@@ -1,0 +1,31 @@
+/*****************************************************************/
+/* 5grid 0.3.2 by n33.co | MIT+GPLv2 license licensed            */
+/* core-desktop.css: Core (desktop) stylesheet                   */
+/*****************************************************************/
+
+.\35 grid .row:after { content: ''; display: block; clear: both; height: 0; } 
+.\35 grid .row > :first-child { margin-left: 0; } 
+.\35 grid .row:first-child > * { margin-top: 0; } 
+.\35 grid .row:last-child > * { margin-bottom: 0; }
+.\35 grid .offset-1u:first-child { margin-left: 8.5% !important; } 
+.\35 grid .offset-2u:first-child { margin-left: 17% !important; } 
+.\35 grid .offset-3u:first-child { margin-left: 25.5% !important; } 
+.\35 grid .offset-4u:first-child { margin-left: 34% !important; } 
+.\35 grid .offset-5u:first-child { margin-left: 42.5% !important; } 
+.\35 grid .offset-6u:first-child { margin-left: 51% !important; } 
+.\35 grid .offset-7u:first-child { margin-left: 59.5% !important; } 
+.\35 grid .offset-8u:first-child { margin-left: 68% !important; } 
+.\35 grid .offset-9u:first-child { margin-left: 76.5% !important; } 
+.\35 grid .offset-10u:first-child { margin-left: 85% !important; } 
+.\35 grid .offset-11u:first-child { margin-left: 93.5% !important; } 
+.\35 grid .offset-1u { margin-left: 10.5% !important; } 
+.\35 grid .offset-2u { margin-left: 19% !important; } 
+.\35 grid .offset-3u { margin-left: 27.5% !important; } 
+.\35 grid .offset-4u { margin-left: 36% !important; } 
+.\35 grid .offset-5u { margin-left: 44.5% !important; } 
+.\35 grid .offset-6u { margin-left: 53% !important; } 
+.\35 grid .offset-7u { margin-left: 61.5% !important; } 
+.\35 grid .offset-8u { margin-left: 70% !important; } 
+.\35 grid .offset-9u { margin-left: 78.5% !important; } 
+.\35 grid .offset-10u { margin-left: 87% !important; } 
+.\35 grid .offset-11u { margin-left: 95.5% !important; }

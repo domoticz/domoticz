@@ -1,0 +1,1731 @@
+<div id="dialog-addweatherdevice" title="Add Device">
+    <form>
+    <fieldset>
+        <label for="name">Name: </label>
+        <input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" />
+    </fieldset>
+    </form>
+</div>
+<div id="dialog-editweatherdevice" title="Edit Device">
+    <form>
+    <fieldset>
+        <label for="name">Name: </label>
+        <input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" />
+    </fieldset>
+    </form>
+</div>
+<div id="weathercontent">
+</div>
+<div id="weatherlog" style="display:none;">
+  <h2>Day</h2><br>
+  <div id="weatherdaygraph" style="height: 300px;"></div>
+  <br>
+  <h2>Month</h2><br>
+  <br>
+  <h2>Year</h2><br>
+ </div>
+ <div id="windlog" style="display:none;">
+  <h2>Day</h2><br>
+  <div id="winddaygraph" style="height: 300px;"></div>
+  <br>
+  <div id="winddirgraph" style="width: 400px; height: 400px;"></div>
+  <br>
+  <h2>Month</h2><br>
+  <div id="windmonthgraph" style="height: 300px;"></div>
+  <br>
+  <h2>Year</h2><br>
+  <div id="windyeargraph" style="height: 300px;"></div>
+</div>
+<div id="uvlog" style="display:none;">
+  <h2>Day</h2><br>
+  <div id="uvdaygraph" style="height: 300px;"></div>
+  <br>
+  <h2>Month</h2><br>
+  <div id="uvmonthgraph" style="height: 300px;"></div>
+  <br>
+  <h2>Year</h2><br>
+  <div id="uvyeargraph" style="height: 300px;"></div>
+</div>
+<div id="barolog" style="display:none;">
+  <h2>Day</h2><br>
+  <div id="barodaygraph" style="height: 300px;"></div>
+  <br>
+  <h2>Month</h2><br>
+  <div id="baromonthgraph" style="height: 300px;"></div>
+  <br>
+  <h2>Year</h2><br>
+  <div id="baroyeargraph" style="height: 300px;"></div>
+</div>
+<div id="rainlog" style="display:none;">
+  <h2>Week</h2><br>
+  <div id="raindaygraph" style="height: 300px;"></div>
+  <br>
+  <h2>Month</h2><br>
+  <div id="rainmonthgraph" style="height: 300px;"></div>
+  <br>
+  <h2>Year</h2><br>
+  <div id="rainyeargraph" style="height: 300px;"></div>
+</div>
+
+<script type="text/javascript" charset="utf-8">
+
+function MakeFavorite(id,isfavorite)
+{
+  $.ajax({
+     url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite, 
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+      ShowWeathers();
+     }
+  });
+}
+
+function EditWeatherDevice(idx,name)
+{
+  $.devIdx=idx;
+  $("#dialog-editweatherdevice #devicename").val(name);
+  $( "#dialog-editweatherdevice" ).dialog( "open" );
+}
+
+function AddWeatherDevice()
+{
+  alert('todo, for now use the devices tab');
+}
+
+function ShowWindLog(id,name)
+{
+  $('#modal').show();
+  var htmlcontent = '';
+        
+  htmlcontent='<p><center><h2>' + name + '</h2></center></p><br><br>\n';
+  htmlcontent+=$('#windlog').html();
+  $('#weathercontent').html(GetBackbuttonHTMLTable('ShowWeathers')+htmlcontent);
+  
+  $.DayChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'winddaygraph',
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=wind&idx="+id+"&range=day",
+                function(data) {
+                      var seriessp = $.DayChart.series[0];
+                      var seriesgu = $.DayChart.series[1];
+                      var datatablesp = [];
+                      var datatablegu = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatablesp.push( [GetUTCFromString(item.d), parseFloat(item.sp) ] );
+                        datatablegu.push( [GetUTCFromString(item.d), parseFloat(item.gu) ] );
+                      });
+                      seriessp.setData(datatablesp);
+                      seriesgu.setData(datatablegu);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Wind speed/gust Last 24 hours'
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: 'Speed (m/s)'
+            },
+            min: 0,
+            minorGridLineWidth: 0,
+            gridLineWidth: 0,
+            alternateGridColor: null,
+            plotBands: [{ // Light air
+                from: 0.3,
+                to: 1.5,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Light air',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Light breeze
+                from: 1.5,
+                to: 3.5,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: 'Light breeze',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Gentle breeze
+                from: 3.5,
+                to: 5.5,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Gentle breeze',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Moderate breeze
+                from: 5.5,
+                to: 8,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: 'Moderate breeze',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Fresh breeze
+                from: 8,
+                to: 10.8,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Fresh breeze',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Strong breeze
+                from: 10.8,
+                to: 13.9,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: 'Strong breeze',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // High wind
+                from: 13.9,
+                to: 17.2,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'High wind',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // fresh gale
+                from: 17.2,
+                to: 20.8,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Fresh gale',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // strong gale
+                from: 20.8,
+                to: 24.5,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: 'Strong gale',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // storm
+                from: 24.5,
+                to: 28.5,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Storm',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Violent storm
+                from: 28.5,
+                to: 32.7,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: 'Violent storm',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // hurricane
+                from: 32.7,
+                to: 100,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Hurricane',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }
+            ]
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' m/s';
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'Speed'
+        }, {
+            name: 'Gust',
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+
+  $.DirChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'winddirgraph',
+          polar: true,
+          events: {
+              load: function() {
+                $.getJSON("json.htm?type=graph&sensor=winddir&idx="+id+"&range=day",
+                function(data) {
+                      var series = $.DirChart.series[0];
+                      var datatable = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable.push( [item.dig, parseFloat(item.div) ] );
+                      });
+                      series.setData(datatable);
+                });
+              }
+          }
+        },
+        title: {
+            text: 'Wind Direction Last 24 hours'
+        },
+        pane: {
+            startAngle: 0,
+            endAngle: 360
+        },
+        credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        xAxis: {
+            min: 0,
+            max: 360,
+            labels: {
+                formatter: function () {
+                    return this.value + '\u00B0';
+                }
+            }
+        },
+        yAxis: {
+            min: 0
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    this.x +'\u00B0: '+ this.y +' %';
+            }
+        },
+        plotOptions: {
+            area: {
+                lineWidth: 2,
+                states: {
+                    hover: {
+                        lineWidth: 2
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            type: 'area',
+            color: 'rgba(68, 170, 213, 0.2)',
+            name: 'Direction'
+        }]
+    });
+
+  $.MonthChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'windmonthgraph',
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=wind&idx="+id+"&range=month",
+                function(data) {
+                      var seriessp = $.MonthChart.series[0];
+                      var seriesgu = $.MonthChart.series[1];
+                      var datatablesp = [];
+                      var datatablegu = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatablesp.push( [GetDateFromString(item.d), parseFloat(item.sp) ] );
+                        datatablegu.push( [GetDateFromString(item.d), parseFloat(item.gu) ] );
+                      });
+                      seriessp.setData(datatablesp);
+                      seriesgu.setData(datatablegu);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Wind speed/gust Last Month'
+        },
+        xAxis: {
+            type: 'datetime',
+            tickInterval: 24 * 3600 * 1000
+        },
+        yAxis: {
+            title: {
+                text: 'Speed (m/s)'
+            },
+            min: 0,
+            minorGridLineWidth: 0,
+            gridLineWidth: 0,
+            alternateGridColor: null,
+            plotBands: [{ // Light air
+                from: 0.3,
+                to: 1.5,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Light air',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Light breeze
+                from: 1.5,
+                to: 3.5,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: 'Light breeze',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Gentle breeze
+                from: 3.5,
+                to: 5.5,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Gentle breeze',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Moderate breeze
+                from: 5.5,
+                to: 8,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: 'Moderate breeze',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Fresh breeze
+                from: 8,
+                to: 10.8,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Fresh breeze',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Strong breeze
+                from: 10.8,
+                to: 13.9,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: 'Strong breeze',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // High wind
+                from: 13.9,
+                to: 17.2,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'High wind',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // fresh gale
+                from: 17.2,
+                to: 20.8,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Fresh gale',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // strong gale
+                from: 20.8,
+                to: 24.5,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: 'Strong gale',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // storm
+                from: 24.5,
+                to: 28.5,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Storm',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Violent storm
+                from: 28.5,
+                to: 32.7,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: 'Violent storm',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // hurricane
+                from: 32.7,
+                to: 100,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Hurricane',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }
+           ]
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' m/s';
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'Speed'
+        }, {
+            name: 'Gust',
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+
+  $.YearChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'windyeargraph',
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=wind&idx="+id+"&range=year",
+                function(data) {
+                      var seriessp = $.YearChart.series[0];
+                      var seriesgu = $.YearChart.series[1];
+                      var datatablesp = [];
+                      var datatablegu = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatablesp.push( [GetDateFromString(item.d), parseFloat(item.sp) ] );
+                        datatablegu.push( [GetDateFromString(item.d), parseFloat(item.gu) ] );
+                      });
+                      seriessp.setData(datatablesp);
+                      seriesgu.setData(datatablegu);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Wind speed/gust Last Year'
+        },
+        xAxis: {
+            type: 'datetime',
+            tickInterval: 24 * 3600 * 1000
+        },
+        yAxis: {
+            title: {
+                text: 'Speed (m/s)'
+            },
+            min: 0,
+            minorGridLineWidth: 0,
+            gridLineWidth: 0,
+            alternateGridColor: null,
+            plotBands: [{ // Light air
+                from: 0.3,
+                to: 1.5,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Light air',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Light breeze
+                from: 1.5,
+                to: 3.3,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: 'Light breeze',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Gentle breeze
+                from: 3.3,
+                to: 5.5,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Gentle breeze',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Moderate breeze
+                from: 5.5,
+                to: 8,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: 'Moderate breeze',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Fresh breeze
+                from: 8,
+                to: 11,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Fresh breeze',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Strong breeze
+                from: 11,
+                to: 14,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: 'Strong breeze',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // High wind
+                from: 14,
+                to: 15,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'High wind',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }]
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' m/s';
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'Speed'
+        }, {
+            name: 'Gust',
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+}
+
+function ShowUVLog(id,name)
+{
+  $('#modal').show();
+  var htmlcontent = '';
+  htmlcontent='<p><center><h2>' + name + '</h2></center></p><br><br>\n';
+  htmlcontent+=$('#uvlog').html();
+  $('#weathercontent').html(GetBackbuttonHTMLTable('ShowWeathers')+htmlcontent);
+  
+  $.DayChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'uvdaygraph',
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=uv&idx="+id+"&range=day",
+                function(data) {
+                      var series = $.DayChart.series[0];
+                      var datatable = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable.push( [GetUTCFromString(item.d), parseFloat(item.uvi) ] );
+                      });
+                      series.setData(datatable);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'UV Last 24 hours'
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: 'UV (UVI)'
+            },
+            min: 0
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' UVI';
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'uv'
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+
+  $.MonthChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'uvmonthgraph',
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=uv&idx="+id+"&range=month",
+                function(data) {
+                      var series = $.MonthChart.series[0];
+                      var datatable = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable.push( [GetDateFromString(item.d), parseFloat(item.uvi) ] );
+                      });
+                      series.setData(datatable);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'UV Last Month'
+        },
+        xAxis: {
+            type: 'datetime',
+            tickInterval: 24 * 3600 * 1000
+        },
+        yAxis: {
+            title: {
+                text: 'UV (UVI)'
+            },
+            min: 0
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' UVI';
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'uv'
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+
+  $.YearChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'uvyeargraph',
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=uv&idx="+id+"&range=year",
+                function(data) {
+                      var series = $.YearChart.series[0];
+                      var datatable = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable.push( [GetDateFromString(item.d), parseFloat(item.uvi) ] );
+                      });
+                      series.setData(datatable);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'UV Last Year'
+        },
+        xAxis: {
+            type: 'datetime',
+            tickInterval: 24 * 3600 * 1000
+        },
+        yAxis: {
+            title: {
+                text: 'UV (UVI)'
+            },
+            min: 0
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' UVI';
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'uv'
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+}
+
+function ShowBaroLog(id,name)
+{
+  $('#modal').show();
+  var htmlcontent = '';
+  htmlcontent='<p><center><h2>' + name + '</h2></center></p><br><br>\n';
+  htmlcontent+=$('#barolog').html();
+  $('#weathercontent').html(GetBackbuttonHTMLTable('ShowWeathers')+htmlcontent);
+  
+  $.DayChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'barodaygraph',
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=temp&idx="+id+"&range=day",
+                function(data) {
+                      var series = $.DayChart.series[0];
+                      var datatable = [];
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable.push( [GetUTCFromString(item.d), parseInt(item.ba) ] );
+                      });
+                      series.setData(datatable);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Barometer Last 24 hours'
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: 'Pressure (hPa)'
+            }
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' hPa';
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'hPa'
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+
+  $.MonthChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'baromonthgraph',
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=temp&idx="+id+"&range=month",
+                function(data) {
+                      var series = $.MonthChart.series[0];
+                      var datatable = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable.push( [GetDateFromString(item.d), parseInt(item.ba) ] );
+                      });
+                      series.setData(datatable);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Barometer Last Month'
+        },
+        xAxis: {
+            type: 'datetime',
+            tickInterval: 24 * 3600 * 1000
+        },
+        yAxis: {
+            title: {
+                text: 'Pressure (hPa)'
+            }
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' hPa';
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'hPa'
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+
+  $.YearChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'baroyeargraph',
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=temp&idx="+id+"&range=year",
+                function(data) {
+                      var series = $.YearChart.series[0];
+                      var datatable = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable.push( [GetDateFromString(item.d), parseInt(item.ba) ] );
+                      });
+                      series.setData(datatable);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Barometer Last Year'
+        },
+        xAxis: {
+            type: 'datetime',
+            tickInterval: 24 * 3600 * 1000
+        },
+        yAxis: {
+            title: {
+                text: 'Pressure (hPa)'
+            }
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' hPa';
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'hPa'
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+}
+
+function ShowRainLog(id,name)
+{
+  $('#modal').show();
+  var htmlcontent = '';
+  htmlcontent='<p><center><h2>' + name + '</h2></center></p><br><br>\n';
+  htmlcontent+=$('#rainlog').html();
+  $('#weathercontent').html(GetBackbuttonHTMLTable('ShowWeathers')+htmlcontent);
+  
+  $.DayChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'raindaygraph',
+          type: 'column',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=rain&idx="+id+"&range=day",
+                function(data) {
+                      var series = $.DayChart.series[0];
+                      var datatable = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable.push( [GetDateFromString(item.d), parseFloat(item.mm) ] );
+                      });
+                      series.setData(datatable);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Rainfall Last week'
+        },
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: {
+                day: '%a'
+            },
+            tickInterval: 24 * 3600 * 1000
+        },
+        yAxis: {
+            title: {
+                text: 'Rainfaill (mm)'
+            },
+            min: 0
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y +' mm';
+            }
+        },
+        plotOptions: {
+            column: {
+                stacking: 'normal',
+                minPointLength: 4,
+                pointPadding: 0.1,
+                groupPadding: 0
+            }
+        },
+        series: [{
+            name: 'mm',
+            color: 'rgba(3,190,252,0.8)',
+            dataLabels: {
+                    verticalAlign: 'top',
+                    enabled: true,
+                    color: '#FFFFFF',
+                    y: -23,
+                    formatter: function() {
+                        return this.y;
+                    },
+                    style: {
+                        fontSize: '13px',
+                        fontFamily: 'Verdana, sans-serif'
+                    }
+                }
+        }]
+        ,
+        legend: {
+            enabled: false
+        }
+    });
+
+  $.MonthChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'rainmonthgraph',
+          type: 'spline',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=rain&idx="+id+"&range=month",
+                function(data) {
+                      var series = $.MonthChart.series[0];
+                      var datatable = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable.push( [GetDateFromString(item.d), parseFloat(item.mm) ] );
+                      });
+                      series.setData(datatable);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Rainfall Last Month'
+        },
+        xAxis: {
+            type: 'datetime',
+            tickInterval: 24 * 3600 * 1000
+        },
+        yAxis: {
+            title: {
+                text: 'Rainfaill (mm)'
+            },
+            min: 0
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y +' mm';
+            }
+        },
+        plotOptions: {
+           spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'mm',
+            color: 'rgba(3,190,252,0.8)'
+        }]
+        ,
+        legend: {
+            enabled: false
+        }
+    });
+
+  $.YearChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'rainyeargraph',
+          type: 'spline',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=rain&idx="+id+"&range=year",
+                function(data) {
+                      var series = $.YearChart.series[0];
+                      var datatable = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable.push( [GetDateFromString(item.d), parseFloat(item.mm) ] );
+                      });
+                      series.setData(datatable);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Rainfall Last Year'
+        },
+        xAxis: {
+            type: 'datetime',
+            tickInterval: 24 * 3600 * 1000
+        },
+        yAxis: {
+            title: {
+                text: 'Rainfaill (mm)'
+            },
+            min: 0
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y +' mm';
+            }
+        },
+        plotOptions: {
+           spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'mm',
+            color: 'rgba(3,190,252,0.8)'
+        }]
+        ,
+        legend: {
+            enabled: false
+        }
+    });
+}
+
+function ShowWeathers()
+{
+  $('#modal').show();
+  
+  var htmlcontent = '';
+  var bHaveAddedDevider = false;
+
+  var sunRise="";
+  var sunSet="";
+
+  $.ajax({
+     url: "json.htm?type=command&param=getSunRiseSet",
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+        if (typeof data.Sunrise != 'undefined') {
+          sunRise=data.Sunrise;
+          sunSet=data.Sunset;
+        }
+     }
+  });
+  
+  var tophtm=
+        '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+        '\t<tr>\n';
+  if (sunRise!="")
+  {
+    tophtm+='\t  <td align="left">SunRise: ' + sunRise + ', SunSet: ' + sunSet + '</td>\n';
+  }
+  tophtm+=
+        '\t  <td align="right">\n' +
+        '\t    <a class="btnstyle" href="#" onclick="AddWeatherDevice();">Add Sensor</a>\n' +
+        '\t  </td>\n' +
+        '\t</tr>\n' +
+        '\t</table>\n';
+  
+
+  var i=0;
+  $.ajax({
+     url: "json.htm?type=devices&filter=weather&used=true&order=Name", 
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+      if (typeof data.result != 'undefined') {
+        $.each(data.result, function(i,item){
+          if (i % 3 == 0)
+          {
+            //add devider
+            if (bHaveAddedDevider == true) {
+              //close previous devider
+              htmlcontent+='</div>\n';
+            }
+            htmlcontent+='<div class="row divider">\n';
+            bHaveAddedDevider=true;
+          }
+          var xhtm=
+                '\t<div class="4u">\n' +
+                '\t  <section>\n' +
+                '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
+                '\t    <tr>\n' +
+                '\t      <td>' + item.Name + '</td>\n' +
+                '\t      <td><img src="images/';
+            if (typeof item.Barometer != 'undefined') {
+              xhtm+='baro48.png" height="48"></td>\n' +
+              '\t      <td>' + item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
+            }
+            if (typeof item.Rain != 'undefined') {
+              xhtm+='rain48.png" height="48"></td>\n' +
+              '\t      <td>' + item.Rain + ' mm';
+              if (typeof item.RainRate != 'undefined') {
+                xhtm+=', Rate: ' + item.RainRate + ' mm/h';
+              }
+            }
+            else if (typeof item.UVI != 'undefined') {
+              xhtm+='uv48.png" height="48"></td>\n' +
+              '\t      <td>' + item.UVI + ' UVI';
+              if (typeof item.Temp!= 'undefined') {
+                xhtm+=', Temp: ' + item.Temp + '&deg; C';
+              }
+            }
+            else if (typeof item.Direction != 'undefined') {
+              xhtm+='wind48.png" height="48"></td>\n' +
+              '\t      <td>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
+              xhtm+='Temp: ' + item.Temp + '&deg; C, ';
+              xhtm+='Chill: ' + item.Chill + '&deg; C';
+            }
+            xhtm+=      
+                '</td>\n' +
+                '\t      <td>' + item.LastUpdate + '</td>\n' +
+                '\t      <td>' + item.Type + ', ' + item.SubType + '</td>\n' +
+                '\t      <td>';
+          if (item.Favorite == 0) {
+            xhtm+=      
+                  '<img src="images/nofavorite.png" title="Add to Dashboard" onclick="MakeFavorite(' + item.idx + ',1);" onMouseover="cursorhand()" onMouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+          }
+          else {
+            xhtm+=      
+                  '<img src="images/favorite.png" title="Remove from Dashboard" onclick="MakeFavorite(' + item.idx + ',0);" onMouseover="cursorhand()" onMouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+          }
+
+          if (typeof item.Barometer != 'undefined') {
+            xhtm+='<a class="btnsmall" href="#" onclick="ShowBaroLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
+          }
+          if (typeof item.Rain != 'undefined') {
+            xhtm+='<a class="btnsmall" href="#" onclick="ShowRainLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
+          }
+          else if (typeof item.UVI != 'undefined') {
+            xhtm+='<a class="btnsmall" href="#" onclick="ShowUVLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
+          }
+          else if (typeof item.Direction != 'undefined') {
+            xhtm+='<a class="btnsmall" href="#" onclick="ShowWindLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
+          }
+          xhtm+=      
+                '<a class="btnsmall" href="#" onclick="EditWeatherDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ' +
+                '<a class="btnsmall" href="#">Notifications</a>' +
+                '</td>\n' +
+                '\t    </tr>\n' +
+                '\t    </table>\n' +
+                '\t  </section>\n' +
+                '\t</div>\n';
+          htmlcontent+=xhtm;
+        });
+      }
+     }
+  });
+  if (bHaveAddedDevider == true) {
+    //close previous devider
+    htmlcontent+='</div>\n';
+  }
+  if (htmlcontent == '')
+  {
+    htmlcontent='<h2>No Weather sensors found or added in the system...</h2>';
+  }
+  $('#modal').hide();
+  $('#weathercontent').html(tophtm+htmlcontent);
+  return false;
+}
+
+$(document).ready(function() {
+    //global var
+    $.devIdx=0;
+    
+    $( "#dialog-addweatherdevice" ).dialog({
+          autoOpen: false,
+          width: 350,
+          height: 150,
+          modal: true,
+          resizable: false,
+          buttons: {
+              "Add Device": function() {
+                  var bValid = true;
+                  bValid = bValid && checkLength( $("#dialog-addweatherdevice #devicename"), 3, 100 );
+                  if ( bValid ) {
+                      $( this ).dialog( "close" );
+                      $.ajax({
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-addweatherdevice #devicename").val() + '&used=true',
+                         async: false, 
+                         dataType: 'json',
+                         success: function(data) {
+                            ShowWeathers();
+                         }
+                      });
+                      
+                  }
+              },
+              Cancel: function() {
+                  $( this ).dialog( "close" );
+              }
+          },
+          open: function() {
+              $(this).keypress(function(e) {
+                if (e.keyCode == $.ui.keyCode.ENTER) {
+                  e.preventDefault();
+                  $(this).parent().find("button:eq(0)").trigger("click");
+                }
+              });
+          },
+          close: function() {
+            $( this ).dialog( "close" );
+          }
+    });
+    $( "#dialog-editweatherdevice" ).dialog({
+          autoOpen: false,
+          width: 350,
+          height: 150,
+          modal: true,
+          resizable: false,
+          buttons: {
+              "Update": function() {
+                  var bValid = true;
+                  bValid = bValid && checkLength( $("#dialog-editweatherdevice #devicename"), 3, 100 );
+                  if ( bValid ) {
+                      $( this ).dialog( "close" );
+                      $.ajax({
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editweatherdevice #devicename").val() + '&used=true',
+                         async: false, 
+                         dataType: 'json',
+                         success: function(data) {
+                            ShowWeathers();
+                         }
+                      });
+                      
+                  }
+              },
+              "Remove Device": function() {
+                  var bValid = false;
+                  bValid=(confirm("Are you sure to remove this Device?")==true);
+                  if ( bValid ) {
+                      $( this ).dialog( "close" );
+                      $.ajax({
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editweatherdevice #devicename").val() + '&used=false',
+                         async: false, 
+                         dataType: 'json',
+                         success: function(data) {
+                            ShowWeathers();
+                         }
+                      });
+                      
+                  }
+              },
+              Cancel: function() {
+                  $( this ).dialog( "close" );
+              }
+          },
+          open: function() {
+              $(this).keypress(function(e) {
+                if (e.keyCode == $.ui.keyCode.ENTER) {
+                  e.preventDefault();
+                  $(this).parent().find("button:eq(0)").trigger("click");
+                }
+              });
+          },
+          close: function() {
+            $( this ).dialog( "close" );
+          }
+    });
+
+  ShowWeathers();
+ 
+} );  
+</script>

@@ -1,0 +1,56 @@
+/*****************************************************************/
+/* 5grid 0.3.2 by n33.co | MIT+GPLv2 license licensed            */
+/* mobileUI-beveled.css: Beveled mobile UI theme                 */
+/*****************************************************************/
+
+#mobileUI-site-titlebar {
+	text-align: center;
+	background: #444;
+	color: #fff;
+	text-shadow: -1px -1px 0px rgba(0,0,0,0.9);
+	font-weight: bold;
+	box-shadow: inset 0px -1px 0px 0px rgba(0,0,0,0.75), inset 0px 22px 0px 0px rgba(255,255,255,0.09), inset 0px 8px 45px 0px rgba(255,255,255,0.4);
+	line-height: 46px !important;
+}
+
+#mobileUI-site-nav-opener {
+	width: 45px;
+	height: 28px;
+	color: #fff;
+	text-align: center;
+	line-height: 28px;
+	font-size: 0.8em;
+	top: 7px;
+	left: 6px;
+	border-radius: 5px;
+	text-shadow: -1px -1px 0px rgba(0,0,0,0.9);
+	box-shadow: inset 0px 0px 0px 1px rgba(0,0,0,0.25), inset 0px 1px 2px 0px rgba(0,0,0,0.5), inset 0px 6px 13px 0px rgba(255,255,255,0.2), 0px 2px 2px 0px rgba(255,255,255,0.1);
+}
+
+#mobileUI-site-nav-opener:active {
+	background: rgba(0,0,0,0.4);
+}
+
+#mobileUI-site-nav {
+	background: #444;
+	color: #fff;
+	box-shadow: inset -10px 0px 40px 0px rgba(0,0,0,0.5);
+}
+
+	#mobileUI-site-nav a {
+		display: block;
+		color: #fff;
+		border-top: solid 1px rgba(255,255,255,0.1);
+		border-bottom: solid 1px rgba(0,0,0,0.2);
+		padding: 0.75em;
+		text-decoration: none;
+		text-shadow: -1px -1px 0px #000;
+	}
+	
+	#mobileUI-site-nav a:first-child {
+		border-top: 0;
+	}
+	
+	#mobileUI-site-nav a:last-child {
+		border-bottom: 0;
+	}

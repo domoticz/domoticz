@@ -1,0 +1,663 @@
+@import url(http://fonts.googleapis.com/css?family=Abel|Satisfy);
+@import url(http://fonts.googleapis.com/css?family=Oswald:400,300);
+
+/*
+	Untitled: A responsive HTML5 website template by HTML5Templates.com
+	Released for free under the Creative Commons Attribution 3.0 license (html5templates.com/license)
+	Visit http://html5templates.com for more great templates or follow us on Twitter @HTML5T
+*/
+
+
+/*********************************************************************************/
+/* Global                                                                        */
+/*********************************************************************************/
+* {
+margin:0;
+padding:0; 
+}
+
+html, body {
+	height: 99%;
+}
+
+body {
+	background: #202020 url(images/img01.jpg) repeat;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 10pt;
+	color: #525252;
+}
+
+h2 {
+	margin: 0em;
+	padding: 0em;
+	font-family: Arial, Helvetica, sans-serif;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1.5em;
+	font-weight: 200;
+	color: #CCCCCC;
+}
+
+h1, h3 {
+	margin: 0em;
+	padding: 0em;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+p {
+	line-height: 170%;
+}
+
+a {
+	color: #43A4D3;
+}
+
+strong {
+	font-weight: 700;
+	color: #2A2A2A;
+}
+
+#wrap {
+min-height:100%; 
+margin:0 auto;
+}
+#wrap:before { /* Opera and IE8 "redraw" bug fix */
+content:"";
+float:left;
+height:100%;
+margin-top:-999em;
+}
+* html #wrap { /* IE6 workaround */
+height:100%; 
+}
+
+/* Copyright */
+
+#copyright {
+  height:16px;
+  margin:-16px auto 0; /* negative margin-top equals height of #foot */
+	border-top: 1px solid #303030;
+	text-align: center;
+}
+
+#copyright p {
+	font-family: 'Abel', sans-serif;
+	font-size: 1.125em;
+	color: #6A6A6A;
+}
+
+#copyright a {
+	color: #838383;
+}
+
+#copyright a:hover {
+	text-decoration: none;
+}
+
+#disimg
+{
+  opacity:0.3;
+  filter:alpha(opacity=30); /* For IE8 and earlier */
+}
+
+#notification{
+    z-index:105;
+    background-color:#204060;
+    border-width: 2px 2px 2px 2px;
+    border-color: #5FA0FF;
+    border-style: solid;
+    border-radius: 10px;
+}
+
+#notification p{
+    font-size:18px;
+    color:white;
+    margin: 11px;
+    text-align:center;
+    text-decoration: none;
+    text-transform: none;
+    font-weight:bold;
+}
+
+/* Button Style */
+
+.button-style a {
+	display: block;
+	width: 11.250em;
+	height: 2.40em;
+	margin-top: 1.875em;
+	background: url(images/img03.jpg) repeat;
+	line-height: 3.125em;
+	text-align: center;
+	text-decoration: none;
+	text-transform: none;
+	font-family: 'Oswald', sans-serif;
+	font-size: 1.125em;
+	font-weight: 200;
+	color: #FFFFFF;
+	outline: none;
+}
+
+.button-style-sel a {
+	display: block;
+	width: 11.250em;
+	height: 2.40em;
+	margin-top: 1.875em;
+	background: url(images/img03s.jpg) repeat;
+	line-height: 3.125em;
+	text-align: center;
+	text-decoration: none;
+	text-transform: none;
+	font-family: 'Oswald', sans-serif;
+	font-size: 1.125em;
+	font-weight: 200;
+	color: #FFFFFF;
+	outline: none;
+}
+
+#topnav {
+	overflow: hidden;
+	padding: 0em 0em 1em 0em;
+	background: #FFFFFF;
+}
+
+/* Button Style 2 */
+
+.button-style2 a {
+	display: inline-block;
+	height: 2.60em;
+	margin-top: 1.25em;
+	padding: 0em 2.25em 0em 1.25em;
+	background: url(images/img03.jpg) repeat right top;
+	border-radius: 5px;
+	line-height: 2.60em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+}
+
+.button-style2-sel a {
+	display: inline-block;
+	height: 2.60em;
+	margin-top: 1.25em;
+	padding: 0em 2.25em 0em 1.25em;
+	background: url(images/img03s.jpg) repeat right top;
+	border-radius: 5px;
+	line-height: 2.60em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+}
+
+.btnstyle {
+	display: inline-block;
+	height: 2.60em;
+	margin-top: 1.25em;
+	padding: 0em 2.25em 0em 1.25em;
+	background: url(images/img03.jpg) repeat right top;
+	border-radius: 5px;
+	line-height: 2.60em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+}
+
+.btnstyle-sel {
+	display: inline-block;
+	height: 2.60em;
+	margin-top: 1.25em;
+	padding: 0em 2.25em 0em 1.25em;
+	background: url(images/img03s.jpg) repeat right top;
+	border-radius: 5px;
+	line-height: 2.60em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+}
+
+.btnstylerev {
+	display: inline-block;
+	height: 2.60em;
+	margin-top: 1.25em;
+	padding: 0em 1.25em 0em 2.0em;
+	background: url(images/img03r.jpg) repeat left top;
+	border-radius: 5px;
+	line-height: 2.60em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+}
+
+.btnstyle3 {
+	display: inline-block;
+	height: 2.00em;
+	margin-top: 0.25em;
+	padding: 0em 1.25em 0em 1.25em;
+	background: url(images/img03b.jpg) repeat right top;
+	border-radius: 5px;
+	line-height: 2.00em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+}
+
+.btnstyle3-dis {
+	display: inline-block;
+	height: 2.00em;
+	margin-top: 0.25em;
+	padding: 0em 1.25em 0em 1.25em;
+	background: url(images/img03bd.png) repeat right top;
+	border-radius: 5px;
+	line-height: 2.00em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+}
+
+.btnstyle3-sel {
+	display: inline-block;
+	height: 2.00em;
+	margin-top: 1.25em;
+	padding: 0em 1.25em 0em 1.25em;
+	background: url(images/img03bs.jpg) repeat right top;
+	border-radius: 5px;
+	line-height: 2.00em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+}
+
+.btnsmall {
+	display: inline-block;
+	height: 1.60em;
+	padding: 0em 0.6em 0em 0.6em;
+	background: url(images/img03b.jpg) repeat right top;
+	border-radius: 5px;
+	line-height: 1.60em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+}
+
+.btnsmall-sel {
+	display: inline-block;
+	height: 1.60em;
+	padding: 0em 0.6em 0em 0.6em;
+	background: url(images/img03bs.jpg) repeat right top;
+	border-radius: 5px;
+	line-height: 1.60em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+}
+
+/* Hover state*/
+.btnsmall:hover{
+	color: #FFFF00;
+}
+
+
+/** LIST STYLE 1 */
+
+ul.style1 {
+	margin: 0em;
+	list-style: none;
+}
+
+ul.style1 li {
+	padding: 0.94em 0em;
+	border-top: 1px solid #E6E6E6;
+}
+
+ul.style1 a {
+	display: block;
+	padding: 0em 0em 0em 1.87em;
+	background: url(images/img10.png) no-repeat left top;
+	text-decoration: none;
+	color: #525252;
+}
+
+ul.style1 a:hover {
+	text-decoration: underline;
+}
+
+ul.style1 .first {
+	border-top: 0;
+}
+
+/** LIST STYLE 2 */
+
+ul.style2 {
+	margin: 0em;
+	padding: 0em;
+	list-style: none;
+}
+
+ul.style2 li {
+	padding: 1.25em 0em 2.5em 0em;
+	border-top: 1px solid #E6E6E6;
+}
+
+ul.style2 a {
+	text-decoration: none;
+	color: #525252;
+}
+
+ul.style2 a:hover {
+	text-decoration: underline;
+}
+
+ul.style2 .date {
+	display: inline-block;
+	margin: 0em 0em 1.56em 0em;
+	padding: 0.35em 0.63em;
+	background: url(images/img06.png) repeat;
+	border-radius: 5px;
+	letter-spacing: 0.06em;
+	line-height: none;
+	text-transform: none;
+	font-family: 'Oswald', sans-serif;
+	font-weight: 200;
+	color: #FFFFFF;
+}
+
+ul.style2 .date a {
+	color: #FFFFFF;
+}
+
+ul.style2 img {
+	float: left;
+	margin-right: 1.5em;
+}
+
+ul.style2 .first {
+	border-top: 0;
+}
+
+/** LIST STYLE 3 */
+
+ul.style3 {
+	margin: 0em;
+	padding: 0em;
+	list-style: none;
+}
+
+ul.style3 li {
+	padding: 1.25em 0em 1.56em 0em;
+}
+
+ul.style3 a {
+	display: block;
+	text-decoration: none;
+	color: #C18062;
+}
+
+ul.style3 a:hover {
+	text-decoration: underline;
+}
+
+ul.style3 .date {
+}
+
+ul.style3 .date b {
+}
+
+ul.style3 .date a {
+	color: #FFFFFF;
+}
+
+ul.style3 .date a:hover {
+	text-decoration: none;
+}
+
+ul.style3 .first {
+	padding-top: 0em;
+	background: none;
+}
+
+/** LIST STYLE 4 */
+
+ul.style4 {
+	margin: 0em;
+	padding: 0em;
+	list-style: none;
+}
+
+ul.style4 li {
+	padding: 0.94em 0em 0.94em 0em;
+	border-top: 1px solid #742F0E;
+}
+
+ul.style4 a {
+	display: block;
+	padding: 0em 0em 0em 1.87em;
+	background: url(images/img10.png) no-repeat left top;
+	text-decoration: none;
+	color: #C18062;
+}
+
+ul.style4 a:hover {
+	text-decoration: underline;
+}
+
+ul.style4 li {
+	border-top: 0;
+}
+
+/** LIST STYLE 5 */
+
+ul.style5 {
+	overflow: hidden;
+	margin: 0em 0em 1em 0em;
+	padding: 0em;
+	list-style: none;
+}
+
+ul.style5 li {
+	float: left;
+	padding: 0.25em 0.25em;
+	line-height: 0;
+}
+
+ul.style5 a {
+}
+
+
+
+/** LIST STYLE 6 */
+
+ul.style6 {
+	margin: 0em;
+	padding: 0em;
+	list-style: none;
+}
+
+
+ul.style6 h3 {
+	margin: 0em;
+	padding: 0em 0em 0.63em 0em;
+	font-family: Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	font-size: 1em;
+	color: #A0A09F;
+}
+
+ul.style6 p {
+	font-style: italic;
+	font-size: 0.87em;
+}
+
+ul.style6 li {
+	padding: 1.25em 0em 1.25em 0em;
+	border-top: 1px solid #303030;
+	line-height: 170%;
+}
+
+ul.style6 a {
+	display: block;
+	padding: 0em;
+	text-decoration: none;
+	color: #737373;
+}
+
+ul.style6 a:hover {
+	text-decoration: underline;
+}
+
+ul.style6 .first {
+	padding-top: 0em;
+	border-top: 0;
+}
+
+
+
+.balloon {
+	padding: 1.87em;
+	background: url(images/img08.jpg) repeat left top;
+	border-radius: 5px;
+	line-height: 180%;
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: 1.2em;
+	font-style: italic;
+}
+
+.ballon-bgbtm {
+	height: 1.87em;
+	background: url(images/img09.png) no-repeat right top;
+}
+
+body table#itemtable,
+body table#itemtable tbody{
+	display: block;
+	width: 100%;
+}
+body table#itemtable tbody tr{
+	display: block;
+	
+	width: 96%;
+	padding: 5px 5px 5px 5px;
+	margin: 2px 100% 5px 0;
+	
+	border-style: none;
+  border-radius: 5px;
+
+	color: #0D161F;
+	background-color: #F1F5FA;
+	
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+
+body table#itemtable thead{
+	display: none;
+}
+
+body table#itemtable tr > *{
+	display: block;
+	padding: 0;
+	margin: 0;
+}
+
+/* I am using the :first-child as a way to style each column by itself*/
+/* First column */
+body table#itemtable tr td:first-child{
+	height: 1.2em;
+	padding: 0 .5em 0 .5em;
+	margin-bottom: 5px;
+	
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 130%;
+	white-space: nowrap;
+	
+	border-width: 1px 1px 1px 1px;
+	border-color: #2B5074;
+	border-style: solid;
+  border-radius: 5px;
+	
+	color: #0D161F;
+	background-color: #D4E1EE;
+}
+
+/* Second column */
+body table#itemtable tr td:first-child + td{ 
+	border-color: #2B5074;  
+	border-style: none;  
+	border-width: 1px; 
+	
+	float: left;
+	margin: 0 10px 10px 0;
+}
+
+body table#itemtable tr td:first-child + td img{
+	display: block;
+}
+
+/* Third column */
+body table#itemtable tr td:first-child + td + td{
+	font-size: 90%;
+	font-weight: bold;
+}
+
+body table#itemtable tr td:first-child + td + td:before{
+	content: "Status: ";
+	font-style: italic;
+	font-size: 90%;
+}
+
+/* Fourth column */
+body table#itemtable tr td:first-child + td + td + td{
+	font-size: 80%;
+}
+body table#itemtable tr td:first-child + td + td + td:before{
+	content: "Last Seen: ";
+	font-style: italic;
+}
+
+/* Fifth column */
+body table#itemtable tr td:first-child + td + td + td + td{
+	font-size: 80%;
+}
+body table#itemtable tr td:first-child + td + td + td + td:before{
+	content: "Type: ";
+	font-style: italic;
+}
+
+/* Sixth column (bottom text)*/
+body table#itemtable tr td:first-child + td + td + td + td + td{
+	font-size: 90%;
+	clear: both;
+	padding: 0 5% 0 5%;
+	line-height: 130%;
+}
+
+/* Hover state*/
+body table#itemtable tbody tr:hover{
+	border-color: #2B2C74;
+	background-color: #F2F1FA;
+}
+body table#itemtable tr:hover td:first-child{
+	border-color: #2B2C74;
+	color: #0D0D1F;
+	background-color: #D4D5EE;
+}
+

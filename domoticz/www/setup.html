@@ -1,0 +1,103 @@
+<form id="settings">
+<h2>Location:</h2><br>
+<table class="display" id="locationtable" border="0" cellpadding="0" cellspacing="0">
+<tr>
+  <td align="right" width="60px"><label for="Latitude">Latitude: </label></td>
+  <td><input type="text" id="Latitude" name="Latitude" style="width: 150px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
+<tr>
+  <td align="right"><label for="Longitude">Longitude: </label></td>
+  <td><input type="text" id="Longitude" name="Longitude" style="width: 150px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
+</tr>
+</table>
+To find your location click <a href="http://itouchmap.com/latlong.html" target="_blank">Here</a><br>
+<br><br>
+<h2>Prowl (iPhone/iPad notification system):</h2><br>
+<table class="display" id="prowltable" border="0" cellpadding="0" cellspacing="0">
+<tr>
+  <td align="right" width="60px"><label for="apikey">API Key: </label></td>
+  <td><input type="input" id="apikey" name="ProwlAPIKey" style="width: 300px; padding: .4em;" class="text ui-widget-content ui-corner-all" />  <a class="btnstyle3" href="javascript:TestProwlNotification()">Test</a></td>
+</table>
+To get a free account/API key click <a href="https://www.prowlapp.com" target="_blank">Here</a><br>
+<br><br>
+<h2>NMA (Android notification system):</h2><br>
+<table class="display" id="nmatable" border="0" cellpadding="0" cellspacing="0">
+<tr>
+  <td align="right" width="60px"><label for="apikey">API Key: </label></td>
+  <td><input type="input" id="apikey" name="NMAAPIKey" style="width: 356px; padding: .4em;" class="text ui-widget-content ui-corner-all" />  <a class="btnstyle3" href="javascript:TestNMANotification()">Test</a></td>
+</table>
+To get a free account/API key click <a href="https://http://www.notifymyandroid.com/" target="_blank">Here</a><br>
+<br>
+<a class="btnstyle3" href="javascript:StoreSettings()">Save</a>
+</form>
+
+<script type="text/javascript" charset="utf-8">
+
+function TestProwlNotification()
+{
+  var ProwlAPI=$("#prowltable #apikey").val();
+  if (ProwlAPI=="") {
+    ShowNotify('Please enter the API key!...', 3500, true);
+    return;
+  }
+  var url="http://api.prowlapp.com/publicapi/add?apikey=" + ProwlAPI + "&priority=0&application=Domoticz&event=Test Message&description=This is a test message!";
+  $.get(url, function(data) {
+  });  
+  ShowNotify('Notification send!<br>Should arrive at your device soon...', 3000);
+}
+
+function TestNMANotification()
+{
+  var NMAAPI=$("#prowltable #apikey").val();
+  if (NMAAPI=="") {
+    ShowNotify('Please enter the API key!...', 3500, true);
+    return;
+  }
+  var url="http://www.notifymyandroid.com/publicapi/notify?apikey=" + NMAAPI + "&priority=0&application=Domoticz&event=Test Message&description=This is a test message!";
+  $.get(url, function(data) {
+  });  
+  ShowNotify('Notification send!<br>Should arrive at your device soon...', 3000);
+}
+
+function ShowSettings()
+{
+  $.ajax({
+     url: "json.htm?type=settings", 
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+      if (typeof data.Location != 'undefined') {
+        $("#locationtable #Latitude").val(data.Location.Latitude);
+        $("#locationtable #Longitude").val(data.Location.Longitude);
+      }
+      if (typeof data.ProwlAPI != 'undefined') {
+        $("#prowltable #apikey").val(data.ProwlAPI);
+      }
+      if (typeof data.NMAAPI != 'undefined') {
+        $("#nmatable #apikey").val(data.NMAAPI);
+      }
+     }
+  });
+
+}
+
+function StoreSettings(formname)
+{
+  var Latitude=$("#locationtable #Latitude").val();
+  var Longitude=$("#locationtable #Longitude").val();
+  if (
+      ((Latitude=="")||(Longitude==""))||
+      ( isNaN(Latitude)||isNaN(Longitude) )
+    )
+  {
+    ShowNotify('Invalid Location Settings...', 2000, true);
+    return;
+  }
+  $.post("storesettings.webem", $("#settings").serialize(), function(data) {
+   SwitchLayout('Dashboard');
+  });
+}
+
+$(document).ready(function() {
+  ShowSettings();
+} );  
+</script>

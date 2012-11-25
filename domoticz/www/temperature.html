@@ -1,0 +1,695 @@
+<div id="dialog-addtempdevice" title="Add Device">
+    <form>
+    <fieldset>
+        <label for="name">Name: </label>
+        <input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" />
+    </fieldset>
+    </form>
+</div>
+<div id="dialog-edittempdevice" title="Edit Device">
+    <form>
+    <fieldset>
+        <label for="name">Name: </label>
+        <input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" />
+    </fieldset>
+    </form>
+</div>
+<div id="tempcontent">
+</div>
+<div id="templog" style="display:none;">
+<h2>Day</h2><br>
+<div id="tempdaygraph" style="height: 300px;"></div>
+<br>
+<h2>Month</h2><br>
+<div id="tempmonthgraph" style="height: 300px;"></div>
+<br>
+<h2>Year</h2><br>
+<div id="tempyeargraph" style="height: 300px;"></div>
+</div>
+
+<script type="text/javascript" charset="utf-8">
+
+function MakeFavorite(id,isfavorite)
+{
+  $.ajax({
+     url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite,
+     async: false,
+     dataType: 'json',
+     success: function(data) {
+      ShowTemps();
+     }
+  });
+}
+
+function EditTempDevice(idx,name)
+{
+  $.devIdx=idx;
+  $("#dialog-edittempdevice #devicename").val(name);
+  $( "#dialog-edittempdevice" ).dialog( "open" );
+}
+
+function AddTempDevice()
+{
+  alert('todo, for now use the devices tab');
+}
+
+function AddDataToTempChart(data,chart,isday)
+{
+    var datatablete = [];
+    var datatabletm = [];
+    var datatablehu = [];
+    var datatablech = [];
+    var datatablecm = [];
+
+    $.each(data.result, function(i,item)
+    {
+      if (isday==1) {
+        if (typeof item.te != 'undefined') {
+          datatablete.push( [GetUTCFromString(item.d), parseFloat(item.te) ] );
+        }
+        if (typeof item.hu != 'undefined') {
+          datatablehu.push( [GetUTCFromString(item.d), parseFloat(item.hu) ] );
+        }
+        if (typeof item.ch != 'undefined') {
+          datatablech.push( [GetUTCFromString(item.d), parseFloat(item.ch) ] );
+        }
+      } else {
+        if (typeof item.te != 'undefined') {
+          datatablete.push( [GetDateFromString(item.d), parseFloat(item.te) ] );
+          datatabletm.push( [GetDateFromString(item.d), parseFloat(item.tm) ] );
+        }
+        if (typeof item.hu != 'undefined') {
+          datatablehu.push( [GetDateFromString(item.d), parseFloat(item.hu) ] );
+        }
+        if (typeof item.ch != 'undefined') {
+          datatablech.push( [GetDateFromString(item.d), parseFloat(item.ch) ] );
+          datatablecm.push( [GetDateFromString(item.d), parseFloat(item.cm) ] );
+        }
+      }
+    });
+    var series;
+    if (datatablehu.length!=0)
+    {
+      chart.addSeries(
+        {
+          id: 'humidity',
+          name: 'Humidity',
+          color: 'limegreen',
+          yAxis: 1
+        }
+      );
+      series = chart.get('humidity');
+      series.setData(datatablehu);
+    }
+
+    if (datatablech.length!=0)
+    {
+      chart.addSeries(
+        {
+          id: 'chill',
+          name: 'Chill',
+          color: 'red',
+          yAxis: 0
+        }
+      );
+      series = chart.get('chill');
+      series.setData(datatablech);
+      
+      if (isday==0) {
+        chart.addSeries(
+          {
+            id: 'chillmin',
+            name: 'Chill_min',
+            color: 'rgba(255,127,39,0.8)',
+            yAxis: 0
+          }
+        );
+        series = chart.get('chillmin');
+        series.setData(datatablecm);
+      }
+    }
+    if (datatablete.length!=0)
+    {
+      //Add Temperature series
+      chart.addSeries(
+        {
+          id: 'temperature',
+          name: 'Temperature',
+          color: 'yellow',
+          yAxis: 0
+        }
+      );
+      series = chart.get('temperature');
+      series.setData(datatablete);
+      if (isday==0) {
+        chart.addSeries(
+          {
+            id: 'temperaturemin',
+            name: 'Temperature_min',
+            color: 'rgba(3,190,252,0.8)',
+            yAxis: 0
+          }
+        );
+        series = chart.get('temperaturemin');
+        series.setData(datatabletm);
+      }
+    }
+    //hide humidity label if not used
+    //if (datatablehu.length==0) {
+    //  var title = chart.yAxis[0].axisTitle;
+    //  title.hide();
+    //}
+}
+
+function ShowTempLog(id,name)
+{
+  $('#modal').show();
+  var htmlcontent = '';
+  htmlcontent='<p><center><h2>' + name + '</h2></center></p><br>\n';
+  htmlcontent+=$('#templog').html();
+  $('#tempcontent').html(GetBackbuttonHTMLTable('ShowTemps')+htmlcontent);
+
+  $.DayChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'tempdaygraph',
+          type: 'line',
+          zoomType: 'xy',
+          events: {
+              load: function() {
+                this.showLoading();
+                $.getJSON("json.htm?type=graph&sensor=temp&idx="+id+"&range=day",
+                function(data) {
+                      AddDataToTempChart(data,$.DayChart,1);
+                      $.DayChart.hideLoading();
+                });
+              }
+          }
+      },
+      loading: {
+          hideDuration: 1000,
+          showDuration: 1000
+      },
+      credits: {
+        enabled: true,
+        href: "http://www.domoticz.com",
+        text: "Domoticz.com"
+      },
+      title: {
+          text: 'Temperature Last 24 hours'
+      },
+      xAxis: {
+          type: 'datetime'
+      },
+      yAxis: [{ //temp label
+          labels:  {
+                   formatter: function() {
+                        return this.value +'\u00B0 C';
+                   },
+                   style: {
+                      color: '#CCCC00'
+                   }
+          },
+          title: {
+              text: 'degrees Celsius',
+               style: {
+                  color: '#CCCC00'
+               }
+          }
+      }, { //humidity label
+          labels:  {
+                   formatter: function() {
+                        return this.value +'%';
+                   },
+                   style: {
+                      color: 'limegreen'
+                   }
+          },
+          title: {
+              text: 'humidity %',
+               style: {
+                  color: '#00CC00'
+               }
+          },
+          opposite: true
+      }],
+      tooltip: {
+          formatter: function() {
+            var unit = {
+                        'Humidity': '%',
+                        'Temperature': '\u00B0 C',
+                        'Temperature_min': '\u00B0 C',
+                        'Chill': '\u00B0 C',
+                        'Chill_min': '\u00B0 C'
+                  }[this.series.name];
+                  return Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
+          }
+      },
+      legend: {
+          enabled: true
+      },
+      plotOptions: {
+               line: {
+                    lineWidth: 3,
+                    states: {
+                        hover: {
+                            lineWidth: 3
+                        }
+                    },
+                    marker: {
+                        enabled: false,
+                        states: {
+                            hover: {
+                                enabled: true,
+                                symbol: 'circle',
+                                radius: 5,
+                                lineWidth: 1
+                            }
+                        }
+                    }
+                }
+      }
+  });
+
+  $.MonthChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'tempmonthgraph',
+          type: 'spline',
+          zoomType: 'xy',
+          events: {
+              load: function() {
+                this.showLoading();
+                $.getJSON("json.htm?type=graph&sensor=temp&idx="+id+"&range=month",
+                function(data) {
+                      AddDataToTempChart(data,$.MonthChart,0);
+                      $.MonthChart.hideLoading();
+                });
+              }
+          }
+      },
+      loading: {
+          hideDuration: 1000,
+          showDuration: 1000
+      },
+      credits: {
+        enabled: true,
+        href: "http://www.domoticz.com",
+        text: "Domoticz.com"
+      },
+      title: {
+          text: 'Temperature Last Month'
+      },
+      xAxis: {
+          type: 'datetime',
+          tickInterval: 24 * 3600 * 1000
+      },
+      yAxis: [{ //temp label
+          labels:  {
+                   formatter: function() {
+                        return this.value +'\u00B0 C';
+                   },
+                   style: {
+                      color: '#CCCC00'
+                   }
+          },
+          title: {
+              text: 'degrees Celsius',
+               style: {
+                  color: '#CCCC00'
+               }
+          }
+      }, { //humidity label
+          labels:  {
+                   formatter: function() {
+                        return this.value +'%';
+                   },
+                   style: {
+                      color: 'limegreen'
+                   }
+          },
+          title: {
+              text: 'humidity %',
+               style: {
+                  color: '#00CC00'
+               }
+          },
+          opposite: true
+      }],
+      tooltip: {
+          formatter: function() {
+            var unit = {
+                        'Humidity': '%',
+                        'Temperature': '\u00B0 C',
+                        'Temperature_min': '\u00B0 C',
+                        'Chill': '\u00B0 C',
+                        'Chill_min': '\u00B0 C'
+                  }[this.series.name];
+                  return Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
+          }
+      },
+      legend: {
+          enabled: true
+      },
+      plotOptions: {
+               spline: {
+                    lineWidth: 3,
+                    states: {
+                        hover: {
+                            lineWidth: 3
+                        }
+                    },
+                    marker: {
+                        enabled: false,
+                        states: {
+                            hover: {
+                                enabled: true,
+                                symbol: 'circle',
+                                radius: 5,
+                                lineWidth: 1
+                            }
+                        }
+                    }
+                }
+      }
+  });
+
+  $.YearChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'tempyeargraph',
+          type: 'spline',
+          zoomType: 'xy',
+          events: {
+              load: function() {
+                this.showLoading();
+                $.getJSON("json.htm?type=graph&sensor=temp&idx="+id+"&range=year",
+                function(data) {
+                      AddDataToTempChart(data,$.YearChart,0);
+                      $.YearChart.hideLoading();
+                });
+              }
+          }
+      },
+      loading: {
+          hideDuration: 1000,
+          showDuration: 1000
+      },
+      credits: {
+        enabled: true,
+        href: "http://www.domoticz.com",
+        text: "Domoticz.com"
+      },
+      title: {
+          text: 'Temperature Last Year'
+      },
+      xAxis: {
+          type: 'datetime',
+          tickInterval: 24 * 3600 * 1000
+      },
+      yAxis: [{ //temp label
+          labels:  {
+                   formatter: function() {
+                        return this.value +'\u00B0 C';
+                   },
+                   style: {
+                      color: '#CCCC00'
+                   }
+          },
+          title: {
+              text: 'degrees Celsius',
+               style: {
+                  color: '#CCCC00'
+               }
+          }
+      }, { //humidity label
+          labels:  {
+                   formatter: function() {
+                        return this.value +'%';
+                   },
+                   style: {
+                      color: 'limegreen'
+                   }
+          },
+          title: {
+              text: 'humidity %',
+               style: {
+                  color: '#00CC00'
+               }
+          },
+          opposite: true
+      }],
+      tooltip: {
+          formatter: function() {
+            var unit = {
+                        'Humidity': '%',
+                        'Temperature': '\u00B0 C',
+                        'Temperature_min': '\u00B0 C',
+                        'Chill': '\u00B0 C',
+                        'Chill_min': '\u00B0 C'
+                  }[this.series.name];
+                  return Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
+          }
+      },
+      legend: {
+          enabled: true
+      },
+      plotOptions: {
+               spline: {
+                    lineWidth: 3,
+                    states: {
+                        hover: {
+                            lineWidth: 3
+                        }
+                    },
+                    marker: {
+                        enabled: false,
+                        states: {
+                            hover: {
+                                enabled: true,
+                                symbol: 'circle',
+                                radius: 5,
+                                lineWidth: 1
+                            }
+                        }
+                    }
+                }
+      }
+  });
+
+  $('#modal').hide();
+  return false;
+}
+
+function ShowTemps()
+{
+  $('#modal').show();
+
+  var htmlcontent = '';
+  var bHaveAddedDevider = false;
+
+  var tophtm=
+        '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+        '\t<tr>\n' +
+        '\t  <td align="right">\n' +
+        '\t    <a class="btnstyle" href="#" onclick="AddTempDevice();">Add Sensor</a>\n' +
+        '\t  </td>\n' +
+        '\t</tr>\n' +
+        '\t</table>\n';
+
+
+  var i=0;
+
+  $.ajax({
+     url: "json.htm?type=devices&filter=temp&used=true&order=Name",
+     async: false,
+     dataType: 'json',
+     success: function(data) {
+      if (typeof data.result != 'undefined') {
+        $.each(data.result, function(i,item){
+          if (i % 3 == 0)
+          {
+            //add devider
+            if (bHaveAddedDevider == true) {
+              //close previous devider
+              htmlcontent+='</div>\n';
+            }
+            htmlcontent+='<div class="row divider">\n';
+            bHaveAddedDevider=true;
+          }
+          var xhtm=
+                '\t<div class="4u">\n' +
+                '\t  <section>\n' +
+                '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
+                '\t    <tr>\n' +
+                '\t      <td>' + item.Name + '</td>\n' +
+                '\t      <td><img src="images/';
+            if ((typeof item.Temp == 'undefined') || (item.Temp>0)) {
+              xhtm+='temp48.png';
+            }
+            else {
+              xhtm+='ice.png';
+            }
+            xhtm+='" height="48"></td>\n' +
+                '\t      <td>';
+            if (typeof item.Temp != 'undefined') {
+                 xhtm+=item.Temp + '&deg; C';
+            }
+            if (typeof item.Chill != 'undefined') {
+              xhtm+=', Chill: ' + item.Chill + '&deg; C';
+            }
+            if (typeof item.Humidity != 'undefined') {
+              xhtm+=', Humidity: ' + item.Humidity + ' %';
+            }
+            if (typeof item.HumidityStatus != 'undefined') {
+              xhtm+=' (' + item.HumidityStatus + ')';
+            }
+            if (typeof item.Barometer != 'undefined') {
+              xhtm+='<br>Barometer: ' + item.Barometer + ' hPa';
+            }
+            if (typeof item.ForecastStr != 'undefined') {
+              xhtm+=', Prediction: ' + item.ForecastStr;
+            }
+						if (typeof item.Direction != 'undefined') {
+              xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms\n';
+            }
+            xhtm+=
+                '</td>\n' +
+                '\t      <td>' + item.LastUpdate + '</td>\n' +
+                '\t      <td>' + item.Type + ', ' + item.SubType + '</td>\n' +
+                '\t      <td>';
+          if (item.Favorite == 0) {
+            xhtm+=
+                  '<img src="images/nofavorite.png" title="Add to Dashboard" onclick="MakeFavorite(' + item.idx + ',1);" onMouseover="cursorhand()" onMouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+          }
+          else {
+            xhtm+=
+                  '<img src="images/favorite.png" title="Remove from Dashboard" onclick="MakeFavorite(' + item.idx + ',0);" onMouseover="cursorhand()" onMouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+          }
+          xhtm+=
+                '<a class="btnsmall" href="#" onclick="ShowTempLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ' +
+                '<a class="btnsmall" href="#" onclick="EditTempDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ' +
+                '<a class="btnsmall" href="#">Notifications</a>' +
+                '</td>\n' +
+                '\t    </tr>\n' +
+                '\t    </table>\n' +
+                '\t  </section>\n' +
+                '\t</div>\n';
+          htmlcontent+=xhtm;
+        });
+      }
+     }
+  });
+  if (bHaveAddedDevider == true) {
+    //close previous devider
+    htmlcontent+='</div>\n';
+  }
+  if (htmlcontent == '')
+  {
+    htmlcontent='<h2>No Temperature sensors found or added in the system...</h2>';
+  }
+  $('#modal').hide();
+  $('#tempcontent').html(tophtm+htmlcontent);
+  return false;
+}
+
+$(document).ready(function() {
+    //global var
+    $.devIdx=0;
+
+    $( "#dialog-addtempdevice" ).dialog({
+          autoOpen: false,
+          width: 350,
+          height: 150,
+          modal: true,
+          resizable: false,
+          buttons: {
+              "Add Device": function() {
+                  var bValid = true;
+                  bValid = bValid && checkLength( $("#dialog-addtempdevice #devicename"), 3, 100 );
+                  if ( bValid ) {
+                      $( this ).dialog( "close" );
+                      $.ajax({
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-addtempdevice #devicename").val() + '&used=true',
+                         async: false,
+                         dataType: 'json',
+                         success: function(data) {
+                            ShowTemps();
+                         }
+                      });
+
+                  }
+              },
+              Cancel: function() {
+                  $( this ).dialog( "close" );
+              }
+          },
+          open: function() {
+              $(this).keypress(function(e) {
+                if (e.keyCode == $.ui.keyCode.ENTER) {
+                  e.preventDefault();
+                  $(this).parent().find("button:eq(0)").trigger("click");
+                }
+              });
+          },
+          close: function() {
+            $( this ).dialog( "close" );
+          }
+    });
+    $( "#dialog-edittempdevice" ).dialog({
+          autoOpen: false,
+          width: 350,
+          height: 150,
+          modal: true,
+          resizable: false,
+          buttons: {
+              "Update": function() {
+                  var bValid = true;
+                  bValid = bValid && checkLength( $("#dialog-edittempdevice #devicename"), 3, 100 );
+                  if ( bValid ) {
+                      $( this ).dialog( "close" );
+                      $.ajax({
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-edittempdevice #devicename").val() + '&used=true',
+                         async: false,
+                         dataType: 'json',
+                         success: function(data) {
+                            ShowTemps();
+                         }
+                      });
+
+                  }
+              },
+              "Remove Device": function() {
+                  var bValid = false;
+                  bValid=(confirm("Are you sure to remove this Device?")==true);
+                  if ( bValid ) {
+                      $( this ).dialog( "close" );
+                      $.ajax({
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-edittempdevice #devicename").val() + '&used=false',
+                         async: false,
+                         dataType: 'json',
+                         success: function(data) {
+                            ShowTemps();
+                         }
+                      });
+
+                  }
+              },
+              Cancel: function() {
+                  $( this ).dialog( "close" );
+              }
+          },
+          open: function() {
+              $(this).keypress(function(e) {
+                if (e.keyCode == $.ui.keyCode.ENTER) {
+                  e.preventDefault();
+                  $(this).parent().find("button:eq(0)").trigger("click");
+                }
+              });
+          },
+          close: function() {
+            $( this ).dialog( "close" );
+          }
+    });
+
+  ShowTemps();
+
+} );
+</script>

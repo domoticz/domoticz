@@ -1,0 +1,350 @@
+<!DOCTYPE HTML>
+
+<html>
+<head>
+<title>Domoticz</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<meta name="description" content="" />
+<meta name="keywords" content="" />
+<noscript>
+<link type="text/css" rel="stylesheet" href="css/5grid/core.css" />
+<link type="text/css" rel="stylesheet" href="css/5grid/core-desktop.css" />
+<link type="text/css" rel="stylesheet" href="css/5grid/core-1200px.css" />
+<link type="text/css" rel="stylesheet" href="css/5grid/core-noscript.css" />
+<link type="text/css" rel="stylesheet" href="css/style.css" />
+<link type="text/css" rel="stylesheet" href="css/style-desktop.css" />
+</noscript>
+
+<link type="text/css" rel="stylesheet" href="css/ui-darkness/jquery-ui-1.9.0.custom.css" />
+<link type="text/css" rel="stylesheet" href="css/loading.css" />
+<link type="text/css" rel="stylesheet" href="css/demo_table_jui.css" />
+<link type="text/css" rel="stylesheet" href="css/ColReorder.css" />
+<link type="text/css" rel="stylesheet" href="css/ColVis.css" />
+<link type="text/css" rel="stylesheet" href="css/TableTools.css" />
+
+		<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/jquery-ui-1.9.0.custom.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="css/5grid/init.js?use=mobile,desktop,1000px&amp;mobileUI=1&amp;mobileUI.theme=none"></script>
+    <!--[if IE 9]><link rel="stylesheet" href="css/style-ie9.css" /><![endif]-->
+		<script type="text/javascript" charset="utf-8" src="js/jquery.dataTables.min.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/ZeroClipboard.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/TableTools.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/date.format.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/highcharts.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/modules/exporting.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/themes/dark-blue.js"></script>
+		
+<script type="text/javascript" charset="utf-8" id="init-code">
+
+      function ShowLog(id)
+      {
+        $(".bannercontent").slideUp('slow', function() {
+          $(".bannercontent").html('data');
+          $(".bannercontent").slideDown('slow');
+        });      
+        //alert('Show the log from' + id);
+      }
+      
+			$(document).ready(function() {
+				$('#devices').dataTable( {
+					"sDom": '<"H"lfrC>t<"F"ip>',
+					"oTableTools": {
+						"sRowSelect": "single",
+					},
+					"aoColumnDefs": [
+            { "bSortable": false, "aTargets": [ 0 ] }
+          ],
+          "aaSorting": [[1, 'asc']],
+          "bProcessing": true,
+					"bStateSave": true,
+					"bJQueryUI": true,
+					"aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+					"iDisplayLength" : 25,
+					"sPaginationType": "full_numbers"
+				} );
+			} );
+		
+</script>
+</head><body class="homepage">
+<div id="header-wrapper">
+	<header id="header">
+		<div class="5grid-layout">
+			<div class="row">
+				<div class="4u" id="logo">
+					<h1><a href="#" class="mobileUI-site-name">Domoticz</a></h1>
+					<p>control at your finger tips. V<!--#embed versionstr --></p>
+				</div>
+				<div class="8u" id="menu">
+					<nav class="mobileUI-site-nav">
+						<ul>
+							<li class="current_page_item"><a href="index.html"><img src="images/desktop.png"> Dashboard</a></li>
+							<li><a href="threecolumn.html"><img src="images/lightbulb.png"> Lights/Switches</a></li>
+							<li><a href="twocolumn1.html"><img src="images/temperature.png"> Temperature</a></li>
+							<li><a href="twocolumn2.html"><img src="images/rain.png"> Weather</a></li>
+							<li><a href="onecolumn.html"><img src="images/hardware.png"> Hardware</a></li>
+						</ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+	</header>
+</div>
+<div id="topnav">
+   <center>
+    <a class="btnstyle" href="#"><img src="images/desktop.png"> Dashboard</a> <a class="btnstyle" href="#"><img src="images/lightbulb.png"> Lights/Switches</a> <a class="btnstyle" href="#"><img src="images/temperature.png"> Temperature</a> <a class="btnstyle" href="#"><img src="images/rain.png"> Weather</a>
+   </center>
+</div>
+
+<div class="5grid-layout">
+	<div class="row">
+		<div id="banner" class="12u">
+			<div class="bannercontent">
+        <table class="display" id="devices" border="0" cellpadding="0" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th width="20"></th>
+                    <th width="80" align="left">ID</th>
+                    <th width="80" align="center">Unit</th>
+                    <th width="200" align="left">Name</th>
+                    <th width="180">Type</th>
+                    <th width="80">SubType</th>
+                    <th>Data</th>
+                    <th width="200" align="left">Last Seen</th>
+                </tr>
+            </thead>
+            
+            <tr id=123">
+            <td><img src="images/lightbulb.png" alt=""></td>
+            <td>123</td>
+            <td class="center">Rob Test</td>
+            <td>Rob Test</td>
+            <td class="center">Rob Test</td>
+            <td class="center">Rob Test</td>
+            <td>Rob Test <img src="images/on.png" title="Switch On"> <img id="disimg" src="images/off.png" title="Switch Off"> <img src="images/add.png" title="Add Device"> <img id="enimg" src="images/log.png" title="Show Log" onclick="ShowLog(123);"></td>
+            <td>today</td>
+            </tr>
+            
+            <!--#embed ShowDevices -->
+        </table>
+   		</div>
+		</div>
+	</div>
+</div>
+<div id="wrapper">
+	<div id="marketing">
+		<div class="5grid-layout">
+			<div class="row divider">
+				<div class="3u">
+					<section>
+						<h2 class="title">Maecenas luctus lectus</h2>
+						<p class="subtitle">In posuere eleifend odio. Quisque semper augue mattis maecenas ligula.</p>
+						<p><a href="#"><img src="images/pics13.jpg" alt=""></a></p>
+						<p class="button-style2"><a href="#">More Details</a></p>
+					</section>
+				</div>
+				<div class="3u">
+					<section>
+						<h2 class="title">Etiam posuere augue</h2>
+						<p class="subtitle">Donec leo. Vivamus nibh in augue. Praesent a lacus at urna congue rutrum.</p>
+						<p><a href="#"><img src="images/pics14.jpg" alt=""></a></p>
+						<p class="button-style2"><a href="#">More Details</a></p>
+					</section>
+				</div>
+				<div class="3u">
+					<section>
+						<h2 class="title">Fusce ultrices fringilla</h2>
+						<p class="subtitle">Pellentesque pede. Donec pulvinar metus. In eu lectus pulvinar mollis. </p>
+						<p><a href="#"><img src="images/pics15.jpg" alt=""></a></p>
+						<p class="button-style2"><a href="#">More Details</a></p>
+					</section>
+				</div>
+				<div class="3u">
+					<section>
+						<h2 class="title">Nulla luctus eleifend</h2>
+						<p class="subtitle">In posuere eleifend odio. Quisque semper augue sed maecenas ligula.</p>
+						<p><a href="#"><img src="images/pics16.jpg" alt=""></a></p>
+						<p class="button-style2"><a href="#">More Details</a></p>
+					</section>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="page">
+		<div class="5grid-layout">
+			<div class="row">
+				<div class="6u">
+					<div class="mobileUI-main-content" id="content">
+						<section>
+							<div class="post">
+								<h2>Integer gravida nibh quis urna</h2>
+								<p class="subtitle">Augue praesent a lacus at urna congue rutrum</p>
+								<p><a href="#"><img src="images/pics03.jpg" alt=""></a><br>
+									Welcome to <strong>Domoticz</strong>, a free domotica control system.
+									Donec leo, vivamus fermentum nibh in augue praesent a lacus at urna congue rutrum
+									vivamus fermentum nibh in augue praesent a lacus at urna congue rutrum Donec leo, vivamus fermentum 
+									leo, vivamus fermentum nibh in augue praesent a lacus at urna congue rutrum 
+									under Donec leo, vivamus fermentum nibh in augue praesent a lacus at urna congue rutrum
+									Donec leo, vivamus Donec leo, vivamus fermentum nibh in augue praesent a lacus at urna congue rutrum free 
+									Enjoy! fermentum nibh in augue praesent a lacus at urna congue rutrum</p>
+								<p class="button-style2"><a href="#">Read Full Article</a></p>
+							</div>
+						</section>
+					</div>
+				</div>
+				<div class="3u" id="sidebar1">
+					<section>
+						<h2>Ipsum Consequat</h2>
+						<ul class="style2">
+							<li class="first">
+								<p><a href="#"><img src="images/pics07.jpg" alt="">Donec leo, vivamus fermentum nibh in augue praesent a lacus at urna congue rutrum. </a></p>
+							</li>
+							<li>
+								<p><a href="#"><img src="images/pics08.jpg" alt="">Donec leo, vivamus fermentum nibh in augue praesent a lacus at urna congue rutrum. </a></p>
+							</li>
+							<li>
+								<p><a href="#"><img src="images/pics09.jpg" alt="">Donec leo, vivamus fermentum nibh in augue praesent a lacus at urna congue rutrum. </a></p>
+							</li>
+							<li>
+								<p><a href="#"><img src="images/pics10.jpg" alt="">Donec leo, vivamus fermentum nibh in augue praesent a lacus at urna congue rutrum. </a></p>
+							</li>
+						</ul>
+					</section>
+				</div>
+				<div class="3u">
+					<div id="sidebar2">
+						<section>
+							<div class="sbox1">
+								<h2>Feugiat Tempus</h2>
+								<ul class="style1">
+									<li class="first"><a href="#">Maecenas luctus lectus at sapien</a></li>
+									<li><a href="#">Etiam rhoncus volutpat erat</a></li>
+									<li><a href="#">Donec dictum metus in sapien</a></li>
+									<li><a href="#">Nulla luctus eleifend purus</a></li>
+									<li><a href="#">Maecenas luctus lectus at sapien</a></li>
+								</ul>
+							</div>
+						</section>
+						<section>
+							<div class="sbox2">
+								<h2>Nulla luctus eleifend</h2>
+								<ul class="style1">
+									<li class="first"><a href="#">Maecenas luctus lectus at sapien</a></li>
+									<li><a href="#">Donec dictum metus in sapien</a></li>
+									<li><a href="#">Integer gravida nibh quis urna</a></li>
+									<li><a href="#">Etiam posuere augue sit amet nisl</a></li>
+									<li><a href="#">Mauris vulputate dolor sit amet nibh</a></li>
+									<li><a href="#">Nulla luctus eleifend purus</a></li>
+								</ul>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div id="featured-area">
+	<div class="5grid-layout">
+		<div class="row divider">
+			<div class="4u">
+				<section>
+					<div class="box-style"> <a href="#"><img src="images/pics04.jpg" alt=""></a>
+						<h3>Etiam posuere augue</h3>
+						<p>Donec nonummy magna quis risus. Quisque eleifend. </p>
+						<p class="button-style2"><a href="#">More</a></p>
+					</div>
+				</section>
+			</div>
+			<div class="4u">
+				<section>
+					<div class="box-style"> <a href="#"><img src="images/pics06.jpg" alt=""></a>
+						<h3>Etiam posuere augue</h3>
+						<p>Donec nonummy magna quis risus. Quisque eleifend. </p>
+						<p class="button-style2"><a href="#">More</a></p>
+					</div>
+				</section>
+			</div>
+			<div class="4u">
+				<section>
+					<div class="box-style"> <a href="#"><img src="images/pics05.jpg" alt=""></a>
+						<h3>Etiam posuere augue</h3>
+						<p>Donec nonummy magna quis risus. Quisque eleifend. </p>
+						<p class="button-style2"><a href="#">More</a></p>
+					</div>
+				</section>
+			</div>
+		</div>
+	</div>
+</div>
+<div id="footer-wrapper">
+	<div class="5grid-layout">
+		<div class="row" id="footer-content">
+			<div class="3u" id="box1">
+				<section>
+					<h2>Maecenas luctus lectus</h2>
+					<div class="balloon">
+						<blockquote>&ldquo;&nbsp;&nbsp;Donec leo, vivamus ullamcorper fermentum nibh in augue pulvinar ullamcorper metus praesent a lacus at urna congue ullamcorper  rutrum.&nbsp;&nbsp;&rdquo;<br>
+							<br>
+							<strong>&ndash;&nbsp;&nbsp;John Smith</strong></blockquote>
+					</div>
+					<div class="ballon-bgbtm">&nbsp;</div>
+					<p></p>
+				</section>
+			</div>
+			<div class="3u" id="box2">
+				<section>
+					<h2>Donec dictum metus</h2>
+					<ul class="style6">
+						<li class="first">
+							<h3>Mauris vulputate dolor sit amet</h3>
+							<p><a href="#">Donec leo, vivamus fermentum nibh in augue praesent a lacus at urna congue rutrum.</a></p>
+						</li>
+						<li>
+							<h3>Fusce ultrices fringilla metus</h3>
+							<p><a href="#">Donec leo, vivamus fermentum nibh in augue praesent a lacus at urna congue rutrum.</a></p>
+						</li>
+						<li>
+							<h3>Donec dictum metus in sapien</h3>
+							<p><a href="#">Donec leo, vivamus fermentum nibh in augue praesent a lacus at urna congue rutrum.</a></p>
+						</li>
+					</ul>
+				</section>
+			</div>
+			<div class="3u" id="box3">
+				<section>
+					<h2>Nulla luctus eleifend</h2>
+					<ul class="style5">
+						<li><a href="#"><img src="images/pics07.jpg" alt=""></a></li>
+						<li><a href="#"><img src="images/pics08.jpg" alt=""></a></li>
+						<li><a href="#"><img src="images/pics09.jpg" alt=""></a></li>
+						<li><a href="#"><img src="images/pics10.jpg" alt=""></a></li>
+						<li><a href="#"><img src="images/pics11.jpg" alt=""></a></li>
+						<li><a href="#"><img src="images/pics12.jpg" alt=""></a></li>
+					</ul>
+					<p class="button-style2"><a href="#">More Collections</a></p>
+				</section>
+			</div>
+			<div class="3u" id="box4">
+				<section>
+					<h2>Nulla luctus eleifend</h2>
+					<p><strong>Aliquam erat volutpat. Pellentesque tristique ante ut risus. </strong></p>
+					<p>&nbsp;</p>
+					<p>Quisque dictum. Integer nisl risus, sagittis convallis, rutrum id, elementum congue, nibh. Suspendisse dictum porta lectus. </p>
+					<p>&nbsp;</p>
+					<p>Donec placerat odio vel elit. Nullam ante orci, pellentesque eget, tempus quis, ultrices in, est. Curabitur sit amet nulla. Nam in massa. Sed vel tellus. Curabitur sem urna, consequat.</p>
+				</section>
+			</div>
+		</div>
+	</div>
+</div>
+<div>
+	<div class="5grid-layout" id="copyright">
+		<div class="row">
+			<div class="12u">
+				<p>&copy; 2012 Domoticz | WWW: <a href="http://domoticz.com/">Domoticz.com</a></p>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>

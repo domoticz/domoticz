@@ -1,0 +1,278 @@
+<!DOCTYPE HTML>
+
+<html>
+<head>
+<title>Domoticz</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<meta name="description" content="" />
+<meta name="keywords" content="" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<META HTTP-EQUIV="Expires" CONTENT="-1">
+<noscript>
+<link type="text/css" rel="stylesheet" href="css/5grid/core.css" />
+<link type="text/css" rel="stylesheet" href="css/5grid/core-desktop.css" />
+<link type="text/css" rel="stylesheet" href="css/5grid/core-1200px.css" />
+<link type="text/css" rel="stylesheet" href="css/5grid/core-noscript.css" />
+<link type="text/css" rel="stylesheet" href="css/style.css" />
+<link type="text/css" rel="stylesheet" href="css/style-desktop.css" />
+</noscript>
+
+<link type="text/css" rel="stylesheet" href="css/ui-darkness/jquery-ui-1.9.0.custom.css" />
+<link type="text/css" rel="stylesheet" href="css/loading.css" />
+<link type="text/css" rel="stylesheet" href="css/demo_table_jui.css" />
+<link type="text/css" rel="stylesheet" href="css/ColReorder.css" />
+<link type="text/css" rel="stylesheet" href="css/ColVis.css" />
+<link type="text/css" rel="stylesheet" href="css/TableTools.css" />
+
+		<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/jquery-ui-1.9.0.custom.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="css/5grid/init.js?use=mobile,desktop,1000px&amp;mobileUI=1&amp;mobileUI.theme=none"></script>
+    <!--[if IE 9]><link rel="stylesheet" href="css/style-ie9.css" /><![endif]-->
+		<script type="text/javascript" charset="utf-8" src="js/jquery.dataTables.min.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/ZeroClipboard.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/TableTools.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/date.format.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/highcharts.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/highcharts-more.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/modules/exporting.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/themes/dark-blue.js"></script>
+		
+<script type="text/javascript" charset="utf-8" id="init-code">
+jQuery.fn.center = function(parent) {
+    if (parent) {
+        parent = this.parent();
+    } else {
+        parent = window;
+    }
+    this.css({
+        "position": "absolute",
+        "top": ((($(parent).height() - this.outerHeight()) / 2) + $(parent).scrollTop() + "px"),
+        "left": ((($(parent).width() - this.outerWidth()) / 2) + $(parent).scrollLeft() + "px")
+    });
+return this;
+}
+
+function GetBackbuttonHTMLTable(backfunction)
+{
+  var xhtm=
+        '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+        '\t<tr>\n' +
+        '\t  <td>\n' +
+        '\t    <a class="btnstylerev" href="#" onclick="' + backfunction + '()">Back</a>\n' +
+        '\t  </td>\n' +
+        '\t</tr>\n' +
+        '\t</table>\n' +
+        '\t<br>\n';
+  return xhtm;
+}
+
+function GetUTCFromString(s)
+{
+    return Date.UTC(
+      parseInt(s.substring(0, 4), 10),
+      parseInt(s.substring(5, 7), 10) - 1,
+      parseInt(s.substring(8, 10), 10),
+      parseInt(s.substring(11, 13), 10),
+      parseInt(s.substring(14, 16), 10),
+      0
+    );
+}
+
+function GetDateFromString(s)
+{
+    return Date.UTC(
+      parseInt(s.substring(0, 4), 10),
+      parseInt(s.substring(5, 7), 10) - 1,
+      parseInt(s.substring(8, 10), 10));
+}
+
+function cursorhand()
+{
+    document.body.style.cursor = "pointer";
+}
+
+function cursordefault()
+{
+   document.body.style.cursor = "default";
+}
+      
+      function ShowNotify(txt, timeout, iserror)
+      {
+        $("#notification").html('<p>' + txt + '</p>');
+        
+        if (typeof iserror != 'undefined') {
+          $("#notification").css("background-color","red");
+        } else {
+          $("#notification").css("background-color","#204060");
+        }
+        $("#notification").center();
+        $("#notification").fadeIn("slow");
+
+        if (typeof timeout != 'undefined') {
+          setTimeout(function() {
+            HideNotify();
+          }, timeout);
+        }
+      }
+      
+      function HideNotify()
+      {
+        $("#notification").hide();
+      }
+      
+      function ChangeClass(elemname, newclass)
+      {
+        document.getElementById(elemname).setAttribute("class", newclass);
+      }
+      
+      function SwitchLayout(layout)
+      {
+				clearInterval($.myglobals.refreshTimer);
+        $.myglobals.prevlayout = $.myglobals.layout;
+        $.myglobals.actlayout = layout;
+        
+        //update menu items
+        ChangeClass("mDashboard","");
+        ChangeClass("mLightSwitches","");
+        ChangeClass("mTemperature","");
+        ChangeClass("mWeather","");
+        ChangeClass("mDevices","");
+        ChangeClass("mHardware","");
+        ChangeClass("mSetup","");
+        
+        var durl='';
+        
+        if (layout == "Dashboard") {
+          durl='dashboard.html';
+          ChangeClass("mDashboard","current_page_item");
+        }
+        else if (layout == "LightSwitches") {
+          durl='lights.html';
+          ChangeClass("mLightSwitches","current_page_item");
+        }
+        else if (layout == "Temperature") {
+          durl='temperature.html';
+          ChangeClass("mTemperature","current_page_item");
+        }
+        else if (layout == "Weather") {
+          durl='weather.html';
+          ChangeClass("mWeather","current_page_item");
+        }
+        else if (layout == "Devices") {
+          durl='devices.html';
+          ChangeClass("mDevices","current_page_item");
+        }
+        else if (layout == "Hardware") {
+          durl='hardware.html';
+          ChangeClass("mHardware","current_page_item");
+        }
+        else if (layout == "Setup") {
+          durl='setup.html';
+          ChangeClass("mSetup","current_page_item");
+        }
+        else
+          return;
+          
+        //stop chaching these pages
+        var dt = new Date();
+        durl+='?sid='+dt.getTime();
+        
+        $(".bannercontent").load(durl, function(response, status, xhr) {
+          if (status == "error") {
+            var msg = "Sorry but there was an error: ";
+            $(".bannercontent").html(msg + xhr.status + " " + xhr.statusText);
+          }
+        });
+        
+      }
+      
+      function ShowNewBannerContent(content, backlink)
+      {
+        if (typeof backlink == 'undefined') {
+          //hide back button
+        }
+        else {
+          //set back button
+        }
+        $(".bannercontent").slideUp('slow', function() {
+          $(".bannercontent").html(content);
+          $(".bannercontent").slideDown('slow');
+        });      
+      }
+      
+      function AddDevice(id)
+      {
+        $( "#dialog-adddevice" ).dialog( "open" );
+      }
+
+      function ShowLog(id)
+      {
+        ShowNewBannerContent("Hier komt de log");
+      }
+      
+      function checkLength( o, min, max ) 
+      {
+            if ( o.val().length > max || o.val().length < min ) {
+                return false;
+            } else {
+                return true;
+            }
+      }
+      
+			$(document).ready(function() {
+
+        $.myglobals = {
+          actlayout : "",
+          prevlayout : "",
+        };
+        
+        SwitchLayout('Dashboard');
+			} );
+		
+</script>
+</head><body class="homepage">
+<div id="wrap">
+<div id="notification" style="display: none;"></div>
+<div id="header-wrapper">
+	<header id="header">
+		<div class="5grid-layout">
+			<div class="row">
+				<div class="4u" id="logo">
+					<h1><a href="#" class="mobileUI-site-name">Domoticz</a></h1>
+					<p>control at your finger tips. V<!--#embed versionstr --></p>
+				</div>
+				<div class="8u" id="menu">
+					<nav class="mobileUI-site-nav">
+						<ul>
+							<li id="mDashboard"><a id="cDashboard" href="javascript:SwitchLayout('Dashboard')"><img src="images/desktop.png"> Dashboard</a></li>							<li id="mLightSwitches"><a id="cLightSwitches" href="javascript:SwitchLayout('LightSwitches')"><img src="images/lightbulb.png"> Lights/Switches</a></li>
+							<li id="mTemperature"><a id="cTemperature" href="javascript:SwitchLayout('Temperature')"><img src="images/temperature.png"> Temperature</a></li>
+							<li id="mWeather"><a id="cWeather" href="javascript:SwitchLayout('Weather')"><img src="images/rain.png"> Weather</a></li>
+							<li id="mDevices"><a id="cDevices" href="javascript:SwitchLayout('Devices')"><img src="images/devices.png"> Devices</a></li>
+							<li id="mHardware"><a id="cHardware" href="javascript:SwitchLayout('Hardware')"><img src="images/hardware.png"> Hardware</a></li>
+              <li id="mSetup"><a id="cSetup" href="javascript:SwitchLayout('Setup')"><img src="images/setup.png"> Setup</a></li>
+						</ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+	</header>
+</div>
+<div class="5grid-layout">
+	<div class="row">
+		<div id="banner" class="12u">
+			<div class="bannercontent">
+   		</div>
+		</div>
+	</div>
+</div>
+</div>
+<div class="5grid-layout" id="copyright">
+  <div class="row">
+    <div class="12u">
+      <p>&copy; 2012 Domoticz | WWW: <a href="http://domoticz.com/">Domoticz.com</a></p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

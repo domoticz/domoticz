@@ -1,0 +1,77 @@
+Note:
+------------------
+This is just an example application for c++ users.
+No support etc... it should help you to get started.
+
+Requirements:
+
+Windows:
+- VS2010 (headers can be modified to support a less version)
+- boost libraries, you probably have to set the correct include/lib folder as i did not bootstrap mine
+
+------------------------------------------------------------------------------------------------
+Ubuntu:
+sudo apt-get install cmake libboost-dev libboost-thread-dev libboost-system-dev libsqlite3-dev
+
+Raspberry Pi (22 November 2012):
+At this moment, there is a issue with the FTDI drivers (USB), a quick fix it to add the following in front of /boot/cmdline.txt
+dwc_otg.speed=1
+This will cause the USB to switch back to version 1.1, but also the network speed is reduced a lot! (not that i want to use 80mbps)
+
+------------------------------------------------------------------------------------------------
+Synology:
+- Make sure the device is bootstrapped, then:
+ipkg install gcc
+ipkg install make
+ipkg install optware-devel (dont worry about the wget-ssl error)
+ipkg install boost-dev
+ipkg install boost-thread
+ipkg install boost-system
+ipkg install boost-date-time
+
+download/install cmake (take a coffee while doing the bootstrap and make commands)
+wget http://www.cmake.org/files/v2.8/cmake-2.8.10.tar.gz
+tar xvf cmake-2.8.10.tar.gz
+cd xvf cmake-2.8.10
+./bootstrap
+make
+make install
+cd ..
+rm -R cmake-2.8.10
+rm cmake-2.8.10.tar.gz
+
+fix known pthread problem:
+
+1) backup the pthread libraries found in /opt/arm-none-linux-gnueabi/lib/ :
+mkdir /opt/arm-none-linux-gnueabi/lib_disabled
+mv /opt/arm-none-linux-gnueabi/lib/libpthread* /opt/arm-none-linux-gnueabi/lib_disabled
+
+2) Copy the pthread libraries found in /opt/lib
+cp /lib/libpthread.so.0 /opt/arm-none-linux-gnueabi/lib/
+cd /opt/arm-none-linux-gnueabi/lib/
+ln -s libpthread.so.0 libpthread.so
+ln -s libpthread.so.0 libpthread-2.5.so
+
+3)
+cp /opt/lib/libboost_* /lib
+
+verify http://forum.synology.com/enu/viewtopic.php?p=185512#p185512
+to check your .profile
+------------------------------------------------------------------------------------------------
+
+unpack the project in your homefile
+cd projectfolder
+
+cmake CMakeLists.txt
+make -f Makefile
+
+now you should have the binary application
+
+Usage:
+Usage: domoticz connection settings
+	"connection settings could be one of the below:"
+	"-serial Port (for example /dev/ttyUSB0 or COM1)"
+	"-ip Address Port (for example 192.168.0.1 10001)";
+
+Example:
+./domoticz -ip 192.168.0.1 10001

@@ -1,0 +1,215 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="crosscompile">
+      <UniqueIdentifier>{52d21c18-6d21-4d97-9a96-e7a3f33b1dd5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Webserver">
+      <UniqueIdentifier>{0636fc98-3ba6-4dc9-8323-48dc959944c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="json">
+      <UniqueIdentifier>{caed8300-c22a-4d76-9380-2b55120edaaa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HTTPClient">
+      <UniqueIdentifier>{43e678ba-2229-48dc-8d72-a10a52186b82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices">
+      <UniqueIdentifier>{f1967572-afca-4c81-a06e-1eb4d560bb60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Serial">
+      <UniqueIdentifier>{261207be-5fec-410d-9407-6a50810bd449}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\TCP">
+      <UniqueIdentifier>{041d79b0-1d2f-485b-86fd-edb5607e0f41}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CMakeLists.txt">
+      <Filter>crosscompile</Filter>
+    </None>
+    <None Include="INSTALL.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mainworker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RFXtrx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sqlite3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="webserver\header.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="webserver\Base64.h">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="webserver\connection.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="webserver\connection_manager.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="webserver\cWebem.h">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="webserver\mime_types.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="webserver\reply.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="webserver\request.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="webserver\request_handler.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="webserver\request_parser.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="webserver\server.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="CmdLine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WebServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RFXNames.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mUri.h">
+      <Filter>HTTPClient</Filter>
+    </ClInclude>
+    <ClInclude Include="mynetwork.h">
+      <Filter>HTTPClient</Filter>
+    </ClInclude>
+    <ClInclude Include="sock_port.h">
+      <Filter>HTTPClient</Filter>
+    </ClInclude>
+    <ClInclude Include="SQLHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DomoticzDevice.h">
+      <Filter>Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="ASyncSerial.h">
+      <Filter>Devices\Serial</Filter>
+    </ClInclude>
+    <ClInclude Include="RFXComSerial.h">
+      <Filter>Devices\Serial</Filter>
+    </ClInclude>
+    <ClInclude Include="RFXComTCP.h">
+      <Filter>Devices\TCP</Filter>
+    </ClInclude>
+    <ClInclude Include="UrlEncode.h">
+      <Filter>HTTPClient</Filter>
+    </ClInclude>
+    <ClInclude Include="Scheduler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="domoticz.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mainworker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="webserver\Base64.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="webserver\connection.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="webserver\connection_manager.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="webserver\cWebem.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="webserver\mime_types.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="webserver\reply.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="webserver\request_handler.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="webserver\request_parser.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="webserver\server.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="CmdLine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WebServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RFXNames.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="json\json_value.cpp">
+      <Filter>json</Filter>
+    </ClCompile>
+    <ClCompile Include="json\json_writer.cpp">
+      <Filter>json</Filter>
+    </ClCompile>
+    <ClCompile Include="json\json_reader.cpp">
+      <Filter>json</Filter>
+    </ClCompile>
+    <ClCompile Include="mynetwork.cpp">
+      <Filter>HTTPClient</Filter>
+    </ClCompile>
+    <ClCompile Include="SQLHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DomoticzDevice.cpp">
+      <Filter>Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="ASyncSerial.cpp">
+      <Filter>Devices\Serial</Filter>
+    </ClCompile>
+    <ClCompile Include="RFXComSerial.cpp">
+      <Filter>Devices\Serial</Filter>
+    </ClCompile>
+    <ClCompile Include="RFXComTCP.cpp">
+      <Filter>Devices\TCP</Filter>
+    </ClCompile>
+    <ClCompile Include="UrlEncode.cpp">
+      <Filter>HTTPClient</Filter>
+    </ClCompile>
+    <ClCompile Include="Scheduler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
