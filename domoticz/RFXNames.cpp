@@ -57,6 +57,42 @@ const char *RFX_Humidity_Status_Desc(const unsigned char status)
 	return findTableIDSingle1 (Table, status);
 }
 
+const char *Security_Status_Desc(const unsigned char status)
+{
+	STR_TABLE_SINGLE	Table[] = 
+	{
+		{ sStatusNormal, "Normal" },
+		{ sStatusNormalDelayed, "Normal Delayed" },
+		{ sStatusAlarm, "Alarm" },
+		{ sStatusAlarmDelayed, "Alarm Delayed" },
+		{ sStatusMotion, "Motion" },
+		{ sStatusNoMotion, "No Motion" },
+		{ sStatusPanic, "Panic" },
+		{ sStatusPanicOff, "Panic End" },
+		{ sStatusArmAway, "Arm Away" },
+		{ sStatusArmAwayDelayed, "Arm Away Delayed" },
+		{ sStatusArmHome, "Arm Home" },
+		{ sStatusArmHomeDelayed, "Arm Home Delayed" },
+		{ sStatusDisarm, "Disarm" },
+		{ sStatusLightOff, "Light Off" },
+		{ sStatusLightOn, "Light On" },
+		{ sStatusLight2Off, "Light 2 Off" },
+		{ sStatusLight2On, "Light 2 On" },
+		{ sStatusDark, "Dark detected" },
+		{ sStatusLight, "Light Detected" },
+		{ sStatusBatLow, "Battery low MS10 or XX18 sensor" },
+		{ sStatusPairKD101, "Pair KD101" },
+		{ sStatusNormalTamper, "Normal + Tamper" },
+		{ sStatusNormalDelayedTamper, "Normal Delayed + Tamper" },
+		{ sStatusAlarmTamper, "Alarm + Tamper" },
+		{ sStatusAlarmDelayedTamper, "Alarm Delayed + Tamper" },
+		{ sStatusMotionTamper, "Motion + Tamper" },
+		{ sStatusNoMotionTamper, "No Motion + Tamper" },
+		{ NULL, NULL }
+	};
+	return findTableIDSingle1 (Table, status);
+}
+
 const char *Timer_Type_Desc(int tType)
 {
 	STR_TABLE_SINGLE	Table[] = 
@@ -137,7 +173,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeLighting6, "Lighting 6" , "lightbulb", },
 		{ pTypeCurtain, "Curtain" , "unknown" },
 		{ pTypeBlinds, "Blinds" , "unknown" },
-		{ pTypeSecurity1, "Security" , "unknown" },
+		{ pTypeSecurity1, "Security" , "security" },
 		{ pTypeCamera, "Camera" , "unknown" },
 		{ pTypeRemote, "Remote & IR" , "unknown" },
 		{ pTypeThermostat1, "Thermostat 1" , "temperature" },
@@ -152,14 +188,14 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeWIND, "Wind" , "wind" },
 		{ pTypeUV, "UV" , "uv" },
 		{ pTypeDT, "Date/Time" , "unknown" },
-		{ pTypeCURRENT, "Current" , "unknown" },
+		{ pTypeCURRENT, "Current" , "current" },
 		{ pTypeENERGY, "Energy" , "unknown" },
 		{ pTypeCURRENTENERGY, "Current/Energy" , "unknown" },
 		{ pTypeGAS, "Gas" , "unknown" },
 		{ pTypeWATER, "Water" , "unknown" },
 		{ pTypeWEIGHT, "Weight" , "unknown" },
 		{ pTypeRFXSensor, "RFXSensor" , "unknown" },
-		{ pTypeRFXMeter, "RFXMeter" , "unknown" },
+		{ pTypeRFXMeter, "RFXMeter" , "counter" },
 		{ pTypeFS20, "FS20" , "unknown" },
 		{  0,NULL,NULL }
 	};
@@ -285,6 +321,12 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		
 		{ pTypeWEIGHT, sTypeWEIGHT1, "BWR102" },
 		{ pTypeWEIGHT, sTypeWEIGHT2, "GR101" },
+		
+		{ pTypeRFXSensor, sTypeRFXSensorTemp, "Temperature" },
+		{ pTypeRFXSensor, sTypeRFXSensorAD, "A/D" },
+		{ pTypeRFXSensor, sTypeRFXSensorVolt, "Voltage" },
+
+		{ pTypeRFXMeter, sTypeRFXMeterCount, "RFXMeter counter" },
 		
 
 		{  0,0,NULL }

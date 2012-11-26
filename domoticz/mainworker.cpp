@@ -9,6 +9,13 @@
 #include "RFXComSerial.h"
 #include "RFXComTCP.h"
 
+//#define PARSE_RFXCOM_DEVICE_LOG
+
+#ifdef PARSE_RFXCOM_DEVICE_LOG
+	#include <iostream>
+	#include <fstream>
+#endif
+
 MainWorker::MainWorker()
 {
 	m_stoprequested=false;
@@ -312,6 +319,51 @@ bool MainWorker::StartThread()
 
 	//Start Scheduler
 	m_scheduler.StartScheduler(this);
+
+#ifdef PARSE_RFXCOM_DEVICE_LOG
+	std::vector<std::string> _lines;
+	std::ifstream myfile ("C:\\RFXtrxLog.txt");
+	if (myfile.is_open())
+	{
+		while ( myfile.good() )
+		{
+			std::string _line;
+			getline (myfile,_line);
+			_lines.push_back(_line);
+		}
+		myfile.close();
+	}
+	std::vector<std::string>::iterator itt;
+	unsigned char rxbuffer[100];
+	static const char* const lut = "0123456789ABCDEF";
+	for (itt=_lines.begin(); itt!=_lines.end(); ++itt)
+	{
+		std::string hexstring=*itt;
+		if (hexstring.size()%2!=0)
+			continue;//illegal
+		int totbytes=hexstring.size()/2;
+		int ii=0;
+		for (ii=0; ii<totbytes; ii++)
+		{
+			std::string hbyte=hexstring.substr((ii*2),2);
+
+			char a = hbyte[0];
+			const char* p = std::lower_bound(lut, lut + 16, a);
+			if (*p != a) throw std::invalid_argument("not a hex digit");
+
+			char b = hbyte[1];
+			const char* q = std::lower_bound(lut, lut + 16, b);
+			if (*q != b) throw std::invalid_argument("not a hex digit");
+
+			unsigned char uchar=((p - lut) << 4) | (q - lut);
+			rxbuffer[ii]=uchar;
+		}
+		if (ii==0)
+			continue;
+		DecodeRXMessage(999, (const unsigned char *)&rxbuffer);
+	}
+	return false;
+#endif
 
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MainWorker::Do_Work, this)));
 
@@ -2330,152 +2382,164 @@ void MainWorker::decode_BLINDS1(const int HwdID, const tRBUF *pResponse)
 	WriteMessage(szTmp);
 }
 
-//not in dbase yet
 void MainWorker::decode_Security1(const int HwdID, const tRBUF *pResponse)
 {
-	unsigned char devType=pTypeSecurity1;
-
 	char szTmp[100];
 
-	switch (pResponse->SECURITY1.subtype)
+	unsigned char devType=pTypeSecurity1;
+	unsigned char subType=pResponse->SECURITY1.subtype;
+	std::string ID;
+	sprintf(szTmp, "%02X%02X%02X", pResponse->SECURITY1.id1, pResponse->SECURITY1.id2, pResponse->SECURITY1.id3);
+	ID=szTmp;
+	unsigned char Unit=0;
+	unsigned char cmnd=pResponse->SECURITY1.status;
+	unsigned char SignalLevel=pResponse->SECURITY1.rssi;
+	unsigned char BatteryLevel = get_BateryLevel(false, pResponse->SECURITY1.battery_level & 0x0F);
+
+	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd);
+
+	if (m_verboselevel == EVBL_ALL)
 	{
-	case sTypeSecX10:
-		WriteMessage("subtype       = X10 security");
-		break;
-	case sTypeSecX10M:
-		WriteMessage("subtype       = X10 security motion");
-		break;
-	case sTypeSecX10R:
-		WriteMessage("subtype       = X10 security remote");
-		break;
-	case sTypeKD101:
-		WriteMessage("subtype       = KD101 smoke detector");
-		break;
-	case sTypePowercodeSensor:
-		WriteMessage("subtype       = Visonic PowerCode sensor - primary contact");
-		break;
-	case sTypePowercodeMotion:
-		WriteMessage("subtype       = Visonic PowerCode motion");
-		break;
-	case sTypeCodesecure:
-		WriteMessage("subtype       = Visonic CodeSecure");
-		break;
-	case sTypePowercodeAux:
-		WriteMessage("subtype       = Visonic PowerCode sensor - auxiliary contact");
-		break;
-	case sTypeMeiantech:
-		WriteMessage("subtype       = Meiantech");
-		break;
-	default:
-		sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->SECURITY1.packettype, pResponse->SECURITY1.subtype);
+		switch (pResponse->SECURITY1.subtype)
+		{
+		case sTypeSecX10:
+			WriteMessage("subtype       = X10 security");
+			break;
+		case sTypeSecX10M:
+			WriteMessage("subtype       = X10 security motion");
+			break;
+		case sTypeSecX10R:
+			WriteMessage("subtype       = X10 security remote");
+			break;
+		case sTypeKD101:
+			WriteMessage("subtype       = KD101 smoke detector");
+			break;
+		case sTypePowercodeSensor:
+			WriteMessage("subtype       = Visonic PowerCode sensor - primary contact");
+			break;
+		case sTypePowercodeMotion:
+			WriteMessage("subtype       = Visonic PowerCode motion");
+			break;
+		case sTypeCodesecure:
+			WriteMessage("subtype       = Visonic CodeSecure");
+			break;
+		case sTypePowercodeAux:
+			WriteMessage("subtype       = Visonic PowerCode sensor - auxiliary contact");
+			break;
+		case sTypeMeiantech:
+			WriteMessage("subtype       = Meiantech");
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->SECURITY1.packettype, pResponse->SECURITY1.subtype);
+			WriteMessage(szTmp);
+		}
+
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->SECURITY1.seqnbr);
+		WriteMessage(szTmp);
+		sprintf(szTmp, "id1-3         = %02X:%02X:%02X", pResponse->SECURITY1.id1, pResponse->SECURITY1.id2, pResponse->SECURITY1.id3);
+		WriteMessage(szTmp);
+
+		WriteMessage("status        = ", false);
+
+		switch (pResponse->SECURITY1.status)
+		{
+		case sStatusNormal:
+			WriteMessage("Normal");
+			break;
+		case sStatusNormalDelayed:
+			WriteMessage("Normal Delayed");
+			break;
+		case sStatusAlarm:
+			WriteMessage("Alarm");
+			break;
+		case sStatusAlarmDelayed:
+			WriteMessage("Alarm Delayed");
+			break;
+		case sStatusMotion:
+			WriteMessage("Motion");
+			break;
+		case sStatusNoMotion:
+			WriteMessage("No Motion");
+			break;
+		case sStatusPanic:
+			WriteMessage("Panic");
+			break;
+		case sStatusPanicOff:
+			WriteMessage("Panic End");
+			break;
+		case sStatusArmAway:
+			if (pResponse->SECURITY1.subtype == sTypeMeiantech)
+				WriteMessage("Group2 or ", false);
+			WriteMessage("Arm Away");
+			break;
+		case sStatusArmAwayDelayed:
+			WriteMessage("Arm Away Delayed");
+			break;
+		case sStatusArmHome:
+			if (pResponse->SECURITY1.subtype == sTypeMeiantech)
+				WriteMessage("Group3 or ", false);
+			WriteMessage("Arm Home");
+		case sStatusArmHomeDelayed:
+			WriteMessage("Arm Home Delayed");
+			break;
+		case sStatusDisarm:
+			if (pResponse->SECURITY1.subtype == sTypeMeiantech)
+				WriteMessage("Group1 or ", false);
+			WriteMessage("Disarm");
+		case sStatusLightOff:
+			WriteMessage("Light Off");
+			break;
+		case sStatusLightOn:
+			WriteMessage("Light On");
+			break;
+		case sStatusLight2Off:
+			WriteMessage("Light 2 Off");
+			break;
+		case sStatusLight2On:
+			WriteMessage("Light 2 On");
+			break;
+		case sStatusDark:
+			WriteMessage("Dark detected");
+			break;
+		case sStatusLight:
+			WriteMessage("Light Detected");
+			break;
+		case sStatusBatLow:
+			WriteMessage("Battery low MS10 or XX18 sensor");
+			break;
+		case sStatusPairKD101:
+			WriteMessage("Pair KD101");
+			break;
+		case sStatusNormalTamper:
+			WriteMessage("Normal + Tamper");
+			break;
+		case sStatusNormalDelayedTamper:
+			WriteMessage("Normal Delayed + Tamper");
+			break;
+		case sStatusAlarmTamper:
+			WriteMessage("Alarm + Tamper");
+			break;
+		case sStatusAlarmDelayedTamper:
+			WriteMessage("Alarm Delayed + Tamper");
+			break;
+		case sStatusMotionTamper:
+			WriteMessage("Motion + Tamper");
+			break;
+		case sStatusNoMotionTamper:
+			WriteMessage("No Motion + Tamper");
+			break;
+		}
+
+		if (pResponse->SECURITY1.subtype != sTypeKD101)		//KD101 does not support battery low indication
+		{
+			if ((pResponse->SECURITY1.battery_level &0xF) == 0)
+				WriteMessage("battery level = Low");
+			else
+				WriteMessage("battery level = OK");
+		}
+		sprintf(szTmp,"Signal level  = %d", pResponse->SECURITY1.rssi);
 		WriteMessage(szTmp);
 	}
-
-	sprintf(szTmp, "Sequence nbr  = %d", pResponse->SECURITY1.seqnbr);
-	WriteMessage(szTmp);
-	sprintf(szTmp, "id1-3         = %02X:%02X:%02X", pResponse->SECURITY1.id1, pResponse->SECURITY1.id2, pResponse->SECURITY1.id3);
-	WriteMessage(szTmp);
-
-	WriteMessage("status        = ", false);
-
-	switch (pResponse->SECURITY1.status)
-	{
-	case sStatusNormal:
-		WriteMessage("Normal");
-		break;
-	case sStatusNormalDelayed:
-		WriteMessage("Normal Delayed");
-		break;
-	case sStatusAlarm:
-		WriteMessage("Alarm");
-		break;
-	case sStatusAlarmDelayed:
-		WriteMessage("Alarm Delayed");
-		break;
-	case sStatusMotion:
-		WriteMessage("Motion");
-		break;
-	case sStatusNoMotion:
-		WriteMessage("No Motion");
-		break;
-	case sStatusPanic:
-		WriteMessage("Panic");
-		break;
-	case sStatusPanicOff:
-		WriteMessage("Panic End");
-		break;
-	case sStatusArmAway:
-		if (pResponse->SECURITY1.subtype == sTypeMeiantech)
-			WriteMessage("Group2 or ", false);
-		WriteMessage("Arm Away");
-		break;
-	case sStatusArmAwayDelayed:
-		WriteMessage("Arm Away Delayed");
-		break;
-	case sStatusArmHome:
-		if (pResponse->SECURITY1.subtype == sTypeMeiantech)
-			WriteMessage("Group3 or ", false);
-		WriteMessage("Arm Home");
-	case sStatusArmHomeDelayed:
-		WriteMessage("Arm Home Delayed");
-		break;
-	case sStatusDisarm:
-		if (pResponse->SECURITY1.subtype == sTypeMeiantech)
-			WriteMessage("Group1 or ", false);
-		WriteMessage("Disarm");
-	case sStatusLightOff:
-		WriteMessage("Light Off");
-		break;
-	case sStatusLightOn:
-		WriteMessage("Light On");
-		break;
-	case sStatusLight2Off:
-		WriteMessage("Light 2 Off");
-		break;
-	case sStatusLight2On:
-		WriteMessage("Light 2 On");
-		break;
-	case sStatusDark:
-		WriteMessage("Dark detected");
-		break;
-	case sStatusLight:
-		WriteMessage("Light Detected");
-		break;
-	case sStatusBatLow:
-		WriteMessage("Battery low MS10 or XX18 sensor");
-		break;
-	case sStatusPairKD101:
-		WriteMessage("Pair KD101");
-		break;
-	case sStatusNormalTamper:
-		WriteMessage("Normal + Tamper");
-		break;
-	case sStatusNormalDelayedTamper:
-		WriteMessage("Normal Delayed + Tamper");
-		break;
-	case sStatusAlarmTamper:
-		WriteMessage("Alarm + Tamper");
-		break;
-	case sStatusAlarmDelayedTamper:
-		WriteMessage("Alarm Delayed + Tamper");
-		break;
-	case sStatusMotionTamper:
-		WriteMessage("Motion + Tamper");
-		break;
-	case sStatusNoMotionTamper:
-		WriteMessage("No Motion + Tamper");
-		break;
-	}
-
-	if (pResponse->SECURITY1.subtype != sTypeKD101)		//KD101 does not support battery low indication
-	{
-		if ((pResponse->SECURITY1.battery_level &0xF) == 0)
-			WriteMessage("battery level = Low");
-		else
-			WriteMessage("battery level = OK");
-	}
-	sprintf(szTmp,"Signal level  = %d", pResponse->SECURITY1.rssi);
-	WriteMessage(szTmp);
 }
 
 //not in dbase yet
@@ -3631,60 +3695,78 @@ void MainWorker::decode_Remote(const int HwdID, const tRBUF *pResponse)
 //not in dbase yet
 void MainWorker::decode_Thermostat1(const int HwdID, const tRBUF *pResponse)
 {
-	unsigned char devType=pTypeThermostat1;
-
 	char szTmp[100];
+	unsigned char devType=pTypeThermostat1;
+	unsigned char subType=pResponse->THERMOSTAT1.subtype;
+	std::string ID;
+	sprintf(szTmp,"%d",(pResponse->THERMOSTAT1.id1 * 256) + pResponse->THERMOSTAT1.id2);
+	ID=szTmp;
+	unsigned char Unit=0;
+	unsigned char cmnd=0;
+	unsigned char SignalLevel=pResponse->THERMOSTAT1.rssi;
+	unsigned char BatteryLevel = 255;
 
-	switch (pResponse->THERMOSTAT1.subtype)
+	unsigned char temp=pResponse->THERMOSTAT1.temperature;
+	unsigned char set_point=pResponse->THERMOSTAT1.set_point;
+	unsigned char mode=(pResponse->THERMOSTAT1.mode & 0x80);
+	unsigned char status=(pResponse->THERMOSTAT1.status & 0x03);
+
+	sprintf(szTmp,"%d;%d;%d;%d",temp,set_point,mode,status);
+	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
+
+	if (m_verboselevel == EVBL_ALL)
 	{
-	case sTypeDigimax:
-		WriteMessage("subtype       = Digimax");
-		break;
-	case sTypeDigimaxShort:
-		WriteMessage("subtype       = Digimax with short format");
-		break;
-	default:
-		sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->THERMOSTAT1.packettype, pResponse->THERMOSTAT1.subtype);
-		WriteMessage(szTmp);
-		break;
-	}
-
-	sprintf(szTmp,"Sequence nbr  = %d", pResponse->THERMOSTAT1.seqnbr);
-	WriteMessage(szTmp);
-	sprintf(szTmp,"ID            = %d", (pResponse->THERMOSTAT1.id1 * 256) + pResponse->THERMOSTAT1.id2);
-	WriteMessage(szTmp);
-	sprintf(szTmp, "Temperature   = %d C", pResponse->THERMOSTAT1.temperature);
-	WriteMessage(szTmp);
-
-	if (pResponse->THERMOSTAT1.subtype == sTypeDigimax)
-	{
-		sprintf(szTmp,"Set           = %d C", pResponse->THERMOSTAT1.set_point);
-		WriteMessage(szTmp);
-
-		if ((pResponse->THERMOSTAT1.mode & 0x80) == 0)
-			WriteMessage("Mode          = heating");
-		else
-			WriteMessage("Mode          = Cooling");
-
-		switch (pResponse->THERMOSTAT1.status & 0x03)
+		switch (pResponse->THERMOSTAT1.subtype)
 		{
-		case 0:
-			WriteMessage("Status        = no status available");
+		case sTypeDigimax:
+			WriteMessage("subtype       = Digimax");
 			break;
-		case 1:
-			WriteMessage("Status        = demand");
+		case sTypeDigimaxShort:
+			WriteMessage("subtype       = Digimax with short format");
 			break;
-		case 2:
-			WriteMessage("Status        = no demand");
-			break;
-		case 3:
-			WriteMessage("Status        = initializing");
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->THERMOSTAT1.packettype, pResponse->THERMOSTAT1.subtype);
+			WriteMessage(szTmp);
 			break;
 		}
-	}
 
-	sprintf(szTmp,"Signal level  = %d", pResponse->THERMOSTAT1.rssi);
-	WriteMessage(szTmp);
+		sprintf(szTmp,"Sequence nbr  = %d", pResponse->THERMOSTAT1.seqnbr);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"ID            = %d", (pResponse->THERMOSTAT1.id1 * 256) + pResponse->THERMOSTAT1.id2);
+		WriteMessage(szTmp);
+		sprintf(szTmp, "Temperature   = %d C", pResponse->THERMOSTAT1.temperature);
+		WriteMessage(szTmp);
+
+		if (pResponse->THERMOSTAT1.subtype == sTypeDigimax)
+		{
+			sprintf(szTmp,"Set           = %d C", pResponse->THERMOSTAT1.set_point);
+			WriteMessage(szTmp);
+
+			if ((pResponse->THERMOSTAT1.mode & 0x80) == 0)
+				WriteMessage("Mode          = heating");
+			else
+				WriteMessage("Mode          = Cooling");
+
+			switch (pResponse->THERMOSTAT1.status & 0x03)
+			{
+			case 0:
+				WriteMessage("Status        = no status available");
+				break;
+			case 1:
+				WriteMessage("Status        = demand");
+				break;
+			case 2:
+				WriteMessage("Status        = no demand");
+				break;
+			case 3:
+				WriteMessage("Status        = initializing");
+				break;
+			}
+		}
+
+		sprintf(szTmp,"Signal level  = %d", pResponse->THERMOSTAT1.rssi);
+		WriteMessage(szTmp);
+	}
 }
 
 //not in dbase yet
@@ -3833,41 +3915,58 @@ void MainWorker::decode_DateTime(const int HwdID, const tRBUF *pResponse)
 //not in dbase yet
 void MainWorker::decode_Current(const int HwdID, const tRBUF *pResponse)
 {
-	unsigned char devType=pTypeCURRENT;
-
 	char szTmp[100];
 
-	switch (pResponse->CURRENT.subtype)
+	unsigned char devType=pTypeCURRENT;
+	unsigned char subType=pResponse->CURRENT.subtype;
+	std::string ID;
+	sprintf(szTmp,"%d",(pResponse->CURRENT.id1 * 256) + pResponse->CURRENT.id2);
+	ID=szTmp;
+	unsigned char Unit=0;
+	unsigned char cmnd=0;
+	unsigned char SignalLevel=pResponse->CURRENT.rssi;
+	unsigned char BatteryLevel = get_BateryLevel(false, pResponse->CURRENT.battery_level & 0x0F);
+
+	float CurrentChannel1= float((pResponse->CURRENT.ch1h * 256) + pResponse->CURRENT.ch1l) / 10.0f;
+	float CurrentChannel2= float((pResponse->CURRENT.ch2h * 256) + pResponse->CURRENT.ch2l) / 10.0f;
+	float CurrentChannel3= float((pResponse->CURRENT.ch3h * 256) + pResponse->CURRENT.ch3l) / 10.0f;
+	sprintf(szTmp,"%.1f;%.1f;%.1f",CurrentChannel1,CurrentChannel2,CurrentChannel3);
+	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
+
+	if (m_verboselevel == EVBL_ALL)
 	{
-	case sTypeELEC1:
-		WriteMessage("subtype       = ELEC1 - OWL CM113, Electrisave, cent-a-meter");
-		break;
-	default:
-		sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->CURRENT.packettype, pResponse->CURRENT.subtype);
+		switch (pResponse->CURRENT.subtype)
+		{
+		case sTypeELEC1:
+			WriteMessage("subtype       = ELEC1 - OWL CM113, Electrisave, cent-a-meter");
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->CURRENT.packettype, pResponse->CURRENT.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+
+		sprintf(szTmp,"Sequence nbr  = %d", pResponse->CURRENT.seqnbr);
 		WriteMessage(szTmp);
-		break;
+		sprintf(szTmp,"ID            = %d", (pResponse->CURRENT.id1 * 256) + pResponse->CURRENT.id2);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"Count         = %d", pResponse->CURRENT.id2);//m_rxbuffer[5]);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"Channel 1     = %.1f ampere", CurrentChannel1);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"Channel 2     = %.1f ampere", CurrentChannel2);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"Channel 3     = %.1f ampere", CurrentChannel3);
+		WriteMessage(szTmp);
+
+		sprintf(szTmp, "Signal level  = %d", pResponse->CURRENT.rssi);
+		WriteMessage(szTmp);
+
+		if ((pResponse->CURRENT.battery_level & 0xF) == 0)
+			WriteMessage("Battery       = Low");
+		else
+			WriteMessage("Battery       = OK");
 	}
-
-	sprintf(szTmp,"Sequence nbr  = %d", pResponse->CURRENT.seqnbr);
-	WriteMessage(szTmp);
-	sprintf(szTmp,"ID            = %d", (pResponse->CURRENT.id1 * 256) + pResponse->CURRENT.id2);
-	WriteMessage(szTmp);
-	sprintf(szTmp,"Count         = %d", pResponse->CURRENT.id2);//m_rxbuffer[5]);
-	WriteMessage(szTmp);
-	sprintf(szTmp,"Channel 1     = %.1f ampere", float((pResponse->CURRENT.ch1h * 256) + pResponse->CURRENT.ch1l) / 10.0f);
-	WriteMessage(szTmp);
-	sprintf(szTmp,"Channel 2     = %.1f ampere", float((pResponse->CURRENT.ch2h * 256) + pResponse->CURRENT.ch2l) / 10.0f);
-	WriteMessage(szTmp);
-	sprintf(szTmp,"Channel 3     = %.1f ampere", float((pResponse->CURRENT.ch3h * 256) + pResponse->CURRENT.ch3l) / 10.0f);
-	WriteMessage(szTmp);
-
-	sprintf(szTmp, "Signal level  = %d", pResponse->CURRENT.rssi);
-	WriteMessage(szTmp);
-
-	if ((pResponse->CURRENT.battery_level & 0xF) == 0)
-		WriteMessage("Battery       = Low");
-	else
-		WriteMessage("Battery       = OK");
 }
 
 //not in dbase yet
@@ -4028,296 +4127,349 @@ void MainWorker::decode_Weight(const int HwdID, const tRBUF *pResponse)
 //not in dbase yet
 void MainWorker::decode_RFXSensor(const int HwdID, const tRBUF *pResponse)
 {
-	unsigned char devType=pTypeRFXSensor;
-
 	char szTmp[100];
+
+	unsigned char devType=pTypeRFXSensor;
+	unsigned char subType=pResponse->RFXSENSOR.subtype;
+	std::string ID;
+	sprintf(szTmp, "%d", pResponse->RFXSENSOR.id);
+	ID=szTmp;
+	unsigned char Unit=0;
+	unsigned char cmnd=0;
+	unsigned char SignalLevel=pResponse->RFXSENSOR.rssi;
+	unsigned char BatteryLevel = 255;
 
 	switch (pResponse->RFXSENSOR.subtype)
 	{
 	case sTypeRFXSensorTemp:
-		WriteMessage("subtype       = Temperature");
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXSENSOR.seqnbr);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", pResponse->RFXSENSOR.id);
-		WriteMessage(szTmp);
-
-		if ((pResponse->RFXSENSOR.msg1 & 0x80) == 0) //positive temperature?
 		{
-			sprintf(szTmp,"Temperature   = %.2f C", float( (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2) / 100.0f);
-			WriteMessage(szTmp);
-		}
-		else
-		{
-			sprintf(szTmp,"Temperature   = -%.2f C", float( ((pResponse->RFXSENSOR.msg1 & 0x7F) * 256) + pResponse->RFXSENSOR.msg2) / 100.0f);
-			WriteMessage(szTmp);
+			float temp;
+			if ((pResponse->RFXSENSOR.msg1 & 0x80) == 0) //positive temperature?
+				temp = float( (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2) / 100.0f;
+			else
+				temp=-(float( ((pResponse->RFXSENSOR.msg1 & 0x7F) * 256) + pResponse->RFXSENSOR.msg2) / 100.0f);
+			sprintf(szTmp,"%.1f",temp);
 		}
 		break;
 	case sTypeRFXSensorAD:
-		WriteMessage("subtype       = A/D");
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXSENSOR.seqnbr);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", pResponse->RFXSENSOR.id);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"volt          = %d mV", (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2);
-		WriteMessage(szTmp);
-		break;
 	case sTypeRFXSensorVolt:
-		WriteMessage("subtype       = Voltage");
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXSENSOR.seqnbr);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", pResponse->RFXSENSOR.id);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"volt          = %d mV", (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2);
-		WriteMessage(szTmp);
-		break;
-	case sTypeRFXSensorMessage:
-		WriteMessage("subtype       = Message");
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXSENSOR.seqnbr);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", pResponse->RFXSENSOR.id);
-		WriteMessage(szTmp);
-		switch (pResponse->RFXSENSOR.msg2)
 		{
-		case 0x1:
-			WriteMessage("msg           = sensor addresses incremented");
-			break;
-		case 0x2:
-			WriteMessage("msg           = battery low detected");
-			break;
-		case 0x81:
-			WriteMessage("msg           = no 1-wire device connected");
-			break;
-		case 0x82:
-			WriteMessage("msg           = 1-Wire ROM CRC error");
-			break;
-		case 0x83:
-			WriteMessage("msg           = 1-Wire device connected is not a DS18B20 or DS2438");
-			break;
-		case 0x84:
-			WriteMessage("msg           = no end of read signal received from 1-Wire device");
-			break;
-		case 0x85:
-			WriteMessage("msg           = 1-Wire scratch pad CRC error");
-			break;
-		default:
-			WriteMessage("ERROR: unknown message");
-			break;
+			int volt=(pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2;
+			sprintf(szTmp,"%d",volt);
 		}
-		sprintf(szTmp,"msg           = %d", (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2);
-		WriteMessage(szTmp);
-		break;
-	default:
-		sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->RFXSENSOR.packettype, pResponse->RFXSENSOR.subtype);
-		WriteMessage(szTmp);
 		break;
 	}
-	sprintf(szTmp,"Signal level  = %d", pResponse->RFXSENSOR.rssi);
-	WriteMessage(szTmp);
+	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
+
+	if (m_verboselevel == EVBL_ALL)
+	{
+		switch (pResponse->RFXSENSOR.subtype)
+		{
+		case sTypeRFXSensorTemp:
+			WriteMessage("subtype       = Temperature");
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXSENSOR.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"ID            = %d", pResponse->RFXSENSOR.id);
+			WriteMessage(szTmp);
+
+			if ((pResponse->RFXSENSOR.msg1 & 0x80) == 0) //positive temperature?
+			{
+				sprintf(szTmp,"Temperature   = %.2f C", float( (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2) / 100.0f);
+				WriteMessage(szTmp);
+			}
+			else
+			{
+				sprintf(szTmp,"Temperature   = -%.2f C", float( ((pResponse->RFXSENSOR.msg1 & 0x7F) * 256) + pResponse->RFXSENSOR.msg2) / 100.0f);
+				WriteMessage(szTmp);
+			}
+			break;
+		case sTypeRFXSensorAD:
+			WriteMessage("subtype       = A/D");
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXSENSOR.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"ID            = %d", pResponse->RFXSENSOR.id);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"volt          = %d mV", (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2);
+			WriteMessage(szTmp);
+			break;
+		case sTypeRFXSensorVolt:
+			WriteMessage("subtype       = Voltage");
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXSENSOR.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"ID            = %d", pResponse->RFXSENSOR.id);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"volt          = %d mV", (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2);
+			WriteMessage(szTmp);
+			break;
+		case sTypeRFXSensorMessage:
+			WriteMessage("subtype       = Message");
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXSENSOR.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"ID            = %d", pResponse->RFXSENSOR.id);
+			WriteMessage(szTmp);
+			switch (pResponse->RFXSENSOR.msg2)
+			{
+			case 0x1:
+				WriteMessage("msg           = sensor addresses incremented");
+				break;
+			case 0x2:
+				WriteMessage("msg           = battery low detected");
+				break;
+			case 0x81:
+				WriteMessage("msg           = no 1-wire device connected");
+				break;
+			case 0x82:
+				WriteMessage("msg           = 1-Wire ROM CRC error");
+				break;
+			case 0x83:
+				WriteMessage("msg           = 1-Wire device connected is not a DS18B20 or DS2438");
+				break;
+			case 0x84:
+				WriteMessage("msg           = no end of read signal received from 1-Wire device");
+				break;
+			case 0x85:
+				WriteMessage("msg           = 1-Wire scratch pad CRC error");
+				break;
+			default:
+				WriteMessage("ERROR: unknown message");
+				break;
+			}
+			sprintf(szTmp,"msg           = %d", (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2);
+			WriteMessage(szTmp);
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->RFXSENSOR.packettype, pResponse->RFXSENSOR.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+		sprintf(szTmp,"Signal level  = %d", pResponse->RFXSENSOR.rssi);
+		WriteMessage(szTmp);
+	}
 }
 
 //not in dbase yet
 void MainWorker::decode_RFXMeter(const int HwdID, const tRBUF *pResponse)
 {
-	unsigned char devType=pTypeRFXMeter;
-
 	char szTmp[100];
 
-	long counter;
-
-	switch (pResponse->RFXMETER.subtype)
+	unsigned char devType=pTypeRFXMeter;
+	unsigned char subType=pResponse->RFXMETER.subtype;
+	if (subType==sTypeRFXMeterCount)
 	{
-	case sTypeRFXMeterCount:
-		WriteMessage("subtype       = RFXMeter counter");
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
-		WriteMessage(szTmp);
-		counter = (pResponse->RFXMETER.count1 << 24) + (pResponse->RFXMETER.count2 << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4;
-		sprintf(szTmp,"Counter       = %ld", counter);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"if RFXPwr     = %ld kWh", counter / 1000);
-		WriteMessage(szTmp);
-		break;
-	case sTypeRFXMeterInterval:
-		WriteMessage("subtype       = RFXMeter new interval time set");
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
-		WriteMessage(szTmp);
-		WriteMessage("Interval time = ", false);
+		std::string ID;
+		sprintf(szTmp,"%d",(pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+		ID=szTmp;
+		unsigned char Unit=0;
+		unsigned char cmnd=0;
+		unsigned char SignalLevel=pResponse->RFXMETER.rssi;
+		unsigned char BatteryLevel = 255;
 
-		switch(pResponse->RFXMETER.count3)
-		{
-		case 0x1:
-			WriteMessage("30 seconds");
-			break;
-		case 0x2:
-			WriteMessage("1 minute");
-			break;
-		case 0x4:
-			WriteMessage("6 minutes");
-			break;
-		case 0x8:
-			WriteMessage("12 minutes");
-			break;
-		case 0x10:
-			WriteMessage("15 minutes");
-			break;
-		case 0x20:
-			WriteMessage("30 minutes");
-			break;
-		case 0x40:
-			WriteMessage("45 minutes");
-			break;
-		case 0x80:
-			WriteMessage("1 hour");
-			break;
-		}
-		break;
-	case sTypeRFXMeterCalib:
-		switch (pResponse->RFXMETER.count2 & 0xC0)
-		{
-		case 0x0:
-			WriteMessage("subtype       = Calibrate mode for channel 1");
-			break;
-		case 0x40:
-			WriteMessage("subtype       = Calibrate mode for channel 2");
-			break;
-		case 0x80:
-			WriteMessage("subtype       = Calibrate mode for channel 3");
-			break;
-		}
-		sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
-		WriteMessage(szTmp);
-		counter = ( ((pResponse->RFXMETER.count2 & 0x3F) << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4 ) / 1000;
-		sprintf(szTmp,"Calibrate cnt = %ld msec", counter);
-		WriteMessage(szTmp);
+		unsigned long counter = (pResponse->RFXMETER.count1 << 24) + (pResponse->RFXMETER.count2 << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4;
+		//float RFXPwr = float(counter) / 1000.0f;
 
-		sprintf(szTmp,"RFXPwr        = %.3f kW", 1.0f / ( float(16 * counter) / (3600000.0f / 62.5f)) );
-		WriteMessage(szTmp);
-		break;
-	case sTypeRFXMeterAddr:
-		WriteMessage("subtype       = New address set, push button for next address");
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
-		WriteMessage(szTmp);
-		break;
-	case sTypeRFXMeterCounterReset:
-		switch (pResponse->RFXMETER.count2 & 0xC0)
-		{
-		case 0x0:
-			WriteMessage("subtype       = Push the button for next mode within 5 seconds or else RESET COUNTER channel 1 will be executed");
-			break;
-		case 0x40:
-			WriteMessage("subtype       = Push the button for next mode within 5 seconds or else RESET COUNTER channel 2 will be executed");
-			break;
-		case 0x80:
-			WriteMessage("subtype       = Push the button for next mode within 5 seconds or else RESET COUNTER channel 3 will be executed");
-			break;
-		}
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
-		WriteMessage(szTmp);
-		break;
-	case sTypeRFXMeterCounterSet:
-		switch (pResponse->RFXMETER.count2 & 0xC0)
-		{
-		case 0x0:
-			WriteMessage("subtype       = Counter channel 1 is reset to zero");
-			break;
-		case 0x40:
-			WriteMessage("subtype       = Counter channel 2 is reset to zero");
-			break;
-		case 0x80:
-			WriteMessage("subtype       = Counter channel 3 is reset to zero");
-			break;
-		}
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
-		WriteMessage(szTmp);
-		counter =  (pResponse->RFXMETER.count1 << 24) + (pResponse->RFXMETER.count2 << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4;
-		sprintf(szTmp,"Counter       = %ld", counter);
-		WriteMessage(szTmp);
-		break;
-	case sTypeRFXMeterSetInterval:
-		WriteMessage("subtype       = Push the button for next mode within 5 seconds or else SET INTERVAL MODE will be entered");
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
-		WriteMessage(szTmp);
-		break;
-	case sTypeRFXMeterSetCalib:
-		switch (pResponse->RFXMETER.count2 & 0xC0)
-		{
-		case 0x0:
-			WriteMessage("subtype       = Push the button for next mode within 5 seconds or else CALIBRATION mode for channel 1 will be executed");
-			break;
-		case 0x40:
-			WriteMessage("subtype       = Push the button for next mode within 5 seconds or else CALIBRATION mode for channel 2 will be executed");
-			break;
-		case 0x80:
-			WriteMessage("subtype       = Push the button for next mode within 5 seconds or else CALIBRATION mode for channel 3 will be executed");
-			break;
-		}
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
-		WriteMessage(szTmp);
-		break;
-	case sTypeRFXMeterSetAddr:
-		WriteMessage("subtype       = Push the button for next mode within 5 seconds or else SET ADDRESS MODE will be entered");
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
-		WriteMessage(szTmp);
-		break;
-	case sTypeRFXMeterIdent:
-		WriteMessage("subtype       = RFXMeter identification");
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"FW version    = %02X", pResponse->RFXMETER.count3);
-		WriteMessage(szTmp);
-		WriteMessage("Interval time = ", false);
+		sprintf(szTmp,"%ld",counter);
+		m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
+	}
 
-		switch (pResponse->RFXMETER.count4)
+	if (m_verboselevel == EVBL_ALL)
+	{
+		unsigned long counter;
+
+		switch (pResponse->RFXMETER.subtype)
 		{
-		case 0x1:
-			WriteMessage("30 seconds");
+		case sTypeRFXMeterCount:
+			WriteMessage("subtype       = RFXMeter counter");
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			WriteMessage(szTmp);
+			counter = (pResponse->RFXMETER.count1 << 24) + (pResponse->RFXMETER.count2 << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4;
+			sprintf(szTmp,"Counter       = %ld", counter);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"if RFXPwr     = %.3f kWh", float(counter) / 1000.0f);
+			WriteMessage(szTmp);
 			break;
-		case 0x2:
-			WriteMessage("1 minute");
+		case sTypeRFXMeterInterval:
+			WriteMessage("subtype       = RFXMeter new interval time set");
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			WriteMessage(szTmp);
+			WriteMessage("Interval time = ", false);
+
+			switch(pResponse->RFXMETER.count3)
+			{
+			case 0x1:
+				WriteMessage("30 seconds");
+				break;
+			case 0x2:
+				WriteMessage("1 minute");
+				break;
+			case 0x4:
+				WriteMessage("6 minutes");
+				break;
+			case 0x8:
+				WriteMessage("12 minutes");
+				break;
+			case 0x10:
+				WriteMessage("15 minutes");
+				break;
+			case 0x20:
+				WriteMessage("30 minutes");
+				break;
+			case 0x40:
+				WriteMessage("45 minutes");
+				break;
+			case 0x80:
+				WriteMessage("1 hour");
+				break;
+			}
 			break;
-		case 0x4:
-			WriteMessage("6 minutes");
+		case sTypeRFXMeterCalib:
+			switch (pResponse->RFXMETER.count2 & 0xC0)
+			{
+			case 0x0:
+				WriteMessage("subtype       = Calibrate mode for channel 1");
+				break;
+			case 0x40:
+				WriteMessage("subtype       = Calibrate mode for channel 2");
+				break;
+			case 0x80:
+				WriteMessage("subtype       = Calibrate mode for channel 3");
+				break;
+			}
+			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			WriteMessage(szTmp);
+			counter = ( ((pResponse->RFXMETER.count2 & 0x3F) << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4 ) / 1000;
+			sprintf(szTmp,"Calibrate cnt = %ld msec", counter);
+			WriteMessage(szTmp);
+
+			sprintf(szTmp,"RFXPwr        = %.3f kW", 1.0f / ( float(16 * counter) / (3600000.0f / 62.5f)) );
+			WriteMessage(szTmp);
 			break;
-		case 0x8:
-			WriteMessage("12 minutes");
+		case sTypeRFXMeterAddr:
+			WriteMessage("subtype       = New address set, push button for next address");
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			WriteMessage(szTmp);
 			break;
-		case 0x10:
-			WriteMessage("15 minutes");
+		case sTypeRFXMeterCounterReset:
+			switch (pResponse->RFXMETER.count2 & 0xC0)
+			{
+			case 0x0:
+				WriteMessage("subtype       = Push the button for next mode within 5 seconds or else RESET COUNTER channel 1 will be executed");
+				break;
+			case 0x40:
+				WriteMessage("subtype       = Push the button for next mode within 5 seconds or else RESET COUNTER channel 2 will be executed");
+				break;
+			case 0x80:
+				WriteMessage("subtype       = Push the button for next mode within 5 seconds or else RESET COUNTER channel 3 will be executed");
+				break;
+			}
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			WriteMessage(szTmp);
 			break;
-		case 0x20:
-			WriteMessage("30 minutes");
+		case sTypeRFXMeterCounterSet:
+			switch (pResponse->RFXMETER.count2 & 0xC0)
+			{
+			case 0x0:
+				WriteMessage("subtype       = Counter channel 1 is reset to zero");
+				break;
+			case 0x40:
+				WriteMessage("subtype       = Counter channel 2 is reset to zero");
+				break;
+			case 0x80:
+				WriteMessage("subtype       = Counter channel 3 is reset to zero");
+				break;
+			}
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			WriteMessage(szTmp);
+			counter =  (pResponse->RFXMETER.count1 << 24) + (pResponse->RFXMETER.count2 << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4;
+			sprintf(szTmp,"Counter       = %ld", counter);
+			WriteMessage(szTmp);
 			break;
-		case 0x40:
-			WriteMessage("45 minutes");
+		case sTypeRFXMeterSetInterval:
+			WriteMessage("subtype       = Push the button for next mode within 5 seconds or else SET INTERVAL MODE will be entered");
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			WriteMessage(szTmp);
 			break;
-		case 0x80:
-			WriteMessage("1 hour");
+		case sTypeRFXMeterSetCalib:
+			switch (pResponse->RFXMETER.count2 & 0xC0)
+			{
+			case 0x0:
+				WriteMessage("subtype       = Push the button for next mode within 5 seconds or else CALIBRATION mode for channel 1 will be executed");
+				break;
+			case 0x40:
+				WriteMessage("subtype       = Push the button for next mode within 5 seconds or else CALIBRATION mode for channel 2 will be executed");
+				break;
+			case 0x80:
+				WriteMessage("subtype       = Push the button for next mode within 5 seconds or else CALIBRATION mode for channel 3 will be executed");
+				break;
+			}
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			WriteMessage(szTmp);
 			break;
+		case sTypeRFXMeterSetAddr:
+			WriteMessage("subtype       = Push the button for next mode within 5 seconds or else SET ADDRESS MODE will be entered");
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			WriteMessage(szTmp);
+			break;
+		case sTypeRFXMeterIdent:
+			WriteMessage("subtype       = RFXMeter identification");
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"FW version    = %02X", pResponse->RFXMETER.count3);
+			WriteMessage(szTmp);
+			WriteMessage("Interval time = ", false);
+
+			switch (pResponse->RFXMETER.count4)
+			{
+			case 0x1:
+				WriteMessage("30 seconds");
+				break;
+			case 0x2:
+				WriteMessage("1 minute");
+				break;
+			case 0x4:
+				WriteMessage("6 minutes");
+				break;
+			case 0x8:
+				WriteMessage("12 minutes");
+				break;
+			case 0x10:
+				WriteMessage("15 minutes");
+				break;
+			case 0x20:
+				WriteMessage("30 minutes");
+				break;
+			case 0x40:
+				WriteMessage("45 minutes");
+				break;
+			case 0x80:
+				WriteMessage("1 hour");
+				break;
+			}
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->RFXMETER.packettype, pResponse->RFXMETER.subtype);
+			WriteMessage(szTmp);
 		}
-		break;
-	default:
-		sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->RFXMETER.packettype, pResponse->RFXMETER.subtype);
+		sprintf(szTmp,"Signal level  = %d", pResponse->RFXMETER.rssi);
 		WriteMessage(szTmp);
 	}
-	sprintf(szTmp,"Signal level  = %d", pResponse->RFXMETER.rssi);
-	WriteMessage(szTmp);
 }
 
 //not in dbase yet

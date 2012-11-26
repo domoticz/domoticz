@@ -39,6 +39,7 @@ const char *RFX_Forecast_Desc(const unsigned char Forecast);
 const char *Timer_Type_Desc(int tType);
 const char *Timer_Cmd_Desc(int tCmd);
 const char *Hardware_Type_Desc(int hType);
+const char *Security_Status_Desc(const unsigned char status);
 
 void GetLightStatus(
 	const unsigned char dType, 

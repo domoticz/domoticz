@@ -300,7 +300,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 						(dType!=pTypeTEMP_HUM)&&
 						(dType!=pTypeTEMP_HUM_BARO)&&
 						(dType!=pTypeWIND)&&
-						(dType!=pTypeUV)
+						(dType!=pTypeUV)&&
+						(!((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp)))
 						)
 						continue;
 				}
@@ -407,11 +408,22 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 			else if (dType == pTypeTEMP)
 			{
 				root["result"][ii]["Temp"]=atof(sValue.c_str());
+				sprintf(szData,"%.1f C", atof(sValue.c_str()));
+				root["result"][ii]["Data"]=szData;
+			}
+			else if ((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))
+			{
+				root["result"][ii]["Temp"]=atof(sValue.c_str());
+				sprintf(szData,"%.1f C", atof(sValue.c_str()));
+				root["result"][ii]["Data"]=szData;
+				root["result"][ii]["TypeImg"]="temperature";
 			}
 			else if (dType == pTypeHUM)
 			{
 				root["result"][ii]["Humidity"]=nValue;
 				root["result"][ii]["HumidityStatus"]=RFX_Humidity_Status_Desc(atoi(sValue.c_str()));
+				sprintf(szData,"Humidity %d %%", nValue);
+				root["result"][ii]["Data"]=szData;
 			}
 			else if (dType == pTypeTEMP_HUM)
 			{
@@ -422,6 +434,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					root["result"][ii]["Temp"]=atof(strarray[0].c_str());
 					root["result"][ii]["Humidity"]=atoi(strarray[1].c_str());
 					root["result"][ii]["HumidityStatus"]=RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
+					sprintf(szData,"%.1f C, %d %%", atof(strarray[0].c_str()),atoi(strarray[1].c_str()));
+					root["result"][ii]["Data"]=szData;
 				}
 			}
 			else if (dType == pTypeTEMP_HUM_BARO)
@@ -436,6 +450,12 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					root["result"][ii]["Barometer"]=atoi(strarray[3].c_str());
 					root["result"][ii]["Forecast"]=atoi(strarray[4].c_str());
 					root["result"][ii]["ForecastStr"]=RFX_Forecast_Desc(atoi(strarray[4].c_str()));
+					sprintf(szData,"%.1f C, %d %%, %d hPa", 
+						atof(strarray[0].c_str()),
+						atoi(strarray[1].c_str()),
+						atoi(strarray[3].c_str())
+						);
+					root["result"][ii]["Data"]=szData;
 				}
 			}
 			else if (dType == pTypeUV)
@@ -514,7 +534,41 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					}
 				}
 			}
-
+			else if (dType == pTypeCURRENT)
+			{
+				std::vector<std::string> strarray;
+				StringSplit(sValue, ";", strarray);
+				if (strarray.size()==3)
+				{
+					sprintf(szData,"%.1f A, %.1f A, %.1f A",atof(strarray[0].c_str()),atof(strarray[1].c_str()),atof(strarray[2].c_str()));
+					root["result"][ii]["Data"]=szData;
+				}
+			}
+			else if (dType == pTypeRFXMeter)
+			{
+				root["result"][ii]["Data"]=sValue;
+			}
+			else if (dType == pTypeRFXSensor)
+			{
+				switch (dSubType)
+				{
+				case sTypeRFXSensorAD:
+					sprintf(szData,"%d mV",atoi(sValue.c_str()));
+					root["result"][ii]["TypeImg"]="current";
+					break;
+				case sTypeRFXSensorVolt:
+					sprintf(szData,"%d mV",atoi(sValue.c_str()));
+					root["result"][ii]["TypeImg"]="current";
+					break;
+				}
+				root["result"][ii]["Data"]=szData;
+			}
+			else if (dType == pTypeSecurity1)
+			{
+				sprintf(szData,"%s",Security_Status_Desc(nValue));
+				root["result"][ii]["Data"]=szData;
+			}
+			
 
 			ii++;
 		}
