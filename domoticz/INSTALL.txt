@@ -1,12 +1,13 @@
 
-Usage: Domoticz -www port -verbose x
-	-www port (for example -www 8080)
-	-verbose x (where x=0 is none, x=1 is debug)
+Usage: Domoticz [-www <port>]  [-verbose <0|1>]
+                -www <port>   Default is: -www 8080
+                -verbose <0|1> (0 is none, 1 is debug)   Default is: -verbose 0
+Examples:
+                Domoticz            (this is the same as Domoticz -www 8080 -verbose 0)
+				Domoticz -www 81 -verbose 1
 
-Example:
-./domoticz
-or
-./domoticz -www 8081
+If Domoticz and the browser are running on the same system you can connect with http://localhost:8080/
+To stop the application: press Ctrl-C in the application screen (not in the browser)
 
 Internet Explorer is not supported at the moment, please use another browser like chrome/firefox.
 

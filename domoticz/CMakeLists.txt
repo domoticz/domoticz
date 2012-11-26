@@ -134,9 +134,16 @@ target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY})
 #target_link_libraries(domoticz ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
 
 # build a CPack driven installer package
-include (InstallRequiredSystemLibraries)
-set (CPACK_RESOURCE_FILE_LICENSE  
-     "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
 set (CPACK_PACKAGE_VERSION_MAJOR "${domoticz_VERSION_MAJOR}")
 set (CPACK_PACKAGE_VERSION_MINOR "${domoticz_VERSION_MINOR}")
+
+SET(CPACK_PACKAGE_NAME "domoticz")
+SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${domoticz}-dev")
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${domoticz}-A program for home automation (Domotica).")
+SET(CPACK_PACKAGING_INSTALL_PREFIX "/")
+SET(CPACK_PACKAGE_DEFAULT_LOCATION "/opt/${CPACK_PACKAGE_NAME}")
+SET(CPACK_PACKAGE_EXECUTABLES "domoticz";"A program for home automation (Dmotica).")
+
+include (InstallRequiredSystemLibraries)
+set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
 include (CPack)
