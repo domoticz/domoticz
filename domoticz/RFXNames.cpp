@@ -189,7 +189,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeUV, "UV" , "uv" },
 		{ pTypeDT, "Date/Time" , "unknown" },
 		{ pTypeCURRENT, "Current" , "current" },
-		{ pTypeENERGY, "Energy" , "unknown" },
+		{ pTypeENERGY, "Energy" , "current" },
 		{ pTypeCURRENTENERGY, "Current/Energy" , "unknown" },
 		{ pTypeGAS, "Gas" , "unknown" },
 		{ pTypeWATER, "Water" , "unknown" },

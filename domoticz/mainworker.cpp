@@ -3972,50 +3972,65 @@ void MainWorker::decode_Current(const int HwdID, const tRBUF *pResponse)
 //not in dbase yet
 void MainWorker::decode_Energy(const int HwdID, const tRBUF *pResponse)
 {
-	unsigned char devType=pTypeENERGY;
-
 	char szTmp[100];
+
+	unsigned char devType=pTypeENERGY;
+	unsigned char subType=pResponse->ENERGY.subtype;
+	std::string ID;
+	sprintf(szTmp,"%d",(pResponse->ENERGY.id1 * 256) + pResponse->ENERGY.id2);
+	ID=szTmp;
+	unsigned char Unit=0;
+	unsigned char cmnd=0;
+	unsigned char SignalLevel=pResponse->ENERGY.rssi;
+	unsigned char BatteryLevel = get_BateryLevel(false, pResponse->ENERGY.battery_level & 0x0F);
 
 	long instant;
 	double usage;
 
 	instant = (pResponse->ENERGY.instant1 * 0x1000000) + (pResponse->ENERGY.instant2 * 0x10000) + (pResponse->ENERGY.instant3 * 0x100) + pResponse->ENERGY.instant4;
 	//usage = double( (pResponse->ENERGY.total1 * 0x10000000000) + (pResponse->ENERGY.total2 * 0x100000000) + (pResponse->ENERGY.total3 * 0x1000000)
-		//+ (pResponse->ENERGY.total4 * 0x10000) + (pResponse->ENERGY.total5 * 0x100) + pResponse->ENERGY.total6) / 223.666;
+	//+ (pResponse->ENERGY.total4 * 0x10000) + (pResponse->ENERGY.total5 * 0x100) + pResponse->ENERGY.total6) / 223.666;
 	usage = double( (pResponse->ENERGY.total3 * 0x1000000)
 		+ (pResponse->ENERGY.total4 * 0x10000) + (pResponse->ENERGY.total5 * 0x100) + pResponse->ENERGY.total6) / 223.666;
 
-	switch (pResponse->ENERGY.subtype)
+	sprintf(szTmp,"%ld;%.2f",instant,usage);
+
+	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
+
+	if (m_verboselevel == EVBL_ALL)
 	{
-	case sTypeELEC2:
-		WriteMessage("subtype       = ELEC2 - OWL CM119, CM160");
-		break;
-	case sTypeELEC3:
-		WriteMessage("subtype       = ELEC2 - OWL CM180");
-		break;
-	default:
-		sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->ENERGY.packettype, pResponse->ENERGY.subtype);
+		switch (pResponse->ENERGY.subtype)
+		{
+		case sTypeELEC2:
+			WriteMessage("subtype       = ELEC2 - OWL CM119, CM160");
+			break;
+		case sTypeELEC3:
+			WriteMessage("subtype       = ELEC2 - OWL CM180");
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->ENERGY.packettype, pResponse->ENERGY.subtype);
+			WriteMessage(szTmp);
+		}
+
+		sprintf(szTmp,"Sequence nbr  = %d", pResponse->ENERGY.seqnbr);
 		WriteMessage(szTmp);
+		sprintf(szTmp,"ID            = %d", (pResponse->ENERGY.id1 * 256) + pResponse->ENERGY.id2);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"Count         = %d", pResponse->ENERGY.count);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"Instant usage = %ld Watt", instant);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"total usage   = %.2f Wh", usage);
+		WriteMessage(szTmp);
+
+		sprintf(szTmp,"Signal level  = %d", pResponse->ENERGY.rssi);
+		WriteMessage(szTmp);
+
+		if ((pResponse->ENERGY.battery_level & 0xF) == 0)
+			WriteMessage("Battery       = Low");
+		else
+			WriteMessage("Battery       = OK");
 	}
-
-	sprintf(szTmp,"Sequence nbr  = %d", pResponse->ENERGY.seqnbr);
-	WriteMessage(szTmp);
-	sprintf(szTmp,"ID            = %d", (pResponse->ENERGY.id1 * 256) + pResponse->ENERGY.id2);
-	WriteMessage(szTmp);
-	sprintf(szTmp,"Count         = %d", pResponse->ENERGY.count);
-	WriteMessage(szTmp);
-	sprintf(szTmp,"Instant usage = %ld Watt", instant);
-	WriteMessage(szTmp);
-	sprintf(szTmp,"total usage   = %.2f Wh", usage);
-	WriteMessage(szTmp);
-
-	sprintf(szTmp,"Signal level  = %d", pResponse->ENERGY.rssi);
-	WriteMessage(szTmp);
-
-	if ((pResponse->ENERGY.battery_level & 0xF) == 0)
-		WriteMessage("Battery       = Low");
-	else
-		WriteMessage("Battery       = OK");
 }
 
 //not in dbase yet

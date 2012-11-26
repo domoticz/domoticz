@@ -544,6 +544,16 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					root["result"][ii]["Data"]=szData;
 				}
 			}
+			else if (dType == pTypeENERGY)
+			{
+				std::vector<std::string> strarray;
+				StringSplit(sValue, ";", strarray);
+				if (strarray.size()==2)
+				{
+					sprintf(szData,"%ld Watt, %.2f Wh",atol(strarray[0].c_str()),atof(strarray[1].c_str()));
+					root["result"][ii]["Data"]=szData;
+				}
+			}
 			else if (dType == pTypeRFXMeter)
 			{
 				root["result"][ii]["Data"]=sValue;
