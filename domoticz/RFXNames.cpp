@@ -88,7 +88,7 @@ const char *Security_Status_Desc(const unsigned char status)
 		{ sStatusAlarmDelayedTamper, "Alarm Delayed + Tamper" },
 		{ sStatusMotionTamper, "Motion + Tamper" },
 		{ sStatusNoMotionTamper, "No Motion + Tamper" },
-		{ NULL, NULL }
+		{ 0, NULL }
 	};
 	return findTableIDSingle1 (Table, status);
 }

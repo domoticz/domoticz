@@ -344,7 +344,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 						continue;
 				}
 			}
-			
+
 			root["result"][ii]["HardwareID"]=hardwareID;
 			if (_hardwareNames.find(hardwareID)==_hardwareNames.end())
 				root["result"][ii]["HardwareName"]="Unknown?";
@@ -450,7 +450,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					root["result"][ii]["Barometer"]=atoi(strarray[3].c_str());
 					root["result"][ii]["Forecast"]=atoi(strarray[4].c_str());
 					root["result"][ii]["ForecastStr"]=RFX_Forecast_Desc(atoi(strarray[4].c_str()));
-					sprintf(szData,"%.1f C, %d %%, %d hPa", 
+					sprintf(szData,"%.1f C, %d %%, %d hPa",
 						atof(strarray[0].c_str()),
 						atoi(strarray[1].c_str()),
 						atoi(strarray[3].c_str())
@@ -578,7 +578,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				sprintf(szData,"%s",Security_Status_Desc(nValue));
 				root["result"][ii]["Data"]=szData;
 			}
-			
+
 
 			ii++;
 		}
@@ -704,7 +704,7 @@ char * CWebServer::GetJSonPage()
 		Json::Value tempjson;
 
 		GetJSonDevices(tempjson, "", "temp","ROWID");
-		
+
 		Json::Value::const_iterator itt;
 		int ii=0;
 		size_t rsize=tempjson["result"].size();
@@ -722,9 +722,9 @@ char * CWebServer::GetJSonPage()
 				root["result"][ii]["Chill"]=tempjson["result"][itt]["Chill"];
 			else
 				root["result"][ii]["Chill"]=0;
-			
+
 			ii++;
-		} 
+		}
 	} //if (rtype=="status-temp")
 	else if (rtype=="status-wind")
 	{
@@ -749,7 +749,7 @@ char * CWebServer::GetJSonPage()
 			root["result"][ii]["LastUpdate"]=tempjson["result"][itt]["LastUpdate"];
 
 			ii++;
-		} 
+		}
 	} //if (rtype=="status-wind")
 	else if (rtype=="status-rain")
 	{
@@ -769,7 +769,7 @@ char * CWebServer::GetJSonPage()
 			root["result"][ii]["Name"]=tempjson["result"][itt]["Name"];
 			root["result"][ii]["Rain"]=tempjson["result"][itt]["Rain"];
 			ii++;
-		} 
+		}
 	} //if (rtype=="status-rain")
 	else if (rtype=="status-uv")
 	{
@@ -789,7 +789,7 @@ char * CWebServer::GetJSonPage()
 			root["result"][ii]["Name"]=tempjson["result"][itt]["Name"];
 			root["result"][ii]["UVI"]=tempjson["result"][itt]["UVI"];
 			ii++;
-		} 
+		}
 	} //if (rtype=="status-uv")
 	else if (rtype=="status-baro")
 	{
@@ -809,7 +809,7 @@ char * CWebServer::GetJSonPage()
 			root["result"][ii]["Name"]=tempjson["result"][itt]["Name"];
 			root["result"][ii]["Barometer"]=tempjson["result"][itt]["Barometer"];
 			ii++;
-		} 
+		}
 	} //if (rtype=="status-uv")
 	else if ((rtype=="lightlog")&&(idx!=0))
 	{
@@ -1431,8 +1431,6 @@ char * CWebServer::GetJSonPage()
 			unsigned char mode4=0;
 			unsigned char mode5=0;
 			int port=atoi(sport.c_str());
-			if (port==0)
-				goto exitjson;
 			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433))
 			{
 				//USB
