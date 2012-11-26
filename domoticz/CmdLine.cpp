@@ -129,12 +129,17 @@ bool CCmdLine::IsSwitch(const char *pParam)
       return false;
    }
 
-   // switches always start with '-'
    if (pParam[0]=='-')
    {
       // allow negative numbers as arguments.
       // ie., don't count them as switches
       return (!isdigit(pParam[1]));
+   }
+   else if (pParam[0]=='/')
+   {
+		// allow negative numbers as arguments.
+		// ie., don't count them as switches
+		return (!isdigit(pParam[1]));
    }
    else
    {

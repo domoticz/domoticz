@@ -30,6 +30,8 @@ public:
 	void ClearDomoticzDevices();
 
 	void SetVerboseLevel(eVerboseLevel Level);
+	void SetWebserverPort(std::string Port);
+	std::string GetWebserverPort();
 
 	bool SwitchLight(std::string idx, std::string switchcmd,std::string level);
 	bool SwitchLight(unsigned long long idx, std::string switchcmd, unsigned char level);
@@ -59,6 +61,7 @@ private:
 	std::vector<CDomoticzDeviceBase*> m_devices;
 	eVerboseLevel m_verboselevel;
 	http::server::CWebServer m_webserver;
+	std::string m_webserverport;
 
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;

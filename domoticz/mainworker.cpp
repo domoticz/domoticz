@@ -16,6 +16,7 @@ MainWorker::MainWorker()
 	m_bStartHardware=false;
 	m_hardwareStartCounter=0;
 	m_bStartup=false;
+	m_webserverport="8080";
 }
 
 MainWorker::~MainWorker()
@@ -198,6 +199,16 @@ void MainWorker::SetVerboseLevel(eVerboseLevel Level)
 	m_verboselevel=Level;
 }
 
+void MainWorker::SetWebserverPort(std::string Port)
+{
+	m_webserverport=Port;
+}
+
+std::string MainWorker::GetWebserverPort()
+{
+	return m_webserverport;
+}
+
 bool MainWorker::AddDeviceFromParams(
 	int ID,
 	std::string Name,
@@ -297,7 +308,7 @@ bool MainWorker::Stop()
 bool MainWorker::StartThread()
 {
 	//Start WebServer
-	m_webserver.StartServer(this, "0.0.0.0","8080","www");
+	m_webserver.StartServer(this, "0.0.0.0",m_webserverport,"www");
 
 	//Start Scheduler
 	m_scheduler.StartScheduler(this);
