@@ -1,7 +1,19 @@
-Note:
-------------------
-This is just an example application for c++ users.
-No support etc... it should help you to get started.
+
+Usage: Domoticz -www port -verbose x
+	-www port (for example -www 8080)
+	-verbose x (where x=0 is none, x=1 is debug)
+
+Example:
+./domoticz
+or
+./domoticz -www 8081
+
+Internet Explorer is not supported at the moment, please use another browser like chrome/firefox.
+
+Compiling from source code:
+
+Getting the source code:
+svn checkout svn://svn.code.sf.net/p/domoticz/code/trunk domoticz-code
 
 Requirements:
 
@@ -63,15 +75,7 @@ unpack the project in your homefile
 cd projectfolder
 
 cmake CMakeLists.txt
-make -f Makefile
+make
 
 now you should have the binary application
 
-Usage:
-Usage: domoticz connection settings
-	"connection settings could be one of the below:"
-	"-serial Port (for example /dev/ttyUSB0 or COM1)"
-	"-ip Address Port (for example 192.168.0.1 10001)";
-
-Example:
-./domoticz -ip 192.168.0.1 10001

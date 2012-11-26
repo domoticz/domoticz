@@ -232,7 +232,7 @@ bool MainWorker::AddDeviceFromParams(
 #if defined WIN32
 		sprintf(szSerialPort,"COM%d",Port);
 #else
-		sprintf(szSerialPort,"/dev/ttyUSB%d",port);
+		sprintf(szSerialPort,"/dev/ttyUSB%d",Port);
 #endif
 		pDevice = new RFXComSerial(ID,szSerialPort,38400);
 		break;

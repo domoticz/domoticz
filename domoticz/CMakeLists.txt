@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.6)
 project(domoticz)
 
+# The version number.
+set (domoticz_VERSION_MAJOR 1)
+set (domoticz_VERSION_MINOR 0)
+
 # Macro for setting up precompiled headers. Usage:
 #
 #   add_precompiled_header(target header.h [FORCEINCLUDE])
@@ -128,3 +132,11 @@ set(BOOST_LIBS thread date_time system)
 find_package(Boost COMPONENTS ${BOOST_LIBS} REQUIRED)
 target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY})
 #target_link_libraries(domoticz ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
+
+# build a CPack driven installer package
+include (InstallRequiredSystemLibraries)
+set (CPACK_RESOURCE_FILE_LICENSE  
+     "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
+set (CPACK_PACKAGE_VERSION_MAJOR "${domoticz_VERSION_MAJOR}")
+set (CPACK_PACKAGE_VERSION_MINOR "${domoticz_VERSION_MINOR}")
+include (CPack)

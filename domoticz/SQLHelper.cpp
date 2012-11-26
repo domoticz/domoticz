@@ -137,6 +137,14 @@ const char *sqlCreateHardware =
 "[Mode4] CHAR DEFAULT 0, "
 "[Mode5] CHAR DEFAULT 0);";
 
+const char *sqlCreateUsers =
+"CREATE TABLE IF NOT EXISTS [Users] ("
+"[Active] INTEGER NOT NULL DEFAULT 0, "
+"[Username] VARCHAR(200) NOT NULL, "
+"[Password] VARCHAR(200) NOT NULL, "
+"[Rights] INTEGER DEFAULT 255);";
+
+
 CSQLHelper::CSQLHelper(void)
 {
 	m_LastSwitchID="";
@@ -166,6 +174,7 @@ CSQLHelper::CSQLHelper(void)
 		query(sqlCreateWind_Calendar);
 		query(sqlCreateNotifications);
 		query(sqlCreateHardware);
+		query(sqlCreateUsers);
 	}
 }
 
