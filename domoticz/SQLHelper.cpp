@@ -9,6 +9,7 @@
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
+"[ID] INTEGER PRIMARY KEY, "
 "[HardwareID] INTEGER NOT NULL, "
 "[DeviceID] VARCHAR(25) NOT NULL, "
 "[Unit] INTEGER DEFAULT 0, "
@@ -79,6 +80,7 @@ const char *sqlCreateTempVars =
 
 const char *sqlCreateTimers =
 "CREATE TABLE IF NOT EXISTS [Timers] ("
+"[ID] INTEGER PRIMARY KEY, "
 "[Active] BOOLEAN DEFAULT true, "
 "[DeviceRowID] BIGINT(10) NOT NULL, "
 "[Time] TIME NOT NULL, "
@@ -119,12 +121,14 @@ const char *sqlCreateWind_Calendar =
 
 const char *sqlCreateNotifications =
 "CREATE TABLE IF NOT EXISTS [Notifications] ("
+"[ID] INTEGER PRIMARY KEY, "
 "[DeviceRowID] BIGINT(10) NOT NULL, "
 "[Params] VARCHAR(100), "
 "[LastSend] DATETIME DEFAULT 0);";
 
 const char *sqlCreateHardware =
 "CREATE TABLE IF NOT EXISTS [Hardware] ("
+"[ID] INTEGER PRIMARY KEY, "
 "[Name] VARCHAR(200) NOT NULL, "
 "[Type] INTEGER NOT NULL, "
 "[Address] VARCHAR(200), "
@@ -139,11 +143,11 @@ const char *sqlCreateHardware =
 
 const char *sqlCreateUsers =
 "CREATE TABLE IF NOT EXISTS [Users] ("
+"[ID] INTEGER PRIMARY KEY, "
 "[Active] INTEGER NOT NULL DEFAULT 0, "
 "[Username] VARCHAR(200) NOT NULL, "
 "[Password] VARCHAR(200) NOT NULL, "
 "[Rights] INTEGER DEFAULT 255);";
-
 
 CSQLHelper::CSQLHelper(void)
 {
@@ -246,10 +250,10 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, unsigned char
 
 	char szTmp[1000];
 
-	unsigned long long RowID=0;
+	unsigned long long ulID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ROWID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
+	sprintf(szTmp,"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
 	result=query(szTmp);
 	if (result.size()==0)
 	{
@@ -263,33 +267,33 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, unsigned char
 			nValue,sValue);
 		result=query(szTmp);
 
-		//Get new ROWID
-		sprintf(szTmp,"SELECT ROWID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
+		//Get new ID
+		sprintf(szTmp,"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
 		result=query(szTmp);
 		if (result.size()==0)
 		{
-			std::cerr << "Serious database error, getting ROWID from DeviceStatus!" << std::endl;
+			std::cerr << "Serious database error, getting ID from DeviceStatus!" << std::endl;
 			return;
 		}
 		std::stringstream s_str( result[0][0] );
-		s_str >> RowID;
+		s_str >> ulID;
 	}
 	else
 	{
 		//Update
 		std::stringstream s_str( result[0][0] );
-		s_str >> RowID;
+		s_str >> ulID;
 
 		time_t now = time(0);
 		struct tm *ltime=localtime(&now);
 
 		sprintf(szTmp,
 			"UPDATE DeviceStatus SET SignalLevel=%d, BatteryLevel=%d, nValue=%d, sValue='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' "
-			"WHERE (ROWID = %llu)",
+			"WHERE (ID = %llu)",
 			signallevel,batterylevel,
 			nValue,sValue,
 			ltime->tm_year+1900,ltime->tm_mon+1, ltime->tm_mday, ltime->tm_hour, ltime->tm_min, ltime->tm_sec,
-			RowID);
+			ulID);
 		result = query(szTmp);
 	}
 	switch (devType)
@@ -302,11 +306,11 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, unsigned char
 	case pTypeLighting6:
 		//Add Lighting log
 		m_LastSwitchID=ID;
-		m_LastSwitchRowID=RowID;
+		m_LastSwitchRowID=ulID;
 		sprintf(szTmp,
 			"INSERT INTO LightingLog (DeviceRowID, nValue, sValue) "
 			"VALUES (%llu, %d, '%s')",
-			RowID,
+			ulID,
 			nValue,sValue);
 		result=query(szTmp);
 
@@ -319,11 +323,11 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, unsigned char
 		if ((lstatus=="On")||(lstatus=="Group On")||(lstatus=="All On"))
 		{
 			std::string notifyparams;
-			if (GetNotification(RowID,notifyparams))
+			if (GetNotification(ulID,notifyparams))
 			{
 				sprintf(szTmp,
-					"SELECT Name FROM DeviceStatus WHERE (ROWID = %llu)",
-					RowID);
+					"SELECT Name FROM DeviceStatus WHERE (ID = %llu)",
+					ulID);
 				result = query(szTmp);
 				if (result.size()>0)
 				{
@@ -331,14 +335,14 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, unsigned char
 					std::string msg=sd[0]+" pressed";
 					SendNotification("", m_urlencoder.URLEncode(msg));
 
-					TouchNotification(RowID);
+					TouchNotification(ulID);
 				}
 			}
 		}
 	}
 }
 
-void CSQLHelper::TouchNotification(unsigned long long RowID)
+void CSQLHelper::TouchNotification(unsigned long long ID)
 {
 	char szTmp[300];
 	char szDate[100];
@@ -348,7 +352,7 @@ void CSQLHelper::TouchNotification(unsigned long long RowID)
 
 	//Set LastSend date
 	sprintf(szTmp,
-		"UPDATE Notifications SET LastSend='%s' WHERE (DeviceRowID = %llu)",szDate,RowID);
+		"UPDATE Notifications SET LastSend='%s' WHERE (DeviceRowID = %llu)",szDate,ID);
 	query(szTmp);
 }
 
@@ -417,10 +421,10 @@ void CSQLHelper::UpdatePreferencesVar(const char *Key, int nValue, const char* s
 
 	char szTmp[1000];
 
-	unsigned long long RowID=0;
+	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ROWID FROM Preferences WHERE (Key='%s')",Key);
+	sprintf(szTmp,"SELECT ID FROM Preferences WHERE (Key='%s')",Key);
 	result=query(szTmp);
 	if (result.size()==0)
 	{
@@ -436,17 +440,17 @@ void CSQLHelper::UpdatePreferencesVar(const char *Key, int nValue, const char* s
 	{
 		//Update
 		std::stringstream s_str( result[0][0] );
-		s_str >> RowID;
+		s_str >> ID;
 
 		time_t now = time(0);
 		struct tm *ltime=localtime(&now);
 
 		sprintf(szTmp,
 			"UPDATE Preferences SET Key='%s', nValue=%d, sValue='%s' "
-			"WHERE (ROWID = %llu)",
+			"WHERE (ID = %llu)",
 			Key,
 			nValue,sValue,
-			RowID);
+			ID);
 		result = query(szTmp);
 	}
 }
@@ -479,7 +483,7 @@ bool CSQLHelper::AddEditNotification(const std::string Idx, const std::string Pa
 	std::stringstream szQuery;
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT ROWID FROM Notifications WHERE (DeviceRowID==" << Idx << ")";
+	szQuery << "SELECT ID FROM Notifications WHERE (DeviceRowID==" << Idx << ")";
 	result=query(szQuery.str());
 	if (result.size()==0)
 	{
@@ -573,10 +577,10 @@ void CSQLHelper::UpdateTempVar(const char *Key, const char* sValue)
 
 	char szTmp[1000];
 
-	unsigned long long RowID=0;
+	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ROWID FROM TempVars WHERE (Key='%s')",Key);
+	sprintf(szTmp,"SELECT ID FROM TempVars WHERE (Key='%s')",Key);
 	result=query(szTmp);
 	if (result.size()==0)
 	{
@@ -590,8 +594,8 @@ void CSQLHelper::UpdateTempVar(const char *Key, const char* sValue)
 	{
 		//Update
 		std::stringstream s_str( result[0][0] );
-		s_str >> RowID;
-		sprintf(szTmp,"UPDATE TempVars SET sValue='%s' WHERE (ROWID = %llu)",sValue,RowID);
+		s_str >> ID;
+		sprintf(szTmp,"UPDATE TempVars SET sValue='%s' WHERE (ID = %llu)",sValue,ID);
 		result = query(szTmp);
 	}
 }
@@ -642,10 +646,10 @@ void CSQLHelper::UpdateTemperatureLog()
 	time_t now = time(NULL);
 	struct tm* tm1 = localtime(&now);
 
-	unsigned long long RowID=0;
+	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ROWID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d)",
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d)",
 		pTypeTEMP,
 		pTypeHUM,
 		pTypeTEMP_HUM,
@@ -662,9 +666,9 @@ void CSQLHelper::UpdateTemperatureLog()
 		{
 			std::vector<std::string> sd=*itt;
 
-			unsigned long long RowID;
+			unsigned long long ID;
 			std::stringstream s_str( sd[0] );
-			s_str >> RowID;
+			s_str >> ID;
 
 			unsigned char dType=atoi(sd[1].c_str());
 			unsigned char dSubType=atoi(sd[2].c_str());
@@ -717,7 +721,7 @@ void CSQLHelper::UpdateTemperatureLog()
 			sprintf(szTmp,
 				"INSERT INTO Temperature (DeviceRowID, Temperature, Chill, Humidity, Barometer) "
 				"VALUES (%llu, %.2f, %.2f, %d, %d)",
-				RowID,
+				ID,
 				temp,
 				chill,
 				humidity,
@@ -757,10 +761,10 @@ void CSQLHelper::UpdateRainLog()
 	time_t now = time(NULL);
 	struct tm* tm1 = localtime(&now);
 
-	unsigned long long RowID=0;
+	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ROWID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d)",
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d)",
 		pTypeRAIN
 		);
 	result=query(szTmp);
@@ -771,9 +775,9 @@ void CSQLHelper::UpdateRainLog()
 		{
 			std::vector<std::string> sd=*itt;
 
-			unsigned long long RowID;
+			unsigned long long ID;
 			std::stringstream s_str( sd[0] );
-			s_str >> RowID;
+			s_str >> ID;
 			unsigned char dType=atoi(sd[1].c_str());
 			unsigned char dSubType=atoi(sd[2].c_str());
 			unsigned char nValue=atoi(sd[3].c_str());
@@ -794,7 +798,7 @@ void CSQLHelper::UpdateRainLog()
 			sprintf(szTmp,
 				"INSERT INTO Rain (DeviceRowID, Total, Rate) "
 				"VALUES (%llu, %.2f, %d)",
-				RowID,
+				ID,
 				total,
 				rate
 				);
@@ -830,10 +834,10 @@ void CSQLHelper::UpdateWindLog()
 	time_t now = time(NULL);
 	struct tm* tm1 = localtime(&now);
 
-	unsigned long long RowID=0;
+	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ROWID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d)", pTypeWIND);
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d)", pTypeWIND);
 	result=query(szTmp);
 	if (result.size()>0)
 	{
@@ -842,9 +846,9 @@ void CSQLHelper::UpdateWindLog()
 		{
 			std::vector<std::string> sd=*itt;
 
-			unsigned long long RowID;
+			unsigned long long ID;
 			std::stringstream s_str( sd[0] );
-			s_str >> RowID;
+			s_str >> ID;
 			unsigned char dType=atoi(sd[1].c_str());
 			unsigned char dSubType=atoi(sd[2].c_str());
 			unsigned char nValue=atoi(sd[3].c_str());
@@ -863,7 +867,7 @@ void CSQLHelper::UpdateWindLog()
 			sprintf(szTmp,
 				"INSERT INTO Wind (DeviceRowID, Direction, Speed, Gust) "
 				"VALUES (%llu, %.2f, %d, %d)",
-				RowID,
+				ID,
 				direction,
 				speed,
 				gust
@@ -900,10 +904,10 @@ void CSQLHelper::UpdateUVLog()
 	time_t now = time(NULL);
 	struct tm* tm1 = localtime(&now);
 
-	unsigned long long RowID=0;
+	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ROWID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d)", pTypeUV);
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d)", pTypeUV);
 	result=query(szTmp);
 	if (result.size()>0)
 	{
@@ -912,9 +916,9 @@ void CSQLHelper::UpdateUVLog()
 		{
 			std::vector<std::string> sd=*itt;
 
-			unsigned long long RowID;
+			unsigned long long ID;
 			std::stringstream s_str( sd[0] );
-			s_str >> RowID;
+			s_str >> ID;
 			unsigned char dType=atoi(sd[1].c_str());
 			unsigned char dSubType=atoi(sd[2].c_str());
 			unsigned char nValue=atoi(sd[3].c_str());
@@ -931,7 +935,7 @@ void CSQLHelper::UpdateUVLog()
 			sprintf(szTmp,
 				"INSERT INTO UV (DeviceRowID, Level) "
 				"VALUES (%llu, %.1f)",
-				RowID,
+				ID,
 				level
 				);
 			std::vector<std::vector<std::string> > result2;
@@ -1001,12 +1005,12 @@ void CSQLHelper::AddCalendarTemperature()
 	for (itt=resultdevices.begin(); itt!=resultdevices.end(); ++itt)
 	{
 		std::vector<std::string> sddev=*itt;
-		unsigned long long RowID;
+		unsigned long long ID;
 		std::stringstream s_str( sddev[0] );
-		s_str >> RowID;
+		s_str >> ID;
 
 		sprintf(szTmp,"SELECT MIN(Temperature), MAX(Temperature), MIN(Chill), MAX(Chill), MAX(Humidity), MAX(Barometer) FROM Temperature WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s')",
-			RowID,
+			ID,
 			szDateStart,
 			szDateEnd
 			);
@@ -1026,7 +1030,7 @@ void CSQLHelper::AddCalendarTemperature()
 			sprintf(szTmp,
 				"INSERT INTO Temperature_Calendar (DeviceRowID, Temp_Min, Temp_Max, Chill_Min, Chill_Max, Humidity, Barometer, Date) "
 				"VALUES (%llu, %.2f, %.2f, %.2f, %.2f, %d, %d, '%s')",
-				RowID,
+				ID,
 				temp_min,
 				temp_max,
 				chill_min,
@@ -1082,12 +1086,12 @@ void CSQLHelper::AddCalendarUpdateRain()
 	for (itt=resultdevices.begin(); itt!=resultdevices.end(); ++itt)
 	{
 		std::vector<std::string> sddev=*itt;
-		unsigned long long RowID;
+		unsigned long long ID;
 		std::stringstream s_str( sddev[0] );
-		s_str >> RowID;
+		s_str >> ID;
 
 		sprintf(szTmp,"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s')",
-			RowID,
+			ID,
 			szDateStart,
 			szDateEnd
 			);
@@ -1106,7 +1110,7 @@ void CSQLHelper::AddCalendarUpdateRain()
 			sprintf(szTmp,
 				"INSERT INTO Rain_Calendar (DeviceRowID, Total, Rate, Date) "
 				"VALUES (%llu, %.2f, %d, '%s')",
-				RowID,
+				ID,
 				total_real,
 				rate,
 				szDateStart
@@ -1157,12 +1161,12 @@ void CSQLHelper::AddCalendarUpdateWind()
 	for (itt=resultdevices.begin(); itt!=resultdevices.end(); ++itt)
 	{
 		std::vector<std::string> sddev=*itt;
-		unsigned long long RowID;
+		unsigned long long ID;
 		std::stringstream s_str( sddev[0] );
-		s_str >> RowID;
+		s_str >> ID;
 
 		sprintf(szTmp,"SELECT AVG(Direction), MIN(Speed), MAX(Speed), MIN(Gust), MAX(Gust) FROM Wind WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s')",
-			RowID,
+			ID,
 			szDateStart,
 			szDateEnd
 			);
@@ -1181,7 +1185,7 @@ void CSQLHelper::AddCalendarUpdateWind()
 			sprintf(szTmp,
 				"INSERT INTO Wind_Calendar (DeviceRowID, Direction, Speed_Min, Speed_Max, Gust_Min, Gust_Max, Date) "
 				"VALUES (%llu, %.2f, %d, %d, %d, %d, '%s')",
-				RowID,
+				ID,
 				Direction,
 				speed_min,
 				speed_max,
@@ -1235,12 +1239,12 @@ void CSQLHelper::AddCalendarUpdateUV()
 	for (itt=resultdevices.begin(); itt!=resultdevices.end(); ++itt)
 	{
 		std::vector<std::string> sddev=*itt;
-		unsigned long long RowID;
+		unsigned long long ID;
 		std::stringstream s_str( sddev[0] );
-		s_str >> RowID;
+		s_str >> ID;
 
 		sprintf(szTmp,"SELECT MAX(Level) FROM UV WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s')",
-			RowID,
+			ID,
 			szDateStart,
 			szDateEnd
 			);
@@ -1255,7 +1259,7 @@ void CSQLHelper::AddCalendarUpdateUV()
 			sprintf(szTmp,
 				"INSERT INTO UV_Calendar (DeviceRowID, Level, Date) "
 				"VALUES (%llu, %.2f, '%s')",
-				RowID,
+				ID,
 				level,
 				szDateStart
 				);
@@ -1268,11 +1272,11 @@ void CSQLHelper::DeleteHardware(const std::string idx)
 {
 	std::vector<std::vector<std::string> > result;
 	char szTmp[1000];
-	sprintf(szTmp,"DELETE FROM Hardware WHERE (ROWID == %s)",idx.c_str());
+	sprintf(szTmp,"DELETE FROM Hardware WHERE (ID == %s)",idx.c_str());
 	result=query(szTmp);
 	//also delete all records in other tables
 
-	sprintf(szTmp,"SELECT ROWID FROM DeviceStatus WHERE (HardwareID == %s)",idx.c_str());
+	sprintf(szTmp,"SELECT ID FROM DeviceStatus WHERE (HardwareID == %s)",idx.c_str());
 	result=query(szTmp);
 	if (result.size()>0)
 	{

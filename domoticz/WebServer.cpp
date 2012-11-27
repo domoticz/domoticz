@@ -224,7 +224,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 	std::map<int,std::string> _hardwareNames;
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT ROWID, Name FROM Hardware";
+	szQuery << "SELECT ID, Name FROM Hardware";
 	result=m_pMain->m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -249,7 +249,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT ROWID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID FROM DeviceStatus ORDER BY " << szOrderBy;
+	szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID FROM DeviceStatus ORDER BY " << szOrderBy;
 	result=m_pMain->m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -658,7 +658,7 @@ char * CWebServer::GetJSonPage()
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT ROWID, Name, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware ORDER BY ROWID ASC";
+		szQuery << "SELECT ID, Name, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware ORDER BY ID ASC";
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -703,7 +703,7 @@ char * CWebServer::GetJSonPage()
 
 		Json::Value tempjson;
 
-		GetJSonDevices(tempjson, "", "temp","ROWID");
+		GetJSonDevices(tempjson, "", "temp","ID");
 
 		Json::Value::const_iterator itt;
 		int ii=0;
@@ -733,7 +733,7 @@ char * CWebServer::GetJSonPage()
 
 		Json::Value tempjson;
 
-		GetJSonDevices(tempjson, "", "wind","ROWID");
+		GetJSonDevices(tempjson, "", "wind","ID");
 
 		Json::Value::const_iterator itt;
 		int ii=0;
@@ -758,7 +758,7 @@ char * CWebServer::GetJSonPage()
 
 		Json::Value tempjson;
 
-		GetJSonDevices(tempjson, "", "rain","ROWID");
+		GetJSonDevices(tempjson, "", "rain","ID");
 
 		Json::Value::const_iterator itt;
 		int ii=0;
@@ -778,7 +778,7 @@ char * CWebServer::GetJSonPage()
 
 		Json::Value tempjson;
 
-		GetJSonDevices(tempjson, "", "uv","ROWID");
+		GetJSonDevices(tempjson, "", "uv","ID");
 
 		Json::Value::const_iterator itt;
 		int ii=0;
@@ -798,7 +798,7 @@ char * CWebServer::GetJSonPage()
 
 		Json::Value tempjson;
 
-		GetJSonDevices(tempjson, "", "baro","ROWID");
+		GetJSonDevices(tempjson, "", "baro","ID");
 
 		Json::Value::const_iterator itt;
 		int ii=0;
@@ -816,7 +816,7 @@ char * CWebServer::GetJSonPage()
 		//First get Device Type/SubType
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT Type, SubType FROM DeviceStatus WHERE (ROWID == " << idx << ")";
+		szQuery << "SELECT Type, SubType FROM DeviceStatus WHERE (ID == " << idx << ")";
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()<1)
 			goto exitjson;
@@ -839,7 +839,7 @@ char * CWebServer::GetJSonPage()
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT ROWID, nValue, sValue, Date FROM LightingLog WHERE (DeviceRowID==" << idx << ") ORDER BY Date DESC";
+		szQuery << "SELECT ID, nValue, sValue, Date FROM LightingLog WHERE (DeviceRowID==" << idx << ") ORDER BY Date DESC";
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -889,7 +889,7 @@ char * CWebServer::GetJSonPage()
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT ROWID, Active, Time, Type, Cmd, Level, Days FROM Timers WHERE (DeviceRowID==" << idx << ") ORDER BY ROWID";
+		szQuery << "SELECT ID, Active, Time, Type, Cmd, Level, Days FROM Timers WHERE (DeviceRowID==" << idx << ") ORDER BY ID";
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -973,7 +973,7 @@ char * CWebServer::GetJSonPage()
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT Type, SubType FROM DeviceStatus WHERE (ROWID == " << idx << ")";
+		szQuery << "SELECT Type, SubType FROM DeviceStatus WHERE (ID == " << idx << ")";
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()<1)
 			goto exitjson;
@@ -1468,7 +1468,7 @@ char * CWebServer::GetJSonPage()
 				);
 			result=m_pMain->m_sql.query(szTmp);
 			//add the device for real in our system
-			strcpy(szTmp,"SELECT MAX(ROWID) FROM Hardware");
+			strcpy(szTmp,"SELECT MAX(ID) FROM Hardware");
 			result=m_pMain->m_sql.query(szTmp);
 			if (result.size()>0)
 			{
@@ -1523,7 +1523,7 @@ char * CWebServer::GetJSonPage()
 			root["status"]="OK";
 			root["title"]="UpdateHardware";
 			sprintf(szTmp,
-				"UPDATE Hardware SET Name='%s', Type=%d, Address='%s', Port=%d, Username='%s', Password='%s', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d WHERE (ROWID == %s)",
+				"UPDATE Hardware SET Name='%s', Type=%d, Address='%s', Port=%d, Username='%s', Password='%s', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d WHERE (ID == %s)",
 				name.c_str(),
 				htype,
 				address.c_str(),
@@ -1617,7 +1617,7 @@ char * CWebServer::GetJSonPage()
 			root["status"]="OK";
 			root["title"]="AddTimer";
 			sprintf(szTmp,
-				"UPDATE Timers SET Active=%d, Time='%s', Type=%d, Cmd=%d, Level=%d, Days=%d WHERE (ROWID == %s)",
+				"UPDATE Timers SET Active=%d, Time='%s', Type=%d, Cmd=%d, Level=%d, Days=%d WHERE (ID == %s)",
 				(active=="true")?1:0,
 				szData,
 				iTimerType,
@@ -1635,7 +1635,7 @@ char * CWebServer::GetJSonPage()
 			if (idx=="")
 				goto exitjson;
 			sprintf(szTmp,
-				"DELETE FROM Timers WHERE (ROWID == %s)",
+				"DELETE FROM Timers WHERE (ID == %s)",
 				idx.c_str()
 				);
 			result=m_pMain->m_sql.query(szTmp);
@@ -1677,7 +1677,7 @@ char * CWebServer::GetJSonPage()
 				//check if used
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "SELECT Name, Used FROM DeviceStatus WHERE (ROWID==" << m_pMain->m_sql.m_LastSwitchRowID << ")";
+				szQuery << "SELECT Name, Used FROM DeviceStatus WHERE (ID==" << m_pMain->m_sql.m_LastSwitchRowID << ")";
 				result=m_pMain->m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
@@ -1699,7 +1699,7 @@ char * CWebServer::GetJSonPage()
 			int isfavorite=atoi(sisfavorite.c_str());
 			szQuery.clear();
 			szQuery.str("");
-			szQuery << "UPDATE DeviceStatus SET Favorite=" << isfavorite << " WHERE (ROWID == " << idx << ")";
+			szQuery << "UPDATE DeviceStatus SET Favorite=" << isfavorite << " WHERE (ID == " << idx << ")";
 			result=m_pMain->m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
@@ -1757,9 +1757,9 @@ char * CWebServer::GetJSonPage()
 		szQuery.clear();
 		szQuery.str("");
 		if (switchtype==-1)
-			szQuery << "UPDATE DeviceStatus SET Used=" << used << ", Name='" << name << "' WHERE (ROWID == " << idx << ")";
+			szQuery << "UPDATE DeviceStatus SET Used=" << used << ", Name='" << name << "' WHERE (ID == " << idx << ")";
 		else
-			szQuery << "UPDATE DeviceStatus SET Used=" << used << ", Name='" << name << "', SwitchType=" << switchtype << " WHERE (ROWID == " << idx << ")";
+			szQuery << "UPDATE DeviceStatus SET Used=" << used << ", Name='" << name << "', SwitchType=" << switchtype << " WHERE (ID == " << idx << ")";
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{

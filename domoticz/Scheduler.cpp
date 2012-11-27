@@ -51,7 +51,7 @@ void CScheduler::ReloadSchedules()
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 
-	szQuery << "SELECT DeviceRowID, Time, Type, Cmd, Level, Days FROM Timers WHERE (Active == 1) ORDER BY ROWID";
+	szQuery << "SELECT DeviceRowID, Time, Type, Cmd, Level, Days FROM Timers WHERE (Active == 1) ORDER BY ID";
 	result=m_pMain->m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{

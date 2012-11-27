@@ -54,6 +54,6 @@ private:
 	void AddCalendarUpdateRain();
 	void AddCalendarUpdateWind();
 	void AddCalendarUpdateUV();
-	void TouchNotification(unsigned long long RowID);
+	void TouchNotification(unsigned long long ID);
 };
 

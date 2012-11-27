@@ -269,7 +269,7 @@ bool MainWorker::Start()
 	//Add Hardware devices
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
-	szQuery << "SELECT ROWID, Name, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware ORDER BY ROWID ASC";
+	szQuery << "SELECT ID, Name, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware ORDER BY ID ASC";
 	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -4747,7 +4747,7 @@ bool MainWorker::SwitchLight(unsigned long long idx, std::string switchcmd, unsi
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,nValue,SwitchType FROM DeviceStatus WHERE (ROWID == " << idx << ")";
+	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,nValue,SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return false;
@@ -4853,9 +4853,9 @@ bool MainWorker::SwitchLight(unsigned long long idx, std::string switchcmd, unsi
 
 bool MainWorker::SwitchLight(std::string idx, std::string switchcmd,std::string level)
 {
-	unsigned long long RowID;
+	unsigned long long ID;
 	std::stringstream s_str( idx );
-	s_str >> RowID;
+	s_str >> ID;
 
-	return SwitchLight(RowID,switchcmd,atoi(level.c_str()));
+	return SwitchLight(ID,switchcmd,atoi(level.c_str()));
 }
