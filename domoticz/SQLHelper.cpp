@@ -645,13 +645,14 @@ void CSQLHelper::UpdateTemperatureLog()
 	unsigned long long RowID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ROWID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d)",
+	sprintf(szTmp,"SELECT ROWID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d)",
 		pTypeTEMP,
 		pTypeHUM,
 		pTypeTEMP_HUM,
 		pTypeTEMP_HUM_BARO,
 		pTypeUV,
-		pTypeWIND
+		pTypeWIND,
+		pTypeRFXSensor
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -705,6 +706,11 @@ void CSQLHelper::UpdateTemperatureLog()
 			case pTypeWIND:
 				temp=(float)atof(splitresults[4].c_str());
 				chill=(float)atof(splitresults[5].c_str());
+				break;
+			case pTypeRFXSensor:
+				if (dSubType!=sTypeRFXSensorTemp)
+					continue;
+				temp=(float)atof(splitresults[0].c_str());
 				break;
 			}
 			//insert record

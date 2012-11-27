@@ -1000,7 +1000,14 @@ char * CWebServer::GetJSonPage()
 						std::vector<std::string> sd=*itt;
 
 						root["result"][ii]["d"]=sd[4].substr(0,16);
-						if ((dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeUV))
+						if (
+							(dType==pTypeTEMP)||
+							(dType==pTypeTEMP_HUM)||
+							(dType==pTypeTEMP_HUM_BARO)||
+							(dType==pTypeWIND)||
+							(dType==pTypeUV)||
+							((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))
+							)
 						{
 							root["result"][ii]["te"]=sd[0];
 						}

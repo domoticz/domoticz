@@ -2270,7 +2270,7 @@ void MainWorker::decode_UNDECODED(const int HwdID, const tRBUF *pResponse)
 	WriteMessage(" ");
 }
 
-//not in dbase yet
+
 void MainWorker::decode_RecXmitMessage(const int HwdID, const tRBUF *pResponse)
 {
 	unsigned char devType=pTypeRecXmitMessage;
