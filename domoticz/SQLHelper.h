@@ -37,6 +37,8 @@ public:
 	void Schedule5Minute();
 	void ScheduleDay();
 
+	void DeleteHardware(const std::string idx);
+
 	std::vector<std::vector<std::string> > query(const std::string szQuery);
 
 	std::string m_LastSwitchID;	//for learning command

@@ -320,6 +320,8 @@ bool MainWorker::StartThread()
 	//Start Scheduler
 	m_scheduler.StartScheduler(this);
 
+	//m_sql.DeleteHardware("999");
+
 #ifdef PARSE_RFXCOM_DEVICE_LOG
 	std::vector<std::string> _lines;
 	std::ifstream myfile ("C:\\RFXtrxLog.txt");

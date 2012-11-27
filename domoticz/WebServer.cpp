@@ -1543,47 +1543,10 @@ char * CWebServer::GetJSonPage()
 			std::string idx=m_pWebEm->FindValue("idx");
 			if (idx=="")
 				goto exitjson;
-			sprintf(szTmp,"DELETE FROM Hardware WHERE (ROWID == %s)",idx.c_str());
-			result=m_pMain->m_sql.query(szTmp);
-			//also delete all records in other tables
+			root["status"]="OK";
+			root["title"]="DeleteHardware";
 
-			sprintf(szTmp,"SELECT ROWID FROM DeviceStatus WHERE (HardwareID == %s)",idx.c_str());
-			result=m_pMain->m_sql.query(szTmp);
-			if (result.size()>0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt=result.begin(); itt!=result.end(); ++itt)
-				{
-					std::vector<std::string> sd=*itt;
-
-					sprintf(szTmp,"DELETE FROM LightingLog WHERE (DeviceRowID == %s)",sd[0].c_str());
-					m_pMain->m_sql.query(szTmp);
-					sprintf(szTmp,"DELETE FROM Notifications WHERE (DeviceRowID == %s)",sd[0].c_str());
-					m_pMain->m_sql.query(szTmp);
-					sprintf(szTmp,"DELETE FROM Rain WHERE (DeviceRowID == %s)",sd[0].c_str());
-					m_pMain->m_sql.query(szTmp);
-					sprintf(szTmp,"DELETE FROM Rain_Calendar WHERE (DeviceRowID == %s)",sd[0].c_str());
-					m_pMain->m_sql.query(szTmp);
-					sprintf(szTmp,"DELETE FROM Temperature WHERE (DeviceRowID == %s)",sd[0].c_str());
-					m_pMain->m_sql.query(szTmp);
-					sprintf(szTmp,"DELETE FROM Temperature_Calendar WHERE (DeviceRowID == %s)",sd[0].c_str());
-					m_pMain->m_sql.query(szTmp);
-					sprintf(szTmp,"DELETE FROM Timers WHERE (DeviceRowID == %s)",sd[0].c_str());
-					m_pMain->m_sql.query(szTmp);
-					sprintf(szTmp,"DELETE FROM UV WHERE (DeviceRowID == %s)",sd[0].c_str());
-					m_pMain->m_sql.query(szTmp);
-					sprintf(szTmp,"DELETE FROM UV_Calendar WHERE (DeviceRowID == %s)",sd[0].c_str());
-					m_pMain->m_sql.query(szTmp);
-					sprintf(szTmp,"DELETE FROM Wind WHERE (DeviceRowID == %s)",sd[0].c_str());
-					m_pMain->m_sql.query(szTmp);
-					sprintf(szTmp,"DELETE FROM Wind_Calendar WHERE (DeviceRowID == %s)",sd[0].c_str());
-					m_pMain->m_sql.query(szTmp);
-				}
-			}
-			//and now delete all records in the DeviceStatus table itself
-			sprintf(szTmp,"DELETE FROM DeviceStatus WHERE (HardwareID == %s)",idx.c_str());
-			result=m_pMain->m_sql.query(szTmp);
-
+			m_pMain->m_sql.DeleteHardware(idx);
 			m_pMain->RemoveDomoticzDevice(atoi(idx.c_str()));
 		}
 		else if (cparam=="addtimer")
