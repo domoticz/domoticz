@@ -42,6 +42,8 @@ public:
 	bool HasNotifications(const unsigned long long DevIdx);
 	bool HasNotifications(const std::string DevIdx);
 
+	bool CheckAndHandleTempHumidityNotification(const int HardwareID, const std::string ID, unsigned char unit, unsigned char devType, unsigned char subType, float temp, int humidity, bool bHaveTemp, bool bHaveHumidity);
+
 	bool HasTimers(const unsigned long long Idx);
 	bool HasTimers(const std::string Idx);
 

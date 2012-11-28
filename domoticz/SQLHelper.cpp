@@ -459,6 +459,104 @@ bool CSQLHelper::GetPreferencesVar(const char *Key, int &nValue, std::string &sV
 	return true;
 }
 
+bool CSQLHelper::CheckAndHandleTempHumidityNotification(const int HardwareID, const std::string ID, unsigned char unit, unsigned char devType, unsigned char subType, float temp, int humidity, bool bHaveTemp, bool bHaveHumidity)
+{
+	if (!m_dbase)
+		return false;
+
+	char szTmp[1000];
+
+	unsigned long long ulID=0;
+
+	std::vector<std::vector<std::string> > result;
+	sprintf(szTmp,"SELECT ID, Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID.c_str(), unit, devType, subType);
+	result=query(szTmp);
+	if (result.size()==0)
+		return false;
+	std::stringstream s_str( result[0][0] );
+	s_str >> ulID;
+	std::string devicename=result[0][1];
+
+	std::vector<_tNotification> notifications=GetNotifications(ulID);
+	if (notifications.size()==0)
+		return false;
+
+	time_t atime=time(NULL);
+
+	//check if not send 12 hours ago, and if applicable
+
+	atime-=(12*3600);
+	std::string msg="";
+
+	std::vector<_tNotification>::const_iterator itt;
+	for (itt=notifications.begin(); itt!=notifications.end(); ++itt)
+	{
+		if (atime>=itt->LastSend)
+		{
+			std::vector<std::string> splitresults;
+			StringSplit(itt->Params, ";", splitresults);
+			if (splitresults.size()<3)
+				continue; //impossible
+			std::string ntype=splitresults[0];
+			bool bWhenIsGreater = (splitresults[1]==">");
+			float svalue=atof(splitresults[2].c_str());
+
+			bool bSendNotification=false;
+
+			if ((ntype=="T")&&(bHaveTemp))
+			{
+				//temperature
+				if (bWhenIsGreater)
+				{
+					if (temp>=svalue)
+					{
+						bSendNotification=true;
+						sprintf(szTmp,"%s temperature is %.1f degrees", devicename.c_str(), temp);
+						msg=szTmp;
+					}
+				}
+				else
+				{
+					if (temp<=svalue)
+					{
+						bSendNotification=true;
+						sprintf(szTmp,"%s temperature is %.1f degrees", devicename.c_str(), temp);
+						msg=szTmp;
+					}
+				}
+			}
+			else if ((ntype=="H")&&(bHaveHumidity))
+			{
+				//humanity
+				if (bWhenIsGreater)
+				{
+					if (humidity>=svalue)
+					{
+						bSendNotification=true;
+						sprintf(szTmp,"%s Humidity is %.1f %%", devicename.c_str(), temp);
+						msg=szTmp;
+					}
+				}
+				else
+				{
+					if (humidity<=svalue)
+					{
+						bSendNotification=true;
+						sprintf(szTmp,"%s Humidity is %.1f %%", devicename.c_str(), temp);
+						msg=szTmp;
+					}
+				}
+			}
+			if (bSendNotification)
+			{
+				SendNotification("", m_urlencoder.URLEncode(msg));
+				TouchNotification(itt->ID);
+			}
+		}
+	}
+	return true;
+}
+
 void CSQLHelper::TouchNotification(unsigned long long ID)
 {
 	char szTmp[300];
@@ -541,10 +639,13 @@ std::vector<_tNotification> CSQLHelper::GetNotifications(const unsigned long lon
 	std::stringstream szQuery;
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT ID, Params FROM Notifications WHERE (DeviceRowID==" << DevIdx << ")";
+	szQuery << "SELECT ID, Params, LastSend FROM Notifications WHERE (DeviceRowID==" << DevIdx << ")";
 	result=query(szQuery.str());
 	if (result.size()==0)
 		return ret;
+
+	time_t mtime=time(NULL);
+	struct tm *atime=localtime(&mtime);
 
 	std::vector<std::vector<std::string> >::const_iterator itt;
 	for (itt=result.begin(); itt!=result.end(); ++itt)
@@ -556,6 +657,25 @@ std::vector<_tNotification> CSQLHelper::GetNotifications(const unsigned long lon
 		s_str >> notification.ID;
 
 		notification.Params=sd[1];
+
+		std::string stime=sd[2];
+		if (stime=="0")
+		{
+			notification.LastSend=0;
+		}
+		else
+		{
+			struct tm ntime;
+			ntime.tm_isdst=atime->tm_isdst;
+			ntime.tm_year=atoi(stime.substr(0,4).c_str())-1900;
+			ntime.tm_mon=atoi(stime.substr(5,2).c_str())-1;
+			ntime.tm_mday=atoi(stime.substr(8,2).c_str());
+			ntime.tm_hour=atoi(stime.substr(11,2).c_str());
+			ntime.tm_min=atoi(stime.substr(14,2).c_str());
+			ntime.tm_sec=atoi(stime.substr(17,2).c_str());
+			notification.LastSend=mktime(&ntime);
+		}
+
 		ret.push_back(notification);
 	}
 	return ret;

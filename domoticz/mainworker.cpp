@@ -1165,6 +1165,8 @@ void MainWorker::decode_Wind(const int HwdID, const tRBUF *pResponse)
 	sprintf(szTmp,"%.2f;%s;%d;%d;%.1f;%.1f",dDirection,strDirection.c_str(),intSpeed,intGust,temp,chill);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
 
+	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, 0, true, false);
+
 	if (m_verboselevel == EVBL_ALL)
 	{
 		switch (pResponse->WIND.subtype)
@@ -1253,6 +1255,8 @@ void MainWorker::decode_Temp(const int HwdID, const tRBUF *pResponse)
 	sprintf(szTmp,"%.1f",temp);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
 
+	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, 0, true, false);
+
 	if (m_verboselevel == EVBL_ALL)
 	{
 		switch (pResponse->TEMP.subtype)
@@ -1338,6 +1342,8 @@ void MainWorker::decode_Hum(const int HwdID, const tRBUF *pResponse)
 
 	sprintf(szTmp,"%d",pResponse->HUM.humidity_status);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,humidity,szTmp);
+
+	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, 0, humidity, false, true);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -1448,6 +1454,8 @@ void MainWorker::decode_TempHum(const int HwdID, const tRBUF *pResponse)
 
 	sprintf(szTmp,"%.1f;%d;%d",temp,Humidity,HumidityStatus);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
+
+	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, Humidity, true, true);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -1575,6 +1583,8 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const tRBUF *pResponse)
 	sprintf(szTmp,"%.1f;%d;%d;%d;%d",temp,Humidity,HumidityStatus, barometer,forcast);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
 
+	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, Humidity, true, true);
+
 	if (m_verboselevel == EVBL_ALL)
 	{
 		switch (pResponse->TEMP_HUM_BARO.subtype)
@@ -1687,6 +1697,8 @@ void MainWorker::decode_UV(const int HwdID, const tRBUF *pResponse)
 
 	sprintf(szTmp,"%.1f;%.1f",Level,temp);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
+
+	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, 0, true, false);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -4141,7 +4153,6 @@ void MainWorker::decode_Weight(const int HwdID, const tRBUF *pResponse)
 	WriteMessage(szTmp);
 }
 
-//not in dbase yet
 void MainWorker::decode_RFXSensor(const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
@@ -4166,6 +4177,7 @@ void MainWorker::decode_RFXSensor(const int HwdID, const tRBUF *pResponse)
 			else
 				temp=-(float( ((pResponse->RFXSENSOR.msg1 & 0x7F) * 256) + pResponse->RFXSENSOR.msg2) / 100.0f);
 			sprintf(szTmp,"%.1f",temp);
+			m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, 0, true, false);
 		}
 		break;
 	case sTypeRFXSensorAD:
@@ -4264,7 +4276,6 @@ void MainWorker::decode_RFXSensor(const int HwdID, const tRBUF *pResponse)
 	}
 }
 
-//not in dbase yet
 void MainWorker::decode_RFXMeter(const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
