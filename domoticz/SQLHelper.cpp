@@ -322,8 +322,8 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, unsigned char
 		GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,bHaveGroupCmd);
 		if ((lstatus=="On")||(lstatus=="Group On")||(lstatus=="All On"))
 		{
-			std::string notifyparams;
-			if (GetNotification(ulID,notifyparams))
+			std::vector<_tNotification> notifications=GetNotifications(ulID);
+			if (notifications.size()>0)
 			{
 				sprintf(szTmp,
 					"SELECT Name FROM DeviceStatus WHERE (ID = %llu)",
@@ -335,25 +335,11 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, unsigned char
 					std::string msg=sd[0]+" pressed";
 					SendNotification("", m_urlencoder.URLEncode(msg));
 
-					TouchNotification(ulID);
+					TouchNotification(notifications[0].ID);
 				}
 			}
 		}
 	}
-}
-
-void CSQLHelper::TouchNotification(unsigned long long ID)
-{
-	char szTmp[300];
-	char szDate[100];
-	time_t atime = time(NULL);
-	struct tm* tm = localtime(&atime);
-	sprintf(szDate,"%04d-%02d-%02d %02d:%02d:%02d",tm->tm_year+1900,tm->tm_mon+1,tm->tm_mday,tm->tm_hour,tm->tm_min,tm->tm_sec);
-
-	//Set LastSend date
-	sprintf(szTmp,
-		"UPDATE Notifications SET LastSend='%s' WHERE (DeviceRowID = %llu)",szDate,ID);
-	query(szTmp);
 }
 
 bool CSQLHelper::SendNotification(const std::string EventID, const std::string Message)
@@ -473,7 +459,21 @@ bool CSQLHelper::GetPreferencesVar(const char *Key, int &nValue, std::string &sV
 	return true;
 }
 
-bool CSQLHelper::AddEditNotification(const std::string Idx, const std::string Param)
+void CSQLHelper::TouchNotification(unsigned long long ID)
+{
+	char szTmp[300];
+	char szDate[100];
+	time_t atime = time(NULL);
+	struct tm* tm = localtime(&atime);
+	sprintf(szDate,"%04d-%02d-%02d %02d:%02d:%02d",tm->tm_year+1900,tm->tm_mon+1,tm->tm_mday,tm->tm_hour,tm->tm_min,tm->tm_sec);
+
+	//Set LastSend date
+	sprintf(szTmp,
+		"UPDATE Notifications SET LastSend='%s' WHERE (ID = %llu)",szDate,ID);
+	query(szTmp);
+}
+
+bool CSQLHelper::AddNotification(const std::string DevIdx, const std::string Param)
 {
 	if (!m_dbase)
 		return false;
@@ -483,40 +483,93 @@ bool CSQLHelper::AddEditNotification(const std::string Idx, const std::string Pa
 	std::stringstream szQuery;
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT ID FROM Notifications WHERE (DeviceRowID==" << Idx << ")";
+	szQuery << "INSERT INTO Notifications (DeviceRowID, Params) VALUES (" << DevIdx << ",'" << Param << "')";
+	result=query(szQuery.str());
+	return true;
+}
+
+bool CSQLHelper::UpdateNotification(const std::string ID, const std::string Param)
+{
+	if (!m_dbase)
+		return false;
+
+	std::vector<std::vector<std::string> > result;
+
+	std::stringstream szQuery;
+	//Update
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "UPDATE Notifications SET Params='" << Param << "' WHERE (ID==" << ID << ")";
+	result = query(szQuery.str());
+	return true;
+}
+
+
+bool CSQLHelper::RemoveDeviceNotifications(const std::string DevIdx)
+{
+	std::vector<std::vector<std::string> > result;
+
+	std::stringstream szQuery;
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "DELETE FROM Notifications WHERE (DeviceRowID==" << DevIdx << ")";
+	result=query(szQuery.str());
+	return true;
+}
+
+bool CSQLHelper::RemoveNotification(const std::string ID)
+{
+	std::vector<std::vector<std::string> > result;
+
+	std::stringstream szQuery;
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "DELETE FROM Notifications WHERE (ID==" << ID << ")";
+	result=query(szQuery.str());
+	return true;
+}
+
+
+std::vector<_tNotification> CSQLHelper::GetNotifications(const unsigned long long DevIdx)
+{
+	std::vector<_tNotification> ret;
+	if (!m_dbase)
+		return ret;
+
+	std::vector<std::vector<std::string> > result;
+
+	std::stringstream szQuery;
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "SELECT ID, Params FROM Notifications WHERE (DeviceRowID==" << DevIdx << ")";
 	result=query(szQuery.str());
 	if (result.size()==0)
+		return ret;
+
+	std::vector<std::vector<std::string> >::const_iterator itt;
+	for (itt=result.begin(); itt!=result.end(); ++itt)
 	{
-		//Insert
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "INSERT INTO Notifications (DeviceRowID, Params) VALUES (" << Idx << ",'" << Param << "')";
-		result=query(szQuery.str());
+		std::vector<std::string> sd=*itt;
+
+		_tNotification notification;
+		std::stringstream s_str( sd[0] );
+		s_str >> notification.ID;
+
+		notification.Params=sd[1];
+		ret.push_back(notification);
 	}
-	else
-	{
-		//Update
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE Notifications SET Params='" << Param << "' WHERE (DeviceRowID==" << Idx << ")";
-		result = query(szQuery.str());
-	}
-	return true;
+	return ret;
 }
 
-bool CSQLHelper::RemoveNotification(const std::string Idx)
+std::vector<_tNotification> CSQLHelper::GetNotifications(const std::string DevIdx)
 {
-	std::vector<std::vector<std::string> > result;
-
-	std::stringstream szQuery;
-	szQuery.clear();
-	szQuery.str("");
-	szQuery << "DELETE FROM Notifications WHERE (DeviceRowID==" << Idx << ")";
-	result=query(szQuery.str());
-	return true;
+	std::stringstream s_str( DevIdx );
+	unsigned long long idxll;
+	s_str >> idxll;
+	return GetNotifications(idxll);
 }
 
-bool CSQLHelper::GetNotification(const unsigned long long Idx, std::string &Param)
+bool CSQLHelper::HasNotifications(const unsigned long long DevIdx)
 {
 	if (!m_dbase)
 		return false;
@@ -526,21 +579,20 @@ bool CSQLHelper::GetNotification(const unsigned long long Idx, std::string &Para
 	std::stringstream szQuery;
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT Params FROM Notifications WHERE (DeviceRowID==" << Idx << ")";
+	szQuery << "SELECT COUNT(*) FROM Notifications WHERE (DeviceRowID==" << DevIdx << ")";
 	result=query(szQuery.str());
 	if (result.size()==0)
 		return false;
 	std::vector<std::string> sd=result[0];
-	Param=sd[0];
-	return true;
+	int totnotifications=atoi(sd[0].c_str());
+	return (totnotifications>0);
 }
-
-bool CSQLHelper::GetNotification(const std::string Idx, std::string &Param)
+bool CSQLHelper::HasNotifications(const std::string DevIdx)
 {
-	std::stringstream s_str( Idx );
+	std::stringstream s_str( DevIdx );
 	unsigned long long idxll;
 	s_str >> idxll;
-	return GetNotification(idxll, Param);
+	return HasNotifications(idxll);
 }
 
 bool CSQLHelper::HasTimers(const unsigned long long Idx)

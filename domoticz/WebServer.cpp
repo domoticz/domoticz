@@ -366,8 +366,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 			sprintf(szData,"%d, %s", nValue,sValue.c_str());
 			root["result"][ii]["Data"]=szData;
 
-			std::string notifyparams;
-			root["result"][ii]["Notifications"]=(m_pMain->m_sql.GetNotification(sd[0],notifyparams)==true)?"true":"false";
+			root["result"][ii]["Notifications"]=(m_pMain->m_sql.HasNotifications(sd[0])==true)?"true":"false";
 			root["result"][ii]["Timers"]=(m_pMain->m_sql.HasTimers(sd[0])==true)?"true":"false";
 
 			if (
@@ -839,7 +838,7 @@ char * CWebServer::GetJSonPage()
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT ID, nValue, sValue, Date FROM LightingLog WHERE (DeviceRowID==" << idx << ") ORDER BY Date DESC";
+		szQuery << "SELECT ROWID, nValue, sValue, Date FROM LightingLog WHERE (DeviceRowID==" << idx << ") ORDER BY Date DESC";
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -910,6 +909,24 @@ char * CWebServer::GetJSonPage()
 			}
 		}
 	} //(rtype=="timers")
+	else if ((rtype=="notifications")&&(idx!=0))
+	{
+		root["status"]="OK";
+		root["title"]="Notifications";
+
+		std::vector<_tNotification> notifications=m_pMain->m_sql.GetNotifications(idx);
+		if (notifications.size()>0)
+		{
+			std::vector<_tNotification>::const_iterator itt;
+			int ii=0;
+			for (itt=notifications.begin(); itt!=notifications.end(); ++itt)
+			{
+				root["result"][ii]["idx"]=itt->ID;
+				root["result"][ii]["Params"]=itt->Params;
+				ii++;
+			}
+		}
+	} //(rtype=="notifications")
 	else if (rtype=="schedules")
 	{
 		root["status"]="OK";
@@ -1417,7 +1434,89 @@ char * CWebServer::GetJSonPage()
 		std::string cparam=m_pWebEm->FindValue("param");
 		if (cparam=="")
 			goto exitjson;
-		if (cparam=="addhardware")
+		if (cparam=="addnotification")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			std::string ntype=m_pWebEm->FindValue("ntype");
+			if ((idx=="")||(ntype==""))
+				goto exitjson;
+		
+			if (ntype=="light")
+			{
+				root["status"]="OK";
+				root["title"]="AddNotification";
+				//Lights can only have one notification, so delete old one first
+				m_pMain->m_sql.RemoveDeviceNotifications(idx);
+				m_pMain->m_sql.AddNotification(idx,"");
+			}
+			else if (ntype=="temp")
+			{
+				std::string stype=m_pWebEm->FindValue("ttype");
+				std::string swhen=m_pWebEm->FindValue("twhen");
+				std::string svalue=m_pWebEm->FindValue("tvalue");
+				if ((stype=="")||(swhen=="")||(swhen==""))
+					goto exitjson;
+				root["status"]="OK";
+				root["title"]="AddNotification";
+				unsigned char ttype=(stype=="0")?'T':'H';
+				unsigned char twhen=(swhen=="0")?'>':'<';
+				sprintf(szTmp,"%c;%c;%s",ttype,twhen,svalue.c_str());
+				m_pMain->m_sql.AddNotification(idx,szTmp);
+			}
+		}
+		else if (cparam=="updatenotification")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			std::string ntype=m_pWebEm->FindValue("ntype");
+			if ((idx=="")||(ntype==""))
+				goto exitjson;
+
+			if (ntype=="temp")
+			{
+				std::string stype=m_pWebEm->FindValue("ttype");
+				std::string swhen=m_pWebEm->FindValue("twhen");
+				std::string svalue=m_pWebEm->FindValue("tvalue");
+				if ((stype=="")||(swhen=="")||(swhen==""))
+					goto exitjson;
+				root["status"]="OK";
+				root["title"]="UpdateNotification";
+				unsigned char ttype=(stype=="0")?'T':'H';
+				unsigned char twhen=(swhen=="0")?'>':'<';
+				sprintf(szTmp,"%c;%c;%s",ttype,twhen,svalue.c_str());
+				m_pMain->m_sql.UpdateNotification(idx,szTmp);
+			}
+		}
+		else if (cparam=="deletenotification")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			std::string ntype=m_pWebEm->FindValue("ntype");
+			if ((idx=="")||(ntype==""))
+				goto exitjson;
+
+			root["status"]="OK";
+			root["title"]="DeleteNotification";
+
+			if (ntype=="light")
+			{
+				m_pMain->m_sql.RemoveDeviceNotifications(idx);
+			}
+			else if (ntype=="temp")
+			{
+				m_pMain->m_sql.RemoveNotification(idx);
+			}
+		}
+		else if (cparam=="clearnotifications")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+
+			root["status"]="OK";
+			root["title"]="ClearNotification";
+
+			m_pMain->m_sql.RemoveDeviceNotifications(idx);
+		}
+		else if (cparam=="addhardware")
 		{
 			std::string name=m_pWebEm->FindValue("name");
 			std::string shtype=m_pWebEm->FindValue("htype");
@@ -1641,6 +1740,40 @@ char * CWebServer::GetJSonPage()
 			result=m_pMain->m_sql.query(szTmp);
 			m_pMain->m_scheduler.ReloadSchedules();
 		}
+		else if (cparam=="clearlightlog")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			//First get Device Type/SubType
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT Type, SubType FROM DeviceStatus WHERE (ID == " << idx << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()<1)
+				goto exitjson;
+
+			unsigned char dType=atoi(result[0][0].c_str());
+			unsigned char dSubType=atoi(result[0][1].c_str());
+
+			if (
+				(dType!=pTypeLighting1)&&
+				(dType!=pTypeLighting2)&&
+				(dType!=pTypeLighting3)&&
+				(dType!=pTypeLighting4)&&
+				(dType!=pTypeLighting5)&&
+				(dType!=pTypeLighting6)
+				)
+				goto exitjson; //no light device! we should not be here!
+
+			root["status"]="OK";
+			root["title"]="ClearLightLog";
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "DELETE FROM LightingLog WHERE (DeviceRowID==" << idx << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+		}
 		else if (cparam=="cleartimers")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
@@ -1810,25 +1943,6 @@ char * CWebServer::GetJSonPage()
 		}
 
 	} //(rtype=="settings")
-	else if (rtype=="editnotification")
-	{
-		std::string idx=m_pWebEm->FindValue("idx");
-		std::string ntype=m_pWebEm->FindValue("ntype");
-		std::string enabled=m_pWebEm->FindValue("enabled");
-		if ((idx=="")||(ntype=="")||(enabled==""))
-			goto exitjson;
-
-		if (ntype=="light")
-		{
-			root["status"]="OK";
-			root["title"]="editnotification";
-			if (enabled=="true")
-				m_pMain->m_sql.AddEditNotification(idx,"");
-			else
-				m_pMain->m_sql.RemoveNotification(idx);
-		}
-
-	}//(rtype=="editnotification")
 exitjson:
 	m_retstr=root.toStyledString();
 	return (char*)m_retstr.c_str();

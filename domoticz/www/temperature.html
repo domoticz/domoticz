@@ -26,8 +26,307 @@
 <h2>Year</h2><br>
 <div id="tempyeargraph" style="height: 300px;"></div>
 </div>
+<div id="editnotifications" style="display:none;">
+    <table class="display" id="notificationtable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th width="120" align="left">Type</th>
+                <th align="left">When</th>
+            </tr>
+        </thead>
+    </table>
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td>
+					<a class="btnstyle3-dis" id="notificationupdate" >Update</a>&nbsp;&nbsp;&nbsp;
+					<a class="btnstyle3-dis" id="notificationdelete" >Delete</a>
+				</td>
+				<td align="right">
+					<a class="btnstyle3" href="#" onclick="ClearNotifications();">Clear</a>
+				</td>
+			</tr>
+		</table>
+		</br>
+		<table class="display" id="notificationparamstable" border="0" cellpadding="0" cellspacing="20">
+			<tr>
+				<td align="right" width="80px"><label for="name">Type:</label></td>
+				<td><select id="combotype" style="width:120px" class="combobox ui-widget-content ui-corner-all">
+							<option value="0">Temperature</option>
+							<option value="1">Humidity</option>
+						</select>
+				</td>
+			</tr>
+			<tr>
+				<td align="right" width="80px"><label for="name">When:</label></td>
+				<td><select id="combowhen" style="width:120px" class="combobox ui-widget-content ui-corner-all">
+							<option value="0">Greater</option>
+							<option value="1">Below</option>
+						</select>
+				</td>
+			</tr>
+			<tr>
+				<td align="right" width="80px"><label for="name">Value:</label></td>
+				<td><input type="text" id="value" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><label id="valuetype">&nbsp;&deg; C</label></td>
+			</tr>
+		</table>
+		</br>
+    <a class="btnstyle3" href="#" onclick="AddNotification();">Add</a>
+</div>
 
 <script type="text/javascript" charset="utf-8">
+
+function GetNotificationSettings()
+{
+	var nsettings = {};
+
+	nsettings.type=$("#tempcontent #notificationparamstable #combotype").val();
+	nsettings.when=$("#tempcontent #notificationparamstable #combowhen").val();
+	nsettings.value=$("#tempcontent #notificationparamstable #value").val();
+	if ((nsettings.value=="")||(isNaN(nsettings.value)))
+	{
+		ShowNotify('Please correct the Value!', 2500, true);
+		return null;
+	}
+
+	return nsettings;
+}
+
+function ClearNotifications()
+{
+	var bValid = false;
+	bValid=(confirm("Are you sure to delete ALL notifications?\n\nThis action can not be undone!!")==true);
+	if (bValid == false)
+		return;
+
+	$.ajax({
+		 url: "json.htm?type=command&param=clearnotifications&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			RefreshNotificationTable($.devIdx);
+		 },
+		 error: function(){
+				HideNotify();
+				ShowNotify('Problem clearing notifications!', 2500, true);
+		 }     
+	});
+}
+
+function UpdateNotification(idx)
+{
+	var nsettings=GetNotificationSettings();
+	if (nsettings==null)
+		return;
+	$.ajax({
+		 url: "json.htm?type=command&param=updatenotification&ntype=temp&idx=" + idx + 
+					"&ttype=" + nsettings.type +
+					"&twhen=" + nsettings.when +
+					"&tvalue=" + nsettings.value,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			RefreshNotificationTable($.devIdx);
+		 },
+		 error: function(){
+				HideNotify();
+				ShowNotify('Problem updating notification!', 2500, true);
+		 }     
+	});
+}
+
+function DeleteNotification(idx)
+{
+	var bValid = false;
+	bValid=(confirm("Are you sure to delete this notification?\n\nThis action can not be undone...")==true);
+	if (bValid == false)
+		return;
+		
+	$.ajax({
+		 url: "json.htm?type=command&param=deletenotification&ntype=temp&idx=" + idx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			RefreshNotificationTable($.devIdx);
+		 },
+		 error: function(){
+				HideNotify();
+				ShowNotify('Problem deleting notification!', 2500, true);
+		 }     
+	});
+}
+
+function AddNotification()
+{
+	var nsettings=GetNotificationSettings();
+	if (nsettings==null)
+		return;
+	$.ajax({
+		 url: "json.htm?type=command&param=addnotification&ntype=temp&idx=" + $.devIdx + 
+					"&ttype=" + nsettings.type +
+					"&twhen=" + nsettings.when +
+					"&tvalue=" + nsettings.value,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			RefreshNotificationTable($.devIdx);
+		 },
+		 error: function(){
+				HideNotify();
+				ShowNotify('Problem adding notification!', 2500, true);
+		 }     
+	});
+}
+
+function RefreshNotificationTable(idx)
+{
+  $('#modal').show();
+
+	$('#updelclr #notificationupdate').attr("class", "btnstyle3-dis");
+	$('#updelclr #notificationdelete').attr("class", "btnstyle3-dis");
+
+  var oTable = $('#notificationtable').dataTable();
+  oTable.fnClearTable();
+  
+  $.ajax({
+     url: "json.htm?type=notifications&idx=" + idx, 
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+        
+      if (typeof data.result != 'undefined') {
+        $.each(data.result, function(i,item){
+        
+					var parts = item.Params.split(';');
+
+					var nvalue=parts[2];
+					var whenstr = "";
+					
+					var ntype="";
+					if (parts[0]=="T")
+						ntype="Temperature";
+					else
+						ntype="Humidity";
+						
+					var nwhen="";
+					if (parts[1]==">") {
+						nwhen="Greater";
+						if (parts[0]=="T")
+							whenstr= nwhen + " then " + nvalue + " &deg; C";
+						else
+							whenstr= nwhen + " then " + nvalue + " %";
+					}
+					else {
+						nwhen="Below";
+						if (parts[0]=="T")
+							whenstr= nwhen + " " + nvalue + " &deg; C";
+						else
+							whenstr= nwhen + " " + nvalue + " %";
+					}
+					
+          var addId = oTable.fnAddData( {
+								"DT_RowId": item.idx,
+								"nvalue" : nvalue,
+                "0": ntype,
+								"1": whenstr
+							} );
+        });
+				/* Add a click handler to the rows - this could be used as a callback */
+				$("#notificationtable tbody tr").click( function( e ) {
+							if ( $(this).hasClass('row_selected') ) {
+									$(this).removeClass('row_selected');
+									$('#updelclr #notificationupdate').attr("class", "btnstyle3-dis");
+									$('#updelclr #notificationdelete').attr("class", "btnstyle3-dis");
+							}
+							else {
+									oTable.$('tr.row_selected').removeClass('row_selected');
+									$(this).addClass('row_selected');
+									$('#updelclr #notificationupdate').attr("class", "btnstyle3");
+									$('#updelclr #notificationdelete').attr("class", "btnstyle3");
+									var anSelected = fnGetSelected( oTable );
+									if ( anSelected.length !== 0 ) {
+										var data = oTable.fnGetData( anSelected[0] );
+										var idx= data["DT_RowId"];
+										$.myglobals.SelectedNotificationIdx=idx;
+										$("#updelclr #notificationupdate").attr("href", "javascript:UpdateNotification(" + idx + ")");
+										$("#updelclr #notificationdelete").attr("href", "javascript:DeleteNotification(" + idx + ")");
+										//update user interface with the paramters of this row
+										if (data["0"]=="Temperature")
+											$("#tempcontent #notificationparamstable #combotype").val(0);
+										else
+											$("#tempcontent #notificationparamstable #combotype").val(1);
+										ShowTypeLabel();
+										if (data["1"].match("^Greater"))
+											$("#tempcontent #notificationparamstable #combowhen").val(0);
+										else
+											$("#tempcontent #notificationparamstable #combowhen").val(1);
+										$("#tempcontent #notificationparamstable #value").val(data["nvalue"]);
+									}
+									
+							}
+				}); 
+				
+      }
+     }
+  });
+  $('#modal').hide();
+}
+
+function ShowTypeLabel()
+{
+		if ($("#tempcontent #notificationparamstable #combotype").val()==0)
+			$('#tempcontent #notificationparamstable #valuetype').html('&nbsp;&deg; C');
+		else
+			$('#tempcontent #notificationparamstable #valuetype').html('&nbsp;%');
+}
+
+function ShowTempNotifications(id,name,bHaveHumidity, bHaveTemperature)
+{
+  $.devIdx=id;
+
+	var oTable;
+	
+	$('#modal').show();
+  var htmlcontent = '';
+  htmlcontent='<p><h2>Name: ' + name + '</h2></p><br>\n';
+  htmlcontent+=$('#editnotifications').html();
+  $('#tempcontent').html(GetBackbuttonHTMLTable('ShowTemps')+htmlcontent);
+ 
+	if (bHaveTemperature == false)
+	{
+		//remove temperature from dropdown
+		$("#tempcontent #notificationparamstable #combotype option[value='0']").remove();
+	}
+	if (bHaveHumidity == false)
+	{
+		//remove humidity from dropdown
+		$("#tempcontent #notificationparamstable #combotype option[value='1']").remove();
+	}
+	
+ 
+  oTable = $('#notificationtable').dataTable( {
+                  "sDom": '<"H"lfrC>t<"F"ip>',
+                  "oTableTools": {
+                    "sRowSelect": "single",
+                  },
+                  "aaSorting": [[ 0, "desc" ]],
+                  "bSortClasses": false,
+                  "bProcessing": true,
+                  "bStateSave": true,
+                  "bJQueryUI": true,
+                  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+                  "iDisplayLength" : 25,
+                  "sPaginationType": "full_numbers"
+                } );
+
+  $("#tempcontent #notificationparamstable #combotype").change(function() {
+		ShowTypeLabel();
+	});
+ 
+	ShowTypeLabel();
+  $('#modal').hide();
+  RefreshNotificationTable(id);
+}
+
 
 function MakeFavorite(id,isfavorite)
 {
@@ -529,14 +828,18 @@ function ShowTemps()
             }
             xhtm+='" height="48"></td>\n' +
                 '\t      <td>';
+            var bHaveTemperature=false;
             if (typeof item.Temp != 'undefined') {
                  xhtm+=item.Temp + '&deg; C';
+                 bHaveTemperature=true;
             }
             if (typeof item.Chill != 'undefined') {
               xhtm+=', Chill: ' + item.Chill + '&deg; C';
             }
+            var bHaveHumidity=false;
             if (typeof item.Humidity != 'undefined') {
               xhtm+=', Humidity: ' + item.Humidity + ' %';
+              bHaveHumidity=true;
             }
             if (typeof item.HumidityStatus != 'undefined') {
               xhtm+=' (' + item.HumidityStatus + ')';
@@ -565,8 +868,13 @@ function ShowTemps()
           }
           xhtm+=
                 '<a class="btnsmall" href="#" onclick="ShowTempLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ' +
-                '<a class="btnsmall" href="#" onclick="EditTempDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ' +
-                '<a class="btnsmall" href="#">Notifications</a>' +
+                '<a class="btnsmall" href="#" onclick="EditTempDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+          if (item.Notifications == "true")
+            xhtm+='<a class="btnsmall-sel" href="#" onclick="ShowTempNotifications(' + item.idx + ',\'' + item.Name + '\',' + bHaveHumidity + ',' + bHaveTemperature+');">Notifications</a>';
+          else
+            xhtm+='<a class="btnsmall" href="#" onclick="ShowTempNotifications(' + item.idx + ',\'' + item.Name + '\',' + bHaveHumidity + ',' + bHaveTemperature+');">Notifications</a>';
+
+					xhtm+=
                 '</td>\n' +
                 '\t    </tr>\n' +
                 '\t    </table>\n' +

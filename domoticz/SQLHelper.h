@@ -6,6 +6,13 @@
 
 struct sqlite3;
 
+struct _tNotification
+{
+	unsigned long long ID;
+	std::string Params;
+	time_t LastSend;
+};
+
 class CSQLHelper
 {
 public:
@@ -24,10 +31,16 @@ public:
 	void UpdatePreferencesVar(const char *Key, int nValue, const char* sValue);
 	bool GetPreferencesVar(const char *Key, int &nValue, std::string &sValue);
 
-	bool AddEditNotification(const std::string Idx, const std::string Param);
-	bool RemoveNotification(const std::string Idx);
-	bool GetNotification(const unsigned long long Idx, std::string &Param);
-	bool GetNotification(const std::string Idx, std::string &Param);
+	//notification functions
+	bool AddNotification(const std::string DevIdx, const std::string Param);
+	bool UpdateNotification(const std::string ID, const std::string Param);
+	bool RemoveDeviceNotifications(const std::string DevIdx);
+	bool RemoveNotification(const std::string ID);
+	std::vector<_tNotification> GetNotifications(const unsigned long long DevIdx);
+	std::vector<_tNotification> GetNotifications(const std::string DevIdx);
+	void TouchNotification(unsigned long long ID);
+	bool HasNotifications(const unsigned long long DevIdx);
+	bool HasNotifications(const std::string DevIdx);
 
 	bool HasTimers(const unsigned long long Idx);
 	bool HasTimers(const std::string Idx);
@@ -54,6 +67,5 @@ private:
 	void AddCalendarUpdateRain();
 	void AddCalendarUpdateWind();
 	void AddCalendarUpdateUV();
-	void TouchNotification(unsigned long long ID);
 };
 
