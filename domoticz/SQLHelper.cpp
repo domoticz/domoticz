@@ -499,7 +499,7 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(const int HardwareID, co
 				continue; //impossible
 			std::string ntype=splitresults[0];
 			bool bWhenIsGreater = (splitresults[1]==">");
-			float svalue=atof(splitresults[2].c_str());
+			float svalue=(float)atof(splitresults[2].c_str());
 
 			bool bSendNotification=false;
 
@@ -533,7 +533,7 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(const int HardwareID, co
 					if (humidity>=svalue)
 					{
 						bSendNotification=true;
-						sprintf(szTmp,"%s Humidity is %.1f %%", devicename.c_str(), temp);
+						sprintf(szTmp,"%s Humidity is %d %%", devicename.c_str(), humidity);
 						msg=szTmp;
 					}
 				}
@@ -542,7 +542,7 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(const int HardwareID, co
 					if (humidity<=svalue)
 					{
 						bSendNotification=true;
-						sprintf(szTmp,"%s Humidity is %.1f %%", devicename.c_str(), temp);
+						sprintf(szTmp,"%s Humidity is %d %%", devicename.c_str(), humidity);
 						msg=szTmp;
 					}
 				}
