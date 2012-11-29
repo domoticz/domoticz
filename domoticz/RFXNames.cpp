@@ -122,10 +122,10 @@ const char *Hardware_Type_Desc(int hType)
 {
 	STR_TABLE_SINGLE	Table[] = 
 	{
-		{ HTYPE_RFXtrx315,	"RFXCom RFXtrx315 USB 315MHz Transceiver" },
-		{ HTYPE_RFXtrx433,	"RFXCom RFXtrx433 USB 433.92MHz Transceiver" },
-		{ HTYPE_RFXLAN,		"RFXCom RFXLAN Transceiver 433.92 MHz with LAN interface" },
-		{ HTYPE_Domoticz,	"Remote Domoticz Server" },
+		{ HTYPE_RFXtrx315,	"RFXCOM - RFXtrx315 USB 315MHz Transceiver" },
+		{ HTYPE_RFXtrx433,	"RFXCOM - RFXtrx433 USB 433.92MHz Transceiver" },
+		{ HTYPE_RFXLAN,		"RFXCOM - RFXLAN Transceiver 433.92 MHz with LAN interface" },
+		{ HTYPE_Domoticz,	"Domoticz - Remote Server" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -141,6 +141,24 @@ const char *Switch_Type_Desc(const unsigned char sType)
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, sType);
+}
+
+const char *Notification_Type_Desc(const int nType)
+{
+	STR_TABLE_SINGLE	Table[] = 
+	{
+		{ NTYPE_TEMPERATURE, "Temperature" },
+		{ NTYPE_HUMIDITY, "Humidity" },
+		{ NTYPE_RAIN, "Rain" },
+		{ NTYPE_UV, "UV" },
+		{ NTYPE_WIND, "Wind" },
+		{ NTYPE_USAGE, "Usage" },
+		{ NTYPE_BARO, "Baro" },
+		{ NTYPE_SWITCHON, "Switch On" },
+		{ NTYPE_SWITCHOFF, "Switch Off" },
+		{  0,NULL,NULL }
+	};
+	return findTableIDSingle1 (Table, nType);
 }
 
 const char *RFX_Forecast_Desc(const unsigned char Forecast)

@@ -31,6 +31,19 @@ enum _eHardwareTypes {
 	HTYPE_END
 };
 
+enum _eNotificationTypes
+{
+	NTYPE_TEMPERATURE=0,
+	NTYPE_HUMIDITY,
+	NTYPE_RAIN,
+	NTYPE_UV,
+	NTYPE_WIND,
+	NTYPE_USAGE,
+	NTYPE_BARO,
+	NTYPE_SWITCHON,
+	NTYPE_SWITCHOFF,
+};
+
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum);
 const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char sType);
 const char *RFX_Humidity_Status_Desc(const unsigned char status);
@@ -40,6 +53,7 @@ const char *Timer_Type_Desc(int tType);
 const char *Timer_Cmd_Desc(int tCmd);
 const char *Hardware_Type_Desc(int hType);
 const char *Security_Status_Desc(const unsigned char status);
+const char *Notification_Type_Desc(const int nType);
 
 void GetLightStatus(
 	const unsigned char dType, 

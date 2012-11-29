@@ -1,3 +1,30 @@
+<div id="dialog-findlatlong" title="Find your Geo location">
+    <form>
+    <fieldset>
+        <table class="display" id="latlongtable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" width="60px"><label for="name">Address: </label></td>
+          <td>
+						<input type="text" id="address" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
+						(Example: Streetname Number City Country)
+          </td>
+        </tr>
+        <tr>
+					<td></td>
+					<td><button id="getlatlong">GetLatLong</button></td>
+        </tr>
+        <tr>
+          <td align="right"><label for="lbllat">Latitude: </label></td>
+          <td><input type="text" id="latitude" style="width: 90px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		    </tr>
+        <tr>
+          <td align="right"><label for="lbllng">Longitude: </label></td>
+          <td><input type="text" id="longitude" style="width: 90px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		    </tr>
+		    </table>
+    </fieldset>
+    </form>
+</div>
 <form id="settings">
 <h2>Location:</h2><br>
 <table class="display" id="locationtable" border="0" cellpadding="0" cellspacing="0">
@@ -9,7 +36,7 @@
   <td><input type="text" id="Longitude" name="Longitude" style="width: 150px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
 </tr>
 </table>
-To find your location click <a href="http://itouchmap.com/latlong.html" target="_blank">Here</a><br>
+To find your location click <a href="#" onclick="GetGeoLocation();">Here</a><br>
 <br><br>
 <h2>Prowl (iPhone/iPad notification system):</h2><br>
 <table class="display" id="prowltable" border="0" cellpadding="0" cellspacing="0">
@@ -25,12 +52,24 @@ To get a free account/API key click <a href="https://www.prowlapp.com" target="_
   <td align="right" width="60px"><label for="apikey">API Key: </label></td>
   <td><input type="input" id="apikey" name="NMAAPIKey" style="width: 356px; padding: .4em;" class="text ui-widget-content ui-corner-all" />  <a class="btnstyle3" href="javascript:TestNMANotification()">Test</a></td>
 </table>
-To get a free account/API key click <a href="https://http://www.notifymyandroid.com/" target="_blank">Here</a><br>
+To get a free account/API key click <a href="http://www.notifymyandroid.com/" target="_blank">Here</a><br>
 <br>
 <a class="btnstyle3" href="javascript:StoreSettings()">Save</a>
 </form>
 
 <script type="text/javascript" charset="utf-8">
+
+var googleMapsCallback;
+
+function GetGeoLocation() {
+	googleMapsCallback = function() {
+		$( "#dialog-findlatlong" ).dialog( "open" );
+  };
+  $.ajax({
+        url: "https://maps.googleapis.com/maps/api/js?v=3&callback=googleMapsCallback&sensor=false",
+        dataType: "script"
+  });
+}
 
 function TestProwlNotification()
 {
@@ -47,7 +86,7 @@ function TestProwlNotification()
 
 function TestNMANotification()
 {
-  var NMAAPI=$("#prowltable #apikey").val();
+  var NMAAPI=$("#nmatable #apikey").val();
   if (NMAAPI=="") {
     ShowNotify('Please enter the API key!...', 3500, true);
     return;
@@ -98,6 +137,63 @@ function StoreSettings(formname)
 }
 
 $(document).ready(function() {
+    $( "#dialog-findlatlong" ).dialog({
+          autoOpen: false,
+          width: 480,
+          height: 280,
+          modal: true,
+          resizable: false,
+          buttons: {
+              "OK": function() {
+                  var bValid = true;
+                  bValid = bValid && checkLength( $("#dialog-findlatlong #latitude"), 3, 100 );
+                  bValid = bValid && checkLength( $("#dialog-findlatlong #longitude"), 3, 100 );
+                  if ( bValid ) {
+
+											$("#locationtable #Latitude").val($( '#dialog-findlatlong #latitude' ).val());
+											$("#locationtable #Longitude").val($( '#dialog-findlatlong #longitude' ).val());
+                  
+                      $( this ).dialog( "close" );
+                  } else
+                  {
+										alert('Please enter a Latitude and Longitude!...', 3500, true);
+                  }
+              },
+              Cancel: function() {
+                  $( this ).dialog( "close" );
+              }
+          },
+          open: function() {
+              $(this).keypress(function(e) {
+                if (e.keyCode == $.ui.keyCode.ENTER) {
+                  e.preventDefault();
+                  $(this).parent().find("button:eq(0)").trigger("click");
+                }
+              });
+							$( '#getlatlong' ).click( function()
+							{
+									var address = $( '#dialog-findlatlong #address' ).val();
+									if (address=="")
+									{
+										alert('Please enter a Address to search for!...', 3500, true);
+										return false;
+									}
+									geocoder = new google.maps.Geocoder();
+									geocoder.geocode( { 'address': address}, function(results, status) {
+										if (status == google.maps.GeocoderStatus.OK) {
+												$( '#dialog-findlatlong #latitude' ).val(results[0].geometry.location.lat().toFixed(6));
+												$( '#dialog-findlatlong #longitude' ).val(results[0].geometry.location.lng().toFixed(6));
+										} else {
+											alert('Geocode was not successful for the following reason: ' + status);
+										}
+									});
+							} );              
+          },
+          close: function() {
+            $( this ).dialog( "close" );
+          }
+    });
+
   ShowSettings();
 } );  
 </script>
