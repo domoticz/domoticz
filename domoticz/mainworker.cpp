@@ -1027,6 +1027,8 @@ void MainWorker::decode_Rain(const int HwdID, const tRBUF *pResponse)
 	sprintf(szTmp,"%d;%.1f",Rainrate,TotalRain);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
 
+	m_sql.CheckAndHandleRainNotification(HwdID, ID, Unit, devType, subType, NTYPE_RAIN, TotalRain);
+
 	if (m_verboselevel == EVBL_ALL)
 	{
 		switch (subType)
@@ -1161,11 +1163,14 @@ void MainWorker::decode_Wind(const int HwdID, const tRBUF *pResponse)
 			//std::cout << "Org Chill: " << chill << " New Chill: " << chillJatTI << std::endl;
 		}
 	}
+	float wspeedms=float(intSpeed)/10.0f;
+	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_WIND, wspeedms);
 
 	sprintf(szTmp,"%.2f;%s;%d;%d;%.1f;%.1f",dDirection,strDirection.c_str(),intSpeed,intGust,temp,chill);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
 
 	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, 0, true, false);
+
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -1585,6 +1590,8 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const tRBUF *pResponse)
 
 	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, Humidity, true, true);
 
+	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_BARO, (float)barometer);
+
 	if (m_verboselevel == EVBL_ALL)
 	{
 		switch (pResponse->TEMP_HUM_BARO.subtype)
@@ -1699,6 +1706,8 @@ void MainWorker::decode_UV(const int HwdID, const tRBUF *pResponse)
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
 
 	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, 0, true, false);
+
+	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_UV, Level);
 
 	if (m_verboselevel == EVBL_ALL)
 	{

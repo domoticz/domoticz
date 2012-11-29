@@ -1609,14 +1609,12 @@ function ShowWeathers()
           }
           xhtm+=      
                 '<a class="btnsmall" href="#" onclick="EditWeatherDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
-          if (typeof item.Barometer == 'undefined') {
-						if (item.Notifications == "true")
-							xhtm+='<a class="btnsmall-sel" href="#" onclick="ShowWeatherNotifications(' + item.idx + ',\'' + item.Name + '\',' + bHaveRain + ',' + bHaveUV+');">Notifications</a> ';
-						else
-							xhtm+='<a class="btnsmall" href="#" onclick="ShowWeatherNotifications(' + item.idx + ',\'' + item.Name + '\',' + bHaveRain + ',' + bHaveUV+');">Notifications</a> ';
-          
-						xhtm+='<a class="btnsmall" href="#">Notifications</a>';
-					}
+                
+          if (item.Notifications == "true")
+            xhtm+='<a class="btnsmall-sel" href="#" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#weathercontent\', \'ShowWeathers\');">Notifications</a>';
+          else
+            xhtm+='<a class="btnsmall" href="#" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#weathercontent\', \'ShowWeathers\');">Notifications</a>';
+
           xhtm+=      
                 '</td>\n' +
                 '\t    </tr>\n' +

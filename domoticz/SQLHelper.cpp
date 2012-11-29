@@ -459,7 +459,16 @@ bool CSQLHelper::GetPreferencesVar(const char *Key, int &nValue, std::string &sV
 	return true;
 }
 
-bool CSQLHelper::CheckAndHandleTempHumidityNotification(const int HardwareID, const std::string ID, unsigned char unit, unsigned char devType, unsigned char subType, float temp, int humidity, bool bHaveTemp, bool bHaveHumidity)
+bool CSQLHelper::CheckAndHandleTempHumidityNotification(
+	const int HardwareID, 
+	const std::string ID, 
+	const unsigned char unit, 
+	const unsigned char devType, 
+	const unsigned char subType, 
+	const float temp, 
+	const int humidity, 
+	const bool bHaveTemp, 
+	const bool bHaveHumidity)
 {
 	if (!m_dbase)
 		return false;
@@ -488,6 +497,9 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(const int HardwareID, co
 	atime-=(12*3600);
 	std::string msg="";
 
+	std::string signtemp=Notification_Type_Desc(NTYPE_TEMPERATURE,1);
+	std::string signhum=Notification_Type_Desc(NTYPE_HUMIDITY,1);
+
 	std::vector<_tNotification>::const_iterator itt;
 	for (itt=notifications.begin(); itt!=notifications.end(); ++itt)
 	{
@@ -503,12 +515,12 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(const int HardwareID, co
 
 			bool bSendNotification=false;
 
-			if ((ntype=="T")&&(bHaveTemp))
+			if ((ntype==signtemp)&&(bHaveTemp))
 			{
 				//temperature
 				if (bWhenIsGreater)
 				{
-					if (temp>=svalue)
+					if (temp>svalue)
 					{
 						bSendNotification=true;
 						sprintf(szTmp,"%s temperature is %.1f degrees", devicename.c_str(), temp);
@@ -517,7 +529,7 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(const int HardwareID, co
 				}
 				else
 				{
-					if (temp<=svalue)
+					if (temp<svalue)
 					{
 						bSendNotification=true;
 						sprintf(szTmp,"%s temperature is %.1f degrees", devicename.c_str(), temp);
@@ -525,12 +537,12 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(const int HardwareID, co
 					}
 				}
 			}
-			else if ((ntype=="H")&&(bHaveHumidity))
+			else if ((ntype==signhum)&&(bHaveHumidity))
 			{
 				//humanity
 				if (bWhenIsGreater)
 				{
-					if (humidity>=svalue)
+					if (humidity>svalue)
 					{
 						bSendNotification=true;
 						sprintf(szTmp,"%s Humidity is %d %%", devicename.c_str(), humidity);
@@ -539,7 +551,7 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(const int HardwareID, co
 				}
 				else
 				{
-					if (humidity<=svalue)
+					if (humidity<svalue)
 					{
 						bSendNotification=true;
 						sprintf(szTmp,"%s Humidity is %d %%", devicename.c_str(), humidity);
@@ -555,6 +567,159 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(const int HardwareID, co
 		}
 	}
 	return true;
+}
+
+bool CSQLHelper::CheckAndHandleNotification(
+	const int HardwareID, 
+	const std::string ID, 
+	const unsigned char unit, 
+	const unsigned char devType, 
+	const unsigned char subType, 
+	const _eNotificationTypes ntype, 
+	const float mvalue)
+{
+	if (!m_dbase)
+		return false;
+
+	char szTmp[1000];
+
+	unsigned long long ulID=0;
+	double intpart;
+	std::string pvalue;
+	if (modf (mvalue, &intpart)==0)
+		sprintf(szTmp,"%.0f",mvalue);
+	else
+		sprintf(szTmp,"%.1f",mvalue);
+	pvalue=szTmp;
+
+	std::vector<std::vector<std::string> > result;
+	sprintf(szTmp,"SELECT ID, Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID.c_str(), unit, devType, subType);
+	result=query(szTmp);
+	if (result.size()==0)
+		return false;
+	std::stringstream s_str( result[0][0] );
+	s_str >> ulID;
+	std::string devicename=result[0][1];
+
+	std::vector<_tNotification> notifications=GetNotifications(ulID);
+	if (notifications.size()==0)
+		return false;
+
+	time_t atime=time(NULL);
+
+	//check if not send 12 hours ago, and if applicable
+
+	atime-=(12*3600);
+	std::string msg="";
+
+	std::string ltype=Notification_Type_Desc(ntype,0);
+	std::string nsign=Notification_Type_Desc(ntype,1);
+	std::string label=Notification_Type_Label(ntype);
+
+	std::vector<_tNotification>::const_iterator itt;
+	for (itt=notifications.begin(); itt!=notifications.end(); ++itt)
+	{
+		if (atime>=itt->LastSend)
+		{
+			std::vector<std::string> splitresults;
+			StringSplit(itt->Params, ";", splitresults);
+			if (splitresults.size()<3)
+				continue; //impossible
+			std::string ntype=splitresults[0];
+			bool bWhenIsGreater = (splitresults[1]==">");
+			float svalue=(float)atof(splitresults[2].c_str());
+
+			bool bSendNotification=false;
+
+			if (ntype==nsign)
+			{
+				if (bWhenIsGreater)
+				{
+					if (mvalue>svalue)
+					{
+						bSendNotification=true;
+						sprintf(szTmp,"%s %s is %s %s", 
+							devicename.c_str(),
+							ltype.c_str(),
+							pvalue.c_str(),
+							label.c_str()
+							);
+						msg=szTmp;
+					}
+				}
+				else
+				{
+					if (mvalue<svalue)
+					{
+						bSendNotification=true;
+						sprintf(szTmp,"%s %s is %s %s", 
+							devicename.c_str(),
+							ltype.c_str(),
+							pvalue.c_str(),
+							label.c_str()
+							);
+						msg=szTmp;
+					}
+				}
+			}
+			if (bSendNotification)
+			{
+				SendNotification("", m_urlencoder.URLEncode(msg));
+				TouchNotification(itt->ID);
+			}
+		}
+	}
+	return true;
+}
+
+bool CSQLHelper::CheckAndHandleRainNotification(
+	const int HardwareID, 
+	const std::string ID, 
+	const unsigned char unit, 
+	const unsigned char devType, 
+	const unsigned char subType, 
+	const _eNotificationTypes ntype, 
+	const float mvalue)
+{
+	if (!m_dbase)
+		return false;
+
+	char szTmp[1000];
+
+	std::vector<std::vector<std::string> > result;
+	sprintf(szTmp,"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID.c_str(), unit, devType, subType);
+	result=query(szTmp);
+	if (result.size()==0)
+		return false;
+	std::string devidx=result[0][0];
+
+	char szDateEnd[40];
+
+	time_t now = time(NULL);
+	struct tm* tm1 = localtime(&now);
+	struct tm ltime;
+	ltime.tm_isdst=tm1->tm_isdst;
+	ltime.tm_hour=0;
+	ltime.tm_min=0;
+	ltime.tm_sec=0;
+	ltime.tm_year=tm1->tm_year;
+	ltime.tm_mon=tm1->tm_mon;
+	ltime.tm_mday=tm1->tm_mday;
+	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
+
+	std::stringstream szQuery;
+	szQuery << "SELECT MIN(Total) FROM Rain WHERE (DeviceRowID=" << devidx << " AND Date>='" << szDateEnd << "')";
+	result=query(szQuery.str());
+	if (result.size()>0)
+	{
+		std::vector<std::string> sd=result[0];
+
+		float total_min=(float)atof(sd[0].c_str());
+		float total_max=mvalue;
+		float total_real=total_max-total_min;
+		CheckAndHandleNotification(HardwareID, ID, unit, devType, subType, NTYPE_RAIN, total_real);
+	}
+	return false;
 }
 
 void CSQLHelper::TouchNotification(unsigned long long ID)

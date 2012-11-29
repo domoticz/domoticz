@@ -40,8 +40,7 @@ enum _eNotificationTypes
 	NTYPE_WIND,
 	NTYPE_USAGE,
 	NTYPE_BARO,
-	NTYPE_SWITCHON,
-	NTYPE_SWITCHOFF,
+	NTYPE_SWITCH,
 };
 
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum);
@@ -53,7 +52,8 @@ const char *Timer_Type_Desc(int tType);
 const char *Timer_Cmd_Desc(int tCmd);
 const char *Hardware_Type_Desc(int hType);
 const char *Security_Status_Desc(const unsigned char status);
-const char *Notification_Type_Desc(const int nType);
+const char *Notification_Type_Desc(const int nType, const unsigned char snum);
+const char *Notification_Type_Label(const int nType);
 
 void GetLightStatus(
 	const unsigned char dType, 

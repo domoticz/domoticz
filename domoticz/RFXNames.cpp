@@ -143,19 +143,38 @@ const char *Switch_Type_Desc(const unsigned char sType)
 	return findTableIDSingle1 (Table, sType);
 }
 
-const char *Notification_Type_Desc(const int nType)
+const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 {
 	STR_TABLE_SINGLE	Table[] = 
 	{
-		{ NTYPE_TEMPERATURE, "Temperature" },
-		{ NTYPE_HUMIDITY, "Humidity" },
-		{ NTYPE_RAIN, "Rain" },
-		{ NTYPE_UV, "UV" },
-		{ NTYPE_WIND, "Wind" },
-		{ NTYPE_USAGE, "Usage" },
-		{ NTYPE_BARO, "Baro" },
-		{ NTYPE_SWITCHON, "Switch On" },
-		{ NTYPE_SWITCHOFF, "Switch Off" },
+		{ NTYPE_TEMPERATURE, "Temperature","T" },
+		{ NTYPE_HUMIDITY, "Humidity","H" },
+		{ NTYPE_RAIN, "Rain","R" },
+		{ NTYPE_UV, "UV","U" },
+		{ NTYPE_WIND, "Wind","W" },
+		{ NTYPE_USAGE, "Usage","M" },
+		{ NTYPE_BARO, "Baro","B" },
+		{ NTYPE_SWITCH, "Switch On", "S" },
+		{  0,NULL,NULL }
+	};
+	if (snum==0)
+		return findTableIDSingle1 (Table, nType);
+	else
+		return findTableIDSingle2 (Table, nType);
+}
+
+const char *Notification_Type_Label(const int nType)
+{
+	STR_TABLE_SINGLE	Table[] = 
+	{
+		{ NTYPE_TEMPERATURE, "degrees" },
+		{ NTYPE_HUMIDITY, "%%" },
+		{ NTYPE_RAIN, "mm" },
+		{ NTYPE_UV, "UVI" },
+		{ NTYPE_WIND, "m/s" },
+		{ NTYPE_USAGE, "" },
+		{ NTYPE_BARO, "hPa" },
+		{ NTYPE_SWITCH, "" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, nType);

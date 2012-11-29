@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "UrlEncode.h"
+#include "RFXNames.h"
 
 struct sqlite3;
 
@@ -42,7 +43,32 @@ public:
 	bool HasNotifications(const unsigned long long DevIdx);
 	bool HasNotifications(const std::string DevIdx);
 
-	bool CheckAndHandleTempHumidityNotification(const int HardwareID, const std::string ID, unsigned char unit, unsigned char devType, unsigned char subType, float temp, int humidity, bool bHaveTemp, bool bHaveHumidity);
+	bool CheckAndHandleTempHumidityNotification(
+		const int HardwareID, 
+		const std::string ID, 
+		const unsigned char unit, 
+		const unsigned char devType, 
+		const unsigned char subType, 
+		const float temp, 
+		const int humidity, 
+		const bool bHaveTemp, 
+		const bool bHaveHumidity);
+	bool CheckAndHandleNotification(
+		const int HardwareID, 
+		const std::string ID, 
+		const unsigned char unit, 
+		const unsigned char devType, 
+		const unsigned char subType, 
+		const _eNotificationTypes ntype, 
+		const float mvalue);
+	bool CheckAndHandleRainNotification(
+		const int HardwareID, 
+		const std::string ID, 
+		const unsigned char unit, 
+		const unsigned char devType, 
+		const unsigned char subType, 
+		const _eNotificationTypes ntype, 
+		const float mvalue);
 
 	bool HasTimers(const unsigned long long Idx);
 	bool HasTimers(const std::string Idx);

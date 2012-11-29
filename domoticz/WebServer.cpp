@@ -1434,11 +1434,87 @@ char * CWebServer::GetJSonPage()
 		std::string cparam=m_pWebEm->FindValue("param");
 		if (cparam=="")
 			goto exitjson;
-		if (cparam=="addnotification")
+		if (cparam=="getnotificationtypes")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			//First get Device Type/SubType
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT Type, SubType FROM DeviceStatus WHERE (ID == " << idx << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()<1)
+				goto exitjson;
+
+			root["status"]="OK";
+			root["title"]="GetNotificationTypes";
+			unsigned char dType=atoi(result[0][0].c_str());
+			unsigned char dSubType=atoi(result[0][1].c_str());
+
+			int ii=0;
+			if (
+				(dType==pTypeTEMP)||
+				(dType==pTypeTEMP_HUM)||
+				(dType==pTypeTEMP_HUM_BARO)||
+				(dType==pTypeWIND)||
+				(dType==pTypeUV)||
+				((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))
+				)
+			{
+				root["result"][ii]["val"]=NTYPE_TEMPERATURE;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TEMPERATURE,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TEMPERATURE,1);
+				ii++;
+			}
+			if (
+				(dType==pTypeHUM)||
+				(dType==pTypeTEMP_HUM)||
+				(dType==pTypeTEMP_HUM_BARO)
+				)
+			{
+				root["result"][ii]["val"]=NTYPE_HUMIDITY;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_HUMIDITY,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_HUMIDITY,1);
+				ii++;
+			}
+			if (dType==pTypeRAIN)
+			{
+				root["result"][ii]["val"]=NTYPE_RAIN;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_RAIN,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_RAIN,1);
+				ii++;
+			}
+			if (dType==pTypeWIND)
+			{
+				root["result"][ii]["val"]=NTYPE_WIND;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_WIND,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_WIND,1);
+				ii++;
+			}
+			if (dType==pTypeUV)
+			{
+				root["result"][ii]["val"]=NTYPE_UV;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_UV,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_UV,1);
+				ii++;
+			}
+			if (
+				(dType==pTypeTEMP_HUM_BARO)||
+				(dType==pTypeBARO)
+				)
+			{
+				root["result"][ii]["val"]=NTYPE_BARO;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_BARO,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_BARO,1);
+				ii++;
+			}
+		}
+		else if (cparam=="addnotification")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
 			std::string ntype=m_pWebEm->FindValue("ntype");
-			if ((idx=="")||(ntype==""))
+			if (idx=="")
 				goto exitjson;
 		
 			if (ntype=="light")
@@ -1449,48 +1525,48 @@ char * CWebServer::GetJSonPage()
 				m_pMain->m_sql.RemoveDeviceNotifications(idx);
 				m_pMain->m_sql.AddNotification(idx,"");
 			}
-			else if (ntype=="temp")
+			else
 			{
 				std::string stype=m_pWebEm->FindValue("ttype");
 				std::string swhen=m_pWebEm->FindValue("twhen");
 				std::string svalue=m_pWebEm->FindValue("tvalue");
 				if ((stype=="")||(swhen=="")||(swhen==""))
 					goto exitjson;
+
 				root["status"]="OK";
 				root["title"]="AddNotification";
-				unsigned char ttype=(stype=="0")?'T':'H';
+
+				_eNotificationTypes ntype=(_eNotificationTypes)atoi(stype.c_str());
+				std::string ttype=Notification_Type_Desc(ntype,1);
 				unsigned char twhen=(swhen=="0")?'>':'<';
-				sprintf(szTmp,"%c;%c;%s",ttype,twhen,svalue.c_str());
+				sprintf(szTmp,"%s;%c;%s",ttype.c_str(),twhen,svalue.c_str());
 				m_pMain->m_sql.AddNotification(idx,szTmp);
 			}
 		}
 		else if (cparam=="updatenotification")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
-			std::string ntype=m_pWebEm->FindValue("ntype");
-			if ((idx=="")||(ntype==""))
+			if (idx=="")
 				goto exitjson;
 
-			if (ntype=="temp")
-			{
-				std::string stype=m_pWebEm->FindValue("ttype");
-				std::string swhen=m_pWebEm->FindValue("twhen");
-				std::string svalue=m_pWebEm->FindValue("tvalue");
-				if ((stype=="")||(swhen=="")||(swhen==""))
-					goto exitjson;
-				root["status"]="OK";
-				root["title"]="UpdateNotification";
-				unsigned char ttype=(stype=="0")?'T':'H';
-				unsigned char twhen=(swhen=="0")?'>':'<';
-				sprintf(szTmp,"%c;%c;%s",ttype,twhen,svalue.c_str());
-				m_pMain->m_sql.UpdateNotification(idx,szTmp);
-			}
+			std::string stype=m_pWebEm->FindValue("ttype");
+			std::string swhen=m_pWebEm->FindValue("twhen");
+			std::string svalue=m_pWebEm->FindValue("tvalue");
+			if ((stype=="")||(swhen=="")||(swhen==""))
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="UpdateNotification";
+			_eNotificationTypes ntype=(_eNotificationTypes)atoi(stype.c_str());
+			std::string ttype=Notification_Type_Desc(ntype,1);
+			unsigned char twhen=(swhen=="0")?'>':'<';
+			sprintf(szTmp,"%s;%c;%s",ttype.c_str(),twhen,svalue.c_str());
+			m_pMain->m_sql.UpdateNotification(idx,szTmp);
 		}
 		else if (cparam=="deletenotification")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
 			std::string ntype=m_pWebEm->FindValue("ntype");
-			if ((idx=="")||(ntype==""))
+			if (idx=="")
 				goto exitjson;
 
 			root["status"]="OK";
@@ -1500,7 +1576,7 @@ char * CWebServer::GetJSonPage()
 			{
 				m_pMain->m_sql.RemoveDeviceNotifications(idx);
 			}
-			else if (ntype=="temp")
+			else
 			{
 				m_pMain->m_sql.RemoveNotification(idx);
 			}

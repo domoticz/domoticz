@@ -280,12 +280,6 @@ function AddTimer()
 	});
 }
 
-/* Get the rows which are currently selected */
-function fnGetSelected( oTableLocal )
-{
-    return oTableLocal.$('tr.row_selected');
-}
-
 function EnableDisableDays(TypeStr, bDisabled)
 {
 		$('#lightcontent #timerparamstable #ChkMon').prop('checked', ((TypeStr.indexOf("Mon") >= 0)||(TypeStr=="Everyday")||(TypeStr=="Weekdays")) ? true : false);
