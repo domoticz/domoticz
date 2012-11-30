@@ -19,15 +19,15 @@
 				</td>
 			</tr>
 		</table>
-		</br>
+		<br>
 		<table class="display" id="hardwareparamstable" border="0" cellpadding="0" cellspacing="20">
 			<tr>
-				<td align="right" width="110px"><label for="name">Name:</label></td>
+				<td align="right" style="width:110px"><label for="name">Name:</label></td>
 				<td><input type="text" id="hardwarename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
 			</tr>
 			<tr>
-				<td align="right" width="110px"><label for="name">Type:</label></td>
-				<td><select id="combotype" style="width:410px" class="combobox ui-widget-content ui-corner-all">
+				<td align="right" style="width:110px"><label for="name">Type:</label></td>
+				<td><select id="combotype" style="width:410px" class="combobox ui-corner-all">
 						<!--#embed hardwaretypes -->
 						</select>
 				</td>
@@ -37,8 +37,8 @@
 			<br>
 			<table class="display" id="hardwareparamsserial" border="0" cellpadding="0" cellspacing="20">
 				<tr>
-					<td align="right" width="110px"><label id="lblserialport" for="name">Serial Port:</label></td>
-					<td><select id="comboserialport" style="width:100px" class="combobox ui-widget-content ui-corner-all">
+					<td align="right" style="width:110px"><label id="lblserialport" for="name">Serial Port:</label></td>
+					<td><select id="comboserialport" style="width:100px" class="combobox ui-corner-all">
 							<!--#embed serialdevices -->
 							</select>
 					</td>
@@ -49,11 +49,11 @@
 			<br>
 			<table class="display" id="hardwareparamsremote" border="0" cellpadding="0" cellspacing="20">
 				<tr>
-					<td align="right" width="110px"><label id="lblremoteaddress" for="name">Remote Address:</label></td>
+					<td align="right" style="width:110px"><label id="lblremoteaddress" for="name">Remote Address:</label></td>
 					<td><input type="text" id="tcpaddress" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
 				</tr>
 				<tr>
-					<td align="right" width="110px"><label id="lblremoteport" for="name">port:</label></td>
+					<td align="right" style="width:110px"><label id="lblremoteport" for="name">port:</label></td>
 					<td><input type="text" id="tcpport" style="width: 50px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
 				</tr>
 			</table>
@@ -62,16 +62,16 @@
 			<br>
 			<table class="display" id="hardwareparamslogin" border="0" cellpadding="0" cellspacing="20">
 				<tr>
-					<td align="right" width="110px"><label id="lblusername" for="name">Username:</label></td>
+					<td align="right" style="width:110px"><label id="lblusername" for="name">Username:</label></td>
 					<td><input type="text" id="username" style="width: 150px; padding: .4em;" class="text ui-widget-content ui-corner-all" />
 				</tr>
 				<tr>
-					<td align="right" width="110px"><label id="lblpassword" for="name">Password:</label></td>
+					<td align="right" style="width:110px"><label id="lblpassword" for="name">Password:</label></td>
 					<td><input type="password" id="password" style="width: 150px; padding: .4em;" class="text ui-widget-content ui-corner-all" />
 				</tr>
 			</table>
 		</div>
-		</br>
+		<br>
     <a class="btnstyle3" href="#" onclick="AddHardware();">Add</a>
 </div>
 
@@ -81,8 +81,9 @@ function DeleteHardware(idx)
 {
 	var bValid = false;
 	bValid=(confirm("Are you sure to delete this Hardware?\n\nThis action can not be undone...\nAll Devices attached will be removed!")==true);
-	if (bValid == false)
+	if (bValid == false) {
 		return;
+	}
 	$.ajax({
 		 url: "json.htm?type=command&param=deletehardware&idx=" + idx,
 		 async: false, 
@@ -299,12 +300,6 @@ function AddHardware()
 	}
 }
 
-/* Get the rows which are currently selected */
-function fnGetSelected( oTableLocal )
-{
-    return oTableLocal.$('tr.row_selected');
-}
-
 function RefreshHardwareTable()
 {
   $('#modal').show();
@@ -418,7 +413,6 @@ function ShowHardware()
   var htmlcontent = "";
   htmlcontent+=$('#hardwaremain').html();
   $('#hardwarecontent').html(htmlcontent);
- 
   oTable = $('#hardwaretable').dataTable( {
                   "sDom": '<"H"lfrC>t<"F"ip>',
                   "oTableTools": {

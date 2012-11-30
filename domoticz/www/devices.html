@@ -8,13 +8,13 @@
 </div>
         <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr>
-          <td align="Left" width="100px">
+          <td align="Left" style="width:100px">
             <a id="mUsed" class="btnstyle3" href="#" onclick="ShowDevices('used');">Used</a>
           </td>
           <td align="center">
             <a id="mAll" class="btnstyle3-sel" href="#" onclick="ShowDevices('all');">All Devices</a>
           </td>
-          <td align="right" width="100px">
+          <td align="right" style="width:100px">
             <a id="mUnknown" class="btnstyle3" href="#" onclick="ShowDevices('unknown');">Not Used</a>
           </td>
         </tr>
@@ -46,8 +46,9 @@ function AddDevice(idx)
 
 function DeleteDevice(idx)
 {
-  if (confirm("Are you sure to remove this Device?")==false)
+  if (confirm("Are you sure to remove this Device?")==false) {
     return;
+  }
     $.ajax({
        url: "json.htm?type=setused&idx=" + idx + '&used=false',
        async: false, 
@@ -130,7 +131,7 @@ $(document).ready(function() {
 				$('#devices').dataTable( {
 					"sDom": '<"H"lfrC>t<"F"ip>',
 					"oTableTools": {
-						"sRowSelect": "single",
+						"sRowSelect": "single"
 					},
 					"aoColumnDefs": [
             { "bSortable": false, "aTargets": [ 0,7 ] }

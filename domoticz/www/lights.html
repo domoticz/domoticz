@@ -3,11 +3,11 @@
     <fieldset>
         <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td align="right" width="60px"><label for="name">Name: </label></td>
+          <td align="right" style="width:60px"><label for="name">Name: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
         <tr>
           <td align="right"><label for="switchtype">Type: </label></td>
-          <td><select id="comboswitchtype" style="width:150px" class="combobox ui-widget-content ui-corner-all">
+          <td><select id="comboswitchtype" style="width:150px" class="combobox ui-corner-all">
             <!--#embed switchtypes -->
           </select></td>
 		    </tr>
@@ -20,7 +20,7 @@
     <fieldset>
         <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td align="right" width="60px"><label for="name">Enabled: </label></td>
+          <td align="right" style="width:60px"><label for="name">Enabled: </label></td>
           <td><input type="checkbox" id="enabled"/></td>
         </tr>
 		    </table>
@@ -32,11 +32,11 @@
     <fieldset>
         <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td align="right" width="60px"><label for="name">Name: </label></td>
+          <td align="right" style="width:60px"><label for="name">Name: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
         <tr>
           <td align="right"><label for="switchtype">Type: </label></td>
-          <td><select id="comboswitchtype" style="width:150px" class="combobox ui-widget-content ui-corner-all">
+          <td><select id="comboswitchtype" style="width:150px" class="combobox ui-corner-all">
             <!--#embed switchtypes -->
           </select></td>
 		    </tr>
@@ -88,29 +88,29 @@
 				</td>
 			</tr>
 		</table>
-		</br>
+		<br>
 		<table class="display" id="timerparamstable" border="0" cellpadding="0" cellspacing="20">
 			<tr>
-				<td align="right" width="80px"><label for="name">Enabled:</label></td>
+				<td align="right" style="width:80px"><label for="name">Enabled:</label></td>
 				<td><input type="checkbox" id="enabled"/></td>
 			</tr>
 			<tr>
-				<td align="right" width="80px"><label for="name">Type:</label></td>
-				<td><select id="combotype" style="width:150px" class="combobox ui-widget-content ui-corner-all">
+				<td align="right" style="width:80px"><label for="name">Type:</label></td>
+				<td><select id="combotype" style="width:150px" class="combobox ui-corner-all">
 						<!--#embed timertypes -->
 						</select>
 				</td>
 			</tr>
 			<tr>
-				<td align="right" width="80px"><label for="name">Time:</label></td>
-				<td><select id="combotimehour" style="width:50px" class="combobox ui-widget-content ui-corner-all"></select>
+				<td align="right" style="width:80px"><label for="name">Time:</label></td>
+				<td><select id="combotimehour" style="width:50px" class="combobox ui-corner-all"></select>
 						:
-						<select id="combotimemin" style="width:50px" class="combobox ui-widget-content ui-corner-all"></select>
+						<select id="combotimemin" style="width:50px" class="combobox ui-corner-all"></select>
 				</td>
 			</tr>
 			<tr>
-				<td align="right" width="80px"><label for="name">Command:</label></td>
-				<td><select id="combocommand" style="width:50px" class="combobox ui-widget-content ui-corner-all">
+				<td align="right" style="width:80px"><label for="name">Command:</label></td>
+				<td><select id="combocommand" style="width:50px" class="combobox ui-corner-all">
 						<option value="0">On</option>
 						<option value="1">Off</option>
 						</select>
@@ -118,7 +118,7 @@
 			</tr>
 			<tr><td></td></tr>
 			<tr>
-				<td align="right" width="80px"><label for="name">When:</label></td>
+				<td align="right" style="width:80px"><label for="name">When:</label></td>
 				<td>
 					<input type="radio" name="when" id="when_1" value="Everyday" checked>&nbsp;Everyday<br><br>
 					<input type="radio" name="when" id="when_2" value="Weekdays">&nbsp;Weekdays<br><br>
@@ -128,7 +128,7 @@
 			</tr>
 			<tr><td></td></tr>
 			<tr>
-				<td align="right" width="80px"><label for="name">Days:</label></td>
+				<td align="right" style="width:80px"><label for="name">Days:</label></td>
 				<td>
 					<input type="checkbox" id="ChkMon"/>&nbsp;Monday&nbsp;
 					<input type="checkbox" id="ChkTue"/>&nbsp;Tuesday&nbsp;
@@ -140,7 +140,7 @@
 				</td>
 			</tr>
 		</table>
-		</br>
+		<br>
     <a class="btnstyle3" href="#" onclick="AddTimer();">Add</a>
 </div>
 
@@ -777,7 +777,7 @@ $(document).ready(function() {
     $( "#dialog-addlightdevice" ).dialog({
           autoOpen: false,
           width: 380,
-          height: 190,
+          height: 210,
           modal: true,
           resizable: false,
           buttons: {
@@ -856,7 +856,7 @@ $(document).ready(function() {
     $( "#dialog-editlightdevice" ).dialog({
           autoOpen: false,
           width: 380,
-          height: 190,
+          height: 210,
           modal: true,
           resizable: false,
           buttons: {

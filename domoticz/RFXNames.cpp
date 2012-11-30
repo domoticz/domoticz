@@ -446,6 +446,7 @@ void GetLightStatus(
 		}
 		break;
 	case pTypeLighting2:
+		llevel=(int)float((100.0f/15.0f)*atof(sValue.c_str()));
 		switch (dSubType)
 		{
 		case sTypeAC:
@@ -462,7 +463,7 @@ void GetLightStatus(
 				lstatus="On";
 				break;
 			case light2_sSetLevel:
-				sprintf(szTmp,"Set Level: %d", atoi(sValue.c_str()));
+				sprintf(szTmp,"Set Level: %d", llevel);
 				if (sValue!="0")
 					lstatus=szTmp;
 				else
@@ -486,6 +487,7 @@ void GetLightStatus(
 		}
 		break;
 	case pTypeLighting5:
+		llevel=int((100.0f/15.0f)*atof(sValue.c_str()));
 		switch (dSubType)
 		{
 		case sTypeLightwaveRF:
@@ -536,7 +538,7 @@ void GetLightStatus(
 				lstatus="Open inline relay";
 				break;
 			case light5_sSetLevel:
-				sprintf(szTmp,"Set Level: %.2f %%" ,atof(sValue.c_str()));
+				sprintf(szTmp,"Set Level: %.2f %%" ,llevel);
 				if (sValue!="0")
 					lstatus=szTmp;
 				else

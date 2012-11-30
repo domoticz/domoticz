@@ -4819,7 +4819,7 @@ bool MainWorker::SwitchLight(unsigned long long idx, std::string switchcmd, unsi
 				std::cout << HEX((unsigned char)pData[ii]);
 			}
 */
-			WriteToDevice(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING2));
+			WriteToDevice(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING1));
 			//send to internal for now (later we use the ACK)
 			DecodeRXMessage(HardwareID,(const unsigned char *)&lcmd);
 			return true;
