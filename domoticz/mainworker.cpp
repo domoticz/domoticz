@@ -8,6 +8,7 @@
 
 #include "RFXComSerial.h"
 #include "RFXComTCP.h"
+#include "DomoticzTCP.h"
 
 //#define PARSE_RFXCOM_DEVICE_LOG
 
@@ -29,13 +30,13 @@ MainWorker::MainWorker()
 MainWorker::~MainWorker()
 {
 	Stop();
-	ClearDomoticzDevices();
+	ClearDomoticzHardware();
 }
 
-void MainWorker::StartDomoticzDevices()
+void MainWorker::StartDomoticzHardware()
 {
-	std::vector<CDomoticzDeviceBase*>::iterator itt;
-	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
+	std::vector<CDomoticzHardwareBase*>::iterator itt;
+	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
 	{
 		if (!(*itt)->IsStarted())
 		{
@@ -44,55 +45,55 @@ void MainWorker::StartDomoticzDevices()
 	}
 }
 
-void MainWorker::StopDomoticzDevices()
+void MainWorker::StopDomoticzHardware()
 {
 	boost::lock_guard<boost::mutex> l(m_devicemutex);
-	std::vector<CDomoticzDeviceBase*>::iterator itt;
-	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
+	std::vector<CDomoticzHardwareBase*>::iterator itt;
+	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
 	{
 		(*itt)->Stop();
 	}
 }
 
-void MainWorker::SendResetCommand(CDomoticzDeviceBase *pDevice)
+void MainWorker::SendResetCommand(CDomoticzHardwareBase *pHardware)
 {
-	pDevice->m_bEnableReceive=false;
+	pHardware->m_bEnableReceive=false;
 
 	//Send Reset
-	SendCommand(pDevice->HwdID,cmdRESET,"Reset");
+	SendCommand(pHardware->m_HwdID,cmdRESET,"Reset");
 
 	//wait at least 50ms
 	boost::this_thread::sleep(boost::posix_time::millisec(500));
 
 	//clear buffer, and enable receive
-	pDevice->m_rxbufferpos=0;
-	pDevice->m_bEnableReceive=true;
+	pHardware->m_rxbufferpos=0;
+	pHardware->m_bEnableReceive=true;
 
-	SendCommand(pDevice->HwdID,cmdSTATUS,"Status");
+	SendCommand(pHardware->m_HwdID,cmdSTATUS,"Status");
 }
 
-void MainWorker::AddDomoticzDevice(CDomoticzDeviceBase *pDevice)
+void MainWorker::AddDomoticzHardware(CDomoticzHardwareBase *pHardware)
 {
-	int devidx=FindDomoticzDevice(pDevice->HwdID);
+	int devidx=FindDomoticzHardware(pHardware->m_HwdID);
 	if (devidx!=-1) //it is already there!, remove it
 	{
-		RemoveDomoticzDevice(m_devices[devidx]);
+		RemoveDomoticzHardware(m_hardwaredevices[devidx]);
 	}
 	boost::lock_guard<boost::mutex> l(m_devicemutex);
-	pDevice->sDecodeRXMessage.connect( boost::bind( &MainWorker::DecodeRXMessage, this, _1, _2 ) );
-	pDevice->sOnConnected.connect( boost::bind( &MainWorker::OnDeviceConnected, this, _1 ) );
-	m_devices.push_back(pDevice);
+	pHardware->sDecodeRXMessage.connect( boost::bind( &MainWorker::DecodeRXMessage, this, _1, _2 ) );
+	pHardware->sOnConnected.connect( boost::bind( &MainWorker::OnHardwareConnected, this, _1 ) );
+	m_hardwaredevices.push_back(pHardware);
 }
 
-void MainWorker::RemoveDomoticzDevice(CDomoticzDeviceBase *pDevice)
+void MainWorker::RemoveDomoticzHardware(CDomoticzHardwareBase *pHardware)
 {
 	boost::lock_guard<boost::mutex> l(m_devicemutex);
-	std::vector<CDomoticzDeviceBase*>::iterator itt;
-	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
+	std::vector<CDomoticzHardwareBase*>::iterator itt;
+	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
 	{
-		CDomoticzDeviceBase *pOrgDevice=*itt;
-		if (pOrgDevice==pDevice) {
-			m_devices.erase(itt);
+		CDomoticzHardwareBase *pOrgDevice=*itt;
+		if (pOrgDevice==pHardware) {
+			m_hardwaredevices.erase(itt);
 			pOrgDevice->Stop();
 			delete pOrgDevice;
 			return;
@@ -100,38 +101,38 @@ void MainWorker::RemoveDomoticzDevice(CDomoticzDeviceBase *pDevice)
 	}
 }
 
-void MainWorker::RemoveDomoticzDevice(int HwdId)
+void MainWorker::RemoveDomoticzHardware(int HwdId)
 {
-	int dpos=FindDomoticzDevice(HwdId);
+	int dpos=FindDomoticzHardware(HwdId);
 	if (dpos==-1)
 		return;
-	RemoveDomoticzDevice(m_devices[dpos]);
+	RemoveDomoticzHardware(m_hardwaredevices[dpos]);
 }
 
-int MainWorker::FindDomoticzDevice(int HwdId)
+int MainWorker::FindDomoticzHardware(int HwdId)
 {
 	boost::lock_guard<boost::mutex> l(m_devicemutex);
-	std::vector<CDomoticzDeviceBase*>::iterator itt;
-	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
+	std::vector<CDomoticzHardwareBase*>::iterator itt;
+	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
 	{
-		if ((*itt)->HwdID==HwdId)
+		if ((*itt)->m_HwdID==HwdId)
 		{
-			return (itt-m_devices.begin());
+			return (itt-m_hardwaredevices.begin());
 		}
 	}
 	return -1;
 }
 
-void MainWorker::ClearDomoticzDevices()
+void MainWorker::ClearDomoticzHardware()
 {
 	boost::lock_guard<boost::mutex> l(m_devicemutex);
-	std::vector<CDomoticzDeviceBase*>::iterator itt;
-	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
+	std::vector<CDomoticzHardwareBase*>::iterator itt;
+	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
 	{
-		CDomoticzDeviceBase* pOrgDevice=(*itt);
+		CDomoticzHardwareBase* pOrgDevice=(*itt);
 //		delete pOrgDevice;
 	}
-	m_devices.clear();
+	m_hardwaredevices.clear();
 }
 
 /* sunset/sunrise
@@ -216,7 +217,7 @@ std::string MainWorker::GetWebserverPort()
 	return m_webserverport;
 }
 
-bool MainWorker::AddDeviceFromParams(
+bool MainWorker::AddHardwareFromParams(
 	int ID,
 	std::string Name,
 	_eHardwareTypes Type,
@@ -229,7 +230,9 @@ bool MainWorker::AddDeviceFromParams(
 	unsigned char Mode5)
 {
 	char szSerialPort[100];
-	CDomoticzDeviceBase *pDevice=NULL;
+	CDomoticzHardwareBase *pHardware=NULL;
+
+	RemoveDomoticzHardware(ID);
 
 	switch (Type)
 	{
@@ -241,17 +244,21 @@ bool MainWorker::AddDeviceFromParams(
 #else
 		sprintf(szSerialPort,"/dev/ttyUSB%d",Port);
 #endif
-		pDevice = new RFXComSerial(ID,szSerialPort,38400);
+		pHardware = new RFXComSerial(ID,szSerialPort,38400);
 		break;
 	case HTYPE_RFXLAN:
 		//LAN
-		pDevice = new RFXComTCP(ID, Address, Port);
+		pHardware = new RFXComTCP(ID, Address, Port);
+		break;
+	case HTYPE_Domoticz:
+		//LAN
+		pHardware = new DomoticzTCP(ID, Address, Port, Username, Password);
 		break;
 	}
-	if (pDevice)
+	if (pHardware)
 	{
-		pDevice->Name=Name;
-		AddDomoticzDevice(pDevice);
+		pHardware->Name=Name;
+		AddDomoticzHardware(pHardware);
 		m_hardwareStartCounter=0;
 		m_bStartHardware=true;
 		return true;
@@ -290,7 +297,7 @@ bool MainWorker::Start()
 			unsigned char mode3=(unsigned char)atoi(sd[9].c_str());
 			unsigned char mode4=(unsigned char)atoi(sd[10].c_str());
 			unsigned char mode5=(unsigned char)atoi(sd[11].c_str());
-			AddDeviceFromParams(ID,Name,Type,Address,Port,Username,Password,mode1,mode2,mode3,mode4,mode5);
+			AddHardwareFromParams(ID,Name,Type,Address,Port,Username,Password,mode1,mode2,mode3,mode4,mode5);
 		}
 	}
 	return true;
@@ -301,7 +308,7 @@ bool MainWorker::Stop()
 {
 	m_scheduler.StopScheduler();
 	m_webserver.StopServer();
-	StopDomoticzDevices();
+	StopDomoticzHardware();
 
 	if (m_thread!=NULL)
 	{
@@ -395,7 +402,7 @@ void MainWorker::Do_Work()
 			if (m_hardwareStartCounter>=2)
 			{
 				m_bStartHardware=false;
-				StartDomoticzDevices();
+				StartDomoticzHardware();
 			}
 		}
 
@@ -447,7 +454,7 @@ void MainWorker::Do_Work()
 
 void MainWorker::SendCommand(const int HwdID, unsigned char Cmd, const char *szMessage)
 {
-	int hindex=FindDomoticzDevice(HwdID);
+	int hindex=FindDomoticzHardware(HwdID);
 	if (hindex==-1)
 		return;
 #ifdef _DEBUG
@@ -459,7 +466,7 @@ void MainWorker::SendCommand(const int HwdID, unsigned char Cmd, const char *szM
 	cmd.ICMND.packetlength = 13;
 	cmd.ICMND.packettype = 0;
 	cmd.ICMND.subtype = 0;
-	cmd.ICMND.seqnbr = m_devices[hindex]->m_SeqNr++;
+	cmd.ICMND.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
 	cmd.ICMND.cmnd = Cmd;
 	cmd.ICMND.msg1 = 0;
 	cmd.ICMND.msg2 = 0;
@@ -470,15 +477,15 @@ void MainWorker::SendCommand(const int HwdID, unsigned char Cmd, const char *szM
 	cmd.ICMND.msg7 = 0;
 	cmd.ICMND.msg8 = 0;
 	cmd.ICMND.msg9 = 0;
-	WriteToDevice(HwdID, (const char*)&cmd,sizeof(cmd.ICMND));
+	WriteToHardware(HwdID, (const char*)&cmd,sizeof(cmd.ICMND));
 }
 
-void MainWorker::WriteToDevice(const int HwdID, const char *pdata, const unsigned char length)
+void MainWorker::WriteToHardware(const int HwdID, const char *pdata, const unsigned char length)
 {
-	int hindex=FindDomoticzDevice(HwdID);
+	int hindex=FindDomoticzHardware(HwdID);
 	if (hindex==-1)
 		return;
-	m_devices[hindex]->WriteToDevice(pdata,length);
+	m_hardwaredevices[hindex]->WriteToHardware(pdata,length);
 }
 
 void MainWorker::WriteMessage(const char *szMessage)
@@ -493,12 +500,28 @@ void MainWorker::WriteMessage(const char *szMessage, bool linefeed)
 		std::cout << std::endl;
 }
 
-void MainWorker::OnDeviceConnected(CDomoticzDeviceBase *pDevice)
+void MainWorker::OnHardwareConnected(CDomoticzHardwareBase *pHardware)
 {
-	SendResetCommand(pDevice);
+	//see if we need to share this hardware, if so, start the share service
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+	szQuery << "SELECT Port, Username, Password, Rights FROM HardwareSharing WHERE (HardwareID == " << pHardware->m_HwdID << ")";
+	result=m_sql.query(szQuery.str());
+	if (result.size()>0)
+	{
+		std::vector<std::string> sd=result[0];
+		std::string port = sd[0];
+		std::string username = sd[1];
+		std::string password = sd[2];
+		int rights=atoi(sd[3].c_str());
+		pHardware->StartSharing(port,username,password,rights);
+
+	}
+
+	SendResetCommand(pHardware);
 }
 
-void MainWorker::DecodeRXMessage(const int HwdID, const unsigned char *pRXCommand)
+void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand)
 {
 	// current date/time based on current system
 	time_t now = time(0);
@@ -507,7 +530,10 @@ void MainWorker::DecodeRXMessage(const int HwdID, const unsigned char *pRXComman
 
 	// convert now to string form
 	char *szDate = asctime(localtime(&now));
-	std::cout << szDate << "HwdID: " << HwdID << " RX: Len: " << std::dec << Len << " ";
+
+	int HwdID = pHardware->m_HwdID;
+
+	std::cout << szDate << "HwdID: " << HwdID << " (" << pHardware->Name << ")" << " RX: Len: " << std::dec << Len << " ";
 
 	for (size_t ii=0; ii<Len; ii++)
 	{
@@ -4774,7 +4800,7 @@ bool MainWorker::SwitchLight(unsigned long long idx, std::string switchcmd, unsi
 	std::vector<std::string> sd=result[0];
 
 	int HardwareID = atoi(sd[0].c_str());
-	int hindex=FindDomoticzDevice(HardwareID);
+	int hindex=FindDomoticzHardware(HardwareID);
 	if (hindex==-1)
 		return false;
 
@@ -4801,7 +4827,7 @@ bool MainWorker::SwitchLight(unsigned long long idx, std::string switchcmd, unsi
 			lcmd.LIGHTING1.packetlength=sizeof(lcmd.LIGHTING1)-1;
 			lcmd.LIGHTING1.packettype=dType;
 			lcmd.LIGHTING1.subtype=dSubType;
-			lcmd.LIGHTING1.seqnbr=m_devices[hindex]->m_SeqNr++;
+			lcmd.LIGHTING1.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
 			lcmd.LIGHTING1.housecode=atoi(sd[1].c_str());
 			lcmd.LIGHTING1.unitcode=Unit;
 			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING1.cmnd))
@@ -4819,9 +4845,9 @@ bool MainWorker::SwitchLight(unsigned long long idx, std::string switchcmd, unsi
 				std::cout << HEX((unsigned char)pData[ii]);
 			}
 */
-			WriteToDevice(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING1));
+			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING1));
 			//send to internal for now (later we use the ACK)
-			DecodeRXMessage(HardwareID,(const unsigned char *)&lcmd);
+			DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
 			return true;
 		}
 		break;
@@ -4831,7 +4857,7 @@ bool MainWorker::SwitchLight(unsigned long long idx, std::string switchcmd, unsi
 			lcmd.LIGHTING2.packetlength=sizeof(lcmd.LIGHTING2)-1;
 			lcmd.LIGHTING2.packettype=dType;
 			lcmd.LIGHTING2.subtype=dSubType;
-			lcmd.LIGHTING2.seqnbr=m_devices[hindex]->m_SeqNr++;
+			lcmd.LIGHTING2.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
 			lcmd.LIGHTING2.id1=ID1;
 			lcmd.LIGHTING2.id2=ID2;
 			lcmd.LIGHTING2.id3=ID3;
@@ -4853,9 +4879,9 @@ bool MainWorker::SwitchLight(unsigned long long idx, std::string switchcmd, unsi
 				std::cout << HEX((unsigned char)pData[ii]);
 			}
 */
-			WriteToDevice(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING2));
+			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING2));
 			//send to internal for now (later we use the ACK)
-			DecodeRXMessage(HardwareID,(const unsigned char *)&lcmd);
+			DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
 			return true;
 		}
 		break;

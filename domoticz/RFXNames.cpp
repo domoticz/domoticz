@@ -538,7 +538,7 @@ void GetLightStatus(
 				lstatus="Open inline relay";
 				break;
 			case light5_sSetLevel:
-				sprintf(szTmp,"Set Level: %.2f %%" ,llevel);
+				sprintf(szTmp,"Set Level: %d %%" ,llevel);
 				if (sValue!="0")
 					lstatus=szTmp;
 				else

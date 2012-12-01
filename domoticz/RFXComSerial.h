@@ -3,9 +3,9 @@
 #define	BUFFEREDASYNCSERIAL_H
 
 #include "ASyncSerial.h"
-#include "DomoticzDevice.h"
+#include "DomoticzHardware.h"
 
-class RFXComSerial: public AsyncSerial, public CDomoticzDeviceBase
+class RFXComSerial: public AsyncSerial, public CDomoticzHardwareBase
 {
 public:
 	RFXComSerial(const int ID, const std::string& devname, unsigned int baud_rate);
@@ -37,23 +37,14 @@ public:
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;
 
-	bool Start();
-	bool Stop();
-	void WriteToDevice(const char *pdata, const unsigned char length);
+	void WriteToHardware(const char *pdata, const unsigned char length);
 private:
+	bool StartHardware();
+	bool StopHardware();
     /**
      * Read callback, stores data in the buffer
      */
     void readCallback(const char *data, size_t len);
-
-    /**
-     * Finds a substring in a vector of char. Used to look for the delimiter.
-     * \param v vector where to find the string
-     * \param s string to find
-     * \return the beginning of the place in the vector where the first
-     * occurrence of the string is, or v.end() if the string was not found
-     */
-    boost::mutex readQueueMutex;
 };
 
 #endif //BUFFEREDASYNCSERIAL_H

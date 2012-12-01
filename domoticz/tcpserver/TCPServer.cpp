@@ -1,0 +1,184 @@
+#include "stdafx.h"
+#include "TCPServer.h"
+#include "TCPClient.h"
+
+#include <boost/asio.hpp>
+#include <algorithm>
+#include <boost/bind.hpp>
+
+namespace tcp {
+namespace server {
+
+CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port):
+	io_service_(),
+	acceptor_(io_service_)
+{
+	// Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
+	boost::asio::ip::tcp::resolver resolver(io_service_);
+	boost::asio::ip::tcp::resolver::query query(address, port);
+	boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
+	acceptor_.open(endpoint.protocol());
+	acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+	acceptor_.bind(endpoint);
+	acceptor_.listen();
+
+	new_connection_= boost::shared_ptr<CTCPClient>(new CTCPClient(io_service_, this));
+
+	acceptor_.async_accept(
+		new_connection_->socket(),
+		boost::bind(&CTCPServerInt::handleAccept, this,
+		boost::asio::placeholders::error));
+}
+
+
+CTCPServerInt::~CTCPServerInt(void)
+{
+//	stopAllClient();
+}
+
+void CTCPServerInt::start()
+{
+	// The io_service::run() call will block until all asynchronous operations
+	// have finished. While the server is running, there is always at least one
+	// asynchronous operation outstanding: the asynchronous accept call waiting
+	// for new incoming connections.
+	io_service_.run();
+}
+
+void CTCPServerInt::stop()
+{
+	// Post a call to the stop function so that server::stop() is safe to call
+	// from any thread.
+	io_service_.post(boost::bind(&CTCPServerInt::handle_stop, this));
+}
+
+void CTCPServerInt::handle_stop()
+{
+	// The server is stopped by cancelling all outstanding asynchronous
+	// operations. Once all operations have finished the io_service::run() call
+	// will exit.
+	acceptor_.close();
+	stopAllClient();
+}
+
+void CTCPServerInt::handleAccept(const boost::system::error_code& error)
+{
+	if(!error) // 1.
+	{
+		boost::lock_guard<boost::mutex> l(connectionMutex);
+		//std::string s = new_connection_->socket().remote_endpoint().address().to_string();
+		//std::cout << "Incoming connection from: " << s << std::endl;
+
+		connections_.insert(new_connection_);
+		new_connection_->start();
+
+		new_connection_.reset(new CTCPClient(io_service_, this));
+
+		acceptor_.async_accept(
+			new_connection_->socket(),
+			boost::bind(&CTCPServerInt::handleAccept, this,
+			boost::asio::placeholders::error));
+	}
+}
+
+void CTCPServerInt::stopClient(CTCPClient_ptr c)
+{
+	boost::lock_guard<boost::mutex> l(connectionMutex);
+
+	//std::string s = c->socket().remote_endpoint().address().to_string();
+	//std::cout << "Closing connection from: " << s << std::endl;
+	if (connections_.find(c)!=connections_.end())
+	{
+		connections_.erase(c);
+		c->stop();
+	}
+}
+
+void CTCPServerInt::stopAllClient()
+{
+	boost::lock_guard<boost::mutex> l(connectionMutex);
+	if (connections_.size()<1)
+		return;
+	std::set<CTCPClient_ptr>::const_iterator itt;
+	for (itt=connections_.begin(); itt!=connections_.end(); ++itt)
+	{
+		CTCPClient *pClient=itt->get();
+		if (pClient)
+			pClient->stop();
+	}
+	connections_.clear();
+}
+
+void CTCPServerInt::SendToAll(const char *pData, size_t Length)
+{
+	boost::lock_guard<boost::mutex> l(connectionMutex);
+	std::set<CTCPClient_ptr>::const_iterator itt;
+	for (itt=connections_.begin(); itt!=connections_.end(); ++itt)
+	{
+		CTCPClient *pClient=itt->get();
+		if (pClient)
+			pClient->write(pData,Length);
+	}
+}
+
+//Out main (wrapper) server
+CTCPServer::CTCPServer()
+{
+	m_pTCPServer=NULL;
+}
+
+CTCPServer::~CTCPServer()
+{
+	StopServer();
+	if (m_pTCPServer!=NULL)
+		delete m_pTCPServer;
+	m_pTCPServer=NULL;
+}
+
+bool CTCPServer::StartServer(const std::string address, const std::string port, const std::string username, const std::string password, const int rights)
+{
+	m_username=username;
+	m_password=password;
+	m_rights=rights;
+
+	try
+	{
+		StopServer();
+		if (m_pTCPServer!=NULL)
+			delete m_pTCPServer;
+		m_pTCPServer=new CTCPServerInt(address,port);
+		if (!m_pTCPServer)
+			return false;
+	}
+	catch(std::exception& e)
+	{
+		std::cout << "Exception: " << e.what() << std::endl;
+		return false;
+	}
+	//Start worker thread
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CTCPServer::Do_Work, this)));
+
+	return (m_thread!=NULL);
+}
+
+void CTCPServer::StopServer()
+{
+	if (m_pTCPServer)
+		m_pTCPServer->stop();
+}
+
+void CTCPServer::Do_Work()
+{
+	if (m_pTCPServer)
+		m_pTCPServer->start();
+	//std::cout << "TCPServer stopped...\n";
+}
+
+void CTCPServer::SendToAll(const char *pData, size_t Length)
+{
+	if (m_pTCPServer)
+		m_pTCPServer->SendToAll(pData,Length);
+}
+
+} // namespace server
+} // namespace tcp

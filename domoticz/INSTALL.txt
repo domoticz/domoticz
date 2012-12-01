@@ -12,15 +12,13 @@ To stop the application: press Ctrl-C in the application screen (not in the brow
 Internet Explorer is not supported at the moment, please use another browser like chrome/firefox.
 
 Compiling from source code:
+------------------------------------------
 
-Getting the source code:
-svn checkout svn://svn.code.sf.net/p/domoticz/code/trunk domoticz-code
-
-Requirements:
+Prerequisites: (or in other words, setup your compile enviroment): 
 
 Windows:
 - VS2010 (headers can be modified to support a less version)
-- boost libraries, you probably have to set the correct include/lib folder as i did not bootstrap mine
+- boost libraries, you probably have to set the correct include/lib folder in the project properties as i did not bootstrap mine
 
 ------------------------------------------------------------------------------------------------
 Ubuntu:
@@ -71,6 +69,11 @@ cp /opt/lib/libboost_* /lib
 verify http://forum.synology.com/enu/viewtopic.php?p=185512#p185512
 to check your .profile
 ------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------
+
+Getting the source code:
+svn checkout svn://svn.code.sf.net/p/domoticz/code/trunk domoticz-code
+
 
 unpack the project in your homefile
 cd projectfolder
@@ -79,4 +82,6 @@ cmake CMakeLists.txt
 make
 
 now you should have the binary application
+
+Note: Compiling on the Raspberry Pi will take about 15 minutes
 

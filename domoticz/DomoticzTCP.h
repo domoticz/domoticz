@@ -4,11 +4,11 @@
 #include <iostream>
 #include "DomoticzHardware.h"
 
-class RFXComTCP: public CDomoticzHardwareBase
+class DomoticzTCP: public CDomoticzHardwareBase
 {
 public:
-	RFXComTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort);
-	~RFXComTCP(void);
+	DomoticzTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string username, const std::string password);
+	~DomoticzTCP(void);
 
 	virtual bool connectto(const char *serveraddr, unsigned short port);
 	virtual void disconnect();
@@ -25,6 +25,8 @@ private:
 protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
+	std::string m_username;
+	std::string m_password;
 
 	void Do_Work();
 	bool ConnectInternal();

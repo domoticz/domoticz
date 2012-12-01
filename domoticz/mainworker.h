@@ -3,7 +3,7 @@
 #include "SQLHelper.h"
 #include "WebServer.h"
 #include "RFXtrx.h"
-#include "DomoticzDevice.h"
+#include "DomoticzHardware.h"
 #include "Scheduler.h"
 
 enum eVerboseLevel
@@ -21,13 +21,13 @@ public:
 	bool Start();
 	bool Stop();
 
-	void StopDomoticzDevices();
-	void StartDomoticzDevices();
-	void AddDomoticzDevice(CDomoticzDeviceBase *pDevice);
-	void RemoveDomoticzDevice(CDomoticzDeviceBase *pDevice);
-	void RemoveDomoticzDevice(int HwdId);
-	int FindDomoticzDevice(int HwdId);
-	void ClearDomoticzDevices();
+	void StopDomoticzHardware();
+	void StartDomoticzHardware();
+	void AddDomoticzHardware(CDomoticzHardwareBase *pHardware);
+	void RemoveDomoticzHardware(CDomoticzHardwareBase *pHardware);
+	void RemoveDomoticzHardware(int HwdId);
+	int FindDomoticzHardware(int HwdId);
+	void ClearDomoticzHardware();
 
 	void SetVerboseLevel(eVerboseLevel Level);
 	void SetWebserverPort(std::string Port);
@@ -37,7 +37,7 @@ public:
 	bool SwitchLight(unsigned long long idx, std::string switchcmd, unsigned char level);
 	bool GetSunSettings();
 
-	bool AddDeviceFromParams(
+	bool AddHardwareFromParams(
 				int ID,
 				std::string Name,
 				_eHardwareTypes Type,
@@ -58,7 +58,7 @@ private:
 	bool m_bStartHardware;
 	unsigned char m_hardwareStartCounter;
 
-	std::vector<CDomoticzDeviceBase*> m_devices;
+	std::vector<CDomoticzHardwareBase*> m_hardwaredevices;
 	eVerboseLevel m_verboselevel;
 	http::server::CWebServer m_webserver;
 	std::string m_webserverport;
@@ -69,11 +69,11 @@ private:
 
 	bool StartThread();
 	void Do_Work();
-	void SendResetCommand(CDomoticzDeviceBase *pDevice);
+	void SendResetCommand(CDomoticzHardwareBase *pHardware);
 	void SendCommand(const int HwdID, unsigned char Cmd, const char *szMessage=NULL);
-	void WriteToDevice(const int HwdID, const char *pdata, const unsigned char length);
-	void DecodeRXMessage(const int HwdID, const unsigned char *pRXCommand);
-	void OnDeviceConnected(CDomoticzDeviceBase *pDevice);
+	void WriteToHardware(const int HwdID, const char *pdata, const unsigned char length);
+	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);
+	void OnHardwareConnected(CDomoticzHardwareBase *pHardware);
 
 	void WriteMessage(const char *szMessage);
 	void WriteMessage(const char *szMessage, bool linefeed);

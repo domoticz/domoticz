@@ -37,7 +37,6 @@ public:
 private:
 	MainWorker *m_pMain;
 	boost::shared_ptr<boost::thread> m_thread;
-	volatile bool m_stoprequested;
 	void Do_Work();
 	std::string m_retstr;
 	std::wstring m_wretstr;

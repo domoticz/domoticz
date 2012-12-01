@@ -24,11 +24,17 @@
     <Filter Include="Devices">
       <UniqueIdentifier>{f1967572-afca-4c81-a06e-1eb4d560bb60}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\Serial">
+    <Filter Include="TCPServer">
+      <UniqueIdentifier>{7c74c4ee-c056-4e43-98a8-248084de2d02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\RFXSerial">
       <UniqueIdentifier>{261207be-5fec-410d-9407-6a50810bd449}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\TCP">
+    <Filter Include="Devices\RFXTCP">
       <UniqueIdentifier>{041d79b0-1d2f-485b-86fd-edb5607e0f41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Domoticz">
+      <UniqueIdentifier>{222696d2-1c77-4abb-a483-83548f0b75d4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -110,23 +116,32 @@
     <ClInclude Include="SQLHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DomoticzDevice.h">
-      <Filter>Devices</Filter>
-    </ClInclude>
     <ClInclude Include="ASyncSerial.h">
-      <Filter>Devices\Serial</Filter>
+      <Filter>Devices\RFXSerial</Filter>
     </ClInclude>
     <ClInclude Include="RFXComSerial.h">
-      <Filter>Devices\Serial</Filter>
+      <Filter>Devices\RFXSerial</Filter>
     </ClInclude>
     <ClInclude Include="RFXComTCP.h">
-      <Filter>Devices\TCP</Filter>
+      <Filter>Devices\RFXTCP</Filter>
     </ClInclude>
     <ClInclude Include="UrlEncode.h">
       <Filter>HTTPClient</Filter>
     </ClInclude>
     <ClInclude Include="Scheduler.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tcpserver\TCPClient.h">
+      <Filter>TCPServer</Filter>
+    </ClInclude>
+    <ClInclude Include="tcpserver\TCPServer.h">
+      <Filter>TCPServer</Filter>
+    </ClInclude>
+    <ClInclude Include="DomoticzHardware.h">
+      <Filter>Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="DomoticzTCP.h">
+      <Filter>Devices\Domoticz</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -193,23 +208,32 @@
     <ClCompile Include="SQLHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DomoticzDevice.cpp">
-      <Filter>Devices</Filter>
-    </ClCompile>
     <ClCompile Include="ASyncSerial.cpp">
-      <Filter>Devices\Serial</Filter>
+      <Filter>Devices\RFXSerial</Filter>
     </ClCompile>
     <ClCompile Include="RFXComSerial.cpp">
-      <Filter>Devices\Serial</Filter>
+      <Filter>Devices\RFXSerial</Filter>
     </ClCompile>
     <ClCompile Include="RFXComTCP.cpp">
-      <Filter>Devices\TCP</Filter>
+      <Filter>Devices\RFXTCP</Filter>
     </ClCompile>
     <ClCompile Include="UrlEncode.cpp">
       <Filter>HTTPClient</Filter>
     </ClCompile>
     <ClCompile Include="Scheduler.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tcpserver\TCPClient.cpp">
+      <Filter>TCPServer</Filter>
+    </ClCompile>
+    <ClCompile Include="tcpserver\TCPServer.cpp">
+      <Filter>TCPServer</Filter>
+    </ClCompile>
+    <ClCompile Include="DomoticzHardware.cpp">
+      <Filter>Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="DomoticzTCP.cpp">
+      <Filter>Devices\Domoticz</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

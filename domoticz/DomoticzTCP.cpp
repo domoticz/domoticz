@@ -1,11 +1,13 @@
 #include "stdafx.h"
-#include "RFXComTCP.h"
+#include "DomoticzTCP.h"
 //#include <boost/bind.hpp>
 //#include <boost/asio.hpp>
 
-RFXComTCP::RFXComTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort)
+DomoticzTCP::DomoticzTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string username, const std::string password)
 {
 	m_HwdID=ID;
+	m_username=username;
+	m_password=password;
 #if defined WIN32
 	int ret;
 	//Init winsock
@@ -30,7 +32,7 @@ RFXComTCP::RFXComTCP(const int ID, const std::string IPAddress, const unsigned s
 	m_usIPPort=usIPPort;
 }
 
-RFXComTCP::~RFXComTCP(void)
+DomoticzTCP::~DomoticzTCP(void)
 {
 #if defined WIN32
 	//
@@ -40,7 +42,7 @@ RFXComTCP::~RFXComTCP(void)
 #endif
 }
 
-bool RFXComTCP::StartHardware()
+bool DomoticzTCP::StartHardware()
 {
 	try
 	{
@@ -63,7 +65,7 @@ bool RFXComTCP::StartHardware()
 	return true;
 }
 
-bool RFXComTCP::StopHardware()
+bool DomoticzTCP::StopHardware()
 {
 	if (isConnected())
 	{
@@ -77,7 +79,7 @@ bool RFXComTCP::StopHardware()
 	return true;
 }
 
-bool RFXComTCP::connectto(const char *serveraddr, unsigned short port)
+bool DomoticzTCP::connectto(const char *serveraddr, unsigned short port)
 {
 	disconnect();
 
@@ -113,12 +115,12 @@ bool RFXComTCP::connectto(const char *serveraddr, unsigned short port)
 		return false;
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&RFXComTCP::Do_Work, this)));
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&DomoticzTCP::Do_Work, this)));
 
 	return (m_thread!=NULL);
 }
 
-bool RFXComTCP::ConnectInternal()
+bool DomoticzTCP::ConnectInternal()
 {
 	m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (m_socket == INVALID_SOCKET)
@@ -142,7 +144,7 @@ bool RFXComTCP::ConnectInternal()
 	return true;
 }
 
-void RFXComTCP::disconnect()
+void DomoticzTCP::disconnect()
 {
 	m_stoprequested=true;
 	if (m_socket==INVALID_SOCKET)
@@ -151,7 +153,7 @@ void RFXComTCP::disconnect()
 	m_socket=INVALID_SOCKET;
 }
 
-void RFXComTCP::Do_Work()
+void DomoticzTCP::Do_Work()
 {
 	int retrycntr=0;
 
@@ -200,14 +202,14 @@ void RFXComTCP::Do_Work()
 	std::cout << "TCP/IP Worker stopped...\n";
 } 
 
-void RFXComTCP::write(const char *data, size_t size)
+void DomoticzTCP::write(const char *data, size_t size)
 {
 	if (m_socket==INVALID_SOCKET)
 		return; //not connected!
 	send(m_socket,data,size,0);
 }
 
-void RFXComTCP::WriteToHardware(const char *pdata, const unsigned char length)
+void DomoticzTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if (isConnected())
 		write(pdata,length);

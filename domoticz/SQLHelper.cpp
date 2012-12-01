@@ -141,6 +141,15 @@ const char *sqlCreateHardware =
 "[Mode4] CHAR DEFAULT 0, "
 "[Mode5] CHAR DEFAULT 0);";
 
+const char *sqlCreateHardwareSharing =
+"CREATE TABLE IF NOT EXISTS [HardwareSharing] ("
+"[ID] INTEGER PRIMARY KEY, "
+"[HardwareID] INTEGER NOT NULL, "
+"[Port] INTEGER NOT NULL, "
+"[Username] VARCHAR(100), "
+"[Password] VARCHAR(100), "
+"[Rights] INTEGER DEFAULT 0);";
+
 const char *sqlCreateUsers =
 "CREATE TABLE IF NOT EXISTS [Users] ("
 "[ID] INTEGER PRIMARY KEY, "
@@ -178,6 +187,7 @@ CSQLHelper::CSQLHelper(void)
 		query(sqlCreateWind_Calendar);
 		query(sqlCreateNotifications);
 		query(sqlCreateHardware);
+		query(sqlCreateHardwareSharing);
 		query(sqlCreateUsers);
 	}
 }
@@ -917,7 +927,7 @@ void CSQLHelper::UpdateTempVar(const char *Key, const char* sValue)
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID FROM TempVars WHERE (Key='%s')",Key);
+	sprintf(szTmp,"SELECT ROWID FROM TempVars WHERE (Key='%s')",Key);
 	result=query(szTmp);
 	if (result.size()==0)
 	{
@@ -932,7 +942,7 @@ void CSQLHelper::UpdateTempVar(const char *Key, const char* sValue)
 		//Update
 		std::stringstream s_str( result[0][0] );
 		s_str >> ID;
-		sprintf(szTmp,"UPDATE TempVars SET sValue='%s' WHERE (ID = %llu)",sValue,ID);
+		sprintf(szTmp,"UPDATE TempVars SET sValue='%s' WHERE (ROWID = %llu)",sValue,ID);
 		result = query(szTmp);
 	}
 }
@@ -1611,6 +1621,8 @@ void CSQLHelper::DeleteHardware(const std::string idx)
 	char szTmp[1000];
 	sprintf(szTmp,"DELETE FROM Hardware WHERE (ID == %s)",idx.c_str());
 	result=query(szTmp);
+	sprintf(szTmp,"DELETE FROM HardwareSharing WHERE (HardwareID == %s)",idx.c_str());
+	query(szTmp);
 	//also delete all records in other tables
 
 	sprintf(szTmp,"SELECT ID FROM DeviceStatus WHERE (HardwareID == %s)",idx.c_str());

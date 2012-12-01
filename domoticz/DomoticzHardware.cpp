@@ -1,19 +1,49 @@
 #include "stdafx.h"
-#include "DomoticzDevice.h"
+#include "DomoticzHardware.h"
 
-CDomoticzDeviceBase::CDomoticzDeviceBase()
+CDomoticzHardwareBase::CDomoticzHardwareBase()
 {
-	HwdID=0; //should be uniquely assigned
+	m_HwdID=0; //should be uniquely assigned
 	m_bEnableReceive=false;
 	m_rxbufferpos=0;
 	m_SeqNr=0;
 	m_bIsStarted=false;
 };
 
-void CDomoticzDeviceBase::onRFXMessage(const unsigned char *pBuffer, const size_t Len)
+bool CDomoticzHardwareBase::StartSharing(const std::string port, const std::string username, const std::string password, const int rights)
+{
+	try {
+		m_sharedserver.StartServer("0.0.0.0",port, username, password, rights);
+	} catch(...)
+	{
+		return false;
+	}
+	return true;
+}
+
+bool CDomoticzHardwareBase::Start()
+{
+	return StartHardware();
+}
+
+bool CDomoticzHardwareBase::Stop()
+{
+	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	StopSharing();
+	return StopHardware();
+}
+
+void CDomoticzHardwareBase::StopSharing()
+{
+	m_sharedserver.StopServer();
+}
+
+void CDomoticzHardwareBase::onRFXMessage(const unsigned char *pBuffer, const size_t Len)
 {
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
+
+	m_sharedserver.SendToAll((const char*)pBuffer,Len);
 
 	size_t ii=0;
 	while (ii<Len)
@@ -46,7 +76,7 @@ void CDomoticzDeviceBase::onRFXMessage(const unsigned char *pBuffer, const size_
 		}
 		if (m_rxbufferpos > m_rxbuffer[0])
 		{
-			sDecodeRXMessage(HwdID, (const unsigned char *)&m_rxbuffer);//decode message
+			sDecodeRXMessage(this, (const unsigned char *)&m_rxbuffer);//decode message
 			m_rxbufferpos = 0;    //set to zero to receive next message
 		}
 		ii++;

@@ -13,7 +13,7 @@
 //
 RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned int baud_rate)
 {
-	HwdID=ID;
+	m_HwdID=ID;
 	m_szSerialPort=devname;
 	m_iBaudRate=baud_rate;
 }
@@ -36,7 +36,7 @@ RFXComSerial::~RFXComSerial()
 #define HEX( x ) \
 	std::setw(2) << std::setfill('0') << std::hex << (int)( x )
 
-bool RFXComSerial::Start()
+bool RFXComSerial::StartHardware()
 {
 	//Try to open the Serial Port
 	try
@@ -63,7 +63,7 @@ bool RFXComSerial::Start()
 	return true;
 }
 
-bool RFXComSerial::Stop()
+bool RFXComSerial::StopHardware()
 {
 	if (isOpen())
 	{
@@ -85,7 +85,7 @@ void RFXComSerial::readCallback(const char *data, size_t len)
 }
 
 
-void RFXComSerial::WriteToDevice(const char *pdata, const unsigned char length)
+void RFXComSerial::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if (isOpen())
 		write(pdata,length);

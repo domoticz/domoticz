@@ -14,7 +14,6 @@ namespace http {
 CWebServer::CWebServer(void)
 {
 	m_pWebEm=NULL;
-	m_stoprequested=false;
 }
 
 
@@ -646,6 +645,7 @@ char * CWebServer::GetJSonPage()
 	}
 
 	std::vector<std::vector<std::string> > result;
+	std::vector<std::vector<std::string> > result2;
 	std::stringstream szQuery;
 	char szData[100];
 	char szTmp[300];
@@ -679,6 +679,31 @@ char * CWebServer::GetJSonPage()
 				root["result"][ii]["Mode3"]=(unsigned char)atoi(sd[9].c_str());
 				root["result"][ii]["Mode4"]=(unsigned char)atoi(sd[10].c_str());
 				root["result"][ii]["Mode5"]=(unsigned char)atoi(sd[11].c_str());
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT Port, Username, Password, Rights FROM HardwareSharing WHERE (HardwareID == " << sd[0] << ")";
+				result2=m_pMain->m_sql.query(szQuery.str());
+				if (result2.size()>0)
+				{
+					//shared
+					sd=result2[0];
+					root["result"][ii]["Shared"]="true";
+					root["result"][ii]["SharedPort"]=sd[0];
+					root["result"][ii]["SharedUsername"]=sd[1];
+					root["result"][ii]["SharedPassword"]=sd[2];
+					root["result"][ii]["SharedRights"]=sd[3];
+				}
+				else
+				{
+					//not shared
+					root["result"][ii]["Shared"]="false";
+					root["result"][ii]["SharedPort"]="";
+					root["result"][ii]["SharedUsername"]="";
+					root["result"][ii]["SharedPassword"]="";
+					root["result"][ii]["SharedRights"]="";
+				}
+
 				ii++;
 			}
 		}
@@ -1629,6 +1654,18 @@ char * CWebServer::GetJSonPage()
 			}
 			else
 				goto exitjson;
+
+			std::string shared=m_pWebEm->FindValue("shared");
+			std::string shareport=m_pWebEm->FindValue("shareport");
+			std::string shareusername=m_pWebEm->FindValue("shareusername");
+			std::string sharepassword=m_pWebEm->FindValue("sharepassword");
+			std::string sharerights=m_pWebEm->FindValue("sharerights");
+			int nsharerights=atoi(sharerights.c_str());
+			int nshareport=atoi(shareport.c_str());
+
+			if ((shared=="true")&&(shareport==""))
+				goto exitjson;
+
 			root["status"]="OK";
 			root["title"]="AddHardware";
 			sprintf(szTmp,
@@ -1642,6 +1679,7 @@ char * CWebServer::GetJSonPage()
 				mode1,mode2,mode3,mode4,mode5
 				);
 			result=m_pMain->m_sql.query(szTmp);
+
 			//add the device for real in our system
 			strcpy(szTmp,"SELECT MAX(ID) FROM Hardware");
 			result=m_pMain->m_sql.query(szTmp);
@@ -1649,7 +1687,21 @@ char * CWebServer::GetJSonPage()
 			{
 				std::vector<std::string> sd=result[0];
 				int ID=atoi(sd[0].c_str());
-				m_pMain->AddDeviceFromParams(ID,name,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
+
+				if (shared=="true") {
+					//add sharing
+					sprintf(szTmp,
+						"INSERT INTO HardwareSharing (HardwareID, Port, Username, Password, Rights) VALUES (%d,%d,'%s','%s',%d)",
+						ID,
+						nshareport,
+						shareusername.c_str(),
+						sharepassword.c_str(),
+						nsharerights
+						);
+					result=m_pMain->m_sql.query(szTmp);
+				}
+
+				m_pMain->AddHardwareFromParams(ID,name,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
 			}
 		}
 		else if (cparam=="updatehardware")
@@ -1669,10 +1721,11 @@ char * CWebServer::GetJSonPage()
 				(sport=="")
 				)
 				goto exitjson;
+
 			_eHardwareTypes htype=(_eHardwareTypes)atoi(shtype.c_str());
+
 			int port=atoi(sport.c_str());
-			if (port==0)
-				goto exitjson;
+
 			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433))
 			{
 				//USB
@@ -1690,6 +1743,17 @@ char * CWebServer::GetJSonPage()
 			else
 				goto exitjson;
 
+			std::string shared=m_pWebEm->FindValue("shared");
+			std::string shareport=m_pWebEm->FindValue("shareport");
+			std::string shareusername=m_pWebEm->FindValue("shareusername");
+			std::string sharepassword=m_pWebEm->FindValue("sharepassword");
+			std::string sharerights=m_pWebEm->FindValue("sharerights");
+			int nsharerights=atoi(sharerights.c_str());
+			int nshareport=atoi(shareport.c_str());
+
+			if ((shared=="true")&&(shareport==""))
+				goto exitjson;
+
 			unsigned char mode1=0;
 			unsigned char mode2=0;
 			unsigned char mode3=0;
@@ -1697,6 +1761,7 @@ char * CWebServer::GetJSonPage()
 			unsigned char mode5=0;
 			root["status"]="OK";
 			root["title"]="UpdateHardware";
+
 			sprintf(szTmp,
 				"UPDATE Hardware SET Name='%s', Type=%d, Address='%s', Port=%d, Username='%s', Password='%s', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d WHERE (ID == %s)",
 				name.c_str(),
@@ -1709,9 +1774,25 @@ char * CWebServer::GetJSonPage()
 				idx.c_str()
 				);
 			result=m_pMain->m_sql.query(szTmp);
+
+			sprintf(szTmp,"DELETE FROM HardwareSharing WHERE (HardwareID == %s)",idx.c_str());
+			result=m_pMain->m_sql.query(szTmp);
+			if (shared=="true") {
+				//add sharing
+				sprintf(szTmp,
+					"INSERT INTO HardwareSharing (HardwareID, Port, Username, Password, Rights) VALUES (%s,%d,'%s','%s',%d)",
+					idx.c_str(),
+					nshareport,
+					shareusername.c_str(),
+					sharepassword.c_str(),
+					nsharerights
+					);
+				result=m_pMain->m_sql.query(szTmp);
+			}
+
 			//re-add the device in our system
 			int ID=atoi(idx.c_str());
-			m_pMain->AddDeviceFromParams(ID,name,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
+			m_pMain->AddHardwareFromParams(ID,name,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
 		}
 		else if (cparam=="deletehardware")
 		{
@@ -1722,7 +1803,7 @@ char * CWebServer::GetJSonPage()
 			root["title"]="DeleteHardware";
 
 			m_pMain->m_sql.DeleteHardware(idx);
-			m_pMain->RemoveDomoticzDevice(atoi(idx.c_str()));
+			m_pMain->RemoveDomoticzHardware(atoi(idx.c_str()));
 		}
 		else if (cparam=="addtimer")
 		{
