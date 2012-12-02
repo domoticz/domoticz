@@ -172,6 +172,8 @@ void CTCPServer::StopServer()
 {
 	if (m_pTCPServer)
 		m_pTCPServer->stop();
+	if (m_thread)
+		m_thread->join();
 }
 
 void CTCPServer::Do_Work()

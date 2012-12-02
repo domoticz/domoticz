@@ -49,6 +49,12 @@ void CTCPClient::handleRead(const boost::system::error_code& e,
 				if (strarray.size()==3)
 				{
 					m_bIsLoggedIn=pConnectionManager->HandleAuthentication(shared_from_this(),strarray[1],strarray[2]);
+					if (!m_bIsLoggedIn)
+					{
+						//Wrong username/password
+						pConnectionManager->stopClient(shared_from_this());
+						return;
+					}
 				}
 			}
 			

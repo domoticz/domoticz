@@ -51,8 +51,14 @@ void connection::handle_read(const boost::system::error_code& e,
   {
 	  m_lastresponse=time(NULL);
     boost::tribool result;
-    boost::tie(result, boost::tuples::ignore) = request_parser_.parse(
-        request_, buffer_.data(), buffer_.data() + bytes_transferred);
+	try
+	{
+		boost::tie(result, boost::tuples::ignore) = request_parser_.parse(
+			request_, buffer_.data(), buffer_.data() + bytes_transferred);
+	}
+	catch (...)
+	{
+	}
 
     if (result)
     {

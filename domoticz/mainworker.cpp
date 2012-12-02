@@ -59,17 +59,22 @@ void MainWorker::SendResetCommand(CDomoticzHardwareBase *pHardware)
 {
 	pHardware->m_bEnableReceive=false;
 
-	//Send Reset
-	SendCommand(pHardware->m_HwdID,cmdRESET,"Reset");
+	if (pHardware->HwdType!=HTYPE_Domoticz)
+	{
+		//Send Reset
+		SendCommand(pHardware->m_HwdID,cmdRESET,"Reset");
 
-	//wait at least 50ms
-	boost::this_thread::sleep(boost::posix_time::millisec(500));
-
+		//wait at least 50ms
+		boost::this_thread::sleep(boost::posix_time::millisec(500));
+	}
 	//clear buffer, and enable receive
 	pHardware->m_rxbufferpos=0;
 	pHardware->m_bEnableReceive=true;
 
-	SendCommand(pHardware->m_HwdID,cmdSTATUS,"Status");
+	if (pHardware->HwdType!=HTYPE_Domoticz)
+	{
+		SendCommand(pHardware->m_HwdID,cmdSTATUS,"Status");
+	}
 }
 
 void MainWorker::AddDomoticzHardware(CDomoticzHardwareBase *pHardware)
@@ -257,6 +262,7 @@ bool MainWorker::AddHardwareFromParams(
 	}
 	if (pHardware)
 	{
+		pHardware->HwdType=Type;
 		pHardware->Name=Name;
 		AddDomoticzHardware(pHardware);
 		m_hardwareStartCounter=0;

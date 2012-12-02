@@ -2,6 +2,7 @@
 
 #include <boost/signals2.hpp>
 #include "tcpserver/TCPServer.h"
+#include "RFXNames.h"
 
 //Base class with functions all notification systems should have
 #define RX_BUFFER_SIZE 40
@@ -26,6 +27,7 @@ public:
 
 	int m_HwdID;
 	std::string Name;
+	_eHardwareTypes HwdType;
 	unsigned char m_SeqNr;
 	unsigned char m_rxbufferpos;
 	bool m_bEnableReceive;
