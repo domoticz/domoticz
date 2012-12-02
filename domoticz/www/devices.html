@@ -6,36 +6,40 @@
     </fieldset>
     </form>
 </div>
-        <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
-        <tr>
-          <td align="Left" style="width:100px">
-            <a id="mUsed" class="btnstyle3" href="#" onclick="ShowDevices('used');">Used</a>
-          </td>
-          <td align="center">
-            <a id="mAll" class="btnstyle3-sel" href="#" onclick="ShowDevices('all');">All Devices</a>
-          </td>
-          <td align="right" style="width:100px">
-            <a id="mUnknown" class="btnstyle3" href="#" onclick="ShowDevices('unknown');">Not Used</a>
-          </td>
-        </tr>
-        </table>
-        <br>
-        <table class="display" id="devices" border="0" cellpadding="0" cellspacing="0" width="100%">
-            <thead>
-                <tr>
-                    <th width="20"></th>
-                    <th width="100" align="left">Hardware</th>
-                    <th width="80" align="left">ID</th>
-                    <th width="80" align="center">Unit</th>
-                    <th width="200" align="left">Name</th>
-                    <th width="150">Type</th>
-                    <th width="80">SubType</th>
-                    <th>Data</th>
-                    <th width="20"></th>
-                    <th width="140" align="left">Last Seen</th>
-                </tr>
-            </thead>
-        </table>
+<div id="devicescontent">
+</div>
+<div id="devicestable" style="display:none;">
+		<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td align="Left" style="width:100px">
+				<a id="mUsed" class="btnstyle3" href="#" onclick="ShowDevices('used');">Used</a>
+			</td>
+			<td align="center">
+				<a id="mAll" class="btnstyle3-sel" href="#" onclick="ShowDevices('all');">All Devices</a>
+			</td>
+			<td align="right" style="width:100px">
+				<a id="mUnknown" class="btnstyle3" href="#" onclick="ShowDevices('unknown');">Not Used</a>
+			</td>
+		</tr>
+		</table>
+		<br>
+		<table class="display" id="devices" border="0" cellpadding="0" cellspacing="0" width="100%">
+				<thead>
+						<tr>
+								<th width="20"></th>
+								<th width="100" align="left">Hardware</th>
+								<th width="80" align="left">ID</th>
+								<th width="50" align="center">Unit</th>
+								<th width="200" align="left">Name</th>
+								<th width="150">Type</th>
+								<th width="80">SubType</th>
+								<th>Data</th>
+								<th width="70"></th>
+								<th width="140" align="left">Last Seen</th>
+						</tr>
+				</thead>
+		</table>
+</div>
 <script type="text/javascript" charset="utf-8">
 
 function AddDevice(idx)
@@ -44,13 +48,28 @@ function AddDevice(idx)
     $( "#dialog-adddevice" ).dialog( "open" );
 }
 
-function DeleteDevice(idx)
+function RemoveDevice(idx)
 {
-  if (confirm("Are you sure to remove this Device?")==false) {
+  if (confirm("Are you sure to remove this Device from your used devices?")==false) {
     return;
   }
     $.ajax({
        url: "json.htm?type=setused&idx=" + idx + '&used=false',
+       async: false, 
+       dataType: 'json',
+       success: function(data) {
+          ShowDevices();
+       }
+    });
+}
+
+function DeleteDevice(idx)
+{
+  if (confirm("Are you sure to delete this Device?")==false) {
+    return;
+  }
+    $.ajax({
+       url: "json.htm?type=deletedevice&idx=" + idx,
        async: false, 
        dataType: 'json',
        success: function(data) {
@@ -87,7 +106,29 @@ function ShowDevices(filter)
       ChangeClass("mAll","btnstyle3-sel");
   }
   
-  var oTable = $('#devices').dataTable();
+  var htmlcontent = '';
+  htmlcontent+=$('#devicestable').html();
+  $('#devicescontent').html(htmlcontent);
+
+	$('#devicescontent #devices').dataTable( {
+		"sDom": '<"H"lfrC>t<"F"ip>',
+		"oTableTools": {
+			"sRowSelect": "single"
+		},
+		"aoColumnDefs": [
+			{ "bSortable": false, "aTargets": [ 0,7 ] }
+		],
+		"aaSorting": [[ 8, "desc" ]],
+		"bSortClasses": false,
+		"bProcessing": true,
+		"bStateSave": true,
+		"bJQueryUI": true,
+		"aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+		"iDisplayLength" : 25,
+		"sPaginationType": "full_numbers"
+	} );
+
+  var oTable = $('#devicescontent #devices').dataTable();
   oTable.fnClearTable();
   
   $.ajax({
@@ -97,13 +138,18 @@ function ShowDevices(filter)
      success: function(data) {
       if (typeof data.result != 'undefined') {
         $.each(data.result, function(i,item){
-          var itemAddDelete="";
+          var itemSubIcons="";
           if (item.Used!=0) {
-            itemAddDelete='<img src="images/delete.png" title="Delete Device" onclick="DeleteDevice(' + item.idx +')">';
+            itemSubIcons+='<img src="images/remove.png" title="Remove Device" onclick="RemoveDevice(' + item.idx +')">';
           }
           else {
-            itemAddDelete='<img src="images/add.png" title="Add Device" onclick="AddDevice(' + item.idx +')">';
+            itemSubIcons+='<img src="images/add.png" title="Add Device" onclick="AddDevice(' + item.idx +')">';
           }
+          if (item.Type.indexOf("Light")==0)
+          {
+            itemSubIcons+='&nbsp;<img src="images/log.png" title="Log" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#devicescontent\', \'ShowDevices\');">';
+          }
+          itemSubIcons+='&nbsp;<img src="images/delete.png" title="Delete Device" onclick="DeleteDevice(' + item.idx +')">';
           var addId = oTable.fnAddData([
                       '<img src="images/' + item.TypeImg + '.png">',
                       item.HardwareName,
@@ -113,7 +159,7 @@ function ShowDevices(filter)
                       item.Type,
                       item.SubType,
                       item.Data,
-                      itemAddDelete,
+                      itemSubIcons,
                       item.LastUpdate
                     ]);
         });
@@ -127,25 +173,7 @@ function ShowDevices(filter)
 $(document).ready(function() {
     //global var
     $.devIdx=0;
-
-				$('#devices').dataTable( {
-					"sDom": '<"H"lfrC>t<"F"ip>',
-					"oTableTools": {
-						"sRowSelect": "single"
-					},
-					"aoColumnDefs": [
-            { "bSortable": false, "aTargets": [ 0,7 ] }
-          ],
-          "aaSorting": [[ 8, "desc" ]],
-          "bSortClasses": false,
-          "bProcessing": true,
-					"bStateSave": true,
-					"bJQueryUI": true,
-					"aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
-					"iDisplayLength" : 25,
-					"sPaginationType": "full_numbers"
-				} );
-				
+			
         $( "#dialog-adddevice" ).dialog({
               autoOpen: false,
               width: 350,

@@ -1633,32 +1633,40 @@ void CSQLHelper::DeleteHardware(const std::string idx)
 		for (itt=result.begin(); itt!=result.end(); ++itt)
 		{
 			std::vector<std::string> sd=*itt;
-
-			sprintf(szTmp,"DELETE FROM LightingLog WHERE (DeviceRowID == %s)",sd[0].c_str());
-			query(szTmp);
-			sprintf(szTmp,"DELETE FROM Notifications WHERE (DeviceRowID == %s)",sd[0].c_str());
-			query(szTmp);
-			sprintf(szTmp,"DELETE FROM Rain WHERE (DeviceRowID == %s)",sd[0].c_str());
-			query(szTmp);
-			sprintf(szTmp,"DELETE FROM Rain_Calendar WHERE (DeviceRowID == %s)",sd[0].c_str());
-			query(szTmp);
-			sprintf(szTmp,"DELETE FROM Temperature WHERE (DeviceRowID == %s)",sd[0].c_str());
-			query(szTmp);
-			sprintf(szTmp,"DELETE FROM Temperature_Calendar WHERE (DeviceRowID == %s)",sd[0].c_str());
-			query(szTmp);
-			sprintf(szTmp,"DELETE FROM Timers WHERE (DeviceRowID == %s)",sd[0].c_str());
-			query(szTmp);
-			sprintf(szTmp,"DELETE FROM UV WHERE (DeviceRowID == %s)",sd[0].c_str());
-			query(szTmp);
-			sprintf(szTmp,"DELETE FROM UV_Calendar WHERE (DeviceRowID == %s)",sd[0].c_str());
-			query(szTmp);
-			sprintf(szTmp,"DELETE FROM Wind WHERE (DeviceRowID == %s)",sd[0].c_str());
-			query(szTmp);
-			sprintf(szTmp,"DELETE FROM Wind_Calendar WHERE (DeviceRowID == %s)",sd[0].c_str());
-			query(szTmp);
+			DeleteDevice(sd[0]);
 		}
 	}
 	//and now delete all records in the DeviceStatus table itself
 	sprintf(szTmp,"DELETE FROM DeviceStatus WHERE (HardwareID == %s)",idx.c_str());
 	result=query(szTmp);
+}
+
+void CSQLHelper::DeleteDevice(const std::string idx)
+{
+	char szTmp[1000];
+	sprintf(szTmp,"DELETE FROM LightingLog WHERE (DeviceRowID == %s)",idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"DELETE FROM Notifications WHERE (DeviceRowID == %s)",idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"DELETE FROM Rain WHERE (DeviceRowID == %s)",idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"DELETE FROM Rain_Calendar WHERE (DeviceRowID == %s)",idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"DELETE FROM Temperature WHERE (DeviceRowID == %s)",idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"DELETE FROM Temperature_Calendar WHERE (DeviceRowID == %s)",idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"DELETE FROM Timers WHERE (DeviceRowID == %s)",idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"DELETE FROM UV WHERE (DeviceRowID == %s)",idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"DELETE FROM UV_Calendar WHERE (DeviceRowID == %s)",idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"DELETE FROM Wind WHERE (DeviceRowID == %s)",idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"DELETE FROM Wind_Calendar WHERE (DeviceRowID == %s)",idx.c_str());
+	query(szTmp);
+	//and now delete all records in the DeviceStatus table itself
+	sprintf(szTmp,"DELETE FROM DeviceStatus WHERE (ID == %s)",idx.c_str());
+	query(szTmp);
 }

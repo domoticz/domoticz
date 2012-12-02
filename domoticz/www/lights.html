@@ -46,25 +46,6 @@
 </div>
 <div id="lightcontent">
 </div>
-<div id="lightlog" style="display:none;">
-    <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0" width="100%">
-        <thead>
-            <tr>
-                <th width="140" align="left">Date</th>
-                <th>Data</th>
-            </tr>
-        </thead>
-    </table>
-    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-			<tr>
-				<td>
-				</td>
-				<td align="right">
-					<a class="btnstyle3" href="#" onclick="ClearLightLog();">Clear</a>
-				</td>
-			</tr>
-		</table>
-</div>
 <div id="edittimers" style="display:none;">
     <table class="display" id="timertable" border="0" cellpadding="0" cellspacing="0" width="100%">
         <thead>
@@ -575,71 +556,6 @@ function AddLightDevice()
 	
 }
 
-function ClearLightLog()
-{
-	var bValid = false;
-	bValid=(confirm("Are you sure to delete the Log?\n\nThis action can not be undone!!")==true);
-	if (bValid == false)
-		return;
-	$.ajax({
-		 url: "json.htm?type=command&param=clearlightlog&idx=" + $.devIdx,
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
-				ShowLights();
-		 },
-		 error: function(){
-				HideNotify();
-				ShowNotify('Problem clearing the Log!', 2500, true);
-		 }     
-	});
-}
-
-function ShowLog(id,name)
-{
-  $.devIdx=id;
-
-  $('#modal').show();
-  var htmlcontent = '';
-  htmlcontent='<p><h2>Name: ' + name + '</h2></p><br>\n';
-  htmlcontent+=$('#lightlog').html();
-  $('#lightcontent').html(GetBackbuttonHTMLTable('ShowLights')+htmlcontent);
-  
-  var oTable = $('#lighttable').dataTable( {
-                  "sDom": '<"H"lfrC>t<"F"ip>',
-                  "oTableTools": {
-                    "sRowSelect": "single",
-                  },
-                  "aaSorting": [[ 0, "desc" ]],
-                  "bSortClasses": false,
-                  "bProcessing": true,
-                  "bStateSave": true,
-                  "bJQueryUI": true,
-                  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
-                  "iDisplayLength" : 25,
-                  "sPaginationType": "full_numbers"
-                } );
-  
-  $.ajax({
-     url: "json.htm?type=lightlog&idx=" + id, 
-     async: false, 
-     dataType: 'json',
-     success: function(data) {
-      if (typeof data.result != 'undefined') {
-        $.each(data.result, function(i,item){
-          var addId = oTable.fnAddData([
-                      item.Date,
-                      item.Data
-                    ]);
-        });
-      }
-     }
-  });
-
-  $('#modal').hide();
-  return false;
-}
-
 function ShowLights()
 {
   $('#modal').show();
@@ -715,7 +631,7 @@ function ShowLights()
                   '<img src="images/favorite.png" title="Remove from Dashboard" onclick="MakeFavorite(' + item.idx + ',0);" onMouseover="cursorhand()" onMouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
           xhtm+=      
-                '<a class="btnsmall" href="#" onclick="ShowLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ' +
+                '<a class="btnsmall" href="#" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#lightcontent\', \'ShowLights\');">Log</a> ' +
                 '<a class="btnsmall" href="#" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +');">Edit</a> ';
           if (item.Timers == "true")
             xhtm+='<a class="btnsmall-sel" href="#" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';

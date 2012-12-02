@@ -2058,6 +2058,16 @@ char * CWebServer::GetJSonPage()
 		}
 
 	} //(rtype=="setused")
+	else if (rtype=="deletedevice")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			goto exitjson;
+
+		root["status"]="OK";
+		root["title"]="DeleteDevice";
+		m_pMain->m_sql.DeleteDevice(idx);
+	} //(rtype=="setused")
 	else if (rtype=="settings")
 	{
 		root["status"]="OK";

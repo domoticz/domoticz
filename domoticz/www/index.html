@@ -72,6 +72,80 @@ function GetBackbuttonHTMLTable(backfunction)
   return xhtm;
 }
 
+function RefreshLightLogTable(idx)
+{
+  var oTable = $($.content + ' #lighttable').dataTable();
+  oTable.fnClearTable();
+  
+  $.ajax({
+     url: "json.htm?type=lightlog&idx=" + idx, 
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+      if (typeof data.result != 'undefined') {
+        $.each(data.result, function(i,item){
+          var addId = oTable.fnAddData([
+                      item.Date,
+                      item.Data
+                    ]);
+        });
+      }
+     }
+  });
+}
+
+function ClearLightLog()
+{
+	var bValid = false;
+	bValid=(confirm("Are you sure to delete the Log?\n\nThis action can not be undone!!")==true);
+	if (bValid == false)
+		return;
+	$.ajax({
+		 url: "json.htm?type=command&param=clearlightlog&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+				RefreshLightLogTable($.devIdx);
+		 },
+		 error: function(){
+				HideNotify();
+				ShowNotify('Problem clearing the Log!', 2500, true);
+		 }     
+	});
+}
+
+function ShowLightLog(id,name,content,backfunction)
+{
+  $.content=content;
+
+  $.devIdx=id;
+
+  $('#modal').show();
+  var htmlcontent = '';
+  htmlcontent='<p><h2>Name: ' + name + '</h2></p><br>\n';
+  htmlcontent+=$('#lightlog').html();
+  $($.content).html(GetBackbuttonHTMLTable(backfunction)+htmlcontent);
+  
+  var oTable = $($.content + ' #lighttable').dataTable( {
+                  "sDom": '<"H"lfrC>t<"F"ip>',
+                  "oTableTools": {
+                    "sRowSelect": "single",
+                  },
+                  "aaSorting": [[ 0, "desc" ]],
+                  "bSortClasses": false,
+                  "bProcessing": true,
+                  "bStateSave": true,
+                  "bJQueryUI": true,
+                  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+                  "iDisplayLength" : 25,
+                  "sPaginationType": "full_numbers"
+                } );
+
+	RefreshLightLogTable($.devIdx);
+  $('#modal').hide();
+  return false;
+}
+
 function GetNotificationSettings()
 {
 	var nsettings = {};
@@ -562,6 +636,25 @@ function cursordefault()
 		
 </script>
 </head><body class="homepage">
+<div id="lightlog" style="display:none;">
+    <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th width="140" align="left">Date</th>
+                <th>Data</th>
+            </tr>
+        </thead>
+    </table>
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td>
+				</td>
+				<td align="right">
+					<a class="btnstyle3" href="#" onclick="ClearLightLog();">Clear</a>
+				</td>
+			</tr>
+		</table>
+</div>
 <div id="editnotifications" style="display:none;">
     <table class="display" id="notificationtable" border="0" cellpadding="0" cellspacing="0" width="100%">
         <thead>
