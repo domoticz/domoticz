@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "TCPClient.h"
 #include "TCPServer.h"
+#include "../Helper.h"
 
 namespace tcp {
 namespace server {
@@ -36,6 +37,22 @@ void CTCPClient::handleRead(const boost::system::error_code& e,
 	{
 		//do something with the data
 		//buffer_.data(), buffer_.data() + bytes_transferred
+		if (bytes_transferred>7)
+		{
+			std::string recstr;
+			recstr.append(buffer_.data(),bytes_transferred);
+			if (recstr.find("AUTH")!=std::string::npos)
+			{
+				//Authentication
+				std::vector<std::string> strarray;
+				StringSplit(recstr, ";", strarray);
+				if (strarray.size()==3)
+				{
+					m_bIsLoggedIn=pConnectionManager->HandleAuthentication(shared_from_this(),strarray[1],strarray[2]);
+				}
+			}
+			
+		}
 
 		//ready for next read
 		socket_.async_read_some(boost::asio::buffer(buffer_),
@@ -51,6 +68,8 @@ void CTCPClient::handleRead(const boost::system::error_code& e,
 
 void CTCPClient::write(const char *pData, size_t Length)
 {
+	if (!m_bIsLoggedIn)
+		return;
 	boost::asio::async_write(socket_, boost::asio::buffer(pData, Length),
 		boost::bind(&CTCPClient::handleWrite, shared_from_this(),
 		boost::asio::placeholders::error));

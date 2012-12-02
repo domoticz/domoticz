@@ -72,7 +72,7 @@ to check your .profile
 ------------------------------------------------------------------------------------------------
 
 Getting the source code:
-svn checkout svn://svn.code.sf.net/p/domoticz/code/trunk domoticz-code
+svn checkout svn://svn.code.sf.net/p/domoticz/code/domoticz
 
 
 unpack the project in your homefile

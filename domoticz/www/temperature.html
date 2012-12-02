@@ -530,16 +530,22 @@ function ShowTemps()
             xhtm+='" height="48"></td>\n' +
                 '\t      <td>';
             var bHaveTemperature=false;
+            var bHaveBefore=false;
             if (typeof item.Temp != 'undefined') {
                  xhtm+=item.Temp + '&deg; C';
                  bHaveTemperature=true;
+                 bHaveBefore=true;
             }
             if (typeof item.Chill != 'undefined') {
               xhtm+=', Chill: ' + item.Chill + '&deg; C';
+              bHaveBefore=true;
             }
             var bHaveHumidity=false;
             if (typeof item.Humidity != 'undefined') {
-              xhtm+=', Humidity: ' + item.Humidity + ' %';
+							if (bHaveBefore==true) {
+								xhtm+=', ';
+							}
+              xhtm+='Humidity: ' + item.Humidity + ' %';
               bHaveHumidity=true;
             }
             if (typeof item.HumidityStatus != 'undefined') {

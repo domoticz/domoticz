@@ -9,7 +9,7 @@ namespace server {
 class CTCPServerInt
 {
 public:
-	CTCPServerInt(const std::string& address, const std::string& port);
+	CTCPServerInt(const std::string& address, const std::string& port, const std::string username, const std::string password, const int rights);
 	~CTCPServerInt(void);
 
 	void start();
@@ -24,6 +24,8 @@ private:
 
 	void handleAccept(const boost::system::error_code& error);
 
+	bool HandleAuthentication(CTCPClient_ptr c, const std::string username, const std::string password);
+
 	/// Handle a request to stop the server.
 	void handle_stop();
 
@@ -35,6 +37,10 @@ private:
 	std::set<CTCPClient_ptr> connections_;
 	CTCPClient_ptr new_connection_;
 	boost::mutex connectionMutex;
+
+	std::string m_username;
+	std::string m_password;
+	int m_rights;
 
 	friend class CTCPClient;
 };
@@ -51,9 +57,6 @@ public:
 private:
 	CTCPServerInt *m_pTCPServer;
 	boost::shared_ptr<boost::thread> m_thread;
-	std::string m_username;
-	std::string m_password;
-	int m_rights;
 
 	void Do_Work();
 };

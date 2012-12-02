@@ -23,6 +23,7 @@ public:
 	void write(const char *pData, size_t Length);
 
 	boost::asio::ip::tcp::socket& socket() { return socket_; }
+	bool m_bIsLoggedIn;
 private:
 	void handleRead(const boost::system::error_code& error, size_t length);
 	void handleWrite(const boost::system::error_code& error);
@@ -34,7 +35,6 @@ private:
 	/// The manager for this connection.
 	CTCPServerInt *pConnectionManager;
 
-	bool m_bIsLoggedIn;
 };
 
 typedef boost::shared_ptr<CTCPClient> CTCPClient_ptr;

@@ -9,10 +9,14 @@
 namespace tcp {
 namespace server {
 
-CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port):
+CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port, const std::string username, const std::string password, const int rights):
 	io_service_(),
 	acceptor_(io_service_)
 {
+	m_username=username;
+	m_password=password;
+	m_rights=rights;
+
 	// Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
 	boost::asio::ip::tcp::resolver resolver(io_service_);
 	boost::asio::ip::tcp::resolver::query query(address, port);
@@ -70,6 +74,8 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 		//std::cout << "Incoming connection from: " << s << std::endl;
 
 		connections_.insert(new_connection_);
+		if (m_username=="")
+			new_connection_->m_bIsLoggedIn=true;
 		new_connection_->start();
 
 		new_connection_.reset(new CTCPClient(io_service_, this));
@@ -79,6 +85,11 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 			boost::bind(&CTCPServerInt::handleAccept, this,
 			boost::asio::placeholders::error));
 	}
+}
+
+bool CTCPServerInt::HandleAuthentication(CTCPClient_ptr c, const std::string username, const std::string password)
+{
+	return ((username==m_username)&&(password==m_password));
 }
 
 void CTCPServerInt::stopClient(CTCPClient_ptr c)
@@ -137,16 +148,12 @@ CTCPServer::~CTCPServer()
 
 bool CTCPServer::StartServer(const std::string address, const std::string port, const std::string username, const std::string password, const int rights)
 {
-	m_username=username;
-	m_password=password;
-	m_rights=rights;
-
 	try
 	{
 		StopServer();
 		if (m_pTCPServer!=NULL)
 			delete m_pTCPServer;
-		m_pTCPServer=new CTCPServerInt(address,port);
+		m_pTCPServer=new CTCPServerInt(address,port,username,password,rights);
 		if (!m_pTCPServer)
 			return false;
 	}

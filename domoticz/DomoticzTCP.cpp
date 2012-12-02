@@ -140,6 +140,13 @@ bool DomoticzTCP::ConnectInternal()
 	}
 
 	std::cout << "connected to: " << m_szIPAddress << ":" << std::dec << m_usIPPort << std::endl;
+
+	if (m_username!="")
+	{
+		char szAuth[300];
+		sprintf(szAuth,"AUTH;%s;%s",m_username.c_str(),m_password.c_str());
+		WriteToHardware((const char*)&szAuth,(const unsigned char)strlen(szAuth));
+	}
 	sOnConnected(this);
 	return true;
 }

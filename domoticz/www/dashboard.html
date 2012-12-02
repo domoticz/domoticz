@@ -161,17 +161,23 @@ function ShowFavorites()
                   }
                   xhtm+='" height="48"></td>\n' +
                       '\t      <td>';
+                  var bHaveBefore=false;
                   if (typeof item.Temp != 'undefined') {
                        xhtm+=item.Temp + '&deg; C';
+                       bHaveBefore=true;
                   }
                   if (typeof item.Chill != 'undefined') {
                     xhtm+=', Chill: ' + item.Chill + '&deg; C';
+                    bHaveBefore=true;
                   }
 									if (typeof item.Direction != 'undefined') {
 										xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms\n';
 									}
                   if (typeof item.Humidity != 'undefined') {
-                    xhtm+=', Humidity: ' + item.Humidity + ' %';
+										if (bHaveBefore==true) {
+											xhtm+=', ';
+										}
+                    xhtm+='Humidity: ' + item.Humidity + ' %';
                   }
                   if (typeof item.HumidityStatus != 'undefined') {
                     xhtm+=' (' + item.HumidityStatus + ')';
