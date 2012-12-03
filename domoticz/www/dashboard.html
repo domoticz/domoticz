@@ -275,6 +275,61 @@ function ShowFavorites()
           //close previous devider
           htmlcontent+='</div>\n';
         }
+
+        //Utility Sensors
+        jj=0;
+        bHaveAddedDevider = false;
+        $.each(data.result, function(i,item){
+          if (
+                ( (typeof item.Counter != 'undefined') ) &&
+                (item.Favorite!=0)
+              )
+          {
+            totdevices+=1;
+            if (jj == 0)
+            {
+              //first time
+              htmlcontent+='<h2>Utility Sensors:</h2>\n';
+            }
+            if (jj % 3 == 0)
+            {
+              //add devider
+              if (bHaveAddedDevider == true) {
+                //close previous devider
+                htmlcontent+='</div>\n';
+              }
+              htmlcontent+='<div class="row divider">\n';
+              bHaveAddedDevider=true;
+            }
+            var xhtm=
+                  '\t<div class="4u">\n' +
+                  '\t  <section>\n' +
+                  '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
+                  '\t    <tr>\n' +
+                  '\t      <td>' + item.Name + '</td>\n' +
+                  '\t      <td><img src="images/';
+									if (typeof item.Counter != 'undefined') {
+										xhtm+='counter.png" height="48"></td>\n' +
+										'\t      <td>' + item.Counter + ', Today: ' + item.CounterToday;
+									}
+                  xhtm+=
+                      '</td>\n' +
+                      '\t      <td>' + item.LastUpdate + '</td>\n' +
+                      '\t      <td>' + item.Type + ', ' + item.SubType + '</td>\n' +
+                  '\t      <td></td>\n' +
+                  '\t    </tr>\n' +
+                  '\t    </table>\n' +
+                  '\t  </section>\n' +
+                  '\t</div>\n';
+            htmlcontent+=xhtm;
+            jj+=1;
+          }
+        }); //Utility devices
+        if (bHaveAddedDevider == true) {
+          //close previous devider
+          htmlcontent+='</div>\n';
+        }
+
       }
      }
   });

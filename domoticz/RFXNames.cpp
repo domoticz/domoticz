@@ -131,13 +131,13 @@ const char *Hardware_Type_Desc(int hType)
 	return findTableIDSingle1 (Table, hType);
 }
 
-const char *Switch_Type_Desc(const unsigned char sType)
+const char *Switch_Type_Desc(const _eSwitchType sType)
 {
 	STR_TABLE_SINGLE	Table[] = 
 	{
-		{ switchTypeOnOff, "On/Off" },
-		{ switchTypeDoorbell, "Doorbell" },
-		{ switchTypeContact, "Contact" },
+		{ STYPE_OnOff, "On/Off" },
+		{ STYPE_Doorbell, "Doorbell" },
+		{ STYPE_Contact, "Contact" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, sType);
@@ -608,18 +608,18 @@ void GetLightStatus(
 bool GetLightCommand(
 	const unsigned char dType, 
 	const unsigned char dSubType, 
-	const unsigned char switchtype, 
+	_eSwitchType switchtype, 
 	std::string switchcmd,
 	unsigned char &cmd
 	)
 {
-	if (switchtype==switchTypeContact)
+	if (switchtype==STYPE_Contact)
 		return false;	//we can not (or will not) switch this type
 
 	switch (dType)
 	{
 	case pTypeLighting1:
-		if (switchtype==switchTypeDoorbell)
+		if (switchtype==STYPE_Doorbell)
 		{
 			if (switchcmd=="On")
 			{
@@ -660,7 +660,7 @@ bool GetLightCommand(
 			return false;
 		break;
 	case pTypeLighting2:
-		if (switchtype==switchTypeDoorbell)
+		if (switchtype==STYPE_Doorbell)
 		{
 			if (switchcmd=="On")
 			{

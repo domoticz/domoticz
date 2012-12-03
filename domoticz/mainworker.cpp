@@ -3747,7 +3747,6 @@ void MainWorker::decode_Remote(const int HwdID, const tRBUF *pResponse)
 	WriteMessage(szTmp);
 }
 
-//not in dbase yet
 void MainWorker::decode_Thermostat1(const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
@@ -3967,7 +3966,6 @@ void MainWorker::decode_DateTime(const int HwdID, const tRBUF *pResponse)
 		WriteMessage("Battery       = OK");
 }
 
-//not in dbase yet
 void MainWorker::decode_Current(const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
@@ -4024,7 +4022,6 @@ void MainWorker::decode_Current(const int HwdID, const tRBUF *pResponse)
 	}
 }
 
-//not in dbase yet
 void MainWorker::decode_Energy(const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
@@ -4823,7 +4820,7 @@ bool MainWorker::SwitchLight(unsigned long long idx, std::string switchcmd, unsi
 	unsigned char dType=atoi(sd[3].c_str());
 	unsigned char dSubType=atoi(sd[4].c_str());
 	unsigned char nValue=atoi(sd[5].c_str());
-	unsigned char switchtype=atoi(sd[6].c_str());
+	_eSwitchType switchtype=(_eSwitchType)atoi(sd[6].c_str());
 
 	switch (dType)
 	{
@@ -4838,7 +4835,7 @@ bool MainWorker::SwitchLight(unsigned long long idx, std::string switchcmd, unsi
 			lcmd.LIGHTING1.unitcode=Unit;
 			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING1.cmnd))
 				return false;
-			if (switchtype==switchTypeDoorbell)
+			if (switchtype==STYPE_Doorbell)
 				level=15;
 			lcmd.LIGHTING1.filler=0;
 			lcmd.LIGHTING1.rssi=7;
@@ -4871,7 +4868,7 @@ bool MainWorker::SwitchLight(unsigned long long idx, std::string switchcmd, unsi
 			lcmd.LIGHTING2.unitcode=Unit;
 			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING2.cmnd))
 				return false;
-			if (switchtype==switchTypeDoorbell)
+			if (switchtype==STYPE_Doorbell)
 				level=15;
 			lcmd.LIGHTING2.level=level;
 			lcmd.LIGHTING2.filler=0;

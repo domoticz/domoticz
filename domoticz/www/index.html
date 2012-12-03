@@ -74,7 +74,8 @@ function GetBackbuttonHTMLTable(backfunction)
 
 function RefreshLightLogTable(idx)
 {
-  var oTable = $($.content + ' #lighttable').dataTable();
+	var mTable = $($.content + ' #lighttable');
+  var oTable = mTable.dataTable();
   oTable.fnClearTable();
   
   $.ajax({
@@ -87,8 +88,9 @@ function RefreshLightLogTable(idx)
           var addId = oTable.fnAddData([
                       item.Date,
                       item.Data
-                    ]);
+                    ],false);
         });
+        mTable.fnDraw();
       }
      }
   });
@@ -541,6 +543,7 @@ function cursordefault()
         ChangeClass("mLightSwitches","");
         ChangeClass("mTemperature","");
         ChangeClass("mWeather","");
+        ChangeClass("mUtility","");
         ChangeClass("mDevices","");
         ChangeClass("mHardware","");
         ChangeClass("mSetup","");
@@ -562,6 +565,10 @@ function cursordefault()
         else if (layout == "Weather") {
           durl='weather.html';
           ChangeClass("mWeather","current_page_item");
+        }
+        else if (layout == "Utility") {
+          durl='utility.html';
+          ChangeClass("mUtility","current_page_item");
         }
         else if (layout == "Devices") {
           durl='devices.html';
@@ -703,16 +710,17 @@ function cursordefault()
 	<header id="header">
 		<div class="5grid-layout">
 			<div class="row">
-				<div class="4u" id="logo">
+				<div class="2u" id="logo">
 					<h1><a href="#" class="mobileUI-site-name">Domoticz</a></h1>
-					<p>control at your finger tips. V<!--#embed versionstr --></p>
+					<p> V<!--#embed versionstr --></p>
 				</div>
-				<div class="8u" id="menu">
+				<div class="10u" id="menu">
 					<nav class="mobileUI-site-nav">
 						<ul>
 							<li id="mDashboard"><a id="cDashboard" href="javascript:SwitchLayout('Dashboard')"><img src="images/desktop.png"> Dashboard</a></li>							<li id="mLightSwitches"><a id="cLightSwitches" href="javascript:SwitchLayout('LightSwitches')"><img src="images/lightbulb.png"> Lights/Switches</a></li>
 							<li id="mTemperature"><a id="cTemperature" href="javascript:SwitchLayout('Temperature')"><img src="images/temperature.png"> Temperature</a></li>
 							<li id="mWeather"><a id="cWeather" href="javascript:SwitchLayout('Weather')"><img src="images/rain.png"> Weather</a></li>
+							<li id="mUtility"><a id="cUtility" href="javascript:SwitchLayout('Utility')"><img src="images/utility.png"> Utility</a></li>
 							<li id="mDevices"><a id="cDevices" href="javascript:SwitchLayout('Devices')"><img src="images/devices.png"> Devices</a></li>
 							<li id="mHardware"><a id="cHardware" href="javascript:SwitchLayout('Hardware')"><img src="images/hardware.png"> Hardware</a></li>
               <li id="mSetup"><a id="cSetup" href="javascript:SwitchLayout('Setup')"><img src="images/setup.png"> Setup</a></li>

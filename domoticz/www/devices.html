@@ -128,7 +128,8 @@ function ShowDevices(filter)
 		"sPaginationType": "full_numbers"
 	} );
 
-  var oTable = $('#devicescontent #devices').dataTable();
+	var mTable = $('#devicescontent #devices');
+  var oTable = mTable.dataTable();
   oTable.fnClearTable();
   
   $.ajax({
@@ -161,8 +162,9 @@ function ShowDevices(filter)
                       item.Data,
                       itemSubIcons,
                       item.LastUpdate
-                    ]);
+                    ], false);
         });
+        mTable.fnDraw();
       }
      }
   });

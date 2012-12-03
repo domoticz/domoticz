@@ -117,9 +117,9 @@ char * CWebServer::DisplaySwitchTypesCombo()
 {
 	m_retstr="";
 	char szTmp[200];
-	for (int ii=0; ii<switchTypeMax+1; ii++)
+	for (int ii=0; ii<STYPE_END; ii++)
 	{
-		sprintf(szTmp,"<option value=\"%d\">%s</option>\n",ii,Switch_Type_Desc(ii));
+		sprintf(szTmp,"<option value=\"%d\">%s</option>\n",ii,Switch_Type_Desc((_eSwitchType)ii));
 		m_retstr+=szTmp;
 	}
 	return (char*)m_retstr.c_str();
@@ -264,7 +264,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 			unsigned char nValue = atoi(sd[9].c_str());
 			std::string sValue=sd[10];
 			unsigned char favorite = atoi(sd[12].c_str());
-			unsigned char switchtype= atoi(sd[13].c_str());
+			_eSwitchType switchtype=(_eSwitchType) atoi(sd[13].c_str());
 			int hardwareID= atoi(sd[14].c_str());
 
 			if (
@@ -300,6 +300,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 						(dType!=pTypeTEMP_HUM_BARO)&&
 						(dType!=pTypeWIND)&&
 						(dType!=pTypeUV)&&
+						(dType!=pTypeThermostat1)&&
 						(!((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp)))
 						)
 						continue;
@@ -311,6 +312,15 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 						(dType!=pTypeRAIN)&&
 						(dType!=pTypeTEMP_HUM_BARO)&&
 						(dType!=pTypeUV)
+						)
+						continue;
+				}
+				else if (rfilter=="utility")
+				{
+					if (
+						(dType!=pTypeRFXMeter)&&
+						(!((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorAD)))&&
+						(!((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorVolt)))
 						)
 						continue;
 				}
@@ -392,9 +402,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				root["result"][ii]["SwitchType"]=Switch_Type_Desc(switchtype);
 				root["result"][ii]["SwitchTypeVal"]=switchtype;
 
-				if (switchtype==switchTypeDoorbell)
+				if (switchtype==STYPE_Doorbell)
 					root["result"][ii]["TypeImg"]="door";
-				else if (switchtype==switchTypeContact)
+				else if (switchtype==STYPE_Contact)
 					root["result"][ii]["TypeImg"]="contact";
 
 				if (llevel!=0)
@@ -408,6 +418,15 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				root["result"][ii]["Temp"]=atof(sValue.c_str());
 				sprintf(szData,"%.1f C", atof(sValue.c_str()));
 				root["result"][ii]["Data"]=szData;
+			}
+			else if (dType == pTypeThermostat1)
+			{
+				std::vector<std::string> strarray;
+				StringSplit(sValue, ";", strarray);
+				if (strarray.size()==4)
+				{
+					root["result"][ii]["Temp"]=atoi(strarray[0].c_str());
+				}
 			}
 			else if ((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))
 			{
@@ -479,13 +498,19 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					root["result"][ii]["Direction"]=atof(strarray[0].c_str());
 					root["result"][ii]["DirectionStr"]=strarray[1];
 					int intSpeed=atoi(strarray[2].c_str());
-					root["result"][ii]["Speedms"]=float(intSpeed) / 10.0f;
-					root["result"][ii]["Speedkmhr"]=(float(intSpeed) * 0.36f);
-					root["result"][ii]["Speedmph"]=((float(intSpeed) * 0.223693629f) / 10.0f);
+					sprintf(szTmp,"%.1f",float(intSpeed) / 10.0f);
+					root["result"][ii]["Speedms"]=szTmp;
+					sprintf(szTmp,"%.1f",(float(intSpeed) * 0.36f));
+					root["result"][ii]["Speedkmhr"]=szTmp;
+					sprintf(szTmp,"%.1f",((float(intSpeed) * 0.223693629f) / 10.0f));
+					root["result"][ii]["Speedmph"]=szTmp;
 					int intGust=atoi(strarray[3].c_str());
-					root["result"][ii]["Gustms"]=float(intGust) / 10.0f;
-					root["result"][ii]["Gustkmhr"]=(float(intGust )* 0.36f);
-					root["result"][ii]["Gustmph"]=(float(intGust) * 0.223693629f) / 10.0f;
+					sprintf(szTmp,"%.1f",float(intGust) / 10.0f);
+					root["result"][ii]["Gustms"]=szTmp;
+					sprintf(szTmp,"%.1f",(float(intGust )* 0.36f));
+					root["result"][ii]["Gustkmhr"]=szTmp;
+					sprintf(szTmp,"%.1f",(float(intGust) * 0.223693629f) / 10.0f);
+					root["result"][ii]["Gustmph"]=szTmp;
 					root["result"][ii]["Temp"]=atof(strarray[4].c_str());
 					root["result"][ii]["Chill"]=atof(strarray[5].c_str());
 				}
@@ -530,6 +555,46 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 						//if ((dSubType==sTypeRAIN1)||(dSubType==sTypeRAIN2))
 						root["result"][ii]["RainRate"]=rate;
 					}
+				}
+			}
+			else if (dType == pTypeRFXMeter)
+			{
+				//get lowest value of today
+				time_t now = time(NULL);
+				struct tm* tm1 = localtime(&now);
+
+				struct tm ltime;
+				ltime.tm_isdst=tm1->tm_isdst;
+				ltime.tm_hour=0;
+				ltime.tm_min=0;
+				ltime.tm_sec=0;
+				ltime.tm_year=tm1->tm_year;
+				ltime.tm_mon=tm1->tm_mon;
+				ltime.tm_mday=tm1->tm_mday;
+
+				char szDate[40];
+				sprintf(szDate,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
+
+				std::vector<std::vector<std::string> > result2;
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
+				result2=m_pMain->m_sql.query(szQuery.str());
+				if (result2.size()>0)
+				{
+					std::vector<std::string> sd2=result2[0];
+
+					unsigned long long total_min,total_max,total_real;
+
+					std::stringstream s_str1( sd2[0] );
+					s_str1 >> total_min;
+					std::stringstream s_str2( sd2[1] );
+					s_str2 >> total_max;
+					total_real=total_max-total_min;
+					sprintf(szTmp,"%llu",total_real);
+					root["result"][ii]["Counter"]=sValue;
+					root["result"][ii]["CounterToday"]=szTmp;
 				}
 			}
 			else if (dType == pTypeCURRENT)
@@ -834,7 +899,7 @@ char * CWebServer::GetJSonPage()
 			root["result"][ii]["Barometer"]=tempjson["result"][itt]["Barometer"];
 			ii++;
 		}
-	} //if (rtype=="status-uv")
+	} //if (rtype=="status-baro")
 	else if ((rtype=="lightlog")&&(idx!=0))
 	{
 		//First get Device Type/SubType
@@ -989,6 +1054,8 @@ char * CWebServer::GetJSonPage()
 				dbasetable="Temperature";
 			else if (sensor=="rain")
 				dbasetable="Rain_Calendar";
+			else if (sensor=="counter")
+				dbasetable="Meter_Calendar";
 			else if ( (sensor=="wind") || (sensor=="winddir") )
 				dbasetable="Wind";
 			else if (sensor=="uv")
@@ -1002,6 +1069,8 @@ char * CWebServer::GetJSonPage()
 				dbasetable="Temperature_Calendar";
 			else if (sensor=="rain")
 				dbasetable="Rain_Calendar";
+			else if (sensor=="counter")
+				dbasetable="Meter_Calendar";
 			else if ( (sensor=="wind") || (sensor=="winddir") )
 				dbasetable="Wind_Calendar";
 			else if (sensor=="uv")
@@ -1048,6 +1117,7 @@ char * CWebServer::GetJSonPage()
 							(dType==pTypeTEMP_HUM_BARO)||
 							(dType==pTypeWIND)||
 							(dType==pTypeUV)||
+							(dType==pTypeThermostat1)||
 							((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))
 							)
 						{
@@ -1151,6 +1221,70 @@ char * CWebServer::GetJSonPage()
 					sprintf(szTmp,"%.1f",total_real);
 					root["result"][ii]["d"]=szDateEnd;
 					root["result"][ii]["mm"]=szTmp;
+					ii++;
+				}
+			}
+			else if (sensor=="counter") {
+				root["status"]="OK";
+				root["title"]="Graph " + sensor + " " + srange;
+
+				char szDateStart[40];
+				char szDateEnd[40];
+
+				struct tm ltime;
+				ltime.tm_isdst=tm1->tm_isdst;
+				ltime.tm_hour=0;
+				ltime.tm_min=0;
+				ltime.tm_sec=0;
+				ltime.tm_year=tm1->tm_year;
+				ltime.tm_mon=tm1->tm_mon;
+				ltime.tm_mday=tm1->tm_mday;
+
+				sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
+
+				//Subtract one week
+
+				ltime.tm_mday -= 7;
+				time_t later = mktime(&ltime);
+				struct tm* tm2 = localtime(&later);
+				sprintf(szDateStart,"%04d-%02d-%02d",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday);
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				int ii=0;
+				if (result.size()>0)
+				{
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					for (itt=result.begin(); itt!=result.end(); ++itt)
+					{
+						std::vector<std::string> sd=*itt;
+
+						root["result"][ii]["d"]=sd[1].substr(0,16);
+						root["result"][ii]["v"]=sd[0];
+						ii++;
+					}
+				}
+				//add today (have to calculate it)
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					std::vector<std::string> sd=result[0];
+
+					unsigned long long total_min,total_max,total_real;
+
+					std::stringstream s_str1( sd[0] );
+					s_str1 >> total_min;
+					std::stringstream s_str2( sd[1] );
+					s_str2 >> total_max;
+					total_real=total_max-total_min;
+					sprintf(szTmp,"%llu",total_real);
+					root["result"][ii]["d"]=szDateEnd;
+					root["result"][ii]["v"]=szTmp;
 					ii++;
 				}
 			}
@@ -1272,7 +1406,7 @@ char * CWebServer::GetJSonPage()
 						std::vector<std::string> sd=*itt;
 
 						root["result"][ii]["d"]=sd[6].substr(0,16);
-						if ((dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeUV))
+						if ((dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeUV)||(dType==pTypeThermostat1))
 						{
 							root["result"][ii]["te"]=sd[1];
 							root["result"][ii]["tm"]=sd[0];
@@ -1304,7 +1438,7 @@ char * CWebServer::GetJSonPage()
 					std::vector<std::string> sd=result[0];
 
 					root["result"][ii]["d"]=szDateEnd;
-					if ((dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeUV))
+					if ((dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeUV)||(dType==pTypeThermostat1))
 					{
 						root["result"][ii]["te"]=sd[1];
 						root["result"][ii]["tm"]=sd[0];
@@ -1484,6 +1618,7 @@ char * CWebServer::GetJSonPage()
 				(dType==pTypeTEMP_HUM_BARO)||
 				(dType==pTypeWIND)||
 				(dType==pTypeUV)||
+				(dType==pTypeThermostat1)||
 				((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))
 				)
 			{

@@ -2,10 +2,13 @@
 
 #include <string>
 
-#define switchTypeOnOff 0
-#define switchTypeDoorbell 1
-#define switchTypeContact 2
-#define switchTypeMax 2
+enum _eSwitchType
+{
+	STYPE_OnOff=0,
+	STYPE_Doorbell,
+	STYPE_Contact,
+	STYPE_END
+};
 
 enum _eTimerType
 {
@@ -46,7 +49,7 @@ enum _eNotificationTypes
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum);
 const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char sType);
 const char *RFX_Humidity_Status_Desc(const unsigned char status);
-const char *Switch_Type_Desc(const unsigned char sType);
+const char *Switch_Type_Desc(const _eSwitchType sType);
 const char *RFX_Forecast_Desc(const unsigned char Forecast);
 const char *Timer_Type_Desc(int tType);
 const char *Timer_Cmd_Desc(int tCmd);
@@ -68,7 +71,7 @@ void GetLightStatus(
 bool GetLightCommand(
 	const unsigned char dType, 
 	const unsigned char dSubType, 
-	const unsigned char switchtype,
+	const _eSwitchType switchtype,
 	std::string switchcmd,
 	unsigned char &cmd
 	);

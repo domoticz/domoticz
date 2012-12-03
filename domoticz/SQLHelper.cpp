@@ -158,6 +158,19 @@ const char *sqlCreateUsers =
 "[Password] VARCHAR(200) NOT NULL, "
 "[Rights] INTEGER DEFAULT 255);";
 
+const char *sqlCreateMeter =
+"CREATE TABLE IF NOT EXISTS [Meter] ("
+"[DeviceRowID] BIGINT NOT NULL, "
+"[Value] BIGINT NOT NULL, "
+"[Date] DATETIME DEFAULT (datetime('now','localtime')));";
+
+const char *sqlCreateMeter_Calendar =
+"CREATE TABLE IF NOT EXISTS [Meter_Calendar] ("
+"[DeviceRowID] BIGINT NOT NULL, "
+"[Value] BIGINT NOT NULL, "
+"[Date] DATETIME DEFAULT (datetime('now','localtime')));";
+
+
 CSQLHelper::CSQLHelper(void)
 {
 	m_LastSwitchID="";
@@ -185,6 +198,8 @@ CSQLHelper::CSQLHelper(void)
 		query(sqlCreateUV_Calendar);
 		query(sqlCreateWind);
 		query(sqlCreateWind_Calendar);
+		query(sqlCreateMeter);
+		query(sqlCreateMeter_Calendar);
 		query(sqlCreateNotifications);
 		query(sqlCreateHardware);
 		query(sqlCreateHardwareSharing);
@@ -974,6 +989,7 @@ void CSQLHelper::Schedule5Minute()
 	UpdateRainLog();
 	UpdateWindLog();
 	UpdateUVLog();
+	UpdateMeter();
 }
 
 void CSQLHelper::ScheduleDay()
@@ -985,6 +1001,7 @@ void CSQLHelper::ScheduleDay()
 	AddCalendarUpdateRain();
 	AddCalendarUpdateUV();
 	AddCalendarUpdateWind();
+	AddCalendarUpdateMeter();
 }
 
 void CSQLHelper::UpdateTemperatureLog()
@@ -996,13 +1013,14 @@ void CSQLHelper::UpdateTemperatureLog()
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d)",
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d)",
 		pTypeTEMP,
 		pTypeHUM,
 		pTypeTEMP_HUM,
 		pTypeTEMP_HUM_BARO,
 		pTypeUV,
 		pTypeWIND,
+		pTypeThermostat1,
 		pTypeRFXSensor
 		);
 	result=query(szTmp);
@@ -1035,6 +1053,9 @@ void CSQLHelper::UpdateTemperatureLog()
 			switch (dType)
 			{
 			case pTypeTEMP:
+				temp=(float)atof(splitresults[0].c_str());
+				break;
+			case pTypeThermostat1:
 				temp=(float)atof(splitresults[0].c_str());
 				break;
 			case pTypeHUM:
@@ -1311,6 +1332,70 @@ void CSQLHelper::UpdateUVLog()
 	result=query(szTmp);
 }
 
+void CSQLHelper::UpdateMeter()
+{
+	char szTmp[1000];
+	time_t now = time(NULL);
+	struct tm* tm1 = localtime(&now);
+
+	unsigned long long ID=0;
+
+	std::vector<std::vector<std::string> > result;
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d)",
+		pTypeRFXMeter
+		);
+	result=query(szTmp);
+	if (result.size()>0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::vector<std::string> sd=*itt;
+
+			unsigned long long ID;
+			std::stringstream s_str( sd[0] );
+			s_str >> ID;
+			unsigned char dType=atoi(sd[1].c_str());
+			unsigned char dSubType=atoi(sd[2].c_str());
+			unsigned char nValue=atoi(sd[3].c_str());
+			std::string sValue=sd[4];
+			unsigned long long MeterValue;
+			std::stringstream s_str2( sValue );
+			s_str2 >> MeterValue;
+
+			//insert record
+			sprintf(szTmp,
+				"INSERT INTO Meter (DeviceRowID, Value) "
+				"VALUES (%llu, %llu)",
+				ID,
+				MeterValue
+				);
+			std::vector<std::vector<std::string> > result2;
+			result2=query(szTmp);
+		}
+	}
+	//truncate the Meter table (remove items older then 24 hours)
+	char szDateEnd[40];
+	struct tm ltime;
+	ltime.tm_isdst=tm1->tm_isdst;
+	ltime.tm_hour=tm1->tm_hour;
+	ltime.tm_min=tm1->tm_min;
+	ltime.tm_sec=tm1->tm_sec;
+	ltime.tm_year=tm1->tm_year;
+	ltime.tm_mon=tm1->tm_mon;
+	ltime.tm_mday=tm1->tm_mday;
+	//subtract one day
+	ltime.tm_mday -= 1;
+	time_t daybefore = mktime(&ltime);
+	struct tm* tm2 = localtime(&daybefore);
+	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday,tm2->tm_hour,tm2->tm_min);
+
+	sprintf(szTmp,"DELETE FROM Meter WHERE (Date<'%s')",
+		szDateEnd
+		);
+	result=query(szTmp);
+}
+
 void CSQLHelper::AddCalendarTemperature()
 {
 	char szTmp[1000];
@@ -1460,6 +1545,79 @@ void CSQLHelper::AddCalendarUpdateRain()
 				ID,
 				total_real,
 				rate,
+				szDateStart
+				);
+			result=query(szTmp);
+		}
+	}
+}
+
+void CSQLHelper::AddCalendarUpdateMeter()
+{
+	char szTmp[1000];
+
+	//Get All UV devices
+	std::vector<std::vector<std::string> > resultdevices;
+	strcpy(szTmp,"SELECT DISTINCT(DeviceRowID) FROM Meter ORDER BY DeviceRowID");
+	resultdevices=query(szTmp);
+	if (resultdevices.size()<1)
+		return; //nothing to do
+
+	char szDateStart[40];
+	char szDateEnd[40];
+
+	time_t now = time(NULL);
+	struct tm* tm1 = localtime(&now);
+
+	struct tm ltime;
+	ltime.tm_isdst=tm1->tm_isdst;
+	ltime.tm_hour=0;
+	ltime.tm_min=0;
+	ltime.tm_sec=0;
+	ltime.tm_year=tm1->tm_year;
+	ltime.tm_mon=tm1->tm_mon;
+	ltime.tm_mday=tm1->tm_mday;
+
+	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
+
+	//Subtract one day
+
+	ltime.tm_mday -= 1;
+	time_t later = mktime(&ltime);
+	struct tm* tm2 = localtime(&later);
+	sprintf(szDateStart,"%04d-%02d-%02d",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday);
+
+	std::vector<std::vector<std::string> > result;
+
+	std::vector<std::vector<std::string> >::const_iterator itt;
+	for (itt=resultdevices.begin(); itt!=resultdevices.end(); ++itt)
+	{
+		std::vector<std::string> sddev=*itt;
+		unsigned long long ID;
+		std::stringstream s_str( sddev[0] );
+		s_str >> ID;
+
+		sprintf(szTmp,"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s')",
+			ID,
+			szDateStart,
+			szDateEnd
+			);
+		result=query(szTmp);
+		if (result.size()>0)
+		{
+			std::vector<std::string> sd=result[0];
+
+			float total_min=(float)atof(sd[0].c_str());
+			float total_max=(float)atof(sd[1].c_str());
+
+			float total_real=total_max-total_min;
+
+			//insert into calendar table
+			sprintf(szTmp,
+				"INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) "
+				"VALUES (%llu, %.2f, '%s')",
+				ID,
+				total_real,
 				szDateStart
 				);
 			result=query(szTmp);
@@ -1665,6 +1823,10 @@ void CSQLHelper::DeleteDevice(const std::string idx)
 	sprintf(szTmp,"DELETE FROM Wind WHERE (DeviceRowID == %s)",idx.c_str());
 	query(szTmp);
 	sprintf(szTmp,"DELETE FROM Wind_Calendar WHERE (DeviceRowID == %s)",idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"DELETE FROM Meter WHERE (DeviceRowID == %s)",idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"DELETE FROM Meter_Calendar WHERE (DeviceRowID == %s)",idx.c_str());
 	query(szTmp);
 	//and now delete all records in the DeviceStatus table itself
 	sprintf(szTmp,"DELETE FROM DeviceStatus WHERE (ID == %s)",idx.c_str());
