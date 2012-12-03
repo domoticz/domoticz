@@ -1,0 +1,538 @@
+<div id="dialog-addutilitydevice" title="Add Device">
+    <form>
+    <fieldset>
+        <label for="name">Name: </label>
+        <input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" />
+    </fieldset>
+    </form>
+</div>
+<div id="dialog-editutilitydevice" title="Edit Device">
+    <form>
+    <fieldset>
+        <label for="name">Name: </label>
+        <input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" />
+    </fieldset>
+    </form>
+</div>
+<div id="utilitycontent">
+</div>
+<div id="utilitylog" style="display:none;">
+  <h2>Day</h2><br>
+  <div id="utilitydaygraph" style="height: 300px;"></div>
+  <br>
+  <h2>Month</h2><br>
+  <br>
+  <h2>Year</h2><br>
+ </div>
+ <div id="windlog" style="display:none;">
+  <h2>Day</h2><br>
+  <div id="winddaygraph" style="height: 300px;"></div>
+  <br>
+  <div id="winddirgraph" style="width: 400px; height: 400px;"></div>
+  <br>
+  <h2>Month</h2><br>
+  <div id="windmonthgraph" style="height: 300px;"></div>
+  <br>
+  <h2>Year</h2><br>
+  <div id="windyeargraph" style="height: 300px;"></div>
+</div>
+<div id="uvlog" style="display:none;">
+  <h2>Day</h2><br>
+  <div id="uvdaygraph" style="height: 300px;"></div>
+  <br>
+  <h2>Month</h2><br>
+  <div id="uvmonthgraph" style="height: 300px;"></div>
+  <br>
+  <h2>Year</h2><br>
+  <div id="uvyeargraph" style="height: 300px;"></div>
+</div>
+<div id="barolog" style="display:none;">
+  <h2>Day</h2><br>
+  <div id="barodaygraph" style="height: 300px;"></div>
+  <br>
+  <h2>Month</h2><br>
+  <div id="baromonthgraph" style="height: 300px;"></div>
+  <br>
+  <h2>Year</h2><br>
+  <div id="baroyeargraph" style="height: 300px;"></div>
+</div>
+<div id="counterlog" style="display:none;">
+  <h2>Week</h2><br>
+  <div id="counterdaygraph" style="height: 300px;"></div>
+  <br>
+  <h2>Month</h2><br>
+  <div id="countermonthgraph" style="height: 300px;"></div>
+  <br>
+  <h2>Year</h2><br>
+  <div id="counteryeargraph" style="height: 300px;"></div>
+</div>
+
+<script type="text/javascript" charset="utf-8">
+
+function MakeFavorite(id,isfavorite)
+{
+  $.ajax({
+     url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite, 
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+      ShowUtilities();
+     }
+  });
+}
+
+function EditUtilityDevice(idx,name)
+{
+  $.devIdx=idx;
+  $("#dialog-editutilitydevice #devicename").val(name);
+  $( "#dialog-editutilitydevice" ).dialog( "open" );
+}
+
+function AddUtilityDevice()
+{
+  alert('todo, for now use the devices tab');
+}
+
+function ShowCounterLog(id,name)
+{
+  $('#modal').show();
+  var htmlcontent = '';
+  htmlcontent='<p><center><h2>' + name + '</h2></center></p><br><br>\n';
+  htmlcontent+=$('#counterlog').html();
+  $('#utilitycontent').html(GetBackbuttonHTMLTable('ShowUtilities')+htmlcontent);
+  
+  $.DayChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'counterdaygraph',
+          type: 'column',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=day",
+                function(data) {
+                      var series = $.DayChart.series[0];
+                      var datatable = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable.push( [GetDateFromString(item.d), parseInt(item.v) ] );
+                      });
+                      series.setData(datatable);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Last week'
+        },
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: {
+                day: '%a'
+            },
+            tickInterval: 24 * 3600 * 1000
+        },
+        yAxis: {
+            title: {
+                text: 'Usage'
+            },
+            min: 0
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y;
+            }
+        },
+        plotOptions: {
+            column: {
+                stacking: 'normal',
+                minPointLength: 4,
+                pointPadding: 0.1,
+                groupPadding: 0
+            }
+        },
+        series: [{
+            name: 'mm',
+            color: 'rgba(3,190,252,0.8)',
+            dataLabels: {
+                    verticalAlign: 'top',
+                    enabled: true,
+                    color: '#FFFFFF',
+                    y: -23,
+                    formatter: function() {
+                        return this.y;
+                    },
+                    style: {
+                        fontSize: '13px',
+                        fontFamily: 'Verdana, sans-serif'
+                    }
+                }
+        }]
+        ,
+        legend: {
+            enabled: false
+        }
+    });
+
+  $.MonthChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'countermonthgraph',
+          type: 'spline',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=month",
+                function(data) {
+                      var series = $.MonthChart.series[0];
+                      var datatable = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable.push( [GetDateFromString(item.d), parseInt(item.v) ] );
+                      });
+                      series.setData(datatable);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Last Month'
+        },
+        xAxis: {
+            type: 'datetime',
+            tickInterval: 24 * 3600 * 1000
+        },
+        yAxis: {
+            title: {
+                text: 'Usage'
+            },
+            min: 0
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y;
+            }
+        },
+        plotOptions: {
+           spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'mm',
+            color: 'rgba(3,190,252,0.8)'
+        }]
+        ,
+        legend: {
+            enabled: false
+        }
+    });
+
+  $.YearChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'counteryeargraph',
+          type: 'spline',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=year",
+                function(data) {
+                      var series = $.YearChart.series[0];
+                      var datatable = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable.push( [GetDateFromString(item.d), parseInt(item.v) ] );
+                      });
+                      series.setData(datatable);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Last Year'
+        },
+        xAxis: {
+            type: 'datetime',
+            tickInterval: 24 * 3600 * 1000
+        },
+        yAxis: {
+            title: {
+                text: 'Usage'
+            },
+            min: 0
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y;
+            }
+        },
+        plotOptions: {
+           spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'mm',
+            color: 'rgba(3,190,252,0.8)'
+        }]
+        ,
+        legend: {
+            enabled: false
+        }
+    });
+}
+
+function ShowUtilities()
+{
+  $('#modal').show();
+  
+  var htmlcontent = '';
+  var bHaveAddedDevider = false;
+
+  var tophtm=
+        '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+        '\t<tr>\n';
+  tophtm+=
+        '\t  <td align="right">\n' +
+        '\t    <a class="btnstyle" href="#" onclick="AddUtilityDevice();">Add Sensor</a>\n' +
+        '\t  </td>\n' +
+        '\t</tr>\n' +
+        '\t</table>\n';
+  
+
+  var i=0;
+  $.ajax({
+     url: "json.htm?type=devices&filter=utility&used=true&order=Name", 
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+      if (typeof data.result != 'undefined') {
+        $.each(data.result, function(i,item){
+          if (i % 3 == 0)
+          {
+            //add devider
+            if (bHaveAddedDevider == true) {
+              //close previous devider
+              htmlcontent+='</div>\n';
+            }
+            htmlcontent+='<div class="row divider">\n';
+            bHaveAddedDevider=true;
+          }
+          
+          var xhtm=
+                '\t<div class="4u">\n' +
+                '\t  <section>\n' +
+                '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
+                '\t    <tr>\n' +
+                '\t      <td>' + item.Name + '</td>\n' +
+                '\t      <td><img src="images/';
+            if (typeof item.Counter != 'undefined') {
+              xhtm+='counter.png" height="48"></td>\n' +
+              '\t      <td>' + item.Counter + ', Today: ' + item.CounterToday;
+            }
+            xhtm+=      
+                '</td>\n' +
+                '\t      <td>' + item.LastUpdate + '</td>\n' +
+                '\t      <td>' + item.Type + ', ' + item.SubType + '</td>\n' +
+                '\t      <td>';
+          if (item.Favorite == 0) {
+            xhtm+=      
+                  '<img src="images/nofavorite.png" title="Add to Dashboard" onclick="MakeFavorite(' + item.idx + ',1);" onMouseover="cursorhand()" onMouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+          }
+          else {
+            xhtm+=      
+                  '<img src="images/favorite.png" title="Remove from Dashboard" onclick="MakeFavorite(' + item.idx + ',0);" onMouseover="cursorhand()" onMouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+          }
+
+          if (typeof item.Counter != 'undefined') {
+            xhtm+='<a class="btnsmall" href="#" onclick="ShowCounterLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
+          }
+          xhtm+=      
+                '<a class="btnsmall" href="#" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+                
+          if (item.Notifications == "true")
+            xhtm+='<a class="btnsmall-sel" href="#" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#utilitycontent\', \'ShowUtilities\');">Notifications</a>';
+          else
+            xhtm+='<a class="btnsmall" href="#" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#utilitycontent\', \'ShowUtilities\');">Notifications</a>';
+
+          xhtm+=      
+                '</td>\n' +
+                '\t    </tr>\n' +
+                '\t    </table>\n' +
+                '\t  </section>\n' +
+                '\t</div>\n';
+          htmlcontent+=xhtm;
+        });
+      }
+     }
+  });
+  if (bHaveAddedDevider == true) {
+    //close previous devider
+    htmlcontent+='</div>\n';
+  }
+  if (htmlcontent == '')
+  {
+    htmlcontent='<h2>No Utility sensors found or added in the system...</h2>';
+  }
+  $('#modal').hide();
+  $('#utilitycontent').html(tophtm+htmlcontent);
+  return false;
+}
+
+$(document).ready(function() {
+    //global var
+    $.devIdx=0;
+    
+    $( "#dialog-addutilitydevice" ).dialog({
+          autoOpen: false,
+          width: 350,
+          height: 150,
+          modal: true,
+          resizable: false,
+          buttons: {
+              "Add Device": function() {
+                  var bValid = true;
+                  bValid = bValid && checkLength( $("#dialog-addutilitydevice #devicename"), 3, 100 );
+                  if ( bValid ) {
+                      $( this ).dialog( "close" );
+                      $.ajax({
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-addutilitydevice #devicename").val() + '&used=true',
+                         async: false, 
+                         dataType: 'json',
+                         success: function(data) {
+                            ShowUtilities();
+                         }
+                      });
+                      
+                  }
+              },
+              Cancel: function() {
+                  $( this ).dialog( "close" );
+              }
+          },
+          open: function() {
+              $(this).keypress(function(e) {
+                if (e.keyCode == $.ui.keyCode.ENTER) {
+                  e.preventDefault();
+                  $(this).parent().find("button:eq(0)").trigger("click");
+                }
+              });
+          },
+          close: function() {
+            $( this ).dialog( "close" );
+          }
+    });
+    $( "#dialog-editutilitydevice" ).dialog({
+          autoOpen: false,
+          width: 350,
+          height: 150,
+          modal: true,
+          resizable: false,
+          buttons: {
+              "Update": function() {
+                  var bValid = true;
+                  bValid = bValid && checkLength( $("#dialog-editutilitydevice #devicename"), 3, 100 );
+                  if ( bValid ) {
+                      $( this ).dialog( "close" );
+                      $.ajax({
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editutilitydevice #devicename").val() + '&used=true',
+                         async: false, 
+                         dataType: 'json',
+                         success: function(data) {
+                            ShowUtilities();
+                         }
+                      });
+                      
+                  }
+              },
+              "Remove Device": function() {
+                  var bValid = false;
+                  bValid=(confirm("Are you sure to remove this Device?")==true);
+                  if ( bValid ) {
+                      $( this ).dialog( "close" );
+                      $.ajax({
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editutilitydevice #devicename").val() + '&used=false',
+                         async: false, 
+                         dataType: 'json',
+                         success: function(data) {
+                            ShowUtilities();
+                         }
+                      });
+                      
+                  }
+              },
+              Cancel: function() {
+                  $( this ).dialog( "close" );
+              }
+          },
+          open: function() {
+              $(this).keypress(function(e) {
+                if (e.keyCode == $.ui.keyCode.ENTER) {
+                  e.preventDefault();
+                  $(this).parent().find("button:eq(0)").trigger("click");
+                }
+              });
+          },
+          close: function() {
+            $( this ).dialog( "close" );
+          }
+    });
+
+  ShowUtilities();
+ 
+} );  
+</script>
