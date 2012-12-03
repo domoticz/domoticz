@@ -1170,7 +1170,7 @@ void MainWorker::decode_Wind(const int HwdID, const tRBUF *pResponse)
 	float temp=0,chill=0;
 	if (pResponse->WIND.subtype == sTypeWIND4)
 	{
-		if ((pResponse->WIND.tempsign & 0x80) == 0)
+		if (!pResponse->WIND.tempsign)
 		{
 			temp=float((pResponse->WIND.temperatureh * 256) + pResponse->WIND.temperaturel) / 10.0f;
 		}
@@ -1281,7 +1281,7 @@ void MainWorker::decode_Temp(const int HwdID, const tRBUF *pResponse)
 		BatteryLevel=100;
 
 	float temp;
-	if ((pResponse->TEMP.tempsign &0x80) == 0)
+	if (!pResponse->TEMP.tempsign)
 	{
 		temp=float((pResponse->TEMP.temperatureh * 256) + pResponse->TEMP.temperaturel) / 10.0f;
 	}
@@ -1477,7 +1477,7 @@ void MainWorker::decode_TempHum(const int HwdID, const tRBUF *pResponse)
 
 
 	float temp;
-	if ((pResponse->TEMP_HUM.tempsign &0x80) == 0)
+	if (!pResponse->TEMP_HUM.tempsign)
 	{
 		temp=float((pResponse->TEMP_HUM.temperatureh * 256) + pResponse->TEMP_HUM.temperaturel) / 10.0f;
 	}
@@ -1604,7 +1604,7 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const tRBUF *pResponse)
 		BatteryLevel=100;
 
 	float temp;
-	if ((pResponse->TEMP_HUM_BARO.tempsign &0x80) == 0)
+	if (!pResponse->TEMP_HUM_BARO.tempsign)
 	{
 		temp=float((pResponse->TEMP_HUM_BARO.temperatureh * 256) + pResponse->TEMP_HUM_BARO.temperaturel) / 10.0f;
 	}
@@ -1724,7 +1724,7 @@ void MainWorker::decode_UV(const int HwdID, const tRBUF *pResponse)
 	float temp=0;
 	if (pResponse->UV.subtype == sTypeUV3)
 	{
-		if ((pResponse->UV.tempsign &0x80) == 0)
+		if (!pResponse->UV.tempsign)
 		{
 			temp = float((pResponse->UV.temperatureh * 256) + pResponse->UV.temperaturel) / 10.0f;
 		}
