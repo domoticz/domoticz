@@ -20,6 +20,7 @@ public:
 	boost::signals2::signal<void()>	sDisconnected;
 	static const int readBufferSize=512;
 private:
+	int m_retrycntr;
 	bool StartHardware();
 	bool StopHardware();
 protected:

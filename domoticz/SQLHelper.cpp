@@ -1076,6 +1076,8 @@ void CSQLHelper::UpdateTemperatureLog()
 				temp=(float)atof(splitresults[1].c_str());
 				break;
 			case pTypeWIND:
+				if (dSubType!=sTypeWIND4)
+					continue;
 				temp=(float)atof(splitresults[4].c_str());
 				chill=(float)atof(splitresults[5].c_str());
 				break;

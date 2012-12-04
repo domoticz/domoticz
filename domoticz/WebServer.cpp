@@ -298,7 +298,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 						(dType!=pTypeHUM)&&
 						(dType!=pTypeTEMP_HUM)&&
 						(dType!=pTypeTEMP_HUM_BARO)&&
-						(dType!=pTypeWIND)&&
+						(!((dType==pTypeWIND)&&(dSubType==sTypeWIND4)))&&
 						(dType!=pTypeUV)&&
 						(dType!=pTypeThermostat1)&&
 						(!((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp)))
@@ -511,8 +511,12 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					root["result"][ii]["Gustkmhr"]=szTmp;
 					sprintf(szTmp,"%.1f",(float(intGust) * 0.223693629f) / 10.0f);
 					root["result"][ii]["Gustmph"]=szTmp;
-					root["result"][ii]["Temp"]=atof(strarray[4].c_str());
-					root["result"][ii]["Chill"]=atof(strarray[5].c_str());
+
+					if ((dType==pTypeWIND)&&(dSubType==sTypeWIND4))
+					{
+						root["result"][ii]["Temp"]=atof(strarray[4].c_str());
+						root["result"][ii]["Chill"]=atof(strarray[5].c_str());
+					}
 				}
 			}
 			else if (dType == pTypeRAIN)
@@ -1115,7 +1119,7 @@ char * CWebServer::GetJSonPage()
 							(dType==pTypeTEMP)||
 							(dType==pTypeTEMP_HUM)||
 							(dType==pTypeTEMP_HUM_BARO)||
-							(dType==pTypeWIND)||
+							((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
 							(dType==pTypeUV)||
 							(dType==pTypeThermostat1)||
 							((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))
@@ -1123,7 +1127,7 @@ char * CWebServer::GetJSonPage()
 						{
 							root["result"][ii]["te"]=sd[0];
 						}
-						if (dType==pTypeWIND)
+						if ((dType==pTypeWIND)&&(dSubType==sTypeWIND4))
 						{
 							root["result"][ii]["ch"]=sd[1];
 						}
@@ -1406,12 +1410,18 @@ char * CWebServer::GetJSonPage()
 						std::vector<std::string> sd=*itt;
 
 						root["result"][ii]["d"]=sd[6].substr(0,16);
-						if ((dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeUV)||(dType==pTypeThermostat1))
+						if (
+							(dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeUV)||(dType==pTypeThermostat1)||
+							((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))
+							)
 						{
-							root["result"][ii]["te"]=sd[1];
-							root["result"][ii]["tm"]=sd[0];
+							if (!((dType==pTypeWIND)&&(dSubType!=sTypeWIND4)))
+							{
+								root["result"][ii]["te"]=sd[1];
+								root["result"][ii]["tm"]=sd[0];
+							}
 						}
-						if (dType==pTypeWIND)
+						if ((dType==pTypeWIND)&&(dSubType==sTypeWIND4))
 						{
 							root["result"][ii]["ch"]=sd[3];
 							root["result"][ii]["cm"]=sd[2];
@@ -1440,10 +1450,13 @@ char * CWebServer::GetJSonPage()
 					root["result"][ii]["d"]=szDateEnd;
 					if ((dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeUV)||(dType==pTypeThermostat1))
 					{
-						root["result"][ii]["te"]=sd[1];
-						root["result"][ii]["tm"]=sd[0];
+						if (!((dType==pTypeWIND)&&(dSubType!=sTypeWIND4)))
+						{
+							root["result"][ii]["te"]=sd[1];
+							root["result"][ii]["tm"]=sd[0];
+						}
 					}
-					if (dType==pTypeWIND)
+					if ((dType==pTypeWIND)&&(dSubType==sTypeWIND4))
 					{
 						root["result"][ii]["ch"]=sd[3];
 						root["result"][ii]["cm"]=sd[2];
@@ -1536,6 +1549,48 @@ char * CWebServer::GetJSonPage()
 					ii++;
 				}
 			}
+			else if (sensor=="counter") {
+				root["status"]="OK";
+				root["title"]="Graph " + sensor + " " + srange;
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				int ii=0;
+				if (result.size()>0)
+				{
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					for (itt=result.begin(); itt!=result.end(); ++itt)
+					{
+						std::vector<std::string> sd=*itt;
+
+						root["result"][ii]["d"]=sd[1].substr(0,16);
+						root["result"][ii]["v"]=sd[0];
+						ii++;
+					}
+				}
+				//add today (have to calculate it)
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT MIN(Value), MAX(Value), FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					std::vector<std::string> sd=result[0];
+					unsigned long long total_min,total_max,total_real;
+
+					std::stringstream s_str1( sd[0] );
+					s_str1 >> total_min;
+					std::stringstream s_str2( sd[1] );
+					s_str2 >> total_max;
+					total_real=total_max-total_min;
+					sprintf(szTmp,"%llu",total_real);
+					root["result"][ii]["d"]=szDateEnd;
+					root["result"][ii]["v"]=szTmp;
+					ii++;
+				}
+			}
 			else if (sensor=="wind") {
 				root["status"]="OK";
 				root["title"]="Graph " + sensor + " " + srange;
@@ -1622,10 +1677,13 @@ char * CWebServer::GetJSonPage()
 				((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))
 				)
 			{
-				root["result"][ii]["val"]=NTYPE_TEMPERATURE;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TEMPERATURE,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TEMPERATURE,1);
-				ii++;
+				if (!((dType==pTypeWIND)&&(dSubType!=sTypeWIND4)))
+				{
+					root["result"][ii]["val"]=NTYPE_TEMPERATURE;
+					root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TEMPERATURE,0);
+					root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TEMPERATURE,1);
+					ii++;
+				}
 			}
 			if (
 				(dType==pTypeHUM)||

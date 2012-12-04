@@ -110,6 +110,7 @@ DomoticzTCP.cpp
 RFXNames.cpp
 Helper.cpp
 mynetwork.cpp
+SunRiseSet.cpp
 UrlEncode.cpp
 tcpserver/TCPServer.cpp
 tcpserver/TCPClient.cpp

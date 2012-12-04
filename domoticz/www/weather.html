@@ -1578,8 +1578,10 @@ function ShowWeathers()
 							bHaveWind=true;
               xhtm+='wind48.png" height="48"></td>\n' +
               '\t      <td>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
-              xhtm+='Temp: ' + item.Temp + '&deg; C, ';
-              xhtm+='Chill: ' + item.Chill + '&deg; C';
+              if (typeof item.Temp != 'undefined') {
+								xhtm+='Temp: ' + item.Temp + '&deg; C, ';
+								xhtm+='Chill: ' + item.Chill + '&deg; C';
+							}
             }
             xhtm+=      
                 '</td>\n' +

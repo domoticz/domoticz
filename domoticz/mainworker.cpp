@@ -3,12 +3,15 @@
 #include "RFXNames.h"
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/lexical_cast.hpp>
 #include "mynetwork.h"
 #include "Helper.h"
 
 #include "RFXComSerial.h"
 #include "RFXComTCP.h"
 #include "DomoticzTCP.h"
+
+#include "SunRiseSet.h"
 
 //#define PARSE_RFXCOM_DEVICE_LOG
 
@@ -140,14 +143,10 @@ void MainWorker::ClearDomoticzHardware()
 	m_hardwaredevices.clear();
 }
 
-/* sunset/sunrise
-http://www.earthtools.org/sun/<latitude>/<longitude>/<day>/<month>/<timezone>/<dst>
-example:
-http://www.earthtools.org/sun/52.214268/5.171002/11/11/99/1
-
-get lat/long from:
-http://www.latlong.net/
-*/
+// sunset/sunrise
+// http://www.earthtools.org/sun/<latitude>/<longitude>/<day>/<month>/<timezone>/<dst>
+// example:
+// http://www.earthtools.org/sun/52.214268/5.171002/11/11/99/1
 
 bool MainWorker::GetSunSettings()
 {
@@ -169,6 +168,29 @@ bool MainWorker::GetSunSettings()
 	time_t atime=time(NULL);
 	struct tm *ltime=localtime(&atime);
 
+	int year=ltime->tm_year+1900;
+	int month=ltime->tm_mon+1;
+	int day=ltime->tm_mday;
+
+	double dLatitude=boost::lexical_cast<double>(Latitude);
+	double dLongitude=boost::lexical_cast<double>(Longitude);
+	SunRiseSet::_tSubRiseSetResults sresult;
+	SunRiseSet::GetSunRiseSet(dLatitude,dLongitude,year,month,day,sresult);
+
+	std::string sunrise;
+	std::string sunset;
+
+	char szRiseSet[30];
+	sprintf(szRiseSet,"%02d:%02d:00",sresult.SunRiseHour,sresult.SunRiseMin);
+	sunrise=szRiseSet;
+	sprintf(szRiseSet,"%02d:%02d:00",sresult.SunSetHour,sresult.SunSetMin);
+	sunset=szRiseSet;
+	std::string riseset=sunrise+";"+sunset;
+	m_sql.UpdateTempVar("SunRiseSet",riseset.c_str());
+	m_scheduler.SetSunRiseSetTimers(sunrise,sunset);
+	std::cout << "Sunrise: " << sunrise << " SunSet: " << sunset << std::endl;
+
+/*
 	char szURL[200];
 	sprintf(szURL,"http://www.earthtools.org/sun/%s/%s/%d/%d/99/0",
 		Latitude.c_str(),Longitude.c_str(),
@@ -203,7 +225,7 @@ bool MainWorker::GetSunSettings()
 	{
 	}
 	delete pData;
-
+*/
 	return true;
 }
 

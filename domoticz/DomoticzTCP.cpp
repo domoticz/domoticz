@@ -3,6 +3,8 @@
 //#include <boost/bind.hpp>
 //#include <boost/asio.hpp>
 
+#define RETRY_DELAY 10
+
 DomoticzTCP::DomoticzTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string username, const std::string password)
 {
 	m_HwdID=ID;
@@ -111,8 +113,7 @@ bool DomoticzTCP::connectto(const char *serveraddr, unsigned short port)
 		}
 	}
 
-	if (!ConnectInternal())
-		return false;
+	m_retrycntr=RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&DomoticzTCP::Do_Work, this)));
@@ -135,6 +136,7 @@ bool DomoticzTCP::ConnectInternal()
 	if (nRet == SOCKET_ERROR)
 	{
 		closesocket(m_socket);
+		m_socket=INVALID_SOCKET;
 		std::cerr << "could not connect to: " << m_szIPAddress << ":" << std::dec << m_usIPPort << std::endl;
 		return false;
 	}
@@ -162,8 +164,6 @@ void DomoticzTCP::disconnect()
 
 void DomoticzTCP::Do_Work()
 {
-	int retrycntr=0;
-
 	while (!m_stoprequested)
 	{
 		if (
@@ -172,13 +172,13 @@ void DomoticzTCP::Do_Work()
 			)
 		{
 			boost::this_thread::sleep(boost::posix_time::seconds(1));
-			retrycntr++;
-			if (retrycntr==4)
+			m_retrycntr++;
+			if (m_retrycntr>=RETRY_DELAY)
 			{
+				m_retrycntr=0;
 				if (!ConnectInternal())
 				{
-					retrycntr=0;
-					std::cout << "retrying in 5 seconds..." << std::endl;
+					std::cout << "retrying in " << std::dec << RETRY_DELAY << " seconds..." << std::endl;
 					continue;
 				}
 			}
@@ -193,8 +193,8 @@ void DomoticzTCP::Do_Work()
 				m_socket=INVALID_SOCKET;
 				if (!m_stoprequested)
 				{
-					std::cout << "retrying in 5 seconds..." << std::endl;
-					retrycntr=0;
+					std::cout << "retrying in " << std::dec << RETRY_DELAY << " seconds..." << std::endl;
+					m_retrycntr=0;
 					continue;
 				}
 			}

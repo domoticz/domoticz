@@ -143,6 +143,9 @@
     <ClInclude Include="DomoticzTCP.h">
       <Filter>Devices\Domoticz</Filter>
     </ClInclude>
+    <ClInclude Include="SunRiseSet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -234,6 +237,9 @@
     </ClCompile>
     <ClCompile Include="DomoticzTCP.cpp">
       <Filter>Devices\Domoticz</Filter>
+    </ClCompile>
+    <ClCompile Include="SunRiseSet.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
