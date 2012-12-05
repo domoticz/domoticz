@@ -1201,7 +1201,7 @@ void MainWorker::decode_Wind(const int HwdID, const tRBUF *pResponse)
 			temp=-(float(((pResponse->WIND.temperatureh & 0x7F) * 256) + pResponse->WIND.temperaturel) / 10.0f);
 		}
 
-		if (pResponse->WIND.chillsign)
+		if (!pResponse->WIND.chillsign)
 		{
 			chill=float((pResponse->WIND.chillh * 256) + pResponse->WIND.chilll) / 10.0f;
 		}
