@@ -168,7 +168,7 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 
 	boost::posix_time::time_duration uoffset=get_utc_offset();
 
-	double timezone=(double)(uoffset.ticks()/3600000000);
+	double timezone=(double)(uoffset.ticks()/3600000000L);
 
 	double riset = 12.0 - 12.0 * ha/PI + timezone - longit/15.0 + equation/60.0;
 	double settm = 12.0 + 12.0 * ha/PI + timezone - longit/15.0 + equation/60.0;
