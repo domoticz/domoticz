@@ -152,10 +152,12 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 	// arctic winter   //
 
 	double timezone=0;
-	struct timeb tp;
-	ftime(&tp);
-
-	timezone=(tp.timezone/60)*-1;
+	time_t atime=time(NULL);
+	struct tm *ptm=gmtime(&atime);
+	int uhour=ptm->tm_hour;
+	ptm=localtime(&atime);
+	int lhour=ptm->tm_hour;
+	timezone=lhour-uhour;
 
 	double riset = 12.0 - 12.0 * ha/PI + timezone - longit/15.0 + equation/60.0;
 	double settm = 12.0 + 12.0 * ha/PI + timezone - longit/15.0 + equation/60.0;
