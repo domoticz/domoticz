@@ -5,6 +5,8 @@
 #include <time.h>
 #include <sys/timeb.h>
 
+#include <boost/date_time/c_local_time_adjustor.hpp>
+
 #ifndef PI
 #define PI			3.1415926535897932384
 #endif
@@ -105,6 +107,19 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, _tSubRis
 	return GetSunRiseSet(latit, longit, year,month,day,result);
 }
 
+boost::posix_time::time_duration get_utc_offset() {
+	using namespace boost::posix_time;
+
+	// boost::date_time::c_local_adjustor uses the C-API to adjust a
+	// moment given in utc to the same moment in the local time zone.
+	typedef boost::date_time::c_local_adjustor<ptime> local_adj;
+
+	const ptime utc_now = second_clock::universal_time();
+	const ptime now = local_adj::utc_to_local(utc_now);
+
+	return now - utc_now;
+}
+
 bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const int year, const int month, const int day, _tSubRiseSetResults &result)
 {
 	result.latit=latit;
@@ -151,13 +166,9 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 	if (daylen<0.0001) {daylen = 0.0;}
 	// arctic winter   //
 
-	double timezone=0;
-	time_t atime=time(NULL);
-	struct tm *ptm=gmtime(&atime);
-	int uhour=ptm->tm_hour;
-	ptm=localtime(&atime);
-	int lhour=ptm->tm_hour;
-	timezone=lhour-uhour;
+	boost::posix_time::time_duration uoffset=get_utc_offset();
+
+	double timezone=(double)(uoffset.ticks()/3600000000);
 
 	double riset = 12.0 - 12.0 * ha/PI + timezone - longit/15.0 + equation/60.0;
 	double settm = 12.0 + 12.0 * ha/PI + timezone - longit/15.0 + equation/60.0;
