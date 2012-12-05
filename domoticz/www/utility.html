@@ -14,6 +14,24 @@
     </fieldset>
     </form>
 </div>
+<div id="dialog-editmeterdevice" title="Edit Meter Device">
+    <form>
+    <fieldset>
+        <table class="display" id="metertable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="width:60px"><label for="name">Name: </label></td>
+          <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
+        <tr>
+          <td align="right"><label for="metertype">Type: </label></td>
+          <td><select id="combometertype" style="width:150px" class="combobox ui-corner-all">
+            <!--#embed metertypes -->
+          </select></td>
+		    </tr>
+		    </table>
+    </fieldset>
+    </form>
+</div>
+
 <div id="utilitycontent">
 </div>
 <div id="utilitylog" style="display:none;">
@@ -88,12 +106,67 @@ function EditUtilityDevice(idx,name)
   $( "#dialog-editutilitydevice" ).dialog( "open" );
 }
 
+function EditMeterDevice(idx,name, switchtype)
+{
+  $.devIdx=idx;
+  $("#dialog-editmeterdevice #devicename").val(name);
+  $("#dialog-editmeterdevice #combometertype").val(switchtype);
+  $( "#dialog-editmeterdevice" ).dialog( "open" );
+}
+
 function AddUtilityDevice()
 {
   alert('todo, for now use the devices tab');
 }
 
-function ShowCounterLog(id,name)
+function AddDataToUtilityChart(data,chart,switchtype)
+{
+    var datatablev = [];
+
+    $.each(data.result, function(i,item)
+    {
+       datatablev.push( [GetDateFromString(item.d), parseFloat(item.v) ] );
+    });
+
+    var series;
+    if (switchtype==0)
+    {
+			//energy
+      chart.addSeries(
+        {
+          id: 'energy',
+          name: 'Energy',
+          color: 'rgba(3,190,252,0.8)',
+          yAxis: 0
+        }
+      );
+			chart.yAxis[0].axisTitle.attr({
+        text: 'Energy kWh'
+			});			
+      series = chart.get('energy');
+			chart.yAxis[0].redraw();
+      series.setData(datatablev);
+    }
+    else if (switchtype==1)
+    {
+			//gas
+      chart.addSeries(
+        {
+          id: 'gas',
+          name: 'Gas',
+          color: 'rgba(3,190,252,0.8)',
+          yAxis: 0
+        }
+      );
+			chart.yAxis[0].axisTitle.attr({
+        text: 'Gas m3'
+			});			
+      series = chart.get('gas');
+      series.setData(datatablev);
+    }
+}
+
+function ShowCounterLog(id,name,switchtype)
 {
   $('#modal').show();
   var htmlcontent = '';
@@ -111,14 +184,7 @@ function ShowCounterLog(id,name)
                   
                 $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=day",
                 function(data) {
-                      var series = $.DayChart.series[0];
-                      var datatable = [];
-                      
-                      $.each(data.result, function(i,item)
-                      {
-                        datatable.push( [GetDateFromString(item.d), parseInt(item.v) ] );
-                      });
-                      series.setData(datatable);
+											AddDataToUtilityChart(data,$.DayChart,switchtype);
                 });
               }
           }
@@ -140,14 +206,17 @@ function ShowCounterLog(id,name)
         },
         yAxis: {
             title: {
-                text: 'Usage'
+                text: 'Energy (kWh)'
             },
             min: 0
         },
         tooltip: {
             formatter: function() {
-                    return ''+
-                    Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y;
+										var unit = {
+																'Energy': 'kWh',
+																'Gas': 'm3'
+													}[this.series.name];
+                    return Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -158,24 +227,6 @@ function ShowCounterLog(id,name)
                 groupPadding: 0
             }
         },
-        series: [{
-            name: 'mm',
-            color: 'rgba(3,190,252,0.8)',
-            dataLabels: {
-                    verticalAlign: 'top',
-                    enabled: true,
-                    color: '#FFFFFF',
-                    y: -23,
-                    formatter: function() {
-                        return this.y;
-                    },
-                    style: {
-                        fontSize: '13px',
-                        fontFamily: 'Verdana, sans-serif'
-                    }
-                }
-        }]
-        ,
         legend: {
             enabled: false
         }
@@ -191,14 +242,7 @@ function ShowCounterLog(id,name)
                   
                 $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=month",
                 function(data) {
-                      var series = $.MonthChart.series[0];
-                      var datatable = [];
-                      
-                      $.each(data.result, function(i,item)
-                      {
-                        datatable.push( [GetDateFromString(item.d), parseInt(item.v) ] );
-                      });
-                      series.setData(datatable);
+											AddDataToUtilityChart(data,$.MonthChart,switchtype);
                 });
               }
           }
@@ -223,8 +267,11 @@ function ShowCounterLog(id,name)
         },
         tooltip: {
             formatter: function() {
-                    return ''+
-                    Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y;
+										var unit = {
+																'Energy': 'kWh',
+																'Gas': 'm3'
+													}[this.series.name];
+                    return Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -248,11 +295,6 @@ function ShowCounterLog(id,name)
                 }
             }
         },
-        series: [{
-            name: 'mm',
-            color: 'rgba(3,190,252,0.8)'
-        }]
-        ,
         legend: {
             enabled: false
         }
@@ -268,14 +310,7 @@ function ShowCounterLog(id,name)
                   
                 $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=year",
                 function(data) {
-                      var series = $.YearChart.series[0];
-                      var datatable = [];
-                      
-                      $.each(data.result, function(i,item)
-                      {
-                        datatable.push( [GetDateFromString(item.d), parseInt(item.v) ] );
-                      });
-                      series.setData(datatable);
+											AddDataToUtilityChart(data,$.YearChart,switchtype);
                 });
               }
           }
@@ -300,8 +335,11 @@ function ShowCounterLog(id,name)
         },
         tooltip: {
             formatter: function() {
-                    return ''+
-                    Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y;
+										var unit = {
+																'Energy': 'kWh',
+																'Gas': 'm3'
+													}[this.series.name];
+                    return Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -325,11 +363,6 @@ function ShowCounterLog(id,name)
                 }
             }
         },
-        series: [{
-            name: 'mm',
-            color: 'rgba(3,190,252,0.8)'
-        }]
-        ,
         legend: {
             enabled: false
         }
@@ -399,11 +432,14 @@ function ShowUtilities()
           }
 
           if (typeof item.Counter != 'undefined') {
-            xhtm+='<a class="btnsmall" href="#" onclick="ShowCounterLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
+            xhtm+='<a class="btnsmall" href="#" onclick="ShowCounterLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">Log</a> ';
+						xhtm+=      
+									'<a class="btnsmall" href="#" onclick="EditMeterDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +');">Edit</a> ';
           }
-          xhtm+=      
-                '<a class="btnsmall" href="#" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
-                
+          else {
+						xhtm+=      
+									'<a class="btnsmall" href="#" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+					}                
           if (item.Notifications == "true")
             xhtm+='<a class="btnsmall-sel" href="#" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#utilitycontent\', \'ShowUtilities\');">Notifications</a>';
           else
@@ -506,6 +542,61 @@ $(document).ready(function() {
                       $( this ).dialog( "close" );
                       $.ajax({
                          url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editutilitydevice #devicename").val() + '&used=false',
+                         async: false, 
+                         dataType: 'json',
+                         success: function(data) {
+                            ShowUtilities();
+                         }
+                      });
+                      
+                  }
+              },
+              Cancel: function() {
+                  $( this ).dialog( "close" );
+              }
+          },
+          open: function() {
+              $(this).keypress(function(e) {
+                if (e.keyCode == $.ui.keyCode.ENTER) {
+                  e.preventDefault();
+                  $(this).parent().find("button:eq(0)").trigger("click");
+                }
+              });
+          },
+          close: function() {
+            $( this ).dialog( "close" );
+          }
+    });
+    $( "#dialog-editmeterdevice" ).dialog({
+          autoOpen: false,
+          width: 370,
+          height: 200,
+          modal: true,
+          resizable: false,
+          buttons: {
+              "Update": function() {
+                  var bValid = true;
+                  bValid = bValid && checkLength( $("#dialog-editmeterdevice #devicename"), 3, 100 );
+                  if ( bValid ) {
+                      $( this ).dialog( "close" );
+                      $.ajax({
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editmeterdevice #devicename").val() + '&switchtype=' + $("#dialog-editmeterdevice #combometertype").val() + '&used=true',
+                         async: false, 
+                         dataType: 'json',
+                         success: function(data) {
+                            ShowUtilities();
+                         }
+                      });
+                      
+                  }
+              },
+              "Remove Device": function() {
+                  var bValid = false;
+                  bValid=(confirm("Are you sure to remove this Device?")==true);
+                  if ( bValid ) {
+                      $( this ).dialog( "close" );
+                      $.ajax({
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editmeterdevice #devicename").val() + '&used=false',
                          async: false, 
                          dataType: 'json',
                          success: function(data) {

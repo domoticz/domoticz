@@ -21,6 +21,7 @@ public:
 
 	char * DisplayVersion();
 	char * DisplaySwitchTypesCombo();
+	char * DisplayMeterTypesCombo();
 	char * DisplayTimerTypesCombo();
 	char * DisplayHardwareTypesCombo();
 	char * DisplaySerialDevicesCombo();

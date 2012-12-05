@@ -143,6 +143,17 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 	return findTableIDSingle1 (Table, sType);
 }
 
+const char *Meter_Type_Desc(const _eMeterType sType)
+{
+	STR_TABLE_SINGLE	Table[] = 
+	{
+		{ MTYPE_ENERGY, "Energy" },
+		{ MTYPE_GAS, "Gas" },
+		{  0,NULL,NULL }
+	};
+	return findTableIDSingle1 (Table, sType);
+}
+
 const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 {
 	STR_TABLE_SINGLE	Table[] = 

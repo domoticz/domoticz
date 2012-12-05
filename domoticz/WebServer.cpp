@@ -72,6 +72,11 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
 		&CWebServer::DisplaySwitchTypesCombo,	// member function
 		this ) );			// instance of class
 
+	m_pWebEm->RegisterIncludeCode( "metertypes",
+		boost::bind(
+		&CWebServer::DisplayMeterTypesCombo,
+		this ) );
+
 	m_pWebEm->RegisterIncludeCode( "hardwaretypes",
 		boost::bind(
 		&CWebServer::DisplayHardwareTypesCombo,
@@ -120,6 +125,18 @@ char * CWebServer::DisplaySwitchTypesCombo()
 	for (int ii=0; ii<STYPE_END; ii++)
 	{
 		sprintf(szTmp,"<option value=\"%d\">%s</option>\n",ii,Switch_Type_Desc((_eSwitchType)ii));
+		m_retstr+=szTmp;
+	}
+	return (char*)m_retstr.c_str();
+}
+
+char * CWebServer::DisplayMeterTypesCombo()
+{
+	m_retstr="";
+	char szTmp[200];
+	for (int ii=0; ii<MTYPE_END; ii++)
+	{
+		sprintf(szTmp,"<option value=\"%d\">%s</option>\n",ii,Meter_Type_Desc((_eMeterType)ii));
 		m_retstr+=szTmp;
 	}
 	return (char*)m_retstr.c_str();
@@ -265,6 +282,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 			std::string sValue=sd[10];
 			unsigned char favorite = atoi(sd[12].c_str());
 			_eSwitchType switchtype=(_eSwitchType) atoi(sd[13].c_str());
+			_eMeterType metertype=(_eMeterType)switchtype;
 			int hardwareID= atoi(sd[14].c_str());
 
 			if (
@@ -597,8 +615,22 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					s_str2 >> total_max;
 					total_real=total_max-total_min;
 					sprintf(szTmp,"%llu",total_real);
+
+					float musage=0;
+					switch (metertype)
+					{
+					case MTYPE_ENERGY:
+						musage=float(total_real)/1000.0f;
+						sprintf(szTmp,"%.03f kWh",musage);
+						break;
+					case MTYPE_GAS:
+						musage=float(total_real)/100.0f;
+						sprintf(szTmp,"%.02f m3",musage);
+						break;
+					}
 					root["result"][ii]["Counter"]=sValue;
 					root["result"][ii]["CounterToday"]=szTmp;
+					root["result"][ii]["SwitchTypeVal"]=metertype;
 				}
 			}
 			else if (dType == pTypeCURRENT)
@@ -1088,13 +1120,14 @@ char * CWebServer::GetJSonPage()
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT Type, SubType FROM DeviceStatus WHERE (ID == " << idx << ")";
+		szQuery << "SELECT Type, SubType, SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()<1)
 			goto exitjson;
 
 		unsigned char dType=atoi(result[0][0].c_str());
 		unsigned char dSubType=atoi(result[0][1].c_str());
+		_eMeterType metertype = (_eMeterType)atoi(result[0][2].c_str());
 
 		if (srange=="day")
 		{
@@ -1266,7 +1299,19 @@ char * CWebServer::GetJSonPage()
 						std::vector<std::string> sd=*itt;
 
 						root["result"][ii]["d"]=sd[1].substr(0,16);
-						root["result"][ii]["v"]=sd[0];
+						std::string szValue=sd[0];
+						switch (metertype)
+						{
+						case MTYPE_ENERGY:
+							sprintf(szTmp,"%.3f",atof(szValue.c_str())/1000.0f);
+							szValue=szTmp;
+							break;
+						case MTYPE_GAS:
+							sprintf(szTmp,"%.2f",atof(szValue.c_str())/100.0f);
+							szValue=szTmp;
+							break;
+						}
+						root["result"][ii]["v"]=szValue;
 						ii++;
 					}
 				}
@@ -1287,8 +1332,21 @@ char * CWebServer::GetJSonPage()
 					s_str2 >> total_max;
 					total_real=total_max-total_min;
 					sprintf(szTmp,"%llu",total_real);
+					std::string szValue=szTmp;
+					switch (metertype)
+					{
+					case MTYPE_ENERGY:
+						sprintf(szTmp,"%.3f",atof(szValue.c_str())/1000.0f);
+						szValue=szTmp;
+						break;
+					case MTYPE_GAS:
+						sprintf(szTmp,"%.2f",atof(szValue.c_str())/100.0f);
+						szValue=szTmp;
+						break;
+					}
+
 					root["result"][ii]["d"]=szDateEnd;
-					root["result"][ii]["v"]=szTmp;
+					root["result"][ii]["v"]=szValue;
 					ii++;
 				}
 			}
@@ -1565,8 +1623,20 @@ char * CWebServer::GetJSonPage()
 					{
 						std::vector<std::string> sd=*itt;
 
+						std::string szValue=sd[0];
+						switch (metertype)
+						{
+						case MTYPE_ENERGY:
+							sprintf(szTmp,"%.3f",atof(szValue.c_str())/1000.0f);
+							szValue=szTmp;
+							break;
+						case MTYPE_GAS:
+							sprintf(szTmp,"%.2f",atof(szValue.c_str())/100.0f);
+							szValue=szTmp;
+							break;
+						}
 						root["result"][ii]["d"]=sd[1].substr(0,16);
-						root["result"][ii]["v"]=sd[0];
+						root["result"][ii]["v"]=szValue;
 						ii++;
 					}
 				}
@@ -1586,8 +1656,22 @@ char * CWebServer::GetJSonPage()
 					s_str2 >> total_max;
 					total_real=total_max-total_min;
 					sprintf(szTmp,"%llu",total_real);
+					
+					std::string szValue=szTmp;
+					switch (metertype)
+					{
+					case MTYPE_ENERGY:
+						sprintf(szTmp,"%.3f",atof(szValue.c_str())/1000.0f);
+						szValue=szTmp;
+						break;
+					case MTYPE_GAS:
+						sprintf(szTmp,"%.2f",atof(szValue.c_str())/100.0f);
+						szValue=szTmp;
+						break;
+					}
+
 					root["result"][ii]["d"]=szDateEnd;
-					root["result"][ii]["v"]=szTmp;
+					root["result"][ii]["v"]=szValue;
 					ii++;
 				}
 			}
