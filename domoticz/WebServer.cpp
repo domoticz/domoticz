@@ -261,7 +261,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 	if (order=="")
 		strcpy(szOrderBy,"LastUpdate DESC");
 	else
-		sprintf(szOrderBy,"%s ASC",order.c_str());
+	{
+		sprintf(szOrderBy,"[Order],%s ASC",order.c_str());
+	}
 
 	szQuery.clear();
 	szQuery.str("");
@@ -305,7 +307,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 						(dType!=pTypeLighting3)&&
 						(dType!=pTypeLighting4)&&
 						(dType!=pTypeLighting5)&&
-						(dType!=pTypeLighting6)
+						(dType!=pTypeLighting6)&&
+						(dType!=pTypeSecurity1)
 						)
 						continue;
 				}
@@ -429,6 +432,26 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					sprintf(szData,"%s, Level: %d %%", lstatus.c_str(), llevel);
 				else
 					sprintf(szData,"%s", lstatus.c_str());
+				root["result"][ii]["Data"]=szData;
+			}
+			else if (dType==pTypeSecurity1)
+			{
+				std::string lstatus="";
+				int llevel=0;
+				bool bHaveDimmer=false;
+				bool bHaveGroupCmd=false;
+
+				GetLightStatus(dType,dSubType,nValue,sValue,lstatus,llevel,bHaveDimmer,bHaveGroupCmd);
+
+				root["result"][ii]["Status"]=lstatus;
+				root["result"][ii]["HaveDimmer"]=bHaveDimmer;
+				root["result"][ii]["HaveGroupCmd"]=bHaveGroupCmd;
+				root["result"][ii]["SwitchType"]="Security";
+				root["result"][ii]["SwitchTypeVal"]=0;
+
+				root["result"][ii]["TypeImg"]="security";
+
+				sprintf(szData,"%s", lstatus.c_str());
 				root["result"][ii]["Data"]=szData;
 			}
 			else if (dType == pTypeTEMP)
@@ -955,7 +978,8 @@ char * CWebServer::GetJSonPage()
 			(dType!=pTypeLighting3)&&
 			(dType!=pTypeLighting4)&&
 			(dType!=pTypeLighting5)&&
-			(dType!=pTypeLighting6)
+			(dType!=pTypeLighting6)&&
+			(dType!=pTypeSecurity1)
 			)
 			goto exitjson; //no light device! we should not be here!
 
@@ -1882,6 +1906,45 @@ char * CWebServer::GetJSonPage()
 			{
 				m_pMain->m_sql.RemoveNotification(idx);
 			}
+		}
+		else if (cparam=="switchdeviceorder")
+		{
+			std::string idx1=m_pWebEm->FindValue("idx1");
+			std::string idx2=m_pWebEm->FindValue("idx2");
+			if ((idx1=="")||(idx2==""))
+				goto exitjson;
+
+			std::string Order1,Order2;
+			//get device order 1
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT [Order] FROM DeviceStatus WHERE (ID == " << idx1 << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()<1)
+				goto exitjson;
+			Order1=result[0][0];
+
+			//get device order 2
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT [Order] FROM DeviceStatus WHERE (ID == " << idx2 << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()<1)
+				goto exitjson;
+			Order2=result[0][0];
+
+			root["status"]="OK";
+			root["title"]="SwitchDeviceOrder";
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE DeviceStatus SET [Order] = " << Order2 << " WHERE (ID == " << idx1 << ")";
+			m_pMain->m_sql.query(szQuery.str());
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE DeviceStatus SET [Order] = " << Order1 << " WHERE (ID == " << idx2 << ")";
+			m_pMain->m_sql.query(szQuery.str());
 		}
 		else if (cparam=="clearnotifications")
 		{

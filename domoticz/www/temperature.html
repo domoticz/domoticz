@@ -299,8 +299,7 @@ function ShowTempLog(id,name)
           text: 'Temperature Last Month'
       },
       xAxis: {
-          type: 'datetime',
-          tickInterval: 24 * 3600 * 1000
+          type: 'datetime'
       },
       yAxis: [{ //temp label
           labels:  {
@@ -401,8 +400,7 @@ function ShowTempLog(id,name)
           text: 'Temperature Last Year'
       },
       xAxis: {
-          type: 'datetime',
-          tickInterval: 24 * 3600 * 1000
+          type: 'datetime'
       },
       yAxis: [{ //temp label
           labels:  {
@@ -515,7 +513,7 @@ function ShowTemps()
             bHaveAddedDevider=true;
           }
           var xhtm=
-                '\t<div class="4u">\n' +
+                '\t<div class="4u" id="' + item.idx + '">\n' +
                 '\t  <section>\n' +
                 '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
                 '\t    <tr>\n' +
@@ -602,6 +600,28 @@ function ShowTemps()
   }
   $('#modal').hide();
   $('#tempcontent').html(tophtm+htmlcontent);
+
+ 	$("#tempcontent .4u").draggable({
+			drag: function() {
+				$.devIdx=$(this).attr("id");
+			},
+			revert: true
+  });
+ 	$("#tempcontent .4u").droppable({
+			drop: function() {
+				var myid=$(this).attr("id");
+				$.devIdx.split(' ');
+				$.ajax({
+					 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+							ShowTemps();
+					 }
+				});
+      }
+  });
+
   return false;
 }
 

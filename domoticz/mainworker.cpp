@@ -2556,6 +2556,7 @@ void MainWorker::decode_Security1(const int HwdID, const tRBUF *pResponse)
 			if (pResponse->SECURITY1.subtype == sTypeMeiantech)
 				WriteMessage("Group3 or ", false);
 			WriteMessage("Arm Home");
+			break;
 		case sStatusArmHomeDelayed:
 			WriteMessage("Arm Home Delayed");
 			break;
@@ -2563,6 +2564,7 @@ void MainWorker::decode_Security1(const int HwdID, const tRBUF *pResponse)
 			if (pResponse->SECURITY1.subtype == sTypeMeiantech)
 				WriteMessage("Group1 or ", false);
 			WriteMessage("Disarm");
+			break;
 		case sStatusLightOff:
 			WriteMessage("Light Off");
 			break;

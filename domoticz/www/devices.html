@@ -146,7 +146,10 @@ function ShowDevices(filter)
           else {
             itemSubIcons+='<img src="images/add.png" title="Add Device" onclick="AddDevice(' + item.idx +')">';
           }
-          if (item.Type.indexOf("Light")==0)
+          if (
+							(item.Type.indexOf("Light")==0)||
+							(item.Type.indexOf("Security")==0)
+						 )
           {
             itemSubIcons+='&nbsp;<img src="images/log.png" title="Log" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#devicescontent\', \'ShowDevices\');">';
           }

@@ -7,6 +7,8 @@
 #include "RFXNames.h"
 #include "mynetwork.h"
 
+#define DB_VERSION 2
+
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
 "[ID] INTEGER PRIMARY KEY, "
@@ -24,6 +26,12 @@ const char *sqlCreateDeviceStatus =
 "[nValue] INTEGER DEFAULT 0, "
 "[sValue] VARCHAR(200) DEFAULT null, "
 "[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')));";
+
+const char *sqlCreateDeviceStatusTrigger =
+"CREATE TRIGGER IF NOT EXISTS devicestatusupdate AFTER INSERT ON DeviceStatus\n"
+"BEGIN\n"
+"	UPDATE DeviceStatus SET [Order] = (SELECT MAX([Order]) FROM DeviceStatus)+1 WHERE DeviceStatus.ID = NEW.ID;\n"
+"END;\n";
 
 const char *sqlCreateLightingLog =
 "CREATE TABLE IF NOT EXISTS [LightingLog] ("
@@ -184,8 +192,13 @@ CSQLHelper::CSQLHelper(void)
 	}
 	else
 	{
+		bool bNewInstall=false;
+		std::vector<std::vector<std::string> > result=query("SELECT name FROM sqlite_master WHERE type='table' AND name='DeviceStatus'");
+		bNewInstall=(result.size()==0);
+
 		//create database (if not exists)
 		query(sqlCreateDeviceStatus);
+		query(sqlCreateDeviceStatusTrigger);
 		query(sqlCreateLightingLog);
 		query(sqlCreatePreferences);
 		query(sqlCreateRain);
@@ -204,6 +217,20 @@ CSQLHelper::CSQLHelper(void)
 		query(sqlCreateHardware);
 		query(sqlCreateHardwareSharing);
 		query(sqlCreateUsers);
+
+		int dbversion=0;
+		GetPreferencesVar("DB_Version", dbversion);
+		if ((!bNewInstall)&&(dbversion<DB_VERSION))
+		{
+			//upgrade
+			if (dbversion<2)
+			{
+				query("ALTER TABLE DeviceStatus ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
+				query(sqlCreateDeviceStatusTrigger);
+			}
+		}
+		UpdatePreferencesVar("DB_Version",DB_VERSION);
+		CheckAndUpdateDeviceOrder();
 	}
 }
 
@@ -329,6 +356,7 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, unsigned char
 	case pTypeLighting4:
 	case pTypeLighting5:
 	case pTypeLighting6:
+	case pTypeSecurity1:
 		//Add Lighting log
 		m_LastSwitchID=ID;
 		m_LastSwitchRowID=ulID;
@@ -435,7 +463,7 @@ void CSQLHelper::UpdatePreferencesVar(const char *Key, int nValue, const char* s
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID FROM Preferences WHERE (Key='%s')",Key);
+	sprintf(szTmp,"SELECT ROWID FROM Preferences WHERE (Key='%s')",Key);
 	result=query(szTmp);
 	if (result.size()==0)
 	{
@@ -458,7 +486,7 @@ void CSQLHelper::UpdatePreferencesVar(const char *Key, int nValue, const char* s
 
 		sprintf(szTmp,
 			"UPDATE Preferences SET Key='%s', nValue=%d, sValue='%s' "
-			"WHERE (ID = %llu)",
+			"WHERE (ROWID = %llu)",
 			Key,
 			nValue,sValue,
 			ID);
@@ -471,7 +499,7 @@ bool CSQLHelper::GetPreferencesVar(const char *Key, int &nValue, std::string &sV
 	if (!m_dbase)
 		return false;
 
-	char szTmp[1000];
+	char szTmp[200];
 
 	std::vector<std::vector<std::string> > result;
 	sprintf(szTmp,"SELECT nValue, sValue FROM Preferences WHERE (Key='%s')",Key);
@@ -482,6 +510,12 @@ bool CSQLHelper::GetPreferencesVar(const char *Key, int &nValue, std::string &sV
 	nValue=atoi(sd[0].c_str());
 	sValue=sd[1];
 	return true;
+}
+
+bool CSQLHelper::GetPreferencesVar(const char *Key, int &nValue)
+{
+	std::string sValue;
+	return GetPreferencesVar(Key, nValue, sValue);
 }
 
 bool CSQLHelper::CheckAndHandleTempHumidityNotification(
@@ -1833,4 +1867,29 @@ void CSQLHelper::DeleteDevice(const std::string idx)
 	//and now delete all records in the DeviceStatus table itself
 	sprintf(szTmp,"DELETE FROM DeviceStatus WHERE (ID == %s)",idx.c_str());
 	query(szTmp);
+}
+
+void CSQLHelper::CheckAndUpdateDeviceOrder()
+{
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+
+	//Get All ID's where Order=0
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "SELECT ROWID FROM DeviceStatus WHERE ([Order]==0)";
+	result=query(szQuery.str());
+	if (result.size()>0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::vector<std::string> sd=*itt;
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE DeviceStatus SET [Order] = (SELECT MAX([Order]) FROM DeviceStatus)+1 WHERE (ROWID == " << sd[0] << ")";
+			query(szQuery.str());
+		}
+	}
 }

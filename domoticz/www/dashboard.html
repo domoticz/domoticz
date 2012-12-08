@@ -79,7 +79,7 @@ function ShowFavorites()
               bHaveAddedDevider=true;
             }
             var xhtm=
-                  '\t<div class="4u">\n' +
+                  '\t<div class="4u" id="light ' + item.idx +'">\n' +
                   '\t  <section>\n' +
                   '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
                   '\t    <tr>\n' +
@@ -147,7 +147,7 @@ function ShowFavorites()
               bHaveAddedDevider=true;
             }
             var xhtm=
-                  '\t<div class="4u">\n' +
+                  '\t<div class="4u" id="temp ' + item.idx +'">\n' +
                   '\t  <section>\n' +
                   '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
                   '\t    <tr>\n' +
@@ -232,7 +232,7 @@ function ShowFavorites()
               bHaveAddedDevider=true;
             }
             var xhtm=
-                  '\t<div class="4u">\n' +
+                  '\t<div class="4u" id="weather ' + item.idx +'">\n' +
                   '\t  <section>\n' +
                   '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
                   '\t    <tr>\n' +
@@ -276,6 +276,63 @@ function ShowFavorites()
           htmlcontent+='</div>\n';
         }
 
+        //security devices
+        jj=0;
+        bHaveAddedDevider = false;
+        $.each(data.result, function(i,item){
+          if ((item.Type.indexOf('Security') == 0)&&(item.Favorite!=0))
+          {
+            totdevices+=1;
+            if (jj == 0)
+            {
+              //first time
+              htmlcontent+='<h2>Security Devices:</h2>\n';
+            }
+            if (jj % 3 == 0)
+            {
+              //add devider
+              if (bHaveAddedDevider == true) {
+                //close previous devider
+                htmlcontent+='</div>\n';
+              }
+              htmlcontent+='<div class="row divider">\n';
+              bHaveAddedDevider=true;
+            }
+            var xhtm=
+                  '\t<div class="4u" id="security ' + item.idx +'">\n' +
+                  '\t  <section>\n' +
+                  '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
+                  '\t    <tr>\n' +
+                  '\t      <td>' + item.Name + '</td>\n';
+						if (item.SubType.indexOf('remote') > 0) {
+							xhtm+='\t      <td><img src="images/remote48.png" height="48"></td>\n';
+						}
+						else {
+							if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
+								xhtm+='\t      <td><img src="images/alarm48.png" height="48"></td>\n';
+							}
+							else {
+								xhtm+='\t      <td><img src="images/security48.png" height="48"></td>\n';
+							}
+						}
+            xhtm+=
+                  '\t      <td>' + item.Status + '</td>\n' +
+                  '\t      <td>' + item.LastUpdate + '</td>\n' +
+                  '\t      <td>' + item.Type + ', ' + item.SubType + '</td>\n' +
+                  '\t      <td></td>\n' +
+                  '\t    </tr>\n' +
+                  '\t    </table>\n' +
+                  '\t  </section>\n' +
+                  '\t</div>\n';
+            htmlcontent+=xhtm;
+            jj+=1;
+          }
+        }); //security devices
+        if (bHaveAddedDevider == true) {
+          //close previous devider
+          htmlcontent+='</div>\n';
+        }
+        
         //Utility Sensors
         jj=0;
         bHaveAddedDevider = false;
@@ -302,8 +359,8 @@ function ShowFavorites()
               bHaveAddedDevider=true;
             }
             var xhtm=
-                  '\t<div class="4u">\n' +
-                  '\t  <section>\n' +
+                  '\t<div class="4u" id="utility ' + item.idx +'">\n' +
+                  '\t  <span>\n' +
                   '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
                   '\t    <tr>\n' +
                   '\t      <td>' + item.Name + '</td>\n' +
@@ -319,7 +376,7 @@ function ShowFavorites()
                   '\t      <td></td>\n' +
                   '\t    </tr>\n' +
                   '\t    </table>\n' +
-                  '\t  </section>\n' +
+                  '\t  </span>\n' +
                   '\t</div>\n';
             htmlcontent+=xhtm;
             jj+=1;
@@ -347,6 +404,36 @@ function ShowFavorites()
     suntext+='SunRise: ' + sunRise + ', SunSet: ' + sunSet + '<br><br>\n';
   }
   $('#dashcontent').html(suntext+htmlcontent);
+
+ 	$("#dashcontent .4u").draggable({
+			drag: function() {
+				clearInterval($.myglobals.refreshTimer);
+				$.devIdx=$(this).attr("id");
+			},
+			revert: true
+  });
+ 	$("#dashcontent .4u").droppable({
+			drop: function() {
+				var myid=$(this).attr("id");
+				var parts1 = myid.split(' ');
+				var parts2 = $.devIdx.split(' ');
+				if (parts1[0]!=parts2[0]) {
+					alert('Only possible between Sensors of the same kind!');
+					$.myglobals.refreshTimer = setInterval(ShowFavorites, 10000);
+				} else {
+				
+					$.ajax({
+						 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + parts1[1] + "&idx2=" + parts2[1],
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+								ShowFavorites();
+						 }
+					});
+				}
+      }
+  });
+
   $.myglobals.refreshTimer = setInterval(ShowFavorites, 10000);
 }
 

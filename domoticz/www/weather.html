@@ -425,8 +425,7 @@ function ShowWindLog(id,name)
             text: 'Wind speed/gust Last Month'
         },
         xAxis: {
-            type: 'datetime',
-            tickInterval: 24 * 3600 * 1000
+            type: 'datetime'
         },
         yAxis: {
             title: {
@@ -635,8 +634,7 @@ function ShowWindLog(id,name)
             text: 'Wind speed/gust Last Year'
         },
         xAxis: {
-            type: 'datetime',
-            tickInterval: 24 * 3600 * 1000
+            type: 'datetime'
         },
         yAxis: {
             title: {
@@ -877,8 +875,7 @@ function ShowUVLog(id,name)
             text: 'UV Last Month'
         },
         xAxis: {
-            type: 'datetime',
-            tickInterval: 24 * 3600 * 1000
+            type: 'datetime'
         },
         yAxis: {
             title: {
@@ -956,8 +953,7 @@ function ShowUVLog(id,name)
             text: 'UV Last Year'
         },
         xAxis: {
-            type: 'datetime',
-            tickInterval: 24 * 3600 * 1000
+            type: 'datetime'
         },
         yAxis: {
             title: {
@@ -1120,8 +1116,7 @@ function ShowBaroLog(id,name)
             text: 'Barometer Last Month'
         },
         xAxis: {
-            type: 'datetime',
-            tickInterval: 24 * 3600 * 1000
+            type: 'datetime'
         },
         yAxis: {
             title: {
@@ -1198,8 +1193,7 @@ function ShowBaroLog(id,name)
             text: 'Barometer Last Year'
         },
         xAxis: {
-            type: 'datetime',
-            tickInterval: 24 * 3600 * 1000
+            type: 'datetime'
         },
         yAxis: {
             title: {
@@ -1364,8 +1358,7 @@ function ShowRainLog(id,name)
             text: 'Rainfall Last Month'
         },
         xAxis: {
-            type: 'datetime',
-            tickInterval: 24 * 3600 * 1000
+            type: 'datetime'
         },
         yAxis: {
             title: {
@@ -1441,8 +1434,7 @@ function ShowRainLog(id,name)
             text: 'Rainfall Last Year'
         },
         xAxis: {
-            type: 'datetime',
-            tickInterval: 24 * 3600 * 1000
+            type: 'datetime'
         },
         yAxis: {
             title: {
@@ -1548,7 +1540,7 @@ function ShowWeathers()
           var bHaveWind = false;
           
           var xhtm=
-                '\t<div class="4u">\n' +
+                '\t<div class="4u" id="' + item.idx + '">\n' +
                 '\t  <section>\n' +
                 '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
                 '\t    <tr>\n' +
@@ -1638,6 +1630,28 @@ function ShowWeathers()
   }
   $('#modal').hide();
   $('#weathercontent').html(tophtm+htmlcontent);
+  
+ 	$("#weathercontent .4u").draggable({
+			drag: function() {
+				$.devIdx=$(this).attr("id");
+			},
+			revert: true
+  });
+ 	$("#weathercontent .4u").droppable({
+			drop: function() {
+				var myid=$(this).attr("id");
+				$.devIdx.split(' ');
+				$.ajax({
+					 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+							ShowWeathers();
+					 }
+				});
+      }
+  });
+  
   return false;
 }
 

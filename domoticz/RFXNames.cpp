@@ -613,6 +613,93 @@ void GetLightStatus(
 			}
 		}
 		break;
+	case pTypeSecurity1:
+		llevel=0;
+		switch (nValue)
+		{
+		case sStatusNormal:
+			lstatus="Normal";
+			break;
+		case sStatusNormalDelayed:
+			lstatus="Normal Delayed";
+			break;
+		case sStatusAlarm:
+			lstatus="Alarm";
+			break;
+		case sStatusAlarmDelayed:
+			lstatus="Alarm Delayed";
+			break;
+		case sStatusMotion:
+			lstatus="Motion";
+			break;
+		case sStatusNoMotion:
+			lstatus="No Motion";
+			break;
+		case sStatusPanic:
+			lstatus="Panic";
+			break;
+		case sStatusPanicOff:
+			lstatus="Panic End";
+			break;
+		case sStatusArmAway:
+			lstatus="Arm Away";
+			break;
+		case sStatusArmAwayDelayed:
+			lstatus="Arm Away Delayed";
+			break;
+		case sStatusArmHome:
+			lstatus="Arm Home";
+			break;
+		case sStatusArmHomeDelayed:
+			lstatus="Arm Home Delayed";
+			break;
+		case sStatusDisarm:
+			lstatus="Disarm";
+			break;
+		case sStatusLightOff:
+			lstatus="Light Off";
+			break;
+		case sStatusLightOn:
+			lstatus="Light On";
+			break;
+		case sStatusLight2Off:
+			lstatus="Light 2 Off";
+			break;
+		case sStatusLight2On:
+			lstatus="Light 2 On";
+			break;
+		case sStatusDark:
+			lstatus="Dark detected";
+			break;
+		case sStatusLight:
+			lstatus="Light Detected";
+			break;
+		case sStatusBatLow:
+			lstatus="Battery low MS10 or XX18 sensor";
+			break;
+		case sStatusPairKD101:
+			lstatus="Pair KD101";
+			break;
+		case sStatusNormalTamper:
+			lstatus="Normal + Tamper";
+			break;
+		case sStatusNormalDelayedTamper:
+			lstatus="Normal Delayed + Tamper";
+			break;
+		case sStatusAlarmTamper:
+			lstatus="Alarm + Tamper";
+			break;
+		case sStatusAlarmDelayedTamper:
+			lstatus="Alarm Delayed + Tamper";
+			break;
+		case sStatusMotionTamper:
+			lstatus="Motion + Tamper";
+			break;
+		case sStatusNoMotionTamper:
+			lstatus="No Motion + Tamper";
+			break;
+		}
+		break;
 	}
 }
 

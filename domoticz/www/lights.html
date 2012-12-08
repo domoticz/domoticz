@@ -593,7 +593,7 @@ function ShowLights()
             bHaveAddedDevider=true;
           }
           var xhtm=
-                '\t<div class="4u">\n' +
+                '\t<div class="4u" id="' + item.idx + '">\n' +
                 '\t  <section>\n' +
                 '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
                 '\t    <tr>\n' +
@@ -603,6 +603,19 @@ function ShowLights()
           }
           else if (item.SwitchType == "Contact") {
             xhtm+='\t      <td><img src="images/contact48.png" height="48"></td>\n';
+          }
+          else if (item.Type == "Security") {
+						if (item.SubType.indexOf('remote') > 0) {
+							xhtm+='\t      <td><img src="images/remote48.png" height="48"></td>\n';
+						}
+						else {
+							if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
+								xhtm+='\t      <td><img src="images/alarm48.png" height="48"></td>\n';
+							}
+							else {
+								xhtm+='\t      <td><img src="images/security48.png" height="48"></td>\n';
+							}
+						}
           }
           else {
             if (
@@ -633,10 +646,12 @@ function ShowLights()
           xhtm+=      
                 '<a class="btnsmall" href="#" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#lightcontent\', \'ShowLights\');">Log</a> ' +
                 '<a class="btnsmall" href="#" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +');">Edit</a> ';
+					if (item.Type != "Security") {
           if (item.Timers == "true")
             xhtm+='<a class="btnsmall-sel" href="#" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';
           else
             xhtm+='<a class="btnsmall" href="#" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';
+					}
           if (item.Notifications == "true")
             xhtm+='<a class="btnsmall-sel" href="#" onclick="EditNotification(' + item.idx + ',\'' + item.Name + '\', true);">Notifications</a>';
           else
@@ -662,6 +677,28 @@ function ShowLights()
   }
   $('#modal').hide();
   $('#lightcontent').html(tophtm+htmlcontent);
+  
+ 	$("#lightcontent .4u").draggable({
+			drag: function() {
+				$.devIdx=$(this).attr("id");
+			},
+			revert: true
+  });
+ 	$("#lightcontent .4u").droppable({
+			drop: function() {
+				var myid=$(this).attr("id");
+				$.devIdx.split(' ');
+				$.ajax({
+					 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+							ShowLights();
+					 }
+				});
+      }
+  });
+  
   return false;
 }
 

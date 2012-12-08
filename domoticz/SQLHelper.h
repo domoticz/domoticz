@@ -31,6 +31,7 @@ public:
 	void UpdatePreferencesVar(const char *Key, int nValue);
 	void UpdatePreferencesVar(const char *Key, int nValue, const char* sValue);
 	bool GetPreferencesVar(const char *Key, int &nValue, std::string &sValue);
+	bool GetPreferencesVar(const char *Key, int &nValue);
 
 	//notification functions
 	bool AddNotification(const std::string DevIdx, const std::string Param);
@@ -89,6 +90,9 @@ public:
 private:
 	CURLEncode m_urlencoder;
 	sqlite3 *m_dbase;
+
+	void CheckAndUpdateDeviceOrder();
+
 	void UpdateTemperatureLog();
 	void UpdateRainLog();
 	void UpdateWindLog();
