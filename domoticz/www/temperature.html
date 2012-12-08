@@ -487,7 +487,7 @@ function ShowTemps()
         '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
         '\t<tr>\n' +
         '\t  <td align="right">\n' +
-        '\t    <a class="btnstyle" href="#" onclick="AddTempDevice();">Add Sensor</a>\n' +
+        '\t    <a class="btnstyle" onclick="AddTempDevice();">Add Sensor</a>\n' +
         '\t  </td>\n' +
         '\t</tr>\n' +
         '\t</table>\n';
@@ -572,12 +572,12 @@ function ShowTemps()
                   '<img src="images/favorite.png" title="Remove from Dashboard" onclick="MakeFavorite(' + item.idx + ',0);" onMouseover="cursorhand()" onMouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
           xhtm+=
-                '<a class="btnsmall" href="#" onclick="ShowTempLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ' +
-                '<a class="btnsmall" href="#" onclick="EditTempDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+                '<a class="btnsmall" onclick="ShowTempLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ' +
+                '<a class="btnsmall" onclick="EditTempDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
           if (item.Notifications == "true")
-            xhtm+='<a class="btnsmall-sel" href="#" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#tempcontent\', \'ShowTemps\');">Notifications</a>';
+            xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#tempcontent\', \'ShowTemps\');">Notifications</a>';
           else
-            xhtm+='<a class="btnsmall" href="#" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#tempcontent\', \'ShowTemps\');">Notifications</a>';
+            xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#tempcontent\', \'ShowTemps\');">Notifications</a>';
 
 					xhtm+=
                 '</td>\n' +
@@ -604,6 +604,7 @@ function ShowTemps()
  	$("#tempcontent .4u").draggable({
 			drag: function() {
 				$.devIdx=$(this).attr("id");
+				$(this).css("z-index", 2);
 			},
 			revert: true
   });

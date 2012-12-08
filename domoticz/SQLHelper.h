@@ -20,16 +20,16 @@ public:
 	CSQLHelper(void);
 	~CSQLHelper(void);
 
-	void UpdateValue(const int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue);
-	void UpdateValue(const int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, const char* sValue);
-	void UpdateValue(const int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue, const char* sValue);
+	void UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue);
+	void UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const char* sValue);
+	void UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue);
 
 	void UpdateTempVar(const char *Key, const char* sValue);
 	bool GetTempVar(const char *Key, int &nValue, std::string &sValue);
 
 	void UpdatePreferencesVar(const char *Key, const char* sValue);
-	void UpdatePreferencesVar(const char *Key, int nValue);
-	void UpdatePreferencesVar(const char *Key, int nValue, const char* sValue);
+	void UpdatePreferencesVar(const char *Key, const int nValue);
+	void UpdatePreferencesVar(const char *Key, const int nValue, const char* sValue);
 	bool GetPreferencesVar(const char *Key, int &nValue, std::string &sValue);
 	bool GetPreferencesVar(const char *Key, int &nValue);
 
@@ -40,7 +40,7 @@ public:
 	bool RemoveNotification(const std::string ID);
 	std::vector<_tNotification> GetNotifications(const unsigned long long DevIdx);
 	std::vector<_tNotification> GetNotifications(const std::string DevIdx);
-	void TouchNotification(unsigned long long ID);
+	void TouchNotification(const unsigned long long ID);
 	bool HasNotifications(const unsigned long long DevIdx);
 	bool HasNotifications(const std::string DevIdx);
 

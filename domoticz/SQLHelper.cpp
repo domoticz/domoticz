@@ -227,10 +227,10 @@ CSQLHelper::CSQLHelper(void)
 			{
 				query("ALTER TABLE DeviceStatus ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
 				query(sqlCreateDeviceStatusTrigger);
+				CheckAndUpdateDeviceOrder();
 			}
 		}
 		UpdatePreferencesVar("DB_Version",DB_VERSION);
-		CheckAndUpdateDeviceOrder();
 	}
 }
 
@@ -285,17 +285,17 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string szQue
 	return results; 
 }
 
-void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue)
+void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue)
 {
 	UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, "");
 }
 
-void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, const char* sValue)
+void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const char* sValue)
 {
 	UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, 0, sValue);
 }
 
-void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue, const char* sValue)
+void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue)
 {
 	if (!m_dbase)
 		return;
@@ -448,12 +448,12 @@ void CSQLHelper::UpdatePreferencesVar(const char *Key, const char* sValue)
 	UpdatePreferencesVar(Key, 0, sValue);
 }
 
-void CSQLHelper::UpdatePreferencesVar(const char *Key, int nValue)
+void CSQLHelper::UpdatePreferencesVar(const char *Key, const int nValue)
 {
 	UpdatePreferencesVar(Key, nValue, "");
 }
 
-void CSQLHelper::UpdatePreferencesVar(const char *Key, int nValue, const char* sValue)
+void CSQLHelper::UpdatePreferencesVar(const char *Key, const int nValue, const char* sValue)
 {
 	if (!m_dbase)
 		return;
@@ -781,7 +781,7 @@ bool CSQLHelper::CheckAndHandleRainNotification(
 	return false;
 }
 
-void CSQLHelper::TouchNotification(unsigned long long ID)
+void CSQLHelper::TouchNotification(const unsigned long long ID)
 {
 	char szTmp[300];
 	char szDate[100];

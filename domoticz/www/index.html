@@ -64,7 +64,7 @@ function GetBackbuttonHTMLTable(backfunction)
         '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
         '\t<tr>\n' +
         '\t  <td>\n' +
-        '\t    <a class="btnstylerev" href="#" onclick="' + backfunction + '()">Back</a>\n' +
+        '\t    <a class="btnstylerev" onclick="' + backfunction + '()">Back</a>\n' +
         '\t  </td>\n' +
         '\t</tr>\n' +
         '\t</table>\n' +
@@ -657,7 +657,7 @@ function cursordefault()
 				<td>
 				</td>
 				<td align="right">
-					<a class="btnstyle3" href="#" onclick="ClearLightLog();">Clear</a>
+					<a class="btnstyle3" onclick="ClearLightLog();">Clear</a>
 				</td>
 			</tr>
 		</table>
@@ -678,7 +678,7 @@ function cursordefault()
 					<a class="btnstyle3-dis" id="notificationdelete" >Delete</a>
 				</td>
 				<td align="right">
-					<a class="btnstyle3" href="#" onclick="ClearNotifications();">Clear</a>
+					<a class="btnstyle3" onclick="ClearNotifications();">Clear</a>
 				</td>
 			</tr>
 		</table>
@@ -702,7 +702,7 @@ function cursordefault()
 			</tr>
 		</table>
 		<br>
-    <a class="btnstyle3" href="#" onclick="AddNotification();">Add</a>
+    <a class="btnstyle3" onclick="AddNotification();">Add</a>
 </div>
 <div id="wrap">
 <div id="notification" style="display: none;"></div>
@@ -711,7 +711,7 @@ function cursordefault()
 		<div class="5grid-layout">
 			<div class="row">
 				<div class="2u" id="logo">
-					<h1><a href="#" class="mobileUI-site-name">Domoticz</a></h1>
+					<h1><a class="mobileUI-site-name">Domoticz</a></h1>
 					<p> V<!--#embed versionstr --></p>
 				</div>
 				<div class="10u" id="menu">

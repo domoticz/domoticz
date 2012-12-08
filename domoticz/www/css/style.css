@@ -136,6 +136,7 @@ height:100%;
 	font-weight: 200;
 	color: #FFFFFF;
 	outline: none;
+	cursor: pointer;
 }
 
 .button-style-sel a {
@@ -153,6 +154,7 @@ height:100%;
 	font-weight: 200;
 	color: #FFFFFF;
 	outline: none;
+	cursor: pointer;
 }
 
 #topnav {
@@ -176,6 +178,7 @@ height:100%;
 	font-size: 1em;
 	color: #FFFFFF;
 	outline: none;
+	cursor: pointer;
 }
 
 .button-style2-sel a {
@@ -191,6 +194,7 @@ height:100%;
 	font-size: 1em;
 	color: #FFFFFF;
 	outline: none;
+	cursor: pointer;
 }
 
 .btnstyle {
@@ -206,6 +210,7 @@ height:100%;
 	font-size: 1em;
 	color: #FFFFFF;
 	outline: none;
+	cursor: pointer;
 }
 
 .btnstyle-sel {
@@ -221,6 +226,7 @@ height:100%;
 	font-size: 1em;
 	color: #FFFFFF;
 	outline: none;
+	cursor: pointer;
 }
 
 .btnstylerev {
@@ -236,6 +242,7 @@ height:100%;
 	font-size: 1em;
 	color: #FFFFFF;
 	outline: none;
+	cursor: pointer;
 }
 
 .btnstyle3 {
@@ -251,6 +258,7 @@ height:100%;
 	font-size: 1em;
 	color: #FFFFFF;
 	outline: none;
+	cursor: pointer;
 }
 
 .btnstyle3-dis {
@@ -266,6 +274,7 @@ height:100%;
 	font-size: 1em;
 	color: #FFFFFF;
 	outline: none;
+	cursor: pointer;
 }
 
 .btnstyle3-sel {
@@ -281,6 +290,7 @@ height:100%;
 	font-size: 1em;
 	color: #FFFFFF;
 	outline: none;
+	cursor: pointer;
 }
 
 .btnsmall {
@@ -295,6 +305,7 @@ height:100%;
 	font-size: 1em;
 	color: #FFFFFF;
 	outline: none;
+	cursor: pointer;
 }
 
 .btnsmall-sel {
@@ -309,6 +320,7 @@ height:100%;
 	font-size: 1em;
 	color: #FFFFFF;
 	outline: none;
+	cursor: pointer;
 }
 
 /* Hover state*/

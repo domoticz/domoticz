@@ -1511,7 +1511,7 @@ function ShowWeathers()
   }
   tophtm+=
         '\t  <td align="right">\n' +
-        '\t    <a class="btnstyle" href="#" onclick="AddWeatherDevice();">Add Sensor</a>\n' +
+        '\t    <a class="btnstyle" onclick="AddWeatherDevice();">Add Sensor</a>\n' +
         '\t  </td>\n' +
         '\t</tr>\n' +
         '\t</table>\n';
@@ -1590,24 +1590,24 @@ function ShowWeathers()
           }
 
           if (typeof item.Barometer != 'undefined') {
-            xhtm+='<a class="btnsmall" href="#" onclick="ShowBaroLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
+            xhtm+='<a class="btnsmall" onclick="ShowBaroLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
           }
           if (typeof item.Rain != 'undefined') {
-            xhtm+='<a class="btnsmall" href="#" onclick="ShowRainLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
+            xhtm+='<a class="btnsmall" onclick="ShowRainLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
           }
           else if (typeof item.UVI != 'undefined') {
-            xhtm+='<a class="btnsmall" href="#" onclick="ShowUVLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
+            xhtm+='<a class="btnsmall" onclick="ShowUVLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
           }
           else if (typeof item.Direction != 'undefined') {
-            xhtm+='<a class="btnsmall" href="#" onclick="ShowWindLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
+            xhtm+='<a class="btnsmall" onclick="ShowWindLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
           }
           xhtm+=      
-                '<a class="btnsmall" href="#" onclick="EditWeatherDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+                '<a class="btnsmall" onclick="EditWeatherDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
                 
           if (item.Notifications == "true")
-            xhtm+='<a class="btnsmall-sel" href="#" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#weathercontent\', \'ShowWeathers\');">Notifications</a>';
+            xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#weathercontent\', \'ShowWeathers\');">Notifications</a>';
           else
-            xhtm+='<a class="btnsmall" href="#" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#weathercontent\', \'ShowWeathers\');">Notifications</a>';
+            xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#weathercontent\', \'ShowWeathers\');">Notifications</a>';
 
           xhtm+=      
                 '</td>\n' +
@@ -1634,6 +1634,7 @@ function ShowWeathers()
  	$("#weathercontent .4u").draggable({
 			drag: function() {
 				$.devIdx=$(this).attr("id");
+				$(this).css("z-index", 2);
 			},
 			revert: true
   });

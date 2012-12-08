@@ -409,6 +409,7 @@ function ShowFavorites()
 			drag: function() {
 				clearInterval($.myglobals.refreshTimer);
 				$.devIdx=$(this).attr("id");
+				$(this).css("z-index", 2);
 			},
 			revert: true
   });

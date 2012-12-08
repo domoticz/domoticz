@@ -381,7 +381,7 @@ function ShowUtilities()
         '\t<tr>\n';
   tophtm+=
         '\t  <td align="right">\n' +
-        '\t    <a class="btnstyle" href="#" onclick="AddUtilityDevice();">Add Sensor</a>\n' +
+        '\t    <a class="btnstyle" onclick="AddUtilityDevice();">Add Sensor</a>\n' +
         '\t  </td>\n' +
         '\t</tr>\n' +
         '\t</table>\n';
@@ -432,18 +432,18 @@ function ShowUtilities()
           }
 
           if (typeof item.Counter != 'undefined') {
-            xhtm+='<a class="btnsmall" href="#" onclick="ShowCounterLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">Log</a> ';
+            xhtm+='<a class="btnsmall" onclick="ShowCounterLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">Log</a> ';
 						xhtm+=      
-									'<a class="btnsmall" href="#" onclick="EditMeterDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +');">Edit</a> ';
+									'<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +');">Edit</a> ';
           }
           else {
 						xhtm+=      
-									'<a class="btnsmall" href="#" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+									'<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
 					}                
           if (item.Notifications == "true")
-            xhtm+='<a class="btnsmall-sel" href="#" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#utilitycontent\', \'ShowUtilities\');">Notifications</a>';
+            xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#utilitycontent\', \'ShowUtilities\');">Notifications</a>';
           else
-            xhtm+='<a class="btnsmall" href="#" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#utilitycontent\', \'ShowUtilities\');">Notifications</a>';
+            xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#utilitycontent\', \'ShowUtilities\');">Notifications</a>';
 
           xhtm+=      
                 '</td>\n' +
@@ -470,6 +470,7 @@ function ShowUtilities()
  	$("#utilitycontent .4u").draggable({
 			drag: function() {
 				$.devIdx=$(this).attr("id");
+				$(this).css("z-index", 2);
 			},
 			revert: true
   });
