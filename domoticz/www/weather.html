@@ -1631,28 +1631,29 @@ function ShowWeathers()
   $('#modal').hide();
   $('#weathercontent').html(tophtm+htmlcontent);
   
- 	$("#weathercontent .4u").draggable({
-			drag: function() {
-				$.devIdx=$(this).attr("id");
-				$(this).css("z-index", 2);
-			},
-			revert: true
-  });
- 	$("#weathercontent .4u").droppable({
-			drop: function() {
-				var myid=$(this).attr("id");
-				$.devIdx.split(' ');
-				$.ajax({
-					 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
-					 async: false, 
-					 dataType: 'json',
-					 success: function(data) {
-							ShowWeathers();
-					 }
-				});
-      }
-  });
-  
+	if (!isiPhone()) {
+		$("#weathercontent .4u").draggable({
+				drag: function() {
+					$.devIdx=$(this).attr("id");
+					$(this).css("z-index", 2);
+				},
+				revert: true
+		});
+		$("#weathercontent .4u").droppable({
+				drop: function() {
+					var myid=$(this).attr("id");
+					$.devIdx.split(' ');
+					$.ajax({
+						 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+								ShowWeathers();
+						 }
+					});
+				}
+		});
+	}
   return false;
 }
 

@@ -405,35 +405,37 @@ function ShowFavorites()
   }
   $('#dashcontent').html(suntext+htmlcontent);
 
- 	$("#dashcontent .4u").draggable({
-			drag: function() {
-				clearInterval($.myglobals.refreshTimer);
-				$.devIdx=$(this).attr("id");
-				$(this).css("z-index", 2);
-			},
-			revert: true
-  });
- 	$("#dashcontent .4u").droppable({
-			drop: function() {
-				var myid=$(this).attr("id");
-				var parts1 = myid.split(' ');
-				var parts2 = $.devIdx.split(' ');
-				if (parts1[0]!=parts2[0]) {
-					alert('Only possible between Sensors of the same kind!');
-					$.myglobals.refreshTimer = setInterval(ShowFavorites, 10000);
-				} else {
-				
-					$.ajax({
-						 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + parts1[1] + "&idx2=" + parts2[1],
-						 async: false, 
-						 dataType: 'json',
-						 success: function(data) {
-								ShowFavorites();
-						 }
-					});
+	if (!isiPhone()) {
+		$("#dashcontent .4u").draggable({
+				drag: function() {
+					clearInterval($.myglobals.refreshTimer);
+					$.devIdx=$(this).attr("id");
+					$(this).css("z-index", 2);
+				},
+				revert: true
+		});
+		$("#dashcontent .4u").droppable({
+				drop: function() {
+					var myid=$(this).attr("id");
+					var parts1 = myid.split(' ');
+					var parts2 = $.devIdx.split(' ');
+					if (parts1[0]!=parts2[0]) {
+						alert('Only possible between Sensors of the same kind!');
+						$.myglobals.refreshTimer = setInterval(ShowFavorites, 10000);
+					} else {
+					
+						$.ajax({
+							 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + parts1[1] + "&idx2=" + parts2[1],
+							 async: false, 
+							 dataType: 'json',
+							 success: function(data) {
+									ShowFavorites();
+							 }
+						});
+					}
 				}
-      }
-  });
+		});
+	}
 
   $.myglobals.refreshTimer = setInterval(ShowFavorites, 10000);
 }

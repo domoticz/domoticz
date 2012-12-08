@@ -52,17 +52,6 @@ void CDomoticzHardwareBase::onRFXMessage(const unsigned char *pBuffer, const siz
 		{
 			if (pBuffer[ii]==0) //ignore first char if 00
 				return;
-/*
-			{
-				WriteMessage("----------------------------------");
-				// current date/time based on current system
-				time_t now = time(0);
-
-				// convert now to string form
-				char *szDate = asctime(localtime(&now));
-				std::cout << szDate << " RX: Len: " << std::dec << (int)pBuffer[ii] << " ";
-			}
-*/
 		}
 		m_rxbuffer[m_rxbufferpos]=pBuffer[ii];
 		m_rxbufferpos++;

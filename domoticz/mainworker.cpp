@@ -13,6 +13,10 @@
 
 #include "SunRiseSet.h"
 
+#ifdef _DEBUG
+	//#define DEBUG_RECEIVE
+#endif
+
 //#define PARSE_RFXCOM_DEVICE_LOG
 
 #ifdef PARSE_RFXCOM_DEVICE_LOG
@@ -560,7 +564,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	char *szDate = asctime(localtime(&now));
 
 	int HwdID = pHardware->m_HwdID;
-
+#ifdef DEBUG_RECEIVE
 	std::cout << szDate << "HwdID: " << HwdID << " (" << pHardware->Name << ")" << " RX: Len: " << std::dec << Len << " ";
 
 	for (size_t ii=0; ii<Len; ii++)
@@ -570,145 +574,149 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		std::cout << HEX((unsigned char)pRXCommand[ii]);
 	}
 	std::cout << std::endl;
+#else
+	szDate[strlen(szDate)-1]=0;
+	std::cout << szDate << " (" << pHardware->Name << ") ";
+#endif
 	switch (pRXCommand[1])
 	{
 		case pTypeInterfaceMessage:
-			WriteMessage("Packettype:      Interface Message");
+			WriteMessage("Packettype:  Interface Message");
 			decode_InterfaceMessage(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRecXmitMessage:
-			WriteMessage("Packettype:      Receiver/Transmitter Message");
+			WriteMessage("Packettype:  Receiver/Transmitter Message");
 			decode_RecXmitMessage(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeUndecoded:
-			WriteMessage("Packettype:      Undecoded RF Message");
+			WriteMessage("Packettype:  Undecoded RF Message");
 			decode_UNDECODED(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting1:
-			WriteMessage("Packettype:      Lighting 1");
+			WriteMessage("Packettype:  Lighting 1");
 			decode_Lighting1(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting2:
-			WriteMessage("Packettype:      Lighting 2");
+			WriteMessage("Packettype:  Lighting 2");
 			decode_Lighting2(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting3:
-			WriteMessage("Packettype:      Lighting 3");
+			WriteMessage("Packettype:  Lighting 3");
 			decode_Lighting3(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting4:
-			WriteMessage("Packettype:      Lighting 4");
+			WriteMessage("Packettype:  Lighting 4");
 			decode_Lighting4(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting5:
-			WriteMessage("Packettype:      Lighting 5");
+			WriteMessage("Packettype:  Lighting 5");
 			decode_Lighting5(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting6:
-			WriteMessage("Packettype:      Lighting 6");
+			WriteMessage("Packettype:  Lighting 6");
 			decode_Lighting6(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeCurtain:
-			WriteMessage("Packettype:      Curtain");	//only transmit
+			WriteMessage("Packettype:  Curtain");	//only transmit
 			break;
 		case pTypeBlinds:
-			WriteMessage("Packettype:      Blinds");
+			WriteMessage("Packettype:  Blinds");
 			decode_BLINDS1(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeSecurity1:
-			WriteMessage("Packettype:      Security 1");
+			WriteMessage("Packettype:  Security 1");
 			decode_Security1(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeCamera:
-			WriteMessage("Packettype:      Camera");
+			WriteMessage("Packettype:  Camera");
 			decode_Camera1(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRemote:
-			WriteMessage("Packettype:      Remote control & IR");
+			WriteMessage("Packettype:  Remote control & IR");
 			decode_Remote(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeThermostat1:
-			WriteMessage("Packettype:      Thermostat 1");
+			WriteMessage("Packettype:  Thermostat 1");
 			decode_Thermostat1(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeThermostat2:
-			WriteMessage("Packettype:      Thermostat 2");
+			WriteMessage("Packettype:  Thermostat 2");
 			decode_Thermostat2(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeThermostat3:
-			WriteMessage("Packettype:      Thermostat 3");
+			WriteMessage("Packettype:  Thermostat 3");
 			decode_Thermostat3(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeTEMP:
-			WriteMessage("Packettype:      Temperature");
+			WriteMessage("Packettype:  Temperature");
 			decode_Temp(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeHUM:
-			WriteMessage("Packettype:      Humidity");
+			WriteMessage("Packettype:  Humidity");
 			decode_Hum(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeTEMP_HUM:
-			WriteMessage("Packettype:      Temperature + Humidity");
+			WriteMessage("Packettype:  Temperature + Humidity");
 			decode_TempHum(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeBARO:
-			WriteMessage("Packettype:      Barometric");
+			WriteMessage("Packettype:  Barometric");
 			decode_Baro(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeTEMP_HUM_BARO:
-			WriteMessage("Packettype:      Temperature + Humidity + Barometric");
+			WriteMessage("Packettype:  Temperature + Humidity + Barometric");
 			decode_TempHumBaro(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRAIN:
-			WriteMessage("Packettype:      Rain Meter");
+			WriteMessage("Packettype:  Rain Meter");
 			decode_Rain(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeWIND:
-			WriteMessage("Packettype:      Wind Meter");
+			WriteMessage("Packettype:  Wind Meter");
 			decode_Wind(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeUV:
-			WriteMessage("Packettype:      UV Meter");
+			WriteMessage("Packettype:  UV Meter");
 			decode_UV(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeDT:
-			WriteMessage("Packettype:      Date & Time");
+			WriteMessage("Packettype:  Date & Time");
 			decode_DateTime(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeCURRENT:
-			WriteMessage("Packettype:      Current Meter");
+			WriteMessage("Packettype:  Current Meter");
 			decode_Current(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeENERGY:
-			WriteMessage("Packettype:      Energy Meter");
+			WriteMessage("Packettype:  Energy Meter");
 			decode_Energy(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeCURRENTENERGY:
-			WriteMessage("Packettype:      Current/Energy Meter");
+			WriteMessage("Packettype:  Current/Energy Meter");
 			decode_Current_Energy(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeGAS:
-			WriteMessage("Packettype:      Gas Meter");
+			WriteMessage("Packettype:  Gas Meter");
 			decode_Gas(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeWATER:
-			WriteMessage("Packettype:      Water Meter");
+			WriteMessage("Packettype:  Water Meter");
 			decode_Water(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeWEIGHT:
-			WriteMessage("Packettype:      Weight Scales");
+			WriteMessage("Packettype:  Weight Scales");
 			decode_Weight(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRFXSensor:
-			WriteMessage("Packettype:      RFXSensor");
+			WriteMessage("Packettype:  RFXSensor");
 			decode_RFXSensor(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRFXMeter:
-			WriteMessage("Packettype:      RFXMeter");
+			WriteMessage("Packettype:  RFXMeter");
 			decode_RFXMeter(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeFS20:
-			WriteMessage("Packettype:      FS20");
+			WriteMessage("Packettype:  FS20");
 			decode_FS20(HwdID, (tRBUF *)pRXCommand);
 			break;
 		default:

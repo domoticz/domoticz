@@ -601,28 +601,29 @@ function ShowTemps()
   $('#modal').hide();
   $('#tempcontent').html(tophtm+htmlcontent);
 
- 	$("#tempcontent .4u").draggable({
-			drag: function() {
-				$.devIdx=$(this).attr("id");
-				$(this).css("z-index", 2);
-			},
-			revert: true
-  });
- 	$("#tempcontent .4u").droppable({
-			drop: function() {
-				var myid=$(this).attr("id");
-				$.devIdx.split(' ');
-				$.ajax({
-					 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
-					 async: false, 
-					 dataType: 'json',
-					 success: function(data) {
-							ShowTemps();
-					 }
-				});
-      }
-  });
-
+	if (!isiPhone()) {
+		$("#tempcontent .4u").draggable({
+				drag: function() {
+					$.devIdx=$(this).attr("id");
+					$(this).css("z-index", 2);
+				},
+				revert: true
+		});
+		$("#tempcontent .4u").droppable({
+				drop: function() {
+					var myid=$(this).attr("id");
+					$.devIdx.split(' ');
+					$.ajax({
+						 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+								ShowTemps();
+						 }
+					});
+				}
+		});
+	}
   return false;
 }
 
