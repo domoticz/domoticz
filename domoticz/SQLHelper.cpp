@@ -25,7 +25,8 @@ const char *sqlCreateDeviceStatus =
 "[BatteryLevel] INTEGER DEFAULT 0, "
 "[nValue] INTEGER DEFAULT 0, "
 "[sValue] VARCHAR(200) DEFAULT null, "
-"[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')));";
+"[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')),"
+"[Order] INTEGER BIGINT(10) default 0);";
 
 const char *sqlCreateDeviceStatusTrigger =
 "CREATE TRIGGER IF NOT EXISTS devicestatusupdate AFTER INSERT ON DeviceStatus\n"

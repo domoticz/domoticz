@@ -43,8 +43,6 @@ void CDomoticzHardwareBase::onRFXMessage(const unsigned char *pBuffer, const siz
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
 
-	m_sharedserver.SendToAll((const char*)pBuffer,Len);
-
 	size_t ii=0;
 	while (ii<Len)
 	{
@@ -66,6 +64,8 @@ void CDomoticzHardwareBase::onRFXMessage(const unsigned char *pBuffer, const siz
 		if (m_rxbufferpos > m_rxbuffer[0])
 		{
 			sDecodeRXMessage(this, (const unsigned char *)&m_rxbuffer);//decode message
+			m_sharedserver.SendToAll((const char*)m_rxbuffer,m_rxbufferpos);
+
 			m_rxbufferpos = 0;    //set to zero to receive next message
 		}
 		ii++;

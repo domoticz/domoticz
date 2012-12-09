@@ -33,9 +33,6 @@ RFXComSerial::~RFXComSerial()
 	clearReadCallback();
 }
 
-#define HEX( x ) \
-	std::setw(2) << std::setfill('0') << std::hex << (int)( x )
-
 bool RFXComSerial::StartHardware()
 {
 	//Try to open the Serial Port

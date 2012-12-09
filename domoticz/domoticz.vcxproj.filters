@@ -36,6 +36,9 @@
     <Filter Include="Devices\Domoticz">
       <UniqueIdentifier>{222696d2-1c77-4abb-a483-83548f0b75d4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\P1MeterSerial">
+      <UniqueIdentifier>{3842a5f4-988f-43df-ab50-6b41679ce600}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -146,6 +149,9 @@
     <ClInclude Include="SunRiseSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="P1MeterSerial.h">
+      <Filter>Devices\P1MeterSerial</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -240,6 +246,9 @@
     </ClCompile>
     <ClCompile Include="SunRiseSet.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="P1MeterSerial.cpp">
+      <Filter>Devices\P1MeterSerial</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
