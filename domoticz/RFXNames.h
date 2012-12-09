@@ -7,6 +7,7 @@ enum _eSwitchType
 	STYPE_OnOff=0,
 	STYPE_Doorbell,
 	STYPE_Contact,
+	STYPE_Blinds,
 	STYPE_END
 };
 

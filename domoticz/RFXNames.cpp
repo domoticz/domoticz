@@ -138,6 +138,7 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_OnOff, "On/Off" },
 		{ STYPE_Doorbell, "Doorbell" },
 		{ STYPE_Contact, "Contact" },
+		{ STYPE_Blinds, "Blinds" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, sType);

@@ -81,6 +81,28 @@ function isiPhone(){
     );
 }
 
+function SwitchLight(idx,switchcmd, refreshfunction)
+{
+  ShowNotify('Switching ' + switchcmd);
+ 
+  $.ajax({
+     url: "json.htm?type=command&param=switchlight&idx=" + idx + "&switchcmd=" + switchcmd + "&level=0",
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+      //wait 1 second
+      setTimeout(function() {
+        HideNotify();
+        refreshfunction();
+      }, 1000);
+     },
+     error: function(){
+        HideNotify();
+        alert('Problem sending switch command');
+     }     
+  });
+}
+
 function RefreshLightLogTable(idx)
 {
 	var mTable = $($.content + ' #lighttable');

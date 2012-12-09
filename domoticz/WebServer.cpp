@@ -427,6 +427,16 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					root["result"][ii]["TypeImg"]="door";
 				else if (switchtype==STYPE_Contact)
 					root["result"][ii]["TypeImg"]="contact";
+				else if (switchtype==STYPE_Blinds)
+				{
+					root["result"][ii]["TypeImg"]="blinds";
+					if (lstatus=="On") {
+						lstatus="Closed";
+					} else {
+						lstatus="Open";
+					}
+					root["result"][ii]["Status"]=lstatus;
+				}
 
 				if (llevel!=0)
 					sprintf(szData,"%s, Level: %d %%", lstatus.c_str(), llevel);
