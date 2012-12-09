@@ -4823,17 +4823,8 @@ void MainWorker::decode_FS20(const int HwdID, const tRBUF *pResponse)
 	WriteMessage(szTmp);
 }
 
-bool MainWorker::SwitchLight(unsigned long long idx, std::string switchcmd, unsigned char level)
+bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, const std::string switchcmd, unsigned char level, const bool IsTesting)
 {
-	//Get Device details
-	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,nValue,SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
-	result=m_sql.query(szQuery.str());
-	if (result.size()<1)
-		return false;
-	std::vector<std::string> sd=result[0];
-
 	int HardwareID = atoi(sd[0].c_str());
 	int hindex=FindDomoticzHardware(HardwareID);
 	if (hindex==-1)
@@ -4851,8 +4842,7 @@ bool MainWorker::SwitchLight(unsigned long long idx, std::string switchcmd, unsi
 	unsigned char Unit=atoi(sd[2].c_str());
 	unsigned char dType=atoi(sd[3].c_str());
 	unsigned char dSubType=atoi(sd[4].c_str());
-	unsigned char nValue=atoi(sd[5].c_str());
-	_eSwitchType switchtype=(_eSwitchType)atoi(sd[6].c_str());
+	_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
 
 	switch (dType)
 	{
@@ -4881,8 +4871,10 @@ bool MainWorker::SwitchLight(unsigned long long idx, std::string switchcmd, unsi
 			}
 */
 			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING1));
-			//send to internal for now (later we use the ACK)
-			DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+			if (!IsTesting) {
+				//send to internal for now (later we use the ACK)
+				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+			}
 			return true;
 		}
 		break;
@@ -4915,8 +4907,10 @@ bool MainWorker::SwitchLight(unsigned long long idx, std::string switchcmd, unsi
 			}
 */
 			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING2));
-			//send to internal for now (later we use the ACK)
-			DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+			if (!IsTesting) {
+				//send to internal for now (later we use the ACK)
+				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+			}
 			return true;
 		}
 		break;
@@ -4930,6 +4924,20 @@ bool MainWorker::SwitchLight(unsigned long long idx, std::string switchcmd, unsi
 		break;
 	}
 	return false;
+}
+
+bool MainWorker::SwitchLight(unsigned long long idx, std::string switchcmd, unsigned char level)
+{
+	//Get Device details
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
+	result=m_sql.query(szQuery.str());
+	if (result.size()<1)
+		return false;
+
+	std::vector<std::string> sd=result[0];
+	return SwitchLightInt(sd,switchcmd,level,false);
 }
 
 bool MainWorker::SwitchLight(std::string idx, std::string switchcmd,std::string level)

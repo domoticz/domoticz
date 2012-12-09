@@ -35,6 +35,8 @@ public:
 
 	bool SwitchLight(std::string idx, std::string switchcmd,std::string level);
 	bool SwitchLight(unsigned long long idx, std::string switchcmd, unsigned char level);
+	bool SwitchLightInt(const std::vector<std::string> sd, const std::string switchcmd, unsigned char level, const bool IsTesting);
+
 	bool GetSunSettings();
 
 	bool AddHardwareFromParams(
@@ -79,7 +81,6 @@ private:
 	void WriteMessage(const char *szMessage, bool linefeed);
 
 	//message decoders
-
 	void decode_BateryLevel(bool bIsInPercentage, unsigned char level);
 	unsigned char get_BateryLevel(bool bIsInPercentage, unsigned char level);
 

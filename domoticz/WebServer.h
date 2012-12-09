@@ -20,6 +20,7 @@ public:
 	void StopServer();
 
 	char * DisplayVersion();
+	char * DisplayHardwareCombo();
 	char * DisplaySwitchTypesCombo();
 	char * DisplayMeterTypesCombo();
 	char * DisplayTimerTypesCombo();

@@ -82,6 +82,11 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
 		&CWebServer::DisplayHardwareTypesCombo,
 		this ) );
 
+	m_pWebEm->RegisterIncludeCode( "combohardware",
+		boost::bind(
+		&CWebServer::DisplayHardwareCombo,
+		this ) );
+
 	m_pWebEm->RegisterIncludeCode( "serialdevices",
 		boost::bind(
 		&CWebServer::DisplaySerialDevicesCombo,
@@ -138,6 +143,40 @@ char * CWebServer::DisplayMeterTypesCombo()
 	{
 		sprintf(szTmp,"<option value=\"%d\">%s</option>\n",ii,Meter_Type_Desc((_eMeterType)ii));
 		m_retstr+=szTmp;
+	}
+	return (char*)m_retstr.c_str();
+}
+
+
+char * CWebServer::DisplayHardwareCombo()
+{
+	m_retstr="";
+	char szTmp[200];
+
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+	szQuery << "SELECT ID, Name, Type FROM Hardware ORDER BY ID ASC";
+	result=m_pMain->m_sql.query(szQuery.str());
+	if (result.size()>0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::vector<std::string> sd=*itt;
+
+			int ID=atoi(sd[0].c_str());
+			std::string Name=sd[1];
+			_eHardwareTypes Type=(_eHardwareTypes)atoi(sd[2].c_str());
+			switch (Type)
+			{
+			case HTYPE_RFXLAN:
+			case HTYPE_RFXtrx315:
+			case HTYPE_RFXtrx433:
+				sprintf(szTmp,"<option value=\"%d\">%s</option>\n",ID,Name.c_str());
+				m_retstr+=szTmp;
+				break;
+			}
+		}
 	}
 	return (char*)m_retstr.c_str();
 }
@@ -1766,7 +1805,147 @@ char * CWebServer::GetJSonPage()
 		std::string cparam=m_pWebEm->FindValue("param");
 		if (cparam=="")
 			goto exitjson;
-		if (cparam=="getnotificationtypes")
+		if (cparam=="testswitch")
+		{
+			std::string hwdid=m_pWebEm->FindValue("hwdid");
+			std::string sswitchtype=m_pWebEm->FindValue("switchtype");
+			std::string slighttype=m_pWebEm->FindValue("lighttype");
+			if (
+				(hwdid=="")||
+				(sswitchtype=="")||
+				(slighttype=="")
+				)
+				goto exitjson;
+			_eSwitchType switchtype=(_eSwitchType)atoi(sswitchtype.c_str());
+			int lighttype=atoi(slighttype.c_str());
+			int dtype;
+			int subtype=0;
+			std::string sunitcode;
+			std::string devid;
+
+			if (lighttype<10)
+			{
+				dtype=pTypeLighting1;
+				subtype=lighttype;
+				std::string shousecode=m_pWebEm->FindValue("housecode");
+				sunitcode=m_pWebEm->FindValue("unitcode");
+				if (
+					(shousecode=="")||
+					(sunitcode=="")
+					)
+					goto exitjson;
+				devid=shousecode;
+			}
+			else
+			{
+				dtype=pTypeLighting2;
+				subtype=lighttype-10;
+				std::string id=m_pWebEm->FindValue("id");
+				sunitcode=m_pWebEm->FindValue("unitcode");
+				if (
+					(id=="")||
+					(sunitcode=="")
+					)
+					goto exitjson;
+				devid=id;
+			}
+			root["status"]="OK";
+			root["title"]="TestSwitch";
+			std::vector<std::string> sd;
+
+			sd.push_back(hwdid);
+			sd.push_back(devid);
+			sd.push_back(sunitcode);
+			sprintf(szTmp,"%d",dtype);
+			sd.push_back(szTmp);
+			sprintf(szTmp,"%d",subtype);
+			sd.push_back(szTmp);
+			sprintf(szTmp,"%d",switchtype);
+			sd.push_back(szTmp);
+
+			std::string switchcmd="On";
+			m_pMain->SwitchLightInt(sd,switchcmd,0,true);
+		}
+		else if (cparam=="addswitch")
+		{
+			std::string hwdid=m_pWebEm->FindValue("hwdid");
+			std::string name=m_pWebEm->FindValue("name");
+			std::string sswitchtype=m_pWebEm->FindValue("switchtype");
+			std::string slighttype=m_pWebEm->FindValue("lighttype");
+			if (
+				(hwdid=="")||
+				(sswitchtype=="")||
+				(slighttype=="")||
+				(name=="")
+				)
+				goto exitjson;
+			_eSwitchType switchtype=(_eSwitchType)atoi(sswitchtype.c_str());
+			int lighttype=atoi(slighttype.c_str());
+			int dtype;
+			int subtype=0;
+			std::string sunitcode;
+			std::string devid;
+
+			if (lighttype<10)
+			{
+				dtype=pTypeLighting1;
+				subtype=lighttype;
+				std::string shousecode=m_pWebEm->FindValue("housecode");
+				sunitcode=m_pWebEm->FindValue("unitcode");
+				if (
+					(shousecode=="")||
+					(sunitcode=="")
+					)
+					goto exitjson;
+				devid=shousecode;
+			}
+			else
+			{
+				dtype=pTypeLighting2;
+				subtype=lighttype-10;
+				std::string id=m_pWebEm->FindValue("id");
+				sunitcode=m_pWebEm->FindValue("unitcode");
+				if (
+					(id=="")||
+					(sunitcode=="")
+					)
+					goto exitjson;
+				devid=id;
+			}
+
+			//check if switch is unique
+			std::vector<std::vector<std::string> > result;
+			std::stringstream szQuery;
+			szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << hwdid << " AND DeviceID=='" << devid << "' AND Unit==" << sunitcode << " AND Type==" << dtype << " AND SubType==" << subtype << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()>0)
+			{
+				root["message"]="Switch already exists!";
+				goto exitjson;
+			}
+
+			m_pMain->m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(),atoi(sunitcode.c_str()),dtype,subtype,0,-1,0);
+			//set name and switchtype
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << hwdid << " AND DeviceID=='" << devid << "' AND Unit==" << sunitcode << " AND Type==" << dtype << " AND SubType==" << subtype << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()<1)
+			{
+				root["message"]="Error finding switch in Database!?!?";
+				goto exitjson;
+			}
+			std::string ID=result[0][0];
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE DeviceStatus SET Used=1, Name='" << name << "', SwitchType=" << switchtype << " WHERE (ID == " << ID << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+
+			root["status"]="OK";
+			root["title"]="AddSwitch";
+		}
+		else if (cparam=="getnotificationtypes")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
 			if (idx=="")

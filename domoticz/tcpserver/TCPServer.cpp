@@ -70,8 +70,8 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 	if(!error) // 1.
 	{
 		boost::lock_guard<boost::mutex> l(connectionMutex);
-		//std::string s = new_connection_->socket().remote_endpoint().address().to_string();
-		//std::cout << "Incoming connection from: " << s << std::endl;
+		std::string s = new_connection_->socket().remote_endpoint().address().to_string();
+		std::cout << "Incoming connection from: " << s << std::endl;
 
 		connections_.insert(new_connection_);
 		if (m_username=="")

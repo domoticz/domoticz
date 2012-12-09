@@ -15,6 +15,88 @@
     </fieldset>
     </form>
 </div>
+<div id="dialog-addmanuallightdevice" title="Add Manual Light/Switch Device">
+    <form>
+    <fieldset>
+        <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="width:60px"><label for="name">Hardware: </label></td>
+          <td><select id="combohardware" style="width:260px" class="combobox ui-corner-all">
+            <!--#embed combohardware -->
+          </select></td>
+        <tr>
+        <tr>
+          <td align="right" style="width:60px"><label for="name">Name: </label></td>
+          <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        <tr>
+          <td align="right"><label for="switchtype">Type: </label></td>
+          <td><select id="comboswitchtype" style="width:150px" class="combobox ui-corner-all">
+						<option value="0">On / Off</option>
+						<option value="1">Doorbell</option>
+          </select></td>
+		    </tr>
+		    <tr>
+          <td align="right"><label>Type: </label></td>
+          <td><select id="combolighttype" style="width:150px" class="combobox ui-corner-all">
+						<option value="0">X10</option>
+						<option value="1">ARC</option>
+						<option value="2">AB400D</option>
+						<option value="3">Waveman</option>
+						<option value="4">EMW200</option>
+						<option value="5">Impuls</option>
+						<option value="10">AC</option>
+						<option value="11">HE EU</option>
+						<option value="12">ANSLUT</option>
+          </select></td>
+		    </tr>
+		    </table>
+				<div id="lighting1params">
+					<br>
+					<table class="display" id="lightparams1" border="0" cellpadding="0" cellspacing="20">
+						<tr>
+							<td align="right" style="width:100px"><label>House Code:</label></td>
+							<td><select id="combohousecode" style="width:60px" class="combobox ui-corner-all">
+									</select>
+							</td>
+						</tr>
+						<tr>
+							<td align="right" style="width:100px"><label>Unit Code:</label></td>
+							<td><select id="combounitcode" style="width:60px" class="combobox ui-corner-all">
+									</select>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<div id="lighting2params">
+					<br>
+					<table class="display" id="lightparams2" border="0" cellpadding="0" cellspacing="20">
+						<tr>
+							<td align="right" style="width:60px"><label>ID:</label></td>
+							<td>
+								<select id="combocmd1" style="width:60px" class="combobox ui-corner-all">
+										<option value="0">0</option>
+										<option value="1">1</option>
+										<option value="2">2</option>
+										<option value="3">3</option>
+								</select>
+								<select id="combocmd2" style="width:60px" class="combobox ui-corner-all"></select>
+								<select id="combocmd3" style="width:60px" class="combobox ui-corner-all"></select>
+								<select id="combocmd4" style="width:60px" class="combobox ui-corner-all"></select>
+							</td>
+						</tr>
+						<tr>
+							<td align="right" style="width:100px"><label>Unit Code:</label></td>
+							<td><select id="combounitcode" style="width:60px" class="combobox ui-corner-all">
+									</select>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<br>
+				<center><a class="btnstyle3" onclick="TestManualLight();">Test</a></center>
+    </fieldset>
+    </form>
+</div>
 <div id="dialog-notificationlightdevice" title="Add/Remove Notification">
     <form>
     <fieldset>
@@ -487,6 +569,11 @@ function EditLightDevice(idx,name, switchtype)
   $( "#dialog-editlightdevice" ).dialog( "open" );
 }
 
+function AddManualLightDevice()
+{
+  $( "#dialog-addmanuallightdevice" ).dialog( "open" );
+}
+
 function AddLightDevice()
 {
   ShowNotify('Press button on Remote...');
@@ -544,8 +631,11 @@ function ShowLights()
   var tophtm=
         '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
         '\t<tr>\n' +
+        '\t  <td align="left">\n' +
+        '\t    <a class="btnstylerev" onclick="AddManualLightDevice();">Manual Light/Switch</a>\n' +
+        '\t  </td>\n' +
         '\t  <td align="right">\n' +
-        '\t    <a class="btnstyle" onclick="AddLightDevice();">Add Light/Switch</a>\n' +
+        '\t    <a class="btnstyle" onclick="AddLightDevice();">Learn Light/Switch</a>\n' +
         '\t  </td>\n' +
         '\t</tr>\n' +
         '\t</table>\n';
@@ -699,6 +789,122 @@ $.strPad = function(i,l,s) {
 	return o;
 };
 
+function UpdateAddManualDialog()
+{
+	var lighttype=$("#dialog-addmanuallightdevice #lighttable #combolighttype option:selected").val();
+	
+	var bIsARCType=0;
+	
+	var tothousecodes=1;
+	var totunits=1;
+	if ((lighttype==0)||(lighttype==1)||(lighttype==3)) {
+		bIsARCType=1;
+		tothousecodes=16;
+		totunits=16;
+	}
+	else if ((lighttype==2)||(lighttype==5)) {
+		bIsARCType=1;
+		tothousecodes=16;
+		totunits=64;
+	}
+	else if (lighttype==4) {
+		bIsARCType=1;
+		tothousecodes=3;
+		totunits=4;
+	}
+	else if (lighttype==7) {
+		bIsARCType=1;
+		tothousecodes=16;
+		totunits=8;
+	}
+	if (bIsARCType==1) {
+		$('#dialog-addmanuallightdevice #lightparams1 #combohousecode >option').remove();
+		$('#dialog-addmanuallightdevice #lightparams1 #combounitcode >option').remove();
+		for (ii=0; ii<tothousecodes; ii++)
+		{
+			$('#dialog-addmanuallightdevice #lightparams1 #combohousecode').append($('<option></option>').val(65+ii).html(String.fromCharCode(65+ii)));
+		}
+		for (ii=1; ii<totunits+1; ii++)
+		{
+			$('#dialog-addmanuallightdevice #lightparams1 #combounitcode').append($('<option></option>').val(ii).html(ii));
+		}
+		$("#dialog-addmanuallightdevice #lighting1params").show();
+		$("#dialog-addmanuallightdevice #lighting2params").hide();
+	}
+	else {
+			$("#dialog-addmanuallightdevice #lighting1params").hide();
+			$("#dialog-addmanuallightdevice #lighting2params").show();
+
+	}
+}
+
+function GetManualLightSettings(isTest)
+{
+	var mParams="";
+	var hwdID=$("#dialog-addmanuallightdevice #lighttable #combohardware option:selected").val();
+	if (typeof hwdID == 'undefined') {
+			ShowNotify('No Hardware Device selected!!', 2500, true);
+			return "";
+	}
+	mParams+="&hwdid="+hwdID;
+	
+	var name=$("#dialog-addmanuallightdevice #devicename");
+	if ((name.val()=="")||(!checkLength(name,3,100))) {
+		if (!isTest) {
+			ShowNotify('Invalid Name!!', 2500, true);
+			return "";
+		}
+	}
+	mParams+="&name="+name.val();
+	mParams+="&switchtype="+$("#dialog-addmanuallightdevice #lighttable #comboswitchtype option:selected").val();
+	var lighttype=$("#dialog-addmanuallightdevice #lighttable #combolighttype option:selected").val();
+	mParams+="&lighttype="+lighttype;
+	if (lighttype<10) {
+		mParams+="&housecode="+$("#dialog-addmanuallightdevice #lightparams1 #combohousecode option:selected").val();
+		mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightparams1 #combounitcode option:selected").val();
+	}
+	else {
+		//AC
+		var ID=
+			$("#dialog-addmanuallightdevice #lightparams2 #combocmd1 option:selected").text()+
+			$("#dialog-addmanuallightdevice #lightparams2 #combocmd2 option:selected").text()+
+			$("#dialog-addmanuallightdevice #lightparams2 #combocmd3 option:selected").text()+
+			$("#dialog-addmanuallightdevice #lightparams2 #combocmd4 option:selected").text();
+		if (ID=="0000000") {
+			ShowNotify('Invalid Switch ID!!', 2500, true);
+			return "";
+		}
+		mParams+="&id="+ID;
+		mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightparams2 #combounitcode option:selected").val();
+	}
+	
+	return mParams;
+}
+
+function TestManualLight()
+{
+	var mParams=GetManualLightSettings(1);
+	if (mParams=="") {
+		return;
+	}
+	$.ajax({
+		 url: "json.htm?type=command&param=testswitch"+mParams, 
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			if (typeof data.status != 'undefined') {
+				if (data.status != 'OK')
+				{
+					ShowNotify("There was a error!<br>Wrong switch parameters?", 2500,true);
+				}
+				else {
+					ShowNotify("On command send!", 2500);
+				}
+			}
+		 }
+	});
+}
+
 $(document).ready(function() {
     //global var
     $.devIdx=0;
@@ -749,6 +955,78 @@ $(document).ready(function() {
                   $(this).parent().find("button:eq(0)").trigger("click");
                 }
               });
+          },
+          close: function() {
+            $( this ).dialog( "close" );
+          }
+    });
+
+    $( "#dialog-addmanuallightdevice" ).dialog({
+          autoOpen: false,
+          width: 440,
+          height: 380,
+          modal: true,
+          resizable: false,
+          buttons: {
+              "Add Device": function() {
+									var mParams=GetManualLightSettings(0);
+									if (mParams=="") {
+										return;
+									}
+									$.pDialog=$( this );
+									$.ajax({
+										 url: "json.htm?type=command&param=addswitch"+mParams, 
+										 async: false, 
+										 dataType: 'json',
+										 success: function(data) {
+											if (typeof data.status != 'undefined') {
+												if (data.status == 'OK')
+												{
+													$.pDialog.dialog( "close" );
+													ShowLights();
+												}
+												else {
+													ShowNotify(data.message, 3000,true);
+												}
+											}
+										 }
+									});
+              },
+              Cancel: function() {
+                  $( this ).dialog( "close" );
+              }
+          },
+          open: function() {
+              $(this).keypress(function(e) {
+                if (e.keyCode == $.ui.keyCode.ENTER) {
+                  e.preventDefault();
+                  $(this).parent().find("button:eq(0)").trigger("click");
+                }
+              });
+              
+             	$("#dialog-addmanuallightdevice #lighttable #comboswitchtype").change(function() { 
+								var switchtype=$("#dialog-addmanuallightdevice #lighttable #comboswitchtype option:selected").val();
+								if (switchtype==1)
+								{
+									//AC device
+									$("#dialog-addmanuallightdevice #lighttable #combolighttype").val(10);
+									UpdateAddManualDialog();
+								}
+							});
+             	$("#dialog-addmanuallightdevice #lighttable #combolighttype").change(function() { 
+								UpdateAddManualDialog();
+							});
+							for (ii=0; ii<256; ii++)
+							{
+								$('#dialog-addmanuallightdevice #lightparams2 #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+								$('#dialog-addmanuallightdevice #lightparams2 #combocmd3').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+								$('#dialog-addmanuallightdevice #lightparams2 #combocmd4').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+							}
+							for (ii=1; ii<16+1; ii++)
+							{
+								$('#dialog-addmanuallightdevice #lightparams2 #combounitcode').append($('<option></option>').val(ii).html(ii));
+							}
+							UpdateAddManualDialog();
           },
           close: function() {
             $( this ).dialog( "close" );

@@ -153,11 +153,15 @@ function ShowDevices(filter)
           {
             itemSubIcons+='&nbsp;<img src="images/log.png" title="Log" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#devicescontent\', \'ShowDevices\');">';
           }
+          var ID = item.ID;
+          if (item.Type=="Lighting 1") {
+						ID = String.fromCharCode(item.ID);
+          }
           itemSubIcons+='&nbsp;<img src="images/delete.png" title="Delete Device" onclick="DeleteDevice(' + item.idx +')">';
           var addId = oTable.fnAddData([
                       '<img src="images/' + item.TypeImg + '.png">',
                       item.HardwareName,
-                      item.ID,
+                      ID,
                       item.Unit,
                       item.Name,
                       item.Type,

@@ -101,7 +101,7 @@ height:100%;
 }
 
 #notification{
-    z-index:105;
+    z-index:1005;
     background-color:#204060;
     border-width: 2px 2px 2px 2px;
     border-color: #5FA0FF;
@@ -201,7 +201,7 @@ height:100%;
 	display: inline-block;
 	height: 2.60em;
 	margin-top: 1.25em;
-	padding: 0em 2.25em 0em 1.25em;
+	padding: 0em 2.25em 0em 0.5em;
 	background: url(images/img03.jpg) repeat right top;
 	border-radius: 5px;
 	line-height: 2.60em;
@@ -217,7 +217,7 @@ height:100%;
 	display: inline-block;
 	height: 2.60em;
 	margin-top: 1.25em;
-	padding: 0em 2.25em 0em 1.25em;
+	padding: 0em 2.25em 0em 0.5em;
 	background: url(images/img03s.jpg) repeat right top;
 	border-radius: 5px;
 	line-height: 2.60em;
@@ -233,7 +233,7 @@ height:100%;
 	display: inline-block;
 	height: 2.60em;
 	margin-top: 1.25em;
-	padding: 0em 1.25em 0em 2.0em;
+	padding: 0em 0.5em 0em 2.0em;
 	background: url(images/img03r.jpg) repeat left top;
 	border-radius: 5px;
 	line-height: 2.60em;
