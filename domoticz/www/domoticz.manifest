@@ -1,0 +1,31 @@
+CACHE MANIFEST
+# 2012-12-10:v1
+
+CACHE:
+/favicon.ico
+css/5grid/core.css
+css/5grid/core-desktop.css
+css/5grid/core-1200px.css
+css/5grid/core-noscript.css
+css/style.css
+css/style-desktop.css
+css/ui-darkness/jquery-ui-1.9.0.custom.min.css
+css/loading.css
+css/demo_table_jui.css
+css/TableTools.css
+css/5grid/init.js
+js/jquery-1.8.2.min.js
+js/jquery-ui-1.9.0.custom.min.js
+js/jquery.dataTables.min.js
+js/ZeroClipboard.js
+js/TableTools.min.js
+js/date.format.js
+js/highcharts.js
+js/highcharts-more.js
+js/modules/exporting.js
+js/themes/dark-blue.js
+
+
+# Resources that require the user to be online.
+NETWORK:
+json.htm
