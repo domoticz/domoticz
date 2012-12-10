@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "TCPServer.h"
 #include "TCPClient.h"
+#include "../RFXNames.h"
+#include "../RFXtrx.h"
 
 #include <boost/asio.hpp>
 #include <algorithm>
@@ -9,7 +11,7 @@
 namespace tcp {
 namespace server {
 
-CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port, const std::string username, const std::string password, const int rights):
+CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port, const std::string username, const std::string password, const _eShareRights rights):
 	io_service_(),
 	acceptor_(io_service_)
 {
@@ -123,6 +125,29 @@ void CTCPServerInt::stopAllClient()
 void CTCPServerInt::SendToAll(const char *pData, size_t Length)
 {
 	boost::lock_guard<boost::mutex> l(connectionMutex);
+
+	//do not share Interface Messages
+	if (
+		(pData[1]==pTypeInterfaceMessage)||
+		(pData[1]==pTypeRecXmitMessage)
+		)
+		return;
+
+	if (m_rights == SHARE_SENSORS)
+	{
+		switch (pData[1])
+		{
+		case pTypeLighting1:
+		case pTypeLighting2:
+		case pTypeLighting3:
+		case pTypeLighting4:
+		case pTypeLighting5:
+		case pTypeLighting6:
+		case pTypeSecurity1:
+			return;	//not shared!!
+		}
+	}
+
 	std::set<CTCPClient_ptr>::const_iterator itt;
 	for (itt=connections_.begin(); itt!=connections_.end(); ++itt)
 	{
@@ -146,7 +171,7 @@ CTCPServer::~CTCPServer()
 	m_pTCPServer=NULL;
 }
 
-bool CTCPServer::StartServer(const std::string address, const std::string port, const std::string username, const std::string password, const int rights)
+bool CTCPServer::StartServer(const std::string address, const std::string port, const std::string username, const std::string password, const _eShareRights rights)
 {
 	try
 	{

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../RFXNames.h"
 #include "TCPClient.h"
 #include <set>
 
@@ -9,7 +10,7 @@ namespace server {
 class CTCPServerInt
 {
 public:
-	CTCPServerInt(const std::string& address, const std::string& port, const std::string username, const std::string password, const int rights);
+	CTCPServerInt(const std::string& address, const std::string& port, const std::string username, const std::string password, const _eShareRights rights);
 	~CTCPServerInt(void);
 
 	void start();
@@ -40,7 +41,8 @@ private:
 
 	std::string m_username;
 	std::string m_password;
-	int m_rights;
+	_eShareRights m_rights;
+
 
 	friend class CTCPClient;
 };
@@ -51,7 +53,7 @@ public:
 	CTCPServer();
 	~CTCPServer(void);
 
-	bool StartServer(const std::string address, const std::string port, const std::string username, const std::string password, const int rights);
+	bool StartServer(const std::string address, const std::string port, const std::string username, const std::string password, const _eShareRights rights);
 	void StopServer();
 	void SendToAll(const char *pData, size_t Length);
 private:

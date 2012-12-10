@@ -10,7 +10,7 @@ CDomoticzHardwareBase::CDomoticzHardwareBase()
 	m_bIsStarted=false;
 };
 
-bool CDomoticzHardwareBase::StartSharing(const std::string port, const std::string username, const std::string password, const int rights)
+bool CDomoticzHardwareBase::StartSharing(const std::string port, const std::string username, const std::string password, const _eShareRights rights)
 {
 	try {
 		m_sharedserver.StartServer("0.0.0.0",port, username, password, rights);

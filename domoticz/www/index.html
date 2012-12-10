@@ -418,6 +418,8 @@ function ShowNotificationTypeLabel()
 			$($.content + " #notificationparamstable #valuetype").html('&nbsp;m/s');
 		else if (typetext == 'Baro')
 			$($.content + " #notificationparamstable #valuetype").html('&nbsp;hPa');
+		else if (typetext == 'Usage')
+			$($.content + " #notificationparamstable #valuetype").html('&nbsp;');
 		else
 			$($.content + " #notificationparamstable #valuetype").html('&nbsp;??');
 }
@@ -668,7 +670,10 @@ function cursordefault()
           actlayout : "",
           prevlayout : "",
         };
-        
+
+				if ( $.browser.msie ) {
+					alert('This Application is NOT compatible with Internet Explorer!\nPlease use Firefox/Chrome or Safari!');
+				}
         SwitchLayout('Dashboard');
 			} );
 		

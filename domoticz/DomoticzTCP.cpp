@@ -149,6 +149,7 @@ bool DomoticzTCP::ConnectInternal()
 		sprintf(szAuth,"AUTH;%s;%s",m_username.c_str(),m_password.c_str());
 		WriteToHardware((const char*)&szAuth,(const unsigned char)strlen(szAuth));
 	}
+
 	sOnConnected(this);
 	return true;
 }

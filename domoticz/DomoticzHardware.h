@@ -22,7 +22,7 @@ public:
 	virtual void WriteToHardware(const char *pdata, const unsigned char length)=0;
 
 	void StopSharing();
-	bool StartSharing(const std::string port, const std::string username, const std::string password, const int rights);
+	bool StartSharing(const std::string port, const std::string username, const std::string password, const _eShareRights rights);
 
 	bool IsStarted() { return m_bIsStarted; }
 
@@ -34,9 +34,9 @@ public:
 	bool m_bEnableReceive;
 	boost::signals2::signal<void(CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand)> sDecodeRXMessage;
 	boost::signals2::signal<void(CDomoticzHardwareBase *pDevice)> sOnConnected;
+	tcp::server::CTCPServer m_sharedserver;
 private:
 	boost::mutex readQueueMutex;
-	tcp::server::CTCPServer m_sharedserver;
 	virtual bool StartHardware()=0;
 	virtual bool StopHardware()=0;
 	void onRFXMessage(const unsigned char *pBuffer, const size_t Len);

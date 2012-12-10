@@ -267,6 +267,8 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("ProwlAPI",ProwlAPI.c_str());
 	std::string NMAAPI=m_pWebEm->FindValue("NMAAPIKey");
 	m_pMain->m_sql.UpdatePreferencesVar("NMAAPI",NMAAPI.c_str());
+	std::string DashboardType=m_pWebEm->FindValue("DashboardType");
+	m_pMain->m_sql.UpdatePreferencesVar("DashboardType",atoi(DashboardType.c_str()));
 	return (char*)m_retstr.c_str();
 }
 
@@ -293,6 +295,11 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 			_hardwareNames[ID]=Name;
 		}
 	}
+
+	int nValue=0;
+	m_pMain->m_sql.GetPreferencesVar("DashboardType",nValue);
+	root["DashboardType"]=nValue;
+
 	char szData[100];
 	char szTmp[300];
 
@@ -2024,6 +2031,13 @@ char * CWebServer::GetJSonPage()
 				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_BARO,1);
 				ii++;
 			}
+			if ((dType==pTypeRFXMeter)&&(dSubType==sTypeRFXMeterCount))
+			{
+				root["result"][ii]["val"]=NTYPE_BARO;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+				ii++;
+			}
 		}
 		else if (cparam=="addnotification")
 		{
@@ -2634,6 +2648,10 @@ char * CWebServer::GetJSonPage()
 				else if (Key=="NMAAPI")
 				{
 					root["NMAAPI"]=sValue;
+				}
+				else if (Key=="DashboardType")
+				{
+					root["DashboardType"]=nValue;
 				}
 			}
 		}

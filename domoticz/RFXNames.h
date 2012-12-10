@@ -54,6 +54,12 @@ enum _eNotificationTypes
 	NTYPE_SWITCH,
 };
 
+enum _eShareRights
+{
+	SHARE_SENSORS=0,
+	SHARE_ALL
+};
+
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum);
 const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char sType);
 const char *RFX_Humidity_Status_Desc(const unsigned char status);

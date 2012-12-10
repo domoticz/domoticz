@@ -33,7 +33,7 @@ function ShowFavorites()
      dataType: 'json',
      success: function(data) {
       if (typeof data.result != 'undefined') {
-
+				//alert(data.DashboardType);
         //light devices
         bHaveAddedDevider = false;
         $.each(data.result, function(i,item){
