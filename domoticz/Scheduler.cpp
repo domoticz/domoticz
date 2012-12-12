@@ -267,8 +267,8 @@ void CScheduler::CheckSchedules()
 						std::cerr << "Error sending switch command, DevID: " << itt->DevID << ", Time: " << asctime(ltime) << std::endl;
 					}
 				}
+				AdjustScheduleItem(&*itt,true);
 			}
-			AdjustScheduleItem(&*itt,true);
 		}
 	}
 }

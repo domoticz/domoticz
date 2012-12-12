@@ -491,6 +491,7 @@ function RefreshTimerTable(idx)
 
 function ShowTimers(id,name)
 {
+  clearInterval($.myglobals.refreshTimer);
   $.devIdx=id;
 
 	var oTable;
@@ -544,6 +545,7 @@ function ShowTimers(id,name)
 
 function MakeFavorite(id,isfavorite)
 {
+  clearInterval($.myglobals.refreshTimer);
   $.ajax({
      url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite, 
      async: false, 
@@ -556,6 +558,7 @@ function MakeFavorite(id,isfavorite)
 
 function EditNotification(idx,name, hasnotifications)
 {
+  clearInterval($.myglobals.refreshTimer);
   $.devIdx=idx;
   $("#dialog-notificationlightdevice #enabled").attr('checked', hasnotifications);
   $( "#dialog-notificationlightdevice" ).dialog( "open" );
@@ -563,6 +566,7 @@ function EditNotification(idx,name, hasnotifications)
 
 function EditLightDevice(idx,name, switchtype)
 {
+  clearInterval($.myglobals.refreshTimer);
   $.devIdx=idx;
   $("#dialog-editlightdevice #devicename").val(name);
   $("#dialog-editlightdevice #comboswitchtype").val(switchtype);
@@ -571,11 +575,13 @@ function EditLightDevice(idx,name, switchtype)
 
 function AddManualLightDevice()
 {
+  clearInterval($.myglobals.refreshTimer);
   $( "#dialog-addmanuallightdevice" ).dialog( "open" );
 }
 
 function AddLightDevice()
 {
+  clearInterval($.myglobals.refreshTimer);
   ShowNotify('Press button on Remote...');
   
   setTimeout(function() {
@@ -623,6 +629,7 @@ function AddLightDevice()
 
 function ShowLights()
 {
+  clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
   
   var htmlcontent = '';
@@ -757,6 +764,7 @@ function ShowLights()
 	if (!isiPhone()) {
 		$("#lightcontent .4u").draggable({
 				drag: function() {
+					clearInterval($.myglobals.refreshTimer);
 					$.devIdx=$(this).attr("id");
 					$(this).css("z-index", 2);
 				},
@@ -777,6 +785,7 @@ function ShowLights()
 				}
 		});
 	}  
+  $.myglobals.refreshTimer = setInterval(ShowLights, 10000);
   return false;
 }
 

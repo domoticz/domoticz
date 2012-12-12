@@ -10,6 +10,10 @@
 
 #include "CmdLine.h"
 
+#if defined WIN32
+#include "WindowsHelper.h"
+#endif
+
 const char *szAppTitle="Domoticz V1.01 (c)2012 GizMoCuz\n";
 
 const char *szHelp=
@@ -20,26 +24,39 @@ const char *szHelp=
 
 MainWorker _mainworker;
 
-/* first, here is the signal handler */
-void catch_int(int sig_num)
+void DQuitFunction()
 {
-	/* re-set the signal handler again to catch_int, for next time */
-	signal(SIGINT, catch_int);
-	/* and print the message */
 	std::cout << "Closing application!..." << std::endl;
 	fflush(stdout);
 	std::cout << "stopping worker...\n";
 	_mainworker.Stop();
+}
+
+void catch_intterm(int sig_num)
+{
+	DQuitFunction();
 	exit(0); 
 }
 
+#if defined WIN32
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+#else
 int main(int argc, char**argv)
+#endif
 {
 	std::cout << szAppTitle;
 
 	CCmdLine cmdLine;
+
 	// parse argc,argv 
+#if defined WIN32
+	cmdLine.SplitLine(__argc, __argv);
+	#ifdef _DEBUG
+		RedirectIOToConsole();
+	#endif
+#else
 	cmdLine.SplitLine(argc, argv);
+#endif
 
 	if ((cmdLine.HasSwitch("-h"))||(cmdLine.HasSwitch("--help"))||(cmdLine.HasSwitch("/?")))
 	{
@@ -73,14 +90,23 @@ int main(int argc, char**argv)
 	if (!_mainworker.Start())
 		return 0;
 
-	/* set the INT (Ctrl-C)
-	signal handler to 'catch_int' */ 
-
-	signal(SIGINT, catch_int); 
+	signal(SIGINT, catch_intterm); 
+	signal(SIGTERM,catch_intterm);
 
 	/* now, lets get into an infinite loop of doing nothing. */
+
+#if defined WIN32
+	InitWindowsHelper(hInstance,hPrevInstance,nShowCmd,DQuitFunction,atoi(_mainworker.GetWebserverPort().c_str()));
+	MSG Msg;
+	while(GetMessage(&Msg, NULL, 0, 0) > 0)
+	{
+		TranslateMessage(&Msg);
+		DispatchMessage(&Msg);
+	}
+#else
 	for ( ;; )
 		boost::this_thread::sleep(boost::posix_time::seconds(1));
+#endif
 	return 0;
 }
 

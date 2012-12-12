@@ -39,12 +39,16 @@
     <Filter Include="Devices\P1MeterSerial">
       <UniqueIdentifier>{3842a5f4-988f-43df-ab50-6b41679ce600}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Windows">
+      <UniqueIdentifier>{b2fc9567-e487-4cee-b23e-9f6002b503b9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
       <Filter>crosscompile</Filter>
     </None>
     <None Include="INSTALL.txt" />
+    <None Include="domoticz.ico" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -152,6 +156,12 @@
     <ClInclude Include="P1MeterSerial.h">
       <Filter>Devices\P1MeterSerial</Filter>
     </ClInclude>
+    <ClInclude Include="WindowsHelper.h">
+      <Filter>Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -250,5 +260,11 @@
     <ClCompile Include="P1MeterSerial.cpp">
       <Filter>Devices\P1MeterSerial</Filter>
     </ClCompile>
+    <ClCompile Include="WindowsHelper.cpp">
+      <Filter>Windows</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="domoticz.rc" />
   </ItemGroup>
 </Project>

@@ -31,6 +31,7 @@
 
 function MakeFavorite(id,isfavorite)
 {
+	clearInterval($.myglobals.refreshTimer);
   $.ajax({
      url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite,
      async: false,
@@ -43,6 +44,7 @@ function MakeFavorite(id,isfavorite)
 
 function EditTempDevice(idx,name)
 {
+	clearInterval($.myglobals.refreshTimer);
   $.devIdx=idx;
   $("#dialog-edittempdevice #devicename").val(name);
   $( "#dialog-edittempdevice" ).dialog( "open" );
@@ -163,6 +165,7 @@ function AddDataToTempChart(data,chart,isday)
 
 function ShowTempLog(id,name)
 {
+	clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
   var htmlcontent = '';
   htmlcontent='<p><center><h2>' + name + '</h2></center></p><br>\n';
@@ -481,6 +484,7 @@ function ShowTempLog(id,name)
 
 function ShowTemps()
 {
+	clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
 
   var htmlcontent = '';
@@ -607,6 +611,7 @@ function ShowTemps()
 	if (!isiPhone()) {
 		$("#tempcontent .4u").draggable({
 				drag: function() {
+					clearInterval($.myglobals.refreshTimer);
 					$.devIdx=$(this).attr("id");
 					$(this).css("z-index", 2);
 				},
@@ -627,6 +632,7 @@ function ShowTemps()
 				}
 		});
 	}
+	$.myglobals.refreshTimer = setInterval(ShowTemps, 10000);
   return false;
 }
 

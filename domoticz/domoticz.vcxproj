@@ -52,7 +52,7 @@
       <AdditionalIncludeDirectories>S:\Boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>S:\Boost\stage\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sqlite3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -70,7 +70,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
@@ -80,6 +80,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt" />
+    <None Include="domoticz.ico" />
     <None Include="INSTALL.txt" />
   </ItemGroup>
   <ItemGroup>
@@ -88,6 +89,7 @@
     <ClInclude Include="DomoticzHardware.h" />
     <ClInclude Include="DomoticzTCP.h" />
     <ClInclude Include="P1MeterSerial.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Scheduler.h" />
     <ClInclude Include="SQLHelper.h" />
     <ClInclude Include="Helper.h" />
@@ -118,6 +120,7 @@
     <ClInclude Include="webserver\request_handler.hpp" />
     <ClInclude Include="webserver\request_parser.hpp" />
     <ClInclude Include="webserver\server.hpp" />
+    <ClInclude Include="WindowsHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ASyncSerial.cpp" />
@@ -155,6 +158,10 @@
     <ClCompile Include="webserver\request_handler.cpp" />
     <ClCompile Include="webserver\request_parser.cpp" />
     <ClCompile Include="webserver\server.cpp" />
+    <ClCompile Include="WindowsHelper.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="domoticz.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

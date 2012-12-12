@@ -89,6 +89,7 @@
 
 function MakeFavorite(id,isfavorite)
 {
+	clearInterval($.myglobals.refreshTimer);
   $.ajax({
      url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite, 
      async: false, 
@@ -101,6 +102,7 @@ function MakeFavorite(id,isfavorite)
 
 function EditUtilityDevice(idx,name)
 {
+	clearInterval($.myglobals.refreshTimer);
   $.devIdx=idx;
   $("#dialog-editutilitydevice #devicename").val(name);
   $( "#dialog-editutilitydevice" ).dialog( "open" );
@@ -108,6 +110,7 @@ function EditUtilityDevice(idx,name)
 
 function EditMeterDevice(idx,name, switchtype)
 {
+	clearInterval($.myglobals.refreshTimer);
   $.devIdx=idx;
   $("#dialog-editmeterdevice #devicename").val(name);
   $("#dialog-editmeterdevice #combometertype").val(switchtype);
@@ -168,6 +171,7 @@ function AddDataToUtilityChart(data,chart,switchtype)
 
 function ShowCounterLog(id,name,switchtype)
 {
+	clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
   var htmlcontent = '';
   htmlcontent='<p><center><h2>' + name + '</h2></center></p><br><br>\n';
@@ -371,6 +375,7 @@ function ShowCounterLog(id,name,switchtype)
 
 function ShowUtilities()
 {
+	clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
   
   var htmlcontent = '';
@@ -470,6 +475,7 @@ function ShowUtilities()
 	if (!isiPhone()) {
 		$("#utilitycontent .4u").draggable({
 				drag: function() {
+					clearInterval($.myglobals.refreshTimer);
 					$.devIdx=$(this).attr("id");
 					$(this).css("z-index", 2);
 				},
@@ -490,6 +496,7 @@ function ShowUtilities()
 				}
 		});
 	}
+	$.myglobals.refreshTimer = setInterval(ShowUtilities, 10000);
   return false;
 }
 

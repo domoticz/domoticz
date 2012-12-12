@@ -71,6 +71,7 @@
 
 function MakeFavorite(id,isfavorite)
 {
+	clearInterval($.myglobals.refreshTimer);
   $.ajax({
      url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite, 
      async: false, 
@@ -83,6 +84,7 @@ function MakeFavorite(id,isfavorite)
 
 function EditWeatherDevice(idx,name)
 {
+	clearInterval($.myglobals.refreshTimer);
   $.devIdx=idx;
   $("#dialog-editweatherdevice #devicename").val(name);
   $( "#dialog-editweatherdevice" ).dialog( "open" );
@@ -95,6 +97,7 @@ function AddWeatherDevice()
 
 function ShowWindLog(id,name)
 {
+	clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
   var htmlcontent = '';
         
@@ -759,6 +762,7 @@ function ShowWindLog(id,name)
 
 function ShowUVLog(id,name)
 {
+	clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
   var htmlcontent = '';
   htmlcontent='<p><center><h2>' + name + '</h2></center></p><br><br>\n';
@@ -1002,6 +1006,7 @@ function ShowUVLog(id,name)
 
 function ShowBaroLog(id,name)
 {
+	clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
   var htmlcontent = '';
   htmlcontent='<p><center><h2>' + name + '</h2></center></p><br><br>\n';
@@ -1241,6 +1246,7 @@ function ShowBaroLog(id,name)
 
 function ShowRainLog(id,name)
 {
+	clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
   var htmlcontent = '';
   htmlcontent='<p><center><h2>' + name + '</h2></center></p><br><br>\n';
@@ -1482,6 +1488,7 @@ function ShowRainLog(id,name)
 
 function ShowWeathers()
 {
+	clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
   
   var htmlcontent = '';
@@ -1634,6 +1641,7 @@ function ShowWeathers()
 	if (!isiPhone()) {
 		$("#weathercontent .4u").draggable({
 				drag: function() {
+					clearInterval($.myglobals.refreshTimer);
 					$.devIdx=$(this).attr("id");
 					$(this).css("z-index", 2);
 				},
@@ -1654,6 +1662,7 @@ function ShowWeathers()
 				}
 		});
 	}
+	$.myglobals.refreshTimer = setInterval(ShowWeathers, 10000);
   return false;
 }
 

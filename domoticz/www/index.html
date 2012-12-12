@@ -1,15 +1,18 @@
 <!DOCTYPE HTML>
-<html>
+<html manifest="domoticz.manifest">
 <head>
 <title>Domoticz</title>
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 <meta name="description" content="" />
 <meta name="keywords" content="" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
 <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
 <META HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="/favicon.ico" />
 <link rel="apple-touch-icon" href="images/iphone-icon.png"/>
+
 <noscript>
 <link type="text/css" rel="stylesheet" href="css/5grid/core.css" />
 <link type="text/css" rel="stylesheet" href="css/5grid/core-desktop.css" />
@@ -83,6 +86,7 @@ function isiPhone(){
 
 function SwitchLight(idx,switchcmd, refreshfunction)
 {
+  clearInterval($.myglobals.refreshTimer);
   ShowNotify('Switching ' + switchcmd);
  
   $.ajax({
@@ -149,6 +153,7 @@ function ClearLightLog()
 
 function ShowLightLog(id,name,content,backfunction)
 {
+  clearInterval($.myglobals.refreshTimer);
   $.content=content;
 
   $.devIdx=id;
@@ -439,6 +444,7 @@ function GetValTextInNTypeStrArray(stext)
 
 function ShowNotifications(id,name,content,backfunction)
 {
+  clearInterval($.myglobals.refreshTimer);
   $.devIdx=id;
   $.content=content;
   
