@@ -12,6 +12,7 @@
 
 #define WM_TRAYICON				(WM_USER+58)
 #define WM_TRAYEXIT				(WM_USER+59)
+#define WM_SHOWCONSOLEWINDOW	(WM_USER+60)
 
 const char g_szClassName[] = "DomoticzWindow";
 HINSTANCE g_hInstance=NULL;
@@ -21,6 +22,15 @@ HANDLE g_hConsoleOut=NULL;
 
 void RedirectIOToConsole()
 {
+	HWND hWnd = GetConsoleWindow();
+	if (hWnd!=NULL) {
+		if (IsWindowVisible(hWnd))
+			ShowWindow( hWnd, SW_HIDE );
+		else
+			ShowWindow( hWnd, SW_SHOW );
+		return;
+	}
+
 	int                        hConHandle;
 	long                       lStdHandle;
 	CONSOLE_SCREEN_BUFFER_INFO coninfo;
@@ -101,7 +111,10 @@ void ShowContextMenu(HWND hWnd)
 	HMENU hMenu = CreatePopupMenu();
 	if(hMenu)
 	{
-		InsertMenu(hMenu, -1, MF_BYPOSITION, WM_TRAYEXIT, "E&xit");
+		int indexMenu=0;
+		InsertMenu(hMenu, indexMenu++, MF_BYPOSITION, WM_SHOWCONSOLEWINDOW, "Show/Hide Console Window (Do not close!)");
+		InsertMenu(hMenu, indexMenu++, MF_SEPARATOR|MF_BYPOSITION, 0, NULL);
+		InsertMenu(hMenu, indexMenu++, MF_BYPOSITION, WM_TRAYEXIT, "E&xit");
 
 		// note:	must set window to the foreground or the
 		//			menu won't disappear when it should
@@ -135,6 +148,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 		case WM_TRAYEXIT:
 			DestroyWindow(hwnd);
+			break;
+		case WM_SHOWCONSOLEWINDOW:
+			RedirectIOToConsole();
 			break;
 		}
 		break;
