@@ -45,7 +45,7 @@ Source: "..\Debug\sqlite3.dll"; DestDir: {app}; Flags: ignoreversion;
 Name: "{group}\Domoticz"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\{cm:ProgramOnTheWeb,Domoticz}"; Filename: "{#MyAppURL}"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-Name: "{commonstartup}\Domoticz"; Filename: "{app}\{#MyAppExeName}"
+Name: "{commonstartup}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "-startupdelay 10"
 Name: "{commondesktop}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
 

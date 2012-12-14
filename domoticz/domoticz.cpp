@@ -19,7 +19,8 @@ const char *szAppTitle="Domoticz V1.01 (c)2012 GizMoCuz\n";
 const char *szHelp=
 	"Usage: Domoticz -www port -verbose x\n"
 	"\t-www port (for example -www 8080)\n"
-	"\t-verbose x (where x=0 is none, x=1 is debug)\n";
+	"\t-verbose x (where x=0 is none, x=1 is debug)\n"
+	"\t-startupdelay seconds (default=0)\n";
 
 
 MainWorker _mainworker;
@@ -44,6 +45,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 int main(int argc, char**argv)
 #endif
 {
+#if defined WIN32
+	RedirectIOToConsole();
+#endif
 	std::cout << szAppTitle;
 
 	CCmdLine cmdLine;
@@ -51,15 +55,6 @@ int main(int argc, char**argv)
 	// parse argc,argv 
 #if defined WIN32
 	cmdLine.SplitLine(__argc, __argv);
-
-#ifndef _DEBUG
-	std::cout << "Windows startup delay... waiting 10 seconds..." << std::endl;
-	boost::this_thread::sleep(boost::posix_time::seconds(10));
-#endif
-
-	#ifdef _DEBUG
-		RedirectIOToConsole();
-	#endif
 #else
 	cmdLine.SplitLine(argc, argv);
 #endif
@@ -68,6 +63,18 @@ int main(int argc, char**argv)
 	{
 		std::cout << szHelp;
 		return 0;
+	}
+
+	if (cmdLine.HasSwitch("-startupdelay"))
+	{
+		if (cmdLine.GetArgumentCount("-startupdelay")!=1)
+		{
+			std::cout << "Please specify a startupdelay" << std::endl;
+			return 0;
+		}
+		int DelaySeconds=atoi(cmdLine.GetSafeArgument("-startupdelay",0,"").c_str());
+		std::cout << "Startup delay... waiting " << DelaySeconds << " seconds..." << std::endl;
+		boost::this_thread::sleep(boost::posix_time::seconds(DelaySeconds));
 	}
 
 	if (cmdLine.HasSwitch("-www"))
@@ -102,6 +109,9 @@ int main(int argc, char**argv)
 	/* now, lets get into an infinite loop of doing nothing. */
 
 #if defined WIN32
+#ifndef _DEBUG
+	RedirectIOToConsole();	//hide console
+#endif
 	InitWindowsHelper(hInstance,hPrevInstance,nShowCmd,DQuitFunction,atoi(_mainworker.GetWebserverPort().c_str()));
 	MSG Msg;
 	while(GetMessage(&Msg, NULL, 0, 0) > 0)
