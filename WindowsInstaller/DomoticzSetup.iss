@@ -52,3 +52,6 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Domoticz"; Filenam
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; Flags: nowait postinstall skipifsilent runascurrentuser
 
+
+[PostCompile]
+Name: "makedist.bat"
