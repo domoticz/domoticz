@@ -8,6 +8,7 @@ enum _eSwitchType
 	STYPE_Doorbell,
 	STYPE_Contact,
 	STYPE_Blinds,
+	STYPE_X10Siren,
 	STYPE_END
 };
 

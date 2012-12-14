@@ -64,6 +64,9 @@ function ShowFavorites()
             if (item.SwitchType == "Doorbell") {
               xhtm+='\t      <td><img src="images/door48.png" height="48" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
             }
+            else if (item.SwitchType == "X10 Siren") {
+              xhtm+='\t      <td><img src="images/siren48.png" height="48"></td>\n';
+            }
             else if (item.SwitchType == "Contact") {
               xhtm+='\t      <td><img src="images/contact48.png" height="48"></td>\n';
             }

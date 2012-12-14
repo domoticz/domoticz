@@ -4857,7 +4857,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, const std::st
 			lcmd.LIGHTING1.unitcode=Unit;
 			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING1.cmnd))
 				return false;
-			if (switchtype==STYPE_Doorbell)
+			if ((switchtype==STYPE_Doorbell)||(switchtype==STYPE_X10Siren))
 				level=15;
 			lcmd.LIGHTING1.filler=0;
 			lcmd.LIGHTING1.rssi=7;
@@ -4892,7 +4892,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, const std::st
 			lcmd.LIGHTING2.unitcode=Unit;
 			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING2.cmnd))
 				return false;
-			if (switchtype==STYPE_Doorbell)
+			if ((switchtype==STYPE_Doorbell)||(switchtype==STYPE_X10Siren))
 				level=15;
 			lcmd.LIGHTING2.level=level;
 			lcmd.LIGHTING2.filler=0;

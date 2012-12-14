@@ -56,6 +56,14 @@ To get a free account/API key click <a href="https://www.prowlapp.com" target="_
 </table>
 To get a free account/API key click <a href="http://www.notifymyandroid.com/" target="_blank">Here</a><br>
 <br><br>
+<h2>Light/Switch History:</h2><br>
+<table class="display" id="lightlogtable" border="0" cellpadding="0" cellspacing="0">
+<tr>
+  <td align="right" style="width:60px"><label>Days: </label></td>
+  <td><input type="text" id="LightHistoryDays" name="LightHistoryDays" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+</tr>
+</table>
+<br><br>
 <h2>Dashboard:</h2><br>
 <table class="display" id="dashmodetable" border="0" cellpadding="0" cellspacing="0">
 <tr>
@@ -138,6 +146,9 @@ function ShowSettings()
       }
       if (typeof data.NMAAPI != 'undefined') {
         $("#nmatable #apikey").val(data.NMAAPI);
+      }
+      if (typeof data.LightHistoryDays != 'undefined') {
+        $("#lightlogtable #LightHistoryDays").val(data.LightHistoryDays);
       }
       if (typeof data.DashboardType != 'undefined') {
         $("#dashmodetable #combosdashtype").val(data.DashboardType);

@@ -93,6 +93,8 @@ private:
 
 	void CheckAndUpdateDeviceOrder();
 
+	void CleanupLightLog();
+
 	void UpdateTemperatureLog();
 	void UpdateRainLog();
 	void UpdateWindLog();

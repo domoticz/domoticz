@@ -33,6 +33,7 @@
           <td><select id="comboswitchtype" style="width:150px" class="combobox ui-corner-all">
 						<option value="0">On / Off</option>
 						<option value="1">Doorbell</option>
+						<option value="4">Siren</option>
           </select></td>
 		    </tr>
 		    <tr>
@@ -109,7 +110,7 @@
     </fieldset>
     </form>
 </div>
-<div id="dialog-editlightdevice" title="Edit Licht/Switch Device">
+<div id="dialog-editlightdevice" title="Edit Light/Switch Device">
     <form>
     <fieldset>
         <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
@@ -673,7 +674,20 @@ function ShowLights()
                 '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
                 '\t    <tr>\n' +
                 '\t      <td>' + item.Name + '</td>\n';
-          if (item.SwitchType == "Doorbell") {
+          if (item.SwitchType == "X10 Siren") {
+            if (
+                (item.Status == 'On')||
+                (item.Status == 'Chime')||
+                (item.Status == 'Group On')||
+                (item.Status == 'All On')
+               ) {
+                    xhtm+='\t      <td><img src="images/siren-on.png" height="48" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
+            }
+            else {
+                    xhtm+='\t      <td><img src="images/siren-off.png" height="48" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
+            }
+          }
+          else if (item.SwitchType == "Doorbell") {
             xhtm+='\t      <td><img src="images/door48.png" height="48" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
           }
           else if (item.SwitchType == "Contact") {

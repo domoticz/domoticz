@@ -51,6 +51,12 @@ int main(int argc, char**argv)
 	// parse argc,argv 
 #if defined WIN32
 	cmdLine.SplitLine(__argc, __argv);
+
+#ifndef _DEBUG
+	std::cout << "Windows startup delay... waiting 10 seconds..." << std::endl;
+	boost::this_thread::sleep(boost::posix_time::seconds(10));
+#endif
+
 	#ifdef _DEBUG
 		RedirectIOToConsole();
 	#endif

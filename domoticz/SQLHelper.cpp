@@ -190,48 +190,53 @@ CSQLHelper::CSQLHelper(void)
 	{
 		std::cerr << "Error opening SQLite3 database: " << sqlite3_errmsg(m_dbase) << std::endl << std::endl;
 		sqlite3_close(m_dbase);
+		return;
 	}
-	else
+	bool bNewInstall=false;
+	std::vector<std::vector<std::string> > result=query("SELECT name FROM sqlite_master WHERE type='table' AND name='DeviceStatus'");
+	bNewInstall=(result.size()==0);
+
+	//create database (if not exists)
+	query(sqlCreateDeviceStatus);
+	query(sqlCreateDeviceStatusTrigger);
+	query(sqlCreateLightingLog);
+	query(sqlCreatePreferences);
+	query(sqlCreateRain);
+	query(sqlCreateRain_Calendar);
+	query(sqlCreateTemperature);
+	query(sqlCreateTemperature_Calendar);
+	query(sqlCreateTempVars);
+	query(sqlCreateTimers);
+	query(sqlCreateUV);
+	query(sqlCreateUV_Calendar);
+	query(sqlCreateWind);
+	query(sqlCreateWind_Calendar);
+	query(sqlCreateMeter);
+	query(sqlCreateMeter_Calendar);
+	query(sqlCreateNotifications);
+	query(sqlCreateHardware);
+	query(sqlCreateHardwareSharing);
+	query(sqlCreateUsers);
+
+	int dbversion=0;
+	GetPreferencesVar("DB_Version", dbversion);
+	if ((!bNewInstall)&&(dbversion<DB_VERSION))
 	{
-		bool bNewInstall=false;
-		std::vector<std::vector<std::string> > result=query("SELECT name FROM sqlite_master WHERE type='table' AND name='DeviceStatus'");
-		bNewInstall=(result.size()==0);
-
-		//create database (if not exists)
-		query(sqlCreateDeviceStatus);
-		query(sqlCreateDeviceStatusTrigger);
-		query(sqlCreateLightingLog);
-		query(sqlCreatePreferences);
-		query(sqlCreateRain);
-		query(sqlCreateRain_Calendar);
-		query(sqlCreateTemperature);
-		query(sqlCreateTemperature_Calendar);
-		query(sqlCreateTempVars);
-		query(sqlCreateTimers);
-		query(sqlCreateUV);
-		query(sqlCreateUV_Calendar);
-		query(sqlCreateWind);
-		query(sqlCreateWind_Calendar);
-		query(sqlCreateMeter);
-		query(sqlCreateMeter_Calendar);
-		query(sqlCreateNotifications);
-		query(sqlCreateHardware);
-		query(sqlCreateHardwareSharing);
-		query(sqlCreateUsers);
-
-		int dbversion=0;
-		GetPreferencesVar("DB_Version", dbversion);
-		if ((!bNewInstall)&&(dbversion<DB_VERSION))
+		//upgrade
+		if (dbversion<2)
 		{
-			//upgrade
-			if (dbversion<2)
-			{
-				query("ALTER TABLE DeviceStatus ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
-				query(sqlCreateDeviceStatusTrigger);
-				CheckAndUpdateDeviceOrder();
-			}
+			query("ALTER TABLE DeviceStatus ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
+			query(sqlCreateDeviceStatusTrigger);
+			CheckAndUpdateDeviceOrder();
 		}
-		UpdatePreferencesVar("DB_Version",DB_VERSION);
+	}
+	UpdatePreferencesVar("DB_Version",DB_VERSION);
+
+	//Make sure we have some default preferences
+	int nValue;
+	if (!GetPreferencesVar("LightHistoryDays", nValue))
+	{
+		UpdatePreferencesVar("LightHistoryDays", 30);
 	}
 }
 
@@ -1037,6 +1042,7 @@ void CSQLHelper::ScheduleDay()
 	AddCalendarUpdateUV();
 	AddCalendarUpdateWind();
 	AddCalendarUpdateMeter();
+	CleanupLightLog();
 }
 
 void CSQLHelper::UpdateTemperatureLog()
@@ -1893,4 +1899,34 @@ void CSQLHelper::CheckAndUpdateDeviceOrder()
 			query(szQuery.str());
 		}
 	}
+}
+
+void CSQLHelper::CleanupLightLog()
+{
+	//cleanup the lighting log
+	int nMaxDays=30;
+	GetPreferencesVar("LightHistoryDays", nMaxDays);
+
+	char szDateEnd[40];
+	time_t now = time(NULL);
+	struct tm* tm1 = localtime(&now);
+	struct tm ltime;
+	ltime.tm_isdst=tm1->tm_isdst;
+	ltime.tm_hour=tm1->tm_hour;
+	ltime.tm_min=tm1->tm_min;
+	ltime.tm_sec=tm1->tm_sec;
+	ltime.tm_year=tm1->tm_year;
+	ltime.tm_mon=tm1->tm_mon;
+	ltime.tm_mday=tm1->tm_mday;
+	//subtract one day
+	ltime.tm_mday -= nMaxDays;
+	time_t daybefore = mktime(&ltime);
+	struct tm* tm2 = localtime(&daybefore);
+	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday,tm2->tm_hour,tm2->tm_min);
+
+	char szTmp[100];
+	sprintf(szTmp,"DELETE FROM LightingLog WHERE (Date<'%s')",
+		szDateEnd
+		);
+	query(szTmp);
 }

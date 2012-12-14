@@ -269,6 +269,11 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("NMAAPI",NMAAPI.c_str());
 	std::string DashboardType=m_pWebEm->FindValue("DashboardType");
 	m_pMain->m_sql.UpdatePreferencesVar("DashboardType",atoi(DashboardType.c_str()));
+
+	std::string LightHistoryDays=m_pWebEm->FindValue("LightHistoryDays");
+	m_pMain->m_sql.UpdatePreferencesVar("LightHistoryDays",atoi(LightHistoryDays.c_str()));
+	
+
 	return (char*)m_retstr.c_str();
 }
 
@@ -471,6 +476,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 
 				if (switchtype==STYPE_Doorbell)
 					root["result"][ii]["TypeImg"]="door";
+				else if (switchtype==STYPE_X10Siren)
+					root["result"][ii]["TypeImg"]="siren";
 				else if (switchtype==STYPE_Contact)
 					root["result"][ii]["TypeImg"]="contact";
 				else if (switchtype==STYPE_Blinds)
@@ -2652,6 +2659,10 @@ char * CWebServer::GetJSonPage()
 				else if (Key=="DashboardType")
 				{
 					root["DashboardType"]=nValue;
+				}
+				else if (Key=="LightHistoryDays")
+				{
+					root["LightHistoryDays"]=nValue;
 				}
 			}
 		}

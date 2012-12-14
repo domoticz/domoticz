@@ -139,6 +139,7 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_Doorbell, "Doorbell" },
 		{ STYPE_Contact, "Contact" },
 		{ STYPE_Blinds, "Blinds" },
+		{ STYPE_X10Siren, "X10 Siren" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, sType);
@@ -720,14 +721,24 @@ bool GetLightCommand(
 	case pTypeLighting1:
 		if (switchtype==STYPE_Doorbell)
 		{
-			if (switchcmd=="On")
+			if ((switchcmd=="On")||(switchcmd=="Group On"))
 			{
-				cmd=light2_sGroupOn;
+				cmd=light1_sAllOn;
 				return true;
 			}
-			else if (switchcmd=="Group On")
+			//no other combinations for the door switch
+			return false;
+		}
+		else if (switchtype==STYPE_X10Siren)
+		{
+			if ((switchcmd=="On")||(switchcmd=="All On"))
 			{
-				cmd=light2_sGroupOn;
+				cmd=light1_sAllOn;
+				return true;
+			}
+			else if ((switchcmd=="Off")||(switchcmd=="All Off"))
+			{
+				cmd=light1_sAllOff;
 				return true;
 			}
 			//no other combinations for the door switch
@@ -761,14 +772,24 @@ bool GetLightCommand(
 	case pTypeLighting2:
 		if (switchtype==STYPE_Doorbell)
 		{
-			if (switchcmd=="On")
+			if ((switchcmd=="On")||(switchcmd=="Group On"))
 			{
 				cmd=light2_sGroupOn;
 				return true;
 			}
-			else if (switchcmd=="Group On")
+			//no other combinations for the door switch
+			return false;
+		}
+		else if (switchtype==STYPE_X10Siren)
+		{
+			if ((switchcmd=="On")||(switchcmd=="Group On"))
 			{
 				cmd=light2_sGroupOn;
+				return true;
+			}
+			else if ((switchcmd=="Off")||(switchcmd=="Group Off"))
+			{
+				cmd=light2_sGroupOff;
 				return true;
 			}
 			//no other combinations for the door switch
