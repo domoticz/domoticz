@@ -40,9 +40,11 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 Source: "..\Release\domoticz.exe"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\domoticz\www\*"; DestDir: {app}\www; Flags: recursesubdirs createallsubdirs;
 Source: "..\Debug\sqlite3.dll"; DestDir: {app}; Flags: ignoreversion;
+Source: "..\Manual\DomoticzManual.pdf"; DestDir: {app}; Flags: ignoreversion;
 
 [Icons]
 Name: "{group}\Domoticz"; Filename: "{app}\{#MyAppExeName}"
+Name: "{group}\DomoticzManual.pdf"; Filename: "{app}\DomoticzManual.pdf"
 Name: "{group}\{cm:ProgramOnTheWeb,Domoticz}"; Filename: "{#MyAppURL}"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{commonstartup}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "-startupdelay 10"

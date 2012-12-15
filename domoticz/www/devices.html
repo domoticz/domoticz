@@ -2,7 +2,29 @@
     <form>
     <fieldset>
         <label for="name">Name: </label>
-        <input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" />
+        <input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+    </fieldset>
+    </form>
+</div>
+<div id="dialog-addlightdevice" title="Add Light/Switch Device">
+    <form>
+    <fieldset>
+        <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="width:60px"><label for="name">Name: </label></td>
+          <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        <tr>
+          <td align="right"><label>As: </label></td>
+          <td><input type="radio" name="how" id="how_1" value="New" checked>&nbsp;Main Device&nbsp;&nbsp;<input type="radio" name="how" id="how_2" value="Sub Device">&nbsp;Sub/Slave Device</td>
+        <tr>
+				<tr id="subdevice" style="display:none">
+					<td align="right" style="width:60px"><label>Device: </label></td>
+					<td>
+						<select id="combosubdevice" style="width:250px" class="combobox ui-corner-all">
+						</select>
+					</td>
+				</tr>
+				</table>
     </fieldset>
     </form>
 </div>
@@ -48,6 +70,21 @@ function AddDevice(idx)
     $( "#dialog-adddevice" ).dialog( "open" );
 }
 
+function AddLightDevice(idx)
+{
+    $.devIdx = idx;
+    
+    $("#dialog-addlightdevice #combosubdevice").html("");
+    
+		$.each($.LightsAndSwitches, function(i,item){
+			var option = $('<option />');
+			option.attr('value', item.idx).text(item.name);
+			$("#dialog-addlightdevice #combosubdevice").append(option);
+		});
+    
+    $( "#dialog-addlightdevice" ).dialog( "open" );
+}
+
 function RemoveDevice(idx)
 {
   if (confirm("Are you sure to remove this Device from your used devices?")==false) {
@@ -79,9 +116,32 @@ function DeleteDevice(idx)
     
 }
 
+function RefreshLightSwitchesComboArray()
+{
+	$.LightsAndSwitches = [];
+  $.ajax({
+     url: "json.htm?type=command&param=getlightswitches", 
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+      if (typeof data.result != 'undefined') {
+        $.each(data.result, function(i,item){
+					$.LightsAndSwitches.push({
+							idx: item.idx,
+							name: item.Name
+						 }
+					);
+        });
+      }
+     }
+  });
+}
+
 function ShowDevices(filter)
 {
   $('#modal').show();
+  
+  RefreshLightSwitchesComboArray();
   
     ChangeClass("mUsed","btnstyle3");
     ChangeClass("mAll","btnstyle3");
@@ -144,7 +204,16 @@ function ShowDevices(filter)
             itemSubIcons+='<img src="images/remove.png" title="Remove Device" onclick="RemoveDevice(' + item.idx +')">';
           }
           else {
-            itemSubIcons+='<img src="images/add.png" title="Add Device" onclick="AddDevice(' + item.idx +')">';
+						if (
+								(item.Type.indexOf("Light")==0)||
+								(item.Type.indexOf("Security")==0)
+							 )
+						{
+							itemSubIcons+='<img src="images/add.png" title="Add Light/Switch Device" onclick="AddLightDevice(' + item.idx +')">';
+						}
+						else {
+							itemSubIcons+='<img src="images/add.png" title="Add Device" onclick="AddDevice(' + item.idx +')">';
+						}
           }
           if (
 							(item.Type.indexOf("Light")==0)||
@@ -179,9 +248,21 @@ function ShowDevices(filter)
   return false;
 }
 
+function EnableDisableSubDevices(bEnabled)
+{
+	var trow=$("#dialog-addlightdevice #lighttable #subdevice");
+	if (bEnabled == true) {
+		trow.show();
+	}
+	else {
+		trow.hide();
+	}
+}
+
 $(document).ready(function() {
     //global var
     $.devIdx=0;
+    $.LightsAndSwitches = [];
 			
         $( "#dialog-adddevice" ).dialog({
               autoOpen: false,
@@ -222,6 +303,62 @@ $(document).ready(function() {
                 $( this ).dialog( "close" );
               }
         });
+
+        $( "#dialog-addlightdevice" ).dialog({
+              autoOpen: false,
+              width: 360,
+              height: 206,
+              modal: true,
+              resizable: false,
+              buttons: {
+                  "Add Device": function() {
+                      var bValid = true;
+                      bValid = bValid && checkLength( $("#dialog-addlightdevice #devicename"), 3, 100 );
+                      var bIsSubDevice=$("#dialog-addlightdevice #lighttable #how_2").attr('checked')?true:false;
+                      var MainDeviceIdx="";
+                      if (bIsSubDevice)
+                      {
+												var MainDeviceIdx=$("#dialog-addlightdevice #combosubdevice option:selected").val();
+												if (typeof MainDeviceIdx == 'undefined') {
+													alert('No Main Device Selected!');
+													return;
+												}
+                      }
+                      if ( bValid ) {
+                          $( this ).dialog( "close" );
+                          $.ajax({
+                             url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-addlightdevice #devicename").val() + '&used=true&maindeviceidx=' + MainDeviceIdx,
+                             async: false, 
+                             dataType: 'json',
+                             success: function(data) {
+                                ShowDevices();
+                             }
+                          });
+                      }
+                  },
+                  Cancel: function() {
+                      $( this ).dialog( "close" );
+                  }
+              },
+              open: function() {
+                  $(this).keypress(function(e) {
+                    if (e.keyCode == $.ui.keyCode.ENTER) {
+                      e.preventDefault();
+                      $(this).parent().find("button:eq(0)").trigger("click");
+                    }
+                  });
+              },
+              close: function() {
+                $( this ).dialog( "close" );
+              }
+        });
+				
+				$("#dialog-addlightdevice #lighttable #how_1").click(function() {
+					EnableDisableSubDevices(false);
+				});
+				$("#dialog-addlightdevice #lighttable #how_2").click(function() {
+					EnableDisableSubDevices(true);
+				});
 				
 				ShowDevices();
 } );  

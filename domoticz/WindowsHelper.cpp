@@ -4,23 +4,35 @@
 
 #include <Windows.h>
 #include "WindowsHelper.h"
-#include <fcntl.h>
-#include <io.h>
+//#include <fcntl.h>
+//#include <io.h>
+#include <cstdio>
 #include <iostream>
-#include <fstream>
+//#include <fstream>
 #include "resource.h"
 
-#define WM_TRAYICON				(WM_USER+58)
-#define WM_TRAYEXIT				(WM_USER+59)
-#define WM_SHOWCONSOLEWINDOW	(WM_USER+60)
+console::console()
+{
+	m_old_cout=NULL;
+	m_old_cerr=NULL;
+	m_old_cin=NULL;
+}
 
-const char g_szClassName[] = "DomoticzWindow";
-HINSTANCE g_hInstance=NULL;
-const void *g_pQuitFunction=NULL;
-HANDLE g_hConsoleOut=NULL;
+console::~console()
+{
+	if (m_old_cout)
+	{
+		// reset the standard streams
+		std::cin.rdbuf(m_old_cin);
+		std::cerr.rdbuf(m_old_cerr);
+		std::cout.rdbuf(m_old_cout);
 
+		// remove the console window
+		FreeConsole();
+	}
+}
 
-void RedirectIOToConsole()
+void console::OpenHideConsole()
 {
 	HWND hWnd = GetConsoleWindow();
 	if (hWnd!=NULL) {
@@ -31,49 +43,42 @@ void RedirectIOToConsole()
 		return;
 	}
 
-	int                        hConHandle;
-	long                       lStdHandle;
-	CONSOLE_SCREEN_BUFFER_INFO coninfo;
-	FILE                       *fp;
-
-	// allocate a console for this app
+	// create a console window
 	AllocConsole();
 
-	// set the screen buffer to be big enough to let us scroll text
-	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), 
-		&coninfo);
-	coninfo.dwSize.Y = 100;  // How many lines do you want to have in the console buffer
-	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), 
-		coninfo.dwSize);
+	// redirect std::cout to our console window
+	m_old_cout = std::cout.rdbuf();
+	m_out.open("CONOUT$");
+	std::cout.rdbuf(m_out.rdbuf());
 
-	// redirect unbuffered STDOUT to the console
-	g_hConsoleOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-	fp = _fdopen( hConHandle, "w" );
-	*stdout = *fp;
-	setvbuf( stdout, NULL, _IONBF, 0 );
+	// redirect std::cerr to our console window
+	m_old_cerr = std::cerr.rdbuf();
+	m_err.open("CONOUT$");
+	std::cerr.rdbuf(m_err.rdbuf());
 
-	// redirect unbuffered STDIN to the console
-	lStdHandle = (long)GetStdHandle(STD_INPUT_HANDLE);
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-	fp = _fdopen( hConHandle, "r" );
-	*stdin = *fp;
-	setvbuf( stdin, NULL, _IONBF, 0 );
+	// redirect std::cin to our console window
+	m_old_cin = std::cin.rdbuf();
+	m_in.open("CONIN$");
+	std::cin.rdbuf(m_in.rdbuf());
 
-	// redirect unbuffered STDERR to the console
-	lStdHandle = (long)GetStdHandle(STD_ERROR_HANDLE);
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-	fp = _fdopen( hConHandle, "w" );
-	*stderr = *fp;
-	setvbuf( stderr, NULL, _IONBF, 0 );	
-	SetConsoleTitle("Domoticz Home Automation System");   
-
-	// make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog 
-	// point to console as well  Uncomment the next line if you are using c++ cio or comment if you don't
-	std::ios::sync_with_stdio();
+	SetConsoleTitle("Domoticz Home Automation System");
 }
 
+console myconsole;
+
+void RedirectIOToConsole()
+{
+	myconsole.OpenHideConsole();
+}
+
+#define WM_TRAYICON				(WM_USER+58)
+#define WM_TRAYEXIT				(WM_USER+59)
+#define WM_SHOWCONSOLEWINDOW	(WM_USER+60)
+
+const char g_szClassName[] = "DomoticzWindow";
+HINSTANCE g_hInstance=NULL;
+const void *g_pQuitFunction=NULL;
+HANDLE g_hConsoleOut=NULL;
 
 BOOL TrayMessage( HWND hWnd, DWORD dwMessage, const char *szInfo)
 {

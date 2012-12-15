@@ -1,16 +1,80 @@
+<div id="editlightswitch" style="display:none;">
+		<table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
+			<tr>
+				<td align="right" style="width:60px"><label for="name">Name: </label></td>
+				<td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			<tr>
+				<td align="right"><label for="switchtype">Type: </label></td>
+				<td><select id="comboswitchtype" style="width:150px" class="combobox ui-corner-all">
+					<!--#embed switchtypes -->
+				</select></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td>
+					<a class="btnstyle3" onclick="SaveLightSwitch();">Save</a>
+				</td>
+			</tr>
+		</table>
+		<br>
+		<h2>Sub/Slave Devices:</h2>
+		<br>
+		<table class="display" id="subdevicestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+				<thead>
+						<tr>
+								<th align="left">Name</th>
+						</tr>
+				</thead>
+		</table>
+    <table id="delclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td>
+					<a class="btnstyle3-dis" id="subdevicedelete" >Delete</a>
+				</td>
+				<td align="right">
+					<a class="btnstyle3" onclick="ClearSubDevices();">Clear</a>
+				</td>
+			</tr>
+		</table>
+		<br>
+		<table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
+			<tr>
+				<td align="right" style="width:110px"><label for="name">Sub/Slave Device: </label></td>
+				<td>
+					<select id="combosubdevice" style="width:250px" class="combobox ui-corner-all">
+					</select>
+					<a class="btnstyle3" onclick="AddSubDevice();">Add</a>
+				</td>
+			</tr>
+		</table>
+		<br>
+</div>
 <div id="dialog-addlightdevice" title="Add Light/Switch Device">
     <form>
     <fieldset>
         <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
         <tr>
           <td align="right" style="width:60px"><label for="name">Name: </label></td>
-          <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
+          <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
         <tr>
           <td align="right"><label for="switchtype">Type: </label></td>
           <td><select id="comboswitchtype" style="width:150px" class="combobox ui-corner-all">
             <!--#embed switchtypes -->
           </select></td>
 		    </tr>
+		    <br>
+        <tr>
+          <td align="right"><label>As: </label></td>
+          <td><input type="radio" name="how" id="how_1" value="New" checked>&nbsp;Main Device&nbsp;&nbsp;<input type="radio" name="how" id="how_2" value="Sub Device">&nbsp;Sub/Slave Device</td>
+        <tr>
+				<tr id="subdevice" style="display:none">
+					<td align="right" style="width:60px"><label>Device: </label></td>
+					<td>
+						<select id="combosubdevice" style="width:250px" class="combobox ui-corner-all">
+						</select>
+					</td>
+				</tr>
 		    </table>
     </fieldset>
     </form>
@@ -95,6 +159,21 @@
 				</div>
 				<br>
 				<center><a class="btnstyle3" onclick="TestManualLight();">Test</a></center>
+				<br>
+        <table class="display" id="howtable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right"><label>As: </label></td>
+          <td><input type="radio" name="how" id="how_1" value="New" checked>&nbsp;Main Device&nbsp;&nbsp;<input type="radio" name="how" id="how_2" value="Sub Device">&nbsp;Sub/Slave Device</td>
+        <tr>
+				<tr id="subdevice" style="display:none">
+					<td align="right" style="width:60px"><label>Device: </label></td>
+					<td>
+						<select id="combosubdevice" style="width:250px" class="combobox ui-corner-all">
+						</select>
+					</td>
+				</tr>
+				</table>
+				
     </fieldset>
     </form>
 </div>
@@ -116,7 +195,7 @@
         <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
         <tr>
           <td align="right" style="width:60px"><label for="name">Name: </label></td>
-          <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
+          <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
         <tr>
           <td align="right"><label for="switchtype">Type: </label></td>
           <td><select id="comboswitchtype" style="width:150px" class="combobox ui-corner-all">
@@ -565,24 +644,197 @@ function EditNotification(idx,name, hasnotifications)
   $( "#dialog-notificationlightdevice" ).dialog( "open" );
 }
 
+function SaveLightSwitch()
+{
+		var bValid = true;
+		bValid = bValid && checkLength( $("#lightcontent #devicename"), 3, 100 );
+		if ( bValid ) {
+				$.ajax({
+					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#lightcontent #devicename").val() + '&switchtype=' + $("#lightcontent #comboswitchtype").val() + '&used=true',
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+							ShowLights();
+					 }
+				});
+		}
+}
+
+function ClearSubDevices()
+{
+	var bValid = false;
+	bValid=(confirm("Are you sure to delete ALL Sub/Slave Devices?\n\nThis action can not be undone!!")==true);
+	if (bValid == false)
+		return;
+	$.ajax({
+		 url: "json.htm?type=command&param=deleteallsubdevices&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			RefreshSubDeviceTable($.devIdx);
+		 }
+	});
+}
+
+function DeleteSubDevice(idx)
+{
+	var bValid = false;
+	bValid=(confirm("Are you sure to delete this Sub/Slave Device?\n\nThis action can not be undone...")==true);
+	if (bValid == false)
+		return;
+
+	$.ajax({
+		 url: "json.htm?type=command&param=deletesubdevice&idx=" + idx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			RefreshSubDeviceTable($.devIdx);
+		 }
+	});
+}
+
+function RefreshSubDeviceTable(idx)
+{
+  $('#modal').show();
+
+	$('#lightcontent #delclr #subdevicedelete').attr("class", "btnstyle3-dis");
+
+  var oTable = $('#lightcontent #subdevicestable').dataTable();
+  oTable.fnClearTable();
+  
+  $.ajax({
+     url: "json.htm?type=command&param=getsubdevices&idx=" + idx, 
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+        
+      if (typeof data.result != 'undefined') {
+        $.each(data.result, function(i,item){
+          var addId = oTable.fnAddData( {
+								"DT_RowId": item.ID,
+                "0": item.Name
+							} );
+        });
+        
+				/* Add a click handler to the rows - this could be used as a callback */
+				$("#lightcontent #subdevicestable tbody tr").click( function( e ) {
+							if ( $(this).hasClass('row_selected') ) {
+									$(this).removeClass('row_selected');
+									$('#lightcontent #delclr #subdevicedelete').attr("class", "btnstyle3-dis");
+							}
+							else {
+									oTable.$('tr.row_selected').removeClass('row_selected');
+									$(this).addClass('row_selected');
+									$('#lightcontent #delclr #subdevicedelete').attr("class", "btnstyle3");
+									
+									var anSelected = fnGetSelected( oTable );
+									if ( anSelected.length !== 0 ) {
+										var data = oTable.fnGetData( anSelected[0] );
+										var idx= data["DT_RowId"];
+										$("#lightcontent #delclr #subdevicedelete").attr("href", "javascript:DeleteSubDevice(" + idx + ")");
+									}
+							}
+				}); 
+				
+        
+      }
+     }
+  });
+  $('#modal').hide();
+}
+
+function AddSubDevice()
+{
+	var SubDeviceIdx=$("#lightcontent #combosubdevice option:selected").val();
+	if (typeof SubDeviceIdx == 'undefined') {
+		alert('No Sub/Slave Device Selected!');
+		return ;
+	}
+	$.ajax({
+		 url: "json.htm?type=command&param=addsubdevice&idx=" + $.devIdx + 
+					"&subidx=" + SubDeviceIdx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			if (data.status == 'OK') {
+				RefreshSubDeviceTable($.devIdx);
+			}
+			else {
+				ShowNotify('Problem adding Sub/Slave Device!', 2500, true);
+			}
+		 },
+		 error: function(){
+				HideNotify();
+				ShowNotify('Problem adding Sub/Slave Device!', 2500, true);
+		 }     
+	});
+}
+
 function EditLightDevice(idx,name, switchtype)
 {
   clearInterval($.myglobals.refreshTimer);
   $.devIdx=idx;
-  $("#dialog-editlightdevice #devicename").val(name);
-  $("#dialog-editlightdevice #comboswitchtype").val(switchtype);
-  $( "#dialog-editlightdevice" ).dialog( "open" );
+  
+	var oTable;
+	
+	$('#modal').show();
+  var htmlcontent = '';
+  htmlcontent+=$('#editlightswitch').html();
+  $('#lightcontent').html(GetBackbuttonHTMLTable('ShowLights')+htmlcontent);
+ 
+  oTable = $('#lightcontent #subdevicestable').dataTable( {
+                  "sDom": '<"H"frC>t<"F"i>',
+                  "oTableTools": {
+                    "sRowSelect": "single",
+                  },
+                  "aaSorting": [[ 0, "desc" ]],
+                  "bSortClasses": false,
+                  "bProcessing": true,
+                  "bStateSave": true,
+                  "bJQueryUI": true,
+                  "sPaginationType": "full_numbers"
+                } );
+  $("#lightcontent #devicename").val(name);
+  $("#lightcontent #comboswitchtype").val(switchtype);
+
+ 	$("#lightcontent #combosubdevice").html("");
+	
+	$.each($.LightsAndSwitches, function(i,item){
+		var option = $('<option />');
+		option.attr('value', item.idx).text(item.name);
+		$("#lightcontent #combosubdevice").append(option);
+	});
+
+  RefreshSubDeviceTable(idx);
 }
 
 function AddManualLightDevice()
 {
   clearInterval($.myglobals.refreshTimer);
+
+	$("#dialog-addmanuallightdevice #combosubdevice").html("");
+	
+	$.each($.LightsAndSwitches, function(i,item){
+		var option = $('<option />');
+		option.attr('value', item.idx).text(item.name);
+		$("#dialog-addmanuallightdevice #combosubdevice").append(option);
+	});
+  
   $( "#dialog-addmanuallightdevice" ).dialog( "open" );
 }
 
 function AddLightDevice()
 {
   clearInterval($.myglobals.refreshTimer);
+  
+    $("#dialog-addlightdevice #combosubdevice").html("");
+    
+		$.each($.LightsAndSwitches, function(i,item){
+			var option = $('<option />');
+			option.attr('value', item.idx).text(item.name);
+			$("#dialog-addlightdevice #combosubdevice").append(option);
+		});
+  
   ShowNotify('Press button on Remote...');
   
   setTimeout(function() {
@@ -628,10 +880,33 @@ function AddLightDevice()
 	
 }
 
+function RefreshLightSwitchesComboArray()
+{
+	$.LightsAndSwitches = [];
+  $.ajax({
+     url: "json.htm?type=command&param=getlightswitches", 
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+      if (typeof data.result != 'undefined') {
+        $.each(data.result, function(i,item){
+					$.LightsAndSwitches.push({
+							idx: item.idx,
+							name: item.Name
+						 }
+					);
+        });
+      }
+     }
+  });
+}
+
 function ShowLights()
 {
   clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
+  
+  RefreshLightSwitchesComboArray();
   
   var htmlcontent = '';
   var bHaveAddedDevider = false;
@@ -900,6 +1175,21 @@ function GetManualLightSettings(isTest)
 		mParams+="&id="+ID;
 		mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightparams2 #combounitcode option:selected").val();
 	}
+
+	var bIsSubDevice=$("#dialog-addmanuallightdevice #howtable #how_2").attr('checked')?true:false;
+	var MainDeviceIdx="";
+	if (bIsSubDevice)
+	{
+		var MainDeviceIdx=$("#dialog-addmanuallightdevice #combosubdevice option:selected").val();
+		if (typeof MainDeviceIdx == 'undefined') {
+			alert('No Main Device Selected!');
+			return "";
+		}
+	}
+	if (MainDeviceIdx!="")
+	{
+		mParams+="&maindeviceidx=" + MainDeviceIdx;
+	}
 	
 	return mParams;
 }
@@ -928,6 +1218,17 @@ function TestManualLight()
 	});
 }
 
+function EnableDisableSubDevices(ElementID, bEnabled)
+{
+	var trow=$(ElementID);
+	if (bEnabled == true) {
+		trow.show();
+	}
+	else {
+		trow.hide();
+	}
+}
+
 $(document).ready(function() {
     //global var
     $.devIdx=0;
@@ -936,6 +1237,8 @@ $(document).ready(function() {
 			CommandStr : [],
 			SelectedTimerIdx: 0
 		};
+		$.LightsAndSwitches = [];
+
 		$('#timerparamstable #combotype > option').each(function() {
 					 $.myglobals.TimerTypesStr.push($(this).text());
 		});
@@ -947,17 +1250,28 @@ $(document).ready(function() {
     $( "#dialog-addlightdevice" ).dialog({
           autoOpen: false,
           width: 380,
-          height: 210,
+          height: 270,
           modal: true,
           resizable: false,
           buttons: {
               "Add Device": function() {
                   var bValid = true;
                   bValid = bValid && checkLength( $("#dialog-addlightdevice #devicename"), 3, 100 );
+									var bIsSubDevice=$("#dialog-addlightdevice #how_2").attr('checked')?true:false;
+									var MainDeviceIdx="";
+									if (bIsSubDevice)
+									{
+										var MainDeviceIdx=$("#dialog-addlightdevice #combosubdevice option:selected").val();
+										if (typeof MainDeviceIdx == 'undefined') {
+											alert('No Main Device Selected!');
+											return;
+										}
+									}
+                  
                   if ( bValid ) {
                       $( this ).dialog( "close" );
                       $.ajax({
-                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-addlightdevice #devicename").val() + '&switchtype=' + $("#dialog-addlightdevice #comboswitchtype").val() + '&used=true',
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-addlightdevice #devicename").val() + '&switchtype=' + $("#dialog-addlightdevice #comboswitchtype").val() + '&used=true&maindeviceidx=' + MainDeviceIdx,
                          async: false, 
                          dataType: 'json',
                          success: function(data) {
@@ -983,11 +1297,17 @@ $(document).ready(function() {
             $( this ).dialog( "close" );
           }
     });
+		$("#dialog-addlightdevice #how_1").click(function() {
+			EnableDisableSubDevices("#dialog-addlightdevice #subdevice",false);
+		});
+		$("#dialog-addlightdevice #how_2").click(function() {
+			EnableDisableSubDevices("#dialog-addlightdevice #subdevice",true);
+		});
 
     $( "#dialog-addmanuallightdevice" ).dialog({
           autoOpen: false,
           width: 440,
-          height: 380,
+          height: 440,
           modal: true,
           resizable: false,
           buttons: {
@@ -1055,6 +1375,13 @@ $(document).ready(function() {
             $( this ).dialog( "close" );
           }
     });
+
+		$("#dialog-addmanuallightdevice #howtable #how_1").click(function() {
+			EnableDisableSubDevices("#dialog-addmanuallightdevice #howtable #subdevice",false);
+		});
+		$("#dialog-addmanuallightdevice #howtable #how_2").click(function() {
+			EnableDisableSubDevices("#dialog-addmanuallightdevice #howtable #subdevice",true);
+		});
 
     $( "#dialog-notificationlightdevice" ).dialog({
           autoOpen: false,

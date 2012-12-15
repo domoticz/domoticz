@@ -179,6 +179,12 @@ const char *sqlCreateMeter_Calendar =
 "[Value] BIGINT NOT NULL, "
 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
+const char *sqlCreateLightSubDevices =
+"CREATE TABLE [LightSubDevices] ("
+"[ID] INTEGER PRIMARY KEY, "
+"[DeviceRowID] INTEGER NOT NULL, "
+"[ParentID] INTEGER NOT NULL);";
+
 
 CSQLHelper::CSQLHelper(void)
 {
@@ -217,6 +223,7 @@ CSQLHelper::CSQLHelper(void)
 	query(sqlCreateHardware);
 	query(sqlCreateHardwareSharing);
 	query(sqlCreateUsers);
+	query(sqlCreateLightSubDevices);
 
 	int dbversion=0;
 	GetPreferencesVar("DB_Version", dbversion);
@@ -302,6 +309,46 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigne
 }
 
 void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue)
+{
+	UpdateValueInt(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue);
+
+	std::vector<std::vector<std::string> > result;
+	char szTmp[300];
+
+	sprintf(szTmp,"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
+	result=query(szTmp);
+	if (result.size()==0)
+		return; //should never happen, because it was previously inserted in non-existent
+
+	std::string idx=result[0][0];
+
+	sprintf(szTmp,"SELECT ParentID FROM LightSubDevices WHERE (DeviceRowID=='%s') AND (DeviceRowID!=ParentID)",
+		idx.c_str()
+		);
+	result=query(szTmp);
+	if (result.size()==0)
+		return; //this is no sub device
+
+	time_t now = time(0);
+	struct tm *ltime=localtime(&now);
+
+	//Set the Main Device state to the same state as this device
+	std::vector<std::vector<std::string> >::const_iterator itt;
+	for (itt=result.begin(); itt!=result.end(); ++itt)
+	{
+		std::vector<std::string> sd=*itt;
+		sprintf(szTmp,
+			"UPDATE DeviceStatus SET nValue=%d, sValue='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == '%s')",
+			nValue,
+			sValue,
+			ltime->tm_year+1900,ltime->tm_mon+1, ltime->tm_mday, ltime->tm_hour, ltime->tm_min, ltime->tm_sec,
+			sd[0].c_str()
+		);
+		query(szTmp);
+	}
+}
+
+void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue)
 {
 	if (!m_dbase)
 		return;
@@ -1846,6 +1893,10 @@ void CSQLHelper::DeleteDevice(const std::string idx)
 {
 	char szTmp[1000];
 	sprintf(szTmp,"DELETE FROM LightingLog WHERE (DeviceRowID == %s)",idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"DELETE FROM LightSubDevices WHERE (ParentID == %s)",idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"DELETE FROM LightSubDevices WHERE (DeviceRowID == %s)",idx.c_str());
 	query(szTmp);
 	sprintf(szTmp,"DELETE FROM Notifications WHERE (DeviceRowID == %s)",idx.c_str());
 	query(szTmp);

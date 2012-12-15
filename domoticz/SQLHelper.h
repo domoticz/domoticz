@@ -91,6 +91,8 @@ private:
 	CURLEncode m_urlencoder;
 	sqlite3 *m_dbase;
 
+	void UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue);
+
 	void CheckAndUpdateDeviceOrder();
 
 	void CleanupLightLog();

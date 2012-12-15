@@ -105,7 +105,7 @@ int main(int argc, char**argv)
 
 	signal(SIGINT, catch_intterm); 
 	signal(SIGTERM,catch_intterm);
-
+	
 	/* now, lets get into an infinite loop of doing nothing. */
 
 #if defined WIN32

@@ -147,7 +147,6 @@ char * CWebServer::DisplayMeterTypesCombo()
 	return (char*)m_retstr.c_str();
 }
 
-
 char * CWebServer::DisplayHardwareCombo()
 {
 	m_retstr="";
@@ -437,7 +436,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 			root["result"][ii]["Type"]=RFX_Type_Desc(dType,1);
 			root["result"][ii]["SubType"]=RFX_Type_SubType_Desc(dType,dSubType);
 			root["result"][ii]["TypeImg"]=RFX_Type_Desc(dType,2);
-			root["result"][ii]["Name"]=(used!=0)?sd[3]:"not used";
+			root["result"][ii]["Name"]=sd[3];
 			root["result"][ii]["Used"]=used;
 			root["result"][ii]["Favorite"]=favorite;
 			root["result"][ii]["SignalLevel"]=atoi(sd[7].c_str());
@@ -1819,7 +1818,113 @@ char * CWebServer::GetJSonPage()
 		std::string cparam=m_pWebEm->FindValue("param");
 		if (cparam=="")
 			goto exitjson;
-		if (cparam=="testswitch")
+		if (cparam=="deleteallsubdevices")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="DeleteAllSubDevices";
+			sprintf(szTmp,"DELETE FROM LightSubDevices WHERE (ParentID == %s)",idx.c_str());
+			result=m_pMain->m_sql.query(szTmp);
+		}
+		else if (cparam=="deletesubdevice")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="DeleteSubDevice";
+			sprintf(szTmp,"DELETE FROM LightSubDevices WHERE (ID == %s)",idx.c_str());
+			result=m_pMain->m_sql.query(szTmp);
+		}
+		else if (cparam=="addsubdevice")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			std::string subidx=m_pWebEm->FindValue("subidx");
+			if ((idx=="")||(subidx==""))
+				goto exitjson;
+			//first check if it is not already a sub device
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << subidx << "') AND (ParentID =='" << idx << "')";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()==0)
+			{
+				root["status"]="OK";
+				root["title"]="AddSubDevice";
+				//no it is not, add it
+				sprintf(szTmp,
+					"INSERT INTO LightSubDevices (DeviceRowID, ParentID) VALUES ('%s','%s')",
+					subidx.c_str(),
+					idx.c_str()
+					);
+				result=m_pMain->m_sql.query(szTmp);
+			}
+		}
+		else if (cparam=="getsubdevices")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+
+			root["status"]="OK";
+			root["title"]="GetSubDevices";
+			std::vector<std::vector<std::string> > result;
+			std::stringstream szQuery;
+			szQuery << "SELECT a.ID, b.Name FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='" << idx << "') AND (b.ID == a.DeviceRowID)";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()>0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii=0;
+				for (itt=result.begin(); itt!=result.end(); ++itt)
+				{
+					std::vector<std::string> sd=*itt;
+
+					root["result"][ii]["ID"]=sd[0];
+					root["result"][ii]["Name"]=sd[1];
+					ii++;
+				}
+			}
+		}
+		else if (cparam=="getlightswitches")
+		{
+			root["status"]="OK";
+			root["title"]="GetLightSwitches";
+			std::vector<std::vector<std::string> > result;
+			std::stringstream szQuery;
+			szQuery << "SELECT ID, Name, Type FROM DeviceStatus WHERE (Used==1) ORDER BY Name";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()>0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii=0;
+				for (itt=result.begin(); itt!=result.end(); ++itt)
+				{
+					std::vector<std::string> sd=*itt;
+
+					std::string ID=sd[0];
+					std::string Name=sd[1];
+					int Type=atoi(sd[2].c_str());
+					switch (Type)
+					{
+					case pTypeLighting1:
+					case pTypeLighting2:
+					case pTypeLighting3:
+					case pTypeLighting4:
+					case pTypeLighting5:
+					case pTypeLighting6:
+					case pTypeSecurity1:
+						root["result"][ii]["idx"]=ID;
+						root["result"][ii]["Name"]=Name;
+						ii++;
+						break;
+					}
+				}
+			}
+		}
+		else if (cparam=="testswitch")
 		{
 			std::string hwdid=m_pWebEm->FindValue("hwdid");
 			std::string sswitchtype=m_pWebEm->FindValue("switchtype");
@@ -1886,6 +1991,8 @@ char * CWebServer::GetJSonPage()
 			std::string name=m_pWebEm->FindValue("name");
 			std::string sswitchtype=m_pWebEm->FindValue("switchtype");
 			std::string slighttype=m_pWebEm->FindValue("lighttype");
+			std::string maindeviceidx=m_pWebEm->FindValue("maindeviceidx");
+
 			if (
 				(hwdid=="")||
 				(sswitchtype=="")||
@@ -1955,6 +2062,26 @@ char * CWebServer::GetJSonPage()
 			szQuery.str("");
 			szQuery << "UPDATE DeviceStatus SET Used=1, Name='" << name << "', SwitchType=" << switchtype << " WHERE (ID == " << ID << ")";
 			result=m_pMain->m_sql.query(szQuery.str());
+
+			if (maindeviceidx!="")
+			{
+				//this is a sub device for another light/switch
+				//first check if it is not already a sub device
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << ID << "') AND (ParentID =='" << maindeviceidx << "')";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()==0)
+				{
+					//no it is not, add it
+					sprintf(szTmp,
+						"INSERT INTO LightSubDevices (DeviceRowID, ParentID) VALUES ('%s','%s')",
+						ID.c_str(),
+						maindeviceidx.c_str()
+						);
+					result=m_pMain->m_sql.query(szTmp);
+				}
+			}
 
 			root["status"]="OK";
 			root["title"]="AddSwitch";
@@ -2584,6 +2711,7 @@ char * CWebServer::GetJSonPage()
 		std::string name=m_pWebEm->FindValue("name");
 		std::string sused=m_pWebEm->FindValue("used");
 		std::string sswitchtype=m_pWebEm->FindValue("switchtype");
+		std::string maindeviceidx=m_pWebEm->FindValue("maindeviceidx");
 		int switchtype=-1;
 		if (sswitchtype!="")
 			switchtype=atoi(sswitchtype.c_str());
@@ -2591,16 +2719,50 @@ char * CWebServer::GetJSonPage()
 		if ((idx=="")||(sused==""))
 			goto exitjson;
 		int used=(sused=="true")?1:0;
-		if (!used)
-			name="Unknown";
 
 		szQuery.clear();
 		szQuery.str("");
-		if (switchtype==-1)
-			szQuery << "UPDATE DeviceStatus SET Used=" << used << ", Name='" << name << "' WHERE (ID == " << idx << ")";
+		if (name=="")
+		{
+			szQuery << "UPDATE DeviceStatus SET Used=" << used << " WHERE (ID == " << idx << ")";
+		}
 		else
-			szQuery << "UPDATE DeviceStatus SET Used=" << used << ", Name='" << name << "', SwitchType=" << switchtype << " WHERE (ID == " << idx << ")";
+		{
+			if (switchtype==-1)
+				szQuery << "UPDATE DeviceStatus SET Used=" << used << ", Name='" << name << "' WHERE (ID == " << idx << ")";
+			else
+				szQuery << "UPDATE DeviceStatus SET Used=" << used << ", Name='" << name << "', SwitchType=" << switchtype << " WHERE (ID == " << idx << ")";
+		}
 		result=m_pMain->m_sql.query(szQuery.str());
+
+		if (used==0)
+		{
+			//if this device was a slave device, remove it
+			sprintf(szTmp,"DELETE FROM LightSubDevices WHERE (ParentID == %s)",idx.c_str());
+			m_pMain->m_sql.query(szTmp);
+			sprintf(szTmp,"DELETE FROM LightSubDevices WHERE (DeviceRowID == %s)",idx.c_str());
+			m_pMain->m_sql.query(szTmp);
+		}
+
+		if (maindeviceidx!="")
+		{
+			//this is a sub device for another light/switch
+			//first check if it is not already a sub device
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << idx << "') AND (ParentID =='" << maindeviceidx << "')";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()==0)
+			{
+				//no it is not, add it
+				sprintf(szTmp,
+					"INSERT INTO LightSubDevices (DeviceRowID, ParentID) VALUES ('%s','%s')",
+					idx.c_str(),
+					maindeviceidx.c_str()
+					);
+				result=m_pMain->m_sql.query(szTmp);
+			}
+		}
 		if (result.size()>0)
 		{
 			root["status"]="OK";
