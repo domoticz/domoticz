@@ -13,7 +13,8 @@
 			<tr>
 				<td></td>
 				<td>
-					<a class="btnstyle3" onclick="SaveLightSwitch();">Save</a>
+					<a class="btnstyle3" onclick="SaveLightSwitch();">Save</a>&nbsp;&nbsp;&nbsp;
+					<a class="btnstyle3" onclick="DeleteLightSwitch();">Delete</a>
 				</td>
 			</tr>
 		</table>
@@ -185,23 +186,6 @@
           <td align="right" style="width:60px"><label for="name">Enabled: </label></td>
           <td><input type="checkbox" id="enabled"/></td>
         </tr>
-		    </table>
-    </fieldset>
-    </form>
-</div>
-<div id="dialog-editlightdevice" title="Edit Light/Switch Device">
-    <form>
-    <fieldset>
-        <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
-        <tr>
-          <td align="right" style="width:60px"><label for="name">Name: </label></td>
-          <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-        <tr>
-          <td align="right"><label for="switchtype">Type: </label></td>
-          <td><select id="comboswitchtype" style="width:150px" class="combobox ui-corner-all">
-            <!--#embed switchtypes -->
-          </select></td>
-		    </tr>
 		    </table>
     </fieldset>
     </form>
@@ -642,6 +626,22 @@ function EditNotification(idx,name, hasnotifications)
   $.devIdx=idx;
   $("#dialog-notificationlightdevice #enabled").attr('checked', hasnotifications);
   $( "#dialog-notificationlightdevice" ).dialog( "open" );
+}
+
+function DeleteLightSwitch()
+{
+	var bValid = false;
+	bValid=(confirm("Are you sure to remove this Light/Switch?")==true);
+	if ( bValid ) {
+			$.ajax({
+				 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#lightcontent #devicename").val() + '&used=false',
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+						ShowLights();
+				 }
+			});
+	}
 }
 
 function SaveLightSwitch()
@@ -1421,63 +1421,6 @@ $(document).ready(function() {
             $( this ).dialog( "close" );
           }
     });
-
-    $( "#dialog-editlightdevice" ).dialog({
-          autoOpen: false,
-          width: 380,
-          height: 210,
-          modal: true,
-          resizable: false,
-          buttons: {
-              "Update": function() {
-                  var bValid = true;
-                  bValid = bValid && checkLength( $("#dialog-editlightdevice #devicename"), 3, 100 );
-                  if ( bValid ) {
-                      $( this ).dialog( "close" );
-                      $.ajax({
-                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editlightdevice #devicename").val() + '&switchtype=' + $("#dialog-editlightdevice #comboswitchtype").val() + '&used=true',
-                         async: false, 
-                         dataType: 'json',
-                         success: function(data) {
-                            ShowLights();
-                         }
-                      });
-                      
-                  }
-              },
-              "Remove Device": function() {
-                  var bValid = false;
-                  bValid=(confirm("Are you sure to remove this Light/Switch?")==true);
-                  if ( bValid ) {
-                      $( this ).dialog( "close" );
-                      $.ajax({
-                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editlightdevice #devicename").val() + '&used=false',
-                         async: false, 
-                         dataType: 'json',
-                         success: function(data) {
-                            ShowLights();
-                         }
-                      });
-                      
-                  }
-              },
-              Cancel: function() {
-                  $( this ).dialog( "close" );
-              }
-          },
-          open: function() {
-              $(this).keypress(function(e) {
-                if (e.keyCode == $.ui.keyCode.ENTER) {
-                  e.preventDefault();
-                  $(this).parent().find("button:eq(0)").trigger("click");
-                }
-              });
-          },
-          close: function() {
-            $( this ).dialog( "close" );
-          }
-    });
-  ShowLights();
-
+		ShowLights();
 } );  
 </script>
