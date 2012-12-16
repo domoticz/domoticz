@@ -673,3 +673,103 @@ body table#itemtable tr:hover td:first-child{
 	background-color: #D4D5EE;
 }
 
+/* Item Table Small */
+body table#itemtablesmall,
+body table#itemtablesmall tbody{
+	display: block;
+	width: 100%;
+}
+body table#itemtablesmall tbody tr{
+	display: block;
+	
+	width: 96%;
+	height: 66px;
+	padding: 5px 5px 5px 5px;
+	margin: 2px 100% 5px 0;
+	
+	border-style: none;
+  border-radius: 5px;
+
+	color: #0D161F;
+	background-color: #F1F5FA;
+	
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+body table#itemtablesmall thead{
+	display: none;
+}
+
+body table#itemtablesmall tr > *{
+	display: block;
+	padding: 0;
+	margin: 0;
+}
+
+/* I am using the :first-child as a way to style each column by itself*/
+/* First column */
+body table#itemtablesmall tr td:first-child{
+	height: 1.2em;
+	padding: 0 .5em 0 .5em;
+	margin-bottom: 5px;
+	
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 130%;
+	white-space: nowrap;
+	
+	border-width: 1px 1px 1px 1px;
+	border-color: #2B5074;
+	border-style: solid;
+  border-radius: 5px;
+	
+	color: #0D161F;
+	background-color: #D4E1EE;
+}
+
+/* Second column */
+body table#itemtablesmall tr td:first-child + td{ 
+	border-color: #2B5074;  
+	border-style: none;  
+	border-width: 1px; 
+	
+	float: left;
+	margin: 0 10px 10px 0;
+}
+
+body table#itemtablesmall tr td:first-child + td img{
+	display: block;
+}
+
+/* Third column */
+body table#itemtablesmall tr td:first-child + td + td{
+	font-size: 90%;
+	font-weight: bold;
+}
+
+body table#itemtablesmall tr td:first-child + td + td:before{
+	content: "";
+	font-style: italic;
+	font-size: 90%;
+}
+
+/* Fourth column */
+body table#itemtablesmall tr td:first-child + td + td + td{
+	margin-top: 2px;
+	font-size: 80%;
+}
+body table#itemtablesmall tr td:first-child + td + td + td:before{
+	content: "Last Seen: ";
+	font-style: italic;
+}
+
+/* Hover state*/
+body table#itemtablesmall tbody tr:hover{
+	border-color: #2B2C74;
+	background-color: #F2F1FA;
+}
+body table#itemtablesmall tr:hover td:first-child{
+	border-color: #2B2C74;
+	color: #0D0D1F;
+	background-color: #D4D5EE;
+}
+

@@ -1486,6 +1486,66 @@ function ShowRainLog(id,name)
     });
 }
 
+function RefreshWeathers()
+{
+	clearInterval($.myglobals.refreshTimer);
+  var id="";
+
+  $.ajax({
+     url: "json.htm?type=devices&filter=weather&used=true&order=Name", 
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+      if (typeof data.result != 'undefined') {
+        $.each(data.result, function(i,item){
+
+					id="#weathercontent #" + item.idx;
+					var obj=$(id);
+					if (typeof obj != 'undefined') {
+						$(id + " #name").html(item.Name);
+
+						if (typeof item.Barometer != 'undefined') {
+								$(id + " #img").html('<img src="images/baro48.png" height="48">');
+								$(id + " #status").html(item.Barometer + ' hPa, Prediction: ' + item.ForecastStr);
+						}
+						if (typeof item.Rain != 'undefined') {
+							$(id + " #img").html('<img src="images/rain48.png" height="48">');
+							var status=item.Rain + ' mm';
+							if (typeof item.RainRate != 'undefined') {
+								if (item.RainRate!=0) {
+									status+=', Rate: ' + item.RainRate + ' mm/h';
+								}
+							}
+							$(id + " #status").html(status);
+						}
+						else if (typeof item.UVI != 'undefined') {
+							$(id + " #img").html('<img src="images/uv48.png" height="48">');
+							var status=item.UVI + ' UVI';
+							if (typeof item.Temp!= 'undefined') {
+								status+=', Temp: ' + item.Temp + '&deg; C';
+							}
+							$(id + " #status").html(status);
+						}
+						else if (typeof item.Direction != 'undefined') {
+							$(id + " #img").html('<img src="images/wind48.png" height="48">');
+							var status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
+							if (typeof item.Temp != 'undefined') {
+								status+='Temp: ' + item.Temp + '&deg; C, ';
+								status+='Chill: ' + item.Chill + '&deg; C';
+							}
+							$(id + " #status").html(status);
+						}
+						$(id + " #lastupdate").html(item.LastUpdate);
+						$(id + " #type").html(item.Type + ', ' + item.SubType);
+					}
+        });
+      }
+     }
+  });
+
+  $.myglobals.refreshTimer = setInterval(RefreshWeathers, 10000);
+}
+
 function ShowWeathers()
 {
 	clearInterval($.myglobals.refreshTimer);
@@ -1551,24 +1611,26 @@ function ShowWeathers()
                 '\t  <section>\n' +
                 '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
                 '\t    <tr>\n' +
-                '\t      <td>' + item.Name + '</td>\n' +
-                '\t      <td><img src="images/';
+                '\t      <td id="name">' + item.Name + '</td>\n' +
+                '\t      <td id="img"><img src="images/';
             if (typeof item.Barometer != 'undefined') {
               xhtm+='baro48.png" height="48"></td>\n' +
-              '\t      <td>' + item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
+              '\t      <td id="status">' + item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
             }
             if (typeof item.Rain != 'undefined') {
 							bHaveRain=true;
               xhtm+='rain48.png" height="48"></td>\n' +
-              '\t      <td>' + item.Rain + ' mm';
+              '\t      <td  id="status">' + item.Rain + ' mm';
               if (typeof item.RainRate != 'undefined') {
-                xhtm+=', Rate: ' + item.RainRate + ' mm/h';
+								if (item.RainRate!=0) {
+									xhtm+=', Rate: ' + item.RainRate + ' mm/h';
+								}
               }
             }
             else if (typeof item.UVI != 'undefined') {
 							bHaveUV=true;
               xhtm+='uv48.png" height="48"></td>\n' +
-              '\t      <td>' + item.UVI + ' UVI';
+              '\t      <td id="status">' + item.UVI + ' UVI';
               if (typeof item.Temp!= 'undefined') {
                 xhtm+=', Temp: ' + item.Temp + '&deg; C';
               }
@@ -1576,7 +1638,7 @@ function ShowWeathers()
             else if (typeof item.Direction != 'undefined') {
 							bHaveWind=true;
               xhtm+='wind48.png" height="48"></td>\n' +
-              '\t      <td>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
+              '\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
               if (typeof item.Temp != 'undefined') {
 								xhtm+='Temp: ' + item.Temp + '&deg; C, ';
 								xhtm+='Chill: ' + item.Chill + '&deg; C';
@@ -1584,8 +1646,8 @@ function ShowWeathers()
             }
             xhtm+=      
                 '</td>\n' +
-                '\t      <td>' + item.LastUpdate + '</td>\n' +
-                '\t      <td>' + item.Type + ', ' + item.SubType + '</td>\n' +
+                '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
+                '\t      <td id="type">' + item.Type + ', ' + item.SubType + '</td>\n' +
                 '\t      <td>';
           if (item.Favorite == 0) {
             xhtm+=      
@@ -1662,7 +1724,7 @@ function ShowWeathers()
 				}
 		});
 	}
-	$.myglobals.refreshTimer = setInterval(ShowWeathers, 10000);
+  $.myglobals.refreshTimer = setInterval(RefreshWeathers, 10000);
   return false;
 }
 

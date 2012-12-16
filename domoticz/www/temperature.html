@@ -482,6 +482,76 @@ function ShowTempLog(id,name)
   return false;
 }
 
+function RefreshTemps()
+{
+  clearInterval($.myglobals.refreshTimer);
+  var id="";
+
+  $.ajax({
+     url: "json.htm?type=devices&filter=temp&used=true&order=Name",
+     async: false,
+     dataType: 'json',
+     success: function(data) {
+      if (typeof data.result != 'undefined') {
+        $.each(data.result, function(i,item){
+					id="#tempcontent #" + item.idx;
+					var obj=$(id);
+					if (typeof obj != 'undefined') {
+						$(id + " #name").html(item.Name);
+						var img='<img src="images/';
+            if ((typeof item.Temp == 'undefined') || (item.Temp>0)) {
+              img+='temp48.png';
+            }
+            else {
+              img+='ice.png';
+            }
+            img+='" height="48">';
+            $(id + " #img").html(img);
+            
+            var status="";
+            var bHaveTemperature=false;
+            var bHaveBefore=false;
+            if (typeof item.Temp != 'undefined') {
+                 status+=item.Temp + '&deg; C';
+                 bHaveTemperature=true;
+                 bHaveBefore=true;
+            }
+            if (typeof item.Chill != 'undefined') {
+              status+=', Chill: ' + item.Chill + '&deg; C';
+              bHaveBefore=true;
+            }
+            var bHaveHumidity=false;
+            if (typeof item.Humidity != 'undefined') {
+							if (bHaveBefore==true) {
+								status+=', ';
+							}
+              status+='Humidity: ' + item.Humidity + ' %';
+              bHaveHumidity=true;
+            }
+            if (typeof item.HumidityStatus != 'undefined') {
+              status+=' (' + item.HumidityStatus + ')';
+            }
+            if (typeof item.Barometer != 'undefined') {
+              status+='<br>Barometer: ' + item.Barometer + ' hPa';
+            }
+            if (typeof item.ForecastStr != 'undefined') {
+              status+=', Prediction: ' + item.ForecastStr;
+            }
+						if (typeof item.Direction != 'undefined') {
+              status+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms\n';
+            }
+            $(id + " #status").html(status);
+            $(id + " #lastupdate").html(item.LastUpdate);
+            $(id + " #type").html(item.Type + ', ' + item.SubType);
+           }
+        });
+      }
+     }
+  });
+  
+	$.myglobals.refreshTimer = setInterval(RefreshTemps, 10000);
+}
+
 function ShowTemps()
 {
 	clearInterval($.myglobals.refreshTimer);
@@ -524,8 +594,8 @@ function ShowTemps()
                 '\t  <section>\n' +
                 '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
                 '\t    <tr>\n' +
-                '\t      <td>' + item.Name + '</td>\n' +
-                '\t      <td><img src="images/';
+                '\t      <td id="name">' + item.Name + '</td>\n' +
+                '\t      <td id="img"><img src="images/';
             if ((typeof item.Temp == 'undefined') || (item.Temp>0)) {
               xhtm+='temp48.png';
             }
@@ -533,7 +603,7 @@ function ShowTemps()
               xhtm+='ice.png';
             }
             xhtm+='" height="48"></td>\n' +
-                '\t      <td>';
+                '\t      <td id="status">';
             var bHaveTemperature=false;
             var bHaveBefore=false;
             if (typeof item.Temp != 'undefined') {
@@ -567,8 +637,8 @@ function ShowTemps()
             }
             xhtm+=
                 '</td>\n' +
-                '\t      <td>' + item.LastUpdate + '</td>\n' +
-                '\t      <td>' + item.Type + ', ' + item.SubType + '</td>\n' +
+                '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
+                '\t      <td id="type">' + item.Type + ', ' + item.SubType + '</td>\n' +
                 '\t      <td>';
           if (item.Favorite == 0) {
             xhtm+=
@@ -632,7 +702,7 @@ function ShowTemps()
 				}
 		});
 	}
-	$.myglobals.refreshTimer = setInterval(ShowTemps, 10000);
+	$.myglobals.refreshTimer = setInterval(RefreshTemps, 10000);
   return false;
 }
 

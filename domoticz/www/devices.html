@@ -139,26 +139,34 @@ function RefreshLightSwitchesComboArray()
 
 function ShowDevices(filter)
 {
+	if (typeof filter != 'undefined') {
+		$.DevicesFilter=filter;
+	}
+	else {
+		if (typeof $.DevicesFilter != 'undefined') {
+			filter=$.DevicesFilter;
+		}
+	}
   $('#modal').show();
   
   RefreshLightSwitchesComboArray();
   
-    ChangeClass("mUsed","btnstyle3");
-    ChangeClass("mAll","btnstyle3");
-    ChangeClass("mUnknown","btnstyle3");
-  
+  $("#devicestable #mUsed").attr('class', 'btnstyle3');
+  $("#devicestable #mAll").attr('class', 'btnstyle3');
+  $("#devicestable #mUnknown").attr('class', 'btnstyle3');
+ 
   var ifilter="all";
   if (typeof filter != 'undefined') {
     if (filter == "used") {
       ifilter = "true";
-      ChangeClass("mUsed","btnstyle3-sel");
+			$("#devicestable #mUsed").attr('class', 'btnstyle3-sel');
     }
     else if (filter == "unknown") {
-      ChangeClass("mUnknown","btnstyle3-sel");
+			$("#devicestable #mUnknown").attr('class', 'btnstyle3-sel');
       ifilter = "false";
     }
     else if (filter == "all") {
-      ChangeClass("mAll","btnstyle3-sel");
+			$("#devicestable #mAll").attr('class', 'btnstyle3-sel');
       ifilter = "all";
     }
   }

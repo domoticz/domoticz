@@ -901,6 +901,88 @@ function RefreshLightSwitchesComboArray()
   });
 }
 
+function RefreshLights()
+{
+  clearInterval($.myglobals.refreshTimer);
+  var id="";
+  
+  $.ajax({
+     url: "json.htm?type=devices&filter=light&used=true&order=Name", 
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+      if (typeof data.result != 'undefined') {
+        $.each(data.result, function(i,item){
+					id="#lightcontent #" + item.idx;
+					var obj=$(id);
+					if (typeof obj != 'undefined') {
+						$(id + " #name").html(item.Name);
+						if (item.SwitchType == "X10 Siren") {
+							if (
+									(item.Status == 'On')||
+									(item.Status == 'Chime')||
+									(item.Status == 'Group On')||
+									(item.Status == 'All On')
+								 )
+							{
+											$(id + " #img").html('<img src="images/siren-on.png" height="48" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()">');
+							}
+							else {
+											$(id + " #img").html('<img src="images/siren-off.png" height="48" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()">');
+							}
+						}
+						else if (item.SwitchType == "Doorbell") {
+							$(id + " #img").html('<img src="images/door48.png" height="48" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()">');
+						}
+						else if (item.SwitchType == "Contact") {
+							$(id + " #img").html('<img src="images/contact48.png" height="48">');
+						}
+						else if (item.SwitchType == "Blinds") {
+							if (item.Status == 'Closed') {
+									$(id + " #img").html('<img src="images/blinds48.png" height="48" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()">');
+							}
+							else {
+									$(id + " #img").html('<img src="images/blindsopen48.png" height="48" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()">');
+							}
+						}
+						else if (item.Type == "Security") {
+							if (item.SubType.indexOf('remote') > 0) {
+								$(id + " #img").html('<img src="images/remote48.png" height="48">');
+							}
+							else {
+								if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
+									$(id + " #img").html('<img src="images/alarm48.png" height="48">');
+								}
+								else {
+									$(id + " #img").html('<img src="images/security48.png" height="48">');
+								}
+							}
+						}
+						else {
+							if (
+									(item.Status == 'On')||
+									(item.Status == 'Chime')||
+									(item.Status == 'Group On')||
+									(item.Status.indexOf('Set ') == 0)
+								 ) {
+											$(id + " #img").html('<img src="images/light-on.png" height="48" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()">');
+							}
+							else {
+											$(id + " #img").html('<img src="images/light-off.png" height="48" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()">');
+							}
+						}
+						$(id + " #status").html(item.Status);
+						$(id + " #lastupdate").html(item.LastUpdate);
+						$(id + " #type").html(item.Type + ', ' + item.SubType);
+					}
+        });
+      }
+     }
+  });
+  
+  $.myglobals.refreshTimer = setInterval(RefreshLights, 10000);
+}
+
 function ShowLights()
 {
   clearInterval($.myglobals.refreshTimer);
@@ -948,7 +1030,7 @@ function ShowLights()
                 '\t  <section>\n' +
                 '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
                 '\t    <tr>\n' +
-                '\t      <td>' + item.Name + '</td>\n';
+                '\t      <td id="name">' + item.Name + '</td>\n';
           if (item.SwitchType == "X10 Siren") {
             if (
                 (item.Status == 'On')||
@@ -956,36 +1038,36 @@ function ShowLights()
                 (item.Status == 'Group On')||
                 (item.Status == 'All On')
                ) {
-                    xhtm+='\t      <td><img src="images/siren-on.png" height="48" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
+                    xhtm+='\t      <td id="img"><img src="images/siren-on.png" height="48" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
             }
             else {
-                    xhtm+='\t      <td><img src="images/siren-off.png" height="48" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
+                    xhtm+='\t      <td id="img"><img src="images/siren-off.png" height="48" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
             }
           }
           else if (item.SwitchType == "Doorbell") {
-            xhtm+='\t      <td><img src="images/door48.png" height="48" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
+            xhtm+='\t      <td id="img"><img src="images/door48.png" height="48" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
           }
           else if (item.SwitchType == "Contact") {
-            xhtm+='\t      <td><img src="images/contact48.png" height="48"></td>\n';
+            xhtm+='\t      <td id="img"><img src="images/contact48.png" height="48"></td>\n';
           }
           else if (item.SwitchType == "Blinds") {
 						if (item.Status == 'Closed') {
-                xhtm+='\t      <td><img src="images/blinds48.png" height="48" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
+                xhtm+='\t      <td id="img"><img src="images/blinds48.png" height="48" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
             }
             else {
-                xhtm+='\t      <td><img src="images/blindsopen48.png" height="48" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
+                xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" height="48" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
 						}
           }
           else if (item.Type == "Security") {
 						if (item.SubType.indexOf('remote') > 0) {
-							xhtm+='\t      <td><img src="images/remote48.png" height="48"></td>\n';
+							xhtm+='\t      <td id="img"><img src="images/remote48.png" height="48"></td>\n';
 						}
 						else {
 							if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
-								xhtm+='\t      <td><img src="images/alarm48.png" height="48"></td>\n';
+								xhtm+='\t      <td id="img"><img src="images/alarm48.png" height="48"></td>\n';
 							}
 							else {
-								xhtm+='\t      <td><img src="images/security48.png" height="48"></td>\n';
+								xhtm+='\t      <td id="img"><img src="images/security48.png" height="48"></td>\n';
 							}
 						}
           }
@@ -996,16 +1078,16 @@ function ShowLights()
                 (item.Status == 'Group On')||
                 (item.Status.indexOf('Set ') == 0)
                ) {
-                    xhtm+='\t      <td><img src="images/light-on.png" height="48" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
+                    xhtm+='\t      <td id="img"><img src="images/light-on.png" height="48" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
             }
             else {
-                    xhtm+='\t      <td><img src="images/light-off.png" height="48" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
+                    xhtm+='\t      <td id="img"><img src="images/light-off.png" height="48" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowLights);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
             }
           }
           xhtm+=
-                '\t      <td>' + item.Status + '</td>\n' +
-                '\t      <td>' + item.LastUpdate + '</td>\n' +
-                '\t      <td>' + item.Type + ', ' + item.SubType + '</td>\n' +
+                '\t      <td id="status">' + item.Status + '</td>\n' +
+                '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
+                '\t      <td id="type">' + item.Type + ', ' + item.SubType + '</td>\n' +
                 '\t      <td>';
           if (item.Favorite == 0) {
             xhtm+=      
@@ -1074,7 +1156,7 @@ function ShowLights()
 				}
 		});
 	}  
-  $.myglobals.refreshTimer = setInterval(ShowLights, 10000);
+  $.myglobals.refreshTimer = setInterval(RefreshLights, 10000);
   return false;
 }
 

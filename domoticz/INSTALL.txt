@@ -21,7 +21,7 @@ Windows:
 - boost libraries, you probably have to set the correct include/lib folder in the project properties as i did not bootstrap mine
 
 ------------------------------------------------------------------------------------------------
-Ubuntu:
+Ubuntu/Raspberry Pi:
 sudo apt-get install cmake libboost-dev libboost-thread-dev libboost-system-dev libsqlite3-dev subversion
 
 Raspberry Pi (22 November 2012): (First time compile time: 15 minutes)
@@ -74,14 +74,24 @@ to check your .profile
 Getting the source code:
 svn checkout svn://svn.code.sf.net/p/domoticz/code/domoticz
 
-
-unpack the project in your homefile
-cd projectfolder
+cd domoticz
 
 cmake CMakeLists.txt
 make
 
-now you should have the binary application
+now you should have the binary application, you can start it with
+./domoticz
+
+For additional parameters type:
+./domoticz -h
 
 Note: Compiling on the Raspberry Pi will take about 15 minutes
 
+To Update to a newer version:
+- stop the application (control-c)
+
+(from the domoticz folder)
+
+svn checkout svn://svn.code.sf.net/p/domoticz/code/domoticz
+cmake CMakeLists.txt
+make

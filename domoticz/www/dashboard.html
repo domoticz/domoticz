@@ -3,6 +3,204 @@
 
 <script type="text/javascript" charset="utf-8">
 
+function RefreshFavorites()
+{
+  clearInterval($.myglobals.refreshTimer);
+  var id="";
+  $.ajax({
+     url: "json.htm?type=devices&filter=all&used=true&order=Name",
+     async: false,
+     dataType: 'json',
+     success: function(data) {
+      if (typeof data.result != 'undefined') {
+        //light devices
+        $.each(data.result, function(i,item){
+          if ((item.Type.indexOf('Light') == 0)&&(item.Favorite!=0))
+          {
+						id="#dashcontent #light_" + item.idx;
+						var obj=$(id);
+						if (typeof obj != 'undefined') {
+							$(id + " #name").html(item.Name);
+							if (item.SwitchType == "Doorbell") {
+								$(id + " #img").html('<img src="images/door48.png" height="40" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()">');
+							}
+							else if (item.SwitchType == "X10 Siren") {
+								$(id + " #img").html('<img src="images/siren48.png" height="40">');
+							}
+							else if (item.SwitchType == "Contact") {
+								$(id + " #img").html('<img src="images/contact48.png" height="40">');
+							}
+							else if (item.SwitchType == "Blinds") {
+								if (item.Status == 'Closed') {
+										$(id + " #img").html('<img src="images/blinds48.png" height="40" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()">');
+								}
+								else {
+										$(id + " #img").html('<img src="images/blindsopen48.png" height="40" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()">');
+								}
+							}
+							else {
+								if (
+										(item.Status == 'On')||
+										(item.Status == 'Chime')||
+										(item.Status == 'Group On')||
+										(item.Status.indexOf('Set ') == 0)
+									 ) {
+											$(id + " #img").html('<img src="images/light-on.png" height="40" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()">');
+								}
+								else {
+											$(id + " #img").html('<img src="images/light-off.png" height="40" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()">');
+								}
+							}
+							$(id + " #status").html(item.Status);
+							$(id + " #lastupdate").html(item.LastUpdate);
+						}
+					}
+				}); //light devices
+				
+        //Temperature Sensors
+        $.each(data.result, function(i,item){
+          if (
+                ((typeof item.Temp != 'undefined')||(typeof item.Humidity != 'undefined')) &&
+                (item.Favorite!=0)
+              )
+          {
+						id="#dashcontent #temp_" + item.idx;
+						var obj=$(id);
+						if (typeof obj != 'undefined') {
+							$(id + " #name").html(item.Name);
+							var img='<img src="images/';
+							if ((typeof item.Temp == 'undefined') || (item.Temp>0)) {
+								img+='temp48.png';
+							}
+							else {
+								img+='ice.png';
+							}
+							img+='" height="40">';
+							$(id + " #img").html(img);
+							var status="";
+							var bHaveBefore=false;
+							if (typeof item.Temp != 'undefined') {
+									 status+=item.Temp + '&deg; C';
+									 bHaveBefore=true;
+							}
+							if (typeof item.Chill != 'undefined') {
+								status+=', Chill: ' + item.Chill + '&deg; C';
+								bHaveBefore=true;
+							}
+							if (typeof item.Direction != 'undefined') {
+								status+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms\n';
+							}
+							if (typeof item.Humidity != 'undefined') {
+								if (bHaveBefore==true) {
+									status+=', ';
+								}
+								status+='Humidity: ' + item.Humidity + ' %';
+							}
+							if (typeof item.HumidityStatus != 'undefined') {
+								status+=' (' + item.HumidityStatus + ')';
+							}
+							if (typeof item.Barometer != 'undefined') {
+								status+='<br>' + item.Barometer + ' hPa';
+							}
+							if (typeof item.ForecastStr != 'undefined') {
+								status+=', Prediction: ' + item.ForecastStr;
+							}
+							$(id + " #status").html(status);
+							$(id + " #lastupdate").html(item.LastUpdate);
+						}
+          }
+        }); //temp devices
+        
+        //Weather Sensors
+        $.each(data.result, function(i,item){
+          if (
+                ( (typeof item.Rain != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Direction != 'undefined') ) &&
+                (item.Favorite!=0)
+              )
+          {
+						id="#dashcontent #weather_" + item.idx;
+						var obj=$(id);
+						if (typeof obj != 'undefined') {
+							$(id + " #name").html(item.Name);
+							if (typeof item.Rain != 'undefined') {
+								$(id + " #img").html('<img src="images/rain48.png" height="40">');
+								var status=item.Rain + ' mm';
+								if (typeof item.RainRate != 'undefined') {
+									if (item.RainRate!=0) {
+										status+=', Rate: ' + item.RainRate + ' mm/h';
+									}
+								}
+								$(id + " #status").html(status);
+							}
+							else if (typeof item.UVI != 'undefined') {
+								$(id + " #img").html('<img src="images/uv48.png" height="40">');
+								var status=item.UVI + ' UVI';
+								if (typeof item.Temp!= 'undefined') {
+									status+=', Temp: ' + item.Temp + '&deg; C';
+								}
+								$(id + " #status").html(status);
+							}
+							else if (typeof item.Direction != 'undefined') {
+								$(id + " #img").html('<img src="images/wind48.png" height="40">');
+								var status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
+								status+='Temp: ' + item.Temp + '&deg; C, ';
+								status+='Chill: ' + item.Chill + '&deg; C';
+								$(id + " #status").html(status);
+							}
+							$(id + " #lastupdate").html(item.LastUpdate);
+						}
+          }
+        }); //weather devices
+        
+        //security devices
+        $.each(data.result, function(i,item){
+          if ((item.Type.indexOf('Security') == 0)&&(item.Favorite!=0))
+          {
+						id="#dashcontent #security_" + item.idx;
+						var obj=$(id);
+						if (typeof obj != 'undefined') {
+							$(id + " #name").html(item.Name);
+							if (item.SubType.indexOf('remote') > 0) {
+								$(id + " #img").html('<img src="images/remote48.png" height="40">');
+							}
+							else {
+								if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
+									$(id + " #img").html('<img src="images/alarm48.png" height="40">');
+								}
+								else {
+									$(id + " #img").html('<img src="images/security48.png" height="40">');
+								}
+							}
+							$(id + " #status").html(item.Status);
+							$(id + " #lastupdate").html(item.LastUpdate);
+						}
+          }
+        }); //security devices
+        
+        //Utility Sensors
+        $.each(data.result, function(i,item){
+          if (
+                ( (typeof item.Counter != 'undefined') ) &&
+                (item.Favorite!=0)
+              )
+          {
+						id="#dashcontent #utility_" + item.idx;
+						var obj=$(id);
+						if (typeof obj != 'undefined') {
+							$(id + " #name").html(item.Name);
+							$(id + " #img").html('<img src="images/counter.png" height="40">');
+							$(id + " #status").html(item.Counter + ', Today: ' + item.CounterToday);
+							$(id + " #lastupdate").html(item.LastUpdate);
+						}
+          }
+        }); //Utility devices
+      }
+     }
+  });
+
+  $.myglobals.refreshTimer = setInterval(RefreshFavorites, 10000);
+}
+
 function ShowFavorites()
 {
   clearInterval($.myglobals.refreshTimer);
@@ -32,8 +230,12 @@ function ShowFavorites()
      async: false,
      dataType: 'json',
      success: function(data) {
+					var rowItems=3;
+					if (data.DashboardType==1) {
+						rowItems=4;
+					}
+
       if (typeof data.result != 'undefined') {
-				//alert(data.DashboardType);
         //light devices
         bHaveAddedDevider = false;
         $.each(data.result, function(i,item){
@@ -45,7 +247,7 @@ function ShowFavorites()
               //first time
               htmlcontent+='<h2>Light/Switch Devices:</h2>\n';
             }
-            if (jj % 3 == 0)
+            if (jj % rowItems == 0)
             {
               //add devider
               if (bHaveAddedDevider == true) {
@@ -55,27 +257,35 @@ function ShowFavorites()
               htmlcontent+='<div class="row divider">\n';
               bHaveAddedDevider=true;
             }
-            var xhtm=
-                  '\t<div class="4u" id="light ' + item.idx +'">\n' +
-                  '\t  <section>\n' +
-                  '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
-                  '\t    <tr>\n' +
-                  '\t      <td>' + item.Name + '</td>\n';
+            
+            var xhtm="";
+            if (data.DashboardType==0) {
+							xhtm='\t<div class="4u" id="light_' + item.idx +'">\n';
+            }
+            else {
+							xhtm='\t<div class="3u" id="light_' + item.idx +'">\n';
+            }
+				
+						xhtm+=
+								'\t  <section>\n' +
+								'\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n' +
+								'\t    <tr>\n' +
+								'\t      <td id="name">' + item.Name + '</td>\n';
             if (item.SwitchType == "Doorbell") {
-              xhtm+='\t      <td><img src="images/door48.png" height="48" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
+              xhtm+='\t      <td id="img"><img src="images/door48.png" height="40" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
             }
             else if (item.SwitchType == "X10 Siren") {
-              xhtm+='\t      <td><img src="images/siren48.png" height="48"></td>\n';
+              xhtm+='\t      <td id="img"><img src="images/siren48.png" height="40"></td>\n';
             }
             else if (item.SwitchType == "Contact") {
-              xhtm+='\t      <td><img src="images/contact48.png" height="48"></td>\n';
+              xhtm+='\t      <td id="img"><img src="images/contact48.png" height="40"></td>\n';
             }
 						else if (item.SwitchType == "Blinds") {
 							if (item.Status == 'Closed') {
-									xhtm+='\t      <td><img src="images/blinds48.png" height="48" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
+									xhtm+='\t      <td id="img"><img src="images/blinds48.png" height="40" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
 							}
 							else {
-									xhtm+='\t      <td><img src="images/blindsopen48.png" height="48" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
+									xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" height="40" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
 							}
 						}
             else {
@@ -85,17 +295,15 @@ function ShowFavorites()
                   (item.Status == 'Group On')||
                   (item.Status.indexOf('Set ') == 0)
                  ) {
-                    xhtm+='\t      <td><img src="images/light-on.png" height="48" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
+                    xhtm+='\t      <td id="img"><img src="images/light-on.png" height="40" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
               }
               else {
-                    xhtm+='\t      <td><img src="images/light-off.png" height="48" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
+                    xhtm+='\t      <td id="img"><img src="images/light-off.png" height="40" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
               }
             }
             xhtm+=
-                  '\t      <td>' + item.Status + '</td>\n' +
-                  '\t      <td>' + item.LastUpdate + '</td>\n' +
-                  '\t      <td>' + item.Type + ', ' + item.SubType + '</td>\n' +
-                  '\t      <td></td>\n' +
+                  '\t      <td id="status">' + item.Status + '</td>\n' +
+                  '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
                   '\t    </tr>\n' +
                   '\t    </table>\n' +
                   '\t  </section>\n' +
@@ -124,7 +332,7 @@ function ShowFavorites()
               //first time
               htmlcontent+='<h2>Temperature Sensors:</h2>\n';
             }
-            if (jj % 3 == 0)
+            if (jj % rowItems == 0)
             {
               //add devider
               if (bHaveAddedDevider == true) {
@@ -134,21 +342,26 @@ function ShowFavorites()
               htmlcontent+='<div class="row divider">\n';
               bHaveAddedDevider=true;
             }
-            var xhtm=
-                  '\t<div class="4u" id="temp ' + item.idx +'">\n' +
-                  '\t  <section>\n' +
-                  '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
+            var xhtm="";
+            if (data.DashboardType==0) {
+							xhtm='\t<div class="4u" id="temp_' + item.idx +'">\n';
+            }
+            else {
+							xhtm='\t<div class="3u" id="temp_' + item.idx +'">\n';
+            }
+            xhtm+='\t  <section>\n' +
+                  '\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n' +
                   '\t    <tr>\n' +
-                  '\t      <td>' + item.Name + '</td>\n' +
-                  '\t      <td><img src="images/';
+                  '\t      <td id="name">' + item.Name + '</td>\n' +
+                  '\t      <td id="img"><img src="images/';
                   if ((typeof item.Temp == 'undefined') || (item.Temp>0)) {
                     xhtm+='temp48.png';
                   }
                   else {
                     xhtm+='ice.png';
                   }
-                  xhtm+='" height="48"></td>\n' +
-                      '\t      <td>';
+                  xhtm+='" height="40"></td>\n' +
+                      '\t      <td id="status">';
                   var bHaveBefore=false;
                   if (typeof item.Temp != 'undefined') {
                        xhtm+=item.Temp + '&deg; C';
@@ -171,16 +384,14 @@ function ShowFavorites()
                     xhtm+=' (' + item.HumidityStatus + ')';
                   }
                   if (typeof item.Barometer != 'undefined') {
-                    xhtm+='<br>Barometer: ' + item.Barometer + ' hPa';
+                    xhtm+='<br>' + item.Barometer + ' hPa';
                   }
                   if (typeof item.ForecastStr != 'undefined') {
                     xhtm+=', Prediction: ' + item.ForecastStr;
                   }
                   xhtm+=
                       '</td>\n' +
-                      '\t      <td>' + item.LastUpdate + '</td>\n' +
-                      '\t      <td>' + item.Type + ', ' + item.SubType + '</td>\n' +
-                  '\t      <td></td>\n' +
+                      '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
                   '\t    </tr>\n' +
                   '\t    </table>\n' +
                   '\t  </section>\n' +
@@ -209,7 +420,7 @@ function ShowFavorites()
               //first time
               htmlcontent+='<h2>Weather Sensors:</h2>\n';
             }
-            if (jj % 3 == 0)
+            if (jj % rowItems == 0)
             {
               //add devider
               if (bHaveAddedDevider == true) {
@@ -219,38 +430,43 @@ function ShowFavorites()
               htmlcontent+='<div class="row divider">\n';
               bHaveAddedDevider=true;
             }
-            var xhtm=
-                  '\t<div class="4u" id="weather ' + item.idx +'">\n' +
-                  '\t  <section>\n' +
-                  '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
+            var xhtm="";
+            if (data.DashboardType==0) {
+							xhtm='\t<div class="4u" id="weather_' + item.idx +'">\n';
+            }
+            else {
+							xhtm='\t<div class="3u" id="weather_' + item.idx +'">\n';
+            }
+            xhtm+='\t  <section>\n' +
+                  '\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n' +
                   '\t    <tr>\n' +
-                  '\t      <td>' + item.Name + '</td>\n' +
-                  '\t      <td><img src="images/';
+                  '\t      <td id="name">' + item.Name + '</td>\n' +
+                  '\t      <td id="img"><img src="images/';
                   if (typeof item.Rain != 'undefined') {
-                    xhtm+='rain48.png" height="48"></td>\n' +
+                    xhtm+='rain48.png" height="40"></td>\n' +
                     '\t      <td>' + item.Rain + ' mm';
                     if (typeof item.RainRate != 'undefined') {
-                      xhtm+=', Rate: ' + item.RainRate + ' mm/h';
+											if (item.RainRate!=0) {
+												xhtm+=', Rate: ' + item.RainRate + ' mm/h';
+											}
                     }
                   }
                   else if (typeof item.UVI != 'undefined') {
-                    xhtm+='uv48.png" height="48"></td>\n' +
+                    xhtm+='uv48.png" height="40"></td>\n' +
                     '\t      <td>' + item.UVI + ' UVI';
                     if (typeof item.Temp!= 'undefined') {
                       xhtm+=', Temp: ' + item.Temp + '&deg; C';
                     }
                   }
                   else if (typeof item.Direction != 'undefined') {
-                    xhtm+='wind48.png" height="48"></td>\n' +
-                    '\t      <td>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
+                    xhtm+='wind48.png" height="40"></td>\n' +
+                    '\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
                     xhtm+='Temp: ' + item.Temp + '&deg; C, ';
                     xhtm+='Chill: ' + item.Chill + '&deg; C';
                   }
                   xhtm+=
                       '</td>\n' +
-                      '\t      <td>' + item.LastUpdate + '</td>\n' +
-                      '\t      <td>' + item.Type + ', ' + item.SubType + '</td>\n' +
-                  '\t      <td></td>\n' +
+                      '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
                   '\t    </tr>\n' +
                   '\t    </table>\n' +
                   '\t  </section>\n' +
@@ -276,7 +492,7 @@ function ShowFavorites()
               //first time
               htmlcontent+='<h2>Security Devices:</h2>\n';
             }
-            if (jj % 3 == 0)
+            if (jj % rowItems == 0)
             {
               //add devider
               if (bHaveAddedDevider == true) {
@@ -286,28 +502,31 @@ function ShowFavorites()
               htmlcontent+='<div class="row divider">\n';
               bHaveAddedDevider=true;
             }
-            var xhtm=
-                  '\t<div class="4u" id="security ' + item.idx +'">\n' +
-                  '\t  <section>\n' +
-                  '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
+            var xhtm="";
+            if (data.DashboardType==0) {
+							xhtm='\t<div class="4u" id="security_' + item.idx +'">\n';
+            }
+            else {
+							xhtm='\t<div class="3u" id="security_' + item.idx +'">\n';
+            }
+            xhtm+='\t  <section>\n' +
+                  '\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n' +
                   '\t    <tr>\n' +
-                  '\t      <td>' + item.Name + '</td>\n';
+                  '\t      <td id="name">' + item.Name + '</td>\n';
 						if (item.SubType.indexOf('remote') > 0) {
-							xhtm+='\t      <td><img src="images/remote48.png" height="48"></td>\n';
+							xhtm+='\t      <td id="img"><img src="images/remote48.png" height="40"></td>\n';
 						}
 						else {
 							if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
-								xhtm+='\t      <td><img src="images/alarm48.png" height="48"></td>\n';
+								xhtm+='\t      <td id="img"><img src="images/alarm48.png" height="40"></td>\n';
 							}
 							else {
-								xhtm+='\t      <td><img src="images/security48.png" height="48"></td>\n';
+								xhtm+='\t      <td id="img"><img src="images/security48.png" height="40"></td>\n';
 							}
 						}
             xhtm+=
-                  '\t      <td>' + item.Status + '</td>\n' +
-                  '\t      <td>' + item.LastUpdate + '</td>\n' +
-                  '\t      <td>' + item.Type + ', ' + item.SubType + '</td>\n' +
-                  '\t      <td></td>\n' +
+                  '\t      <td id="status">' + item.Status + '</td>\n' +
+                  '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
                   '\t    </tr>\n' +
                   '\t    </table>\n' +
                   '\t  </section>\n' +
@@ -336,7 +555,7 @@ function ShowFavorites()
               //first time
               htmlcontent+='<h2>Utility Sensors:</h2>\n';
             }
-            if (jj % 3 == 0)
+            if (jj % rowItems == 0)
             {
               //add devider
               if (bHaveAddedDevider == true) {
@@ -346,22 +565,25 @@ function ShowFavorites()
               htmlcontent+='<div class="row divider">\n';
               bHaveAddedDevider=true;
             }
-            var xhtm=
-                  '\t<div class="4u" id="utility ' + item.idx +'">\n' +
-                  '\t  <span>\n' +
-                  '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
+            var xhtm="";
+            if (data.DashboardType==0) {
+							xhtm='\t<div class="4u" id="utility_' + item.idx +'">\n';
+            }
+            else {
+							xhtm='\t<div class="3u" id="utility_' + item.idx +'">\n';
+            }
+            xhtm+='\t  <span>\n' +
+                  '\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n' +
                   '\t    <tr>\n' +
-                  '\t      <td>' + item.Name + '</td>\n' +
-                  '\t      <td><img src="images/';
+                  '\t      <td id="name">' + item.Name + '</td>\n' +
+                  '\t      <td id="img"><img src="images/';
 									if (typeof item.Counter != 'undefined') {
-										xhtm+='counter.png" height="48"></td>\n' +
-										'\t      <td>' + item.Counter + ', Today: ' + item.CounterToday;
+										xhtm+='counter.png" height="40"></td>\n' +
+										'\t      <td id="status">' + item.Counter + ', Today: ' + item.CounterToday;
 									}
                   xhtm+=
                       '</td>\n' +
-                      '\t      <td>' + item.LastUpdate + '</td>\n' +
-                      '\t      <td>' + item.Type + ', ' + item.SubType + '</td>\n' +
-                  '\t      <td></td>\n' +
+                      '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
                   '\t    </tr>\n' +
                   '\t    </table>\n' +
                   '\t  </span>\n' +
@@ -393,6 +615,8 @@ function ShowFavorites()
   }
   $('#dashcontent').html(suntext+htmlcontent);
 
+	//$("#dashcontent #light_12 #name").html("Kerstman!");
+
 	if (!isiPhone()) {
 		$("#dashcontent .4u").draggable({
 				drag: function() {
@@ -405,8 +629,37 @@ function ShowFavorites()
 		$("#dashcontent .4u").droppable({
 				drop: function() {
 					var myid=$(this).attr("id");
-					var parts1 = myid.split(' ');
-					var parts2 = $.devIdx.split(' ');
+					var parts1 = myid.split('_');
+					var parts2 = $.devIdx.split('_');
+					if (parts1[0]!=parts2[0]) {
+						alert('Only possible between Sensors of the same kind!');
+						$.myglobals.refreshTimer = setInterval(ShowFavorites, 10000);
+					} else {
+					
+						$.ajax({
+							 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + parts1[1] + "&idx2=" + parts2[1],
+							 async: false, 
+							 dataType: 'json',
+							 success: function(data) {
+									ShowFavorites();
+							 }
+						});
+					}
+				}
+		});
+		$("#dashcontent .3u").draggable({
+				drag: function() {
+					clearInterval($.myglobals.refreshTimer);
+					$.devIdx=$(this).attr("id");
+					$(this).css("z-index", 2);
+				},
+				revert: true
+		});
+		$("#dashcontent .3u").droppable({
+				drop: function() {
+					var myid=$(this).attr("id");
+					var parts1 = myid.split('_');
+					var parts2 = $.devIdx.split('_');
 					if (parts1[0]!=parts2[0]) {
 						alert('Only possible between Sensors of the same kind!');
 						$.myglobals.refreshTimer = setInterval(ShowFavorites, 10000);
@@ -424,8 +677,7 @@ function ShowFavorites()
 				}
 		});
 	}
-
-  $.myglobals.refreshTimer = setInterval(ShowFavorites, 10000);
+  $.myglobals.refreshTimer = setInterval(RefreshFavorites, 10000);
 }
 
 $(document).ready(function() {

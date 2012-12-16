@@ -373,6 +373,35 @@ function ShowCounterLog(id,name,switchtype)
     });
 }
 
+function RefreshUtilities()
+{
+	clearInterval($.myglobals.refreshTimer);
+  var id="";
+
+  $.ajax({
+     url: "json.htm?type=devices&filter=utility&used=true&order=Name", 
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+      if (typeof data.result != 'undefined') {
+        $.each(data.result, function(i,item){
+					id="#utilitycontent #" + item.idx;
+					var obj=$(id);
+					if (typeof obj != 'undefined') {
+						$(id + " #name").html(item.Name);
+						$(id + " #img").html('<img src="images/counter.png" height="48">');
+						$(id + " #status").html(item.Counter + ', Today: ' + item.CounterToday);
+						$(id + " #lastupdate").html(item.LastUpdate);
+						$(id + " #type").html(item.Type + ', ' + item.SubType);
+					}
+        });
+      }
+     }
+  });
+
+	$.myglobals.refreshTimer = setInterval(RefreshUtilities, 10000);
+}
+
 function ShowUtilities()
 {
 	clearInterval($.myglobals.refreshTimer);
@@ -416,16 +445,16 @@ function ShowUtilities()
                 '\t  <section>\n' +
                 '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
                 '\t    <tr>\n' +
-                '\t      <td>' + item.Name + '</td>\n' +
-                '\t      <td><img src="images/';
+                '\t      <td id="name">' + item.Name + '</td>\n' +
+                '\t      <td id="img"><img src="images/';
             if (typeof item.Counter != 'undefined') {
               xhtm+='counter.png" height="48"></td>\n' +
-              '\t      <td>' + item.Counter + ', Today: ' + item.CounterToday;
+              '\t      <td id="status">' + item.Counter + ', Today: ' + item.CounterToday;
             }
             xhtm+=      
                 '</td>\n' +
-                '\t      <td>' + item.LastUpdate + '</td>\n' +
-                '\t      <td>' + item.Type + ', ' + item.SubType + '</td>\n' +
+                '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
+                '\t      <td id="type">' + item.Type + ', ' + item.SubType + '</td>\n' +
                 '\t      <td>';
           if (item.Favorite == 0) {
             xhtm+=      
@@ -496,7 +525,7 @@ function ShowUtilities()
 				}
 		});
 	}
-	$.myglobals.refreshTimer = setInterval(ShowUtilities, 10000);
+	$.myglobals.refreshTimer = setInterval(RefreshUtilities, 10000);
   return false;
 }
 
