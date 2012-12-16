@@ -92,6 +92,6 @@ To Update to a newer version:
 
 (from the domoticz folder)
 
-svn checkout svn://svn.code.sf.net/p/domoticz/code/domoticz
+svn update
 cmake CMakeLists.txt
 make
