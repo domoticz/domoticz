@@ -10,6 +10,7 @@ public:
 	console();
 	~console();
 	void OpenHideConsole();
+	BOOL IsConsoleVisible();
 private:
 	std::ofstream m_out;
 	std::ofstream m_err;

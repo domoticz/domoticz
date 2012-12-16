@@ -1844,6 +1844,9 @@ char * CWebServer::GetJSonPage()
 			std::string subidx=m_pWebEm->FindValue("subidx");
 			if ((idx=="")||(subidx==""))
 				goto exitjson;
+			if (idx==subidx)
+				goto exitjson;
+
 			//first check if it is not already a sub device
 			szQuery.clear();
 			szQuery.str("");
@@ -2065,21 +2068,24 @@ char * CWebServer::GetJSonPage()
 
 			if (maindeviceidx!="")
 			{
-				//this is a sub device for another light/switch
-				//first check if it is not already a sub device
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << ID << "') AND (ParentID =='" << maindeviceidx << "')";
-				result=m_pMain->m_sql.query(szQuery.str());
-				if (result.size()==0)
+				if (maindeviceidx!=ID)
 				{
-					//no it is not, add it
-					sprintf(szTmp,
-						"INSERT INTO LightSubDevices (DeviceRowID, ParentID) VALUES ('%s','%s')",
-						ID.c_str(),
-						maindeviceidx.c_str()
-						);
-					result=m_pMain->m_sql.query(szTmp);
+					//this is a sub device for another light/switch
+					//first check if it is not already a sub device
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << ID << "') AND (ParentID =='" << maindeviceidx << "')";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()==0)
+					{
+						//no it is not, add it
+						sprintf(szTmp,
+							"INSERT INTO LightSubDevices (DeviceRowID, ParentID) VALUES ('%s','%s')",
+							ID.c_str(),
+							maindeviceidx.c_str()
+							);
+						result=m_pMain->m_sql.query(szTmp);
+					}
 				}
 			}
 
@@ -2746,21 +2752,24 @@ char * CWebServer::GetJSonPage()
 
 		if (maindeviceidx!="")
 		{
-			//this is a sub device for another light/switch
-			//first check if it is not already a sub device
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << idx << "') AND (ParentID =='" << maindeviceidx << "')";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()==0)
+			if (maindeviceidx!=idx)
 			{
-				//no it is not, add it
-				sprintf(szTmp,
-					"INSERT INTO LightSubDevices (DeviceRowID, ParentID) VALUES ('%s','%s')",
-					idx.c_str(),
-					maindeviceidx.c_str()
-					);
-				result=m_pMain->m_sql.query(szTmp);
+				//this is a sub device for another light/switch
+				//first check if it is not already a sub device
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << idx << "') AND (ParentID =='" << maindeviceidx << "')";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()==0)
+				{
+					//no it is not, add it
+					sprintf(szTmp,
+						"INSERT INTO LightSubDevices (DeviceRowID, ParentID) VALUES ('%s','%s')",
+						idx.c_str(),
+						maindeviceidx.c_str()
+						);
+					result=m_pMain->m_sql.query(szTmp);
+				}
 			}
 		}
 		if (result.size()>0)

@@ -32,6 +32,14 @@ console::~console()
 	}
 }
 
+BOOL console::IsConsoleVisible()
+{
+	HWND hWnd = GetConsoleWindow();
+	if (hWnd==NULL)
+		return false;
+	return IsWindowVisible(hWnd);
+}
+
 void console::OpenHideConsole()
 {
 	HWND hWnd = GetConsoleWindow();
@@ -40,12 +48,21 @@ void console::OpenHideConsole()
 			ShowWindow( hWnd, SW_HIDE );
 		else
 			ShowWindow( hWnd, SW_SHOW );
+		EnableMenuItem(GetSystemMenu(GetConsoleWindow(), FALSE), SC_CLOSE , MF_GRAYED);
 		return;
 	}
 
 	// create a console window
 	AllocConsole();
 
+	EnableMenuItem(GetSystemMenu(GetConsoleWindow(), FALSE), SC_CLOSE , MF_GRAYED);
+
+	HWND hwnd = GetConsoleWindow();
+	HMENU hmenu = GetSystemMenu (hwnd, FALSE);
+	HINSTANCE hinstance =
+		(HINSTANCE) GetWindowLong (hwnd, GWL_HINSTANCE);
+	while (DeleteMenu (hmenu, 0, MF_BYPOSITION))
+		;
 	// redirect std::cout to our console window
 	m_old_cout = std::cout.rdbuf();
 	m_out.open("CONOUT$");
@@ -117,7 +134,9 @@ void ShowContextMenu(HWND hWnd)
 	if(hMenu)
 	{
 		int indexMenu=0;
-		InsertMenu(hMenu, indexMenu++, MF_BYPOSITION, WM_SHOWCONSOLEWINDOW, "Show/Hide Console Window (Do not close!)");
+		InsertMenu(hMenu, indexMenu++, MF_BYPOSITION, WM_SHOWCONSOLEWINDOW, "Show/Hide Console Window");
+		CheckMenuItem(hMenu,WM_SHOWCONSOLEWINDOW,(myconsole.IsConsoleVisible())?MF_CHECKED:MF_UNCHECKED);
+
 		InsertMenu(hMenu, indexMenu++, MF_SEPARATOR|MF_BYPOSITION, 0, NULL);
 		InsertMenu(hMenu, indexMenu++, MF_BYPOSITION, WM_TRAYEXIT, "E&xit");
 

@@ -312,7 +312,25 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigne
 {
 	UpdateValueInt(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue);
 
-	std::vector<std::vector<std::string> > result;
+	bool bIsLightSwitch=false;
+	switch (devType)
+	{
+	case pTypeLighting1:
+	case pTypeLighting2:
+	case pTypeLighting3:
+	case pTypeLighting4:
+	case pTypeLighting5:
+	case pTypeLighting6:
+	case pTypeSecurity1:
+		bIsLightSwitch=true;
+		break;
+	}
+	if (!bIsLightSwitch)
+		return;
+
+	//Get the ID of this device
+	std::vector<std::vector<std::string> > result,result2;
+	std::vector<std::vector<std::string> >::const_iterator itt,itt2;
 	char szTmp[300];
 
 	sprintf(szTmp,"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
@@ -322,29 +340,131 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigne
 
 	std::string idx=result[0][0];
 
+	time_t now = time(0);
+	struct tm *ltime=localtime(&now);
+
+	//Check if this switch was a Sub/Slave device for other devices, if so adjust the state of those other devices
 	sprintf(szTmp,"SELECT ParentID FROM LightSubDevices WHERE (DeviceRowID=='%s') AND (DeviceRowID!=ParentID)",
 		idx.c_str()
 		);
 	result=query(szTmp);
-	if (result.size()==0)
-		return; //this is no sub device
-
-	time_t now = time(0);
-	struct tm *ltime=localtime(&now);
-
-	//Set the Main Device state to the same state as this device
-	std::vector<std::vector<std::string> >::const_iterator itt;
-	for (itt=result.begin(); itt!=result.end(); ++itt)
+	if (result.size()>0)
 	{
-		std::vector<std::string> sd=*itt;
-		sprintf(szTmp,
-			"UPDATE DeviceStatus SET nValue=%d, sValue='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == '%s')",
-			nValue,
-			sValue,
-			ltime->tm_year+1900,ltime->tm_mon+1, ltime->tm_mday, ltime->tm_hour, ltime->tm_min, ltime->tm_sec,
-			sd[0].c_str()
+		//This is a sub/slave device for another main device
+		//Set the Main Device state to the same state as this device
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::vector<std::string> sd=*itt;
+			sprintf(szTmp,
+				"UPDATE DeviceStatus SET nValue=%d, sValue='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == '%s')",
+				nValue,
+				sValue,
+				ltime->tm_year+1900,ltime->tm_mon+1, ltime->tm_mday, ltime->tm_hour, ltime->tm_min, ltime->tm_sec,
+				sd[0].c_str()
+				);
+			query(szTmp);
+			//Set the status of all slave devices from this device (except the one we just received) to off
+			//Check if this switch was a Sub/Slave device for other devices, if so adjust the state of those other devices
+			sprintf(szTmp,"SELECT a.DeviceRowID, b.Type FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='%s') AND (a.DeviceRowID!='%s') AND (b.ID == a.DeviceRowID) AND (a.DeviceRowID!=a.ParentID)",
+				sd[0].c_str(),
+				idx.c_str()
+				);
+			result2=query(szTmp);
+			if (result2.size()>0)
+			{
+				for (itt2=result2.begin(); itt2!=result2.end(); ++itt2)
+				{
+					std::vector<std::string> sd=*itt2;
+					int oDevType=atoi(sd[1].c_str());
+					int newnValue=0;
+					switch (oDevType)
+					{
+					case pTypeLighting1:
+						newnValue=light1_sOff;
+						break;
+					case pTypeLighting2:
+						newnValue=light2_sOff;
+						break;
+					case pTypeLighting3:
+						newnValue=light3_sOff;
+						break;
+					case pTypeLighting4:
+						newnValue=0;//light4_sOff;
+						break;
+					case pTypeLighting5:
+						newnValue=light5_sOff;
+						break;
+					case pTypeLighting6:
+						newnValue=light6_sOff;
+						break;
+					case pTypeSecurity1:
+						newnValue=sStatusNormal;
+						break;
+					default:
+						continue;
+					}
+					sprintf(szTmp,
+						"UPDATE DeviceStatus SET nValue=%d, sValue='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == '%s')",
+						newnValue,
+						"",
+						ltime->tm_year+1900,ltime->tm_mon+1, ltime->tm_mday, ltime->tm_hour, ltime->tm_min, ltime->tm_sec,
+						sd[0].c_str()
+						);
+					query(szTmp);
+				}
+			}
+		}
+	}
+
+	//If this is a 'Main' device, and it has Sub/Slave devices,
+	//set the status of the Sub/Slave devices to Off, as we might be out of sync then
+	sprintf(szTmp,"SELECT a.DeviceRowID, b.Type FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='%s') AND (b.ID == a.DeviceRowID) AND (a.DeviceRowID!=a.ParentID)",
+		idx.c_str()
 		);
-		query(szTmp);
+	result=query(szTmp);
+	if (result.size()>0)
+	{
+		//set the status to off
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::vector<std::string> sd=*itt;
+			int oDevType=atoi(sd[1].c_str());
+			int newnValue=0;
+			switch (oDevType)
+			{
+			case pTypeLighting1:
+				newnValue=light1_sOff;
+				break;
+			case pTypeLighting2:
+				newnValue=light2_sOff;
+				break;
+			case pTypeLighting3:
+				newnValue=light3_sOff;
+				break;
+			case pTypeLighting4:
+				newnValue=0;//light4_sOff;
+				break;
+			case pTypeLighting5:
+				newnValue=light5_sOff;
+				break;
+			case pTypeLighting6:
+				newnValue=light6_sOff;
+				break;
+			case pTypeSecurity1:
+				newnValue=sStatusNormal;
+				break;
+			default:
+				continue;
+			}
+			sprintf(szTmp,
+				"UPDATE DeviceStatus SET nValue=%d, sValue='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == '%s')",
+				newnValue,
+				"",
+				ltime->tm_year+1900,ltime->tm_mon+1, ltime->tm_mday, ltime->tm_hour, ltime->tm_min, ltime->tm_sec,
+				sd[0].c_str()
+				);
+			query(szTmp);
+		}
 	}
 }
 
