@@ -6,6 +6,7 @@
 #include "Helper.h"
 #include "RFXNames.h"
 #include "mynetwork.h"
+#include "WindowsHelper.h"
 
 #define DB_VERSION 2
 
@@ -575,6 +576,12 @@ bool CSQLHelper::SendNotification(const std::string EventID, const std::string M
 	char szURL[300];
 	unsigned char *pData=NULL;
 	unsigned long ulLength=0;
+
+#if defined WIN32
+	//Make a system tray message
+	ShowSystemTrayNotification(Message.c_str());
+#endif
+
 	//check if prowl enabled
 	if (GetPreferencesVar("ProwlAPI",nValue,sValue))
 	{

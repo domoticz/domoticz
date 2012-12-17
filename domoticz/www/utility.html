@@ -388,11 +388,20 @@ function RefreshUtilities()
 					id="#utilitycontent #" + item.idx;
 					var obj=$(id);
 					if (typeof obj != 'undefined') {
-						$(id + " #name").html(item.Name);
-						$(id + " #img").html('<img src="images/counter.png" height="48">');
-						$(id + " #status").html(item.Counter + ', Today: ' + item.CounterToday);
-						$(id + " #lastupdate").html(item.LastUpdate);
-						$(id + " #type").html(item.Type + ', ' + item.SubType);
+						if ($(id + " #name").html()!=item.Name) {
+							$(id + " #name").html(item.Name);
+						}
+						var img='<img src="images/counter.png" height="48">';
+						if ($(id + " #img").html()!=img) {
+							$(id + " #img").html(img);
+						}
+						var status=item.Counter + ', Today: ' + item.CounterToday;
+						if ($(id + " #status").html()!=status) {
+							$(id + " #status").html(status);
+						}
+						if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+							$(id + " #lastupdate").html(item.LastUpdate);
+						}
 					}
         });
       }
@@ -458,11 +467,11 @@ function ShowUtilities()
                 '\t      <td>';
           if (item.Favorite == 0) {
             xhtm+=      
-                  '<img src="images/nofavorite.png" title="Add to Dashboard" onclick="MakeFavorite(' + item.idx + ',1);" onMouseover="cursorhand()" onMouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+                  '<img src="images/nofavorite.png" title="Add to Dashboard" onclick="MakeFavorite(' + item.idx + ',1);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
           else {
             xhtm+=      
-                  '<img src="images/favorite.png" title="Remove from Dashboard" onclick="MakeFavorite(' + item.idx + ',0);" onMouseover="cursorhand()" onMouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+                  '<img src="images/favorite.png" title="Remove from Dashboard" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
 
           if (typeof item.Counter != 'undefined') {

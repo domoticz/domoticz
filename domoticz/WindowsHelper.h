@@ -22,6 +22,7 @@ private:
 };
 
 bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCmd, void *pQuitFunction, const int iWebPort);
+void ShowSystemTrayNotification(const char *szMessage);
 void RedirectIOToConsole();
 
 #endif

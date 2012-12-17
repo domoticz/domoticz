@@ -497,7 +497,9 @@ function RefreshTemps()
 					id="#tempcontent #" + item.idx;
 					var obj=$(id);
 					if (typeof obj != 'undefined') {
-						$(id + " #name").html(item.Name);
+						if ($(id + " #name").html()!=item.Name) {
+							$(id + " #name").html(item.Name);
+						}
 						var img='<img src="images/';
             if ((typeof item.Temp == 'undefined') || (item.Temp>0)) {
               img+='temp48.png';
@@ -506,18 +508,21 @@ function RefreshTemps()
               img+='ice.png';
             }
             img+='" height="48">';
-            $(id + " #img").html(img);
+            
+            if ($(id + " #img").html()!=img) {
+							$(id + " #img").html(img);
+						}
             
             var status="";
             var bHaveTemperature=false;
             var bHaveBefore=false;
             if (typeof item.Temp != 'undefined') {
-                 status+=item.Temp + '&deg; C';
+                 status+=item.Temp + '\u00B0 C';
                  bHaveTemperature=true;
                  bHaveBefore=true;
             }
             if (typeof item.Chill != 'undefined') {
-              status+=', Chill: ' + item.Chill + '&deg; C';
+              status+=', Chill: ' + item.Chill + '\u00B0 C';
               bHaveBefore=true;
             }
             var bHaveHumidity=false;
@@ -540,9 +545,12 @@ function RefreshTemps()
 						if (typeof item.Direction != 'undefined') {
               status+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms\n';
             }
-            $(id + " #status").html(status);
-            $(id + " #lastupdate").html(item.LastUpdate);
-            $(id + " #type").html(item.Type + ', ' + item.SubType);
+            if ($(id + " #status").html()!=status) {
+							$(id + " #status").html(status);
+						}
+						if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+							$(id + " #lastupdate").html(item.LastUpdate);
+						}
            }
         });
       }
@@ -607,12 +615,12 @@ function ShowTemps()
             var bHaveTemperature=false;
             var bHaveBefore=false;
             if (typeof item.Temp != 'undefined') {
-                 xhtm+=item.Temp + '&deg; C';
+                 xhtm+=item.Temp + '\u00B0 C';
                  bHaveTemperature=true;
                  bHaveBefore=true;
             }
             if (typeof item.Chill != 'undefined') {
-              xhtm+=', Chill: ' + item.Chill + '&deg; C';
+              xhtm+=', Chill: ' + item.Chill + '\u00B0 C';
               bHaveBefore=true;
             }
             var bHaveHumidity=false;
@@ -642,11 +650,11 @@ function ShowTemps()
                 '\t      <td>';
           if (item.Favorite == 0) {
             xhtm+=
-                  '<img src="images/nofavorite.png" title="Add to Dashboard" onclick="MakeFavorite(' + item.idx + ',1);" onMouseover="cursorhand()" onMouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+                  '<img src="images/nofavorite.png" title="Add to Dashboard" onclick="MakeFavorite(' + item.idx + ',1);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
           else {
             xhtm+=
-                  '<img src="images/favorite.png" title="Remove from Dashboard" onclick="MakeFavorite(' + item.idx + ',0);" onMouseover="cursorhand()" onMouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+                  '<img src="images/favorite.png" title="Remove from Dashboard" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
           xhtm+=
                 '<a class="btnsmall" onclick="ShowTempLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ' +

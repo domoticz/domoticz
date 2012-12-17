@@ -1502,41 +1502,49 @@ function RefreshWeathers()
 					id="#weathercontent #" + item.idx;
 					var obj=$(id);
 					if (typeof obj != 'undefined') {
-						$(id + " #name").html(item.Name);
+						if ($(id + " #name").html()!=item.Name) {
+							$(id + " #name").html(item.Name);
+						}
 
+						var status="";
+						var img="";
 						if (typeof item.Barometer != 'undefined') {
-								$(id + " #img").html('<img src="images/baro48.png" height="48">');
-								$(id + " #status").html(item.Barometer + ' hPa, Prediction: ' + item.ForecastStr);
+								img='<img src="images/baro48.png" height="48">';
+								status=item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
 						}
 						if (typeof item.Rain != 'undefined') {
-							$(id + " #img").html('<img src="images/rain48.png" height="48">');
-							var status=item.Rain + ' mm';
+							img='<img src="images/rain48.png" height="48">';
+							status=item.Rain + ' mm';
 							if (typeof item.RainRate != 'undefined') {
 								if (item.RainRate!=0) {
 									status+=', Rate: ' + item.RainRate + ' mm/h';
 								}
 							}
-							$(id + " #status").html(status);
 						}
 						else if (typeof item.UVI != 'undefined') {
-							$(id + " #img").html('<img src="images/uv48.png" height="48">');
-							var status=item.UVI + ' UVI';
+							img='<img src="images/uv48.png" height="48">';
+							status=item.UVI + ' UVI';
 							if (typeof item.Temp!= 'undefined') {
-								status+=', Temp: ' + item.Temp + '&deg; C';
+								status+=', Temp: ' + item.Temp + '\u00B0 C';
 							}
-							$(id + " #status").html(status);
 						}
 						else if (typeof item.Direction != 'undefined') {
-							$(id + " #img").html('<img src="images/wind48.png" height="48">');
-							var status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
+							img='<img src="images/wind48.png" height="48">';
+							status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
 							if (typeof item.Temp != 'undefined') {
-								status+='Temp: ' + item.Temp + '&deg; C, ';
-								status+='Chill: ' + item.Chill + '&deg; C';
+								status+='Temp: ' + item.Temp + '\u00B0 C, ';
+								status+='Chill: ' + item.Chill + '\u00B0 C';
 							}
+						}
+						if ($(id + " #img").html()!=img) {
+							$(id + " #img").html(img);
+						}
+						if ($(id + " #status").html()!=status) {
 							$(id + " #status").html(status);
 						}
-						$(id + " #lastupdate").html(item.LastUpdate);
-						$(id + " #type").html(item.Type + ', ' + item.SubType);
+						if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+							$(id + " #lastupdate").html(item.LastUpdate);
+						}
 					}
         });
       }
@@ -1632,7 +1640,7 @@ function ShowWeathers()
               xhtm+='uv48.png" height="48"></td>\n' +
               '\t      <td id="status">' + item.UVI + ' UVI';
               if (typeof item.Temp!= 'undefined') {
-                xhtm+=', Temp: ' + item.Temp + '&deg; C';
+                xhtm+=', Temp: ' + item.Temp + '\u00B0 C';
               }
             }
             else if (typeof item.Direction != 'undefined') {
@@ -1640,8 +1648,8 @@ function ShowWeathers()
               xhtm+='wind48.png" height="48"></td>\n' +
               '\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
               if (typeof item.Temp != 'undefined') {
-								xhtm+='Temp: ' + item.Temp + '&deg; C, ';
-								xhtm+='Chill: ' + item.Chill + '&deg; C';
+								xhtm+='Temp: ' + item.Temp + '\u00B0 C, ';
+								xhtm+='Chill: ' + item.Chill + '\u00B0 C';
 							}
             }
             xhtm+=      
@@ -1651,11 +1659,11 @@ function ShowWeathers()
                 '\t      <td>';
           if (item.Favorite == 0) {
             xhtm+=      
-                  '<img src="images/nofavorite.png" title="Add to Dashboard" onclick="MakeFavorite(' + item.idx + ',1);" onMouseover="cursorhand()" onMouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+                  '<img src="images/nofavorite.png" title="Add to Dashboard" onclick="MakeFavorite(' + item.idx + ',1);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
           else {
             xhtm+=      
-                  '<img src="images/favorite.png" title="Remove from Dashboard" onclick="MakeFavorite(' + item.idx + ',0);" onMouseover="cursorhand()" onMouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+                  '<img src="images/favorite.png" title="Remove from Dashboard" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
 
           if (typeof item.Barometer != 'undefined') {

@@ -96,12 +96,10 @@ const char g_szClassName[] = "DomoticzWindow";
 HINSTANCE g_hInstance=NULL;
 const void *g_pQuitFunction=NULL;
 HANDLE g_hConsoleOut=NULL;
+HWND g_hWnd;
 
 BOOL TrayMessage( HWND hWnd, DWORD dwMessage, const char *szInfo)
 {
-	char szTip[100];
-	sprintf(szTip,"Domoticz Home Automation");
-	
 	NOTIFYICONDATA tnd;
 	ZeroMemory(&tnd,sizeof(NOTIFYICONDATA));
 
@@ -114,13 +112,13 @@ BOOL TrayMessage( HWND hWnd, DWORD dwMessage, const char *szInfo)
 	if (dwMessage==NIM_ADD)
 		tnd.uFlags|=NIF_SHOWTIP;
 	tnd.hIcon = LoadIcon(g_hInstance,MAKEINTRESOURCE (IDR_MAINFRAME));
-	strcpy(tnd.szTip, szTip);
+	strcpy(tnd.szTip, "Domoticz Home Automation");
 	tnd.uTimeout=5;
 	if (szInfo!=NULL)
 	{
 		tnd.uFlags|=NIF_INFO;
 		strcpy(tnd.szInfo, szInfo);
-		strcpy(tnd.szInfoTitle, szTip);
+		strcpy(tnd.szInfoTitle, tnd.szTip);
 	}
 
 	return Shell_NotifyIcon(dwMessage, &tnd);
@@ -198,7 +196,6 @@ bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCm
 	g_pQuitFunction=pQuitFunction;
 	g_hInstance=hInstance;
 	WNDCLASSEX wc;
-	HWND hwnd;
 
 	//Step 1: Registering the Window Class
 	wc.cbSize        = sizeof(WNDCLASSEX);
@@ -222,7 +219,7 @@ bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCm
 	}
 
 	// Step 2: Creating the Window
-	hwnd = CreateWindowEx(
+	g_hWnd = CreateWindowEx(
 		WS_EX_CLIENTEDGE,
 		g_szClassName,
 		"Domoticz Home Automation",
@@ -230,15 +227,15 @@ bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCm
 		CW_USEDEFAULT, CW_USEDEFAULT, 340, 20,
 		NULL, NULL, hInstance, NULL);
 
-	if(hwnd == NULL)
+	if(g_hWnd == NULL)
 	{
 		MessageBox(NULL,"Failed creating Domoticz Main Window!", "Error!", MB_ICONEXCLAMATION | MB_OK);
 		return false;
 	}
 	char szTrayInfo[100];
 	sprintf(szTrayInfo,"Application Started.\nWebserver port: %d",iWebPort);
-	TrayMessage(hwnd, NIM_ADD,szTrayInfo);
-	ShowWindow(hwnd, SW_HIDE);
+	TrayMessage(g_hWnd, NIM_ADD,szTrayInfo);
+	ShowWindow(g_hWnd, SW_HIDE);
 #ifndef _DEBUG
 	char szURL[100];
 	sprintf(szURL,"http://127.0.0.1:%d",iWebPort);
@@ -247,5 +244,9 @@ bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCm
 	return true;
 }
 
+void ShowSystemTrayNotification(const char *szMessage)
+{
+	TrayMessage(g_hWnd, NIM_ADD,szMessage);
+}
 
 #endif

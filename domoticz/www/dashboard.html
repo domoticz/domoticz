@@ -20,22 +20,25 @@ function RefreshFavorites()
 						id="#dashcontent #light_" + item.idx;
 						var obj=$(id);
 						if (typeof obj != 'undefined') {
-							$(id + " #name").html(item.Name);
+							if ($(id + " #name").html()!=item.Name) {
+								$(id + " #name").html(item.Name);
+							}
+							var img="";
 							if (item.SwitchType == "Doorbell") {
-								$(id + " #img").html('<img src="images/door48.png" height="40" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()">');
+								img='<img src="images/door48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 							}
 							else if (item.SwitchType == "X10 Siren") {
-								$(id + " #img").html('<img src="images/siren48.png" height="40">');
+								img='<img src="images/siren48.png" height="40">';
 							}
 							else if (item.SwitchType == "Contact") {
-								$(id + " #img").html('<img src="images/contact48.png" height="40">');
+								img='<img src="images/contact48.png" height="40">';
 							}
 							else if (item.SwitchType == "Blinds") {
 								if (item.Status == 'Closed') {
-										$(id + " #img").html('<img src="images/blinds48.png" height="40" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()">');
+										img='<img src="images/blinds48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 								}
 								else {
-										$(id + " #img").html('<img src="images/blindsopen48.png" height="40" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()">');
+										img='<img src="images/blindsopen48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 								}
 							}
 							else {
@@ -45,14 +48,21 @@ function RefreshFavorites()
 										(item.Status == 'Group On')||
 										(item.Status.indexOf('Set ') == 0)
 									 ) {
-											$(id + " #img").html('<img src="images/light-on.png" height="40" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()">');
+											img='<img src="images/light-on.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 								}
 								else {
-											$(id + " #img").html('<img src="images/light-off.png" height="40" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()">');
+											img='<img src="images/light-off.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 								}
 							}
-							$(id + " #status").html(item.Status);
-							$(id + " #lastupdate").html(item.LastUpdate);
+							if ($(id + " #img").html()!=img) {
+								$(id + " #img").html(img);
+							}
+							if ($(id + " #status").html()!=item.Status) {
+								$(id + " #status").html(item.Status);
+							}
+							if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+								$(id + " #lastupdate").html(item.LastUpdate);
+							}
 						}
 					}
 				}); //light devices
@@ -67,7 +77,9 @@ function RefreshFavorites()
 						id="#dashcontent #temp_" + item.idx;
 						var obj=$(id);
 						if (typeof obj != 'undefined') {
-							$(id + " #name").html(item.Name);
+							if ($(id + " #name").html()!=item.Name) {
+								$(id + " #name").html(item.Name);
+							}
 							var img='<img src="images/';
 							if ((typeof item.Temp == 'undefined') || (item.Temp>0)) {
 								img+='temp48.png';
@@ -76,15 +88,17 @@ function RefreshFavorites()
 								img+='ice.png';
 							}
 							img+='" height="40">';
-							$(id + " #img").html(img);
+							if ($(id + " #img").html()!=img) {
+								$(id + " #img").html(img);
+							}
 							var status="";
 							var bHaveBefore=false;
 							if (typeof item.Temp != 'undefined') {
-									 status+=item.Temp + '&deg; C';
+									 status+=item.Temp + '° C';
 									 bHaveBefore=true;
 							}
 							if (typeof item.Chill != 'undefined') {
-								status+=', Chill: ' + item.Chill + '&deg; C';
+								status+=', Chill: ' + item.Chill + '° C';
 								bHaveBefore=true;
 							}
 							if (typeof item.Direction != 'undefined') {
@@ -105,8 +119,12 @@ function RefreshFavorites()
 							if (typeof item.ForecastStr != 'undefined') {
 								status+=', Prediction: ' + item.ForecastStr;
 							}
-							$(id + " #status").html(status);
-							$(id + " #lastupdate").html(item.LastUpdate);
+							if ($(id + " #status").html()!=status) {
+								$(id + " #status").html(status);
+							}
+							if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+								$(id + " #lastupdate").html(item.LastUpdate);
+							}
 						}
           }
         }); //temp devices
@@ -121,10 +139,14 @@ function RefreshFavorites()
 						id="#dashcontent #weather_" + item.idx;
 						var obj=$(id);
 						if (typeof obj != 'undefined') {
-							$(id + " #name").html(item.Name);
+							if ($(id + " #name").html()!=item.Name) {
+								$(id + " #name").html(item.Name);
+							}
+							var img="";
+							var status="";
 							if (typeof item.Rain != 'undefined') {
-								$(id + " #img").html('<img src="images/rain48.png" height="40">');
-								var status=item.Rain + ' mm';
+								img='<img src="images/rain48.png" height="40">';
+								status=item.Rain + ' mm';
 								if (typeof item.RainRate != 'undefined') {
 									if (item.RainRate!=0) {
 										status+=', Rate: ' + item.RainRate + ' mm/h';
@@ -133,21 +155,29 @@ function RefreshFavorites()
 								$(id + " #status").html(status);
 							}
 							else if (typeof item.UVI != 'undefined') {
-								$(id + " #img").html('<img src="images/uv48.png" height="40">');
-								var status=item.UVI + ' UVI';
+								img='<img src="images/uv48.png" height="40">';
+								status=item.UVI + ' UVI';
 								if (typeof item.Temp!= 'undefined') {
-									status+=', Temp: ' + item.Temp + '&deg; C';
+									status+=', Temp: ' + item.Temp + '° C';
 								}
 								$(id + " #status").html(status);
 							}
 							else if (typeof item.Direction != 'undefined') {
-								$(id + " #img").html('<img src="images/wind48.png" height="40">');
-								var status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
-								status+='Temp: ' + item.Temp + '&deg; C, ';
-								status+='Chill: ' + item.Chill + '&deg; C';
+								img='<img src="images/wind48.png" height="40">';
+								status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
+								status+='Temp: ' + item.Temp + '° C, ';
+								status+='Chill: ' + item.Chill + '° C';
 								$(id + " #status").html(status);
 							}
-							$(id + " #lastupdate").html(item.LastUpdate);
+							if ($(id + " #img").html()!=img) {
+								$(id + " #img").html(img);
+							}
+							if ($(id + " #status").html()!=status) {
+								$(id + " #status").html("AA");
+							}
+							if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+								$(id + " #lastupdate").html(item.LastUpdate);
+							}
 						}
           }
         }); //weather devices
@@ -159,20 +189,30 @@ function RefreshFavorites()
 						id="#dashcontent #security_" + item.idx;
 						var obj=$(id);
 						if (typeof obj != 'undefined') {
-							$(id + " #name").html(item.Name);
+							if ($(id + " #name").html()!=item.Name) {
+								$(id + " #name").html(item.Name);
+							}
+							var img="";
 							if (item.SubType.indexOf('remote') > 0) {
-								$(id + " #img").html('<img src="images/remote48.png" height="40">');
+								img='<img src="images/remote48.png" height="40">';
 							}
 							else {
 								if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
-									$(id + " #img").html('<img src="images/alarm48.png" height="40">');
+									img='<img src="images/alarm48.png" height="40">';
 								}
 								else {
-									$(id + " #img").html('<img src="images/security48.png" height="40">');
+									img='<img src="images/security48.png" height="40">';
 								}
 							}
-							$(id + " #status").html(item.Status);
-							$(id + " #lastupdate").html(item.LastUpdate);
+							if ($(id + " #img").html()!=img) {
+								$(id + " #img").html(img);
+							}
+							if ($(id + " #status").html()!=item.Status) {
+								$(id + " #status").html(item.Status);
+							}
+							if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+								$(id + " #lastupdate").html(item.LastUpdate);
+							}
 						}
           }
         }); //security devices
@@ -187,10 +227,20 @@ function RefreshFavorites()
 						id="#dashcontent #utility_" + item.idx;
 						var obj=$(id);
 						if (typeof obj != 'undefined') {
-							$(id + " #name").html(item.Name);
-							$(id + " #img").html('<img src="images/counter.png" height="40">');
-							$(id + " #status").html(item.Counter + ', Today: ' + item.CounterToday);
-							$(id + " #lastupdate").html(item.LastUpdate);
+							if ($(id + " #name").html()!=item.Name) {
+								$(id + " #name").html(item.Name);
+							}
+							var img='<img src="images/counter.png" height="40">';
+							var status=item.Counter + ', Today: ' + item.CounterToday;
+							if ($(id + " #img").html()!=img) {
+								$(id + " #img").html(img);
+							}
+							if ($(id + " #status").html()!=status) {
+								$(id + " #status").html(status);
+							}
+							if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+								$(id + " #lastupdate").html(item.LastUpdate);
+							}
 						}
           }
         }); //Utility devices
@@ -272,7 +322,7 @@ function ShowFavorites()
 								'\t    <tr>\n' +
 								'\t      <td id="name">' + item.Name + '</td>\n';
             if (item.SwitchType == "Doorbell") {
-              xhtm+='\t      <td id="img"><img src="images/door48.png" height="40" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
+              xhtm+='\t      <td id="img"><img src="images/door48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
             }
             else if (item.SwitchType == "X10 Siren") {
               xhtm+='\t      <td id="img"><img src="images/siren48.png" height="40"></td>\n';
@@ -282,10 +332,10 @@ function ShowFavorites()
             }
 						else if (item.SwitchType == "Blinds") {
 							if (item.Status == 'Closed') {
-									xhtm+='\t      <td id="img"><img src="images/blinds48.png" height="40" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
+									xhtm+='\t      <td id="img"><img src="images/blinds48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 							}
 							else {
-									xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" height="40" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
+									xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 							}
 						}
             else {
@@ -295,10 +345,10 @@ function ShowFavorites()
                   (item.Status == 'Group On')||
                   (item.Status.indexOf('Set ') == 0)
                  ) {
-                    xhtm+='\t      <td id="img"><img src="images/light-on.png" height="40" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
+                    xhtm+='\t      <td id="img"><img src="images/light-on.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
               }
               else {
-                    xhtm+='\t      <td id="img"><img src="images/light-off.png" height="40" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onMouseover="cursorhand()" onMouseout="cursordefault()"></td>\n';
+                    xhtm+='\t      <td id="img"><img src="images/light-off.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
               }
             }
             xhtm+=
@@ -364,11 +414,11 @@ function ShowFavorites()
                       '\t      <td id="status">';
                   var bHaveBefore=false;
                   if (typeof item.Temp != 'undefined') {
-                       xhtm+=item.Temp + '&deg; C';
+                       xhtm+=item.Temp + '° C';
                        bHaveBefore=true;
                   }
                   if (typeof item.Chill != 'undefined') {
-                    xhtm+=', Chill: ' + item.Chill + '&deg; C';
+                    xhtm+=', Chill: ' + item.Chill + '° C';
                     bHaveBefore=true;
                   }
 									if (typeof item.Direction != 'undefined') {
@@ -444,7 +494,7 @@ function ShowFavorites()
                   '\t      <td id="img"><img src="images/';
                   if (typeof item.Rain != 'undefined') {
                     xhtm+='rain48.png" height="40"></td>\n' +
-                    '\t      <td>' + item.Rain + ' mm';
+                    '\t      <td id="status">' + item.Rain + ' mm';
                     if (typeof item.RainRate != 'undefined') {
 											if (item.RainRate!=0) {
 												xhtm+=', Rate: ' + item.RainRate + ' mm/h';
@@ -453,16 +503,16 @@ function ShowFavorites()
                   }
                   else if (typeof item.UVI != 'undefined') {
                     xhtm+='uv48.png" height="40"></td>\n' +
-                    '\t      <td>' + item.UVI + ' UVI';
+                    '\t      <td id="status">' + item.UVI + ' UVI';
                     if (typeof item.Temp!= 'undefined') {
-                      xhtm+=', Temp: ' + item.Temp + '&deg; C';
+                      xhtm+=', Temp: ' + item.Temp + '° C';
                     }
                   }
                   else if (typeof item.Direction != 'undefined') {
                     xhtm+='wind48.png" height="40"></td>\n' +
                     '\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
-                    xhtm+='Temp: ' + item.Temp + '&deg; C, ';
-                    xhtm+='Chill: ' + item.Chill + '&deg; C';
+                    xhtm+='Temp: ' + item.Temp + '° C, ';
+                    xhtm+='Chill: ' + item.Chill + '° C';
                   }
                   xhtm+=
                       '</td>\n' +
