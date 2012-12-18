@@ -140,6 +140,7 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_Contact, "Contact" },
 		{ STYPE_Blinds, "Blinds" },
 		{ STYPE_X10Siren, "X10 Siren" },
+		{ STYPE_SMOKEDETECTOR, "Smoke Detector" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, sType);
@@ -168,6 +169,11 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_USAGE, "Usage","M" },
 		{ NTYPE_BARO, "Baro","B" },
 		{ NTYPE_SWITCH, "Switch On", "S" },
+		{ NTYPE_AMPERE1, "Ampere 1", "A" },
+		{ NTYPE_AMPERE2, "Ampere 2", "A" },
+		{ NTYPE_AMPERE3, "Ampere 3", "A" },
+		{ NTYPE_ENERGYINSTANT, "Instant", "W" },
+		{ NTYPE_ENERGYTOTAL, "Total", "Wh" },
 		{  0,NULL,NULL }
 	};
 	if (snum==0)
@@ -827,6 +833,16 @@ bool GetLightCommand(
 		}
 		else
 			return false;
+		break;
+	case pTypeSecurity1:
+		if (dSubType==sTypeKD101)
+		{
+			if ((switchcmd=="On")||(switchcmd=="All On"))
+			{
+				cmd=sStatusPanic;
+				return true;
+			}
+		}
 		break;
 	}
 	//unknown command

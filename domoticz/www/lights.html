@@ -952,6 +952,9 @@ function RefreshLights()
 							if (item.SubType.indexOf('remote') > 0) {
 								img='<img src="images/remote48.png" height="48">';
 							}
+							else if (item.SubType.indexOf('smoke') > 0) {
+									img='<img src="images/smoke48on.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+							}
 							else {
 								if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
 									img='<img src="images/alarm48.png" height="48">';
@@ -1070,6 +1073,9 @@ function ShowLights()
           else if (item.Type == "Security") {
 						if (item.SubType.indexOf('remote') > 0) {
 							xhtm+='\t      <td id="img"><img src="images/remote48.png" height="48"></td>\n';
+						}
+						else if (item.SubType.indexOf('smoke') > 0) {
+							xhtm+='\t      <td id="img"><img src="images/smoke48on.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
 						}
 						else {
 							if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {

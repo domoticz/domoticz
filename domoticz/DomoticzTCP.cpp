@@ -157,6 +157,8 @@ bool DomoticzTCP::ConnectInternal()
 void DomoticzTCP::disconnect()
 {
 	m_stoprequested=true;
+	if (m_thread!=NULL)
+		m_thread->join();
 	if (m_socket==INVALID_SOCKET)
 		return;
 	closesocket(m_socket);	//will terminate the thread

@@ -9,6 +9,7 @@ enum _eSwitchType
 	STYPE_Contact,
 	STYPE_Blinds,
 	STYPE_X10Siren,
+	STYPE_SMOKEDETECTOR,
 	STYPE_END
 };
 
@@ -53,6 +54,11 @@ enum _eNotificationTypes
 	NTYPE_USAGE,
 	NTYPE_BARO,
 	NTYPE_SWITCH,
+	NTYPE_AMPERE1,
+	NTYPE_AMPERE2,
+	NTYPE_AMPERE3,
+	NTYPE_ENERGYINSTANT,
+	NTYPE_ENERGYTOTAL,
 };
 
 enum _eShareRights
