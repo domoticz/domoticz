@@ -391,7 +391,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					if (
 						(dType!=pTypeRFXMeter)&&
 						(!((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorAD)))&&
-						(!((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorVolt)))
+						(!((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorVolt)))&&
+						(dType!=pTypeCURRENT)&&
+						(dType!=pTypeENERGY)
 						)
 						continue;
 				}

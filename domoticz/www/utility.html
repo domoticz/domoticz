@@ -391,11 +391,25 @@ function RefreshUtilities()
 						if ($(id + " #name").html()!=item.Name) {
 							$(id + " #name").html(item.Name);
 						}
-						var img='<img src="images/counter.png" height="48">';
+						var img="";
+						var status="";
+						
+            if (typeof item.Counter != 'undefined') {
+              img='<img src="images/counter.png" height="48">';
+              status=item.Counter + ', Today: ' + item.CounterToday;
+            }
+            else if (item.Type == "Current") {
+							img='<img src="images/current48.png" height="48">';
+              status=item.Data;
+            }
+            else if (item.Type == "Energy") {
+							img='<img src="images/current48.png" height="48">';
+              status=item.Data;
+            }
+						
 						if ($(id + " #img").html()!=img) {
 							$(id + " #img").html(img);
 						}
-						var status=item.Counter + ', Today: ' + item.CounterToday;
 						if ($(id + " #status").html()!=status) {
 							$(id + " #status").html(status);
 						}
@@ -460,6 +474,15 @@ function ShowUtilities()
               xhtm+='counter.png" height="48"></td>\n' +
               '\t      <td id="status">' + item.Counter + ', Today: ' + item.CounterToday;
             }
+            else if (item.Type == "Current") {
+              xhtm+='current48.png" height="48"></td>\n' +
+              '\t      <td id="status">' + item.Data;
+            }
+            else if (item.Type == "Energy") {
+              xhtm+='current48.png" height="48"></td>\n' +
+              '\t      <td id="status">' + item.Data;
+            }
+
             xhtm+=      
                 '</td>\n' +
                 '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +

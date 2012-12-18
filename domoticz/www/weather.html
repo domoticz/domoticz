@@ -113,7 +113,6 @@ function ShowWindLog(id,name)
           marginRight: 10,
           events: {
               load: function() {
-                  
                 $.getJSON("json.htm?type=graph&sensor=wind&idx="+id+"&range=day",
                 function(data) {
                       var seriessp = $.DayChart.series[0];
@@ -349,9 +348,21 @@ function ShowWindLog(id,name)
         xAxis: {
             min: 0,
             max: 360,
+            tickWidth: 1,
+            tickPosition: 'outside',
+            tickLength: 20,
+            tickColor: '#999',
+            tickInterval:45,
             labels: {
-                formatter: function () {
-                    return this.value + '\u00B0';
+                formatter:function(){
+                    if(this.value == 0) { return 'N'; }
+                    else if(this.value == 45) { return 'NE'; }
+                    else if(this.value == 90) { return 'E'; }
+                    else if(this.value == 135) { return 'SE'; }
+                    else if(this.value == 180) { return 'S'; }
+                    else if(this.value == 225) { return 'SW'; }
+                    else if(this.value == 270) { return 'W'; }
+                    else if(this.value == 315) { return 'NW'; }
                 }
             }
         },
@@ -1338,6 +1349,7 @@ function ShowRainLog(id,name)
           renderTo: 'rainmonthgraph',
           type: 'spline',
           marginRight: 10,
+          zoomType: 'xy',
           events: {
               load: function() {
                   
@@ -1414,6 +1426,7 @@ function ShowRainLog(id,name)
           renderTo: 'rainyeargraph',
           type: 'spline',
           marginRight: 10,
+          zoomType: 'xy',
           events: {
               load: function() {
                   
