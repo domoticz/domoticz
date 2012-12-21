@@ -20,7 +20,8 @@ const char *szHelp=
 	"Usage: Domoticz -www port -verbose x\n"
 	"\t-www port (for example -www 8080)\n"
 	"\t-verbose x (where x=0 is none, x=1 is debug)\n"
-	"\t-startupdelay seconds (default=0)\n";
+	"\t-startupdelay seconds (default=0)\n"
+	"\t-nowwwpwd (in case you forgot the webserver username/password)\n";
 
 
 MainWorker _mainworker;
@@ -87,6 +88,12 @@ int main(int argc, char**argv)
 		std::string wwwport=cmdLine.GetSafeArgument("-www",0,"8080");
 		_mainworker.SetWebserverPort(wwwport);
 	}
+	if (cmdLine.HasSwitch("-nowwwpwd"))
+	{
+		_mainworker.m_bIgnoreUsernamePassword=true;
+	}
+
+	
 
 	if (cmdLine.HasSwitch("-verbose"))
 	{

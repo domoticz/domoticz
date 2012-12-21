@@ -78,7 +78,14 @@ bool RFXComSerial::StopHardware()
 void RFXComSerial::readCallback(const char *data, size_t len)
 {
 	boost::lock_guard<boost::mutex> l(readQueueMutex);
-	onRFXMessage((const unsigned char *)data,len);
+	try
+	{
+		onRFXMessage((const unsigned char *)data,len);
+	}
+	catch (...)
+	{
+
+	}
 }
 
 

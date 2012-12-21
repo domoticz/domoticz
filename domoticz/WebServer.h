@@ -16,7 +16,7 @@ class CWebServer
 public:
 	CWebServer(void);
 	~CWebServer(void);
-	bool StartServer(MainWorker *pMain, std::string listenaddress, std::string listenport,std::string serverpath);
+	bool StartServer(MainWorker *pMain, std::string listenaddress, std::string listenport,std::string serverpath, bool bIgnoreUsernamePassword);
 	void StopServer();
 
 	char * DisplayVersion();

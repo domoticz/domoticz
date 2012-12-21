@@ -181,7 +181,7 @@ const char *sqlCreateMeter_Calendar =
 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
 const char *sqlCreateLightSubDevices =
-"CREATE TABLE [LightSubDevices] ("
+"CREATE TABLE IF NOT EXISTS [LightSubDevices] ("
 "[ID] INTEGER PRIMARY KEY, "
 "[DeviceRowID] INTEGER NOT NULL, "
 "[ParentID] INTEGER NOT NULL);";

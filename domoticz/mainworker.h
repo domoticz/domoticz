@@ -53,8 +53,10 @@ public:
 
 	CSQLHelper m_sql;
 	CScheduler m_scheduler;
+	bool m_bIgnoreUsernamePassword;
 private:
 	boost::mutex m_devicemutex;
+	boost::mutex decodeRXMessageMutex;
 
 	bool m_bStartup;
 	bool m_bStartHardware;

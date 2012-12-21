@@ -7,6 +7,7 @@
 #include "RFXNames.h"
 #include "RFXtrx.h"
 #include "Helper.h"
+#include "webserver/Base64.h"
 
 namespace http {
 	namespace server {
@@ -36,7 +37,7 @@ void CWebServer::Do_Work()
 
 
 
-bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::string listenport, std::string serverpath)
+bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::string listenport, std::string serverpath, bool bIgnoreUsernamePassword)
 {
 	m_pMain=pMain;
 	StopServer();
@@ -55,10 +56,28 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
 
 	m_pWebEm->SetDigistRealm("DVBControl.com");
 
-	std::vector<_tWebUserPassword>::const_iterator itt;
-	for (itt=m_users.begin(); itt!=m_users.end(); ++itt)
+	if (!bIgnoreUsernamePassword)
 	{
-		m_pWebEm->AddUserPassword(itt->Username, itt->Password);
+		std::string WebUserName,WebPassword;
+		int nValue=0;
+		if (m_pMain->m_sql.GetPreferencesVar("WebUserName",nValue,WebUserName))
+		{
+			if (m_pMain->m_sql.GetPreferencesVar("WebPassword",nValue,WebPassword))
+			{
+				if ((WebUserName!="")&&(WebPassword!="")) 
+				{
+					WebUserName=base64_decode(WebUserName);
+					WebPassword=base64_decode(WebPassword);
+					m_pWebEm->AddUserPassword(WebUserName, WebPassword);
+				}
+			}
+		}
+
+		std::vector<_tWebUserPassword>::const_iterator itt;
+		for (itt=m_users.begin(); itt!=m_users.end(); ++itt)
+		{
+			m_pWebEm->AddUserPassword(itt->Username, itt->Password);
+		}
 	}
 
 	//register callbacks
@@ -272,6 +291,24 @@ char * CWebServer::PostSettings()
 	std::string LightHistoryDays=m_pWebEm->FindValue("LightHistoryDays");
 	m_pMain->m_sql.UpdatePreferencesVar("LightHistoryDays",atoi(LightHistoryDays.c_str()));
 	
+	std::string WebUserName=m_pWebEm->FindValue("WebUserName");
+	std::string WebPassword=m_pWebEm->FindValue("WebPassword");
+
+	if ((WebUserName=="")||(WebPassword==""))
+	{
+		WebUserName="";
+		WebPassword="";
+	}
+	m_pWebEm->ClearUserPasswords();
+	if ((WebUserName!="")&&(WebPassword!="")) {
+		m_pWebEm->AddUserPassword(WebUserName,WebPassword);
+		WebUserName=base64_encode((const unsigned char*)WebUserName.c_str(),WebUserName.size());
+		WebPassword=base64_encode((const unsigned char*)WebPassword.c_str(),WebPassword.size());
+	}
+
+	m_pMain->m_sql.UpdatePreferencesVar("WebUserName",WebUserName.c_str());
+	m_pMain->m_sql.UpdatePreferencesVar("WebPassword",WebPassword.c_str());
+
 
 	return (char*)m_retstr.c_str();
 }
@@ -2838,6 +2875,14 @@ char * CWebServer::GetJSonPage()
 				else if (Key=="LightHistoryDays")
 				{
 					root["LightHistoryDays"]=nValue;
+				}
+				else if (Key=="WebUserName")
+				{
+					root["WebUserName"]=base64_decode(sValue);
+				}
+				else if (Key=="WebPassword")
+				{
+					root["WebPassword"]=base64_decode(sValue);
 				}
 			}
 		}

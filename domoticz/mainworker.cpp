@@ -32,6 +32,7 @@ MainWorker::MainWorker()
 	m_hardwareStartCounter=0;
 	m_bStartup=false;
 	m_webserverport="8080";
+	m_bIgnoreUsernamePassword=false;
 }
 
 MainWorker::~MainWorker()
@@ -99,7 +100,8 @@ void MainWorker::AddDomoticzHardware(CDomoticzHardwareBase *pHardware)
 
 void MainWorker::RemoveDomoticzHardware(CDomoticzHardwareBase *pHardware)
 {
-	boost::lock_guard<boost::mutex> l(m_devicemutex);
+	boost::lock_guard<boost::mutex> l1(decodeRXMessageMutex);
+	boost::lock_guard<boost::mutex> l2(m_devicemutex);
 	std::vector<CDomoticzHardwareBase*>::iterator itt;
 	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
 	{
@@ -354,7 +356,7 @@ bool MainWorker::Stop()
 bool MainWorker::StartThread()
 {
 	//Start WebServer
-	m_webserver.StartServer(this, "0.0.0.0",m_webserverport,"www");
+	m_webserver.StartServer(this, "0.0.0.0",m_webserverport,"www",m_bIgnoreUsernamePassword);
 
 	//Start Scheduler
 	m_scheduler.StartScheduler(this);
@@ -555,6 +557,8 @@ void MainWorker::OnHardwareConnected(CDomoticzHardwareBase *pHardware)
 
 void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand)
 {
+	boost::lock_guard<boost::mutex> l(decodeRXMessageMutex);
+
 	// current date/time based on current system
 	time_t now = time(0);
 
