@@ -271,7 +271,8 @@ void CScheduler::CheckSchedules()
 				{
 					//something is wrong, probably no sunset/rise
 					//remove this timer
-					m_scheduleitems.erase(itt);
+					itt->startTime+=24*3600;
+					//m_scheduleitems.erase(itt);
 					return;
 				}
 			}
