@@ -267,7 +267,13 @@ void CScheduler::CheckSchedules()
 						std::cerr << "Error sending switch command, DevID: " << itt->DevID << ", Time: " << asctime(ltime) << std::endl;
 					}
 				}
-				AdjustScheduleItem(&*itt,true);
+				if (!AdjustScheduleItem(&*itt,true))
+				{
+					//something is wrong, probably no sunset/rise
+					//remove this timer
+					m_scheduleitems.erase(itt);
+					return;
+				}
 			}
 		}
 	}
