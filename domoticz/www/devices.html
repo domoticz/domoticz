@@ -208,6 +208,21 @@ function ShowDevices(filter)
       if (typeof data.result != 'undefined') {
         $.each(data.result, function(i,item){
           var itemSubIcons="";
+          var TypeImg=item.TypeImg;
+          var itemImage='<img src="images/' + TypeImg + '.png">';
+          if (TypeImg.indexOf("lightbulb")==0) {
+							if (
+									(item.Status == 'On')||
+									(item.Status == 'Chime')||
+									(item.Status == 'Group On')||
+									(item.Status.indexOf('Set ') == 0)
+								 ) {
+											itemImage='<img src="images/lightbulb.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowDevices);" onmouseover="cursorhand()" onmouseout="cursordefault()">';
+							}
+							else {
+											itemImage='<img src="images/lightbulboff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowDevices);" onmouseover="cursorhand()" onmouseout="cursordefault()">';
+							}
+          }
           if (item.Used!=0) {
             itemSubIcons+='<img src="images/remove.png" title="Remove Device" onclick="RemoveDevice(' + item.idx +')">';
           }
@@ -230,13 +245,15 @@ function ShowDevices(filter)
           {
             itemSubIcons+='&nbsp;<img src="images/log.png" title="Log" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#devicescontent\', \'ShowDevices\');">';
           }
+          else
+						itemSubIcons+='&nbsp;<img src="images/empty16.png">';
           var ID = item.ID;
           if (item.Type=="Lighting 1") {
 						ID = String.fromCharCode(item.ID);
           }
           itemSubIcons+='&nbsp;<img src="images/delete.png" title="Delete Device" onclick="DeleteDevice(' + item.idx +')">';
           var addId = oTable.fnAddData([
-                      '<img src="images/' + item.TypeImg + '.png">',
+                      itemImage,
                       item.HardwareName,
                       ID,
                       item.Unit,

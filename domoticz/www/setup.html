@@ -27,6 +27,7 @@
 </div>
 <form id="settings">
 <h2>Location:</h2><br>
+<label id="sunriseset"></label>
 <table class="display" id="locationtable" border="0" cellpadding="0" cellspacing="0">
 <tr>
   <td align="right" style="width:60px"><label for="Latitude">Latitude: </label></td>
@@ -132,6 +133,28 @@ function TestNMANotification()
 
 function ShowSettings()
 {
+  var sunRise="";
+  var sunSet="";
+  $.ajax({
+     url: "json.htm?type=command&param=getSunRiseSet",
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+        if (typeof data.Sunrise != 'undefined') {
+          sunRise=data.Sunrise;
+          sunSet=data.Sunset;
+        }
+     }
+  });
+  
+	var suntext="";
+  if (sunRise!="")
+  {
+    suntext='<br>Current SunRise: ' + sunRise + ', SunSet: ' + sunSet + '<br><br>\n';
+    $("#sunriseset").html(suntext);
+  }
+  
+
   $.ajax({
      url: "json.htm?type=settings", 
      async: false, 

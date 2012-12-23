@@ -563,6 +563,26 @@ function ShowTimers(id,name)
 	$('#modal').show();
   var htmlcontent = '';
   htmlcontent='<p><h2>Name: ' + name + '</h2></p><br>\n';
+  
+  var sunRise="";
+  var sunSet="";
+  $.ajax({
+     url: "json.htm?type=command&param=getSunRiseSet",
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+        if (typeof data.Sunrise != 'undefined') {
+          sunRise=data.Sunrise;
+          sunSet=data.Sunset;
+        }
+     }
+  });
+  
+  if (sunRise!="")
+  {
+    htmlcontent+='SunRise: ' + sunRise + ', SunSet: ' + sunSet + '<br><br>\n';
+  }
+  
   htmlcontent+=$('#edittimers').html();
   $('#lightcontent').html(GetBackbuttonHTMLTable('ShowLights')+htmlcontent);
  
