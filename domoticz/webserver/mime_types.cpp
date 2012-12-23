@@ -30,6 +30,7 @@ struct mapping
   { "js", "text/javascript" },
   { "swf", "application/x-shockwave-flash" },
   { "manifest", "text/cache-manifest" },
+  { "appcache", "text/cache-manifest" },
   { 0, 0 } // Marks end of list.
 };
 

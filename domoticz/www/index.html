@@ -1,31 +1,63 @@
-<!DOCTYPE HTML>
-<html>
+<!DOCTYPE html>
+<html manifest="html5.appcache">
 <head>
-<title>Domoticz</title>
-<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<meta name="description" content="" />
-<meta name="keywords" content="" />
-<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black" />
-<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
-<META HTTP-EQUIV="Expires" CONTENT="-1">
-<link rel="shortcut icon" href="/favicon.ico" />
-<link rel="apple-touch-icon" href="images/iphone-icon.png"/>
+    <title>Domoticz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" /> 
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
 
-<noscript>
-<link type="text/css" rel="stylesheet" href="css/5grid/core.css" />
-<link type="text/css" rel="stylesheet" href="css/5grid/core-desktop.css" />
-<link type="text/css" rel="stylesheet" href="css/5grid/core-1200px.css" />
-<link type="text/css" rel="stylesheet" href="css/5grid/core-noscript.css" />
-<link type="text/css" rel="stylesheet" href="css/style.css" />
-<link type="text/css" rel="stylesheet" href="css/style-desktop.css" />
-</noscript>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta name="description" content="" />
+		<meta name="keywords" content="" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<link rel="shortcut icon" href="/favicon.ico" />
+		<link rel="apple-touch-icon" href="images/iphone-icon.png"/>
 
-<link type="text/css" rel="stylesheet" href="css/ui-darkness/jquery-ui-1.9.0.custom.min.css" />
-<link type="text/css" rel="stylesheet" href="css/loading.css" />
-<link type="text/css" rel="stylesheet" href="css/demo_table_jui.css" />
-<link type="text/css" rel="stylesheet" href="css/TableTools.css" />
+    <!-- iPhone -->
+    <link href="images/startup/apple-touch-startup-image-320x460.png" 
+        media="(device-width: 320px)" 
+        rel="apple-touch-startup-image">
+    
+    <!-- iPhone (Retina) -->
+    <link href="images/startup/apple-touch-startup-image-640x920.png" 
+        media="(device-width: 320px) and (-webkit-device-pixel-ratio: 2)" 
+        rel="apple-touch-startup-image">
+
+		<!-- iPad (portrait) -->
+		<link href="images/startup/apple-touch-startup-image-768x1004.png" 
+					media="(device-width: 768px) and (orientation: portrait)" 
+					rel="apple-touch-startup-image">
+
+		<!-- iPad (landscape) -->
+		<link href="images/startup/apple-touch-startup-image-1024x748.png" 
+					media="(device-width: 768px) and (orientation: landscape)" 
+					rel="apple-touch-startup-image">      
+
+		<!--iPad (Retina, portrait) -->
+		<link href="images/startup/apple-touch-startup-image-1536x2008.png" 
+					media="(device-width: 768px) 
+					 and (orientation: portrait) and (-webkit-device-pixel-ratio: 2)" 
+					rel="apple-touch-startup-image">
+
+		<!-- iPad (Retina, landscape) -->
+		<link href="images/startup/apple-touch-startup-image-2048x1496.png" 
+					media="(device-width: 768px) 
+					 and (orientation: landscape) and (-webkit-device-pixel-ratio: 2)" 
+					rel="apple-touch-startup-image"> 
+
+		<noscript>
+		<link type="text/css" rel="stylesheet" href="css/5grid/core.css" />
+		<link type="text/css" rel="stylesheet" href="css/5grid/core-desktop.css" />
+		<link type="text/css" rel="stylesheet" href="css/5grid/core-1200px.css" />
+		<link type="text/css" rel="stylesheet" href="css/5grid/core-noscript.css" />
+		<link type="text/css" rel="stylesheet" href="css/style.css" />
+		<link type="text/css" rel="stylesheet" href="css/style-desktop.css" />
+		</noscript>
+
+		<link type="text/css" rel="stylesheet" href="css/ui-darkness/jquery-ui-1.9.0.custom.min.css" />
+		<link type="text/css" rel="stylesheet" href="css/loading.css" />
+		<link type="text/css" rel="stylesheet" href="css/demo_table_jui.css" />
+		<link type="text/css" rel="stylesheet" href="css/TableTools.css" />
 
 		<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/jquery-ui-1.9.0.custom.min.js"></script>
@@ -41,6 +73,26 @@
     <script type="text/javascript" charset="utf-8" src="js/themes/dark-blue.js"></script>
 
 <script type="text/javascript" charset="utf-8" id="init-code">
+
+	// Check if a new cache is available on page load.
+	window.addEventListener('load', function(e) 
+	{
+			window.applicationCache.addEventListener('updateready', function(e) 
+			{
+					if (window.applicationCache.status == window.applicationCache.UPDATEREADY) 
+					{
+							// Browser downloaded a new app cache.
+							// Swap it in and reload the page to get the new hotness.
+							window.applicationCache.swapCache();
+							
+							if (confirm('A new version of the Application is available. Reload Now?')) 
+							{
+									window.location.reload();
+							}
+					}
+			}, false);
+	}, false);
+                
 jQuery.fn.center = function(parent) {
     if (parent) {
         parent = this.parent();

@@ -3,7 +3,7 @@
 //#include <boost/bind.hpp>
 //#include <boost/asio.hpp>
 
-#define RETRY_DELAY 10
+#define RETRY_DELAY 30
 
 DomoticzTCP::DomoticzTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string username, const std::string password)
 {

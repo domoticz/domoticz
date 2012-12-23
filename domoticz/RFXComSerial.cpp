@@ -43,7 +43,7 @@ bool RFXComSerial::StartHardware()
 	}
 	catch (boost::exception & e)
 	{
-		std::cerr << "Error opening serial port!\n";
+		std::cerr << "Error opening serial port!" << std::endl;
 #ifdef _DEBUG
 		std::cerr << "-----------------" << std::endl << boost::diagnostic_information(e) << "-----------------" << std::endl;
 #endif
@@ -51,7 +51,7 @@ bool RFXComSerial::StartHardware()
 	}
 	catch ( ... )
 	{
-		std::cerr << "Error opening serial port!!!";
+		std::cerr << "Error opening serial port!!!" << std::endl;
 		return false;
 	}
 	m_bIsStarted=true;
