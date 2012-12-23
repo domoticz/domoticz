@@ -24,5 +24,6 @@ private:
 bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCmd, void *pQuitFunction, const int iWebPort);
 void ShowSystemTrayNotification(const char *szMessage);
 void RedirectIOToConsole();
+BOOL TrayMessage(DWORD dwMessage, const char *szInfo);
 
 #endif

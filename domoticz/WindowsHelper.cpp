@@ -98,14 +98,14 @@ const void *g_pQuitFunction=NULL;
 HANDLE g_hConsoleOut=NULL;
 HWND g_hWnd;
 
-BOOL TrayMessage( HWND hWnd, DWORD dwMessage, const char *szInfo)
+BOOL TrayMessage(DWORD dwMessage, const char *szInfo)
 {
 	NOTIFYICONDATA tnd;
 	ZeroMemory(&tnd,sizeof(NOTIFYICONDATA));
 
 	tnd.cbSize = NOTIFYICONDATAA_V2_SIZE;
 
-	tnd.hWnd = hWnd;
+	tnd.hWnd = g_hWnd;
 	tnd.uID = 100;
 	tnd.uCallbackMessage = WM_TRAYICON;
 	tnd.uFlags = NIF_MESSAGE|NIF_ICON|NIF_TIP | NIF_SHOWTIP;
@@ -180,7 +180,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		DestroyWindow(hwnd);
 		break;
 	case WM_DESTROY:
-		TrayMessage(hwnd,NIM_DELETE,NULL);
+		TrayMessage(NIM_DELETE,NULL);
 		if (g_pQuitFunction)
 			((void (*)(void)) g_pQuitFunction)();
 		PostQuitMessage(0);
@@ -234,7 +234,7 @@ bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCm
 	}
 	char szTrayInfo[100];
 	sprintf(szTrayInfo,"Application Started.\nWebserver port: %d",iWebPort);
-	TrayMessage(g_hWnd, NIM_ADD,szTrayInfo);
+	TrayMessage(NIM_ADD,szTrayInfo);
 	ShowWindow(g_hWnd, SW_HIDE);
 #ifndef _DEBUG
 	char szURL[100];
@@ -246,7 +246,7 @@ bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCm
 
 void ShowSystemTrayNotification(const char *szMessage)
 {
-	TrayMessage(g_hWnd, NIM_ADD,szMessage);
+	TrayMessage(NIM_ADD,szMessage);
 }
 
 #endif

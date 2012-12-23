@@ -30,6 +30,9 @@ void DQuitFunction()
 {
 	std::cout << "Closing application!..." << std::endl;
 	fflush(stdout);
+#if defined WIN32
+	TrayMessage(NIM_DELETE,NULL);
+#endif
 	std::cout << "stopping worker...\n";
 	_mainworker.Stop();
 }
