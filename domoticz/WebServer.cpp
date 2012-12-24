@@ -374,11 +374,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 			_eMeterType metertype=(_eMeterType)switchtype;
 			int hardwareID= atoi(sd[14].c_str());
 
-			if (
-				(rused=="true")&&
-				(!used)
-				)
+			if ((rused=="true")&&(!used))
 				continue;
+
 			if (
 				(rused=="false")&&
 				(used)
@@ -524,8 +522,6 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 
 				root["result"][ii]["IsSubDevice"]=bIsSubDevice;
 				
-				
-
 				if (switchtype==STYPE_Doorbell)
 					root["result"][ii]["TypeImg"]="door";
 				else if (switchtype==STYPE_X10Siren)
@@ -1952,7 +1948,7 @@ char * CWebServer::GetJSonPage()
 			root["title"]="GetLightSwitches";
 			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;
-			szQuery << "SELECT ID, Name, Type FROM DeviceStatus WHERE (Used==1) ORDER BY Name";
+			szQuery << "SELECT ID, Name, Type, Used FROM DeviceStatus ORDER BY Name";
 			result=m_pMain->m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
@@ -1965,6 +1961,8 @@ char * CWebServer::GetJSonPage()
 					std::string ID=sd[0];
 					std::string Name=sd[1];
 					int Type=atoi(sd[2].c_str());
+					int used=atoi(sd[3].c_str());
+					bool bdoAdd;
 					switch (Type)
 					{
 					case pTypeLighting1:
@@ -1974,9 +1972,27 @@ char * CWebServer::GetJSonPage()
 					case pTypeLighting5:
 					case pTypeLighting6:
 					case pTypeSecurity1:
-						root["result"][ii]["idx"]=ID;
-						root["result"][ii]["Name"]=Name;
-						ii++;
+						bdoAdd=true;
+						if (!used)
+						{
+							bdoAdd=false;
+							bool bIsSubDevice=false;
+							std::vector<std::vector<std::string> > resultSD;
+							std::stringstream szQuerySD;
+
+							szQuerySD.clear();
+							szQuerySD.str("");
+							szQuerySD << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << sd[0] << "')";
+							resultSD=m_pMain->m_sql.query(szQuerySD.str());
+							if (resultSD.size()>0)
+								bdoAdd=true;
+						}
+						if (bdoAdd)
+						{
+							root["result"][ii]["idx"]=ID;
+							root["result"][ii]["Name"]=Name;
+							ii++;
+						}
 						break;
 					}
 				}
@@ -2780,8 +2796,8 @@ char * CWebServer::GetJSonPage()
 		if ((idx=="")||(sused==""))
 			goto exitjson;
 		int used=(sused=="true")?1:0;
-		//if (maindeviceidx!="")
-			//used=0;
+		if (maindeviceidx!="")
+			used=0;
 
 		szQuery.clear();
 		szQuery.str("");
@@ -2800,7 +2816,7 @@ char * CWebServer::GetJSonPage()
 
 		if (used==0)
 		{
-			bool bRemoveSubDevices=true;//(m_pWebEm->FindValue("RemoveSubDevices")!="");
+			bool bRemoveSubDevices=(m_pWebEm->FindValue("RemoveSubDevices")=="true");
 
 			if (bRemoveSubDevices)
 			{

@@ -1,3 +1,6 @@
+<div id="dialog-confirm-delete-subs" title="Warning:" style="display:none;">
+    <p>This device is used as a Sub/Slave device for other Devices.<br>Do you want to remove this device from those devices too?</p>
+</div>
 <div id="editlightswitch" style="display:none;">
 		<table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
 			<tr>
@@ -648,27 +651,46 @@ function EditNotification(idx,name, hasnotifications)
   $( "#dialog-notificationlightdevice" ).dialog( "open" );
 }
 
+function DeleteLightSwitchIntern(bRemoveSubDevices)
+{
+		$.ajax({
+			 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#lightcontent #devicename").val() + '&used=false&RemoveSubDevices=' + bRemoveSubDevices,
+			 async: false, 
+			 dataType: 'json',
+			 success: function(data) {
+					ShowLights();
+			 }
+		});
+}
+
 function DeleteLightSwitch()
 {
 	var bValid = false;
 	bValid=(confirm("Are you sure to remove this Light/Switch?")==true);
 	if ( bValid ) {
 			var bRemoveSubDevices=true;
-			//if ($.isslave==true) {
-			//	if (!confirm("This device is used as a Sub/Slave device for other Devices.\nDo you want to remove this device from those devices too?")) {
-			//		return;
-			//	}
-			//	bRemoveSubDevices=true;
-			//}
-
-			$.ajax({
-				 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#lightcontent #devicename").val() + '&used=false&RemoveSubDevices=' + bRemoveSubDevices,
-				 async: false, 
-				 dataType: 'json',
-				 success: function(data) {
-						ShowLights();
-				 }
-			});
+			if ($.isslave==true) {
+					var result=false;
+					$( "#dialog-confirm-delete-subs" ).dialog({
+							resizable: false,
+							width: 440,
+							height:180,
+							modal: true,
+							buttons: {
+									"Yes": function() {
+											$( this ).dialog( "close" );
+											DeleteLightSwitchIntern(true);
+									},
+									"No": function() {
+											$( this ).dialog( "close" );
+											DeleteLightSwitchIntern(false);
+									}
+						}
+				});
+			}
+			else {
+				DeleteLightSwitchIntern(false);
+			}
 	}
 }
 
@@ -1070,6 +1092,7 @@ function ShowLights()
   
 
   var i=0;
+	var j=0;
 
   $.ajax({
      url: "json.htm?type=devices&filter=light&used=true&order=Name", 
@@ -1078,7 +1101,7 @@ function ShowLights()
      success: function(data) {
       if (typeof data.result != 'undefined') {
         $.each(data.result, function(i,item){
-          if (i % 3 == 0)
+          if (j % 3 == 0)
           {
             //add devider
             if (bHaveAddedDevider == true) {
@@ -1183,6 +1206,7 @@ function ShowLights()
                 '\t  </section>\n' +
                 '\t</div>\n';
           htmlcontent+=xhtm;
+          j+=1;
         });
       }
      }
@@ -1394,7 +1418,6 @@ $(document).ready(function() {
 					 $.myglobals.CommandStr.push($(this).text());
 		});
 
-    
     $( "#dialog-addlightdevice" ).dialog({
           autoOpen: false,
           width: 380,
