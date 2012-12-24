@@ -204,6 +204,7 @@ void CScheduler::CheckSchedules()
 	time_t atime=time(NULL);
 
 	std::vector<tScheduleItem>::iterator itt;
+	int ii=0;
 	for (itt=m_scheduleitems.begin(); itt!=m_scheduleitems.end(); ++itt)
 	{
 		if (atime>itt->startTime)
@@ -267,15 +268,19 @@ void CScheduler::CheckSchedules()
 						std::cerr << "Error sending switch command, DevID: " << itt->DevID << ", Time: " << asctime(ltime) << std::endl;
 					}
 				}
-				if (!AdjustScheduleItem(&*itt,true))
+
+				//test for raspberry pi
+
+				tScheduleItem sItem=*itt;
+
+				if (!AdjustScheduleItem(&sItem,true))
 				{
 					//something is wrong, probably no sunset/rise
-					//remove this timer
-					itt->startTime+=24*3600;
-					//m_scheduleitems.erase(itt);
-					return;
+					sItem.startTime+=24*3600;
 				}
+				m_scheduleitems[ii]=sItem;
 			}
+			ii++;
 		}
 	}
 }
