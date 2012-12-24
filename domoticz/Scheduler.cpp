@@ -179,8 +179,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	if ((itime<rtime)||(bForceAddDay))
 	{
 		//item is scheduled for next day
-		ltime->tm_mday+=1;
-		itime=mktime(ltime);
+		itime+=24*3600;
 	}
 	pItem->startTime=itime;
 	return true;
