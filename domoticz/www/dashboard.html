@@ -298,6 +298,9 @@ function ShowFavorites()
 					if (data.DashboardType==1) {
 						rowItems=4;
 					}
+					else if (data.DashboardType==2) {
+						rowItems=1000;
+					}
 
       if (typeof data.result != 'undefined') {
         //light devices
@@ -326,13 +329,24 @@ function ShowFavorites()
             if (data.DashboardType==0) {
 							xhtm='\t<div class="4u" id="light_' + item.idx +'">\n';
             }
-            else {
+            else if (data.DashboardType==1) {
 							xhtm='\t<div class="3u" id="light_' + item.idx +'">\n';
             }
+            else {
+							xhtm+='\t<div id="light_' + item.idx +'">\n';
+            }
 				
+						xhtm+='\t  <section>\n';
+            if (data.DashboardType==0) {
+							xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+            }
+            else if (data.DashboardType==1) {
+							xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+            }
+            else {
+							xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+            }
 						xhtm+=
-								'\t  <section>\n' +
-								'\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n' +
 								'\t    <tr>\n' +
 								'\t      <td id="name">' + item.Name + '</td>\n';
             if (item.SwitchType == "Doorbell") {
@@ -410,11 +424,21 @@ function ShowFavorites()
             if (data.DashboardType==0) {
 							xhtm='\t<div class="4u" id="temp_' + item.idx +'">\n';
             }
-            else {
+            else if (data.DashboardType==1) {
 							xhtm='\t<div class="3u" id="temp_' + item.idx +'">\n';
             }
-            xhtm+='\t  <section>\n' +
-                  '\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n' +
+            else {
+							xhtm='\t<div class="0u" id="temp_' + item.idx +'">\n';
+            }
+
+            xhtm+='\t  <section>\n';
+            if (data.DashboardType==0) {
+                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+            }
+            else {
+                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+            }
+            xhtm+=
                   '\t    <tr>\n' +
                   '\t      <td id="name">' + item.Name + '</td>\n' +
                   '\t      <td id="img"><img src="images/';
@@ -498,11 +522,23 @@ function ShowFavorites()
             if (data.DashboardType==0) {
 							xhtm='\t<div class="4u" id="weather_' + item.idx +'">\n';
             }
-            else {
+            else if (data.DashboardType==1) {
 							xhtm='\t<div class="3u" id="weather_' + item.idx +'">\n';
             }
-            xhtm+='\t  <section>\n' +
-                  '\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n' +
+            else {
+							xhtm='\t<div class="0u" id="weather_' + item.idx +'">\n';
+            }
+            xhtm+='\t  <section>\n';
+            if (data.DashboardType==0) {
+                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+            }
+            else if (data.DashboardType==1) {
+                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+            }
+            else {
+                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+            }
+            xhtm+=
                   '\t    <tr>\n' +
                   '\t      <td id="name">' + item.Name + '</td>\n' +
                   '\t      <td id="img"><img src="images/';
@@ -570,11 +606,23 @@ function ShowFavorites()
             if (data.DashboardType==0) {
 							xhtm='\t<div class="4u" id="security_' + item.idx +'">\n';
             }
-            else {
+            else if (data.DashboardType==1) {
 							xhtm='\t<div class="3u" id="security_' + item.idx +'">\n';
             }
-            xhtm+='\t  <section>\n' +
-                  '\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n' +
+            else {
+							xhtm='\t<div class="0u" id="security_' + item.idx +'">\n';
+            }
+            xhtm+='\t  <section>\n';
+            if (data.DashboardType==0) {
+                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+            }
+            else if (data.DashboardType==1) {
+                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+            }
+            else {
+                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+            }
+            xhtm+=
                   '\t    <tr>\n' +
                   '\t      <td id="name">' + item.Name + '</td>\n';
 						if (item.SubType.indexOf('remote') > 0) {
@@ -633,11 +681,23 @@ function ShowFavorites()
             if (data.DashboardType==0) {
 							xhtm='\t<div class="4u" id="utility_' + item.idx +'">\n';
             }
-            else {
+            else if (data.DashboardType==1) {
 							xhtm='\t<div class="3u" id="utility_' + item.idx +'">\n';
             }
-            xhtm+='\t  <span>\n' +
-                  '\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n' +
+            else {
+							xhtm='\t<div class="0u" id="utility_' + item.idx +'">\n';
+            }
+            xhtm+='\t  <span>\n';
+            if (data.DashboardType==0) {
+                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+            }
+            else if (data.DashboardType==1) {
+                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+            }
+            else {
+                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+            }
+            xhtm+=
                   '\t    <tr>\n' +
                   '\t      <td id="name">' + item.Name + '</td>\n' +
                   '\t      <td id="img"><img src="images/';

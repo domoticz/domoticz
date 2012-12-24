@@ -653,8 +653,16 @@ function DeleteLightSwitch()
 	var bValid = false;
 	bValid=(confirm("Are you sure to remove this Light/Switch?")==true);
 	if ( bValid ) {
+			var bRemoveSubDevices=true;
+			//if ($.isslave==true) {
+			//	if (!confirm("This device is used as a Sub/Slave device for other Devices.\nDo you want to remove this device from those devices too?")) {
+			//		return;
+			//	}
+			//	bRemoveSubDevices=true;
+			//}
+
 			$.ajax({
-				 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#lightcontent #devicename").val() + '&used=false',
+				 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#lightcontent #devicename").val() + '&used=false&RemoveSubDevices=' + bRemoveSubDevices,
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
@@ -790,11 +798,12 @@ function AddSubDevice()
 	});
 }
 
-function EditLightDevice(idx,name, switchtype)
+function EditLightDevice(idx,name,switchtype,isslave)
 {
   clearInterval($.myglobals.refreshTimer);
   $.devIdx=idx;
-  
+  $.isslave=isslave;
+ 
 	var oTable;
 	
 	$('#modal').show();
@@ -1025,12 +1034,34 @@ function ShowLights()
   var htmlcontent = '';
   var bHaveAddedDevider = false;
 
+  var sunRise="";
+  var sunSet="";
+
+  $.ajax({
+     url: "json.htm?type=command&param=getSunRiseSet",
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+        if (typeof data.Sunrise != 'undefined') {
+          sunRise=data.Sunrise;
+          sunSet=data.Sunset;
+        }
+     }
+  });
+
+	var suntext="";
+  if (sunRise!="")
+  {
+    suntext+='SunRise: ' + sunRise + ', SunSet: ' + sunSet + '<br><br>\n';
+  }
+
   var tophtm=
         '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
         '\t<tr>\n' +
         '\t  <td align="left">\n' +
         '\t    <a class="btnstylerev" onclick="AddManualLightDevice();">Manual Light/Switch</a>\n' +
         '\t  </td>\n' +
+        '\t  <td align="center">' + suntext + '</td>\n'+
         '\t  <td align="right">\n' +
         '\t    <a class="btnstyle" onclick="AddLightDevice();">Learn Light/Switch</a>\n' +
         '\t  </td>\n' +
@@ -1134,7 +1165,7 @@ function ShowLights()
           }
           xhtm+=      
                 '<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#lightcontent\', \'ShowLights\');">Log</a> ' +
-                '<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +');">Edit</a> ';
+                '<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +', ' + item.IsSubDevice +');">Edit</a> ';
 					if (item.Type != "Security") {
           if (item.Timers == "true")
             xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';

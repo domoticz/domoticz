@@ -512,6 +512,20 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				root["result"][ii]["SwitchType"]=Switch_Type_Desc(switchtype);
 				root["result"][ii]["SwitchTypeVal"]=switchtype;
 
+				bool bIsSubDevice=false;
+				std::vector<std::vector<std::string> > resultSD;
+				std::stringstream szQuerySD;
+
+				szQuerySD.clear();
+				szQuerySD.str("");
+				szQuerySD << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << sd[0] << "')";
+				resultSD=m_pMain->m_sql.query(szQuerySD.str());
+				bIsSubDevice=(resultSD.size()>0);
+
+				root["result"][ii]["IsSubDevice"]=bIsSubDevice;
+				
+				
+
 				if (switchtype==STYPE_Doorbell)
 					root["result"][ii]["TypeImg"]="door";
 				else if (switchtype==STYPE_X10Siren)
@@ -2766,6 +2780,8 @@ char * CWebServer::GetJSonPage()
 		if ((idx=="")||(sused==""))
 			goto exitjson;
 		int used=(sused=="true")?1:0;
+		//if (maindeviceidx!="")
+			//used=0;
 
 		szQuery.clear();
 		szQuery.str("");
@@ -2784,10 +2800,15 @@ char * CWebServer::GetJSonPage()
 
 		if (used==0)
 		{
-			//if this device was a slave device, remove it
+			bool bRemoveSubDevices=true;//(m_pWebEm->FindValue("RemoveSubDevices")!="");
+
+			if (bRemoveSubDevices)
+			{
+				//if this device was a slave device, remove it
+				sprintf(szTmp,"DELETE FROM LightSubDevices WHERE (DeviceRowID == %s)",idx.c_str());
+				m_pMain->m_sql.query(szTmp);
+			}
 			sprintf(szTmp,"DELETE FROM LightSubDevices WHERE (ParentID == %s)",idx.c_str());
-			m_pMain->m_sql.query(szTmp);
-			sprintf(szTmp,"DELETE FROM LightSubDevices WHERE (DeviceRowID == %s)",idx.c_str());
 			m_pMain->m_sql.query(szTmp);
 		}
 
