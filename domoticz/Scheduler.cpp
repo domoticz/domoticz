@@ -203,7 +203,6 @@ void CScheduler::CheckSchedules()
 	time_t atime=time(NULL);
 
 	std::vector<tScheduleItem>::iterator itt;
-	int ii=0;
 	for (itt=m_scheduleitems.begin(); itt!=m_scheduleitems.end(); ++itt)
 	{
 		if (atime>itt->startTime)
@@ -268,18 +267,14 @@ void CScheduler::CheckSchedules()
 					}
 				}
 
-				//test for raspberry pi
-
 				tScheduleItem sItem=*itt;
-
 				if (!AdjustScheduleItem(&sItem,true))
 				{
 					//something is wrong, probably no sunset/rise
 					sItem.startTime+=24*3600;
 				}
-				m_scheduleitems[ii]=sItem;
+				itt->startTime=sItem.startTime;
 			}
-			ii++;
 		}
 	}
 }
