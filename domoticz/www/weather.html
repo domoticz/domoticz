@@ -1762,7 +1762,7 @@ $(document).ready(function() {
           buttons: {
               "Add Device": function() {
                   var bValid = true;
-                  bValid = bValid && checkLength( $("#dialog-addweatherdevice #devicename"), 3, 100 );
+                  bValid = bValid && checkLength( $("#dialog-addweatherdevice #devicename"), 2, 100 );
                   if ( bValid ) {
                       $( this ).dialog( "close" );
                       $.ajax({
@@ -1801,7 +1801,7 @@ $(document).ready(function() {
           buttons: {
               "Update": function() {
                   var bValid = true;
-                  bValid = bValid && checkLength( $("#dialog-editweatherdevice #devicename"), 3, 100 );
+                  bValid = bValid && checkLength( $("#dialog-editweatherdevice #devicename"), 2, 100 );
                   if ( bValid ) {
                       $( this ).dialog( "close" );
                       $.ajax({

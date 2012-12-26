@@ -298,7 +298,7 @@ $(document).ready(function() {
               buttons: {
                   "Add Device": function() {
                       var bValid = true;
-                      bValid = bValid && checkLength( $("#dialog-adddevice #devicename"), 3, 100 );
+                      bValid = bValid && checkLength( $("#dialog-adddevice #devicename"), 2, 100 );
                       if ( bValid ) {
                           $( this ).dialog( "close" );
                           $.ajax({
@@ -338,7 +338,7 @@ $(document).ready(function() {
               buttons: {
                   "Add Device": function() {
                       var bValid = true;
-                      bValid = bValid && checkLength( $("#dialog-addlightdevice #devicename"), 3, 100 );
+                      bValid = bValid && checkLength( $("#dialog-addlightdevice #devicename"), 2, 100 );
                       var bIsSubDevice=$("#dialog-addlightdevice #lighttable #how_2").attr('checked')?true:false;
                       var MainDeviceIdx="";
                       if (bIsSubDevice)

@@ -697,7 +697,7 @@ function DeleteLightSwitch()
 function SaveLightSwitch()
 {
 		var bValid = true;
-		bValid = bValid && checkLength( $("#lightcontent #devicename"), 3, 100 );
+		bValid = bValid && checkLength( $("#lightcontent #devicename"), 2, 100 );
 		if ( bValid ) {
 				$.ajax({
 					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#lightcontent #devicename").val() + '&switchtype=' + $("#lightcontent #comboswitchtype").val() + '&used=true',
@@ -1319,7 +1319,7 @@ function GetManualLightSettings(isTest)
 	mParams+="&hwdid="+hwdID;
 	
 	var name=$("#dialog-addmanuallightdevice #devicename");
-	if ((name.val()=="")||(!checkLength(name,3,100))) {
+	if ((name.val()=="")||(!checkLength(name,2,100))) {
 		if (!isTest) {
 			ShowNotify('Invalid Name!!', 2500, true);
 			return "";
@@ -1427,7 +1427,7 @@ $(document).ready(function() {
           buttons: {
               "Add Device": function() {
                   var bValid = true;
-                  bValid = bValid && checkLength( $("#dialog-addlightdevice #devicename"), 3, 100 );
+                  bValid = bValid && checkLength( $("#dialog-addlightdevice #devicename"), 2, 100 );
 									var bIsSubDevice=$("#dialog-addlightdevice #how_2").attr('checked')?true:false;
 									var MainDeviceIdx="";
 									if (bIsSubDevice)
