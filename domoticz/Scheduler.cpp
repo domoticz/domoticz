@@ -82,17 +82,17 @@ void CScheduler::ReloadSchedules()
 
 void CScheduler::SetSunRiseSetTimers(std::string sSunRise, std::string sSunSet)
 {
-	time_t temptime;
-	time_t atime=time(NULL);
-	tm *ltime;
-	ltime=localtime(&atime);
-	if (!ltime)
-		return;
-
 	bool bReloadSchedules=false;
 	{	//needed private scope for the lock
 		boost::lock_guard<boost::mutex> l(m_mutex);
 		unsigned char hour,min,sec;
+
+		time_t temptime;
+		time_t atime=time(NULL);
+		tm *ltime;
+		ltime=localtime(&atime);
+		if (!ltime)
+			return;
 
 		hour=atoi(sSunRise.substr(0,2).c_str());
 		min=atoi(sSunRise.substr(3,2).c_str());
@@ -102,7 +102,7 @@ void CScheduler::SetSunRiseSetTimers(std::string sSunRise, std::string sSunSet)
 		ltime->tm_min = min;
 		ltime->tm_sec = sec;
 		temptime = mktime(ltime);
-		if (m_tSunRise!=temptime)
+		if ((m_tSunRise!=temptime)&&(temptime!=0))
 		{
 			bReloadSchedules=true;
 			m_tSunRise=temptime;
@@ -116,7 +116,7 @@ void CScheduler::SetSunRiseSetTimers(std::string sSunRise, std::string sSunSet)
 		ltime->tm_min = min;
 		ltime->tm_sec = sec;
 		temptime = mktime(ltime);
-		if (m_tSunSet!=temptime)
+		if ((m_tSunSet!=temptime)&&(temptime!=0))
 		{
 			bReloadSchedules=true;
 			m_tSunSet=temptime;
@@ -128,61 +128,53 @@ void CScheduler::SetSunRiseSetTimers(std::string sSunRise, std::string sSunSet)
 
 bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 {
-	time_t rtime;
-	time_t atime;
+	time_t atime=time(NULL);
+	time_t rtime=atime;
 	tm *ltime;
-	atime=time(NULL);
 	ltime=localtime(&atime);
 	ltime->tm_sec=0;
-	rtime=mktime(ltime);	//time now without seconds
+
+	unsigned long HourMinuteOffset=(pItem->startHour*3600)+(pItem->startMin*60);
 
 	if (pItem->timerType == TTYPE_ONTIME)
 	{
 		ltime->tm_hour=pItem->startHour;
 		ltime->tm_min=pItem->startMin;
+		rtime=mktime(ltime);
 	}
 	else if (pItem->timerType == TTYPE_BEFORESUNSET)
 	{
 		if (m_tSunSet==0)
 			return false;
-		ltime=localtime(&m_tSunSet);
-		ltime->tm_hour-=pItem->startHour;
-		ltime->tm_min-=pItem->startMin;
+		rtime=m_tSunSet-HourMinuteOffset;
 	}
 	else if (pItem->timerType == TTYPE_AFTERSUNSET)
 	{
 		if (m_tSunSet==0)
 			return false;
-		ltime=localtime(&m_tSunSet);
-		ltime->tm_hour+=pItem->startHour;
-		ltime->tm_min+=pItem->startMin;
+		rtime=m_tSunSet+HourMinuteOffset;
 	}
 	else if (pItem->timerType == TTYPE_BEFORESUNRISE)
 	{
 		if (m_tSunRise==0)
 			return false;
-		ltime=localtime(&m_tSunRise);
-		ltime->tm_hour-=pItem->startHour;
-		ltime->tm_min-=pItem->startMin;
+		rtime=m_tSunRise-HourMinuteOffset;
 	}
 	else if (pItem->timerType == TTYPE_AFTERSUNRISE)
 	{
 		if (m_tSunRise==0)
 			return false;
-		ltime=localtime(&m_tSunRise);
-		ltime->tm_hour+=pItem->startHour;
-		ltime->tm_min+=pItem->startMin;
+		rtime=m_tSunRise+HourMinuteOffset;
 	}
+	else
+		return false; //unknown timer type
 
-
-	time_t itime=mktime(ltime);
-	if ((itime<rtime)||(bForceAddDay))
+	if ((rtime<atime)||(bForceAddDay))
 	{
 		//item is scheduled for next day
-		ltime->tm_mday+=1;
-		itime=mktime(ltime);
+		rtime+=(24*3600);
 	}
-	pItem->startTime=itime;
+	pItem->startTime=rtime;
 	return true;
 }
 
@@ -270,9 +262,7 @@ void CScheduler::CheckSchedules()
 				if (!AdjustScheduleItem(&*itt,true))
 				{
 					//something is wrong, probably no sunset/rise
-					//remove this timer
-					itt->startTime+=24*3600;
-					//m_scheduleitems.erase(itt);
+					itt->startTime+=atime+(24*3600);
 				}
 			}
 		}
