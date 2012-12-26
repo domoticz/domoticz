@@ -102,6 +102,8 @@ void CScheduler::SetSunRiseSetTimers(std::string sSunRise, std::string sSunSet)
 		ltime->tm_min = min;
 		ltime->tm_sec = sec;
 		temptime = mktime(ltime);
+		if (temptime<atime)
+			temptime+=(24*3600);
 		if ((m_tSunRise!=temptime)&&(temptime!=0))
 		{
 			bReloadSchedules=true;
@@ -116,6 +118,8 @@ void CScheduler::SetSunRiseSetTimers(std::string sSunRise, std::string sSunSet)
 		ltime->tm_min = min;
 		ltime->tm_sec = sec;
 		temptime = mktime(ltime);
+		if (temptime<atime)
+			temptime+=(24*3600);
 		if ((m_tSunSet!=temptime)&&(temptime!=0))
 		{
 			bReloadSchedules=true;
