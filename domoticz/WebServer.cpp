@@ -310,18 +310,18 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("WebUserName",WebUserName.c_str());
 	m_pMain->m_sql.UpdatePreferencesVar("WebPassword",WebPassword.c_str());
 
-	int EnergyDevider=atoi(m_pWebEm->FindValue("EnergyDevider").c_str());
-	int GasDevider=atoi(m_pWebEm->FindValue("GasDevider").c_str());
-	int WaterDevider=atoi(m_pWebEm->FindValue("WaterDevider").c_str());
-	if (EnergyDevider<1)
-		EnergyDevider=1000;
-	if (GasDevider<1)
-		GasDevider=100;
-	if (WaterDevider<1)
-		WaterDevider=100;
-	m_pMain->m_sql.UpdatePreferencesVar("MeterDeviderEnergy",EnergyDevider);
-	m_pMain->m_sql.UpdatePreferencesVar("MeterDeviderGas",GasDevider);
-	m_pMain->m_sql.UpdatePreferencesVar("MeterDeviderWater",WaterDevider);
+	int EnergyDivider=atoi(m_pWebEm->FindValue("EnergyDivider").c_str());
+	int GasDivider=atoi(m_pWebEm->FindValue("GasDivider").c_str());
+	int WaterDivider=atoi(m_pWebEm->FindValue("WaterDivider").c_str());
+	if (EnergyDivider<1)
+		EnergyDivider=1000;
+	if (GasDivider<1)
+		GasDivider=100;
+	if (WaterDivider<1)
+		WaterDivider=100;
+	m_pMain->m_sql.UpdatePreferencesVar("MeterDividerEnergy",EnergyDivider);
+	m_pMain->m_sql.UpdatePreferencesVar("MeterDividerGas",GasDivider);
+	m_pMain->m_sql.UpdatePreferencesVar("MeterDividerWater",WaterDivider);
 
 
 	return (char*)m_retstr.c_str();
@@ -731,21 +731,21 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 			}
 			else if (dType == pTypeRFXMeter)
 			{
-				float EnergyDevider=1000.0f;
-				float GasDevider=100.0f;
-				float WaterDevider=100.0f;
+				float EnergyDivider=1000.0f;
+				float GasDivider=100.0f;
+				float WaterDivider=100.0f;
 				int tValue;
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDeviderEnergy", tValue))
+				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 				{
-					EnergyDevider=float(tValue);
+					EnergyDivider=float(tValue);
 				}
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDeviderGas", tValue))
+				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerGas", tValue))
 				{
-					GasDevider=float(tValue);
+					GasDivider=float(tValue);
 				}
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDeviderWater", tValue))
+				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerWater", tValue))
 				{
-					WaterDevider=float(tValue);
+					WaterDivider=float(tValue);
 				}
 
 				//get lowest value of today
@@ -787,15 +787,15 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					switch (metertype)
 					{
 					case MTYPE_ENERGY:
-						musage=float(total_real)/EnergyDevider;
+						musage=float(total_real)/EnergyDivider;
 						sprintf(szTmp,"%.03f kWh",musage);
 						break;
 					case MTYPE_GAS:
-						musage=float(total_real)/GasDevider;
+						musage=float(total_real)/GasDivider;
 						sprintf(szTmp,"%.02f m3",musage);
 						break;
 					case MTYPE_WATER:
-						musage=float(total_real)/WaterDevider;
+						musage=float(total_real)/WaterDivider;
 						sprintf(szTmp,"%.02f m3",musage);
 						break;
 					}
@@ -1437,21 +1437,21 @@ char * CWebServer::GetJSonPage()
 				root["status"]="OK";
 				root["title"]="Graph " + sensor + " " + srange;
 
-				float EnergyDevider=1000.0f;
-				float GasDevider=100.0f;
-				float WaterDevider=100.0f;
+				float EnergyDivider=1000.0f;
+				float GasDivider=100.0f;
+				float WaterDivider=100.0f;
 				int tValue;
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDeviderEnergy", tValue))
+				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 				{
-					EnergyDevider=float(tValue);
+					EnergyDivider=float(tValue);
 				}
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDeviderGas", tValue))
+				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerGas", tValue))
 				{
-					GasDevider=float(tValue);
+					GasDivider=float(tValue);
 				}
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDeviderWater", tValue))
+				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerWater", tValue))
 				{
-					WaterDevider=float(tValue);
+					WaterDivider=float(tValue);
 				}
 
 				char szDateStart[40];
@@ -1492,15 +1492,15 @@ char * CWebServer::GetJSonPage()
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
-							sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDevider);
+							sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDivider);
 							szValue=szTmp;
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp,"%.2f",atof(szValue.c_str())/GasDevider);
+							sprintf(szTmp,"%.2f",atof(szValue.c_str())/GasDivider);
 							szValue=szTmp;
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp,"%.2f",atof(szValue.c_str())/WaterDevider);
+							sprintf(szTmp,"%.2f",atof(szValue.c_str())/WaterDivider);
 							szValue=szTmp;
 							break;
 						}
@@ -1529,15 +1529,15 @@ char * CWebServer::GetJSonPage()
 					switch (metertype)
 					{
 					case MTYPE_ENERGY:
-						sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDevider);
+						sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDivider);
 						szValue=szTmp;
 						break;
 					case MTYPE_GAS:
-						sprintf(szTmp,"%.2f",atof(szValue.c_str())/GasDevider);
+						sprintf(szTmp,"%.2f",atof(szValue.c_str())/GasDivider);
 						szValue=szTmp;
 						break;
 					case MTYPE_WATER:
-						sprintf(szTmp,"%.2f",atof(szValue.c_str())/WaterDevider);
+						sprintf(szTmp,"%.2f",atof(szValue.c_str())/WaterDivider);
 						szValue=szTmp;
 						break;
 					}
@@ -1808,21 +1808,21 @@ char * CWebServer::GetJSonPage()
 				root["status"]="OK";
 				root["title"]="Graph " + sensor + " " + srange;
 
-				float EnergyDevider=1000.0f;
-				float GasDevider=100.0f;
-				float WaterDevider=100.0f;
+				float EnergyDivider=1000.0f;
+				float GasDivider=100.0f;
+				float WaterDivider=100.0f;
 				int tValue;
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDeviderEnergy", tValue))
+				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 				{
-					EnergyDevider=float(tValue);
+					EnergyDivider=float(tValue);
 				}
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDeviderGas", tValue))
+				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerGas", tValue))
 				{
-					GasDevider=float(tValue);
+					GasDivider=float(tValue);
 				}
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDeviderWater", tValue))
+				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerWater", tValue))
 				{
-					WaterDevider=float(tValue);
+					WaterDivider=float(tValue);
 				}
 
 				szQuery.clear();
@@ -1841,15 +1841,15 @@ char * CWebServer::GetJSonPage()
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
-							sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDevider);
+							sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDivider);
 							szValue=szTmp;
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp,"%.2f",atof(szValue.c_str())/GasDevider);
+							sprintf(szTmp,"%.2f",atof(szValue.c_str())/GasDivider);
 							szValue=szTmp;
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp,"%.2f",atof(szValue.c_str())/WaterDevider);
+							sprintf(szTmp,"%.2f",atof(szValue.c_str())/WaterDivider);
 							szValue=szTmp;
 							break;
 						}
@@ -1879,15 +1879,15 @@ char * CWebServer::GetJSonPage()
 					switch (metertype)
 					{
 					case MTYPE_ENERGY:
-						sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDevider);
+						sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDivider);
 						szValue=szTmp;
 						break;
 					case MTYPE_GAS:
-						sprintf(szTmp,"%.2f",atof(szValue.c_str())/GasDevider);
+						sprintf(szTmp,"%.2f",atof(szValue.c_str())/GasDivider);
 						szValue=szTmp;
 						break;
 					case MTYPE_WATER:
-						sprintf(szTmp,"%.2f",atof(szValue.c_str())/WaterDevider);
+						sprintf(szTmp,"%.2f",atof(szValue.c_str())/WaterDivider);
 						szValue=szTmp;
 						break;
 					}
@@ -3006,17 +3006,17 @@ char * CWebServer::GetJSonPage()
 				{
 					root["WebPassword"]=base64_decode(sValue);
 				}
-				else if (Key=="MeterDeviderEnergy")
+				else if (Key=="MeterDividerEnergy")
 				{
-					root["EnergyDevider"]=nValue;
+					root["EnergyDivider"]=nValue;
 				}
-				else if (Key=="MeterDeviderGas")
+				else if (Key=="MeterDividerGas")
 				{
-					root["GasDevider"]=nValue;
+					root["GasDivider"]=nValue;
 				}
-				else if (Key=="MeterDeviderWater")
+				else if (Key=="MeterDividerWater")
 				{
-					root["WaterDevider"]=nValue;
+					root["WaterDivider"]=nValue;
 				}
 
 				

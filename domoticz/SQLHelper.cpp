@@ -246,17 +246,17 @@ CSQLHelper::CSQLHelper(void)
 	{
 		UpdatePreferencesVar("LightHistoryDays", 30);
 	}
-	if (!GetPreferencesVar("MeterDeviderEnergy", nValue))
+	if (!GetPreferencesVar("MeterDividerEnergy", nValue))
 	{
-		UpdatePreferencesVar("MeterDeviderEnergy", 1000);
+		UpdatePreferencesVar("MeterDividerEnergy", 1000);
 	}
-	if (!GetPreferencesVar("MeterDeviderGas", nValue))
+	if (!GetPreferencesVar("MeterDividerGas", nValue))
 	{
-		UpdatePreferencesVar("MeterDeviderGas", 100);
+		UpdatePreferencesVar("MeterDividerGas", 100);
 	}
-	if (!GetPreferencesVar("MeterDeviderWater", nValue))
+	if (!GetPreferencesVar("MeterDividerWater", nValue))
 	{
-		UpdatePreferencesVar("MeterDeviderWater", 100);
+		UpdatePreferencesVar("MeterDividerWater", 100);
 	}
 }
 
