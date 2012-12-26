@@ -167,6 +167,23 @@ function AddDataToUtilityChart(data,chart,switchtype)
       series = chart.get('gas');
       series.setData(datatablev);
     }
+    else if (switchtype==2)
+    {
+			//water
+      chart.addSeries(
+        {
+          id: 'water',
+          name: 'Water',
+          color: 'rgba(3,190,252,0.8)',
+          yAxis: 0
+        }
+      );
+			chart.yAxis[0].axisTitle.attr({
+        text: 'Water m3'
+			});			
+      series = chart.get('water');
+      series.setData(datatablev);
+    }
 }
 
 function ShowCounterLog(id,name,switchtype)
@@ -218,7 +235,8 @@ function ShowCounterLog(id,name,switchtype)
             formatter: function() {
 										var unit = {
 																'Energy': 'kWh',
-																'Gas': 'm3'
+																'Gas': 'm3',
+																'Water': 'm3'
 													}[this.series.name];
                     return Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
             }
@@ -273,7 +291,8 @@ function ShowCounterLog(id,name,switchtype)
             formatter: function() {
 										var unit = {
 																'Energy': 'kWh',
-																'Gas': 'm3'
+																'Gas': 'm3',
+																'Water': 'm3'
 													}[this.series.name];
                     return Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
             }
@@ -341,7 +360,8 @@ function ShowCounterLog(id,name,switchtype)
             formatter: function() {
 										var unit = {
 																'Energy': 'kWh',
-																'Gas': 'm3'
+																'Gas': 'm3',
+																'Water': 'm3'
 													}[this.series.name];
                     return Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
             }

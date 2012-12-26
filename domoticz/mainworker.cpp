@@ -376,6 +376,8 @@ bool MainWorker::StartThread()
 		}
 		myfile.close();
 	}
+	DomoticzTCP tempHardware(999,"0.0.0.0",1234,"","");
+
 	std::vector<std::string>::iterator itt;
 	unsigned char rxbuffer[100];
 	static const char* const lut = "0123456789ABCDEF";
@@ -403,7 +405,7 @@ bool MainWorker::StartThread()
 		}
 		if (ii==0)
 			continue;
-		DecodeRXMessage(999, (const unsigned char *)&rxbuffer);
+		DecodeRXMessage(&tempHardware, (const unsigned char *)&rxbuffer);
 	}
 	return false;
 #endif

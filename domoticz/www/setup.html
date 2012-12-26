@@ -88,6 +88,22 @@ To get a free account/API key click <a href="http://www.notifymyandroid.com/" ta
   <td><input type="password" id="WebPassword" name="WebPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 </tr>
 </table>
+<br><br>
+<h2>RFXMeter Counter Deviders:</h2><br>
+<table class="display" id="rfxmetertable" border="0" cellpadding="0" cellspacing="0">
+<tr>
+  <td align="right" style="width:60px"><label>Energy: </label></td>
+  <td><input type="input" id="EnergyDevider" name="EnergyDevider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+</tr>
+<tr>
+  <td align="right" style="width:60px"><label>Gas: </label></td>
+  <td><input type="input" id="GasDevider" name="GasDevider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+</tr>
+<tr>
+  <td align="right" style="width:60px"><label>Water: </label></td>
+  <td><input type="input" id="WaterDevider" name="WaterDevider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+</tr>
+</table>
 <br>
 <a class="btnstyle3" href="javascript:StoreSettings()">Save</a>
 </form>
@@ -182,6 +198,15 @@ function ShowSettings()
       }
       if (typeof data.WebPassword != 'undefined') {
         $("#webtable #WebPassword").val(data.WebPassword);
+      }
+      if (typeof data.EnergyDevider != 'undefined') {
+        $("#rfxmetertable #EnergyDevider").val(data.EnergyDevider);
+      }
+      if (typeof data.GasDevider != 'undefined') {
+        $("#rfxmetertable #GasDevider ").val(data.GasDevider );
+      }
+      if (typeof data.WaterDevider != 'undefined') {
+        $("#rfxmetertable #WaterDevider ").val(data.WaterDevider );
       }
       
       
