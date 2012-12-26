@@ -7,7 +7,7 @@
 #include <stdio.h>     /* standard I/O functions                         */
 #include <sys/types.h> /* various type definitions, like pid_t           */
 #include <signal.h>    /* signal name macros, and the signal() prototype */ 
-
+#include <iostream>
 #include "CmdLine.h"
 #include "appversion.h"
 

@@ -30,7 +30,7 @@ dwc_otg.speed=1
 This will cause the USB to switch back to version 1.1, but also the network speed is reduced a lot! (not that i want to use 80mbps)
 
 ------------------------------------------------------------------------------------------------
-Synology:
+Synology: (Initial setup time is 30 minutes)
 - Make sure the device is bootstrapped, then:
 ipkg install gcc
 ipkg install make
@@ -43,7 +43,7 @@ ipkg install boost-date-time
 download/install cmake (take a coffee while doing the bootstrap and make commands)
 wget http://www.cmake.org/files/v2.8/cmake-2.8.10.tar.gz
 tar xvf cmake-2.8.10.tar.gz
-cd xvf cmake-2.8.10
+cd cmake-2.8.10
 ./bootstrap
 make
 make install
@@ -67,7 +67,10 @@ ln -s libpthread.so.0 libpthread-2.5.so
 cp /opt/lib/libboost_* /lib
 
 verify http://forum.synology.com/enu/viewtopic.php?p=185512#p185512
-to check your .profile
+to check your /root/.profile
+
+goto the root folder again for the next steps
+cd /root
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------
 
