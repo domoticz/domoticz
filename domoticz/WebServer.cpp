@@ -8,6 +8,7 @@
 #include "RFXtrx.h"
 #include "Helper.h"
 #include "webserver/Base64.h"
+#include "appversion.h"
 
 namespace http {
 	namespace server {

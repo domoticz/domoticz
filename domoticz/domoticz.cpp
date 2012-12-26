@@ -9,6 +9,7 @@
 #include <signal.h>    /* signal name macros, and the signal() prototype */ 
 
 #include "CmdLine.h"
+#include "appversion.h"
 
 #if defined WIN32
 #include "WindowsHelper.h"
@@ -52,7 +53,7 @@ int main(int argc, char**argv)
 #if defined WIN32
 	RedirectIOToConsole();
 #endif
-	std::cout << szAppTitle;
+	std::cout << "Domoticz V" << VERSION_STRING << " (c)2012-2013 GizMoCuz\n";
 
 	CCmdLine cmdLine;
 

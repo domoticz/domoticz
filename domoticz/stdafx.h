@@ -32,4 +32,3 @@ typedef unsigned char       BYTE;
 
 #include <boost/thread.hpp>
 
-#define VERSION_STRING "1.0.2"
