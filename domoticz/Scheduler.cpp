@@ -179,7 +179,8 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	if ((itime<rtime)||(bForceAddDay))
 	{
 		//item is scheduled for next day
-		itime+=24*3600;
+		ltime->tm_mday+=1;
+		itime=mktime(ltime);
 	}
 	pItem->startTime=itime;
 	return true;
@@ -266,14 +267,13 @@ void CScheduler::CheckSchedules()
 						std::cerr << "Error sending switch command, DevID: " << itt->DevID << ", Time: " << asctime(ltime) << std::endl;
 					}
 				}
-
-				tScheduleItem sItem=*itt;
-				if (!AdjustScheduleItem(&sItem,true))
+				if (!AdjustScheduleItem(&*itt,true))
 				{
 					//something is wrong, probably no sunset/rise
-					sItem.startTime+=24*3600;
+					//remove this timer
+					itt->startTime+=24*3600;
+					//m_scheduleitems.erase(itt);
 				}
-				itt->startTime=sItem.startTime;
 			}
 		}
 	}

@@ -763,6 +763,10 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 						musage=float(total_real)/100.0f;
 						sprintf(szTmp,"%.02f m3",musage);
 						break;
+					case MTYPE_WATER:
+						musage=float(total_real)/100.0f;
+						sprintf(szTmp,"%.02f m3",musage);
+						break;
 					}
 					root["result"][ii]["Counter"]=sValue;
 					root["result"][ii]["CounterToday"]=szTmp;
@@ -1447,6 +1451,10 @@ char * CWebServer::GetJSonPage()
 							sprintf(szTmp,"%.2f",atof(szValue.c_str())/100.0f);
 							szValue=szTmp;
 							break;
+						case MTYPE_WATER:
+							sprintf(szTmp,"%.2f",atof(szValue.c_str())/100.0f);
+							szValue=szTmp;
+							break;
 						}
 						root["result"][ii]["v"]=szValue;
 						ii++;
@@ -1477,6 +1485,10 @@ char * CWebServer::GetJSonPage()
 						szValue=szTmp;
 						break;
 					case MTYPE_GAS:
+						sprintf(szTmp,"%.2f",atof(szValue.c_str())/100.0f);
+						szValue=szTmp;
+						break;
+					case MTYPE_WATER:
 						sprintf(szTmp,"%.2f",atof(szValue.c_str())/100.0f);
 						szValue=szTmp;
 						break;
@@ -1771,6 +1783,10 @@ char * CWebServer::GetJSonPage()
 							sprintf(szTmp,"%.2f",atof(szValue.c_str())/100.0f);
 							szValue=szTmp;
 							break;
+						case MTYPE_WATER:
+							sprintf(szTmp,"%.2f",atof(szValue.c_str())/100.0f);
+							szValue=szTmp;
+							break;
 						}
 						root["result"][ii]["d"]=sd[1].substr(0,16);
 						root["result"][ii]["v"]=szValue;
@@ -1802,6 +1818,10 @@ char * CWebServer::GetJSonPage()
 						szValue=szTmp;
 						break;
 					case MTYPE_GAS:
+						sprintf(szTmp,"%.2f",atof(szValue.c_str())/100.0f);
+						szValue=szTmp;
+						break;
+					case MTYPE_WATER:
 						sprintf(szTmp,"%.2f",atof(szValue.c_str())/100.0f);
 						szValue=szTmp;
 						break;

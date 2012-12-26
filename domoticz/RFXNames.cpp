@@ -152,6 +152,7 @@ const char *Meter_Type_Desc(const _eMeterType sType)
 	{
 		{ MTYPE_ENERGY, "Energy" },
 		{ MTYPE_GAS, "Gas" },
+		{ MTYPE_WATER, "Water" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, sType);

@@ -17,6 +17,7 @@ enum _eMeterType
 {
 	MTYPE_ENERGY=0,
 	MTYPE_GAS,
+	MTYPE_WATER,
 	MTYPE_END
 };
 
