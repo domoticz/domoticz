@@ -2951,6 +2951,7 @@ char * CWebServer::GetJSonPage()
 		root["status"]="OK";
 		root["title"]="DeleteDevice";
 		m_pMain->m_sql.DeleteDevice(idx);
+		m_pMain->m_scheduler.ReloadSchedules();
 	} //(rtype=="setused")
 	else if (rtype=="settings")
 	{
