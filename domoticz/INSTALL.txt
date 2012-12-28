@@ -9,7 +9,9 @@ Examples:
 If Domoticz and the browser are running on the same system you can connect with http://localhost:8080/
 To stop the application: press Ctrl-C in the application screen (not in the browser)
 
-Internet Explorer is not supported at the moment, please use another browser like chrome/firefox.
+Compatible browsers:
+- Chrome/Firefox/Safari...
+- Internet Explorer version 10+
 
 Compiling from source code:
 ------------------------------------------
@@ -24,8 +26,8 @@ Windows:
 Ubuntu/Raspberry Pi:
 sudo apt-get install cmake libboost-dev libboost-thread-dev libboost-system-dev libsqlite3-dev subversion
 
-Raspberry Pi (22 November 2012): (First time compile time: 15 minutes)
-At this moment, there is a issue with the FTDI drivers (USB), a quick fix it to add the following in front of /boot/cmdline.txt
+Raspberry Pi (22 November 2012): (First time compile time: 18 minutes)
+At this moment (First generation RPi (128MB), there is a issue with the FTDI drivers (USB), a quick fix it to add the following in front of /boot/cmdline.txt
 dwc_otg.speed=1
 This will cause the USB to switch back to version 1.1, but also the network speed is reduced a lot! (not that i want to use 80mbps)
 

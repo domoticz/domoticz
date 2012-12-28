@@ -1,13 +1,35 @@
-@import url(http://fonts.googleapis.com/css?family=Abel|Satisfy);
-@import url(http://fonts.googleapis.com/css?family=Oswald:400,300);
-
 /*
 	Untitled: A responsive HTML5 website template by HTML5Templates.com
 	Released for free under the Creative Commons Attribution 3.0 license (html5templates.com/license)
 	Visit http://html5templates.com for more great templates or follow us on Twitter @HTML5T
 */
 
-
+@font-face {
+  font-family: 'Satisfy';
+  font-style: normal;
+  font-weight: 400;
+  src: url('fonts/Satisfy.eot');
+  src: local('Satisfy'), url('fonts/Satisfy.eot') format('truetype');
+}
+@font-face {
+  font-family: 'Abel';
+  font-style: normal;
+  font-weight: 400;
+  src: url('fonts/Abel.eot');
+  src: local('Abel'), local('Abel-Regular'), url('fonts/Abel.eot') format('truetype');
+} 
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  src: url('fonts/Oswald-Light.eot');
+  src: local('Oswald Light'), local('Oswald-Light'), url('fonts/Oswald-Light.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  src: url('fonts/Oswald-Regular.eot');
+  src: local('Oswald Regular'), local('Oswald-Regular'), url('fonts/Oswald-Regular.ttf') format('truetype');
+} 
 /*********************************************************************************/
 /* Global                                                                        */
 /*********************************************************************************/

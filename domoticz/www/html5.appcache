@@ -1,11 +1,19 @@
 CACHE MANIFEST
-# ref 23
+# ref 30
 
 CACHE:
 favicon.ico
 css/demo_table_jui.css
 css/loading.css
 css/pIkfp.gif
+css/fonts/Abel.eot
+css/fonts/Abel.ttf
+css/fonts/Oswald-Light.eot
+css/fonts/Oswald-Light.ttf
+css/fonts/Oswald-Regular.eot
+css/fonts/Oswald-Regular.ttf
+css/fonts/Satisfy.eot
+css/fonts/Satisfy.ttf
 css/style-1000px.css
 css/style-1200px.css
 css/style-desktop.css
@@ -13,6 +21,7 @@ css/style-fluid.css
 css/style-mobile.css
 css/style.css
 css/TableTools.css
+css/5grid/init.js
 css/5grid/core-1000px.css
 css/5grid/core-1200px.css
 css/5grid/core-desktop.css
@@ -154,6 +163,7 @@ images/startup/apple-touch-startup-image-1536x2008.png
 images/startup/apple-touch-startup-image-2048x1496.png
 
 # js
+js/domoticz.js
 js/ColReorder.min.js
 js/ColVis.min.js
 js/date.format.js
