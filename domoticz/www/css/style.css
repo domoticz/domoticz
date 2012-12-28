@@ -794,3 +794,93 @@ body table#itemtablesmall tr:hover td:first-child{
 	color: #0D0D1F;
 	background-color: #D4D5EE;
 }
+
+/* Mobile Dashboard items */
+table.mobileitem {
+    *border-collapse: collapse; /* IE7 and lower */
+    border-spacing: 0;
+		border-style: none;
+		background-color: #FFFFFF;
+    width: 100%;
+}
+
+.mobileitem {
+    border: solid #ccc 1px;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
+    -webkit-box-shadow: 0 1px 1px #ccc; 
+    -moz-box-shadow: 0 1px 1px #ccc; 
+    box-shadow: 0 1px 1px #ccc;         
+		color: #000;
+}
+
+.mobileitem tr:hover {
+    background: #fbf8e9;
+    -o-transition: all 0.1s ease-in-out;
+    -webkit-transition: all 0.1s ease-in-out;
+    -moz-transition: all 0.1s ease-in-out;
+    -ms-transition: all 0.1s ease-in-out;
+    transition: all 0.1s ease-in-out;     
+}    
+    
+.mobileitem td, .mobileitem th {
+    border-left: 0px solid #ccc;
+    border-top: 1px solid #ccc;
+    padding: 6px;
+    text-align: left;    
+}
+
+.mobileitem th {
+    background-color: #dce9f9;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#ebf3fc), to(#dce9f9));
+    background-image: -webkit-linear-gradient(top, #ebf3fc, #dce9f9);
+    background-image: -moz-linear-gradient(top, #ebf3fc, #dce9f9);
+    background-image: -ms-linear-gradient(top, #ebf3fc, #dce9f9);
+    background-image: -o-linear-gradient(top, #ebf3fc, #dce9f9);
+    background-image: linear-gradient(top, #ebf3fc, #dce9f9);
+    -webkit-box-shadow: 0 1px 0 rgba(255,255,255,.8) inset; 
+    -moz-box-shadow:0 1px 0 rgba(255,255,255,.8) inset;  
+    border-top: none;
+		text-shadow: 0 1px 0 rgba(255,255,255,.5); 
+		font-weight: bold;
+}
+
+.mobileitem td:first-child, .mobileitem th:first-child {
+    border-left: none;
+}
+
+.mobileitem td:last-child {
+	font-weight: bold;
+  text-align: right;
+}
+
+.mobileitem th:first-child {
+    -moz-border-radius: 6px 0 0 0;
+    -webkit-border-radius: 6px 0 0 0;
+    border-radius: 6px 0 0 0;
+}
+
+.mobileitem th:last-child {
+    -moz-border-radius: 0 6px 0 0;
+    -webkit-border-radius: 0 6px 0 0;
+    border-radius: 0 6px 0 0;
+}
+
+.mobileitem th:only-child{
+    -moz-border-radius: 6px 6px 0 0;
+    -webkit-border-radius: 6px 6px 0 0;
+    border-radius: 6px 6px 0 0;
+}
+
+.mobileitem tr:last-child td:first-child {
+    -moz-border-radius: 0 0 0 6px;
+    -webkit-border-radius: 0 0 0 6px;
+    border-radius: 0 0 0 6px;
+}
+
+.mobileitem tr:last-child td:last-child {
+    -moz-border-radius: 0 0 6px 0;
+    -webkit-border-radius: 0 0 6px 0;
+    border-radius: 0 0 6px 0;
+}

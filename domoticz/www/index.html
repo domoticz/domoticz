@@ -111,8 +111,12 @@ $(document).ready(function() {
 	$.myglobals = {
 		actlayout : "",
 		prevlayout : "",
+		ismobile: false
 	};
 
+	if( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {
+		$.myglobals.ismobile=true;
+	}
 	if ( $.browser.msie ) {
 		var bVersion=parseFloat($.browser.version);
 		if (bVersion < 10.0) {

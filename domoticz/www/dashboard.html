@@ -23,50 +23,88 @@ function RefreshFavorites()
 							if ($(id + " #name").html()!=item.Name) {
 								$(id + " #name").html(item.Name);
 							}
-							var img="";
-							if (item.SwitchType == "Doorbell") {
-								img='<img src="images/door48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
-							}
-							else if (item.SwitchType == "X10 Siren") {
-								img='<img src="images/siren48.png" height="40">';
-							}
-							else if (item.SwitchType == "Contact") {
-								img='<img src="images/contact48.png" height="40">';
-							}
-							else if (item.SwitchType == "Blinds") {
-								if (item.Status == 'Closed') {
-										img='<img src="images/blinds48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+							if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+								var status=item.Status + " ";
+								if (item.SwitchType == "Doorbell") {
+									status+='<img src="images/door.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+								}
+								else if (item.SwitchType == "X10 Siren") {
+									status+='<img src="images/siren.png" height="16">';
+								}
+								else if (item.SwitchType == "Contact") {
+									status+='<img src="images/contact.png" height="16">';
+								}
+								else if (item.SwitchType == "Blinds") {
+									if (item.Status == 'Closed') {
+											status+='<img src="images/blinds48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									}
+									else {
+											status+='<img src="images/blinds.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									}
 								}
 								else {
-										img='<img src="images/blindsopen48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									if (
+											(item.Status == 'On')||
+											(item.Status == 'Chime')||
+											(item.Status == 'Group On')||
+											(item.Status.indexOf('Set ') == 0)
+										 ) {
+												status+='<img src="images/lightbulb.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									}
+									else {
+												status+='<img src="images/lightbulboff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									}
+								}
+								if ($(id + " #status").html()!=status) {
+									$(id + " #status").html(status);
 								}
 							}
 							else {
-								if (
-										(item.Status == 'On')||
-										(item.Status == 'Chime')||
-										(item.Status == 'Group On')||
-										(item.Status.indexOf('Set ') == 0)
-									 ) {
-											img='<img src="images/light-on.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+								var img="";
+								if (item.SwitchType == "Doorbell") {
+									img='<img src="images/door48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+								}
+								else if (item.SwitchType == "X10 Siren") {
+									img='<img src="images/siren48.png" height="40">';
+								}
+								else if (item.SwitchType == "Contact") {
+									img='<img src="images/contact48.png" height="40">';
+								}
+								else if (item.SwitchType == "Blinds") {
+									if (item.Status == 'Closed') {
+											img='<img src="images/blinds48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									}
+									else {
+											img='<img src="images/blindsopen48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									}
 								}
 								else {
-											img='<img src="images/light-off.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									if (
+											(item.Status == 'On')||
+											(item.Status == 'Chime')||
+											(item.Status == 'Group On')||
+											(item.Status.indexOf('Set ') == 0)
+										 ) {
+												img='<img src="images/light-on.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									}
+									else {
+												img='<img src="images/light-off.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									}
 								}
-							}
-							if ($(id + " #img").html()!=img) {
-								$(id + " #img").html(img);
-							}
-							if ($(id + " #status").html()!=item.Status) {
-								$(id + " #status").html(item.Status);
-							}
-							if ($(id + " #lastupdate").html()!=item.LastUpdate) {
-								$(id + " #lastupdate").html(item.LastUpdate);
+								if ($(id + " #img").html()!=img) {
+									$(id + " #img").html(img);
+								}
+								if ($(id + " #status").html()!=item.Status) {
+									$(id + " #status").html(item.Status);
+								}
+								if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+									$(id + " #lastupdate").html(item.LastUpdate);
+								}
 							}
 						}
 					}
 				}); //light devices
-				
+
         //Temperature Sensors
         $.each(data.result, function(i,item){
           if (
@@ -80,55 +118,87 @@ function RefreshFavorites()
 							if ($(id + " #name").html()!=item.Name) {
 								$(id + " #name").html(item.Name);
 							}
-							var img='<img src="images/';
-							if ((typeof item.Temp == 'undefined') || (item.Temp>0)) {
-								img+='temp48.png';
+							if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+								var status="";
+								var bHaveBefore=false;
+								if (typeof item.Temp != 'undefined') {
+										 status+=item.Temp + '° C';
+										 bHaveBefore=true;
+								}
+								if (typeof item.Chill != 'undefined') {
+									status+=', Chill: ' + item.Chill + '° C';
+									bHaveBefore=true;
+								}
+								if (typeof item.Humidity != 'undefined') {
+									if (bHaveBefore==true) {
+										status+=', ';
+									}
+									status+=item.Humidity + ' %';
+								}
+								if (typeof item.HumidityStatus != 'undefined') {
+									status+=' (' + item.HumidityStatus + ')';
+								}
+								if (typeof item.Barometer != 'undefined') {
+									status+='<br>' + item.Barometer + ' hPa';
+								}
+								if (typeof item.ForecastStr != 'undefined') {
+									status+=', Prediction: ' + item.ForecastStr;
+								}
+								if ($(id + " #status").html()!=status) {
+									$(id + " #status").html(status);
+								}
 							}
 							else {
-								img+='ice.png';
-							}
-							img+='" height="40">';
-							if ($(id + " #img").html()!=img) {
-								$(id + " #img").html(img);
-							}
-							var status="";
-							var bHaveBefore=false;
-							if (typeof item.Temp != 'undefined') {
-									 status+=item.Temp + '° C';
-									 bHaveBefore=true;
-							}
-							if (typeof item.Chill != 'undefined') {
-								status+=', Chill: ' + item.Chill + '° C';
-								bHaveBefore=true;
-							}
-							if (typeof item.Direction != 'undefined') {
-								status+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms\n';
-							}
-							if (typeof item.Humidity != 'undefined') {
-								if (bHaveBefore==true) {
-									status+=', ';
+								var img='<img src="images/';
+								if ((typeof item.Temp == 'undefined') || (item.Temp>0)) {
+									img+='temp48.png';
 								}
-								status+='Humidity: ' + item.Humidity + ' %';
-							}
-							if (typeof item.HumidityStatus != 'undefined') {
-								status+=' (' + item.HumidityStatus + ')';
-							}
-							if (typeof item.Barometer != 'undefined') {
-								status+='<br>' + item.Barometer + ' hPa';
-							}
-							if (typeof item.ForecastStr != 'undefined') {
-								status+=', Prediction: ' + item.ForecastStr;
-							}
-							if ($(id + " #status").html()!=status) {
-								$(id + " #status").html(status);
-							}
-							if ($(id + " #lastupdate").html()!=item.LastUpdate) {
-								$(id + " #lastupdate").html(item.LastUpdate);
+								else {
+									img+='ice.png';
+								}
+								img+='" height="40">';
+								if ($(id + " #img").html()!=img) {
+									$(id + " #img").html(img);
+								}
+								var status="";
+								var bHaveBefore=false;
+								if (typeof item.Temp != 'undefined') {
+										 status+=item.Temp + '° C';
+										 bHaveBefore=true;
+								}
+								if (typeof item.Chill != 'undefined') {
+									status+=', Chill: ' + item.Chill + '° C';
+									bHaveBefore=true;
+								}
+								if (typeof item.Direction != 'undefined') {
+									status+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms\n';
+								}
+								if (typeof item.Humidity != 'undefined') {
+									if (bHaveBefore==true) {
+										status+=', ';
+									}
+									status+='Humidity: ' + item.Humidity + ' %';
+								}
+								if (typeof item.HumidityStatus != 'undefined') {
+									status+=' (' + item.HumidityStatus + ')';
+								}
+								if (typeof item.Barometer != 'undefined') {
+									status+='<br>' + item.Barometer + ' hPa';
+								}
+								if (typeof item.ForecastStr != 'undefined') {
+									status+=', Prediction: ' + item.ForecastStr;
+								}
+								if ($(id + " #status").html()!=status) {
+									$(id + " #status").html(status);
+								}
+								if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+									$(id + " #lastupdate").html(item.LastUpdate);
+								}
 							}
 						}
           }
         }); //temp devices
-        
+
         //Weather Sensors
         $.each(data.result, function(i,item){
           if (
@@ -142,41 +212,61 @@ function RefreshFavorites()
 							if ($(id + " #name").html()!=item.Name) {
 								$(id + " #name").html(item.Name);
 							}
-							var img="";
-							var status="";
-							if (typeof item.Rain != 'undefined') {
-								img='<img src="images/rain48.png" height="40">';
-								status=item.Rain + ' mm';
-								if (typeof item.RainRate != 'undefined') {
-									if (item.RainRate!=0) {
-										status+=', Rate: ' + item.RainRate + ' mm/h';
+							if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+								var status="";
+								if (typeof item.Rain != 'undefined') {
+									status=item.Rain + ' mm';
+									if (typeof item.RainRate != 'undefined') {
+										if (item.RainRate!=0) {
+											status+=', Rate: ' + item.RainRate + ' mm/h';
+										}
 									}
 								}
-								$(id + " #status").html(status);
-							}
-							else if (typeof item.UVI != 'undefined') {
-								img='<img src="images/uv48.png" height="40">';
-								status=item.UVI + ' UVI';
-								if (typeof item.Temp!= 'undefined') {
-									status+=', Temp: ' + item.Temp + '° C';
+								else if (typeof item.UVI != 'undefined') {
+									status=item.UVI + ' UVI';
 								}
-								$(id + " #status").html(status);
+								else if (typeof item.Direction != 'undefined') {
+									img='<img src="images/wind48.png" height="40">';
+									status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms';
+								}
+								if ($(id + " #status").html()!=status) {
+									$(id + " #status").html(status);
+								}
 							}
-							else if (typeof item.Direction != 'undefined') {
-								img='<img src="images/wind48.png" height="40">';
-								status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
-								status+='Temp: ' + item.Temp + '° C, ';
-								status+='Chill: ' + item.Chill + '° C';
-								$(id + " #status").html(status);
-							}
-							if ($(id + " #img").html()!=img) {
-								$(id + " #img").html(img);
-							}
-							if ($(id + " #status").html()!=status) {
-								$(id + " #status").html("AA");
-							}
-							if ($(id + " #lastupdate").html()!=item.LastUpdate) {
-								$(id + " #lastupdate").html(item.LastUpdate);
+							else {
+								var img="";
+								var status="";
+								if (typeof item.Rain != 'undefined') {
+									img='<img src="images/rain48.png" height="40">';
+									status=item.Rain + ' mm';
+									if (typeof item.RainRate != 'undefined') {
+										if (item.RainRate!=0) {
+											status+=', Rate: ' + item.RainRate + ' mm/h';
+										}
+									}
+								}
+								else if (typeof item.UVI != 'undefined') {
+									img='<img src="images/uv48.png" height="40">';
+									status=item.UVI + ' UVI';
+									if (typeof item.Temp!= 'undefined') {
+										status+=', Temp: ' + item.Temp + '° C';
+									}
+								}
+								else if (typeof item.Direction != 'undefined') {
+									img='<img src="images/wind48.png" height="40">';
+									status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
+									status+='Temp: ' + item.Temp + '° C, ';
+									status+='Chill: ' + item.Chill + '° C';
+								}
+								if ($(id + " #img").html()!=img) {
+									$(id + " #img").html(img);
+								}
+								if ($(id + " #status").html()!=status) {
+									$(id + " #status").html(status);
+								}
+								if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+									$(id + " #lastupdate").html(item.LastUpdate);
+								}
 							}
 						}
           }
@@ -192,26 +282,33 @@ function RefreshFavorites()
 							if ($(id + " #name").html()!=item.Name) {
 								$(id + " #name").html(item.Name);
 							}
-							var img="";
-							if (item.SubType.indexOf('remote') > 0) {
-								img='<img src="images/remote48.png" height="40">';
+							if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+								if ($(id + " #status").html()!=item.Status) {
+									$(id + " #status").html(item.Status);
+								}
 							}
 							else {
-								if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
-									img='<img src="images/alarm48.png" height="40">';
+								var img="";
+								if (item.SubType.indexOf('remote') > 0) {
+									img='<img src="images/remote48.png" height="40">';
 								}
 								else {
-									img='<img src="images/security48.png" height="40">';
+									if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
+										img='<img src="images/alarm48.png" height="40">';
+									}
+									else {
+										img='<img src="images/security48.png" height="40">';
+									}
 								}
-							}
-							if ($(id + " #img").html()!=img) {
-								$(id + " #img").html(img);
-							}
-							if ($(id + " #status").html()!=item.Status) {
-								$(id + " #status").html(item.Status);
-							}
-							if ($(id + " #lastupdate").html()!=item.LastUpdate) {
-								$(id + " #lastupdate").html(item.LastUpdate);
+								if ($(id + " #img").html()!=img) {
+									$(id + " #img").html(img);
+								}
+								if ($(id + " #status").html()!=item.Status) {
+									$(id + " #status").html(item.Status);
+								}
+								if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+									$(id + " #lastupdate").html(item.LastUpdate);
+								}
 							}
 						}
           }
@@ -220,7 +317,7 @@ function RefreshFavorites()
         //Utility Sensors
         $.each(data.result, function(i,item){
           if (
-                ( (typeof item.Counter != 'undefined') ) &&
+                ( (typeof item.Counter != 'undefined') || (item.Type == "Current") || (item.Type == "Energy") ) &&
                 (item.Favorite!=0)
               )
           {
@@ -230,30 +327,47 @@ function RefreshFavorites()
 							if ($(id + " #name").html()!=item.Name) {
 								$(id + " #name").html(item.Name);
 							}
-							var img="";
-							var status="";
-							
-							if (typeof item.Counter != 'undefined') {
-								img='<img src="images/counter.png" height="40">';
-								status=item.Counter + ', Today: ' + item.CounterToday;
+							if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+								var status="";
+								if (typeof item.Counter != 'undefined') {
+									status+=item.Counter + ', Today: ' + item.CounterToday;
+								}
+								else if (item.Type == "Current") {
+									status+=item.Data;
+								}
+								else if (item.Type == "Energy") {
+									status+=item.Data;
+								}
+								if ($(id + " #status").html()!=status) {
+									$(id + " #status").html(status);
+								}
 							}
-							else if (item.Type == "Current") {
-								img='<img src="images/current48.png" height="40">';
-								status=item.Data;
-							}
-							else if (item.Type == "Energy") {
-								img='<img src="images/current48.png" height="40">';
-								status=item.Data;
-							}
-							
-							if ($(id + " #img").html()!=img) {
-								$(id + " #img").html(img);
-							}
-							if ($(id + " #status").html()!=status) {
-								$(id + " #status").html(status);
-							}
-							if ($(id + " #lastupdate").html()!=item.LastUpdate) {
-								$(id + " #lastupdate").html(item.LastUpdate);
+							else {
+								var img="";
+								var status="";
+								
+								if (typeof item.Counter != 'undefined') {
+									img='<img src="images/counter.png" height="40">';
+									status=item.Counter + ', Today: ' + item.CounterToday;
+								}
+								else if (item.Type == "Current") {
+									img='<img src="images/current48.png" height="40">';
+									status=item.Data;
+								}
+								else if (item.Type == "Energy") {
+									img='<img src="images/current48.png" height="40">';
+									status=item.Data;
+								}
+								
+								if ($(id + " #img").html()!=img) {
+									$(id + " #img").html(img);
+								}
+								if ($(id + " #status").html()!=status) {
+									$(id + " #status").html(status);
+								}
+								if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+									$(id + " #lastupdate").html(item.LastUpdate);
+								}
 							}
 						}
           }
@@ -261,7 +375,6 @@ function RefreshFavorites()
       }
      }
   });
-
   $.myglobals.refreshTimer = setInterval(RefreshFavorites, 10000);
 }
 
@@ -298,7 +411,7 @@ function ShowFavorites()
 					if (data.DashboardType==1) {
 						rowItems=4;
 					}
-					else if (data.DashboardType==2) {
+					if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
 						rowItems=1000;
 					}
 
@@ -312,7 +425,17 @@ function ShowFavorites()
             if (jj == 0)
             {
               //first time
-              htmlcontent+='<h2>Light/Switch Devices:</h2>\n';
+              if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+								htmlcontent+='\t    <table class="mobileitem">\n';
+								htmlcontent+='\t    <thead>\n';
+								htmlcontent+='\t    <tr>\n';
+								htmlcontent+='\t    		<th colspan="2">Light/Switch Devices</th>\n';
+								htmlcontent+='\t    </tr>\n';
+								htmlcontent+='\t    </thead>\n';
+              }
+              else {
+								htmlcontent+='<h2>Light/Switch Devices:</h2>\n';
+							}
             }
             if (jj % rowItems == 0)
             {
@@ -326,66 +449,100 @@ function ShowFavorites()
             }
             
             var xhtm="";
-            if (data.DashboardType==0) {
-							xhtm='\t<div class="4u" id="light_' + item.idx +'">\n';
-            }
-            else if (data.DashboardType==1) {
-							xhtm='\t<div class="3u" id="light_' + item.idx +'">\n';
-            }
-            else {
-							xhtm+='\t<div id="light_' + item.idx +'">\n';
-            }
-				
-						xhtm+='\t  <section>\n';
-            if (data.DashboardType==0) {
-							xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
-            }
-            else if (data.DashboardType==1) {
-							xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
-            }
-            else {
-							xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
-            }
-						xhtm+=
-								'\t    <tr>\n' +
-								'\t      <td id="name">' + item.Name + '</td>\n';
-            if (item.SwitchType == "Doorbell") {
-              xhtm+='\t      <td id="img"><img src="images/door48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
-            }
-            else if (item.SwitchType == "X10 Siren") {
-              xhtm+='\t      <td id="img"><img src="images/siren48.png" height="40"></td>\n';
-            }
-            else if (item.SwitchType == "Contact") {
-              xhtm+='\t      <td id="img"><img src="images/contact48.png" height="40"></td>\n';
-            }
-						else if (item.SwitchType == "Blinds") {
-							if (item.Status == 'Closed') {
-									xhtm+='\t      <td id="img"><img src="images/blinds48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+						if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+							xhtm+=
+									'\t    <tr id="light_' + item.idx +'">\n' +
+									'\t      <td id="name">' + item.Name + '</td>\n';
+							var status=item.Status + " ";
+							if (item.SwitchType == "Doorbell") {
+								status+='<img src="images/door.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+							}
+							else if (item.SwitchType == "X10 Siren") {
+								status+='<img src="images/siren.png" height="16">';
+							}
+							else if (item.SwitchType == "Contact") {
+								status+='<img src="images/contact.png" height="16">';
+							}
+							else if (item.SwitchType == "Blinds") {
+								if (item.Status == 'Closed') {
+										status+='<img src="images/blinds48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+								}
+								else {
+										status+='<img src="images/blind.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+								}
 							}
 							else {
-									xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								if (
+										(item.Status == 'On')||
+										(item.Status == 'Chime')||
+										(item.Status == 'Group On')||
+										(item.Status.indexOf('Set ') == 0)
+									 ) {
+											status+='<img src="images/lightbulb.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+								}
+								else {
+											status+='<img src="images/lightbulboff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+								}
 							}
+							xhtm+=
+										'\t      <td id="status">' + status + '</td>\n' +
+										'\t    </tr>\n';
 						}
-            else {
-              if (
-                  (item.Status == 'On')||
-                  (item.Status == 'Chime')||
-                  (item.Status == 'Group On')||
-                  (item.Status.indexOf('Set ') == 0)
-                 ) {
-                    xhtm+='\t      <td id="img"><img src="images/light-on.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
-              }
-              else {
-                    xhtm+='\t      <td id="img"><img src="images/light-off.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
-              }
-            }
-            xhtm+=
-                  '\t      <td id="status">' + item.Status + '</td>\n' +
-                  '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
-                  '\t    </tr>\n' +
-                  '\t    </table>\n' +
-                  '\t  </section>\n' +
-                  '\t</div>\n';
+						else {
+							if (data.DashboardType==0) {
+								xhtm='\t<div class="4u" id="light_' + item.idx +'">\n';
+							}
+							else if (data.DashboardType==1) {
+								xhtm='\t<div class="3u" id="light_' + item.idx +'">\n';
+							}
+							xhtm+='\t  <section>\n';
+							if (data.DashboardType==0) {
+								xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+							}
+							else if (data.DashboardType==1) {
+								xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+							}
+							xhtm+=
+									'\t    <tr>\n' +
+									'\t      <td id="name">' + item.Name + '</td>\n';
+							if (item.SwitchType == "Doorbell") {
+								xhtm+='\t      <td id="img"><img src="images/door48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+							}
+							else if (item.SwitchType == "X10 Siren") {
+								xhtm+='\t      <td id="img"><img src="images/siren48.png" height="40"></td>\n';
+							}
+							else if (item.SwitchType == "Contact") {
+								xhtm+='\t      <td id="img"><img src="images/contact48.png" height="40"></td>\n';
+							}
+							else if (item.SwitchType == "Blinds") {
+								if (item.Status == 'Closed') {
+										xhtm+='\t      <td id="img"><img src="images/blinds48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								}
+								else {
+										xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								}
+							}
+							else {
+								if (
+										(item.Status == 'On')||
+										(item.Status == 'Chime')||
+										(item.Status == 'Group On')||
+										(item.Status.indexOf('Set ') == 0)
+									 ) {
+											xhtm+='\t      <td id="img"><img src="images/light-on.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								}
+								else {
+											xhtm+='\t      <td id="img"><img src="images/light-off.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								}
+							}
+							xhtm+=
+										'\t      <td id="status">' + item.Status + '</td>\n' +
+										'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
+										'\t    </tr>\n' +
+										'\t    </table>\n' +
+										'\t  </section>\n' +
+										'\t</div>\n';
+						}
             htmlcontent+=xhtm;
             jj+=1;
           }
@@ -394,6 +551,10 @@ function ShowFavorites()
           //close previous devider
           htmlcontent+='</div>\n';
         }
+        if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+					htmlcontent+='\t    </table>\n';
+        }
+
 
         //Temperature Sensors
         jj=0;
@@ -408,7 +569,20 @@ function ShowFavorites()
             if (jj == 0)
             {
               //first time
-              htmlcontent+='<h2>Temperature Sensors:</h2>\n';
+              if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+								if (htmlcontent!="") {
+									htmlcontent+='<br>';
+								}
+								htmlcontent+='\t    <table class="mobileitem">\n';
+								htmlcontent+='\t    <thead>\n';
+								htmlcontent+='\t    <tr>\n';
+								htmlcontent+='\t    		<th colspan="2">Temperature Sensors</th>\n';
+								htmlcontent+='\t    </tr>\n';
+								htmlcontent+='\t    </thead>\n';
+              }
+              else {
+								htmlcontent+='<h2>Temperature Sensors:</h2>\n';
+							}
             }
             if (jj % rowItems == 0)
             {
@@ -421,69 +595,100 @@ function ShowFavorites()
               bHaveAddedDevider=true;
             }
             var xhtm="";
-            if (data.DashboardType==0) {
-							xhtm='\t<div class="4u" id="temp_' + item.idx +'">\n';
-            }
-            else if (data.DashboardType==1) {
-							xhtm='\t<div class="3u" id="temp_' + item.idx +'">\n';
-            }
-            else {
-							xhtm='\t<div class="0u" id="temp_' + item.idx +'">\n';
-            }
-
-            xhtm+='\t  <section>\n';
-            if (data.DashboardType==0) {
-                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
-            }
-            else {
-                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
-            }
-            xhtm+=
-                  '\t    <tr>\n' +
-                  '\t      <td id="name">' + item.Name + '</td>\n' +
-                  '\t      <td id="img"><img src="images/';
-                  if ((typeof item.Temp == 'undefined') || (item.Temp>0)) {
-                    xhtm+='temp48.png';
-                  }
-                  else {
-                    xhtm+='ice.png';
-                  }
-                  xhtm+='" height="40"></td>\n' +
-                      '\t      <td id="status">';
-                  var bHaveBefore=false;
-                  if (typeof item.Temp != 'undefined') {
-                       xhtm+=item.Temp + '° C';
-                       bHaveBefore=true;
-                  }
-                  if (typeof item.Chill != 'undefined') {
-                    xhtm+=', Chill: ' + item.Chill + '° C';
-                    bHaveBefore=true;
-                  }
-									if (typeof item.Direction != 'undefined') {
-										xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms\n';
-									}
-                  if (typeof item.Humidity != 'undefined') {
-										if (bHaveBefore==true) {
-											xhtm+=', ';
+						if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+							xhtm+=
+									'\t    <tr id="temp_' + item.idx +'">\n' +
+									'\t      <td id="name">' + item.Name + '</td>\n';
+							var status="";
+							var bHaveBefore=false;
+							if (typeof item.Temp != 'undefined') {
+									 status+=item.Temp + '° C';
+									 bHaveBefore=true;
+							}
+							if (typeof item.Chill != 'undefined') {
+								status+=', Chill: ' + item.Chill + '° C';
+								bHaveBefore=true;
+							}
+							if (typeof item.Humidity != 'undefined') {
+								if (bHaveBefore==true) {
+									status+=', ';
+								}
+								status+=item.Humidity + ' %';
+							}
+							if (typeof item.HumidityStatus != 'undefined') {
+								status+=' (' + item.HumidityStatus + ')';
+							}
+							if (typeof item.Barometer != 'undefined') {
+								status+='<br>' + item.Barometer + ' hPa';
+							}
+							if (typeof item.ForecastStr != 'undefined') {
+								status+=', Prediction: ' + item.ForecastStr;
+							}
+							xhtm+=
+										'\t      <td id="status">' + status + '</td>\n' +
+										'\t    </tr>\n';
+						}
+						else {
+							if (data.DashboardType==0) {
+								xhtm='\t<div class="4u" id="temp_' + item.idx +'">\n';
+							}
+							else if (data.DashboardType==1) {
+								xhtm='\t<div class="3u" id="temp_' + item.idx +'">\n';
+							}
+							xhtm+='\t  <section>\n';
+							if (data.DashboardType==0) {
+										xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+							}
+							else {
+										xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+							}
+							xhtm+=
+										'\t    <tr>\n' +
+										'\t      <td id="name">' + item.Name + '</td>\n' +
+										'\t      <td id="img"><img src="images/';
+										if ((typeof item.Temp == 'undefined') || (item.Temp>0)) {
+											xhtm+='temp48.png';
 										}
-                    xhtm+='Humidity: ' + item.Humidity + ' %';
-                  }
-                  if (typeof item.HumidityStatus != 'undefined') {
-                    xhtm+=' (' + item.HumidityStatus + ')';
-                  }
-                  if (typeof item.Barometer != 'undefined') {
-                    xhtm+='<br>' + item.Barometer + ' hPa';
-                  }
-                  if (typeof item.ForecastStr != 'undefined') {
-                    xhtm+=', Prediction: ' + item.ForecastStr;
-                  }
-                  xhtm+=
-                      '</td>\n' +
-                      '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
-                  '\t    </tr>\n' +
-                  '\t    </table>\n' +
-                  '\t  </section>\n' +
-                  '\t</div>\n';
+										else {
+											xhtm+='ice.png';
+										}
+										xhtm+='" height="40"></td>\n' +
+												'\t      <td id="status">';
+										var bHaveBefore=false;
+										if (typeof item.Temp != 'undefined') {
+												 xhtm+=item.Temp + '° C';
+												 bHaveBefore=true;
+										}
+										if (typeof item.Chill != 'undefined') {
+											xhtm+=', Chill: ' + item.Chill + '° C';
+											bHaveBefore=true;
+										}
+										if (typeof item.Direction != 'undefined') {
+											xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms\n';
+										}
+										if (typeof item.Humidity != 'undefined') {
+											if (bHaveBefore==true) {
+												xhtm+=', ';
+											}
+											xhtm+='Humidity: ' + item.Humidity + ' %';
+										}
+										if (typeof item.HumidityStatus != 'undefined') {
+											xhtm+=' (' + item.HumidityStatus + ')';
+										}
+										if (typeof item.Barometer != 'undefined') {
+											xhtm+='<br>' + item.Barometer + ' hPa';
+										}
+										if (typeof item.ForecastStr != 'undefined') {
+											xhtm+=', Prediction: ' + item.ForecastStr;
+										}
+										xhtm+=
+												'</td>\n' +
+												'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
+										'\t    </tr>\n' +
+										'\t    </table>\n' +
+										'\t  </section>\n' +
+										'\t</div>\n';
+						}
             htmlcontent+=xhtm;
             jj+=1;
           }
@@ -491,6 +696,9 @@ function ShowFavorites()
         if (bHaveAddedDevider == true) {
           //close previous devider
           htmlcontent+='</div>\n';
+        }
+        if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+					htmlcontent+='\t    </table>\n';
         }
 
         //Weather Sensors
@@ -506,7 +714,20 @@ function ShowFavorites()
             if (jj == 0)
             {
               //first time
-              htmlcontent+='<h2>Weather Sensors:</h2>\n';
+              if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+								if (htmlcontent!="") {
+									htmlcontent+='<br>';
+								}
+								htmlcontent+='\t    <table class="mobileitem">\n';
+								htmlcontent+='\t    <thead>\n';
+								htmlcontent+='\t    <tr>\n';
+								htmlcontent+='\t    		<th colspan="2">Weather Sensors</th>\n';
+								htmlcontent+='\t    </tr>\n';
+								htmlcontent+='\t    </thead>\n';
+              }
+              else {
+								htmlcontent+='<h2>Weather Sensors:</h2>\n';
+							}
             }
             if (jj % rowItems == 0)
             {
@@ -519,58 +740,77 @@ function ShowFavorites()
               bHaveAddedDevider=true;
             }
             var xhtm="";
-            if (data.DashboardType==0) {
-							xhtm='\t<div class="4u" id="weather_' + item.idx +'">\n';
-            }
-            else if (data.DashboardType==1) {
-							xhtm='\t<div class="3u" id="weather_' + item.idx +'">\n';
-            }
-            else {
-							xhtm='\t<div class="0u" id="weather_' + item.idx +'">\n';
-            }
-            xhtm+='\t  <section>\n';
-            if (data.DashboardType==0) {
-                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
-            }
-            else if (data.DashboardType==1) {
-                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
-            }
-            else {
-                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
-            }
-            xhtm+=
-                  '\t    <tr>\n' +
-                  '\t      <td id="name">' + item.Name + '</td>\n' +
-                  '\t      <td id="img"><img src="images/';
-                  if (typeof item.Rain != 'undefined') {
-                    xhtm+='rain48.png" height="40"></td>\n' +
-                    '\t      <td id="status">' + item.Rain + ' mm';
-                    if (typeof item.RainRate != 'undefined') {
-											if (item.RainRate!=0) {
-												xhtm+=', Rate: ' + item.RainRate + ' mm/h';
-											}
-                    }
-                  }
-                  else if (typeof item.UVI != 'undefined') {
-                    xhtm+='uv48.png" height="40"></td>\n' +
-                    '\t      <td id="status">' + item.UVI + ' UVI';
-                    if (typeof item.Temp!= 'undefined') {
-                      xhtm+=', Temp: ' + item.Temp + '° C';
-                    }
-                  }
-                  else if (typeof item.Direction != 'undefined') {
-                    xhtm+='wind48.png" height="40"></td>\n' +
-                    '\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
-                    xhtm+='Temp: ' + item.Temp + '° C, ';
-                    xhtm+='Chill: ' + item.Chill + '° C';
-                  }
-                  xhtm+=
-                      '</td>\n' +
-                      '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
-                  '\t    </tr>\n' +
-                  '\t    </table>\n' +
-                  '\t  </section>\n' +
-                  '\t</div>\n';
+						if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+							xhtm+=
+									'\t    <tr id="weather_' + item.idx +'">\n' +
+									'\t      <td id="name">' + item.Name + '</td>\n';
+							var status="";
+							if (typeof item.Rain != 'undefined') {
+								status+=item.Rain + ' mm';
+								if (typeof item.RainRate != 'undefined') {
+									if (item.RainRate!=0) {
+										status+=', Rate: ' + item.RainRate + ' mm/h';
+									}
+								}
+							}
+							else if (typeof item.UVI != 'undefined') {
+								status+=item.UVI + ' UVI';
+							}
+							else if (typeof item.Direction != 'undefined') {
+								status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms';
+							}
+							xhtm+=
+										'\t      <td id="status">' + status + '</td>\n' +
+										'\t    </tr>\n';
+						}
+						else {
+							if (data.DashboardType==0) {
+								xhtm='\t<div class="4u" id="weather_' + item.idx +'">\n';
+							}
+							else if (data.DashboardType==1) {
+								xhtm='\t<div class="3u" id="weather_' + item.idx +'">\n';
+							}
+							xhtm+='\t  <section>\n';
+							if (data.DashboardType==0) {
+										xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+							}
+							else if (data.DashboardType==1) {
+										xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+							}
+							xhtm+=
+										'\t    <tr>\n' +
+										'\t      <td id="name">' + item.Name + '</td>\n' +
+										'\t      <td id="img"><img src="images/';
+							if (typeof item.Rain != 'undefined') {
+								xhtm+='rain48.png" height="40"></td>\n' +
+								'\t      <td id="status">' + item.Rain + ' mm';
+								if (typeof item.RainRate != 'undefined') {
+									if (item.RainRate!=0) {
+										xhtm+=', Rate: ' + item.RainRate + ' mm/h';
+									}
+								}
+							}
+							else if (typeof item.UVI != 'undefined') {
+								xhtm+='uv48.png" height="40"></td>\n' +
+								'\t      <td id="status">' + item.UVI + ' UVI';
+								if (typeof item.Temp!= 'undefined') {
+									xhtm+=', Temp: ' + item.Temp + '° C';
+								}
+							}
+							else if (typeof item.Direction != 'undefined') {
+								xhtm+='wind48.png" height="40"></td>\n' +
+								'\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
+								xhtm+='Temp: ' + item.Temp + '° C, ';
+								xhtm+='Chill: ' + item.Chill + '° C';
+							}
+							xhtm+=
+									'</td>\n' +
+									'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
+							'\t    </tr>\n' +
+							'\t    </table>\n' +
+							'\t  </section>\n' +
+							'\t</div>\n';
+						}
             htmlcontent+=xhtm;
             jj+=1;
           }
@@ -578,6 +818,9 @@ function ShowFavorites()
         if (bHaveAddedDevider == true) {
           //close previous devider
           htmlcontent+='</div>\n';
+        }
+        if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+					htmlcontent+='\t    </table>\n';
         }
 
         //security devices
@@ -590,7 +833,20 @@ function ShowFavorites()
             if (jj == 0)
             {
               //first time
-              htmlcontent+='<h2>Security Devices:</h2>\n';
+              if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+								if (htmlcontent!="") {
+									htmlcontent+='<br>';
+								}
+								htmlcontent+='\t    <table class="mobileitem">\n';
+								htmlcontent+='\t    <thead>\n';
+								htmlcontent+='\t    <tr>\n';
+								htmlcontent+='\t    		<th colspan="2">Security Devices</th>\n';
+								htmlcontent+='\t    </tr>\n';
+								htmlcontent+='\t    </thead>\n';
+              }
+              else {
+								htmlcontent+='<h2>Security Devices:</h2>\n';
+							}
             }
             if (jj % rowItems == 0)
             {
@@ -603,46 +859,51 @@ function ShowFavorites()
               bHaveAddedDevider=true;
             }
             var xhtm="";
-            if (data.DashboardType==0) {
-							xhtm='\t<div class="4u" id="security_' + item.idx +'">\n';
-            }
-            else if (data.DashboardType==1) {
-							xhtm='\t<div class="3u" id="security_' + item.idx +'">\n';
-            }
-            else {
-							xhtm='\t<div class="0u" id="security_' + item.idx +'">\n';
-            }
-            xhtm+='\t  <section>\n';
-            if (data.DashboardType==0) {
-                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
-            }
-            else if (data.DashboardType==1) {
-                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
-            }
-            else {
-                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
-            }
-            xhtm+=
-                  '\t    <tr>\n' +
-                  '\t      <td id="name">' + item.Name + '</td>\n';
-						if (item.SubType.indexOf('remote') > 0) {
-							xhtm+='\t      <td id="img"><img src="images/remote48.png" height="40"></td>\n';
+						if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+							xhtm+=
+									'\t    <tr id="security_' + item.idx +'">\n' +
+									'\t      <td id="name">' + item.Name + '</td>\n';
+							var status=item.Status;
+							xhtm+=
+										'\t      <td id="status">' + status + '</td>\n' +
+										'\t    </tr>\n';
 						}
 						else {
-							if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
-								xhtm+='\t      <td id="img"><img src="images/alarm48.png" height="40"></td>\n';
+							if (data.DashboardType==0) {
+								xhtm='\t<div class="4u" id="security_' + item.idx +'">\n';
+							}
+							else if (data.DashboardType==1) {
+								xhtm='\t<div class="3u" id="security_' + item.idx +'">\n';
+							}
+							xhtm+='\t  <section>\n';
+							if (data.DashboardType==0) {
+										xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+							}
+							else if (data.DashboardType==1) {
+										xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+							}
+							xhtm+=
+										'\t    <tr>\n' +
+										'\t      <td id="name">' + item.Name + '</td>\n';
+							if (item.SubType.indexOf('remote') > 0) {
+								xhtm+='\t      <td id="img"><img src="images/remote48.png" height="40"></td>\n';
 							}
 							else {
-								xhtm+='\t      <td id="img"><img src="images/security48.png" height="40"></td>\n';
+								if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
+									xhtm+='\t      <td id="img"><img src="images/alarm48.png" height="40"></td>\n';
+								}
+								else {
+									xhtm+='\t      <td id="img"><img src="images/security48.png" height="40"></td>\n';
+								}
 							}
+							xhtm+=
+										'\t      <td id="status">' + item.Status + '</td>\n' +
+										'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
+										'\t    </tr>\n' +
+										'\t    </table>\n' +
+										'\t  </section>\n' +
+										'\t</div>\n';
 						}
-            xhtm+=
-                  '\t      <td id="status">' + item.Status + '</td>\n' +
-                  '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
-                  '\t    </tr>\n' +
-                  '\t    </table>\n' +
-                  '\t  </section>\n' +
-                  '\t</div>\n';
             htmlcontent+=xhtm;
             jj+=1;
           }
@@ -650,6 +911,9 @@ function ShowFavorites()
         if (bHaveAddedDevider == true) {
           //close previous devider
           htmlcontent+='</div>\n';
+        }
+        if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+					htmlcontent+='\t    </table>\n';
         }
         
         //Utility Sensors
@@ -665,7 +929,20 @@ function ShowFavorites()
             if (jj == 0)
             {
               //first time
-              htmlcontent+='<h2>Utility Sensors:</h2>\n';
+              if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+								if (htmlcontent!="") {
+									htmlcontent+='<br>';
+								}
+								htmlcontent+='\t    <table class="mobileitem">\n';
+								htmlcontent+='\t    <thead>\n';
+								htmlcontent+='\t    <tr>\n';
+								htmlcontent+='\t    		<th colspan="2">Security Devices</th>\n';
+								htmlcontent+='\t    </tr>\n';
+								htmlcontent+='\t    </thead>\n';
+              }
+              else {
+								htmlcontent+='<h2>Utility Sensors:</h2>\n';
+							}
             }
             if (jj % rowItems == 0)
             {
@@ -678,48 +955,65 @@ function ShowFavorites()
               bHaveAddedDevider=true;
             }
             var xhtm="";
-            if (data.DashboardType==0) {
-							xhtm='\t<div class="4u" id="utility_' + item.idx +'">\n';
-            }
-            else if (data.DashboardType==1) {
-							xhtm='\t<div class="3u" id="utility_' + item.idx +'">\n';
-            }
-            else {
-							xhtm='\t<div class="0u" id="utility_' + item.idx +'">\n';
-            }
-            xhtm+='\t  <span>\n';
-            if (data.DashboardType==0) {
-                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
-            }
-            else if (data.DashboardType==1) {
-                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
-            }
-            else {
-                  xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
-            }
-            xhtm+=
-                  '\t    <tr>\n' +
-                  '\t      <td id="name">' + item.Name + '</td>\n' +
-                  '\t      <td id="img"><img src="images/';
-									if (typeof item.Counter != 'undefined') {
-										xhtm+='counter.png" height="40"></td>\n' +
-										'\t      <td id="status">' + item.Counter + ', Today: ' + item.CounterToday;
-									}
-									else if (item.Type == "Current") {
-										xhtm+='current48.png" height="40"></td>\n' +
-										'\t      <td id="status">' + item.Data;
-									}
-									else if (item.Type == "Energy") {
-										xhtm+='current48.png" height="40"></td>\n' +
-										'\t      <td id="status">' + item.Data;
-									}
-                  xhtm+=
-                      '</td>\n' +
-                      '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
-                  '\t    </tr>\n' +
-                  '\t    </table>\n' +
-                  '\t  </span>\n' +
-                  '\t</div>\n';
+						if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+							xhtm+=
+									'\t    <tr id="utility_' + item.idx +'">\n' +
+									'\t      <td id="name">' + item.Name + '</td>\n';
+							var status="";
+							if (typeof item.Counter != 'undefined') {
+								status=item.Counter + ', Today: ' + item.CounterToday;
+							}
+							else if (item.Type == "Current") {
+								status=item.Data;
+							}
+							else if (item.Type == "Energy") {
+								status=item.Data;
+							}
+							xhtm+=
+										'\t      <td id="status">' + status + '</td>\n' +
+										'\t    </tr>\n';
+						}
+						else {
+							if (data.DashboardType==0) {
+								xhtm='\t<div class="4u" id="utility_' + item.idx +'">\n';
+							}
+							else if (data.DashboardType==1) {
+								xhtm='\t<div class="3u" id="utility_' + item.idx +'">\n';
+							}
+							xhtm+='\t  <span>\n';
+							if (data.DashboardType==0) {
+										xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+							}
+							else if (data.DashboardType==1) {
+										xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+							}
+							else {
+										xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+							}
+							xhtm+=
+										'\t    <tr>\n' +
+										'\t      <td id="name">' + item.Name + '</td>\n' +
+										'\t      <td id="img"><img src="images/';
+							if (typeof item.Counter != 'undefined') {
+								xhtm+='counter.png" height="40"></td>\n' +
+								'\t      <td id="status">' + item.Counter + ', Today: ' + item.CounterToday;
+							}
+							else if (item.Type == "Current") {
+								xhtm+='current48.png" height="40"></td>\n' +
+								'\t      <td id="status">' + item.Data;
+							}
+							else if (item.Type == "Energy") {
+								xhtm+='current48.png" height="40"></td>\n' +
+								'\t      <td id="status">' + item.Data;
+							}
+							xhtm+=
+									'</td>\n' +
+									'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
+							'\t    </tr>\n' +
+							'\t    </table>\n' +
+							'\t  </span>\n' +
+							'\t</div>\n';
+						}
             htmlcontent+=xhtm;
             jj+=1;
           }
@@ -727,6 +1021,9 @@ function ShowFavorites()
         if (bHaveAddedDevider == true) {
           //close previous devider
           htmlcontent+='</div>\n';
+        }
+        if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+					htmlcontent+='\t    </table>\n';
         }
 
       }
@@ -738,6 +1035,9 @@ function ShowFavorites()
     htmlcontent=
       '<h2>No favorite devices defined ... (Or communication Lost!)</h2><br>\n' +
       'If this is your first time here, please setup your <a href="javascript:SwitchLayout(\'Hardware\')">hardware</a>, and add some <a href="javascript:SwitchLayout(\'Devices\')">devices</a>.';
+	}
+	else {
+		htmlcontent+="<br>";
 	}
 	
 	var suntext="";
@@ -813,6 +1113,10 @@ function ShowFavorites()
 }
 
 $(document).ready(function() {
+	if( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {
+		$.myglobals.ismobile=true;
+	}
+
   ShowFavorites();
 } );
 </script>
