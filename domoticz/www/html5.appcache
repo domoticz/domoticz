@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 35
+# ref 36
 
 CACHE:
 favicon.ico
@@ -69,12 +69,14 @@ css/ui-darkness/images/ui-icons_ffffff_256x240.png
 
 # images
 images/add.png
+images/air_signal.png
 images/alarm48.png
 images/background.png
 images/back_disabled.png
 images/back_enabled.png
 images/back_enabled_hover.png
 images/baro48.png
+images/battery.png
 images/battery-low.png
 images/battery-ok.png
 images/blinds.png

@@ -26,84 +26,103 @@
     </form>
 </div>
 <form id="settings">
-<h2>Location:</h2><br>
-<label id="sunriseset"></label>
-<table class="display" id="locationtable" border="0" cellpadding="0" cellspacing="0">
-<tr>
-  <td align="right" style="width:60px"><label for="Latitude">Latitude: </label></td>
-  <td><input type="text" id="Latitude" name="Latitude" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-<tr>
-  <td align="right"><label for="Longitude">Longitude: </label></td>
-  <td><input type="text" id="Longitude" name="Longitude" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-</tr>
-</table>
-To find your location click <a onclick="GetGeoLocation();" onMouseover="cursorhand()" onMouseout="cursordefault()">Here</a><br>
-<br><br>
-<h2>Prowl (iPhone/iPad notification system):</h2><br>
-<table class="display" id="prowltable" border="0" cellpadding="0" cellspacing="0">
-<tr>
-  <td align="right" style="width:60px"><label for="apikey">API Key: </label></td>
-  <td><input type="input" id="apikey" name="ProwlAPIKey" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <a class="btnstyle3" href="javascript:TestProwlNotification()">Test</a></td>
-</tr>
-</table>
-To get a free account/API key click <a href="https://www.prowlapp.com" target="_blank">Here</a><br>
-<br><br>
-<h2>NMA (Android notification system):</h2><br>
-<table class="display" id="nmatable" border="0" cellpadding="0" cellspacing="0">
-<tr>
-  <td align="right" style="width:60px"><label for="apikey">API Key: </label></td>
-  <td><input type="input" id="apikey" name="NMAAPIKey" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <a class="btnstyle3" href="javascript:TestNMANotification()">Test</a></td>
-</tr>
-</table>
-To get a free account/API key click <a href="http://www.notifymyandroid.com/" target="_blank">Here</a><br>
-<br><br>
-<h2>Light/Switch History:</h2><br>
-<table class="display" id="lightlogtable" border="0" cellpadding="0" cellspacing="0">
-<tr>
-  <td align="right" style="width:60px"><label>Days: </label></td>
-  <td><input type="text" id="LightHistoryDays" name="LightHistoryDays" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-</tr>
-</table>
-<br><br>
-<h2>Dashboard:</h2><br>
-<table class="display" id="dashmodetable" border="0" cellpadding="0" cellspacing="0">
-<tr>
-  <td align="right" style="width:60px"><label>Mode: </label></td>
-	<td><select id="combosdashtype" name="DashboardType" style="width:120px" class="combobox ui-corner-all">
-		<option value="0">Normal</option>
-		<option value="1">Compact</option>
-		<option value="2">Mobile</option>
-	</select></td>
-</tr>
-</table>
-<br><br>
-<h2>Website Protection:</h2><br>
-<table class="display" id="webtable" border="0" cellpadding="0" cellspacing="0">
-<tr>
-  <td align="right" style="width:60px"><label>Username: </label></td>
-  <td><input type="input" id="WebUserName" name="WebUserName" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-</tr>
-<tr>
-  <td align="right" style="width:60px"><label>Password: </label></td>
-  <td><input type="password" id="WebPassword" name="WebPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-</tr>
-</table>
-<br><br>
-<h2>RFXMeter Counter Dividers:</h2><br>
-<table class="display" id="rfxmetertable" border="0" cellpadding="0" cellspacing="0">
-<tr>
-  <td align="right" style="width:60px"><label>Energy: </label></td>
-  <td><input type="input" id="EnergyDivider" name="EnergyDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-</tr>
-<tr>
-  <td align="right" style="width:60px"><label>Gas: </label></td>
-  <td><input type="input" id="GasDivider" name="GasDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-</tr>
-<tr>
-  <td align="right" style="width:60px"><label>Water: </label></td>
-  <td><input type="input" id="WaterDivider" name="WaterDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-</tr>
-</table>
+<div class="row divider">
+	<div class="6u">
+	<h2>Location:</h2><br>
+	<label id="sunriseset"></label>
+	<table class="display" id="locationtable" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td align="right" style="width:60px"><label for="Latitude">Latitude: </label></td>
+		<td><input type="text" id="Latitude" name="Latitude" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+	<tr>
+		<td align="right"><label for="Longitude">Longitude: </label></td>
+		<td><input type="text" id="Longitude" name="Longitude" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+	</tr>
+	</table>
+	To find your location click <a onclick="GetGeoLocation();" onMouseover="cursorhand()" onMouseout="cursordefault()">Here</a><br>
+	</div>
+</div>
+<br>
+<div class="row divider">
+	<div class="6u">
+	<h2>Prowl (iPhone/iPad notification system):</h2><br>
+	<table class="display" id="prowltable" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td align="right" style="width:60px"><label for="apikey">API Key: </label></td>
+		<td><input type="input" id="apikey" name="ProwlAPIKey" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <a class="btnstyle3" href="javascript:TestProwlNotification()">Test</a></td>
+	</tr>
+	</table>
+	To get a free account/API key click <a href="https://www.prowlapp.com" target="_blank">Here</a><br>
+	</div>
+	<div class="6u">
+	<h2>NMA (Android notification system):</h2><br>
+	<table class="display" id="nmatable" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td align="right" style="width:60px"><label for="apikey">API Key: </label></td>
+		<td><input type="input" id="apikey" name="NMAAPIKey" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <a class="btnstyle3" href="javascript:TestNMANotification()">Test</a></td>
+	</tr>
+	</table>
+	To get a free account/API key click <a href="http://www.notifymyandroid.com/" target="_blank">Here</a><br>
+	</div>
+</div>
+<br>
+<div class="row divider">
+	<div class="6u">
+	<h2>Light/Switch History:</h2><br>
+	<table class="display" id="lightlogtable" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td align="right" style="width:60px"><label>Days: </label></td>
+		<td><input type="text" id="LightHistoryDays" name="LightHistoryDays" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+	</tr>
+	</table>
+	</div>
+	<div class="6u">
+	<h2>Dashboard:</h2><br>
+	<table class="display" id="dashmodetable" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td align="right" style="width:60px"><label>Mode: </label></td>
+		<td><select id="combosdashtype" name="DashboardType" style="width:120px" class="combobox ui-corner-all">
+			<option value="0">Normal</option>
+			<option value="1">Compact</option>
+			<option value="2">Mobile</option>
+		</select></td>
+	</tr>
+	</table>
+	</div>
+</div>
+<br>
+<div class="row divider">
+	<div class="6u">
+	<h2>Website Protection:</h2><br>
+	<table class="display" id="webtable" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td align="right" style="width:60px"><label>Username: </label></td>
+		<td><input type="input" id="WebUserName" name="WebUserName" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+	</tr>
+	<tr>
+		<td align="right" style="width:60px"><label>Password: </label></td>
+		<td><input type="password" id="WebPassword" name="WebPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+	</tr>
+	</table>
+	</div>
+	<div class="6u">
+	<h2>RFXMeter Counter Dividers:</h2><br>
+	<table class="display" id="rfxmetertable" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td align="right" style="width:60px"><label>Energy: </label></td>
+		<td><input type="input" id="EnergyDivider" name="EnergyDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+	</tr>
+	<tr>
+		<td align="right" style="width:60px"><label>Gas: </label></td>
+		<td><input type="input" id="GasDivider" name="GasDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+	</tr>
+	<tr>
+		<td align="right" style="width:60px"><label>Water: </label></td>
+		<td><input type="input" id="WaterDivider" name="WaterDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+	</tr>
+	</table>
+	</div>
+</div>
 <br>
 <a class="btnstyle3" href="javascript:StoreSettings()">Save</a>
 </form>

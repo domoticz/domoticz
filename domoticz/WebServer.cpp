@@ -685,6 +685,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 						root["result"][ii]["Temp"]=atof(strarray[4].c_str());
 						root["result"][ii]["Chill"]=atof(strarray[5].c_str());
 					}
+					root["result"][ii]["Data"]=sValue;
 				}
 			}
 			else if (dType == pTypeRAIN)
