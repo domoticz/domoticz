@@ -835,6 +835,60 @@ bool GetLightCommand(
 		else
 			return false;
 		break;
+	case pTypeLighting5:
+		if (switchtype==STYPE_Doorbell)
+		{
+			if ((switchcmd=="On")||(switchcmd=="Group On"))
+			{
+				cmd=light5_sGroupOn;
+				return true;
+			}
+			//no other combinations for the door switch
+			return false;
+		}
+		else if (switchtype==STYPE_X10Siren)
+		{
+			if ((switchcmd=="On")||(switchcmd=="Group On"))
+			{
+				cmd=light5_sGroupOn;
+				return true;
+			}
+			else if ((switchcmd=="Off")||(switchcmd=="Group Off"))
+			{
+				cmd=light5_sGroupOff;
+				return true;
+			}
+			//no other combinations for the door switch
+			return false;
+		}
+		if (switchcmd=="Off")
+		{
+			cmd=light5_sOff;
+			return true;
+		}
+		else if (switchcmd=="On")
+		{
+			cmd=light5_sOn;
+			return true;
+		}
+		else if (switchcmd=="Set Level")
+		{
+			cmd=light5_sSetLevel;
+			return true;
+		}
+		else if (switchcmd=="Group Off")
+		{
+			cmd=light5_sGroupOff;
+			return true;
+		}
+		else if (switchcmd=="Group On")
+		{
+			cmd=light5_sGroupOn;
+			return true;
+		}
+		else
+			return false;
+		break;
 	case pTypeSecurity1:
 		if (dSubType==sTypeKD101)
 		{

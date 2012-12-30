@@ -4925,6 +4925,30 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, const std::st
 	case pTypeLighting4:
 		break;
 	case pTypeLighting5:
+		{
+			tRBUF lcmd;
+			lcmd.LIGHTING5.packetlength=sizeof(lcmd.LIGHTING5)-1;
+			lcmd.LIGHTING5.packettype=dType;
+			lcmd.LIGHTING5.subtype=dSubType;
+			lcmd.LIGHTING5.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
+			lcmd.LIGHTING5.id1=ID2;
+			lcmd.LIGHTING5.id2=ID3;
+			lcmd.LIGHTING5.id3=ID4;
+			lcmd.LIGHTING5.unitcode=Unit;
+			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING5.cmnd))
+				return false;
+			if ((switchtype==STYPE_Doorbell)||(switchtype==STYPE_X10Siren))
+				level=15;
+			lcmd.LIGHTING5.level=level;
+			lcmd.LIGHTING5.filler=0;
+			lcmd.LIGHTING5.rssi=7;
+			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING5));
+			if (!IsTesting) {
+				//send to internal for now (later we use the ACK)
+				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+			}
+			return true;
+		}
 		break;
 	case pTypeLighting6:
 		break;
