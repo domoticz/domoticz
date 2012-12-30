@@ -134,7 +134,7 @@ ADD_PRECOMPILED_HEADER(domoticz "stdafx.h")
 set(BOOST_LIBS thread date_time system)
 #set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost COMPONENTS ${BOOST_LIBS} REQUIRED)
-target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY})
+target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread)
 #target_link_libraries(domoticz ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
 
 # build a CPack driven installer package
