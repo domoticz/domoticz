@@ -23,13 +23,17 @@ Windows:
 - boost libraries, you probably have to set the correct include/lib folder in the project properties as i did not bootstrap mine
 
 ------------------------------------------------------------------------------------------------
-Ubuntu/Raspberry Pi:
+Ubuntu / Raspberry Pi (wheezy):
 sudo apt-get install cmake libboost-dev libboost-thread-dev libboost-system-dev libsqlite3-dev subversion
 
 Raspberry Pi (22 November 2012): (First time compile time: 18 minutes)
 At this moment (First generation RPi (128MB), there is a issue with the FTDI drivers (USB), a quick fix it to add the following in front of /boot/cmdline.txt
 dwc_otg.speed=1
 This will cause the USB to switch back to version 1.1, but also the network speed is reduced a lot! (not that i want to use 80mbps)
+
+------------------------------------------------------------------------------------------------
+Raspberry Pi (Arch Linux):
+sudo pacman -S gcc cmake subversion boost sqlite make
 
 ------------------------------------------------------------------------------------------------
 Synology: (Initial setup time is 30 minutes)
