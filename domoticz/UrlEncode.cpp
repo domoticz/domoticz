@@ -122,7 +122,5 @@ std::string CURLEncode::URLEncode(std::string pcsEncode)
 		}
 	}
 
-
 	return csEncoded;
-
 }
