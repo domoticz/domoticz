@@ -432,6 +432,7 @@ void GetLightStatus(
 			}
 			break;
 		case sTypeARC:
+		case sTypePhilips:
 			bHaveGroupCmd=true;
 			switch (nValue)
 			{
@@ -453,6 +454,10 @@ void GetLightStatus(
 			}
 			break;
 		case sTypeAB400D:
+		case sTypeWaveman:
+		case sTypeEMW200:
+		case sTypeIMPULS:
+		case sTypeRisingSun:
 			switch (nValue)
 			{
 			case light1_sOff:
