@@ -81,6 +81,7 @@
   <ItemGroup>
     <None Include="CMakeLists.txt" />
     <None Include="domoticz.ico" />
+    <None Include="History.txt" />
     <None Include="INSTALL.txt" />
   </ItemGroup>
   <ItemGroup>

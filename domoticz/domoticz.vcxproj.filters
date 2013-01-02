@@ -49,6 +49,7 @@
     </None>
     <None Include="INSTALL.txt" />
     <None Include="domoticz.ico" />
+    <None Include="History.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
