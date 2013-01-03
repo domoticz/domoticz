@@ -12,7 +12,9 @@ class CDomoticzHardwareBase
 	friend class RFXComSerial;
 	friend class RFXComTCP;
 	friend class DomoticzTCP;
+	friend class P1MeterBase;
 	friend class P1MeterSerial;
+	friend class P1MeterTCP;
 public:
 	CDomoticzHardwareBase();
 	~CDomoticzHardwareBase() {};

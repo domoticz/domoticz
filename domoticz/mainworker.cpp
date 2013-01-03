@@ -10,6 +10,9 @@
 #include "RFXComSerial.h"
 #include "RFXComTCP.h"
 #include "DomoticzTCP.h"
+#include "P1MeterBase.h"
+#include "P1MeterSerial.h"
+#include "P1MeterTCP.h"
 
 #include "SunRiseSet.h"
 
@@ -67,7 +70,11 @@ void MainWorker::SendResetCommand(CDomoticzHardwareBase *pHardware)
 {
 	pHardware->m_bEnableReceive=false;
 
-	if (pHardware->HwdType!=HTYPE_Domoticz)
+	if (
+		(pHardware->HwdType!=HTYPE_Domoticz)&&
+		(pHardware->HwdType!=HTYPE_P1SmartMeter)&&
+		(pHardware->HwdType!=HTYPE_P1SmartMeterLAN)
+		)
 	{
 		//Send Reset
 		SendCommand(pHardware->m_HwdID,cmdRESET,"Reset");
@@ -79,7 +86,11 @@ void MainWorker::SendResetCommand(CDomoticzHardwareBase *pHardware)
 	pHardware->m_rxbufferpos=0;
 	pHardware->m_bEnableReceive=true;
 
-	if (pHardware->HwdType!=HTYPE_Domoticz)
+	if (
+		(pHardware->HwdType!=HTYPE_Domoticz)&&
+		(pHardware->HwdType!=HTYPE_P1SmartMeter)&&
+		(pHardware->HwdType!=HTYPE_P1SmartMeterLAN)
+		)
 	{
 		SendCommand(pHardware->m_HwdID,cmdSTATUS,"Status");
 	}
@@ -286,6 +297,19 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Domoticz:
 		//LAN
 		pHardware = new DomoticzTCP(ID, Address, Port, Username, Password);
+		break;
+	case HTYPE_P1SmartMeter:
+		//USB
+#if defined WIN32
+		sprintf(szSerialPort,"COM%d",Port);
+#else
+		sprintf(szSerialPort,"/dev/ttyUSB%d",Port);
+#endif
+//		pHardware = new P1MeterSerial(ID,szSerialPort,9600);
+		break;
+	case HTYPE_P1SmartMeterLAN:
+		//LAN
+		pHardware = new P1MeterTCP(ID, Address, Port);
 		break;
 	}
 	if (pHardware)
@@ -721,6 +745,14 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		case pTypeRFXMeter:
 			WriteMessage("RFXMeter");
 			decode_RFXMeter(HwdID, (tRBUF *)pRXCommand);
+			break;
+		case pTypeP1Power:
+			WriteMessage("P1 Smart Meter Power");
+			decode_P1MeterPower(HwdID, (tRBUF *)pRXCommand);
+			break;
+		case pTypeP1Gas:
+			WriteMessage("P1 Smart Meter Gas");
+			decode_P1MeterGas(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeFS20:
 			WriteMessage("FS20");
@@ -1678,6 +1710,7 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const tRBUF *pResponse)
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->TEMP_HUM_BARO.packettype, pResponse->TEMP_HUM_BARO.subtype);
 			WriteMessage(szTmp);
+			break;
 		}
 
 		sprintf(szTmp,"Sequence nbr  = %d", pResponse->TEMP_HUM_BARO.seqnbr);
@@ -1938,7 +1971,7 @@ void MainWorker::decode_Lighting1(const int HwdID, const tRBUF *pResponse)
 			}
 			break;
 		default:
-			printf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING1.packettype, pResponse->LIGHTING1.subtype);
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING1.packettype, pResponse->LIGHTING1.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
@@ -2279,6 +2312,7 @@ void MainWorker::decode_Lighting6(const int HwdID, const tRBUF *pResponse)
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING6.packettype, pResponse->LIGHTING6.subtype);
 			WriteMessage(szTmp);
+			break;
 		}
 		sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING6.rssi);
 		WriteMessage(szTmp);
@@ -2524,6 +2558,7 @@ void MainWorker::decode_Security1(const int HwdID, const tRBUF *pResponse)
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->SECURITY1.packettype, pResponse->SECURITY1.subtype);
 			WriteMessage(szTmp);
+			break;
 		}
 
 		sprintf(szTmp, "Sequence nbr  = %d", pResponse->SECURITY1.seqnbr);
@@ -2712,6 +2747,7 @@ void MainWorker::decode_Camera1(const int HwdID, const tRBUF *pResponse)
 	default:
 		sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->CAMERA1.packettype, pResponse->CAMERA1.subtype);
 		WriteMessage(szTmp);
+		break;
 	}
 	sprintf(szTmp, "Signal level  = %d", pResponse->CAMERA1.rssi);
 	WriteMessage(szTmp);
@@ -4101,6 +4137,7 @@ void MainWorker::decode_Energy(const int HwdID, const tRBUF *pResponse)
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->ENERGY.packettype, pResponse->ENERGY.subtype);
 			WriteMessage(szTmp);
+			break;
 		}
 
 		sprintf(szTmp,"Sequence nbr  = %d", pResponse->ENERGY.seqnbr);
@@ -4571,9 +4608,95 @@ void MainWorker::decode_RFXMeter(const int HwdID, const tRBUF *pResponse)
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->RFXMETER.packettype, pResponse->RFXMETER.subtype);
 			WriteMessage(szTmp);
+			break;
 		}
 		sprintf(szTmp,"Signal level  = %d", pResponse->RFXMETER.rssi);
 		WriteMessage(szTmp);
+	}
+}
+
+void MainWorker::decode_P1MeterPower(const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[200];
+	const _tP1Power *p1Power=(const _tP1Power*)pResponse;
+	unsigned char devType=p1Power->type;
+	unsigned char subType=p1Power->subtype;
+	std::string ID="1";
+	unsigned char Unit=subType;
+	unsigned char cmnd=0;
+	unsigned char SignalLevel=12;
+	unsigned char BatteryLevel = 255;
+
+	sprintf(szTmp,"%ld;%ld;%ld;%ld;%ld;%ld",
+		p1Power->powerusage1,
+		p1Power->powerusage2,
+		p1Power->powerdeliv1,
+		p1Power->powerdeliv2,
+		p1Power->usagecurrent,
+		p1Power->delivcurrent
+		);
+	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
+
+	if (m_verboselevel == EVBL_ALL)
+	{
+		switch (p1Power->subtype)
+		{
+		case sTypeP1Power:
+			WriteMessage("subtype       = P1 Smart Meter Power");
+
+			sprintf(szTmp,"powerusage1 = %.3f kWh", float(p1Power->powerusage1) / 1000.0f);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"powerusage2 = %.3f kWh", float(p1Power->powerusage2) / 1000.0f);
+			WriteMessage(szTmp);
+
+			sprintf(szTmp,"powerdeliv1 = %.3f kWh", float(p1Power->powerdeliv1) / 1000.0f);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"powerdeliv2 = %.3f kWh", float(p1Power->powerdeliv2) / 1000.0f);
+			WriteMessage(szTmp);
+
+			sprintf(szTmp,"current usage = %03ld kWh", p1Power->usagecurrent);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"current deliv = %03ld kWh", p1Power->delivcurrent);
+			WriteMessage(szTmp);
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", p1Power->type, p1Power->subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+	}
+}
+
+void MainWorker::decode_P1MeterGas(const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[200];
+	const _tP1Gas *p1Gas=(const _tP1Gas*)pResponse;
+	unsigned char devType=p1Gas->type;
+	unsigned char subType=p1Gas->subtype;
+	std::string ID="1";
+	unsigned char Unit=subType;
+	unsigned char cmnd=0;
+	unsigned char SignalLevel=12;
+	unsigned char BatteryLevel = 255;
+
+	sprintf(szTmp,"%ld",p1Gas->gasusage);
+	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
+
+	if (m_verboselevel == EVBL_ALL)
+	{
+		switch (p1Gas->subtype)
+		{
+		case sTypeP1Gas:
+			WriteMessage("subtype       = P1 Smart Meter Gas");
+
+			sprintf(szTmp,"gasusage = %.3f m3", float(p1Gas->gasusage) / 1000.0f);
+			WriteMessage(szTmp);
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", p1Gas->type, p1Gas->subtype);
+			WriteMessage(szTmp);
+			break;
+		}
 	}
 }
 

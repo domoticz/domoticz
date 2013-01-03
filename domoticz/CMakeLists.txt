@@ -107,6 +107,9 @@ ASyncSerial.cpp
 RFXComSerial.cpp
 RFXComTCP.cpp
 DomoticzTCP.cpp
+P1MeterBase.cpp
+P1MeterTCP.cpp
+P1MeterSerial.cpp
 RFXNames.cpp
 Helper.cpp
 mynetwork.cpp

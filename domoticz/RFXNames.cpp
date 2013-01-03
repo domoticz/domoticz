@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "RFXNames.h"
 #include "RFXtrx.h"
+#include "P1MeterBase.h"
 
 typedef struct _STR_TABLE_SINGLE {
 	unsigned long    id;
@@ -122,10 +123,12 @@ const char *Hardware_Type_Desc(int hType)
 {
 	STR_TABLE_SINGLE	Table[] = 
 	{
-		{ HTYPE_RFXtrx315,	"RFXCOM - RFXtrx315 USB 315MHz Transceiver" },
-		{ HTYPE_RFXtrx433,	"RFXCOM - RFXtrx433 USB 433.92MHz Transceiver" },
-		{ HTYPE_RFXLAN,		"RFXCOM - RFXLAN Transceiver 433.92 MHz with LAN interface" },
-		{ HTYPE_Domoticz,	"Domoticz - Remote Server" },
+		{ HTYPE_RFXtrx315,			"RFXCOM - RFXtrx315 USB 315MHz Transceiver" },
+		{ HTYPE_RFXtrx433,			"RFXCOM - RFXtrx433 USB 433.92MHz Transceiver" },
+		{ HTYPE_RFXLAN,				"RFXCOM - RFXLAN Transceiver 433.92 MHz with LAN interface" },
+		{ HTYPE_Domoticz,			"Domoticz - Remote Server" },
+		{ HTYPE_P1SmartMeter,		"P1 Smart Meter USB" },
+		{ HTYPE_P1SmartMeterLAN,	"P1 Smart Meter with LAN interface" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -253,6 +256,8 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeWEIGHT, "Weight" , "unknown" },
 		{ pTypeRFXSensor, "RFXSensor" , "unknown" },
 		{ pTypeRFXMeter, "RFXMeter" , "counter" },
+		{ pTypeP1Power, "P1 Smart Meter" , "counter" },
+		{ pTypeP1Gas, "P1 Smart Meter" , "counter" },
 		{ pTypeFS20, "FS20" , "unknown" },
 		{  0,NULL,NULL }
 	};
@@ -385,6 +390,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 
 		{ pTypeRFXMeter, sTypeRFXMeterCount, "RFXMeter counter" },
 		
+		{ pTypeP1Power, sTypeP1Power, "Energy" },
+		{ pTypeP1Gas, sTypeP1Gas, "Gas" },
 
 		{  0,0,NULL }
 	};

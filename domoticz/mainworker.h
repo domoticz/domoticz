@@ -120,5 +120,7 @@ private:
 	void decode_Weight(const int HwdID, const tRBUF *pResponse);
 	void decode_RFXSensor(const int HwdID, const tRBUF *pResponse);
 	void decode_RFXMeter(const int HwdID, const tRBUF *pResponse);
+	void decode_P1MeterPower(const int HwdID, const tRBUF *pResponse);
+	void decode_P1MeterGas(const int HwdID, const tRBUF *pResponse);
 	void decode_FS20(const int HwdID, const tRBUF *pResponse);
 };

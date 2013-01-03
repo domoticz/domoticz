@@ -7,6 +7,7 @@
 #include "RFXNames.h"
 #include "mynetwork.h"
 #include "WindowsHelper.h"
+#include "P1MeterBase.h"
 
 #define DB_VERSION 2
 
@@ -129,6 +130,29 @@ const char *sqlCreateWind_Calendar =
 "[Gust_Max] INTEGER NOT NULL, "
 "[Date] DATE NOT NULL);";
 
+const char *sqlCreateMultiMeter =
+"CREATE TABLE IF NOT EXISTS [MultiMeter] ("
+"[DeviceRowID] BIGINT NOT NULL, "
+"[Value1] BIGINT NOT NULL, "
+"[Value2] BIGINT DEFAULT 0, "
+"[Value3] BIGINT DEFAULT 0, "
+"[Value4] BIGINT DEFAULT 0, "
+"[Value5] BIGINT DEFAULT 0, "
+"[Value6] BIGINT DEFAULT 0, "
+"[Date] DATETIME DEFAULT (datetime('now','localtime')));";
+
+const char *sqlCreateMultiMeter_Calendar =
+"CREATE TABLE IF NOT EXISTS [MultiMeter_Calendar] ("
+"[DeviceRowID] BIGINT NOT NULL, "
+"[Value1] BIGINT NOT NULL, "
+"[Value2] BIGINT NOT NULL, "
+"[Value3] BIGINT NOT NULL, "
+"[Value4] BIGINT NOT NULL, "
+"[Value5] BIGINT NOT NULL, "
+"[Value6] BIGINT NOT NULL, "
+"[Date] DATETIME DEFAULT (datetime('now','localtime')));";
+
+
 const char *sqlCreateNotifications =
 "CREATE TABLE IF NOT EXISTS [Notifications] ("
 "[ID] INTEGER PRIMARY KEY, "
@@ -220,6 +244,8 @@ CSQLHelper::CSQLHelper(void)
 	query(sqlCreateWind_Calendar);
 	query(sqlCreateMeter);
 	query(sqlCreateMeter_Calendar);
+	query(sqlCreateMultiMeter);
+	query(sqlCreateMultiMeter_Calendar);
 	query(sqlCreateNotifications);
 	query(sqlCreateHardware);
 	query(sqlCreateHardwareSharing);
@@ -1216,6 +1242,7 @@ void CSQLHelper::Schedule5Minute()
 	UpdateWindLog();
 	UpdateUVLog();
 	UpdateMeter();
+	UpdateMultiMeter();
 }
 
 void CSQLHelper::ScheduleDay()
@@ -1228,6 +1255,7 @@ void CSQLHelper::ScheduleDay()
 	AddCalendarUpdateUV();
 	AddCalendarUpdateWind();
 	AddCalendarUpdateMeter();
+	AddCalendarUpdateMultiMeter();
 	CleanupLightLog();
 }
 
@@ -1570,8 +1598,9 @@ void CSQLHelper::UpdateMeter()
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d)",
-		pTypeRFXMeter
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d OR Type=%d)",
+		pTypeRFXMeter,
+		pTypeP1Gas
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -1620,6 +1649,109 @@ void CSQLHelper::UpdateMeter()
 	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday,tm2->tm_hour,tm2->tm_min);
 
 	sprintf(szTmp,"DELETE FROM Meter WHERE (Date<'%s')",
+		szDateEnd
+		);
+	result=query(szTmp);
+}
+
+void CSQLHelper::UpdateMultiMeter()
+{
+	char szTmp[1000];
+	time_t now = time(NULL);
+	struct tm* tm1 = localtime(&now);
+
+	unsigned long long ID=0;
+
+	std::vector<std::vector<std::string> > result;
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d)",
+		pTypeP1Power
+		);
+	result=query(szTmp);
+	if (result.size()>0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::vector<std::string> sd=*itt;
+
+			unsigned long long ID;
+			std::stringstream s_str( sd[0] );
+			s_str >> ID;
+			unsigned char dType=atoi(sd[1].c_str());
+			unsigned char dSubType=atoi(sd[2].c_str());
+			unsigned char nValue=atoi(sd[3].c_str());
+			std::string sValue=sd[4];
+
+			std::vector<std::string> splitresults;
+			StringSplit(sValue, ";", splitresults);
+
+			unsigned long long value1=0;
+			unsigned long long value2=0;
+			unsigned long long value3=0;
+			unsigned long long value4=0;
+
+			if (dType==pTypeP1Power)
+			{
+				if (splitresults.size()!=6)
+					continue; //impossible
+				unsigned long long powerusage1;
+				unsigned long long powerusage2;
+				unsigned long long powerdeliv1;
+				unsigned long long powerdeliv2;
+				unsigned long long usagecurrent;
+				unsigned long long delivcurrent;
+
+				std::stringstream s_powerusage1(splitresults[0]);
+				std::stringstream s_powerusage2(splitresults[1]);
+				std::stringstream s_powerdeliv1(splitresults[2]);
+				std::stringstream s_powerdeliv2(splitresults[3]);
+				std::stringstream s_usagecurrent(splitresults[4]);
+				std::stringstream s_delivcurrent(splitresults[5]);
+
+				s_powerusage1 >> powerusage1;
+				s_powerusage2 >> powerusage2;
+				s_powerdeliv1 >> powerdeliv1;
+				s_powerdeliv2 >> powerdeliv2;
+				s_usagecurrent >> usagecurrent;
+				s_delivcurrent >> delivcurrent;
+
+				value1=powerusage1+powerusage2;
+				value2=powerdeliv1+powerdeliv2;
+				value3=usagecurrent;
+				value4=delivcurrent;
+			}
+
+			//insert record
+			sprintf(szTmp,
+				"INSERT INTO MultiMeter (DeviceRowID, Value1, Value2, Value3, Value4) "
+				"VALUES (%llu, %llu, %llu, %llu, %llu)",
+				ID,
+				value1,
+				value2,
+				value3,
+				value4
+				);
+			std::vector<std::vector<std::string> > result2;
+			result2=query(szTmp);
+		}
+	}
+	//truncate the MultiMeter table (remove items older then 24 hours)
+	char szDateEnd[40];
+	struct tm ltime;
+	ltime.tm_isdst=tm1->tm_isdst;
+	ltime.tm_hour=tm1->tm_hour;
+	ltime.tm_min=tm1->tm_min;
+	ltime.tm_sec=tm1->tm_sec;
+	ltime.tm_year=tm1->tm_year;
+	ltime.tm_mon=tm1->tm_mon;
+	ltime.tm_mday=tm1->tm_mday;
+	//subtract one day
+	ltime.tm_mday -= 1;
+	time_t daybefore = mktime(&ltime);
+	struct tm* tm2 = localtime(&daybefore);
+	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday,tm2->tm_hour,tm2->tm_min);
+
+	sprintf(szTmp,"DELETE FROM MultiMeter WHERE (Date<'%s')",
 		szDateEnd
 		);
 	result=query(szTmp);
@@ -1847,6 +1979,88 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				"VALUES (%llu, %.2f, '%s')",
 				ID,
 				total_real,
+				szDateStart
+				);
+			result=query(szTmp);
+		}
+	}
+}
+
+void CSQLHelper::AddCalendarUpdateMultiMeter()
+{
+	char szTmp[1000];
+
+	//Get All UV devices
+	std::vector<std::vector<std::string> > resultdevices;
+	strcpy(szTmp,"SELECT DISTINCT(DeviceRowID) FROM MultiMeter ORDER BY DeviceRowID");
+	resultdevices=query(szTmp);
+	if (resultdevices.size()<1)
+		return; //nothing to do
+
+	char szDateStart[40];
+	char szDateEnd[40];
+
+	time_t now = time(NULL);
+	struct tm* tm1 = localtime(&now);
+
+	struct tm ltime;
+	ltime.tm_isdst=tm1->tm_isdst;
+	ltime.tm_hour=0;
+	ltime.tm_min=0;
+	ltime.tm_sec=0;
+	ltime.tm_year=tm1->tm_year;
+	ltime.tm_mon=tm1->tm_mon;
+	ltime.tm_mday=tm1->tm_mday;
+
+	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
+
+	//Subtract one day
+
+	ltime.tm_mday -= 1;
+	time_t later = mktime(&ltime);
+	struct tm* tm2 = localtime(&later);
+	sprintf(szDateStart,"%04d-%02d-%02d",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday);
+
+	std::vector<std::vector<std::string> > result;
+
+	std::vector<std::vector<std::string> >::const_iterator itt;
+	for (itt=resultdevices.begin(); itt!=resultdevices.end(); ++itt)
+	{
+		std::vector<std::string> sddev=*itt;
+		unsigned long long ID;
+		std::stringstream s_str( sddev[0] );
+		s_str >> ID;
+
+		sprintf(szTmp,"SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2), MIN(Value3), MAX(Value3), MIN(Value4), MAX(Value4), MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM MultiMeter WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s')",
+			ID,
+			szDateStart,
+			szDateEnd
+			);
+		result=query(szTmp);
+		if (result.size()>0)
+		{
+			std::vector<std::string> sd=result[0];
+
+			float total_real[6];
+
+			for (int ii=0; ii<6; ii++)
+			{
+				float total_min=(float)atof(sd[(ii*2)+0].c_str());
+				float total_max=(float)atof(sd[(ii*2)+1].c_str());
+				total_real[ii]=total_max-total_min;
+			}
+
+			//insert into calendar table
+			sprintf(szTmp,
+				"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Date) "
+				"VALUES (%llu, %.2f, '%s')",
+				ID,
+				total_real[0],
+				total_real[1],
+				total_real[2],
+				total_real[3],
+				total_real[4],
+				total_real[5],
 				szDateStart
 				);
 			result=query(szTmp);

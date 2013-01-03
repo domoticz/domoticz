@@ -139,6 +139,13 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	ltime=localtime(&atime);
 	ltime->tm_sec=0;
 
+	time_t sunset=m_tSunSet;
+	if (sunset<atime)
+		sunset+=(24*3600);
+	time_t sunrise=m_tSunRise;
+	if (sunrise<atime)
+		sunrise+=(24*3600);
+
 	unsigned long HourMinuteOffset=(pItem->startHour*3600)+(pItem->startMin*60);
 
 	if (pItem->timerType == TTYPE_ONTIME)
@@ -151,25 +158,33 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	{
 		if (m_tSunSet==0)
 			return false;
-		rtime=m_tSunSet-HourMinuteOffset;
+		rtime=sunset-HourMinuteOffset;
+		if (rtime<atime)
+			rtime+=(24*3600);
 	}
 	else if (pItem->timerType == TTYPE_AFTERSUNSET)
 	{
 		if (m_tSunSet==0)
 			return false;
-		rtime=m_tSunSet+HourMinuteOffset;
+		rtime=sunset+HourMinuteOffset;
+		if (rtime<atime)
+			rtime+=(24*3600);
 	}
 	else if (pItem->timerType == TTYPE_BEFORESUNRISE)
 	{
 		if (m_tSunRise==0)
 			return false;
-		rtime=m_tSunRise-HourMinuteOffset;
+		rtime=sunrise-HourMinuteOffset;
+		if (rtime<atime)
+			rtime+=(24*3600);
 	}
 	else if (pItem->timerType == TTYPE_AFTERSUNRISE)
 	{
 		if (m_tSunRise==0)
 			return false;
-		rtime=m_tSunRise+HourMinuteOffset;
+		rtime=sunrise+HourMinuteOffset;
+		if (rtime<atime)
+			rtime+=(24*3600);
 	}
 	else
 		return false; //unknown timer type

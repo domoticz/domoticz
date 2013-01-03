@@ -102,10 +102,12 @@ private:
 	void UpdateWindLog();
 	void UpdateUVLog();
 	void UpdateMeter();
+	void UpdateMultiMeter();
 	void AddCalendarTemperature();
 	void AddCalendarUpdateRain();
 	void AddCalendarUpdateWind();
 	void AddCalendarUpdateUV();
 	void AddCalendarUpdateMeter();
+	void AddCalendarUpdateMultiMeter();
 };
 

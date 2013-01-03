@@ -426,6 +426,13 @@ function RefreshUtilities()
 							img='<img src="images/current48.png" height="48">';
               status=item.Data;
             }
+            if (typeof item.Usage != 'undefined') {
+							status+=", Usage: " + item.Usage;
+            }
+            if (typeof item.CounterDeliv != 'undefined') {
+              status+='<br>Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
+							status+=", Actual: " + item.UsageDeliv;
+            }
 						
 						if ($(id + " #img").html()!=img) {
 							$(id + " #img").html(img);
@@ -490,21 +497,29 @@ function ShowUtilities()
                 '\t    <tr>\n' +
                 '\t      <td id="name">' + item.Name + '</td>\n' +
                 '\t      <td id="img"><img src="images/';
+            var status="";
             if (typeof item.Counter != 'undefined') {
-              xhtm+='counter.png" height="48"></td>\n' +
-              '\t      <td id="status">' + item.Counter + ', Today: ' + item.CounterToday;
+              xhtm+='counter.png" height="48"></td>\n';
+              status=item.Counter + ', Today: ' + item.CounterToday;
             }
             else if (item.Type == "Current") {
-              xhtm+='current48.png" height="48"></td>\n' +
-              '\t      <td id="status">' + item.Data;
+              xhtm+='current48.png" height="48"></td>\n';
+              status=item.Data;
             }
             else if (item.Type == "Energy") {
-              xhtm+='current48.png" height="48"></td>\n' +
-              '\t      <td id="status">' + item.Data;
+              xhtm+='current48.png" height="48"></td>\n';
+              status=item.Data;
             }
-
-            xhtm+=      
-                '</td>\n' +
+            if (typeof item.Usage != 'undefined') {
+							status+=", Usage: " + item.Usage;
+            }
+            if (typeof item.CounterDeliv != 'undefined') {
+              status+='<br>Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
+							status+=", Actual: " + item.UsageDeliv;
+            }
+            
+						xhtm+=      
+                '\t      <td id="status">' + status + '</td>\n' +
                 '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
                 '\t      <td id="type">' + item.Type + ', ' + item.SubType + '</td>\n' +
                 '\t      <td>';

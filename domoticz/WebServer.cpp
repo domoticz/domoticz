@@ -9,6 +9,7 @@
 #include "Helper.h"
 #include "webserver/Base64.h"
 #include "appversion.h"
+#include "P1MeterBase.h"
 
 namespace http {
 	namespace server {
@@ -442,7 +443,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 						(!((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorAD)))&&
 						(!((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorVolt)))&&
 						(dType!=pTypeCURRENT)&&
-						(dType!=pTypeENERGY)
+						(dType!=pTypeENERGY)&&
+						(dType!=pTypeP1Power)&&
+						(dType!=pTypeP1Gas)
 						)
 						continue;
 				}
@@ -804,6 +807,152 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				root["result"][ii]["Counter"]=sValue;
 				root["result"][ii]["CounterToday"]=szTmp;
 				root["result"][ii]["SwitchTypeVal"]=metertype;
+			}
+			else if (dType == pTypeP1Power)
+			{
+				std::vector<std::string> splitresults;
+				StringSplit(sValue, ";", splitresults);
+				if (splitresults.size()!=6)
+					continue; //impossible
+
+				float EnergyDivider=1000.0f;
+				int tValue;
+				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+				{
+					EnergyDivider=float(tValue);
+				}
+
+				//get lowest value of today
+				time_t now = time(NULL);
+				struct tm* tm1 = localtime(&now);
+
+				struct tm ltime;
+				ltime.tm_isdst=tm1->tm_isdst;
+				ltime.tm_hour=0;
+				ltime.tm_min=0;
+				ltime.tm_sec=0;
+				ltime.tm_year=tm1->tm_year;
+				ltime.tm_mon=tm1->tm_mon;
+				ltime.tm_mday=tm1->tm_mday;
+
+				char szDate[40];
+				sprintf(szDate,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
+
+				std::vector<std::vector<std::string> > result2;
+				strcpy(szTmp,"");
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT MIN(Value1), MIN(Value2) FROM MultiMeter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
+				result2=m_pMain->m_sql.query(szQuery.str());
+				if (result2.size()>0)
+				{
+					std::vector<std::string> sd2=result2[0];
+
+					unsigned long long total_min_usage,total_real_usage;
+					unsigned long long total_min_deliv,total_real_deliv;
+
+					std::stringstream s_str1( sd2[0] );
+					s_str1 >> total_min_usage;
+					std::stringstream s_str2( sd2[1] );
+					s_str2 >> total_min_deliv;
+
+					unsigned long long powerusage1;
+					unsigned long long powerusage2;
+					unsigned long long powerdeliv1;
+					unsigned long long powerdeliv2;
+					unsigned long long usagecurrent;
+					unsigned long long delivcurrent;
+
+					std::stringstream s_powerusage1(splitresults[0]);
+					std::stringstream s_powerusage2(splitresults[1]);
+					std::stringstream s_powerdeliv1(splitresults[2]);
+					std::stringstream s_powerdeliv2(splitresults[3]);
+					std::stringstream s_usagecurrent(splitresults[4]);
+					std::stringstream s_delivcurrent(splitresults[5]);
+
+					s_powerusage1 >> powerusage1;
+					s_powerusage2 >> powerusage2;
+					s_powerdeliv1 >> powerdeliv1;
+					s_powerdeliv2 >> powerdeliv2;
+					s_usagecurrent >> usagecurrent;
+					s_delivcurrent >> delivcurrent;
+
+					unsigned long long powerusage=powerusage1+powerusage2;
+					unsigned long long powerdeliv=powerdeliv1+powerdeliv2;
+					root["result"][ii]["SwitchTypeVal"]=MTYPE_ENERGY;
+					root["result"][ii]["Counter"]=powerusage;
+					root["result"][ii]["CounterDeliv"]=powerdeliv;
+
+					total_real_usage=powerusage-total_min_usage;
+					total_real_deliv=powerdeliv-total_min_deliv;
+
+					float musage=0;
+					musage=float(total_real_usage)/EnergyDivider;
+					sprintf(szTmp,"%.03f kWh",musage);
+					root["result"][ii]["CounterToday"]=szTmp;
+					musage=float(total_real_deliv)/EnergyDivider;
+					sprintf(szTmp,"%.03f kWh",musage);
+					root["result"][ii]["CounterDelivToday"]=szTmp;
+
+					sprintf(szTmp,"%llu Watt",usagecurrent);
+					root["result"][ii]["Usage"]=szTmp;
+					sprintf(szTmp,"%llu Watt",delivcurrent);
+					root["result"][ii]["UsageDeliv"]=szTmp;
+				}
+			}
+			else if (dType == pTypeP1Gas)
+			{
+				float GasDivider=100.0f;
+				int tValue;
+				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerGas", tValue))
+				{
+					GasDivider=float(tValue);
+				}
+
+				//get lowest value of today
+				time_t now = time(NULL);
+				struct tm* tm1 = localtime(&now);
+
+				struct tm ltime;
+				ltime.tm_isdst=tm1->tm_isdst;
+				ltime.tm_hour=0;
+				ltime.tm_min=0;
+				ltime.tm_sec=0;
+				ltime.tm_year=tm1->tm_year;
+				ltime.tm_mon=tm1->tm_mon;
+				ltime.tm_mday=tm1->tm_mday;
+
+				char szDate[40];
+				sprintf(szDate,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
+
+				std::vector<std::vector<std::string> > result2;
+				strcpy(szTmp,"");
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
+				result2=m_pMain->m_sql.query(szQuery.str());
+				if (result2.size()>0)
+				{
+					std::vector<std::string> sd2=result2[0];
+
+					unsigned long long total_min_gas,total_real_gas;
+					unsigned long long gasactual;
+
+					std::stringstream s_str1( sd2[0] );
+					s_str1 >> total_min_gas;
+					std::stringstream s_str2( sValue );
+					s_str2 >> gasactual;
+
+					root["result"][ii]["SwitchTypeVal"]=MTYPE_GAS;
+					root["result"][ii]["Counter"]=gasactual;
+
+					total_real_gas=gasactual-total_min_gas;
+
+					float musage=0;
+					musage=float(total_real_gas)/GasDivider;
+					sprintf(szTmp,"%.02f m3",musage);
+					root["result"][ii]["CounterToday"]=szTmp;
+				}
 			}
 			else if (dType == pTypeCURRENT)
 			{
@@ -2328,7 +2477,11 @@ char * CWebServer::GetJSonPage()
 				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_BARO,1);
 				ii++;
 			}
-			if ((dType==pTypeRFXMeter)&&(dSubType==sTypeRFXMeterCount))
+			if (
+				((dType==pTypeRFXMeter)&&(dSubType==sTypeRFXMeterCount))||
+				(dType==pTypeP1Power)||
+				(dType==pTypeP1Gas)
+				)
 			{
 				root["result"][ii]["val"]=NTYPE_BARO;
 				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
@@ -2478,11 +2631,11 @@ char * CWebServer::GetJSonPage()
 			unsigned char mode4=0;
 			unsigned char mode5=0;
 			int port=atoi(sport.c_str());
-			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433))
+			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter))
 			{
 				//USB
 			}
-			else if (htype == HTYPE_RFXLAN) {
+			else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)) {
 				//Lan
 				if (address=="")
 					goto exitjson;

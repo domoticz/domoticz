@@ -330,13 +330,36 @@ function RefreshFavorites()
 							if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
 								var status="";
 								if (typeof item.Counter != 'undefined') {
-									status+=item.Counter + ', Today: ' + item.CounterToday;
+									if (data.DashboardType==0) {
+										status+=item.Counter + ', Today: ' + item.CounterToday;
+									}
+									else {
+										status+=item.Counter + ', T: ' + item.CounterToday;
+									}
 								}
 								else if (item.Type == "Current") {
 									status+=item.Data;
 								}
 								else if (item.Type == "Energy") {
 									status+=item.Data;
+								}
+								if (typeof item.Usage != 'undefined') {
+									if (data.DashboardType==0) {
+										status+=", Usage: " + item.Usage;
+									}
+									else {
+										status+=", U: " + item.Usage;
+									}
+								}
+								if (typeof item.CounterDeliv != 'undefined') {
+									if (data.DashboardType==0) {
+										status+='<br>Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
+										status+=", Actual: " + item.UsageDeliv;
+									}
+									else {
+										status+='<br>R: ' + item.CounterDeliv + ', T: ' + item.CounterDelivToday;
+										status+=", A: " + item.UsageDeliv;
+									}
 								}
 								if ($(id + " #status").html()!=status) {
 									$(id + " #status").html(status);
@@ -348,7 +371,12 @@ function RefreshFavorites()
 								
 								if (typeof item.Counter != 'undefined') {
 									img='<img src="images/counter.png" height="40">';
-									status=item.Counter + ', Today: ' + item.CounterToday;
+									if (data.DashboardType==0) {
+										status=item.Counter + ', Today: ' + item.CounterToday;
+									}
+									else {
+										status=item.Counter + ', T: ' + item.CounterToday;
+									}
 								}
 								else if (item.Type == "Current") {
 									img='<img src="images/current48.png" height="40">';
@@ -358,7 +386,25 @@ function RefreshFavorites()
 									img='<img src="images/current48.png" height="40">';
 									status=item.Data;
 								}
-								
+								if (typeof item.Usage != 'undefined') {
+									if (data.DashboardType==0) {
+										status+=", Usage: " + item.Usage;
+									}
+									else {
+										status+=", U: " + item.Usage;
+									}
+								}
+								if (typeof item.CounterDeliv != 'undefined') {
+									status+='<br>';
+									if (data.DashboardType==0) {
+										status+='Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
+										status+=", Actual: " + item.UsageDeliv;
+									}
+									else {
+										status+='R: ' + item.CounterDeliv + ', T: ' + item.CounterDelivToday;
+										status+=", A: " + item.UsageDeliv;
+									}
+								}
 								if ($(id + " #img").html()!=img) {
 									$(id + " #img").html(img);
 								}
@@ -961,13 +1007,37 @@ function ShowFavorites()
 									'\t      <td id="name">' + item.Name + '</td>\n';
 							var status="";
 							if (typeof item.Counter != 'undefined') {
-								status=item.Counter + ', Today: ' + item.CounterToday;
+								if (data.DashboardType==0) {
+									status=item.Counter + ', Today: ' + item.CounterToday;
+								}
+								else {
+									status=item.Counter + ', T: ' + item.CounterToday;
+								}
 							}
 							else if (item.Type == "Current") {
 								status=item.Data;
 							}
 							else if (item.Type == "Energy") {
 								status=item.Data;
+							}
+							if (typeof item.Usage != 'undefined') {
+								if (data.DashboardType==0) {
+									status+=", Usage: " + item.Usage;
+								}
+								else {
+									status+=", U: " + item.Usage;
+								}
+							}
+							if (typeof item.CounterDeliv != 'undefined') {
+								status+='<br>R: ';
+								if (data.DashboardType==0) {
+									status+=item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
+									status+=", Actual: " + item.UsageDeliv;
+								}
+								else {
+									status+=item.CounterDeliv + ', T: ' + item.CounterDelivToday;
+									status+=", A: " + item.UsageDeliv;
+								}
 							}
 							xhtm+=
 										'\t      <td id="status">' + status + '</td>\n' +
@@ -994,20 +1064,46 @@ function ShowFavorites()
 										'\t    <tr>\n' +
 										'\t      <td id="name">' + item.Name + '</td>\n' +
 										'\t      <td id="img"><img src="images/';
+							var status="";
 							if (typeof item.Counter != 'undefined') {
-								xhtm+='counter.png" height="40"></td>\n' +
-								'\t      <td id="status">' + item.Counter + ', Today: ' + item.CounterToday;
+								xhtm+='counter.png" height="40"></td>\n';
+								if (data.DashboardType==0) {
+									status=item.Counter + ', Today: ' + item.CounterToday;
+								}
+								else {
+									status=item.Counter + ', T: ' + item.CounterToday;
+								}
 							}
 							else if (item.Type == "Current") {
-								xhtm+='current48.png" height="40"></td>\n' +
-								'\t      <td id="status">' + item.Data;
+								xhtm+='current48.png" height="40"></td>\n';
+								status=item.Data;
 							}
 							else if (item.Type == "Energy") {
-								xhtm+='current48.png" height="40"></td>\n' +
-								'\t      <td id="status">' + item.Data;
+								xhtm+='current48.png" height="40"></td>\n';
+								status=item.Data;
 							}
+							if (typeof item.Usage != 'undefined') {
+								if (data.DashboardType==0) {
+									status+=", Usage: " + item.Usage;
+								}
+								else {
+									status+=", U: " + item.Usage;
+								}
+							}
+							if (typeof item.CounterDeliv != 'undefined') {
+								status+='<br>';
+								if (data.DashboardType==0) {
+									status+='Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
+									status+=", Actual: " + item.UsageDeliv;
+								}
+								else {
+									status+='R: ' + item.CounterDeliv + ', T: ' + item.CounterDelivToday;
+									status+=", A: " + item.UsageDeliv;
+								}
+							}
+							
 							xhtm+=
-									'</td>\n' +
+									'\t      <td id="status">' + status + '</td>\n' +
 									'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
 							'\t    </tr>\n' +
 							'\t    </table>\n' +

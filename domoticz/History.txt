@@ -1,5 +1,6 @@
 Version 1.0.6 (Januari xxth 2013)
 - SunRise/Set is now calculated on startup and 01:00am
+- Working on P1 Smart Meter interface, please do not use yet!
 
 Version 1.0.5 (December 29th 2012)
 - Start of History document

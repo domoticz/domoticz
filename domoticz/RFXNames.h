@@ -42,6 +42,8 @@ enum _eHardwareTypes {
 	HTYPE_RFXtrx433,
 	HTYPE_RFXLAN,
 	HTYPE_Domoticz,
+	HTYPE_P1SmartMeter,
+	HTYPE_P1SmartMeterLAN,
 	HTYPE_END
 };
 

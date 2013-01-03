@@ -11,29 +11,6 @@
 
 #include <ctime>
 
-typedef enum { ID, STD, LINE17, LINE18, EXCLMARK } MatchType;
-typedef struct {
-	MatchType type;
-	char* key;
-	char* topic;
-	int start;
-	int width;
-} Match;
-
-Match matchlist[] = {
-	{ID, P1_SMID, "", 0, 0},
-	{STD, P1PU1, "powerusage1", 10, 9},
-	{STD, P1PU2, "powerusage2", 10, 9},
-	{STD, P1PD1, "powerdeliv1", 10, 9},
-	{STD, P1PD2, "powerdeliv2", 10, 9},
-	{STD, P1TIP, "tariff", 12, 4},
-	{STD, P1PUC, "powerusagec", 10, 7},
-	{STD, P1PDC, "powerdelivc", 10, 7},
-	{LINE17, P1GTS, "gastimestamp", 11, 12},
-	{LINE18, "(", "gasusage", 1, 9},
-	{EXCLMARK,"!","", 0, 0}
-};
-
 //
 //Class P1MeterSerial
 //
@@ -65,7 +42,13 @@ bool P1MeterSerial::StartHardware()
 	try
 	{
 		std::cout << "Using serial port: " << m_szSerialPort << std::endl;
-		open(m_szSerialPort,m_iBaudRate);
+		open(
+			m_szSerialPort,
+			m_iBaudRate,
+			boost::asio::serial_port_base::parity(
+			boost::asio::serial_port_base::parity::even),
+			boost::asio::serial_port_base::character_size(7)
+			);
 	}
 	catch (boost::exception & e)
 	{
@@ -103,53 +86,6 @@ bool P1MeterSerial::StopHardware()
 	return true;
 }
 
-void P1MeterSerial::MatchLine()
-{
-	uint8_t i;
-	uint8_t found=0;
-	Match t;
-	char value[13]="";
-
-	for(i=0;(i<sizeof(matchlist)/sizeof(Match))&(!found);i++)
-	{
-		t = matchlist[i];
-		switch(t.type)
-		{
-		case ID:
-			if(strncmp(t.key, (const char*)&m_rxbuffer, strlen(t.key)) == 0) {
-				m_linecount=1;
-			}
-			break;
-		case STD:
-			if(strncmp(t.key, (const char*)&m_rxbuffer, strlen(t.key)) == 0) {
-				found=1;
-			}
-			break;
-		case LINE17:
-			if(strncmp(t.key, (const char*)&m_rxbuffer, strlen(t.key)) == 0) {
-				m_linecount = 17;
-				found=1;
-			}
-			break;
-		case LINE18:
-			if((m_linecount == 18)&&(strncmp(t.key, (const char*)&m_rxbuffer, strlen(t.key)) == 0)) {
-				found=1;
-			}
-			break;
-		case EXCLMARK:
-			if(strncmp(t.key, (const char*)&m_rxbuffer, strlen(t.key)) == 0) {
-				m_exclmarkfound=1;
-			}
-			break;
-		} //switch
-
-		if((found)&&(m_exclmarkfound))
-		{
-			strncpy(value, (const char*)&m_rxbuffer+t.start, t.width);
-			//send(t.topic, value);
-		}
-	}
-}
 
 void P1MeterSerial::readCallback(const char *data, size_t len)
 {
@@ -158,30 +94,8 @@ void P1MeterSerial::readCallback(const char *data, size_t len)
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
 
-	m_sharedserver.SendToAll((const char*)data,len);
-
-	size_t ii=0;
-	while (ii<len)
-	{
-		const unsigned char c = data[ii];
-		if(c == 0x0d)
-			continue;
-
-		m_rxbuffer[m_rxbufferpos] = c;
-		if(c == 0x0a || m_rxbufferpos == sizeof(m_rxbuffer) - 1)
-		{
-			// discard newline, close string, parse line and clear it.
-			if(m_rxbufferpos > 0) m_rxbuffer[m_rxbufferpos] = 0;
-			m_linecount++;
-			MatchLine();
-			m_rxbufferpos = 0;
-		}
-		else
-		{
-			m_rxbufferpos++;
-		}
-		ii++;
-	}
+	//m_sharedserver.SendToAll((const char*)data,len);
+	ParseData((const unsigned char*)data, (int)len);
 }
 
 void P1MeterSerial::WriteToHardware(const char *pdata, const unsigned char length)
