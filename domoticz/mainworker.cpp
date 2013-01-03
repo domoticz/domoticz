@@ -499,8 +499,7 @@ void MainWorker::Do_Work()
 		if (
 			(
 			(ltime->tm_sec==0)&&
-			(ltime->tm_min==0)&&
-			(ltime->tm_hour==1)
+			(ltime->tm_min==0)
 			) ||
 			(m_bStartup)
 			)
