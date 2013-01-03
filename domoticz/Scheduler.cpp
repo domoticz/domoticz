@@ -110,6 +110,8 @@ void CScheduler::SetSunRiseSetTimers(std::string sSunRise, std::string sSunSet)
 			bReloadSchedules=true;
 			m_tSunRise=temptime;
 		}
+		if (m_tSunRise<atime)
+			m_tSunRise+=(24*3600);
 
 		hour=atoi(sSunSet.substr(0,2).c_str());
 		min=atoi(sSunSet.substr(3,2).c_str());
@@ -126,6 +128,8 @@ void CScheduler::SetSunRiseSetTimers(std::string sSunRise, std::string sSunSet)
 			bReloadSchedules=true;
 			m_tSunSet=temptime;
 		}
+		if (m_tSunSet<atime)
+			m_tSunSet+=(24*3600);
 	}
 	if (bReloadSchedules)
 		ReloadSchedules();
@@ -159,32 +163,24 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		if (m_tSunSet==0)
 			return false;
 		rtime=sunset-HourMinuteOffset;
-		if (rtime<atime)
-			rtime+=(24*3600);
 	}
 	else if (pItem->timerType == TTYPE_AFTERSUNSET)
 	{
 		if (m_tSunSet==0)
 			return false;
 		rtime=sunset+HourMinuteOffset;
-		if (rtime<atime)
-			rtime+=(24*3600);
 	}
 	else if (pItem->timerType == TTYPE_BEFORESUNRISE)
 	{
 		if (m_tSunRise==0)
 			return false;
 		rtime=sunrise-HourMinuteOffset;
-		if (rtime<atime)
-			rtime+=(24*3600);
 	}
 	else if (pItem->timerType == TTYPE_AFTERSUNRISE)
 	{
 		if (m_tSunRise==0)
 			return false;
 		rtime=sunrise+HourMinuteOffset;
-		if (rtime<atime)
-			rtime+=(24*3600);
 	}
 	else
 		return false; //unknown timer type
