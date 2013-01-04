@@ -886,7 +886,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					musage=float(powerusage)/EnergyDivider;
 					sprintf(szTmp,"%.03f",musage);
 					root["result"][ii]["Counter"]=szTmp;
-					root["result"][ii]["CounterDeliv"]=powerdeliv;
+					musage=float(powerdeliv)/EnergyDivider;
+					sprintf(szTmp,"%.03f",musage);
+					root["result"][ii]["CounterDeliv"]=szTmp;
 
 					total_real_usage=powerusage-total_min_usage;
 					total_real_deliv=powerdeliv-total_min_deliv;
