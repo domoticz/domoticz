@@ -19,6 +19,15 @@
 // civil liability for the breach of the terms and conditions of this license.
 //-------------------------------------------------------------------------------------
 
+//SDK version 5.03
+//	RAIN6 added
+//	BlindsT4 added
+//	protocol enable/disable msg3_LIGHTING4 added
+//  Interface Message - Wrong Command added
+//
+//SDK version 5.01
+//	baroForecast values added
+//
 //SDK version 5.00
 //	Commands removed from Interface control:
 //		cmdENABLEALL 0x04, cmdUNDEC 0x05
@@ -128,6 +137,7 @@
 
 #define pTypeInterfaceMessage 0x01
 #define sTypeInterfaceResponse 0x00
+#define sTypeInterfaceWrongCommand 0xFF
 #define recType310 0x50
 #define recType315 0x51
 #define recType43392 0x52
@@ -144,7 +154,7 @@
 #define msg3_RFU6 0x40
 #define msg3_RFU5 0x20
 #define msg3_RFU4 0x10
-#define msg3_RFU3 0x08
+#define msg3_LIGHTING4 0x08
 #define msg3_FINEOFFSET 0x04
 #define msg3_RUBICSON 0x02
 #define msg3_AE 0x01
@@ -202,41 +212,41 @@
 #define sTypeIMPULS 0x5
 #define sTypeRisingSun 0x6
 #define sTypePhilips 0x7
-#define light1_sOff 0
-#define light1_sOn  1
-#define light1_sDim  2
-#define light1_sBright  3
-#define light1_sAllOff  5
-#define light1_sAllOn  6
-#define light1_sChime  7
+#define light1_sOff 0x0
+#define light1_sOn 0x1
+#define light1_sDim 0x2
+#define light1_sBright 0x3
+#define light1_sAllOff 0x5
+#define light1_sAllOn 0x6
+#define light1_sChime 0x7
 
 #define pTypeLighting2 0x11
 #define sTypeAC 0x0
 #define sTypeHEU 0x1
 #define sTypeANSLUT 0x2
-#define light2_sOff 0
-#define light2_sOn 1
-#define light2_sSetLevel 2
-#define light2_sGroupOff 3
-#define light2_sGroupOn 4
-#define light2_sSetGroupLevel 5
+#define light2_sOff 0x0
+#define light2_sOn 0x1
+#define light2_sSetLevel 0x2
+#define light2_sGroupOff 0x3
+#define light2_sGroupOn 0x4
+#define light2_sSetGroupLevel 0x5
 
 #define pTypeLighting3 0x12
 #define sTypeKoppla 0x0
-#define light3_sBright 0
-#define light3_sDim 8
-#define light3_sOn 16
-#define light3_sLevel1 17
-#define light3_sLevel2 18
-#define light3_sLevel3 19
-#define light3_sLevel4 20
-#define light3_sLevel5 21
-#define light3_sLevel6 22
-#define light3_sLevel7 23
-#define light3_sLevel8 24
-#define light3_sLevel9 25
-#define light3_sOff 26
-#define light3_sProgram 28
+#define light3_sBright 0x0
+#define light3_sDim 0x8
+#define light3_sOn 0x10
+#define light3_sLevel1 0x11
+#define light3_sLevel2 0x12
+#define light3_sLevel3 0x13
+#define light3_sLevel4 0x14
+#define light3_sLevel5 0x15
+#define light3_sLevel6 0x16
+#define light3_sLevel7 0x17
+#define light3_sLevel8 0x18
+#define light3_sLevel9 0x19
+#define light3_sOff 0x1A
+#define light3_sProgram 0x1B
 
 #define pTypeLighting4 0x13
 #define sTypePT2262 0x0
@@ -245,38 +255,38 @@
 #define sTypeLightwaveRF 0x0
 #define sTypeEMW100 0x1
 #define sTypeBBSB 0x2
-#define light5_sOff 0
-#define light5_sOn 1
-#define light5_sGroupOff 2
-#define light5_sLearn 2
-#define light5_sGroupOn 3
-#define light5_sMood1 3
-#define light5_sMood2 4
-#define light5_sMood3 5
-#define light5_sMood4 6
-#define light5_sMood5 7
-#define light5_sUnlock 10
-#define light5_sLock 11
-#define light5_sAllLock 12
-#define light5_sClose 13
-#define light5_sStop 14
-#define light5_sOpen 15
-#define light5_sSetLevel 16
+#define light5_sOff 0x0
+#define light5_sOn 0x1
+#define light5_sGroupOff 0x2
+#define light5_sLearn 0x2
+#define light5_sGroupOn 0x3
+#define light5_sMood1 0x3
+#define light5_sMood2 0x4
+#define light5_sMood3 0x5
+#define light5_sMood4 0x6
+#define light5_sMood5 0x7
+#define light5_sUnlock 0xA
+#define light5_sLock 0xB
+#define light5_sAllLock 0xC
+#define light5_sClose 0xD
+#define light5_sStop 0xE
+#define light5_sOpen 0xF
+#define light5_sSetLevel 0x10
 
 #define pTypeLighting6 0x15
 #define sTypeBlyss 0x0
-#define light6_sOn 0
-#define light6_sOff 1
-#define light6_sGroupOn 2
-#define light6_sGroupOff 3
+#define light6_sOn 0x0
+#define light6_sOff 0x1
+#define light6_sGroupOn 0x2
+#define light6_sGroupOff 0x3
 
 //types for Curtain
 #define pTypeCurtain 0x18
 #define sTypeHarrison 0x0
-#define curtain_sOpen 0
-#define curtain_sClose 1
-#define curtain_sStop 2
-#define curtain_sProgram 3
+#define curtain_sOpen 0x0
+#define curtain_sClose 0x1
+#define curtain_sStop 0x2
+#define curtain_sProgram 0x3
 
 //types for Blinds
 #define pTypeBlinds 0x19
@@ -284,11 +294,17 @@
 #define sTypeBlindsT1 0x1	//Hasta old
 #define sTypeBlindsT2 0x2	//A-OK RF01
 #define sTypeBlindsT3 0x3	//A-OK AC114
-#define blinds_sOpen 0
-#define blinds_sClose 1
-#define blinds_sStop 2
-#define blinds_sConfirm 3
-#define blinds_sLimit 4
+#define sTypeBlindsT4 0x4	//RAEX YR1326
+#define blinds_sOpen 0x0
+#define blinds_sClose 0x1
+#define blinds_sStop 0x2
+#define blinds_sConfirm 0x3
+#define blinds_sLimit 0x4
+#define blinds_slowerLimit 0x5
+#define blinds_sDeleteLimits 0x6
+#define blinds_sChangeDirection 0x7
+#define blinds_sLeft 0x8
+#define blinds_sRight 0x9
 
 //types for Security1
 #define pTypeSecurity1 0x20
@@ -335,22 +351,22 @@
 //types for Camera
 #define pTypeCamera 0x28
 #define sTypeNinja 0x0		//X10 Ninja/Robocam
-#define camera_sLeft 0
-#define camera_sRight 1
-#define camera_sUp 2
-#define camera_sDown 3
-#define camera_sPosition1 4
-#define camera_sProgramPosition1 5
-#define camera_sPosition2 6
-#define camera_sProgramPosition2 7
+#define camera_sLeft 0x0
+#define camera_sRight 0x1
+#define camera_sUp 0x2
+#define camera_sDown 0x3
+#define camera_sPosition1 0x4
+#define camera_sProgramPosition1 0x5
+#define camera_sPosition2 0x6
+#define camera_sProgramPosition2 0x7
 #define camera_sPosition3 8
-#define camera_sProgramPosition3 9
-#define camera_sPosition4 10
-#define camera_sProgramPosition4 11
-#define camera_sCenter 12
-#define camera_sProgramCenterPosition 13
-#define camera_sSweep 14
-#define camera_sProgramSweep 15
+#define camera_sProgramPosition3 0x9
+#define camera_sPosition4 0xA
+#define camera_sProgramPosition4 0xB
+#define camera_sCenter 0xC
+#define camera_sProgramCenterPosition 0xD
+#define camera_sSweep 0xE
+#define camera_sProgramSweep 0xF
 
 //types for Remotes
 #define pTypeRemote 0x30
@@ -364,30 +380,30 @@
 #define pTypeThermostat1 0x40
 #define sTypeDigimax 0x0		//Digimax
 #define sTypeDigimaxShort 0x1	//Digimax with short format
-#define thermostat1_sNoStatus 0
-#define thermostat1_sDemand 1
-#define thermostat1_sNoDemand 2
-#define thermostat1_sInitializing 3
+#define thermostat1_sNoStatus 0x0
+#define thermostat1_sDemand 0x1
+#define thermostat1_sNoDemand 0x2
+#define thermostat1_sInitializing 0x3
 
 #define pTypeThermostat2 0x41
 #define sTypeHE105 0x0
 #define sTypeRTS10 0x1
-#define thermostat2_sOff 0
-#define thermostat2_sOn 1
-#define thermostat2_sProgram 2
+#define thermostat2_sOff 0x0
+#define thermostat2_sOn 0x1
+#define thermostat2_sProgram 0x2
 
 #define pTypeThermostat3 0x42
 #define sTypeMertikG6RH4T1 0x0	//Mertik G6R-H4T1
 #define sTypeMertikG6RH4TB 0x1	//Mertik G6R-H4TB
-#define thermostat3_sOff 0
-#define thermostat3_sOn 1
-#define thermostat3_sUp 2
-#define thermostat3_sDown 3
-#define thermostat3_sRunUp 4
-#define thermostat3_Off2nd 4
-#define thermostat3_sRunDown 5
-#define thermostat3_On2nd 5
-#define thermostat3_sStop 6
+#define thermostat3_sOff 0x0
+#define thermostat3_sOn 0x1
+#define thermostat3_sUp 0x2
+#define thermostat3_sDown 0x3
+#define thermostat3_sRunUp 0x4
+#define thermostat3_Off2nd 0x4
+#define thermostat3_sRunDown 0x5
+#define thermostat3_On2nd 0x5
+#define thermostat3_sStop 0x6
 
 //types for temperature
 #define pTypeTEMP 0x50
@@ -432,11 +448,11 @@
 #define pTypeTEMP_HUM_BARO 0x54
 #define sTypeTHB1 0x1   //BTHR918
 #define sTypeTHB2 0x2   //BTHR918N,BTHR968
-#define baroForecastNoInfo 0
-#define baroForecastSunny 1
-#define baroForecastPartlyCloudy 2
-#define baroForecastCloudy 3
-#define baroForecastRain 4
+#define baroForecastNoInfo 0x00
+#define baroForecastSunny 0x01
+#define baroForecastPartlyCloudy 0x02
+#define baroForecastCloudy 0x03
+#define baroForecastRain 0x04
 
 //types for rain
 #define pTypeRAIN 0x55
@@ -445,6 +461,7 @@
 #define sTypeRAIN3 0x3   //TFA
 #define sTypeRAIN4 0x4   //UPM
 #define sTypeRAIN5 0x5   //WS2300
+#define sTypeRAIN6 0x6   //TX5
 
 //types for wind
 #define pTypeWIND 0x56

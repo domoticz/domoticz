@@ -976,11 +976,6 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const tRBUF *pResponse
 					else
 						WriteMessage("FineOffset        disabled");
 
-					if (pResponse->IRESPONSE.msg3 & msg3_RFU3)
-						WriteMessage("RFU protocol 3    enabled");
-					else
-						WriteMessage("RFU protocol 3    disabled");
-
 					if (pResponse->IRESPONSE.msg3 & msg3_RFU4)
 						WriteMessage("RFU protocol 4    enabled");
 					else
@@ -1147,6 +1142,9 @@ void MainWorker::decode_Rain(const int HwdID, const tRBUF *pResponse)
 			break;
 		case sTypeRAIN5:
 			WriteMessage("subtype       = RAIN5 - LaCrosse WS2300");
+			break;
+		case sTypeRAIN6:
+			WriteMessage("subtype       = RAIN6 - LaCrosse TX5");
 			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X : %02X", pResponse->RAIN.packettype, pResponse->RAIN.subtype);
