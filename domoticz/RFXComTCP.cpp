@@ -125,7 +125,7 @@ bool RFXComTCP::ConnectInternal()
 	m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (m_socket == INVALID_SOCKET)
 	{
-		std::cerr << "could not create a TCP/IP socket!" << std::endl;
+		std::cerr << "RFXCOM could not create a TCP/IP socket!" << std::endl;
 		return false;
 	}
 
@@ -136,11 +136,11 @@ bool RFXComTCP::ConnectInternal()
 	{
 		closesocket(m_socket);
 		m_socket=INVALID_SOCKET;
-		std::cerr << "could not connect to: " << m_szIPAddress << ":" << std::dec << m_usIPPort << std::endl;
+		std::cerr << "RFXCOM could not connect to: " << m_szIPAddress << ":" << std::dec << m_usIPPort << std::endl;
 		return false;
 	}
 
-	std::cout << "connected to: " << m_szIPAddress << ":" << std::dec << m_usIPPort << std::endl;
+	std::cout << "RFXCOM connected to: " << m_szIPAddress << ":" << std::dec << m_usIPPort << std::endl;
 	sOnConnected(this);
 	return true;
 }

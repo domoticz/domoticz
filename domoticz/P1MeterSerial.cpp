@@ -41,7 +41,7 @@ bool P1MeterSerial::StartHardware()
 	//Try to open the Serial Port
 	try
 	{
-		std::cout << "Using serial port: " << m_szSerialPort << std::endl;
+		std::cout << "P1 Smart Meter Using serial port: " << m_szSerialPort << std::endl;
 		open(
 			m_szSerialPort,
 			m_iBaudRate,
