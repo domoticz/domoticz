@@ -1615,6 +1615,8 @@ char * CWebServer::GetJSonPage()
 				{
 					WaterDivider=float(tValue);
 				}
+				if (dType==pTypeP1Gas)
+					GasDivider=1000;
 
 				char szDateStart[40];
 				char szDateEnd[40];
@@ -2065,6 +2067,8 @@ char * CWebServer::GetJSonPage()
 				{
 					WaterDivider=float(tValue);
 				}
+				if (dType==pTypeP1Gas)
+					GasDivider=1000;
 
 				szQuery.clear();
 				szQuery.str("");
