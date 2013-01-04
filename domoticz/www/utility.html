@@ -34,49 +34,20 @@
 
 <div id="utilitycontent">
 </div>
-<div id="utilitylog" style="display:none;">
-  <h2>Day</h2><br>
-  <div id="utilitydaygraph" style="height: 300px;"></div>
-  <br>
-  <h2>Month</h2><br>
-  <br>
-  <h2>Year</h2><br>
- </div>
- <div id="windlog" style="display:none;">
-  <h2>Day</h2><br>
-  <div id="winddaygraph" style="height: 300px;"></div>
-  <br>
-  <div id="winddirgraph" style="width: 400px; height: 400px;"></div>
-  <br>
-  <h2>Month</h2><br>
-  <div id="windmonthgraph" style="height: 300px;"></div>
-  <br>
-  <h2>Year</h2><br>
-  <div id="windyeargraph" style="height: 300px;"></div>
-</div>
-<div id="uvlog" style="display:none;">
-  <h2>Day</h2><br>
-  <div id="uvdaygraph" style="height: 300px;"></div>
-  <br>
-  <h2>Month</h2><br>
-  <div id="uvmonthgraph" style="height: 300px;"></div>
-  <br>
-  <h2>Year</h2><br>
-  <div id="uvyeargraph" style="height: 300px;"></div>
-</div>
-<div id="barolog" style="display:none;">
-  <h2>Day</h2><br>
-  <div id="barodaygraph" style="height: 300px;"></div>
-  <br>
-  <h2>Month</h2><br>
-  <div id="baromonthgraph" style="height: 300px;"></div>
-  <br>
-  <h2>Year</h2><br>
-  <div id="baroyeargraph" style="height: 300px;"></div>
-</div>
 <div id="counterlog" style="display:none;">
   <h2>Week</h2><br>
-  <div id="counterdaygraph" style="height: 300px;"></div>
+  <div id="counterweekgraph" style="height: 300px;"></div>
+  <br>
+  <h2>Month</h2><br>
+  <div id="countermonthgraph" style="height: 300px;"></div>
+  <br>
+  <h2>Year</h2><br>
+  <div id="counteryeargraph" style="height: 300px;"></div>
+</div>
+
+<div id="smartlog" style="display:none;">
+  <h2>Week</h2><br>
+  <div id="counterweekgraph" style="height: 300px;"></div>
   <br>
   <h2>Month</h2><br>
   <div id="countermonthgraph" style="height: 300px;"></div>
@@ -125,20 +96,24 @@ function AddUtilityDevice()
 function AddDataToUtilityChart(data,chart,switchtype)
 {
     var datatablev = [];
+    var datatablereturn = [];
 
     $.each(data.result, function(i,item)
     {
        datatablev.push( [GetDateFromString(item.d), parseFloat(item.v) ] );
+       if (typeof item.v2!= 'undefined') {
+				datatablereturn.push( [GetDateFromString(item.d), parseFloat(item.v2) ] );
+       }
     });
 
     var series;
     if (switchtype==0)
     {
-			//energy
+			//energy Usage/Return
       chart.addSeries(
         {
           id: 'energy',
-          name: 'Energy',
+          name: 'Usage',
           color: 'rgba(3,190,252,0.8)',
           yAxis: 0
         }
@@ -149,6 +124,21 @@ function AddDataToUtilityChart(data,chart,switchtype)
       series = chart.get('energy');
 			chart.yAxis[0].redraw();
       series.setData(datatablev);
+
+			if (typeof data.delivered!= 'undefined') {
+				//energy return
+				chart.addSeries(
+					{
+						id: 'energyreturn',
+						name: 'Return',
+						color: 'rgba(3,252,190,0.8)',
+						yAxis: 0
+					}
+				);
+				series = chart.get('energyreturn');
+				chart.yAxis[0].redraw();
+				series.setData(datatablereturn);
+			}
     }
     else if (switchtype==1)
     {
@@ -195,9 +185,9 @@ function ShowCounterLog(id,name,switchtype)
   htmlcontent+=$('#counterlog').html();
   $('#utilitycontent').html(GetBackbuttonHTMLTable('ShowUtilities')+htmlcontent);
   
-  $.DayChart = new Highcharts.Chart({
+  $.WeekChart = new Highcharts.Chart({
       chart: {
-          renderTo: 'counterdaygraph',
+          renderTo: 'counterweekgraph',
           type: 'column',
           marginRight: 10,
           events: {
@@ -205,7 +195,7 @@ function ShowCounterLog(id,name,switchtype)
                   
                 $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=day",
                 function(data) {
-											AddDataToUtilityChart(data,$.DayChart,switchtype);
+											AddDataToUtilityChart(data,$.WeekChart,switchtype);
                 });
               }
           }
@@ -234,16 +224,16 @@ function ShowCounterLog(id,name,switchtype)
         tooltip: {
             formatter: function() {
 										var unit = {
-																'Energy': 'kWh',
+																'Usage': 'kWh',
+																'Return': 'kWh',
 																'Gas': 'm3',
 																'Water': 'm3'
 													}[this.series.name];
-                    return Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
+                    return this.series.name + ': ' + Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
             }
         },
         plotOptions: {
             column: {
-                stacking: 'normal',
                 minPointLength: 4,
                 pointPadding: 0.1,
                 groupPadding: 0
@@ -290,11 +280,12 @@ function ShowCounterLog(id,name,switchtype)
         tooltip: {
             formatter: function() {
 										var unit = {
-																'Energy': 'kWh',
+																'Usage': 'kWh',
+																'Return': 'kWh',
 																'Gas': 'm3',
 																'Water': 'm3'
 													}[this.series.name];
-                    return Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
+                    return this.series.name + ': ' + Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -359,11 +350,12 @@ function ShowCounterLog(id,name,switchtype)
         tooltip: {
             formatter: function() {
 										var unit = {
-																'Energy': 'kWh',
+																'Usage': 'kWh',
+																'Return': 'kWh',
 																'Gas': 'm3',
 																'Water': 'm3'
 													}[this.series.name];
-                    return Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
+                    return this.series.name + ': ' + Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
             }
         },
         plotOptions: {
