@@ -132,7 +132,7 @@ const char *sqlCreateWind_Calendar =
 
 const char *sqlCreateMultiMeter =
 "CREATE TABLE IF NOT EXISTS [MultiMeter] ("
-"[DeviceRowID] BIGINT NOT NULL, "
+"[DeviceRowID] BIGINT(10) NOT NULL, "
 "[Value1] BIGINT NOT NULL, "
 "[Value2] BIGINT DEFAULT 0, "
 "[Value3] BIGINT DEFAULT 0, "
@@ -143,7 +143,7 @@ const char *sqlCreateMultiMeter =
 
 const char *sqlCreateMultiMeter_Calendar =
 "CREATE TABLE IF NOT EXISTS [MultiMeter_Calendar] ("
-"[DeviceRowID] BIGINT NOT NULL, "
+"[DeviceRowID] BIGINT(10) NOT NULL, "
 "[Value1] BIGINT NOT NULL, "
 "[Value2] BIGINT NOT NULL, "
 "[Value3] BIGINT NOT NULL, "
