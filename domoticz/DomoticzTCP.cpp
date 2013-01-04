@@ -186,8 +186,8 @@ void DomoticzTCP::Do_Work()
 		}
 		else
 		{
-			char buf;
-			int bread=recv(m_socket,&buf,1,0);
+			char buf[40];
+			int bread=recv(m_socket,(char*)&buf,sizeof(buf),0);
 			if ((bread==0)||(bread<0)) {
 				std::cout << "TCP/IP connection closed!" << std::endl;
 				closesocket(m_socket);
@@ -202,7 +202,7 @@ void DomoticzTCP::Do_Work()
 			else
 			{
 				boost::lock_guard<boost::mutex> l(readQueueMutex);
-				onRFXMessage((const unsigned char *)&buf,1);
+				onRFXMessage((const unsigned char *)&buf,bread);
 			}
 		}
 		

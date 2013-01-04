@@ -94,7 +94,6 @@ void P1MeterSerial::readCallback(const char *data, size_t len)
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
 
-	//m_sharedserver.SendToAll((const char*)data,len);
 	ParseData((const unsigned char*)data, (int)len);
 }
 

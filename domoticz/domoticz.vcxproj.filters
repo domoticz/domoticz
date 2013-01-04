@@ -39,13 +39,13 @@
     <Filter Include="Windows">
       <UniqueIdentifier>{b2fc9567-e487-4cee-b23e-9f6002b503b9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\Domoticz\P1Meter">
+    <Filter Include="Devices\P1Smart Meter">
       <UniqueIdentifier>{44ff1baf-dce6-4a20-b295-313ef10e0509}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\Domoticz\P1Meter\P1MeterTCP">
+    <Filter Include="Devices\P1Smart Meter\P1MeterTCP">
       <UniqueIdentifier>{35d0b876-1f3b-471d-8fee-5f83919994f5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\Domoticz\P1Meter\P1MeterSerial">
+    <Filter Include="Devices\P1Smart Meter\P1MeterSerial">
       <UniqueIdentifier>{3842a5f4-988f-43df-ab50-6b41679ce600}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -161,7 +161,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="P1MeterSerial.h">
-      <Filter>Devices\Domoticz\P1Meter\P1MeterSerial</Filter>
+      <Filter>Devices\P1Smart Meter\P1MeterSerial</Filter>
     </ClInclude>
     <ClInclude Include="WindowsHelper.h">
       <Filter>Windows</Filter>
@@ -173,10 +173,10 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="P1MeterTCP.h">
-      <Filter>Devices\Domoticz\P1Meter\P1MeterTCP</Filter>
+      <Filter>Devices\P1Smart Meter\P1MeterTCP</Filter>
     </ClInclude>
     <ClInclude Include="P1MeterBase.h">
-      <Filter>Devices\Domoticz\P1Meter</Filter>
+      <Filter>Devices\P1Smart Meter</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -274,16 +274,16 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="P1MeterSerial.cpp">
-      <Filter>Devices\Domoticz\P1Meter\P1MeterSerial</Filter>
+      <Filter>Devices\P1Smart Meter\P1MeterSerial</Filter>
     </ClCompile>
     <ClCompile Include="WindowsHelper.cpp">
       <Filter>Windows</Filter>
     </ClCompile>
     <ClCompile Include="P1MeterTCP.cpp">
-      <Filter>Devices\Domoticz\P1Meter\P1MeterTCP</Filter>
+      <Filter>Devices\P1Smart Meter\P1MeterTCP</Filter>
     </ClCompile>
     <ClCompile Include="P1MeterBase.cpp">
-      <Filter>Devices\Domoticz\P1Meter</Filter>
+      <Filter>Devices\P1Smart Meter</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

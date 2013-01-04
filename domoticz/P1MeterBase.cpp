@@ -77,11 +77,11 @@ void P1MeterBase::Init()
 	memset(&m_p1power,0,sizeof(m_p1power));
 	memset(&m_p1gas,0,sizeof(m_p1gas));
 
-	m_p1power.len=sizeof(P1Power);
+	m_p1power.len=sizeof(P1Power)-1;
 	m_p1power.type=pTypeP1Power;
 	m_p1power.subtype=sTypeP1Power;
 
-	m_p1gas.len=sizeof(P1Gas);
+	m_p1gas.len=sizeof(P1Gas)-1;
 	m_p1gas.type=pTypeP1Gas;
 	m_p1gas.subtype=sTypeP1Gas;
 }
