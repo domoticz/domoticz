@@ -113,8 +113,6 @@ bool RFXComTCP::connectto(const char *serveraddr, unsigned short port)
 
 	//force connect the next first time
 	m_retrycntr=RETRY_DELAY;
-	if (!ConnectInternal())
-		return false;
 
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&RFXComTCP::Do_Work, this)));

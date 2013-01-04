@@ -2742,11 +2742,11 @@ char * CWebServer::GetJSonPage()
 
 			int port=atoi(sport.c_str());
 
-			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433))
+			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter))
 			{
 				//USB
 			}
-			else if (htype == HTYPE_RFXLAN) {
+			else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)) {
 				//Lan
 				if (address=="")
 					goto exitjson;

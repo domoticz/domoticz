@@ -112,8 +112,6 @@ bool P1MeterTCP::connectto(const char *serveraddr, unsigned short port)
 
 	//force connect the next first time
 	m_retrycntr=RETRY_DELAY;
-	if (!ConnectInternal())
-		return false;
 
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&P1MeterTCP::Do_Work, this)));
@@ -137,11 +135,11 @@ bool P1MeterTCP::ConnectInternal()
 	{
 		closesocket(m_socket);
 		m_socket=INVALID_SOCKET;
-		std::cerr << "P1 could not connect to: " << m_szIPAddress << ":" << std::dec << m_usIPPort << std::endl;
+		std::cerr << "P1 Smart Meter could not connect to: " << m_szIPAddress << ":" << std::dec << m_usIPPort << std::endl;
 		return false;
 	}
 
-	std::cout << "P1 connected to: " << m_szIPAddress << ":" << std::dec << m_usIPPort << std::endl;
+	std::cout << "P1 Smart Meter connected to: " << m_szIPAddress << ":" << std::dec << m_usIPPort << std::endl;
 
 	Init();
 
