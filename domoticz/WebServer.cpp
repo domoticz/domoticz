@@ -1405,37 +1405,6 @@ char * CWebServer::GetJSonPage()
 		std::string srange=m_pWebEm->FindValue("range");
 		if (srange=="")
 			goto exitjson;
-		std::string dbasetable="";
-
-		if (srange=="day") {
-			if (sensor=="temp")
-				dbasetable="Temperature";
-			else if (sensor=="rain")
-				dbasetable="Rain_Calendar";
-			else if (sensor=="counter")
-				dbasetable="Meter_Calendar";
-			else if ( (sensor=="wind") || (sensor=="winddir") )
-				dbasetable="Wind";
-			else if (sensor=="uv")
-				dbasetable="UV";
-			else
-				goto exitjson;
-		}
-		else
-		{
-			if (sensor=="temp")
-				dbasetable="Temperature_Calendar";
-			else if (sensor=="rain")
-				dbasetable="Rain_Calendar";
-			else if (sensor=="counter")
-				dbasetable="Meter_Calendar";
-			else if ( (sensor=="wind") || (sensor=="winddir") )
-				dbasetable="Wind_Calendar";
-			else if (sensor=="uv")
-				dbasetable="UV_Calendar";
-			else
-				goto exitjson;
-		}
 
 		time_t now = time(NULL);
 		struct tm* tm1 = localtime(&now);
@@ -1450,6 +1419,48 @@ char * CWebServer::GetJSonPage()
 		unsigned char dType=atoi(result[0][0].c_str());
 		unsigned char dSubType=atoi(result[0][1].c_str());
 		_eMeterType metertype = (_eMeterType)atoi(result[0][2].c_str());
+
+		std::string dbasetable="";
+		if (srange=="day") {
+			if (sensor=="temp")
+				dbasetable="Temperature";
+			else if (sensor=="rain")
+				dbasetable="Rain_Calendar";
+			else if (sensor=="counter") 
+			{
+				if (dType==pTypeP1Power)
+					dbasetable="MultiMeter_Calendar";
+				else
+					dbasetable="Meter_Calendar";
+			}
+			else if ( (sensor=="wind") || (sensor=="winddir") )
+				dbasetable="Wind";
+			else if (sensor=="uv")
+				dbasetable="UV";
+			else
+				goto exitjson;
+		}
+		else
+		{
+			if (sensor=="temp")
+				dbasetable="Temperature_Calendar";
+			else if (sensor=="rain")
+				dbasetable="Rain_Calendar";
+			else if (sensor=="counter")
+			{
+				if (dType==pTypeP1Power)
+					dbasetable="MultiMeter_Calendar";
+				else
+					dbasetable="Meter_Calendar";
+			}
+			else if ( (sensor=="wind") || (sensor=="winddir") )
+				dbasetable="Wind_Calendar";
+			else if (sensor=="uv")
+				dbasetable="UV_Calendar";
+			else
+				goto exitjson;
+		}
+
 
 		if (srange=="day")
 		{
@@ -1627,7 +1638,10 @@ char * CWebServer::GetJSonPage()
 
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+				if (dType==pTypeP1Power)
+					szQuery << "SELECT Value1, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+				else
+					szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 				result=m_pMain->m_sql.query(szQuery.str());
 				int ii=0;
 				if (result.size()>0)
@@ -1661,7 +1675,10 @@ char * CWebServer::GetJSonPage()
 				//add today (have to calculate it)
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				if (dType==pTypeP1Power)
+					szQuery << "SELECT MIN(Value1), MAX(Value1) FROM MultiMeter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				else
+					szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 				result=m_pMain->m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
@@ -1977,7 +1994,10 @@ char * CWebServer::GetJSonPage()
 
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+				if (dType==pTypeP1Power)
+					szQuery << "SELECT Value1, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+				else
+					szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 				result=m_pMain->m_sql.query(szQuery.str());
 				int ii=0;
 				if (result.size()>0)
@@ -2011,7 +2031,10 @@ char * CWebServer::GetJSonPage()
 				//add today (have to calculate it)
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				if (dType==pTypeP1Power)
+					szQuery << "SELECT MIN(Value1), MAX(Value1) FROM MultiMeter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				else
+					szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 				result=m_pMain->m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{

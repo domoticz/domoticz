@@ -1,6 +1,6 @@
 #pragma once
-#ifndef BUFFEREDASYNCSERIAL_H
-#define	BUFFEREDASYNCSERIAL_H
+#ifndef BUFFEREDP1ASYNCSERIAL_H
+#define	BUFFEREDP1ASYNCSERIAL_H
 
 #include "ASyncSerial.h"
 #include "P1MeterBase.h"
@@ -47,4 +47,4 @@ private:
     void readCallback(const char *data, size_t len);
 };
 
-#endif //BUFFEREDASYNCSERIAL_H
+#endif //BUFFEREDP1ASYNCSERIAL_H

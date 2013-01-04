@@ -2053,7 +2053,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 			//insert into calendar table
 			sprintf(szTmp,
 				"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Date) "
-				"VALUES (%llu, %.2f, '%s')",
+				"VALUES (%llu, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, '%s')",
 				ID,
 				total_real[0],
 				total_real[1],

@@ -305,7 +305,7 @@ bool MainWorker::AddHardwareFromParams(
 #else
 		sprintf(szSerialPort,"/dev/ttyUSB%d",Port);
 #endif
-//		pHardware = new P1MeterSerial(ID,szSerialPort,9600);
+		pHardware = new P1MeterSerial(ID,szSerialPort,9600);
 		break;
 	case HTYPE_P1SmartMeterLAN:
 		//LAN
