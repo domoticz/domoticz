@@ -1338,7 +1338,8 @@ void MainWorker::decode_Temp(const int HwdID, const tRBUF *pResponse)
 
 	unsigned char devType=pTypeTEMP;
 	unsigned char subType=pResponse->TEMP.subtype;
-	std::string ID="1";
+	sprintf(szTmp,"%d",(pResponse->TEMP.id1 * 256) + pResponse->TEMP.id2);
+	std::string ID=szTmp;
 	unsigned char Unit=pResponse->TEMP.id2;
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=pResponse->TEMP.rssi;
@@ -1434,7 +1435,8 @@ void MainWorker::decode_Hum(const int HwdID, const tRBUF *pResponse)
 
 	unsigned char devType=pTypeHUM;
 	unsigned char subType=pResponse->HUM.subtype;
-	std::string ID="1";
+	sprintf(szTmp,"%d",(pResponse->HUM.id1 * 256) + pResponse->HUM.id2);
+	std::string ID=szTmp;
 	unsigned char Unit=1;
 	unsigned char SignalLevel=pResponse->HUM.rssi;
 	unsigned char BatteryLevel = 0;
@@ -1661,7 +1663,8 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const tRBUF *pResponse)
 
 	unsigned char devType=pTypeTEMP_HUM_BARO;
 	unsigned char subType=pResponse->TEMP_HUM_BARO.subtype;
-	std::string ID="1";
+	sprintf(szTmp,"%d",(pResponse->TEMP_HUM_BARO.id1 * 256) + pResponse->TEMP_HUM_BARO.id2);
+	std::string ID=szTmp;
 	unsigned char Unit=pResponse->TEMP_HUM_BARO.id2;
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=pResponse->TEMP_HUM_BARO.rssi;
