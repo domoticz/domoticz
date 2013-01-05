@@ -173,11 +173,12 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_USAGE, "Usage","M" },
 		{ NTYPE_BARO, "Baro","B" },
 		{ NTYPE_SWITCH, "Switch On", "S" },
-		{ NTYPE_AMPERE1, "Ampere 1", "A" },
-		{ NTYPE_AMPERE2, "Ampere 2", "A" },
-		{ NTYPE_AMPERE3, "Ampere 3", "A" },
-		{ NTYPE_ENERGYINSTANT, "Instant", "W" },
-		{ NTYPE_ENERGYTOTAL, "Total", "Wh" },
+		{ NTYPE_AMPERE1, "Ampere 1", "1" },
+		{ NTYPE_AMPERE2, "Ampere 2", "2" },
+		{ NTYPE_AMPERE3, "Ampere 3", "3" },
+		{ NTYPE_ENERGYINSTANT, "Instant", "I" },
+		{ NTYPE_TODAYENERGY, "Today", "E" },
+		{ NTYPE_TODAYGAS, "Today", "G" },
 		{  0,NULL,NULL }
 	};
 	if (snum==0)

@@ -827,8 +827,14 @@ function ShowUtilities()
 						else {
 							xhtm+='<a class="btnsmall" onclick="ShowCounterLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">Log</a> ';
 						}
-						xhtm+=      
-									'<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +');">Edit</a> ';
+						if (item.Type == "P1 Smart Meter") {
+							xhtm+=      
+										'<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+						}
+						else {
+							xhtm+=      
+										'<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +');">Edit</a> ';
+						}
           }
           else {
 						xhtm+=      

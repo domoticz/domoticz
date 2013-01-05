@@ -70,6 +70,22 @@ public:
 		const unsigned char subType, 
 		const _eNotificationTypes ntype, 
 		const float mvalue);
+	bool CheckAndHandleTotalNotification(
+		const int HardwareID, 
+		const std::string ID, 
+		const unsigned char unit, 
+		const unsigned char devType, 
+		const unsigned char subType, 
+		const _eNotificationTypes ntype, 
+		const float mvalue);
+	bool CheckAndHandleUsageNotification(
+		const int HardwareID, 
+		const std::string ID, 
+		const unsigned char unit, 
+		const unsigned char devType, 
+		const unsigned char subType, 
+		const _eNotificationTypes ntype, 
+		const float mvalue);
 
 	bool HasTimers(const unsigned long long Idx);
 	bool HasTimers(const std::string Idx);

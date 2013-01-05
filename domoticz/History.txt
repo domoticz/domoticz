@@ -5,6 +5,7 @@ Version 1.0.6 (Januari xxth 2013)
 - P1 Smart Meter TCP hardware implemented
 - Fixed: Temp, Hum, TempHumBaro ID
 - option to add a manual LightwaveRF switch
+- Chime light/switch status will now also trigger a notification
 
 Version 1.0.5 (December 29th 2012)
 - Start of History document

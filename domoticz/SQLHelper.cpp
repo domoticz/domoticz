@@ -585,7 +585,7 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 		bool bHaveDimmer=false;
 		bool bHaveGroupCmd=false;
 		GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,bHaveGroupCmd);
-		if ((lstatus=="On")||(lstatus=="Group On")||(lstatus=="All On"))
+		if ((lstatus=="On")||(lstatus=="Group On")||(lstatus=="All On")||(lstatus=="Chime"))
 		{
 			std::vector<_tNotification> notifications=GetNotifications(ulID);
 			if (notifications.size()>0)

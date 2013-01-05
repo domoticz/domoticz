@@ -313,6 +313,31 @@ function RefreshNotificationTable(idx)
 					{
 						ntype="Switch";
 					}
+					else if (parts[0]=="E")
+					{
+						ntype="Today";
+						stype=" kWh";
+					}
+					else if (parts[0]=="G")
+					{
+						ntype="Today";
+						stype=" m3";
+					}
+					else if (parts[0]=="1")
+					{
+						ntype="Ampere 1";
+						stype=" A";
+					}
+					else if (parts[0]=="2")
+					{
+						ntype="Ampere 2";
+						stype=" A";
+					}
+					else if (parts[0]=="3")
+					{
+						ntype="Ampere 3";
+						stype=" A";
+					}
 						
 					var nwhen="";
 					if (parts[1]==">") {
@@ -386,6 +411,10 @@ function ShowNotificationTypeLabel()
 		else if (typetext == 'Baro')
 			$($.content + " #notificationparamstable #valuetype").html('&nbsp;hPa');
 		else if (typetext == 'Usage')
+			$($.content + " #notificationparamstable #valuetype").html('&nbsp;');
+		else if (typetext == 'Today')
+			$($.content + " #notificationparamstable #valuetype").html('&nbsp;');
+		else if (typetext == 'Total')
 			$($.content + " #notificationparamstable #valuetype").html('&nbsp;');
 		else
 			$($.content + " #notificationparamstable #valuetype").html('&nbsp;??');

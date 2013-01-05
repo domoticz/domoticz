@@ -2646,7 +2646,7 @@ char * CWebServer::GetJSonPage()
 			//First get Device Type/SubType
 			szQuery.clear();
 			szQuery.str("");
-			szQuery << "SELECT Type, SubType FROM DeviceStatus WHERE (ID == " << idx << ")";
+			szQuery << "SELECT Type, SubType, SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
 			result=m_pMain->m_sql.query(szQuery.str());
 			if (result.size()<1)
 				goto exitjson;
@@ -2655,6 +2655,7 @@ char * CWebServer::GetJSonPage()
 			root["title"]="GetNotificationTypes";
 			unsigned char dType=atoi(result[0][0].c_str());
 			unsigned char dSubType=atoi(result[0][1].c_str());
+			unsigned char switchtype=atoi(result[0][2].c_str());
 
 			int ii=0;
 			if (
@@ -2717,15 +2718,45 @@ char * CWebServer::GetJSonPage()
 				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_BARO,1);
 				ii++;
 			}
-			if (
-				((dType==pTypeRFXMeter)&&(dSubType==sTypeRFXMeterCount))||
-				(dType==pTypeP1Power)||
-				(dType==pTypeP1Gas)
-				)
+			if ((dType==pTypeRFXMeter)&&(dSubType==sTypeRFXMeterCount))
 			{
-				root["result"][ii]["val"]=NTYPE_BARO;
+				if (switchtype==MTYPE_ENERGY)
+				{
+					root["result"][ii]["val"]=NTYPE_TODAYENERGY;
+					root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TODAYENERGY,0);
+					root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TODAYENERGY,1);
+				}
+				else if (switchtype==MTYPE_ENERGY)
+				{
+					root["result"][ii]["val"]=NTYPE_TODAYGAS;
+					root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TODAYGAS,0);
+					root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TODAYGAS,1);
+				}
+				else
+				{
+					//water (same as gas)
+					root["result"][ii]["val"]=NTYPE_TODAYGAS;
+					root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TODAYGAS,0);
+					root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TODAYGAS,1);
+				}
+				ii++;
+			}
+			if (dType==pTypeP1Power)
+			{
+				root["result"][ii]["val"]=NTYPE_USAGE;
 				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
 				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+				ii++;
+				root["result"][ii]["val"]=NTYPE_TODAYENERGY;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TODAYENERGY,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TODAYENERGY,1);
+				ii++;
+			}
+			if (dType==pTypeP1Gas)
+			{
+				root["result"][ii]["val"]=NTYPE_TODAYGAS;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TODAYGAS,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TODAYGAS,1);
 				ii++;
 			}
 		}
