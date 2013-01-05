@@ -10,6 +10,7 @@
 #include "webserver/Base64.h"
 #include "appversion.h"
 #include "P1MeterBase.h"
+#include "UrlEncode.h"
 
 namespace http {
 	namespace server {
@@ -71,6 +72,22 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
 					WebUserName=base64_decode(WebUserName);
 					WebPassword=base64_decode(WebPassword);
 					m_pWebEm->AddUserPassword(WebUserName, WebPassword);
+
+					std::string WebLocalNetworks;
+					if (m_pMain->m_sql.GetPreferencesVar("WebLocalNetworks",nValue,WebLocalNetworks))
+					{
+						std::vector<std::string> strarray;
+						StringSplit(WebLocalNetworks, ";", strarray);
+						std::vector<std::string>::const_iterator itt;
+						for (itt=strarray.begin(); itt!=strarray.end(); ++itt)
+						{
+							std::string network=*itt;
+							int pos=network.find_first_of("*");
+							if (pos>0)
+								network=network.substr(0,pos);
+							m_pWebEm->AddLocalNetworks(network);
+						}
+					}
 				}
 			}
 		}
@@ -295,6 +312,10 @@ char * CWebServer::PostSettings()
 	
 	std::string WebUserName=m_pWebEm->FindValue("WebUserName");
 	std::string WebPassword=m_pWebEm->FindValue("WebPassword");
+	std::string WebLocalNetworks=m_pWebEm->FindValue("WebLocalNetworks");
+	WebUserName=CURLEncode::URLDecode(WebUserName);
+	WebPassword=CURLEncode::URLDecode(WebPassword);
+	WebLocalNetworks=CURLEncode::URLDecode(WebLocalNetworks);
 
 	if ((WebUserName=="")||(WebPassword==""))
 	{
@@ -307,9 +328,22 @@ char * CWebServer::PostSettings()
 		WebUserName=base64_encode((const unsigned char*)WebUserName.c_str(),WebUserName.size());
 		WebPassword=base64_encode((const unsigned char*)WebPassword.c_str(),WebPassword.size());
 	}
+	m_pWebEm->ClearLocalNetworks();
+	std::vector<std::string> strarray;
+	StringSplit(WebLocalNetworks, ";", strarray);
+	std::vector<std::string>::const_iterator itt;
+	for (itt=strarray.begin(); itt!=strarray.end(); ++itt)
+	{
+		std::string network=*itt;
+		int pos=network.find_first_of("*");
+		if (pos>0)
+			network=network.substr(0,pos);
+		m_pWebEm->AddLocalNetworks(network);
+	}
 
 	m_pMain->m_sql.UpdatePreferencesVar("WebUserName",WebUserName.c_str());
 	m_pMain->m_sql.UpdatePreferencesVar("WebPassword",WebPassword.c_str());
+	m_pMain->m_sql.UpdatePreferencesVar("WebLocalNetworks",WebLocalNetworks.c_str());
 
 	int EnergyDivider=atoi(m_pWebEm->FindValue("EnergyDivider").c_str());
 	int GasDivider=atoi(m_pWebEm->FindValue("GasDivider").c_str());
@@ -3431,6 +3465,10 @@ char * CWebServer::GetJSonPage()
 				else if (Key=="WebPassword")
 				{
 					root["WebPassword"]=base64_decode(sValue);
+				}
+				else if (Key=="WebLocalNetworks")
+				{
+					root["WebLocalNetworks"]=sValue;
 				}
 				else if (Key=="MeterDividerEnergy")
 				{

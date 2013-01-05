@@ -139,6 +139,9 @@ namespace http {
 			void AddUserPassword(std::string username, std::string password);
 			void ClearUserPasswords();
 			std::vector<_tWebUserPassword> m_userpasswords;
+			void AddLocalNetworks(std::string network);
+			void ClearLocalNetworks();
+			std::vector<std::string> m_localnetworks;
 			void SetDigistRealm(std::string realm);
 			std::string m_DigistRealm;
 			void SetZipPassword(std::string password);

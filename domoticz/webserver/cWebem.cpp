@@ -425,6 +425,16 @@ void cWebem::ClearUserPasswords()
 	m_userpasswords.clear();
 }
 
+void cWebem::AddLocalNetworks(std::string network)
+{
+	m_localnetworks.push_back(network);
+}
+
+void cWebem::ClearLocalNetworks()
+{
+	m_localnetworks.clear();
+}
+
 void cWebem::SetDigistRealm(std::string realm)
 {
 	m_DigistRealm=realm;
@@ -911,6 +921,30 @@ int cWebemRequestHandler::check_authorization(const request& req)
 	myWebem->m_actualuser="";
 	if (myWebem->m_userpasswords.size()==0)
 		return 1;//no username/password
+
+	//check if in local network(s)
+	const char *host_header;
+	bool doAuthorize=true;
+	if ((host_header = request::get_req_header(&req, "Host")) != NULL)
+	{
+		std::string host=host_header;
+		int pos=host.find_first_of(":");
+		if (pos!=std::string::npos)
+			host=host.substr(0,pos);
+		std::vector<std::string>::const_iterator itt;
+		for (itt=myWebem->m_localnetworks.begin(); itt!=myWebem->m_localnetworks.end(); ++itt)
+		{
+			std::string network=*itt;
+			if (host.compare(0, network.length(), network) == 0)
+			{
+				doAuthorize=false;
+				break;
+			}
+		}
+	}
+	if (!doAuthorize)
+		return 1;
+
 	return authorize(req);
 }
 

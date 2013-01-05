@@ -13,5 +13,6 @@ public:
 	CURLEncode() { };
 	virtual ~CURLEncode() { };
 	std::string URLEncode(std::string vData);
+	static std::string URLDecode(const std::string SRC);
 };
 

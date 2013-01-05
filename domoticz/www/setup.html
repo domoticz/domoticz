@@ -104,6 +104,18 @@
 		<td><input type="password" id="WebPassword" name="WebPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 	</tr>
 	</table>
+	<br>
+	Local Networks (no username/password):<br><br>
+	<table class="display" id="weblocaltable" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td align="right" style="width:60px"><label>Networks: </label></td>
+		<td>
+			<input type="input" id="WebLocalNetworks" name="WebLocalNetworks" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
+			(Separate by dot-comma, For Example: 127.0.0.*;192.168.0.*)
+		</td>
+	</tr>
+	</table>
+	<br>
 	</div>
 	<div class="6u">
 	<h2>RFXMeter Counter Dividers:</h2><br>
@@ -217,6 +229,9 @@ function ShowSettings()
       }
       if (typeof data.WebPassword != 'undefined') {
         $("#webtable #WebPassword").val(data.WebPassword);
+      }
+      if (typeof data.WebLocalNetworks != 'undefined') {
+        $("#weblocaltable #WebLocalNetworks").val(data.WebLocalNetworks);
       }
       if (typeof data.EnergyDivider != 'undefined') {
         $("#rfxmetertable #EnergyDivider").val(data.EnergyDivider);

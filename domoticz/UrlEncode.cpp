@@ -124,3 +124,24 @@ std::string CURLEncode::URLEncode(std::string pcsEncode)
 
 	return csEncoded;
 }
+
+std::string CURLEncode::URLDecode(const std::string SRC)
+{
+	std::string ret;
+	char ch;
+	int ii;
+	size_t len=SRC.length();
+	for (size_t i=0; i<len; i++) {
+		if (int(SRC[i])==37) {
+			if ( i+2 >= len )
+				return SRC;
+			sscanf(SRC.substr(i+1,2).c_str(), "%x", &ii);
+			ch=static_cast<char>(ii);
+			ret+=ch;
+			i=i+2;
+		} else {
+			ret+=SRC[i];
+		}
+	}
+	return (ret);
+}
