@@ -55,10 +55,12 @@ public:
 	CScheduler m_scheduler;
 	bool m_bIgnoreUsernamePassword;
 private:
+	unsigned char m_ScheduleLastMinute;
+	unsigned char m_ScheduleLastHour;
+
 	boost::mutex m_devicemutex;
 	boost::mutex decodeRXMessageMutex;
 
-	bool m_bStartup;
 	bool m_bStartHardware;
 	unsigned char m_hardwareStartCounter;
 

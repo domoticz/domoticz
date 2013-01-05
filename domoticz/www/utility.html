@@ -261,6 +261,7 @@ function ShowCounterLog(id,name,switchtype)
           renderTo: 'countermonthgraph',
           type: 'spline',
           marginRight: 10,
+          zoomType: 'xy',
           events: {
               load: function() {
                   
@@ -331,6 +332,7 @@ function ShowCounterLog(id,name,switchtype)
           renderTo: 'counteryeargraph',
           type: 'spline',
           marginRight: 10,
+          zoomType: 'xy',
           events: {
               load: function() {
                   
@@ -410,6 +412,7 @@ function ShowSmartLog(id,name,switchtype)
       chart: {
           renderTo: 'smartdaygraph',
           type: 'line',
+          zoomType: 'xy',
           events: {
               load: function() {
                 $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=day",
@@ -536,6 +539,7 @@ function ShowSmartLog(id,name,switchtype)
           renderTo: 'smartmonthgraph',
           type: 'spline',
           marginRight: 10,
+          zoomType: 'xy',
           events: {
               load: function() {
                   
@@ -606,6 +610,7 @@ function ShowSmartLog(id,name,switchtype)
           renderTo: 'smartyeargraph',
           type: 'spline',
           marginRight: 10,
+          zoomType: 'xy',
           events: {
               load: function() {
                   

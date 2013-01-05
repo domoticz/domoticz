@@ -33,9 +33,14 @@ MainWorker::MainWorker()
 	m_verboselevel=EVBL_None;
 	m_bStartHardware=false;
 	m_hardwareStartCounter=0;
-	m_bStartup=false;
 	m_webserverport="8080";
 	m_bIgnoreUsernamePassword=false;
+
+	time_t atime=time(NULL);
+	tm *ltime;
+	ltime=localtime(&atime);
+	m_ScheduleLastMinute=ltime->tm_min;
+	m_ScheduleLastHour=ltime->tm_hour;
 }
 
 MainWorker::~MainWorker()
@@ -326,10 +331,7 @@ bool MainWorker::AddHardwareFromParams(
 
 bool MainWorker::Start()
 {
-	m_bStartup=true;
 	Stop();
-	if (!StartThread())
-		return false;
 
 	//Add Hardware devices
 	std::vector<std::vector<std::string> > result;
@@ -358,6 +360,9 @@ bool MainWorker::Start()
 			AddHardwareFromParams(ID,Name,Type,Address,Port,Username,Password,mode1,mode2,mode3,mode4,mode5);
 		}
 	}
+	if (!StartThread())
+		return false;
+	GetSunSettings();
 	return true;
 }
 
@@ -450,12 +455,6 @@ void MainWorker::Do_Work()
 		//sleep 1 second
 		boost::this_thread::sleep(boost::posix_time::seconds(1));
 
-		time_t atime=time(NULL);
-		tm *ltime;
-		ltime=localtime(&atime);
-		if (!ltime)
-			continue;
-
 		if (m_bStartHardware)
 		{
 			m_hardwareStartCounter++;
@@ -466,46 +465,29 @@ void MainWorker::Do_Work()
 			}
 		}
 
-		//check for daily schedule
-		if (
-			(ltime->tm_sec==0)&&
-			(ltime->tm_min==0)&&
-			(ltime->tm_hour==0)
-			)
+		time_t atime=time(NULL);
+		tm *ltime;
+		ltime=localtime(&atime);
+		if (!ltime)
+			continue;
+		if (ltime->tm_min!=m_ScheduleLastMinute)
 		{
-			m_sql.ScheduleDay();
+			m_ScheduleLastMinute=ltime->tm_min;
+			//check for 5 minute schedule
+			if (ltime->tm_min%5==0)
+			{
+				m_sql.Schedule5Minute();
+			}
 		}
-
-		//check for hour schedule
-		if (
-			(ltime->tm_sec==0)&&
-			(ltime->tm_min==0)
-			)
+		if (ltime->tm_hour!=m_ScheduleLastHour)
 		{
-			//
-		}
-
-		//check for 5 minute schedule
-		if (
-			(ltime->tm_sec==0)&&
-			(ltime->tm_min%5==0)
-			)
-		{
-			m_sql.Schedule5Minute();
-		}
-
-		//these could take some time (http downloads), thats why they are at the bottom
-		//check for hour schedule
-		if (
-			(
-			(ltime->tm_sec==0)&&
-			(ltime->tm_min==0)
-			) ||
-			(m_bStartup)
-			)
-		{
-			m_bStartup=false;
+			m_ScheduleLastHour=ltime->tm_hour;
 			GetSunSettings();
+			//check for daily schedule
+			if (ltime->tm_hour==0)
+			{
+				m_sql.ScheduleDay();
+			}
 		}
 
 	}
