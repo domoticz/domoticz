@@ -108,29 +108,25 @@ cmake CMakeLists.txt
 make
 
 Unix startup script:
-To start Domoticz automaticaly when the system starts:
+To start Domoticz automatically when the system starts perform the following steps:
 
 sudo cp domoticz.sh /etc/init.d
 sudo chmod +x /etc/init.d/domoticz.sh
 
-edit the startup script and point the DEAMON location to point to the installation folder:
+Edit the startup script and point the DEAMON location to point to the installation folder:
 sudo vi /etc/init.d/domoticz.sh
 
 DAEMON=/home/pi/domoticz/domoticz
 
-if you want to use another web interface port change:
+If you want to use another web interface port change:
 
 OPTIONS="-www 8080"
 
-You can now start domotics with:
-
+You can now start domoticz with:
 /etc/init.d/domoticz.sh start
 
-to stop:
-
+To stop:
 /etc/init.d/domoticz.sh stop
 
-to check if domoticz is running:
-
+To check if domoticz is running:
 /etc/init.d/domoticz.sh status
-
