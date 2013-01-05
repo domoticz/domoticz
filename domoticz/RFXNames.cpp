@@ -354,7 +354,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeSecurity1, sTypePowercodeMotion, "Visonic PowerCode motion" },
 		{ pTypeSecurity1, sTypeCodesecure, "Visonic CodeSecure" },
 		{ pTypeSecurity1, sTypePowercodeAux, "Visonic PowerCode sensor - auxiliary contact" },
-		{ pTypeSecurity1, sTypeMeiantech, "Meiantech" },
+		{ pTypeSecurity1, sTypeMeiantech, "Meiantech/Atlantic/Aidebao" },
 		
 		{ pTypeCamera, sTypeNinja, "Meiantech" },
 

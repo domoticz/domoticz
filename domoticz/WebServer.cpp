@@ -2438,10 +2438,23 @@ char * CWebServer::GetJSonPage()
 					goto exitjson;
 				devid=shousecode;
 			}
-			else
+			else if (lighttype<13)
 			{
 				dtype=pTypeLighting2;
 				subtype=lighttype-10;
+				std::string id=m_pWebEm->FindValue("id");
+				sunitcode=m_pWebEm->FindValue("unitcode");
+				if (
+					(id=="")||
+					(sunitcode=="")
+					)
+					goto exitjson;
+				devid=id;
+			}
+			else
+			{
+				dtype=pTypeLighting5;
+				subtype=lighttype-13;
 				std::string id=m_pWebEm->FindValue("id");
 				sunitcode=m_pWebEm->FindValue("unitcode");
 				if (
@@ -2503,10 +2516,23 @@ char * CWebServer::GetJSonPage()
 					goto exitjson;
 				devid=shousecode;
 			}
-			else
+			else if (lighttype<13)
 			{
 				dtype=pTypeLighting2;
 				subtype=lighttype-10;
+				std::string id=m_pWebEm->FindValue("id");
+				sunitcode=m_pWebEm->FindValue("unitcode");
+				if (
+					(id=="")||
+					(sunitcode=="")
+					)
+					goto exitjson;
+				devid=id;
+			}
+			else
+			{
+				dtype=pTypeLighting5;
+				subtype=lighttype-13;
 				std::string id=m_pWebEm->FindValue("id");
 				sunitcode=m_pWebEm->FindValue("unitcode");
 				if (

@@ -902,9 +902,9 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const tRBUF *pResponse
 						WriteMessage("HomeEasy EU       disabled");
 
 					if (pResponse->IRESPONSE.msg5 & msg5_MEI)
-						WriteMessage("Meiantech         enabled");
+						WriteMessage("Meiantech/Atlantic enabled");
 					else
-						WriteMessage("Meiantech         disabled");
+						WriteMessage("Meiantech/Atlantic disabled");
 
 					if (pResponse->IRESPONSE.msg5 & msg5_OREGON)
 						WriteMessage("Oregon Scientific enabled");
@@ -996,7 +996,14 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const tRBUF *pResponse
 				WriteMessage("response on cmnd  = Save");
 				break;
 			}
+			break;
 		}
+		break;
+	case sTypeInterfaceWrongCommand:
+		WriteMessage("subtype           = Wrong command received from application");
+		sprintf(szTmp,"Sequence nbr      = %d", pResponse->IRESPONSE.seqnbr);
+		WriteMessage(szTmp);
+		break;
 	}
 }
 
@@ -2108,8 +2115,115 @@ void MainWorker::decode_Lighting4(const int HwdID, const tRBUF *pResponse)
 	unsigned char devType=pTypeLighting4;
 
 	//tRBUF *pResponse=(tRBUF*)m_rxbuffer;
-	//char szTmp[100];
-	WriteMessage("Not implemented");
+	char szTmp[100];
+
+	if (m_verboselevel == EVBL_ALL)
+	{
+		switch (pResponse->LIGHTING4.subtype)
+		{
+		case sTypePT2262:
+			WriteMessage("subtype       = PT2262");
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING4.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"Code          = %02X%02X%02X", pResponse->LIGHTING4.cmd1,pResponse->LIGHTING4.cmd2,pResponse->LIGHTING4.cmd3);
+			WriteMessage(szTmp);
+			WriteMessage("S1- S12  = ", false);
+
+			if ((pResponse->LIGHTING4.cmd1 & 0xC0) == 0)
+				WriteMessage("up ", false);
+			else if ((pResponse->LIGHTING4.cmd1 & 0xC0) == 0x40)
+				WriteMessage("middle ", false);
+			else if ((pResponse->LIGHTING4.cmd1 & 0xC0) == 0xC0)
+				WriteMessage("down ", false);
+
+			if ((pResponse->LIGHTING4.cmd1 & 0x30) == 0)
+				WriteMessage("up ", false);
+			else if ((pResponse->LIGHTING4.cmd1 & 0x30) == 0x10)
+				WriteMessage("middle ", false);
+			else if ((pResponse->LIGHTING4.cmd1 & 0x30) == 0x30)
+				WriteMessage("down ", false);
+
+			if ((pResponse->LIGHTING4.cmd1 & 0x0C) == 0)
+				WriteMessage("up ", false);
+			else if ((pResponse->LIGHTING4.cmd1 & 0x0C) == 0x4)
+				WriteMessage("middle ", false);
+			else if ((pResponse->LIGHTING4.cmd1 & 0x0C) == 0xC)
+				WriteMessage("down ", false);
+
+			if ((pResponse->LIGHTING4.cmd1 & 0x03) == 0)
+				WriteMessage("up ", false);
+			else if ((pResponse->LIGHTING4.cmd1 & 0x03) == 0x1)
+				WriteMessage("middle ", false);
+			else if ((pResponse->LIGHTING4.cmd1 & 0x03) == 0x3)
+				WriteMessage("down ", false);
+
+			if ((pResponse->LIGHTING4.cmd2 & 0xC0) == 0)
+				WriteMessage("up ", false);
+			else if ((pResponse->LIGHTING4.cmd2 & 0xC0) == 0x40)
+				WriteMessage("middle ", false);
+			else if ((pResponse->LIGHTING4.cmd2 & 0xC0) == 0xC0)
+				WriteMessage("down ", false);
+
+			if ((pResponse->LIGHTING4.cmd2 & 0x30) == 0)
+				WriteMessage("up ", false);
+			else if ((pResponse->LIGHTING4.cmd2 & 0x30) == 0x10)
+				WriteMessage("middle ", false);
+			else if ((pResponse->LIGHTING4.cmd2 & 0x30) == 0x30)
+				WriteMessage("down ", false);
+
+			if ((pResponse->LIGHTING4.cmd2 & 0xC) == 0)
+				WriteMessage("up ", false);
+			else if ((pResponse->LIGHTING4.cmd2 & 0xC) == 0x4)
+				WriteMessage("middle ", false);
+			else if ((pResponse->LIGHTING4.cmd2 & 0xC) == 0xC)
+				WriteMessage("down ", false);
+
+			if ((pResponse->LIGHTING4.cmd2 & 0x3) == 0)
+				WriteMessage("up ", false);
+			else if ((pResponse->LIGHTING4.cmd2 & 0x3) == 0x1)
+				WriteMessage("middle ", false);
+			else if ((pResponse->LIGHTING4.cmd2 & 0x3) == 0x3)
+				WriteMessage("down ", false);
+
+			if ((pResponse->LIGHTING4.cmd3 & 0xC0) == 0)
+				WriteMessage("up ", false);
+			else if ((pResponse->LIGHTING4.cmd3 & 0xC0) == 0x40)
+				WriteMessage("middle ", false);
+			else if ((pResponse->LIGHTING4.cmd3 & 0xC0) == 0xC0)
+				WriteMessage("down ", false);
+
+			if ((pResponse->LIGHTING4.cmd3 & 0x30) == 0)
+				WriteMessage("up ", false);
+			else if ((pResponse->LIGHTING4.cmd3 & 0x30) == 0x10)
+				WriteMessage("middle ", false);
+			else if ((pResponse->LIGHTING4.cmd3 & 0x30) == 0x30)
+				WriteMessage("down ", false);
+
+			if ((pResponse->LIGHTING4.cmd3 & 0xC) == 0)
+				WriteMessage("up ", false);
+			else if ((pResponse->LIGHTING4.cmd3 & 0xC) == 0x4)
+				WriteMessage("middle ", false);
+			else if ((pResponse->LIGHTING4.cmd3 & 0xC) == 0xC)
+				WriteMessage("down ", false);
+
+			if ((pResponse->LIGHTING4.cmd3 & 0x3) == 0)
+				WriteMessage("up");
+			else if ((pResponse->LIGHTING4.cmd3 & 0x3) == 0x1)
+				WriteMessage("middle");
+			else if ((pResponse->LIGHTING4.cmd3 & 0x3) == 0x3)
+				WriteMessage("down");
+
+			sprintf(szTmp,"Pulse         = %d usec", (pResponse->LIGHTING4.pulseHigh * 256) + pResponse->LIGHTING4.pulseLow);
+			WriteMessage(szTmp);
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING4.packettype, pResponse->LIGHTING4.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+		sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING4.rssi);
+		WriteMessage(szTmp);
+	}
 }
 
 void MainWorker::decode_Lighting5(const int HwdID, const tRBUF *pResponse)
@@ -2130,130 +2244,133 @@ void MainWorker::decode_Lighting5(const int HwdID, const tRBUF *pResponse)
 	sprintf(szTmp,"%.1f",level);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp);
 
-	switch (pResponse->LIGHTING5.subtype)
+	if (m_verboselevel == EVBL_ALL)
 	{
-	case sTypeLightwaveRF:
-		WriteMessage("subtype       = LightwaveRF");
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"Unit          = %d", pResponse->LIGHTING5.unitcode);
-		WriteMessage(szTmp);
-		WriteMessage("Command       = ", false);
-		switch (pResponse->LIGHTING5.cmnd)
+		switch (pResponse->LIGHTING5.subtype)
 		{
-		case light5_sOff:
-			WriteMessage("Off");
+		case sTypeLightwaveRF:
+			WriteMessage("subtype       = LightwaveRF");
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"Unit          = %d", pResponse->LIGHTING5.unitcode);
+			WriteMessage(szTmp);
+			WriteMessage("Command       = ", false);
+			switch (pResponse->LIGHTING5.cmnd)
+			{
+			case light5_sOff:
+				WriteMessage("Off");
+				break;
+			case light5_sOn:
+				WriteMessage("On");
+				break;
+			case light5_sGroupOff:
+				WriteMessage("Group Off");
+				break;
+			case light5_sMood1:
+				WriteMessage("Group Mood 1");
+				break;
+			case light5_sMood2:
+				WriteMessage("Group Mood 2");
+				break;
+			case light5_sMood3:
+				WriteMessage("Group Mood 3");
+				break;
+			case light5_sMood4:
+				WriteMessage("Group Mood 4");
+				break;
+			case light5_sMood5:
+				WriteMessage("Group Mood 5");
+				break;
+			case light5_sUnlock:
+				WriteMessage("Unlock");
+				break;
+			case light5_sLock:
+				WriteMessage("Lock");
+				break;
+			case light5_sAllLock:
+				WriteMessage("All lock");
+				break;
+			case light5_sClose:
+				WriteMessage("Close inline relay");
+				break;
+			case light5_sStop:
+				WriteMessage("Stop inline relay");
+				break;
+			case light5_sOpen:
+				WriteMessage("Open inline relay");
+				break;
+			case light5_sSetLevel:
+				sprintf(szTmp,"Set dim level to: %.2f %%" , level);
+				WriteMessage(szTmp);
+				break;
+			default:
+				WriteMessage("UNKNOWN");
+				break;
+			}
 			break;
-		case light5_sOn:
-			WriteMessage("On");
+		case sTypeEMW100:
+			WriteMessage("subtype       = EMW100");
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"ID            = %02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"Unit          = %d", pResponse->LIGHTING5.unitcode);
+			WriteMessage(szTmp);
+			WriteMessage("Command       = ", false);
+			switch (pResponse->LIGHTING5.cmnd)
+			{
+			case light5_sOff:
+				WriteMessage("Off");
+				break;
+			case light5_sOn:
+				WriteMessage("On");
+				break;
+			case light5_sLearn:
+				WriteMessage("Learn");
+				break;
+			default:
+				WriteMessage("UNKNOWN");
+				break;
+			}
 			break;
-		case light5_sGroupOff:
-			WriteMessage("Group Off");
+		case sTypeBBSB:
+			WriteMessage("subtype       = BBSB new");
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"Unit          = %d", pResponse->LIGHTING5.unitcode);
+			WriteMessage(szTmp);
+			WriteMessage("Command       = ", false);
+			switch (pResponse->LIGHTING5.cmnd)
+			{
+			case light5_sOff:
+				WriteMessage("Off");
+				break;
+			case light5_sOn:
+				WriteMessage("On");
+				break;
+			case light5_sGroupOff:
+				WriteMessage("Group Off");
+				break;
+			case light5_sGroupOn:
+				WriteMessage("Group On");
+				break;
+			default:
+				WriteMessage("UNKNOWN");
+				break;
+			}
 			break;
-		case light5_sMood1:
-			WriteMessage("Group Mood 1");
-			break;
-		case light5_sMood2:
-			WriteMessage("Group Mood 2");
-			break;
-		case light5_sMood3:
-			WriteMessage("Group Mood 3");
-			break;
-		case light5_sMood4:
-			WriteMessage("Group Mood 4");
-			break;
-		case light5_sMood5:
-			WriteMessage("Group Mood 5");
-			break;
-		case light5_sUnlock:
-			WriteMessage("Unlock");
-			break;
-		case light5_sLock:
-			WriteMessage("Lock");
-			break;
-		case light5_sAllLock:
-			WriteMessage("All lock");
-			break;
-		case light5_sClose:
-			WriteMessage("Close inline relay");
-			break;
-		case light5_sStop:
-			WriteMessage("Stop inline relay");
-			break;
-		case light5_sOpen:
-			WriteMessage("Open inline relay");
-			break;
-		case light5_sSetLevel:
-			sprintf(szTmp,"Set dim level to: %.2f %%" , level);
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING5.packettype, pResponse->LIGHTING5.subtype);
 			WriteMessage(szTmp);
 			break;
-		default:
-			WriteMessage("UNKNOWN");
-			break;
 		}
-		break;
-	case sTypeEMW100:
-		WriteMessage("subtype       = EMW100");
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+		sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING5.rssi);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"Unit          = %d", pResponse->LIGHTING5.unitcode);
-		WriteMessage(szTmp);
-		WriteMessage("Command       = ", false);
-		switch (pResponse->LIGHTING5.cmnd)
-		{
-		case light5_sOff:
-			WriteMessage("Off");
-			break;
-		case light5_sOn:
-			WriteMessage("On");
-			break;
-		case light5_sLearn:
-			WriteMessage("Learn");
-			break;
-		default:
-			WriteMessage("UNKNOWN");
-			break;
-		}
-		break;
-	case sTypeBBSB:
-		WriteMessage("subtype       = BBSB new");
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"Unit          = %d", pResponse->LIGHTING5.unitcode);
-		WriteMessage(szTmp);
-		WriteMessage("Command       = ", false);
-		switch (pResponse->LIGHTING5.cmnd)
-		{
-		case light5_sOff:
-			WriteMessage("Off");
-			break;
-		case light5_sOn:
-			WriteMessage("On");
-			break;
-		case light5_sGroupOff:
-			WriteMessage("Group Off");
-			break;
-		case light5_sGroupOn:
-			WriteMessage("Group On");
-			break;
-		default:
-			WriteMessage("UNKNOWN");
-			break;
-		}
-		break;
-	default:
-		sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING5.packettype, pResponse->LIGHTING5.subtype);
-		WriteMessage(szTmp);
-		break;
 	}
-	sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING5.rssi);
-	WriteMessage(szTmp);
 }
 
 void MainWorker::decode_Lighting6(const int HwdID, const tRBUF *pResponse)
@@ -2553,7 +2670,7 @@ void MainWorker::decode_Security1(const int HwdID, const tRBUF *pResponse)
 			WriteMessage("subtype       = Visonic PowerCode sensor - auxiliary contact");
 			break;
 		case sTypeMeiantech:
-			WriteMessage("subtype       = Meiantech");
+			WriteMessage("subtype       = Meiantech/Atlantic/Aidebao");
 			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->SECURITY1.packettype, pResponse->SECURITY1.subtype);

@@ -116,6 +116,7 @@
 						<option value="10">AC</option>
 						<option value="11">HE EU</option>
 						<option value="12">ANSLUT</option>
+						<option value="13">LightwaveRF</option>
           </select></td>
 		    </tr>
 		    </table>
@@ -1264,6 +1265,7 @@ function UpdateAddManualDialog()
 	var lighttype=$("#dialog-addmanuallightdevice #lighttable #combolighttype option:selected").val();
 	
 	var bIsARCType=0;
+	var bIsType5=0;
 	
 	var tothousecodes=1;
 	var totunits=1;
@@ -1287,6 +1289,10 @@ function UpdateAddManualDialog()
 		tothousecodes=16;
 		totunits=8;
 	}
+	else if (lighttype==13) {
+		bIsType5=1;
+		totunits=16;
+	}
 	if (bIsARCType==1) {
 		$('#dialog-addmanuallightdevice #lightparams1 #combohousecode >option').remove();
 		$('#dialog-addmanuallightdevice #lightparams1 #combounitcode >option').remove();
@@ -1302,6 +1308,12 @@ function UpdateAddManualDialog()
 		$("#dialog-addmanuallightdevice #lighting2params").hide();
 	}
 	else {
+			if (bIsType5==0) {
+				$("#dialog-addmanuallightdevice #lighting2params #combocmd1").show();
+			}
+			else {
+				$("#dialog-addmanuallightdevice #lighting2params #combocmd1").hide();
+			}
 			$("#dialog-addmanuallightdevice #lighting1params").hide();
 			$("#dialog-addmanuallightdevice #lighting2params").show();
 
@@ -1335,12 +1347,26 @@ function GetManualLightSettings(isTest)
 	}
 	else {
 		//AC
-		var ID=
-			$("#dialog-addmanuallightdevice #lightparams2 #combocmd1 option:selected").text()+
-			$("#dialog-addmanuallightdevice #lightparams2 #combocmd2 option:selected").text()+
-			$("#dialog-addmanuallightdevice #lightparams2 #combocmd3 option:selected").text()+
-			$("#dialog-addmanuallightdevice #lightparams2 #combocmd4 option:selected").text();
-		if (ID=="0000000") {
+		var ID="";
+		var bIsType5=0;
+		if (lighttype==13)
+		{
+			bIsType5=1;
+		}
+		if (bIsType5==0) {
+			ID=
+				$("#dialog-addmanuallightdevice #lightparams2 #combocmd1 option:selected").text()+
+				$("#dialog-addmanuallightdevice #lightparams2 #combocmd2 option:selected").text()+
+				$("#dialog-addmanuallightdevice #lightparams2 #combocmd3 option:selected").text()+
+				$("#dialog-addmanuallightdevice #lightparams2 #combocmd4 option:selected").text();
+		}
+		else {
+			ID=
+				$("#dialog-addmanuallightdevice #lightparams2 #combocmd2 option:selected").text()+
+				$("#dialog-addmanuallightdevice #lightparams2 #combocmd3 option:selected").text()+
+				$("#dialog-addmanuallightdevice #lightparams2 #combocmd4 option:selected").text();
+		}
+		if ((ID=="0000000")||(ID=="000000")) {
 			ShowNotify('Invalid Switch ID!!', 2500, true);
 			return "";
 		}
@@ -1536,6 +1562,7 @@ $(document).ready(function() {
 								$('#dialog-addmanuallightdevice #lightparams2 #combocmd3').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
 								$('#dialog-addmanuallightdevice #lightparams2 #combocmd4').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
 							}
+							$('#dialog-addmanuallightdevice #lightparams2 #combounitcode >option').remove();
 							for (ii=1; ii<16+1; ii++)
 							{
 								$('#dialog-addmanuallightdevice #lightparams2 #combounitcode').append($('<option></option>').val(ii).html(ii));

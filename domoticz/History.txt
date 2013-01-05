@@ -4,6 +4,7 @@ Version 1.0.6 (Januari xxth 2013)
 - P1 Smart Meter Serial hardware implemented (need some more work on the graphs)
 - P1 Smart Meter TCP hardware implemented (need some more work on the graphs)
 - Fixed: Temp, Hum, TempHumBaro ID
+- option to add a manual LightwaveRF switch
 
 Version 1.0.5 (December 29th 2012)
 - Start of History document
