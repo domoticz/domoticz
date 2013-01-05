@@ -34,6 +34,7 @@
 
 <div id="utilitycontent">
 </div>
+
 <div id="counterlog" style="display:none;">
   <h2>Week</h2><br>
   <div id="counterweekgraph" style="height: 300px;"></div>
@@ -46,14 +47,17 @@
 </div>
 
 <div id="smartlog" style="display:none;">
+  <h2>Day</h2><br>
+  <div id="smartdaygraph" style="height: 300px;"></div>
+  <br>
   <h2>Week</h2><br>
-  <div id="counterweekgraph" style="height: 300px;"></div>
+  <div id="smartweekgraph" style="height: 300px;"></div>
   <br>
   <h2>Month</h2><br>
-  <div id="countermonthgraph" style="height: 300px;"></div>
+  <div id="smartmonthgraph" style="height: 300px;"></div>
   <br>
   <h2>Year</h2><br>
-  <div id="counteryeargraph" style="height: 300px;"></div>
+  <div id="smartyeargraph" style="height: 300px;"></div>
 </div>
 
 <script type="text/javascript" charset="utf-8">
@@ -100,10 +104,18 @@ function AddDataToUtilityChart(data,chart,switchtype)
 
     $.each(data.result, function(i,item)
     {
+			if (chart == $.DayChart) {
+       datatablev.push( [GetUTCFromString(item.d), parseFloat(item.v) ] );
+       if (typeof item.v2!= 'undefined') {
+				datatablereturn.push( [GetUTCFromString(item.d), parseFloat(item.v2) ] );
+       }
+			}
+			else {
        datatablev.push( [GetDateFromString(item.d), parseFloat(item.v) ] );
        if (typeof item.v2!= 'undefined') {
 				datatablereturn.push( [GetDateFromString(item.d), parseFloat(item.v2) ] );
        }
+			}
     });
 
     var series;
@@ -193,7 +205,7 @@ function ShowCounterLog(id,name,switchtype)
           events: {
               load: function() {
                   
-                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=day",
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=week",
                 function(data) {
 											AddDataToUtilityChart(data,$.WeekChart,switchtype);
                 });
@@ -317,6 +329,281 @@ function ShowCounterLog(id,name,switchtype)
   $.YearChart = new Highcharts.Chart({
       chart: {
           renderTo: 'counteryeargraph',
+          type: 'spline',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=year",
+                function(data) {
+											AddDataToUtilityChart(data,$.YearChart,switchtype);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Last Year'
+        },
+        xAxis: {
+            type: 'datetime',
+            tickInterval: 24 * 3600 * 1000
+        },
+        yAxis: {
+            title: {
+                text: 'Usage'
+            },
+            min: 0
+        },
+        tooltip: {
+            formatter: function() {
+										var unit = {
+																'Usage': 'kWh',
+																'Return': 'kWh',
+																'Gas': 'm3',
+																'Water': 'm3'
+													}[this.series.name];
+                    return this.series.name + ': ' + Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
+            }
+        },
+        plotOptions: {
+           spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        legend: {
+            enabled: false
+        }
+    });
+}
+
+function ShowSmartLog(id,name,switchtype)
+{
+	clearInterval($.myglobals.refreshTimer);
+  $('#modal').show();
+  var htmlcontent = '';
+  htmlcontent='<p><center><h2>' + name + '</h2></center></p><br><br>\n';
+  htmlcontent+=$('#smartlog').html();
+  $('#utilitycontent').html(GetBackbuttonHTMLTable('ShowUtilities')+htmlcontent);
+  
+  $.DayChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'smartdaygraph',
+          type: 'line',
+          events: {
+              load: function() {
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=day",
+                function(data) {
+											AddDataToUtilityChart(data,$.DayChart,switchtype);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Last 24 Hours'
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: 'Usage'
+            },
+            min: 0
+        },
+        tooltip: {
+            formatter: function() {
+										var unit = {
+																'Usage': 'Watt',
+																'Return': 'Watt',
+																'Gas': 'm3',
+																'Water': 'm3'
+													}[this.series.name];
+                    return this.series.name + ': ' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y + ' ' + unit;
+            }
+        },
+        plotOptions: {
+						 line: {
+									lineWidth: 3,
+									states: {
+											hover: {
+													lineWidth: 3
+											}
+									},
+									marker: {
+											enabled: false,
+											states: {
+													hover: {
+															enabled: true,
+															symbol: 'circle',
+															radius: 5,
+															lineWidth: 1
+													}
+											}
+									}
+							}
+        },
+        legend: {
+            enabled: true
+        }
+    });
+  
+  $.WeekChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'smartweekgraph',
+          type: 'column',
+          marginRight: 10,
+          events: {
+              load: function() {
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=week",
+                function(data) {
+											AddDataToUtilityChart(data,$.WeekChart,switchtype);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Last week'
+        },
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: {
+                day: '%a'
+            },
+            tickInterval: 24 * 3600 * 1000
+        },
+        yAxis: {
+            title: {
+                text: 'Energy (kWh)'
+            },
+            min: 0
+        },
+        tooltip: {
+            formatter: function() {
+										var unit = {
+																'Usage': 'kWh',
+																'Return': 'kWh',
+																'Gas': 'm3',
+																'Water': 'm3'
+													}[this.series.name];
+                    return this.series.name + ': ' + Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
+            }
+        },
+        plotOptions: {
+            column: {
+                minPointLength: 4,
+                pointPadding: 0.1,
+                groupPadding: 0
+            }
+        },
+        legend: {
+            enabled: false
+        }
+    });
+
+  $.MonthChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'smartmonthgraph',
+          type: 'spline',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=month",
+                function(data) {
+											AddDataToUtilityChart(data,$.MonthChart,switchtype);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Last Month'
+        },
+        xAxis: {
+            type: 'datetime',
+            tickInterval: 24 * 3600 * 1000
+        },
+        yAxis: {
+            title: {
+                text: 'Usage'
+            },
+            min: 0
+        },
+        tooltip: {
+            formatter: function() {
+										var unit = {
+																'Usage': 'kWh',
+																'Return': 'kWh',
+																'Gas': 'm3',
+																'Water': 'm3'
+													}[this.series.name];
+                    return this.series.name + ': ' + Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
+            }
+        },
+        plotOptions: {
+           spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        legend: {
+            enabled: false
+        }
+    });
+
+  $.YearChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'smartyeargraph',
           type: 'spline',
           marginRight: 10,
           events: {
@@ -529,7 +816,12 @@ function ShowUtilities()
           }
 
           if (typeof item.Counter != 'undefined') {
-            xhtm+='<a class="btnsmall" onclick="ShowCounterLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">Log</a> ';
+						if ((item.Type == "P1 Smart Meter")&&(item.SubType=="Energy")) {
+							xhtm+='<a class="btnsmall" onclick="ShowSmartLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">Log</a> ';
+						}
+						else {
+							xhtm+='<a class="btnsmall" onclick="ShowCounterLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">Log</a> ';
+						}
 						xhtm+=      
 									'<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +');">Edit</a> ';
           }

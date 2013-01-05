@@ -1432,9 +1432,9 @@ char * CWebServer::GetJSonPage()
 			else if (sensor=="counter") 
 			{
 				if (dType==pTypeP1Power)
-					dbasetable="MultiMeter_Calendar";
+					dbasetable="MultiMeter";
 				else
-					dbasetable="Meter_Calendar";
+					dbasetable="Meter";
 			}
 			else if ( (sensor=="wind") || (sensor=="winddir") )
 				dbasetable="Wind";
@@ -1445,6 +1445,7 @@ char * CWebServer::GetJSonPage()
 		}
 		else
 		{
+			//week,year,month
 			if (sensor=="temp")
 				dbasetable="Temperature_Calendar";
 			else if (sensor=="rain")
@@ -1510,6 +1511,41 @@ char * CWebServer::GetJSonPage()
 						}
 
 						ii++;
+					}
+				}
+			}
+			else if (sensor=="counter")
+			{
+				if (dSubType==sTypeP1Power)
+				{
+					root["status"]="OK";
+					root["title"]="Graph " + sensor + " " + srange;
+
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT Value3, Value4, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator itt;
+						int ii=0;
+						bool bHaveDeliverd=false;
+						for (itt=result.begin(); itt!=result.end(); ++itt)
+						{
+							std::vector<std::string> sd=*itt;
+
+							root["result"][ii]["d"]=sd[2].substr(0,16);
+
+							if (sd[1]!="0")
+								bHaveDeliverd=true;
+							root["result"][ii]["v"]=sd[0];
+							root["result"][ii]["v2"]=sd[1];
+							ii++;
+						}
+						if (bHaveDeliverd)
+						{
+							root["delivered"]=true;
+						}
 					}
 				}
 			}
@@ -1597,7 +1633,80 @@ char * CWebServer::GetJSonPage()
 					ii++;
 				}
 			}
-			else if (sensor=="counter") {
+			else if (sensor=="wind") {
+				root["status"]="OK";
+				root["title"]="Graph " + sensor + " " + srange;
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT Direction, Speed, Gust, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					int ii=0;
+					for (itt=result.begin(); itt!=result.end(); ++itt)
+					{
+						std::vector<std::string> sd=*itt;
+
+						root["result"][ii]["d"]=sd[3].substr(0,16);
+						root["result"][ii]["di"]=sd[0];
+
+						int intSpeed=atoi(sd[1].c_str());
+						sprintf(szTmp,"%.1f",float(intSpeed) / 10.0f);
+						root["result"][ii]["sp"]=szTmp;
+						int intGust=atoi(sd[2].c_str());
+						sprintf(szTmp,"%.1f",float(intGust) / 10.0f);
+						root["result"][ii]["gu"]=szTmp;
+						ii++;
+					}
+				}
+			}
+			else if (sensor=="winddir") {
+				root["status"]="OK";
+				root["title"]="Graph " + sensor + " " + srange;
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT Direction FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					std::map<int,int> _directions;
+					int totalvalues=0;
+					//init dir list
+					int idir;
+					for (idir=0; idir<360+1; idir++)
+						_directions[idir]=0;
+
+					for (itt=result.begin(); itt!=result.end(); ++itt)
+					{
+						std::vector<std::string> sd=*itt;
+						int direction=atoi(sd[0].c_str());
+						_directions[direction]++;
+						totalvalues++;
+					}
+					int ii=0;
+					for (idir=0; idir<360+1; idir++)
+					{
+						if (_directions[idir]!=0)
+						{
+							root["result"][ii]["dig"]=idir;
+							float percentage=(float(100.0/float(totalvalues))*float(_directions[idir]));
+							sprintf(szTmp,"%.2f",percentage);
+							root["result"][ii]["div"]=szTmp;
+							ii++;
+						}
+					}
+				}
+			}
+
+		}//day
+		else if (srange=="week")
+		{
+			if (sensor=="counter") 
+			{
 				root["status"]="OK";
 				root["title"]="Graph " + sensor + " " + srange;
 
@@ -1735,7 +1844,7 @@ char * CWebServer::GetJSonPage()
 						total_real_deliv=total_max_deliv-total_min_deliv;
 						if (total_real_deliv!=0)
 							bHaveDeliverd=true;
-						
+
 						root["result"][ii]["d"]=szDateEnd;
 
 						sprintf(szTmp,"%llu",total_real_usage);
@@ -1792,76 +1901,7 @@ char * CWebServer::GetJSonPage()
 					}
 				}
 			}
-			else if (sensor=="wind") {
-				root["status"]="OK";
-				root["title"]="Graph " + sensor + " " + srange;
-
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "SELECT Direction, Speed, Gust, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
-				result=m_pMain->m_sql.query(szQuery.str());
-				if (result.size()>0)
-				{
-					std::vector<std::vector<std::string> >::const_iterator itt;
-					int ii=0;
-					for (itt=result.begin(); itt!=result.end(); ++itt)
-					{
-						std::vector<std::string> sd=*itt;
-
-						root["result"][ii]["d"]=sd[3].substr(0,16);
-						root["result"][ii]["di"]=sd[0];
-
-						int intSpeed=atoi(sd[1].c_str());
-						sprintf(szTmp,"%.1f",float(intSpeed) / 10.0f);
-						root["result"][ii]["sp"]=szTmp;
-						int intGust=atoi(sd[2].c_str());
-						sprintf(szTmp,"%.1f",float(intGust) / 10.0f);
-						root["result"][ii]["gu"]=szTmp;
-						ii++;
-					}
-				}
-			}
-			else if (sensor=="winddir") {
-				root["status"]="OK";
-				root["title"]="Graph " + sensor + " " + srange;
-
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "SELECT Direction FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
-				result=m_pMain->m_sql.query(szQuery.str());
-				if (result.size()>0)
-				{
-					std::vector<std::vector<std::string> >::const_iterator itt;
-					std::map<int,int> _directions;
-					int totalvalues=0;
-					//init dir list
-					int idir;
-					for (idir=0; idir<360+1; idir++)
-						_directions[idir]=0;
-
-					for (itt=result.begin(); itt!=result.end(); ++itt)
-					{
-						std::vector<std::string> sd=*itt;
-						int direction=atoi(sd[0].c_str());
-						_directions[direction]++;
-						totalvalues++;
-					}
-					int ii=0;
-					for (idir=0; idir<360+1; idir++)
-					{
-						if (_directions[idir]!=0)
-						{
-							root["result"][ii]["dig"]=idir;
-							float percentage=(float(100.0/float(totalvalues))*float(_directions[idir]));
-							sprintf(szTmp,"%.2f",percentage);
-							root["result"][ii]["div"]=szTmp;
-							ii++;
-						}
-					}
-				}
-			}
-
-		}//day
+		}//week
 		else if ( (srange=="month") || (srange=="year" ) )
 		{
 			char szDateStart[40];
