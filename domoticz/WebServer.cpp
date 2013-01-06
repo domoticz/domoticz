@@ -1190,8 +1190,8 @@ char * CWebServer::GetJSonPage()
 
 		Json::Value::const_iterator itt;
 		int ii=0;
-		size_t rsize=tempjson["result"].size();
-		for ( size_t itt = 0; itt<rsize; itt++)
+		Json::ArrayIndex rsize=tempjson["result"].size();
+		for ( Json::ArrayIndex itt = 0; itt<rsize; itt++)
 		{
 			root["result"][ii]["idx"]=ii;
 			root["result"][ii]["Name"]=tempjson["result"][itt]["Name"];
@@ -1220,8 +1220,8 @@ char * CWebServer::GetJSonPage()
 
 		Json::Value::const_iterator itt;
 		int ii=0;
-		size_t rsize=tempjson["result"].size();
-		for ( size_t itt = 0; itt<rsize; itt++)
+		Json::ArrayIndex rsize=tempjson["result"].size();
+		for ( Json::ArrayIndex itt = 0; itt<rsize; itt++)
 		{
 			root["result"][ii]["idx"]=ii;
 			root["result"][ii]["Name"]=tempjson["result"][itt]["Name"];
@@ -1245,8 +1245,8 @@ char * CWebServer::GetJSonPage()
 
 		Json::Value::const_iterator itt;
 		int ii=0;
-		size_t rsize=tempjson["result"].size();
-		for ( size_t itt = 0; itt<rsize; itt++)
+		Json::ArrayIndex rsize=tempjson["result"].size();
+		for ( Json::ArrayIndex itt = 0; itt<rsize; itt++)
 		{
 			root["result"][ii]["idx"]=ii;
 			root["result"][ii]["Name"]=tempjson["result"][itt]["Name"];
@@ -1265,8 +1265,8 @@ char * CWebServer::GetJSonPage()
 
 		Json::Value::const_iterator itt;
 		int ii=0;
-		size_t rsize=tempjson["result"].size();
-		for ( size_t itt = 0; itt<rsize; itt++)
+		Json::ArrayIndex rsize=tempjson["result"].size();
+		for ( Json::ArrayIndex itt = 0; itt<rsize; itt++)
 		{
 			root["result"][ii]["idx"]=ii;
 			root["result"][ii]["Name"]=tempjson["result"][itt]["Name"];
@@ -1285,8 +1285,8 @@ char * CWebServer::GetJSonPage()
 
 		Json::Value::const_iterator itt;
 		int ii=0;
-		size_t rsize=tempjson["result"].size();
-		for ( size_t itt = 0; itt<rsize; itt++)
+		Json::ArrayIndex rsize=tempjson["result"].size();
+		for ( Json::ArrayIndex itt = 0; itt<rsize; itt++)
 		{
 			root["result"][ii]["idx"]=ii;
 			root["result"][ii]["Name"]=tempjson["result"][itt]["Name"];
