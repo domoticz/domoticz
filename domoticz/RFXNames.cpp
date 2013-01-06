@@ -742,10 +742,22 @@ bool GetLightCommand(
 	case pTypeLighting1:
 		if (switchtype==STYPE_Doorbell)
 		{
-			if ((switchcmd=="On")||(switchcmd=="Group On"))
+			if (dSubType==sTypeARC)
 			{
-				cmd=light1_sAllOn;
-				return true;
+				if ((switchcmd=="On")||(switchcmd=="Group On")||(switchcmd=="Chime"))
+				{
+					cmd=light1_sChime;
+					return true;
+				}
+			}
+			else
+			{
+				//not sure yet, maybe more devices need the above chime command
+				if ((switchcmd=="On")||(switchcmd=="Group On"))
+				{
+					cmd=light1_sAllOn;
+					return true;
+				}
 			}
 			//no other combinations for the door switch
 			return false;
