@@ -11,6 +11,8 @@ Version 1.0.6 (Januari xxth 2013)
 - Code now compiles also with Debian (Mac OS)
 - Lighting 1, ARC Doorbell is now send with a 'Chime' instead of AllOn
 - P1 Smart Meter, Gas value now only send/update when the value is changing (once every 1 a 2 hours)
+- P1 Smart Meter updates to shared clients now once every 60 seconds (reduces network traffic)
+- Random Timer implemented (OnTime timer with +/- xxx minutes offset)
 
 Version 1.0.5 (December 29th 2012)
 - Start of History document

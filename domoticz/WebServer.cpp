@@ -309,7 +309,10 @@ char * CWebServer::PostSettings()
 
 	std::string LightHistoryDays=m_pWebEm->FindValue("LightHistoryDays");
 	m_pMain->m_sql.UpdatePreferencesVar("LightHistoryDays",atoi(LightHistoryDays.c_str()));
-	
+
+	std::string sRandomTimerFrame=m_pWebEm->FindValue("RandomSpread");
+	m_pMain->m_sql.UpdatePreferencesVar("RandomTimerFrame",atoi(sRandomTimerFrame.c_str()));
+
 	std::string WebUserName=m_pWebEm->FindValue("WebUserName");
 	std::string WebPassword=m_pWebEm->FindValue("WebPassword");
 	std::string WebLocalNetworks=m_pWebEm->FindValue("WebLocalNetworks");
@@ -3467,6 +3470,10 @@ char * CWebServer::GetJSonPage()
 				else if (Key=="WebLocalNetworks")
 				{
 					root["WebLocalNetworks"]=sValue;
+				}
+				else if (Key=="RandomTimerFrame")
+				{
+					root["RandomTimerFrame"]=nValue;
 				}
 				else if (Key=="MeterDividerEnergy")
 				{

@@ -714,7 +714,7 @@ function RefreshUtilities()
 							status+=", Usage: " + item.Usage;
             }
             if (typeof item.CounterDeliv != 'undefined') {
-							if (item.CounterDeliv!="0") {
+							if (item.CounterDeliv!=0) {
 								status+='<br>Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
 								status+=", Actual: " + item.UsageDeliv;
 							}
@@ -800,7 +800,7 @@ function ShowUtilities()
 							status+=", Usage: " + item.Usage;
             }
             if (typeof item.CounterDeliv != 'undefined') {
-							if (item.CounterDeliv!="0") {
+							if (item.CounterDeliv!=0) {
 								status+='<br>Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
 								status+=", Actual: " + item.UsageDeliv;
 							}

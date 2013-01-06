@@ -9,6 +9,7 @@ CScheduler::CScheduler(void)
 	m_tSunSet=0;
 	m_pMain=NULL;
 	m_stoprequested=false;
+	srand((int)time(NULL));
 }
 
 CScheduler::~CScheduler(void)
@@ -152,11 +153,21 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 
 	unsigned long HourMinuteOffset=(pItem->startHour*3600)+(pItem->startMin*60);
 
+	int nRandomTimerFrame=15;
+	m_pMain->m_sql.GetPreferencesVar("RandomTimerFrame", nRandomTimerFrame);
+	int roffset=rand() % (nRandomTimerFrame*2)-nRandomTimerFrame;
+
 	if (pItem->timerType == TTYPE_ONTIME)
 	{
 		ltime->tm_hour=pItem->startHour;
 		ltime->tm_min=pItem->startMin;
 		rtime=mktime(ltime);
+	}
+	else if (pItem->timerType == TTYPE_ONTIMERANDOM)
+	{
+		ltime->tm_hour=pItem->startHour;
+		ltime->tm_min=pItem->startMin;
+		rtime=mktime(ltime)+(roffset*60);
 	}
 	else if (pItem->timerType == TTYPE_BEFORESUNSET)
 	{

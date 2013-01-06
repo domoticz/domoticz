@@ -40,6 +40,7 @@ public:
 private:
 	static const int readBufferSize=1028;
 	unsigned long m_lastgasusage;
+	time_t m_lastSharedSend;
 
 	unsigned char m_linecount;
 	unsigned char m_exclmarkfound;

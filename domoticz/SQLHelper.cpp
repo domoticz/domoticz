@@ -284,6 +284,10 @@ CSQLHelper::CSQLHelper(void)
 	{
 		UpdatePreferencesVar("MeterDividerWater", 100);
 	}
+	if (!GetPreferencesVar("RandomTimerFrame", nValue))
+	{
+		UpdatePreferencesVar("RandomTimerFrame", 15);
+	}
 }
 
 CSQLHelper::~CSQLHelper(void)

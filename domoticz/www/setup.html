@@ -134,6 +134,15 @@
 	</tr>
 	</table>
 	</div>
+	<div class="6u">
+	<h2>Random Timer:</h2><br>
+	<table class="display" id="randomtable" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td align="right" style="width:60px"><label>Spread: </label></td>
+		<td><input type="input" id="RandomSpread" name="RandomSpread" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (Minutes +/-)</td>
+	</tr>
+	</table>
+	</div>
 </div>
 <br>
 <a class="btnstyle3" href="javascript:StoreSettings()">Save</a>
@@ -237,10 +246,13 @@ function ShowSettings()
         $("#rfxmetertable #EnergyDivider").val(data.EnergyDivider);
       }
       if (typeof data.GasDivider != 'undefined') {
-        $("#rfxmetertable #GasDivider ").val(data.GasDivider );
+        $("#rfxmetertable #GasDivider").val(data.GasDivider );
       }
       if (typeof data.WaterDivider != 'undefined') {
-        $("#rfxmetertable #WaterDivider ").val(data.WaterDivider );
+        $("#rfxmetertable #WaterDivider").val(data.WaterDivider );
+      }
+      if (typeof data.RandomTimerFrame != 'undefined') {
+        $("#randomtable #RandomSpread").val(data.RandomTimerFrame );
       }
       
       
