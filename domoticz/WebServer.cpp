@@ -1092,9 +1092,7 @@ char * CWebServer::GetJSonPage()
 		}
 		else if (datestr.size()==7)
 		{
-			if (
-				(datestr[2]=='-')
-				)
+			if (datestr[2]=='-')
 			{
 				day=1;
 				month=atoi(datestr.substr(0,2).c_str());

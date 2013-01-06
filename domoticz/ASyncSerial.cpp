@@ -312,20 +312,20 @@ AsyncSerial::AsyncSerial(): pimpl(new AsyncSerialImpl)
 }
 
 AsyncSerial::AsyncSerial(const std::string& devname, unsigned int baud_rate,
-        asio::serial_port_base::parity opt_parity,
-        asio::serial_port_base::character_size opt_csize,
-        asio::serial_port_base::flow_control opt_flow,
-        asio::serial_port_base::stop_bits opt_stop)
+        boost::asio::serial_port_base::parity opt_parity,
+        boost::asio::serial_port_base::character_size opt_csize,
+        boost::asio::serial_port_base::flow_control opt_flow,
+        boost::asio::serial_port_base::stop_bits opt_stop)
         : pimpl(new AsyncSerialImpl)
 {
     open(devname,baud_rate,opt_parity,opt_csize,opt_flow,opt_stop);
 }
 
 void AsyncSerial::open(const std::string& devname, unsigned int baud_rate,
-        asio::serial_port_base::parity opt_parity,
-        asio::serial_port_base::character_size opt_csize,
-        asio::serial_port_base::flow_control opt_flow,
-        asio::serial_port_base::stop_bits opt_stop)
+        boost::asio::serial_port_base::parity opt_parity,
+        boost::asio::serial_port_base::character_size opt_csize,
+        boost::asio::serial_port_base::flow_control opt_flow,
+        boost::asio::serial_port_base::stop_bits opt_stop)
 {
     if(isOpen()) close();
 
