@@ -38,6 +38,16 @@ Raspberry Pi (Arch Linux):
 sudo pacman -S gcc cmake subversion boost sqlite make
 
 ------------------------------------------------------------------------------------------------
+Debian (Mac OS)
+Mac OS Installation:
+Prerequistics:
+- XCode with Command Line Tools
+- macports
+
+sudo port install cmake
+sudo port install boost
+
+------------------------------------------------------------------------------------------------
 Synology: (Initial setup time is 30 minutes)
 - Make sure the device is bootstrapped, then:
 ipkg install gcc
