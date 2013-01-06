@@ -408,7 +408,7 @@ void AsyncSerial::open(const std::string& devname, unsigned int baud_rate,
     setErrorStatus(false);//If we get here, no error
     pimpl->open=true; //Port is now open
 
-    thread t(bind(&AsyncSerial::doRead, this));
+    boost::thread t(boost::bind(&AsyncSerial::doRead, this));
     pimpl->backgroundThread.swap(t);
 }
 
@@ -419,7 +419,7 @@ bool AsyncSerial::isOpen() const
 
 bool AsyncSerial::errorStatus() const
 {
-    lock_guard<mutex> l(pimpl->errorMutex);
+    boost::lock_guard<boost::mutex> l(pimpl->errorMutex);
     return pimpl->error;
 }
 
@@ -509,12 +509,12 @@ void AsyncSerial::doClose()
 
 void AsyncSerial::setErrorStatus(bool e)
 {
-    lock_guard<mutex> l(pimpl->errorMutex);
+    boost::lock_guard<boost::mutex> l(pimpl->errorMutex);
     pimpl->error=e;
 }
 
 void AsyncSerial::setReadCallback(const
-        function<void (const char*, size_t)>& callback)
+        boost::function<void (const char*, size_t)>& callback)
 {
     pimpl->callback=callback;
 }
