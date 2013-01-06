@@ -71,6 +71,7 @@ void P1MeterBase::Init()
 	m_linecount=0;
 	m_exclmarkfound=0;
 	m_bufferpos=0;
+	m_lastgasusage=0;
 
 	memset(&m_buffer,0,sizeof(m_buffer));
 
@@ -195,8 +196,13 @@ void P1MeterBase::MatchLine()
 		if (m_exclmarkfound) {
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1power);//decode message
 			m_sharedserver.SendToAll((const char*)&m_p1power,sizeof(m_p1power));
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas);//decode message
-			m_sharedserver.SendToAll((const char*)&m_p1gas,sizeof(m_p1gas));
+			if (m_p1gas.gasusage!=m_lastgasusage)
+			{
+				//only update gas when there is a new value (once every 1 hour, some devices every 2 hours)
+				m_lastgasusage=m_p1gas.gasusage;
+				sDecodeRXMessage(this, (const unsigned char *)&m_p1gas);//decode message
+				m_sharedserver.SendToAll((const char*)&m_p1gas,sizeof(m_p1gas));
+			}
 			m_exclmarkfound=0;
 		}
 		return;

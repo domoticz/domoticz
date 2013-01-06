@@ -39,6 +39,7 @@ public:
 	P1Gas	m_p1gas;
 private:
 	static const int readBufferSize=1028;
+	unsigned long m_lastgasusage;
 
 	unsigned char m_linecount;
 	unsigned char m_exclmarkfound;
