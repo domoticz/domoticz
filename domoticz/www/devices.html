@@ -47,7 +47,8 @@
 		<br>
 		<table class="display" id="devices" border="0" cellpadding="0" cellspacing="0" width="100%">
 				<thead>
-						<tr>
+						<tr valign="middle">
+								<th width="40"><img src="images/delete.png" title="Delete selected device(s)" onclick="DeleteMultipleDevices()"/><img src="images/switch.png" title="Invert selection" onclick="InvertCheck()"/</th>	
 								<th width="20"></th>
 								<th width="100" align="left">Hardware</th>
 								<th width="70" align="left">ID</th>
@@ -59,7 +60,7 @@
 								<th width="30"><img src="images/air_signal.png"></img></th>
 								<th width="30"><img src="images/battery.png"></img></th>
 								<th width="70"></th>
-								<th width="140" align="left">Last Seen</th>
+								<th width="100" align="left">Last Seen</th>
 						</tr>
 				</thead>
 		</table>
@@ -104,7 +105,7 @@ function RemoveDevice(idx)
 
 function DeleteDevice(idx)
 {
-  if (confirm("Are you sure to delete this Device?")==false) {
+  if (confirm("Are you sure to delete this Device?"+idx)==false) {
     return;
   }
     $.ajax({
@@ -115,6 +116,32 @@ function DeleteDevice(idx)
           ShowDevices();
        }
     });
+    
+}
+function InvertCheck()
+{
+	$('#devices input:checkbox').each(function(){
+		$(this).attr('checked', !$(this).attr('checked'));
+	});
+}
+function DeleteMultipleDevices()
+{
+	if (confirm("Are you sure you want to delete the selected devices?")==false) {
+		return;
+	}
+    var delCount = 0;
+	$('#devices input:checkbox:checked').each(function(){
+		$.ajax({
+			url: "json.htm?type=deletedevice&idx=" + $(this).val(),
+			async: false, 
+			dataType: 'json',
+			success: function(data) {
+				delCount++;
+			}
+		});
+	});
+	alert(delCount+" deviced deleted.");
+	ShowDevices();
     
 }
 
@@ -186,7 +213,7 @@ function ShowDevices(filter)
 			"sRowSelect": "single"
 		},
 		"aoColumnDefs": [
-			{ "bSortable": false, "aTargets": [ 0,7,10 ] }
+			{ "bSortable": false, "aTargets": [ 0,1,8,11 ] }
 		],
 		"aaSorting": [[ 11, "desc" ]],
 		"bSortClasses": false,
@@ -210,6 +237,10 @@ function ShowDevices(filter)
       if (typeof data.result != 'undefined') {
         $.each(data.result, function(i,item){
           var itemSubIcons="";
+		  var itemChecker = "";
+          if (ifilter = 'false') {
+			var itemChecker = '<input type="checkbox" name="Check-' + item.ID + ' id="Check-' + item.ID + '" value="'+item.idx+'" />';
+          }
           var TypeImg=item.TypeImg;
           var itemImage='<img src="images/' + TypeImg + '.png">';
           if (TypeImg.indexOf("lightbulb")==0) {
@@ -253,7 +284,7 @@ function ShowDevices(filter)
           if (item.Type=="Lighting 1") {
 						ID = String.fromCharCode(item.ID);
           }
-          itemSubIcons+='&nbsp;<img src="images/delete.png" title="Delete Device" onclick="DeleteDevice(' + item.idx +')">';
+          //itemSubIcons+='&nbsp;<img src="images/delete.png" title="Delete Device" onclick="DeleteDevice(' + item.idx +')">';
           var BatteryLevel=item.BatteryLevel;
           if (BatteryLevel=="255") {
 						BatteryLevel="-";
@@ -262,6 +293,7 @@ function ShowDevices(filter)
 						BatteryLevel="Low";
           }
           var addId = oTable.fnAddData([
+					  itemChecker,
                       itemImage,
                       item.HardwareName,
                       ID,
