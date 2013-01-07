@@ -104,6 +104,7 @@ public:
 	std::string m_LastSwitchID;	//for learning command
 	unsigned long long m_LastSwitchRowID;
 private:
+	boost::mutex m_sqlQueryMutex;
 	CURLEncode m_urlencoder;
 	sqlite3 *m_dbase;
 

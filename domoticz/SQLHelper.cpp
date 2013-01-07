@@ -301,6 +301,8 @@ CSQLHelper::~CSQLHelper(void)
 
 std::vector<std::vector<std::string> > CSQLHelper::query(const std::string szQuery)
 {
+	boost::lock_guard<boost::mutex> l(m_sqlQueryMutex);
+	
 	sqlite3_stmt *statement;
 	std::vector<std::vector<std::string> > results;
 

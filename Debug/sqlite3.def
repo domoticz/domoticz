@@ -83,6 +83,7 @@ sqlite3_enable_shared_cache
 sqlite3_errcode
 sqlite3_errmsg
 sqlite3_errmsg16
+sqlite3_errstr
 sqlite3_exec
 sqlite3_expired
 sqlite3_extended_errcode
