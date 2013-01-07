@@ -110,7 +110,7 @@ int main(int argc, char**argv)
 		_mainworker.SetVerboseLevel((eVerboseLevel)Level);
 	}
 
-	std::cout << "Webserver listning on port: " << _mainworker.GetWebserverPort() << std::endl;
+	std::cout << "Webserver listening on port: " << _mainworker.GetWebserverPort() << std::endl;
 	if (!_mainworker.Start())
 		return 0;
 
