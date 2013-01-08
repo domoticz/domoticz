@@ -48,8 +48,7 @@
 		<table class="display" id="devices" border="0" cellpadding="0" cellspacing="0" width="100%">
 				<thead>
 						<tr valign="middle">
-								<th width="40"><img src="images/delete.png" title="Delete selected device(s)" onclick="DeleteMultipleDevices()"/><img src="images/switch.png" title="Invert selection" onclick="InvertCheck()"/></th>	
-								<th width="20"></th>
+								<th width="60"><img src="images/switch.png" title="Invert selection" onclick="InvertCheck()"/>&nbsp;<img src="images/delete.png" title="Delete selected device(s)" onclick="DeleteMultipleDevices()"/></th>	
 								<th width="100" align="left">Hardware</th>
 								<th width="70" align="left">ID</th>
 								<th width="40" align="left">Unit</th>
@@ -59,8 +58,8 @@
 								<th>Data</th>
 								<th width="30"><img src="images/air_signal.png"></img></th>
 								<th width="30"><img src="images/battery.png"></img></th>
-								<th width="70"></th>
-								<th width="100" align="left">Last Seen</th>
+								<th width="50"></th>
+								<th width="140" align="left">Last Seen</th>
 						</tr>
 				</thead>
 		</table>
@@ -213,7 +212,7 @@ function ShowDevices(filter)
 			"sRowSelect": "single"
 		},
 		"aoColumnDefs": [
-			{ "bSortable": false, "aTargets": [ 0,1,8,11 ] }
+			{ "bSortable": false, "aTargets": [ 0,10 ] }
 		],
 		"aaSorting": [[ 11, "desc" ]],
 		"bSortClasses": false,
@@ -293,8 +292,7 @@ function ShowDevices(filter)
 						BatteryLevel="Low";
           }
           var addId = oTable.fnAddData([
-					  itemChecker,
-                      itemImage,
+											itemChecker + "&nbsp;&nbsp;" + itemImage,
                       item.HardwareName,
                       ID,
                       item.Unit,

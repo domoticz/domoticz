@@ -767,6 +767,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 						root["result"][ii]["Rain"]=szTmp;
 						//if ((dSubType==sTypeRAIN1)||(dSubType==sTypeRAIN2))
 						root["result"][ii]["RainRate"]=rate;
+						root["result"][ii]["Data"]=sValue;
 					}
 				}
 			}
@@ -941,6 +942,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					root["result"][ii]["Usage"]=szTmp;
 					sprintf(szTmp,"%llu Watt",delivcurrent);
 					root["result"][ii]["UsageDeliv"]=szTmp;
+					root["result"][ii]["Data"]=sValue;
 				}
 			}
 			else if (dType == pTypeP1Gas)
@@ -992,6 +994,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					musage=float(total_real_gas)/GasDivider;
 					sprintf(szTmp,"%.03f m3",musage);
 					root["result"][ii]["CounterToday"]=szTmp;
+					root["result"][ii]["Data"]=sValue;
 				}
 			}
 			else if (dType == pTypeCURRENT)
