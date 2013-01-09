@@ -306,8 +306,9 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string szQue
 {
 	if (!m_dbase)
 	{
-		std::cout << "Datebase not open!!...Check your user rights!.." << std::endl;
-		return;
+		std::cout << "Database not open!!...Check your user rights!.." << std::endl;
+		std::vector<std::vector<std::string> > results;
+		return results;
 	}
 	boost::lock_guard<boost::mutex> l(m_sqlQueryMutex);
 	
