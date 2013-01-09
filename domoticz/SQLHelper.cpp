@@ -9,6 +9,9 @@
 #include "WindowsHelper.h"
 #include "P1MeterBase.h"
 
+//Rob, to implement PushOver notifications
+// Domoticz Application API key = 2n0VOY8xplTU7kZq9zeJn980bmMWms
+
 #define DB_VERSION 2
 
 const char *sqlCreateDeviceStatus =
@@ -301,6 +304,11 @@ CSQLHelper::~CSQLHelper(void)
 
 std::vector<std::vector<std::string> > CSQLHelper::query(const std::string szQuery)
 {
+	if (!m_dbase)
+	{
+		std::cout << "Datebase not open!!...Check your user rights!.." << std::endl;
+		return;
+	}
 	boost::lock_guard<boost::mutex> l(m_sqlQueryMutex);
 	
 	sqlite3_stmt *statement;
