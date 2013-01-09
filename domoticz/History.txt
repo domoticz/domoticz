@@ -1,4 +1,7 @@
-Version 1.0.6 (Januari xxth 2013)
+Version 1.0.7 (Januari xxth 2013)
+- replaced all localtime function with localtime_r
+
+Version 1.0.6 (Januari 9th 2013)
 - {SunRise/Set is now calculated on startup and 01:00am}
 - RFXCOM Lan will now keep retrying to connect when it does not succeed on the first time
 - P1 Smart Meter Serial hardware implemented

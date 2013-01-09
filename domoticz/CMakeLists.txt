@@ -104,6 +104,7 @@ WebServer.cpp
 DomoticzHardware.cpp
 Scheduler.cpp
 ASyncSerial.cpp
+localtime_r.cpp
 RFXComSerial.cpp
 RFXComTCP.cpp
 DomoticzTCP.cpp

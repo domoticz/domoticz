@@ -178,6 +178,9 @@
     <ClInclude Include="P1MeterBase.h">
       <Filter>Devices\P1Smart Meter</Filter>
     </ClInclude>
+    <ClInclude Include="localtime_r.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -284,6 +287,9 @@
     </ClCompile>
     <ClCompile Include="P1MeterBase.cpp">
       <Filter>Devices\P1Smart Meter</Filter>
+    </ClCompile>
+    <ClCompile Include="localtime_r.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

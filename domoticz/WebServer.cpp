@@ -11,6 +11,7 @@
 #include "appversion.h"
 #include "P1MeterBase.h"
 #include "UrlEncode.h"
+#include "localtime_r.h"
 
 namespace http {
 	namespace server {
@@ -736,16 +737,17 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				{
 					//get lowest value of today, and max rate
 					time_t now = time(NULL);
-					struct tm* tm1 = localtime(&now);
+					struct tm tm1;
+					localtime_r(&now,&tm1);
 
 					struct tm ltime;
-					ltime.tm_isdst=tm1->tm_isdst;
+					ltime.tm_isdst=tm1.tm_isdst;
 					ltime.tm_hour=0;
 					ltime.tm_min=0;
 					ltime.tm_sec=0;
-					ltime.tm_year=tm1->tm_year;
-					ltime.tm_mon=tm1->tm_mon;
-					ltime.tm_mday=tm1->tm_mday;
+					ltime.tm_year=tm1.tm_year;
+					ltime.tm_mon=tm1.tm_mon;
+					ltime.tm_mday=tm1.tm_mday;
 
 					char szDate[40];
 					sprintf(szDate,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
@@ -792,16 +794,17 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 
 				//get lowest value of today
 				time_t now = time(NULL);
-				struct tm* tm1 = localtime(&now);
+				struct tm tm1;
+				localtime_r(&now,&tm1);
 
 				struct tm ltime;
-				ltime.tm_isdst=tm1->tm_isdst;
+				ltime.tm_isdst=tm1.tm_isdst;
 				ltime.tm_hour=0;
 				ltime.tm_min=0;
 				ltime.tm_sec=0;
-				ltime.tm_year=tm1->tm_year;
-				ltime.tm_mon=tm1->tm_mon;
-				ltime.tm_mday=tm1->tm_mday;
+				ltime.tm_year=tm1.tm_year;
+				ltime.tm_mon=tm1.tm_mon;
+				ltime.tm_mday=tm1.tm_mday;
 
 				char szDate[40];
 				sprintf(szDate,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
@@ -862,16 +865,17 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 
 				//get lowest value of today
 				time_t now = time(NULL);
-				struct tm* tm1 = localtime(&now);
+				struct tm tm1;
+				localtime_r(&now,&tm1);
 
 				struct tm ltime;
-				ltime.tm_isdst=tm1->tm_isdst;
+				ltime.tm_isdst=tm1.tm_isdst;
 				ltime.tm_hour=0;
 				ltime.tm_min=0;
 				ltime.tm_sec=0;
-				ltime.tm_year=tm1->tm_year;
-				ltime.tm_mon=tm1->tm_mon;
-				ltime.tm_mday=tm1->tm_mday;
+				ltime.tm_year=tm1.tm_year;
+				ltime.tm_mon=tm1.tm_mon;
+				ltime.tm_mday=tm1.tm_mday;
 
 				char szDate[40];
 				sprintf(szDate,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
@@ -950,16 +954,17 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				float GasDivider=1000.0f;
 				//get lowest value of today
 				time_t now = time(NULL);
-				struct tm* tm1 = localtime(&now);
+				struct tm tm1;
+				localtime_r(&now,&tm1);
 
 				struct tm ltime;
-				ltime.tm_isdst=tm1->tm_isdst;
+				ltime.tm_isdst=tm1.tm_isdst;
 				ltime.tm_hour=0;
 				ltime.tm_min=0;
 				ltime.tm_sec=0;
-				ltime.tm_year=tm1->tm_year;
-				ltime.tm_mon=tm1->tm_mon;
-				ltime.tm_mday=tm1->tm_mday;
+				ltime.tm_year=tm1.tm_year;
+				ltime.tm_mon=tm1.tm_mon;
+				ltime.tm_mday=tm1.tm_mday;
 
 				char szDate[40];
 				sprintf(szDate,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
@@ -1448,7 +1453,8 @@ char * CWebServer::GetJSonPage()
 			goto exitjson;
 
 		time_t now = time(NULL);
-		struct tm* tm1 = localtime(&now);
+		struct tm tm1;
+		localtime_r(&now,&tm1);
 
 		szQuery.clear();
 		szQuery.str("");
@@ -1617,13 +1623,13 @@ char * CWebServer::GetJSonPage()
 				char szDateEnd[40];
 
 				struct tm ltime;
-				ltime.tm_isdst=tm1->tm_isdst;
+				ltime.tm_isdst=tm1.tm_isdst;
 				ltime.tm_hour=0;
 				ltime.tm_min=0;
 				ltime.tm_sec=0;
-				ltime.tm_year=tm1->tm_year;
-				ltime.tm_mon=tm1->tm_mon;
-				ltime.tm_mday=tm1->tm_mday;
+				ltime.tm_year=tm1.tm_year;
+				ltime.tm_mon=tm1.tm_mon;
+				ltime.tm_mday=tm1.tm_mday;
 
 				sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
@@ -1631,8 +1637,10 @@ char * CWebServer::GetJSonPage()
 
 				ltime.tm_mday -= 7;
 				time_t later = mktime(&ltime);
-				struct tm* tm2 = localtime(&later);
-				sprintf(szDateStart,"%04d-%02d-%02d",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday);
+				struct tm tm2;
+				localtime_r(&later,&tm2);
+
+				sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 				szQuery.clear();
 				szQuery.str("");
@@ -1771,13 +1779,13 @@ char * CWebServer::GetJSonPage()
 				char szDateEnd[40];
 
 				struct tm ltime;
-				ltime.tm_isdst=tm1->tm_isdst;
+				ltime.tm_isdst=tm1.tm_isdst;
 				ltime.tm_hour=0;
 				ltime.tm_min=0;
 				ltime.tm_sec=0;
-				ltime.tm_year=tm1->tm_year;
-				ltime.tm_mon=tm1->tm_mon;
-				ltime.tm_mday=tm1->tm_mday;
+				ltime.tm_year=tm1.tm_year;
+				ltime.tm_mon=tm1.tm_mon;
+				ltime.tm_mday=tm1.tm_mday;
 
 				sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
@@ -1785,8 +1793,9 @@ char * CWebServer::GetJSonPage()
 
 				ltime.tm_mday -= 7;
 				time_t later = mktime(&ltime);
-				struct tm* tm2 = localtime(&later);
-				sprintf(szDateStart,"%04d-%02d-%02d",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday);
+				struct tm tm2;
+				localtime_r(&later,&tm2);
+				sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 				szQuery.clear();
 				szQuery.str("");
@@ -1946,13 +1955,13 @@ char * CWebServer::GetJSonPage()
 			char szDateEnd[40];
 
 			struct tm ltime;
-			ltime.tm_isdst=tm1->tm_isdst;
+			ltime.tm_isdst=tm1.tm_isdst;
 			ltime.tm_hour=0;
 			ltime.tm_min=0;
 			ltime.tm_sec=0;
-			ltime.tm_year=tm1->tm_year;
-			ltime.tm_mon=tm1->tm_mon;
-			ltime.tm_mday=tm1->tm_mday;
+			ltime.tm_year=tm1.tm_year;
+			ltime.tm_mon=tm1.tm_mon;
+			ltime.tm_mday=tm1.tm_mday;
 
 			sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
@@ -1968,9 +1977,10 @@ char * CWebServer::GetJSonPage()
 			}
 
 			time_t later = mktime(&ltime);
-			struct tm* tm2 = localtime(&later);
+			struct tm tm2;
+			localtime_r(&later,&tm2);
 
-			sprintf(szDateStart,"%04d-%02d-%02d",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday);
+			sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 			if (sensor=="temp") {
 				root["status"]="OK";
 				root["title"]="Graph " + sensor + " " + srange;

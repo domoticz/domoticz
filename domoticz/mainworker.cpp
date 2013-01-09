@@ -16,6 +16,8 @@
 
 #include "SunRiseSet.h"
 
+#include "localtime_r.h"
+
 #ifdef _DEBUG
 	//#define DEBUG_RECEIVE
 #endif
@@ -37,10 +39,10 @@ MainWorker::MainWorker()
 	m_bIgnoreUsernamePassword=false;
 
 	time_t atime=time(NULL);
-	tm *ltime;
-	ltime=localtime(&atime);
-	m_ScheduleLastMinute=ltime->tm_min;
-	m_ScheduleLastHour=ltime->tm_hour;
+	struct tm ltime;
+	localtime_r(&atime,&ltime);
+	m_ScheduleLastMinute=ltime.tm_min;
+	m_ScheduleLastHour=ltime.tm_hour;
 }
 
 MainWorker::~MainWorker()
@@ -188,11 +190,12 @@ bool MainWorker::GetSunSettings()
 	unsigned char *pData=NULL;
 	unsigned long ulLength=0;
 	time_t atime=time(NULL);
-	struct tm *ltime=localtime(&atime);
+	struct tm ltime;
+	localtime_r(&atime,&ltime);
 
-	int year=ltime->tm_year+1900;
-	int month=ltime->tm_mon+1;
-	int day=ltime->tm_mday;
+	int year=ltime.tm_year+1900;
+	int month=ltime.tm_mon+1;
+	int day=ltime.tm_mday;
 
 	double dLatitude=boost::lexical_cast<double>(Latitude);
 	double dLongitude=boost::lexical_cast<double>(Longitude);
@@ -216,7 +219,7 @@ bool MainWorker::GetSunSettings()
 	char szURL[200];
 	sprintf(szURL,"http://www.earthtools.org/sun/%s/%s/%d/%d/99/0",
 		Latitude.c_str(),Longitude.c_str(),
-		ltime->tm_mday,ltime->tm_mon+1);
+		ltime.tm_mday,ltime.tm_mon+1);
 	I_HTTPRequest * r = NewHTTPRequest( szURL );
 	if (r!=NULL)
 	{
@@ -471,29 +474,25 @@ void MainWorker::Do_Work()
 		}
 
 		time_t atime=time(NULL);
-		tm *ltime;
-		ltime=localtime(&atime);
-		if (!ltime)
-			continue;
-		int minute=ltime->tm_min;	//we need to backup this, as the *tm is only temporary
-		int hour=ltime->tm_hour;	//if other functions uses it, it is pointing to that!!!
-
-		if (minute!=m_ScheduleLastMinute)
+		struct tm ltime;
+		localtime_r(&atime,&ltime);
+		
+		if (ltime.tm_min!=m_ScheduleLastMinute)
 		{
-			m_ScheduleLastMinute=minute;
+			m_ScheduleLastMinute=ltime.tm_min;
 			//check for 5 minute schedule
-			if (minute%5==0)
+			if (ltime.tm_min%5==0)
 			{
 				m_sql.Schedule5Minute();
 			}
 		}
-		if (hour!=m_ScheduleLastHour)
+		if (ltime.tm_hour!=m_ScheduleLastHour)
 		{
-			m_ScheduleLastHour=hour;
+			m_ScheduleLastHour=ltime.tm_hour;
 			GetSunSettings();
 
 			//check for daily schedule
-			if (hour==0)
+			if (ltime.tm_hour==0)
 			{
 				m_sql.ScheduleDay();
 			}

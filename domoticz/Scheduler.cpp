@@ -2,6 +2,7 @@
 #include <iostream>
 #include "Scheduler.h"
 #include "mainworker.h"
+#include "localtime_r.h"
 
 CScheduler::CScheduler(void)
 {
@@ -91,19 +92,17 @@ void CScheduler::SetSunRiseSetTimers(std::string sSunRise, std::string sSunSet)
 
 		time_t temptime;
 		time_t atime=time(NULL);
-		tm *ltime;
-		ltime=localtime(&atime);
-		if (!ltime)
-			return;
+		struct tm ltime;
+		localtime_r(&atime,&ltime);
 
 		hour=atoi(sSunRise.substr(0,2).c_str());
 		min=atoi(sSunRise.substr(3,2).c_str());
 		sec=atoi(sSunRise.substr(6,2).c_str());
 
-		ltime->tm_hour = hour;
-		ltime->tm_min = min;
-		ltime->tm_sec = sec;
-		temptime = mktime(ltime);
+		ltime.tm_hour = hour;
+		ltime.tm_min = min;
+		ltime.tm_sec = sec;
+		temptime = mktime(&ltime);
 		if (temptime<atime)
 			temptime+=(24*3600);
 		if ((m_tSunRise!=temptime)&&(temptime!=0))
@@ -118,10 +117,10 @@ void CScheduler::SetSunRiseSetTimers(std::string sSunRise, std::string sSunSet)
 		min=atoi(sSunSet.substr(3,2).c_str());
 		sec=atoi(sSunSet.substr(6,2).c_str());
 
-		ltime->tm_hour = hour;
-		ltime->tm_min = min;
-		ltime->tm_sec = sec;
-		temptime = mktime(ltime);
+		ltime.tm_hour = hour;
+		ltime.tm_min = min;
+		ltime.tm_sec = sec;
+		temptime = mktime(&ltime);
 		if (temptime<atime)
 			temptime+=(24*3600);
 		if ((m_tSunSet!=temptime)&&(temptime!=0))
@@ -140,9 +139,9 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 {
 	time_t atime=time(NULL);
 	time_t rtime=atime;
-	tm *ltime;
-	ltime=localtime(&atime);
-	ltime->tm_sec=0;
+	struct tm ltime;
+	localtime_r(&atime,&ltime);
+	ltime.tm_sec=0;
 
 	time_t sunset=m_tSunSet;
 	if (sunset<atime)
@@ -159,15 +158,15 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 
 	if (pItem->timerType == TTYPE_ONTIME)
 	{
-		ltime->tm_hour=pItem->startHour;
-		ltime->tm_min=pItem->startMin;
-		rtime=mktime(ltime);
+		ltime.tm_hour=pItem->startHour;
+		ltime.tm_min=pItem->startMin;
+		rtime=mktime(&ltime);
 	}
 	else if (pItem->timerType == TTYPE_ONTIMERANDOM)
 	{
-		ltime->tm_hour=pItem->startHour;
-		ltime->tm_min=pItem->startMin;
-		rtime=mktime(ltime)+(roffset*60);
+		ltime.tm_hour=pItem->startHour;
+		ltime.tm_min=pItem->startMin;
+		rtime=mktime(&ltime)+(roffset*60);
 	}
 	else if (pItem->timerType == TTYPE_BEFORESUNSET)
 	{
@@ -221,14 +220,14 @@ void CScheduler::CheckSchedules()
 	boost::lock_guard<boost::mutex> l(m_mutex);
 
 	time_t atime=time(NULL);
+	struct tm ltime;
+	localtime_r(&atime,&ltime);
 
 	std::vector<tScheduleItem>::iterator itt;
 	for (itt=m_scheduleitems.begin(); itt!=m_scheduleitems.end(); ++itt)
 	{
 		if (atime>itt->startTime)
 		{
-			struct tm *ltime;
-			ltime=localtime(&itt->startTime);
 
 			//check if we are on a valid day
 			bool bOkToFire=false;
@@ -240,36 +239,36 @@ void CScheduler::CheckSchedules()
 			else if (itt->Days & 0x100)
 			{
 				//weekdays
-				if ((ltime->tm_wday>0)&&(ltime->tm_wday<6))
+				if ((ltime.tm_wday>0)&&(ltime.tm_wday<6))
 					bOkToFire=true;
 			}
 			else if (itt->Days & 0x200)
 			{
 				//weekends
-				if ((ltime->tm_wday==0)||(ltime->tm_wday==6))
+				if ((ltime.tm_wday==0)||(ltime.tm_wday==6))
 					bOkToFire=true;
 			}
 			else
 			{
 				//custom days
-				if ((itt->Days & 0x01)&&(ltime->tm_wday==1))
+				if ((itt->Days & 0x01)&&(ltime.tm_wday==1))
 					bOkToFire=true;//Monday
-				if ((itt->Days & 0x02)&&(ltime->tm_wday==2))
+				if ((itt->Days & 0x02)&&(ltime.tm_wday==2))
 					bOkToFire=true;//Tuesday
-				if ((itt->Days & 0x04)&&(ltime->tm_wday==3))
+				if ((itt->Days & 0x04)&&(ltime.tm_wday==3))
 					bOkToFire=true;//Wednesday
-				if ((itt->Days & 0x08)&&(ltime->tm_wday==4))
+				if ((itt->Days & 0x08)&&(ltime.tm_wday==4))
 					bOkToFire=true;//Thursday
-				if ((itt->Days & 0x10)&&(ltime->tm_wday==5))
+				if ((itt->Days & 0x10)&&(ltime.tm_wday==5))
 					bOkToFire=true;//Friday
-				if ((itt->Days & 0x20)&&(ltime->tm_wday==6))
+				if ((itt->Days & 0x20)&&(ltime.tm_wday==6))
 					bOkToFire=true;//Saturday
-				if ((itt->Days & 0x40)&&(ltime->tm_wday==0))
+				if ((itt->Days & 0x40)&&(ltime.tm_wday==0))
 					bOkToFire=true;//Sunday
 			}
 			if (bOkToFire)
 			{
-				std::cout << "Schedule item started! DevID: " << itt->DevID << ", Time: " << asctime(ltime) << std::endl;
+				std::cout << "Schedule item started! DevID: " << itt->DevID << ", Time: " << asctime(&ltime) << std::endl;
 				std::string switchcmd="";
 				if (itt->timerCmd == TCMD_ON)
 					switchcmd="On";
@@ -283,7 +282,7 @@ void CScheduler::CheckSchedules()
 				{
 					if (!m_pMain->SwitchLight(itt->DevID,switchcmd,itt->Level))
 					{
-						std::cerr << "Error sending switch command, DevID: " << itt->DevID << ", Time: " << asctime(ltime) << std::endl;
+						std::cerr << "Error sending switch command, DevID: " << itt->DevID << ", Time: " << asctime(&ltime) << std::endl;
 					}
 				}
 				if (!AdjustScheduleItem(&*itt,true))

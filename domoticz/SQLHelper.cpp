@@ -8,6 +8,7 @@
 #include "mynetwork.h"
 #include "WindowsHelper.h"
 #include "P1MeterBase.h"
+#include "localtime_r.h"
 
 //Rob, to implement PushOver notifications
 // Domoticz Application API key = 2n0VOY8xplTU7kZq9zeJn980bmMWms
@@ -306,6 +307,8 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("RandomTimerFrame", 15);
 	}
+
+	return true;
 }
 
 void CSQLHelper::SetDatabaseName(const std::string DBName)
@@ -406,7 +409,8 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigne
 	std::string idx=result[0][0];
 
 	time_t now = time(0);
-	struct tm *ltime=localtime(&now);
+	struct tm ltime;
+	localtime_r(&now,&ltime);
 
 	//Check if this switch was a Sub/Slave device for other devices, if so adjust the state of those other devices
 	sprintf(szTmp,"SELECT ParentID FROM LightSubDevices WHERE (DeviceRowID=='%s') AND (DeviceRowID!=ParentID)",
@@ -424,7 +428,7 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigne
 				"UPDATE DeviceStatus SET nValue=%d, sValue='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == '%s')",
 				nValue,
 				sValue,
-				ltime->tm_year+1900,ltime->tm_mon+1, ltime->tm_mday, ltime->tm_hour, ltime->tm_min, ltime->tm_sec,
+				ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 				sd[0].c_str()
 				);
 			query(szTmp);
@@ -472,7 +476,7 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigne
 						"UPDATE DeviceStatus SET nValue=%d, sValue='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == '%s')",
 						newnValue,
 						"",
-						ltime->tm_year+1900,ltime->tm_mon+1, ltime->tm_mday, ltime->tm_hour, ltime->tm_min, ltime->tm_sec,
+						ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 						sd[0].c_str()
 						);
 					query(szTmp);
@@ -525,7 +529,7 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigne
 				"UPDATE DeviceStatus SET nValue=%d, sValue='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == '%s')",
 				newnValue,
 				"",
-				ltime->tm_year+1900,ltime->tm_mon+1, ltime->tm_mday, ltime->tm_hour, ltime->tm_min, ltime->tm_sec,
+				ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 				sd[0].c_str()
 				);
 			query(szTmp);
@@ -575,14 +579,15 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 		s_str >> ulID;
 
 		time_t now = time(0);
-		struct tm *ltime=localtime(&now);
+		struct tm ltime;
+		localtime_r(&now,&ltime);
 
 		sprintf(szTmp,
 			"UPDATE DeviceStatus SET SignalLevel=%d, BatteryLevel=%d, nValue=%d, sValue='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' "
 			"WHERE (ID = %llu)",
 			signallevel,batterylevel,
 			nValue,sValue,
-			ltime->tm_year+1900,ltime->tm_mon+1, ltime->tm_mday, ltime->tm_hour, ltime->tm_min, ltime->tm_sec,
+			ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 			ulID);
 		result = query(szTmp);
 	}
@@ -726,7 +731,8 @@ void CSQLHelper::UpdatePreferencesVar(const char *Key, const int nValue, const c
 		s_str >> ID;
 
 		time_t now = time(0);
-		struct tm *ltime=localtime(&now);
+		struct tm ltime;
+		localtime_r(&now,&ltime);
 
 		sprintf(szTmp,
 			"UPDATE Preferences SET Key='%s', nValue=%d, sValue='%s' "
@@ -999,15 +1005,16 @@ bool CSQLHelper::CheckAndHandleRainNotification(
 	char szDateEnd[40];
 
 	time_t now = time(NULL);
-	struct tm* tm1 = localtime(&now);
+	struct tm tm1;
+	localtime_r(&now,&tm1);
 	struct tm ltime;
-	ltime.tm_isdst=tm1->tm_isdst;
+	ltime.tm_isdst=tm1.tm_isdst;
 	ltime.tm_hour=0;
 	ltime.tm_min=0;
 	ltime.tm_sec=0;
-	ltime.tm_year=tm1->tm_year;
-	ltime.tm_mon=tm1->tm_mon;
-	ltime.tm_mday=tm1->tm_mday;
+	ltime.tm_year=tm1.tm_year;
+	ltime.tm_mon=tm1.tm_mon;
+	ltime.tm_mday=tm1.tm_mday;
 	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
 	std::stringstream szQuery;
@@ -1030,8 +1037,9 @@ void CSQLHelper::TouchNotification(const unsigned long long ID)
 	char szTmp[300];
 	char szDate[100];
 	time_t atime = time(NULL);
-	struct tm* tm = localtime(&atime);
-	sprintf(szDate,"%04d-%02d-%02d %02d:%02d:%02d",tm->tm_year+1900,tm->tm_mon+1,tm->tm_mday,tm->tm_hour,tm->tm_min,tm->tm_sec);
+	struct tm ltime;
+	localtime_r(&atime,&ltime);
+	sprintf(szDate,"%04d-%02d-%02d %02d:%02d:%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,ltime.tm_hour,ltime.tm_min,ltime.tm_sec);
 
 	//Set LastSend date
 	sprintf(szTmp,
@@ -1113,7 +1121,8 @@ std::vector<_tNotification> CSQLHelper::GetNotifications(const unsigned long lon
 		return ret;
 
 	time_t mtime=time(NULL);
-	struct tm *atime=localtime(&mtime);
+	struct tm atime;
+	localtime_r(&mtime,&atime);
 
 	std::vector<std::vector<std::string> >::const_iterator itt;
 	for (itt=result.begin(); itt!=result.end(); ++itt)
@@ -1134,7 +1143,7 @@ std::vector<_tNotification> CSQLHelper::GetNotifications(const unsigned long lon
 		else
 		{
 			struct tm ntime;
-			ntime.tm_isdst=atime->tm_isdst;
+			ntime.tm_isdst=atime.tm_isdst;
 			ntime.tm_year=atoi(stime.substr(0,4).c_str())-1900;
 			ntime.tm_mon=atoi(stime.substr(5,2).c_str())-1;
 			ntime.tm_mday=atoi(stime.substr(8,2).c_str());
@@ -1289,7 +1298,8 @@ void CSQLHelper::UpdateTemperatureLog()
 {
 	char szTmp[1000];
 	time_t now = time(NULL);
-	struct tm* tm1 = localtime(&now);
+	struct tm tm1;
+	localtime_r(&now,&tm1);
 
 	unsigned long long ID=0;
 
@@ -1386,18 +1396,20 @@ void CSQLHelper::UpdateTemperatureLog()
 	//truncate the temperature table (remove items older then 24 hours)
 	char szDateEnd[40];
 	struct tm ltime;
-	ltime.tm_isdst=tm1->tm_isdst;
-	ltime.tm_hour=tm1->tm_hour;
-	ltime.tm_min=tm1->tm_min;
-	ltime.tm_sec=tm1->tm_sec;
-	ltime.tm_year=tm1->tm_year;
-	ltime.tm_mon=tm1->tm_mon;
-	ltime.tm_mday=tm1->tm_mday;
+	ltime.tm_isdst=tm1.tm_isdst;
+	ltime.tm_hour=tm1.tm_hour;
+	ltime.tm_min=tm1.tm_min;
+	ltime.tm_sec=tm1.tm_sec;
+	ltime.tm_year=tm1.tm_year;
+	ltime.tm_mon=tm1.tm_mon;
+	ltime.tm_mday=tm1.tm_mday;
 	//subtract one day
 	ltime.tm_mday -= 1;
 	time_t daybefore = mktime(&ltime);
-	struct tm* tm2 = localtime(&daybefore);
-	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday,tm2->tm_hour,tm2->tm_min);
+	struct tm tm2;
+	localtime_r(&daybefore,&tm2);
+
+	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min);
 
 	sprintf(szTmp,"DELETE FROM Temperature WHERE (Date<'%s')",
 		szDateEnd
@@ -1410,7 +1422,8 @@ void CSQLHelper::UpdateRainLog()
 {
 	char szTmp[1000];
 	time_t now = time(NULL);
-	struct tm* tm1 = localtime(&now);
+	struct tm tm1;
+	localtime_r(&now,&tm1);
 
 	unsigned long long ID=0;
 
@@ -1460,18 +1473,19 @@ void CSQLHelper::UpdateRainLog()
 	//truncate the rain table (remove items older then 24 hours)
 	char szDateEnd[40];
 	struct tm ltime;
-	ltime.tm_isdst=tm1->tm_isdst;
-	ltime.tm_hour=tm1->tm_hour;
-	ltime.tm_min=tm1->tm_min;
-	ltime.tm_sec=tm1->tm_sec;
-	ltime.tm_year=tm1->tm_year;
-	ltime.tm_mon=tm1->tm_mon;
-	ltime.tm_mday=tm1->tm_mday;
+	ltime.tm_isdst=tm1.tm_isdst;
+	ltime.tm_hour=tm1.tm_hour;
+	ltime.tm_min=tm1.tm_min;
+	ltime.tm_sec=tm1.tm_sec;
+	ltime.tm_year=tm1.tm_year;
+	ltime.tm_mon=tm1.tm_mon;
+	ltime.tm_mday=tm1.tm_mday;
 	//subtract one day
 	ltime.tm_mday -= 1;
 	time_t daybefore = mktime(&ltime);
-	struct tm* tm2 = localtime(&daybefore);
-	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday,tm2->tm_hour,tm2->tm_min);
+	struct tm tm2;
+	localtime_r(&daybefore,&tm2);
+	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min);
 
 	sprintf(szTmp,"DELETE FROM Rain WHERE (Date<'%s')",
 		szDateEnd
@@ -1483,7 +1497,8 @@ void CSQLHelper::UpdateWindLog()
 {
 	char szTmp[1000];
 	time_t now = time(NULL);
-	struct tm* tm1 = localtime(&now);
+	struct tm tm1;
+	localtime_r(&now,&tm1);
 
 	unsigned long long ID=0;
 
@@ -1530,18 +1545,19 @@ void CSQLHelper::UpdateWindLog()
 	//truncate the wind table (remove items older then 24 hours)
 	char szDateEnd[40];
 	struct tm ltime;
-	ltime.tm_isdst=tm1->tm_isdst;
-	ltime.tm_hour=tm1->tm_hour;
-	ltime.tm_min=tm1->tm_min;
-	ltime.tm_sec=tm1->tm_sec;
-	ltime.tm_year=tm1->tm_year;
-	ltime.tm_mon=tm1->tm_mon;
-	ltime.tm_mday=tm1->tm_mday;
+	ltime.tm_isdst=tm1.tm_isdst;
+	ltime.tm_hour=tm1.tm_hour;
+	ltime.tm_min=tm1.tm_min;
+	ltime.tm_sec=tm1.tm_sec;
+	ltime.tm_year=tm1.tm_year;
+	ltime.tm_mon=tm1.tm_mon;
+	ltime.tm_mday=tm1.tm_mday;
 	//subtract one day
 	ltime.tm_mday -= 1;
 	time_t daybefore = mktime(&ltime);
-	struct tm* tm2 = localtime(&daybefore);
-	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday,tm2->tm_hour,tm2->tm_min);
+	struct tm tm2;
+	localtime_r(&daybefore,&tm2);
+	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min);
 
 	sprintf(szTmp,"DELETE FROM Wind WHERE (Date<'%s')",
 		szDateEnd
@@ -1553,7 +1569,8 @@ void CSQLHelper::UpdateUVLog()
 {
 	char szTmp[1000];
 	time_t now = time(NULL);
-	struct tm* tm1 = localtime(&now);
+	struct tm tm1;
+	localtime_r(&now,&tm1);
 
 	unsigned long long ID=0;
 
@@ -1596,18 +1613,19 @@ void CSQLHelper::UpdateUVLog()
 	//truncate the uv table (remove items older then 24 hours)
 	char szDateEnd[40];
 	struct tm ltime;
-	ltime.tm_isdst=tm1->tm_isdst;
-	ltime.tm_hour=tm1->tm_hour;
-	ltime.tm_min=tm1->tm_min;
-	ltime.tm_sec=tm1->tm_sec;
-	ltime.tm_year=tm1->tm_year;
-	ltime.tm_mon=tm1->tm_mon;
-	ltime.tm_mday=tm1->tm_mday;
+	ltime.tm_isdst=tm1.tm_isdst;
+	ltime.tm_hour=tm1.tm_hour;
+	ltime.tm_min=tm1.tm_min;
+	ltime.tm_sec=tm1.tm_sec;
+	ltime.tm_year=tm1.tm_year;
+	ltime.tm_mon=tm1.tm_mon;
+	ltime.tm_mday=tm1.tm_mday;
 	//subtract one day
 	ltime.tm_mday -= 1;
 	time_t daybefore = mktime(&ltime);
-	struct tm* tm2 = localtime(&daybefore);
-	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday,tm2->tm_hour,tm2->tm_min);
+	struct tm tm2;
+	localtime_r(&daybefore,&tm2);
+	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min);
 
 	sprintf(szTmp,"DELETE FROM UV WHERE (Date<'%s')",
 		szDateEnd
@@ -1619,7 +1637,8 @@ void CSQLHelper::UpdateMeter()
 {
 	char szTmp[1000];
 	time_t now = time(NULL);
-	struct tm* tm1 = localtime(&now);
+	struct tm tm1;
+	localtime_r(&now,&tm1);
 
 	unsigned long long ID=0;
 
@@ -1661,18 +1680,19 @@ void CSQLHelper::UpdateMeter()
 	//truncate the Meter table (remove items older then 24 hours)
 	char szDateEnd[40];
 	struct tm ltime;
-	ltime.tm_isdst=tm1->tm_isdst;
-	ltime.tm_hour=tm1->tm_hour;
-	ltime.tm_min=tm1->tm_min;
-	ltime.tm_sec=tm1->tm_sec;
-	ltime.tm_year=tm1->tm_year;
-	ltime.tm_mon=tm1->tm_mon;
-	ltime.tm_mday=tm1->tm_mday;
+	ltime.tm_isdst=tm1.tm_isdst;
+	ltime.tm_hour=tm1.tm_hour;
+	ltime.tm_min=tm1.tm_min;
+	ltime.tm_sec=tm1.tm_sec;
+	ltime.tm_year=tm1.tm_year;
+	ltime.tm_mon=tm1.tm_mon;
+	ltime.tm_mday=tm1.tm_mday;
 	//subtract one day
 	ltime.tm_mday -= 1;
 	time_t daybefore = mktime(&ltime);
-	struct tm* tm2 = localtime(&daybefore);
-	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday,tm2->tm_hour,tm2->tm_min);
+	struct tm tm2;
+	localtime_r(&daybefore,&tm2);
+	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min);
 
 	sprintf(szTmp,"DELETE FROM Meter WHERE (Date<'%s')",
 		szDateEnd
@@ -1684,7 +1704,8 @@ void CSQLHelper::UpdateMultiMeter()
 {
 	char szTmp[1000];
 	time_t now = time(NULL);
-	struct tm* tm1 = localtime(&now);
+	struct tm tm1;
+	localtime_r(&now,&tm1);
 
 	unsigned long long ID=0;
 
@@ -1764,18 +1785,19 @@ void CSQLHelper::UpdateMultiMeter()
 	//truncate the MultiMeter table (remove items older then 24 hours)
 	char szDateEnd[40];
 	struct tm ltime;
-	ltime.tm_isdst=tm1->tm_isdst;
-	ltime.tm_hour=tm1->tm_hour;
-	ltime.tm_min=tm1->tm_min;
-	ltime.tm_sec=tm1->tm_sec;
-	ltime.tm_year=tm1->tm_year;
-	ltime.tm_mon=tm1->tm_mon;
-	ltime.tm_mday=tm1->tm_mday;
+	ltime.tm_isdst=tm1.tm_isdst;
+	ltime.tm_hour=tm1.tm_hour;
+	ltime.tm_min=tm1.tm_min;
+	ltime.tm_sec=tm1.tm_sec;
+	ltime.tm_year=tm1.tm_year;
+	ltime.tm_mon=tm1.tm_mon;
+	ltime.tm_mday=tm1.tm_mday;
 	//subtract one day
 	ltime.tm_mday -= 1;
 	time_t daybefore = mktime(&ltime);
-	struct tm* tm2 = localtime(&daybefore);
-	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday,tm2->tm_hour,tm2->tm_min);
+	struct tm tm2;
+	localtime_r(&daybefore,&tm2);
+	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min);
 
 	sprintf(szTmp,"DELETE FROM MultiMeter WHERE (Date<'%s')",
 		szDateEnd
@@ -1798,16 +1820,17 @@ void CSQLHelper::AddCalendarTemperature()
 	char szDateEnd[40];
 
 	time_t now = time(NULL);
-	struct tm* tm1 = localtime(&now);
+	struct tm tm1;
+	localtime_r(&now,&tm1);
 
 	struct tm ltime;
-	ltime.tm_isdst=tm1->tm_isdst;
+	ltime.tm_isdst=tm1.tm_isdst;
 	ltime.tm_hour=0;
 	ltime.tm_min=0;
 	ltime.tm_sec=0;
-	ltime.tm_year=tm1->tm_year;
-	ltime.tm_mon=tm1->tm_mon;
-	ltime.tm_mday=tm1->tm_mday;
+	ltime.tm_year=tm1.tm_year;
+	ltime.tm_mon=tm1.tm_mon;
+	ltime.tm_mday=tm1.tm_mday;
 
 	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
@@ -1815,8 +1838,9 @@ void CSQLHelper::AddCalendarTemperature()
 
 	ltime.tm_mday -= 1;
 	time_t later = mktime(&ltime);
-	struct tm* tm2 = localtime(&later);
-	sprintf(szDateStart,"%04d-%02d-%02d",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday);
+	struct tm tm2;
+	localtime_r(&later,&tm2);
+	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
 
@@ -1879,16 +1903,17 @@ void CSQLHelper::AddCalendarUpdateRain()
 	char szDateEnd[40];
 
 	time_t now = time(NULL);
-	struct tm* tm1 = localtime(&now);
+	struct tm tm1;
+	localtime_r(&now,&tm1);
 
 	struct tm ltime;
-	ltime.tm_isdst=tm1->tm_isdst;
+	ltime.tm_isdst=tm1.tm_isdst;
 	ltime.tm_hour=0;
 	ltime.tm_min=0;
 	ltime.tm_sec=0;
-	ltime.tm_year=tm1->tm_year;
-	ltime.tm_mon=tm1->tm_mon;
-	ltime.tm_mday=tm1->tm_mday;
+	ltime.tm_year=tm1.tm_year;
+	ltime.tm_mon=tm1.tm_mon;
+	ltime.tm_mday=tm1.tm_mday;
 
 	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
@@ -1896,8 +1921,9 @@ void CSQLHelper::AddCalendarUpdateRain()
 
 	ltime.tm_mday -= 1;
 	time_t later = mktime(&ltime);
-	struct tm* tm2 = localtime(&later);
-	sprintf(szDateStart,"%04d-%02d-%02d",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday);
+	struct tm tm2;
+	localtime_r(&later,&tm2);
+	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
 
@@ -1954,16 +1980,17 @@ void CSQLHelper::AddCalendarUpdateMeter()
 	char szDateEnd[40];
 
 	time_t now = time(NULL);
-	struct tm* tm1 = localtime(&now);
+	struct tm tm1;
+	localtime_r(&now,&tm1);
 
 	struct tm ltime;
-	ltime.tm_isdst=tm1->tm_isdst;
+	ltime.tm_isdst=tm1.tm_isdst;
 	ltime.tm_hour=0;
 	ltime.tm_min=0;
 	ltime.tm_sec=0;
-	ltime.tm_year=tm1->tm_year;
-	ltime.tm_mon=tm1->tm_mon;
-	ltime.tm_mday=tm1->tm_mday;
+	ltime.tm_year=tm1.tm_year;
+	ltime.tm_mon=tm1.tm_mon;
+	ltime.tm_mday=tm1.tm_mday;
 
 	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
@@ -1971,8 +1998,9 @@ void CSQLHelper::AddCalendarUpdateMeter()
 
 	ltime.tm_mday -= 1;
 	time_t later = mktime(&ltime);
-	struct tm* tm2 = localtime(&later);
-	sprintf(szDateStart,"%04d-%02d-%02d",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday);
+	struct tm tm2;
+	localtime_r(&later,&tm2);
+	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
 
@@ -2027,16 +2055,17 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 	char szDateEnd[40];
 
 	time_t now = time(NULL);
-	struct tm* tm1 = localtime(&now);
+	struct tm tm1;
+	localtime_r(&now,&tm1);
 
 	struct tm ltime;
-	ltime.tm_isdst=tm1->tm_isdst;
+	ltime.tm_isdst=tm1.tm_isdst;
 	ltime.tm_hour=0;
 	ltime.tm_min=0;
 	ltime.tm_sec=0;
-	ltime.tm_year=tm1->tm_year;
-	ltime.tm_mon=tm1->tm_mon;
-	ltime.tm_mday=tm1->tm_mday;
+	ltime.tm_year=tm1.tm_year;
+	ltime.tm_mon=tm1.tm_mon;
+	ltime.tm_mday=tm1.tm_mday;
 
 	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
@@ -2044,8 +2073,9 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 
 	ltime.tm_mday -= 1;
 	time_t later = mktime(&ltime);
-	struct tm* tm2 = localtime(&later);
-	sprintf(szDateStart,"%04d-%02d-%02d",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday);
+	struct tm tm2;
+	localtime_r(&later,&tm2);
+	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
 
@@ -2109,16 +2139,17 @@ void CSQLHelper::AddCalendarUpdateWind()
 	char szDateEnd[40];
 
 	time_t now = time(NULL);
-	struct tm* tm1 = localtime(&now);
+	struct tm tm1;
+	localtime_r(&now,&tm1);
 
 	struct tm ltime;
-	ltime.tm_isdst=tm1->tm_isdst;
+	ltime.tm_isdst=tm1.tm_isdst;
 	ltime.tm_hour=0;
 	ltime.tm_min=0;
 	ltime.tm_sec=0;
-	ltime.tm_year=tm1->tm_year;
-	ltime.tm_mon=tm1->tm_mon;
-	ltime.tm_mday=tm1->tm_mday;
+	ltime.tm_year=tm1.tm_year;
+	ltime.tm_mon=tm1.tm_mon;
+	ltime.tm_mday=tm1.tm_mday;
 
 	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
@@ -2126,8 +2157,9 @@ void CSQLHelper::AddCalendarUpdateWind()
 
 	ltime.tm_mday -= 1;
 	time_t later = mktime(&ltime);
-	struct tm* tm2 = localtime(&later);
-	sprintf(szDateStart,"%04d-%02d-%02d",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday);
+	struct tm tm2;
+	localtime_r(&later,&tm2);
+	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
 
@@ -2187,16 +2219,17 @@ void CSQLHelper::AddCalendarUpdateUV()
 	char szDateEnd[40];
 
 	time_t now = time(NULL);
-	struct tm* tm1 = localtime(&now);
+	struct tm tm1;
+	localtime_r(&now,&tm1);
 
 	struct tm ltime;
-	ltime.tm_isdst=tm1->tm_isdst;
+	ltime.tm_isdst=tm1.tm_isdst;
 	ltime.tm_hour=0;
 	ltime.tm_min=0;
 	ltime.tm_sec=0;
-	ltime.tm_year=tm1->tm_year;
-	ltime.tm_mon=tm1->tm_mon;
-	ltime.tm_mday=tm1->tm_mday;
+	ltime.tm_year=tm1.tm_year;
+	ltime.tm_mon=tm1.tm_mon;
+	ltime.tm_mday=tm1.tm_mday;
 
 	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
@@ -2204,8 +2237,9 @@ void CSQLHelper::AddCalendarUpdateUV()
 
 	ltime.tm_mday -= 1;
 	time_t later = mktime(&ltime);
-	struct tm* tm2 = localtime(&later);
-	sprintf(szDateStart,"%04d-%02d-%02d",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday);
+	struct tm tm2;
+	localtime_r(&later,&tm2);
+	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
 
@@ -2339,20 +2373,23 @@ void CSQLHelper::CleanupLightLog()
 
 	char szDateEnd[40];
 	time_t now = time(NULL);
-	struct tm* tm1 = localtime(&now);
+	struct tm tm1;
+	localtime_r(&now,&tm1);
+
 	struct tm ltime;
-	ltime.tm_isdst=tm1->tm_isdst;
-	ltime.tm_hour=tm1->tm_hour;
-	ltime.tm_min=tm1->tm_min;
-	ltime.tm_sec=tm1->tm_sec;
-	ltime.tm_year=tm1->tm_year;
-	ltime.tm_mon=tm1->tm_mon;
-	ltime.tm_mday=tm1->tm_mday;
+	ltime.tm_isdst=tm1.tm_isdst;
+	ltime.tm_hour=tm1.tm_hour;
+	ltime.tm_min=tm1.tm_min;
+	ltime.tm_sec=tm1.tm_sec;
+	ltime.tm_year=tm1.tm_year;
+	ltime.tm_mon=tm1.tm_mon;
+	ltime.tm_mday=tm1.tm_mday;
 	//subtract one day
 	ltime.tm_mday -= nMaxDays;
 	time_t daybefore = mktime(&ltime);
-	struct tm* tm2 = localtime(&daybefore);
-	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2->tm_year+1900,tm2->tm_mon+1,tm2->tm_mday,tm2->tm_hour,tm2->tm_min);
+	struct tm tm2;
+	localtime_r(&daybefore,&tm2);
+	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min);
 
 	char szTmp[100];
 	sprintf(szTmp,"DELETE FROM LightingLog WHERE (Date<'%s')",

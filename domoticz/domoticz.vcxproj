@@ -90,6 +90,7 @@
     <ClInclude Include="CmdLine.h" />
     <ClInclude Include="DomoticzHardware.h" />
     <ClInclude Include="DomoticzTCP.h" />
+    <ClInclude Include="localtime_r.h" />
     <ClInclude Include="P1MeterBase.h" />
     <ClInclude Include="P1MeterSerial.h" />
     <ClInclude Include="P1MeterTCP.h" />
@@ -131,6 +132,7 @@
     <ClCompile Include="CmdLine.cpp" />
     <ClCompile Include="DomoticzHardware.cpp" />
     <ClCompile Include="DomoticzTCP.cpp" />
+    <ClCompile Include="localtime_r.cpp" />
     <ClCompile Include="P1MeterBase.cpp" />
     <ClCompile Include="P1MeterSerial.cpp" />
     <ClCompile Include="P1MeterTCP.cpp" />

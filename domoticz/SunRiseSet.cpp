@@ -2,9 +2,8 @@
 #include "SunRiseSet.h"
 
 #include <math.h>
-#include <time.h>
-#include <sys/timeb.h>
-
+#include "localtime_r.h"
+//#include <sys/timeb.h>
 #include <boost/date_time/c_local_time_adjustor.hpp>
 
 #ifndef PI
@@ -96,14 +95,14 @@ void SunRiseSet::gethourmin(const double dhr, int &hour, int &min)
 bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, _tSubRiseSetResults &result)
 {
 	time_t sekunnit;
-	struct tm *ltime;
 	/** First get current time **/
 	time(&sekunnit);
-	ltime=localtime(&sekunnit);
+	struct tm ltime;
+	localtime_r(&sekunnit,&ltime);
 	// this is Y2K compliant algorithm
-	int year = 1900 + ltime->tm_year;
-	int month = ltime->tm_mon + 1;
-	int day = ltime->tm_mday;
+	int year = 1900 + ltime.tm_year;
+	int month = ltime.tm_mon + 1;
+	int day = ltime.tm_mday;
 	return GetSunRiseSet(latit, longit, year,month,day,result);
 }
 
