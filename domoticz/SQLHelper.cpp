@@ -218,13 +218,28 @@ CSQLHelper::CSQLHelper(void)
 {
 	m_LastSwitchID="";
 	m_LastSwitchRowID=0;
+	m_dbase=NULL;
+	SetDatabaseName("domoticz.db");
+}
+
+CSQLHelper::~CSQLHelper(void)
+{
+	if (m_dbase!=NULL)
+	{
+		sqlite3_close(m_dbase);
+		m_dbase=NULL;
+	}
+}
+
+bool CSQLHelper::OpenDatabase()
+{
 	//Open Database
-	int rc = sqlite3_open("domoticz.db", &m_dbase);
+	int rc = sqlite3_open(m_dbase_name.c_str(), &m_dbase);
 	if (rc)
 	{
 		std::cerr << "Error opening SQLite3 database: " << sqlite3_errmsg(m_dbase) << std::endl << std::endl;
 		sqlite3_close(m_dbase);
-		return;
+		return false;
 	}
 	bool bNewInstall=false;
 	std::vector<std::vector<std::string> > result=query("SELECT name FROM sqlite_master WHERE type='table' AND name='DeviceStatus'");
@@ -293,13 +308,9 @@ CSQLHelper::CSQLHelper(void)
 	}
 }
 
-CSQLHelper::~CSQLHelper(void)
+void CSQLHelper::SetDatabaseName(const std::string DBName)
 {
-	if (m_dbase!=NULL)
-	{
-		sqlite3_close(m_dbase);
-		m_dbase=NULL;
-	}
+	m_dbase_name=DBName;
 }
 
 std::vector<std::vector<std::string> > CSQLHelper::query(const std::string szQuery)

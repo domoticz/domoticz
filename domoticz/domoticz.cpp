@@ -20,6 +20,7 @@ const char *szAppTitle="Domoticz V1.01 (c)2012 GizMoCuz\n";
 const char *szHelp=
 	"Usage: Domoticz -www port -verbose x\n"
 	"\t-www port (for example -www 8080)\n"
+	"\t-dbase file_path (for example D:\\domoticz.db)\n"
 	"\t-verbose x (where x=0 is none, x=1 is debug)\n"
 	"\t-startupdelay seconds (default=0)\n"
 	"\t-nowwwpwd (in case you forgot the webserver username/password)\n";
@@ -97,7 +98,15 @@ int main(int argc, char**argv)
 		_mainworker.m_bIgnoreUsernamePassword=true;
 	}
 
-	
+	if (cmdLine.HasSwitch("-dbase"))
+	{
+		if (cmdLine.GetArgumentCount("-dbase")!=1)
+		{
+			std::cout << "Please specify a Database Name" << std::endl;
+			return 0;
+		}
+		_mainworker.m_sql.SetDatabaseName(cmdLine.GetSafeArgument("-dbase",0,"domoticz.db"));
+	}
 
 	if (cmdLine.HasSwitch("-verbose"))
 	{
@@ -112,7 +121,9 @@ int main(int argc, char**argv)
 
 	std::cout << "Webserver listening on port: " << _mainworker.GetWebserverPort() << std::endl;
 	if (!_mainworker.Start())
+	{
 		return 0;
+	}
 
 	signal(SIGINT, catch_intterm); 
 	signal(SIGTERM,catch_intterm);

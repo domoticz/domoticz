@@ -333,6 +333,11 @@ bool MainWorker::Start()
 {
 	Stop();
 
+	if (!m_sql.OpenDatabase())
+	{
+		return false;
+	}
+
 	//Add Hardware devices
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;

@@ -20,6 +20,9 @@ public:
 	CSQLHelper(void);
 	~CSQLHelper(void);
 
+	bool OpenDatabase();
+	void SetDatabaseName(const std::string DBName);
+
 	void UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue);
 	void UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const char* sValue);
 	void UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue);
@@ -107,6 +110,7 @@ private:
 	boost::mutex m_sqlQueryMutex;
 	CURLEncode m_urlencoder;
 	sqlite3 *m_dbase;
+	std::string m_dbase_name;
 
 	void UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue);
 
