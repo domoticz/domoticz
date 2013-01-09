@@ -475,21 +475,25 @@ void MainWorker::Do_Work()
 		ltime=localtime(&atime);
 		if (!ltime)
 			continue;
-		if (ltime->tm_min!=m_ScheduleLastMinute)
+		int minute=ltime->tm_min;	//we need to backup this, as the *tm is only temporary
+		int hour=ltime->tm_hour;	//if other functions uses it, it is pointing to that!!!
+
+		if (minute!=m_ScheduleLastMinute)
 		{
-			m_ScheduleLastMinute=ltime->tm_min;
+			m_ScheduleLastMinute=minute;
 			//check for 5 minute schedule
-			if (ltime->tm_min%5==0)
+			if (minute%5==0)
 			{
 				m_sql.Schedule5Minute();
 			}
 		}
-		if (ltime->tm_hour!=m_ScheduleLastHour)
+		if (hour!=m_ScheduleLastHour)
 		{
-			m_ScheduleLastHour=ltime->tm_hour;
+			m_ScheduleLastHour=hour;
 			GetSunSettings();
+
 			//check for daily schedule
-			if (ltime->tm_hour==0)
+			if (hour==0)
 			{
 				m_sql.ScheduleDay();
 			}
