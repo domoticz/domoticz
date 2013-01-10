@@ -398,10 +398,7 @@ bool MainWorker::StartThread()
     std::cout << "Webserver started\n";
 
 	//Start Scheduler
-	if (!m_scheduler.StartScheduler(this))
-        return false;
-    std::cout << "Scheduler started\n";
-    
+	m_scheduler.StartScheduler(this);
 	//m_sql.DeleteHardware("999");
 
 #ifdef PARSE_RFXCOM_DEVICE_LOG
