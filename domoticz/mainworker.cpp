@@ -393,11 +393,15 @@ bool MainWorker::Stop()
 bool MainWorker::StartThread()
 {
 	//Start WebServer
-	m_webserver.StartServer(this, "0.0.0.0",m_webserverport,"www",m_bIgnoreUsernamePassword);
+	if (!m_webserver.StartServer(this, "0.0.0.0",m_webserverport,"www",m_bIgnoreUsernamePassword))
+        return false;
+    std::cout << "Webserver started\n";
 
 	//Start Scheduler
-	m_scheduler.StartScheduler(this);
-
+	if (!m_scheduler.StartScheduler(this))
+        return false;
+    std::cout << "Scheduler started\n";
+    
 	//m_sql.DeleteHardware("999");
 
 #ifdef PARSE_RFXCOM_DEVICE_LOG

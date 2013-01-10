@@ -50,14 +50,20 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
 
 	if (m_pWebEm!=NULL)
 		delete m_pWebEm;
-
-	m_pWebEm= new http::server::cWebem(
-		listenaddress.c_str(),						// address
-		listenport.c_str(),							// port
-		serverpath.c_str());
-	if (m_pWebEm==NULL)
-		return false;
-
+    try {
+        m_pWebEm= new http::server::cWebem(
+                                           listenaddress.c_str(),						// address
+                                           listenport.c_str(),							// port
+                                           serverpath.c_str());
+        if (m_pWebEm==NULL)
+            return false;
+    }
+    catch(...) {
+        std::cout << "Failed to start webserver\n";
+        if(atoi(listenaddress.c_str())<1024)
+            std::cout << "check privileges for opening ports below 1024\n";
+        return false;
+    }
 	m_pWebEm->SetDigistRealm("DVBControl.com");
 
 	if (!bIgnoreUsernamePassword)
