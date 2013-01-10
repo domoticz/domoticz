@@ -102,21 +102,6 @@ function RemoveDevice(idx)
     });
 }
 
-function DeleteDevice(idx)
-{
-  if (confirm("Are you sure to delete this Device?"+idx)==false) {
-    return;
-  }
-    $.ajax({
-       url: "json.htm?type=deletedevice&idx=" + idx,
-       async: false, 
-       dataType: 'json',
-       success: function(data) {
-          ShowDevices();
-       }
-    });
-    
-}
 function InvertCheck()
 {
 	$('#devices input:checkbox').each(function(){
@@ -125,21 +110,26 @@ function InvertCheck()
 }
 function DeleteMultipleDevices()
 {
-	if (confirm("Are you sure you want to delete the selected devices?")==false) {
+	var totalselected=$('#devices input:checkbox:checked').length;
+	if (totalselected==0) {
+		alert('No Devices selected to Delete!');
+		return;
+	}
+	if (confirm("Are you sure you want to delete the selected Devices?")==false) {
 		return;
 	}
     var delCount = 0;
-	$('#devices input:checkbox:checked').each(function(){
-		$.ajax({
-			url: "json.htm?type=deletedevice&idx=" + $(this).val(),
-			async: false, 
-			dataType: 'json',
-			success: function(data) {
-				delCount++;
-			}
+		$('#devices input:checkbox:checked').each(function() {
+			$.ajax({
+				url: "json.htm?type=deletedevice&idx=" + $(this).val(),
+				async: false, 
+				dataType: 'json',
+				success: function(data) {
+					delCount++;
+				}
 		});
 	});
-	alert(delCount+" deviced deleted.");
+	alert(delCount+" Devices deleted.");
 	ShowDevices();
     
 }
@@ -236,10 +226,7 @@ function ShowDevices(filter)
       if (typeof data.result != 'undefined') {
         $.each(data.result, function(i,item){
           var itemSubIcons="";
-		  var itemChecker = "";
-          if (ifilter = 'false') {
-			var itemChecker = '<input type="checkbox" name="Check-' + item.ID + ' id="Check-' + item.ID + '" value="'+item.idx+'" />';
-          }
+					var itemChecker = '<input type="checkbox" name="Check-' + item.ID + ' id="Check-' + item.ID + '" value="'+item.idx+'" />';
           var TypeImg=item.TypeImg;
           var itemImage='<img src="images/' + TypeImg + '.png">';
           if (TypeImg.indexOf("lightbulb")==0) {
@@ -283,7 +270,6 @@ function ShowDevices(filter)
           if (item.Type=="Lighting 1") {
 						ID = String.fromCharCode(item.ID);
           }
-          //itemSubIcons+='&nbsp;<img src="images/delete.png" title="Delete Device" onclick="DeleteDevice(' + item.idx +')">';
           var BatteryLevel=item.BatteryLevel;
           if (BatteryLevel=="255") {
 						BatteryLevel="-";

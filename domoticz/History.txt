@@ -1,8 +1,9 @@
 Version 1.0.7 (Januari xxth 2013)
 - replaced all localtime function with localtime_r
+- Dashboard: P1 Smart Meter Energy does not show the retour values if not used
+- Devices Tab: Check if any device is selected to delete
 
 Version 1.0.6 (Januari 9th 2013)
-- {SunRise/Set is now calculated on startup and 01:00am}
 - RFXCOM Lan will now keep retrying to connect when it does not succeed on the first time
 - P1 Smart Meter Serial hardware implemented
 - P1 Smart Meter TCP hardware implemented

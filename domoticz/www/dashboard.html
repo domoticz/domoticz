@@ -395,14 +395,16 @@ function RefreshFavorites()
 									}
 								}
 								if (typeof item.CounterDeliv != 'undefined') {
-									status+='<br>';
-									if (data.DashboardType==0) {
-										status+='Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
-										status+=", Actual: " + item.UsageDeliv;
-									}
-									else {
-										status+='R: ' + item.CounterDeliv + ', T: ' + item.CounterDelivToday;
-										status+=", A: " + item.UsageDeliv;
+									if (item.CounterDeliv!=0) {
+										status+='<br>';
+										if (data.DashboardType==0) {
+											status+='Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
+											status+=", Actual: " + item.UsageDeliv;
+										}
+										else {
+											status+='R: ' + item.CounterDeliv + ', T: ' + item.CounterDelivToday;
+											status+=", A: " + item.UsageDeliv;
+										}
 									}
 								}
 								if ($(id + " #img").html()!=img) {
@@ -1029,14 +1031,16 @@ function ShowFavorites()
 								}
 							}
 							if (typeof item.CounterDeliv != 'undefined') {
-								status+='<br>R: ';
-								if (data.DashboardType==0) {
-									status+=item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
-									status+=", Actual: " + item.UsageDeliv;
-								}
-								else {
-									status+=item.CounterDeliv + ', T: ' + item.CounterDelivToday;
-									status+=", A: " + item.UsageDeliv;
+								if (item.CounterDeliv!=0) {
+									status+='<br>R: ';
+									if (data.DashboardType==0) {
+										status+=item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
+										status+=", Actual: " + item.UsageDeliv;
+									}
+									else {
+										status+=item.CounterDeliv + ', T: ' + item.CounterDelivToday;
+										status+=", A: " + item.UsageDeliv;
+									}
 								}
 							}
 							xhtm+=
@@ -1091,14 +1095,16 @@ function ShowFavorites()
 								}
 							}
 							if (typeof item.CounterDeliv != 'undefined') {
-								status+='<br>';
-								if (data.DashboardType==0) {
-									status+='Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
-									status+=", Actual: " + item.UsageDeliv;
-								}
-								else {
-									status+='R: ' + item.CounterDeliv + ', T: ' + item.CounterDelivToday;
-									status+=", A: " + item.UsageDeliv;
+								if (item.CounterDeliv!=0) {
+									status+='<br>';
+									if (data.DashboardType==0) {
+										status+='Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
+										status+=", Actual: " + item.UsageDeliv;
+									}
+									else {
+										status+='R: ' + item.CounterDeliv + ', T: ' + item.CounterDelivToday;
+										status+=", A: " + item.UsageDeliv;
+									}
 								}
 							}
 							
