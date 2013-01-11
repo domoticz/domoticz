@@ -165,6 +165,7 @@ void DomoticzTCP::disconnect()
 
 void DomoticzTCP::Do_Work()
 {
+	char buf[40];
 	while (!m_stoprequested)
 	{
 		if (
@@ -180,16 +181,14 @@ void DomoticzTCP::Do_Work()
 				if (!ConnectInternal())
 				{
 					std::cout << "retrying in " << std::dec << RETRY_DELAY << " seconds..." << std::endl;
-					continue;
 				}
 			}
 		}
 		else
 		{
-			char buf[40];
 			int bread=recv(m_socket,(char*)&buf,sizeof(buf),0);
-			if ((bread==0)||(bread<0)) {
-				std::cout << "TCP/IP connection closed!" << std::endl;
+			if (bread<=0) {
+				std::cout << "TCP/IP connection closed! " << m_szIPAddress << std::endl;
 				closesocket(m_socket);
 				m_socket=INVALID_SOCKET;
 				if (!m_stoprequested)
@@ -207,7 +206,7 @@ void DomoticzTCP::Do_Work()
 		}
 		
 	}
-	std::cout << "TCP/IP Worker stopped...\n";
+	std::cout << "TCP/IP Worker stopped..." << m_szIPAddress << std::endl;
 } 
 
 void DomoticzTCP::write(const char *data, size_t size)
