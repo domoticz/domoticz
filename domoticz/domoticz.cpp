@@ -25,6 +25,7 @@ const char *szHelp=
 	"\t-startupdelay seconds (default=0)\n"
 	"\t-nowwwpwd (in case you forgot the webserver username/password)\n";
 
+std::string szStartupFolder;
 
 MainWorker _mainworker;
 
@@ -45,6 +46,49 @@ void catch_intterm(int sig_num)
 	exit(0); 
 }
 
+#if defined(_WIN32)
+	static size_t getExecutablePathName(char* pathName, size_t pathNameCapacity)
+	{
+		return GetModuleFileNameA(NULL, pathName, (DWORD)pathNameCapacity);
+	}
+#elif defined(__linux__) /* elif of: #if defined(_WIN32) */
+#include <unistd.h>
+	static size_t getExecutablePathName(char* pathName, size_t pathNameCapacity)
+	{
+		size_t pathNameSize = readlink("/proc/self/exe", pathName, pathNameCapacity - 1);
+		pathName[pathNameSize] = '\0';
+		return pathNameSize;
+	}
+#elif defined(__APPLE__) /* elif of: #elif defined(__linux__) */
+	#include <mach-o/dyld.h>
+	static size_t getExecutablePathName(char* pathName, size_t pathNameCapacity)
+	{
+		uint32_t pathNameSize = 0;
+
+		_NSGetExecutablePath(NULL, &pathNameSize);
+
+		if (pathNameSize > pathNameCapacity)
+			pathNameSize = pathNameCapacity;
+
+		if (!_NSGetExecutablePath(pathName, &pathNameSize))
+		{
+			char real[PATH_MAX];
+
+			if (realpath(pathName, real) != NULL)
+			{
+				pathNameSize = strlen(real);
+				strncpy(pathName, real, pathNameSize);
+			}
+
+			return pathNameSize;
+		}
+
+		return 0;
+	}
+#else /* else of: #elif defined(__APPLE__) */
+	#error provide your own getExecutablePathName implementation
+#endif /* end of: #if defined(_WIN32) */
+
 #if defined WIN32
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 #else
@@ -55,6 +99,16 @@ int main(int argc, char**argv)
 	RedirectIOToConsole();
 #endif
 	std::cout << "Domoticz V" << VERSION_STRING << " (c)2012-2013 GizMoCuz\n";
+
+	szStartupFolder="";
+#if !defined WIN32
+	char szStartupPath[255];
+	getExecutablePathName((char*)&szStartupPath,255);
+	szStartupFolder=szStartupPath;
+	if (szStartupFolder.find_last_of('/')!=std::string::npos)
+		szStartupFolder=szStartupFolder.substr(0,szStartupFolder.find_last_of('/')+1);
+	//std::cout << "Startup Path: " << szStartupFolder << std::endl;
+#endif
 
 	CCmdLine cmdLine;
 
@@ -98,6 +152,7 @@ int main(int argc, char**argv)
 		_mainworker.m_bIgnoreUsernamePassword=true;
 	}
 
+	std::string dbasefile=szStartupFolder + "domoticz.db";
 	if (cmdLine.HasSwitch("-dbase"))
 	{
 		if (cmdLine.GetArgumentCount("-dbase")!=1)
@@ -105,8 +160,10 @@ int main(int argc, char**argv)
 			std::cout << "Please specify a Database Name" << std::endl;
 			return 0;
 		}
-		_mainworker.m_sql.SetDatabaseName(cmdLine.GetSafeArgument("-dbase",0,"domoticz.db"));
+		dbasefile=cmdLine.GetSafeArgument("-dbase",0,"domoticz.db");
 	}
+	_mainworker.m_sql.SetDatabaseName(dbasefile);
+
 
 	if (cmdLine.HasSwitch("-verbose"))
 	{
@@ -119,7 +176,6 @@ int main(int argc, char**argv)
 		_mainworker.SetVerboseLevel((eVerboseLevel)Level);
 	}
 
-	std::cout << "Webserver starting on port: " << _mainworker.GetWebserverPort() << std::endl;
 	if (!_mainworker.Start())
 	{
 		return 0;

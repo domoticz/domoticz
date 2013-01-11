@@ -41,9 +41,6 @@ test -f $DAEMON || exit 0
 # Defaults
 OPTIONS="-www 8080"
 
-# Read config file (will override defaults above)
-[ -r /etc/default/ser2net ] && . /etc/default/ser2net
-
 # this is from madduck on IRC, 2006-07-06
 # There should be a better possibility to give daemon error messages
 # and/or to log things
@@ -59,14 +56,18 @@ log()
 
 start () {
   if ! pidofproc -p "$PIDFILE" >/dev/null; then
+      log_daemon_msg "Starting $DESC"
       # since we dont have a proper daemon, lets pretend...
       $DAEMON $OPTIONS &> $LOGFILE &
       pid=$!
+      if [ $! != 0 ]; then
+        echo $pid > $PIDFILE
+        log_end_msg 0
+        exit 1
+      else
+        log_end_msg 1
+      fi       
       ret=$?
-      echo $pid > $PIDFILE
-      [ $ret = 0 ] && log_daemon_msg "Running - PID: $pid" "Domoticz"
-      [ $ret != 0 ] && log_daemon_msg "Error - exit status: $ret" "Domoticz"
-      log_end_msg $ret
   else
     log_failure_msg "already running!"
     log_end_msg 1
@@ -87,7 +88,6 @@ stop () {
 
 case "$1" in
   start)
-	log_daemon_msg "Starting $DESC"
 	start
 	log_end_msg 0
 	;;

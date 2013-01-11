@@ -128,6 +128,10 @@ To start Domoticz automatically when the system starts perform the following ste
 sudo cp domoticz.sh /etc/init.d
 sudo chmod +x /etc/init.d/domoticz.sh
 
+(for ubuntu based systems also execute:
+sudo update-rc.d domoticz.sh defaults
+)
+
 Edit the startup script and point the DEAMON location to point to the installation folder:
 sudo vi /etc/init.d/domoticz.sh
 

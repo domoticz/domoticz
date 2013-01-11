@@ -29,6 +29,8 @@
 	#include <fstream>
 #endif
 
+extern std::string szStartupFolder;
+
 MainWorker::MainWorker()
 {
 	m_stoprequested=false;
@@ -393,9 +395,11 @@ bool MainWorker::Stop()
 bool MainWorker::StartThread()
 {
 	//Start WebServer
-	if (!m_webserver.StartServer(this, "0.0.0.0",m_webserverport,"www",m_bIgnoreUsernamePassword))
+	if (!m_webserver.StartServer(this, "0.0.0.0",m_webserverport,szStartupFolder+"www",m_bIgnoreUsernamePassword))
+	{
         return false;
-    std::cout << "Webserver started\n";
+	}
+	std::cout << "Webserver started on port: " << m_webserverport << std::endl;
 
 	//Start Scheduler
 	m_scheduler.StartScheduler(this);
