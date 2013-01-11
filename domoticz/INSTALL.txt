@@ -146,3 +146,16 @@ sudo /etc/init.d/domoticz.sh stop
 
 To check if domoticz is running:
 sudo /etc/init.d/domoticz.sh status
+
+If your system supports it you can also do
+sudo service domoticz.sh start
+sudo service domoticz.sh stop
+sudo service domoticz.sh status
+
+To update when you have installed it as startup service:
+cd /home/pi/domoticz (or where you installed domoticz)
+sudo service domoticz.sh stop
+svn update
+make
+sudo service domoticz.sh start
+
