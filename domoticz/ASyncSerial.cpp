@@ -189,6 +189,7 @@ void AsyncSerial::readEnd(const boost::system::error_code& error,
 {
     if(error)
     {
+		_asm nop;
         #ifdef __APPLE__
         if(error.value()==45)
         {
@@ -202,6 +203,7 @@ void AsyncSerial::readEnd(const boost::system::error_code& error,
         //In this case it is not a real error, so ignore
         if(isOpen())
         {
+			std::cout << "Serial Port closed!..." << std::endl;
             doClose();
             setErrorStatus(true);
         }
