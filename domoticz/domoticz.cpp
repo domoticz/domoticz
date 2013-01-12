@@ -15,8 +15,6 @@
 #include "WindowsHelper.h"
 #endif
 
-const char *szAppTitle="Domoticz V1.01 (c)2012 GizMoCuz\n";
-
 const char *szHelp=
 	"Usage: Domoticz -www port -verbose x\n"
 	"\t-www port (for example -www 8080)\n"
@@ -43,7 +41,7 @@ void DQuitFunction()
 void catch_intterm(int sig_num)
 {
 	DQuitFunction();
-	exit(0); 
+	exit(EXIT_SUCCESS); 
 }
 
 #if defined(_WIN32)

@@ -40,7 +40,7 @@ std::vector<std::string> GetSerialPorts()
 		}
 	}
 #else
-	//scan /dev for /dev/ttyUSB* or /dev/ttyS*
+	//scan /dev for /dev/ttyUSB* or /dev/ttyS* or /dev/tty.usbserial*
 	DIR *d=NULL;
 	d=opendir("/dev");
 	if (d != NULL)
@@ -50,7 +50,10 @@ std::vector<std::string> GetSerialPorts()
 		while(de = readdir(d))
 		{
 			std::string fname = de->d_name;
-			if (fname.find("ttyUSB")!=std::string::npos)
+			if (
+				(fname.find("ttyUSB")!=std::string::npos)||
+				(fname.find("tty.usbserial")!=std::string::npos)
+				)
 			{
 				ret.push_back(fname);
 			}

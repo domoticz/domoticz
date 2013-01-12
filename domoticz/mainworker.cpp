@@ -288,6 +288,10 @@ bool MainWorker::AddHardwareFromParams(
 
 	RemoveDomoticzHardware(ID);
 
+#ifdef __APPLE__
+	std::vector<std::string> apple_serial_ports=GetSerialPorts();
+#endif
+
 	switch (Type)
 	{
 	case HTYPE_RFXtrx315:
@@ -296,7 +300,16 @@ bool MainWorker::AddHardwareFromParams(
 #if defined WIN32
 		sprintf(szSerialPort,"COM%d",Port);
 #else
-		sprintf(szSerialPort,"/dev/ttyUSB%d",Port);
+		#ifdef __APPLE__
+			if (Port>=apple_serial_ports.size())
+			{
+				std::cout << "Serial Port out of range!..." << std::endl;
+				return false;
+			}
+			sprintf(szSerialPort,"/dev/%s",apple_serial_ports[Port].c_str());
+		#else
+			sprintf(szSerialPort,"/dev/ttyUSB%d",Port);
+		#endif
 #endif
 		pHardware = new RFXComSerial(ID,szSerialPort,38400);
 		break;
@@ -313,7 +326,16 @@ bool MainWorker::AddHardwareFromParams(
 #if defined WIN32
 		sprintf(szSerialPort,"COM%d",Port);
 #else
-		sprintf(szSerialPort,"/dev/ttyUSB%d",Port);
+		#ifdef __APPLE__
+				if (Port>=apple_serial_ports.size())
+				{
+					std::cout << "Serial Port out of range!..." << std::endl;
+					return false;
+				}
+				sprintf(szSerialPort,"/dev/%s",apple_serial_ports[Port].c_str());
+		#else
+				sprintf(szSerialPort,"/dev/ttyUSB%d",Port);
+		#endif
 #endif
 		pHardware = new P1MeterSerial(ID,szSerialPort,9600);
 		break;

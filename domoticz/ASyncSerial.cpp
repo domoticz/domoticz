@@ -176,6 +176,7 @@ void AsyncSerial::writeString(const std::string& s)
 
 void AsyncSerial::doRead()
 {
+	if(isOpen()==false) return;
     pimpl->port.async_read_some(boost::asio::buffer(pimpl->readBuffer,readBufferSize),
             boost::bind(&AsyncSerial::readEnd,
             this,
@@ -428,9 +429,7 @@ void AsyncSerial::close()
     if(!isOpen()) return;
 
     pimpl->open=false;
-
     ::close(pimpl->fd); //The thread waiting on I/O should return
-
     pimpl->backgroundThread.join();
     if(errorStatus())
     {
