@@ -189,7 +189,6 @@ void AsyncSerial::readEnd(const boost::system::error_code& error,
 {
     if(error)
     {
-		_asm nop;
         #ifdef __APPLE__
         if(error.value()==45)
         {
