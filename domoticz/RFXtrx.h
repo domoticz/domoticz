@@ -2,26 +2,31 @@
 
 #ifndef _RXFCOMLIB_F11DD459_E67E_4B26_8E44_B964E99304BF
 #define _RXFCOMLIB_F11DD459_E67E_4B26_8E44_B964E99304BF
-//-------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------
 //                     Software License Agreement                      
 //                                                                     
-// This code is owned by RFXCOM, and is protected under applicable copyright laws.
-// 
-// It is not allowed to use this software or any part of it in an exclusive or patented
-// product without the express prior written permission of RFXCOM.
-// It is only allowed to use this code or any part of it for RFXCOM products.
+// Copyright 2011-2013, RFXCOM
 //
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
+// ALL RIGHTS RESERVED. This code is owned by RFXCOM, and is protected under
+// Netherlands Copyright Laws and Treaties and shall be subject to the 
+// exclusive jurisdiction of the Netherlands Courts. The information from this
+// file may freely be used to create programs to exclusively interface with
+// RFXCOM products only. Any other use or unauthorized reprint of this material
+// is prohibited. No part of this file may be reproduced or transmitted in
+// any form or by any means, electronic or mechanical, including photocopying,
+// recording, or by any information storage and retrieval system without
+// express written permission from RFXCOM.
 //
-// Any use in violation of the foregoing restrictions may subject the
-// user to criminal sanctions under applicable laws, as well as to
-// civil liability for the breach of the terms and conditions of this license.
-//-------------------------------------------------------------------------------------
+// The above copyright notice shall be included in all copies or substantial
+// portions of this Software.
+//-----------------------------------------------------------------------------
 
+//SDK version 6.01
+//  Copyright message updated
+//
 //SDK version 5.03
 //	RAIN6 added
-//	BlindsT4 added
+//	Raex BlindsT4 added
 //	protocol enable/disable msg3_LIGHTING4 added
 //  Interface Message - Wrong Command added
 //
