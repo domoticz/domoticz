@@ -1482,6 +1482,10 @@ char * CWebServer::GetJSonPage()
 		unsigned char dType=atoi(result[0][0].c_str());
 		unsigned char dSubType=atoi(result[0][1].c_str());
 		_eMeterType metertype = (_eMeterType)atoi(result[0][2].c_str());
+		if (dType==pTypeP1Power)
+			metertype= MTYPE_ENERGY;
+		else if (dType==pTypeP1Gas)
+			metertype= MTYPE_GAS;
 
 		std::string dbasetable="";
 		if (srange=="day") {
@@ -1605,6 +1609,82 @@ char * CWebServer::GetJSonPage()
 						if (bHaveDeliverd)
 						{
 							root["delivered"]=true;
+						}
+					}
+				}
+				else
+				{
+					root["status"]="OK";
+					root["title"]="Graph " + sensor + " " + srange;
+
+					float EnergyDivider=1000.0f;
+					float GasDivider=100.0f;
+					float WaterDivider=100.0f;
+					int tValue;
+					if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+					{
+						EnergyDivider=float(tValue);
+					}
+					if (m_pMain->m_sql.GetPreferencesVar("MeterDividerGas", tValue))
+					{
+						GasDivider=float(tValue);
+					}
+					if (m_pMain->m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+					{
+						WaterDivider=float(tValue);
+					}
+					if (dType==pTypeP1Gas)
+						GasDivider=1000;
+
+					szQuery.clear();
+					szQuery.str("");
+					int ii=0;
+					szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
+					result=m_pMain->m_sql.query(szQuery.str());
+
+					bool bHaveLastValue=false;
+					float LastValue=0;
+
+					if (result.size()>0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator itt;
+						for (itt=result.begin(); itt!=result.end(); ++itt)
+						{
+							std::vector<std::string> sd=*itt;
+
+							root["result"][ii]["d"]=sd[1].substr(0,16);
+							std::string szValue=sd[0];
+							float fvalue=(float)atof(szValue.c_str());
+
+							if (!bHaveLastValue)
+							{
+								LastValue=fvalue;
+								bHaveLastValue=true;
+								continue;
+							}
+							if (fvalue==LastValue)
+								continue;
+
+							float fdiff=fvalue-LastValue;
+							LastValue=fvalue;
+
+							switch (metertype)
+							{
+							case MTYPE_ENERGY:
+								sprintf(szTmp,"%.3f",fdiff/EnergyDivider);
+								szValue=szTmp;
+								break;
+							case MTYPE_GAS:
+								sprintf(szTmp,"%.2f",fdiff/GasDivider);
+								szValue=szTmp;
+								break;
+							case MTYPE_WATER:
+								sprintf(szTmp,"%.2f",fdiff/WaterDivider);
+								szValue=szTmp;
+								break;
+							}
+							root["result"][ii]["v"]=szValue;
+							ii++;
 						}
 					}
 				}

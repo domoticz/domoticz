@@ -36,6 +36,9 @@
 </div>
 
 <div id="counterlog" style="display:none;">
+  <h2>Last 24 Hours</h2><br>
+  <div id="counterdaygraph" style="height: 300px;"></div>
+  <br>
   <h2>Week</h2><br>
   <div id="counterweekgraph" style="height: 300px;"></div>
   <br>
@@ -196,6 +199,66 @@ function ShowCounterLog(id,name,switchtype)
   htmlcontent='<p><center><h2>' + name + '</h2></center></p><br><br>\n';
   htmlcontent+=$('#counterlog').html();
   $('#utilitycontent').html(GetBackbuttonHTMLTable('ShowUtilities')+htmlcontent);
+  
+  $.DayChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'counterdaygraph',
+          type: 'column',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=day",
+                function(data) {
+											AddDataToUtilityChart(data,$.DayChart,switchtype);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Usage Last 24 Hours'
+        },
+        xAxis: {
+            type: 'datetime',
+            labels: {
+							formatter: function() {
+								return Highcharts.dateFormat("%H:%M", this.value);
+							}
+						}
+        },
+        yAxis: {
+            title: {
+                text: 'Energy (kWh)'
+            },
+            min: 0
+        },
+        tooltip: {
+            formatter: function() {
+										var unit = {
+																'Usage': 'kWh',
+																'Return': 'kWh',
+																'Gas': 'm3',
+																'Water': 'm3'
+													}[this.series.name];
+                    return this.series.name + ': ' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y + ' ' + unit;
+            }
+        },
+        plotOptions: {
+            column: {
+                minPointLength: 4,
+                pointPadding: 0.1,
+                groupPadding: 0
+            }
+        },
+        legend: {
+            enabled: false
+        }
+    });
   
   $.WeekChart = new Highcharts.Chart({
       chart: {
