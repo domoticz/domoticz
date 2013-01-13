@@ -2015,7 +2015,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 	localtime_r(&later,&tm2);
 	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
-	std::vector<std::vector<std::string> > result;
+	std::vector<std::vector<std::string> > result,result2;
 
 	std::vector<std::vector<std::string> >::const_iterator itt;
 	for (itt=resultdevices.begin(); itt!=resultdevices.end(); ++itt)
@@ -2049,6 +2049,28 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				szDateStart
 				);
 			result=query(szTmp);
+		}
+		else
+		{
+			//no new meter result received in last hour
+			//add the last value again
+			sprintf(szTmp,"SELECT Value FROM Meter WHERE (DeviceRowID=%llu) ORDER BY ROWID DESC LIMIT 1",ID);
+			result2=query(szTmp);
+			if (result2.size()>0)
+			{
+				std::vector<std::string> sd2=result2[0];
+				std::string sValueLast=sd2[0];
+				float fValue=(float)atof(sValueLast.c_str());
+				//insert into calendar table
+				sprintf(szTmp,
+					"INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) "
+					"VALUES (%llu, %.2f, '%s')",
+					ID,
+					fValue,
+					szDateStart
+					);
+				result=query(szTmp);
+			}
 		}
 	}
 }
