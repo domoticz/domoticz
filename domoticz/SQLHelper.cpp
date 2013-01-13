@@ -2053,24 +2053,15 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		else
 		{
 			//no new meter result received in last hour
-			//add the last value again
-			sprintf(szTmp,"SELECT Value FROM Meter WHERE (DeviceRowID=%llu) ORDER BY ROWID DESC LIMIT 1",ID);
-			result2=query(szTmp);
-			if (result2.size()>0)
-			{
-				std::vector<std::string> sd2=result2[0];
-				std::string sValueLast=sd2[0];
-				float fValue=(float)atof(sValueLast.c_str());
-				//insert into calendar table
-				sprintf(szTmp,
-					"INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) "
-					"VALUES (%llu, %.2f, '%s')",
-					ID,
-					fValue,
-					szDateStart
-					);
-				result=query(szTmp);
-			}
+			//insert into calendar table
+			sprintf(szTmp,
+				"INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) "
+				"VALUES (%llu, %.2f, '%s')",
+				ID,
+				0,
+				szDateStart
+				);
+			result=query(szTmp);
 		}
 	}
 }
