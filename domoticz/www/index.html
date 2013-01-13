@@ -79,6 +79,18 @@
 function logEvent(event) {
   //console.log(event.type);
 }
+    
+function getServerTime() {
+    
+    $.ajax({
+           url: "json.htm?type=command&param=getServerTime",
+           async: false,
+           dataType: 'json',
+           success: function(data) {
+           $("#servertime").html(data.ServerTime);
+           }
+    });
+}
 
 if (window.applicationCache) {
 	window.applicationCache.addEventListener('checking',logEvent,false);
@@ -123,6 +135,11 @@ $(document).ready(function() {
 			alert('This Application is is designed for Internet Explorer version 10+!\nPlease upgrade your browser!');
 		}
 	}
+    getServerTime();
+    window.setInterval(function() {
+    getServerTime();
+    }, 10000);              
+                  
 	SwitchLayout('Dashboard');
 	
 } );
@@ -195,14 +212,16 @@ $(document).ready(function() {
 <div id="notification" style="display: none;"></div>
 <div id="header-wrapper">
 	<header id="header">
+        <!--<div id="servertime"></div>-->
 		<div class="5grid-layout">
 			<div class="row">
-				<div class="2u" id="logo">
+				<div class="3u" id="logo">
 					<h1><a class="mobileUI-site-name">Domoticz</a></h1>
-					<p> V<!--#embed versionstr --></p>
-				</div>
-				<div class="10u" id="menu">
-					<nav class="mobileUI-site-nav">
+                    <div id="servertime" style="padding-top: 10px;"></div>
+                    <div>V<!--#embed versionstr --></div>
+                </div>
+                <div class="9u" id="menu">
+             		<nav class="mobileUI-site-nav">
 						<ul>
 							<li id="mDashboard"><a id="cDashboard" href="javascript:SwitchLayout('Dashboard')"><img src="images/desktop.png"> Dashboard</img></a></li>
 							<li id="mLightSwitches"><a id="cLightSwitches" href="javascript:SwitchLayout('LightSwitches')"><img src="images/lightbulb.png"> Lights/Switches</a></li>
@@ -216,7 +235,7 @@ $(document).ready(function() {
 					</nav>
 				</div>
 			</div>
-		</div>
+          </div>
 	</header>
 </div>
 <div class="5grid-layout">

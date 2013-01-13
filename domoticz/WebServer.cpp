@@ -3355,6 +3355,21 @@ char * CWebServer::GetJSonPage()
 				}
 			}
 		}
+        else if (cparam =="getServerTime") {
+
+            time_t rawtime;
+            struct tm * timeinfo;
+            char buffer [80];
+
+            time ( &rawtime );
+            timeinfo = localtime ( &rawtime );
+
+            strftime (buffer,80,"%b %d %Y %I:%M%p",timeinfo);
+            
+            root["status"]="OK";
+			root["title"]="getServerTime";
+			root["ServerTime"]=buffer;
+		}
 	} //(rtype=="command")
 	else if (rtype=="setused")
 	{
