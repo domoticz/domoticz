@@ -2373,6 +2373,8 @@ void CSQLHelper::DeleteDevice(const std::string idx)
 void CSQLHelper::TransferDevice(const std::string idx, const std::string newidx)
 {
 	char szTmp[1000];
+	std::vector<std::vector<std::string> > result;
+
 	sprintf(szTmp,"UPDATE LightingLog SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
 	query(szTmp);
 	sprintf(szTmp,"UPDATE LightSubDevices SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
@@ -2381,31 +2383,105 @@ void CSQLHelper::TransferDevice(const std::string idx, const std::string newidx)
 	query(szTmp);
 	sprintf(szTmp,"UPDATE Notifications SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
 	query(szTmp);
-	sprintf(szTmp,"UPDATE Rain SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+
+	sprintf(szTmp,"SELECT Date FROM Rain WHERE (DeviceRowID == '%s') ORDER BY Date ASC LIMIT 1",newidx.c_str());
+	result=query(szTmp);
+	if (result.size()>0)
+		sprintf(szTmp,"UPDATE Rain SET DeviceRowID=%s WHERE (DeviceRowID == '%s') AND (Date<'%s')",newidx.c_str(),idx.c_str(),result[0][0].c_str());
+	else
+		sprintf(szTmp,"UPDATE Rain SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
 	query(szTmp);
-	sprintf(szTmp,"UPDATE Rain_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+
+	sprintf(szTmp,"SELECT Date FROM Rain_Calendar WHERE (DeviceRowID == '%s') ORDER BY Date ASC LIMIT 1",newidx.c_str());
+	result=query(szTmp);
+	if (result.size()>0)
+		sprintf(szTmp,"UPDATE Rain_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s') AND (Date<'%s')",newidx.c_str(),idx.c_str(),result[0][0].c_str());
+	else
+		sprintf(szTmp,"UPDATE Rain_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
 	query(szTmp);
-	sprintf(szTmp,"UPDATE Temperature SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+
+	sprintf(szTmp,"SELECT Date FROM Temperature WHERE (DeviceRowID == '%s') ORDER BY Date ASC LIMIT 1",newidx.c_str());
+	result=query(szTmp);
+	if (result.size()>0)
+		sprintf(szTmp,"UPDATE Temperature SET DeviceRowID=%s WHERE (DeviceRowID == '%s') AND (Date<'%s')",newidx.c_str(),idx.c_str(),result[0][0].c_str());
+	else
+		sprintf(szTmp,"UPDATE Temperature SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
 	query(szTmp);
-	sprintf(szTmp,"UPDATE Temperature_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+
+
+	sprintf(szTmp,"SELECT Date FROM Temperature_Calendar WHERE (DeviceRowID == '%s') ORDER BY Date ASC LIMIT 1",newidx.c_str());
+	result=query(szTmp);
+	if (result.size()>0)
+		sprintf(szTmp,"UPDATE Temperature_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s') AND (Date<'%s')",newidx.c_str(),idx.c_str(),result[0][0].c_str());
+	else
+		sprintf(szTmp,"UPDATE Temperature_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
 	query(szTmp);
+
 	sprintf(szTmp,"UPDATE Timers SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
 	query(szTmp);
-	sprintf(szTmp,"UPDATE UV SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+
+	sprintf(szTmp,"SELECT Date FROM UV WHERE (DeviceRowID == '%s') ORDER BY Date ASC LIMIT 1",newidx.c_str());
+	result=query(szTmp);
+	if (result.size()>0)
+		sprintf(szTmp,"UPDATE UV SET DeviceRowID=%s WHERE (DeviceRowID == '%s') AND (Date<'%s')",newidx.c_str(),idx.c_str(),result[0][0].c_str());
+	else
+		sprintf(szTmp,"UPDATE UV SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
 	query(szTmp);
-	sprintf(szTmp,"UPDATE UV_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+
+	sprintf(szTmp,"SELECT Date FROM UV_Calendar WHERE (DeviceRowID == '%s') ORDER BY Date ASC LIMIT 1",newidx.c_str());
+	result=query(szTmp);
+	if (result.size()>0)
+		sprintf(szTmp,"UPDATE UV_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s') AND (Date<'%s')",newidx.c_str(),idx.c_str(),result[0][0].c_str());
+	else
+		sprintf(szTmp,"UPDATE UV_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
 	query(szTmp);
-	sprintf(szTmp,"UPDATE Wind SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+
+	sprintf(szTmp,"SELECT Date FROM Wind WHERE (DeviceRowID == '%s') ORDER BY Date ASC LIMIT 1",newidx.c_str());
+	result=query(szTmp);
+	if (result.size()>0)
+		sprintf(szTmp,"UPDATE Wind SET DeviceRowID=%s WHERE (DeviceRowID == '%s') AND (Date<'%s')",newidx.c_str(),idx.c_str(),result[0][0].c_str());
+	else
+		sprintf(szTmp,"UPDATE Wind SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
 	query(szTmp);
-	sprintf(szTmp,"UPDATE Wind_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+
+	sprintf(szTmp,"SELECT Date FROM Wind_Calendar WHERE (DeviceRowID == '%s') ORDER BY Date ASC LIMIT 1",newidx.c_str());
+	result=query(szTmp);
+	if (result.size()>0)
+		sprintf(szTmp,"UPDATE Wind_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s') AND (Date<'%s')",newidx.c_str(),idx.c_str(),result[0][0].c_str());
+	else
+		sprintf(szTmp,"UPDATE Wind_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
 	query(szTmp);
-	sprintf(szTmp,"UPDATE Meter SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+
+	sprintf(szTmp,"SELECT Date FROM Meter WHERE (DeviceRowID == '%s') ORDER BY Date ASC LIMIT 1",newidx.c_str());
+	result=query(szTmp);
+	if (result.size()>0)
+		sprintf(szTmp,"UPDATE Meter SET DeviceRowID=%s WHERE (DeviceRowID == '%s') AND (Date<'%s')",newidx.c_str(),idx.c_str(),result[0][0].c_str());
+	else
+		sprintf(szTmp,"UPDATE Meter SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
 	query(szTmp);
-	sprintf(szTmp,"UPDATE Meter_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+
+	sprintf(szTmp,"SELECT Date FROM Meter_Calendar WHERE (DeviceRowID == '%s') ORDER BY Date ASC LIMIT 1",newidx.c_str());
+	result=query(szTmp);
+	if (result.size()>0)
+		sprintf(szTmp,"UPDATE Meter_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s') AND (Date<'%s')",newidx.c_str(),idx.c_str(),result[0][0].c_str());
+	else
+		sprintf(szTmp,"UPDATE Meter_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
 	query(szTmp);
-	sprintf(szTmp,"UPDATE MultiMeter SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+
+	sprintf(szTmp,"SELECT Date FROM MultiMeter WHERE (DeviceRowID == '%s') ORDER BY Date ASC LIMIT 1",newidx.c_str());
+	result=query(szTmp);
+	if (result.size()>0)
+		sprintf(szTmp,"UPDATE MultiMeter SET DeviceRowID=%s WHERE (DeviceRowID == '%s') AND (Date<'%s')",newidx.c_str(),idx.c_str(),result[0][0].c_str());
+	else
+		sprintf(szTmp,"UPDATE MultiMeter SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
 	query(szTmp);
-	sprintf(szTmp,"UPDATE MultiMeter_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+
+	sprintf(szTmp,"SELECT Date FROM MultiMeter_Calendar WHERE (DeviceRowID == '%s') ORDER BY Date ASC LIMIT 1",newidx.c_str());
+	result=query(szTmp);
+	if (result.size()>0)
+		sprintf(szTmp,"UPDATE MultiMeter_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s') AND (Date<'%s')",newidx.c_str(),idx.c_str(),result[0][0].c_str());
+	else
+		sprintf(szTmp,"UPDATE MultiMeter_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
 	query(szTmp);
 }
 
