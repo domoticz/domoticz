@@ -1643,6 +1643,8 @@ void CSQLHelper::UpdateMeter()
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
+	std::vector<std::vector<std::string> > result2;
+
 	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d OR Type=%d)",
 		pTypeRFXMeter,
 		pTypeP1Gas
@@ -1665,6 +1667,21 @@ void CSQLHelper::UpdateMeter()
 			unsigned long long MeterValue;
 			std::stringstream s_str2( sValue );
 			s_str2 >> MeterValue;
+
+			if (dType==pTypeP1Gas)
+			{
+				//if last value == actual value, then do not insert it
+				//(Update is onces every one/two hours)
+				sprintf(szTmp,"SELECT Value FROM Meter WHERE (DeviceRowID=%llu) ORDER BY ROWID DESC LIMIT 1",ID);
+				result2=query(szTmp);
+				if (result2.size()>0)
+				{
+					std::vector<std::string> sd2=result2[0];
+					std::string sValueLast=sd2[0];
+					if (sValueLast==sValue)
+						continue; //skip same value
+				}
+			}
 
 			//insert record
 			sprintf(szTmp,
