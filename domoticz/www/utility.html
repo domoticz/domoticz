@@ -1040,6 +1040,10 @@ $(document).ready(function() {
                       
                   }
               },
+              "Transfer": function() {
+                  $( this ).dialog( "close" );
+                  TransferDevice($.devIdx,ShowUtilities);
+              },
               Cancel: function() {
                   $( this ).dialog( "close" );
               }

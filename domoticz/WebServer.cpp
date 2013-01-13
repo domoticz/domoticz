@@ -1419,6 +1419,54 @@ char * CWebServer::GetJSonPage()
 			}
 		}
 	} //(rtype=="timers")
+	else if ((rtype=="gettransfers")&&(idx!=0))
+	{
+		root["status"]="OK";
+		root["title"]="GetTransfers";
+
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT Type, SubType FROM DeviceStatus WHERE (ID==" << idx << ")";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT ID, Name FROM DeviceStatus WHERE (Type==" << result[0][0] << ") AND (SubType==" << result[0][1] << ") AND (ID!=" << idx << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			int ii=0;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+
+				root["result"][ii]["idx"]=sd[0];
+				root["result"][ii]["Name"]=sd[1];
+				ii++;
+			}
+		}
+	} //(rtype=="gettransfers")
+	else if ((rtype=="transferdevice")&&(idx!=0))
+	{
+		std::string sidx=m_pWebEm->FindValue("idx");
+		if (sidx=="")
+			goto exitjson;
+
+		std::string newidx=m_pWebEm->FindValue("newidx");
+		if (newidx=="")
+			goto exitjson;
+
+		root["status"]="OK";
+		root["title"]="TransferDevice";
+
+		//transfer device logs
+		m_pMain->m_sql.TransferDevice(sidx,newidx);
+
+		//now delete the old device
+		m_pMain->m_sql.DeleteDevice(sidx);
+		m_pMain->m_scheduler.ReloadSchedules();
+	} //(rtype=="transferdevice")
 	else if ((rtype=="notifications")&&(idx!=0))
 	{
 		root["status"]="OK";

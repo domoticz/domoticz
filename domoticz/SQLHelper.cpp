@@ -2361,8 +2361,51 @@ void CSQLHelper::DeleteDevice(const std::string idx)
 	query(szTmp);
 	sprintf(szTmp,"DELETE FROM Meter_Calendar WHERE (DeviceRowID == %s)",idx.c_str());
 	query(szTmp);
+	sprintf(szTmp,"DELETE FROM MultiMeter WHERE (DeviceRowID == %s)",idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"DELETE FROM MultiMeter_Calendar WHERE (DeviceRowID == %s)",idx.c_str());
+	query(szTmp);
 	//and now delete all records in the DeviceStatus table itself
 	sprintf(szTmp,"DELETE FROM DeviceStatus WHERE (ID == %s)",idx.c_str());
+	query(szTmp);
+}
+
+void CSQLHelper::TransferDevice(const std::string idx, const std::string newidx)
+{
+	char szTmp[1000];
+	sprintf(szTmp,"UPDATE LightingLog SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"UPDATE LightSubDevices SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"UPDATE LightSubDevices SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"UPDATE Notifications SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"UPDATE Rain SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"UPDATE Rain_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"UPDATE Temperature SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"UPDATE Temperature_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"UPDATE Timers SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"UPDATE UV SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"UPDATE UV_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"UPDATE Wind SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"UPDATE Wind_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"UPDATE Meter SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"UPDATE Meter_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"UPDATE MultiMeter SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"UPDATE MultiMeter_Calendar SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
 	query(szTmp);
 }
 

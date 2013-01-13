@@ -102,6 +102,8 @@ public:
 
 	void DeleteDevice(const std::string idx);
 
+	void TransferDevice(const std::string oldidx, const std::string newidx);
+
 	std::vector<std::vector<std::string> > query(const std::string szQuery);
 
 	std::string m_LastSwitchID;	//for learning command

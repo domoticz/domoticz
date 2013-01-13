@@ -80,6 +80,32 @@ function logEvent(event) {
   //console.log(event.type);
 }
 
+function TransferDevice(idx,backfunction)
+{
+	$.ajax({
+		 url: "json.htm?type=gettransfers&idx=" + idx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+				if (typeof data.result == 'undefined') 
+				{
+					alert('No devices to Transfer too!');
+					return;
+				}
+				$("#dialog-transferdevice #newdevice").html("");
+				
+				$.each(data.result, function(i,item){
+					var option = $('<option />');
+					option.attr('value', item.idx).text(item.Name);
+					$("#dialog-transferdevice #newdevice").append(option);
+				});
+				$.devIdx = idx;
+				$.backfunction=backfunction;
+        $( "#dialog-transferdevice" ).dialog( "open" );
+		 }
+	});
+}
+
 if (window.applicationCache) {
 	window.applicationCache.addEventListener('checking',logEvent,false);
 	window.applicationCache.addEventListener('noupdate',logEvent,false);
@@ -123,6 +149,58 @@ $(document).ready(function() {
 			alert('This Application is is designed for Internet Explorer version 10+!\nPlease upgrade your browser!');
 		}
 	}
+	
+    $( "#dialog-transferdevice" ).dialog({
+          autoOpen: false,
+          width: 380,
+          height: 160,
+          modal: true,
+          resizable: false,
+          buttons: {
+              "OK": function() {
+                  var bValid = true;
+                  $( this ).dialog( "close" );
+                  
+									var NewDeviceIdx=$("#dialog-transferdevice #newdevice option:selected").val();
+									if (typeof NewDeviceIdx == 'undefined') {
+										alert('No New Device Selected!');
+										return ;
+									}
+									$.ajax({
+										 url: "json.htm?type=transferdevice&idx=" + $.devIdx + "&newidx=" + NewDeviceIdx,
+										 async: false, 
+										 dataType: 'json',
+										 success: function(data) {
+											if (data.status == 'OK') {
+												$.backfunction();
+											}
+											else {
+												ShowNotify('Problem Transfering Device!', 2500, true);
+											}
+										 },
+										 error: function(){
+												HideNotify();
+												ShowNotify('Problem Transfering Device!', 2500, true);
+										 }     
+									});
+              },
+              Cancel: function() {
+                  $( this ).dialog( "close" );
+              }
+          },
+          open: function() {
+              $(this).keypress(function(e) {
+                if (e.keyCode == $.ui.keyCode.ENTER) {
+                  e.preventDefault();
+                  $(this).parent().find("button:eq(0)").trigger("click");
+                }
+              });
+          },
+          close: function() {
+            $( this ).dialog( "close" );
+          }
+    });
+	
 	SwitchLayout('Dashboard');
 	
 } );
@@ -190,6 +268,15 @@ $(document).ready(function() {
 		</table>
 		<br>
     <a class="btnstyle3" onclick="AddNotification();">Add</a>
+</div>
+<div id="dialog-transferdevice" title="Transfer Device">
+    <form>
+    <fieldset>
+        <label for="newdevice">New Device: </label>
+				<select id="newdevice" style="width:250px" class="combobox ui-corner-all">
+				</select>
+    </fieldset>
+    </form>
 </div>
 <div id="wrap">
 <div id="notification" style="display: none;"></div>

@@ -10,6 +10,7 @@ Version 1.0.7 (Januari xxth 2013)
 - meter values now only inserted in meter table when there is a difference in value
 - implemented utility graph 'last 24 hours usage'
 - added jwsmtp class
+- Option to transfer old device logs/settings to a new device (for example when the device battery is replaced and received a new ID)
 
 Version 1.0.6 (Januari 9th 2013)
 - RFXCOM Lan will now keep retrying to connect when it does not succeed on the first time

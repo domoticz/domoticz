@@ -1809,7 +1809,7 @@ $(document).ready(function() {
     });
     $( "#dialog-editweatherdevice" ).dialog({
           autoOpen: false,
-          width: 350,
+          width: 450,
           height: 150,
           modal: true,
           resizable: false,
@@ -1845,6 +1845,10 @@ $(document).ready(function() {
                       });
                       
                   }
+              },
+              "Transfer": function() {
+                  $( this ).dialog( "close" );
+                  TransferDevice($.devIdx,ShowWeathers);
               },
               Cancel: function() {
                   $( this ).dialog( "close" );
