@@ -3348,8 +3348,15 @@ char * CWebServer::GetJSonPage()
 				StringSplit(sValue, ";", strarray);
 				if (strarray.size()==2)
 				{
+					struct tm loctime;
+					time_t now = time(NULL);
+
+					localtime_r (&now, &loctime );
+					strftime (szTmp,80,"%b %d %Y %X",&loctime);
+
 					root["status"]="OK";
 					root["title"]="getSunRiseSet";
+					root["ServerTime"]=szTmp;
 					root["Sunrise"]=strarray[0];
 					root["Sunset"]=strarray[1];
 				}
@@ -3357,18 +3364,15 @@ char * CWebServer::GetJSonPage()
 		}
         else if (cparam =="getServerTime") {
 
-            time_t rawtime;
-            struct tm * timeinfo;
-            char buffer [80];
+            struct tm loctime;
+			time_t now = time(NULL);
 
-            time ( &rawtime );
-            timeinfo = localtime ( &rawtime );
-
-            strftime (buffer,80,"%b %d %Y %I:%M%p",timeinfo);
+            localtime_r (&now, &loctime );
+			strftime (szTmp,80,"%b %d %Y %X",&loctime);
             
             root["status"]="OK";
 			root["title"]="getServerTime";
-			root["ServerTime"]=buffer;
+			root["ServerTime"]=szTmp;
 		}
 	} //(rtype=="command")
 	else if (rtype=="setused")

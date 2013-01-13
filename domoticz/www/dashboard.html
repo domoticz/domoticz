@@ -7,6 +7,22 @@ function RefreshFavorites()
 {
   clearInterval($.myglobals.refreshTimer);
   var id="";
+  
+  $.ajax({
+     url: "json.htm?type=command&param=getSunRiseSet",
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+        if (typeof data.Sunrise != 'undefined') {
+					var sunRise=data.Sunrise;
+					var sunSet=data.Sunset;
+					var ServerTime=data.ServerTime;
+					var suntext=ServerTime + ', SunRise: ' + sunRise + ', SunSet: ' + sunSet;
+					$("#timesun").html(suntext);
+        }
+     }
+  });
+  
   $.ajax({
      url: "json.htm?type=devices&filter=all&used=true&order=Name",
      async: false,
@@ -437,6 +453,7 @@ function ShowFavorites()
 
   var sunRise="";
   var sunSet="";
+  var ServerTime="";
 
   $.ajax({
      url: "json.htm?type=command&param=getSunRiseSet",
@@ -446,6 +463,7 @@ function ShowFavorites()
         if (typeof data.Sunrise != 'undefined') {
           sunRise=data.Sunrise;
           sunSet=data.Sunset;
+          ServerTime=data.ServerTime;
         }
      }
   });
@@ -1145,7 +1163,7 @@ function ShowFavorites()
 	var suntext="";
   if (sunRise!="")
   {
-    suntext+='SunRise: ' + sunRise + ', SunSet: ' + sunSet + '<br><br>\n';
+    suntext+='<div id="timesun">' + ServerTime + ', SunRise: ' + sunRise + ', SunSet: ' + sunSet + '</div><br>\n';
   }
   $('#dashcontent').html(suntext+htmlcontent);
 
