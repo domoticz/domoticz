@@ -5,6 +5,8 @@ Version 1.0.7 (Januari xxth 2013)
 - Support for MAC serial ports
 - Error message when serial port get disconnected
 - updated to RFCOM SDK version 6.01
+- Dashboard now includes server date
+- Barometer graph values now displays as whole number
 
 Version 1.0.6 (Januari 9th 2013)
 - RFXCOM Lan will now keep retrying to connect when it does not succeed on the first time

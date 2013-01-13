@@ -1060,7 +1060,12 @@ function ShowBaroLog(id,name)
         yAxis: {
             title: {
                 text: 'Pressure (hPa)'
-            }
+            },
+            labels: {
+							formatter: function(){
+									return this.value;       
+							}
+						}
         },
         tooltip: {
             formatter: function() {
@@ -1137,7 +1142,12 @@ function ShowBaroLog(id,name)
         yAxis: {
             title: {
                 text: 'Pressure (hPa)'
-            }
+            },
+            labels: {
+							formatter: function(){
+									return this.value;       
+							}
+						}
         },
         tooltip: {
             formatter: function() {
@@ -1214,7 +1224,12 @@ function ShowBaroLog(id,name)
         yAxis: {
             title: {
                 text: 'Pressure (hPa)'
-            }
+            },
+            labels: {
+							formatter: function(){
+									return this.value;       
+							}
+						}
         },
         tooltip: {
             formatter: function() {
