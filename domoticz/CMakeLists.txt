@@ -130,6 +130,9 @@ webserver/server.cpp
 json/json_writer.cpp
 json/json_reader.cpp
 json/json_value.cpp
+jwsmtp/mailer.cpp
+jwsmtp/base64_b.cpp
+jwsmtp/compat.cpp
 )
 add_executable(domoticz ${domoticz_SRCS})
 ADD_PRECOMPILED_HEADER(domoticz "stdafx.h")

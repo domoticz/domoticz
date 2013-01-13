@@ -48,6 +48,9 @@
     <Filter Include="Devices\P1Smart Meter\P1MeterSerial">
       <UniqueIdentifier>{3842a5f4-988f-43df-ab50-6b41679ce600}</UniqueIdentifier>
     </Filter>
+    <Filter Include="SMTP">
+      <UniqueIdentifier>{acc2dd9a-c3ba-4abc-9dd5-a6871fd4d465}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -181,6 +184,18 @@
     <ClInclude Include="localtime_r.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="jwsmtp\compat.h">
+      <Filter>SMTP</Filter>
+    </ClInclude>
+    <ClInclude Include="jwsmtp\jwsmtp.h">
+      <Filter>SMTP</Filter>
+    </ClInclude>
+    <ClInclude Include="jwsmtp\mailer.h">
+      <Filter>SMTP</Filter>
+    </ClInclude>
+    <ClInclude Include="jwsmtp\base64_b.h">
+      <Filter>SMTP</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -290,6 +305,15 @@
     </ClCompile>
     <ClCompile Include="localtime_r.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="jwsmtp\compat.cpp">
+      <Filter>SMTP</Filter>
+    </ClCompile>
+    <ClCompile Include="jwsmtp\mailer.cpp">
+      <Filter>SMTP</Filter>
+    </ClCompile>
+    <ClCompile Include="jwsmtp\base64_b.cpp">
+      <Filter>SMTP</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

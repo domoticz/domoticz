@@ -90,6 +90,10 @@
     <ClInclude Include="CmdLine.h" />
     <ClInclude Include="DomoticzHardware.h" />
     <ClInclude Include="DomoticzTCP.h" />
+    <ClInclude Include="jwsmtp\base64_b.h" />
+    <ClInclude Include="jwsmtp\compat.h" />
+    <ClInclude Include="jwsmtp\jwsmtp.h" />
+    <ClInclude Include="jwsmtp\mailer.h" />
     <ClInclude Include="localtime_r.h" />
     <ClInclude Include="P1MeterBase.h" />
     <ClInclude Include="P1MeterSerial.h" />
@@ -132,6 +136,9 @@
     <ClCompile Include="CmdLine.cpp" />
     <ClCompile Include="DomoticzHardware.cpp" />
     <ClCompile Include="DomoticzTCP.cpp" />
+    <ClCompile Include="jwsmtp\base64_b.cpp" />
+    <ClCompile Include="jwsmtp\compat.cpp" />
+    <ClCompile Include="jwsmtp\mailer.cpp" />
     <ClCompile Include="localtime_r.cpp" />
     <ClCompile Include="P1MeterBase.cpp" />
     <ClCompile Include="P1MeterSerial.cpp" />
