@@ -59,9 +59,11 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
             return false;
     }
     catch(...) {
-        std::cout << "Failed to start webserver\n";
-        if(atoi(listenaddress.c_str())<1024)
-            std::cout << "check privileges for opening ports below 1024\n";
+        std::cout << "Failed to start the webserver" << std::endl;
+        if(atoi(listenport.c_str())<1024)
+            std::cout << "check privileges for opening ports below 1024" << std::endl;
+		else
+			std::cout << "check if no other application is using port: " << listenport << std::endl;
         return false;
     }
 	m_pWebEm->SetDigistRealm("DVBControl.com");
