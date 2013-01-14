@@ -2058,7 +2058,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				"INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) "
 				"VALUES (%llu, %.2f, '%s')",
 				ID,
-				0,
+				0.0f,
 				szDateStart
 				);
 			result=query(szTmp);
