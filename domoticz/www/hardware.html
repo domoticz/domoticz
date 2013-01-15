@@ -401,7 +401,7 @@ function RefreshHardwareTable()
         $.each(data.result, function(i,item){
         
 					var SerialName="Unknown!?";
-					if ((item.Type == 2)||(item.Type == 3))
+					if ((item.Type == 2)||(item.Type == 3)||(item.Type == 5)||(item.Type == 6))
 					{
 						SerialName=item.Port;
 					}
