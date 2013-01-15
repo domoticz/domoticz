@@ -51,6 +51,9 @@
     <Filter Include="SMTP">
       <UniqueIdentifier>{acc2dd9a-c3ba-4abc-9dd5-a6871fd4d465}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\YouLess">
+      <UniqueIdentifier>{ddea03ec-8176-4bdf-8402-b73040b73584}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -196,6 +199,9 @@
     <ClInclude Include="jwsmtp\base64_b.h">
       <Filter>SMTP</Filter>
     </ClInclude>
+    <ClInclude Include="YouLess.h">
+      <Filter>Devices\YouLess</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -314,6 +320,9 @@
     </ClCompile>
     <ClCompile Include="jwsmtp\base64_b.cpp">
       <Filter>SMTP</Filter>
+    </ClCompile>
+    <ClCompile Include="YouLess.cpp">
+      <Filter>Devices\YouLess</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

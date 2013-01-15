@@ -124,5 +124,6 @@ private:
 	void decode_RFXMeter(const int HwdID, const tRBUF *pResponse);
 	void decode_P1MeterPower(const int HwdID, const tRBUF *pResponse);
 	void decode_P1MeterGas(const int HwdID, const tRBUF *pResponse);
+	void decode_YouLessMeter(const int HwdID, const tRBUF *pResponse);
 	void decode_FS20(const int HwdID, const tRBUF *pResponse);
 };

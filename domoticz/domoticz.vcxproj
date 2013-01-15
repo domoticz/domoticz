@@ -130,6 +130,7 @@
     <ClInclude Include="webserver\request_parser.hpp" />
     <ClInclude Include="webserver\server.hpp" />
     <ClInclude Include="WindowsHelper.h" />
+    <ClInclude Include="YouLess.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ASyncSerial.cpp" />
@@ -174,6 +175,7 @@
     <ClCompile Include="webserver\request_parser.cpp" />
     <ClCompile Include="webserver\server.cpp" />
     <ClCompile Include="WindowsHelper.cpp" />
+    <ClCompile Include="YouLess.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="domoticz.rc" />

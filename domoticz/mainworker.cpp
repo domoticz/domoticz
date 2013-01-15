@@ -4,7 +4,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/lexical_cast.hpp>
-#include "mynetwork.h"
+//#include "mynetwork.h"
 #include "Helper.h"
 
 #include "RFXComSerial.h"
@@ -13,6 +13,7 @@
 #include "P1MeterBase.h"
 #include "P1MeterSerial.h"
 #include "P1MeterTCP.h"
+#include "YouLess.h"
 
 #include "SunRiseSet.h"
 
@@ -82,7 +83,8 @@ void MainWorker::SendResetCommand(CDomoticzHardwareBase *pHardware)
 	if (
 		(pHardware->HwdType!=HTYPE_Domoticz)&&
 		(pHardware->HwdType!=HTYPE_P1SmartMeter)&&
-		(pHardware->HwdType!=HTYPE_P1SmartMeterLAN)
+		(pHardware->HwdType!=HTYPE_P1SmartMeterLAN)&&
+		(pHardware->HwdType!=HTYPE_YouLess)
 		)
 	{
 		//Send Reset
@@ -98,7 +100,8 @@ void MainWorker::SendResetCommand(CDomoticzHardwareBase *pHardware)
 	if (
 		(pHardware->HwdType!=HTYPE_Domoticz)&&
 		(pHardware->HwdType!=HTYPE_P1SmartMeter)&&
-		(pHardware->HwdType!=HTYPE_P1SmartMeterLAN)
+		(pHardware->HwdType!=HTYPE_P1SmartMeterLAN)&&
+		(pHardware->HwdType!=HTYPE_YouLess)
 		)
 	{
 		SendCommand(pHardware->m_HwdID,cmdSTATUS,"Status");
@@ -342,6 +345,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_P1SmartMeterLAN:
 		//LAN
 		pHardware = new P1MeterTCP(ID, Address, Port);
+		break;
+	case HTYPE_YouLess:
+		//LAN
+		pHardware = new CYouLess(ID, Address, Port);
 		break;
 	}
 	if (pHardware)
@@ -769,6 +776,10 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		case pTypeP1Gas:
 			WriteMessage("P1 Smart Meter Gas");
 			decode_P1MeterGas(HwdID, (tRBUF *)pRXCommand);
+			break;
+		case pTypeYouLess:
+			WriteMessage("YouLess Meter");
+			decode_YouLessMeter(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeFS20:
 			WriteMessage("FS20");
@@ -4828,6 +4839,44 @@ void MainWorker::decode_P1MeterGas(const int HwdID, const tRBUF *pResponse)
 			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", p1Gas->type, p1Gas->subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+	}
+}
+
+void MainWorker::decode_YouLessMeter(const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[200];
+	const _tYouLessMeter *pMeter=(const _tYouLessMeter*)pResponse;
+	unsigned char devType=pMeter->type;
+	unsigned char subType=pMeter->subtype;
+	std::string ID=pMeter->ID;
+	unsigned char Unit=subType;
+	unsigned char cmnd=0;
+	unsigned char SignalLevel=12;
+	unsigned char BatteryLevel = 255;
+
+	sprintf(szTmp,"%ld;%ld",
+		pMeter->powerusage,
+		pMeter->usagecurrent
+		);
+	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
+
+	if (m_verboselevel == EVBL_ALL)
+	{
+		switch (pMeter->subtype)
+		{
+		case sTypeYouLess:
+			WriteMessage("subtype       = YouLess Meter");
+
+			sprintf(szTmp,"powerusage = %.3f kWh", float(pMeter->powerusage) / 1000.0f);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"current usage = %03ld kWh", pMeter->usagecurrent);
+			WriteMessage(szTmp);
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
 			WriteMessage(szTmp);
 			break;
 		}

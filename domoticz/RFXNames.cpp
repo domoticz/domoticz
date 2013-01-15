@@ -2,6 +2,7 @@
 #include "RFXNames.h"
 #include "RFXtrx.h"
 #include "P1MeterBase.h"
+#include "YouLess.h"
 
 typedef struct _STR_TABLE_SINGLE {
 	unsigned long    id;
@@ -130,6 +131,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_Domoticz,			"Domoticz - Remote Server" },
 		{ HTYPE_P1SmartMeter,		"P1 Smart Meter USB" },
 		{ HTYPE_P1SmartMeterLAN,	"P1 Smart Meter with LAN interface" },
+		{ HTYPE_YouLess,			"YouLess Meter with LAN interface" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -260,6 +262,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeRFXMeter, "RFXMeter" , "counter" },
 		{ pTypeP1Power, "P1 Smart Meter" , "counter" },
 		{ pTypeP1Gas, "P1 Smart Meter" , "counter" },
+		{ pTypeYouLess, "YouLess Meter", "counter" },
 		{ pTypeFS20, "FS20" , "unknown" },
 		{  0,NULL,NULL }
 	};
@@ -395,6 +398,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		
 		{ pTypeP1Power, sTypeP1Power, "Energy" },
 		{ pTypeP1Gas, sTypeP1Gas, "Gas" },
+
+		{ pTypeYouLess, sTypeYouLess, "YouLess counter" },
 
 		{  0,0,NULL }
 	};

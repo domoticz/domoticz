@@ -8,6 +8,7 @@
 #include "mynetwork.h"
 #include "WindowsHelper.h"
 #include "P1MeterBase.h"
+#include "YouLess.h"
 #include "localtime_r.h"
 
 //Rob, to implement PushOver notifications
@@ -1645,9 +1646,10 @@ void CSQLHelper::UpdateMeter()
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
 
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d OR Type=%d)",
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d)",
 		pTypeRFXMeter,
-		pTypeP1Gas
+		pTypeP1Gas,
+		pTypeYouLess
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -1664,6 +1666,16 @@ void CSQLHelper::UpdateMeter()
 			unsigned char dSubType=atoi(sd[2].c_str());
 			unsigned char nValue=atoi(sd[3].c_str());
 			std::string sValue=sd[4];
+
+			if (dType==pTypeYouLess)
+			{
+				std::vector<std::string> splitresults;
+				StringSplit(sValue, ";", splitresults);
+				if (splitresults.size()<2)
+					continue;
+				sValue=splitresults[0];
+			}
+
 			unsigned long long MeterValue;
 			std::stringstream s_str2( sValue );
 			s_str2 >> MeterValue;

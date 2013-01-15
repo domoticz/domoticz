@@ -10,6 +10,7 @@
 #include "webserver/Base64.h"
 #include "appversion.h"
 #include "P1MeterBase.h"
+#include "YouLess.h"
 #include "UrlEncode.h"
 #include "localtime_r.h"
 
@@ -501,7 +502,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 						(dType!=pTypeCURRENT)&&
 						(dType!=pTypeENERGY)&&
 						(dType!=pTypeP1Power)&&
-						(dType!=pTypeP1Gas)
+						(dType!=pTypeP1Gas)&&
+						(dType!=pTypeYouLess)
 						)
 						continue;
 				}
@@ -866,6 +868,140 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				root["result"][ii]["Counter"]=sValue;
 				root["result"][ii]["CounterToday"]=szTmp;
 				root["result"][ii]["SwitchTypeVal"]=metertype;
+			}
+			else if (dType == pTypeYouLess)
+			{
+				float EnergyDivider=1000.0f;
+				float GasDivider=100.0f;
+				float WaterDivider=100.0f;
+				float musage=0;
+				int tValue;
+				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+				{
+					EnergyDivider=float(tValue);
+				}
+				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerGas", tValue))
+				{
+					GasDivider=float(tValue);
+				}
+				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+				{
+					WaterDivider=float(tValue);
+				}
+
+				//get lowest value of today
+				time_t now = time(NULL);
+				struct tm tm1;
+				localtime_r(&now,&tm1);
+
+				struct tm ltime;
+				ltime.tm_isdst=tm1.tm_isdst;
+				ltime.tm_hour=0;
+				ltime.tm_min=0;
+				ltime.tm_sec=0;
+				ltime.tm_year=tm1.tm_year;
+				ltime.tm_mon=tm1.tm_mon;
+				ltime.tm_mday=tm1.tm_mday;
+
+				char szDate[40];
+				sprintf(szDate,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
+
+				std::vector<std::vector<std::string> > result2;
+				strcpy(szTmp,"");
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
+				result2=m_pMain->m_sql.query(szQuery.str());
+				if (result2.size()>0)
+				{
+					std::vector<std::string> sd2=result2[0];
+
+					unsigned long long total_min,total_max,total_real;
+
+					std::stringstream s_str1( sd2[0] );
+					s_str1 >> total_min;
+					std::stringstream s_str2( sd2[1] );
+					s_str2 >> total_max;
+					total_real=total_max-total_min;
+					sprintf(szTmp,"%llu",total_real);
+
+					musage=0;
+					switch (metertype)
+					{
+					case MTYPE_ENERGY:
+						musage=float(total_real)/EnergyDivider;
+						sprintf(szTmp,"%.03f kWh",musage);
+						break;
+					case MTYPE_GAS:
+						musage=float(total_real)/GasDivider;
+						sprintf(szTmp,"%.02f m3",musage);
+						break;
+					case MTYPE_WATER:
+						musage=float(total_real)/WaterDivider;
+						sprintf(szTmp,"%.02f m3",musage);
+						break;
+					}
+				}
+				std::vector<std::string> splitresults;
+				StringSplit(sValue, ";", splitresults);
+
+				root["result"][ii]["CounterToday"]=szTmp;
+
+				unsigned long long total_actual;
+				std::stringstream s_stra( splitresults[0]);
+				s_stra >> total_actual;
+				musage=0;
+				switch (metertype)
+				{
+				case MTYPE_ENERGY:
+					musage=float(total_actual)/EnergyDivider;
+					sprintf(szTmp,"%.03f",musage);
+					break;
+				case MTYPE_GAS:
+				case MTYPE_WATER:
+					musage=float(total_actual)/GasDivider;
+					sprintf(szTmp,"%.02f",musage);
+					break;
+				}
+				root["result"][ii]["Counter"]=szTmp;
+
+				root["result"][ii]["SwitchTypeVal"]=metertype;
+
+				unsigned long long acounter;
+				std::stringstream s_str3( sValue );
+				s_str3 >> acounter;
+				musage=0;
+				switch (metertype)
+				{
+				case MTYPE_ENERGY:
+					musage=float(acounter)/EnergyDivider;
+					sprintf(szTmp,"%.03f kWh %s Watt",musage,splitresults[1].c_str());
+					break;
+				case MTYPE_GAS:
+					musage=float(acounter)/GasDivider;
+					sprintf(szTmp,"%.02f m3",musage);
+					break;
+				case MTYPE_WATER:
+					musage=float(acounter)/WaterDivider;
+					sprintf(szTmp,"%.02f m3",musage);
+					break;
+				}
+				root["result"][ii]["Data"]=szTmp;
+				switch (metertype)
+				{
+				case MTYPE_ENERGY:
+					sprintf(szTmp,"%s Watt",splitresults[1].c_str());
+					break;
+				case MTYPE_GAS:
+					sprintf(szTmp,"%s m",splitresults[1].c_str());
+					break;
+				case MTYPE_WATER:
+					sprintf(szTmp,"%s m",splitresults[1].c_str());
+					break;
+				}
+
+				root["result"][ii]["Usage"]=szTmp;
+
 			}
 			else if (dType == pTypeP1Power)
 			{
@@ -1630,7 +1766,7 @@ char * CWebServer::GetJSonPage()
 			}
 			else if (sensor=="counter")
 			{
-				if (dSubType==sTypeP1Power)
+				if (dType==pTypeP1Power)
 				{
 					root["status"]="OK";
 					root["title"]="Graph " + sensor + " " + srange;
@@ -1694,6 +1830,9 @@ char * CWebServer::GetJSonPage()
 
 					bool bHaveLastValue=false;
 					float LastValue=0;
+					float total=0;
+					float totalValues=0;
+					std::string LastDateTime="";
 
 					if (result.size()>0)
 					{
@@ -1702,7 +1841,33 @@ char * CWebServer::GetJSonPage()
 						{
 							std::vector<std::string> sd=*itt;
 
-							root["result"][ii]["d"]=sd[1].substr(0,16);
+							std::string actDateTimeHour=sd[1].substr(0,13);
+							if (actDateTimeHour!=LastDateTime)
+							{
+								if (totalValues!=0)
+								{
+									float TotalValue=total/totalValues;
+									root["result"][ii]["d"]=LastDateTime+":00";
+
+									switch (metertype)
+									{
+									case MTYPE_ENERGY:
+										sprintf(szTmp,"%.3f",TotalValue/EnergyDivider);
+										break;
+									case MTYPE_GAS:
+										sprintf(szTmp,"%.2f",TotalValue/GasDivider);
+										break;
+									case MTYPE_WATER:
+										sprintf(szTmp,"%.2f",TotalValue/WaterDivider);
+										break;
+									}
+									root["result"][ii]["v"]=szTmp;
+									ii++;
+								}
+								totalValues=0;
+								total=0;
+								LastDateTime=actDateTimeHour;
+							}
 							std::string szValue=sd[0];
 							float fvalue=(float)atof(szValue.c_str());
 
@@ -1710,32 +1875,36 @@ char * CWebServer::GetJSonPage()
 							{
 								LastValue=fvalue;
 								bHaveLastValue=true;
+								total=0;
 								continue;
 							}
 							if (fvalue==LastValue)
 								continue;
-
-							float fdiff=fvalue-LastValue;
+							total+=fvalue-LastValue;
+							totalValues+=1;
 							LastValue=fvalue;
-
-							switch (metertype)
-							{
-							case MTYPE_ENERGY:
-								sprintf(szTmp,"%.3f",fdiff/EnergyDivider);
-								szValue=szTmp;
-								break;
-							case MTYPE_GAS:
-								sprintf(szTmp,"%.2f",fdiff/GasDivider);
-								szValue=szTmp;
-								break;
-							case MTYPE_WATER:
-								sprintf(szTmp,"%.2f",fdiff/WaterDivider);
-								szValue=szTmp;
-								break;
-							}
-							root["result"][ii]["v"]=szValue;
-							ii++;
 						}
+					}
+					if (totalValues>0)
+					{
+						//add last value
+						float TotalValue=total/totalValues;
+						root["result"][ii]["d"]=LastDateTime+":00";
+
+						switch (metertype)
+						{
+						case MTYPE_ENERGY:
+							sprintf(szTmp,"%.3f",TotalValue/EnergyDivider);
+							break;
+						case MTYPE_GAS:
+							sprintf(szTmp,"%.2f",TotalValue/GasDivider);
+							break;
+						case MTYPE_WATER:
+							sprintf(szTmp,"%.2f",TotalValue/WaterDivider);
+							break;
+						}
+						root["result"][ii]["v"]=szTmp;
+						ii++;
 					}
 				}
 			}
@@ -2912,7 +3081,10 @@ char * CWebServer::GetJSonPage()
 				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_BARO,1);
 				ii++;
 			}
-			if ((dType==pTypeRFXMeter)&&(dSubType==sTypeRFXMeterCount))
+			if (
+				((dType==pTypeRFXMeter)&&(dSubType==sTypeRFXMeterCount))||
+				(dType==pTypeYouLess)
+				)
 			{
 				if (switchtype==MTYPE_ENERGY)
 				{
@@ -3100,7 +3272,7 @@ char * CWebServer::GetJSonPage()
 			{
 				//USB
 			}
-			else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)) {
+			else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)) {
 				//Lan
 				if (address=="")
 					goto exitjson;
@@ -3188,7 +3360,7 @@ char * CWebServer::GetJSonPage()
 			{
 				//USB
 			}
-			else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)) {
+			else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)) {
 				//Lan
 				if (address=="")
 					goto exitjson;

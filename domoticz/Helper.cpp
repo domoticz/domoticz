@@ -21,6 +21,20 @@ void StringSplit(std::string str, std::string delim, std::vector<std::string> &r
 	}
 }
 
+std::string stdreplace(
+	std::string result, 
+	const std::string& replaceWhat, 
+	const std::string& replaceWithWhat)
+{
+	while(1)
+	{
+		const int pos = result.find(replaceWhat);
+		if (pos==-1) break;
+		result.replace(pos,replaceWhat.size(),replaceWithWhat);
+	}
+	return result;
+}
+
 std::vector<std::string> GetSerialPorts()
 {
 	std::vector<std::string> ret;

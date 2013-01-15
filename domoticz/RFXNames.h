@@ -45,6 +45,7 @@ enum _eHardwareTypes {
 	HTYPE_Domoticz,
 	HTYPE_P1SmartMeter,
 	HTYPE_P1SmartMeterLAN,
+	HTYPE_YouLess,
 	HTYPE_END
 };
 
