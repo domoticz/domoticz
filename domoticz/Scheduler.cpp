@@ -268,7 +268,7 @@ void CScheduler::CheckSchedules()
 			}
 			if (bOkToFire)
 			{
-				std::cout << "Schedule item started! DevID: " << itt->DevID << ", Time: " << asctime(&ltime) << std::endl;
+				std::cout << "Schedule item started! Type: " << Timer_Type_Desc(itt->timerType) << ", DevID: " << itt->DevID << ", Time: " << asctime(&ltime) << std::endl;
 				std::string switchcmd="";
 				if (itt->timerCmd == TCMD_ON)
 					switchcmd="On";
