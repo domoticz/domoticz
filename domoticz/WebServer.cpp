@@ -1829,7 +1829,9 @@ char * CWebServer::GetJSonPage()
 					result=m_pMain->m_sql.query(szQuery.str());
 
 					bool bHaveFirstValue=false;
+					bool bHaveFirstRealValue=false;
 					float FirstValue=0;
+					unsigned long long ulFirstRealValue=0;
 					unsigned long long ulFirstValue=0;
 					unsigned long long ulLastValue=0;
 					std::string LastDateTime="";
@@ -1849,22 +1851,30 @@ char * CWebServer::GetJSonPage()
 									root["result"][ii]["d"]=LastDateTime+":00";
 
 									unsigned long long ulTotalValue=ulLastValue-ulFirstValue;
-									float TotalValue=float(ulTotalValue);
-
-									switch (metertype)
+									if (ulTotalValue==0)
 									{
-									case MTYPE_ENERGY:
-										sprintf(szTmp,"%.3f",(TotalValue/EnergyDivider)*1000.0f);	//from kWh -> Watt
-										break;
-									case MTYPE_GAS:
-										sprintf(szTmp,"%.2f",TotalValue/GasDivider);
-										break;
-									case MTYPE_WATER:
-										sprintf(szTmp,"%.2f",TotalValue/WaterDivider);
-										break;
+										//Could be the P1 Gas Meter, only transmits one every 1 a 2 hours
+										ulTotalValue=ulLastValue-ulFirstRealValue;
+										ulFirstRealValue=ulLastValue;
 									}
-									root["result"][ii]["v"]=szTmp;
-									ii++;
+									float TotalValue=float(ulTotalValue);
+									if (TotalValue!=0)
+									{
+										switch (metertype)
+										{
+										case MTYPE_ENERGY:
+											sprintf(szTmp,"%.3f",(TotalValue/EnergyDivider)*1000.0f);	//from kWh -> Watt
+											break;
+										case MTYPE_GAS:
+											sprintf(szTmp,"%.2f",TotalValue/GasDivider);
+											break;
+										case MTYPE_WATER:
+											sprintf(szTmp,"%.2f",TotalValue/WaterDivider);
+											break;
+										}
+										root["result"][ii]["v"]=szTmp;
+										ii++;
+									}
 								}
 								LastDateTime=actDateTimeHour;
 								bHaveFirstValue=false;
@@ -1877,6 +1887,11 @@ char * CWebServer::GetJSonPage()
 								ulFirstValue=ulLastValue;
 								bHaveFirstValue=true;
 							}
+							if (!bHaveFirstRealValue)
+							{
+								bHaveFirstRealValue=true;
+								ulFirstRealValue=ulLastValue;
+							}
 						}
 					}
 					if (bHaveFirstValue)
@@ -1885,22 +1900,35 @@ char * CWebServer::GetJSonPage()
 						root["result"][ii]["d"]=LastDateTime+":00";
 
 						unsigned long long ulTotalValue=ulLastValue-ulFirstValue;
+						if (ulTotalValue==0)
+						{
+							if (bHaveFirstRealValue)
+							{
+								//Could be the P1 Gas Meter, only transmits one every 1 a 2 hours
+								ulTotalValue=ulLastValue-ulFirstRealValue;
+								ulFirstRealValue=ulLastValue;
+							}
+						}
+
 						float TotalValue=float(ulTotalValue);
 
-						switch (metertype)
+						if (TotalValue!=0)
 						{
-						case MTYPE_ENERGY:
-							sprintf(szTmp,"%.3f",(TotalValue/EnergyDivider)*1000.0f);	//from kWh -> Watt
-							break;
-						case MTYPE_GAS:
-							sprintf(szTmp,"%.2f",TotalValue/GasDivider);
-							break;
-						case MTYPE_WATER:
-							sprintf(szTmp,"%.2f",TotalValue/WaterDivider);
-							break;
+							switch (metertype)
+							{
+							case MTYPE_ENERGY:
+								sprintf(szTmp,"%.3f",(TotalValue/EnergyDivider)*1000.0f);	//from kWh -> Watt
+								break;
+							case MTYPE_GAS:
+								sprintf(szTmp,"%.2f",TotalValue/GasDivider);
+								break;
+							case MTYPE_WATER:
+								sprintf(szTmp,"%.2f",TotalValue/WaterDivider);
+								break;
+							}
+							root["result"][ii]["v"]=szTmp;
+							ii++;
 						}
-						root["result"][ii]["v"]=szTmp;
-						ii++;
 					}
 				}
 			}
