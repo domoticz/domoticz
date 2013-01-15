@@ -111,6 +111,7 @@ DomoticzTCP.cpp
 P1MeterBase.cpp
 P1MeterTCP.cpp
 P1MeterSerial.cpp
+YouLess.cpp
 RFXNames.cpp
 Helper.cpp
 mynetwork.cpp
