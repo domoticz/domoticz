@@ -133,9 +133,16 @@ function AddDataToUtilityChart(data,chart,switchtype)
           yAxis: 0
         }
       );
-			chart.yAxis[0].axisTitle.attr({
-        text: 'Energy kWh'
-			});			
+      if (chart == $.DayChart) {
+					chart.yAxis[0].axisTitle.attr({
+						text: 'Energy Watt'
+				});			
+      }
+      else {
+					chart.yAxis[0].axisTitle.attr({
+						text: 'Energy kWh'
+				});			
+			}
       series = chart.get('energy');
 			chart.yAxis[0].redraw();
       series.setData(datatablev);
@@ -233,14 +240,14 @@ function ShowCounterLog(id,name,switchtype)
         },
         yAxis: {
             title: {
-                text: 'Energy (kWh)'
+                text: 'Energy (Watt)'
             },
             min: 0
         },
         tooltip: {
             formatter: function() {
 										var unit = {
-																'Usage': 'kWh',
+																'Usage': 'Watt',
 																'Return': 'kWh',
 																'Gas': 'm3',
 																'Water': 'm3'

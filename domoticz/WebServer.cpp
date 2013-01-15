@@ -1828,10 +1828,10 @@ char * CWebServer::GetJSonPage()
 					szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 					result=m_pMain->m_sql.query(szQuery.str());
 
-					bool bHaveLastValue=false;
-					float LastValue=0;
-					float total=0;
-					float totalValues=0;
+					bool bHaveFirstValue=false;
+					float FirstValue=0;
+					unsigned long long ulFirstValue=0;
+					unsigned long long ulLastValue=0;
 					std::string LastDateTime="";
 
 					if (result.size()>0)
@@ -1844,15 +1844,17 @@ char * CWebServer::GetJSonPage()
 							std::string actDateTimeHour=sd[1].substr(0,13);
 							if (actDateTimeHour!=LastDateTime)
 							{
-								if (totalValues!=0)
+								if (bHaveFirstValue)
 								{
-									float TotalValue=total/totalValues;
 									root["result"][ii]["d"]=LastDateTime+":00";
+
+									unsigned long long ulTotalValue=ulLastValue-ulFirstValue;
+									float TotalValue=float(ulTotalValue);
 
 									switch (metertype)
 									{
 									case MTYPE_ENERGY:
-										sprintf(szTmp,"%.3f",TotalValue/EnergyDivider);
+										sprintf(szTmp,"%.3f",(TotalValue/EnergyDivider)*1000.0f);	//from kWh -> Watt
 										break;
 									case MTYPE_GAS:
 										sprintf(szTmp,"%.2f",TotalValue/GasDivider);
@@ -1864,37 +1866,31 @@ char * CWebServer::GetJSonPage()
 									root["result"][ii]["v"]=szTmp;
 									ii++;
 								}
-								totalValues=0;
-								total=0;
 								LastDateTime=actDateTimeHour;
+								bHaveFirstValue=false;
 							}
-							std::string szValue=sd[0];
-							float fvalue=(float)atof(szValue.c_str());
+							std::stringstream s_str1( sd[0] );
+							s_str1 >> ulLastValue;
 
-							if (!bHaveLastValue)
+							if (!bHaveFirstValue)
 							{
-								LastValue=fvalue;
-								bHaveLastValue=true;
-								total=0;
-								continue;
+								ulFirstValue=ulLastValue;
+								bHaveFirstValue=true;
 							}
-							if (fvalue==LastValue)
-								continue;
-							total+=fvalue-LastValue;
-							totalValues+=1;
-							LastValue=fvalue;
 						}
 					}
-					if (totalValues>0)
+					if (bHaveFirstValue)
 					{
 						//add last value
-						float TotalValue=total/totalValues;
 						root["result"][ii]["d"]=LastDateTime+":00";
+
+						unsigned long long ulTotalValue=ulLastValue-ulFirstValue;
+						float TotalValue=float(ulTotalValue);
 
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
-							sprintf(szTmp,"%.3f",TotalValue/EnergyDivider);
+							sprintf(szTmp,"%.3f",(TotalValue/EnergyDivider)*1000.0f);	//from kWh -> Watt
 							break;
 						case MTYPE_GAS:
 							sprintf(szTmp,"%.2f",TotalValue/GasDivider);
