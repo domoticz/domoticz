@@ -2699,6 +2699,392 @@ char * CWebServer::GetJSonPage()
 				}
 			}
 		}//month or year
+		else if ((srange.substr(0,1)=="2") && (srange.substr(10,1)=="T") && (srange.substr(11,1)=="2")) // custom range 2013-01-01T2013-12-31
+		{
+            
+            std::string szDateStart=srange.substr(0,10);
+            std::string szDateEnd=srange.substr(11,10);
+
+			if (sensor=="temp") {
+				root["status"]="OK";
+				root["title"]="Graph " + sensor + " " + srange;
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT Temp_Min, Temp_Max, Chill_Min, Chill_Max, Humidity, Barometer, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				int ii=0;
+				if (result.size()>0)
+				{
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					for (itt=result.begin(); itt!=result.end(); ++itt)
+					{
+						std::vector<std::string> sd=*itt;
+
+						root["result"][ii]["d"]=sd[6].substr(0,16);
+						if (
+							(dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeUV)||(dType==pTypeThermostat1)||
+							((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))
+							)
+						{
+							if (!((dType==pTypeWIND)&&(dSubType!=sTypeWIND4)))
+							{
+								root["result"][ii]["te"]=sd[1];
+								root["result"][ii]["tm"]=sd[0];
+							}
+						}
+						if ((dType==pTypeWIND)&&(dSubType==sTypeWIND4))
+						{
+							root["result"][ii]["ch"]=sd[3];
+							root["result"][ii]["cm"]=sd[2];
+						}
+						if ((dType==pTypeHUM)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO))
+						{
+							root["result"][ii]["hu"]=sd[4];
+						}
+						if (dType==pTypeTEMP_HUM_BARO)
+						{
+							root["result"][ii]["ba"]=sd[5];
+						}
+
+						ii++;
+					}
+				}
+				//add today (have to calculate it)
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT MIN(Temperature), MAX(Temperature), MIN(Chill), MAX(Chill), MAX(Humidity), MAX(Barometer) FROM Temperature WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					std::vector<std::string> sd=result[0];
+
+					root["result"][ii]["d"]=szDateEnd;
+					if ((dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeUV)||(dType==pTypeThermostat1))
+					{
+						if (!((dType==pTypeWIND)&&(dSubType!=sTypeWIND4)))
+						{
+							root["result"][ii]["te"]=sd[1];
+							root["result"][ii]["tm"]=sd[0];
+						}
+					}
+					if ((dType==pTypeWIND)&&(dSubType==sTypeWIND4))
+					{
+						root["result"][ii]["ch"]=sd[3];
+						root["result"][ii]["cm"]=sd[2];
+					}
+					if ((dType==pTypeHUM)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO))
+					{
+						root["result"][ii]["hu"]=sd[4];
+					}
+					if (dType==pTypeTEMP_HUM_BARO)
+					{
+						root["result"][ii]["ba"]=sd[5];
+					}
+					ii++;
+				}
+
+			}
+			else if (sensor=="uv") {
+				root["status"]="OK";
+				root["title"]="Graph " + sensor + " " + srange;
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT Level, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				int ii=0;
+				if (result.size()>0)
+				{
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					for (itt=result.begin(); itt!=result.end(); ++itt)
+					{
+						std::vector<std::string> sd=*itt;
+
+						root["result"][ii]["d"]=sd[1].substr(0,16);
+						root["result"][ii]["uvi"]=sd[0];
+						ii++;
+					}
+				}
+				//add today (have to calculate it)
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT MAX(Level) FROM UV WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					std::vector<std::string> sd=result[0];
+
+					root["result"][ii]["d"]=szDateEnd;
+					root["result"][ii]["uvi"]=sd[0];
+					ii++;
+				}
+			}
+			else if (sensor=="rain") {
+				root["status"]="OK";
+				root["title"]="Graph " + sensor + " " + srange;
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT Total, Rate, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				int ii=0;
+				if (result.size()>0)
+				{
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					for (itt=result.begin(); itt!=result.end(); ++itt)
+					{
+						std::vector<std::string> sd=*itt;
+
+						root["result"][ii]["d"]=sd[2].substr(0,16);
+						root["result"][ii]["mm"]=sd[0];
+						ii++;
+					}
+				}
+				//add today (have to calculate it)
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					std::vector<std::string> sd=result[0];
+
+					float total_min=(float)atof(sd[0].c_str());
+					float total_max=(float)atof(sd[1].c_str());
+					int rate=atoi(sd[2].c_str());
+
+					float total_real=total_max-total_min;
+					sprintf(szTmp,"%.1f",total_real);
+					root["result"][ii]["d"]=szDateEnd;
+					root["result"][ii]["mm"]=szTmp;
+					ii++;
+				}
+			}
+			else if (sensor=="counter") {
+				root["status"]="OK";
+				root["title"]="Graph " + sensor + " " + srange;
+
+				float EnergyDivider=1000.0f;
+				float GasDivider=100.0f;
+				float WaterDivider=100.0f;
+				int tValue;
+				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+				{
+					EnergyDivider=float(tValue);
+				}
+				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerGas", tValue))
+				{
+					GasDivider=float(tValue);
+				}
+				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+				{
+					WaterDivider=float(tValue);
+				}
+				if (dType==pTypeP1Gas)
+					GasDivider=1000;
+
+				szQuery.clear();
+				szQuery.str("");
+				int ii=0;
+				if (dType==pTypeP1Power)
+				{
+					szQuery << "SELECT Value1,Value2, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						bool bHaveDeliverd=false;
+						std::vector<std::vector<std::string> >::const_iterator itt;
+						for (itt=result.begin(); itt!=result.end(); ++itt)
+						{
+							std::vector<std::string> sd=*itt;
+
+							root["result"][ii]["d"]=sd[2].substr(0,16);
+
+							std::string szValue=sd[0];
+							sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDivider);
+							root["result"][ii]["v"]=szTmp;
+							std::string szValue2=sd[1];
+							if (szValue2!="0")
+								bHaveDeliverd=true;
+							sprintf(szTmp,"%.3f",atof(szValue2.c_str())/EnergyDivider);
+							root["result"][ii]["v2"]=szTmp;
+							ii++;
+						}
+						if (bHaveDeliverd)
+						{
+							root["delivered"]=true;
+						}
+					}
+				}
+				else
+				{
+					szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator itt;
+						for (itt=result.begin(); itt!=result.end(); ++itt)
+						{
+							std::vector<std::string> sd=*itt;
+
+							std::string szValue=sd[0];
+							switch (metertype)
+							{
+							case MTYPE_ENERGY:
+								sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDivider);
+								szValue=szTmp;
+								break;
+							case MTYPE_GAS:
+								sprintf(szTmp,"%.2f",atof(szValue.c_str())/GasDivider);
+								szValue=szTmp;
+								break;
+							case MTYPE_WATER:
+								sprintf(szTmp,"%.2f",atof(szValue.c_str())/WaterDivider);
+								szValue=szTmp;
+								break;
+							}
+							root["result"][ii]["d"]=sd[1].substr(0,16);
+							root["result"][ii]["v"]=szValue;
+							ii++;
+						}
+					}
+				}
+				//add today (have to calculate it)
+				szQuery.clear();
+				szQuery.str("");
+				if (dType==pTypeP1Power)
+				{
+					szQuery << "SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2) FROM MultiMeter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+					bool bHaveDeliverd=false;
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						std::vector<std::string> sd=result[0];
+						unsigned long long total_min_usage,total_max_usage,total_real_usage;
+						unsigned long long total_min_deliv,total_max_deliv,total_real_deliv;
+
+						std::stringstream s_str1( sd[0] );
+						s_str1 >> total_min_usage;
+						std::stringstream s_str2( sd[1] );
+						s_str2 >> total_max_usage;
+						total_real_usage=total_max_usage-total_min_usage;
+						std::stringstream s_str3( sd[2] );
+						s_str3 >> total_min_deliv;
+						std::stringstream s_str4( sd[3] );
+						s_str4 >> total_max_deliv;
+						total_real_deliv=total_max_deliv-total_min_deliv;
+						if (total_real_deliv!=0)
+							bHaveDeliverd=true;
+
+						root["result"][ii]["d"]=szDateEnd;
+
+						sprintf(szTmp,"%llu",total_real_usage);
+						std::string szValue=szTmp;
+						sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDivider);
+						root["result"][ii]["v"]=szTmp;
+						sprintf(szTmp,"%llu",total_real_deliv);
+						szValue=szTmp;
+						sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDivider);
+						root["result"][ii]["v2"]=szTmp;
+						ii++;
+						if (bHaveDeliverd)
+						{
+							root["delivered"]=true;
+						}
+					}
+				}
+				else
+				{
+					szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						std::vector<std::string> sd=result[0];
+						unsigned long long total_min,total_max,total_real;
+
+						std::stringstream s_str1( sd[0] );
+						s_str1 >> total_min;
+						std::stringstream s_str2( sd[1] );
+						s_str2 >> total_max;
+						total_real=total_max-total_min;
+						sprintf(szTmp,"%llu",total_real);
+
+						std::string szValue=szTmp;
+						switch (metertype)
+						{
+						case MTYPE_ENERGY:
+							sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDivider);
+							szValue=szTmp;
+							break;
+						case MTYPE_GAS:
+							sprintf(szTmp,"%.2f",atof(szValue.c_str())/GasDivider);
+							szValue=szTmp;
+							break;
+						case MTYPE_WATER:
+							sprintf(szTmp,"%.2f",atof(szValue.c_str())/WaterDivider);
+							szValue=szTmp;
+							break;
+						}
+
+						root["result"][ii]["d"]=szDateEnd;
+						root["result"][ii]["v"]=szValue;
+						ii++;
+					}
+				}
+			}
+			else if (sensor=="wind") {
+				root["status"]="OK";
+				root["title"]="Graph " + sensor + " " + srange;
+
+				int ii=0;
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT Direction, Speed_Min, Speed_Max, Gust_Min, Gust_Max, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					for (itt=result.begin(); itt!=result.end(); ++itt)
+					{
+						std::vector<std::string> sd=*itt;
+
+						root["result"][ii]["d"]=sd[5].substr(0,16);
+						root["result"][ii]["di"]=sd[0];
+
+						int intSpeed=atoi(sd[2].c_str());
+						sprintf(szTmp,"%.1f",float(intSpeed) / 10.0f);
+						root["result"][ii]["sp"]=szTmp;
+						int intGust=atoi(sd[4].c_str());
+						sprintf(szTmp,"%.1f",float(intGust) / 10.0f);
+						root["result"][ii]["gu"]=szTmp;
+						ii++;
+					}
+				}
+				//add today (have to calculate it)
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT AVG(Direction), MIN(Speed), MAX(Speed), MIN(Gust), MAX(Gust) FROM Wind WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateEnd << "') ORDER BY Date ASC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					std::vector<std::string> sd=result[0];
+
+					root["result"][ii]["d"]=szDateEnd;
+					root["result"][ii]["di"]=sd[0];
+
+					int intSpeed=atoi(sd[2].c_str());
+					sprintf(szTmp,"%.1f",float(intSpeed) / 10.0f);
+					root["result"][ii]["sp"]=szTmp;
+					int intGust=atoi(sd[4].c_str());
+					sprintf(szTmp,"%.1f",float(intGust) / 10.0f);
+					root["result"][ii]["gu"]=szTmp;
+					ii++;
+				}
+			}
+		}//custom range
+
 	}
 	else if (rtype=="command")
 	{
