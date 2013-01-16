@@ -21,15 +21,13 @@ CYouLess::~CYouLess(void)
 void CYouLess::Init()
 {
 	m_PollCounter=YOULESS_POLL_INTERVAL-2;
-	memset(&m_meter,0,sizeof(m_meter));
-
 	m_meter.len=sizeof(YouLessMeter)-1;
 	m_meter.type=pTypeYouLess;
 	m_meter.subtype=sTypeYouLess;
+	m_meter.powerusage=0;
+	m_meter.usagecurrent=0;
 
-	std::stringstream s_strid;
-	s_strid << m_usIPPort;
-	s_strid >> m_meter.ID;
+	m_meter.ID=boost::to_string(m_usIPPort);
 }
 
 bool CYouLess::StartHardware()
