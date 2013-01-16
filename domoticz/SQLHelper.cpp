@@ -1735,8 +1735,9 @@ void CSQLHelper::UpdateMultiMeter()
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d)",
-		pTypeP1Power
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d OR Type=%d)",
+		pTypeP1Power,
+		pTypeCURRENT
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -1792,6 +1793,17 @@ void CSQLHelper::UpdateMultiMeter()
 				value3=usagecurrent;
 				value4=delivcurrent;
 			}
+			else if ((dType==pTypeCURRENT)&&(dSubType==sTypeELEC1))
+			{
+				if (splitresults.size()!=3)
+					continue; //impossible
+
+				value1=(unsigned long)(atof(splitresults[0].c_str())*10.0f);
+				value2=(unsigned long)(atof(splitresults[1].c_str())*10.0f);
+				value3=(unsigned long)(atof(splitresults[2].c_str())*10.0f);
+			}
+			else
+				continue;//don't know you (yet)
 
 			//insert record
 			sprintf(szTmp,
