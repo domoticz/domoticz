@@ -235,7 +235,7 @@ function AddMultipleDataToTempChart(data,chart,isday,deviceid,devicename)
       chart.addSeries(
         {
           id: 'chill'+deviceid,
-          name: 'Chill',
+          name: devicename+':chill',
           yAxis: 0
         }
       );
@@ -432,14 +432,10 @@ function ShowCustomTempLog()
       }],
       tooltip: {
           formatter: function() {
-            var unit = {
-                        'Humidity': '%',
-                        'Temperature': '\u00B0 C',
-                        'Temperature_min': '\u00B0 C',
-                        'Chill': '\u00B0 C',
-                        'Chill_min': '\u00B0 C'
-                  }[this.series.name];
-                  return Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
+                var unit = '';
+                var baseName = this.series.name.split(':')[1];
+                if (baseName=="humidity") {unit = '%'} else {unit = '\u00B0 C'};
+                return Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit ;
           }
       },
       legend: {
