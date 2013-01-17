@@ -48,7 +48,12 @@ function RefreshFavorites()
 									status+='<img src="images/siren.png" height="16">';
 								}
 								else if (item.SwitchType == "Contact") {
-									status+='<img src="images/contact.png" height="16">';
+									if (item.Status == 'Closed') {
+										status+='<img src="images/contact.png" height="16">';
+									}
+									else {
+										status+='<img src="images/contact_open.png" height="16">';
+									}
 								}
 								else if (item.SwitchType == "Blinds") {
 									if (item.Status == 'Closed') {
@@ -84,7 +89,12 @@ function RefreshFavorites()
 									img='<img src="images/siren48.png" height="40">';
 								}
 								else if (item.SwitchType == "Contact") {
-									img='<img src="images/contact48.png" height="40">';
+									if (item.Status == 'Closed') {
+										img='<img src="images/contact48.png" height="40">';
+									}
+									else {
+										img='<img src="images/contact48_open.png" height="40">';
+									}
 								}
 								else if (item.SwitchType == "Blinds") {
 									if (item.Status == 'Closed') {
@@ -527,7 +537,12 @@ function ShowFavorites()
 								status+='<img src="images/siren.png" height="16">';
 							}
 							else if (item.SwitchType == "Contact") {
-								status+='<img src="images/contact.png" height="16">';
+									if (item.Status == 'Closed') {
+										status+='<img src="images/contact.png" height="16">';
+									}
+									else {
+										status+='<img src="images/contact_open.png" height="16">';
+									}
 							}
 							else if (item.SwitchType == "Blinds") {
 								if (item.Status == 'Closed') {
@@ -578,7 +593,12 @@ function ShowFavorites()
 								xhtm+='\t      <td id="img"><img src="images/siren48.png" height="40"></td>\n';
 							}
 							else if (item.SwitchType == "Contact") {
-								xhtm+='\t      <td id="img"><img src="images/contact48.png" height="40"></td>\n';
+								if (item.Status == 'Closed') {
+									xhtm+='\t      <td id="img"><img src="images/contact48.png" height="40"></td>\n';
+								}
+								else {
+									xhtm+='\t      <td id="img"><img src="images/contact48_open.png" height="40"></td>\n';
+								}
 							}
 							else if (item.SwitchType == "Blinds") {
 								if (item.Status == 'Closed') {

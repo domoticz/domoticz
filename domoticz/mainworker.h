@@ -42,6 +42,7 @@ public:
 	bool AddHardwareFromParams(
 				int ID,
 				std::string Name,
+				bool Enabled,
 				_eHardwareTypes Type,
 				std::string Address, unsigned short Port, 
 				std::string Username, std::string Password, 

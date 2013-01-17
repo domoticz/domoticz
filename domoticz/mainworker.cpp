@@ -277,6 +277,7 @@ std::string MainWorker::GetWebserverPort()
 bool MainWorker::AddHardwareFromParams(
 	int ID,
 	std::string Name,
+	bool Enabled,
 	_eHardwareTypes Type,
 	std::string Address, unsigned short Port, 
 	std::string Username, std::string Password, 
@@ -286,10 +287,13 @@ bool MainWorker::AddHardwareFromParams(
 	unsigned char Mode4,
 	unsigned char Mode5)
 {
+	RemoveDomoticzHardware(ID);
+
+	if (!Enabled)
+		return true;
+
 	char szSerialPort[100];
 	CDomoticzHardwareBase *pHardware=NULL;
-
-	RemoveDomoticzHardware(ID);
 
 #ifdef __APPLE__
 	std::vector<std::string> apple_serial_ports=GetSerialPorts();
@@ -375,7 +379,7 @@ bool MainWorker::Start()
 	//Add Hardware devices
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
-	szQuery << "SELECT ID, Name, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware ORDER BY ID ASC";
+	szQuery << "SELECT ID, Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware ORDER BY ID ASC";
 	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -386,17 +390,19 @@ bool MainWorker::Start()
 
 			int ID=atoi(sd[0].c_str());
 			std::string Name=sd[1];
-			_eHardwareTypes Type=(_eHardwareTypes)atoi(sd[2].c_str());
-			std::string Address=sd[3];
-			unsigned short Port=atoi(sd[4].c_str());
-			std::string Username=sd[5];
-			std::string Password=sd[6];
-			unsigned char mode1=(unsigned char)atoi(sd[7].c_str());
-			unsigned char mode2=(unsigned char)atoi(sd[8].c_str());
-			unsigned char mode3=(unsigned char)atoi(sd[9].c_str());
-			unsigned char mode4=(unsigned char)atoi(sd[10].c_str());
-			unsigned char mode5=(unsigned char)atoi(sd[11].c_str());
-			AddHardwareFromParams(ID,Name,Type,Address,Port,Username,Password,mode1,mode2,mode3,mode4,mode5);
+			std::string sEnabled=sd[2];
+			bool Enabled=(sEnabled=="1")?true:false;
+			_eHardwareTypes Type=(_eHardwareTypes)atoi(sd[3].c_str());
+			std::string Address=sd[4];
+			unsigned short Port=atoi(sd[5].c_str());
+			std::string Username=sd[6];
+			std::string Password=sd[7];
+			unsigned char mode1=(unsigned char)atoi(sd[8].c_str());
+			unsigned char mode2=(unsigned char)atoi(sd[9].c_str());
+			unsigned char mode3=(unsigned char)atoi(sd[10].c_str());
+			unsigned char mode4=(unsigned char)atoi(sd[11].c_str());
+			unsigned char mode5=(unsigned char)atoi(sd[12].c_str());
+			AddHardwareFromParams(ID,Name,Enabled,Type,Address,Port,Username,Password,mode1,mode2,mode3,mode4,mode5);
 		}
 	}
 	if (!StartThread())

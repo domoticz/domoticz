@@ -5,6 +5,7 @@
         <thead>
             <tr>
                 <th width="120" align="left">Name</th>
+                <th width="60" align="left">Enabled</th>
                 <th width="60" align="left">Shared</th>
                 <th width="240" align="left">Type</th>
                 <th width="200" align="left">Address</th>
@@ -22,6 +23,10 @@
 		</table>
 		<br>
 		<table class="display" id="hardwareparamstable" border="0" cellpadding="0" cellspacing="20">
+			<tr>
+				<td align="right" style="width:80px"><label for="enabled">Enabled:</label></td>
+				<td><input type="checkbox" id="enabled" checked></td>
+			</tr>
 			<tr>
 				<td align="right" style="width:110px"><label for="name">Name:</label></td>
 				<td><input type="text" id="hardwarename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
@@ -187,6 +192,9 @@ function UpdateHardware(idx)
 		ShowNotify('Unknown device selected!', 2500, true);
 		return;
 	}
+	
+	var bEnabled=$('#hardwarecontent #hardwareparamsshareenabled #enabled').attr('checked')?true:false;
+	
 	var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
 	if (text.indexOf("USB") >= 0)
 	{
@@ -197,7 +205,7 @@ function UpdateHardware(idx)
 			return;
 		}
 		$.ajax({
-			 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + "&port=" + serialport + "&name=" + name + "&idx=" + idx + shareparm,
+			 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + "&port=" + serialport + "&name=" + name + "&enabled=" + bEnabled + "&idx=" + idx + shareparm,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -228,7 +236,7 @@ function UpdateHardware(idx)
 			return;
 		}		
 		$.ajax({
-			 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + name + "&idx=" + idx + shareparm,
+			 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + name + "&enabled=" + bEnabled + "&idx=" + idx + shareparm,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -261,7 +269,7 @@ function UpdateHardware(idx)
 		var username=$("#hardwarecontent #divlogin #username").val();
 		var password=$("#hardwarecontent #divlogin #password").val();
 		$.ajax({
-			 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + username + "&password=" + password + "&name=" + name + "&idx=" + idx + shareparm,
+			 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + username + "&password=" + password + "&name=" + name + "&enabled=" + bEnabled + "&idx=" + idx + shareparm,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -294,6 +302,9 @@ function AddHardware()
 		ShowNotify('Unknown device selected!', 2500, true);
 		return;
 	}
+	
+	var bEnabled=$('#hardwarecontent #hardwareparamsshareenabled #enabled').attr('checked')?true:false;
+	
 	var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
 	if (text.indexOf("USB") >= 0)
 	{
@@ -304,7 +315,7 @@ function AddHardware()
 			return;
 		}
 		$.ajax({
-			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + serialport + "&name=" + name + shareparm,
+			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + serialport + "&name=" + name + "&enabled=" + bEnabled + shareparm,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -335,7 +346,7 @@ function AddHardware()
 			return;
 		}		
 		$.ajax({
-			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + name + shareparm,
+			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + name + "&enabled=" + bEnabled + shareparm,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -368,7 +379,7 @@ function AddHardware()
 		var username=$("#hardwarecontent #divlogin #username").val();
 		var password=$("#hardwarecontent #divlogin #password").val();
 		$.ajax({
-			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + username + "&password=" + password + "&name=" + name + shareparm,
+			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + username + "&password=" + password + "&name=" + name + "&enabled=" + bEnabled + shareparm,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -411,6 +422,11 @@ function RefreshHardwareTable()
 						if (serpos!=-1)
 							SerialName=$.myglobals.SerialPortStr[serpos];
 					}
+
+					var enabledstr="No";
+					if (item.Enabled=="true") {
+						enabledstr="Yes";
+					}
 					
 					var sharedstr="No";
 					if (item.Shared=="true") {
@@ -421,6 +437,7 @@ function RefreshHardwareTable()
 								"DT_RowId": item.idx,
 								"Username": item.Username,
 								"Password": item.Password,
+								"Enabled": item.Enabled,
 								"Mode1": item.Mode1,
 								"Mode2": item.Mode2,
 								"Mode3": item.Mode3,
@@ -433,10 +450,11 @@ function RefreshHardwareTable()
 								"SharedPassword": item.SharedPassword,
 								"SharedRights": item.SharedRights,
                 "0": item.Name,
-                "1": sharedstr,
-								"2": $.myglobals.HardwareTypesStr[item.Type],
-								"3": item.Address,
-								"4": SerialName
+                "1": enabledstr,
+                "2": sharedstr,
+								"3": $.myglobals.HardwareTypesStr[item.Type],
+								"4": item.Address,
+								"5": SerialName
 							} );
         });
 				/* Add a click handler to the rows - this could be used as a callback */
@@ -459,7 +477,9 @@ function RefreshHardwareTable()
 										$("#updelclr #hardwareupdate").attr("href", "javascript:UpdateHardware(" + idx + ")");
 										$("#updelclr #hardwaredelete").attr("href", "javascript:DeleteHardware(" + idx + ")");
 										$("#hardwarecontent #hardwareparamstable #hardwarename").val(data["0"]);
-										$("#hardwarecontent #hardwareparamstable #combotype").val(jQuery.inArray(data["2"], $.myglobals.HardwareTypesStr));
+										$("#hardwarecontent #hardwareparamstable #combotype").val(jQuery.inArray(data["3"], $.myglobals.HardwareTypesStr));
+
+										$('#hardwarecontent #hardwareparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
 
 										$('#hardwarecontent #hardwareparamsshareenabled #shareenabled').prop('checked',(data["Shared"]=="true"));
 										$('#hardwarecontent #hardwareparamssharedetails #shareport').val(data["SharedPort"]);
@@ -468,17 +488,17 @@ function RefreshHardwareTable()
 										$("#hardwarecontent #hardwareparamssharedetails #combosharerights").val(parseInt(data["SharedRights"]));
 										
 										UpdateHardwareParamControls();
-										if (data["2"].indexOf("USB") >= 0)
+										if (data["3"].indexOf("USB") >= 0)
 										{
 											$("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
 										}
 										else
-										if ((data["2"].indexOf("LAN") >= 0)||(data["2"].indexOf("Domoticz") >= 0))
+										if ((data["3"].indexOf("LAN") >= 0)||(data["2"].indexOf("Domoticz") >= 0))
 										{
-											$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["3"]);
-											$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["4"]);
+											$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["4"]);
+											$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["5"]);
 										}
-										if (data["2"].indexOf("Domoticz") >= 0) {
+										if (data["3"].indexOf("Domoticz") >= 0) {
 											$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
 											$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
 										}

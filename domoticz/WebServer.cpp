@@ -604,7 +604,15 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				else if (switchtype==STYPE_SMOKEDETECTOR)
 					root["result"][ii]["TypeImg"]="smoke";
 				else if (switchtype==STYPE_Contact)
+				{
 					root["result"][ii]["TypeImg"]="contact";
+					if (lstatus=="On") {
+						lstatus="Open";
+					} else {
+						lstatus="Closed";
+					}
+					root["result"][ii]["Status"]=lstatus;
+				}
 				else if (switchtype==STYPE_Blinds)
 				{
 					root["result"][ii]["TypeImg"]="blinds";
@@ -1279,7 +1287,7 @@ char * CWebServer::GetJSonPage()
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT ID, Name, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware ORDER BY ID ASC";
+		szQuery << "SELECT ID, Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware ORDER BY ID ASC";
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -1291,16 +1299,17 @@ char * CWebServer::GetJSonPage()
 
 				root["result"][ii]["idx"]=sd[0];
 				root["result"][ii]["Name"]=sd[1];
-				root["result"][ii]["Type"]=atoi(sd[2].c_str());
-				root["result"][ii]["Address"]=sd[3];
-				root["result"][ii]["Port"]=atoi(sd[4].c_str());
-				root["result"][ii]["Username"]=sd[5];
-				root["result"][ii]["Password"]=sd[6];
-				root["result"][ii]["Mode1"]=(unsigned char)atoi(sd[7].c_str());
-				root["result"][ii]["Mode2"]=(unsigned char)atoi(sd[8].c_str());
-				root["result"][ii]["Mode3"]=(unsigned char)atoi(sd[9].c_str());
-				root["result"][ii]["Mode4"]=(unsigned char)atoi(sd[10].c_str());
-				root["result"][ii]["Mode5"]=(unsigned char)atoi(sd[11].c_str());
+				root["result"][ii]["Enabled"]=(sd[2]=="1")?"true":"false";
+				root["result"][ii]["Type"]=atoi(sd[3].c_str());
+				root["result"][ii]["Address"]=sd[4];
+				root["result"][ii]["Port"]=atoi(sd[5].c_str());
+				root["result"][ii]["Username"]=sd[6];
+				root["result"][ii]["Password"]=sd[7];
+				root["result"][ii]["Mode1"]=(unsigned char)atoi(sd[8].c_str());
+				root["result"][ii]["Mode2"]=(unsigned char)atoi(sd[9].c_str());
+				root["result"][ii]["Mode3"]=(unsigned char)atoi(sd[10].c_str());
+				root["result"][ii]["Mode4"]=(unsigned char)atoi(sd[11].c_str());
+				root["result"][ii]["Mode5"]=(unsigned char)atoi(sd[12].c_str());
 
 				szQuery.clear();
 				szQuery.str("");
@@ -3660,6 +3669,7 @@ char * CWebServer::GetJSonPage()
 		else if (cparam=="addhardware")
 		{
 			std::string name=m_pWebEm->FindValue("name");
+			std::string senabled=m_pWebEm->FindValue("enabled");
 			std::string shtype=m_pWebEm->FindValue("htype");
 			std::string address=m_pWebEm->FindValue("address");
 			std::string sport=m_pWebEm->FindValue("port");
@@ -3667,6 +3677,7 @@ char * CWebServer::GetJSonPage()
 			std::string password=m_pWebEm->FindValue("password");
 			if (
 				(name=="")||
+				(senabled=="")||
 				(shtype=="")||
 				(sport=="")
 				)
@@ -3709,8 +3720,9 @@ char * CWebServer::GetJSonPage()
 			root["status"]="OK";
 			root["title"]="AddHardware";
 			sprintf(szTmp,
-				"INSERT INTO Hardware (Name, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5) VALUES ('%s',%d,'%s',%d,'%s','%s',%d,%d,%d,%d,%d)",
+				"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5) VALUES ('%s',%d, %d,'%s',%d,'%s','%s',%d,%d,%d,%d,%d)",
 				name.c_str(),
+				(senabled=="true")?1:0,
 				htype,
 				address.c_str(),
 				port,
@@ -3741,7 +3753,7 @@ char * CWebServer::GetJSonPage()
 					result=m_pMain->m_sql.query(szTmp);
 				}
 
-				m_pMain->AddHardwareFromParams(ID,name,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
+				m_pMain->AddHardwareFromParams(ID,name,(senabled=="true")?true:false,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
 			}
 		}
 		else if (cparam=="updatehardware")
@@ -3750,6 +3762,7 @@ char * CWebServer::GetJSonPage()
 			if (idx=="")
 				goto exitjson;
 			std::string name=m_pWebEm->FindValue("name");
+			std::string senabled=m_pWebEm->FindValue("enabled");
 			std::string shtype=m_pWebEm->FindValue("htype");
 			std::string address=m_pWebEm->FindValue("address");
 			std::string sport=m_pWebEm->FindValue("port");
@@ -3757,6 +3770,7 @@ char * CWebServer::GetJSonPage()
 			std::string password=m_pWebEm->FindValue("password");
 			if (
 				(name=="")||
+				(senabled=="")||
 				(shtype=="")||
 				(sport=="")
 				)
@@ -3803,8 +3817,9 @@ char * CWebServer::GetJSonPage()
 			root["title"]="UpdateHardware";
 
 			sprintf(szTmp,
-				"UPDATE Hardware SET Name='%s', Type=%d, Address='%s', Port=%d, Username='%s', Password='%s', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d WHERE (ID == %s)",
+				"UPDATE Hardware SET Name='%s', Enabled=%d, Type=%d, Address='%s', Port=%d, Username='%s', Password='%s', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d WHERE (ID == %s)",
 				name.c_str(),
+				(senabled=="true")?1:0,
 				htype,
 				address.c_str(),
 				port,
@@ -3832,7 +3847,7 @@ char * CWebServer::GetJSonPage()
 
 			//re-add the device in our system
 			int ID=atoi(idx.c_str());
-			m_pMain->AddHardwareFromParams(ID,name,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
+			m_pMain->AddHardwareFromParams(ID,name,(senabled=="true")?true:false,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
 		}
 		else if (cparam=="deletehardware")
 		{

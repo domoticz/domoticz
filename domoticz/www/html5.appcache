@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 55
+# ref 56
 
 CACHE:
 favicon.ico
@@ -86,7 +86,9 @@ images/button.png
 images/collection.png
 images/collection_hover.png
 images/contact.png
+images/contact_open.png
 images/contact48.png
+images/contact48_open.png
 images/copy.png
 images/copy_hover.png
 images/counter.png
@@ -113,6 +115,8 @@ images/light-off.png
 images/light-on.png
 images/lightbulb.png
 images/lightbulboff.png
+images/lock_closed.png
+images/lock_open.png
 images/log.png
 images/next.png
 images/nofavorite.png

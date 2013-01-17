@@ -13,6 +13,10 @@ Version 1.0.7 (Januari xxth 2013)
 - Option to transfer old device logs/settings to a new device (for example when the device battery is replaced and received a new ID)
 - Youless Pulse Counter Meter hardware implemented
 - Schedule item started message will now also report the timer type
+- Clicking TopLeft (Domoticz) will show dashboard
+- Hardware can now be Enabled/Disabled
+- Lights/Switches, Contact status now displays as Open/Closed instead of On/Off
+- Lights/Switches, Contact Open/Closed icon
 
 Version 1.0.6 (Januari 9th 2013)
 - RFXCOM Lan will now keep retrying to connect when it does not succeed on the first time

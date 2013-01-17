@@ -11,10 +11,7 @@
 #include "YouLess.h"
 #include "localtime_r.h"
 
-//Rob, to implement PushOver notifications
-// Domoticz Application API key = 2n0VOY8xplTU7kZq9zeJn980bmMWms
-
-#define DB_VERSION 2
+#define DB_VERSION 3
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -169,6 +166,7 @@ const char *sqlCreateHardware =
 "CREATE TABLE IF NOT EXISTS [Hardware] ("
 "[ID] INTEGER PRIMARY KEY, "
 "[Name] VARCHAR(200) NOT NULL, "
+"[Enabled] INTEGER DEFAULT 1, "
 "[Type] INTEGER NOT NULL, "
 "[Address] VARCHAR(200), "
 "[Port] INTEGER, "
@@ -282,6 +280,10 @@ bool CSQLHelper::OpenDatabase()
 			query("ALTER TABLE DeviceStatus ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
 			query(sqlCreateDeviceStatusTrigger);
 			CheckAndUpdateDeviceOrder();
+		}
+		if (dbversion<3)
+		{
+			query("ALTER TABLE Hardware ADD COLUMN [Enabled] INTEGER default 1");
 		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
