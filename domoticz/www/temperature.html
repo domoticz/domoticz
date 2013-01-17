@@ -16,6 +16,22 @@
 </div>
 <div id="tempcontent">
 </div>
+<div id="customlog" style="display:none;">
+    <table width="95%">
+        <tr>
+            <td width="80%"><div id="customgraph" style="height: 400px;"></div></td>
+            <td width="20%" style="padding-left:10px; padding-top:80px; vertical-align:top;">Select device(s) to display:<div id="devicecontainer" style="margin-top:10px; background-color: #7D7E7D; background-image: -moz-linear-gradient(center top , #7D7E7D, #0E0E0E); border: 1px solid #616261; width:100%; height: 240px; overflow-y: scroll;"></div>
+                <div id="controlbar" style="height: 20px; padding: 5px;" align="center">
+                    <table>
+                        <tr><td align="left"><label for="graphfrom">From:&nbsp;</label></td>
+                        <td><input type="text" style="width: 70px;" id="graphfrom" class="datepick" name="graphfrom" /></td>
+                            <tr><td align="left"><label for="graphto">To:</label></td>
+                        <td><input type="text" style="width: 70px;" id="graphto" class="datepick" name="graphto" /></td></tr>
+                    </table>
+                </div></td>
+        </tr>
+    </table>
+</div>
 <div id="templog" style="display:none;">
 <h2>Day</h2><br>
 <div id="tempdaygraph" style="height: 300px;"></div>
@@ -41,6 +57,7 @@ function MakeFavorite(id,isfavorite)
      }
   });
 }
+    
 
 function EditTempDevice(idx,name)
 {
@@ -163,6 +180,298 @@ function AddDataToTempChart(data,chart,isday)
     //}
 }
 
+    
+function AddMultipleDataToTempChart(data,chart,isday,deviceid,devicename)
+{
+    var datatablete = [];
+    var datatabletm = [];
+    var datatablehu = [];
+    var datatablech = [];
+    var datatablecm = [];
+
+    $.each(data.result, function(i,item)
+    {
+      if (isday==1) {
+        if (typeof item.te != 'undefined') {
+          datatablete.push( [GetUTCFromString(item.d), parseFloat(item.te) ] );
+        }
+        if (typeof item.hu != 'undefined') {
+          datatablehu.push( [GetUTCFromString(item.d), parseFloat(item.hu) ] );
+        }
+        if (typeof item.ch != 'undefined') {
+          datatablech.push( [GetUTCFromString(item.d), parseFloat(item.ch) ] );
+        }
+      } else {
+        if (typeof item.te != 'undefined') {
+          datatablete.push( [GetDateFromString(item.d), parseFloat(item.te) ] );
+          datatabletm.push( [GetDateFromString(item.d), parseFloat(item.tm) ] );
+        }
+        if (typeof item.hu != 'undefined') {
+          datatablehu.push( [GetDateFromString(item.d), parseFloat(item.hu) ] );
+        }
+        if (typeof item.ch != 'undefined') {
+          datatablech.push( [GetDateFromString(item.d), parseFloat(item.ch) ] );
+          datatablecm.push( [GetDateFromString(item.d), parseFloat(item.cm) ] );
+        }
+      }
+    });
+    var series;
+
+    if (datatablehu.length!=0)
+    {
+      chart.addSeries(
+        {
+          id: 'humidity'+deviceid,
+          name: devicename+':humidity',
+          yAxis: 1
+        }
+      );
+      series = chart.get('humidity'+deviceid);
+      series.setData(datatablehu);
+    }
+
+    if (datatablech.length!=0)
+    {
+      chart.addSeries(
+        {
+          id: 'chill'+deviceid,
+          name: 'Chill',
+          yAxis: 0
+        }
+      );
+      series = chart.get('chill'+deviceid);
+      series.setData(datatablech);
+      
+      if (isday==0) {
+        chart.addSeries(
+          {
+            id: 'chillmin'+deviceid,
+            name: devicename+':chill_min',
+            yAxis: 0
+          }
+        );
+        series = chart.get('chillmin'+deviceid);
+        series.setData(datatablecm);
+      }
+    }
+    if (datatablete.length!=0)
+    {
+      //Add Temperature series
+      chart.addSeries(
+        {
+          id: 'temperature'+deviceid,
+          name: devicename+':temperature',
+          yAxis: 0
+        }
+      );
+      series = chart.get('temperature'+deviceid);
+      series.setData(datatablete);
+      if (isday==0) {
+        chart.addSeries(
+          {
+            id: 'temperaturemin'+deviceid,
+            name: devicename+':temperature_min',
+            yAxis: 0
+          }
+        );
+        series = chart.get('temperaturemin'+deviceid);
+        series.setData(datatabletm);
+      }
+    }
+}    
+
+function RemoveMultipleDataFromTempChart(chart,deviceid)
+{
+    hum=chart.get('humidity'+deviceid);
+    if(hum!=null) {hum.remove()};
+    chill=chart.get('chill'+deviceid)
+    if(chill!=null) {chill.remove()};
+    chillmin=chart.get('chillmin'+deviceid);
+    if(chillmin!=null) {chillmin.remove()};
+    temperature=chart.get('temperature'+deviceid);
+    if(temperature!=null) {temperature.remove()};
+    temperaturemin=chart.get('temperaturemin'+deviceid);
+    if(temperaturemin!=null) {temperaturemin.remove()};
+}
+
+    
+function SelectGraphDevices()
+{
+    clearInterval($.myglobals.refreshTimer);
+    
+    $.ajax({
+           url: "json.htm?type=devices&filter=temp&used=true&order=Name",
+           async: false,
+           dataType: 'json',
+           success: function(data) {
+            if (typeof data.result != 'undefined') {
+                $.each(data.result, function(i,item){
+                    $("#devicecontainer").append('<input type="checkbox" class="devicecheckbox" id="'+item.idx+'" value="'+item.Name+'" onChange="AddDeviceToGraph(this)">'+item.Name+'<br />');
+                    });
+            }
+           }
+    });
+}
+
+function AddDeviceToGraph(cb)
+{
+    if (cb.checked==true) {
+        $.ajax({
+           url: "json.htm?type=graph&sensor=temp&idx="+cb.id+"&range="+$("#graphfrom").val()+"T"+$("#graphto").val(),
+           async: false,
+           dataType: 'json',
+           success: function(data) {
+            AddMultipleDataToTempChart(data,$.CustomChart,0,cb.id,cb.value);
+           }
+        });
+    }
+    else {
+        RemoveMultipleDataFromTempChart($.CustomChart,cb.id);
+    }
+}
+function datePickerChanged()
+{
+    
+    $( "#graphfrom" ).datepicker('option', 'maxDate', $("#graphto").val());
+    $( "#graphto" ).datepicker('option', 'minDate', $("#graphfrom").val());
+    $('div[id="devicecontainer"] input:checkbox:checked').each(function() {
+        RemoveMultipleDataFromTempChart($.CustomChart,$(this).attr('id'));
+        $.ajax({
+           url: "json.htm?type=graph&sensor=temp&idx="+$(this).attr('id')+"&range="+$("#graphfrom").val()+"T"+$("#graphto").val(),
+           async: false,
+           dataType: 'json',
+           graphid: $(this).attr('id'),
+           graphval: $(this).val(),
+           success: function(data) {
+            AddMultipleDataToTempChart(data,$.CustomChart,0,this.graphid,this.graphval);
+           }
+        });
+    });   
+}
+    
+function ShowCustomTempLog()
+{
+  clearInterval($.myglobals.refreshTimer);
+  $('#modal').show();
+  var htmlcontent = '';
+  htmlcontent+=$('#customlog').html();
+  $('#tempcontent').html(GetBackbuttonHTMLTable('ShowTemps')+htmlcontent);
+    $('.datepick').each(function() {
+        $(this).datepicker({
+                           dateFormat: 'yy-mm-dd',
+                           onClose:function(){ datePickerChanged() }});
+        $(this).datepicker('setDate', new Date());
+    });
+    $("#graphfrom").datepicker('setDate', '-7');
+    
+  $.CustomChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'customgraph',
+          type: 'line',
+          zoomType: 'xy',
+          alignTicks: false,
+          
+          events: {
+              load: function() {
+              }
+          }
+      },
+      colors: ['#FF99CC','#FFCC99','#FFFF99','#CCFFCC','#CCFFFF','#99CCFF','#CC99FF','#FFFFFF',
+               '#9999FF','#993366','#FFFFCC','#CCFFFF','#660066','#FF8080','#0066CC','#CCCCFF',
+               '#000080','#FF00FF','#FFFF00','#00FFFF','#800080','#800000','#008080','#0000FF',
+               '#000000','#993300','#333300','#003300','#003366','#000080','#333399','#333333',
+               '#800000','#FF6600','#808000','#008000','#008080','#0000FF','#666699','#808080',
+               '#FF0000','#FF9900','#99CC00','#339966','#33CCCC','#3366FF','#800080','#969696',
+               '#FF00FF','#FFCC00','#FFFF00','#00FF00','#00FFFF','#00CCFF','#993366','#C0C0C0'],
+      loading: {
+          hideDuration: 1000,
+          showDuration: 1000
+      },
+      credits: {
+        enabled: true,
+        href: "http://www.domoticz.com",
+        text: "Domoticz.com"
+      },
+      title: {
+          text: 'Custom temperature graph'
+      },
+      xAxis: {
+          type: 'datetime'
+      },
+      yAxis: [{ //temp label
+          labels:  {
+                   formatter: function() {
+                        return this.value +'\u00B0 C';
+                   },
+                   style: {
+                      color: 'white'
+                   }
+          },
+          title: {
+              text: 'degrees Celsius',
+               style: {
+                  color: 'white'
+               }
+          }
+      }, { //humidity label
+          labels:  {
+                   formatter: function() {
+                        return this.value +'%';
+                   },
+                   style: {
+                      color: 'white'
+                   }
+          },
+          title: {
+              text: 'humidity %',
+               style: {
+                  color: 'white'
+               }
+          },
+          opposite: true
+      }],
+      tooltip: {
+          formatter: function() {
+            var unit = {
+                        'Humidity': '%',
+                        'Temperature': '\u00B0 C',
+                        'Temperature_min': '\u00B0 C',
+                        'Chill': '\u00B0 C',
+                        'Chill_min': '\u00B0 C'
+                  }[this.series.name];
+                  return Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
+          }
+      },
+      legend: {
+          enabled: true
+      },
+      plotOptions: {
+               line: {
+                    lineWidth: 3,
+                    states: {
+                        hover: {
+                            lineWidth: 3
+                        }
+                    },
+                    marker: {
+                        enabled: false,
+                        states: {
+                            hover: {
+                                enabled: true,
+                                symbol: 'circle',
+                                radius: 5,
+                                lineWidth: 1
+                            }
+                        }
+                    }
+                }
+      }
+  });
+  SelectGraphDevices();
+  $('#modal').hide();
+  return false;
+}
+    
 function ShowTempLog(id,name)
 {
 	clearInterval($.myglobals.refreshTimer);
@@ -572,6 +881,7 @@ function ShowTemps()
         '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
         '\t<tr>\n' +
         '\t  <td align="right">\n' +
+        '\t    <a class="btnstyle" onclick="ShowCustomTempLog();">Custom graph</a>\n' +
         '\t    <a class="btnstyle" onclick="AddTempDevice();">Add Sensor</a>\n' +
         '\t  </td>\n' +
         '\t</tr>\n' +
