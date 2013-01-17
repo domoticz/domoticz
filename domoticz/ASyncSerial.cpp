@@ -189,7 +189,11 @@ void AsyncSerial::readEnd(const boost::system::error_code& error,
 {
     if(error)
     {
-        #ifdef __APPLE__
+		//In case a asynchronous operation is cancelled due to a timeout,
+		//each OS seems to have its way to react.
+		#ifdef _WIN32
+		if(error.value()==995) return; //Windows spits out error 995
+		#elif __APPLE__
         if(error.value()==45)
         {
             //Bug on OS X, it might be necessary to repeat the setup
