@@ -200,6 +200,11 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		//item is scheduled for next day
 		rtime+=(24*3600);
 	}
+	while (rtime-(24*3600)>atime+60)
+	{
+		rtime-=(24*3600);
+	}
+
 	pItem->startTime=rtime;
 	return true;
 }
