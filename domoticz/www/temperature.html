@@ -331,9 +331,8 @@ function AddDeviceToGraph(cb)
 }
 function datePickerChanged()
 {
-    
-    $( "#graphfrom" ).datepicker('option', 'maxDate', $("#graphto").val());
-    $( "#graphto" ).datepicker('option', 'minDate', $("#graphfrom").val());
+    $( "#tempcontent #graphfrom" ).datepicker('option', 'maxDate', $("#graphto").val());
+    $( "#tempcontent #graphto" ).datepicker('option', 'minDate', $("#graphfrom").val());
     $('div[id="devicecontainer"] input:checkbox:checked').each(function() {
         RemoveMultipleDataFromTempChart($.CustomChart,$(this).attr('id'));
         $.ajax({
@@ -356,13 +355,13 @@ function ShowCustomTempLog()
   var htmlcontent = '';
   htmlcontent+=$('#customlog').html();
   $('#tempcontent').html(GetBackbuttonHTMLTable('ShowTemps')+htmlcontent);
-    $('.datepick').each(function() {
+    $('#tempcontent .datepick').each(function() {
         $(this).datepicker({
                            dateFormat: 'yy-mm-dd',
                            onClose:function(){ datePickerChanged() }});
         $(this).datepicker('setDate', new Date());
     });
-    $("#graphfrom").datepicker('setDate', '-7');
+    $("#tempcontent #graphfrom").datepicker('setDate', '-7');
     
   $.CustomChart = new Highcharts.Chart({
       chart: {
@@ -379,7 +378,7 @@ function ShowCustomTempLog()
       colors: ['#FF99CC','#FFCC99','#FFFF99','#CCFFCC','#CCFFFF','#99CCFF','#CC99FF','#FFFFFF',
                '#9999FF','#993366','#FFFFCC','#CCFFFF','#660066','#FF8080','#0066CC','#CCCCFF',
                '#000080','#FF00FF','#FFFF00','#00FFFF','#800080','#800000','#008080','#0000FF',
-               '#000000','#993300','#333300','#003300','#003366','#000080','#333399','#333333',
+               '#00C0C0','#993300','#333300','#003300','#003366','#000080','#333399','#333333',
                '#800000','#FF6600','#808000','#008000','#008080','#0000FF','#666699','#808080',
                '#FF0000','#FF9900','#99CC00','#339966','#33CCCC','#3366FF','#800080','#969696',
                '#FF00FF','#FFCC00','#FFFF00','#00FF00','#00FFFF','#00CCFF','#993366','#C0C0C0'],
@@ -393,7 +392,7 @@ function ShowCustomTempLog()
         text: "Domoticz.com"
       },
       title: {
-          text: 'Custom temperature graph'
+          text: 'Custom Temperature Graph'
       },
       xAxis: {
           type: 'datetime'
@@ -877,7 +876,7 @@ function ShowTemps()
         '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
         '\t<tr>\n' +
         '\t  <td align="right">\n' +
-        '\t    <a class="btnstyle" onclick="ShowCustomTempLog();">Custom graph</a>\n' +
+        '\t    <a class="btnstyle" onclick="ShowCustomTempLog();">Custom Graph</a>\n' +
         '\t    <a class="btnstyle" onclick="AddTempDevice();">Add Sensor</a>\n' +
         '\t  </td>\n' +
         '\t</tr>\n' +

@@ -1,4 +1,6 @@
-Version 1.0.7 (Januari xxth 2013)
+Version 1.0.8 (Januari xxth 2013)
+
+Version 1.0.7 (Januari 18th 2013)
 - replaced all localtime function with localtime_r
 - Dashboard: P1 Smart Meter Energy does not show the retour values if not used
 - Devices Tab: Check if any device is selected to delete
@@ -17,6 +19,7 @@ Version 1.0.7 (Januari xxth 2013)
 - Hardware can now be Enabled/Disabled
 - Lights/Switches, Contact status now displays as Open/Closed instead of On/Off
 - Lights/Switches, Contact Open/Closed icon
+- Temperature Custom Graph
 
 Version 1.0.6 (Januari 9th 2013)
 - RFXCOM Lan will now keep retrying to connect when it does not succeed on the first time
