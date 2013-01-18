@@ -419,8 +419,9 @@ function RefreshHardwareTable()
 					else
 					{
 						var serpos=jQuery.inArray(item.Port, $.myglobals.SerialPortVal);
-						if (serpos!=-1)
+						if (serpos!=-1) {
 							SerialName=$.myglobals.SerialPortStr[serpos];
+						}
 					}
 
 					var enabledstr="No";
@@ -493,7 +494,7 @@ function RefreshHardwareTable()
 											$("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
 										}
 										else
-										if ((data["3"].indexOf("LAN") >= 0)||(data["2"].indexOf("Domoticz") >= 0))
+										if ((data["3"].indexOf("LAN") >= 0)||(data["3"].indexOf("Domoticz") >= 0))
 										{
 											$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["4"]);
 											$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["5"]);

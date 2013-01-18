@@ -252,7 +252,7 @@ char * CWebServer::DisplaySerialDevicesCombo()
 	{
 		std::string serialname=*itt;
 		int snumber=-1;
-		if (bUseDirectPath)
+		if (!bUseDirectPath)
 		{
 			int pos=serialname.find_first_of("01234567890");
 			if (pos!=std::string::npos) {
