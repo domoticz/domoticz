@@ -303,22 +303,40 @@ bool MainWorker::AddHardwareFromParams(
 	{
 	case HTYPE_RFXtrx315:
 	case HTYPE_RFXtrx433:
-		//USB
+	case HTYPE_P1SmartMeter:
+		{
+			//USB/Serial
 #if defined WIN32
-		sprintf(szSerialPort,"COM%d",Port);
+			sprintf(szSerialPort,"COM%d",Port);
 #else
-		#ifdef __APPLE__
-			if (Port>=apple_serial_ports.size())
+			bool bUseDirectPath=false;
+			std::vector<std::string> serialports=GetSerialPorts(bUseDirectPath);
+			if (bUseDirectPath)
 			{
-				std::cout << "Serial Port out of range!..." << std::endl;
-				return false;
+				if (Port>=serialports.size())
+				{
+					std::cout << "Serial Port out of range!..." << std::endl;
+					return false;
+				}
+				strcpy(szSerialPort,serialports[Port].c_str());
 			}
-			sprintf(szSerialPort,"/dev/%s",apple_serial_ports[Port].c_str());
-		#else
-			sprintf(szSerialPort,"/dev/ttyUSB%d",Port);
-		#endif
+			else
+			{
+				sprintf(szSerialPort,"/dev/ttyUSB%d",Port);
+			}
 #endif
-		pHardware = new RFXComSerial(ID,szSerialPort,38400);
+			if (
+				(Type==HTYPE_RFXtrx315)||
+				(Type==HTYPE_RFXtrx433)
+				)
+			{
+				pHardware = new RFXComSerial(ID,szSerialPort,38400);
+			}
+			else if (Type==HTYPE_P1SmartMeter)
+			{
+				pHardware = new P1MeterSerial(ID,szSerialPort,9600);
+			}
+		}
 		break;
 	case HTYPE_RFXLAN:
 		//LAN
@@ -327,24 +345,6 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Domoticz:
 		//LAN
 		pHardware = new DomoticzTCP(ID, Address, Port, Username, Password);
-		break;
-	case HTYPE_P1SmartMeter:
-		//USB
-#if defined WIN32
-		sprintf(szSerialPort,"COM%d",Port);
-#else
-		#ifdef __APPLE__
-				if (Port>=apple_serial_ports.size())
-				{
-					std::cout << "Serial Port out of range!..." << std::endl;
-					return false;
-				}
-				sprintf(szSerialPort,"/dev/%s",apple_serial_ports[Port].c_str());
-		#else
-				sprintf(szSerialPort,"/dev/ttyUSB%d",Port);
-		#endif
-#endif
-		pHardware = new P1MeterSerial(ID,szSerialPort,9600);
 		break;
 	case HTYPE_P1SmartMeterLAN:
 		//LAN

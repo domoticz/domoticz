@@ -6,4 +6,4 @@ std::string stdreplace(
 	const std::string& replaceWhat, 
 	const std::string& replaceWithWhat);
 
-std::vector<std::string> GetSerialPorts();
+std::vector<std::string> GetSerialPorts(bool &bUseDirectPath);

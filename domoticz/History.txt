@@ -1,4 +1,5 @@
 Version 1.0.8 (Januari xxth 2013)
+- Fixed Hardware Enabled/Disabled option
 
 Version 1.0.7 (Januari 18th 2013)
 - replaced all localtime function with localtime_r

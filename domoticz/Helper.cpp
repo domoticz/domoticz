@@ -35,8 +35,10 @@ std::string stdreplace(
 	return result;
 }
 
-std::vector<std::string> GetSerialPorts()
+std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 {
+	bUseDirectPath=false;
+
 	std::vector<std::string> ret;
 #if defined WIN32
 	//windows
@@ -64,15 +66,36 @@ std::vector<std::string> GetSerialPorts()
 		while(de = readdir(d))
 		{
 			std::string fname = de->d_name;
-			if (
-				(fname.find("ttyUSB")!=std::string::npos)||
-				(fname.find("tty.usbserial")!=std::string::npos)
-				)
+			if (fname.find("ttyUSB")!=std::string::npos)
 			{
-				ret.push_back(fname);
+				ret.push_back("/dev/" + fname);
+			}
+			if (fname.find("tty.usbserial")!=std::string::npos)
+			{
+				bUseDirectPath=true;
+				ret.push_back("/dev/" + fname);
 			}
 		}
-	}	
+		closedir(d);
+	}
+	//also scan in /dev/usb
+	d=opendir("/dev/usb");
+	if (d != NULL)
+	{
+		struct dirent *de=NULL;
+		// Loop while not NULL
+		while(de = readdir(d))
+		{
+			std::string fname = de->d_name;
+			if (fname.find("ttyUSB")!=std::string::npos)
+			{
+				bUseDirectPath=true;
+				ret.push_back("/dev/usb/" + fname);
+			}
+		}
+		closedir(d);
+	}
+
 #endif
 	return ret;
 }

@@ -244,21 +244,25 @@ char * CWebServer::DisplaySerialDevicesCombo()
 {
 	m_retstr="";
 	char szTmp[200];
-	std::vector<std::string> serialports=GetSerialPorts();
+	bool bUseDirectPath=false;
+	std::vector<std::string> serialports=GetSerialPorts(bUseDirectPath);
 	std::vector<std::string>::iterator itt;
 	int iDevice=0;
 	for (itt=serialports.begin(); itt!=serialports.end(); ++itt)
 	{
 		std::string serialname=*itt;
 		int snumber=-1;
-#ifndef __APPLE__
-		int pos=serialname.find_first_of("01234567890");
-		if (pos!=std::string::npos) {
-			snumber=atoi(serialname.substr(pos).c_str());
+		if (bUseDirectPath)
+		{
+			int pos=serialname.find_first_of("01234567890");
+			if (pos!=std::string::npos) {
+				snumber=atoi(serialname.substr(pos).c_str());
+			}
 		}
-#else
-		snumber=iDevice;
-#endif
+		else
+		{
+			snumber=iDevice;
+		}
 		if (iDevice!=-1) 
 		{
 			sprintf(szTmp,"<option value=\"%d\">%s</option>\n",snumber,serialname.c_str());
