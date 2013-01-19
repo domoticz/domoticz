@@ -92,6 +92,21 @@ cp /opt/lib/libboost_* /lib
 verify http://forum.synology.com/enu/viewtopic.php?p=185512#p185512
 to check your /root/.profile
 
+4)
+install the FTDI and usb drivers. For a tutorial on a DS212+ see:
+http://sirloon.net/installing-usb-serial-modules-on-nas-synology-ds212
+
+basic installation:
+insmod usbserial.kp
+insmod ftdi_sio.ko
+
+mknod /dev/usb/ttyUSB0 c 188 0
+
+Plugin your RFXtrx transceiver, and verify the USB device is found with:
+dmesg
+
+you should see it found the device and assigned a usb device (in my case ttyUSB0, and it gets linked to /dev/usb/ttyUSB0)
+
 goto the root folder again for the next steps
 cd /root
 ------------------------------------------------------------------------------------------------
