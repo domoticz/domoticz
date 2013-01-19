@@ -331,12 +331,12 @@ boost::tribool request_parser::consume(request& req, char input)
 
 bool request_parser::is_char(int c)
 {
-  return c >= 0 && c <= 127;
+  return ((c >= 0) && (c <= 127));
 }
 
 bool request_parser::is_ctl(int c)
 {
-  return c >= 0 && c <= 31 || c == 127;
+  return ((c >= 0) && (c <= 31)) || (c == 127);
 }
 
 bool request_parser::is_tspecial(int c)
