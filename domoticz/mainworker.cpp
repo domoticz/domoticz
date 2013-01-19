@@ -295,10 +295,6 @@ bool MainWorker::AddHardwareFromParams(
 	char szSerialPort[100];
 	CDomoticzHardwareBase *pHardware=NULL;
 
-#ifdef __APPLE__
-	std::vector<std::string> apple_serial_ports=GetSerialPorts();
-#endif
-
 	switch (Type)
 	{
 	case HTYPE_RFXtrx315:
