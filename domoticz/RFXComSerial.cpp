@@ -69,14 +69,15 @@ void RFXComSerial::Do_Work()
 		boost::this_thread::sleep(boost::posix_time::seconds(1));
 		if (!isOpen())
 		{
+			if (m_retrycntr==0)
+			{
+				std::cout << "RFXCOM serial retrying in " << std::dec << RETRY_DELAY << " seconds..." << std::endl;
+			}
 			m_retrycntr++;
 			if (m_retrycntr>=RETRY_DELAY)
 			{
 				m_retrycntr=0;
-				if (!OpenSerialDevice())
-				{
-					std::cout << "retrying in " << std::dec << RETRY_DELAY << " seconds..." << std::endl;
-				}
+				OpenSerialDevice();
 			}
 		}
 	}
@@ -89,12 +90,12 @@ bool RFXComSerial::OpenSerialDevice()
 	//Try to open the Serial Port
 	try
 	{
-		std::cout << "RFXCOM Using serial port: " << m_szSerialPort << std::endl;
 		open(m_szSerialPort,m_iBaudRate);
+		std::cout << "RFXCOM Using serial port: " << m_szSerialPort << std::endl;
 	}
 	catch (boost::exception & e)
 	{
-		std::cerr << "Error opening serial port!" << std::endl;
+		std::cerr << "RFXCOM Error opening serial port!" << std::endl;
 #ifdef _DEBUG
 		std::cerr << "-----------------" << std::endl << boost::diagnostic_information(e) << "-----------------" << std::endl;
 #endif
@@ -102,7 +103,7 @@ bool RFXComSerial::OpenSerialDevice()
 	}
 	catch ( ... )
 	{
-		std::cerr << "Error opening serial port!!!" << std::endl;
+		std::cerr << "RFXCOM Error opening serial port!!!" << std::endl;
 		return false;
 	}
 	m_bIsStarted=true;

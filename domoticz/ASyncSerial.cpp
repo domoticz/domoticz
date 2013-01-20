@@ -187,7 +187,9 @@ void AsyncSerial::readEnd(const boost::system::error_code& error,
         if(isOpen())
         {
 			std::cout << "Serial Port closed!..." << std::endl;
-            doClose();
+			clearReadCallback();
+			close();
+	        doClose();
             setErrorStatus(true);
         }
     } else {
