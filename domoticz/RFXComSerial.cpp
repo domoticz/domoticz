@@ -38,12 +38,16 @@ RFXComSerial::~RFXComSerial()
 
 bool RFXComSerial::StartHardware()
 {
+	return OpenSerialDevice();
+	//somehow retry does not seem to work?!
+/*
 	m_retrycntr=RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&RFXComSerial::Do_Work, this)));
 
 	return (m_thread!=NULL);
+*/
 }
 
 bool RFXComSerial::StopHardware()
