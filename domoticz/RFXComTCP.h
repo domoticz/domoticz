@@ -10,8 +10,6 @@ public:
 	RFXComTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort);
 	~RFXComTCP(void);
 
-	virtual bool connectto(const char *serveraddr, unsigned short port);
-	virtual void disconnect();
 	void write(const char *data, size_t size);
 	bool isConnected(){ return m_socket!= INVALID_SOCKET; };
 	void WriteToHardware(const char *pdata, const unsigned char length);
@@ -20,6 +18,7 @@ public:
 	boost::signals2::signal<void()>	sDisconnected;
 	static const int readBufferSize=512;
 private:
+	void disconnect();
 	int m_retrycntr;
 	bool StartHardware();
 	bool StopHardware();

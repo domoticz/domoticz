@@ -8,6 +8,8 @@
 
 #include <ctime>
 
+#define RETRY_DELAY 30
+
 //
 //Class RFXComSerial
 //
@@ -16,6 +18,7 @@ RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned in
 	m_HwdID=ID;
 	m_szSerialPort=devname;
 	m_iBaudRate=baud_rate;
+	m_stoprequested=false;
 }
 
 RFXComSerial::RFXComSerial(const std::string& devname,
@@ -34,6 +37,54 @@ RFXComSerial::~RFXComSerial()
 }
 
 bool RFXComSerial::StartHardware()
+{
+	m_retrycntr=RETRY_DELAY; //will force reconnect first thing
+
+	//Start worker thread
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&RFXComSerial::Do_Work, this)));
+
+	return (m_thread!=NULL);
+}
+
+bool RFXComSerial::StopHardware()
+{
+	m_stoprequested=true;
+	if (isOpen())
+	{
+		try {
+			clearReadCallback();
+			close();
+		} catch(...)
+		{
+			//Don't throw from a Stop command
+		}
+	}
+	return true;
+}
+
+void RFXComSerial::Do_Work()
+{
+	while (!m_stoprequested)
+	{
+		boost::this_thread::sleep(boost::posix_time::seconds(1));
+		if (!isOpen())
+		{
+			m_retrycntr++;
+			if (m_retrycntr>=RETRY_DELAY)
+			{
+				m_retrycntr=0;
+				if (!OpenSerialDevice())
+				{
+					std::cout << "retrying in " << std::dec << RETRY_DELAY << " seconds..." << std::endl;
+				}
+			}
+		}
+	}
+	std::cout << "Serial Worker stopped..." << std::endl;
+} 
+
+
+bool RFXComSerial::OpenSerialDevice()
 {
 	//Try to open the Serial Port
 	try
@@ -57,21 +108,6 @@ bool RFXComSerial::StartHardware()
 	m_bIsStarted=true;
 	setReadCallback(boost::bind(&RFXComSerial::readCallback, this, _1, _2));
 	sOnConnected(this);
-	return true;
-}
-
-bool RFXComSerial::StopHardware()
-{
-	if (isOpen())
-	{
-		try {
-			clearReadCallback();
-			close();
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
 	return true;
 }
 

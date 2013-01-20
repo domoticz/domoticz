@@ -46,53 +46,16 @@ DomoticzTCP::~DomoticzTCP(void)
 
 bool DomoticzTCP::StartHardware()
 {
-	try
-	{
-		connectto(m_szIPAddress.c_str(), m_usIPPort);
-	}
-	catch (boost::exception & e)
-	{
-		std::cerr << "Error opening TCP connection!\n";
-#ifdef _DEBUG
-		std::cerr << "-----------------" << std::endl << boost::diagnostic_information(e) << "-----------------" << std::endl;
-#endif
-		return false;
-	}
-	catch ( ... )
-	{
-		std::cerr << "Error opening TCP connection!!!";
-		return false;
-	}
 	m_bIsStarted=true;
-	return true;
-}
-
-bool DomoticzTCP::StopHardware()
-{
-	if (isConnected())
-	{
-		try {
-			disconnect();
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
-	return true;
-}
-
-bool DomoticzTCP::connectto(const char *serveraddr, unsigned short port)
-{
-	disconnect();
 
 	m_stoprequested=false;
 
 	memset(&m_addr,0,sizeof(sockaddr_in));
 	m_addr.sin_family = AF_INET;
-	m_addr.sin_port = htons(port);
+	m_addr.sin_port = htons(m_usIPPort);
 
 	unsigned long ip;
-	ip=inet_addr(serveraddr);
+	ip=inet_addr(m_szIPAddress.c_str());
 
 	// if we have a error in the ip, it means we have entered a string
 	if(ip!=INADDR_NONE)
@@ -102,7 +65,7 @@ bool DomoticzTCP::connectto(const char *serveraddr, unsigned short port)
 	else
 	{
 		// change Hostname in serveraddr
-		hostent *he=gethostbyname(serveraddr);
+		hostent *he=gethostbyname(m_szIPAddress.c_str());
 		if(he==NULL)
 		{
 			return false;
@@ -119,6 +82,20 @@ bool DomoticzTCP::connectto(const char *serveraddr, unsigned short port)
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&DomoticzTCP::Do_Work, this)));
 
 	return (m_thread!=NULL);
+}
+
+bool DomoticzTCP::StopHardware()
+{
+	if (isConnected())
+	{
+		try {
+			disconnect();
+		} catch(...)
+		{
+			//Don't throw from a Stop command
+		}
+	}
+	return true;
 }
 
 bool DomoticzTCP::ConnectInternal()

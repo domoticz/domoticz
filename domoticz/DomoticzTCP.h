@@ -10,8 +10,6 @@ public:
 	DomoticzTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string username, const std::string password);
 	~DomoticzTCP(void);
 
-	virtual bool connectto(const char *serveraddr, unsigned short port);
-	virtual void disconnect();
 	void write(const char *data, size_t size);
 	bool isConnected(){ return m_socket!= INVALID_SOCKET; };
 	void WriteToHardware(const char *pdata, const unsigned char length);
@@ -31,6 +29,7 @@ protected:
 
 	void Do_Work();
 	bool ConnectInternal();
+	void disconnect();
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
 	sockaddr_in m_addr;

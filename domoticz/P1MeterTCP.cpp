@@ -43,25 +43,41 @@ P1MeterTCP::~P1MeterTCP(void)
 
 bool P1MeterTCP::StartHardware()
 {
-	try
+	m_stoprequested=false;
+
+	memset(&m_addr,0,sizeof(sockaddr_in));
+	m_addr.sin_family = AF_INET;
+	m_addr.sin_port = htons(m_usIPPort);
+
+	unsigned long ip;
+	ip=inet_addr(m_szIPAddress.c_str());
+
+	// if we have a error in the ip, it means we have entered a string
+	if(ip!=INADDR_NONE)
 	{
-		connectto(m_szIPAddress.c_str(), m_usIPPort);
+		m_addr.sin_addr.s_addr=ip;
 	}
-	catch (boost::exception & e)
+	else
 	{
-		std::cerr << "Error opening P1 TCP connection!\n";
-#ifdef _DEBUG
-		std::cerr << "-----------------" << std::endl << boost::diagnostic_information(e) << "-----------------" << std::endl;
-#endif
-		return false;
+		// change Hostname in serveraddr
+		hostent *he=gethostbyname(m_szIPAddress.c_str());
+		if(he==NULL)
+		{
+			return false;
+		}
+		else
+		{
+			memcpy(&(m_addr.sin_addr),he->h_addr_list[0],4);
+		}
 	}
-	catch ( ... )
-	{
-		std::cerr << "Error opening P1 TCP connection!!!";
-		return false;
-	}
+
+	//force connect the next first time
+	m_retrycntr=RETRY_DELAY;
 	m_bIsStarted=true;
-	return true;
+
+	//Start worker thread
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&P1MeterTCP::Do_Work, this)));
+	return (m_thread!=NULL);
 }
 
 bool P1MeterTCP::StopHardware()
@@ -76,47 +92,6 @@ bool P1MeterTCP::StopHardware()
 		}
 	}
 	return true;
-}
-
-bool P1MeterTCP::connectto(const char *serveraddr, unsigned short port)
-{
-	disconnect();
-
-	m_stoprequested=false;
-
-	memset(&m_addr,0,sizeof(sockaddr_in));
-	m_addr.sin_family = AF_INET;
-	m_addr.sin_port = htons(port);
-
-	unsigned long ip;
-	ip=inet_addr(serveraddr);
-
-	// if we have a error in the ip, it means we have entered a string
-	if(ip!=INADDR_NONE)
-	{
-		m_addr.sin_addr.s_addr=ip;
-	}
-	else
-	{
-		// change Hostname in serveraddr
-		hostent *he=gethostbyname(serveraddr);
-		if(he==NULL)
-		{
-			return false;
-		}
-		else
-		{
-			memcpy(&(m_addr.sin_addr),he->h_addr_list[0],4);
-		}
-	}
-
-	//force connect the next first time
-	m_retrycntr=RETRY_DELAY;
-
-	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&P1MeterTCP::Do_Work, this)));
-
-	return (m_thread!=NULL);
 }
 
 bool P1MeterTCP::ConnectInternal()

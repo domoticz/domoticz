@@ -10,8 +10,6 @@ public:
 	P1MeterTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort);
 	~P1MeterTCP(void);
 
-	virtual bool connectto(const char *serveraddr, unsigned short port);
-	virtual void disconnect();
 	void write(const char *data, size_t size);
 	bool isConnected(){ return m_socket!= INVALID_SOCKET; };
 	void WriteToHardware(const char *pdata, const unsigned char length);
@@ -22,6 +20,7 @@ private:
 	int m_retrycntr;
 	bool StartHardware();
 	bool StopHardware();
+	void disconnect();
 protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
