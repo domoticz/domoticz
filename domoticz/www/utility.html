@@ -49,6 +49,17 @@
   <div id="counteryeargraph" style="height: 300px;"></div>
 </div>
 
+<div id="currentlog" style="display:none;">
+  <h2>Last 24 Hours</h2><br>
+  <div id="currentdaygraph" style="height: 300px;"></div>
+  <br>
+  <h2>Month</h2><br>
+  <div id="currentmonthgraph" style="height: 300px;"></div>
+  <br>
+  <h2>Year</h2><br>
+  <div id="currentyeargraph" style="height: 300px;"></div>
+</div>
+
 <div id="smartlog" style="display:none;">
   <h2>Day</h2><br>
   <div id="smartdaygraph" style="height: 300px;"></div>
@@ -196,6 +207,392 @@ function AddDataToUtilityChart(data,chart,switchtype)
       series = chart.get('water');
       series.setData(datatablev);
     }
+}
+
+function AddDataToCurrentChart(data,chart,switchtype)
+{
+    var datatablev1 = [];
+    var datatablev2 = [];
+    var datatablev3 = [];
+    var datatablev4 = [];
+    var datatablev5 = [];
+    var datatablev6 = [];
+
+    $.each(data.result, function(i,item)
+    {
+			if (chart == $.DayChart) {
+       datatablev1.push( [GetUTCFromString(item.d), parseFloat(item.v1) ] );
+       datatablev2.push( [GetUTCFromString(item.d), parseFloat(item.v2) ] );
+       datatablev3.push( [GetUTCFromString(item.d), parseFloat(item.v3) ] );
+			}
+			else {
+       datatablev1.push( [GetDateFromString(item.d), parseFloat(item.v1) ] );
+       datatablev2.push( [GetDateFromString(item.d), parseFloat(item.v2) ] );
+       datatablev3.push( [GetDateFromString(item.d), parseFloat(item.v3) ] );
+       datatablev4.push( [GetDateFromString(item.d), parseFloat(item.v4) ] );
+       datatablev5.push( [GetDateFromString(item.d), parseFloat(item.v5) ] );
+       datatablev6.push( [GetDateFromString(item.d), parseFloat(item.v6) ] );
+			}
+    });
+
+    var series;
+    if (switchtype==0)
+    {
+			//Current (A)
+			if (chart == $.DayChart) {
+				if (data.haveL1) {
+					chart.addSeries(
+						{
+							id: 'current1',
+							name: 'Current_L1',
+							color: 'rgba(3,190,252,0.8)',
+							yAxis: 0
+						}
+					);
+					series = chart.get('current1');
+					series.setData(datatablev1);
+				}
+				if (data.haveL2) {
+					chart.addSeries(
+						{
+							id: 'current2',
+							name: 'Current_L2',
+							color: 'rgba(252,190,3,0.8)',
+							yAxis: 0
+						}
+					);
+					series = chart.get('current2');
+					series.setData(datatablev2);
+				}
+				if (data.haveL3) {
+					chart.addSeries(
+						{
+							id: 'current3',
+							name: 'Current_L3',
+							color: 'rgba(190,252,3,0.8)',
+							yAxis: 0
+						}
+					);
+					series = chart.get('current3');
+					series.setData(datatablev3);
+				}
+			}
+			else {
+				if (data.haveL1) {
+					chart.addSeries(
+						{
+							id: 'current1min',
+							name: 'Current_L1_Min',
+							color: 'rgba(3,190,252,0.8)',
+							yAxis: 0
+						}
+					);
+					chart.addSeries(
+						{
+							id: 'current1max',
+							name: 'Current_L1_Max',
+							color: 'rgba(3,252,190,0.8)',
+							yAxis: 0
+						}
+					);
+					series = chart.get('current1min');
+					series.setData(datatablev1);
+					series = chart.get('current1max');
+					series.setData(datatablev2);
+				}
+				if (data.haveL2) {
+					chart.addSeries(
+						{
+							id: 'current2min',
+							name: 'Current_L2_Min',
+							color: 'rgba(252,190,3,0.8)',
+							yAxis: 0
+						}
+					);
+					chart.addSeries(
+						{
+							id: 'current2max',
+							name: 'Current_L2_Max',
+							color: 'rgba(252,3,190,0.8)',
+							yAxis: 0
+						}
+					);
+					series = chart.get('current2min');
+					series.setData(datatablev3);
+					series = chart.get('current2max');
+					series.setData(datatablev4);
+				}
+				if (data.haveL3) {
+					chart.addSeries(
+						{
+							id: 'current3min',
+							name: 'Current_L3_Min',
+							color: 'rgba(190,252,3,0.8)',
+							yAxis: 0
+						}
+					);
+					chart.addSeries(
+						{
+							id: 'current3max',
+							name: 'Current_L3_Min',
+							color: 'rgba(112,146,190,0.8)',
+							yAxis: 0
+						}
+					);
+					series = chart.get('current3min');
+					series.setData(datatablev5);
+					series = chart.get('current3max');
+					series.setData(datatablev6);
+				}
+			}
+			chart.yAxis[0].axisTitle.attr({
+					text: 'Current (A)'
+			});			
+    }
+    else if (switchtype==1)
+    {
+			//gas
+      chart.addSeries(
+        {
+          id: 'gas',
+          name: 'Gas',
+          color: 'rgba(3,190,252,0.8)',
+          yAxis: 0
+        }
+      );
+			chart.yAxis[0].axisTitle.attr({
+        text: 'Gas m3'
+			});			
+      series = chart.get('gas');
+      series.setData(datatablev);
+    }
+		chart.yAxis[0].redraw();
+}
+
+function ShowCurrentLog(id,name,switchtype)
+{
+	clearInterval($.myglobals.refreshTimer);
+  $('#modal').show();
+  var htmlcontent = '';
+  htmlcontent='<p><center><h2>' + name + '</h2></center></p><br><br>\n';
+  htmlcontent+=$('#currentlog').html();
+  $('#utilitycontent').html(GetBackbuttonHTMLTable('ShowUtilities')+htmlcontent);
+  
+  $.DayChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'currentdaygraph',
+          type: 'line',
+          zoomType: 'xy',
+          events: {
+              load: function() {
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=day",
+                function(data) {
+											AddDataToCurrentChart(data,$.DayChart,switchtype);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Last 24 Hours'
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: 'Usage'
+            },
+            min: 0
+        },
+        tooltip: {
+            formatter: function() {
+										var unit = {
+																'Usage': 'Watt',
+																'Current_L1': 'A',
+																'Current_L2': 'A',
+																'Current_L3': 'A'
+													}[this.series.name];
+                    return this.series.name + ': ' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y + ' ' + unit;
+            }
+        },
+        plotOptions: {
+						 line: {
+									lineWidth: 3,
+									states: {
+											hover: {
+													lineWidth: 3
+											}
+									},
+									marker: {
+											enabled: false,
+											states: {
+													hover: {
+															enabled: true,
+															symbol: 'circle',
+															radius: 5,
+															lineWidth: 1
+													}
+											}
+									}
+							}
+        },
+        legend: {
+            enabled: true
+        }
+    });
+  
+  $.MonthChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'currentmonthgraph',
+          type: 'spline',
+          marginRight: 10,
+          zoomType: 'xy',
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=month",
+                function(data) {
+											AddDataToCurrentChart(data,$.MonthChart,switchtype);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Last Month'
+        },
+        xAxis: {
+            type: 'datetime',
+            tickInterval: 24 * 3600 * 1000
+        },
+        yAxis: {
+            title: {
+                text: 'Usage'
+            },
+            min: 0
+        },
+        tooltip: {
+            formatter: function() {
+										var unit = {
+																'Usage': 'kWh',
+																'Current_L1_Min': 'A',
+																'Current_L1_Max': 'A',
+																'Current_L2_Min': 'A',
+																'Current_L2_Max': 'A',
+																'Current_L3_Min': 'A',
+																'Current_L3_Max': 'A'
+													}[this.series.name];
+                    return this.series.name + ': ' + Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
+            }
+        },
+        plotOptions: {
+           spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        legend: {
+            enabled: true
+        }
+    });
+
+  $.YearChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'currentyeargraph',
+          type: 'spline',
+          marginRight: 10,
+          zoomType: 'xy',
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=year",
+                function(data) {
+											AddDataToCurrentChart(data,$.YearChart,switchtype);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Last Year'
+        },
+        xAxis: {
+            type: 'datetime',
+            tickInterval: 24 * 3600 * 1000
+        },
+        yAxis: {
+            title: {
+                text: 'Usage'
+            },
+            min: 0
+        },
+        tooltip: {
+            formatter: function() {
+										var unit = {
+																'Usage': 'kWh',
+																'Current_L1_Min': 'A',
+																'Current_L1_Max': 'A',
+																'Current_L2_Min': 'A',
+																'Current_L2_Max': 'A',
+																'Current_L3_Min': 'A',
+																'Current_L3_Max': 'A'
+													}[this.series.name];
+                    return this.series.name + ': ' + Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
+            }
+        },
+        plotOptions: {
+           spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        legend: {
+            enabled: true
+        }
+    });
 }
 
 function ShowCounterLog(id,name,switchtype)
@@ -905,6 +1302,11 @@ function ShowUtilities()
 							xhtm+=      
 										'<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +');">Edit</a> ';
 						}
+          }
+          else if (item.Type == "Current") {
+							xhtm+='<a class="btnsmall" onclick="ShowCurrentLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">Log</a> ';
+							xhtm+=      
+										'<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
           }
           else {
 						xhtm+=      

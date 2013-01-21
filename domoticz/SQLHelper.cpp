@@ -2149,13 +2149,36 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 		{
 			std::vector<std::string> sd=result[0];
 
+			std::vector<std::vector<std::string> > result2;
+			sprintf(szTmp,"SELECT Type,SubType FROM DeviceStatus WHERE (ID=%llu)",ID);
+			result2=query(szTmp);
+			if (result2.size()<1)
+				continue;
+			unsigned char dType=atoi(result2[0][0].c_str());
+			unsigned char dSubType=atoi(result2[0][1].c_str());
+
 			float total_real[6];
 
-			for (int ii=0; ii<6; ii++)
+			if (
+				(dType==pTypeCURRENT)&&
+				(dSubType==sTypeELEC1)
+				)
 			{
-				float total_min=(float)atof(sd[(ii*2)+0].c_str());
-				float total_max=(float)atof(sd[(ii*2)+1].c_str());
-				total_real[ii]=total_max-total_min;
+				//CM113 current meter
+				for (int ii=0; ii<6; ii++)
+				{
+					float fvalue=(float)atof(sd[ii].c_str());
+					total_real[ii]=fvalue;
+				}
+			}
+			else
+			{
+				for (int ii=0; ii<6; ii++)
+				{
+					float total_min=(float)atof(sd[(ii*2)+0].c_str());
+					float total_max=(float)atof(sd[(ii*2)+1].c_str());
+					total_real[ii]=total_max-total_min;
+				}
 			}
 
 			//insert into calendar table

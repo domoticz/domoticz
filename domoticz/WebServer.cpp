@@ -1176,6 +1176,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				{
 					sprintf(szData,"%.1f A, %.1f A, %.1f A",atof(strarray[0].c_str()),atof(strarray[1].c_str()),atof(strarray[2].c_str()));
 					root["result"][ii]["Data"]=szData;
+					root["result"][ii]["SwitchTypeVal"]=0;
 				}
 			}
 			else if (dType == pTypeENERGY)
@@ -1694,7 +1695,7 @@ char * CWebServer::GetJSonPage()
 				dbasetable="Rain_Calendar";
 			else if (sensor=="counter") 
 			{
-				if (dType==pTypeP1Power)
+				if ((dType==pTypeP1Power)||(dType==pTypeCURRENT))
 					dbasetable="MultiMeter";
 				else
 					dbasetable="Meter";
@@ -1715,7 +1716,7 @@ char * CWebServer::GetJSonPage()
 				dbasetable="Rain_Calendar";
 			else if (sensor=="counter")
 			{
-				if (dType==pTypeP1Power)
+				if ((dType==pTypeP1Power)||(dType==pTypeCURRENT))
 					dbasetable="MultiMeter_Calendar";
 				else
 					dbasetable="Meter_Calendar";
@@ -1809,6 +1810,70 @@ char * CWebServer::GetJSonPage()
 						{
 							root["delivered"]=true;
 						}
+					}
+				}
+				else if (dType==pTypeCURRENT)
+				{
+					root["status"]="OK";
+					root["title"]="Graph " + sensor + " " + srange;
+
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT Value1, Value2, Value3, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator itt;
+						int ii=0;
+						bool bHaveL1=false;
+						bool bHaveL2=false;
+						bool bHaveL3=false;
+						for (itt=result.begin(); itt!=result.end(); ++itt)
+						{
+							std::vector<std::string> sd=*itt;
+
+							root["result"][ii]["d"]=sd[3].substr(0,16);
+
+							float fval1=(float)atof(sd[0].c_str());
+							float fval2=(float)atof(sd[1].c_str());
+							float fval3=(float)atof(sd[2].c_str());
+
+							if (fval1!=0)
+								bHaveL1=true;
+							if (fval2!=0)
+								bHaveL2=true;
+							if (fval3!=0)
+								bHaveL3=true;
+
+							//metertype=0 is current, 1=energy
+							unsigned char iCurrentMeterType=0;
+							if (iCurrentMeterType==0)
+							{
+								sprintf(szTmp,"%.1f",fval1/10.0f);
+								root["result"][ii]["v1"]=szTmp;
+								sprintf(szTmp,"%.1f",fval2/10.0f);
+								root["result"][ii]["v2"]=szTmp;
+								sprintf(szTmp,"%.1f",fval3/10.0f);
+								root["result"][ii]["v3"]=szTmp;
+							}
+							else
+							{
+								float voltage=230.0f;
+								sprintf(szTmp,"%.3f",fval1*voltage);
+								root["result"][ii]["v1"]=szTmp;
+								sprintf(szTmp,"%.3f",fval2*voltage);
+								root["result"][ii]["v2"]=szTmp;
+								sprintf(szTmp,"%.3f",fval3*voltage);
+								root["result"][ii]["v3"]=szTmp;
+							}
+							ii++;
+						}
+						if (bHaveL1)
+							root["haveL1"]=true;
+						if (bHaveL2)
+							root["haveL2"]=true;
+						if (bHaveL3)
+							root["haveL3"]=true;
 					}
 				}
 				else
@@ -2543,6 +2608,80 @@ char * CWebServer::GetJSonPage()
 						{
 							root["delivered"]=true;
 						}
+					}
+				}
+				else if (dType==pTypeCURRENT)
+				{
+					szQuery << "SELECT Value1,Value2,Value3,Value4,Value5,Value6, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						bool bHaveL1=false;
+						bool bHaveL2=false;
+						bool bHaveL3=false;
+						std::vector<std::vector<std::string> >::const_iterator itt;
+						for (itt=result.begin(); itt!=result.end(); ++itt)
+						{
+							std::vector<std::string> sd=*itt;
+
+							root["result"][ii]["d"]=sd[6].substr(0,16);
+
+							float fval1=(float)atof(sd[0].c_str());
+							float fval2=(float)atof(sd[1].c_str());
+							float fval3=(float)atof(sd[2].c_str());
+							float fval4=(float)atof(sd[3].c_str());
+							float fval5=(float)atof(sd[4].c_str());
+							float fval6=(float)atof(sd[5].c_str());
+
+							if ((fval1!=0)||(fval2!=0))
+								bHaveL1=true;
+							if ((fval3!=0)||(fval4!=0))
+								bHaveL2=true;
+							if ((fval5!=0)||(fval6!=0))
+								bHaveL3=true;
+
+							//metertype=0 is current, 1=energy
+							unsigned char iCurrentMeterType=0;
+							if (iCurrentMeterType==0)
+							{
+								sprintf(szTmp,"%.1f",fval1/10.0f);
+								root["result"][ii]["v1"]=szTmp;
+								sprintf(szTmp,"%.1f",fval2/10.0f);
+								root["result"][ii]["v2"]=szTmp;
+								sprintf(szTmp,"%.1f",fval3/10.0f);
+								root["result"][ii]["v3"]=szTmp;
+								sprintf(szTmp,"%.1f",fval4/10.0f);
+								root["result"][ii]["v4"]=szTmp;
+								sprintf(szTmp,"%.1f",fval5/10.0f);
+								root["result"][ii]["v5"]=szTmp;
+								sprintf(szTmp,"%.1f",fval6/10.0f);
+								root["result"][ii]["v6"]=szTmp;
+							}
+							else
+							{
+								float voltage=230.0f;
+								sprintf(szTmp,"%.3f",fval1*voltage);
+								root["result"][ii]["v1"]=szTmp;
+								sprintf(szTmp,"%.3f",fval2*voltage);
+								root["result"][ii]["v2"]=szTmp;
+								sprintf(szTmp,"%.3f",fval3*voltage);
+								root["result"][ii]["v3"]=szTmp;
+								sprintf(szTmp,"%.3f",fval4*voltage);
+								root["result"][ii]["v4"]=szTmp;
+								sprintf(szTmp,"%.3f",fval5*voltage);
+								root["result"][ii]["v5"]=szTmp;
+								sprintf(szTmp,"%.3f",fval6*voltage);
+								root["result"][ii]["v6"]=szTmp;
+							}
+
+							ii++;
+						}
+						if (bHaveL1)
+							root["haveL1"]=true;
+						if (bHaveL2)
+							root["haveL2"]=true;
+						if (bHaveL3)
+							root["haveL3"]=true;
 					}
 				}
 				else
