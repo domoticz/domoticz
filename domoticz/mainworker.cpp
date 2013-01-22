@@ -4786,6 +4786,8 @@ void MainWorker::decode_P1MeterPower(const int HwdID, const tRBUF *pResponse)
 		);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
 
+	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (const float)p1Power->usagecurrent);
+
 	if (m_verboselevel == EVBL_ALL)
 	{
 		switch (p1Power->subtype)
@@ -4866,6 +4868,8 @@ void MainWorker::decode_YouLessMeter(const int HwdID, const tRBUF *pResponse)
 		pMeter->usagecurrent
 		);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
+
+	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (const float)pMeter->usagecurrent);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
