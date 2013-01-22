@@ -881,6 +881,138 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(
 	return true;
 }
 
+bool CSQLHelper::CheckAndHandleAmpere123Notification(
+	const int HardwareID, 
+	const std::string ID, 
+	const unsigned char unit, 
+	const unsigned char devType, 
+	const unsigned char subType, 
+	const float Ampere1,
+	const float Ampere2,
+	const float Ampere3)
+{
+	if (!m_dbase)
+		return false;
+
+	char szTmp[1000];
+
+	unsigned long long ulID=0;
+
+	std::vector<std::vector<std::string> > result;
+	sprintf(szTmp,"SELECT ID, Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID.c_str(), unit, devType, subType);
+	result=query(szTmp);
+	if (result.size()==0)
+		return false;
+	std::stringstream s_str( result[0][0] );
+	s_str >> ulID;
+	std::string devicename=result[0][1];
+
+	std::vector<_tNotification> notifications=GetNotifications(ulID);
+	if (notifications.size()==0)
+		return false;
+
+	time_t atime=time(NULL);
+
+	//check if not send 12 hours ago, and if applicable
+
+	atime-=(12*3600);
+	std::string msg="";
+
+	std::string signamp1=Notification_Type_Desc(NTYPE_AMPERE1,1);
+	std::string signamp2=Notification_Type_Desc(NTYPE_AMPERE2,2);
+	std::string signamp3=Notification_Type_Desc(NTYPE_AMPERE3,3);
+
+	std::vector<_tNotification>::const_iterator itt;
+	for (itt=notifications.begin(); itt!=notifications.end(); ++itt)
+	{
+		if (atime>=itt->LastSend)
+		{
+			std::vector<std::string> splitresults;
+			StringSplit(itt->Params, ";", splitresults);
+			if (splitresults.size()<3)
+				continue; //impossible
+			std::string ntype=splitresults[0];
+			bool bWhenIsGreater = (splitresults[1]==">");
+			float svalue=(float)atof(splitresults[2].c_str());
+
+			bool bSendNotification=false;
+
+			if (ntype==signamp1)
+			{
+				//Ampere1
+				if (bWhenIsGreater)
+				{
+					if (Ampere1>svalue)
+					{
+						bSendNotification=true;
+						sprintf(szTmp,"%s Ampere1 is %.1f Ampere", devicename.c_str(), Ampere1);
+						msg=szTmp;
+					}
+				}
+				else
+				{
+					if (Ampere1<svalue)
+					{
+						bSendNotification=true;
+						sprintf(szTmp,"%s Ampere1 is %.1f Ampere", devicename.c_str(), Ampere1);
+						msg=szTmp;
+					}
+				}
+			}
+			else if (ntype==signamp2)
+			{
+				//Ampere2
+				if (bWhenIsGreater)
+				{
+					if (Ampere2>svalue)
+					{
+						bSendNotification=true;
+						sprintf(szTmp,"%s Ampere2 is %.1f Ampere", devicename.c_str(), Ampere2);
+						msg=szTmp;
+					}
+				}
+				else
+				{
+					if (Ampere2<svalue)
+					{
+						bSendNotification=true;
+						sprintf(szTmp,"%s Ampere2 is %.1f Ampere", devicename.c_str(), Ampere2);
+						msg=szTmp;
+					}
+				}
+			}
+			else if (ntype==signamp3)
+			{
+				//Ampere3
+				if (bWhenIsGreater)
+				{
+					if (Ampere3>svalue)
+					{
+						bSendNotification=true;
+						sprintf(szTmp,"%s Ampere3 is %.1f Ampere", devicename.c_str(), Ampere3);
+						msg=szTmp;
+					}
+				}
+				else
+				{
+					if (Ampere3<svalue)
+					{
+						bSendNotification=true;
+						sprintf(szTmp,"%s Ampere3 is %.1f Ampere", devicename.c_str(), Ampere3);
+						msg=szTmp;
+					}
+				}
+			}
+			if (bSendNotification)
+			{
+				SendNotification("", m_urlencoder.URLEncode(msg));
+				TouchNotification(itt->ID);
+			}
+		}
+	}
+	return true;
+}
+
 bool CSQLHelper::CheckAndHandleNotification(
 	const int HardwareID, 
 	const std::string ID, 

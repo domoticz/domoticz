@@ -3669,6 +3669,21 @@ char * CWebServer::GetJSonPage()
 				}
 				ii++;
 			}
+			if ((dType==pTypeCURRENT)&&(dSubType==sTypeELEC1))
+			{
+				root["result"][ii]["val"]=NTYPE_AMPERE1;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_AMPERE1,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_AMPERE1,1);
+				ii++;
+				root["result"][ii]["val"]=NTYPE_AMPERE2;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_AMPERE2,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_AMPERE2,1);
+				ii++;
+				root["result"][ii]["val"]=NTYPE_AMPERE3;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_AMPERE3,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_AMPERE3,1);
+				ii++;
+			}
 			if (dType==pTypeP1Power)
 			{
 				root["result"][ii]["val"]=NTYPE_USAGE;

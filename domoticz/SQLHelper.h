@@ -89,6 +89,16 @@ public:
 		const unsigned char subType, 
 		const _eNotificationTypes ntype, 
 		const float mvalue);
+	bool CheckAndHandleAmpere123Notification(
+		const int HardwareID, 
+		const std::string ID, 
+		const unsigned char unit, 
+		const unsigned char devType, 
+		const unsigned char subType, 
+		const float Ampere1,
+		const float Ampere2,
+		const float Ampere3
+		);
 
 	bool HasTimers(const unsigned long long Idx);
 	bool HasTimers(const std::string Idx);

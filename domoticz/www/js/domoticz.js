@@ -433,6 +433,12 @@ function ShowNotificationTypeLabel()
 			$($.content + " #notificationparamstable #valuetype").html('&nbsp;');
 		else if (typetext == 'Total')
 			$($.content + " #notificationparamstable #valuetype").html('&nbsp;');
+		else if (typetext == 'Ampere 1')
+			$($.content + " #notificationparamstable #valuetype").html('&nbsp;A');
+		else if (typetext == 'Ampere 2')
+			$($.content + " #notificationparamstable #valuetype").html('&nbsp;A');
+		else if (typetext == 'Ampere 3')
+			$($.content + " #notificationparamstable #valuetype").html('&nbsp;A');
 		else
 			$($.content + " #notificationparamstable #valuetype").html('&nbsp;??');
 }

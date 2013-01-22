@@ -4208,6 +4208,8 @@ void MainWorker::decode_Current(const int HwdID, const tRBUF *pResponse)
 	sprintf(szTmp,"%.1f;%.1f;%.1f",CurrentChannel1,CurrentChannel2,CurrentChannel3);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
 
+	m_sql.CheckAndHandleAmpere123Notification(HwdID, ID, Unit, devType, subType, CurrentChannel1, CurrentChannel2, CurrentChannel3);
+
 	if (m_verboselevel == EVBL_ALL)
 	{
 		switch (pResponse->CURRENT.subtype)
