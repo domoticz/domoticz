@@ -2295,7 +2295,25 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 {
 	char szTmp[1000];
 
-	//Get All UV devices
+	float EnergyDivider=1000.0f;
+	float GasDivider=100.0f;
+	float WaterDivider=100.0f;
+	float musage=0;
+	int tValue;
+	if (GetPreferencesVar("MeterDividerEnergy", tValue))
+	{
+		EnergyDivider=float(tValue);
+	}
+	if (GetPreferencesVar("MeterDividerGas", tValue))
+	{
+		GasDivider=float(tValue);
+	}
+	if (GetPreferencesVar("MeterDividerWater", tValue))
+	{
+		WaterDivider=float(tValue);
+	}
+
+	//Get All meter devices
 	std::vector<std::vector<std::string> > resultdevices;
 	strcpy(szTmp,"SELECT DISTINCT(DeviceRowID) FROM MultiMeter ORDER BY DeviceRowID");
 	resultdevices=query(szTmp);
@@ -2338,6 +2356,21 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 		std::stringstream s_str( sddev[0] );
 		s_str >> ID;
 
+		//Get Device Information
+		sprintf(szTmp,"SELECT HardwareID, DeviceID, Unit, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID='%llu')",ID);
+		result=query(szTmp);
+		if (result.size()<1)
+			continue;
+		std::vector<std::string> sd=result[0];
+
+		int hardwareID= atoi(sd[0].c_str());
+		std::string DeviceID=sd[1];
+		unsigned char Unit = atoi(sd[2].c_str());
+		unsigned char devType=atoi(sd[3].c_str());
+		unsigned char subType=atoi(sd[4].c_str());
+		_eSwitchType switchtype=(_eSwitchType) atoi(sd[5].c_str());
+		_eMeterType metertype=(_eMeterType)switchtype;
+
 		sprintf(szTmp,"SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2), MIN(Value3), MAX(Value3), MIN(Value4), MAX(Value4), MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM MultiMeter WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s')",
 			ID,
 			szDateStart,
@@ -2348,35 +2381,23 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 		{
 			std::vector<std::string> sd=result[0];
 
-			std::vector<std::vector<std::string> > result2;
-			sprintf(szTmp,"SELECT Type,SubType FROM DeviceStatus WHERE (ID=%llu)",ID);
-			result2=query(szTmp);
-			if (result2.size()<1)
-				continue;
-			unsigned char dType=atoi(result2[0][0].c_str());
-			unsigned char dSubType=atoi(result2[0][1].c_str());
-
 			float total_real[6];
 
-			if (
-				(dType==pTypeCURRENT)&&
-				(dSubType==sTypeELEC1)
-				)
-			{
-				//CM113 current meter
-				for (int ii=0; ii<6; ii++)
-				{
-					float fvalue=(float)atof(sd[ii].c_str());
-					total_real[ii]=fvalue;
-				}
-			}
-			else
+			if (devType==pTypeP1Power)
 			{
 				for (int ii=0; ii<6; ii++)
 				{
 					float total_min=(float)atof(sd[(ii*2)+0].c_str());
 					float total_max=(float)atof(sd[(ii*2)+1].c_str());
 					total_real[ii]=total_max-total_min;
+				}
+			}
+			else
+			{
+				for (int ii=0; ii<6; ii++)
+				{
+					float fvalue=(float)atof(sd[ii].c_str());
+					total_real[ii]=fvalue;
 				}
 			}
 
@@ -2394,6 +2415,13 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 				szDateStart
 				);
 			result=query(szTmp);
+
+			//Check for Notification
+			if (devType==pTypeP1Power)
+			{
+				float musage=(total_real[0]+total_real[1])/EnergyDivider;
+				CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYENERGY, musage);
+			}
 		}
 	}
 }
