@@ -2140,7 +2140,25 @@ void CSQLHelper::AddCalendarUpdateMeter()
 {
 	char szTmp[1000];
 
-	//Get All UV devices
+	float EnergyDivider=1000.0f;
+	float GasDivider=100.0f;
+	float WaterDivider=100.0f;
+	float musage=0;
+	int tValue;
+	if (GetPreferencesVar("MeterDividerEnergy", tValue))
+	{
+		EnergyDivider=float(tValue);
+	}
+	if (GetPreferencesVar("MeterDividerGas", tValue))
+	{
+		GasDivider=float(tValue);
+	}
+	if (GetPreferencesVar("MeterDividerWater", tValue))
+	{
+		WaterDivider=float(tValue);
+	}
+
+	//Get All Meter devices
 	std::vector<std::vector<std::string> > resultdevices;
 	strcpy(szTmp,"SELECT DISTINCT(DeviceRowID) FROM Meter ORDER BY DeviceRowID");
 	resultdevices=query(szTmp);
@@ -2183,6 +2201,34 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		std::stringstream s_str( sddev[0] );
 		s_str >> ID;
 
+		//Get Device Information
+		sprintf(szTmp,"SELECT HardwareID, DeviceID, Unit, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID='%llu')",ID);
+		result=query(szTmp);
+		if (result.size()<1)
+			continue;
+		std::vector<std::string> sd=result[0];
+
+		int hardwareID= atoi(sd[0].c_str());
+		std::string DeviceID=sd[1];
+		unsigned char Unit = atoi(sd[2].c_str());
+		unsigned char devType=atoi(sd[3].c_str());
+		unsigned char subType=atoi(sd[4].c_str());
+		_eSwitchType switchtype=(_eSwitchType) atoi(sd[5].c_str());
+		_eMeterType metertype=(_eMeterType)switchtype;
+
+		float tGasDivider=GasDivider;
+
+		if (devType==pTypeP1Power)
+		{
+			metertype=MTYPE_ENERGY;
+		}
+		else if (devType==pTypeP1Gas)
+		{
+			metertype=MTYPE_GAS;
+			tGasDivider=1000.0f;
+		}
+
+
 		sprintf(szTmp,"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s')",
 			ID,
 			szDateStart,
@@ -2207,6 +2253,27 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				szDateStart
 				);
 			result=query(szTmp);
+
+			//Check for Notification
+			musage=0;
+			switch (metertype)
+			{
+			case MTYPE_ENERGY:
+				musage=float(total_real)/EnergyDivider;
+				if (musage!=0)
+					CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYENERGY, musage);
+				break;
+			case MTYPE_GAS:
+				musage=float(total_real)/tGasDivider;
+				if (musage!=0)
+					CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYGAS, musage);
+				break;
+			case MTYPE_WATER:
+				musage=float(total_real)/WaterDivider;
+				if (musage!=0)
+					CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYGAS, musage);
+				break;
+			}
 		}
 		else
 		{
@@ -2723,3 +2790,4 @@ void CSQLHelper::CleanupLightLog()
 		);
 	query(szTmp);
 }
+

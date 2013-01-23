@@ -824,7 +824,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					WaterDivider=float(tValue);
 				}
 
-				//get lowest value of today
+				//get value of today
 				time_t now = time(NULL);
 				struct tm tm1;
 				localtime_r(&now,&tm1);
@@ -901,7 +901,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					WaterDivider=float(tValue);
 				}
 
-				//get lowest value of today
+				//get value of today
 				time_t now = time(NULL);
 				struct tm tm1;
 				localtime_r(&now,&tm1);
@@ -954,10 +954,10 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 						break;
 					}
 				}
+				root["result"][ii]["CounterToday"]=szTmp;
+
 				std::vector<std::string> splitresults;
 				StringSplit(sValue, ";", splitresults);
-
-				root["result"][ii]["CounterToday"]=szTmp;
 
 				unsigned long long total_actual;
 				std::stringstream s_stra( splitresults[0]);
@@ -1029,7 +1029,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					EnergyDivider=float(tValue);
 				}
 
-				//get lowest value of today
+				//get value of today
 				time_t now = time(NULL);
 				struct tm tm1;
 				localtime_r(&now,&tm1);
