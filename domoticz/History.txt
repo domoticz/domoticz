@@ -6,6 +6,7 @@ Version 1.0.8 (Januari xxth 2013)
 - implemented P1 Gas Meter/YouLess/RFXMeter, today notification
 - implemented P1 Energy Meter, today notification
 - Removed SQLite MFC runtime dependency
+- source code cleanup (moved things to seperate folders)
 
 Version 1.0.7 (Januari 18th 2013)
 - replaced all localtime function with localtime_r
