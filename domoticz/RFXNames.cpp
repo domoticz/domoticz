@@ -202,6 +202,12 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_USAGE, "" },
 		{ NTYPE_BARO, "hPa" },
 		{ NTYPE_SWITCH, "" },
+		{ NTYPE_AMPERE1, "Ampere"},
+		{ NTYPE_AMPERE2, "Ampere"},
+		{ NTYPE_AMPERE3, "Ampere" },
+		{ NTYPE_ENERGYINSTANT, "Watt" },
+		{ NTYPE_TODAYENERGY, "kWh" },
+		{ NTYPE_TODAYGAS, "m3" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, nType);
