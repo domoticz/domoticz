@@ -3,7 +3,7 @@
 #include "SQLHelper.h"
 #include "WebServer.h"
 #include "RFXtrx.h"
-#include "DomoticzHardware.h"
+#include "../hardware/DomoticzHardware.h"
 #include "Scheduler.h"
 
 enum eVerboseLevel

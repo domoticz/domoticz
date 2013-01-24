@@ -55,7 +55,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>S:\Boost\stage\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>sqlite3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>sqlite/sqlite3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
   </ItemDefinitionGroup>
@@ -76,50 +76,51 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>S:\Boost\stage\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>sqlite3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>sqlite/sqlite3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt" />
-    <None Include="domoticz.ico" />
+    <None Include="main\domoticz.ico" />
     <None Include="History.txt" />
     <None Include="INSTALL.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="appversion.h" />
-    <ClInclude Include="ASyncSerial.h" />
-    <ClInclude Include="CmdLine.h" />
-    <ClInclude Include="DomoticzHardware.h" />
-    <ClInclude Include="DomoticzTCP.h" />
+    <ClInclude Include="main\appversion.h" />
+    <ClInclude Include="hardware\ASyncSerial.h" />
+    <ClInclude Include="main\CmdLine.h" />
+    <ClInclude Include="hardware\DomoticzHardware.h" />
+    <ClInclude Include="hardware\DomoticzTCP.h" />
+    <ClInclude Include="hardware\hardwaretypes.h" />
     <ClInclude Include="jwsmtp\base64_b.h" />
     <ClInclude Include="jwsmtp\compat.h" />
     <ClInclude Include="jwsmtp\jwsmtp.h" />
     <ClInclude Include="jwsmtp\mailer.h" />
-    <ClInclude Include="localtime_r.h" />
-    <ClInclude Include="P1MeterBase.h" />
-    <ClInclude Include="P1MeterSerial.h" />
-    <ClInclude Include="P1MeterTCP.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="Scheduler.h" />
-    <ClInclude Include="SQLHelper.h" />
-    <ClInclude Include="Helper.h" />
-    <ClInclude Include="mUri.h" />
-    <ClInclude Include="mynetwork.h" />
-    <ClInclude Include="RFXComSerial.h" />
-    <ClInclude Include="mainworker.h" />
-    <ClInclude Include="RFXComTCP.h" />
-    <ClInclude Include="RFXNames.h" />
-    <ClInclude Include="RFXtrx.h" />
-    <ClInclude Include="sock_port.h" />
-    <ClInclude Include="sqlite3.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="SunRiseSet.h" />
-    <ClInclude Include="targetver.h" />
+    <ClInclude Include="main\localtime_r.h" />
+    <ClInclude Include="hardware\P1MeterBase.h" />
+    <ClInclude Include="hardware\P1MeterSerial.h" />
+    <ClInclude Include="hardware\P1MeterTCP.h" />
+    <ClInclude Include="main\resource.h" />
+    <ClInclude Include="main\Scheduler.h" />
+    <ClInclude Include="main\SQLHelper.h" />
+    <ClInclude Include="main\Helper.h" />
+    <ClInclude Include="httpclient\mUri.h" />
+    <ClInclude Include="httpclient\mynetwork.h" />
+    <ClInclude Include="hardware\RFXComSerial.h" />
+    <ClInclude Include="main\mainworker.h" />
+    <ClInclude Include="hardware\RFXComTCP.h" />
+    <ClInclude Include="main\RFXNames.h" />
+    <ClInclude Include="main\RFXtrx.h" />
+    <ClInclude Include="httpclient\sock_port.h" />
+    <ClInclude Include="sqlite\sqlite3.h" />
+    <ClInclude Include="main\stdafx.h" />
+    <ClInclude Include="main\SunRiseSet.h" />
+    <ClInclude Include="main\targetver.h" />
     <ClInclude Include="tcpserver\TCPClient.h" />
     <ClInclude Include="tcpserver\TCPServer.h" />
-    <ClInclude Include="UrlEncode.h" />
-    <ClInclude Include="WebServer.h" />
+    <ClInclude Include="httpclient\UrlEncode.h" />
+    <ClInclude Include="main\WebServer.h" />
     <ClInclude Include="webserver\Base64.h" />
     <ClInclude Include="webserver\connection.hpp" />
     <ClInclude Include="webserver\connection_manager.hpp" />
@@ -131,42 +132,42 @@
     <ClInclude Include="webserver\request_handler.hpp" />
     <ClInclude Include="webserver\request_parser.hpp" />
     <ClInclude Include="webserver\server.hpp" />
-    <ClInclude Include="WindowsHelper.h" />
-    <ClInclude Include="YouLess.h" />
+    <ClInclude Include="main\WindowsHelper.h" />
+    <ClInclude Include="hardware\YouLess.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ASyncSerial.cpp" />
-    <ClCompile Include="CmdLine.cpp" />
-    <ClCompile Include="DomoticzHardware.cpp" />
-    <ClCompile Include="DomoticzTCP.cpp" />
+    <ClCompile Include="hardware\ASyncSerial.cpp" />
+    <ClCompile Include="main\CmdLine.cpp" />
+    <ClCompile Include="hardware\DomoticzHardware.cpp" />
+    <ClCompile Include="hardware\DomoticzTCP.cpp" />
     <ClCompile Include="jwsmtp\base64_b.cpp" />
     <ClCompile Include="jwsmtp\compat.cpp" />
     <ClCompile Include="jwsmtp\mailer.cpp" />
-    <ClCompile Include="localtime_r.cpp" />
-    <ClCompile Include="P1MeterBase.cpp" />
-    <ClCompile Include="P1MeterSerial.cpp" />
-    <ClCompile Include="P1MeterTCP.cpp" />
-    <ClCompile Include="Scheduler.cpp" />
-    <ClCompile Include="SQLHelper.cpp" />
-    <ClCompile Include="Helper.cpp" />
+    <ClCompile Include="main\localtime_r.cpp" />
+    <ClCompile Include="hardware\P1MeterBase.cpp" />
+    <ClCompile Include="hardware\P1MeterSerial.cpp" />
+    <ClCompile Include="hardware\P1MeterTCP.cpp" />
+    <ClCompile Include="main\Scheduler.cpp" />
+    <ClCompile Include="main\SQLHelper.cpp" />
+    <ClCompile Include="main\Helper.cpp" />
     <ClCompile Include="json\json_reader.cpp" />
     <ClCompile Include="json\json_value.cpp" />
     <ClCompile Include="json\json_writer.cpp" />
-    <ClCompile Include="mainworker.cpp" />
-    <ClCompile Include="mynetwork.cpp" />
-    <ClCompile Include="RFXComSerial.cpp" />
-    <ClCompile Include="domoticz.cpp" />
-    <ClCompile Include="RFXComTCP.cpp" />
-    <ClCompile Include="RFXNames.cpp" />
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="main\mainworker.cpp" />
+    <ClCompile Include="httpclient\mynetwork.cpp" />
+    <ClCompile Include="hardware\RFXComSerial.cpp" />
+    <ClCompile Include="main\domoticz.cpp" />
+    <ClCompile Include="hardware\RFXComTCP.cpp" />
+    <ClCompile Include="main\RFXNames.cpp" />
+    <ClCompile Include="main\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="SunRiseSet.cpp" />
+    <ClCompile Include="main\SunRiseSet.cpp" />
     <ClCompile Include="tcpserver\TCPClient.cpp" />
     <ClCompile Include="tcpserver\TCPServer.cpp" />
-    <ClCompile Include="UrlEncode.cpp" />
-    <ClCompile Include="WebServer.cpp" />
+    <ClCompile Include="httpclient\UrlEncode.cpp" />
+    <ClCompile Include="main\WebServer.cpp" />
     <ClCompile Include="webserver\Base64.cpp" />
     <ClCompile Include="webserver\connection.cpp" />
     <ClCompile Include="webserver\connection_manager.cpp" />
@@ -176,11 +177,11 @@
     <ClCompile Include="webserver\request_handler.cpp" />
     <ClCompile Include="webserver\request_parser.cpp" />
     <ClCompile Include="webserver\server.cpp" />
-    <ClCompile Include="WindowsHelper.cpp" />
-    <ClCompile Include="YouLess.cpp" />
+    <ClCompile Include="main\WindowsHelper.cpp" />
+    <ClCompile Include="hardware\YouLess.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="domoticz.rc" />
+    <ResourceCompile Include="main\domoticz.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

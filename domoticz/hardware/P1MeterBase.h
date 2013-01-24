@@ -2,12 +2,6 @@
 
 #include "DomoticzHardware.h"
 
-#define pTypeP1Power	0xFA
-#define sTypeP1Power	0x01
-
-#define pTypeP1Gas		0xFB
-#define sTypeP1Gas		0x02
-
 typedef struct _tP1Power {
 	unsigned char len;
 	unsigned char type;

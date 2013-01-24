@@ -1,18 +1,17 @@
 #include "stdafx.h"
 #include "WebServer.h"
 #include <boost/bind.hpp>
-#include "webserver/cWebem.h"
 #include <iostream>
 #include "mainworker.h"
 #include "RFXNames.h"
 #include "RFXtrx.h"
 #include "Helper.h"
-#include "webserver/Base64.h"
 #include "appversion.h"
-#include "P1MeterBase.h"
-#include "YouLess.h"
-#include "UrlEncode.h"
 #include "localtime_r.h"
+#include "../webserver/cWebem.h"
+#include "../httpclient/UrlEncode.h"
+#include "../hardware/hardwaretypes.h"
+#include "../webserver/Base64.h"
 
 namespace http {
 	namespace server {

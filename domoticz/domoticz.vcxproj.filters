@@ -60,28 +60,10 @@
       <Filter>crosscompile</Filter>
     </None>
     <None Include="INSTALL.txt" />
-    <None Include="domoticz.ico" />
     <None Include="History.txt" />
+    <None Include="main\domoticz.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="mainworker.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RFXtrx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sqlite3.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="webserver\header.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="webserver\Base64.h">
       <Filter>Webserver</Filter>
     </ClInclude>
@@ -112,80 +94,11 @@
     <ClInclude Include="webserver\server.hpp">
       <Filter>Webserver</Filter>
     </ClInclude>
-    <ClInclude Include="CmdLine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WebServer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RFXNames.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Helper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="mUri.h">
-      <Filter>HTTPClient</Filter>
-    </ClInclude>
-    <ClInclude Include="mynetwork.h">
-      <Filter>HTTPClient</Filter>
-    </ClInclude>
-    <ClInclude Include="sock_port.h">
-      <Filter>HTTPClient</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLHelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ASyncSerial.h">
-      <Filter>Devices\RFXSerial</Filter>
-    </ClInclude>
-    <ClInclude Include="RFXComSerial.h">
-      <Filter>Devices\RFXSerial</Filter>
-    </ClInclude>
-    <ClInclude Include="RFXComTCP.h">
-      <Filter>Devices\RFXTCP</Filter>
-    </ClInclude>
-    <ClInclude Include="UrlEncode.h">
-      <Filter>HTTPClient</Filter>
-    </ClInclude>
-    <ClInclude Include="Scheduler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="tcpserver\TCPClient.h">
       <Filter>TCPServer</Filter>
     </ClInclude>
     <ClInclude Include="tcpserver\TCPServer.h">
       <Filter>TCPServer</Filter>
-    </ClInclude>
-    <ClInclude Include="DomoticzHardware.h">
-      <Filter>Devices</Filter>
-    </ClInclude>
-    <ClInclude Include="DomoticzTCP.h">
-      <Filter>Devices\Domoticz</Filter>
-    </ClInclude>
-    <ClInclude Include="SunRiseSet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="P1MeterSerial.h">
-      <Filter>Devices\P1Smart Meter\P1MeterSerial</Filter>
-    </ClInclude>
-    <ClInclude Include="WindowsHelper.h">
-      <Filter>Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="appversion.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="P1MeterTCP.h">
-      <Filter>Devices\P1Smart Meter\P1MeterTCP</Filter>
-    </ClInclude>
-    <ClInclude Include="P1MeterBase.h">
-      <Filter>Devices\P1Smart Meter</Filter>
-    </ClInclude>
-    <ClInclude Include="localtime_r.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="jwsmtp\compat.h">
       <Filter>SMTP</Filter>
@@ -199,20 +112,101 @@
     <ClInclude Include="jwsmtp\base64_b.h">
       <Filter>SMTP</Filter>
     </ClInclude>
-    <ClInclude Include="YouLess.h">
+    <ClInclude Include="hardware\DomoticzTCP.h">
+      <Filter>Devices\Domoticz</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\P1MeterBase.h">
+      <Filter>Devices\P1Smart Meter</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\P1MeterSerial.h">
+      <Filter>Devices\P1Smart Meter\P1MeterSerial</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\P1MeterTCP.h">
+      <Filter>Devices\P1Smart Meter\P1MeterTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\ASyncSerial.h">
+      <Filter>Devices\RFXSerial</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\RFXComSerial.h">
+      <Filter>Devices\RFXSerial</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\RFXComTCP.h">
+      <Filter>Devices\RFXTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\YouLess.h">
       <Filter>Devices\YouLess</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\DomoticzHardware.h">
+      <Filter>Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\hardwaretypes.h">
+      <Filter>Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="httpclient\mUri.h">
+      <Filter>HTTPClient</Filter>
+    </ClInclude>
+    <ClInclude Include="httpclient\mynetwork.h">
+      <Filter>HTTPClient</Filter>
+    </ClInclude>
+    <ClInclude Include="httpclient\sock_port.h">
+      <Filter>HTTPClient</Filter>
+    </ClInclude>
+    <ClInclude Include="httpclient\UrlEncode.h">
+      <Filter>HTTPClient</Filter>
+    </ClInclude>
+    <ClInclude Include="webserver\header.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="sqlite\sqlite3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main\appversion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main\CmdLine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main\Helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main\localtime_r.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main\mainworker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main\resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main\RFXNames.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main\RFXtrx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main\Scheduler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main\SQLHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main\stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main\SunRiseSet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main\targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main\WebServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main\WindowsHelper.h">
+      <Filter>Windows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="domoticz.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mainworker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="webserver\Base64.cpp">
       <Filter>Webserver</Filter>
     </ClCompile>
@@ -240,18 +234,6 @@
     <ClCompile Include="webserver\server.cpp">
       <Filter>Webserver</Filter>
     </ClCompile>
-    <ClCompile Include="CmdLine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WebServer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RFXNames.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Helper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="json\json_value.cpp">
       <Filter>json</Filter>
     </ClCompile>
@@ -261,56 +243,11 @@
     <ClCompile Include="json\json_reader.cpp">
       <Filter>json</Filter>
     </ClCompile>
-    <ClCompile Include="mynetwork.cpp">
-      <Filter>HTTPClient</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLHelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ASyncSerial.cpp">
-      <Filter>Devices\RFXSerial</Filter>
-    </ClCompile>
-    <ClCompile Include="RFXComSerial.cpp">
-      <Filter>Devices\RFXSerial</Filter>
-    </ClCompile>
-    <ClCompile Include="RFXComTCP.cpp">
-      <Filter>Devices\RFXTCP</Filter>
-    </ClCompile>
-    <ClCompile Include="UrlEncode.cpp">
-      <Filter>HTTPClient</Filter>
-    </ClCompile>
-    <ClCompile Include="Scheduler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="tcpserver\TCPClient.cpp">
       <Filter>TCPServer</Filter>
     </ClCompile>
     <ClCompile Include="tcpserver\TCPServer.cpp">
       <Filter>TCPServer</Filter>
-    </ClCompile>
-    <ClCompile Include="DomoticzHardware.cpp">
-      <Filter>Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="DomoticzTCP.cpp">
-      <Filter>Devices\Domoticz</Filter>
-    </ClCompile>
-    <ClCompile Include="SunRiseSet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="P1MeterSerial.cpp">
-      <Filter>Devices\P1Smart Meter\P1MeterSerial</Filter>
-    </ClCompile>
-    <ClCompile Include="WindowsHelper.cpp">
-      <Filter>Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="P1MeterTCP.cpp">
-      <Filter>Devices\P1Smart Meter\P1MeterTCP</Filter>
-    </ClCompile>
-    <ClCompile Include="P1MeterBase.cpp">
-      <Filter>Devices\P1Smart Meter</Filter>
-    </ClCompile>
-    <ClCompile Include="localtime_r.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="jwsmtp\compat.cpp">
       <Filter>SMTP</Filter>
@@ -321,11 +258,77 @@
     <ClCompile Include="jwsmtp\base64_b.cpp">
       <Filter>SMTP</Filter>
     </ClCompile>
-    <ClCompile Include="YouLess.cpp">
+    <ClCompile Include="hardware\DomoticzTCP.cpp">
+      <Filter>Devices\Domoticz</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\P1MeterBase.cpp">
+      <Filter>Devices\P1Smart Meter</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\P1MeterSerial.cpp">
+      <Filter>Devices\P1Smart Meter\P1MeterSerial</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\P1MeterTCP.cpp">
+      <Filter>Devices\P1Smart Meter\P1MeterTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\ASyncSerial.cpp">
+      <Filter>Devices\RFXSerial</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\RFXComSerial.cpp">
+      <Filter>Devices\RFXSerial</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\RFXComTCP.cpp">
+      <Filter>Devices\RFXTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\YouLess.cpp">
       <Filter>Devices\YouLess</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\DomoticzHardware.cpp">
+      <Filter>Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="httpclient\mynetwork.cpp">
+      <Filter>HTTPClient</Filter>
+    </ClCompile>
+    <ClCompile Include="httpclient\UrlEncode.cpp">
+      <Filter>HTTPClient</Filter>
+    </ClCompile>
+    <ClCompile Include="main\CmdLine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main\domoticz.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main\Helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main\localtime_r.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main\mainworker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main\RFXNames.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main\Scheduler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main\SQLHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main\stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main\SunRiseSet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main\WebServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main\WindowsHelper.cpp">
+      <Filter>Windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="domoticz.rc" />
+    <ResourceCompile Include="main\domoticz.rc" />
   </ItemGroup>
 </Project>

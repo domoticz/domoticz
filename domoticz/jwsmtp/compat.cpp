@@ -21,7 +21,6 @@
 //   http://johnwiggins.net
 //   smtplib@johnwiggins.net
 //
-
 #include "stdafx.h" 
 #include <string>
 #include <vector>

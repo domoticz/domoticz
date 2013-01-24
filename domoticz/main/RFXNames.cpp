@@ -1,8 +1,7 @@
 #include "stdafx.h"
 #include "RFXNames.h"
 #include "RFXtrx.h"
-#include "P1MeterBase.h"
-#include "YouLess.h"
+#include "../hardware/hardwaretypes.h"
 
 typedef struct _STR_TABLE_SINGLE {
 	unsigned long    id;

@@ -1,15 +1,14 @@
 #include "stdafx.h"
 #include "SQLHelper.h"
-#include "sqlite3.h"
 #include <iostream>     /* standard I/O functions                         */
 #include "RFXtrx.h"
 #include "Helper.h"
 #include "RFXNames.h"
-#include "mynetwork.h"
 #include "WindowsHelper.h"
-#include "P1MeterBase.h"
-#include "YouLess.h"
 #include "localtime_r.h"
+#include "../sqlite/sqlite3.h"
+#include "../hardware/hardwaretypes.h"
+#include "../httpclient/mynetwork.h"
 
 #define DB_VERSION 3
 
@@ -212,7 +211,6 @@ const char *sqlCreateLightSubDevices =
 "[ID] INTEGER PRIMARY KEY, "
 "[DeviceRowID] INTEGER NOT NULL, "
 "[ParentID] INTEGER NOT NULL);";
-
 
 CSQLHelper::CSQLHelper(void)
 {

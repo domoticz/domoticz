@@ -3,9 +3,6 @@
 #include "DomoticzHardware.h"
 #include <iostream>
 
-#define pTypeYouLess	0xFC
-#define sTypeYouLess	0x01
-
 typedef struct _tYouLessMeter {
 	unsigned char len;
 	unsigned char type;

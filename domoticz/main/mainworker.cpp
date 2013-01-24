@@ -4,20 +4,20 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/lexical_cast.hpp>
-//#include "mynetwork.h"
 #include "Helper.h"
-
-#include "RFXComSerial.h"
-#include "RFXComTCP.h"
-#include "DomoticzTCP.h"
-#include "P1MeterBase.h"
-#include "P1MeterSerial.h"
-#include "P1MeterTCP.h"
-#include "YouLess.h"
-
 #include "SunRiseSet.h"
-
 #include "localtime_r.h"
+
+//Hardware Devices
+#include "../hardware/hardwaretypes.h"
+#include "../hardware/RFXComSerial.h"
+#include "../hardware/RFXComTCP.h"
+#include "../hardware/DomoticzTCP.h"
+#include "../hardware/P1MeterBase.h"
+#include "../hardware/P1MeterSerial.h"
+#include "../hardware/P1MeterTCP.h"
+#include "../hardware/YouLess.h"
+
 
 #ifdef _DEBUG
 	//#define DEBUG_RECEIVE

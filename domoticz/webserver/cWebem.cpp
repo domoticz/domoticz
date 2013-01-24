@@ -3,7 +3,6 @@
 //Detailed class and method documentation of the WEBEM C++ embedded web server source code.
 //
 //Modified, extended etc by Robbert E. Peters/RTSS B.V.
-
 #include "stdafx.h"
 #include "cWebem.h"
 #include <boost/bind.hpp>

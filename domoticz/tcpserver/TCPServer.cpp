@@ -2,8 +2,8 @@
 #include <iostream>
 #include "TCPServer.h"
 #include "TCPClient.h"
-#include "../RFXNames.h"
-#include "../RFXtrx.h"
+#include "../main/RFXNames.h"
+#include "../main/RFXtrx.h"
 
 #include <boost/asio.hpp>
 #include <algorithm>

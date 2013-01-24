@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "YouLess.h"
-#include "Helper.h"
-#include "mynetwork.h"
+#include "../main/Helper.h"
+#include "../httpclient/mynetwork.h"
+#include "hardwaretypes.h"
 
 #define YOULESS_POLL_INTERVAL 10
 

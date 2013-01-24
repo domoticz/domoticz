@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../RFXNames.h"
+#include "../main/RFXNames.h"
 #include "TCPClient.h"
 #include <set>
 

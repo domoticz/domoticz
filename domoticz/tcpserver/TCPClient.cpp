@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "TCPClient.h"
 #include "TCPServer.h"
-#include "../Helper.h"
+#include "../main/Helper.h"
 
 namespace tcp {
 namespace server {

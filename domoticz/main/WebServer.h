@@ -2,8 +2,8 @@
 
 #include <string>
 #include <vector>
-#include "json/config.h"
-#include "json/json.h"
+#include "../json/config.h"
+#include "../json/json.h"
 
 class MainWorker;
 

@@ -91,32 +91,33 @@ if(NOT SQLITE3_LIBRARY)
   message(SEND_ERROR "Failed to find the sqlite3 library")
 endif()
 
-include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/main) 
 
 ## Target
 set(
 domoticz_SRCS
-domoticz.cpp
-CmdLine.cpp
-mainworker.cpp
-SQLHelper.cpp
-WebServer.cpp
-DomoticzHardware.cpp
-Scheduler.cpp
-ASyncSerial.cpp
-localtime_r.cpp
-RFXComSerial.cpp
-RFXComTCP.cpp
-DomoticzTCP.cpp
-P1MeterBase.cpp
-P1MeterTCP.cpp
-P1MeterSerial.cpp
-YouLess.cpp
-RFXNames.cpp
-Helper.cpp
-mynetwork.cpp
-SunRiseSet.cpp
-UrlEncode.cpp
+main/stdafx.cpp
+main/domoticz.cpp
+main/CmdLine.cpp
+main/mainworker.cpp
+main/SQLHelper.cpp
+main/WebServer.cpp
+main/Scheduler.cpp
+main/localtime_r.cpp
+main/RFXNames.cpp
+main/Helper.cpp
+main/SunRiseSet.cpp
+httpclient/mynetwork.cpp
+httpclient/UrlEncode.cpp
+hardware/DomoticzHardware.cpp
+hardware/ASyncSerial.cpp
+hardware/RFXComSerial.cpp
+hardware/RFXComTCP.cpp
+hardware/DomoticzTCP.cpp
+hardware/P1MeterBase.cpp
+hardware/P1MeterTCP.cpp
+hardware/P1MeterSerial.cpp
+hardware/YouLess.cpp
 tcpserver/TCPServer.cpp
 tcpserver/TCPClient.cpp
 webserver/cWebem.cpp
@@ -136,7 +137,7 @@ jwsmtp/base64_b.cpp
 jwsmtp/compat.cpp
 )
 add_executable(domoticz ${domoticz_SRCS})
-ADD_PRECOMPILED_HEADER(domoticz "stdafx.h")
+ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
 
 ## Link libraries
 set(BOOST_LIBS thread date_time system)

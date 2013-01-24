@@ -2,8 +2,8 @@
 
 #include <vector>
 #include <string>
-#include "UrlEncode.h"
 #include "RFXNames.h"
+#include "../httpclient/UrlEncode.h"
 
 struct sqlite3;
 

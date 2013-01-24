@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "P1MeterBase.h"
+#include "hardwaretypes.h"
 
 typedef enum { 
 	ID=0, 
