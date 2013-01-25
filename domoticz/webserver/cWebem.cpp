@@ -35,7 +35,7 @@ cWebem::cWebem(
 myRequestHandler( doc_root,this ), myPort( port ),
 myServer( address, port, myRequestHandler )
 {
-	m_DigistRealm = "DVBControl.com";
+	m_DigistRealm = "Domoticz.com";
 	m_zippassword = "";
 }
 

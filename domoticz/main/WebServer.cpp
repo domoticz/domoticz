@@ -66,7 +66,7 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
 			std::cout << "check if no other application is using port: " << listenport << std::endl;
         return false;
     }
-	m_pWebEm->SetDigistRealm("DVBControl.com");
+	m_pWebEm->SetDigistRealm("Domoticz.com");
 
 	if (!bIgnoreUsernamePassword)
 	{
