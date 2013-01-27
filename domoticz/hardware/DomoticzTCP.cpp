@@ -106,7 +106,17 @@ bool DomoticzTCP::ConnectInternal()
 		std::cerr << "Domoticz TCP could not create a TCP/IP socket!" << std::endl;
 		return false;
 	}
-
+/*
+	//Set socket timeout to 2 minutes
+#if !defined WIN32
+	struct timeval tv;
+	tv.tv_sec = 120;
+	setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO,(struct timeval *)&tv,sizeof(struct timeval));
+#else
+	unsigned long nTimeout = 120*1000;
+	setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&nTimeout, sizeof(DWORD));
+#endif
+*/
 	// connect to the server
 	int nRet;
 	nRet = connect(m_socket,(const sockaddr*)&m_addr, sizeof(m_addr));

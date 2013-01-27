@@ -33,6 +33,7 @@ public:
 
 	void LoadUsers();
 	void SaveUsers();
+	void ClearUserPasswords();
 	int FindUser(const char* szUserName);
 	std::vector<_tWebUserPassword> m_users;
 

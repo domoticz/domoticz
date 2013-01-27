@@ -4,6 +4,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/filesystem.hpp>
 #include "Helper.h"
 #include "SunRiseSet.h"
 #include "localtime_r.h"
@@ -491,7 +492,6 @@ bool MainWorker::StartThread()
 #define HEX( x ) \
 	std::setw(2) << std::setfill('0') << std::hex << (int)( x )
 
-
 void MainWorker::Do_Work()
 {
 	while (!m_stoprequested)
@@ -520,6 +520,13 @@ void MainWorker::Do_Work()
 			if (ltime.tm_min%5==0)
 			{
 				m_sql.Schedule5Minute();
+			}
+			boost::filesystem::path file(szStartupFolder+"resetpwd");
+
+			if(boost::filesystem::exists(file))
+			{
+				boost::filesystem::remove(file);
+				m_webserver.ClearUserPasswords();
 			}
 		}
 		if (ltime.tm_hour!=m_ScheduleLastHour)

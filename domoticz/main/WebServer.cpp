@@ -295,6 +295,11 @@ void CWebServer::SaveUsers()
 {
 }
 
+void CWebServer::ClearUserPasswords()
+{
+	m_pWebEm->ClearUserPasswords();
+}
+
 int CWebServer::FindUser(const char* szUserName)
 {
 	int iUser=0;
@@ -348,7 +353,7 @@ char * CWebServer::PostSettings()
 		WebUserName="";
 		WebPassword="";
 	}
-	m_pWebEm->ClearUserPasswords();
+	ClearUserPasswords();
 	if ((WebUserName!="")&&(WebPassword!="")) {
 		m_pWebEm->AddUserPassword(WebUserName,WebPassword);
 		WebUserName=base64_encode((const unsigned char*)WebUserName.c_str(),WebUserName.size());
