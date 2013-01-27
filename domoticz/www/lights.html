@@ -605,6 +605,9 @@ function ShowTimers(id,name)
                   "iDisplayLength" : 25,
                   "sPaginationType": "full_numbers"
                 } );
+	$('#timerparamstable #combotimehour >option').remove();
+	$('#timerparamstable #combotimemin >option').remove();
+                
   //fill hour/minute comboboxes
   for (ii=0; ii<24; ii++)
   {

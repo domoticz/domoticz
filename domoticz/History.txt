@@ -1,5 +1,6 @@
 Version 1.0.8 (Januari xxth 2013)
 - Fixed Hardware Enabled/Disabled option
+- Fixed Light/Switches timer, time dropdown combobox
 - implemented OWL113 current logging/chart
 - implemented OWL113 Ampere Notifications
 - implemented P1 Energy Meter/P1 Gas Meter/YouLess, usage notification
