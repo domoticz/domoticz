@@ -4,10 +4,12 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/filesystem.hpp>
 #include "Helper.h"
 #include "SunRiseSet.h"
 #include "localtime_r.h"
+
+#include <sys/types.h>
+#include <sys/stat.h>
 
 //Hardware Devices
 #include "../hardware/hardwaretypes.h"
@@ -492,6 +494,12 @@ bool MainWorker::StartThread()
 #define HEX( x ) \
 	std::setw(2) << std::setfill('0') << std::hex << (int)( x )
 
+bool file_exist (const char *filename)
+{
+	struct stat sbuffer;   
+	return (stat(filename, &sbuffer) == 0);
+}
+
 void MainWorker::Do_Work()
 {
 	while (!m_stoprequested)
@@ -521,12 +529,11 @@ void MainWorker::Do_Work()
 			{
 				m_sql.Schedule5Minute();
 			}
-			boost::filesystem::path file(szStartupFolder+"resetpwd");
-
-			if(boost::filesystem::exists(file))
+			std::string szPwdResetFile=szStartupFolder+"resetpwd";
+			if (file_exist(szPwdResetFile.c_str()))
 			{
-				boost::filesystem::remove(file);
 				m_webserver.ClearUserPasswords();
+				std::remove(szPwdResetFile.c_str());
 			}
 		}
 		if (ltime.tm_hour!=m_ScheduleLastHour)

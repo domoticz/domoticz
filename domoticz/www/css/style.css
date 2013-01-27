@@ -885,3 +885,7 @@ table.mobileitem {
     border-radius: 0 0 6px 0;
 }
 
+.borderbot {
+	border-bottom: 0.04em solid rgba(255,255,255,.1);
+}
+
