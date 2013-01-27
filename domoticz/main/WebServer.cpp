@@ -591,6 +591,10 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				root["result"][ii]["HaveDimmer"]=bHaveDimmer;
 				root["result"][ii]["HaveGroupCmd"]=bHaveGroupCmd;
 				root["result"][ii]["SwitchType"]=Switch_Type_Desc(switchtype);
+                if (Switch_Type_Desc(switchtype) == "Blinds inverted")
+                {
+                    root["result"][ii]["SwitchType"]="Blinds";
+                };
 				root["result"][ii]["SwitchTypeVal"]=switchtype;
 
 				bool bIsSubDevice=false;
@@ -631,7 +635,16 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					}
 					root["result"][ii]["Status"]=lstatus;
 				}
-
+				else if (switchtype==STYPE_BlindsInverted)
+				{
+					root["result"][ii]["TypeImg"]="blinds";
+					if (lstatus=="On") {
+						lstatus="Open";
+					} else {
+						lstatus="Closed";
+					}
+					root["result"][ii]["Status"]=lstatus;
+				}
 				if (llevel!=0)
 					sprintf(szData,"%s, Level: %d %%", lstatus.c_str(), llevel);
 				else

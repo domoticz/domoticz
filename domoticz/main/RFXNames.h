@@ -10,6 +10,7 @@ enum _eSwitchType
 	STYPE_Blinds,
 	STYPE_X10Siren,
 	STYPE_SMOKEDETECTOR,
+    STYPE_BlindsInverted,
 	STYPE_END
 };
 
