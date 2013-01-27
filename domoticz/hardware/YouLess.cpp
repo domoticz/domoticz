@@ -42,10 +42,20 @@ bool CYouLess::StartHardware()
 
 bool CYouLess::StopHardware()
 {
-	m_stoprequested=true;
+	/*
+    m_stoprequested=true;
 	if (m_thread)
 		m_thread->join();
 	return true;
+    */
+	if (m_thread!=NULL)
+	{
+		assert(m_thread);
+		m_stoprequested = true;
+		m_thread->join();
+	}
+    
+    return true;
 }
 
 void CYouLess::Do_Work()
