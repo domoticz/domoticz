@@ -591,10 +591,6 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				root["result"][ii]["HaveDimmer"]=bHaveDimmer;
 				root["result"][ii]["HaveGroupCmd"]=bHaveGroupCmd;
 				root["result"][ii]["SwitchType"]=Switch_Type_Desc(switchtype);
-                if (Switch_Type_Desc(switchtype) == "Blinds inverted")
-                {
-                    root["result"][ii]["SwitchType"]="Blinds";
-                };
 				root["result"][ii]["SwitchTypeVal"]=switchtype;
 
 				bool bIsSubDevice=false;

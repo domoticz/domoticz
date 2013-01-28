@@ -63,7 +63,15 @@ function RefreshFavorites()
 											status+='<img src="images/blinds.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 								}
-								else {
+								else if (item.SwitchType == "Blinds inverted") {
+									if (item.Status == 'Closed') {
+											status+='<img src="images/blinds48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									}
+									else {
+											status+='<img src="images/blinds.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									}
+								}
+                                else {
 									if (
 											(item.Status == 'On')||
 											(item.Status == 'Chime')||
@@ -102,6 +110,14 @@ function RefreshFavorites()
 									}
 									else {
 											img='<img src="images/blindsopen48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									}
+								}
+								else if (item.SwitchType == "Blinds inverted") {
+									if (item.Status == 'Closed') {
+											img='<img src="images/blinds48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									}
+									else {
+											img='<img src="images/blindsopen48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 								}
 								else {
@@ -552,6 +568,14 @@ function ShowFavorites()
 										status+='<img src="images/blind.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 							}
+							else if (item.SwitchType == "Blinds inverted") {
+								if (item.Status == 'Closed') {
+										status+='<img src="images/blinds48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+								}
+								else {
+										status+='<img src="images/blind.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+								}
+							}               
 							else {
 								if (
 										(item.Status == 'On')||
@@ -608,6 +632,14 @@ function ShowFavorites()
 										xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 							}
+							else if (item.SwitchType == "Blinds inverted") {
+								if (item.Status == 'Closed') {
+										xhtm+='\t      <td id="img"><img src="images/blinds48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								}
+								else {
+										xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								}
+							}               
 							else {
 								if (
 										(item.Status == 'On')||
