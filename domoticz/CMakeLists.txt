@@ -91,6 +91,20 @@ if(NOT SQLITE3_LIBRARY)
   message(SEND_ERROR "Failed to find the sqlite3 library")
 endif()
 
+FIND_PROGRAM(SVN_EXECUTABLE svn
+  DOC "subversion command line client")
+
+MACRO(Subversion_GET_REVISION dir variable)
+  EXECUTE_PROCESS(COMMAND ${SVN_EXECUTABLE} info ${dir}
+    OUTPUT_VARIABLE ${variable}
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+  STRING(REGEX REPLACE "^(.*\n)?Revision: ([^\n]+).*"
+    "\\2" ${variable} "${${variable}}")
+ENDMACRO(Subversion_GET_REVISION)
+
+Subversion_GET_REVISION(. ProjectRevision)
+#MESSAGE(STATUS "Compiling Revision #${ProjectRevision}")
+
 include_directories(${CMAKE_SOURCE_DIR}/main) 
 
 ## Target
@@ -154,12 +168,15 @@ target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread)
 set (CPACK_PACKAGE_VERSION_MAJOR "${domoticz_VERSION_MAJOR}")
 set (CPACK_PACKAGE_VERSION_MINOR "${domoticz_VERSION_MINOR}")
 
+#set (DOMOTICZ_VERSION_SHORT "${domoticz_VERSION_MAJOR}.${domoticz_VERSION_MINOR}.${ProjectRevision}")
+#set(CPACK_PACKAGE_FILE_NAME "domoticz-${DOMOTICZ_VERSION_SHORT}-${CMAKE_SYSTEM_NAME}")
+
 SET(CPACK_PACKAGE_NAME "domoticz")
 SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${domoticz}-dev")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${domoticz}-A program for home automation (Domotica).")
 SET(CPACK_PACKAGING_INSTALL_PREFIX "/")
 SET(CPACK_PACKAGE_DEFAULT_LOCATION "/opt/${CPACK_PACKAGE_NAME}")
-SET(CPACK_PACKAGE_EXECUTABLES "domoticz";"A program for home automation (Dmotica).")
+SET(CPACK_PACKAGE_EXECUTABLES "domoticz";"A program for home automation (Domotica).")
 
 include (InstallRequiredSystemLibraries)
 set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
