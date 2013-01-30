@@ -146,7 +146,7 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_Blinds, "Blinds" },
 		{ STYPE_X10Siren, "X10 Siren" },
 		{ STYPE_SMOKEDETECTOR, "Smoke Detector" },
-        { STYPE_BlindsInverted, "Blinds inverted" },
+        { STYPE_BlindsInverted, "Blinds Inverted" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, sType);
