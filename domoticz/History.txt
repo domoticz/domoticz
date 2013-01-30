@@ -10,6 +10,7 @@ Version 1.0.8 (Januari xxth 2013)
 - source code cleanup (moved things to seperate folders)
 - alternative webpage username/password reset (resetpwd file)
 - implemented inverted blinds switch type
+- when setting switch level = 0, the switch is turned Off now
 
 Version 1.0.7 (Januari 18th 2013)
 - replaced all localtime function with localtime_r

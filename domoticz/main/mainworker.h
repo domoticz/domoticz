@@ -35,7 +35,7 @@ public:
 
 	bool SwitchLight(std::string idx, std::string switchcmd,std::string level);
 	bool SwitchLight(unsigned long long idx, std::string switchcmd, unsigned char level);
-	bool SwitchLightInt(const std::vector<std::string> sd, const std::string switchcmd, unsigned char level, const bool IsTesting);
+	bool SwitchLightInt(const std::vector<std::string> sd, std::string switchcmd, unsigned char level, const bool IsTesting);
 
 	bool GetSunSettings();
 

@@ -5160,12 +5160,16 @@ void MainWorker::decode_FS20(const int HwdID, const tRBUF *pResponse)
 	WriteMessage(szTmp);
 }
 
-bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, const std::string switchcmd, unsigned char level, const bool IsTesting)
+bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, std::string switchcmd, unsigned char level, const bool IsTesting)
 {
 	int HardwareID = atoi(sd[0].c_str());
 	int hindex=FindDomoticzHardware(HardwareID);
 	if (hindex==-1)
 		return false;
+
+	//when level = 0, set switch command to Off
+	if (level==0)
+		switchcmd="Off";
 
 	unsigned long ID;
 	std::stringstream s_strid;
