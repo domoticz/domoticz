@@ -21,7 +21,7 @@ private:
 	std::streambuf* m_old_cin;
 };
 
-bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCmd, void *pQuitFunction, const int iWebPort);
+bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCmd, void *pQuitFunction, const int iWebPort, const bool bStartWebBrowser);
 void ShowSystemTrayNotification(const char *szMessage);
 void RedirectIOToConsole();
 BOOL TrayMessage(DWORD dwMessage, const char *szInfo);

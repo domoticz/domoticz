@@ -21,7 +21,12 @@ const char *szHelp=
 	"\t-dbase file_path (for example D:\\domoticz.db)\n"
 	"\t-verbose x (where x=0 is none, x=1 is debug)\n"
 	"\t-startupdelay seconds (default=0)\n"
-	"\t-nowwwpwd (in case you forgot the webserver username/password)\n";
+	"\t-nowwwpwd (in case you forgot the web server username/password)\n"
+#if defined WIN32
+	"\t-nobrowser (do not start web browser (Windows Only)\n";
+#else
+	"";
+#endif
 
 std::string szStartupFolder;
 
@@ -94,6 +99,7 @@ int main(int argc, char**argv)
 #endif
 {
 #if defined WIN32
+	bool bStartWebBrowser=true;
 	RedirectIOToConsole();
 #endif
 	std::cout << "Domoticz V" << VERSION_STRING << " (c)2012-2013 GizMoCuz\n";
@@ -173,7 +179,12 @@ int main(int argc, char**argv)
 		int Level=atoi(cmdLine.GetSafeArgument("-verbose",0,"").c_str());
 		_mainworker.SetVerboseLevel((eVerboseLevel)Level);
 	}
-
+#if defined WIN32
+	if (cmdLine.HasSwitch("-nobrowser"))
+	{
+		bStartWebBrowser=false;
+	}
+#endif
 	if (!_mainworker.Start())
 	{
 		return 0;
@@ -188,7 +199,7 @@ int main(int argc, char**argv)
 #ifndef _DEBUG
 	RedirectIOToConsole();	//hide console
 #endif
-	InitWindowsHelper(hInstance,hPrevInstance,nShowCmd,DQuitFunction,atoi(_mainworker.GetWebserverPort().c_str()));
+	InitWindowsHelper(hInstance,hPrevInstance,nShowCmd,DQuitFunction,atoi(_mainworker.GetWebserverPort().c_str()),bStartWebBrowser);
 	MSG Msg;
 	while(GetMessage(&Msg, NULL, 0, 0) > 0)
 	{

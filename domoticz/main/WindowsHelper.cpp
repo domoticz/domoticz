@@ -191,7 +191,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCmd, void *pQuitFunction, const int iWebPort)
+bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCmd, void *pQuitFunction, const int iWebPort, const bool bStartWebBrowser)
 {
 	g_pQuitFunction=pQuitFunction;
 	g_hInstance=hInstance;
@@ -237,9 +237,12 @@ bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCm
 	TrayMessage(NIM_ADD,szTrayInfo);
 	ShowWindow(g_hWnd, SW_HIDE);
 #ifndef _DEBUG
-	char szURL[100];
-	sprintf(szURL,"http://127.0.0.1:%d",iWebPort);
-	ShellExecute(NULL, "open", szURL, NULL, NULL, SW_SHOWNORMAL);
+	if (bStartWebBrowser)
+	{
+		char szURL[100];
+		sprintf(szURL,"http://127.0.0.1:%d",iWebPort);
+		ShellExecute(NULL, "open", szURL, NULL, NULL, SW_SHOWNORMAL);
+	}
 #endif
 	return true;
 }
