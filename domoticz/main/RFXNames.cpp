@@ -786,7 +786,6 @@ bool GetLightCommand(
 				cmd=light1_sAllOff;
 				return true;
 			}
-			//no other combinations for the door switch
 			return false;
 		}
 		if (switchcmd=="Off")
@@ -837,7 +836,6 @@ bool GetLightCommand(
 				cmd=light2_sGroupOff;
 				return true;
 			}
-			//no other combinations for the door switch
 			return false;
 		}
 		if (switchcmd=="Off")
@@ -874,6 +872,12 @@ bool GetLightCommand(
 			return false;
 		break;
 	case pTypeLighting5:
+		if (dSubType!=sTypeLightwaveRF)
+		{
+			//Only LightwaveRF devices have a set-level
+			if (switchcmd=="Set Level")
+				switchcmd="On";
+		}
 		if (switchtype==STYPE_Doorbell)
 		{
 			if ((switchcmd=="On")||(switchcmd=="Group On"))
@@ -896,7 +900,6 @@ bool GetLightCommand(
 				cmd=light5_sGroupOff;
 				return true;
 			}
-			//no other combinations for the door switch
 			return false;
 		}
 		if (switchcmd=="Off")
