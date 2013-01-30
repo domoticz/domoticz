@@ -11,6 +11,7 @@ Version 1.0.8 (Januari xxth 2013)
 - alternative webpage username/password reset (resetpwd file)
 - implemented inverted blinds switch type
 - when setting switch level = 0, the switch is turned Off now
+- setting a switch level is now done by setting the level to 0=Off, 1..xx for the level
 
 Version 1.0.7 (Januari 18th 2013)
 - replaced all localtime function with localtime_r
