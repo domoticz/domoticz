@@ -5168,10 +5168,13 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, std::string s
 		return false;
 
 	//when level = 0, set switch command to Off
-	if (level==0)
-		switchcmd="Off";
-	else if (level > 0)
-		level-=1;
+	if (switchcmd=="Set Level")
+	{
+		if (level==0)
+			switchcmd="Off";
+		else if (level > 0)
+			level-=1;
+	}
 
 	unsigned long ID;
 	std::stringstream s_strid;
