@@ -96,6 +96,7 @@ void GetLightStatus(
 	std::string &lstatus, 
 	int &llevel, 
 	bool &bHaveDimmer,
+	int &maxDimLevel,
 	bool &bHaveGroupCmd);
 
 bool GetLightCommand(

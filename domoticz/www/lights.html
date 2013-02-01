@@ -1009,7 +1009,7 @@ function RefreshLights()
 									img='<img src="images/blindsopen48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
 							}
 						}
-						else if (item.SwitchType == "Blinds inverted") {
+						else if (item.SwitchType == "Blinds Inverted") {
 							if (item.Status == 'Closed') {
 									img='<img src="images/blinds48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
 							}
@@ -1017,7 +1017,7 @@ function RefreshLights()
 									img='<img src="images/blindsopen48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
 							}
 						}
-                        else if (item.Type == "Security") {
+            else if (item.Type == "Security") {
 							if (item.SubType.indexOf('remote') > 0) {
 								img='<img src="images/remote48.png" height="48">';
 							}
@@ -1167,7 +1167,7 @@ function ShowLights()
                 xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
 						}
           }
-          else if (item.SwitchType == "Blinds inverted") {
+          else if (item.SwitchType == "Blinds Inverted") {
 						if (item.Status == 'Closed') {
                 xhtm+='\t      <td id="img"><img src="images/blinds48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
             }

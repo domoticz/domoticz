@@ -583,12 +583,14 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				int llevel=0;
 				bool bHaveDimmer=false;
 				bool bHaveGroupCmd=false;
+				int maxDimLevel=0;
 
-				GetLightStatus(dType,dSubType,nValue,sValue,lstatus,llevel,bHaveDimmer,bHaveGroupCmd);
+				GetLightStatus(dType,dSubType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
 
 				root["result"][ii]["Status"]=lstatus;
 				root["result"][ii]["Level"]=llevel;
 				root["result"][ii]["HaveDimmer"]=bHaveDimmer;
+				root["result"][ii]["MaxDimLevel"]=maxDimLevel;
 				root["result"][ii]["HaveGroupCmd"]=bHaveGroupCmd;
 				root["result"][ii]["SwitchType"]=Switch_Type_Desc(switchtype);
 				root["result"][ii]["SwitchTypeVal"]=switchtype;
@@ -653,11 +655,13 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				int llevel=0;
 				bool bHaveDimmer=false;
 				bool bHaveGroupCmd=false;
+				int maxDimLevel=0;
 
-				GetLightStatus(dType,dSubType,nValue,sValue,lstatus,llevel,bHaveDimmer,bHaveGroupCmd);
+				GetLightStatus(dType,dSubType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
 
 				root["result"][ii]["Status"]=lstatus;
 				root["result"][ii]["HaveDimmer"]=bHaveDimmer;
+				root["result"][ii]["MaxDimLevel"]=maxDimLevel;
 				root["result"][ii]["HaveGroupCmd"]=bHaveGroupCmd;
 				root["result"][ii]["SwitchType"]="Security";
 				root["result"][ii]["SwitchTypeVal"]=0;
@@ -1533,12 +1537,14 @@ char * CWebServer::GetJSonPage()
 				int llevel=0;
 				bool bHaveDimmer=false;
 				bool bHaveGroupCmd=false;
+				int maxDimLevel=0;
 
-				GetLightStatus(dType,dSubType,nValue,sValue,lstatus,llevel,bHaveDimmer,bHaveGroupCmd);
+				GetLightStatus(dType,dSubType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
 
 				if (ii==0)
 				{
 					root["HaveDimmer"]=bHaveDimmer;
+					root["result"][ii]["MaxDimLevel"]=maxDimLevel;
 					root["HaveGroupCmd"]=bHaveGroupCmd;
 				}
 

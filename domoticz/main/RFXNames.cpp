@@ -420,8 +420,13 @@ void GetLightStatus(
 		std::string &lstatus, 
 		int &llevel, 
 		bool &bHaveDimmer,
+		int &maxDimLevel,
 		bool &bHaveGroupCmd)
 {
+	bHaveDimmer=false;
+	maxDimLevel=0;
+	bHaveGroupCmd=false;
+
 	char szTmp[80];
 	switch (dType)
 	{
@@ -499,6 +504,7 @@ void GetLightStatus(
 		case sTypeHEU:
 		case sTypeANSLUT:
 			bHaveDimmer=true;
+			maxDimLevel=16;
 			bHaveGroupCmd=true;
 			switch (nValue)
 			{
@@ -539,6 +545,7 @@ void GetLightStatus(
 		case sTypeLightwaveRF:
 			bHaveGroupCmd=true;
 			bHaveDimmer=true;
+			maxDimLevel=16;
 			switch (nValue)
 			{
 			case light5_sOff:
