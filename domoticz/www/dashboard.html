@@ -71,7 +71,20 @@ function RefreshFavorites()
 											status+='<img src="images/blinds.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 								}
-                                else {
+								else if (item.SwitchType == "Dimmer") {
+									if (
+											(item.Status == 'On')||
+											(item.Status == 'Chime')||
+											(item.Status == 'Group On')||
+											(item.Status.indexOf('Set ') == 0)
+										 ) {
+												status+='<img src="images/dimmer.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									}
+									else {
+												status+='<img src="images/dimmeroff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									}
+								}
+								else {
 									if (
 											(item.Status == 'On')||
 											(item.Status == 'Chime')||
@@ -118,6 +131,19 @@ function RefreshFavorites()
 									}
 									else {
 											img='<img src="images/blindsopen48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									}
+								}
+								else if (item.SwitchType == "Dimmer") {
+									if (
+											(item.Status == 'On')||
+											(item.Status == 'Chime')||
+											(item.Status == 'Group On')||
+											(item.Status.indexOf('Set ') == 0)
+										 ) {
+												img='<img src="images/dimmer48-on.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									}
+									else {
+												img='<img src="images/dimmer48-off.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 								}
 								else {
@@ -576,6 +602,19 @@ function ShowFavorites()
 										status+='<img src="images/blind.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 							}               
+							else if (item.SwitchType == "Dimmer") {
+								if (
+										(item.Status == 'On')||
+										(item.Status == 'Chime')||
+										(item.Status == 'Group On')||
+										(item.Status.indexOf('Set ') == 0)
+									 ) {
+											status+='<img src="images/dimmer.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+								}
+								else {
+											status+='<img src="images/dimmeroff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+								}
+							}
 							else {
 								if (
 										(item.Status == 'On')||
@@ -640,6 +679,19 @@ function ShowFavorites()
 										xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 							}               
+							else if (item.SwitchType == "Dimmer") {
+								if (
+										(item.Status == 'On')||
+										(item.Status == 'Chime')||
+										(item.Status == 'Group On')||
+										(item.Status.indexOf('Set ') == 0)
+									 ) {
+											xhtm+='\t      <td id="img"><img src="images/dimmer48-on.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								}
+								else {
+											xhtm+='\t      <td id="img"><img src="images/dimmer48-off.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								}
+							}
 							else {
 								if (
 										(item.Status == 'On')||

@@ -242,6 +242,19 @@ function ShowDevices(filter)
 											itemImage='<img src="images/lightbulboff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowDevices);" onmouseover="cursorhand()" onmouseout="cursordefault()">';
 							}
           }
+          if (TypeImg.indexOf("dimmer")==0) {
+							if (
+									(item.Status == 'On')||
+									(item.Status == 'Chime')||
+									(item.Status == 'Group On')||
+									(item.Status.indexOf('Set ') == 0)
+								 ) {
+											itemImage='<img src="images/dimmer.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowDevices);" onmouseover="cursorhand()" onmouseout="cursordefault()">';
+							}
+							else {
+											itemImage='<img src="images/dimmeroff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowDevices);" onmouseover="cursorhand()" onmouseout="cursordefault()">';
+							}
+          }
           if (item.Used!=0) {
             itemSubIcons+='<img src="images/remove.png" title="Remove Device" onclick="RemoveDevice(' + item.idx +')">';
           }

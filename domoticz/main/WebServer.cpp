@@ -643,6 +643,10 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					}
 					root["result"][ii]["Status"]=lstatus;
 				}
+				else if (switchtype==STYPE_Dimmer)
+				{
+					root["result"][ii]["TypeImg"]="dimmer";
+				}
 				if (llevel!=0)
 					sprintf(szData,"%s, Level: %d %%", lstatus.c_str(), llevel);
 				else

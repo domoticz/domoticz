@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 65
+# ref 66
 
 CACHE:
 favicon.ico
@@ -100,6 +100,10 @@ images/delete.png
 images/desktop.png
 images/details.png
 images/devices.png
+images/dimmer.png
+images/dimmeroff.png
+images/dimmer48-on.png
+images/dimmer48-off.png
 images/door.png
 images/door48.png
 images/edit.png
