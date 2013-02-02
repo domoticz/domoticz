@@ -594,7 +594,7 @@ function ShowFavorites()
 										status+='<img src="images/blind.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 							}
-							else if (item.SwitchType == "Blinds inverted") {
+							else if (item.SwitchType == "Blinds Inverted") {
 								if (item.Status == 'Closed') {
 										status+='<img src="images/blinds48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
@@ -671,7 +671,7 @@ function ShowFavorites()
 										xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 							}
-							else if (item.SwitchType == "Blinds inverted") {
+							else if (item.SwitchType == "Blinds Inverted") {
 								if (item.Status == 'Closed') {
 										xhtm+='\t      <td id="img"><img src="images/blinds48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
