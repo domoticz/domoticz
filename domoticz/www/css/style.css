@@ -889,12 +889,14 @@ table.mobileitem {
 	border-bottom: 0.04em solid rgba(255,255,255,.1);
 }
 
-.dimslider{
+.dimslider {
+	z-index:1;
 	border-width: 1px;
 	border-style: solid;
 	border-color: #333 #333 #777 #333;
 	border-radius: 25px;
 	width: 100%;
+	margin-top: 0.5em;
 	position: absolute;
 	height: 13px;
 	background-color: #8e8d8d;
@@ -902,7 +904,8 @@ table.mobileitem {
     box-shadow: inset 0 1px 5px 0px rgba(0, 0, 0, .5), 
     				  0 1px 0 0px rgba(250, 250, 250, .5);
 }
-.ui-slider-handle {
+
+.dimslider .ui-slider-handle {
 	position: absolute;
 	z-index: 2;
 	width: 25px;
@@ -911,11 +914,13 @@ table.mobileitem {
 	background: url('images/handle.png') no-repeat 50% 50%;
 	font-weight: bold;
 	color: #1C94C4;
+	border-style: none;
 	outline: none;
 	top: -7px;
 	margin-left: -12px;
 }
-.ui-slider-range {
+
+.dimslider .ui-slider-range {
 	background: #ffffff; /* Old browsers */
 	background: -moz-linear-gradient(top,  #11AAFD 0%, #0199E0 100%); /* FF3.6+ */
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#11AAFD), color-stop(100%,#0199E0)); /* Chrome,Safari4+ */

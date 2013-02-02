@@ -1233,8 +1233,13 @@ function ShowLights()
           xhtm+=
                 '\t      <td id="status">' + item.Status + '</td>\n' +
                 '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
-                '\t      <td id="type">' + item.Type + ', ' + item.SubType + '</td>\n' +
-                '\t      <td>';
+                '\t      <td id="type">' + item.Type + ', ' + item.SubType;
+          if (item.SwitchType == "Dimmer") {
+						xhtm+='<br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-maxlevel="' + item.MaxDimLevel + '" data-svalue="10"></div>';
+          }
+					xhtm+=
+								'</td>\n' +
+								'\t      <td>';
           if (item.Favorite == 0) {
             xhtm+=      
                   '<img src="images/nofavorite.png" title="Add to Dashboard" onclick="MakeFavorite(' + item.idx + ',1);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -1302,9 +1307,35 @@ function ShowLights()
 					});
 				}
 		});
-	}  
+	}
+	//Create Dimmer Sliders
+	$('#lightcontent .dimslider').slider({
+		//Config
+		range: "min",
+		min: 0,
+		max: 16,
+		value: 5,
+
+		//Slider Events
+		create: function(event,ui ) {
+			$( this ).slider( "option", "max", $( this ).data('maxlevel'));
+			$( this ).slider( "value", $( this ).data('svalue') );
+		},
+		slide: function(event, ui) { //When the slider is sliding
+			clearInterval($.setDimValue);
+			var idx=$( this ).data('idx');
+			$.setDimValue = setInterval(function() { SetDimValue(idx,ui.value); }, 500);
+		}
+	});
+	ResizeDimSliders();
   $.myglobals.refreshTimer = setInterval(RefreshLights, 10000);
   return false;
+}
+
+function ResizeDimSliders()
+{
+	var width=$(".4u").width()-90;
+	$("#lightcontent .dimslider").width(width);
 }
 
 $.strPad = function(i,l,s) {
@@ -1499,6 +1530,8 @@ $(document).ready(function() {
 		$('#timerparamstable #combocommand > option').each(function() {
 					 $.myglobals.CommandStr.push($(this).text());
 		});
+
+		$(window).resize(function() { ResizeDimSliders(); });
 
     $( "#dialog-addlightdevice" ).dialog({
           autoOpen: false,

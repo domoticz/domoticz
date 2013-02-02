@@ -684,3 +684,12 @@ function checkLength( o, min, max )
 			}
 }
 
+function SetDimValue(idx, value)
+{
+	clearInterval($.setDimValue);
+	$.ajax({
+		 url: "json.htm?type=command&param=switchlight&idx=350&switchcmd=Set%20Level&level=" + value,
+		 async: false, 
+		 dataType: 'json'
+	});
+}

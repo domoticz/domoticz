@@ -36,9 +36,6 @@ function RefreshFavorites()
 						id="#dashcontent #light_" + item.idx;
 						var obj=$(id);
 						if (typeof obj != 'undefined') {
-							if ($(id + " #name").html()!=item.Name) {
-								$(id + " #name").html(item.Name);
-							}
 							if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
 								var status=item.Status + " ";
 								if (item.SwitchType == "Doorbell") {
@@ -420,13 +417,15 @@ function RefreshFavorites()
 									}
 								}
 								if (typeof item.CounterDeliv != 'undefined') {
-									if (data.DashboardType==0) {
-										status+='<br>Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
-										status+=", Actual: " + item.UsageDeliv;
-									}
-									else {
-										status+='<br>R: ' + item.CounterDeliv + ', T: ' + item.CounterDelivToday;
-										status+=", A: " + item.UsageDeliv;
+									if (item.CounterDeliv!=0) {
+										if (data.DashboardType==0) {
+											status+='<br>Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
+											status+=", Actual: " + item.UsageDeliv;
+										}
+										else {
+											status+='<br>R: ' + item.CounterDeliv + ', T: ' + item.CounterDelivToday;
+											status+=", A: " + item.UsageDeliv;
+										}
 									}
 								}
 								if ($(id + " #status").html()!=status) {
@@ -570,7 +569,12 @@ function ShowFavorites()
 						if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
 							xhtm+=
 									'\t    <tr id="light_' + item.idx +'">\n' +
-									'\t      <td id="name">' + item.Name + '</td>\n';
+									'\t      <td id="name">' + item.Name;
+							if (item.SwitchType == "Dimmer") {
+								xhtm+='<br><div style="margin-top: 0.2em;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-maxlevel="' + item.MaxDimLevel + '" data-svalue="10"></div><br>';
+							}
+							xhtm+=
+									 '</td>\n';
 							var status=item.Status + " ";
 							if (item.SwitchType == "Doorbell") {
 								status+='<img src="images/door.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
@@ -707,7 +711,11 @@ function ShowFavorites()
 							}
 							xhtm+=
 										'\t      <td id="status">' + item.Status + '</td>\n' +
-										'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
+										'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n';
+							if (item.SwitchType == "Dimmer") {
+								xhtm+='<td><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-maxlevel="' + item.MaxDimLevel + '" data-svalue="10"></div></td>';
+							}
+							xhtm+=
 										'\t    </tr>\n' +
 										'\t    </table>\n' +
 										'\t  </section>\n' +
@@ -1332,15 +1340,45 @@ function ShowFavorites()
 					}
 				}
 		});
+		//Create Dimmer Sliders
+		$('.dimslider').slider({
+			//Config
+			range: "min",
+			min: 0,
+			max: 16,
+			value: 5,
+
+			//Slider Events
+			create: function(event,ui ) {
+				$( this ).slider( "option", "max", $( this ).data('maxlevel'));
+				$( this ).slider( "value", $( this ).data('svalue') );
+			},
+			slide: function(event, ui) { //When the slider is sliding
+				clearInterval($.setDimValue);
+				var idx=$( this ).data('idx');
+				$.setDimValue = setInterval(function() { SetDimValue(idx,ui.value); }, 500);
+			}
+		});
+		ResizeDimSliders();
 	}
   $.myglobals.refreshTimer = setInterval(RefreshFavorites, 10000);
+}
+
+function ResizeDimSliders()
+{
+	var width=$(".4u").width()-70;
+	$("#dashcontent .4u .dimslider").width(width);
+	width=$(".3u").width()-70;
+	$("#dashcontent .3u .dimslider").width(width);
+	width=$(".mobileitem").width()-16;
+	$("#dashcontent .mobileitem .dimslider").width(width);
 }
 
 $(document).ready(function() {
 	if( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {
 		$.myglobals.ismobile=true;
 	}
-
+	$(window).resize(function() { ResizeDimSliders(); });
   ShowFavorites();
 } );
 </script>
