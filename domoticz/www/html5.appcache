@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 71
+# ref 74
 
 CACHE:
 favicon.ico
@@ -31,6 +31,8 @@ css/5grid/core-noscript.css
 css/5grid/core.css
 css/5grid/mobileUI-beveled.css
 css/5grid/mobileUI-flat.css
+css/images/bg-track.png
+css/images/handle.png
 css/images/img01.jpg
 css/images/img02.jpg
 css/images/img03.jpg
@@ -51,7 +53,7 @@ css/images/img12.jpg
 css/images/img12.png
 css/images/img13.jpg
 css/images/spacer.gif
-css/ui-darkness/jquery-ui-1.9.0.custom.min.css
+css/ui-darkness/jquery-ui-1.10.0.custom.min.css
 css/ui-darkness/images/ui-bg_flat_30_cccccc_40x100.png
 css/ui-darkness/images/ui-bg_flat_50_5c5c5c_40x100.png
 css/ui-darkness/images/ui-bg_glass_20_555555_1x400.png
@@ -107,6 +109,7 @@ images/dimmer48-off.png
 images/door.png
 images/door48.png
 images/edit.png
+images/empty16.png
 images/favorite.png
 images/forward_disabled.png
 images/forward_enabled.png
@@ -175,13 +178,11 @@ images/startup/apple-touch-startup-image-2048x1496.png
 # js
 js/domoticz.js
 js/jquery.ui.touch-punch.min.js
-js/ColReorder.min.js
-js/ColVis.min.js
 js/date.format.js
 js/highcharts-more.js
 js/highcharts.js
-js/jquery-1.8.2.min.js
-js/jquery-ui-1.9.0.custom.min.js
+js/jquery-1.9.0.min.js
+js/jquery-ui-1.10.0.custom.min.js
 js/jquery.dataTables.min.js
 js/TableTools.min.js
 js/ZeroClipboard.js

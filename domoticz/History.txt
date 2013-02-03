@@ -1,21 +1,24 @@
-Version 1.0.8 (Januari xxth 2013)
+Version 1.0.9 (February xxh 2013)
+
+Version 1.0.8 (February 3th 2013)
 - Fixed Hardware Enabled/Disabled option
 - Fixed Light/Switches timer, time dropdown combobox
-- implemented OWL113 current logging/chart
-- implemented OWL113 Ampere Notifications
-- implemented P1 Energy Meter/P1 Gas Meter/YouLess, usage notification
-- implemented P1 Gas Meter/YouLess/RFXMeter, today notification
-- implemented P1 Energy Meter, today notification
+- Implemented OWL113 current logging/chart
+- Implemented OWL113 Ampere Notifications
+- Implemented P1 Energy Meter/P1 Gas Meter/YouLess, usage notification
+- Implemented P1 Gas Meter/YouLess/RFXMeter, today notification
+- Implemented P1 Energy Meter, today notification
 - Removed SQLite MFC runtime dependency
-- source code cleanup (moved things to seperate folders)
-- alternative webpage username/password reset (resetpwd file)
-- implemented inverted blinds switch type
-- when setting switch level = 0, the switch is turned Off now
-- setting a switch level is now done by setting the level to 0=Off, 1..xx for the level
-- new (Windows) command line argument (-nobrowser) do not start web browser
-- implemented switchtype 'Dimmer' (not working on iphone yes.. strangly enough)
+- Source code cleanup (moved things to seperate folders)
+- HTML cleanup (Updated to newer libraries as well)
+- Alternative webpage username/password reset (resetpwd file)
+- Implemented inverted blinds switch type
+- When setting switch level = 0, the switch is turned Off now
+- Setting a switch level is now done by setting the level to 0=Off, 1..xx for the level
+- New (Windows) command line argument (-nobrowser) do not start web browser
+- Implemented switchtype 'Dimmer' (not working on iPhone yet.. strangely enough)
 
-Version 1.0.7 (Januari 18th 2013)
+Version 1.0.7 (January 18th 2013)
 - replaced all localtime function with localtime_r
 - Dashboard: P1 Smart Meter Energy does not show the retour values if not used
 - Devices Tab: Check if any device is selected to delete
@@ -24,9 +27,9 @@ Version 1.0.7 (Januari 18th 2013)
 - updated to RFCOM SDK version 6.01
 - Dashboard now includes server date
 - Barometer graph values now displays as whole number
-- meter values now only inserted in meter table when there is a difference in value
-- implemented utility graph 'last 24 hours usage'
-- added jwsmtp class
+- Meter values now only inserted in meter table when there is a difference in value
+- Implemented utility graph 'last 24 hours usage'
+- Added jwsmtp class
 - Option to transfer old device logs/settings to a new device (for example when the device battery is replaced and received a new ID)
 - Youless Pulse Counter Meter hardware implemented
 - Schedule item started message will now also report the timer type
@@ -36,12 +39,12 @@ Version 1.0.7 (Januari 18th 2013)
 - Lights/Switches, Contact Open/Closed icon
 - Temperature Custom Graph
 
-Version 1.0.6 (Januari 9th 2013)
+Version 1.0.6 (January 9th 2013)
 - RFXCOM Lan will now keep retrying to connect when it does not succeed on the first time
 - P1 Smart Meter Serial hardware implemented
 - P1 Smart Meter TCP hardware implemented
 - Fixed: Temp, Hum, TempHumBaro ID
-- option to add a manual LightwaveRF switch
+- Option to add a manual LightwaveRF switch
 - Chime light/switch status will now also trigger a notification
 - Web Protection, option to ignore (local) networks
 - Code should now compile also with VS2010 express

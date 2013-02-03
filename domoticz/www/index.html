@@ -54,13 +54,13 @@
 		<link type="text/css" rel="stylesheet" href="css/style-desktop.css" />
 		</noscript>
 
-		<link type="text/css" rel="stylesheet" href="css/ui-darkness/jquery-ui-1.9.0.custom.min.css" />
+		<link type="text/css" rel="stylesheet" href="css/ui-darkness/jquery-ui-1.10.0.custom.min.css" />
 		<link type="text/css" rel="stylesheet" href="css/loading.css" />
 		<link type="text/css" rel="stylesheet" href="css/demo_table_jui.css" />
 		<link type="text/css" rel="stylesheet" href="css/TableTools.css" />
 
-		<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
-		<script type="text/javascript" charset="utf-8" src="js/jquery-ui-1.9.0.custom.min.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/jquery-1.9.0.min.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/jquery-ui-1.10.0.custom.min.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/jquery.ui.touch-punch.min.js"></script>
     <script type="text/javascript" charset="utf-8" src="css/5grid/init.js?use=mobile,desktop,1000px&amp;mobileUI=1&amp;mobileUI.theme=none"></script>
     <!--[if IE 9]><link rel="stylesheet" href="css/style-ie9.css" /><![endif]-->
@@ -72,7 +72,6 @@
     <script type="text/javascript" charset="utf-8" src="js/highcharts-more.js"></script>
     <script type="text/javascript" charset="utf-8" src="js/modules/exporting.js"></script>
     <script type="text/javascript" charset="utf-8" src="js/themes/dark-blue.js"></script>
-
     <script type="text/javascript" charset="utf-8" src="js/domoticz.js"></script>
     
 <script type="text/javascript" charset="utf-8" id="init-code">
@@ -144,8 +143,16 @@ $(document).ready(function() {
 	if( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {
 		$.myglobals.ismobile=true;
 	}
-	if ( $.browser.msie ) {
-		var bVersion=parseFloat($.browser.version);
+
+	var matched = matchua( navigator.userAgent );
+	var browser = {};
+	if ( matched.browser ) {
+		browser[ matched.browser ] = true;
+		browser.version = matched.version;
+	}
+	
+	if ( browser.msie ) {
+		var bVersion=parseFloat(browser.version);
 		if (bVersion < 10.0) {
 			alert('This Application is is designed for Internet Explorer version 10+!\nPlease upgrade your browser!');
 		}
