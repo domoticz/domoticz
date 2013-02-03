@@ -1,4 +1,5 @@
 Version 1.0.9 (February xxh 2013)
+- Implemented OWL113 option to display in Ampere/Usage
 
 Version 1.0.8 (February 3th 2013)
 - Fixed Hardware Enabled/Disabled option

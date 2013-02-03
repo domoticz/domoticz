@@ -308,6 +308,14 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("RandomTimerFrame", 15);
 	}
+	if (!GetPreferencesVar("ElectricVoltage", nValue))
+	{
+		UpdatePreferencesVar("ElectricVoltage", 230);
+	}
+	if (!GetPreferencesVar("CM113DisplayType", nValue))
+	{
+		UpdatePreferencesVar("CM113DisplayType", 0);
+	}
 
 	return true;
 }

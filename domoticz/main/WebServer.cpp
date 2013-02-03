@@ -338,9 +338,12 @@ char * CWebServer::PostSettings()
 	std::string LightHistoryDays=m_pWebEm->FindValue("LightHistoryDays");
 	m_pMain->m_sql.UpdatePreferencesVar("LightHistoryDays",atoi(LightHistoryDays.c_str()));
 
-	std::string sRandomTimerFrame=m_pWebEm->FindValue("RandomSpread");
-	m_pMain->m_sql.UpdatePreferencesVar("RandomTimerFrame",atoi(sRandomTimerFrame.c_str()));
+	std::string sElectricVoltage=m_pWebEm->FindValue("ElectricVoltage");
+	m_pMain->m_sql.UpdatePreferencesVar("ElectricVoltage",atoi(sElectricVoltage.c_str()));
 
+	std::string sCM113DisplayType=m_pWebEm->FindValue("CM113DisplayType");
+	m_pMain->m_sql.UpdatePreferencesVar("CM113DisplayType",atoi(sCM113DisplayType.c_str()));
+	
 	std::string WebUserName=m_pWebEm->FindValue("WebUserName");
 	std::string WebPassword=m_pWebEm->FindValue("WebPassword");
 	std::string WebLocalNetworks=m_pWebEm->FindValue("WebLocalNetworks");
@@ -1195,9 +1198,18 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				StringSplit(sValue, ";", strarray);
 				if (strarray.size()==3)
 				{
-					sprintf(szData,"%.1f A, %.1f A, %.1f A",atof(strarray[0].c_str()),atof(strarray[1].c_str()),atof(strarray[2].c_str()));
+					//CM113
+					int displaytype=0;
+					int voltage=230;
+					m_pMain->m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
+					m_pMain->m_sql.GetPreferencesVar("ElectricVoltage", voltage);
+
+					if (displaytype==0)
+						sprintf(szData,"%.1f A, %.1f A, %.1f A",atof(strarray[0].c_str()),atof(strarray[1].c_str()),atof(strarray[2].c_str()));
+					else
+						sprintf(szData,"%d Watt, %d Watt, %d Watt",int(atof(strarray[0].c_str())*voltage),int(atof(strarray[1].c_str())*voltage),int(atof(strarray[2].c_str())*voltage));
 					root["result"][ii]["Data"]=szData;
-					root["result"][ii]["SwitchTypeVal"]=0;
+					root["result"][ii]["displaytype"]=displaytype;
 				}
 			}
 			else if (dType == pTypeENERGY)
@@ -1840,6 +1852,14 @@ char * CWebServer::GetJSonPage()
 					root["status"]="OK";
 					root["title"]="Graph " + sensor + " " + srange;
 
+					//CM113
+					int displaytype=0;
+					int voltage=230;
+					m_pMain->m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
+					m_pMain->m_sql.GetPreferencesVar("ElectricVoltage", voltage);
+
+					root["displaytype"]=displaytype;
+
 					szQuery.clear();
 					szQuery.str("");
 					szQuery << "SELECT Value1, Value2, Value3, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
@@ -1857,9 +1877,9 @@ char * CWebServer::GetJSonPage()
 
 							root["result"][ii]["d"]=sd[3].substr(0,16);
 
-							float fval1=(float)atof(sd[0].c_str());
-							float fval2=(float)atof(sd[1].c_str());
-							float fval3=(float)atof(sd[2].c_str());
+							float fval1=(float)atof(sd[0].c_str())/10.0f;
+							float fval2=(float)atof(sd[1].c_str())/10.0f;
+							float fval3=(float)atof(sd[2].c_str())/10.0f;
 
 							if (fval1!=0)
 								bHaveL1=true;
@@ -1868,25 +1888,22 @@ char * CWebServer::GetJSonPage()
 							if (fval3!=0)
 								bHaveL3=true;
 
-							//metertype=0 is current, 1=energy
-							unsigned char iCurrentMeterType=0;
-							if (iCurrentMeterType==0)
+							if (displaytype==0)
 							{
-								sprintf(szTmp,"%.1f",fval1/10.0f);
+								sprintf(szTmp,"%.1f",fval1);
 								root["result"][ii]["v1"]=szTmp;
-								sprintf(szTmp,"%.1f",fval2/10.0f);
+								sprintf(szTmp,"%.1f",fval2);
 								root["result"][ii]["v2"]=szTmp;
-								sprintf(szTmp,"%.1f",fval3/10.0f);
+								sprintf(szTmp,"%.1f",fval3);
 								root["result"][ii]["v3"]=szTmp;
 							}
 							else
 							{
-								float voltage=230.0f;
-								sprintf(szTmp,"%.3f",fval1*voltage);
+								sprintf(szTmp,"%d",int(fval1*voltage));
 								root["result"][ii]["v1"]=szTmp;
-								sprintf(szTmp,"%.3f",fval2*voltage);
+								sprintf(szTmp,"%d",int(fval2*voltage));
 								root["result"][ii]["v2"]=szTmp;
-								sprintf(szTmp,"%.3f",fval3*voltage);
+								sprintf(szTmp,"%d",int(fval3*voltage));
 								root["result"][ii]["v3"]=szTmp;
 							}
 							ii++;
@@ -2639,6 +2656,14 @@ char * CWebServer::GetJSonPage()
 					result=m_pMain->m_sql.query(szQuery.str());
 					if (result.size()>0)
 					{
+						//CM113
+						int displaytype=0;
+						int voltage=230;
+						m_pMain->m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
+						m_pMain->m_sql.GetPreferencesVar("ElectricVoltage", voltage);
+
+						root["displaytype"]=displaytype;
+
 						bool bHaveL1=false;
 						bool bHaveL2=false;
 						bool bHaveL3=false;
@@ -2649,12 +2674,12 @@ char * CWebServer::GetJSonPage()
 
 							root["result"][ii]["d"]=sd[6].substr(0,16);
 
-							float fval1=(float)atof(sd[0].c_str());
-							float fval2=(float)atof(sd[1].c_str());
-							float fval3=(float)atof(sd[2].c_str());
-							float fval4=(float)atof(sd[3].c_str());
-							float fval5=(float)atof(sd[4].c_str());
-							float fval6=(float)atof(sd[5].c_str());
+							float fval1=(float)atof(sd[0].c_str())/10.0f;
+							float fval2=(float)atof(sd[1].c_str())/10.0f;
+							float fval3=(float)atof(sd[2].c_str())/10.0f;
+							float fval4=(float)atof(sd[3].c_str())/10.0f;
+							float fval5=(float)atof(sd[4].c_str())/10.0f;
+							float fval6=(float)atof(sd[5].c_str())/10.0f;
 
 							if ((fval1!=0)||(fval2!=0))
 								bHaveL1=true;
@@ -2663,37 +2688,34 @@ char * CWebServer::GetJSonPage()
 							if ((fval5!=0)||(fval6!=0))
 								bHaveL3=true;
 
-							//metertype=0 is current, 1=energy
-							unsigned char iCurrentMeterType=0;
-							if (iCurrentMeterType==0)
+							if (displaytype==0)
 							{
-								sprintf(szTmp,"%.1f",fval1/10.0f);
+								sprintf(szTmp,"%.1f",fval1);
 								root["result"][ii]["v1"]=szTmp;
-								sprintf(szTmp,"%.1f",fval2/10.0f);
+								sprintf(szTmp,"%.1f",fval2);
 								root["result"][ii]["v2"]=szTmp;
-								sprintf(szTmp,"%.1f",fval3/10.0f);
+								sprintf(szTmp,"%.1f",fval3);
 								root["result"][ii]["v3"]=szTmp;
-								sprintf(szTmp,"%.1f",fval4/10.0f);
+								sprintf(szTmp,"%.1f",fval4);
 								root["result"][ii]["v4"]=szTmp;
-								sprintf(szTmp,"%.1f",fval5/10.0f);
+								sprintf(szTmp,"%.1f",fval5);
 								root["result"][ii]["v5"]=szTmp;
-								sprintf(szTmp,"%.1f",fval6/10.0f);
+								sprintf(szTmp,"%.1f",fval6);
 								root["result"][ii]["v6"]=szTmp;
 							}
 							else
 							{
-								float voltage=230.0f;
-								sprintf(szTmp,"%.3f",fval1*voltage);
+								sprintf(szTmp,"%d",int(fval1*voltage));
 								root["result"][ii]["v1"]=szTmp;
-								sprintf(szTmp,"%.3f",fval2*voltage);
+								sprintf(szTmp,"%d",int(fval2*voltage));
 								root["result"][ii]["v2"]=szTmp;
-								sprintf(szTmp,"%.3f",fval3*voltage);
+								sprintf(szTmp,"%d",int(fval3*voltage));
 								root["result"][ii]["v3"]=szTmp;
-								sprintf(szTmp,"%.3f",fval4*voltage);
+								sprintf(szTmp,"%d",int(fval4*voltage));
 								root["result"][ii]["v4"]=szTmp;
-								sprintf(szTmp,"%.3f",fval5*voltage);
+								sprintf(szTmp,"%d",int(fval5*voltage));
 								root["result"][ii]["v5"]=szTmp;
-								sprintf(szTmp,"%.3f",fval6*voltage);
+								sprintf(szTmp,"%d",int(fval6*voltage));
 								root["result"][ii]["v6"]=szTmp;
 							}
 
@@ -4450,8 +4472,14 @@ char * CWebServer::GetJSonPage()
 				{
 					root["WaterDivider"]=nValue;
 				}
-
-				
+				else if (Key=="ElectricVoltage")
+				{
+					root["ElectricVoltage"]=nValue;
+				}
+				else if (Key=="CM113DisplayType")
+				{
+					root["CM113DisplayType"]=nValue;
+				}
 			}
 		}
 

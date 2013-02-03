@@ -351,20 +351,116 @@ function AddDataToCurrentChart(data,chart,switchtype)
     }
     else if (switchtype==1)
     {
-			//gas
-      chart.addSeries(
-        {
-          id: 'gas',
-          name: 'Gas',
-          color: 'rgba(3,190,252,0.8)',
-          yAxis: 0
-        }
-      );
+			//Watt
+			if (chart == $.DayChart) {
+				if (data.haveL1) {
+					chart.addSeries(
+						{
+							id: 'current1',
+							name: 'Usage_L1',
+							color: 'rgba(3,190,252,0.8)',
+							yAxis: 0
+						}
+					);
+					series = chart.get('current1');
+					series.setData(datatablev1);
+				}
+				if (data.haveL2) {
+					chart.addSeries(
+						{
+							id: 'current2',
+							name: 'Usage_L2',
+							color: 'rgba(252,190,3,0.8)',
+							yAxis: 0
+						}
+					);
+					series = chart.get('current2');
+					series.setData(datatablev2);
+				}
+				if (data.haveL3) {
+					chart.addSeries(
+						{
+							id: 'current3',
+							name: 'Usage_L3',
+							color: 'rgba(190,252,3,0.8)',
+							yAxis: 0
+						}
+					);
+					series = chart.get('current3');
+					series.setData(datatablev3);
+				}
+			}
+			else {
+				if (data.haveL1) {
+					chart.addSeries(
+						{
+							id: 'current1min',
+							name: 'Usage_L1_Min',
+							color: 'rgba(3,190,252,0.8)',
+							yAxis: 0
+						}
+					);
+					chart.addSeries(
+						{
+							id: 'current1max',
+							name: 'Usage_L1_Max',
+							color: 'rgba(3,252,190,0.8)',
+							yAxis: 0
+						}
+					);
+					series = chart.get('current1min');
+					series.setData(datatablev1);
+					series = chart.get('current1max');
+					series.setData(datatablev2);
+				}
+				if (data.haveL2) {
+					chart.addSeries(
+						{
+							id: 'current2min',
+							name: 'Usage_L2_Min',
+							color: 'rgba(252,190,3,0.8)',
+							yAxis: 0
+						}
+					);
+					chart.addSeries(
+						{
+							id: 'current2max',
+							name: 'Usage_L2_Max',
+							color: 'rgba(252,3,190,0.8)',
+							yAxis: 0
+						}
+					);
+					series = chart.get('current2min');
+					series.setData(datatablev3);
+					series = chart.get('current2max');
+					series.setData(datatablev4);
+				}
+				if (data.haveL3) {
+					chart.addSeries(
+						{
+							id: 'current3min',
+							name: 'Usage_L3_Min',
+							color: 'rgba(190,252,3,0.8)',
+							yAxis: 0
+						}
+					);
+					chart.addSeries(
+						{
+							id: 'current3max',
+							name: 'Usage_L3_Min',
+							color: 'rgba(112,146,190,0.8)',
+							yAxis: 0
+						}
+					);
+					series = chart.get('current3min');
+					series.setData(datatablev5);
+					series = chart.get('current3max');
+					series.setData(datatablev6);
+				}
+			}
 			chart.yAxis[0].axisTitle.attr({
-        text: 'Gas m3'
+					text: 'Usage (Watt)'
 			});			
-      series = chart.get('gas');
-      series.setData(datatablev);
     }
 		chart.yAxis[0].redraw();
 }
@@ -415,7 +511,10 @@ function ShowCurrentLog(id,name,switchtype)
 																'Usage': 'Watt',
 																'Current_L1': 'A',
 																'Current_L2': 'A',
-																'Current_L3': 'A'
+																'Current_L3': 'A',
+																'Usage_L1': 'Watt',
+																'Usage_L2': 'Watt',
+																'Usage_L3': 'Watt'
 													}[this.series.name];
                     return this.series.name + ': ' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y + ' ' + unit;
             }
@@ -489,7 +588,13 @@ function ShowCurrentLog(id,name,switchtype)
 																'Current_L2_Min': 'A',
 																'Current_L2_Max': 'A',
 																'Current_L3_Min': 'A',
-																'Current_L3_Max': 'A'
+																'Current_L3_Max': 'A',
+																'Usage_L1_Min': 'Watt',
+																'Usage_L1_Max': 'Watt',
+																'Usage_L2_Min': 'Watt',
+																'Usage_L2_Max': 'Watt',
+																'Usage_L3_Min': 'Watt',
+																'Usage_L3_Max': 'Watt'
 													}[this.series.name];
                     return this.series.name + ': ' + Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
             }
@@ -563,7 +668,13 @@ function ShowCurrentLog(id,name,switchtype)
 																'Current_L2_Min': 'A',
 																'Current_L2_Max': 'A',
 																'Current_L3_Min': 'A',
-																'Current_L3_Max': 'A'
+																'Current_L3_Max': 'A',
+																'Usage_L1_Min': 'Watt',
+																'Usage_L1_Max': 'Watt',
+																'Usage_L2_Min': 'Watt',
+																'Usage_L2_Max': 'Watt',
+																'Usage_L3_Min': 'Watt',
+																'Usage_L3_Max': 'Watt'
 													}[this.series.name];
                     return this.series.name + ': ' + Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
             }
@@ -1304,7 +1415,7 @@ function ShowUtilities()
 						}
           }
           else if (item.Type == "Current") {
-							xhtm+='<a class="btnsmall" onclick="ShowCurrentLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">Log</a> ';
+							xhtm+='<a class="btnsmall" onclick="ShowCurrentLog(' + item.idx + ',\'' + item.Name + '\', ' + item.displaytype + ');">Log</a> ';
 							xhtm+=      
 										'<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
           }

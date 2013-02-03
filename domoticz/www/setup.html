@@ -91,7 +91,7 @@
 	</div>
 </div>
 <br>
-<div class="row divider">
+<div class="row divider borderbot">
 	<div class="6u">
 	<h2>Website Protection:</h2><br>
 	<table class="display" id="webtable" border="0" cellpadding="0" cellspacing="0">
@@ -142,6 +142,27 @@
 		<td><input type="input" id="RandomSpread" name="RandomSpread" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (Minutes +/-)</td>
 	</tr>
 	</table>
+	</div>
+</div>
+<div class="row divider">
+	<div class="6u">
+	<h2>OWL CM113:</h2><br>
+		<table class="display" id="owl113table" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="right" style="width:60px"><label>Voltage: </label></td>
+				<td><input type="input" id="ElectricVoltage" name="ElectricVoltage" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			<tr>
+				<td align="right" style="width:60px"><label>Display: </label></td>
+				<td><select id="comboscm113type" name="CM113DisplayType" style="width:120px" class="combobox ui-corner-all">
+					<option value="0">Ampere</option>
+					<option value="1">Watt</option>
+				</select></td>
+			</tr>
+		</table>
+	</tr>
+	</div>
+	<div class="6u">
 	</div>
 </div>
 <br>
@@ -254,8 +275,12 @@ function ShowSettings()
       if (typeof data.RandomTimerFrame != 'undefined') {
         $("#randomtable #RandomSpread").val(data.RandomTimerFrame );
       }
-      
-      
+      if (typeof data.ElectricVoltage!= 'undefined') {
+        $("#owl113table #ElectricVoltage").val(data.ElectricVoltage);
+      }
+      if (typeof data.CM113DisplayType != 'undefined') {
+        $("#owl113table #comboscm113type").val(data.CM113DisplayType);
+      }
      }
   });
 
