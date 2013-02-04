@@ -33,8 +33,21 @@ CWebServer::~CWebServer(void)
 
 void CWebServer::Do_Work()
 {
-	if (m_pWebEm)
-		m_pWebEm->Run();
+	while (1==1)
+	{
+		try
+		{
+			if (m_pWebEm)
+				m_pWebEm->Run();
+		}
+		catch(...)
+		{
+			std::cout << "WebServer stopped by exception, starting again...\n";
+			m_pWebEm->Stop();
+			continue;
+		}
+		break;
+	}
 
 	std::cout << "WebServer stopped...\n";
 }
