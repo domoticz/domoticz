@@ -688,7 +688,7 @@ function SetDimValue(idx, value)
 {
 	clearInterval($.setDimValue);
 	$.ajax({
-		 url: "json.htm?type=command&param=switchlight&idx=350&switchcmd=Set%20Level&level=" + value,
+		 url: "json.htm?type=command&param=switchlight&idx=" + idx + "&switchcmd=Set%20Level&level=" + value,
 		 async: false, 
 		 dataType: 'json'
 	});
