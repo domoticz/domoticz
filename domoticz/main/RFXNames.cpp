@@ -516,7 +516,7 @@ void GetLightStatus(
 				lstatus="On";
 				break;
 			case light2_sSetLevel:
-				sprintf(szTmp,"Set Level: %d", llevel);
+				sprintf(szTmp,"Set Level: %d %%", llevel);
 				if (sValue!="0")
 					lstatus=szTmp;
 				else
@@ -529,7 +529,7 @@ void GetLightStatus(
 				lstatus="Group On";
 				break;
 			case light2_sSetGroupLevel:
-				sprintf(szTmp,"Set Group Level: %d", atoi(sValue.c_str()));
+				sprintf(szTmp,"Set Group Level: %d %%", atoi(sValue.c_str()));
 				if (sValue!="0")
 					lstatus=szTmp;
 				else

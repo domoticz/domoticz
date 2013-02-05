@@ -685,6 +685,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				root["result"][ii]["HaveGroupCmd"]=bHaveGroupCmd;
 				root["result"][ii]["SwitchType"]="Security";
 				root["result"][ii]["SwitchTypeVal"]=0;
+				if (dSubType==sTypeKD101)
+					root["result"][ii]["SwitchTypeVal"]=STYPE_SMOKEDETECTOR;
 
 				root["result"][ii]["TypeImg"]="security";
 
