@@ -2,6 +2,7 @@ Version 1.0.9 (February xxh 2013)
 - Implemented OWL113 option to display in Ampere/Usage
 - Fixed Dimmer slider (had a hardcoded device index)
 - Fixed Edit Lights/Switches Smoke Detector type
+- Solved HTML checkbox 'ischecked' property duo upgrade to new JQuery
 
 Version 1.0.8 (February 3th 2013)
 - Fixed Hardware Enabled/Disabled option

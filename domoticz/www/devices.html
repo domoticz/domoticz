@@ -105,7 +105,7 @@ function RemoveDevice(idx)
 function InvertCheck()
 {
 	$('#devices input:checkbox').each(function(){
-		$(this).attr('checked', !$(this).attr('checked'));
+		$(this).prop('checked', !$(this).is(":checked"));
 	});
 }
 function DeleteMultipleDevices()
@@ -379,7 +379,7 @@ $(document).ready(function() {
                   "Add Device": function() {
                       var bValid = true;
                       bValid = bValid && checkLength( $("#dialog-addlightdevice #devicename"), 2, 100 );
-                      var bIsSubDevice=$("#dialog-addlightdevice #lighttable #how_2").attr('checked')?true:false;
+                      var bIsSubDevice=$("#dialog-addlightdevice #lighttable #how_2").is(":checked");
                       var MainDeviceIdx="";
                       if (bIsSubDevice)
                       {

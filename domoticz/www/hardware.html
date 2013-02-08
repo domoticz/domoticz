@@ -140,7 +140,7 @@ function DeleteHardware(idx)
 function GetSharedParameters()
 {
 	var shareparam="";
-	var bShared=$('#hardwarecontent #hardwareparamsshareenabled #shareenabled').attr('checked')?true:false;
+	var bShared=$('#hardwarecontent #hardwareparamsshareenabled #shareenabled').is(":checked");
 	shareparam+="&shared="+bShared;
 	var shareport=$('#hardwarecontent #hardwareparamssharedetails #shareport').val();
 	var shareusername=$('#hardwarecontent #hardwareparamssharedetails #shareusername').val();
@@ -193,7 +193,7 @@ function UpdateHardware(idx)
 		return;
 	}
 	
-	var bEnabled=$('#hardwarecontent #hardwareparamstable #enabled').attr('checked')?true:false;
+	var bEnabled=$('#hardwarecontent #hardwareparamstable #enabled').is(":checked");
 	
 	var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
 	if (text.indexOf("USB") >= 0)
@@ -303,7 +303,7 @@ function AddHardware()
 		return;
 	}
 	
-	var bEnabled=$('#hardwarecontent #hardwareparamstable #enabled').attr('checked')?true:false;
+	var bEnabled=$('#hardwarecontent #hardwareparamstable #enabled').is(":checked");
 	
 	var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
 	if (text.indexOf("USB") >= 0)
@@ -540,7 +540,7 @@ function UpdateHardwareParamControls()
 			$("#hardwarecontent #divremote").hide();
 			$("#hardwarecontent #divlogin").hide();
 		}
-		var bShared=$('#hardwarecontent #hardwareparamsshareenabled #shareenabled').attr('checked')?true:false;
+		var bShared=$('#hardwarecontent #hardwareparamsshareenabled #shareenabled').is(":checked");
 		if (bShared == true) {
 			$("#hardwarecontent #divsharedparam").show();
 		}

@@ -322,15 +322,15 @@ function ClearTimers()
 function GetTimerSettings()
 {
 	var tsettings = {};
-	tsettings.Active=$('#lightcontent #timerparamstable #enabled').attr('checked')?true:false;
+	tsettings.Active=$('#lightcontent #timerparamstable #enabled').is(":checked");
 	tsettings.timertype=$("#lightcontent #timerparamstable #combotype").val();
 	tsettings.hour=$("#lightcontent #timerparamstable #combotimehour").val();
 	tsettings.min=$("#lightcontent #timerparamstable #combotimemin").val();
 	tsettings.cmd=$("#lightcontent #timerparamstable #combocommand").val();
 	tsettings.days=0;
-	var everyday=$("#lightcontent #timerparamstable #when_1").attr('checked')?true:false;
-	var weekdays=$("#lightcontent #timerparamstable #when_2").attr('checked')?true:false;
-	var weekends=$("#lightcontent #timerparamstable #when_3").attr('checked')?true:false;
+	var everyday=$("#lightcontent #timerparamstable #when_1").is(":checked");
+	var weekdays=$("#lightcontent #timerparamstable #when_2").is(":checked");
+	var weekends=$("#lightcontent #timerparamstable #when_3").is(":checked");
 	if (everyday==true)
 		tsettings.days=0x80;
 	else if (weekdays==true)
@@ -338,19 +338,19 @@ function GetTimerSettings()
 	else if (weekends==true)
 		tsettings.days=0x200;
 	else {
-		if ($('#lightcontent #timerparamstable #ChkMon').attr('checked'))
+		if ($('#lightcontent #timerparamstable #ChkMon').is(":checked"))
 			tsettings.days|=0x01;
-		if ($('#lightcontent #timerparamstable #ChkTue').attr('checked'))
+		if ($('#lightcontent #timerparamstable #ChkTue').is(":checked"))
 			tsettings.days|=0x02;
-		if ($('#lightcontent #timerparamstable #ChkWed').attr('checked'))
+		if ($('#lightcontent #timerparamstable #ChkWed').is(":checked"))
 			tsettings.days|=0x04;
-		if ($('#lightcontent #timerparamstable #ChkThu').attr('checked'))
+		if ($('#lightcontent #timerparamstable #ChkThu').is(":checked"))
 			tsettings.days|=0x08;
-		if ($('#lightcontent #timerparamstable #ChkFri').attr('checked'))
+		if ($('#lightcontent #timerparamstable #ChkFri').is(":checked"))
 			tsettings.days|=0x10;
-		if ($('#lightcontent #timerparamstable #ChkSat').attr('checked'))
+		if ($('#lightcontent #timerparamstable #ChkSat').is(":checked"))
 			tsettings.days|=0x20;
-		if ($('#lightcontent #timerparamstable #ChkSun').attr('checked'))
+		if ($('#lightcontent #timerparamstable #ChkSun').is(":checked"))
 			tsettings.days|=0x40;
 	}
 	return tsettings;
@@ -1461,7 +1461,7 @@ function GetManualLightSettings(isTest)
 		mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightparams2 #combounitcode option:selected").val();
 	}
 
-	var bIsSubDevice=$("#dialog-addmanuallightdevice #howtable #how_2").attr('checked')?true:false;
+	var bIsSubDevice=$("#dialog-addmanuallightdevice #howtable #how_2").is(":checked");
 	var MainDeviceIdx="";
 	if (bIsSubDevice)
 	{
@@ -1543,7 +1543,7 @@ $(document).ready(function() {
               "Add Device": function() {
                   var bValid = true;
                   bValid = bValid && checkLength( $("#dialog-addlightdevice #devicename"), 2, 100 );
-									var bIsSubDevice=$("#dialog-addlightdevice #how_2").attr('checked')?true:false;
+									var bIsSubDevice=$("#dialog-addlightdevice #how_2").is(":checked");
 									var MainDeviceIdx="";
 									if (bIsSubDevice)
 									{
@@ -1678,11 +1678,12 @@ $(document).ready(function() {
           resizable: false,
           buttons: {
               "OK": function() {
-                  var IsChecked=($("#dialog-notificationlightdevice #enabled").attr('checked')=="checked");
+									var IsChecked=$('#dialog-notificationlightdevice #enabled').is(":checked");
                   $( this ).dialog( "close" );
                   var param="addnotification";
-                  if (IsChecked != true)
+                  if (IsChecked != true) {
 										param="deletenotification";
+									}
                   $.ajax({
                      url: "json.htm?type=command&param=" + param +"&ntype=light&idx=" + $.devIdx,
                      async: false, 
