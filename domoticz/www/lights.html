@@ -1298,6 +1298,11 @@ function ShowLights()
 								else
 									xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';
 					}
+					if (item.SwitchType == "Smoke Detector") {
+						if (item.Status == 'Panic') {
+							xhtm+='<a class="btnsmall-sel" onclick="ResetSecurityStatus(' + item.idx + ',\'Panic End\',ShowLights);">Reset</a> ';
+						}
+          }					
           if (item.Notifications == "true")
             xhtm+='<a class="btnsmall-sel" onclick="EditNotification(' + item.idx + ',\'' + item.Name + '\', true);">Notifications</a>';
           else

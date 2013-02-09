@@ -731,6 +731,7 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 						break;
 					}
 				}
+/* Smoke detectors are manualy reset!
 				else if (
 					(devType==pTypeSecurity1)&&
 					(subType==sTypeKD101)
@@ -739,6 +740,7 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 					cmd=sStatusPanicOff;
 					bAdd2DelayQueue=true;
 				}
+*/
 				if (bAdd2DelayQueue==true)
 				{
 					boost::lock_guard<boost::mutex> l(m_device_status_mutex);

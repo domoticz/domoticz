@@ -6,7 +6,7 @@ Version 1.0.9 (February xxh 2013)
 - P1 Smart meter, Gas value now send when changed, or every 5 minutes
 - Implemented Motion Detector
 - Implemented Smoke Detector Off image
-- Implemented 'Delay Off' for Motion and Smoke detectors
+- Implemented 'Delay Off' for Motion detectors
 - Fixed: Not displaying the 'timer' option for certain devices
 
 Version 1.0.8 (February 3th 2013)
