@@ -1233,7 +1233,7 @@ function ShowLights()
           xhtm+=
                 '\t      <td id="status">' + item.Status + '</td>\n' +
                 '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
-                '\t      <td id="type">' + item.Type + ', ' + item.SubType;
+                '\t      <td id="type">' + item.Type + ', ' + item.SubType + ', ' + item.SwitchType;
           if (item.SwitchType == "Dimmer") {
 						xhtm+='<br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-maxlevel="' + item.MaxDimLevel + '" data-svalue="10"></div>';
           }
@@ -1251,17 +1251,21 @@ function ShowLights()
           xhtm+=      
                 '<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#lightcontent\', \'ShowLights\');">Log</a> ' +
                 '<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +', ' + item.IsSubDevice +');">Edit</a> ';
-					if (item.Type != "Security") {
-          if (item.Timers == "true")
-            xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';
-          else
-            xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';
-					}
+	      if (item.SwitchType == "Smoke Detector") {
+          	xhtm+='<a class="btnsmall-sel" onclick="ResetSecurityStatus(' + item.idx + ',\'Panic End\',RefreshLights);">Reset</a> ';
+          }
+		  if (item.Type != "Security") {
+	          if (item.Timers == "true")
+    	        xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';
+        	  else
+            	xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';
+		  }
           if (item.Notifications == "true")
             xhtm+='<a class="btnsmall-sel" onclick="EditNotification(' + item.idx + ',\'' + item.Name + '\', true);">Notifications</a>';
           else
             xhtm+='<a class="btnsmall" onclick="EditNotification(' + item.idx + ',\'' + item.Name + '\', false);">Notifications</a>';
-          xhtm+=                
+
+          xhtm+=
                 '</td>\n' +
                 '\t    </tr>\n' +
                 '\t    </table>\n' +

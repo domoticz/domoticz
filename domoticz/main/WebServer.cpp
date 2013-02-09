@@ -683,11 +683,13 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				root["result"][ii]["HaveDimmer"]=bHaveDimmer;
 				root["result"][ii]["MaxDimLevel"]=maxDimLevel;
 				root["result"][ii]["HaveGroupCmd"]=bHaveGroupCmd;
-				root["result"][ii]["SwitchType"]="Security";
+                root["result"][ii]["SwitchType"]="Security";
 				root["result"][ii]["SwitchTypeVal"]=0;
-				if (dSubType==sTypeKD101)
+				if ((dSubType==sTypeKD101) || (switchtype == STYPE_SMOKEDETECTOR)) {
+                    // X10 security device manually set to smoke detector also
 					root["result"][ii]["SwitchTypeVal"]=STYPE_SMOKEDETECTOR;
-
+                    root["result"][ii]["SwitchType"] =Switch_Type_Desc(STYPE_SMOKEDETECTOR);
+                }
 				root["result"][ii]["TypeImg"]="security";
 
 				sprintf(szData,"%s", lstatus.c_str());
@@ -4277,7 +4279,41 @@ char * CWebServer::GetJSonPage()
 				root["title"]="MakeFavorite";
 			}
 		} //makefavorite
-		else if (cparam=="switchlight")
+
+        else if (cparam=="resetsecuritystatus")
+		{
+            std::string idx=m_pWebEm->FindValue("idx");
+			std::string switchcmd=m_pWebEm->FindValue("switchcmd");
+            int nValue=-1;
+            
+            // Change to generic *Security_Status_Desc lookup...
+            
+            if (switchcmd == "Panic End") {
+                nValue = 7;
+            }
+            
+            if (nValue>=0) {
+                
+                szQuery.clear();
+                szQuery.str("");
+                szQuery << "UPDATE DeviceStatus SET nValue=" << nValue << " WHERE (ID == " << idx << ")";
+        		result=m_pMain->m_sql.query(szQuery.str());
+                if (result.size()>0) {
+                    root["status"]="OK";
+                    root["title"]="SwitchLight";
+                }
+                else {
+                    goto exitjson;
+                }
+            }
+            else {
+				goto exitjson;
+            }
+            
+            
+            
+        }
+        else if (cparam=="switchlight")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
 			std::string switchcmd=m_pWebEm->FindValue("switchcmd");

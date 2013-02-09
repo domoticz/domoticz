@@ -86,6 +86,29 @@ function SwitchLight(idx,switchcmd, refreshfunction)
   });
 }
 
+function ResetSecurityStatus(idx,switchcmd, refreshfunction)
+{
+  clearInterval($.myglobals.refreshTimer);
+  ShowNotify('Switching ' + switchcmd);
+ 
+  $.ajax({
+     url: "json.htm?type=command&param=resetsecuritystatus&idx=" + idx + "&switchcmd=" + switchcmd,
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+      //wait 1 second
+      setTimeout(function() {
+        HideNotify();
+        refreshfunction();
+      }, 1000);
+     },
+     error: function(){
+        HideNotify();
+        alert('Problem sending switch command');
+     }     
+  });
+}
+
 function RefreshLightLogTable(idx)
 {
 	var mTable = $($.content + ' #lighttable');
