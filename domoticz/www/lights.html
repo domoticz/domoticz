@@ -1017,17 +1017,20 @@ function RefreshLights()
 									img='<img src="images/blindsopen48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
 							}
 						}
+						else if (item.SwitchType=="Smoke Detector") {
+								if (
+										(item.Status == 'Panic')||
+										(item.Status == 'On')
+									) {
+									img='<img src="images/smoke48on.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+								}
+								else {
+									img='<img src="images/smoke48off.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+								}
+						}
             else if (item.Type == "Security") {
 							if (item.SubType.indexOf('remote') > 0) {
 								img='<img src="images/remote48.png" height="48">';
-							}
-							else if (item.SubType.indexOf('smoke') > 0) {
-									if (item.Status == 'Panic') {
-										img='<img src="images/smoke48on.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
-									}
-									else {
-										img='<img src="images/smoke48off.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
-									}
 							}
 							else {
 									if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
@@ -1209,17 +1212,20 @@ function ShowLights()
                 xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
 						}
           }
+					else if (item.SwitchType=="Smoke Detector") {
+						if (
+								(item.Status == 'Panic')||
+								(item.Status == 'On')
+							 ) {
+								xhtm+='\t      <td id="img"><img src="images/smoke48on.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+						}
+						else {
+							xhtm+='\t      <td id="img"><img src="images/smoke48off.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+						}
+					}
 					else if (item.Type == "Security") {
 						if (item.SubType.indexOf('remote') > 0) {
 							xhtm+='\t      <td id="img"><img src="images/remote48.png" height="48"></td>\n';
-						}
-						else if (item.SubType.indexOf('smoke') > 0) {
-							if (item.Status == 'Panic') {
-								xhtm+='\t      <td id="img"><img src="images/smoke48on.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
-							}
-							else {
-								xhtm+='\t      <td id="img"><img src="images/smoke48off.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
-							}
 						}
 						else {
 							if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
@@ -1299,8 +1305,11 @@ function ShowLights()
 									xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';
 					}
 					if (item.SwitchType == "Smoke Detector") {
-						if (item.Status == 'Panic') {
-							xhtm+='<a class="btnsmall-sel" onclick="ResetSecurityStatus(' + item.idx + ',\'Panic End\',ShowLights);">Reset</a> ';
+						if (
+								(item.Status == 'Panic')||
+								(item.Status == 'On')
+							 ) {
+							xhtm+='<a class="btnsmall-sel" onclick="ResetSecurityStatus(' + item.idx + ',\'Normal\',ShowLights);">Reset</a> ';
 						}
           }					
           if (item.Notifications == "true")

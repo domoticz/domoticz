@@ -94,6 +94,17 @@ function RefreshFavorites()
 												status+='<img src="images/motionoff.png" height="16">';
 									}
 								}
+								else if (item.SwitchType == "Smoke Detector") {
+										if (
+												(item.Status == "Panic")||
+												(item.Status == "On")
+											 ) {
+												status+='<img src="images/smoke.png" height="16">';
+										}
+										else {
+												status+='<img src="images/smokeoff.png" height="16">';
+										}
+								}
 								else {
 									if (
 											(item.Status == 'On')||
@@ -168,6 +179,17 @@ function RefreshFavorites()
 									else {
 												img='<img src="images/motion48-off.png" height="40">';
 									}
+								}
+								else if (item.SwitchType == "Smoke Detector") {
+										if (
+												(item.Status == "Panic")||
+												(item.Status == "On")
+											 ) {
+												img='<img src="images/smoke48on.png" height="40">';
+										}
+										else {
+												img='<img src="images/smoke48off.png" height="40">';
+										}
 								}
 								else {
 									if (
@@ -384,7 +406,7 @@ function RefreshFavorites()
 									img='<img src="images/remote48.png" height="40">';
 								}
 								else if (item.SubType.indexOf('smoke') > 0) {
-										if (item.Status == 'Panic') {
+										if (item.Status == "Panic") {
 											img='<img src="images/smoke48on.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 										}
 										else {
@@ -666,6 +688,17 @@ function ShowFavorites()
 											status+='<img src="images/motionoff.png" height="16">';
 								}
 							}
+							else if (item.SwitchType == "Smoke Detector") {
+									if (
+											(item.Status == "Panic")||
+											(item.Status == "On")
+										 ) {
+											status+='<img src="images/smoke.png" height="16">';
+									}
+									else {
+											status+='<img src="images/smokeoff.png" height="16">';
+									}
+							}
 							else {
 								if (
 										(item.Status == 'On')||
@@ -755,6 +788,17 @@ function ShowFavorites()
 								else {
 											xhtm+='\t      <td id="img"><img src="images/motion48-off.png" height="40"></td>\n';
 								}
+							}
+							else if (item.SwitchType == "Smoke Detector") {
+									if (
+											(item.Status == "Panic")||
+											(item.Status == "On")
+										 ) {
+											xhtm+='\t      <td id="img"><img src="images/smoke48on.png" height="40"></td>\n';
+									}
+									else {
+											xhtm+='\t      <td id="img"><img src="images/smoke48off.png" height="40"></td>\n';
+									}
 							}
 							else {
 								if (
@@ -1127,7 +1171,7 @@ function ShowFavorites()
 								xhtm+='\t      <td id="img"><img src="images/remote48.png" height="40"></td>\n';
 							}
 							else if (item.SubType.indexOf('smoke') > 0) {
-									if (item.Status == 'Panic') {
+									if (item.Status == "Panic") {
 										xhtm+='\t      <td id="img"><img src="images/smoke48on.png" height="40"></td>\n';
 									}
 									else {

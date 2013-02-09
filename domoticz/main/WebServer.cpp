@@ -628,7 +628,11 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				else if (switchtype==STYPE_X10Siren)
 					root["result"][ii]["TypeImg"]="siren";
 				else if (switchtype==STYPE_SMOKEDETECTOR)
+				{
 					root["result"][ii]["TypeImg"]="smoke";
+					root["result"][ii]["SwitchTypeVal"]=STYPE_SMOKEDETECTOR;
+					root["result"][ii]["SwitchType"] =Switch_Type_Desc(STYPE_SMOKEDETECTOR);
+				}
 				else if (switchtype==STYPE_Contact)
 				{
 					root["result"][ii]["TypeImg"]="contact";
@@ -4295,8 +4299,12 @@ char * CWebServer::GetJSonPage()
             if (switchcmd == "Panic End") {
                 nValue = 7;
             }
+			else if (switchcmd == "Normal") {
+				nValue = 0;
+			}
             
-            if (nValue>=0) {
+            if (nValue>=0)
+			{
                 
                 szQuery.clear();
                 szQuery.str("");
@@ -4310,12 +4318,10 @@ char * CWebServer::GetJSonPage()
                     goto exitjson;
                 }
             }
-            else {
+            else 
+			{
 				goto exitjson;
             }
-            
-            
-            
         }
         else if (cparam=="switchlight")
 		{
