@@ -14,6 +14,34 @@ struct _tNotification
 	time_t LastSend;
 };
 
+struct _tDeviceStatus
+{
+	unsigned char _DelayTime;
+	int _HardwareID;
+	std::string _ID;
+	unsigned char _unit;
+	unsigned char _devType;
+	unsigned char _subType;
+	unsigned char _signallevel;
+	unsigned char _batterylevel;
+	int _nValue;
+	std::string _sValue;
+
+	_tDeviceStatus(const unsigned char DelayTime, const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue)
+	{
+		_DelayTime=DelayTime;
+		_HardwareID=HardwareID;
+		_ID=ID;
+		_unit=unit;
+		_devType=devType;
+		_subType=subType;
+		_signallevel=signallevel;
+		_batterylevel=batterylevel;
+		_nValue=nValue;
+		_sValue=sValue;
+	}
+};
+
 class CSQLHelper
 {
 public:
@@ -123,6 +151,13 @@ private:
 	CURLEncode m_urlencoder;
 	sqlite3 *m_dbase;
 	std::string m_dbase_name;
+
+	std::vector<_tDeviceStatus> m_device_status_queue;
+	boost::shared_ptr<boost::thread> m_device_status_thread;
+	boost::mutex m_device_status_mutex;
+	bool m_stoprequested;
+	bool StartThread();
+	void Do_Work();
 
 	void UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue);
 

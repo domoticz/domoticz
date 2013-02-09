@@ -81,6 +81,19 @@ function RefreshFavorites()
 												status+='<img src="images/dimmeroff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 								}
+								else if (item.SwitchType == "Motion Sensor") {
+									if (
+											(item.Status == 'On')||
+											(item.Status == 'Chime')||
+											(item.Status == 'Group On')||
+											(item.Status.indexOf('Set ') == 0)
+										 ) {
+												status+='<img src="images/motion.png" height="16">';
+									}
+									else {
+												status+='<img src="images/motionoff.png" height="16">';
+									}
+								}
 								else {
 									if (
 											(item.Status == 'On')||
@@ -141,6 +154,19 @@ function RefreshFavorites()
 									}
 									else {
 												img='<img src="images/dimmer48-off.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									}
+								}
+								else if (item.SwitchType == "Motion Sensor") {
+									if (
+											(item.Status == 'On')||
+											(item.Status == 'Chime')||
+											(item.Status == 'Group On')||
+											(item.Status.indexOf('Set ') == 0)
+										 ) {
+												img='<img src="images/motion48-on.png" height="40">';
+									}
+									else {
+												img='<img src="images/motion48-off.png" height="40">';
 									}
 								}
 								else {
@@ -356,6 +382,14 @@ function RefreshFavorites()
 								var img="";
 								if (item.SubType.indexOf('remote') > 0) {
 									img='<img src="images/remote48.png" height="40">';
+								}
+								else if (item.SubType.indexOf('smoke') > 0) {
+										if (item.Status == 'Panic') {
+											img='<img src="images/smoke48on.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+										}
+										else {
+											img='<img src="images/smoke48off.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+										}
 								}
 								else {
 									if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
@@ -619,6 +653,19 @@ function ShowFavorites()
 											status+='<img src="images/dimmeroff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 							}
+							else if (item.SwitchType == "Motion Sensor") {
+								if (
+										(item.Status == 'On')||
+										(item.Status == 'Chime')||
+										(item.Status == 'Group On')||
+										(item.Status.indexOf('Set ') == 0)
+									 ) {
+											status+='<img src="images/motion.png" height="16">';
+								}
+								else {
+											status+='<img src="images/motionoff.png" height="16">';
+								}
+							}
 							else {
 								if (
 										(item.Status == 'On')||
@@ -694,6 +741,19 @@ function ShowFavorites()
 								}
 								else {
 											xhtm+='\t      <td id="img"><img src="images/dimmer48-off.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								}
+							}
+							else if (item.SwitchType == "Motion Sensor") {
+								if (
+										(item.Status == 'On')||
+										(item.Status == 'Chime')||
+										(item.Status == 'Group On')||
+										(item.Status.indexOf('Set ') == 0)
+									 ) {
+											xhtm+='\t      <td id="img"><img src="images/motion48-on.png" height="40"></td>\n';
+								}
+								else {
+											xhtm+='\t      <td id="img"><img src="images/motion48-off.png" height="40"></td>\n';
 								}
 							}
 							else {
@@ -1065,6 +1125,14 @@ function ShowFavorites()
 										'\t      <td id="name">' + item.Name + '</td>\n';
 							if (item.SubType.indexOf('remote') > 0) {
 								xhtm+='\t      <td id="img"><img src="images/remote48.png" height="40"></td>\n';
+							}
+							else if (item.SubType.indexOf('smoke') > 0) {
+									if (item.Status == 'Panic') {
+										xhtm+='\t      <td id="img"><img src="images/smoke48on.png" height="40"></td>\n';
+									}
+									else {
+										xhtm+='\t      <td id="img"><img src="images/smoke48off.png" height="40"></td>\n';
+									}
 							}
 							else {
 								if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {

@@ -12,6 +12,7 @@ enum _eSwitchType
 	STYPE_SMOKEDETECTOR,
     STYPE_BlindsInverted,
 	STYPE_Dimmer,
+	STYPE_Motion,
 	STYPE_END
 };
 

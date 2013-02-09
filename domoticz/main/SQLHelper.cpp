@@ -217,11 +217,18 @@ CSQLHelper::CSQLHelper(void)
 	m_LastSwitchID="";
 	m_LastSwitchRowID=0;
 	m_dbase=NULL;
+	m_stoprequested=false;
 	SetDatabaseName("domoticz.db");
 }
 
 CSQLHelper::~CSQLHelper(void)
 {
+	if (m_device_status_thread!=NULL)
+	{
+		assert(m_device_status_thread);
+		m_stoprequested = true;
+		m_device_status_thread->join();
+	}
 	if (m_dbase!=NULL)
 	{
 		sqlite3_close(m_dbase);
@@ -317,7 +324,43 @@ bool CSQLHelper::OpenDatabase()
 		UpdatePreferencesVar("CM113DisplayType", 0);
 	}
 
+	//Start background thread
+	if (!StartThread())
+		return false;
+
 	return true;
+}
+
+bool CSQLHelper::StartThread()
+{
+	m_device_status_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CSQLHelper::Do_Work, this)));
+
+	return (m_device_status_thread!=NULL);
+}
+
+void CSQLHelper::Do_Work()
+{
+	while (!m_stoprequested)
+	{
+		//sleep 1 second
+		boost::this_thread::sleep(boost::posix_time::seconds(1));
+		if (m_device_status_queue.size()<1)
+			continue;
+		boost::lock_guard<boost::mutex> l(m_device_status_mutex);
+
+		std::vector<_tDeviceStatus>::iterator itt=m_device_status_queue.begin();
+		while (itt!=m_device_status_queue.end())
+		{
+			itt->_DelayTime--;
+			if (itt->_DelayTime<=0)
+			{
+				UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str());
+				itt=m_device_status_queue.erase(itt);
+			}
+			else
+				itt++;
+		}
+	}
 }
 
 void CSQLHelper::SetDatabaseName(const std::string DBName)
@@ -625,23 +668,81 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 		bool bHaveDimmer=false;
 		bool bHaveGroupCmd=false;
 		int maxDimLevel=0;
-		GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
-		if ((lstatus=="On")||(lstatus=="Group On")||(lstatus=="All On")||(lstatus=="Chime"))
-		{
-			std::vector<_tNotification> notifications=GetNotifications(ulID);
-			if (notifications.size()>0)
-			{
-				sprintf(szTmp,
-					"SELECT Name FROM DeviceStatus WHERE (ID = %llu)",
-					ulID);
-				result = query(szTmp);
-				if (result.size()>0)
-				{
-					std::vector<std::string> sd=result[0];
-					std::string msg=sd[0]+" pressed";
-					SendNotification("", m_urlencoder.URLEncode(msg));
 
-					TouchNotification(notifications[0].ID);
+		sprintf(szTmp,
+			"SELECT Name,SwitchType FROM DeviceStatus WHERE (ID = %llu)",
+			ulID);
+		result = query(szTmp);
+		if (result.size()>0)
+		{
+			std::vector<std::string> sd=result[0];
+			std::string Name=sd[0];
+			_eSwitchType switchtype=(_eSwitchType)atoi(sd[1].c_str());
+			GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+			if (
+				(lstatus=="On")||
+				(lstatus=="Group On")||
+				(lstatus=="All On")||
+				(lstatus=="Chime")||
+				(lstatus=="Motion")||
+				(lstatus=="Alarm")||
+				(lstatus=="Panic")||
+				(lstatus=="Light On")||
+				(lstatus=="Light 2 On")
+				)
+			{
+				std::vector<_tNotification> notifications=GetNotifications(ulID);
+				if (notifications.size()>0)
+				{
+					sprintf(szTmp,
+						"SELECT Name FROM DeviceStatus WHERE (ID = %llu)",
+						ulID);
+					result = query(szTmp);
+					if (result.size()>0)
+					{
+						std::vector<std::string> sd=result[0];
+						std::string msg=sd[0]+" pressed";
+						SendNotification("", m_urlencoder.URLEncode(msg));
+
+						TouchNotification(notifications[0].ID);
+					}
+				}
+				bool bAdd2DelayQueue=false;
+				int cmd=0;
+				if (switchtype==STYPE_Motion)
+				{
+					switch (devType)
+					{
+					case pTypeLighting1:
+						cmd=light1_sOff;
+						bAdd2DelayQueue=true;
+						break;
+					case pTypeLighting2:
+						cmd=light2_sOff;
+						bAdd2DelayQueue=true;
+						break;
+					case pTypeLighting3:
+						cmd=light3_sOff;
+						bAdd2DelayQueue=true;
+						break;
+					case pTypeLighting5:
+						cmd=light5_sOff;
+						bAdd2DelayQueue=true;
+						break;
+					}
+				}
+				else if (
+					(devType==pTypeSecurity1)&&
+					(subType==sTypeKD101)
+					)
+				{
+					cmd=sStatusPanicOff;
+					bAdd2DelayQueue=true;
+				}
+				if (bAdd2DelayQueue==true)
+				{
+					boost::lock_guard<boost::mutex> l(m_device_status_mutex);
+					m_device_status_queue.push_back(_tDeviceStatus(10,HardwareID,ID,unit,devType,subType,signallevel,batterylevel,cmd,sValue));
 				}
 			}
 		}

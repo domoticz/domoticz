@@ -663,6 +663,10 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				{
 					root["result"][ii]["TypeImg"]="dimmer";
 				}
+				else if (switchtype==STYPE_Motion)
+				{
+					root["result"][ii]["TypeImg"]="motion";
+				}
 				if (llevel!=0)
 					sprintf(szData,"%s, Level: %d %%", lstatus.c_str(), llevel);
 				else
@@ -685,13 +689,13 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				root["result"][ii]["HaveGroupCmd"]=bHaveGroupCmd;
                 root["result"][ii]["SwitchType"]="Security";
 				root["result"][ii]["SwitchTypeVal"]=0;
-				if ((dSubType==sTypeKD101) || (switchtype == STYPE_SMOKEDETECTOR)) {
-                    // X10 security device manually set to smoke detector also
-					root["result"][ii]["SwitchTypeVal"]=STYPE_SMOKEDETECTOR;
-                    root["result"][ii]["SwitchType"] =Switch_Type_Desc(STYPE_SMOKEDETECTOR);
-                }
 				root["result"][ii]["TypeImg"]="security";
-
+				if ((dSubType==sTypeKD101) || (switchtype == STYPE_SMOKEDETECTOR)) 
+				{
+					root["result"][ii]["SwitchTypeVal"]=STYPE_SMOKEDETECTOR;
+					root["result"][ii]["TypeImg"]="smoke";
+					root["result"][ii]["SwitchType"] =Switch_Type_Desc(STYPE_SMOKEDETECTOR);
+				}
 				sprintf(szData,"%s", lstatus.c_str());
 				root["result"][ii]["Data"]=szData;
 			}

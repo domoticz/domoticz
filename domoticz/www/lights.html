@@ -1022,7 +1022,12 @@ function RefreshLights()
 								img='<img src="images/remote48.png" height="48">';
 							}
 							else if (item.SubType.indexOf('smoke') > 0) {
-									img='<img src="images/smoke48on.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+									if (item.Status == 'Panic') {
+										img='<img src="images/smoke48on.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+									}
+									else {
+										img='<img src="images/smoke48off.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+									}
 							}
 							else {
 									if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
@@ -1044,6 +1049,19 @@ function RefreshLights()
 							}
 							else {
 											img='<img src="images/dimmer48-off.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+							}
+            }
+            else if (item.SwitchType == "Motion Sensor") {
+							if (
+									(item.Status == 'On')||
+									(item.Status == 'Chime')||
+									(item.Status == 'Group On')||
+									(item.Status.indexOf('Set ') == 0)
+								 ) {
+											img='<img src="images/motion48-on.png" height="48">';
+							}
+							else {
+											img='<img src="images/motion48-off.png" height="48">';
 							}
             }
 						else {
@@ -1193,7 +1211,12 @@ function ShowLights()
 							xhtm+='\t      <td id="img"><img src="images/remote48.png" height="48"></td>\n';
 						}
 						else if (item.SubType.indexOf('smoke') > 0) {
-							xhtm+='\t      <td id="img"><img src="images/smoke48on.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+							if (item.Status == 'Panic') {
+								xhtm+='\t      <td id="img"><img src="images/smoke48on.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+							}
+							else {
+								xhtm+='\t      <td id="img"><img src="images/smoke48off.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+							}
 						}
 						else {
 							if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
@@ -1215,6 +1238,19 @@ function ShowLights()
             }
             else {
                     xhtm+='\t      <td id="img"><img src="images/dimmer48-off.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+            }
+					}
+					else if (item.SwitchType == "Motion Sensor") {
+            if (
+                (item.Status == 'On')||
+                (item.Status == 'Chime')||
+                (item.Status == 'Group On')||
+                (item.Status.indexOf('Set ') == 0)
+               ) {
+                    xhtm+='\t      <td id="img"><img src="images/motion48-on.png" height="48"></td>\n';
+            }
+            else {
+                    xhtm+='\t      <td id="img"><img src="images/motion48-off.png" height="48"></td>\n';
             }
 					}
           else {
@@ -1251,15 +1287,12 @@ function ShowLights()
           xhtm+=      
                 '<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#lightcontent\', \'ShowLights\');">Log</a> ' +
                 '<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +', ' + item.IsSubDevice +');">Edit</a> ';
-	      if (item.SwitchType == "Smoke Detector") {
-          	xhtm+='<a class="btnsmall-sel" onclick="ResetSecurityStatus(' + item.idx + ',\'Panic End\',RefreshLights);">Reset</a> ';
-          }
-		  if (item.Type != "Security") {
-	          if (item.Timers == "true")
-    	        xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';
-        	  else
-            	xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';
-		  }
+					if (item.Type != "Security") {
+								if (item.Timers == "true")
+									xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';
+								else
+									xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';
+					}
           if (item.Notifications == "true")
             xhtm+='<a class="btnsmall-sel" onclick="EditNotification(' + item.idx + ',\'' + item.Name + '\', true);">Notifications</a>';
           else

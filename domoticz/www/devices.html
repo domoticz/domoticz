@@ -242,7 +242,7 @@ function ShowDevices(filter)
 											itemImage='<img src="images/lightbulboff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowDevices);" onmouseover="cursorhand()" onmouseout="cursordefault()">';
 							}
           }
-          if (TypeImg.indexOf("dimmer")==0) {
+          else if (TypeImg.indexOf("dimmer")==0) {
 							if (
 									(item.Status == 'On')||
 									(item.Status == 'Chime')||
@@ -253,6 +253,27 @@ function ShowDevices(filter)
 							}
 							else {
 											itemImage='<img src="images/dimmeroff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowDevices);" onmouseover="cursorhand()" onmouseout="cursordefault()">';
+							}
+          }
+          else if (TypeImg.indexOf("motion")==0) {
+							if (
+									(item.Status == 'On')||
+									(item.Status == 'Chime')||
+									(item.Status == 'Group On')||
+									(item.Status.indexOf('Set ') == 0)
+								 ) {
+											itemImage='<img src="images/motion.png">';
+							}
+							else {
+											itemImage='<img src="images/motionoff.png">';
+							}
+          }
+          else if (TypeImg.indexOf("smoke")==0) {
+							if (item.Status == 'Panic') {
+									itemImage='<img src="images/smoke.png">';
+							}
+							else {
+									itemImage='<img src="images/smokeoff.png">';
 							}
           }
           if (item.Used!=0) {
