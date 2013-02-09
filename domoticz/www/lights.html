@@ -1160,6 +1160,7 @@ function ShowLights()
             htmlcontent+='<div class="row divider">\n';
             bHaveAddedDevider=true;
           }
+          var bAddTimer=true;
           var xhtm=
                 '\t<div class="4u" id="' + item.idx + '">\n' +
                 '\t  <section>\n' +
@@ -1181,6 +1182,7 @@ function ShowLights()
           }
           else if (item.SwitchType == "Doorbell") {
             xhtm+='\t      <td id="img"><img src="images/door48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+            bAddTimer=false;
           }
           else if (item.SwitchType == "Contact") {
 						if (item.Status == 'Closed') {
@@ -1189,6 +1191,7 @@ function ShowLights()
 						else {
 							xhtm+='\t      <td id="img"><img src="images/contact48_open.png" height="48"></td>\n';
 						}
+						bAddTimer=false;
           }
           else if (item.SwitchType == "Blinds") {
 						if (item.Status == 'Closed') {
@@ -1226,6 +1229,7 @@ function ShowLights()
 								xhtm+='\t      <td id="img"><img src="images/security48.png" height="48"></td>\n';
 							}
 						}
+						bAddTimer=false;
 					}
 					else if (item.SwitchType == "Dimmer") {
             if (
@@ -1252,6 +1256,7 @@ function ShowLights()
             else {
                     xhtm+='\t      <td id="img"><img src="images/motion48-off.png" height="48"></td>\n';
             }
+            bAddTimer=false;
 					}
           else {
             if (
@@ -1287,7 +1292,7 @@ function ShowLights()
           xhtm+=      
                 '<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#lightcontent\', \'ShowLights\');">Log</a> ' +
                 '<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +', ' + item.IsSubDevice +');">Edit</a> ';
-					if (item.Type != "Security") {
+					if (bAddTimer == true) {
 								if (item.Timers == "true")
 									xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';
 								else

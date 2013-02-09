@@ -7,6 +7,7 @@ Version 1.0.9 (February xxh 2013)
 - Implemented Motion Detector
 - Implemented Smoke Detector Off image
 - Implemented 'Delay Off' for Motion and Smoke detectors
+- Fixed: Not displaying the 'timer' option for certain devices
 
 Version 1.0.8 (February 3th 2013)
 - Fixed Hardware Enabled/Disabled option
