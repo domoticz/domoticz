@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 80
+# ref 81
 
 CACHE:
 favicon.ico
@@ -125,6 +125,10 @@ images/lightbulboff.png
 images/lock_closed.png
 images/lock_open.png
 images/log.png
+images/motion.png
+images/motionoff.png
+images/motion48-on.png
+images/motion48-off.png
 images/next.png
 images/nofavorite.png
 images/off.png
@@ -147,6 +151,7 @@ images/siren-off.png
 images/siren-on.png
 images/siren.png
 images/smoke.png
+images/smokeoff.png
 images/smoke48off.png
 images/smoke48on.png
 images/sort_asc.png

@@ -104,6 +104,8 @@ void AsyncSerial::open(const std::string& devname, unsigned int baud_rate,
     pimpl->port.set_option(opt_flow);
     pimpl->port.set_option(opt_stop);
 
+	pimpl->io.reset();
+
     //This gives some work to the io_service before it is started
     pimpl->io.post(boost::bind(&AsyncSerial::doRead, this));
 
@@ -186,7 +188,7 @@ void AsyncSerial::readEnd(const boost::system::error_code& error,
         //In this case it is not a real error, so ignore
         if(isOpen())
         {
-			std::cout << "Serial Port closed!..." << std::endl;
+			std::cout << "Serial Port closed!... Error: " << error.message() << std::endl;
 			clearReadCallback();
 			close();
 	        doClose();

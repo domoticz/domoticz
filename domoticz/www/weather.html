@@ -1736,7 +1736,7 @@ function ShowWeathers()
   $('#modal').hide();
   $('#weathercontent').html(tophtm+htmlcontent);
   
-	if (!isiPhone()) {
+	if ($.myglobals.ismobile==false) {
 		$("#weathercontent .4u").draggable({
 				drag: function() {
 					clearInterval($.myglobals.refreshTimer);

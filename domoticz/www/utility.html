@@ -1450,7 +1450,7 @@ function ShowUtilities()
   $('#modal').hide();
   $('#utilitycontent').html(tophtm+htmlcontent);
 
-	if (!isiPhone()) {
+	if ($.myglobals.ismobile==false) {
 		$("#utilitycontent .4u").draggable({
 				drag: function() {
 					clearInterval($.myglobals.refreshTimer);

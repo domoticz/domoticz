@@ -8,6 +8,8 @@ Version 1.0.9 (February xxh 2013)
 - Implemented Smoke Detector Off image
 - Implemented 'Delay Off' for Motion detectors
 - Fixed: Not displaying the 'timer' option for certain devices
+- Fixed: 'Dimmer' on the dashboard on mobile devices
+- Implemented serial port auto reconnect option 
 
 Version 1.0.8 (February 3th 2013)
 - Fixed Hardware Enabled/Disabled option
@@ -25,7 +27,7 @@ Version 1.0.8 (February 3th 2013)
 - When setting switch level = 0, the switch is turned Off now
 - Setting a switch level is now done by setting the level to 0=Off, 1..xx for the level
 - New (Windows) command line argument (-nobrowser) do not start web browser
-- Implemented switchtype 'Dimmer' (not working on iPhone yet.. strangely enough)
+- Implemented switchtype 'Dimmer'
 
 Version 1.0.7 (January 18th 2013)
 - replaced all localtime function with localtime_r

@@ -405,12 +405,15 @@ function RefreshFavorites()
 								if (item.SubType.indexOf('remote') > 0) {
 									img='<img src="images/remote48.png" height="40">';
 								}
-								else if (item.SubType.indexOf('smoke') > 0) {
-										if (item.Status == "Panic") {
-											img='<img src="images/smoke48on.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+								else if (item.SwitchType == "Smoke Detector") {
+										if (
+												(item.Status == "Panic")||
+												(item.Status == "On")
+											 ) {
+												img='<img src="images/smoke48on.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 										}
 										else {
-											img='<img src="images/smoke48off.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+												img='<img src="images/smoke48off.png" title="Turn Alarm On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 										}
 								}
 								else {
@@ -556,6 +559,8 @@ function ShowFavorites()
   var jj=0;
   var bHaveAddedDevider = false;
 
+  $.myglobals.ismobile=( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) );
+
 	var htmlcontent = "";
 
   var sunRise="";
@@ -580,13 +585,13 @@ function ShowFavorites()
      async: false,
      dataType: 'json',
      success: function(data) {
-					var rowItems=3;
-					if (data.DashboardType==1) {
-						rowItems=4;
-					}
-					if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
-						rowItems=1000;
-					}
+			var rowItems=3;
+			if (data.DashboardType==1) {
+				rowItems=4;
+			}
+			if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+				rowItems=1000;
+			}
 
       if (typeof data.result != 'undefined') {
         //light devices
@@ -1170,12 +1175,15 @@ function ShowFavorites()
 							if (item.SubType.indexOf('remote') > 0) {
 								xhtm+='\t      <td id="img"><img src="images/remote48.png" height="40"></td>\n';
 							}
-							else if (item.SubType.indexOf('smoke') > 0) {
-									if (item.Status == "Panic") {
-										xhtm+='\t      <td id="img"><img src="images/smoke48on.png" height="40"></td>\n';
+							else if (item.SwitchType == "Smoke Detector") {
+									if (
+											(item.Status == "Panic")||
+											(item.Status == "On")
+										 ) {
+											xhtm+='\t      <td id="img"><img src="images/smoke48on.png" height="40"></td>\n';
 									}
 									else {
-										xhtm+='\t      <td id="img"><img src="images/smoke48off.png" height="40"></td>\n';
+											xhtm+='\t      <td id="img"><img src="images/smoke48off.png" height="40"></td>\n';
 									}
 							}
 							else {
@@ -1391,9 +1399,28 @@ function ShowFavorites()
   }
   $('#dashcontent').html(suntext+htmlcontent);
 
-	//$("#dashcontent #light_12 #name").html("Kerstman!");
+	//Create Dimmer Sliders
+	$('#dashcontent .dimslider').slider({
+		//Config
+		range: "min",
+		min: 0,
+		max: 16,
+		value: 5,
 
-	if (!isiPhone()) {
+		//Slider Events
+		create: function(event,ui ) {
+			$( this ).slider( "option", "max", $( this ).data('maxlevel'));
+			$( this ).slider( "value", $( this ).data('svalue') );
+		},
+		slide: function(event, ui) { //When the slider is sliding
+			clearInterval($.setDimValue);
+			var idx=$( this ).data('idx');
+			$.setDimValue = setInterval(function() { SetDimValue(idx,ui.value); }, 500);
+		}
+	});
+	ResizeDimSliders();
+
+	if ($.myglobals.ismobile==false) {
 		$("#dashcontent .4u").draggable({
 				drag: function() {
 					clearInterval($.myglobals.refreshTimer);
@@ -1452,26 +1479,6 @@ function ShowFavorites()
 					}
 				}
 		});
-		//Create Dimmer Sliders
-		$('.dimslider').slider({
-			//Config
-			range: "min",
-			min: 0,
-			max: 16,
-			value: 5,
-
-			//Slider Events
-			create: function(event,ui ) {
-				$( this ).slider( "option", "max", $( this ).data('maxlevel'));
-				$( this ).slider( "value", $( this ).data('svalue') );
-			},
-			slide: function(event, ui) { //When the slider is sliding
-				clearInterval($.setDimValue);
-				var idx=$( this ).data('idx');
-				$.setDimValue = setInterval(function() { SetDimValue(idx,ui.value); }, 500);
-			}
-		});
-		ResizeDimSliders();
 	}
   $.myglobals.refreshTimer = setInterval(RefreshFavorites, 10000);
 }

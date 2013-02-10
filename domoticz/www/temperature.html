@@ -991,7 +991,7 @@ function ShowTemps()
   $('#modal').hide();
   $('#tempcontent').html(tophtm+htmlcontent);
 
-	if (!isiPhone()) {
+	if ($.myglobals.ismobile==false) {
 		$("#tempcontent .4u").draggable({
 				drag: function() {
 					clearInterval($.myglobals.refreshTimer);

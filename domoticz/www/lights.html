@@ -1105,6 +1105,8 @@ function ShowLights()
   
   RefreshLightSwitchesComboArray();
   
+  $.myglobals.ismobile=( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) );
+  
   var htmlcontent = '';
   var bHaveAddedDevider = false;
 
@@ -1340,7 +1342,7 @@ function ShowLights()
   $('#modal').hide();
   $('#lightcontent').html(tophtm+htmlcontent);
   
-	if (!isiPhone()) {
+  if ($.myglobals.ismobile==false) {
 		$("#lightcontent .4u").draggable({
 				drag: function() {
 					clearInterval($.myglobals.refreshTimer);
