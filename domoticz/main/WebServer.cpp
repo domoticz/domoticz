@@ -4218,7 +4218,8 @@ char * CWebServer::GetJSonPage()
 				(dType!=pTypeLighting3)&&
 				(dType!=pTypeLighting4)&&
 				(dType!=pTypeLighting5)&&
-				(dType!=pTypeLighting6)
+				(dType!=pTypeLighting6)&&
+				(dType!=pTypeSecurity1)
 				)
 				goto exitjson; //no light device! we should not be here!
 

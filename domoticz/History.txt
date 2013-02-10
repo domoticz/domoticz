@@ -12,6 +12,7 @@ Version 1.0.9 (February xxh 2013)
 - Implemented serial port auto reconnect option 
 - Fixed: LightwaveRF dimmer value notation
 - Implemented dimmer timer support
+- Fixed: Now able to clear lightlog for security1 devices
 
 Version 1.0.8 (February 3th 2013)
 - Fixed Hardware Enabled/Disabled option
