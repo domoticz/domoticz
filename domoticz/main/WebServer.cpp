@@ -605,6 +605,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 
 				root["result"][ii]["Status"]=lstatus;
 				root["result"][ii]["Level"]=llevel;
+				root["result"][ii]["LevelInt"]=atoi(sValue.c_str());
 				root["result"][ii]["HaveDimmer"]=bHaveDimmer;
 				root["result"][ii]["MaxDimLevel"]=maxDimLevel;
 				root["result"][ii]["HaveGroupCmd"]=bHaveGroupCmd;
@@ -1620,12 +1621,16 @@ char * CWebServer::GetJSonPage()
 			{
 				std::vector<std::string> sd=*itt;
 
+				unsigned char iLevel=atoi(sd[5].c_str());
+				if (iLevel==0)
+					iLevel=100;
+
 				root["result"][ii]["idx"]=sd[0];
 				root["result"][ii]["Active"]=(atoi(sd[1].c_str())==0)?"false":"true";
 				root["result"][ii]["Time"]=sd[2].substr(0,5);
 				root["result"][ii]["Type"]=atoi(sd[3].c_str());
 				root["result"][ii]["Cmd"]=atoi(sd[4].c_str());
-				root["result"][ii]["Level"]=atoi(sd[5].c_str());
+				root["result"][ii]["Level"]=iLevel;
 				root["result"][ii]["Days"]=atoi(sd[6].c_str());
 				ii++;
 			}
@@ -4104,6 +4109,7 @@ char * CWebServer::GetJSonPage()
 			std::string smin=m_pWebEm->FindValue("min");
 			std::string scmd=m_pWebEm->FindValue("command");
 			std::string sdays=m_pWebEm->FindValue("days");
+			std::string slevel=m_pWebEm->FindValue("level");	//in percentage
 			if (
 				(idx=="")||
 				(active=="")||
@@ -4119,6 +4125,7 @@ char * CWebServer::GetJSonPage()
 			unsigned char icmd = atoi(scmd.c_str());
 			unsigned char iTimerType=atoi(stimertype.c_str());
 			int days=atoi(sdays.c_str());
+			unsigned char level=atoi(slevel.c_str());
 			sprintf(szData,"%02d:%02d",hour,min);
 			root["status"]="OK";
 			root["title"]="AddTimer";
@@ -4129,7 +4136,7 @@ char * CWebServer::GetJSonPage()
 				szData,
 				iTimerType,
 				icmd,
-				0,
+				level,
 				days
 				);
 			result=m_pMain->m_sql.query(szTmp);
@@ -4144,6 +4151,7 @@ char * CWebServer::GetJSonPage()
 			std::string smin=m_pWebEm->FindValue("min");
 			std::string scmd=m_pWebEm->FindValue("command");
 			std::string sdays=m_pWebEm->FindValue("days");
+			std::string slevel=m_pWebEm->FindValue("level");	//in percentage
 			if (
 				(idx=="")||
 				(active=="")||
@@ -4159,6 +4167,7 @@ char * CWebServer::GetJSonPage()
 			unsigned char icmd = atoi(scmd.c_str());
 			unsigned char iTimerType=atoi(stimertype.c_str());
 			int days=atoi(sdays.c_str());
+			unsigned char level=atoi(slevel.c_str());
 			sprintf(szData,"%02d:%02d",hour,min);
 			root["status"]="OK";
 			root["title"]="AddTimer";
@@ -4168,7 +4177,7 @@ char * CWebServer::GetJSonPage()
 				szData,
 				iTimerType,
 				icmd,
-				0,
+				level,
 				days,
 				idx.c_str()
 				);

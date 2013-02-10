@@ -241,11 +241,29 @@
 				</td>
 			</tr>
 			<tr>
-				<td align="right" style="width:80px"><label for="name">Command:</label></td>
-				<td><select id="combocommand" style="width:50px" class="combobox ui-corner-all">
-						<option value="0">On</option>
-						<option value="1">Off</option>
-						</select>
+				<td align="right" style="width:80px"><label for="combocommand">Command:</label></td>
+				<td>
+					<select id="combocommand" style="width:50px" class="combobox ui-corner-all">
+					<option value="0">On</option>
+					<option value="1">Off</option>
+					</select>
+				</td>
+			</tr>
+			<tr id="LevelDiv">
+				<td align="right" style="width:80px"><label for="combolevel">Level:</label></td>
+				<td>
+					<select id="combolevel" style="width:70px" class="combobox ui-corner-all">
+					<option value="10">10%</option>
+					<option value="20">20%</option>
+					<option value="30">30%</option>
+					<option value="40">40%</option>
+					<option value="50">50%</option>
+					<option value="60">60%</option>
+					<option value="70">70%</option>
+					<option value="80">80%</option>
+					<option value="90">90%</option>
+					<option value="100">100%</option>
+					</select>
 				</td>
 			</tr>
 			<tr><td></td></tr>
@@ -322,6 +340,7 @@ function ClearTimers()
 function GetTimerSettings()
 {
 	var tsettings = {};
+	tsettings.level=100;
 	tsettings.Active=$('#lightcontent #timerparamstable #enabled').is(":checked");
 	tsettings.timertype=$("#lightcontent #timerparamstable #combotype").val();
 	tsettings.hour=$("#lightcontent #timerparamstable #combotimehour").val();
@@ -353,6 +372,12 @@ function GetTimerSettings()
 		if ($('#lightcontent #timerparamstable #ChkSun').is(":checked"))
 			tsettings.days|=0x40;
 	}
+	if (tsettings.cmd==0)
+	{
+		if ($.isDimmer) {
+			tsettings.level=$("#lightcontent #timerparamstable #combolevel").val();
+		}
+	}
 	return tsettings;
 }
 
@@ -371,6 +396,7 @@ function UpdateTimer(idx)
 					"&hour=" + tsettings.hour +
 					"&min=" + tsettings.min +
 					"&command=" + tsettings.cmd +
+					"&level=" + tsettings.level +
 					"&days=" + tsettings.days,
 		 async: false, 
 		 dataType: 'json',
@@ -399,6 +425,7 @@ function AddTimer()
 					"&hour=" + tsettings.hour +
 					"&min=" + tsettings.min +
 					"&command=" + tsettings.cmd +
+					"&level=" + tsettings.level +
 					"&days=" + tsettings.days,
 		 async: false, 
 		 dataType: 'json',
@@ -453,9 +480,14 @@ function RefreshTimerTable(idx)
 					if (item.Active == "true")
 						active="Yes";
 					var Command="On";
-					if (item.Cmd == 1)
+					if (item.Cmd == 1) {
 						Command="Off";
-						
+					}
+					var tCommand=Command;
+					if ((Command=="On") && ($.isDimmer)) {
+						tCommand+=" (" + item.Level + "%)";
+					}
+					
 					var DayStr = "";
 					var dayflags = parseInt(item.Days);
 					if (dayflags & 0x80)
@@ -497,10 +529,12 @@ function RefreshTimerTable(idx)
 						
           var addId = oTable.fnAddData( {
 								"DT_RowId": item.idx,
+								"Command": Command,
+								"Level": item.Level,
                 "0": active,
 								"1": $.myglobals.TimerTypesStr[item.Type],
 								"2": item.Time,
-								"3": Command,
+								"3": tCommand,
 								"4": DayStr
 							} );
         });
@@ -528,7 +562,10 @@ function RefreshTimerTable(idx)
 										$("#lightcontent #timerparamstable #combotype").val(jQuery.inArray(data["1"], $.myglobals.TimerTypesStr));
 										$("#lightcontent #timerparamstable #combotimehour").val(parseInt(data["2"].substring(0,2)));
 										$("#lightcontent #timerparamstable #combotimemin").val(parseInt(data["2"].substring(3,5)));
-										$("#lightcontent #timerparamstable #combocommand").val(jQuery.inArray(data["3"], $.myglobals.CommandStr));
+										$("#lightcontent #timerparamstable #combocommand").val(jQuery.inArray(data["Command"], $.myglobals.CommandStr));
+										if ($.isDimmer) {
+											$("#lightcontent #timerparamstable #combolevel").val(data["Level"]);
+										}
 										
 										var disableDays=false;
 										if (data["4"]=="Everyday") {
@@ -558,11 +595,12 @@ function RefreshTimerTable(idx)
   $('#modal').hide();
 }
 
-function ShowTimers(id,name)
+function ShowTimers(id,name, isdimmer)
 {
   clearInterval($.myglobals.refreshTimer);
   $.devIdx=id;
-
+  $.isDimmer=isdimmer;
+  
 	var oTable;
 	
 	$('#modal').show();
@@ -590,7 +628,7 @@ function ShowTimers(id,name)
   
   htmlcontent+=$('#edittimers').html();
   $('#lightcontent').html(GetBackbuttonHTMLTable('ShowLights')+htmlcontent);
- 
+
   oTable = $('#timertable').dataTable( {
                   "sDom": '<"H"lfrC>t<"F"ip>',
                   "oTableTools": {
@@ -630,6 +668,29 @@ function ShowTimers(id,name)
   $("#lightcontent #timerparamstable #when_4").click(function() {
 		EnableDisableDays("",false);
 	});
+
+  $("#lightcontent #timerparamstable #combocommand").change(function() {
+		var cval=$("#lightcontent #timerparamstable #combocommand").val();
+		var bShowLevel=false;
+		if ($.isDimmer) {
+			if (cval==0) {
+				bShowLevel=true;
+			}
+		}
+		if (bShowLevel==true) {
+			$("#lightcontent #LevelDiv").show();
+		}
+		else {
+			$("#lightcontent #LevelDiv").hide();
+		}
+	});
+
+	if ($.isDimmer) {
+		$("#lightcontent #LevelDiv").show();
+	}
+	else {
+		$("#lightcontent #LevelDiv").hide();
+	}
   
   $('#modal').hide();
   RefreshTimerTable(id);
@@ -1166,6 +1227,7 @@ function ShowLights()
             bHaveAddedDevider=true;
           }
           var bAddTimer=true;
+          var bIsDimmer=false;
           var xhtm=
                 '\t<div class="4u" id="' + item.idx + '">\n' +
                 '\t  <section>\n' +
@@ -1240,6 +1302,7 @@ function ShowLights()
 						bAddTimer=false;
 					}
 					else if (item.SwitchType == "Dimmer") {
+						bIsDimmer=true;
             if (
                 (item.Status == 'On')||
                 (item.Status == 'Chime')||
@@ -1284,7 +1347,7 @@ function ShowLights()
                 '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
                 '\t      <td id="type">' + item.Type + ', ' + item.SubType + ', ' + item.SwitchType;
           if (item.SwitchType == "Dimmer") {
-						xhtm+='<br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-maxlevel="' + item.MaxDimLevel + '" data-svalue="10"></div>';
+						xhtm+='<br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-maxlevel="' + item.MaxDimLevel + '" data-svalue="' + item.LevelInt + '"></div>';
           }
 					xhtm+=
 								'</td>\n' +
@@ -1301,10 +1364,12 @@ function ShowLights()
                 '<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#lightcontent\', \'ShowLights\');">Log</a> ' +
                 '<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +', ' + item.IsSubDevice +');">Edit</a> ';
 					if (bAddTimer == true) {
-								if (item.Timers == "true")
-									xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';
-								else
-									xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';
+								if (item.Timers == "true") {
+									xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',' + bIsDimmer + ');">Timers</a> ';
+								}
+								else {
+									xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',' + bIsDimmer + ');">Timers</a> ';
+								}
 					}
 					if (item.SwitchType == "Smoke Detector") {
 						if (

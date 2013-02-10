@@ -2285,9 +2285,9 @@ void MainWorker::decode_Lighting5(const int HwdID, const tRBUF *pResponse)
 	std::string ID = szTmp;
 	unsigned char Unit=pResponse->LIGHTING5.unitcode;
 	unsigned char cmnd=pResponse->LIGHTING5.cmnd;
-	float level=float(pResponse->LIGHTING5.level) * 3.2f;
+	float flevel=(100.0f/31.0f)*float(pResponse->LIGHTING5.level);
 	unsigned char SignalLevel=pResponse->LIGHTING5.rssi;
-	sprintf(szTmp,"%.1f",level);
+	sprintf(szTmp,"%d",pResponse->LIGHTING5.level);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp);
 
 	if (m_verboselevel == EVBL_ALL)
@@ -2348,7 +2348,7 @@ void MainWorker::decode_Lighting5(const int HwdID, const tRBUF *pResponse)
 				WriteMessage("Open inline relay");
 				break;
 			case light5_sSetLevel:
-				sprintf(szTmp,"Set dim level to: %.2f %%" , level);
+				sprintf(szTmp,"Set dim level to: %.2f %%" , flevel);
 				WriteMessage(szTmp);
 				break;
 			default:

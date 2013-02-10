@@ -541,13 +541,13 @@ void GetLightStatus(
 		}
 		break;
 	case pTypeLighting5:
-		llevel=int((100.0f/15.0f)*atof(sValue.c_str()));
+		llevel=int((100.0f/31.0f)*atof(sValue.c_str()));
 		switch (dSubType)
 		{
 		case sTypeLightwaveRF:
 			bHaveGroupCmd=true;
 			bHaveDimmer=true;
-			maxDimLevel=16;
+			maxDimLevel=32;
 			switch (nValue)
 			{
 			case light5_sOff:
