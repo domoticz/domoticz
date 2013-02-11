@@ -1576,6 +1576,7 @@ void MainWorker::decode_TempHum(const int HwdID, const tRBUF *pResponse)
 	case sTypeTH4:
 	case sTypeTH6:
 	case sTypeTH8:
+	case sTypeTH10:
 		Unit = pResponse->TEMP_HUM.id2;
 		break;
 	case sTypeTH5:
@@ -1669,6 +1670,11 @@ void MainWorker::decode_TempHum(const int HwdID, const tRBUF *pResponse)
 			break;
 		case sTypeTH9:
 			WriteMessage("subtype       = TH9 - Viking 02038, 02035 (02035 has no humidity)");
+			break;
+		case sTypeTH10:
+			WriteMessage("subtype       = TH10 - Rubicson/IW008T/TX95");
+			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);
+			WriteMessage(szTmp);
 			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->TEMP_HUM.packettype, pResponse->TEMP_HUM.subtype);
@@ -2625,6 +2631,12 @@ void MainWorker::decode_BLINDS1(const int HwdID, const tRBUF *pResponse)
 	case sTypeBlindsT3:
 		WriteMessage("subtype       = A-OK AC114");
 		break;
+	case sTypeBlindsT4:
+		WriteMessage("subtype       = RAEX");
+		break;
+	case sTypeBlindsT5:
+		WriteMessage("subtype       = Media Mount");
+		break;
 	default:
 		sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->BLINDS1.packettype, pResponse->BLINDS1.subtype);
 		WriteMessage(szTmp);
@@ -2662,6 +2674,25 @@ void MainWorker::decode_BLINDS1(const int HwdID, const tRBUF *pResponse)
 		break;
 	case blinds_sLimit:
 		WriteMessage("Set Limit");
+		if (pResponse->BLINDS1.subtype == sTypeBlindsT4)
+			WriteMessage("Set Upper Limit");
+		else
+			WriteMessage("Set Limit");
+		break;
+	case blinds_slowerLimit:
+		WriteMessage("Set Lower Limit");
+		break;
+	case blinds_sDeleteLimits:
+		WriteMessage("Delete Limits");
+		break;
+	case blinds_sChangeDirection:
+		WriteMessage("Change Direction");
+		break;
+	case blinds_sLeft:
+		WriteMessage("Left");
+		break;
+	case blinds_sRight:
+		WriteMessage("Right");
 		break;
 	default:
 		WriteMessage("UNKNOWN");

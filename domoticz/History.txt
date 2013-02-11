@@ -13,6 +13,8 @@ Version 1.0.9 (February xxh 2013)
 - Fixed: LightwaveRF dimmer value notation
 - Implemented dimmer timer support
 - Fixed: Now able to clear lightlog for security1 devices
+- Implemented temp_hum Rubicson/IW008T/TX95
+- Implemented Latest RFXCOM SDK
 
 Version 1.0.8 (February 3th 2013)
 - Fixed Hardware Enabled/Disabled option

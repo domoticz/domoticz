@@ -21,6 +21,9 @@
 // portions of this Software.
 //-----------------------------------------------------------------------------
 
+//SDK version 6.02
+//	sTypeTH10 0xA   //Rubicson added
+//
 //SDK version 6.01
 //  Copyright message updated
 //
@@ -300,6 +303,7 @@
 #define sTypeBlindsT2 0x2	//A-OK RF01
 #define sTypeBlindsT3 0x3	//A-OK AC114
 #define sTypeBlindsT4 0x4	//RAEX YR1326
+#define sTypeBlindsT5 0x5	//Media Mount
 #define blinds_sOpen 0x0
 #define blinds_sClose 0x1
 #define blinds_sStop 0x2
@@ -445,6 +449,7 @@
 #define sTypeTH7 0x7  //TFA TS34C, Cresta
 #define sTypeTH8 0x8  //WT450H
 #define sTypeTH9 0x9  //Viking 02035,02038 (02035 has no humidity)
+#define sTypeTH10 0xA   //Rubicson
 
 //types for barometric
 #define pTypeBARO 0x53

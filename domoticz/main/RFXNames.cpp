@@ -307,6 +307,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeTEMP_HUM, sTypeTH7, "Cresta, TFA TS34C" },
 		{ pTypeTEMP_HUM, sTypeTH8, "WT450H" },
 		{ pTypeTEMP_HUM, sTypeTH9, "Viking 02035, 02038" },
+		{ pTypeTEMP_HUM, sTypeTH10, "Rubicson/IW008T/TX95" },
 
 		{ pTypeTEMP_HUM_BARO, sTypeTHB1, "THB1 - BTHR918" },
 		{ pTypeTEMP_HUM_BARO, sTypeTHB2, "THB2 - BTHR918N, BTHR968" },
@@ -358,6 +359,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeBlinds, sTypeBlindsT1, "Hasta old" },
 		{ pTypeBlinds, sTypeBlindsT2, "A-OK RF01" },
 		{ pTypeBlinds, sTypeBlindsT3, "A-OK AC114" },
+		{ pTypeBlinds, sTypeBlindsT4, "RAEX" },
+		{ pTypeBlinds, sTypeBlindsT5, "Media Mount" },
 
 		{ pTypeSecurity1, sTypeSecX10, "X10 security" },
 		{ pTypeSecurity1, sTypeSecX10M, "X10 security motion" },
