@@ -1890,10 +1890,11 @@ void CSQLHelper::UpdateMeter()
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
 
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d)",
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d)",
 		pTypeRFXMeter,
 		pTypeP1Gas,
-		pTypeYouLess
+		pTypeYouLess,
+		pTypeENERGY
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -1918,6 +1919,16 @@ void CSQLHelper::UpdateMeter()
 				if (splitresults.size()<2)
 					continue;
 				sValue=splitresults[0];
+			}
+			else if (dType==pTypeENERGY)
+			{
+				std::vector<std::string> splitresults;
+				StringSplit(sValue, ";", splitresults);
+				if (splitresults.size()<2)
+					continue;
+				double fValue=atof(splitresults[1].c_str())*100;
+				sprintf_s(szTmp,"%.0f",fValue);
+				sValue=szTmp;
 			}
 
 			unsigned long long MeterValue;
