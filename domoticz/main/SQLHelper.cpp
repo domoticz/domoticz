@@ -1927,7 +1927,7 @@ void CSQLHelper::UpdateMeter()
 				if (splitresults.size()<2)
 					continue;
 				double fValue=atof(splitresults[1].c_str())*100;
-				sprintf_s(szTmp,"%.0f",fValue);
+				sprintf(szTmp,"%.0f",fValue);
 				sValue=szTmp;
 			}
 
