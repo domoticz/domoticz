@@ -98,11 +98,9 @@
           <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
         <tr>
           <td align="right"><label for="switchtype">Type: </label></td>
-          <td><select id="comboswitchtype" style="width:150px" class="combobox ui-corner-all">
-						<option value="0">On / Off</option>
-						<option value="1">Doorbell</option>
-						<option value="4">Siren</option>
-          </select></td>
+					<td><select id="comboswitchtype" style="width:150px" class="combobox ui-corner-all">
+						<!--#embed switchtypes -->
+					</select></td>
 		    </tr>
 		    <tr>
           <td align="right"><label>Type: </label></td>
@@ -1435,7 +1433,7 @@ function ShowLights()
 	$('#lightcontent .dimslider').slider({
 		//Config
 		range: "min",
-		min: 0,
+		min: 1,
 		max: 16,
 		value: 5,
 
@@ -1446,7 +1444,33 @@ function ShowLights()
 		},
 		slide: function(event, ui) { //When the slider is sliding
 			clearInterval($.setDimValue);
+			var maxValue=$( this ).slider( "option", "max");
+			var fPercentage=0;
+			if (ui.value!=1) {
+				fPercentage=parseInt((100.0/(maxValue-1))*((ui.value-1)));
+			}
 			var idx=$( this ).data('idx');
+			id="#lightcontent #" + idx;
+			var obj=$(id);
+			if (typeof obj != 'undefined') {
+				var img="";
+				var status="";
+				if (fPercentage==0)
+				{
+					img='<img src="images/dimmer48-off.png" title="Turn On" onclick="SwitchLight(' + idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+					status="Off";
+				}
+				else {
+					img='<img src="images/dimmer48-on.png" title="Turn Off" onclick="SwitchLight(' + idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+					status="Set Level: " + fPercentage + " %";
+				}
+				if ($(id + " #img").html()!=img) {
+					$(id + " #img").html(img);
+				}
+				if ($(id + " #status").html()!=status) {
+					$(id + " #status").html(status);
+				}
+			}
 			$.setDimValue = setInterval(function() { SetDimValue(idx,ui.value); }, 500);
 		}
 	});

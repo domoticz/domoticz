@@ -592,6 +592,7 @@ function ShowFavorites()
 			if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
 				rowItems=1000;
 			}
+			$.myglobals.DashboardType=data.DashboardType;
 
       if (typeof data.result != 'undefined') {
         //light devices
@@ -656,7 +657,7 @@ function ShowFavorites()
 										status+='<img src="images/blinds48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 								else {
-										status+='<img src="images/blind.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+										status+='<img src="images/blinds.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 							}
 							else if (item.SwitchType == "Blinds Inverted") {
@@ -664,7 +665,7 @@ function ShowFavorites()
 										status+='<img src="images/blinds48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 								else {
-										status+='<img src="images/blind.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+										status+='<img src="images/blinds.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 							}               
 							else if (item.SwitchType == "Dimmer") {
@@ -1403,7 +1404,7 @@ function ShowFavorites()
 	$('#dashcontent .dimslider').slider({
 		//Config
 		range: "min",
-		min: 0,
+		min: 1,
 		max: 16,
 		value: 5,
 
@@ -1414,7 +1415,49 @@ function ShowFavorites()
 		},
 		slide: function(event, ui) { //When the slider is sliding
 			clearInterval($.setDimValue);
+			var maxValue=$( this ).slider( "option", "max");
+			var fPercentage=0;
+			if (ui.value!=1) {
+				fPercentage=parseInt((100.0/(maxValue-1))*((ui.value-1)));
+			}
 			var idx=$( this ).data('idx');
+			id="#dashcontent #light_" + idx;
+			var obj=$(id);
+			if (typeof obj != 'undefined') {
+				var img="";
+				var status="";
+				if (($.myglobals.DashboardType==2)||($.myglobals.ismobile==true)) {
+					if (fPercentage==0)
+					{
+						status="Off ";
+						status+='<img src="images/dimmeroff.png" title="Turn On" onclick="SwitchLight(' + idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+					}
+					else {
+						status="Set Level: " + fPercentage + " % ";
+						status+='<img src="images/dimmer.png" title="Turn Off" onclick="SwitchLight(' + idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+					}
+					if ($(id + " #status").html()!=status) {
+						$(id + " #status").html(status);
+					}
+				}
+				else {
+					if (fPercentage==0)
+					{
+						img='<img src="images/dimmer48-off.png" title="Turn On" onclick="SwitchLight(' + idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+						status="Off";
+					}
+					else {
+						img='<img src="images/dimmer48-on.png" title="Turn Off" onclick="SwitchLight(' + idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+						status="Set Level: " + fPercentage + " %";
+					}
+					if ($(id + " #img").html()!=img) {
+						$(id + " #img").html(img);
+					}
+					if ($(id + " #status").html()!=status) {
+						$(id + " #status").html(status);
+					}
+				}
+			}
 			$.setDimValue = setInterval(function() { SetDimValue(idx,ui.value); }, 500);
 		}
 	});
