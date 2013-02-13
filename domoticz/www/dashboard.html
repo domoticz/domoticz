@@ -635,7 +635,7 @@ function ShowFavorites()
 									'\t    <tr id="light_' + item.idx +'">\n' +
 									'\t      <td id="name">' + item.Name;
 							if (item.SwitchType == "Dimmer") {
-								xhtm+='<br><div style="margin-top: 0.2em;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-maxlevel="' + item.MaxDimLevel + '" data-svalue="10"></div><br>';
+								xhtm+='<br><div style="margin-top: 0.2em;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-maxlevel="' + item.MaxDimLevel + '" data-svalue="' + item.LevelInt + '"></div><br>';
 							}
 							xhtm+=
 									 '</td>\n';
@@ -827,7 +827,7 @@ function ShowFavorites()
 										'\t      <td id="status">' + item.Status + '</td>\n' +
 										'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n';
 							if (item.SwitchType == "Dimmer") {
-								xhtm+='<td><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-maxlevel="' + item.MaxDimLevel + '" data-svalue="10"></div></td>';
+								xhtm+='<td><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-maxlevel="' + item.MaxDimLevel + '" data-svalue="' + item.LevelInt + '"></div></td>';
 							}
 							xhtm+=
 										'\t    </tr>\n' +
