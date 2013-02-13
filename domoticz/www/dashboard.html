@@ -69,17 +69,19 @@ function RefreshFavorites()
 									}
 								}
 								else if (item.SwitchType == "Dimmer") {
+									var img="";
 									if (
 											(item.Status == 'On')||
 											(item.Status == 'Chime')||
 											(item.Status == 'Group On')||
 											(item.Status.indexOf('Set ') == 0)
 										 ) {
-												status+='<img src="images/dimmer.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+												img='<img src="images/dimmer.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 									else {
-												status+='<img src="images/dimmeroff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+												img='<img src="images/dimmeroff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
+									status="<label id=\"statustext\">" + item.Status + "</label> <label id=\"dimimage\">" + img + "</label>";
 								}
 								else if (item.SwitchType == "Motion Sensor") {
 									if (
@@ -669,17 +671,19 @@ function ShowFavorites()
 								}
 							}               
 							else if (item.SwitchType == "Dimmer") {
+								var img="";
 								if (
 										(item.Status == 'On')||
 										(item.Status == 'Chime')||
 										(item.Status == 'Group On')||
 										(item.Status.indexOf('Set ') == 0)
 									 ) {
-											status+='<img src="images/dimmer.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+											img='<img src="images/dimmer.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 								else {
-											status+='<img src="images/dimmeroff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+											img='<img src="images/dimmeroff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
+								status="<label id=\"statustext\">" + item.Status + "</label> <label id=\"dimimage\">" + img + "</label>";
 							}
 							else if (item.SwitchType == "Motion Sensor") {
 								if (
@@ -1430,14 +1434,17 @@ function ShowFavorites()
 					if (fPercentage==0)
 					{
 						status="Off ";
-						status+='<img src="images/dimmeroff.png" title="Turn On" onclick="SwitchLight(' + idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+						img='<img src="images/dimmeroff.png" title="Turn On" onclick="SwitchLight(' + idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 					}
 					else {
 						status="Set Level: " + fPercentage + " % ";
-						status+='<img src="images/dimmer.png" title="Turn Off" onclick="SwitchLight(' + idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+						img='<img src="images/dimmer.png" title="Turn Off" onclick="SwitchLight(' + idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 					}
-					if ($(id + " #status").html()!=status) {
-						$(id + " #status").html(status);
+					if ($(id + " #statustext").html()!=status) {
+						$(id + " #statustext").html(status);
+					}
+					if ($(id + " #dimimage").html()!=img) {
+						$(id + " #dimimage").html(img);
 					}
 				}
 				else {

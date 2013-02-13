@@ -19,6 +19,7 @@ Version 1.0.9 (February xxh 2013)
 - Implemented: Dimmer change now directly updates the user interface status
 - Fixed: Mobile desktop, blind open icon
 - Fixed: Day display for Month/Year utility graph
+- Fixed: Mobile dashboard slider image redraw issue
 
 Version 1.0.8 (February 3th 2013)
 - Fixed Hardware Enabled/Disabled option
