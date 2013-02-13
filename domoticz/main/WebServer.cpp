@@ -1246,6 +1246,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				{
 					sprintf(szData,"%ld Watt, %.2f Wh",atol(strarray[0].c_str()),atof(strarray[1].c_str()));
 					root["result"][ii]["Data"]=szData;
+					root["result"][ii]["SwitchTypeVal"]=MTYPE_ENERGY;
 				}
 			}
 			else if (dType == pTypeRFXMeter)
@@ -1747,7 +1748,7 @@ char * CWebServer::GetJSonPage()
 		unsigned char dType=atoi(result[0][0].c_str());
 		unsigned char dSubType=atoi(result[0][1].c_str());
 		_eMeterType metertype = (_eMeterType)atoi(result[0][2].c_str());
-		if (dType==pTypeP1Power)
+		if ((dType==pTypeP1Power)||(dType==pTypeENERGY))
 			metertype= MTYPE_ENERGY;
 		else if (dType==pTypeP1Gas)
 			metertype= MTYPE_GAS;

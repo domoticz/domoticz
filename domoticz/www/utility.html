@@ -570,8 +570,7 @@ function ShowCurrentLog(id,name,switchtype)
             text: 'Last Month'
         },
         xAxis: {
-            type: 'datetime',
-            tickInterval: 24 * 3600 * 1000
+            type: 'datetime'
         },
         yAxis: {
             title: {
@@ -650,8 +649,7 @@ function ShowCurrentLog(id,name,switchtype)
             text: 'Last Year'
         },
         xAxis: {
-            type: 'datetime',
-            tickInterval: 24 * 3600 * 1000
+            type: 'datetime'
         },
         yAxis: {
             title: {
@@ -859,8 +857,7 @@ function ShowCounterLog(id,name,switchtype)
             text: 'Last Month'
         },
         xAxis: {
-            type: 'datetime',
-            tickInterval: 24 * 3600 * 1000
+            type: 'datetime'
         },
         yAxis: {
             title: {
@@ -930,8 +927,7 @@ function ShowCounterLog(id,name,switchtype)
             text: 'Last Year'
         },
         xAxis: {
-            type: 'datetime',
-            tickInterval: 24 * 3600 * 1000
+            type: 'datetime'
         },
         yAxis: {
             title: {
@@ -1137,8 +1133,7 @@ function ShowSmartLog(id,name,switchtype)
             text: 'Last Month'
         },
         xAxis: {
-            type: 'datetime',
-            tickInterval: 24 * 3600 * 1000
+            type: 'datetime'
         },
         yAxis: {
             title: {
@@ -1208,8 +1203,7 @@ function ShowSmartLog(id,name,switchtype)
             text: 'Last Year'
         },
         xAxis: {
-            type: 'datetime',
-            tickInterval: 24 * 3600 * 1000
+            type: 'datetime'
         },
         yAxis: {
             title: {
@@ -1416,6 +1410,11 @@ function ShowUtilities()
           }
           else if (item.Type == "Current") {
 							xhtm+='<a class="btnsmall" onclick="ShowCurrentLog(' + item.idx + ',\'' + item.Name + '\', ' + item.displaytype + ');">Log</a> ';
+							xhtm+=      
+										'<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+          }
+          else if (item.Type == "Energy") {
+							xhtm+='<a class="btnsmall" onclick="ShowCounterLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">Log</a> ';
 							xhtm+=      
 										'<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
           }
