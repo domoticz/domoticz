@@ -1415,7 +1415,7 @@ function ShowFavorites()
 		//Slider Events
 		create: function(event,ui ) {
 			$( this ).slider( "option", "max", $( this ).data('maxlevel'));
-			$( this ).slider( "value", $( this ).data('svalue') );
+			$( this ).slider( "value", $( this ).data('svalue')+1 );
 		},
 		slide: function(event, ui) { //When the slider is sliding
 			clearInterval($.setDimValue);
