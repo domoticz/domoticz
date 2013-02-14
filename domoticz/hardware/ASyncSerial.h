@@ -107,6 +107,11 @@ public:
     */
     void writeString(const std::string& s);
 
+    /**
+     * Callback to close serial port
+     */
+    void doClose();
+
     ~AsyncSerial();
 
     /**
@@ -141,11 +146,6 @@ private:
      * This callback is called by the io_service in the spawned thread.
      */
     void writeEnd(const boost::system::error_code& error);
-
-    /**
-     * Callback to close serial port
-     */
-    void doClose();
 
     boost::shared_ptr<AsyncSerialImpl> pimpl;
 

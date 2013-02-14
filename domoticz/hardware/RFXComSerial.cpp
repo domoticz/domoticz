@@ -53,11 +53,14 @@ bool RFXComSerial::StartHardware()
 bool RFXComSerial::StopHardware()
 {
 	m_stoprequested=true;
+	m_thread->join();
 	if (isOpen())
 	{
 		try {
 			clearReadCallback();
 			close();
+			doClose();
+			setErrorStatus(true);
 		} catch(...)
 		{
 			//Don't throw from a Stop command
@@ -71,6 +74,8 @@ void RFXComSerial::Do_Work()
 	while (!m_stoprequested)
 	{
 		boost::this_thread::sleep(boost::posix_time::seconds(1));
+		if (m_stoprequested)
+			break;
 		if (!isOpen())
 		{
 			if (m_retrycntr==0)

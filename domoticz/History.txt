@@ -21,6 +21,7 @@ Version 1.0.9 (February xxh 2013)
 - Fixed: Day display for Month/Year utility graph
 - Fixed: Mobile dashboard slider image redraw issue
 - Fixed: Initial dimslider position on dashboard
+- Fixed: Possible issue when disabling/enabling the RFXtrx serial hardware
 
 Version 1.0.8 (February 3th 2013)
 - Fixed Hardware Enabled/Disabled option
