@@ -567,19 +567,19 @@ function RefreshTimerTable(idx)
 										
 										var disableDays=false;
 										if (data["4"]=="Everyday") {
-											$("#lightcontent #timerparamstable #when_1").attr('checked', 'checked');
+											$("#lightcontent #timerparamstable #when_1").prop('checked', 'checked');
 											disableDays=true;
 										}
 										else if (data["4"]=="Weekdays") {
-											$("#lightcontent #timerparamstable #when_2").attr('checked', 'checked');
+											$("#lightcontent #timerparamstable #when_2").prop('checked', 'checked');
 											disableDays=true;
 										}
 										else if (data["4"]=="Weekends") {
-											$("#lightcontent #timerparamstable #when_3").attr('checked', 'checked');
+											$("#lightcontent #timerparamstable #when_3").prop('checked', 'checked');
 											disableDays=true;
 										}
 										else
-											$("#lightcontent #timerparamstable #when_4").attr('checked', 'checked');
+											$("#lightcontent #timerparamstable #when_4").prop('checked', 'checked');
 											
 										EnableDisableDays(data["4"],disableDays);
 									}
@@ -711,7 +711,7 @@ function EditNotification(idx,name, hasnotifications)
 {
   clearInterval($.myglobals.refreshTimer);
   $.devIdx=idx;
-  $("#dialog-notificationlightdevice #enabled").attr('checked', hasnotifications);
+  $("#dialog-notificationlightdevice #enabled").prop('checked', hasnotifications);
   $( "#dialog-notificationlightdevice" ).dialog( "open" );
 }
 

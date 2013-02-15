@@ -144,10 +144,12 @@ bool DomoticzTCP::ConnectInternal()
 void DomoticzTCP::disconnect()
 {
 	m_stoprequested=true;
-	if (m_socket==INVALID_SOCKET)
-		return;
-	closesocket(m_socket);	//will terminate the thread
-	m_socket=INVALID_SOCKET;
+	if (m_socket!=INVALID_SOCKET)
+	{
+		closesocket(m_socket);	//will terminate the thread
+		m_socket=INVALID_SOCKET;
+	}
+	m_thread-> join();
 }
 
 void DomoticzTCP::Do_Work()
@@ -161,6 +163,8 @@ void DomoticzTCP::Do_Work()
 			)
 		{
 			boost::this_thread::sleep(boost::posix_time::seconds(1));
+			if (m_stoprequested)
+				break;
 			m_retrycntr++;
 			if (m_retrycntr>=RETRY_DELAY)
 			{
@@ -174,6 +178,8 @@ void DomoticzTCP::Do_Work()
 		else
 		{
 			int bread=recv(m_socket,(char*)&buf,sizeof(buf),0);
+			if (m_stoprequested)
+				break;
 			if (bread<=0) {
 				std::cout << "TCP/IP connection closed! " << m_szIPAddress << std::endl;
 				closesocket(m_socket);

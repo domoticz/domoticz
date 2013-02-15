@@ -1638,7 +1638,7 @@ void CSQLHelper::UpdateTemperatureLog()
 
 		}
 	}
-	//truncate the temperature table (remove items older then 24 hours)
+	//truncate the temperature table (remove items older then 48 hours)
 	char szDateEnd[40];
 	struct tm ltime;
 	ltime.tm_isdst=tm1.tm_isdst;
@@ -1648,8 +1648,8 @@ void CSQLHelper::UpdateTemperatureLog()
 	ltime.tm_year=tm1.tm_year;
 	ltime.tm_mon=tm1.tm_mon;
 	ltime.tm_mday=tm1.tm_mday;
-	//subtract one day
-	ltime.tm_mday -= 1;
+	//subtract two days
+	ltime.tm_mday -= 2;
 	time_t daybefore = mktime(&ltime);
 	struct tm tm2;
 	localtime_r(&daybefore,&tm2);
@@ -1715,7 +1715,7 @@ void CSQLHelper::UpdateRainLog()
 			result2=query(szTmp);
 		}
 	}
-	//truncate the rain table (remove items older then 24 hours)
+	//truncate the rain table (remove items older then 48 hours)
 	char szDateEnd[40];
 	struct tm ltime;
 	ltime.tm_isdst=tm1.tm_isdst;
@@ -1725,8 +1725,8 @@ void CSQLHelper::UpdateRainLog()
 	ltime.tm_year=tm1.tm_year;
 	ltime.tm_mon=tm1.tm_mon;
 	ltime.tm_mday=tm1.tm_mday;
-	//subtract one day
-	ltime.tm_mday -= 1;
+	//subtract two days
+	ltime.tm_mday -= 2;
 	time_t daybefore = mktime(&ltime);
 	struct tm tm2;
 	localtime_r(&daybefore,&tm2);
@@ -1787,7 +1787,7 @@ void CSQLHelper::UpdateWindLog()
 			result2=query(szTmp);
 		}
 	}
-	//truncate the wind table (remove items older then 24 hours)
+	//truncate the wind table (remove items older then 48 hours)
 	char szDateEnd[40];
 	struct tm ltime;
 	ltime.tm_isdst=tm1.tm_isdst;
@@ -1798,7 +1798,7 @@ void CSQLHelper::UpdateWindLog()
 	ltime.tm_mon=tm1.tm_mon;
 	ltime.tm_mday=tm1.tm_mday;
 	//subtract one day
-	ltime.tm_mday -= 1;
+	ltime.tm_mday -= 2;
 	time_t daybefore = mktime(&ltime);
 	struct tm tm2;
 	localtime_r(&daybefore,&tm2);
@@ -1855,7 +1855,7 @@ void CSQLHelper::UpdateUVLog()
 			result2=query(szTmp);
 		}
 	}
-	//truncate the uv table (remove items older then 24 hours)
+	//truncate the uv table (remove items older then 48 hours)
 	char szDateEnd[40];
 	struct tm ltime;
 	ltime.tm_isdst=tm1.tm_isdst;
@@ -1866,7 +1866,7 @@ void CSQLHelper::UpdateUVLog()
 	ltime.tm_mon=tm1.tm_mon;
 	ltime.tm_mday=tm1.tm_mday;
 	//subtract one day
-	ltime.tm_mday -= 1;
+	ltime.tm_mday -= 2;
 	time_t daybefore = mktime(&ltime);
 	struct tm tm2;
 	localtime_r(&daybefore,&tm2);
@@ -1957,7 +1957,7 @@ void CSQLHelper::UpdateMeter()
 			result2=query(szTmp);
 		}
 	}
-	//truncate the Meter table (remove items older then 24 hours)
+	//truncate the Meter table (remove items older then 48 hours)
 	char szDateEnd[40];
 	struct tm ltime;
 	ltime.tm_isdst=tm1.tm_isdst;
@@ -1968,7 +1968,7 @@ void CSQLHelper::UpdateMeter()
 	ltime.tm_mon=tm1.tm_mon;
 	ltime.tm_mday=tm1.tm_mday;
 	//subtract one day
-	ltime.tm_mday -= 1;
+	ltime.tm_mday -= 2;
 	time_t daybefore = mktime(&ltime);
 	struct tm tm2;
 	localtime_r(&daybefore,&tm2);
@@ -2074,7 +2074,7 @@ void CSQLHelper::UpdateMultiMeter()
 			result2=query(szTmp);
 		}
 	}
-	//truncate the MultiMeter table (remove items older then 24 hours)
+	//truncate the MultiMeter table (remove items older then 48 hours)
 	char szDateEnd[40];
 	struct tm ltime;
 	ltime.tm_isdst=tm1.tm_isdst;
@@ -2085,7 +2085,7 @@ void CSQLHelper::UpdateMultiMeter()
 	ltime.tm_mon=tm1.tm_mon;
 	ltime.tm_mday=tm1.tm_mday;
 	//subtract one day
-	ltime.tm_mday -= 1;
+	ltime.tm_mday -= 2;
 	time_t daybefore = mktime(&ltime);
 	struct tm tm2;
 	localtime_r(&daybefore,&tm2);
