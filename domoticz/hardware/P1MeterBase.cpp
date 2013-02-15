@@ -73,6 +73,7 @@ void P1MeterBase::Init()
 	m_exclmarkfound=0;
 	m_bufferpos=0;
 	m_lastgasusage=0;
+	m_lastelectrausage=0;
 	m_lastSharedSendElectra=0;
 	m_lastSharedSendGas=0;
 
@@ -201,8 +202,11 @@ void P1MeterBase::MatchLine()
 			time_t atime=time(NULL);
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1power);//decode message
 			bSend2Shared=(atime-m_lastSharedSendElectra>59);
+			if (abs(double(m_lastelectrausage)-double(m_p1power.usagecurrent))>40)
+				bSend2Shared=true;
 			if (bSend2Shared)
 			{
+				m_lastelectrausage=m_p1power.usagecurrent;
 				m_lastSharedSendElectra=atime;
 				m_sharedserver.SendToAll((const char*)&m_p1power,sizeof(m_p1power));
 			}
