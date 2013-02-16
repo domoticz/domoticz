@@ -64,6 +64,8 @@ public:
 	bool GetPreferencesVar(const char *Key, int &nValue, std::string &sValue);
 	bool GetPreferencesVar(const char *Key, int &nValue);
 
+	void Set5MinuteHistoryDays(const int Days);
+
 	//notification functions
 	bool AddNotification(const std::string DevIdx, const std::string Param);
 	bool UpdateNotification(const std::string ID, const std::string Param);
@@ -151,6 +153,7 @@ private:
 	CURLEncode m_urlencoder;
 	sqlite3 *m_dbase;
 	std::string m_dbase_name;
+	int m_5MinuteHistoryDays;
 
 	std::vector<_tDeviceStatus> m_device_status_queue;
 	boost::shared_ptr<boost::thread> m_device_status_thread;

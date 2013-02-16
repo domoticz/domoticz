@@ -351,6 +351,12 @@ char * CWebServer::PostSettings()
 	std::string LightHistoryDays=m_pWebEm->FindValue("LightHistoryDays");
 	m_pMain->m_sql.UpdatePreferencesVar("LightHistoryDays",atoi(LightHistoryDays.c_str()));
 
+	std::string ShortLogDays=m_pWebEm->FindValue("ShortLogDays");
+	if (ShortLogDays!="")
+	{
+		m_pMain->m_sql.Set5MinuteHistoryDays(atoi(ShortLogDays.c_str()));
+	}
+
 	std::string sElectricVoltage=m_pWebEm->FindValue("ElectricVoltage");
 	m_pMain->m_sql.UpdatePreferencesVar("ElectricVoltage",atoi(sElectricVoltage.c_str()));
 
@@ -436,6 +442,10 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 	int nValue=0;
 	m_pMain->m_sql.GetPreferencesVar("DashboardType",nValue);
 	root["DashboardType"]=nValue;
+
+	nValue=1;
+	m_pMain->m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
+	root["5MinuteHistoryDays"]=nValue;
 
 	char szData[100];
 	char szTmp[300];
@@ -4523,6 +4533,10 @@ char * CWebServer::GetJSonPage()
 				else if (Key=="LightHistoryDays")
 				{
 					root["LightHistoryDays"]=nValue;
+				}
+				else if (Key=="5MinuteHistoryDays")
+				{
+					root["ShortLogDays"]=nValue;
 				}
 				else if (Key=="WebUserName")
 				{

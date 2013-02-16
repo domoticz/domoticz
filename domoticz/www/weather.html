@@ -137,7 +137,7 @@ function ShowWindLog(id,name)
           text: "Domoticz.com"
         },
         title: {
-            text: 'Wind speed/gust Last 24 hours'
+            text: 'Wind speed/gust '  + Get5MinuteHistoryDaysGraphTitle()
         },
         xAxis: {
             type: 'datetime'
@@ -334,7 +334,7 @@ function ShowWindLog(id,name)
           }
         },
         title: {
-            text: 'Wind Direction Last 24 hours'
+            text: 'Wind Direction '  + Get5MinuteHistoryDaysGraphTitle()
         },
         pane: {
             startAngle: 0,
@@ -809,7 +809,7 @@ function ShowUVLog(id,name)
           text: "Domoticz.com"
         },
         title: {
-            text: 'UV Last 24 hours'
+            text: 'UV '  + Get5MinuteHistoryDaysGraphTitle()
         },
         xAxis: {
             type: 'datetime'
@@ -1052,7 +1052,7 @@ function ShowBaroLog(id,name)
           text: "Domoticz.com"
         },
         title: {
-            text: 'Barometer Last 24 hours'
+            text: 'Barometer '  + Get5MinuteHistoryDaysGraphTitle()
         },
         xAxis: {
             type: 'datetime'
@@ -1627,6 +1627,9 @@ function ShowWeathers()
      dataType: 'json',
      success: function(data) {
       if (typeof data.result != 'undefined') {
+
+				$.FiveMinuteHistoryDays=data["5MinuteHistoryDays"];
+
         $.each(data.result, function(i,item){
           if (i % 3 == 0)
           {

@@ -323,12 +323,23 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("CM113DisplayType", 0);
 	}
+	if (!GetPreferencesVar("5MinuteHistoryDays", nValue))
+	{
+		UpdatePreferencesVar("5MinuteHistoryDays", 1);
+	}
+	Set5MinuteHistoryDays(nValue);
 
 	//Start background thread
 	if (!StartThread())
 		return false;
 
 	return true;
+}
+
+void CSQLHelper::Set5MinuteHistoryDays(const int Days)
+{
+	m_5MinuteHistoryDays=Days;
+	UpdatePreferencesVar("5MinuteHistoryDays", Days);
 }
 
 bool CSQLHelper::StartThread()
@@ -1648,8 +1659,8 @@ void CSQLHelper::UpdateTemperatureLog()
 	ltime.tm_year=tm1.tm_year;
 	ltime.tm_mon=tm1.tm_mon;
 	ltime.tm_mday=tm1.tm_mday;
-	//subtract two days
-	ltime.tm_mday -= 2;
+	//subtract xx days
+	ltime.tm_mday -= m_5MinuteHistoryDays;
 	time_t daybefore = mktime(&ltime);
 	struct tm tm2;
 	localtime_r(&daybefore,&tm2);
@@ -1725,8 +1736,8 @@ void CSQLHelper::UpdateRainLog()
 	ltime.tm_year=tm1.tm_year;
 	ltime.tm_mon=tm1.tm_mon;
 	ltime.tm_mday=tm1.tm_mday;
-	//subtract two days
-	ltime.tm_mday -= 2;
+	//subtract xx days
+	ltime.tm_mday -= m_5MinuteHistoryDays;
 	time_t daybefore = mktime(&ltime);
 	struct tm tm2;
 	localtime_r(&daybefore,&tm2);
@@ -1797,8 +1808,8 @@ void CSQLHelper::UpdateWindLog()
 	ltime.tm_year=tm1.tm_year;
 	ltime.tm_mon=tm1.tm_mon;
 	ltime.tm_mday=tm1.tm_mday;
-	//subtract one day
-	ltime.tm_mday -= 2;
+	//subtract xx days
+	ltime.tm_mday -= m_5MinuteHistoryDays;
 	time_t daybefore = mktime(&ltime);
 	struct tm tm2;
 	localtime_r(&daybefore,&tm2);
@@ -1865,8 +1876,8 @@ void CSQLHelper::UpdateUVLog()
 	ltime.tm_year=tm1.tm_year;
 	ltime.tm_mon=tm1.tm_mon;
 	ltime.tm_mday=tm1.tm_mday;
-	//subtract one day
-	ltime.tm_mday -= 2;
+	//subtract xx days
+	ltime.tm_mday -= m_5MinuteHistoryDays;
 	time_t daybefore = mktime(&ltime);
 	struct tm tm2;
 	localtime_r(&daybefore,&tm2);
@@ -1967,8 +1978,8 @@ void CSQLHelper::UpdateMeter()
 	ltime.tm_year=tm1.tm_year;
 	ltime.tm_mon=tm1.tm_mon;
 	ltime.tm_mday=tm1.tm_mday;
-	//subtract one day
-	ltime.tm_mday -= 2;
+	//subtract xx days
+	ltime.tm_mday -= m_5MinuteHistoryDays;
 	time_t daybefore = mktime(&ltime);
 	struct tm tm2;
 	localtime_r(&daybefore,&tm2);
@@ -2084,8 +2095,8 @@ void CSQLHelper::UpdateMultiMeter()
 	ltime.tm_year=tm1.tm_year;
 	ltime.tm_mon=tm1.tm_mon;
 	ltime.tm_mday=tm1.tm_mday;
-	//subtract one day
-	ltime.tm_mday -= 2;
+	//subtract xx days
+	ltime.tm_mday -= m_5MinuteHistoryDays;
 	time_t daybefore = mktime(&ltime);
 	struct tm tm2;
 	localtime_r(&daybefore,&tm2);

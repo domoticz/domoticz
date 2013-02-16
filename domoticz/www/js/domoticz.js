@@ -718,7 +718,8 @@ function SetDimValue(idx, value)
 }
 
 //Some helper for browser detection
-function matchua ( ua ) {
+function matchua ( ua ) 
+{
 	ua = ua.toLowerCase();
 
 	var match = /(chrome)[ \/]([\w.]+)/.exec( ua ) ||
@@ -732,4 +733,15 @@ function matchua ( ua ) {
 		browser: match[ 1 ] || "",
 		version: match[ 2 ] || "0"
 	};
-};
+}
+
+function Get5MinuteHistoryDaysGraphTitle()
+{
+	if ($.FiveMinuteHistoryDays==1) {
+		return "Last 24 hours";
+	}
+	else if  ($.FiveMinuteHistoryDays==2) {
+		return "Last 48 hours";
+	}
+	return "Last " + $.FiveMinuteHistoryDays + " days";
+}

@@ -36,7 +36,7 @@
 </div>
 
 <div id="counterlog" style="display:none;">
-  <h2>Last 24 Hours</h2><br>
+  <h2>Day</h2><br>
   <div id="counterdaygraph" style="height: 300px;"></div>
   <br>
   <h2>Week</h2><br>
@@ -50,7 +50,7 @@
 </div>
 
 <div id="currentlog" style="display:none;">
-  <h2>Last 24 Hours</h2><br>
+  <h2>Day</h2><br>
   <div id="currentdaygraph" style="height: 300px;"></div>
   <br>
   <h2>Month</h2><br>
@@ -494,7 +494,7 @@ function ShowCurrentLog(id,name,switchtype)
           text: "Domoticz.com"
         },
         title: {
-            text: 'Last 24 Hours'
+            text: Get5MinuteHistoryDaysGraphTitle()
         },
         xAxis: {
             type: 'datetime'
@@ -734,7 +734,7 @@ function ShowCounterLog(id,name,switchtype)
           text: "Domoticz.com"
         },
         title: {
-            text: 'Usage Last 24 Hours'
+            text: 'Usage ' + Get5MinuteHistoryDaysGraphTitle()
         },
         xAxis: {
             type: 'datetime',
@@ -1002,7 +1002,7 @@ function ShowSmartLog(id,name,switchtype)
           text: "Domoticz.com"
         },
         title: {
-            text: 'Last 24 Hours'
+            text: Get5MinuteHistoryDaysGraphTitle()
         },
         xAxis: {
             type: 'datetime'
@@ -1336,6 +1336,9 @@ function ShowUtilities()
      dataType: 'json',
      success: function(data) {
       if (typeof data.result != 'undefined') {
+
+				$.FiveMinuteHistoryDays=data["5MinuteHistoryDays"];
+
         $.each(data.result, function(i,item){
           if (i % 3 == 0)
           {

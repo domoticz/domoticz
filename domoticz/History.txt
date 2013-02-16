@@ -25,6 +25,7 @@ Version 1.0.9 (February xxh 2013)
 - Fixed: Notification Enable/Disable checkbox
 - Implemented: P1 smart meter will update once a minute, or when usage difference is greater than 40 Watt
 - Implemented: OWL 160/180/190 logging/graphs
+- Implemented: Option to enlarge the short-log (5 minutes) till 7 days
 
 Version 1.0.8 (February 3th 2013)
 - Fixed Hardware Enabled/Disabled option

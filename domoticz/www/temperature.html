@@ -466,7 +466,7 @@ function ShowCustomTempLog()
   $('#modal').hide();
   return false;
 }
-    
+
 function ShowTempLog(id,name)
 {
 	clearInterval($.myglobals.refreshTimer);
@@ -503,7 +503,7 @@ function ShowTempLog(id,name)
         text: "Domoticz.com"
       },
       title: {
-          text: 'Temperature Last 24 hours'
+          text: 'Temperature ' + Get5MinuteHistoryDaysGraphTitle()
       },
       xAxis: {
           type: 'datetime'
@@ -891,6 +891,9 @@ function ShowTemps()
      dataType: 'json',
      success: function(data) {
       if (typeof data.result != 'undefined') {
+      
+				$.FiveMinuteHistoryDays=data["5MinuteHistoryDays"];
+      
         $.each(data.result, function(i,item){
           if (i % 3 == 0)
           {
