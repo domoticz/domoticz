@@ -1,20 +1,20 @@
 Version 1.0.9 (February xxh 2013)
-- Implemented OWL113 option to display in Ampere/Usage
-- Fixed Dimmer slider (had a hardcoded device index)
-- Fixed Edit Lights/Switches Smoke Detector type
-- Solved HTML checkbox 'ischecked' property duo upgrade to new JQuery
-- P1 Smart meter, Gas value now send when changed, or every 5 minutes
-- Implemented Motion Detector
-- Implemented Smoke Detector Off image
-- Implemented 'Delay Off' for Motion detectors
+- Implemented: OWL113 option to display in Ampere/Usage
+- Fixed: Dimmer slider (had a hardcoded device index)
+- Fixed: Edit Lights/Switches Smoke Detector type
+- Fixed: HTML checkbox 'ischecked' property duo upgrade to new JQuery
+- Implemented: P1 Smart meter, Gas value now send when changed, or every 5 minutes
+- Implemented: Motion Detector
+- Implemented: Smoke Detector Off image
+- Implemented: 'Delay Off' for Motion detectors
 - Fixed: Not displaying the 'timer' option for certain devices
 - Fixed: 'Dimmer' on the dashboard on mobile devices
-- Implemented serial port auto reconnect option 
+- Implemented: Serial port auto reconnect option 
 - Fixed: LightwaveRF dimmer value notation
-- Implemented dimmer timer support
+- Implemented: dimmer timer support
 - Fixed: Now able to clear lightlog for security1 devices
-- Implemented temp_hum Rubicson/IW008T/TX95
-- Implemented Latest RFXCOM SDK
+- Implemented: temp_hum Rubicson/IW008T/TX95
+- Implemented: Latest RFXCOM SDK
 - Changed: Manual Add light switchtypes are now complete
 - Implemented: Dimmer change now directly updates the user interface status
 - Fixed: Mobile desktop, blind open icon
@@ -24,6 +24,7 @@ Version 1.0.9 (February xxh 2013)
 - Fixed: Possible issue when disabling/enabling/removing hardware
 - Fixed: Notification Enable/Disable checkbox
 - Implemented: P1 smart meter will update once a minute, or when usage difference is greater than 40 Watt
+- Implemented: OWL 160/180/190 logging/graphs
 
 Version 1.0.8 (February 3th 2013)
 - Fixed Hardware Enabled/Disabled option

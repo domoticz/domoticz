@@ -1952,7 +1952,7 @@ char * CWebServer::GetJSonPage()
 					root["status"]="OK";
 					root["title"]="Graph " + sensor + " " + srange;
 
-					float EnergyDivider=1000.0f;
+ 					float EnergyDivider=1000.0f;
 					float GasDivider=100.0f;
 					float WaterDivider=100.0f;
 					int tValue;
@@ -1970,6 +1970,8 @@ char * CWebServer::GetJSonPage()
 					}
 					if (dType==pTypeP1Gas)
 						GasDivider=1000;
+					else if (dType==pTypeENERGY)
+						EnergyDivider*=100.0f;
 
 					szQuery.clear();
 					szQuery.str("");
@@ -2262,6 +2264,8 @@ char * CWebServer::GetJSonPage()
 				}
 				if (dType==pTypeP1Gas)
 					GasDivider=1000;
+				else if (dType==pTypeENERGY)
+					EnergyDivider*=100.0f;
 
 				char szDateStart[40];
 				char szDateEnd[40];
@@ -2647,6 +2651,8 @@ char * CWebServer::GetJSonPage()
 				}
 				if (dType==pTypeP1Gas)
 					GasDivider=1000;
+				else if (dType==pTypeENERGY)
+					EnergyDivider*=100.0f;
 
 				szQuery.clear();
 				szQuery.str("");
@@ -3111,6 +3117,8 @@ char * CWebServer::GetJSonPage()
 				}
 				if (dType==pTypeP1Gas)
 					GasDivider=1000;
+				else if (dType==pTypeENERGY)
+					EnergyDivider*=100.0f;
 
 				szQuery.clear();
 				szQuery.str("");
