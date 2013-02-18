@@ -424,7 +424,7 @@ function ShowCustomTempLog()
                 var unit = '';
                 var baseName = this.series.name.split(':')[1];
                 if (baseName=="humidity") {unit = '%'} else {unit = '\u00B0 C'};
-                return Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit ;
+                return Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit ;
           }
       },
       legend: {
@@ -539,7 +539,7 @@ function ShowTempLog(id,name)
                         'Chill': '\u00B0 C',
                         'Chill_min': '\u00B0 C'
                   }[this.series.name];
-                  return Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
+                  return Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
           }
       },
       legend: {
@@ -641,7 +641,7 @@ function ShowTempLog(id,name)
                         'Chill': '\u00B0 C',
                         'Chill_min': '\u00B0 C'
                   }[this.series.name];
-                  return Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
+                  return Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
           }
       },
       legend: {
@@ -743,7 +743,7 @@ function ShowTempLog(id,name)
                         'Chill': '\u00B0 C',
                         'Chill_min': '\u00B0 C'
                   }[this.series.name];
-                  return Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
+                  return Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
           }
       },
       legend: {
