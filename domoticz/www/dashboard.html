@@ -130,7 +130,18 @@ function RefreshFavorites()
 									img='<img src="images/door48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 								}
 								else if (item.SwitchType == "X10 Siren") {
-									img='<img src="images/siren48.png" height="40">';
+									if (
+											(item.Status == 'On')||
+											(item.Status == 'Chime')||
+											(item.Status == 'Group On')||
+											(item.Status == 'All On')
+										 )
+									{
+													img='<img src="images/siren-on.png" height="40">';
+									}
+									else {
+													img='<img src="images/siren-off.png" height="40">';
+									}
 								}
 								else if (item.SwitchType == "Contact") {
 									if (item.Status == 'Closed') {
@@ -634,9 +645,6 @@ function ShowFavorites()
 							xhtm+=
 									'\t    <tr id="light_' + item.idx +'">\n' +
 									'\t      <td id="name">' + item.Name;
-							if (item.SwitchType == "Dimmer") {
-								xhtm+='<br><div style="margin-top: 0.2em;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-maxlevel="' + item.MaxDimLevel + '" data-svalue="' + item.LevelInt + '"></div><br>';
-							}
 							xhtm+=
 									 '</td>\n';
 							var status=item.Status + " ";
@@ -725,13 +733,21 @@ function ShowFavorites()
 							xhtm+=
 										'\t      <td id="status">' + status + '</td>\n' +
 										'\t    </tr>\n';
+							if (item.SwitchType == "Dimmer") {
+								xhtm+='<tr>';
+								xhtm+='<td colspan="2" style="border:0px solid red;">';
+								xhtm+='<div style="margin-top: -11px; margin-left: 4px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-maxlevel="' + item.MaxDimLevel + '" data-svalue="' + item.LevelInt + '"></div>';
+								xhtm+='</td>';
+								xhtm+='</tr>';
+							}
+										
 						}
 						else {
 							if (data.DashboardType==0) {
-								xhtm='\t<div class="4u" id="light_' + item.idx +'">\n';
+								xhtm='\t<div class="span4" id="light_' + item.idx +'">\n';
 							}
 							else if (data.DashboardType==1) {
-								xhtm='\t<div class="3u" id="light_' + item.idx +'">\n';
+								xhtm='\t<div class="span3" id="light_' + item.idx +'">\n';
 							}
 							xhtm+='\t  <section>\n';
 							if (data.DashboardType==0) {
@@ -747,7 +763,18 @@ function ShowFavorites()
 								xhtm+='\t      <td id="img"><img src="images/door48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 							}
 							else if (item.SwitchType == "X10 Siren") {
-								xhtm+='\t      <td id="img"><img src="images/siren48.png" height="40"></td>\n';
+								if (
+										(item.Status == 'On')||
+										(item.Status == 'Chime')||
+										(item.Status == 'Group On')||
+										(item.Status == 'All On')
+									 )
+								{
+										xhtm+='\t      <td id="img"><img src="images/siren-on.png" height="40"></td>\n';
+								}
+								else {
+										xhtm+='\t      <td id="img"><img src="images/siren-off.png" height="40"></td>\n';
+								}
 							}
 							else if (item.SwitchType == "Contact") {
 								if (item.Status == 'Closed') {
@@ -922,10 +949,10 @@ function ShowFavorites()
 						}
 						else {
 							if (data.DashboardType==0) {
-								xhtm='\t<div class="4u" id="temp_' + item.idx +'">\n';
+								xhtm='\t<div class="span4" id="temp_' + item.idx +'">\n';
 							}
 							else if (data.DashboardType==1) {
-								xhtm='\t<div class="3u" id="temp_' + item.idx +'">\n';
+								xhtm='\t<div class="span3" id="temp_' + item.idx +'">\n';
 							}
 							xhtm+='\t  <section>\n';
 							if (data.DashboardType==0) {
@@ -1057,10 +1084,10 @@ function ShowFavorites()
 						}
 						else {
 							if (data.DashboardType==0) {
-								xhtm='\t<div class="4u" id="weather_' + item.idx +'">\n';
+								xhtm='\t<div class="span4" id="weather_' + item.idx +'">\n';
 							}
 							else if (data.DashboardType==1) {
-								xhtm='\t<div class="3u" id="weather_' + item.idx +'">\n';
+								xhtm='\t<div class="span3" id="weather_' + item.idx +'">\n';
 							}
 							xhtm+='\t  <section>\n';
 							if (data.DashboardType==0) {
@@ -1162,10 +1189,10 @@ function ShowFavorites()
 						}
 						else {
 							if (data.DashboardType==0) {
-								xhtm='\t<div class="4u" id="security_' + item.idx +'">\n';
+								xhtm='\t<div class="span4" id="security_' + item.idx +'">\n';
 							}
 							else if (data.DashboardType==1) {
-								xhtm='\t<div class="3u" id="security_' + item.idx +'">\n';
+								xhtm='\t<div class="span3" id="security_' + item.idx +'">\n';
 							}
 							xhtm+='\t  <section>\n';
 							if (data.DashboardType==0) {
@@ -1304,10 +1331,10 @@ function ShowFavorites()
 						}
 						else {
 							if (data.DashboardType==0) {
-								xhtm='\t<div class="4u" id="utility_' + item.idx +'">\n';
+								xhtm='\t<div class="span4" id="utility_' + item.idx +'">\n';
 							}
 							else if (data.DashboardType==1) {
-								xhtm='\t<div class="3u" id="utility_' + item.idx +'">\n';
+								xhtm='\t<div class="span3" id="utility_' + item.idx +'">\n';
 							}
 							xhtm+='\t  <span>\n';
 							if (data.DashboardType==0) {
@@ -1471,7 +1498,7 @@ function ShowFavorites()
 	ResizeDimSliders();
 
 	if ($.myglobals.ismobile==false) {
-		$("#dashcontent .4u").draggable({
+		$("#dashcontent .span4").draggable({
 				drag: function() {
 					clearInterval($.myglobals.refreshTimer);
 					$.devIdx=$(this).attr("id");
@@ -1479,7 +1506,7 @@ function ShowFavorites()
 				},
 				revert: true
 		});
-		$("#dashcontent .4u").droppable({
+		$("#dashcontent .span4").droppable({
 				drop: function() {
 					var myid=$(this).attr("id");
 					var parts1 = myid.split('_');
@@ -1500,7 +1527,7 @@ function ShowFavorites()
 					}
 				}
 		});
-		$("#dashcontent .3u").draggable({
+		$("#dashcontent .span3").draggable({
 				drag: function() {
 					clearInterval($.myglobals.refreshTimer);
 					$.devIdx=$(this).attr("id");
@@ -1508,7 +1535,7 @@ function ShowFavorites()
 				},
 				revert: true
 		});
-		$("#dashcontent .3u").droppable({
+		$("#dashcontent .span3").droppable({
 				drop: function() {
 					var myid=$(this).attr("id");
 					var parts1 = myid.split('_');
@@ -1535,11 +1562,11 @@ function ShowFavorites()
 
 function ResizeDimSliders()
 {
-	var width=$(".4u").width()-70;
-	$("#dashcontent .4u .dimslider").width(width);
-	width=$(".3u").width()-70;
-	$("#dashcontent .3u .dimslider").width(width);
-	width=$(".mobileitem").width()-16;
+	var width=$(".span4").width()-70;
+	$("#dashcontent .span4 .dimslider").width(width);
+	width=$(".span3").width()-70;
+	$("#dashcontent .span3 .dimslider").width(width);
+	width=$(".mobileitem").width()-23;
 	$("#dashcontent .mobileitem .dimslider").width(width);
 }
 

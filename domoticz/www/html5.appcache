@@ -1,11 +1,16 @@
 CACHE MANIFEST
-# ref 91
+# ref 96
 
 CACHE:
 favicon.ico
+css/bootstrap-responsive.css
+css/bootstrap.css
 css/demo_table_jui.css
-css/loading.css
-css/pIkfp.gif
+css/style.css
+css/TableTools.css
+css/ui-darkness/jquery-ui-1.10.1.custom.min.css
+
+# fonts
 css/fonts/Abel.eot
 css/fonts/Abel.ttf
 css/fonts/Oswald-Light.eot
@@ -14,23 +19,8 @@ css/fonts/Oswald-Regular.eot
 css/fonts/Oswald-Regular.ttf
 css/fonts/Satisfy.eot
 css/fonts/Satisfy.ttf
-css/style-1000px.css
-css/style-1200px.css
-css/style-desktop.css
-css/style-fluid.css
-css/style-mobile.css
-css/style.css
-css/TableTools.css
-css/5grid/init.js
-css/5grid/core-1000px.css
-css/5grid/core-1200px.css
-css/5grid/core-desktop.css
-css/5grid/core-fluid.css
-css/5grid/core-mobile.css
-css/5grid/core-noscript.css
-css/5grid/core.css
-css/5grid/mobileUI-beveled.css
-css/5grid/mobileUI-flat.css
+
+# images
 css/images/bg-track.png
 css/images/handle.png
 css/images/img01.jpg
@@ -53,7 +43,7 @@ css/images/img12.jpg
 css/images/img12.png
 css/images/img13.jpg
 css/images/spacer.gif
-css/ui-darkness/jquery-ui-1.10.0.custom.min.css
+css/ui-darkness/images/animated-overlay.gif
 css/ui-darkness/images/ui-bg_flat_30_cccccc_40x100.png
 css/ui-darkness/images/ui-bg_flat_50_5c5c5c_40x100.png
 css/ui-darkness/images/ui-bg_glass_20_555555_1x400.png
@@ -68,8 +58,6 @@ css/ui-darkness/images/ui-icons_4b8e0b_256x240.png
 css/ui-darkness/images/ui-icons_a83300_256x240.png
 css/ui-darkness/images/ui-icons_cccccc_256x240.png
 css/ui-darkness/images/ui-icons_ffffff_256x240.png
-
-# images
 images/add.png
 images/air_signal.png
 images/alarm48.png
@@ -78,9 +66,9 @@ images/back_disabled.png
 images/back_enabled.png
 images/back_enabled_hover.png
 images/baro48.png
-images/battery.png
 images/battery-low.png
 images/battery-ok.png
+images/battery.png
 images/blinds.png
 images/blinds48.png
 images/blindsopen48.png
@@ -88,9 +76,9 @@ images/button.png
 images/collection.png
 images/collection_hover.png
 images/contact.png
-images/contact_open.png
 images/contact48.png
 images/contact48_open.png
+images/contact_open.png
 images/copy.png
 images/copy_hover.png
 images/counter.png
@@ -103,9 +91,9 @@ images/desktop.png
 images/details.png
 images/devices.png
 images/dimmer.png
-images/dimmeroff.png
-images/dimmer48-on.png
 images/dimmer48-off.png
+images/dimmer48-on.png
+images/dimmeroff.png
 images/door.png
 images/door48.png
 images/edit.png
@@ -114,6 +102,9 @@ images/favorite.png
 images/forward_disabled.png
 images/forward_enabled.png
 images/forward_enabled_hover.png
+images/glyphicons-halflings-white.png
+images/glyphicons-halflings.png
+images/handle.png
 images/hardware.png
 images/ice.png
 images/insert.png
@@ -126,9 +117,9 @@ images/lock_closed.png
 images/lock_open.png
 images/log.png
 images/motion.png
-images/motionoff.png
-images/motion48-on.png
 images/motion48-off.png
+images/motion48-on.png
+images/motionoff.png
 images/next.png
 images/nofavorite.png
 images/off.png
@@ -151,9 +142,9 @@ images/siren-off.png
 images/siren-on.png
 images/siren.png
 images/smoke.png
-images/smokeoff.png
 images/smoke48off.png
 images/smoke48on.png
+images/smokeoff.png
 images/sort_asc.png
 images/sort_asc_disabled.png
 images/sort_both.png
@@ -173,36 +164,34 @@ images/wind.png
 images/wind48.png
 images/xls.png
 images/xls_hover.png
-images/startup/apple-touch-startup-image-320x460.png
-images/startup/apple-touch-startup-image-640x920.png
-images/startup/apple-touch-startup-image-768x1004.png
 images/startup/apple-touch-startup-image-1024x748.png
 images/startup/apple-touch-startup-image-1536x2008.png
 images/startup/apple-touch-startup-image-2048x1496.png
-
-# js
-js/domoticz.js
-js/jquery.ui.touch-punch.min.js
-js/date.format.js
-js/highcharts-more.js
-js/highcharts.js
-js/jquery-1.9.0.min.js
-js/jquery-ui-1.10.0.custom.min.js
-js/jquery.dataTables.min.js
-js/TableTools.min.js
-js/ZeroClipboard.js
-js/modules/canvas-tools.js
-js/modules/data.js
-js/modules/exporting.js
-js/themes/dark-blue.js
-js/themes/dark-green.js
-js/themes/gray.js
-js/themes/grid.js
-js/themes/skies.js
-
-# other
+images/startup/apple-touch-startup-image-320x460.png
+images/startup/apple-touch-startup-image-640x920.png
+images/startup/apple-touch-startup-image-768x1004.png
 media/swf/copy_csv_xls.swf
 media/swf/copy_csv_xls_pdf.swf
+
+# js
+js/bootstrap.min.js.gz
+js/date.format.js.gz
+js/domoticz.js
+js/highcharts-more.js.gz
+js/highcharts.js.gz
+js/jquery-1.9.1.min.js.gz
+js/jquery-migrate-1.1.1.min.js.gz
+js/jquery-ui-1.10.1.custom.min.js.gz
+js/jquery.dataTables.min.js.gz
+js/jquery.ui.touch-punch.min.js.gz
+js/TableTools.min.js.gz
+js/ZeroClipboard.js.gz
+js/modules/exporting.js.gz
+js/themes/dark-blue.js.gz
+js/themes/dark-green.js.gz
+js/themes/gray.js.gz
+js/themes/grid.js.gz
+js/themes/skies.js.gz
 
 # Resources that require the user to be online.
 NETWORK:
@@ -211,6 +200,7 @@ dashboard.html
 devices.html
 hardware.html
 lights.html
+log.html
 setup.html
 temperature.html
 utility.html

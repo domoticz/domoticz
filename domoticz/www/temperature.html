@@ -1,17 +1,7 @@
-<div id="dialog-addtempdevice" title="Add Device">
-    <form>
-    <fieldset>
-        <label for="name">Name: </label>
-        <input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" />
-    </fieldset>
-    </form>
-</div>
 <div id="dialog-edittempdevice" title="Edit Device">
     <form>
-    <fieldset>
         <label for="name">Name: </label>
         <input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" />
-    </fieldset>
     </form>
 </div>
 <div id="tempcontent">
@@ -33,13 +23,13 @@
     </table>
 </div>
 <div id="templog" style="display:none;">
-<h2>Day</h2><br>
+<h2>Day</h2>
 <div id="tempdaygraph" style="height: 300px;"></div>
 <br>
-<h2>Month</h2><br>
+<h2>Month</h2>
 <div id="tempmonthgraph" style="height: 300px;"></div>
 <br>
-<h2>Year</h2><br>
+<h2>Year</h2>
 <div id="tempyeargraph" style="height: 300px;"></div>
 </div>
 
@@ -472,7 +462,7 @@ function ShowTempLog(id,name)
 	clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
   var htmlcontent = '';
-  htmlcontent='<p><center><h2>' + name + '</h2></center></p><br>\n';
+  htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
   htmlcontent+=$('#templog').html();
   $('#tempcontent').html(GetBackbuttonHTMLTable('ShowTemps')+htmlcontent);
 
@@ -906,7 +896,7 @@ function ShowTemps()
             bHaveAddedDevider=true;
           }
           var xhtm=
-                '\t<div class="4u" id="' + item.idx + '">\n' +
+                '\t<div class="span4" id="' + item.idx + '">\n' +
                 '\t  <section>\n' +
                 '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
                 '\t    <tr>\n' +
@@ -995,7 +985,7 @@ function ShowTemps()
   $('#tempcontent').html(tophtm+htmlcontent);
 
 	if ($.myglobals.ismobile==false) {
-		$("#tempcontent .4u").draggable({
+		$("#tempcontent .span4").draggable({
 				drag: function() {
 					clearInterval($.myglobals.refreshTimer);
 					$.devIdx=$(this).attr("id");
@@ -1003,7 +993,7 @@ function ShowTemps()
 				},
 				revert: true
 		});
-		$("#tempcontent .4u").droppable({
+		$("#tempcontent .span4").droppable({
 				drop: function() {
 					var myid=$(this).attr("id");
 					$.devIdx.split(' ');
@@ -1026,49 +1016,10 @@ $(document).ready(function() {
     //global var
     $.devIdx=0;
 
-    $( "#dialog-addtempdevice" ).dialog({
-          autoOpen: false,
-          width: 350,
-          height: 150,
-          modal: true,
-          resizable: false,
-          buttons: {
-              "Add Device": function() {
-                  var bValid = true;
-                  bValid = bValid && checkLength( $("#dialog-addtempdevice #devicename"), 2, 100 );
-                  if ( bValid ) {
-                      $( this ).dialog( "close" );
-                      $.ajax({
-                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-addtempdevice #devicename").val() + '&used=true',
-                         async: false,
-                         dataType: 'json',
-                         success: function(data) {
-                            ShowTemps();
-                         }
-                      });
-
-                  }
-              },
-              Cancel: function() {
-                  $( this ).dialog( "close" );
-              }
-          },
-          open: function() {
-              $(this).keypress(function(e) {
-                if (e.keyCode == $.ui.keyCode.ENTER) {
-                  e.preventDefault();
-                  $(this).parent().find("button:eq(0)").trigger("click");
-                }
-              });
-          },
-          close: function() {
-            $( this ).dialog( "close" );
-          }
-    });
     $( "#dialog-edittempdevice" ).dialog({
           autoOpen: false,
           width: 450,
-          height: 150,
+          height: 160,
           modal: true,
           resizable: false,
           buttons: {

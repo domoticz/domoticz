@@ -162,7 +162,7 @@ function ShowLightLog(id,name,content,backfunction)
 
   $('#modal').show();
   var htmlcontent = '';
-  htmlcontent='<p><h2>Name: ' + name + '</h2></p><br>\n';
+  htmlcontent='<p><h2>Name: ' + name + '</h2></p>\n';
   htmlcontent+=$('#lightlog').html();
   $($.content).html(GetBackbuttonHTMLTable(backfunction)+htmlcontent);
   
@@ -623,6 +623,7 @@ function SwitchLayout(layout)
 	ChangeClass("mDevices","");
 	ChangeClass("mHardware","");
 	ChangeClass("mSetup","");
+	ChangeClass("mLog","");
 	
 	var durl='';
 	
@@ -658,6 +659,10 @@ function SwitchLayout(layout)
 		durl='setup.html';
 		ChangeClass("mSetup","current_page_item");
 	}
+	else if (layout == "Log") {
+		durl='log.html';
+		ChangeClass("mLog","current_page_item");
+	}
 	else
 		return;
 		
@@ -671,7 +676,9 @@ function SwitchLayout(layout)
 			$(".bannercontent").html(msg + xhr.status + " " + xhr.statusText);
 		}
 	});
-	
+
+$('.btn-navbar').addClass('collapsed');
+$('.nav-collapse').removeClass('in').css('height', '0');	
 }
 
 function ShowNewBannerContent(content, backlink)

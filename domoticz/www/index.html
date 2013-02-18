@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html manifest="html5.appcache">
 <head>
-    <title>Domoticz</title>
+		<meta charset="utf-8">
+		<title>Domoticz</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" /> 
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
@@ -45,35 +46,28 @@
 					 and (orientation: landscape) and (-webkit-device-pixel-ratio: 2)" 
 					rel="apple-touch-startup-image"> 
 
-		<noscript>
-		<link type="text/css" rel="stylesheet" href="css/5grid/core.css" />
-		<link type="text/css" rel="stylesheet" href="css/5grid/core-desktop.css" />
-		<link type="text/css" rel="stylesheet" href="css/5grid/core-1200px.css" />
-		<link type="text/css" rel="stylesheet" href="css/5grid/core-noscript.css" />
-		<link type="text/css" rel="stylesheet" href="css/style.css" />
-		<link type="text/css" rel="stylesheet" href="css/style-desktop.css" />
-		</noscript>
+        <link rel="stylesheet" href="css/bootstrap.css">
+        <link href="css/bootstrap-responsive.css" rel="stylesheet" media="screen">
+        <link type="text/css" rel="stylesheet" href="css/ui-darkness/jquery-ui-1.10.1.custom.min.css" />
+				<link type="text/css" rel="stylesheet" href="css/demo_table_jui.css" />
+				<link type="text/css" rel="stylesheet" href="css/TableTools.css" />
+        <link type="text/css" rel="stylesheet" href="css/style.css" />
 
-		<link type="text/css" rel="stylesheet" href="css/ui-darkness/jquery-ui-1.10.0.custom.min.css" />
-		<link type="text/css" rel="stylesheet" href="css/loading.css" />
-		<link type="text/css" rel="stylesheet" href="css/demo_table_jui.css" />
-		<link type="text/css" rel="stylesheet" href="css/TableTools.css" />
+        <script src="js/jquery-1.9.1.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <script src="js/jquery-ui-1.10.1.custom.min.js"></script>
+				<script src="js/jquery.ui.touch-punch.min.js"></script>
 
-		<script type="text/javascript" charset="utf-8" src="js/jquery-1.9.0.min.js"></script>
-		<script type="text/javascript" charset="utf-8" src="js/jquery-ui-1.10.0.custom.min.js"></script>
-		<script type="text/javascript" charset="utf-8" src="js/jquery.ui.touch-punch.min.js"></script>
-    <script type="text/javascript" charset="utf-8" src="css/5grid/init.js?use=mobile,desktop,1000px&amp;mobileUI=1&amp;mobileUI.theme=none"></script>
-    <!--[if IE 9]><link rel="stylesheet" href="css/style-ie9.css" /><![endif]-->
-		<script type="text/javascript" charset="utf-8" src="js/jquery.dataTables.min.js"></script>
-		<script type="text/javascript" charset="utf-8" src="js/ZeroClipboard.js"></script>
-		<script type="text/javascript" charset="utf-8" src="js/TableTools.min.js"></script>
-    <script type="text/javascript" charset="utf-8" src="js/date.format.js"></script>
-    <script type="text/javascript" charset="utf-8" src="js/highcharts.js"></script>
-    <script type="text/javascript" charset="utf-8" src="js/highcharts-more.js"></script>
-    <script type="text/javascript" charset="utf-8" src="js/modules/exporting.js"></script>
-    <script type="text/javascript" charset="utf-8" src="js/themes/dark-blue.js"></script>
-    <script type="text/javascript" charset="utf-8" src="js/domoticz.js"></script>
-    
+				<script type="text/javascript" charset="utf-8" src="js/jquery.dataTables.min.js"></script>
+				<script type="text/javascript" charset="utf-8" src="js/ZeroClipboard.js"></script>
+				<script type="text/javascript" charset="utf-8" src="js/TableTools.min.js"></script>
+				<script type="text/javascript" charset="utf-8" src="js/date.format.js"></script>
+				<script type="text/javascript" charset="utf-8" src="js/highcharts.js"></script>
+				<script type="text/javascript" charset="utf-8" src="js/highcharts-more.js"></script>
+				<script type="text/javascript" charset="utf-8" src="js/modules/exporting.js"></script>
+				<script type="text/javascript" charset="utf-8" src="js/themes/dark-blue.js"></script>
+				<script type="text/javascript" charset="utf-8" src="js/domoticz.js"></script>
+
 <script type="text/javascript" charset="utf-8" id="init-code">
 
 function logEvent(event) {
@@ -214,120 +208,121 @@ $(document).ready(function() {
 
 </script>
 
-</head><body class="homepage">
-<div id="lightlog" style="display:none;">
-    <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0" width="100%">
-        <thead>
-            <tr>
-                <th width="140" align="left">Date</th>
-                <th>Data</th>
-            </tr>
-        </thead>
-    </table>
-    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-			<tr>
-				<td>
-				</td>
-				<td align="right">
-					<a class="btnstyle3" onclick="ClearLightLog();">Clear</a>
-				</td>
-			</tr>
-		</table>
-</div>
-<div id="editnotifications" style="display:none;">
-    <table class="display" id="notificationtable" border="0" cellpadding="0" cellspacing="0" width="100%">
-        <thead>
-            <tr>
-                <th width="120" align="left">Type</th>
-                <th align="left">When</th>
-            </tr>
-        </thead>
-    </table>
-    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-			<tr>
-				<td>
-					<a class="btnstyle3-dis" id="notificationupdate" >Update</a>&nbsp;&nbsp;&nbsp;
-					<a class="btnstyle3-dis" id="notificationdelete" >Delete</a>
-				</td>
-				<td align="right">
-					<a class="btnstyle3" onclick="ClearNotifications();">Clear</a>
-				</td>
-			</tr>
-		</table>
-		<br>
-		<table class="display" id="notificationparamstable" border="0" cellpadding="0" cellspacing="20">
-			<tr>
-				<td align="right" style="width:80px"><label for="name">Type:</label></td>
-				<td><select id="combotype" style="width:120px" class="combobox ui-corner-all"></select></td>
-			</tr>
-			<tr>
-				<td align="right" style="width:80px"><label for="name">When:</label></td>
-				<td><select id="combowhen" style="width:120px" class="combobox ui-corner-all">
-							<option value="0">Greater</option>
-							<option value="1">Below</option>
-						</select>
-				</td>
-			</tr>
-			<tr>
-				<td align="right" style="width:80px"><label for="name">Value:</label></td>
-				<td><input type="text" id="value" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><label id="valuetype">&nbsp;&deg; C</label></td>
-			</tr>
-		</table>
-		<br>
-    <a class="btnstyle3" onclick="AddNotification();">Add</a>
-</div>
-<div id="dialog-transferdevice" title="Transfer Device">
-    <form>
-    <fieldset>
-        <label for="newdevice">New Device: </label>
-				<select id="newdevice" style="width:250px" class="combobox ui-corner-all">
-				</select>
-    </fieldset>
-    </form>
-</div>
-<div id="wrap">
-<div id="notification" style="display: none;"></div>
-<div id="header-wrapper">
-	<header id="header">
-		<div class="5grid-layout">
-			<div class="row">
-				<div class="2u" id="logo">
-					<h1><a class="mobileUI-site-name" href="javascript:SwitchLayout('Dashboard')">Domoticz</a></h1>
-					<p> V<!--#embed versionstr --></p>
-				</div>
-				<div class="10u" id="menu">
-					<nav class="mobileUI-site-nav">
-						<ul>
-							<li id="mDashboard"><a id="cDashboard" href="javascript:SwitchLayout('Dashboard')"><img src="images/desktop.png"> Dashboard</img></a></li>
-							<li id="mLightSwitches"><a id="cLightSwitches" href="javascript:SwitchLayout('LightSwitches')"><img src="images/lightbulb.png"> Lights/Switches</a></li>
-							<li id="mTemperature"><a id="cTemperature" href="javascript:SwitchLayout('Temperature')"><img src="images/temperature.png"> Temperature</a></li>
-							<li id="mWeather"><a id="cWeather" href="javascript:SwitchLayout('Weather')"><img src="images/rain.png"> Weather</a></li>
-							<li id="mUtility"><a id="cUtility" href="javascript:SwitchLayout('Utility')"><img src="images/utility.png"> Utility</a></li>
-							<li id="mDevices"><a id="cDevices" href="javascript:SwitchLayout('Devices')"><img src="images/devices.png"> Devices</a></li>
-							<li id="mHardware"><a id="cHardware" href="javascript:SwitchLayout('Hardware')"><img src="images/hardware.png"> Hardware</a></li>
-              <li id="mSetup"><a id="cSetup" href="javascript:SwitchLayout('Setup')"><img src="images/setup.png"> Setup</a></li>
-						</ul>
-					</nav>
-				</div>
-			</div>
-		</div>
-	</header>
-</div>
-<div class="5grid-layout">
-	<div class="row">
-		<div id="banner" class="12u">
-			<div class="bannercontent">
-   		</div>
-		</div>
+</head class="homepage">
+<body>
+	<div id="lightlog" style="display:none;">
+			<table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0" width="100%">
+					<thead>
+							<tr>
+									<th width="140" align="left">Date</th>
+									<th>Data</th>
+							</tr>
+					</thead>
+			</table>
+			<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+				<tr>
+					<td>
+					</td>
+					<td align="right">
+						<a class="btnstyle3" onclick="ClearLightLog();">Clear</a>
+					</td>
+				</tr>
+			</table>
 	</div>
-</div>
-</div>
-<div class="5grid-layout" id="copyright">
-  <div class="row">
-    <div class="12u">
-      <p>&copy; 2012-2013 Domoticz | WWW: <a href="http://domoticz.com/">Domoticz.com</a></p>
-    </div>
-  </div>
-</div>
-</body>
+	<div id="editnotifications" style="display:none;">
+			<table class="display" id="notificationtable" border="0" cellpadding="0" cellspacing="0" width="100%">
+					<thead>
+							<tr>
+									<th width="120" align="left">Type</th>
+									<th align="left">When</th>
+							</tr>
+					</thead>
+			</table>
+			<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+				<tr>
+					<td>
+						<a class="btnstyle3-dis" id="notificationupdate" >Update</a>&nbsp;&nbsp;&nbsp;
+						<a class="btnstyle3-dis" id="notificationdelete" >Delete</a>
+					</td>
+					<td align="right">
+						<a class="btnstyle3" onclick="ClearNotifications();">Clear</a>
+					</td>
+				</tr>
+			</table>
+			<br>
+			<table class="display" id="notificationparamstable" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:80px"><label for="name">Type:</label></td>
+					<td><select id="combotype" style="width:120px" class="combobox ui-corner-all"></select></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:80px"><label for="name">When:</label></td>
+					<td><select id="combowhen" style="width:120px" class="combobox ui-corner-all">
+								<option value="0">Greater</option>
+								<option value="1">Below</option>
+							</select>
+					</td>
+				</tr>
+				<tr>
+					<td align="right" style="width:80px"><label for="name">Value:</label></td>
+					<td><input type="text" id="value" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><label id="valuetype">&nbsp;&deg; C</label></td>
+				</tr>
+			</table>
+			<br>
+			<a class="btnstyle3" onclick="AddNotification();">Add</a>
+	</div>
+	<div id="dialog-transferdevice" title="Transfer Device">
+			<form>
+					<label for="newdevice">New Device: </label>
+					<select id="newdevice" style="width:250px" class="combobox ui-corner-all">
+					</select>
+			</form>
+	</div>
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+										<a class="brand" href="javascript:SwitchLayout('Dashboard')"><h1>Domoticz</h1> <h2>V<!--#embed versionstr --></h2></a>
+                    <div class="nav-collapse collapse">
+                        <ul class="nav">
+                            <li id="mDashboard"><a id="cDashboard" href="javascript:SwitchLayout('Dashboard')"><img src="images/desktop.png"> Dashboard</img></a></li>
+                            <li class="divider-vertical"></li>
+														<li id="mLightSwitches"><a id="cLightSwitches" href="javascript:SwitchLayout('LightSwitches')"><img src="images/lightbulb.png"> Lights/Switches</a></li>
+                            <li class="divider-vertical"></li>
+														<li id="mTemperature"><a id="cTemperature" href="javascript:SwitchLayout('Temperature')"><img src="images/temperature.png"> Temperature</a></li>
+                            <li class="divider-vertical"></li>
+														<li id="mWeather"><a id="cWeather" href="javascript:SwitchLayout('Weather')"><img src="images/rain.png"> Weather</a></li>
+                            <li class="divider-vertical"></li>
+														<li id="mUtility"><a id="cUtility" href="javascript:SwitchLayout('Utility')"><img src="images/utility.png"> Utility</a></li>
+                            <li class="divider-vertical"></li>
+														<li id="mDevices"><a id="cDevices" href="javascript:SwitchLayout('Devices')"><img src="images/devices.png"> Devices</a></li>
+                            <li class="divider-vertical"></li>
+                            <li class="dropdown">
+                                <a class="dropdown-toggle" data-toggle="dropdown" onmouseover="cursorhand()" onmouseout="cursordefault()"><img src="images/setup.png"> Setup <b class="caret"></b></a>
+                                <ul class="dropdown-menu pull-right">
+																		<li id="mHardware"><a id="cHardware" href="javascript:SwitchLayout('Hardware')"><img src="images/hardware.png"> Hardware</a></li>
+                                    <li id="mSetup"><a id="cSetup" href="javascript:SwitchLayout('Setup')"><img src="images/setup.png"> Application Settings</a></li>
+                                    <li class="divider"></li>
+                                    <li id="mLog"><a id="cLog" href="javascript:SwitchLayout('Log')"><img src="images/log.png"> Log</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div><!--/.nav-collapse -->
+                </div>
+            </div>
+        </div>
+        <div id="holder">
+					<div class="container">
+							<div id="notification" style="display: none;"></div>
+							<div class="bannercontent"></div>
+							<div id="copyright">
+									<p>&copy; 2012-2013 Domoticz | WWW: <a href="http://domoticz.com/">Domoticz.com</a></p>
+							</div>
+					</div> <!-- /container -->
+				</div>
+    </body>
 </html>

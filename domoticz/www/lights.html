@@ -56,7 +56,6 @@
 </div>
 <div id="dialog-addlightdevice" title="Add Light/Switch Device">
     <form>
-    <fieldset>
         <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
         <tr>
           <td align="right" style="width:60px"><label for="name">Name: </label></td>
@@ -80,12 +79,10 @@
 					</td>
 				</tr>
 		    </table>
-    </fieldset>
     </form>
 </div>
 <div id="dialog-addmanuallightdevice" title="Add Manual Light/Switch Device">
     <form>
-    <fieldset>
         <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
         <tr>
           <td align="right" style="width:60px"><label for="name">Hardware: </label></td>
@@ -177,19 +174,16 @@
 				</tr>
 				</table>
 				
-    </fieldset>
     </form>
 </div>
 <div id="dialog-notificationlightdevice" title="Add/Remove Notification">
     <form>
-    <fieldset>
         <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
         <tr>
           <td align="right" style="width:60px"><label for="enabled">Enabled: </label></td>
           <td><input type="checkbox" id="enabled"></td>
         </tr>
 		    </table>
-    </fieldset>
     </form>
 </div>
 <div id="lightcontent">
@@ -1187,19 +1181,15 @@ function ShowLights()
 	var suntext="";
   if (sunRise!="")
   {
-    suntext+='SunRise: ' + sunRise + ', SunSet: ' + sunSet + '<br><br>\n';
+    suntext+='SunRise: ' + sunRise + ', SunSet: ' + sunSet + '\n';
   }
 
   var tophtm=
+				'\t<center>' + suntext + '</center>\n' +
         '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
         '\t<tr>\n' +
-        '\t  <td align="left">\n' +
-        '\t    <a class="btnstylerev" onclick="AddManualLightDevice();">Manual Light/Switch</a>\n' +
-        '\t  </td>\n' +
-        '\t  <td align="center">' + suntext + '</td>\n'+
-        '\t  <td align="right">\n' +
-        '\t    <a class="btnstyle" onclick="AddLightDevice();">Learn Light/Switch</a>\n' +
-        '\t  </td>\n' +
+        '\t  <td align="left"><a class="btnstylerev" onclick="AddManualLightDevice();">Manual Light/Switch</a></td>\n' +
+        '\t  <td align="right"><a class="btnstyle" onclick="AddLightDevice();">Learn Light/Switch</a></td>\n' +
         '\t</tr>\n' +
         '\t</table>\n';
   
@@ -1227,7 +1217,7 @@ function ShowLights()
           var bAddTimer=true;
           var bIsDimmer=false;
           var xhtm=
-                '\t<div class="4u" id="' + item.idx + '">\n' +
+                '\t<div class="span4" id="' + item.idx + '">\n' +
                 '\t  <section>\n' +
                 '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
                 '\t    <tr>\n' +
@@ -1406,7 +1396,7 @@ function ShowLights()
   $('#lightcontent').html(tophtm+htmlcontent);
   
   if ($.myglobals.ismobile==false) {
-		$("#lightcontent .4u").draggable({
+		$("#lightcontent .span4").draggable({
 				drag: function() {
 					clearInterval($.myglobals.refreshTimer);
 					$.devIdx=$(this).attr("id");
@@ -1414,7 +1404,7 @@ function ShowLights()
 				},
 				revert: true
 		});
-		$("#lightcontent .4u").droppable({
+		$("#lightcontent .span4").droppable({
 				drop: function() {
 					var myid=$(this).attr("id");
 					$.devIdx.split(' ');
@@ -1481,7 +1471,7 @@ function ShowLights()
 
 function ResizeDimSliders()
 {
-	var width=$(".4u").width()-90;
+	var width=$(".span4").width()-90;
 	$("#lightcontent .dimslider").width(width);
 }
 
