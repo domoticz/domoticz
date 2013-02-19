@@ -326,6 +326,7 @@ bool CSQLHelper::OpenDatabase()
 	if (!GetPreferencesVar("5MinuteHistoryDays", nValue))
 	{
 		UpdatePreferencesVar("5MinuteHistoryDays", 1);
+		nValue=1;
 	}
 	Set5MinuteHistoryDays(nValue);
 
@@ -338,7 +339,10 @@ bool CSQLHelper::OpenDatabase()
 
 void CSQLHelper::Set5MinuteHistoryDays(const int Days)
 {
-	m_5MinuteHistoryDays=Days;
+	if (Days<1)
+		m_5MinuteHistoryDays=1;
+	else
+		m_5MinuteHistoryDays=Days;
 	UpdatePreferencesVar("5MinuteHistoryDays", Days);
 }
 
