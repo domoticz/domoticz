@@ -3,6 +3,7 @@ Version 1.0.10 (February xxth 2013)
 - Implemented: New layout, dropdown menu, hardware moved to setting dropdown
 - Implemented: Chart tooltip now includes weekday
 - Fixed: Option to enlarge the short-log (5 minutes)
+- Fixed: Dimslider using now values 1 till ... , 1=Off
 
 Version 1.0.9 (February 17th 2013)
 - Implemented: OWL113 option to display in Ampere/Usage
