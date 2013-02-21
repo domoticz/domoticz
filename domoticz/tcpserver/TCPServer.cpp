@@ -74,7 +74,7 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 	{
 		boost::lock_guard<boost::mutex> l(connectionMutex);
 		std::string s = new_connection_->socket().remote_endpoint().address().to_string();
-		std::cout << "Incoming connection from: " << s << std::endl;
+		_log.Log(LOG_NORM,"Incoming connection from: %s", s.c_str());
 
 		connections_.insert(new_connection_);
 		if (m_username=="")
@@ -100,7 +100,7 @@ void CTCPServerInt::stopClient(CTCPClient_ptr c)
 	boost::lock_guard<boost::mutex> l(connectionMutex);
 
 	//std::string s = c->socket().remote_endpoint().address().to_string();
-	//std::cout << "Closing connection from: " << s << std::endl;
+	//_log.Log(LOG_NORM,"Closing connection from: %s", s.c_str());
 	if (connections_.find(c)!=connections_.end())
 	{
 		connections_.erase(c);
@@ -185,7 +185,7 @@ bool CTCPServer::StartServer(const std::string address, const std::string port, 
 	}
 	catch(std::exception& e)
 	{
-		std::cout << "Exception: " << e.what() << std::endl;
+		_log.Log(LOG_ERROR,"Exception: %s",e.what());
 		return false;
 	}
 	//Start worker thread
@@ -206,7 +206,7 @@ void CTCPServer::Do_Work()
 {
 	if (m_pTCPServer)
 		m_pTCPServer->start();
-	//std::cout << "TCPServer stopped...\n";
+	//_log.Log(LOG_NORM,"TCPServer stopped...");
 }
 
 void CTCPServer::SendToAll(const char *pData, size_t Length)

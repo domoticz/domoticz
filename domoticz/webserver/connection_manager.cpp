@@ -26,7 +26,7 @@ void connection_manager::start(connection_ptr c)
   {
 	  //ok, this could get a very long list when running for years
 	  connectedips_.insert(s);
-	  std::cout << "Incoming connection from: " << s << std::endl;
+	  _log.Log(LOG_NORM,"Incoming connection from: %s", s.c_str());
   }
 
   c->start();

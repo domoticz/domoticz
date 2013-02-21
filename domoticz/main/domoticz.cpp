@@ -25,21 +25,23 @@ const char *szHelp=
 #if defined WIN32
 	"\t-nobrowser (do not start web browser (Windows Only)\n";
 #else
+	"\t-logfile file_path (for example D:\\domoticz.log)\n";
 	"";
 #endif
 
 std::string szStartupFolder;
 
 MainWorker _mainworker;
+CLogger _log;
 
 void DQuitFunction()
 {
-	std::cout << "Closing application!..." << std::endl;
+	_log.Log(LOG_NORM,"Closing application!...");
 	fflush(stdout);
 #if defined WIN32
 	TrayMessage(NIM_DELETE,NULL);
 #endif
-	std::cout << "stopping worker...\n";
+	_log.Log(LOG_NORM,"stopping worker...");
 	_mainworker.Stop();
 }
 
@@ -102,7 +104,7 @@ int main(int argc, char**argv)
 	bool bStartWebBrowser=true;
 	RedirectIOToConsole();
 #endif
-	std::cout << "Domoticz V" << VERSION_STRING << " (c)2012-2013 GizMoCuz\n";
+	_log.Log(LOG_NORM,"Domoticz V%s (c)2012-2013 GizMoCuz",VERSION_STRING);
 
 	szStartupFolder="";
 #if !defined WIN32
@@ -111,7 +113,7 @@ int main(int argc, char**argv)
 	szStartupFolder=szStartupPath;
 	if (szStartupFolder.find_last_of('/')!=std::string::npos)
 		szStartupFolder=szStartupFolder.substr(0,szStartupFolder.find_last_of('/')+1);
-	//std::cout << "Startup Path: " << szStartupFolder << std::endl;
+	_log.Log(LOG_NORM,"Startup Path: %s", szStartupFolder.c_str());
 #endif
 
 	CCmdLine cmdLine;
@@ -125,7 +127,7 @@ int main(int argc, char**argv)
 
 	if ((cmdLine.HasSwitch("-h"))||(cmdLine.HasSwitch("--help"))||(cmdLine.HasSwitch("/?")))
 	{
-		std::cout << szHelp;
+		_log.Log(LOG_NORM,szHelp);
 		return 0;
 	}
 
@@ -133,11 +135,11 @@ int main(int argc, char**argv)
 	{
 		if (cmdLine.GetArgumentCount("-startupdelay")!=1)
 		{
-			std::cout << "Please specify a startupdelay" << std::endl;
+			_log.Log(LOG_ERROR,"Please specify a startupdelay");
 			return 0;
 		}
 		int DelaySeconds=atoi(cmdLine.GetSafeArgument("-startupdelay",0,"").c_str());
-		std::cout << "Startup delay... waiting " << DelaySeconds << " seconds..." << std::endl;
+		_log.Log(LOG_NORM,"Startup delay... waiting %d seconds...",DelaySeconds);
 		boost::this_thread::sleep(boost::posix_time::seconds(DelaySeconds));
 	}
 
@@ -145,7 +147,7 @@ int main(int argc, char**argv)
 	{
 		if (cmdLine.GetArgumentCount("-www")!=1)
 		{
-			std::cout << "Please specify a port" << std::endl;
+			_log.Log(LOG_ERROR,"Please specify a port");
 			return 0;
 		}
 		std::string wwwport=cmdLine.GetSafeArgument("-www",0,"8080");
@@ -161,7 +163,7 @@ int main(int argc, char**argv)
 	{
 		if (cmdLine.GetArgumentCount("-dbase")!=1)
 		{
-			std::cout << "Please specify a Database Name" << std::endl;
+			_log.Log(LOG_ERROR,"Please specify a Database Name");
 			return 0;
 		}
 		dbasefile=cmdLine.GetSafeArgument("-dbase",0,"domoticz.db");
@@ -173,7 +175,7 @@ int main(int argc, char**argv)
 	{
 		if (cmdLine.GetArgumentCount("-verbose")!=1)
 		{
-			std::cout << "Please specify a verbose level" << std::endl;
+			_log.Log(LOG_ERROR,"Please specify a verbose level");
 			return 0;
 		}
 		int Level=atoi(cmdLine.GetSafeArgument("-verbose",0,"").c_str());
@@ -185,6 +187,17 @@ int main(int argc, char**argv)
 		bStartWebBrowser=false;
 	}
 #endif
+	if (cmdLine.HasSwitch("-logfile"))
+	{
+		if (cmdLine.GetArgumentCount("-logfile")!=1)
+		{
+			_log.Log(LOG_ERROR,"Please specify an output log file");
+			return 0;
+		}
+		std::string logfile=cmdLine.GetSafeArgument("-logfile",0,"domoticz.log");
+		_log.SetOutputFile(logfile.c_str());
+	}
+	
 	if (!_mainworker.Start())
 	{
 		return 0;

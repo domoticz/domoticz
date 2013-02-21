@@ -221,44 +221,7 @@ bool MainWorker::GetSunSettings()
 	std::string riseset=sunrise+";"+sunset;
 	m_sql.UpdateTempVar("SunRiseSet",riseset.c_str());
 	m_scheduler.SetSunRiseSetTimers(sunrise,sunset);
-	std::cout << "Sunrise: " << sunrise << " SunSet: " << sunset << std::endl;
-
-/*
-	char szURL[200];
-	sprintf(szURL,"http://www.earthtools.org/sun/%s/%s/%d/%d/99/0",
-		Latitude.c_str(),Longitude.c_str(),
-		ltime.tm_mday,ltime.tm_mon+1);
-	I_HTTPRequest * r = NewHTTPRequest( szURL );
-	if (r!=NULL)
-	{
-		if (r->readDataInVecBuffer())
-		{
-			r->getBuffer(pData, ulLength);
-		}
-		r->dispose();
-	}
-	if (pData==NULL)
-		return false;
-	
-	try
-	{
-		using boost::property_tree::ptree;
-		ptree pt;
-		std::istringstream input( (char*)pData );
-		read_xml(input, pt);
-
-		std::string sunrise = pt.get_child("sun").get_child("morning").get<std::string>("sunrise");
-		std::string sunset = pt.get_child("sun").get_child("evening").get<std::string>("sunset");
-		std::string riseset=sunrise+";"+sunset;
-		m_sql.UpdateTempVar("SunRiseSet",riseset.c_str());
-		m_scheduler.SetSunRiseSetTimers(sunrise,sunset);
-		std::cout << "Sunrise: " << sunrise << " SunSet: " << sunset << std::endl;
-	}
-	catch (...)
-	{
-	}
-	delete pData;
-*/
+	_log.Log(LOG_NORM,"Sunrise: %s SunSet:%s", sunrise.c_str(), sunset.c_str());
 	return true;
 }
 
@@ -314,7 +277,7 @@ bool MainWorker::AddHardwareFromParams(
 			{
 				if (Port>=serialports.size())
 				{
-					std::cout << "Serial Port out of range!..." << std::endl;
+					_log.Log(LOG_ERROR,"Serial Port out of range!...");
 					return false;
 				}
 				strcpy(szSerialPort,serialports[Port].c_str());
@@ -433,7 +396,7 @@ bool MainWorker::StartThread()
 	{
         return false;
 	}
-	std::cout << "Webserver started on port: " << m_webserverport << std::endl;
+	_log.Log(LOG_NORM,"Webserver started on port: %s", m_webserverport.c_str());
 
 	//Start Scheduler
 	m_scheduler.StartScheduler(this);
@@ -551,7 +514,7 @@ void MainWorker::Do_Work()
 		}
 
 	}
-	std::cout << "Mainworker Stopped..." << std::endl;
+	_log.Log(LOG_NORM, "Mainworker Stopped...");
 }
 
 void MainWorker::SendCommand(const int HwdID, unsigned char Cmd, const char *szMessage)
@@ -561,7 +524,7 @@ void MainWorker::SendCommand(const int HwdID, unsigned char Cmd, const char *szM
 		return;
 #ifdef _DEBUG
 	if (szMessage!=NULL)
-		std::cout << "Cmd: " << szMessage << std::endl;
+		_log.Log(LOG_NORM,"Cmd: %s", szMessage);
 #endif
 
 	tRBUF cmd;
@@ -592,14 +555,15 @@ void MainWorker::WriteToHardware(const int HwdID, const char *pdata, const unsig
 
 void MainWorker::WriteMessage(const char *szMessage)
 {
-	std::cout << szMessage << std::endl;
+	_log.Log(LOG_NORM,"%s",szMessage);
 }
 
 void MainWorker::WriteMessage(const char *szMessage, bool linefeed)
 {
-	std::cout << szMessage;
 	if (linefeed)
-		std::cout << std::endl;
+		_log.Log(LOG_NORM,szMessage);
+	else
+		_log.LogNoLF(LOG_NORM,szMessage);
 }
 
 void MainWorker::OnHardwareConnected(CDomoticzHardwareBase *pHardware)
@@ -637,18 +601,19 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 
 	int HwdID = pHardware->m_HwdID;
 #ifdef DEBUG_RECEIVE
-	std::cout << szDate << "HwdID: " << HwdID << " (" << pHardware->Name << ")" << " RX: Len: " << std::dec << Len << " ";
+	std::stringstream sstream;
+	sstream << szDate << "HwdID: " << HwdID << " (" << pHardware->Name << ")" << " RX: Len: " << std::dec << Len << " ";
 
 	for (size_t ii=0; ii<Len; ii++)
 	{
 		if (ii!=0)
-			std::cout << ":";
-		std::cout << HEX((unsigned char)pRXCommand[ii]);
+			sstream << ":";
+		sstream << HEX((unsigned char)pRXCommand[ii]);
 	}
-	std::cout << std::endl;
+	_log.Log(LOG_NORM,"%s",sstream.str().c_str());
 #else
 	szDate[strlen(szDate)-1]=0;
-	std::cout << szDate << " (" << pHardware->Name << ") ";
+	_log.LogNoLF(LOG_NORM,"%s (%s) ",szDate,pHardware->Name.c_str());
 #endif
 	switch (pRXCommand[1])
 	{
@@ -804,7 +769,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			decode_FS20(HwdID, (tRBUF *)pRXCommand);
 			break;
 		default:
-			std::cout << "UNHANDLED PACKET TYPE:      FS20 " << HEX((unsigned char)pRXCommand[1]) << std::endl;
+			_log.Log(LOG_ERROR,"UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
 			break;
 	}
 }
@@ -1311,7 +1276,6 @@ void MainWorker::decode_Wind(const int HwdID, const tRBUF *pResponse)
 		{
 			float chillJatTI = 13.12f+0.6215f*temp -11.37f*pow(wspeedms*3.6f,0.16f) + 0.3965f*temp*pow(wspeedms*3.6f,0.16f);
 			chill=chillJatTI;
-			//std::cout << "Org Chill: " << chill << " New Chill: " << chillJatTI << std::endl;
 		}
 	}
 	float wspeedms=float(intSpeed)/10.0f;
@@ -2560,7 +2524,7 @@ void MainWorker::decode_UNDECODED(const int HwdID, const tRBUF *pResponse)
 	}
 	for (int i = 0; i< (pResponse->UNDECODED.packetlength - pResponse->UNDECODED.msg1); i++)
 	{
-		std::cout << HEX((unsigned char)(pResponse->UNDECODED.msg1 + i));
+		_log.LogNoLF(LOG_NORM,"%02X",(unsigned char)(pResponse->UNDECODED.msg1 + i));
 	}
 	WriteMessage(" ");
 }
@@ -5238,15 +5202,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, std::string s
 				level=15;
 			lcmd.LIGHTING1.filler=0;
 			lcmd.LIGHTING1.rssi=7;
-/*
-			unsigned char *pData=(unsigned char *)&lcmd;
-			for (size_t ii=0; ii<sizeof(lcmd.LIGHTING2); ii++)
-			{
-				if (ii!=0)
-					std::cout << ":";
-				std::cout << HEX((unsigned char)pData[ii]);
-			}
-*/
 			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING1));
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
@@ -5276,15 +5231,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, std::string s
 			lcmd.LIGHTING2.level=level;
 			lcmd.LIGHTING2.filler=0;
 			lcmd.LIGHTING2.rssi=7;
-/*
-			unsigned char *pData=(unsigned char *)&lcmd;
-			for (size_t ii=0; ii<sizeof(lcmd.LIGHTING2); ii++)
-			{
-				if (ii!=0)
-					std::cout << ":";
-				std::cout << HEX((unsigned char)pData[ii]);
-			}
-*/
 			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING2));
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)

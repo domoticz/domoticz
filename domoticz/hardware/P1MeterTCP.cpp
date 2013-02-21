@@ -21,7 +21,7 @@ P1MeterTCP::P1MeterTCP(const int ID, const std::string IPAddress, const unsigned
 
 		if (ret == WSANOTINITIALISED) 
 		{  
-			std::cout << "Winsock could not be initialized!" << std::endl;
+			_log.Log(LOG_ERROR,"Winsock could not be initialized!");
 		}
 	}
 	m_socket=INVALID_SOCKET;
@@ -99,7 +99,7 @@ bool P1MeterTCP::ConnectInternal()
 	m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (m_socket == INVALID_SOCKET)
 	{
-		std::cerr << "could not create a TCP/IP socket!" << std::endl;
+		_log.Log(LOG_ERROR,"could not create a TCP/IP socket!");
 		return false;
 	}
 
@@ -110,11 +110,11 @@ bool P1MeterTCP::ConnectInternal()
 	{
 		closesocket(m_socket);
 		m_socket=INVALID_SOCKET;
-		std::cerr << "P1 Smart Meter could not connect to: " << m_szIPAddress << ":" << std::dec << m_usIPPort << std::endl;
+		_log.Log(LOG_ERROR,"P1 Smart Meter could not connect to: %s:%ld",m_szIPAddress.c_str(),m_usIPPort);
 		return false;
 	}
 
-	std::cout << "P1 Smart Meter connected to: " << m_szIPAddress << ":" << std::dec << m_usIPPort << std::endl;
+	_log.Log(LOG_NORM,"P1 Smart Meter connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
 
 	Init();
 
@@ -148,7 +148,7 @@ void P1MeterTCP::Do_Work()
 				m_retrycntr=0;
 				if (!ConnectInternal())
 				{
-					std::cout << "retrying in " << std::dec << RETRY_DELAY << " seconds..." << std::endl;
+					_log.Log(LOG_NORM,"retrying in %d seconds...", RETRY_DELAY);
 					continue;
 				}
 			}
@@ -158,12 +158,12 @@ void P1MeterTCP::Do_Work()
 			unsigned char data[1028];
 			int bread=recv(m_socket,(char*)&data,sizeof(data),0);
 			if ((bread==0)||(bread<0)) {
-				std::cout << "P1 TCP/IP connection closed!" << std::endl;
+				_log.Log(LOG_NORM,"P1 TCP/IP connection closed!");
 				closesocket(m_socket);
 				m_socket=INVALID_SOCKET;
 				if (!m_stoprequested)
 				{
-					std::cout << "retrying in " << std::dec << RETRY_DELAY << " seconds..." << std::endl;
+					_log.Log(LOG_NORM,"retrying in %d seconds...", RETRY_DELAY);
 					m_retrycntr=0;
 					continue;
 				}
@@ -175,7 +175,7 @@ void P1MeterTCP::Do_Work()
 			}
 		}
 	}
-	std::cout << "P1 TCP/IP Worker stopped...\n";
+	_log.Log(LOG_NORM,"P1 TCP/IP Worker stopped...");
 } 
 
 void P1MeterTCP::write(const char *data, size_t size)

@@ -101,6 +101,7 @@
     <ClInclude Include="hardware\P1MeterBase.h" />
     <ClInclude Include="hardware\P1MeterSerial.h" />
     <ClInclude Include="hardware\P1MeterTCP.h" />
+    <ClInclude Include="main\Logger.h" />
     <ClInclude Include="main\resource.h" />
     <ClInclude Include="main\Scheduler.h" />
     <ClInclude Include="main\SQLHelper.h" />
@@ -147,6 +148,7 @@
     <ClCompile Include="hardware\P1MeterBase.cpp" />
     <ClCompile Include="hardware\P1MeterSerial.cpp" />
     <ClCompile Include="hardware\P1MeterTCP.cpp" />
+    <ClCompile Include="main\Logger.cpp" />
     <ClCompile Include="main\Scheduler.cpp" />
     <ClCompile Include="main\SQLHelper.cpp" />
     <ClCompile Include="main\Helper.cpp" />

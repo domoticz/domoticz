@@ -111,6 +111,7 @@ include_directories(${CMAKE_SOURCE_DIR}/main)
 set(
 domoticz_SRCS
 main/stdafx.cpp
+main/Logger.cpp
 main/domoticz.cpp
 main/CmdLine.cpp
 main/mainworker.cpp

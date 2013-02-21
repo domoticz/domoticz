@@ -223,7 +223,7 @@ void CScheduler::Do_Work()
 		boost::this_thread::sleep(boost::posix_time::seconds(1));
 		CheckSchedules();
 	}
-	std::cout << "Scheduler stopped..." << std::endl;
+	_log.Log(LOG_NORM,"Scheduler stopped...");
 }
 
 void CScheduler::CheckSchedules()
@@ -279,7 +279,7 @@ void CScheduler::CheckSchedules()
 			}
 			if (bOkToFire)
 			{
-				std::cout << "Schedule item started! Type: " << Timer_Type_Desc(itt->timerType) << ", DevID: " << itt->DevID << ", Time: " << asctime(&ltime) << std::endl;
+				_log.Log(LOG_NORM,"Schedule item started! Type: %s, DevID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->DevID, asctime(&ltime));
 				std::string switchcmd="";
 				if (itt->timerCmd == TCMD_ON)
 					switchcmd="On";
@@ -287,7 +287,7 @@ void CScheduler::CheckSchedules()
 					switchcmd="Off";
 				if (switchcmd=="")
 				{
-					std::cerr << "Unknown switch command in timer!!...." << std::endl;
+					_log.Log(LOG_ERROR,"Unknown switch command in timer!!....");
 				}
 				else
 				{
@@ -324,7 +324,7 @@ void CScheduler::CheckSchedules()
 						}
 						if (!m_pMain->SwitchLight(itt->DevID,switchcmd,ilevel))
 						{
-							std::cerr << "Error sending switch command, DevID: " << itt->DevID << ", Time: " << asctime(&ltime) << std::endl;
+							_log.Log(LOG_ERROR,"Error sending switch command, DevID: %llu, Time: %s", itt->DevID, asctime(&ltime));
 						}
 					}
 				}

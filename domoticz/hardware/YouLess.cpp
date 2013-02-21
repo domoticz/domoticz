@@ -70,7 +70,7 @@ void CYouLess::Do_Work()
 			m_PollCounter=0;
 		}
 	}
-	std::cout << "YouLess Worker stopped...\n";
+	_log.Log(LOG_NORM,"YouLess Worker stopped...");
 }
 
 void CYouLess::WriteToHardware(const char *pdata, const unsigned char length)
@@ -96,7 +96,7 @@ void CYouLess::GetMeterDetails()
 	}
 	if ((pData==NULL)||(ulLength<5))
 	{
-		std::cout << "YouLess error connecting to: " << m_szIPAddress << std::endl;
+		_log.Log(LOG_NORM,"YouLess error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
 	std::string response=(char*)pData;
@@ -105,7 +105,7 @@ void CYouLess::GetMeterDetails()
 	StringSplit(response, "\n", results);
 	if (results.size()<2)
 	{
-		std::cout << "YouLess error connecting to: " << m_szIPAddress << std::endl;
+		_log.Log(LOG_ERROR,"YouLess error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
 	int fpos;

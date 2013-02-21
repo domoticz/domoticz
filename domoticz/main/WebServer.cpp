@@ -42,14 +42,14 @@ void CWebServer::Do_Work()
 		}
 		catch(...)
 		{
-			std::cout << "WebServer stopped by exception, starting again...\n";
+			_log.Log(LOG_ERROR,"WebServer stopped by exception, starting again...");
 			m_pWebEm->Stop();
 			continue;
 		}
 		break;
 	}
 
-	std::cout << "WebServer stopped...\n";
+	_log.Log(LOG_NORM,"WebServer stopped...");
 }
 
 
@@ -72,11 +72,11 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
             return false;
     }
     catch(...) {
-        std::cout << "Failed to start the webserver" << std::endl;
+        _log.Log(LOG_ERROR,"Failed to start the webserver");
         if(atoi(listenport.c_str())<1024)
-            std::cout << "check privileges for opening ports below 1024" << std::endl;
+            _log.Log(LOG_ERROR,"check privileges for opening ports below 1024");
 		else
-			std::cout << "check if no other application is using port: " << listenport << std::endl;
+			_log.Log(LOG_ERROR,"check if no other application is using port: %s",listenport.c_str());
         return false;
     }
 	m_pWebEm->SetDigistRealm("Domoticz.com");

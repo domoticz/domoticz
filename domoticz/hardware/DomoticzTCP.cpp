@@ -24,7 +24,7 @@ DomoticzTCP::DomoticzTCP(const int ID, const std::string IPAddress, const unsign
 
 		if (ret == WSANOTINITIALISED) 
 		{  
-			std::cout << "Winsock could not be initialized!" << std::endl;
+			_log.Log(LOG_ERROR,"Winsock could not be initialized!");
 		}
 	}
 	m_socket=INVALID_SOCKET;
@@ -103,7 +103,7 @@ bool DomoticzTCP::ConnectInternal()
 	m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (m_socket == INVALID_SOCKET)
 	{
-		std::cerr << "Domoticz TCP could not create a TCP/IP socket!" << std::endl;
+		_log.Log(LOG_ERROR,"Domoticz TCP could not create a TCP/IP socket!");
 		return false;
 	}
 /*
@@ -124,11 +124,11 @@ bool DomoticzTCP::ConnectInternal()
 	{
 		closesocket(m_socket);
 		m_socket=INVALID_SOCKET;
-		std::cerr << "Domoticz TCP could not connect to: " << m_szIPAddress << ":" << std::dec << m_usIPPort << std::endl;
+		_log.Log(LOG_ERROR,"Domoticz TCP could not connect to: %s:%ld",m_szIPAddress.c_str(),m_usIPPort);
 		return false;
 	}
 
-	std::cout << "Domoticz TCP connected to: " << m_szIPAddress << ":" << std::dec << m_usIPPort << std::endl;
+	_log.Log(LOG_NORM, "Domoticz TCP connected to: %s:%ld",m_szIPAddress.c_str(),m_usIPPort);
 
 	if (m_username!="")
 	{
@@ -171,7 +171,7 @@ void DomoticzTCP::Do_Work()
 				m_retrycntr=0;
 				if (!ConnectInternal())
 				{
-					std::cout << "retrying in " << std::dec << RETRY_DELAY << " seconds..." << std::endl;
+					_log.Log(LOG_NORM,"retrying in %d seconds...",RETRY_DELAY);
 				}
 			}
 		}
@@ -181,12 +181,12 @@ void DomoticzTCP::Do_Work()
 			if (m_stoprequested)
 				break;
 			if (bread<=0) {
-				std::cout << "TCP/IP connection closed! " << m_szIPAddress << std::endl;
+				_log.Log(LOG_NORM,"TCP/IP connection closed! %s",m_szIPAddress.c_str());
 				closesocket(m_socket);
 				m_socket=INVALID_SOCKET;
 				if (!m_stoprequested)
 				{
-					std::cout << "retrying in " << std::dec << RETRY_DELAY << " seconds..." << std::endl;
+					_log.Log(LOG_NORM,"retrying in %s  seconds...",RETRY_DELAY);
 					m_retrycntr=0;
 					continue;
 				}
@@ -199,7 +199,7 @@ void DomoticzTCP::Do_Work()
 		}
 		
 	}
-	std::cout << "TCP/IP Worker stopped..." << m_szIPAddress << std::endl;
+	_log.Log(LOG_NORM,"TCP/IP Worker stopped...");
 } 
 
 void DomoticzTCP::write(const char *data, size_t size)

@@ -205,6 +205,9 @@
     <ClInclude Include="main\WindowsHelper.h">
       <Filter>Windows</Filter>
     </ClInclude>
+    <ClInclude Include="main\Logger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -326,6 +329,9 @@
     </ClCompile>
     <ClCompile Include="main\WindowsHelper.cpp">
       <Filter>Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="main\Logger.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

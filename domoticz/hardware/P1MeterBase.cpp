@@ -195,7 +195,7 @@ void P1MeterBase::MatchLine()
 			break;
 		}
 
-		//std::cout << "Key: " << t.topic << ", Value: " << value << std::endl;
+		//_log.Log(LOG_NORM,"Key: %s, Value: %s", t.topic,value);
 
 		if (m_exclmarkfound) {
 			bool bSend2Shared=false;

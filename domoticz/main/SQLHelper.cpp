@@ -242,7 +242,7 @@ bool CSQLHelper::OpenDatabase()
 	int rc = sqlite3_open(m_dbase_name.c_str(), &m_dbase);
 	if (rc)
 	{
-		std::cerr << "Error opening SQLite3 database: " << sqlite3_errmsg(m_dbase) << std::endl << std::endl;
+		_log.Log(LOG_ERROR,"Error opening SQLite3 database: %s", sqlite3_errmsg(m_dbase));
 		sqlite3_close(m_dbase);
 		return false;
 	}
@@ -387,7 +387,7 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string szQue
 {
 	if (!m_dbase)
 	{
-		std::cout << "Database not open!!...Check your user rights!.." << std::endl;
+		_log.Log(LOG_ERROR,"Database not open!!...Check your user rights!..");
 		std::vector<std::vector<std::string> > results;
 		return results;
 	}
@@ -429,7 +429,7 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string szQue
 
 	std::string error = sqlite3_errmsg(m_dbase);
 	if(error != "not an error") 
-		std::cout << error << std::endl;
+		_log.Log(LOG_ERROR,"%s",error.c_str());
 	return results; 
 }
 
@@ -633,7 +633,7 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 		result=query(szTmp);
 		if (result.size()==0)
 		{
-			std::cerr << "Serious database error, getting ID from DeviceStatus!" << std::endl;
+			_log.Log(LOG_ERROR,"Serious database error, problem getting ID from DeviceStatus!");
 			return;
 		}
 		std::stringstream s_str( result[0][0] );

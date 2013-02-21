@@ -58,7 +58,7 @@ void CDomoticzHardwareBase::onRFXMessage(const unsigned char *pBuffer, const siz
 		{
 			//something is out of sync here!!
 			//restart
-			std::cout << "input buffer out of sync, going to restart!...." << std::endl;
+			_log.Log(LOG_ERROR,"input buffer out of sync, going to restart!....");
 			m_rxbufferpos=0;
 			return;
 		}

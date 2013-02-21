@@ -41,7 +41,7 @@ bool P1MeterSerial::StartHardware()
 	//Try to open the Serial Port
 	try
 	{
-		std::cout << "P1 Smart Meter Using serial port: " << m_szSerialPort << std::endl;
+		_log.Log(LOG_NORM,"P1 Smart Meter Using serial port: %s", m_szSerialPort.c_str());
 		open(
 			m_szSerialPort,
 			m_iBaudRate,
@@ -52,15 +52,15 @@ bool P1MeterSerial::StartHardware()
 	}
 	catch (boost::exception & e)
 	{
-		std::cerr << "Error opening serial port!\n";
+		_log.Log(LOG_ERROR,"Error opening serial port!");
 #ifdef _DEBUG
-		std::cerr << "-----------------" << std::endl << boost::diagnostic_information(e) << "-----------------" << std::endl;
+		_log.Log(LOG_ERROR,"-----------------\n%s\n-----------------",boost::diagnostic_information(e).c_str());
 #endif
 		return false;
 	}
 	catch ( ... )
 	{
-		std::cerr << "Error opening serial port!!!";
+		_log.Log(LOG_ERROR,"Error opening serial port!!!");
 		return false;
 	}
 	m_bIsStarted=true;
