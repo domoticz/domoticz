@@ -18,14 +18,22 @@
 const char *szHelp=
 	"Usage: Domoticz -www port -verbose x\n"
 	"\t-www port (for example -www 8080)\n"
+#if defined WIN32
 	"\t-dbase file_path (for example D:\\domoticz.db)\n"
+#else
+	"\t-dbase file_path (for example /opt/domoticz/domoticz.db)\n"
+#endif
 	"\t-verbose x (where x=0 is none, x=1 is debug)\n"
 	"\t-startupdelay seconds (default=0)\n"
 	"\t-nowwwpwd (in case you forgot the web server username/password)\n"
 #if defined WIN32
 	"\t-nobrowser (do not start web browser (Windows Only)\n"
 #endif
+#if defined WIN32
 	"\t-logfile file_path (for example D:\\domoticz.log)\n"
+#else
+	"\t-logfile file_path (for example /var/log/domoticz.log)\n"
+#endif
 	"";
 
 std::string szStartupFolder;
