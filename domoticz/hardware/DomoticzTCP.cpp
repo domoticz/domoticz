@@ -27,8 +27,8 @@ DomoticzTCP::DomoticzTCP(const int ID, const std::string IPAddress, const unsign
 			_log.Log(LOG_ERROR,"Winsock could not be initialized!");
 		}
 	}
-	m_socket=INVALID_SOCKET;
 #endif
+	m_socket=INVALID_SOCKET;
 	m_stoprequested=false;
 	m_szIPAddress=IPAddress;
 	m_usIPPort=usIPPort;
