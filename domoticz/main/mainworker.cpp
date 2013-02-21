@@ -84,27 +84,27 @@ void MainWorker::SendResetCommand(CDomoticzHardwareBase *pHardware)
 	pHardware->m_bEnableReceive=false;
 
 	if (
-		(pHardware->HwdType!=HTYPE_Domoticz)&&
-		(pHardware->HwdType!=HTYPE_P1SmartMeter)&&
-		(pHardware->HwdType!=HTYPE_P1SmartMeterLAN)&&
-		(pHardware->HwdType!=HTYPE_YouLess)
+		(pHardware->HwdType==HTYPE_RFXtrx315)||
+		(pHardware->HwdType==HTYPE_RFXtrx433)||
+		(pHardware->HwdType==HTYPE_RFXLAN)
 		)
 	{
+		pHardware->m_rxbufferpos=0;
 		//Send Reset
 		SendCommand(pHardware->m_HwdID,cmdRESET,"Reset");
 
 		//wait at least 50ms
 		boost::this_thread::sleep(boost::posix_time::millisec(500));
+		pHardware->m_rxbufferpos=0;
 	}
 	//clear buffer, and enable receive
 	pHardware->m_rxbufferpos=0;
 	pHardware->m_bEnableReceive=true;
 
 	if (
-		(pHardware->HwdType!=HTYPE_Domoticz)&&
-		(pHardware->HwdType!=HTYPE_P1SmartMeter)&&
-		(pHardware->HwdType!=HTYPE_P1SmartMeterLAN)&&
-		(pHardware->HwdType!=HTYPE_YouLess)
+		(pHardware->HwdType==HTYPE_RFXtrx315)||
+		(pHardware->HwdType==HTYPE_RFXtrx433)||
+		(pHardware->HwdType==HTYPE_RFXLAN)
 		)
 	{
 		SendCommand(pHardware->m_HwdID,cmdSTATUS,"Status");
