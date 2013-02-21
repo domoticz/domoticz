@@ -23,11 +23,10 @@ const char *szHelp=
 	"\t-startupdelay seconds (default=0)\n"
 	"\t-nowwwpwd (in case you forgot the web server username/password)\n"
 #if defined WIN32
-	"\t-nobrowser (do not start web browser (Windows Only)\n";
-#else
+	"\t-nobrowser (do not start web browser (Windows Only)\n"
+#endif
 	"\t-logfile file_path (for example D:\\domoticz.log)\n"
 	"";
-#endif
 
 std::string szStartupFolder;
 
