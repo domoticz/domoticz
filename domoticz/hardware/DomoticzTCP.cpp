@@ -186,7 +186,7 @@ void DomoticzTCP::Do_Work()
 				m_socket=INVALID_SOCKET;
 				if (!m_stoprequested)
 				{
-					_log.Log(LOG_NORM,"retrying in %s  seconds...",RETRY_DELAY);
+					_log.Log(LOG_NORM,"retrying in %d seconds...",RETRY_DELAY);
 					m_retrycntr=0;
 					continue;
 				}
