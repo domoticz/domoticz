@@ -25,7 +25,7 @@ const char *szHelp=
 #if defined WIN32
 	"\t-nobrowser (do not start web browser (Windows Only)\n";
 #else
-	"\t-logfile file_path (for example D:\\domoticz.log)\n";
+	"\t-logfile file_path (for example D:\\domoticz.log)\n"
 	"";
 #endif
 
