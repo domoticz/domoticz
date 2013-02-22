@@ -3346,7 +3346,10 @@ char * CWebServer::GetJSonPage()
 			time_t lastlogtime=0;
 			std::string slastlogtime=m_pWebEm->FindValue("lastlogtime");
 			if (slastlogtime!="")
-				lastlogtime=std::stoull(slastlogtime.c_str());
+			{
+				std::stringstream s_str( slastlogtime );
+				s_str >> lastlogtime;
+			}
 
 			std::list<CLogger::_tLogLineStruct> logmessages=_log.GetLog();
 			std::list<CLogger::_tLogLineStruct>::const_iterator itt;
