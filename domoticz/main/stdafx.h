@@ -42,5 +42,4 @@ typedef unsigned char       BYTE;
 #define WEBSERVER_DONT_USE_ZIP
 
 #include <boost/thread.hpp>
-#include "Logger.h"
 

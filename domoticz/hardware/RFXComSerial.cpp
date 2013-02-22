@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "RFXComSerial.h"
+#include "../main/Logger.h"
 
 #include <string>
 #include <algorithm>

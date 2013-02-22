@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "YouLess.h"
 #include "../main/Helper.h"
+#include "../main/Logger.h"
 #include "../httpclient/mynetwork.h"
 #include "hardwaretypes.h"
 

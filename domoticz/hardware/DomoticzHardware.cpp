@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include <iostream>
 #include "DomoticzHardware.h"
+#include "../main/Logger.h"
 
 CDomoticzHardwareBase::CDomoticzHardwareBase()
 {

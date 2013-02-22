@@ -12,6 +12,7 @@
 #include "../httpclient/UrlEncode.h"
 #include "../hardware/hardwaretypes.h"
 #include "../webserver/Base64.h"
+#include "Logger.h"
 
 namespace http {
 	namespace server {

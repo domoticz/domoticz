@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <boost/bind.hpp>
 #include <iostream>
-
+#include "../main/Logger.h"
 
 namespace http {
 namespace server {

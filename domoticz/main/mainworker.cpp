@@ -7,6 +7,7 @@
 #include "Helper.h"
 #include "SunRiseSet.h"
 #include "localtime_r.h"
+#include "Logger.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>

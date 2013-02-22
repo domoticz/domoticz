@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "DomoticzTCP.h"
+#include "../main/Logger.h"
 //#include <boost/bind.hpp>
 //#include <boost/asio.hpp>
 

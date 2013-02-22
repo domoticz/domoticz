@@ -3,6 +3,7 @@
 #include "Scheduler.h"
 #include "mainworker.h"
 #include "localtime_r.h"
+#include "Logger.h"
 
 CScheduler::CScheduler(void)
 {

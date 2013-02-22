@@ -10,6 +10,7 @@
 #include <iostream>
 #include "CmdLine.h"
 #include "appversion.h"
+#include "Logger.h"
 
 #if defined WIN32
 #include "WindowsHelper.h"

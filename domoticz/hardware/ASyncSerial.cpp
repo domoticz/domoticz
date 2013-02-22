@@ -26,6 +26,7 @@
  */
 #include "stdafx.h"
 #include "ASyncSerial.h"
+#include "../main/Logger.h"
 
 #include <string>
 #include <algorithm>

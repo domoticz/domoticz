@@ -4,6 +4,7 @@
 #include "TCPClient.h"
 #include "../main/RFXNames.h"
 #include "../main/RFXtrx.h"
+#include "../main/Logger.h"
 
 #include <boost/asio.hpp>
 #include <algorithm>

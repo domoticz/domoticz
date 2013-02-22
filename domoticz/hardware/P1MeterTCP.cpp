@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "P1MeterTCP.h"
+#include "../main/Logger.h"
 #include <iostream>
 
 #define RETRY_DELAY 30

@@ -6,6 +6,7 @@
 #include "RFXNames.h"
 #include "WindowsHelper.h"
 #include "localtime_r.h"
+#include "Logger.h"
 #include "../sqlite/sqlite3.h"
 #include "../hardware/hardwaretypes.h"
 #include "../httpclient/mynetwork.h"

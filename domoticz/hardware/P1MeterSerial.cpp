@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "P1MeterSerial.h"
+#include "../main/Logger.h"
 
 //NOTE!!!, this code is partly based on the great work of RHekkers:
 //https://github.com/rhekkers
