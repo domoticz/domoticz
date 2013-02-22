@@ -182,7 +182,7 @@ void DomoticzTCP::Do_Work()
 			if (m_stoprequested)
 				break;
 			if (bread<=0) {
-				_log.Log(LOG_NORM,"TCP/IP connection closed! %s",m_szIPAddress.c_str());
+				_log.Log(LOG_ERROR,"TCP/IP connection closed! %s",m_szIPAddress.c_str());
 				closesocket(m_socket);
 				m_socket=INVALID_SOCKET;
 				if (!m_stoprequested)

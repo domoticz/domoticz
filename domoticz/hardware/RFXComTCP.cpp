@@ -155,8 +155,10 @@ void RFXComTCP::Do_Work()
 		{
 			char buf;
 			int bread=recv(m_socket,&buf,1,0);
+			if (m_stoprequested)
+				break;
 			if ((bread==0)||(bread<0)) {
-				_log.Log(LOG_NORM,"TCP/IP connection closed!");
+				_log.Log(LOG_ERROR,"TCP/IP connection closed!");
 				closesocket(m_socket);
 				m_socket=INVALID_SOCKET;
 				if (!m_stoprequested)

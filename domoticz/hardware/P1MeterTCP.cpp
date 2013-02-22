@@ -158,8 +158,10 @@ void P1MeterTCP::Do_Work()
 		{
 			unsigned char data[1028];
 			int bread=recv(m_socket,(char*)&data,sizeof(data),0);
+			if (m_stoprequested)
+				break;
 			if ((bread==0)||(bread<0)) {
-				_log.Log(LOG_NORM,"P1 TCP/IP connection closed!");
+				_log.Log(LOG_ERROR,"P1 TCP/IP connection closed!");
 				closesocket(m_socket);
 				m_socket=INVALID_SOCKET;
 				if (!m_stoprequested)
