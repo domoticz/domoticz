@@ -3355,9 +3355,11 @@ char * CWebServer::GetJSonPage()
 			{
 				if (itt->logtime>lastlogtime) 
 				{
+					std::stringstream szLogTime;
+					szLogTime << itt->logtime;
+					root["LastLogTime"]=szLogTime.str();
 					root["result"][ii]["level"]=(int)itt->level;
 					root["result"][ii]["message"]=itt->logmessage;
-					root["LastLogTime"]=itt->logtime;
 					ii++;
 				}
 			}
