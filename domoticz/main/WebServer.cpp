@@ -3343,14 +3343,23 @@ char * CWebServer::GetJSonPage()
 			root["status"]="OK";
 			root["title"]="GetLog";
 
+			time_t lastlogtime=0;
+			std::string slastlogtime=m_pWebEm->FindValue("lastlogtime");
+			if (slastlogtime!="")
+				lastlogtime=std::stoull(slastlogtime.c_str());
+
 			std::list<CLogger::_tLogLineStruct> logmessages=_log.GetLog();
 			std::list<CLogger::_tLogLineStruct>::const_iterator itt;
 			int ii=0;
 			for (itt=logmessages.begin(); itt!=logmessages.end(); ++itt)
 			{
-				root["result"][ii]["level"]=(int)itt->level;
-				root["result"][ii]["message"]=itt->logmessage;
-				ii++;
+				if (itt->logtime>lastlogtime) 
+				{
+					root["result"][ii]["level"]=(int)itt->level;
+					root["result"][ii]["message"]=itt->logmessage;
+					root["LastLogTime"]=itt->logtime;
+					ii++;
+				}
 			}
 		}
 		else if (cparam=="deleteallsubdevices")

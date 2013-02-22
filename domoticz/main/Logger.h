@@ -16,10 +16,12 @@ class CLogger
 public:
 	struct _tLogLineStruct
 	{
+		time_t logtime;
 		_eLogLevel level;
 		std::string logmessage;
 		_tLogLineStruct(const _eLogLevel nlevel, const std::string nlogmessage)
 		{
+			logtime=time(NULL);
 			level=nlevel;
 			logmessage=nlogmessage;
 		}

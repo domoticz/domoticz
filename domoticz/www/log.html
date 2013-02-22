@@ -1,4 +1,6 @@
 <div id="logcontent" class="logcontent">
+	<div id="logdata" class="log">
+	</div>
 </div>
 
 <script type="text/javascript" charset="utf-8">
@@ -7,8 +9,7 @@ function RefreshLog()
 {
   clearInterval($.myglobals.refreshTimer);
   
-  var htmlcontent = '';
-  
+ 
   var bWasAtBottom=true;
   var div = $("#logcontent #logdata");
   if (div!=null) {
@@ -21,13 +22,17 @@ function RefreshLog()
   }
   var lastscrolltop=$("#logcontent #logdata").scrollTop();
   
+  var htmlcontent = '';
+  
   $.ajax({
-     url: "json.htm?type=command&param=getlog", 
+     url: "json.htm?type=command&param=getlog&lastlogtime=" + $.LastLogTime, 
      async: false, 
      dataType: 'json',
      success: function(data) {
       if (typeof data.result != 'undefined') {
-				htmlcontent+='<div id="logdata" class="log">\n';
+				if (typeof data.LastLogTime != 'undefined') {
+					$.LastLogTime=parseInt(data.LastLogTime);
+				}
         $.each(data.result, function(i,item){
 					if (item.level==0) {
 						htmlcontent+='<span>';
@@ -39,17 +44,18 @@ function RefreshLog()
 					htmlcontent+=message;
 					htmlcontent+='</span><br>\n';
         });
-				htmlcontent+='</div>\n';
       }
      }
   });
-  $('#logcontent').html(htmlcontent);
-  ResizeLogWindow();
-  if ((bWasAtBottom==true)||(lastscrolltop==null)) {
-		$("#logcontent #logdata").scrollTop($("#logcontent #logdata")[0].scrollHeight);
-	}
-	else {
-			$("#logcontent #logdata").scrollTop(lastscrolltop);
+  if (htmlcontent!="") {
+		$("#logcontent #logdata").append(htmlcontent);
+		ResizeLogWindow();
+		if ((bWasAtBottom==true)||(lastscrolltop==null)) {
+			$("#logcontent #logdata").scrollTop($("#logcontent #logdata")[0].scrollHeight);
+		}
+		else {
+				$("#logcontent #logdata").scrollTop(lastscrolltop);
+		}
   }
   $.myglobals.refreshTimer = setInterval(RefreshLog, 5000);
 }
@@ -65,6 +71,7 @@ function ResizeLogWindow()
 }
 
 $(document).ready(function() {
+	$.LastLogTime=parseInt(0);
 	RefreshLog();
 } );  
 </script>
