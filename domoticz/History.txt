@@ -6,6 +6,7 @@ Version 1.0.10 (February xxth 2013)
 - Fixed: Dimslider using now values 1 till ... , 1=Off
 - Implemented: New Log mechanism (needed later for log viewer)
 - Implemented: command line option '-logfile'
+- Implemented: Log Window
 
 Version 1.0.9 (February 17th 2013)
 - Implemented: OWL113 option to display in Ampere/Usage

@@ -553,17 +553,27 @@ void MainWorker::WriteToHardware(const int HwdID, const char *pdata, const unsig
 	m_hardwaredevices[hindex]->WriteToHardware(pdata,length);
 }
 
+void MainWorker::WriteMessageStart()
+{
+	_log.LogSequenceStart();
+}
+
+void MainWorker::WriteMessageEnd()
+{
+	_log.LogSequenceEnd(LOG_NORM);
+}
+
 void MainWorker::WriteMessage(const char *szMessage)
 {
-	_log.Log(LOG_NORM,"%s",szMessage);
+	_log.LogSequenceAdd(szMessage);
 }
 
 void MainWorker::WriteMessage(const char *szMessage, bool linefeed)
 {
 	if (linefeed)
-		_log.Log(LOG_NORM,szMessage);
+		_log.LogSequenceAdd(szMessage);
 	else
-		_log.LogNoLF(LOG_NORM,szMessage);
+		_log.LogSequenceAddNoLF(szMessage);
 }
 
 void MainWorker::OnHardwareConnected(CDomoticzHardwareBase *pHardware)
@@ -613,7 +623,12 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	_log.Log(LOG_NORM,"%s",sstream.str().c_str());
 #else
 	szDate[strlen(szDate)-1]=0;
-	_log.LogNoLF(LOG_NORM,"%s (%s) ",szDate,pHardware->Name.c_str());
+
+	WriteMessageStart();
+
+	std::stringstream sTmp;
+	sTmp << szDate << " (" << pHardware->Name << ") ";
+	WriteMessage(sTmp.str().c_str(),false);
 #endif
 	switch (pRXCommand[1])
 	{
@@ -772,6 +787,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			_log.Log(LOG_ERROR,"UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
 			break;
 	}
+	WriteMessageEnd();
 }
 
 //not in dbase yet
@@ -2522,11 +2538,12 @@ void MainWorker::decode_UNDECODED(const int HwdID, const tRBUF *pResponse)
 		WriteMessage(szTmp);
 		break;
 	}
+	std::stringstream sHexDump;
 	for (int i = 0; i< (pResponse->UNDECODED.packetlength - pResponse->UNDECODED.msg1); i++)
 	{
-		_log.LogNoLF(LOG_NORM,"%02X",(unsigned char)(pResponse->UNDECODED.msg1 + i));
+		sHexDump << HEX((unsigned char)(pResponse->UNDECODED.msg1 + i));
 	}
-	WriteMessage(" ");
+	WriteMessage(sHexDump.str().c_str());
 }
 
 

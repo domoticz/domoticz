@@ -1,6 +1,70 @@
-This page will be made soon.
+<div id="logcontent" class="logcontent">
+</div>
 
 <script type="text/javascript" charset="utf-8">
+
+function RefreshLog()
+{
+  clearInterval($.myglobals.refreshTimer);
+  
+  var htmlcontent = '';
+  
+  var bWasAtBottom=true;
+  var div = $("#logcontent #logdata");
+  if (div!=null) {
+		if (div[0]!=null) {
+			var diff=Math.abs((div[0].scrollHeight- div.scrollTop())-div.height());
+			if (diff>9) {
+				bWasAtBottom=false;
+			}
+		}
+  }
+  var lastscrolltop=$("#logcontent #logdata").scrollTop();
+  
+  $.ajax({
+     url: "json.htm?type=command&param=getlog", 
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+      if (typeof data.result != 'undefined') {
+				htmlcontent+='<div id="logdata" class="log">\n';
+        $.each(data.result, function(i,item){
+					if (item.level==0) {
+						htmlcontent+='<span>';
+					}
+					else {
+						htmlcontent+='<span class="logerror"> Error: ';
+					}
+					var message=item.message.replace(/\n/gi,"<br>");
+					htmlcontent+=message;
+					htmlcontent+='</span><br>\n';
+        });
+				htmlcontent+='</div>\n';
+      }
+     }
+  });
+  $('#logcontent').html(htmlcontent);
+  ResizeLogWindow();
+  if ((bWasAtBottom==true)||(lastscrolltop==null)) {
+		$("#logcontent #logdata").scrollTop($("#logcontent #logdata")[0].scrollHeight);
+	}
+	else {
+			$("#logcontent #logdata").scrollTop(lastscrolltop);
+  }
+  $.myglobals.refreshTimer = setInterval(RefreshLog, 5000);
+}
+
+$(window).resize(function() {
+	ResizeLogWindow();
+});
+
+function ResizeLogWindow()
+{
+	var pheight=$(window).innerHeight();
+	$("#logcontent #logdata").height(pheight-130);
+}
+
 $(document).ready(function() {
+	RefreshLog();
 } );  
 </script>

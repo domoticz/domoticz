@@ -82,8 +82,10 @@ private:
 	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);
 	void OnHardwareConnected(CDomoticzHardwareBase *pHardware);
 
+	void WriteMessageStart();
 	void WriteMessage(const char *szMessage);
 	void WriteMessage(const char *szMessage, bool linefeed);
+	void WriteMessageEnd();
 
 	//message decoders
 	void decode_BateryLevel(bool bIsInPercentage, unsigned char level);

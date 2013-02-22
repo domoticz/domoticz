@@ -1073,3 +1073,20 @@ html,body{
 	background-repeat: no-repeat;
 	filter: none;
 }						
+
+div.log {
+	background-color: #FAFAFA;
+	height: 300px;
+	overflow: auto;
+	border: 1px dotted #AAAAAA;
+	padding: 4px;
+	font-family: "Courier New", monospace;
+	color: #666666;
+	font-size: 11px;
+	word-wrap: break-word;
+	text-align: left; 
+}
+
+.logerror {
+	color:#860016;
+}

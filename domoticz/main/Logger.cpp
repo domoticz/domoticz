@@ -7,6 +7,7 @@
 
 CLogger::CLogger(void)
 {
+	m_bInSequenceMode=false;
 }
 
 
@@ -18,6 +19,7 @@ CLogger::~CLogger(void)
 
 void CLogger::SetOutputFile(const char *OutputFile)
 {
+	boost::unique_lock< boost::mutex > lock(m_mutex);
 	if (m_outputfile.is_open())
 		m_outputfile.close();
 
@@ -34,6 +36,7 @@ void CLogger::SetOutputFile(const char *OutputFile)
 
 void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 {
+	boost::unique_lock< boost::mutex > lock(m_mutex);
 	va_list argList;
 	char cbuffer[1024];
 	va_start(argList, logline);
@@ -60,8 +63,18 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 		m_outputfile.flush();
 }
 
+bool strhasEnding(std::string const &fullString, std::string const &ending)
+{
+	if (fullString.length() >= ending.length()) {
+		return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
+	} else {
+		return false;
+	}
+}
+
 void CLogger::LogNoLF(const _eLogLevel level, const char* logline, ...)
 {
+	boost::unique_lock< boost::mutex > lock(m_mutex);
 	va_list argList;
 	char cbuffer[1024];
 	va_start(argList, logline);
@@ -70,7 +83,12 @@ void CLogger::LogNoLF(const _eLogLevel level, const char* logline, ...)
 
 	if (m_lastlog.size()>=MAX_LOG_LINE_BUFFER)
 		m_lastlog.erase(m_lastlog.begin());
-	m_lastlog.push_back(_tLogLineStruct(level,cbuffer));
+	std::string message=cbuffer;
+	if (strhasEnding(message,"\n"))
+	{
+		message=message.substr(0,message.size()-1);
+	}
+	m_lastlog.push_back(_tLogLineStruct(level,message));
 
 	if (level==LOG_NORM)
 	{
@@ -84,12 +102,42 @@ void CLogger::LogNoLF(const _eLogLevel level, const char* logline, ...)
 		if (m_outputfile.is_open())
 			m_outputfile << "Error: " << cbuffer;
 	}
+
+	std::cout.flush();
+
 	if (m_outputfile.is_open())
 		m_outputfile.flush();
 }
 
+void CLogger::LogSequenceStart()
+{
+	m_bInSequenceMode=true;
+	m_sequencestring.clear();
+	m_sequencestring.str("");
+}
+
+void CLogger::LogSequenceEnd(const _eLogLevel level)
+{
+	m_bInSequenceMode=false;
+	LogNoLF(level,m_sequencestring.str().c_str());
+	m_sequencestring.clear();
+	m_sequencestring.str("");
+}
+
+void CLogger::LogSequenceAdd(const char* logline)
+{
+	m_sequencestring << logline << std::endl;
+}
+
+void CLogger::LogSequenceAddNoLF(const char* logline)
+{
+	m_sequencestring << logline;
+}
+
 std::list<CLogger::_tLogLineStruct> CLogger::GetLog()
 {
+	boost::unique_lock< boost::mutex > lock(m_mutex);
+
 	//boost::unique_lock< boost::mutex > lock(m_mutex);
 	std::list<_tLogLineStruct> mlist;
 	std::deque<_tLogLineStruct>::const_iterator itt;

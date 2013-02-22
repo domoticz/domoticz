@@ -3337,7 +3337,22 @@ char * CWebServer::GetJSonPage()
 		std::string cparam=m_pWebEm->FindValue("param");
 		if (cparam=="")
 			goto exitjson;
-		if (cparam=="deleteallsubdevices")
+		if (cparam=="getlog")
+		{
+			root["status"]="OK";
+			root["title"]="GetLog";
+
+			std::list<CLogger::_tLogLineStruct> logmessages=_log.GetLog();
+			std::list<CLogger::_tLogLineStruct>::const_iterator itt;
+			int ii=0;
+			for (itt=logmessages.begin(); itt!=logmessages.end(); ++itt)
+			{
+				root["result"][ii]["level"]=(int)itt->level;
+				root["result"][ii]["message"]=itt->logmessage;
+				ii++;
+			}
+		}
+		else if (cparam=="deleteallsubdevices")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
 			if (idx=="")
