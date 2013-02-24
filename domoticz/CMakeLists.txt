@@ -118,6 +118,7 @@ main/mainworker.cpp
 main/SQLHelper.cpp
 main/WebServer.cpp
 main/Scheduler.cpp
+main/Camera.cpp
 main/localtime_r.cpp
 main/RFXNames.cpp
 main/Helper.cpp

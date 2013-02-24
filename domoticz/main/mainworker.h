@@ -5,6 +5,7 @@
 #include "RFXtrx.h"
 #include "../hardware/DomoticzHardware.h"
 #include "Scheduler.h"
+#include "Camera.h"
 
 enum eVerboseLevel
 {
@@ -55,6 +56,7 @@ public:
 
 	CSQLHelper m_sql;
 	CScheduler m_scheduler;
+    CCamScheduler m_camscheduler;
 	bool m_bIgnoreUsernamePassword;
 private:
 	unsigned char m_ScheduleLastMinute;
