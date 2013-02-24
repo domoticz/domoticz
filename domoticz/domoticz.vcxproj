@@ -89,6 +89,7 @@
   <ItemGroup>
     <ClInclude Include="main\appversion.h" />
     <ClInclude Include="hardware\ASyncSerial.h" />
+    <ClInclude Include="main\Camera.h" />
     <ClInclude Include="main\CmdLine.h" />
     <ClInclude Include="hardware\DomoticzHardware.h" />
     <ClInclude Include="hardware\DomoticzTCP.h" />
@@ -138,6 +139,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hardware\ASyncSerial.cpp" />
+    <ClCompile Include="main\Camera.cpp" />
     <ClCompile Include="main\CmdLine.cpp" />
     <ClCompile Include="hardware\DomoticzHardware.cpp" />
     <ClCompile Include="hardware\DomoticzTCP.cpp" />

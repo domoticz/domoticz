@@ -54,6 +54,9 @@
     <Filter Include="Devices\YouLess">
       <UniqueIdentifier>{ddea03ec-8176-4bdf-8402-b73040b73584}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Camera">
+      <UniqueIdentifier>{adaa661b-4aaf-443c-a368-2c2f384d9c1a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -208,6 +211,9 @@
     <ClInclude Include="main\Logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="main\Camera.h">
+      <Filter>Devices\Camera</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -332,6 +338,9 @@
     </ClCompile>
     <ClCompile Include="main\Logger.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main\Camera.cpp">
+      <Filter>Devices\Camera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
