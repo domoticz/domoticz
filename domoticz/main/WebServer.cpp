@@ -1427,6 +1427,34 @@ char * CWebServer::GetJSonPage()
 		GetJSonDevices(root, rused, rfilter,order);
 
 	} //if (rtype=="devices")
+    if (rtype=="cameras")
+	{
+		root["status"]="OK";
+		root["title"]="Cameras";
+        
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT ID, Name, Enabled, Address, Port, Username, Password FROM Cameras ORDER BY ID ASC";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			int ii=0;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+                
+				root["result"][ii]["idx"]=sd[0];
+				root["result"][ii]["Name"]=sd[1];
+				root["result"][ii]["Enabled"]=(sd[2]=="1")?"true":"false";
+				root["result"][ii]["Address"]=sd[3];
+				root["result"][ii]["Port"]=atoi(sd[4].c_str());
+				root["result"][ii]["Username"]=sd[5];
+				root["result"][ii]["Password"]=sd[6];
+				ii++;
+			}
+		}
+	} //if (rtype=="cameras")
 	else if (rtype=="status-temp")
 	{
 		root["status"]="OK";
@@ -4138,6 +4166,72 @@ char * CWebServer::GetJSonPage()
 			int ID=atoi(idx.c_str());
 			m_pMain->AddHardwareFromParams(ID,name,(senabled=="true")?true:false,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
 		}
+		else if (cparam=="addcamera")
+		{
+			std::string name=m_pWebEm->FindValue("name");
+			std::string senabled=m_pWebEm->FindValue("enabled");
+			std::string address=m_pWebEm->FindValue("address");
+			std::string sport=m_pWebEm->FindValue("port");
+			std::string username=m_pWebEm->FindValue("username");
+			std::string password=m_pWebEm->FindValue("password");
+			if (
+				(name=="")||
+				(address=="")||
+                (senabled=="")||
+				(sport=="")
+				)
+				goto exitjson;
+			int port=atoi(sport.c_str());
+			root["status"]="OK";
+			root["title"]="AddCamera";
+			sprintf(szTmp,
+                    "INSERT INTO Cameras (Name, Enabled, Address, Port, Username, Password) VALUES ('%s',%d,'%s',%d,'%s','%s')",
+                    name.c_str(),
+                    (senabled=="true")?1:0,
+                    address.c_str(),
+                    port,
+                    username.c_str(),
+                    password.c_str()
+                    );
+			result=m_pMain->m_sql.query(szTmp);
+		}
+		else if (cparam=="updatecamera")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			std::string name=m_pWebEm->FindValue("name");
+			std::string senabled=m_pWebEm->FindValue("enabled");
+			std::string address=m_pWebEm->FindValue("address");
+			std::string sport=m_pWebEm->FindValue("port");
+			std::string username=m_pWebEm->FindValue("username");
+			std::string password=m_pWebEm->FindValue("password");
+			if (
+				(name=="")||
+				(senabled=="")||
+				(address=="")||
+				(sport=="")
+				)
+				goto exitjson;
+            int port=atoi(sport.c_str());
+		
+            root["status"]="OK";
+			root["title"]="UpdateCamera";
+            
+			sprintf(szTmp,
+                    "UPDATE Cameras SET Name='%s', Enabled=%d, Address='%s', Port=%d, Username='%s', Password='%s' WHERE (ID == %s)",
+                    name.c_str(),
+                    (senabled=="true")?1:0,
+                    address.c_str(),
+                    port,
+                    username.c_str(),
+                    password.c_str(),
+                    idx.c_str()
+                    );
+			result=m_pMain->m_sql.query(szTmp);
+            
+        }
+        
 		else if (cparam=="deletehardware")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
@@ -4148,6 +4242,16 @@ char * CWebServer::GetJSonPage()
 
 			m_pMain->m_sql.DeleteHardware(idx);
 			m_pMain->RemoveDomoticzHardware(atoi(idx.c_str()));
+		}
+		else if (cparam=="deletecamera")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="DeleteCamera";
+            
+			m_pMain->m_sql.DeleteCamera(idx);
 		}
 		else if (cparam=="addtimer")
 		{

@@ -139,6 +139,8 @@ public:
 	void ScheduleDay();
 
 	void DeleteHardware(const std::string idx);
+    
+    void DeleteCamera(const std::string idx);
 
 	void DeleteDevice(const std::string idx);
 

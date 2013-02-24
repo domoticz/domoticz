@@ -213,6 +213,16 @@ const char *sqlCreateLightSubDevices =
 "[DeviceRowID] INTEGER NOT NULL, "
 "[ParentID] INTEGER NOT NULL);";
 
+const char *sqlCreateCameras =
+"CREATE TABLE IF NOT EXISTS [Cameras] ("
+"[ID] INTEGER PRIMARY KEY, "
+"[Name] VARCHAR(200) NOT NULL, "
+"[Enabled] INTEGER DEFAULT 1, "
+"[Address] VARCHAR(200), "
+"[Port] INTEGER, "
+"[Username] VARCHAR(100), "
+"[Password] VARCHAR(100));";
+
 CSQLHelper::CSQLHelper(void)
 {
 	m_LastSwitchID="";
@@ -275,6 +285,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateHardwareSharing);
 	query(sqlCreateUsers);
 	query(sqlCreateLightSubDevices);
+    query(sqlCreateCameras);
 
 	int dbversion=0;
 	GetPreferencesVar("DB_Version", dbversion);
@@ -2740,6 +2751,15 @@ void CSQLHelper::DeleteHardware(const std::string idx)
 	sprintf(szTmp,"DELETE FROM DeviceStatus WHERE (HardwareID == %s)",idx.c_str());
 	result=query(szTmp);
 }
+
+void CSQLHelper::DeleteCamera(const std::string idx)
+{
+	std::vector<std::vector<std::string> > result;
+	char szTmp[1000];
+	sprintf(szTmp,"DELETE FROM Cameras WHERE (ID == %s)",idx.c_str());
+	result=query(szTmp);
+}
+
 
 void CSQLHelper::DeleteDevice(const std::string idx)
 {

@@ -624,6 +624,7 @@ function SwitchLayout(layout)
 	ChangeClass("mHardware","");
 	ChangeClass("mSetup","");
 	ChangeClass("mLog","");
+	ChangeClass("mCam","");
 	
 	var durl='';
 	
@@ -663,6 +664,11 @@ function SwitchLayout(layout)
 		durl='log.html';
 		ChangeClass("mLog","current_page_item");
 	}
+	else if (layout == "Cam") {
+		durl='cam.html';
+		ChangeClass("mCam","current_page_item");
+	}
+
 	else
 		return;
 		
