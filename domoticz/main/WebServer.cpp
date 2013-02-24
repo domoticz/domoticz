@@ -4297,9 +4297,7 @@ char * CWebServer::GetJSonPage()
                     idx.c_str()
                     );
 			result=m_pMain->m_sql.query(szTmp);
-            
         }
-        
 		else if (cparam=="deletehardware")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
