@@ -91,19 +91,20 @@ function Updatecamera(idx)
 	var address=$("#cameracontent #cameraparamstable #cameraaddress").val();
 	if (address=="")
 	{
-		ShowNotify('Please enter an Address!', 2500, true);
+		ShowNotify('Please enter an address!', 2500, true);
 		return;
 	}
 	var port=$("#cameracontent #cameraparamstable #cameraport").val();
-	if (port=="")
+	if (port!="")
 	{
-		ShowNotify('Please enter a port number!', 2500, true);
-		return;
+		var intRegex = /^\d+$/;
+		if(!intRegex.test(port)) {
+			ShowNotify('Please enter a valid port number!', 2500, true);
+			return;
+		}
 	}
-	var intRegex = /^\d+$/;
-	if(!intRegex.test(port)) {
-		ShowNotify('Please enter a valid port number!', 2500, true);
-		return;
+	else {
+		port = 80;
 	}
 	var username=$('#cameracontent #cameraparamstable #username').val();
 	var password=$('#cameracontent #cameraparamstable #password').val();
@@ -138,19 +139,20 @@ function Addcamera()
 	var address=$("#cameracontent #cameraparamstable #cameraaddress").val();
 	if (address=="")
 	{
-		ShowNotify('Please enter an Address!', 2500, true);
+		ShowNotify('Please enter an address!', 2500, true);
 		return;
 	}
 	var port=$("#cameracontent #cameraparamstable #cameraport").val();
-	if (port=="")
+	if (port!="")
 	{
-		ShowNotify('Please enter an Port!', 2500, true);
-		return;
+		var intRegex = /^\d+$/;
+		if(!intRegex.test(port)) {
+			ShowNotify('Please enter a valid Port!', 2500, true);
+			return;
+		}
 	}
-	var intRegex = /^\d+$/;
-	if(!intRegex.test(port)) {
-		ShowNotify('Please enter an Valid Port!', 2500, true);
-		return;
+	else {
+		port=80;
 	}
 	var username=$('#cameracontent #cameraparamstable #username').val();
 	var password=$('#cameracontent #cameraparamstable #password').val();

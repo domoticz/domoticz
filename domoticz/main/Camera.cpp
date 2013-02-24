@@ -49,7 +49,7 @@ void CCamScheduler::ReloadCameras()
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 	m_cameradevices.clear();
-
+    _log.Log(LOG_NORM,"Camera settings (re)loaded");
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 

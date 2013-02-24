@@ -4245,8 +4245,7 @@ char * CWebServer::GetJSonPage()
 			if (
 				(name=="")||
 				(address=="")||
-                (senabled=="")||
-				(sport=="")
+                (senabled=="")
 				)
 				goto exitjson;
 			int port=atoi(sport.c_str());
@@ -4262,6 +4261,7 @@ char * CWebServer::GetJSonPage()
                     password.c_str()
                     );
 			result=m_pMain->m_sql.query(szTmp);
+            m_pMain->m_camscheduler.ReloadCameras();
 		}
 		else if (cparam=="updatecamera")
 		{
@@ -4272,14 +4272,13 @@ char * CWebServer::GetJSonPage()
 			std::string senabled=m_pWebEm->FindValue("enabled");
 			std::string address=m_pWebEm->FindValue("address");
 			std::string sport=m_pWebEm->FindValue("port");
-			std::string username=m_pWebEm->FindValue("username");
+    		std::string username=m_pWebEm->FindValue("username");
 			std::string password=m_pWebEm->FindValue("password");
 			if (
 				(name=="")||
 				(senabled=="")||
-				(address=="")||
-				(sport=="")
-				)
+				(address=="")
+                )
 				goto exitjson;
             int port=atoi(sport.c_str());
 		
@@ -4297,6 +4296,7 @@ char * CWebServer::GetJSonPage()
                     idx.c_str()
                     );
 			result=m_pMain->m_sql.query(szTmp);
+            m_pMain->m_camscheduler.ReloadCameras();
         }
 		else if (cparam=="deletehardware")
 		{
@@ -4318,6 +4318,7 @@ char * CWebServer::GetJSonPage()
 			root["title"]="DeleteCamera";
             
 			m_pMain->m_sql.DeleteCamera(idx);
+            m_pMain->m_camscheduler.ReloadCameras();
 		}
 		else if (cparam=="addtimer")
 		{
