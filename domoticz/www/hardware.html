@@ -1,5 +1,57 @@
 <div id="hardwarecontent">
 </div>
+<div id="hardwaremode" style="display:none;">
+<center>
+<form id="settings">
+	<table>
+		<tr>
+			<td align="left" style="width:150px"><input type="checkbox" id="undecon" name="undecon">&nbsp;<label for="undecon">undec on</label></td>
+			<td align="left" style="width:150px"><input type="checkbox" id="BlindT1T2T3T4" name="BlindT1T2T3T4">&nbsp;<label for="BlindT1T2T3T4">Blind T1/T2/T3/T4</label></td>
+			<td align="left" style="width:150px"><input type="checkbox" id="Visonic" nane="Visonic">&nbsp;<label for="Visonic">Visonic</label></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="rfu6" name="rfu6">&nbsp;<label for="rfu6">RFU 6</label></td>
+			<td><input type="checkbox" id="BlindT0" name="BlindT0">&nbsp;<label for="BlindT0">Blind T0</label></td>
+			<td><input type="checkbox" id="ATIremote" name="ATIremote">&nbsp;<label for="ATIremote">ATI remote</label></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="rfu5" name="rfu5">&nbsp;<label for="rfu5">RFU 5</label></td>
+			<td><input type="checkbox" id="ProGuard" name="ProGuard">&nbsp;<label for="ProGuard">ProGuard</label></td>
+			<td><input type="checkbox" id="OregonScientific" name="OregonScientific">&nbsp;<label for="OregonScientific">Oregon Scientific</label></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="rfu4">&nbsp;<label for="rfu4">RFU 4</label></td>
+			<td><input type="checkbox" id="FS20">&nbsp;<label for="FS20">FS20</label></td>
+			<td><input type="checkbox" id="Meiantech">&nbsp;<label for="Meiantech">Meiantech</label></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="Lighting4" name="Lighting4">&nbsp;<label for="Lighting4">Lighting4</label></td>
+			<td><input type="checkbox" id="LaCrosse" name="LaCrosse">&nbsp;<label for="LaCrosse">LaCrosse</label></td>
+			<td><input type="checkbox" id="HomeEasyEU" name="HomeEasyEU">&nbsp;<label for="HomeEasyEU">HomeEasy EU</label></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="FineOffsetViking" name="FineOffsetViking">&nbsp;<label for="FineOffsetViking">FineOffset/Viking</label></td>
+			<td><input type="checkbox" id="HidekiUPM" name="HidekiUPM">&nbsp;<label for="HidekiUPM">Hideki/UPM</label></td>
+			<td><input type="checkbox" id="AC" name="AC">&nbsp;<label for="AC">AC</label></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="Rubicson" name="Rubicson">&nbsp;<label for="Rubicson">Rubicson</label></td>
+			<td><input type="checkbox" id="ADLightwaveRF" name="ADLightwaveRF">&nbsp;<label for="ADLightwaveRF">AD/LightwaveRF</label></td>
+			<td><input type="checkbox" id="ARC" name="ARC">&nbsp;<label for="ARC">ARC</label></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="AEBlyss" name="AEBlyss">&nbsp;<label for="AEBlyss">AE/Blyss</label></td>
+			<td><input type="checkbox" id="Mertik" name="Mertik">&nbsp;<label for="Mertik">Mertik</label></td>
+			<td><input type="checkbox" id="X10" name="X10">&nbsp;<label for="X10">X10</label></td>
+		</tr>
+	</table>
+	<br>
+	<input type="hidden" id="idx" name="idx" value="-1">
+	<button class="btn btn-warning" id="defaultbutton">Default</button>
+	<button class="btn btn-danger" id="submitbutton">Set Mode</button>
+</form>
+</center>
+</div>
 <div id="hardwaremain" style="display:none;">
     <table class="display" id="hardwaretable" border="0" cellpadding="0" cellspacing="0" width="100%">
         <thead>
@@ -146,7 +198,7 @@ function GetSharedParameters()
 	var shareusername=$('#hardwarecontent #hardwareparamssharedetails #shareusername').val();
 	var sharepassword=$('#hardwarecontent #hardwareparamssharedetails #sharepassword').val();
 	
-	if ( (shareusername!="") && (sharepassword=="") ) {
+	if ( (shareusername!="") & (sharepassword=="") ) {
 		ShowNotify('Please enter a password!', 2500, true);
 		return null;
 	}
@@ -392,6 +444,83 @@ function AddHardware()
 	}
 }
 
+function EditRFXCOMMode(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
+{
+	cursordefault();
+  var htmlcontent = '';
+  htmlcontent='<p><center><h2>Device: ' + name + '</h2></center></p>\n';
+  htmlcontent+=$('#hardwaremode').html();
+  $('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
+
+	$('#hardwarecontent #submitbutton').click(function (e) {
+		e.preventDefault();
+		SetRFXCOMMode();
+	});
+
+
+  $('#hardwarecontent #idx').val(idx);
+  $('#hardwarecontent #undecon').prop('checked',((Mode3 & 0x80)!=0));
+  $('#hardwarecontent #X10').prop('checked',((Mode5 & 0x01)!=0));
+  $('#hardwarecontent #ARC').prop('checked',((Mode5 & 0x02)!=0));
+  $('#hardwarecontent #AC').prop('checked',((Mode5 & 0x04)!=0));
+  $('#hardwarecontent #HomeEasyEU').prop('checked',((Mode5 & 0x08)!=0));
+  $('#hardwarecontent #Meiantech').prop('checked',((Mode5 & 0x10)!=0));
+  $('#hardwarecontent #OregonScientific').prop('checked',((Mode5 & 0x20)!=0));
+  $('#hardwarecontent #ATIremote').prop('checked',((Mode5 & 0x40)!=0));
+  $('#hardwarecontent #Visonic').prop('checked',((Mode5 & 0x80)!=0));
+  $('#hardwarecontent #Mertik').prop('checked',((Mode4 & 0x01)!=0));
+  $('#hardwarecontent #ADLightwaveRF').prop('checked',((Mode4 & 0x02)!=0));
+  $('#hardwarecontent #HidekiUPM').prop('checked',((Mode4 & 0x04)!=0));
+  $('#hardwarecontent #LaCrosse').prop('checked',((Mode4 & 0x08)!=0));
+  $('#hardwarecontent #FS20').prop('checked',((Mode4 & 0x10)!=0));
+  $('#hardwarecontent #ProGuard').prop('checked',((Mode4 & 0x20)!=0));
+  $('#hardwarecontent #BlindT0').prop('checked',((Mode4 & 0x40)!=0));
+	$('#hardwarecontent #BlindT1T2T3T4').prop('checked',((Mode4 & 0x80)!=0));
+  $('#hardwarecontent #AEBlyss').prop('checked',((Mode3 & 0x01)!=0));
+  $('#hardwarecontent #Rubicson').prop('checked',((Mode3 & 0x02)!=0));
+  $('#hardwarecontent #FineOffsetViking').prop('checked',((Mode3 & 0x04)!=0));
+  $('#hardwarecontent #Lighting4').prop('checked',((Mode3 & 0x08)!=0));
+  $('#hardwarecontent #rfu4').prop('checked',((Mode3 & 0x10)!=0));
+  $('#hardwarecontent #rfu5').prop('checked',((Mode3 & 0x20)!=0));
+  $('#hardwarecontent #rfu6').prop('checked',((Mode3 & 0x40)!=0));
+
+	$('#hardwarecontent #defaultbutton').click(function (e) {
+		e.preventDefault();
+		$('#hardwarecontent #undecon').prop('checked',false);
+		$('#hardwarecontent #X10').prop('checked',true);
+		$('#hardwarecontent #ARC').prop('checked',true);
+		$('#hardwarecontent #AC').prop('checked',true);
+		$('#hardwarecontent #HomeEasyEU').prop('checked',true);
+		$('#hardwarecontent #Meiantech').prop('checked',false);
+		$('#hardwarecontent #OregonScientific').prop('checked',true);
+		$('#hardwarecontent #ATIremote').prop('checked',false);
+		$('#hardwarecontent #Visonic').prop('checked',false);
+		$('#hardwarecontent #Mertik').prop('checked',false);
+		$('#hardwarecontent #ADLightwaveRF').prop('checked',false);
+		$('#hardwarecontent #HidekiUPM').prop('checked',true);
+		$('#hardwarecontent #LaCrosse').prop('checked',true);
+		$('#hardwarecontent #FS20').prop('checked',false);
+		$('#hardwarecontent #ProGuard').prop('checked',false);
+		$('#hardwarecontent #BlindT0').prop('checked',false);
+		$('#hardwarecontent #BlindT1T2T3T4').prop('checked',false);
+		$('#hardwarecontent #AEBlyss').prop('checked',false);
+		$('#hardwarecontent #Rubicson').prop('checked',false);
+		$('#hardwarecontent #FineOffsetViking').prop('checked',false);
+		$('#hardwarecontent #Lighting4').prop('checked',false);
+		$('#hardwarecontent #rfu4').prop('checked',false);
+		$('#hardwarecontent #rfu5').prop('checked',false);
+		$('#hardwarecontent #rfu6').prop('checked',false);
+	});
+
+}
+
+function SetRFXCOMMode()
+{
+  $.post("setrfxcommode.webem", $("#hardwarecontent #settings").serialize(), function(data) {
+   ShowHardware();
+  });
+}
+
 function RefreshHardwareTable()
 {
   $('#modal').show();
@@ -434,6 +563,16 @@ function RefreshHardwareTable()
 						sharedstr="Yes (" + item.SharedPort + ")";
 					}
 					
+					var HwTypeStr=$.myglobals.HardwareTypesStr[item.Type];
+					if (HwTypeStr.indexOf("RFXCOM") >= 0)
+					{
+						if (item.Mode1!=0)
+						{
+							HwTypeStr+='<br>Firmware version: ' + item.Mode2;
+							HwTypeStr+=' <span class="label label-info" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Set Mode</span>';
+						}
+					}
+					
           var addId = oTable.fnAddData( {
 								"DT_RowId": item.idx,
 								"Username": item.Username,
@@ -444,6 +583,7 @@ function RefreshHardwareTable()
 								"Mode3": item.Mode3,
 								"Mode4": item.Mode4,
 								"Mode5": item.Mode5,
+								"Type" : $.myglobals.HardwareTypesStr[item.Type],
 								"IntPort": item.Port,
 								"Shared": item.Shared,
 								"SharedPort": item.SharedPort,
@@ -453,7 +593,7 @@ function RefreshHardwareTable()
                 "0": item.Name,
                 "1": enabledstr,
                 "2": sharedstr,
-								"3": $.myglobals.HardwareTypesStr[item.Type],
+								"3": HwTypeStr,
 								"4": item.Address,
 								"5": SerialName
 							} );
@@ -478,7 +618,7 @@ function RefreshHardwareTable()
 										$("#updelclr #hardwareupdate").attr("href", "javascript:UpdateHardware(" + idx + ")");
 										$("#updelclr #hardwaredelete").attr("href", "javascript:DeleteHardware(" + idx + ")");
 										$("#hardwarecontent #hardwareparamstable #hardwarename").val(data["0"]);
-										$("#hardwarecontent #hardwareparamstable #combotype").val(jQuery.inArray(data["3"], $.myglobals.HardwareTypesStr));
+										$("#hardwarecontent #hardwareparamstable #combotype").val(jQuery.inArray(data["Type"], $.myglobals.HardwareTypesStr));
 
 										$('#hardwarecontent #hardwareparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
 
@@ -489,17 +629,17 @@ function RefreshHardwareTable()
 										$("#hardwarecontent #hardwareparamssharedetails #combosharerights").val(parseInt(data["SharedRights"]));
 										
 										UpdateHardwareParamControls();
-										if (data["3"].indexOf("USB") >= 0)
+										if (data["Type"].indexOf("USB") >= 0)
 										{
 											$("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
 										}
 										else
-										if ((data["3"].indexOf("LAN") >= 0)||(data["3"].indexOf("Domoticz") >= 0))
+										if ((data["Type"].indexOf("LAN") >= 0)||(data["Type"].indexOf("Domoticz") >= 0))
 										{
 											$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["4"]);
 											$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["5"]);
 										}
-										if (data["3"].indexOf("Domoticz") >= 0) {
+										if (data["Type"].indexOf("Domoticz") >= 0) {
 											$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
 											$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
 										}
@@ -603,6 +743,7 @@ $(document).ready(function() {
 				 $.myglobals.SerialPortStr.push($(this).text());
 				 $.myglobals.SerialPortVal.push(parseInt($(this).val()));
 	});
+	
   ShowHardware();
 } );  
 </script>

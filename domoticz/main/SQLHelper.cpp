@@ -908,6 +908,13 @@ bool CSQLHelper::GetPreferencesVar(const char *Key, int &nValue)
 	return GetPreferencesVar(Key, nValue, sValue);
 }
 
+void CSQLHelper::UpdateRFXCOMHardwareDetails(const int HardwareID, const int msg1, const int msg2, const int msg3, const int msg4, const int msg5)
+{
+	std::stringstream szQuery;
+	szQuery << "UPDATE Hardware SET Mode1=" << msg1 << ", Mode2=" << msg2 << ", Mode3=" << msg3 <<", Mode4=" << msg4 <<", Mode5=" << msg5 << " WHERE (ID == " << HardwareID << ")";
+	query(szQuery.str());
+}
+
 bool CSQLHelper::CheckAndHandleTempHumidityNotification(
 	const int HardwareID, 
 	const std::string ID, 

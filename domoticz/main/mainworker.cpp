@@ -456,7 +456,7 @@ bool MainWorker::StartThread()
 }
 
 #define HEX( x ) \
-	std::setw(2) << std::setfill('0') << std::hex << (int)( x )
+	std::setw(2) << std::setfill('0') << std::hex << std::uppercase << (int)( x )
 
 bool file_exist (const char *filename)
 {
@@ -859,6 +859,8 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const tRBUF *pResponse
 						WriteMessage("Error: unknown response");
 						break;
 					}
+
+					m_sql.UpdateRFXCOMHardwareDetails(HwdID,pResponse->IRESPONSE.msg1,pResponse->IRESPONSE.msg2,pResponse->IRESPONSE.msg3,pResponse->IRESPONSE.msg4,pResponse->IRESPONSE.msg5);
 
 					switch (pResponse->IRESPONSE.msg1)
 					{
@@ -2540,9 +2542,10 @@ void MainWorker::decode_UNDECODED(const int HwdID, const tRBUF *pResponse)
 		break;
 	}
 	std::stringstream sHexDump;
-	for (int i = 0; i< (pResponse->UNDECODED.packetlength - pResponse->UNDECODED.msg1); i++)
+	unsigned char *pRXBytes=(unsigned char*)&pResponse->UNDECODED.msg1;
+	for (int i = 0; i< pResponse->UNDECODED.packetlength - 3; i++)
 	{
-		sHexDump << HEX((unsigned char)(pResponse->UNDECODED.msg1 + i));
+		sHexDump << HEX(pRXBytes[i]);
 	}
 	WriteMessage(sHexDump.str().c_str());
 }
@@ -5171,6 +5174,33 @@ void MainWorker::decode_FS20(const int HwdID, const tRBUF *pResponse)
 
 	sprintf(szTmp,"Signal level  = %d", pResponse->FS20.rssi);
 	WriteMessage(szTmp);
+}
+
+bool MainWorker::SetRFXCOMHardwaremodes(const int HardwareID, const unsigned char Mode1,const unsigned char Mode2,const unsigned char Mode3,const unsigned char Mode4,const unsigned char Mode5)
+{
+	int hindex=FindDomoticzHardware(HardwareID);
+	if (hindex==-1)
+		return false;
+	m_hardwaredevices[hindex]->m_rxbufferpos=0;
+	tRBUF Response;
+	Response.ICMND.packetlength = sizeof(Response.ICMND)-1;
+	Response.ICMND.packettype = pTypeInterfaceControl;
+	Response.ICMND.subtype = sTypeInterfaceCommand;
+	Response.ICMND.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+	Response.ICMND.cmnd = cmdSETMODE;
+	Response.ICMND.msg1=Mode1;
+	Response.ICMND.msg2=Mode2;
+	Response.ICMND.msg3=Mode3;
+	Response.ICMND.msg4=Mode4;
+	Response.ICMND.msg5=Mode5;
+	WriteToHardware(HardwareID,(const char*)&Response,sizeof(Response.ICMND));
+	DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&Response);
+	//Save it also
+	SendCommand(HardwareID,cmdSAVE,"Save Settings");
+
+	m_hardwaredevices[hindex]->m_rxbufferpos=0;
+
+	return true;
 }
 
 bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, std::string switchcmd, unsigned char level, const bool IsTesting)

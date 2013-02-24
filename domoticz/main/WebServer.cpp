@@ -164,6 +164,7 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
 		this ) );			// instance of class
 
 	m_pWebEm->RegisterActionCode( "storesettings",boost::bind(&CWebServer::PostSettings,this));
+	m_pWebEm->RegisterActionCode( "setrfxcommode",boost::bind(&CWebServer::SetRFXCOMMode,this));
 
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWebServer::Do_Work, this)));
@@ -327,7 +328,6 @@ int CWebServer::FindUser(const char* szUserName)
 	return -1;
 }
 
-
 char * CWebServer::PostSettings()
 {
 	m_retstr="/index.html";
@@ -412,6 +412,67 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("MeterDividerGas",GasDivider);
 	m_pMain->m_sql.UpdatePreferencesVar("MeterDividerWater",WaterDivider);
 
+	return (char*)m_retstr.c_str();
+}
+
+char * CWebServer::SetRFXCOMMode()
+{
+	m_retstr="";
+	std::string idx=m_pWebEm->FindValue("idx");
+	if (idx=="") {
+		return (char*)m_retstr.c_str();
+	}
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
+	result=m_pMain->m_sql.query(szQuery.str());
+	if (result.size()<1)
+		return (char*)m_retstr.c_str();
+
+	m_retstr="/index.html";
+
+	unsigned char Mode1=atoi(result[0][0].c_str());
+	unsigned char Mode2=atoi(result[0][1].c_str());
+	unsigned char Mode3=atoi(result[0][2].c_str());
+	unsigned char Mode4=atoi(result[0][3].c_str());
+	unsigned char Mode5=atoi(result[0][4].c_str());
+
+	tRBUF Response;
+	Response.ICMND.msg1=Mode1;
+	Response.ICMND.msg2=Mode2;
+	Response.ICMND.msg3=Mode3;
+	Response.ICMND.msg4=Mode4;
+	Response.ICMND.msg5=Mode5;
+
+	Response.MODEbits.display_undecoded=(m_pWebEm->FindValue("undecon")=="on")?1:0;
+	Response.MODEbits.X10enabled=(m_pWebEm->FindValue("X10")=="on")?1:0;
+	Response.MODEbits.ARCenabled=(m_pWebEm->FindValue("ARC")=="on")?1:0;
+	Response.MODEbits.ACenabled=(m_pWebEm->FindValue("AC")=="on")?1:0;
+	Response.MODEbits.HEEUenabled=(m_pWebEm->FindValue("HomeEasyEU")=="on")?1:0;
+	Response.MODEbits.MEIANTECHenabled=(m_pWebEm->FindValue("Meiantech")=="on")?1:0;
+	Response.MODEbits.OREGONenabled=(m_pWebEm->FindValue("OregonScientific")=="on")?1:0;
+	Response.MODEbits.ATIenabled=(m_pWebEm->FindValue("ATIremote")=="on")?1:0;
+	Response.MODEbits.VISONICenabled=(m_pWebEm->FindValue("Visonic")=="on")?1:0;
+	Response.MODEbits.MERTIKenabled=(m_pWebEm->FindValue("Mertik")=="on")?1:0;
+	Response.MODEbits.LWRFenabled=(m_pWebEm->FindValue("ADLightwaveRF")=="on")?1:0;
+	Response.MODEbits.HIDEKIenabled=(m_pWebEm->FindValue("HidekiUPM")=="on")?1:0;
+	Response.MODEbits.LACROSSEenabled=(m_pWebEm->FindValue("LaCrosse")=="on")?1:0;
+	Response.MODEbits.FS20enabled=(m_pWebEm->FindValue("FS20")=="on")?1:0;
+	Response.MODEbits.PROGUARDenabled=(m_pWebEm->FindValue("ProGuard")=="on")?1:0;
+	Response.MODEbits.BLINDST0enabled=(m_pWebEm->FindValue("BlindT0")=="on")?1:0;
+	Response.MODEbits.BLINDST1enabled=(m_pWebEm->FindValue("BlindT1T2T3T4")=="on")?1:0;
+	Response.MODEbits.AEenabled=(m_pWebEm->FindValue("AEBlyss")=="on")?1:0;
+	Response.MODEbits.RUBICSONenabled=(m_pWebEm->FindValue("Rubicson")=="on")?1:0;
+	Response.MODEbits.FINEOFFSETenabled=(m_pWebEm->FindValue("FineOffsetViking")=="on")?1:0;
+	Response.MODEbits.LIGHTING4enabled=(m_pWebEm->FindValue("Lighting4")=="on")?1:0;
+	Response.MODEbits.RFU4=(m_pWebEm->FindValue("rfu4")=="on")?1:0;
+	Response.MODEbits.RFU5=(m_pWebEm->FindValue("rfu5")=="on")?1:0;
+	Response.MODEbits.RFU6=(m_pWebEm->FindValue("rfu6")=="on")?1:0;
+
+	m_pMain->SetRFXCOMHardwaremodes(atoi(idx.c_str()),Response.ICMND.msg1,Response.ICMND.msg2,Response.ICMND.msg3,Response.ICMND.msg4,Response.ICMND.msg5);
 
 	return (char*)m_retstr.c_str();
 }

@@ -619,41 +619,44 @@ typedef union tRBUF {
 
 	struct tagMODEBits
 	{
-        unsigned long X10enabled : 1; //note: keep this order
-        unsigned long ARCenabled : 1;
-        unsigned long ACenabled : 1;
-        unsigned long HEEUenabled : 1;
-        unsigned long MEIANTECHenabled : 1;
-        unsigned long OREGONenabled : 1;
-        unsigned long ATIenabled : 1;
-        unsigned long VISONICenabled : 1;
-
-        unsigned long MERTIKenabled : 1;
-        unsigned long LWRFenabled : 1;
-        unsigned long HIDEKIenabled : 1;
-        unsigned long LACROSSEenabled : 1;
-        unsigned long FS20enabled : 1;
-        unsigned long PROGUARDenabled : 1;
-        unsigned long BLINDST0enabled : 1;
-        unsigned long BLINDST1enabled : 1;
-
-        unsigned long AEenabled : 1;
-        unsigned long RUBICSONenabled : 1;
-        unsigned long FINEOFFSETenabled : 1;
-        unsigned long RFU3 : 1;
-        unsigned long RFU4 : 1;
-        unsigned long RFU5 : 1;
-        unsigned long RFU6 : 1;
-        unsigned long display_undecoded : 1; //send un-decoded messages to the application
-
-        unsigned long RFU7 : 1;
-        unsigned long RFU8 : 1;
-        unsigned long RFU9 : 1;
-        unsigned long RFU10 : 1;
-        unsigned long RFU11 : 1;
-        unsigned long RFU12 : 1;
-        unsigned long RFU13 : 1;
-        unsigned long RFU14 : 1;
+		BYTE  packetlength;
+		BYTE  packettype;
+		BYTE  subtype;
+		BYTE  seqnbr;
+		BYTE  cmnd;
+		BYTE  msg1; //receiver/transceiver type
+		BYTE  msg2; //firmware version
+		//BYTE      msg3;
+		BYTE AEenabled : 1;
+		BYTE RUBICSONenabled : 1;
+		BYTE FINEOFFSETenabled : 1;
+		BYTE LIGHTING4enabled : 1;
+		BYTE RFU4 : 1;
+		BYTE RFU5 : 1;
+		BYTE RFU6 : 1;
+		BYTE display_undecoded : 1;
+		//BYTE      msg4;
+		BYTE MERTIKenabled : 1;
+		BYTE LWRFenabled : 1;
+		BYTE HIDEKIenabled : 1;
+		BYTE LACROSSEenabled : 1;
+		BYTE FS20enabled : 1;
+		BYTE PROGUARDenabled : 1;
+		BYTE BLINDST0enabled : 1;
+		BYTE BLINDST1enabled : 1;
+		//BYTE      msg5;
+		BYTE X10enabled : 1; //note: keep this order
+		BYTE ARCenabled : 1;
+		BYTE ACenabled : 1;
+		BYTE HEEUenabled : 1;
+		BYTE MEIANTECHenabled : 1;
+		BYTE OREGONenabled : 1;
+		BYTE ATIenabled : 1;
+		BYTE VISONICenabled : 1;
+		BYTE  msg6;
+		BYTE  msg7;
+		BYTE  msg8;
+		BYTE  msg9;
 	} MODEbits;
 
 	struct {	//receiver/transmitter messages

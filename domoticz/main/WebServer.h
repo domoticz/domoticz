@@ -28,6 +28,7 @@ public:
 	char * DisplaySerialDevicesCombo();
 	char * GetJSonPage();
 	char * PostSettings();
+	char * SetRFXCOMMode();
 
 	cWebem *m_pWebEm;
 

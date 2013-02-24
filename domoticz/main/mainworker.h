@@ -36,6 +36,7 @@ public:
 	bool SwitchLight(std::string idx, std::string switchcmd,std::string level);
 	bool SwitchLight(unsigned long long idx, std::string switchcmd, unsigned char level);
 	bool SwitchLightInt(const std::vector<std::string> sd, std::string switchcmd, unsigned char level, const bool IsTesting);
+	bool SetRFXCOMHardwaremodes(const int HardwareID, const unsigned char Mode1,const unsigned char Mode2,const unsigned char Mode3,const unsigned char Mode4,const unsigned char Mode5);
 
 	bool GetSunSettings();
 

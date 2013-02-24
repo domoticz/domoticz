@@ -8,6 +8,9 @@ Version 1.0.10 (February xxth 2013)
 - Implemented: command line option '-logfile'
 - Implemented: Log Window
 - Implemented: Minimized log traffic from server to client
+- Implemented: Option to set RFXCOM Mode (enable/disable protocols)
+- Implemented: Displaying of RFXCOM Firmware
+
 
 Version 1.0.9 (February 17th 2013)
 - Implemented: OWL113 option to display in Ampere/Usage
