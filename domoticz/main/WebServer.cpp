@@ -1429,12 +1429,19 @@ char * CWebServer::GetJSonPage()
 	} //if (rtype=="devices")
     if (rtype=="cameras")
 	{
+        std::string rused=m_pWebEm->FindValue("used");
+        
 		root["status"]="OK";
 		root["title"]="Cameras";
         
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT ID, Name, Enabled, Address, Port, Username, Password FROM Cameras ORDER BY ID ASC";
+        if(rused=="true") {
+		szQuery << "SELECT ID, Name, Enabled, Address, Port, Username, Password FROM Cameras WHERE (Enabled=='1') ORDER BY ID ASC";
+        }
+        else {
+            szQuery << "SELECT ID, Name, Enabled, Address, Port, Username, Password FROM Cameras ORDER BY ID ASC";
+        }
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
