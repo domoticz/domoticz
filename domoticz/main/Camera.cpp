@@ -22,7 +22,6 @@ void CCamScheduler::StartCameraGrabber(MainWorker *pMainWorker)
 {
 	m_pMain=pMainWorker;
 	ReloadCameras();
-    CheckCameras();
 	m_seconds_counter=CAMERA_POLL_INTERVAL;
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CCamScheduler::Do_Work, this)));
 }
