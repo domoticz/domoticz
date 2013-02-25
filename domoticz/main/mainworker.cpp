@@ -379,8 +379,8 @@ bool MainWorker::Stop()
 {
 	m_scheduler.StopScheduler();
     m_camscheduler.StopCameraGrabber();
-	m_webserver.StopServer();
 	StopDomoticzHardware();
+	m_webserver.StopServer();
 
 	if (m_thread!=NULL)
 	{

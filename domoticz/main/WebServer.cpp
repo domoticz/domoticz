@@ -4647,6 +4647,9 @@ char * CWebServer::GetJSonPage()
 			}
 			sprintf(szTmp,"DELETE FROM LightSubDevices WHERE (ParentID == %s)",idx.c_str());
 			m_pMain->m_sql.query(szTmp);
+
+			sprintf(szTmp,"DELETE FROM Timers WHERE (DeviceRowID == %s)",idx.c_str());
+			m_pMain->m_sql.query(szTmp);
 		}
 
 		if (maindeviceidx!="")

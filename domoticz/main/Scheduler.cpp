@@ -54,6 +54,7 @@ void CScheduler::ReloadSchedules()
 
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
+	std::vector<std::vector<std::string> > result2;
 
 	szQuery << "SELECT DeviceRowID, Time, Type, Cmd, Level, Days FROM Timers WHERE (Active == 1) ORDER BY ID";
 	result=m_pMain->m_sql.query(szQuery.str());
@@ -64,27 +65,48 @@ void CScheduler::ReloadSchedules()
 		{
 			std::vector<std::string> sd=*itt;
 
-			tScheduleItem titem;
-
-			std::stringstream s_str( sd[0] );
-			s_str >> titem.DevID;
-
-			titem.startHour=(unsigned char)atoi(sd[1].substr(0,2).c_str());
-			titem.startMin=(unsigned char)atoi(sd[1].substr(3,2).c_str());
-			titem.startTime=0;
-
-			titem.timerType=(_eTimerType)atoi(sd[2].c_str());
-			titem.timerCmd=(_eTimerCommand)atoi(sd[3].c_str());
-			titem.Level=(unsigned char)atoi(sd[4].c_str());
-
-			if ((titem.timerCmd==TCMD_ON)&&(titem.Level==0))
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT Used FROM DeviceStatus WHERE (ID == " << sd[0] << ")";
+			result2=m_pMain->m_sql.query(szQuery.str());
+			if (result2.size()>0)
 			{
-				titem.Level=100;
-			}
+				std::string sIsUsed = result2[0][0];
+				if (atoi(sIsUsed.c_str())==1)
+				{
+					tScheduleItem titem;
 
-			titem.Days=atoi(sd[5].c_str());
-			if (AdjustScheduleItem(&titem,false)==true)
-				m_scheduleitems.push_back(titem);
+					std::stringstream s_str( sd[0] );
+
+
+					s_str >> titem.DevID;
+
+					titem.startHour=(unsigned char)atoi(sd[1].substr(0,2).c_str());
+					titem.startMin=(unsigned char)atoi(sd[1].substr(3,2).c_str());
+					titem.startTime=0;
+
+					titem.timerType=(_eTimerType)atoi(sd[2].c_str());
+					titem.timerCmd=(_eTimerCommand)atoi(sd[3].c_str());
+					titem.Level=(unsigned char)atoi(sd[4].c_str());
+
+					if ((titem.timerCmd==TCMD_ON)&&(titem.Level==0))
+					{
+						titem.Level=100;
+					}
+
+					titem.Days=atoi(sd[5].c_str());
+					if (AdjustScheduleItem(&titem)==true)
+						m_scheduleitems.push_back(titem);
+				}
+				else
+				{
+					//not used? delete it
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "DELETE FROM Timers WHERE (DeviceRowID == " << sd[0] << ")";
+					m_pMain->m_sql.query(szQuery.str());
+				}
+			}
 		}
 	}
 
@@ -142,7 +164,7 @@ void CScheduler::SetSunRiseSetTimers(std::string sSunRise, std::string sSunSet)
 		ReloadSchedules();
 }
 
-bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
+bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem)
 {
 	time_t atime=time(NULL);
 	time_t rtime=atime;
@@ -202,14 +224,10 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	else
 		return false; //unknown timer type
 
-	if ((rtime<atime)||(bForceAddDay))
+	//Adjust timer by 1 day if we are in the past
+	while (rtime<atime)
 	{
-		//item is scheduled for next day
 		rtime+=(24*3600);
-	}
-	while (rtime-(24*3600)>atime+60)
-	{
-		rtime-=(24*3600);
 	}
 
 	pItem->startTime=rtime;
@@ -329,7 +347,7 @@ void CScheduler::CheckSchedules()
 						}
 					}
 				}
-				if (!AdjustScheduleItem(&*itt,true))
+				if (!AdjustScheduleItem(&*itt))
 				{
 					//something is wrong, probably no sunset/rise
 					itt->startTime+=atime+(24*3600);
