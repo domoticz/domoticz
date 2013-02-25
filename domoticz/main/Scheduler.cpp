@@ -225,7 +225,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem)
 		return false; //unknown timer type
 
 	//Adjust timer by 1 day if we are in the past
-	while (rtime<atime)
+	while (rtime<atime+60)
 	{
 		rtime+=(24*3600);
 	}
