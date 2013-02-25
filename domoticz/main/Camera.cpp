@@ -5,10 +5,13 @@
 #include "localtime_r.h"
 #include "Logger.h"
 
+#define CAMERA_POLL_INTERVAL 30
+
 CCamScheduler::CCamScheduler(void)
 {
 	m_pMain=NULL;
 	m_stoprequested=false;
+	m_seconds_counter=0;
 }
 
 CCamScheduler::~CCamScheduler(void)
@@ -20,6 +23,7 @@ void CCamScheduler::StartCameraGrabber(MainWorker *pMainWorker)
 	m_pMain=pMainWorker;
 	ReloadCameras();
     CheckCameras();
+	m_seconds_counter=CAMERA_POLL_INTERVAL;
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CCamScheduler::Do_Work, this)));
 }
 
@@ -83,8 +87,15 @@ void CCamScheduler::Do_Work()
 	while (!m_stoprequested)
 	{
 		//sleep 1 second
-		boost::this_thread::sleep(boost::posix_time::seconds(30));
-		CheckCameras();
+		boost::this_thread::sleep(boost::posix_time::seconds(1));
+		if (m_stoprequested)
+			break;
+		m_seconds_counter++;
+		if (m_seconds_counter>=CAMERA_POLL_INTERVAL)
+		{
+			m_seconds_counter=0;
+			CheckCameras();
+		}
 	}
 	_log.Log(LOG_NORM,"Camera fetch stopped...");
 }

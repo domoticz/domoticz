@@ -30,6 +30,7 @@ public:
 private:
 	MainWorker *m_pMain;
 	boost::mutex m_mutex;
+	unsigned char m_seconds_counter;
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 	std::vector<cameraDevice> m_cameradevices;
