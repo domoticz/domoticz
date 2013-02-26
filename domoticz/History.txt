@@ -12,6 +12,8 @@ Version 1.0.10 (February xxth 2013)
 - Implemented: Displaying of RFXCOM Firmware
 - Fixed: Deleting a device now also deleted the schedules
 - Fixed: Loading schedules only for used devices, deleting otherwise
+- Fixed: Stopping of Domoticz with Domoticz share could take 30 seconds, should be 1 not
+- Fixed: Domoticz startup script, restart, time between stop en start set at 4 seconds
 
 Version 1.0.9 (February 17th 2013)
 - Implemented: OWL113 option to display in Ampere/Usage

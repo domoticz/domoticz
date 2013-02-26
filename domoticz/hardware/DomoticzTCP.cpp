@@ -149,8 +149,9 @@ void DomoticzTCP::disconnect()
 	{
 		closesocket(m_socket);	//will terminate the thread
 		m_socket=INVALID_SOCKET;
+		boost::this_thread::sleep(boost::posix_time::seconds(1));
 	}
-	m_thread-> join();
+	//m_thread-> join();
 }
 
 void DomoticzTCP::Do_Work()

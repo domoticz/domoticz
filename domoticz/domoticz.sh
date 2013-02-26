@@ -104,7 +104,7 @@ case "$1" in
   restart)
 	log_daemon_msg "Restarting $DESC"
 	stop
-	sleep 1
+	sleep 4
 	start
 	log_end_msg 0
 	;;
