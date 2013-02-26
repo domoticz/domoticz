@@ -624,7 +624,7 @@ function SwitchLayout(layout)
 	ChangeClass("mHardware","");
 	ChangeClass("mSetup","");
 	ChangeClass("mLog","");
-	ChangeClass("mCam","");
+	//ChangeClass("mCam","");
 	
 	var durl='';
 	
