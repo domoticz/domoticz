@@ -15,6 +15,7 @@ Version 1.0.10 (February xxth 2013)
 - Fixed: Stopping of Domoticz with Domoticz share could take 30 seconds, should be 1 not
 - Fixed: Domoticz startup script, restart, time between stop en start set at 4 seconds
 - Implemented: Mobile desktop, shortcuts for actual tab page
+- Implemented: Combined LaCrosse TX3 Temp + Humidity sensor as one new device
 
 Version 1.0.9 (February 17th 2013)
 - Implemented: OWL113 option to display in Ampere/Usage

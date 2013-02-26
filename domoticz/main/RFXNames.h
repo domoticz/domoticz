@@ -2,6 +2,8 @@
 
 #include <string>
 
+#define sTypeTH_LC_TC 0xA0   //La Cross Temp_Hum combined
+
 enum _eSwitchType
 {
 	STYPE_OnOff=0,

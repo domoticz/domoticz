@@ -1398,7 +1398,25 @@ void MainWorker::decode_Temp(const int HwdID, const tRBUF *pResponse)
 	sprintf(szTmp,"%.1f",temp);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
 
-	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, 0, true, false);
+	unsigned char humidity=0;
+	if (pResponse->TEMP.subtype==sTypeTEMP5)
+	{
+		//check if we already had a humidity for this device, if so, keep it!
+		char szTmp[300];
+		std::vector<std::vector<std::string> > result;
+
+		sprintf(szTmp,"SELECT nValue,sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HwdID, ID.c_str(),1,pTypeHUM,sTypeHUM1);
+		result=m_sql.query(szTmp);
+		if (result.size()==1)
+		{
+			humidity=atoi(result[0][0].c_str());
+			unsigned char humidity_status=atoi(result[0][1].c_str());
+			sprintf(szTmp,"%.1f;%d;%d",temp,humidity,humidity_status);
+			m_sql.UpdateValue(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,SignalLevel,BatteryLevel,0,szTmp);
+		}
+	}
+
+	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, humidity, true, false);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -1487,7 +1505,24 @@ void MainWorker::decode_Hum(const int HwdID, const tRBUF *pResponse)
 	sprintf(szTmp,"%d",pResponse->HUM.humidity_status);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,humidity,szTmp);
 
-	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, 0, humidity, false, true);
+	float temp=0;
+	if (pResponse->HUM.subtype==sTypeHUM1)
+	{
+		//check if we already had a humidity for this device, if so, keep it!
+		char szTmp[300];
+		std::vector<std::vector<std::string> > result;
+
+		sprintf(szTmp,"SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HwdID, ID.c_str(),0,pTypeTEMP,sTypeTEMP5);
+		result=m_sql.query(szTmp);
+		if (result.size()==1)
+		{
+			temp=(float)atof(result[0][0].c_str());
+			sprintf(szTmp,"%.1f;%d;%d",temp,humidity,pResponse->HUM.humidity_status);
+			m_sql.UpdateValue(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,SignalLevel,BatteryLevel,0,szTmp);
+		}
+	}
+
+	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, humidity, false, true);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
