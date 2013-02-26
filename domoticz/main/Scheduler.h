@@ -8,6 +8,7 @@ class MainWorker;
 
 struct tScheduleItem
 {
+	std::string DeviceName;
 	unsigned long long DevID;
 	unsigned char startHour;
 	unsigned char startMin;
@@ -48,7 +49,7 @@ private:
 
 	//will set the new/next startTime
 	//returns false if timer is invalid (like no sunset/sunrise known yet)
-	bool AdjustScheduleItem(tScheduleItem *pItem);
+	bool AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay);
 	//will check if anything needs to be scheduled
 	void CheckSchedules();
 };

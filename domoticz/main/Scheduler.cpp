@@ -56,7 +56,7 @@ void CScheduler::ReloadSchedules()
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
 
-	szQuery << "SELECT DeviceRowID, Time, Type, Cmd, Level, Days FROM Timers WHERE (Active == 1) ORDER BY ID";
+	szQuery << "SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T2.Used FROM Timers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID";
 	result=m_pMain->m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -65,11 +65,9 @@ void CScheduler::ReloadSchedules()
 		{
 			std::vector<std::string> sd=*itt;
 
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT Used FROM DeviceStatus WHERE (ID == " << sd[0] << ")";
-			result2=m_pMain->m_sql.query(szQuery.str());
-			if (result2.size()>0)
+			bool bDUsed=(atoi(sd[7].c_str())!=0);
+
+			if (bDUsed==true)
 			{
 				std::string sIsUsed = result2[0][0];
 				if (atoi(sIsUsed.c_str())==1)
@@ -77,25 +75,21 @@ void CScheduler::ReloadSchedules()
 					tScheduleItem titem;
 
 					std::stringstream s_str( sd[0] );
-
-
 					s_str >> titem.DevID;
 
 					titem.startHour=(unsigned char)atoi(sd[1].substr(0,2).c_str());
 					titem.startMin=(unsigned char)atoi(sd[1].substr(3,2).c_str());
 					titem.startTime=0;
-
 					titem.timerType=(_eTimerType)atoi(sd[2].c_str());
 					titem.timerCmd=(_eTimerCommand)atoi(sd[3].c_str());
 					titem.Level=(unsigned char)atoi(sd[4].c_str());
-
 					if ((titem.timerCmd==TCMD_ON)&&(titem.Level==0))
 					{
 						titem.Level=100;
 					}
-
 					titem.Days=atoi(sd[5].c_str());
-					if (AdjustScheduleItem(&titem)==true)
+					titem.DeviceName=sd[6];
+					if (AdjustScheduleItem(&titem,false)==true)
 						m_scheduleitems.push_back(titem);
 				}
 				else
@@ -164,7 +158,7 @@ void CScheduler::SetSunRiseSetTimers(std::string sSunRise, std::string sSunSet)
 		ReloadSchedules();
 }
 
-bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem)
+bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 {
 	time_t atime=time(NULL);
 	time_t rtime=atime;
@@ -224,6 +218,12 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem)
 	else
 		return false; //unknown timer type
 
+	if (bForceAddDay)
+	{
+		//item is scheduled for next day
+		rtime+=(24*3600);
+	}
+
 	//Adjust timer by 1 day if we are in the past
 	while (rtime<atime+60)
 	{
@@ -258,7 +258,6 @@ void CScheduler::CheckSchedules()
 	{
 		if (atime>itt->startTime)
 		{
-
 			//check if we are on a valid day
 			bool bOkToFire=false;
 			if (itt->Days & 0x80)
@@ -329,7 +328,7 @@ void CScheduler::CheckSchedules()
 						int maxDimLevel=0;
 
 						GetLightStatus(dType,dSubType,0,"",lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
-						int ilevel=100;
+						int ilevel=maxDimLevel;
 						if ((switchtype == STYPE_Dimmer)&&(maxDimLevel!=0))
 						{
 							if (itt->timerCmd == TCMD_ON)
@@ -347,11 +346,11 @@ void CScheduler::CheckSchedules()
 						}
 					}
 				}
-				if (!AdjustScheduleItem(&*itt))
-				{
-					//something is wrong, probably no sunset/rise
-					itt->startTime+=atime+(24*3600);
-				}
+			}
+			if (!AdjustScheduleItem(&*itt,true))
+			{
+				//something is wrong, probably no sunset/rise
+				itt->startTime+=atime+(24*3600);
 			}
 		}
 	}

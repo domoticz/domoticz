@@ -1821,8 +1821,10 @@ char * CWebServer::GetJSonPage()
 		for (itt=schedules.begin(); itt!=schedules.end(); ++itt)
 		{
 			root["result"][ii]["DevID"]=itt->DevID;
+			root["result"][ii]["DevName"]=itt->DeviceName;
 			root["result"][ii]["TimerType"]=Timer_Type_Desc(itt->timerType);
 			root["result"][ii]["TimerCmd"]=Timer_Cmd_Desc(itt->timerCmd);
+			root["result"][ii]["Days"]=itt->Days;
 			char *pDate=asctime(localtime(&itt->startTime));
 			if (pDate!=NULL)
 			{
