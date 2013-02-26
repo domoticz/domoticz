@@ -615,66 +615,19 @@ function SwitchLayout(layout)
 	$.myglobals.actlayout = layout;
 	
 	//update menu items
-	ChangeClass("mDashboard","");
-	ChangeClass("mLightSwitches","");
-	ChangeClass("mTemperature","");
-	ChangeClass("mWeather","");
-	ChangeClass("mUtility","");
-	ChangeClass("mDevices","");
-	ChangeClass("mHardware","");
-	ChangeClass("mSetup","");
-	ChangeClass("mLog","");
-	//ChangeClass("mCam","");
-	
-	var durl='';
-	
-	if (layout == "Dashboard") {
-		durl='dashboard.html';
-		ChangeClass("mDashboard","current_page_item");
-	}
-	else if (layout == "LightSwitches") {
-		durl='lights.html';
-		ChangeClass("mLightSwitches","current_page_item");
-	}
-	else if (layout == "Temperature") {
-		durl='temperature.html';
-		ChangeClass("mTemperature","current_page_item");
-	}
-	else if (layout == "Weather") {
-		durl='weather.html';
-		ChangeClass("mWeather","current_page_item");
-	}
-	else if (layout == "Utility") {
-		durl='utility.html';
-		ChangeClass("mUtility","current_page_item");
-	}
-	else if (layout == "Devices") {
-		durl='devices.html';
-		ChangeClass("mDevices","current_page_item");
-	}
-	else if (layout == "Hardware") {
-		durl='hardware.html';
-		ChangeClass("mHardware","current_page_item");
-	}
-	else if (layout == "Setup") {
-		durl='setup.html';
-		ChangeClass("mSetup","current_page_item");
-	}
-	else if (layout == "Log") {
-		durl='log.html';
-		ChangeClass("mLog","current_page_item");
-	}
-	else if (layout == "Cam") {
-		durl='cam.html';
-		ChangeClass("mCam","current_page_item");
-	}
+	$("ul.nav li").removeClass("current_page_item");
+	$("ul.nav #m"+layout).addClass("current_page_item");
 
-	else
-		return;
+	var durl=layout.toLowerCase()+".html";
+	if (layout == "LightSwitches") {
+		durl='lights.html';
+	}
 		
 	//stop chaching these pages
 	var dt = new Date();
 	durl+='?sid='+dt.getTime();
+
+	if(window.location.hash != "#"+layout) window.location.hash = layout;
 	
 	$(".bannercontent").load(durl, function(response, status, xhr) {
 		if (status == "error") {
@@ -683,8 +636,8 @@ function SwitchLayout(layout)
 		}
 	});
 
-$('.btn-navbar').addClass('collapsed');
-$('.nav-collapse').removeClass('in').css('height', '0');	
+	$('.btn-navbar').addClass('collapsed');
+	$('.nav-collapse').removeClass('in').css('height', '0');	
 }
 
 function ShowNewBannerContent(content, backlink)

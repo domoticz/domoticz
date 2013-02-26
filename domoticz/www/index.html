@@ -203,7 +203,12 @@ $(document).ready(function() {
           }
     });
 	
-	SwitchLayout('Dashboard');
+		var startPage = window.location.hash.substr(1);
+		SwitchLayout(startPage!=""?startPage:'Dashboard');
+
+		window.onhashchange = function() {
+			SwitchLayout(window.location.hash.substr(1));
+		}; 
 } );
 
 </script>
