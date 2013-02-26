@@ -69,37 +69,33 @@ void CScheduler::ReloadSchedules()
 
 			if (bDUsed==true)
 			{
-				std::string sIsUsed = result2[0][0];
-				if (atoi(sIsUsed.c_str())==1)
-				{
-					tScheduleItem titem;
+				tScheduleItem titem;
 
-					std::stringstream s_str( sd[0] );
-					s_str >> titem.DevID;
+				std::stringstream s_str( sd[0] );
+				s_str >> titem.DevID;
 
-					titem.startHour=(unsigned char)atoi(sd[1].substr(0,2).c_str());
-					titem.startMin=(unsigned char)atoi(sd[1].substr(3,2).c_str());
-					titem.startTime=0;
-					titem.timerType=(_eTimerType)atoi(sd[2].c_str());
-					titem.timerCmd=(_eTimerCommand)atoi(sd[3].c_str());
-					titem.Level=(unsigned char)atoi(sd[4].c_str());
-					if ((titem.timerCmd==TCMD_ON)&&(titem.Level==0))
-					{
-						titem.Level=100;
-					}
-					titem.Days=atoi(sd[5].c_str());
-					titem.DeviceName=sd[6];
-					if (AdjustScheduleItem(&titem,false)==true)
-						m_scheduleitems.push_back(titem);
-				}
-				else
+				titem.startHour=(unsigned char)atoi(sd[1].substr(0,2).c_str());
+				titem.startMin=(unsigned char)atoi(sd[1].substr(3,2).c_str());
+				titem.startTime=0;
+				titem.timerType=(_eTimerType)atoi(sd[2].c_str());
+				titem.timerCmd=(_eTimerCommand)atoi(sd[3].c_str());
+				titem.Level=(unsigned char)atoi(sd[4].c_str());
+				if ((titem.timerCmd==TCMD_ON)&&(titem.Level==0))
 				{
-					//not used? delete it
-					szQuery.clear();
-					szQuery.str("");
-					szQuery << "DELETE FROM Timers WHERE (DeviceRowID == " << sd[0] << ")";
-					m_pMain->m_sql.query(szQuery.str());
+					titem.Level=100;
 				}
+				titem.Days=atoi(sd[5].c_str());
+				titem.DeviceName=sd[6];
+				if (AdjustScheduleItem(&titem,false)==true)
+					m_scheduleitems.push_back(titem);
+			}
+			else
+			{
+				//not used? delete it
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "DELETE FROM Timers WHERE (DeviceRowID == " << sd[0] << ")";
+				m_pMain->m_sql.query(szQuery.str());
 			}
 		}
 	}
