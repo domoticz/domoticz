@@ -4676,6 +4676,11 @@ char * CWebServer::GetJSonPage()
 				}
 			}
 		}
+		if (used==0)
+		{
+			//really remove it, including log etc
+			m_pMain->m_sql.DeleteDevice(idx);
+		}
 		if (result.size()>0)
 		{
 			root["status"]="OK";

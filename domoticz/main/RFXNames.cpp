@@ -255,7 +255,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeHUM, "Humidity" , "temperature" },
 		{ pTypeTEMP_HUM, "Temp + Humidity" , "temperature" },
 		{ pTypeBARO, "Barometric" , "temperature" },
-		{ pTypeTEMP_HUM_BARO, "Temp + Humidity + Barometric" , "temperature" },
+		{ pTypeTEMP_HUM_BARO, "Temp + Humidity + Baro" , "temperature" },
 		{ pTypeRAIN, "Rain" , "rain" },
 		{ pTypeWIND, "Wind" , "wind" },
 		{ pTypeUV, "UV" , "uv" },

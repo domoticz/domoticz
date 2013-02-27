@@ -121,15 +121,11 @@ void CScheduler::SetSunRiseSetTimers(std::string sSunRise, std::string sSunSet)
 		ltime.tm_min = min;
 		ltime.tm_sec = sec;
 		temptime = mktime(&ltime);
-		if (temptime<atime)
-			temptime+=(24*3600);
 		if ((m_tSunRise!=temptime)&&(temptime!=0))
 		{
 			bReloadSchedules=true;
 			m_tSunRise=temptime;
 		}
-		if (m_tSunRise<atime)
-			m_tSunRise+=(24*3600);
 
 		hour=atoi(sSunSet.substr(0,2).c_str());
 		min=atoi(sSunSet.substr(3,2).c_str());
@@ -139,15 +135,11 @@ void CScheduler::SetSunRiseSetTimers(std::string sSunRise, std::string sSunSet)
 		ltime.tm_min = min;
 		ltime.tm_sec = sec;
 		temptime = mktime(&ltime);
-		if (temptime<atime)
-			temptime+=(24*3600);
 		if ((m_tSunSet!=temptime)&&(temptime!=0))
 		{
 			bReloadSchedules=true;
 			m_tSunSet=temptime;
 		}
-		if (m_tSunSet<atime)
-			m_tSunSet+=(24*3600);
 	}
 	if (bReloadSchedules)
 		ReloadSchedules();
@@ -160,13 +152,6 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	struct tm ltime;
 	localtime_r(&atime,&ltime);
 	ltime.tm_sec=0;
-
-	time_t sunset=m_tSunSet;
-	if (sunset<atime)
-		sunset+=(24*3600);
-	time_t sunrise=m_tSunRise;
-	if (sunrise<atime)
-		sunrise+=(24*3600);
 
 	unsigned long HourMinuteOffset=(pItem->startHour*3600)+(pItem->startMin*60);
 
@@ -190,25 +175,25 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	{
 		if (m_tSunSet==0)
 			return false;
-		rtime=sunset-HourMinuteOffset;
+		rtime=m_tSunSet-HourMinuteOffset;
 	}
 	else if (pItem->timerType == TTYPE_AFTERSUNSET)
 	{
 		if (m_tSunSet==0)
 			return false;
-		rtime=sunset+HourMinuteOffset;
+		rtime=m_tSunSet+HourMinuteOffset;
 	}
 	else if (pItem->timerType == TTYPE_BEFORESUNRISE)
 	{
 		if (m_tSunRise==0)
 			return false;
-		rtime=sunrise-HourMinuteOffset;
+		rtime=m_tSunRise-HourMinuteOffset;
 	}
 	else if (pItem->timerType == TTYPE_AFTERSUNRISE)
 	{
 		if (m_tSunRise==0)
 			return false;
-		rtime=sunrise+HourMinuteOffset;
+		rtime=m_tSunRise+HourMinuteOffset;
 	}
 	else
 		return false; //unknown timer type
