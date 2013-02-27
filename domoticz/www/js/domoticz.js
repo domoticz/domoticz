@@ -608,11 +608,30 @@ function ChangeClass(elemname, newclass)
 	document.getElementById(elemname).setAttribute("class", newclass);
 }
 
+function GetLayoutFromURL()
+{
+	var page = window.location.hash.substr(1);
+	return page!=""?page:'Dashboard';
+}
+
+function SetLayoutURL(name)
+{
+	window.location.hash = name;
+}
+
 function SwitchLayout(layout)
 {
+	var fullLayout = layout;
+	var hyphen = layout.indexOf('-');
+	if( hyphen >= 0 ){
+		layout = layout.substr(0, hyphen);
+	}
+
 	clearInterval($.myglobals.refreshTimer);
 	$.myglobals.prevlayout = $.myglobals.layout;
 	$.myglobals.actlayout = layout;
+	$.myglobals.layoutFull = fullLayout;
+	$.myglobals.layoutParameters = fullLayout.substr(hyphen+1);
 	
 	//update menu items
 	$("ul.nav li").removeClass("current_page_item");
@@ -627,7 +646,7 @@ function SwitchLayout(layout)
 	var dt = new Date();
 	durl+='?sid='+dt.getTime();
 
-	if(window.location.hash != "#"+layout) window.location.hash = layout;
+	if(GetLayoutFromURL() != fullLayout) SetLayoutURL(fullLayout);
 	
 	$(".bannercontent").load(durl, function(response, status, xhr) {
 		if (status == "error") {
@@ -636,8 +655,8 @@ function SwitchLayout(layout)
 		}
 	});
 
-	$('.btn-navbar').addClass('collapsed');
-	$('.nav-collapse').removeClass('in').css('height', '0');	
+$('.btn-navbar').addClass('collapsed');
+$('.nav-collapse').removeClass('in').css('height', '0');	
 }
 
 function ShowNewBannerContent(content, backlink)

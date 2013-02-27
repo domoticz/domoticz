@@ -203,11 +203,12 @@ $(document).ready(function() {
           }
     });
 	
-		var startPage = window.location.hash.substr(1);
-		SwitchLayout(startPage!=""?startPage:'Dashboard');
+		SwitchLayout(GetLayoutFromURL());
 
-		window.onhashchange = function() {
-			SwitchLayout(window.location.hash.substr(1));
+		window.onhashchange = function(){
+			if($.myglobals.layoutFull != GetLayoutFromURL()) {
+				SwitchLayout(GetLayoutFromURL());
+			}
 		}; 
 } );
 
