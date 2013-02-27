@@ -153,7 +153,6 @@ jwsmtp/base64_b.cpp
 jwsmtp/compat.cpp
 )
 add_executable(domoticz ${domoticz_SRCS})
-ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
 
 ## Link libraries
 set(BOOST_LIBS thread date_time system)
@@ -165,6 +164,8 @@ IF (Boost_FOUND)
 ENDIF()
 target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread)
 #target_link_libraries(domoticz ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
+
+ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
 
 # build a CPack driven installer package
 set (CPACK_PACKAGE_VERSION_MAJOR "${domoticz_VERSION_MAJOR}")
