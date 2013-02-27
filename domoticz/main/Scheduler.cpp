@@ -21,7 +21,6 @@ CScheduler::~CScheduler(void)
 void CScheduler::StartScheduler(MainWorker *pMainWorker)
 {
 	m_pMain=pMainWorker;
-	ReloadSchedules();
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CScheduler::Do_Work, this)));
 }
 
