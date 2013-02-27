@@ -17,6 +17,7 @@ Version 1.0.10 (February xxth 2013)
 - Implemented: Mobile desktop, shortcuts for actual tab page
 - Implemented: Combined LaCrosse TX3 Temp + Humidity sensor as one new device
 - Implemented: Ability to change page / bookmark page using # on url
+- Fixed: After/Before Sunset/Sunrise when starting the application (could be triggered next day)
 
 Version 1.0.9 (February 17th 2013)
 - Implemented: OWL113 option to display in Ampere/Usage
