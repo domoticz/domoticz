@@ -193,6 +193,7 @@ js/themes/dark-green.js.gz
 js/themes/gray.js.gz
 js/themes/grid.js.gz
 js/themes/skies.js.gz
+js/jquery.jeditable.mini.gz
 
 # Resources that require the user to be online.
 NETWORK:
