@@ -1547,7 +1547,7 @@ function RefreshWeathers()
 							}
 						}
 						else if (typeof item.Direction != 'undefined') {
-							img='<img src="images/wind48.png" height="48">';
+							img='<img src="images/Wind' + item.DirectionStr + '.png" height="48">';
 							status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
 							if (typeof item.Temp != 'undefined') {
 								status+='Temp: ' + item.Temp + '\u00B0 C, ';
@@ -1666,7 +1666,7 @@ function ShowWeathers()
             }
             else if (typeof item.Direction != 'undefined') {
 							bHaveWind=true;
-              xhtm+='wind48.png" height="48"></td>\n' +
+              xhtm+='Wind' + item.DirectionStr + '.png" height="48"></td>\n' +
               '\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
               if (typeof item.Temp != 'undefined') {
 								xhtm+='Temp: ' + item.Temp + '\u00B0 C, ';
