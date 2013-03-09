@@ -223,6 +223,21 @@ const char *sqlCreateCameras =
 "[Username] VARCHAR(100), "
 "[Password] VARCHAR(100));";
 
+const char *sqlCreatePlanMappings =
+"CREATE TABLE IF NOT EXISTS [DeviceToPlansMap] ("
+"[ID] INTEGER PRIMARY KEY, "
+"[DeviceRowID] BIGINT NOT NULL, "
+"[PlanID] BIGINT NOT NULL, "
+"[HPos] FLOAT NOT NULL, "
+"[VPos] FLOAT NOT NULL, "
+"[Name] VARCHAR(200) NOT NULL);";
+
+const char *sqlCreatePlans =
+"CREATE TABLE IF NOT EXISTS [Plans] ("
+"[ID] INTEGER PRIMARY KEY, "
+"[PlanOrder] BIGINT NOT NULL, "
+"[Name] VARCHAR(200) NOT NULL);";
+
 CSQLHelper::CSQLHelper(void)
 {
 	m_LastSwitchID="";
@@ -286,6 +301,8 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateUsers);
 	query(sqlCreateLightSubDevices);
     query(sqlCreateCameras);
+    query(sqlCreatePlanMappings);
+    query(sqlCreatePlans);
 
 	int dbversion=0;
 	GetPreferencesVar("DB_Version", dbversion);
@@ -2767,6 +2784,13 @@ void CSQLHelper::DeleteCamera(const std::string idx)
 	result=query(szTmp);
 }
 
+void CSQLHelper::DeletePlan(const std::string idx)
+{
+	std::vector<std::vector<std::string> > result;
+	char szTmp[1000];
+	sprintf(szTmp,"DELETE FROM Plans WHERE (ID == %s)",idx.c_str());
+	result=query(szTmp);
+}
 
 void CSQLHelper::DeleteDevice(const std::string idx)
 {

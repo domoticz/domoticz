@@ -1488,7 +1488,7 @@ char * CWebServer::GetJSonPage()
 		GetJSonDevices(root, rused, rfilter,order);
 
 	} //if (rtype=="devices")
-    if (rtype=="cameras")
+    else if (rtype=="cameras")
 	{
         std::string rused=m_pWebEm->FindValue("used");
         
@@ -1523,6 +1523,104 @@ char * CWebServer::GetJSonPage()
 			}
 		}
 	} //if (rtype=="cameras")
+    else if (rtype=="plans")
+	{
+     	root["title"]="Plans";
+        
+        std::string cparam=m_pWebEm->FindValue("param");
+
+        if (cparam=="create")
+		{
+			root["title"]="AddPlan";
+            
+            std::string name=m_pWebEm->FindValue("name");
+			if (name=="")
+				goto exitjson;
+			
+            int planOrder=0;
+            szQuery.clear();
+            szQuery.str("");
+            szQuery << "SELECT MAX(PlanOrder) FROM Plans";
+            result=m_pMain->m_sql.query(szQuery.str());
+            
+            if (result.size()>0)
+            {
+                std::vector<std::string> sd=result[0];
+                
+                planOrder=(int)atoi(sd[0].c_str());
+                planOrder++;
+            }
+            sprintf(szTmp,
+					"INSERT INTO Plans (Name, PlanOrder) VALUES ('%s',%d)",
+					name.c_str(),
+					planOrder
+					);
+            result=m_pMain->m_sql.query(szTmp);
+            root["status"]="OK";
+        }
+        if (cparam=="update")
+		{
+			root["title"]="UpdatePlan";
+            
+            std::string plan=m_pWebEm->FindValue("plan");
+			if (plan=="")
+				goto exitjson;
+        
+            std::string name=m_pWebEm->FindValue("name");
+            std::string order=m_pWebEm->FindValue("order");
+            if (name!="") {
+                sprintf(szTmp,
+                    "UPDATE Plans SET Name='%s' WHERE (ID == %s)",
+                    name.c_str(),
+                    plan.c_str()
+                    );
+                result=m_pMain->m_sql.query(szTmp);
+                root["status"]="OK";
+            }
+            if (order!="") {
+                sprintf(szTmp,
+                        "UPDATE Plans SET PlanOrder=%d WHERE (ID == %s)",
+                        atoi(order.c_str()),
+                        plan.c_str()
+                        );
+                result=m_pMain->m_sql.query(szTmp);
+                root["status"]="OK";
+            }
+            
+        }
+        else if (cparam=="delete")
+		{
+            root["title"]="DeletePlan";
+			std::string idx=m_pWebEm->FindValue("plan");
+			if (idx=="")
+				goto exitjson;
+			m_pMain->m_sql.DeletePlan(idx);
+            root["status"]="OK";
+        }
+        else
+        { 
+            szQuery.clear();
+            szQuery.str("");
+
+            szQuery << "SELECT ROWID, Name, PlanOrder FROM Plans ORDER BY PlanOrder ASC";
+            result=m_pMain->m_sql.query(szQuery.str());
+            if (result.size()>0)
+            {
+                std::vector<std::vector<std::string> >::const_iterator itt;
+                int ii=0;
+                for (itt=result.begin(); itt!=result.end(); ++itt)
+                {
+                    std::vector<std::string> sd=*itt;
+                    root["result"][ii]["idx"]=atoi(sd[0].c_str());
+                    root["result"][ii]["name"]=sd[1].c_str();
+                    root["result"][ii]["planorder"]=atoi(sd[2].c_str());
+                    ii++;
+                }
+            }
+            root["status"]="OK";
+        }
+        
+    }//if (rtype=="plans")
 	else if (rtype=="status-temp")
 	{
 		root["status"]="OK";
