@@ -238,6 +238,7 @@ const char *sqlCreatePlans =
 "[PlanOrder] BIGINT NOT NULL, "
 "[Name] VARCHAR(200) NOT NULL);";
 
+
 CSQLHelper::CSQLHelper(void)
 {
 	m_LastSwitchID="";

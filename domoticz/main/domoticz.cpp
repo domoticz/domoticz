@@ -13,7 +13,8 @@
 #include "Logger.h"
 
 #if defined WIN32
-#include "WindowsHelper.h"
+	#include "WindowsHelper.h"
+	#include <Shlobj.h>
 #endif
 
 const char *szHelp=
@@ -167,6 +168,42 @@ int main(int argc, char**argv)
 	}
 
 	std::string dbasefile=szStartupFolder + "domoticz.db";
+#ifdef WIN32
+	if (!IsUserAnAdmin())
+	{
+		PWSTR wPath;
+		HRESULT hr=SHGetKnownFolderPath(
+		  FOLDERID_ProgramData,
+		  0,
+		  NULL,
+		  &wPath
+		);
+		if (SUCCEEDED(hr))
+		{
+			char szPath[MAX_PATH];
+			wcstombs(szPath, wPath, MAX_PATH);
+			CoTaskMemFree(wPath);
+			std::string sPath=szPath;
+			sPath+="\\Domoticz";
+
+			MessageBox(0,sPath.c_str(),"Info",MB_OK);
+
+			DWORD dwAttr = GetFileAttributes(sPath.c_str());
+			BOOL bDirExists=(dwAttr != 0xffffffff && (dwAttr & FILE_ATTRIBUTE_DIRECTORY));
+			if (!bDirExists)
+			{
+				BOOL bRet=CreateDirectory(sPath.c_str(),NULL);
+				if (bRet==FALSE) {
+					MessageBox(0,"Error creating Domoticz directory in program data folder (%ProgramData%)!!","Error:",MB_OK);
+				}
+			}
+			sPath+="\\domoticz.db";
+			dbasefile=sPath;
+			MessageBox(0,sPath.c_str(),"Info",MB_OK);
+		}
+	}
+#endif
+
 	if (cmdLine.HasSwitch("-dbase"))
 	{
 		if (cmdLine.GetArgumentCount("-dbase")!=1)
