@@ -4130,11 +4130,16 @@ char * CWebServer::GetJSonPage()
 			root["status"]="OK";
 			root["title"]="SwitchDeviceOrder";
 
-			int orderChange = Order1 < Order2 ? +1 : -1;
-
 			szQuery.clear();
 			szQuery.str("");
-			szQuery << "UPDATE DeviceStatus SET [Order] = [Order]+" << orderChange << " WHERE ([Order] >= " << Order1 << ")";
+			if(atoi(Order1.c_str()) < atoi(Order2.c_str()))
+			{
+				szQuery << "UPDATE DeviceStatus SET [Order] = [Order]+1 WHERE ([Order] >= " << Order1 << " AND [Order] < " << Order2 << ")";
+			}
+			else
+			{
+				szQuery << "UPDATE DeviceStatus SET [Order] = [Order]-1 WHERE ([Order] > " << Order2 << " AND [Order] <= " << Order1 << ")";
+			}
 			m_pMain->m_sql.query(szQuery.str());
 
 			szQuery.clear();
