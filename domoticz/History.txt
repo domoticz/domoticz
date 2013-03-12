@@ -19,6 +19,7 @@ Version 1.0.10 (February xxth 2013)
 - Implemented: Ability to change page / bookmark page using # on url
 - Fixed: After/Before Sunset/Sunrise when starting the application (could be triggered next day)
 - Implemented: Wind Direction Icons
+- Changed: Drag/Dropping sensors now inserts instead of swapping items
 
 Version 1.0.9 (February 17th 2013)
 - Implemented: OWL113 option to display in Ampere/Usage
