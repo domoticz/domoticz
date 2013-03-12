@@ -20,6 +20,7 @@ Version 1.0.10 (March xxth 2013)
 - Fixed: After/Before Sunset/Sunrise when starting the application (could be triggered next day)
 - Implemented: Wind Direction Icons
 - Changed: Drag/Dropping sensors now inserts instead of swapping items
+- Fixed: KD101 smoke detector battery indication (has none)
 
 Version 1.0.9 (February 17th 2013)
 - Implemented: OWL113 option to display in Ampere/Usage
