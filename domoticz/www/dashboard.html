@@ -328,7 +328,7 @@ function RefreshFavorites()
         //Weather Sensors
         $.each(data.result, function(i,item){
           if (
-                ( (typeof item.Rain != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Direction != 'undefined') ) &&
+                ( (typeof item.Rain != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined') ) &&
                 (item.Favorite!=0)
               )
           {
@@ -355,6 +355,9 @@ function RefreshFavorites()
 									img='<img src="images/Wind' + item.DirectionStr + '.png" height="40">';
 									status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms';
 								}
+								else if (typeof item.Barometer != 'undefined') {
+                  status=item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
+                }
 								if ($(id + " #status").html()!=status) {
 									$(id + " #status").html(status);
 								}
@@ -384,6 +387,10 @@ function RefreshFavorites()
 									status+='Temp: ' + item.Temp + '° C, ';
 									status+='Chill: ' + item.Chill + '° C';
 								}
+								else if (typeof item.Barometer != 'undefined') {
+                  img='<img src="images/baro48.png" height="40">';
+                  status=item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
+                }
 								if ($(id + " #img").html()!=img) {
 									$(id + " #img").html(img);
 								}
@@ -1027,7 +1034,7 @@ function ShowFavorites()
         bHaveAddedDevider = false;
         $.each(data.result, function(i,item){
           if (
-                ( (typeof item.Rain != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Direction != 'undefined') ) &&
+                ( (typeof item.Rain != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined') ) &&
                 (item.Favorite!=0)
               )
           {
@@ -1081,6 +1088,9 @@ function ShowFavorites()
 							else if (typeof item.Direction != 'undefined') {
 								status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms';
 							}
+							else if (typeof item.Barometer != 'undefined') {
+								status=item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
+              }
 							xhtm+=
 										'\t      <td id="status">' + status + '</td>\n' +
 										'\t    </tr>\n';
@@ -1125,6 +1135,10 @@ function ShowFavorites()
 								xhtm+='Temp: ' + item.Temp + '° C, ';
 								xhtm+='Chill: ' + item.Chill + '° C';
 							}
+							else if (typeof item.Barometer != 'undefined') {
+								xhtm+='baro48.png" height="40"></td>\n' +
+								'\t      <td id="status">' + item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
+              }
 							xhtm+=
 									'</td>\n' +
 									'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
