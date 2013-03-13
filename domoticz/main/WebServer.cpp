@@ -3974,7 +3974,7 @@ char * CWebServer::GetJSonPage()
 					root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TODAYENERGY,0);
 					root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TODAYENERGY,1);
 				}
-				else if (switchtype==MTYPE_ENERGY)
+				else if (switchtype==MTYPE_GAS)
 				{
 					root["result"][ii]["val"]=NTYPE_TODAYGAS;
 					root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TODAYGAS,0);
