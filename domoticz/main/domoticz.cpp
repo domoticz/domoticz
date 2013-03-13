@@ -171,22 +171,12 @@ int main(int argc, char**argv)
 #ifdef WIN32
 	if (!IsUserAnAdmin())
 	{
-		PWSTR wPath;
-		HRESULT hr=SHGetKnownFolderPath(
-		  FOLDERID_ProgramData,
-		  0,
-		  NULL,
-		  &wPath
-		);
+		char szPath[MAX_PATH];
+		HRESULT hr = SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szPath);
 		if (SUCCEEDED(hr))
 		{
-			char szPath[MAX_PATH];
-			wcstombs(szPath, wPath, MAX_PATH);
-			CoTaskMemFree(wPath);
 			std::string sPath=szPath;
 			sPath+="\\Domoticz";
-
-			MessageBox(0,sPath.c_str(),"Info",MB_OK);
 
 			DWORD dwAttr = GetFileAttributes(sPath.c_str());
 			BOOL bDirExists=(dwAttr != 0xffffffff && (dwAttr & FILE_ATTRIBUTE_DIRECTORY));
@@ -199,7 +189,6 @@ int main(int argc, char**argv)
 			}
 			sPath+="\\domoticz.db";
 			dbasefile=sPath;
-			MessageBox(0,sPath.c_str(),"Info",MB_OK);
 		}
 	}
 #endif
