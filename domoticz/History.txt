@@ -25,6 +25,7 @@ Version 1.0.10 (March xxth 2013)
 - Implemented: Windows, no longer need admin rights
 - Fixed: Baro meter did not show on the dashboard under weather
 - Fixed: Only TFA UV sensor will now report a temperature
+- Fixed: Light/Switch notification could not be unset
 
 Version 1.0.9 (February 17th 2013)
 - Implemented: OWL113 option to display in Ampere/Usage
