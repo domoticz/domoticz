@@ -1315,11 +1315,13 @@ bool CSQLHelper::CheckAndHandleRainNotification(
 	char szTmp[1000];
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID.c_str(), unit, devType, subType);
+	sprintf(szTmp,"SELECT ID,AddjValue,AddjMulti FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID.c_str(), unit, devType, subType);
 	result=query(szTmp);
 	if (result.size()==0)
 		return false;
 	std::string devidx=result[0][0];
+	double AddjValue=atof(result[0][1].c_str());
+	double AddjMulti=atof(result[0][2].c_str());
 
 	char szDateEnd[40];
 
@@ -1345,8 +1347,10 @@ bool CSQLHelper::CheckAndHandleRainNotification(
 
 		float total_min=(float)atof(sd[0].c_str());
 		float total_max=mvalue;
-		float total_real=total_max-total_min;
-		CheckAndHandleNotification(HardwareID, ID, unit, devType, subType, NTYPE_RAIN, total_real);
+		double total_real=total_max-total_min;
+		total_real*=AddjMulti;
+
+		CheckAndHandleNotification(HardwareID, ID, unit, devType, subType, NTYPE_RAIN, (float)total_real);
 	}
 	return false;
 }
