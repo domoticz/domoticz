@@ -573,7 +573,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 						(dType!=pTypeTEMP_HUM)&&
 						(dType!=pTypeTEMP_HUM_BARO)&&
 						(!((dType==pTypeWIND)&&(dSubType==sTypeWIND4)))&&
-						(dType!=pTypeUV)&&
+						(!((dType==pTypeUV)&&(dSubType==sTypeUV3)))&&
 						(dType!=pTypeThermostat1)&&
 						(!((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp)))
 						)
@@ -847,8 +847,15 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					float UVI=(float)atof(strarray[0].c_str());
 					float Temp=(float)atof(strarray[1].c_str());
 					root["result"][ii]["UVI"]=strarray[0];
-					root["result"][ii]["Temp"]=strarray[1];
-					sprintf(szData,"%.1f UVI, %.1f&deg; C",UVI,Temp);
+					if (dSubType==sTypeUV3)
+					{
+						root["result"][ii]["Temp"]=strarray[1];
+						sprintf(szData,"%.1f UVI, %.1f&deg; C",UVI,Temp);
+					}
+					else
+					{
+						sprintf(szData,"%.1f UVI",UVI);
+					}
 					root["result"][ii]["Data"]=szData;
 				}
 			}
@@ -2027,7 +2034,7 @@ char * CWebServer::GetJSonPage()
 							(dType==pTypeTEMP_HUM)||
 							(dType==pTypeTEMP_HUM_BARO)||
 							((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
-							(dType==pTypeUV)||
+							((dType==pTypeUV)&&(dSubType==sTypeUV3))||
 							(dType==pTypeThermostat1)||
 							((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))
 							)
@@ -2698,8 +2705,9 @@ char * CWebServer::GetJSonPage()
 
 						root["result"][ii]["d"]=sd[6].substr(0,16);
 						if (
-							(dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeUV)||(dType==pTypeThermostat1)||
-							((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))
+							(dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeThermostat1)||
+							((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))||
+							((dType==pTypeUV)&&(dSubType==sTypeUV3))
 							)
 						{
 							if (!((dType==pTypeWIND)&&(dSubType!=sTypeWIND4)))
@@ -2735,13 +2743,14 @@ char * CWebServer::GetJSonPage()
 					std::vector<std::string> sd=result[0];
 
 					root["result"][ii]["d"]=szDateEnd;
-					if ((dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeUV)||(dType==pTypeThermostat1))
+					if (
+						((dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeThermostat1))||
+						((dType==pTypeUV)&&(dSubType==sTypeUV3))||
+						((dType==pTypeWIND)&&(dSubType==sTypeWIND4))
+						)
 					{
-						if (!((dType==pTypeWIND)&&(dSubType!=sTypeWIND4)))
-						{
-							root["result"][ii]["te"]=sd[1];
-							root["result"][ii]["tm"]=sd[0];
-						}
+						root["result"][ii]["te"]=sd[1];
+						root["result"][ii]["tm"]=sd[0];
 					}
 					if ((dType==pTypeWIND)&&(dSubType==sTypeWIND4))
 					{
@@ -3164,15 +3173,14 @@ char * CWebServer::GetJSonPage()
 
 						root["result"][ii]["d"]=sd[6].substr(0,16);
 						if (
-							(dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeUV)||(dType==pTypeThermostat1)||
+							(dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeThermostat1)||
+							((dType==pTypeUV)&&(dSubType==sTypeUV3))||
+							((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
 							((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))
 							)
 						{
-							if (!((dType==pTypeWIND)&&(dSubType!=sTypeWIND4)))
-							{
-								root["result"][ii]["te"]=sd[1];
-								root["result"][ii]["tm"]=sd[0];
-							}
+							root["result"][ii]["te"]=sd[1];
+							root["result"][ii]["tm"]=sd[0];
 						}
 						if ((dType==pTypeWIND)&&(dSubType==sTypeWIND4))
 						{
@@ -3201,13 +3209,14 @@ char * CWebServer::GetJSonPage()
 					std::vector<std::string> sd=result[0];
 
 					root["result"][ii]["d"]=szDateEnd;
-					if ((dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeUV)||(dType==pTypeThermostat1))
+					if (
+						((dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeThermostat1))||
+						((dType==pTypeUV)&&(dSubType==sTypeUV3))||
+						((dType==pTypeWIND)&&(dSubType==sTypeWIND4))
+						)
 					{
-						if (!((dType==pTypeWIND)&&(dSubType!=sTypeWIND4)))
-						{
-							root["result"][ii]["te"]=sd[1];
-							root["result"][ii]["tm"]=sd[0];
-						}
+						root["result"][ii]["te"]=sd[1];
+						root["result"][ii]["tm"]=sd[0];
 					}
 					if ((dType==pTypeWIND)&&(dSubType==sTypeWIND4))
 					{
@@ -3904,22 +3913,21 @@ char * CWebServer::GetJSonPage()
 
 			int ii=0;
 			if (
+				(
 				(dType==pTypeTEMP)||
 				(dType==pTypeTEMP_HUM)||
 				(dType==pTypeTEMP_HUM_BARO)||
-				(dType==pTypeWIND)||
-				(dType==pTypeUV)||
 				(dType==pTypeThermostat1)||
 				((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))
+				)||
+				((dType==pTypeUV)&&(dSubType==sTypeUV3))||
+				((dType==pTypeWIND)&&(dSubType==sTypeWIND4))
 				)
 			{
-				if (!((dType==pTypeWIND)&&(dSubType!=sTypeWIND4)))
-				{
-					root["result"][ii]["val"]=NTYPE_TEMPERATURE;
-					root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TEMPERATURE,0);
-					root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TEMPERATURE,1);
-					ii++;
-				}
+				root["result"][ii]["val"]=NTYPE_TEMPERATURE;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TEMPERATURE,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TEMPERATURE,1);
+				ii++;
 			}
 			if (
 				(dType==pTypeHUM)||
