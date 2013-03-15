@@ -1159,6 +1159,12 @@ void MainWorker::decode_Rain(const int HwdID, const tRBUF *pResponse)
 	unsigned char BatteryLevel = get_BateryLevel(pResponse->RAIN.subtype==sTypeRAIN1, pResponse->RAIN.battery_level & 0x0F);
 	int Rainrate=(pResponse->RAIN.rainrateh * 256) + pResponse->RAIN.rainratel;
 	float TotalRain=float((pResponse->RAIN.raintotal1 * 65535) + (pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3) / 10.0f;
+
+	float AddjValue=0.0f;
+	float AddjMulti=1.0f;
+	m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
+	TotalRain*=AddjMulti;
+
 	sprintf(szTmp,"%d;%.1f",Rainrate,TotalRain);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
 
@@ -1284,6 +1290,10 @@ void MainWorker::decode_Wind(const int HwdID, const tRBUF *pResponse)
 		{
 			temp=-(float(((pResponse->WIND.temperatureh & 0x7F) * 256) + pResponse->WIND.temperaturel) / 10.0f);
 		}
+		float AddjValue=0.0f;
+		float AddjMulti=1.0f;
+		m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
+		temp+=AddjValue;
 
 		if (!pResponse->WIND.chillsign)
 		{
@@ -1395,6 +1405,12 @@ void MainWorker::decode_Temp(const int HwdID, const tRBUF *pResponse)
 	{
 		temp=-(float(((pResponse->TEMP.temperatureh & 0x7F) * 256) + pResponse->TEMP.temperaturel) / 10.0f);
 	}
+
+	float AddjValue=0.0f;
+	float AddjMulti=1.0f;
+	m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
+	temp+=AddjValue;
+
 	sprintf(szTmp,"%.1f",temp);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
 
@@ -1628,6 +1644,12 @@ void MainWorker::decode_TempHum(const int HwdID, const tRBUF *pResponse)
 	{
 		temp=-(float(((pResponse->TEMP_HUM.temperatureh & 0x7F) * 256) + pResponse->TEMP_HUM.temperaturel) / 10.0f);
 	}
+
+	float AddjValue=0.0f;
+	float AddjMulti=1.0f;
+	m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
+	temp+=AddjValue;
+
 	unsigned char Humidity = pResponse->TEMP_HUM.humidity;
 	unsigned char HumidityStatus = pResponse->TEMP_HUM.humidity_status;
 
@@ -1761,6 +1783,12 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const tRBUF *pResponse)
 	{
 		temp=-(float(((pResponse->TEMP_HUM_BARO.temperatureh & 0x7F) * 256) + pResponse->TEMP_HUM_BARO.temperaturel) / 10.0f);
 	}
+
+	float AddjValue=0.0f;
+	float AddjMulti=1.0f;
+	m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
+	temp+=AddjValue;
+
 	unsigned char Humidity = pResponse->TEMP_HUM_BARO.humidity;
 	unsigned char HumidityStatus = pResponse->TEMP_HUM_BARO.humidity_status;
 	int barometer = (pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol;
@@ -1882,6 +1910,10 @@ void MainWorker::decode_UV(const int HwdID, const tRBUF *pResponse)
 		{
 			temp = -(float(((pResponse->UV.temperatureh & 0x7F) * 256) + pResponse->UV.temperaturel) / 10.0f);
 		}
+		float AddjValue=0.0f;
+		float AddjMulti=1.0f;
+		m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
+		temp+=AddjValue;
 	}
 
 	sprintf(szTmp,"%.1f;%.1f",Level,temp);
@@ -4511,6 +4543,11 @@ void MainWorker::decode_RFXSensor(const int HwdID, const tRBUF *pResponse)
 				temp = float( (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2) / 100.0f;
 			else
 				temp=-(float( ((pResponse->RFXSENSOR.msg1 & 0x7F) * 256) + pResponse->RFXSENSOR.msg2) / 100.0f);
+			float AddjValue=0.0f;
+			float AddjMulti=1.0f;
+			m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
+			temp+=AddjValue;
+
 			sprintf(szTmp,"%.1f",temp);
 			m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, 0, true, false);
 		}

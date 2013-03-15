@@ -522,7 +522,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID FROM DeviceStatus ORDER BY " << szOrderBy;
+	szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti FROM DeviceStatus ORDER BY " << szOrderBy;
 	result=m_pMain->m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -541,6 +541,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 			_eSwitchType switchtype=(_eSwitchType) atoi(sd[13].c_str());
 			_eMeterType metertype=(_eMeterType)switchtype;
 			int hardwareID= atoi(sd[14].c_str());
+			float AddjValue=(float)atof(sd[15].c_str());
+			float AddjMulti=(float)atof(sd[16].c_str());
 
 			if ((rused=="true")&&(!used))
 				continue;
@@ -778,6 +780,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 			}
 			else if (dType == pTypeTEMP)
 			{
+				root["result"][ii]["AddjValue"]=AddjValue;
+				root["result"][ii]["AddjMulti"]=AddjMulti;
 				root["result"][ii]["Temp"]=atof(sValue.c_str());
 				sprintf(szData,"%.1f C", atof(sValue.c_str()));
 				root["result"][ii]["Data"]=szData;
@@ -793,6 +797,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 			}
 			else if ((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))
 			{
+				root["result"][ii]["AddjValue"]=AddjValue;
+				root["result"][ii]["AddjMulti"]=AddjMulti;
 				root["result"][ii]["Temp"]=atof(sValue.c_str());
 				sprintf(szData,"%.1f C", atof(sValue.c_str()));
 				root["result"][ii]["Data"]=szData;
@@ -811,6 +817,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				StringSplit(sValue, ";", strarray);
 				if (strarray.size()==3)
 				{
+					root["result"][ii]["AddjValue"]=AddjValue;
+					root["result"][ii]["AddjMulti"]=AddjMulti;
 					root["result"][ii]["Temp"]=atof(strarray[0].c_str());
 					root["result"][ii]["Humidity"]=atoi(strarray[1].c_str());
 					root["result"][ii]["HumidityStatus"]=RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
@@ -824,6 +832,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				StringSplit(sValue, ";", strarray);
 				if (strarray.size()==5)
 				{
+					root["result"][ii]["AddjValue"]=AddjValue;
+					root["result"][ii]["AddjMulti"]=AddjMulti;
 					root["result"][ii]["Temp"]=atof(strarray[0].c_str());
 					root["result"][ii]["Humidity"]=atoi(strarray[1].c_str());
 					root["result"][ii]["HumidityStatus"]=RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
@@ -849,6 +859,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					root["result"][ii]["UVI"]=strarray[0];
 					if (dSubType==sTypeUV3)
 					{
+						root["result"][ii]["AddjValue"]=AddjValue;
+						root["result"][ii]["AddjMulti"]=AddjMulti;
 						root["result"][ii]["Temp"]=strarray[1];
 						sprintf(szData,"%.1f UVI, %.1f&deg; C",UVI,Temp);
 					}
@@ -884,6 +896,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 
 					if ((dType==pTypeWIND)&&(dSubType==sTypeWIND4))
 					{
+						root["result"][ii]["AddjValue"]=AddjValue;
+						root["result"][ii]["AddjMulti"]=AddjMulti;
 						root["result"][ii]["Temp"]=atof(strarray[4].c_str());
 						root["result"][ii]["Chill"]=atof(strarray[5].c_str());
 					}
@@ -921,6 +935,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					result2=m_pMain->m_sql.query(szQuery.str());
 					if (result2.size()>0)
 					{
+						root["result"][ii]["AddjValue"]=AddjValue;
+						root["result"][ii]["AddjMulti"]=AddjMulti;
 						std::vector<std::string> sd2=result2[0];
 						float total_min=(float)atof(sd2[0].c_str());
 						float total_max=(float)atof(sd2[1].c_str());

@@ -11,7 +11,7 @@
 #include "../hardware/hardwaretypes.h"
 #include "../httpclient/mynetwork.h"
 
-#define DB_VERSION 3
+#define DB_VERSION 4
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -30,7 +30,9 @@ const char *sqlCreateDeviceStatus =
 "[nValue] INTEGER DEFAULT 0, "
 "[sValue] VARCHAR(200) DEFAULT null, "
 "[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')),"
-"[Order] INTEGER BIGINT(10) default 0);";
+"[Order] INTEGER BIGINT(10) default 0,"
+"[AddjValue] FLOAT DEFAULT 0, "
+"[AddjMulti] FLOAT DEFAULT 1);";
 
 const char *sqlCreateDeviceStatusTrigger =
 "CREATE TRIGGER IF NOT EXISTS devicestatusupdate AFTER INSERT ON DeviceStatus\n"
@@ -319,6 +321,11 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion<3)
 		{
 			query("ALTER TABLE Hardware ADD COLUMN [Enabled] INTEGER default 1");
+		}
+		if (dbversion<4)
+		{
+			query("ALTER TABLE DeviceStatus ADD COLUMN [AddjValue] FLOAT default 0");
+			query("ALTER TABLE DeviceStatus ADD COLUMN [AddjMulti] FLOAT default 1");
 		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
@@ -793,6 +800,21 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 				}
 			}
 		}
+	}
+}
+
+void CSQLHelper::GetAddjustment(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, float &AddjValue, float &AddjMulti)
+{
+	AddjValue=0.0f;
+	AddjMulti=1.0f;
+	std::vector<std::vector<std::string> > result;
+	char szTmp[1000];
+	sprintf(szTmp,"SELECT AddjValue,AddjMulti FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
+	result=query(szTmp);
+	if (result.size()!=0)
+	{
+		AddjValue=(float)atof(result[0][0].c_str());
+		AddjMulti=(float)atof(result[0][1].c_str());
 	}
 }
 
