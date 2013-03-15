@@ -4,6 +4,20 @@
         <input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" />
     </form>
 </div>
+<div id="dialog-editraindevice" title="Edit Device">
+    <form>
+        <table class="display" id="edittable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="width:60px"><label for="devicename">Name: </label></td>
+          <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        <tr>
+        <tr>
+          <td align="right" style="width:60px"><label for="multiply">Multiply: </label></td>
+          <td><input type="text" id="multiply" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        <tr>
+				</table>
+    </form>
+</div>
 <div id="weathercontent">
 </div>
 <div id="weatherlog" style="display:none;">
@@ -70,6 +84,15 @@ function MakeFavorite(id,isfavorite)
       ShowWeathers();
      }
   });
+}
+
+function EditRainDevice(idx,name,addjmulti)
+{
+	clearInterval($.myglobals.refreshTimer);
+  $.devIdx=idx;
+  $("#dialog-editraindevice #devicename").val(name);
+  $("#dialog-editraindevice #multiply").val(addjmulti);
+  $( "#dialog-editraindevice" ).dialog( "open" );
 }
 
 function EditWeatherDevice(idx,name)
@@ -1699,8 +1722,14 @@ function ShowWeathers()
           else if (typeof item.Direction != 'undefined') {
             xhtm+='<a class="btnsmall" onclick="ShowWindLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
           }
-          xhtm+=      
-                '<a class="btnsmall" onclick="EditWeatherDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+          if (bHaveRain) {
+						xhtm+=      
+									'<a class="btnsmall" onclick="EditRainDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjMulti +');">Edit</a> ';
+          }
+          else {
+						xhtm+=      
+									'<a class="btnsmall" onclick="EditWeatherDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+          }
                 
           if (item.Notifications == "true")
             xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#weathercontent\', \'ShowWeathers\');">Notifications</a>';
@@ -1775,6 +1804,65 @@ $(document).ready(function() {
                       $( this ).dialog( "close" );
                       $.ajax({
                          url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editweatherdevice #devicename").val() + '&used=true',
+                         async: false, 
+                         dataType: 'json',
+                         success: function(data) {
+                            ShowWeathers();
+                         }
+                      });
+                      
+                  }
+              },
+              "Remove Device": function() {
+                  var bValid = false;
+                  bValid=(confirm("Are you sure to remove this Device?")==true);
+                  if ( bValid ) {
+                      $( this ).dialog( "close" );
+                      $.ajax({
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editweatherdevice #devicename").val() + '&used=false',
+                         async: false, 
+                         dataType: 'json',
+                         success: function(data) {
+                            ShowWeathers();
+                         }
+                      });
+                      
+                  }
+              },
+              "Transfer": function() {
+                  $( this ).dialog( "close" );
+                  TransferDevice($.devIdx,ShowWeathers);
+              },
+              Cancel: function() {
+                  $( this ).dialog( "close" );
+              }
+          },
+          open: function() {
+              $(this).keypress(function(e) {
+                if (e.keyCode == $.ui.keyCode.ENTER) {
+                  e.preventDefault();
+                  $(this).parent().find("button:eq(0)").trigger("click");
+                }
+              });
+          },
+          close: function() {
+            $( this ).dialog( "close" );
+          }
+    });
+    $( "#dialog-editraindevice" ).dialog({
+          autoOpen: false,
+          width: 450,
+          height: 190,
+          modal: true,
+          resizable: false,
+          buttons: {
+              "Update": function() {
+                  var bValid = true;
+                  bValid = bValid && checkLength( $("#dialog-editraindevice #edittable #devicename"), 2, 100 );
+                  if ( bValid ) {
+                      $( this ).dialog( "close" );
+                      $.ajax({
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editraindevice #devicename").val() + '&addjmulti=' + $("#dialog-editraindevice #edittable #multiply").val() + '&used=true',
                          async: false, 
                          dataType: 'json',
                          success: function(data) {

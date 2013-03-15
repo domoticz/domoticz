@@ -541,8 +541,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 			_eSwitchType switchtype=(_eSwitchType) atoi(sd[13].c_str());
 			_eMeterType metertype=(_eMeterType)switchtype;
 			int hardwareID= atoi(sd[14].c_str());
-			float AddjValue=(float)atof(sd[15].c_str());
-			float AddjMulti=(float)atof(sd[16].c_str());
+			double AddjValue=atof(sd[15].c_str());
+			double AddjMulti=atof(sd[16].c_str());
 
 			if ((rused=="true")&&(!used))
 				continue;
@@ -941,7 +941,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 						float total_min=(float)atof(sd2[0].c_str());
 						float total_max=(float)atof(sd2[1].c_str());
 						int rate=atoi(sd2[2].c_str());
-						float total_real=total_max-total_min;
+						double total_real=total_max-total_min;
+						total_real*=AddjMulti;
+
 						sprintf(szTmp,"%.1f",total_real);
 						root["result"][ii]["Rain"]=szTmp;
 						//if ((dSubType==sTypeRAIN1)||(dSubType==sTypeRAIN2))
@@ -1970,7 +1972,7 @@ char * CWebServer::GetJSonPage()
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT Type, SubType, SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
+		szQuery << "SELECT Type, SubType, SwitchType, AddjValue, AddjMulti FROM DeviceStatus WHERE (ID == " << idx << ")";
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()<1)
 			goto exitjson;
@@ -1982,6 +1984,9 @@ char * CWebServer::GetJSonPage()
 			metertype= MTYPE_ENERGY;
 		else if (dType==pTypeP1Gas)
 			metertype= MTYPE_GAS;
+
+		double AddjValue=atof(result[0][3].c_str());
+		double AddjMulti=atof(result[0][4].c_str());
 
 		std::string dbasetable="";
 		if (srange=="day") {
@@ -2375,7 +2380,10 @@ char * CWebServer::GetJSonPage()
 						std::vector<std::string> sd=*itt;
 
 						root["result"][ii]["d"]=sd[2].substr(0,16);
-						root["result"][ii]["mm"]=sd[0];
+						double mmval=atof(sd[0].c_str());
+						mmval*=AddjMulti;
+						sprintf(szTmp,"%.1f",mmval);
+						root["result"][ii]["mm"]=szTmp;
 						ii++;
 					}
 				}
@@ -2392,7 +2400,8 @@ char * CWebServer::GetJSonPage()
 					float total_max=(float)atof(sd[1].c_str());
 					int rate=atoi(sd[2].c_str());
 
-					float total_real=total_max-total_min;
+					double total_real=total_max-total_min;
+					total_real*=AddjMulti;
 					sprintf(szTmp,"%.1f",total_real);
 					root["result"][ii]["d"]=szDateEnd;
 					root["result"][ii]["mm"]=szTmp;
@@ -2837,7 +2846,10 @@ char * CWebServer::GetJSonPage()
 						std::vector<std::string> sd=*itt;
 
 						root["result"][ii]["d"]=sd[2].substr(0,16);
-						root["result"][ii]["mm"]=sd[0];
+						double mmval=atof(sd[0].c_str());
+						mmval*=AddjMulti;
+						sprintf(szTmp,"%.1f",mmval);
+						root["result"][ii]["mm"]=szTmp;
 						ii++;
 					}
 				}
@@ -2854,7 +2866,8 @@ char * CWebServer::GetJSonPage()
 					float total_max=(float)atof(sd[1].c_str());
 					int rate=atoi(sd[2].c_str());
 
-					float total_real=total_max-total_min;
+					double total_real=total_max-total_min;
+					total_real*=AddjMulti;
 					sprintf(szTmp,"%.1f",total_real);
 					root["result"][ii]["d"]=szDateEnd;
 					root["result"][ii]["mm"]=szTmp;
@@ -4741,6 +4754,9 @@ char * CWebServer::GetJSonPage()
 		std::string sused=m_pWebEm->FindValue("used");
 		std::string sswitchtype=m_pWebEm->FindValue("switchtype");
 		std::string maindeviceidx=m_pWebEm->FindValue("maindeviceidx");
+		std::string addjvalue=m_pWebEm->FindValue("addjvalue");
+		std::string addjmulti=m_pWebEm->FindValue("addjmulti");
+		
 		int switchtype=-1;
 		if (sswitchtype!="")
 			switchtype=atoi(sswitchtype.c_str());
@@ -4765,6 +4781,24 @@ char * CWebServer::GetJSonPage()
 				szQuery << "UPDATE DeviceStatus SET Used=" << used << ", Name='" << name << "', SwitchType=" << switchtype << " WHERE (ID == " << idx << ")";
 		}
 		result=m_pMain->m_sql.query(szQuery.str());
+		if (addjvalue!="")
+		{
+			double faddjvalue=atof(addjvalue.c_str());
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE DeviceStatus SET AddjValue=" << faddjvalue << " WHERE (ID == " << idx << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+		}
+		if (addjmulti!="")
+		{
+			double faddjmulti=atof(addjmulti.c_str());
+			if (faddjmulti==0)
+				faddjmulti=1;
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE DeviceStatus SET AddjMulti=" << faddjmulti << " WHERE (ID == " << idx << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+		}
 
 		if (used==0)
 		{

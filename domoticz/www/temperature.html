@@ -1,7 +1,15 @@
 <div id="dialog-edittempdevice" title="Edit Device">
     <form>
-        <label for="name">Name: </label>
-        <input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" />
+        <table class="display" id="edittable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="width:60px"><label for="devicename">Name: </label></td>
+          <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        <tr>
+        <tr>
+          <td align="right" style="width:60px"><label for="adjustment">Adjustment: </label></td>
+          <td><input type="text" id="adjustment" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> &deg; C</td>
+        <tr>
+				</table>
     </form>
 </div>
 <div id="tempcontent">
@@ -49,11 +57,12 @@ function MakeFavorite(id,isfavorite)
 }
     
 
-function EditTempDevice(idx,name)
+function EditTempDevice(idx,name,addjvalue)
 {
 	clearInterval($.myglobals.refreshTimer);
   $.devIdx=idx;
   $("#dialog-edittempdevice #devicename").val(name);
+  $("#dialog-edittempdevice #adjustment").val(addjvalue);
   $( "#dialog-edittempdevice" ).dialog( "open" );
 }
 
@@ -956,7 +965,7 @@ function ShowTemps()
           }
           xhtm+=
                 '<a class="btnsmall" onclick="ShowTempLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ' +
-                '<a class="btnsmall" onclick="EditTempDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+                '<a class="btnsmall" onclick="EditTempDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjValue + ');">Edit</a> ';
           if (item.Notifications == "true")
             xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#tempcontent\', \'ShowTemps\');">Notifications</a>';
           else
@@ -1019,17 +1028,18 @@ $(document).ready(function() {
     $( "#dialog-edittempdevice" ).dialog({
           autoOpen: false,
           width: 450,
-          height: 160,
+          height: 190,
           modal: true,
           resizable: false,
           buttons: {
               "Update": function() {
                   var bValid = true;
-                  bValid = bValid && checkLength( $("#dialog-edittempdevice #devicename"), 2, 100 );
+                  bValid = bValid && checkLength( $("#dialog-edittempdevice #edittable #devicename"), 2, 100 );
                   if ( bValid ) {
                       $( this ).dialog( "close" );
+                      var aValue=$("#dialog-edittempdevice #edittable #adjustment").val();
                       $.ajax({
-                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-edittempdevice #devicename").val() + '&used=true',
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-edittempdevice #devicename").val() + '&addjvalue=' + aValue + '&used=true',
                          async: false,
                          dataType: 'json',
                          success: function(data) {

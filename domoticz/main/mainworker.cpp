@@ -1159,12 +1159,6 @@ void MainWorker::decode_Rain(const int HwdID, const tRBUF *pResponse)
 	unsigned char BatteryLevel = get_BateryLevel(pResponse->RAIN.subtype==sTypeRAIN1, pResponse->RAIN.battery_level & 0x0F);
 	int Rainrate=(pResponse->RAIN.rainrateh * 256) + pResponse->RAIN.rainratel;
 	float TotalRain=float((pResponse->RAIN.raintotal1 * 65535) + (pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3) / 10.0f;
-
-	float AddjValue=0.0f;
-	float AddjMulti=1.0f;
-	m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
-	TotalRain*=AddjMulti;
-
 	sprintf(szTmp,"%d;%.1f",Rainrate,TotalRain);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
 
@@ -1303,6 +1297,8 @@ void MainWorker::decode_Wind(const int HwdID, const tRBUF *pResponse)
 		{
 			chill = -(float(((pResponse->WIND.chillh) & 0x7F) * 256 + pResponse->WIND.chilll) / 10.0f);
 		}
+		chill+=AddjValue;
+
 		float wspeedms=float(intSpeed)/10.0f;
 		if ((temp<10.0)&&(wspeedms>=1.4))
 		{
@@ -1425,6 +1421,8 @@ void MainWorker::decode_Temp(const int HwdID, const tRBUF *pResponse)
 		result=m_sql.query(szTmp);
 		if (result.size()==1)
 		{
+			m_sql.GetAddjustment(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,AddjValue,AddjMulti);
+			temp+=AddjValue;
 			humidity=atoi(result[0][0].c_str());
 			unsigned char humidity_status=atoi(result[0][1].c_str());
 			sprintf(szTmp,"%.1f;%d;%d",temp,humidity,humidity_status);
@@ -1533,6 +1531,10 @@ void MainWorker::decode_Hum(const int HwdID, const tRBUF *pResponse)
 		if (result.size()==1)
 		{
 			temp=(float)atof(result[0][0].c_str());
+			float AddjValue=0.0f;
+			float AddjMulti=1.0f;
+			m_sql.GetAddjustment(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,AddjValue,AddjMulti);
+			temp+=AddjValue;
 			sprintf(szTmp,"%.1f;%d;%d",temp,humidity,pResponse->HUM.humidity_status);
 			m_sql.UpdateValue(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,SignalLevel,BatteryLevel,0,szTmp);
 		}
