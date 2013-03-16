@@ -1867,6 +1867,38 @@ char * CWebServer::GetJSonPage()
 			}
 		}
 	} //(rtype=="timers")
+	else if ((rtype=="scenetimers")&&(idx!=0))
+	{
+		root["status"]="OK";
+		root["title"]="SceneTimers";
+
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT ID, Active, Time, Type, Cmd, Level, Days FROM SceneTimers WHERE (SceneRowID==" << idx << ") ORDER BY ID";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			int ii=0;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+
+				unsigned char iLevel=atoi(sd[5].c_str());
+				if (iLevel==0)
+					iLevel=100;
+
+				root["result"][ii]["idx"]=sd[0];
+				root["result"][ii]["Active"]=(atoi(sd[1].c_str())==0)?"false":"true";
+				root["result"][ii]["Time"]=sd[2].substr(0,5);
+				root["result"][ii]["Type"]=atoi(sd[3].c_str());
+				root["result"][ii]["Cmd"]=atoi(sd[4].c_str());
+				root["result"][ii]["Level"]=iLevel;
+				root["result"][ii]["Days"]=atoi(sd[6].c_str());
+				ii++;
+			}
+		}
+	} //(rtype=="scenetimers")
 	else if ((rtype=="gettransfers")&&(idx!=0))
 	{
 		root["status"]="OK";
@@ -1943,7 +1975,8 @@ char * CWebServer::GetJSonPage()
 		std::vector<tScheduleItem>::iterator itt;
 		for (itt=schedules.begin(); itt!=schedules.end(); ++itt)
 		{
-			root["result"][ii]["DevID"]=itt->DevID;
+			root["result"][ii]["Type"]=(itt->bIsScene)?"Scene":"Device";
+			root["result"][ii]["RowID"]=itt->RowID;
 			root["result"][ii]["DevName"]=itt->DeviceName;
 			root["result"][ii]["TimerType"]=Timer_Type_Desc(itt->timerType);
 			root["result"][ii]["TimerCmd"]=Timer_Cmd_Desc(itt->timerCmd);
@@ -3648,6 +3681,42 @@ char * CWebServer::GetJSonPage()
 				result=m_pMain->m_sql.query(szTmp);
 			}
 		}
+		else if (cparam=="addscenedevice")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			std::string devidx=m_pWebEm->FindValue("devidx");
+			if (devidx=="")
+				goto exitjson;
+			//first check if it is not already a sub device
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT ID FROM SceneDevices WHERE (DeviceRowID=='" << devidx << "') AND (SceneRowID =='" << idx << "')";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()==0)
+			{
+				root["status"]="OK";
+				root["title"]="AddSceneDevice";
+				//no it is not, add it
+				sprintf(szTmp,
+					"INSERT INTO SceneDevices (DeviceRowID, SceneRowID) VALUES ('%s','%s')",
+					devidx.c_str(),
+					idx.c_str()
+					);
+				result=m_pMain->m_sql.query(szTmp);
+			}
+		}
+		else if (cparam=="deletescenedevice")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="DeleteSceneDevice";
+			sprintf(szTmp,"DELETE FROM SceneDevices WHERE (ID == %s)",idx.c_str());
+			result=m_pMain->m_sql.query(szTmp);
+		}
 		else if (cparam=="getsubdevices")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
@@ -3673,6 +3742,42 @@ char * CWebServer::GetJSonPage()
 					ii++;
 				}
 			}
+		}
+		else if (cparam=="getscenedevices")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+
+			root["status"]="OK";
+			root["title"]="GetSceneDevices";
+			std::vector<std::vector<std::string> > result;
+			std::stringstream szQuery;
+			szQuery << "SELECT a.ID, b.Name FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='" << idx << "') AND (b.ID == a.DeviceRowID) ORDER BY b.Name";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()>0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii=0;
+				for (itt=result.begin(); itt!=result.end(); ++itt)
+				{
+					std::vector<std::string> sd=*itt;
+
+					root["result"][ii]["ID"]=sd[0];
+					root["result"][ii]["Name"]=sd[1];
+					ii++;
+				}
+			}
+		}
+		else if (cparam=="deleteallscenedevices")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="DeleteAllSceneDevices";
+			sprintf(szTmp,"DELETE FROM SceneDevices WHERE (SceneRowID == %s)",idx.c_str());
+			result=m_pMain->m_sql.query(szTmp);
 		}
 		else if (cparam=="getlightswitches")
 		{
@@ -4184,6 +4289,52 @@ char * CWebServer::GetJSonPage()
 			szQuery << "UPDATE DeviceStatus SET [Order] = " << Order1 << " WHERE (ID == " << idx2 << ")";
 			m_pMain->m_sql.query(szQuery.str());
 		}
+		else if (cparam=="switchsceneorder")
+		{
+			std::string idx1=m_pWebEm->FindValue("idx1");
+			std::string idx2=m_pWebEm->FindValue("idx2");
+			if ((idx1=="")||(idx2==""))
+				goto exitjson;
+
+			std::string Order1,Order2;
+			//get device order 1
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT [Order] FROM Scenes WHERE (ID == " << idx1 << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()<1)
+				goto exitjson;
+			Order1=result[0][0];
+
+			//get device order 2
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT [Order] FROM Scenes WHERE (ID == " << idx2 << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()<1)
+				goto exitjson;
+			Order2=result[0][0];
+
+			root["status"]="OK";
+			root["title"]="SwitchSceneOrder";
+
+			szQuery.clear();
+			szQuery.str("");
+			if(atoi(Order1.c_str()) < atoi(Order2.c_str()))
+			{
+				szQuery << "UPDATE Scenes SET [Order] = [Order]+1 WHERE ([Order] >= " << Order1 << " AND [Order] < " << Order2 << ")";
+			}
+			else
+			{
+				szQuery << "UPDATE Scenes SET [Order] = [Order]-1 WHERE ([Order] > " << Order2 << " AND [Order] <= " << Order1 << ")";
+			}
+			m_pMain->m_sql.query(szQuery.str());
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE Scenes SET [Order] = " << Order1 << " WHERE (ID == " << idx2 << ")";
+			m_pMain->m_sql.query(szQuery.str());
+		}
 		else if (cparam=="clearnotifications")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
@@ -4506,6 +4657,48 @@ char * CWebServer::GetJSonPage()
 			result=m_pMain->m_sql.query(szTmp);
 			m_pMain->m_scheduler.ReloadSchedules();
 		}
+		else if (cparam=="addscenetimer")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			std::string active=m_pWebEm->FindValue("active");
+			std::string stimertype=m_pWebEm->FindValue("timertype");
+			std::string shour=m_pWebEm->FindValue("hour");
+			std::string smin=m_pWebEm->FindValue("min");
+			std::string scmd=m_pWebEm->FindValue("command");
+			std::string sdays=m_pWebEm->FindValue("days");
+			std::string slevel=m_pWebEm->FindValue("level");	//in percentage
+			if (
+				(idx=="")||
+				(active=="")||
+				(stimertype=="")||
+				(shour=="")||
+				(smin=="")||
+				(scmd=="")||
+				(sdays=="")
+				)
+				goto exitjson;
+			unsigned char hour = atoi(shour.c_str());
+			unsigned char min = atoi(smin.c_str());
+			unsigned char icmd = atoi(scmd.c_str());
+			unsigned char iTimerType=atoi(stimertype.c_str());
+			int days=atoi(sdays.c_str());
+			unsigned char level=atoi(slevel.c_str());
+			sprintf(szData,"%02d:%02d",hour,min);
+			root["status"]="OK";
+			root["title"]="AddSceneTimer";
+			sprintf(szTmp,
+				"INSERT INTO SceneTimers (Active, SceneRowID, Time, Type, Cmd, Level, Days) VALUES (%d,%s,'%s',%d,%d,%d,%d)",
+				(active=="true")?1:0,
+				idx.c_str(),
+				szData,
+				iTimerType,
+				icmd,
+				level,
+				days
+				);
+			result=m_pMain->m_sql.query(szTmp);
+			m_pMain->m_scheduler.ReloadSchedules();
+		}
 		else if (cparam=="updatetimer")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
@@ -4534,9 +4727,51 @@ char * CWebServer::GetJSonPage()
 			unsigned char level=atoi(slevel.c_str());
 			sprintf(szData,"%02d:%02d",hour,min);
 			root["status"]="OK";
-			root["title"]="AddTimer";
+			root["title"]="UpdateTimer";
 			sprintf(szTmp,
 				"UPDATE Timers SET Active=%d, Time='%s', Type=%d, Cmd=%d, Level=%d, Days=%d WHERE (ID == %s)",
+				(active=="true")?1:0,
+				szData,
+				iTimerType,
+				icmd,
+				level,
+				days,
+				idx.c_str()
+				);
+			result=m_pMain->m_sql.query(szTmp);
+			m_pMain->m_scheduler.ReloadSchedules();
+		}
+		else if (cparam=="updatescenetimer")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			std::string active=m_pWebEm->FindValue("active");
+			std::string stimertype=m_pWebEm->FindValue("timertype");
+			std::string shour=m_pWebEm->FindValue("hour");
+			std::string smin=m_pWebEm->FindValue("min");
+			std::string scmd=m_pWebEm->FindValue("command");
+			std::string sdays=m_pWebEm->FindValue("days");
+			std::string slevel=m_pWebEm->FindValue("level");	//in percentage
+			if (
+				(idx=="")||
+				(active=="")||
+				(stimertype=="")||
+				(shour=="")||
+				(smin=="")||
+				(scmd=="")||
+				(sdays=="")
+				)
+				goto exitjson;
+			unsigned char hour = atoi(shour.c_str());
+			unsigned char min = atoi(smin.c_str());
+			unsigned char icmd = atoi(scmd.c_str());
+			unsigned char iTimerType=atoi(stimertype.c_str());
+			int days=atoi(sdays.c_str());
+			unsigned char level=atoi(slevel.c_str());
+			sprintf(szData,"%02d:%02d",hour,min);
+			root["status"]="OK";
+			root["title"]="UpdateSceneTimer";
+			sprintf(szTmp,
+				"UPDATE SceneTimers SET Active=%d, Time='%s', Type=%d, Cmd=%d, Level=%d, Days=%d WHERE (ID == %s)",
 				(active=="true")?1:0,
 				szData,
 				iTimerType,
@@ -4553,8 +4788,24 @@ char * CWebServer::GetJSonPage()
 			std::string idx=m_pWebEm->FindValue("idx");
 			if (idx=="")
 				goto exitjson;
+			root["status"]="OK";
+			root["title"]="DeleteTimer";
 			sprintf(szTmp,
 				"DELETE FROM Timers WHERE (ID == %s)",
+				idx.c_str()
+				);
+			result=m_pMain->m_sql.query(szTmp);
+			m_pMain->m_scheduler.ReloadSchedules();
+		}
+		else if (cparam=="deletescenetimer")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="DeleteSceneTimer";
+			sprintf(szTmp,
+				"DELETE FROM SceneTimers WHERE (ID == %s)",
 				idx.c_str()
 				);
 			result=m_pMain->m_sql.query(szTmp);
@@ -4600,8 +4851,24 @@ char * CWebServer::GetJSonPage()
 			std::string idx=m_pWebEm->FindValue("idx");
 			if (idx=="")
 				goto exitjson;
+			root["status"]="OK";
+			root["title"]="ClearTimer";
 			sprintf(szTmp,
 				"DELETE FROM Timers WHERE (DeviceRowID == %s)",
+				idx.c_str()
+				);
+			result=m_pMain->m_sql.query(szTmp);
+			m_pMain->m_scheduler.ReloadSchedules();
+		}
+		else if (cparam=="clearscenetimers")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="ClearSceneTimer";
+			sprintf(szTmp,
+				"DELETE FROM SceneTimers WHERE (SceneRowID == %s)",
 				idx.c_str()
 				);
 			result=m_pMain->m_sql.query(szTmp);
@@ -4661,7 +4928,23 @@ char * CWebServer::GetJSonPage()
 				root["title"]="MakeFavorite";
 			}
 		} //makefavorite
-
+		else if (cparam == "makescenefavorite")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			std::string sisfavorite=m_pWebEm->FindValue("isfavorite");
+			if ((idx=="")||(sisfavorite==""))
+				goto exitjson;
+			int isfavorite=atoi(sisfavorite.c_str());
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE Scenes SET Favorite=" << isfavorite << " WHERE (ID == " << idx << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()>0)
+			{
+				root["status"]="OK";
+				root["title"]="MakeSceneFavorite";
+			}
+		} //makescenefavorite
         else if (cparam=="resetsecuritystatus")
 		{
             std::string idx=m_pWebEm->FindValue("idx");
@@ -4711,6 +4994,19 @@ char * CWebServer::GetJSonPage()
 				root["title"]="SwitchLight";
 			}
 		} //(rtype=="switchlight")
+		else if (cparam=="switchscene")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			std::string switchcmd=m_pWebEm->FindValue("switchcmd");
+			if ((idx=="")||(switchcmd==""))
+				goto exitjson;
+
+			if (m_pMain->SwitchScene(idx,switchcmd)==true)
+			{
+				root["status"]="OK";
+				root["title"]="SwitchScene";
+			}
+		} //(rtype=="switchscene")
 		else if (cparam =="getSunRiseSet") {
 			int nValue=0;
 			std::string sValue;
@@ -4861,7 +5157,86 @@ char * CWebServer::GetJSonPage()
 		root["title"]="DeleteDevice";
 		m_pMain->m_sql.DeleteDevice(idx);
 		m_pMain->m_scheduler.ReloadSchedules();
-	} //(rtype=="setused")
+	} //(rtype=="deletedevice")
+	else if (rtype=="addscene")
+	{
+		std::string name=m_pWebEm->FindValue("name");
+		if (name=="")
+		{
+			root["status"]="ERR";
+			root["message"]="No Scene Name specified!";
+			goto exitjson;
+		}
+		if (m_pMain->m_sql.DoesSceneByNameExits(name)==true)
+		{
+			root["status"]="ERR";
+			root["message"]="A Scene with this Name already Exits!";
+			goto exitjson;
+		}
+		root["status"]="OK";
+		root["title"]="AddScene";
+		sprintf(szTmp,
+			"INSERT INTO Scenes (Name) VALUES ('%s')",
+			name.c_str()
+			);
+		result=m_pMain->m_sql.query(szTmp);
+
+	} //(rtype=="addscene")
+	else if (rtype=="deletescene")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			goto exitjson;
+		root["status"]="OK";
+		root["title"]="DeleteScene";
+		sprintf(szTmp,"DELETE FROM Scenes WHERE (ID == %s)",idx.c_str());
+		m_pMain->m_sql.query(szTmp);
+		sprintf(szTmp,"DELETE FROM SceneDevices WHERE (SceneRowID == %s)",idx.c_str());
+		m_pMain->m_sql.query(szTmp);
+		sprintf(szTmp,"DELETE FROM SceneTimers WHERE (SceneRowID == %s)",idx.c_str());
+		m_pMain->m_sql.query(szTmp);
+	} //(rtype=="deletescene")
+	else if (rtype=="updatescene")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string name=m_pWebEm->FindValue("name");
+		if ((idx=="")||(name==""))
+			goto exitjson;
+		root["status"]="OK";
+		root["title"]="UpdateScene";
+		sprintf(szTmp,"UPDATE Scenes SET Name='%s' WHERE (ID == %s)",name.c_str(),idx.c_str());
+		m_pMain->m_sql.query(szTmp);
+	} //(rtype=="updatescene")
+	else if (rtype=="scenes")
+	{
+		root["status"]="OK";
+		root["title"]="Scenes";
+
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT ID, Name, HardwareID, Favorite, nValue, LastUpdate FROM Scenes ORDER BY [Order]";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			int ii=0;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+
+				unsigned char nValue=atoi(sd[4].c_str());
+				root["result"][ii]["idx"]=sd[0];
+				root["result"][ii]["Name"]=sd[1];
+				root["result"][ii]["HardwareID"]=atoi(sd[2].c_str());
+				root["result"][ii]["Favorite"]=atoi(sd[3].c_str());
+				root["result"][ii]["LastUpdate"]=sd[5].c_str();
+				root["result"][ii]["Status"]=(nValue==0)?"Off":"On";
+				root["result"][ii]["Timers"]=(m_pMain->m_sql.HasSceneTimers(sd[0])==true)?"true":"false";
+				ii++;
+			}
+		}
+
+	} //(rtype=="scenes")
 	else if (rtype=="settings")
 	{
 		root["status"]="OK";

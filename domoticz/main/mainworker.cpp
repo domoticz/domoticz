@@ -5455,3 +5455,55 @@ bool MainWorker::SwitchLight(std::string idx, std::string switchcmd,std::string 
 
 	return SwitchLight(ID,switchcmd,atoi(level.c_str()));
 }
+
+bool MainWorker::SwitchScene(std::string idx, std::string switchcmd)
+{
+	unsigned long long ID;
+	std::stringstream s_str( idx );
+	s_str >> ID;
+
+	return SwitchScene(ID,switchcmd);
+}
+
+bool MainWorker::SwitchScene(unsigned long long idx, std::string switchcmd)
+{
+	//Get Scene details
+	std::vector<std::vector<std::string> > result;
+	int nValue=(switchcmd=="On")?1:0;
+
+	time_t now = time(0);
+	struct tm ltime;
+	localtime_r(&now,&ltime);
+
+	//first set actual scene status
+	char szTmp[100];
+	sprintf(szTmp, "UPDATE Scenes SET nValue=%d, LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == %llu)",
+		nValue,
+		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+		idx);
+	m_sql.query(szTmp);
+
+	//now switch all attached devices
+	std::stringstream szQuery;
+	szQuery << "SELECT DeviceRowID FROM SceneDevices WHERE (SceneRowID == " << idx << ")";
+	result=m_sql.query(szQuery.str());
+	if (result.size()<1)
+		return false;
+	std::vector<std::vector<std::string> >::const_iterator itt;
+	for (itt=result.begin(); itt!=result.end(); ++itt)
+	{
+		std::vector<std::string> sd=*itt;
+		std::vector<std::vector<std::string> > result2;
+		std::stringstream szQuery2;
+		szQuery2 << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << sd[0] << ")";
+		result2=m_sql.query(szQuery2.str());
+		if (result2.size()>0)
+		{
+			std::vector<std::string> sd2=result2[0];
+			SwitchLightInt(sd2,switchcmd,0,false);
+		}
+	}
+
+	return true;
+}
+

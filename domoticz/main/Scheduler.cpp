@@ -55,6 +55,7 @@ void CScheduler::ReloadSchedules()
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
 
+	//Add Device Timers
 	szQuery << "SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T2.Used FROM Timers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID";
 	result=m_pMain->m_sql.query(szQuery.str());
 	if (result.size()>0)
@@ -70,8 +71,10 @@ void CScheduler::ReloadSchedules()
 			{
 				tScheduleItem titem;
 
+				titem.bIsScene=false;
+
 				std::stringstream s_str( sd[0] );
-				s_str >> titem.DevID;
+				s_str >> titem.RowID;
 
 				titem.startHour=(unsigned char)atoi(sd[1].substr(0,2).c_str());
 				titem.startMin=(unsigned char)atoi(sd[1].substr(3,2).c_str());
@@ -96,6 +99,42 @@ void CScheduler::ReloadSchedules()
 				szQuery << "DELETE FROM Timers WHERE (DeviceRowID == " << sd[0] << ")";
 				m_pMain->m_sql.query(szQuery.str());
 			}
+		}
+	}
+
+	//Add Scene Timers
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "SELECT T1.SceneRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name FROM SceneTimers as T1, Scenes as T2 WHERE ((T1.Active == 1) AND (T2.ID == T1.SceneRowID)) ORDER BY T1.ID";
+	result=m_pMain->m_sql.query(szQuery.str());
+	if (result.size()>0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::vector<std::string> sd=*itt;
+
+			tScheduleItem titem;
+
+			titem.bIsScene=true;
+
+			std::stringstream s_str( sd[0] );
+			s_str >> titem.RowID;
+
+			titem.startHour=(unsigned char)atoi(sd[1].substr(0,2).c_str());
+			titem.startMin=(unsigned char)atoi(sd[1].substr(3,2).c_str());
+			titem.startTime=0;
+			titem.timerType=(_eTimerType)atoi(sd[2].c_str());
+			titem.timerCmd=(_eTimerCommand)atoi(sd[3].c_str());
+			titem.Level=(unsigned char)atoi(sd[4].c_str());
+			if ((titem.timerCmd==TCMD_ON)&&(titem.Level==0))
+			{
+				titem.Level=100;
+			}
+			titem.Days=atoi(sd[5].c_str());
+			titem.DeviceName=sd[6];
+			if (AdjustScheduleItem(&titem,false)==true)
+				m_scheduleitems.push_back(titem);
 		}
 	}
 
@@ -277,7 +316,10 @@ void CScheduler::CheckSchedules()
 			}
 			if (bOkToFire)
 			{
-				_log.Log(LOG_NORM,"Schedule item started! Type: %s, DevID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->DevID, asctime(&ltime));
+				if (itt->bIsScene==false)
+					_log.Log(LOG_NORM,"Schedule item started! Type: %s, DevID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->RowID, asctime(&ltime));
+				else
+					_log.Log(LOG_NORM,"Schedule item started! Type: %s, SceneID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->RowID, asctime(&ltime));
 				std::string switchcmd="";
 				if (itt->timerCmd == TCMD_ON)
 					switchcmd="On";
@@ -289,40 +331,50 @@ void CScheduler::CheckSchedules()
 				}
 				else
 				{
-					//Get SwitchType
-					std::vector<std::vector<std::string> > result;
-					std::stringstream szQuery;
-					szQuery << "SELECT Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << itt->DevID << ")";
-					result=m_pMain->m_sql.query(szQuery.str());
-					if (result.size()>0)
+					if (itt->bIsScene==false)
 					{
-						std::vector<std::string> sd=result[0];
-
-						unsigned char dType=atoi(sd[0].c_str());
-						unsigned char dSubType=atoi(sd[1].c_str());
-						_eSwitchType switchtype=(_eSwitchType) atoi(sd[2].c_str());
-						std::string lstatus="";
-						int llevel=0;
-						bool bHaveDimmer=false;
-						bool bHaveGroupCmd=false;
-						int maxDimLevel=0;
-
-						GetLightStatus(dType,dSubType,0,"",lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
-						int ilevel=maxDimLevel;
-						if ((switchtype == STYPE_Dimmer)&&(maxDimLevel!=0))
+						//Get SwitchType
+						std::vector<std::vector<std::string> > result;
+						std::stringstream szQuery;
+						szQuery << "SELECT Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << itt->RowID << ")";
+						result=m_pMain->m_sql.query(szQuery.str());
+						if (result.size()>0)
 						{
-							if (itt->timerCmd == TCMD_ON)
+							std::vector<std::string> sd=result[0];
+
+							unsigned char dType=atoi(sd[0].c_str());
+							unsigned char dSubType=atoi(sd[1].c_str());
+							_eSwitchType switchtype=(_eSwitchType) atoi(sd[2].c_str());
+							std::string lstatus="";
+							int llevel=0;
+							bool bHaveDimmer=false;
+							bool bHaveGroupCmd=false;
+							int maxDimLevel=0;
+
+							GetLightStatus(dType,dSubType,0,"",lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+							int ilevel=maxDimLevel;
+							if ((switchtype == STYPE_Dimmer)&&(maxDimLevel!=0))
 							{
-								switchcmd="Set Level";
-								float fLevel=(maxDimLevel/100.0f)*itt->Level;
-								if (fLevel>100)
-									fLevel=100;
-								ilevel=int(fLevel);
+								if (itt->timerCmd == TCMD_ON)
+								{
+									switchcmd="Set Level";
+									float fLevel=(maxDimLevel/100.0f)*itt->Level;
+									if (fLevel>100)
+										fLevel=100;
+									ilevel=int(fLevel);
+								}
+							}
+							if (!m_pMain->SwitchLight(itt->RowID,switchcmd,ilevel))
+							{
+								_log.Log(LOG_ERROR,"Error sending switch command, DevID: %llu, Time: %s", itt->RowID, asctime(&ltime));
 							}
 						}
-						if (!m_pMain->SwitchLight(itt->DevID,switchcmd,ilevel))
+					}
+					else
+					{
+						if (!m_pMain->SwitchScene(itt->RowID,switchcmd))
 						{
-							_log.Log(LOG_ERROR,"Error sending switch command, DevID: %llu, Time: %s", itt->DevID, asctime(&ltime));
+							_log.Log(LOG_ERROR,"Error switching Scene command, SceneID: %llu, Time: %s", itt->RowID, asctime(&ltime));
 						}
 					}
 				}

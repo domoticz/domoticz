@@ -30,7 +30,7 @@ const char *sqlCreateDeviceStatus =
 "[nValue] INTEGER DEFAULT 0, "
 "[sValue] VARCHAR(200) DEFAULT null, "
 "[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')),"
-"[Order] INTEGER BIGINT(10) default 0,"
+"[Order] INTEGER BIGINT(10) default 0, "
 "[AddjValue] FLOAT DEFAULT 0, "
 "[AddjMulti] FLOAT DEFAULT 1);";
 
@@ -240,6 +240,42 @@ const char *sqlCreatePlans =
 "[PlanOrder] BIGINT NOT NULL, "
 "[Name] VARCHAR(200) NOT NULL);";
 
+const char *sqlCreateScenes =
+"CREATE TABLE IF NOT EXISTS [Scenes] (\n"
+"[ID] INTEGER PRIMARY KEY, \n"
+"[Name] VARCHAR(100) NOT NULL, \n"
+"[HardwareID] INTEGER DEFAULT 0, \n"
+"[DeviceID] VARCHAR(25), \n"
+"[Unit] INTEGER DEFAULT 0, \n"
+"[Type] INTEGER DEFAULT 0, \n"
+"[SubType] INTEGER DEFAULT 0, \n"
+"[Favorite] INTEGER DEFAULT 0, \n"
+"[Order] INTEGER BIGINT(10) default 0, \n"
+"[nValue] INTEGER DEFAULT 0, \n"
+"[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')));\n";
+
+const char *sqlCreateScenesTrigger =
+"CREATE TRIGGER IF NOT EXISTS scenesupdate AFTER INSERT ON Scenes\n"
+"BEGIN\n"
+"	UPDATE Scenes SET [Order] = (SELECT MAX([Order]) FROM Scenes)+1 WHERE Scenes.ID = NEW.ID;\n"
+"END;\n";
+
+const char *sqlCreateSceneDevices =
+"CREATE TABLE IF NOT EXISTS [SceneDevices] ("
+"[ID] INTEGER PRIMARY KEY, "
+"[SceneRowID] BIGINT NOT NULL, "
+"[DeviceRowID] BIGINT NOT NULL);";
+
+const char *sqlCreateSceneTimers =
+"CREATE TABLE IF NOT EXISTS [SceneTimers] ("
+"[ID] INTEGER PRIMARY KEY, "
+"[Active] BOOLEAN DEFAULT true, "
+"[SceneRowID] BIGINT(10) NOT NULL, "
+"[Time] TIME NOT NULL, "
+"[Type] INTEGER NOT NULL, "
+"[Cmd] INTEGER NOT NULL, "
+"[Level] INTEGER DEFAULT 15, "
+"[Days] INTEGER NOT NULL);";
 
 CSQLHelper::CSQLHelper(void)
 {
@@ -306,6 +342,10 @@ bool CSQLHelper::OpenDatabase()
     query(sqlCreateCameras);
     query(sqlCreatePlanMappings);
     query(sqlCreatePlans);
+	query(sqlCreateScenes);
+	query(sqlCreateScenesTrigger);
+	query(sqlCreateSceneDevices);
+	query(sqlCreateSceneTimers);
 
 	int dbversion=0;
 	GetPreferencesVar("DB_Version", dbversion);
@@ -1540,6 +1580,33 @@ bool CSQLHelper::HasTimers(const std::string Idx)
 	unsigned long long idxll;
 	s_str >> idxll;
 	return HasTimers(idxll);
+}
+
+bool CSQLHelper::HasSceneTimers(const unsigned long long Idx)
+{
+	if (!m_dbase)
+		return false;
+
+	std::vector<std::vector<std::string> > result;
+
+	std::stringstream szQuery;
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "SELECT COUNT(*) FROM SceneTimers WHERE (SceneRowID==" << Idx << ")";
+	result=query(szQuery.str());
+	if (result.size()==0)
+		return false;
+	std::vector<std::string> sd=result[0];
+	int totaltimers=atoi(sd[0].c_str());
+	return (totaltimers>0);
+}
+
+bool CSQLHelper::HasSceneTimers(const std::string Idx)
+{
+	std::stringstream s_str( Idx );
+	unsigned long long idxll;
+	s_str >> idxll;
+	return HasSceneTimers(idxll);
 }
 
 void CSQLHelper::UpdateTempVar(const char *Key, const char* sValue)
@@ -3032,5 +3099,18 @@ void CSQLHelper::CleanupLightLog()
 		szDateEnd
 		);
 	query(szTmp);
+}
+
+bool CSQLHelper::DoesSceneByNameExits(const std::string SceneName)
+{
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+
+	//Get All ID's where Order=0
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "SELECT ID FROM Scenes WHERE (Name=='" << SceneName << "')";
+	result=query(szQuery.str());
+	return (result.size()>0);
 }
 

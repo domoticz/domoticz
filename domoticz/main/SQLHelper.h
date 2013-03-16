@@ -137,6 +137,8 @@ public:
 
 	bool HasTimers(const unsigned long long Idx);
 	bool HasTimers(const std::string Idx);
+	bool HasSceneTimers(const unsigned long long Idx);
+	bool HasSceneTimers(const std::string Idx);
 
 	bool SendNotification(const std::string EventID, const std::string Message);
 
@@ -152,6 +154,8 @@ public:
 	void DeleteDevice(const std::string idx);
 
 	void TransferDevice(const std::string oldidx, const std::string newidx);
+
+	bool DoesSceneByNameExits(const std::string SceneName);
 
 	std::vector<std::vector<std::string> > query(const std::string szQuery);
 

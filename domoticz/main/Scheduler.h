@@ -8,8 +8,9 @@ class MainWorker;
 
 struct tScheduleItem
 {
+	bool bIsScene;
 	std::string DeviceName;
-	unsigned long long DevID;
+	unsigned long long RowID;
 	unsigned char startHour;
 	unsigned char startMin;
 	_eTimerType	timerType; 

@@ -1,0 +1,1020 @@
+<div id="scenecontent">
+</div>
+<div id="dialog-addscene" title="Add Scene">
+    <form>
+        <table class="display" id="scenetable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="width:60px"><label for="scenename">Name: </label></td>
+          <td><input type="text" id="scenename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		    </table>
+    </form>
+</div>
+<div id="editscene" style="display:none;">
+		<table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
+			<tr>
+				<td align="right" style="width:60px"><label for="name">Name: </label></td>
+				<td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td>
+					<a class="btnstyle3" onclick="SaveScene();">Save</a>&nbsp;&nbsp;&nbsp;
+					<a class="btnstyle3" onclick="DeleteScene();">Delete</a>
+				</td>
+			</tr>
+		</table>
+		<br>
+		<h2>Devices:</h2>
+		<br>
+		<table class="display" id="devicestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+				<thead>
+						<tr>
+								<th align="left">Name</th>
+						</tr>
+				</thead>
+		</table>
+    <table id="delclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td>
+					<a class="btnstyle3-dis" id="devicedelete" >Delete</a>
+				</td>
+				<td align="right">
+					<a class="btnstyle3" onclick="ClearDevices();">Clear</a>
+				</td>
+			</tr>
+		</table>
+		<br>
+		<table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
+			<tr>
+				<td align="right" style="width:110px"><label for="name">Device: </label></td>
+				<td>
+					<select id="combodevice" style="width:250px" class="combobox ui-corner-all">
+					</select>
+					<a class="btnstyle3" onclick="AddDevice();">Add</a>
+				</td>
+			</tr>
+		</table>
+		<br>
+</div>
+<div id="edittimers" style="display:none;">
+    <table class="display" id="timertable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th width="40" align="center">Active</th>
+                <th width="120" align="center">Type</th>
+                <th width="60" align="center">Time</th>
+                <th width="80" align="center">Command</th>
+                <th align="left">Days</th>
+            </tr>
+        </thead>
+    </table>
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td>
+					<a class="btnstyle3-dis" id="timerupdate" >Update</a>&nbsp;&nbsp;&nbsp;
+					<a class="btnstyle3-dis" id="timerdelete" >Delete</a>
+				</td>
+				<td align="right">
+					<a class="btnstyle3" onclick="ClearTimers();">Clear</a>
+				</td>
+			</tr>
+		</table>
+		<br>
+		<table class="display" id="timerparamstable" border="0" cellpadding="0" cellspacing="20">
+			<tr>
+				<td align="right" style="width:80px"><label for="enabled">Enabled:</label></td>
+				<td><input type="checkbox" id="enabled" checked></td>
+			</tr>
+			<tr>
+				<td align="right" style="width:80px"><label for="name">Type:</label></td>
+				<td><select id="combotype" style="width:150px" class="combobox ui-corner-all">
+						<!--#embed timertypes -->
+						</select>
+				</td>
+			</tr>
+			<tr>
+				<td align="right" style="width:80px"><label for="name">Time:</label></td>
+				<td><select id="combotimehour" style="width:50px" class="combobox ui-corner-all"></select>
+						:
+						<select id="combotimemin" style="width:50px" class="combobox ui-corner-all"></select>
+						(hour/minute)
+				</td>
+			</tr>
+			<tr>
+				<td align="right" style="width:80px"><label for="combocommand">Command:</label></td>
+				<td>
+					<select id="combocommand" style="width:50px" class="combobox ui-corner-all">
+					<option value="0">On</option>
+					<option value="1">Off</option>
+					</select>
+				</td>
+			</tr>
+			<tr id="LevelDiv">
+				<td align="right" style="width:80px"><label for="combolevel">Level:</label></td>
+				<td>
+					<select id="combolevel" style="width:70px" class="combobox ui-corner-all">
+					<option value="10">10%</option>
+					<option value="20">20%</option>
+					<option value="30">30%</option>
+					<option value="40">40%</option>
+					<option value="50">50%</option>
+					<option value="60">60%</option>
+					<option value="70">70%</option>
+					<option value="80">80%</option>
+					<option value="90">90%</option>
+					<option value="100">100%</option>
+					</select>
+				</td>
+			</tr>
+			<tr><td></td></tr>
+			<tr>
+				<td align="right" style="width:80px"><label for="name">When:</label></td>
+				<td>
+					<input type="radio" name="when" id="when_1" value="Everyday" checked>&nbsp;Everyday<br><br>
+					<input type="radio" name="when" id="when_2" value="Weekdays">&nbsp;Weekdays<br><br>
+					<input type="radio" name="when" id="when_3" value="Weekends">&nbsp;Weekends<br><br>
+					<input type="radio" name="when" id="when_4" value="SelectedDays">&nbsp;Selected Days<br><br>
+				</td>
+			</tr>
+			<tr><td></td></tr>
+			<tr>
+				<td align="right" style="width:80px"><label for="name">Days:</label></td>
+				<td>
+					<input type="checkbox" id="ChkMon"/>&nbsp;Monday&nbsp;
+					<input type="checkbox" id="ChkTue"/>&nbsp;Tuesday&nbsp;
+					<input type="checkbox" id="ChkWed"/>&nbsp;Wednesday&nbsp;
+					<input type="checkbox" id="ChkThu"/>&nbsp;Thursday&nbsp;
+					<input type="checkbox" id="ChkFri"/>&nbsp;Friday&nbsp;
+					<input type="checkbox" id="ChkSat"/>&nbsp;Saturday&nbsp;
+					<input type="checkbox" id="ChkSun"/>&nbsp;Sunday&nbsp;
+				</td>
+			</tr>
+		</table>
+		<br>
+    <a class="btnstyle3" onclick="AddTimer();">Add</a>
+</div>
+
+<script type="text/javascript" charset="utf-8">
+
+function AddScene()
+{
+	$( "#dialog-addscene" ).dialog( "open" );
+}
+
+function DeleteScene()
+{
+	var bValid = false;
+	bValid=(confirm("Are you sure to remove this Scene?")==true);
+	if ( bValid ) {
+		$.ajax({
+			 url: "json.htm?type=deletescene&idx=" + $.devIdx,
+			 async: false, 
+			 dataType: 'json',
+			 success: function(data) {
+					ShowScenes();
+			 }
+		});
+	}
+}
+
+function SaveScene()
+{
+		var bValid = true;
+		bValid = bValid && checkLength( $("#scenecontent #devicename"), 2, 100 );
+		if ( bValid ) {
+				$.ajax({
+					 url: "json.htm?type=updatescene&idx=" + $.devIdx + '&name=' + $("#scenecontent #devicename").val(),
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+              ShowScenes();
+					 }
+				});
+		}
+}
+
+function AddDevice()
+{
+	var DeviceIdx=$("#scenecontent #combodevice option:selected").val();
+	if (typeof DeviceIdx == 'undefined') {
+		alert('No Device Selected!');
+		return ;
+	}
+	$.ajax({
+		 url: "json.htm?type=command&param=addscenedevice&idx=" + $.devIdx + "&devidx=" + DeviceIdx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			if (data.status == 'OK') {
+				RefreshDeviceTable($.devIdx);
+			}
+			else {
+				ShowNotify('Problem adding Device!', 2500, true);
+			}
+		 },
+		 error: function(){
+				HideNotify();
+				ShowNotify('Problem adding Device!', 2500, true);
+		 }     
+	});
+}
+
+function ClearDevices()
+{
+	var bValid = false;
+	bValid=(confirm("Are you sure to delete ALL Devices?\n\nThis action can not be undone!!")==true);
+	if (bValid == false)
+		return;
+	$.ajax({
+		 url: "json.htm?type=command&param=deleteallscenedevices&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			RefreshDeviceTable($.devIdx);
+		 }
+	});
+}
+
+function MakeFavorite(id,isfavorite)
+{
+  clearInterval($.myglobals.refreshTimer);
+  $.ajax({
+     url: "json.htm?type=command&param=makescenefavorite&idx=" + id + "&isfavorite=" + isfavorite, 
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+      ShowScenes();
+     }
+  });
+}
+
+function RefreshDeviceTable(idx)
+{
+  $('#modal').show();
+
+	$('#scenecontent #delclr #devicedelete').attr("class", "btnstyle3-dis");
+
+  var oTable = $('#scenecontent #devicestable').dataTable();
+  oTable.fnClearTable();
+  
+  $.ajax({
+     url: "json.htm?type=command&param=getscenedevices&idx=" + idx, 
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+        
+      if (typeof data.result != 'undefined') {
+        $.each(data.result, function(i,item){
+          var addId = oTable.fnAddData( {
+								"DT_RowId": item.ID,
+                "0": item.Name
+							} );
+        });
+        
+				/* Add a click handler to the rows - this could be used as a callback */
+				$("#scenecontent #devicestable tbody tr").click( function( e ) {
+						if ( $(this).hasClass('row_selected') ) {
+								$(this).removeClass('row_selected');
+								$('#scenecontent #delclr #devicedelete').attr("class", "btnstyle3-dis");
+						}
+						else {
+								oTable.$('tr.row_selected').removeClass('row_selected');
+								$(this).addClass('row_selected');
+								$('#scenecontent #delclr #devicedelete').attr("class", "btnstyle3");
+								
+								var anSelected = fnGetSelected( oTable );
+								if ( anSelected.length !== 0 ) {
+									var data = oTable.fnGetData( anSelected[0] );
+									var idx= data["DT_RowId"];
+									$("#scenecontent #delclr #devicedelete").attr("href", "javascript:DeleteDevice(" + idx + ")");
+								}
+						}
+				}); 
+      }
+     }
+  });
+  $('#modal').hide();
+}
+
+function DeleteDevice(idx)
+{
+	var bValid = false;
+	bValid=(confirm("Are you sure to delete this Device?\n\nThis action can not be undone...")==true);
+	if (bValid == false)
+		return;
+
+	$.ajax({
+		 url: "json.htm?type=command&param=deletescenedevice&idx=" + idx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			RefreshDeviceTable($.devIdx);
+		 }
+	});
+}
+
+function EditSceneDevice(idx,name)
+{
+  clearInterval($.myglobals.refreshTimer);
+  $.devIdx=idx;
+ 
+	var oTable;
+	
+  var htmlcontent = '';
+  htmlcontent+=$('#editscene').html();
+  $('#scenecontent').html(GetBackbuttonHTMLTable('ShowScenes')+htmlcontent);
+ 
+  oTable = $('#scenecontent #devicestable').dataTable( {
+                  "sDom": '<"H"frC>t<"F"i>',
+                  "oTableTools": {
+                    "sRowSelect": "single",
+                  },
+                  "aaSorting": [[ 0, "asc" ]],
+                  "bSortClasses": false,
+                  "bProcessing": true,
+                  "bStateSave": true,
+                  "bJQueryUI": true,
+                  "sPaginationType": "full_numbers"
+                } );
+  $("#scenecontent #devicename").val(name);
+
+ 	$("#scenecontent #combodevice").html("");
+	
+	$.each($.LightsAndSwitches, function(i,item){
+		var option = $('<option />');
+		option.attr('value', item.idx).text(item.name);
+		$("#scenecontent #combodevice").append(option);
+	});
+
+  RefreshDeviceTable(idx);
+}
+
+function RefreshLightSwitchesComboArray()
+{
+	$.LightsAndSwitches = [];
+  $.ajax({
+     url: "json.htm?type=command&param=getlightswitches", 
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+      if (typeof data.result != 'undefined') {
+        $.each(data.result, function(i,item){
+					$.LightsAndSwitches.push({
+							idx: item.idx,
+							name: item.Name
+						 }
+					);
+        });
+      }
+     }
+  });
+}
+
+function EnableDisableDays(TypeStr, bDisabled)
+{
+		$('#scenecontent #timerparamstable #ChkMon').prop('checked', ((TypeStr.indexOf("Mon") >= 0)||(TypeStr=="Everyday")||(TypeStr=="Weekdays")) ? true : false);
+		$('#scenecontent #timerparamstable #ChkTue').prop('checked', ((TypeStr.indexOf("Tue") >= 0)||(TypeStr=="Everyday")||(TypeStr=="Weekdays")) ? true : false);
+		$('#scenecontent #timerparamstable #ChkWed').prop('checked', ((TypeStr.indexOf("Wed") >= 0)||(TypeStr=="Everyday")||(TypeStr=="Weekdays")) ? true : false);
+		$('#scenecontent #timerparamstable #ChkThu').prop('checked', ((TypeStr.indexOf("Thu") >= 0)||(TypeStr=="Everyday")||(TypeStr=="Weekdays")) ? true : false);
+		$('#scenecontent #timerparamstable #ChkFri').prop('checked', ((TypeStr.indexOf("Fri") >= 0)||(TypeStr=="Everyday")||(TypeStr=="Weekdays")) ? true : false);
+		$('#scenecontent #timerparamstable #ChkSat').prop('checked', ((TypeStr.indexOf("Sat") >= 0)||(TypeStr=="Everyday")||(TypeStr=="Weekends")) ? true : false);
+		$('#scenecontent #timerparamstable #ChkSun').prop('checked', ((TypeStr.indexOf("Sun") >= 0)||(TypeStr=="Everyday")||(TypeStr=="Weekends")) ? true : false);
+
+		$('#scenecontent #timerparamstable #ChkMon').attr('disabled', bDisabled);
+		$('#scenecontent #timerparamstable #ChkTue').attr('disabled', bDisabled);
+		$('#scenecontent #timerparamstable #ChkWed').attr('disabled', bDisabled);
+		$('#scenecontent #timerparamstable #ChkThu').attr('disabled', bDisabled);
+		$('#scenecontent #timerparamstable #ChkFri').attr('disabled', bDisabled);
+		$('#scenecontent #timerparamstable #ChkSat').attr('disabled', bDisabled);
+		$('#scenecontent #timerparamstable #ChkSun').attr('disabled', bDisabled);
+}
+
+function ClearTimers()
+{
+	var bValid = false;
+	bValid=(confirm("Are you sure to delete ALL timers?\n\nThis action can not be undone!!")==true);
+	if (bValid == false)
+		return;
+	$.ajax({
+		 url: "json.htm?type=command&param=clearscenetimers&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			RefreshTimerTable($.devIdx);
+		 },
+		 error: function(){
+				HideNotify();
+				ShowNotify('Problem clearing timers!', 2500, true);
+		 }     
+	});
+}
+
+function DeleteTimer(idx)
+{
+	var bValid = false;
+	bValid=(confirm("Are you sure to delete this timers?\n\nThis action can not be undone...")==true);
+	if (bValid == false)
+		return;
+		
+	$.ajax({
+		 url: "json.htm?type=command&param=deletescenetimer&idx=" + idx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			RefreshTimerTable($.devIdx);
+		 },
+		 error: function(){
+				HideNotify();
+				ShowNotify('Problem deleting timer!', 2500, true);
+		 }     
+	});
+}
+
+function GetTimerSettings()
+{
+	var tsettings = {};
+	tsettings.level=100;
+	tsettings.Active=$('#scenecontent #timerparamstable #enabled').is(":checked");
+	tsettings.timertype=$("#scenecontent #timerparamstable #combotype").val();
+	tsettings.hour=$("#scenecontent #timerparamstable #combotimehour").val();
+	tsettings.min=$("#scenecontent #timerparamstable #combotimemin").val();
+	tsettings.cmd=$("#scenecontent #timerparamstable #combocommand").val();
+	tsettings.days=0;
+	var everyday=$("#scenecontent #timerparamstable #when_1").is(":checked");
+	var weekdays=$("#scenecontent #timerparamstable #when_2").is(":checked");
+	var weekends=$("#scenecontent #timerparamstable #when_3").is(":checked");
+	if (everyday==true)
+		tsettings.days=0x80;
+	else if (weekdays==true)
+		tsettings.days=0x100;
+	else if (weekends==true)
+		tsettings.days=0x200;
+	else {
+		if ($('#scenecontent #timerparamstable #ChkMon').is(":checked"))
+			tsettings.days|=0x01;
+		if ($('#scenecontent #timerparamstable #ChkTue').is(":checked"))
+			tsettings.days|=0x02;
+		if ($('#scenecontent #timerparamstable #ChkWed').is(":checked"))
+			tsettings.days|=0x04;
+		if ($('#scenecontent #timerparamstable #ChkThu').is(":checked"))
+			tsettings.days|=0x08;
+		if ($('#scenecontent #timerparamstable #ChkFri').is(":checked"))
+			tsettings.days|=0x10;
+		if ($('#scenecontent #timerparamstable #ChkSat').is(":checked"))
+			tsettings.days|=0x20;
+		if ($('#scenecontent #timerparamstable #ChkSun').is(":checked"))
+			tsettings.days|=0x40;
+	}
+	if (tsettings.cmd==0)
+	{
+		if ($.isDimmer) {
+			tsettings.level=$("#scenecontent #timerparamstable #combolevel").val();
+		}
+	}
+	return tsettings;
+}
+
+function UpdateTimer(idx)
+{
+	var tsettings=GetTimerSettings();
+	if (tsettings.days==0)
+	{
+		ShowNotify('Please select some days!', 2500, true);
+		return;
+	}
+	$.ajax({
+		 url: "json.htm?type=command&param=updatescenetimer&idx=" + idx + 
+					"&active=" + tsettings.Active + 
+					"&timertype=" + tsettings.timertype +
+					"&hour=" + tsettings.hour +
+					"&min=" + tsettings.min +
+					"&command=" + tsettings.cmd +
+					"&level=" + tsettings.level +
+					"&days=" + tsettings.days,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			RefreshTimerTable($.devIdx);
+		 },
+		 error: function(){
+				HideNotify();
+				ShowNotify('Problem updating timer!', 2500, true);
+		 }     
+	});
+}
+
+function AddTimer()
+{
+	var tsettings=GetTimerSettings();
+	if (tsettings.days==0)
+	{
+		ShowNotify('Please select some days!', 2500, true);
+		return;
+	}
+	$.ajax({
+		 url: "json.htm?type=command&param=addscenetimer&idx=" + $.devIdx + 
+					"&active=" + tsettings.Active + 
+					"&timertype=" + tsettings.timertype +
+					"&hour=" + tsettings.hour +
+					"&min=" + tsettings.min +
+					"&command=" + tsettings.cmd +
+					"&level=" + tsettings.level +
+					"&days=" + tsettings.days,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			RefreshTimerTable($.devIdx);
+		 },
+		 error: function(){
+				HideNotify();
+				ShowNotify('Problem adding timer!', 2500, true);
+		 }     
+	});
+}
+
+
+$.strPad = function(i,l,s) {
+	var o = i.toString();
+	if (!s) { s = '0'; }
+	while (o.length < l) {
+		o = s + o;
+	}
+	return o;
+};
+
+function RefreshTimerTable(idx)
+{
+  $('#modal').show();
+
+	$.isDimmer=false;
+
+	$('#updelclr #timerupdate').attr("class", "btnstyle3-dis");
+	$('#updelclr #timerdelete').attr("class", "btnstyle3-dis");
+
+  var oTable = $('#timertable').dataTable();
+  oTable.fnClearTable();
+  
+  $.ajax({
+     url: "json.htm?type=scenetimers&idx=" + idx, 
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+        
+      if (typeof data.result != 'undefined') {
+        $.each(data.result, function(i,item){
+					var active="No";
+					if (item.Active == "true")
+						active="Yes";
+					var Command="On";
+					if (item.Cmd == 1) {
+						Command="Off";
+					}
+					var tCommand=Command;
+					if ((Command=="On") && ($.isDimmer)) {
+						tCommand+=" (" + item.Level + "%)";
+					}
+					var DayStr = "";
+					var dayflags = parseInt(item.Days);
+					if (dayflags & 0x80)
+						DayStr="Everyday";
+					else if (dayflags & 0x100)
+						DayStr="Weekdays";
+					else if (dayflags & 0x200)
+						DayStr="Weekends";
+					else {
+						if (dayflags & 0x01) {
+							if (DayStr!="") DayStr+=", ";
+							DayStr+="Mon";
+						}
+						if (dayflags & 0x02) {
+							if (DayStr!="") DayStr+=", ";
+							DayStr+="Tue";
+						}
+						if (dayflags & 0x04) {
+							if (DayStr!="") DayStr+=", ";
+							DayStr+="Wed";
+						}
+						if (dayflags & 0x08) {
+							if (DayStr!="") DayStr+=", ";
+							DayStr+="Thu";
+						}
+						if (dayflags & 0x10) {
+							if (DayStr!="") DayStr+=", ";
+							DayStr+="Fri";
+						}
+						if (dayflags & 0x20) {
+							if (DayStr!="") DayStr+=", ";
+              DayStr+="Sat";
+						}
+						if (dayflags & 0x40) {
+							if (DayStr!="") DayStr+=", ";
+							DayStr+="Sun";
+						}
+					}
+          var addId = oTable.fnAddData( {
+								"DT_RowId": item.idx,
+								"Command": Command,
+								"Level": item.Level,
+                "0": active,
+								"1": $.myglobals.TimerTypesStr[item.Type],
+								"2": item.Time,
+								"3": tCommand,
+								"4": DayStr
+							} );
+        });
+				/* Add a click handler to the rows - this could be used as a callback */
+				$("#timertable tbody tr").click( function( e ) {
+							if ( $(this).hasClass('row_selected') ) {
+									$(this).removeClass('row_selected');
+									$('#updelclr #timerupdate').attr("class", "btnstyle3-dis");
+									$('#updelclr #timerdelete').attr("class", "btnstyle3-dis");
+							}
+							else {
+									oTable.$('tr.row_selected').removeClass('row_selected');
+									$(this).addClass('row_selected');
+									$('#updelclr #timerupdate').attr("class", "btnstyle3");
+									$('#updelclr #timerdelete').attr("class", "btnstyle3");
+									var anSelected = fnGetSelected( oTable );
+									if ( anSelected.length !== 0 ) {
+										var data = oTable.fnGetData( anSelected[0] );
+										var idx= data["DT_RowId"];
+										$.myglobals.SelectedTimerIdx=idx;
+										$("#updelclr #timerupdate").attr("href", "javascript:UpdateTimer(" + idx + ")");
+										$("#updelclr #timerdelete").attr("href", "javascript:DeleteTimer(" + idx + ")");
+										//update user interface with the paramters of this row
+										$('#scenecontent #timerparamstable #enabled').prop('checked', (data["0"]=="Yes") ? true : false);
+										$("#scenecontent #timerparamstable #combotype").val(jQuery.inArray(data["1"], $.myglobals.TimerTypesStr));
+										$("#scenecontent #timerparamstable #combotimehour").val(parseInt(data["2"].substring(0,2)));
+										$("#scenecontent #timerparamstable #combotimemin").val(parseInt(data["2"].substring(3,5)));
+										$("#scenecontent #timerparamstable #combocommand").val(jQuery.inArray(data["Command"], $.myglobals.CommandStr));
+										if ($.isDimmer) {
+											$("#scenecontent #timerparamstable #combolevel").val(data["Level"]);
+										}
+										
+										var disableDays=false;
+										if (data["4"]=="Everyday") {
+											$("#scenecontent #timerparamstable #when_1").prop('checked', 'checked');
+											disableDays=true;
+										}
+										else if (data["4"]=="Weekdays") {
+											$("#scenecontent #timerparamstable #when_2").prop('checked', 'checked');
+											disableDays=true;
+										}
+										else if (data["4"]=="Weekends") {
+											$("#scenecontent #timerparamstable #when_3").prop('checked', 'checked');
+											disableDays=true;
+										}
+										else
+											$("#scenecontent #timerparamstable #when_4").prop('checked', 'checked');
+											
+										EnableDisableDays(data["4"],disableDays);
+									}
+									
+							}
+				}); 
+				
+      }
+     }
+  });
+  $('#modal').hide();
+}
+
+function ShowTimers(id,name)
+{
+  clearInterval($.myglobals.refreshTimer);
+  $.devIdx=id;
+  $.isDimmer=false;
+  
+	var oTable;
+	
+	$('#modal').show();
+  var htmlcontent = '';
+  htmlcontent='<p><h2>Name: ' + name + '</h2></p><br>\n';
+  
+  var sunRise="";
+  var sunSet="";
+  $.ajax({
+     url: "json.htm?type=command&param=getSunRiseSet",
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+        if (typeof data.Sunrise != 'undefined') {
+          sunRise=data.Sunrise;
+          sunSet=data.Sunset;
+        }
+     }
+  });
+  
+  if (sunRise!="")
+  {
+    htmlcontent+='SunRise: ' + sunRise + ', SunSet: ' + sunSet + '<br><br>\n';
+  }
+  
+  htmlcontent+=$('#edittimers').html();
+  $('#scenecontent').html(GetBackbuttonHTMLTable('ShowScenes')+htmlcontent);
+  oTable = $('#timertable').dataTable( {
+                  "sDom": '<"H"lfrC>t<"F"ip>',
+                  "oTableTools": {
+                    "sRowSelect": "single",
+                  },
+                  "aaSorting": [[ 2, "asc" ]],
+                  "bSortClasses": false,
+                  "bProcessing": true,
+                  "bStateSave": true,
+                  "bJQueryUI": true,
+                  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+                  "iDisplayLength" : 25,
+                  "sPaginationType": "full_numbers"
+                } );
+	$('#timerparamstable #combotimehour >option').remove();
+	$('#timerparamstable #combotimemin >option').remove();
+                
+  //fill hour/minute comboboxes
+  for (ii=0; ii<24; ii++)
+  {
+		$('#timerparamstable #combotimehour').append($('<option></option>').val(ii).html($.strPad(ii,2)));  
+  }
+  for (ii=0; ii<60; ii++)
+  {
+		$('#timerparamstable #combotimemin').append($('<option></option>').val(ii).html($.strPad(ii,2)));  
+  }
+  $("#scenecontent #timerparamstable #when_1").click(function() {
+		EnableDisableDays("Everyday",true);
+	});
+  $("#scenecontent #timerparamstable #when_2").click(function() {
+		EnableDisableDays("Weekdays",true);
+	});
+  $("#scenecontent #timerparamstable #when_3").click(function() {
+		EnableDisableDays("Weekends",true);
+	});
+  $("#scenecontent #timerparamstable #when_4").click(function() {
+		EnableDisableDays("",false);
+	});
+
+  $("#scenecontent #timerparamstable #combocommand").change(function() {
+		var cval=$("#scenecontent #timerparamstable #combocommand").val();
+		var bShowLevel=false;
+		if ($.isDimmer) {
+			if (cval==0) {
+				bShowLevel=true;
+			}
+		}
+		if (bShowLevel==true) {
+			$("#scenecontent #LevelDiv").show();
+		}
+		else {
+			$("#scenecontent #LevelDiv").hide();
+		}
+	});
+
+	if ($.isDimmer) {
+		$("#scenecontent #LevelDiv").show();
+	}
+	else {
+		$("#scenecontent #LevelDiv").hide();
+	}
+  
+  $('#modal').hide();
+  RefreshTimerTable(id);
+ }
+
+function RefreshScenes()
+{
+	clearInterval($.myglobals.refreshTimer);
+	
+  var id="";
+  
+  $.ajax({
+     url: "json.htm?type=scenes", 
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+      if (typeof data.result != 'undefined') {
+        $.each(data.result, function(i,item){
+					id="#scenecontent #" + item.idx;
+					var obj=$(id);
+					if (typeof obj != 'undefined') {
+						if ($(id + " #name").html()!=item.Name) {
+							$(id + " #name").html(item.Name);
+						}
+						var img="";
+						if (item.Status == 'On') {
+							img='<img src="images/light-on.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+						}
+						else {
+							img='<img src="images/light-off.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+						}
+						if ($(id + " #img").html()!=img) {
+							$(id + " #img").html(img);
+						}
+						if ($(id + " #status").html()!=item.Status) {
+							$(id + " #status").html(item.Status);
+						}
+						if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+							$(id + " #lastupdate").html(item.LastUpdate);
+						}
+					}
+        });
+      }
+     }
+  });
+	
+	$.myglobals.refreshTimer = setInterval(RefreshScenes, 10000);
+}
+
+function ShowScenes()
+{
+	clearInterval($.myglobals.refreshTimer);
+	
+  RefreshLightSwitchesComboArray();
+
+  var htmlcontent = '';
+  var bHaveAddedDevider = false;
+
+  var tophtm=
+        '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+        '\t<tr>\n' +
+        '\t  <td align="right">\n' +
+        '\t    <a class="btnstyle" onclick="AddScene();">Add Scene</a>\n' +
+        '\t  </td>\n' +
+        '\t</tr>\n' +
+        '\t</table>\n';
+
+  var i=0;
+	var j=0;
+
+  $.ajax({
+     url: "json.htm?type=scenes", 
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+      if (typeof data.result != 'undefined') {
+        $.each(data.result, function(i,item){
+          if (j % 3 == 0)
+          {
+            //add devider
+            if (bHaveAddedDevider == true) {
+              //close previous devider
+              htmlcontent+='</div>\n';
+            }
+            htmlcontent+='<div class="row divider">\n';
+            bHaveAddedDevider=true;
+          }
+          var bAddTimer=true;
+          var xhtm=
+                '\t<div class="span4" id="' + item.idx + '">\n' +
+                '\t  <section>\n' +
+                '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
+                '\t    <tr>\n' +
+                '\t      <td id="name">' + item.Name + '</td>\n';
+					if (item.Status == 'On') {
+									xhtm+='\t      <td id="img"><img src="images/light-on.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+					}
+					else {
+									xhtm+='\t      <td id="img"><img src="images/light-off.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+					}
+          xhtm+=
+                '\t      <td id="status">' + item.Status + '</td>\n' +
+                '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
+                '\t      <td id="type">Scene</td>\n';
+					xhtm+=
+								'\t      <td>';
+          if (item.Favorite == 0) {
+            xhtm+=      
+                  '<img src="images/nofavorite.png" title="Add to Dashboard" onclick="MakeFavorite(' + item.idx + ',1);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+          }
+          else {
+            xhtm+=      
+                  '<img src="images/favorite.png" title="Remove from Dashboard" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+          }
+          xhtm+=      
+                '<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+					if (bAddTimer == true) {
+								if (item.Timers == "true") {
+									xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';
+								}
+								else {
+									xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';
+								}
+					}
+          xhtm+=
+                '</td>\n' +
+                '\t    </tr>\n' +
+                '\t    </table>\n' +
+                '\t  </section>\n' +
+                '\t</div>\n';
+          htmlcontent+=xhtm;
+          j+=1;
+        });
+      }
+     }
+  });
+  if (bHaveAddedDevider == true) {
+    //close previous devider
+    htmlcontent+='</div>\n';
+  }
+  if (htmlcontent == '')
+  {
+    htmlcontent='<h2>No Scenes defined yet...</h2>';
+  }
+  $('#scenecontent').html(tophtm+htmlcontent);
+  
+  if ($.myglobals.ismobile==false) {
+		$("#scenecontent .span4").draggable({
+				drag: function() {
+					clearInterval($.myglobals.refreshTimer);
+					$.devIdx=$(this).attr("id");
+					$(this).css("z-index", 2);
+				},
+				revert: true
+		});
+		$("#scenecontent .span4").droppable({
+				drop: function() {
+					var myid=$(this).attr("id");
+					$.devIdx.split(' ');
+					$.ajax({
+						 url: "json.htm?type=command&param=switchsceneorder&idx1=" + myid + "&idx2=" + $.devIdx,
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+								ShowScenes();
+						 }
+					});
+				}
+		});
+	}
+  
+	$.myglobals.refreshTimer = setInterval(RefreshScenes, 10000);
+  return false;
+}
+
+$(document).ready(function() {
+
+	$.devIdx=0;
+	$.myglobals = {
+		TimerTypesStr : [],
+		CommandStr : [],
+		SelectedTimerIdx: 0
+	};
+	$.LightsAndSwitches = [];
+
+	$('#timerparamstable #combotype > option').each(function() {
+				 $.myglobals.TimerTypesStr.push($(this).text());
+	});
+	$('#timerparamstable #combocommand > option').each(function() {
+				 $.myglobals.CommandStr.push($(this).text());
+	});
+
+	$( "#dialog-addscene" ).dialog({
+				autoOpen: false,
+				width: 380,
+				height: 156,
+				modal: true,
+				resizable: false,
+				buttons: {
+						"Add Scene": function() {
+								var bValid = true;
+								bValid = bValid && checkLength( $("#dialog-addscene #scenename"), 2, 100 );
+								
+								if ( bValid ) {
+										$.pDialog=$( this );
+										$.ajax({
+											 url: "json.htm?type=addscene&name=" + $("#dialog-addscene #scenename").val(),
+											 async: false, 
+											 dataType: 'json',
+											 success: function(data) {
+												if (typeof data.status != 'undefined') {
+													if (data.status == 'OK')
+													{
+														$.pDialog.dialog( "close" );
+														ShowScenes();
+													}
+													else {
+														ShowNotify(data.message, 3000,true);
+													}
+												}
+											 }
+										});
+										
+								}
+						},
+						Cancel: function() {
+								$( this ).dialog( "close" );
+						}
+				},
+				open: function() {
+						$(this).keypress(function(e) {
+							if (e.keyCode == $.ui.keyCode.ENTER) {
+								e.preventDefault();
+								$(this).parent().find("button:eq(0)").trigger("click");
+							}
+						});
+				},
+				close: function() {
+					$( this ).dialog( "close" );
+				}
+	});
+
+	ShowScenes();
+} );  
+</script>
