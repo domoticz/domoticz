@@ -55,7 +55,7 @@
 		<br>
     <img id="camfeed" src="" style="max-width: 640px;" width="100%">
     <br>
-    When everything is filled in correctly, the camera feed should display above.
+    When everything is filled in correctly, the feed should display above.<br>Does not work in IE10.
 </div>
 
 <script type="text/javascript" charset="utf-8">
@@ -287,6 +287,9 @@ function Showcameras()
                   "oTableTools": {
                     "sRowSelect": "single",
                   },
+									"aoColumnDefs": [
+										{ "bSortable": false, "aTargets": [ 0 ] }
+									],
                   "aaSorting": [[ 1, "asc" ]],
                   "bSortClasses": false,
                   "bProcessing": true,

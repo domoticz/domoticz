@@ -34,8 +34,9 @@
 		<br>
 		<table class="display" id="devicestable" border="0" cellpadding="0" cellspacing="0" width="100%">
 				<thead>
-						<tr>
+						<tr valign="middle">
 								<th align="left">Name</th>
+								<th align="right" width="80">Command</th>
 						</tr>
 				</thead>
 		</table>
@@ -333,9 +334,16 @@ function MakeFavorite(id,isfavorite)
   });
 }
 
+function RefreshDeviceTableEx()
+{
+	RefreshDeviceTable($.SceneIdx);
+}
+
 function RefreshDeviceTable(idx)
 {
   $('#modal').show();
+
+	$.SceneIdx=idx;
 
 	$('#scenecontent #delclr #devicedelete').attr("class", "btnstyle3-dis");
 
@@ -350,9 +358,17 @@ function RefreshDeviceTable(idx)
         
       if (typeof data.result != 'undefined') {
         $.each(data.result, function(i,item){
+					var commandbtns;
+					if (item.IsOn==true) {
+						commandbtns='<button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.DevID + ',\'On\',RefreshDeviceTableEx);">ON</button> <button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.DevID + ',\'Off\',RefreshDeviceTableEx);">OFF</button>';
+					}
+					else {
+						commandbtns='<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.DevID + ',\'On\',RefreshDeviceTableEx);">ON</button> <button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.DevID + ',\'Off\',RefreshDeviceTableEx);">OFF</button>';
+					}
           var addId = oTable.fnAddData( {
 								"DT_RowId": item.ID,
-                "0": item.Name
+                "0": item.Name,
+                "1": commandbtns
 							} );
         });
         
@@ -414,6 +430,9 @@ function EditSceneDevice(idx,name,havecode)
                   "oTableTools": {
                     "sRowSelect": "single",
                   },
+									"aoColumnDefs": [
+										{ "bSortable": false, "aTargets": [ 1 ] }
+									],
                   "aaSorting": [[ 0, "asc" ]],
                   "bSortClasses": false,
                   "bProcessing": true,

@@ -3779,7 +3779,7 @@ char * CWebServer::GetJSonPage()
 			root["title"]="GetSceneDevices";
 			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;
-			szQuery << "SELECT a.ID, b.Name FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='" << idx << "') AND (b.ID == a.DeviceRowID) ORDER BY b.Name";
+			szQuery << "SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='" << idx << "') AND (b.ID == a.DeviceRowID) ORDER BY b.Name";
 			result=m_pMain->m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
@@ -3791,6 +3791,20 @@ char * CWebServer::GetJSonPage()
 
 					root["result"][ii]["ID"]=sd[0];
 					root["result"][ii]["Name"]=sd[1];
+					root["result"][ii]["DevID"]=sd[2];
+
+					unsigned char devType=atoi(sd[3].c_str());
+					unsigned char subType=atoi(sd[4].c_str());
+					unsigned char nValue=(unsigned char)atoi(sd[5].c_str());
+					std::string sValue=sd[6];
+
+					std::string lstatus="";
+					int llevel=0;
+					bool bHaveDimmer=false;
+					bool bHaveGroupCmd=false;
+					int maxDimLevel=0;
+					GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+					root["result"][ii]["IsOn"]=IsLightSwitchOn(lstatus);
 					ii++;
 				}
 			}
