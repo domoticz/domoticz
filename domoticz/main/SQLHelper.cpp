@@ -2915,6 +2915,8 @@ void CSQLHelper::DeleteDevice(const std::string idx)
 	query(szTmp);
 	sprintf(szTmp,"DELETE FROM SceneDevices WHERE (DeviceRowID == %s)",idx.c_str());
 	query(szTmp);
+	sprintf(szTmp,"DELETE FROM DeviceToPlansMap WHERE (DeviceRowID == %s)",idx.c_str());
+	query(szTmp);
 	//and now delete all records in the DeviceStatus table itself
 	sprintf(szTmp,"DELETE FROM DeviceStatus WHERE (ID == %s)",idx.c_str());
 	query(szTmp);

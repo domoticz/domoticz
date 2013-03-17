@@ -28,7 +28,7 @@ Version 1.0.10 (March xxth 2013)
 - Fixed: Light/Switch notification could not be unset
 - Implemented: Adjustment value for temperature sensors
 - Implemented: multiply value for rain sensors
-- Preparation: Scenes
+- Implemented: Scenes
 
 Version 1.0.9 (February 17th 2013)
 - Implemented: OWL113 option to display in Ampere/Usage
