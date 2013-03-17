@@ -38,8 +38,9 @@ public:
 	bool SwitchLight(unsigned long long idx, std::string switchcmd, unsigned char level);
 	bool SwitchLightInt(const std::vector<std::string> sd, std::string switchcmd, unsigned char level, const bool IsTesting);
 
-	bool SwitchScene(std::string idx, std::string switchcmd);
-	bool SwitchScene(unsigned long long idx, std::string switchcmd);
+	bool SwitchScene(const std::string idx, const std::string switchcmd);
+	bool SwitchScene(const unsigned long long idx, const std::string switchcmd);
+	void CheckSceneCode(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int nValue, const char* sValue);
 
 	bool SetRFXCOMHardwaremodes(const int HardwareID, const unsigned char Mode1,const unsigned char Mode2,const unsigned char Mode3,const unsigned char Mode4,const unsigned char Mode5);
 
@@ -63,6 +64,11 @@ public:
     CCamScheduler m_camscheduler;
 	bool m_bIgnoreUsernamePassword;
 private:
+	struct _tStartScene
+	{
+		unsigned long long SceneRowID;
+		std::string switchcmd;
+	};
 	unsigned char m_ScheduleLastMinute;
 	unsigned char m_ScheduleLastHour;
 
@@ -80,6 +86,9 @@ private:
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 	boost::mutex m_mutex;
+
+	boost::mutex m_startscene_mutex;
+	std::vector<_tStartScene> m_scenes_to_start;
 
 	bool StartThread();
 	void Do_Work();

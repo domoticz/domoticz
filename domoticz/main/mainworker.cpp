@@ -469,10 +469,28 @@ bool file_exist (const char *filename)
 
 void MainWorker::Do_Work()
 {
+	int second_counter=0;
 	while (!m_stoprequested)
 	{
-		//sleep 1 second
-		boost::this_thread::sleep(boost::posix_time::seconds(1));
+		//sleep 500 milliseconds
+		boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+
+		if (m_scenes_to_start.size()>0)
+		{
+			boost::lock_guard<boost::mutex> l(m_startscene_mutex);
+			std::vector<_tStartScene>::iterator itt=m_scenes_to_start.begin();
+			while (itt!=m_scenes_to_start.end())
+			{
+				SwitchScene(itt->SceneRowID,itt->switchcmd);
+				itt++;
+			}
+			m_scenes_to_start.clear();
+		}
+
+		second_counter++;
+		if (second_counter<2)
+			continue;
+		second_counter=0;
 
 		if (m_bStartHardware)
 		{
@@ -1991,6 +2009,7 @@ void MainWorker::decode_Lighting1(const int HwdID, const tRBUF *pResponse)
 	unsigned char cmnd=pResponse->LIGHTING1.cmnd;
 	unsigned char SignalLevel=pResponse->LIGHTING1.rssi;
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd);
+	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -2108,6 +2127,7 @@ void MainWorker::decode_Lighting2(const int HwdID, const tRBUF *pResponse)
 	unsigned char SignalLevel=pResponse->LIGHTING2.rssi;
 	sprintf(szTmp,"%d",level);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp);
+	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -2350,6 +2370,7 @@ void MainWorker::decode_Lighting5(const int HwdID, const tRBUF *pResponse)
 	unsigned char SignalLevel=pResponse->LIGHTING5.rssi;
 	sprintf(szTmp,"%d",pResponse->LIGHTING5.level);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp);
+	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -2494,6 +2515,7 @@ void MainWorker::decode_Lighting6(const int HwdID, const tRBUF *pResponse)
 	unsigned char SignalLevel=pResponse->LIGHTING6.rssi;
 	sprintf(szTmp,"%d",rfu);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp);
+	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -2776,6 +2798,7 @@ void MainWorker::decode_Security1(const int HwdID, const tRBUF *pResponse)
 		BatteryLevel=255;
 
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd);
+	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -5456,7 +5479,7 @@ bool MainWorker::SwitchLight(std::string idx, std::string switchcmd,std::string 
 	return SwitchLight(ID,switchcmd,atoi(level.c_str()));
 }
 
-bool MainWorker::SwitchScene(std::string idx, std::string switchcmd)
+bool MainWorker::SwitchScene(const std::string idx, const std::string switchcmd)
 {
 	unsigned long long ID;
 	std::stringstream s_str( idx );
@@ -5465,7 +5488,7 @@ bool MainWorker::SwitchScene(std::string idx, std::string switchcmd)
 	return SwitchScene(ID,switchcmd);
 }
 
-bool MainWorker::SwitchScene(unsigned long long idx, std::string switchcmd)
+bool MainWorker::SwitchScene(const unsigned long long idx, const std::string switchcmd)
 {
 	//Get Scene details
 	std::vector<std::vector<std::string> > result;
@@ -5505,5 +5528,37 @@ bool MainWorker::SwitchScene(unsigned long long idx, std::string switchcmd)
 	}
 
 	return true;
+}
+
+void MainWorker::CheckSceneCode(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int nValue, const char* sValue)
+{
+	//check for scene code
+	char szTmp[200];
+	std::vector<std::vector<std::string> > result;
+
+	sprintf(szTmp,"SELECT ID FROM Scenes WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
+	result = m_sql.query(szTmp);
+	if (result.size()>0)
+	{
+		std::string lstatus="";
+		int llevel=0;
+		bool bHaveDimmer=false;
+		bool bHaveGroupCmd=false;
+		int maxDimLevel=0;
+
+		GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+		std::string switchcmd=(IsLightSwitchOn(lstatus)==true)?"On":"Off";
+		unsigned long long ID;
+		std::stringstream s_str( result[0][0] );
+		s_str >> ID;
+
+		_tStartScene sscene;
+		sscene.SceneRowID=ID;
+		sscene.switchcmd=switchcmd;
+
+		//we have to start it outside this function/loop else we have a deadlock because of the mutex in ::DecodeRXMessage
+		boost::lock_guard<boost::mutex> l(m_startscene_mutex);
+		m_scenes_to_start.push_back(sscene);
+	}
 }
 

@@ -3689,6 +3689,32 @@ char * CWebServer::GetJSonPage()
 			std::string devidx=m_pWebEm->FindValue("devidx");
 			if (devidx=="")
 				goto exitjson;
+			//first check if this device is not the scene code!
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << devidx << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()>0)
+			{
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM Scenes WHERE (ID==" << idx << ")";
+				result2=m_pMain->m_sql.query(szQuery.str());
+				if (result2.size()>0)
+				{
+					if (
+						(result[0][0]==result2[0][0])&&
+						(result[0][1]==result2[0][1])&&
+						(result[0][2]==result2[0][2])&&
+						(result[0][3]==result2[0][3])&&
+						(result[0][4]==result2[0][4])
+						)
+					{
+						//This is not allowed!
+						goto exitjson;
+					}
+				}
+			}
 			//first check if it is not already a sub device
 			szQuery.clear();
 			szQuery.str("");
@@ -4873,6 +4899,57 @@ char * CWebServer::GetJSonPage()
 				);
 			result=m_pMain->m_sql.query(szTmp);
 			m_pMain->m_scheduler.ReloadSchedules();
+		}
+		else if (cparam=="setscenecode")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			std::string devid=m_pWebEm->FindValue("devid");
+			if (devid=="")
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="SetSceneCode";
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << devid << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()>0)
+			{
+				sprintf(szTmp,
+					"UPDATE Scenes SET HardwareID=%d, DeviceID='%s', Unit=%d, Type=%d, SubType=%d WHERE (ID == %s)",
+					atoi(result[0][0].c_str()),
+					result[0][1].c_str(),
+					atoi(result[0][2].c_str()),
+					atoi(result[0][3].c_str()),
+					atoi(result[0][4].c_str()),
+					idx.c_str()
+					);
+				result=m_pMain->m_sql.query(szTmp);
+				//Sanity Check, remove all SceneDevice that has this code
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "DELETE FROM SceneDevices WHERE (SceneRowID==" << idx << " AND DeviceRowID==" << devid << ")";
+				result=m_pMain->m_sql.query(szQuery.str());
+			}
+		}
+		else if (cparam=="removescenecode")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="RemoveSceneCode";
+			sprintf(szTmp,
+				"UPDATE Scenes SET HardwareID=%d, DeviceID='%s', Unit=%d, Type=%d, SubType=%d WHERE (ID == %s)",
+				0,
+				"",
+				0,
+				0,
+				0,
+				idx.c_str()
+				);
+			result=m_pMain->m_sql.query(szTmp);
 		}
 		else if (cparam=="learnsw")
 		{

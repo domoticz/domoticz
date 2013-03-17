@@ -771,17 +771,7 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 			std::string Name=sd[0];
 			_eSwitchType switchtype=(_eSwitchType)atoi(sd[1].c_str());
 			GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
-			if (
-				(lstatus=="On")||
-				(lstatus=="Group On")||
-				(lstatus=="All On")||
-				(lstatus=="Chime")||
-				(lstatus=="Motion")||
-				(lstatus=="Alarm")||
-				(lstatus=="Panic")||
-				(lstatus=="Light On")||
-				(lstatus=="Light 2 On")
-				)
+			if (IsLightSwitchOn(lstatus)==true)
 			{
 				std::vector<_tNotification> notifications=GetNotifications(ulID);
 				if (notifications.size()>0)
@@ -823,7 +813,7 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 						break;
 					}
 				}
-/* Smoke detectors are manualy reset!
+/* Smoke detectors are manually reset!
 				else if (
 					(devType==pTypeSecurity1)&&
 					(subType==sTypeKD101)
@@ -839,7 +829,7 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 					m_device_status_queue.push_back(_tDeviceStatus(10,HardwareID,ID,unit,devType,subType,signallevel,batterylevel,cmd,sValue));
 				}
 			}
-		}
+		}//end of check for notifications
 	}
 }
 
@@ -2922,6 +2912,8 @@ void CSQLHelper::DeleteDevice(const std::string idx)
 	sprintf(szTmp,"DELETE FROM MultiMeter WHERE (DeviceRowID == %s)",idx.c_str());
 	query(szTmp);
 	sprintf(szTmp,"DELETE FROM MultiMeter_Calendar WHERE (DeviceRowID == %s)",idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"DELETE FROM SceneDevices WHERE (DeviceRowID == %s)",idx.c_str());
 	query(szTmp);
 	//and now delete all records in the DeviceStatus table itself
 	sprintf(szTmp,"DELETE FROM DeviceStatus WHERE (ID == %s)",idx.c_str());

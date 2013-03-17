@@ -958,3 +958,18 @@ bool GetLightCommand(
 	//unknown command
 	return false;
 }
+
+bool IsLightSwitchOn(const std::string lstatus)
+{
+	return (
+		(lstatus=="On")||
+		(lstatus=="Group On")||
+		(lstatus=="All On")||
+		(lstatus=="Chime")||
+		(lstatus=="Motion")||
+		(lstatus=="Alarm")||
+		(lstatus=="Panic")||
+		(lstatus=="Light On")||
+		(lstatus=="Light 2 On")
+		);
+}

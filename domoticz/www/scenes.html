@@ -24,6 +24,12 @@
 			</tr>
 		</table>
 		<br>
+		<h2>Code:</h2>
+		<br>
+			<button id="removecode" class="btn btn-small" type="button" onclick="RemoveCode();">Remove Code</button>
+			<button id="learncode" class="btn btn-small" type="button" onclick="LearnCode();">Learn Code</button>
+		<br>
+		<br>
 		<h2>Devices:</h2>
 		<br>
 		<table class="display" id="devicestable" border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -155,6 +161,85 @@
 </div>
 
 <script type="text/javascript" charset="utf-8">
+
+function RemoveCode()
+{
+	if($("#scenecontent #removecode").hasClass('disabled')) {
+		return false;
+	}
+	$("#scenecontent #removecode").removeClass("btn-danger");
+	$("#scenecontent #learncode").removeClass("btn-warning");
+
+	$("#scenecontent #removecode").addClass("disabled");
+	$("#scenecontent #learncode").addClass("btn-success");
+	$("#scenecontent #learncode").html("Learn Code");
+
+	$.ajax({
+		 url: "json.htm?type=command&param=removescenecode&idx="+$.devIdx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+		 }
+	});
+}
+
+function LearnCode()
+{
+  ShowNotify('Press button on Remote...');
+  
+  setTimeout(function() {
+    var bHaveFoundDevice = false;
+    var deviceID = "";
+    var deviceidx = 0;
+    var bIsUsed = false;
+    var Name = "";
+    
+    $.ajax({
+       url: "json.htm?type=command&param=learnsw", 
+       async: false, 
+       dataType: 'json',
+       success: function(data) {
+        if (typeof data.status != 'undefined') {
+          if (data.status == 'OK')
+          {
+            bHaveFoundDevice=true;
+            deviceID=data.ID;
+            deviceidx=data.idx;
+            bIsUsed=data.Used;
+            Name=data.Name;
+          }
+        }
+       }
+    });
+    HideNotify();
+    
+    setTimeout(function() {
+      if ((bHaveFoundDevice == true) && (bIsUsed == false))
+      {
+				$("#scenecontent #removecode").removeClass("disabled");
+				$("#scenecontent #learncode").removeClass("btn-success");
+
+				$("#scenecontent #removecode").addClass("btn-danger");
+				$("#scenecontent #learncode").addClass("btn-warning");
+				$("#scenecontent #learncode").html("Change Code");
+				
+				$.ajax({
+					 url: "json.htm?type=command&param=setscenecode&idx="+$.devIdx+"&devid="+deviceidx, 
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+					 }
+				});
+      }
+      else {
+        if (bIsUsed == true)
+          ShowNotify('Already used by:<br>"' + Name +'"', 3500, true);
+        else
+          ShowNotify('Timeout...<br>Please try again!', 2500, true);
+      }
+    }, 200);
+	}, 600);
+}
 
 function AddScene()
 {
@@ -313,7 +398,7 @@ function DeleteDevice(idx)
 	});
 }
 
-function EditSceneDevice(idx,name)
+function EditSceneDevice(idx,name,havecode)
 {
   clearInterval($.myglobals.refreshTimer);
   $.devIdx=idx;
@@ -345,6 +430,17 @@ function EditSceneDevice(idx,name)
 		option.attr('value', item.idx).text(item.name);
 		$("#scenecontent #combodevice").append(option);
 	});
+
+	if (havecode==0) {
+			$("#scenecontent #removecode").addClass("disabled");
+			$("#scenecontent #learncode").addClass("btn-success");
+			$("#scenecontent #learncode").html("Learn Code");
+	}
+	else {
+			$("#scenecontent #removecode").addClass("btn-danger");
+			$("#scenecontent #learncode").addClass("btn-warning");
+			$("#scenecontent #learncode").html("Change Code");
+	}
 
   RefreshDeviceTable(idx);
 }
@@ -888,7 +984,7 @@ function ShowScenes()
                   '<img src="images/favorite.png" title="Remove from Dashboard" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
           xhtm+=      
-                '<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+                '<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + item.Name + '\',' + item.HardwareID + ');">Edit</a> ';
 					if (bAddTimer == true) {
 								if (item.Timers == "true") {
 									xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';

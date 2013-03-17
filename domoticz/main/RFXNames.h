@@ -110,3 +110,5 @@ bool GetLightCommand(
 	std::string switchcmd,
 	unsigned char &cmd
 	);
+
+bool IsLightSwitchOn(const std::string lstatus);
