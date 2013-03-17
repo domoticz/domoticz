@@ -753,3 +753,33 @@ function Get5MinuteHistoryDaysGraphTitle()
 	}
 	return "Last " + $.FiveMinuteHistoryDays + " days";
 }
+
+function GenerateCamFeedURL(address,port,username,password)
+{
+	var feedsrc="http://";
+	if (username!="")
+	{
+		feedsrc+=username+":"+password+"@";
+	}
+	feedsrc+=address;
+	if (port!=80) {
+		feedsrc+=":"+port;
+	}
+	feedsrc+="/mjpeg.cgi";
+	return feedsrc;
+}
+
+function GenerateCamImageURL(address,port,username,password)
+{
+	var feedsrc="http://";
+	if (username!="")
+	{
+		feedsrc+=username+":"+password+"@";
+	}
+	feedsrc+=address;
+	if (port!=80) {
+		feedsrc+=":"+port;
+	}
+	feedsrc+="/image.jpg";
+	return feedsrc;
+}
