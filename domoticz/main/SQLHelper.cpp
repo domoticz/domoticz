@@ -878,6 +878,7 @@ bool CSQLHelper::SendNotification(const std::string EventID, const std::string M
 				}
 				r->dispose();
 			}
+			_log.Log(LOG_NORM,"Notification send (Prowl)");
 		}
 	}
 	//check if NMA enabled
@@ -897,6 +898,7 @@ bool CSQLHelper::SendNotification(const std::string EventID, const std::string M
 				}
 				r->dispose();
 			}
+			_log.Log(LOG_NORM,"Notification send (NMA)");
 		}
 	}
 	return true;
