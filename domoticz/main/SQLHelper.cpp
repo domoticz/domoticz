@@ -548,7 +548,7 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigne
 	sprintf(szTmp,"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
 	result=query(szTmp);
 	if (result.size()==0)
-		return; //should never happen, because it was previously inserted in non-existent
+		return; //should never happen, because it was previously inserted if non-existent
 
 	std::string idx=result[0][0];
 
@@ -762,7 +762,7 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 		int maxDimLevel=0;
 
 		sprintf(szTmp,
-			"SELECT Name,SwitchType FROM DeviceStatus WHERE (ID = %llu)",
+			"SELECT Name,SwitchType,AddjValue FROM DeviceStatus WHERE (ID = %llu)",
 			ulID);
 		result = query(szTmp);
 		if (result.size()>0)
@@ -770,63 +770,59 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 			std::vector<std::string> sd=result[0];
 			std::string Name=sd[0];
 			_eSwitchType switchtype=(_eSwitchType)atoi(sd[1].c_str());
+			int AddjValue=(int)atof(sd[2].c_str());
 			GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
 			if (IsLightSwitchOn(lstatus)==true)
 			{
 				std::vector<_tNotification> notifications=GetNotifications(ulID);
 				if (notifications.size()>0)
 				{
-					sprintf(szTmp,
-						"SELECT Name FROM DeviceStatus WHERE (ID = %llu)",
-						ulID);
-					result = query(szTmp);
-					if (result.size()>0)
-					{
-						std::vector<std::string> sd=result[0];
-						std::string msg=sd[0]+" pressed";
-						SendNotification("", m_urlencoder.URLEncode(msg));
+					std::string msg=Name+" pressed";
+					SendNotification("", m_urlencoder.URLEncode(msg));
 
-						TouchNotification(notifications[0].ID);
-					}
+					TouchNotification(notifications[0].ID);
 				}
-				bool bAdd2DelayQueue=false;
-				int cmd=0;
-				if (switchtype==STYPE_Motion)
+				if (AddjValue!=0)
 				{
-					switch (devType)
+					bool bAdd2DelayQueue=false;
+					int cmd=0;
+					if (switchtype==STYPE_Motion)
 					{
-					case pTypeLighting1:
-						cmd=light1_sOff;
-						bAdd2DelayQueue=true;
-						break;
-					case pTypeLighting2:
-						cmd=light2_sOff;
-						bAdd2DelayQueue=true;
-						break;
-					case pTypeLighting3:
-						cmd=light3_sOff;
-						bAdd2DelayQueue=true;
-						break;
-					case pTypeLighting5:
-						cmd=light5_sOff;
-						bAdd2DelayQueue=true;
-						break;
+						switch (devType)
+						{
+						case pTypeLighting1:
+							cmd=light1_sOff;
+							bAdd2DelayQueue=true;
+							break;
+						case pTypeLighting2:
+							cmd=light2_sOff;
+							bAdd2DelayQueue=true;
+							break;
+						case pTypeLighting3:
+							cmd=light3_sOff;
+							bAdd2DelayQueue=true;
+							break;
+						case pTypeLighting5:
+							cmd=light5_sOff;
+							bAdd2DelayQueue=true;
+							break;
+						}
 					}
-				}
-/* Smoke detectors are manually reset!
-				else if (
-					(devType==pTypeSecurity1)&&
-					(subType==sTypeKD101)
-					)
-				{
-					cmd=sStatusPanicOff;
-					bAdd2DelayQueue=true;
-				}
-*/
-				if (bAdd2DelayQueue==true)
-				{
-					boost::lock_guard<boost::mutex> l(m_device_status_mutex);
-					m_device_status_queue.push_back(_tDeviceStatus(10,HardwareID,ID,unit,devType,subType,signallevel,batterylevel,cmd,sValue));
+	/* Smoke detectors are manually reset!
+					else if (
+						(devType==pTypeSecurity1)&&
+						(subType==sTypeKD101)
+						)
+					{
+						cmd=sStatusPanicOff;
+						bAdd2DelayQueue=true;
+					}
+	*/
+					if (bAdd2DelayQueue==true)
+					{
+						boost::lock_guard<boost::mutex> l(m_device_status_mutex);
+						m_device_status_queue.push_back(_tDeviceStatus(AddjValue,HardwareID,ID,unit,devType,subType,signallevel,batterylevel,cmd,sValue));
+					}
 				}
 			}
 		}//end of check for notifications

@@ -707,6 +707,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					root["result"][ii]["TypeImg"]="smoke";
 					root["result"][ii]["SwitchTypeVal"]=STYPE_SMOKEDETECTOR;
 					root["result"][ii]["SwitchType"] =Switch_Type_Desc(STYPE_SMOKEDETECTOR);
+					root["result"][ii]["AddjValue"]=AddjValue;
+					root["result"][ii]["AddjMulti"]=AddjMulti;
 				}
 				else if (switchtype==STYPE_Contact)
 				{
@@ -717,6 +719,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 						lstatus="Closed";
 					}
 					root["result"][ii]["Status"]=lstatus;
+					root["result"][ii]["AddjValue"]=AddjValue;
+					root["result"][ii]["AddjMulti"]=AddjMulti;
 				}
 				else if (switchtype==STYPE_Blinds)
 				{
@@ -745,6 +749,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				else if (switchtype==STYPE_Motion)
 				{
 					root["result"][ii]["TypeImg"]="motion";
+					root["result"][ii]["AddjValue"]=AddjValue;
+					root["result"][ii]["AddjMulti"]=AddjMulti;
 				}
 				if (llevel!=0)
 					sprintf(szData,"%s, Level: %d %%", lstatus.c_str(), llevel);
@@ -774,7 +780,15 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					root["result"][ii]["SwitchTypeVal"]=STYPE_SMOKEDETECTOR;
 					root["result"][ii]["TypeImg"]="smoke";
 					root["result"][ii]["SwitchType"] =Switch_Type_Desc(STYPE_SMOKEDETECTOR);
+					root["result"][ii]["AddjValue"]=AddjValue;
+					root["result"][ii]["AddjMulti"]=AddjMulti;
 				}
+				if (switchtype == STYPE_Motion)
+				{
+					root["result"][ii]["AddjValue"]=AddjValue;
+					root["result"][ii]["AddjMulti"]=AddjMulti;
+				}
+
 				sprintf(szData,"%s", lstatus.c_str());
 				root["result"][ii]["Data"]=szData;
 			}

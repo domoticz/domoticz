@@ -13,6 +13,10 @@
 					<!--#embed switchtypes -->
 				</select></td>
 			</tr>
+			<tr id="MotionDiv">
+				<td align="right" style="width:60px"><label for="motionoffdelay">Off Delay:</label></td>
+				<td><input type="text" id="motionoffdelay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (Seconds) 0 = Use sensor time</td>
+			</tr>
 			<tr>
 				<td></td>
 				<td>
@@ -757,8 +761,13 @@ function SaveLightSwitch()
 		var bValid = true;
 		bValid = bValid && checkLength( $("#lightcontent #devicename"), 2, 100 );
 		if ( bValid ) {
+				var addjvalstr="";
+				if ($("#lightcontent #comboswitchtype").val()==8) {
+					addjvalstr="&addjvalue=" + $("#lightcontent #motionoffdelay").val();
+				}
+		
 				$.ajax({
-					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#lightcontent #devicename").val() + '&switchtype=' + $("#lightcontent #comboswitchtype").val() + '&used=true',
+					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#lightcontent #devicename").val() + '&switchtype=' + $("#lightcontent #comboswitchtype").val() + '&used=true' + addjvalstr,
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -878,7 +887,7 @@ function AddSubDevice()
 	});
 }
 
-function EditLightDevice(idx,name,switchtype,isslave)
+function EditLightDevice(idx,name,switchtype,addjvalue,isslave)
 {
   clearInterval($.myglobals.refreshTimer);
   $.devIdx=idx;
@@ -905,6 +914,14 @@ function EditLightDevice(idx,name,switchtype,isslave)
                 } );
   $("#lightcontent #devicename").val(name);
   $("#lightcontent #comboswitchtype").val(switchtype);
+
+	if (switchtype==8) {
+		$("#lightcontent #MotionDiv").show();
+		$("#lightcontent #motionoffdelay").val(addjvalue);
+	}
+	else {
+		$("#lightcontent #MotionDiv").hide();
+	}
 
  	$("#lightcontent #combosubdevice").html("");
 	
@@ -1350,7 +1367,7 @@ function ShowLights()
           }
           xhtm+=      
                 '<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#lightcontent\', \'ShowLights\');">Log</a> ' +
-                '<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +', ' + item.IsSubDevice +');">Edit</a> ';
+                '<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.IsSubDevice +');">Edit</a> ';
 					if (bAddTimer == true) {
 								if (item.Timers == "true") {
 									xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',' + bIsDimmer + ');">Timers</a> ';
