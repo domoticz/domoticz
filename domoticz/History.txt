@@ -30,6 +30,10 @@ Version 1.0.10 (March xxth 2013)
 - Implemented: multiply value for rain sensors
 - Implemented: Scenes
 - Implemented: Motion Sensor Off Delay
+- Implemented: Sensors that are not received within xx minutes are not logged any more (one hour now, will be in the settings)
+- Implemented: Sensors that are not received within xx minutes are highlighted
+- Implemented: Wind meter direction is now averaged ( ~10 minutes )
+- Implemented: Temperature/Weather sensors now display their main value in large font
 
 Version 1.0.9 (February 17th 2013)
 - Implemented: OWL113 option to display in Ampere/Usage

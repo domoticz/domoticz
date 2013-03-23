@@ -40,6 +40,7 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 Source: "..\Release\domoticz.exe"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\domoticz\www\*"; DestDir: {app}\www; Flags: recursesubdirs createallsubdirs;
 Source: "..\Debug\sqlite3.dll"; DestDir: {app}; Flags: ignoreversion;
+Source: "..\Debug\libcurl.dll"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\Manual\DomoticzManual.pdf"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\domoticz\History.txt"; DestDir: {app}; Flags: ignoreversion;
 

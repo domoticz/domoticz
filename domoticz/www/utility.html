@@ -1343,8 +1343,15 @@ function ShowUtilities()
                 '\t<div class="span4" id="' + item.idx + '">\n' +
                 '\t  <section>\n' +
                 '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
-                '\t    <tr>\n' +
-                '\t      <td id="name">' + item.Name + '</td>\n' +
+                '\t    <tr>\n';
+					if (item.HaveTimeout==false) {
+						xhtm+='\t      <td id="name">' + item.Name + '</td>\n';
+					}
+					else {
+						xhtm+='\t      <td id="name" style="background-color: #DF2D3A;">' + item.Name + '</td>\n';
+					}
+					xhtm+=
+								'\t      <td id="bigtext"></td>\n' +
                 '\t      <td id="img"><img src="images/';
             var status="";
             if (typeof item.Counter != 'undefined') {

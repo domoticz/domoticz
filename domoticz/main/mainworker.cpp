@@ -1236,13 +1236,16 @@ void MainWorker::decode_Rain(const int HwdID, const tRBUF *pResponse)
 	}
 }
 
+#define round(a) ( int ) ( a + .5 )
+
 void MainWorker::decode_Wind(const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[300];
 
 	unsigned char devType=pTypeWIND;
 	unsigned char subType=pResponse->WIND.subtype;
-	sprintf(szTmp,"%d", (pResponse->WIND.id1*256) + pResponse->WIND.id2);
+	unsigned short windID=(pResponse->WIND.id1*256) + pResponse->WIND.id2;
+	sprintf(szTmp,"%d", windID);
 	std::string ID = szTmp;
 	unsigned char Unit=0;
 	unsigned char cmnd=0;
@@ -1250,9 +1253,26 @@ void MainWorker::decode_Wind(const int HwdID, const tRBUF *pResponse)
 	unsigned char BatteryLevel=get_BateryLevel(pResponse->WIND.subtype==sTypeWIND3, pResponse->WIND.battery_level & 0x0F);
 
 	double dDirection;
-	std::string strDirection;
 	dDirection = (pResponse->WIND.directionh * 256) + pResponse->WIND.directionl;
+	if (m_wind_results.find(windID)!=m_wind_results.end())
+	{
+		//wind meter is transmitted roughly every 30 seconds, try todo a +- 10 minute avarage
+		if (m_wind_results[windID].size()>19)
+		{
+			m_wind_results[windID].pop_front();
+		}
+	}
+	m_wind_results[windID].push_back(dDirection);
+	//average wind direction
+	std::deque<double>::const_iterator itt;
+	dDirection=0;
+	for (itt=m_wind_results[windID].begin(); itt!=m_wind_results[windID].end(); ++itt)
+	{
+		dDirection+=*itt;
+	}
+	dDirection/=m_wind_results[windID].size();
 
+	std::string strDirection;
 	if (dDirection > 348.75 || dDirection < 11.26)
 		strDirection = "N";
 	else if (dDirection < 33.76)
@@ -1287,6 +1307,8 @@ void MainWorker::decode_Wind(const int HwdID, const tRBUF *pResponse)
 		strDirection = "NNW";
 	else
 		strDirection = "---";
+
+	dDirection=round(dDirection);
 
 	int intSpeed = (pResponse->WIND.av_speedh * 256) + pResponse->WIND.av_speedl;
 	int intGust = (pResponse->WIND.gusth * 256) + pResponse->WIND.gustl;

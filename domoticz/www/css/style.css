@@ -635,6 +635,16 @@ body table#itemtable tr td:first-child{
 
 /* Second column */
 body table#itemtable tr td:first-child + td{ 
+	float: right;
+	margin: -27px 3px 0px 0px;
+	font-size: 140%;
+	font-weight: bold;
+	white-space: nowrap;
+	color: #000000;
+}
+
+/* Third column */
+body table#itemtable tr td:first-child + td + td{ 
 	border-color: #2B5074;  
 	border-style: none;  
 	border-width: 1px; 
@@ -643,29 +653,20 @@ body table#itemtable tr td:first-child + td{
 	margin: 0 10px 10px 0;
 }
 
-body table#itemtable tr td:first-child + td img{
+body table#itemtable tr td:first-child + td + td img{
 	display: block;
-}
-
-/* Third column */
-body table#itemtable tr td:first-child + td + td{
-	font-size: 90%;
-	font-weight: bold;
-}
-
-body table#itemtable tr td:first-child + td + td:before{
-	content: "Status: ";
-	font-style: italic;
-	font-size: 90%;
 }
 
 /* Fourth column */
 body table#itemtable tr td:first-child + td + td + td{
-	font-size: 80%;
+	font-size: 90%;
+	font-weight: bold;
 }
+
 body table#itemtable tr td:first-child + td + td + td:before{
-	content: "Last Seen: ";
+	content: "Status: ";
 	font-style: italic;
+	font-size: 90%;
 }
 
 /* Fifth column */
@@ -673,12 +674,21 @@ body table#itemtable tr td:first-child + td + td + td + td{
 	font-size: 80%;
 }
 body table#itemtable tr td:first-child + td + td + td + td:before{
+	content: "Last Seen: ";
+	font-style: italic;
+}
+
+/* Sixth column */
+body table#itemtable tr td:first-child + td + td + td + td + td{
+	font-size: 80%;
+}
+body table#itemtable tr td:first-child + td + td + td + td + td:before{
 	content: "Type: ";
 	font-style: italic;
 }
 
-/* Sixth column (bottom text)*/
-body table#itemtable tr td:first-child + td + td + td + td + td{
+/* Seventh column (bottom text)*/
+body table#itemtable tr td:first-child + td + td + td + td + td + td{
 	font-size: 90%;
 	clear: both;
 	padding: 0 5% 0 5%;
@@ -751,6 +761,16 @@ body table#itemtablesmall tr td:first-child{
 
 /* Second column */
 body table#itemtablesmall tr td:first-child + td{ 
+	float: right;
+	margin: -27px 3px 0px 0px;
+	font-size: 140%;
+	font-weight: bold;
+	white-space: nowrap;
+	color: #000000;
+}
+
+/* Third column */
+body table#itemtablesmall tr td:first-child + td + td{ 
 	border-color: #2B5074;  
 	border-style: none;  
 	border-width: 1px; 
@@ -759,30 +779,30 @@ body table#itemtablesmall tr td:first-child + td{
 	margin: 0 10px 10px 0;
 }
 
-body table#itemtablesmall tr td:first-child + td img{
+body table#itemtablesmall tr td:first-child + td + td img{
 	display: block;
 }
 
-/* Third column */
-body table#itemtablesmall tr td:first-child + td + td{
+/* Fourth column */
+body table#itemtablesmall tr td:first-child + td + td + td{
 	font-size: 90%;
 	font-weight: bold;
 	line-height:86%;
 }
 
-body table#itemtablesmall tr td:first-child + td + td:before{
+body table#itemtablesmall tr td:first-child + td + td + td:before{
 	content: "";
 	font-style: italic;
 	font-size: 90%;
 }
 
-/* Fourth column */
-body table#itemtablesmall tr td:first-child + td + td + td{
+/* Fifth column */
+body table#itemtablesmall tr td:first-child + td + td + td + td{
 	margin-top: 2px;
 	font-size: 80%;
 	line-height:86%;
 }
-body table#itemtablesmall tr td:first-child + td + td + td:before{
+body table#itemtablesmall tr td:first-child + td + td + td + td:before{
 	content: "Last Seen: ";
 	font-style: italic;
 }
@@ -1089,4 +1109,24 @@ div.log {
 
 .logerror {
 	color:#860016;
+}
+
+.obtext {
+	position: absolute;
+	right:14px;
+	top: 11px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 1.8em;
+  font-weight:bold;
+	color: #000000;
+}
+
+.obtext2 {
+	position: absolute;
+	right:14px;
+	top: 11px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 1.6em;
+  font-weight:bold;
+	color: #444444;
 }

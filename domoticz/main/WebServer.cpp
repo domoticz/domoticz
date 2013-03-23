@@ -482,6 +482,12 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
 
+	time_t now = time(NULL);
+	struct tm tm1;
+	localtime_r(&now,&tm1);
+	int SensorTimeOut=60;
+	m_pMain->m_sql.GetPreferencesVar("SensorTimeout", SensorTimeOut);
+
 	//Get All Hardware ID's/Names, need them later
 	std::map<int,std::string> _hardwareNames;
 	szQuery.clear();
@@ -537,12 +543,25 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 			unsigned char used = atoi(sd[4].c_str());
 			unsigned char nValue = atoi(sd[9].c_str());
 			std::string sValue=sd[10];
+			std::string sLastUpdate=sd[11].c_str();
 			unsigned char favorite = atoi(sd[12].c_str());
 			_eSwitchType switchtype=(_eSwitchType) atoi(sd[13].c_str());
 			_eMeterType metertype=(_eMeterType)switchtype;
 			int hardwareID= atoi(sd[14].c_str());
 			double AddjValue=atof(sd[15].c_str());
 			double AddjMulti=atof(sd[16].c_str());
+
+
+			struct tm ntime;
+			ntime.tm_isdst=tm1.tm_isdst;
+			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
+			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
+			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
+			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
+			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
+			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
+			time_t checktime=mktime(&ntime);
+			bool bHaveTimeout=(now-checktime>=SensorTimeOut*60);
 
 			if ((rused=="true")&&(!used))
 				continue;
@@ -651,7 +670,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 			root["result"][ii]["Favorite"]=favorite;
 			root["result"][ii]["SignalLevel"]=atoi(sd[7].c_str());
 			root["result"][ii]["BatteryLevel"]=atoi(sd[8].c_str());
-			root["result"][ii]["LastUpdate"]=sd[11].c_str();
+			root["result"][ii]["LastUpdate"]=sLastUpdate;
 
 			sprintf(szData,"%d, %s", nValue,sValue.c_str());
 			root["result"][ii]["Data"]=szData;
@@ -799,6 +818,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				root["result"][ii]["Temp"]=atof(sValue.c_str());
 				sprintf(szData,"%.1f C", atof(sValue.c_str()));
 				root["result"][ii]["Data"]=szData;
+				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 			}
 			else if (dType == pTypeThermostat1)
 			{
@@ -807,6 +827,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				if (strarray.size()==4)
 				{
 					root["result"][ii]["Temp"]=atoi(strarray[0].c_str());
+					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				}
 			}
 			else if ((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))
@@ -817,6 +838,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				sprintf(szData,"%.1f C", atof(sValue.c_str()));
 				root["result"][ii]["Data"]=szData;
 				root["result"][ii]["TypeImg"]="temperature";
+				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 			}
 			else if (dType == pTypeHUM)
 			{
@@ -824,6 +846,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				root["result"][ii]["HumidityStatus"]=RFX_Humidity_Status_Desc(atoi(sValue.c_str()));
 				sprintf(szData,"Humidity %d %%", nValue);
 				root["result"][ii]["Data"]=szData;
+				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 			}
 			else if (dType == pTypeTEMP_HUM)
 			{
@@ -838,6 +861,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					root["result"][ii]["HumidityStatus"]=RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
 					sprintf(szData,"%.1f C, %d %%", atof(strarray[0].c_str()),atoi(strarray[1].c_str()));
 					root["result"][ii]["Data"]=szData;
+					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				}
 			}
 			else if (dType == pTypeTEMP_HUM_BARO)
@@ -860,6 +884,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 						atoi(strarray[3].c_str())
 						);
 					root["result"][ii]["Data"]=szData;
+					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				}
 			}
 			else if (dType == pTypeUV)
@@ -883,6 +908,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 						sprintf(szData,"%.1f UVI",UVI);
 					}
 					root["result"][ii]["Data"]=szData;
+					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				}
 			}
 			else if (dType == pTypeWIND)
@@ -916,6 +942,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 						root["result"][ii]["Chill"]=atof(strarray[5].c_str());
 					}
 					root["result"][ii]["Data"]=sValue;
+					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				}
 			}
 			else if (dType == pTypeRAIN)
@@ -963,6 +990,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 						//if ((dSubType==sTypeRAIN1)||(dSubType==sTypeRAIN2))
 						root["result"][ii]["RainRate"]=rate;
 						root["result"][ii]["Data"]=sValue;
+						root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 					}
 				}
 			}
@@ -1041,6 +1069,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				root["result"][ii]["Counter"]=sValue;
 				root["result"][ii]["CounterToday"]=szTmp;
 				root["result"][ii]["SwitchTypeVal"]=metertype;
+				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 			}
 			else if (dType == pTypeYouLess)
 			{
@@ -1174,7 +1203,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				}
 
 				root["result"][ii]["Usage"]=szTmp;
-
+				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 			}
 			else if (dType == pTypeP1Power)
 			{
@@ -1274,6 +1303,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					sprintf(szTmp,"%llu Watt",delivcurrent);
 					root["result"][ii]["UsageDeliv"]=szTmp;
 					root["result"][ii]["Data"]=sValue;
+					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				}
 			}
 			else if (dType == pTypeP1Gas)
@@ -1327,6 +1357,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					sprintf(szTmp,"%.03f m3",musage);
 					root["result"][ii]["CounterToday"]=szTmp;
 					root["result"][ii]["Data"]=sValue;
+					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				}
 			}
 			else if (dType == pTypeCURRENT)
@@ -1347,6 +1378,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 						sprintf(szData,"%d Watt, %d Watt, %d Watt",int(atof(strarray[0].c_str())*voltage),int(atof(strarray[1].c_str())*voltage),int(atof(strarray[2].c_str())*voltage));
 					root["result"][ii]["Data"]=szData;
 					root["result"][ii]["displaytype"]=displaytype;
+					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				}
 			}
 			else if (dType == pTypeENERGY)
@@ -1358,11 +1390,13 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					sprintf(szData,"%ld Watt, %.2f Wh",atol(strarray[0].c_str()),atof(strarray[1].c_str()));
 					root["result"][ii]["Data"]=szData;
 					root["result"][ii]["SwitchTypeVal"]=MTYPE_ENERGY;
+					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				}
 			}
 			else if (dType == pTypeRFXMeter)
 			{
 				root["result"][ii]["Data"]=sValue;
+				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 			}
 			else if (dType == pTypeRFXSensor)
 			{
@@ -1378,6 +1412,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					break;
 				}
 				root["result"][ii]["Data"]=szData;
+				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 			}
 			else if (dType == pTypeSecurity1)
 			{

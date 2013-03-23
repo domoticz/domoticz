@@ -125,6 +125,7 @@ main/Helper.cpp
 main/SunRiseSet.cpp
 httpclient/mynetwork.cpp
 httpclient/UrlEncode.cpp
+httpclient/HTTPClient.cpp
 hardware/DomoticzHardware.cpp
 hardware/ASyncSerial.cpp
 hardware/RFXComSerial.cpp
@@ -162,7 +163,17 @@ IF (Boost_FOUND)
     INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
     ADD_DEFINITIONS( "-DHAS_BOOST" )
 ENDIF()
-target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread)
+
+FIND_PACKAGE(CURL)
+IF(CURL_FOUND)
+  MESSAGE(STATUS "Curl libraries found at: ${CURL_LIBRARIES}")
+  MESSAGE(STATUS "Curl includes found at: ${CURL_INCLUDE_DIRS}")
+  INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIRS})
+else()
+  MESSAGE(FATAL_ERROR "Could not find cURL on your system, see install.txt how to get them installed. (for example 'sudo apt-get install curl libcurl4-openssl-dev')")
+ENDIF(CURL_FOUND)
+
+target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread curl)
 #target_link_libraries(domoticz ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")

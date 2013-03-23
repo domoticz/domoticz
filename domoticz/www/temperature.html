@@ -817,14 +817,17 @@ function RefreshTemps()
 						}
             
             var status="";
+            var bigtext="";
             var bHaveTemperature=false;
             var bHaveBefore=false;
             if (typeof item.Temp != 'undefined') {
                  status+=item.Temp + '\u00B0 C';
+                 bigtext=item.Temp + '\u00B0';
                  bHaveTemperature=true;
                  bHaveBefore=true;
             }
             if (typeof item.Chill != 'undefined') {
+							bigtext+=' / ' + item.Chill + '\u00B0';
               status+=', Chill: ' + item.Chill + '\u00B0 C';
               bHaveBefore=true;
             }
@@ -832,8 +835,10 @@ function RefreshTemps()
             if (typeof item.Humidity != 'undefined') {
 							if (bHaveBefore==true) {
 								status+=', ';
+								bigtext+=' / ';
 							}
               status+='Humidity: ' + item.Humidity + ' %';
+              bigtext+=item.Humidity + '%';
               bHaveHumidity=true;
             }
             if (typeof item.HumidityStatus != 'undefined') {
@@ -849,6 +854,7 @@ function RefreshTemps()
               status+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms\n';
             }
             if ($(id + " #status").html()!=status) {
+							$(id + " #bigtext").html(bigtext);
 							$(id + " #status").html(status);
 						}
 						if ($(id + " #lastupdate").html()!=item.LastUpdate) {
@@ -908,53 +914,73 @@ function ShowTemps()
                 '\t<div class="span4" id="' + item.idx + '">\n' +
                 '\t  <section>\n' +
                 '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
-                '\t    <tr>\n' +
-                '\t      <td id="name">' + item.Name + '</td>\n' +
-                '\t      <td id="img"><img src="images/';
-            if ((typeof item.Temp == 'undefined') || (item.Temp>0)) {
-              xhtm+='temp48.png';
-            }
-            else {
-              xhtm+='ice.png';
-            }
-            xhtm+='" height="48"></td>\n' +
-                '\t      <td id="status">';
-            var bHaveTemperature=false;
-            var bHaveBefore=false;
-            if (typeof item.Temp != 'undefined') {
-                 xhtm+=item.Temp + '\u00B0 C';
-                 bHaveTemperature=true;
-                 bHaveBefore=true;
-            }
-            if (typeof item.Chill != 'undefined') {
-              xhtm+=', Chill: ' + item.Chill + '\u00B0 C';
-              bHaveBefore=true;
-            }
-            var bHaveHumidity=false;
-            if (typeof item.Humidity != 'undefined') {
-							if (bHaveBefore==true) {
-								xhtm+=', ';
-							}
-              xhtm+='Humidity: ' + item.Humidity + ' %';
-              bHaveHumidity=true;
-            }
-            if (typeof item.HumidityStatus != 'undefined') {
-              xhtm+=' (' + item.HumidityStatus + ')';
-            }
-            if (typeof item.Barometer != 'undefined') {
-              xhtm+='<br>Barometer: ' + item.Barometer + ' hPa';
-            }
-            if (typeof item.ForecastStr != 'undefined') {
-              xhtm+=', Prediction: ' + item.ForecastStr;
-            }
-						if (typeof item.Direction != 'undefined') {
-              xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms\n';
-            }
-            xhtm+=
-                '</td>\n' +
-                '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
-                '\t      <td id="type">' + item.Type + ', ' + item.SubType + '</td>\n' +
-                '\t      <td>';
+                '\t    <tr>\n';
+					if (item.HaveTimeout==false) {			
+						xhtm+='\t      <td id="name">' + item.Name + '</td>\n';
+					}
+					else {
+						xhtm+='\t      <td id="name" style="background-color: #DF2D3A;">' + item.Name + '</td>\n';
+					}
+          xhtm+='\t      <td id="bigtext">';
+          var bigtext="";
+					if (typeof item.Temp != 'undefined') {
+						bigtext=item.Temp + '\u00B0';
+					}
+					if (typeof item.Humidity != 'undefined') {
+						if (bigtext!="") {
+							bigtext+=' / ';
+						}
+						bigtext+=item.Humidity + '%';
+					}
+					if (typeof item.Chill != 'undefined') {
+						bigtext+=' / ' + item.Chill + '\u00B0';
+					}
+          xhtm+=bigtext+'</td>\n';
+          xhtm+='\t      <td id="img"><img src="images/';
+					if ((typeof item.Temp == 'undefined') || (item.Temp>0)) {
+						xhtm+='temp48.png';
+					}
+					else {
+						xhtm+='ice.png';
+					}
+					xhtm+='" height="48"></td>\n' +
+							'\t      <td id="status">';
+					var bHaveTemperature=false;
+					var bHaveBefore=false;
+					if (typeof item.Temp != 'undefined') {
+							 xhtm+=item.Temp + '\u00B0 C';
+							 bHaveTemperature=true;
+							 bHaveBefore=true;
+					}
+					if (typeof item.Chill != 'undefined') {
+						xhtm+=', Chill: ' + item.Chill + '\u00B0 C';
+						bHaveBefore=true;
+					}
+					var bHaveHumidity=false;
+					if (typeof item.Humidity != 'undefined') {
+						if (bHaveBefore==true) {
+							xhtm+=', ';
+						}
+						xhtm+='Humidity: ' + item.Humidity + ' %';
+						bHaveHumidity=true;
+					}
+					if (typeof item.HumidityStatus != 'undefined') {
+						xhtm+=' (' + item.HumidityStatus + ')';
+					}
+					if (typeof item.Barometer != 'undefined') {
+						xhtm+='<br>Barometer: ' + item.Barometer + ' hPa';
+					}
+					if (typeof item.ForecastStr != 'undefined') {
+						xhtm+=', Prediction: ' + item.ForecastStr;
+					}
+					if (typeof item.Direction != 'undefined') {
+						xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms\n';
+					}
+					xhtm+=
+							'</td>\n' +
+							'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
+							'\t      <td id="type">' + item.Type + ', ' + item.SubType + '</td>\n' +
+							'\t      <td>';
           if (item.Favorite == 0) {
             xhtm+=
                   '<img src="images/nofavorite.png" title="Add to Dashboard" onclick="MakeFavorite(' + item.idx + ',1);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';

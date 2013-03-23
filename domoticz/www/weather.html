@@ -1549,13 +1549,16 @@ function RefreshWeathers()
 
 						var status="";
 						var img="";
+						var bigtext="";
 						if (typeof item.Barometer != 'undefined') {
 								img='<img src="images/baro48.png" height="48">';
 								status=item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
+								bigtext=item.Barometer + ' hPa';
 						}
 						if (typeof item.Rain != 'undefined') {
 							img='<img src="images/rain48.png" height="48">';
 							status=item.Rain + ' mm';
+							bigtext=item.Rain + ' mm';
 							if (typeof item.RainRate != 'undefined') {
 								if (item.RainRate!=0) {
 									status+=', Rate: ' + item.RainRate + ' mm/h';
@@ -1565,6 +1568,7 @@ function RefreshWeathers()
 						else if (typeof item.UVI != 'undefined') {
 							img='<img src="images/uv48.png" height="48">';
 							status=item.UVI + ' UVI';
+							bigtext=item.UVI + ' UVI';
 							if (typeof item.Temp!= 'undefined') {
 								status+=', Temp: ' + item.Temp + '\u00B0 C';
 							}
@@ -1572,6 +1576,7 @@ function RefreshWeathers()
 						else if (typeof item.Direction != 'undefined') {
 							img='<img src="images/Wind' + item.DirectionStr + '.png" height="48">';
 							status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
+							bigtext=item.DirectionStr + '/' + item.Speedms + ' ms';
 							if (typeof item.Temp != 'undefined') {
 								status+='Temp: ' + item.Temp + '\u00B0 C, ';
 								status+='Chill: ' + item.Chill + '\u00B0 C';
@@ -1582,6 +1587,9 @@ function RefreshWeathers()
 						}
 						if ($(id + " #status").html()!=status) {
 							$(id + " #status").html(status);
+						}
+						if ($(id + " #bigtext").html()!=bigtext) {
+							$(id + " #bigtext").html(bigtext);
 						}
 						if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 							$(id + " #lastupdate").html(item.LastUpdate);
@@ -1662,45 +1670,64 @@ function ShowWeathers()
                 '\t<div class="span4" id="' + item.idx + '">\n' +
                 '\t  <section>\n' +
                 '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
-                '\t    <tr>\n' +
-                '\t      <td id="name">' + item.Name + '</td>\n' +
-                '\t      <td id="img"><img src="images/';
-            if (typeof item.Barometer != 'undefined') {
-              xhtm+='baro48.png" height="48"></td>\n' +
-              '\t      <td id="status">' + item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
-            }
-            if (typeof item.Rain != 'undefined') {
-							bHaveRain=true;
-              xhtm+='rain48.png" height="48"></td>\n' +
-              '\t      <td  id="status">' + item.Rain + ' mm';
-              if (typeof item.RainRate != 'undefined') {
-								if (item.RainRate!=0) {
-									xhtm+=', Rate: ' + item.RainRate + ' mm/h';
-								}
-              }
-            }
-            else if (typeof item.UVI != 'undefined') {
-							bHaveUV=true;
-              xhtm+='uv48.png" height="48"></td>\n' +
-              '\t      <td id="status">' + item.UVI + ' UVI';
-              if (typeof item.Temp!= 'undefined') {
-                xhtm+=', Temp: ' + item.Temp + '\u00B0 C';
-              }
-            }
-            else if (typeof item.Direction != 'undefined') {
-							bHaveWind=true;
-              xhtm+='Wind' + item.DirectionStr + '.png" height="48"></td>\n' +
-              '\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
-              if (typeof item.Temp != 'undefined') {
-								xhtm+='Temp: ' + item.Temp + '\u00B0 C, ';
-								xhtm+='Chill: ' + item.Chill + '\u00B0 C';
+                '\t    <tr>\n';
+					if (item.HaveTimeout==false) {
+						xhtm+='\t      <td id="name">' + item.Name + '</td>\n';
+					}
+					else {
+						xhtm+='\t      <td id="name" style="background-color: #DF2D3A;">' + item.Name + '</td>\n';
+					}
+					xhtm+='\t      <td id="bigtext">';
+					if (typeof item.Barometer != 'undefined') {
+						xhtm+=item.Barometer + ' hPa';
+					}
+					else if (typeof item.Rain != 'undefined') {
+						xhtm+=item.Rain + ' mm';
+					}
+					else if (typeof item.UVI != 'undefined') {
+						xhtm+=item.UVI + ' UVI';
+					}
+					else if (typeof item.Direction != 'undefined') {
+						xhtm+=item.DirectionStr + '/' + item.Speedms + ' ms';
+					}
+					xhtm+='</td>\n';
+          xhtm+='\t      <td id="img"><img src="images/';
+					if (typeof item.Barometer != 'undefined') {
+						xhtm+='baro48.png" height="48"></td>\n' +
+						'\t      <td id="status">' + item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
+					}
+					else if (typeof item.Rain != 'undefined') {
+						bHaveRain=true;
+						xhtm+='rain48.png" height="48"></td>\n' +
+						'\t      <td  id="status">' + item.Rain + ' mm';
+						if (typeof item.RainRate != 'undefined') {
+							if (item.RainRate!=0) {
+								xhtm+=', Rate: ' + item.RainRate + ' mm/h';
 							}
-            }
-            xhtm+=      
-                '</td>\n' +
-                '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
-                '\t      <td id="type">' + item.Type + ', ' + item.SubType + '</td>\n' +
-                '\t      <td>';
+						}
+					}
+					else if (typeof item.UVI != 'undefined') {
+						bHaveUV=true;
+						xhtm+='uv48.png" height="48"></td>\n' +
+						'\t      <td id="status">' + item.UVI + ' UVI';
+						if (typeof item.Temp!= 'undefined') {
+							xhtm+=', Temp: ' + item.Temp + '\u00B0 C';
+						}
+					}
+					else if (typeof item.Direction != 'undefined') {
+						bHaveWind=true;
+						xhtm+='Wind' + item.DirectionStr + '.png" height="48"></td>\n' +
+						'\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
+						if (typeof item.Temp != 'undefined') {
+							xhtm+='Temp: ' + item.Temp + '\u00B0 C, ';
+							xhtm+='Chill: ' + item.Chill + '\u00B0 C';
+						}
+					}
+					xhtm+=      
+							'</td>\n' +
+							'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
+							'\t      <td id="type">' + item.Type + ', ' + item.SubType + '</td>\n' +
+							'\t      <td>';
           if (item.Favorite == 0) {
             xhtm+=      
                   '<img src="images/nofavorite.png" title="Add to Dashboard" onclick="MakeFavorite(' + item.idx + ',1);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';

@@ -29,7 +29,7 @@ Windows:
 ------------------------------------------------------------------------------------------------
 Ubuntu / Raspberry Pi (wheezy):
 sudo apt-get install build-essential -y
-sudo apt-get install cmake libboost-dev libboost-thread-dev libboost-system-dev libsqlite3-dev subversion
+sudo apt-get install cmake libboost-dev libboost-thread-dev libboost-system-dev libsqlite3-dev subversion curl libcurl4-openssl-dev libusb-dev
 
 Raspberry Pi (wheezy, 22 November 2012): (First time compile time: 25 minutes)
 At this moment (First generation RPi (128MB) (And possible the last generation too), there is a issue with the FTDI drivers (USB).
@@ -40,7 +40,7 @@ When using the Arch Linux image, it looks like you do not have to apply the abov
 
 ------------------------------------------------------------------------------------------------
 Raspberry Pi (Arch Linux):
-sudo pacman -S gcc cmake subversion boost sqlite make
+sudo pacman -S gcc cmake subversion boost sqlite make curl libcurl4-openssl-dev libusb-dev
 
 ------------------------------------------------------------------------------------------------
 Debian (Mac OS)
@@ -51,6 +51,7 @@ Prerequistics:
 
 sudo port install cmake
 sudo port install boost
+sudo port install libusb
 
 ------------------------------------------------------------------------------------------------
 Synology: (Initial setup time is 30 minutes)
@@ -62,6 +63,8 @@ ipkg install boost-dev
 ipkg install boost-thread
 ipkg install boost-system
 ipkg install boost-date-time
+ipkg install libcurl-dev
+ipkg install libusb
 
 download/install cmake (take a coffee while doing the bootstrap and make commands)
 wget http://www.cmake.org/files/v2.8/cmake-2.8.10.tar.gz

@@ -315,6 +315,9 @@ function RefreshFavorites()
 									status+=', Prediction: ' + item.ForecastStr;
 								}
 								if ($(id + " #status").html()!=status) {
+									if (typeof $(id + " #bigtext") != 'undefined') {
+										$(id + " #bigtext").html(item.Temp + '\u00B0');
+									}
 									$(id + " #status").html(status);
 								}
 								if ($(id + " #lastupdate").html()!=item.LastUpdate) {
@@ -365,9 +368,11 @@ function RefreshFavorites()
 							else {
 								var img="";
 								var status="";
+								var bigtext="";
 								if (typeof item.Rain != 'undefined') {
 									img='<img src="images/rain48.png" height="40">';
 									status=item.Rain + ' mm';
+									bigtext=item.Rain + ' mm';
 									if (typeof item.RainRate != 'undefined') {
 										if (item.RainRate!=0) {
 											status+=', Rate: ' + item.RainRate + ' mm/h';
@@ -377,6 +382,7 @@ function RefreshFavorites()
 								else if (typeof item.UVI != 'undefined') {
 									img='<img src="images/uv48.png" height="40">';
 									status=item.UVI + ' UVI';
+									bigtext=item.UVI + ' UVI';
 									if (typeof item.Temp!= 'undefined') {
 										status+=', Temp: ' + item.Temp + '° C';
 									}
@@ -386,16 +392,21 @@ function RefreshFavorites()
 									status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
 									status+='Temp: ' + item.Temp + '° C, ';
 									status+='Chill: ' + item.Chill + '° C';
+									bigtext=item.DirectionStr + '/' + item.Speedms + ' ms';
 								}
 								else if (typeof item.Barometer != 'undefined') {
                   img='<img src="images/baro48.png" height="40">';
                   status=item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
+                  bigtext=item.Barometer + ' hPa';
                 }
 								if ($(id + " #img").html()!=img) {
 									$(id + " #img").html(img);
 								}
 								if ($(id + " #status").html()!=status) {
 									$(id + " #status").html(status);
+								}
+								if ($(id + " #bigtext").html()!=bigtext) {
+									$(id + " #bigtext").html(bigtext);
 								}
 								if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 									$(id + " #lastupdate").html(item.LastUpdate);
@@ -766,7 +777,8 @@ function ShowFavorites()
 							}
 							xhtm+=
 									'\t    <tr>\n' +
-									'\t      <td id="name">' + item.Name + '</td>\n';
+									'\t      <td id="name">' + item.Name + '</td>\n'+
+									'\t      <td id="bigtext"></td>\n';
 							if (item.SwitchType == "Doorbell") {
 								xhtm+='\t      <td id="img"><img src="images/door48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 							}
@@ -964,15 +976,17 @@ function ShowFavorites()
 								xhtm='\t<div class="span3" id="temp_' + item.idx +'">\n';
 							}
 							xhtm+='\t  <section>\n';
-							if (data.DashboardType==0) {
-										xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+							xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+							xhtm+=
+										'\t    <tr>\n';
+							if (item.HaveTimeout==false) {			
+								xhtm+='\t      <td id="name">' + item.Name + '</td>\n';
 							}
 							else {
-										xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+								xhtm+='\t      <td id="name" style="background-color: #DF2D3A;">' + item.Name + '</td>\n';
 							}
 							xhtm+=
-										'\t    <tr>\n' +
-										'\t      <td id="name">' + item.Name + '</td>\n' +
+										'\t      <td id="bigtext">' + item.Temp + '\u00B0</td>\n' +
 										'\t      <td id="img"><img src="images/';
 										if ((typeof item.Temp == 'undefined') || (item.Temp>0)) {
 											xhtm+='temp48.png';
@@ -1103,16 +1117,29 @@ function ShowFavorites()
 								xhtm='\t<div class="span3" id="weather_' + item.idx +'">\n';
 							}
 							xhtm+='\t  <section>\n';
-							if (data.DashboardType==0) {
-										xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+							xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+							xhtm+='\t    <tr>\n';
+							if (item.HaveTimeout==false) {			
+								xhtm+='\t      <td id="name">' + item.Name + '</td>\n';
 							}
-							else if (data.DashboardType==1) {
-										xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+							else {
+								xhtm+='\t      <td id="name" style="background-color: #DF2D3A;">' + item.Name + '</td>\n';
 							}
-							xhtm+=
-										'\t    <tr>\n' +
-										'\t      <td id="name">' + item.Name + '</td>\n' +
-										'\t      <td id="img"><img src="images/';
+							xhtm+='\t      <td id="bigtext">';
+							if (typeof item.Barometer != 'undefined') {
+								xhtm+=item.Barometer + ' hPa';
+							}
+							else if (typeof item.Rain != 'undefined') {
+								xhtm+=item.Rain + ' mm';
+							}
+							else if (typeof item.UVI != 'undefined') {
+								xhtm+=item.UVI + ' UVI';
+							}
+							else if (typeof item.Direction != 'undefined') {
+								xhtm+=item.DirectionStr + '/' + item.Speedms + ' ms';
+							}
+							xhtm+='</td>\n';
+							xhtm+='\t      <td id="img"><img src="images/';
 							if (typeof item.Rain != 'undefined') {
 								xhtm+='rain48.png" height="40"></td>\n' +
 								'\t      <td id="status">' + item.Rain + ' mm';
@@ -1221,7 +1248,9 @@ function ShowFavorites()
 							}
 							xhtm+=
 										'\t    <tr>\n' +
-										'\t      <td id="name">' + item.Name + '</td>\n';
+										'\t      <td id="name">' + item.Name + '</td>\n' +
+										'\t      <td id="bigtext"></td>\n';
+
 							if (item.SubType.indexOf('remote') > 0) {
 								xhtm+='\t      <td id="img"><img src="images/remote48.png" height="40"></td>\n';
 							}
@@ -1356,18 +1385,16 @@ function ShowFavorites()
 								xhtm='\t<div class="span3" id="utility_' + item.idx +'">\n';
 							}
 							xhtm+='\t  <span>\n';
-							if (data.DashboardType==0) {
-										xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
-							}
-							else if (data.DashboardType==1) {
-										xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+							xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+							xhtm+='\t    <tr>\n';
+							if (item.HaveTimeout==false) {			
+								xhtm+='\t      <td id="name">' + item.Name + '</td>\n';
 							}
 							else {
-										xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+								xhtm+='\t      <td id="name" style="background-color: #DF2D3A;">' + item.Name + '</td>\n';
 							}
 							xhtm+=
-										'\t    <tr>\n' +
-										'\t      <td id="name">' + item.Name + '</td>\n' +
+										'\t      <td id="bigtext"></td>\n' +
 										'\t      <td id="img"><img src="images/';
 							var status="";
 							if (typeof item.Counter != 'undefined') {

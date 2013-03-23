@@ -214,6 +214,9 @@
     <ClInclude Include="main\Camera.h">
       <Filter>Devices\Camera</Filter>
     </ClInclude>
+    <ClInclude Include="httpclient\HTTPClient.h">
+      <Filter>HTTPClient</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -341,6 +344,9 @@
     </ClCompile>
     <ClCompile Include="main\Camera.cpp">
       <Filter>Devices\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="httpclient\HTTPClient.cpp">
+      <Filter>HTTPClient</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -315,6 +315,8 @@ bool CSQLHelper::OpenDatabase()
 	//rc=sqlite3_exec(m_dbase, "PRAGMA synchronous = NORMAL", NULL, NULL, NULL);
 	//rc=sqlite3_exec(m_dbase, "PRAGMA journal_mode = WAL", NULL, NULL, NULL);
 
+	//rc=sqlite3_exec(m_dbase, "PRAGMA journal_mode=DELETE", NULL, NULL, NULL);
+
 	bool bNewInstall=false;
 	std::vector<std::vector<std::string> > result=query("SELECT name FROM sqlite_master WHERE type='table' AND name='DeviceStatus'");
 	bNewInstall=(result.size()==0);
@@ -410,6 +412,10 @@ bool CSQLHelper::OpenDatabase()
 		nValue=1;
 	}
 	Set5MinuteHistoryDays(nValue);
+	if (!GetPreferencesVar("SensorTimeout", nValue))
+	{
+		UpdatePreferencesVar("SensorTimeout", 60);
+	}
 
 	//Start background thread
 	if (!StartThread())
@@ -1683,10 +1689,13 @@ void CSQLHelper::UpdateTemperatureLog()
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
+	int SensorTimeOut=60;
+	GetPreferencesVar("SensorTimeout", SensorTimeOut);
+
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d)",
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d)",
 		pTypeTEMP,
 		pTypeHUM,
 		pTypeTEMP_HUM,
@@ -1712,6 +1721,20 @@ void CSQLHelper::UpdateTemperatureLog()
 			unsigned char dSubType=atoi(sd[2].c_str());
 			unsigned char nValue=atoi(sd[3].c_str());
 			std::string sValue=sd[4];
+
+			//do not include sensors that have no reading within an hour
+			std::string sLastUpdate=sd[5];
+			struct tm ntime;
+			ntime.tm_isdst=tm1.tm_isdst;
+			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
+			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
+			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
+			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
+			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
+			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
+			time_t checktime=mktime(&ntime);
+			if (now-checktime>=SensorTimeOut*60)
+				continue;
 
 			std::vector<std::string> splitresults;
 			StringSplit(sValue, ";", splitresults);
@@ -1807,10 +1830,13 @@ void CSQLHelper::UpdateRainLog()
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
+	int SensorTimeOut=60;
+	GetPreferencesVar("SensorTimeout", SensorTimeOut);
+
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d)",
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)",
 		pTypeRAIN
 		);
 	result=query(szTmp);
@@ -1828,6 +1854,20 @@ void CSQLHelper::UpdateRainLog()
 			unsigned char dSubType=atoi(sd[2].c_str());
 			unsigned char nValue=atoi(sd[3].c_str());
 			std::string sValue=sd[4];
+
+			//do not include sensors that have no reading within an hour
+			std::string sLastUpdate=sd[5];
+			struct tm ntime;
+			ntime.tm_isdst=tm1.tm_isdst;
+			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
+			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
+			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
+			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
+			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
+			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
+			time_t checktime=mktime(&ntime);
+			if (now-checktime>=SensorTimeOut*60)
+				continue;
 
 			std::vector<std::string> splitresults;
 			StringSplit(sValue, ";", splitresults);
@@ -1882,10 +1922,13 @@ void CSQLHelper::UpdateWindLog()
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
+	int SensorTimeOut=60;
+	GetPreferencesVar("SensorTimeout", SensorTimeOut);
+
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d)", pTypeWIND);
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeWIND);
 	result=query(szTmp);
 	if (result.size()>0)
 	{
@@ -1901,6 +1944,20 @@ void CSQLHelper::UpdateWindLog()
 			unsigned char dSubType=atoi(sd[2].c_str());
 			unsigned char nValue=atoi(sd[3].c_str());
 			std::string sValue=sd[4];
+
+			//do not include sensors that have no reading within an hour
+			std::string sLastUpdate=sd[5];
+			struct tm ntime;
+			ntime.tm_isdst=tm1.tm_isdst;
+			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
+			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
+			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
+			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
+			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
+			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
+			time_t checktime=mktime(&ntime);
+			if (now-checktime>=SensorTimeOut*60)
+				continue;
 
 			std::vector<std::string> splitresults;
 			StringSplit(sValue, ";", splitresults);
@@ -1954,10 +2011,13 @@ void CSQLHelper::UpdateUVLog()
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
+	int SensorTimeOut=60;
+	GetPreferencesVar("SensorTimeout", SensorTimeOut);
+
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d)", pTypeUV);
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeUV);
 	result=query(szTmp);
 	if (result.size()>0)
 	{
@@ -1973,6 +2033,20 @@ void CSQLHelper::UpdateUVLog()
 			unsigned char dSubType=atoi(sd[2].c_str());
 			unsigned char nValue=atoi(sd[3].c_str());
 			std::string sValue=sd[4];
+
+			//do not include sensors that have no reading within an hour
+			std::string sLastUpdate=sd[5];
+			struct tm ntime;
+			ntime.tm_isdst=tm1.tm_isdst;
+			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
+			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
+			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
+			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
+			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
+			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
+			time_t checktime=mktime(&ntime);
+			if (now-checktime>=SensorTimeOut*60)
+				continue;
 
 			std::vector<std::string> splitresults;
 			StringSplit(sValue, ";", splitresults);
@@ -2022,12 +2096,15 @@ void CSQLHelper::UpdateMeter()
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
+	int SensorTimeOut=60;
+	GetPreferencesVar("SensorTimeout", SensorTimeOut);
+
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
 
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d)",
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d)",
 		pTypeRFXMeter,
 		pTypeP1Gas,
 		pTypeYouLess,
@@ -2048,6 +2125,20 @@ void CSQLHelper::UpdateMeter()
 			unsigned char dSubType=atoi(sd[2].c_str());
 			unsigned char nValue=atoi(sd[3].c_str());
 			std::string sValue=sd[4];
+
+			//do not include sensors that have no reading within an hour
+			std::string sLastUpdate=sd[5];
+			struct tm ntime;
+			ntime.tm_isdst=tm1.tm_isdst;
+			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
+			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
+			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
+			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
+			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
+			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
+			time_t checktime=mktime(&ntime);
+			if (now-checktime>=SensorTimeOut*60)
+				continue;
 
 			if (dType==pTypeYouLess)
 			{
@@ -2124,10 +2215,13 @@ void CSQLHelper::UpdateMultiMeter()
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
+	int SensorTimeOut=60;
+	GetPreferencesVar("SensorTimeout", SensorTimeOut);
+
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (Type=%d OR Type=%d)",
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d)",
 		pTypeP1Power,
 		pTypeCURRENT
 		);
@@ -2146,6 +2240,20 @@ void CSQLHelper::UpdateMultiMeter()
 			unsigned char dSubType=atoi(sd[2].c_str());
 			unsigned char nValue=atoi(sd[3].c_str());
 			std::string sValue=sd[4];
+
+			//do not include sensors that have no reading within an hour
+			std::string sLastUpdate=sd[5];
+			struct tm ntime;
+			ntime.tm_isdst=tm1.tm_isdst;
+			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
+			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
+			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
+			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
+			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
+			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
+			time_t checktime=mktime(&ntime);
+			if (now-checktime>=SensorTimeOut*60)
+				continue;
 
 			std::vector<std::string> splitresults;
 			StringSplit(sValue, ";", splitresults);
