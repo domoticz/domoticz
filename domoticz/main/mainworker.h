@@ -92,7 +92,7 @@ private:
 	boost::mutex m_startscene_mutex;
 	std::vector<_tStartScene> m_scenes_to_start;
 
-	std::map<unsigned short,std::deque<double>> m_wind_results;
+	std::map<unsigned short,std::deque<double> > m_wind_results;
 
 	bool StartThread();
 	void Do_Work();
