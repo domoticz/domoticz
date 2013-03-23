@@ -981,7 +981,9 @@ function ShowScenes()
                 '\t  <section>\n' +
                 '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
                 '\t    <tr>\n' +
-                '\t      <td id="name">' + item.Name + '</td>\n';
+                '\t      <td id="name">' + item.Name + '</td>\n' +
+                '\t      <td id="bigtext"></td>\n';
+
 					if (item.Status == 'On') {
 									xhtm+='\t      <td id="img"><img src="images/light-on.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
 					}
