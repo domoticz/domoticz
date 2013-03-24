@@ -58,6 +58,17 @@ const char *RFX_Humidity_Status_Desc(const unsigned char status)
 	return findTableIDSingle1 (Table, status);
 }
 
+unsigned char Get_Humidity_Level(const unsigned char hlevel)
+{
+	if (hlevel<25)
+		return humstat_dry;
+	if (hlevel>60)
+		return humstat_wet;
+	if ((hlevel>=25)&&(hlevel<=60))
+		return humstat_comfort;
+	return humstat_normal;
+}
+
 const char *Security_Status_Desc(const unsigned char status)
 {
 	STR_TABLE_SINGLE	Table[] = 
@@ -131,6 +142,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_P1SmartMeter,		"P1 Smart Meter USB" },
 		{ HTYPE_P1SmartMeterLAN,	"P1 Smart Meter with LAN interface" },
 		{ HTYPE_YouLess,			"YouLess Meter with LAN interface" },
+		{ HTYPE_TE923,				"TE923 USB Compatible Weather Station" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

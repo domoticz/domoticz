@@ -51,6 +51,7 @@ enum _eHardwareTypes {
 	HTYPE_P1SmartMeter,
 	HTYPE_P1SmartMeterLAN,
 	HTYPE_YouLess,
+	HTYPE_TE923,
 	HTYPE_END
 };
 
@@ -81,6 +82,7 @@ enum _eShareRights
 
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum);
 const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char sType);
+unsigned char Get_Humidity_Level(const unsigned char hlevel);
 const char *RFX_Humidity_Status_Desc(const unsigned char status);
 const char *Switch_Type_Desc(const _eSwitchType sType);
 const char *Meter_Type_Desc(const _eMeterType sType);

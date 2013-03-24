@@ -49,12 +49,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>S:\Boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>S:\Boost;./libusb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>S:\Boost\stage\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>S:\Boost\stage\lib\x86;./libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>curl/libcurl_imp.lib;sqlite/sqlite3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
@@ -67,7 +67,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>S:\Boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>S:\Boost;./libusb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -75,7 +75,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>S:\Boost\stage\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>S:\Boost\stage\lib\x86;./libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>curl/libcurl_imp.lib;sqlite/sqlite3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
@@ -87,6 +87,9 @@
     <None Include="INSTALL.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="hardware\libusbwinusbbridge.h" />
+    <ClInclude Include="hardware\TE923.h" />
+    <ClInclude Include="hardware\TE923Tool.h" />
     <ClInclude Include="httpclient\HTTPClient.h" />
     <ClInclude Include="main\appversion.h" />
     <ClInclude Include="hardware\ASyncSerial.h" />
@@ -140,6 +143,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hardware\ASyncSerial.cpp" />
+    <ClCompile Include="hardware\libusbwinusbbridge.cpp" />
+    <ClCompile Include="hardware\TE923.cpp" />
+    <ClCompile Include="hardware\TE923Tool.cpp" />
     <ClCompile Include="httpclient\HTTPClient.cpp" />
     <ClCompile Include="main\Camera.cpp" />
     <ClCompile Include="main\CmdLine.cpp" />

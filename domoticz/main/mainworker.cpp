@@ -21,6 +21,7 @@
 #include "../hardware/P1MeterSerial.h"
 #include "../hardware/P1MeterTCP.h"
 #include "../hardware/YouLess.h"
+#include "../hardware/TE923.h"
 
 
 #ifdef _DEBUG
@@ -316,6 +317,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_YouLess:
 		//LAN
 		pHardware = new CYouLess(ID, Address, Port);
+		break;
+	case HTYPE_TE923:
+		//TE923 compatible weather station
+		pHardware = new CTE923(ID);
 		break;
 	}
 	if (pHardware)

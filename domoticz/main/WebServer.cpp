@@ -4472,6 +4472,9 @@ char * CWebServer::GetJSonPage()
 				if (address=="")
 					goto exitjson;
 			}
+			else if (htype == HTYPE_TE923) {
+				//all fine here!
+			}
 			else
 				goto exitjson;
 
@@ -4562,6 +4565,9 @@ char * CWebServer::GetJSonPage()
 				//Remote Domoticz
 				if (address=="")
 					goto exitjson;
+			}
+			else if (htype == HTYPE_TE923) {
+				//All find here
 			}
 			else
 				goto exitjson;

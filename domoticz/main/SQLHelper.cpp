@@ -11,7 +11,7 @@
 #include "../hardware/hardwaretypes.h"
 #include "../httpclient/mynetwork.h"
 
-#define DB_VERSION 4
+#define DB_VERSION 5
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -264,7 +264,9 @@ const char *sqlCreateSceneDevices =
 "CREATE TABLE IF NOT EXISTS [SceneDevices] ("
 "[ID] INTEGER PRIMARY KEY, "
 "[SceneRowID] BIGINT NOT NULL, "
-"[DeviceRowID] BIGINT NOT NULL);";
+"[DeviceRowID] BIGINT NOT NULL, "
+"[Cmd] INTEGER DEFAULT 1, "
+"[Level] INTEGER DEFAULT 100);";
 
 const char *sqlCreateSceneTimers =
 "CREATE TABLE IF NOT EXISTS [SceneTimers] ("
@@ -372,6 +374,11 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("ALTER TABLE DeviceStatus ADD COLUMN [AddjValue] FLOAT default 0");
 			query("ALTER TABLE DeviceStatus ADD COLUMN [AddjMulti] FLOAT default 1");
+		}
+		if (dbversion<5)
+		{
+			query("ALTER TABLE SceneDevices ADD COLUMN [Cmd] INTEGER default 1");
+			query("ALTER TABLE SceneDevices ADD COLUMN [Level] INTEGER default 100");
 		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);

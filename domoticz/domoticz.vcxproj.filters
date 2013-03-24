@@ -57,6 +57,9 @@
     <Filter Include="Devices\Camera">
       <UniqueIdentifier>{adaa661b-4aaf-443c-a368-2c2f384d9c1a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\TE923">
+      <UniqueIdentifier>{591cadc8-1b94-461a-b993-3d2e72c4fb0c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -217,6 +220,15 @@
     <ClInclude Include="httpclient\HTTPClient.h">
       <Filter>HTTPClient</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\TE923Tool.h">
+      <Filter>Devices\TE923</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\libusbwinusbbridge.h">
+      <Filter>Devices\TE923</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\TE923.h">
+      <Filter>Devices\TE923</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -347,6 +359,15 @@
     </ClCompile>
     <ClCompile Include="httpclient\HTTPClient.cpp">
       <Filter>HTTPClient</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\TE923Tool.cpp">
+      <Filter>Devices\TE923</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\libusbwinusbbridge.cpp">
+      <Filter>Devices\TE923</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\TE923.cpp">
+      <Filter>Devices\TE923</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

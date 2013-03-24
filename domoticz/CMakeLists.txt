@@ -135,6 +135,8 @@ hardware/P1MeterBase.cpp
 hardware/P1MeterTCP.cpp
 hardware/P1MeterSerial.cpp
 hardware/YouLess.cpp
+hardware/TE923.cpp
+hardware/TE923Tool.cpp
 tcpserver/TCPServer.cpp
 tcpserver/TCPClient.cpp
 webserver/cWebem.cpp
@@ -172,6 +174,19 @@ IF(CURL_FOUND)
 else()
   MESSAGE(FATAL_ERROR "Could not find cURL on your system, see install.txt how to get them installed. (for example 'sudo apt-get install curl libcurl4-openssl-dev')")
 ENDIF(CURL_FOUND)
+
+find_path(LIBUSB_INCLUDE_DIR usb.h
+   HINTS ${PC_LIBUSB_INCLUDEDIR} ${PC_LIBUSB_INCLUDE_DIRS})
+find_library(LIBUSB_LIBRARY NAMES usb
+   HINTS ${PC_LIBUSB_LIBDIR} ${PC_LIBUSB_LIBRARY_DIRS})
+set(LIBUSB_LIBRARIES ${LIBUSB_LIBRARY})
+
+find_package_handle_standard_args(LIBUSB  DEFAULT_MSG  LIBUSB_LIBRARIES LIBUSB_INCLUDE_DIR)
+IF(LIBUSB_FOUND)
+  MESSAGE(STATUS "LIBUSB found at: ${LIBUSB_LIBRARIES}")
+else()
+  MESSAGE(FATAL_ERROR "Could not find LIBUSB on your system, see install.txt how to get them installed.")
+ENDIF(LIBUSB_FOUND)
 
 target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread curl)
 #target_link_libraries(domoticz ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})

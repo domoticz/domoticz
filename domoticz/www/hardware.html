@@ -248,7 +248,21 @@ function UpdateHardware(idx)
 	var bEnabled=$('#hardwarecontent #hardwareparamstable #enabled').is(":checked");
 	
 	var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
-	if (text.indexOf("USB") >= 0)
+	if (text.indexOf("TE923") >= 0)
+	{
+		$.ajax({
+			 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + "&port=1&name=" + name + "&enabled=" + bEnabled + "&idx=" + idx + shareparm,
+			 async: false, 
+			 dataType: 'json',
+			 success: function(data) {
+				RefreshHardwareTable();
+			 },
+			 error: function(){
+					ShowNotify('Problem updating hardware!', 2500, true);
+			 }     
+		});
+	}
+	else if (text.indexOf("USB") >= 0)
 	{
 		var serialport=$("#hardwarecontent #divserial #comboserialport option:selected").val();
 		if (typeof serialport == 'undefined')
@@ -264,7 +278,7 @@ function UpdateHardware(idx)
 				RefreshHardwareTable();
 			 },
 			 error: function(){
-					ShowNotify('Problem adding hardware!', 2500, true);
+					ShowNotify('Problem updating hardware!', 2500, true);
 			 }     
 		});
 	}
@@ -295,7 +309,7 @@ function UpdateHardware(idx)
 				RefreshHardwareTable();
 			 },
 			 error: function(){
-					ShowNotify('Problem adding hardware!', 2500, true);
+					ShowNotify('Problem updating hardware!', 2500, true);
 			 }     
 		});
 	}
@@ -328,7 +342,7 @@ function UpdateHardware(idx)
 				RefreshHardwareTable();
 			 },
 			 error: function(){
-					ShowNotify('Problem adding hardware!', 2500, true);
+					ShowNotify('Problem updating hardware!', 2500, true);
 			 }     
 		});
 	}
@@ -358,7 +372,21 @@ function AddHardware()
 	var bEnabled=$('#hardwarecontent #hardwareparamstable #enabled').is(":checked");
 	
 	var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
-	if (text.indexOf("USB") >= 0)
+	if (text.indexOf("TE923") >= 0)
+	{
+		$.ajax({
+			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=1&name=" + name + "&enabled=" + bEnabled + shareparm,
+			 async: false, 
+			 dataType: 'json',
+			 success: function(data) {
+				RefreshHardwareTable();
+			 },
+			 error: function(){
+					ShowNotify('Problem adding hardware!', 2500, true);
+			 }     
+		});
+	}
+	else if (text.indexOf("USB") >= 0)
 	{
 		var serialport=$("#hardwarecontent #divserial #comboserialport option:selected").val();
 		if (typeof serialport == 'undefined')
@@ -629,6 +657,11 @@ function RefreshHardwareTable()
 										$("#hardwarecontent #hardwareparamssharedetails #combosharerights").val(parseInt(data["SharedRights"]));
 										
 										UpdateHardwareParamControls();
+										if (data["Type"].indexOf("TE923") >= 0)
+										{
+											//nothing to be set
+										}
+										else
 										if (data["Type"].indexOf("USB") >= 0)
 										{
 											$("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
@@ -656,7 +689,13 @@ function RefreshHardwareTable()
 function UpdateHardwareParamControls()
 {
 		var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
-		if (text.indexOf("USB") >= 0)
+		if (text.indexOf("TE923") >= 0)
+		{
+			$("#hardwarecontent #divserial").hide();
+			$("#hardwarecontent #divremote").hide();
+			$("#hardwarecontent #divlogin").hide();
+		}
+		else if (text.indexOf("USB") >= 0)
 		{
 			$("#hardwarecontent #divserial").show();
 			$("#hardwarecontent #divremote").hide();
