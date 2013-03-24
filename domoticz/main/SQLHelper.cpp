@@ -11,7 +11,7 @@
 #include "../hardware/hardwaretypes.h"
 #include "../httpclient/mynetwork.h"
 
-#define DB_VERSION 5
+#define DB_VERSION 6
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -223,7 +223,9 @@ const char *sqlCreateCameras =
 "[Address] VARCHAR(200), "
 "[Port] INTEGER, "
 "[Username] VARCHAR(100), "
-"[Password] VARCHAR(100));";
+"[Password] VARCHAR(100), "
+"[VideoURL] VARCHAR(100), "
+"[ImageURL] VARCHAR(100));";
 
 const char *sqlCreatePlanMappings =
 "CREATE TABLE IF NOT EXISTS [DeviceToPlansMap] ("
@@ -380,6 +382,11 @@ bool CSQLHelper::OpenDatabase()
 			query("ALTER TABLE SceneDevices ADD COLUMN [Cmd] INTEGER default 1");
 			query("ALTER TABLE SceneDevices ADD COLUMN [Level] INTEGER default 100");
 		}
+		if (dbversion<6)
+		{
+			query("ALTER TABLE Cameras ADD COLUMN [VideoURL] VARCHAR(100)");
+			query("ALTER TABLE Cameras ADD COLUMN [ImageURL] VARCHAR(100)");
+		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
 
@@ -506,9 +513,10 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string szQue
 					char* value = (char*)sqlite3_column_text(statement, col);
 					if (value == 0)
 					{
-						break;
+						values.push_back("");
 					}
-					values.push_back(value);
+					else
+						values.push_back(value);
 				}
 				if (values.size()>0)
 					results.push_back(values);

@@ -9,6 +9,8 @@
                 <th width="60" align="left">Enabled</th>
                 <th width="100" align="left">Address</th>
                 <th width="80" align="center">Port</th>
+                <th width="80" align="center">VideoURL</th>
+                <th width="80" align="center">ImageURL</th>
             </tr>
         </thead>
     </table>
@@ -45,7 +47,15 @@
 			<tr>
 				<td align="right" style="width:110px"><label id="lblpassword" for="password">Password:</label></td>
 					<td><input type="password" id="password" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
-				</tr>
+			</tr>
+			<tr>
+				<td align="right" style="width:110px"><label for="videourl">VideoURL:</label></td>
+				<td><input type="text" id="videourl" style="width: 130px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			<tr>
+				<td align="right" style="width:110px"><label for="imageurl">ImageURL:</label></td>
+				<td><input type="text" id="imageurl" style="width: 130px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
 			</table>
 		<br>
     <a class="btnstyle3" onclick="TestCamFeed();">Test Feed</a> <a class="btnstyle3" onclick="Addcamera();">Add</a>
@@ -123,7 +133,15 @@ function GetCameraSettings()
 			ShowNotify('Please enter a username!', 2500, true);
 			return;
 	}
-	
+
+	csettings.videourl=$('#cameracontent #cameraparamstable #videourl').val();
+	csettings.imageurl=$('#cameracontent #cameraparamstable #imageurl').val();
+
+	if ((csettings.videourl=="")&&(csettings.imageurl!="")) {
+			ShowNotify('Please enter a Video/Image url!', 2500, true);
+			return;
+	}
+
 	return csettings;
 }
 
@@ -133,7 +151,7 @@ function TestCamFeed()
 	if (typeof csettings == 'undefined') {
 		return;
 	}
-	var feedsrc=GenerateCamFeedURL(csettings.address,csettings.port,csettings.username,csettings.password);
+	var feedsrc=GenerateCamFeedURL(csettings.address,csettings.port,csettings.username,csettings.password,csettings.videourl);
 	$('#cameracontent #camfeed').attr("src", feedsrc);
 }
 
@@ -145,7 +163,10 @@ function Updatecamera(idx)
 	}
 
 	$.ajax({
-		 url: "json.htm?type=command&param=updatecamera&address=" + csettings.address + "&port=" + csettings.port + "&name=" + csettings.name + "&enabled=" + csettings.bEnabled + "&idx=" + idx + "&username=" + csettings.username + "&password=" + csettings.password,
+		 url: "json.htm?type=command&param=updatecamera&address=" + csettings.address + 
+					"&port=" + csettings.port + "&name=" + csettings.name + "&enabled=" + csettings.bEnabled + "&idx=" + idx + 
+					"&username=" + csettings.username + "&password=" + csettings.password +
+					"&videourl=" + csettings.videourl + "&imageurl=" + csettings.imageurl,
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {
@@ -165,7 +186,10 @@ function Addcamera()
 	}
 
 	$.ajax({
-		 url: "json.htm?type=command&param=addcamera&address=" + csettings.address + "&port=" + csettings.port + "&name=" + csettings.name + "&enabled=" + csettings.bEnabled +  "&username=" + csettings.username + "&password=" + csettings.password ,
+		 url: "json.htm?type=command&param=addcamera&address=" + csettings.address +
+					"&port=" + csettings.port + "&name=" + csettings.name + "&enabled=" + csettings.bEnabled +
+					"&username=" + csettings.username + "&password=" + csettings.password +
+					"&videourl=" + csettings.videourl + "&imageurl=" + csettings.imageurl,
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {
@@ -202,7 +226,7 @@ function RefreshcameraTable()
 
 					var previewimg;
 					if (item.Enabled=="true") {
-						var imgsrc=GenerateCamImageURL(item.Address,item.Port,item.Username,item.Password);
+						var imgsrc=GenerateCamImageURL(item.Address,item.Port,item.Username,item.Password,item.ImageURL);
 						previewimg='<img src="' + imgsrc + '" height="40"> ';
 					}
 					else {
@@ -215,13 +239,17 @@ function RefreshcameraTable()
 								"Address": item.Address,
 								"Username": item.Username,
 								"Password": item.Password,
+								"VideoURL": item.VideoURL,
+								"ImageURL": item.ImageURL,
 								"Enabled": item.Enabled,
 								"IntPort": item.Port,
 				                "0": previewimg,
 				                "1": item.Name,
 				                "2": enabledstr,
 				               	"3": item.Address,
-				               	"4": item.Port
+				               	"4": item.Port,
+				               	"5": item.VideoURL,
+				               	"6": item.ImageURL
 							} );
         });
 				/* Add a click handler to the rows - this could be used as a callback */
@@ -237,6 +265,8 @@ function RefreshcameraTable()
 									$('#cameracontent #cameraparamstable #enabled').prop('checked',true);
 									$("#cameracontent #cameraparamstable #username").val("");
 									$("#cameracontent #cameraparamstable #password").val("");
+									$("#cameracontent #cameraparamstable #videourl").val("mjpeg.cgi");
+									$("#cameracontent #cameraparamstable #imageurl").val("image.jpg");
 							}
 							else {
 									oTable.$('tr.row_selected').removeClass('row_selected');
@@ -256,8 +286,10 @@ function RefreshcameraTable()
 										$('#cameracontent #cameraparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
 										$("#cameracontent #cameraparamstable #username").val(data["Username"]);
 										$("#cameracontent #cameraparamstable #password").val(data["Password"]);
+										$("#cameracontent #cameraparamstable #videourl").val(data["VideoURL"]);
+										$("#cameracontent #cameraparamstable #imageurl").val(data["ImageURL"]);
 										if (data["Enabled"]=="true") {
-											var feedsrc=GenerateCamFeedURL(data["Address"],data["IntPort"],data["Username"],data["Password"]);
+											var feedsrc=GenerateCamFeedURL(data["Address"],data["IntPort"],data["Username"],data["Password"],data["VideoURL"]);
 											$('#cameracontent #camfeed').attr("src", feedsrc);
 										}
 										else {
@@ -282,6 +314,8 @@ function Showcameras()
   var htmlcontent = "";
   htmlcontent+=$('#cameramain').html();
   $('#cameracontent').html(htmlcontent);
+	$("#cameracontent #cameraparamstable #videourl").val("mjpeg.cgi");
+	$("#cameracontent #cameraparamstable #imageurl").val("image.jpg");
   oTable = $('#cameratable').dataTable( {
                   "sDom": '<"H"lfrC>t<"F"ip>',
                   "oTableTools": {

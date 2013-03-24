@@ -1572,10 +1572,10 @@ char * CWebServer::GetJSonPage()
 		szQuery.clear();
 		szQuery.str("");
         if(rused=="true") {
-		szQuery << "SELECT ID, Name, Enabled, Address, Port, Username, Password FROM Cameras WHERE (Enabled=='1') ORDER BY ID ASC";
+		szQuery << "SELECT ID, Name, Enabled, Address, Port, Username, Password, VideoURL, ImageURL FROM Cameras WHERE (Enabled=='1') ORDER BY ID ASC";
         }
         else {
-            szQuery << "SELECT ID, Name, Enabled, Address, Port, Username, Password FROM Cameras ORDER BY ID ASC";
+            szQuery << "SELECT ID, Name, Enabled, Address, Port, Username, Password, VideoURL, ImageURL FROM Cameras ORDER BY ID ASC";
         }
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
@@ -1593,6 +1593,8 @@ char * CWebServer::GetJSonPage()
 				root["result"][ii]["Port"]=atoi(sd[4].c_str());
 				root["result"][ii]["Username"]=sd[5];
 				root["result"][ii]["Password"]=sd[6];
+				root["result"][ii]["VideoURL"]=sd[7];
+				root["result"][ii]["ImageURL"]=sd[8];
 				ii++;
 			}
 		}
@@ -4632,23 +4634,29 @@ char * CWebServer::GetJSonPage()
 			std::string sport=m_pWebEm->FindValue("port");
 			std::string username=m_pWebEm->FindValue("username");
 			std::string password=m_pWebEm->FindValue("password");
+			std::string videourl=m_pWebEm->FindValue("videourl");
+			std::string imageurl=m_pWebEm->FindValue("imageurl");
 			if (
 				(name=="")||
 				(address=="")||
-                (senabled=="")
+				(address=="")||
+				(videourl=="")||
+				(imageurl=="")
 				)
 				goto exitjson;
 			int port=atoi(sport.c_str());
 			root["status"]="OK";
 			root["title"]="AddCamera";
 			sprintf(szTmp,
-                    "INSERT INTO Cameras (Name, Enabled, Address, Port, Username, Password) VALUES ('%s',%d,'%s',%d,'%s','%s')",
+                    "INSERT INTO Cameras (Name, Enabled, Address, Port, Username, Password, VideoURL, ImageURL) VALUES ('%s',%d,'%s',%d,'%s','%s','%s','%s')",
                     name.c_str(),
                     (senabled=="true")?1:0,
                     address.c_str(),
                     port,
                     username.c_str(),
-                    password.c_str()
+                    password.c_str(),
+					videourl.c_str(),
+					imageurl.c_str()
                     );
 			result=m_pMain->m_sql.query(szTmp);
             m_pMain->m_camscheduler.ReloadCameras();
@@ -4664,10 +4672,14 @@ char * CWebServer::GetJSonPage()
 			std::string sport=m_pWebEm->FindValue("port");
     		std::string username=m_pWebEm->FindValue("username");
 			std::string password=m_pWebEm->FindValue("password");
+			std::string videourl=m_pWebEm->FindValue("videourl");
+			std::string imageurl=m_pWebEm->FindValue("imageurl");
 			if (
 				(name=="")||
 				(senabled=="")||
-				(address=="")
+				(address=="")||
+				(videourl=="")||
+				(imageurl=="")
                 )
 				goto exitjson;
             int port=atoi(sport.c_str());
@@ -4676,13 +4688,15 @@ char * CWebServer::GetJSonPage()
 			root["title"]="UpdateCamera";
             
 			sprintf(szTmp,
-                    "UPDATE Cameras SET Name='%s', Enabled=%d, Address='%s', Port=%d, Username='%s', Password='%s' WHERE (ID == %s)",
+                    "UPDATE Cameras SET Name='%s', Enabled=%d, Address='%s', Port=%d, Username='%s', Password='%s', VideoURL='%s', ImageURL='%s' WHERE (ID == %s)",
                     name.c_str(),
                     (senabled=="true")?1:0,
                     address.c_str(),
                     port,
                     username.c_str(),
                     password.c_str(),
+					videourl.c_str(),
+					imageurl.c_str(),
                     idx.c_str()
                     );
 			result=m_pMain->m_sql.query(szTmp);
