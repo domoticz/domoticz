@@ -248,6 +248,12 @@ char * CWebServer::DisplayHardwareTypesCombo()
 	char szTmp[200];
 	for (int ii=0; ii<HTYPE_END; ii++)
 	{
+#ifdef WIN32
+	#ifndef _DEBUG
+			if (ii==HTYPE_TE923)
+				continue;
+	#endif
+#endif
 		sprintf(szTmp,"<option value=\"%d\">%s</option>\n",ii,Hardware_Type_Desc(ii));
 		m_retstr+=szTmp;
 	}
