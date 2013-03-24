@@ -125,15 +125,6 @@ function GetCameraSettings()
 	csettings.username=$('#cameracontent #cameraparamstable #username').val();
 	csettings.password=$('#cameracontent #cameraparamstable #password').val();
 	
-	if ((csettings.username!="")&&(csettings.password=="")) {
-			ShowNotify('Please enter a password!', 2500, true);
-			return;
-	}
-	if ((csettings.username=="")&&(csettings.password!="")) {
-			ShowNotify('Please enter a username!', 2500, true);
-			return;
-	}
-
 	csettings.videourl=$('#cameracontent #cameraparamstable #videourl').val();
 	csettings.imageurl=$('#cameracontent #cameraparamstable #imageurl').val();
 

@@ -4,6 +4,7 @@
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
+#include "TE923Tool.h"
 
 #define TE923_POLL_INTERVAL 30
 
@@ -16,7 +17,6 @@ CTE923::CTE923(const int ID)
 {
 	m_HwdID=ID;
 	m_stoprequested=false;
-	m_bIsOpen=false;
 	Init();
 }
 
@@ -31,14 +31,7 @@ void CTE923::Init()
 
 bool CTE923::StartHardware()
 {
-#ifndef _DEBUG
-	if (!m_te923tool.OpenDevice())
-	{
-		return false;
-	}
-#endif
 	Init();
-	m_bIsOpen=true;
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CTE923::Do_Work, this)));
 
@@ -59,10 +52,6 @@ bool CTE923::StopHardware()
 		m_stoprequested = true;
 		m_thread->join();
 	}
-	if (m_bIsOpen)
-		m_te923tool.CloseDevice();
-	m_bIsOpen=false;
-    
     return true;
 }
 
@@ -89,11 +78,14 @@ void CTE923::WriteToHardware(const char *pdata, const unsigned char length)
 
 void CTE923::GetSensorDetails()
 {
-	if (!m_bIsOpen)
+	CTE923Tool _te923tool;
+	if (!_te923tool.OpenDevice())
+	{
 		return;
+	}
 	Te923DataSet_t data;
 #ifndef _DEBUG
-	if (!m_te923tool.GetData(&data))
+	if (!_te923tool.GetData(&data))
 	{
 		_log.Log(LOG_ERROR, "Could not read weather data!");
 		return;
