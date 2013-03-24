@@ -34,6 +34,7 @@ Version 1.0.10 (March xxth 2013)
 - Implemented: Sensors that are not received within xx minutes are highlighted
 - Implemented: Wind meter direction is now averaged ( ~10 minutes )
 - Implemented: Temperature/Weather sensors now display their main value in large font
+- Fixed: Temperature/Humidity display on dashboard
 
 Version 1.0.9 (February 17th 2013)
 - Implemented: OWL113 option to display in Ampere/Usage

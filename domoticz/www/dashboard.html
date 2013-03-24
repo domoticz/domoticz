@@ -287,13 +287,16 @@ function RefreshFavorites()
 									$(id + " #img").html(img);
 								}
 								var status="";
+								var bigtext="";
 								var bHaveBefore=false;
 								if (typeof item.Temp != 'undefined') {
 										 status+=item.Temp + '° C';
+										 bigtext=item.Temp + '\u00B0';
 										 bHaveBefore=true;
 								}
 								if (typeof item.Chill != 'undefined') {
 									status+=', Chill: ' + item.Chill + '° C';
+									bigtext+=' / ' + item.Chill + '\u00B0';
 									bHaveBefore=true;
 								}
 								if (typeof item.Direction != 'undefined') {
@@ -302,8 +305,10 @@ function RefreshFavorites()
 								if (typeof item.Humidity != 'undefined') {
 									if (bHaveBefore==true) {
 										status+=', ';
+										bigtext+=' / ';
 									}
 									status+='Humidity: ' + item.Humidity + ' %';
+									bigtext+=item.Humidity + '%';
 								}
 								if (typeof item.HumidityStatus != 'undefined') {
 									status+=' (' + item.HumidityStatus + ')';
@@ -316,7 +321,7 @@ function RefreshFavorites()
 								}
 								if ($(id + " #status").html()!=status) {
 									if (typeof $(id + " #bigtext") != 'undefined') {
-										$(id + " #bigtext").html(item.Temp + '\u00B0');
+										$(id + " #bigtext").html(bigtext);
 									}
 									$(id + " #status").html(status);
 								}
@@ -985,51 +990,64 @@ function ShowFavorites()
 							else {
 								xhtm+='\t      <td id="name" style="background-color: #DF2D3A;">' + item.Name + '</td>\n';
 							}
+							xhtm+='\t      <td id="bigtext">';
+							var bigtext="";
+							if (typeof item.Temp != 'undefined') {
+								bigtext=item.Temp + '\u00B0';
+							}
+							if (typeof item.Humidity != 'undefined') {
+								if (bigtext!="") {
+									bigtext+=' / ';
+								}
+								bigtext+=item.Humidity + '%';
+							}
+							if (typeof item.Chill != 'undefined') {
+								bigtext+=' / ' + item.Chill + '\u00B0';
+							}
+							xhtm+=bigtext+'</td>\n';
+							xhtm+='\t      <td id="img"><img src="images/';
+							if ((typeof item.Temp == 'undefined') || (item.Temp>0)) {
+								xhtm+='temp48.png';
+							}
+							else {
+								xhtm+='ice.png';
+							}
+							xhtm+='" height="40"></td>\n' +
+									'\t      <td id="status">';
+							var bHaveBefore=false;
+							if (typeof item.Temp != 'undefined') {
+									 xhtm+=item.Temp + '° C';
+									 bHaveBefore=true;
+							}
+							if (typeof item.Chill != 'undefined') {
+								xhtm+=', Chill: ' + item.Chill + '° C';
+								bHaveBefore=true;
+							}
+							if (typeof item.Direction != 'undefined') {
+								xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms\n';
+							}
+							if (typeof item.Humidity != 'undefined') {
+								if (bHaveBefore==true) {
+									xhtm+=', ';
+								}
+								xhtm+='Humidity: ' + item.Humidity + ' %';
+							}
+							if (typeof item.HumidityStatus != 'undefined') {
+								xhtm+=' (' + item.HumidityStatus + ')';
+							}
+							if (typeof item.Barometer != 'undefined') {
+								xhtm+='<br>' + item.Barometer + ' hPa';
+							}
+							if (typeof item.ForecastStr != 'undefined') {
+								xhtm+=', Prediction: ' + item.ForecastStr;
+							}
 							xhtm+=
-										'\t      <td id="bigtext">' + item.Temp + '\u00B0</td>\n' +
-										'\t      <td id="img"><img src="images/';
-										if ((typeof item.Temp == 'undefined') || (item.Temp>0)) {
-											xhtm+='temp48.png';
-										}
-										else {
-											xhtm+='ice.png';
-										}
-										xhtm+='" height="40"></td>\n' +
-												'\t      <td id="status">';
-										var bHaveBefore=false;
-										if (typeof item.Temp != 'undefined') {
-												 xhtm+=item.Temp + '° C';
-												 bHaveBefore=true;
-										}
-										if (typeof item.Chill != 'undefined') {
-											xhtm+=', Chill: ' + item.Chill + '° C';
-											bHaveBefore=true;
-										}
-										if (typeof item.Direction != 'undefined') {
-											xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms\n';
-										}
-										if (typeof item.Humidity != 'undefined') {
-											if (bHaveBefore==true) {
-												xhtm+=', ';
-											}
-											xhtm+='Humidity: ' + item.Humidity + ' %';
-										}
-										if (typeof item.HumidityStatus != 'undefined') {
-											xhtm+=' (' + item.HumidityStatus + ')';
-										}
-										if (typeof item.Barometer != 'undefined') {
-											xhtm+='<br>' + item.Barometer + ' hPa';
-										}
-										if (typeof item.ForecastStr != 'undefined') {
-											xhtm+=', Prediction: ' + item.ForecastStr;
-										}
-										xhtm+=
-												'</td>\n' +
-												'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
-										'\t    </tr>\n' +
-										'\t    </table>\n' +
-										'\t  </section>\n' +
-										'\t</div>\n';
+									'</td>\n' +
+									'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
+							'\t    </tr>\n' +
+							'\t    </table>\n' +
+							'\t  </section>\n' +
+							'\t</div>\n';
 						}
             htmlcontent+=xhtm;
             jj+=1;
