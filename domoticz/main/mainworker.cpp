@@ -5565,12 +5565,29 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string swi
 		std::vector<std::string> sd=*itt;
 		std::vector<std::vector<std::string> > result2;
 		std::stringstream szQuery2;
-		szQuery2 << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << sd[0] << ")";
+		szQuery2 << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType, nValue, sValue FROM DeviceStatus WHERE (ID == " << sd[0] << ")";
 		result2=m_sql.query(szQuery2.str());
 		if (result2.size()>0)
 		{
 			std::vector<std::string> sd2=result2[0];
-			SwitchLightInt(sd2,switchcmd,0,false);
+			unsigned char rnValue=atoi(sd2[6].c_str());
+			std::string sValue=sd2[7];
+			unsigned char Unit=atoi(sd2[2].c_str());
+			unsigned char dType=atoi(sd2[3].c_str());
+			unsigned char dSubType=atoi(sd2[4].c_str());
+			_eSwitchType switchtype=(_eSwitchType)atoi(sd2[5].c_str());
+
+			std::string lstatus="";
+			int llevel=0;
+			bool bHaveDimmer=false;
+			bool bHaveGroupCmd=false;
+			int maxDimLevel=0;
+
+			GetLightStatus(dType,dSubType,rnValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+			if ((IsLightSwitchOn(lstatus)==false)&&(nValue==1))
+				SwitchLightInt(sd2,switchcmd,0,false);
+			else if ((IsLightSwitchOn(lstatus)==true)&&(nValue==0))
+				SwitchLightInt(sd2,switchcmd,0,false);
 		}
 	}
 
