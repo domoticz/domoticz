@@ -4544,32 +4544,52 @@ void MainWorker::decode_Water(const int HwdID, const tRBUF *pResponse)
 //not in dbase yet
 void MainWorker::decode_Weight(const int HwdID, const tRBUF *pResponse)
 {
-	unsigned char devType=pTypeWEIGHT;
-
 	char szTmp[100];
+	unsigned char devType=pTypeWEIGHT;
+	unsigned char subType=pResponse->WEIGHT.subtype;
+	unsigned short weightID=(pResponse->WEIGHT.id1*256) + pResponse->WEIGHT.id2;
+	std::string ID;
+	sprintf(szTmp, "%d", weightID);
+	ID=szTmp;
+	unsigned char Unit=0;
+	unsigned char cmnd=0;
+	unsigned char SignalLevel=pResponse->WEIGHT.rssi;
+	unsigned char BatteryLevel = 255;
+	float weight=(float(pResponse->WEIGHT.weighthigh) * 25.6f) + (float(pResponse->WEIGHT.weightlow) / 10.0f);
 
-	switch (pResponse->WEIGHT.subtype)
+	float AddjValue=0.0f;
+	float AddjMulti=1.0f;
+	m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
+	weight+=AddjValue;
+
+	sprintf(szTmp,"%.1f",weight);
+	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
+
+	if (m_verboselevel == EVBL_ALL)
 	{
-	case sTypeWEIGHT1:
-		WriteMessage("subtype       = BWR102");
-		break;
-	case sTypeWEIGHT2:
-		WriteMessage("subtype       = GR101");
-		break;
-	default:
-		sprintf(szTmp,"ERROR: Unknown Sub type for Packet type = %02X:%02X", pResponse->WEIGHT.packettype, pResponse->WEIGHT.subtype);
-		WriteMessage(szTmp);
-		break;
-	}
+		switch (pResponse->WEIGHT.subtype)
+		{
+		case sTypeWEIGHT1:
+			WriteMessage("subtype       = BWR102");
+			break;
+		case sTypeWEIGHT2:
+			WriteMessage("subtype       = GR101");
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type = %02X:%02X", pResponse->WEIGHT.packettype, pResponse->WEIGHT.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
 
-	sprintf(szTmp,"Sequence nbr  = %d", pResponse->WEIGHT.seqnbr);
-	WriteMessage(szTmp);
-	sprintf(szTmp,"ID            = %d", (pResponse->WEIGHT.id1 * 256) + pResponse->WEIGHT.id2);
-	WriteMessage(szTmp);
-	sprintf(szTmp,"Weight        = %.1f kg", (float(pResponse->WEIGHT.weighthigh) * 25.6f) + (float(pResponse->WEIGHT.weightlow) / 10));
-	WriteMessage(szTmp);
-	sprintf(szTmp, "Signal level  = %d", pResponse->WEIGHT.rssi);
-	WriteMessage(szTmp);
+		sprintf(szTmp,"Sequence nbr  = %d", pResponse->WEIGHT.seqnbr);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"ID            = %d", (pResponse->WEIGHT.id1 * 256) + pResponse->WEIGHT.id2);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"Weight        = %.1f kg", (float(pResponse->WEIGHT.weighthigh) * 25.6f) + (float(pResponse->WEIGHT.weightlow) / 10));
+		WriteMessage(szTmp);
+		sprintf(szTmp, "Signal level  = %d", pResponse->WEIGHT.rssi);
+		WriteMessage(szTmp);
+	}
 }
 
 void MainWorker::decode_RFXSensor(const int HwdID, const tRBUF *pResponse)
