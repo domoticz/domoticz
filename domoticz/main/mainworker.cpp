@@ -1840,13 +1840,19 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const tRBUF *pResponse)
 	unsigned char HumidityStatus = pResponse->TEMP_HUM_BARO.humidity_status;
 	int barometer = (pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol;
 	int forcast = pResponse->TEMP_HUM_BARO.forecast;
-
-	sprintf(szTmp,"%.1f;%d;%d;%d;%d",temp,Humidity,HumidityStatus, barometer,forcast);
+	float fbarometer=(float)barometer;
+	if (pResponse->TEMP_HUM_BARO.subtype==sTypeTHBFloat)
+	{
+		fbarometer=float((pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol)/10.0f;
+		sprintf(szTmp,"%.1f;%d;%d;%.1f;%d",temp,Humidity,HumidityStatus, fbarometer,forcast);
+	}
+	else
+		sprintf(szTmp,"%.1f;%d;%d;%d;%d",temp,Humidity,HumidityStatus, barometer,forcast);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
 
 	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, Humidity, true, true);
 
-	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_BARO, (float)barometer);
+	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_BARO, fbarometer);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -1861,6 +1867,9 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const tRBUF *pResponse)
 			WriteMessage("subtype       = THB2 - BTHR918N, BTHR968");
 			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM_BARO.id2);
 			WriteMessage(szTmp);
+			break;
+		case sTypeTHBFloat:
+			WriteMessage("subtype       = Weather Station");
 			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->TEMP_HUM_BARO.packettype, pResponse->TEMP_HUM_BARO.subtype);
@@ -1896,7 +1905,10 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const tRBUF *pResponse)
 			break;
 		}
 
-		sprintf(szTmp,"Barometer     = %d hPa", (pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol);
+		if (pResponse->TEMP_HUM_BARO.subtype==sTypeTHBFloat)
+			sprintf(szTmp,"Barometer     = %.1f hPa", float((pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol)/10.0f);
+		else
+			sprintf(szTmp,"Barometer     = %d hPa", (pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol);
 		WriteMessage(szTmp);
 
 		switch (pResponse->TEMP_HUM_BARO.forecast)

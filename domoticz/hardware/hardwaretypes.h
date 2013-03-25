@@ -1,5 +1,8 @@
 #pragma once
 
+#define sTypeTHBFloat 0x10   //Weather Station
+
+
 #define pTypeP1Power	0xFA
 #define sTypeP1Power	0x01
 

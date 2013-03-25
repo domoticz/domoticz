@@ -881,14 +881,28 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					root["result"][ii]["Temp"]=atof(strarray[0].c_str());
 					root["result"][ii]["Humidity"]=atoi(strarray[1].c_str());
 					root["result"][ii]["HumidityStatus"]=RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
-					root["result"][ii]["Barometer"]=atoi(strarray[3].c_str());
+					if (dSubType==sTypeTHBFloat)
+						root["result"][ii]["Barometer"]=atof(strarray[3].c_str());
+					else
+						root["result"][ii]["Barometer"]=atoi(strarray[3].c_str());
 					root["result"][ii]["Forecast"]=atoi(strarray[4].c_str());
 					root["result"][ii]["ForecastStr"]=RFX_Forecast_Desc(atoi(strarray[4].c_str()));
-					sprintf(szData,"%.1f C, %d %%, %d hPa",
-						atof(strarray[0].c_str()),
-						atoi(strarray[1].c_str()),
-						atoi(strarray[3].c_str())
-						);
+					if (dSubType==sTypeTHBFloat)
+					{
+						sprintf(szData,"%.1f C, %d %%, %.1f hPa",
+							atof(strarray[0].c_str()),
+							atoi(strarray[1].c_str()),
+							atof(strarray[3].c_str())
+							);
+					}
+					else
+					{
+						sprintf(szData,"%.1f C, %d %%, %d hPa",
+							atof(strarray[0].c_str()),
+							atoi(strarray[1].c_str()),
+							atoi(strarray[3].c_str())
+							);
+					}
 					root["result"][ii]["Data"]=szData;
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				}
@@ -2162,7 +2176,13 @@ char * CWebServer::GetJSonPage()
 						}
 						if (dType==pTypeTEMP_HUM_BARO)
 						{
-							root["result"][ii]["ba"]=sd[3];
+							if (dSubType==sTypeTHBFloat)
+							{
+								sprintf(szTmp,"%.1f",atof(sd[3].c_str())/10.0f);
+								root["result"][ii]["ba"]=szTmp;
+							}
+							else
+								root["result"][ii]["ba"]=sd[3];
 						}
 
 						ii++;
@@ -2842,7 +2862,13 @@ char * CWebServer::GetJSonPage()
 						}
 						if (dType==pTypeTEMP_HUM_BARO)
 						{
-							root["result"][ii]["ba"]=sd[5];
+							if (dSubType==sTypeTHBFloat)
+							{
+								sprintf(szTmp,"%.1f",atof(sd[5].c_str())/10.0f);
+								root["result"][ii]["ba"]=szTmp;
+							}
+							else
+								root["result"][ii]["ba"]=sd[5];
 						}
 
 						ii++;
@@ -2878,7 +2904,13 @@ char * CWebServer::GetJSonPage()
 					}
 					if (dType==pTypeTEMP_HUM_BARO)
 					{
-						root["result"][ii]["ba"]=sd[5];
+						if (dSubType==sTypeTHBFloat)
+						{
+							sprintf(szTmp,"%.1f",atof(sd[5].c_str())/10.0f);
+							root["result"][ii]["ba"]=szTmp;
+						}
+						else
+							root["result"][ii]["ba"]=sd[5];
 					}
 					ii++;
 				}
@@ -3312,7 +3344,13 @@ char * CWebServer::GetJSonPage()
 						}
 						if (dType==pTypeTEMP_HUM_BARO)
 						{
-							root["result"][ii]["ba"]=sd[5];
+							if (dSubType==sTypeTHBFloat)
+							{
+								sprintf(szTmp,"%.1f",atof(sd[5].c_str())/10.0f);
+								root["result"][ii]["ba"]=szTmp;
+							}
+							else
+								root["result"][ii]["ba"]=sd[5];
 						}
 
 						ii++;
@@ -3348,7 +3386,13 @@ char * CWebServer::GetJSonPage()
 					}
 					if (dType==pTypeTEMP_HUM_BARO)
 					{
-						root["result"][ii]["ba"]=sd[5];
+						if (dSubType==sTypeTHBFloat)
+						{
+							sprintf(szTmp,"%.1f",atof(sd[5].c_str())/10.0f);
+							root["result"][ii]["ba"]=szTmp;
+						}
+						else
+							root["result"][ii]["ba"]=sd[5];
 					}
 					ii++;
 				}

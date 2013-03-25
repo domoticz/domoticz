@@ -325,6 +325,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 
 		{ pTypeTEMP_HUM_BARO, sTypeTHB1, "THB1 - BTHR918" },
 		{ pTypeTEMP_HUM_BARO, sTypeTHB2, "THB2 - BTHR918N, BTHR968" },
+		{ pTypeTEMP_HUM_BARO, sTypeTHBFloat, "Weather Station" },
 
 		{ pTypeRAIN, sTypeRAIN1, "RGR126/682/918/928" },
 		{ pTypeRAIN, sTypeRAIN2, "PCR800" },

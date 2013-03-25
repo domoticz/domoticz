@@ -1779,7 +1779,10 @@ void CSQLHelper::UpdateTemperatureLog()
 			case pTypeTEMP_HUM_BARO:
 				temp=(float)atof(splitresults[0].c_str());
 				humidity=atoi(splitresults[1].c_str());
-				barometer=atoi(splitresults[3].c_str());
+				if (dSubType==sTypeTHBFloat)
+					barometer=int(atof(splitresults[3].c_str())*10.0f);
+				else
+					barometer=atoi(splitresults[3].c_str());
 				break;
 			case pTypeUV:
 				if (dSubType!=sTypeUV3)

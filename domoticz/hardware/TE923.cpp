@@ -112,7 +112,7 @@ void CTE923::GetSensorDetails()
 			{
 				tsen.TEMP_HUM_BARO.packetlength=sizeof(tsen);
 				tsen.TEMP_HUM_BARO.packettype=pTypeTEMP_HUM_BARO;
-				tsen.TEMP_HUM_BARO.subtype=sTypeTHB1;
+				tsen.TEMP_HUM_BARO.subtype=sTypeTHBFloat;
 				tsen.TEMP_HUM_BARO.battery_level=9;
 				tsen.TEMP_HUM_BARO.rssi=6;
 				tsen.TEMP_HUM_BARO.id1=0;
@@ -126,7 +126,7 @@ void CTE923::GetSensorDetails()
 				tsen.TEMP_HUM_BARO.humidity=(BYTE)data.h[ii];
 				tsen.TEMP_HUM_BARO.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
 
-				int ab10=round(data.press);
+				int ab10=round(data.press*10.0f);
 				tsen.TEMP_HUM_BARO.baroh=(BYTE)(ab10/256);
 				ab10-=(tsen.TEMP_HUM_BARO.baroh*256);
 				tsen.TEMP_HUM_BARO.barol=(BYTE)(ab10);
