@@ -3696,7 +3696,7 @@ char * CWebServer::GetJSonPage()
 #ifdef WIN32
 			system("shutdown -s -f -t 1 -d up:125:1");
 #else
-			system("shutdown");
+			system("sudo shutdown -h now");
 #endif
 			root["status"]="OK";
 			root["title"]="SystemShutdown";
@@ -3706,7 +3706,7 @@ char * CWebServer::GetJSonPage()
 #ifdef WIN32
 			system("shutdown -r -f -t 1 -d up:125:1");
 #else
-			system("reboot");
+			system("sudo shutdown -r now");
 #endif
 			root["status"]="OK";
 			root["title"]="SystemReboot";
