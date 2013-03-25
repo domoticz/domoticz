@@ -78,13 +78,13 @@ void CTE923::WriteToHardware(const char *pdata, const unsigned char length)
 
 void CTE923::GetSensorDetails()
 {
+	Te923DataSet_t data;
+#ifndef _DEBUG
 	CTE923Tool _te923tool;
 	if (!_te923tool.OpenDevice())
 	{
 		return;
 	}
-	Te923DataSet_t data;
-#ifndef _DEBUG
 	if (!_te923tool.GetData(&data))
 	{
 		_log.Log(LOG_ERROR, "Could not read weather data!");
@@ -119,7 +119,7 @@ void CTE923::GetSensorDetails()
 				tsen.TEMP_HUM_BARO.id2=(ii+1);
 
 				tsen.TEMP_HUM_BARO.tempsign=(data.t[ii]>=0)?0:1;
-				int at10=round(data.t[ii]*10.0f);
+				int at10=round(abs(data.t[ii]*10.0f));
 				tsen.TEMP_HUM_BARO.temperatureh=(BYTE)(at10/256);
 				at10-=(tsen.TEMP_HUM_BARO.temperatureh*256);
 				tsen.TEMP_HUM_BARO.temperaturel=(BYTE)(at10);
@@ -168,7 +168,7 @@ void CTE923::GetSensorDetails()
 				tsen.TEMP_HUM.id2=(ii+1);
 
 				tsen.TEMP_HUM.tempsign=(data.t[ii]>=0)?0:1;
-				int at10=round(data.t[ii]*10.0f);
+				int at10=round(abs(data.t[ii]*10.0f));
 				tsen.TEMP_HUM.temperatureh=(BYTE)(at10/256);
 				at10-=(tsen.TEMP_HUM.temperatureh*256);
 				tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
@@ -193,7 +193,7 @@ void CTE923::GetSensorDetails()
 			tsen.TEMP.id2=(ii+1);
 
 			tsen.TEMP.tempsign=(data.t[ii]>=0)?0:1;
-			int at10=round(data.t[ii]*10.0f);
+			int at10=round(abs(data.t[ii]*10.0f));
 			tsen.TEMP.temperatureh=(BYTE)(at10/256);
 			at10-=(tsen.TEMP.temperatureh*256);
 			tsen.TEMP.temperaturel=(BYTE)(at10);
@@ -269,7 +269,7 @@ void CTE923::GetSensorDetails()
 		{
 			tsen.WIND.tempsign=(data.wChill>=0)?0:1;
 			tsen.WIND.chillsign=(data.wChill>=0)?0:1;
-			int at10=round(data.wChill*10.0f);
+			int at10=round(abs(data.wChill*10.0f));
 			tsen.WIND.temperatureh=(BYTE)(at10/256);
 			tsen.WIND.chillh=(BYTE)(at10/256);
 			at10-=(tsen.WIND.chillh*256);
