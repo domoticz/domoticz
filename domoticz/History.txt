@@ -38,6 +38,7 @@ Version 1.0.10 (March xxth 2013)
 - Implemented: TE932Tool (USB 433Mhz Weather Station, Hideki weather station like IROX Pro X, Mebus TE923 or TFA Nexus) 
   ^^(Unix only at the moment! On Windows it does NOT work)
 - Fixed: Weather Station Negative temperature
+- Fixed: P1 Smart Meter (Gas) now has a timeout of 3 hours
 
 Version 1.0.9 (February 17th 2013)
 - Implemented: OWL113 option to display in Ampere/Usage

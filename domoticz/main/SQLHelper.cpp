@@ -2152,9 +2152,18 @@ void CSQLHelper::UpdateMeter()
 			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
 			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
 			time_t checktime=mktime(&ntime);
-			if (now-checktime>=SensorTimeOut*60)
-				continue;
 
+			if (dType!=pTypeP1Gas)
+			{
+				if (now-checktime>=SensorTimeOut*60)
+					continue;
+			}
+			else
+			{
+				//P1 Gas meter transmits results every 1 a 2 hours
+				if (now-checktime>=3*3600)
+					continue;
+			}
 			if (dType==pTypeYouLess)
 			{
 				std::vector<std::string> splitresults;
