@@ -275,7 +275,7 @@ void CTE923::GetSensorDetails()
 		tsen.RAIN.rainrateh=0;
 		tsen.RAIN.rainratel=0;
 
-		int tr10=int(float(data.RainCount)*10.0f);
+		int tr10=int((float(data.RainCount)*10.0f)*0.7f);
 
 		tsen.RAIN.raintotal1=0;
 		tsen.RAIN.raintotal2=(BYTE)(tr10/256);
