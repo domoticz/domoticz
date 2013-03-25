@@ -2,6 +2,14 @@
 
 #define sTypeTHBFloat 0x10   //Weather Station
 
+#define wsbaroforcast_heavy_snow 0x01
+#define wsbaroforcast_snow 0x01
+#define wsbaroforcast_heavy_rain 0x02
+#define wsbaroforcast_rain 0x03
+#define wsbaroforcast_cloudy 0x04
+#define wsbaroforcast_some_clouds 0x05
+#define wsbaroforcast_sunny 0x06
+
 
 #define pTypeP1Power	0xFA
 #define sTypeP1Power	0x01

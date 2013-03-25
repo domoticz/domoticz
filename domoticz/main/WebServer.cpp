@@ -881,12 +881,17 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					root["result"][ii]["Temp"]=atof(strarray[0].c_str());
 					root["result"][ii]["Humidity"]=atoi(strarray[1].c_str());
 					root["result"][ii]["HumidityStatus"]=RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
-					if (dSubType==sTypeTHBFloat)
-						root["result"][ii]["Barometer"]=atof(strarray[3].c_str());
-					else
-						root["result"][ii]["Barometer"]=atoi(strarray[3].c_str());
 					root["result"][ii]["Forecast"]=atoi(strarray[4].c_str());
-					root["result"][ii]["ForecastStr"]=RFX_Forecast_Desc(atoi(strarray[4].c_str()));
+					if (dSubType==sTypeTHBFloat)
+					{
+						root["result"][ii]["Barometer"]=atof(strarray[3].c_str());
+						root["result"][ii]["ForecastStr"]=RFX_WSForecast_Desc(atoi(strarray[4].c_str()));
+					}
+					else
+					{
+						root["result"][ii]["Barometer"]=atoi(strarray[3].c_str());
+						root["result"][ii]["ForecastStr"]=RFX_Forecast_Desc(atoi(strarray[4].c_str()));
+					}
 					if (dSubType==sTypeTHBFloat)
 					{
 						sprintf(szData,"%.1f C, %d %%, %.1f hPa",

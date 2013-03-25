@@ -87,6 +87,7 @@ const char *RFX_Humidity_Status_Desc(const unsigned char status);
 const char *Switch_Type_Desc(const _eSwitchType sType);
 const char *Meter_Type_Desc(const _eMeterType sType);
 const char *RFX_Forecast_Desc(const unsigned char Forecast);
+const char *RFX_WSForecast_Desc(const unsigned char Forecast);
 const char *Timer_Type_Desc(int tType);
 const char *Timer_Cmd_Desc(int tCmd);
 const char *Hardware_Type_Desc(int hType);

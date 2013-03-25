@@ -39,7 +39,7 @@ Version 1.0.10 (March xxth 2013)
   ^^(Unix only at the moment! On Windows it does NOT work)
 - Fixed: Weather Station Negative temperature
 - Fixed: P1 Smart Meter (Gas) now has a timeout of 3 hours
-- Implemented: Weather Station baro meter now more precise (xxxx.x hPa)
+- Implemented: Weather Station baro meter now more precise (xxxx.x hPa), and displaying device forcast
 
 Version 1.0.9 (February 17th 2013)
 - Implemented: OWL113 option to display in Ampere/Usage

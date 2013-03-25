@@ -241,6 +241,22 @@ const char *RFX_Forecast_Desc(const unsigned char Forecast)
 	return findTableIDSingle1 (Table, Forecast);
 }
 
+const char *RFX_WSForecast_Desc(const unsigned char Forecast)
+{
+	STR_TABLE_SINGLE	Table[] = 
+	{
+		{ wsbaroforcast_heavy_snow,"Heavy Snow" },
+		{ wsbaroforcast_snow, "Snow" },
+		{ wsbaroforcast_heavy_rain, "Heavy Rain" },
+		{ wsbaroforcast_rain, "Rain" },
+		{ wsbaroforcast_cloudy, "Cloudy" },
+		{ wsbaroforcast_some_clouds, "Some Clouds" },
+		{ wsbaroforcast_sunny, "Sunny" },
+		{  0,NULL,NULL }
+	};
+	return findTableIDSingle1 (Table, Forecast);
+}
+
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 {
 	STR_TABLE_SINGLE	Table[] = 

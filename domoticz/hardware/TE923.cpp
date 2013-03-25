@@ -130,29 +130,7 @@ void CTE923::GetSensorDetails()
 				tsen.TEMP_HUM_BARO.baroh=(BYTE)(ab10/256);
 				ab10-=(tsen.TEMP_HUM_BARO.baroh*256);
 				tsen.TEMP_HUM_BARO.barol=(BYTE)(ab10);
-				tsen.TEMP_HUM_BARO.forecast=baroForecastNoInfo;
-				if (data._forecast == 0)
-				{
-					switch (data.forecast)
-					{
-					case 0: //snow
-					case 1: //heavy snow
-						tsen.TEMP_HUM_BARO.forecast=baroForecastRain;
-						break;
-					case 2: //rain
-					case 3: //heavy rain
-						tsen.TEMP_HUM_BARO.forecast=baroForecastRain;
-						break;
-					case 4:	//cloudy
-						tsen.TEMP_HUM_BARO.forecast=baroForecastCloudy;
-						break;
-					case 5: //some clouds
-						tsen.TEMP_HUM_BARO.forecast=baroForecastPartlyCloudy;
-						break;
-					case 6: //sunny
-						tsen.TEMP_HUM_BARO.forecast=baroForecastSunny;
-					}
-				}
+				tsen.TEMP_HUM_BARO.forecast=data.forecast;
 
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO);//decode message
 				m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.TEMP_HUM_BARO));
