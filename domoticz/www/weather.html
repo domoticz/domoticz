@@ -1052,7 +1052,7 @@ function ShowBaroLog(id,name)
                       var datatable = [];
                       $.each(data.result, function(i,item)
                       {
-                        datatable.push( [GetUTCFromString(item.d), parseInt(item.ba) ] );
+                        datatable.push( [GetUTCFromString(item.d), parseFloat(item.ba) ] );
                       });
                       series.setData(datatable);
                 });
@@ -1134,7 +1134,7 @@ function ShowBaroLog(id,name)
                       
                       $.each(data.result, function(i,item)
                       {
-                        datatable.push( [GetDateFromString(item.d), parseInt(item.ba) ] );
+                        datatable.push( [GetDateFromString(item.d), parseFloat(item.ba) ] );
                       });
                       series.setData(datatable);
                 });
@@ -1216,7 +1216,7 @@ function ShowBaroLog(id,name)
                       
                       $.each(data.result, function(i,item)
                       {
-                        datatable.push( [GetDateFromString(item.d), parseInt(item.ba) ] );
+                        datatable.push( [GetDateFromString(item.d), parseFloat(item.ba) ] );
                       });
                       series.setData(datatable);
                 });
