@@ -3691,6 +3691,26 @@ char * CWebServer::GetJSonPage()
 				}
 			}
 		}
+		else if (cparam=="system_shutdown")
+		{
+#ifdef WIN32
+			system("shutdown -s -f -t 1 -d up:125:1");
+#else
+			system("shutdown");
+#endif
+			root["status"]="OK";
+			root["title"]="SystemShutdown";
+		}
+		else if (cparam=="system_reboot")
+		{
+#ifdef WIN32
+			system("shutdown -r -f -t 1 -d up:125:1");
+#else
+			system("reboot");
+#endif
+			root["status"]="OK";
+			root["title"]="SystemReboot";
+		}
 		else if (cparam=="deleteallsubdevices")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
