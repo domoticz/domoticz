@@ -396,7 +396,7 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion<8)
 		{
-			query("DELETE FROM Cameras");
+			query("DROP TABLE IF EXISTS [Cameras]");
 			query(sqlCreateCameras);
 		}
 	}
