@@ -99,7 +99,7 @@ void CTE923::GetSensorDetails()
 	int ii;
 
 	//Add temp sensors
-	for (ii=0; ii<5; ii++)
+	for (ii=0; ii<6; ii++)
 	{
 		if ((data._t[ii]==0)&&(data._h[ii]==0))
 		{
