@@ -912,6 +912,7 @@ function ShowUVLog(id,name)
                       {
                         datatable.push( [GetDateFromString(item.d), parseFloat(item.uvi) ] );
                       });
+                      alert(datatable);
                       series.setData(datatable);
                 });
               }

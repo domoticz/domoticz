@@ -11,7 +11,7 @@
 #include "../hardware/hardwaretypes.h"
 #include "../httpclient/mynetwork.h"
 
-#define DB_VERSION 7
+#define DB_VERSION 8
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -224,10 +224,10 @@ const char *sqlCreateCameras =
 "[Enabled] INTEGER DEFAULT 1, "
 "[Address] VARCHAR(200), "
 "[Port] INTEGER, "
-"[Username] VARCHAR(100), "
-"[Password] VARCHAR(100), "
-"[VideoURL] VARCHAR(100), "
-"[ImageURL] VARCHAR(100));";
+"[Username] VARCHAR(100) DEFAULT (''), "
+"[Password] VARCHAR(100) DEFAULT (''), "
+"[VideoURL] VARCHAR(100) DEFAULT (''), "
+"[ImageURL] VARCHAR(100) DEFAULT (''));";
 
 const char *sqlCreatePlanMappings =
 "CREATE TABLE IF NOT EXISTS [DeviceToPlansMap] ("
@@ -394,6 +394,11 @@ bool CSQLHelper::OpenDatabase()
 			query("ALTER TABLE DeviceStatus ADD COLUMN [AddjValue2] FLOAT default 0");
 			query("ALTER TABLE DeviceStatus ADD COLUMN [AddjMulti2] FLOAT default 1");
 		}
+		if (dbversion<8)
+		{
+			query("DELETE FROM Cameras");
+			query(sqlCreateCameras);
+		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
 
@@ -519,11 +524,8 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string szQue
 				{
 					char* value = (char*)sqlite3_column_text(statement, col);
 					if (value == 0)
-					{
-						values.push_back("");
-					}
-					else
-						values.push_back(value);
+						break;
+					values.push_back(value);
 				}
 				if (values.size()>0)
 					results.push_back(values);
