@@ -1841,13 +1841,20 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const tRBUF *pResponse)
 	int barometer = (pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol;
 	int forcast = pResponse->TEMP_HUM_BARO.forecast;
 	float fbarometer=(float)barometer;
+
+	m_sql.GetAddjustment2(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
+	barometer+=int(AddjValue);
+
 	if (pResponse->TEMP_HUM_BARO.subtype==sTypeTHBFloat)
 	{
 		fbarometer=float((pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol)/10.0f;
+		fbarometer+=AddjValue;
 		sprintf(szTmp,"%.1f;%d;%d;%.1f;%d",temp,Humidity,HumidityStatus, fbarometer,forcast);
 	}
 	else
+	{
 		sprintf(szTmp,"%.1f;%d;%d;%d;%d",temp,Humidity,HumidityStatus, barometer,forcast);
+	}
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp);
 
 	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, Humidity, true, true);

@@ -18,6 +18,20 @@
 				</table>
     </form>
 </div>
+<div id="dialog-editbarodevice" title="Edit Device">
+    <form>
+        <table class="display" id="edittable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="width:60px"><label for="devicename">Name: </label></td>
+          <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        <tr>
+        <tr>
+          <td align="right" style="width:60px"><label for="adjustment">Adjustment: </label></td>
+          <td><input type="text" id="adjustment" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> hPa</td>
+        <tr>
+				</table>
+    </form>
+</div>
 <div id="weathercontent">
 </div>
 <div id="weatherlog" style="display:none;">
@@ -92,7 +106,16 @@ function EditRainDevice(idx,name,addjmulti)
   $.devIdx=idx;
   $("#dialog-editraindevice #devicename").val(name);
   $("#dialog-editraindevice #multiply").val(addjmulti);
-  $( "#dialog-editraindevice" ).dialog( "open" );
+  $("#dialog-editraindevice" ).dialog( "open" );
+}
+
+function EditBaroDevice(idx,name,addjvalue)
+{
+	clearInterval($.myglobals.refreshTimer);
+  $.devIdx=idx;
+  $("#dialog-editbarodevice #devicename").val(name);
+  $("#dialog-editbarodevice #adjustment").val(addjvalue);
+  $("#dialog-editbarodevice" ).dialog( "open" );
 }
 
 function EditWeatherDevice(idx,name)
@@ -1663,6 +1686,7 @@ function ShowWeathers()
             bHaveAddedDevider=true;
           }
           var bHaveRain = false;
+          var bHaveBaro = false;
           var bHaveUV = false;
           var bHaveWind = false;
           
@@ -1693,6 +1717,7 @@ function ShowWeathers()
 					xhtm+='</td>\n';
           xhtm+='\t      <td id="img"><img src="images/';
 					if (typeof item.Barometer != 'undefined') {
+						bHaveBaro=true;
 						xhtm+='baro48.png" height="48"></td>\n' +
 						'\t      <td id="status">' + item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
 					}
@@ -1750,8 +1775,10 @@ function ShowWeathers()
             xhtm+='<a class="btnsmall" onclick="ShowWindLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
           }
           if (bHaveRain) {
-						xhtm+=      
-									'<a class="btnsmall" onclick="EditRainDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjMulti +');">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditRainDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjMulti +');">Edit</a> ';
+          }
+          else if (bHaveBaro) {
+						xhtm+='<a class="btnsmall" onclick="EditBaroDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjValue2 +');">Edit</a> ';
           }
           else {
 						xhtm+=      
@@ -1913,6 +1940,66 @@ $(document).ready(function() {
                          }
                       });
                       
+                  }
+              },
+              "Transfer": function() {
+                  $( this ).dialog( "close" );
+                  TransferDevice($.devIdx,ShowWeathers);
+              },
+              Cancel: function() {
+                  $( this ).dialog( "close" );
+              }
+          },
+          open: function() {
+              $(this).keypress(function(e) {
+                if (e.keyCode == $.ui.keyCode.ENTER) {
+                  e.preventDefault();
+                  $(this).parent().find("button:eq(0)").trigger("click");
+                }
+              });
+          },
+          close: function() {
+            $( this ).dialog( "close" );
+          }
+    });
+    $( "#dialog-editbarodevice" ).dialog({
+          autoOpen: false,
+          width: 450,
+          height: 190,
+          modal: true,
+          resizable: false,
+          buttons: {
+              "Update": function() {
+                  var bValid = true;
+                  bValid = bValid && checkLength( $("#dialog-editbarodevice #edittable #devicename"), 2, 100 );
+                  if ( bValid ) {
+                      $( this ).dialog( "close" );
+                      var aValue=$("#dialog-editbarodevice #edittable #adjustment").val();
+                      $.ajax({
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editbarodevice #devicename").val() + '&addjvalue2=' + aValue + '&used=true',
+                         async: false,
+                         dataType: 'json',
+                         success: function(data) {
+                            ShowWeathers();
+                         }
+                      });
+
+                  }
+              },
+              "Remove Device": function() {
+                  var bValid = false;
+                  bValid=(confirm("Are you sure to remove this Device?")==true);
+                  if ( bValid ) {
+                      $( this ).dialog( "close" );
+                      $.ajax({
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editbarodevice #devicename").val() + '&used=false',
+                         async: false,
+                         dataType: 'json',
+                         success: function(data) {
+                            ShowWeathers();
+                         }
+                      });
+
                   }
               },
               "Transfer": function() {

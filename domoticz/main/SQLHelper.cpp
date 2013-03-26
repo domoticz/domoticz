@@ -11,7 +11,7 @@
 #include "../hardware/hardwaretypes.h"
 #include "../httpclient/mynetwork.h"
 
-#define DB_VERSION 6
+#define DB_VERSION 7
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -32,7 +32,9 @@ const char *sqlCreateDeviceStatus =
 "[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')),"
 "[Order] INTEGER BIGINT(10) default 0, "
 "[AddjValue] FLOAT DEFAULT 0, "
-"[AddjMulti] FLOAT DEFAULT 1);";
+"[AddjMulti] FLOAT DEFAULT 1, "
+"[AddjValue2] FLOAT DEFAULT 0, "
+"[AddjMulti2] FLOAT DEFAULT 1);";
 
 const char *sqlCreateDeviceStatusTrigger =
 "CREATE TRIGGER IF NOT EXISTS devicestatusupdate AFTER INSERT ON DeviceStatus\n"
@@ -386,6 +388,11 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("ALTER TABLE Cameras ADD COLUMN [VideoURL] VARCHAR(100)");
 			query("ALTER TABLE Cameras ADD COLUMN [ImageURL] VARCHAR(100)");
+		}
+		if (dbversion<7)
+		{
+			query("ALTER TABLE DeviceStatus ADD COLUMN [AddjValue2] FLOAT default 0");
+			query("ALTER TABLE DeviceStatus ADD COLUMN [AddjMulti2] FLOAT default 1");
 		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
@@ -861,6 +868,21 @@ void CSQLHelper::GetAddjustment(const int HardwareID, const char* ID, const unsi
 	std::vector<std::vector<std::string> > result;
 	char szTmp[1000];
 	sprintf(szTmp,"SELECT AddjValue,AddjMulti FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
+	result=query(szTmp);
+	if (result.size()!=0)
+	{
+		AddjValue=(float)atof(result[0][0].c_str());
+		AddjMulti=(float)atof(result[0][1].c_str());
+	}
+}
+
+void CSQLHelper::GetAddjustment2(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, float &AddjValue, float &AddjMulti)
+{
+	AddjValue=0.0f;
+	AddjMulti=1.0f;
+	std::vector<std::vector<std::string> > result;
+	char szTmp[1000];
+	sprintf(szTmp,"SELECT AddjValue2,AddjMulti2 FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
 	result=query(szTmp);
 	if (result.size()!=0)
 	{

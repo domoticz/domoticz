@@ -534,7 +534,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti FROM DeviceStatus ORDER BY " << szOrderBy;
+	szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2 FROM DeviceStatus ORDER BY " << szOrderBy;
 	result=m_pMain->m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -556,7 +556,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 			int hardwareID= atoi(sd[14].c_str());
 			double AddjValue=atof(sd[15].c_str());
 			double AddjMulti=atof(sd[16].c_str());
-
+			double AddjValue2=atof(sd[17].c_str());
+			double AddjMulti2=atof(sd[18].c_str());
 
 			struct tm ntime;
 			ntime.tm_isdst=tm1.tm_isdst;
@@ -734,6 +735,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					root["result"][ii]["SwitchType"] =Switch_Type_Desc(STYPE_SMOKEDETECTOR);
 					root["result"][ii]["AddjValue"]=AddjValue;
 					root["result"][ii]["AddjMulti"]=AddjMulti;
+					root["result"][ii]["AddjValue2"]=AddjValue2;
+					root["result"][ii]["AddjMulti2"]=AddjMulti2;
 				}
 				else if (switchtype==STYPE_Contact)
 				{
@@ -746,6 +749,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					root["result"][ii]["Status"]=lstatus;
 					root["result"][ii]["AddjValue"]=AddjValue;
 					root["result"][ii]["AddjMulti"]=AddjMulti;
+					root["result"][ii]["AddjValue2"]=AddjValue2;
+					root["result"][ii]["AddjMulti2"]=AddjMulti2;
 				}
 				else if (switchtype==STYPE_Blinds)
 				{
@@ -776,6 +781,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					root["result"][ii]["TypeImg"]="motion";
 					root["result"][ii]["AddjValue"]=AddjValue;
 					root["result"][ii]["AddjMulti"]=AddjMulti;
+					root["result"][ii]["AddjValue2"]=AddjValue2;
+					root["result"][ii]["AddjMulti2"]=AddjMulti2;
 				}
 				if (llevel!=0)
 					sprintf(szData,"%s, Level: %d %%", lstatus.c_str(), llevel);
@@ -807,11 +814,15 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					root["result"][ii]["SwitchType"] =Switch_Type_Desc(STYPE_SMOKEDETECTOR);
 					root["result"][ii]["AddjValue"]=AddjValue;
 					root["result"][ii]["AddjMulti"]=AddjMulti;
+					root["result"][ii]["AddjValue2"]=AddjValue2;
+					root["result"][ii]["AddjMulti2"]=AddjMulti2;
 				}
 				if (switchtype == STYPE_Motion)
 				{
 					root["result"][ii]["AddjValue"]=AddjValue;
 					root["result"][ii]["AddjMulti"]=AddjMulti;
+					root["result"][ii]["AddjValue2"]=AddjValue2;
+					root["result"][ii]["AddjMulti2"]=AddjMulti2;
 				}
 
 				sprintf(szData,"%s", lstatus.c_str());
@@ -821,6 +832,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 			{
 				root["result"][ii]["AddjValue"]=AddjValue;
 				root["result"][ii]["AddjMulti"]=AddjMulti;
+				root["result"][ii]["AddjValue2"]=AddjValue2;
+				root["result"][ii]["AddjMulti2"]=AddjMulti2;
 				root["result"][ii]["Temp"]=atof(sValue.c_str());
 				sprintf(szData,"%.1f C", atof(sValue.c_str()));
 				root["result"][ii]["Data"]=szData;
@@ -840,6 +853,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 			{
 				root["result"][ii]["AddjValue"]=AddjValue;
 				root["result"][ii]["AddjMulti"]=AddjMulti;
+				root["result"][ii]["AddjValue2"]=AddjValue2;
+				root["result"][ii]["AddjMulti2"]=AddjMulti2;
 				root["result"][ii]["Temp"]=atof(sValue.c_str());
 				sprintf(szData,"%.1f C", atof(sValue.c_str()));
 				root["result"][ii]["Data"]=szData;
@@ -862,6 +877,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				{
 					root["result"][ii]["AddjValue"]=AddjValue;
 					root["result"][ii]["AddjMulti"]=AddjMulti;
+					root["result"][ii]["AddjValue2"]=AddjValue2;
+					root["result"][ii]["AddjMulti2"]=AddjMulti2;
 					root["result"][ii]["Temp"]=atof(strarray[0].c_str());
 					root["result"][ii]["Humidity"]=atoi(strarray[1].c_str());
 					root["result"][ii]["HumidityStatus"]=RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
@@ -878,6 +895,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 				{
 					root["result"][ii]["AddjValue"]=AddjValue;
 					root["result"][ii]["AddjMulti"]=AddjMulti;
+					root["result"][ii]["AddjValue2"]=AddjValue2;
+					root["result"][ii]["AddjMulti2"]=AddjMulti2;
 					root["result"][ii]["Temp"]=atof(strarray[0].c_str());
 					root["result"][ii]["Humidity"]=atoi(strarray[1].c_str());
 					root["result"][ii]["HumidityStatus"]=RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
@@ -925,6 +944,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					{
 						root["result"][ii]["AddjValue"]=AddjValue;
 						root["result"][ii]["AddjMulti"]=AddjMulti;
+						root["result"][ii]["AddjValue2"]=AddjValue2;
+						root["result"][ii]["AddjMulti2"]=AddjMulti2;
 						root["result"][ii]["Temp"]=strarray[1];
 						sprintf(szData,"%.1f UVI, %.1f&deg; C",UVI,Temp);
 					}
@@ -963,6 +984,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					{
 						root["result"][ii]["AddjValue"]=AddjValue;
 						root["result"][ii]["AddjMulti"]=AddjMulti;
+						root["result"][ii]["AddjValue2"]=AddjValue2;
+						root["result"][ii]["AddjMulti2"]=AddjMulti2;
 						root["result"][ii]["Temp"]=atof(strarray[4].c_str());
 						root["result"][ii]["Chill"]=atof(strarray[5].c_str());
 					}
@@ -1003,6 +1026,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 					{
 						root["result"][ii]["AddjValue"]=AddjValue;
 						root["result"][ii]["AddjMulti"]=AddjMulti;
+						root["result"][ii]["AddjValue2"]=AddjValue2;
+						root["result"][ii]["AddjMulti2"]=AddjMulti2;
 						std::vector<std::string> sd2=result2[0];
 						float total_min=(float)atof(sd2[0].c_str());
 						float total_max=(float)atof(sd2[1].c_str());
@@ -5287,6 +5312,8 @@ char * CWebServer::GetJSonPage()
 		std::string maindeviceidx=m_pWebEm->FindValue("maindeviceidx");
 		std::string addjvalue=m_pWebEm->FindValue("addjvalue");
 		std::string addjmulti=m_pWebEm->FindValue("addjmulti");
+		std::string addjvalue2=m_pWebEm->FindValue("addjvalue2");
+		std::string addjmulti2=m_pWebEm->FindValue("addjmulti2");
 		
 		int switchtype=-1;
 		if (sswitchtype!="")
@@ -5328,6 +5355,24 @@ char * CWebServer::GetJSonPage()
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "UPDATE DeviceStatus SET AddjMulti=" << faddjmulti << " WHERE (ID == " << idx << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+		}
+		if (addjvalue2!="")
+		{
+			double faddjvalue2=atof(addjvalue2.c_str());
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE DeviceStatus SET AddjValue2=" << faddjvalue2 << " WHERE (ID == " << idx << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+		}
+		if (addjmulti2!="")
+		{
+			double faddjmulti2=atof(addjmulti2.c_str());
+			if (faddjmulti2==0)
+				faddjmulti2=1;
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE DeviceStatus SET AddjMulti2=" << faddjmulti2 << " WHERE (ID == " << idx << ")";
 			result=m_pMain->m_sql.query(szQuery.str());
 		}
 
