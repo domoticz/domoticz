@@ -573,6 +573,10 @@ function RefreshHardwareTable()
 					{
 						SerialName=item.Port;
 					}
+					else if (item.Type == 7)
+					{
+						SerialName="USB";
+					}
 					else
 					{
 						var serpos=jQuery.inArray(item.Port, $.myglobals.SerialPortVal);
