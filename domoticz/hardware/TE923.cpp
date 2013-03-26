@@ -116,7 +116,7 @@ void CTE923::GetSensorDetails()
 				tsen.TEMP_HUM_BARO.battery_level=9;
 				tsen.TEMP_HUM_BARO.rssi=6;
 				tsen.TEMP_HUM_BARO.id1=0;
-				tsen.TEMP_HUM_BARO.id2=(ii+1);
+				tsen.TEMP_HUM_BARO.id2=ii;
 
 				tsen.TEMP_HUM_BARO.tempsign=(data.t[ii]>=0)?0:1;
 				int at10=round(abs(data.t[ii]*10.0f));
@@ -143,7 +143,7 @@ void CTE923::GetSensorDetails()
 				tsen.TEMP_HUM.battery_level=9;
 				tsen.TEMP_HUM.rssi=6;
 				tsen.TEMP_HUM.id1=0;
-				tsen.TEMP_HUM.id2=(ii+1);
+				tsen.TEMP_HUM.id2=ii;
 
 				tsen.TEMP_HUM.tempsign=(data.t[ii]>=0)?0:1;
 				int at10=round(abs(data.t[ii]*10.0f));
@@ -168,7 +168,7 @@ void CTE923::GetSensorDetails()
 			tsen.TEMP.battery_level=9;
 			tsen.TEMP.rssi=6;
 			tsen.TEMP.id1=0;
-			tsen.TEMP.id2=(ii+1);
+			tsen.TEMP.id2=ii;
 
 			tsen.TEMP.tempsign=(data.t[ii]>=0)?0:1;
 			int at10=round(abs(data.t[ii]*10.0f));
@@ -190,7 +190,7 @@ void CTE923::GetSensorDetails()
 			tsen.HUM.battery_level=9;
 			tsen.HUM.rssi=6;
 			tsen.HUM.id1=0;
-			tsen.HUM.id2=(ii+1);
+			tsen.HUM.id2=ii;
 
 			tsen.HUM.humidity=(BYTE)data.h[ii];
 			tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
