@@ -1333,6 +1333,12 @@ void MainWorker::decode_Wind(const int HwdID, const tRBUF *pResponse)
 		{
 			temp=-(float(((pResponse->WIND.temperatureh & 0x7F) * 256) + pResponse->WIND.temperaturel) / 10.0f);
 		}
+		if ((temp<-60)||(temp>60))
+		{
+			WriteMessage(" Invalid Temperature");
+			return;
+		}
+
 		float AddjValue=0.0f;
 		float AddjMulti=1.0f;
 		m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
@@ -1365,6 +1371,12 @@ void MainWorker::decode_Wind(const int HwdID, const tRBUF *pResponse)
 		{
 			temp=-(float(((pResponse->WIND.temperatureh & 0x7F) * 256) + pResponse->WIND.temperaturel) / 10.0f);
 		}
+		if ((temp<-60)||(temp>60))
+		{
+			WriteMessage(" Invalid Temperature");
+			return;
+		}
+
 		float AddjValue=0.0f;
 		float AddjMulti=1.0f;
 		m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
@@ -1381,6 +1393,7 @@ void MainWorker::decode_Wind(const int HwdID, const tRBUF *pResponse)
 		chill+=AddjValue;
 		float wspeedms=float(intSpeed)/10.0f;
 	}
+
 	sprintf(szTmp,"%.2f;%s;%d;%d;%.1f;%.1f",dDirection,strDirection.c_str(),intSpeed,intGust,temp,chill);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
 	PrintDeviceName(devname);
