@@ -1489,6 +1489,11 @@ void MainWorker::decode_Temp(const int HwdID, const tRBUF *pResponse)
 	{
 		temp=-(float(((pResponse->TEMP.temperatureh & 0x7F) * 256) + pResponse->TEMP.temperaturel) / 10.0f);
 	}
+	if ((temp<-60)||(temp>60))
+	{
+		WriteMessage(" Invalid Temperature");
+		return;
+	}
 
 	float AddjValue=0.0f;
 	float AddjMulti=1.0f;
@@ -1606,6 +1611,11 @@ void MainWorker::decode_Hum(const int HwdID, const tRBUF *pResponse)
 		BatteryLevel=100;
 
 	unsigned char humidity=pResponse->HUM.humidity;
+	if (humidity>100)
+	{
+		WriteMessage(" Invalid Humidity");
+		return;
+	}
 
 	sprintf(szTmp,"%d",pResponse->HUM.humidity_status);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,humidity,szTmp,devname);
@@ -1740,6 +1750,11 @@ void MainWorker::decode_TempHum(const int HwdID, const tRBUF *pResponse)
 	{
 		temp=-(float(((pResponse->TEMP_HUM.temperatureh & 0x7F) * 256) + pResponse->TEMP_HUM.temperaturel) / 10.0f);
 	}
+	if ((temp<-60)||(temp>60))
+	{
+		WriteMessage(" Invalid Temperature");
+		return;
+	}
 
 	float AddjValue=0.0f;
 	float AddjMulti=1.0f;
@@ -1748,6 +1763,12 @@ void MainWorker::decode_TempHum(const int HwdID, const tRBUF *pResponse)
 
 	unsigned char Humidity = pResponse->TEMP_HUM.humidity;
 	unsigned char HumidityStatus = pResponse->TEMP_HUM.humidity_status;
+
+	if (Humidity>100)
+	{
+		WriteMessage(" Invalid Humidity");
+		return;
+	}
 
 	sprintf(szTmp,"%.1f;%d;%d",temp,Humidity,HumidityStatus);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
@@ -1880,6 +1901,11 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const tRBUF *pResponse)
 	{
 		temp=-(float(((pResponse->TEMP_HUM_BARO.temperatureh & 0x7F) * 256) + pResponse->TEMP_HUM_BARO.temperaturel) / 10.0f);
 	}
+	if ((temp<-60)||(temp>60))
+	{
+		WriteMessage(" Invalid Temperature");
+		return;
+	}
 
 	float AddjValue=0.0f;
 	float AddjMulti=1.0f;
@@ -1888,7 +1914,21 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const tRBUF *pResponse)
 
 	unsigned char Humidity = pResponse->TEMP_HUM_BARO.humidity;
 	unsigned char HumidityStatus = pResponse->TEMP_HUM_BARO.humidity_status;
+
+	if (Humidity>100)
+	{
+		WriteMessage(" Invalid Humidity");
+		return;
+	}
+
 	int barometer = (pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol;
+
+	if ((barometer<800)||(barometer>1200))
+	{
+		WriteMessage(" Invalid Barometer");
+		return;
+	}
+
 	int forcast = pResponse->TEMP_HUM_BARO.forecast;
 	float fbarometer=(float)barometer;
 
@@ -2016,6 +2056,11 @@ void MainWorker::decode_UV(const int HwdID, const tRBUF *pResponse)
 	else
 		BatteryLevel=100;
 	float Level=float(pResponse->UV.uv) / 10.0f;
+	if (Level>30)
+	{
+		WriteMessage(" Invalid UV");
+		return;
+	}
 	float temp=0;
 	if (pResponse->UV.subtype == sTypeUV3)
 	{
@@ -2027,6 +2072,12 @@ void MainWorker::decode_UV(const int HwdID, const tRBUF *pResponse)
 		{
 			temp = -(float(((pResponse->UV.temperatureh & 0x7F) * 256) + pResponse->UV.temperaturel) / 10.0f);
 		}
+		if ((temp<-60)||(temp>60))
+		{
+			WriteMessage(" Invalid Temperature");
+			return;
+		}
+
 		float AddjValue=0.0f;
 		float AddjMulti=1.0f;
 		m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
