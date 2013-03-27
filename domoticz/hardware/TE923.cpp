@@ -101,7 +101,11 @@ void CTE923::GetSensorDetails()
 			_log.Log(LOG_ERROR, "Could not read weather data!");
 			return;
 		}
+		else
+			_te923tool2.CloseDevice();
 	}
+	else
+		_te923tool.CloseDevice();
 #else
 	FILE *fIn=fopen("weatherdata.bin","rb+");
 	fread(&data,1,sizeof(Te923DataSet_t),fIn);
@@ -137,6 +141,12 @@ void CTE923::GetSensorDetails()
 				tsen.TEMP_HUM_BARO.temperaturel=(BYTE)(at10);
 				tsen.TEMP_HUM_BARO.humidity=(BYTE)data.h[ii];
 				tsen.TEMP_HUM_BARO.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
+
+				if ((data.press<800)||(data.press>1200))
+				{
+					_log.Log(LOG_ERROR, "Invalid weather station data received!");
+					return;
+				}
 
 				int ab10=round(data.press*10.0f);
 				tsen.TEMP_HUM_BARO.baroh=(BYTE)(ab10/256);
