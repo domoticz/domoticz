@@ -356,6 +356,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeWIND, sTypeWIND4, "TFA" },
 		{ pTypeWIND, sTypeWIND5, "UPM WDS500" },
 		{ pTypeWIND, sTypeWIND6, "LaCrosse WS2300" },
+		{ pTypeWIND, sTypeWINDNoTemp, "Weather Station" },
 
 		{ pTypeUV, sTypeUV1, "UVN128,UV138" },
 		{ pTypeUV, sTypeUV2, "UVN800" },

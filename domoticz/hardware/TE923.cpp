@@ -219,7 +219,7 @@ void CTE923::GetSensorDetails()
 		memset(&tsen,0,sizeof(RBUF));
 		tsen.WIND.packetlength=sizeof(tsen);
 		tsen.WIND.packettype=pTypeWIND;
-		tsen.WIND.subtype=sTypeWIND4;
+		tsen.WIND.subtype=sTypeWINDNoTemp;
 		tsen.WIND.battery_level=9;
 		tsen.WIND.rssi=6;
 		tsen.WIND.id1=0;

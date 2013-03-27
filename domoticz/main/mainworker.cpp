@@ -1355,6 +1355,32 @@ void MainWorker::decode_Wind(const int HwdID, const tRBUF *pResponse)
 			chill=chillJatTI;
 		}
 	}
+	else if (pResponse->WIND.subtype==sTypeWINDNoTemp)
+	{
+		if (!pResponse->WIND.tempsign)
+		{
+			temp=float((pResponse->WIND.temperatureh * 256) + pResponse->WIND.temperaturel) / 10.0f;
+		}
+		else
+		{
+			temp=-(float(((pResponse->WIND.temperatureh & 0x7F) * 256) + pResponse->WIND.temperaturel) / 10.0f);
+		}
+		float AddjValue=0.0f;
+		float AddjMulti=1.0f;
+		m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
+		temp+=AddjValue;
+
+		if (!pResponse->WIND.chillsign)
+		{
+			chill=float((pResponse->WIND.chillh * 256) + pResponse->WIND.chilll) / 10.0f;
+		}
+		else
+		{
+			chill = -(float(((pResponse->WIND.chillh) & 0x7F) * 256 + pResponse->WIND.chilll) / 10.0f);
+		}
+		chill+=AddjValue;
+		float wspeedms=float(intSpeed)/10.0f;
+	}
 	sprintf(szTmp,"%.2f;%s;%d;%d;%.1f;%.1f",dDirection,strDirection.c_str(),intSpeed,intGust,temp,chill);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
 	PrintDeviceName(devname);
@@ -1387,6 +1413,9 @@ void MainWorker::decode_Wind(const int HwdID, const tRBUF *pResponse)
 		case sTypeWIND6:
 			WriteMessage("subtype       = WIND6 - LaCrosse WS2300");
 			break;
+		case sTypeWINDNoTemp:
+			WriteMessage("subtype       = Weather Station");
+			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->WIND.packettype, pResponse->WIND.subtype);
 			WriteMessage(szTmp);
@@ -1411,6 +1440,13 @@ void MainWorker::decode_Wind(const int HwdID, const tRBUF *pResponse)
 		WriteMessage(szTmp);
 
 		if (pResponse->WIND.subtype == sTypeWIND4)
+		{
+			sprintf(szTmp,"Temperature   = %.1f C", temp);
+			WriteMessage(szTmp);
+
+			sprintf(szTmp,"Chill         = %.1f C", chill);
+		}
+		if (pResponse->WIND.subtype == sTypeWINDNoTemp)
 		{
 			sprintf(szTmp,"Temperature   = %.1f C", temp);
 			WriteMessage(szTmp);
