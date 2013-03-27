@@ -117,6 +117,11 @@ void CTE923::GetSensorDetails()
 		_log.Log(LOG_ERROR, "No Barometric pressure in weather station, reading skipped!");
 		return;
 	}
+	if ((data.press<800)||(data.press>1200))
+	{
+		_log.Log(LOG_ERROR, "Invalid weather station data received!");
+		return;
+	}
 
 	int ii;
 
@@ -147,12 +152,6 @@ void CTE923::GetSensorDetails()
 				tsen.TEMP_HUM_BARO.temperaturel=(BYTE)(at10);
 				tsen.TEMP_HUM_BARO.humidity=(BYTE)data.h[ii];
 				tsen.TEMP_HUM_BARO.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-
-				if ((data.press<800)||(data.press>1200))
-				{
-					_log.Log(LOG_ERROR, "Invalid weather station data received!");
-					return;
-				}
 
 				int ab10=round(data.press*10.0f);
 				tsen.TEMP_HUM_BARO.baroh=(BYTE)(ab10/256);
