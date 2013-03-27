@@ -2,6 +2,7 @@
 #include "Logger.h"
 #include <iostream>     /* standard I/O functions                         */
 #include <stdarg.h>
+#include <time.h>
 
 #define MAX_LOG_LINE_BUFFER 100
 
@@ -55,9 +56,15 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	}
 	else
 	{
-		std::cerr << cbuffer << std::endl;
+		//Error log, add date
+		// convert now to string form
+		time_t now = time(0);
+		char *szDate = asctime(localtime(&now));
+		szDate[strlen(szDate)-1]=0;
+
+		std::cerr << szDate << " " << cbuffer << std::endl;
 		if (m_outputfile.is_open())
-			m_outputfile << "Error: " << cbuffer << std::endl;
+			m_outputfile << "Error: " << szDate << " " << cbuffer << std::endl;
 	}
 	if (m_outputfile.is_open())
 		m_outputfile.flush();
