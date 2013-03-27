@@ -783,3 +783,29 @@ function GenerateCamImageURL(address,port,username,password,imageurl)
 	feedsrc+="/" + imageurl;
 	return feedsrc;
 }
+
+function GetTemp48Item(temp)
+{
+	if (temp<=0) {
+		return "ice.png";
+	}
+	if (temp<5) {
+		return "temp-0-5.png";
+	}
+	if (temp<10) {
+		return "temp-5-10.png";
+	}
+	if (temp<15) {
+		return "temp-10-15.png";
+	}
+	if (temp<20) {
+		return "temp-15-20.png";
+	}
+	if (temp<25) {
+		return "temp-20-25.png";
+	}
+	if (temp<30) {
+		return "temp-25-30.png";
+	}
+	return "temp-gt-30.png";
+}

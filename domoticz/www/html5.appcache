@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 116
+# ref 118
 
 CACHE:
 favicon.ico
@@ -166,6 +166,13 @@ images/sort_desc.png
 images/sort_desc_disabled.png
 images/spacer.gif
 images/switch.png
+images/temp-0-5.png
+images/temp-10-15.png
+images/temp-15-20.png
+images/temp-20-25.png
+images/temp-25-30.png
+images/temp-5-10.png
+images/temp-gt-30.png
 images/temp48.png
 images/temperature.png
 images/unknown.png

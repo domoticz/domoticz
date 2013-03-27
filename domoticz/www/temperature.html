@@ -804,12 +804,7 @@ function RefreshTemps()
 							$(id + " #name").html(item.Name);
 						}
 						var img='<img src="images/';
-            if ((typeof item.Temp == 'undefined') || (item.Temp>0)) {
-              img+='temp48.png';
-            }
-            else {
-              img+='ice.png';
-            }
+						img+=GetTemp48Item(item.Temp);
             img+='" height="48">';
             
             if ($(id + " #img").html()!=img) {
@@ -937,12 +932,7 @@ function ShowTemps()
 					}
           xhtm+=bigtext+'</td>\n';
           xhtm+='\t      <td id="img"><img src="images/';
-					if ((typeof item.Temp == 'undefined') || (item.Temp>0)) {
-						xhtm+='temp48.png';
-					}
-					else {
-						xhtm+='ice.png';
-					}
+					xhtm+=GetTemp48Item(item.Temp);
 					xhtm+='" height="48"></td>\n' +
 							'\t      <td id="status">';
 					var bHaveTemperature=false;
