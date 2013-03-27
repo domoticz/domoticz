@@ -119,11 +119,22 @@ void CTE923::GetSensorDetails()
 	}
 	if ((data.press<800)||(data.press>1200))
 	{
-		_log.Log(LOG_ERROR, "Invalid weather station data received!");
+		_log.Log(LOG_ERROR, "Invalid weather station data received (baro)!");
 		return;
 	}
 
 	int ii;
+	for (ii=0; ii<6; ii++)
+	{
+		if (data._t[ii]==0)
+		{
+			if ((data.t[ii]<-60)||(data.t[ii]>60))
+			{
+				_log.Log(LOG_ERROR, "Invalid weather station data received (temp)!");
+				return;
+			}
+		}
+	}
 
 	//Add temp sensors
 	for (ii=0; ii<6; ii++)
