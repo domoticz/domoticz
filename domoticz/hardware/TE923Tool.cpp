@@ -23,6 +23,8 @@
 #define TE923_PRODUCT   0x6801
 #define BUFLEN          35
 
+#define MAX_LOOP_RETRY 20
+
 struct usb_device *CTE923Tool::find_te923() 
 {
 	usb_find_busses();
@@ -321,7 +323,7 @@ int CTE923Tool::get_te923_lifedata( Te923DataSet_t *data )
 		ret = read_from_te923( adr, (unsigned char*)&buf );
 		readretries++;
 	}
-	while (( ret <= 0 )&&(readretries<10));
+	while (( ret <= 0 )&&(readretries<MAX_LOOP_RETRY));
 	if ( buf[0] != 0x5A )
 		return -1;
 	memmove( buf, buf + 1, BUFLEN - 1 );
@@ -344,8 +346,8 @@ int CTE923Tool::get_te923_memdata( Te923DataSet_t *data )
 			ret = read_from_te923( last_adr, buf );
 			readretries++;
 		}
-		while (( ret <= 0 )&&(readretries<10));
-		if (readretries>=10)
+		while (( ret <= 0 )&&(readretries<MAX_LOOP_RETRY));
+		if (readretries>=MAX_LOOP_RETRY)
 			return -1;
 
 		adr = (((( int )buf[3] ) * 0x100 + ( int )buf[5] ) * 0x26 ) + 0x101;
@@ -362,8 +364,8 @@ int CTE923Tool::get_te923_memdata( Te923DataSet_t *data )
 		ret = read_from_te923( adr, buf );
 		readretries++;
 	}
-	while (( ret <= 0 )&&(readretries<10));
-	if (readretries>=10)
+	while (( ret <= 0 )&&(readretries<MAX_LOOP_RETRY));
+	if (readretries>=MAX_LOOP_RETRY)
 		return -1;
 
 	int day = bcd2int( buf[2] );
@@ -392,8 +394,8 @@ int CTE923Tool::get_te923_memdata( Te923DataSet_t *data )
 		ret = read_from_te923( adr, buf );
 		readretries++;
 	}
-	while (( ret <= 0 )&&(readretries<10));
-	if (readretries>=10)
+	while (( ret <= 0 )&&(readretries<MAX_LOOP_RETRY));
+	if (readretries>=MAX_LOOP_RETRY)
 		return -1;
 
 	memcpy( databuf + 11, buf + 1, 21 );

@@ -87,8 +87,20 @@ void CTE923::GetSensorDetails()
 	}
 	if (!_te923tool.GetData(&data))
 	{
-		_log.Log(LOG_ERROR, "Could not read weather data!");
-		return;
+		//give it one more change!
+		_te923tool.CloseDevice();
+		boost::this_thread::sleep( boost::posix_time::milliseconds(500) );
+
+		CTE923Tool _te923tool2;
+		if (!_te923tool2.OpenDevice())
+		{
+			return;
+		}
+		if (!_te923tool2.GetData(&data))
+		{
+			_log.Log(LOG_ERROR, "Could not read weather data!");
+			return;
+		}
 	}
 #else
 	FILE *fIn=fopen("weatherdata.bin","rb+");
