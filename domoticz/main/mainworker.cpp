@@ -1936,12 +1936,6 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const tRBUF *pResponse)
 
 	int barometer = (pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol;
 
-	if ((barometer<8000)||(barometer>12000))
-	{
-		WriteMessage(" Invalid Barometer");
-		return;
-	}
-
 	int forcast = pResponse->TEMP_HUM_BARO.forecast;
 	float fbarometer=(float)barometer;
 
@@ -1950,12 +1944,22 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const tRBUF *pResponse)
 
 	if (pResponse->TEMP_HUM_BARO.subtype==sTypeTHBFloat)
 	{
+		if ((barometer<8000)||(barometer>12000))
+		{
+			WriteMessage(" Invalid Barometer");
+			return;
+		}
 		fbarometer=float((pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol)/10.0f;
 		fbarometer+=AddjValue;
 		sprintf(szTmp,"%.1f;%d;%d;%.1f;%d",temp,Humidity,HumidityStatus, fbarometer,forcast);
 	}
 	else
 	{
+		if ((barometer<800)||(barometer>1200))
+		{
+			WriteMessage(" Invalid Barometer");
+			return;
+		}
 		sprintf(szTmp,"%.1f;%d;%d;%d;%d",temp,Humidity,HumidityStatus, barometer,forcast);
 	}
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
