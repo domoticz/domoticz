@@ -1923,7 +1923,7 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const tRBUF *pResponse)
 
 	int barometer = (pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol;
 
-	if ((barometer<800)||(barometer>1200))
+	if ((barometer<8000)||(barometer>12000))
 	{
 		WriteMessage(" Invalid Barometer");
 		return;
