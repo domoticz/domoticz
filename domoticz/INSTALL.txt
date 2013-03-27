@@ -53,6 +53,8 @@ sudo port install cmake
 sudo port install boost
 sudo port install libusb
 
+(If above libusb does not work, use 'sudo port install libusb-compat')
+
 ------------------------------------------------------------------------------------------------
 Synology: (Initial setup time is 30 minutes)
 - Make sure the device is bootstrapped, then:
