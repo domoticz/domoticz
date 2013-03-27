@@ -66,6 +66,7 @@ public:
     CCamScheduler m_camscheduler;
 	bool m_bIgnoreUsernamePassword;
 private:
+	void PrintDeviceName(const std::string devname);
 	struct _tStartScene
 	{
 		unsigned long long SceneRowID;

@@ -4172,8 +4172,8 @@ char * CWebServer::GetJSonPage()
 				root["message"]="Switch already exists!";
 				goto exitjson;
 			}
-
-			m_pMain->m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(),atoi(sunitcode.c_str()),dtype,subtype,0,-1,0);
+			std::string devname;
+			m_pMain->m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(),atoi(sunitcode.c_str()),dtype,subtype,0,-1,0,devname);
 			//set name and switchtype
 			szQuery.clear();
 			szQuery.str("");

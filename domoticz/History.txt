@@ -44,6 +44,7 @@ Version 1.0.10 (March xxth 2013)
 - Fixed: Weather Station can now handle 6 temperature channels
 - Implemented: Adjustment value for barometer sensors
 - Changed: Error log now contains date/time
+- Implemented: Log now includes sensor name (if known)
 
 Version 1.0.9 (February 17th 2013)
 - Implemented: OWL113 option to display in Ampere/Usage

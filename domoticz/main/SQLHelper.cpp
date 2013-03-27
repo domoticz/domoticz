@@ -482,7 +482,8 @@ void CSQLHelper::Do_Work()
 			itt->_DelayTime--;
 			if (itt->_DelayTime<=0)
 			{
-				UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str());
+				std::string devname="";
+				UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname);
 				itt=m_device_status_queue.erase(itt);
 			}
 			else
@@ -544,19 +545,19 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string szQue
 	return results; 
 }
 
-void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue)
+void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, std::string &devname)
 {
-	UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, "");
+	UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, "", devname);
 }
 
-void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const char* sValue)
+void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const char* sValue, std::string &devname)
 {
-	UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, 0, sValue);
+	UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, 0, sValue,devname);
 }
 
-void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue)
+void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname)
 {
-	UpdateValueInt(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue);
+	UpdateValueInt(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue,devname);
 
 	bool bIsLightSwitch=false;
 	switch (devType)
@@ -715,7 +716,7 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigne
 	}
 }
 
-void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue)
+void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname)
 {
 	if (!m_dbase)
 		return;
@@ -725,11 +726,12 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 	unsigned long long ulID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
+	sprintf(szTmp,"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
 	result=query(szTmp);
 	if (result.size()==0)
 	{
 		//Insert
+		devname="Unknown";
 		sprintf(szTmp,
 			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue) "
 			"VALUES (%d,'%s',%d,%d,%d,%d,%d,%d,'%s')",
@@ -755,6 +757,8 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 		//Update
 		std::stringstream s_str( result[0][0] );
 		s_str >> ulID;
+
+		devname=result[0][1];
 
 		time_t now = time(0);
 		struct tm ltime;
@@ -3268,4 +3272,3 @@ bool CSQLHelper::DoesSceneByNameExits(const std::string SceneName)
 	result=query(szQuery.str());
 	return (result.size()>0);
 }
-
