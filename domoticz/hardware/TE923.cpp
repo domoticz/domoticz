@@ -112,6 +112,12 @@ void CTE923::GetSensorDetails()
 	fclose(fIn);
 #endif
 
+	if (data._press != 0 )
+	{
+		_log.Log(LOG_ERROR, "No Barometric pressure in weather station, reading skipped!");
+		return;
+	}
+
 	int ii;
 
 	//Add temp sensors
