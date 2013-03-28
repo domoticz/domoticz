@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef WIN32
+
 #include "DomoticzHardware.h"
 #include <iostream>
 
@@ -22,3 +24,4 @@ private:
 	void GetSensorDetails();
 };
 
+#endif

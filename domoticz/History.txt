@@ -48,6 +48,7 @@ Version 1.0.10 (March xxth 2013)
 - Implemented: Checking for invalid sensor values
 - Implemented: Temperature (large) icons now represents global temperature index
 - Fixed: Temperature month/year graph
+- Changed: Excluded TE293 for windows systems
 
 Version 1.0.9 (February 17th 2013)
 - Implemented: OWL113 option to display in Ampere/Usage

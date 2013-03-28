@@ -1,4 +1,4 @@
-
+#ifndef WIN32
 
 /*
  * libusb-winusb-bridge.h
@@ -102,3 +102,5 @@ int usb_find_devices(void);
 struct usb_bus *usb_get_busses(void);
 
 #endif  // __LIBUSB_WINUSB_BRIDGE_H
+
+#endif

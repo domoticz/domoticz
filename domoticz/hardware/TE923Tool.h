@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef WIN32
+
 typedef struct {
 	// this are the values from station
 	unsigned long timestamp;                 // timestamp for this dataset
@@ -56,3 +58,4 @@ private:
 	int decode_te923_data( unsigned char buf[], Te923DataSet_t *data );
 };
 
+#endif

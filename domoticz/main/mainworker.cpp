@@ -318,10 +318,12 @@ bool MainWorker::AddHardwareFromParams(
 		//LAN
 		pHardware = new CYouLess(ID, Address, Port);
 		break;
+#ifndef WIN32
 	case HTYPE_TE923:
 		//TE923 compatible weather station
 		pHardware = new CTE923(ID);
 		break;
+#endif
 	}
 	if (pHardware)
 	{

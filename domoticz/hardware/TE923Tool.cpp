@@ -1,4 +1,7 @@
 #include "stdafx.h"
+
+#ifndef WIN32
+
 #include "TE923Tool.h"
 #include <iostream>     /* standard I/O functions                         */
 #include <time.h>
@@ -495,3 +498,5 @@ bool CTE923Tool::GetData(Te923DataSet_t *data)
 	return (ret!=-1);
 	//printData( data, iText);
 }
+
+#endif

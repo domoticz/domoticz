@@ -24,6 +24,9 @@
  * MA 02111-1307, USA.
  */
 #include "stdafx.h"
+
+#ifndef WIN32
+
 #include "libusbwinusbbridge.h"
 //#include <rpc.h>
 
@@ -409,3 +412,5 @@ int usb_reset(usb_dev_handle *dev)
 void usb_set_debug(int level)
 {
 }
+
+#endif

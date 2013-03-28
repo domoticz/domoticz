@@ -1,4 +1,6 @@
+
 #include "stdafx.h"
+#ifndef WIN32
 #include "TE923.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
@@ -341,3 +343,5 @@ void CTE923::GetSensorDetails()
 		m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.UV));
 	}
 }
+
+#endif
