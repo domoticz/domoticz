@@ -3793,6 +3793,43 @@ char * CWebServer::GetJSonPage()
 				}
 			}
 		}
+		else if (cparam=="udevice")
+		{
+			std::string hid=m_pWebEm->FindValue("hid");
+			std::string did=m_pWebEm->FindValue("did");
+			std::string dunit=m_pWebEm->FindValue("dunit");
+			std::string dtype=m_pWebEm->FindValue("dtype");
+			std::string dsubtype=m_pWebEm->FindValue("dsubtype");
+			std::string nvalue=m_pWebEm->FindValue("nvalue");
+			std::string svalue=m_pWebEm->FindValue("svalue");
+			if (
+				(hid=="")||
+				(did=="")||
+				(dunit=="")||
+				(dtype=="")||
+				(dsubtype=="")
+				)
+				goto exitjson;
+			if ((nvalue=="")&&(svalue==""))
+				goto exitjson;
+
+			root["status"]="OK";
+			root["title"]="Update Device";
+
+			std::string devname="Unknown";
+			m_pMain->m_sql.UpdateValue(
+				atoi(hid.c_str()),
+				did.c_str(),
+				(const unsigned char)atoi(dunit.c_str()),
+				(const unsigned char)atoi(dtype.c_str()),
+				(const unsigned char)atoi(dsubtype.c_str()),
+				12,//signal level,
+				255,//battery level
+				(const int)atoi(nvalue.c_str()),
+				svalue.c_str(),
+				devname
+				);
+		}
 		else if (cparam=="system_shutdown")
 		{
 #ifdef WIN32
