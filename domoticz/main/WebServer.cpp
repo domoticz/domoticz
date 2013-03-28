@@ -2888,6 +2888,11 @@ char * CWebServer::GetJSonPage()
 							{
 								bOK=((dSubType==sTypeWIND4)||(dSubType==sTypeWINDNoTemp));
 							}
+							if (bOK)
+							{
+								root["result"][ii]["te"]=sd[1];
+								root["result"][ii]["tm"]=sd[0];
+							}
 						}
 						if (
 							((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
