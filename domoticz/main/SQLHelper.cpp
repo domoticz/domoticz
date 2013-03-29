@@ -2276,9 +2276,10 @@ void CSQLHelper::UpdateMultiMeter()
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d)",
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d)",
 		pTypeP1Power,
-		pTypeCURRENT
+		pTypeCURRENT,
+		pTypeCURRENTENERGY
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -2356,6 +2357,16 @@ void CSQLHelper::UpdateMultiMeter()
 				value1=(unsigned long)(atof(splitresults[0].c_str())*10.0f);
 				value2=(unsigned long)(atof(splitresults[1].c_str())*10.0f);
 				value3=(unsigned long)(atof(splitresults[2].c_str())*10.0f);
+			}
+			else if ((dType==pTypeCURRENTENERGY)&&(dSubType==sTypeELEC4))
+			{
+				if (splitresults.size()!=3)
+					continue; //impossible
+
+				value1=(unsigned long)(atof(splitresults[0].c_str())*10.0f);
+				value2=(unsigned long)(atof(splitresults[1].c_str())*10.0f);
+				value3=(unsigned long)(atof(splitresults[2].c_str())*10.0f);
+				value4=(unsigned long)(atof(splitresults[3].c_str())*1000.0f);
 			}
 			else
 				continue;//don't know you (yet)

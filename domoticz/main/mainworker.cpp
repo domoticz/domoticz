@@ -4650,65 +4650,84 @@ void MainWorker::decode_Energy(const int HwdID, const tRBUF *pResponse)
 	}
 }
 
-//not in dbase yet
 void MainWorker::decode_Current_Energy(const int HwdID, const tRBUF *pResponse)
 {
-	WriteMessage("");
+	char szTmp[100];
+	std::string devname;
 
 	unsigned char devType=pTypeCURRENTENERGY;
+	unsigned char subType=pResponse->CURRENT_ENERGY.subtype;
+	std::string ID;
+	sprintf(szTmp,"%d",(pResponse->CURRENT_ENERGY.id1 * 256) + pResponse->CURRENT_ENERGY.id2);
+	ID=szTmp;
+	unsigned char Unit=0;
+	unsigned char cmnd=0;
+	unsigned char SignalLevel=pResponse->CURRENT_ENERGY.rssi;
+	unsigned char BatteryLevel = get_BateryLevel(false, pResponse->CURRENT_ENERGY.battery_level & 0x0F);
 
-	char szTmp[100];
+	float CurrentChannel1= float((pResponse->CURRENT_ENERGY.ch1h * 256) + pResponse->CURRENT_ENERGY.ch1l) / 10.0f;
+	float CurrentChannel2= float((pResponse->CURRENT_ENERGY.ch2h * 256) + pResponse->CURRENT_ENERGY.ch2l) / 10.0f;
+	float CurrentChannel3= float((pResponse->CURRENT_ENERGY.ch3h * 256) + pResponse->CURRENT_ENERGY.ch3l) / 10.0f;
 
-	double usage;
+	double usage= double( (pResponse->CURRENT_ENERGY.total3 * 0x1000000)
+		+ (pResponse->CURRENT_ENERGY.total4 * 0x10000) + (pResponse->CURRENT_ENERGY.total5 * 0x100) + pResponse->CURRENT_ENERGY.total6) / 223.666;
 
-	switch (pResponse->CURRENT_ENERGY.subtype)
+	sprintf(szTmp,"%.1f;%.1f;%.1f;%.3f",CurrentChannel1,CurrentChannel2,CurrentChannel3,usage);
+	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
+	PrintDeviceName(devname);
+
+	m_sql.CheckAndHandleAmpere123Notification(HwdID, ID, Unit, devType, subType, CurrentChannel1, CurrentChannel2, CurrentChannel3);
+
+	if (m_verboselevel == EVBL_ALL)
 	{
-	case sTypeELEC4:
-		WriteMessage("subtype       = ELEC4 - OWL CM180i");
-		break;
-	default:
-		sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->CURRENT_ENERGY.packettype, pResponse->CURRENT_ENERGY.subtype);
+		switch (pResponse->CURRENT_ENERGY.subtype)
+		{
+		case sTypeELEC4:
+			WriteMessage("subtype       = ELEC4 - OWL CM180i");
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->CURRENT_ENERGY.packettype, pResponse->CURRENT_ENERGY.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+
+		sprintf(szTmp,"Sequence nbr  = %d", pResponse->CURRENT_ENERGY.seqnbr);
 		WriteMessage(szTmp);
-		break;
-	}
-
-	sprintf(szTmp,"Sequence nbr  = %d", pResponse->CURRENT_ENERGY.seqnbr);
-	WriteMessage(szTmp);
-	sprintf(szTmp,"ID            = %d", (pResponse->CURRENT_ENERGY.id1 * 256) + pResponse->CURRENT_ENERGY.id2);
-	WriteMessage(szTmp);
-	sprintf(szTmp,"Count         = %d", pResponse->CURRENT_ENERGY.count);
-	WriteMessage(szTmp);
-	float ampereChannel1,ampereChannel2,ampereChannel3;
-	ampereChannel1=float((pResponse->CURRENT_ENERGY.ch1h * 256) + pResponse->CURRENT_ENERGY.ch1l) / 10.0f;
-	ampereChannel2=float((pResponse->CURRENT_ENERGY.ch2h * 256) + pResponse->CURRENT_ENERGY.ch2l) / 10.0f;
-	ampereChannel3=float((pResponse->CURRENT_ENERGY.ch3h * 256) + pResponse->CURRENT_ENERGY.ch3l) / 10.0f;
-	sprintf(szTmp,"Channel 1     = %.1f ampere", ampereChannel1);
-	WriteMessage(szTmp);
-	sprintf(szTmp,"Channel 2     = %.1f ampere", ampereChannel2);
-	WriteMessage(szTmp);
-	sprintf(szTmp,"Channel 3     = %.1f ampere", ampereChannel3);
-	WriteMessage(szTmp);
-
-	if (pResponse->CURRENT_ENERGY.count == 0)
-	{
-		//usage = (CDbl(pResponse->CURRENT_ENERGY.total1)) * &H10000000000 + CDbl(pResponse->CURRENT_ENERGY.total2)) * &H100000000 + CDbl(pResponse->CURRENT_ENERGY.total3)) * &H1000000 _
-			//+ pResponse->CURRENT_ENERGY.total4) * &H10000 + pResponse->CURRENT_ENERGY.total5) * &H100 + pResponse->CURRENT_ENERGY.total6)) / 223.666
-		//usage = double( (pResponse->CURRENT_ENERGY.total1 * 0x10000000000) + (pResponse->CURRENT_ENERGY.total2 * 0x100000000) + (pResponse->CURRENT_ENERGY.total3 * 0x1000000)
-		//+ (pResponse->CURRENT_ENERGY.total4 * 0x10000) + (pResponse->CURRENT_ENERGY.total5 * 0x100) + pResponse->CURRENT_ENERGY.total6) / 223.666;
-		usage = double( (pResponse->CURRENT_ENERGY.total3 * 0x1000000)
-			+ (pResponse->CURRENT_ENERGY.total4 * 0x10000) + (pResponse->CURRENT_ENERGY.total5 * 0x100) + pResponse->CURRENT_ENERGY.total6) / 223.666;
-
-		sprintf(szTmp,"total usage   = %.3f Wh", usage);
+		sprintf(szTmp,"ID            = %d", (pResponse->CURRENT_ENERGY.id1 * 256) + pResponse->CURRENT_ENERGY.id2);
 		WriteMessage(szTmp);
+		sprintf(szTmp,"Count         = %d", pResponse->CURRENT_ENERGY.count);
+		WriteMessage(szTmp);
+		float ampereChannel1,ampereChannel2,ampereChannel3;
+		ampereChannel1=float((pResponse->CURRENT_ENERGY.ch1h * 256) + pResponse->CURRENT_ENERGY.ch1l) / 10.0f;
+		ampereChannel2=float((pResponse->CURRENT_ENERGY.ch2h * 256) + pResponse->CURRENT_ENERGY.ch2l) / 10.0f;
+		ampereChannel3=float((pResponse->CURRENT_ENERGY.ch3h * 256) + pResponse->CURRENT_ENERGY.ch3l) / 10.0f;
+		sprintf(szTmp,"Channel 1     = %.1f ampere", ampereChannel1);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"Channel 2     = %.1f ampere", ampereChannel2);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"Channel 3     = %.1f ampere", ampereChannel3);
+		WriteMessage(szTmp);
+
+		if (pResponse->CURRENT_ENERGY.count == 0)
+		{
+			//usage = (CDbl(pResponse->CURRENT_ENERGY.total1)) * &H10000000000 + CDbl(pResponse->CURRENT_ENERGY.total2)) * &H100000000 + CDbl(pResponse->CURRENT_ENERGY.total3)) * &H1000000 _
+				//+ pResponse->CURRENT_ENERGY.total4) * &H10000 + pResponse->CURRENT_ENERGY.total5) * &H100 + pResponse->CURRENT_ENERGY.total6)) / 223.666
+			//usage = double( (pResponse->CURRENT_ENERGY.total1 * 0x10000000000) + (pResponse->CURRENT_ENERGY.total2 * 0x100000000) + (pResponse->CURRENT_ENERGY.total3 * 0x1000000)
+			//+ (pResponse->CURRENT_ENERGY.total4 * 0x10000) + (pResponse->CURRENT_ENERGY.total5 * 0x100) + pResponse->CURRENT_ENERGY.total6) / 223.666;
+			//usage = double( (pResponse->CURRENT_ENERGY.total3 * 0x1000000)
+				//+ (pResponse->CURRENT_ENERGY.total4 * 0x10000) + (pResponse->CURRENT_ENERGY.total5 * 0x100) + pResponse->CURRENT_ENERGY.total6) / 223.666;
+			sprintf(szTmp,"total usage   = %.3f Wh", usage);
+			WriteMessage(szTmp);
+		}
+
+		sprintf(szTmp,"Signal level  = %d", pResponse->CURRENT_ENERGY.rssi);
+		WriteMessage(szTmp);
+
+		if ((pResponse->CURRENT_ENERGY.battery_level & 0xF) == 0)
+			WriteMessage("Battery       = Low");
+		else
+			WriteMessage("Battery       = OK");
 	}
-
-	sprintf(szTmp,"Signal level  = %d", pResponse->CURRENT_ENERGY.rssi);
-	WriteMessage(szTmp);
-
-	if ((pResponse->CURRENT_ENERGY.battery_level & 0xF) == 0)
-		WriteMessage("Battery       = Low");
-	else
-		WriteMessage("Battery       = OK");
 }
 
 //not in dbase yet
