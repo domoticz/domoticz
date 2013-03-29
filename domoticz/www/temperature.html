@@ -804,7 +804,12 @@ function RefreshTemps()
 							$(id + " #name").html(item.Name);
 						}
 						var img='<img src="images/';
-						img+=GetTemp48Item(item.Temp);
+						if (typeof item.Temp != 'undefined') {
+							img+=GetTemp48Item(item.Temp);
+						}
+						else {
+							img+=GetTemp48Item(item.Chill);
+						}
             img+='" height="48">';
             
             if ($(id + " #img").html()!=img) {
@@ -822,8 +827,14 @@ function RefreshTemps()
                  bHaveBefore=true;
             }
             if (typeof item.Chill != 'undefined') {
-							bigtext+=' / ' + item.Chill + '\u00B0';
-              status+=', Chill: ' + item.Chill + '\u00B0 C';
+							if (bigtext!="") {
+								bigtext+=' / ';
+							}
+							bigtext+=item.Chill + '\u00B0';
+							if (status!="") {
+								status+=', ';
+							}
+              status+='Chill: ' + item.Chill + '\u00B0 C';
               bHaveBefore=true;
             }
             var bHaveHumidity=false;
@@ -928,11 +939,19 @@ function ShowTemps()
 						bigtext+=item.Humidity + '%';
 					}
 					if (typeof item.Chill != 'undefined') {
-						bigtext+=' / ' + item.Chill + '\u00B0';
+						if (bigtext!="") {
+							bigtext+=' / ';
+						}
+						bigtext+=item.Chill + '\u00B0';
 					}
           xhtm+=bigtext+'</td>\n';
           xhtm+='\t      <td id="img"><img src="images/';
-					xhtm+=GetTemp48Item(item.Temp);
+          if (typeof item.Temp != 'undefined') {
+						xhtm+=GetTemp48Item(item.Temp);
+					}
+					else {
+						xhtm+=GetTemp48Item(item.Chill);
+					}
 					xhtm+='" height="48"></td>\n' +
 							'\t      <td id="status">';
 					var bHaveTemperature=false;
@@ -943,7 +962,10 @@ function ShowTemps()
 							 bHaveBefore=true;
 					}
 					if (typeof item.Chill != 'undefined') {
-						xhtm+=', Chill: ' + item.Chill + '\u00B0 C';
+						if (typeof item.Temp != 'undefined') {
+							xhtm+=', ';
+						}
+						xhtm+='Chill: ' + item.Chill + '\u00B0 C';
 						bHaveBefore=true;
 					}
 					var bHaveHumidity=false;

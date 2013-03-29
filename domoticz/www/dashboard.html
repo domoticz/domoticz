@@ -234,7 +234,7 @@ function RefreshFavorites()
         //Temperature Sensors
         $.each(data.result, function(i,item){
           if (
-                ((typeof item.Temp != 'undefined')||(typeof item.Humidity != 'undefined')) &&
+                ((typeof item.Temp != 'undefined')||(typeof item.Humidity != 'undefined')||(typeof item.Chill != 'undefined')) &&
                 (item.Favorite!=0)
               )
           {
@@ -252,7 +252,10 @@ function RefreshFavorites()
 										 bHaveBefore=true;
 								}
 								if (typeof item.Chill != 'undefined') {
-									status+=', Chill: ' + item.Chill + '° C';
+									if (status!="") {
+										status+=', ';
+									}
+									status+='Chill: ' + item.Chill + '° C';
 									bHaveBefore=true;
 								}
 								if (typeof item.Humidity != 'undefined') {
@@ -276,7 +279,12 @@ function RefreshFavorites()
 							}
 							else {
 								var img='<img src="images/';
-								img+=GetTemp48Item(item.Temp);
+								if (typeof item.Temp != 'undefined') {
+									img+=GetTemp48Item(item.Temp);
+								}
+								else {
+									img+=GetTemp48Item(item.Chill);
+								}
 								img+='" height="40">';
 								if ($(id + " #img").html()!=img) {
 									$(id + " #img").html(img);
@@ -290,8 +298,12 @@ function RefreshFavorites()
 										 bHaveBefore=true;
 								}
 								if (typeof item.Chill != 'undefined') {
-									status+=', Chill: ' + item.Chill + '° C';
-									bigtext+=' / ' + item.Chill + '\u00B0';
+									if (bHaveBefore) {
+										status+=', ';
+										bigtext+=' / ';
+									}
+									status+='Chill: ' + item.Chill + '° C';
+									bigtext+=item.Chill + '\u00B0';
 									bHaveBefore=true;
 								}
 								if (typeof item.Direction != 'undefined') {
@@ -390,7 +402,9 @@ function RefreshFavorites()
 								else if (typeof item.Direction != 'undefined') {
 									img='<img src="images/Wind' + item.DirectionStr + '.png" height="40">';
 									status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
-									status+='Temp: ' + item.Temp + '° C, ';
+									if (typeof item.Temp != 'undefined') {
+										status+='Temp: ' + item.Temp + '° C, ';
+									}
 									status+='Chill: ' + item.Chill + '° C';
 									bigtext=item.DirectionStr + '/' + item.Speedms + ' ms';
 								}
@@ -900,7 +914,7 @@ function ShowFavorites()
         bHaveAddedDevider = false;
         $.each(data.result, function(i,item){
           if (
-                ((typeof item.Temp != 'undefined')||(typeof item.Humidity != 'undefined')) &&
+                ((typeof item.Temp != 'undefined')||(typeof item.Humidity != 'undefined')||(typeof item.Chill != 'undefined')) &&
                 (item.Favorite!=0)
               )
           {
@@ -946,7 +960,10 @@ function ShowFavorites()
 									 bHaveBefore=true;
 							}
 							if (typeof item.Chill != 'undefined') {
-								status+=', Chill: ' + item.Chill + '° C';
+								if (bHaveBefore) {
+									status+=', ';
+								}
+								status+='Chill: ' + item.Chill + '° C';
 								bHaveBefore=true;
 							}
 							if (typeof item.Humidity != 'undefined') {
@@ -997,11 +1014,19 @@ function ShowFavorites()
 								bigtext+=item.Humidity + '%';
 							}
 							if (typeof item.Chill != 'undefined') {
-								bigtext+=' / ' + item.Chill + '\u00B0';
+								if (bigtext!="") {
+									bigtext+=' / ';
+								}
+								bigtext+=item.Chill + '\u00B0';
 							}
 							xhtm+=bigtext+'</td>\n';
 							xhtm+='\t      <td id="img"><img src="images/';
-							xhtm+=GetTemp48Item(item.Temp);
+							if (typeof item.Temp != 'undefined') {
+								xhtm+=GetTemp48Item(item.Temp);
+							}
+							else {
+								xhtm+=GetTemp48Item(item.Chill);
+							}
 							xhtm+='" height="40"></td>\n' +
 									'\t      <td id="status">';
 							var bHaveBefore=false;
@@ -1010,7 +1035,10 @@ function ShowFavorites()
 									 bHaveBefore=true;
 							}
 							if (typeof item.Chill != 'undefined') {
-								xhtm+=', Chill: ' + item.Chill + '° C';
+								if (bHaveBefore) {
+									xhtm+=', ';
+								}
+								xhtm+='Chill: ' + item.Chill + '° C';
 								bHaveBefore=true;
 							}
 							if (typeof item.Direction != 'undefined') {
@@ -1167,7 +1195,9 @@ function ShowFavorites()
 							else if (typeof item.Direction != 'undefined') {
 								xhtm+='Wind' + item.DirectionStr + '.png" height="40"></td>\n' +
 								'\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
-								xhtm+='Temp: ' + item.Temp + '° C, ';
+								if (typeof item.Temp != 'undefined') {
+									xhtm+='Temp: ' + item.Temp + '° C, ';
+								}
 								xhtm+='Chill: ' + item.Chill + '° C';
 							}
 							else if (typeof item.Barometer != 'undefined') {

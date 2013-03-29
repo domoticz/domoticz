@@ -819,7 +819,6 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	WriteMessageEnd();
 }
 
-//not in dbase yet
 void MainWorker::decode_InterfaceMessage(const int HwdID, const tRBUF *pResponse)
 {
 	unsigned char devType=pTypeInterfaceMessage;
@@ -2753,7 +2752,6 @@ void MainWorker::decode_Lighting6(const int HwdID, const tRBUF *pResponse)
 	}
 }
 
-//not in dbase yet
 void MainWorker::decode_UNDECODED(const int HwdID, const tRBUF *pResponse)
 {
 	unsigned char devType=pTypeUndecoded;
