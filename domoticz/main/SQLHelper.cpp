@@ -2308,9 +2308,10 @@ void CSQLHelper::UpdateMultiMeter()
 			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
 			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
 			time_t checktime=mktime(&ntime);
+#ifndef _DEBUG
 			if (now-checktime>=SensorTimeOut*60)
 				continue;
-
+#endif
 			std::vector<std::string> splitresults;
 			StringSplit(sValue, ";", splitresults);
 

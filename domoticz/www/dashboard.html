@@ -486,7 +486,7 @@ function RefreshFavorites()
         //Utility Sensors
         $.each(data.result, function(i,item){
           if (
-                ( (typeof item.Counter != 'undefined') || (item.Type == "Current") || (item.Type == "Energy") ) &&
+                ( (typeof item.Counter != 'undefined') || (item.Type == "Current") || (item.Type == "Energy") || (item.Type == "Current/Energy")) &&
                 (item.Favorite!=0)
               )
           {
@@ -506,7 +506,7 @@ function RefreshFavorites()
 										status+=item.Counter + ', T: ' + item.CounterToday;
 									}
 								}
-								else if (item.Type == "Current") {
+								else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
 									status+=item.Data;
 								}
 								else if (item.Type == "Energy") {
@@ -549,7 +549,7 @@ function RefreshFavorites()
 										status=item.Counter + ', T: ' + item.CounterToday;
 									}
 								}
-								else if (item.Type == "Current") {
+								else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
 									img='<img src="images/current48.png" height="40">';
 									status=item.Data;
 								}
@@ -1336,7 +1336,7 @@ function ShowFavorites()
         bHaveAddedDevider = false;
         $.each(data.result, function(i,item){
           if (
-                ( (typeof item.Counter != 'undefined') || (item.Type == "Current") || (item.Type == "Energy") ) &&
+                ( (typeof item.Counter != 'undefined') || (item.Type == "Current") || (item.Type == "Energy") || (item.Type == "Current/Energy")) &&
                 (item.Favorite!=0)
               )
           {
@@ -1384,7 +1384,7 @@ function ShowFavorites()
 									status=item.Counter + ', T: ' + item.CounterToday;
 								}
 							}
-							else if (item.Type == "Current") {
+							else if ((item.Type == "Current") || (item.Type == "Current/Energy")){
 								status=item.Data;
 							}
 							else if (item.Type == "Energy") {
@@ -1444,7 +1444,7 @@ function ShowFavorites()
 									status=item.Counter + ', T: ' + item.CounterToday;
 								}
 							}
-							else if (item.Type == "Current") {
+							else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
 								xhtm+='current48.png" height="40"></td>\n';
 								status=item.Data;
 							}
