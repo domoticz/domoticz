@@ -1262,7 +1262,7 @@ function RefreshUtilities()
               img='<img src="images/counter.png" height="48">';
               status=item.Counter + ', Today: ' + item.CounterToday;
             }
-            else if (item.Type == "Current") {
+            else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
 							img='<img src="images/current48.png" height="48">';
               status=item.Data;
             }
@@ -1358,7 +1358,7 @@ function ShowUtilities()
               xhtm+='counter.png" height="48"></td>\n';
               status=item.Counter + ', Today: ' + item.CounterToday;
             }
-            else if (item.Type == "Current") {
+            else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
               xhtm+='current48.png" height="48"></td>\n';
               status=item.Data;
             }
@@ -1406,7 +1406,7 @@ function ShowUtilities()
 										'<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +');">Edit</a> ';
 						}
           }
-          else if (item.Type == "Current") {
+          else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
 							xhtm+='<a class="btnsmall" onclick="ShowCurrentLog(' + item.idx + ',\'' + item.Name + '\', ' + item.displaytype + ');">Log</a> ';
 							xhtm+=      
 										'<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';

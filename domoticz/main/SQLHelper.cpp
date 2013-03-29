@@ -2360,7 +2360,7 @@ void CSQLHelper::UpdateMultiMeter()
 			}
 			else if ((dType==pTypeCURRENTENERGY)&&(dSubType==sTypeELEC4))
 			{
-				if (splitresults.size()!=3)
+				if (splitresults.size()!=4)
 					continue; //impossible
 
 				value1=(unsigned long)(atof(splitresults[0].c_str())*10.0f);
