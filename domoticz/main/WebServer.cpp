@@ -483,7 +483,7 @@ char * CWebServer::SetRFXCOMMode()
 	return (char*)m_retstr.c_str();
 }
 
-void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::string rfilter, std::string order)
+void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, const std::string rfilter, const std::string order, const std::string rowid)
 {
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
@@ -534,7 +534,10 @@ void CWebServer::GetJSonDevices(Json::Value &root, std::string rused, std::strin
 
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2 FROM DeviceStatus ORDER BY " << szOrderBy;
+	if (rowid!="")
+		szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2 FROM DeviceStatus WHERE (ID==" << rowid << ")";
+	else
+		szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2 FROM DeviceStatus ORDER BY " << szOrderBy;
 	result=m_pMain->m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -1634,12 +1637,12 @@ char * CWebServer::GetJSonPage()
 		std::string rfilter=m_pWebEm->FindValue("filter");
 		std::string order=m_pWebEm->FindValue("order");
 		std::string rused=m_pWebEm->FindValue("used");
+		std::string rid=m_pWebEm->FindValue("rid");
 
 		root["status"]="OK";
 		root["title"]="Devices";
 
-		GetJSonDevices(root, rused, rfilter,order);
-
+		GetJSonDevices(root, rused, rfilter,order,rid);
 	} //if (rtype=="devices")
     else if (rtype=="cameras")
 	{
@@ -1783,7 +1786,7 @@ char * CWebServer::GetJSonPage()
 
 		Json::Value tempjson;
 
-		GetJSonDevices(tempjson, "", "temp","ID");
+		GetJSonDevices(tempjson, "", "temp","ID","");
 
 		Json::Value::const_iterator itt;
 		int ii=0;
@@ -1813,7 +1816,7 @@ char * CWebServer::GetJSonPage()
 
 		Json::Value tempjson;
 
-		GetJSonDevices(tempjson, "", "wind","ID");
+		GetJSonDevices(tempjson, "", "wind","ID","");
 
 		Json::Value::const_iterator itt;
 		int ii=0;
@@ -1838,7 +1841,7 @@ char * CWebServer::GetJSonPage()
 
 		Json::Value tempjson;
 
-		GetJSonDevices(tempjson, "", "rain","ID");
+		GetJSonDevices(tempjson, "", "rain","ID","");
 
 		Json::Value::const_iterator itt;
 		int ii=0;
@@ -1858,7 +1861,7 @@ char * CWebServer::GetJSonPage()
 
 		Json::Value tempjson;
 
-		GetJSonDevices(tempjson, "", "uv","ID");
+		GetJSonDevices(tempjson, "", "uv","ID","");
 
 		Json::Value::const_iterator itt;
 		int ii=0;
@@ -1878,7 +1881,7 @@ char * CWebServer::GetJSonPage()
 
 		Json::Value tempjson;
 
-		GetJSonDevices(tempjson, "", "baro","ID");
+		GetJSonDevices(tempjson, "", "baro","ID","");
 
 		Json::Value::const_iterator itt;
 		int ii=0;

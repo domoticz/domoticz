@@ -46,7 +46,7 @@ private:
 	std::wstring m_wretstr;
 
 	//JSon
-	void GetJSonDevices(Json::Value &root, std::string rused, std::string rfilter, std::string order);
+	void GetJSonDevices(Json::Value &root, const std::string rused, const std::string rfilter, const std::string order, const std::string rowid);
 };
 
 } //server
