@@ -179,3 +179,11 @@ svn update
 make
 sudo service domoticz.sh start
 
+Option: Create an update and backup script
+chmod +x updatedomo
+
+To update domoticz
+
+login to your Raspberry Pi
+cd domoticz
+./updatedomo

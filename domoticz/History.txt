@@ -50,6 +50,7 @@ Version 1.0.10 (March xxth 2013)
 - Fixed: Temperature month/year graph
 - Changed: Excluded TE293 for windows systems
 - Implemented: Started working on support for the CM180i
+- Implemented: Unix update script
 
 Version 1.0.9 (February 17th 2013)
 - Implemented: OWL113 option to display in Ampere/Usage

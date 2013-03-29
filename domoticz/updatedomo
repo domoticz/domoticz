@@ -1,0 +1,9 @@
+#! /bin/bash
+svn update
+make
+# stop domoticz
+sudo service domoticz.sh stop
+echo "please standby... (waiting 8 seconds)"
+sleep 8
+sudo service domoticz.sh start
+
