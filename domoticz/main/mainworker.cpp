@@ -4611,6 +4611,8 @@ void MainWorker::decode_Energy(const int HwdID, const tRBUF *pResponse)
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
 	PrintDeviceName(devname);
 
+	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (const float)usage);
+
 	if (m_verboselevel == EVBL_ALL)
 	{
 		switch (pResponse->ENERGY.subtype)

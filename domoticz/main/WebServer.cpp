@@ -4571,6 +4571,13 @@ char * CWebServer::GetJSonPage()
 				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
 				ii++;
 			}
+			if (dType==pTypeENERGY)
+			{
+				root["result"][ii]["val"]=NTYPE_USAGE;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+				ii++;
+			}
 			if ((dType==pTypeCURRENT)&&(dSubType==sTypeELEC1))
 			{
 				root["result"][ii]["val"]=NTYPE_AMPERE1;
