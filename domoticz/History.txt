@@ -52,6 +52,7 @@ Version 1.0.10 (March xxth 2013)
 - Implemented: Started working on support for the CM180i
 - Implemented: Unix update script
 - Implemented: Scenes can now be added to the dashboard
+- Implemented: SQLite faster journal/update mode on non-windows systems
 
 Version 1.0.9 (February 17th 2013)
 - Implemented: OWL113 option to display in Ampere/Usage

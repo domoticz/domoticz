@@ -317,12 +317,13 @@ bool CSQLHelper::OpenDatabase()
 		sqlite3_close(m_dbase);
 		return false;
 	}
+#ifndef WIN32
 	//test, this could improve performance
-	//rc=sqlite3_exec(m_dbase, "PRAGMA synchronous = NORMAL", NULL, NULL, NULL);
-	//rc=sqlite3_exec(m_dbase, "PRAGMA journal_mode = WAL", NULL, NULL, NULL);
-
+	rc=sqlite3_exec(m_dbase, "PRAGMA synchronous = NORMAL", NULL, NULL, NULL);
+	rc=sqlite3_exec(m_dbase, "PRAGMA journal_mode = WAL", NULL, NULL, NULL);
+#else
 	rc=sqlite3_exec(m_dbase, "PRAGMA journal_mode=DELETE", NULL, NULL, NULL);
-
+#endif
 	bool bNewInstall=false;
 	std::vector<std::vector<std::string> > result=query("SELECT name FROM sqlite_master WHERE type='table' AND name='DeviceStatus'");
 	bNewInstall=(result.size()==0);
