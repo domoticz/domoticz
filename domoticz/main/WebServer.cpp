@@ -532,6 +532,44 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 		sprintf(szOrderBy,"[Order],%s ASC",order.c_str());
 	}
 
+	int ii=0;
+	if (rfilter=="all")
+	{
+		//also add scenes
+		szQuery.clear();
+		szQuery.str("");
+		if (rowid!="")
+			szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite FROM Scenes WHERE (ID==" << rowid << ")";
+		else
+			szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite FROM Scenes ORDER BY " << szOrderBy;
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+
+				unsigned char nValue = atoi(sd[2].c_str());
+				std::string sLastUpdate=sd[3].c_str();
+				unsigned char favorite = atoi(sd[4].c_str());
+				root["result"][ii]["Type"]="Scene";
+				root["result"][ii]["idx"]=sd[0];
+				root["result"][ii]["Name"]=sd[1];
+				root["result"][ii]["Favorite"]=favorite;
+				root["result"][ii]["LastUpdate"]=sLastUpdate;
+				root["result"][ii]["TypeImg"]="lightbulb";
+				if (nValue==0)
+					root["result"][ii]["Status"]="Off";
+				else if (nValue==1)
+					root["result"][ii]["Status"]="On";
+				else
+					root["result"][ii]["Status"]="Unknown";
+				ii++;
+			}
+		}
+	}
+
 	szQuery.clear();
 	szQuery.str("");
 	if (rowid!="")
@@ -542,7 +580,6 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
-		int ii=0;
 		for (itt=result.begin(); itt!=result.end(); ++itt)
 		{
 			std::vector<std::string> sd=*itt;

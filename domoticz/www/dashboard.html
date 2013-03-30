@@ -29,8 +29,50 @@ function RefreshFavorites()
      dataType: 'json',
      success: function(data) {
       if (typeof data.result != 'undefined') {
-        //light devices
+
         $.each(data.result, function(i,item){
+						//Scenes
+						if ((item.Type.indexOf('Scene') == 0)&&(item.Favorite!=0))
+						{
+							id="#dashcontent #scene_" + item.idx;
+							var obj=$(id);
+							if (typeof obj != 'undefined') {
+								if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+									var status=item.Status;
+									if (item.Status == 'On') {
+											status+='<img src="images/lightbulb.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									}
+									else {
+											status+='<img src="images/lightbulboff.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									}
+									if ($(id + " #status").html()!=status) {
+										$(id + " #status").html(status);
+									}
+								}
+								else {
+									var img="";
+									if (item.Status == 'On') {
+												img='<img src="images/light-on.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									}
+									else {
+												img='<img src="images/light-off.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									}
+									if ($(id + " #img").html()!=img) {
+										$(id + " #img").html(img);
+									}
+									if ($(id + " #status").html()!=item.Status) {
+										$(id + " #status").html(item.Status);
+									}
+									if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+										$(id + " #lastupdate").html(item.LastUpdate);
+									}
+								}
+							}
+						}
+					}); //Scene devices
+
+        $.each(data.result, function(i,item){
+					//Lights
           if ((item.Type.indexOf('Light') == 0)&&(item.Favorite!=0))
           {
 						id="#dashcontent #light_" + item.idx;
@@ -640,7 +682,108 @@ function ShowFavorites()
 			$.myglobals.DashboardType=data.DashboardType;
 
       if (typeof data.result != 'undefined') {
+				//Scenes
+        jj=0;
+        bHaveAddedDevider = false;
+        $.each(data.result, function(i,item){
+          if ((item.Type.indexOf('Scene') == 0)&&(item.Favorite!=0))
+          {
+            totdevices+=1;
+            if (jj == 0)
+            {
+              //first time
+              if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+								htmlcontent+='\t    <table class="mobileitem">\n';
+								htmlcontent+='\t    <thead>\n';
+								htmlcontent+='\t    <tr>\n';
+								htmlcontent+='\t    		<th>Scenes</th>\n';
+								htmlcontent+='\t    		<th style="text-align:right"><a id="cLightSwitches" href="javascript:SwitchLayout(\'LightSwitches\')"><img src="images/next.png"></a></th>\n';
+								htmlcontent+='\t    </tr>\n';
+								htmlcontent+='\t    </thead>\n';
+              }
+              else {
+								htmlcontent+='<h2>Scenes:</h2>\n';
+							}
+            }
+            if (jj % rowItems == 0)
+            {
+              //add devider
+              if (bHaveAddedDevider == true) {
+                //close previous devider
+                htmlcontent+='</div>\n';
+              }
+              htmlcontent+='<div class="row divider">\n';
+              bHaveAddedDevider=true;
+            }
+            
+            var xhtm="";
+						if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+							xhtm+=
+									'\t    <tr id="scene_' + item.idx +'">\n' +
+									'\t      <td id="name">' + item.Name;
+							xhtm+=
+									 '</td>\n';
+							var status=item.Status + " ";
+							if (item.Status == 'On') {
+											status+='<img src="images/lightbulb.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+							}
+							else {
+										status+='<img src="images/lightbulboff.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+							}
+							xhtm+=
+										'\t      <td id="status">' + status + '</td>\n' +
+										'\t    </tr>\n';
+						}
+						else {
+							if (data.DashboardType==0) {
+								xhtm='\t<div class="span4" id="scene_' + item.idx +'">\n';
+							}
+							else if (data.DashboardType==1) {
+								xhtm='\t<div class="span3" id="scene_' + item.idx +'">\n';
+							}
+							xhtm+='\t  <section>\n';
+							if (data.DashboardType==0) {
+								xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+							}
+							else if (data.DashboardType==1) {
+								xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+							}
+							xhtm+=
+									'\t    <tr>\n' +
+									'\t      <td id="name">' + item.Name + '</td>\n'+
+									'\t      <td id="bigtext"></td>\n';
+							if (item.Status == 'On') {
+										xhtm+='\t      <td id="img"><img src="images/light-on.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+							}
+							else {
+										xhtm+='\t      <td id="img"><img src="images/light-off.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+							}
+							xhtm+=
+										'\t      <td id="status">' + item.Status + '</td>\n' +
+										'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n';
+							if (item.SwitchType == "Dimmer") {
+								xhtm+='<td><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-maxlevel="' + item.MaxDimLevel + '" data-svalue="' + item.LevelInt + '"></div></td>';
+							}
+							xhtm+=
+										'\t    </tr>\n' +
+										'\t    </table>\n' +
+										'\t  </section>\n' +
+										'\t</div>\n';
+						}
+            htmlcontent+=xhtm;
+            jj+=1;
+          }
+        }); //scenes
+        if (bHaveAddedDevider == true) {
+          //close previous devider
+          htmlcontent+='</div>\n';
+        }
+        if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+					htmlcontent+='\t    </table>\n';
+        }
+        
         //light devices
+        jj=0;
         bHaveAddedDevider = false;
         $.each(data.result, function(i,item){
           if ((item.Type.indexOf('Light') == 0)&&(item.Favorite!=0))
@@ -650,6 +793,9 @@ function ShowFavorites()
             {
               //first time
               if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+								if (htmlcontent!="") {
+									htmlcontent+='<br>';
+								}
 								htmlcontent+='\t    <table class="mobileitem">\n';
 								htmlcontent+='\t    <thead>\n';
 								htmlcontent+='\t    <tr>\n';
@@ -907,7 +1053,6 @@ function ShowFavorites()
         if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
 					htmlcontent+='\t    </table>\n';
         }
-
 
         //Temperature Sensors
         jj=0;
