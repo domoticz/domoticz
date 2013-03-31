@@ -15,6 +15,8 @@
 #include "Logger.h"
 #include "../svnversion.h"
 
+extern std::string szStartupFolder;
+
 namespace http {
 	namespace server {
 
@@ -4065,6 +4067,23 @@ char * CWebServer::GetJSonPage()
 #endif
 			root["status"]="OK";
 			root["title"]="SystemReboot";
+		}
+		else if (cparam=="execute_script")
+		{
+			std::string scriptname=m_pWebEm->FindValue("scriptname");
+			if (scriptname=="")
+				goto exitjson;
+			if (scriptname.find("..")!=std::string::npos)
+				goto exitjson;
+#ifdef WIN32
+			scriptname = szStartupFolder + "scripts\\" + scriptname;
+			ShellExecute(NULL,"open",scriptname.c_str(),NULL,NULL,SW_SHOWNORMAL);
+#else
+			scriptname = szStartupFolder + "scripts/" + scriptname;
+			system(scriptname.c_str());
+#endif
+			root["status"]="OK";
+			root["title"]="ExecuteScript";
 		}
 		else if (cparam=="deleteallsubdevices")
 		{
