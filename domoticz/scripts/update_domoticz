@@ -1,0 +1,9 @@
+#!/bin/sh
+wget http://domoticz.sourceforge.net/domoticz_linux_armv6l.tgz -O update.tgz
+tar xfz update.tgz
+rm update.tgz
+
+sudo service domoticz.sh stop
+echo "please standby... (waiting 8 seconds)"
+sleep 8
+sudo service domoticz.sh start
