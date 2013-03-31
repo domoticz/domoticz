@@ -193,20 +193,40 @@ target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread cur
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
 
+# If it wasn't overridden from command line / cache.
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+	set(CMAKE_INSTALL_PREFIX "/opt/${CPACK_PACKAGE_NAME}" CACHE PATH "Install path prefix, prepended onto install directories." FORCE)
+endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+
+install(TARGETS domoticz DESTINATION /opt/domoticz)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION /opt/domoticz)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/License.txt DESTINATION /opt/domoticz)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/updatedomo DESTINATION /opt/domoticz PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ)
+
 # build a CPack driven installer package
-set (CPACK_PACKAGE_VERSION_MAJOR "${domoticz_VERSION_MAJOR}")
-set (CPACK_PACKAGE_VERSION_MINOR "${domoticz_VERSION_MINOR}")
+INCLUDE(InstallRequiredSystemLibraries)
 
-#set (DOMOTICZ_VERSION_SHORT "${domoticz_VERSION_MAJOR}.${domoticz_VERSION_MINOR}.${ProjectRevision}")
-#set(CPACK_PACKAGE_FILE_NAME "domoticz-${DOMOTICZ_VERSION_SHORT}-${CMAKE_SYSTEM_NAME}")
-
+SET(CPACK_GENERATOR "DEB;ZIP")
 SET(CPACK_PACKAGE_NAME "domoticz")
-SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${domoticz}-dev")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${domoticz}-A program for home automation (Domotica).")
+SET(CPACK_PACKAGE_VENDOR "Domoticz.com")
+SET(CPACK_PACKAGE_CONTACT "info@domoticz.com")
+SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
+
+SET(CPACK_PACKAGE_VERSION_MAJOR "${domoticz_VERSION_MAJOR}")
+SET(CPACK_PACKAGE_VERSION_MINOR "${domoticz_VERSION_MINOR}")
+
+SET(CPACK_PACKAGE_INSTALL_DIRECTORY "domoticz")
+#SET (DOMOTICZ_VERSION_SHORT "${domoticz_VERSION_MAJOR}.${domoticz_VERSION_MINOR}.${ProjectRevision}")
+#SET(CPACK_PACKAGE_FILE_NAME "domoticz-${DOMOTICZ_VERSION_SHORT}-${CMAKE_SYSTEM_NAME}")
+
+SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${domoticz}-dev")
 SET(CPACK_PACKAGING_INSTALL_PREFIX "/")
 SET(CPACK_PACKAGE_DEFAULT_LOCATION "/opt/${CPACK_PACKAGE_NAME}")
-SET(CPACK_PACKAGE_EXECUTABLES "domoticz";"A program for home automation (Domotica).")
+SET(CPACK_PACKAGE_EXECUTABLES "domoticz;A program for home automation (Domotica).")
 
-include (InstallRequiredSystemLibraries)
-set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
-include (CPack)
+#set(CPACK_DEB_COMPONENT_INSTALL TRUE)
+SET(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
+
+INCLUDE(CPack)
+
