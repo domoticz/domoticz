@@ -166,6 +166,10 @@ jwsmtp/compat.cpp
 )
 add_executable(domoticz ${domoticz_SRCS})
 
+# explicitly say that the executable depends on the revisiontag
+add_dependencies(domoticz revisiontag)
+
+
 ## Link libraries
 set(BOOST_LIBS thread date_time system)
 #set(Boost_USE_STATIC_LIBS ON)
