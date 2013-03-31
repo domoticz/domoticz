@@ -114,7 +114,7 @@ int main(int argc, char**argv)
 	bool bStartWebBrowser=true;
 	RedirectIOToConsole();
 #endif
-	_log.Log(LOG_NORM,"Domoticz V%s%ld (c)2012-2013 GizMoCuz",VERSION_STRING,SVNVERSION);
+	_log.Log(LOG_NORM,"Domoticz V%s%d (c)2012-2013 GizMoCuz",VERSION_STRING,SVNVERSION);
 
 	szStartupFolder="";
 #if !defined WIN32

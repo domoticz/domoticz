@@ -185,7 +185,7 @@ void CWebServer::StopServer()
 char * CWebServer::DisplayVersion()
 {
 	char szTmp[100];
-	sprintf(szTmp,"%s%ld",VERSION_STRING,SVNVERSION);
+	sprintf(szTmp,"%s%d",VERSION_STRING,SVNVERSION);
 	m_retstr=szTmp;
 	return (char*)m_retstr.c_str();
 }
