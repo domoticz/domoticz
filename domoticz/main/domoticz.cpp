@@ -11,6 +11,7 @@
 #include "CmdLine.h"
 #include "appversion.h"
 #include "Logger.h"
+#include "../svnversion.h"
 
 #if defined WIN32
 	#include "WindowsHelper.h"
@@ -113,7 +114,7 @@ int main(int argc, char**argv)
 	bool bStartWebBrowser=true;
 	RedirectIOToConsole();
 #endif
-	_log.Log(LOG_NORM,"Domoticz V%s (c)2012-2013 GizMoCuz",VERSION_STRING);
+	_log.Log(LOG_NORM,"Domoticz V%s%ld (c)2012-2013 GizMoCuz",VERSION_STRING,SVNVERSION);
 
 	szStartupFolder="";
 #if !defined WIN32

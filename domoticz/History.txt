@@ -53,6 +53,7 @@ Version 1.0.10 (March xxth 2013)
 - Implemented: Unix update script
 - Implemented: Scenes can now be added to the dashboard
 - Implemented: SQLite faster journal/update mode on non-windows systems
+- Implemented: Added SVN revision number to version string
 
 Version 1.0.9 (February 17th 2013)
 - Implemented: OWL113 option to display in Ampere/Usage

@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 project(domoticz)
 
-# The version number.
-set (domoticz_VERSION_MAJOR 1)
-set (domoticz_VERSION_MINOR 0)
-
 # Macro for setting up precompiled headers. Usage:
 #
 #   add_precompiled_header(target header.h [FORCEINCLUDE])
@@ -103,9 +99,22 @@ MACRO(Subversion_GET_REVISION dir variable)
 ENDMACRO(Subversion_GET_REVISION)
 
 Subversion_GET_REVISION(. ProjectRevision)
-#MESSAGE(STATUS "Compiling Revision #${ProjectRevision}")
+MESSAGE(STATUS "Compiling Revision #${ProjectRevision}")
+
+# The version number.
+set (domoticz_VERSION_MAJOR 1)
+set (domoticz_VERSION_MINOR 0)
+set (domoticz_VERSION_PATCH ${ProjectRevision})
 
 include_directories(${CMAKE_SOURCE_DIR}/main) 
+
+# a custom target that is always built
+ADD_CUSTOM_TARGET(revisiontag ALL)
+
+# creates svnversion.h using cmake script
+ADD_CUSTOM_COMMAND(TARGET revisiontag COMMAND ${CMAKE_COMMAND}
+   -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR} 
+   -P ${CMAKE_CURRENT_SOURCE_DIR}/getsvn.cmake)
 
 ## Target
 set(
@@ -215,9 +224,10 @@ SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
 
 SET(CPACK_PACKAGE_VERSION_MAJOR "${domoticz_VERSION_MAJOR}")
 SET(CPACK_PACKAGE_VERSION_MINOR "${domoticz_VERSION_MINOR}")
+SET(CPACK_PACKAGE_VERSION_PATCH "${domoticz_VERSION_PATCH}")
 
 SET(CPACK_PACKAGE_INSTALL_DIRECTORY "domoticz")
-#SET (DOMOTICZ_VERSION_SHORT "${domoticz_VERSION_MAJOR}.${domoticz_VERSION_MINOR}.${ProjectRevision}")
+#SET (DOMOTICZ_VERSION_SHORT "${domoticz_VERSION_MAJOR}.${domoticz_VERSION_MINOR}.${domoticz_VERSION_PATCH}")
 #SET(CPACK_PACKAGE_FILE_NAME "domoticz-${DOMOTICZ_VERSION_SHORT}-${CMAKE_SYSTEM_NAME}")
 
 SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${domoticz}-dev")

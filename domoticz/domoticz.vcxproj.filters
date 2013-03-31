@@ -68,6 +68,9 @@
     <None Include="INSTALL.txt" />
     <None Include="History.txt" />
     <None Include="main\domoticz.ico" />
+    <None Include="getsvn.cmake">
+      <Filter>crosscompile</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="webserver\Base64.h">

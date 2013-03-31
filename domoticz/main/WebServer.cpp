@@ -13,6 +13,7 @@
 #include "../hardware/hardwaretypes.h"
 #include "../webserver/Base64.h"
 #include "Logger.h"
+#include "../svnversion.h"
 
 namespace http {
 	namespace server {
@@ -181,7 +182,9 @@ void CWebServer::StopServer()
 
 char * CWebServer::DisplayVersion()
 {
-	m_retstr=VERSION_STRING;
+	char szTmp[100];
+	sprintf(szTmp,"%s%ld",VERSION_STRING,SVNVERSION);
+	m_retstr=szTmp;
 	return (char*)m_retstr.c_str();
 }
 
