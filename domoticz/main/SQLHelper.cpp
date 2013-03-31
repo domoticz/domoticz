@@ -865,6 +865,10 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 				}
 			}
 		}//end of check for notifications
+		
+		//Check Scene Status
+		CheckSceneStatusWithDevice(ulID);
+		break;
 	}
 }
 
@@ -3283,3 +3287,118 @@ bool CSQLHelper::DoesSceneByNameExits(const std::string SceneName)
 	result=query(szQuery.str());
 	return (result.size()>0);
 }
+
+void CSQLHelper::CheckSceneStatusWithDevice(const std::string DevIdx)
+{
+	std::stringstream s_str( DevIdx );
+	unsigned long long idxll;
+	s_str >> idxll;
+	return CheckSceneStatusWithDevice(idxll);
+}
+
+void CSQLHelper::CheckSceneStatusWithDevice(const unsigned long long DevIdx)
+{
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+
+	szQuery << "SELECT SceneRowID FROM SceneDevices WHERE (DeviceRowID == " << DevIdx << ")";
+	result=query(szQuery.str());
+	std::vector<std::vector<std::string> >::const_iterator itt;
+	for (itt=result.begin(); itt!=result.end(); ++itt)
+	{
+		std::vector<std::string> sd=*itt;
+		CheckSceneStatus(sd[0]);
+	}
+}
+
+void CSQLHelper::CheckSceneStatus(const std::string Idx)
+{
+	std::stringstream s_str( Idx );
+	unsigned long long idxll;
+	s_str >> idxll;
+	return CheckSceneStatus(idxll);
+}
+
+void CSQLHelper::CheckSceneStatus(const unsigned long long Idx)
+{
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+
+	szQuery << "SELECT nValue FROM Scenes WHERE (ID == " << Idx << ")";
+	result=query(szQuery.str());
+	if (result.size()<1)
+		return; //not found
+
+	unsigned char orgValue=(unsigned char)atoi(result[0][0].c_str());
+	unsigned char newValue=orgValue;
+
+	szQuery.clear();
+	szQuery.str("");
+
+	szQuery << "SELECT a.ID, a.DeviceID, a.Unit, a.Type, a.SubType, a.SwitchType, a.nValue, a.sValue FROM DeviceStatus AS a, SceneDevices as b WHERE (a.ID == b.DeviceRowID) AND (b.SceneRowID == " << Idx << ")";
+	result=query(szQuery.str());
+	if (result.size()<1)
+		return; //no devices in scene
+
+	std::vector<std::vector<std::string> >::const_iterator itt;
+
+	std::vector<bool> _DeviceStatusResults;
+
+	for (itt=result.begin(); itt!=result.end(); ++itt)
+	{
+		std::vector<std::string> sd=*itt;
+		unsigned char nValue=atoi(sd[6].c_str());
+		std::string sValue=sd[7];
+		unsigned char Unit=atoi(sd[2].c_str());
+		unsigned char dType=atoi(sd[3].c_str());
+		unsigned char dSubType=atoi(sd[4].c_str());
+		_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
+
+		std::string lstatus="";
+		int llevel=0;
+		bool bHaveDimmer=false;
+		bool bHaveGroupCmd=false;
+		int maxDimLevel=0;
+
+		GetLightStatus(dType,dSubType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+		_DeviceStatusResults.push_back(IsLightSwitchOn(lstatus));
+	}
+
+	//Check if all on/off
+	int totOn=0;
+	int totOff=0;
+
+	std::vector<bool>::const_iterator itt2;
+	for (itt2=_DeviceStatusResults.begin(); itt2!=_DeviceStatusResults.end(); ++itt2)
+	{
+		if (*itt2==true)
+			totOn++;
+		else
+			totOff++;
+	}
+	if (totOn==_DeviceStatusResults.size())
+	{
+		//All are on
+		newValue=1;
+	}
+	else if (totOff==_DeviceStatusResults.size())
+	{
+		//All are Off
+		newValue=0;
+	}
+	else
+	{
+		//Some are on, some are off
+		newValue=2;
+	}
+	if (newValue!=orgValue)
+	{
+		//Set new Scene status
+		szQuery.clear();
+		szQuery.str("");
+
+		szQuery << "UPDATE Scenes SET nValue=" << int(newValue) << " WHERE (ID == " << Idx << ")";
+		result=query(szQuery.str());
+	}
+}
+

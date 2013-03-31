@@ -151,6 +151,11 @@ public:
 	bool HasSceneTimers(const unsigned long long Idx);
 	bool HasSceneTimers(const std::string Idx);
 
+	void CheckSceneStatus(const unsigned long long Idx);
+	void CheckSceneStatus(const std::string Idx);
+	void CheckSceneStatusWithDevice(const unsigned long long DevIdx);
+	void CheckSceneStatusWithDevice(const std::string DevIdx);
+
 	bool SendNotification(const std::string EventID, const std::string Message);
 
 	void Schedule5Minute();

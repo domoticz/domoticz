@@ -564,7 +564,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				else if (nValue==1)
 					root["result"][ii]["Status"]="On";
 				else
-					root["result"][ii]["Status"]="Unknown";
+					root["result"][ii]["Status"]="Mixed";
 				ii++;
 			}
 		}
@@ -5811,7 +5811,12 @@ char * CWebServer::GetJSonPage()
 				root["result"][ii]["HardwareID"]=atoi(sd[2].c_str());
 				root["result"][ii]["Favorite"]=atoi(sd[3].c_str());
 				root["result"][ii]["LastUpdate"]=sd[5].c_str();
-				root["result"][ii]["Status"]=(nValue==0)?"Off":"On";
+				if (nValue==0)
+					root["result"][ii]["Status"]="Off";
+				else if (nValue==1)
+					root["result"][ii]["Status"]="On";
+				else
+					root["result"][ii]["Status"]="Mixed";
 				root["result"][ii]["Timers"]=(m_pMain->m_sql.HasSceneTimers(sd[0])==true)?"true":"false";
 				ii++;
 			}

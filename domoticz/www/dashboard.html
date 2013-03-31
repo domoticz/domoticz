@@ -42,6 +42,9 @@ function RefreshFavorites()
 									if (item.Status == 'On') {
 											status+='<img src="images/lightbulb.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
+									else if (item.Status == 'Mixed') {
+											status+='<img src="images/lightbulbunknown.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									}
 									else {
 											status+='<img src="images/lightbulboff.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
@@ -53,6 +56,9 @@ function RefreshFavorites()
 									var img="";
 									if (item.Status == 'On') {
 												img='<img src="images/light-on.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									}
+									else if (item.Status == 'Mixed') {
+												img='<img src="images/light-unknown.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 									else {
 												img='<img src="images/light-off.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
@@ -697,7 +703,7 @@ function ShowFavorites()
 								htmlcontent+='\t    <thead>\n';
 								htmlcontent+='\t    <tr>\n';
 								htmlcontent+='\t    		<th>Scenes</th>\n';
-								htmlcontent+='\t    		<th style="text-align:right"><a id="cLightSwitches" href="javascript:SwitchLayout(\'LightSwitches\')"><img src="images/next.png"></a></th>\n';
+								htmlcontent+='\t    		<th style="text-align:right"><a id="cLightSwitches" href="javascript:SwitchLayout(\'Scenes\')"><img src="images/next.png"></a></th>\n';
 								htmlcontent+='\t    </tr>\n';
 								htmlcontent+='\t    </thead>\n';
               }
@@ -727,6 +733,9 @@ function ShowFavorites()
 							if (item.Status == 'On') {
 											status+='<img src="images/lightbulb.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 							}
+							else if (item.Status == 'Mixed') {
+											status+='<img src="images/lightbulbunknown.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+							}
 							else {
 										status+='<img src="images/lightbulboff.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 							}
@@ -754,6 +763,9 @@ function ShowFavorites()
 									'\t      <td id="bigtext"></td>\n';
 							if (item.Status == 'On') {
 										xhtm+='\t      <td id="img"><img src="images/light-on.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+							}
+							else if (item.Status == 'Mixed') {
+										xhtm+='\t      <td id="img"><img src="images/light-unknown.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 							}
 							else {
 										xhtm+='\t      <td id="img"><img src="images/light-off.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';

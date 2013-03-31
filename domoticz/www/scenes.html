@@ -916,6 +916,9 @@ function RefreshScenes()
 						if (item.Status == 'On') {
 							img='<img src="images/light-on.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
 						}
+						else if (item.Status == 'Mixed') {
+							img='<img src="images/light-unknown.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+						}
 						else {
 							img='<img src="images/light-off.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
 						}
@@ -985,10 +988,13 @@ function ShowScenes()
                 '\t      <td id="bigtext"></td>\n';
 
 					if (item.Status == 'On') {
-									xhtm+='\t      <td id="img"><img src="images/light-on.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+							xhtm+='\t      <td id="img"><img src="images/light-on.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+					}
+					else if (item.Status == 'Mixed') {
+							xhtm+='\t      <td id="img"><img src="images/light-unknown.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
 					}
 					else {
-									xhtm+='\t      <td id="img"><img src="images/light-off.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+							xhtm+='\t      <td id="img"><img src="images/light-off.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
 					}
           xhtm+=
                 '\t      <td id="status">' + item.Status + '</td>\n' +
