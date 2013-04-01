@@ -5600,6 +5600,13 @@ char * CWebServer::GetJSonPage()
 		{
             std::string idx=m_pWebEm->FindValue("idx");
 			std::string switchcmd=m_pWebEm->FindValue("switchcmd");
+
+			if ((idx=="")||(switchcmd==""))
+				goto exitjson;
+
+			root["status"]="OK";
+			root["title"]="ResetSecurityStatus";
+
             int nValue=-1;
             
             // Change to generic *Security_Status_Desc lookup...
