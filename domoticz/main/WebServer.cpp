@@ -14,7 +14,6 @@
 #include "../hardware/hardwaretypes.h"
 #include "../webserver/Base64.h"
 #include "Logger.h"
-#include "../svnversion.h"
 #ifndef WIN32
 	#include <sys/utsname.h>
 #else
@@ -191,7 +190,7 @@ void CWebServer::StopServer()
 char * CWebServer::DisplayVersion()
 {
 	char szTmp[100];
-	sprintf(szTmp,"%s%d",VERSION_STRING,SVNVERSION);
+	sprintf(szTmp,"%s",GetVersionStr().c_str());
 	m_retstr=szTmp;
 	return (char*)m_retstr.c_str();
 }

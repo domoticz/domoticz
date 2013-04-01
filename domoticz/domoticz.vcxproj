@@ -154,6 +154,7 @@
     <ClCompile Include="hardware\TE923.cpp" />
     <ClCompile Include="hardware\TE923Tool.cpp" />
     <ClCompile Include="httpclient\HTTPClient.cpp" />
+    <ClCompile Include="main\appversion.cpp" />
     <ClCompile Include="main\Camera.cpp" />
     <ClCompile Include="main\CmdLine.cpp" />
     <ClCompile Include="hardware\DomoticzHardware.cpp" />
