@@ -427,6 +427,9 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("MeterDividerGas",GasDivider);
 	m_pMain->m_sql.UpdatePreferencesVar("MeterDividerWater",WaterDivider);
 
+	std::string scheckforupdates=m_pWebEm->FindValue("checkforupdates");
+	m_pMain->m_sql.UpdatePreferencesVar("UseAutoUpdate",(scheckforupdates=="on"?1:0));
+
 	return (char*)m_retstr.c_str();
 }
 
@@ -4107,18 +4110,30 @@ char * CWebServer::GetJSonPage()
 			}
 			else
 			{
-				std::string revfile;
-				if (!HTTPClient::GET("http://domoticz.sourceforge.net/svnversion.h",revfile))
-					goto exitjson;
-				std::vector<std::string> strarray;
-				StringSplit(revfile, " ", strarray);
-				if (strarray.size()!=3)
-					goto exitjson;
-				root["status"]="OK";
-				root["title"]="CheckForUpdate";
-				root["IsSupported"]=true;
-				root["HaveUpdate"]=(SVNVERSION<atoi(strarray[2].c_str()))?true:false;
-				root["Revision"]=atoi(strarray[2].c_str());
+				int nValue=0;
+				m_pMain->m_sql.GetPreferencesVar("UseAutoUpdate",nValue);
+				if (nValue==1)
+				{
+					std::string revfile;
+					if (!HTTPClient::GET("http://domoticz.sourceforge.net/svnversion.h",revfile))
+						goto exitjson;
+					std::vector<std::string> strarray;
+					StringSplit(revfile, " ", strarray);
+					if (strarray.size()!=3)
+						goto exitjson;
+					root["status"]="OK";
+					root["title"]="CheckForUpdate";
+					root["IsSupported"]=true;
+					root["HaveUpdate"]=(SVNVERSION<atoi(strarray[2].c_str()))?true:false;
+					root["Revision"]=atoi(strarray[2].c_str());
+				}
+				else
+				{
+					root["status"]="OK";
+					root["title"]="CheckForUpdate";
+					root["IsSupported"]=false;
+					root["HaveUpdate"]=false;
+				}
 			}
 		}
 		else if (cparam=="downloadupdate")
@@ -6005,6 +6020,10 @@ char * CWebServer::GetJSonPage()
 				else if (Key=="CM113DisplayType")
 				{
 					root["CM113DisplayType"]=nValue;
+				}
+				else if (Key=="UseAutoUpdate")
+				{
+					root["UseAutoUpdate"]=nValue;
 				}
 			}
 		}

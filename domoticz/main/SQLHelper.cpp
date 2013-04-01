@@ -443,6 +443,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("SensorTimeout", 60);
 	}
+	if (!GetPreferencesVar("UseAutoUpdate", nValue))
+	{
+		UpdatePreferencesVar("UseAutoUpdate", 1);
+	}
 
 	//Start background thread
 	if (!StartThread())

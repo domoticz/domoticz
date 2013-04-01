@@ -173,7 +173,15 @@
 		</table>
 	</tr>
 	</div>
+</div>
+<div class="row divider borderbot">
 	<div class="span6">
+		<table class="display" id="autoupdatetable" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td><input type="checkbox" id="checkforupdates" name="checkforupdates"/> Check for Updates (Not working on windows systems)</td>
+			</tr>
+		</table>
+	</tr>
 	</div>
 </div>
 <br>
@@ -294,6 +302,9 @@ function ShowSettings()
       }
       if (typeof data.CM113DisplayType != 'undefined') {
         $("#owl113table #comboscm113type").val(data.CM113DisplayType);
+      }
+      if (typeof data.UseAutoUpdate != 'undefined') {
+        $("#autoupdatetable #checkforupdates").prop('checked',data.UseAutoUpdate==1);
       }
      }
   });

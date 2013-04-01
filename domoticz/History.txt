@@ -2,6 +2,7 @@ Version 1.0.xxx (April xxth 2013)
 - Implemented: Raspberry Pi, updating via the web browser (Settings Tab)
 - Implemented: Web Gui, sticky Notification (now only used when there is an update for the Raspberry Pi)
 - Fixed: ResetSecurityStatus json return status
+- Implemented: Option to display update check
 
 Version 1.0.412 (April 1th 2013)
 - Fixed: Siren icon on dashboard
