@@ -21,7 +21,6 @@ function progressdownload() {
 	else {
 		$("#updatecontent #divprogress").hide();
 		$( "#toplabel" ).html("Error while downloading Update,<br>check your internet connection or try again later !...");
-		//SwitchLayout('Dashboard');
 	}
 }
 
@@ -35,7 +34,20 @@ function progressupdatesystem() {
 	}
 	else {
 		SwitchLayout('Dashboard');
+		window.location.reload();
 	}
+}
+
+function SendUpdateCommand() {
+	$.ajax({
+		 url: "json.htm?type=command&param=execute_script&scriptname=update_domoticz",
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+		 },
+		 error: function(){
+		 }     
+	});
 }
 
 function CheckDownloadReady()
@@ -57,15 +69,7 @@ function CheckDownloadReady()
 						$( "#progressbar" ).progressbar( "value",0);
 						$( "#toplabel" ).text("Updating system...");
 						$.myglobals.refreshTimer=setTimeout( progressupdatesystem, 400 );
-						$.ajax({
-							 url: "json.htm?type=command&param=execute_script&scriptname=update_domoticz",
-							 async: false, 
-							 dataType: 'json',
-							 success: function(data) {
-							 },
-							 error: function(){
-							 }     
-						});
+						setTimeout( SendUpdateCommand, 1000 );
 				}
 				else {
 					setTimeout( CheckDownloadReady, 1000 );
