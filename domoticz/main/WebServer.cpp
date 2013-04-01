@@ -4091,6 +4091,13 @@ char * CWebServer::GetJSonPage()
 		}
 		else if (cparam=="checkforupdate")
 		{
+#ifdef _DEBUG
+			root["status"]="OK";
+			root["title"]="CheckForUpdate";
+			root["IsSupported"]=true;
+			root["HaveUpdate"]=true;
+			root["Revision"]=123;
+#else
 			utsname my_uname;
 			if (uname(&my_uname)<0)
 				goto exitjson;
@@ -4118,9 +4125,18 @@ char * CWebServer::GetJSonPage()
 				root["HaveUpdate"]=(SVNVERSION<atoi(strarray[2].c_str()))?true:false;
 				root["Revision"]=atoi(strarray[2].c_str());
 			}
+#endif
 		}
 		else if (cparam=="downloadupdate")
 		{
+#ifdef _DEBUG
+			root["status"]="OK";
+			root["title"]="DownloadUpdate";
+			std::string systemname="linux";
+			std::string machine="armv6l";
+			std::string downloadURL="http://domoticz.sourceforge.net/domoticz_" + systemname + "_" + machine + ".tgz";
+			m_pMain->GetDomoticzUpdate(downloadURL);
+#else
 			std::string revfile;
 			if (!HTTPClient::GET("http://domoticz.sourceforge.net/svnversion.h",revfile))
 				goto exitjson;
@@ -4142,6 +4158,7 @@ char * CWebServer::GetJSonPage()
 			root["title"]="DownloadUpdate";
 			std::string downloadURL="http://domoticz.sourceforge.net/domoticz_" + systemname + "_" + machine + ".tgz";
 			m_pMain->GetDomoticzUpdate(downloadURL);
+#endif
 		}
 		else if (cparam=="downloadready")
 		{

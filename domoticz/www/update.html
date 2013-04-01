@@ -64,8 +64,8 @@ function CheckDownloadReady()
 		 dataType: 'json',
 		 success: function(data) {
 			if (data.status == "OK") {
-				clearTimeout($.myglobals.refreshTimer);
 				if (data.downloadok==true) {
+						clearTimeout($.myglobals.refreshTimer);
 						$( "#progressbar" ).progressbar( "value",0);
 						$( "#toplabel" ).text("Updating system...");
 						$.myglobals.refreshTimer=setTimeout( progressupdatesystem, 400 );
