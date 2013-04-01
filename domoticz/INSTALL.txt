@@ -13,9 +13,11 @@ Compatible browsers:
 - Chrome/Firefox/Safari...
 - Internet Explorer version 10+
 
-Be aware that a Raspberry pi receives its time from an online ntp server. If the pi is not connected to a network, the device time will not be updated, resulting in scheduling issues. 
+Be aware that a Raspberry pi receives its time from an online ntp server.
+If the pi is not connected to a network, the device time will not be updated, resulting in scheduling issues. 
 
-All ports below 1024 on linux systems can only be started by root. If you run domoticz on port 80, make sure to run it as root, e.g. : sudo ./domoticz
+All ports below 1024 on linux systems can only be started by root.
+If you run domoticz on port 80, make sure to run it as root, e.g. : sudo ./domoticz
 
 Compiling from source code:
 ------------------------------------------
