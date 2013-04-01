@@ -29,7 +29,7 @@ function progressupdatesystem() {
 	$( "#progressbar" ).progressbar( "value", val + 1 );
 	if ( val < 99 ) {
 		if ($.StopProgress==false) {
-			$.myglobals.refreshTimer=setTimeout( progressupdatesystem, 600 );
+			$.myglobals.refreshTimer=setTimeout( progressupdatesystem, 400 );
 		}
 	}
 	else {

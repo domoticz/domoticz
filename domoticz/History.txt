@@ -1,5 +1,6 @@
-Version 1.0.413 (April xxth 2013)
+Version 1.0.xxx (April xxth 2013)
 - Implemented: Raspberry Pi, updating via the webbrowser (Settings Tab)
+- Implemented: Web Gui, stickey Notification (now only used when there is an update for the Raspberry Pi)
 
 Version 1.0.412 (April 1th 2013)
 - Fixed: Siren icon on dashboard
