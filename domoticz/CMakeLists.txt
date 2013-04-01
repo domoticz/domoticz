@@ -173,7 +173,7 @@ add_dependencies(domoticz revisiontag)
 
 
 ## Link libraries
-set(Boost_USE_STATIC_LIBS ON)
+#set(Boost_USE_STATIC_LIBS ON)
 set(BOOST_LIBS thread date_time system)
 find_package(Boost COMPONENTS ${BOOST_LIBS} REQUIRED)
 IF (Boost_FOUND)
