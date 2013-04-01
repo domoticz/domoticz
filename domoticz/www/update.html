@@ -72,7 +72,10 @@ function CheckDownloadReady()
 						setTimeout( SendUpdateCommand, 1000 );
 				}
 				else {
-					setTimeout( CheckDownloadReady, 1000 );
+					clearTimeout($.myglobals.refreshTimer);
+					$.StopProgress=true;
+					$("#updatecontent #divprogress").hide();
+					$( "#toplabel" ).html("Error while downloading Update,<br>check your internet connection or try again later !...");
 				}
 			}
 			else {
