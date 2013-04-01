@@ -71,6 +71,9 @@ function CheckDownloadReady()
 					setTimeout( CheckDownloadReady, 1000 );
 				}
 			}
+			else {
+					setTimeout( CheckDownloadReady, 1000 );
+			}
 		 },
 		 error: function(){
 			clearTimeout($.myglobals.refreshTimer);
