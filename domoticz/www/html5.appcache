@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 121
+# ref 122
 
 CACHE:
 favicon.ico
@@ -215,25 +215,29 @@ media/swf/copy_csv_xls.swf
 media/swf/copy_csv_xls_pdf.swf
 
 # js
-js/bootstrap.min.js.gz
-js/date.format.js.gz
+js/bootstrap.min.js
+js/date.format.js
 js/domoticz.js
-js/highcharts-more.js.gz
-js/highcharts.js.gz
-js/jquery-1.9.1.min.js.gz
-js/jquery-migrate-1.1.1.min.js.gz
-js/jquery-ui-1.10.1.custom.min.js.gz
-js/jquery.dataTables.min.js.gz
-js/jquery.ui.touch-punch.min.js.gz
-js/TableTools.min.js.gz
-js/ZeroClipboard.js.gz
-js/modules/exporting.js.gz
-js/themes/dark-blue.js.gz
-js/themes/dark-green.js.gz
-js/themes/gray.js.gz
-js/themes/grid.js.gz
-js/themes/skies.js.gz
+js/highcharts-more.js
+js/highcharts.js
+js/jquery-1.9.1.min.js
+js/jquery-migrate-1.1.1.min.js
+js/jquery-ui-1.10.1.custom.min.js
+js/jquery.dataTables.min.js
 js/jquery.jeditable.mini.gz
+js/jquery.ui.touch-punch.min.js
+js/TableTools.min.js
+js/ZeroClipboard.js
+js/modules/exporting.js
+js/noty/jquery.noty.js
+js/noty/layouts/top.js
+js/noty/layouts/topRight.js
+js/noty/themes/default.js
+js/themes/dark-blue.js
+js/themes/dark-green.js
+js/themes/gray.js
+js/themes/grid.js
+js/themes/skies.js
 
 # Resources that require the user to be online.
 NETWORK:

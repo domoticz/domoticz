@@ -57,7 +57,10 @@
         <script src="js/bootstrap.min.js"></script>
         <script src="js/jquery-ui-1.10.1.custom.min.js"></script>
 				<script src="js/jquery.ui.touch-punch.min.js"></script>
-
+				<script type="text/javascript" src="js/noty/jquery.noty.js"></script>
+        <script type="text/javascript" src="js/noty/layouts/top.js"></script>
+        <script type="text/javascript" src="js/noty/layouts/topRight.js"></script>
+        <script type="text/javascript" src="js/noty/themes/default.js"></script>
 				<script type="text/javascript" charset="utf-8" src="js/jquery.dataTables.min.js"></script>
 				<script type="text/javascript" charset="utf-8" src="js/ZeroClipboard.js"></script>
 				<script type="text/javascript" charset="utf-8" src="js/TableTools.min.js"></script>
@@ -89,6 +92,9 @@ function CheckForUpdate(showdialog) {
 						if (bValid) {
 							SwitchLayout('Update');
 						}
+					}
+					else {
+						var noty2 = noty({text: 'A new version of Domoticz is Available!...<br>Use the Setup tab to update.'});
 					}
 				}
 				else
@@ -246,6 +252,31 @@ $(document).ready(function() {
           }
     });
     
+$.noty.defaults = {
+	layout: 'topRight',
+	theme: 'defaultTheme',
+	type: 'success',
+	text: '',
+	dismissQueue: true, // If you want to use queue feature set this true
+	template: '<div class="noty_message"><span class="noty_text"></span><div class="noty_close"></div></div>',
+	animation: {
+		open: {height: 'toggle'},
+		close: {height: 'toggle'},
+		easing: 'swing',
+		speed: 500 // opening & closing animation speed
+	},
+	timeout: false, // delay for closing event. Set false for sticky notifications
+	force: false, // adds notification to the beginning of queue when set to true
+	modal: false,
+	closeWith: ['click'], // ['click', 'button', 'hover']
+	callback: {
+		onShow: function() {},
+		afterShow: function() {},
+		onClose: function() {},
+		afterClose: function() {}
+	},
+	buttons: false // an array of buttons
+};    
     CheckForUpdate(false);
 	
 		SwitchLayout(GetLayoutFromURL());
