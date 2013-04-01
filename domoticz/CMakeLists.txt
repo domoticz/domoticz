@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 project(domoticz)
 
+set(CMAKE_EXE_LINKER_FLAGS "-static")
+
 # Macro for setting up precompiled headers. Usage:
 #
 #   add_precompiled_header(target header.h [FORCEINCLUDE])
