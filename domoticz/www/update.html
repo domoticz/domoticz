@@ -68,8 +68,8 @@ function CheckDownloadReady()
 						clearTimeout($.myglobals.refreshTimer);
 						$( "#progressbar" ).progressbar( "value",0);
 						$( "#toplabel" ).text("Updating system...");
-						$.myglobals.refreshTimer=setTimeout( progressupdatesystem, 400 );
-						setTimeout( SendUpdateCommand, 1000 );
+						$.myglobals.refreshTimer=setTimeout( progressupdatesystem, 200 );
+						setTimeout( SendUpdateCommand, 5000 );
 				}
 				else {
 					clearTimeout($.myglobals.refreshTimer);

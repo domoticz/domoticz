@@ -15,7 +15,7 @@
 
 bool		HTTPClient::m_bCurlGlobalInitialized = false;
 long		HTTPClient::m_iConnectionTimeout=30;
-long		HTTPClient::m_iTimeout=10;
+long		HTTPClient::m_iTimeout=90;
 std::string	HTTPClient::m_sUserAgent="domoticz/1.0";
 
 size_t write_curl_data(void *contents, size_t size, size_t nmemb, void *userp) {
