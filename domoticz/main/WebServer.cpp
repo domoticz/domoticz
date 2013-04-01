@@ -4118,6 +4118,7 @@ char * CWebServer::GetJSonPage()
 				root["title"]="CheckForUpdate";
 				root["IsSupported"]=true;
 				root["HaveUpdate"]=(SVNVERSION<atol(strarray[2].c_str()))?true:false;
+				root["Revision"]=atol(strarray[2].c_str());
 			}
 		}
 		else if (cparam=="downloadupdate")
