@@ -372,9 +372,6 @@
     <ClCompile Include="hardware\TE923.cpp">
       <Filter>Devices\TE923</Filter>
     </ClCompile>
-    <ClCompile Include="main\appversion.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="main\domoticz.rc" />

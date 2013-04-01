@@ -6,7 +6,6 @@
 #include "RFXNames.h"
 #include "RFXtrx.h"
 #include "Helper.h"
-#include "appversion.h"
 #include "localtime_r.h"
 #include "../webserver/cWebem.h"
 #include "../httpclient/UrlEncode.h"
@@ -19,7 +18,7 @@
 #else
 	#include "WindowsHelper.h"
 #endif
-
+#include "appversion.h"
 extern std::string szStartupFolder;
 
 namespace http {
@@ -190,7 +189,7 @@ void CWebServer::StopServer()
 char * CWebServer::DisplayVersion()
 {
 	char szTmp[100];
-	sprintf(szTmp,"%s",GetVersionStr().c_str());
+	sprintf(szTmp,"%s%d",VERSION_STRING,SVNVERSION);
 	m_retstr=szTmp;
 	return (char*)m_retstr.c_str();
 }
@@ -4116,7 +4115,7 @@ char * CWebServer::GetJSonPage()
 				root["status"]="OK";
 				root["title"]="CheckForUpdate";
 				root["IsSupported"]=true;
-				root["HaveUpdate"]=(SVNVERSION<atol(strarray[2].c_str()))?true:false;
+				root["HaveUpdate"]=(SVNVERSION<atoi(strarray[2].c_str()))?true:false;
 				root["Revision"]=atoi(strarray[2].c_str());
 			}
 		}
@@ -4129,7 +4128,7 @@ char * CWebServer::GetJSonPage()
 			StringSplit(revfile, " ", strarray);
 			if (strarray.size()!=3)
 				goto exitjson;
-			if (SVNVERSION>=atol(strarray[2].c_str()))
+			if (SVNVERSION>=atoi(strarray[2].c_str()))
 				goto exitjson;
 			utsname my_uname;
 			if (uname(&my_uname)<0)
