@@ -1,4 +1,7 @@
-Version 1.0.412 (April xxth 2013)
+Version 1.0.413 (April xxth 2013)
+- Implemented: Raspberry Pi, updating via the webbrowser (Settings Tab)
+
+Version 1.0.412 (April 1th 2013)
 - Fixed: Siren icon on dashboard
 - Implemented: New layout, dropdown menu, hardware moved to setting dropdown
 - Implemented: Chart tooltip now includes weekday
