@@ -4076,10 +4076,10 @@ char * CWebServer::GetJSonPage()
 			if (scriptname.find("..")!=std::string::npos)
 				goto exitjson;
 #ifdef WIN32
-			scriptname = szStartupFolder + "scripts\\" + scriptname;
+			scriptname = szStartupFolder + "scripts\\" + scriptname + " " + szStartupFolder;
 			ShellExecute(NULL,"open",scriptname.c_str(),NULL,NULL,SW_SHOWNORMAL);
 #else
-			scriptname = szStartupFolder + "scripts/" + scriptname;
+			scriptname = szStartupFolder + "scripts/" + scriptname + " " + szStartupFolder;
 			system(scriptname.c_str());
 #endif
 			root["status"]="OK";
