@@ -65,6 +65,11 @@ public:
 	CScheduler m_scheduler;
     CCamScheduler m_camscheduler;
 	bool m_bIgnoreUsernamePassword;
+
+	void GetDomoticzUpdate(const std::string UpdateURL);
+	bool m_bHaveDownloadedDomoticzUpdate;
+	bool m_bHaveDownloadedDomoticzUpdateSuccessFull;
+
 private:
 	void PrintDeviceName(const std::string devname);
 	struct _tStartScene
@@ -78,6 +83,8 @@ private:
 	boost::mutex m_devicemutex;
 	boost::mutex decodeRXMessageMutex;
 
+	std::string m_szDomoticzUpdateURL;
+	bool m_bDoDownloadDomoticzUpdate;
 	bool m_bStartHardware;
 	unsigned char m_hardwareStartCounter;
 

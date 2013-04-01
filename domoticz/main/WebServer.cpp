@@ -10,10 +10,16 @@
 #include "localtime_r.h"
 #include "../webserver/cWebem.h"
 #include "../httpclient/UrlEncode.h"
+#include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
 #include "../webserver/Base64.h"
 #include "Logger.h"
 #include "../svnversion.h"
+#ifndef WIN32
+	#include <sys/utsname.h>
+#else
+	#include "WindowsHelper.h"
+#endif
 
 extern std::string szStartupFolder;
 
@@ -4084,6 +4090,67 @@ char * CWebServer::GetJSonPage()
 #endif
 			root["status"]="OK";
 			root["title"]="ExecuteScript";
+		}
+		else if (cparam=="checkforupdate")
+		{
+			utsname my_uname;
+			if (uname(&my_uname)<0)
+				goto exitjson;
+			std::string machine=my_uname.machine;
+			if (machine!="armv6l")
+			{
+				//Only Raspberry Pi for now!
+				root["status"]="OK";
+				root["title"]="CheckForUpdate";
+				root["HaveUpdate"]=false;
+				root["IsSupported"]=false;
+			}
+			else
+			{
+				std::string revfile;
+				if (!HTTPClient::GET("http://domoticz.sourceforge.net/svnversion.h",revfile))
+					goto exitjson;
+				std::vector<std::string> strarray;
+				StringSplit(revfile, " ", strarray);
+				if (strarray.size()!=3)
+					goto exitjson;
+				root["status"]="OK";
+				root["title"]="CheckForUpdate";
+				root["IsSupported"]=true;
+				root["HaveUpdate"]=(SVNVERSION<atol(strarray[2].c_str()))?true:false;
+			}
+		}
+		else if (cparam=="downloadupdate")
+		{
+			std::string revfile;
+			if (!HTTPClient::GET("http://domoticz.sourceforge.net/svnversion.h",revfile))
+				goto exitjson;
+			std::vector<std::string> strarray;
+			StringSplit(revfile, " ", strarray);
+			if (strarray.size()!=3)
+				goto exitjson;
+			if (SVNVERSION>=atol(strarray[2].c_str()))
+				goto exitjson;
+			utsname my_uname;
+			if (uname(&my_uname)<0)
+				goto exitjson;
+			std::string systemname=my_uname.sysname;
+			std::string machine=my_uname.machine;
+			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
+			if (machine!="armv6l")
+				goto exitjson;	//only Raspberry Pi for now
+			root["status"]="OK";
+			root["title"]="DownloadUpdate";
+			std::string downloadURL="http://domoticz.sourceforge.net/domoticz_" + systemname + "_" + machine + ".tgz";
+			m_pMain->GetDomoticzUpdate(downloadURL);
+		}
+		else if (cparam=="downloadready")
+		{
+			if (!m_pMain->m_bHaveDownloadedDomoticzUpdate)
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="DownloadReady";
+			root["downloadok"]=(m_pMain->m_bHaveDownloadedDomoticzUpdateSuccessFull)?true:false;
 		}
 		else if (cparam=="deleteallsubdevices")
 		{

@@ -6,6 +6,13 @@
 	#include <curl/curl.h>
 #endif
 
+#include <iostream>
+#include <fstream>
+
+#ifndef O_LARGEFILE
+	#define O_LARGEFILE 0
+#endif
+
 bool		HTTPClient::m_bCurlGlobalInitialized = false;
 long		HTTPClient::m_iConnectionTimeout=30;
 long		HTTPClient::m_iTimeout=10;
@@ -15,6 +22,13 @@ size_t write_curl_data(void *contents, size_t size, size_t nmemb, void *userp) {
 	size_t realsize = size * nmemb;
 	std::vector<unsigned char>* pvHTTPResponse = (std::vector<unsigned char>*)userp;
 	pvHTTPResponse->insert(pvHTTPResponse->end(),(unsigned char*)contents,(unsigned char*)contents+realsize);
+	return realsize;
+}
+
+size_t write_curl_data_file(void *contents, size_t size, size_t nmemb, void *userp) {
+	size_t realsize = size * nmemb;
+	std::ofstream *outfile=(std::ofstream*)userp;
+	outfile->write((const char*)contents,realsize);
 	return realsize;
 }
 
@@ -78,6 +92,34 @@ bool HTTPClient::GETBinary(const std::string url, std::vector<unsigned char> &re
 	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 	res = curl_easy_perform(curl);
 	curl_easy_cleanup(curl);
+
+	return (res==CURLE_OK);
+}
+
+bool HTTPClient::GETBinaryToFile(const std::string url, const std::string outputfile)
+{
+	if (!CheckIfGlobalInitDone())
+		return false;
+
+	//open the output file for writing
+	std::ofstream outfile;
+	outfile.open(outputfile.c_str(),std::ios::out|std::ios::binary|std::ios::trunc);
+	if (!outfile.is_open())
+		return false;
+
+	CURL *curl=curl_easy_init();
+	if (!curl)
+		return false;
+
+	CURLcode res;
+	SetGlobalOptions(curl);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_curl_data_file);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&outfile);
+	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+	res = curl_easy_perform(curl);
+	curl_easy_cleanup(curl);
+
+	outfile.close();
 
 	return (res==CURLE_OK);
 }

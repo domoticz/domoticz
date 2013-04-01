@@ -1,6 +1,5 @@
 #!/bin/sh
 cd $1
-wget http://domoticz.sourceforge.net/domoticz_linux_armv6l.tgz -O update.tgz
 tar xfz update.tgz
 rm update.tgz
 

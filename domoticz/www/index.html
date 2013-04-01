@@ -74,6 +74,49 @@ function logEvent(event) {
   //console.log(event.type);
 }
 
+function CheckForUpdate(showdialog) {
+		$.ajax({
+			 url: "json.htm?type=command&param=checkforupdate",
+			 async: false, 
+			 dataType: 'json',
+			 success: function(data) {
+				if (data.HaveUpdate == true) {
+					$("#mUpdate").show();
+					$("#mCheckUpdate").hide();
+					if (showdialog) {
+						var bValid = false;
+						bValid=(confirm("Update Available !... Update Now?")==true);
+						if (bValid) {
+							SwitchLayout('Update');
+						}
+					}
+				}
+				else
+				{
+					if (data.IsSupported==false) {
+						$("#dUpdate").hide();
+						$("#mUpdate").hide();
+						$("#mCheckUpdate").hide();
+					}
+					else {
+						$("#mUpdate").hide();
+						$("#mCheckUpdate").show();
+					}
+					if (showdialog) {
+						alert("No Update Available...");
+					}
+				}
+			 },
+			 error: function(){
+					$("#mUpdate").hide();
+					$("#mCheckUpdate").show();
+					if (showdialog) {
+						alert("Error communicating to server!");
+					}
+			 }     
+		});
+}
+
 function TransferDevice(idx,backfunction)
 {
 	$.ajax({
@@ -202,6 +245,8 @@ $(document).ready(function() {
             $( this ).dialog( "close" );
           }
     });
+    
+    CheckForUpdate(false);
 	
 		SwitchLayout(GetLayoutFromURL());
 
@@ -316,6 +361,9 @@ $(document).ready(function() {
                                     <!--
                                     <li id="mCam"><a id="cCam" href="javascript:SwitchLayout('Cam')"><img src="images/camera-web.png"> Cameras</a></li>
                                     -->
+                                    <li id="dUpdate" class="divider"></li>
+                                    <li id="mUpdate"><a id="cUpdate" href="javascript:SwitchLayout('Update')"><img src="images/utility.png"> Update Domoticz</a></li>
+                                    <li id="mCheckUpdate"><a id="cUpdate" href="javascript:CheckForUpdate(true)"><img src="images/utility.png"> Check for Update</a></li>
                                     <li class="divider"></li>
                                     <li id="mLog"><a id="cLog" href="javascript:SwitchLayout('Log')"><img src="images/log.png"> Log</a></li>
                                 </ul>

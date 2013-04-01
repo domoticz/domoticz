@@ -1,0 +1,145 @@
+<div id="updatecontent">
+	<h1 id="toplabel">Checking for updates....</h1>
+	<br>
+	<div id="divprogress" style="display:none;">
+		<div id="progressbar"><div id="proglabel" class="progress-label"></div></div>
+		<br>
+		<center>Do not poweroff the system while updating !...</center>
+	</div>
+</div>
+
+<script type="text/javascript" charset="utf-8">
+
+function progressdownload() {
+	var val = $( "#progressbar" ).progressbar( "value" ) || 0;
+	$( "#progressbar" ).progressbar( "value", val + 1 );
+	if ( val < 99 ) {
+		if ($.StopProgress==false) {
+			$.myglobals.refreshTimer=setTimeout( progressdownload, 600 );
+		}
+	}
+	else {
+		$("#updatecontent #divprogress").hide();
+		$( "#toplabel" ).html("Error while downloading Update,<br>check your internet connection or try again later !...");
+		//SwitchLayout('Dashboard');
+	}
+}
+
+function progressupdatesystem() {
+	var val = $( "#progressbar" ).progressbar( "value" ) || 0;
+	$( "#progressbar" ).progressbar( "value", val + 1 );
+	if ( val < 99 ) {
+		if ($.StopProgress==false) {
+			$.myglobals.refreshTimer=setTimeout( progressupdatesystem, 600 );
+		}
+	}
+	else {
+		SwitchLayout('Dashboard');
+	}
+}
+
+function CheckDownloadReady()
+{
+	var val = $( "#progressbar" ).progressbar( "value" ) || 0;
+	if (val == 100) {
+		$("#updatecontent #divprogress").hide();
+		$( "#toplabel" ).html("Error while downloading Update,<br>check your internet connection or try again later !...");
+		return;
+	}
+	$.ajax({
+		 url: "json.htm?type=command&param=downloadready",
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			if (data.status == "OK") {
+				clearTimeout($.myglobals.refreshTimer);
+				if (data.downloadok==true) {
+						$( "#progressbar" ).progressbar( "value",0);
+						$( "#toplabel" ).text("Updating system...");
+						$.myglobals.refreshTimer=setTimeout( progressupdatesystem, 400 );
+						$.ajax({
+							 url: "json.htm?type=command&param=execute_script&scriptname=update_domoticz",
+							 async: false, 
+							 dataType: 'json',
+							 success: function(data) {
+							 },
+							 error: function(){
+							 }     
+						});
+				}
+				else {
+					setTimeout( CheckDownloadReady, 1000 );
+				}
+			}
+		 },
+		 error: function(){
+			clearTimeout($.myglobals.refreshTimer);
+			$.StopProgress=true;
+			$("#updatecontent #divprogress").hide();
+			$( "#toplabel" ).html("Error while downloading Update,<br>check your internet connection or try again later !...");
+		 }     
+	});
+}
+
+function CheckForUpdate()
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=checkforupdate",
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			if (data.HaveUpdate == true) {
+				$( "#toplabel" ).text("Update Available... Downloading Update !...");
+				
+				$.ajax({
+					 url: "json.htm?type=command&param=downloadupdate",
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+						if (data.status == "OK") {
+							$("#updatecontent #divprogress").show();
+							$( "#progressbar" ).progressbar( "value",0);
+							$.myglobals.refreshTimer=setTimeout( progressdownload, 1000 );
+							setTimeout( CheckDownloadReady, 2000 );
+						}
+						else {
+							$( "#toplabel" ).html("Could not start download,<br>check your internet connection or try again later !...");
+						}
+					 },
+					 error: function(){
+							$( "#toplabel" ).text("Error communicating with Server !...");
+					 }     
+				});
+			}
+			else {
+				$( "#toplabel" ).text("No Update Available !...");
+			}
+		 },
+		 error: function(){
+				$( "#toplabel" ).text("Error communicating with Server !...");
+		 }     
+	});
+}
+
+$(document).ready(function() {
+	$.StopProgress=false;
+	var progressbar = $( "#progressbar" );
+	progressLabel = $( ".progress-label" );
+	progressbar.height(22);
+	progressbar.progressbar({
+		value: false,
+		change: function() {
+			progressLabel.text( progressbar.progressbar( "value" ) + "%" );
+		},
+		complete: function() {
+			//progressLabel.text( "Complete!" );
+		}
+	});
+	progressbarValue = progressbar.find( ".ui-progressbar-value" );
+	progressbarValue.css({
+		"background": 'url(images/pbar-ani.gif)'
+	});
+	
+	$.myglobals.refreshTimer=setTimeout( CheckForUpdate, 2000 );
+} );  
+</script>

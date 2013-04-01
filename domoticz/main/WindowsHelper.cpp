@@ -252,4 +252,15 @@ void ShowSystemTrayNotification(const char *szMessage)
 	TrayMessage(NIM_ADD,szMessage);
 }
 
+int	uname(struct utsname *putsname)
+{
+	strcpy_s(putsname->sysname,"Windows");
+	strcpy_s(putsname->machine,"x86");
+	strcpy_s(putsname->nodename,"Domoticz");
+	strcpy_s(putsname->release,"1.2.3");
+	strcpy_s(putsname->version,"latest");
+
+	return 0;
+}
+
 #endif

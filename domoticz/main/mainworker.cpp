@@ -8,6 +8,7 @@
 #include "SunRiseSet.h"
 #include "localtime_r.h"
 #include "Logger.h"
+#include "../httpclient/HTTPClient.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -51,6 +52,9 @@ MainWorker::MainWorker()
 	localtime_r(&atime,&ltime);
 	m_ScheduleLastMinute=ltime.tm_min;
 	m_ScheduleLastHour=ltime.tm_hour;
+	m_bHaveDownloadedDomoticzUpdate=false;
+	m_bHaveDownloadedDomoticzUpdateSuccessFull=false;
+	m_bDoDownloadDomoticzUpdate=false;
 }
 
 MainWorker::~MainWorker()
@@ -474,6 +478,14 @@ bool file_exist (const char *filename)
 	return (stat(filename, &sbuffer) == 0);
 }
 
+void MainWorker::GetDomoticzUpdate(const std::string UpdateURL)
+{
+	m_szDomoticzUpdateURL=UpdateURL;
+	m_bHaveDownloadedDomoticzUpdate=false;
+	m_bHaveDownloadedDomoticzUpdateSuccessFull=false;
+	m_bDoDownloadDomoticzUpdate=true;
+}
+
 void MainWorker::Do_Work()
 {
 	int second_counter=0;
@@ -481,6 +493,14 @@ void MainWorker::Do_Work()
 	{
 		//sleep 500 milliseconds
 		boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+
+		if (m_bDoDownloadDomoticzUpdate)
+		{
+			m_bDoDownloadDomoticzUpdate=false;
+			std::string outfile = szStartupFolder+"update.tgz";
+			m_bHaveDownloadedDomoticzUpdateSuccessFull=HTTPClient::GETBinaryToFile(m_szDomoticzUpdateURL.c_str(),outfile.c_str());
+			m_bHaveDownloadedDomoticzUpdate=true;
+		}
 
 		if (m_scenes_to_start.size()>0)
 		{

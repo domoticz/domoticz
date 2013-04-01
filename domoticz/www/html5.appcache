@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 120
+# ref 121
 
 CACHE:
 favicon.ico
@@ -137,6 +137,7 @@ images/override.png
 images/override_mini.png
 images/overrule.png
 images/overrule_mini.png
+images/pbar-ani.gif
 images/pdf.png
 images/pdf_hover.png
 images/pIkfp.gif

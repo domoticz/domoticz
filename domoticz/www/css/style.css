@@ -1130,3 +1130,13 @@ div.log {
   font-weight:bold;
 	color: #444444;
 }
+
+ .progress-label {
+	float: left;
+	margin-left: 50%;
+	margin-top: -4px;
+	font-size: 1.3em;
+  font-weight:bold;
+  text-shadow: 1px 1px #000;
+	color: #fff;
+}
