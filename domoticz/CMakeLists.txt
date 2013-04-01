@@ -120,7 +120,6 @@ ADD_CUSTOM_COMMAND(TARGET revisiontag COMMAND ${CMAKE_COMMAND}
 set(
 domoticz_SRCS
 main/stdafx.cpp
-main/appversion.cpp
 main/Logger.cpp
 main/domoticz.cpp
 main/CmdLine.cpp
