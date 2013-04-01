@@ -1,13 +1,13 @@
 Version 1.0.xxx (April xxth 2013)
-- Implemented: Raspberry Pi, updating via the webbrowser (Settings Tab)
-- Implemented: Web Gui, stickey Notification (now only used when there is an update for the Raspberry Pi)
+- Implemented: Raspberry Pi, updating via the web browser (Settings Tab)
+- Implemented: Web Gui, sticky Notification (now only used when there is an update for the Raspberry Pi)
 
 Version 1.0.412 (April 1th 2013)
 - Fixed: Siren icon on dashboard
 - Implemented: New layout, dropdown menu, hardware moved to setting dropdown
 - Implemented: Chart tooltip now includes weekday
 - Fixed: Option to enlarge the short-log (5 minutes)
-- Fixed: Dimslider using now values 1 till ... , 1=Off
+- Fixed: Dim slider using now values 1 till ... , 1=Off
 - Implemented: New Log mechanism (needed later for log viewer)
 - Implemented: command line option '-logfile'
 - Implemented: Log Window
@@ -25,9 +25,9 @@ Version 1.0.412 (April 1th 2013)
 - Implemented: Wind Direction Icons
 - Changed: Drag/Dropping sensors now inserts instead of swapping items
 - Fixed: KD101 smoke detector battery indication (has none)
-- Implemented: Windows, if user has NO admin rights, the domoticz database will be created in %ProgramData%\Domoticz folder
+- Implemented: Windows, if user has NO admin rights, the Domoticz database will be created in %ProgramData%\Domoticz folder
 - Implemented: Windows, no longer need admin rights
-- Fixed: Baro meter did not show on the dashboard under weather
+- Fixed: Barometer did not show on the dashboard under weather
 - Fixed: Only TFA UV sensor will now report a temperature
 - Fixed: Light/Switch notification could not be unset
 - Implemented: Adjustment value for temperature sensors
@@ -43,7 +43,7 @@ Version 1.0.412 (April 1th 2013)
   ^^(Unix only at the moment! On Windows it does NOT work)
 - Fixed: Weather Station Negative temperature
 - Fixed: P1 Smart Meter (Gas) now has a timeout of 3 hours
-- Implemented: Weather Station baro meter now more precise (xxxx.x hPa), and displaying device forcast
+- Implemented: Weather Station barometer now more precise (xxxx.x hPa), and displaying device forecast
 - Fixed: Weather Station Rain meter
 - Fixed: Weather Station can now handle 6 temperature channels
 - Implemented: Adjustment value for barometer sensors
@@ -73,15 +73,15 @@ Version 1.0.9 (February 17th 2013)
 - Implemented: Serial port auto reconnect option 
 - Fixed: LightwaveRF dimmer value notation
 - Implemented: dimmer timer support
-- Fixed: Now able to clear lightlog for security1 devices
+- Fixed: Now able to clear light log for security1 devices
 - Implemented: temp_hum Rubicson/IW008T/TX95
 - Implemented: Latest RFXCOM SDK
-- Changed: Manual Add light switchtypes are now complete
+- Changed: Manual Add light switch types are now complete
 - Implemented: Dimmer change now directly updates the user interface status
 - Fixed: Mobile desktop, blind open icon
 - Fixed: Day display for Month/Year utility graph
 - Fixed: Mobile dashboard slider image redraw issue
-- Fixed: Initial dimslider position on dashboard
+- Fixed: Initial dim slider position on dashboard
 - Fixed: Possible issue when disabling/enabling/removing hardware
 - Fixed: Notification Enable/Disable checkbox
 - Implemented: P1 smart meter will update once a minute, or when usage difference is greater than 40 Watt
@@ -121,7 +121,7 @@ Version 1.0.7 (January 18th 2013)
 - Option to transfer old device logs/settings to a new device (for example when the device battery is replaced and received a new ID)
 - Youless Pulse Counter Meter hardware implemented
 - Schedule item started message will now also report the timer type
-- Clicking TopLeft (Domoticz) will show dashboard
+- Clicking Top Left (Domoticz) will show dashboard
 - Hardware can now be Enabled/Disabled
 - Lights/Switches, Contact status now displays as Open/Closed instead of On/Off
 - Lights/Switches, Contact Open/Closed icon
@@ -137,10 +137,12 @@ Version 1.0.6 (January 9th 2013)
 - Web Protection, option to ignore (local) networks
 - Code should now compile also with VS2010 express
 - Code now compiles also with Debian (Mac OS)
-- Lighting 1, ARC Doorbell is now send with a 'Chime' instead of AllOn
+- Lighting 1, ARC Doorbell is now send with a 'Chime' instead of All On
 - P1 Smart Meter, Gas value now only send/update when the value is changing (once every 1 a 2 hours)
-- P1 Smart Meter updates to shared clients now once every 60 seconds (reduces network traffic)
-- Random Timer implemented (OnTime timer with +/- xxx minutes offset)
+- P1 Smart Meter updates its information to shared clients now once every 60 seconds (reduces network traffic)
+- Random Timer implemented (On Time timer with +/- xxx minutes offset)
 
 Version 1.0.5 (December 29th 2012)
 - Start of History document
+
+
