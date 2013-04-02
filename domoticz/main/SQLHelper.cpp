@@ -925,8 +925,8 @@ bool CSQLHelper::SendNotification(const std::string EventID, const std::string M
 		if (sValue!="")
 		{
 			//send message to Prowl
-			sprintf(szURL,"http://api.prowlapp.com/publicapi/add?apikey=%s&priority=0&application=Domoticz&event=%s&description=%s",
-				sValue.c_str(),EventID.c_str(),Message.c_str());
+			sprintf(szURL,"http://api.prowlapp.com/publicapi/add?apikey=%s&application=Domoticz&event=%s&description=%s&priority=0",
+				sValue.c_str(),Message.c_str(),Message.c_str());
 			I_HTTPRequest * r = NewHTTPRequest( szURL );
 			if (r!=NULL)
 			{
@@ -945,7 +945,7 @@ bool CSQLHelper::SendNotification(const std::string EventID, const std::string M
 		if (sValue!="")
 		{
 			//send message to Prowl
-			sprintf(szURL,"http://www.notifymyandroid.com/publicapi/notify?apikey=%s&priority=0&application=Domoticz&event=%s&description=%s",
+			sprintf(szURL,"http://www.notifymyandroid.com/publicapi/notify?apikey=%s&application=Domoticz&event=%s&priority=0&description=%s",
 				sValue.c_str(),EventID.c_str(),Message.c_str());
 			I_HTTPRequest * r = NewHTTPRequest( szURL );
 			if (r!=NULL)

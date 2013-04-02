@@ -6,6 +6,7 @@ Version 1.0.xxx (April xxth 2013)
 - Implemented: Utility sensors now display their usage value in large font
 - Implemented/Fixed: web update now not available for ArchLinux raspberry pi
 - Implemented: Version number now read with json call
+- Changed: Some code for sending NMA notifications
 
 Version 1.0.412 (April 1th 2013)
 - Fixed: Siren icon on dashboard
