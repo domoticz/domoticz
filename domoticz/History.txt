@@ -5,6 +5,7 @@ Version 1.0.xxx (April xxth 2013)
 - Implemented: Option to display update check
 - Implemented: Utility sensors now display their usage value in large font
 - Implemented/Fixed: web update now not available for ArchLinux raspberry pi
+- Implemented: Version number now read with json call
 
 Version 1.0.412 (April 1th 2013)
 - Fixed: Siren icon on dashboard
