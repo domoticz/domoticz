@@ -4107,7 +4107,7 @@ char * CWebServer::GetJSonPage()
 			std::string systemname=my_uname.sysname;
 			std::string machine=my_uname.machine;
 			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
-			if ((systemname=="windows")||(machine!="armv6l"))
+			if ((systemname=="windows")||(machine!="armv6l")||(strstr(my_uname.release,"ARCH+")!=NULL))
 			{
 				//Only Raspberry Pi for now!
 				root["status"]="OK";
@@ -4160,7 +4160,7 @@ char * CWebServer::GetJSonPage()
 			std::string systemname=my_uname.sysname;
 			std::string machine=my_uname.machine;
 			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
-			if (machine!="armv6l")
+			if ((machine!="armv6l")||(strstr(my_uname.release,"ARCH+")!=NULL))
 				goto exitjson;	//only Raspberry Pi for now
 			root["status"]="OK";
 			root["title"]="DownloadUpdate";
