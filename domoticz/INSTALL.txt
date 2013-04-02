@@ -42,7 +42,7 @@ When using the Arch Linux image, it looks like you do not have to apply the abov
 
 ------------------------------------------------------------------------------------------------
 Raspberry Pi (Arch Linux):
-sudo pacman -S gcc cmake subversion boost sqlite make curl libcurl4-openssl-dev libusb-dev
+sudo pacman -S gcc cmake subversion boost sqlite make curl libusb
 
 ------------------------------------------------------------------------------------------------
 Debian (Mac OS)
