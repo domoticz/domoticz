@@ -1257,6 +1257,7 @@ function RefreshUtilities()
 						}
 						var img="";
 						var status="";
+						var bigtext="";
 						
             if (typeof item.Counter != 'undefined') {
               img='<img src="images/counter.png" height="48">';
@@ -1272,6 +1273,7 @@ function RefreshUtilities()
             }
             if (typeof item.Usage != 'undefined') {
 							status+=", Usage: " + item.Usage;
+							bigtext=item.Usage;
             }
             if (typeof item.CounterDeliv != 'undefined') {
 							if (item.CounterDeliv!=0) {
@@ -1284,6 +1286,7 @@ function RefreshUtilities()
 							$(id + " #img").html(img);
 						}
 						if ($(id + " #status").html()!=status) {
+							$(id + " #bigtext").html(bigtext);
 							$(id + " #status").html(status);
 						}
 						if ($(id + " #lastupdate").html()!=item.LastUpdate) {
@@ -1350,9 +1353,12 @@ function ShowUtilities()
 					else {
 						xhtm+='\t      <td id="name" style="background-color: #DF2D3A;">' + item.Name + '</td>\n';
 					}
-					xhtm+=
-								'\t      <td id="bigtext"></td>\n' +
-                '\t      <td id="img"><img src="images/';
+					xhtm+='\t      <td id="bigtext">';
+					if (typeof item.Usage != 'undefined') {
+						xhtm+=item.Usage;
+					}
+					xhtm+='</td>\n';
+          xhtm+='\t      <td id="img"><img src="images/';
             var status="";
             if (typeof item.Counter != 'undefined') {
               xhtm+='counter.png" height="48"></td>\n';

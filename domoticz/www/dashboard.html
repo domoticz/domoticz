@@ -587,6 +587,7 @@ function RefreshFavorites()
 							else {
 								var img="";
 								var status="";
+								var bigtext="";
 								
 								if (typeof item.Counter != 'undefined') {
 									img='<img src="images/counter.png" height="40">';
@@ -606,6 +607,7 @@ function RefreshFavorites()
 									status=item.Data;
 								}
 								if (typeof item.Usage != 'undefined') {
+									bigtext=item.Usage;
 									if (data.DashboardType==0) {
 										status+=", Usage: " + item.Usage;
 									}
@@ -631,6 +633,9 @@ function RefreshFavorites()
 								}
 								if ($(id + " #status").html()!=status) {
 									$(id + " #status").html(status);
+								}
+								if ($(id + " #bigtext").html()!=bigtext) {
+									$(id + " #bigtext").html(bigtext);
 								}
 								if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 									$(id + " #lastupdate").html(item.LastUpdate);
@@ -1588,9 +1593,12 @@ function ShowFavorites()
 							else {
 								xhtm+='\t      <td id="name" style="background-color: #DF2D3A;">' + item.Name + '</td>\n';
 							}
-							xhtm+=
-										'\t      <td id="bigtext"></td>\n' +
-										'\t      <td id="img"><img src="images/';
+							xhtm+='\t      <td id="bigtext">';
+							if (typeof item.Usage != 'undefined') {
+								xhtm+=item.Usage;
+							}
+							xhtm+='</td>\n';
+							xhtm+='\t      <td id="img"><img src="images/';
 							var status="";
 							if (typeof item.Counter != 'undefined') {
 								xhtm+='counter.png" height="40"></td>\n';

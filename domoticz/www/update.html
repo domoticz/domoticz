@@ -33,6 +33,18 @@ function progressupdatesystem() {
 		}
 	}
 	else {
+		$.ajax({
+			 url: "json.htm?type=command&param=getversion",
+			 async: false, 
+			 dataType: 'json',
+			 success: function(data) {
+				if (data.status == "OK") {
+					$( "#appversion" ).text("V" + data.version);
+				}
+			 },
+			 error: function(){
+			 }     
+		});
 		SwitchLayout('Dashboard');
 		window.location.reload();
 	}

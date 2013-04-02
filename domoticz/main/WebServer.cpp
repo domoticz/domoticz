@@ -3989,7 +3989,14 @@ char * CWebServer::GetJSonPage()
 		std::string cparam=m_pWebEm->FindValue("param");
 		if (cparam=="")
 			goto exitjson;
-		if (cparam=="getlog")
+		if (cparam=="getversion")
+		{
+			char *szVersion=DisplayVersion();
+			root["status"]="OK";
+			root["title"]="GetVersion";
+			root["version"]=szVersion;
+		}
+		else if (cparam=="getlog")
 		{
 			root["status"]="OK";
 			root["title"]="GetLog";

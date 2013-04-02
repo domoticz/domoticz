@@ -62,13 +62,13 @@ bool CTE923Tool::OpenDevice()
 
 	dev = find_te923();
 	if ( dev == NULL ) {
-		_log.Log(LOG_ERROR, "TE923 weather station not found.");
+		_log.Log(LOG_ERROR, "TE923: Weather station not found.");
 		return false;
 	}
 
 	m_device_handle = usb_open( dev );
 	if ( m_device_handle == NULL ) {
-		_log.Log(LOG_ERROR, "Error while opening USB port and getting a device handler." );
+		_log.Log(LOG_ERROR, "TE923: Error while opening USB port and getting a device handler." );
 		return false;
 	}
 #ifndef WIN32
@@ -80,19 +80,19 @@ bool CTE923Tool::OpenDevice()
 #endif
 	ret = usb_set_configuration( m_device_handle, 1 );
 	if ( ret != 0 ) {
-		_log.Log(LOG_ERROR, "Error while setting device configuration (%d)." , ret );
+		_log.Log(LOG_ERROR, "TE923: Error while setting device configuration (%d)." , ret );
 		return false;
 	}
 
 	ret = usb_claim_interface( m_device_handle, 0 );
 	if ( ret != 0 ) {
-		_log.Log(LOG_ERROR, "Error while claiming device interface (%d)." , ret );
+		_log.Log(LOG_ERROR, "TE923: Error while claiming device interface (%d)." , ret );
 		return false;
 	}
 #ifndef WIN32
 	ret = usb_set_altinterface( m_device_handle, 0 );
 	if ( ret != 0 ) {
-		_log.Log(LOG_ERROR, "Error while setting alternative device interface (%d)." , ret );
+		_log.Log(LOG_ERROR, "TE923: Error while setting alternative device interface (%d)." , ret );
 		return false;
 	}
 	sleep(0.5);
