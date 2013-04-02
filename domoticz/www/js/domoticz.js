@@ -664,6 +664,19 @@ function SwitchLayout(layout)
 	if (layout == "LightSwitches") {
 		durl='lights.html';
 	}
+
+	$.ajax({
+	 url: "json.htm?type=command&param=getversion",
+	 async: true, 
+	 dataType: 'json',
+	 success: function(data) {
+		if (data.status == "OK") {
+			$( "#appversion" ).text("V" + data.version);
+		}
+	 },
+	 error: function(){
+	 }     
+	});
 		
 	//stop chaching these pages
 	var dt = new Date();

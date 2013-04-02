@@ -7,7 +7,7 @@ function RefreshFavorites()
 {
   clearInterval($.myglobals.refreshTimer);
   var id="";
-  
+
   $.ajax({
      url: "json.htm?type=command&param=getSunRiseSet",
      async: false, 
@@ -1823,6 +1823,7 @@ $(document).ready(function() {
 	if( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {
 		$.myglobals.ismobile=true;
 	}
+	
 	$(window).resize(function() { ResizeDimSliders(); });
   ShowFavorites();
 } );
