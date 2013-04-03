@@ -44,6 +44,7 @@ private:
 	void Do_Work();
 	std::string m_retstr;
 	std::wstring m_wretstr;
+	time_t m_LastUpdateCheck;
 
 	//JSon
 	void GetJSonDevices(Json::Value &root, const std::string rused, const std::string rfilter, const std::string order, const std::string rowid);

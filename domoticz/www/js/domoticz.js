@@ -822,3 +822,14 @@ function GetTemp48Item(temp)
 	}
 	return "temp-gt-30.png";
 }
+
+function generate_noty(ntype, ntext, ntimeout) {
+	var n = noty({
+		text: ntext,
+		type: ntype,
+		dismissQueue: true,
+		timeout: ntimeout,
+		layout: 'topRight',
+		theme: 'defaultTheme'
+	});
+}

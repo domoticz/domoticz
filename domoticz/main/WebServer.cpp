@@ -27,6 +27,7 @@ namespace http {
 CWebServer::CWebServer(void)
 {
 	m_pWebEm=NULL;
+	m_LastUpdateCheck=0;
 }
 
 
@@ -4104,12 +4105,14 @@ char * CWebServer::GetJSonPage()
 			utsname my_uname;
 			if (uname(&my_uname)<0)
 				goto exitjson;
+			std::string forced=m_pWebEm->FindValue("forced");
+			bool bIsForced=(forced=="true");
 			std::string systemname=my_uname.sysname;
 			std::string machine=my_uname.machine;
 			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
 			if ((systemname=="windows")||(machine!="armv6l")||(strstr(my_uname.release,"ARCH+")!=NULL))
 			{
-				//Only Raspberry Pi for now!
+				//Only Raspberry Pi (Wheezy) for now!
 				root["status"]="OK";
 				root["title"]="CheckForUpdate";
 				root["HaveUpdate"]=false;
@@ -4131,7 +4134,18 @@ char * CWebServer::GetJSonPage()
 					root["status"]="OK";
 					root["title"]="CheckForUpdate";
 					root["IsSupported"]=true;
-					root["HaveUpdate"]=(SVNVERSION<atoi(strarray[2].c_str()))?true:false;
+					bool bHaveUpdate=(SVNVERSION<atoi(strarray[2].c_str()));
+					if ((bHaveUpdate)&&(!bIsForced))
+					{
+						time_t atime=time(NULL);
+						if (atime-m_LastUpdateCheck<12*3600)
+						{
+							bHaveUpdate=false;
+						}
+						else
+							m_LastUpdateCheck=atime;
+					}
+					root["HaveUpdate"]=bHaveUpdate;
 					root["Revision"]=atoi(strarray[2].c_str());
 				}
 				else

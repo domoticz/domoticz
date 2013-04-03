@@ -8,6 +8,8 @@ Version 1.0.xxx (April xxth 2013)
 - Implemented: Version number now read with json call
 - Fixed: NMA notifications working again
 - Fixed: Visual Studio svn template was not added to SVN
+- Implemented: Browser cache is not automatically refresh (with a standby notification)
+- Implemented: Notifications for new updates are now send once in every 12 hours, unless checked by hand
 
 Version 1.0.412 (April 1th 2013)
 - Fixed: Siren icon on dashboard
