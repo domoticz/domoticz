@@ -95,7 +95,7 @@ function CheckDownloadReady()
 function CheckForUpdate()
 {
 	$.ajax({
-		 url: "json.htm?type=command&param=checkforupdate",
+		 url: "json.htm?type=command&param=checkforupdate&forced=true",
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {
