@@ -1284,23 +1284,7 @@ void MainWorker::decode_Wind(const int HwdID, const tRBUF *pResponse)
 
 	double dDirection;
 	dDirection = (pResponse->WIND.directionh * 256) + pResponse->WIND.directionl;
-	if (m_wind_results.find(windID)!=m_wind_results.end())
-	{
-		//wind meter is transmitted roughly every 30 seconds, try todo a +- 10 minute avarage
-		if (m_wind_results[windID].size()>19)
-		{
-			m_wind_results[windID].pop_front();
-		}
-	}
-	m_wind_results[windID].push_back(dDirection);
-	//average wind direction
-	std::deque<double>::const_iterator itt;
-	dDirection=0;
-	for (itt=m_wind_results[windID].begin(); itt!=m_wind_results[windID].end(); ++itt)
-	{
-		dDirection+=*itt;
-	}
-	dDirection/=m_wind_results[windID].size();
+	dDirection=m_wind_calculator[windID].AddValueAndReturnAvarage(dDirection);
 
 	std::string strDirection;
 	if (dDirection > 348.75 || dDirection < 11.26)
@@ -1354,7 +1338,7 @@ void MainWorker::decode_Wind(const int HwdID, const tRBUF *pResponse)
 		{
 			temp=-(float(((pResponse->WIND.temperatureh & 0x7F) * 256) + pResponse->WIND.temperaturel) / 10.0f);
 		}
-		if ((temp<-60)||(temp>60))
+		if ((temp<-60)||(temp>260))
 		{
 			WriteMessage(" Invalid Temperature");
 			return;
@@ -1392,7 +1376,7 @@ void MainWorker::decode_Wind(const int HwdID, const tRBUF *pResponse)
 		{
 			temp=-(float(((pResponse->WIND.temperatureh & 0x7F) * 256) + pResponse->WIND.temperaturel) / 10.0f);
 		}
-		if ((temp<-60)||(temp>60))
+		if ((temp<-60)||(temp>260))
 		{
 			WriteMessage(" Invalid Temperature");
 			return;
@@ -1523,7 +1507,7 @@ void MainWorker::decode_Temp(const int HwdID, const tRBUF *pResponse)
 	{
 		temp=-(float(((pResponse->TEMP.temperatureh & 0x7F) * 256) + pResponse->TEMP.temperaturel) / 10.0f);
 	}
-	if ((temp<-60)||(temp>60))
+	if ((temp<-60)||(temp>260))
 	{
 		WriteMessage(" Invalid Temperature");
 		return;
@@ -1784,7 +1768,7 @@ void MainWorker::decode_TempHum(const int HwdID, const tRBUF *pResponse)
 	{
 		temp=-(float(((pResponse->TEMP_HUM.temperatureh & 0x7F) * 256) + pResponse->TEMP_HUM.temperaturel) / 10.0f);
 	}
-	if ((temp<-60)||(temp>60))
+	if ((temp<-60)||(temp>260))
 	{
 		WriteMessage(" Invalid Temperature");
 		return;
@@ -1935,7 +1919,7 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const tRBUF *pResponse)
 	{
 		temp=-(float(((pResponse->TEMP_HUM_BARO.temperatureh & 0x7F) * 256) + pResponse->TEMP_HUM_BARO.temperaturel) / 10.0f);
 	}
-	if ((temp<-60)||(temp>60))
+	if ((temp<-60)||(temp>260))
 	{
 		WriteMessage(" Invalid Temperature");
 		return;
@@ -2110,7 +2094,7 @@ void MainWorker::decode_UV(const int HwdID, const tRBUF *pResponse)
 		{
 			temp = -(float(((pResponse->UV.temperatureh & 0x7F) * 256) + pResponse->UV.temperaturel) / 10.0f);
 		}
-		if ((temp<-60)||(temp>60))
+		if ((temp<-60)||(temp>260))
 		{
 			WriteMessage(" Invalid Temperature");
 			return;

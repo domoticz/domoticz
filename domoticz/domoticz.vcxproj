@@ -126,6 +126,7 @@
     <ClInclude Include="main\RFXNames.h" />
     <ClInclude Include="main\RFXtrx.h" />
     <ClInclude Include="httpclient\sock_port.h" />
+    <ClInclude Include="main\WindCalculation.h" />
     <ClInclude Include="sqlite\sqlite3.h" />
     <ClInclude Include="main\stdafx.h" />
     <ClInclude Include="main\SunRiseSet.h" />

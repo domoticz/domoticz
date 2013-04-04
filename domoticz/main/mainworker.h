@@ -8,6 +8,7 @@
 #include "Camera.h"
 #include <map>
 #include <deque>
+#include "WindCalculation.h"
 
 enum eVerboseLevel
 {
@@ -100,7 +101,7 @@ private:
 	boost::mutex m_startscene_mutex;
 	std::vector<_tStartScene> m_scenes_to_start;
 
-	std::map<unsigned short,std::deque<double> > m_wind_results;
+	std::map<unsigned short,_tWindCalculationStruct> m_wind_calculator;
 
 	bool StartThread();
 	void Do_Work();

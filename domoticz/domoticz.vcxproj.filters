@@ -232,6 +232,9 @@
     <ClInclude Include="hardware\TE923.h">
       <Filter>Devices\TE923</Filter>
     </ClInclude>
+    <ClInclude Include="main\WindCalculation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
