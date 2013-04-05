@@ -5849,7 +5849,7 @@ char * CWebServer::GetJSonPage()
 				}
 			}
 		}
-		if (used==0)
+		if ((used==0)&&(maindeviceidx==""))
 		{
 			//really remove it, including log etc
 			m_pMain->m_sql.DeleteDevice(idx);
