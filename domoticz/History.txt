@@ -13,6 +13,7 @@ Version 1.0.xxx (April xxth 2013)
 - Changed: Temperatures can now be max. 260 degrees
 - Implemented: New wind rose icons
 - Fixed: Adding Light/Switch as Sub-Device from Devices tab
+- Changed: Negative wind direction to positive
 
 Version 1.0.412 (April 1th 2013)
 - Fixed: Siren icon on dashboard

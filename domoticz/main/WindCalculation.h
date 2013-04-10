@@ -58,6 +58,8 @@ struct _tWindCalculationStruct
 		}
 		m_last_direction=degree;
 		m_bHaveLastDirection=true;
+		if (dirresult<0)
+			dirresult+=360;
 		return dirresult;
 /*
 		time_t atime=time(NULL);
