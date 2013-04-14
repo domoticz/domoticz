@@ -23,6 +23,7 @@ enum _eMeterType
 	MTYPE_ENERGY=0,
 	MTYPE_GAS,
 	MTYPE_WATER,
+    MTYPE_COUNTER,
 	MTYPE_END
 };
 
@@ -52,6 +53,7 @@ enum _eHardwareTypes {
 	HTYPE_P1SmartMeterLAN,
 	HTYPE_YouLess,
 	HTYPE_TE923,
+	HTYPE_Rego6XX,
 	HTYPE_END
 };
 
@@ -72,6 +74,7 @@ enum _eNotificationTypes
 	NTYPE_ENERGYTOTAL,
 	NTYPE_TODAYENERGY,
 	NTYPE_TODAYGAS,
+	NTYPE_TODAYCOUNTER
 };
 
 enum _eShareRights

@@ -173,6 +173,20 @@
 		</table>
 	</tr>
 	</div>
+	<div class="span6">
+	<h2>Rego 6XX:</h2><br>
+		<table class="display" id="rego6xxtable" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="right" style="width:60px"><label>Type: </label></td>
+				<td><select id="comborego6xxtype" name="Rego6XXType" style="width:200px" class="combobox ui-corner-all">
+					<option value="0">600-635, 637 single language</option>
+					<option value="1">636</option>
+					<option value="2">637 multi language</option>
+				</select></td>
+			</tr>
+		</table>
+	</tr>
+	</div>
 </div>
 <div class="row divider borderbot">
 	<div class="span6">
@@ -305,6 +319,9 @@ function ShowSettings()
       }
       if (typeof data.UseAutoUpdate != 'undefined') {
         $("#autoupdatetable #checkforupdates").prop('checked',data.UseAutoUpdate==1);
+      }
+      if (typeof data.Rego6XXType != 'undefined') {
+        $("#rego6xxtable #comborego6xxtype").val(data.Rego6XXType);
       }
      }
   });

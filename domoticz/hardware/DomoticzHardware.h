@@ -16,6 +16,7 @@ class CDomoticzHardwareBase
 	friend class P1MeterSerial;
 	friend class P1MeterTCP;
 	friend class CYouLess;
+	friend class CRego6XXSerial;
 public:
 	CDomoticzHardwareBase();
 	~CDomoticzHardwareBase() {};

@@ -94,6 +94,7 @@
     <None Include="INSTALL.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="hardware\Rego6XXSerial.h" />
     <ClInclude Include="hardware\libusbwinusbbridge.h" />
     <ClInclude Include="hardware\TE923.h" />
     <ClInclude Include="hardware\TE923Tool.h" />
@@ -156,6 +157,7 @@
     <ClCompile Include="hardware\TE923Tool.cpp" />
     <ClCompile Include="httpclient\HTTPClient.cpp" />
     <ClCompile Include="main\Camera.cpp" />
+    <ClCompile Include="hardware\Rego6XXSerial.cpp" />
     <ClCompile Include="main\CmdLine.cpp" />
     <ClCompile Include="hardware\DomoticzHardware.cpp" />
     <ClCompile Include="hardware\DomoticzTCP.cpp" />

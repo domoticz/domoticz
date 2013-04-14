@@ -143,6 +143,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_P1SmartMeterLAN,	"P1 Smart Meter with LAN interface" },
 		{ HTYPE_YouLess,			"YouLess Meter with LAN interface" },
 		{ HTYPE_TE923,				"TE923 USB Compatible Weather Station" },
+		{ HTYPE_Rego6XX,			"Rego 6XX USB/serial interface" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -173,6 +174,7 @@ const char *Meter_Type_Desc(const _eMeterType sType)
 		{ MTYPE_ENERGY, "Energy" },
 		{ MTYPE_GAS, "Gas" },
 		{ MTYPE_WATER, "Water" },
+		{ MTYPE_COUNTER, "Counter" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, sType);
@@ -196,6 +198,7 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_ENERGYINSTANT, "Instant", "I" },
 		{ NTYPE_TODAYENERGY, "Today", "E" },
 		{ NTYPE_TODAYGAS, "Today", "G" },
+		{ NTYPE_TODAYCOUNTER, "Today", "C" },
 		{  0,NULL,NULL }
 	};
 	if (snum==0)
@@ -222,6 +225,7 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_ENERGYINSTANT, "Watt" },
 		{ NTYPE_TODAYENERGY, "kWh" },
 		{ NTYPE_TODAYGAS, "m3" },
+		{ NTYPE_TODAYCOUNTER, "cnt" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, nType);
@@ -300,6 +304,8 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeP1Gas, "P1 Smart Meter" , "counter" },
 		{ pTypeYouLess, "YouLess Meter", "counter" },
 		{ pTypeFS20, "FS20" , "unknown" },
+		{ pTypeRego6XXTemp, "Temp" , "temperature" },
+		{ pTypeRego6XXValue, "Value" , "utility" },
 		{  0,NULL,NULL }
 	};
 	if (snum==1)
@@ -443,6 +449,10 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeP1Gas, sTypeP1Gas, "Gas" },
 
 		{ pTypeYouLess, sTypeYouLess, "YouLess counter" },
+
+		{ pTypeRego6XXTemp, sTypeRego6XXTemp, "Rego 6XX" },
+		{ pTypeRego6XXValue, sTypeRego6XXStatus, "Rego 6XX" },
+		{ pTypeRego6XXValue, sTypeRego6XXCounter, "Rego 6XX" },
 
 		{  0,0,NULL }
 	};
@@ -776,6 +786,17 @@ void GetLightStatus(
 			break;
 		case sStatusNoMotionTamper:
 			lstatus="No Motion + Tamper";
+			break;
+		}
+		break;
+	case pTypeRego6XXValue:
+		switch (nValue)
+		{
+		case 0:
+			lstatus="Off";
+			break;
+		case 1:
+			lstatus="On";
 			break;
 		}
 		break;

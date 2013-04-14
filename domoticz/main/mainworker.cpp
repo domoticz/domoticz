@@ -23,6 +23,7 @@
 #include "../hardware/P1MeterTCP.h"
 #include "../hardware/YouLess.h"
 #include "../hardware/TE923.h"
+#include "../hardware/Rego6XXSerial.h"
 
 
 #ifdef _DEBUG
@@ -272,6 +273,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RFXtrx315:
 	case HTYPE_RFXtrx433:
 	case HTYPE_P1SmartMeter:
+	case HTYPE_Rego6XX:
 		{
 			//USB/Serial
 #if defined WIN32
@@ -303,6 +305,13 @@ bool MainWorker::AddHardwareFromParams(
 			else if (Type==HTYPE_P1SmartMeter)
 			{
 				pHardware = new P1MeterSerial(ID,szSerialPort,9600);
+			}
+			else if (Type==HTYPE_Rego6XX)
+			{
+				int regotype=0;
+				m_sql.GetPreferencesVar("Rego6XXType", regotype);
+
+				pHardware = new CRego6XXSerial(ID,szSerialPort, regotype);
 			}
 		}
 		break;
@@ -827,6 +836,14 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		case pTypeYouLess:
 			WriteMessage("YouLess Meter",false);
 			decode_YouLessMeter(HwdID, (tRBUF *)pRXCommand);
+			break;
+		case pTypeRego6XXTemp:
+			WriteMessage("Rego6XX temp",false);
+			decode_Rego6XXTemp(HwdID, (tRBUF *)pRXCommand);
+			break;
+		case pTypeRego6XXValue:
+			WriteMessage("Rego6XX value",false);
+			decode_Rego6XXValue(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeFS20:
 			WriteMessage("FS20");
@@ -2180,6 +2197,7 @@ void MainWorker::decode_Lighting1(const int HwdID, const tRBUF *pResponse)
 	unsigned char Unit=pResponse->LIGHTING1.unitcode;
 	unsigned char cmnd=pResponse->LIGHTING1.cmnd;
 	unsigned char SignalLevel=pResponse->LIGHTING1.rssi;
+	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
 
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,devname);
 	PrintDeviceName(devname);
@@ -2305,6 +2323,7 @@ void MainWorker::decode_Lighting2(const int HwdID, const tRBUF *pResponse)
 	sprintf(szTmp,"%d",level);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp,devname);
 	PrintDeviceName(devname);
+	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
@@ -2556,6 +2575,7 @@ void MainWorker::decode_Lighting5(const int HwdID, const tRBUF *pResponse)
 	sprintf(szTmp,"%d",pResponse->LIGHTING5.level);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp,devname);
 	PrintDeviceName(devname);
+	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
@@ -2705,6 +2725,7 @@ void MainWorker::decode_Lighting6(const int HwdID, const tRBUF *pResponse)
 	sprintf(szTmp,"%d",rfu);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp,devname);
 	PrintDeviceName(devname);
+	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
@@ -2992,6 +3013,7 @@ void MainWorker::decode_Security1(const int HwdID, const tRBUF *pResponse)
 
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,devname);
 	PrintDeviceName(devname);
+	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
 
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
 
@@ -5297,6 +5319,73 @@ void MainWorker::decode_YouLessMeter(const int HwdID, const tRBUF *pResponse)
 			WriteMessage(szTmp);
 			break;
 		}
+	}
+}
+
+void MainWorker::decode_Rego6XXTemp(const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[200];
+	std::string devname;
+	const _tRego6XXTemp *pRego=(const _tRego6XXTemp*)pResponse;
+	unsigned char devType=pRego->type;
+	unsigned char subType=pRego->subtype;
+	std::string ID=pRego->ID;
+	unsigned char Unit=subType;
+	unsigned char cmnd=0;
+	unsigned char SignalLevel=12;
+	unsigned char BatteryLevel = 255;
+
+    sprintf(szTmp,"%.1f",
+		pRego->temperature
+	);
+    m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, devname);
+	PrintDeviceName(devname);
+    m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_TEMPERATURE, pRego->temperature);
+ 
+	if (m_verboselevel == EVBL_ALL)
+	{
+		WriteMessage("subtype       = Rego6XX Temp");
+
+		sprintf(szTmp,"Temp = %.1f", pRego->temperature);
+		WriteMessage(szTmp);
+	}
+}
+
+void MainWorker::decode_Rego6XXValue(const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[200];
+	std::string devname;
+	const _tRego6XXStatus *pRego=(const _tRego6XXStatus*)pResponse;
+	unsigned char devType=pRego->type;
+	unsigned char subType=pRego->subtype;
+	std::string ID=pRego->ID;
+	unsigned char Unit = subType;
+	int numValue = pRego->value;
+	unsigned char SignalLevel=12;
+	unsigned char BatteryLevel = 255;
+
+    sprintf(szTmp,"%d",
+		pRego->value
+	);
+
+    m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,numValue,szTmp, devname);
+	PrintDeviceName(devname);
+
+	if (m_verboselevel == EVBL_ALL)
+	{
+		switch (pRego->subtype)
+		{
+		case sTypeRego6XXStatus:
+    		WriteMessage("subtype       = Rego6XX Status");
+            sprintf(szTmp,"Status = %d", pRego->value);
+		    WriteMessage(szTmp);
+            break;
+		case sTypeRego6XXCounter:
+    		WriteMessage("subtype       = Rego6XX Counter");
+            sprintf(szTmp,"Counter = %d", pRego->value);
+		    WriteMessage(szTmp);
+            break;
+        }
 	}
 }
 

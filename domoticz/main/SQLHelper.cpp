@@ -447,6 +447,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("UseAutoUpdate", 1);
 	}
+	if (!GetPreferencesVar("Rego6XXType", nValue))
+	{
+		UpdatePreferencesVar("Rego6XXType", 0);
+	}
 
 	//Start background thread
 	if (!StartThread())
@@ -780,6 +784,11 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 	}
 	switch (devType)
 	{
+	case pTypeRego6XXValue:
+        if(subType != sTypeRego6XXStatus)
+        {
+            break;
+        }
 	case pTypeLighting1:
 	case pTypeLighting2:
 	case pTypeLighting3:
@@ -1747,7 +1756,7 @@ void CSQLHelper::UpdateTemperatureLog()
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d)",
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d)",
 		pTypeTEMP,
 		pTypeHUM,
 		pTypeTEMP_HUM,
@@ -1755,7 +1764,8 @@ void CSQLHelper::UpdateTemperatureLog()
 		pTypeUV,
 		pTypeWIND,
 		pTypeThermostat1,
-		pTypeRFXSensor
+		pTypeRFXSensor,
+		pTypeRego6XXTemp
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -1800,6 +1810,7 @@ void CSQLHelper::UpdateTemperatureLog()
 
 			switch (dType)
 			{
+			case pTypeRego6XXTemp:
 			case pTypeTEMP:
 				temp=(float)atof(splitresults[0].c_str());
 				break;
@@ -2159,11 +2170,13 @@ void CSQLHelper::UpdateMeter()
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
 
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d)",
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d))",
 		pTypeRFXMeter,
 		pTypeP1Gas,
 		pTypeYouLess,
-		pTypeENERGY
+		pTypeENERGY,
+        pTypeRego6XXValue,
+        sTypeRego6XXCounter
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -2667,6 +2680,10 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			metertype=MTYPE_GAS;
 			tGasDivider=1000.0f;
 		}
+        else if ((devType==pTypeRego6XXValue) && (subType==sTypeRego6XXCounter))
+		{
+			metertype=MTYPE_COUNTER;
+		}
 
 
 		sprintf(szTmp,"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s')",
@@ -2712,6 +2729,11 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				musage=float(total_real)/WaterDivider;
 				if (musage!=0)
 					CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYGAS, musage);
+				break;
+			case MTYPE_COUNTER:
+				musage=float(total_real);
+				if (musage!=0)
+					CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYCOUNTER, musage);
 				break;
 			}
 		}

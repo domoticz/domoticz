@@ -60,6 +60,9 @@
     <Filter Include="Devices\TE923">
       <UniqueIdentifier>{591cadc8-1b94-461a-b993-3d2e72c4fb0c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Rego6XX">
+      <UniqueIdentifier>{f7b93c2a-b061-4a1b-9a68-75151cb727cb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -235,6 +238,9 @@
     <ClInclude Include="main\WindCalculation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\Rego6XXSerial.h">
+      <Filter>Devices\Rego6XX</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -374,6 +380,9 @@
     </ClCompile>
     <ClCompile Include="hardware\TE923.cpp">
       <Filter>Devices\TE923</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\Rego6XXSerial.cpp">
+      <Filter>Devices\Rego6XX</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

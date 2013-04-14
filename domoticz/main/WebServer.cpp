@@ -431,6 +431,9 @@ char * CWebServer::PostSettings()
 	std::string scheckforupdates=m_pWebEm->FindValue("checkforupdates");
 	m_pMain->m_sql.UpdatePreferencesVar("UseAutoUpdate",(scheckforupdates=="on"?1:0));
 
+	std::string sRego6XXType=m_pWebEm->FindValue("Rego6XXType");
+	m_pMain->m_sql.UpdatePreferencesVar("Rego6XXType",atoi(sRego6XXType.c_str()));
+	
 	return (char*)m_retstr.c_str();
 }
 
@@ -642,7 +645,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 						(dType!=pTypeLighting4)&&
 						(dType!=pTypeLighting5)&&
 						(dType!=pTypeLighting6)&&
-						(dType!=pTypeSecurity1)
+						(dType!=pTypeSecurity1)&&
+						(!((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXStatus)))
 						)
 						continue;
 				}
@@ -657,7 +661,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 						(!((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp)))&&
 						(!((dType==pTypeUV)&&(dSubType==sTypeUV3)))&&
 						(dType!=pTypeThermostat1)&&
-						(!((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp)))
+						(!((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp)))&&
+						(dType!=pTypeRego6XXTemp)
 						)
 						continue;
 				}
@@ -682,7 +687,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 						(dType!=pTypeENERGY)&&
 						(dType!=pTypeP1Power)&&
 						(dType!=pTypeP1Gas)&&
-						(dType!=pTypeYouLess)
+						(dType!=pTypeYouLess)&&
+						(!((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXCounter)))
 						)
 						continue;
 				}
@@ -883,12 +889,10 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				sprintf(szData,"%s", lstatus.c_str());
 				root["result"][ii]["Data"]=szData;
 			}
-			else if (dType == pTypeTEMP)
+			else if ((dType == pTypeTEMP) || (dType == pTypeRego6XXTemp))
 			{
 				root["result"][ii]["AddjValue"]=AddjValue;
 				root["result"][ii]["AddjMulti"]=AddjMulti;
-				root["result"][ii]["AddjValue2"]=AddjValue2;
-				root["result"][ii]["AddjMulti2"]=AddjMulti2;
 				root["result"][ii]["Temp"]=atof(sValue.c_str());
 				sprintf(szData,"%.1f C", atof(sValue.c_str()));
 				root["result"][ii]["Data"]=szData;
@@ -1175,6 +1179,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 						musage=float(total_real)/WaterDivider;
 						sprintf(szTmp,"%.02f m3",musage);
 						break;
+					case MTYPE_COUNTER:
+						sprintf(szTmp,"%d",total_real);
+						break;
 					}
 				}
 				root["result"][ii]["Counter"]=sValue;
@@ -1253,6 +1260,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 						musage=float(total_real)/WaterDivider;
 						sprintf(szTmp,"%.02f m3",musage);
 						break;
+					case MTYPE_COUNTER:
+						sprintf(szTmp,"%d",total_real);
+						break;
 					}
 				}
 				root["result"][ii]["CounterToday"]=szTmp;
@@ -1274,6 +1284,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				case MTYPE_WATER:
 					musage=float(total_actual)/GasDivider;
 					sprintf(szTmp,"%.02f",musage);
+					break;
+				case MTYPE_COUNTER:
+					sprintf(szTmp,"%d",total_actual);
 					break;
 				}
 				root["result"][ii]["Counter"]=szTmp;
@@ -1298,6 +1311,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					musage=float(acounter)/WaterDivider;
 					sprintf(szTmp,"%.02f m3",musage);
 					break;
+				case MTYPE_COUNTER:
+					sprintf(szTmp,"%d",acounter);
+					break;
 				}
 				root["result"][ii]["Data"]=szTmp;
 				switch (metertype)
@@ -1310,6 +1326,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					break;
 				case MTYPE_WATER:
 					sprintf(szTmp,"%s m",splitresults[1].c_str());
+					break;
+				case MTYPE_COUNTER:
+					sprintf(szTmp,"%s",splitresults[1].c_str());
 					break;
 				}
 
@@ -1551,7 +1570,77 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				sprintf(szData,"%s",Security_Status_Desc(nValue));
 				root["result"][ii]["Data"]=szData;
 			}
+			else if (dType == pTypeRego6XXValue)
+			{
+				switch (dSubType)
+				{
+				case sTypeRego6XXStatus:
+                    {
+   				        std::string lstatus="On";
 
+	    		        if(atoi(sValue.c_str()) == 0)
+                        {
+                            lstatus = "Off";
+                        }
+				        root["result"][ii]["Status"]=lstatus;
+				        root["result"][ii]["HaveDimmer"]=false;
+				        root["result"][ii]["MaxDimLevel"]=0;
+				        root["result"][ii]["HaveGroupCmd"]=false;
+				        root["result"][ii]["TypeImg"]="utility";
+				        root["result"][ii]["SwitchTypeVal"]=STYPE_OnOff;
+				        root["result"][ii]["SwitchType"] =Switch_Type_Desc(STYPE_OnOff);
+				        sprintf(szData,"%d", atoi(sValue.c_str()));
+				        root["result"][ii]["Data"]=szData;
+         			    root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+                    }
+                    break;
+				case sTypeRego6XXCounter:
+                    {
+				        //get value of today
+				        time_t now = time(NULL);
+				        struct tm tm1;
+				        localtime_r(&now,&tm1);
+
+				        struct tm ltime;
+				        ltime.tm_isdst=tm1.tm_isdst;
+				        ltime.tm_hour=0;
+				        ltime.tm_min=0;
+				        ltime.tm_sec=0;
+				        ltime.tm_year=tm1.tm_year;
+				        ltime.tm_mon=tm1.tm_mon;
+				        ltime.tm_mday=tm1.tm_mday;
+
+				        char szDate[40];
+				        sprintf(szDate,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
+
+				        std::vector<std::vector<std::string> > result2;
+				        strcpy(szTmp,"");
+				        szQuery.clear();
+				        szQuery.str("");
+				        szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
+				        result2=m_pMain->m_sql.query(szQuery.str());
+				        if (result2.size()>0)
+				        {
+					        std::vector<std::string> sd2=result2[0];
+
+					        unsigned long long total_min,total_max,total_real;
+
+					        std::stringstream s_str1( sd2[0] );
+					        s_str1 >> total_min;
+					        std::stringstream s_str2( sd2[1] );
+					        s_str2 >> total_max;
+					        total_real=total_max-total_min;
+					        sprintf(szTmp,"%llu",total_real);
+				        }
+    					root["result"][ii]["SwitchTypeVal"]=MTYPE_COUNTER;
+				        root["result"][ii]["Counter"]=sValue;
+				        root["result"][ii]["CounterToday"]=szTmp;
+				        root["result"][ii]["Data"]=sValue;
+				        root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+                    }
+                    break;
+                }
+			}
 
 			ii++;
 		}
@@ -1964,7 +2053,8 @@ char * CWebServer::GetJSonPage()
 			(dType!=pTypeLighting4)&&
 			(dType!=pTypeLighting5)&&
 			(dType!=pTypeLighting6)&&
-			(dType!=pTypeSecurity1)
+			(dType!=pTypeSecurity1)&&
+			(dType!=pTypeRego6XXValue)
 			)
 			goto exitjson; //no light device! we should not be here!
 
@@ -2200,6 +2290,8 @@ char * CWebServer::GetJSonPage()
 			metertype= MTYPE_ENERGY;
 		else if (dType==pTypeP1Gas)
 			metertype= MTYPE_GAS;
+        else if ((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXCounter))
+			metertype= MTYPE_COUNTER;
 
 		double AddjValue=atof(result[0][3].c_str());
 		double AddjMulti=atof(result[0][4].c_str());
@@ -2267,6 +2359,7 @@ char * CWebServer::GetJSonPage()
 
 						root["result"][ii]["d"]=sd[4].substr(0,16);
 						if (
+							(dType==pTypeRego6XXTemp)||
 							(dType==pTypeTEMP)||
 							(dType==pTypeTEMP_HUM)||
 							(dType==pTypeTEMP_HUM_BARO)||
@@ -2552,6 +2645,9 @@ char * CWebServer::GetJSonPage()
 										case MTYPE_WATER:
 											sprintf(szTmp,"%.2f",TotalValue/WaterDivider);
 											break;
+										case MTYPE_COUNTER:
+											sprintf(szTmp,"%.1f",TotalValue);
+											break;
 										}
 										root["result"][ii]["v"]=szTmp;
 										ii++;
@@ -2605,6 +2701,9 @@ char * CWebServer::GetJSonPage()
 								break;
 							case MTYPE_WATER:
 								sprintf(szTmp,"%.2f",TotalValue/WaterDivider);
+								break;
+							case MTYPE_COUNTER:
+								sprintf(szTmp,"%.1f",TotalValue);
 								break;
 							}
 							root["result"][ii]["v"]=szTmp;
@@ -3025,7 +3124,7 @@ char * CWebServer::GetJSonPage()
 
 						root["result"][ii]["d"]=sd[6].substr(0,16);
 						if (
-							(dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeThermostat1)||
+							(dType==pTypeRego6XXTemp)||(dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeThermostat1)||
 							((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))||
 							((dType==pTypeUV)&&(dSubType==sTypeUV3))
 							)
@@ -3078,7 +3177,7 @@ char * CWebServer::GetJSonPage()
 
 					root["result"][ii]["d"]=szDateEnd;
 					if (
-						((dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeThermostat1))||
+						((dType==pTypeRego6XXTemp)||(dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeThermostat1))||
 						((dType==pTypeUV)&&(dSubType==sTypeUV3))||
 						((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
 						((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))
@@ -3600,7 +3699,7 @@ char * CWebServer::GetJSonPage()
 
 						root["result"][ii]["d"]=sd[6].substr(0,16);
 						if (
-							(dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeThermostat1)||
+							(dType==pTypeRego6XXTemp)||(dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeThermostat1)||
 							((dType==pTypeUV)&&(dSubType==sTypeUV3))||
 							((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
 							((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))||
@@ -3647,7 +3746,7 @@ char * CWebServer::GetJSonPage()
 
 					root["result"][ii]["d"]=szDateEnd;
 					if (
-						((dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeThermostat1))||
+						((dType==pTypeRego6XXTemp)||(dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeThermostat1))||
 						((dType==pTypeUV)&&(dSubType==sTypeUV3))||
 						((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
 						((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))
@@ -4647,6 +4746,7 @@ char * CWebServer::GetJSonPage()
 				(dType==pTypeTEMP_HUM)||
 				(dType==pTypeTEMP_HUM_BARO)||
 				(dType==pTypeThermostat1)||
+				(dType==pTypeRego6XXTemp)||
 				((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))
 				)||
 				((dType==pTypeUV)&&(dSubType==sTypeUV3))||
@@ -4703,7 +4803,8 @@ char * CWebServer::GetJSonPage()
 			}
 			if (
 				((dType==pTypeRFXMeter)&&(dSubType==sTypeRFXMeterCount))||
-				(dType==pTypeYouLess)
+				(dType==pTypeYouLess)||
+                ((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXCounter))
 				)
 			{
 				if (switchtype==MTYPE_ENERGY)
@@ -4717,6 +4818,12 @@ char * CWebServer::GetJSonPage()
 					root["result"][ii]["val"]=NTYPE_TODAYGAS;
 					root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TODAYGAS,0);
 					root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TODAYGAS,1);
+				}
+				else if (switchtype==MTYPE_COUNTER)
+				{
+					root["result"][ii]["val"]=NTYPE_TODAYCOUNTER;
+					root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TODAYCOUNTER,0);
+					root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TODAYCOUNTER,1);
 				}
 				else
 				{
@@ -4987,7 +5094,7 @@ char * CWebServer::GetJSonPage()
 			unsigned char mode4=0;
 			unsigned char mode5=0;
 			int port=atoi(sport.c_str());
-			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter))
+			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX))
 			{
 				//USB
 			}
@@ -5081,7 +5188,7 @@ char * CWebServer::GetJSonPage()
 
 			int port=atoi(sport.c_str());
 
-			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter))
+			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX))
 			{
 				//USB
 			}
@@ -6045,6 +6152,10 @@ char * CWebServer::GetJSonPage()
 				else if (Key=="UseAutoUpdate")
 				{
 					root["UseAutoUpdate"]=nValue;
+				}
+				else if (Key=="Rego6XXType")
+				{
+					root["Rego6XXType"]=nValue;
 				}
 			}
 		}

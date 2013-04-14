@@ -20,3 +20,10 @@
 
 #define pTypeYouLess	0xFC
 #define sTypeYouLess	0x01
+
+#define pTypeRego6XXTemp    0xFD
+#define sTypeRego6XXTemp    0x01
+
+#define pTypeRego6XXValue    0xFE
+#define sTypeRego6XXStatus   0x02
+#define sTypeRego6XXCounter  0x03
