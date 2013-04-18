@@ -266,14 +266,14 @@ void CRego6XXSerial::Do_Work()
 					    cmd.data.regNum[2] = g_allRegisters[m_pollcntr].regNum_type1 & 0x007F;
                         break;
                     case 1:
-                        cmd.data.regNum[0] = (g_allRegisters[m_pollcntr].regNum_type1 & 0xC000) >> 14 ;
-					    cmd.data.regNum[1] = (g_allRegisters[m_pollcntr].regNum_type1 & 0x3F80) >> 7 ;
-					    cmd.data.regNum[2] = g_allRegisters[m_pollcntr].regNum_type1 & 0x007F;
+                        cmd.data.regNum[0] = (g_allRegisters[m_pollcntr].regNum_type2 & 0xC000) >> 14 ;
+					    cmd.data.regNum[1] = (g_allRegisters[m_pollcntr].regNum_type2 & 0x3F80) >> 7 ;
+					    cmd.data.regNum[2] = g_allRegisters[m_pollcntr].regNum_type2 & 0x007F;
                         break;
                     case 2:
-                        cmd.data.regNum[0] = (g_allRegisters[m_pollcntr].regNum_type1 & 0xC000) >> 14 ;
-					    cmd.data.regNum[1] = (g_allRegisters[m_pollcntr].regNum_type1 & 0x3F80) >> 7 ;
-					    cmd.data.regNum[2] = g_allRegisters[m_pollcntr].regNum_type1 & 0x007F;
+                        cmd.data.regNum[0] = (g_allRegisters[m_pollcntr].regNum_type3 & 0xC000) >> 14 ;
+					    cmd.data.regNum[1] = (g_allRegisters[m_pollcntr].regNum_type3 & 0x3F80) >> 7 ;
+					    cmd.data.regNum[2] = g_allRegisters[m_pollcntr].regNum_type3 & 0x007F;
                         break;
                     default:
                 		std::cerr << "Rego6XX Unknown type!" << std::endl;
