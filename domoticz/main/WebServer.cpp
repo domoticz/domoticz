@@ -1187,7 +1187,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 						sprintf(szTmp,"%.02f m3",musage);
 						break;
 					case MTYPE_COUNTER:
-						sprintf(szTmp,"%d",total_real);
+						sprintf(szTmp,"%llu",total_real);
 						break;
 					}
 				}
@@ -1268,7 +1268,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 						sprintf(szTmp,"%.02f m3",musage);
 						break;
 					case MTYPE_COUNTER:
-						sprintf(szTmp,"%d",total_real);
+						sprintf(szTmp,"%llu",total_real);
 						break;
 					}
 				}
@@ -1293,7 +1293,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					sprintf(szTmp,"%.02f",musage);
 					break;
 				case MTYPE_COUNTER:
-					sprintf(szTmp,"%d",total_actual);
+					sprintf(szTmp,"%llu",total_actual);
 					break;
 				}
 				root["result"][ii]["Counter"]=szTmp;
@@ -1319,7 +1319,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					sprintf(szTmp,"%.02f m3",musage);
 					break;
 				case MTYPE_COUNTER:
-					sprintf(szTmp,"%d",acounter);
+					sprintf(szTmp,"%llu",acounter);
 					break;
 				}
 				root["result"][ii]["Data"]=szTmp;
