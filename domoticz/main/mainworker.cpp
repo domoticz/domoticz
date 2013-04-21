@@ -2727,8 +2727,6 @@ void MainWorker::decode_Lighting6(const int HwdID, const tRBUF *pResponse)
 	PrintDeviceName(devname);
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
-	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
-
 	if (m_verboselevel == EVBL_ALL)
 	{
 		switch (pResponse->LIGHTING6.subtype)
