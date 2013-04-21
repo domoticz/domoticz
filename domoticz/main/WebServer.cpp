@@ -1107,6 +1107,13 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 						root["result"][ii]["Data"]=sValue;
 						root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 					}
+					else
+					{
+						root["result"][ii]["Rain"]="0.0";
+						root["result"][ii]["RainRate"]=0;
+						root["result"][ii]["Data"]="0.0";
+						root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+					}
 				}
 			}
 			else if (dType == pTypeRFXMeter)
@@ -1435,6 +1442,21 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					root["result"][ii]["Data"]=sValue;
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				}
+				else
+				{
+					root["result"][ii]["SwitchTypeVal"]=MTYPE_ENERGY;
+					sprintf(szTmp,"%.03f",0.0f);
+					root["result"][ii]["Counter"]=szTmp;
+					root["result"][ii]["CounterDeliv"]=szTmp;
+					sprintf(szTmp,"%.03f kWh",0.0f);
+					root["result"][ii]["CounterToday"]=szTmp;
+					root["result"][ii]["CounterDelivToday"]=szTmp;
+					sprintf(szTmp,"%llu Watt",0LL);
+					root["result"][ii]["Usage"]=szTmp;
+					root["result"][ii]["UsageDeliv"]=szTmp;
+					root["result"][ii]["Data"]=sValue;
+					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+				}
 			}
 			else if (dType == pTypeP1Gas)
 			{
@@ -1485,6 +1507,16 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 
 					musage=float(total_real_gas)/GasDivider;
 					sprintf(szTmp,"%.03f m3",musage);
+					root["result"][ii]["CounterToday"]=szTmp;
+					root["result"][ii]["Data"]=sValue;
+					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+				}
+				else
+				{
+					root["result"][ii]["SwitchTypeVal"]=MTYPE_GAS;
+					sprintf(szTmp,"%.03f",0.0f);
+					root["result"][ii]["Counter"]=szTmp;
+					sprintf(szTmp,"%.03f m3",0.0f);
 					root["result"][ii]["CounterToday"]=szTmp;
 					root["result"][ii]["Data"]=sValue;
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
