@@ -15,6 +15,7 @@ Version 1.0.xxx (April xxth 2013)
 - Fixed: Adding Light/Switch as Sub-Device from Devices tab
 - Changed: Negative wind direction to positive
 - Implemented: Support for the heat pump controller Rego600-Rego637 (Rego6XX)
+- Fixed: Dashboard showed all light devices instead of only favorite ones
 
 Version 1.0.412 (April 1th 2013)
 - Fixed: Siren icon on dashboard

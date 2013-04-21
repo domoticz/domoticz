@@ -803,9 +803,10 @@ function ShowFavorites()
         jj=0;
         bHaveAddedDevider = false;
         $.each(data.result, function(i,item){
-          if ((item.Type.indexOf('Light') == 0)||
-              ((item.Type.indexOf('Value') == 0) && typeof item.SwitchType != 'undefined') &&
-              (item.Favorite!=0))
+          if (
+							((item.Type.indexOf('Light') == 0)&&(item.Favorite!=0))||
+              ((item.Type.indexOf('Value') == 0) && (typeof item.SwitchType != 'undefined'))
+              )
           {
             totdevices+=1;
             if (jj == 0)
