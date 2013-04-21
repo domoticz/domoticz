@@ -2202,8 +2202,6 @@ void MainWorker::decode_Lighting1(const int HwdID, const tRBUF *pResponse)
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,devname);
 	PrintDeviceName(devname);
 
-	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
-
 	if (m_verboselevel == EVBL_ALL)
 	{
 		switch (pResponse->LIGHTING1.subtype)
@@ -2323,8 +2321,6 @@ void MainWorker::decode_Lighting2(const int HwdID, const tRBUF *pResponse)
 	sprintf(szTmp,"%d",level);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp,devname);
 	PrintDeviceName(devname);
-	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
-
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
 	if (m_verboselevel == EVBL_ALL)
@@ -2575,8 +2571,6 @@ void MainWorker::decode_Lighting5(const int HwdID, const tRBUF *pResponse)
 	sprintf(szTmp,"%d",pResponse->LIGHTING5.level);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp,devname);
 	PrintDeviceName(devname);
-	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
-
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
 	if (m_verboselevel == EVBL_ALL)
@@ -3011,8 +3005,6 @@ void MainWorker::decode_Security1(const int HwdID, const tRBUF *pResponse)
 
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,devname);
 	PrintDeviceName(devname);
-	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
-
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
 
 	if (m_verboselevel == EVBL_ALL)
