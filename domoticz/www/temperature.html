@@ -859,6 +859,16 @@ function RefreshTemps()
 						if (typeof item.Direction != 'undefined') {
               status+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms\n';
             }
+
+            var nbackcolor="#D4E1EE";
+						if (item.HaveTimeout==true) {
+							nbackcolor="#DF2D3A";
+						}
+            var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
+            if (obackcolor!=nbackcolor) {
+							$(id + " #name").css( "background-color", nbackcolor );
+            }
+            
             if ($(id + " #status").html()!=status) {
 							$(id + " #bigtext").html(bigtext);
 							$(id + " #status").html(status);

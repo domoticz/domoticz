@@ -1608,6 +1608,16 @@ function RefreshWeathers()
 								status+='Chill: ' + item.Chill + '\u00B0 C';
 							}
 						}
+						
+            var nbackcolor="#D4E1EE";
+						if (item.HaveTimeout==true) {
+							nbackcolor="#DF2D3A";
+						}
+            var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
+            if (obackcolor!=nbackcolor) {
+							$(id + " #name").css( "background-color", nbackcolor );
+            }
+						
 						if ($(id + " #img").html()!=img) {
 							$(id + " #img").html(img);
 						}

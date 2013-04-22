@@ -374,6 +374,16 @@ function RefreshFavorites()
 								if (typeof item.ForecastStr != 'undefined') {
 									status+=', Prediction: ' + item.ForecastStr;
 								}
+								
+								var nbackcolor="#D4E1EE";
+								if (item.HaveTimeout==true) {
+									nbackcolor="#DF2D3A";
+								}
+								var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
+								if (obackcolor!=nbackcolor) {
+									$(id + " #name").css( "background-color", nbackcolor );
+								}
+								
 								if ($(id + " #status").html()!=status) {
 									if (typeof $(id + " #bigtext") != 'undefined') {
 										$(id + " #bigtext").html(bigtext);
@@ -461,6 +471,16 @@ function RefreshFavorites()
                   status=item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
                   bigtext=item.Barometer + ' hPa';
                 }
+                
+								var nbackcolor="#D4E1EE";
+								if (item.HaveTimeout==true) {
+									nbackcolor="#DF2D3A";
+								}
+								var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
+								if (obackcolor!=nbackcolor) {
+									$(id + " #name").css( "background-color", nbackcolor );
+								}
+                
 								if ($(id + " #img").html()!=img) {
 									$(id + " #img").html(img);
 								}
@@ -517,6 +537,16 @@ function RefreshFavorites()
 										img='<img src="images/security48.png" height="40">';
 									}
 								}
+								
+								var nbackcolor="#D4E1EE";
+								if (item.HaveTimeout==true) {
+									nbackcolor="#DF2D3A";
+								}
+								var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
+								if (obackcolor!=nbackcolor) {
+									$(id + " #name").css( "background-color", nbackcolor );
+								}
+								
 								if ($(id + " #img").html()!=img) {
 									$(id + " #img").html(img);
 								}
@@ -628,6 +658,16 @@ function RefreshFavorites()
 										}
 									}
 								}
+								
+								var nbackcolor="#D4E1EE";
+								if (item.HaveTimeout==true) {
+									nbackcolor="#DF2D3A";
+								}
+								var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
+								if (obackcolor!=nbackcolor) {
+									$(id + " #name").css( "background-color", nbackcolor );
+								}
+								
 								if ($(id + " #img").html()!=img) {
 									$(id + " #img").html(img);
 								}
