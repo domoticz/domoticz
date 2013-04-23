@@ -1096,21 +1096,26 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 						std::vector<std::string> sd2=result2[0];
 						float total_min=(float)atof(sd2[0].c_str());
 						float total_max=(float)atof(sd2[1].c_str());
-						int rate=atoi(sd2[2].c_str());
+						float rate=(float)atof(sd2[2].c_str());
+						if (dSubType==sTypeRAIN2)
+							rate/=100.0f;
 						double total_real=total_max-total_min;
 						total_real*=AddjMulti;
 
 						sprintf(szTmp,"%.1f",total_real);
 						root["result"][ii]["Rain"]=szTmp;
-						//if ((dSubType==sTypeRAIN1)||(dSubType==sTypeRAIN2))
-						root["result"][ii]["RainRate"]=rate;
+						if (dSubType!=sTypeRAIN2)
+							sprintf(szTmp,"%.1f",rate);
+						else
+							sprintf(szTmp,"%.2f",rate);
+						root["result"][ii]["RainRate"]=szTmp;
 						root["result"][ii]["Data"]=sValue;
 						root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 					}
 					else
 					{
 						root["result"][ii]["Rain"]="0.0";
-						root["result"][ii]["RainRate"]=0;
+						root["result"][ii]["RainRate"]="0.0";
 						root["result"][ii]["Data"]="0.0";
 						root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 					}
