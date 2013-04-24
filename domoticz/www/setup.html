@@ -134,14 +134,20 @@
 	<tr>
 		<td align="right" style="width:60px"><label>Energy: </label></td>
 		<td><input type="input" id="EnergyDivider" name="EnergyDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		<td align="right" style="width:60px"><label>Costs: </label></td>
+		<td><input type="input" id="CostEnergy" name="CostEnergy" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
 	</tr>
 	<tr>
 		<td align="right" style="width:60px"><label>Gas: </label></td>
 		<td><input type="input" id="GasDivider" name="GasDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		<td align="right" style="width:60px"><label>Costs: </label></td>
+		<td><input type="input" id="CostGas" name="CostGas" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / m3</td>
 	</tr>
 	<tr>
 		<td align="right" style="width:60px"><label>Water: </label></td>
 		<td><input type="input" id="WaterDivider" name="WaterDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		<td align="right" style="width:60px"><label>Costs: </label></td>
+		<td><input type="input" id="CostWater" name="CostWater" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / m3</td>
 	</tr>
 	</table>
 	</div>
@@ -302,11 +308,20 @@ function ShowSettings()
       if (typeof data.EnergyDivider != 'undefined') {
         $("#rfxmetertable #EnergyDivider").val(data.EnergyDivider);
       }
+      if (typeof data.CostEnergy != 'undefined') {
+        $("#rfxmetertable #CostEnergy").val(data.CostEnergy);
+      }
       if (typeof data.GasDivider != 'undefined') {
         $("#rfxmetertable #GasDivider").val(data.GasDivider );
       }
+      if (typeof data.CostGas!= 'undefined') {
+        $("#rfxmetertable #CostGas").val(data.CostGas);
+      }
       if (typeof data.WaterDivider != 'undefined') {
         $("#rfxmetertable #WaterDivider").val(data.WaterDivider );
+      }
+      if (typeof data.CostWater!= 'undefined') {
+        $("#rfxmetertable #CostWater").val(data.CostWater);
       }
       if (typeof data.RandomTimerFrame != 'undefined') {
         $("#randomtable #RandomSpread").val(data.RandomTimerFrame );

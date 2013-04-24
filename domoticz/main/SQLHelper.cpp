@@ -451,6 +451,19 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("Rego6XXType", 0);
 	}
+	//Costs for Energy/Gas and Water (See your provider, try to include tax and other stuff)
+	if (!GetPreferencesVar("CostEnergy", nValue))
+	{
+		UpdatePreferencesVar("CostEnergy", 2149);
+	}
+	if (!GetPreferencesVar("CostGas", nValue))
+	{
+		UpdatePreferencesVar("CostGas", 6218);
+	}
+	if (!GetPreferencesVar("CostWater", nValue))
+	{
+		UpdatePreferencesVar("CostWater", 16473);
+	}
 
 	//Start background thread
 	if (!StartThread())

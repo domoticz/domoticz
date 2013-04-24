@@ -434,6 +434,13 @@ char * CWebServer::PostSettings()
 	std::string sRego6XXType=m_pWebEm->FindValue("Rego6XXType");
 	m_pMain->m_sql.UpdatePreferencesVar("Rego6XXType",atoi(sRego6XXType.c_str()));
 	
+	float CostEnergy=(float)atof(m_pWebEm->FindValue("CostEnergy").c_str());
+	float CostGas=(float)atof(m_pWebEm->FindValue("CostGas").c_str());
+	float CostWater=(float)atof(m_pWebEm->FindValue("CostWater").c_str());
+	m_pMain->m_sql.UpdatePreferencesVar("CostEnergy",int(CostEnergy*10000.0f));
+	m_pMain->m_sql.UpdatePreferencesVar("CostGas",int(CostGas*10000.0f));
+	m_pMain->m_sql.UpdatePreferencesVar("CostWater",int(CostWater*10000.0f));
+
 	return (char*)m_retstr.c_str();
 }
 
@@ -6194,9 +6201,23 @@ char * CWebServer::GetJSonPage()
 				{
 					root["Rego6XXType"]=nValue;
 				}
+				else if (Key=="CostEnergy")
+				{
+					sprintf(szTmp,"%.4f",(float)(nValue)/10000.0f);
+					root["CostEnergy"]=szTmp;
+				}
+				else if (Key=="CostGas")
+				{
+					sprintf(szTmp,"%.4f",(float)(nValue)/10000.0f);
+					root["CostGas"]=szTmp;
+				}
+				else if (Key=="CostWater")
+				{
+					sprintf(szTmp,"%.4f",(float)(nValue)/10000.0f);
+					root["CostWater"]=szTmp;
+				}
 			}
 		}
-
 	} //(rtype=="settings")
 exitjson:
 	m_retstr=root.toStyledString();
