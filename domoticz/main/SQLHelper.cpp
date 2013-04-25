@@ -871,6 +871,10 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 							cmd=light5_sOff;
 							bAdd2DelayQueue=true;
 							break;
+						case pTypeLighting6:
+							cmd=light6_sOff;
+							bAdd2DelayQueue=true;
+							break;
 						}
 					}
 	/* Smoke detectors are manually reset!
