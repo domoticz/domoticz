@@ -18,6 +18,7 @@ Version 1.0.xxx (April xxth 2013)
 - Fixed: Dashboard showed all light devices instead of only favorite ones
 - Fixed: Sensor Timeout status update in web interface
 - Fixed: Rain (PCR800) rate/hour corrected
+- Implemented: Add support for Lighting6 (Blyss)
 
 Version 1.0.412 (April 1th 2013)
 - Fixed: Siren icon on dashboard

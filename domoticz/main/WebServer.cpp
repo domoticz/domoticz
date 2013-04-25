@@ -4591,7 +4591,23 @@ char * CWebServer::GetJSonPage()
 			std::string sunitcode;
 			std::string devid;
 
-			if (lighttype<10)
+			if (lighttype==6)
+			{
+				//Blyss
+				dtype=pTypeLighting6;
+				subtype=sTypeBlyss;
+				std::string sgroupcode=m_pWebEm->FindValue("groupcode");
+				sunitcode=m_pWebEm->FindValue("unitcode");
+				std::string id=m_pWebEm->FindValue("id");
+				if (
+					(sgroupcode=="")||
+					(sunitcode=="")||
+					(id=="")
+					)
+					goto exitjson;
+				devid=id+sgroupcode;
+			}
+			else if (lighttype<10)
 			{
 				dtype=pTypeLighting1;
 				subtype=lighttype;
@@ -4669,7 +4685,23 @@ char * CWebServer::GetJSonPage()
 			std::string sunitcode;
 			std::string devid;
 
-			if (lighttype<10)
+			if (lighttype==6)
+			{
+				//Blyss
+				dtype=pTypeLighting6;
+				subtype=sTypeBlyss;
+				std::string sgroupcode=m_pWebEm->FindValue("groupcode");
+				sunitcode=m_pWebEm->FindValue("unitcode");
+				std::string id=m_pWebEm->FindValue("id");
+				if (
+					(sgroupcode=="")||
+					(sunitcode=="")||
+					(id=="")
+					)
+					goto exitjson;
+				devid=id+sgroupcode;
+			}
+			else if (lighttype<10)
 			{
 				dtype=pTypeLighting1;
 				subtype=lighttype;

@@ -112,6 +112,7 @@
 						<option value="3">Waveman</option>
 						<option value="4">EMW200</option>
 						<option value="5">Impuls</option>
+						<option value="6">Blyss</option>
 						<option value="10">AC</option>
 						<option value="11">HE EU</option>
 						<option value="12">ANSLUT</option>
@@ -157,6 +158,30 @@
 							<td align="right" style="width:100px"><label>Unit Code:</label></td>
 							<td><select id="combounitcode" style="width:60px" class="combobox ui-corner-all">
 									</select>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<div id="lighting3params">
+					<br>
+					<table class="display" id="lightparams3" border="0" cellpadding="0" cellspacing="20">
+						<tr>
+							<td align="right" style="width:60px"><label>ID:</label></td>
+							<td>
+								<select id="combocmd1" style="width:60px" class="combobox ui-corner-all"></select>
+								<select id="combocmd2" style="width:60px" class="combobox ui-corner-all"></select>
+							</td>
+						</tr>
+						<tr>
+							<td align="right" style="width:100px"><label>Group Code:</label></td>
+							<td>
+								<select id="combogroupcode" style="width:60px" class="combobox ui-corner-all"></select>
+							</td>
+						</tr>
+						<tr>
+							<td align="right" style="width:100px"><label>Unit Code:</label></td>
+							<td>
+								<select id="combounitcode" style="width:60px" class="combobox ui-corner-all"></select>
 							</td>
 						</tr>
 					</table>
@@ -1526,6 +1551,10 @@ function UpdateAddManualDialog()
 		tothousecodes=3;
 		totunits=4;
 	}
+	else if (lighttype==6) {
+		tothousecodes=4;
+		totunits=5;
+	}
 	else if (lighttype==7) {
 		bIsARCType=1;
 		tothousecodes=16;
@@ -1535,7 +1564,22 @@ function UpdateAddManualDialog()
 		bIsType5=1;
 		totunits=16;
 	}
-	if (bIsARCType==1) {
+	if (lighttype==6) {
+		$('#dialog-addmanuallightdevice #lightparams3 #combogroupcode >option').remove();
+		$('#dialog-addmanuallightdevice #lightparams3 #combounitcode >option').remove();
+		for (ii=0; ii<tothousecodes; ii++)
+		{
+			$('#dialog-addmanuallightdevice #lightparams3 #combogroupcode').append($('<option></option>').val(65+ii).html(String.fromCharCode(65+ii)));
+		}
+		for (ii=1; ii<totunits+1; ii++)
+		{
+			$('#dialog-addmanuallightdevice #lightparams3 #combounitcode').append($('<option></option>').val(ii).html(ii));
+		}
+		$("#dialog-addmanuallightdevice #lighting1params").hide();
+		$("#dialog-addmanuallightdevice #lighting2params").hide();
+		$("#dialog-addmanuallightdevice #lighting3params").show();
+	}
+	else if (bIsARCType==1) {
 		$('#dialog-addmanuallightdevice #lightparams1 #combohousecode >option').remove();
 		$('#dialog-addmanuallightdevice #lightparams1 #combounitcode >option').remove();
 		for (ii=0; ii<tothousecodes; ii++)
@@ -1548,6 +1592,7 @@ function UpdateAddManualDialog()
 		}
 		$("#dialog-addmanuallightdevice #lighting1params").show();
 		$("#dialog-addmanuallightdevice #lighting2params").hide();
+		$("#dialog-addmanuallightdevice #lighting3params").hide();
 	}
 	else {
 			if (bIsType5==0) {
@@ -1558,7 +1603,7 @@ function UpdateAddManualDialog()
 			}
 			$("#dialog-addmanuallightdevice #lighting1params").hide();
 			$("#dialog-addmanuallightdevice #lighting2params").show();
-
+			$("#dialog-addmanuallightdevice #lighting3params").hide();
 	}
 }
 
@@ -1583,7 +1628,16 @@ function GetManualLightSettings(isTest)
 	mParams+="&switchtype="+$("#dialog-addmanuallightdevice #lighttable #comboswitchtype option:selected").val();
 	var lighttype=$("#dialog-addmanuallightdevice #lighttable #combolighttype option:selected").val();
 	mParams+="&lighttype="+lighttype;
-	if (lighttype<10) {
+	if (lighttype==6) {
+		//Blyss
+		mParams+="&groupcode="+$("#dialog-addmanuallightdevice #lightparams3 #combogroupcode option:selected").val();
+		mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightparams3 #combounitcode option:selected").val();
+		ID=
+			$("#dialog-addmanuallightdevice #lightparams3 #combocmd1 option:selected").text()+
+			$("#dialog-addmanuallightdevice #lightparams3 #combocmd2 option:selected").text();
+		mParams+="&id="+ID;
+	}
+	else if (lighttype<10) {
 		mParams+="&housecode="+$("#dialog-addmanuallightdevice #lightparams1 #combohousecode option:selected").val();
 		mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightparams1 #combounitcode option:selected").val();
 	}
@@ -1805,6 +1859,8 @@ $(document).ready(function() {
 								$('#dialog-addmanuallightdevice #lightparams2 #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
 								$('#dialog-addmanuallightdevice #lightparams2 #combocmd3').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
 								$('#dialog-addmanuallightdevice #lightparams2 #combocmd4').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+								$('#dialog-addmanuallightdevice #lightparams3 #combocmd1').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+								$('#dialog-addmanuallightdevice #lightparams3 #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
 							}
 							$('#dialog-addmanuallightdevice #lightparams2 #combounitcode >option').remove();
 							for (ii=1; ii<16+1; ii++)

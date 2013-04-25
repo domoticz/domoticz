@@ -995,6 +995,30 @@ bool GetLightCommand(
 		else
 			return false;
 		break;
+	case pTypeLighting6:
+		if (switchcmd=="Off")
+		{
+			cmd=light6_sOff;
+			return true;
+		}
+		else if (switchcmd=="On")
+		{
+			cmd=light6_sOn;
+			return true;
+		}
+		else if (switchcmd=="Group Off")
+		{
+			cmd=light6_sGroupOff;
+			return true;
+		}
+		else if (switchcmd=="Group On")
+		{
+			cmd=light6_sGroupOn;
+			return true;
+		}
+		else
+			return false;
+		break;
 	case pTypeSecurity1:
 		if (dSubType==sTypeKD101)
 		{

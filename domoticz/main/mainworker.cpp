@@ -2709,7 +2709,7 @@ void MainWorker::decode_Lighting6(const int HwdID, const tRBUF *pResponse)
 
 	unsigned char devType=pTypeLighting6;
 	unsigned char subType=pResponse->LIGHTING6.subtype;
-	sprintf(szTmp,"%02X%02X", pResponse->LIGHTING6.id1, pResponse->LIGHTING6.id2);
+	sprintf(szTmp,"%02X%02X%02X", pResponse->LIGHTING6.id1, pResponse->LIGHTING6.id2,pResponse->LIGHTING6.groupcode);
 	std::string ID = szTmp;
 	unsigned char Unit=pResponse->LIGHTING6.unitcode;
 	unsigned char cmnd=pResponse->LIGHTING6.cmnd;
@@ -5778,6 +5778,29 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, std::string s
 		}
 		break;
 	case pTypeLighting6:
+		{
+			tRBUF lcmd;
+			lcmd.LIGHTING6.packetlength=sizeof(lcmd.LIGHTING6)-1;
+			lcmd.LIGHTING6.packettype=dType;
+			lcmd.LIGHTING6.subtype=dSubType;
+			lcmd.LIGHTING6.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
+			lcmd.LIGHTING6.id1=ID2;
+			lcmd.LIGHTING6.id2=ID3;
+			lcmd.LIGHTING6.groupcode=ID4;
+			lcmd.LIGHTING6.unitcode=Unit;
+			lcmd.LIGHTING6.cmndseqnbr=m_hardwaredevices[hindex]->m_SeqNr%4;
+
+			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING6.cmnd))
+				return false;
+			lcmd.LIGHTING6.filler=0;
+			lcmd.LIGHTING6.rssi=7;
+			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING6));
+			if (!IsTesting) {
+				//send to internal for now (later we use the ACK)
+				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+			}
+			return true;
+		}
 		break;
 	case pTypeSecurity1:
 		switch (dSubType)
