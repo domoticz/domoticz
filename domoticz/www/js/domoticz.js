@@ -845,3 +845,59 @@ function rgb2hex(rgb) {
 			return "#" + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
 	}
 }
+
+function chartPointClick(event, retChart) {
+	if (event.shiftKey!=true) {
+		return;
+	}
+	var dateString=Highcharts.dateFormat('%Y-%m-%d', event.point.x);
+	var bValid = false;
+	bValid=(confirm("Are you sure to remove this value at ?:\n\nDate: " + dateString + " \nValue: " + event.point.y)==true);
+	if (bValid == false) {
+		return;
+	}
+	$.ajax({
+		 url: "json.htm?type=command&param=deletedatapoint&idx=" + $.devIdx + "&date=" + dateString,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			if (data.status == "OK") {
+				retChart($.devIdx,$.devName);
+			}
+			else {
+				ShowNotify('Problem deleting data point!', 2500, true);
+			}
+		 },
+		 error: function(){
+			ShowNotify('Problem deleting data point!', 2500, true);
+		 }     
+	}); 	
+}
+
+function chartPointClickEx(event, retChart) {
+	if (event.shiftKey!=true) {
+		return;
+	}
+	var dateString=Highcharts.dateFormat('%Y-%m-%d', event.point.x);
+	var bValid = false;
+	bValid=(confirm("Are you sure to remove this value at ?:\n\nDate: " + dateString + " \nValue: " + event.point.y)==true);
+	if (bValid == false) {
+		return;
+	}
+	$.ajax({
+		 url: "json.htm?type=command&param=deletedatapoint&idx=" + $.devIdx + "&date=" + dateString,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			if (data.status == "OK") {
+				retChart($.devIdx,$.devName,$.devSwitchType);
+			}
+			else {
+				ShowNotify('Problem deleting data point!', 2500, true);
+			}
+		 },
+		 error: function(){
+			ShowNotify('Problem deleting data point!', 2500, true);
+		 }     
+	}); 	
+}

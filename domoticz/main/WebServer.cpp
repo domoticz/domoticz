@@ -4351,6 +4351,19 @@ char * CWebServer::GetJSonPage()
 			root["title"]="DownloadReady";
 			root["downloadok"]=(m_pMain->m_bHaveDownloadedDomoticzUpdateSuccessFull)?true:false;
 		}
+		else if (cparam=="deletedatapoint")
+		{
+			const std::string idx=m_pWebEm->FindValue("idx");
+			const std::string Date=m_pWebEm->FindValue("date");
+			if (
+				(idx=="")||
+				(Date=="")
+				)
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="deletedatapoint";
+			m_pMain->m_sql.DeleteDataPoint(idx.c_str(),Date.c_str());
+		}
 		else if (cparam=="deleteallsubdevices")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");

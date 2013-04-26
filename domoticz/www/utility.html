@@ -488,6 +488,9 @@ function ShowCurrentLog(id,name,switchtype)
 {
 	clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
+  $.devIdx=id;
+  $.devName=name;
+  $.devSwitchType=switchtype;
   var htmlcontent = '';
   htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
   htmlcontent+=$('#currentlog').html();
@@ -618,7 +621,16 @@ function ShowCurrentLog(id,name,switchtype)
             }
         },
         plotOptions: {
-           spline: {
+			series: {
+				point: {
+					events: {
+						click: function(event) {
+							chartPointClickEx(event,ShowCurrentLog);
+						}
+					}
+				}
+			},
+			spline: {
                 lineWidth: 3,
                 states: {
                     hover: {
@@ -697,7 +709,16 @@ function ShowCurrentLog(id,name,switchtype)
             }
         },
         plotOptions: {
-           spline: {
+			series: {
+				point: {
+					events: {
+						click: function(event) {
+							chartPointClickEx(event,ShowCurrentLog);
+						}
+					}
+				}
+			},
+			spline: {
                 lineWidth: 3,
                 states: {
                     hover: {
@@ -727,6 +748,9 @@ function ShowCounterLog(id,name,switchtype)
 {
 	clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
+  $.devIdx=id;
+  $.devName=name;
+  $.devSwitchType=switchtype;
   var htmlcontent = '';
   htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
   htmlcontent+=$('#counterlog').html();
@@ -896,7 +920,16 @@ function ShowCounterLog(id,name,switchtype)
             }
         },
         plotOptions: {
-           spline: {
+			series: {
+				point: {
+					events: {
+						click: function(event) {
+							chartPointClickEx(event,ShowCounterLog);
+						}
+					}
+				}
+			},
+			spline: {
                 lineWidth: 3,
                 states: {
                     hover: {
@@ -966,7 +999,16 @@ function ShowCounterLog(id,name,switchtype)
             }
         },
         plotOptions: {
-           spline: {
+			series: {
+				point: {
+					events: {
+						click: function(event) {
+							chartPointClickEx(event,ShowCounterLog);
+						}
+					}
+				}
+			},
+			spline: {
                 lineWidth: 3,
                 states: {
                     hover: {
@@ -996,6 +1038,9 @@ function ShowGenericLog(id,name,switchtype)
 {
 	clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
+  $.devIdx=id;
+  $.devName=name;
+  $.devSwitchType=switchtype;
   var htmlcontent = '';
   htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
   htmlcontent+=$('#genericlog').html();
@@ -1163,7 +1208,16 @@ function ShowGenericLog(id,name,switchtype)
             }
         },
         plotOptions: {
-           spline: {
+			series: {
+				point: {
+					events: {
+						click: function(event) {
+							chartPointClickEx(event,ShowGenericLog);
+						}
+					}
+				}
+			},
+			spline: {
                 lineWidth: 3,
                 states: {
                     hover: {
@@ -1234,7 +1288,16 @@ function ShowGenericLog(id,name,switchtype)
             }
         },
         plotOptions: {
-           spline: {
+			series: {
+				point: {
+					events: {
+						click: function(event) {
+							chartPointClickEx(event,ShowGenericLog);
+						}
+					}
+				}
+			},
+			spline: {
                 lineWidth: 3,
                 states: {
                     hover: {
@@ -1264,6 +1327,9 @@ function ShowSmartLog(id,name,switchtype)
 {
 	clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
+  $.devIdx=id;
+  $.devName=name;
+  $.devSwitchType=switchtype;
   var htmlcontent = '';
   htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
   htmlcontent+=$('#smartlog').html();
@@ -1440,7 +1506,16 @@ function ShowSmartLog(id,name,switchtype)
             }
         },
         plotOptions: {
-           spline: {
+			series: {
+				point: {
+					events: {
+						click: function(event) {
+							chartPointClickEx(event,ShowSmartLog);
+						}
+					}
+				}
+			},
+			spline: {
                 lineWidth: 3,
                 states: {
                     hover: {
@@ -1510,7 +1585,16 @@ function ShowSmartLog(id,name,switchtype)
             }
         },
         plotOptions: {
-           spline: {
+			series: {
+				point: {
+					events: {
+						click: function(event) {
+							chartPointClickEx(event,ShowSmartLog);
+						}
+					}
+				}
+			},
+			spline: {
                 lineWidth: 3,
                 states: {
                     hover: {

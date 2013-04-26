@@ -3482,3 +3482,28 @@ void CSQLHelper::CheckSceneStatus(const unsigned long long Idx)
 	}
 }
 
+void CSQLHelper::DeleteDataPoint(const char *ID, const char *Date)
+{
+	std::vector<std::vector<std::string> > result;
+	char szTmp[200];
+	sprintf(szTmp,"SELECT Type,SubType FROM DeviceStatus WHERE (ID==%s)",ID);
+	result=query(szTmp);
+	if (result.size()<1)
+		return;
+	//std::vector<std::string> sd=result[0];
+	//unsigned char dType=atoi(sd[0].c_str());
+	//unsigned char dSubType=atoi(sd[1].c_str());
+
+	sprintf(szTmp,"DELETE FROM Rain_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date);
+	result=query(szTmp);
+	sprintf(szTmp,"DELETE FROM Wind_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date);
+	result=query(szTmp);
+	sprintf(szTmp,"DELETE FROM UV_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date);
+	result=query(szTmp);
+	sprintf(szTmp,"DELETE FROM Temperature_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date);
+	result=query(szTmp);
+	sprintf(szTmp,"DELETE FROM Meter_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date);
+	result=query(szTmp);
+	sprintf(szTmp,"DELETE FROM MultiMeter_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date);
+	result=query(szTmp);
+}

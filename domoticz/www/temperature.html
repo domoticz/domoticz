@@ -470,6 +470,8 @@ function ShowTempLog(id,name)
 {
 	clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
+  $.devIdx=id;
+  $.devName=name;
   var htmlcontent = '';
   htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
   htmlcontent+=$('#templog').html();
@@ -657,7 +659,16 @@ function ShowTempLog(id,name)
           enabled: true
       },
       plotOptions: {
-               spline: {
+				series: {
+					point: {
+						events: {
+							click: function(event) {
+								chartPointClick(event,ShowTempLog);
+							}
+						}
+					}
+				},
+				spline: {
                     lineWidth: 3,
                     states: {
                         hover: {
@@ -759,7 +770,16 @@ function ShowTempLog(id,name)
           enabled: true
       },
       plotOptions: {
-               spline: {
+				series: {
+					point: {
+						events: {
+							click: function(event) {
+								chartPointClick(event,ShowTempLog);
+							}
+						}
+					}
+				},
+				spline: {
                     lineWidth: 3,
                     states: {
                         hover: {

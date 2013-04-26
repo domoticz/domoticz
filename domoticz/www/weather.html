@@ -135,6 +135,8 @@ function ShowWindLog(id,name)
 {
 	clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
+  $.devIdx=id;
+  $.devName=name;
   var htmlcontent = '';
         
   htmlcontent='<p><center><h2>' + name + '</h2></center></p><br>\n';
@@ -636,9 +638,23 @@ function ShowWindLog(id,name)
             }
         },
         series: [{
-            name: 'Speed'
+            name: 'Speed',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,ShowWindLog);
+					}
+				}
+			}
         }, {
             name: 'Gust',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,ShowWindLog);
+					}
+				}
+			}
         }]
         ,
         navigation: {
@@ -794,9 +810,23 @@ function ShowWindLog(id,name)
             }
         },
         series: [{
-            name: 'Speed'
+            name: 'Speed',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,ShowWindLog);
+					}
+				}
+			}
         }, {
             name: 'Gust',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,ShowWindLog);
+					}
+				}
+			}
         }]
         ,
         navigation: {
@@ -811,6 +841,8 @@ function ShowUVLog(id,name)
 {
 	clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
+  $.devIdx=id;
+  $.devName=name;
   var htmlcontent = '';
   htmlcontent='<p><center><h2>' + name + '</h2></center></p><br>\n';
   htmlcontent+=$('#uvlog').html();
@@ -962,7 +994,14 @@ function ShowUVLog(id,name)
             }
         },
         series: [{
-            name: 'uv'
+            name: 'uv',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,ShowUVLog);
+					}
+				}
+			}
         }]
         ,
         navigation: {
@@ -1040,7 +1079,14 @@ function ShowUVLog(id,name)
             }
         },
         series: [{
-            name: 'uv'
+            name: 'uv',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,ShowUVLog);
+					}
+				}
+			}
         }]
         ,
         navigation: {
@@ -1055,6 +1101,8 @@ function ShowBaroLog(id,name)
 {
 	clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
+  $.devIdx=id;
+  $.devName=name;
   var htmlcontent = '';
   htmlcontent='<p><center><h2>' + name + '</h2></center></p><br>\n';
   htmlcontent+=$('#barolog').html();
@@ -1213,7 +1261,14 @@ function ShowBaroLog(id,name)
             }
         },
         series: [{
-            name: 'hPa'
+            name: 'hPa',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,ShowBaroLog);
+					}
+				}
+			}
         }]
         ,
         navigation: {
@@ -1295,7 +1350,14 @@ function ShowBaroLog(id,name)
             }
         },
         series: [{
-            name: 'hPa'
+            name: 'hPa',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,ShowBaroLog);
+					}
+				}
+			}
         }]
         ,
         navigation: {
@@ -1310,6 +1372,8 @@ function ShowRainLog(id,name)
 {
 	clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
+  $.devIdx=id;
+  $.devName=name;
   var htmlcontent = '';
   htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
   htmlcontent+=$('#rainlog').html();
@@ -1463,7 +1527,14 @@ function ShowRainLog(id,name)
         },
         series: [{
             name: 'mm',
-            color: 'rgba(3,190,252,0.8)'
+            color: 'rgba(3,190,252,0.8)',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,ShowRainLog);
+					}
+				}
+			}
         }]
         ,
         legend: {
@@ -1540,7 +1611,14 @@ function ShowRainLog(id,name)
         },
         series: [{
             name: 'mm',
-            color: 'rgba(3,190,252,0.8)'
+            color: 'rgba(3,190,252,0.8)',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,ShowRainLog);
+					}
+				}
+			}
         }]
         ,
         legend: {
