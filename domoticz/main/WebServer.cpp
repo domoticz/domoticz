@@ -730,10 +730,17 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 			}
 
 			root["result"][ii]["HardwareID"]=hardwareID;
-			if (_hardwareNames.find(hardwareID)==_hardwareNames.end())
-				root["result"][ii]["HardwareName"]="Unknown?";
+			if (hardwareID==1000)
+			{
+				root["result"][ii]["HardwareName"]="System";
+			}
 			else
-				root["result"][ii]["HardwareName"]=_hardwareNames[hardwareID];
+			{
+				if (_hardwareNames.find(hardwareID)==_hardwareNames.end())
+					root["result"][ii]["HardwareName"]="Unknown?";
+				else
+					root["result"][ii]["HardwareName"]=_hardwareNames[hardwareID];
+			}
 			root["result"][ii]["idx"]=sd[0];
 			root["result"][ii]["ID"]=sd[1];
 			root["result"][ii]["Unit"]=atoi(sd[2].c_str());
