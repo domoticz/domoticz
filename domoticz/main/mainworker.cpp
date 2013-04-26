@@ -37,7 +37,10 @@
 	#include <fstream>
 #endif
 
+#define round(a) ( int ) ( a + .5 )
+
 extern std::string szStartupFolder;
+extern bool bIsRaspberryPi;
 
 MainWorker::MainWorker()
 {
@@ -495,6 +498,44 @@ void MainWorker::GetDomoticzUpdate(const std::string UpdateURL)
 	m_bDoDownloadDomoticzUpdate=true;
 }
 
+void MainWorker::GetRaspberryPiTemperature()
+{
+	std::string sLine = "";
+	std::ifstream infile;
+
+	infile.open("/sys/class/thermal/thermal_zone0/temp");
+	if (infile.is_open())
+	{
+		if (!infile.eof())
+		{
+			getline(infile, sLine);
+			float temperature=(float)atof(sLine.c_str())/1000.0f;
+			//Temp
+			RBUF tsen;
+			memset(&tsen,0,sizeof(RBUF));
+			tsen.TEMP.packetlength=sizeof(tsen);
+			tsen.TEMP.packettype=pTypeTEMP;
+			tsen.TEMP.subtype=sTypeTEMP_RPI;
+			tsen.TEMP.battery_level=9;
+			tsen.TEMP.rssi=6;
+			tsen.TEMP.id1=0;
+			tsen.TEMP.id2=1;
+
+			tsen.TEMP.tempsign=(temperature>=0)?0:1;
+			int at10=round(abs(temperature*10.0f));
+			tsen.TEMP.temperatureh=(BYTE)(at10/256);
+			at10-=(tsen.TEMP.temperatureh*256);
+			tsen.TEMP.temperaturel=(BYTE)(at10);
+
+			WriteMessageStart();
+			WriteMessage("Temperature",false);
+			decode_Temp(1000, (const tRBUF*)&tsen.TEMP);
+			WriteMessageEnd();
+		}
+		infile.close();
+	}
+}
+
 void MainWorker::Do_Work()
 {
 	int second_counter=0;
@@ -541,7 +582,7 @@ void MainWorker::Do_Work()
 		time_t atime=time(NULL);
 		struct tm ltime;
 		localtime_r(&atime,&ltime);
-		
+
 		if (ltime.tm_min!=m_ScheduleLastMinute)
 		{
 			m_ScheduleLastMinute=ltime.tm_min;
@@ -570,7 +611,10 @@ void MainWorker::Do_Work()
 				m_sql.ScheduleDay();
 			}
 		}
-
+		if ((bIsRaspberryPi)&&(ltime.tm_sec%30==0))
+		{
+			GetRaspberryPiTemperature();
+		}
 	}
 	_log.Log(LOG_NORM, "Mainworker Stopped...");
 }
@@ -1604,6 +1648,9 @@ void MainWorker::decode_Temp(const int HwdID, const tRBUF *pResponse)
 		case sTypeTEMP10:
 			WriteMessage("subtype       = TEMP10 - TFA 30.3133");
 			break;
+		case sTypeTEMP_RPI:
+			WriteMessage("subtype       = Raspberry Pi");
+			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->TEMP.packettype, pResponse->TEMP.subtype);
 			WriteMessage(szTmp);
@@ -1616,6 +1663,7 @@ void MainWorker::decode_Temp(const int HwdID, const tRBUF *pResponse)
 		WriteMessage(szTmp);
 
 		sprintf(szTmp,"Temperature   = %.1f C", temp);
+		WriteMessage(szTmp);
 
 		sprintf(szTmp,"Signal level  = %d", pResponse->TEMP.rssi);
 		WriteMessage(szTmp);
@@ -1883,6 +1931,7 @@ void MainWorker::decode_TempHum(const int HwdID, const tRBUF *pResponse)
 		WriteMessage(szTmp);
 
 		sprintf(szTmp,"Temperature   = %.1f C", temp);
+		WriteMessage(szTmp);
 		sprintf(szTmp,"Humidity      = %d %%" ,Humidity);
 		WriteMessage(szTmp);
 

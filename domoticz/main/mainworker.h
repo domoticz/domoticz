@@ -73,6 +73,7 @@ public:
 
 private:
 	void PrintDeviceName(const std::string devname);
+	void GetRaspberryPiTemperature();
 	struct _tStartScene
 	{
 		unsigned long long SceneRowID;

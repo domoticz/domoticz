@@ -39,6 +39,7 @@ const char *szHelp=
 	"";
 
 std::string szStartupFolder;
+bool bIsRaspberryPi=false;
 
 MainWorker _mainworker;
 CLogger _log;
@@ -116,7 +117,28 @@ int main(int argc, char**argv)
 	_log.Log(LOG_NORM,"Domoticz V%s%d (c)2012-2013 GizMoCuz",VERSION_STRING,SVNVERSION);
 
 	szStartupFolder="";
+
 #if !defined WIN32
+	//Check if we are running on a RaspberryPi
+	std::string sLine = "";
+	std::ifstream infile;
+
+	infile.open("/proc/cpuinfo");
+	if (infile.is_open())
+	{
+		while (!infile.eof())
+		{
+			getline(infile, sLine);
+			if (sLine.find("BCM2708")!=std::string::npos)
+			{
+				_log.Log(LOG_NORM,"System: Raspberry Pi");
+				bIsRaspberryPi=true;
+				break;
+			}
+		}
+		infile.close();
+	}
+
 	char szStartupPath[255];
 	getExecutablePathName((char*)&szStartupPath,255);
 	szStartupFolder=szStartupPath;
