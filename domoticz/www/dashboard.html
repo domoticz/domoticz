@@ -1,4 +1,4 @@
-<div id="dashcontent">
+﻿<div id="dashcontent">
 </div>
 
 <script type="text/javascript" charset="utf-8">
@@ -89,8 +89,11 @@ function RefreshFavorites()
 								if (item.SwitchType == "Doorbell") {
 									status+='<img src="images/door.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
-								else if (item.SwitchType == "Push Button") {
+								else if (item.SwitchType == "Push On Button") {
 									status+='<img src="images/push.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+								}
+								else if (item.SwitchType == "Push Off Button") {
+									status+='<img src="images/push.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 								else if (item.SwitchType == "X10 Siren") {
 									status+='<img src="images/siren.png" height="16">';
@@ -180,8 +183,11 @@ function RefreshFavorites()
 								if (item.SwitchType == "Doorbell") {
 									img='<img src="images/door48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 								}
-								else if (item.SwitchType == "Push Button") {
+								else if (item.SwitchType == "Push On Button") {
 									img='<img src="images/push48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+								}
+								else if (item.SwitchType == "Push Off Button") {
+									img='<img src="images/push48.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 								}
 								else if (item.SwitchType == "X10 Siren") {
 									if (
@@ -896,8 +902,11 @@ function ShowFavorites()
 							if (item.SwitchType == "Doorbell") {
 								status+='<img src="images/door.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 							}
-							else if (item.SwitchType == "Push Button") {
+							else if (item.SwitchType == "Push On Button") {
 								status+='<img src="images/push.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+							}
+							else if (item.SwitchType == "Push Off Button") {
+								status+='<img src="images/push.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 							}
 							else if (item.SwitchType == "X10 Siren") {
 								status+='<img src="images/siren.png" height="16">';
@@ -1011,8 +1020,11 @@ function ShowFavorites()
 							if (item.SwitchType == "Doorbell") {
 								xhtm+='\t      <td id="img"><img src="images/door48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 							}
-							else if (item.SwitchType == "Push Button") {
+							else if (item.SwitchType == "Push On Button") {
 								xhtm+='\t      <td id="img"><img src="images/push48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+							}
+							else if (item.SwitchType == "Push Off Button") {
+								xhtm+='\t      <td id="img"><img src="images/push48.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 							}
 							else if (item.SwitchType == "X10 Siren") {
 								if (

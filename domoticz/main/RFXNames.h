@@ -16,7 +16,8 @@ enum _eSwitchType
     STYPE_BlindsInverted,
 	STYPE_Dimmer,
 	STYPE_Motion,
-	STYPE_Push,
+	STYPE_PushOn,
+	STYPE_PushOff,
 	STYPE_END
 };
 

@@ -162,7 +162,8 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
         { STYPE_BlindsInverted, "Blinds Inverted" },
 		{ STYPE_Dimmer, "Dimmer" },
 		{ STYPE_Motion, "Motion Sensor" },
-		{ STYPE_Push, "Push Button" },
+		{ STYPE_PushOn, "Push On Button" },
+		{ STYPE_PushOff, "Push Off Button" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, sType);

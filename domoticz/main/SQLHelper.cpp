@@ -853,7 +853,7 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 					int cmd=0;
 					if (
 						(switchtype==STYPE_Motion)||
-						(switchtype==STYPE_Push)
+						(switchtype==STYPE_PushOn)
 						)
 					{
 						switch (devType)

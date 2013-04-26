@@ -1099,8 +1099,11 @@ function RefreshLights()
 						else if (item.SwitchType == "Doorbell") {
 							img='<img src="images/door48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
 						}
-						else if (item.SwitchType == "Push Button") {
+						else if (item.SwitchType == "Push On Button") {
 							img='<img src="images/push48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+						}
+						else if (item.SwitchType == "Push Off Button") {
+							img='<img src="images/push48.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
 						}
 						else if (item.SwitchType == "Contact") {
 							if (item.Status == 'Closed') {
@@ -1296,8 +1299,12 @@ function ShowLights()
             xhtm+='\t      <td id="img"><img src="images/door48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
             bAddTimer=false;
           }
-          else if (item.SwitchType == "Push Button") {
+          else if (item.SwitchType == "Push On Button") {
             xhtm+='\t      <td id="img"><img src="images/push48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+            bAddTimer=false;
+          }
+          else if (item.SwitchType == "Push Off Button") {
+            xhtm+='\t      <td id="img"><img src="images/push48.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
             bAddTimer=false;
           }
           else if (item.SwitchType == "Contact") {
