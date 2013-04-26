@@ -238,13 +238,13 @@ void CRego6XXSerial::Do_Work()
                 else if(g_allRegisters[m_pollcntr].type == REGO_TYPE_TOTCOMP)
                 {
     		        time_t atime=time(NULL);
-                    if((atime - g_allRegisters[20].lastSent <= 7200) && // Radiator hours is fresh
-                       (atime - g_allRegisters[21].lastSent <= 7200)) // Hot water hours is fresh 
+                    if((atime - g_allRegisters[20].lastSent <= 6000) && // Radiator hours is fresh
+                       (atime - g_allRegisters[21].lastSent <= 6000)) // Hot water hours is fresh 
                     {
         			    m_Rego6XXValue.ID = g_allRegisters[m_pollcntr].name;
  					    m_Rego6XXValue.value =  g_allRegisters[20].lastValue + g_allRegisters[21].lastValue;
                         if((m_Rego6XXValue.value != g_allRegisters[m_pollcntr].lastValue) || // Only send changes.
-                             (atime - g_allRegisters[m_pollcntr].lastSent >= 3600)) // Send at least every 60 minutes
+                             (atime - g_allRegisters[m_pollcntr].lastSent >= 3000)) // Send at least every 50 minutes
                         {
                             g_allRegisters[m_pollcntr].lastSent = atime;
                             g_allRegisters[m_pollcntr].lastValue = m_Rego6XXValue.value;
@@ -435,7 +435,7 @@ void CRego6XXSerial::ParseData()
 					m_Rego6XXValue.value = data; 
                 	m_Rego6XXValue.subtype=sTypeRego6XXCounter;
                     if((m_Rego6XXValue.value != g_allRegisters[m_pollcntr].lastValue) || // Only send changes.
-                       (atime - g_allRegisters[m_pollcntr].lastSent >= 3600)) // Send at least every 60 minutes
+                       (atime - g_allRegisters[m_pollcntr].lastSent >= 3000)) // Send at least every 50 minutes
                     {
                         g_allRegisters[m_pollcntr].lastSent = atime;
                         g_allRegisters[m_pollcntr].lastValue = m_Rego6XXValue.value;
