@@ -26,6 +26,7 @@ Version 1.0.xxx (April xxth 2013)
 - Updated: Charts Library
 - Implemented: Option to delete data point from sensor by Shift-Left click on month/year graph point
 - Implemented: Push On Button switch type (sends an OFF command)
+- Implemented: Added support for short term data in the custom temperature graph
 
 Version 1.0.412 (April 1th 2013)
 - Fixed: Siren icon on dashboard

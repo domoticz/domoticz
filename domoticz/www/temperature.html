@@ -17,16 +17,41 @@
 <div id="customlog" style="display:none;">
     <table width="95%">
         <tr>
-            <td width="80%"><div id="customgraph" style="height: 400px;"></div></td>
-            <td width="20%" style="padding-left:10px; padding-top:80px; vertical-align:top;">Select device(s) to display:<div id="devicecontainer" style="margin-top:10px; background-color: #7D7E7D; background-image: -moz-linear-gradient(center top , #7D7E7D, #0E0E0E); border: 1px solid #616261; width:100%; height: 240px; overflow-y: scroll;"></div>
-                <div id="controlbar" style="height: 20px; padding: 5px;" align="center">
-                    <table>
-                        <tr><td align="left"><label for="graphfrom">From:&nbsp;</label></td>
-                        <td><input type="text" style="width: 70px;" id="graphfrom" class="datepick" name="graphfrom" /></td>
-                            <tr><td align="left"><label for="graphto">To:</label></td>
-                        <td><input type="text" style="width: 70px;" id="graphto" class="datepick" name="graphto" /></td></tr>
-                    </table>
-                </div></td>
+            <td width="80%"><div id="customgraph" style="height: 400px; vertical-align:top;"></div></td>
+            <td width="20%">
+             <table>
+              <tr><td style="margin-top:7px; padding-left:10px; vertical-align:top;">
+                Select graph type:
+                <select id="combocustomgraphtype" name="CustomGraphType" style="margin-top:3px; width:200px;" class="combobox ui-corner-all" onChange="ClearCustomGraph()">
+					<option value="1">Short term (5 minute values)</option>
+					<option value="0">Long term (daily values)</option>
+				</select>
+              </td></tr>
+              <tr><td style="margin-top:7px; padding-left:10px; vertical-align:top;">
+              Select device(s) to display:
+              <div id="devicecontainer" style="margin-top:3px; background-color: #7D7E7D; background-image: -moz-linear-gradient(center top , #7D7E7D, #0E0E0E); border: 1px solid #616261; width:100%; height: 240px; overflow-y: scroll;"></div>
+              <div id="controlbar" style="padding: 5px;" align="center">
+                <table>
+                    <tr>
+                      <td align="left"><label for="graphfrom">From:&nbsp;</label></td>
+                      <td><input type="text" style="width: 70px;" id="graphfrom" class="datepick" name="graphfrom" /></td>
+                    </tr>
+                    <tr>
+                      <td align="left"><label for="graphto">To:</label></td>
+                      <td><input type="text" style="width: 70px;" id="graphto" class="datepick" name="graphto" /></td>
+                   </tr>
+                   <tr>
+                      <td style="padding: 5px;"><input type="checkbox" class="devicecheckbox" id="graphTemp" checked>Temperature</td>
+                      <td style="padding: 5px;"><input type="checkbox" class="devicecheckbox" id="graphChill">Chill factor</td>
+                   </tr>
+                   <tr>
+                      <td style="padding: 5px;"><input type="checkbox" class="devicecheckbox" id="graphHum">Humidity</td>
+                      <td style="padding: 5px;"><input type="checkbox" class="devicecheckbox" id="graphBaro">Barometer</td>
+                   </tr>
+                </table>
+              </div></td></tr>
+             </table>
+            </td>
         </tr>
     </table>
 </div>
@@ -293,6 +318,13 @@ function RemoveMultipleDataFromTempChart(chart,deviceid)
     if(temperaturemin!=null) {temperaturemin.remove()};
 }
 
+function ClearCustomGraph()
+{
+    $('div[id="devicecontainer"] input:checkbox:checked').each(function() {
+        RemoveMultipleDataFromTempChart($.CustomChart,$(this).attr('id'));
+        $(this).prop("checked", false);
+    });   
+}
     
 function SelectGraphDevices()
 {
@@ -316,11 +348,12 @@ function AddDeviceToGraph(cb)
 {
     if (cb.checked==true) {
         $.ajax({
-           url: "json.htm?type=graph&sensor=temp&idx="+cb.id+"&range="+$("#graphfrom").val()+"T"+$("#graphto").val(),
+           url: "json.htm?type=graph&sensor=temp&idx="+cb.id+"&range="+$("#graphfrom").val()+"T"+$("#graphto").val()+"&graphtype="+$("#combocustomgraphtype").val()+
+           "&graphTemp="+$("#graphTemp").prop("checked")+"&graphChill="+$("#graphChill").prop("checked")+"&graphHum="+$("#graphHum").prop("checked")+"&graphBaro="+$("#graphBaro").prop("checked"),
            async: false,
            dataType: 'json',
            success: function(data) {
-            AddMultipleDataToTempChart(data,$.CustomChart,0,cb.id,cb.value);
+            AddMultipleDataToTempChart(data,$.CustomChart,$("#combocustomgraphtype").val(),cb.id,cb.value);
            }
         });
     }
@@ -335,13 +368,14 @@ function datePickerChanged()
     $('div[id="devicecontainer"] input:checkbox:checked').each(function() {
         RemoveMultipleDataFromTempChart($.CustomChart,$(this).attr('id'));
         $.ajax({
-           url: "json.htm?type=graph&sensor=temp&idx="+$(this).attr('id')+"&range="+$("#graphfrom").val()+"T"+$("#graphto").val(),
+           url: "json.htm?type=graph&sensor=temp&idx="+$(this).attr('id')+"&range="+$("#graphfrom").val()+"T"+$("#graphto").val()+"&graphtype="+$("#combocustomgraphtype").val()+
+           "&graphTemp="+$("#graphTemp").prop("checked")+"&graphChill="+$("#graphChill").prop("checked")+"&graphHum="+$("#graphHum").prop("checked")+"&graphBaro="+$("#graphBaro").prop("checked"),
            async: false,
            dataType: 'json',
            graphid: $(this).attr('id'),
            graphval: $(this).val(),
            success: function(data) {
-            AddMultipleDataToTempChart(data,$.CustomChart,0,this.graphid,this.graphval);
+            AddMultipleDataToTempChart(data,$.CustomChart,$("#combocustomgraphtype").val(),this.graphid,this.graphval);
            }
         });
     });   

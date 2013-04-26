@@ -3748,109 +3748,174 @@ char * CWebServer::GetJSonPage()
 		}//month or year
 		else if ((srange.substr(0,1)=="2") && (srange.substr(10,1)=="T") && (srange.substr(11,1)=="2")) // custom range 2013-01-01T2013-12-31
 		{
-            
             std::string szDateStart=srange.substr(0,10);
             std::string szDateEnd=srange.substr(11,10);
-
+ 		    std::string sgraphtype=m_pWebEm->FindValue("graphtype");
+ 		    std::string sgraphTemp=m_pWebEm->FindValue("graphTemp");
+ 		    std::string sgraphChill=m_pWebEm->FindValue("graphChill");
+ 		    std::string sgraphHum=m_pWebEm->FindValue("graphHum");
+ 		    std::string sgraphBaro=m_pWebEm->FindValue("graphBaro");
+          
 			if (sensor=="temp") {
 				root["status"]="OK";
 				root["title"]="Graph " + sensor + " " + srange;
 
+                bool sendTemp = false;
+                bool sendChill = false;
+                bool sendHum = false;
+                bool sendBaro = false;
+
+			    if ((sgraphTemp=="true") && 
+				    ((dType==pTypeRego6XXTemp)||(dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeThermostat1)||
+				    ((dType==pTypeUV)&&(dSubType==sTypeUV3))||
+				    ((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
+				    ((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))||
+				    ((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp)))
+				    )
+			    {
+                    sendTemp = true;
+			    }
+			    if ((sgraphChill=="true") &&
+				    (((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
+				    ((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp)))
+				    )
+			    {
+                    sendChill = true;
+			    }
+			    if ((sgraphHum=="true") &&
+                    ((dType==pTypeHUM)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO))
+                    )
+			    {
+                    sendHum = true;
+			    }
+			    if ((sgraphHum=="true") && (dType==pTypeTEMP_HUM_BARO))
+			    {
+                    sendBaro = true;
+                }
+
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "SELECT Temp_Min, Temp_Max, Chill_Min, Chill_Max, Humidity, Barometer, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-				result=m_pMain->m_sql.query(szQuery.str());
-				int ii=0;
-				if (result.size()>0)
-				{
-					std::vector<std::vector<std::string> >::const_iterator itt;
-					for (itt=result.begin(); itt!=result.end(); ++itt)
-					{
-						std::vector<std::string> sd=*itt;
+                if(sgraphtype=="1")
+                {
+				    szQuery << "SELECT Temperature, Chill, Humidity, Barometer, Date FROM Temperature WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+				    result=m_pMain->m_sql.query(szQuery.str());
+				    int ii=0;
+				    if (result.size()>0)
+				    {
+					    std::vector<std::vector<std::string> >::const_iterator itt;
+					    for (itt=result.begin(); itt!=result.end(); ++itt)
+					    {
+						    std::vector<std::string> sd=*itt;
 
-						root["result"][ii]["d"]=sd[6].substr(0,16);
-						if (
-							(dType==pTypeRego6XXTemp)||(dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeThermostat1)||
-							((dType==pTypeUV)&&(dSubType==sTypeUV3))||
-							((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
-							((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))||
-							((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))
-							)
-						{
-							root["result"][ii]["te"]=sd[1];
-							root["result"][ii]["tm"]=sd[0];
-						}
-						if (
-							((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
-							((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))
-							)
-						{
-							root["result"][ii]["ch"]=sd[3];
-							root["result"][ii]["cm"]=sd[2];
-						}
-						if ((dType==pTypeHUM)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO))
-						{
-							root["result"][ii]["hu"]=sd[4];
-						}
-						if (dType==pTypeTEMP_HUM_BARO)
-						{
-							if (dSubType==sTypeTHBFloat)
-							{
-								sprintf(szTmp,"%.1f",atof(sd[5].c_str())/10.0f);
-								root["result"][ii]["ba"]=szTmp;
-							}
-							else
-								root["result"][ii]["ba"]=sd[5];
-						}
+						    root["result"][ii]["d"]=sd[4];//.substr(0,16);
+						    if (sendTemp)
+						    {
+							    root["result"][ii]["te"]=sd[0];
+							    root["result"][ii]["tm"]=sd[0];
+						    }
+						    if (sendChill)
+						    {
+							    root["result"][ii]["ch"]=sd[1];
+							    root["result"][ii]["cm"]=sd[1];
+						    }
+						    if (sendHum)
+						    {
+							    root["result"][ii]["hu"]=sd[2];
+						    }
+						    if (sendBaro)
+						    {
+							    if (dSubType==sTypeTHBFloat)
+							    {
+								    sprintf(szTmp,"%.1f",atof(sd[3].c_str())/10.0f);
+								    root["result"][ii]["ba"]=szTmp;
+							    }
+							    else
+								    root["result"][ii]["ba"]=sd[3];
+						    }
 
-						ii++;
-					}
+						    ii++;
+					    }
+                    }
 				}
-				//add today (have to calculate it)
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "SELECT MIN(Temperature), MAX(Temperature), MIN(Chill), MAX(Chill), MAX(Humidity), MAX(Barometer) FROM Temperature WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
-				result=m_pMain->m_sql.query(szQuery.str());
-				if (result.size()>0)
-				{
-					std::vector<std::string> sd=result[0];
+                else
+                {
+				    szQuery << "SELECT Temp_Min, Temp_Max, Chill_Min, Chill_Max, Humidity, Barometer, Date FROM Temperature_Calendar WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+				    result=m_pMain->m_sql.query(szQuery.str());
+				    int ii=0;
+				    if (result.size()>0)
+				    {
+					    std::vector<std::vector<std::string> >::const_iterator itt;
+					    for (itt=result.begin(); itt!=result.end(); ++itt)
+					    {
+						    std::vector<std::string> sd=*itt;
 
-					root["result"][ii]["d"]=szDateEnd;
-					if (
-						((dType==pTypeRego6XXTemp)||(dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeWIND)||(dType==pTypeThermostat1))||
-						((dType==pTypeUV)&&(dSubType==sTypeUV3))||
-						((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
-						((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))
-						)
-					{
-						root["result"][ii]["te"]=sd[1];
-						root["result"][ii]["tm"]=sd[0];
-					}
-					if (
-						((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
-						((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))
-						)
-					{
-						root["result"][ii]["ch"]=sd[3];
-						root["result"][ii]["cm"]=sd[2];
-					}
-					if ((dType==pTypeHUM)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO))
-					{
-						root["result"][ii]["hu"]=sd[4];
-					}
-					if (dType==pTypeTEMP_HUM_BARO)
-					{
-						if (dSubType==sTypeTHBFloat)
-						{
-							sprintf(szTmp,"%.1f",atof(sd[5].c_str())/10.0f);
-							root["result"][ii]["ba"]=szTmp;
-						}
-						else
-							root["result"][ii]["ba"]=sd[5];
-					}
-					ii++;
-				}
+						    root["result"][ii]["d"]=sd[6].substr(0,16);
+						    if (sendTemp)
+						    {
+							    root["result"][ii]["te"]=sd[1];
+							    root["result"][ii]["tm"]=sd[0];
+						    }
+						    if (sendChill)
+						    {
+							    root["result"][ii]["ch"]=sd[3];
+							    root["result"][ii]["cm"]=sd[2];
+						    }
+						    if (sendHum)
+						    {
+							    root["result"][ii]["hu"]=sd[4];
+						    }
+						    if (sendBaro)
+						    {
+							    if (dSubType==sTypeTHBFloat)
+							    {
+								    sprintf(szTmp,"%.1f",atof(sd[5].c_str())/10.0f);
+								    root["result"][ii]["ba"]=szTmp;
+							    }
+							    else
+								    root["result"][ii]["ba"]=sd[5];
+						    }
 
+						    ii++;
+					    }
+                    }
+
+				    //add today (have to calculate it)
+				    szQuery.clear();
+				    szQuery.str("");
+				    szQuery << "SELECT MIN(Temperature), MAX(Temperature), MIN(Chill), MAX(Chill), MAX(Humidity), MAX(Barometer) FROM Temperature WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				    result=m_pMain->m_sql.query(szQuery.str());
+				    if (result.size()>0)
+				    {
+					    std::vector<std::string> sd=result[0];
+
+					    root["result"][ii]["d"]=szDateEnd;
+					    if (sendTemp)
+					    {
+						    root["result"][ii]["te"]=sd[1];
+						    root["result"][ii]["tm"]=sd[0];
+					    }
+					    if (sendChill)
+					    {
+						    root["result"][ii]["ch"]=sd[3];
+						    root["result"][ii]["cm"]=sd[2];
+					    }
+					    if (sendHum)
+					    {
+						    root["result"][ii]["hu"]=sd[4];
+					    }
+					    if (sendBaro)
+					    {
+						    if (dSubType==sTypeTHBFloat)
+						    {
+							    sprintf(szTmp,"%.1f",atof(sd[5].c_str())/10.0f);
+							    root["result"][ii]["ba"]=szTmp;
+						    }
+						    else
+							    root["result"][ii]["ba"]=sd[5];
+					    }
+					    ii++;
+				    }
+                }
 			}
 			else if (sensor=="uv") {
 				root["status"]="OK";
@@ -4280,7 +4345,7 @@ char * CWebServer::GetJSonPage()
 			std::string systemname=my_uname.sysname;
 			std::string machine=my_uname.machine;
 			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
-			if ((systemname=="windows")||(machine!="armv6l")||(strstr(my_uname.release,"ARCH+")!=NULL))
+			if ((systemname=="windows")||(machine!="armv6l"))
 			{
 				//Only Raspberry Pi (Wheezy) for now!
 				root["status"]="OK";
