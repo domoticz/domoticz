@@ -527,7 +527,16 @@ void MainWorker::GetRaspberryPiTemperature()
 			at10-=(tsen.TEMP.temperatureh*256);
 			tsen.TEMP.temperaturel=(BYTE)(at10);
 
+			// convert now to string form
+			time_t now = time(0);
+			char *szDate = asctime(localtime(&now));
+			szDate[strlen(szDate)-1]=0;
+
 			WriteMessageStart();
+
+			std::stringstream sTmp;
+			sTmp << szDate << " (System) ";
+			WriteMessage(sTmp.str().c_str(),false);
 			WriteMessage("Temperature",false);
 			decode_Temp(1000, (const tRBUF*)&tsen.TEMP);
 			WriteMessageEnd();
