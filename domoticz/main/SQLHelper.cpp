@@ -2182,6 +2182,17 @@ void CSQLHelper::UpdateMeter()
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
+	struct tm ltime;
+	ltime.tm_isdst=tm1.tm_isdst;
+	ltime.tm_hour=0;
+	ltime.tm_min=0;
+	ltime.tm_sec=0;
+	ltime.tm_year=tm1.tm_year;
+	ltime.tm_mon=tm1.tm_mon;
+	ltime.tm_mday=tm1.tm_mday;
+	char szDateToday[100];
+	sprintf(szDateToday,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
+
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
@@ -2261,7 +2272,7 @@ void CSQLHelper::UpdateMeter()
 			s_str2 >> MeterValue;
 
 			//if last value == actual value, then do not insert it
-			sprintf(szTmp,"SELECT Value FROM Meter WHERE (DeviceRowID=%llu) ORDER BY ROWID DESC LIMIT 1",ID);
+			sprintf(szTmp,"SELECT Value FROM Meter WHERE (DeviceRowID=%llu) AND (Date>='%s') ORDER BY ROWID DESC LIMIT 1",ID,szDateToday);
 			result2=query(szTmp);
 			if (result2.size()>0)
 			{
@@ -2284,7 +2295,6 @@ void CSQLHelper::UpdateMeter()
 	}
 	//truncate the Meter table (remove items older then 48 hours)
 	char szDateEnd[40];
-	struct tm ltime;
 	ltime.tm_isdst=tm1.tm_isdst;
 	ltime.tm_hour=tm1.tm_hour;
 	ltime.tm_min=tm1.tm_min;
