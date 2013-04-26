@@ -2595,16 +2595,19 @@ void CSQLHelper::AddCalendarUpdateRain()
 
 			float total_real=total_max-total_min;
 
-			//insert into calendar table
-			sprintf(szTmp,
-				"INSERT INTO Rain_Calendar (DeviceRowID, Total, Rate, Date) "
-				"VALUES (%llu, %.2f, %d, '%s')",
-				ID,
-				total_real,
-				rate,
-				szDateStart
-				);
-			result=query(szTmp);
+			if (total_real<1000)
+			{
+				//insert into calendar table
+				sprintf(szTmp,
+					"INSERT INTO Rain_Calendar (DeviceRowID, Total, Rate, Date) "
+					"VALUES (%llu, %.2f, %d, '%s')",
+					ID,
+					total_real,
+					rate,
+					szDateStart
+					);
+				result=query(szTmp);
+			}
 		}
 	}
 }
@@ -2654,10 +2657,9 @@ void CSQLHelper::AddCalendarUpdateMeter()
 	ltime.tm_mon=tm1.tm_mon;
 	ltime.tm_mday=tm1.tm_mday;
 
-	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
+	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,ltime.tm_hour,ltime.tm_min,ltime.tm_sec);
 
 	//Subtract one day
-
 	ltime.tm_mday -= 1;
 	time_t later = mktime(&ltime);
 	struct tm tm2;
@@ -2756,10 +2758,19 @@ void CSQLHelper::AddCalendarUpdateMeter()
 					CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYCOUNTER, musage);
 				break;
 			}
+			//Insert the last (max) counter value into the meter table to get the "today" value correct.
+			sprintf(szTmp,
+				"INSERT INTO Meter (DeviceRowID, Value, Date) "
+				"VALUES (%llu, %s, '%s')",
+				ID,
+				sd[1].c_str(),
+				szDateEnd
+				);
+			result=query(szTmp);
 		}
 		else
 		{
-			//no new meter result received in last hour
+			//no new meter result received in last day
 			//insert into calendar table
 			sprintf(szTmp,
 				"INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) "
@@ -2818,10 +2829,9 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 	ltime.tm_mon=tm1.tm_mon;
 	ltime.tm_mday=tm1.tm_mday;
 
-	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
+	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,ltime.tm_hour,ltime.tm_min,ltime.tm_sec);
 
 	//Subtract one day
-
 	ltime.tm_mday -= 1;
 	time_t later = mktime(&ltime);
 	struct tm tm2;
@@ -2904,6 +2914,20 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 				float musage=(total_real[0]+total_real[1])/EnergyDivider;
 				CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYENERGY, musage);
 			}
+			//Insert the last (max) counter values into the table to get the "today" value correct.
+			sprintf(szTmp,
+				"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Date) "
+				"VALUES (%llu, %s, %s, %s, %s, %s, %s, '%s')",
+				ID,
+				sd[0].c_str(),
+				sd[1].c_str(),
+				sd[2].c_str(),
+				sd[3].c_str(),
+				sd[4].c_str(),
+				sd[5].c_str(),
+				szDateEnd
+				);
+			result=query(szTmp);
 		}
 	}
 }

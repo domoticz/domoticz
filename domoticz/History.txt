@@ -20,6 +20,7 @@ Version 1.0.xxx (April xxth 2013)
 - Fixed: Rain (PCR800) rate/hour corrected
 - Implemented: Add support for Lighting6 (Blyss)
 - Implemented: Push Button switch type (sends an ON command, with option to specify Off delay)
+- Changed: Better day value calculation for meter devices
 
 Version 1.0.412 (April 1th 2013)
 - Fixed: Siren icon on dashboard
