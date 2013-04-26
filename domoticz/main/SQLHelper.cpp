@@ -851,7 +851,10 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 				{
 					bool bAdd2DelayQueue=false;
 					int cmd=0;
-					if (switchtype==STYPE_Motion)
+					if (
+						(switchtype==STYPE_Motion)||
+						(switchtype==STYPE_Push)
+						)
 					{
 						switch (devType)
 						{

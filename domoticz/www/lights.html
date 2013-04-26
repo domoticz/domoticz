@@ -17,6 +17,10 @@
 				<td align="right" style="width:60px"><label for="motionoffdelay">Off Delay:</label></td>
 				<td><input type="text" id="motionoffdelay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (Seconds) 0 = Use sensor time</td>
 			</tr>
+			<tr id="OffDelayDiv">
+				<td align="right" style="width:60px"><label for="motionoffdelay">Off Delay:</label></td>
+				<td><input type="text" id="offdelay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (Seconds) 0 = Disabled</td>
+			</tr>
 			<tr>
 				<td></td>
 				<td>
@@ -787,8 +791,12 @@ function SaveLightSwitch()
 		bValid = bValid && checkLength( $("#lightcontent #devicename"), 2, 100 );
 		if ( bValid ) {
 				var addjvalstr="";
-				if ($("#lightcontent #comboswitchtype").val()==8) {
+				var switchtype=$("#lightcontent #comboswitchtype").val();
+				if (switchtype==8) {
 					addjvalstr="&addjvalue=" + $("#lightcontent #motionoffdelay").val();
+				}
+				else if (switchtype==9) {
+					addjvalstr="&addjvalue=" + $("#lightcontent #offdelay").val();
 				}
 		
 				$.ajax({
@@ -940,12 +948,15 @@ function EditLightDevice(idx,name,switchtype,addjvalue,isslave)
   $("#lightcontent #devicename").val(name);
   $("#lightcontent #comboswitchtype").val(switchtype);
 
+	$("#lightcontent #OffDelayDiv").hide();
+	$("#lightcontent #MotionDiv").hide();
 	if (switchtype==8) {
 		$("#lightcontent #MotionDiv").show();
 		$("#lightcontent #motionoffdelay").val(addjvalue);
 	}
-	else {
-		$("#lightcontent #MotionDiv").hide();
+	else if (switchtype==9) {
+		$("#lightcontent #OffDelayDiv").show();
+		$("#lightcontent #offdelay").val(addjvalue);
 	}
 
  	$("#lightcontent #combosubdevice").html("");
