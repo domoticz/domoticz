@@ -1103,7 +1103,7 @@ function RefreshLights()
 							img='<img src="images/push48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
 						}
 						else if (item.SwitchType == "Push Off Button") {
-							img='<img src="images/push48.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+							img='<img src="images/pushoff48.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
 						}
 						else if (item.SwitchType == "Contact") {
 							if (item.Status == 'Closed') {
@@ -1304,7 +1304,7 @@ function ShowLights()
             bAddTimer=false;
           }
           else if (item.SwitchType == "Push Off Button") {
-            xhtm+='\t      <td id="img"><img src="images/push48.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+            xhtm+='\t      <td id="img"><img src="images/pushoff48.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
             bAddTimer=false;
           }
           else if (item.SwitchType == "Contact") {
