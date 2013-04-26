@@ -1403,7 +1403,6 @@ function ShowRainLog(id,name)
           zoomType: 'xy',
           events: {
               load: function() {
-                  
                 $.getJSON("json.htm?type=graph&sensor=rain&idx="+id+"&range=month",
                 function(data) {
                       var series = $.MonthChart.series[0];
