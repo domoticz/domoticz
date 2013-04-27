@@ -4,21 +4,21 @@
 <div id="editlightswitch" style="display:none;">
 		<table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
 			<tr>
-				<td align="right" style="width:60px"><label for="name">Name: </label></td>
+				<td align="right" style="width:80px"><label for="name">Name: </label></td>
 				<td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 			</tr>
 			<tr>
-				<td align="right"><label for="switchtype">Type: </label></td>
+				<td align="right"><label for="switchtype">Switch Type: </label></td>
 				<td><select id="comboswitchtype" style="width:150px" class="combobox ui-corner-all">
 					<!--#embed switchtypes -->
 				</select></td>
 			</tr>
 			<tr id="MotionDiv">
-				<td align="right" style="width:60px"><label for="motionoffdelay">Off Delay:</label></td>
+				<td align="right"<label for="motionoffdelay">Off Delay:</label></td>
 				<td><input type="text" id="motionoffdelay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (Seconds) 0 = Use sensor time</td>
 			</tr>
 			<tr id="OffDelayDiv">
-				<td align="right" style="width:60px"><label for="motionoffdelay">Off Delay:</label></td>
+				<td align="right"><label for="motionoffdelay">Off Delay:</label></td>
 				<td><input type="text" id="offdelay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (Seconds) 0 = Disabled</td>
 			</tr>
 			<tr>
@@ -52,7 +52,7 @@
 		<br>
 		<table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
 			<tr>
-				<td align="right" style="width:110px"><label for="name">Sub/Slave Device: </label></td>
+				<td align="right" style="width:120px"><label for="name">Sub/Slave Device: </label></td>
 				<td>
 					<select id="combosubdevice" style="width:250px" class="combobox ui-corner-all">
 					</select>
@@ -66,10 +66,10 @@
     <form>
         <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td align="right" style="width:60px"><label for="name">Name: </label></td>
-          <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+          <td align="right" style="width:120px"><label for="name">Name: </label></td>
+          <td><input type="text" id="devicename" style="width: 244px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
         <tr>
-          <td align="right"><label for="switchtype">Type: </label></td>
+          <td align="right"><label for="switchtype">Switch Type: </label></td>
           <td><select id="comboswitchtype" style="width:150px" class="combobox ui-corner-all">
             <!--#embed switchtypes -->
           </select></td>
@@ -79,35 +79,39 @@
           <td align="right"><label>As: </label></td>
           <td><input type="radio" name="how" id="how_1" value="New" checked>&nbsp;Main Device&nbsp;&nbsp;<input type="radio" name="how" id="how_2" value="Sub Device">&nbsp;Sub/Slave Device</td>
         <tr>
-				<tr id="subdevice" style="display:none">
-					<td align="right" style="width:60px"><label>Device: </label></td>
-					<td>
-						<select id="combosubdevice" style="width:250px" class="combobox ui-corner-all">
-						</select>
-					</td>
-				</tr>
-		    </table>
+		<tr id="subdevice" style="display:none">
+			<td align="right"><label>Device: </label></td>
+			<td>
+				<select id="combosubdevice" style="width:244px" class="combobox ui-corner-all">
+				</select>
+			</td>
+		</tr>
+		</table>
     </form>
 </div>
 <div id="dialog-addmanuallightdevice" title="Add Manual Light/Switch Device">
     <form>
         <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td align="right" style="width:60px"><label for="name">Hardware: </label></td>
+          <td align="right" style="width:120px"><label for="name">Hardware: </label></td>
           <td><select id="combohardware" style="width:260px" class="combobox ui-corner-all">
             <!--#embed combohardware -->
           </select></td>
         <tr>
         <tr>
-          <td align="right" style="width:60px"><label for="name">Name: </label></td>
+          <td align="right"><label for="name">Name: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
         <tr>
-          <td align="right"><label for="switchtype">Type: </label></td>
+          <td align="right"><label for="switchtype">Switch Type: </label></td>
 					<td><select id="comboswitchtype" style="width:150px" class="combobox ui-corner-all">
 						<!--#embed switchtypes -->
 					</select></td>
-		    </tr>
-		    <tr>
+	    </tr>
+	    <tr>
+			<td></td>
+			<td></td>
+	    </tr>
+	    <tr>
           <td align="right"><label>Type: </label></td>
           <td><select id="combolighttype" style="width:150px" class="combobox ui-corner-all">
 						<option value="0">X10</option>
@@ -125,16 +129,15 @@
 		    </tr>
 		    </table>
 				<div id="lighting1params">
-					<br>
 					<table class="display" id="lightparams1" border="0" cellpadding="0" cellspacing="20">
 						<tr>
-							<td align="right" style="width:100px"><label>House Code:</label></td>
+							<td align="right" style="width:110px"><label>House Code:</label></td>
 							<td><select id="combohousecode" style="width:60px" class="combobox ui-corner-all">
 									</select>
 							</td>
 						</tr>
 						<tr>
-							<td align="right" style="width:100px"><label>Unit Code:</label></td>
+							<td align="right"><label>Unit Code:</label></td>
 							<td><select id="combounitcode" style="width:60px" class="combobox ui-corner-all">
 									</select>
 							</td>
@@ -142,10 +145,9 @@
 					</table>
 				</div>
 				<div id="lighting2params">
-					<br>
 					<table class="display" id="lightparams2" border="0" cellpadding="0" cellspacing="20">
 						<tr>
-							<td align="right" style="width:60px"><label>ID:</label></td>
+							<td align="right" style="width:110px"><label>ID:</label></td>
 							<td>
 								<select id="combocmd1" style="width:60px" class="combobox ui-corner-all">
 										<option value="0">0</option>
@@ -159,7 +161,7 @@
 							</td>
 						</tr>
 						<tr>
-							<td align="right" style="width:100px"><label>Unit Code:</label></td>
+							<td align="right"><label>Unit Code:</label></td>
 							<td><select id="combounitcode" style="width:60px" class="combobox ui-corner-all">
 									</select>
 							</td>
@@ -167,23 +169,22 @@
 					</table>
 				</div>
 				<div id="lighting3params">
-					<br>
 					<table class="display" id="lightparams3" border="0" cellpadding="0" cellspacing="20">
 						<tr>
-							<td align="right" style="width:60px"><label>ID:</label></td>
+							<td align="right" style="width:110px"><label>ID:</label></td>
 							<td>
 								<select id="combocmd1" style="width:60px" class="combobox ui-corner-all"></select>
 								<select id="combocmd2" style="width:60px" class="combobox ui-corner-all"></select>
 							</td>
 						</tr>
 						<tr>
-							<td align="right" style="width:100px"><label>Group Code:</label></td>
+							<td align="right"><label>Group Code:</label></td>
 							<td>
 								<select id="combogroupcode" style="width:60px" class="combobox ui-corner-all"></select>
 							</td>
 						</tr>
 						<tr>
-							<td align="right" style="width:100px"><label>Unit Code:</label></td>
+							<td align="right"><label>Unit Code:</label></td>
 							<td>
 								<select id="combounitcode" style="width:60px" class="combobox ui-corner-all"></select>
 							</td>
@@ -501,119 +502,117 @@ function RefreshTimerTable(idx)
         
       if (typeof data.result != 'undefined') {
         $.each(data.result, function(i,item){
-					var active="No";
-					if (item.Active == "true")
-						active="Yes";
-					var Command="On";
-					if (item.Cmd == 1) {
-						Command="Off";
-					}
-					var tCommand=Command;
-					if ((Command=="On") && ($.isDimmer)) {
-						tCommand+=" (" + item.Level + "%)";
+			var active="No";
+			if (item.Active == "true")
+				active="Yes";
+			var Command="On";
+			if (item.Cmd == 1) {
+				Command="Off";
+			}
+			var tCommand=Command;
+			if ((Command=="On") && ($.isDimmer)) {
+				tCommand+=" (" + item.Level + "%)";
+			}
+			
+			var DayStr = "";
+			var dayflags = parseInt(item.Days);
+			if (dayflags & 0x80)
+				DayStr="Everyday";
+			else if (dayflags & 0x100)
+				DayStr="Weekdays";
+			else if (dayflags & 0x200)
+				DayStr="Weekends";
+			else {
+				if (dayflags & 0x01) {
+					if (DayStr!="") DayStr+=", ";
+					DayStr+="Mon";
+				}
+				if (dayflags & 0x02) {
+					if (DayStr!="") DayStr+=", ";
+					DayStr+="Tue";
+				}
+				if (dayflags & 0x04) {
+					if (DayStr!="") DayStr+=", ";
+					DayStr+="Wed";
+				}
+				if (dayflags & 0x08) {
+					if (DayStr!="") DayStr+=", ";
+					DayStr+="Thu";
+				}
+				if (dayflags & 0x10) {
+					if (DayStr!="") DayStr+=", ";
+					DayStr+="Fri";
+				}
+				if (dayflags & 0x20) {
+					if (DayStr!="") DayStr+=", ";
+					DayStr+="Sat";
+				}
+				if (dayflags & 0x40) {
+					if (DayStr!="") DayStr+=", ";
+					DayStr+="Sun";
+				}
+			}
+						
+			var addId = oTable.fnAddData( {
+				"DT_RowId": item.idx,
+				"Command": Command,
+				"Level": item.Level,
+				"0": active,
+				"1": $.myglobals.TimerTypesStr[item.Type],
+				"2": item.Time,
+				"3": tCommand,
+				"4": DayStr
+			} );
+        });
+		/* Add a click handler to the rows - this could be used as a callback */
+		$("#timertable tbody tr").click( function( e ) {
+			if ( $(this).hasClass('row_selected') ) {
+					$(this).removeClass('row_selected');
+					$('#updelclr #timerupdate').attr("class", "btnstyle3-dis");
+					$('#updelclr #timerdelete').attr("class", "btnstyle3-dis");
+			}
+			else {
+				oTable.$('tr.row_selected').removeClass('row_selected');
+				$(this).addClass('row_selected');
+				$('#updelclr #timerupdate').attr("class", "btnstyle3");
+				$('#updelclr #timerdelete').attr("class", "btnstyle3");
+				var anSelected = fnGetSelected( oTable );
+				if ( anSelected.length !== 0 ) {
+					var data = oTable.fnGetData( anSelected[0] );
+					var idx= data["DT_RowId"];
+					$.myglobals.SelectedTimerIdx=idx;
+					$("#updelclr #timerupdate").attr("href", "javascript:UpdateTimer(" + idx + ")");
+					$("#updelclr #timerdelete").attr("href", "javascript:DeleteTimer(" + idx + ")");
+					//update user interface with the paramters of this row
+					$('#lightcontent #timerparamstable #enabled').prop('checked', (data["0"]=="Yes") ? true : false);
+					$("#lightcontent #timerparamstable #combotype").val(jQuery.inArray(data["1"], $.myglobals.TimerTypesStr));
+					$("#lightcontent #timerparamstable #combotimehour").val(parseInt(data["2"].substring(0,2)));
+					$("#lightcontent #timerparamstable #combotimemin").val(parseInt(data["2"].substring(3,5)));
+					$("#lightcontent #timerparamstable #combocommand").val(jQuery.inArray(data["Command"], $.myglobals.CommandStr));
+					if ($.isDimmer) {
+						$("#lightcontent #timerparamstable #combolevel").val(data["Level"]);
 					}
 					
-					var DayStr = "";
-					var dayflags = parseInt(item.Days);
-					if (dayflags & 0x80)
-						DayStr="Everyday";
-					else if (dayflags & 0x100)
-						DayStr="Weekdays";
-					else if (dayflags & 0x200)
-						DayStr="Weekends";
-					else {
-						if (dayflags & 0x01) {
-							if (DayStr!="") DayStr+=", ";
-							DayStr+="Mon";
-						}
-						if (dayflags & 0x02) {
-							if (DayStr!="") DayStr+=", ";
-							DayStr+="Tue";
-						}
-						if (dayflags & 0x04) {
-							if (DayStr!="") DayStr+=", ";
-							DayStr+="Wed";
-						}
-						if (dayflags & 0x08) {
-							if (DayStr!="") DayStr+=", ";
-							DayStr+="Thu";
-						}
-						if (dayflags & 0x10) {
-							if (DayStr!="") DayStr+=", ";
-							DayStr+="Fri";
-						}
-						if (dayflags & 0x20) {
-							if (DayStr!="") DayStr+=", ";
-              DayStr+="Sat";
-						}
-						if (dayflags & 0x40) {
-							if (DayStr!="") DayStr+=", ";
-							DayStr+="Sun";
-						}
+					var disableDays=false;
+					if (data["4"]=="Everyday") {
+						$("#lightcontent #timerparamstable #when_1").prop('checked', 'checked');
+						disableDays=true;
 					}
+					else if (data["4"]=="Weekdays") {
+						$("#lightcontent #timerparamstable #when_2").prop('checked', 'checked');
+						disableDays=true;
+					}
+					else if (data["4"]=="Weekends") {
+						$("#lightcontent #timerparamstable #when_3").prop('checked', 'checked');
+						disableDays=true;
+					}
+					else
+						$("#lightcontent #timerparamstable #when_4").prop('checked', 'checked');
 						
-          var addId = oTable.fnAddData( {
-								"DT_RowId": item.idx,
-								"Command": Command,
-								"Level": item.Level,
-                "0": active,
-								"1": $.myglobals.TimerTypesStr[item.Type],
-								"2": item.Time,
-								"3": tCommand,
-								"4": DayStr
-							} );
-        });
-				/* Add a click handler to the rows - this could be used as a callback */
-				$("#timertable tbody tr").click( function( e ) {
-							if ( $(this).hasClass('row_selected') ) {
-									$(this).removeClass('row_selected');
-									$('#updelclr #timerupdate').attr("class", "btnstyle3-dis");
-									$('#updelclr #timerdelete').attr("class", "btnstyle3-dis");
-							}
-							else {
-									oTable.$('tr.row_selected').removeClass('row_selected');
-									$(this).addClass('row_selected');
-									$('#updelclr #timerupdate').attr("class", "btnstyle3");
-									$('#updelclr #timerdelete').attr("class", "btnstyle3");
-									var anSelected = fnGetSelected( oTable );
-									if ( anSelected.length !== 0 ) {
-										var data = oTable.fnGetData( anSelected[0] );
-										var idx= data["DT_RowId"];
-										$.myglobals.SelectedTimerIdx=idx;
-										$("#updelclr #timerupdate").attr("href", "javascript:UpdateTimer(" + idx + ")");
-										$("#updelclr #timerdelete").attr("href", "javascript:DeleteTimer(" + idx + ")");
-										//update user interface with the paramters of this row
-										$('#lightcontent #timerparamstable #enabled').prop('checked', (data["0"]=="Yes") ? true : false);
-										$("#lightcontent #timerparamstable #combotype").val(jQuery.inArray(data["1"], $.myglobals.TimerTypesStr));
-										$("#lightcontent #timerparamstable #combotimehour").val(parseInt(data["2"].substring(0,2)));
-										$("#lightcontent #timerparamstable #combotimemin").val(parseInt(data["2"].substring(3,5)));
-										$("#lightcontent #timerparamstable #combocommand").val(jQuery.inArray(data["Command"], $.myglobals.CommandStr));
-										if ($.isDimmer) {
-											$("#lightcontent #timerparamstable #combolevel").val(data["Level"]);
-										}
-										
-										var disableDays=false;
-										if (data["4"]=="Everyday") {
-											$("#lightcontent #timerparamstable #when_1").prop('checked', 'checked');
-											disableDays=true;
-										}
-										else if (data["4"]=="Weekdays") {
-											$("#lightcontent #timerparamstable #when_2").prop('checked', 'checked');
-											disableDays=true;
-										}
-										else if (data["4"]=="Weekends") {
-											$("#lightcontent #timerparamstable #when_3").prop('checked', 'checked');
-											disableDays=true;
-										}
-										else
-											$("#lightcontent #timerparamstable #when_4").prop('checked', 'checked');
-											
-										EnableDisableDays(data["4"],disableDays);
-									}
-									
-							}
-				}); 
-				
+					EnableDisableDays(data["4"],disableDays);
+				}
+			}
+		}); 
       }
      }
   });
@@ -622,79 +621,78 @@ function RefreshTimerTable(idx)
 
 function ShowTimers(id,name, isdimmer)
 {
-  clearInterval($.myglobals.refreshTimer);
-  $.devIdx=id;
-  $.isDimmer=isdimmer;
+	clearInterval($.myglobals.refreshTimer);
+	$.devIdx=id;
+	$.isDimmer=isdimmer;
   
 	var oTable;
 	
 	$('#modal').show();
-  var htmlcontent = '';
-  htmlcontent='<p><h2>Name: ' + name + '</h2></p><br>\n';
-  
-  var sunRise="";
-  var sunSet="";
-  $.ajax({
-     url: "json.htm?type=command&param=getSunRiseSet",
-     async: false, 
-     dataType: 'json',
-     success: function(data) {
-        if (typeof data.Sunrise != 'undefined') {
-          sunRise=data.Sunrise;
-          sunSet=data.Sunset;
-        }
-     }
-  });
-  
-  if (sunRise!="")
-  {
-    htmlcontent+='SunRise: ' + sunRise + ', SunSet: ' + sunSet + '<br><br>\n';
-  }
-  
-  htmlcontent+=$('#edittimers').html();
-  $('#lightcontent').html(GetBackbuttonHTMLTable('ShowLights')+htmlcontent);
+	var htmlcontent = '';
+	htmlcontent='<p><h2>Name: ' + name + '</h2></p><br>\n';
 
-  oTable = $('#timertable').dataTable( {
-                  "sDom": '<"H"lfrC>t<"F"ip>',
-                  "oTableTools": {
-                    "sRowSelect": "single",
-                  },
-                  "aaSorting": [[ 0, "desc" ]],
-                  "bSortClasses": false,
-                  "bProcessing": true,
-                  "bStateSave": true,
-                  "bJQueryUI": true,
-                  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
-                  "iDisplayLength" : 25,
-                  "sPaginationType": "full_numbers"
-                } );
+	var sunRise="";
+	var sunSet="";
+	$.ajax({
+		 url: "json.htm?type=command&param=getSunRiseSet",
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			if (typeof data.Sunrise != 'undefined') {
+			  sunRise=data.Sunrise;
+			  sunSet=data.Sunset;
+			}
+		 }
+	});
+  
+	if (sunRise!="") {
+		htmlcontent+='SunRise: ' + sunRise + ', SunSet: ' + sunSet + '<br><br>\n';
+	}
+  
+	htmlcontent+=$('#edittimers').html();
+	$('#lightcontent').html(GetBackbuttonHTMLTable('ShowLights')+htmlcontent);
+
+	oTable = $('#timertable').dataTable( {
+	  "sDom": '<"H"lfrC>t<"F"ip>',
+	  "oTableTools": {
+		"sRowSelect": "single",
+	  },
+	  "aaSorting": [[ 0, "desc" ]],
+	  "bSortClasses": false,
+	  "bProcessing": true,
+	  "bStateSave": true,
+	  "bJQueryUI": true,
+	  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+	  "iDisplayLength" : 25,
+	  "sPaginationType": "full_numbers"
+	} );
 	$('#timerparamstable #combotimehour >option').remove();
 	$('#timerparamstable #combotimemin >option').remove();
                 
-  //fill hour/minute comboboxes
-  for (ii=0; ii<24; ii++)
-  {
+	//fill hour/minute comboboxes
+	for (ii=0; ii<24; ii++)
+	{
 		$('#timerparamstable #combotimehour').append($('<option></option>').val(ii).html($.strPad(ii,2)));  
-  }
-  for (ii=0; ii<60; ii++)
-  {
+	}
+	for (ii=0; ii<60; ii++)
+	{
 		$('#timerparamstable #combotimemin').append($('<option></option>').val(ii).html($.strPad(ii,2)));  
-  }
+	}
   
-  $("#lightcontent #timerparamstable #when_1").click(function() {
+	$("#lightcontent #timerparamstable #when_1").click(function() {
 		EnableDisableDays("Everyday",true);
 	});
-  $("#lightcontent #timerparamstable #when_2").click(function() {
+	$("#lightcontent #timerparamstable #when_2").click(function() {
 		EnableDisableDays("Weekdays",true);
 	});
-  $("#lightcontent #timerparamstable #when_3").click(function() {
+	$("#lightcontent #timerparamstable #when_3").click(function() {
 		EnableDisableDays("Weekends",true);
 	});
-  $("#lightcontent #timerparamstable #when_4").click(function() {
+	$("#lightcontent #timerparamstable #when_4").click(function() {
 		EnableDisableDays("",false);
 	});
 
-  $("#lightcontent #timerparamstable #combocommand").change(function() {
+	$("#lightcontent #timerparamstable #combocommand").change(function() {
 		var cval=$("#lightcontent #timerparamstable #combocommand").val();
 		var bShowLevel=false;
 		if ($.isDimmer) {
@@ -717,41 +715,41 @@ function ShowTimers(id,name, isdimmer)
 		$("#lightcontent #LevelDiv").hide();
 	}
   
-  $('#modal').hide();
-  RefreshTimerTable(id);
- }
+	$('#modal').hide();
+	RefreshTimerTable(id);
+}
 
 function MakeFavorite(id,isfavorite)
 {
-  clearInterval($.myglobals.refreshTimer);
-  $.ajax({
-     url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite, 
-     async: false, 
-     dataType: 'json',
-     success: function(data) {
-      ShowLights();
-     }
-  });
+	clearInterval($.myglobals.refreshTimer);
+	$.ajax({
+		url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite, 
+		async: false, 
+		dataType: 'json',
+		success: function(data) {
+			ShowLights();
+		}
+	});
 }
 
 function EditNotification(idx,name, hasnotifications)
 {
-  clearInterval($.myglobals.refreshTimer);
-  $.devIdx=idx;
-  $("#dialog-notificationlightdevice #enabled").prop('checked', hasnotifications);
-  $( "#dialog-notificationlightdevice" ).dialog( "open" );
+	clearInterval($.myglobals.refreshTimer);
+	$.devIdx=idx;
+	$("#dialog-notificationlightdevice #enabled").prop('checked', hasnotifications);
+	$( "#dialog-notificationlightdevice" ).dialog( "open" );
 }
 
 function DeleteLightSwitchIntern(bRemoveSubDevices)
 {
-		$.ajax({
-			 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#lightcontent #devicename").val() + '&used=false&RemoveSubDevices=' + bRemoveSubDevices,
-			 async: false, 
-			 dataType: 'json',
-			 success: function(data) {
-					ShowLights();
-			 }
-		});
+	$.ajax({
+		 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#lightcontent #devicename").val() + '&used=false&RemoveSubDevices=' + bRemoveSubDevices,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+				ShowLights();
+		 }
+	});
 }
 
 function DeleteLightSwitch()
@@ -759,55 +757,54 @@ function DeleteLightSwitch()
 	var bValid = false;
 	bValid=(confirm("Are you sure to remove this Light/Switch?")==true);
 	if ( bValid ) {
-			var bRemoveSubDevices=true;
-			if ($.isslave==true) {
-					var result=false;
-					$( "#dialog-confirm-delete-subs" ).dialog({
-							resizable: false,
-							width: 440,
-							height:180,
-							modal: true,
-							buttons: {
-									"Yes": function() {
-											$( this ).dialog( "close" );
-											DeleteLightSwitchIntern(true);
-									},
-									"No": function() {
-											$( this ).dialog( "close" );
-											DeleteLightSwitchIntern(false);
-									}
-						}
-				});
-			}
-			else {
-				DeleteLightSwitchIntern(false);
-			}
+		var bRemoveSubDevices=true;
+		if ($.isslave==true) {
+				var result=false;
+				$( "#dialog-confirm-delete-subs" ).dialog({
+					resizable: false,
+					width: 440,
+					height:180,
+					modal: true,
+					buttons: {
+						"Yes": function() {
+								$( this ).dialog( "close" );
+								DeleteLightSwitchIntern(true);
+					},
+						"No": function() {
+								$( this ).dialog( "close" );
+								DeleteLightSwitchIntern(false);
+					}
+				}
+			});
+		}
+		else {
+			DeleteLightSwitchIntern(false);
+		}
 	}
 }
 
 function SaveLightSwitch()
 {
-		var bValid = true;
-		bValid = bValid && checkLength( $("#lightcontent #devicename"), 2, 100 );
-		if ( bValid ) {
-				var addjvalstr="";
-				var switchtype=$("#lightcontent #comboswitchtype").val();
-				if (switchtype==8) {
-					addjvalstr="&addjvalue=" + $("#lightcontent #motionoffdelay").val();
-				}
-				else if (switchtype==9) {
-					addjvalstr="&addjvalue=" + $("#lightcontent #offdelay").val();
-				}
-		
-				$.ajax({
-					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#lightcontent #devicename").val() + '&switchtype=' + $("#lightcontent #comboswitchtype").val() + '&used=true' + addjvalstr,
-					 async: false, 
-					 dataType: 'json',
-					 success: function(data) {
-							ShowLights();
-					 }
-				});
+	var bValid = true;
+	bValid = bValid && checkLength( $("#lightcontent #devicename"), 2, 100 );
+	if ( bValid ) {
+		var addjvalstr="";
+		var switchtype=$("#lightcontent #comboswitchtype").val();
+		if (switchtype==8) {
+			addjvalstr="&addjvalue=" + $("#lightcontent #motionoffdelay").val();
 		}
+		else if (switchtype==9) {
+			addjvalstr="&addjvalue=" + $("#lightcontent #offdelay").val();
+		}
+		$.ajax({
+			 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#lightcontent #devicename").val() + '&switchtype=' + $("#lightcontent #comboswitchtype").val() + '&used=true' + addjvalstr,
+			 async: false, 
+			 dataType: 'json',
+			 success: function(data) {
+					ShowLights();
+			 }
+		});
+	}
 }
 
 function ClearSubDevices()
@@ -817,12 +814,12 @@ function ClearSubDevices()
 	if (bValid == false)
 		return;
 	$.ajax({
-		 url: "json.htm?type=command&param=deleteallsubdevices&idx=" + $.devIdx,
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
+			url: "json.htm?type=command&param=deleteallsubdevices&idx=" + $.devIdx,
+			async: false, 
+			dataType: 'json',
+			success: function(data) {
 			RefreshSubDeviceTable($.devIdx);
-		 }
+		}
 	});
 }
 
@@ -845,51 +842,47 @@ function DeleteSubDevice(idx)
 
 function RefreshSubDeviceTable(idx)
 {
-  $('#modal').show();
+	$('#modal').show();
 
 	$('#lightcontent #delclr #subdevicedelete').attr("class", "btnstyle3-dis");
 
-  var oTable = $('#lightcontent #subdevicestable').dataTable();
-  oTable.fnClearTable();
+	var oTable = $('#lightcontent #subdevicestable').dataTable();
+	oTable.fnClearTable();
   
-  $.ajax({
-     url: "json.htm?type=command&param=getsubdevices&idx=" + idx, 
-     async: false, 
-     dataType: 'json',
-     success: function(data) {
-        
-      if (typeof data.result != 'undefined') {
-        $.each(data.result, function(i,item){
-          var addId = oTable.fnAddData( {
-								"DT_RowId": item.ID,
-                "0": item.Name
-							} );
-        });
-        
+	$.ajax({
+		url: "json.htm?type=command&param=getsubdevices&idx=" + idx, 
+		async: false, 
+		dataType: 'json',
+		success: function(data) {
+			if (typeof data.result != 'undefined') {
+				$.each(data.result, function(i,item){
+				  var addId = oTable.fnAddData( {
+										"DT_RowId": item.ID,
+						"0": item.Name
+									} );
+				});
 				/* Add a click handler to the rows - this could be used as a callback */
 				$("#lightcontent #subdevicestable tbody tr").click( function( e ) {
-							if ( $(this).hasClass('row_selected') ) {
-									$(this).removeClass('row_selected');
-									$('#lightcontent #delclr #subdevicedelete').attr("class", "btnstyle3-dis");
-							}
-							else {
-									oTable.$('tr.row_selected').removeClass('row_selected');
-									$(this).addClass('row_selected');
-									$('#lightcontent #delclr #subdevicedelete').attr("class", "btnstyle3");
-									
-									var anSelected = fnGetSelected( oTable );
-									if ( anSelected.length !== 0 ) {
-										var data = oTable.fnGetData( anSelected[0] );
-										var idx= data["DT_RowId"];
-										$("#lightcontent #delclr #subdevicedelete").attr("href", "javascript:DeleteSubDevice(" + idx + ")");
-									}
-							}
+					if ( $(this).hasClass('row_selected') ) {
+						$(this).removeClass('row_selected');
+						$('#lightcontent #delclr #subdevicedelete').attr("class", "btnstyle3-dis");
+					}
+					else {
+						oTable.$('tr.row_selected').removeClass('row_selected');
+						$(this).addClass('row_selected');
+						$('#lightcontent #delclr #subdevicedelete').attr("class", "btnstyle3");
+						
+						var anSelected = fnGetSelected( oTable );
+						if ( anSelected.length !== 0 ) {
+							var data = oTable.fnGetData( anSelected[0] );
+							var idx= data["DT_RowId"];
+							$("#lightcontent #delclr #subdevicedelete").attr("href", "javascript:DeleteSubDevice(" + idx + ")");
+						}
+					}
 				}); 
-				
-        
-      }
-     }
-  });
+			}
+		}
+	});
   $('#modal').hide();
 }
 
@@ -901,52 +894,52 @@ function AddSubDevice()
 		return ;
 	}
 	$.ajax({
-		 url: "json.htm?type=command&param=addsubdevice&idx=" + $.devIdx + 
-					"&subidx=" + SubDeviceIdx,
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
+		url: "json.htm?type=command&param=addsubdevice&idx=" + $.devIdx + "&subidx=" + SubDeviceIdx,
+		async: false, 
+		dataType: 'json',
+		success: function(data) {
 			if (data.status == 'OK') {
 				RefreshSubDeviceTable($.devIdx);
 			}
 			else {
 				ShowNotify('Problem adding Sub/Slave Device!', 2500, true);
 			}
-		 },
-		 error: function(){
-				HideNotify();
-				ShowNotify('Problem adding Sub/Slave Device!', 2500, true);
-		 }     
+		},
+		error: function(){
+			HideNotify();
+			ShowNotify('Problem adding Sub/Slave Device!', 2500, true);
+		}     
 	});
 }
 
 function EditLightDevice(idx,name,switchtype,addjvalue,isslave)
 {
-  clearInterval($.myglobals.refreshTimer);
-  $.devIdx=idx;
-  $.isslave=isslave;
- 
+	clearInterval($.myglobals.refreshTimer);
+	$.devIdx=idx;
+	$.isslave=isslave;
+
 	var oTable;
 	
 	$('#modal').show();
-  var htmlcontent = '';
-  htmlcontent+=$('#editlightswitch').html();
-  $('#lightcontent').html(GetBackbuttonHTMLTable('ShowLights')+htmlcontent);
+	var htmlcontent = '';
+	htmlcontent+=$('#editlightswitch').html();
+	$('#lightcontent').html(GetBackbuttonHTMLTable('ShowLights')+htmlcontent);
  
-  oTable = $('#lightcontent #subdevicestable').dataTable( {
-                  "sDom": '<"H"frC>t<"F"i>',
-                  "oTableTools": {
-                    "sRowSelect": "single",
-                  },
-                  "aaSorting": [[ 0, "desc" ]],
-                  "bSortClasses": false,
-                  "bProcessing": true,
-                  "bStateSave": true,
-                  "bJQueryUI": true,
-                  "sPaginationType": "full_numbers"
-                } );
-  $("#lightcontent #devicename").val(name);
-  $("#lightcontent #comboswitchtype").val(switchtype);
+	oTable = $('#lightcontent #subdevicestable').dataTable( {
+		"sDom": '<"H"frC>t<"F"i>',
+		"oTableTools": {
+			"sRowSelect": "single",
+		},
+		"aaSorting": [[ 0, "desc" ]],
+		"bSortClasses": false,
+		"bProcessing": true,
+		"bStateSave": true,
+		"bJQueryUI": true,
+		"sPaginationType": "full_numbers"
+	});
+
+	$("#lightcontent #devicename").val(name);
+	$("#lightcontent #comboswitchtype").val(switchtype);
 
 	$("#lightcontent #OffDelayDiv").hide();
 	$("#lightcontent #MotionDiv").hide();
@@ -967,12 +960,12 @@ function EditLightDevice(idx,name,switchtype,addjvalue,isslave)
 		$("#lightcontent #combosubdevice").append(option);
 	});
 
-  RefreshSubDeviceTable(idx);
+	RefreshSubDeviceTable(idx);
 }
 
 function AddManualLightDevice()
 {
-  clearInterval($.myglobals.refreshTimer);
+	clearInterval($.myglobals.refreshTimer);
 
 	$("#dialog-addmanuallightdevice #combosubdevice").html("");
 	
@@ -982,85 +975,82 @@ function AddManualLightDevice()
 		$("#dialog-addmanuallightdevice #combosubdevice").append(option);
 	});
   
-  $( "#dialog-addmanuallightdevice" ).dialog( "open" );
+	$( "#dialog-addmanuallightdevice" ).dialog( "open" );
 }
 
 function AddLightDevice()
 {
-  clearInterval($.myglobals.refreshTimer);
+	clearInterval($.myglobals.refreshTimer);
   
     $("#dialog-addlightdevice #combosubdevice").html("");
-    
-		$.each($.LightsAndSwitches, function(i,item){
-			var option = $('<option />');
-			option.attr('value', item.idx).text(item.name);
-			$("#dialog-addlightdevice #combosubdevice").append(option);
+	$.each($.LightsAndSwitches, function(i,item){
+		var option = $('<option />');
+		option.attr('value', item.idx).text(item.name);
+		$("#dialog-addlightdevice #combosubdevice").append(option);
+	});
+  
+	ShowNotify('Press button on Remote...');
+
+	setTimeout(function() {
+		var bHaveFoundDevice = false;
+		var deviceID = "";
+		var deviceidx = 0;
+		var bIsUsed = false;
+		var Name = "";
+
+		$.ajax({
+		   url: "json.htm?type=command&param=learnsw", 
+		   async: false, 
+		   dataType: 'json',
+		   success: function(data) {
+			if (typeof data.status != 'undefined') {
+			  if (data.status == 'OK')
+			  {
+				bHaveFoundDevice=true;
+				deviceID=data.ID;
+				deviceidx=data.idx;
+				bIsUsed=data.Used;
+				Name=data.Name;
+			  }
+			}
+		   }
 		});
-  
-  ShowNotify('Press button on Remote...');
-  
-  setTimeout(function() {
-    var bHaveFoundDevice = false;
-    var deviceID = "";
-    var deviceidx = 0;
-    var bIsUsed = false;
-    var Name = "";
-    
-    $.ajax({
-       url: "json.htm?type=command&param=learnsw", 
-       async: false, 
-       dataType: 'json',
-       success: function(data) {
-        if (typeof data.status != 'undefined') {
-          if (data.status == 'OK')
-          {
-            bHaveFoundDevice=true;
-            deviceID=data.ID;
-            deviceidx=data.idx;
-            bIsUsed=data.Used;
-            Name=data.Name;
-          }
-        }
-       }
-    });
-    HideNotify();
-    
-    setTimeout(function() {
-      if ((bHaveFoundDevice == true) && (bIsUsed == false))
-      {
-        $.devIdx = deviceidx;
-        $( "#dialog-addlightdevice" ).dialog( "open" );
-      }
-      else {
-        if (bIsUsed == true)
-          ShowNotify('Already used by:<br>"' + Name +'"', 3500, true);
-        else
-          ShowNotify('Timeout...<br>Please try again!', 2500, true);
-      }
-    }, 200);
+		HideNotify();
+
+		setTimeout(function() {
+			if ((bHaveFoundDevice == true) && (bIsUsed == false))
+			{
+				$.devIdx = deviceidx;
+				$( "#dialog-addlightdevice" ).dialog( "open" );
+			}
+			else {
+				if (bIsUsed == true)
+					ShowNotify('Already used by:<br>"' + Name +'"', 3500, true);
+				else
+					ShowNotify('Timeout...<br>Please try again!', 2500, true);
+			}
+		}, 200);
 	}, 600);
-	
 }
 
 function RefreshLightSwitchesComboArray()
 {
 	$.LightsAndSwitches = [];
-  $.ajax({
-     url: "json.htm?type=command&param=getlightswitches", 
-     async: false, 
-     dataType: 'json',
-     success: function(data) {
-      if (typeof data.result != 'undefined') {
-        $.each(data.result, function(i,item){
+	$.ajax({
+		url: "json.htm?type=command&param=getlightswitches", 
+		async: false, 
+		dataType: 'json',
+		success: function(data) {
+			if (typeof data.result != 'undefined') {
+				$.each(data.result, function(i,item) {
 					$.LightsAndSwitches.push({
-							idx: item.idx,
-							name: item.Name
-						 }
-					);
-        });
-      }
-     }
-  });
+						idx: item.idx,
+						name: item.Name
+					});
+				});
+			}
+		}
+	});
 }
 
 function RefreshLights()
@@ -1405,9 +1395,9 @@ function ShowLights()
           if (item.SwitchType == "Dimmer") {
 						xhtm+='<br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-maxlevel="' + item.MaxDimLevel + '" data-svalue="' + item.LevelInt + '"></div>';
           }
-					xhtm+=
-								'</td>\n' +
-								'\t      <td>';
+			xhtm+=
+						'</td>\n' +
+						'\t      <td>';
           if (item.Favorite == 0) {
             xhtm+=      
                   '<img src="images/nofavorite.png" title="Add to Dashboard" onclick="MakeFavorite(' + item.idx + ',1);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -1769,8 +1759,8 @@ $(document).ready(function() {
 
     $( "#dialog-addlightdevice" ).dialog({
           autoOpen: false,
-          width: 380,
-          height: 270,
+          width: 400,
+          height: 290,
           modal: true,
           resizable: false,
           buttons: {
