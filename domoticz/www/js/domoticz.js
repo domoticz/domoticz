@@ -901,3 +901,24 @@ function chartPointClickEx(event, retChart) {
 		 }     
 	}); 	
 }
+
+function ExportChart2CSV(chart)
+{
+	var csv = "";
+	for (var i = 0; i < chart.series.length; i++) {
+		var series = chart.series[i];
+		for (var j = 0; j < series.data.length; j++) {
+			if (series.data[j] != undefined && series.data[j].x >= series.xAxis.min && series.data[j].x <= series.xAxis.max) {
+				csv = csv + series.name + ',' + Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', series.data[j].x) + ',' + series.data[j].y + '\r\n';
+			}
+		}
+	}
+  
+	var w = window.open('','csvWindow'); // popup, may be blocked though
+	// the following line does not actually do anything interesting with the 
+	// parameter given in current browsers, but really should have. 
+	// Maybe in some browser it will. It does not hurt anyway to give the mime type
+	w.document.open("text/csv");
+	w.document.write(csv); // the csv string from for example a jquery plugin
+	w.document.close();
+}
