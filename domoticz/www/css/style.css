@@ -1140,3 +1140,43 @@ div.log {
   text-shadow: 1px 1px #000;
 	color: #fff;
 }
+
+.sb-link {
+	font-size: 1.2em;
+	font-weight:bold;
+	color: #000000;
+}
+.sb-link a, .sb-link a:link, .sb-link a:active, .sb-link a:visited
+{
+	text-decoration: none;
+	color: #000;
+}
+.sb-link a:hover
+{
+	color: #000FF0;
+}
+
+.sb-fixed {
+	padding: 2px; 
+}
+
+@media (min-width: 768px) { 
+  .sb-fixed{
+    position: fixed;
+  } 
+}
+
+.page-header-small {
+  padding-bottom: 4px;
+  margin: 20px 0 6px;
+  border-bottom: 1px solid #eeeeee;
+} 
+
+a:link {
+	color:#FFF;
+}
+
+.norm-link a:link {
+	color:#FFF;
+	font-weight:bold;
+}

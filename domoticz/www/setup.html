@@ -23,192 +23,223 @@
 		    </table>
     </form>
 </div>
-<form id="settings">
-<div class="row divider borderbot">
-	<div class="span6">
-	<h2>Location:</h2>
-	<label id="sunriseset"></label>
-	<table class="display" id="locationtable" border="0" cellpadding="0" cellspacing="0">
-	<tr>
-		<td align="right" style="width:60px"><label for="Latitude">Latitude: </label></td>
-		<td><input type="text" id="Latitude" name="Latitude" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-	<tr>
-		<td align="right"><label for="Longitude">Longitude: </label></td>
-		<td><input type="text" id="Longitude" name="Longitude" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-	</tr>
-	</table>
-	To find your location click <a onclick="GetGeoLocation();" onMouseover="cursorhand()" onMouseout="cursordefault()">Here</a><br>
+<div class="row">
+	<div class="span4 hidden-phone">
+	   <div class="well sidebar-nav sb-fixed">
+			<!-- Sidebar Contents -->
+			<ul class="nav nav-list bs-docs-sidenav">
+			  <li><a class="sb-link" id="idsystem" onmouseover="cursorhand()" onmouseout="cursordefault()"><i class="icon-chevron-right"></i> System</a></li>
+			  <li><a class="sb-link" id="idloghistory" onmouseover="cursorhand()" onmouseout="cursordefault()"><i class="icon-chevron-right"></i> Log History</a></li>
+			  <li><a class="sb-link" id="idnotifications" onmouseover="cursorhand()" onmouseout="cursordefault()"><i class="icon-chevron-right"></i> Notificatons</a></li>
+			  <li><a class="sb-link" id="idmetercounters" onmouseover="cursorhand()" onmouseout="cursordefault()"><i class="icon-chevron-right"></i> Meter/Counter Setup</a></li>
+			  <li><a class="sb-link" id="idothersettings" onmouseover="cursorhand()" onmouseout="cursordefault()"><i class="icon-chevron-right"></i> Other Settings</a></li>
+			</ul>
+			<center><a class="btn btn-danger" href="javascript:StoreSettings()">Save</a></center>
+	   </div>
 	</div>
-</div>
-<div class="row divider borderbot">
-	<div class="span6">
-	<h2>Prowl (iPhone/iPad notification system):</h2><br>
-	<table class="display" id="prowltable" border="0" cellpadding="0" cellspacing="0">
-	<tr>
-		<td align="right" style="width:60px"><label for="apikey">API Key: </label></td>
-		<td><input type="input" id="apikey" name="ProwlAPIKey" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <a class="btnstyle3" href="javascript:TestProwlNotification()">Test</a></td>
-	</tr>
-	</table>
-	To get a free account/API key click <a href="https://www.prowlapp.com" target="_blank">Here</a><br>
-	</div>
-	<div class="span6">
-	<h2>NMA (Android notification system):</h2><br>
-	<table class="display" id="nmatable" border="0" cellpadding="0" cellspacing="0">
-	<tr>
-		<td align="right" style="width:60px"><label for="apikey">API Key: </label></td>
-		<td><input type="input" id="apikey" name="NMAAPIKey" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <a class="btnstyle3" href="javascript:TestNMANotification()">Test</a></td>
-	</tr>
-	</table>
-	To get a free account/API key click <a href="http://www.notifymyandroid.com/" target="_blank">Here</a><br>
-	</div>
-</div>
-<div class="row divider borderbot">
-	<div class="span6">
-	<h2>Light/Switch History:</h2><br>
-	<table class="display" id="lightlogtable" border="0" cellpadding="0" cellspacing="0">
-	<tr>
-		<td align="right" style="width:60px"><label>Days: </label></td>
-		<td><input type="text" id="LightHistoryDays" name="LightHistoryDays" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-	</tr>
-	</table>
-	<br>
-	<h2>Short Log History:</h2><br>
-	<table class="display" id="shortlogtable" border="0" cellpadding="0" cellspacing="0">
-	<tr>
-		<td align="right" style="width:60px"><label>Days: </label></td>
-		<td><select id="comboshortlogdays" name="ShortLogDays" style="width:60px" class="combobox ui-corner-all">
-			<option value="1">1</option>
-			<option value="2">2</option>
-			<option value="3">3</option>
-			<option value="4">4</option>
-			<option value="5">5</option>
-			<option value="6">6</option>
-			<option value="7">7</option>
-		</select></td>
-	</tr>
-	</table>
-	</div>
-	<div class="span6">
-	<h2>Dashboard:</h2><br>
-	<table class="display" id="dashmodetable" border="0" cellpadding="0" cellspacing="0">
-	<tr>
-		<td align="right" style="width:60px"><label>Mode: </label></td>
-		<td><select id="combosdashtype" name="DashboardType" style="width:120px" class="combobox ui-corner-all">
-			<option value="0">Normal</option>
-			<option value="1">Compact</option>
-			<option value="2">Mobile</option>
-		</select></td>
-	</tr>
-	</table>
-	</div>
-</div>
-<div class="row divider borderbot">
-	<div class="span6">
-	<h2>Website Protection:</h2><br>
-	<table class="display" id="webtable" border="0" cellpadding="0" cellspacing="0">
-	<tr>
-		<td align="right" style="width:60px"><label>Username: </label></td>
-		<td><input type="input" id="WebUserName" name="WebUserName" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-	</tr>
-	<tr>
-		<td align="right" style="width:60px"><label>Password: </label></td>
-		<td><input type="password" id="WebPassword" name="WebPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-	</tr>
-	</table>
-	<br>
-	Local Networks (no username/password):<br><br>
-	<table class="display" id="weblocaltable" border="0" cellpadding="0" cellspacing="0">
-	<tr>
-		<td align="right" style="width:60px"><label>Networks: </label></td>
-		<td>
-			<input type="input" id="WebLocalNetworks" name="WebLocalNetworks" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
-			(Separate by a semicolon, For Example: 127.0.0.*;192.168.0.*)
-		</td>
-	</tr>
-	</table>
-	<br>
-	</div>
-	<div class="span6">
-	<h2>RFXMeter/Counter Dividers:</h2><br>
-	<table class="display" id="rfxmetertable" border="0" cellpadding="0" cellspacing="0">
-	<tr>
-		<td align="right" style="width:60px"><label>Energy: </label></td>
-		<td><input type="input" id="EnergyDivider" name="EnergyDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-		<td align="right" style="width:60px"><label>Costs: </label></td>
-		<td><input type="input" id="CostEnergy" name="CostEnergy" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
-	</tr>
-	<tr>
-		<td align="right" style="width:60px"><label>Gas: </label></td>
-		<td><input type="input" id="GasDivider" name="GasDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-		<td align="right" style="width:60px"><label>Costs: </label></td>
-		<td><input type="input" id="CostGas" name="CostGas" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / m3</td>
-	</tr>
-	<tr>
-		<td align="right" style="width:60px"><label>Water: </label></td>
-		<td><input type="input" id="WaterDivider" name="WaterDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-		<td align="right" style="width:60px"><label>Costs: </label></td>
-		<td><input type="input" id="CostWater" name="CostWater" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / m3</td>
-	</tr>
-	</table>
-	</div>
-	<div class="span6">
-	<h2>Random Timer:</h2><br>
-	<table class="display" id="randomtable" border="0" cellpadding="0" cellspacing="0">
-	<tr>
-		<td align="right" style="width:60px"><label>Spread: </label></td>
-		<td><input type="input" id="RandomSpread" name="RandomSpread" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (Minutes +/-)</td>
-	</tr>
-	</table>
-	</div>
-</div>
-<div class="row divider borderbot">
-	<div class="span6">
-	<h2>OWL CM113/CM180i:</h2><br>
-		<table class="display" id="owl113table" border="0" cellpadding="0" cellspacing="0">
-			<tr>
-				<td align="right" style="width:60px"><label>Voltage: </label></td>
-				<td><input type="input" id="ElectricVoltage" name="ElectricVoltage" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-			</tr>
-			<tr>
-				<td align="right" style="width:60px"><label>Display: </label></td>
-				<td><select id="comboscm113type" name="CM113DisplayType" style="width:120px" class="combobox ui-corner-all">
-					<option value="0">Ampere</option>
-					<option value="1">Watt</option>
-				</select></td>
-			</tr>
-		</table>
-	</tr>
-	</div>
-	<div class="span6">
-	<h2>Rego 6XX:</h2><br>
-		<table class="display" id="rego6xxtable" border="0" cellpadding="0" cellspacing="0">
-			<tr>
-				<td align="right" style="width:60px"><label>Type: </label></td>
-				<td><select id="comborego6xxtype" name="Rego6XXType" style="width:200px" class="combobox ui-corner-all">
-					<option value="0">600-635, 637 single language</option>
-					<option value="1">636</option>
-					<option value="2">637 multi language</option>
-				</select></td>
-			</tr>
-		</table>
-	</tr>
-	</div>
-</div>
-<div class="row divider borderbot">
-	<div class="span6">
-		<table class="display" id="autoupdatetable" border="0" cellpadding="0" cellspacing="0">
-			<tr>
-				<td><input type="checkbox" id="checkforupdates" name="checkforupdates"/> Check for Updates (Not working on windows systems)</td>
-			</tr>
-		</table>
-	</tr>
-	</div>
-</div>
-<br>
-<a class="btnstyle3" href="javascript:StoreSettings()">Save</a>
-</form>
 
-<script type="text/javascript" charset="utf-8">
+	<div id="settingscontent" class="span8">
+		<form id="settings">
+		<!-- Location
+		================================================== -->
+		<section id="system">
+			<div class="page-header-small">
+				<h1>System Setup</h1>
+			</div>
+			<h2>Location:</h2>
+			<label id="sunriseset"></label>
+			<table class="display" id="locationtable" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="right" style="width:60px"><label for="Latitude">Latitude: </label></td>
+				<td><input type="text" id="Latitude" name="Latitude" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			<tr>
+				<td align="right"><label for="Longitude">Longitude: </label></td>
+				<td><input type="text" id="Longitude" name="Longitude" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			</table>
+			To find your location click <a class="norm-link" onclick="GetGeoLocation();" onMouseover="cursorhand()" onMouseout="cursordefault()">Here</a><br>
+			<br>
+			<h2>Dashboard:</h2>
+			<table class="display" id="dashmodetable" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="right" style="width:60px"><label>Mode: </label></td>
+				<td><select id="combosdashtype" name="DashboardType" style="width:120px" class="combobox ui-corner-all">
+					<option value="0">Normal</option>
+					<option value="1">Compact</option>
+					<option value="2">Mobile</option>
+				</select></td>
+			</tr>
+			</table>
+			<br>
+			<h2>Website Protection:</h2>
+			<table class="display" id="webtable" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="right" style="width:60px"><label>Username: </label></td>
+				<td><input type="input" id="WebUserName" name="WebUserName" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			<tr>
+				<td align="right" style="width:60px"><label>Password: </label></td>
+				<td><input type="password" id="WebPassword" name="WebPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			</table>
+			<br>
+			Local Networks (no username/password):<br><br>
+			<table class="display" id="weblocaltable" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="right" style="width:60px"><label>Networks: </label></td>
+				<td>
+					<input type="input" id="WebLocalNetworks" name="WebLocalNetworks" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
+					(Separate by a semicolon, For Example: 127.0.0.*;192.168.0.*)
+				</td>
+			</tr>
+			</table>
+			<br>
+			<div id="SoftwareUpdates">
+				<h2>Software Updates:</h2>
+				<table class="display" id="autoupdatetable" border="0" cellpadding="0" cellspacing="0">
+					<tr>
+						<td><input type="checkbox" id="checkforupdates" name="checkforupdates"/> Check for Updates (Not working on windows systems)</td>
+					</tr>
+				</table>
+			</div>
+		</section>
+
+		<!-- Log History
+		================================================== -->
+		<section id="loghistory">
+		  <div class="page-header-small">
+			<h1>Log History</h1>
+		  </div>
+			<h2>Light/Switches:</h2>
+			<table class="display" id="lightlogtable" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="right" style="width:60px"><label>Days: </label></td>
+				<td><input type="text" id="LightHistoryDays" name="LightHistoryDays" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			</table>
+			<br>
+			<h2>Short Log Sensors:</h2>
+			<table class="display" id="shortlogtable" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="right" style="width:60px"><label>Days: </label></td>
+				<td><select id="comboshortlogdays" name="ShortLogDays" style="width:60px" class="combobox ui-corner-all">
+					<option value="1">1</option>
+					<option value="2">2</option>
+					<option value="3">3</option>
+					<option value="4">4</option>
+					<option value="5">5</option>
+					<option value="6">6</option>
+					<option value="7">7</option>
+				</select></td>
+			</tr>
+			</table>
+		</section>
+
+		<!-- Notification system
+		================================================== -->
+		<section id="notifications">
+		  <div class="page-header-small">
+			<h1>Notification system</h1>
+		  </div>
+			<h2>Prowl (iPhone/iPad):</h2>
+			<table class="display" id="prowltable" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="right" style="width:60px"><label for="apikey">API Key: </label></td>
+				<td><input type="input" id="apikey" name="ProwlAPIKey" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <a class="btnstyle3" href="javascript:TestProwlNotification()">Test</a></td>
+			</tr>
+			</table>
+			To get a free account/API key click <a class="norm-link" href="https://www.prowlapp.com/" target="_blank">Here</a><br>
+			<br>
+			<h2>NMA (Android):</h2>
+			<table class="display" id="nmatable" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="right" style="width:60px"><label for="apikey">API Key: </label></td>
+				<td><input type="input" id="apikey" name="NMAAPIKey" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <a class="btnstyle3" href="javascript:TestNMANotification()">Test</a></td>
+			</tr>
+			</table>
+			To get a free account/API key click <a class="norm-link" href="http://www.notifymyandroid.com/" target="_blank">Here</a><br>
+		</section>
+
+		<!-- Meter Settings
+		================================================== -->
+		<section id="metercounters">
+		  <div class="page-header-small">
+			<h1>Meter/Counter Setup</h1>
+		  </div>
+			<h2>RFXMeter/Counter Dividers:</h2>
+			<table class="display" id="rfxmetertable" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="right" style="width:60px"><label>Energy: </label></td>
+				<td><input type="input" id="EnergyDivider" name="EnergyDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				<td align="right" style="width:60px"><label>Costs: </label></td>
+				<td><input type="input" id="CostEnergy" name="CostEnergy" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
+			</tr>
+			<tr>
+				<td align="right" style="width:60px"><label>Gas: </label></td>
+				<td><input type="input" id="GasDivider" name="GasDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				<td align="right" style="width:60px"><label>Costs: </label></td>
+				<td><input type="input" id="CostGas" name="CostGas" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / m3</td>
+			</tr>
+			<tr>
+				<td align="right" style="width:60px"><label>Water: </label></td>
+				<td><input type="input" id="WaterDivider" name="WaterDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				<td align="right" style="width:60px"><label>Costs: </label></td>
+				<td><input type="input" id="CostWater" name="CostWater" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / m3</td>
+			</tr>
+			</table>
+			<br>
+			<h2>OWL CM113/CM180i:</h2>
+			<table class="display" id="owl113table" border="0" cellpadding="0" cellspacing="0">
+				<tr>
+					<td align="right" style="width:60px"><label>Voltage: </label></td>
+					<td><input type="input" id="ElectricVoltage" name="ElectricVoltage" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:60px"><label>Display: </label></td>
+					<td><select id="comboscm113type" name="CM113DisplayType" style="width:120px" class="combobox ui-corner-all">
+						<option value="0">Ampere</option>
+						<option value="1">Watt</option>
+					</select></td>
+				</tr>
+			</table>
+		</section>
+
+		<!-- Other Settings
+		================================================== -->
+		<section id="othersettings">
+		  <div class="page-header-small">
+			<h1>Other Settings</h1>
+		  </div>
+			<h2>Random Timer:</h2>
+			<table class="display" id="randomtable" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="right" style="width:60px"><label>Spread: </label></td>
+				<td><input type="input" id="RandomSpread" name="RandomSpread" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (Minutes +/-)</td>
+			</tr>
+			</table>
+			<br>
+			<h2>Rego 6XX Sensor:</h2>
+			<table class="display" id="rego6xxtable" border="0" cellpadding="0" cellspacing="0">
+				<tr>
+					<td align="right" style="width:60px"><label>Type: </label></td>
+					<td><select id="comborego6xxtype" name="Rego6XXType" style="width:200px" class="combobox ui-corner-all">
+						<option value="0">600-635, 637 single language</option>
+						<option value="1">636</option>
+						<option value="2">637 multi language</option>
+					</select></td>
+				</tr>
+			</table>
+		</section>
+		<br>
+		<section id="savesettings">
+			<a class="btn btn-danger" href="javascript:StoreSettings()">Save</a>
+		</section>
+		<br>
+		</form>
+	</div>
+</div>
+
+<script type="text/javascript" charset="utf-8"> 
 
 var googleMapsCallback;
 
@@ -360,7 +391,22 @@ function StoreSettings(formname)
   });
 }
 
+function MakeScrollLink(nameclick,namescroll)
+{
+	$(nameclick).click(function(e){
+		var position = $(namescroll).offset();
+		scroll(0,position.top-60);
+		e.preventDefault();
+    });
+}
+
 $(document).ready(function() {
+  MakeScrollLink("#idsystem","#system");
+  MakeScrollLink("#idloghistory","#loghistory");
+  MakeScrollLink("#idnotifications","#notifications");
+  MakeScrollLink("#idmetercounters","#metercounters");
+  MakeScrollLink("#idothersettings","#othersettings");
+  
     $( "#dialog-findlatlong" ).dialog({
           autoOpen: false,
           width: 480,
@@ -418,7 +464,8 @@ $(document).ready(function() {
             $( this ).dialog( "close" );
           }
     });
+  
+	ShowSettings();
+} );   
 
-  ShowSettings();
-} );  
 </script>
