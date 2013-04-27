@@ -1074,8 +1074,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					root["result"][ii]["Gustmph"]=szTmp;
 
 					if (
-						(dType==pTypeWIND)&&(dSubType==sTypeWIND4)||
-						(dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp)
+						((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
+						((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))
 						)
 					{
 						root["result"][ii]["AddjValue"]=AddjValue;
@@ -2444,8 +2444,8 @@ char * CWebServer::GetJSonPage()
 							root["result"][ii]["te"]=sd[0];
 						}
 						if (
-							(dType==pTypeWIND)&&(dSubType==sTypeWIND4)||
-							(dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp)
+							((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
+							((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))
 							)
 						{
 							root["result"][ii]["ch"]=sd[1];
