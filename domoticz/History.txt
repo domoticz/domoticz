@@ -28,6 +28,7 @@ Version 1.0.xxx (April xxth 2013)
 - Implemented: Push On Button switch type (sends an OFF command)
 - Implemented: Added support for short term data in the custom temperature graph
 - Changed: Application Settings
+- Fixed: Push On delayed Off was not working
 
 Version 1.0.412 (April 1th 2013)
 - Fixed: Siren icon on dashboard

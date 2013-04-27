@@ -7,6 +7,7 @@
 #include "WindowsHelper.h"
 #include "localtime_r.h"
 #include "Logger.h"
+#include "mainworker.h"
 #include "../sqlite/sqlite3.h"
 #include "../hardware/hardwaretypes.h"
 #include "../httpclient/mynetwork.h"
@@ -285,6 +286,7 @@ const char *sqlCreateSceneTimers =
 
 CSQLHelper::CSQLHelper(void)
 {
+	m_pMain=NULL;
 	m_LastSwitchID="";
 	m_LastSwitchRowID=0;
 	m_dbase=NULL;
@@ -305,6 +307,11 @@ CSQLHelper::~CSQLHelper(void)
 		sqlite3_close(m_dbase);
 		m_dbase=NULL;
 	}
+}
+
+void CSQLHelper::SetMainWorker(MainWorker *pWorker)
+{
+	m_pMain=pWorker;
 }
 
 bool CSQLHelper::OpenDatabase()
@@ -504,9 +511,17 @@ void CSQLHelper::Do_Work()
 			itt->_DelayTime--;
 			if (itt->_DelayTime<=0)
 			{
-				std::string devname="";
-				UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname);
-				itt=m_device_status_queue.erase(itt);
+				if (itt->_switchtype==STYPE_PushOn)
+				{
+					if (m_pMain)
+						m_pMain->SwitchLight(itt->_idx,"Off",0);
+				}
+				else
+				{
+					std::string devname="";
+					UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname);
+					itt=m_device_status_queue.erase(itt);
+				}
 			}
 			else
 				itt++;
@@ -893,7 +908,7 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 					if (bAdd2DelayQueue==true)
 					{
 						boost::lock_guard<boost::mutex> l(m_device_status_mutex);
-						m_device_status_queue.push_back(_tDeviceStatus(AddjValue,HardwareID,ID,unit,devType,subType,signallevel,batterylevel,cmd,sValue));
+						m_device_status_queue.push_back(_tDeviceStatus(AddjValue,ulID,HardwareID,ID,unit,devType,subType,switchtype,signallevel,batterylevel,cmd,sValue));
 					}
 				}
 			}

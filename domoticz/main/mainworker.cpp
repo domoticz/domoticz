@@ -59,6 +59,7 @@ MainWorker::MainWorker()
 	m_bHaveDownloadedDomoticzUpdate=false;
 	m_bHaveDownloadedDomoticzUpdateSuccessFull=false;
 	m_bDoDownloadDomoticzUpdate=false;
+	m_sql.SetMainWorker(this);
 }
 
 MainWorker::~MainWorker()

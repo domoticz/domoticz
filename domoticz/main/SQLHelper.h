@@ -7,6 +7,8 @@
 
 struct sqlite3;
 
+class MainWorker;
+
 struct _tNotification
 {
 	unsigned long long ID;
@@ -29,18 +31,21 @@ struct _tDeviceStatus
 {
 	unsigned char _DelayTime;
 	int _HardwareID;
+	unsigned long long _idx;
 	std::string _ID;
 	unsigned char _unit;
 	unsigned char _devType;
 	unsigned char _subType;
 	unsigned char _signallevel;
 	unsigned char _batterylevel;
+	int _switchtype;
 	int _nValue;
 	std::string _sValue;
 
-	_tDeviceStatus(const unsigned char DelayTime, const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue)
+	_tDeviceStatus(const unsigned char DelayTime, const unsigned long long idx, const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int switchtype, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue)
 	{
 		_DelayTime=DelayTime;
+		_idx=idx;
 		_HardwareID=HardwareID;
 		_ID=ID;
 		_unit=unit;
@@ -48,6 +53,7 @@ struct _tDeviceStatus
 		_subType=subType;
 		_signallevel=signallevel;
 		_batterylevel=batterylevel;
+		_switchtype=switchtype;
 		_nValue=nValue;
 		_sValue=sValue;
 	}
@@ -59,6 +65,7 @@ public:
 	CSQLHelper(void);
 	~CSQLHelper(void);
 
+	void SetMainWorker(MainWorker *pWorker);
 	bool OpenDatabase();
 	void SetDatabaseName(const std::string DBName);
 
@@ -183,6 +190,7 @@ private:
 	boost::mutex m_sqlQueryMutex;
 	CURLEncode m_urlencoder;
 	sqlite3 *m_dbase;
+	MainWorker *m_pMain;
 	std::string m_dbase_name;
 	int m_5MinuteHistoryDays;
 
