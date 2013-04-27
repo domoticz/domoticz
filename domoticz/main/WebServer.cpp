@@ -5278,6 +5278,9 @@ char * CWebServer::GetJSonPage()
 			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX))
 			{
 				//USB
+				if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433))
+				{
+				}
 			}
 			else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)) {
 				//Lan
@@ -5400,11 +5403,11 @@ char * CWebServer::GetJSonPage()
 			if ((shared=="true")&&(shareport==""))
 				goto exitjson;
 
-			unsigned char mode1=0;
-			unsigned char mode2=0;
-			unsigned char mode3=0;
-			unsigned char mode4=0;
-			unsigned char mode5=0;
+			unsigned char mode1=(unsigned char)atoi(m_pWebEm->FindValue("Mode1").c_str());
+			unsigned char mode2=(unsigned char)atoi(m_pWebEm->FindValue("Mode2").c_str());
+			unsigned char mode3=(unsigned char)atoi(m_pWebEm->FindValue("Mode3").c_str());
+			unsigned char mode4=(unsigned char)atoi(m_pWebEm->FindValue("Mode4").c_str());
+			unsigned char mode5=(unsigned char)atoi(m_pWebEm->FindValue("Mode5").c_str());
 			root["status"]="OK";
 			root["title"]="UpdateHardware";
 

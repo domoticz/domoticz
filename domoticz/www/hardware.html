@@ -225,7 +225,7 @@ function GetSharedParameters()
 	return shareparam;
 }
 
-function UpdateHardware(idx)
+function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 {
 	var name=$("#hardwarecontent #hardwareparamstable #hardwarename").val();
 	if (name=="")
@@ -251,7 +251,12 @@ function UpdateHardware(idx)
 	if (text.indexOf("TE923") >= 0)
 	{
 		$.ajax({
-			 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + "&port=1&name=" + name + "&enabled=" + bEnabled + "&idx=" + idx + shareparm,
+			 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+				"&port=1&name=" + name + 
+				"&enabled=" + bEnabled + 
+				"&idx=" + idx +
+				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + 
+				shareparm,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -271,7 +276,13 @@ function UpdateHardware(idx)
 			return;
 		}
 		$.ajax({
-			 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + "&port=" + serialport + "&name=" + name + "&enabled=" + bEnabled + "&idx=" + idx + shareparm,
+			 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+				"&port=" + serialport + 
+				"&name=" + name + 
+				"&enabled=" + bEnabled + 
+				"&idx=" + idx +
+				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + 
+				shareparm,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -302,7 +313,14 @@ function UpdateHardware(idx)
 			return;
 		}		
 		$.ajax({
-			 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + name + "&enabled=" + bEnabled + "&idx=" + idx + shareparm,
+			 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + 
+				"&address=" + address + 
+				"&port=" + port + 
+				"&name=" + name + 
+				"&enabled=" + bEnabled + 
+				"&idx=" + idx + 
+				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + 
+				shareparm,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -335,7 +353,16 @@ function UpdateHardware(idx)
 		var username=$("#hardwarecontent #divlogin #username").val();
 		var password=$("#hardwarecontent #divlogin #password").val();
 		$.ajax({
-			 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + username + "&password=" + password + "&name=" + name + "&enabled=" + bEnabled + "&idx=" + idx + shareparm,
+			 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+				"&address=" + address + 
+				"&port=" + port + 
+				"&username=" + username + 
+				"&password=" + password + 
+				"&name=" + name + 
+				"&enabled=" + bEnabled + 
+				"&idx=" + idx + 
+				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + 
+				shareparm,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -596,13 +623,13 @@ function RefreshHardwareTable()
 					}
 					
 					var HwTypeStr=$.myglobals.HardwareTypesStr[item.Type];
-					if (HwTypeStr.indexOf("RFXCOM") >= 0)
+					if (
+						(HwTypeStr.indexOf("RFXtrx433 USB") >= 0)||
+						(HwTypeStr.indexOf("RFXtrx315 USB") >= 0)
+					   )
 					{
-						if (item.Mode1!=0)
-						{
-							HwTypeStr+='<br>Firmware version: ' + item.Mode2;
-							HwTypeStr+=' <span class="label label-info" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Set Mode</span>';
-						}
+						HwTypeStr+='<br>Firmware version: ' + item.Mode2;
+						HwTypeStr+=' <span class="label label-info" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Set Mode</span>';
 					}
 					
           var addId = oTable.fnAddData( {
@@ -647,7 +674,7 @@ function RefreshHardwareTable()
 										var data = oTable.fnGetData( anSelected[0] );
 										var idx= data["DT_RowId"];
 										$.myglobals.SelectedTimerIdx=idx;
-										$("#updelclr #hardwareupdate").attr("href", "javascript:UpdateHardware(" + idx + ")");
+										$("#updelclr #hardwareupdate").attr("href", "javascript:UpdateHardware(" + idx + "," + data["Mode1"] + "," + data["Mode2"] + "," + data["Mode3"] + "," + data["Mode4"] + "," + data["Mode5"] + ")");
 										$("#updelclr #hardwaredelete").attr("href", "javascript:DeleteHardware(" + idx + ")");
 										$("#hardwarecontent #hardwareparamstable #hardwarename").val(data["0"]);
 										$("#hardwarecontent #hardwareparamstable #combotype").val(jQuery.inArray(data["Type"], $.myglobals.HardwareTypesStr));
