@@ -1,4 +1,4 @@
-﻿<div id="dashcontent">
+<div id="dashcontent">
 </div>
 
 <script type="text/javascript" charset="utf-8">
@@ -590,7 +590,7 @@ function RefreshFavorites()
 								var status="";
 								if (typeof item.Counter != 'undefined') {
 									if (data.DashboardType==0) {
-										status+=item.Counter + ', Today: ' + item.CounterToday;
+										status+='Usage: '+item.Counter + ', Today: ' + item.CounterToday;
 									}
 									else {
 										status+=item.Counter + ', T: ' + item.CounterToday;
@@ -604,10 +604,10 @@ function RefreshFavorites()
 								}
 								if (typeof item.Usage != 'undefined') {
 									if (data.DashboardType==0) {
-										status+=", Usage: " + item.Usage;
+										status+=", Actual: " + item.Usage;
 									}
 									else {
-										status+=", U: " + item.Usage;
+										status+=", A: " + item.Usage;
 									}
 								}
 								if (typeof item.CounterDeliv != 'undefined') {
@@ -634,7 +634,7 @@ function RefreshFavorites()
 								if (typeof item.Counter != 'undefined') {
 									img='<img src="images/counter.png" height="40">';
 									if (data.DashboardType==0) {
-										status=item.Counter + ', Today: ' + item.CounterToday;
+										status='Usage: '+item.Counter + ', Today: ' + item.CounterToday;
 									}
 									else {
 										status=item.Counter + ', T: ' + item.CounterToday;
@@ -651,14 +651,17 @@ function RefreshFavorites()
 								if (typeof item.Usage != 'undefined') {
 									bigtext=item.Usage;
 									if (data.DashboardType==0) {
-										status+=", Usage: " + item.Usage;
+										status+=", Actual: " + item.Usage;
 									}
 									else {
-										status+=", U: " + item.Usage;
+										status+=", A: " + item.Usage;
 									}
 								}
 								if (typeof item.CounterDeliv != 'undefined') {
 									if (item.CounterDeliv!=0) {
+										if (item.CounterDeliv.charAt(0) != 0) {
+											bigtext='-' + item.UsageDeliv;
+										}
 										status+='<br>';
 										if (data.DashboardType==0) {
 											status+='Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
@@ -1607,10 +1610,10 @@ function ShowFavorites()
 							var status="";
 							if (typeof item.Counter != 'undefined') {
 								if (data.DashboardType==0) {
-									status=item.Counter + ', Today: ' + item.CounterToday;
+									status='Usage: '+item.Counter + ', Today: ' + item.CounterToday;
 								}
 								else {
-									status=item.Counter + ', T: ' + item.CounterToday;
+									status='U: '+item.Counter + ', T: ' + item.CounterToday;
 								}
 							}
 							else if ((item.Type == "Current") || (item.Type == "Current/Energy")){
@@ -1621,10 +1624,10 @@ function ShowFavorites()
 							}
 							if (typeof item.Usage != 'undefined') {
 								if (data.DashboardType==0) {
-									status+=", Usage: " + item.Usage;
+									status+=", Actual: " + item.Usage;
 								}
 								else {
-									status+=", U: " + item.Usage;
+									status+=", A: " + item.Usage;
 								}
 							}
 							if (typeof item.CounterDeliv != 'undefined') {
@@ -1661,8 +1664,16 @@ function ShowFavorites()
 								xhtm+='\t      <td id="name" style="background-color: #DF2D3A;">' + item.Name + '</td>\n';
 							}
 							xhtm+='\t      <td id="bigtext">';
-							if (typeof item.Usage != 'undefined') {
+							if (typeof item.Usage != 'undefined' && item.UsageDeliv == 'undefined') {
 								xhtm+=item.Usage;
+							}
+							else if (typeof item.Usage != 'undefined' && item.UsageDeliv != 'undefined') {
+								if (item.Usage.charAt(0) != 0) {
+									xhtm+=item.Usage;
+								}
+								if (item.UsageDeliv.charAt(0) != 0) {
+									xhtm+='-' + item.UsageDeliv;
+								}
 							}
 							xhtm+='</td>\n';
 							xhtm+='\t      <td id="img"><img src="images/';
@@ -1670,10 +1681,10 @@ function ShowFavorites()
 							if (typeof item.Counter != 'undefined') {
 								xhtm+='counter.png" height="40"></td>\n';
 								if (data.DashboardType==0) {
-									status=item.Counter + ', Today: ' + item.CounterToday;
+									status='Usage: '+item.Counter + ', Today: ' + item.CounterToday;
 								}
 								else {
-									status=item.Counter + ', T: ' + item.CounterToday;
+									status='U:'+item.Counter + ', T: ' + item.CounterToday;
 								}
 							}
 							else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
@@ -1686,10 +1697,10 @@ function ShowFavorites()
 							}
 							if (typeof item.Usage != 'undefined') {
 								if (data.DashboardType==0) {
-									status+=", Usage: " + item.Usage;
+									status+=", Actual: " + item.Usage;
 								}
 								else {
-									status+=", U: " + item.Usage;
+									status+=", A: " + item.Usage;
 								}
 							}
 							if (typeof item.CounterDeliv != 'undefined') {

@@ -1644,7 +1644,7 @@ function RefreshUtilities()
 						
             if (typeof item.Counter != 'undefined') {
               img='<img src="images/counter.png" height="48">';
-              status=item.Counter + ', Today: ' + item.CounterToday;
+              status='<br>Usage: ' + item.Counter + ', Today: ' + item.CounterToday;
             }
             else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
 							img='<img src="images/current48.png" height="48">';
@@ -1655,13 +1655,16 @@ function RefreshUtilities()
               status=item.Data;
             }
             if (typeof item.Usage != 'undefined') {
-							status+=", Usage: " + item.Usage;
+							status+=", Actual: " + item.Usage;
 							bigtext=item.Usage;
             }
             if (typeof item.CounterDeliv != 'undefined') {
 							if (item.CounterDeliv!=0) {
 								status+='<br>Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
 								status+=", Actual: " + item.UsageDeliv;
+								if (item.UsageDeliv != 0) {
+									bigtext='-' + item.UsageDeliv;
+								}
 							}
             }
             
@@ -1746,15 +1749,23 @@ function ShowUtilities()
 						xhtm+='\t      <td id="name" style="background-color: #DF2D3A;">' + item.Name + '</td>\n';
 					}
 					xhtm+='\t      <td id="bigtext">';
-					if (typeof item.Usage != 'undefined') {
+					if (typeof item.Usage != 'undefined' && item.UsageDeliv == 'undefined') {
 						xhtm+=item.Usage;
+					}
+					else if (typeof item.Usage != 'undefined' && item.UsageDeliv != 'undefined') {
+						if (item.Usage.charAt(0) != 0) {
+							xhtm+=item.Usage;
+						}
+						if (item.UsageDeliv.charAt(0) != 0) {
+							xhtm+='-' + item.UsageDeliv;
+						}
 					}
 					xhtm+='</td>\n';
           xhtm+='\t      <td id="img"><img src="images/';
             var status="";
             if (typeof item.Counter != 'undefined') {
               xhtm+='counter.png" height="48"></td>\n';
-              status=item.Counter + ', Today: ' + item.CounterToday;
+              status='<br>Usage: ' + item.Counter + ', Today: ' + item.CounterToday;
             }
             else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
               xhtm+='current48.png" height="48"></td>\n';
@@ -1765,12 +1776,13 @@ function ShowUtilities()
               status=item.Data;
             }
             if (typeof item.Usage != 'undefined') {
-							status+=", Usage: " + item.Usage;
+							status+=", Actual: " + item.Usage;
             }
             if (typeof item.CounterDeliv != 'undefined') {
 							if (item.CounterDeliv!=0) {
 								status+='<br>Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
 								status+=", Actual: " + item.UsageDeliv;
+
 							}
             }
             
