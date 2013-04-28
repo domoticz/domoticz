@@ -1,4 +1,4 @@
-<div id="dashcontent">
+﻿<div id="dashcontent">
 </div>
 
 <script type="text/javascript" charset="utf-8">
@@ -590,7 +590,7 @@ function RefreshFavorites()
 								var status="";
 								if (typeof item.Counter != 'undefined') {
 									if (data.DashboardType==0) {
-										status+='Usage: '+item.Counter + ', Today: ' + item.CounterToday;
+										status+='<br>Usage: '+item.Counter + ', Today: ' + item.CounterToday;
 									}
 									else {
 										status+=item.Counter + ', T: ' + item.CounterToday;
@@ -634,7 +634,7 @@ function RefreshFavorites()
 								if (typeof item.Counter != 'undefined') {
 									img='<img src="images/counter.png" height="40">';
 									if (data.DashboardType==0) {
-										status='Usage: '+item.Counter + ', Today: ' + item.CounterToday;
+										status='<br>Usage: '+item.Counter + ', Today: ' + item.CounterToday;
 									}
 									else {
 										status=item.Counter + ', T: ' + item.CounterToday;
@@ -659,7 +659,7 @@ function RefreshFavorites()
 								}
 								if (typeof item.CounterDeliv != 'undefined') {
 									if (item.CounterDeliv!=0) {
-										if (item.CounterDeliv.charAt(0) != 0) {
+										if (item.UsageDeliv.charAt(0) != 0) {
 											bigtext='-' + item.UsageDeliv;
 										}
 										status+='<br>';
