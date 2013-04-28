@@ -380,7 +380,7 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 		rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
 		rep.headers[1].name = "Content-Type";
 		rep.headers[1].value = mime_types::extension_to_type(extension);
-		rep.headers[1].value += ";charset=ISO-8859-1";
+		rep.headers[1].value += ";charset=UTF-8"; //ISO-8859-1
 		rep.headers[2].name = "Cache-Control";
 		rep.headers[2].value = "no-cache";
 		rep.headers[3].name = "Pragma";
