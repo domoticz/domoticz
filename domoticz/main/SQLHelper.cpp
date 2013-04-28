@@ -454,9 +454,29 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("UseAutoUpdate", 1);
 	}
-	if (!GetPreferencesVar("Rego6XXType", nValue))
+	if (GetPreferencesVar("Rego6XXType", nValue))
 	{
-		UpdatePreferencesVar("Rego6XXType", 0);
+        // The setting is no longer here. It has moved to the hardware table (Mode1)
+        // Copy the setting so no data is lost - if the rego is used. (zero is the default 
+        // so it's no point copying this value...)
+        // THIS SETTING CAN BE REMOVED WHEN ALL CAN BE ASSUMED TO HAVE UPDATED (summer 2013?)
+        if(nValue > 0)
+        {
+        	std::stringstream szQuery;
+
+        	szQuery.clear();
+        	szQuery.str("");
+        	szQuery << "SELECT ID,Mode1 FROM Hardware WHERE (Type=" << HTYPE_Rego6XX << ")";
+        	result=m_pMain->m_sql.query(szQuery.str());
+        	if (result.size()>0)
+            {
+                if(atoi(result[0][1].c_str()) != nValue)
+                {
+                    UpdateRFXCOMHardwareDetails(atoi(result[0][0].c_str()), nValue, 0, 0, 0, 0);
+                }
+            }
+		    UpdatePreferencesVar("Rego6XXType", 0); // Set to zero to avoid another copy
+        }
 	}
 	//Costs for Energy/Gas and Water (See your provider, try to include tax and other stuff)
 	if (!GetPreferencesVar("CostEnergy", nValue))

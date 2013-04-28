@@ -52,6 +52,26 @@
 </form>
 </center>
 </div>
+<div id="rego6xxtypeedit" style="display:none;">
+<center>
+<form id="regotype">
+    <table>
+        <tr>
+            <td><label>Rego 6XX type: </label></td>
+            <td><select id="comborego6xxtype" name="Rego6XXType" style="width:200px" class="combobox ui-corner-all">
+                <option value="0">600-635, 637 single language</option>
+                <option value="1">636</option>
+                <option value="2">637 multi language</option>
+            </select></td>
+        </tr>
+        <tr><td colspan="2">Note: Any change will take effect after restarting Domoticz!</td></tr>
+    </table>
+	<br>
+	<input type="hidden" id="idx" name="idx" value="-1">
+	<button class="btn btn-danger" id="submitbuttonrego">Set Mode</button>
+</form>
+</center>
+</div>
 <div id="hardwaremain" style="display:none;">
     <table class="display" id="hardwaretable" border="0" cellpadding="0" cellspacing="0" width="100%">
         <thead>
@@ -569,9 +589,34 @@ function EditRFXCOMMode(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 
 }
 
+function EditRego6XXType(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
+{
+  cursordefault();
+  var htmlcontent = '';
+  htmlcontent='<p><center><h2>Device: ' + name + '</h2></center></p>\n';
+  htmlcontent+=$('#rego6xxtypeedit').html();
+  $('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
+
+	$('#hardwarecontent #submitbuttonrego').click(function (e) {
+		e.preventDefault();
+		SetRego6XXType();
+	});
+
+
+  $('#hardwarecontent #idx').val(idx);
+  $('#hardwarecontent #comborego6xxtype').val(Mode1);
+}
+
 function SetRFXCOMMode()
 {
   $.post("setrfxcommode.webem", $("#hardwarecontent #settings").serialize(), function(data) {
+   ShowHardware();
+  });
+}
+
+function SetRego6XXType()
+{
+  $.post("setrego6xxtype.webem", $("#hardwarecontent #regotype").serialize(), function(data) {
    ShowHardware();
   });
 }
@@ -630,6 +675,23 @@ function RefreshHardwareTable()
 					{
 						HwTypeStr+='<br>Firmware version: ' + item.Mode2;
 						HwTypeStr+=' <span class="label label-info" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Set Mode</span>';
+					}
+					else if (HwTypeStr.indexOf("Rego 6XX") >= 0)
+					{
+						HwTypeStr+='<br>Type: ';
+                        if (item.Mode1=="0")
+                        {
+                            HwTypeStr+='600-635, 637 single language';
+                        }
+                        else if(item.Mode1=="1")
+                        {
+                            HwTypeStr+='636';
+                        }
+                        else if(item.Mode1=="2")
+                        {
+                            HwTypeStr+='637 multi language';
+                        }
+						HwTypeStr+=' <span class="label label-info" onclick="EditRego6XXType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Change Type</span>';
 					}
 					
           var addId = oTable.fnAddData( {

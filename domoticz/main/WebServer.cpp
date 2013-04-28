@@ -173,6 +173,7 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
 
 	m_pWebEm->RegisterActionCode( "storesettings",boost::bind(&CWebServer::PostSettings,this));
 	m_pWebEm->RegisterActionCode( "setrfxcommode",boost::bind(&CWebServer::SetRFXCOMMode,this));
+	m_pWebEm->RegisterActionCode( "setrego6xxtype",boost::bind(&CWebServer::SetRego6XXType,this));
 
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWebServer::Do_Work, this)));
@@ -431,9 +432,6 @@ char * CWebServer::PostSettings()
 	std::string scheckforupdates=m_pWebEm->FindValue("checkforupdates");
 	m_pMain->m_sql.UpdatePreferencesVar("UseAutoUpdate",(scheckforupdates=="on"?1:0));
 
-	std::string sRego6XXType=m_pWebEm->FindValue("Rego6XXType");
-	m_pMain->m_sql.UpdatePreferencesVar("Rego6XXType",atoi(sRego6XXType.c_str()));
-	
 	float CostEnergy=(float)atof(m_pWebEm->FindValue("CostEnergy").c_str());
 	float CostGas=(float)atof(m_pWebEm->FindValue("CostGas").c_str());
 	float CostWater=(float)atof(m_pWebEm->FindValue("CostWater").c_str());
@@ -503,6 +501,38 @@ char * CWebServer::SetRFXCOMMode()
 
 	m_pMain->SetRFXCOMHardwaremodes(atoi(idx.c_str()),Response.ICMND.msg1,Response.ICMND.msg2,Response.ICMND.msg3,Response.ICMND.msg4,Response.ICMND.msg5);
 
+	return (char*)m_retstr.c_str();
+}
+
+char * CWebServer::SetRego6XXType()
+{
+	m_retstr="";
+	std::string idx=m_pWebEm->FindValue("idx");
+	if (idx=="") {
+		return (char*)m_retstr.c_str();
+	}
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
+	result=m_pMain->m_sql.query(szQuery.str());
+	if (result.size()<1)
+		return (char*)m_retstr.c_str();
+
+	m_retstr="/index.html";
+
+    unsigned char currentMode1=atoi(result[0][0].c_str());
+
+	std::string sRego6XXType=m_pWebEm->FindValue("Rego6XXType");
+    unsigned char newMode1=atoi(sRego6XXType.c_str());
+	
+    if(currentMode1 != newMode1)
+    {
+        m_pMain->m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), newMode1, 0, 0, 0, 0);
+    }
+	
 	return (char*)m_retstr.c_str();
 }
 
@@ -1192,7 +1222,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				sprintf(szDate,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
 				std::vector<std::vector<std::string> > result2;
-				strcpy(szTmp,"");
+				strcpy(szTmp,"0");
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
@@ -1273,7 +1303,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				sprintf(szDate,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
 				std::vector<std::vector<std::string> > result2;
-				strcpy(szTmp,"");
+				strcpy(szTmp,"0");
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
@@ -1413,7 +1443,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				sprintf(szDate,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
 				std::vector<std::vector<std::string> > result2;
-				strcpy(szTmp,"");
+				strcpy(szTmp,"0");
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT MIN(Value1), MIN(Value2) FROM MultiMeter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
@@ -1518,7 +1548,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				sprintf(szDate,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
 				std::vector<std::vector<std::string> > result2;
-				strcpy(szTmp,"");
+				strcpy(szTmp,"0");
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
@@ -1685,7 +1715,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				        sprintf(szDate,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
 				        std::vector<std::vector<std::string> > result2;
-				        strcpy(szTmp,"");
+				        strcpy(szTmp,"0");
 				        szQuery.clear();
 				        szQuery.str("");
 				        szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";

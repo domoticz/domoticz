@@ -312,10 +312,7 @@ bool MainWorker::AddHardwareFromParams(
 			}
 			else if (Type==HTYPE_Rego6XX)
 			{
-				int regotype=0;
-				m_sql.GetPreferencesVar("Rego6XXType", regotype);
-
-				pHardware = new CRego6XXSerial(ID,szSerialPort, regotype);
+				pHardware = new CRego6XXSerial(ID,szSerialPort, Mode1);
 			}
 		}
 		break;

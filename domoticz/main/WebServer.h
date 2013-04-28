@@ -29,6 +29,7 @@ public:
 	char * GetJSonPage();
 	char * PostSettings();
 	char * SetRFXCOMMode();
+	char * SetRego6XXType();
 
 	cWebem *m_pWebEm;
 
