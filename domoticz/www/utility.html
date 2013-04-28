@@ -1662,7 +1662,7 @@ function RefreshUtilities()
 							if (item.CounterDeliv!=0) {
 								status+='<br>Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
 								status+=", Actual: " + item.UsageDeliv;
-								if (item.UsageDeliv != 0) {
+								if (item.UsageDeliv.charAt(0) != 0) {
 									bigtext='-' + item.UsageDeliv;
 								}
 							}
