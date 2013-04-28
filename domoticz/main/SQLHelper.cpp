@@ -2939,6 +2939,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 				float musage=(total_real[0]+total_real[1])/EnergyDivider;
 				CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYENERGY, musage);
 			}
+/*
 			//Insert the last (max) counter values into the table to get the "today" value correct.
 			sprintf(szTmp,
 				"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Date) "
@@ -2953,6 +2954,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 				szDateEnd
 				);
 			result=query(szTmp);
+*/
 		}
 	}
 }

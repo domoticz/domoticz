@@ -30,6 +30,7 @@ Version 1.0.xxx (April xxth 2013)
 - Changed: Application Settings
 - Fixed: Push On delayed Off was not working
 - Fixed: RFXtrx USB mode option in hardware settings
+- Fixed: Undone previous patch for 'Better day value calculation' for multimeter devices (Like P1 Smart Meter electra)
 
 Version 1.0.412 (April 1th 2013)
 - Fixed: Siren icon on dashboard
