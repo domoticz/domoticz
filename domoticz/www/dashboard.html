@@ -590,10 +590,10 @@ function RefreshFavorites()
 								var status="";
 								if (typeof item.Counter != 'undefined') {
 									if (data.DashboardType==0) {
-										status+='<br>Usage: '+item.Counter + ', Today: ' + item.CounterToday;
+										status+='Usage: '+item.Counter + ', Today: ' + item.CounterToday;
 									}
 									else {
-										status+=item.Counter + ', T: ' + item.CounterToday;
+										status+='U: '+item.Counter + ', T: ' + item.CounterToday;
 									}
 								}
 								else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
@@ -634,10 +634,10 @@ function RefreshFavorites()
 								if (typeof item.Counter != 'undefined') {
 									img='<img src="images/counter.png" height="40">';
 									if (data.DashboardType==0) {
-										status='<br>Usage: '+item.Counter + ', Today: ' + item.CounterToday;
+										status='Usage: '+item.Counter + ', Today: ' + item.CounterToday;
 									}
 									else {
-										status=item.Counter + ', T: ' + item.CounterToday;
+										status='U: '+item.Counter + ', T: ' + item.CounterToday;
 									}
 								}
 								else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
@@ -1684,7 +1684,7 @@ function ShowFavorites()
 									status='Usage: '+item.Counter + ', Today: ' + item.CounterToday;
 								}
 								else {
-									status='U:'+item.Counter + ', T: ' + item.CounterToday;
+									status='U: '+item.Counter + ', T: ' + item.CounterToday;
 								}
 							}
 							else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
