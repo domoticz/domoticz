@@ -5786,8 +5786,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, std::string s
 				return false;
 			if ((switchtype==STYPE_Doorbell)||(switchtype==STYPE_X10Siren))
 				level=15;
-			if (level>16)
-				level=16;
+			if (level>15)
+				level=15;
 			lcmd.LIGHTING2.level=level;
 			lcmd.LIGHTING2.filler=0;
 			lcmd.LIGHTING2.rssi=7;
@@ -5819,7 +5819,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, std::string s
 			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING5.cmnd))
 				return false;
 			if ((switchtype==STYPE_Doorbell)||(switchtype==STYPE_X10Siren))
-				level=15;
+				level=31;
 			if (level>31)
 				level=31;
 			lcmd.LIGHTING5.level=level;

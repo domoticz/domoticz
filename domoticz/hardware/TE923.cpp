@@ -36,6 +36,7 @@ bool CTE923::StartHardware()
 	Init();
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CTE923::Do_Work, this)));
+	sOnConnected(this);
 
 	return (m_thread!=NULL);
 }
