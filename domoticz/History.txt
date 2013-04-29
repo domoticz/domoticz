@@ -1,4 +1,6 @@
 Version 1.0.xxx (April xxth 2013)
+- Changed: Rego6XX Type setting moved to the hardware settings in the same way as RFCtrx setup is done
+- Removed: patch for 'Better day value calculation' for multimeter devices (Like P1 Smart Meter electra), not needed
 
 Version 1.0.484 (April 28th 2013)
 - Implemented: Raspberry Pi, updating via the web browser (Settings Tab)
@@ -32,9 +34,7 @@ Version 1.0.484 (April 28th 2013)
 - Changed: Application Settings
 - Fixed: Push On delayed Off was not working
 - Fixed: RFXtrx USB mode option in hardware settings
-- Fixed: Fixed 'Better day value calculation' for multimeter devices (Like P1 Smart Meter electra)
 - Implemented: Multi language support for sensors/switch names
-- Changed: Rego6XX Type setting moved to the hardware settings in the same way as RFCtrx setup is done
 
 Version 1.0.412 (April 1th 2013)
 - Fixed: Siren icon on dashboard
