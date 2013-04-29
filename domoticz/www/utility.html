@@ -1659,13 +1659,13 @@ function RefreshUtilities()
 							bigtext=item.Usage;
             }
             if (typeof item.CounterDeliv != 'undefined') {
-							if (item.CounterDeliv!=0) {
-								status+='<br>Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
-								status+=", Actual: " + item.UsageDeliv;
-								if (item.UsageDeliv.charAt(0) != 0) {
-									bigtext='-' + item.UsageDeliv;
-								}
-							}
+				if (item.CounterDeliv!=0) {
+					status+='<br>Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
+					status+=", Actual: " + item.UsageDeliv;
+					if (item.UsageDeliv.charAt(0) != 0) {
+						bigtext='-' + item.UsageDeliv;
+					}
+				}
             }
             
             var nbackcolor="#D4E1EE";
@@ -1749,10 +1749,10 @@ function ShowUtilities()
 						xhtm+='\t      <td id="name" style="background-color: #DF2D3A;">' + item.Name + '</td>\n';
 					}
 					xhtm+='\t      <td id="bigtext">';
-					if (typeof item.Usage != 'undefined' && item.UsageDeliv == 'undefined') {
+					if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
 						xhtm+=item.Usage;
 					}
-					else if (typeof item.Usage != 'undefined' && item.UsageDeliv != 'undefined') {
+					else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
 						if (item.Usage.charAt(0) != 0) {
 							xhtm+=item.Usage;
 						}

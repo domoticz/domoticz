@@ -1664,10 +1664,10 @@ function ShowFavorites()
 								xhtm+='\t      <td id="name" style="background-color: #DF2D3A;">' + item.Name + '</td>\n';
 							}
 							xhtm+='\t      <td id="bigtext">';
-							if (typeof item.Usage != 'undefined' && item.UsageDeliv == 'undefined') {
+							if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
 								xhtm+=item.Usage;
 							}
-							else if (typeof item.Usage != 'undefined' && item.UsageDeliv != 'undefined') {
+							else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
 								if (item.Usage.charAt(0) != 0) {
 									xhtm+=item.Usage;
 								}
