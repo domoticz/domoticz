@@ -1644,7 +1644,7 @@ function RefreshUtilities()
 						
             if (typeof item.Counter != 'undefined') {
               img='<img src="images/counter.png" height="48">';
-              status='<br>Usage: ' + item.Counter + ', Today: ' + item.CounterToday;
+              status='Usage: ' + item.Counter + ', Today: ' + item.CounterToday;
             }
             else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
 							img='<img src="images/current48.png" height="48">';
@@ -1765,7 +1765,7 @@ function ShowUtilities()
             var status="";
             if (typeof item.Counter != 'undefined') {
               xhtm+='counter.png" height="48"></td>\n';
-              status='<br>Usage: ' + item.Counter + ', Today: ' + item.CounterToday;
+              status='Usage: ' + item.Counter + ', Today: ' + item.CounterToday;
             }
             else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
               xhtm+='current48.png" height="48"></td>\n';
