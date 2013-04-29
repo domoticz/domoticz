@@ -151,7 +151,7 @@ void CTE923::GetSensorDetails()
 			//special case if baro is present for first sensor
 			if ((ii==0)&&(data._press == 0 ))
 			{
-				tsen.TEMP_HUM_BARO.packetlength=sizeof(tsen);
+				tsen.TEMP_HUM_BARO.packetlength=sizeof(tsen)-1;
 				tsen.TEMP_HUM_BARO.packettype=pTypeTEMP_HUM_BARO;
 				tsen.TEMP_HUM_BARO.subtype=sTypeTHBFloat;
 				tsen.TEMP_HUM_BARO.battery_level=9;
@@ -178,7 +178,7 @@ void CTE923::GetSensorDetails()
 			}
 			else
 			{
-				tsen.TEMP_HUM.packetlength=sizeof(tsen);
+				tsen.TEMP_HUM.packetlength=sizeof(tsen)-1;
 				tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
 				tsen.TEMP_HUM.subtype=sTypeTH5;
 				tsen.TEMP_HUM.battery_level=9;
@@ -203,7 +203,7 @@ void CTE923::GetSensorDetails()
 			//Temp
 			RBUF tsen;
 			memset(&tsen,0,sizeof(RBUF));
-			tsen.TEMP.packetlength=sizeof(tsen);
+			tsen.TEMP.packetlength=sizeof(tsen)-1;
 			tsen.TEMP.packettype=pTypeTEMP;
 			tsen.TEMP.subtype=sTypeTEMP10;
 			tsen.TEMP.battery_level=9;
@@ -225,7 +225,7 @@ void CTE923::GetSensorDetails()
 			//Hum
 			RBUF tsen;
 			memset(&tsen,0,sizeof(RBUF));
-			tsen.HUM.packetlength=sizeof(tsen);
+			tsen.HUM.packetlength=sizeof(tsen)-1;
 			tsen.HUM.packettype=pTypeHUM;
 			tsen.HUM.subtype=sTypeHUM2;
 			tsen.HUM.battery_level=9;
@@ -246,7 +246,7 @@ void CTE923::GetSensorDetails()
 	{
 		RBUF tsen;
 		memset(&tsen,0,sizeof(RBUF));
-		tsen.WIND.packetlength=sizeof(tsen);
+		tsen.WIND.packetlength=sizeof(tsen)-1;
 		tsen.WIND.packettype=pTypeWIND;
 		tsen.WIND.subtype=sTypeWINDNoTemp;
 		tsen.WIND.battery_level=9;
@@ -305,7 +305,7 @@ void CTE923::GetSensorDetails()
 	{
 		RBUF tsen;
 		memset(&tsen,0,sizeof(RBUF));
-		tsen.RAIN.packetlength=sizeof(tsen);
+		tsen.RAIN.packetlength=sizeof(tsen)-1;
 		tsen.RAIN.packettype=pTypeRAIN;
 		tsen.RAIN.subtype=sTypeRAIN3;
 		tsen.RAIN.battery_level=9;
@@ -331,7 +331,7 @@ void CTE923::GetSensorDetails()
 	{
 		RBUF tsen;
 		memset(&tsen,0,sizeof(RBUF));
-		tsen.UV.packetlength=sizeof(tsen);
+		tsen.UV.packetlength=sizeof(tsen)-1;
 		tsen.UV.packettype=pTypeUV;
 		tsen.UV.subtype=sTypeUV1;
 		tsen.UV.battery_level=9;

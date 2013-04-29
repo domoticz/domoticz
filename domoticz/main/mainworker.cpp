@@ -511,7 +511,7 @@ void MainWorker::GetRaspberryPiTemperature()
 			//Temp
 			RBUF tsen;
 			memset(&tsen,0,sizeof(RBUF));
-			tsen.TEMP.packetlength=sizeof(tsen);
+			tsen.TEMP.packetlength=sizeof(tsen)-1;
 			tsen.TEMP.packettype=pTypeTEMP;
 			tsen.TEMP.subtype=sTypeTEMP_RPI;
 			tsen.TEMP.battery_level=9;
