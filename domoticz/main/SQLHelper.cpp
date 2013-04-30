@@ -553,7 +553,7 @@ void CSQLHelper::Do_Work()
 					ShellExecute(NULL,"open",itt->_ID.c_str(),itt->_sValue.c_str(),NULL,SW_SHOWNORMAL);
 #else
 					std::string lscript=itt->_ID + " " + itt->_sValue;
-					system(scriptname.c_str());
+					system(lscript.c_str());
 #endif
 				}
 				itt=m_background_task_queue.erase(itt);
