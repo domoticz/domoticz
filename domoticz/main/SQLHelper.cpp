@@ -552,7 +552,7 @@ void CSQLHelper::Do_Work()
 #ifdef WIN32
 					ShellExecute(NULL,"open",itt->_ID.c_str(),itt->_sValue.c_str(),NULL,SW_SHOWNORMAL);
 #else
-					std::string lscript+=itt->_ID + " " + itt->_sValue;
+					std::string lscript=itt->_ID + " " + itt->_sValue;
 					system(scriptname.c_str());
 #endif
 				}
