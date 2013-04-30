@@ -664,7 +664,7 @@ body table#itemtable tr td:first-child + td + td + td{
 }
 
 body table#itemtable tr td:first-child + td + td + td:before{
-	content: " ";
+	content: " Status: ";
 	font-style: italic;
 	font-size: 90%;
 }
