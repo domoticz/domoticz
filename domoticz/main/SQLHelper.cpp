@@ -298,11 +298,11 @@ CSQLHelper::CSQLHelper(void)
 
 CSQLHelper::~CSQLHelper(void)
 {
-	if (m_device_status_thread!=NULL)
+	if (m_background_task_thread!=NULL)
 	{
-		assert(m_device_status_thread);
+		assert(m_background_task_thread);
 		m_stoprequested = true;
-		m_device_status_thread->join();
+		m_background_task_thread->join();
 	}
 	if (m_dbase!=NULL)
 	{
@@ -512,9 +512,9 @@ void CSQLHelper::Set5MinuteHistoryDays(const int Days)
 
 bool CSQLHelper::StartThread()
 {
-	m_device_status_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CSQLHelper::Do_Work, this)));
+	m_background_task_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CSQLHelper::Do_Work, this)));
 
-	return (m_device_status_thread!=NULL);
+	return (m_background_task_thread!=NULL);
 }
 
 void CSQLHelper::Do_Work()
@@ -523,27 +523,40 @@ void CSQLHelper::Do_Work()
 	{
 		//sleep 1 second
 		boost::this_thread::sleep(boost::posix_time::seconds(1));
-		if (m_device_status_queue.size()<1)
+		if (m_background_task_queue.size()<1)
 			continue;
-		boost::lock_guard<boost::mutex> l(m_device_status_mutex);
+		boost::lock_guard<boost::mutex> l(m_background_task_mutex);
 
-		std::vector<_tDeviceStatus>::iterator itt=m_device_status_queue.begin();
-		while (itt!=m_device_status_queue.end())
+		std::vector<_tTaskItem>::iterator itt=m_background_task_queue.begin();
+		while (itt!=m_background_task_queue.end())
 		{
 			itt->_DelayTime--;
 			if (itt->_DelayTime<=0)
 			{
-				if (itt->_switchtype==STYPE_PushOn)
+				if (itt->_ItemType == TITEM_SWITCHCMD)
 				{
-					if (m_pMain)
-						m_pMain->SwitchLight(itt->_idx,"Off",0);
+					if (itt->_switchtype==STYPE_PushOn)
+					{
+						if (m_pMain)
+							m_pMain->SwitchLight(itt->_idx,"Off",0);
+					}
+					else
+					{
+						std::string devname="";
+						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname);
+					}
 				}
-				else
+				else if (itt->_ItemType == TITEM_EXECUTE_SCRIPT)
 				{
-					std::string devname="";
-					UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname);
+					//start script
+#ifdef WIN32
+					ShellExecute(NULL,"open",itt->_ID.c_str(),itt->_sValue.c_str(),NULL,SW_SHOWNORMAL);
+#else
+					std::string lscript+=itt->_ID + " " + itt->_sValue;
+					system(scriptname.c_str());
+#endif
 				}
-				itt=m_device_status_queue.erase(itt);
+				itt=m_background_task_queue.erase(itt);
 			}
 			else
 				itt++;
@@ -888,13 +901,9 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 				//Add parameters
 				std::stringstream s_scriptparams;
 				s_scriptparams << szStartupFolder << " " << HardwareID << " " << ulID << " " << (bIsLightSwitchOn?"On":"Off");
-				//start script
-#ifdef WIN32
-				ShellExecute(NULL,"open",scriptname.c_str(),s_scriptparams.str().c_str(),NULL,SW_SHOWNORMAL);
-#else
-				scriptname+=" " + s_scriptparams.str();
-				system(scriptname.c_str());
-#endif
+				//add script to background worker				
+				boost::lock_guard<boost::mutex> l(m_background_task_mutex);
+				m_background_task_queue.push_back(_tTaskItem(1,scriptname,s_scriptparams.str()));
 			}
 
 			if (bIsLightSwitchOn)
@@ -953,8 +962,8 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 	*/
 					if (bAdd2DelayQueue==true)
 					{
-						boost::lock_guard<boost::mutex> l(m_device_status_mutex);
-						m_device_status_queue.push_back(_tDeviceStatus(AddjValue,ulID,HardwareID,ID,unit,devType,subType,switchtype,signallevel,batterylevel,cmd,sValue));
+						boost::lock_guard<boost::mutex> l(m_background_task_mutex);
+						m_background_task_queue.push_back(_tTaskItem(AddjValue,ulID,HardwareID,ID,unit,devType,subType,switchtype,signallevel,batterylevel,cmd,sValue));
 					}
 				}
 			}

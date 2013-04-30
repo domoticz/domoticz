@@ -27,8 +27,15 @@ struct _tDeviceNameRef
 	std::string Name;
 };
 
-struct _tDeviceStatus
+enum _eTaskItemType
 {
+	TITEM_SWITCHCMD=0,
+	TITEM_EXECUTE_SCRIPT,
+};
+
+struct _tTaskItem
+{
+	_eTaskItemType _ItemType;
 	unsigned char _DelayTime;
 	int _HardwareID;
 	unsigned long long _idx;
@@ -42,8 +49,9 @@ struct _tDeviceStatus
 	int _nValue;
 	std::string _sValue;
 
-	_tDeviceStatus(const unsigned char DelayTime, const unsigned long long idx, const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int switchtype, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue)
+	_tTaskItem(const unsigned char DelayTime, const unsigned long long idx, const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int switchtype, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue)
 	{
+		_ItemType=TITEM_SWITCHCMD;
 		_DelayTime=DelayTime;
 		_idx=idx;
 		_HardwareID=HardwareID;
@@ -56,6 +64,13 @@ struct _tDeviceStatus
 		_switchtype=switchtype;
 		_nValue=nValue;
 		_sValue=sValue;
+	}
+	_tTaskItem(const unsigned char DelayTime, const std::string ScriptPath, const std::string ScriptParams)
+	{
+		_ItemType=TITEM_EXECUTE_SCRIPT;
+		_DelayTime=DelayTime;
+		_ID=ScriptPath;
+		_sValue=ScriptParams;
 	}
 };
 
@@ -194,9 +209,9 @@ private:
 	std::string m_dbase_name;
 	int m_5MinuteHistoryDays;
 
-	std::vector<_tDeviceStatus> m_device_status_queue;
-	boost::shared_ptr<boost::thread> m_device_status_thread;
-	boost::mutex m_device_status_mutex;
+	std::vector<_tTaskItem> m_background_task_queue;
+	boost::shared_ptr<boost::thread> m_background_task_thread;
+	boost::mutex m_background_task_mutex;
 	bool m_stoprequested;
 	bool StartThread();
 	void Do_Work();
