@@ -540,8 +540,8 @@ void CSQLHelper::Do_Work()
 				{
 					std::string devname="";
 					UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname);
-					itt=m_device_status_queue.erase(itt);
 				}
+				itt=m_device_status_queue.erase(itt);
 			}
 			else
 				itt++;
