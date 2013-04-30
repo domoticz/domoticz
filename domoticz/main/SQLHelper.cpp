@@ -284,6 +284,8 @@ const char *sqlCreateSceneTimers =
 "[Level] INTEGER DEFAULT 15, "
 "[Days] INTEGER NOT NULL);";
 
+extern std::string szStartupFolder;
+
 CSQLHelper::CSQLHelper(void)
 {
 	m_pMain=NULL;
@@ -854,7 +856,6 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 			nValue,sValue);
 		result=query(szTmp);
 
-		//Check for notifications
 		std::string lstatus="";
 		int llevel=0;
 		bool bHaveDimmer=false;
@@ -872,8 +873,33 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 			_eSwitchType switchtype=(_eSwitchType)atoi(sd[1].c_str());
 			int AddjValue=(int)atof(sd[2].c_str());
 			GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
-			if (IsLightSwitchOn(lstatus)==true)
+
+			bool bIsLightSwitchOn=IsLightSwitchOn(lstatus);
+
+			//Execute possible script
+			std::string scriptname;
+#ifdef WIN32
+			scriptname = szStartupFolder + "scripts\\domoticz_main.bat";
+#else
+			scriptname = szStartupFolder + "scripts/domoticz_main";
+#endif
+			if (file_exist(scriptname.c_str()))
 			{
+				//Add parameters
+				std::stringstream s_scriptparams;
+				s_scriptparams << szStartupFolder << " " << HardwareID << " " << ulID << " " << (bIsLightSwitchOn?"On":"Off");
+				//start script
+#ifdef WIN32
+				ShellExecute(NULL,"open",scriptname.c_str(),s_scriptparams.str().c_str(),NULL,SW_SHOWNORMAL);
+#else
+				scriptname+=" " + s_scriptparams.str();
+				system(scriptname.c_str());
+#endif
+			}
+
+			if (bIsLightSwitchOn)
+			{
+				//Check for notifications
 				std::vector<_tNotification> notifications=GetNotifications(ulID);
 				if (notifications.size()>0)
 				{

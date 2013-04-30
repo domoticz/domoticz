@@ -2,6 +2,9 @@ Version 1.0.xxx (April xxth 2013)
 - Changed: Rego6XX Type setting moved to the hardware settings in the same way as RFCtrx setup is done
 - Removed: patch for 'Better day value calculation' for multimeter devices (Like P1 Smart Meter electra), not needed
 - Fixed: TE923 (Weather stations) hardware can now be shared
+- Fixed: Push On delayed Off was deleted from queue, and was being send
+- Implemented: Latest RFXCOM SDK (#66)
+- Implemented: when a light/switch is pressed an optional script can be started (see scripts/readme.txt)
 
 Version 1.0.484 (April 28th 2013)
 - Implemented: Raspberry Pi, updating via the web browser (Settings Tab)

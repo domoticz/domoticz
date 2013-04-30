@@ -5,5 +5,5 @@ std::string stdreplace(
 	std::string result, 
 	const std::string& replaceWhat, 
 	const std::string& replaceWithWhat);
-
+bool file_exist (const char *filename);
 std::vector<std::string> GetSerialPorts(bool &bUseDirectPath);

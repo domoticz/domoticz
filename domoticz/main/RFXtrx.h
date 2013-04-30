@@ -21,108 +21,117 @@
 // portions of this Software.
 //-----------------------------------------------------------------------------
 
-//SDK version 6.02
-//	sTypeTH10 0xA   //Rubicson added
-//
-//SDK version 6.01
-//  Copyright message updated
-//
-//SDK version 5.03
-//	RAIN6 added
-//	Raex BlindsT4 added
-//	protocol enable/disable msg3_LIGHTING4 added
-//  Interface Message - Wrong Command added
-//
-//SDK version 5.01
-//	baroForecast values added
-//
-//SDK version 5.00
-//	Commands removed from Interface control:
-//		cmdENABLEALL 0x04, cmdUNDEC 0x05
-//		cmdDISX10 0x10   to    cmdDISFS20 0x1C
-//	CM180i CURRENT_ENERGY - ELEC4 added
-//	code for pTypeGAS and pTypeWATER changed (not yet used) 
-//
-//SDK version 4.36
-//	security - #define sStatusIRbeam 0x8 added
-//
-//SDK version 4.35
-//	defines added for commands
-//	union tRBUF is now typedef
-//	filler in REMOTE changed to cmndtype
-//	sTypeDigimax1 changed to sTypeDigimaxShort
-//
-//SDK version 4.34
-//	BlindsT2 BlindsT3 added
-//
-//SDK version 4.32
-//	BBSB new type added
-////SDK version 4.31
-//	Modebits updated
-//
-//SDK version 4.30
-//	Energy sensor ELEC3 - CM180 added
-//
-//SDK version 4.29
-//  sTypeTEMP10 for TFA 30.3133 added
-//	#define sTypeATI2 0x1   changed to    #define sTypeATIplus 0x1
-//	#define sTypeATIrw2 0x4  added
-//
-//SDK version 4.28
-//  undecoded types 0x0F-0x12 added
-//
-//SDK version 4.27
-//  Lighting1 - Philips SBC added
-//	Lighting6 - Blyss added
-//	BLINDS1 Rollertrol renamed to BlindsT0 and BlindsT1 added
-//	msg4_ROLLERTROL renamed to msg4_BLINDST0
-//	msg4_BLINDST1 added
-//	MODEbits.rollertrolenabled renamed to MODEbits.BLINDST0enabled
-//	MODEbits.BLINDST1enabled added
-//  undecoded types:
-//		sTypeUrollertrol renamed to sTypeUblinds
-//		sTypeUrubicson,sTypeUfineoffset and sTypeUae added
-//
-//SDK version 4.26
-//	TEMP-HUM TH9 Viking 02035,02038 added
-//	TEMP TEMP9 RUBiCSON added
-//	Security tamper status changed
-//	Security1 Meiantech, msg5_MEI and cmdDISMEI added
-//	Disable Koppla removed
-//
-//SDK version 4.23
-//	4 sensors WS2300 added
-//
-//SDK version 4.22
-//	Viking temperature sensor TEMP7 added
-//	Blinds1 - RollerTrol added
-//
-//SDK version 4.21
-//  Lighting1 - RisingSun added
-//
-//SDK version 4.19
-//	TS15C added
-//
-//SDK version 4.18
-//	UPM wind and rain added
-//
-//SDK version 4.17
-//	FS20 added
-//
-//SDK version 4.15
-//	Lighting5 - EMW100 added
-//
-//SDK version 4.14
-//	Lighting5 - level added
-//
-//SDK version 4.13
-// added sTypeTH8 Esic Temp-Hum sensor
-// Lighting6 - Novatis removed
-//
-//SDK version 4.9
-// added: #define recType43392 0x52
-// changed; #define recType43392 0x53  to   #define trxType43392 0x53
+/*
+SDK version 6.02b
+	msg3-5 replaced by MODEbits in IRESPONSE structure
+	LIGHTING4enabled added in struct MODEbits
 
+SDK version 6.02a
+	#define sTypeBlindsT5 0x5  added
+
+SDK version 6.02
+	sTypeTH10 0xA   //Rubicson added
+
+SDK version 6.01
+  Copyright message updated
+
+SDK version 5.03
+	RAIN6 added
+	Raex BlindsT4 added
+	protocol enable/disable msg3_LIGHTING4 added
+	Interface Message - Wrong Command added
+
+SDK version 5.01
+	baroForecast values added
+
+SDK version 5.00
+	Commands removed from Interface control:
+		cmdENABLEALL 0x04, cmdUNDEC 0x05
+		cmdDISX10 0x10   to    cmdDISFS20 0x1C
+	CM180i CURRENT_ENERGY - ELEC4 added
+	code for pTypeGAS and pTypeWATER changed (not yet used) 
+
+SDK version 4.36
+	security - #define sStatusIRbeam 0x8 added
+
+SDK version 4.35
+	defines added for commands
+	union tRBUF is now typedef
+	filler in REMOTE changed to cmndtype
+	sTypeDigimax1 changed to sTypeDigimaxShort
+
+SDK version 4.34
+	BlindsT2 BlindsT3 added
+
+SDK version 4.32
+	BBSB new type added
+
+SDK version 4.31
+	Modebits updated
+
+SDK version 4.30
+	Energy sensor ELEC3 - CM180 added
+
+SDK version 4.29
+  sTypeTEMP10 for TFA 30.3133 added
+	#define sTypeATI2 0x1   changed to    #define sTypeATIplus 0x1
+	#define sTypeATIrw2 0x4  added
+
+SDK version 4.28
+  undecoded types 0x0F-0x12 added
+
+SDK version 4.27
+  Lighting1 - Philips SBC added
+	Lighting6 - Blyss added
+	BLINDS1 Rollertrol renamed to BlindsT0 and BlindsT1 added
+	msg4_ROLLERTROL renamed to msg4_BLINDST0
+	msg4_BLINDST1 added
+	MODEbits.rollertrolenabled renamed to MODEbits.BLINDST0enabled
+	MODEbits.BLINDST1enabled added
+  undecoded types:
+		sTypeUrollertrol renamed to sTypeUblinds
+		sTypeUrubicson,sTypeUfineoffset and sTypeUae added
+
+SDK version 4.26
+	TEMP-HUM TH9 Viking 02035,02038 added
+	TEMP TEMP9 RUBiCSON added
+	Security tamper status changed
+	Security1 Meiantech, msg5_MEI and cmdDISMEI added
+	Disable Koppla removed
+
+SDK version 4.23
+	4 sensors WS2300 added
+
+SDK version 4.22
+	Viking temperature sensor TEMP7 added
+	Blinds1 - RollerTrol added
+
+SDK version 4.21
+  Lighting1 - RisingSun added
+
+SDK version 4.19
+	TS15C added
+
+SDK version 4.18
+	UPM wind and rain added
+
+SDK version 4.17
+	FS20 added
+
+SDK version 4.15
+	Lighting5 - EMW100 added
+
+SDK version 4.14
+	Lighting5 - level added
+
+SDK version 4.13
+	added sTypeTH8 Esic Temp-Hum sensor
+	Lighting6 - Novatis removed
+
+SDK version 4.9
+	added: #define recType43392 0x52
+	changed; #define recType43392 0x53  to   #define trxType43392 0x53
+*/
 
 //types for Interface Control
 #define pTypeInterfaceControl 0x00
@@ -158,32 +167,32 @@
 #define recType86835FSK 0x5A
 #define recType86895 0x5B
 
-#define msg3_undec 0x80
-#define msg3_RFU6 0x40
-#define msg3_RFU5 0x20
-#define msg3_RFU4 0x10
-#define msg3_LIGHTING4 0x08
-#define msg3_FINEOFFSET 0x04
-#define msg3_RUBICSON 0x02
 #define msg3_AE 0x01
+#define msg3_RUBICSON 0x02
+#define msg3_FINEOFFSET 0x04
+#define msg3_LIGHTING4 0x08
+#define msg3_RFU4 0x10
+#define msg3_RFU5 0x20
+#define msg3_RFU6 0x40
+#define msg3_undec 0x80
 
-#define msg4_BLINDST1 0x80
-#define msg4_BLINDST0 0x40
-#define msg4_PROGUARD 0x20
-#define msg4_FS20 0x10
-#define msg4_LCROS 0x08
-#define msg4_HID 0x04
-#define msg4_AD 0x02
 #define msg4_MERTIK 0x01
+#define msg4_AD 0x02
+#define msg4_HID 0x04
+#define msg4_LCROS 0x08
+#define msg4_FS20 0x10
+#define msg4_PROGUARD 0x20
+#define msg4_BLINDST0 0x40
+#define msg4_BLINDST1 0x80
 
-#define msg5_VISONIC 0x80
-#define msg5_ATI 0x40
-#define msg5_OREGON 0x20
-#define msg5_MEI 0x10
-#define msg5_HEU 0x08
-#define msg5_AC 0x04
-#define msg5_ARC 0x02
 #define msg5_X10 0x01
+#define msg5_ARC 0x02
+#define msg5_AC 0x04
+#define msg5_HEU 0x08
+#define msg5_MEI 0x10
+#define msg5_OREGON 0x20
+#define msg5_ATI 0x40
+#define msg5_VISONIC 0x80
 
 #define pTypeRecXmitMessage 0x02
 #define sTypeReceiverLockError 0x00
@@ -566,11 +575,35 @@ typedef union tRBUF {
 		BYTE	subtype;
 		BYTE	seqnbr;
 		BYTE	cmnd;
-		BYTE	msg1;
-		BYTE	msg2;
-		BYTE	msg3;
-		BYTE	msg4;
-		BYTE	msg5;
+		BYTE	msg1;	//receiver/transceiver type
+		BYTE	msg2;	//firmware version
+		//BYTE	msg3;
+		BYTE	AEenabled : 1;
+		BYTE	RUBICSONenabled : 1;
+		BYTE	FINEOFFSETenabled : 1;
+		BYTE	LIGHTING4enabled : 1;
+		BYTE	RFU4 : 1;
+		BYTE	RFU5 : 1;
+		BYTE	RFU6 : 1;
+		BYTE	UNDECODEDenabled : 1;
+		//BYTE	msg4;
+		BYTE	MERTIKenabled : 1;
+		BYTE	LWRFenabled : 1;
+		BYTE	HIDEKIenabled : 1;
+		BYTE	LACROSSEenabled : 1;
+		BYTE	FS20enabled : 1;
+		BYTE	PROGUARDenabled : 1;
+		BYTE	BLINDST0enabled : 1;
+		BYTE	BLINDST1enabled : 1;
+		//BYTE	msg5;
+		BYTE	X10enabled : 1; //note: keep this order
+		BYTE	ARCenabled : 1;
+		BYTE	ACenabled : 1;
+		BYTE	HEEUenabled : 1;
+		BYTE	MEIANTECHenabled : 1;
+		BYTE	OREGONenabled : 1;
+		BYTE	ATIenabled : 1;
+		BYTE	VISONICenabled : 1;
 		BYTE	msg6;
 		BYTE	msg7;
 		BYTE	msg8;
@@ -616,48 +649,6 @@ typedef union tRBUF {
 		BYTE	msg32;
 		BYTE	msg33;
 	} UNDECODED;
-
-	struct tagMODEBits
-	{
-		BYTE  packetlength;
-		BYTE  packettype;
-		BYTE  subtype;
-		BYTE  seqnbr;
-		BYTE  cmnd;
-		BYTE  msg1; //receiver/transceiver type
-		BYTE  msg2; //firmware version
-		//BYTE      msg3;
-		BYTE AEenabled : 1;
-		BYTE RUBICSONenabled : 1;
-		BYTE FINEOFFSETenabled : 1;
-		BYTE LIGHTING4enabled : 1;
-		BYTE RFU4 : 1;
-		BYTE RFU5 : 1;
-		BYTE RFU6 : 1;
-		BYTE display_undecoded : 1;
-		//BYTE      msg4;
-		BYTE MERTIKenabled : 1;
-		BYTE LWRFenabled : 1;
-		BYTE HIDEKIenabled : 1;
-		BYTE LACROSSEenabled : 1;
-		BYTE FS20enabled : 1;
-		BYTE PROGUARDenabled : 1;
-		BYTE BLINDST0enabled : 1;
-		BYTE BLINDST1enabled : 1;
-		//BYTE      msg5;
-		BYTE X10enabled : 1; //note: keep this order
-		BYTE ARCenabled : 1;
-		BYTE ACenabled : 1;
-		BYTE HEEUenabled : 1;
-		BYTE MEIANTECHenabled : 1;
-		BYTE OREGONenabled : 1;
-		BYTE ATIenabled : 1;
-		BYTE VISONICenabled : 1;
-		BYTE  msg6;
-		BYTE  msg7;
-		BYTE  msg8;
-		BYTE  msg9;
-	} MODEbits;
 
 	struct {	//receiver/transmitter messages
 		BYTE	packetlength;

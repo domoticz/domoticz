@@ -10,9 +10,6 @@
 #include "Logger.h"
 #include "../httpclient/HTTPClient.h"
 
-#include <sys/types.h>
-#include <sys/stat.h>
-
 //Hardware Devices
 #include "../hardware/hardwaretypes.h"
 #include "../hardware/RFXComSerial.h"
@@ -481,12 +478,6 @@ bool MainWorker::StartThread()
 
 #define HEX( x ) \
 	std::setw(2) << std::setfill('0') << std::hex << std::uppercase << (int)( x )
-
-bool file_exist (const char *filename)
-{
-	struct stat sbuffer;   
-	return (stat(filename, &sbuffer) == 0);
-}
 
 void MainWorker::GetDomoticzUpdate(const std::string UpdateURL)
 {
@@ -975,7 +966,7 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const tRBUF *pResponse
 						break;
 					}
 
-					m_sql.UpdateRFXCOMHardwareDetails(HwdID,pResponse->IRESPONSE.msg1,pResponse->IRESPONSE.msg2,pResponse->IRESPONSE.msg3,pResponse->IRESPONSE.msg4,pResponse->IRESPONSE.msg5);
+					m_sql.UpdateRFXCOMHardwareDetails(HwdID,pResponse->IRESPONSE.msg1,pResponse->IRESPONSE.msg2,pResponse->ICMND.msg3,pResponse->ICMND.msg4,pResponse->ICMND.msg5);
 
 					switch (pResponse->IRESPONSE.msg1)
 					{
@@ -1021,117 +1012,122 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const tRBUF *pResponse
 					sprintf(szTmp,"Hardware version  = %d.%d",pResponse->IRESPONSE.msg6,pResponse->IRESPONSE.msg7);
 					WriteMessage(szTmp);
 
-					if (pResponse->IRESPONSE.msg3)
+					if (pResponse->IRESPONSE.UNDECODEDenabled)
 						WriteMessage("Undec             on");
 					else
 						WriteMessage("Undec             off");
 
-					if (pResponse->IRESPONSE.msg5 & msg5_X10)
+					if (pResponse->IRESPONSE.X10enabled & msg5_X10)
 						WriteMessage("X10               enabled");
 					else
 						WriteMessage("X10               disabled");
 
-					if (pResponse->IRESPONSE.msg5 & msg5_ARC)
+					if (pResponse->IRESPONSE.ARCenabled & msg5_ARC)
 						WriteMessage("ARC               enabled");
 					else
 						WriteMessage("ARC               disabled");
 
-					if (pResponse->IRESPONSE.msg5 & msg5_AC)
+					if (pResponse->IRESPONSE.ACenabled & msg5_AC)
 						WriteMessage("AC                enabled");
 					else
 						WriteMessage("AC                disabled");
 
-					if (pResponse->IRESPONSE.msg5 & msg5_HEU)
+					if (pResponse->IRESPONSE.HEEUenabled & msg5_HEU)
 						WriteMessage("HomeEasy EU       enabled");
 					else
 						WriteMessage("HomeEasy EU       disabled");
 
-					if (pResponse->IRESPONSE.msg5 & msg5_MEI)
+					if (pResponse->IRESPONSE.MEIANTECHenabled & msg5_MEI)
 						WriteMessage("Meiantech/Atlantic enabled");
 					else
 						WriteMessage("Meiantech/Atlantic disabled");
 
-					if (pResponse->IRESPONSE.msg5 & msg5_OREGON)
+					if (pResponse->IRESPONSE.OREGONenabled & msg5_OREGON)
 						WriteMessage("Oregon Scientific enabled");
 					else
 						WriteMessage("Oregon Scientific disabled");
 
-					if (pResponse->IRESPONSE.msg5 & msg5_ATI)
+					if (pResponse->IRESPONSE.ATIenabled & msg5_ATI)
 						WriteMessage("ATI               enabled");
 					else
 						WriteMessage("ATI               disabled");
 
-					if (pResponse->IRESPONSE.msg5 & msg5_VISONIC)
+					if (pResponse->IRESPONSE.VISONICenabled & msg5_VISONIC)
 						WriteMessage("Visonic           enabled");
 					else
 						WriteMessage("Visonic           disabled");
 
-					if (pResponse->IRESPONSE.msg4 & msg4_MERTIK)
+					if (pResponse->IRESPONSE.MERTIKenabled & msg4_MERTIK)
 						WriteMessage("Mertik            enabled");
 					else
 						WriteMessage("Mertik            disabled");
 
-					if (pResponse->IRESPONSE.msg4 & msg4_AD)
+					if (pResponse->IRESPONSE.LWRFenabled & msg4_AD)
 						WriteMessage("AD                enabled");
 					else
 						WriteMessage("AD                disabled");
 
-					if (pResponse->IRESPONSE.msg4 & msg4_HID)
+					if (pResponse->IRESPONSE.HIDEKIenabled & msg4_HID)
 						WriteMessage("Hideki            enabled");
 					else
 						WriteMessage("Hideki            disabled");
 
-					if (pResponse->IRESPONSE.msg4 & msg4_LCROS)
+					if (pResponse->IRESPONSE.LACROSSEenabled & msg4_LCROS)
 						WriteMessage("La Crosse         enabled");
 					else
 						WriteMessage("La Crosse         disabled");
 
-					if (pResponse->IRESPONSE.msg4 & msg4_FS20)
+					if (pResponse->IRESPONSE.FS20enabled & msg4_FS20)
 						WriteMessage("FS20              enabled");
 					else
 						WriteMessage("FS20              disabled");
 
-					if (pResponse->IRESPONSE.msg4 & msg4_PROGUARD)
+					if (pResponse->IRESPONSE.PROGUARDenabled & msg4_PROGUARD)
 						WriteMessage("ProGuard          enabled");
 					else
 						WriteMessage("ProGuard          disabled");
 
-					if (pResponse->IRESPONSE.msg4 & msg4_BLINDST0)
+					if (pResponse->IRESPONSE.BLINDST0enabled & msg4_BLINDST0)
 						WriteMessage("BlindsT0          enabled");
 					else
 						WriteMessage("BlindsT0          disabled");
 
-					if (pResponse->IRESPONSE.msg4 & msg4_BLINDST1)
+					if (pResponse->IRESPONSE.BLINDST1enabled & msg4_BLINDST1)
 						WriteMessage("BlindsT1          enabled");
 					else
 						WriteMessage("BlindsT1          disabled");
 
-					if (pResponse->IRESPONSE.msg3 & msg3_AE)
+					if (pResponse->IRESPONSE.AEenabled & msg3_AE)
 						WriteMessage("AE                enabled");
 					else
 						WriteMessage("AE                disabled");
 
-					if (pResponse->IRESPONSE.msg3 & msg3_RUBICSON)
+					if (pResponse->IRESPONSE.RUBICSONenabled & msg3_RUBICSON)
 						WriteMessage("RUBiCSON          enabled");
 					else
 						WriteMessage("RUBiCSON          disabled");
 
-					if (pResponse->IRESPONSE.msg3 & msg3_FINEOFFSET)
+					if (pResponse->IRESPONSE.FINEOFFSETenabled & msg3_FINEOFFSET)
 						WriteMessage("FineOffset        enabled");
 					else
 						WriteMessage("FineOffset        disabled");
 
-					if (pResponse->IRESPONSE.msg3 & msg3_RFU4)
+					if (pResponse->IRESPONSE.LIGHTING4enabled & msg3_LIGHTING4)
+						WriteMessage("Lighting4         enabled");
+					else
+						WriteMessage("Lighting4         disabled");
+
+					if (pResponse->IRESPONSE.RFU4 & msg3_RFU4)
 						WriteMessage("RFU protocol 4    enabled");
 					else
 						WriteMessage("RFU protocol 4    disabled");
 
-					if (pResponse->IRESPONSE.msg3 & msg3_RFU5)
+					if (pResponse->IRESPONSE.RFU5 & msg3_RFU5)
 						WriteMessage("RFU protocol 5    enabled");
 					else
 						WriteMessage("RFU protocol 5    disabled");
 
-					if (pResponse->IRESPONSE.msg3 & msg3_RFU6)
+					if (pResponse->IRESPONSE.RFU6 & msg3_RFU6)
 						WriteMessage("RFU protocol 6    enabled");
 					else
 						WriteMessage("RFU protocol 6    disabled");

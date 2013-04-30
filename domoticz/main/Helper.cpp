@@ -3,6 +3,8 @@
 #if !defined WIN32
 	#include <dirent.h>
 #endif
+#include <sys/types.h>
+#include <sys/stat.h>
 
 void StringSplit(std::string str, std::string delim, std::vector<std::string> &results)
 {
@@ -99,3 +101,10 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 #endif
 	return ret;
 }
+
+bool file_exist (const char *filename)
+{
+	struct stat sbuffer;   
+	return (stat(filename, &sbuffer) == 0);
+}
+

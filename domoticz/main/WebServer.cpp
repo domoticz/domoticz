@@ -19,6 +19,7 @@
 	#include "WindowsHelper.h"
 #endif
 #include "appversion.h"
+
 extern std::string szStartupFolder;
 
 namespace http {
@@ -474,30 +475,30 @@ char * CWebServer::SetRFXCOMMode()
 	Response.ICMND.msg4=Mode4;
 	Response.ICMND.msg5=Mode5;
 
-	Response.MODEbits.display_undecoded=(m_pWebEm->FindValue("undecon")=="on")?1:0;
-	Response.MODEbits.X10enabled=(m_pWebEm->FindValue("X10")=="on")?1:0;
-	Response.MODEbits.ARCenabled=(m_pWebEm->FindValue("ARC")=="on")?1:0;
-	Response.MODEbits.ACenabled=(m_pWebEm->FindValue("AC")=="on")?1:0;
-	Response.MODEbits.HEEUenabled=(m_pWebEm->FindValue("HomeEasyEU")=="on")?1:0;
-	Response.MODEbits.MEIANTECHenabled=(m_pWebEm->FindValue("Meiantech")=="on")?1:0;
-	Response.MODEbits.OREGONenabled=(m_pWebEm->FindValue("OregonScientific")=="on")?1:0;
-	Response.MODEbits.ATIenabled=(m_pWebEm->FindValue("ATIremote")=="on")?1:0;
-	Response.MODEbits.VISONICenabled=(m_pWebEm->FindValue("Visonic")=="on")?1:0;
-	Response.MODEbits.MERTIKenabled=(m_pWebEm->FindValue("Mertik")=="on")?1:0;
-	Response.MODEbits.LWRFenabled=(m_pWebEm->FindValue("ADLightwaveRF")=="on")?1:0;
-	Response.MODEbits.HIDEKIenabled=(m_pWebEm->FindValue("HidekiUPM")=="on")?1:0;
-	Response.MODEbits.LACROSSEenabled=(m_pWebEm->FindValue("LaCrosse")=="on")?1:0;
-	Response.MODEbits.FS20enabled=(m_pWebEm->FindValue("FS20")=="on")?1:0;
-	Response.MODEbits.PROGUARDenabled=(m_pWebEm->FindValue("ProGuard")=="on")?1:0;
-	Response.MODEbits.BLINDST0enabled=(m_pWebEm->FindValue("BlindT0")=="on")?1:0;
-	Response.MODEbits.BLINDST1enabled=(m_pWebEm->FindValue("BlindT1T2T3T4")=="on")?1:0;
-	Response.MODEbits.AEenabled=(m_pWebEm->FindValue("AEBlyss")=="on")?1:0;
-	Response.MODEbits.RUBICSONenabled=(m_pWebEm->FindValue("Rubicson")=="on")?1:0;
-	Response.MODEbits.FINEOFFSETenabled=(m_pWebEm->FindValue("FineOffsetViking")=="on")?1:0;
-	Response.MODEbits.LIGHTING4enabled=(m_pWebEm->FindValue("Lighting4")=="on")?1:0;
-	Response.MODEbits.RFU4=(m_pWebEm->FindValue("rfu4")=="on")?1:0;
-	Response.MODEbits.RFU5=(m_pWebEm->FindValue("rfu5")=="on")?1:0;
-	Response.MODEbits.RFU6=(m_pWebEm->FindValue("rfu6")=="on")?1:0;
+	Response.IRESPONSE.UNDECODEDenabled=(m_pWebEm->FindValue("undecon")=="on")?1:0;
+	Response.IRESPONSE.X10enabled=(m_pWebEm->FindValue("X10")=="on")?1:0;
+	Response.IRESPONSE.ARCenabled=(m_pWebEm->FindValue("ARC")=="on")?1:0;
+	Response.IRESPONSE.ACenabled=(m_pWebEm->FindValue("AC")=="on")?1:0;
+	Response.IRESPONSE.HEEUenabled=(m_pWebEm->FindValue("HomeEasyEU")=="on")?1:0;
+	Response.IRESPONSE.MEIANTECHenabled=(m_pWebEm->FindValue("Meiantech")=="on")?1:0;
+	Response.IRESPONSE.OREGONenabled=(m_pWebEm->FindValue("OregonScientific")=="on")?1:0;
+	Response.IRESPONSE.ATIenabled=(m_pWebEm->FindValue("ATIremote")=="on")?1:0;
+	Response.IRESPONSE.VISONICenabled=(m_pWebEm->FindValue("Visonic")=="on")?1:0;
+	Response.IRESPONSE.MERTIKenabled=(m_pWebEm->FindValue("Mertik")=="on")?1:0;
+	Response.IRESPONSE.LWRFenabled=(m_pWebEm->FindValue("ADLightwaveRF")=="on")?1:0;
+	Response.IRESPONSE.HIDEKIenabled=(m_pWebEm->FindValue("HidekiUPM")=="on")?1:0;
+	Response.IRESPONSE.LACROSSEenabled=(m_pWebEm->FindValue("LaCrosse")=="on")?1:0;
+	Response.IRESPONSE.FS20enabled=(m_pWebEm->FindValue("FS20")=="on")?1:0;
+	Response.IRESPONSE.PROGUARDenabled=(m_pWebEm->FindValue("ProGuard")=="on")?1:0;
+	Response.IRESPONSE.BLINDST0enabled=(m_pWebEm->FindValue("BlindT0")=="on")?1:0;
+	Response.IRESPONSE.BLINDST1enabled=(m_pWebEm->FindValue("BlindT1T2T3T4")=="on")?1:0;
+	Response.IRESPONSE.AEenabled=(m_pWebEm->FindValue("AEBlyss")=="on")?1:0;
+	Response.IRESPONSE.RUBICSONenabled=(m_pWebEm->FindValue("Rubicson")=="on")?1:0;
+	Response.IRESPONSE.FINEOFFSETenabled=(m_pWebEm->FindValue("FineOffsetViking")=="on")?1:0;
+	Response.IRESPONSE.LIGHTING4enabled=(m_pWebEm->FindValue("Lighting4")=="on")?1:0;
+	Response.IRESPONSE.RFU4=(m_pWebEm->FindValue("rfu4")=="on")?1:0;
+	Response.IRESPONSE.RFU5=(m_pWebEm->FindValue("rfu5")=="on")?1:0;
+	Response.IRESPONSE.RFU6=(m_pWebEm->FindValue("rfu6")=="on")?1:0;
 
 	m_pMain->SetRFXCOMHardwaremodes(atoi(idx.c_str()),Response.ICMND.msg1,Response.ICMND.msg2,Response.ICMND.msg3,Response.ICMND.msg4,Response.ICMND.msg5);
 
@@ -4356,8 +4357,8 @@ char * CWebServer::GetJSonPage()
 			if (scriptname.find("..")!=std::string::npos)
 				goto exitjson;
 #ifdef WIN32
-			scriptname = szStartupFolder + "scripts\\" + scriptname + " " + szStartupFolder;
-			ShellExecute(NULL,"open",scriptname.c_str(),NULL,NULL,SW_SHOWNORMAL);
+			scriptname = szStartupFolder + "scripts\\" + scriptname;
+			ShellExecute(NULL,"open",scriptname.c_str(),szStartupFolder.c_str(),NULL,SW_SHOWNORMAL);
 #else
 			scriptname = szStartupFolder + "scripts/" + scriptname + " " + szStartupFolder;
 			system(scriptname.c_str());
