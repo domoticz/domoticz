@@ -49,6 +49,8 @@ public:
 
 	bool GetSunSettings();
 
+	bool EmailCameraSnapshot(const std::string CamIdx, const std::string subject);
+
 	bool AddHardwareFromParams(
 				int ID,
 				std::string Name,

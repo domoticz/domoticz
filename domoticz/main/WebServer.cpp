@@ -4325,6 +4325,21 @@ std::string CWebServer::GetJSonPage()
 				}
 			}
 		}
+		else if (cparam=="emailcamerasnapshot")
+		{
+			std::string camidx=m_pWebEm->FindValue("camidx");
+			std::string subject=m_pWebEm->FindValue("subject");
+			if (
+				(camidx=="")||
+				(subject=="")
+				)
+				goto exitjson;
+			bool bRet=m_pMain->EmailCameraSnapshot(camidx,subject);
+			if (!bRet)
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="Email Camera Snapshot";
+		}
 		else if (cparam=="udevice")
 		{
 			std::string hid=m_pWebEm->FindValue("hid");
