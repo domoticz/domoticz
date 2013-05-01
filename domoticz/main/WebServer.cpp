@@ -4383,7 +4383,7 @@ std::string CWebServer::GetJSonPage()
 #endif
 			if (!file_exist(scriptname.c_str()))
 				goto exitjson;
-			std::string script_params=m_pWebEm->FindValue("params");
+			std::string script_params=m_pWebEm->FindValue("scriptparams");
 			std::string strparm=szStartupFolder;
 			if (script_params!="")
 				strparm+=" " + script_params;
