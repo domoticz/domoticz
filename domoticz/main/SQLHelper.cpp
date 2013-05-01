@@ -985,6 +985,7 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 						while (itt!=m_background_task_queue.end())
 						{
 							if (
+								(itt->_ItemType==TITEM_SWITCHCMD)&&
 								(itt->_idx==ulID)&&
 								(itt->_HardwareID==HardwareID)
 								)
