@@ -519,48 +519,63 @@ bool CSQLHelper::StartThread()
 
 void CSQLHelper::Do_Work()
 {
+	std::vector<_tTaskItem> _items2do;
+
 	while (!m_stoprequested)
 	{
 		//sleep 1 second
 		boost::this_thread::sleep(boost::posix_time::seconds(1));
-		if (m_background_task_queue.size()<1)
-			continue;
-		boost::lock_guard<boost::mutex> l(m_background_task_mutex);
 
-		std::vector<_tTaskItem>::iterator itt=m_background_task_queue.begin();
-		while (itt!=m_background_task_queue.end())
+		if (m_background_task_queue.size()>0)
 		{
-			itt->_DelayTime--;
-			if (itt->_DelayTime<=0)
+			_items2do.clear();
+			boost::lock_guard<boost::mutex> l(m_background_task_mutex);
+
+			std::vector<_tTaskItem>::iterator itt=m_background_task_queue.begin();
+			while (itt!=m_background_task_queue.end())
 			{
-				if (itt->_ItemType == TITEM_SWITCHCMD)
+				itt->_DelayTime--;
+				if (itt->_DelayTime<=0)
 				{
-					if (itt->_switchtype==STYPE_PushOn)
-					{
-						if (m_pMain)
-							m_pMain->SwitchLight(itt->_idx,"Off",0);
-					}
-					else
-					{
-						std::string devname="";
-						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname);
-					}
+					_items2do.push_back(*itt);
+					itt=m_background_task_queue.erase(itt);
 				}
-				else if (itt->_ItemType == TITEM_EXECUTE_SCRIPT)
-				{
-					//start script
-#ifdef WIN32
-					ShellExecute(NULL,"open",itt->_ID.c_str(),itt->_sValue.c_str(),NULL,SW_SHOWNORMAL);
-#else
-					std::string lscript=itt->_ID + " " + itt->_sValue;
-					system(lscript.c_str());
-#endif
-				}
-				itt=m_background_task_queue.erase(itt);
+				else
+					itt++;
 			}
-			else
-				itt++;
 		}
+		if (_items2do.size()<1)
+			continue;
+
+		std::vector<_tTaskItem>::iterator itt=_items2do.begin();
+		while (itt!=_items2do.end())
+		{
+			if (itt->_ItemType == TITEM_SWITCHCMD)
+			{
+				if (itt->_switchtype==STYPE_PushOn)
+				{
+					if (m_pMain)
+						m_pMain->SwitchLight(itt->_idx,"Off",0);
+				}
+				else
+				{
+					std::string devname="";
+					UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname);
+				}
+			}
+			else if (itt->_ItemType == TITEM_EXECUTE_SCRIPT)
+			{
+				//start script
+#ifdef WIN32
+				ShellExecute(NULL,"open",itt->_ID.c_str(),itt->_sValue.c_str(),NULL,SW_SHOWNORMAL);
+#else
+				std::string lscript=itt->_ID + " " + itt->_sValue;
+				system(lscript.c_str());
+#endif
+			}
+			itt++;
+		}
+		_items2do.clear();
 	}
 }
 

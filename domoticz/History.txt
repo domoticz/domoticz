@@ -5,6 +5,7 @@ Version 1.0.xxx (April xxth 2013)
 - Fixed: Push On delayed Off was deleted from queue, and was being send
 - Implemented: Latest RFXCOM SDK (#66)
 - Implemented: when a light/switch is pressed an optional script can be started (see scripts/readme.txt)
+- Fixed: background scripts now outside of mutex (could cause a lock)
 
 Version 1.0.484 (April 28th 2013)
 - Implemented: Raspberry Pi, updating via the web browser (Settings Tab)
