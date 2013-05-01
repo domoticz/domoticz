@@ -158,6 +158,34 @@
 			</tr>
 			</table>
 			To get a free account/API key click <a class="norm-link" href="http://www.notifymyandroid.com/" target="_blank">Here</a><br>
+			<br>
+			<h2>Email (SMTP):</h2>
+			<table class="display" id="emailtable" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="right" style="width:60px"><label>From: </label></td>
+				<td><input type="input" id="EmailFrom" name="EmailFrom" style="width: 180px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			<tr>
+				<td align="right" style="width:60px"><label>To: </label></td>
+				<td><input type="input" id="EmailTo" name="EmailTo" style="width: 180px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			<tr>
+				<td align="right" style="width:60px"><label>Server: </label></td>
+				<td><input type="input" id="EmailServer" name="EmailServer" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			<tr>
+				<td align="right" style="width:60px"><label>Port: </label></td>
+				<td><input type="input" id="EmailPort" name="EmailPort" value="25" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			<tr>
+				<td align="right" style="width:60px"><label>Username: </label></td>
+				<td><input type="input" id="EmailUsername" name="EmailUsername" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			<tr>
+				<td align="right" style="width:60px"><label>Password: </label></td>
+				<td><input type="password" id="EmailPassword" name="EmailPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			</table>
 		</section>
 
 		<!-- Meter Settings
@@ -354,6 +382,24 @@ function ShowSettings()
       if (typeof data.UseAutoUpdate != 'undefined') {
         $("#autoupdatetable #checkforupdates").prop('checked',data.UseAutoUpdate==1);
       }
+      if (typeof data.EmailFrom!= 'undefined') {
+        $("#emailtable #EmailFrom").val(data.EmailFrom);
+      }
+      if (typeof data.EmailTo!= 'undefined') {
+        $("#emailtable #EmailTo").val(data.EmailTo);
+      }
+      if (typeof data.EmailServer!= 'undefined') {
+        $("#emailtable #EmailServer").val(data.EmailServer);
+      }
+      if (typeof data.EmailPort!= 'undefined') {
+        $("#emailtable #EmailPort").val(data.EmailPort);
+      }
+      if (typeof data.EmailUsername!= 'undefined') {
+        $("#emailtable #EmailUsername").val(data.EmailUsername);
+      }
+      if (typeof data.EmailPassword!= 'undefined') {
+        $("#emailtable #EmailPassword").val(data.EmailPassword);
+      }
      }
   });
 
@@ -371,6 +417,30 @@ function StoreSettings(formname)
     ShowNotify('Invalid Location Settings...', 2000, true);
     return;
   }
+  
+  //Check email settings
+  var EmailServer=$("#emailtable #EmailServer").val();
+  if (EmailServer!="")
+  {
+	var EmailPort=$("#emailtable #EmailPort").val();
+	var EmailFrom=$("#emailtable #EmailFrom").val();
+	var EmailTo=$("#emailtable #EmailTo").val();
+	var EmailUsername=$("#emailtable #EmailUsername").val();
+	var EmailPassword=$("#emailtable #EmailPassword").val();
+	if (EmailPort=="") {
+		ShowNotify('Invalid Email Port Settings...', 2000, true);
+		return;
+	}
+	if ((EmailFrom=="")||(EmailTo=="")) {
+		ShowNotify('Invalid Email From/To Settings...', 2000, true);
+		return;
+	}
+	if ((EmailUsername!="")&&(EmailPassword=="")) {
+		ShowNotify('Please enter an Email Password...', 2000, true);
+		return;
+	}
+  }
+  
   $.post("storesettings.webem", $("#settings").serialize(), function(data) {
    SwitchLayout('Dashboard');
   });

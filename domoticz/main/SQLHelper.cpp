@@ -11,6 +11,9 @@
 #include "../sqlite/sqlite3.h"
 #include "../hardware/hardwaretypes.h"
 #include "../httpclient/mynetwork.h"
+#include "../jwsmtp/mailer.h"
+#include "../jwsmtp/base64_b.h"
+#include "../webserver/Base64.h"
 
 #define DB_VERSION 8
 
@@ -1089,6 +1092,39 @@ bool CSQLHelper::SendNotification(const std::string EventID, const std::string M
 				r->dispose();
 			}
 			_log.Log(LOG_NORM,"Notification send (NMA)");
+		}
+	}
+	//check if Email enabled
+	if (GetPreferencesVar("EmailServer",nValue,sValue))
+	{
+		if (sValue!="")
+		{
+			std::string EmailFrom;
+			std::string EmailTo;
+			std::string EmailServer=sValue;
+			int EmailPort=25;
+			std::string EmailUsername;
+			std::string EmailPassword;
+			GetPreferencesVar("EmailFrom",nValue,EmailFrom);
+			GetPreferencesVar("EmailTo",nValue,EmailTo);
+			GetPreferencesVar("EmailPort",EmailPort,sValue);
+			GetPreferencesVar("EmailUsername",nValue,EmailUsername);
+			GetPreferencesVar("EmailPassword",nValue,EmailPassword);
+
+			jwsmtp::mailer mymailer;
+			mymailer.setsender(CURLEncode::URLDecode(EmailFrom.c_str()));
+			mymailer.setserver(CURLEncode::URLDecode(EmailServer.c_str()));
+			if (EmailUsername.size()>0)
+			{
+				mymailer.username(base64_decode(EmailUsername));
+				mymailer.password(base64_decode(EmailPassword));
+			}
+			mymailer.addrecipient(CURLEncode::URLDecode(EmailTo.c_str()));
+			mymailer.setsubject(CURLEncode::URLDecode(Message));
+			mymailer.setmessage(CURLEncode::URLDecode(Message));
+			mymailer.send();
+			bool bOK=(mymailer.response().substr(0,3) == "250");
+			_log.Log(LOG_NORM,"Notification send (Email)");
 		}
 	}
 	return true;

@@ -444,6 +444,19 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("CostGas",int(CostGas*10000.0f));
 	m_pMain->m_sql.UpdatePreferencesVar("CostWater",int(CostWater*10000.0f));
 
+	m_pMain->m_sql.UpdatePreferencesVar("EmailFrom",CURLEncode::URLDecode(m_pWebEm->FindValue("EmailFrom")).c_str());
+	m_pMain->m_sql.UpdatePreferencesVar("EmailTo",CURLEncode::URLDecode(m_pWebEm->FindValue("EmailTo")).c_str());
+	m_pMain->m_sql.UpdatePreferencesVar("EmailServer",m_pWebEm->FindValue("EmailServer").c_str());
+	m_pMain->m_sql.UpdatePreferencesVar("EmailPort",atoi(m_pWebEm->FindValue("EmailPort").c_str()));
+
+	std::string EmailUsername=CURLEncode::URLDecode(m_pWebEm->FindValue("EmailUsername"));
+	std::string EmailPassword=CURLEncode::URLDecode(m_pWebEm->FindValue("EmailPassword"));
+	EmailUsername=base64_encode((const unsigned char*)EmailUsername.c_str(),EmailUsername.size());
+	EmailPassword=base64_encode((const unsigned char*)EmailPassword.c_str(),EmailPassword.size());
+
+	m_pMain->m_sql.UpdatePreferencesVar("EmailUsername",EmailUsername.c_str());
+	m_pMain->m_sql.UpdatePreferencesVar("EmailPassword",EmailPassword.c_str());
+
 	return (char*)m_retstr.c_str();
 }
 
@@ -6431,6 +6444,30 @@ std::string CWebServer::GetJSonPage()
 				{
 					sprintf(szTmp,"%.4f",(float)(nValue)/10000.0f);
 					root["CostWater"]=szTmp;
+				}
+				else if (Key=="EmailFrom")
+				{
+					root["EmailFrom"]=sValue;
+				}
+				else if (Key=="EmailTo")
+				{
+					root["EmailTo"]=sValue;
+				}
+				else if (Key=="EmailServer")
+				{
+					root["EmailServer"]=sValue;
+				}
+				else if (Key=="EmailPort")
+				{
+					root["EmailPort"]=nValue;
+				}
+				else if (Key=="EmailUsername")
+				{
+					root["EmailUsername"]=base64_decode(sValue);
+				}
+				else if (Key=="EmailPassword")
+				{
+					root["EmailPassword"]=base64_decode(sValue);
 				}
 			}
 		}

@@ -9,6 +9,7 @@ Version 1.0.xxx (April xxth 2013)
 - Changed: Normal script calls should now use the 'params' option for parameters
 - Fixed: Scene 'Learn' code option can now be used with already known switches 
 - Fixed: webgui update auto restart (caused by script changes)
+- Implemented: Email Notifications
 
 Version 1.0.484 (April 28th 2013)
 - Implemented: Raspberry Pi, updating via the web browser (Settings Tab)
