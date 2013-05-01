@@ -4383,8 +4383,12 @@ std::string CWebServer::GetJSonPage()
 #endif
 			if (!file_exist(scriptname.c_str()))
 				goto exitjson;
+			std::string script_params=m_pWebEm->FindValue("params");
+			std::string strparm=szStartupFolder;
+			if (script_params!="")
+				strparm+=" " + script_params;
 			//add script to background worker
-			_tTaskItem tItem(1,scriptname,szStartupFolder);
+			_tTaskItem tItem(1,scriptname,strparm);
 			m_pMain->m_sql.AddTaskItem(tItem);
 			root["status"]="OK";
 			root["title"]="ExecuteScript";
