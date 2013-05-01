@@ -978,7 +978,24 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 					if (bAdd2DelayQueue==true)
 					{
 						boost::lock_guard<boost::mutex> l(m_background_task_mutex);
-						m_background_task_queue.push_back(_tTaskItem(AddjValue,ulID,HardwareID,ID,unit,devType,subType,switchtype,signallevel,batterylevel,cmd,sValue));
+						_tTaskItem tItem(AddjValue,ulID,HardwareID,ID,unit,devType,subType,switchtype,signallevel,batterylevel,cmd,sValue);
+						//Remove all instances with this device from the queue first
+						//otherwise command will be send twice, and first one will be to soon as it is currently counting
+						std::vector<_tTaskItem>::iterator itt=m_background_task_queue.begin();
+						while (itt!=m_background_task_queue.end())
+						{
+							if (
+								(itt->_idx==ulID)&&
+								(itt->_HardwareID==HardwareID)
+								)
+							{
+								itt=m_background_task_queue.erase(itt);
+							}
+							else
+								itt++;
+						}
+						//Finaly add it to the queue
+						m_background_task_queue.push_back(tItem);
 					}
 				}
 			}
