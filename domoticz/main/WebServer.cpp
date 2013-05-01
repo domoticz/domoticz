@@ -4386,7 +4386,12 @@ std::string CWebServer::GetJSonPage()
 			std::string script_params=m_pWebEm->FindValue("scriptparams");
 			std::string strparm=szStartupFolder;
 			if (script_params!="")
-				strparm+=" " + script_params;
+			{
+				if (strparm.size()>0)
+					strparm+=" " + script_params;
+				else
+					strparm=script_params;
+			}
 			//add script to background worker
 			_tTaskItem tItem(1,scriptname,strparm);
 			m_pMain->m_sql.AddTaskItem(tItem);
