@@ -31,6 +31,8 @@ struct mapping
   { "swf", "application/x-shockwave-flash" },
   { "manifest", "text/cache-manifest" },
   { "appcache", "text/cache-manifest" },
+  { "xls", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
+  { "m3u", "audio/mpegurl" },
   { 0, 0 } // Marks end of list.
 };
 

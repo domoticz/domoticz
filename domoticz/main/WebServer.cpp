@@ -171,6 +171,10 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
 		boost::bind(
 		&CWebServer::GetJSonPage,	// member function
 		this ) );			// instance of class
+	m_pWebEm->RegisterPageCode( "/camsnapshot.jpg", 
+		boost::bind( 
+		&CWebServer::GetCameraSnapshot,
+		this ) );
 
 	m_pWebEm->RegisterActionCode( "storesettings",boost::bind(&CWebServer::PostSettings,this));
 	m_pWebEm->RegisterActionCode( "setrfxcommode",boost::bind(&CWebServer::SetRFXCOMMode,this));
@@ -1749,7 +1753,23 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 	}
 }
 
-char * CWebServer::GetJSonPage()
+std::string CWebServer::GetCameraSnapshot()
+{
+	m_retstr="";
+	std::string idx=m_pWebEm->FindValue("idx");
+	std::vector<unsigned char> camimage;
+	if (idx=="")
+		goto exitproc;
+
+	if (!m_pMain->m_camscheduler.TakeSnapshot(idx, camimage))
+		goto exitproc;
+	m_retstr.insert( m_retstr.begin(), camimage.begin(), camimage.end() );
+	m_pWebEm->m_outputfilename="snapshot.jpg";
+exitproc:
+	return m_retstr;
+}
+
+std::string CWebServer::GetJSonPage()
 {
 	Json::Value root;
 	root["status"]="ERR";
@@ -1764,7 +1784,7 @@ char * CWebServer::GetJSonPage()
 	{
 		m_retstr=root.toStyledString();
 
-		return (char*)m_retstr.c_str();
+		return m_retstr.c_str();
 	}
 
 	std::string rtype=m_pWebEm->FindValue("type");
@@ -6392,7 +6412,7 @@ char * CWebServer::GetJSonPage()
 	} //(rtype=="settings")
 exitjson:
 	m_retstr=root.toStyledString();
-	return (char*)m_retstr.c_str();
+	return m_retstr.c_str();
 }
 
 

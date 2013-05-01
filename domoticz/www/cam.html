@@ -6,6 +6,7 @@
             <tr valign="middle">
                 <th width="70" align="left">Preview</th>
                 <th align="left">Name</th>
+                <th width="48" align="left"></th>
                 <th width="60" align="left">Enabled</th>
                 <th width="100" align="left">Address</th>
                 <th width="80" align="center">Port</th>
@@ -192,6 +193,11 @@ function Addcamera()
 	});		
 }
 
+function GetCameraSnapshot(idx)
+{
+	window.location = "camsnapshot.jpg?idx=" + idx;
+}
+
 function RefreshcameraTable()
 {
   $('#modal').show();
@@ -209,87 +215,89 @@ function RefreshcameraTable()
         
       if (typeof data.result != 'undefined') {
         $.each(data.result, function(i,item){
-       
-					var enabledstr="No";
-					if (item.Enabled=="true") {
-						enabledstr="Yes";
-					}
+			var enabledstr="No";
+			if (item.Enabled=="true") {
+				enabledstr="Yes";
+			}
 
-					var previewimg;
-					if (item.Enabled=="true") {
-						var imgsrc=GenerateCamImageURL(item.Address,item.Port,item.Username,item.Password,item.ImageURL);
-						previewimg='<img src="' + imgsrc + '" height="40"> ';
+			var previewimg;
+			if (item.Enabled=="true") {
+				var imgsrc=GenerateCamImageURL(item.Address,item.Port,item.Username,item.Password,item.ImageURL);
+				previewimg='<img src="' + imgsrc + '" height="40"> ';
+			}
+			else {
+				previewimg='<img src="" height="40"> ';
+			}
+			
+			var captureimg='<img  src="images/capture.png" title="Take Snapshot" height="32">';
+			captureurl="<a href=\"camsnapshot.jpg?idx=" + item.idx + "\">" + captureimg + "</a>";
+			
+			var addId = oTable.fnAddData( {
+				"DT_RowId": item.idx,
+				"Name": item.Name,
+				"Address": item.Address,
+				"Username": item.Username,
+				"Password": item.Password,
+				"VideoURL": item.VideoURL,
+				"ImageURL": item.ImageURL,
+				"Enabled": item.Enabled,
+				"IntPort": item.Port,
+				"0": previewimg,
+				"1": item.Name,
+				"2": captureurl,
+				"3": enabledstr,
+				"4": item.Address,
+				"5": item.Port,
+				"6": item.VideoURL,
+				"7": item.ImageURL
+			} );
+        });
+		/* Add a click handler to the rows - this could be used as a callback */
+		$("#cameratable tbody tr").click( function( e ) {
+			if ( $(this).hasClass('row_selected') ) {
+				$(this).removeClass('row_selected');
+				$('#updelclr #cameraupdate').attr("class", "btnstyle3-dis");
+				$('#updelclr #cameradelete').attr("class", "btnstyle3-dis");
+				$('#cameracontent #camfeed').attr("src", "");
+				$("#cameracontent #cameraparamstable #cameraname").val("");
+				$("#cameracontent #cameraparamstable #cameraaddress").val("");
+				$("#cameracontent #cameraparamstable #cameraport").val("");
+				$('#cameracontent #cameraparamstable #enabled').prop('checked',true);
+				$("#cameracontent #cameraparamstable #username").val("");
+				$("#cameracontent #cameraparamstable #password").val("");
+				$("#cameracontent #cameraparamstable #videourl").val("mjpeg.cgi");
+				$("#cameracontent #cameraparamstable #imageurl").val("image.jpg");
+			}
+			else {
+				oTable.$('tr.row_selected').removeClass('row_selected');
+				$(this).addClass('row_selected');
+				$('#updelclr #cameraupdate').attr("class", "btnstyle3");
+				$('#updelclr #cameradelete').attr("class", "btnstyle3");
+				var anSelected = fnGetSelected( oTable );
+				if ( anSelected.length !== 0 ) {
+					var data = oTable.fnGetData( anSelected[0] );
+					var idx= data["DT_RowId"];
+					$.myglobals.SelectedTimerIdx=idx;
+					$("#updelclr #cameraupdate").attr("href", "javascript:Updatecamera(" + idx + ")");
+					$("#updelclr #cameradelete").attr("href", "javascript:Deletecamera(" + idx + ")");
+					$("#cameracontent #cameraparamstable #cameraname").val(data["Name"]);
+					$("#cameracontent #cameraparamstable #cameraaddress").val(data["Address"]);
+					$("#cameracontent #cameraparamstable #cameraport").val(data["IntPort"]);
+					$('#cameracontent #cameraparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
+					$("#cameracontent #cameraparamstable #username").val(data["Username"]);
+					$("#cameracontent #cameraparamstable #password").val(data["Password"]);
+					$("#cameracontent #cameraparamstable #videourl").val(data["VideoURL"]);
+					$("#cameracontent #cameraparamstable #imageurl").val(data["ImageURL"]);
+					if (data["Enabled"]=="true") {
+						var feedsrc=GenerateCamFeedURL(data["Address"],data["IntPort"],data["Username"],data["Password"],data["VideoURL"]);
+						$('#cameracontent #camfeed').attr("src", feedsrc);
 					}
 					else {
-						previewimg='<img src="" height="40"> ';
+						$('#cameracontent #camfeed').attr("src", "");
 					}
-					
-          var addId = oTable.fnAddData( {
-								"DT_RowId": item.idx,
-								"Name": item.Name,
-								"Address": item.Address,
-								"Username": item.Username,
-								"Password": item.Password,
-								"VideoURL": item.VideoURL,
-								"ImageURL": item.ImageURL,
-								"Enabled": item.Enabled,
-								"IntPort": item.Port,
-				                "0": previewimg,
-				                "1": item.Name,
-				                "2": enabledstr,
-				               	"3": item.Address,
-				               	"4": item.Port,
-				               	"5": item.VideoURL,
-				               	"6": item.ImageURL
-							} );
-        });
-				/* Add a click handler to the rows - this could be used as a callback */
-				$("#cameratable tbody tr").click( function( e ) {
-							if ( $(this).hasClass('row_selected') ) {
-									$(this).removeClass('row_selected');
-									$('#updelclr #cameraupdate').attr("class", "btnstyle3-dis");
-									$('#updelclr #cameradelete').attr("class", "btnstyle3-dis");
-									$('#cameracontent #camfeed').attr("src", "");
-									$("#cameracontent #cameraparamstable #cameraname").val("");
-									$("#cameracontent #cameraparamstable #cameraaddress").val("");
-									$("#cameracontent #cameraparamstable #cameraport").val("");
-									$('#cameracontent #cameraparamstable #enabled').prop('checked',true);
-									$("#cameracontent #cameraparamstable #username").val("");
-									$("#cameracontent #cameraparamstable #password").val("");
-									$("#cameracontent #cameraparamstable #videourl").val("mjpeg.cgi");
-									$("#cameracontent #cameraparamstable #imageurl").val("image.jpg");
-							}
-							else {
-									oTable.$('tr.row_selected').removeClass('row_selected');
-									$(this).addClass('row_selected');
-									$('#updelclr #cameraupdate').attr("class", "btnstyle3");
-									$('#updelclr #cameradelete').attr("class", "btnstyle3");
-									var anSelected = fnGetSelected( oTable );
-									if ( anSelected.length !== 0 ) {
-										var data = oTable.fnGetData( anSelected[0] );
-										var idx= data["DT_RowId"];
-										$.myglobals.SelectedTimerIdx=idx;
-										$("#updelclr #cameraupdate").attr("href", "javascript:Updatecamera(" + idx + ")");
-										$("#updelclr #cameradelete").attr("href", "javascript:Deletecamera(" + idx + ")");
-										$("#cameracontent #cameraparamstable #cameraname").val(data["Name"]);
-										$("#cameracontent #cameraparamstable #cameraaddress").val(data["Address"]);
-										$("#cameracontent #cameraparamstable #cameraport").val(data["IntPort"]);
-										$('#cameracontent #cameraparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
-										$("#cameracontent #cameraparamstable #username").val(data["Username"]);
-										$("#cameracontent #cameraparamstable #password").val(data["Password"]);
-										$("#cameracontent #cameraparamstable #videourl").val(data["VideoURL"]);
-										$("#cameracontent #cameraparamstable #imageurl").val(data["ImageURL"]);
-										if (data["Enabled"]=="true") {
-											var feedsrc=GenerateCamFeedURL(data["Address"],data["IntPort"],data["Username"],data["Password"],data["VideoURL"]);
-											$('#cameracontent #camfeed').attr("src", feedsrc);
-										}
-										else {
-											$('#cameracontent #camfeed').attr("src", "");
-										}
-									}
-							}
-				}); 
-				
+				}
+			}
+		}); 
       }
      }
   });
@@ -302,31 +310,31 @@ function Showcameras()
 	var oTable;
 	
 	$('#modal').show();
-  var htmlcontent = "";
-  htmlcontent+=$('#cameramain').html();
-  $('#cameracontent').html(htmlcontent);
+	var htmlcontent = "";
+	htmlcontent+=$('#cameramain').html();
+	$('#cameracontent').html(htmlcontent);
 	$("#cameracontent #cameraparamstable #videourl").val("mjpeg.cgi");
 	$("#cameracontent #cameraparamstable #imageurl").val("image.jpg");
-  oTable = $('#cameratable').dataTable( {
-                  "sDom": '<"H"lfrC>t<"F"ip>',
-                  "oTableTools": {
-                    "sRowSelect": "single",
-                  },
-									"aoColumnDefs": [
-										{ "bSortable": false, "aTargets": [ 0 ] }
-									],
-                  "aaSorting": [[ 1, "asc" ]],
-                  "bSortClasses": false,
-                  "bProcessing": true,
-                  "bStateSave": true,
-                  "bJQueryUI": true,
-                  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
-                  "iDisplayLength" : 25,
-                  "sPaginationType": "full_numbers"
-                } );
+	oTable = $('#cameratable').dataTable( {
+		"sDom": '<"H"lfrC>t<"F"ip>',
+		"oTableTools": {
+		"sRowSelect": "single",
+		},
+		"aoColumnDefs": [
+			{ "bSortable": false, "aTargets": [ 0,2 ] }
+		],
+		"aaSorting": [[ 1, "asc" ]],
+		"bSortClasses": false,
+		"bProcessing": true,
+		"bStateSave": true,
+		"bJQueryUI": true,
+		"aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+		"iDisplayLength" : 25,
+		"sPaginationType": "full_numbers"
+		} );
 
-  $('#modal').hide();
-  RefreshcameraTable();
+	$('#modal').hide();
+	RefreshcameraTable();
  }
 
 

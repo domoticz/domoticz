@@ -4,6 +4,7 @@
 #include "mainworker.h"
 #include "localtime_r.h"
 #include "Logger.h"
+#include "../httpclient/HTTPClient.h"
 
 #define CAMERA_POLL_INTERVAL 30
 
@@ -55,7 +56,7 @@ void CCamScheduler::ReloadCameras()
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 
-	szQuery << "SELECT ID, Name, Address, Port, Username, Password FROM Cameras WHERE (Enabled == 1) ORDER BY ID";
+	szQuery << "SELECT ID, Name, Address, Port, Username, Password, VideoURL, ImageURL FROM Cameras WHERE (Enabled == 1) ORDER BY ID";
 	result=m_pMain->m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -68,17 +69,17 @@ void CCamScheduler::ReloadCameras()
 			cameraDevice citem;
 
 			std::stringstream s_str( sd[0] );
-			s_str >> citem.DevID;
-            citem.Name = sd[1].c_str();
-            citem.Address = sd[2].c_str();
-			citem.Port= atoi(sd[3].c_str());
-		    citem.Username=sd[4].c_str();
-            citem.Password =sd[5].c_str();
+			s_str >> citem.ID;
+            citem.Name		= sd[1].c_str();
+            citem.Address	= sd[2].c_str();
+			citem.Port		= atoi(sd[3].c_str());
+		    citem.Username	= sd[4].c_str();
+            citem.Password	= sd[5].c_str();
+			citem.VideoURL	= sd[6].c_str();
+			citem.ImageURL	= sd[7].c_str();
             m_cameradevices.push_back(citem);
-            
 		}
 	}
-
 }
 
 void CCamScheduler::Do_Work()
@@ -109,3 +110,54 @@ void CCamScheduler::CheckCameras()
     //_log.Log(LOG_NORM,"Camera tick");
 
 }
+
+std::string CCamScheduler::GetCameraURL(cameraDevice *pCamera)
+{
+	std::stringstream s_str;
+	if (pCamera->Username!="")
+		s_str << "http://" << pCamera->Username << ":" << pCamera->Password << "@" << pCamera->Address << ":" << pCamera->Port;
+	else
+		s_str << "http://" << pCamera->Username << ":" << pCamera->Password << "@" << pCamera->Address << ":" << pCamera->Port;
+	return s_str.str();
+}
+
+cameraDevice* CCamScheduler::GetCamera(const std::string CamID)
+{
+	unsigned long long ulID;
+	std::stringstream s_str( CamID );
+	s_str >> ulID;
+	return GetCamera(ulID);
+}
+
+cameraDevice* CCamScheduler::GetCamera(const unsigned long long CamID)
+{
+	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::vector<cameraDevice>::iterator itt;
+	for (itt=m_cameradevices.begin(); itt!=m_cameradevices.end(); ++itt)
+	{
+		if (itt->ID==CamID)
+			return &(*itt);
+	}
+	return NULL;
+}
+
+bool CCamScheduler::TakeSnapshot(const std::string CamID, std::vector<unsigned char> &camimage)
+{
+	unsigned long long ulID;
+	std::stringstream s_str( CamID );
+	s_str >> ulID;
+	return TakeSnapshot(ulID,camimage);
+}
+
+bool CCamScheduler::TakeSnapshot(const unsigned long long CamID, std::vector<unsigned char> &camimage)
+{
+	cameraDevice *pCamera=GetCamera(CamID);
+	if (pCamera==NULL)
+		return false;
+
+	std::string szURL=GetCameraURL(pCamera);
+	szURL+="/" + pCamera->ImageURL;
+
+	return HTTPClient::GETBinary(szURL,camimage);
+}
+

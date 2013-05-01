@@ -7,12 +7,14 @@ class MainWorker;
 
 struct cameraDevice
 {
-	unsigned long long DevID;
+	unsigned long long ID;
 	std::string Name;
     std::string Address;
 	std::string Username;
 	std::string Password;
 	int Port;
+	std::string VideoURL;
+	std::string ImageURL;
 };
 
 class CCamScheduler
@@ -27,6 +29,10 @@ public:
     void CheckCameras();
 	std::vector<cameraDevice> GetCameraDevices();
 
+	bool TakeSnapshot(const unsigned long long CamID, std::vector<unsigned char> &camimage);
+	bool TakeSnapshot(const std::string CamID, std::vector<unsigned char> &camimage);
+	cameraDevice* GetCamera(const unsigned long long CamID);
+	cameraDevice* GetCamera(const std::string CamID);
 private:
 	MainWorker *m_pMain;
 	boost::mutex m_mutex;
@@ -38,6 +44,6 @@ private:
 	//our thread
 	void Do_Work();
 
-
+	std::string GetCameraURL(cameraDevice *pCamera);
 };
 

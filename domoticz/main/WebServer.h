@@ -26,7 +26,8 @@ public:
 	char * DisplayTimerTypesCombo();
 	char * DisplayHardwareTypesCombo();
 	char * DisplaySerialDevicesCombo();
-	char * GetJSonPage();
+	std::string GetJSonPage();
+	std::string GetCameraSnapshot();
 	char * PostSettings();
 	char * SetRFXCOMMode();
 	char * SetRego6XXType();

@@ -371,20 +371,35 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 
 	if (pfun!=myPages.end())
 	{
+		m_outputfilename="";
 		rep.status = reply::ok;
 		std::string retstr=pfun->second( );
 
 		rep.content.append(retstr.c_str(), retstr.size());
-		rep.headers.resize(4);
+
+		std::string strMimeType=mime_types::extension_to_type(extension);
+		int extraheaders=0;
+		if (m_outputfilename!="")
+		{
+			extraheaders=1;
+		}
+
+		rep.headers.resize(4+extraheaders);
 		rep.headers[0].name = "Content-Length";
 		rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
 		rep.headers[1].name = "Content-Type";
-		rep.headers[1].value = mime_types::extension_to_type(extension);
+		rep.headers[1].value = strMimeType;
 		rep.headers[1].value += ";charset=UTF-8"; //ISO-8859-1
 		rep.headers[2].name = "Cache-Control";
 		rep.headers[2].value = "no-cache";
 		rep.headers[3].name = "Pragma";
 		rep.headers[3].value = "no-cache";
+
+		if (m_outputfilename!="")
+		{
+			rep.headers[4].name = "Content-Disposition";
+			rep.headers[4].value = "attachment; filename=" + m_outputfilename;
+		}
 
 		return true;
 	}

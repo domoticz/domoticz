@@ -56,7 +56,7 @@ namespace http {
 		typedef boost::function< char*() > webem_include_function;
 		typedef boost::function< wchar_t*() > webem_include_function_w;
 		typedef boost::function< char*( cWebem* ) > webem_action_function;
-		typedef boost::function< char*() > webem_page_function;
+		typedef boost::function< std::string() > webem_page_function;
 		typedef boost::function< wchar_t*() > webem_page_function_w;
 
 
@@ -147,6 +147,7 @@ namespace http {
 			void SetZipPassword(std::string password);
 			std::string m_zippassword;
 			std::string m_actualuser;
+			std::string m_outputfilename;
 		private:
 			/// store map between include codes and application functions
 			std::map < std::string, webem_include_function > myIncludes;
