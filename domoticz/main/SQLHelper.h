@@ -197,6 +197,8 @@ public:
 
 	bool DoesSceneByNameExits(const std::string SceneName);
 
+	void AddTaskItem(const _tTaskItem tItem);
+
 	std::vector<std::vector<std::string> > query(const std::string szQuery);
 
 	std::string m_LastSwitchID;	//for learning command

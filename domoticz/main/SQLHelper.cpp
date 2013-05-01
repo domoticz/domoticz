@@ -3594,3 +3594,9 @@ void CSQLHelper::DeleteDataPoint(const char *ID, const char *Date)
 	sprintf(szTmp,"DELETE FROM MultiMeter_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date);
 	result=query(szTmp);
 }
+
+void CSQLHelper::AddTaskItem(const _tTaskItem tItem)
+{
+	boost::lock_guard<boost::mutex> l(m_background_task_mutex);
+	m_background_task_queue.push_back(tItem);
+}

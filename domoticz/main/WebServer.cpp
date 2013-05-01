@@ -4378,11 +4378,14 @@ std::string CWebServer::GetJSonPage()
 				goto exitjson;
 #ifdef WIN32
 			scriptname = szStartupFolder + "scripts\\" + scriptname;
-			ShellExecute(NULL,"open",scriptname.c_str(),szStartupFolder.c_str(),NULL,SW_SHOWNORMAL);
 #else
-			scriptname = szStartupFolder + "scripts/" + scriptname + " " + szStartupFolder;
-			system(scriptname.c_str());
+			scriptname = szStartupFolder + "scripts/" + scriptname;
 #endif
+			if (!file_exist(scriptname.c_str()))
+				goto exitjson;
+			//add script to background worker
+			_tTaskItem tItem(1,scriptname,szStartupFolder);
+			m_pMain->m_sql.AddTaskItem(tItem);
 			root["status"]="OK";
 			root["title"]="ExecuteScript";
 		}
