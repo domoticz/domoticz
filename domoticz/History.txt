@@ -7,6 +7,7 @@ Version 1.0.xxx (April xxth 2013)
 - Implemented: when a light/switch is pressed an optional script can be started (see scripts/readme.txt)
 - Fixed: background scripts now outside of mutex (could cause a lock)
 - Changed: Normal script calls should now use the 'params' option for parameters
+- Fixed: Scene 'Learn' code option can now be used with already known switches 
 
 Version 1.0.484 (April 28th 2013)
 - Implemented: Raspberry Pi, updating via the web browser (Settings Tab)

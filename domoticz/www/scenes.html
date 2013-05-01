@@ -215,7 +215,7 @@ function LearnCode()
     HideNotify();
     
     setTimeout(function() {
-      if ((bHaveFoundDevice == true) && (bIsUsed == false))
+      if (bHaveFoundDevice == true)
       {
 				$("#scenecontent #removecode").removeClass("disabled");
 				$("#scenecontent #learncode").removeClass("btn-success");
@@ -233,10 +233,7 @@ function LearnCode()
 				});
       }
       else {
-        if (bIsUsed == true)
-          ShowNotify('Already used by:<br>"' + Name +'"', 3500, true);
-        else
-          ShowNotify('Timeout...<br>Please try again!', 2500, true);
+         ShowNotify('Timeout...<br>Please try again!', 2500, true);
       }
     }, 200);
 	}, 600);
