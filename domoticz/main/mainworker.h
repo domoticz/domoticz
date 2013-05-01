@@ -49,8 +49,6 @@ public:
 
 	bool GetSunSettings();
 
-	bool EmailCameraSnapshot(const std::string CamIdx, const std::string subject);
-
 	bool AddHardwareFromParams(
 				int ID,
 				std::string Name,
@@ -66,7 +64,7 @@ public:
 
 	CSQLHelper m_sql;
 	CScheduler m_scheduler;
-    CCamScheduler m_camscheduler;
+    CCamScheduler m_cameras;
 	bool m_bIgnoreUsernamePassword;
 
 	void GetDomoticzUpdate(const std::string UpdateURL);

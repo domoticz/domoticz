@@ -33,6 +33,9 @@ public:
 	bool TakeSnapshot(const std::string CamID, std::vector<unsigned char> &camimage);
 	cameraDevice* GetCamera(const unsigned long long CamID);
 	cameraDevice* GetCamera(const std::string CamID);
+
+	bool EmailCameraSnapshot(const std::string CamIdx, const std::string subject);
+
 private:
 	MainWorker *m_pMain;
 	boost::mutex m_mutex;

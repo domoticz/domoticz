@@ -1774,7 +1774,7 @@ std::string CWebServer::GetCameraSnapshot()
 	if (idx=="")
 		goto exitproc;
 
-	if (!m_pMain->m_camscheduler.TakeSnapshot(idx, camimage))
+	if (!m_pMain->m_cameras.TakeSnapshot(idx, camimage))
 		goto exitproc;
 	m_retstr.insert( m_retstr.begin(), camimage.begin(), camimage.end() );
 	m_pWebEm->m_outputfilename="snapshot.jpg";
@@ -4334,7 +4334,7 @@ std::string CWebServer::GetJSonPage()
 				(subject=="")
 				)
 				goto exitjson;
-			bool bRet=m_pMain->EmailCameraSnapshot(camidx,subject);
+			bool bRet=m_pMain->m_cameras.EmailCameraSnapshot(camidx,subject);
 			if (!bRet)
 				goto exitjson;
 			root["status"]="OK";
@@ -5581,7 +5581,7 @@ std::string CWebServer::GetJSonPage()
 					imageurl.c_str()
                     );
 			result=m_pMain->m_sql.query(szTmp);
-            m_pMain->m_camscheduler.ReloadCameras();
+            m_pMain->m_cameras.ReloadCameras();
 		}
 		else if (cparam=="updatecamera")
 		{
@@ -5622,7 +5622,7 @@ std::string CWebServer::GetJSonPage()
                     idx.c_str()
                     );
 			result=m_pMain->m_sql.query(szTmp);
-            m_pMain->m_camscheduler.ReloadCameras();
+            m_pMain->m_cameras.ReloadCameras();
         }
 		else if (cparam=="deletehardware")
 		{
@@ -5644,7 +5644,7 @@ std::string CWebServer::GetJSonPage()
 			root["title"]="DeleteCamera";
             
 			m_pMain->m_sql.DeleteCamera(idx);
-            m_pMain->m_camscheduler.ReloadCameras();
+            m_pMain->m_cameras.ReloadCameras();
 		}
 		else if (cparam=="addtimer")
 		{
