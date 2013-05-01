@@ -31,6 +31,7 @@ enum _eTaskItemType
 {
 	TITEM_SWITCHCMD=0,
 	TITEM_EXECUTE_SCRIPT,
+	TITEM_EMAIL_CAMERA_SNAPSHOT,
 };
 
 struct _tTaskItem
@@ -48,6 +49,11 @@ struct _tTaskItem
 	int _switchtype;
 	int _nValue;
 	std::string _sValue;
+
+	_tTaskItem()
+	{
+
+	}
 
 	_tTaskItem(const unsigned char DelayTime, const unsigned long long idx, const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int switchtype, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue)
 	{
@@ -71,6 +77,15 @@ struct _tTaskItem
 		_DelayTime=DelayTime;
 		_ID=ScriptPath;
 		_sValue=ScriptParams;
+	}
+	static _tTaskItem EmailCameraSnapshot(const unsigned char DelayTime, const std::string CamIdx, const std::string Subject)
+	{
+		_tTaskItem tItem;
+		tItem._ItemType=TITEM_EMAIL_CAMERA_SNAPSHOT;
+		tItem._DelayTime=DelayTime;
+		tItem._ID=CamIdx;
+		tItem._sValue=Subject;
+		return tItem;
 	}
 };
 

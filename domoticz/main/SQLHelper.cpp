@@ -576,6 +576,11 @@ void CSQLHelper::Do_Work()
 				system(lscript.c_str());
 #endif
 			}
+			else if (itt->_ItemType == TITEM_EMAIL_CAMERA_SNAPSHOT)
+			{
+				m_pMain->m_cameras.EmailCameraSnapshot(itt->_ID,itt->_sValue);
+			}
+
 			itt++;
 		}
 		_items2do.clear();

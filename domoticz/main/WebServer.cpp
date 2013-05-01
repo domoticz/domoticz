@@ -4334,9 +4334,8 @@ std::string CWebServer::GetJSonPage()
 				(subject=="")
 				)
 				goto exitjson;
-			bool bRet=m_pMain->m_cameras.EmailCameraSnapshot(camidx,subject);
-			if (!bRet)
-				goto exitjson;
+			//Add to queue
+			m_pMain->m_sql.AddTaskItem(_tTaskItem::EmailCameraSnapshot(1,camidx,subject));
 			root["status"]="OK";
 			root["title"]="Email Camera Snapshot";
 		}
@@ -5624,17 +5623,6 @@ std::string CWebServer::GetJSonPage()
 			result=m_pMain->m_sql.query(szTmp);
             m_pMain->m_cameras.ReloadCameras();
         }
-		else if (cparam=="deletehardware")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="DeleteHardware";
-
-			m_pMain->m_sql.DeleteHardware(idx);
-			m_pMain->RemoveDomoticzHardware(atoi(idx.c_str()));
-		}
 		else if (cparam=="deletecamera")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
@@ -5645,6 +5633,17 @@ std::string CWebServer::GetJSonPage()
             
 			m_pMain->m_sql.DeleteCamera(idx);
             m_pMain->m_cameras.ReloadCameras();
+		}
+		else if (cparam=="deletehardware")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="DeleteHardware";
+
+			m_pMain->m_sql.DeleteHardware(idx);
+			m_pMain->RemoveDomoticzHardware(atoi(idx.c_str()));
 		}
 		else if (cparam=="addtimer")
 		{
