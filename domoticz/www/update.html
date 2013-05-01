@@ -40,7 +40,7 @@ function progressupdatesystem() {
 
 function SendUpdateCommand() {
 	$.ajax({
-		 url: "json.htm?type=command&param=execute_script&scriptname=update_domoticz",
+		 url: "json.htm?type=command&param=execute_script&scriptname=update_domoticz&direct=true",
 		 async: true, 
 		 timeout: 20000,
 		 dataType: 'json',

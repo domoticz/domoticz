@@ -4392,9 +4392,22 @@ std::string CWebServer::GetJSonPage()
 				else
 					strparm=script_params;
 			}
-			//add script to background worker
-			_tTaskItem tItem(1,scriptname,strparm);
-			m_pMain->m_sql.AddTaskItem(tItem);
+			std::string sdirect=m_pWebEm->FindValue("direct");
+			if (sdirect=="true")
+			{
+#ifdef WIN32
+				ShellExecute(NULL,"open",scriptname.c_str(),strparm.c_str(),NULL,SW_SHOWNORMAL);
+#else
+				std::string lscript=scriptname + " " + strparm;
+				system(lscript.c_str());
+#endif
+			}
+			else
+			{
+				//add script to background worker
+				_tTaskItem tItem(1,scriptname,strparm);
+				m_pMain->m_sql.AddTaskItem(tItem);
+			}
 			root["status"]="OK";
 			root["title"]="ExecuteScript";
 		}
