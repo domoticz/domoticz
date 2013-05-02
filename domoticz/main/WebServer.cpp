@@ -12,6 +12,7 @@
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
 #include "../webserver/Base64.h"
+#include "../smtpclient/SMTPClient.h"
 #include "Logger.h"
 #ifndef WIN32
 	#include <sys/utsname.h>
@@ -4786,13 +4787,14 @@ std::string CWebServer::GetJSonPage()
 			root["title"]="GetLightSwitchesScenes";
 			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;
+			int ii=0;
+
 			//First List/Switch Devices
 			szQuery << "SELECT ID, Name, Type, Used FROM DeviceStatus ORDER BY Name";
 			result=m_pMain->m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
-				int ii=0;
 				for (itt=result.begin(); itt!=result.end(); ++itt)
 				{
 					std::vector<std::string> sd=*itt;
@@ -4813,20 +4815,10 @@ std::string CWebServer::GetJSonPage()
 						case pTypeLighting6:
 						case pTypeSecurity1:
 							{
-								std::vector<std::vector<std::string> > resultSD;
-								std::stringstream szQuerySD;
-
-								szQuerySD.clear();
-								szQuerySD.str("");
-								szQuerySD << "SELECT ID FROM CamerasActiveDevices WHERE (DevSceneType==0) AND (DevSceneRowID=='" << sd[0] << "')";
-								resultSD=m_pMain->m_sql.query(szQuerySD.str());
-								if (resultSD.size()<2)
-								{
-									root["result"][ii]["type"]=0;
-									root["result"][ii]["idx"]=ID;
-									root["result"][ii]["Name"]="[Light/Switch] " + Name;
-									ii++;
-								}
+								root["result"][ii]["type"]=0;
+								root["result"][ii]["idx"]=ID;
+								root["result"][ii]["Name"]="[Light/Switch] " + Name;
+								ii++;
 							}
 							break;
 						}
@@ -4842,7 +4834,6 @@ std::string CWebServer::GetJSonPage()
 			if (result.size()>0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
-				int ii=0;
 				for (itt=result.begin(); itt!=result.end(); ++itt)
 				{
 					std::vector<std::string> sd=*itt;
@@ -4850,19 +4841,10 @@ std::string CWebServer::GetJSonPage()
 					std::string ID=sd[0];
 					std::string Name=sd[1];
 
-					std::vector<std::vector<std::string> > resultSD;
-					std::stringstream szQuerySD;
-					szQuerySD.clear();
-					szQuerySD.str("");
-					szQuerySD << "SELECT ID FROM CamerasActiveDevices WHERE (DevSceneType==1) AND (DevSceneRowID=='" << sd[0] << "')";
-					resultSD=m_pMain->m_sql.query(szQuerySD.str());
-					if (resultSD.size()<2)
-					{
-						root["result"][ii]["type"]=1;
-						root["result"][ii]["idx"]=ID;
-						root["result"][ii]["Name"]="[Scene] " + Name;
-						ii++;
-					}
+					root["result"][ii]["type"]=1;
+					root["result"][ii]["idx"]=ID;
+					root["result"][ii]["Name"]="[Scene] " + Name;
+					ii++;
 				}
 			}//end light/switches
 		}
@@ -4993,6 +4975,42 @@ std::string CWebServer::GetJSonPage()
 			root["title"]="DeleteAllCameraActiveDeviced";
 			sprintf(szTmp,"DELETE FROM CamerasActiveDevices WHERE (CameraRowID == '%s')",idx.c_str());
 			result=m_pMain->m_sql.query(szTmp);
+		}
+		else if (cparam=="testemail")
+		{
+			std::string EmailFrom=m_pWebEm->FindValue("EmailFrom");
+			std::string EmailTo=m_pWebEm->FindValue("EmailTo");
+			std::string EmailServer=m_pWebEm->FindValue("EmailServer");
+			std::string EmailUsername=m_pWebEm->FindValue("EmailUsername");
+			std::string EmailPassword=m_pWebEm->FindValue("EmailPassword");
+			if (
+				(EmailFrom=="")||
+				(EmailTo=="")||
+				(EmailServer=="")||
+				(EmailUsername=="")||
+				(EmailPassword=="")
+				)
+				goto exitjson;
+			int EmailPort=25;
+			std::string szBody;
+			szBody=
+				"<html>\n"
+				"<body>\n"
+				"<b>If you received this, then your email settings worked!</b>\n"
+				"</body>\n"
+				"</html>\n";
+
+			bool bRet=SMTPClient::SendEmail(
+				CURLEncode::URLDecode(EmailFrom.c_str()),
+				CURLEncode::URLDecode(EmailTo.c_str()),
+				CURLEncode::URLDecode(EmailServer.c_str()),
+				EmailPort,
+				CURLEncode::URLDecode(EmailUsername),
+				CURLEncode::URLDecode(EmailPassword),
+				CURLEncode::URLDecode("Test email message from Domoticz!"),
+				szBody,
+				true
+				);
 		}
 		else if (cparam=="testswitch")
 		{

@@ -921,6 +921,34 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 
 			bool bIsLightSwitchOn=IsLightSwitchOn(lstatus);
 
+			//Check if we need to email a snapshot of a Camera
+			std::string emailserver;
+			int n2Value;
+			if (GetPreferencesVar("EmailServer",n2Value,emailserver))
+			{
+				if (emailserver!="")
+				{
+					sprintf(szTmp,
+						"SELECT CameraRowID, DevSceneDelay FROM CamerasActiveDevices WHERE (DevSceneType==0) AND (DevSceneRowID==%llu) AND (DevSceneWhen==%d)",
+						ulID,
+						(bIsLightSwitchOn==true)?0:1
+						);
+					result=query(szTmp);
+					if (result.size()>0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator ittCam;
+						for (ittCam=result.begin(); ittCam!=result.end(); ++ittCam)
+						{
+							std::vector<std::string> sd=*ittCam;
+							std::string camidx=sd[0];
+							int delay=atoi(sd[1].c_str());
+							std::string subject=Name + " Status: " + lstatus;
+							AddTaskItem(_tTaskItem::EmailCameraSnapshot(delay+1,camidx,subject));
+						}
+					}
+				}
+			}
+
 			//Execute possible script
 			std::string scriptname;
 #ifdef WIN32

@@ -12,6 +12,8 @@ Version 1.0.xxx (May xxth 2013)
 - Implemented: Email Notifications
 - Implemented: Email now via Curl library
 - Implemented: Experimental Light Log graph
+- Implemented: IP-Camera setup, and option to send email for light/switch/scene (email setup via application settings)
+- Implemented: Email setup test button
 
 Version 1.0.484 (April 28th 2013)
 - Implemented: Raspberry Pi, updating via the web browser (Settings Tab)

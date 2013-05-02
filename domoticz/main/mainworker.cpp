@@ -5930,12 +5930,52 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string swi
 	localtime_r(&now,&ltime);
 
 	//first set actual scene status
-	char szTmp[100];
+	char szTmp[300];
+	std::string Name="Unknown?";
+
+	//Get Scene Name
+	sprintf(szTmp, "SELECT Name FROM Scenes WHERE (ID == %llu)",
+		idx);
+	result=m_sql.query(szTmp);
+	if (result.size()>0)
+	{
+		Name=result[0][0];
+	}
+
 	sprintf(szTmp, "UPDATE Scenes SET nValue=%d, LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == %llu)",
 		nValue,
 		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 		idx);
 	m_sql.query(szTmp);
+
+	//Check if we need to email a snapshot of a Camera
+	std::string emailserver;
+	int n2Value;
+	if (m_sql.GetPreferencesVar("EmailServer",n2Value,emailserver))
+	{
+		if (emailserver!="")
+		{
+			sprintf(szTmp,
+				"SELECT CameraRowID, DevSceneDelay FROM CamerasActiveDevices WHERE (DevSceneType==1) AND (DevSceneRowID==%llu) AND (DevSceneWhen==%d)",
+				idx,
+				!nValue
+				);
+			result=m_sql.query(szTmp);
+			if (result.size()>0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator ittCam;
+				for (ittCam=result.begin(); ittCam!=result.end(); ++ittCam)
+				{
+					std::vector<std::string> sd=*ittCam;
+					std::string camidx=sd[0];
+					int delay=atoi(sd[1].c_str());
+					std::string subject=Name + " Status: " + switchcmd;
+					m_sql.AddTaskItem(_tTaskItem::EmailCameraSnapshot(delay+1,camidx,subject));
+				}
+			}
+		}
+	}
+
 
 	//now switch all attached devices
 	std::stringstream szQuery;

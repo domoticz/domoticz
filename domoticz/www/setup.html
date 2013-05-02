@@ -179,7 +179,7 @@
 			</tr>
 			<tr>
 				<td align="right" style="width:60px"><label>Password: </label></td>
-				<td><input type="password" id="EmailPassword" name="EmailPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				<td><input type="password" id="EmailPassword" name="EmailPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <a class="btnstyle3" href="javascript:TestEmailNotification()">Test</a></td>
 			</tr>
 			</table>
 		</section>
@@ -289,6 +289,50 @@ function TestNMANotification()
   $.get(url, function(data) {
   });  
   ShowNotify('Notification send!<br>Should arrive at your device soon...', 3000);
+}
+
+function TestEmailNotification()
+{
+	var EmailServer=$("#emailtable #EmailServer").val();
+	if (EmailServer=="") {
+		ShowNotify('Invalid Email Settings...', 2000, true);
+		return;
+	}
+	var EmailFrom=$("#emailtable #EmailFrom").val();
+	var EmailTo=$("#emailtable #EmailTo").val();
+	var EmailUsername=$("#emailtable #EmailUsername").val();
+	var EmailPassword=$("#emailtable #EmailPassword").val();
+	if ((EmailFrom=="")||(EmailTo=="")) {
+		ShowNotify('Invalid Email From/To Settings...', 2000, true);
+		return;
+	}
+	if ((EmailUsername!="")&&(EmailPassword=="")) {
+		ShowNotify('Please enter an Email Password...', 2000, true);
+		return;
+	}
+	$.ajax({
+		url: "json.htm?type=command&param=testemail"+
+			"&EmailFrom="+EmailFrom+
+			"&EmailTo="+EmailTo+
+			"&EmailServer="+EmailServer+
+			"&EmailUsername="+EmailUsername+
+			"&EmailPassword="+EmailPassword, 
+		async: false, 
+		dataType: 'json',
+		success: function(data) {
+			if (typeof data.result != 'undefined') {
+				$.each(data.result, function(i,item) {
+					$.LightsSwitchesScenes.push({
+						type: item.type,
+						idx: item.idx,
+						name: item.Name
+					});
+				});
+			}
+		}
+	});
+	
+	ShowNotify('Notification send!<br>Should arrive at in your inbox soon...', 3000);
 }
 
 function ShowSettings()
