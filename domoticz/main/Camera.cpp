@@ -171,6 +171,10 @@ bool CCamScheduler::EmailCameraSnapshot(const std::string CamIdx, const std::str
 	{
 		return false;//no email setup
 	}
+	if (sValue=="")
+	{
+		return false;//no email setup
+	}
 	std::vector<unsigned char> camimage;
 	if (CamIdx=="")
 		return false;
