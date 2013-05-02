@@ -135,25 +135,64 @@ function ResetSecurityStatus(idx,switchcmd, refreshfunction)
 function RefreshLightLogTable(idx)
 {
 	var mTable = $($.content + ' #lighttable');
-  var oTable = mTable.dataTable();
-  oTable.fnClearTable();
+	var oTable = mTable.dataTable();
+	oTable.fnClearTable();
   
-  $.ajax({
-     url: "json.htm?type=lightlog&idx=" + idx, 
-     async: false, 
-     dataType: 'json',
-     success: function(data) {
-      if (typeof data.result != 'undefined') {
-        $.each(data.result, function(i,item){
-          var addId = oTable.fnAddData([
-                      item.Date,
-                      item.Data
-                    ],false);
-        });
-        mTable.fnDraw();
-      }
-     }
-  });
+	$.ajax({
+		url: "json.htm?type=lightlog&idx=" + idx, 
+		async: false, 
+		dataType: 'json',
+		success: function(data) {
+			if (typeof data.result != 'undefined') {
+				var datatable = [];
+				var chart=$.LogChart.highcharts();
+				var ii=0;
+				$.each(data.result, function(i,item){
+					var addId = oTable.fnAddData([
+						  item.Date,
+						  item.Data
+						],false);
+					var level=-1;
+					if (item.Data.indexOf('Off') == 0) {
+						level=0;
+					}
+					else if (item.Data.indexOf('Set Level:') == 0) {
+						var lstr=item.Data.substr(11);
+						var idx=lstr.indexOf('%');
+						if (idx!=-1) {
+							lstr=lstr.substr(0,idx-1);
+							level=parseInt(lstr);
+						}
+					}
+					else {
+						var idx=item.Data.indexOf('Level: ');
+						if (idx!=-1)
+						{
+							var lstr=item.Data.substr(idx+7);
+							var idx=lstr.indexOf('%');
+							if (idx!=-1) {
+								lstr=lstr.substr(0,idx-1);
+								level=parseInt(lstr);
+								if (level>100) {
+									level=100;
+								}
+							}
+						}
+						else {
+							if ((item.Data.indexOf('On') == 0)||(item.Data.indexOf('Group On') == 0)) {
+								level=100;
+							}
+						}
+					}
+					if (level!=-1) {
+						datatable.unshift( [GetUTCFromStringSec(item.Date), level ] );
+					}
+				});
+				mTable.fnDraw();
+				chart.series[0].setData(datatable);
+			}
+		}
+	});
 }
 
 function ClearLightLog()
@@ -178,16 +217,79 @@ function ClearLightLog()
 
 function ShowLightLog(id,name,content,backfunction)
 {
-  clearInterval($.myglobals.refreshTimer);
-  $.content=content;
+	clearInterval($.myglobals.refreshTimer);
+	$.content=content;
 
-  $.devIdx=id;
+	$.devIdx=id;
 
-  $('#modal').show();
-  var htmlcontent = '';
-  htmlcontent='<p><h2>Name: ' + name + '</h2></p>\n';
-  htmlcontent+=$('#lightlog').html();
-  $($.content).html(GetBackbuttonHTMLTable(backfunction)+htmlcontent);
+	$('#modal').show();
+	var htmlcontent = '';
+	htmlcontent='<p><h2>Name: ' + name + '</h2></p>\n';
+	htmlcontent+=$('#lightlog').html();
+	$($.content).html(GetBackbuttonHTMLTable(backfunction)+htmlcontent);
+	$.LogChart = $($.content + ' #lightgraph');
+	$.LogChart.highcharts({
+		chart: {
+		  type: 'spline',
+		  zoomType: 'xy',
+		  marginRight: 10
+		},
+		credits: {
+		  enabled: true,
+		  href: "http://www.domoticz.com",
+		  text: "Domoticz.com"
+		},
+		title: {
+			text: null
+		},
+		xAxis: {
+			type: 'datetime'
+		},
+		yAxis: {
+			title: {
+				text: 'Percent (%)'
+			},
+			min: 0,
+			max: 100
+		},
+		tooltip: {
+			formatter: function() {
+					return ''+
+					Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M:%S', this.x) +': '+ this.y +' %';
+			}
+		},
+		plotOptions: {
+			spline: {
+				lineWidth: 3,
+				states: {
+					hover: {
+						lineWidth: 3
+					}
+				},
+				marker: {
+					enabled: false,
+					states: {
+						hover: {
+							enabled: true,
+							symbol: 'circle',
+							radius: 5,
+							lineWidth: 1
+						}
+					}
+				}
+			}
+		},
+		series: [{
+			showInLegend: false,
+			name: 'percent'
+		}]
+		,
+		navigation: {
+			menuItemStyle: {
+				fontSize: '10px'
+			}
+		}
+	});
   
   var oTable = $($.content + ' #lighttable').dataTable( {
                   "sDom": '<"H"lfrC>t<"F"ip>',
@@ -581,6 +683,18 @@ function GetUTCFromString(s)
       parseInt(s.substring(11, 13), 10),
       parseInt(s.substring(14, 16), 10),
       0
+    );
+}
+
+function GetUTCFromStringSec(s)
+{
+    return Date.UTC(
+      parseInt(s.substring(0, 4), 10),
+      parseInt(s.substring(5, 7), 10) - 1,
+      parseInt(s.substring(8, 10), 10),
+      parseInt(s.substring(11, 13), 10),
+      parseInt(s.substring(14, 16), 10),
+      parseInt(s.substring(17, 19), 10)
     );
 }
 

@@ -11,6 +11,7 @@ Version 1.0.xxx (May xxth 2013)
 - Fixed: webgui update auto restart (caused by script changes)
 - Implemented: Email Notifications
 - Implemented: Email now via Curl library
+- Implemented: Experimental Light Log graph
 
 Version 1.0.484 (April 28th 2013)
 - Implemented: Raspberry Pi, updating via the web browser (Settings Tab)
