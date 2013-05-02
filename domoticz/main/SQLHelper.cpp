@@ -232,6 +232,15 @@ const char *sqlCreateCameras =
 "[VideoURL] VARCHAR(100) DEFAULT (''), "
 "[ImageURL] VARCHAR(100) DEFAULT (''));";
 
+const char *sqlCreateCamerasActiveDevices =
+"CREATE TABLE IF NOT EXISTS [CamerasActiveDevices] ("
+"[ID] INTEGER PRIMARY KEY, "
+"[CameraRowID] INTEGER NOT NULL, "
+"[DevSceneType] INTEGER NOT NULL, "
+"[DevSceneRowID] INTEGER NOT NULL, "
+"[DevSceneWhen] INTEGER NOT NULL, "
+"[DevSceneDelay] INTEGER NOT NULL);";
+
 const char *sqlCreatePlanMappings =
 "CREATE TABLE IF NOT EXISTS [DeviceToPlansMap] ("
 "[ID] INTEGER PRIMARY KEY, "
@@ -364,6 +373,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateUsers);
 	query(sqlCreateLightSubDevices);
     query(sqlCreateCameras);
+	query(sqlCreateCamerasActiveDevices);
     query(sqlCreatePlanMappings);
     query(sqlCreatePlans);
 	query(sqlCreateScenes);

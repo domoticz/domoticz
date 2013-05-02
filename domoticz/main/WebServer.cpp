@@ -4780,6 +4780,220 @@ std::string CWebServer::GetJSonPage()
 				}
 			}
 		}
+		else if (cparam=="getlightswitchesscenes")
+		{
+			root["status"]="OK";
+			root["title"]="GetLightSwitchesScenes";
+			std::vector<std::vector<std::string> > result;
+			std::stringstream szQuery;
+			//First List/Switch Devices
+			szQuery << "SELECT ID, Name, Type, Used FROM DeviceStatus ORDER BY Name";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()>0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii=0;
+				for (itt=result.begin(); itt!=result.end(); ++itt)
+				{
+					std::vector<std::string> sd=*itt;
+
+					std::string ID=sd[0];
+					std::string Name=sd[1];
+					int Type=atoi(sd[2].c_str());
+					int used=atoi(sd[3].c_str());
+					if (used)
+					{
+						switch (Type)
+						{
+						case pTypeLighting1:
+						case pTypeLighting2:
+						case pTypeLighting3:
+						case pTypeLighting4:
+						case pTypeLighting5:
+						case pTypeLighting6:
+						case pTypeSecurity1:
+							{
+								std::vector<std::vector<std::string> > resultSD;
+								std::stringstream szQuerySD;
+
+								szQuerySD.clear();
+								szQuerySD.str("");
+								szQuerySD << "SELECT ID FROM CamerasActiveDevices WHERE (DevSceneType==0) AND (DevSceneRowID=='" << sd[0] << "')";
+								resultSD=m_pMain->m_sql.query(szQuerySD.str());
+								if (resultSD.size()<2)
+								{
+									root["result"][ii]["type"]=0;
+									root["result"][ii]["idx"]=ID;
+									root["result"][ii]["Name"]="[Light/Switch] " + Name;
+									ii++;
+								}
+							}
+							break;
+						}
+					}
+				}
+			}//end light/switches
+			
+			//Add Scenes
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT ID, Name FROM Scenes ORDER BY Name";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()>0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii=0;
+				for (itt=result.begin(); itt!=result.end(); ++itt)
+				{
+					std::vector<std::string> sd=*itt;
+
+					std::string ID=sd[0];
+					std::string Name=sd[1];
+
+					std::vector<std::vector<std::string> > resultSD;
+					std::stringstream szQuerySD;
+					szQuerySD.clear();
+					szQuerySD.str("");
+					szQuerySD << "SELECT ID FROM CamerasActiveDevices WHERE (DevSceneType==1) AND (DevSceneRowID=='" << sd[0] << "')";
+					resultSD=m_pMain->m_sql.query(szQuerySD.str());
+					if (resultSD.size()<2)
+					{
+						root["result"][ii]["type"]=1;
+						root["result"][ii]["idx"]=ID;
+						root["result"][ii]["Name"]="[Scene] " + Name;
+						ii++;
+					}
+				}
+			}//end light/switches
+		}
+		else if (cparam=="getcamactivedevices")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="GetCameraActiveDevices";
+			std::vector<std::vector<std::string> > result;
+			std::stringstream szQuery;
+			//First List/Switch Devices
+			szQuery << "SELECT ID, DevSceneType, DevSceneRowID, DevSceneWhen, DevSceneDelay FROM CamerasActiveDevices WHERE (CameraRowID=='" << idx << "') ORDER BY ID";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()>0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii=0;
+				for (itt=result.begin(); itt!=result.end(); ++itt)
+				{
+					std::vector<std::string> sd=*itt;
+
+					std::string ID=sd[0];
+					int DevSceneType=atoi(sd[1].c_str());
+					std::string DevSceneRowID=sd[2];
+					int DevSceneWhen=atoi(sd[3].c_str());
+					int DevSceneDelay=atoi(sd[4].c_str());
+
+					std::string Name="";
+					if (DevSceneType==0)
+					{
+						std::vector<std::vector<std::string> > result2;
+						std::stringstream szQuery2;
+						szQuery2 << "SELECT Name FROM DeviceStatus WHERE (ID=='" << DevSceneRowID << "')";
+						result2=m_pMain->m_sql.query(szQuery2.str());
+						if (result2.size()>0)
+						{
+							Name="[Light/Switches] " + result2[0][0];
+						}
+					}
+					else
+					{
+						std::vector<std::vector<std::string> > result2;
+						std::stringstream szQuery2;
+						szQuery2 << "SELECT Name FROM Scenes WHERE (ID=='" << DevSceneRowID << "')";
+						result2=m_pMain->m_sql.query(szQuery2.str());
+						if (result2.size()>0)
+						{
+							Name="[Scene] " + result2[0][0];
+						}
+					}
+					if (Name!="")
+					{
+						root["result"][ii]["idx"]=ID;
+						root["result"][ii]["type"]=DevSceneType;
+						root["result"][ii]["DevSceneRowID"]=DevSceneRowID;
+						root["result"][ii]["when"]=DevSceneWhen;
+						root["result"][ii]["delay"]=DevSceneDelay;
+						root["result"][ii]["Name"]=Name;
+						ii++;
+					}
+				}
+			}
+		}
+		else if (cparam=="addcamactivedevice")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			std::string activeidx=m_pWebEm->FindValue("activeidx");
+			std::string sactivetype=m_pWebEm->FindValue("activetype");
+			std::string sactivewhen=m_pWebEm->FindValue("activewhen");
+			std::string sactivedelay=m_pWebEm->FindValue("activedelay");
+
+			if (
+				(idx=="")||
+				(activeidx=="")||
+				(sactivetype=="")||
+				(sactivewhen=="")||
+				(sactivedelay=="")
+				)
+			{
+				goto exitjson;
+			}
+
+			int activetype=atoi(sactivetype.c_str());
+			int activewhen=atoi(sactivewhen.c_str());
+			int activedelay=atoi(sactivedelay.c_str());
+
+			//first check if it is not already a Active Device
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT ID FROM CamerasActiveDevices WHERE (CameraRowID=='" 
+					<< idx << "') AND (DevSceneType==" 
+					<< activetype << ") AND (DevSceneRowID=='" << activeidx << "')  AND (DevSceneWhen==" << sactivewhen << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()==0)
+			{
+				root["status"]="OK";
+				root["title"]="AddCameraActiveDevice";
+				//no it is not, add it
+				sprintf(szTmp,
+					"INSERT INTO CamerasActiveDevices (CameraRowID, DevSceneType, DevSceneRowID, DevSceneWhen, DevSceneDelay) VALUES ('%s',%d,'%s',%d,%d)",
+					idx.c_str(),
+					activetype,
+					activeidx.c_str(),
+					activewhen,
+					activedelay
+					);
+				result=m_pMain->m_sql.query(szTmp);
+			}
+		}
+		else if (cparam=="deleteamactivedevice")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="DeleteCameraActiveDevice";
+			sprintf(szTmp,"DELETE FROM CamerasActiveDevices WHERE (ID == '%s')",idx.c_str());
+			result=m_pMain->m_sql.query(szTmp);
+		}
+		else if (cparam=="deleteallactivecamdevices")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="DeleteAllCameraActiveDeviced";
+			sprintf(szTmp,"DELETE FROM CamerasActiveDevices WHERE (CameraRowID == '%s')",idx.c_str());
+			result=m_pMain->m_sql.query(szTmp);
+		}
 		else if (cparam=="testswitch")
 		{
 			std::string hwdid=m_pWebEm->FindValue("hwdid");

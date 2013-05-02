@@ -1,75 +1,204 @@
 <div id="cameracontent">
 </div>
+<div id="dialog-add-edit-camera" style="display:none;">
+	<table border="0" cellpadding="0" cellspacing="20" width="100%">
+		<tr>
+			<td style="width:320px">
+				<table class="display" id="cameraparamstable" border="0" cellpadding="0" cellspacing="20">
+					<tr>
+						<td align="right" style="width:80px"><label for="enabled">Enabled:</label></td>
+						<td><input type="checkbox" id="enabled" checked></td>
+					</tr>
+					<tr>
+						<td align="right" style="width:110px"><label for="cameraname">Name:</label></td>
+						<td><input type="text" id="cameraname" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+					</tr>
+					<tr>
+						<td align="right" style="width:110px"><label for="cameraaddress">IP Address:</label></td>
+						<td><input type="text" id="cameraaddress" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+					</tr>
+					<tr>
+						<td align="right" style="width:110px"><label for="cameraport">Port:</label></td>
+						<td><input type="text" id="cameraport" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="80"/></td>
+					</tr>
+					<tr>
+						<td align="right" style="width:110px"><label id="lblusername" for="username">Username:</label></td>
+						<td><input type="text" id="username" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+					</tr>
+					<tr>
+						<td align="right" style="width:110px"><label id="lblpassword" for="password">Password:</label></td>
+							<td><input type="password" id="password" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+					</tr>
+					<tr>
+						<td align="right" style="width:110px"><label for="videourl">VideoURL:</label></td>
+						<td><input type="text" id="videourl" style="width: 130px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="mjpeg.cgi"/></td>
+					</tr>
+					<tr>
+						<td align="right" style="width:110px"><label for="imageurl">ImageURL:</label></td>
+						<td><input type="text" id="imageurl" style="width: 130px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="image.jpg"/></td>
+					</tr>
+					<tr>
+						<td></td>
+						<td><a class="btnstyle3" onclick="TestCamFeed();">Test Connection</a></td>
+					</tr>
+				</table>
+			</td>
+			<td>
+				<img id="camfeed" src="images/camera_default.png" width="280" height="210" style="max-height: 220px; border: 1px solid #1E2832;">
+				<br>
+				When everything is filled in correctly, the feed should display above.<br>Does not work in IE10.
+			</td>
+		</tr>
+	</table>
+</div>
 <div id="cameramain" style="display:none;">
-    <table class="display" id="cameratable" border="0" cellpadding="0" cellspacing="0" width="100%">
-        <thead>
-            <tr valign="middle">
-                <th width="70" align="left">Preview</th>
-                <th align="left">Name</th>
-                <th width="48" align="left"></th>
-                <th width="60" align="left">Enabled</th>
-                <th width="100" align="left">Address</th>
-                <th width="80" align="center">Port</th>
-                <th width="80" align="center">VideoURL</th>
-                <th width="80" align="center">ImageURL</th>
-            </tr>
-        </thead>
-    </table>
-    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-			<tr>
-				<td>
-					<a class="btnstyle3-dis" id="cameraupdate" >Update</a>&nbsp;&nbsp;&nbsp;
-					<a class="btnstyle3-dis" id="cameradelete" >Delete</a>
-				</td>
+	<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+	<tr>
+		<td align="left"></td>
+		<td align="right"><a class="btnstyle" onclick="AddCameraDevice();">Add Camera</a></td>
+	</tr>
+	</table>
+	<br>
+	<table class="display" id="cameratable" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<thead>
+			<tr valign="middle">
+				<th width="70" align="left">Preview</th>
+				<th align="left">Name</th>
+				<th width="48" align="left"></th>
+				<th width="60" align="left">Enabled</th>
+				<th width="100" align="left">Address</th>
+				<th width="80" align="center">Port</th>
+				<th width="80" align="center">VideoURL</th>
+				<th width="80" align="center">ImageURL</th>
 			</tr>
-		</table>
-		<br>
-		<table class="display" id="cameraparamstable" border="0" cellpadding="0" cellspacing="20">
-			<tr>
-				<td align="right" style="width:80px"><label for="enabled">Enabled:</label></td>
-				<td><input type="checkbox" id="enabled" checked></td>
-			</tr>
-			<tr>
-				<td align="right" style="width:110px"><label for="cameraname">Name:</label></td>
-				<td><input type="text" id="cameraname" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-			</tr>
-			<tr>
-				<td align="right" style="width:110px"><label for="cameraaddress">IP Address:</label></td>
-				<td><input type="text" id="cameraaddress" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-			</tr>
-			<tr>
-				<td align="right" style="width:110px"><label for="cameraport">Port:</label></td>
-				<td><input type="text" id="cameraport" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-			</tr>
-			<tr>
-				<td align="right" style="width:110px"><label id="lblusername" for="username">Username:</label></td>
-				<td><input type="text" id="username" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
-			</tr>
-			<tr>
-				<td align="right" style="width:110px"><label id="lblpassword" for="password">Password:</label></td>
-					<td><input type="password" id="password" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
-			</tr>
-			<tr>
-				<td align="right" style="width:110px"><label for="videourl">VideoURL:</label></td>
-				<td><input type="text" id="videourl" style="width: 130px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-			</tr>
-			<tr>
-				<td align="right" style="width:110px"><label for="imageurl">ImageURL:</label></td>
-				<td><input type="text" id="imageurl" style="width: 130px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-			</tr>
-			</table>
-		<br>
-    <a class="btnstyle3" onclick="TestCamFeed();">Test Feed</a> <a class="btnstyle3" onclick="Addcamera();">Add</a>
-		<br>
-		<br>
-		<h2>Camera Feed:</h2>
-		<br>
-    <img id="camfeed" src="" style="max-width: 640px;" width="100%">
-    <br>
-    When everything is filled in correctly, the feed should display above.<br>Does not work in IE10.
+		</thead>
+	</table>
+	<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td>
+				<a class="btnstyle3-dis" id="cameraedit" >Edit</a>&nbsp;&nbsp;&nbsp;
+				<a class="btnstyle3-dis" id="cameradelete" >Delete</a>
+			</td>
+		</tr>
+	</table>
+	<br>
+	<h2>Active Devices/Scenes:</h2>
+	<br>
+	<table class="display" id="activetable" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<thead>
+				<tr valign="middle">
+					<th align="left">Name</th>
+					<th width="60" align="center">When</th>
+					<th width="60" align="center">Delay</th>
+				</tr>
+		</thead>
+	</table>
+    <table id="delclractive" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td>
+				<a class="btnstyle3-dis" id="activedevicedelete" >Delete</a>
+			</td>
+			<td align="right">
+				<a class="btnstyle3" onclick="ClearActiveDevices();">Clear</a>
+			</td>
+		</tr>
+	</table>
+	<br>
+	<table class="display" id="activeparamstable" border="0" cellpadding="0" cellspacing="20">
+		<tr>
+			<td>
+				<label for="name">Device/Scene: </label>
+				<select id="comboactivedevice" style="width:250px" class="combobox ui-corner-all">
+				</select>
+				<label for="name"> When: </label>
+				<select id="activewhen" style="width:80px" class="combobox ui-corner-all">
+					<option value="0">On</option>
+					<option value="1">Off</option>
+				</select>			
+				<label for="name"> Delay: </label>
+				<input type="text" id="delay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="0"/>
+				(seconds, 0=no delay)
+				<a class="btnstyle3" onclick="AddActiveDevice();">Add</a>
+			</td>
+		</tr>
+	</table>
 </div>
 
 <script type="text/javascript" charset="utf-8">
+
+function AddCameraDevice()
+{
+	$('#dialog-add-edit-camera #camfeed').attr("src", "images/camera_default.png");
+
+	$( "#dialog-add-edit-camera" ).dialog({
+		resizable: false,
+		width: 690,
+		height:480,
+		modal: true,
+		title: 'Add New Camera',
+		buttons: {
+			"Cancel": function() {
+				$( this ).dialog( "close" );
+			},
+			"Add": function() {
+				var csettings=GetCameraSettings();
+				if (typeof csettings == 'undefined') {
+					return;
+				}
+				$( this ).dialog( "close" );
+				Addcamera();
+			}
+		},
+		open: function() {
+			$(this).keypress(function(e) {
+				if (e.keyCode == $.ui.keyCode.ENTER) {
+					e.preventDefault();
+					$(this).parent().find("button:eq(0)").trigger("click");
+				}
+			});
+          },
+		close: function() {
+            $( this ).dialog( "close" );
+		}
+	});
+}
+
+function EditCamera(idx)
+{
+	$('#dialog-add-edit-camera #camfeed').attr("src", "images/camera_default.png");
+
+	$( "#dialog-add-edit-camera" ).dialog({
+		resizable: false,
+		width: 690,
+		height:480,
+		modal: true,
+		title: 'Edit Camera',
+		buttons: {
+			"Cancel": function() {
+				$( this ).dialog( "close" );
+			},
+			"Update": function() {
+				var csettings=GetCameraSettings();
+				if (typeof csettings == 'undefined') {
+					return;
+				}
+				$( this ).dialog( "close" );
+				Updatecamera(idx);
+			}
+		},
+		open: function() {
+			$(this).keypress(function(e) {
+				if (e.keyCode == $.ui.keyCode.ENTER) {
+					e.preventDefault();
+					$(this).parent().find("button:eq(0)").trigger("click");
+				}
+			});
+          },
+		close: function() {
+            $( this ).dialog( "close" );
+		}
+	});
+}
 
 function Deletecamera(idx)
 {
@@ -96,22 +225,22 @@ function GetCameraSettings()
 {
 	var csettings = {};
 
-	csettings.name=$("#cameracontent #cameraparamstable #cameraname").val();
+	csettings.name=$("#dialog-add-edit-camera #cameraparamstable #cameraname").val();
 	if (csettings.name=="")
 	{
 		ShowNotify('Please enter a Name!', 2500, true);
 		return;
 	}
 	
-	csettings.bEnabled=$('#cameracontent #cameraparamstable #enabled').is(":checked");
+	csettings.bEnabled=$('#dialog-add-edit-camera #cameraparamstable #enabled').is(":checked");
 	
-	csettings.address=$("#cameracontent #cameraparamstable #cameraaddress").val();
+	csettings.address=$("#dialog-add-edit-camera #cameraparamstable #cameraaddress").val();
 	if (csettings.address=="")
 	{
 		ShowNotify('Please enter an address!', 2500, true);
 		return;
 	}
-	csettings.port=$("#cameracontent #cameraparamstable #cameraport").val();
+	csettings.port=$("#dialog-add-edit-camera #cameraparamstable #cameraport").val();
 	if (csettings.port!="")
 	{
 		var intRegex = /^\d+$/;
@@ -123,11 +252,11 @@ function GetCameraSettings()
 	else {
 		csettings.port=80;
 	}
-	csettings.username=$('#cameracontent #cameraparamstable #username').val();
-	csettings.password=$('#cameracontent #cameraparamstable #password').val();
+	csettings.username=$('#dialog-add-edit-camera #cameraparamstable #username').val();
+	csettings.password=$('#dialog-add-edit-camera #cameraparamstable #password').val();
 	
-	csettings.videourl=$('#cameracontent #cameraparamstable #videourl').val();
-	csettings.imageurl=$('#cameracontent #cameraparamstable #imageurl').val();
+	csettings.videourl=$('#dialog-add-edit-camera #cameraparamstable #videourl').val();
+	csettings.imageurl=$('#dialog-add-edit-camera #cameraparamstable #imageurl').val();
 
 	if ((csettings.videourl=="")&&(csettings.imageurl!="")) {
 			ShowNotify('Please enter a Video/Image url!', 2500, true);
@@ -144,7 +273,7 @@ function TestCamFeed()
 		return;
 	}
 	var feedsrc=GenerateCamFeedURL(csettings.address,csettings.port,csettings.username,csettings.password,csettings.videourl);
-	$('#cameracontent #camfeed').attr("src", feedsrc);
+	$('#dialog-add-edit-camera #camfeed').attr("src", feedsrc);
 }
 
 function Updatecamera(idx)
@@ -200,21 +329,23 @@ function GetCameraSnapshot(idx)
 
 function RefreshcameraTable()
 {
-  $('#modal').show();
+	$('#modal').show();
 
-	$('#updelclr #cameraupdate').attr("class", "btnstyle3-dis");
+	$.devIdx=-1;
+
+	$('#updelclr #cameraedit').attr("class", "btnstyle3-dis");
 	$('#updelclr #cameradelete').attr("class", "btnstyle3-dis");
 
-  var oTable = $('#cameratable').dataTable();
-  oTable.fnClearTable();
-  $.ajax({
-     url: "json.htm?type=cameras", 
-     async: false, 
-     dataType: 'json',
-     success: function(data) {
-        
-      if (typeof data.result != 'undefined') {
-        $.each(data.result, function(i,item){
+	var oTable = $('#cameratable').dataTable();
+	oTable.fnClearTable();
+	$.ajax({
+	 url: "json.htm?type=cameras", 
+	 async: false, 
+	 dataType: 'json',
+	 success: function(data) {
+		
+	  if (typeof data.result != 'undefined') {
+		$.each(data.result, function(i,item){
 			var enabledstr="No";
 			if (item.Enabled=="true") {
 				enabledstr="Yes";
@@ -251,74 +382,93 @@ function RefreshcameraTable()
 				"6": item.VideoURL,
 				"7": item.ImageURL
 			} );
-        });
+		});
 		/* Add a click handler to the rows - this could be used as a callback */
 		$("#cameratable tbody tr").click( function( e ) {
+			$.devIdx=-1;
+
 			if ( $(this).hasClass('row_selected') ) {
 				$(this).removeClass('row_selected');
-				$('#updelclr #cameraupdate').attr("class", "btnstyle3-dis");
+				$('#updelclr #cameraedit').attr("class", "btnstyle3-dis");
 				$('#updelclr #cameradelete').attr("class", "btnstyle3-dis");
-				$('#cameracontent #camfeed').attr("src", "");
-				$("#cameracontent #cameraparamstable #cameraname").val("");
-				$("#cameracontent #cameraparamstable #cameraaddress").val("");
-				$("#cameracontent #cameraparamstable #cameraport").val("");
-				$('#cameracontent #cameraparamstable #enabled').prop('checked',true);
-				$("#cameracontent #cameraparamstable #username").val("");
-				$("#cameracontent #cameraparamstable #password").val("");
-				$("#cameracontent #cameraparamstable #videourl").val("mjpeg.cgi");
-				$("#cameracontent #cameraparamstable #imageurl").val("image.jpg");
+				$("#dialog-add-edit-camera #cameraparamstable #cameraname").val("");
+				$("#dialog-add-edit-camera #cameraparamstable #cameraaddress").val("");
+				$("#dialog-add-edit-camera #cameraparamstable #cameraport").val("");
+				$('#dialog-add-edit-camera #cameraparamstable #enabled').prop('checked',true);
+				$("#dialog-add-edit-camera #cameraparamstable #username").val("");
+				$("#dialog-add-edit-camera #cameraparamstable #password").val("");
+				$("#dialog-add-edit-camera #cameraparamstable #videourl").val("mjpeg.cgi");
+				$("#dialog-add-edit-camera #cameraparamstable #imageurl").val("image.jpg");
 			}
 			else {
 				oTable.$('tr.row_selected').removeClass('row_selected');
 				$(this).addClass('row_selected');
-				$('#updelclr #cameraupdate').attr("class", "btnstyle3");
+				$('#updelclr #cameraedit').attr("class", "btnstyle3");
 				$('#updelclr #cameradelete').attr("class", "btnstyle3");
 				var anSelected = fnGetSelected( oTable );
 				if ( anSelected.length !== 0 ) {
 					var data = oTable.fnGetData( anSelected[0] );
 					var idx= data["DT_RowId"];
-					$.myglobals.SelectedTimerIdx=idx;
-					$("#updelclr #cameraupdate").attr("href", "javascript:Updatecamera(" + idx + ")");
+					$.devIdx=idx;
+					$("#updelclr #cameraedit").attr("href", "javascript:EditCamera(" + idx + ")");
 					$("#updelclr #cameradelete").attr("href", "javascript:Deletecamera(" + idx + ")");
-					$("#cameracontent #cameraparamstable #cameraname").val(data["Name"]);
-					$("#cameracontent #cameraparamstable #cameraaddress").val(data["Address"]);
-					$("#cameracontent #cameraparamstable #cameraport").val(data["IntPort"]);
-					$('#cameracontent #cameraparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
-					$("#cameracontent #cameraparamstable #username").val(data["Username"]);
-					$("#cameracontent #cameraparamstable #password").val(data["Password"]);
-					$("#cameracontent #cameraparamstable #videourl").val(data["VideoURL"]);
-					$("#cameracontent #cameraparamstable #imageurl").val(data["ImageURL"]);
-					if (data["Enabled"]=="true") {
-						var feedsrc=GenerateCamFeedURL(data["Address"],data["IntPort"],data["Username"],data["Password"],data["VideoURL"]);
-						$('#cameracontent #camfeed').attr("src", feedsrc);
-					}
-					else {
-						$('#cameracontent #camfeed').attr("src", "");
-					}
+					$("#dialog-add-edit-camera #cameraparamstable #cameraname").val(data["Name"]);
+					$("#dialog-add-edit-camera #cameraparamstable #cameraaddress").val(data["Address"]);
+					$("#dialog-add-edit-camera #cameraparamstable #cameraport").val(data["IntPort"]);
+					$('#dialog-add-edit-camera #cameraparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
+					$("#dialog-add-edit-camera #cameraparamstable #username").val(data["Username"]);
+					$("#dialog-add-edit-camera #cameraparamstable #password").val(data["Password"]);
+					$("#dialog-add-edit-camera #cameraparamstable #videourl").val(data["VideoURL"]);
+					$("#dialog-add-edit-camera #cameraparamstable #imageurl").val(data["ImageURL"]);
+					RefreshActiveDevicesTable(idx);
 				}
 			}
 		}); 
-      }
-     }
-  });
+	  }
+	 }
+	});
+  
   $('#modal').hide();
 }
 
+function RefreshLightSwitchesScenesComboArray()
+{
+	$.LightsSwitchesScenes = [];
+	$.ajax({
+		url: "json.htm?type=command&param=getlightswitchesscenes", 
+		async: false, 
+		dataType: 'json',
+		success: function(data) {
+			if (typeof data.result != 'undefined') {
+				$.each(data.result, function(i,item) {
+					$.LightsSwitchesScenes.push({
+						type: item.type,
+						idx: item.idx,
+						name: item.Name
+					});
+				});
+			}
+		}
+	});
+}
 
 function Showcameras()
 {
 	var oTable;
 	
 	$('#modal').show();
+	
+	$.devIdx=-1;
+	
+	RefreshLightSwitchesScenesComboArray();
+	
 	var htmlcontent = "";
 	htmlcontent+=$('#cameramain').html();
 	$('#cameracontent').html(htmlcontent);
-	$("#cameracontent #cameraparamstable #videourl").val("mjpeg.cgi");
-	$("#cameracontent #cameraparamstable #imageurl").val("image.jpg");
 	oTable = $('#cameratable').dataTable( {
 		"sDom": '<"H"lfrC>t<"F"ip>',
 		"oTableTools": {
-		"sRowSelect": "single",
+			"sRowSelect": "single",
 		},
 		"aoColumnDefs": [
 			{ "bSortable": false, "aTargets": [ 0,2 ] }
@@ -333,10 +483,163 @@ function Showcameras()
 		"sPaginationType": "full_numbers"
 		} );
 
+	oTable = $('#activetable').dataTable( {
+		"sDom": '<"H"frC>t<"F"i>',
+		"oTableTools": {
+			"sRowSelect": "single",
+		},
+		"aaSorting": [[ 0, "asc" ]],
+		"bSortClasses": false,
+		"bProcessing": true,
+		"bStateSave": true,
+		"bJQueryUI": true,
+		"sPaginationType": "full_numbers"
+	});
+
+	$.each($.LightsSwitchesScenes, function(i,item){
+		var option = $('<option />');
+		option.attr('value', item.idx).text(item.name);
+		$("#cameracontent #comboactivedevice").append(option);
+	});
+
 	$('#modal').hide();
 	RefreshcameraTable();
- }
+}
 
+function RefreshActiveDevicesTable(idx)
+{
+	$('#modal').show();
+
+	$('#cameracontent #delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
+
+	var oTable = $('#cameracontent #activetable').dataTable();
+	oTable.fnClearTable();
+  
+	$.ajax({
+		url: "json.htm?type=command&param=getcamactivedevices&idx=" + idx, 
+		async: false, 
+		dataType: 'json',
+		success: function(data) {
+			if (typeof data.result != 'undefined') {
+				$.each(data.result, function(i,item){
+					var swhen="On";
+					if (item.when==1) {
+						swhen="Off";
+					}
+					var addId = oTable.fnAddData( {
+						"DT_RowId": item.idx,
+						"0": item.Name,
+						"1": swhen,
+						"2": item.delay
+					} );
+				});
+				/* Add a click handler to the rows - this could be used as a callback */
+				$("#cameracontent #activetable tbody tr").click( function( e ) {
+					if ( $(this).hasClass('row_selected') ) {
+						$(this).removeClass('row_selected');
+						$('#cameracontent #delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
+					}
+					else {
+						oTable.$('tr.row_selected').removeClass('row_selected');
+						$(this).addClass('row_selected');
+						$('#cameracontent #delclractive #activedevicedelete').attr("class", "btnstyle3");
+						
+						var anSelected = fnGetSelected( oTable );
+						if ( anSelected.length !== 0 ) {
+							var data = oTable.fnGetData( anSelected[0] );
+							var idx= data["DT_RowId"];
+							$("#cameracontent #delclractive #activedevicedelete").attr("href", "javascript:DeleteActiveDevice(" + idx + ")");
+						}
+					}
+				}); 
+			}
+		}
+	});
+  $('#modal').hide();
+}
+
+function AddActiveDevice()
+{
+	if ($.devIdx==-1) {
+		alert('No Camera Selected!');
+		return;
+	}
+	var ActiveDeviceIdx=$("#cameracontent #comboactivedevice option:selected").val();
+	if (typeof ActiveDeviceIdx == 'undefined') {
+		alert('No Active Device Selected!');
+		return ;
+	}
+	var ADType=0;
+	if ($("#cameracontent #comboactivedevice option:selected").text().indexOf("[Scene]") == 0) {
+		ADType=1;
+	}
+	var ADWhen=$("#cameracontent #activewhen option:selected").val();
+	if (typeof ADWhen == 'undefined') {
+		alert('Choose When On or Off!');
+		return ;
+	}
+	var sdelay=$("#cameracontent #delay").val();
+	var ADDelay=0;
+	if (sdelay!="")
+	{
+		ADDelay=parseInt(sdelay);
+	}
+	$.ajax({
+		url: "json.htm?type=command&param=addcamactivedevice&idx=" + $.devIdx + 
+			"&activeidx=" + ActiveDeviceIdx +
+			"&activetype=" + ADType +
+			"&activewhen=" + ADWhen +
+			"&activedelay=" + ADDelay,
+		async: false, 
+		dataType: 'json',
+		success: function(data) {
+			if (data.status == 'OK') {
+				RefreshActiveDevicesTable($.devIdx);
+			}
+			else {
+				ShowNotify('Problem adding Active Device!', 2500, true);
+			}
+		},
+		error: function(){
+			HideNotify();
+			ShowNotify('Problem adding Active Device!', 2500, true);
+		}     
+	});
+	
+}
+
+function DeleteActiveDevice(idx)
+{
+	var bValid = false;
+	bValid=(confirm("Are you sure to delete this Active Device?\n\nThis action can not be undone...")==true);
+	if (bValid == false)
+		return;
+
+	$.ajax({
+		 url: "json.htm?type=command&param=deleteamactivedevice&idx=" + idx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			RefreshActiveDevicesTable($.devIdx);
+		 }
+	});
+}
+
+function ClearActiveDevices()
+{
+	var bValid = false;
+	bValid=(confirm("Are you sure to delete ALL Active Devices?\n\nThis action can not be undone!!")==true);
+	if (bValid == false)
+		return;
+	$.ajax({
+			url: "json.htm?type=command&param=deleteallactivecamdevices&idx=" + $.devIdx,
+			async: false, 
+			dataType: 'json',
+			success: function(data) {
+			RefreshSubDeviceTable($.devIdx);
+		}
+	});
+}
 
 $(document).ready(function() {
   Showcameras();
