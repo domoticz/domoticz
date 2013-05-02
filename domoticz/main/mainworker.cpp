@@ -10,6 +10,8 @@
 #include "Logger.h"
 #include "../httpclient/HTTPClient.h"
 
+#include "../smtpclient/SMTPClient.h"
+
 //Hardware Devices
 #include "../hardware/hardwaretypes.h"
 #include "../hardware/RFXComSerial.h"

@@ -447,7 +447,6 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("EmailFrom",CURLEncode::URLDecode(m_pWebEm->FindValue("EmailFrom")).c_str());
 	m_pMain->m_sql.UpdatePreferencesVar("EmailTo",CURLEncode::URLDecode(m_pWebEm->FindValue("EmailTo")).c_str());
 	m_pMain->m_sql.UpdatePreferencesVar("EmailServer",m_pWebEm->FindValue("EmailServer").c_str());
-	m_pMain->m_sql.UpdatePreferencesVar("EmailPort",atoi(m_pWebEm->FindValue("EmailPort").c_str()));
 
 	std::string EmailUsername=CURLEncode::URLDecode(m_pWebEm->FindValue("EmailUsername"));
 	std::string EmailPassword=CURLEncode::URLDecode(m_pWebEm->FindValue("EmailPassword"));
@@ -6470,10 +6469,6 @@ std::string CWebServer::GetJSonPage()
 				else if (Key=="EmailServer")
 				{
 					root["EmailServer"]=sValue;
-				}
-				else if (Key=="EmailPort")
-				{
-					root["EmailPort"]=nValue;
 				}
 				else if (Key=="EmailUsername")
 				{

@@ -11,8 +11,7 @@
 #include "../sqlite/sqlite3.h"
 #include "../hardware/hardwaretypes.h"
 #include "../httpclient/mynetwork.h"
-#include "../jwsmtp/mailer.h"
-#include "../jwsmtp/base64_b.h"
+#include "../smtpclient/SMTPClient.h"
 #include "../webserver/Base64.h"
 
 #define DB_VERSION 8
@@ -1112,24 +1111,32 @@ bool CSQLHelper::SendNotification(const std::string EventID, const std::string M
 			std::string EmailPassword;
 			GetPreferencesVar("EmailFrom",nValue,EmailFrom);
 			GetPreferencesVar("EmailTo",nValue,EmailTo);
-			GetPreferencesVar("EmailPort",EmailPort,sValue);
 			GetPreferencesVar("EmailUsername",nValue,EmailUsername);
 			GetPreferencesVar("EmailPassword",nValue,EmailPassword);
 
-			jwsmtp::mailer mymailer;
-			mymailer.setsender(CURLEncode::URLDecode(EmailFrom.c_str()));
-			mymailer.setserver(CURLEncode::URLDecode(EmailServer.c_str()));
-			if (EmailUsername.size()>0)
-			{
-				mymailer.username(base64_decode(EmailUsername));
-				mymailer.password(base64_decode(EmailPassword));
-			}
-			mymailer.addrecipient(CURLEncode::URLDecode(EmailTo.c_str()));
-			mymailer.setsubject(CURLEncode::URLDecode(Message));
-			mymailer.setmessage(CURLEncode::URLDecode(Message));
-			mymailer.send();
-			bool bOK=(mymailer.response().substr(0,3) == "250");
-			_log.Log(LOG_NORM,"Notification send (Email)");
+			std::string szBody;
+			szBody=
+				"<html>\n"
+				"<body>\n"
+				"<b>" + CURLEncode::URLDecode(Message) + "</b>\n"
+				"</body>\n"
+				"</html>\n";
+
+			bool bRet=SMTPClient::SendEmail(
+				CURLEncode::URLDecode(EmailFrom.c_str()),
+				CURLEncode::URLDecode(EmailTo.c_str()),
+				CURLEncode::URLDecode(EmailServer.c_str()),
+				EmailPort,
+				base64_decode(EmailUsername),
+				base64_decode(EmailPassword),
+				CURLEncode::URLDecode(Message),
+				szBody,
+				true
+				);
+			if (bRet)
+				_log.Log(LOG_NORM,"Notification send (Email)");
+			else
+				_log.Log(LOG_ERROR,"Notification failed (Email)");
 		}
 	}
 	return true;

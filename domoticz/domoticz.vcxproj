@@ -106,10 +106,6 @@
     <ClInclude Include="hardware\DomoticzHardware.h" />
     <ClInclude Include="hardware\DomoticzTCP.h" />
     <ClInclude Include="hardware\hardwaretypes.h" />
-    <ClInclude Include="jwsmtp\base64_b.h" />
-    <ClInclude Include="jwsmtp\compat.h" />
-    <ClInclude Include="jwsmtp\jwsmtp.h" />
-    <ClInclude Include="jwsmtp\mailer.h" />
     <ClInclude Include="main\localtime_r.h" />
     <ClInclude Include="hardware\P1MeterBase.h" />
     <ClInclude Include="hardware\P1MeterSerial.h" />
@@ -128,6 +124,7 @@
     <ClInclude Include="main\RFXtrx.h" />
     <ClInclude Include="httpclient\sock_port.h" />
     <ClInclude Include="main\WindCalculation.h" />
+    <ClInclude Include="smtpclient\SMTPClient.h" />
     <ClInclude Include="sqlite\sqlite3.h" />
     <ClInclude Include="main\stdafx.h" />
     <ClInclude Include="main\SunRiseSet.h" />
@@ -161,9 +158,6 @@
     <ClCompile Include="main\CmdLine.cpp" />
     <ClCompile Include="hardware\DomoticzHardware.cpp" />
     <ClCompile Include="hardware\DomoticzTCP.cpp" />
-    <ClCompile Include="jwsmtp\base64_b.cpp" />
-    <ClCompile Include="jwsmtp\compat.cpp" />
-    <ClCompile Include="jwsmtp\mailer.cpp" />
     <ClCompile Include="main\localtime_r.cpp" />
     <ClCompile Include="hardware\P1MeterBase.cpp" />
     <ClCompile Include="hardware\P1MeterSerial.cpp" />
@@ -186,6 +180,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="main\SunRiseSet.cpp" />
+    <ClCompile Include="smtpclient\SMTPClient.cpp" />
     <ClCompile Include="tcpserver\TCPClient.cpp" />
     <ClCompile Include="tcpserver\TCPServer.cpp" />
     <ClCompile Include="httpclient\UrlEncode.cpp" />

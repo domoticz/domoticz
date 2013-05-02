@@ -112,18 +112,6 @@
     <ClInclude Include="tcpserver\TCPServer.h">
       <Filter>TCPServer</Filter>
     </ClInclude>
-    <ClInclude Include="jwsmtp\compat.h">
-      <Filter>SMTP</Filter>
-    </ClInclude>
-    <ClInclude Include="jwsmtp\jwsmtp.h">
-      <Filter>SMTP</Filter>
-    </ClInclude>
-    <ClInclude Include="jwsmtp\mailer.h">
-      <Filter>SMTP</Filter>
-    </ClInclude>
-    <ClInclude Include="jwsmtp\base64_b.h">
-      <Filter>SMTP</Filter>
-    </ClInclude>
     <ClInclude Include="hardware\DomoticzTCP.h">
       <Filter>Devices\Domoticz</Filter>
     </ClInclude>
@@ -241,6 +229,9 @@
     <ClInclude Include="hardware\Rego6XXSerial.h">
       <Filter>Devices\Rego6XX</Filter>
     </ClInclude>
+    <ClInclude Include="smtpclient\SMTPClient.h">
+      <Filter>SMTP</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -284,15 +275,6 @@
     </ClCompile>
     <ClCompile Include="tcpserver\TCPServer.cpp">
       <Filter>TCPServer</Filter>
-    </ClCompile>
-    <ClCompile Include="jwsmtp\compat.cpp">
-      <Filter>SMTP</Filter>
-    </ClCompile>
-    <ClCompile Include="jwsmtp\mailer.cpp">
-      <Filter>SMTP</Filter>
-    </ClCompile>
-    <ClCompile Include="jwsmtp\base64_b.cpp">
-      <Filter>SMTP</Filter>
     </ClCompile>
     <ClCompile Include="hardware\DomoticzTCP.cpp">
       <Filter>Devices\Domoticz</Filter>
@@ -383,6 +365,9 @@
     </ClCompile>
     <ClCompile Include="hardware\Rego6XXSerial.cpp">
       <Filter>Devices\Rego6XX</Filter>
+    </ClCompile>
+    <ClCompile Include="smtpclient\SMTPClient.cpp">
+      <Filter>SMTP</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

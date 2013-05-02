@@ -5,8 +5,7 @@
 #include "localtime_r.h"
 #include "Logger.h"
 #include "../httpclient/HTTPClient.h"
-#include "../jwsmtp/mailer.h"
-#include "../jwsmtp/base64_b.h"
+#include "../smtpclient/SMTPClient.h"
 #include "../webserver/Base64.h"
 
 #define CAMERA_POLL_INTERVAL 30
@@ -187,20 +186,8 @@ bool CCamScheduler::EmailCameraSnapshot(const std::string CamIdx, const std::str
 	std::string EmailPassword;
 	m_pMain->m_sql.GetPreferencesVar("EmailFrom",nValue,EmailFrom);
 	m_pMain->m_sql.GetPreferencesVar("EmailTo",nValue,EmailTo);
-	m_pMain->m_sql.GetPreferencesVar("EmailPort",EmailPort,sValue);
 	m_pMain->m_sql.GetPreferencesVar("EmailUsername",nValue,EmailUsername);
 	m_pMain->m_sql.GetPreferencesVar("EmailPassword",nValue,EmailPassword);
-
-	jwsmtp::mailer mymailer;
-	mymailer.setsender(CURLEncode::URLDecode(EmailFrom.c_str()));
-	mymailer.setserver(CURLEncode::URLDecode(EmailServer.c_str()));
-	if (EmailUsername.size()>0)
-	{
-		mymailer.username(base64_decode(EmailUsername));
-		mymailer.password(base64_decode(EmailPassword));
-	}
-	mymailer.addrecipient(CURLEncode::URLDecode(EmailTo.c_str()));
-	mymailer.setsubject(CURLEncode::URLDecode(subject));
 
 	std::string htmlMsg=
 		"<html>\r\n"
@@ -208,16 +195,25 @@ bool CCamScheduler::EmailCameraSnapshot(const std::string CamIdx, const std::str
 		"<img src=\"data:image/jpeg;base64,";
 	std::vector<char> filedata;
 	filedata.insert(filedata.begin(),camimage.begin(),camimage.end());
-	filedata = jwsmtp::base64encode(filedata);
-	htmlMsg.insert(htmlMsg.end(),filedata.begin(),filedata.end());
+	std::string imgstring;
+	imgstring.insert(imgstring.end(),filedata.begin(),filedata.end());
+	imgstring=base64_encode((const unsigned char*)imgstring.c_str(),filedata.size());
 	htmlMsg+=
+		imgstring +
 		"\">\r\n"
 		"</body>\r\n"
 		"</html>\r\n";
 
-	mymailer.setmessageHTML(htmlMsg);
-	mymailer.send();
-
-	bool bOK=(mymailer.response().substr(0,3) == "250");
-	return bOK;
+	bool bRet=SMTPClient::SendEmail(
+		CURLEncode::URLDecode(EmailFrom.c_str()),
+		CURLEncode::URLDecode(EmailTo.c_str()),
+		CURLEncode::URLDecode(EmailServer.c_str()),
+		EmailPort,
+		base64_decode(EmailUsername),
+		base64_decode(EmailPassword),
+		CURLEncode::URLDecode(subject),
+		htmlMsg,
+		true
+		);
+	return bRet;
 }
