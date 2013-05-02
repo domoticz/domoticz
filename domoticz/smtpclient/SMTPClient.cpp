@@ -57,7 +57,6 @@ bool SMTPClient::SendEmail(
 	slist1 = curl_slist_append(slist1, sTo.c_str());
 
 	std::string szURL="smtp://"+MailServer+"/domoticz";
-	std::string szUserPassword=MailUsername+":"+MailPassword;
 
 	curl = curl_easy_init();
 
@@ -66,6 +65,7 @@ bool SMTPClient::SendEmail(
 	curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
 	if (MailUsername!="")
 	{
+		//std::string szUserPassword=MailUsername+":"+MailPassword;
 		//curl_easy_setopt(curl, CURLOPT_USERPWD, szUserPassword.c_str());
 		curl_easy_setopt(curl, CURLOPT_USERNAME, MailUsername.c_str());
 		curl_easy_setopt(curl, CURLOPT_PASSWORD, MailPassword.c_str());
@@ -78,7 +78,7 @@ bool SMTPClient::SendEmail(
 	curl_easy_setopt(curl, CURLOPT_SSLVERSION, 0L);
 	curl_easy_setopt(curl, CURLOPT_SSL_SESSIONID_CACHE, 0L);
 
-	curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
+	//curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
 	curl_easy_setopt(curl, CURLOPT_MAIL_FROM, sFrom.c_str());
 	curl_easy_setopt(curl, CURLOPT_MAIL_RCPT, slist1);
 
