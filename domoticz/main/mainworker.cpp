@@ -5466,15 +5466,15 @@ void MainWorker::decode_AirQuality(const int HwdID, const tRBUF *pResponse)
 			sprintf(szTmp,"CO2 = %ld ppm", pMeter->airquality);
 			WriteMessage(szTmp);
 			if (pMeter->airquality<700)
-				strcpy_s(szTmp,"Quality = Excellent");
+				strcpy(szTmp,"Quality = Excellent");
 			else if (pMeter->airquality<900)
-				strcpy_s(szTmp,"Quality = Good");
+				strcpy(szTmp,"Quality = Good");
 			else if (pMeter->airquality<1100)
-				strcpy_s(szTmp,"Quality = Fair");
+				strcpy(szTmp,"Quality = Fair");
 			else if (pMeter->airquality<1600)
-				strcpy_s(szTmp,"Quality = Mediocre");
+				strcpy(szTmp,"Quality = Mediocre");
 			else
-				strcpy_s(szTmp,"Quality = Bad");
+				strcpy(szTmp,"Quality = Bad");
 			WriteMessage(szTmp);
 			break;
 		default:
