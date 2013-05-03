@@ -75,10 +75,10 @@ void CCamScheduler::ReloadCameras()
             citem.Name		= sd[1].c_str();
             citem.Address	= sd[2].c_str();
 			citem.Port		= atoi(sd[3].c_str());
-		    citem.Username	= sd[4].c_str();
-            citem.Password	= sd[5].c_str();
-			citem.VideoURL	= sd[6].c_str();
-			citem.ImageURL	= sd[7].c_str();
+		    citem.Username	= CURLEncode::URLDecode(sd[4].c_str());
+            citem.Password	= CURLEncode::URLDecode(sd[5].c_str());
+			citem.VideoURL	= CURLEncode::URLDecode(sd[6].c_str());
+			citem.ImageURL	= CURLEncode::URLDecode(sd[7].c_str());
             m_cameradevices.push_back(citem);
 		}
 	}

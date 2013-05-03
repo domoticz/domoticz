@@ -506,7 +506,7 @@ function RefreshNotificationTable(idx)
 						
 					var nwhen="";
 					if (parts[1]==">") {
-						nwhen="Greater then ";
+						nwhen="Greater than ";
 					}
 					else {
 						nwhen="Below ";
