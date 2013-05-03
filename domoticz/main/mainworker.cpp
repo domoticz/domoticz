@@ -5463,7 +5463,7 @@ void MainWorker::decode_AirQuality(const int HwdID, const tRBUF *pResponse)
 		case sTypeVoltcraft:
 			WriteMessage("subtype       = Voltcraft CO-20");
 
-			sprintf(szTmp,"CO2 = %ld ppm", pMeter->airquality);
+			sprintf(szTmp,"CO2 = %d ppm", pMeter->airquality);
 			WriteMessage(szTmp);
 			if (pMeter->airquality<700)
 				strcpy(szTmp,"Quality = Excellent");
