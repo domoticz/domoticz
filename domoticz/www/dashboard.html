@@ -90,7 +90,12 @@ function RefreshFavorites()
 									status+='<img src="images/door.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 								else if (item.SwitchType == "Push On Button") {
-									status+='<img src="images/push.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									if (item.InternalState=="On") {
+										status+='<img src="images/pushon.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									}
+									else {
+										status+='<img src="images/push.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									}
 								}
 								else if (item.SwitchType == "Push Off Button") {
 									status+='<img src="images/pushoff.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
@@ -184,7 +189,12 @@ function RefreshFavorites()
 									img='<img src="images/door48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 								}
 								else if (item.SwitchType == "Push On Button") {
-									img='<img src="images/push48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									if (item.InternalState=="On") {
+										img='<img src="images/pushon48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									}
+									else {
+										img='<img src="images/push48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									}
 								}
 								else if (item.SwitchType == "Push Off Button") {
 									img='<img src="images/pushoff48.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
@@ -911,7 +921,12 @@ function ShowFavorites()
 								status+='<img src="images/door.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 							}
 							else if (item.SwitchType == "Push On Button") {
-								status+='<img src="images/push.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+								if (item.InternalState=="On") {
+									status+='<img src="images/pushon.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+								}
+								else {
+									status+='<img src="images/push.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+								}
 							}
 							else if (item.SwitchType == "Push Off Button") {
 								status+='<img src="images/pushoff.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
@@ -1029,7 +1044,12 @@ function ShowFavorites()
 								xhtm+='\t      <td id="img"><img src="images/door48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 							}
 							else if (item.SwitchType == "Push On Button") {
-								xhtm+='\t      <td id="img"><img src="images/push48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								if (item.InternalState=="On") {
+									xhtm+='\t      <td id="img"><img src="images/pushon48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								}
+								else {
+									xhtm+='\t      <td id="img"><img src="images/push48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								}
 							}
 							else if (item.SwitchType == "Push Off Button") {
 								xhtm+='\t      <td id="img"><img src="images/pushoff48.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';

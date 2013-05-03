@@ -853,6 +853,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				else if (switchtype==STYPE_PushOn)
 				{
 					root["result"][ii]["TypeImg"]="push";
+					root["result"][ii]["InternalState"]=(IsLightSwitchOn(lstatus)==true)?"On":"Off";
 					root["result"][ii]["AddjValue"]=AddjValue;
 					root["result"][ii]["AddjMulti"]=AddjMulti;
 					root["result"][ii]["AddjValue2"]=AddjValue2;

@@ -1051,6 +1051,7 @@ bool IsLightSwitchOn(const std::string lstatus)
 		(lstatus=="Alarm")||
 		(lstatus=="Panic")||
 		(lstatus=="Light On")||
-		(lstatus=="Light 2 On")
+		(lstatus=="Light 2 On")||
+		(lstatus=="Open inline relay")
 		);
 }
