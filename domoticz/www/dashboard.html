@@ -600,7 +600,7 @@ function RefreshFavorites()
 								var status="";
 								if (typeof item.Counter != 'undefined') {
 									if (data.DashboardType==0) {
-										status+='Usage: '+item.Counter + ', Today: ' + item.CounterToday;
+										status+=item.Counter + ', Today: ' + item.CounterToday;
 									}
 									else {
 										status+='U: '+item.Counter + ', T: ' + item.CounterToday;
@@ -644,7 +644,7 @@ function RefreshFavorites()
 								if (typeof item.Counter != 'undefined') {
 									img='<img src="images/counter.png" height="40">';
 									if (data.DashboardType==0) {
-										status='Usage: '+item.Counter + ', Today: ' + item.CounterToday;
+										status=item.Counter + ', Today: ' + item.CounterToday;
 									}
 									else {
 										status='U: '+item.Counter + ', T: ' + item.CounterToday;
@@ -1635,7 +1635,7 @@ function ShowFavorites()
 							var status="";
 							if (typeof item.Counter != 'undefined') {
 								if (data.DashboardType==0) {
-									status='Usage: '+item.Counter + ', Today: ' + item.CounterToday;
+									status=item.Counter + ', Today: ' + item.CounterToday;
 								}
 								else {
 									status='U: '+item.Counter + ', T: ' + item.CounterToday;
@@ -1709,7 +1709,7 @@ function ShowFavorites()
 							if (typeof item.Counter != 'undefined') {
 								xhtm+='counter.png" height="40"></td>\n';
 								if (data.DashboardType==0) {
-									status='Usage: '+item.Counter + ', Today: ' + item.CounterToday;
+									status=item.Counter + ', Today: ' + item.CounterToday;
 								}
 								else {
 									status='U: '+item.Counter + ', T: ' + item.CounterToday;
