@@ -963,7 +963,7 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 				std::string nszStartupFolder=szStartupFolder;
 				if (nszStartupFolder=="")
 					nszStartupFolder=".";
-				s_scriptparams << nszStartupFolder << " " << HardwareID << " " << ulID << " " << (bIsLightSwitchOn?"On":"Off");
+				s_scriptparams << nszStartupFolder << " " << HardwareID << " " << ulID << " " << (bIsLightSwitchOn?"On":"Off") << " \"" << lstatus << "\"";
 				//add script to background worker				
 				boost::lock_guard<boost::mutex> l(m_background_task_mutex);
 				m_background_task_queue.push_back(_tTaskItem(1,scriptname,s_scriptparams.str()));
