@@ -1666,7 +1666,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 			}
 			else if (dType == pTypeAirQuality)
 			{
-				sprintf_s(szTmp,"%d ppm",nValue);
+				sprintf(szTmp,"%d ppm",nValue);
 				root["result"][ii]["Data"]=szTmp;
 				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				int airquality = nValue;
