@@ -37,6 +37,17 @@
   <div id="counteryeargraph" style="height: 300px;"></div>
 </div>
 
+<div id="airlog" style="display:none;">
+  <h2>Day</h2>
+  <div id="airdaygraph" style="height: 300px;"></div>
+  <br>
+  <h2>Month</h2>
+  <div id="airmonthgraph" style="height: 300px;"></div>
+  <br>
+  <h2>Year</h2>
+  <div id="airyeargraph" style="height: 300px;"></div>
+</div>
+
 <div id="currentlog" style="display:none;">
   <h2>Day</h2>
   <div id="currentdaygraph" style="height: 300px;"></div>
@@ -740,6 +751,457 @@ function ShowCurrentLog(id,name,switchtype)
         },
         legend: {
             enabled: true
+        }
+    });
+}
+
+function ShowAirQualityLog(id,name)
+{
+	clearInterval($.myglobals.refreshTimer);
+  $('#modal').show();
+  $.devIdx=id;
+  $.devName=name;
+  var htmlcontent = '';
+  htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
+  htmlcontent+=$('#airlog').html();
+  $('#utilitycontent').html(GetBackbuttonHTMLTable('ShowUtilities')+htmlcontent);
+
+  $.DayChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'airdaygraph',
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=day",
+                function(data) {
+                      var series = $.DayChart.series[0];
+                      var datatable = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable.push( [GetUTCFromString(item.d), parseInt(item.co2) ] );
+                      });
+                      series.setData(datatable);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Air Quality '  + Get5MinuteHistoryDaysGraphTitle()
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: 'co2 (ppm)'
+            },
+            min: 0,
+            minorGridLineWidth: 0,
+            gridLineWidth: 0,
+            alternateGridColor: null,
+            plotBands: [{ // Excellent
+                from: 0,
+                to: 700,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Excellent',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Good
+                from: 700,
+                to: 900,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: 'Good',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Fair
+                from: 900,
+                to: 1100,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Fair',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Mediocre
+                from: 1100,
+                to: 1600,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: 'Mediocre',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Bad
+                from: 1600,
+                to: 6000,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Bad',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }
+           ]
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' ppm';
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'co2'
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+
+  $.MonthChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'airmonthgraph',
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=month",
+                function(data) {
+                      var datatable1 = [];
+                      var datatable2 = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable1.push( [GetDateFromString(item.d), parseInt(item.co2_min) ] );
+                        datatable2.push( [GetDateFromString(item.d), parseInt(item.co2_max) ] );
+                      });
+                      var series1 = $.MonthChart.series[0];
+                      var series2 = $.MonthChart.series[1];
+                      series1.setData(datatable1);
+                      series2.setData(datatable2);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Air Quality Last Month'
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: 'co2 (ppm)'
+            },
+            min: 0,
+            minorGridLineWidth: 0,
+            gridLineWidth: 0,
+            alternateGridColor: null,
+            plotBands: [{ // Excellent
+                from: 0,
+                to: 700,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Excellent',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Good
+                from: 700,
+                to: 900,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: 'Good',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Fair
+                from: 900,
+                to: 1100,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Fair',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Mediocre
+                from: 1100,
+                to: 1600,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: 'Mediocre',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Bad
+                from: 1600,
+                to: 6000,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Bad',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }
+           ]
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' ppm';
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'co2_min',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,ShowCounterLog);
+					}
+				}
+			}
+		}, {
+            name: 'co2_max',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,ShowCounterLog);
+					}
+				}
+			}
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+
+  $.YearChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'airyeargraph',
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=year",
+                function(data) {
+                      var datatable1 = [];
+                      var datatable2 = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable1.push( [GetDateFromString(item.d), parseInt(item.co2_min) ] );
+                        datatable2.push( [GetDateFromString(item.d), parseInt(item.co2_max) ] );
+                      });
+                      var series1 = $.YearChart.series[0];
+                      var series2 = $.YearChart.series[1];
+                      series1.setData(datatable1);
+                      series2.setData(datatable2);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: 'Air Quality Last Year'
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: 'co2 (ppm)'
+            },
+            min: 0,
+            minorGridLineWidth: 0,
+            gridLineWidth: 0,
+            alternateGridColor: null,
+            plotBands: [{ // Excellent
+                from: 0,
+                to: 700,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Excellent',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Good
+                from: 700,
+                to: 900,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: 'Good',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Fair
+                from: 900,
+                to: 1100,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Fair',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Mediocre
+                from: 1100,
+                to: 1600,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: 'Mediocre',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Bad
+                from: 1600,
+                to: 6000,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: 'Bad',
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }
+           ]
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' ppm';
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'co2_min',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,ShowCounterLog);
+					}
+				}
+			}
+		}, {
+            name: 'co2_max',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,ShowCounterLog);
+					}
+				}
+			}
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
         }
     });
 }
@@ -1656,8 +2118,8 @@ function RefreshUtilities()
             }
             else if (item.Type == "Air Quality") {
 				img='<img src="images/air48.png" height="48">';
-				status=item.Data + " ppm (" + item.Quality + ")";
-				bigtext=item.Data + " ppm";
+				status=item.Data + " (" + item.Quality + ")";
+				bigtext=item.Data;
             }
             if (typeof item.Usage != 'undefined') {
 							status+=", Actual: " + item.Usage;
@@ -1766,7 +2228,7 @@ function ShowUtilities()
 					}
 				}
 				else if (item.Type == "Air Quality") {
-				  xhtm+=item.Data + " ppm";
+				  xhtm+=item.Data;
 				}
 				xhtm+='</td>\n';
           xhtm+='\t      <td id="img"><img src="images/';
@@ -1785,7 +2247,7 @@ function ShowUtilities()
             }
             else if (item.Type == "Air Quality") {
               xhtm+='air48.png" height="48"></td>\n';
-              status=item.Data + " ppm (" + item.Quality + ")";
+              status=item.Data + " (" + item.Quality + ")";
             }
             if (typeof item.Usage != 'undefined') {
 							status+=", Actual: " + item.Usage;
@@ -1832,7 +2294,7 @@ function ShowUtilities()
 			}
           }
 		  else if (item.Type == "Air Quality") {
-			xhtm+='<a class="btnsmall" onclick="ShowAurQualityLog(' + item.idx + ',\'' + item.Name + ');">Log</a> ';
+			xhtm+='<a class="btnsmall" onclick="ShowAirQualityLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
 		  }
           else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
 							xhtm+='<a class="btnsmall" onclick="ShowCurrentLog(' + item.idx + ',\'' + item.Name + '\', ' + item.displaytype + ');">Log</a> ';

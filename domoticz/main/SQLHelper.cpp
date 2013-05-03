@@ -2933,43 +2933,59 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			float total_min=(float)atof(sd[0].c_str());
 			float total_max=(float)atof(sd[1].c_str());
 
-			float total_real=total_max-total_min;
-
-			//insert into calendar table
-			sprintf(szTmp,
-				"INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) "
-				"VALUES (%llu, %.2f, '%s')",
-				ID,
-				total_real,
-				szDateStart
-				);
-			result=query(szTmp);
-
-			//Check for Notification
-			musage=0;
-			switch (metertype)
+			if (devType!=pTypeAirQuality)
 			{
-			case MTYPE_ENERGY:
-				musage=float(total_real)/EnergyDivider;
-				if (musage!=0)
-					CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYENERGY, musage);
-				break;
-			case MTYPE_GAS:
-				musage=float(total_real)/tGasDivider;
-				if (musage!=0)
-					CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYGAS, musage);
-				break;
-			case MTYPE_WATER:
-				musage=float(total_real)/WaterDivider;
-				if (musage!=0)
-					CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYGAS, musage);
-				break;
-			case MTYPE_COUNTER:
-				musage=float(total_real);
-				if (musage!=0)
-					CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYCOUNTER, musage);
-				break;
+				float total_real=total_max-total_min;
+
+				//insert into calendar table
+				sprintf(szTmp,
+					"INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) "
+					"VALUES (%llu, %.2f, '%s')",
+					ID,
+					total_real,
+					szDateStart
+					);
+				result=query(szTmp);
+
+				//Check for Notification
+				musage=0;
+				switch (metertype)
+				{
+				case MTYPE_ENERGY:
+					musage=float(total_real)/EnergyDivider;
+					if (musage!=0)
+						CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYENERGY, musage);
+					break;
+				case MTYPE_GAS:
+					musage=float(total_real)/tGasDivider;
+					if (musage!=0)
+						CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYGAS, musage);
+					break;
+				case MTYPE_WATER:
+					musage=float(total_real)/WaterDivider;
+					if (musage!=0)
+						CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYGAS, musage);
+					break;
+				case MTYPE_COUNTER:
+					musage=float(total_real);
+					if (musage!=0)
+						CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYCOUNTER, musage);
+					break;
+				}
 			}
+			else
+			{
+				//AirQuality insert into MultiMeter_Calendar table
+				sprintf(szTmp,
+					"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1,Value2,Value3,Value4,Value5,Value6, Date) "
+					"VALUES (%llu, %.2f,%.2f,%.2f,%.2f,%.2f,%.2f, '%s')",
+					ID,
+					total_min,total_max,0.0f,0.0f,0.0f,0.0f,
+					szDateStart
+					);
+				result=query(szTmp);
+			}
+
 			//Insert the last (max) counter value into the meter table to get the "today" value correct.
 			sprintf(szTmp,
 				"INSERT INTO Meter (DeviceRowID, Value, Date) "

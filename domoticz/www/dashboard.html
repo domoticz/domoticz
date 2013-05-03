@@ -576,7 +576,7 @@ function RefreshFavorites()
         //Utility Sensors
         $.each(data.result, function(i,item){
           if (
-                ( (typeof item.Counter != 'undefined') || (item.Type == "Current") || (item.Type == "Energy") || (item.Type == "Current/Energy")) &&
+                ( (typeof item.Counter != 'undefined') || (item.Type == "Current") || (item.Type == "Energy") || (item.Type == "Current/Energy") || (item.Type == "Air Quality")) &&
                 (item.Favorite!=0)
               )
           {
@@ -599,7 +599,7 @@ function RefreshFavorites()
 								else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
 									status+=item.Data;
 								}
-								else if (item.Type == "Energy") {
+								else if ((item.Type == "Energy")||(item.Type == "Air Quality")) {
 									status+=item.Data;
 								}
 								if (typeof item.Usage != 'undefined') {
@@ -647,6 +647,11 @@ function RefreshFavorites()
 								else if (item.Type == "Energy") {
 									img='<img src="images/current48.png" height="40">';
 									status=item.Data;
+								}
+								else if (item.Type == "Air Quality") {
+									img='<img src="images/air48.png" height="40">';
+									status=item.Data + " (" + item.Quality + ")";
+									bigtext=item.Data;
 								}
 								if (typeof item.Usage != 'undefined') {
 									bigtext=item.Usage;
@@ -1568,7 +1573,7 @@ function ShowFavorites()
         bHaveAddedDevider = false;
         $.each(data.result, function(i,item){
           if (
-                ( (typeof item.Counter != 'undefined') || (item.Type == "Current") || (item.Type == "Energy") || (item.Type == "Current/Energy")) &&
+                ( (typeof item.Counter != 'undefined') || (item.Type == "Current") || (item.Type == "Energy") || (item.Type == "Current/Energy") || (item.Type == "Air Quality")) &&
                 (item.Favorite!=0)
               )
           {
@@ -1619,7 +1624,7 @@ function ShowFavorites()
 							else if ((item.Type == "Current") || (item.Type == "Current/Energy")){
 								status=item.Data;
 							}
-							else if (item.Type == "Energy") {
+							else if ((item.Type == "Energy")||(item.Type == "Air Quality")) {
 								status=item.Data;
 							}
 							if (typeof item.Usage != 'undefined') {
@@ -1675,6 +1680,9 @@ function ShowFavorites()
 									xhtm+='-' + item.UsageDeliv;
 								}
 							}
+							else if (item.Type == "Air Quality") {
+								xhtm+=item.Data;
+							}
 							xhtm+='</td>\n';
 							xhtm+='\t      <td id="img"><img src="images/';
 							var status="";
@@ -1695,6 +1703,11 @@ function ShowFavorites()
 								xhtm+='current48.png" height="40"></td>\n';
 								status=item.Data;
 							}
+							else if (item.Type == "Air Quality") {
+								xhtm+='air48.png" height="40"></td>\n';
+								status=item.Data + " (" + item.Quality + ")";;
+							}
+							
 							if (typeof item.Usage != 'undefined') {
 								if (data.DashboardType==0) {
 									status+=", Actual: " + item.Usage;

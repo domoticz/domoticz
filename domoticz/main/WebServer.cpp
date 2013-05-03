@@ -1666,7 +1666,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 			}
 			else if (dType == pTypeAirQuality)
 			{
-				root["result"][ii]["Data"]=nValue;
+				sprintf_s(szTmp,"%d ppm",nValue);
+				root["result"][ii]["Data"]=szTmp;
 				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				int airquality = nValue;
 				if (airquality<700)
@@ -2477,7 +2478,7 @@ std::string CWebServer::GetJSonPage()
 				dbasetable="Rain_Calendar";
 			else if (sensor=="counter")
 			{
-				if ((dType==pTypeP1Power)||(dType==pTypeCURRENT)||(dType==pTypeCURRENTENERGY))
+				if ((dType==pTypeP1Power)||(dType==pTypeCURRENT)||(dType==pTypeCURRENTENERGY)||(dType==pTypeAirQuality))
 					dbasetable="MultiMeter_Calendar";
 				else
 					dbasetable="Meter_Calendar";
@@ -2581,6 +2582,29 @@ std::string CWebServer::GetJSonPage()
 						if (bHaveDeliverd)
 						{
 							root["delivered"]=true;
+						}
+					}
+				}
+				else if (dType==pTypeAirQuality)
+				{//day
+					root["status"]="OK";
+					root["title"]="Graph " + sensor + " " + srange;
+
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator itt;
+						int ii=0;
+						for (itt=result.begin(); itt!=result.end(); ++itt)
+						{
+							std::vector<std::string> sd=*itt;
+
+							root["result"][ii]["d"]=sd[1].substr(0,16);
+							root["result"][ii]["co2"]=sd[0];
+							ii++;
 						}
 					}
 				}
@@ -3502,6 +3526,27 @@ std::string CWebServer::GetJSonPage()
 						}
 					}
 				}
+				else if (dType==pTypeAirQuality)
+				{//month/year
+					root["status"]="OK";
+					root["title"]="Graph " + sensor + " " + srange;
+
+					szQuery << "SELECT Value1,Value2, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator itt;
+						for (itt=result.begin(); itt!=result.end(); ++itt)
+						{
+							std::vector<std::string> sd=*itt;
+
+							root["result"][ii]["d"]=sd[2].substr(0,16);
+							root["result"][ii]["co2_min"]=sd[0];
+							root["result"][ii]["co2_max"]=sd[1];
+							ii++;
+						}
+					}
+				}
 				else if (dType==pTypeCURRENT)
 				{
 					szQuery << "SELECT Value1,Value2,Value3,Value4,Value5,Value6, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
@@ -3735,6 +3780,18 @@ std::string CWebServer::GetJSonPage()
 						{
 							root["delivered"]=true;
 						}
+					}
+				}
+				else if (dType==pTypeAirQuality)
+				{
+					szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						root["result"][ii]["d"]=szDateEnd;
+						root["result"][ii]["co2_min"]=result[0][0];
+						root["result"][ii]["co2_max"]=result[0][1];
+						ii++;
 					}
 				}
 				else
