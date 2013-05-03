@@ -37,7 +37,7 @@ enum _eTaskItemType
 struct _tTaskItem
 {
 	_eTaskItemType _ItemType;
-	unsigned char _DelayTime;
+	int _DelayTime;
 	int _HardwareID;
 	unsigned long long _idx;
 	std::string _ID;
@@ -55,7 +55,7 @@ struct _tTaskItem
 
 	}
 
-	_tTaskItem(const unsigned char DelayTime, const unsigned long long idx, const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int switchtype, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue)
+	_tTaskItem(const int DelayTime, const unsigned long long idx, const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int switchtype, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue)
 	{
 		_ItemType=TITEM_SWITCHCMD;
 		_DelayTime=DelayTime;
@@ -71,14 +71,14 @@ struct _tTaskItem
 		_nValue=nValue;
 		_sValue=sValue;
 	}
-	_tTaskItem(const unsigned char DelayTime, const std::string ScriptPath, const std::string ScriptParams)
+	_tTaskItem(const int DelayTime, const std::string ScriptPath, const std::string ScriptParams)
 	{
 		_ItemType=TITEM_EXECUTE_SCRIPT;
 		_DelayTime=DelayTime;
 		_ID=ScriptPath;
 		_sValue=ScriptParams;
 	}
-	static _tTaskItem EmailCameraSnapshot(const unsigned char DelayTime, const std::string CamIdx, const std::string Subject)
+	static _tTaskItem EmailCameraSnapshot(const int DelayTime, const std::string CamIdx, const std::string Subject)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_EMAIL_CAMERA_SNAPSHOT;

@@ -621,7 +621,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 			{
 				std::vector<std::string> sd=*itt;
 
-				unsigned char nValue = atoi(sd[2].c_str());
+				int nValue= atoi(sd[2].c_str());
 				std::string sLastUpdate=sd[3].c_str();
 				unsigned char favorite = atoi(sd[4].c_str());
 				root["result"][ii]["Type"]="Scene";
@@ -658,7 +658,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 			unsigned char dType=atoi(sd[5].c_str());
 			unsigned char dSubType=atoi(sd[6].c_str());
 			unsigned char used = atoi(sd[4].c_str());
-			unsigned char nValue = atoi(sd[9].c_str());
+			int nValue = atoi(sd[9].c_str());
 			std::string sValue=sd[10];
 			std::string sLastUpdate=sd[11].c_str();
 			unsigned char favorite = atoi(sd[12].c_str());
@@ -743,6 +743,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 						(dType!=pTypeP1Power)&&
 						(dType!=pTypeP1Gas)&&
 						(dType!=pTypeYouLess)&&
+						(dType!=pTypeAirQuality)&&
 						(!((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXCounter)))
 						)
 						continue;
@@ -1663,6 +1664,22 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				}
 			}
+			else if (dType == pTypeAirQuality)
+			{
+				root["result"][ii]["Data"]=nValue;
+				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+				int airquality = nValue;
+				if (airquality<700)
+					root["result"][ii]["Quality"]="Excellent";
+				else if (airquality<900)
+					root["result"][ii]["Quality"]="Good";
+				else if (airquality<1100)
+					root["result"][ii]["Quality"]="Fair";
+				else if (airquality<1600)
+					root["result"][ii]["Quality"]="Mediocre";
+				else
+					root["result"][ii]["Quality"]="Bad";
+			}
 			else if (dType == pTypeRFXMeter)
 			{
 				root["result"][ii]["Data"]=sValue;
@@ -2208,7 +2225,7 @@ std::string CWebServer::GetJSonPage()
 			{
 				std::vector<std::string> sd=*itt;
 
-				unsigned char nValue = atoi(sd[1].c_str());
+				int nValue = atoi(sd[1].c_str());
 				std::string sValue=sd[2];
 
 				root["result"][ii]["idx"]=sd[0];
@@ -5350,6 +5367,13 @@ std::string CWebServer::GetJSonPage()
 				ii++;
 			}
 			if (dType==pTypeYouLess)
+			{
+				root["result"][ii]["val"]=NTYPE_USAGE;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+				ii++;
+			}
+			if (dType==pTypeAirQuality)
 			{
 				root["result"][ii]["val"]=NTYPE_USAGE;
 				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);

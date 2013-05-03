@@ -11,6 +11,8 @@
 #define wsbaroforcast_some_clouds 0x05
 #define wsbaroforcast_sunny 0x06
 
+#define pTypeAirQuality	0xF9
+#define sTypeVoltcraft	0x01
 
 #define pTypeP1Power	0xFA
 #define sTypeP1Power	0x01
@@ -27,3 +29,11 @@
 #define pTypeRego6XXValue    0xFE
 #define sTypeRego6XXStatus   0x02
 #define sTypeRego6XXCounter  0x03
+
+typedef struct _tAirQualityMeter {
+	unsigned char len;
+	unsigned char type;
+	unsigned char subtype;
+	std::string ID;
+	int airquality;
+} AirQualityMeter;

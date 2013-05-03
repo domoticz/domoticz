@@ -1993,7 +1993,7 @@ void CSQLHelper::UpdateTemperatureLog()
 
 			unsigned char dType=atoi(sd[1].c_str());
 			unsigned char dSubType=atoi(sd[2].c_str());
-			unsigned char nValue=atoi(sd[3].c_str());
+			int nValue=atoi(sd[3].c_str());
 			std::string sValue=sd[4];
 
 			//do not include sensors that have no reading within an hour
@@ -2130,7 +2130,7 @@ void CSQLHelper::UpdateRainLog()
 			s_str >> ID;
 			unsigned char dType=atoi(sd[1].c_str());
 			unsigned char dSubType=atoi(sd[2].c_str());
-			unsigned char nValue=atoi(sd[3].c_str());
+			int nValue=atoi(sd[3].c_str());
 			std::string sValue=sd[4];
 
 			//do not include sensors that have no reading within an hour
@@ -2220,7 +2220,7 @@ void CSQLHelper::UpdateWindLog()
 			s_str >> ID;
 			unsigned char dType=atoi(sd[1].c_str());
 			unsigned char dSubType=atoi(sd[2].c_str());
-			unsigned char nValue=atoi(sd[3].c_str());
+			int nValue=atoi(sd[3].c_str());
 			std::string sValue=sd[4];
 
 			//do not include sensors that have no reading within an hour
@@ -2309,7 +2309,7 @@ void CSQLHelper::UpdateUVLog()
 			s_str >> ID;
 			unsigned char dType=atoi(sd[1].c_str());
 			unsigned char dSubType=atoi(sd[2].c_str());
-			unsigned char nValue=atoi(sd[3].c_str());
+			int nValue=atoi(sd[3].c_str());
 			std::string sValue=sd[4];
 
 			//do not include sensors that have no reading within an hour
@@ -2393,13 +2393,13 @@ void CSQLHelper::UpdateMeter()
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
 
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d))",
+	sprintf(szTmp,"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d))",
 		pTypeRFXMeter,
 		pTypeP1Gas,
 		pTypeYouLess,
 		pTypeENERGY,
-        pTypeRego6XXValue,
-        sTypeRego6XXCounter
+		pTypeAirQuality,
+        pTypeRego6XXValue,sTypeRego6XXCounter
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -2412,13 +2412,17 @@ void CSQLHelper::UpdateMeter()
 			unsigned long long ID;
 			std::stringstream s_str( sd[0] );
 			s_str >> ID;
-			unsigned char dType=atoi(sd[1].c_str());
-			unsigned char dSubType=atoi(sd[2].c_str());
-			unsigned char nValue=atoi(sd[3].c_str());
-			std::string sValue=sd[4];
+			int hardwareID= atoi(sd[1].c_str());
+			std::string DeviceID=sd[2];
+			unsigned char Unit = atoi(sd[3].c_str());
+
+			unsigned char dType=atoi(sd[4].c_str());
+			unsigned char dSubType=atoi(sd[5].c_str());
+			int nValue=atoi(sd[6].c_str());
+			std::string sValue=sd[7];
+			std::string sLastUpdate=sd[8];
 
 			//do not include sensors that have no reading within an hour
-			std::string sLastUpdate=sd[5];
 			struct tm ntime;
 			ntime.tm_isdst=tm1.tm_isdst;
 			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
@@ -2457,6 +2461,12 @@ void CSQLHelper::UpdateMeter()
 				double fValue=atof(splitresults[1].c_str())*100;
 				sprintf(szTmp,"%.0f",fValue);
 				sValue=szTmp;
+			}
+			else if (dType==pTypeAirQuality)
+			{
+				sprintf(szTmp,"%d",nValue);
+				sValue=szTmp;
+				CheckAndHandleNotification(hardwareID, DeviceID, Unit, dType, dSubType, NTYPE_USAGE, (float)nValue);
 			}
 
 			unsigned long long MeterValue;
@@ -2538,7 +2548,7 @@ void CSQLHelper::UpdateMultiMeter()
 			s_str >> ID;
 			unsigned char dType=atoi(sd[1].c_str());
 			unsigned char dSubType=atoi(sd[2].c_str());
-			unsigned char nValue=atoi(sd[3].c_str());
+			int nValue=atoi(sd[3].c_str());
 			std::string sValue=sd[4];
 
 			//do not include sensors that have no reading within an hour
@@ -3621,7 +3631,7 @@ void CSQLHelper::CheckSceneStatus(const unsigned long long Idx)
 	for (itt=result.begin(); itt!=result.end(); ++itt)
 	{
 		std::vector<std::string> sd=*itt;
-		unsigned char nValue=atoi(sd[6].c_str());
+		int nValue=atoi(sd[6].c_str());
 		std::string sValue=sd[7];
 		unsigned char Unit=atoi(sd[2].c_str());
 		unsigned char dType=atoi(sd[3].c_str());

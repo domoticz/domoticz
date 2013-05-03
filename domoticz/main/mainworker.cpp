@@ -881,6 +881,10 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			WriteMessage("YouLess Meter",false);
 			decode_YouLessMeter(HwdID, (tRBUF *)pRXCommand);
 			break;
+		case pTypeAirQuality:
+			WriteMessage("AirQuality Meter",false);
+			decode_AirQuality(HwdID, (tRBUF *)pRXCommand);
+			break;
 		case pTypeRego6XXTemp:
 			WriteMessage("Rego6XX temp",false);
 			decode_Rego6XXTemp(HwdID, (tRBUF *)pRXCommand);
@@ -5430,6 +5434,54 @@ void MainWorker::decode_Rego6XXValue(const int HwdID, const tRBUF *pResponse)
 		    WriteMessage(szTmp);
             break;
         }
+	}
+}
+
+void MainWorker::decode_AirQuality(const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[200];
+	std::string devname;
+
+	const _tAirQualityMeter *pMeter=(const _tAirQualityMeter*)pResponse;
+	unsigned char devType=pMeter->type;
+	unsigned char subType=pMeter->subtype;
+	std::string ID=pMeter->ID;
+	unsigned char Unit=subType;
+	unsigned char cmnd=0;
+	unsigned char SignalLevel=12;
+	unsigned char BatteryLevel = 255;
+
+	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,pMeter->airquality,devname);
+	PrintDeviceName(devname);
+
+	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (const float)pMeter->airquality);
+
+	if (m_verboselevel == EVBL_ALL)
+	{
+		switch (pMeter->subtype)
+		{
+		case sTypeVoltcraft:
+			WriteMessage("subtype       = Voltcraft CO-20");
+
+			sprintf(szTmp,"CO2 = %ld ppm", pMeter->airquality);
+			WriteMessage(szTmp);
+			if (pMeter->airquality<700)
+				strcpy_s(szTmp,"Quality = Excellent");
+			else if (pMeter->airquality<900)
+				strcpy_s(szTmp,"Quality = Good");
+			else if (pMeter->airquality<1100)
+				strcpy_s(szTmp,"Quality = Fair");
+			else if (pMeter->airquality<1600)
+				strcpy_s(szTmp,"Quality = Mediocre");
+			else
+				strcpy_s(szTmp,"Quality = Bad");
+			WriteMessage(szTmp);
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
+			WriteMessage(szTmp);
+			break;
+		}
 	}
 }
 

@@ -16,6 +16,7 @@ Version 1.0.xxx (May xxth 2013)
 - Implemented: Email setup test button
 - Changed: Notification text 'Greater then' changed to 'Greater Than'
 - Implemented: 5th parameter for light/switch script (full status descriptor)
+- Fixed: PushOn button Off delay time now handles values above 255
 
 Version 1.0.484 (April 28th 2013)
 - Implemented: Raspberry Pi, updating via the web browser (Settings Tab)

@@ -308,6 +308,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeFS20, "FS20" , "unknown" },
 		{ pTypeRego6XXTemp, "Temp" , "temperature" },
 		{ pTypeRego6XXValue, "Value" , "utility" },
+		{ pTypeAirQuality, "Air Quality" , "air" },
 		{  0,NULL,NULL }
 	};
 	if (snum==1)
@@ -456,6 +457,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeRego6XXTemp, sTypeRego6XXTemp, "Rego 6XX" },
 		{ pTypeRego6XXValue, sTypeRego6XXStatus, "Rego 6XX" },
 		{ pTypeRego6XXValue, sTypeRego6XXCounter, "Rego 6XX" },
+
+		{ pTypeAirQuality, sTypeVoltcraft, "Voltcraft CO-20" },
 
 		{  0,0,NULL }
 	};
