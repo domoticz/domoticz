@@ -30,6 +30,11 @@
 #define sTypeRego6XXStatus   0x02
 #define sTypeRego6XXCounter  0x03
 
+//Z-Wave
+//#define pTypeENERGY 0x5A
+#define sTypeZWaveUsage 0xA0
+
+
 typedef struct _tAirQualityMeter {
 	unsigned char len;
 	unsigned char type;

@@ -23,7 +23,7 @@
 #include "../hardware/YouLess.h"
 #include "../hardware/TE923.h"
 #include "../hardware/Rego6XXSerial.h"
-
+#include "../hardware/Razberry.h"
 
 #ifdef _DEBUG
 	//#define DEBUG_RECEIVE
@@ -322,6 +322,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Domoticz:
 		//LAN
 		pHardware = new DomoticzTCP(ID, Address, Port, Username, Password);
+		break;
+	case HTYPE_RazberryZWave:
+		//HTTP
+		pHardware = new CRazberry(ID, Address, Port, Username, Password);
 		break;
 	case HTYPE_P1SmartMeterLAN:
 		//LAN

@@ -63,6 +63,9 @@
     <Filter Include="Devices\Rego6XX">
       <UniqueIdentifier>{f7b93c2a-b061-4a1b-9a68-75151cb727cb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Razberry-ZWave">
+      <UniqueIdentifier>{3d63876c-62b2-4fbf-a50c-5132dcfbcb3b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -232,6 +235,9 @@
     <ClInclude Include="smtpclient\SMTPClient.h">
       <Filter>SMTP</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\Razberry.h">
+      <Filter>Devices\Razberry-ZWave</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -368,6 +374,9 @@
     </ClCompile>
     <ClCompile Include="smtpclient\SMTPClient.cpp">
       <Filter>SMTP</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\Razberry.cpp">
+      <Filter>Devices\Razberry-ZWave</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

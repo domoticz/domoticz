@@ -4723,6 +4723,9 @@ std::string CWebServer::GetJSonPage()
 			root["title"]="DeleteSceneDevice";
 			sprintf(szTmp,"DELETE FROM SceneDevices WHERE (ID == %s)",idx.c_str());
 			result=m_pMain->m_sql.query(szTmp);
+			sprintf(szTmp,"DELETE FROM CamerasActiveDevices WHERE (DevSceneType==1) AND (DevSceneRowID == %s)",idx.c_str());
+			result=m_pMain->m_sql.query(szTmp);
+
 		}
 		else if (cparam=="getsubdevices")
 		{
@@ -5698,7 +5701,7 @@ std::string CWebServer::GetJSonPage()
 				{
 				}
 			}
-			else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)) {
+			else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)||(htype == HTYPE_RazberryZWave)) {
 				//Lan
 				if (address=="")
 					goto exitjson;
@@ -5792,7 +5795,7 @@ std::string CWebServer::GetJSonPage()
 			{
 				//USB
 			}
-			else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)) {
+			else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)||(htype == HTYPE_RazberryZWave)) {
 				//Lan
 				if (address=="")
 					goto exitjson;

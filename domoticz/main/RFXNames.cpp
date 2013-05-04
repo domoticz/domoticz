@@ -144,6 +144,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_YouLess,			"YouLess Meter with LAN interface" },
 		{ HTYPE_TE923,				"TE923 USB Compatible Weather Station" },
 		{ HTYPE_Rego6XX,			"Rego 6XX USB/serial interface" },
+		{ HTYPE_RazberryZWave,		"Razberry Z-Wave via LAN interface (HTTP)" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -437,7 +438,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		
 		{ pTypeENERGY, sTypeELEC2, "CM119 / CM160" },
 		{ pTypeENERGY, sTypeELEC3, "CM180" },
-		
+		{ pTypeENERGY, sTypeZWaveUsage, "ZWave Usage" },
+
 		{ pTypeCURRENTENERGY, sTypeELEC4, "CM180i" },
 		
 		{ pTypeWEIGHT, sTypeWEIGHT1, "BWR102" },

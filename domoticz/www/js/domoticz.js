@@ -230,7 +230,7 @@ function ShowLightLog(id,name,content,backfunction)
 	$.LogChart = $($.content + ' #lightgraph');
 	$.LogChart.highcharts({
 		chart: {
-		  type: 'spline',
+		  type: 'line',
 		  zoomType: 'xy',
 		  marginRight: 10
 		},
@@ -259,7 +259,7 @@ function ShowLightLog(id,name,content,backfunction)
 			}
 		},
 		plotOptions: {
-			spline: {
+			line: {
 				lineWidth: 3,
 				states: {
 					hover: {
@@ -281,7 +281,8 @@ function ShowLightLog(id,name,content,backfunction)
 		},
 		series: [{
 			showInLegend: false,
-			name: 'percent'
+			name: 'percent',
+			step: 'left'
 		}]
 		,
 		navigation: {
