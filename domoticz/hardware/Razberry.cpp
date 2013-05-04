@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "Razberry.h"
 
 #include <iostream>     // std::cout
