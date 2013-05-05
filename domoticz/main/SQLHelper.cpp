@@ -508,6 +508,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("CostWater", 16473);
 	}
+	if (!GetPreferencesVar("UseEmailInNotifications", nValue))
+	{
+		UpdatePreferencesVar("UseEmailInNotifications", 1);
+	}
 
 	//Start background thread
 	if (!StartThread())
@@ -1176,19 +1180,25 @@ bool CSQLHelper::SendNotification(const std::string EventID, const std::string M
 		}
 	}
 	//check if Email enabled
-	if (GetPreferencesVar("EmailServer",nValue,sValue))
+	if (GetPreferencesVar("UseEmailInNotifications", nValue))
 	{
-		if (sValue!="")
+		if (nValue==1)
 		{
-			std::string szBody;
-			szBody=
-				"<html>\n"
-				"<body>\n"
-				"<b>" + CURLEncode::URLDecode(Message) + "</b>\n"
-				"</body>\n"
-				"</html>\n";
+			if (GetPreferencesVar("EmailServer",nValue,sValue))
+			{
+				if (sValue!="")
+				{
+					std::string szBody;
+					szBody=
+						"<html>\n"
+						"<body>\n"
+						"<b>" + CURLEncode::URLDecode(Message) + "</b>\n"
+						"</body>\n"
+						"</html>\n";
 
-			AddTaskItem(_tTaskItem::SendEmail(1,CURLEncode::URLDecode(Message),szBody));
+					AddTaskItem(_tTaskItem::SendEmail(1,CURLEncode::URLDecode(Message),szBody));
+				}
+			}
 		}
 	}
 	return true;

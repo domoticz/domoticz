@@ -449,6 +449,9 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("EmailTo",CURLEncode::URLDecode(m_pWebEm->FindValue("EmailTo")).c_str());
 	m_pMain->m_sql.UpdatePreferencesVar("EmailServer",m_pWebEm->FindValue("EmailServer").c_str());
 
+	std::string suseemailinnotificationsalerts=m_pWebEm->FindValue("useemailinnotificationsalerts");
+	m_pMain->m_sql.UpdatePreferencesVar("UseEmailInNotifications",(suseemailinnotificationsalerts=="on"?1:0));
+
 	std::string EmailUsername=CURLEncode::URLDecode(m_pWebEm->FindValue("EmailUsername"));
 	std::string EmailPassword=CURLEncode::URLDecode(m_pWebEm->FindValue("EmailPassword"));
 	EmailUsername=base64_encode((const unsigned char*)EmailUsername.c_str(),EmailUsername.size());
@@ -6830,6 +6833,10 @@ std::string CWebServer::GetJSonPage()
 				else if (Key=="EmailPassword")
 				{
 					root["EmailPassword"]=base64_decode(sValue);
+				}
+				else if (Key=="UseEmailInNotifications")
+				{
+					root["UseEmailInNotifications"]=nValue;
 				}
 			}
 		}
