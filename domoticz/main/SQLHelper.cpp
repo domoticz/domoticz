@@ -14,7 +14,7 @@
 #include "../smtpclient/SMTPClient.h"
 #include "../webserver/Base64.h"
 
-#define DB_VERSION 8
+#define DB_VERSION 9
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -421,6 +421,9 @@ bool CSQLHelper::OpenDatabase()
 			query("DROP TABLE IF EXISTS [Cameras]");
 			query(sqlCreateCameras);
 		}
+		if (dbversion<9) {
+			query("UPDATE Notifications SET Params = 'S' WHERE Params = ''");
+		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
 
@@ -588,6 +591,43 @@ void CSQLHelper::Do_Work()
 			else if (itt->_ItemType == TITEM_EMAIL_CAMERA_SNAPSHOT)
 			{
 				m_pMain->m_cameras.EmailCameraSnapshot(itt->_ID,itt->_sValue);
+			}
+			else if (itt->_ItemType == TITEM_SEND_EMAIL)
+			{
+				int nValue;
+				std::string sValue;
+				if (GetPreferencesVar("EmailServer",nValue,sValue))
+				{
+					if (sValue!="")
+					{
+						std::string EmailFrom;
+						std::string EmailTo;
+						std::string EmailServer=sValue;
+						int EmailPort=25;
+						std::string EmailUsername;
+						std::string EmailPassword;
+						GetPreferencesVar("EmailFrom",nValue,EmailFrom);
+						GetPreferencesVar("EmailTo",nValue,EmailTo);
+						GetPreferencesVar("EmailUsername",nValue,EmailUsername);
+						GetPreferencesVar("EmailPassword",nValue,EmailPassword);
+						bool bRet=SMTPClient::SendEmail(
+							CURLEncode::URLDecode(EmailFrom.c_str()),
+							CURLEncode::URLDecode(EmailTo.c_str()),
+							CURLEncode::URLDecode(EmailServer.c_str()),
+							EmailPort,
+							base64_decode(EmailUsername),
+							base64_decode(EmailPassword),
+							itt->_ID,
+							itt->_sValue,
+							true
+							);
+						if (bRet)
+							_log.Log(LOG_NORM,"Notification send (Email)");
+						else
+							_log.Log(LOG_ERROR,"Notification failed (Email)");
+
+					}
+				}
 			}
 
 			itt++;
@@ -969,17 +1009,13 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 				m_background_task_queue.push_back(_tTaskItem(1,scriptname,s_scriptparams.str()));
 			}
 
+			//Check for notifications
+			if (bIsLightSwitchOn)
+				CheckAndHandleSwitchNotification(HardwareID,ID,unit,devType,subType,NTYPE_SWITCH_ON);
+			else
+				CheckAndHandleSwitchNotification(HardwareID,ID,unit,devType,subType,NTYPE_SWITCH_OFF);
 			if (bIsLightSwitchOn)
 			{
-				//Check for notifications
-				std::vector<_tNotification> notifications=GetNotifications(ulID);
-				if (notifications.size()>0)
-				{
-					std::string msg=Name+" pressed";
-					SendNotification("", m_urlencoder.URLEncode(msg));
-
-					TouchNotification(notifications[0].ID);
-				}
 				if (AddjValue!=0)
 				{
 					bool bAdd2DelayQueue=false;
@@ -1144,17 +1180,6 @@ bool CSQLHelper::SendNotification(const std::string EventID, const std::string M
 	{
 		if (sValue!="")
 		{
-			std::string EmailFrom;
-			std::string EmailTo;
-			std::string EmailServer=sValue;
-			int EmailPort=25;
-			std::string EmailUsername;
-			std::string EmailPassword;
-			GetPreferencesVar("EmailFrom",nValue,EmailFrom);
-			GetPreferencesVar("EmailTo",nValue,EmailTo);
-			GetPreferencesVar("EmailUsername",nValue,EmailUsername);
-			GetPreferencesVar("EmailPassword",nValue,EmailPassword);
-
 			std::string szBody;
 			szBody=
 				"<html>\n"
@@ -1163,21 +1188,7 @@ bool CSQLHelper::SendNotification(const std::string EventID, const std::string M
 				"</body>\n"
 				"</html>\n";
 
-			bool bRet=SMTPClient::SendEmail(
-				CURLEncode::URLDecode(EmailFrom.c_str()),
-				CURLEncode::URLDecode(EmailTo.c_str()),
-				CURLEncode::URLDecode(EmailServer.c_str()),
-				EmailPort,
-				base64_decode(EmailUsername),
-				base64_decode(EmailPassword),
-				CURLEncode::URLDecode(Message),
-				szBody,
-				true
-				);
-			if (bRet)
-				_log.Log(LOG_NORM,"Notification send (Email)");
-			else
-				_log.Log(LOG_ERROR,"Notification failed (Email)");
+			AddTaskItem(_tTaskItem::SendEmail(1,CURLEncode::URLDecode(Message),szBody));
 		}
 	}
 	return true;
@@ -1611,6 +1622,86 @@ bool CSQLHelper::CheckAndHandleNotification(
 	return true;
 }
 
+bool CSQLHelper::CheckAndHandleSwitchNotification(
+	const int HardwareID, 
+	const std::string ID, 
+	const unsigned char unit, 
+	const unsigned char devType, 
+	const unsigned char subType, 
+	const _eNotificationTypes ntype)
+{
+	if (!m_dbase)
+		return false;
+
+	char szTmp[1000];
+
+	unsigned long long ulID=0;
+
+	std::vector<std::vector<std::string> > result;
+	sprintf(szTmp,"SELECT ID, Name, SwitchType FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID.c_str(), unit, devType, subType);
+	result=query(szTmp);
+	if (result.size()==0)
+		return false;
+	std::stringstream s_str( result[0][0] );
+	s_str >> ulID;
+	std::string devicename=result[0][1];
+	_eSwitchType switchtype=(_eSwitchType)atoi(result[0][2].c_str());
+
+	std::vector<_tNotification> notifications=GetNotifications(ulID);
+	if (notifications.size()==0)
+		return false;
+
+	std::string msg="";
+
+	std::string ltype=Notification_Type_Desc(ntype,1);
+
+	std::vector<_tNotification>::const_iterator itt;
+	for (itt=notifications.begin(); itt!=notifications.end(); ++itt)
+	{
+		std::vector<std::string> splitresults;
+		StringSplit(itt->Params, ";", splitresults);
+		if (splitresults.size()<1)
+			continue; //impossible
+		std::string atype=splitresults[0];
+
+		bool bSendNotification=false;
+
+		if (atype==ltype)
+		{
+			bSendNotification=true;
+			msg=devicename;
+			if (ntype==NTYPE_SWITCH_ON)
+			{
+				switch (switchtype)
+				{
+				case STYPE_Doorbell:
+					msg+=" pressed";
+					break;
+				case STYPE_Motion:
+					msg+=" movement detected";
+					break;
+				case STYPE_SMOKEDETECTOR:
+					msg+=" ALARM/FIRE !";
+					break;
+				default:
+					msg+=" >> ON";
+					break;
+				}
+				 
+			}
+			else {
+				msg+=" >> OFF";
+			}
+		}
+		if (bSendNotification)
+		{
+			SendNotification("", m_urlencoder.URLEncode(msg));
+			TouchNotification(itt->ID);
+		}
+	}
+	return true;
+}
+
 bool CSQLHelper::CheckAndHandleRainNotification(
 	const int HardwareID, 
 	const std::string ID, 
@@ -1689,29 +1780,19 @@ bool CSQLHelper::AddNotification(const std::string DevIdx, const std::string Par
 	std::vector<std::vector<std::string> > result;
 
 	std::stringstream szQuery;
+
+	//First check for duplicate, because we do not want this
+	szQuery << "SELECT ROWID FROM Notifications WHERE (DeviceRowID==" << DevIdx << ") AND (Params=='" << Param << "')";
+	result=query(szQuery.str());
+	if (result.size()>0)
+		return false;//already there!
+
 	szQuery.clear();
 	szQuery.str("");
 	szQuery << "INSERT INTO Notifications (DeviceRowID, Params) VALUES (" << DevIdx << ",'" << Param << "')";
 	result=query(szQuery.str());
 	return true;
 }
-
-bool CSQLHelper::UpdateNotification(const std::string ID, const std::string Param)
-{
-	if (!m_dbase)
-		return false;
-
-	std::vector<std::vector<std::string> > result;
-
-	std::stringstream szQuery;
-	//Update
-	szQuery.clear();
-	szQuery.str("");
-	szQuery << "UPDATE Notifications SET Params='" << Param << "' WHERE (ID==" << ID << ")";
-	result = query(szQuery.str());
-	return true;
-}
-
 
 bool CSQLHelper::RemoveDeviceNotifications(const std::string DevIdx)
 {

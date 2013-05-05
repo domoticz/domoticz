@@ -194,7 +194,7 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_WIND, "Wind","W" },
 		{ NTYPE_USAGE, "Usage","M" },
 		{ NTYPE_BARO, "Baro","B" },
-		{ NTYPE_SWITCH, "Switch On", "S" },
+		{ NTYPE_SWITCH_ON, "Switch On", "S" },
 		{ NTYPE_AMPERE1, "Ampere 1", "1" },
 		{ NTYPE_AMPERE2, "Ampere 2", "2" },
 		{ NTYPE_AMPERE3, "Ampere 3", "3" },
@@ -202,6 +202,7 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_TODAYENERGY, "Today", "E" },
 		{ NTYPE_TODAYGAS, "Today", "G" },
 		{ NTYPE_TODAYCOUNTER, "Today", "C" },
+		{ NTYPE_SWITCH_OFF, "Switch Off", "O" },
 		{  0,NULL,NULL }
 	};
 	if (snum==0)
@@ -219,9 +220,9 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_RAIN, "mm" },
 		{ NTYPE_UV, "UVI" },
 		{ NTYPE_WIND, "m/s" },
-		{ NTYPE_USAGE, "" },
+		{ NTYPE_USAGE, "On" },
 		{ NTYPE_BARO, "hPa" },
-		{ NTYPE_SWITCH, "" },
+		{ NTYPE_SWITCH_ON, "" },
 		{ NTYPE_AMPERE1, "Ampere"},
 		{ NTYPE_AMPERE2, "Ampere"},
 		{ NTYPE_AMPERE3, "Ampere" },
@@ -229,6 +230,7 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_TODAYENERGY, "kWh" },
 		{ NTYPE_TODAYGAS, "m3" },
 		{ NTYPE_TODAYCOUNTER, "cnt" },
+		{ NTYPE_SWITCH_OFF, "On" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, nType);

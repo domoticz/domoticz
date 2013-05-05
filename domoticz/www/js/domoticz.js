@@ -317,14 +317,20 @@ function GetNotificationSettings()
 	var nsettings = {};
 
 	nsettings.type=$($.content + " #notificationparamstable #combotype").val();
-	nsettings.when=$($.content + " #notificationparamstable #combowhen").val();
-	nsettings.value=$($.content + " #notificationparamstable #value").val();
-	if ((nsettings.value=="")||(isNaN(nsettings.value)))
-	{
-		ShowNotify('Please correct the Value!', 2500, true);
-		return null;
+	var whenvisible=$($.content + " #notificationparamstable #notiwhen").is(":visible");
+	if (whenvisible==false) {
+		nsettings.when=0;
+		nsettings.value=0;
 	}
-
+	else {
+		nsettings.when=$($.content + " #notificationparamstable #combowhen").val();
+		nsettings.value=$($.content + " #notificationparamstable #value").val();
+		if ((nsettings.value=="")||(isNaN(nsettings.value)))
+		{
+			ShowNotify('Please correct the Value!', 2500, true);
+			return null;
+		}
+	}
 	return nsettings;
 }
 
@@ -357,6 +363,7 @@ function UpdateNotification(idx)
 	}
 	$.ajax({
 		 url: "json.htm?type=command&param=updatenotification&idx=" + idx + 
+					"&devidx=" + $.devIdx +
 					"&ttype=" + nsettings.type +
 					"&twhen=" + nsettings.when +
 					"&tvalue=" + nsettings.value,
@@ -399,19 +406,24 @@ function AddNotification()
 	if (nsettings==null)
 		return;
 	$.ajax({
-		 url: "json.htm?type=command&param=addnotification&idx=" + $.devIdx + 
-					"&ttype=" + nsettings.type +
-					"&twhen=" + nsettings.when +
-					"&tvalue=" + nsettings.value,
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
-			RefreshNotificationTable($.devIdx);
-		 },
-		 error: function(){
+		url: "json.htm?type=command&param=addnotification&idx=" + $.devIdx + 
+				"&ttype=" + nsettings.type +
+				"&twhen=" + nsettings.when +
+				"&tvalue=" + nsettings.value,
+		async: false, 
+		dataType: 'json',
+		success: function(data) {
+			if (data.status != "OK") {
 				HideNotify();
-				ShowNotify('Problem adding notification!', 2500, true);
-		 }     
+				ShowNotify('Problem adding notification!<br>Duplicate Value?', 2500, true);
+				return;
+			}
+			RefreshNotificationTable($.devIdx);
+		},
+		error: function(){
+			HideNotify();
+			ShowNotify('Problem adding notification!', 2500, true);
+		}     
 	});
 }
 
@@ -433,128 +445,139 @@ function RefreshNotificationTable(idx)
         
       if (typeof data.result != 'undefined') {
         $.each(data.result, function(i,item){
-        
-					var parts = item.Params.split(';');
+			var parts = item.Params.split(';');
+			var nvalue=0;
+			if (parts.length>1) {
+				nvalue=parts[2];
+			}
+			var whenstr = "";
+			
+			var ntype="";
+			var stype="";
+			if (parts[0]=="T")
+			{
+				ntype="Temperature";
+				stype=" &deg; C";
+			}
+			else if (parts[0]=="H")
+			{
+				ntype="Humidity";
+				stype=" %";
+			}
+			else if (parts[0]=="R")
+			{
+				ntype="Rain";
+				stype=" mm";
+			}
+			else if (parts[0]=="W")
+			{
+				ntype="Wind";
+				stype=" m/s";
+			}
+			else if (parts[0]=="U")
+			{
+				ntype="UV";
+				stype=" UVI";
+			}
+			else if (parts[0]=="M")
+			{
+				ntype="Usage";
+			}
+			else if (parts[0]=="B")
+			{
+				ntype="Baro";
+				stype=" hPa";
+			}
+			else if (parts[0]=="S")
+			{
+				ntype="Switch On";
+			}
+			else if (parts[0]=="O")
+			{
+				ntype="Switch Off";
+			}
+			else if (parts[0]=="E")
+			{
+				ntype="Today";
+				stype=" kWh";
+			}
+			else if (parts[0]=="G")
+			{
+				ntype="Today";
+				stype=" m3";
+			}
+			else if (parts[0]=="1")
+			{
+				ntype="Ampere 1";
+				stype=" A";
+			}
+			else if (parts[0]=="2")
+			{
+				ntype="Ampere 2";
+				stype=" A";
+			}
+			else if (parts[0]=="3")
+			{
+				ntype="Ampere 3";
+				stype=" A";
+			}
 
-					var nvalue=parts[2];
-					var whenstr = "";
+			var nwhen="";
+			if (ntype=="Switch On") {
+				whenstr="On";
+			}
+			else if (ntype=="Switch Off") {
+				whenstr="Off";
+			}
+			else {
+				if (parts[1]==">") {
+					nwhen="Greater than ";
+				}
+				else {
+					nwhen="Below ";
+				}
+				whenstr= nwhen + nvalue + stype;
+			}
 					
-					var ntype="";
-					var stype="";
-					if (parts[0]=="T")
-					{
-						ntype="Temperature";
-						stype=" &deg; C";
-					}
-					else if (parts[0]=="H")
-					{
-						ntype="Humidity";
-						stype=" %";
-					}
-					else if (parts[0]=="R")
-					{
-						ntype="Rain";
-						stype=" mm";
-					}
-					else if (parts[0]=="W")
-					{
-						ntype="Wind";
-						stype=" m/s";
-					}
-					else if (parts[0]=="U")
-					{
-						ntype="UV";
-						stype=" UVI";
-					}
-					else if (parts[0]=="M")
-					{
-						ntype="Usage";
-					}
-					else if (parts[0]=="B")
-					{
-						ntype="Baro";
-						stype=" hPa";
-					}
-					else if (parts[0]=="S")
-					{
-						ntype="Switch";
-					}
-					else if (parts[0]=="E")
-					{
-						ntype="Today";
-						stype=" kWh";
-					}
-					else if (parts[0]=="G")
-					{
-						ntype="Today";
-						stype=" m3";
-					}
-					else if (parts[0]=="1")
-					{
-						ntype="Ampere 1";
-						stype=" A";
-					}
-					else if (parts[0]=="2")
-					{
-						ntype="Ampere 2";
-						stype=" A";
-					}
-					else if (parts[0]=="3")
-					{
-						ntype="Ampere 3";
-						stype=" A";
-					}
-						
-					var nwhen="";
-					if (parts[1]==">") {
-						nwhen="Greater than ";
+			var addId = oTable.fnAddData( {
+				"DT_RowId": item.idx,
+				"nvalue" : nvalue,
+				"0": ntype,
+				"1": whenstr
+			} );
+		});
+		/* Add a click handler to the rows - this could be used as a callback */
+		$($.content + " #notificationtable tbody tr").click( function( e ) {
+			if ( $(this).hasClass('row_selected') ) {
+				$(this).removeClass('row_selected');
+				$($.content + ' #updelclr #notificationupdate').attr("class", "btnstyle3-dis");
+				$($.content + ' #updelclr #notificationdelete').attr("class", "btnstyle3-dis");
+			}
+			else {
+				oTable.$('tr.row_selected').removeClass('row_selected');
+				$(this).addClass('row_selected');
+				$($.content + ' #updelclr #notificationupdate').attr("class", "btnstyle3");
+				$($.content + ' #updelclr #notificationdelete').attr("class", "btnstyle3");
+				var anSelected = fnGetSelected( oTable );
+				if ( anSelected.length !== 0 ) {
+					var data = oTable.fnGetData( anSelected[0] );
+					var idx= data["DT_RowId"];
+					$.myglobals.SelectedNotificationIdx=idx;
+					$($.content + " #updelclr #notificationupdate").attr("href", "javascript:UpdateNotification(" + idx + ")");
+					$($.content + " #updelclr #notificationdelete").attr("href", "javascript:DeleteNotification(" + idx + ")");
+					//update user interface with the paramters of this row
+					$($.content + " #notificationparamstable #combotype").val(GetValTextInNTypeStrArray(data["0"]));
+					ShowNotificationTypeLabel();
+					if (data["1"].match("^Greater")) {
+						$($.content + " #notificationparamstable #combowhen").val(0);
 					}
 					else {
-						nwhen="Below ";
+						$($.content + " #notificationparamstable #combowhen").val(1);
 					}
-					whenstr= nwhen + nvalue + stype;
-					
-          var addId = oTable.fnAddData( {
-								"DT_RowId": item.idx,
-								"nvalue" : nvalue,
-                "0": ntype,
-								"1": whenstr
-							} );
-        });
-				/* Add a click handler to the rows - this could be used as a callback */
-				$($.content + " #notificationtable tbody tr").click( function( e ) {
-							if ( $(this).hasClass('row_selected') ) {
-									$(this).removeClass('row_selected');
-									$($.content + ' #updelclr #notificationupdate').attr("class", "btnstyle3-dis");
-									$($.content + ' #updelclr #notificationdelete').attr("class", "btnstyle3-dis");
-							}
-							else {
-									oTable.$('tr.row_selected').removeClass('row_selected');
-									$(this).addClass('row_selected');
-									$($.content + ' #updelclr #notificationupdate').attr("class", "btnstyle3");
-									$($.content + ' #updelclr #notificationdelete').attr("class", "btnstyle3");
-									var anSelected = fnGetSelected( oTable );
-									if ( anSelected.length !== 0 ) {
-										var data = oTable.fnGetData( anSelected[0] );
-										var idx= data["DT_RowId"];
-										$.myglobals.SelectedNotificationIdx=idx;
-										$($.content + " #updelclr #notificationupdate").attr("href", "javascript:UpdateNotification(" + idx + ")");
-										$($.content + " #updelclr #notificationdelete").attr("href", "javascript:DeleteNotification(" + idx + ")");
-										//update user interface with the paramters of this row
-										$($.content + " #notificationparamstable #combotype").val(GetValTextInNTypeStrArray(data["0"]));
-										ShowNotificationTypeLabel();
-										if (data["1"].match("^Greater")) {
-											$($.content + " #notificationparamstable #combowhen").val(0);
-										}
-										else {
-											$($.content + " #notificationparamstable #combowhen").val(1);
-										}
-										$($.content + " #notificationparamstable #value").val(data["nvalue"]);
-									}
-									
-							}
-				}); 
-				
+					$($.content + " #notificationparamstable #value").val(data["nvalue"]);
+				}
+			}
+		}); 
       }
      }
   });
@@ -564,32 +587,41 @@ function RefreshNotificationTable(idx)
 function ShowNotificationTypeLabel()
 {
 	var typetext = $($.content + " #notificationparamstable #combotype option:selected").text();
-		if (typetext == 'Temperature')
-			$($.content + " #notificationparamstable #valuetype").html('&nbsp;&deg; C');
-		else if (typetext == 'Humidity')
-			$($.content + " #notificationparamstable #valuetype").html('&nbsp;%');
-		else if (typetext == 'UV')
-			$($.content + " #notificationparamstable #valuetype").html('&nbsp;UVI');
-		else if (typetext == 'Rain')
-			$($.content + " #notificationparamstable #valuetype").html('&nbsp;mm');
-		else if (typetext == 'Wind')
-			$($.content + " #notificationparamstable #valuetype").html('&nbsp;m/s');
-		else if (typetext == 'Baro')
-			$($.content + " #notificationparamstable #valuetype").html('&nbsp;hPa');
-		else if (typetext == 'Usage')
-			$($.content + " #notificationparamstable #valuetype").html('&nbsp;');
-		else if (typetext == 'Today')
-			$($.content + " #notificationparamstable #valuetype").html('&nbsp;');
-		else if (typetext == 'Total')
-			$($.content + " #notificationparamstable #valuetype").html('&nbsp;');
-		else if (typetext == 'Ampere 1')
-			$($.content + " #notificationparamstable #valuetype").html('&nbsp;A');
-		else if (typetext == 'Ampere 2')
-			$($.content + " #notificationparamstable #valuetype").html('&nbsp;A');
-		else if (typetext == 'Ampere 3')
-			$($.content + " #notificationparamstable #valuetype").html('&nbsp;A');
-		else
-			$($.content + " #notificationparamstable #valuetype").html('&nbsp;??');
+	
+	if ((typetext == "Switch On")||(typetext == "Switch Off")) {
+		$($.content + " #notificationparamstable #notiwhen").hide();
+		$($.content + " #notificationparamstable #notival").hide();
+		return;
+	}
+	$($.content + " #notificationparamstable #notiwhen").show();
+	$($.content + " #notificationparamstable #notival").show();
+	
+	if (typetext == 'Temperature')
+		$($.content + " #notificationparamstable #valuetype").html('&nbsp;&deg; C');
+	else if (typetext == 'Humidity')
+		$($.content + " #notificationparamstable #valuetype").html('&nbsp;%');
+	else if (typetext == 'UV')
+		$($.content + " #notificationparamstable #valuetype").html('&nbsp;UVI');
+	else if (typetext == 'Rain')
+		$($.content + " #notificationparamstable #valuetype").html('&nbsp;mm');
+	else if (typetext == 'Wind')
+		$($.content + " #notificationparamstable #valuetype").html('&nbsp;m/s');
+	else if (typetext == 'Baro')
+		$($.content + " #notificationparamstable #valuetype").html('&nbsp;hPa');
+	else if (typetext == 'Usage')
+		$($.content + " #notificationparamstable #valuetype").html('&nbsp;');
+	else if (typetext == 'Today')
+		$($.content + " #notificationparamstable #valuetype").html('&nbsp;');
+	else if (typetext == 'Total')
+		$($.content + " #notificationparamstable #valuetype").html('&nbsp;');
+	else if (typetext == 'Ampere 1')
+		$($.content + " #notificationparamstable #valuetype").html('&nbsp;A');
+	else if (typetext == 'Ampere 2')
+		$($.content + " #notificationparamstable #valuetype").html('&nbsp;A');
+	else if (typetext == 'Ampere 3')
+		$($.content + " #notificationparamstable #valuetype").html('&nbsp;A');
+	else
+		$($.content + " #notificationparamstable #valuetype").html('&nbsp;??');
 }
 
 function GetValTextInNTypeStrArray(stext)

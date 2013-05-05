@@ -2387,7 +2387,11 @@ std::string CWebServer::GetJSonPage()
 			for (itt=notifications.begin(); itt!=notifications.end(); ++itt)
 			{
 				root["result"][ii]["idx"]=itt->ID;
-				root["result"][ii]["Params"]=itt->Params;
+				std::string sParams=itt->Params;
+				if (sParams=="") {
+					sParams="S";
+				}
+				root["result"][ii]["Params"]=sParams;
 				ii++;
 			}
 		}
@@ -5334,6 +5338,31 @@ std::string CWebServer::GetJSonPage()
 
 			int ii=0;
 			if (
+				(dType==pTypeLighting1)||
+				(dType==pTypeLighting2)||
+				(dType==pTypeLighting3)||
+				(dType==pTypeLighting4)||
+				(dType==pTypeLighting5)||
+				(dType==pTypeLighting6)||
+				(dType==pTypeSecurity1)
+				)
+			{
+				if (switchtype!=STYPE_PushOff)
+				{
+					root["result"][ii]["val"]=NTYPE_SWITCH_ON;
+					root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_SWITCH_ON,0);
+					root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_SWITCH_ON,1);
+					ii++;
+				}
+				if (switchtype!=STYPE_PushOn)
+				{
+					root["result"][ii]["val"]=NTYPE_SWITCH_OFF;
+					root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_SWITCH_OFF,0);
+					root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_SWITCH_OFF,1);
+					ii++;
+				}
+			}
+			if (
 				(
 				(dType==pTypeTEMP)||
 				(dType==pTypeTEMP_HUM)||
@@ -5500,40 +5529,40 @@ std::string CWebServer::GetJSonPage()
 		else if (cparam=="addnotification")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
-			std::string ntype=m_pWebEm->FindValue("ntype");
 			if (idx=="")
 				goto exitjson;
 		
-			if (ntype=="light")
+			std::string stype=m_pWebEm->FindValue("ttype");
+			std::string swhen=m_pWebEm->FindValue("twhen");
+			std::string svalue=m_pWebEm->FindValue("tvalue");
+			if ((stype=="")||(swhen=="")||(swhen==""))
+				goto exitjson;
+
+			_eNotificationTypes ntype=(_eNotificationTypes)atoi(stype.c_str());
+			std::string ttype=Notification_Type_Desc(ntype,1);
+			if (
+				(ntype==NTYPE_SWITCH_ON)||
+				(ntype==NTYPE_SWITCH_OFF)
+				)
 			{
-				root["status"]="OK";
-				root["title"]="AddNotification";
-				//Lights can only have one notification, so delete old one first
-				m_pMain->m_sql.RemoveDeviceNotifications(idx);
-				m_pMain->m_sql.AddNotification(idx,"");
+				strcpy(szTmp,ttype.c_str());
 			}
 			else
 			{
-				std::string stype=m_pWebEm->FindValue("ttype");
-				std::string swhen=m_pWebEm->FindValue("twhen");
-				std::string svalue=m_pWebEm->FindValue("tvalue");
-				if ((stype=="")||(swhen=="")||(swhen==""))
-					goto exitjson;
-
-				root["status"]="OK";
-				root["title"]="AddNotification";
-
-				_eNotificationTypes ntype=(_eNotificationTypes)atoi(stype.c_str());
-				std::string ttype=Notification_Type_Desc(ntype,1);
 				unsigned char twhen=(swhen=="0")?'>':'<';
 				sprintf(szTmp,"%s;%c;%s",ttype.c_str(),twhen,svalue.c_str());
-				m_pMain->m_sql.AddNotification(idx,szTmp);
+			}
+			bool bOK=m_pMain->m_sql.AddNotification(idx,szTmp);
+			if (bOK) {
+				root["status"]="OK";
+				root["title"]="AddNotification";
 			}
 		}
 		else if (cparam=="updatenotification")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
+			std::string devidx=m_pWebEm->FindValue("devidx");
+			if ((idx=="")||(devidx==""))
 				goto exitjson;
 
 			std::string stype=m_pWebEm->FindValue("ttype");
@@ -5543,11 +5572,25 @@ std::string CWebServer::GetJSonPage()
 				goto exitjson;
 			root["status"]="OK";
 			root["title"]="UpdateNotification";
+
+			//delete old record
+			m_pMain->m_sql.RemoveNotification(idx);
+
 			_eNotificationTypes ntype=(_eNotificationTypes)atoi(stype.c_str());
 			std::string ttype=Notification_Type_Desc(ntype,1);
-			unsigned char twhen=(swhen=="0")?'>':'<';
-			sprintf(szTmp,"%s;%c;%s",ttype.c_str(),twhen,svalue.c_str());
-			m_pMain->m_sql.UpdateNotification(idx,szTmp);
+			if (
+				(ntype==NTYPE_SWITCH_ON)||
+				(ntype==NTYPE_SWITCH_OFF)
+				)
+			{
+				strcpy(szTmp,ttype.c_str());
+			}
+			else
+			{
+				unsigned char twhen=(swhen=="0")?'>':'<';
+				sprintf(szTmp,"%s;%c;%s",ttype.c_str(),twhen,svalue.c_str());
+			}
+			m_pMain->m_sql.AddNotification(devidx,szTmp);
 		}
 		else if (cparam=="deletenotification")
 		{
@@ -5559,14 +5602,7 @@ std::string CWebServer::GetJSonPage()
 			root["status"]="OK";
 			root["title"]="DeleteNotification";
 
-			if (ntype=="light")
-			{
-				m_pMain->m_sql.RemoveDeviceNotifications(idx);
-			}
-			else
-			{
-				m_pMain->m_sql.RemoveNotification(idx);
-			}
+			m_pMain->m_sql.RemoveNotification(idx);
 		}
 		else if (cparam=="switchdeviceorder")
 		{

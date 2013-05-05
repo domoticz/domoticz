@@ -210,16 +210,6 @@
 				
     </form>
 </div>
-<div id="dialog-notificationlightdevice" title="Add/Remove Notification">
-    <form>
-        <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
-        <tr>
-          <td align="right" style="width:60px"><label for="enabled">Enabled: </label></td>
-          <td><input type="checkbox" id="enabled"></td>
-        </tr>
-		    </table>
-    </form>
-</div>
 <div id="lightcontent">
 </div>
 <div id="edittimers" style="display:none;">
@@ -730,14 +720,6 @@ function MakeFavorite(id,isfavorite)
 			ShowLights();
 		}
 	});
-}
-
-function EditNotification(idx,name, hasnotifications)
-{
-	clearInterval($.myglobals.refreshTimer);
-	$.devIdx=idx;
-	$("#dialog-notificationlightdevice #enabled").prop('checked', hasnotifications);
-	$( "#dialog-notificationlightdevice" ).dialog( "open" );
 }
 
 function DeleteLightSwitchIntern(bRemoveSubDevices)
@@ -1436,9 +1418,9 @@ function ShowLights()
 						}
           }					
           if (item.Notifications == "true")
-            xhtm+='<a class="btnsmall-sel" onclick="EditNotification(' + item.idx + ',\'' + item.Name + '\', true);">Notifications</a>';
+			xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#lightcontent\', \'ShowLights\');">Notifications</a>';
           else
-            xhtm+='<a class="btnsmall" onclick="EditNotification(' + item.idx + ',\'' + item.Name + '\', false);">Notifications</a>';
+            xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#lightcontent\', \'ShowLights\');">Notifications</a>';
 
           xhtm+=
                 '</td>\n' +
@@ -1899,52 +1881,13 @@ $(document).ready(function() {
           }
     });
 
-		$("#dialog-addmanuallightdevice #howtable #how_1").click(function() {
-			EnableDisableSubDevices("#dialog-addmanuallightdevice #howtable #subdevice",false);
-		});
-		$("#dialog-addmanuallightdevice #howtable #how_2").click(function() {
-			EnableDisableSubDevices("#dialog-addmanuallightdevice #howtable #subdevice",true);
-		});
+	$("#dialog-addmanuallightdevice #howtable #how_1").click(function() {
+		EnableDisableSubDevices("#dialog-addmanuallightdevice #howtable #subdevice",false);
+	});
+	$("#dialog-addmanuallightdevice #howtable #how_2").click(function() {
+		EnableDisableSubDevices("#dialog-addmanuallightdevice #howtable #subdevice",true);
+	});
 
-    $( "#dialog-notificationlightdevice" ).dialog({
-          autoOpen: false,
-          width: 380,
-          height: 190,
-          modal: true,
-          resizable: false,
-          buttons: {
-              "OK": function() {
-									var IsChecked=$('#dialog-notificationlightdevice #lighttable #enabled').is(":checked");
-                  $( this ).dialog( "close" );
-                  var param="addnotification";
-                  if (IsChecked != true) {
-										param="deletenotification";
-									}
-                  $.ajax({
-                     url: "json.htm?type=command&param=" + param +"&ntype=light&idx=" + $.devIdx,
-                     async: false, 
-                     dataType: 'json',
-                     success: function(data) {
-                        ShowLights();
-                     }
-                  });
-              },
-              Cancel: function() {
-                  $( this ).dialog( "close" );
-              }
-          },
-          open: function() {
-              $(this).keypress(function(e) {
-                if (e.keyCode == $.ui.keyCode.ENTER) {
-                  e.preventDefault();
-                  $(this).parent().find("button:eq(0)").trigger("click");
-                }
-              });
-          },
-          close: function() {
-            $( this ).dialog( "close" );
-          }
-    });
-		ShowLights();
+	ShowLights();
 } );  
 </script>

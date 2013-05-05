@@ -20,6 +20,8 @@ Version 1.0.xxx (May xxth 2013)
 - Implemented: Push On switch type On/Off icon
 - Changed: LightwaveRF inline relay, "Open inline relay" now seen as "On"
 - Implemented: Razberry (Z-Wave) switch support
+- Implemented: Email notifications now send in background
+- Implemented: Light/Switch notification On/Off type
 
 Version 1.0.484 (April 28th 2013)
 - Implemented: Raspberry Pi, updating via the web browser (Settings Tab)

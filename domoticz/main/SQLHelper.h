@@ -32,6 +32,7 @@ enum _eTaskItemType
 	TITEM_SWITCHCMD=0,
 	TITEM_EXECUTE_SCRIPT,
 	TITEM_EMAIL_CAMERA_SNAPSHOT,
+	TITEM_SEND_EMAIL,
 };
 
 struct _tTaskItem
@@ -87,6 +88,15 @@ struct _tTaskItem
 		tItem._sValue=Subject;
 		return tItem;
 	}
+	static _tTaskItem SendEmail(const int DelayTime, const std::string Subject, const std::string Body)
+	{
+		_tTaskItem tItem;
+		tItem._ItemType=TITEM_SEND_EMAIL;
+		tItem._DelayTime=DelayTime;
+		tItem._ID=Subject;
+		tItem._sValue=Body;
+		return tItem;
+	}
 };
 
 class CSQLHelper
@@ -123,7 +133,6 @@ public:
 
 	//notification functions
 	bool AddNotification(const std::string DevIdx, const std::string Param);
-	bool UpdateNotification(const std::string ID, const std::string Param);
 	bool RemoveDeviceNotifications(const std::string DevIdx);
 	bool RemoveNotification(const std::string ID);
 	std::vector<_tNotification> GetNotifications(const unsigned long long DevIdx);
@@ -150,6 +159,13 @@ public:
 		const unsigned char subType, 
 		const _eNotificationTypes ntype, 
 		const float mvalue);
+	bool CheckAndHandleSwitchNotification(
+		const int HardwareID, 
+		const std::string ID, 
+		const unsigned char unit, 
+		const unsigned char devType, 
+		const unsigned char subType, 
+		const _eNotificationTypes ntype);
 	bool CheckAndHandleRainNotification(
 		const int HardwareID, 
 		const std::string ID, 
