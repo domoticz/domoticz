@@ -131,7 +131,7 @@ bool SMTPClient::SendEmail(
 		///////////////////////////////////
 		// Add html message here!
 		szMessage +=
-			"Content-type: text/html; charset=iso-8859-1\n"
+			"Content-type: text/html; charset=UTF-8\n"
 			"Content-Transfer-Encoding: base64\n\n";
 		std::string szHTML=base64_encode((const unsigned char*)MailBody.c_str(),MailBody.size());
 		szMessage +=szHTML;

@@ -88,6 +88,14 @@ enum _eShareRights
 	SHARE_ALL
 };
 
+enum _eEventActions
+{
+	EACTION_SWITCHLIGHT=0,
+	EACTION_SENDNOTIFICATION,
+	EACTION_SENDEMAIL,
+	EACTION_EXECUTESCRIPT,
+};
+
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum);
 const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char sType);
 unsigned char Get_Humidity_Level(const unsigned char hlevel);
