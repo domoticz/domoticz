@@ -747,6 +747,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 						(dType!=pTypeP1Gas)&&
 						(dType!=pTypeYouLess)&&
 						(dType!=pTypeAirQuality)&&
+						(dType!=pTypeUsage)&&
 						(!((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXCounter)))
 						)
 						continue;
@@ -1685,6 +1686,19 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				else
 					root["result"][ii]["Quality"]="Bad";
 			}
+			else if (dType == pTypeUsage)
+			{
+				if (dSubType==sTypeElectric)
+				{
+					sprintf(szData,"%.1f Watt",atof(sValue.c_str()));
+					root["result"][ii]["Data"]=szData;
+				}
+				else
+				{
+					root["result"][ii]["Data"]=sValue;
+				}
+				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+			}
 			else if (dType == pTypeRFXMeter)
 			{
 				root["result"][ii]["Data"]=sValue;
@@ -2486,7 +2500,7 @@ std::string CWebServer::GetJSonPage()
 				dbasetable="Rain_Calendar";
 			else if (sensor=="counter")
 			{
-				if ((dType==pTypeP1Power)||(dType==pTypeCURRENT)||(dType==pTypeCURRENTENERGY)||(dType==pTypeAirQuality))
+				if ((dType==pTypeP1Power)||(dType==pTypeCURRENT)||(dType==pTypeCURRENTENERGY)||(dType==pTypeAirQuality)||(dType==pTypeUsage))
 					dbasetable="MultiMeter_Calendar";
 				else
 					dbasetable="Meter_Calendar";
@@ -2612,6 +2626,29 @@ std::string CWebServer::GetJSonPage()
 
 							root["result"][ii]["d"]=sd[1].substr(0,16);
 							root["result"][ii]["co2"]=sd[0];
+							ii++;
+						}
+					}
+				}
+				else if (dType==pTypeUsage)
+				{//day
+					root["status"]="OK";
+					root["title"]="Graph " + sensor + " " + srange;
+
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator itt;
+						int ii=0;
+						for (itt=result.begin(); itt!=result.end(); ++itt)
+						{
+							std::vector<std::string> sd=*itt;
+
+							root["result"][ii]["d"]=sd[1].substr(0,16);
+							root["result"][ii]["u"]=sd[0];
 							ii++;
 						}
 					}
@@ -3555,6 +3592,27 @@ std::string CWebServer::GetJSonPage()
 						}
 					}
 				}
+				else if (dType==pTypeUsage)
+				{//month/year
+					root["status"]="OK";
+					root["title"]="Graph " + sensor + " " + srange;
+
+					szQuery << "SELECT Value1,Value2, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator itt;
+						for (itt=result.begin(); itt!=result.end(); ++itt)
+						{
+							std::vector<std::string> sd=*itt;
+
+							root["result"][ii]["d"]=sd[2].substr(0,16);
+							root["result"][ii]["u_min"]=sd[0];
+							root["result"][ii]["u_max"]=sd[1];
+							ii++;
+						}
+					}
+				}
 				else if (dType==pTypeCURRENT)
 				{
 					szQuery << "SELECT Value1,Value2,Value3,Value4,Value5,Value6, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
@@ -3799,6 +3857,18 @@ std::string CWebServer::GetJSonPage()
 						root["result"][ii]["d"]=szDateEnd;
 						root["result"][ii]["co2_min"]=result[0][0];
 						root["result"][ii]["co2_max"]=result[0][1];
+						ii++;
+					}
+				}
+				else if (dType==pTypeUsage)
+				{
+					szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						root["result"][ii]["d"]=szDateEnd;
+						root["result"][ii]["u_min"]=result[0][0];
+						root["result"][ii]["u_max"]=result[0][1];
 						ii++;
 					}
 				}
@@ -5467,6 +5537,13 @@ std::string CWebServer::GetJSonPage()
 				ii++;
 			}
 			if (dType==pTypeAirQuality)
+			{
+				root["result"][ii]["val"]=NTYPE_USAGE;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+				ii++;
+			}
+			if (dType==pTypeUsage)
 			{
 				root["result"][ii]["val"]=NTYPE_USAGE;
 				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);

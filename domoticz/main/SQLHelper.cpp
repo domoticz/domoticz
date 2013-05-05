@@ -2505,12 +2505,13 @@ void CSQLHelper::UpdateMeter()
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
 
-	sprintf(szTmp,"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d))",
+	sprintf(szTmp,"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d))",
 		pTypeRFXMeter,
 		pTypeP1Gas,
 		pTypeYouLess,
 		pTypeENERGY,
 		pTypeAirQuality,
+		pTypeUsage,
         pTypeRego6XXValue,sTypeRego6XXCounter
 		);
 	result=query(szTmp);
@@ -3045,7 +3046,10 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			float total_min=(float)atof(sd[0].c_str());
 			float total_max=(float)atof(sd[1].c_str());
 
-			if (devType!=pTypeAirQuality)
+			if (
+				(devType!=pTypeAirQuality)&&
+				(devType!=pTypeUsage)
+				)
 			{
 				float total_real=total_max-total_min;
 
@@ -3087,7 +3091,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			}
 			else
 			{
-				//AirQuality insert into MultiMeter_Calendar table
+				//AirQuality/Usage Meter insert into MultiMeter_Calendar table
 				sprintf(szTmp,
 					"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1,Value2,Value3,Value4,Value5,Value6, Date) "
 					"VALUES (%llu, %.2f,%.2f,%.2f,%.2f,%.2f,%.2f, '%s')",

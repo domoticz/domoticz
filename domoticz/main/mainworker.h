@@ -162,4 +162,5 @@ private:
 	void decode_FS20(const int HwdID, const tRBUF *pResponse);
 	void decode_Rego6XXTemp(const int HwdID, const tRBUF *pResponse);
 	void decode_Rego6XXValue(const int HwdID, const tRBUF *pResponse);
+	void decode_Usage(const int HwdID, const tRBUF *pResponse);
 };

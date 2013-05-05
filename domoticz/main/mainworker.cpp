@@ -881,6 +881,10 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			WriteMessage("P1 Smart Meter Gas",false);
 			decode_P1MeterGas(HwdID, (tRBUF *)pRXCommand);
 			break;
+		case pTypeUsage:
+			WriteMessage("Usage Meter",false);
+			decode_Usage(HwdID, (tRBUF *)pRXCommand);
+			break;
 		case pTypeYouLess:
 			WriteMessage("YouLess Meter",false);
 			decode_YouLessMeter(HwdID, (tRBUF *)pRXCommand);
@@ -5479,6 +5483,45 @@ void MainWorker::decode_AirQuality(const int HwdID, const tRBUF *pResponse)
 				strcpy(szTmp,"Quality = Mediocre");
 			else
 				strcpy(szTmp,"Quality = Bad");
+			WriteMessage(szTmp);
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+	}
+}
+
+void MainWorker::decode_Usage(const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[200];
+	std::string devname;
+
+	const _tUsageMeter *pMeter=(const _tUsageMeter*)pResponse;
+	unsigned char devType=pMeter->type;
+	unsigned char subType=pMeter->subtype;
+	std::string ID=pMeter->ID;
+	unsigned char Unit=subType;
+	unsigned char cmnd=0;
+	unsigned char SignalLevel=12;
+	unsigned char BatteryLevel = 255;
+
+	sprintf(szTmp,"%.1f",pMeter->fusage);
+
+	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
+	PrintDeviceName(devname);
+
+	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->fusage);
+
+	if (m_verboselevel == EVBL_ALL)
+	{
+		switch (pMeter->subtype)
+		{
+		case sTypeElectric:
+			WriteMessage("subtype       = Electric");
+
+			sprintf(szTmp,"Usage = %.1f W", pMeter->fusage);
 			WriteMessage(szTmp);
 			break;
 		default:

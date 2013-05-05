@@ -57,7 +57,7 @@ private:
 	const std::string GetControllerURL();
 	const std::string GetRunURL(const std::string cmd);
 	void parseDevices(const Json::Value devroot);
-	void InsertOrUpdateDevice(_tZWaveDevice device);
+	void InsertOrUpdateDevice(_tZWaveDevice device, const bool bSend2Domoticz);
 	void UpdateDevice(const std::string path, const Json::Value obj);
 	void Do_Work();
 	void SendDevice2Domoticz(const _tZWaveDevice *pDevice);

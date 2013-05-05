@@ -9,6 +9,8 @@
 #include "../httpclient/HTTPClient.h"
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
+#include "../main/Logger.h"
+#include "hardwaretypes.h"
 
 #pragma warning(disable: 4996)
 
@@ -125,7 +127,7 @@ bool CRazberry::GetInitialDevices()
 	bret=HTTPClient::GET(szURL,sResult);
 	if (!bret)
 	{
-		std::cout << "Error getting Razberry data!" << std::endl;
+		_log.Log(LOG_ERROR,"Error getting Razberry data!");
 		return 0;
 	}
 	//sResult=readInputTestFile("test.json");
@@ -135,7 +137,7 @@ bool CRazberry::GetInitialDevices()
 	bool ret=jReader.parse(sResult,root);
 	if (!ret)
 	{
-		std::cout << "Razberry: Invalid data received!" << std::endl;
+		_log.Log(LOG_ERROR,"Razberry: Invalid data received!");
 		return 0;
 	}
 
@@ -171,7 +173,7 @@ bool CRazberry::GetUpdates()
 	bret=HTTPClient::GET(szURL,sResult);
 	if (!bret)
 	{
-		std::cout << "Error getting Razberry data!" << std::endl;
+		_log.Log(LOG_ERROR,"Razberry: Error getting update data!");
 		return 0;
 	}
 	//sResult=readInputTestFile("update.json");
@@ -181,7 +183,7 @@ bool CRazberry::GetUpdates()
 	bool ret=jReader.parse(sResult,root);
 	if (!ret)
 	{
-		std::cout << "Razberry: Invalid data received!" << std::endl;
+		_log.Log(LOG_ERROR,"Razberry: Invalid data received!");
 		return 0;
 	}
 
@@ -260,13 +262,13 @@ void CRazberry::parseDevices(const Json::Value devroot)
 			{
 				_device.commandClassID=38;
 				_device.intvalue=instance["commandClasses"]["38"]["data"]["level"]["value"].asInt();
-				InsertOrUpdateDevice(_device);
+				InsertOrUpdateDevice(_device,true);
 			}
 			else if (instance["commandClasses"]["37"].empty()==false)
 			{
 				_device.commandClassID=37;
 				_device.intvalue=instance["commandClasses"]["37"]["data"]["level"]["value"].asInt();
-				InsertOrUpdateDevice(_device);
+				InsertOrUpdateDevice(_device,true);
 			}
 
 			// Add SensorMultilevel
@@ -297,7 +299,7 @@ void CRazberry::parseDevices(const Json::Value devroot)
 					if ((_device.scaleID == 2 || _device.scaleID == 4 || _device.scaleID == 6) && (sensorType == 1))
 					{
 						_device.commandClassID=50;
-						InsertOrUpdateDevice(_device);
+						InsertOrUpdateDevice(_device,false);
 					}
 				}
 			}
@@ -318,14 +320,14 @@ void CRazberry::parseDevices(const Json::Value devroot)
 					if ((_device.scaleID == 2 || _device.scaleID == 4 || _device.scaleID == 6) && (sensorType == 1))
 						continue; // we don't want to have measurable here (W, V, PowerFactor)
 					_device.commandClassID=50;
-					InsertOrUpdateDevice(_device);
+					InsertOrUpdateDevice(_device,false);
 				}
 			}
 		}
 	}
 }
 
-void CRazberry::InsertOrUpdateDevice(_tZWaveDevice device)
+void CRazberry::InsertOrUpdateDevice(_tZWaveDevice device, const bool bSend2Domoticz)
 {
 	std::stringstream sstr;
 	sstr << device.nodeID << ".instances." << device.instanceID << ".commandClasses." << device.commandClassID << ".data";
@@ -338,7 +340,7 @@ void CRazberry::InsertOrUpdateDevice(_tZWaveDevice device)
 	bool bNewDevice=(m_devices.find(device.string_id)==m_devices.end());
 	
 	device.lastreceived=time(NULL);
-
+#ifdef _DEBUG
 	if (bNewDevice)
 	{
 		std::cout << "New device: " << device.string_id << std::endl;
@@ -347,10 +349,14 @@ void CRazberry::InsertOrUpdateDevice(_tZWaveDevice device)
 	{
 		std::cout << "Update device: " << device.string_id << std::endl;
 	}
+#endif
 	//insert or update device in internal record
 	device.sequence_number=1;
 	m_devices[device.string_id]=device;
-	SendDevice2Domoticz(&device);
+	if (bSend2Domoticz)
+	{
+		SendDevice2Domoticz(&device);
+	}
 }
 
 void CRazberry::UpdateDevice(const std::string path, const Json::Value obj)
@@ -383,10 +389,10 @@ void CRazberry::UpdateDevice(const std::string path, const Json::Value obj)
 	time_t atime=time(NULL);
 	if (atime-pDevice->lastreceived<2)
 		return; //to soon
-
+#ifdef _DEBUG
 	std::cout << asctime(localtime(&atime));
 	std::cout << "Razberry: Update device: " << pDevice->string_id << std::endl;
-
+#endif
 	switch (pDevice->commandClassID)
 	{
 	case 50:
@@ -473,7 +479,13 @@ void CRazberry::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		m_sharedserver.SendToAll((const char*)&lcmd,sizeof(lcmd.LIGHTING2));
 		return;
 	}
-
+	else if (pDevice->commandClassID==ZDTYPE_SENSOR_METER)
+	{
+		_tUsageMeter umeter;
+		umeter.fusage=pDevice->floatValue;
+		sDecodeRXMessage(this, (const unsigned char *)&umeter);//decode message
+		m_sharedserver.SendToAll((const char*)&umeter,sizeof(_tUsageMeter));
+	}
 }
 
 const CRazberry::_tZWaveDevice* CRazberry::FindDevice(int nodeID, int instanceID, int commandClassID)
@@ -554,7 +566,7 @@ void CRazberry::RunCMD(const std::string cmd)
 	bret=HTTPClient::GET(szURL,sResult);
 	if (!bret)
 	{
-		std::cout << "Razberry: Error sending command to controller!" << std::endl;
+		_log.Log(LOG_ERROR,"Razberry: Error sending command to controller!");
 	}
 }
 

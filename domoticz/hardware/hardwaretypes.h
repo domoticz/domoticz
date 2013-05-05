@@ -11,6 +11,9 @@
 #define wsbaroforcast_some_clouds 0x05
 #define wsbaroforcast_sunny 0x06
 
+#define pTypeUsage		0xF8
+#define sTypeElectric	0x01
+
 #define pTypeAirQuality	0xF9
 #define sTypeVoltcraft	0x01
 
@@ -42,3 +45,18 @@ typedef struct _tAirQualityMeter {
 	std::string ID;
 	int airquality;
 } AirQualityMeter;
+
+typedef struct _tUsageMeter {
+	unsigned char len;
+	unsigned char type;
+	unsigned char subtype;
+	std::string ID;
+	float fusage;
+
+	_tUsageMeter()
+	{
+		len=sizeof(_tUsageMeter)-1;
+		type=pTypeUsage;
+		subtype=sTypeElectric;
+	}
+} UsageMeter;
