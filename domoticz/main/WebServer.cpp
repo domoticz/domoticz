@@ -1095,10 +1095,10 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					root["result"][ii]["Temp"]=atof(strarray[0].c_str());
 					root["result"][ii]["Forecast"]=atoi(strarray[2].c_str());
 					root["result"][ii]["Barometer"]=atof(strarray[1].c_str());
-					root["result"][ii]["ForecastStr"]=RFX_WSForecast_Desc(atoi(strarray[2].c_str()));
+					root["result"][ii]["ForecastStr"]=RFX_Forecast_Desc(atoi(strarray[2].c_str()));
 					sprintf(szData,"%.1f C, %.1f hPa",
 						atof(strarray[0].c_str()),
-						atoi(strarray[1].c_str())
+						atof(strarray[1].c_str())
 						);
 					root["result"][ii]["Data"]=szData;
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
