@@ -27,6 +27,7 @@ Version 1.0.xxx (May xxth 2013)
 - Implemented: Razberry (Z-Wave) usage meter sensor
 - Changed: Email setup now includes Port number
 - Implemented: Temp+Baro sensor, subType BMP085 I2C
+- Fixed: Switch Lights Off (Dimmer) now does not update slider position
 
 Version 1.0.484 (April 28th 2013)
 - Implemented: Raspberry Pi, updating via the web browser (Settings Tab)
