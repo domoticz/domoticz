@@ -5,6 +5,7 @@
 #else
 #include <curl/curl.h>
 #endif
+
 #include <sstream>
 
 #include "../main/Logger.h"
@@ -60,11 +61,11 @@ bool SMTPClient::SendEmail(
 	std::stringstream sstr;
 
 	sstr << "smtp://" << MailServer << ":" << MailPort << "/domoticz";
-
-	std::string szURL=sstr.str();
+	std::string szURL=sstr.str();//"smtp://"+MailServer+"/domoticz";
 
 	curl = curl_easy_init();
 
+	curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)177);
 	curl_easy_setopt(curl, CURLOPT_URL, szURL.c_str());
 	curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
 	if (MailUsername!="")
@@ -106,8 +107,8 @@ bool SMTPClient::SendEmail(
 		"To: " + sTo + "\n" +
 		"From: " + sFrom + "(Domoticz)\n" +
 		"Subject: " + MailSubject + "\n";
-		//"Content-Type: text/html; charset=\"us-ascii\"\n" +
-		//"Content-Transfer-Encoding: quoted-printable\n" +
+	//"Content-Type: text/html; charset=\"us-ascii\"\n" +
+	//"Content-Transfer-Encoding: quoted-printable\n" +
 	if (bIsHTML)
 	{
 		szMessage+=
@@ -161,9 +162,6 @@ bool SMTPClient::SendEmail(
 	}
 	smtp_ctx.sDataLength=szMessage.size();
 	memcpy(smtp_ctx.pDataBytes,szMessage.c_str(),smtp_ctx.sDataLength);
-
-	curl_off_t blength=(curl_off_t)smtp_ctx.sDataLength;
-	curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, blength);
 
 	curl_easy_setopt(curl, CURLOPT_READFUNCTION, smtp_payload_reader);
 	curl_easy_setopt(curl, CURLOPT_READDATA, &smtp_ctx);
