@@ -5,7 +5,7 @@ rm update.tgz
 
 sudo service domoticz.sh stop
 systemctl stop domoticz.service
-echo "please standby... (waiting 10 seconds)"
-sleep 10
+echo "please standby... (waiting 15 seconds)"
+sleep 15
 sudo service domoticz.sh start
 systemctl start domoticz.service

@@ -181,6 +181,10 @@
 				<td><input type="input" id="EmailServer" name="EmailServer" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 			</tr>
 			<tr>
+				<td align="right" style="width:60px"><label>Port: </label></td>
+				<td><input type="input" id="EmailPort" name="EmailPort" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (default 25, StartTLS Port 587, SSL Port 465)</td>
+			</tr>
+			<tr>
 				<td align="right" style="width:60px"><label>Username: </label></td>
 				<td><input type="input" id="EmailUsername" name="EmailUsername" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 			</tr>
@@ -309,6 +313,11 @@ function TestEmailNotification()
 		ShowNotify('Invalid Email Settings...', 2000, true);
 		return;
 	}
+	var EmailPort=$("#emailtable #EmailPort").val();
+	if (EmailPort=="") {
+		ShowNotify('Invalid Email Settings...', 2000, true);
+		return;
+	}
 	var EmailFrom=$("#emailtable #EmailFrom").val();
 	var EmailTo=$("#emailtable #EmailTo").val();
 	var EmailUsername=$("#emailtable #EmailUsername").val();
@@ -326,24 +335,27 @@ function TestEmailNotification()
 			"&EmailFrom="+EmailFrom+
 			"&EmailTo="+EmailTo+
 			"&EmailServer="+EmailServer+
+			"&EmailPort="+EmailPort+
 			"&EmailUsername="+EmailUsername+
 			"&EmailPassword="+EmailPassword, 
 		async: false, 
 		dataType: 'json',
 		success: function(data) {
-			if (typeof data.result != 'undefined') {
-				$.each(data.result, function(i,item) {
-					$.LightsSwitchesScenes.push({
-						type: item.type,
-						idx: item.idx,
-						name: item.Name
-					});
-				});
+			if (data.status != "OK") {
+				HideNotify();
+				ShowNotify('Problem sending Email, please check credentials!', 2500, true);
+				return;
 			}
+			else {
+				HideNotify();
+				ShowNotify('An Email has been delivered<br>Please check your inbox!', 2500);
+			}
+		},
+		error: function(){
+			HideNotify();
+			ShowNotify('Problem sending Email, please check credentials!', 2500, true);
 		}
 	});
-	
-	ShowNotify('Notification send!<br>Should arrive at in your inbox soon...', 3000);
 }
 
 function ShowSettings()
@@ -442,6 +454,9 @@ function ShowSettings()
       if (typeof data.EmailServer!= 'undefined') {
         $("#emailtable #EmailServer").val(data.EmailServer);
       }
+      if (typeof data.EmailPort!= 'undefined') {
+        $("#emailtable #EmailPort").val(data.EmailPort);
+      }
       if (typeof data.EmailUsername!= 'undefined') {
         $("#emailtable #EmailUsername").val(data.EmailUsername);
       }
@@ -473,6 +488,11 @@ function StoreSettings(formname)
   var EmailServer=$("#emailtable #EmailServer").val();
   if (EmailServer!="")
   {
+	var EmailPort=$("#emailtable #EmailPort").val();
+	if (EmailPort=="") {
+		ShowNotify('Please enter an Email Port...', 2000, true);
+		return;
+	}
 	var EmailFrom=$("#emailtable #EmailFrom").val();
 	var EmailTo=$("#emailtable #EmailTo").val();
 	var EmailUsername=$("#emailtable #EmailUsername").val();

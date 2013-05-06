@@ -533,6 +533,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("UseEmailInNotifications", 1);
 	}
+	if (!GetPreferencesVar("EmailPort", nValue))
+	{
+		UpdatePreferencesVar("EmailPort", 25);
+	}
 
 	//Start background thread
 	if (!StartThread())
@@ -635,6 +639,7 @@ void CSQLHelper::Do_Work()
 						GetPreferencesVar("EmailTo",nValue,EmailTo);
 						GetPreferencesVar("EmailUsername",nValue,EmailUsername);
 						GetPreferencesVar("EmailPassword",nValue,EmailPassword);
+						GetPreferencesVar("EmailPort", EmailPort);
 						bool bRet=SMTPClient::SendEmail(
 							CURLEncode::URLDecode(EmailFrom.c_str()),
 							CURLEncode::URLDecode(EmailTo.c_str()),

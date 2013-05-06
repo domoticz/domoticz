@@ -448,6 +448,7 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("EmailFrom",CURLEncode::URLDecode(m_pWebEm->FindValue("EmailFrom")).c_str());
 	m_pMain->m_sql.UpdatePreferencesVar("EmailTo",CURLEncode::URLDecode(m_pWebEm->FindValue("EmailTo")).c_str());
 	m_pMain->m_sql.UpdatePreferencesVar("EmailServer",m_pWebEm->FindValue("EmailServer").c_str());
+	m_pMain->m_sql.UpdatePreferencesVar("EmailPort",atoi(m_pWebEm->FindValue("EmailPort").c_str()));
 
 	std::string suseemailinnotificationsalerts=m_pWebEm->FindValue("useemailinnotificationsalerts");
 	m_pMain->m_sql.UpdatePreferencesVar("UseEmailInNotifications",(suseemailinnotificationsalerts=="on"?1:0));
@@ -5138,15 +5139,18 @@ std::string CWebServer::GetJSonPage()
 			std::string EmailServer=m_pWebEm->FindValue("EmailServer");
 			std::string EmailUsername=m_pWebEm->FindValue("EmailUsername");
 			std::string EmailPassword=m_pWebEm->FindValue("EmailPassword");
+			std::string sEmailPort=m_pWebEm->FindValue("EmailPort");
+
 			if (
 				(EmailFrom=="")||
 				(EmailTo=="")||
 				(EmailServer=="")||
 				(EmailUsername=="")||
-				(EmailPassword=="")
+				(EmailPassword=="")||
+				(sEmailPort=="")
 				)
 				goto exitjson;
-			int EmailPort=25;
+			int EmailPort=atoi(sEmailPort.c_str());
 			std::string szBody;
 			szBody=
 				"<html>\n"
@@ -5166,6 +5170,10 @@ std::string CWebServer::GetJSonPage()
 				szBody,
 				true
 				);
+			if (bRet==true) {
+				root["status"]="OK";
+				root["title"]="TestEmail";
+			}
 		}
 		else if (cparam=="testswitch")
 		{
@@ -6902,6 +6910,10 @@ std::string CWebServer::GetJSonPage()
 				else if (Key=="EmailServer")
 				{
 					root["EmailServer"]=sValue;
+				}
+				else if (Key=="EmailPort")
+				{
+					root["EmailPort"]=nValue;
 				}
 				else if (Key=="EmailUsername")
 				{

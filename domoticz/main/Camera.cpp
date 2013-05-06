@@ -192,6 +192,7 @@ bool CCamScheduler::EmailCameraSnapshot(const std::string CamIdx, const std::str
 	m_pMain->m_sql.GetPreferencesVar("EmailTo",nValue,EmailTo);
 	m_pMain->m_sql.GetPreferencesVar("EmailUsername",nValue,EmailUsername);
 	m_pMain->m_sql.GetPreferencesVar("EmailPassword",nValue,EmailPassword);
+	m_pMain->m_sql.GetPreferencesVar("EmailPort", EmailPort);
 
 	std::string htmlMsg=
 		"<html>\r\n"
