@@ -353,10 +353,13 @@ void CRazberry::InsertOrUpdateDevice(_tZWaveDevice device, const bool bSend2Domo
 	//insert or update device in internal record
 	device.sequence_number=1;
 	m_devices[device.string_id]=device;
+	//do not send (for now), as this will trigger event/notifications
+/*
 	if (bSend2Domoticz)
 	{
 		SendDevice2Domoticz(&device);
 	}
+*/
 }
 
 void CRazberry::UpdateDevice(const std::string path, const Json::Value obj)

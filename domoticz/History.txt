@@ -26,6 +26,7 @@ Version 1.0.xxx (May xxth 2013)
 - Fixed: Email now being send with UTF-8 encoding
 - Implemented: Razberry (Z-Wave) usage meter sensor
 - Changed: Email setup now includes Port number
+- Implemented: Temp+Baro sensor, subType BMP085 I2C
 
 Version 1.0.484 (April 28th 2013)
 - Implemented: Raspberry Pi, updating via the web browser (Settings Tab)

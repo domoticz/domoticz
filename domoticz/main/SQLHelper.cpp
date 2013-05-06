@@ -2085,11 +2085,12 @@ void CSQLHelper::UpdateTemperatureLog()
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d)",
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d)",
 		pTypeTEMP,
 		pTypeHUM,
 		pTypeTEMP_HUM,
 		pTypeTEMP_HUM_BARO,
+		pTypeTEMP_BARO,
 		pTypeUV,
 		pTypeWIND,
 		pTypeThermostat1,
@@ -2160,6 +2161,10 @@ void CSQLHelper::UpdateTemperatureLog()
 					barometer=int(atof(splitresults[3].c_str())*10.0f);
 				else
 					barometer=atoi(splitresults[3].c_str());
+				break;
+			case pTypeTEMP_BARO:
+				temp=(float)atof(splitresults[0].c_str());
+				barometer=int(atof(splitresults[1].c_str())*10.0f);
 				break;
 			case pTypeUV:
 				if (dSubType!=sTypeUV3)

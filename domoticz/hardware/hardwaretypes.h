@@ -11,6 +11,9 @@
 #define wsbaroforcast_some_clouds 0x05
 #define wsbaroforcast_sunny 0x06
 
+#define pTypeTEMP_BARO	0xF7
+#define sTypeBMP085		0x01
+
 #define pTypeUsage		0xF8
 #define sTypeElectric	0x01
 
@@ -37,6 +40,16 @@
 //#define pTypeENERGY 0x5A
 #define sTypeZWaveUsage 0xA0
 
+typedef struct _tTempBaro {
+	unsigned char len;
+	unsigned char type;
+	unsigned char subtype;
+	std::string ID;
+	unsigned char sunit;
+	float temp;
+	float baro;
+	unsigned char forecast;
+} _tTempBaro;
 
 typedef struct _tAirQualityMeter {
 	unsigned char len;

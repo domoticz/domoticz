@@ -146,6 +146,7 @@ private:
 	void decode_Thermostat3(const int HwdID, const tRBUF *pResponse);
 	void decode_Baro(const int HwdID, const tRBUF *pResponse);
 	void decode_TempHumBaro(const int HwdID, const tRBUF *pResponse);
+	void decode_TempBaro(const int HwdID, const tRBUF *pResponse);
 	void decode_DateTime(const int HwdID, const tRBUF *pResponse);
 	void decode_Current(const int HwdID, const tRBUF *pResponse);
 	void decode_Energy(const int HwdID, const tRBUF *pResponse);
