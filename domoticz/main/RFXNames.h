@@ -18,6 +18,7 @@ enum _eSwitchType
 	STYPE_Motion,
 	STYPE_PushOn,
 	STYPE_PushOff,
+	STYPE_DoorLock,
 	STYPE_END
 };
 

@@ -857,7 +857,22 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				root["result"][ii]["IsSubDevice"]=bIsSubDevice;
 				
 				if (switchtype==STYPE_Doorbell)
+					root["result"][ii]["TypeImg"]="doorbell";
+				else if (switchtype==STYPE_DoorLock)
+				{
 					root["result"][ii]["TypeImg"]="door";
+					root["result"][ii]["InternalState"]=(IsLightSwitchOn(lstatus)==true)?"Open":"Closed";
+					if (lstatus=="On") {
+						lstatus="Open";
+					} else {
+						lstatus="Closed";
+					}
+					root["result"][ii]["Status"]=lstatus;
+					root["result"][ii]["AddjValue"]=AddjValue;
+					root["result"][ii]["AddjMulti"]=AddjMulti;
+					root["result"][ii]["AddjValue2"]=AddjValue2;
+					root["result"][ii]["AddjMulti2"]=AddjMulti2;
+				}
 				else if (switchtype==STYPE_PushOn)
 				{
 					root["result"][ii]["TypeImg"]="push";
@@ -4665,8 +4680,7 @@ std::string CWebServer::GetJSonPage()
 			else
 			{
 				//add script to background worker
-				_tTaskItem tItem(1,scriptname,strparm);
-				m_pMain->m_sql.AddTaskItem(tItem);
+				m_pMain->m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1,scriptname,strparm));
 			}
 			root["status"]="OK";
 			root["title"]="ExecuteScript";

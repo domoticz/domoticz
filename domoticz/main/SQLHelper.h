@@ -56,28 +56,32 @@ struct _tTaskItem
 
 	}
 
-	_tTaskItem(const int DelayTime, const unsigned long long idx, const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int switchtype, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue)
+	static _tTaskItem SwitchLight(const int DelayTime, const unsigned long long idx, const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int switchtype, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue)
 	{
-		_ItemType=TITEM_SWITCHCMD;
-		_DelayTime=DelayTime;
-		_idx=idx;
-		_HardwareID=HardwareID;
-		_ID=ID;
-		_unit=unit;
-		_devType=devType;
-		_subType=subType;
-		_signallevel=signallevel;
-		_batterylevel=batterylevel;
-		_switchtype=switchtype;
-		_nValue=nValue;
-		_sValue=sValue;
+		_tTaskItem tItem;
+		tItem._ItemType=TITEM_SWITCHCMD;
+		tItem._DelayTime=DelayTime;
+		tItem._idx=idx;
+		tItem._HardwareID=HardwareID;
+		tItem._ID=ID;
+		tItem._unit=unit;
+		tItem._devType=devType;
+		tItem._subType=subType;
+		tItem._signallevel=signallevel;
+		tItem._batterylevel=batterylevel;
+		tItem._switchtype=switchtype;
+		tItem._nValue=nValue;
+		tItem._sValue=sValue;
+		return tItem;
 	}
-	_tTaskItem(const int DelayTime, const std::string ScriptPath, const std::string ScriptParams)
+	static _tTaskItem ExecuteScript(const int DelayTime, const std::string ScriptPath, const std::string ScriptParams)
 	{
-		_ItemType=TITEM_EXECUTE_SCRIPT;
-		_DelayTime=DelayTime;
-		_ID=ScriptPath;
-		_sValue=ScriptParams;
+		_tTaskItem tItem;
+		tItem._ItemType=TITEM_EXECUTE_SCRIPT;
+		tItem._DelayTime=DelayTime;
+		tItem._ID=ScriptPath;
+		tItem._sValue=ScriptParams;
+		return tItem;
 	}
 	static _tTaskItem EmailCameraSnapshot(const int DelayTime, const std::string CamIdx, const std::string Subject)
 	{

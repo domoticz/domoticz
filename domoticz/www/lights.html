@@ -775,7 +775,7 @@ function SaveLightSwitch()
 		if (switchtype==8) {
 			addjvalstr="&addjvalue=" + $("#lightcontent #motionoffdelay").val();
 		}
-		else if (switchtype==9) {
+		else if ((switchtype==9)||(switchtype==11)) {
 			addjvalstr="&addjvalue=" + $("#lightcontent #offdelay").val();
 		}
 		$.ajax({
@@ -929,7 +929,7 @@ function EditLightDevice(idx,name,switchtype,addjvalue,isslave)
 		$("#lightcontent #MotionDiv").show();
 		$("#lightcontent #motionoffdelay").val(addjvalue);
 	}
-	else if (switchtype==9) {
+	else if ((switchtype==9)||(switchtype==11)) {
 		$("#lightcontent #OffDelayDiv").show();
 		$("#lightcontent #offdelay").val(addjvalue);
 	}
@@ -1069,7 +1069,7 @@ function RefreshLights()
 							}
 						}
 						else if (item.SwitchType == "Doorbell") {
-							img='<img src="images/door48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+							img='<img src="images/doorbell48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
 						}
 						else if (item.SwitchType == "Push On Button") {
 							if (item.InternalState=="On") {
@@ -1077,6 +1077,14 @@ function RefreshLights()
 							}
 							else {
 								img='<img src="images/push48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+							}
+						}
+						else if (item.SwitchType == "Door Lock") {
+							if (item.InternalState=="Open") {
+								img='<img src="images/door48open.png" title="Close Door" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+							}
+							else {
+								img='<img src="images/door48.png" title="Open Door" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
 							}
 						}
 						else if (item.SwitchType == "Push Off Button") {
@@ -1273,15 +1281,24 @@ function ShowLights()
             }
           }
           else if (item.SwitchType == "Doorbell") {
-            xhtm+='\t      <td id="img"><img src="images/door48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+            xhtm+='\t      <td id="img"><img src="images/doorbell48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
             bAddTimer=false;
           }
           else if (item.SwitchType == "Push On Button") {
-			if (item.InternalState=="On") {
+			if (item.InternalState=="Open") {
 				xhtm+='\t      <td id="img"><img src="images/pushon48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
 			}
 			else {
 				xhtm+='\t      <td id="img"><img src="images/push48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+			}
+            bAddTimer=false;
+          }
+          else if (item.SwitchType == "Door Lock") {
+			if (item.InternalState=="On") {
+				xhtm+='\t      <td id="img"><img src="images/door48open.png" title="Close Door" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+			}
+			else {
+				xhtm+='\t      <td id="img"><img src="images/door48.png" title="Open Door" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
 			}
             bAddTimer=false;
           }

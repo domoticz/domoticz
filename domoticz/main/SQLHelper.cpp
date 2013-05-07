@@ -596,13 +596,14 @@ void CSQLHelper::Do_Work()
 		{
 			if (itt->_ItemType == TITEM_SWITCHCMD)
 			{
-				if (itt->_switchtype==STYPE_PushOn)
+				if (itt->_switchtype!=STYPE_Motion)
 				{
 					if (m_pMain)
 						m_pMain->SwitchLight(itt->_idx,"Off",0);
 				}
 				else
 				{
+					//motion sensor will only be updated internally
 					std::string devname="";
 					UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname);
 				}
@@ -1036,7 +1037,7 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 				s_scriptparams << nszStartupFolder << " " << HardwareID << " " << ulID << " " << (bIsLightSwitchOn?"On":"Off") << " \"" << lstatus << "\"";
 				//add script to background worker				
 				boost::lock_guard<boost::mutex> l(m_background_task_mutex);
-				m_background_task_queue.push_back(_tTaskItem(1,scriptname,s_scriptparams.str()));
+				m_background_task_queue.push_back(_tTaskItem::ExecuteScript(1,scriptname,s_scriptparams.str()));
 			}
 
 			//Check for notifications
@@ -1052,7 +1053,8 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 					int cmd=0;
 					if (
 						(switchtype==STYPE_Motion)||
-						(switchtype==STYPE_PushOn)
+						(switchtype==STYPE_PushOn)||
+						(switchtype==STYPE_DoorLock)
 						)
 					{
 						switch (devType)
@@ -1092,7 +1094,7 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 					if (bAdd2DelayQueue==true)
 					{
 						boost::lock_guard<boost::mutex> l(m_background_task_mutex);
-						_tTaskItem tItem(AddjValue,ulID,HardwareID,ID,unit,devType,subType,switchtype,signallevel,batterylevel,cmd,sValue);
+						_tTaskItem tItem=_tTaskItem::SwitchLight(AddjValue,ulID,HardwareID,ID,unit,devType,subType,switchtype,signallevel,batterylevel,cmd,sValue);
 						//Remove all instances with this device from the queue first
 						//otherwise command will be send twice, and first one will be to soon as it is currently counting
 						std::vector<_tTaskItem>::iterator itt=m_background_task_queue.begin();
@@ -1109,7 +1111,7 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 							else
 								itt++;
 						}
-						//Finaly add it to the queue
+						//finally add it to the queue
 						m_background_task_queue.push_back(tItem);
 					}
 				}

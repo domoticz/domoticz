@@ -87,7 +87,7 @@ function RefreshFavorites()
 							if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
 								var status=item.Status + " ";
 								if (item.SwitchType == "Doorbell") {
-									status+='<img src="images/door.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									status+='<img src="images/doorbell.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 								else if (item.SwitchType == "Push On Button") {
 									if (item.InternalState=="On") {
@@ -95,6 +95,14 @@ function RefreshFavorites()
 									}
 									else {
 										status+='<img src="images/push.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									}
+								}
+								else if (item.SwitchType == "Door Lock") {
+									if (item.InternalState=="Open") {
+										status+='<img src="images/door48open.png" title="Close Door" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									}
+									else {
+										status+='<img src="images/door.png" title="Open Door" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 								}
 								else if (item.SwitchType == "Push Off Button") {
@@ -186,7 +194,7 @@ function RefreshFavorites()
 							else {
 								var img="";
 								if (item.SwitchType == "Doorbell") {
-									img='<img src="images/door48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									img='<img src="images/doorbell48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 								}
 								else if (item.SwitchType == "Push On Button") {
 									if (item.InternalState=="On") {
@@ -194,6 +202,14 @@ function RefreshFavorites()
 									}
 									else {
 										img='<img src="images/push48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									}
+								}
+								else if (item.SwitchType == "Door Lock") {
+									if (item.InternalState=="Open") {
+										img='<img src="images/door48open.png" title="Close Door" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									}
+									else {
+										img='<img src="images/door48.png" title="Open Door" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 								}
 								else if (item.SwitchType == "Push Off Button") {
@@ -923,7 +939,7 @@ function ShowFavorites()
 									 '</td>\n';
 							var status=item.Status + " ";
 							if (item.SwitchType == "Doorbell") {
-								status+='<img src="images/door.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+								status+='<img src="images/doorbell.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 							}
 							else if (item.SwitchType == "Push On Button") {
 								if (item.InternalState=="On") {
@@ -931,6 +947,14 @@ function ShowFavorites()
 								}
 								else {
 									status+='<img src="images/push.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+								}
+							}
+							else if (item.SwitchType == "Door Lock") {
+								if (item.InternalState=="Open") {
+									status+='<img src="images/door48open.png" title="Close Door" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+								}
+								else {
+									status+='<img src="images/door.png" title="Open Door" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 							}
 							else if (item.SwitchType == "Push Off Button") {
@@ -1046,7 +1070,7 @@ function ShowFavorites()
 									'\t      <td id="name">' + item.Name + '</td>\n'+
 									'\t      <td id="bigtext"></td>\n';
 							if (item.SwitchType == "Doorbell") {
-								xhtm+='\t      <td id="img"><img src="images/door48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								xhtm+='\t      <td id="img"><img src="images/doorbell48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 							}
 							else if (item.SwitchType == "Push On Button") {
 								if (item.InternalState=="On") {
@@ -1054,6 +1078,14 @@ function ShowFavorites()
 								}
 								else {
 									xhtm+='\t      <td id="img"><img src="images/push48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								}
+							}
+							else if (item.SwitchType == "Door Lock") {
+								if (item.InternalState=="Open") {
+									xhtm+='\t      <td id="img"><img src="images/door48open.png" title="Close Door" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								}
+								else {
+									xhtm+='\t      <td id="img"><img src="images/door48.png" title="Open Door" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 							}
 							else if (item.SwitchType == "Push Off Button") {
