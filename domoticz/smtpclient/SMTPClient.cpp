@@ -5,7 +5,7 @@
 #else
 #include <curl/curl.h>
 #endif
-
+#include "../main/Helper.h"
 #include <sstream>
 
 #include "../main/Logger.h"
@@ -53,10 +53,18 @@ bool SMTPClient::SendEmail(
 	smtp_ctx.bytes_read=0;
 
 	std::string sFrom="<"+MailFrom+">";
-	std::string sTo="<"+MailTo+">";
 
 	slist1 = NULL;
-	slist1 = curl_slist_append(slist1, sTo.c_str());
+
+	std::vector<std::string> results;
+	StringSplit(MailTo,";",results);
+
+	std::vector<std::string>::const_iterator itt;
+	for (itt=results.begin(); itt!=results.end(); ++itt)
+	{
+		std::string sTo="<"+(*itt)+">";
+		slist1 = curl_slist_append(slist1, sTo.c_str());
+	}
 
 	std::stringstream sstr;
 
@@ -105,8 +113,21 @@ bool SMTPClient::SendEmail(
 		szMessage = timestring;
 		szMessage += "\n";
 	}
+
+	size_t tot_to=results.size();
+	if (tot_to>0)
+	{
+		szMessage+="To: ";
+		for (itt=results.begin(); itt!=results.end(); ++itt)
+		{
+			szMessage += *itt;
+			if(tot_to > 1 && ((itt + 1) < results.end()) )
+				szMessage += ",\n "; // must add a space after the comma
+			else
+				szMessage += "\n";
+		}
+	}
 	szMessage+=
-		"To: " + sTo + "\n" +
 		"From: " + sFrom + "(Domoticz)\n" +
 		"Subject: " + MailSubject + "\n";
 	//"Content-Type: text/html; charset=\"us-ascii\"\n" +
