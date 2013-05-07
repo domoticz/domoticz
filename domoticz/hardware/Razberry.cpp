@@ -538,7 +538,7 @@ void CRazberry::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 		else {
 			//find dimmer
-			pDevice=FindDevice(nodeID,instanceID,ZDTYPE_SWITCHNORMAL);
+			pDevice=FindDevice(nodeID,instanceID,ZDTYPE_SWITCHDIMMER);
 			if (!pDevice)
 				return;//ehh dont know you!
 
