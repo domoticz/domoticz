@@ -29,6 +29,7 @@ Version 1.0.xxx (May xxth 2013)
 - Implemented: Temp+Baro sensor, subType BMP085 I2C
 - Fixed: Switch Lights Off (Dimmer) now does not update slider position
 - Implemented: Light/Switch type "Door Lock"
+- Implemented: Email connection timeout (10 seconds)
 
 Version 1.0.484 (April 28th 2013)
 - Implemented: Raspberry Pi, updating via the web browser (Settings Tab)

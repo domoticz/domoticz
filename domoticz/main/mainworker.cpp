@@ -4562,10 +4562,65 @@ void MainWorker::decode_Thermostat1(const int HwdID, const tRBUF *pResponse)
 //not in dbase yet
 void MainWorker::decode_Thermostat2(const int HwdID, const tRBUF *pResponse)
 {
-	WriteMessage("");
+	//decoding of this type is only implemented for use by simulate and verbose
+	//HE105 receive is not implemented in the RFXtrx433 firmware
+	//and RTS10 commands are received as Thermostat1 commands
 
+	WriteMessage("");
+/*
 	unsigned char devType=pTypeThermostat2;
 
+		Select Case recbuf(THERMOSTAT2.subtype)
+		Case THERMOSTAT2.sTypeHE105
+		WriteMessage("subtype       = HE105")
+		Case THERMOSTAT2.sTypeRTS10
+		WriteMessage("subtype       = RTS10/RFS10/TLX1206")
+		Case Else
+		WriteMessage("ERROR: Unknown Sub type for Packet type=" & Hex(recbuf(THERMOSTAT2.packettype)) & ": " & Hex(recbuf(THERMOSTAT2.subtype)))
+		End Select
+		WriteMessage("Sequence nbr  = " & recbuf(THERMOSTAT2.seqnbr).ToString)
+		WriteMessage("unitcode      = " & recbuf(THERMOSTAT2.unitcode).ToString)
+		If recbuf(THERMOSTAT2.subtype) = THERMOSTAT2.sTypeHE105 Then
+		WriteMessage("switches 1- 5 = ", False)
+		If (recbuf(THERMOSTAT2.unitcode) And &H10) = 0 Then
+		WriteMessage("OFF ", False)
+		Else
+		WriteMessage("ON  ", False)
+		End If
+		If (recbuf(THERMOSTAT2.unitcode) And &H8) = 0 Then
+		WriteMessage("OFF ", False)
+		Else
+		WriteMessage("ON  ", False)
+		End If
+		If (recbuf(THERMOSTAT2.unitcode) And &H4) = 0 Then
+		WriteMessage("OFF ", False)
+		Else
+		WriteMessage("ON  ", False)
+		End If
+		If (recbuf(THERMOSTAT2.unitcode) And &H2) = 0 Then
+		WriteMessage("OFF ", False)
+		Else
+		WriteMessage("ON  ", False)
+		End If
+		If (recbuf(THERMOSTAT2.unitcode) And &H1) = 0 Then
+		WriteMessage("OFF ")
+		Else
+		WriteMessage("ON  ")
+		End If
+		End If
+		WriteMessage("Command       = ", False)
+		Select Case recbuf(THERMOSTAT2.cmnd)
+		Case THERMOSTAT2.sOff
+		WriteMessage("Off")
+		Case THERMOSTAT2.sOn
+		WriteMessage("On")
+		Case THERMOSTAT2.sProgram
+		WriteMessage("Program RTS10")
+		Case Else
+		WriteMessage("UNKNOWN")
+		End Select
+		WriteMessage("Signal level  = " & (recbuf(THERMOSTAT2.rssi) >> 4).ToString)
+*/
 	WriteMessage("Not implemented");
 }
 
