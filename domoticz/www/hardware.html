@@ -610,7 +610,7 @@ function EditRego6XXType(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 function SetRFXCOMMode()
 {
   $.post("setrfxcommode.webem", $("#hardwarecontent #settings").serialize(), function(data) {
-   ShowHardware();
+   SwitchLayout('Dashboard');
   });
 }
 
