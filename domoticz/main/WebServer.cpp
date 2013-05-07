@@ -3,12 +3,9 @@
 #include <boost/bind.hpp>
 #include <iostream>
 #include "mainworker.h"
-#include "RFXNames.h"
-#include "RFXtrx.h"
 #include "Helper.h"
 #include "localtime_r.h"
 #include "../webserver/cWebem.h"
-#include "../httpclient/UrlEncode.h"
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
 #include "../webserver/Base64.h"

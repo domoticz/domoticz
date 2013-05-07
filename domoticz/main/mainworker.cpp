@@ -1,16 +1,10 @@
 #include "stdafx.h"
 #include "mainworker.h"
-#include "RFXNames.h"
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/lexical_cast.hpp>
 #include "Helper.h"
 #include "SunRiseSet.h"
 #include "localtime_r.h"
 #include "Logger.h"
 #include "../httpclient/HTTPClient.h"
-
-#include "../smtpclient/SMTPClient.h"
 
 //Hardware Devices
 #include "../hardware/hardwaretypes.h"
@@ -215,8 +209,9 @@ bool MainWorker::GetSunSettings()
 	int month=ltime.tm_mon+1;
 	int day=ltime.tm_mday;
 
-	double dLatitude=boost::lexical_cast<double>(Latitude);
-	double dLongitude=boost::lexical_cast<double>(Longitude);
+	double dLatitude=atof(Latitude.c_str());
+	double dLongitude=atof(Longitude.c_str());
+
 	SunRiseSet::_tSubRiseSetResults sresult;
 	SunRiseSet::GetSunRiseSet(dLatitude,dLongitude,year,month,day,sresult);
 
