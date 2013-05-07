@@ -64,6 +64,7 @@ typedef struct _tUsageMeter {
 	unsigned char type;
 	unsigned char subtype;
 	std::string ID;
+	unsigned char dunit;
 	float fusage;
 
 	_tUsageMeter()

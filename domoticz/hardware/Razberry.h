@@ -7,11 +7,9 @@
 
 enum _eZWaveDeviceType
 {
-	ZDTYPE_SWITCHNORMAL = 37,
-	ZDTYPE_SWITCHDIMMER = 38,
-	ZDTYPE_SENSOR_MULTILEVEL_LEVEL = 48,
-	ZDTYPE_SENSOR_MULTILEVEL_VAL = 49,
-	ZDTYPE_SENSOR_METER = 50,
+	ZDTYPE_SWITCHNORMAL = 0,
+	ZDTYPE_SWITCHDIMMER,
+	ZDTYPE_SENSOR_POWER,
 };
 
 class CRazberry : public CDomoticzHardwareBase
@@ -21,6 +19,7 @@ class CRazberry : public CDomoticzHardwareBase
 		int nodeID;
 		int instanceID;
 		int commandClassID;
+		_eZWaveDeviceType devType;
 		int scaleID;
 		int basicType;
 		int genericType;
@@ -61,7 +60,7 @@ private:
 	void UpdateDevice(const std::string path, const Json::Value obj);
 	void Do_Work();
 	void SendDevice2Domoticz(const _tZWaveDevice *pDevice);
-	const _tZWaveDevice* FindDevice(int nodeID, int instanceID, int commandClassID);
+	const _tZWaveDevice* FindDevice(int nodeID, int instanceID, _eZWaveDeviceType devType);
 	void RunCMD(const std::string cmd);
 
 	bool m_bInitState;

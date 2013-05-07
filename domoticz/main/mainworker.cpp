@@ -5662,7 +5662,7 @@ void MainWorker::decode_Usage(const int HwdID, const tRBUF *pResponse)
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
 	std::string ID=pMeter->ID;
-	unsigned char Unit=subType;
+	unsigned char Unit=pMeter->dunit;
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=12;
 	unsigned char BatteryLevel = 255;

@@ -101,7 +101,7 @@ void CRazberry::Do_Work()
 const std::string CRazberry::GetControllerURL()
 {
 	std::stringstream sUrl;
-	if (m_username!="")
+	if (m_username=="")
 		sUrl << "http://" << m_ipaddress << ":" << m_port << "/ZWaveAPI/Data/" << m_updateTime;
 	else
 		sUrl << "http://"  << m_username << ":" << m_password << "@" << m_ipaddress << ":" << m_port << "/ZWaveAPI/Data/" << m_updateTime;
@@ -261,12 +261,14 @@ void CRazberry::parseDevices(const Json::Value devroot)
 			if (instance["commandClasses"]["38"].empty()==false)
 			{
 				_device.commandClassID=38;
+				_device.devType= ZDTYPE_SWITCHDIMMER;
 				_device.intvalue=instance["commandClasses"]["38"]["data"]["level"]["value"].asInt();
 				InsertOrUpdateDevice(_device,true);
 			}
 			else if (instance["commandClasses"]["37"].empty()==false)
 			{
 				_device.commandClassID=37;
+				_device.devType= ZDTYPE_SWITCHNORMAL;
 				_device.intvalue=instance["commandClasses"]["37"]["data"]["level"]["value"].asInt();
 				InsertOrUpdateDevice(_device,true);
 			}
@@ -280,6 +282,25 @@ void CRazberry::parseDevices(const Json::Value devroot)
 			if (instance["commandClasses"]["49"].empty()==false)
 			{
 				_device.commandClassID=49;
+				const Json::Value inVal=instance["commandClasses"]["49"]["data"];
+				for (Json::Value::iterator itt2=inVal.begin(); itt2!=inVal.end(); ++itt2)
+				{
+					const std::string sKey=itt2.key().asString();
+					if (!isInt(sKey))
+						continue; //not a scale
+					_device.scaleID=atoi(sKey.c_str());
+					std::string sensorTypeString = (*itt2)["sensorTypeString"]["value"].asString();
+					if (sensorTypeString=="Power")
+					{
+						_device.floatValue=(*itt2)["val"]["value"].asFloat();
+						if (_device.scaleID == 4)
+						{
+							_device.commandClassID=49;
+							_device.devType = ZDTYPE_SENSOR_POWER;
+							InsertOrUpdateDevice(_device,false);
+						}
+					}
+				}
 				//InsertOrUpdateDevice(_device);
 			}
 
@@ -299,6 +320,7 @@ void CRazberry::parseDevices(const Json::Value devroot)
 					if ((_device.scaleID == 2 || _device.scaleID == 4 || _device.scaleID == 6) && (sensorType == 1))
 					{
 						_device.commandClassID=50;
+						_device.devType = ZDTYPE_SENSOR_POWER;
 						InsertOrUpdateDevice(_device,false);
 					}
 				}
@@ -320,6 +342,7 @@ void CRazberry::parseDevices(const Json::Value devroot)
 					if ((_device.scaleID == 2 || _device.scaleID == 4 || _device.scaleID == 6) && (sensorType == 1))
 						continue; // we don't want to have measurable here (W, V, PowerFactor)
 					_device.commandClassID=50;
+					_device.devType = ZDTYPE_SENSOR_POWER;
 					InsertOrUpdateDevice(_device,false);
 				}
 			}
@@ -381,14 +404,6 @@ void CRazberry::UpdateDevice(const std::string path, const Json::Value obj)
 		return; //don't know you
 	}
 
-	switch (pDevice->commandClassID)
-	{
-	case 37:
-	case 38:
-		//switch
-		pDevice->intvalue=obj["value"].asInt();
-		break;
-	}
 	time_t atime=time(NULL);
 	if (atime-pDevice->lastreceived<2)
 		return; //to soon
@@ -396,9 +411,15 @@ void CRazberry::UpdateDevice(const std::string path, const Json::Value obj)
 	std::cout << asctime(localtime(&atime));
 	std::cout << "Razberry: Update device: " << pDevice->string_id << std::endl;
 #endif
-	switch (pDevice->commandClassID)
+
+	switch (pDevice->devType)
 	{
-	case 50:
+	case ZDTYPE_SWITCHNORMAL:
+	case ZDTYPE_SWITCHDIMMER:
+		//switch
+		pDevice->intvalue=obj["value"].asInt();
+		break;
+	case ZDTYPE_SENSOR_POWER:
 		//meters
 		pDevice->floatValue=obj["val"]["value"].asFloat();
 		break;
@@ -418,15 +439,19 @@ void CRazberry::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	unsigned char ID3=0;
 	unsigned char ID4=0;
 
-	if ((pDevice->commandClassID==ZDTYPE_SWITCHNORMAL)||(pDevice->commandClassID==ZDTYPE_SWITCHDIMMER))
+	//make device ID
+	ID1=0;
+	ID2=(unsigned char)((pDevice->nodeID&0xFF00)>>8);
+	ID3=(unsigned char)pDevice->nodeID&0xFF;
+	ID4=pDevice->instanceID;
+
+	char szID[10];
+	sprintf(szID,"%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+
+
+	if ((pDevice->devType==ZDTYPE_SWITCHNORMAL)||(pDevice->devType==ZDTYPE_SWITCHDIMMER))
 	{
 		//Send as Lighting 2
-
-		//make device ID
-		ID1=0;
-		ID2=(unsigned char)((pDevice->nodeID&0xFF00)>>8);
-		ID3=(unsigned char)pDevice->nodeID&0xFF;
-		ID4=pDevice->instanceID;
 
 		tRBUF lcmd;
 		memset(&lcmd,0,sizeof(RBUF));
@@ -440,7 +465,7 @@ void CRazberry::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		lcmd.LIGHTING2.id4=ID4;
 		lcmd.LIGHTING2.unitcode=1;
 		int level=15;
-		if (pDevice->commandClassID==ZDTYPE_SWITCHNORMAL)
+		if (pDevice->devType==ZDTYPE_SWITCHNORMAL)
 		{
 			//simple on/off device
 			if (pDevice->intvalue==0)
@@ -482,16 +507,18 @@ void CRazberry::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		m_sharedserver.SendToAll((const char*)&lcmd,sizeof(lcmd.LIGHTING2));
 		return;
 	}
-	else if (pDevice->commandClassID==ZDTYPE_SENSOR_METER)
+	else if (pDevice->devType==ZDTYPE_SENSOR_POWER)
 	{
 		_tUsageMeter umeter;
+		umeter.ID=szID;
+		umeter.dunit=pDevice->scaleID;
 		umeter.fusage=pDevice->floatValue;
 		sDecodeRXMessage(this, (const unsigned char *)&umeter);//decode message
 		m_sharedserver.SendToAll((const char*)&umeter,sizeof(_tUsageMeter));
 	}
 }
 
-const CRazberry::_tZWaveDevice* CRazberry::FindDevice(int nodeID, int instanceID, int commandClassID)
+const CRazberry::_tZWaveDevice* CRazberry::FindDevice(int nodeID, int instanceID, _eZWaveDeviceType devType)
 {
 	std::map<std::string,_tZWaveDevice>::iterator itt;
 	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
@@ -499,7 +526,7 @@ const CRazberry::_tZWaveDevice* CRazberry::FindDevice(int nodeID, int instanceID
 		if (
 			(itt->second.nodeID==nodeID)&&
 			(itt->second.instanceID==instanceID)&&
-			(itt->second.commandClassID==commandClassID)
+			(itt->second.devType==devType)
 			)
 			return &itt->second;
 	}
