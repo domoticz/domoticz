@@ -2175,8 +2175,7 @@ void MainWorker::decode_TempBaro(const int HwdID, const tRBUF *pResponse)
 	unsigned char subType=sTypeBMP085;
 	_tTempBaro *pTempBaro=(_tTempBaro*)pResponse;
 
-	sprintf(szTmp,"%d",pTempBaro->ID.c_str());
-	std::string ID=szTmp;
+	std::string ID=pTempBaro->ID;
 	unsigned char Unit=pTempBaro->sunit;
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=12;

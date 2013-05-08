@@ -151,6 +151,7 @@ hardware/TE923.cpp
 hardware/TE923Tool.cpp
 hardware/Razberry.cpp
 hardware/Rego6XXSerial.cpp
+hardware/DavisLoggerSerial.cpp
 tcpserver/TCPServer.cpp
 tcpserver/TCPClient.cpp
 webserver/cWebem.cpp
