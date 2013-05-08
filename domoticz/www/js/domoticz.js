@@ -249,8 +249,8 @@ function ShowLightLog(id,name,content,backfunction)
 			title: {
 				text: 'Percent (%)'
 			},
-			min: 0,
-			max: 100
+			endOnTick: false,
+			startOnTick: false
 		},
 		tooltip: {
 			formatter: function() {
