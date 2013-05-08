@@ -32,6 +32,7 @@ Version 1.0.xxx (May xxth 2013)
 - Implemented: Email connection timeout (10 seconds)
 - Implemented: Support for multiple Email recipients
 - Fixed: RFXtrx USB mode option in hardware settings, will now return to dashboard
+- Implemented: P1 Smart meter Power, logging of day/night tariff separately (!note: next day value will be low)
 
 Version 1.0.484 (April 28th 2013)
 - Implemented: Raspberry Pi, updating via the web browser (Settings Tab)

@@ -22,6 +22,8 @@
 
 #define pTypeP1Power	0xFA
 #define sTypeP1Power	0x01
+#define mModeP1Norm		0x00
+#define mModeP1Double	0x01
 
 #define pTypeP1Gas		0xFB
 #define sTypeP1Gas		0x02

@@ -14,7 +14,7 @@
 #include "../smtpclient/SMTPClient.h"
 #include "../webserver/Base64.h"
 
-#define DB_VERSION 9
+#define DB_VERSION 10
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -445,6 +445,41 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion<9) {
 			query("UPDATE Notifications SET Params = 'S' WHERE Params = ''");
 		}
+		if (dbversion<10)
+		{
+			//P1 Smart meter power change, need to delete all short logs from today
+			char szDateStart[40];
+			time_t now = time(NULL);
+			struct tm tm1;
+			localtime_r(&now,&tm1);
+			struct tm ltime;
+			ltime.tm_isdst=tm1.tm_isdst;
+			ltime.tm_hour=0;
+			ltime.tm_min=0;
+			ltime.tm_sec=0;
+			ltime.tm_year=tm1.tm_year;
+			ltime.tm_mon=tm1.tm_mon;
+			ltime.tm_mday=tm1.tm_mday;
+
+			sprintf(szDateStart,"%04d-%02d-%02d %02d:%02d:%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,ltime.tm_hour,ltime.tm_min,ltime.tm_sec);
+
+			char szTmp[200];
+
+			std::vector<std::vector<std::string> > result;
+			sprintf(szTmp,"SELECT ID FROM DeviceStatus WHERE (Type=%d)",pTypeP1Power);
+			result=query(szTmp);
+			if (result.size()>0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt=result.begin(); itt!=result.end(); ++itt)
+				{
+					std::vector<std::string> sd=*itt;
+					std::string idx=sd[0];
+					sprintf(szTmp,"DELETE FROM MultiMeter WHERE (DeviceRowID='%s') AND (Date>='%s')",idx.c_str(),szDateStart);
+					query(szTmp);
+				}
+			}
+		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
 
@@ -515,6 +550,10 @@ bool CSQLHelper::OpenDatabase()
             }
 		    UpdatePreferencesVar("Rego6XXType", 0); // Set to zero to avoid another copy
         }
+	}
+	if (!GetPreferencesVar("P1PowerMode", nValue))
+	{
+		UpdatePreferencesVar("P1PowerMode", mModeP1Norm);
 	}
 	//Costs for Energy/Gas and Water (See your provider, try to include tax and other stuff)
 	if (!GetPreferencesVar("CostEnergy", nValue))
@@ -2696,6 +2735,8 @@ void CSQLHelper::UpdateMultiMeter()
 			unsigned long long value2=0;
 			unsigned long long value3=0;
 			unsigned long long value4=0;
+			unsigned long long value5=0;
+			unsigned long long value6=0;
 
 			if (dType==pTypeP1Power)
 			{
@@ -2722,8 +2763,10 @@ void CSQLHelper::UpdateMultiMeter()
 				s_usagecurrent >> usagecurrent;
 				s_delivcurrent >> delivcurrent;
 
-				value1=powerusage1+powerusage2;
-				value2=powerdeliv1+powerdeliv2;
+				value1=powerusage1;
+				value2=powerdeliv1;
+				value5=powerusage2;
+				value6=powerdeliv2;
 				value3=usagecurrent;
 				value4=delivcurrent;
 			}
@@ -2751,13 +2794,15 @@ void CSQLHelper::UpdateMultiMeter()
 
 			//insert record
 			sprintf(szTmp,
-				"INSERT INTO MultiMeter (DeviceRowID, Value1, Value2, Value3, Value4) "
-				"VALUES (%llu, %llu, %llu, %llu, %llu)",
+				"INSERT INTO MultiMeter (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6) "
+				"VALUES (%llu, %llu, %llu, %llu, %llu, %llu, %llu)",
 				ID,
 				value1,
 				value2,
 				value3,
-				value4
+				value4,
+				value5,
+				value6
 				);
 			std::vector<std::vector<std::string> > result2;
 			result2=query(szTmp);

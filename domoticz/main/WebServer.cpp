@@ -1487,6 +1487,47 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					EnergyDivider=float(tValue);
 				}
 
+				unsigned long long powerusage1;
+				unsigned long long powerusage2;
+				unsigned long long powerdeliv1;
+				unsigned long long powerdeliv2;
+				unsigned long long usagecurrent;
+				unsigned long long delivcurrent;
+
+				std::stringstream s_powerusage1(splitresults[0]);
+				std::stringstream s_powerusage2(splitresults[1]);
+				std::stringstream s_powerdeliv1(splitresults[2]);
+				std::stringstream s_powerdeliv2(splitresults[3]);
+				std::stringstream s_usagecurrent(splitresults[4]);
+				std::stringstream s_delivcurrent(splitresults[5]);
+
+				s_powerusage1 >> powerusage1;
+				s_powerusage2 >> powerusage2;
+				s_powerdeliv1 >> powerdeliv1;
+				s_powerdeliv2 >> powerdeliv2;
+				s_usagecurrent >> usagecurrent;
+				s_delivcurrent >> delivcurrent;
+
+				unsigned long long powerusage=powerusage1+powerusage2;
+				unsigned long long powerdeliv=powerdeliv1+powerdeliv2;
+
+				float musage=0;
+
+				root["result"][ii]["SwitchTypeVal"]=MTYPE_ENERGY;
+				musage=float(powerusage)/EnergyDivider;
+				sprintf(szTmp,"%.03f",musage);
+				root["result"][ii]["Counter"]=szTmp;
+				musage=float(powerdeliv)/EnergyDivider;
+				sprintf(szTmp,"%.03f",musage);
+				root["result"][ii]["CounterDeliv"]=szTmp;
+
+				sprintf(szTmp,"%llu Watt",usagecurrent);
+				root["result"][ii]["Usage"]=szTmp;
+				sprintf(szTmp,"%llu Watt",delivcurrent);
+				root["result"][ii]["UsageDeliv"]=szTmp;
+				root["result"][ii]["Data"]=sValue;
+				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+
 				//get value of today
 				time_t now = time(NULL);
 				struct tm tm1;
@@ -1508,56 +1549,28 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				strcpy(szTmp,"0");
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "SELECT MIN(Value1), MIN(Value2) FROM MultiMeter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
+				szQuery << "SELECT MIN(Value1), MIN(Value2), MIN(Value5), MIN(Value6) FROM MultiMeter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
 				result2=m_pMain->m_sql.query(szQuery.str());
 				if (result2.size()>0)
 				{
 					std::vector<std::string> sd2=result2[0];
 
-					unsigned long long total_min_usage,total_real_usage;
-					unsigned long long total_min_deliv,total_real_deliv;
+					unsigned long long total_min_usage_1,total_min_usage_2,total_real_usage;
+					unsigned long long total_min_deliv_1,total_min_deliv_2,total_real_deliv;
 
 					std::stringstream s_str1( sd2[0] );
-					s_str1 >> total_min_usage;
+					s_str1 >> total_min_usage_1;
 					std::stringstream s_str2( sd2[1] );
-					s_str2 >> total_min_deliv;
+					s_str2 >> total_min_deliv_1;
+					std::stringstream s_str3( sd2[2] );
+					s_str3 >> total_min_usage_2;
+					std::stringstream s_str4( sd2[3] );
+					s_str4 >> total_min_deliv_2;
 
-					unsigned long long powerusage1;
-					unsigned long long powerusage2;
-					unsigned long long powerdeliv1;
-					unsigned long long powerdeliv2;
-					unsigned long long usagecurrent;
-					unsigned long long delivcurrent;
+					musage=0;
 
-					std::stringstream s_powerusage1(splitresults[0]);
-					std::stringstream s_powerusage2(splitresults[1]);
-					std::stringstream s_powerdeliv1(splitresults[2]);
-					std::stringstream s_powerdeliv2(splitresults[3]);
-					std::stringstream s_usagecurrent(splitresults[4]);
-					std::stringstream s_delivcurrent(splitresults[5]);
-
-					s_powerusage1 >> powerusage1;
-					s_powerusage2 >> powerusage2;
-					s_powerdeliv1 >> powerdeliv1;
-					s_powerdeliv2 >> powerdeliv2;
-					s_usagecurrent >> usagecurrent;
-					s_delivcurrent >> delivcurrent;
-
-					unsigned long long powerusage=powerusage1+powerusage2;
-					unsigned long long powerdeliv=powerdeliv1+powerdeliv2;
-
-					float musage=0;
-
-					root["result"][ii]["SwitchTypeVal"]=MTYPE_ENERGY;
-					musage=float(powerusage)/EnergyDivider;
-					sprintf(szTmp,"%.03f",musage);
-					root["result"][ii]["Counter"]=szTmp;
-					musage=float(powerdeliv)/EnergyDivider;
-					sprintf(szTmp,"%.03f",musage);
-					root["result"][ii]["CounterDeliv"]=szTmp;
-
-					total_real_usage=powerusage-total_min_usage;
-					total_real_deliv=powerdeliv-total_min_deliv;
+					total_real_usage=powerusage-(total_min_usage_1+total_min_usage_2);
+					total_real_deliv=powerdeliv-(total_min_deliv_1+total_min_deliv_2);
 
 					musage=float(total_real_usage)/EnergyDivider;
 					sprintf(szTmp,"%.03f kWh",musage);
@@ -1565,28 +1578,12 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					musage=float(total_real_deliv)/EnergyDivider;
 					sprintf(szTmp,"%.03f kWh",musage);
 					root["result"][ii]["CounterDelivToday"]=szTmp;
-
-					sprintf(szTmp,"%llu Watt",usagecurrent);
-					root["result"][ii]["Usage"]=szTmp;
-					sprintf(szTmp,"%llu Watt",delivcurrent);
-					root["result"][ii]["UsageDeliv"]=szTmp;
-					root["result"][ii]["Data"]=sValue;
-					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				}
 				else
 				{
-					root["result"][ii]["SwitchTypeVal"]=MTYPE_ENERGY;
-					sprintf(szTmp,"%.03f",0.0f);
-					root["result"][ii]["Counter"]=szTmp;
-					root["result"][ii]["CounterDeliv"]=szTmp;
 					sprintf(szTmp,"%.03f kWh",0.0f);
 					root["result"][ii]["CounterToday"]=szTmp;
 					root["result"][ii]["CounterDelivToday"]=szTmp;
-					sprintf(szTmp,"%llu Watt",0LL);
-					root["result"][ii]["Usage"]=szTmp;
-					root["result"][ii]["UsageDeliv"]=szTmp;
-					root["result"][ii]["Data"]=sValue;
-					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				}
 			}
 			else if (dType == pTypeP1Gas)
@@ -3198,7 +3195,7 @@ std::string CWebServer::GetJSonPage()
 				int ii=0;
 				if (dType==pTypeP1Power)
 				{
-					szQuery << "SELECT Value1,Value2,Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+					szQuery << "SELECT Value1,Value2,Value5,Value6,Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 					result=m_pMain->m_sql.query(szQuery.str());
 					if (result.size()>0)
 					{
@@ -3208,14 +3205,20 @@ std::string CWebServer::GetJSonPage()
 						{
 							std::vector<std::string> sd=*itt;
 
-							root["result"][ii]["d"]=sd[2].substr(0,16);
-							std::string szValue1=sd[0];
-							std::string szValue2=sd[1];
-							if (szValue2!="0")
+							root["result"][ii]["d"]=sd[4].substr(0,16);
+							std::string szValueUsage1=sd[0];
+							std::string szValueDeliv1=sd[1];
+							std::string szValueUsage2=sd[2];
+							std::string szValueDeliv2=sd[3];
+
+							float fUsage=(float)(atof(szValueUsage1.c_str())+atof(szValueUsage2.c_str()));
+							float fDeliv=(float)(atof(szValueDeliv1.c_str())+atof(szValueDeliv2.c_str()));
+
+							if (fDeliv!=0)
 								bHaveDeliverd=true;
-							sprintf(szTmp,"%.3f",atof(szValue1.c_str())/EnergyDivider);
+							sprintf(szTmp,"%.3f",fUsage/EnergyDivider);
 							root["result"][ii]["v"]=szTmp;
-							sprintf(szTmp,"%.3f",atof(szValue2.c_str())/EnergyDivider);
+							sprintf(szTmp,"%.3f",fDeliv/EnergyDivider);
 							root["result"][ii]["v2"]=szTmp;
 							ii++;
 						}
@@ -3263,28 +3266,38 @@ std::string CWebServer::GetJSonPage()
 				szQuery.str("");
 				if (dType==pTypeP1Power)
 				{
-					szQuery << "SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2) FROM MultiMeter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+					szQuery << "SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2),MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM MultiMeter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 					result=m_pMain->m_sql.query(szQuery.str());
 					if (result.size()>0)
 					{
 						std::vector<std::string> sd=result[0];
 
-						unsigned long long total_min_usage,total_max_usage,total_real_usage;
-						unsigned long long total_min_deliv,total_max_deliv,total_real_deliv;
+						unsigned long long total_min_usage_1,total_min_usage_2,total_max_usage_1,total_max_usage_2,total_real_usage;
+						unsigned long long total_min_deliv_1,total_min_deliv_2,total_max_deliv_1,total_max_deliv_2,total_real_deliv;
 
 						bool bHaveDeliverd=false;
 
 						std::stringstream s_str1( sd[0] );
-						s_str1 >> total_min_usage;
+						s_str1 >> total_min_usage_1;
 						std::stringstream s_str2( sd[1] );
-						s_str2 >> total_max_usage;
-						total_real_usage=total_max_usage-total_min_usage;
+						s_str2 >> total_max_usage_1;
+						std::stringstream s_str3( sd[4] );
+						s_str3 >> total_min_usage_2;
+						std::stringstream s_str4( sd[5] );
+						s_str4 >> total_max_usage_2;
 
-						std::stringstream s_str3( sd[2] );
-						s_str3 >> total_min_deliv;
-						std::stringstream s_str4( sd[3] );
-						s_str4 >> total_max_deliv;
-						total_real_deliv=total_max_deliv-total_min_deliv;
+						total_real_usage=(total_max_usage_1+total_max_usage_2)-(total_min_usage_1+total_min_usage_2);
+
+						std::stringstream s_str5( sd[2] );
+						s_str5 >> total_min_deliv_1;
+						std::stringstream s_str6( sd[3] );
+						s_str6 >> total_max_deliv_1;
+						std::stringstream s_str7( sd[6] );
+						s_str7 >> total_min_deliv_2;
+						std::stringstream s_str8( sd[7] );
+						s_str8 >> total_max_deliv_2;
+
+						total_real_deliv=(total_max_deliv_1+total_max_deliv_2)-(total_min_deliv_1+total_min_deliv_2);
 						if (total_real_deliv!=0)
 							bHaveDeliverd=true;
 
@@ -3614,7 +3627,7 @@ std::string CWebServer::GetJSonPage()
 				int ii=0;
 				if (dType==pTypeP1Power)
 				{
-					szQuery << "SELECT Value1,Value2, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+					szQuery << "SELECT Value1,Value2,Value5,Value6, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 					result=m_pMain->m_sql.query(szQuery.str());
 					if (result.size()>0)
 					{
@@ -3624,15 +3637,21 @@ std::string CWebServer::GetJSonPage()
 						{
 							std::vector<std::string> sd=*itt;
 
-							root["result"][ii]["d"]=sd[2].substr(0,16);
+							root["result"][ii]["d"]=sd[4].substr(0,16);
 
-							std::string szValue=sd[0];
-							sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDivider);
-							root["result"][ii]["v"]=szTmp;
-							std::string szValue2=sd[1];
-							if (szValue2!="0")
+							std::string szUsage1=sd[0];
+							std::string szDeliv1=sd[1];
+							std::string szUsage2=sd[2];
+							std::string szDeliv2=sd[3];
+
+							float fUsage=(float)(atof(szUsage1.c_str())+atof(szUsage2.c_str()));
+							float fDeliv=(float)(atof(szDeliv1.c_str())+atof(szDeliv2.c_str()));
+
+							if (fDeliv!=0)
 								bHaveDeliverd=true;
-							sprintf(szTmp,"%.3f",atof(szValue2.c_str())/EnergyDivider);
+							sprintf(szTmp,"%.3f",fUsage/EnergyDivider);
+							root["result"][ii]["v"]=szTmp;
+							sprintf(szTmp,"%.3f",fDeliv/EnergyDivider);
 							root["result"][ii]["v2"]=szTmp;
 							ii++;
 						}
@@ -3880,25 +3899,37 @@ std::string CWebServer::GetJSonPage()
 				szQuery.str("");
 				if (dType==pTypeP1Power)
 				{
-					szQuery << "SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2) FROM MultiMeter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+					szQuery << "SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2), MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM MultiMeter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 					bool bHaveDeliverd=false;
 					result=m_pMain->m_sql.query(szQuery.str());
 					if (result.size()>0)
 					{
 						std::vector<std::string> sd=result[0];
-						unsigned long long total_min_usage,total_max_usage,total_real_usage;
-						unsigned long long total_min_deliv,total_max_deliv,total_real_deliv;
+						unsigned long long total_min_usage_1,total_min_usage_2,total_max_usage_1,total_max_usage_2,total_real_usage;
+						unsigned long long total_min_deliv_1,total_min_deliv_2,total_max_deliv_1,total_max_deliv_2,total_real_deliv;
 
 						std::stringstream s_str1( sd[0] );
-						s_str1 >> total_min_usage;
+						s_str1 >> total_min_usage_1;
 						std::stringstream s_str2( sd[1] );
-						s_str2 >> total_max_usage;
-						total_real_usage=total_max_usage-total_min_usage;
-						std::stringstream s_str3( sd[2] );
-						s_str3 >> total_min_deliv;
-						std::stringstream s_str4( sd[3] );
-						s_str4 >> total_max_deliv;
-						total_real_deliv=total_max_deliv-total_min_deliv;
+						s_str2 >> total_max_usage_1;
+						std::stringstream s_str3( sd[4] );
+						s_str3 >> total_min_usage_2;
+						std::stringstream s_str4( sd[5] );
+						s_str4 >> total_max_usage_2;
+
+						total_real_usage=(total_max_usage_1+total_max_usage_2)-(total_min_usage_1+total_min_usage_2);
+
+						std::stringstream s_str5( sd[2] );
+						s_str5 >> total_min_deliv_1;
+						std::stringstream s_str6( sd[3] );
+						s_str6 >> total_max_deliv_1;
+						std::stringstream s_str7( sd[6] );
+						s_str7 >> total_min_deliv_2;
+						std::stringstream s_str8( sd[7] );
+						s_str8 >> total_max_deliv_2;
+
+						total_real_deliv=(total_max_deliv_1+total_max_deliv_2)-(total_min_deliv_1+total_min_deliv_2);
+
 						if (total_real_deliv!=0)
 							bHaveDeliverd=true;
 
@@ -4332,7 +4363,7 @@ std::string CWebServer::GetJSonPage()
 				int ii=0;
 				if (dType==pTypeP1Power)
 				{
-					szQuery << "SELECT Value1,Value2, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+					szQuery << "SELECT Value1,Value2,Value5,Value6, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 					result=m_pMain->m_sql.query(szQuery.str());
 					if (result.size()>0)
 					{
@@ -4342,15 +4373,21 @@ std::string CWebServer::GetJSonPage()
 						{
 							std::vector<std::string> sd=*itt;
 
-							root["result"][ii]["d"]=sd[2].substr(0,16);
+							root["result"][ii]["d"]=sd[4].substr(0,16);
 
-							std::string szValue=sd[0];
-							sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDivider);
-							root["result"][ii]["v"]=szTmp;
-							std::string szValue2=sd[1];
-							if (szValue2!="0")
+							std::string szUsage1=sd[0];
+							std::string szDeliv1=sd[1];
+							std::string szUsage2=sd[2];
+							std::string szDeliv2=sd[3];
+
+							float fUsage=(float)(atof(szUsage1.c_str())+atof(szUsage2.c_str()));
+							float fDeliv=(float)(atof(szDeliv1.c_str())+atof(szDeliv2.c_str()));
+
+							if (fDeliv!=0)
 								bHaveDeliverd=true;
-							sprintf(szTmp,"%.3f",atof(szValue2.c_str())/EnergyDivider);
+							sprintf(szTmp,"%.3f",fUsage/EnergyDivider);
+							root["result"][ii]["v"]=szTmp;
+							sprintf(szTmp,"%.3f",fDeliv/EnergyDivider);
 							root["result"][ii]["v2"]=szTmp;
 							ii++;
 						}
@@ -4398,25 +4435,37 @@ std::string CWebServer::GetJSonPage()
 				szQuery.str("");
 				if (dType==pTypeP1Power)
 				{
-					szQuery << "SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2) FROM MultiMeter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+					szQuery << "SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2),MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM MultiMeter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 					bool bHaveDeliverd=false;
 					result=m_pMain->m_sql.query(szQuery.str());
 					if (result.size()>0)
 					{
 						std::vector<std::string> sd=result[0];
-						unsigned long long total_min_usage,total_max_usage,total_real_usage;
-						unsigned long long total_min_deliv,total_max_deliv,total_real_deliv;
+						unsigned long long total_min_usage_1,total_min_usage_2,total_max_usage_1,total_max_usage_2,total_real_usage;
+						unsigned long long total_min_deliv_1,total_min_deliv_2,total_max_deliv_1,total_max_deliv_2,total_real_deliv;
 
 						std::stringstream s_str1( sd[0] );
-						s_str1 >> total_min_usage;
+						s_str1 >> total_min_usage_1;
 						std::stringstream s_str2( sd[1] );
-						s_str2 >> total_max_usage;
-						total_real_usage=total_max_usage-total_min_usage;
-						std::stringstream s_str3( sd[2] );
-						s_str3 >> total_min_deliv;
-						std::stringstream s_str4( sd[3] );
-						s_str4 >> total_max_deliv;
-						total_real_deliv=total_max_deliv-total_min_deliv;
+						s_str2 >> total_max_usage_1;
+						std::stringstream s_str3( sd[4] );
+						s_str3 >> total_min_usage_2;
+						std::stringstream s_str4( sd[5] );
+						s_str4 >> total_max_usage_2;
+
+						total_real_usage=(total_max_usage_1+total_max_usage_2)-(total_min_usage_1+total_min_usage_2);
+
+						std::stringstream s_str5( sd[2] );
+						s_str5 >> total_min_deliv_1;
+						std::stringstream s_str6( sd[3] );
+						s_str6 >> total_max_deliv_1;
+						std::stringstream s_str7( sd[6] );
+						s_str7 >> total_min_deliv_2;
+						std::stringstream s_str8( sd[7] );
+						s_str8 >> total_max_deliv_2;
+
+						total_real_deliv=(total_max_deliv_1+total_max_deliv_2)-(total_min_deliv_1+total_min_deliv_2);
+
 						if (total_real_deliv!=0)
 							bHaveDeliverd=true;
 
