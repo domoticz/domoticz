@@ -6,19 +6,12 @@
 
 namespace http {
 	namespace server {
-
-		typedef struct _tWebUserPermission
-		{
-			unsigned long InputID;
-			int PID;
-		} WebUserPermissions;
-
 		typedef struct _tWebUserPassword
 		{
 			std::string Username;
 			std::string Password;
 
-			std::vector<_tWebUserPermission> Permissions;
+			bool bIsAdmin;
 		} WebUserPassword;
 
 		// Parsed Authorization header
@@ -136,7 +129,7 @@ namespace http {
 
 			bool CheckForPageOverride( const request& req, reply& rep);
 
-			void AddUserPassword(std::string username, std::string password);
+			void AddUserPassword(const std::string username, const std::string password, const bool bIsAdmin);
 			void ClearUserPasswords();
 			std::vector<_tWebUserPassword> m_userpasswords;
 			void AddLocalNetworks(std::string network);

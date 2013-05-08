@@ -428,11 +428,12 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 	return true;
 }
 
-void cWebem::AddUserPassword(std::string username, std::string password)
+void cWebem::AddUserPassword(const std::string username, const std::string password, const bool bIsAdmin)
 {
 	_tWebUserPassword wtmp;
 	wtmp.Username=username;
 	wtmp.Password=password;
+	wtmp.bIsAdmin=bIsAdmin;
 	m_userpasswords.push_back(wtmp);
 }
 

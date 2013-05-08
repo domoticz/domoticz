@@ -101,7 +101,7 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
 				{
 					WebUserName=base64_decode(WebUserName);
 					WebPassword=base64_decode(WebPassword);
-					m_pWebEm->AddUserPassword(WebUserName, WebPassword);
+					m_pWebEm->AddUserPassword(WebUserName, WebPassword,true);
 
 					std::string WebLocalNetworks;
 					if (m_pMain->m_sql.GetPreferencesVar("WebLocalNetworks",nValue,WebLocalNetworks))
@@ -125,7 +125,7 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
 		std::vector<_tWebUserPassword>::const_iterator itt;
 		for (itt=m_users.begin(); itt!=m_users.end(); ++itt)
 		{
-			m_pWebEm->AddUserPassword(itt->Username, itt->Password);
+			m_pWebEm->AddUserPassword(itt->Username, itt->Password,true);
 		}
 	}
 
@@ -398,7 +398,7 @@ char * CWebServer::PostSettings()
 	}
 	ClearUserPasswords();
 	if ((WebUserName!="")&&(WebPassword!="")) {
-		m_pWebEm->AddUserPassword(WebUserName,WebPassword);
+		m_pWebEm->AddUserPassword(WebUserName,WebPassword,true);
 		WebUserName=base64_encode((const unsigned char*)WebUserName.c_str(),WebUserName.size());
 		WebPassword=base64_encode((const unsigned char*)WebPassword.c_str(),WebPassword.size());
 	}
