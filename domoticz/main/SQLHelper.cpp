@@ -771,6 +771,8 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigne
 
 void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname)
 {
+	if (!NeedToUpdateHardwareDevice(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue,devname))
+		return;
 	UpdateValueInt(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue,devname);
 
 	bool bIsLightSwitch=false;
@@ -1162,6 +1164,50 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 		break;
 	}
 }
+
+//Special case for Z-Wave, as we receive the same update as we send it
+bool CSQLHelper::NeedToUpdateHardwareDevice(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname)
+{
+	if (devType!=pTypeLighting2)
+		return true;
+
+	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(HardwareID);
+	if (!pHardware)
+		return true;
+	if (pHardware->HwdType!=HTYPE_RazberryZWave)
+		return true;
+
+	//Check if nValue and sValue are the same, if true, then just update the date
+	std::vector<std::vector<std::string> > result;
+	char szTmp[1000];
+	sprintf(szTmp,"SELECT ID, nValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
+	result=query(szTmp);
+	if (result.size()<1)
+		return true; //new device
+	std::string idx=result[0][0];
+	int oldnValue=atoi(result[0][1].c_str());
+	bool bIsSame=(oldnValue==nValue);
+	if (!bIsSame)
+		return true;
+
+	time_t now = time(0);
+	struct tm ltime;
+	localtime_r(&now,&ltime);
+
+	unsigned long long ulID;
+	std::stringstream s_str( idx );
+	s_str >> ulID;
+
+	sprintf(szTmp,
+		"UPDATE DeviceStatus SET sValue='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID = %llu)",
+		sValue,
+		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+		ulID);
+	result = query(szTmp);
+
+	return false;
+}
+
 
 void CSQLHelper::GetAddjustment(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, float &AddjValue, float &AddjMulti)
 {

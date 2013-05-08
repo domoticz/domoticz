@@ -145,6 +145,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_TE923,				"TE923 USB Compatible Weather Station" },
 		{ HTYPE_Rego6XX,			"Rego 6XX USB/serial interface" },
 		{ HTYPE_RazberryZWave,		"Razberry Z-Wave via LAN interface (HTTP)" },
+		{ HTYPE_DavisVantage,		"Davis Vantage Weather Station USB" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

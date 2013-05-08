@@ -5960,7 +5960,7 @@ std::string CWebServer::GetJSonPage()
 			unsigned char mode4=0;
 			unsigned char mode5=0;
 			int port=atoi(sport.c_str());
-			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX))
+			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX)||(htype==HTYPE_DavisVantage))
 			{
 				//USB
 				if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433))
@@ -6057,7 +6057,7 @@ std::string CWebServer::GetJSonPage()
 
 			int port=atoi(sport.c_str());
 
-			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX))
+			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX)||(htype==HTYPE_DavisVantage))
 			{
 				//USB
 			}

@@ -32,6 +32,7 @@ public:
 	void RemoveDomoticzHardware(int HwdId);
 	int FindDomoticzHardware(int HwdId);
 	void ClearDomoticzHardware();
+	CDomoticzHardwareBase* GetHardware(int HwdId);
 
 	void SetVerboseLevel(eVerboseLevel Level);
 	void SetWebserverPort(std::string Port);

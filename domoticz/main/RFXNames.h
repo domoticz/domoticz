@@ -59,6 +59,7 @@ enum _eHardwareTypes {
 	HTYPE_TE923,
 	HTYPE_Rego6XX,
 	HTYPE_RazberryZWave,
+	HTYPE_DavisVantage,
 	HTYPE_END
 };
 

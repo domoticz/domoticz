@@ -18,6 +18,7 @@
 #include "../hardware/TE923.h"
 #include "../hardware/Rego6XXSerial.h"
 #include "../hardware/Razberry.h"
+#include "../hardware/DavisLoggerSerial.h"
 
 #ifdef _DEBUG
 	//#define DEBUG_RECEIVE
@@ -167,6 +168,20 @@ int MainWorker::FindDomoticzHardware(int HwdId)
 	return -1;
 }
 
+CDomoticzHardwareBase* MainWorker::GetHardware(int HwdId)
+{
+	boost::lock_guard<boost::mutex> l(m_devicemutex);
+	std::vector<CDomoticzHardwareBase*>::iterator itt;
+	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
+	{
+		if ((*itt)->m_HwdID==HwdId)
+		{
+			return (*itt);
+		}
+	}
+	return NULL;
+}
+
 void MainWorker::ClearDomoticzHardware()
 {
 	boost::lock_guard<boost::mutex> l(m_devicemutex);
@@ -272,6 +287,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RFXtrx433:
 	case HTYPE_P1SmartMeter:
 	case HTYPE_Rego6XX:
+	case HTYPE_DavisVantage:
 		{
 			//USB/Serial
 #if defined WIN32
@@ -307,6 +323,10 @@ bool MainWorker::AddHardwareFromParams(
 			else if (Type==HTYPE_Rego6XX)
 			{
 				pHardware = new CRego6XXSerial(ID,szSerialPort, Mode1);
+			}
+			else if (Type==HTYPE_DavisVantage)
+			{
+				pHardware = new CDavisLoggerSerial(ID,szSerialPort, 19200);
 			}
 		}
 		break;

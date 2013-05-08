@@ -66,6 +66,9 @@
     <Filter Include="Devices\Razberry-ZWave">
       <UniqueIdentifier>{3d63876c-62b2-4fbf-a50c-5132dcfbcb3b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Davis">
+      <UniqueIdentifier>{c3024a2d-5f67-4780-8d26-cc53d91624ac}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -238,6 +241,9 @@
     <ClInclude Include="hardware\Razberry.h">
       <Filter>Devices\Razberry-ZWave</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\DavisLoggerSerial.h">
+      <Filter>Devices\Davis</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -377,6 +383,9 @@
     </ClCompile>
     <ClCompile Include="hardware\Razberry.cpp">
       <Filter>Devices\Razberry-ZWave</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\DavisLoggerSerial.cpp">
+      <Filter>Devices\Davis</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

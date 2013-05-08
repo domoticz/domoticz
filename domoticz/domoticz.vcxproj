@@ -94,6 +94,7 @@
     <None Include="INSTALL.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="hardware\DavisLoggerSerial.h" />
     <ClInclude Include="hardware\Razberry.h" />
     <ClInclude Include="hardware\Rego6XXSerial.h" />
     <ClInclude Include="hardware\libusbwinusbbridge.h" />
@@ -150,6 +151,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hardware\ASyncSerial.cpp" />
+    <ClCompile Include="hardware\DavisLoggerSerial.cpp" />
     <ClCompile Include="hardware\libusbwinusbbridge.cpp" />
     <ClCompile Include="hardware\Razberry.cpp" />
     <ClCompile Include="hardware\TE923.cpp" />
