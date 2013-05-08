@@ -13,6 +13,8 @@
 #include "Base64.h"
 #include <stdarg.h>
 
+int m_failcounter=0;
+
 namespace http {
 	namespace server {
 
@@ -919,13 +921,21 @@ int cWebemRequestHandler::authorize(const request& req)
 	{
 		if (itt->Username == _ah.user)
 		{
-			return check_password
+			int bOK=check_password
 				(
 				req.method.c_str(),
 				itt->Password.c_str(), _ah.uri, _ah.nonce, _ah.nc, _ah.cnonce, _ah.qop,_ah.response
 				);
+			if (!bOK)
+			{
+				m_failcounter++;
+				return 0;
+			}
+			m_failcounter=0;
+			return 1;
 		}
 	}
+	m_failcounter++;
 	return 0;
 }
 
@@ -982,7 +992,13 @@ void cWebemRequestHandler::handle_request( const request& req, reply& rep)
 {
 	if (!check_authorization(req)) 
 	{
-		send_authorization_request(rep);
+		if (m_failcounter==4)
+		{
+			m_failcounter=0;
+			rep = reply::stock_reply(reply::forbidden);
+		}
+		else
+			send_authorization_request(rep);
 		return;
 	}
 
