@@ -520,7 +520,7 @@ void MainWorker::GetRaspberryPiTemperature()
 		{
 			getline(infile, sLine);
 			float temperature=(float)atof(sLine.c_str())/1000.0f;
-			if ((temperature != 85) && (temperature > 273))
+			if ((temperature != 85) && (temperature > -273))
 			{
 				//Temp
 				RBUF tsen;
