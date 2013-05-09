@@ -6156,8 +6156,8 @@ std::string CWebServer::GetJSonPage()
                     (senabled=="true")?1:0,
                     address.c_str(),
                     port,
-                    base64_encode((const unsigned char*)username.c_str(),username.size()),
-					base64_encode((const unsigned char*)password.c_str(),password.size()),
+                    base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
+					base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
 					videourl.c_str(),
 					imageurl.c_str()
                     );
@@ -6196,8 +6196,8 @@ std::string CWebServer::GetJSonPage()
                     (senabled=="true")?1:0,
                     address.c_str(),
                     port,
-					base64_encode((const unsigned char*)username.c_str(),username.size()),
-					base64_encode((const unsigned char*)password.c_str(),password.size()),
+					base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
+					base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
 					videourl.c_str(),
 					imageurl.c_str(),
                     idx.c_str()
