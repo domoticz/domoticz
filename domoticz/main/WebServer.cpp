@@ -2678,8 +2678,10 @@ std::string CWebServer::GetJSonPage()
 
 								if (totalDeliv!=0)
 									bHaveDeliverd=true;
-								root["result"][ii]["v"]=totalUsage;
-								root["result"][ii]["v2"]=totalDeliv;
+								sprintf(szTmp,"%d",totalUsage);
+								root["result"][ii]["v"]=szTmp;
+								sprintf(szTmp,"%d",totalDeliv);
+								root["result"][ii]["v2"]=szTmp;
 								ii++;
 							}
 							else
