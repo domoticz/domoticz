@@ -3,7 +3,9 @@
     <meta charset="utf-8">
     <script type="text/javascript" src="/js/blockly_compressed.js"></script>
     <script type="text/javascript" src="/js/en_compressed.js"></script>
-    <!--<script type="text/javascript" src="/js/domoticzblocks.js"></script>-->
+    <script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
+    <scrip  type="text/javascript" src="js/jquery-ui-1.10.1.custom.min.js"></script>
+    <script type="text/javascript" src="/js/domoticzblocks.js"></script>
     <style>
       html, body {
         background-color: transparent;
@@ -36,12 +38,21 @@
 	   		<block type="logic_compare"></block>
 	   		<block type="logic_operation"></block>
 	   		<block type="logic_boolean"></block>
+	   		<block type="logic_states"></block>
    		</category>
    		<category name="Devices">   		
-		   	<category name="Switches" custom="VARIABLE"></category>   		
-		   	<category name="Temperature" custom="VARIABLE"></category>	   		   		
-		   	<category name="Weather" custom="VARIABLE"></category>
-		   	<category name="Utility" custom="VARIABLE"></category>
+		   	<category name="Switches">
+			   	<block type="switchvariables_get"></block>
+		   	</category>   		
+		   	<category name="Temperature">
+			   	<block type="temperaturevariables_get"></block>
+		   	</category>	   		   		
+		   	<category name="Weather">
+			   	<block type="weathervariables_get"></block>
+		   	</category>
+		   	<category name="Utility">
+			   	<block type="utilityvariables_get"></block>
+		   	</category>
    		</category>	
     </xml>
   </body>
