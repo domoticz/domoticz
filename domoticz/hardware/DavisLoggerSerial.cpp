@@ -23,15 +23,6 @@ CDavisLoggerSerial::CDavisLoggerSerial(const int ID, const std::string& devname,
 	m_iBaudRate=baud_rate;
 	m_stoprequested=false;
 	m_bIsStarted=false;
-/*
-#ifdef _DEBUG
-	unsigned char szBuffer[200];
-	FILE *fIn=fopen("E:\\davis.bin","rb+");
-	fread(&szBuffer,1,100,fIn);
-	fclose(fIn);
-	HandleLoopData((const unsigned char*)&szBuffer,100);
-#endif
-*/
 }
 
 CDavisLoggerSerial::~CDavisLoggerSerial(void)
@@ -218,6 +209,73 @@ void CDavisLoggerSerial::readCallback(const char *data, size_t len)
 	}
 }
 
+void CDavisLoggerSerial::UpdateTempHumSensor(const unsigned char Idx, const float Temp, const int Hum)
+{
+	RBUF tsen;
+	memset(&tsen,0,sizeof(RBUF));
+	tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
+	tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
+	tsen.TEMP_HUM.subtype=sTypeTH5;
+	tsen.TEMP_HUM.battery_level=9;
+	tsen.TEMP_HUM.rssi=6;
+	tsen.TEMP_HUM.id1=0;
+	tsen.TEMP_HUM.id2=Idx;
+
+	tsen.TEMP_HUM.tempsign=(Temp>=0)?0:1;
+	int at10=round(abs(Temp*10.0f));
+	tsen.TEMP_HUM.temperatureh=(BYTE)(at10/256);
+	at10-=(tsen.TEMP_HUM.temperatureh*256);
+	tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
+	tsen.TEMP_HUM.humidity=(BYTE)Hum;
+	tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
+
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);//decode message
+	m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.TEMP_HUM));
+}
+
+void CDavisLoggerSerial::UpdateTempSensor(const unsigned char Idx, const float Temp)
+{
+	RBUF tsen;
+	memset(&tsen,0,sizeof(RBUF));
+
+	tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
+	tsen.TEMP.packettype=pTypeTEMP;
+	tsen.TEMP.subtype=sTypeTEMP10;
+	tsen.TEMP.battery_level=9;
+	tsen.TEMP.rssi=6;
+	tsen.TEMP.id1=0;
+	tsen.TEMP.id2=Idx;
+
+	tsen.TEMP.tempsign=(Temp>=0)?0:1;
+	int at10=round(abs(Temp*10.0f));
+	tsen.TEMP.temperatureh=(BYTE)(at10/256);
+	at10-=(tsen.TEMP.temperatureh*256);
+	tsen.TEMP.temperaturel=(BYTE)(at10);
+
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
+	m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.TEMP));
+}
+
+void CDavisLoggerSerial::UpdateHumSensor(const unsigned char Idx, const int Hum)
+{
+	RBUF tsen;
+	memset(&tsen,0,sizeof(RBUF));
+
+	tsen.HUM.packetlength=sizeof(tsen.HUM)-1;
+	tsen.HUM.packettype=pTypeHUM;
+	tsen.HUM.subtype=sTypeHUM2;
+	tsen.HUM.battery_level=9;
+	tsen.HUM.rssi=6;
+	tsen.HUM.id1=0;
+	tsen.HUM.id2=Idx;
+
+	tsen.HUM.humidity=(BYTE)Hum;
+	tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
+
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM);//decode message
+	m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.HUM));
+}
+
 bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 {
 	if (len!=100)
@@ -233,7 +291,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		return false;
 /*
 #ifdef _DEBUG
-	FILE *fOut=fopen("davis.bin","wb+");
+	FILE *fOut=fopen("davisrob.bin","wb+");
 	fwrite(data,1,len,fOut);
 	fclose(fOut);
 #endif
@@ -244,6 +302,17 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	bool bIsRevA = (data[4]=='P');
 
 	const uint8_t *pData=data+1;
+
+#ifdef _DEBUG
+	unsigned char szBuffer[200];
+	FILE *fIn=fopen("E:\\davis.bin","rb+");
+	//FILE *fIn=fopen("davisrob.bin","rb+");
+	fread(&szBuffer,1,100,fIn);
+	fclose(fIn);
+	pData=szBuffer+1;
+#endif
+
+	unsigned char tempIdx=1;
 
 	bool bBaroValid=false;
 	float BaroMeter=0;
@@ -261,6 +330,8 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 
 	bool bWindSpeedValid=false;
 	float WindSpeed=0;
+	bool bWindSpeedAVR10Valid=false;
+	float WindSpeedAVR10=0;
 
 	bool bUVValid=false;
 	float UV=0;
@@ -295,7 +366,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		tsen.TEMP_HUM_BARO.battery_level=9;
 		tsen.TEMP_HUM_BARO.rssi=6;
 		tsen.TEMP_HUM_BARO.id1=0;
-		tsen.TEMP_HUM_BARO.id2=1;
+		tsen.TEMP_HUM_BARO.id2=tempIdx++;
 
 		tsen.TEMP_HUM_BARO.tempsign=(InsideTemperature>=0)?0:1;
 		int at10=round(abs(InsideTemperature*10.0f));
@@ -345,12 +416,115 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		if (OutsideHumidity<101)
 			bOutsideHumidityValid=true;
 	}
+	if (bOutsideTemperatureValid||bOutsideHumidityValid)
+	{
+		//add outside sensor
+		memset(&tsen,0,sizeof(RBUF));
+
+		if ((bOutsideTemperatureValid)&&(bOutsideHumidityValid))
+		{
+			//Temp+hum
+			UpdateTempHumSensor(tempIdx++,OutsideTemperature,OutsideHumidity);
+		}
+		else if (bOutsideTemperatureValid)
+		{
+			//Temp
+			UpdateTempSensor(tempIdx++,OutsideTemperature);
+		}
+		else if (bOutsideHumidityValid)
+		{
+			//hum
+			UpdateHumSensor(tempIdx++,OutsideHumidity);
+		}
+	}
+
+	tempIdx=10;
+	//Add Extra Temp/Hum Sensors
+	int iTmp;
+	for (int iTmp=0; iTmp<7; iTmp++)
+	{
+		bool bTempValid=false;
+		bool bHumValid=false;
+		float temp=0;
+		uint8_t hum=0;
+
+		if (pData[18+iTmp]!=0xFF)
+		{
+			bTempValid=true;
+			temp=pData[18+iTmp]-90.0f;
+			temp = (temp - 32.0f) * 5.0f / 9.0f;
+		}
+		if (pData[34+iTmp]!=0xFF)
+		{
+			bHumValid=true;
+			hum=pData[34+iTmp];
+		}
+		if ((bTempValid)&&(bHumValid))
+		{
+			//Temp+hum
+			UpdateTempHumSensor(tempIdx++,temp,hum);
+		}
+		else if (bTempValid)
+		{
+			//Temp
+			UpdateTempSensor(tempIdx++,temp);
+		}
+		else if (bHumValid)
+		{
+			//hum
+			UpdateHumSensor(tempIdx++,hum);
+		}
+	}
+
+	tempIdx=20;
+	//Add Extra Soil Temp Sensors
+	for (iTmp=0; iTmp<4; iTmp++)
+	{
+		bool bTempValid=false;
+		float temp=0;
+
+		if (pData[25+iTmp]!=0xFF)
+		{
+			bTempValid=true;
+			temp=pData[25+iTmp]-90.0f;
+			temp = (temp - 32.0f) * 5.0f / 9.0f;
+		}
+		if (bTempValid)
+		{
+			UpdateTempSensor(tempIdx++,temp);
+		}
+	}
+
+	tempIdx=30;
+	//Add Extra Leaf Temp Sensors
+	for (iTmp=0; iTmp<4; iTmp++)
+	{
+		bool bTempValid=false;
+		float temp=0;
+
+		if (pData[29+iTmp]!=0xFF)
+		{
+			bTempValid=true;
+			temp=pData[29+iTmp]-90.0f;
+			temp = (temp - 32.0f) * 5.0f / 9.0f;
+		}
+		if (bTempValid)
+		{
+			UpdateTempSensor(tempIdx++,temp);
+		}
+	}
 
 	//Wind Speed
 	if (pData[14]!=0xFF)
 	{
 		bWindSpeedValid=true;
 		WindSpeed=(pData[14])*(4.0f/9.0f);
+	}
+	//Wind Speed AVR 10 minutes
+	if (pData[15]!=0xFF)
+	{
+		bWindSpeedAVR10Valid=true;
+		WindSpeedAVR10=(pData[15])*(4.0f/9.0f);
 	}
 	//Wind Direction
 	if ((pData[16]!=0xFF)&&(pData[17]!=0x7F))
@@ -390,7 +564,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		tsen.WIND.chilll=0;
 		tsen.WIND.temperatureh=0;
 		tsen.WIND.temperaturel;
-		if (bOutsideTemperatureValid==0)
+		if (bOutsideTemperatureValid)
 		{
 			tsen.WIND.tempsign=(OutsideTemperature>=0)?0:1;
 			tsen.WIND.chillsign=(OutsideTemperature>=0)?0:1;
@@ -430,6 +604,47 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.UV));
 	}
 	
+	//Rain Rate
+	if ((pData[41]!=0xFF)&&(pData[42]!=0xFF))
+	{
+		float rainRate=((unsigned int)((pData[42] << 8) | pData[41])) / 100.0f; //inches
+		rainRate*=25.4f; //mm
+	}
+	//Rain Day
+	if ((pData[50]!=0xFF)&&(pData[51]!=0xFF))
+	{
+		float rainDay=((unsigned int)((pData[51] << 8) | pData[50])) / 100.0f; //inches
+		rainDay*=25.4f; //mm
+	}
+	//Rain Year
+	if ((pData[54]!=0xFF)&&(pData[55]!=0xFF))
+	{
+		float rainYear=((unsigned int)((pData[55] << 8) | pData[54])) / 100.0f; //inches
+		rainYear*=25.4f; //mm
+
+		RBUF tsen;
+		memset(&tsen,0,sizeof(RBUF));
+		tsen.RAIN.packetlength=sizeof(tsen.RAIN)-1;
+		tsen.RAIN.packettype=pTypeRAIN;
+		tsen.RAIN.subtype=sTypeRAIN3;
+		tsen.RAIN.battery_level=9;
+		tsen.RAIN.rssi=6;
+		tsen.RAIN.id1=0;
+		tsen.RAIN.id2=1;
+
+		tsen.RAIN.rainrateh=0;
+		tsen.RAIN.rainratel=0;
+
+		int tr10=int(float(rainYear)*10.0f);
+
+		tsen.RAIN.raintotal1=0;
+		tsen.RAIN.raintotal2=(BYTE)(tr10/256);
+		tr10-=(tsen.RAIN.raintotal2*256);
+		tsen.RAIN.raintotal3=(BYTE)(tr10);
+
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN);//decode message
+		m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.RAIN));
+	}
 
 	return true;
 }

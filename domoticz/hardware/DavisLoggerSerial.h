@@ -21,6 +21,9 @@ private:
 	bool StopHardware();
 	void readCallback(const char *data, size_t len);
 	bool HandleLoopData(const unsigned char *data, size_t len);
+	void UpdateTempHumSensor(const unsigned char Idx, const float Temp, const int Hum);
+	void UpdateTempSensor(const unsigned char Idx, const float Temp);
+	void UpdateHumSensor(const unsigned char Idx, const int Hum);
 	bool OpenSerialDevice();
 	void Do_Work();
 	boost::shared_ptr<boost::thread> m_thread;
