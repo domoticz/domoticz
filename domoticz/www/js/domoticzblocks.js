@@ -68,11 +68,11 @@ Blockly.Language.switchvariables_get = {
   init: function() {
     this.setColour(330);
     this.appendDummyInput()
-        .appendTitle("Get")
-        .appendTitle(new Blockly.FieldDropdown(switches), 'DDSW');
+        .appendTitle(new Blockly.FieldDropdown(switches), 'DDGetSW');
     this.setOutput(true, null);
   }
  };
+
 
 Blockly.Language.temperaturevariables_get = {
   // Variable getter.
@@ -80,8 +80,7 @@ Blockly.Language.temperaturevariables_get = {
   init: function() {
     this.setColour(330);
     this.appendDummyInput()
-        .appendTitle("Get")
-        .appendTitle(new Blockly.FieldDropdown(temperatures), 'DDTEMP');
+        .appendTitle(new Blockly.FieldDropdown(temperatures), 'DDGetTEMP');
     this.setOutput(true, null);
   }
  };
@@ -92,8 +91,7 @@ Blockly.Language.weathervariables_get = {
   init: function() {
     this.setColour(330);
     this.appendDummyInput()
-        .appendTitle("Get")
-        .appendTitle(new Blockly.FieldDropdown(weather), 'DDWE');
+        .appendTitle(new Blockly.FieldDropdown(weather), 'DDGetWE');
     this.setOutput(true, null);
   }
  };
@@ -104,8 +102,7 @@ Blockly.Language.utilityvariables_get = {
   init: function() {
     this.setColour(330);
     this.appendDummyInput()
-        .appendTitle("Get")
-        .appendTitle(new Blockly.FieldDropdown(utilities), 'DDUTIL');
+        .appendTitle(new Blockly.FieldDropdown(utilities), 'DDGetUTIL');
     this.setOutput(true, null);
   }
  };
@@ -125,5 +122,19 @@ Blockly.Language.logic_states.STATES =
     [["on", '1'],
      ["off", '0']];
 
+Blockly.Language.logic_set = {
+  // Comparison operator.
+  init: function() {
+    this.setColour(120);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.appendValueInput('A')
+    	.appendTitle("Set");
+    this.appendValueInput('B')
+        .appendTitle("=");
+    this.setInputsInline(true);
+
+  }
+};
 
 
