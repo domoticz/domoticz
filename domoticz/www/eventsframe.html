@@ -3,7 +3,7 @@
     <meta charset="utf-8">
     <script type="text/javascript" src="/js/blockly_compressed.js"></script>
     <script type="text/javascript" src="/js/en_compressed.js"></script>
-    <script type="text/javascript" src="/js/domoticzblocks.js"></script>
+    <!--<script type="text/javascript" src="/js/domoticzblocks.js"></script>-->
     <style>
       html, body {
         background-color: transparent;
@@ -32,14 +32,17 @@
    		<category name="Control">
 	   		<block type="controls_if"></block>
    		</category>
-	   	<category name="Switches">
-	   	</category>
-	   	<category name="Temperature">
-	   	</category>
-	   	<category name="Weather">
-	   	</category>
-	   	<category name="Utility">
-	   	</category>
+   		<category name="Logic">
+	   		<block type="logic_compare"></block>
+	   		<block type="logic_operation"></block>
+	   		<block type="logic_boolean"></block>
+   		</category>
+   		<category name="Devices">   		
+		   	<category name="Switches" custom="VARIABLE"></category>   		
+		   	<category name="Temperature" custom="VARIABLE"></category>	   		   		
+		   	<category name="Weather" custom="VARIABLE"></category>
+		   	<category name="Utility" custom="VARIABLE"></category>
+   		</category>	
     </xml>
   </body>
 </html>
