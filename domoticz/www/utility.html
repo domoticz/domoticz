@@ -2103,7 +2103,7 @@ function ShowSmartLog(id,name,switchtype)
               load: function() {
                 $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=day",
                 function(data) {
-											AddDataToUtilityChart(data,$.DayChart,switchtype);
+					AddDataToUtilityChart(data,$.DayChart,switchtype);
                 });
               }
           }
@@ -2120,16 +2120,20 @@ function ShowSmartLog(id,name,switchtype)
             type: 'datetime'
         },
         yAxis: {
-            title: {
-                text: 'Usage'
-            },
-            min: 0
-        },
+				title: {
+					text: 'Usage'
+				},
+				min: 0,
+				endOnTick: false,
+				startOnTick: false
+		},
         tooltip: {
             formatter: function() {
 										var unit = {
 																'Usage': 'Watt',
 																'Return': 'Watt',
+																'Peak_Usage': 'Watt',
+																'Peak_Return': 'Watt',
 																'Gas': 'm3',
 																'Water': 'm3'
 													}[this.series.name];

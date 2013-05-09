@@ -34,6 +34,8 @@ Version 1.0.xxx (May xxth 2013)
 - Fixed: RFXtrx USB mode option in hardware settings, will now return to dashboard
 - Implemented: P1 Smart meter Power, logging of day/night tariff separately (!note: next day value will be low)
 - Implemented: Website security, forbidden result after to many attempts
+- Changed: P1 Smart meter Power, now displaying real usage in short log graph, instead of peak values
+- Changed: ignoring illegal Raspberry temperature (85/-273)
 
 Version 1.0.484 (April 28th 2013)
 - Implemented: Raspberry Pi, updating via the web browser (Settings Tab)

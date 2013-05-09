@@ -520,36 +520,39 @@ void MainWorker::GetRaspberryPiTemperature()
 		{
 			getline(infile, sLine);
 			float temperature=(float)atof(sLine.c_str())/1000.0f;
-			//Temp
-			RBUF tsen;
-			memset(&tsen,0,sizeof(RBUF));
-			tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-			tsen.TEMP.packettype=pTypeTEMP;
-			tsen.TEMP.subtype=sTypeTEMP_RPI;
-			tsen.TEMP.battery_level=9;
-			tsen.TEMP.rssi=6;
-			tsen.TEMP.id1=0;
-			tsen.TEMP.id2=1;
+			if ((temperature != 85) && (temperature > 273))
+			{
+				//Temp
+				RBUF tsen;
+				memset(&tsen,0,sizeof(RBUF));
+				tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
+				tsen.TEMP.packettype=pTypeTEMP;
+				tsen.TEMP.subtype=sTypeTEMP_RPI;
+				tsen.TEMP.battery_level=9;
+				tsen.TEMP.rssi=6;
+				tsen.TEMP.id1=0;
+				tsen.TEMP.id2=1;
 
-			tsen.TEMP.tempsign=(temperature>=0)?0:1;
-			int at10=round(abs(temperature*10.0f));
-			tsen.TEMP.temperatureh=(BYTE)(at10/256);
-			at10-=(tsen.TEMP.temperatureh*256);
-			tsen.TEMP.temperaturel=(BYTE)(at10);
+				tsen.TEMP.tempsign=(temperature>=0)?0:1;
+				int at10=round(abs(temperature*10.0f));
+				tsen.TEMP.temperatureh=(BYTE)(at10/256);
+				at10-=(tsen.TEMP.temperatureh*256);
+				tsen.TEMP.temperaturel=(BYTE)(at10);
 
-			// convert now to string form
-			time_t now = time(0);
-			char *szDate = asctime(localtime(&now));
-			szDate[strlen(szDate)-1]=0;
+				// convert now to string form
+				time_t now = time(0);
+				char *szDate = asctime(localtime(&now));
+				szDate[strlen(szDate)-1]=0;
 
-			WriteMessageStart();
+				WriteMessageStart();
 
-			std::stringstream sTmp;
-			sTmp << szDate << " (System) ";
-			WriteMessage(sTmp.str().c_str(),false);
-			WriteMessage("Temperature",false);
-			decode_Temp(1000, (const tRBUF*)&tsen.TEMP);
-			WriteMessageEnd();
+				std::stringstream sTmp;
+				sTmp << szDate << " (System) ";
+				WriteMessage(sTmp.str().c_str(),false);
+				WriteMessage("Temperature",false);
+				decode_Temp(1000, (const tRBUF*)&tsen.TEMP);
+				WriteMessageEnd();
+			}
 		}
 		infile.close();
 	}

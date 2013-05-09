@@ -435,6 +435,9 @@ char * CWebServer::PostSettings()
 	std::string scheckforupdates=m_pWebEm->FindValue("checkforupdates");
 	m_pMain->m_sql.UpdatePreferencesVar("UseAutoUpdate",(scheckforupdates=="on"?1:0));
 
+	std::string sP1PowerMode=m_pWebEm->FindValue("P1PowerMode");
+	m_pMain->m_sql.UpdatePreferencesVar("P1PowerMode",atoi(sP1PowerMode.c_str()));
+
 	float CostEnergy=(float)atof(m_pWebEm->FindValue("CostEnergy").c_str());
 	float CostGas=(float)atof(m_pWebEm->FindValue("CostGas").c_str());
 	float CostWater=(float)atof(m_pWebEm->FindValue("CostWater").c_str());
@@ -2629,24 +2632,64 @@ std::string CWebServer::GetJSonPage()
 
 					szQuery.clear();
 					szQuery.str("");
-					szQuery << "SELECT Value3, Value4, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
+					szQuery << "SELECT Value1, Value2, Value3, Value4, Value5, Value6, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 					result=m_pMain->m_sql.query(szQuery.str());
 					if (result.size()>0)
 					{
 						std::vector<std::vector<std::string> >::const_iterator itt;
 						int ii=0;
 						bool bHaveDeliverd=false;
+						bool bHaveFirstValue=false;
+						long long lastUsage1,lastUsage2,lastDeliv1,lastDeliv2;
 						for (itt=result.begin(); itt!=result.end(); ++itt)
 						{
 							std::vector<std::string> sd=*itt;
 
-							root["result"][ii]["d"]=sd[2].substr(0,16);
+							long long actUsage1,actUsage2,actDeliv1,actDeliv2;
+							std::stringstream s_str1( sd[0] );
+							s_str1 >> actUsage1;
+							std::stringstream s_str2( sd[4] );
+							s_str2 >> actUsage2;
+							std::stringstream s_str3( sd[1] );
+							s_str3 >> actDeliv1;
+							std::stringstream s_str4( sd[5] );
+							s_str4 >> actDeliv2;
 
-							if (sd[1]!="0")
-								bHaveDeliverd=true;
-							root["result"][ii]["v"]=sd[0];
-							root["result"][ii]["v2"]=sd[1];
-							ii++;
+							if (bHaveFirstValue)
+							{
+								long curUsage1=(long)(actUsage1-lastUsage1);
+								long curUsage2=(long)(actUsage2-lastUsage2);
+								long curDeliv1=(long)(actDeliv1-lastDeliv1);
+								long curDeliv2=(long)(actDeliv2-lastDeliv2);
+
+								if ((curUsage1<0)||(curUsage1>100000))
+									curUsage1=0;
+								if ((curUsage2<0)||(curUsage2>100000))
+									curUsage2=0;
+								if ((curDeliv1<0)||(curDeliv1>100000))
+									curDeliv1=0;
+								if ((curDeliv2<0)||(curDeliv2>100000))
+									curDeliv2=0;
+
+								long totalUsage=curUsage1+curUsage2;
+								long totalDeliv=curDeliv1+curDeliv2;
+
+								root["result"][ii]["d"]=sd[6].substr(0,16);
+
+								if (totalDeliv!=0)
+									bHaveDeliverd=true;
+								root["result"][ii]["v"]=totalUsage;
+								root["result"][ii]["v2"]=totalDeliv;
+								ii++;
+							}
+							else
+							{
+								bHaveFirstValue=true;
+							}
+							lastUsage1=actUsage1;
+							lastUsage2=actUsage2;
+							lastDeliv1=actDeliv1;
+							lastDeliv2=actDeliv2;
 						}
 						if (bHaveDeliverd)
 						{
@@ -7040,6 +7083,10 @@ std::string CWebServer::GetJSonPage()
 				{
 					sprintf(szTmp,"%.4f",(float)(nValue)/10000.0f);
 					root["CostWater"]=szTmp;
+				}
+				else if (Key=="P1PowerMode")
+				{
+					root["P1PowerMode"]=nValue;
 				}
 				else if (Key=="EmailFrom")
 				{
