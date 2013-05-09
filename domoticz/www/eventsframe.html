@@ -3,9 +3,10 @@
     <meta charset="utf-8">
     <script type="text/javascript" src="/js/blockly_compressed.js"></script>
     <script type="text/javascript" src="/js/en_compressed.js"></script>
+    <script type="text/javascript" src="/js/domoticzblocks.js"></script>
     <style>
       html, body {
-        background-color: #fff;
+        background-color: transparent;
         margin: 0;
         padding: 0;
         overflow: hidden;
@@ -22,17 +23,23 @@
         // Let the top-level application know that Blockly is ready.
         window.parent.blocklyLoaded(Blockly);
       }
+      
     </script>
+
   </head>
-  <body onload="init()" style="background-color:transparent; height:100%">
+  <body onload="init()">
     <xml id="toolbox" style="display: none">
-      <block type="controls_if"></block>
-      <block type="controls_repeat"></block>
-      <block type="logic_compare"></block>
-      <block type="math_number"></block>
-      <block type="math_arithmetic"></block>
-      <block type="text"></block>
-      <block type="text_print"></block>
+   		<category name="Control">
+	   		<block type="controls_if"></block>
+   		</category>
+	   	<category name="Switches">
+	   	</category>
+	   	<category name="Temperature">
+	   	</category>
+	   	<category name="Weather">
+	   	</category>
+	   	<category name="Utility">
+	   	</category>
     </xml>
   </body>
 </html>
