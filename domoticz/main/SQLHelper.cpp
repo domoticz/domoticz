@@ -14,7 +14,7 @@
 #include "../smtpclient/SMTPClient.h"
 #include "../webserver/Base64.h"
 
-#define DB_VERSION 10
+#define DB_VERSION 11
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -477,6 +477,27 @@ bool CSQLHelper::OpenDatabase()
 					std::string idx=sd[0];
 					sprintf(szTmp,"DELETE FROM MultiMeter WHERE (DeviceRowID='%s') AND (Date>='%s')",idx.c_str(),szDateStart);
 					query(szTmp);
+				}
+			}
+		}
+		if (dbversion<11)
+		{
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+
+			szQuery << "SELECT ID, Username, Password FROM Cameras ORDER BY ID";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()>0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt=result.begin(); itt!=result.end(); ++itt)
+				{
+					std::vector<std::string> sd=*itt;
+					std::string camuser=base64_encode((const unsigned char*)sd[1].c_str(),sd[1].size());
+					std::string campwd=base64_encode((const unsigned char*)sd[2].c_str(),sd[2].size());
+					std::stringstream szQuery2;
+					szQuery2 << "UPDATE Cameras SET Username='" << camuser << "', Password='" << campwd << "' WHERE (ID=='" << sd[0] << "')";
+					m_pMain->m_sql.query(szQuery2.str());
 				}
 			}
 		}

@@ -69,16 +69,15 @@ void CCamScheduler::ReloadCameras()
 			std::vector<std::string> sd=*itt;
 
 			cameraDevice citem;
-
 			std::stringstream s_str( sd[0] );
 			s_str >> citem.ID;
-            citem.Name		= sd[1].c_str();
-            citem.Address	= sd[2].c_str();
+            citem.Name		= sd[1];
+            citem.Address	= sd[2];
 			citem.Port		= atoi(sd[3].c_str());
-		    citem.Username	= sd[4].c_str();
-            citem.Password	= sd[5].c_str();
-			citem.VideoURL	= sd[6].c_str();
-			citem.ImageURL	= sd[7].c_str();
+		    citem.Username	= base64_decode(sd[4]);
+            citem.Password	= base64_decode(sd[5]);
+			citem.VideoURL	= sd[6];
+			citem.ImageURL	= sd[7];
             m_cameradevices.push_back(citem);
 		}
 	}

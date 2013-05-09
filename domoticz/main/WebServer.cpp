@@ -2018,8 +2018,8 @@ std::string CWebServer::GetJSonPage()
 				root["result"][ii]["Enabled"]=(sd[2]=="1")?"true":"false";
 				root["result"][ii]["Address"]=sd[3];
 				root["result"][ii]["Port"]=atoi(sd[4].c_str());
-				root["result"][ii]["Username"]=sd[5];
-				root["result"][ii]["Password"]=sd[6];
+				root["result"][ii]["Username"]=base64_decode(sd[5]);
+				root["result"][ii]["Password"]=base64_decode(sd[6]);
 				root["result"][ii]["VideoURL"]=sd[7];
 				root["result"][ii]["ImageURL"]=sd[8];
 				ii++;
@@ -6156,8 +6156,8 @@ std::string CWebServer::GetJSonPage()
                     (senabled=="true")?1:0,
                     address.c_str(),
                     port,
-                    username.c_str(),
-                    password.c_str(),
+                    base64_encode((const unsigned char*)username.c_str(),username.size()),
+					base64_encode((const unsigned char*)password.c_str(),password.size()),
 					videourl.c_str(),
 					imageurl.c_str()
                     );
@@ -6196,8 +6196,8 @@ std::string CWebServer::GetJSonPage()
                     (senabled=="true")?1:0,
                     address.c_str(),
                     port,
-                    username.c_str(),
-                    password.c_str(),
+					base64_encode((const unsigned char*)username.c_str(),username.size()),
+					base64_encode((const unsigned char*)password.c_str(),password.size()),
 					videourl.c_str(),
 					imageurl.c_str(),
                     idx.c_str()
