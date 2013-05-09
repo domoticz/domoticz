@@ -6,6 +6,11 @@
     <script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
     <scrip  type="text/javascript" src="js/jquery-ui-1.10.1.custom.min.js"></script>
     <script type="text/javascript" src="/js/domoticzblocks.js"></script>
+        <link rel="stylesheet" href="css/bootstrap.css">
+        <link href="css/bootstrap-responsive.css" rel="stylesheet" media="screen">
+        <link type="text/css" rel="stylesheet" href="css/ui-darkness/jquery-ui-1.10.1.custom.min.css" />
+	    <link type="text/css" rel="stylesheet" href="css/style.css" />	
+	    
     <style>
       html, body {
         background-color: transparent;
@@ -14,17 +19,85 @@
         overflow: hidden;
       }
       .blocklySvg {
-        height: 100%;
-        width: 100%;
+        height:100%;
+        width: 100%; 
+      }
+      .blocklyTreeRow {
+        color:black;
+      }
+      #saveTable
+      { border-spacing: 8px;
+    	padding:2px 2px 2px 2px;
       }
     </style>
     <script>
       function init() {
-        Blockly.inject(document.body,
-            {path: '../../', toolbox: document.getElementById('toolbox')});
+      	Blockly.inject(document.getElementById('blocklyDiv'),
+        {path: './', toolbox: document.getElementById('toolbox')});
+        //Blockly.inject(document.body,
+          //  {path: '../../', toolbox: document.getElementById('toolbox')});
         // Let the top-level application know that Blockly is ready.
         window.parent.blocklyLoaded(Blockly);
+        load_blocks();
       }
+      
+      function loadSelectedEvent(name) {
+      	if(typeof(Storage)!=="undefined"){
+	      	if(localStorage.getItem(name)!=null){
+		      	var xml = Blockly.Xml.textToDom(localStorage.getItem(name));
+		      	Blockly.mainWorkspace.clear();
+			    Blockly.Xml.domToWorkspace( Blockly.mainWorkspace, xml );
+			    $("#blockName").val(name);
+			}
+		}
+	  }
+	  
+      function delete_block() {
+        var name = document.getElementById("savedEvents").value;
+      	if(typeof(Storage)!=="undefined"){
+	      	if(localStorage.getItem(name)!=null){
+		      	localStorage.removeItem(name);
+		      	load_blocks();
+			}
+			else {alert("Nothing selected!")}
+		}
+	  }	  
+	  
+	  	  
+	  function load_blocks() {
+		  var select = document.getElementById("savedEvents");
+		  select.options.length = 0;
+		  for (i=0;i<localStorage.length;i++) 
+		  	{
+			  	var key = localStorage.key(i);
+			  	if(key != null) 
+			  	{
+				  	var value = localStorage.getItem(key); 
+				  	var option = document.createElement("option");
+					option.text = key;
+					option.value = key;
+					select.appendChild(option);
+				 }
+			}
+	  }
+	  
+      
+      function save_block() {
+      	var xml = Blockly.Xml.workspaceToDom( Blockly.mainWorkspace );
+      	//alert(Blockly.Xml.domToText( xml ));
+      	var blockName = $("#blockName").val();
+      	if (blockName != undefined&&blockName!=""&&blockName!=null) {
+      		localStorage.setItem(blockName, Blockly.Xml.domToText( xml ));
+      		load_blocks();
+      	}
+      	else {alert('no event name entered!');}
+      }
+      
+      jQuery(document).ready(function(){
+	      $("#blocklyDiv").css("width", $(window).width()*0.8);
+	      $("#blocklyDiv").css("height", $(window).height()*0.9);
+	      $("#toolbox").css("font-color", "black");
+	  });
       
     </script>
 
@@ -56,5 +129,22 @@
 		   	</category>
    		</category>	
     </xml>
+    <table id="saveTable">
+	    <tr>
+		    <td>
+			    <div id="blocklyDiv" style="height: 480px; width: 600px;"></div>
+		    </td>
+		    <td valign="top" >
+		    <label for="blockName">Event name: </label><br>
+		    	<input type="input" id="blockName" name="blockName" style="width: 100px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+			    <a class="btnstyle3" href="javascript:save_block()">Save</a>
+			    <P>
+			    <label for="savedEvents">Saved events: </label><br>
+			    <select size="10" width="100%" style="width: 100%" id="savedEvents" name="savedEvents" onchange="loadSelectedEvent(this.value);">> 
+  				</select>
+  				<br><a class="btnstyle3" href="javascript:delete_block()">Delete selected</a>
+			</td>
+		</tr>
+    </table>
   </body>
 </html>

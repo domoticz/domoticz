@@ -66,7 +66,7 @@ Blockly.Language.switchvariables_get = {
   // Variable getter.
   category: null,  // Variables are handled specially.
   init: function() {
-    this.setColour(330);
+    this.setColour(30);
     this.appendDummyInput()
         .appendTitle(new Blockly.FieldDropdown(switches), 'DDGetSW');
     this.setOutput(true, null);
@@ -89,7 +89,7 @@ Blockly.Language.weathervariables_get = {
   // Variable getter.
   category: null,  // Variables are handled specially.
   init: function() {
-    this.setColour(330);
+    this.setColour(210);
     this.appendDummyInput()
         .appendTitle(new Blockly.FieldDropdown(weather), 'DDGetWE');
     this.setOutput(true, null);
@@ -100,7 +100,7 @@ Blockly.Language.utilityvariables_get = {
   // Variable getter.
   category: null,  // Variables are handled specially.
   init: function() {
-    this.setColour(330);
+    this.setColour(290);
     this.appendDummyInput()
         .appendTitle(new Blockly.FieldDropdown(utilities), 'DDGetUTIL');
     this.setOutput(true, null);
