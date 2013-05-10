@@ -2641,6 +2641,7 @@ std::string CWebServer::GetJSonPage()
 						bool bHaveDeliverd=false;
 						bool bHaveFirstValue=false;
 						long long lastUsage1,lastUsage2,lastDeliv1,lastDeliv2;
+						time_t lastTime=0;
 						for (itt=result.begin(); itt!=result.end(); ++itt)
 						{
 							std::vector<std::string> sd=*itt;
@@ -2654,6 +2655,18 @@ std::string CWebServer::GetJSonPage()
 							s_str3 >> actDeliv1;
 							std::stringstream s_str4( sd[5] );
 							s_str4 >> actDeliv2;
+
+							std::string stime=sd[6];
+							struct tm ntime;
+							time_t atime;
+							ntime.tm_isdst=0;
+							ntime.tm_year=atoi(stime.substr(0,4).c_str())-1900;
+							ntime.tm_mon=atoi(stime.substr(5,2).c_str())-1;
+							ntime.tm_mday=atoi(stime.substr(8,2).c_str());
+							ntime.tm_hour=atoi(stime.substr(11,2).c_str());
+							ntime.tm_min=atoi(stime.substr(14,2).c_str());
+							ntime.tm_sec=atoi(stime.substr(17,2).c_str());
+							atime=mktime(&ntime);
 
 							if (bHaveFirstValue)
 							{
@@ -2674,6 +2687,12 @@ std::string CWebServer::GetJSonPage()
 								long totalUsage=curUsage1+curUsage2;
 								long totalDeliv=curDeliv1+curDeliv2;
 
+								time_t tdiff=atime-lastTime;
+								if (tdiff==0)
+									tdiff=1;
+								float tlaps=3600.0f/tdiff;
+								totalUsage*=int(tlaps);
+
 								root["result"][ii]["d"]=sd[6].substr(0,16);
 
 								if (totalDeliv!=0)
@@ -2692,6 +2711,7 @@ std::string CWebServer::GetJSonPage()
 							lastUsage2=actUsage2;
 							lastDeliv1=actDeliv1;
 							lastDeliv2=actDeliv2;
+							lastTime=atime;
 						}
 						if (bHaveDeliverd)
 						{

@@ -33,6 +33,7 @@ struct mapping
   { "appcache", "text/cache-manifest" },
   { "xls", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
   { "m3u", "audio/mpegurl" },
+  { "wav", "audio/x-wav" },
   { 0, 0 } // Marks end of list.
 };
 
