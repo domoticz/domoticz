@@ -20,7 +20,6 @@ CVolcraftCO20::CVolcraftCO20(const int ID)
 	m_HwdID=ID;
 	m_stoprequested=false;
 	Init();
-	GetSensorDetails();
 }
 
 CVolcraftCO20::~CVolcraftCO20(void)
@@ -110,11 +109,11 @@ void CVolcraftCO20::GetSensorDetails()
 		_VolcraftCO20tool.CloseDevice();
 
 	//got the data
-	_log.Log(LOG_NORM,"VolcraftCO20: voc:%d",voc);
 	_tAirQualityMeter meter;
 	meter.len=sizeof(_tAirQualityMeter)-1;
 	meter.type=pTypeAirQuality;
 	meter.subtype=sTypeVoltcraft;
+	meter.airquality=voc;
 	meter.ID=1;
 	sDecodeRXMessage(this, (const unsigned char *)&meter);//decode message
 	m_sharedserver.SendToAll((const char*)&meter,sizeof(meter));
