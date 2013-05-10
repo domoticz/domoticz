@@ -3083,95 +3083,109 @@ void MainWorker::decode_RecXmitMessage(const int HwdID, const tRBUF *pResponse)
 //not in dbase yet
 void MainWorker::decode_BLINDS1(const int HwdID, const tRBUF *pResponse)
 {
-	WriteMessage("");
+	char szTmp[100];
+	std::string devname;
 
 	unsigned char devType=pTypeBlinds;
+	unsigned char subType=pResponse->BLINDS1.subtype;
+	sprintf(szTmp,"%02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2,pResponse->BLINDS1.id3);
+	std::string ID = szTmp;
+	unsigned char Unit=pResponse->BLINDS1.unitcode;
+	unsigned char cmnd=pResponse->BLINDS1.cmnd;
+	unsigned char SignalLevel=pResponse->BLINDS1.rssi;
 
-	char szTmp[100];
+	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,devname);
+	PrintDeviceName(devname);
+	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
-	switch (pResponse->BLINDS1.subtype)
+	if (m_verboselevel == EVBL_ALL)
 	{
-	case sTypeBlindsT0:
-		WriteMessage("subtype       = Safy / RollerTrol / Hasta new");
-		break;
-	case sTypeBlindsT1:
-		WriteMessage("subtype       = Hasta old");
-		break;
-	case sTypeBlindsT2:
-		WriteMessage("subtype       = A-OK RF01");
-		break;
-	case sTypeBlindsT3:
-		WriteMessage("subtype       = A-OK AC114");
-		break;
-	case sTypeBlindsT4:
-		WriteMessage("subtype       = RAEX");
-		break;
-	case sTypeBlindsT5:
-		WriteMessage("subtype       = Media Mount");
-		break;
-	default:
-		sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->BLINDS1.packettype, pResponse->BLINDS1.subtype);
+		char szTmp[100];
+
+		switch (pResponse->BLINDS1.subtype)
+		{
+		case sTypeBlindsT0:
+			WriteMessage("subtype       = Safy / RollerTrol / Hasta new");
+			break;
+		case sTypeBlindsT1:
+			WriteMessage("subtype       = Hasta old");
+			break;
+		case sTypeBlindsT2:
+			WriteMessage("subtype       = A-OK RF01");
+			break;
+		case sTypeBlindsT3:
+			WriteMessage("subtype       = A-OK AC114");
+			break;
+		case sTypeBlindsT4:
+			WriteMessage("subtype       = RAEX");
+			break;
+		case sTypeBlindsT5:
+			WriteMessage("subtype       = Media Mount");
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->BLINDS1.packettype, pResponse->BLINDS1.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+		sprintf(szTmp,"Sequence nbr  = %d", pResponse->BLINDS1.seqnbr);
 		WriteMessage(szTmp);
-		break;
-	}
-	sprintf(szTmp,"Sequence nbr  = %d", pResponse->BLINDS1.seqnbr);
-	WriteMessage(szTmp);
 
-	sprintf(szTmp,"id1-3         = %02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2, pResponse->BLINDS1.id3);
-	WriteMessage(szTmp);
-
-	if (pResponse->BLINDS1.unitcode == 15)
-		WriteMessage("Unit          = All");
-	else
-	{
-		sprintf(szTmp,"Unit          = %d", pResponse->BLINDS1.unitcode);
+		sprintf(szTmp,"id1-3         = %02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2, pResponse->BLINDS1.id3);
 		WriteMessage(szTmp);
-	}
 
-	WriteMessage("Command       = ", false);
-
-	switch (pResponse->BLINDS1.cmnd)
-	{
-	case blinds_sOpen:
-		WriteMessage("Open");
-		break;
-	case blinds_sStop:
-		WriteMessage("Stop");
-		break;
-	case blinds_sClose:
-		WriteMessage("Close");
-		break;
-	case blinds_sConfirm:
-		WriteMessage("Confirm");
-		break;
-	case blinds_sLimit:
-		WriteMessage("Set Limit");
-		if (pResponse->BLINDS1.subtype == sTypeBlindsT4)
-			WriteMessage("Set Upper Limit");
+		if (pResponse->BLINDS1.unitcode == 15)
+			WriteMessage("Unit          = All");
 		else
+		{
+			sprintf(szTmp,"Unit          = %d", pResponse->BLINDS1.unitcode);
+			WriteMessage(szTmp);
+		}
+
+		WriteMessage("Command       = ", false);
+
+		switch (pResponse->BLINDS1.cmnd)
+		{
+		case blinds_sOpen:
+			WriteMessage("Open");
+			break;
+		case blinds_sStop:
+			WriteMessage("Stop");
+			break;
+		case blinds_sClose:
+			WriteMessage("Close");
+			break;
+		case blinds_sConfirm:
+			WriteMessage("Confirm");
+			break;
+		case blinds_sLimit:
 			WriteMessage("Set Limit");
-		break;
-	case blinds_slowerLimit:
-		WriteMessage("Set Lower Limit");
-		break;
-	case blinds_sDeleteLimits:
-		WriteMessage("Delete Limits");
-		break;
-	case blinds_sChangeDirection:
-		WriteMessage("Change Direction");
-		break;
-	case blinds_sLeft:
-		WriteMessage("Left");
-		break;
-	case blinds_sRight:
-		WriteMessage("Right");
-		break;
-	default:
-		WriteMessage("UNKNOWN");
-		break;
+			if (pResponse->BLINDS1.subtype == sTypeBlindsT4)
+				WriteMessage("Set Upper Limit");
+			else
+				WriteMessage("Set Limit");
+			break;
+		case blinds_slowerLimit:
+			WriteMessage("Set Lower Limit");
+			break;
+		case blinds_sDeleteLimits:
+			WriteMessage("Delete Limits");
+			break;
+		case blinds_sChangeDirection:
+			WriteMessage("Change Direction");
+			break;
+		case blinds_sLeft:
+			WriteMessage("Left");
+			break;
+		case blinds_sRight:
+			WriteMessage("Right");
+			break;
+		default:
+			WriteMessage("UNKNOWN");
+			break;
+		}
+		sprintf(szTmp,"Signal level  = %d", pResponse->BLINDS1.rssi);
+		WriteMessage(szTmp);
 	}
-	sprintf(szTmp,"Signal level  = %d", pResponse->BLINDS1.rssi);
-	WriteMessage(szTmp);
 }
 
 void MainWorker::decode_Security1(const int HwdID, const tRBUF *pResponse)
@@ -6157,6 +6171,30 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, std::string s
 				}
 			}
 			break;
+		}
+		break;
+	case pTypeBlinds:
+		{
+			tRBUF lcmd;
+			lcmd.BLINDS1.packetlength=sizeof(lcmd.BLINDS1)-1;
+			lcmd.BLINDS1.packettype=dType;
+			lcmd.BLINDS1.subtype=dSubType;
+			lcmd.BLINDS1.id1=ID2;
+			lcmd.BLINDS1.id2=ID3;
+			lcmd.BLINDS1.id3=ID4;
+			lcmd.BLINDS1.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
+			lcmd.BLINDS1.unitcode=Unit;
+			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.BLINDS1.cmnd))
+				return false;
+			level=15;
+			lcmd.BLINDS1.filler=0;
+			lcmd.BLINDS1.rssi=7;
+			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.BLINDS1));
+			if (!IsTesting) {
+				//send to internal for now (later we use the ACK)
+				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+			}
+			return true;
 		}
 		break;
 	}

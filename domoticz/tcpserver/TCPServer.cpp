@@ -146,6 +146,7 @@ void CTCPServerInt::SendToAll(const char *pData, size_t Length)
 		case pTypeLighting5:
 		case pTypeLighting6:
 		case pTypeSecurity1:
+		case pTypeBlinds:
 			return;	//not shared!!
 		}
 	}

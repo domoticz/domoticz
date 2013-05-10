@@ -820,6 +820,17 @@ void GetLightStatus(
 			break;
 		}
 		break;
+	case pTypeBlinds:
+		switch (nValue)
+		{
+		case 0:
+			lstatus="Off";
+			break;
+		case 1:
+			lstatus="On";
+			break;
+		}
+		break;
 	}
 }
 
@@ -1048,6 +1059,15 @@ bool GetLightCommand(
 				return true;
 			}
 		}
+		break;
+	case pTypeBlinds:
+		if (switchcmd=="On")
+		{
+			cmd=blinds_sClose;
+		}
+		else
+			cmd=blinds_sOpen;
+		return true;
 		break;
 	}
 	//unknown command

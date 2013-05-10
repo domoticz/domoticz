@@ -806,6 +806,7 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigne
 	case pTypeLighting5:
 	case pTypeLighting6:
 	case pTypeSecurity1:
+	case pTypeBlinds:
 		bIsLightSwitch=true;
 		break;
 	}
@@ -885,6 +886,9 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigne
 					case pTypeSecurity1:
 						newnValue=sStatusNormal;
 						break;
+					case pTypeBlinds:
+						newnValue=blinds_sOpen;
+						break;
 					default:
 						continue;
 					}
@@ -937,6 +941,9 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigne
 				break;
 			case pTypeSecurity1:
 				newnValue=sStatusNormal;
+				break;
+			case pTypeBlinds:
+				newnValue=blinds_sOpen;
 				break;
 			default:
 				continue;
@@ -1024,6 +1031,7 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 	case pTypeLighting5:
 	case pTypeLighting6:
 	case pTypeSecurity1:
+	case pTypeBlinds:
 		//Add Lighting log
 		m_LastSwitchID=ID;
 		m_LastSwitchRowID=ulID;

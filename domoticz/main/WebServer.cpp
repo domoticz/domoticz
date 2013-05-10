@@ -699,6 +699,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 						(dType!=pTypeLighting5)&&
 						(dType!=pTypeLighting6)&&
 						(dType!=pTypeSecurity1)&&
+						(dType!=pTypeBlinds)&&
 						(!((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXStatus)))
 						)
 						continue;
@@ -817,7 +818,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				(dType==pTypeLighting3)||
 				(dType==pTypeLighting4)||
 				(dType==pTypeLighting5)||
-				(dType==pTypeLighting6)
+				(dType==pTypeLighting6)||
+				(dType==pTypeBlinds)
 				)
 			{
 				//add light details
@@ -2257,6 +2259,7 @@ std::string CWebServer::GetJSonPage()
 			(dType!=pTypeLighting5)&&
 			(dType!=pTypeLighting6)&&
 			(dType!=pTypeSecurity1)&&
+			(dType!=pTypeBlinds)&&
 			(dType!=pTypeRego6XXValue)
 			)
 			goto exitjson; //no light device! we should not be here!
@@ -5111,6 +5114,7 @@ std::string CWebServer::GetJSonPage()
 					case pTypeLighting5:
 					case pTypeLighting6:
 					case pTypeSecurity1:
+					case pTypeBlinds:
 						bdoAdd=true;
 						if (!used)
 						{
@@ -5170,6 +5174,7 @@ std::string CWebServer::GetJSonPage()
 						case pTypeLighting5:
 						case pTypeLighting6:
 						case pTypeSecurity1:
+						case pTypeBlinds:
 							{
 								root["result"][ii]["type"]=0;
 								root["result"][ii]["idx"]=ID;
@@ -5625,7 +5630,8 @@ std::string CWebServer::GetJSonPage()
 				(dType==pTypeLighting4)||
 				(dType==pTypeLighting5)||
 				(dType==pTypeLighting6)||
-				(dType==pTypeSecurity1)
+				(dType==pTypeSecurity1)||
+				(dType==pTypeBlinds)
 				)
 			{
 				if (switchtype!=STYPE_PushOff)
@@ -6506,7 +6512,8 @@ std::string CWebServer::GetJSonPage()
 				(dType!=pTypeLighting4)&&
 				(dType!=pTypeLighting5)&&
 				(dType!=pTypeLighting6)&&
-				(dType!=pTypeSecurity1)
+				(dType!=pTypeSecurity1)&&
+				(dType!=pTypeBlinds)
 				)
 				goto exitjson; //no light device! we should not be here!
 
