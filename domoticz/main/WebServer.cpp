@@ -2692,6 +2692,7 @@ std::string CWebServer::GetJSonPage()
 									tdiff=1;
 								float tlaps=3600.0f/tdiff;
 								totalUsage*=int(tlaps);
+								totalDeliv*=int(tlaps);
 
 								root["result"][ii]["d"]=sd[6].substr(0,16);
 
