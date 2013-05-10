@@ -58,7 +58,22 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		}
 	}
 #else
-	//scan /dev for /dev/ttyUSB* or /dev/ttyS* or /dev/tty.usbserial*
+	//scan /dev for /dev/ttyUSB* or /dev/ttyS* or /dev/tty.usbserial* or /dev/ttyAMA*
+
+	bool bHaveTtyAMAfree=false;
+	std::string sLine = "";
+	std::ifstream infile;
+
+	infile.open("/boot/cmdline.txt");
+	if (infile.is_open())
+	{
+		if (!infile.eof())
+		{
+			getline(infile, sLine);
+			bHaveTtyAMAfree=(sLine.find("ttyAMA0")==std::string::npos);
+		}
+	}
+
 	DIR *d=NULL;
 	d=opendir("/dev");
 	if (d != NULL)
@@ -76,6 +91,14 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 			{
 				bUseDirectPath=true;
 				ret.push_back("/dev/" + fname);
+			}
+			if (bHaveTtyAMAfree)
+			{
+				if (fname.find("ttyAMA0")!=std::string::npos)
+				{
+					ret.push_back("/dev/" + fname);
+					bUseDirectPath=true;
+				}
 			}
 		}
 		closedir(d);

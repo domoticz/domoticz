@@ -39,6 +39,7 @@ Version 1.0.xxx (May xxth 2013)
 - Fixed: Scenes with a Push On type switch will now only send the On command to this switch
 - Fixed: Possible timer problem duo sunset/sunrise reloading issues
 - Implemented: Device type Blinds (Safy / RollerTrol / Hasta / A-OK RF01,AC114 / RAEX /  Media Mount)
+- Implemented: Raspberry Pi, is ttyAMA0 is free (GPIO/cmdline.txt) it can be used
 
 Version 1.0.484 (April 28th 2013)
 - Implemented: Raspberry Pi, updating via the web browser (Settings Tab)
