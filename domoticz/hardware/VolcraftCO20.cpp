@@ -100,6 +100,7 @@ void CVolcraftCO20::GetSensorDetails()
 			return;
 		}
 		voc=_VolcraftCO20tool2.GetVOC();
+		if (voc==0)
 		{
 			_log.Log(LOG_ERROR, "VolcraftCO20: Could not read sensor data!");
 			return;
