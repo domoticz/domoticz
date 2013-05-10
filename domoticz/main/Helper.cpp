@@ -5,6 +5,7 @@
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fstream>
 
 void StringSplit(std::string str, std::string delim, std::vector<std::string> &results)
 {
