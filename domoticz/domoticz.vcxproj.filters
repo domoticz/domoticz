@@ -69,6 +69,9 @@
     <Filter Include="Devices\Davis">
       <UniqueIdentifier>{c3024a2d-5f67-4780-8d26-cc53d91624ac}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\VolcraftCO20">
+      <UniqueIdentifier>{1c7cd6cd-b14b-413a-bc63-1f9c4bd2a8b7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -223,9 +226,6 @@
     <ClInclude Include="hardware\TE923Tool.h">
       <Filter>Devices\TE923</Filter>
     </ClInclude>
-    <ClInclude Include="hardware\libusbwinusbbridge.h">
-      <Filter>Devices\TE923</Filter>
-    </ClInclude>
     <ClInclude Include="hardware\TE923.h">
       <Filter>Devices\TE923</Filter>
     </ClInclude>
@@ -243,6 +243,15 @@
     </ClInclude>
     <ClInclude Include="hardware\DavisLoggerSerial.h">
       <Filter>Devices\Davis</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\VolcraftCO20.h">
+      <Filter>Devices\VolcraftCO20</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\VolcraftCO20Tool.h">
+      <Filter>Devices\VolcraftCO20</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\hidapi.h">
+      <Filter>Devices\TE923</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -369,9 +378,6 @@
     <ClCompile Include="hardware\TE923Tool.cpp">
       <Filter>Devices\TE923</Filter>
     </ClCompile>
-    <ClCompile Include="hardware\libusbwinusbbridge.cpp">
-      <Filter>Devices\TE923</Filter>
-    </ClCompile>
     <ClCompile Include="hardware\TE923.cpp">
       <Filter>Devices\TE923</Filter>
     </ClCompile>
@@ -386,6 +392,15 @@
     </ClCompile>
     <ClCompile Include="hardware\DavisLoggerSerial.cpp">
       <Filter>Devices\Davis</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\VolcraftCO20.cpp">
+      <Filter>Devices\VolcraftCO20</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\VolcraftCO20Tool.cpp">
+      <Filter>Devices\VolcraftCO20</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\libusbwinusbbridge.cpp">
+      <Filter>Devices\TE923</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

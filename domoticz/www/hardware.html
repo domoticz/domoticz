@@ -645,7 +645,7 @@ function RefreshHardwareTable()
 					{
 						SerialName=item.Port;
 					}
-					else if (item.Type == 7)
+					else if ((item.Type == 7)||(item.Type == 11))
 					{
 						SerialName="USB";
 					}

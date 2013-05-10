@@ -6046,6 +6046,9 @@ std::string CWebServer::GetJSonPage()
 			else if (htype == HTYPE_TE923) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_VOLCRAFTCO20) {
+				//all fine here!
+			}
 			else
 				goto exitjson;
 
@@ -6138,6 +6141,9 @@ std::string CWebServer::GetJSonPage()
 					goto exitjson;
 			}
 			else if (htype == HTYPE_TE923) {
+				//All find here
+			}
+			else if (htype == HTYPE_VOLCRAFTCO20) {
 				//All find here
 			}
 			else

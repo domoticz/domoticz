@@ -19,6 +19,7 @@
 #include "../hardware/Rego6XXSerial.h"
 #include "../hardware/Razberry.h"
 #include "../hardware/DavisLoggerSerial.h"
+#include "../hardware/VolcraftCO20.h"
 
 #ifdef _DEBUG
 	//#define DEBUG_RECEIVE
@@ -354,6 +355,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_TE923:
 		//TE923 compatible weather station
 		pHardware = new CTE923(ID);
+		break;
+	case HTYPE_VOLCRAFTCO20:
+		//TE923 compatible weather station
+		pHardware = new CVolcraftCO20(ID);
 		break;
 #endif
 	}

@@ -142,10 +142,11 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_P1SmartMeter,		"P1 Smart Meter USB" },
 		{ HTYPE_P1SmartMeterLAN,	"P1 Smart Meter with LAN interface" },
 		{ HTYPE_YouLess,			"YouLess Meter with LAN interface" },
-		{ HTYPE_TE923,				"TE923 USB Compatible Weather Station" },
+		{ HTYPE_TE923,				"TE923 USB Compatible Weather Station (Unix only!)" },
 		{ HTYPE_Rego6XX,			"Rego 6XX USB/serial interface" },
 		{ HTYPE_RazberryZWave,		"Razberry Z-Wave via LAN interface (HTTP)" },
 		{ HTYPE_DavisVantage,		"Davis Vantage Weather Station USB" },
+		{ HTYPE_VOLCRAFTCO20,		"Volcraft CO-20 USB air quality sensor (Unix only!)" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

@@ -25,7 +25,7 @@
  */
 #include "stdafx.h"
 
-#ifndef WIN32
+//#ifndef WIN32
 
 #include "libusbwinusbbridge.h"
 //#include <rpc.h>
@@ -397,6 +397,11 @@ int usb_interrupt_read(usb_dev_handle *dev, int ep, char *bytes, int size,
    return tmp;
 }
 
+int usb_interrupt_write(usb_dev_handle *dev, int ep, char *bytes, int size, int timeout)
+{
+	return 0;
+}
+
 char *usb_strerror(void)
 {
    static char buf[256];
@@ -413,4 +418,4 @@ void usb_set_debug(int level)
 {
 }
 
-#endif
+//#endif

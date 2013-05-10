@@ -149,6 +149,8 @@ hardware/P1MeterSerial.cpp
 hardware/YouLess.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
+hardware/VolcraftCO20.cpp
+hardware/VolcraftCO20Tool.cpp
 hardware/Razberry.cpp
 hardware/Rego6XXSerial.cpp
 hardware/DavisLoggerSerial.cpp
