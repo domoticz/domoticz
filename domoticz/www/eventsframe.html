@@ -6,10 +6,11 @@
     <script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
     <scrip  type="text/javascript" src="js/jquery-ui-1.10.1.custom.min.js"></script>
     <script type="text/javascript" src="/js/domoticzblocks.js"></script>
-        <link rel="stylesheet" href="css/bootstrap.css">
-        <link href="css/bootstrap-responsive.css" rel="stylesheet" media="screen">
-        <link type="text/css" rel="stylesheet" href="css/ui-darkness/jquery-ui-1.10.1.custom.min.css" />
-	    <link type="text/css" rel="stylesheet" href="css/style.css" />	
+    <script type="text/javascript" src="blockly/javascript_compressed.js"></script>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link href="css/bootstrap-responsive.css" rel="stylesheet" media="screen">
+    <link type="text/css" rel="stylesheet" href="css/ui-darkness/jquery-ui-1.10.1.custom.min.css" />
+    <link type="text/css" rel="stylesheet" href="css/style.css" />	
 	    
     <style>
       html, body {
@@ -89,6 +90,8 @@
       	if (blockName != undefined&&blockName!=""&&blockName!=null) {
       		localStorage.setItem(blockName, Blockly.Xml.domToText( xml ));
       		load_blocks();
+      		var code = Blockly.Generator.workspaceToCode('JavaScript');
+      		document.getElementById('textarea').value = code;
       	}
       	else {alert('no event name entered!');}
       }
@@ -113,19 +116,25 @@
 	   		<block type="logic_boolean"></block>
 	   		<block type="logic_states"></block>
 	   		<block type="logic_set"></block>
+	   		<block type="math_number">
+   		</category>
+   		<category name="Messages">
+   			<block type="send_notification"></block>
+   			<block type="send_email"></block>
+   			<block type="text"></block>
    		</category>
    		<category name="Devices">   		
 		   	<category name="Switches">
-			   	<block type="switchvariables_get"></block>
+			   	<block type="switchvariables"></block>
 			</category>   		
 		   	<category name="Temperature">
-			   	<block type="temperaturevariables_get"></block>
+			   	<block type="temperaturevariables"></block>
 		   	</category>	   		   		
 		   	<category name="Weather">
-			   	<block type="weathervariables_get"></block>
+			   	<block type="weathervariables"></block>
 		   	</category>
 		   	<category name="Utility">
-			   	<block type="utilityvariables_get"></block>
+			   	<block type="utilityvariables"></block>
 		   	</category>
    		</category>	
     </xml>
@@ -143,6 +152,7 @@
 			    <select size="10" width="100%" style="width: 100%" id="savedEvents" name="savedEvents" onchange="loadSelectedEvent(this.value);">> 
   				</select>
   				<br><a class="btnstyle3" href="javascript:delete_block()">Delete selected</a>
+  				<textarea id="textarea" width="100%" heigt="100"></textarea>
 			</td>
 		</tr>
     </table>

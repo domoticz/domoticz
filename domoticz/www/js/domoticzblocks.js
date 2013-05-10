@@ -62,47 +62,47 @@ $.ajax({
 	}
 });
 
-Blockly.Language.switchvariables_get = {
+Blockly.Language.switchvariables = {
   // Variable getter.
   category: null,  // Variables are handled specially.
   init: function() {
     this.setColour(30);
     this.appendDummyInput()
-        .appendTitle(new Blockly.FieldDropdown(switches), 'DDGetSW');
+        .appendTitle(new Blockly.FieldDropdown(switches), 'Switch');
     this.setOutput(true, null);
   }
  };
 
 
-Blockly.Language.temperaturevariables_get = {
+Blockly.Language.temperaturevariables = {
   // Variable getter.
   category: null,  // Variables are handled specially.
   init: function() {
     this.setColour(330);
     this.appendDummyInput()
-        .appendTitle(new Blockly.FieldDropdown(temperatures), 'DDGetTEMP');
+        .appendTitle(new Blockly.FieldDropdown(temperatures), 'Temperature');
     this.setOutput(true, null);
   }
  };
 
-Blockly.Language.weathervariables_get = {
+Blockly.Language.weathervariables = {
   // Variable getter.
   category: null,  // Variables are handled specially.
   init: function() {
     this.setColour(210);
     this.appendDummyInput()
-        .appendTitle(new Blockly.FieldDropdown(weather), 'DDGetWE');
+        .appendTitle(new Blockly.FieldDropdown(weather), 'Weather');
     this.setOutput(true, null);
   }
  };
  
-Blockly.Language.utilityvariables_get = {
+Blockly.Language.utilityvariables = {
   // Variable getter.
   category: null,  // Variables are handled specially.
   init: function() {
     this.setColour(290);
     this.appendDummyInput()
-        .appendTitle(new Blockly.FieldDropdown(utilities), 'DDGetUTIL');
+        .appendTitle(new Blockly.FieldDropdown(utilities), 'Utility');
     this.setOutput(true, null);
   }
  };
@@ -137,4 +137,28 @@ Blockly.Language.logic_set = {
   }
 };
 
+Blockly.Language.send_notification = {
+  // Comparison operator.
+  init: function() {
+    this.setColour(120);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.appendValueInput('notificationText')
+    	.appendTitle("Send notification with text:");
+    this.setInputsInline(true);
+
+  }
+};
+
+Blockly.Language.send_email = {
+  // Comparison operator.
+  init: function() {
+    this.setColour(120);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.appendValueInput('emailText')
+    	.appendTitle("Send email with text:");
+    this.setInputsInline(true);
+  }
+};
 
