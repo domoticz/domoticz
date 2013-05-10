@@ -162,7 +162,8 @@ void CScheduler::SetSunRiseSetTimers(std::string sSunRise, std::string sSunSet)
 		temptime = mktime(&ltime);
 		if ((m_tSunRise!=temptime)&&(temptime!=0))
 		{
-			bReloadSchedules=true;
+			if (m_tSunRise==0)
+				bReloadSchedules=true;
 			m_tSunRise=temptime;
 		}
 
@@ -176,7 +177,8 @@ void CScheduler::SetSunRiseSetTimers(std::string sSunRise, std::string sSunSet)
 		temptime = mktime(&ltime);
 		if ((m_tSunSet!=temptime)&&(temptime!=0))
 		{
-			bReloadSchedules=true;
+			if (m_tSunSet==0)
+				bReloadSchedules=true;
 			m_tSunSet=temptime;
 		}
 	}

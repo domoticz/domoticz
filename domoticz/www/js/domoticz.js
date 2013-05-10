@@ -179,7 +179,7 @@ function RefreshLightLogTable(idx)
 							}
 						}
 						else {
-							if ((item.Data.indexOf('On') == 0)||(item.Data.indexOf('Group On') == 0)) {
+							if ((item.Data.indexOf('On') == 0)||(item.Data.indexOf('Group On') == 0)||(item.Data.indexOf('Open inline relay') == 0)) {
 								level=100;
 							}
 						}
