@@ -302,16 +302,16 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	bool bIsRevA = (data[4]=='P');
 
 	const uint8_t *pData=data+1;
-
+/*
 #ifdef _DEBUG
 	unsigned char szBuffer[200];
-	FILE *fIn=fopen("E:\\davis.bin","rb+");
+	FILE *fIn=fopen("E:\\davis3.bin","rb+");
 	//FILE *fIn=fopen("davisrob.bin","rb+");
 	fread(&szBuffer,1,100,fIn);
 	fclose(fIn);
 	pData=szBuffer+1;
 #endif
-
+*/
 	unsigned char tempIdx=1;
 
 	bool bBaroValid=false;
@@ -583,7 +583,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	//UV
 	if (pData[43]!=0xFF)
 	{
-		UV=pData[43];
+		UV=(pData[43])/10.0f;
 		if (UV<100)
 			bUVValid=true;
 	}
@@ -644,6 +644,21 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN);//decode message
 		m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.RAIN));
+	}
+
+	//Solar Radiation
+	if ((pData[44]!=0xFF)&&(pData[45]!=0x7F))
+	{
+		unsigned int solarRadiation=((unsigned int)((pData[45] << 8) | pData[44]));//Watt/M2
+	}
+
+	//Soil Moistures
+	for (int iMoister=0; iMoister<4; iMoister++)
+	{
+		if (pData[62+iMoister]!=0xFF)
+		{
+			int moister=pData[62+iMoister];
+		}
 	}
 
 	return true;
