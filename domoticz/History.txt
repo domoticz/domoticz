@@ -43,6 +43,7 @@ Version 1.0.xxx (May xxth 2013)
 - Implemented: Volcraft CO-20 Air Quality hardware device (Unix only!)
 - Implemented: Date/Time/SunSet/SunRise on every page (except mobile browsers will have only SunSet/SunRise)
 - Changed: P1 Smart meter Power, Day/Week graph now displays both meters (day/night)
+- Changed: P1 Smart meter Power, graph color swap between tariff 1/2
 
 Version 1.0.484 (April 28th 2013)
 - Implemented: Raspberry Pi, updating via the web browser (Settings Tab)
