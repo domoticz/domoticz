@@ -429,9 +429,6 @@ char * CWebServer::PostSettings()
 	std::string scheckforupdates=m_pWebEm->FindValue("checkforupdates");
 	m_pMain->m_sql.UpdatePreferencesVar("UseAutoUpdate",(scheckforupdates=="on"?1:0));
 
-	std::string sP1PowerMode=m_pWebEm->FindValue("P1PowerMode");
-	m_pMain->m_sql.UpdatePreferencesVar("P1PowerMode",atoi(sP1PowerMode.c_str()));
-
 	float CostEnergy=(float)atof(m_pWebEm->FindValue("CostEnergy").c_str());
 	float CostGas=(float)atof(m_pWebEm->FindValue("CostGas").c_str());
 	float CostWater=(float)atof(m_pWebEm->FindValue("CostWater").c_str());
@@ -443,6 +440,7 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("EmailTo",CURLEncode::URLDecode(m_pWebEm->FindValue("EmailTo")).c_str());
 	m_pMain->m_sql.UpdatePreferencesVar("EmailServer",m_pWebEm->FindValue("EmailServer").c_str());
 	m_pMain->m_sql.UpdatePreferencesVar("EmailPort",atoi(m_pWebEm->FindValue("EmailPort").c_str()));
+	m_pMain->m_sql.UpdatePreferencesVar("DoorbellCommand",atoi(m_pWebEm->FindValue("DoorbellCommand").c_str()));
 
 	std::string suseemailinnotificationsalerts=m_pWebEm->FindValue("useemailinnotificationsalerts");
 	m_pMain->m_sql.UpdatePreferencesVar("UseEmailInNotifications",(suseemailinnotificationsalerts=="on"?1:0));
@@ -7155,10 +7153,6 @@ std::string CWebServer::GetJSonPage()
 					sprintf(szTmp,"%.4f",(float)(nValue)/10000.0f);
 					root["CostWater"]=szTmp;
 				}
-				else if (Key=="P1PowerMode")
-				{
-					root["P1PowerMode"]=nValue;
-				}
 				else if (Key=="EmailFrom")
 				{
 					root["EmailFrom"]=sValue;
@@ -7186,6 +7180,10 @@ std::string CWebServer::GetJSonPage()
 				else if (Key=="UseEmailInNotifications")
 				{
 					root["UseEmailInNotifications"]=nValue;
+				}
+				else if (Key=="DoorbellCommand")
+				{
+					root["DoorbellCommand"]=nValue;
 				}
 			}
 		}

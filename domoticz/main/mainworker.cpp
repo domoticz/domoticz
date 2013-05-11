@@ -6052,7 +6052,15 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, std::string s
 			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING1.cmnd))
 				return false;
 			if ((switchtype==STYPE_Doorbell)||(switchtype==STYPE_X10Siren))
+			{
 				level=15;
+				int rnvalue=0;
+				m_sql.GetPreferencesVar("DoorbellCommand", rnvalue);
+				if (rnvalue==0)
+					lcmd.LIGHTING1.cmnd=light1_sChime;
+				else
+					lcmd.LIGHTING1.cmnd=light1_sOn;
+			}
 			lcmd.LIGHTING1.filler=0;
 			lcmd.LIGHTING1.rssi=7;
 			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING1));
@@ -6077,8 +6085,15 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, std::string s
 			lcmd.LIGHTING2.unitcode=Unit;
 			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING2.cmnd))
 				return false;
-			if ((switchtype==STYPE_Doorbell)||(switchtype==STYPE_X10Siren))
+			if ((switchtype==STYPE_Doorbell)||(switchtype==STYPE_X10Siren)) {
+				int rnvalue=0;
+				m_sql.GetPreferencesVar("DoorbellCommand", rnvalue);
+				if (rnvalue==0)
+					lcmd.LIGHTING2.cmnd=light2_sGroupOn;
+				else
+					lcmd.LIGHTING2.cmnd=light2_sOn;
 				level=15;
+			}
 			if (level>15)
 				level=15;
 			lcmd.LIGHTING2.level=level;
@@ -6112,7 +6127,15 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, std::string s
 			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING5.cmnd))
 				return false;
 			if ((switchtype==STYPE_Doorbell)||(switchtype==STYPE_X10Siren))
+			{
+				int rnvalue=0;
+				m_sql.GetPreferencesVar("DoorbellCommand", rnvalue);
+				if (rnvalue==0)
+					lcmd.LIGHTING5.cmnd=light5_sGroupOn;
+				else
+					lcmd.LIGHTING5.cmnd=light5_sOn;
 				level=31;
+			}
 			if (level>31)
 				level=31;
 			lcmd.LIGHTING5.level=level;

@@ -590,10 +590,6 @@ bool CSQLHelper::OpenDatabase()
 		    UpdatePreferencesVar("Rego6XXType", 0); // Set to zero to avoid another copy
         }
 	}
-	if (!GetPreferencesVar("P1PowerMode", nValue))
-	{
-		UpdatePreferencesVar("P1PowerMode", mModeP1Norm);
-	}
 	//Costs for Energy/Gas and Water (See your provider, try to include tax and other stuff)
 	if (!GetPreferencesVar("CostEnergy", nValue))
 	{
@@ -614,6 +610,10 @@ bool CSQLHelper::OpenDatabase()
 	if (!GetPreferencesVar("EmailPort", nValue))
 	{
 		UpdatePreferencesVar("EmailPort", 25);
+	}
+	if (!GetPreferencesVar("DoorbellCommand", nValue))
+	{
+		UpdatePreferencesVar("DoorbellCommand", 0);
 	}
 
 	//Start background thread

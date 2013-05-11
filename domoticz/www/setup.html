@@ -245,17 +245,6 @@
 					</select></td>
 				</tr>
 			</table>
-			<br>
-			<h2>P1 Smart Meter:</h2>
-			<table class="display" id="p1metertable" border="0" cellpadding="0" cellspacing="0">
-				<tr>
-					<td align="right" style="width:60px"><label>Type: </label></td>
-					<td><select id="comboP1MeterType" name="P1PowerMode" style="width:120px" class="combobox ui-corner-all">
-						<option value="0">Single</option>
-						<option value="1">Double</option>
-					</select></td>
-				</tr>
-			</table>
 		</section>
 
 		<!-- Other Settings
@@ -270,6 +259,17 @@
 				<td align="right" style="width:60px"><label>Spread: </label></td>
 				<td><input type="input" id="RandomSpread" name="RandomSpread" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (Minutes +/-)</td>
 			</tr>
+			</table>
+			<br>
+			<h2>Doorbell Command:</h2>
+			<table class="display" id="doorbelltable" border="0" cellpadding="0" cellspacing="0">
+				<tr>
+					<td align="right" style="width:60px"><label>Command: </label></td>
+					<td><select id="comboDoorbellCommand" name="DoorbellCommand" style="width:120px" class="combobox ui-corner-all">
+						<option value="0">Group On</option>
+						<option value="1">On</option>
+					</select></td>
+				</tr>
 			</table>
 		</section>
 		<br>
@@ -457,9 +457,6 @@ function ShowSettings()
       if (typeof data.CM113DisplayType != 'undefined') {
         $("#owl113table #comboscm113type").val(data.CM113DisplayType);
       }
-      if (typeof data.P1PowerMode != 'undefined') {
-        $("#p1metertable #comboP1MeterType").val(data.P1PowerMode);
-      }
       if (typeof data.UseAutoUpdate != 'undefined') {
         $("#autoupdatetable #checkforupdates").prop('checked',data.UseAutoUpdate==1);
       }
@@ -483,6 +480,9 @@ function ShowSettings()
       }
       if (typeof data.UseEmailInNotifications != 'undefined') {
         $("#emailtable #useemailinnotificationsalerts").prop('checked',data.UseEmailInNotifications==1);
+      }
+      if (typeof data.DoorbellCommand != 'undefined') {
+        $("#doorbelltable #comboDoorbellCommand").val(data.DoorbellCommand);
       }
      }
   });
