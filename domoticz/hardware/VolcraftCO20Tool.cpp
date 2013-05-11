@@ -55,7 +55,7 @@ bool CVolcraftCO20Tool::OpenDevice()
 
 	dev = find_VolcraftCO20();
 	if ( dev == NULL ) {
-		_log.Log(LOG_ERROR, "VolcraftCO20: Weather station not found.");
+		_log.Log(LOG_ERROR, "VolcraftCO20: Hardware not found.");
 		return false;
 	}
 

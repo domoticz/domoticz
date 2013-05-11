@@ -193,13 +193,24 @@ function AddDataToUtilityChart(data,chart,switchtype)
     {
 		if ((chart == $.DayChart)||(chart == $.WeekChart)) {
 			if (datatableUsage1.length>0) {
-				chart.addSeries({
-				  id: 'usage1',
-				  name: 'Usage_1',
-				  color: 'rgba(3,190,252,0.8)',
-				  stack: 'susage',
-				  yAxis: 0
-				});
+				if (datatableUsage2.length>0) {
+					chart.addSeries({
+					  id: 'usage1',
+					  name: 'Usage_1',
+					  color: 'rgba(3,190,252,0.8)',
+					  stack: 'susage',
+					  yAxis: 0
+					});
+				}
+				else {
+					chart.addSeries({
+					  id: 'usage1',
+					  name: 'Usage',
+					  color: 'rgba(3,190,252,0.8)',
+					  stack: 'susage',
+					  yAxis: 0
+					});
+				}
 				series = chart.get('usage1');
 				series.setData(datatableUsage1);
 			}
