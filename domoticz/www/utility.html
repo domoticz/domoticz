@@ -262,15 +262,17 @@ function AddDataToUtilityChart(data,chart,switchtype)
 				series = chart.get('usage');
 				series.setData(datatableTotalUsage);
 			}
-			if (datatableTotalReturn.length>0) {
-				chart.addSeries({
-					id: 'return',
-					name: 'Total_Return',
-					color: 'rgba(3,252,190,0.8)',
-					yAxis: 0
-				});
-				series = chart.get('return');
-				series.setData(datatableTotalReturn);
+			if (bHaveDelivered) {
+				if (datatableTotalReturn.length>0) {
+					chart.addSeries({
+						id: 'return',
+						name: 'Total_Return',
+						color: 'rgba(3,252,190,0.8)',
+						yAxis: 0
+					});
+					series = chart.get('return');
+					series.setData(datatableTotalReturn);
+				}
 			}
 		}
 		if (chart == $.DayChart) {
