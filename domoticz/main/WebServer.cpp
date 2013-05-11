@@ -2695,13 +2695,13 @@ std::string CWebServer::GetJSonPage()
 								if ((curDeliv1!=0)||(curDeliv2!=0))
 									bHaveDeliverd=true;
 
-								sprintf_s(szTmp,"%ld",curUsage1);
+								sprintf(szTmp,"%ld",curUsage1);
 								root["result"][ii]["v"]=szTmp;
-								sprintf_s(szTmp,"%ld",curUsage2);
+								sprintf(szTmp,"%ld",curUsage2);
 								root["result"][ii]["v2"]=szTmp;
-								sprintf_s(szTmp,"%ld",curDeliv1);
+								sprintf(szTmp,"%ld",curDeliv1);
 								root["result"][ii]["r1"]=szTmp;
-								sprintf_s(szTmp,"%ld",curDeliv2);
+								sprintf(szTmp,"%ld",curDeliv2);
 								root["result"][ii]["r2"]=szTmp;
 								ii++;
 							}
