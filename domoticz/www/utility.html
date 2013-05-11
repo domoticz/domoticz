@@ -137,116 +137,187 @@ function AddUtilityDevice()
 
 function AddDataToUtilityChart(data,chart,switchtype)
 {
-    var datatablev = [];
-    var datatablereturn = [];
+    var datatableUsage1 = [];
+    var datatableUsage2 = [];
+    var datatableReturn1 = [];
+    var datatableReturn2 = [];
+    var datatableTotalUsage = [];
+    var datatableTotalReturn = [];
 
+	var bHaveDelivered=(typeof data.delivered!= 'undefined');
+	
     $.each(data.result, function(i,item)
     {
 			if (chart == $.DayChart) {
-       datatablev.push( [GetUTCFromString(item.d), parseFloat(item.v) ] );
-       if (typeof item.v2!= 'undefined') {
-				datatablereturn.push( [GetUTCFromString(item.d), parseFloat(item.v2) ] );
-       }
+				var cdate=GetUTCFromString(item.d);
+				datatableUsage1.push( [cdate, parseFloat(item.v) ] );
+				if (typeof item.v2!= 'undefined') {
+					datatableUsage2.push( [cdate, parseFloat(item.v2) ] );
+				}
+				if (bHaveDelivered) {
+					datatableReturn1.push( [cdate, parseFloat(item.r1) ] );
+					if (typeof item.r2!= 'undefined') {
+						datatableReturn2.push( [cdate, parseFloat(item.r2) ] );
+					}
+				}
 			}
 			else {
-       datatablev.push( [GetDateFromString(item.d), parseFloat(item.v) ] );
-       if (typeof item.v2!= 'undefined') {
-				datatablereturn.push( [GetDateFromString(item.d), parseFloat(item.v2) ] );
-       }
+				var cdate=GetDateFromString(item.d);
+				datatableUsage1.push( [cdate, parseFloat(item.v) ] );
+				if (typeof item.v2!= 'undefined') {
+					datatableUsage2.push( [cdate, parseFloat(item.v2) ] );
+				}
+				if (bHaveDelivered) {
+					datatableReturn1.push( [cdate, parseFloat(item.r1) ] );
+					if (typeof item.r2!= 'undefined') {
+						datatableReturn2.push( [cdate, parseFloat(item.r2) ] );
+					}
+				}
+				if (datatableUsage2.length>0) {
+					datatableTotalUsage.push( [cdate, parseFloat(item.v)+parseFloat(item.v2) ] );
+				}
+				else {
+					datatableTotalUsage.push( [cdate, parseFloat(item.v) ] );
+				}
+				if (datatableUsage2.length>0) {
+					datatableTotalReturn.push( [cdate, parseFloat(item.r1)+parseFloat(item.r2) ] );
+				}
+				else {
+					datatableTotalReturn.push( [cdate, parseFloat(item.r1) ] );
+				}
 			}
     });
 
     var series;
     if (switchtype==0)
     {
-			//energy Usage/Return
-      chart.addSeries(
-        {
-          id: 'energy',
-          name: 'Usage',
-          color: 'rgba(3,190,252,0.8)',
-          yAxis: 0
-        }
-      );
-      if (chart == $.DayChart) {
-					chart.yAxis[0].axisTitle.attr({
-						text: 'Energy Watt'
-				});			
-      }
-      else {
-					chart.yAxis[0].axisTitle.attr({
-						text: 'Energy kWh'
-				});			
+		if ((chart == $.DayChart)||(chart == $.WeekChart)) {
+			if (datatableUsage1.length>0) {
+				chart.addSeries({
+				  id: 'usage1',
+				  name: 'Usage_1',
+				  color: 'rgba(3,190,252,0.8)',
+				  stack: 'susage',
+				  yAxis: 0
+				});
+				series = chart.get('usage1');
+				series.setData(datatableUsage1);
 			}
-      series = chart.get('energy');
-			chart.yAxis[0].redraw();
-      series.setData(datatablev);
-
-			if (typeof data.delivered!= 'undefined') {
-				//energy return
-				chart.addSeries(
-					{
-						id: 'energyreturn',
-						name: 'Return',
+			if (datatableUsage2.length>0) {
+				chart.addSeries({
+				  id: 'usage2',
+				  name: 'Usage_2',
+				  color: 'rgba(60,130,252,0.8)',
+				  stack: 'susage',
+				  yAxis: 0
+				});
+				series = chart.get('usage2');
+				series.setData(datatableUsage2);
+			}
+			if (bHaveDelivered) {
+				if (datatableReturn1.length>0) {
+					chart.addSeries({
+						id: 'return1',
+						name: 'Return_1',
 						color: 'rgba(3,252,190,0.8)',
+						stack: 'sreturn',
 						yAxis: 0
-					}
-				);
-				series = chart.get('energyreturn');
-				chart.yAxis[0].redraw();
-				series.setData(datatablereturn);
+					});
+					series = chart.get('return1');
+					series.setData(datatableReturn1);
+				}
+				if (datatableReturn2.length>0) {
+					chart.addSeries({
+						id: 'return2',
+						name: 'Return_2',
+						color: 'rgba(30,242,110,0.8)',
+						stack: 'sreturn',
+						yAxis: 0
+					});
+					series = chart.get('return2');
+					series.setData(datatableReturn2);
+				}
 			}
+		}
+		else {
+			//month/year, show total for now
+			if (datatableTotalUsage.length>0) {
+				chart.addSeries({
+				  id: 'usage',
+				  name: 'Total_Usage',
+				  color: 'rgba(3,190,252,0.8)',
+				  yAxis: 0
+				});
+				series = chart.get('usage');
+				series.setData(datatableTotalUsage);
+			}
+			if (datatableTotalReturn.length>0) {
+				chart.addSeries({
+					id: 'return',
+					name: 'Total_Return',
+					color: 'rgba(3,252,190,0.8)',
+					yAxis: 0
+				});
+				series = chart.get('return');
+				series.setData(datatableTotalReturn);
+			}
+		}
+		if (chart == $.DayChart) {
+			chart.yAxis[0].axisTitle.attr({
+				text: 'Energy Watt'
+			});			
+		}
+		else {
+			chart.yAxis[0].axisTitle.attr({
+				text: 'Energy kWh'
+			});			
+		}
+		chart.yAxis[0].redraw();
     }
     else if (switchtype==1)
     {
-			//gas
-      chart.addSeries(
-        {
+		//gas
+		chart.addSeries({
           id: 'gas',
           name: 'Gas',
           color: 'rgba(3,190,252,0.8)',
           yAxis: 0
-        }
-      );
-			chart.yAxis[0].axisTitle.attr({
-        text: 'Gas m3'
-			});			
-      series = chart.get('gas');
-      series.setData(datatablev);
+        });
+		chart.yAxis[0].axisTitle.attr({
+			text: 'Gas m3'
+		});			
+		series = chart.get('gas');
+		series.setData(datatableUsage1);
     }
     else if (switchtype==2)
     {
-			//water
-      chart.addSeries(
-        {
+		//water
+		chart.addSeries({
           id: 'water',
           name: 'Water',
           color: 'rgba(3,190,252,0.8)',
           yAxis: 0
-        }
-      );
-			chart.yAxis[0].axisTitle.attr({
-        text: 'Water m3'
-			});			
-      series = chart.get('water');
-      series.setData(datatablev);
+        });
+		chart.yAxis[0].axisTitle.attr({
+			text: 'Water m3'
+		});			
+		series = chart.get('water');
+		series.setData(datatableUsage1);
     }
     else if (switchtype==3)
     {
-			//counter
-      chart.addSeries(
-        {
+		//counter
+		chart.addSeries({
           id: 'counter',
           name: 'Counter',
           color: 'rgba(3,190,252,0.8)',
           yAxis: 0
-        }
-      );
-			chart.yAxis[0].axisTitle.attr({
-        text: 'Count'
-			});			
-      series = chart.get('counter');
-      series.setData(datatablev);
+        });
+		chart.yAxis[0].axisTitle.attr({
+			text: 'Count'
+		});			
+		series = chart.get('counter');
+		series.setData(datatableUsage1);
     }
 }
 
@@ -1525,7 +1596,7 @@ function ShowCounterLog(id,name,switchtype)
                   
                 $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=day",
                 function(data) {
-											AddDataToUtilityChart(data,$.DayChart,switchtype);
+					AddDataToUtilityChart(data,$.DayChart,switchtype);
                 });
               }
           }
@@ -1560,7 +1631,7 @@ function ShowCounterLog(id,name,switchtype)
 																'Gas': 'm3',
 																'Water': 'm3'
 													}[this.series.name];
-                    return this.series.name + ':<br/>' + Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y + ' ' + unit;
+                    return Highcharts.dateFormat('%A %Y-%m-%d %H:%M', this.x) + '<br/>' + this.series.name + ': ' + this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -1585,7 +1656,7 @@ function ShowCounterLog(id,name,switchtype)
                   
                 $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=week",
                 function(data) {
-											AddDataToUtilityChart(data,$.WeekChart,switchtype);
+					AddDataToUtilityChart(data,$.WeekChart,switchtype);
                 });
               }
           }
@@ -1619,7 +1690,7 @@ function ShowCounterLog(id,name,switchtype)
 																'Gas': 'm3',
 																'Water': 'm3'
 													}[this.series.name];
-                    return this.series.name + ':<br/>' + Highcharts.dateFormat('%A<br/>%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
+                    return Highcharts.dateFormat('%A %Y-%m-%d %H:%M', this.x) + '<br/>' + this.series.name + ': ' + this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -1645,7 +1716,7 @@ function ShowCounterLog(id,name,switchtype)
                   
                 $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=month",
                 function(data) {
-											AddDataToUtilityChart(data,$.MonthChart,switchtype);
+					AddDataToUtilityChart(data,$.MonthChart,switchtype);
                 });
               }
           }
@@ -1675,7 +1746,7 @@ function ShowCounterLog(id,name,switchtype)
 																'Gas': 'm3',
 																'Water': 'm3'
 													}[this.series.name];
-                    return this.series.name + ':<br/>' + Highcharts.dateFormat('%A<br/>%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
+                    return Highcharts.dateFormat('%A %Y-%m-%d %H:%M', this.x) + '<br/>' + this.series.name + ': ' + this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -1724,7 +1795,7 @@ function ShowCounterLog(id,name,switchtype)
                   
                 $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=year",
                 function(data) {
-											AddDataToUtilityChart(data,$.YearChart,switchtype);
+					AddDataToUtilityChart(data,$.YearChart,switchtype);
                 });
               }
           }
@@ -1754,7 +1825,7 @@ function ShowCounterLog(id,name,switchtype)
 																'Gas': 'm3',
 																'Water': 'm3'
 													}[this.series.name];
-                    return this.series.name + ':<br/>' + Highcharts.dateFormat('%A<br/>%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
+                    return Highcharts.dateFormat('%A %Y-%m-%d %H:%M', this.x) + '<br/>' + this.series.name + ': ' + this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -1815,7 +1886,7 @@ function ShowGenericLog(id,name,switchtype)
                   
                 $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=day",
                 function(data) {
-											AddDataToUtilityChart(data,$.DayChart,switchtype);
+					AddDataToUtilityChart(data,$.DayChart,switchtype);
                 });
               }
           }
@@ -1871,7 +1942,7 @@ function ShowGenericLog(id,name,switchtype)
                   
                 $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=week",
                 function(data) {
-											AddDataToUtilityChart(data,$.WeekChart,switchtype);
+					AddDataToUtilityChart(data,$.WeekChart,switchtype);
                 });
               }
           }
@@ -1932,7 +2003,7 @@ function ShowGenericLog(id,name,switchtype)
                   
                 $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=month",
                 function(data) {
-											AddDataToUtilityChart(data,$.MonthChart,switchtype);
+					AddDataToUtilityChart(data,$.MonthChart,switchtype);
                 });
               }
           }
@@ -2012,7 +2083,7 @@ function ShowGenericLog(id,name,switchtype)
                   
                 $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=year",
                 function(data) {
-											AddDataToUtilityChart(data,$.YearChart,switchtype);
+					AddDataToUtilityChart(data,$.YearChart,switchtype);
                 });
               }
           }
@@ -2129,37 +2200,37 @@ function ShowSmartLog(id,name,switchtype)
 		},
         tooltip: {
             formatter: function() {
-										var unit = {
-																'Usage': 'Watt',
-																'Return': 'Watt',
-																'Peak_Usage': 'Watt',
-																'Peak_Return': 'Watt',
-																'Gas': 'm3',
-																'Water': 'm3'
-													}[this.series.name];
-                    return this.series.name + ':<br/>' + Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y + ' ' + unit;
+				var unit = {
+								'Usage_1': 'Watt',
+								'Usage_2': 'Watt',
+								'Return_1': 'Watt',
+								'Return_2': 'Watt',
+								'Gas': 'm3',
+								'Water': 'm3'
+							}[this.series.name];
+				return Highcharts.dateFormat('%A %Y-%m-%d %H:%M', this.x) + '<br />' + this.series.name + ':  ' + this.y + ' ' + unit;
             }
         },
         plotOptions: {
-						 line: {
-									lineWidth: 3,
-									states: {
-											hover: {
-													lineWidth: 3
-											}
-									},
-									marker: {
-											enabled: false,
-											states: {
-													hover: {
-															enabled: true,
-															symbol: 'circle',
-															radius: 5,
-															lineWidth: 1
-													}
-											}
-									}
+			line: {
+				lineWidth: 3,
+				states: {
+					hover: {
+							lineWidth: 3
+					}
+				},
+				marker: {
+					enabled: false,
+					states: {
+							hover: {
+									enabled: true,
+									symbol: 'circle',
+									radius: 5,
+									lineWidth: 1
 							}
+					}
+				}
+			}
         },
         legend: {
             enabled: true
@@ -2175,7 +2246,7 @@ function ShowSmartLog(id,name,switchtype)
               load: function() {
                 $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=week",
                 function(data) {
-											AddDataToUtilityChart(data,$.WeekChart,switchtype);
+					AddDataToUtilityChart(data,$.WeekChart,switchtype);
                 });
               }
           }
@@ -2203,24 +2274,27 @@ function ShowSmartLog(id,name,switchtype)
         },
         tooltip: {
             formatter: function() {
-										var unit = {
-																'Usage': 'kWh',
-																'Return': 'kWh',
-																'Gas': 'm3',
-																'Water': 'm3'
-													}[this.series.name];
-                    return this.series.name + ':<br/>' + Highcharts.dateFormat('%A<br/>%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
+					var unit = {
+						'Usage_1': 'kWh',
+						'Usage_2': 'kWh',
+						'Return_1': 'kWh',
+						'Return_2': 'kWh',
+						'Gas': 'm3',
+						'Water': 'm3'
+					}[this.series.name];
+                    return Highcharts.dateFormat('%A %Y-%m-%d', this.x) +'<br/>'+ this.series.name + ': ' + this.y + ' ' + unit + '<br/>Total: '+ this.point.stackTotal + ' ' + unit;
             }
         },
         plotOptions: {
             column: {
+				stacking: 'normal',
                 minPointLength: 4,
                 pointPadding: 0.1,
                 groupPadding: 0
             }
         },
         legend: {
-            enabled: false
+            enabled: true
         }
     });
 
@@ -2232,10 +2306,9 @@ function ShowSmartLog(id,name,switchtype)
           zoomType: 'xy',
           events: {
               load: function() {
-                  
                 $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=month",
                 function(data) {
-											AddDataToUtilityChart(data,$.MonthChart,switchtype);
+					AddDataToUtilityChart(data,$.MonthChart,switchtype);
                 });
               }
           }
@@ -2259,13 +2332,17 @@ function ShowSmartLog(id,name,switchtype)
         },
         tooltip: {
             formatter: function() {
-										var unit = {
-																'Usage': 'kWh',
-																'Return': 'kWh',
-																'Gas': 'm3',
-																'Water': 'm3'
-													}[this.series.name];
-                    return this.series.name + ':<br/>' + Highcharts.dateFormat('%A<br/>%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
+					var unit = {
+						'Usage_1': 'kWh',
+						'Usage_2': 'kWh',
+						'Return_1': 'kWh',
+						'Return_2': 'kWh',
+						'Total_Usage': 'kWh',
+						'Total_Return': 'kWh',
+						'Gas': 'm3',
+						'Water': 'm3'
+					}[this.series.name];
+                    return Highcharts.dateFormat('%A %Y-%m-%d', this.x) + '<br/>' + this.series.name + ': ' + this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -2299,7 +2376,7 @@ function ShowSmartLog(id,name,switchtype)
             }
         },
         legend: {
-            enabled: false
+            enabled: true
         }
     });
 
@@ -2311,10 +2388,9 @@ function ShowSmartLog(id,name,switchtype)
           zoomType: 'xy',
           events: {
               load: function() {
-                  
                 $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=year",
                 function(data) {
-											AddDataToUtilityChart(data,$.YearChart,switchtype);
+					AddDataToUtilityChart(data,$.YearChart,switchtype);
                 });
               }
           }
@@ -2338,13 +2414,17 @@ function ShowSmartLog(id,name,switchtype)
         },
         tooltip: {
             formatter: function() {
-										var unit = {
-																'Usage': 'kWh',
-																'Return': 'kWh',
-																'Gas': 'm3',
-																'Water': 'm3'
-													}[this.series.name];
-                    return this.series.name + ':<br/>' + Highcharts.dateFormat('%A<br/>%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
+					var unit = {
+						'Usage_1': 'kWh',
+						'Usage_2': 'kWh',
+						'Return_1': 'kWh',
+						'Return_2': 'kWh',
+						'Total_Usage': 'kWh',
+						'Total_Return': 'kWh',
+						'Gas': 'm3',
+						'Water': 'm3'
+					}[this.series.name];
+                    return Highcharts.dateFormat('%A %Y-%m-%d', this.x) + '<br/>' + this.series.name + ': ' +  this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -2378,7 +2458,7 @@ function ShowSmartLog(id,name,switchtype)
             }
         },
         legend: {
-            enabled: false
+            enabled: true
         }
     });
 }
@@ -2465,7 +2545,7 @@ function RefreshUtilities()
       }
      }
   });
-
+	RefreshTimeAndSun();
 	$.myglobals.refreshTimer = setInterval(RefreshUtilities, 10000);
 }
 
@@ -2479,8 +2559,8 @@ function ShowUtilities()
 
   var tophtm=
         '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
-        '\t<tr>\n';
-  tophtm+=
+        '\t<tr>\n' +
+		'\t  <td align="left"><div id="timesun" /></td>\n' +
         '\t  <td align="right">\n' +
         '\t    <a class="btnstyle" onclick="AddUtilityDevice();">Add Sensor</a>\n' +
         '\t  </td>\n' +
@@ -2679,6 +2759,7 @@ function ShowUtilities()
 				}
 		});
 	}
+	RefreshTimeAndSun();
 	$.myglobals.refreshTimer = setInterval(RefreshUtilities, 10000);
   return false;
 }

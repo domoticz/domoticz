@@ -606,6 +606,9 @@ function RefreshTimerTable(idx)
       }
      }
   });
+  
+  RefreshTimeAndSun();
+  
   $('#modal').hide();
 }
 
@@ -635,12 +638,13 @@ function ShowTimers(id,name, isdimmer)
 		 }
 	});
   
-	if (sunRise!="") {
-		htmlcontent+='SunRise: ' + sunRise + ', SunSet: ' + sunSet + '<br><br>\n';
-	}
+	var suntext='<div id="timesun" /><br>\n';
+	htmlcontent+=suntext;
   
 	htmlcontent+=$('#edittimers').html();
 	$('#lightcontent').html(GetBackbuttonHTMLTable('ShowLights')+htmlcontent);
+
+	RefreshTimeAndSun();
 
 	oTable = $('#timertable').dataTable( {
 	  "sDom": '<"H"lfrC>t<"F"ip>',
@@ -1191,7 +1195,7 @@ function RefreshLights()
       }
      }
   });
-  
+  RefreshTimeAndSun();
   $.myglobals.refreshTimer = setInterval(RefreshLights, 10000);
 }
 
@@ -1207,26 +1211,7 @@ function ShowLights()
   var htmlcontent = '';
   var bHaveAddedDevider = false;
 
-  var sunRise="";
-  var sunSet="";
-
-  $.ajax({
-     url: "json.htm?type=command&param=getSunRiseSet",
-     async: false, 
-     dataType: 'json',
-     success: function(data) {
-        if (typeof data.Sunrise != 'undefined') {
-          sunRise=data.Sunrise;
-          sunSet=data.Sunset;
-        }
-     }
-  });
-
-	var suntext="";
-  if (sunRise!="")
-  {
-    suntext+='SunRise: ' + sunRise + ', SunSet: ' + sunSet + '\n';
-  }
+	var suntext='<div id="timesun" />\n';
 
   var tophtm=
 				'\t<center>' + suntext + '</center>\n' +
@@ -1486,6 +1471,9 @@ function ShowLights()
 				}
 		});
 	}
+	
+	RefreshTimeAndSun();
+	
 	//Create Dimmer Sliders
 	$('#lightcontent .dimslider').slider({
 		//Config

@@ -1712,7 +1712,7 @@ function RefreshWeathers()
       }
      }
   });
-
+	RefreshTimeAndSun();
   $.myglobals.refreshTimer = setInterval(RefreshWeathers, 10000);
 }
 
@@ -1724,29 +1724,10 @@ function ShowWeathers()
   var htmlcontent = '';
   var bHaveAddedDevider = false;
 
-  var sunRise="";
-  var sunSet="";
-
-  $.ajax({
-     url: "json.htm?type=command&param=getSunRiseSet",
-     async: false, 
-     dataType: 'json',
-     success: function(data) {
-        if (typeof data.Sunrise != 'undefined') {
-          sunRise=data.Sunrise;
-          sunSet=data.Sunset;
-        }
-     }
-  });
-  
   var tophtm=
         '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
-        '\t<tr>\n';
-  if (sunRise!="")
-  {
-    tophtm+='\t  <td align="left">SunRise: ' + sunRise + ', SunSet: ' + sunSet + '</td>\n';
-  }
-  tophtm+=
+        '\t<tr>\n' +
+		'\t  <td align="left"><div id="timesun" /></td>\n' +
         '\t  <td align="right">\n' +
         '\t    <a class="btnstyle" onclick="AddWeatherDevice();">Add Sensor</a>\n' +
         '\t  </td>\n' +
@@ -1904,6 +1885,8 @@ function ShowWeathers()
   }
   $('#modal').hide();
   $('#weathercontent').html(tophtm+htmlcontent);
+  
+  RefreshTimeAndSun();
   
 	if ($.myglobals.ismobile==false) {
 		$("#weathercontent .span4").draggable({

@@ -1069,3 +1069,30 @@ function ExportChart2CSV(chart)
 	w.document.write(csv); // the csv string from for example a jquery plugin
 	w.document.close();
 }
+
+function RefreshTimeAndSun()
+{
+	if (typeof $("#timesun") != 'undefined') {
+		$.ajax({
+		 url: "json.htm?type=command&param=getSunRiseSet",
+		 async: true, 
+		 dataType: 'json',
+		 success: function(data) {
+			if (typeof data.Sunrise != 'undefined') {
+						var sunRise=data.Sunrise;
+						var sunSet=data.Sunset;
+						var ServerTime=data.ServerTime;
+						var suntext;
+						var bIsMobile=$.myglobals.ismobile;
+						if (bIsMobile == true) {
+							suntext='SunRise: ' + sunRise + ', SunSet: ' + sunSet;
+						}
+						else {
+							suntext=ServerTime + ', SunRise: ' + sunRise + ', SunSet: ' + sunSet;
+						}
+						$("#timesun").html(suntext);
+			}
+		 }
+		});
+	}
+}

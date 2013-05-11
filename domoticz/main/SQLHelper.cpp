@@ -14,7 +14,7 @@
 #include "../smtpclient/SMTPClient.h"
 #include "../webserver/Base64.h"
 
-#define DB_VERSION 11
+#define DB_VERSION 12
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -500,6 +500,24 @@ bool CSQLHelper::OpenDatabase()
 					m_pMain->m_sql.query(szQuery2.str());
 				}
 			}
+		}
+		if (dbversion<12)
+		{
+			std::vector<std::vector<std::string> > result;
+			result=m_pMain->m_sql.query("SELECT t.RowID, u.RowID from MultiMeter_Calendar as t, MultiMeter_Calendar as u WHERE (t.[Date] == u.[Date]) AND (t.[DeviceRowID] == u.[DeviceRowID]) AND (t.[RowID] != u.[RowID])");
+			if (result.size()>0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt=result.begin(); itt!=result.end(); ++itt)
+				{
+					itt++;
+					std::vector<std::string> sd=*itt;
+					std::stringstream szQuery2;
+					szQuery2 << "DELETE FROM MultiMeter_Calendar WHERE (RowID=='" << sd[0] << "')";
+					m_pMain->m_sql.query(szQuery2.str());
+				}
+			}
+			
 		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
@@ -3404,8 +3422,8 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 				sd[5].c_str(),
 				szDateEnd
 				);
+				result=query(szTmp);
 */
-			result=query(szTmp);
 		}
 	}
 }

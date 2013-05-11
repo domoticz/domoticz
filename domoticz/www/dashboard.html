@@ -8,20 +8,7 @@ function RefreshFavorites()
   clearInterval($.myglobals.refreshTimer);
   var id="";
 
-  $.ajax({
-     url: "json.htm?type=command&param=getSunRiseSet",
-     async: false, 
-     dataType: 'json',
-     success: function(data) {
-        if (typeof data.Sunrise != 'undefined') {
-					var sunRise=data.Sunrise;
-					var sunSet=data.Sunset;
-					var ServerTime=data.ServerTime;
-					var suntext=ServerTime + ', SunRise: ' + sunRise + ', SunSet: ' + sunSet;
-					$("#timesun").html(suntext);
-        }
-     }
-  });
+	RefreshTimeAndSun();
   
   $.ajax({
      url: "json.htm?type=devices&filter=all&used=true&order=Name",
@@ -1828,13 +1815,11 @@ function ShowFavorites()
 		htmlcontent+="<br>";
 	}
 	
-	var suntext="";
-  if (sunRise!="")
-  {
-    suntext+='<div id="timesun">' + ServerTime + ', SunRise: ' + sunRise + ', SunSet: ' + sunSet + '</div><br>\n';
-  }
-  $('#dashcontent').html(suntext+htmlcontent);
+	var suntext='<div id="timesun" /><br>\n';
+	$('#dashcontent').html(suntext+htmlcontent);
 
+	RefreshTimeAndSun();
+	
 	//Create Dimmer Sliders
 	$('#dashcontent .dimslider').slider({
 		//Config

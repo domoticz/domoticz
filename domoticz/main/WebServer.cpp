@@ -2681,24 +2681,24 @@ std::string CWebServer::GetJSonPage()
 								if ((curDeliv2<0)||(curDeliv2>100000))
 									curDeliv2=0;
 
-								long totalUsage=curUsage1+curUsage2;
-								long totalDeliv=curDeliv1+curDeliv2;
-
 								time_t tdiff=atime-lastTime;
 								if (tdiff==0)
 									tdiff=1;
 								float tlaps=3600.0f/tdiff;
-								totalUsage*=int(tlaps);
-								totalDeliv*=int(tlaps);
+								curUsage1*=int(tlaps);
+								curUsage2*=int(tlaps);
+								curDeliv1*=int(tlaps);
+								curDeliv2*=int(tlaps);
 
 								root["result"][ii]["d"]=sd[6].substr(0,16);
 
-								if (totalDeliv!=0)
+								if ((curDeliv1!=0)||(curDeliv2!=0))
 									bHaveDeliverd=true;
-								sprintf(szTmp,"%ld",totalUsage);
-								root["result"][ii]["v"]=szTmp;
-								sprintf(szTmp,"%ld",totalDeliv);
-								root["result"][ii]["v2"]=szTmp;
+
+								root["result"][ii]["v"]=curUsage1;
+								root["result"][ii]["v2"]=curUsage2;
+								root["result"][ii]["r1"]=curDeliv1;
+								root["result"][ii]["r2"]=curDeliv2;
 								ii++;
 							}
 							else
@@ -3267,22 +3267,27 @@ std::string CWebServer::GetJSonPage()
 						for (itt=result.begin(); itt!=result.end(); ++itt)
 						{
 							std::vector<std::string> sd=*itt;
-
 							root["result"][ii]["d"]=sd[4].substr(0,16);
 							std::string szValueUsage1=sd[0];
 							std::string szValueDeliv1=sd[1];
 							std::string szValueUsage2=sd[2];
 							std::string szValueDeliv2=sd[3];
 
-							float fUsage=(float)(atof(szValueUsage1.c_str())+atof(szValueUsage2.c_str()));
-							float fDeliv=(float)(atof(szValueDeliv1.c_str())+atof(szValueDeliv2.c_str()));
+							float fUsage1=(float)(atof(szValueUsage1.c_str()));
+							float fUsage2=(float)(atof(szValueUsage2.c_str()));
+							float fDeliv1=(float)(atof(szValueDeliv1.c_str()));
+							float fDeliv2=(float)(atof(szValueDeliv2.c_str()));
 
-							if (fDeliv!=0)
+							if ((fDeliv1!=0)||(fDeliv2!=0))
 								bHaveDeliverd=true;
-							sprintf(szTmp,"%.3f",fUsage/EnergyDivider);
+							sprintf(szTmp,"%.3f",fUsage1/EnergyDivider);
 							root["result"][ii]["v"]=szTmp;
-							sprintf(szTmp,"%.3f",fDeliv/EnergyDivider);
+							sprintf(szTmp,"%.3f",fUsage2/EnergyDivider);
 							root["result"][ii]["v2"]=szTmp;
+							sprintf(szTmp,"%.3f",fDeliv1/EnergyDivider);
+							root["result"][ii]["r1"]=szTmp;
+							sprintf(szTmp,"%.3f",fDeliv2/EnergyDivider);
+							root["result"][ii]["r2"]=szTmp;
 							ii++;
 						}
 						if (bHaveDeliverd)
@@ -3335,8 +3340,8 @@ std::string CWebServer::GetJSonPage()
 					{
 						std::vector<std::string> sd=result[0];
 
-						unsigned long long total_min_usage_1,total_min_usage_2,total_max_usage_1,total_max_usage_2,total_real_usage;
-						unsigned long long total_min_deliv_1,total_min_deliv_2,total_max_deliv_1,total_max_deliv_2,total_real_deliv;
+						unsigned long long total_min_usage_1,total_min_usage_2,total_max_usage_1,total_max_usage_2,total_real_usage_1,total_real_usage_2;
+						unsigned long long total_min_deliv_1,total_min_deliv_2,total_max_deliv_1,total_max_deliv_2,total_real_deliv_1,total_real_deliv_2;
 
 						bool bHaveDeliverd=false;
 
@@ -3349,7 +3354,8 @@ std::string CWebServer::GetJSonPage()
 						std::stringstream s_str4( sd[5] );
 						s_str4 >> total_max_usage_2;
 
-						total_real_usage=(total_max_usage_1+total_max_usage_2)-(total_min_usage_1+total_min_usage_2);
+						total_real_usage_1=total_max_usage_1-total_min_usage_1;
+						total_real_usage_2=total_max_usage_2-total_min_usage_2;
 
 						std::stringstream s_str5( sd[2] );
 						s_str5 >> total_min_deliv_1;
@@ -3360,20 +3366,31 @@ std::string CWebServer::GetJSonPage()
 						std::stringstream s_str8( sd[7] );
 						s_str8 >> total_max_deliv_2;
 
-						total_real_deliv=(total_max_deliv_1+total_max_deliv_2)-(total_min_deliv_1+total_min_deliv_2);
-						if (total_real_deliv!=0)
+						total_real_deliv_1=total_max_deliv_1-total_min_deliv_1;
+						total_real_deliv_2=total_max_deliv_2-total_min_deliv_2;
+						if ((total_real_deliv_1!=0)||(total_real_deliv_2!=0))
 							bHaveDeliverd=true;
 
 						root["result"][ii]["d"]=szDateEnd;
 
-						sprintf(szTmp,"%llu",total_real_usage);
+						sprintf(szTmp,"%llu",total_real_usage_1);
 						std::string szValue=szTmp;
 						sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDivider);
 						root["result"][ii]["v"]=szTmp;
-						sprintf(szTmp,"%llu",total_real_deliv);
+						sprintf(szTmp,"%llu",total_real_usage_2);
 						szValue=szTmp;
 						sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDivider);
 						root["result"][ii]["v2"]=szTmp;
+
+						sprintf(szTmp,"%llu",total_real_deliv_1);
+						szValue=szTmp;
+						sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDivider);
+						root["result"][ii]["r1"]=szTmp;
+						sprintf(szTmp,"%llu",total_real_deliv_2);
+						szValue=szTmp;
+						sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDivider);
+						root["result"][ii]["r2"]=szTmp;
+
 						ii++;
 						if (bHaveDeliverd)
 						{
@@ -3707,15 +3724,21 @@ std::string CWebServer::GetJSonPage()
 							std::string szUsage2=sd[2];
 							std::string szDeliv2=sd[3];
 
-							float fUsage=(float)(atof(szUsage1.c_str())+atof(szUsage2.c_str()));
-							float fDeliv=(float)(atof(szDeliv1.c_str())+atof(szDeliv2.c_str()));
+							float fUsage_1=(float)atof(szUsage1.c_str());
+							float fUsage_2=(float)atof(szUsage2.c_str());
+							float fDeliv_1=(float)atof(szDeliv1.c_str());
+							float fDeliv_2=(float)atof(szDeliv2.c_str());
 
-							if (fDeliv!=0)
+							if ((fDeliv_1!=0)||(fDeliv_2!=0))
 								bHaveDeliverd=true;
-							sprintf(szTmp,"%.3f",fUsage/EnergyDivider);
+							sprintf(szTmp,"%.3f",fUsage_1/EnergyDivider);
 							root["result"][ii]["v"]=szTmp;
-							sprintf(szTmp,"%.3f",fDeliv/EnergyDivider);
+							sprintf(szTmp,"%.3f",fUsage_2/EnergyDivider);
 							root["result"][ii]["v2"]=szTmp;
+							sprintf(szTmp,"%.3f",fDeliv_1/EnergyDivider);
+							root["result"][ii]["r1"]=szTmp;
+							sprintf(szTmp,"%.3f",fDeliv_2/EnergyDivider);
+							root["result"][ii]["r2"]=szTmp;
 							ii++;
 						}
 						if (bHaveDeliverd)
@@ -3968,8 +3991,8 @@ std::string CWebServer::GetJSonPage()
 					if (result.size()>0)
 					{
 						std::vector<std::string> sd=result[0];
-						unsigned long long total_min_usage_1,total_min_usage_2,total_max_usage_1,total_max_usage_2,total_real_usage;
-						unsigned long long total_min_deliv_1,total_min_deliv_2,total_max_deliv_1,total_max_deliv_2,total_real_deliv;
+						unsigned long long total_min_usage_1,total_min_usage_2,total_max_usage_1,total_max_usage_2,total_real_usage_1,total_real_usage_2;
+						unsigned long long total_min_deliv_1,total_min_deliv_2,total_max_deliv_1,total_max_deliv_2,total_real_deliv_1,total_real_deliv_2;
 
 						std::stringstream s_str1( sd[0] );
 						s_str1 >> total_min_usage_1;
@@ -3980,7 +4003,8 @@ std::string CWebServer::GetJSonPage()
 						std::stringstream s_str4( sd[5] );
 						s_str4 >> total_max_usage_2;
 
-						total_real_usage=(total_max_usage_1+total_max_usage_2)-(total_min_usage_1+total_min_usage_2);
+						total_real_usage_1=total_max_usage_1-total_min_usage_1;
+						total_real_usage_2=total_max_usage_2-total_min_usage_2;
 
 						std::stringstream s_str5( sd[2] );
 						s_str5 >> total_min_deliv_1;
@@ -3991,26 +4015,39 @@ std::string CWebServer::GetJSonPage()
 						std::stringstream s_str8( sd[7] );
 						s_str8 >> total_max_deliv_2;
 
-						total_real_deliv=(total_max_deliv_1+total_max_deliv_2)-(total_min_deliv_1+total_min_deliv_2);
+						total_real_deliv_1=total_max_deliv_1-total_min_deliv_1;
+						total_real_deliv_2=total_max_deliv_2-total_min_deliv_2;
 
-						if (total_real_deliv!=0)
+						if ((total_real_deliv_1!=0)||(total_real_deliv_2!=0))
 							bHaveDeliverd=true;
 
 						root["result"][ii]["d"]=szDateEnd;
 
-						sprintf(szTmp,"%llu",total_real_usage);
-						std::string szValue=szTmp;
+						std::string szValue;
+
+						sprintf(szTmp,"%llu",total_real_usage_1);
+						szValue=szTmp;
 						sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDivider);
 						root["result"][ii]["v"]=szTmp;
-						sprintf(szTmp,"%llu",total_real_deliv);
+						sprintf(szTmp,"%llu",total_real_usage_2);
 						szValue=szTmp;
 						sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDivider);
 						root["result"][ii]["v2"]=szTmp;
+
+						sprintf(szTmp,"%llu",total_real_deliv_1);
+						szValue=szTmp;
+						sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDivider);
+						root["result"][ii]["r1"]=szTmp;
+						sprintf(szTmp,"%llu",total_real_deliv_2);
+						szValue=szTmp;
+						sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDivider);
+						root["result"][ii]["r2"]=szTmp;
+
 						ii++;
-						if (bHaveDeliverd)
-						{
-							root["delivered"]=true;
-						}
+					}
+					if (bHaveDeliverd)
+					{
+						root["delivered"]=true;
 					}
 				}
 				else if (dType==pTypeAirQuality)
