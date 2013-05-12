@@ -446,6 +446,8 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("EmailPort",atoi(m_pWebEm->FindValue("EmailPort").c_str()));
 	m_pMain->m_sql.UpdatePreferencesVar("DoorbellCommand",atoi(m_pWebEm->FindValue("DoorbellCommand").c_str()));
 
+	m_pMain->m_sql.UpdatePreferencesVar("SmartMeterType",atoi(m_pWebEm->FindValue("SmartMeterType").c_str()));
+
 	std::string suseemailinnotificationsalerts=m_pWebEm->FindValue("useemailinnotificationsalerts");
 	m_pMain->m_sql.UpdatePreferencesVar("UseEmailInNotifications",(suseemailinnotificationsalerts=="on"?1:0));
 
@@ -2662,81 +2664,100 @@ std::string CWebServer::GetJSonPage()
 						bool bHaveFirstValue=false;
 						long long lastUsage1,lastUsage2,lastDeliv1,lastDeliv2;
 						time_t lastTime=0;
+
+						int nMeterType=0;
+						m_pMain->m_sql.GetPreferencesVar("SmartMeterType", nMeterType);
+
 						for (itt=result.begin(); itt!=result.end(); ++itt)
 						{
 							std::vector<std::string> sd=*itt;
 
-							long long actUsage1,actUsage2,actDeliv1,actDeliv2;
-							std::stringstream s_str1( sd[0] );
-							s_str1 >> actUsage1;
-							std::stringstream s_str2( sd[4] );
-							s_str2 >> actUsage2;
-							std::stringstream s_str3( sd[1] );
-							s_str3 >> actDeliv1;
-							std::stringstream s_str4( sd[5] );
-							s_str4 >> actDeliv2;
-
-							std::string stime=sd[6];
-							struct tm ntime;
-							time_t atime;
-							ntime.tm_isdst=0;
-							ntime.tm_year=atoi(stime.substr(0,4).c_str())-1900;
-							ntime.tm_mon=atoi(stime.substr(5,2).c_str())-1;
-							ntime.tm_mday=atoi(stime.substr(8,2).c_str());
-							ntime.tm_hour=atoi(stime.substr(11,2).c_str());
-							ntime.tm_min=atoi(stime.substr(14,2).c_str());
-							ntime.tm_sec=atoi(stime.substr(17,2).c_str());
-							atime=mktime(&ntime);
-
-							if (bHaveFirstValue)
+							if (nMeterType==0)
 							{
-								long curUsage1=(long)(actUsage1-lastUsage1);
-								long curUsage2=(long)(actUsage2-lastUsage2);
-								long curDeliv1=(long)(actDeliv1-lastDeliv1);
-								long curDeliv2=(long)(actDeliv2-lastDeliv2);
+								long long actUsage1,actUsage2,actDeliv1,actDeliv2;
+								std::stringstream s_str1( sd[0] );
+								s_str1 >> actUsage1;
+								std::stringstream s_str2( sd[4] );
+								s_str2 >> actUsage2;
+								std::stringstream s_str3( sd[1] );
+								s_str3 >> actDeliv1;
+								std::stringstream s_str4( sd[5] );
+								s_str4 >> actDeliv2;
 
-								if ((curUsage1<0)||(curUsage1>100000))
-									curUsage1=0;
-								if ((curUsage2<0)||(curUsage2>100000))
-									curUsage2=0;
-								if ((curDeliv1<0)||(curDeliv1>100000))
-									curDeliv1=0;
-								if ((curDeliv2<0)||(curDeliv2>100000))
-									curDeliv2=0;
+								std::string stime=sd[6];
+								struct tm ntime;
+								time_t atime;
+								ntime.tm_isdst=0;
+								ntime.tm_year=atoi(stime.substr(0,4).c_str())-1900;
+								ntime.tm_mon=atoi(stime.substr(5,2).c_str())-1;
+								ntime.tm_mday=atoi(stime.substr(8,2).c_str());
+								ntime.tm_hour=atoi(stime.substr(11,2).c_str());
+								ntime.tm_min=atoi(stime.substr(14,2).c_str());
+								ntime.tm_sec=atoi(stime.substr(17,2).c_str());
+								atime=mktime(&ntime);
 
-								time_t tdiff=atime-lastTime;
-								if (tdiff==0)
-									tdiff=1;
-								float tlaps=3600.0f/tdiff;
-								curUsage1*=int(tlaps);
-								curUsage2*=int(tlaps);
-								curDeliv1*=int(tlaps);
-								curDeliv2*=int(tlaps);
+								if (bHaveFirstValue)
+								{
+									long curUsage1=(long)(actUsage1-lastUsage1);
+									long curUsage2=(long)(actUsage2-lastUsage2);
+									long curDeliv1=(long)(actDeliv1-lastDeliv1);
+									long curDeliv2=(long)(actDeliv2-lastDeliv2);
 
-								root["result"][ii]["d"]=sd[6].substr(0,16);
+									if ((curUsage1<0)||(curUsage1>100000))
+										curUsage1=0;
+									if ((curUsage2<0)||(curUsage2>100000))
+										curUsage2=0;
+									if ((curDeliv1<0)||(curDeliv1>100000))
+										curDeliv1=0;
+									if ((curDeliv2<0)||(curDeliv2>100000))
+										curDeliv2=0;
 
-								if ((curDeliv1!=0)||(curDeliv2!=0))
-									bHaveDeliverd=true;
+									time_t tdiff=atime-lastTime;
+									if (tdiff==0)
+										tdiff=1;
+									float tlaps=3600.0f/tdiff;
+									curUsage1*=int(tlaps);
+									curUsage2*=int(tlaps);
+									curDeliv1*=int(tlaps);
+									curDeliv2*=int(tlaps);
 
-								sprintf(szTmp,"%ld",curUsage1);
-								root["result"][ii]["v"]=szTmp;
-								sprintf(szTmp,"%ld",curUsage2);
-								root["result"][ii]["v2"]=szTmp;
-								sprintf(szTmp,"%ld",curDeliv1);
-								root["result"][ii]["r1"]=szTmp;
-								sprintf(szTmp,"%ld",curDeliv2);
-								root["result"][ii]["r2"]=szTmp;
-								ii++;
+									root["result"][ii]["d"]=sd[6].substr(0,16);
+
+									if ((curDeliv1!=0)||(curDeliv2!=0))
+										bHaveDeliverd=true;
+
+									sprintf(szTmp,"%ld",curUsage1);
+									root["result"][ii]["v"]=szTmp;
+									sprintf(szTmp,"%ld",curUsage2);
+									root["result"][ii]["v2"]=szTmp;
+									sprintf(szTmp,"%ld",curDeliv1);
+									root["result"][ii]["r1"]=szTmp;
+									sprintf(szTmp,"%ld",curDeliv2);
+									root["result"][ii]["r2"]=szTmp;
+									ii++;
+								}
+								else
+								{
+									bHaveFirstValue=true;
+								}
+								lastUsage1=actUsage1;
+								lastUsage2=actUsage2;
+								lastDeliv1=actDeliv1;
+								lastDeliv2=actDeliv2;
+								lastTime=atime;
 							}
 							else
 							{
-								bHaveFirstValue=true;
+								//this meter has no decimals, so return the use peaks
+								root["result"][ii]["d"]=sd[6].substr(0,16);
+
+								if (sd[3]!="0")
+									bHaveDeliverd=true;
+								root["result"][ii]["v"]=sd[2];
+								root["result"][ii]["r1"]=sd[3];
+								ii++;
+
 							}
-							lastUsage1=actUsage1;
-							lastUsage2=actUsage2;
-							lastDeliv1=actDeliv1;
-							lastDeliv2=actDeliv2;
-							lastTime=atime;
 						}
 						if (bHaveDeliverd)
 						{
@@ -7209,6 +7230,10 @@ std::string CWebServer::GetJSonPage()
 				else if (Key=="DoorbellCommand")
 				{
 					root["DoorbellCommand"]=nValue;
+				}
+				else if (Key=="SmartMeterType")
+				{
+					root["SmartMeterType"]=nValue;
 				}
 			}
 		}

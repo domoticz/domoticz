@@ -246,6 +246,7 @@ private:
 	boost::mutex m_sqlQueryMutex;
 	CURLEncode m_urlencoder;
 	sqlite3 *m_dbase;
+	sqlite3 *m_demo_dbase;
 	MainWorker *m_pMain;
 	std::string m_dbase_name;
 	int m_5MinuteHistoryDays;

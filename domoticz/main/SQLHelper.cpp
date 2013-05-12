@@ -322,6 +322,7 @@ CSQLHelper::CSQLHelper(void)
 	m_LastSwitchID="";
 	m_LastSwitchRowID=0;
 	m_dbase=NULL;
+	m_demo_dbase=NULL;
 	m_stoprequested=false;
 	SetDatabaseName("domoticz.db");
 }
@@ -338,6 +339,11 @@ CSQLHelper::~CSQLHelper(void)
 	{
 		sqlite3_close(m_dbase);
 		m_dbase=NULL;
+	}
+	if (m_demo_dbase!=NULL)
+	{
+		sqlite3_close(m_demo_dbase);
+		m_demo_dbase=NULL;
 	}
 }
 
@@ -614,6 +620,10 @@ bool CSQLHelper::OpenDatabase()
 	if (!GetPreferencesVar("DoorbellCommand", nValue))
 	{
 		UpdatePreferencesVar("DoorbellCommand", 0);
+	}
+	if (!GetPreferencesVar("SmartMeterType", nValue))	//0=meter has decimals, 1=meter does not have decimals, need this for the day graph
+	{
+		UpdatePreferencesVar("SmartMeterType", 0);
 	}
 
 	//Start background thread

@@ -5482,9 +5482,9 @@ void MainWorker::decode_P1MeterPower(const int HwdID, const tRBUF *pResponse)
 			sprintf(szTmp,"powerdeliv2 = %.3f kWh", float(p1Power->powerdeliv2) / 1000.0f);
 			WriteMessage(szTmp);
 
-			sprintf(szTmp,"current usage = %03ld kWh", p1Power->usagecurrent);
+			sprintf(szTmp,"current usage = %03ld Watt", p1Power->usagecurrent);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"current deliv = %03ld kWh", p1Power->delivcurrent);
+			sprintf(szTmp,"current deliv = %03ld Watt", p1Power->delivcurrent);
 			WriteMessage(szTmp);
 			break;
 		default:
