@@ -78,49 +78,64 @@ function logEvent(event) {
 }
 
 function CheckForUpdate(showdialog) {
-		$.ajax({
-			 url: "json.htm?type=command&param=checkforupdate&forced=" + showdialog,
-			 async: false, 
-			 dataType: 'json',
-			 success: function(data) {
-				if (data.HaveUpdate == true) {
-					$("#mUpdate").show();
+	$.ajax({
+		 url: "json.htm?type=command&param=checkforupdate&forced=" + showdialog,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			var urights=data.statuscode;
+			if (urights!=3) {
+				//display logout option
+			}
+			else {
+				urights=2;
+			}
+			window.my_config =
+			{
+				userrights : urights
+			};
+			if (window.my_config.userrights!=2) {
+				$("#mDevices").hide();
+				$("#setupmenu").hide();
+			}
+			if (data.HaveUpdate == true) {
+				$("#mUpdate").show();
+				$("#mCheckUpdate").hide();
+				if (showdialog) {
+					var bValid = false;
+					bValid=(confirm("Update Available !... Update Now?")==true);
+					if (bValid) {
+						SwitchLayout('Update');
+					}
+				}
+				else {
+					generate_noty('success', 'A new version of Domoticz is Available!...<br>Use the Setup tab to update.', false);
+				}
+			}
+			else
+			{
+				if (data.IsSupported==false) {
+					$("#dUpdate").hide();
+					$("#mUpdate").hide();
 					$("#mCheckUpdate").hide();
-					if (showdialog) {
-						var bValid = false;
-						bValid=(confirm("Update Available !... Update Now?")==true);
-						if (bValid) {
-							SwitchLayout('Update');
-						}
-					}
-					else {
-						generate_noty('success', 'A new version of Domoticz is Available!...<br>Use the Setup tab to update.', false);
-					}
 				}
-				else
-				{
-					if (data.IsSupported==false) {
-						$("#dUpdate").hide();
-						$("#mUpdate").hide();
-						$("#mCheckUpdate").hide();
-					}
-					else {
-						$("#mUpdate").hide();
-						$("#mCheckUpdate").show();
-					}
-					if (showdialog) {
-						alert("No Update Available...");
-					}
-				}
-			 },
-			 error: function(){
+				else {
 					$("#mUpdate").hide();
 					$("#mCheckUpdate").show();
-					if (showdialog) {
-						alert("Error communicating to server!");
-					}
-			 }     
-		});
+				}
+				if (showdialog) {
+					alert("No Update Available...");
+				}
+			}
+		 },
+		 error: function(){
+				$("#mUpdate").hide();
+				$("#mCheckUpdate").show();
+				if (showdialog) {
+					alert("Error communicating to server!");
+				}
+		 }     
+	});
 }
 
 function TransferDevice(idx,backfunction)
@@ -160,22 +175,22 @@ if (window.applicationCache) {
 }
 
 $(document).ready(function() {
-		if (window.applicationCache) {
-			window.applicationCache.addEventListener('downloading', function(e)
-			{
-				generate_noty('information', '<b>Browser Cache is being refreshed...</b><br>Please standby...', 5000);
-			}, false);
-			window.applicationCache.addEventListener('updateready', function(e) 
-			{
-					if (window.applicationCache.status == window.applicationCache.UPDATEREADY) 
-					{
-							// Browser downloaded a new app cache.
-							// Swap it in and reload the page to get the new hotness.
-							window.applicationCache.swapCache();
-							window.location.reload();
-					}
-			}, false);
-		}
+	if (window.applicationCache) {
+		window.applicationCache.addEventListener('downloading', function(e)
+		{
+			generate_noty('information', '<b>Browser Cache is being refreshed...</b><br>Please standby...', 5000);
+		}, false);
+		window.applicationCache.addEventListener('updateready', function(e) 
+		{
+				if (window.applicationCache.status == window.applicationCache.UPDATEREADY) 
+				{
+						// Browser downloaded a new app cache.
+						// Swap it in and reload the page to get the new hotness.
+						window.applicationCache.swapCache();
+						window.location.reload();
+				}
+		}, false);
+	}
 		
 	$.myglobals = {
 		actlayout : "",
@@ -368,12 +383,13 @@ $(document).ready(function() {
 														<li id="mDevices"><a id="cDevices" href="javascript:SwitchLayout('Devices')"><img src="images/devices.png"> Devices</a></li>
                             <li class="divider-vertical"></li>
                             <li class="dropdown">
-                                <a class="dropdown-toggle" data-toggle="dropdown" onmouseover="cursorhand()" onmouseout="cursordefault()"><img src="images/setup.png"> Setup <b class="caret"></b></a>
+                                <a id="setupmenu" class="dropdown-toggle" data-toggle="dropdown" onmouseover="cursorhand()" onmouseout="cursordefault()"><img src="images/setup.png"> Setup <b class="caret"></b></a>
                                 <ul class="dropdown-menu pull-right">
 																		<li id="mHardware"><a id="cHardware" href="javascript:SwitchLayout('Hardware')"><img src="images/hardware.png"> Hardware</a></li>
                                     <li id="mSetup"><a id="cSetup" href="javascript:SwitchLayout('Setup')"><img src="images/setup.png"> Application Settings</a></li>
                                     <li id="mScenes"><a id="cScenes" href="javascript:SwitchLayout('Scenes')"><img src="images/scenes.png"> Scenes</a></li>
                                     <li id="mCam"><a id="cCam" href="javascript:SwitchLayout('Cam')"><img src="images/camera-web.png"> Cameras</a></li>
+                                    <li id="mUsers"><a id="cUsers" href="javascript:SwitchLayout('Users')"><img src="images/users.png"> Edit Users</a></li>
                                     <li id="dUpdate" class="divider"></li>
                                     <li id="mUpdate"><a id="cUpdate" href="javascript:SwitchLayout('Update')"><img src="images/utility.png"> Update Domoticz</a></li>
                                     <li id="mCheckUpdate"><a id="cUpdate" href="javascript:CheckForUpdate(true)"><img src="images/utility.png"> Check for Update</a></li>

@@ -715,6 +715,11 @@ function ShowTimers(id,name, isdimmer)
 
 function MakeFavorite(id,isfavorite)
 {
+	if (window.my_config.userrights!=2) {
+        HideNotify();
+		ShowNotify('You do not have permission to do that!', 2500, true);
+		return;
+	}
 	clearInterval($.myglobals.refreshTimer);
 	$.ajax({
 		url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite, 
@@ -1392,38 +1397,40 @@ function ShowLights()
 			xhtm+=
 						'</td>\n' +
 						'\t      <td>';
-          if (item.Favorite == 0) {
-            xhtm+=      
-                  '<img src="images/nofavorite.png" title="Add to Dashboard" onclick="MakeFavorite(' + item.idx + ',1);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
-          }
-          else {
-            xhtm+=      
-                  '<img src="images/favorite.png" title="Remove from Dashboard" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
-          }
-          xhtm+=      
-                '<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#lightcontent\', \'ShowLights\');">Log</a> ' +
-                '<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.IsSubDevice +');">Edit</a> ';
-					if (bAddTimer == true) {
-								if (item.Timers == "true") {
-									xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',' + bIsDimmer + ');">Timers</a> ';
-								}
-								else {
-									xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',' + bIsDimmer + ');">Timers</a> ';
-								}
-					}
-					if (item.SwitchType == "Smoke Detector") {
-						if (
-								(item.Status == 'Panic')||
-								(item.Status == 'On')
-							 ) {
-							xhtm+='<a class="btnsmall-sel" onclick="ResetSecurityStatus(' + item.idx + ',\'Normal\',ShowLights);">Reset</a> ';
+			  if (item.Favorite == 0) {
+				xhtm+=      
+					  '<img src="images/nofavorite.png" title="Add to Dashboard" onclick="MakeFavorite(' + item.idx + ',1);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+			  }
+			  else {
+				xhtm+=      
+					  '<img src="images/favorite.png" title="Remove from Dashboard" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+			  }
+          xhtm+=
+                '<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#lightcontent\', \'ShowLights\');">Log</a> ';
+          if (window.my_config.userrights==2) {
+			  xhtm+=
+					'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.IsSubDevice +');">Edit</a> ';
+						if (bAddTimer == true) {
+									if (item.Timers == "true") {
+										xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',' + bIsDimmer + ');">Timers</a> ';
+									}
+									else {
+										xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',' + bIsDimmer + ');">Timers</a> ';
+									}
 						}
-          }					
-          if (item.Notifications == "true")
-			xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#lightcontent\', \'ShowLights\');">Notifications</a>';
-          else
-            xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#lightcontent\', \'ShowLights\');">Notifications</a>';
-
+						if (item.SwitchType == "Smoke Detector") {
+							if (
+									(item.Status == 'Panic')||
+									(item.Status == 'On')
+								 ) {
+								xhtm+='<a class="btnsmall-sel" onclick="ResetSecurityStatus(' + item.idx + ',\'Normal\',ShowLights);">Reset</a> ';
+							}
+			  }					
+			  if (item.Notifications == "true")
+				xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#lightcontent\', \'ShowLights\');">Notifications</a>';
+			  else
+				xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#lightcontent\', \'ShowLights\');">Notifications</a>';
+		  }
           xhtm+=
                 '</td>\n' +
                 '\t    </tr>\n' +

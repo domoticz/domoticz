@@ -67,8 +67,6 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
 	m_pMain=pMain;
 	StopServer();
 
-	LoadUsers();
-
 	if (m_pWebEm!=NULL)
 		delete m_pWebEm;
     try {
@@ -91,41 +89,22 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
 
 	if (!bIgnoreUsernamePassword)
 	{
-		std::string WebUserName,WebPassword;
-		int nValue=0;
-		if (m_pMain->m_sql.GetPreferencesVar("WebUserName",nValue,WebUserName))
+		LoadUsers();
+		std::string WebLocalNetworks;
+		int nValue;
+		if (m_pMain->m_sql.GetPreferencesVar("WebLocalNetworks",nValue,WebLocalNetworks))
 		{
-			if (m_pMain->m_sql.GetPreferencesVar("WebPassword",nValue,WebPassword))
+			std::vector<std::string> strarray;
+			StringSplit(WebLocalNetworks, ";", strarray);
+			std::vector<std::string>::const_iterator itt;
+			for (itt=strarray.begin(); itt!=strarray.end(); ++itt)
 			{
-				if ((WebUserName!="")&&(WebPassword!="")) 
-				{
-					WebUserName=base64_decode(WebUserName);
-					WebPassword=base64_decode(WebPassword);
-					m_pWebEm->AddUserPassword(WebUserName, WebPassword,true);
-
-					std::string WebLocalNetworks;
-					if (m_pMain->m_sql.GetPreferencesVar("WebLocalNetworks",nValue,WebLocalNetworks))
-					{
-						std::vector<std::string> strarray;
-						StringSplit(WebLocalNetworks, ";", strarray);
-						std::vector<std::string>::const_iterator itt;
-						for (itt=strarray.begin(); itt!=strarray.end(); ++itt)
-						{
-							std::string network=*itt;
-							int pos=network.find_first_of("*");
-							if (pos>0)
-								network=network.substr(0,pos);
-							m_pWebEm->AddLocalNetworks(network);
-						}
-					}
-				}
+				std::string network=*itt;
+				int pos=network.find_first_of("*");
+				if (pos>0)
+					network=network.substr(0,pos);
+				m_pWebEm->AddLocalNetworks(network);
 			}
-		}
-
-		std::vector<_tWebUserPassword>::const_iterator itt;
-		for (itt=m_users.begin(); itt!=m_users.end(); ++itt)
-		{
-			m_pWebEm->AddUserPassword(itt->Username, itt->Password,true);
 		}
 	}
 
@@ -320,8 +299,61 @@ char * CWebServer::DisplayTimerTypesCombo()
 
 void CWebServer::LoadUsers()
 {
-	m_users.clear();
+	ClearUserPasswords();
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+	result=m_pMain->m_sql.query("SELECT ID, Active, Username, Password, Rights FROM Users");
+	if (result.size()>0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		int ii=0;
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::vector<std::string> sd=*itt;
 
+			unsigned long ID;
+			std::stringstream s_strid;
+			s_strid << std::hex << sd[0];
+			s_strid >> ID;
+
+			std::string username=base64_decode(sd[2]);
+			std::string password=base64_decode(sd[3]);
+
+			_eUserRights rights=(_eUserRights)atoi(sd[4].c_str());
+
+			int bIsActive=(int)atoi(sd[1].c_str());
+			if (bIsActive)
+			{
+				AddUser(ID,username,password,rights);
+			}
+		}
+	}
+	std::string WebUserName,WebPassword;
+	int nValue=0;
+	if (m_pMain->m_sql.GetPreferencesVar("WebUserName",nValue,WebUserName))
+	{
+		if (m_pMain->m_sql.GetPreferencesVar("WebPassword",nValue,WebPassword))
+		{
+			if ((WebUserName!="")&&(WebPassword!="")) 
+			{
+				WebUserName=base64_decode(WebUserName);
+				WebPassword=base64_decode(WebPassword);
+				AddUser(10000,WebUserName, WebPassword, URIGHTS_ADMIN);
+			}
+		}
+	}
+}
+
+void CWebServer::AddUser(const unsigned long ID, const std::string username, const std::string password, const int userrights)
+{
+	_tWebUserPassword wtmp;
+	wtmp.ID=ID;
+	wtmp.Username=username;
+	wtmp.Password=password;
+	wtmp.userrights=(_eUserRights)userrights;
+	m_users.push_back(wtmp);
+
+	m_pWebEm->AddUserPassword(ID,username,password,(_eUserRights)userrights);
 }
 
 void CWebServer::SaveUsers()
@@ -330,6 +362,7 @@ void CWebServer::SaveUsers()
 
 void CWebServer::ClearUserPasswords()
 {
+	m_users.clear();
 	m_pWebEm->ClearUserPasswords();
 }
 
@@ -344,6 +377,17 @@ int CWebServer::FindUser(const char* szUserName)
 		iUser++;
 	}
 	return -1;
+}
+
+bool CWebServer::FindAdminUser()
+{
+	std::vector<_tWebUserPassword>::const_iterator itt;
+	for (itt=m_users.begin(); itt!=m_users.end(); ++itt)
+	{
+		if (itt->userrights== URIGHTS_ADMIN)
+			return true;
+	}
+	return false;
 }
 
 char * CWebServer::PostSettings()
@@ -394,9 +438,9 @@ char * CWebServer::PostSettings()
 		WebUserName="";
 		WebPassword="";
 	}
-	ClearUserPasswords();
+	LoadUsers();
 	if ((WebUserName!="")&&(WebPassword!="")) {
-		m_pWebEm->AddUserPassword(WebUserName,WebPassword,true);
+		AddUser(10000,WebUserName,WebPassword, URIGHTS_ADMIN);
 		WebUserName=base64_encode((const unsigned char*)WebUserName.c_str(),WebUserName.size());
 		WebPassword=base64_encode((const unsigned char*)WebPassword.c_str(),WebPassword.size());
 	}
@@ -2050,6 +2094,44 @@ std::string CWebServer::GetJSonPage()
 			}
 		}
 	} //if (rtype=="cameras")
+	else if (rtype=="users")
+	{
+		bool bHaveUser=(m_pWebEm->m_actualuser!="");
+		int urights=3;
+		if (bHaveUser)
+		{
+			int iUser=-1;
+			iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+			if (iUser!=-1)
+				urights=(int)m_users[iUser].userrights;
+		}
+		if (urights<2)
+			goto exitjson;
+
+		root["status"]="OK";
+		root["title"]="Users";
+
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT ID, Active, Username, Password, Rights FROM USERS ORDER BY ID ASC";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			int ii=0;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+
+				root["result"][ii]["idx"]=sd[0];
+				root["result"][ii]["Enabled"]=(sd[1]=="1")?"true":"false";
+				root["result"][ii]["Username"]=base64_decode(sd[2]);
+				root["result"][ii]["Password"]=base64_decode(sd[3]);
+				root["result"][ii]["Rights"]=atoi(sd[4].c_str());
+				ii++;
+			}
+		}
+	} //if (rtype=="users")
     else if (rtype=="plans")
 	{
      	root["title"]="Plans";
@@ -4881,9 +4963,23 @@ std::string CWebServer::GetJSonPage()
 		}
 		else if (cparam=="checkforupdate")
 		{
+			bool bHaveUser=(m_pWebEm->m_actualuser!="");
+			int urights=3;
+			if (bHaveUser)
+			{
+				int iUser=-1;
+				iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+				if (iUser!=-1)
+					urights=(int)m_users[iUser].userrights;
+			}
+			root["statuscode"]=urights;
+
+			std::string auser=m_pWebEm->m_actualuser;
+
 			utsname my_uname;
 			if (uname(&my_uname)<0)
 				goto exitjson;
+
 			std::string forced=m_pWebEm->FindValue("forced");
 			bool bIsForced=(forced=="true");
 			std::string systemname=my_uname.sysname;
@@ -6373,6 +6469,128 @@ std::string CWebServer::GetJSonPage()
 			m_pMain->m_sql.DeleteCamera(idx);
             m_pMain->m_cameras.ReloadCameras();
 		}
+		else if (cparam=="adduser")
+		{
+			bool bHaveUser=(m_pWebEm->m_actualuser!="");
+			int urights=3;
+			if (bHaveUser)
+			{
+				int iUser=-1;
+				iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+				if (iUser!=-1)
+					urights=(int)m_users[iUser].userrights;
+			}
+			if (urights<2)
+				goto exitjson;
+
+			std::string senabled=m_pWebEm->FindValue("enabled");
+			std::string username=m_pWebEm->FindValue("username");
+			std::string password=m_pWebEm->FindValue("password");
+			std::string srights=m_pWebEm->FindValue("rights");
+			if (
+				(senabled=="")||
+				(username=="")||
+				(password=="")||
+				(srights=="")
+				)
+				goto exitjson;
+			int rights=atoi(srights.c_str());
+			if (rights!=2)
+			{
+				if (!FindAdminUser())
+				{
+					root["message"]="Add a Admin user first! (Or enable Settings/Website Protection)";
+					goto exitjson;
+				}
+			}
+			root["status"]="OK";
+			root["title"]="AddUser";
+			sprintf(szTmp,
+				"INSERT INTO Users (Active, Username, Password, Rights) VALUES (%d,'%s','%s','%d')",
+				(senabled=="true")?1:0,
+				base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
+				base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
+				rights
+				);
+			result=m_pMain->m_sql.query(szTmp);
+			LoadUsers();
+		}
+		else if (cparam=="updateuser")
+		{
+			bool bHaveUser=(m_pWebEm->m_actualuser!="");
+			int urights=3;
+			if (bHaveUser)
+			{
+				int iUser=-1;
+				iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+				if (iUser!=-1)
+					urights=(int)m_users[iUser].userrights;
+			}
+			if (urights<2)
+				goto exitjson;
+
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			std::string senabled=m_pWebEm->FindValue("enabled");
+			std::string username=m_pWebEm->FindValue("username");
+			std::string password=m_pWebEm->FindValue("password");
+			std::string srights=m_pWebEm->FindValue("rights");
+			if (
+				(senabled=="")||
+				(username=="")||
+				(password=="")||
+				(srights=="")
+				)
+				goto exitjson;
+			int rights=atoi(srights.c_str());
+			if (rights!=2)
+			{
+				if (!FindAdminUser())
+				{
+					root["message"]="Add a Admin user first! (Or enable Settings/Website Protection)";
+					goto exitjson;
+				}
+			}
+
+			root["status"]="OK";
+			root["title"]="UpdateUser";
+
+			sprintf(szTmp,
+				"UPDATE Users SET Active=%d, Username='%s', Password='%s', Rights=%d WHERE (ID == %s)",
+				(senabled=="true")?1:0,
+				base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
+				base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
+				rights,
+				idx.c_str()
+				);
+			result=m_pMain->m_sql.query(szTmp);
+			LoadUsers();
+		}
+		else if (cparam=="deleteuser")
+		{
+			bool bHaveUser=(m_pWebEm->m_actualuser!="");
+			int urights=3;
+			if (bHaveUser)
+			{
+				int iUser=-1;
+				iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+				if (iUser!=-1)
+					urights=(int)m_users[iUser].userrights;
+			}
+			if (urights<2)
+				goto exitjson;
+
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+
+			root["status"]="OK";
+			root["title"]="DeleteUser";
+			sprintf(szTmp,"DELETE FROM Users WHERE (ID == %s)",idx.c_str());
+			result=m_pMain->m_sql.query(szTmp);
+			LoadUsers();
+		}
 		else if (cparam=="deletehardware")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
@@ -6768,6 +6986,17 @@ std::string CWebServer::GetJSonPage()
 		} //makescenefavorite
         else if (cparam=="resetsecuritystatus")
 		{
+			int urights=3;
+			if (bHaveUser)
+			{
+				int iUser=-1;
+				iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+				if (iUser!=-1)
+					urights=(int)m_users[iUser].userrights;
+			}
+			if (urights<1)
+				goto exitjson;
+
             std::string idx=m_pWebEm->FindValue("idx");
 			std::string switchcmd=m_pWebEm->FindValue("switchcmd");
 
@@ -6810,6 +7039,17 @@ std::string CWebServer::GetJSonPage()
         }
         else if (cparam=="switchlight")
 		{
+			int urights=3;
+			if (bHaveUser)
+			{
+				int iUser=-1;
+				iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+				if (iUser!=-1)
+					urights=(int)m_users[iUser].userrights;
+			}
+			if (urights<1)
+				goto exitjson;
+
 			std::string idx=m_pWebEm->FindValue("idx");
 			std::string switchcmd=m_pWebEm->FindValue("switchcmd");
 			std::string level=m_pWebEm->FindValue("level");
@@ -6824,6 +7064,17 @@ std::string CWebServer::GetJSonPage()
 		} //(rtype=="switchlight")
 		else if (cparam=="switchscene")
 		{
+			int urights=3;
+			if (bHaveUser)
+			{
+				int iUser=-1;
+				iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+				if (iUser!=-1)
+					urights=(int)m_users[iUser].userrights;
+			}
+			if (urights<1)
+				goto exitjson;
+
 			std::string idx=m_pWebEm->FindValue("idx");
 			std::string switchcmd=m_pWebEm->FindValue("switchcmd");
 			if ((idx=="")||(switchcmd==""))

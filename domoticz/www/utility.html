@@ -102,6 +102,12 @@
 
 function MakeFavorite(id,isfavorite)
 {
+	if (window.my_config.userrights!=2) {
+        HideNotify();
+		ShowNotify('You do not have permission to do that!', 2500, true);
+		return;
+	}
+
 	clearInterval($.myglobals.refreshTimer);
   $.ajax({
      url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite, 
@@ -2214,6 +2220,7 @@ function ShowSmartLog(id,name,switchtype)
         tooltip: {
             formatter: function() {
 				var unit = {
+								'Usage': 'Watt',
 								'Usage_1': 'Watt',
 								'Usage_2': 'Watt',
 								'Return_1': 'Watt',
@@ -2690,42 +2697,52 @@ function ShowUtilities()
 			else {
 				xhtm+='<a class="btnsmall" onclick="ShowCounterLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">Log</a> ';
 			}
-			if (item.Type == "P1 Smart Meter") {
-				xhtm+=      
-							'<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
-			}
-			else {
-				xhtm+=      
-							'<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +');">Edit</a> ';
+			if (window.my_config.userrights==2) {
+				if (item.Type == "P1 Smart Meter") {
+					xhtm+=      
+								'<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+				}
+				else {
+					xhtm+=      
+								'<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +');">Edit</a> ';
+				}
 			}
           }
 		  else if (item.Type == "Air Quality") {
 			xhtm+='<a class="btnsmall" onclick="ShowAirQualityLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
-			xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+			if (window.my_config.userrights==2) {
+				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+			}
 		  }
 		  else if (item.Type == "Usage") {
 			xhtm+='<a class="btnsmall" onclick="ShowUsageLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
-			xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+			if (window.my_config.userrights==2) {
+				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+			}
 		  }
           else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
-							xhtm+='<a class="btnsmall" onclick="ShowCurrentLog(' + item.idx + ',\'' + item.Name + '\', ' + item.displaytype + ');">Log</a> ';
-							xhtm+=      
-										'<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+			xhtm+='<a class="btnsmall" onclick="ShowCurrentLog(' + item.idx + ',\'' + item.Name + '\', ' + item.displaytype + ');">Log</a> ';
+			if (window.my_config.userrights==2) {
+				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+			}
           }
           else if (item.Type == "Energy") {
-							xhtm+='<a class="btnsmall" onclick="ShowCounterLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">Log</a> ';
-							xhtm+=      
-										'<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+				xhtm+='<a class="btnsmall" onclick="ShowCounterLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">Log</a> ';
+				if (window.my_config.userrights==2) {
+					xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+				}
           }
           else {
-						xhtm+=
-								'<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
-		  }                
-          if (item.Notifications == "true")
-            xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#utilitycontent\', \'ShowUtilities\');">Notifications</a>';
-          else
-            xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#utilitycontent\', \'ShowUtilities\');">Notifications</a>';
-
+			if (window.my_config.userrights==2) {
+				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+			}
+		  }
+		  if (window.my_config.userrights==2) {              
+			  if (item.Notifications == "true")
+				xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#utilitycontent\', \'ShowUtilities\');">Notifications</a>';
+			  else
+				xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#utilitycontent\', \'ShowUtilities\');">Notifications</a>';
+		  }
           xhtm+=      
                 '</td>\n' +
                 '\t    </tr>\n' +

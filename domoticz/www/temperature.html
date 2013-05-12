@@ -70,6 +70,11 @@
 
 function MakeFavorite(id,isfavorite)
 {
+	if (window.my_config.userrights!=2) {
+        HideNotify();
+		ShowNotify('You do not have permission to do that!', 2500, true);
+		return;
+	}
 	clearInterval($.myglobals.refreshTimer);
   $.ajax({
      url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite,
@@ -1071,13 +1076,15 @@ function ShowTemps()
                   '<img src="images/favorite.png" title="Remove from Dashboard" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
           xhtm+=
-                '<a class="btnsmall" onclick="ShowTempLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ' +
+                '<a class="btnsmall" onclick="ShowTempLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
+		if (window.my_config.userrights==2) {
+          xhtm+=
                 '<a class="btnsmall" onclick="EditTempDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjValue + ');">Edit</a> ';
           if (item.Notifications == "true")
             xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#tempcontent\', \'ShowTemps\');">Notifications</a>';
           else
             xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#tempcontent\', \'ShowTemps\');">Notifications</a>';
-
+		}
 					xhtm+=
                 '</td>\n' +
                 '\t    </tr>\n' +

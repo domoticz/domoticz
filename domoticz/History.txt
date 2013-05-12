@@ -2,6 +2,7 @@ Version 1.0.xxx (May xxth 2013)
 - Implemented: Settings, Doorbell could be send as 'Group On' or 'On' command
 - Fixed: Power Usage Graph, Problem with other devices then P1 Smart Meter
 - Implemented: Settings, Option to specify P1 Smart Meter Type (with/without Decimals)
+- Implemented: User Editor
 
 Version 1.0.607 (May 11th 2013)
 - Changed: Rego6XX Type setting moved to the hardware settings in the same way as RFCtrx setup is done

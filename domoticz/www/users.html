@@ -1,0 +1,258 @@
+<div id="usercontent">
+</div>
+<div id="usermain" style="display:none;">
+	<table class="display" id="usertable" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<thead>
+			<tr valign="middle">
+				<th width="60" align="left">Enabled</th>
+				<th align="left">Name</th>
+				<th width="80" align="center">Rights</th>
+			</tr>
+		</thead>
+	</table>
+	<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td>
+				<a class="btnstyle3-dis" id="userupdate" >Update</a>&nbsp;&nbsp;&nbsp;
+				<a class="btnstyle3-dis" id="userdelete" >Delete</a>
+			</td>
+		</tr>
+	</table>
+	<br>
+	<table class="display" id="userparamstable" border="0" cellpadding="0" cellspacing="20">
+		<tr>
+			<td align="right" style="width:80px"><label for="enabled">Enabled:</label></td>
+			<td><input type="checkbox" id="enabled" checked></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:110px"><label for="name">Username:</label></td>
+			<td><input type="text" id="username" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:110px"><label for="name">Password:</label></td>
+			<td><input type="password" id="userpassword" name="userpassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:110px"><label for="name">Rights:</label></td>
+			<td><select id="comborights" style="width:110px" class="combobox ui-corner-all">
+					<option value="0">Viewer</option>
+					<option value="1">User</option>
+					<option value="2">Admin</option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td></td>
+			<td>
+				<a class="btnstyle3" onclick="AddUser();">Add</a>
+			</td>
+		</tr>
+	</table>
+</div>
+
+<script type="text/javascript" charset="utf-8">
+
+function DeleteUser(idx)
+{
+	var bValid = false;
+	bValid=(confirm("Are you sure you want to delete this User?")==true);
+	if (bValid == false) {
+		return;
+	}
+	$.ajax({
+		 url: "json.htm?type=command&param=deleteuser&idx=" + idx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			RefreshUserTable();
+		 },
+		 error: function(){
+				HideNotify();
+				ShowNotify('Problem deleting User!', 2500, true);
+		 }     
+	});
+}
+
+function GetUserSettings()
+{
+	var csettings = {};
+
+	csettings.bEnabled=$('#usercontent #userparamstable #enabled').is(":checked");
+	csettings.username=$("#usercontent #userparamstable #username").val();
+	if (csettings.username=="")
+	{
+		ShowNotify('Please enter a Username!', 2500, true);
+		return;
+	}
+	csettings.password=$("#usercontent #userparamstable #userpassword").val();
+	if (csettings.password=="")
+	{
+		ShowNotify('Please enter a Password!', 2500, true);
+		return;
+	}
+	csettings.rights=$("#usercontent #userparamstable #comborights").val();
+	
+	return csettings;
+}
+
+function UpdateUser(idx)
+{
+	var csettings=GetUserSettings();
+	if (typeof csettings == 'undefined') {
+		return;
+	}
+
+	$.ajax({
+		 url: "json.htm?type=command&param=updateuser&idx=" + idx + "&enabled=" + csettings.bEnabled + "&username=" + csettings.username + "&password=" + csettings.password + "&rights=" + csettings.rights,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			RefreshUserTable();
+		 },
+		 error: function(){
+			ShowNotify('Problem updating User!', 2500, true);
+		 }     
+	});
+}
+
+function AddUser()
+{
+	var csettings=GetUserSettings();
+	if (typeof csettings == 'undefined') {
+		return;
+	}
+
+	$.ajax({
+		 url: "json.htm?type=command&param=adduser&enabled=" + csettings.bEnabled +"&username=" + csettings.username + "&password=" + csettings.password + "&rights=" + csettings.rights,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			if (data.status != "OK") {
+				ShowNotify(data.message, 2500, true);
+				return;
+			}
+			RefreshUserTable();
+		 },
+		 error: function(){
+			ShowNotify('Problem adding User!', 2500, true);
+		 }     
+	});		
+}
+
+function RefreshUserTable()
+{
+	$('#modal').show();
+
+	$.devIdx=-1;
+
+	$('#updelclr #userupdate').attr("class", "btnstyle3-dis");
+	$('#updelclr #userdelete').attr("class", "btnstyle3-dis");
+
+	var oTable = $('#usertable').dataTable();
+	oTable.fnClearTable();
+	$.ajax({
+	 url: "json.htm?type=users", 
+	 async: false, 
+	 dataType: 'json',
+	 success: function(data) {
+		
+	  if (typeof data.result != 'undefined') {
+		$.each(data.result, function(i,item){
+			var enabledstr="No";
+			if (item.Enabled=="true") {
+				enabledstr="Yes";
+			}
+			var rightstr="rights";
+			if (item.Rights==0) {
+				rightstr="Viewer";
+			}
+			else if (item.Rights==1) {
+				rightstr="User";
+			}
+			else {
+				rightstr="Admin";
+			}
+			
+			var addId = oTable.fnAddData( {
+				"DT_RowId": item.idx,
+				"Enabled": item.Enabled,
+				"Username": item.Username,
+				"Password": item.Password,
+				"Rights": item.rights,
+				"0": enabledstr,
+				"1": item.Username,
+				"2": rightstr
+			} );
+		});
+		/* Add a click handler to the rows - this could be used as a callback */
+		$("#usertable tbody tr").click( function( e ) {
+			$.devIdx=-1;
+
+			if ( $(this).hasClass('row_selected') ) {
+				$(this).removeClass('row_selected');
+				$('#updelclr #userupdate').attr("class", "btnstyle3-dis");
+				$('#updelclr #userdelete').attr("class", "btnstyle3-dis");
+			}
+			else {
+				oTable.$('tr.row_selected').removeClass('row_selected');
+				$(this).addClass('row_selected');
+				$('#updelclr #userupdate').attr("class", "btnstyle3");
+				$('#updelclr #userdelete').attr("class", "btnstyle3");
+				var anSelected = fnGetSelected( oTable );
+				if ( anSelected.length !== 0 ) {
+					var data = oTable.fnGetData( anSelected[0] );
+					var idx= data["DT_RowId"];
+					$.devIdx=idx;
+					$("#updelclr #userupdate").attr("href", "javascript:UpdateUser(" + idx + ")");
+					$("#updelclr #userdelete").attr("href", "javascript:DeleteUser(" + idx + ")");
+					$('#usercontent #userparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
+					$("#usercontent #userparamstable #username").val(data["Username"]);
+					$("#usercontent #userparamstable #userpassword").val(data["Password"]);
+					$("#usercontent #userparamstable #comborights").val(data["Rights"]);
+				}
+			}
+		}); 
+	  }
+	 }
+	});
+  
+  $('#modal').hide();
+}
+
+function ShowUsers()
+{
+	var oTable;
+	
+	$('#modal').show();
+	
+	$.devIdx=-1;
+	
+	var htmlcontent = "";
+	htmlcontent+=$('#usermain').html();
+	$('#usercontent').html(htmlcontent);
+	oTable = $('#usertable').dataTable( {
+		"sDom": '<"H"lfrC>t<"F"ip>',
+		"oTableTools": {
+			"sRowSelect": "single",
+		},
+		"aoColumnDefs": [
+			{ "bSortable": false, "aTargets": [ 0 ] }
+		],
+		"aaSorting": [[ 1, "asc" ]],
+		"bSortClasses": false,
+		"bProcessing": true,
+		"bStateSave": true,
+		"bJQueryUI": true,
+		"aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+		"iDisplayLength" : 25,
+		"sPaginationType": "full_numbers"
+		} );
+
+	$('#modal').hide();
+	RefreshUserTable();
+}
+
+$(document).ready(function() {
+  ShowUsers();
+} );  
+</script>

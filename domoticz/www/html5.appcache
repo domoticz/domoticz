@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 168
+# ref 169
 
 CACHE:
 favicon.ico
@@ -130,6 +130,7 @@ images/lightbulbunknown.png
 images/lock_closed.png
 images/lock_open.png
 images/log.png
+images/logout.png
 images/motion.png
 images/motion48-off.png
 images/motion48-on.png
@@ -193,6 +194,7 @@ images/temp-gt-30.png
 images/temp48.png
 images/temperature.png
 images/unknown.png
+images/users.png
 images/utility.png
 images/uv.png
 images/uv48.png
@@ -256,6 +258,7 @@ js/themes/skies.js
 # Resources that require the user to be online.
 NETWORK:
 index.html
+cam.html
 dashboard.html
 devices.html
 hardware.html
@@ -265,6 +268,7 @@ scenes.html
 setup.html
 temperature.html
 utility.html
+users.html
 weather.html
 json.htm
 *

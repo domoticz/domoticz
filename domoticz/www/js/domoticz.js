@@ -65,6 +65,11 @@ function isiPhone(){
 
 function SwitchLight(idx,switchcmd, refreshfunction)
 {
+	if (window.my_config.userrights==0) {
+        HideNotify();
+		ShowNotify('You do not have permission to do that!', 2500, true);
+		return;
+	}
   clearInterval($.myglobals.refreshTimer);
   ShowNotify('Switching ' + switchcmd);
  
@@ -88,6 +93,12 @@ function SwitchLight(idx,switchcmd, refreshfunction)
 
 function SwitchScene(idx,switchcmd, refreshfunction)
 {
+	if (window.my_config.userrights==0) {
+        HideNotify();
+		ShowNotify('You do not have permission to do that!', 2500, true);
+		return;
+	}
+
   clearInterval($.myglobals.refreshTimer);
   ShowNotify('Switching ' + switchcmd);
  
@@ -111,6 +122,12 @@ function SwitchScene(idx,switchcmd, refreshfunction)
 
 function ResetSecurityStatus(idx,switchcmd, refreshfunction)
 {
+	if (window.my_config.userrights==0) {
+        HideNotify();
+		ShowNotify('You do not have permission to do that!', 2500, true);
+		return;
+	}
+
   clearInterval($.myglobals.refreshTimer);
   ShowNotify('Switching ' + switchcmd);
  
@@ -811,6 +828,11 @@ function SwitchLayout(layout)
 	if (layout == "LightSwitches") {
 		durl='lights.html';
 	}
+	if (window.my_config.userrights!=2) {
+		if ((durl=='setup.html')||(durl=='users.html')||(durl=='cam.html')||(durl=='events.html')||(durl=='hardware.html')||(durl=='devices.html')) {
+			durl='dashboard.html';
+		}
+	}
 
 	$.ajax({
 	 url: "json.htm?type=command&param=getversion",
@@ -877,6 +899,12 @@ function checkLength( o, min, max )
 
 function SetDimValue(idx, value)
 {
+	if (window.my_config.userrights==0) {
+        HideNotify();
+		ShowNotify('You do not have permission to do that!', 2500, true);
+		return;
+	}
+
 	clearInterval($.setDimValue);
 	$.ajax({
 		 url: "json.htm?type=command&param=switchlight&idx=" + idx + "&switchcmd=Set%20Level&level=" + value,
