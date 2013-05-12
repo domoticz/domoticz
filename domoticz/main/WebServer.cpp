@@ -173,6 +173,10 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
 		boost::bind( 
 		&CWebServer::GetCameraSnapshot,
 		this ) );
+	m_pWebEm->RegisterPageCode( "/backupdatabase.php", 
+		boost::bind( 
+		&CWebServer::GetDatabaseBackup,
+		this ) );
 
 	m_pWebEm->RegisterActionCode( "storesettings",boost::bind(&CWebServer::PostSettings,this));
 	m_pWebEm->RegisterActionCode( "setrfxcommode",boost::bind(&CWebServer::SetRFXCOMMode,this));
@@ -1850,6 +1854,24 @@ std::string CWebServer::GetCameraSnapshot()
 	m_retstr.insert( m_retstr.begin(), camimage.begin(), camimage.end() );
 	m_pWebEm->m_outputfilename="snapshot.jpg";
 exitproc:
+	return m_retstr;
+}
+
+std::string CWebServer::GetDatabaseBackup()
+{
+	m_retstr="";
+	std::string OutputFileName=szStartupFolder + "backup.db";
+	if (m_pMain->m_sql.BackupDatabase(OutputFileName))
+	{
+		std::ifstream testFile(OutputFileName.c_str(), std::ios::binary);
+		std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
+			std::istreambuf_iterator<char>());
+		if (fileContents.size()>0)
+		{
+			m_retstr.insert( m_retstr.begin(), fileContents.begin(), fileContents.end() );
+			m_pWebEm->m_outputfilename="domoticz.db";
+		}
+	}
 	return m_retstr;
 }
 

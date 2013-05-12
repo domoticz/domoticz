@@ -4004,3 +4004,44 @@ void CSQLHelper::AddTaskItem(const _tTaskItem tItem)
 	boost::lock_guard<boost::mutex> l(m_background_task_mutex);
 	m_background_task_queue.push_back(tItem);
 }
+
+bool CSQLHelper::BackupDatabase(const std::string OutputFile)
+{
+	if (!m_dbase)
+		return false; //database not open!
+
+	boost::lock_guard<boost::mutex> l(m_sqlQueryMutex);
+
+	int rc;                     // Function return code
+	sqlite3 *pFile;             // Database connection opened on zFilename
+	sqlite3_backup *pBackup;    // Backup handle used to copy data
+
+	// Open the database file identified by zFilename.
+	rc = sqlite3_open(OutputFile.c_str(), &pFile);
+	if( rc!=SQLITE_OK )
+		return false;
+
+	// Open the sqlite3_backup object used to accomplish the transfer
+    pBackup = sqlite3_backup_init(pFile, "main", m_dbase, "main");
+    if( pBackup )
+	{
+      // Each iteration of this loop copies 5 database pages from database
+      // pDb to the backup database.
+      do {
+        rc = sqlite3_backup_step(pBackup, 5);
+        //xProgress(  sqlite3_backup_remaining(pBackup), sqlite3_backup_pagecount(pBackup) );
+        //if( rc==SQLITE_OK || rc==SQLITE_BUSY || rc==SQLITE_LOCKED ){
+          //sqlite3_sleep(250);
+        //}
+      } while( rc==SQLITE_OK || rc==SQLITE_BUSY || rc==SQLITE_LOCKED );
+
+      /* Release resources allocated by backup_init(). */
+      sqlite3_backup_finish(pBackup);
+    }
+    rc = sqlite3_errcode(pFile);
+	// Close the database connection opened on database file zFilename
+	// and return the result of this function.
+	sqlite3_close(pFile);
+	return ( rc==SQLITE_OK );
+}
+

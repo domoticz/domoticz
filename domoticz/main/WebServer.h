@@ -28,6 +28,7 @@ public:
 	char * DisplaySerialDevicesCombo();
 	std::string GetJSonPage();
 	std::string GetCameraSnapshot();
+	std::string GetDatabaseBackup();
 	char * PostSettings();
 	char * SetRFXCOMMode();
 	char * SetRego6XXType();

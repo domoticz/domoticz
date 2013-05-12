@@ -383,6 +383,12 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 		int extraheaders=0;
 		if (m_outputfilename!="")
 		{
+			std::size_t last_dot_pos = m_outputfilename.find_last_of(".");
+			if (last_dot_pos != std::string::npos)
+			{
+				extension = m_outputfilename.substr(last_dot_pos + 1);
+				strMimeType=mime_types::extension_to_type(extension);
+			}
 			extraheaders=1;
 		}
 

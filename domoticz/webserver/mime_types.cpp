@@ -34,6 +34,7 @@ struct mapping
   { "xls", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
   { "m3u", "audio/mpegurl" },
   { "wav", "audio/x-wav" },
+  { "db", "application/octet-stream" },
   { 0, 0 } // Marks end of list.
 };
 
