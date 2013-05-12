@@ -1219,14 +1219,16 @@ function ShowLights()
 	var suntext='<div id="timesun" />\n';
 
   var tophtm=
-				'\t<center>' + suntext + '</center>\n' +
-        '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
-        '\t<tr>\n' +
-        '\t  <td align="left"><a class="btnstylerev" onclick="AddManualLightDevice();">Manual Light/Switch</a></td>\n' +
-        '\t  <td align="right"><a class="btnstyle" onclick="AddLightDevice();">Learn Light/Switch</a></td>\n' +
-        '\t</tr>\n' +
-        '\t</table>\n';
-  
+				'\t<center>' + suntext + '</center>\n';
+	if (window.my_config.userrights==2) {
+		tophtm+=
+			'\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+			'\t<tr>\n' +
+			'\t  <td align="left"><a class="btnstylerev" onclick="AddManualLightDevice();">Manual Light/Switch</a></td>\n' +
+			'\t  <td align="right"><a class="btnstyle" onclick="AddLightDevice();">Learn Light/Switch</a></td>\n' +
+			'\t</tr>\n' +
+			'\t</table>\n';
+	}
 
   var i=0;
 	var j=0;
