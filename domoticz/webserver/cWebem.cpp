@@ -408,7 +408,6 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 			rep.headers[4].name = "Content-Disposition";
 			rep.headers[4].value = "attachment; filename=" + m_outputfilename;
 		}
-
 		return true;
 	}
 	//check wchar_t

@@ -1025,6 +1025,11 @@ function chartPointClick(event, retChart) {
 	if (event.shiftKey!=true) {
 		return;
 	}
+	if (window.my_config.userrights!=2) {
+        HideNotify();
+		ShowNotify('You do not have permission to do that!', 2500, true);
+		return;
+	}
 	var dateString=Highcharts.dateFormat('%Y-%m-%d', event.point.x);
 	var bValid = false;
 	bValid=(confirm("Are you sure to remove this value at ?:\n\nDate: " + dateString + " \nValue: " + event.point.y)==true);
@@ -1051,6 +1056,11 @@ function chartPointClick(event, retChart) {
 
 function chartPointClickEx(event, retChart) {
 	if (event.shiftKey!=true) {
+		return;
+	}
+	if (window.my_config.userrights!=2) {
+        HideNotify();
+		ShowNotify('You do not have permission to do that!', 2500, true);
 		return;
 	}
 	var dateString=Highcharts.dateFormat('%Y-%m-%d', event.point.x);
@@ -1123,4 +1133,19 @@ function RefreshTimeAndSun()
 		 }
 		});
 	}
+}
+
+function Logout()
+{
+  $.ajax({
+     url: "json.htm?type=command&param=logout",
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+		SwitchLayout('Dashboard');
+     },
+     error: function(){
+		SwitchLayout('Dashboard');
+     }     
+  });
 }

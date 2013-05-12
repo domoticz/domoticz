@@ -7037,6 +7037,14 @@ std::string CWebServer::GetJSonPage()
 				goto exitjson;
             }
         }
+		else if (cparam=="logout")
+		{
+			root["status"]="OK";
+			root["title"]="Logout";
+			m_retstr="authorize";
+			return m_retstr;
+			
+		}
         else if (cparam=="switchlight")
 		{
 			int urights=3;
