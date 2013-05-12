@@ -214,6 +214,11 @@ function RefreshLightLogTable(idx)
 
 function ClearLightLog()
 {
+	if (window.my_config.userrights!=2) {
+        HideNotify();
+		ShowNotify('You do not have permission to do that!', 2500, true);
+		return;
+	}
 	var bValid = false;
 	bValid=(confirm("Are you sure to delete the Log?\n\nThis action can not be undone!!")==true);
 	if (bValid == false)
