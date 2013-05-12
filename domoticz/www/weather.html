@@ -1894,30 +1894,32 @@ function ShowWeathers()
   $('#weathercontent').html(tophtm+htmlcontent);
   
   RefreshTimeAndSun();
-  
-	if ($.myglobals.ismobile==false) {
-		$("#weathercontent .span4").draggable({
-				drag: function() {
-					clearInterval($.myglobals.refreshTimer);
-					$.devIdx=$(this).attr("id");
-					$(this).css("z-index", 2);
-				},
-				revert: true
-		});
-		$("#weathercontent .span4").droppable({
-				drop: function() {
-					var myid=$(this).attr("id");
-					$.devIdx.split(' ');
-					$.ajax({
-						 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
-						 async: false, 
-						 dataType: 'json',
-						 success: function(data) {
-								ShowWeathers();
-						 }
-					});
-				}
-		});
+
+	if (window.my_config.userrights==2) {
+		if ($.myglobals.ismobile==false) {
+			$("#weathercontent .span4").draggable({
+					drag: function() {
+						clearInterval($.myglobals.refreshTimer);
+						$.devIdx=$(this).attr("id");
+						$(this).css("z-index", 2);
+					},
+					revert: true
+			});
+			$("#weathercontent .span4").droppable({
+					drop: function() {
+						var myid=$(this).attr("id");
+						$.devIdx.split(' ');
+						$.ajax({
+							 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
+							 async: false, 
+							 dataType: 'json',
+							 success: function(data) {
+									ShowWeathers();
+							 }
+						});
+					}
+			});
+		}
 	}
   $.myglobals.refreshTimer = setInterval(RefreshWeathers, 10000);
   return false;
