@@ -238,8 +238,7 @@ const std::string SMTPClient::MakeMessage()
 	time_t t;
 	time(&t);
 	char timestring[128] = "";
-	char * timeformat = "Date: %d %b %y %H:%M:%S %Z";
-	if(strftime(timestring, 127, timeformat, localtime(&t))) { // got the date
+	if(strftime(timestring, 127, "Date: %d %b %y %H:%M:%S %Z", localtime(&t))) { // got the date
 		ret += timestring;
 		ret += "\n";
 	}
