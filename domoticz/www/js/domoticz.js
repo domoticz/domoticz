@@ -904,13 +904,14 @@ function checkLength( o, min, max )
 
 function SetDimValue(idx, value)
 {
+	clearInterval($.setDimValue);
+
 	if (window.my_config.userrights==0) {
         HideNotify();
 		ShowNotify('You do not have permission to do that!', 2500, true);
 		return;
 	}
 
-	clearInterval($.setDimValue);
 	$.ajax({
 		 url: "json.htm?type=command&param=switchlight&idx=" + idx + "&switchcmd=Set%20Level&level=" + value,
 		 async: false, 
