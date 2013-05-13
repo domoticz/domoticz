@@ -72,6 +72,9 @@
     <Filter Include="Devices\VolcraftCO20">
       <UniqueIdentifier>{1c7cd6cd-b14b-413a-bc63-1f9c4bd2a8b7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\1-Wire">
+      <UniqueIdentifier>{013ea4c4-bb81-4718-bf23-82eb9bdee56e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -253,6 +256,9 @@
     <ClInclude Include="hardware\hidapi.h">
       <Filter>Devices\TE923</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\1Wire.h">
+      <Filter>Devices\1-Wire</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -401,6 +407,9 @@
     </ClCompile>
     <ClCompile Include="hardware\libusbwinusbbridge.cpp">
       <Filter>Devices\TE923</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\1Wire.cpp">
+      <Filter>Devices\1-Wire</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

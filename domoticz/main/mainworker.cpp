@@ -20,6 +20,7 @@
 #include "../hardware/Razberry.h"
 #include "../hardware/DavisLoggerSerial.h"
 #include "../hardware/VolcraftCO20.h"
+#include "../hardware/1Wire.h"
 
 #ifdef _DEBUG
 	//#define DEBUG_RECEIVE
@@ -36,6 +37,7 @@
 
 extern std::string szStartupFolder;
 extern bool bIsRaspberryPi;
+extern bool bHave1Wire;
 
 MainWorker::MainWorker()
 {
@@ -410,6 +412,19 @@ bool MainWorker::Start()
 			unsigned char mode4=(unsigned char)atoi(sd[11].c_str());
 			unsigned char mode5=(unsigned char)atoi(sd[12].c_str());
 			AddHardwareFromParams(ID,Name,Enabled,Type,Address,Port,Username,Password,mode1,mode2,mode3,mode4,mode5);
+		}
+	}
+	if (bHave1Wire)
+	{
+		//Add 1-wire device
+		CDomoticzHardwareBase *pHardware=new C1Wire(1001);
+		if (pHardware)
+		{
+			pHardware->HwdType=(_eHardwareTypes)1001;
+			pHardware->Name="1-Wire";
+			AddDomoticzHardware(pHardware);
+			m_hardwareStartCounter=0;
+			m_bStartHardware=true;
 		}
 	}
 	if (!StartThread())

@@ -835,6 +835,10 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 			{
 				root["result"][ii]["HardwareName"]="System";
 			}
+			else if (hardwareID==1001)
+			{
+				root["result"][ii]["HardwareName"]="1-Wire";
+			}
 			else
 			{
 				if (_hardwareNames.find(hardwareID)==_hardwareNames.end())

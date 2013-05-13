@@ -139,6 +139,7 @@ httpclient/UrlEncode.cpp
 httpclient/HTTPClient.cpp
 smtpclient/SMTPClient.cpp
 hardware/DomoticzHardware.cpp
+hardware/1Wire.cpp
 hardware/ASyncSerial.cpp
 hardware/RFXComSerial.cpp
 hardware/RFXComTCP.cpp

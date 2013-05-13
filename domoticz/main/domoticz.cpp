@@ -40,6 +40,7 @@ const char *szHelp=
 
 std::string szStartupFolder;
 bool bIsRaspberryPi=false;
+bool bHave1Wire=false;
 
 MainWorker _mainworker;
 CLogger _log;
@@ -117,7 +118,6 @@ int main(int argc, char**argv)
 	_log.Log(LOG_NORM,"Domoticz V%s%d (c)2012-2013 GizMoCuz",VERSION_STRING,SVNVERSION);
 
 	szStartupFolder="";
-
 #if !defined WIN32
 	//Check if we are running on a RaspberryPi
 	std::string sLine = "";
@@ -138,7 +138,18 @@ int main(int argc, char**argv)
 		}
 		infile.close();
 	}
-
+	if (bIsRaspberryPi)
+	{
+		std::ifstream infile1wire;
+		std::string wire1catfile="/sys/bus/w1/devices";
+		wire1catfile+="/w1_bus_master1/w1_master_slaves";
+		infile1wire.open(wire1catfile.c_str());
+		if (infile1wire.is_open())
+		{
+			bHave1Wire=true;
+			infile1wire.close();
+		}
+	}
 	char szStartupPath[255];
 	getExecutablePathName((char*)&szStartupPath,255);
 	szStartupFolder=szStartupPath;
