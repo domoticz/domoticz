@@ -137,6 +137,60 @@ Blockly.Language.logic_set = {
   }
 };
 
+Blockly.Language.logic_timeofday = {
+  // Comparison operator.
+  init: function() {
+    this.setColour(120);
+    this.setOutput(true, Boolean);
+    this.appendDummyInput()
+	    .appendTitle("Time ")
+        .appendTitle(new Blockly.FieldDropdown(this.OPERATORS), 'OP')
+        .appendTitle(" ")
+        .appendTitle(new Blockly.FieldTextInput('00:00'), 'Time');
+    this.setInputsInline(true);
+  }
+}; 
+ 
+ Blockly.Language.logic_timeofday.OPERATORS =
+    [['=', 'EQ'],
+     ['\u2260', 'NEQ'],
+     ['<', 'LT'],
+     ['\u2264', 'LTE'],
+     ['>', 'GT'],
+     ['\u2265', 'GTE']];
+
+
+Blockly.Language.logic_weekday = {
+  // Variable getter.
+  init: function() {
+    this.setColour(120);
+    this.setOutput(true, null);
+    this.appendDummyInput()
+	    .appendTitle("Day ")
+	    .appendTitle(new Blockly.FieldDropdown(this.OPERATORS), 'OP')
+	    .appendTitle(" ")
+    	.appendTitle(new Blockly.FieldDropdown(this.DAYS), 'Weekday');
+    }
+ };   
+ 
+  Blockly.Language.logic_weekday.OPERATORS =
+    [['=', 'EQ'],
+     ['\u2260', 'NEQ'],
+     ['<', 'LT'],
+     ['\u2264', 'LTE'],
+     ['>', 'GT'],
+     ['\u2265', 'GTE']];  
+
+Blockly.Language.logic_weekday.DAYS =
+    [["Monday", '1'],
+    ["Tuesday",'2'],
+    ["Wednesday",'3'],
+    ["Thursday",'4'],
+    ["Friday",'5'],
+    ["Saturday",'6'],
+     ["Sunday", '0']];
+
+
 Blockly.Language.send_notification = {
   // Comparison operator.
   init: function() {

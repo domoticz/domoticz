@@ -6,7 +6,6 @@
     <script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
     <scrip  type="text/javascript" src="js/jquery-ui-1.10.1.custom.min.js"></script>
     <script type="text/javascript" src="/js/domoticzblocks.js"></script>
-    <script type="text/javascript" src="blockly/javascript_compressed.js"></script>
     <link rel="stylesheet" href="css/bootstrap.css">
     <link href="css/bootstrap-responsive.css" rel="stylesheet" media="screen">
     <link type="text/css" rel="stylesheet" href="css/ui-darkness/jquery-ui-1.10.1.custom.min.css" />
@@ -87,11 +86,11 @@
       	var xml = Blockly.Xml.workspaceToDom( Blockly.mainWorkspace );
       	//alert(Blockly.Xml.domToText( xml ));
       	var blockName = $("#blockName").val();
-      	if (blockName != undefined&&blockName!=""&&blockName!=null) {
-      		localStorage.setItem(blockName, Blockly.Xml.domToText( xml ));
+      	if (blockName) {
+      	    var blockXml  = Blockly.Xml.domToText( xml );
+      		localStorage.setItem(blockName,blockXml );
       		load_blocks();
-      		var code = Blockly.Generator.workspaceToCode('JavaScript');
-      		document.getElementById('textarea').value = code;
+      		document.getElementById('textarea').value = blockXml;
       	}
       	else {alert('no event name entered!');}
       }
@@ -116,7 +115,9 @@
 	   		<block type="logic_boolean"></block>
 	   		<block type="logic_states"></block>
 	   		<block type="logic_set"></block>
-	   		<block type="math_number">
+	   		<block type="logic_timeofday"></block>
+	   		<block type="logic_weekday"></block>
+	   		<block type="math_number"></block>
    		</category>
    		<category name="Messages">
    			<block type="send_notification"></block>
