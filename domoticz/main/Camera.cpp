@@ -187,37 +187,41 @@ bool CCamScheduler::EmailCameraSnapshot(const std::string CamIdx, const std::str
 	int EmailPort=25;
 	std::string EmailUsername;
 	std::string EmailPassword;
+	int EmailAsAttachment=0;
 	m_pMain->m_sql.GetPreferencesVar("EmailFrom",nValue,EmailFrom);
 	m_pMain->m_sql.GetPreferencesVar("EmailTo",nValue,EmailTo);
 	m_pMain->m_sql.GetPreferencesVar("EmailUsername",nValue,EmailUsername);
 	m_pMain->m_sql.GetPreferencesVar("EmailPassword",nValue,EmailPassword);
 	m_pMain->m_sql.GetPreferencesVar("EmailPort", EmailPort);
+	m_pMain->m_sql.GetPreferencesVar("EmailAsAttachment", EmailAsAttachment);
 
-	std::string htmlMsg=
-		"<html>\r\n"
-		"<body>\r\n"
-		"<img src=\"data:image/jpeg;base64,";
 	std::vector<char> filedata;
 	filedata.insert(filedata.begin(),camimage.begin(),camimage.end());
 	std::string imgstring;
 	imgstring.insert(imgstring.end(),filedata.begin(),filedata.end());
 	imgstring=base64_encode((const unsigned char*)imgstring.c_str(),filedata.size());
+
+	std::string htmlMsg=
+		"<html>\r\n"
+		"<body>\r\n"
+		"<img src=\"data:image/jpeg;base64,";
 	htmlMsg+=
 		imgstring +
 		"\">\r\n"
 		"</body>\r\n"
 		"</html>\r\n";
 
-	bool bRet=SMTPClient::SendEmail(
-		CURLEncode::URLDecode(EmailFrom.c_str()),
-		CURLEncode::URLDecode(EmailTo.c_str()),
-		CURLEncode::URLDecode(EmailServer.c_str()),
-		EmailPort,
-		base64_decode(EmailUsername),
-		base64_decode(EmailPassword),
-		CURLEncode::URLDecode(subject),
-		htmlMsg,
-		true
-		);
+	SMTPClient sclient;
+	sclient.SetFrom(CURLEncode::URLDecode(EmailFrom.c_str()));
+	sclient.SetTo(CURLEncode::URLDecode(EmailTo.c_str()));
+	sclient.SetCredentials(base64_decode(EmailUsername),base64_decode(EmailPassword));
+	sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()),EmailPort);
+	sclient.SetSubject(CURLEncode::URLDecode(subject));
+
+	if (EmailAsAttachment==0)
+		sclient.SetHTMLBody(htmlMsg);
+	else
+		sclient.AddAttachment(imgstring,"snapshot.jpg");
+	bool bRet=sclient.SendEmail();
 	return bRet;
 }

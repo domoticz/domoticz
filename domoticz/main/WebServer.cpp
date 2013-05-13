@@ -488,12 +488,13 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("EmailTo",CURLEncode::URLDecode(m_pWebEm->FindValue("EmailTo")).c_str());
 	m_pMain->m_sql.UpdatePreferencesVar("EmailServer",m_pWebEm->FindValue("EmailServer").c_str());
 	m_pMain->m_sql.UpdatePreferencesVar("EmailPort",atoi(m_pWebEm->FindValue("EmailPort").c_str()));
-	m_pMain->m_sql.UpdatePreferencesVar("DoorbellCommand",atoi(m_pWebEm->FindValue("DoorbellCommand").c_str()));
-
-	m_pMain->m_sql.UpdatePreferencesVar("SmartMeterType",atoi(m_pWebEm->FindValue("SmartMeterType").c_str()));
-
 	std::string suseemailinnotificationsalerts=m_pWebEm->FindValue("useemailinnotificationsalerts");
 	m_pMain->m_sql.UpdatePreferencesVar("UseEmailInNotifications",(suseemailinnotificationsalerts=="on"?1:0));
+	std::string sEmailAsAttachment=m_pWebEm->FindValue("EmailAsAttachment");
+	m_pMain->m_sql.UpdatePreferencesVar("EmailAsAttachment",(sEmailAsAttachment=="on"?1:0));
+
+	m_pMain->m_sql.UpdatePreferencesVar("DoorbellCommand",atoi(m_pWebEm->FindValue("DoorbellCommand").c_str()));
+	m_pMain->m_sql.UpdatePreferencesVar("SmartMeterType",atoi(m_pWebEm->FindValue("SmartMeterType").c_str()));
 
 	std::string EmailUsername=CURLEncode::URLDecode(m_pWebEm->FindValue("EmailUsername"));
 	std::string EmailPassword=CURLEncode::URLDecode(m_pWebEm->FindValue("EmailPassword"));
@@ -5545,17 +5546,14 @@ std::string CWebServer::GetJSonPage()
 				"</body>\n"
 				"</html>\n";
 
-			bool bRet=SMTPClient::SendEmail(
-				CURLEncode::URLDecode(EmailFrom.c_str()),
-				CURLEncode::URLDecode(EmailTo.c_str()),
-				CURLEncode::URLDecode(EmailServer.c_str()),
-				EmailPort,
-				CURLEncode::URLDecode(EmailUsername),
-				CURLEncode::URLDecode(EmailPassword),
-				CURLEncode::URLDecode("Test email message from Domoticz!"),
-				szBody,
-				true
-				);
+			SMTPClient sclient;
+			sclient.SetFrom(CURLEncode::URLDecode(EmailFrom.c_str()));
+			sclient.SetTo(CURLEncode::URLDecode(EmailTo.c_str()));
+			sclient.SetCredentials(CURLEncode::URLDecode(EmailUsername),CURLEncode::URLDecode(EmailPassword));
+			sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()),EmailPort);
+			sclient.SetSubject(CURLEncode::URLDecode("Test email message from Domoticz!"));
+			sclient.SetHTMLBody(szBody);
+			bool bRet=sclient.SendEmail();
 			if (bRet==true) {
 				root["status"]="OK";
 				root["title"]="TestEmail";
@@ -7485,6 +7483,10 @@ std::string CWebServer::GetJSonPage()
 				else if (Key=="UseEmailInNotifications")
 				{
 					root["UseEmailInNotifications"]=nValue;
+				}
+				else if (Key=="EmailAsAttachment")
+				{
+					root["EmailAsAttachment"]=nValue;
 				}
 				else if (Key=="DoorbellCommand")
 				{

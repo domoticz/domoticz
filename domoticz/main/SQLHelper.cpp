@@ -617,6 +617,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("EmailPort", 25);
 	}
+	if (!GetPreferencesVar("EmailAsAttachment", nValue))
+	{
+		UpdatePreferencesVar("EmailAsAttachment", 0);
+	}
 	if (!GetPreferencesVar("DoorbellCommand", nValue))
 	{
 		UpdatePreferencesVar("DoorbellCommand", 0);
@@ -729,17 +733,16 @@ void CSQLHelper::Do_Work()
 						GetPreferencesVar("EmailUsername",nValue,EmailUsername);
 						GetPreferencesVar("EmailPassword",nValue,EmailPassword);
 						GetPreferencesVar("EmailPort", EmailPort);
-						bool bRet=SMTPClient::SendEmail(
-							CURLEncode::URLDecode(EmailFrom.c_str()),
-							CURLEncode::URLDecode(EmailTo.c_str()),
-							CURLEncode::URLDecode(EmailServer.c_str()),
-							EmailPort,
-							base64_decode(EmailUsername),
-							base64_decode(EmailPassword),
-							itt->_ID,
-							itt->_sValue,
-							true
-							);
+
+						SMTPClient sclient;
+						sclient.SetFrom(CURLEncode::URLDecode(EmailFrom.c_str()));
+						sclient.SetTo(CURLEncode::URLDecode(EmailTo.c_str()));
+						sclient.SetCredentials(base64_decode(EmailUsername),base64_decode(EmailPassword));
+						sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()),EmailPort);
+						sclient.SetSubject(CURLEncode::URLDecode(itt->_ID));
+						sclient.SetHTMLBody(itt->_sValue);
+						bool bRet=sclient.SendEmail();
+
 						if (bRet)
 							_log.Log(LOG_NORM,"Notification send (Email)");
 						else

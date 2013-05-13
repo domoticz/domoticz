@@ -200,6 +200,10 @@
 				<td></td>
 				<td><input type="checkbox" id="useemailinnotificationsalerts" name="useemailinnotificationsalerts"/> Send Email Notification Alerts</td>
 			</tr>
+			<tr>
+				<td></td>
+				<td><input type="checkbox" id="checkEmailAsAttachment" name="EmailAsAttachment"/> Send Camera snapshots as Attachment</td>
+			</tr>
 			</table>
 		</section>
 
@@ -492,6 +496,10 @@ function ShowSettings()
       if (typeof data.UseEmailInNotifications != 'undefined') {
         $("#emailtable #useemailinnotificationsalerts").prop('checked',data.UseEmailInNotifications==1);
       }
+      if (typeof data.EmailAsAttachment != 'undefined') {
+        $("#emailtable #checkEmailAsAttachment").prop('checked',data.EmailAsAttachment==1);
+      }
+      
       if (typeof data.DoorbellCommand != 'undefined') {
         $("#doorbelltable #comboDoorbellCommand").val(data.DoorbellCommand);
       }
