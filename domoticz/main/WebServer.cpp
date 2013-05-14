@@ -4364,7 +4364,8 @@ std::string CWebServer::GetJSonPage()
 				szQuery.str("");
                 if(sgraphtype=="1")
                 {
-				    szQuery << "SELECT Temperature, Chill, Humidity, Barometer, Date FROM Temperature WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+                    // Need to get all values of the end date so 23:59:59 is appended to the date string
+				    szQuery << "SELECT Temperature, Chill, Humidity, Barometer, Date FROM Temperature WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << " 23:59:59') ORDER BY Date ASC";
 				    result=m_pMain->m_sql.query(szQuery.str());
 				    int ii=0;
 				    if (result.size()>0)
