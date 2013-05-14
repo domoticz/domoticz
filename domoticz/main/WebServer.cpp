@@ -19,6 +19,8 @@
 #include "appversion.h"
 
 extern std::string szStartupFolder;
+extern bool bIsRaspberryPi;
+extern bool bHave1Wire;
 
 namespace http {
 	namespace server {
@@ -245,8 +247,24 @@ char * CWebServer::DisplayHardwareTypesCombo()
 	char szTmp[200];
 	for (int ii=0; ii<HTYPE_END; ii++)
 	{
-		sprintf(szTmp,"<option value=\"%d\">%s</option>\n",ii,Hardware_Type_Desc(ii));
-		m_retstr+=szTmp;
+		bool bDoAdd=true;
+#ifdef WIN32
+		if (
+			(ii == HTYPE_VOLCRAFTCO20)||
+			(ii == HTYPE_TE923)
+			)
+			bDoAdd=false;
+#endif
+		if ((ii == HTYPE_RazberryZWave)&&(!bIsRaspberryPi))
+			bDoAdd=false;
+		if ((ii == HTYPE_1WIRE)&&(!bHave1Wire))
+			bDoAdd=false;
+
+		if (bDoAdd)
+		{
+			sprintf(szTmp,"<option value=\"%d\">%s</option>\n",ii,Hardware_Type_Desc(ii));
+			m_retstr+=szTmp;
+		}
 	}
 	return (char*)m_retstr.c_str();
 }
@@ -834,10 +852,6 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 			if (hardwareID==1000)
 			{
 				root["result"][ii]["HardwareName"]="System";
-			}
-			else if (hardwareID==1001)
-			{
-				root["result"][ii]["HardwareName"]="1-Wire";
 			}
 			else
 			{
@@ -6232,6 +6246,9 @@ std::string CWebServer::GetJSonPage()
 			else if (htype == HTYPE_VOLCRAFTCO20) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_1WIRE) {
+				//all fine here!
+			}
 			else
 				goto exitjson;
 
@@ -6324,10 +6341,13 @@ std::string CWebServer::GetJSonPage()
 					goto exitjson;
 			}
 			else if (htype == HTYPE_TE923) {
-				//All find here
+				//All fine here
 			}
 			else if (htype == HTYPE_VOLCRAFTCO20) {
-				//All find here
+				//All fine here
+			}
+			else if (htype == HTYPE_1WIRE) {
+				//All fine here
 			}
 			else
 				goto exitjson;

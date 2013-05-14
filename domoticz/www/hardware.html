@@ -268,7 +268,7 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 	var bEnabled=$('#hardwarecontent #hardwareparamstable #enabled').is(":checked");
 	
 	var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
-	if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0))
+	if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("1-Wire") >= 0))
 	{
 		$.ajax({
 			 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -419,7 +419,7 @@ function AddHardware()
 	var bEnabled=$('#hardwarecontent #hardwareparamstable #enabled').is(":checked");
 	
 	var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
-	if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0))
+	if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("1-Wire") >= 0))
 	{
 		$.ajax({
 			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=1&name=" + name + "&enabled=" + bEnabled + shareparm,
@@ -522,10 +522,10 @@ function AddHardware()
 function EditRFXCOMMode(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 {
 	cursordefault();
-  var htmlcontent = '';
-  htmlcontent='<p><center><h2>Device: ' + name + '</h2></center></p>\n';
-  htmlcontent+=$('#hardwaremode').html();
-  $('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
+	var htmlcontent = '';
+	htmlcontent='<p><center><h2>Device: ' + name + '</h2></center></p>\n';
+	htmlcontent+=$('#hardwaremode').html();
+	$('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
 
 	$('#hardwarecontent #submitbutton').click(function (e) {
 		e.preventDefault();
@@ -533,31 +533,31 @@ function EditRFXCOMMode(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 	});
 
 
-  $('#hardwarecontent #idx').val(idx);
-  $('#hardwarecontent #undecon').prop('checked',((Mode3 & 0x80)!=0));
-  $('#hardwarecontent #X10').prop('checked',((Mode5 & 0x01)!=0));
-  $('#hardwarecontent #ARC').prop('checked',((Mode5 & 0x02)!=0));
-  $('#hardwarecontent #AC').prop('checked',((Mode5 & 0x04)!=0));
-  $('#hardwarecontent #HomeEasyEU').prop('checked',((Mode5 & 0x08)!=0));
-  $('#hardwarecontent #Meiantech').prop('checked',((Mode5 & 0x10)!=0));
-  $('#hardwarecontent #OregonScientific').prop('checked',((Mode5 & 0x20)!=0));
-  $('#hardwarecontent #ATIremote').prop('checked',((Mode5 & 0x40)!=0));
-  $('#hardwarecontent #Visonic').prop('checked',((Mode5 & 0x80)!=0));
-  $('#hardwarecontent #Mertik').prop('checked',((Mode4 & 0x01)!=0));
-  $('#hardwarecontent #ADLightwaveRF').prop('checked',((Mode4 & 0x02)!=0));
-  $('#hardwarecontent #HidekiUPM').prop('checked',((Mode4 & 0x04)!=0));
-  $('#hardwarecontent #LaCrosse').prop('checked',((Mode4 & 0x08)!=0));
-  $('#hardwarecontent #FS20').prop('checked',((Mode4 & 0x10)!=0));
-  $('#hardwarecontent #ProGuard').prop('checked',((Mode4 & 0x20)!=0));
-  $('#hardwarecontent #BlindT0').prop('checked',((Mode4 & 0x40)!=0));
+	$('#hardwarecontent #idx').val(idx);
+	$('#hardwarecontent #undecon').prop('checked',((Mode3 & 0x80)!=0));
+	$('#hardwarecontent #X10').prop('checked',((Mode5 & 0x01)!=0));
+	$('#hardwarecontent #ARC').prop('checked',((Mode5 & 0x02)!=0));
+	$('#hardwarecontent #AC').prop('checked',((Mode5 & 0x04)!=0));
+	$('#hardwarecontent #HomeEasyEU').prop('checked',((Mode5 & 0x08)!=0));
+	$('#hardwarecontent #Meiantech').prop('checked',((Mode5 & 0x10)!=0));
+	$('#hardwarecontent #OregonScientific').prop('checked',((Mode5 & 0x20)!=0));
+	$('#hardwarecontent #ATIremote').prop('checked',((Mode5 & 0x40)!=0));
+	$('#hardwarecontent #Visonic').prop('checked',((Mode5 & 0x80)!=0));
+	$('#hardwarecontent #Mertik').prop('checked',((Mode4 & 0x01)!=0));
+	$('#hardwarecontent #ADLightwaveRF').prop('checked',((Mode4 & 0x02)!=0));
+	$('#hardwarecontent #HidekiUPM').prop('checked',((Mode4 & 0x04)!=0));
+	$('#hardwarecontent #LaCrosse').prop('checked',((Mode4 & 0x08)!=0));
+	$('#hardwarecontent #FS20').prop('checked',((Mode4 & 0x10)!=0));
+	$('#hardwarecontent #ProGuard').prop('checked',((Mode4 & 0x20)!=0));
+	$('#hardwarecontent #BlindT0').prop('checked',((Mode4 & 0x40)!=0));
 	$('#hardwarecontent #BlindT1T2T3T4').prop('checked',((Mode4 & 0x80)!=0));
-  $('#hardwarecontent #AEBlyss').prop('checked',((Mode3 & 0x01)!=0));
-  $('#hardwarecontent #Rubicson').prop('checked',((Mode3 & 0x02)!=0));
-  $('#hardwarecontent #FineOffsetViking').prop('checked',((Mode3 & 0x04)!=0));
-  $('#hardwarecontent #Lighting4').prop('checked',((Mode3 & 0x08)!=0));
-  $('#hardwarecontent #rfu4').prop('checked',((Mode3 & 0x10)!=0));
-  $('#hardwarecontent #rfu5').prop('checked',((Mode3 & 0x20)!=0));
-  $('#hardwarecontent #rfu6').prop('checked',((Mode3 & 0x40)!=0));
+	$('#hardwarecontent #AEBlyss').prop('checked',((Mode3 & 0x01)!=0));
+	$('#hardwarecontent #Rubicson').prop('checked',((Mode3 & 0x02)!=0));
+	$('#hardwarecontent #FineOffsetViking').prop('checked',((Mode3 & 0x04)!=0));
+	$('#hardwarecontent #Lighting4').prop('checked',((Mode3 & 0x08)!=0));
+	$('#hardwarecontent #rfu4').prop('checked',((Mode3 & 0x10)!=0));
+	$('#hardwarecontent #rfu5').prop('checked',((Mode3 & 0x20)!=0));
+	$('#hardwarecontent #rfu6').prop('checked',((Mode3 & 0x40)!=0));
 
 	$('#hardwarecontent #defaultbutton').click(function (e) {
 		e.preventDefault();
@@ -586,25 +586,23 @@ function EditRFXCOMMode(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 		$('#hardwarecontent #rfu5').prop('checked',false);
 		$('#hardwarecontent #rfu6').prop('checked',false);
 	});
-
 }
 
 function EditRego6XXType(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 {
-  cursordefault();
-  var htmlcontent = '';
-  htmlcontent='<p><center><h2>Device: ' + name + '</h2></center></p>\n';
-  htmlcontent+=$('#rego6xxtypeedit').html();
-  $('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
+	cursordefault();
+	var htmlcontent = '';
+	htmlcontent='<p><center><h2>Device: ' + name + '</h2></center></p>\n';
+	htmlcontent+=$('#rego6xxtypeedit').html();
+	$('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
 
 	$('#hardwarecontent #submitbuttonrego').click(function (e) {
 		e.preventDefault();
 		SetRego6XXType();
 	});
 
-
-  $('#hardwarecontent #idx').val(idx);
-  $('#hardwarecontent #comborego6xxtype').val(Mode1);
+	$('#hardwarecontent #idx').val(idx);
+	$('#hardwarecontent #comborego6xxtype').val(Mode1);
 }
 
 function SetRFXCOMMode()
@@ -640,138 +638,145 @@ function RefreshHardwareTable()
       if (typeof data.result != 'undefined') {
         $.each(data.result, function(i,item){
         
-					var SerialName="Unknown!?";
-					if ((item.Type == 2)||(item.Type == 3)||(item.Type == 5)||(item.Type == 6)||(item.Type == 9))
-					{
-						SerialName=item.Port;
-					}
-					else if ((item.Type == 7)||(item.Type == 11))
-					{
-						SerialName="USB";
-					}
-					else
-					{
-						var serpos=jQuery.inArray(item.Port, $.myglobals.SerialPortVal);
-						if (serpos!=-1) {
-							SerialName=$.myglobals.SerialPortStr[serpos];
-						}
-					}
+			var SerialName="Unknown!?";
+			if ((item.Type == 2)||(item.Type == 3)||(item.Type == 5)||(item.Type == 6)||(item.Type == 9))
+			{
+				SerialName=item.Port;
+			}
+			else if ((item.Type == 7)||(item.Type == 11))
+			{
+				SerialName="USB";
+			}
+			else if (item.Type == 12)
+			{
+				SerialName="System";
+			}
+			else
+			{
+				var serpos=jQuery.inArray(item.Port, $.myglobals.SerialPortVal);
+				if (serpos!=-1) {
+					SerialName=$.myglobals.SerialPortStr[serpos];
+				}
+			}
 
-					var enabledstr="No";
-					if (item.Enabled=="true") {
-						enabledstr="Yes";
-					}
+			var enabledstr="No";
+			if (item.Enabled=="true") {
+				enabledstr="Yes";
+			}
+			
+			var sharedstr="No";
+			if (item.Shared=="true") {
+				sharedstr="Yes (" + item.SharedPort + ")";
+			}
+			
+			var HwTypeStr=$.myglobals.HardwareTypesStr[item.Type];
+			if (typeof HwTypeStr == 'undefined') {
+				HwTypeStr="???? Unknown (NA)";
+			}
+			else if (
+				(HwTypeStr.indexOf("RFXtrx433 USB") >= 0)||
+				(HwTypeStr.indexOf("RFXtrx315 USB") >= 0)
+			   )
+			{
+				HwTypeStr+='<br>Firmware version: ' + item.Mode2;
+				HwTypeStr+=' <span class="label label-info" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Set Mode</span>';
+			}
+			else if (HwTypeStr.indexOf("Rego 6XX") >= 0)
+			{
+				HwTypeStr+='<br>Type: ';
+				if (item.Mode1=="0")
+				{
+					HwTypeStr+='600-635, 637 single language';
+				}
+				else if(item.Mode1=="1")
+				{
+					HwTypeStr+='636';
+				}
+				else if(item.Mode1=="2")
+				{
+					HwTypeStr+='637 multi language';
+				}
+				HwTypeStr+=' <span class="label label-info" onclick="EditRego6XXType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Change Type</span>';
+			}
 					
-					var sharedstr="No";
-					if (item.Shared=="true") {
-						sharedstr="Yes (" + item.SharedPort + ")";
-					}
-					
-					var HwTypeStr=$.myglobals.HardwareTypesStr[item.Type];
-					if (
-						(HwTypeStr.indexOf("RFXtrx433 USB") >= 0)||
-						(HwTypeStr.indexOf("RFXtrx315 USB") >= 0)
-					   )
-					{
-						HwTypeStr+='<br>Firmware version: ' + item.Mode2;
-						HwTypeStr+=' <span class="label label-info" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Set Mode</span>';
-					}
-					else if (HwTypeStr.indexOf("Rego 6XX") >= 0)
-					{
-						HwTypeStr+='<br>Type: ';
-                        if (item.Mode1=="0")
-                        {
-                            HwTypeStr+='600-635, 637 single language';
-                        }
-                        else if(item.Mode1=="1")
-                        {
-                            HwTypeStr+='636';
-                        }
-                        else if(item.Mode1=="2")
-                        {
-                            HwTypeStr+='637 multi language';
-                        }
-						HwTypeStr+=' <span class="label label-info" onclick="EditRego6XXType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Change Type</span>';
-					}
-					
-          var addId = oTable.fnAddData( {
-								"DT_RowId": item.idx,
-								"Username": item.Username,
-								"Password": item.Password,
-								"Enabled": item.Enabled,
-								"Mode1": item.Mode1,
-								"Mode2": item.Mode2,
-								"Mode3": item.Mode3,
-								"Mode4": item.Mode4,
-								"Mode5": item.Mode5,
-								"Type" : $.myglobals.HardwareTypesStr[item.Type],
-								"IntPort": item.Port,
-								"Shared": item.Shared,
-								"SharedPort": item.SharedPort,
-								"SharedUsername": item.SharedUsername,
-								"SharedPassword": item.SharedPassword,
-								"SharedRights": item.SharedRights,
+			var addId = oTable.fnAddData( {
+				"DT_RowId": item.idx,
+				"Username": item.Username,
+				"Password": item.Password,
+				"Enabled": item.Enabled,
+				"Mode1": item.Mode1,
+				"Mode2": item.Mode2,
+				"Mode3": item.Mode3,
+				"Mode4": item.Mode4,
+				"Mode5": item.Mode5,
+				"Type" : HwTypeStr,
+				"IntPort": item.Port,
+				"Shared": item.Shared,
+				"SharedPort": item.SharedPort,
+				"SharedUsername": item.SharedUsername,
+				"SharedPassword": item.SharedPassword,
+				"SharedRights": item.SharedRights,
                 "0": item.Name,
                 "1": enabledstr,
                 "2": sharedstr,
-								"3": HwTypeStr,
-								"4": item.Address,
-								"5": SerialName
-							} );
+				"3": HwTypeStr,
+				"4": item.Address,
+				"5": SerialName
+			} );
         });
-				/* Add a click handler to the rows - this could be used as a callback */
-				$("#hardwaretable tbody tr").click( function( e ) {
-							if ( $(this).hasClass('row_selected') ) {
-									$(this).removeClass('row_selected');
-									$('#updelclr #hardwareupdate').attr("class", "btnstyle3-dis");
-									$('#updelclr #hardwaredelete').attr("class", "btnstyle3-dis");
-							}
-							else {
-									oTable.$('tr.row_selected').removeClass('row_selected');
-									$(this).addClass('row_selected');
-									$('#updelclr #hardwareupdate').attr("class", "btnstyle3");
-									$('#updelclr #hardwaredelete').attr("class", "btnstyle3");
-									var anSelected = fnGetSelected( oTable );
-									if ( anSelected.length !== 0 ) {
-										var data = oTable.fnGetData( anSelected[0] );
-										var idx= data["DT_RowId"];
-										$.myglobals.SelectedTimerIdx=idx;
-										$("#updelclr #hardwareupdate").attr("href", "javascript:UpdateHardware(" + idx + "," + data["Mode1"] + "," + data["Mode2"] + "," + data["Mode3"] + "," + data["Mode4"] + "," + data["Mode5"] + ")");
-										$("#updelclr #hardwaredelete").attr("href", "javascript:DeleteHardware(" + idx + ")");
-										$("#hardwarecontent #hardwareparamstable #hardwarename").val(data["0"]);
-										$("#hardwarecontent #hardwareparamstable #combotype").val(jQuery.inArray(data["Type"], $.myglobals.HardwareTypesStr));
+		/* Add a click handler to the rows - this could be used as a callback */
+		$("#hardwaretable tbody tr").click( function( e ) {
+			if ( $(this).hasClass('row_selected') ) {
+				$(this).removeClass('row_selected');
+				$('#updelclr #hardwareupdate').attr("class", "btnstyle3-dis");
+				$('#updelclr #hardwaredelete').attr("class", "btnstyle3-dis");
+			}
+			else {
+				oTable.$('tr.row_selected').removeClass('row_selected');
+				$(this).addClass('row_selected');
+				$('#updelclr #hardwareupdate').attr("class", "btnstyle3");
+				$('#updelclr #hardwaredelete').attr("class", "btnstyle3");
+				var anSelected = fnGetSelected( oTable );
+				if ( anSelected.length !== 0 ) {
+					var data = oTable.fnGetData( anSelected[0] );
+					var idx= data["DT_RowId"];
+					$.myglobals.SelectedTimerIdx=idx;
+					$("#updelclr #hardwareupdate").attr("href", "javascript:UpdateHardware(" + idx + "," + data["Mode1"] + "," + data["Mode2"] + "," + data["Mode3"] + "," + data["Mode4"] + "," + data["Mode5"] + ")");
+					$("#updelclr #hardwaredelete").attr("href", "javascript:DeleteHardware(" + idx + ")");
+					$("#hardwarecontent #hardwareparamstable #hardwarename").val(data["0"]);
+					$("#hardwarecontent #hardwareparamstable #combotype").val(jQuery.inArray(data["Type"], $.myglobals.HardwareTypesStr));
 
-										$('#hardwarecontent #hardwareparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
+					$('#hardwarecontent #hardwareparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
 
-										$('#hardwarecontent #hardwareparamsshareenabled #shareenabled').prop('checked',(data["Shared"]=="true"));
-										$('#hardwarecontent #hardwareparamssharedetails #shareport').val(data["SharedPort"]);
-										$('#hardwarecontent #hardwareparamssharedetails #shareusername').val(data["SharedUsername"]);
-										$('#hardwarecontent #hardwareparamssharedetails #sharepassword').val(data["SharedPassword"]);
-										$("#hardwarecontent #hardwareparamssharedetails #combosharerights").val(parseInt(data["SharedRights"]));
-										
-										UpdateHardwareParamControls();
-										if ((data["Type"].indexOf("TE923") >= 0)||(data["Type"].indexOf("Volcraft") >= 0))
-										{
-											//nothing to be set
-										}
-										else
-										if (data["Type"].indexOf("USB") >= 0)
-										{
-											$("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
-										}
-										else
-										if ((data["Type"].indexOf("LAN") >= 0)||(data["Type"].indexOf("Domoticz") >= 0))
-										{
-											$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["4"]);
-											$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["5"]);
-										}
-										if (data["Type"].indexOf("Domoticz") >= 0) {
-											$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
-											$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
-										}
-									}
-							}
-				}); 
+					$('#hardwarecontent #hardwareparamsshareenabled #shareenabled').prop('checked',(data["Shared"]=="true"));
+					$('#hardwarecontent #hardwareparamssharedetails #shareport').val(data["SharedPort"]);
+					$('#hardwarecontent #hardwareparamssharedetails #shareusername').val(data["SharedUsername"]);
+					$('#hardwarecontent #hardwareparamssharedetails #sharepassword').val(data["SharedPassword"]);
+					$("#hardwarecontent #hardwareparamssharedetails #combosharerights").val(parseInt(data["SharedRights"]));
+					
+					UpdateHardwareParamControls();
+					if ((data["Type"].indexOf("TE923") >= 0)||(data["Type"].indexOf("Volcraft") >= 0)||(data["Type"].indexOf("1-Wire") >= 0))
+					{
+						//nothing to be set
+					}
+					else
+					if (data["Type"].indexOf("USB") >= 0)
+					{
+						$("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
+					}
+					else
+					if ((data["Type"].indexOf("LAN") >= 0)||(data["Type"].indexOf("Domoticz") >= 0))
+					{
+						$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["4"]);
+						$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["5"]);
+					}
+					if (data["Type"].indexOf("Domoticz") >= 0) {
+						$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
+						$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
+					}
+				}
+			}
+		}); 
 				
       }
      }
@@ -781,45 +786,44 @@ function RefreshHardwareTable()
 
 function UpdateHardwareParamControls()
 {
-		var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
-		if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0))
-		{
-			$("#hardwarecontent #divserial").hide();
-			$("#hardwarecontent #divremote").hide();
-			$("#hardwarecontent #divlogin").hide();
-		}
-		else if (text.indexOf("USB") >= 0)
-		{
-			$("#hardwarecontent #divserial").show();
-			$("#hardwarecontent #divremote").hide();
-			$("#hardwarecontent #divlogin").hide();
-		}
-		else if (text.indexOf("LAN") >= 0)
-		{
-			$("#hardwarecontent #divserial").hide();
-			$("#hardwarecontent #divremote").show();
-			$("#hardwarecontent #divlogin").hide();
-		}
-		else if (text.indexOf("Domoticz") >= 0)
-		{
-			$("#hardwarecontent #divserial").hide();
-			$("#hardwarecontent #divremote").show();
-			$("#hardwarecontent #divlogin").show();
-		}
-		else
-		{
-			$("#hardwarecontent #divserial").hide();
-			$("#hardwarecontent #divremote").hide();
-			$("#hardwarecontent #divlogin").hide();
-		}
-		var bShared=$('#hardwarecontent #hardwareparamsshareenabled #shareenabled').is(":checked");
-		if (bShared == true) {
-			$("#hardwarecontent #divsharedparam").show();
-		}
-		else {
-			$("#hardwarecontent #divsharedparam").hide();
-		}
-
+	var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
+	if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0))
+	{
+		$("#hardwarecontent #divserial").hide();
+		$("#hardwarecontent #divremote").hide();
+		$("#hardwarecontent #divlogin").hide();
+	}
+	else if (text.indexOf("USB") >= 0)
+	{
+		$("#hardwarecontent #divserial").show();
+		$("#hardwarecontent #divremote").hide();
+		$("#hardwarecontent #divlogin").hide();
+	}
+	else if (text.indexOf("LAN") >= 0)
+	{
+		$("#hardwarecontent #divserial").hide();
+		$("#hardwarecontent #divremote").show();
+		$("#hardwarecontent #divlogin").hide();
+	}
+	else if (text.indexOf("Domoticz") >= 0)
+	{
+		$("#hardwarecontent #divserial").hide();
+		$("#hardwarecontent #divremote").show();
+		$("#hardwarecontent #divlogin").show();
+	}
+	else
+	{
+		$("#hardwarecontent #divserial").hide();
+		$("#hardwarecontent #divremote").hide();
+		$("#hardwarecontent #divlogin").hide();
+	}
+	var bShared=$('#hardwarecontent #hardwareparamsshareenabled #shareenabled').is(":checked");
+	if (bShared == true) {
+		$("#hardwarecontent #divsharedparam").show();
+	}
+	else {
+		$("#hardwarecontent #divsharedparam").hide();
+	}
 }
 
 function ShowHardware()
@@ -827,23 +831,23 @@ function ShowHardware()
 	var oTable;
 	
 	$('#modal').show();
-  var htmlcontent = "";
-  htmlcontent+=$('#hardwaremain').html();
-  $('#hardwarecontent').html(htmlcontent);
-  oTable = $('#hardwaretable').dataTable( {
-                  "sDom": '<"H"lfrC>t<"F"ip>',
-                  "oTableTools": {
-                    "sRowSelect": "single",
-                  },
-                  "aaSorting": [[ 0, "desc" ]],
-                  "bSortClasses": false,
-                  "bProcessing": true,
-                  "bStateSave": true,
-                  "bJQueryUI": true,
-                  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
-                  "iDisplayLength" : 25,
-                  "sPaginationType": "full_numbers"
-                } );
+	var htmlcontent = "";
+	htmlcontent+=$('#hardwaremain').html();
+	$('#hardwarecontent').html(htmlcontent);
+	oTable = $('#hardwaretable').dataTable( {
+	  "sDom": '<"H"lfrC>t<"F"ip>',
+	  "oTableTools": {
+		"sRowSelect": "single",
+	  },
+	  "aaSorting": [[ 0, "desc" ]],
+	  "bSortClasses": false,
+	  "bProcessing": true,
+	  "bStateSave": true,
+	  "bJQueryUI": true,
+	  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+	  "iDisplayLength" : 25,
+	  "sPaginationType": "full_numbers"
+	} );
 
 	$("#hardwarecontent #hardwareparamstable #combotype").change(function() { 
 		UpdateHardwareParamControls();
@@ -852,11 +856,10 @@ function ShowHardware()
 		UpdateHardwareParamControls();
 	});
 	
-	
-  $('#modal').hide();
-  RefreshHardwareTable();
-  UpdateHardwareParamControls();
- }
+	$('#modal').hide();
+	RefreshHardwareTable();
+	UpdateHardwareParamControls();
+}
 
 
 $(document).ready(function() {
@@ -869,13 +872,13 @@ $(document).ready(function() {
 		SelectedHardwareIdx: 0
 	};
 	$('#hardwareparamstable #combotype > option').each(function() {
-				 $.myglobals.HardwareTypesStr.push($(this).text());
+		 $.myglobals.HardwareTypesStr[$(this).val()]=$(this).text();
 	});
 	$('#hardwareparamsserial #comboserialport > option').each(function() {
-				 $.myglobals.SerialPortStr.push($(this).text());
-				 $.myglobals.SerialPortVal.push(parseInt($(this).val()));
+		 $.myglobals.SerialPortStr.push($(this).text());
+		 $.myglobals.SerialPortVal.push(parseInt($(this).val()));
 	});
 	
-  ShowHardware();
+	ShowHardware();
 } );  
 </script>

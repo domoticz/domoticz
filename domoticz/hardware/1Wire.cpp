@@ -8,12 +8,13 @@
 
 #define Wire1_POLL_INTERVAL 30
 
-#define Wire1_Base_Dir "/sys/bus/w1/devices"
+#ifdef _DEBUG
+	#define Wire1_Base_Dir "E:\\w1\\devices"
+#else
+	#define Wire1_Base_Dir "/sys/bus/w1/devices"
+#endif
 
 #define round(a) ( int ) ( a + .5 )
-
-//at this moment it does not work under windows... no idea why... help appriciated!
-//for this we fake the data previously read by a station on unix (weatherdata.bin)
 
 C1Wire::C1Wire(const int ID)
 {

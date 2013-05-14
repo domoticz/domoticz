@@ -14,7 +14,7 @@
 #include "../smtpclient/SMTPClient.h"
 #include "../webserver/Base64.h"
 
-#define DB_VERSION 12
+#define DB_VERSION 13
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -524,6 +524,10 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 			
+		}
+		if (dbversion<13)
+		{
+			DeleteHardware("1001");
 		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);

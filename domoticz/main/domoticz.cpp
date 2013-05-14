@@ -138,18 +138,6 @@ int main(int argc, char**argv)
 		}
 		infile.close();
 	}
-	if (bIsRaspberryPi)
-	{
-		std::ifstream infile1wire;
-		std::string wire1catfile="/sys/bus/w1/devices";
-		wire1catfile+="/w1_bus_master1/w1_master_slaves";
-		infile1wire.open(wire1catfile.c_str());
-		if (infile1wire.is_open())
-		{
-			bHave1Wire=true;
-			infile1wire.close();
-		}
-	}
 	char szStartupPath[255];
 	getExecutablePathName((char*)&szStartupPath,255);
 	szStartupFolder=szStartupPath;
@@ -157,6 +145,20 @@ int main(int argc, char**argv)
 		szStartupFolder=szStartupFolder.substr(0,szStartupFolder.find_last_of('/')+1);
 	_log.Log(LOG_NORM,"Startup Path: %s", szStartupFolder.c_str());
 #endif
+	//Check if system supports 1-wire
+	std::ifstream infile1wire;
+#ifdef _DEBUG
+	std::string wire1catfile="E:\\w1\\devices";
+#else
+	std::string wire1catfile="/sys/bus/w1/devices";
+#endif
+	wire1catfile+="/w1_bus_master1/w1_master_slaves";
+	infile1wire.open(wire1catfile.c_str());
+	if (infile1wire.is_open())
+	{
+		bHave1Wire=true;
+		infile1wire.close();
+	}
 
 	CCmdLine cmdLine;
 

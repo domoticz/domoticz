@@ -61,6 +61,7 @@ enum _eHardwareTypes {
 	HTYPE_RazberryZWave,
 	HTYPE_DavisVantage,
 	HTYPE_VOLCRAFTCO20,
+	HTYPE_1WIRE,
 	HTYPE_END
 };
 
