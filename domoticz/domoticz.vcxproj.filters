@@ -259,6 +259,9 @@
     <ClInclude Include="hardware\1Wire.h">
       <Filter>Devices\1-Wire</Filter>
     </ClInclude>
+    <ClInclude Include="main\dirent_windows.h">
+      <Filter>Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">

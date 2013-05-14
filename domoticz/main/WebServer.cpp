@@ -8,6 +8,7 @@
 #include "../webserver/cWebem.h"
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
+#include "../hardware/1Wire.h"
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
 #include "Logger.h"
@@ -20,7 +21,6 @@
 
 extern std::string szStartupFolder;
 extern bool bIsRaspberryPi;
-extern bool bHave1Wire;
 
 namespace http {
 	namespace server {
@@ -257,7 +257,7 @@ char * CWebServer::DisplayHardwareTypesCombo()
 #endif
 		if ((ii == HTYPE_RazberryZWave)&&(!bIsRaspberryPi))
 			bDoAdd=false;
-		if ((ii == HTYPE_1WIRE)&&(!bHave1Wire))
+		if ((ii == HTYPE_1WIRE)&&(!C1Wire::Have1WireSystem()))
 			bDoAdd=false;
 
 		if (bDoAdd)

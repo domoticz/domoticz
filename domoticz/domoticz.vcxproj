@@ -111,6 +111,7 @@
     <ClInclude Include="hardware\DomoticzHardware.h" />
     <ClInclude Include="hardware\DomoticzTCP.h" />
     <ClInclude Include="hardware\hardwaretypes.h" />
+    <ClInclude Include="main\dirent_windows.h" />
     <ClInclude Include="main\localtime_r.h" />
     <ClInclude Include="hardware\P1MeterBase.h" />
     <ClInclude Include="hardware\P1MeterSerial.h" />

@@ -1,17 +1,28 @@
 
 #include "stdafx.h"
 #include "1Wire.h"
-#include "../main/Helper.h"
 #include "../main/Logger.h"
-#include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
+
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#ifdef WIN32
+	#include "../main/dirent_windows.h"
+#else
+	#include <dirent.h>
+#endif
 
 #define Wire1_POLL_INTERVAL 30
 
+//Support for w1-gpio and OWFS
+
 #ifdef _DEBUG
 	#define Wire1_Base_Dir "E:\\w1\\devices"
+	#define OWFS_Base_Dir "E:\\w1\\1wire\\uncached"
 #else
 	#define Wire1_Base_Dir "/sys/bus/w1/devices"
+	#define OWFS_Base_Dir "/mnt/1wire/uncached"
 #endif
 
 #define round(a) ( int ) ( a + .5 )
@@ -20,6 +31,8 @@ C1Wire::C1Wire(const int ID)
 {
 	m_HwdID=ID;
 	m_stoprequested=false;
+	m_bIsGPIO=IsGPIOSystem();
+	m_bIsOWFS=IsOWFSSystem();
 	Init();
 }
 
@@ -73,7 +86,65 @@ void C1Wire::WriteToHardware(const char *pdata, const unsigned char length)
 
 }
 
+bool C1Wire::IsGPIOSystem()
+{
+	//Check if system have the w1-gpio interface
+	std::ifstream infile1wire;
+#ifdef _DEBUG
+	std::string wire1catfile="E:\\w1\\devices";
+#else
+	std::string wire1catfile="/sys/bus/w1/devices";
+#endif
+	wire1catfile+="/w1_bus_master1/w1_master_slaves";
+	infile1wire.open(wire1catfile.c_str());
+	if (infile1wire.is_open())
+	{
+		infile1wire.close();
+		return true;
+	}
+	return false;
+}
+
+bool C1Wire::IsOWFSSystem()
+{
+	DIR *d=NULL;
+
+	d=opendir(OWFS_Base_Dir);
+	if (d != NULL)
+	{
+		struct dirent *de=NULL;
+		// Loop while not NULL
+		while(de = readdir(d))
+		{
+			std::string dirname = de->d_name;
+			if (de->d_type==DT_DIR) {
+				if ((dirname!=".")&&(dirname!=".."))
+				{
+					closedir(d);
+					return true;
+				}
+			}
+		}
+		closedir(d);
+	}
+	return false;
+}
+
+
+bool C1Wire::Have1WireSystem()
+{
+	return (IsGPIOSystem()||IsOWFSSystem());
+}
+
 void C1Wire::GetSensorDetails()
+{
+	if (m_bIsOWFS)
+		GetOWFSSensorDetails();
+	else if (m_bIsGPIO)
+		GetGPIOSensorDetails();
+}
+
+void C1Wire::GetGPIOSensorDetails()
 {
 	std::string catfile=Wire1_Base_Dir;
 	catfile+="/w1_bus_master1/w1_master_slaves";
@@ -148,5 +219,66 @@ void C1Wire::GetSensorDetails()
 				}
 			}
 		}
+	}
+}
+
+void C1Wire::GetOWFSSensorDetails()
+{
+	DIR *d=NULL;
+
+	d=opendir(OWFS_Base_Dir);
+	if (d != NULL)
+	{
+		struct dirent *de=NULL;
+		// Loop while not NULL
+		while(de = readdir(d))
+		{
+			std::string dirname = de->d_name;
+			if (de->d_type==DT_DIR)
+			{
+				if ((dirname!=".")&&(dirname!=".."))
+				{
+					std::string devfile=OWFS_Base_Dir;
+					devfile+="/" + dirname + "/temperature";
+					std::string devid=dirname;
+					devid=devid.substr(3,4);
+					std::ifstream infile2;
+					infile2.open(devfile.c_str());
+					if (infile2.is_open())
+					{
+						std::string sLine;
+						getline(infile2, sLine);
+						float temp=(float)atof(sLine.c_str());
+						if ((temp>-300)&&(temp<300))
+						{
+							unsigned int xID;   
+							std::stringstream ss;
+							ss << std::hex << devid;
+							ss >> xID;
+							//Temp
+							RBUF tsen;
+							memset(&tsen,0,sizeof(RBUF));
+							tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
+							tsen.TEMP.packettype=pTypeTEMP;
+							tsen.TEMP.subtype=sTypeTEMP10;
+							tsen.TEMP.battery_level=9;
+							tsen.TEMP.rssi=6;
+							tsen.TEMP.id1=(BYTE)((xID&0xFF00)>>8);
+							tsen.TEMP.id2=(BYTE)(xID&0xFF);
+
+							tsen.TEMP.tempsign=(temp>=0)?0:1;
+							int at10=round(abs(temp*10.0f));
+							tsen.TEMP.temperatureh=(BYTE)(at10/256);
+							at10-=(tsen.TEMP.temperatureh*256);
+							tsen.TEMP.temperaturel=(BYTE)(at10);
+
+							sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
+							m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.TEMP));
+						}
+					}
+				}
+			}
+		}
+		closedir(d);
 	}
 }

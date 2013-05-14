@@ -37,7 +37,6 @@
 
 extern std::string szStartupFolder;
 extern bool bIsRaspberryPi;
-extern bool bHave1Wire;
 
 MainWorker::MainWorker()
 {
