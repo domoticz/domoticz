@@ -1155,3 +1155,49 @@ function Logout()
      }     
   });
 }
+
+function EnableDisableTabs()
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=getactivetabs",
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			if (data.result["EnableTabLights"]==0) {
+				$("#mLightSwitches").hide();
+			}
+			else {
+				$("#mLightSwitches").show();
+			}
+			if (data.result["EnableTabTemp"]==0) {
+				$("#mTemperature").hide();
+			}
+			else {
+				$("#mTemperature").show();
+			}
+			if (data.result["EnableTabWeather"]==0) {
+				$("#mWeather").hide();
+			}
+			else {
+				$("#mWeather").show();
+			}
+			if (data.result["EnableTabUtility"]==0) {
+				$("#mUtility").hide();
+			}
+			else {
+				$("#mUtility").show();
+			}
+			if (data.result["EnableTabDevices"]==0) {
+				$("#mDevices").hide();
+			}
+			else {
+				$("#mDevices").show();
+			}
+		 },
+		 error: function(){
+			if (showdialog) {
+				alert("Error communicating to server!");
+			}
+		 }     
+	});
+}

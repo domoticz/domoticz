@@ -103,6 +103,27 @@
 					</tr>
 				</table>
 			</div>
+			<br>
+			<div id="ActiveTabs">
+				<h2>Active Menus:</h2>
+				<table class="display" id="activemenustable" border="0" cellpadding="0" cellspacing="0">
+					<tr>
+						<td><input type="checkbox" id="EnableTabLights" name="EnableTabLights"/> Lights/Switches</td>
+					</tr>
+					<tr>
+						<td><input type="checkbox" id="EnableTabTemp" name="EnableTabTemp"/> Temperature</td>
+					</tr>
+					<tr>
+						<td><input type="checkbox" id="EnableTabWeather" name="EnableTabWeather"/> Weather</td>
+					</tr>
+					<tr>
+						<td><input type="checkbox" id="EnableTabUtility" name="EnableTabUtility"/> Utility</td>
+					</tr>
+					<tr>
+						<td><input type="checkbox" id="EnableTabDevices" name="EnableTabDevices"/> Devices</td>
+					</tr>
+				</table>
+			</div>
 		</section>
 
 		<!-- Log History
@@ -499,16 +520,29 @@ function ShowSettings()
       if (typeof data.EmailAsAttachment != 'undefined') {
         $("#emailtable #checkEmailAsAttachment").prop('checked',data.EmailAsAttachment==1);
       }
-      
       if (typeof data.DoorbellCommand != 'undefined') {
         $("#doorbelltable #comboDoorbellCommand").val(data.DoorbellCommand);
       }
       if (typeof data.SmartMeterType != 'undefined') {
         $("#p1metertable #comboP1MeterType").val(data.SmartMeterType);
       }
+      if (typeof data.EnableTabLights != 'undefined') {
+        $("#activemenustable #EnableTabLights").prop('checked',data.EnableTabLights==1);
+      }
+      if (typeof data.EnableTabTemp != 'undefined') {
+        $("#activemenustable #EnableTabTemp").prop('checked',data.EnableTabTemp==1);
+      }
+      if (typeof data.EnableTabWeather != 'undefined') {
+        $("#activemenustable #EnableTabWeather").prop('checked',data.EnableTabWeather==1);
+      }
+      if (typeof data.EnableTabUtility != 'undefined') {
+        $("#activemenustable #EnableTabUtility").prop('checked',data.EnableTabUtility==1);
+      }
+      if (typeof data.EnableTabDevices != 'undefined') {
+        $("#activemenustable #EnableTabDevices").prop('checked',data.EnableTabDevices==1);
+      }
      }
   });
-
 }
 
 function StoreSettings(formname)
@@ -547,9 +581,10 @@ function StoreSettings(formname)
 	}
   }
   
-  $.post("storesettings.webem", $("#settings").serialize(), function(data) {
-   SwitchLayout('Dashboard');
-  });
+	$.post("storesettings.webem", $("#settings").serialize(), function(data) {
+		EnableDisableTabs();
+		SwitchLayout('Dashboard');
+	});
 }
 
 function MakeScrollLink(nameclick,namescroll)

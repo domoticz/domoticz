@@ -633,6 +633,26 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("SmartMeterType", 0);
 	}
+	if (!GetPreferencesVar("EnableTabLights", nValue))
+	{
+		UpdatePreferencesVar("EnableTabLights", 1);
+	}
+	if (!GetPreferencesVar("EnableTabTemp", nValue))
+	{
+		UpdatePreferencesVar("EnableTabTemp", 1);
+	}
+	if (!GetPreferencesVar("EnableTabWeather", nValue))
+	{
+		UpdatePreferencesVar("EnableTabWeather", 1);
+	}
+	if (!GetPreferencesVar("EnableTabUtility", nValue))
+	{
+		UpdatePreferencesVar("EnableTabUtility", 1);
+	}
+	if (!GetPreferencesVar("EnableTabDevices", nValue))
+	{
+		UpdatePreferencesVar("EnableTabDevices", 1);
+	}
 
 	//Start background thread
 	if (!StartThread())

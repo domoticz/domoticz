@@ -522,6 +522,17 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("EmailUsername",EmailUsername.c_str());
 	m_pMain->m_sql.UpdatePreferencesVar("EmailPassword",EmailPassword.c_str());
 
+	std::string EnableTabLights=m_pWebEm->FindValue("EnableTabLights");
+	m_pMain->m_sql.UpdatePreferencesVar("EnableTabLights",(EnableTabLights=="on"?1:0));
+	std::string EnableTabTemp=m_pWebEm->FindValue("EnableTabTemp");
+	m_pMain->m_sql.UpdatePreferencesVar("EnableTabTemp",(EnableTabTemp=="on"?1:0));
+	std::string EnableTabWeather=m_pWebEm->FindValue("EnableTabWeather");
+	m_pMain->m_sql.UpdatePreferencesVar("EnableTabWeather",(EnableTabWeather=="on"?1:0));
+	std::string EnableTabUtility=m_pWebEm->FindValue("EnableTabUtility");
+	m_pMain->m_sql.UpdatePreferencesVar("EnableTabUtility",(EnableTabUtility=="on"?1:0));
+	std::string EnableTabDevices=m_pWebEm->FindValue("EnableTabDevices");
+	m_pMain->m_sql.UpdatePreferencesVar("EnableTabDevices",(EnableTabDevices=="on"?1:0));
+
 	return (char*)m_retstr.c_str();
 }
 
@@ -4920,6 +4931,33 @@ std::string CWebServer::GetJSonPage()
 				ii++;
 			}
 		}
+		else if (cparam=="getactivetabs")
+		{
+			root["status"]="OK";
+			root["title"]="GetActiveTabs";
+
+			int nValue;
+			if (m_pMain->m_sql.GetPreferencesVar("EnableTabLights", nValue))
+			{
+				root["result"]["EnableTabLights"]=nValue;
+			}
+			if (m_pMain->m_sql.GetPreferencesVar("EnableTabTemp", nValue))
+			{
+				root["result"]["EnableTabTemp"]=nValue;
+			}
+			if (m_pMain->m_sql.GetPreferencesVar("EnableTabWeather", nValue))
+			{
+				root["result"]["EnableTabWeather"]=nValue;
+			}
+			if (m_pMain->m_sql.GetPreferencesVar("EnableTabUtility", nValue))
+			{
+				root["result"]["EnableTabUtility"]=nValue;
+			}
+			if (m_pMain->m_sql.GetPreferencesVar("EnableTabDevices", nValue))
+			{
+				root["result"]["EnableTabDevices"]=nValue;
+			}
+		}
 		else if (cparam=="emailcamerasnapshot")
 		{
 			std::string camidx=m_pWebEm->FindValue("camidx");
@@ -7569,6 +7607,26 @@ std::string CWebServer::GetJSonPage()
 				else if (Key=="SmartMeterType")
 				{
 					root["SmartMeterType"]=nValue;
+				}
+				else if (Key=="EnableTabLights")
+				{
+					root["EnableTabLights"]=nValue;
+				}
+				else if (Key=="EnableTabTemp")
+				{
+					root["EnableTabTemp"]=nValue;
+				}
+				else if (Key=="EnableTabWeather")
+				{
+					root["EnableTabWeather"]=nValue;
+				}
+				else if (Key=="EnableTabUtility")
+				{
+					root["EnableTabUtility"]=nValue;
+				}
+				else if (Key=="EnableTabDevices")
+				{
+					root["EnableTabDevices"]=nValue;
 				}
 			}
 		}
