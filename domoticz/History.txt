@@ -8,6 +8,8 @@ Version 1.0.xxx (May xxth 2013)
 - Implemented: 1-Wire sensor support (temperature at the moment, w1-gpio, w1-therm) see Wiki pages
 - Implemented: 1-Wire OWFS sensor support, see Wiki pages
 - Implemented: Clicking on the version number now displays the history file
+- Fixed: Data for the last selected day in the custom short term graph was not shown
+- Changed: 1-Wire OWFS, ignoring ID=0 when temp is also 0
 
 Version 1.0.607 (May 11th 2013)
 - Changed: Rego6XX Type setting moved to the hardware settings in the same way as RFCtrx setup is done

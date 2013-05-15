@@ -71,7 +71,7 @@ void CVolcraftCO20::Do_Work()
 			m_LastPollTime=time(NULL);
 		}
 	}
-	_log.Log(LOG_NORM,"VolcraftCO20 Worker stopped...");
+	_log.Log(LOG_NORM,"Voltcraft CO-20 CO-20: Worker stopped...");
 }
 
 void CVolcraftCO20::WriteToHardware(const char *pdata, const unsigned char length)
@@ -101,13 +101,17 @@ void CVolcraftCO20::GetSensorDetails()
 		voc=_VolcraftCO20tool2.GetVOC();
 		if (voc==0)
 		{
-			_log.Log(LOG_ERROR, "VolcraftCO20: Could not read sensor data!");
+			_log.Log(LOG_ERROR, "Voltcraft CO-20: Could not read sensor data!");
 			return;
 		}
 	}
 	else
 		_VolcraftCO20tool.CloseDevice();
-
+	if (voc==3000)
+	{
+		_log.Log(LOG_ERROR, "Voltcraft CO-20: Sensor data out of range!!");
+		return;
+	}
 	//got the data
 	_tAirQualityMeter meter;
 	meter.len=sizeof(_tAirQualityMeter)-1;

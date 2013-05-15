@@ -255,25 +255,29 @@ void C1Wire::GetOWFSSensorDetails()
 							std::stringstream ss;
 							ss << std::hex << devid;
 							ss >> xID;
-							//Temp
-							RBUF tsen;
-							memset(&tsen,0,sizeof(RBUF));
-							tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-							tsen.TEMP.packettype=pTypeTEMP;
-							tsen.TEMP.subtype=sTypeTEMP10;
-							tsen.TEMP.battery_level=9;
-							tsen.TEMP.rssi=6;
-							tsen.TEMP.id1=(BYTE)((xID&0xFF00)>>8);
-							tsen.TEMP.id2=(BYTE)(xID&0xFF);
 
-							tsen.TEMP.tempsign=(temp>=0)?0:1;
-							int at10=round(abs(temp*10.0f));
-							tsen.TEMP.temperatureh=(BYTE)(at10/256);
-							at10-=(tsen.TEMP.temperatureh*256);
-							tsen.TEMP.temperaturel=(BYTE)(at10);
+							if (!((xID==0)&&(temp==0)))
+							{
+								//Temp
+								RBUF tsen;
+								memset(&tsen,0,sizeof(RBUF));
+								tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
+								tsen.TEMP.packettype=pTypeTEMP;
+								tsen.TEMP.subtype=sTypeTEMP10;
+								tsen.TEMP.battery_level=9;
+								tsen.TEMP.rssi=6;
+								tsen.TEMP.id1=(BYTE)((xID&0xFF00)>>8);
+								tsen.TEMP.id2=(BYTE)(xID&0xFF);
 
-							sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
-							m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.TEMP));
+								tsen.TEMP.tempsign=(temp>=0)?0:1;
+								int at10=round(abs(temp*10.0f));
+								tsen.TEMP.temperatureh=(BYTE)(at10/256);
+								at10-=(tsen.TEMP.temperatureh*256);
+								tsen.TEMP.temperaturel=(BYTE)(at10);
+
+								sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
+								m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.TEMP));
+							}
 						}
 					}
 				}

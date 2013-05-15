@@ -124,7 +124,7 @@ unsigned short CVolcraftCO20Tool::GetVOC()
 	memcpy(&iresult,buf+2,2);
 	unsigned short voc = iresult;//__le16_to_cpu(iresult);
 	if ((voc<400)||(voc>2000))
-		return 0;
+		return 3000;
 	return voc;
 }
 
