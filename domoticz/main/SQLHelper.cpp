@@ -1864,6 +1864,9 @@ bool CSQLHelper::CheckAndHandleSwitchNotification(
 				case STYPE_Doorbell:
 					msg+=" pressed";
 					break;
+				case STYPE_DoorLock:
+					msg+=" Open";
+					break;
 				case STYPE_Motion:
 					msg+=" movement detected";
 					break;
@@ -1877,7 +1880,15 @@ bool CSQLHelper::CheckAndHandleSwitchNotification(
 				 
 			}
 			else {
-				msg+=" >> OFF";
+				switch (switchtype)
+				{
+				case STYPE_DoorLock:
+					msg+=" Closed";
+					break;
+				default:
+					msg+=" >> OFF";
+					break;
+				}
 			}
 		}
 		if (bSendNotification)

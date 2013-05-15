@@ -10,6 +10,7 @@ Version 1.0.xxx (May xxth 2013)
 - Implemented: Clicking on the version number now displays the history file
 - Fixed: Data for the last selected day in the custom short term graph was not shown
 - Changed: 1-Wire OWFS, ignoring ID=0 when temp is also 0
+- Fixed: Light/Switch type 'Door Lock' on Lights tab showed initially a wrong icon for the 'Open' state
 
 Version 1.0.607 (May 11th 2013)
 - Changed: Rego6XX Type setting moved to the hardware settings in the same way as RFCtrx setup is done

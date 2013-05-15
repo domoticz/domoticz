@@ -1285,7 +1285,7 @@ function ShowLights()
 			}
           }
           else if (item.SwitchType == "Door Lock") {
-			if (item.InternalState=="On") {
+			if (item.InternalState=="Open") {
 				xhtm+='\t      <td id="img"><img src="images/door48open.png" title="Close Door" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
 			}
 			else {
