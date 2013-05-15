@@ -4895,6 +4895,31 @@ std::string CWebServer::GetJSonPage()
 				}
 			}
 		}
+		else if (cparam=="getnewhistory")
+		{
+			root["status"]="OK";
+			root["title"]="GetNewHistory";
+
+			std::string historyfile;
+			if (!HTTPClient::GET("http://domoticz.sourceforge.net/History.txt",historyfile))
+			{
+				historyfile="Unable to get Online History document !!";
+			}
+
+			std::istringstream stream(historyfile);
+			std::string sLine;
+			int ii=0;
+			while (std::getline(stream, sLine)) 
+			{
+				root["LastLogTime"]="";
+				if (sLine.find("Version ")==0)
+					root["result"][ii]["level"]=1;
+				else
+					root["result"][ii]["level"]=0;
+				root["result"][ii]["message"]=sLine;
+				ii++;
+			}
+		}
 		else if (cparam=="emailcamerasnapshot")
 		{
 			std::string camidx=m_pWebEm->FindValue("camidx");
@@ -5577,8 +5602,6 @@ std::string CWebServer::GetJSonPage()
 				(EmailFrom=="")||
 				(EmailTo=="")||
 				(EmailServer=="")||
-				(EmailUsername=="")||
-				(EmailPassword=="")||
 				(sEmailPort=="")
 				)
 				goto exitjson;

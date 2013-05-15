@@ -195,9 +195,10 @@ $(document).ready(function() {
 	$.myglobals = {
 		actlayout : "",
 		prevlayout : "",
-		ismobile: false
+		ismobile: false,
+		historytype : 1
 	};
-
+	
 	if( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {
 		$.myglobals.ismobile=true;
 	}
@@ -218,6 +219,7 @@ $(document).ready(function() {
 
 	$("#appversion").click( function( e ) {
 		e.preventDefault();
+		$.myglobals.historytype=1;
 		SwitchLayout('History');
 	});
 	

@@ -5,13 +5,13 @@
 
 <script type="text/javascript" charset="utf-8">
 
-function ShowHistory()
+function ShowHistory(historytype)
 {
 	var div = $("#historycontent #historydata");
 	var htmlcontent = '';
   
 	$.ajax({
-		url: "json.htm?type=command&param=getactualhistory", 
+		url: "json.htm?type=command&param=" + historytype, 
 		async: false, 
 		dataType: 'json',
 		success: function(data) {
@@ -51,7 +51,19 @@ function ResizeLogWindow()
 }
 
 $(document).ready(function() {
-	ShowHistory();
+	var bShowNewHistory=false;
+	if ($.myglobals.historytype != 'undefined') {
+		if ($.myglobals.historytype == 2)
+		{
+			bShowNewHistory=true;
+		}
+	}
+	if (bShowNewHistory == false) {
+		ShowHistory("getactualhistory");
+	}
+	else {
+		ShowHistory("getnewhistory");
+	}
 	ResizeLogWindow();
 } );  
 </script>
