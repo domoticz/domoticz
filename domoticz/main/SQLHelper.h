@@ -220,6 +220,7 @@ public:
 	void CheckSceneStatusWithDevice(const std::string DevIdx);
 
 	bool SendNotification(const std::string EventID, const std::string Message);
+	bool SendNotificationEx(const std::string Subject, const std::string Body);
 
 	void Schedule5Minute();
 	void ScheduleDay();

@@ -1401,6 +1401,88 @@ bool CSQLHelper::SendNotification(const std::string EventID, const std::string M
 	return true;
 }
 
+bool CSQLHelper::SendNotificationEx(const std::string Subject, const std::string Body)
+{
+	int nValue;
+	std::string sValue;
+	char szURL[300];
+	unsigned char *pData=NULL;
+	unsigned long ulLength=0;
+
+#if defined WIN32
+	//Make a system tray message
+	ShowSystemTrayNotification(Subject.c_str());
+#endif
+
+	std::string notimessage=Body;
+	notimessage=stdreplace(notimessage,"<br>"," ");
+
+	CURLEncode uencode;
+	//check if prowl enabled
+	if (GetPreferencesVar("ProwlAPI",nValue,sValue))
+	{
+		if (sValue!="")
+		{
+			//send message to Prowl
+			sprintf(szURL,"http://api.prowlapp.com/publicapi/add?apikey=%s&application=Domoticz&event=%s&description=%s&priority=0",
+				sValue.c_str(),uencode.URLEncode(Subject).c_str(),uencode.URLEncode(notimessage).c_str());
+			I_HTTPRequest * r = NewHTTPRequest( szURL );
+			if (r!=NULL)
+			{
+				if (r->readDataInVecBuffer())
+				{
+					r->getBuffer(pData, ulLength);
+				}
+				r->dispose();
+			}
+			_log.Log(LOG_NORM,"Notification send (Prowl)");
+		}
+	}
+	//check if NMA enabled
+	if (GetPreferencesVar("NMAAPI",nValue,sValue))
+	{
+		if (sValue!="")
+		{
+			//send message to Prowl
+			sprintf(szURL,"http://www.notifymyandroid.com/publicapi/notify?apikey=%s&application=Domoticz&event=%s&priority=0&description=%s",
+				sValue.c_str(),uencode.URLEncode(Subject).c_str(),uencode.URLEncode(notimessage).c_str());
+			I_HTTPRequest * r = NewHTTPRequest( szURL );
+			if (r!=NULL)
+			{
+				if (r->readDataInVecBuffer())
+				{
+					r->getBuffer(pData, ulLength);
+				}
+				r->dispose();
+			}
+			_log.Log(LOG_NORM,"Notification send (NMA)");
+		}
+	}
+	//check if Email enabled
+	if (GetPreferencesVar("UseEmailInNotifications", nValue))
+	{
+		if (nValue==1)
+		{
+			if (GetPreferencesVar("EmailServer",nValue,sValue))
+			{
+				if (sValue!="")
+				{
+					std::string szBody;
+					szBody=
+						"<html>\n"
+						"<body>\n"
+						"<b>" + CURLEncode::URLDecode(Body) + "</b>\n"
+						"</body>\n"
+						"</html>\n";
+
+					AddTaskItem(_tTaskItem::SendEmail(1,CURLEncode::URLDecode(Subject),szBody));
+				}
+			}
+		}
+	}
+	return true;
+}
+
 void CSQLHelper::UpdatePreferencesVar(const char *Key, const char* sValue)
 {
 	UpdatePreferencesVar(Key, 0, sValue);

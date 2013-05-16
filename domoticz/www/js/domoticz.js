@@ -1189,9 +1189,11 @@ function EnableDisableTabs()
 			}
 			if (data.result["EnableTabDevices"]==0) {
 				$("#mDevices").hide();
+				$("#mDevices2").show();
 			}
 			else {
 				$("#mDevices").show();
+				$("#mDevices2").hide();
 			}
 		 },
 		 error: function(){

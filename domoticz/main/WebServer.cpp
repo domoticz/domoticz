@@ -255,8 +255,6 @@ char * CWebServer::DisplayHardwareTypesCombo()
 			)
 			bDoAdd=false;
 #endif
-		if ((ii == HTYPE_RazberryZWave)&&(!bIsRaspberryPi))
-			bDoAdd=false;
 		if ((ii == HTYPE_1WIRE)&&(!C1Wire::Have1WireSystem()))
 			bDoAdd=false;
 
@@ -4972,6 +4970,34 @@ std::string CWebServer::GetJSonPage()
 			root["status"]="OK";
 			root["title"]="Email Camera Snapshot";
 		}
+		else if (cparam=="sendnotification")
+		{
+			std::string subject=m_pWebEm->FindValue("subject");
+			std::string body=m_pWebEm->FindValue("body");
+			if (
+				(subject=="")||
+				(body=="")
+				)
+				goto exitjson;
+			//Add to queue
+			m_pMain->m_sql.SendNotificationEx(subject,body);
+			root["status"]="OK";
+			root["title"]="SendNotification";
+		}
+		else if (cparam=="emailcamerasnapshot")
+		{
+			std::string camidx=m_pWebEm->FindValue("camidx");
+			std::string subject=m_pWebEm->FindValue("subject");
+			if (
+				(camidx=="")||
+				(subject=="")
+				)
+				goto exitjson;
+			//Add to queue
+			m_pMain->m_sql.AddTaskItem(_tTaskItem::EmailCameraSnapshot(1,camidx,subject));
+			root["status"]="OK";
+			root["title"]="Email Camera Snapshot";
+		}
 		else if (cparam=="udevice")
 		{
 			std::string hid=m_pWebEm->FindValue("hid");
@@ -5320,6 +5346,35 @@ std::string CWebServer::GetJSonPage()
 
 					root["result"][ii]["ID"]=sd[0];
 					root["result"][ii]["Name"]=sd[1];
+					ii++;
+				}
+			}
+		}
+		else if (cparam=="gettimerlist")
+		{
+			root["status"]="OK";
+			root["title"]="GetTimerList";
+			std::vector<std::vector<std::string> > result;
+			std::stringstream szQuery;
+			szQuery << "SELECT t.ID, t.Active, d.[Name], t.DeviceRowID, t.Time, t.Type, t.Cmd, t.Level, t.Days FROM Timers as t, DeviceStatus as d WHERE (d.ID == t.DeviceRowID) ORDER BY d.[Name], t.Time";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()>0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii=0;
+				for (itt=result.begin(); itt!=result.end(); ++itt)
+				{
+					std::vector<std::string> sd=*itt;
+
+					root["result"][ii]["ID"]			=sd[0];
+					root["result"][ii]["Active"]		=sd[1];
+					root["result"][ii]["Name"]			=sd[2];
+					root["result"][ii]["DeviceRowID"]	=sd[3];
+					root["result"][ii]["Time"]			=sd[4];
+					root["result"][ii]["Type"]			=sd[5];
+					root["result"][ii]["Cmd"]			=sd[6];
+					root["result"][ii]["Level"]			=sd[7];
+					root["result"][ii]["Days"]			=sd[8];
 					ii++;
 				}
 			}
