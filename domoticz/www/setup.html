@@ -34,6 +34,9 @@
 			  <li><a class="sb-link" id="idemailsetup" onmouseover="cursorhand()" onmouseout="cursordefault()"><i class="icon-chevron-right"></i> Email Setup</a></li>
 			  <li><a class="sb-link" id="idmetercounters" onmouseover="cursorhand()" onmouseout="cursordefault()"><i class="icon-chevron-right"></i> Meter/Counter Setup</a></li>
 			  <li><a class="sb-link" id="idothersettings" onmouseover="cursorhand()" onmouseout="cursordefault()"><i class="icon-chevron-right"></i> Other Settings</a></li>
+			  <li class="divider"></li>
+			  <center><a class="btn btn-inverse" href="backupdatabase.php">Backup Database</a></center>
+			  <li class="divider"></li>
 			</ul>
 			<center><a class="btn btn-danger" href="javascript:StoreSettings()">Save</a></center>
 	   </div>
@@ -603,7 +606,7 @@ $(document).ready(function() {
   MakeScrollLink("#idemailsetup","#emailsetup");
   MakeScrollLink("#idmetercounters","#metercounters");
   MakeScrollLink("#idothersettings","#othersettings");
-  
+
     $( "#dialog-findlatlong" ).dialog({
           autoOpen: false,
           width: 480,
@@ -637,25 +640,25 @@ $(document).ready(function() {
                   $(this).parent().find("button:eq(0)").trigger("click");
                 }
               });
-							$( '#getlatlong' ).click( function()
-							{
-									var address = $( '#dialog-findlatlong #address' ).val();
-									if (address=="")
-									{
-										alert('Please enter a Address to search for!...', 3500, true);
-										return false;
-									}
-									geocoder = new google.maps.Geocoder();
-									geocoder.geocode( { 'address': address}, function(results, status) {
-										if (status == google.maps.GeocoderStatus.OK) {
-												$( '#dialog-findlatlong #latitude' ).val(results[0].geometry.location.lat().toFixed(6));
-												$( '#dialog-findlatlong #longitude' ).val(results[0].geometry.location.lng().toFixed(6));
-										} else {
-											alert('Geocode was not successful for the following reason: ' + status);
-										}
-									});
-									return false;
-							} );              
+				$( '#getlatlong' ).click( function()
+				{
+						var address = $( '#dialog-findlatlong #address' ).val();
+						if (address=="")
+						{
+							alert('Please enter a Address to search for!...', 3500, true);
+							return false;
+						}
+						geocoder = new google.maps.Geocoder();
+						geocoder.geocode( { 'address': address}, function(results, status) {
+							if (status == google.maps.GeocoderStatus.OK) {
+									$( '#dialog-findlatlong #latitude' ).val(results[0].geometry.location.lat().toFixed(6));
+									$( '#dialog-findlatlong #longitude' ).val(results[0].geometry.location.lng().toFixed(6));
+							} else {
+								alert('Geocode was not successful for the following reason: ' + status);
+							}
+						});
+						return false;
+				} );              
           },
           close: function() {
             $( this ).dialog( "close" );

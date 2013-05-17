@@ -426,7 +426,10 @@ function AddNotification()
 {
 	var nsettings=GetNotificationSettings();
 	if (nsettings==null)
+	{
+	alert("Invalid Notification Settings");
 		return;
+	}
 	$.ajax({
 		url: "json.htm?type=command&param=addnotification&idx=" + $.devIdx + 
 				"&ttype=" + nsettings.type +

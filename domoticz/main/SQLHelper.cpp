@@ -1363,7 +1363,7 @@ bool CSQLHelper::SendNotification(const std::string EventID, const std::string M
 		{
 			//send message to Prowl
 			sprintf(szURL,"http://www.notifymyandroid.com/publicapi/notify?apikey=%s&application=Domoticz&event=%s&priority=0&description=%s",
-				sValue.c_str(),EventID.c_str(),Message.c_str());
+				sValue.c_str(),Message.c_str(),Message.c_str());
 			I_HTTPRequest * r = NewHTTPRequest( szURL );
 			if (r!=NULL)
 			{

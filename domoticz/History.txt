@@ -14,6 +14,8 @@ Version 1.0.xxx (May xxth 2013)
 - Fixed: Settings Email, now possible to send a test email without username/password
 - Implemented: Option to enable/disable menus from application settings
 - Implemented: Option to request list of all timers via JSON (gettimerlist)
+- Implemented: Option to send Notifications (Setup -> More options)
+- Implemented: Option to backup database (Setup -> Application Settings left menu)
 
 Version 1.0.607 (May 11th 2013)
 - Changed: Rego6XX Type setting moved to the hardware settings in the same way as RFXtrx setup is done

@@ -139,6 +139,7 @@ images/next.png
 images/nodemand.png
 images/nodemand_mini.png
 images/nofavorite.png
+images/notification.png
 images/off.png
 images/on.png
 images/onoff48.png
@@ -265,6 +266,7 @@ hardware.html
 history.html
 lights.html
 log.html
+notification.html
 scenes.html
 setup.html
 temperature.html
