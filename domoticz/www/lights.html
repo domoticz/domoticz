@@ -1254,8 +1254,14 @@ function ShowLights()
           var bIsDimmer=false;
           var xhtm=
                 '\t<div class="span4" id="' + item.idx + '">\n' +
-                '\t  <section>\n' +
-                '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
+                '\t  <section>\n';
+			if (item.SwitchType == "Doorbell") {
+				xhtm+='\t    <table id="itemtablenostatus" border="0" cellpadding="0" cellspacing="0">\n';
+			}
+			else {
+				xhtm+='\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n';
+			}
+			xhtm+=
                 '\t    <tr>\n' +
                 '\t      <td id="name">' + item.Name + '</td>\n' +
 								'\t      <td id="bigtext"></td>\n';

@@ -706,6 +706,131 @@ body table#itemtable tr:hover td:first-child{
 	background-color: #D4D5EE;
 }
 
+/* Itemtable no status: line */
+body table#itemtablenostatus,
+body table#itemtablenostatus tbody{
+	display: block;
+	width: 100%;
+}
+body table#itemtablenostatus tbody tr{
+	display: block;
+
+	width: 96%;
+	padding: 5px 5px 5px 5px;
+	margin: 2px 100% 5px 0;
+	
+	border-style: none;
+  border-radius: 5px;
+
+	color: #0D161F;
+	background-color: #F1F5FA;
+	
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+
+body table#itemtablenostatus thead{
+	display: none;
+}
+
+body table#itemtablenostatus tr > *{
+	display: block;
+	padding: 0;
+	margin: 0;
+}
+
+/* I am using the :first-child as a way to style each column by itself*/
+/* First column */
+body table#itemtablenostatus tr td:first-child{
+	height: 1.2em;
+	padding: 0 .5em 0 .5em;
+	margin-bottom: 5px;
+
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 130%;
+	white-space: nowrap;
+	
+	border-width: 1px 1px 1px 1px;
+	border-color: #2B5074;
+	border-style: solid;
+  border-radius: 5px;
+	
+	color: #0D161F;
+	background-color: #D4E1EE;
+}
+
+/* Second column */
+body table#itemtablenostatus tr td:first-child + td{ 
+	float: right;
+	margin: -27px 3px 0px 0px;
+	font-size: 140%;
+	font-weight: bold;
+	white-space: nowrap;
+	color: #000000;
+}
+
+/* Third column */
+body table#itemtablenostatus tr td:first-child + td + td{ 
+	border-color: #2B5074;  
+	border-style: none;  
+	border-width: 1px; 
+	
+	float: left;
+	margin: 0 10px 10px 0;
+}
+
+body table#itemtablenostatus tr td:first-child + td + td img{
+	display: block;
+}
+
+/* Fourth column */
+body table#itemtablenostatus tr td:first-child + td + td + td{
+	font-size: 90%;
+	font-weight: bold;
+}
+
+body table#itemtablenostatus tr td:first-child + td + td + td:before{
+	font-style: italic;
+	font-size: 90%;
+}
+
+/* Fifth column */
+body table#itemtablenostatus tr td:first-child + td + td + td + td{
+	font-size: 80%;
+}
+body table#itemtablenostatus tr td:first-child + td + td + td + td:before{
+	content: "Last Seen: ";
+	font-style: italic;
+}
+
+/* Sixth column */
+body table#itemtablenostatus tr td:first-child + td + td + td + td + td{
+	font-size: 80%;
+}
+body table#itemtablenostatus tr td:first-child + td + td + td + td + td:before{
+	content: "Type: ";
+	font-style: italic;
+}
+
+/* Seventh column (bottom text)*/
+body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td{
+	font-size: 90%;
+	clear: both;
+	padding: 0 5% 0 5%;
+	line-height: 130%;
+}
+
+/* Hover state*/
+body table#itemtablenostatus tbody tr:hover{
+	border-color: #2B2C74;
+	background-color: #F2F1FA;
+}
+body table#itemtablenostatus tr:hover td:first-child{
+	border-color: #2B2C74;
+	color: #0D0D1F;
+	background-color: #D4D5EE;
+}
+
 /* Item Table Small */
 body table#itemtablesmall,
 body table#itemtablesmall tbody{

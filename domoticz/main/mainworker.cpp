@@ -2650,92 +2650,133 @@ void MainWorker::decode_Lighting4(const int HwdID, const tRBUF *pResponse)
 			WriteMessage(szTmp);
 			sprintf(szTmp,"Code          = %02X%02X%02X", pResponse->LIGHTING4.cmd1,pResponse->LIGHTING4.cmd2,pResponse->LIGHTING4.cmd3);
 			WriteMessage(szTmp);
-			WriteMessage("S1- S12  = ", false);
 
-			if ((pResponse->LIGHTING4.cmd1 & 0xC0) == 0)
-				WriteMessage("up ", false);
-			else if ((pResponse->LIGHTING4.cmd1 & 0xC0) == 0x40)
-				WriteMessage("middle ", false);
-			else if ((pResponse->LIGHTING4.cmd1 & 0xC0) == 0xC0)
-				WriteMessage("down ", false);
+			WriteMessage("S1- S24  = ", false);
+			if ((pResponse->LIGHTING4.cmd1 & 0x80)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd1 & 0x40)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd1 & 0x20)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd1 & 0x10)==0)
+				WriteMessage("0 ", false);
+			else
+				WriteMessage("1 ", false);
+			
 
-			if ((pResponse->LIGHTING4.cmd1 & 0x30) == 0)
-				WriteMessage("up ", false);
-			else if ((pResponse->LIGHTING4.cmd1 & 0x30) == 0x10)
-				WriteMessage("middle ", false);
-			else if ((pResponse->LIGHTING4.cmd1 & 0x30) == 0x30)
-				WriteMessage("down ", false);
+			if ((pResponse->LIGHTING4.cmd1 & 0x8)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd1 & 0x4)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd1 & 0x2)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd1 & 0x1)==0)
+				WriteMessage("0 ", false);
+			else
+				WriteMessage("1 ", false);
+			
 
-			if ((pResponse->LIGHTING4.cmd1 & 0x0C) == 0)
-				WriteMessage("up ", false);
-			else if ((pResponse->LIGHTING4.cmd1 & 0x0C) == 0x4)
-				WriteMessage("middle ", false);
-			else if ((pResponse->LIGHTING4.cmd1 & 0x0C) == 0xC)
-				WriteMessage("down ", false);
+			if ((pResponse->LIGHTING4.cmd2 & 0x80)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd2 & 0x40)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd2 & 0x20)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd2 & 0x10)==0)
+				WriteMessage("0 ", false);
+			else
+				WriteMessage("1 ", false);
+			
 
-			if ((pResponse->LIGHTING4.cmd1 & 0x03) == 0)
-				WriteMessage("up ", false);
-			else if ((pResponse->LIGHTING4.cmd1 & 0x03) == 0x1)
-				WriteMessage("middle ", false);
-			else if ((pResponse->LIGHTING4.cmd1 & 0x03) == 0x3)
-				WriteMessage("down ", false);
+			if ((pResponse->LIGHTING4.cmd2 & 0x8)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd2 & 0x4)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd2 & 0x2)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd2 & 0x1)==0)
+				WriteMessage("0 ", false);
+			else
+				WriteMessage("1 ", false);
+			
 
-			if ((pResponse->LIGHTING4.cmd2 & 0xC0) == 0)
-				WriteMessage("up ", false);
-			else if ((pResponse->LIGHTING4.cmd2 & 0xC0) == 0x40)
-				WriteMessage("middle ", false);
-			else if ((pResponse->LIGHTING4.cmd2 & 0xC0) == 0xC0)
-				WriteMessage("down ", false);
+			if ((pResponse->LIGHTING4.cmd3 & 0x80)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd3 & 0x40)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd3 & 0x20)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd3 & 0x10)==0)
+				WriteMessage("0 ", false);
+			else
+				WriteMessage("1 ", false);
+			
 
-			if ((pResponse->LIGHTING4.cmd2 & 0x30) == 0)
-				WriteMessage("up ", false);
-			else if ((pResponse->LIGHTING4.cmd2 & 0x30) == 0x10)
-				WriteMessage("middle ", false);
-			else if ((pResponse->LIGHTING4.cmd2 & 0x30) == 0x30)
-				WriteMessage("down ", false);
-
-			if ((pResponse->LIGHTING4.cmd2 & 0xC) == 0)
-				WriteMessage("up ", false);
-			else if ((pResponse->LIGHTING4.cmd2 & 0xC) == 0x4)
-				WriteMessage("middle ", false);
-			else if ((pResponse->LIGHTING4.cmd2 & 0xC) == 0xC)
-				WriteMessage("down ", false);
-
-			if ((pResponse->LIGHTING4.cmd2 & 0x3) == 0)
-				WriteMessage("up ", false);
-			else if ((pResponse->LIGHTING4.cmd2 & 0x3) == 0x1)
-				WriteMessage("middle ", false);
-			else if ((pResponse->LIGHTING4.cmd2 & 0x3) == 0x3)
-				WriteMessage("down ", false);
-
-			if ((pResponse->LIGHTING4.cmd3 & 0xC0) == 0)
-				WriteMessage("up ", false);
-			else if ((pResponse->LIGHTING4.cmd3 & 0xC0) == 0x40)
-				WriteMessage("middle ", false);
-			else if ((pResponse->LIGHTING4.cmd3 & 0xC0) == 0xC0)
-				WriteMessage("down ", false);
-
-			if ((pResponse->LIGHTING4.cmd3 & 0x30) == 0)
-				WriteMessage("up ", false);
-			else if ((pResponse->LIGHTING4.cmd3 & 0x30) == 0x10)
-				WriteMessage("middle ", false);
-			else if ((pResponse->LIGHTING4.cmd3 & 0x30) == 0x30)
-				WriteMessage("down ", false);
-
-			if ((pResponse->LIGHTING4.cmd3 & 0xC) == 0)
-				WriteMessage("up ", false);
-			else if ((pResponse->LIGHTING4.cmd3 & 0xC) == 0x4)
-				WriteMessage("middle ", false);
-			else if ((pResponse->LIGHTING4.cmd3 & 0xC) == 0xC)
-				WriteMessage("down ", false);
-
-			if ((pResponse->LIGHTING4.cmd3 & 0x3) == 0)
-				WriteMessage("up");
-			else if ((pResponse->LIGHTING4.cmd3 & 0x3) == 0x1)
-				WriteMessage("middle");
-			else if ((pResponse->LIGHTING4.cmd3 & 0x3) == 0x3)
-				WriteMessage("down");
-
+			if ((pResponse->LIGHTING4.cmd3 & 0x8)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd3 & 0x4)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd3 & 0x2)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd3 & 0x1)==0)
+				WriteMessage("0");
+			else
+				WriteMessage("1");
+				
 			sprintf(szTmp,"Pulse         = %d usec", (pResponse->LIGHTING4.pulseHigh * 256) + pResponse->LIGHTING4.pulseLow);
 			WriteMessage(szTmp);
 			break;
