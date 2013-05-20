@@ -316,34 +316,6 @@ char * CWebServer::DisplayTimerTypesCombo()
 void CWebServer::LoadUsers()
 {
 	ClearUserPasswords();
-	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	result=m_pMain->m_sql.query("SELECT ID, Active, Username, Password, Rights FROM Users");
-	if (result.size()>0)
-	{
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		int ii=0;
-		for (itt=result.begin(); itt!=result.end(); ++itt)
-		{
-			std::vector<std::string> sd=*itt;
-
-			unsigned long ID;
-			std::stringstream s_strid;
-			s_strid << std::hex << sd[0];
-			s_strid >> ID;
-
-			std::string username=base64_decode(sd[2]);
-			std::string password=base64_decode(sd[3]);
-
-			_eUserRights rights=(_eUserRights)atoi(sd[4].c_str());
-
-			int bIsActive=(int)atoi(sd[1].c_str());
-			if (bIsActive)
-			{
-				AddUser(ID,username,password,rights);
-			}
-		}
-	}
 	std::string WebUserName,WebPassword;
 	int nValue=0;
 	if (m_pMain->m_sql.GetPreferencesVar("WebUserName",nValue,WebUserName))
@@ -355,6 +327,35 @@ void CWebServer::LoadUsers()
 				WebUserName=base64_decode(WebUserName);
 				WebPassword=base64_decode(WebPassword);
 				AddUser(10000,WebUserName, WebPassword, URIGHTS_ADMIN);
+
+				std::vector<std::vector<std::string> > result;
+				std::stringstream szQuery;
+				result=m_pMain->m_sql.query("SELECT ID, Active, Username, Password, Rights FROM Users");
+				if (result.size()>0)
+				{
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					int ii=0;
+					for (itt=result.begin(); itt!=result.end(); ++itt)
+					{
+						std::vector<std::string> sd=*itt;
+
+						unsigned long ID;
+						std::stringstream s_strid;
+						s_strid << std::hex << sd[0];
+						s_strid >> ID;
+
+						std::string username=base64_decode(sd[2]);
+						std::string password=base64_decode(sd[3]);
+
+						_eUserRights rights=(_eUserRights)atoi(sd[4].c_str());
+
+						int bIsActive=(int)atoi(sd[1].c_str());
+						if (bIsActive)
+						{
+							AddUser(ID,username,password,rights);
+						}
+					}
+				}
 			}
 		}
 	}
