@@ -95,7 +95,6 @@ function CheckForUpdate(showdialog) {
 				userrights : urights
 			};
 			if (window.my_config.userrights!=2) {
-				$("#mDevices").hide();
 				$("#setupmenu").hide();
 			}
 			if (data.HaveUpdate == true) {
@@ -381,7 +380,9 @@ $(document).ready(function() {
                         <ul class="nav">
                             <li id="mDashboard"><a id="cDashboard" href="javascript:SwitchLayout('Dashboard')"><img src="images/desktop.png"> Dashboard</img></a></li>
                             <li class="divider-vertical"></li>
-								<li id="mLightSwitches"><a id="cLightSwitches" href="javascript:SwitchLayout('LightSwitches')"><img src="images/lightbulb.png"> Lights/Switches</a></li>
+								<li id="mLightSwitches"><a id="cLightSwitches" href="javascript:SwitchLayout('LightSwitches')"><img src="images/lightbulb.png"> Switches</a></li>
+                            <li class="divider-vertical"></li>
+								<li id="mScenes"><a id="cScenes" href="javascript:SwitchLayout('Scenes')"><img src="images/scenes.png"> Scenes</a></li>
                             <li class="divider-vertical"></li>
 								<li id="mTemperature"><a id="cTemperature" href="javascript:SwitchLayout('Temperature')"><img src="images/temperature.png"> Temperature</a></li>
                             <li class="divider-vertical"></li>
@@ -389,21 +390,18 @@ $(document).ready(function() {
                             <li class="divider-vertical"></li>
 								<li id="mUtility"><a id="cUtility" href="javascript:SwitchLayout('Utility')"><img src="images/utility.png"> Utility</a></li>
                             <li class="divider-vertical"></li>
-								<li id="mDevices"><a id="cDevices" href="javascript:SwitchLayout('Devices')"><img src="images/devices.png"> Devices</a></li>
-                            <li class="divider-vertical"></li>
                             <li class="dropdown">
                                 <a id="setupmenu" class="dropdown-toggle" data-toggle="dropdown" onmouseover="cursorhand()" onmouseout="cursordefault()"><img src="images/setup.png"> Setup <b class="caret"></b></a>
                                 <ul class="dropdown-menu pull-right">
 									<li id="mHardware"><a id="cHardware" href="javascript:SwitchLayout('Hardware')"><img src="images/hardware.png"> Hardware</a></li>
+									<li id="mDevices"><a id="cDevices" href="javascript:SwitchLayout('Devices')"><img src="images/devices.png"> Devices</a></li>
                                     <li id="mSetup"><a id="cSetup" href="javascript:SwitchLayout('Setup')"><img src="images/setup.png"> Application Settings</a></li>
-                                    <li id="mScenes"><a id="cScenes" href="javascript:SwitchLayout('Scenes')"><img src="images/scenes.png"> Scenes</a></li>
                                     <li id="dUpdate" class="divider"></li>
                                     <li id="mUpdate"><a id="cUpdate" href="javascript:SwitchLayout('Update')"><img src="images/utility.png"> Update Domoticz</a></li>
                                     <li id="mCheckUpdate"><a id="cUpdate" href="javascript:CheckForUpdate(true)"><img src="images/utility.png"> Check for Update</a></li>
                                     <li class="dropdown-submenu">
 										<a tabindex="-1">More options</a>
 										<ul class="dropdown-menu pull-left">
-											<li id="mDevices2"><a id="cDevices" href="javascript:SwitchLayout('Devices')"><img src="images/devices.png"> Devices</a></li>
 											<li id="mCam"><a id="cCam" href="javascript:SwitchLayout('Cam')"><img src="images/camera-web.png"> Cameras</a></li>
 											<li id="mUsers"><a id="cUsers" href="javascript:SwitchLayout('Users')"><img src="images/users.png"> Edit Users</a></li>
 											<li id="mUsers"><a id="cUsers" href="javascript:SwitchLayout('Notification')"><img src="images/notification.png"> Send Notification</a></li>

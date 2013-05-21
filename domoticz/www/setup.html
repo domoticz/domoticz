@@ -111,7 +111,10 @@
 				<h2>Active Menus:</h2>
 				<table class="display" id="activemenustable" border="0" cellpadding="0" cellspacing="0">
 					<tr>
-						<td><input type="checkbox" id="EnableTabLights" name="EnableTabLights"/> Lights/Switches</td>
+						<td><input type="checkbox" id="EnableTabLights" name="EnableTabLights"/> Switches</td>
+					</tr>
+					<tr>
+						<td><input type="checkbox" id="EnableTabScenes" name="EnableTabScenes"/> Scenes</td>
 					</tr>
 					<tr>
 						<td><input type="checkbox" id="EnableTabTemp" name="EnableTabTemp"/> Temperature</td>
@@ -121,9 +124,6 @@
 					</tr>
 					<tr>
 						<td><input type="checkbox" id="EnableTabUtility" name="EnableTabUtility"/> Utility</td>
-					</tr>
-					<tr>
-						<td><input type="checkbox" id="EnableTabDevices" name="EnableTabDevices"/> Devices</td>
 					</tr>
 				</table>
 			</div>
@@ -532,6 +532,9 @@ function ShowSettings()
       if (typeof data.EnableTabLights != 'undefined') {
         $("#activemenustable #EnableTabLights").prop('checked',data.EnableTabLights==1);
       }
+      if (typeof data.EnableTabScenes != 'undefined') {
+        $("#activemenustable #EnableTabScenes").prop('checked',data.EnableTabScenes==1);
+      }
       if (typeof data.EnableTabTemp != 'undefined') {
         $("#activemenustable #EnableTabTemp").prop('checked',data.EnableTabTemp==1);
       }
@@ -540,9 +543,6 @@ function ShowSettings()
       }
       if (typeof data.EnableTabUtility != 'undefined') {
         $("#activemenustable #EnableTabUtility").prop('checked',data.EnableTabUtility==1);
-      }
-      if (typeof data.EnableTabDevices != 'undefined') {
-        $("#activemenustable #EnableTabDevices").prop('checked',data.EnableTabDevices==1);
       }
      }
   });

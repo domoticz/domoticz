@@ -1172,6 +1172,12 @@ function EnableDisableTabs()
 			else {
 				$("#mLightSwitches").show();
 			}
+			if (data.result["EnableTabScenes"]==0) {
+				$("#mScenes").hide();
+			}
+			else {
+				$("#mScenes").show();
+			}
 			if (data.result["EnableTabTemp"]==0) {
 				$("#mTemperature").hide();
 			}
@@ -1189,14 +1195,6 @@ function EnableDisableTabs()
 			}
 			else {
 				$("#mUtility").show();
-			}
-			if (data.result["EnableTabDevices"]==0) {
-				$("#mDevices").hide();
-				$("#mDevices2").show();
-			}
-			else {
-				$("#mDevices").show();
-				$("#mDevices2").hide();
 			}
 		 },
 		 error: function(){

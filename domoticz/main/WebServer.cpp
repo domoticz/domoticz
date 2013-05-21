@@ -529,8 +529,8 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("EnableTabWeather",(EnableTabWeather=="on"?1:0));
 	std::string EnableTabUtility=m_pWebEm->FindValue("EnableTabUtility");
 	m_pMain->m_sql.UpdatePreferencesVar("EnableTabUtility",(EnableTabUtility=="on"?1:0));
-	std::string EnableTabDevices=m_pWebEm->FindValue("EnableTabDevices");
-	m_pMain->m_sql.UpdatePreferencesVar("EnableTabDevices",(EnableTabDevices=="on"?1:0));
+	std::string EnableTabScenes=m_pWebEm->FindValue("EnableTabScenes");
+	m_pMain->m_sql.UpdatePreferencesVar("EnableTabScenes",(EnableTabScenes=="on"?1:0));
 
 	return (char*)m_retstr.c_str();
 }
@@ -4952,9 +4952,9 @@ std::string CWebServer::GetJSonPage()
 			{
 				root["result"]["EnableTabUtility"]=nValue;
 			}
-			if (m_pMain->m_sql.GetPreferencesVar("EnableTabDevices", nValue))
+			if (m_pMain->m_sql.GetPreferencesVar("EnableTabScenes", nValue))
 			{
-				root["result"]["EnableTabDevices"]=nValue;
+				root["result"]["EnableTabScenes"]=nValue;
 			}
 		}
 		else if (cparam=="emailcamerasnapshot")
@@ -7680,9 +7680,9 @@ std::string CWebServer::GetJSonPage()
 				{
 					root["EnableTabUtility"]=nValue;
 				}
-				else if (Key=="EnableTabDevices")
+				else if (Key=="EnableTabScenes")
 				{
-					root["EnableTabDevices"]=nValue;
+					root["EnableTabScenes"]=nValue;
 				}
 			}
 		}

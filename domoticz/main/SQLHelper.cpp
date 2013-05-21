@@ -649,9 +649,9 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("EnableTabUtility", 1);
 	}
-	if (!GetPreferencesVar("EnableTabDevices", nValue))
+	if (!GetPreferencesVar("EnableTabScenes", nValue))
 	{
-		UpdatePreferencesVar("EnableTabDevices", 1);
+		UpdatePreferencesVar("EnableTabScenes", 1);
 	}
 
 	//Start background thread
