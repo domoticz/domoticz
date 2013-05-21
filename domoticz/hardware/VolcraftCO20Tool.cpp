@@ -11,8 +11,10 @@
 
 #ifdef WIN32
 	#include "libusbwinusbbridge.h"
+	#define __le16_to_cpu(x) (x)
 #else
 	#include <usb.h>
+	#include <asm/byteorder.h>
 #endif
 
 #define VolcraftCO20_VENDOR    0x03eb
@@ -122,7 +124,7 @@ unsigned short CVolcraftCO20Tool::GetVOC()
 
 	unsigned short iresult=0;
 	memcpy(&iresult,buf+2,2);
-	unsigned short voc = iresult;//__le16_to_cpu(iresult);
+	unsigned short voc = __le16_to_cpu(iresult);
 	if ((voc<400)||(voc>2000))
 		return 3000;
 	return voc;

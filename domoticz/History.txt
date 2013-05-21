@@ -19,6 +19,7 @@ Version 1.0.xxx (May xxth 2013)
 - Fixed: notification.png now included in SVN (caused browser cache problems)
 - Changed: Door bells do not display a status message anymore
 - Changed: Web users not loaded when no Application Settings admin account is specified
+- Fixed: Voltcraft C020 value reading corrected for little endian systems
 
 Version 1.0.607 (May 11th 2013)
 - Changed: Rego6XX Type setting moved to the hardware settings in the same way as RFXtrx setup is done
