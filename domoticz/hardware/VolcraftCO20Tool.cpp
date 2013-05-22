@@ -77,6 +77,7 @@ bool CVolcraftCO20Tool::OpenDevice()
 		_log.Log(LOG_ERROR, "VolcraftCO20: Error while claiming device interface (%d)." , ret );
 		return false;
 	}
+	char buf[1000];
 	ret = usb_set_altinterface(m_device_handle, 0);
 
 	ret = usb_get_descriptor(m_device_handle, 0x0000001, 0x0000000, buf, 0x0000012);
