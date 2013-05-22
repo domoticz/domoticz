@@ -17,6 +17,7 @@ private:
 	volatile bool m_stoprequested;
 	time_t m_LastPollTime;
 	boost::shared_ptr<boost::thread> m_thread;
+	bool m_bDetectSystem;
 	bool m_bIsGPIO;
 	bool m_bIsOWFS;
 

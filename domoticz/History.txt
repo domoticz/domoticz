@@ -23,6 +23,8 @@ Version 1.0.xxx (May xxth 2013)
 - Changed: Reorganized main menu
 - Implemented: Devices Overview, added device Idx
 - Changed: generic little endian detection algorithm
+- Implemented: 1-Wire startup delay
+- Implemented: Application Settings, Notification Interval for Sensors/Switches
 
 Version 1.0.607 (May 11th 2013)
 - Changed: Rego6XX Type setting moved to the hardware settings in the same way as RFXtrx setup is done

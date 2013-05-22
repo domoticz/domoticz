@@ -163,9 +163,9 @@
 		<!-- Notification system
 		================================================== -->
 		<section id="notifications">
-		  <div class="page-header-small">
-			<h1>Notification system</h1>
-		  </div>
+			<div class="page-header-small">
+				<h1>Notification system</h1>
+			</div>
 			<h2>Prowl (iPhone/iPad):</h2>
 			<table class="display" id="prowltable" border="0" cellpadding="0" cellspacing="0">
 			<tr>
@@ -183,6 +183,37 @@
 			</tr>
 			</table>
 			To get a free account/API key click <a class="norm-link" href="http://www.notifymyandroid.com/" target="_blank">Here</a><br>
+			<br>
+			<h2>Notification Intervals:</h2>
+			<table class="display" id="nitable" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="right" style="width:60px"><label>Sensors: </label></td>
+				<td><select id="comboNotificationSensorInterval" name="NotificationSensorInterval" style="width:100px" class="combobox ui-corner-all">
+					<option value="60">1 Minute</option>
+					<option value="300">5 Minutes</option>
+					<option value="600">10 Minutes</option>
+					<option value="900">15 Minutes</option>
+					<option value="1800">30 Minutes</option>
+					<option value="3600">1 Hour</option>
+					<option value="43200">12 Hours</option>
+					<option value="86400">24 Hours</option>
+				</select></td>
+			</tr>
+			<tr>
+				<td align="right" style="width:60px"><label>Switches: </label></td>
+				<td><select id="comboNotificationSwitchesInterval" name="NotificationSwitchInterval" style="width:100px" class="combobox ui-corner-all">
+					<option value="0">Direct</option>
+					<option value="60">1 Minute</option>
+					<option value="300">5 Minutes</option>
+					<option value="600">10 Minutes</option>
+					<option value="900">15 Minutes</option>
+					<option value="1800">30 Minutes</option>
+					<option value="3600">1 Hour</option>
+					<option value="43200">12 Hours</option>
+					<option value="86400">24 Hours</option>
+				</select></td>
+			</tr>
+			</table>
 		</section>
 
 		<!-- Email Setup
@@ -543,6 +574,12 @@ function ShowSettings()
       }
       if (typeof data.EnableTabUtility != 'undefined') {
         $("#activemenustable #EnableTabUtility").prop('checked',data.EnableTabUtility==1);
+      }
+      if (typeof data.NotificationSensorInterval != 'undefined') {
+        $("#nitable #comboNotificationSensorInterval").val(data.NotificationSensorInterval);
+      }
+      if (typeof data.NotificationSwitchInterval != 'undefined') {
+        $("#nitable #comboNotificationSwitchesInterval").val(data.NotificationSwitchInterval);
       }
      }
   });

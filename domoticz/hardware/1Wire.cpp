@@ -31,8 +31,6 @@ C1Wire::C1Wire(const int ID)
 {
 	m_HwdID=ID;
 	m_stoprequested=false;
-	m_bIsGPIO=IsGPIOSystem();
-	m_bIsOWFS=IsOWFSSystem();
 	Init();
 }
 
@@ -42,7 +40,8 @@ C1Wire::~C1Wire(void)
 
 void C1Wire::Init()
 {
-	m_LastPollTime=time(NULL)-Wire1_POLL_INTERVAL+2;
+	m_bDetectSystem=true;
+	m_LastPollTime=time(NULL);
 }
 
 bool C1Wire::StartHardware()
@@ -74,6 +73,13 @@ void C1Wire::Do_Work()
 		atime=time(NULL);
 		if (atime-m_LastPollTime>=Wire1_POLL_INTERVAL)
 		{
+			if (m_bDetectSystem)
+			{
+				m_bDetectSystem=false;
+				m_bIsGPIO=IsGPIOSystem();
+				m_bIsOWFS=IsOWFSSystem();
+			}
+
 			GetSensorDetails();
 			m_LastPollTime=time(NULL);
 		}

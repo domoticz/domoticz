@@ -532,6 +532,9 @@ char * CWebServer::PostSettings()
 	std::string EnableTabScenes=m_pWebEm->FindValue("EnableTabScenes");
 	m_pMain->m_sql.UpdatePreferencesVar("EnableTabScenes",(EnableTabScenes=="on"?1:0));
 
+	m_pMain->m_sql.UpdatePreferencesVar("NotificationSensorInterval",atoi(m_pWebEm->FindValue("NotificationSensorInterval").c_str()));
+	m_pMain->m_sql.UpdatePreferencesVar("NotificationSwitchInterval",atoi(m_pWebEm->FindValue("NotificationSwitchInterval").c_str()));
+
 	return (char*)m_retstr.c_str();
 }
 
@@ -7683,6 +7686,14 @@ std::string CWebServer::GetJSonPage()
 				else if (Key=="EnableTabScenes")
 				{
 					root["EnableTabScenes"]=nValue;
+				}
+				else if (Key=="NotificationSensorInterval")
+				{
+					root["NotificationSensorInterval"]=nValue;
+				}
+				else if (Key=="NotificationSwitchInterval")
+				{
+					root["NotificationSwitchInterval"]=nValue;
 				}
 			}
 		}

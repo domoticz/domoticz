@@ -653,6 +653,19 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("EnableTabScenes", 1);
 	}
+	if (!GetPreferencesVar("NotificationSensorInterval", nValue))
+	{
+		UpdatePreferencesVar("NotificationSensorInterval", 12*60*60);
+	}
+	else
+	{
+		if (nValue<60)
+			UpdatePreferencesVar("NotificationSensorInterval", 60);
+	}
+	if (!GetPreferencesVar("NotificationSwitchInterval", nValue))
+	{
+		UpdatePreferencesVar("NotificationSwitchInterval", 0);
+	}
 
 	//Start background thread
 	if (!StartThread())
@@ -1601,7 +1614,10 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(
 
 	//check if not send 12 hours ago, and if applicable
 
-	atime-=(12*3600);
+	int nNotificationInterval=12*3600;
+	GetPreferencesVar("NotificationSensorInterval", nNotificationInterval);
+	atime-=nNotificationInterval;
+
 	std::string msg="";
 
 	std::string signtemp=Notification_Type_Desc(NTYPE_TEMPERATURE,1);
@@ -1710,7 +1726,10 @@ bool CSQLHelper::CheckAndHandleAmpere123Notification(
 
 	//check if not send 12 hours ago, and if applicable
 
-	atime-=(12*3600);
+	int nNotificationInterval=12*3600;
+	GetPreferencesVar("NotificationSensorInterval", nNotificationInterval);
+	atime-=nNotificationInterval;
+
 	std::string msg="";
 
 	std::string signamp1=Notification_Type_Desc(NTYPE_AMPERE1,1);
@@ -1848,7 +1867,10 @@ bool CSQLHelper::CheckAndHandleNotification(
 
 	//check if not send 12 hours ago, and if applicable
 
-	atime-=(12*3600);
+	int nNotificationInterval=12*3600;
+	GetPreferencesVar("NotificationSensorInterval", nNotificationInterval);
+	atime-=nNotificationInterval;
+
 	std::string msg="";
 
 	std::string ltype=Notification_Type_Desc(ntype,0);
@@ -1944,59 +1966,67 @@ bool CSQLHelper::CheckAndHandleSwitchNotification(
 
 	std::string ltype=Notification_Type_Desc(ntype,1);
 
+	time_t atime=time(NULL);
+	int nNotificationInterval=0;
+	GetPreferencesVar("NotificationSwitchInterval", nNotificationInterval);
+	atime-=nNotificationInterval;
+
 	std::vector<_tNotification>::const_iterator itt;
 	for (itt=notifications.begin(); itt!=notifications.end(); ++itt)
 	{
-		std::vector<std::string> splitresults;
-		StringSplit(itt->Params, ";", splitresults);
-		if (splitresults.size()<1)
-			continue; //impossible
-		std::string atype=splitresults[0];
-
-		bool bSendNotification=false;
-
-		if (atype==ltype)
+		if (atime>=itt->LastSend)
 		{
-			bSendNotification=true;
-			msg=devicename;
-			if (ntype==NTYPE_SWITCH_ON)
+			std::vector<std::string> splitresults;
+			StringSplit(itt->Params, ";", splitresults);
+			if (splitresults.size()<1)
+				continue; //impossible
+			std::string atype=splitresults[0];
+
+			bool bSendNotification=false;
+
+			if (atype==ltype)
 			{
-				switch (switchtype)
+				bSendNotification=true;
+				msg=devicename;
+				if (ntype==NTYPE_SWITCH_ON)
 				{
-				case STYPE_Doorbell:
-					msg+=" pressed";
-					break;
-				case STYPE_DoorLock:
-					msg+=" Open";
-					break;
-				case STYPE_Motion:
-					msg+=" movement detected";
-					break;
-				case STYPE_SMOKEDETECTOR:
-					msg+=" ALARM/FIRE !";
-					break;
-				default:
-					msg+=" >> ON";
-					break;
-				}
+					switch (switchtype)
+					{
+					case STYPE_Doorbell:
+						msg+=" pressed";
+						break;
+					case STYPE_DoorLock:
+						msg+=" Open";
+						break;
+					case STYPE_Motion:
+						msg+=" movement detected";
+						break;
+					case STYPE_SMOKEDETECTOR:
+						msg+=" ALARM/FIRE !";
+						break;
+					default:
+						msg+=" >> ON";
+						break;
+					}
 				 
-			}
-			else {
-				switch (switchtype)
-				{
-				case STYPE_DoorLock:
-					msg+=" Closed";
-					break;
-				default:
-					msg+=" >> OFF";
-					break;
+				}
+				else {
+					switch (switchtype)
+					{
+					case STYPE_DoorLock:
+						msg+=" Closed";
+						break;
+					default:
+						msg+=" >> OFF";
+						break;
+					}
 				}
 			}
-		}
-		if (bSendNotification)
-		{
-			SendNotification("", m_urlencoder.URLEncode(msg));
-			TouchNotification(itt->ID);
+			if (bSendNotification)
+			{
+				SendNotification("", m_urlencoder.URLEncode(msg));
+				TouchNotification(itt->ID);
+			}
 		}
 	}
 	return true;
