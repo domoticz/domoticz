@@ -128,6 +128,7 @@ unsigned short CVolcraftCO20Tool::GetVOC()
 		return 0;
 
 	char buf[1000];
+	int ret;
 
 	int c0 = 104;
 	int c1 = 37; 
