@@ -39,7 +39,6 @@ C1Wire::C1Wire(const int ID)
 	m_HwdID=ID;
 	m_stoprequested=false;
 	Init();
-	GetOWFSSensorDetails();
 }
 
 C1Wire::~C1Wire(void)
@@ -236,6 +235,18 @@ void C1Wire::GetGPIOSensorDetails()
 	}
 }
 
+bool HaveSupported1WireSensor(const std::string basedir)
+{
+	std::string devfile=basedir+"/temperature";
+	if (file_exist(devfile.c_str()))
+		return true;
+	devfile=basedir+"/humidity";
+	if (file_exist(devfile.c_str()))
+		return true;
+
+	return false;
+}
+
 void C1Wire::GetOWFSSensorDetails()
 {
 	DIR *d=NULL;
@@ -260,8 +271,6 @@ void C1Wire::GetOWFSSensorDetails()
 						((fchar>='A')&&(fchar<='F'))
 						)
 					{
-						std::string devfile=OWFS_Base_Dir;
-						devfile+="/" + dirname + "/temperature";
 						_t1WireSensor sensor;
 						std::string devid=dirname;
 						devid=devid.substr(3,4);
@@ -269,7 +278,9 @@ void C1Wire::GetOWFSSensorDetails()
 						sensor.filename=OWFS_Base_Dir;
 						sensor.filename+="/" + dirname;
 
-						if (file_exist(devfile.c_str()))
+						std::string devfile=OWFS_Base_Dir;
+						devfile+="/" + dirname;
+						if (HaveSupported1WireSensor(devfile))
 						{
 							_wiresensors.push_back(sensor);
 						}
@@ -297,8 +308,8 @@ void C1Wire::GetOWFSSensorDetails()
 												((fchar>='A')&&(fchar<='F'))
 												)
 											{
-												std::string devfile=dirname2+"/"+dirname3+"/temperature";
-												if (file_exist(devfile.c_str()))
+												std::string devfile=dirname2+"/"+dirname3;
+												if (HaveSupported1WireSensor(devfile))
 												{
 													_t1WireSensor sensor;
 													std::string devid=dirname3;
