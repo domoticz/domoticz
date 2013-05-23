@@ -3,6 +3,7 @@
 #include "1Wire.h"
 #include "../main/Logger.h"
 #include "../main/RFXtrx.h"
+#include "../main/Helper.h"
 
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -232,6 +233,13 @@ void C1Wire::GetOWFSSensorDetails()
 {
 	DIR *d=NULL;
 
+	struct _t1WireSensor
+	{
+		std::string devid;
+		std::string filename;
+	};
+	std::vector<_t1WireSensor> _wiresensors;
+
 	d=opendir(OWFS_Base_Dir);
 	if (d != NULL)
 	{
@@ -239,50 +247,68 @@ void C1Wire::GetOWFSSensorDetails()
 		// Loop while not NULL
 		while(de = readdir(d))
 		{
-			std::string dirname = de->d_name;
 			if (de->d_type==DT_DIR)
 			{
+				std::string dirname = de->d_name;
 				if ((dirname!=".")&&(dirname!=".."))
 				{
-					std::string devfile=OWFS_Base_Dir;
-					devfile+="/" + dirname + "/temperature";
-					std::string devid=dirname;
-					devid=devid.substr(3,4);
-					std::ifstream infile2;
-					infile2.open(devfile.c_str());
-					if (infile2.is_open())
+					unsigned char fchar=dirname[0];
+					if (
+						((fchar>='0')&&(fchar<='9'))||
+						((fchar>='A')&&(fchar<='F'))
+						)
 					{
-						std::string sLine;
-						getline(infile2, sLine);
-						float temp=(float)atof(sLine.c_str());
-						if ((temp>-300)&&(temp<300))
+						std::string devfile=OWFS_Base_Dir;
+						devfile+="/" + dirname + "/temperature";
+						_t1WireSensor sensor;
+						std::string devid=dirname;
+						devid=devid.substr(3,4);
+						sensor.devid=devid;
+						sensor.filename=devfile;
+
+						if (file_exist(devfile.c_str()))
 						{
-							unsigned int xID;   
-							std::stringstream ss;
-							ss << std::hex << devid;
-							ss >> xID;
-
-							if (!((xID==0)&&(temp==0)))
+							_wiresensors.push_back(sensor);
+						}
+						else
+						{
+							//Might be a w-wire hub
+							DIR *d2=NULL;
+							std::string dirname2=OWFS_Base_Dir;
+							dirname2+="/"+dirname;
+							dirname2+="/main";
+							d2=opendir(dirname2.c_str());
+							if (d2!=NULL)
 							{
-								//Temp
-								RBUF tsen;
-								memset(&tsen,0,sizeof(RBUF));
-								tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-								tsen.TEMP.packettype=pTypeTEMP;
-								tsen.TEMP.subtype=sTypeTEMP10;
-								tsen.TEMP.battery_level=9;
-								tsen.TEMP.rssi=6;
-								tsen.TEMP.id1=(BYTE)((xID&0xFF00)>>8);
-								tsen.TEMP.id2=(BYTE)(xID&0xFF);
-
-								tsen.TEMP.tempsign=(temp>=0)?0:1;
-								int at10=round(abs(temp*10.0f));
-								tsen.TEMP.temperatureh=(BYTE)(at10/256);
-								at10-=(tsen.TEMP.temperatureh*256);
-								tsen.TEMP.temperaturel=(BYTE)(at10);
-
-								sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
-								m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.TEMP));
+								struct dirent *de2=NULL;
+								while(de2 = readdir(d2))
+								{
+									if (de2->d_type==DT_DIR)
+									{
+										std::string dirname3 = de2->d_name;
+										if ((dirname3!=".")&&(dirname3!=".."))
+										{
+											unsigned char fchar=dirname3[0];
+											if (
+												((fchar>='0')&&(fchar<='9'))||
+												((fchar>='A')&&(fchar<='F'))
+												)
+											{
+												std::string devfile=dirname2+"/"+dirname3+"/temperature";
+												if (file_exist(devfile.c_str()))
+												{
+													_t1WireSensor sensor;
+													std::string devid=dirname3;
+													devid=devid.substr(3,4);
+													sensor.devid=devid;
+													sensor.filename=devfile;
+													_wiresensors.push_back(sensor);
+												}
+											}
+										}
+									}
+								}
+								closedir(d2);
 							}
 						}
 					}
@@ -290,5 +316,49 @@ void C1Wire::GetOWFSSensorDetails()
 			}
 		}
 		closedir(d);
+	}
+	//parse our sensors
+	std::vector<_t1WireSensor>::const_iterator itt;
+	for (itt=_wiresensors.begin(); itt!=_wiresensors.end(); ++itt)
+	{
+		std::ifstream infile2;
+		std::string filename=itt->filename;
+		infile2.open(filename.c_str());
+		if (infile2.is_open())
+		{
+			std::string sLine;
+			getline(infile2, sLine);
+			float temp=(float)atof(sLine.c_str());
+			if ((temp>-300)&&(temp<300))
+			{
+				unsigned int xID;   
+				std::stringstream ss;
+				ss << std::hex << itt->devid;
+				ss >> xID;
+
+				if (!((xID==0)&&(temp==0)))
+				{
+					//Temp
+					RBUF tsen;
+					memset(&tsen,0,sizeof(RBUF));
+					tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
+					tsen.TEMP.packettype=pTypeTEMP;
+					tsen.TEMP.subtype=sTypeTEMP10;
+					tsen.TEMP.battery_level=9;
+					tsen.TEMP.rssi=6;
+					tsen.TEMP.id1=(BYTE)((xID&0xFF00)>>8);
+					tsen.TEMP.id2=(BYTE)(xID&0xFF);
+
+					tsen.TEMP.tempsign=(temp>=0)?0:1;
+					int at10=round(abs(temp*10.0f));
+					tsen.TEMP.temperatureh=(BYTE)(at10/256);
+					at10-=(tsen.TEMP.temperatureh*256);
+					tsen.TEMP.temperaturel=(BYTE)(at10);
+
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
+					m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.TEMP));
+				}
+			}
+		}
 	}
 }
