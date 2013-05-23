@@ -874,7 +874,20 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					root["result"][ii]["HardwareName"]=_hardwareNames[hardwareID];
 			}
 			root["result"][ii]["idx"]=sd[0];
-			root["result"][ii]["ID"]=sd[1];
+			sprintf(szData,"%04X",atol(sd[1].c_str()));
+			if (
+				(dType==pTypeTEMP_BARO)||
+				(dType==pTypeTEMP)||
+				(dType==pTypeTEMP_HUM)||
+				(dType==pTypeTEMP_HUM_BARO)||
+				(dType==pTypeBARO)||
+				(dType==pTypeHUM)
+				)
+			{
+				root["result"][ii]["ID"]=szData;
+			}
+			else
+				root["result"][ii]["ID"]=sd[1];
 			root["result"][ii]["Unit"]=atoi(sd[2].c_str());
 			root["result"][ii]["Type"]=RFX_Type_Desc(dType,1);
 			root["result"][ii]["SubType"]=RFX_Type_SubType_Desc(dType,dSubType);
