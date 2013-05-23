@@ -1283,7 +1283,7 @@ function ShowLights()
             bAddTimer=false;
           }
           else if (item.SwitchType == "Push On Button") {
-			if (item.InternalState=="Open") {
+			if (item.InternalState=="On") {
 				xhtm+='\t      <td id="img"><img src="images/pushon48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
 			}
 			else {
