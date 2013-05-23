@@ -31,6 +31,7 @@ Version 1.0.xxx (May xxth 2013)
 - Changed: command line parameter -logfile is not -log (do not enable logging, only if needed, use the application log viewer)
 - Fixed: Switched tab, initial Push-On icon was set to off
 - Fixed: Windows installer now includes scripts folder
+- Fixed: Light Log graph, "Group Off" now seen as Off
 
 Version 1.0.607 (May 11th 2013)
 - Changed: Rego6XX Type setting moved to the hardware settings in the same way as RFXtrx setup is done

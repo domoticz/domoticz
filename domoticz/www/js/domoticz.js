@@ -170,7 +170,7 @@ function RefreshLightLogTable(idx)
 						  item.Data
 						],false);
 					var level=-1;
-					if (item.Data.indexOf('Off') == 0) {
+					if (item.Data.indexOf('Off') >= 0) {
 						level=0;
 					}
 					else if (item.Data.indexOf('Set Level:') == 0) {
