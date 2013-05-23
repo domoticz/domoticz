@@ -32,9 +32,9 @@ const char *szHelp=
 	"\t-nobrowser (do not start web browser (Windows Only)\n"
 #endif
 #if defined WIN32
-	"\t-logfile file_path (for example D:\\domoticz.log)\n"
+	"\t-log file_path (for example D:\\domoticz.log)\n"
 #else
-	"\t-logfile file_path (for example /var/log/domoticz.log)\n"
+	"\t-log file_path (for example /var/log/domoticz.log)\n"
 #endif
 	"";
 
@@ -241,14 +241,14 @@ int main(int argc, char**argv)
 		bStartWebBrowser=false;
 	}
 #endif
-	if (cmdLine.HasSwitch("-logfile"))
+	if (cmdLine.HasSwitch("-log"))
 	{
-		if (cmdLine.GetArgumentCount("-logfile")!=1)
+		if (cmdLine.GetArgumentCount("-log")!=1)
 		{
 			_log.Log(LOG_ERROR,"Please specify an output log file");
 			return 0;
 		}
-		std::string logfile=cmdLine.GetSafeArgument("-logfile",0,"domoticz.log");
+		std::string logfile=cmdLine.GetSafeArgument("-log",0,"domoticz.log");
 		_log.SetOutputFile(logfile.c_str());
 	}
 	
