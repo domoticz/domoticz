@@ -39,6 +39,7 @@ C1Wire::C1Wire(const int ID)
 	m_HwdID=ID;
 	m_stoprequested=false;
 	Init();
+	GetOWFSSensorDetails();
 }
 
 C1Wire::~C1Wire(void)
@@ -265,7 +266,8 @@ void C1Wire::GetOWFSSensorDetails()
 						std::string devid=dirname;
 						devid=devid.substr(3,4);
 						sensor.devid=devid;
-						sensor.filename=devfile;
+						sensor.filename=OWFS_Base_Dir;
+						sensor.filename+="/" + dirname;
 
 						if (file_exist(devfile.c_str()))
 						{
@@ -302,7 +304,7 @@ void C1Wire::GetOWFSSensorDetails()
 													std::string devid=dirname3;
 													devid=devid.substr(3,4);
 													sensor.devid=devid;
-													sensor.filename=devfile;
+													sensor.filename=dirname2+"/"+dirname3;
 													_wiresensors.push_back(sensor);
 												}
 											}
@@ -322,43 +324,107 @@ void C1Wire::GetOWFSSensorDetails()
 	std::vector<_t1WireSensor>::const_iterator itt;
 	for (itt=_wiresensors.begin(); itt!=_wiresensors.end(); ++itt)
 	{
-		std::ifstream infile2;
-		std::string filename=itt->filename;
-		infile2.open(filename.c_str());
-		if (infile2.is_open())
+		std::string filename;
+		float temp=0x1234;
+		float humidity=0x1234;
+
+		unsigned int xID;   
+		std::stringstream ss;
+		ss << std::hex << itt->devid;
+		ss >> xID;
+
+		if (xID!=0)
 		{
-			std::string sLine;
-			getline(infile2, sLine);
-			float temp=(float)atof(sLine.c_str());
-			if ((temp>-300)&&(temp<300))
+			//try to read temperature
+			std::ifstream infile;
+			filename=itt->filename+"/temperature";
+			infile.open(filename.c_str());
+			if (infile.is_open())
 			{
-				unsigned int xID;   
-				std::stringstream ss;
-				ss << std::hex << itt->devid;
-				ss >> xID;
+				std::string sLine;
+				getline(infile, sLine);
+				float temp2=(float)atof(sLine.c_str());
+				if ((temp2>-300)&&(temp2<300))
+					temp=temp2;
+				infile.close();
+			}
+			//try to read humidity
+			std::ifstream infile2;
+			filename=itt->filename+"/humidity";
+			infile2.open(filename.c_str());
+			if (infile2.is_open())
+			{
+				std::string sLine;
+				getline(infile2, sLine);
+				float himidity2=(float)atof(sLine.c_str());
+				if ((himidity2>=0)&&(himidity2<=100))
+					humidity=himidity2;
+				infile2.close();
+			}
+			if ((temp!=0x1234)&&(humidity==0x1234))
+			{
+				//temp
+				RBUF tsen;
+				memset(&tsen,0,sizeof(RBUF));
+				tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
+				tsen.TEMP.packettype=pTypeTEMP;
+				tsen.TEMP.subtype=sTypeTEMP10;
+				tsen.TEMP.battery_level=9;
+				tsen.TEMP.rssi=6;
+				tsen.TEMP.id1=(BYTE)((xID&0xFF00)>>8);
+				tsen.TEMP.id2=(BYTE)(xID&0xFF);
 
-				if (!((xID==0)&&(temp==0)))
-				{
-					//Temp
-					RBUF tsen;
-					memset(&tsen,0,sizeof(RBUF));
-					tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-					tsen.TEMP.packettype=pTypeTEMP;
-					tsen.TEMP.subtype=sTypeTEMP10;
-					tsen.TEMP.battery_level=9;
-					tsen.TEMP.rssi=6;
-					tsen.TEMP.id1=(BYTE)((xID&0xFF00)>>8);
-					tsen.TEMP.id2=(BYTE)(xID&0xFF);
+				tsen.TEMP.tempsign=(temp>=0)?0:1;
+				int at10=round(abs(temp*10.0f));
+				tsen.TEMP.temperatureh=(BYTE)(at10/256);
+				at10-=(tsen.TEMP.temperatureh*256);
+				tsen.TEMP.temperaturel=(BYTE)(at10);
 
-					tsen.TEMP.tempsign=(temp>=0)?0:1;
-					int at10=round(abs(temp*10.0f));
-					tsen.TEMP.temperatureh=(BYTE)(at10/256);
-					at10-=(tsen.TEMP.temperatureh*256);
-					tsen.TEMP.temperaturel=(BYTE)(at10);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
+				m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.TEMP));
+			}
+			else if ((temp!=0x1234)&&(humidity!=0x1234))
+			{
+				//temp+hum
+				RBUF tsen;
+				memset(&tsen,0,sizeof(RBUF));
+				tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
+				tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
+				tsen.TEMP_HUM.subtype=sTypeTH5;
+				tsen.TEMP_HUM.battery_level=9;
+				tsen.TEMP_HUM.rssi=6;
+				tsen.TEMP.id1=(BYTE)((xID&0xFF00)>>8);
+				tsen.TEMP.id2=(BYTE)(xID&0xFF);
 
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
-					m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.TEMP));
-				}
+				tsen.TEMP_HUM.tempsign=(temp>=0)?0:1;
+				int at10=round(abs(temp*10.0f));
+				tsen.TEMP_HUM.temperatureh=(BYTE)(at10/256);
+				at10-=(tsen.TEMP_HUM.temperatureh*256);
+				tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
+				tsen.TEMP_HUM.humidity=(BYTE)round(humidity);
+				tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
+
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);//decode message
+				m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.TEMP_HUM));
+			}
+			else if (humidity!=0x1234)
+			{
+				//humidity
+				RBUF tsen;
+				memset(&tsen,0,sizeof(RBUF));
+				tsen.HUM.packetlength=sizeof(tsen.HUM)-1;
+				tsen.HUM.packettype=pTypeHUM;
+				tsen.HUM.subtype=sTypeHUM2;
+				tsen.HUM.battery_level=9;
+				tsen.HUM.rssi=6;
+				tsen.TEMP.id1=(BYTE)((xID&0xFF00)>>8);
+				tsen.TEMP.id2=(BYTE)(xID&0xFF);
+
+				tsen.HUM.humidity=(BYTE)round(humidity);
+				tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
+
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM);//decode message
+				m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.HUM));
 			}
 		}
 	}

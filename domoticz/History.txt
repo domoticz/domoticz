@@ -26,6 +26,7 @@ Version 1.0.xxx (May xxth 2013)
 - Implemented: 1-Wire startup delay
 - Implemented: Application Settings, Notification Interval for Sensors/Switches
 - Implemented: support for 1-Wire with hubs
+- Implemented: 1-Wire Humidity sensors
 
 Version 1.0.607 (May 11th 2013)
 - Changed: Rego6XX Type setting moved to the hardware settings in the same way as RFXtrx setup is done
