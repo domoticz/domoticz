@@ -28,6 +28,12 @@
 
 #define round(a) ( int ) ( a + .5 )
 
+typedef struct _t1WireSensor
+{
+	std::string devid;
+	std::string filename;
+} T1WIRESENSOR;
+
 C1Wire::C1Wire(const int ID)
 {
 	m_HwdID=ID;
@@ -233,11 +239,6 @@ void C1Wire::GetOWFSSensorDetails()
 {
 	DIR *d=NULL;
 
-	struct _t1WireSensor
-	{
-		std::string devid;
-		std::string filename;
-	};
 	std::vector<_t1WireSensor> _wiresensors;
 
 	d=opendir(OWFS_Base_Dir);
