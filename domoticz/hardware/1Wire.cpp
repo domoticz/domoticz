@@ -246,6 +246,9 @@ bool HaveSupported1WireSensor(const std::string basedir)
 	devfile=basedir+"/humidity";
 	if (file_exist(devfile.c_str()))
 		return true;
+	devfile=basedir+"/counters.A";
+	if (file_exist(devfile.c_str()))
+		return true;
 
 	return false;
 }
@@ -380,6 +383,7 @@ void C1Wire::GetOWFSSensorDetails()
 		std::string filename;
 		float temp=0x1234;
 		float humidity=0x1234;
+		unsigned long counterA=0xFEDCBA98;
 
 		unsigned int xID;   
 		std::stringstream ss;
@@ -413,6 +417,17 @@ void C1Wire::GetOWFSSensorDetails()
 				if ((himidity2>=0)&&(himidity2<=100))
 					humidity=himidity2;
 				infile2.close();
+			}
+			//try to read counters.A
+			std::ifstream infile3;
+			filename=itt->filename+"/counters.A";
+			infile3.open(filename.c_str());
+			if (infile3.is_open())
+			{
+				std::string sLine;
+				getline(infile3, sLine);
+				counterA=(unsigned long)atol(sLine.c_str());
+				infile3.close();
 			}
 			if ((temp!=0x1234)&&(humidity==0x1234))
 			{
@@ -478,6 +493,26 @@ void C1Wire::GetOWFSSensorDetails()
 
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM);//decode message
 				m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.HUM));
+			}
+			else if (counterA!=0xFEDCBA98)
+			{
+				//Counter
+				RBUF tsen;
+				memset(&tsen,0,sizeof(RBUF));
+				tsen.RFXMETER.packetlength=sizeof(tsen.RFXMETER)-1;
+				tsen.RFXMETER.packettype=pTypeRFXMeter;
+				tsen.RFXMETER.subtype=sTypeRFXMeterCount;
+				tsen.RFXMETER.rssi=6;
+				tsen.RFXMETER.id1=(BYTE)((xID&0xFF00)>>8);
+				tsen.RFXMETER.id2=(BYTE)(xID&0xFF);
+
+				tsen.RFXMETER.count1 = (BYTE)((counterA & 0xFF000000) >> 24);
+				tsen.RFXMETER.count2 = (BYTE)((counterA & 0x00FF0000) >> 16);
+				tsen.RFXMETER.count3 = (BYTE)((counterA & 0x0000FF00) >> 8);
+				tsen.RFXMETER.count4 = (BYTE)(counterA & 0x000000FF);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);//decode message
+				m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.RFXMETER));
+
 			}
 		}
 	}
