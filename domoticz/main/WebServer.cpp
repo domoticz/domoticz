@@ -3405,6 +3405,8 @@ std::string CWebServer::GetJSonPage()
 					GasDivider=1000;
 				else if (dType==pTypeENERGY)
 					EnergyDivider*=100.0f;
+				//else if (dType==pTypeRFXMeter)
+					//EnergyDivider*=1000.0f;
 
 				char szDateStart[40];
 				char szDateEnd[40];
@@ -3876,6 +3878,8 @@ std::string CWebServer::GetJSonPage()
 					GasDivider=1000;
 				else if (dType==pTypeENERGY)
 					EnergyDivider*=100.0f;
+//				else if (dType==pTypeRFXMeter)
+	//				EnergyDivider*=1000.0f;
 
 				szQuery.clear();
 				szQuery.str("");

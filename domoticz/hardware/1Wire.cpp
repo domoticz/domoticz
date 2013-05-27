@@ -269,106 +269,112 @@ void C1Wire::GetOWFSSensorDetails()
 			if (de->d_type==DT_DIR)
 			{
 				std::string dirname = de->d_name;
-				if ((dirname!=".")&&(dirname!=".."))
-				{
-					unsigned char fchar=dirname[0];
-					if (
-						((fchar>='0')&&(fchar<='9'))||
-						((fchar>='A')&&(fchar<='F'))
+				if ((dirname==".")||(dirname=="..")||(dirname.size()<3))
+					continue;
+				unsigned char fchar=dirname[0];
+				if (
+					(dirname[2]=='.')&&
+						(
+							((fchar>='0')&&(fchar<='9'))||
+							((fchar>='A')&&(fchar<='F'))
 						)
+					)
+				{
+					_t1WireSensor sensor;
+					std::string devid=dirname;
+					devid=devid.substr(3,4);
+					sensor.devid=devid;
+					sensor.filename=OWFS_Base_Dir;
+					sensor.filename+="/" + dirname;
+
+					std::string devfile=OWFS_Base_Dir;
+					devfile+="/" + dirname;
+					if (HaveSupported1WireSensor(devfile))
 					{
-						_t1WireSensor sensor;
-						std::string devid=dirname;
-						devid=devid.substr(3,4);
-						sensor.devid=devid;
-						sensor.filename=OWFS_Base_Dir;
-						sensor.filename+="/" + dirname;
+						_wiresensors.push_back(sensor);
+					}
+					else
+					{
+						//Might be a w-wire hub
+						DIR *d2=NULL;
 
-						std::string devfile=OWFS_Base_Dir;
-						devfile+="/" + dirname;
-						if (HaveSupported1WireSensor(devfile))
+						//First scan all /main folders
+						std::string dirname2=OWFS_Base_Dir;
+						dirname2+="/"+dirname;
+						dirname2+="/main";
+						d2=opendir(dirname2.c_str());
+						if (d2!=NULL)
 						{
-							_wiresensors.push_back(sensor);
+							struct dirent *de2=NULL;
+							while(de2 = readdir(d2))
+							{
+								if (de2->d_type==DT_DIR)
+								{
+									std::string dirname3 = de2->d_name;
+									if ((dirname3!=".")&&(dirname3!=".."))
+									{
+										unsigned char fchar=dirname3[0];
+										if (
+											((fchar>='0')&&(fchar<='9'))||
+											((fchar>='A')&&(fchar<='F'))
+											)
+										{
+											std::string devfile=dirname2+"/"+dirname3;
+											if (HaveSupported1WireSensor(devfile))
+											{
+												_t1WireSensor sensor;
+												std::string devid=dirname3;
+												devid=devid.substr(3,4);
+												sensor.devid=devid;
+												sensor.filename=dirname2+"/"+dirname3;
+												_wiresensors.push_back(sensor);
+											}
+										}
+									}
+								}
+							}
+							closedir(d2);
 						}
-						else
+						//Next scan all /_aux folders
+						dirname2=OWFS_Base_Dir;
+						dirname2+="/"+dirname;
+#ifdef WIN32							
+						dirname2+="/_aux";
+#else
+						dirname2+="/aux";
+#endif
+						d2=opendir(dirname2.c_str());
+						if (d2!=NULL)
 						{
-							//Might be a w-wire hub
-							DIR *d2=NULL;
-
-							//First scan all /main folders
-							std::string dirname2=OWFS_Base_Dir;
-							dirname2+="/"+dirname;
-							dirname2+="/main";
-							d2=opendir(dirname2.c_str());
-							if (d2!=NULL)
+							struct dirent *de2=NULL;
+							while(de2 = readdir(d2))
 							{
-								struct dirent *de2=NULL;
-								while(de2 = readdir(d2))
+								if (de2->d_type==DT_DIR)
 								{
-									if (de2->d_type==DT_DIR)
+									std::string dirname3 = de2->d_name;
+									if ((dirname3!=".")&&(dirname3!=".."))
 									{
-										std::string dirname3 = de2->d_name;
-										if ((dirname3!=".")&&(dirname3!=".."))
+										unsigned char fchar=dirname3[0];
+										if (
+											((fchar>='0')&&(fchar<='9'))||
+											((fchar>='A')&&(fchar<='F'))
+											)
 										{
-											unsigned char fchar=dirname3[0];
-											if (
-												((fchar>='0')&&(fchar<='9'))||
-												((fchar>='A')&&(fchar<='F'))
-												)
+											std::string devfile=dirname2+"/"+dirname3;
+											if (HaveSupported1WireSensor(devfile))
 											{
-												std::string devfile=dirname2+"/"+dirname3;
-												if (HaveSupported1WireSensor(devfile))
-												{
-													_t1WireSensor sensor;
-													std::string devid=dirname3;
-													devid=devid.substr(3,4);
-													sensor.devid=devid;
-													sensor.filename=dirname2+"/"+dirname3;
-													_wiresensors.push_back(sensor);
-												}
+												_t1WireSensor sensor;
+												std::string devid=dirname3;
+												devid=devid.substr(3,4);
+												sensor.devid=devid;
+												sensor.filename=dirname2+"/"+dirname3;
+												_wiresensors.push_back(sensor);
 											}
 										}
 									}
 								}
-								closedir(d2);
 							}
-							//Next scan all /_aux folders
-							dirname2=OWFS_Base_Dir;
-							dirname2+="/"+dirname;
-							dirname2+="/_aux";
-							d2=opendir(dirname2.c_str());
-							if (d2!=NULL)
-							{
-								struct dirent *de2=NULL;
-								while(de2 = readdir(d2))
-								{
-									if (de2->d_type==DT_DIR)
-									{
-										std::string dirname3 = de2->d_name;
-										if ((dirname3!=".")&&(dirname3!=".."))
-										{
-											unsigned char fchar=dirname3[0];
-											if (
-												((fchar>='0')&&(fchar<='9'))||
-												((fchar>='A')&&(fchar<='F'))
-												)
-											{
-												std::string devfile=dirname2+"/"+dirname3;
-												if (HaveSupported1WireSensor(devfile))
-												{
-													_t1WireSensor sensor;
-													std::string devid=dirname3;
-													devid=devid.substr(3,4);
-													sensor.devid=devid;
-													sensor.filename=dirname2+"/"+dirname3;
-													_wiresensors.push_back(sensor);
-												}
-											}
-										}
-									}
-								}
-								closedir(d2);
-							}
+							closedir(d2);
 						}
 					}
 				}
