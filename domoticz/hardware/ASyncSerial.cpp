@@ -229,7 +229,7 @@ void AsyncSerial::writeEnd(const boost::system::error_code& error)
         {
             pimpl->writeBuffer.reset();
             pimpl->writeBufferSize=0;
-            
+            boost::this_thread::sleep(boost::posix_time::milliseconds(75));
             return;
         }
         pimpl->writeBufferSize=pimpl->writeQueue.size();
