@@ -784,7 +784,7 @@ function SaveLightSwitch()
 		if (switchtype==8) {
 			addjvalstr="&addjvalue=" + $("#lightcontent #motionoffdelay").val();
 		}
-		else if ((switchtype==9)||(switchtype==11)) {
+		else if ((switchtype==0)||(switchtype==9)||(switchtype==11)) {
 			addjvalstr="&addjvalue=" + $("#lightcontent #offdelay").val();
 		}
 		$.ajax({
@@ -938,7 +938,7 @@ function EditLightDevice(idx,name,switchtype,addjvalue,isslave)
 		$("#lightcontent #MotionDiv").show();
 		$("#lightcontent #motionoffdelay").val(addjvalue);
 	}
-	else if ((switchtype==9)||(switchtype==11)) {
+	else if ((switchtype==0)||(switchtype==9)||(switchtype==11)) {
 		$("#lightcontent #OffDelayDiv").show();
 		$("#lightcontent #offdelay").val(addjvalue);
 	}

@@ -7,18 +7,18 @@
 
 enum _eSwitchType
 {
-	STYPE_OnOff=0,
-	STYPE_Doorbell,
-	STYPE_Contact,
-	STYPE_Blinds,
-	STYPE_X10Siren,
-	STYPE_SMOKEDETECTOR,
-    STYPE_BlindsInverted,
-	STYPE_Dimmer,
-	STYPE_Motion,
-	STYPE_PushOn,
-	STYPE_PushOff,
-	STYPE_DoorLock,
+	STYPE_OnOff=0,			//0
+	STYPE_Doorbell,			//1
+	STYPE_Contact,			//2
+	STYPE_Blinds,			//3
+	STYPE_X10Siren,			//4
+	STYPE_SMOKEDETECTOR,	//5
+    STYPE_BlindsInverted,	//6
+	STYPE_Dimmer,			//7
+	STYPE_Motion,			//8
+	STYPE_PushOn,			//9
+	STYPE_PushOff,			//10
+	STYPE_DoorLock,			//11
 	STYPE_END
 };
 

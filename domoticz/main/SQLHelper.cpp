@@ -725,16 +725,43 @@ void CSQLHelper::Do_Work()
 		{
 			if (itt->_ItemType == TITEM_SWITCHCMD)
 			{
-				if (itt->_switchtype!=STYPE_Motion)
+				if (itt->_switchtype==STYPE_Motion)
 				{
-					if (m_pMain)
-						m_pMain->SwitchLight(itt->_idx,"Off",0);
+					std::string devname="";
+					switch (itt->_devType)
+					{
+					case pTypeLighting1:
+					case pTypeLighting2:
+					case pTypeLighting3:
+					case pTypeLighting4:
+					case pTypeLighting5:
+					case pTypeLighting6:
+						if (m_pMain)
+							m_pMain->SwitchLight(itt->_idx,"Off",0);
+						break;
+					case pTypeSecurity1:
+						switch (itt->_subType)
+						{
+						case sTypeSecX10M:
+							if (m_pMain)
+								m_pMain->SwitchLight(itt->_idx,"No Motion",0);
+							break;
+						default:
+							//just update internally
+							UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname);
+							break;
+						}
+						break;
+					default:
+						//unknown hardware type, sensor will only be updated internally
+						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname);
+						break;
+					}
 				}
 				else
 				{
-					//motion sensor will only be updated internally
-					std::string devname="";
-					UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname);
+					if (m_pMain)
+						m_pMain->SwitchLight(itt->_idx,"Off",0);
 				}
 			}
 			else if (itt->_ItemType == TITEM_EXECUTE_SCRIPT)
@@ -1190,6 +1217,7 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 					bool bAdd2DelayQueue=false;
 					int cmd=0;
 					if (
+						(switchtype==STYPE_OnOff)||
 						(switchtype==STYPE_Motion)||
 						(switchtype==STYPE_PushOn)||
 						(switchtype==STYPE_DoorLock)

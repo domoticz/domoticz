@@ -1,4 +1,8 @@
-Version 1.0.xxx (May xxth 2013)
+Version 1.0.xxx (June xxth 2013)
+- Changed: Motion Sensors, Off delay now sends 'Off' to Lighting 1/6 devices, and 'No Motion' to X10 motion sensors
+- Implemented: On/Off switches, Off Delay option
+
+Version 1.0.666 (May 28th 2013)
 - Implemented: Settings, Doorbell could be send as 'Group On' or 'On' command
 - Fixed: Power Usage Graph, Problem with other devices then P1 Smart Meter
 - Implemented: Settings, Option to specify P1 Smart Meter Type (with/without Decimals)

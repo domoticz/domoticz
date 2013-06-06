@@ -945,7 +945,14 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 
 				root["result"][ii]["IsSubDevice"]=bIsSubDevice;
 				
-				if (switchtype==STYPE_Doorbell)
+				if (switchtype==STYPE_OnOff)
+				{
+					root["result"][ii]["AddjValue"]=AddjValue;
+					root["result"][ii]["AddjMulti"]=AddjMulti;
+					root["result"][ii]["AddjValue2"]=AddjValue2;
+					root["result"][ii]["AddjMulti2"]=AddjMulti2;
+				}
+				else if (switchtype==STYPE_Doorbell)
 				{
 					root["result"][ii]["TypeImg"]="doorbell";
 					root["result"][ii]["Status"]="";//"Pressed";

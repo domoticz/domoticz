@@ -6221,30 +6221,43 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, std::string s
 		}
 		break;
 	case pTypeSecurity1:
-		switch (dSubType)
 		{
-		case sTypeKD101:
+			tRBUF lcmd;
+			lcmd.SECURITY1.packetlength=sizeof(lcmd.SECURITY1)-1;
+			lcmd.SECURITY1.packettype=dType;
+			lcmd.SECURITY1.subtype=sTypeKD101;
+			lcmd.SECURITY1.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
+			lcmd.SECURITY1.id1=ID2;
+			lcmd.SECURITY1.id2=ID3;
+			lcmd.SECURITY1.id3=ID4;
+			switch (dSubType)
 			{
-				tRBUF lcmd;
-				lcmd.SECURITY1.packetlength=sizeof(lcmd.SECURITY1)-1;
-				lcmd.SECURITY1.packettype=dType;
-				lcmd.SECURITY1.subtype=sTypeKD101;
-				lcmd.SECURITY1.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
-				lcmd.SECURITY1.id1=ID2;
-				lcmd.SECURITY1.id2=ID3;
-				lcmd.SECURITY1.id3=ID4;
-				if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.SECURITY1.status))
-					return false;
-				//send it twice
-				WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.SECURITY1));
-				boost::this_thread::sleep(boost::posix_time::milliseconds(500));
-				WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.SECURITY1));
-				if (!IsTesting) {
-					//send to internal for now (later we use the ACK)
-					DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+			case sTypeKD101:
+				{
+					if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.SECURITY1.status))
+						return false;
+					//send it twice
+					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.SECURITY1));
+					boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.SECURITY1));
+					if (!IsTesting) {
+						//send to internal for now (later we use the ACK)
+						DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+					}
 				}
+				break;
+			case sTypeSecX10M:
+				{
+					if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.SECURITY1.status))
+						return false;
+					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.SECURITY1));
+					if (!IsTesting) {
+						//send to internal for now (later we use the ACK)
+						DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+					}
+				}
+				break;
 			}
-			break;
 		}
 		break;
 	case pTypeBlinds:

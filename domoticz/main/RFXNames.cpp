@@ -1061,6 +1061,19 @@ bool GetLightCommand(
 				return true;
 			}
 		}
+		else if (dSubType==sTypeSecX10M)
+		{
+			if (switchcmd=="Motion")
+			{
+				cmd=sStatusMotion;
+				return true;
+			}
+			else if (switchcmd=="No Motion")
+			{
+				cmd=sStatusNoMotion;
+				return true;
+			}
+		}
 		break;
 	case pTypeBlinds:
 		if (switchcmd=="On")
