@@ -1657,9 +1657,18 @@ function RefreshWeathers()
 						var img="";
 						var bigtext="";
 						if (typeof item.Barometer != 'undefined') {
-								img='<img src="images/baro48.png" height="48">';
+							img='<img src="images/baro48.png" height="48">';
+							bigtext=item.Barometer + ' hPa';
+							if (typeof item.ForecastStr != 'undefined') {
 								status=item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
-								bigtext=item.Barometer + ' hPa';
+							}
+							else
+							{
+								status=item.Barometer + ' hPa';
+							}
+							if (typeof item.Altitude != 'undefined') {
+								status+=', Altitude: ' + item.Altitude + ' meter';
+							}
 						}
 						if (typeof item.Rain != 'undefined') {
 							img='<img src="images/rain48.png" height="48">';
@@ -1796,7 +1805,13 @@ function ShowWeathers()
 					if (typeof item.Barometer != 'undefined') {
 						bHaveBaro=true;
 						xhtm+='baro48.png" height="48"></td>\n' +
-						'\t      <td id="status">' + item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
+							  '\t      <td id="status">' + item.Barometer + ' hPa';
+						if (typeof item.ForecastStr != 'undefined') {
+							xhtm+=', Prediction: ' + item.ForecastStr;
+						}
+						if (typeof item.Altitude != 'undefined') {
+							xhtm+=', Altitude: ' + item.Altitude + ' meter';
+						}
 					}
 					else if (typeof item.Rain != 'undefined') {
 						bHaveRain=true;

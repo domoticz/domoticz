@@ -3,6 +3,7 @@ Version 1.0.xxx (June xxth 2013)
 - Implemented: On/Off switches, Off Delay option
 - Implemented: BMP085 I2C sensor (Rasberry Pi/arm only)
 - Fixed: Sharing of Voltcraft,Razberry,BMP085
+- Implemented: BMP085 altitude display (removed forecast for now, until we know how to calculate it...)
 
 Version 1.0.666 (May 28th 2013)
 - Implemented: Settings, Doorbell could be send as 'Group On' or 'On' command

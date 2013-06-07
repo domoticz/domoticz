@@ -356,6 +356,9 @@ function RefreshFavorites()
 								if (typeof item.ForecastStr != 'undefined') {
 									status+=', Prediction: ' + item.ForecastStr;
 								}
+								if (typeof item.Altitude != 'undefined') {
+									status+=', Altitude: ' + item.Altitude + ' meter';
+								}
 								if ($(id + " #status").html()!=status) {
 									$(id + " #status").html(status);
 								}
@@ -408,6 +411,9 @@ function RefreshFavorites()
 								}
 								if (typeof item.ForecastStr != 'undefined') {
 									status+=', Prediction: ' + item.ForecastStr;
+								}
+								if (typeof item.Altitude != 'undefined') {
+									status+=', Altitude: ' + item.Altitude + ' meter';
 								}
 								
 								var nbackcolor="#D4E1EE";
@@ -464,8 +470,16 @@ function RefreshFavorites()
 									status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms';
 								}
 								else if (typeof item.Barometer != 'undefined') {
-                  status=item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
-                }
+									if (typeof item.ForecastStr != 'undefined') {
+										status=item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
+									}
+									else {
+										status=item.Barometer + ' hPa';
+									}
+									if (typeof item.Altitude != 'undefined') {
+										status+=', Altitude: ' + item.Altitude + ' meter';
+									}
+								}
 								if ($(id + " #status").html()!=status) {
 									$(id + " #status").html(status);
 								}
@@ -502,11 +516,18 @@ function RefreshFavorites()
 									bigtext=item.DirectionStr + '/' + item.Speedms + ' ms';
 								}
 								else if (typeof item.Barometer != 'undefined') {
-                  img='<img src="images/baro48.png" height="40">';
-                  status=item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
-                  bigtext=item.Barometer + ' hPa';
-                }
-                
+									img='<img src="images/baro48.png" height="40">';
+									bigtext=item.Barometer + ' hPa';
+									if (typeof item.ForecastStr != 'undefined') {
+										status=item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
+									}
+									else {
+										status=item.Barometer + ' hPa';
+									}
+									if (typeof item.Altitude != 'undefined') {
+										status+=', Altitude: ' + item.Altitude + ' meter';
+									}
+								}
 								var nbackcolor="#D4E1EE";
 								if (item.HaveTimeout==true) {
 									nbackcolor="#DF2D3A";
@@ -1276,6 +1297,9 @@ function ShowFavorites()
 							if (typeof item.ForecastStr != 'undefined') {
 								status+=', Prediction: ' + item.ForecastStr;
 							}
+							if (typeof item.Altitude != 'undefined') {
+								status+=', Altitude: ' + item.Altitude + ' meter';
+							}
 							xhtm+=
 										'\t      <td id="status">' + status + '</td>\n' +
 										'\t    </tr>\n';
@@ -1353,6 +1377,9 @@ function ShowFavorites()
 							}
 							if (typeof item.ForecastStr != 'undefined') {
 								xhtm+=', Prediction: ' + item.ForecastStr;
+							}
+							if (typeof item.Altitude != 'undefined') {
+								xhtm+=', Altitude: ' + item.Altitude + ' meter';
 							}
 							xhtm+=
 									'</td>\n' +
@@ -1434,8 +1461,16 @@ function ShowFavorites()
 								status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms';
 							}
 							else if (typeof item.Barometer != 'undefined') {
-								status=item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
-              }
+								if (typeof item.ForecastStr != 'undefined') {
+									status=item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
+								}
+								else {
+									status=item.Barometer + ' hPa';
+								}
+								if (typeof item.Altitude != 'undefined') {
+									status+=', Altitude: ' + item.Altitude + ' meter';
+								}
+							}
 							xhtm+=
 										'\t      <td id="status">' + status + '</td>\n' +
 										'\t    </tr>\n';
@@ -1497,8 +1532,14 @@ function ShowFavorites()
 							}
 							else if (typeof item.Barometer != 'undefined') {
 								xhtm+='baro48.png" height="40"></td>\n' +
-								'\t      <td id="status">' + item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
-              }
+								'\t      <td id="status">' + item.Barometer + ' hPa';
+								if (typeof item.ForecastStr != 'undefined') {
+									xhtm+=', Prediction: ' + item.ForecastStr;
+								}
+								if (typeof item.Altitude != 'undefined') {
+									xhtm+=', Altitude: ' + item.Altitude + ' meter';
+								}
+							}
 							xhtm+=
 									'</td>\n' +
 									'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +

@@ -1210,9 +1210,13 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					root["result"][ii]["AddjValue2"]=AddjValue2;
 					root["result"][ii]["AddjMulti2"]=AddjMulti2;
 					root["result"][ii]["Temp"]=atof(strarray[0].c_str());
-					root["result"][ii]["Forecast"]=atoi(strarray[2].c_str());
+					int forecast=atoi(strarray[2].c_str());
+					if (forecast!=baroForecastNoInfo)
+					{
+						root["result"][ii]["Forecast"]=forecast;
+						root["result"][ii]["ForecastStr"]=RFX_Forecast_Desc(forecast);
+					}
 					root["result"][ii]["Barometer"]=atof(strarray[1].c_str());
-					root["result"][ii]["ForecastStr"]=RFX_Forecast_Desc(atoi(strarray[2].c_str()));
 
 					if (strarray.size()==4)
 					{
