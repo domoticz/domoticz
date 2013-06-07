@@ -293,6 +293,7 @@ void CBMP085::ReadSensorDetails()
 	//Calculate Altitude
 	double altitude = CalculateAltitudeFromPressure((double)pressure);
 	_tTempBaro tsensor;
+	tsensor.id1=1;
 	tsensor.temp=float(((double)temperature)/10);
 	tsensor.baro=float(((double)pressure)/100);
 	tsensor.altitude=float(altitude);

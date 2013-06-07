@@ -510,7 +510,10 @@ void CRazberry::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	else if (pDevice->devType==ZDTYPE_SENSOR_POWER)
 	{
 		_tUsageMeter umeter;
-		umeter.ID=szID;
+		umeter.id1=ID1;
+		umeter.id2=ID2;
+		umeter.id3=ID3;
+		umeter.id4=ID4;
 		umeter.dunit=pDevice->scaleID;
 		umeter.fusage=pDevice->floatValue;
 		sDecodeRXMessage(this, (const unsigned char *)&umeter);//decode message

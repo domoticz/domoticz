@@ -46,8 +46,7 @@ typedef struct _tTempBaro {
 	unsigned char len;
 	unsigned char type;
 	unsigned char subtype;
-	std::string ID;
-	unsigned char sunit;
+	BYTE	id1;
 	float temp;
 	float baro;
 	float altitude;
@@ -58,6 +57,7 @@ typedef struct _tTempBaro {
 		len=sizeof(_tTempBaro)-1;
 		type=pTypeTEMP_BARO;
 		subtype=sTypeBMP085;
+		id1=1;
 	}
 } _tTempBaro;
 
@@ -65,15 +65,25 @@ typedef struct _tAirQualityMeter {
 	unsigned char len;
 	unsigned char type;
 	unsigned char subtype;
-	std::string ID;
+	BYTE	id1;
 	int airquality;
+	_tAirQualityMeter()
+	{
+		len=sizeof(_tAirQualityMeter)-1;
+		type=pTypeAirQuality;
+		subtype=sTypeVoltcraft;
+		id1=0;
+	}
 } AirQualityMeter;
 
 typedef struct _tUsageMeter {
 	unsigned char len;
 	unsigned char type;
 	unsigned char subtype;
-	std::string ID;
+	BYTE	id1;
+	BYTE	id2;
+	BYTE	id3;
+	BYTE	id4;
 	unsigned char dunit;
 	float fusage;
 
@@ -82,5 +92,9 @@ typedef struct _tUsageMeter {
 		len=sizeof(_tUsageMeter)-1;
 		type=pTypeUsage;
 		subtype=sTypeElectric;
+		id1=0;
+		id2=0;
+		id3=0;
+		id4=0;
 	}
 } UsageMeter;

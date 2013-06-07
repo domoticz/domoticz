@@ -2,6 +2,7 @@ Version 1.0.xxx (June xxth 2013)
 - Changed: Motion Sensors, Off delay now sends 'Off' to Lighting 1/6 devices, and 'No Motion' to X10 motion sensors
 - Implemented: On/Off switches, Off Delay option
 - Implemented: BMP085 I2C sensor (Rasberry Pi/arm only)
+- Fixed: Sharing of Voltcraft,Razberry,BMP085
 
 Version 1.0.666 (May 28th 2013)
 - Implemented: Settings, Doorbell could be send as 'Group On' or 'On' command

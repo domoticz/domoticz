@@ -366,10 +366,10 @@ bool MainWorker::AddHardwareFromParams(
 		//TE923 compatible weather station
 		pHardware = new CVolcraftCO20(ID);
 		break;
+#endif
 	case HTYPE_RaspberryBMP085:
 		pHardware = new CBMP085(ID);
 		break;
-#endif
 	}
 	if (pHardware)
 	{
@@ -2192,8 +2192,9 @@ void MainWorker::decode_TempBaro(const int HwdID, const tRBUF *pResponse)
 	unsigned char subType=sTypeBMP085;
 	_tTempBaro *pTempBaro=(_tTempBaro*)pResponse;
 
-	std::string ID=pTempBaro->ID;
-	unsigned char Unit=pTempBaro->sunit;
+	sprintf(szTmp,"%d",pTempBaro->id1);
+	std::string ID=szTmp;
+	unsigned char Unit=1;
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=12;
 	unsigned char BatteryLevel;
@@ -2229,28 +2230,22 @@ void MainWorker::decode_TempBaro(const int HwdID, const tRBUF *pResponse)
 		{
 		case sTypeBMP085:
 			WriteMessage("subtype       = BMP085 I2C");
-			sprintf(szTmp,"                channel %d", pTempBaro->sunit);
+			sprintf(szTmp,"                channel %d", pTempBaro->id1);
 			WriteMessage(szTmp);
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->TEMP_HUM_BARO.packettype, pResponse->TEMP_HUM_BARO.subtype);
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", devType, subType);
 			WriteMessage(szTmp);
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->TEMP_HUM_BARO.seqnbr);
-		WriteMessage(szTmp);
-
-		sprintf(szTmp, "ID            = %d", (pResponse->TEMP_HUM_BARO.id1 * 256) + pResponse->TEMP_HUM_BARO.id2);
-		WriteMessage(szTmp);
-
 		sprintf(szTmp,"Temperature   = %.1f C", temp);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Barometer     = %.1f hPa", float((pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol)/10.0f);
+		sprintf(szTmp,"Barometer     = %.1f hPa", fbarometer);
 		WriteMessage(szTmp);
 
-		switch (pResponse->TEMP_HUM_BARO.forecast)
+		switch (pTempBaro->forecast)
 		{
 		case baroForecastNoInfo:
 			WriteMessage("Forecast      = No information available");
@@ -2274,14 +2269,6 @@ void MainWorker::decode_TempBaro(const int HwdID, const tRBUF *pResponse)
 			sprintf(szTmp,"Altitude   = %.2f meter", pTempBaro->altitude);
 			WriteMessage(szTmp);
 		}
-
-		sprintf(szTmp, "Signal level  = %d", pResponse->TEMP_HUM_BARO.rssi);
-		WriteMessage(szTmp);
-
-		if ((pResponse->TEMP_HUM_BARO.battery_level &0x0F) == 0)
-			WriteMessage("Battery       = Low");
-		else
-			WriteMessage("Battery       = OK");
 	}
 }
 
@@ -5705,7 +5692,8 @@ void MainWorker::decode_AirQuality(const int HwdID, const tRBUF *pResponse)
 	const _tAirQualityMeter *pMeter=(const _tAirQualityMeter*)pResponse;
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
-	std::string ID=pMeter->ID;
+	sprintf(szTmp,"%d",pMeter->id1);
+	std::string ID=szTmp;
 	unsigned char Unit=subType;
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=12;
@@ -5753,7 +5741,8 @@ void MainWorker::decode_Usage(const int HwdID, const tRBUF *pResponse)
 	const _tUsageMeter *pMeter=(const _tUsageMeter*)pResponse;
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
-	std::string ID=pMeter->ID;
+	sprintf(szTmp,"%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
+	std::string ID=szTmp;
 	unsigned char Unit=pMeter->dunit;
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=12;
