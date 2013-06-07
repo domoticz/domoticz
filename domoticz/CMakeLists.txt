@@ -155,6 +155,8 @@ hardware/VolcraftCO20Tool.cpp
 hardware/Razberry.cpp
 hardware/Rego6XXSerial.cpp
 hardware/DavisLoggerSerial.cpp
+hardware/BMP085.cpp
+hardware/smbus.cpp
 tcpserver/TCPServer.cpp
 tcpserver/TCPClient.cpp
 webserver/cWebem.cpp

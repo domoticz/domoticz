@@ -251,7 +251,8 @@ char * CWebServer::DisplayHardwareTypesCombo()
 #ifdef WIN32
 		if (
 			(ii == HTYPE_VOLCRAFTCO20)||
-			(ii == HTYPE_TE923)
+			(ii == HTYPE_TE923)||
+			(ii == HTYPE_RaspberryBMP085)
 			)
 			bDoAdd=false;
 #endif
@@ -6420,6 +6421,9 @@ std::string CWebServer::GetJSonPage()
 			else if (htype == HTYPE_1WIRE) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_RaspberryBMP085) {
+				//all fine here!
+			}
 			else
 				goto exitjson;
 
@@ -6518,6 +6522,9 @@ std::string CWebServer::GetJSonPage()
 				//All fine here
 			}
 			else if (htype == HTYPE_1WIRE) {
+				//All fine here
+			}
+			else if (htype == HTYPE_RaspberryBMP085) {
 				//All fine here
 			}
 			else

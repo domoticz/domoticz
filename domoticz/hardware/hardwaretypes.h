@@ -50,7 +50,15 @@ typedef struct _tTempBaro {
 	unsigned char sunit;
 	float temp;
 	float baro;
+	float altitude;
 	unsigned char forecast;
+
+	_tTempBaro()
+	{
+		len=sizeof(_tTempBaro)-1;
+		type=pTypeTEMP_BARO;
+		subtype=sTypeBMP085;
+	}
 } _tTempBaro;
 
 typedef struct _tAirQualityMeter {

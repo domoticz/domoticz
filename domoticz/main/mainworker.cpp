@@ -21,6 +21,7 @@
 #include "../hardware/DavisLoggerSerial.h"
 #include "../hardware/VolcraftCO20.h"
 #include "../hardware/1Wire.h"
+#include "../hardware/BMP085.h"
 
 #ifdef _DEBUG
 	//#define DEBUG_RECEIVE
@@ -352,11 +353,11 @@ bool MainWorker::AddHardwareFromParams(
 		//LAN
 		pHardware = new CYouLess(ID, Address, Port);
 		break;
+#ifndef WIN32
 	case HTYPE_1WIRE:
 		//1-Wire file system
 		pHardware = new C1Wire(ID);
 		break;
-#ifndef WIN32
 	case HTYPE_TE923:
 		//TE923 compatible weather station
 		pHardware = new CTE923(ID);
@@ -364,6 +365,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_VOLCRAFTCO20:
 		//TE923 compatible weather station
 		pHardware = new CVolcraftCO20(ID);
+		break;
+	case HTYPE_RaspberryBMP085:
+		pHardware = new CBMP085(ID);
 		break;
 #endif
 	}
@@ -854,7 +858,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			decode_TempHumBaro(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeTEMP_BARO:
-			WriteMessage("Temperature + Humidity + Barometric",false);
+			WriteMessage("Temperature + Barometric",false);
 			decode_TempBaro(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRAIN:

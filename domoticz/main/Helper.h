@@ -7,3 +7,4 @@ std::string stdreplace(
 	const std::string& replaceWithWhat);
 bool file_exist (const char *filename);
 std::vector<std::string> GetSerialPorts(bool &bUseDirectPath);
+double CalculateAltitudeFromPressure(double pressure);

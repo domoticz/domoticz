@@ -62,6 +62,7 @@ enum _eHardwareTypes {
 	HTYPE_DavisVantage,
 	HTYPE_VOLCRAFTCO20,
 	HTYPE_1WIRE,
+	HTYPE_RaspberryBMP085,
 	HTYPE_END
 };
 

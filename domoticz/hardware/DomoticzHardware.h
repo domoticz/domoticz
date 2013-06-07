@@ -18,6 +18,7 @@ class CDomoticzHardwareBase
 	friend class CYouLess;
 	friend class CRego6XXSerial;
 	friend class CDavisLoggerSerial;
+	friend class CBMP085;
 public:
 	CDomoticzHardwareBase();
 	~CDomoticzHardwareBase() {};

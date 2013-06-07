@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fstream>
+#include <math.h>
 
 void StringSplit(std::string str, std::string delim, std::vector<std::string> &results)
 {
@@ -132,3 +133,9 @@ bool file_exist (const char *filename)
 	return (stat(filename, &sbuffer) == 0);
 }
 
+double CalculateAltitudeFromPressure(double pressure)
+{
+	double seaLevelPressure=101325.0;
+	double altitude = 44330.0 * (1.0 - pow( (pressure / seaLevelPressure), 0.1903));
+	return altitude;
+}

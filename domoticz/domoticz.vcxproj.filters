@@ -75,6 +75,9 @@
     <Filter Include="Devices\1-Wire">
       <UniqueIdentifier>{013ea4c4-bb81-4718-bf23-82eb9bdee56e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\I2C">
+      <UniqueIdentifier>{f241a5bf-887e-41fe-a92c-e1cc990598b8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -262,6 +265,12 @@
     <ClInclude Include="main\dirent_windows.h">
       <Filter>Windows</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\BMP085.h">
+      <Filter>Devices\I2C</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\smbus.h">
+      <Filter>Devices\I2C</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -413,6 +422,12 @@
     </ClCompile>
     <ClCompile Include="hardware\1Wire.cpp">
       <Filter>Devices\1-Wire</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\BMP085.cpp">
+      <Filter>Devices\I2C</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\smbus.cpp">
+      <Filter>Devices\I2C</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

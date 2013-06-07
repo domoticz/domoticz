@@ -95,10 +95,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hardware\1Wire.h" />
+    <ClInclude Include="hardware\BMP085.h" />
     <ClInclude Include="hardware\DavisLoggerSerial.h" />
     <ClInclude Include="hardware\hidapi.h" />
     <ClInclude Include="hardware\Razberry.h" />
     <ClInclude Include="hardware\Rego6XXSerial.h" />
+    <ClInclude Include="hardware\smbus.h" />
     <ClInclude Include="hardware\TE923.h" />
     <ClInclude Include="hardware\TE923Tool.h" />
     <ClInclude Include="hardware\VolcraftCO20.h" />
@@ -156,9 +158,11 @@
   <ItemGroup>
     <ClCompile Include="hardware\1Wire.cpp" />
     <ClCompile Include="hardware\ASyncSerial.cpp" />
+    <ClCompile Include="hardware\BMP085.cpp" />
     <ClCompile Include="hardware\DavisLoggerSerial.cpp" />
     <ClCompile Include="hardware\libusbwinusbbridge.cpp" />
     <ClCompile Include="hardware\Razberry.cpp" />
+    <ClCompile Include="hardware\smbus.cpp" />
     <ClCompile Include="hardware\TE923.cpp" />
     <ClCompile Include="hardware\TE923Tool.cpp" />
     <ClCompile Include="hardware\VolcraftCO20.cpp" />
