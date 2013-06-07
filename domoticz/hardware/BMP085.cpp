@@ -297,7 +297,19 @@ void CBMP085::ReadSensorDetails()
 	tsensor.temp=float(((double)temperature)/10);
 	tsensor.baro=float(((double)pressure)/100);
 	tsensor.altitude=float(altitude);
+
+	//this is probably not good, need to take the rising/falling of the pressure into account?
+	//any help would be welcome!
+
 	tsensor.forecast=baroForecastNoInfo;
+	if (tsensor.baro<1000)
+		tsensor.forecast=baroForecastRain;
+	else if (tsensor.baro<1020)
+		tsensor.forecast=baroForecastCloudy;
+	else if (tsensor.baro<1030)
+		tsensor.forecast=baroForecastPartlyCloudy;
+	else
+		tsensor.forecast=baroForecastSunny;
 	sDecodeRXMessage(this, (const unsigned char *)&tsensor);//decode message
 	m_sharedserver.SendToAll((const char*)&tsensor,sizeof(_tTempBaro));
 }
