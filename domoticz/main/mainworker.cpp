@@ -2216,7 +2216,7 @@ void MainWorker::decode_TempBaro(const int HwdID, const tRBUF *pResponse)
 	m_sql.GetAddjustment2(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
 	fbarometer+=AddjValue;
 
-	sprintf(szTmp,"%.1f;%.1f;%d",temp,fbarometer,forcast);
+	sprintf(szTmp,"%.1f;%.1f;%d;%.2f",temp,fbarometer,forcast,pTempBaro->altitude);
 	m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
 	PrintDeviceName(devname);
 
@@ -2267,6 +2267,12 @@ void MainWorker::decode_TempBaro(const int HwdID, const tRBUF *pResponse)
 		case baroForecastRain:
 			WriteMessage("Forecast      = Rain");
 			break;
+		}
+
+		if (pResponse->TEMP_HUM_BARO.subtype==sTypeBMP085)
+		{
+			sprintf(szTmp,"Altitude   = %.2f meter", pTempBaro->altitude);
+			WriteMessage(szTmp);
 		}
 
 		sprintf(szTmp, "Signal level  = %d", pResponse->TEMP_HUM_BARO.rssi);

@@ -1201,7 +1201,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 			{
 				std::vector<std::string> strarray;
 				StringSplit(sValue, ";", strarray);
-				if (strarray.size()==3)
+				if (strarray.size()>=3)
 				{
 					root["result"][ii]["AddjValue"]=AddjValue;
 					root["result"][ii]["AddjMulti"]=AddjMulti;
@@ -1211,10 +1211,23 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					root["result"][ii]["Forecast"]=atoi(strarray[2].c_str());
 					root["result"][ii]["Barometer"]=atof(strarray[1].c_str());
 					root["result"][ii]["ForecastStr"]=RFX_Forecast_Desc(atoi(strarray[2].c_str()));
-					sprintf(szData,"%.1f C, %.1f hPa",
-						atof(strarray[0].c_str()),
-						atof(strarray[1].c_str())
-						);
+
+					if (strarray.size()==4)
+					{
+						root["result"][ii]["Altitude"]=atof(strarray[3].c_str());
+						sprintf(szData,"%.1f C, %.1f hPa, %.2f meter",
+							atof(strarray[0].c_str()),
+							atof(strarray[1].c_str()),
+							atof(strarray[3].c_str())
+							);
+					}
+					else
+					{
+						sprintf(szData,"%.1f C, %.1f hPa",
+							atof(strarray[0].c_str()),
+							atof(strarray[1].c_str())
+							);
+					}
 					root["result"][ii]["Data"]=szData;
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				}
