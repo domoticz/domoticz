@@ -1063,7 +1063,7 @@ function RefreshLights()
 							$(id + " #name").html(item.Name);
 						}
 						var img="";
-						var img2="";
+						var img3="";
 						if (item.SwitchType == "X10 Siren") {
 							if (
 									(item.Status == 'On')||
@@ -1111,21 +1111,21 @@ function RefreshLights()
 						else if (item.SwitchType == "Blinds") {
 							if (item.Status == 'Closed') {
 								img='<img src="images/blindsopen48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
-								img2='<img src="images/blinds48sel.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+								img3='<img src="images/blinds48sel.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
 							}
 							else {
 								img='<img src="images/blindsopen48sel.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
-								img2='<img src="images/blinds48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+								img3='<img src="images/blinds48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
 							}
 						}
 						else if (item.SwitchType == "Blinds Inverted") {
 							if (item.Status == 'Closed') {
 								img='<img src="images/blindsopen48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
-								img2='<img src="images/blinds48sel.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+								img3='<img src="images/blinds48sel.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
 							}
 							else {
 								img='<img src="images/blindsopen48sel.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
-								img2='<img src="images/blinds48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+								img3='<img src="images/blinds48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
 							}
 						}
 						else if (item.SwitchType=="Smoke Detector") {
@@ -1194,10 +1194,10 @@ function RefreshLights()
 						if ($(id + " #img").html()!=img) {
 							$(id + " #img").html(img);
 						}
-						if (img2!="")
+						if (img3!="")
 						{
-							if ($(id + " #img2").html()!=img2) {
-								$(id + " #img2").html(img2);
+							if ($(id + " #img3").html()!=img3) {
+								$(id + " #img3").html(img3);
 							}
 						}
 						if ($(id + " #status").html()!=item.Status) {
@@ -1270,7 +1270,7 @@ function ShowLights()
 				xhtm+='\t    <table id="itemtablenostatus" border="0" cellpadding="0" cellspacing="0">\n';
 			}
 			else if ((item.SwitchType == "Blinds")||(item.SwitchType == "Blinds Inverted")) {
-				xhtm+='\t    <table id="itemtabledoubleicon" border="0" cellpadding="0" cellspacing="0">\n';
+				xhtm+='\t    <table id="itemtabletrippleicon" border="0" cellpadding="0" cellspacing="0">\n';
 			}
 			else {
 				xhtm+='\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n';
@@ -1328,21 +1328,25 @@ function ShowLights()
           else if (item.SwitchType == "Blinds") {
 			if (item.Status == 'Closed') {
 				xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
-				xhtm+='\t      <td id="img2"><img src="images/blinds48sel.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+				xhtm+='\t      <td id="img2"><img src="images/blindsstop.png" title="Stop Blinds" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+				xhtm+='\t      <td id="img3"><img src="images/blinds48sel.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
 			}
 			else {
 				xhtm+='\t      <td id="img"><img src="images/blindsopen48sel.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
-				xhtm+='\t      <td id="img2"><img src="images/blinds48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+				xhtm+='\t      <td id="img2"><img src="images/blindsstop.png" title="Stop Blinds" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+				xhtm+='\t      <td id="img3"><img src="images/blinds48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
 			}
           }
           else if (item.SwitchType == "Blinds Inverted") {
 			if (item.Status == 'Closed') {
                 xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
-                xhtm+='\t      <td id="img2"><img src="images/blinds48sel.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+				xhtm+='\t      <td id="img2"><img src="images/blindsstop.png" title="Stop Blinds" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+                xhtm+='\t      <td id="img3"><img src="images/blinds48sel.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
 			}
 			else {
                 xhtm+='\t      <td id="img"><img src="images/blindsopen48sel.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
-                xhtm+='\t      <td id="img2"><img src="images/blinds48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+				xhtm+='\t      <td id="img2"><img src="images/blindsstop.png" title="Stop Blinds" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+                xhtm+='\t      <td id="img3"><img src="images/blinds48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
 			}
           }
 			else if (item.SwitchType=="Smoke Detector") {

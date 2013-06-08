@@ -285,8 +285,8 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeLighting4, "Lighting 4" , "lightbulb", },
 		{ pTypeLighting5, "Lighting 5" , "lightbulb", },
 		{ pTypeLighting6, "Lighting 6" , "lightbulb", },
-		{ pTypeCurtain, "Curtain" , "unknown" },
-		{ pTypeBlinds, "Blinds" , "unknown" },
+		{ pTypeCurtain, "Curtain" , "blinds" },
+		{ pTypeBlinds, "Blinds" , "blinds" },
 		{ pTypeSecurity1, "Security" , "security" },
 		{ pTypeCamera, "Camera" , "unknown" },
 		{ pTypeRemote, "Remote & IR" , "unknown" },
@@ -1081,8 +1081,14 @@ bool GetLightCommand(
 		{
 			cmd=blinds_sClose;
 		}
-		else
+		else if (switchcmd=="Off")
+		{
 			cmd=blinds_sOpen;
+		}
+		else
+		{
+			cmd=blinds_sStop;
+		}
 		return true;
 		break;
 	}
