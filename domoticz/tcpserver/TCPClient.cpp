@@ -10,6 +10,7 @@ CTCPClient::CTCPClient(boost::asio::io_service& ios, CTCPServerInt *pManager)
 	: socket_(ios), pConnectionManager(pManager)
 {
 	m_bIsLoggedIn=false;
+	m_username="";
 }
 
 
@@ -55,6 +56,7 @@ void CTCPClient::handleRead(const boost::system::error_code& e,
 						pConnectionManager->stopClient(shared_from_this());
 						return;
 					}
+					m_username=strarray[1];
 				}
 			}
 			

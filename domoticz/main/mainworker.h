@@ -9,6 +9,7 @@
 #include <map>
 #include <deque>
 #include "WindCalculation.h"
+#include "../tcpserver/TCPServer.h"
 
 enum eVerboseLevel
 {
@@ -49,6 +50,7 @@ public:
 	bool SetRFXCOMHardwaremodes(const int HardwareID, const unsigned char Mode1,const unsigned char Mode2,const unsigned char Mode3,const unsigned char Mode4,const unsigned char Mode5);
 
 	bool GetSunSettings();
+	void LoadSharedUsers();
 
 	bool AddHardwareFromParams(
 				int ID,
@@ -73,6 +75,8 @@ public:
 	bool m_bHaveDownloadedDomoticzUpdateSuccessFull;
 
 private:
+	tcp::server::CTCPServer m_sharedserver;
+
 	void PrintDeviceName(const std::string devname);
 	void GetRaspberryPiTemperature();
 	struct _tStartScene
@@ -122,47 +126,47 @@ private:
 	void decode_BateryLevel(bool bIsInPercentage, unsigned char level);
 	unsigned char get_BateryLevel(bool bIsInPercentage, unsigned char level);
 
-	//RFX Message decoders
-	void decode_InterfaceMessage(const int HwdID, const tRBUF *pResponse);
-	void decode_UNDECODED(const int HwdID, const tRBUF *pResponse);
-	void decode_RecXmitMessage(const int HwdID, const tRBUF *pResponse);
-	void decode_Rain(const int HwdID, const tRBUF *pResponse);
-	void decode_Wind(const int HwdID, const tRBUF *pResponse);
-	void decode_Temp(const int HwdID, const tRBUF *pResponse);
-	void decode_Hum(const int HwdID, const tRBUF *pResponse);
-	void decode_TempHum(const int HwdID, const tRBUF *pResponse);
-	void decode_UV(const int HwdID, const tRBUF *pResponse);
-	void decode_Lighting1(const int HwdID, const tRBUF *pResponse);
-	void decode_Lighting2(const int HwdID, const tRBUF *pResponse);
-	void decode_Lighting3(const int HwdID, const tRBUF *pResponse);
-	void decode_Lighting4(const int HwdID, const tRBUF *pResponse);
-	void decode_Lighting5(const int HwdID, const tRBUF *pResponse);
-	void decode_Lighting6(const int HwdID, const tRBUF *pResponse);
-	void decode_BLINDS1(const int HwdID, const tRBUF *pResponse);
-	void decode_Security1(const int HwdID, const tRBUF *pResponse);
-	void decode_Camera1(const int HwdID, const tRBUF *pResponse);
-	void decode_Remote(const int HwdID, const tRBUF *pResponse);
-	void decode_Thermostat1(const int HwdID, const tRBUF *pResponse);
-	void decode_Thermostat2(const int HwdID, const tRBUF *pResponse);
-	void decode_Thermostat3(const int HwdID, const tRBUF *pResponse);
-	void decode_Baro(const int HwdID, const tRBUF *pResponse);
-	void decode_TempHumBaro(const int HwdID, const tRBUF *pResponse);
-	void decode_TempBaro(const int HwdID, const tRBUF *pResponse);
-	void decode_DateTime(const int HwdID, const tRBUF *pResponse);
-	void decode_Current(const int HwdID, const tRBUF *pResponse);
-	void decode_Energy(const int HwdID, const tRBUF *pResponse);
-	void decode_Current_Energy(const int HwdID, const tRBUF *pResponse);
-	void decode_Gas(const int HwdID, const tRBUF *pResponse);
-	void decode_Water(const int HwdID, const tRBUF *pResponse);
-	void decode_Weight(const int HwdID, const tRBUF *pResponse);
-	void decode_RFXSensor(const int HwdID, const tRBUF *pResponse);
-	void decode_RFXMeter(const int HwdID, const tRBUF *pResponse);
-	void decode_P1MeterPower(const int HwdID, const tRBUF *pResponse);
-	void decode_P1MeterGas(const int HwdID, const tRBUF *pResponse);
-	void decode_YouLessMeter(const int HwdID, const tRBUF *pResponse);
-	void decode_AirQuality(const int HwdID, const tRBUF *pResponse);
-	void decode_FS20(const int HwdID, const tRBUF *pResponse);
-	void decode_Rego6XXTemp(const int HwdID, const tRBUF *pResponse);
-	void decode_Rego6XXValue(const int HwdID, const tRBUF *pResponse);
-	void decode_Usage(const int HwdID, const tRBUF *pResponse);
+	//(RFX) Message decoders
+	unsigned long long decode_InterfaceMessage(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_UNDECODED(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_RecXmitMessage(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Rain(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Wind(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Temp(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Hum(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_TempHum(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_UV(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Lighting1(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Lighting2(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Lighting3(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Lighting4(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Lighting5(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Lighting6(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_BLINDS1(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Security1(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Camera1(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Remote(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Thermostat1(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Thermostat2(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Thermostat3(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Baro(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_TempHumBaro(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_TempBaro(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_DateTime(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Current(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Energy(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Current_Energy(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Gas(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Water(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Weight(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_RFXSensor(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_RFXMeter(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_P1MeterPower(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_P1MeterGas(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_YouLessMeter(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_AirQuality(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_FS20(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Rego6XXTemp(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Rego6XXValue(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Usage(const int HwdID, const tRBUF *pResponse);
 };

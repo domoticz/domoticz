@@ -13,14 +13,10 @@
 namespace tcp {
 namespace server {
 
-CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port, const std::string username, const std::string password, const _eShareRights rights):
+CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port):
 	io_service_(),
 	acceptor_(io_service_)
 {
-	m_username=username;
-	m_password=password;
-	m_rights=rights;
-
 	// Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
 	boost::asio::ip::tcp::resolver resolver(io_service_);
 	boost::asio::ip::tcp::resolver::query query(address, port);
@@ -41,7 +37,7 @@ CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port
 
 CTCPServerInt::~CTCPServerInt(void)
 {
-//	stopAllClient();
+//	stopAllClients();
 }
 
 void CTCPServerInt::start()
@@ -66,7 +62,7 @@ void CTCPServerInt::handle_stop()
 	// operations. Once all operations have finished the io_service::run() call
 	// will exit.
 	acceptor_.close();
-	stopAllClient();
+	stopAllClients();
 }
 
 void CTCPServerInt::handleAccept(const boost::system::error_code& error)
@@ -78,8 +74,6 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 		_log.Log(LOG_NORM,"Incoming connection from: %s", s.c_str());
 
 		connections_.insert(new_connection_);
-		if (m_username=="")
-			new_connection_->m_bIsLoggedIn=true;
 		new_connection_->start();
 
 		new_connection_.reset(new CTCPClient(io_service_, this));
@@ -91,9 +85,26 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 	}
 }
 
+CTCPServerInt::_tRemoteShareUser* CTCPServerInt::FindUser(const std::string username)
+{
+	std::vector<CTCPServerInt::_tRemoteShareUser>::iterator itt;
+	int ii=0;
+	for (itt=m_users.begin(); itt!=m_users.end(); ++itt)
+	{
+		if (itt->Username==username)
+			return &m_users[ii];
+		ii++;
+	}
+	return NULL;
+}
+
 bool CTCPServerInt::HandleAuthentication(CTCPClient_ptr c, const std::string username, const std::string password)
 {
-	return ((username==m_username)&&(password==m_password));
+	_tRemoteShareUser *pUser=FindUser(username);
+	if (pUser==NULL)
+		return false;
+
+	return ((pUser->Username==username)&&(pUser->Password==password));
 }
 
 void CTCPServerInt::stopClient(CTCPClient_ptr c)
@@ -109,7 +120,7 @@ void CTCPServerInt::stopClient(CTCPClient_ptr c)
 	}
 }
 
-void CTCPServerInt::stopAllClient()
+void CTCPServerInt::stopAllClients()
 {
 	boost::lock_guard<boost::mutex> l(connectionMutex);
 	if (connections_.size()<1)
@@ -124,7 +135,13 @@ void CTCPServerInt::stopAllClient()
 	connections_.clear();
 }
 
-void CTCPServerInt::SendToAll(const char *pData, size_t Length)
+void CTCPServerInt::SetRemoteUsers(const std::vector<_tRemoteShareUser> users)
+{
+	boost::lock_guard<boost::mutex> l(connectionMutex);
+	m_users=users;
+}
+
+void CTCPServerInt::SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length)
 {
 	boost::lock_guard<boost::mutex> l(connectionMutex);
 
@@ -135,28 +152,35 @@ void CTCPServerInt::SendToAll(const char *pData, size_t Length)
 		)
 		return;
 
-	if (m_rights == SHARE_SENSORS)
-	{
-		switch (pData[1])
-		{
-		case pTypeLighting1:
-		case pTypeLighting2:
-		case pTypeLighting3:
-		case pTypeLighting4:
-		case pTypeLighting5:
-		case pTypeLighting6:
-		case pTypeSecurity1:
-		case pTypeBlinds:
-			return;	//not shared!!
-		}
-	}
-
 	std::set<CTCPClient_ptr>::const_iterator itt;
 	for (itt=connections_.begin(); itt!=connections_.end(); ++itt)
 	{
 		CTCPClient *pClient=itt->get();
 		if (pClient)
-			pClient->write(pData,Length);
+		{
+			_tRemoteShareUser *pUser=FindUser(pClient->m_username);
+			if (pUser!=NULL)
+			{
+				//check if we are allowed to get this device
+				bool bOk2Send=false;
+				if (pUser->Devices.size()==0)
+					bOk2Send=true;
+				else
+				{
+					int tdevices=pUser->Devices.size();
+					for (int ii=0; ii<tdevices; ii++)
+					{
+						if (pUser->Devices[ii]==DeviceRowID)
+						{
+							bOk2Send=true;
+							break;
+						}
+					}
+				}
+				if (bOk2Send)
+					pClient->write(pData,Length);
+			}
+		}
 	}
 }
 
@@ -174,14 +198,14 @@ CTCPServer::~CTCPServer()
 	m_pTCPServer=NULL;
 }
 
-bool CTCPServer::StartServer(const std::string address, const std::string port, const std::string username, const std::string password, const _eShareRights rights)
+bool CTCPServer::StartServer(const std::string address, const std::string port)
 {
 	try
 	{
 		StopServer();
 		if (m_pTCPServer!=NULL)
 			delete m_pTCPServer;
-		m_pTCPServer=new CTCPServerInt(address,port,username,password,rights);
+		m_pTCPServer=new CTCPServerInt(address,port);
 		if (!m_pTCPServer)
 			return false;
 	}
@@ -211,10 +235,22 @@ void CTCPServer::Do_Work()
 	//_log.Log(LOG_NORM,"TCPServer stopped...");
 }
 
-void CTCPServer::SendToAll(const char *pData, size_t Length)
+void CTCPServer::SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length)
 {
 	if (m_pTCPServer)
-		m_pTCPServer->SendToAll(pData,Length);
+		m_pTCPServer->SendToAll(DeviceRowID,pData,Length);
+}
+
+void CTCPServer::SetRemoteUsers(const std::vector<CTCPServerInt::_tRemoteShareUser> users)
+{
+	if (m_pTCPServer)
+		m_pTCPServer->SetRemoteUsers(users);
+}
+
+void CTCPServer::stopAllClients()
+{
+	if (m_pTCPServer)
+		m_pTCPServer->stopAllClients();
 }
 
 } // namespace server

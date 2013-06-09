@@ -230,7 +230,6 @@ void CDavisLoggerSerial::UpdateTempHumSensor(const unsigned char Idx, const floa
 	tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
 
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);//decode message
-	m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.TEMP_HUM));
 }
 
 void CDavisLoggerSerial::UpdateTempSensor(const unsigned char Idx, const float Temp)
@@ -253,7 +252,6 @@ void CDavisLoggerSerial::UpdateTempSensor(const unsigned char Idx, const float T
 	tsen.TEMP.temperaturel=(BYTE)(at10);
 
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
-	m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.TEMP));
 }
 
 void CDavisLoggerSerial::UpdateHumSensor(const unsigned char Idx, const int Hum)
@@ -273,7 +271,6 @@ void CDavisLoggerSerial::UpdateHumSensor(const unsigned char Idx, const int Hum)
 	tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
 
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM);//decode message
-	m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.HUM));
 }
 
 bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
@@ -398,7 +395,6 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		tsen.TEMP_HUM_BARO.forecast=forecast;
 
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO);//decode message
-		m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.TEMP_HUM_BARO));
 	}
 
 	//Outside Temperature
@@ -577,7 +573,6 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		}
 
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND);//decode message
-		m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.WIND));
 	}
 
 	//UV
@@ -601,7 +596,6 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 
 		tsen.UV.uv=(BYTE)round(UV*10);
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.UV);//decode message
-		m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.UV));
 	}
 	
 	//Rain Rate
@@ -643,7 +637,6 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		tsen.RAIN.raintotal3=(BYTE)(tr10);
 
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN);//decode message
-		m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.RAIN));
 	}
 
 	//Solar Radiation

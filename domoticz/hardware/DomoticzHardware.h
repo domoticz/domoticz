@@ -1,7 +1,6 @@
 #pragma once
 
 #include <boost/signals2.hpp>
-#include "../tcpserver/TCPServer.h"
 #include "../main/RFXNames.h"
 
 //Base class with functions all notification systems should have
@@ -27,9 +26,6 @@ public:
 	bool Stop();
 	virtual void WriteToHardware(const char *pdata, const unsigned char length)=0;
 
-	void StopSharing();
-	bool StartSharing(const std::string port, const std::string username, const std::string password, const _eShareRights rights);
-
 	bool IsStarted() { return m_bIsStarted; }
 
 	int m_HwdID;
@@ -40,7 +36,6 @@ public:
 	bool m_bEnableReceive;
 	boost::signals2::signal<void(CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand)> sDecodeRXMessage;
 	boost::signals2::signal<void(CDomoticzHardwareBase *pDevice)> sOnConnected;
-	tcp::server::CTCPServer m_sharedserver;
 private:
 	boost::mutex readQueueMutex;
 	virtual bool StartHardware()=0;

@@ -208,7 +208,6 @@ void P1MeterBase::MatchLine()
 			{
 				m_lastelectrausage=m_p1power.usagecurrent;
 				m_lastSharedSendElectra=atime;
-				m_sharedserver.SendToAll((const char*)&m_p1power,sizeof(m_p1power));
 			}
 			if (
 				(m_p1gas.gasusage!=m_lastgasusage)||
@@ -219,7 +218,6 @@ void P1MeterBase::MatchLine()
 				m_lastSharedSendGas=atime;
 				m_lastgasusage=m_p1gas.gasusage;
 				sDecodeRXMessage(this, (const unsigned char *)&m_p1gas);//decode message
-				m_sharedserver.SendToAll((const char*)&m_p1gas,sizeof(m_p1gas));
 			}
 			m_exclmarkfound=0;
 		}

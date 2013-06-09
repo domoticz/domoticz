@@ -125,5 +125,4 @@ void CYouLess::GetMeterDetails()
 	m_meter.powerusage=atol(pusage.c_str());
 	m_meter.usagecurrent=atol(pcurrent.c_str());
 	sDecodeRXMessage(this, (const unsigned char *)&m_meter);//decode message
-	m_sharedserver.SendToAll((const char*)&m_meter,sizeof(m_meter));
 }

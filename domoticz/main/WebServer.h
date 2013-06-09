@@ -26,6 +26,7 @@ public:
 	char * DisplayTimerTypesCombo();
 	char * DisplayHardwareTypesCombo();
 	char * DisplaySerialDevicesCombo();
+	char * DisplayDevicesList();
 	std::string GetJSonPage();
 	std::string GetCameraSnapshot();
 	std::string GetDatabaseBackup();

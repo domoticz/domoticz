@@ -59,6 +59,8 @@ sudo port install libusb-compat
 ------------------------------------------------------------------------------------------------
 Synology: (Initial setup time is 30 minutes)
 - Make sure the device is bootstrapped, then:
+ipkg update
+ipkg upgrade
 ipkg install gcc
 ipkg install make
 ipkg install optware-devel (dont worry about the wget-ssl error)
@@ -70,15 +72,15 @@ ipkg install libcurl-dev
 ipkg install libusb
 
 download/install cmake (take a coffee while doing the bootstrap and make commands)
-wget http://www.cmake.org/files/v2.8/cmake-2.8.10.tar.gz
-tar xvf cmake-2.8.10.tar.gz
-cd cmake-2.8.10
+wget http://www.cmake.org/files/v2.8/cmake-2.8.11.1.tar.gz
+tar xvf cmake-2.8.11.1.tar.gz
+cd cmake-2.8.11.1
 ./bootstrap
 make
 make install
 cd ..
-rm -R cmake-2.8.10
-rm cmake-2.8.10.tar.gz
+rm -R cmake-2.8.11.1
+rm cmake-2.8.11.1.tar.gz
 
 fix known pthread problem:
 

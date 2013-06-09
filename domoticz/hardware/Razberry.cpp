@@ -504,7 +504,6 @@ void CRazberry::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		lcmd.LIGHTING2.filler=0;
 		lcmd.LIGHTING2.rssi=7;
 		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);//decode message
-		m_sharedserver.SendToAll((const char*)&lcmd,sizeof(lcmd.LIGHTING2));
 		return;
 	}
 	else if (pDevice->devType==ZDTYPE_SENSOR_POWER)
@@ -517,7 +516,6 @@ void CRazberry::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		umeter.dunit=pDevice->scaleID;
 		umeter.fusage=pDevice->floatValue;
 		sDecodeRXMessage(this, (const unsigned char *)&umeter);//decode message
-		m_sharedserver.SendToAll((const char*)&umeter,sizeof(_tUsageMeter));
 	}
 }
 

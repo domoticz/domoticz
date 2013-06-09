@@ -9,6 +9,7 @@ css/demo_table_jui.css
 css/style.css
 css/TableTools.css
 css/ui-darkness/jquery-ui-1.10.1.custom.min.css
+css/jquery.uix.multiselect.css
 
 # fonts
 css/fonts/Abel.eot
@@ -244,8 +245,10 @@ js/jquery-1.9.1.min.js
 js/jquery-migrate-1.1.1.min.js
 js/jquery-ui-1.10.1.custom.min.js
 js/jquery.dataTables.min.js
-js/jquery.jeditable.mini.gz
+js/jquery.jeditable.mini.js
+js/jquery.localisation-min.js
 js/jquery.ui.touch-punch.min.js
+js/jquery.uix.multiselect.min.js
 js/TableTools.min.js
 js/ZeroClipboard.js
 js/modules/exporting.js

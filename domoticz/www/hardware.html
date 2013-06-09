@@ -78,7 +78,6 @@
             <tr>
                 <th width="120" align="left">Name</th>
                 <th width="60" align="left">Enabled</th>
-                <th width="60" align="left">Shared</th>
                 <th width="240" align="left">Type</th>
                 <th width="200" align="left">Address</th>
                 <th width="80" align="center">Port</th>
@@ -149,39 +148,6 @@
 				</tr>
 			</table>
 		</div>
-		<div id="divshared">
-				<br>
-				<table class="display" id="hardwareparamsshareenabled" border="0" cellpadding="0" cellspacing="20">
-					<tr>
-          <td align="right" style="width:110px"><label>Shared:</label></td>
-          <td><input type="checkbox" id="shareenabled"/></td>
-					</tr>
-				</table>
-				<div id="divsharedparam">
-					<table class="display" id="hardwareparamssharedetails" border="0" cellpadding="0" cellspacing="20">
-						<tr>
-							<td align="right" style="width:110px"><label>Port:</label></td>
-							<td><input type="text" id="shareport" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
-						</tr>
-						<tr>
-							<td align="right" style="width:110px"><label>Username:</label></td>
-							<td><input type="text" id="shareusername" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
-						</tr>
-						<tr>
-							<td align="right" style="width:110px"><label>Password:</label></td>
-							<td><input type="password" id="sharepassword" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
-						</tr>
-						<tr>
-							<td align="right" style="width:110px"><label>Share:</label></td>
-							<td><select id="combosharerights" style="width:230px" class="combobox ui-corner-all">
-										<option value="0">Sensors</option>
-										<option value="1">Sensors + Light/Switches (All !)</option>
-									</select>
-							</td>
-						</tr>
-					</table>
-				</div>
-		</div>
 		<br>
     <a class="btnstyle3" onclick="AddHardware();">Add</a>
 </div>
@@ -209,53 +175,12 @@ function DeleteHardware(idx)
 	});
 }
 
-function GetSharedParameters()
-{
-	var shareparam="";
-	var bShared=$('#hardwarecontent #hardwareparamsshareenabled #shareenabled').is(":checked");
-	shareparam+="&shared="+bShared;
-	var shareport=$('#hardwarecontent #hardwareparamssharedetails #shareport').val();
-	var shareusername=$('#hardwarecontent #hardwareparamssharedetails #shareusername').val();
-	var sharepassword=$('#hardwarecontent #hardwareparamssharedetails #sharepassword').val();
-	
-	if ( (shareusername!="") & (sharepassword=="") ) {
-		ShowNotify('Please enter a password!', 2500, true);
-		return null;
-	}
-	
-	var sharerights=$("#hardwarecontent #hardwareparamssharedetails #combosharerights option:selected").val();
-	if (bShared==true) {
-		if (shareport=="") {
-			ShowNotify('Please enter Unique TCP Port for sharing!', 2500, true);
-			return null;
-		}
-		var intPort=parseInt(shareport);
-		var intRegex = /^\d+$/;
-		
-		if ((intPort<80)||(intPort>30000)||(!intRegex.test(shareport))) {
-			ShowNotify('Please enter an Valid TCP Port for sharing!<br>Try between 80 and 30000...', 2500, true);
-			return null;
-		}		
-	}
-	
-	shareparam+="&shareport="+shareport;
-	shareparam+="&shareusername="+shareusername;
-	shareparam+="&sharepassword="+sharepassword;
-	shareparam+="&sharerights="+sharerights;
-	return shareparam;
-}
-
 function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 {
 	var name=$("#hardwarecontent #hardwareparamstable #hardwarename").val();
 	if (name=="")
 	{
 		ShowNotify('Please enter a Name!', 2500, true);
-		return;
-	}
-
-	var shareparm=GetSharedParameters();
-	if (shareparm==null) {
 		return;
 	}
 
@@ -275,8 +200,7 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 				"&port=1&name=" + name + 
 				"&enabled=" + bEnabled + 
 				"&idx=" + idx +
-				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + 
-				shareparm,
+				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -301,8 +225,7 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 				"&name=" + name + 
 				"&enabled=" + bEnabled + 
 				"&idx=" + idx +
-				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + 
-				shareparm,
+				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -339,8 +262,7 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 				"&name=" + name + 
 				"&enabled=" + bEnabled + 
 				"&idx=" + idx + 
-				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + 
-				shareparm,
+				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -381,8 +303,7 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 				"&name=" + name + 
 				"&enabled=" + bEnabled + 
 				"&idx=" + idx + 
-				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + 
-				shareparm,
+				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -404,12 +325,6 @@ function AddHardware()
 		return false;
 	}
 
-	var shareparm=GetSharedParameters();
-	if (shareparm==null) {
-		return;
-	}
-
-	
 	var hardwaretype=$("#hardwarecontent #hardwareparamstable #combotype option:selected").val();
 	if (typeof hardwaretype == 'undefined') {
 		ShowNotify('Unknown device selected!', 2500, true);
@@ -422,7 +337,7 @@ function AddHardware()
 	if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("1-Wire") >= 0)||(text.indexOf("BMP085") >= 0))
 	{
 		$.ajax({
-			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=1&name=" + name + "&enabled=" + bEnabled + shareparm,
+			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=1&name=" + name + "&enabled=" + bEnabled,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -442,7 +357,7 @@ function AddHardware()
 			return;
 		}
 		$.ajax({
-			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + serialport + "&name=" + name + "&enabled=" + bEnabled + shareparm,
+			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + serialport + "&name=" + name + "&enabled=" + bEnabled,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -473,7 +388,7 @@ function AddHardware()
 			return;
 		}		
 		$.ajax({
-			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + name + "&enabled=" + bEnabled + shareparm,
+			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + name + "&enabled=" + bEnabled,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -506,7 +421,7 @@ function AddHardware()
 		var username=$("#hardwarecontent #divlogin #username").val();
 		var password=$("#hardwarecontent #divlogin #password").val();
 		$.ajax({
-			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + username + "&password=" + password + "&name=" + name + "&enabled=" + bEnabled + shareparm,
+			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + username + "&password=" + password + "&name=" + name + "&enabled=" + bEnabled,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -664,11 +579,6 @@ function RefreshHardwareTable()
 				enabledstr="Yes";
 			}
 			
-			var sharedstr="No";
-			if (item.Shared=="true") {
-				sharedstr="Yes (" + item.SharedPort + ")";
-			}
-			
 			var HwTypeStr=$.myglobals.HardwareTypesStr[item.Type];
 			if (typeof HwTypeStr == 'undefined') {
 				HwTypeStr="???? Unknown (NA)";
@@ -711,17 +621,11 @@ function RefreshHardwareTable()
 				"Mode5": item.Mode5,
 				"Type" : HwTypeStr,
 				"IntPort": item.Port,
-				"Shared": item.Shared,
-				"SharedPort": item.SharedPort,
-				"SharedUsername": item.SharedUsername,
-				"SharedPassword": item.SharedPassword,
-				"SharedRights": item.SharedRights,
                 "0": item.Name,
                 "1": enabledstr,
-                "2": sharedstr,
-				"3": HwTypeStr,
-				"4": item.Address,
-				"5": SerialName
+				"2": HwTypeStr,
+				"3": item.Address,
+				"4": SerialName
 			} );
         });
 		/* Add a click handler to the rows - this could be used as a callback */
@@ -748,12 +652,6 @@ function RefreshHardwareTable()
 
 					$('#hardwarecontent #hardwareparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
 
-					$('#hardwarecontent #hardwareparamsshareenabled #shareenabled').prop('checked',(data["Shared"]=="true"));
-					$('#hardwarecontent #hardwareparamssharedetails #shareport').val(data["SharedPort"]);
-					$('#hardwarecontent #hardwareparamssharedetails #shareusername').val(data["SharedUsername"]);
-					$('#hardwarecontent #hardwareparamssharedetails #sharepassword').val(data["SharedPassword"]);
-					$("#hardwarecontent #hardwareparamssharedetails #combosharerights").val(parseInt(data["SharedRights"]));
-					
 					UpdateHardwareParamControls();
 					if ((data["Type"].indexOf("TE923") >= 0)||(data["Type"].indexOf("Volcraft") >= 0)||(data["Type"].indexOf("1-Wire") >= 0)||(data["Type"].indexOf("BMP085") >= 0))
 					{
@@ -817,13 +715,6 @@ function UpdateHardwareParamControls()
 		$("#hardwarecontent #divremote").hide();
 		$("#hardwarecontent #divlogin").hide();
 	}
-	var bShared=$('#hardwarecontent #hardwareparamsshareenabled #shareenabled').is(":checked");
-	if (bShared == true) {
-		$("#hardwarecontent #divsharedparam").show();
-	}
-	else {
-		$("#hardwarecontent #divsharedparam").hide();
-	}
 }
 
 function ShowHardware()
@@ -850,9 +741,6 @@ function ShowHardware()
 	} );
 
 	$("#hardwarecontent #hardwareparamstable #combotype").change(function() { 
-		UpdateHardwareParamControls();
-	});
-	$("#hardwarecontent #hardwareparamsshareenabled #shareenabled").click(function() { 
 		UpdateHardwareParamControls();
 	});
 	

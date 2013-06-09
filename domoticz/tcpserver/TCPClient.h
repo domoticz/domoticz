@@ -23,6 +23,7 @@ public:
 	void write(const char *pData, size_t Length);
 
 	boost::asio::ip::tcp::socket& socket() { return socket_; }
+	std::string m_username;
 	bool m_bIsLoggedIn;
 private:
 	void handleRead(const boost::system::error_code& error, size_t length);

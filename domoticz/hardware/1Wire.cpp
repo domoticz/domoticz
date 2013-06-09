@@ -230,7 +230,6 @@ void C1Wire::GetGPIOSensorDetails()
 						tsen.TEMP.temperaturel=(BYTE)(at10);
 
 						sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
-						m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.TEMP));
 					}
 				}
 			}
@@ -455,7 +454,6 @@ void C1Wire::GetOWFSSensorDetails()
 				tsen.TEMP.temperaturel=(BYTE)(at10);
 
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
-				m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.TEMP));
 			}
 			else if ((temp!=0x1234)&&(humidity!=0x1234))
 			{
@@ -479,7 +477,6 @@ void C1Wire::GetOWFSSensorDetails()
 				tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
 
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);//decode message
-				m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.TEMP_HUM));
 			}
 			else if (humidity!=0x1234)
 			{
@@ -498,7 +495,6 @@ void C1Wire::GetOWFSSensorDetails()
 				tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
 
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM);//decode message
-				m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.HUM));
 			}
 			else if (counterA!=0xFEDCBA98)
 			{
@@ -517,7 +513,6 @@ void C1Wire::GetOWFSSensorDetails()
 				tsen.RFXMETER.count3 = (BYTE)((counterA & 0x0000FF00) >> 8);
 				tsen.RFXMETER.count4 = (BYTE)(counterA & 0x000000FF);
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);//decode message
-				m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.RFXMETER));
 
 			}
 		}

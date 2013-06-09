@@ -311,5 +311,4 @@ void CBMP085::ReadSensorDetails()
 	else
 		tsensor.forecast=baroForecastSunny;
 	sDecodeRXMessage(this, (const unsigned char *)&tsensor);//decode message
-	m_sharedserver.SendToAll((const char*)&tsensor,sizeof(_tTempBaro));
 }

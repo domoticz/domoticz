@@ -3,6 +3,7 @@
 #include "../main/RFXNames.h"
 #include "TCPClient.h"
 #include <set>
+#include <vector>
 
 namespace tcp {
 namespace server {
@@ -10,18 +11,28 @@ namespace server {
 class CTCPServerInt
 {
 public:
-	CTCPServerInt(const std::string& address, const std::string& port, const std::string username, const std::string password, const _eShareRights rights);
+	struct _tRemoteShareUser
+	{
+		std::string Username;
+		std::string Password;
+		std::vector<unsigned long long> Devices;
+	};
+	CTCPServerInt(const std::string& address, const std::string& port);
 	~CTCPServerInt(void);
 
 	void start();
 	void stop();
+	void stopAllClients();
 
-	void SendToAll(const char *pData, size_t Length);
+	void SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length);
+
+	void SetRemoteUsers(const std::vector<_tRemoteShareUser> users);
 
 private:
 	/// Stop the specified connection.
 	void stopClient(CTCPClient_ptr c);
-	void stopAllClient();
+
+	_tRemoteShareUser* FindUser(const std::string username);
 
 	void handleAccept(const boost::system::error_code& error);
 
@@ -39,10 +50,7 @@ private:
 	CTCPClient_ptr new_connection_;
 	boost::mutex connectionMutex;
 
-	std::string m_username;
-	std::string m_password;
-	_eShareRights m_rights;
-
+	std::vector<_tRemoteShareUser> m_users;
 
 	friend class CTCPClient;
 };
@@ -53,9 +61,11 @@ public:
 	CTCPServer();
 	~CTCPServer(void);
 
-	bool StartServer(const std::string address, const std::string port, const std::string username, const std::string password, const _eShareRights rights);
+	bool StartServer(const std::string address, const std::string port);
 	void StopServer();
-	void SendToAll(const char *pData, size_t Length);
+	void SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length);
+	void SetRemoteUsers(const std::vector<CTCPServerInt::_tRemoteShareUser> users);
+	void stopAllClients();
 private:
 	CTCPServerInt *m_pTCPServer;
 	boost::shared_ptr<boost::thread> m_thread;

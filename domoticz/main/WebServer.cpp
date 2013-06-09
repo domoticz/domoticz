@@ -146,6 +146,11 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
 		&CWebServer::DisplayTimerTypesCombo,	// member function
 		this ) );			// instance of class
 
+	m_pWebEm->RegisterIncludeCode( "deviceslist",
+		boost::bind(
+		&CWebServer::DisplayDevicesList,
+		this ) );
+
 	m_pWebEm->RegisterPageCode( "/json.htm",
 		boost::bind(
 		&CWebServer::GetJSonPage,	// member function
@@ -316,6 +321,28 @@ char * CWebServer::DisplayTimerTypesCombo()
 	return (char*)m_retstr.c_str();
 }
 
+char * CWebServer::DisplayDevicesList()
+{
+	m_retstr="";
+	char szTmp[300];
+
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+	result=m_pMain->m_sql.query("SELECT ID, Name FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
+	if (result.size()>0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::vector<std::string> sd=*itt;
+			sprintf(szTmp,"<option value=\"%s\">%s</option>\n",sd[0].c_str(),sd[1].c_str());
+			m_retstr+=szTmp;
+		}
+	}
+
+	return (char*)m_retstr.c_str();
+}
+
 void CWebServer::LoadUsers()
 {
 	ClearUserPasswords();
@@ -362,6 +389,7 @@ void CWebServer::LoadUsers()
 			}
 		}
 	}
+	m_pMain->LoadSharedUsers();
 }
 
 void CWebServer::AddUser(const unsigned long ID, const std::string username, const std::string password, const int userrights)
@@ -537,6 +565,9 @@ char * CWebServer::PostSettings()
 
 	m_pMain->m_sql.UpdatePreferencesVar("NotificationSensorInterval",atoi(m_pWebEm->FindValue("NotificationSensorInterval").c_str()));
 	m_pMain->m_sql.UpdatePreferencesVar("NotificationSwitchInterval",atoi(m_pWebEm->FindValue("NotificationSwitchInterval").c_str()));
+
+	m_pMain->m_sql.UpdatePreferencesVar("RemoteSharedPort",atoi(m_pWebEm->FindValue("RemoteSharedPort").c_str()));
+	
 
 	return (char*)m_retstr.c_str();
 }
@@ -2088,31 +2119,6 @@ std::string CWebServer::GetJSonPage()
 				root["result"][ii]["Mode3"]=(unsigned char)atoi(sd[10].c_str());
 				root["result"][ii]["Mode4"]=(unsigned char)atoi(sd[11].c_str());
 				root["result"][ii]["Mode5"]=(unsigned char)atoi(sd[12].c_str());
-
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "SELECT Port, Username, Password, Rights FROM HardwareSharing WHERE (HardwareID == " << sd[0] << ")";
-				result2=m_pMain->m_sql.query(szQuery.str());
-				if (result2.size()>0)
-				{
-					//shared
-					sd=result2[0];
-					root["result"][ii]["Shared"]="true";
-					root["result"][ii]["SharedPort"]=sd[0];
-					root["result"][ii]["SharedUsername"]=sd[1];
-					root["result"][ii]["SharedPassword"]=sd[2];
-					root["result"][ii]["SharedRights"]=sd[3];
-				}
-				else
-				{
-					//not shared
-					root["result"][ii]["Shared"]="false";
-					root["result"][ii]["SharedPort"]="";
-					root["result"][ii]["SharedUsername"]="";
-					root["result"][ii]["SharedPassword"]="";
-					root["result"][ii]["SharedRights"]="";
-				}
-
 				ii++;
 			}
 		}
@@ -2185,7 +2191,7 @@ std::string CWebServer::GetJSonPage()
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT ID, Active, Username, Password, Rights FROM USERS ORDER BY ID ASC";
+		szQuery << "SELECT ID, Active, Username, Password, Rights, RemoteSharing FROM USERS ORDER BY ID ASC";
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -2200,6 +2206,7 @@ std::string CWebServer::GetJSonPage()
 				root["result"][ii]["Username"]=base64_decode(sd[2]);
 				root["result"][ii]["Password"]=base64_decode(sd[3]);
 				root["result"][ii]["Rights"]=atoi(sd[4].c_str());
+				root["result"][ii]["RemoteSharing"]=atoi(sd[5].c_str());
 				ii++;
 			}
 		}
@@ -6446,17 +6453,6 @@ std::string CWebServer::GetJSonPage()
 			else
 				goto exitjson;
 
-			std::string shared=m_pWebEm->FindValue("shared");
-			std::string shareport=m_pWebEm->FindValue("shareport");
-			std::string shareusername=m_pWebEm->FindValue("shareusername");
-			std::string sharepassword=m_pWebEm->FindValue("sharepassword");
-			std::string sharerights=m_pWebEm->FindValue("sharerights");
-			int nsharerights=atoi(sharerights.c_str());
-			int nshareport=atoi(shareport.c_str());
-
-			if ((shared=="true")&&(shareport==""))
-				goto exitjson;
-
 			root["status"]="OK";
 			root["title"]="AddHardware";
 			sprintf(szTmp,
@@ -6479,19 +6475,6 @@ std::string CWebServer::GetJSonPage()
 			{
 				std::vector<std::string> sd=result[0];
 				int ID=atoi(sd[0].c_str());
-
-				if (shared=="true") {
-					//add sharing
-					sprintf(szTmp,
-						"INSERT INTO HardwareSharing (HardwareID, Port, Username, Password, Rights) VALUES (%d,%d,'%s','%s',%d)",
-						ID,
-						nshareport,
-						shareusername.c_str(),
-						sharepassword.c_str(),
-						nsharerights
-						);
-					result=m_pMain->m_sql.query(szTmp);
-				}
 
 				m_pMain->AddHardwareFromParams(ID,name,(senabled=="true")?true:false,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
 			}
@@ -6549,17 +6532,6 @@ std::string CWebServer::GetJSonPage()
 			else
 				goto exitjson;
 
-			std::string shared=m_pWebEm->FindValue("shared");
-			std::string shareport=m_pWebEm->FindValue("shareport");
-			std::string shareusername=m_pWebEm->FindValue("shareusername");
-			std::string sharepassword=m_pWebEm->FindValue("sharepassword");
-			std::string sharerights=m_pWebEm->FindValue("sharerights");
-			int nsharerights=atoi(sharerights.c_str());
-			int nshareport=atoi(shareport.c_str());
-
-			if ((shared=="true")&&(shareport==""))
-				goto exitjson;
-
 			unsigned char mode1=(unsigned char)atoi(m_pWebEm->FindValue("Mode1").c_str());
 			unsigned char mode2=(unsigned char)atoi(m_pWebEm->FindValue("Mode2").c_str());
 			unsigned char mode3=(unsigned char)atoi(m_pWebEm->FindValue("Mode3").c_str());
@@ -6581,21 +6553,6 @@ std::string CWebServer::GetJSonPage()
 				idx.c_str()
 				);
 			result=m_pMain->m_sql.query(szTmp);
-
-			sprintf(szTmp,"DELETE FROM HardwareSharing WHERE (HardwareID == %s)",idx.c_str());
-			result=m_pMain->m_sql.query(szTmp);
-			if (shared=="true") {
-				//add sharing
-				sprintf(szTmp,
-					"INSERT INTO HardwareSharing (HardwareID, Port, Username, Password, Rights) VALUES (%s,%d,'%s','%s',%d)",
-					idx.c_str(),
-					nshareport,
-					shareusername.c_str(),
-					sharepassword.c_str(),
-					nsharerights
-					);
-				result=m_pMain->m_sql.query(szTmp);
-			}
 
 			//re-add the device in our system
 			int ID=atoi(idx.c_str());
@@ -6706,11 +6663,13 @@ std::string CWebServer::GetJSonPage()
 			std::string username=m_pWebEm->FindValue("username");
 			std::string password=m_pWebEm->FindValue("password");
 			std::string srights=m_pWebEm->FindValue("rights");
+			std::string sRemoteSharing=m_pWebEm->FindValue("RemoteSharing");
 			if (
 				(senabled=="")||
 				(username=="")||
 				(password=="")||
-				(srights=="")
+				(srights=="")||
+				(sRemoteSharing=="")
 				)
 				goto exitjson;
 			int rights=atoi(srights.c_str());
@@ -6725,11 +6684,12 @@ std::string CWebServer::GetJSonPage()
 			root["status"]="OK";
 			root["title"]="AddUser";
 			sprintf(szTmp,
-				"INSERT INTO Users (Active, Username, Password, Rights) VALUES (%d,'%s','%s','%d')",
+				"INSERT INTO Users (Active, Username, Password, Rights, RemoteSharing) VALUES (%d,'%s','%s','%d','%d')",
 				(senabled=="true")?1:0,
 				base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
 				base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
-				rights
+				rights,
+				(sRemoteSharing=="true")?1:0
 				);
 			result=m_pMain->m_sql.query(szTmp);
 			LoadUsers();
@@ -6755,11 +6715,13 @@ std::string CWebServer::GetJSonPage()
 			std::string username=m_pWebEm->FindValue("username");
 			std::string password=m_pWebEm->FindValue("password");
 			std::string srights=m_pWebEm->FindValue("rights");
+			std::string sRemoteSharing=m_pWebEm->FindValue("RemoteSharing");
 			if (
 				(senabled=="")||
 				(username=="")||
 				(password=="")||
-				(srights=="")
+				(srights=="")||
+				(sRemoteSharing=="")
 				)
 				goto exitjson;
 			int rights=atoi(srights.c_str());
@@ -6776,11 +6738,12 @@ std::string CWebServer::GetJSonPage()
 			root["title"]="UpdateUser";
 
 			sprintf(szTmp,
-				"UPDATE Users SET Active=%d, Username='%s', Password='%s', Rights=%d WHERE (ID == %s)",
+				"UPDATE Users SET Active=%d, Username='%s', Password='%s', Rights=%d, RemoteSharing=%d WHERE (ID == %s)",
 				(senabled=="true")?1:0,
 				base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
 				base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
 				rights,
+				(sRemoteSharing=="true")?1:0,
 				idx.c_str()
 				);
 			result=m_pMain->m_sql.query(szTmp);
@@ -6808,6 +6771,12 @@ std::string CWebServer::GetJSonPage()
 			root["title"]="DeleteUser";
 			sprintf(szTmp,"DELETE FROM Users WHERE (ID == %s)",idx.c_str());
 			result=m_pMain->m_sql.query(szTmp);
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "DELETE FROM SharedDevices WHERE (SharedUserID == " << idx << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+
 			LoadUsers();
 		}
 		else if (cparam=="deletehardware")
@@ -7349,6 +7318,57 @@ std::string CWebServer::GetJSonPage()
 			root["ServerTime"]=szTmp;
 		}
 	} //(rtype=="command")
+	else if (rtype=="getshareduserdevices")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			goto exitjson;
+		root["status"]="OK";
+		root["title"]="GetSharedUserDevices";
+
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == " << idx << ")";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			int ii=0;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+				root["result"][ii]["DeviceRowIdx"]=sd[0];
+				ii++;
+			}
+		}
+	}
+	else if (rtype=="setshareduserdevices")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string userdevices=m_pWebEm->FindValue("devices");
+		if (idx=="")
+			goto exitjson;
+		root["status"]="OK";
+		root["title"]="SetSharedUserDevices";
+		std::vector<std::string> strarray;
+		StringSplit(userdevices, ";", strarray);
+
+		//First delete all devices for this user, then add the (new) onces
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "DELETE FROM SharedDevices WHERE (SharedUserID == " << idx << ")";
+		result=m_pMain->m_sql.query(szQuery.str());
+
+		int nDevices=(int)strarray.size();
+		for (int ii=0; ii<nDevices; ii++)
+		{
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "INSERT INTO SharedDevices (SharedUserID,DeviceRowID) VALUES ('" << idx << "','" << strarray[ii] << "')";
+			result=m_pMain->m_sql.query(szQuery.str());
+		}
+
+	}
 	else if (rtype=="setused")
 	{
 		std::string idx=m_pWebEm->FindValue("idx");
@@ -7744,6 +7764,10 @@ std::string CWebServer::GetJSonPage()
 				else if (Key=="NotificationSwitchInterval")
 				{
 					root["NotificationSwitchInterval"]=nValue;
+				}
+				else if (Key=="RemoteSharedPort")
+				{
+					root["RemoteSharedPort"]=nValue;
 				}
 			}
 		}

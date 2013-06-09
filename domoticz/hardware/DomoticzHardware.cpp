@@ -12,17 +12,6 @@ CDomoticzHardwareBase::CDomoticzHardwareBase()
 	m_bIsStarted=false;
 };
 
-bool CDomoticzHardwareBase::StartSharing(const std::string port, const std::string username, const std::string password, const _eShareRights rights)
-{
-	try {
-		m_sharedserver.StartServer("0.0.0.0",port, username, password, rights);
-	} catch(...)
-	{
-		return false;
-	}
-	return true;
-}
-
 bool CDomoticzHardwareBase::Start()
 {
 	return StartHardware();
@@ -31,14 +20,9 @@ bool CDomoticzHardwareBase::Start()
 bool CDomoticzHardwareBase::Stop()
 {
 	boost::lock_guard<boost::mutex> l(readQueueMutex);
-	StopSharing();
 	return StopHardware();
 }
 
-void CDomoticzHardwareBase::StopSharing()
-{
-	m_sharedserver.StopServer();
-}
 
 void CDomoticzHardwareBase::onRFXMessage(const unsigned char *pBuffer, const size_t Len)
 {
@@ -66,8 +50,6 @@ void CDomoticzHardwareBase::onRFXMessage(const unsigned char *pBuffer, const siz
 		if (m_rxbufferpos > m_rxbuffer[0])
 		{
 			sDecodeRXMessage(this, (const unsigned char *)&m_rxbuffer);//decode message
-			m_sharedserver.SendToAll((const char*)m_rxbuffer,m_rxbufferpos);
-
 			m_rxbufferpos = 0;    //set to zero to receive next message
 		}
 		ii++;

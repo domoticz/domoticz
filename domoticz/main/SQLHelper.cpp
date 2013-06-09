@@ -14,7 +14,7 @@
 #include "../smtpclient/SMTPClient.h"
 #include "../webserver/Base64.h"
 
-#define DB_VERSION 13
+#define DB_VERSION 14
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -219,7 +219,8 @@ const char *sqlCreateUsers =
 "[Active] INTEGER NOT NULL DEFAULT 0, "
 "[Username] VARCHAR(200) NOT NULL, "
 "[Password] VARCHAR(200) NOT NULL, "
-"[Rights] INTEGER DEFAULT 255);";
+"[Rights] INTEGER DEFAULT 255, "
+"[RemoteSharing] INTEGER DEFAULT 0);";
 
 const char *sqlCreateMeter =
 "CREATE TABLE IF NOT EXISTS [Meter] ("
@@ -314,6 +315,12 @@ const char *sqlCreateSceneTimers =
 "[Level] INTEGER DEFAULT 15, "
 "[Days] INTEGER NOT NULL);";
 
+const char *sqlCreateSharedDevices =
+"CREATE TABLE IF NOT EXISTS [SharedDevices] ("
+"[ID] INTEGER PRIMARY KEY,  "
+"[SharedUserID] BIGINT NOT NULL, "
+"[DeviceRowID] BIGINT NOT NULL);";
+
 extern std::string szStartupFolder;
 
 CSQLHelper::CSQLHelper(void)
@@ -407,6 +414,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateScenesTrigger);
 	query(sqlCreateSceneDevices);
 	query(sqlCreateSceneTimers);
+	query(sqlCreateSharedDevices);
 
 	int dbversion=0;
 	GetPreferencesVar("DB_Version", dbversion);
@@ -528,6 +536,10 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion<13)
 		{
 			DeleteHardware("1001");
+		}
+		if (dbversion<14)
+		{
+			query("ALTER TABLE Users ADD COLUMN [RemoteSharing] INTEGER default 0");
 		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
@@ -665,6 +677,10 @@ bool CSQLHelper::OpenDatabase()
 	if (!GetPreferencesVar("NotificationSwitchInterval", nValue))
 	{
 		UpdatePreferencesVar("NotificationSwitchInterval", 0);
+	}
+	if (!GetPreferencesVar("RemoteSharedPort", nValue))
+	{
+		UpdatePreferencesVar("RemoteSharedPort", 6144);
 	}
 
 	//Start background thread
@@ -875,21 +891,21 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string szQue
 	return results; 
 }
 
-void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, std::string &devname)
+unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, std::string &devname)
 {
-	UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, "", devname);
+	return UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, "", devname);
 }
 
-void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const char* sValue, std::string &devname)
+unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const char* sValue, std::string &devname)
 {
-	UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, 0, sValue,devname);
+	return UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, 0, sValue,devname);
 }
 
-void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname)
+unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname)
 {
 	if (!NeedToUpdateHardwareDevice(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue,devname))
-		return;
-	UpdateValueInt(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue,devname);
+		return -1;
+	unsigned long long devRowID=UpdateValueInt(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue,devname);
 
 	bool bIsLightSwitch=false;
 	switch (devType)
@@ -906,7 +922,7 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigne
 		break;
 	}
 	if (!bIsLightSwitch)
-		return;
+		return devRowID;
 
 	//Get the ID of this device
 	std::vector<std::vector<std::string> > result,result2;
@@ -916,7 +932,7 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigne
 	sprintf(szTmp,"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
 	result=query(szTmp);
 	if (result.size()==0)
-		return; //should never happen, because it was previously inserted if non-existent
+		return devRowID; //should never happen, because it was previously inserted if non-existent
 
 	std::string idx=result[0][0];
 
@@ -1053,12 +1069,13 @@ void CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigne
 			query(szTmp);
 		}
 	}
+	return devRowID;
 }
 
-void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname)
+unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname)
 {
 	if (!m_dbase)
-		return;
+		return -1;
 
 	char szTmp[1000];
 
@@ -1086,7 +1103,7 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 		if (result.size()==0)
 		{
 			_log.Log(LOG_ERROR,"Serious database error, problem getting ID from DeviceStatus!");
-			return;
+			return -1;
 		}
 		std::stringstream s_str( result[0][0] );
 		s_str >> ulID;
@@ -1288,6 +1305,7 @@ void CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsi
 		CheckSceneStatusWithDevice(ulID);
 		break;
 	}
+	return ulID;
 }
 
 //Special case for Z-Wave, as we receive the same update as we send it
@@ -3774,8 +3792,6 @@ void CSQLHelper::DeleteHardware(const std::string idx)
 	char szTmp[1000];
 	sprintf(szTmp,"DELETE FROM Hardware WHERE (ID == %s)",idx.c_str());
 	result=query(szTmp);
-	sprintf(szTmp,"DELETE FROM HardwareSharing WHERE (HardwareID == %s)",idx.c_str());
-	query(szTmp);
 	//also delete all records in other tables
 
 	sprintf(szTmp,"SELECT ID FROM DeviceStatus WHERE (HardwareID == %s)",idx.c_str());
@@ -3854,6 +3870,8 @@ void CSQLHelper::DeleteDevice(const std::string idx)
 	sprintf(szTmp,"DELETE FROM DeviceToPlansMap WHERE (DeviceRowID == %s)",idx.c_str());
 	query(szTmp);
 	sprintf(szTmp,"DELETE FROM CamerasActiveDevices WHERE (DevSceneType==0) AND (DevSceneRowID == %s)",idx.c_str());
+	query(szTmp);
+	sprintf(szTmp,"DELETE FROM SharedDevices WHERE (DeviceRowID== %s)",idx.c_str());
 	query(szTmp);
 
 	//and now delete all records in the DeviceStatus table itself

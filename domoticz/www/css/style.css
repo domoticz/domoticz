@@ -1835,3 +1835,8 @@ a:link {
 	color:#FFF;
 	font-weight:bold;
 }
+
+.multiselect {
+	width: 750px;
+	height: 500px;
+}

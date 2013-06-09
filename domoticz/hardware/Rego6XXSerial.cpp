@@ -213,7 +213,6 @@ void CRego6XXSerial::Do_Work()
                             g_allRegisters[m_pollcntr].lastSent = atime;
                             g_allRegisters[m_pollcntr].lastTemp = m_Rego6XXTemp.temperature;
 					        sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXTemp);//decode message
-					        m_sharedserver.SendToAll((const char*)&m_Rego6XXTemp,sizeof(m_Rego6XXTemp));
                         }
                     }
                 }
@@ -231,7 +230,6 @@ void CRego6XXSerial::Do_Work()
                             g_allRegisters[m_pollcntr].lastSent = atime;
                             g_allRegisters[m_pollcntr].lastTemp = m_Rego6XXTemp.temperature;
 					        sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXTemp);//decode message
-					        m_sharedserver.SendToAll((const char*)&m_Rego6XXTemp,sizeof(m_Rego6XXTemp));
                         }
                     }
                 }
@@ -249,7 +247,6 @@ void CRego6XXSerial::Do_Work()
                             g_allRegisters[m_pollcntr].lastSent = atime;
                             g_allRegisters[m_pollcntr].lastValue = m_Rego6XXValue.value;
 					        sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXValue);//decode message
-					        m_sharedserver.SendToAll((const char*)&m_Rego6XXValue,sizeof(m_Rego6XXValue));
                         }
                     }
                 }
@@ -412,7 +409,6 @@ void CRego6XXSerial::ParseData()
                         g_allRegisters[m_pollcntr].lastSent = atime;
                         g_allRegisters[m_pollcntr].lastTemp = m_Rego6XXTemp.temperature;
 					    sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXTemp);//decode message
-					    m_sharedserver.SendToAll((const char*)&m_Rego6XXTemp,sizeof(m_Rego6XXTemp));
                     }
 				}
 				else if(g_allRegisters[m_pollcntr].type == REGO_TYPE_STATUS)
@@ -426,7 +422,6 @@ void CRego6XXSerial::ParseData()
                         g_allRegisters[m_pollcntr].lastSent = atime;
                         g_allRegisters[m_pollcntr].lastValue = m_Rego6XXValue.value;
     					sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXValue);//decode message
-	    				m_sharedserver.SendToAll((const char*)&m_Rego6XXValue,sizeof(m_Rego6XXValue));
                     }
 				}
 				else if(g_allRegisters[m_pollcntr].type == REGO_TYPE_COUNTER)
@@ -440,7 +435,6 @@ void CRego6XXSerial::ParseData()
                         g_allRegisters[m_pollcntr].lastSent = atime;
                         g_allRegisters[m_pollcntr].lastValue = m_Rego6XXValue.value;
     					sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXValue);//decode message
-	    				m_sharedserver.SendToAll((const char*)&m_Rego6XXValue,sizeof(m_Rego6XXValue));
                     }
 				}
 

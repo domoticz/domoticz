@@ -1,5 +1,21 @@
 <div id="usercontent">
 </div>
+<div id="userdevices" style="display:none;">
+	<table id="userdevicestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td>
+				<select id="devices" class="multiselect" multiple="multiple" name="devices[]">
+					<!--#embed deviceslist -->
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<a class="btnstyle3" onclick="SaveUserDevices();">Save</a>
+			</td>
+		</tr>
+	</table>
+</div>
 <div id="usermain" style="display:none;">
 	<table class="display" id="usertable" border="0" cellpadding="0" cellspacing="0" width="100%">
 		<thead>
@@ -7,6 +23,7 @@
 				<th width="60" align="left">Enabled</th>
 				<th align="left">Name</th>
 				<th width="80" align="center">Rights</th>
+				<th width="120" align="center">Sharing</th>
 			</tr>
 		</thead>
 	</table>
@@ -40,6 +57,10 @@
 					<option value="2">Admin</option>
 				</select>
 			</td>
+		</tr>
+		<tr>
+			<td align="right" style="width:80px"><label for="enabled">Sharing:</label></td>
+			<td><input type="checkbox" id="enablesharing"> (Enables remote sharing of devices with this user)</td>
 		</tr>
 		<tr>
 			<td></td>
@@ -91,6 +112,7 @@ function GetUserSettings()
 		return;
 	}
 	csettings.rights=$("#usercontent #userparamstable #comborights").val();
+	csettings.bEnableSharing=$('#usercontent #userparamstable #enablesharing').is(":checked");
 	
 	return csettings;
 }
@@ -103,7 +125,7 @@ function UpdateUser(idx)
 	}
 
 	$.ajax({
-		 url: "json.htm?type=command&param=updateuser&idx=" + idx + "&enabled=" + csettings.bEnabled + "&username=" + csettings.username + "&password=" + csettings.password + "&rights=" + csettings.rights,
+		 url: "json.htm?type=command&param=updateuser&idx=" + idx + "&enabled=" + csettings.bEnabled + "&username=" + csettings.username + "&password=" + csettings.password + "&rights=" + csettings.rights + "&RemoteSharing=" + csettings.bEnableSharing,
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {
@@ -115,6 +137,56 @@ function UpdateUser(idx)
 	});
 }
 
+function SaveUserDevices()
+{
+	var selecteddevices = $("#usercontent .multiselect option:selected").map(function(){ return this.value }).get().join(";");
+	$.ajax({
+		 url: "json.htm?type=setshareduserdevices&idx=" + $.devIdx + "&devices=" + selecteddevices,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			ShowUsers();
+		 },
+		 error: function(){
+			ShowNotify('Problem setting User Devices!', 2500, true);
+		 }     
+	});
+}
+
+function EditSharedDevices(idx,name)
+{
+	$.devIdx=idx;
+	cursordefault();
+	var htmlcontent = '';
+	htmlcontent='<p><h2>User: ' + name + '</h2></p>\n';
+	htmlcontent+=$('#userdevices').html();
+	$('#usercontent').html(GetBackbuttonHTMLTable('ShowUsers')+htmlcontent);
+	
+	var defaultOptions = {
+                    availableListPosition: 'left',
+                    splitRatio: 0.5,
+                    moveEffect: 'blind',
+                    moveEffectOptions: {direction:'vertical'},
+                    moveEffectSpeed: 'fast'
+                }; 
+	
+	$("#usercontent .multiselect").multiselect(defaultOptions);
+
+	$.ajax({
+	 url: "json.htm?type=getshareduserdevices&idx=" + idx, 
+	 async: false, 
+	 dataType: 'json',
+	 success: function(data) {
+		 if (typeof data.result != 'undefined') {
+			$.each(data.result, function(i,item) {
+				var selstr='#usercontent .multiselect option[value="' + item.DeviceRowIdx +'"]';
+				$(selstr).attr("selected", "selected");
+			});
+		 }
+	 }
+	});
+}
+
 function AddUser()
 {
 	var csettings=GetUserSettings();
@@ -123,7 +195,7 @@ function AddUser()
 	}
 
 	$.ajax({
-		 url: "json.htm?type=command&param=adduser&enabled=" + csettings.bEnabled +"&username=" + csettings.username + "&password=" + csettings.password + "&rights=" + csettings.rights,
+		 url: "json.htm?type=command&param=adduser&enabled=" + csettings.bEnabled +"&username=" + csettings.username + "&password=" + csettings.password + "&rights=" + csettings.rights + "&RemoteSharing=" + csettings.bEnableSharing,
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {
@@ -173,15 +245,22 @@ function RefreshUserTable()
 				rightstr="Admin";
 			}
 			
+			var sharedstr="No";
+			if (item.RemoteSharing==true) {
+				sharedstr='Yes  <span class="label label-info" onclick="EditSharedDevices(' + item.idx + ',\'' + item.Username + '\');" onmouseover="cursorhand()" onmouseout="cursordefault()">Set Devices</span>';
+			}
+			
 			var addId = oTable.fnAddData( {
 				"DT_RowId": item.idx,
 				"Enabled": item.Enabled,
 				"Username": item.Username,
 				"Password": item.Password,
 				"Rights": item.rights,
+				"Sharing": item.RemoteSharing,
 				"0": enabledstr,
 				"1": item.Username,
-				"2": rightstr
+				"2": rightstr,
+				"3": sharedstr
 			} );
 		});
 		/* Add a click handler to the rows - this could be used as a callback */
@@ -209,6 +288,7 @@ function RefreshUserTable()
 					$("#usercontent #userparamstable #username").val(data["Username"]);
 					$("#usercontent #userparamstable #userpassword").val(data["Password"]);
 					$("#usercontent #userparamstable #comborights").val(data["Rights"]);
+					$('#usercontent #userparamstable #enablesharing').prop('checked',(data["Sharing"]=="1"));
 				}
 			}
 		}); 

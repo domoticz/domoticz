@@ -6,6 +6,8 @@ Version 1.0.xxx (June xxth 2013)
 - Implemented: BMP085 altitude display
 - Implemented: BMP085 Possible forecast, still need exact method
 - Implemented: Blinds Stop button
+- Fixed: Setup dropdown, users/notifications selection highlight
+- Implemented: Global hardware sharing system (application settings, user manager)
 
 Version 1.0.666 (May 28th 2013)
 - Implemented: Settings, Doorbell could be send as 'Group On' or 'On' command
