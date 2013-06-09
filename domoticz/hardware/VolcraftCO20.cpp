@@ -120,7 +120,6 @@ void CVolcraftCO20::GetSensorDetails()
 	meter.airquality=voc;
 	meter.id1=1;
 	sDecodeRXMessage(this, (const unsigned char *)&meter);//decode message
-	m_sharedserver.SendToAll((const char*)&meter,sizeof(meter));
 }
 
 #endif

@@ -142,6 +142,5 @@ void RFXComSerial::WriteToHardware(const char *pdata, const unsigned char length
 {
 	if (isOpen()) {
 		write(pdata,length);
-		//m_sharedserver.SendToAll(pdata,length);
 	}
 }
