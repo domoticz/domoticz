@@ -566,9 +566,25 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("NotificationSensorInterval",atoi(m_pWebEm->FindValue("NotificationSensorInterval").c_str()));
 	m_pMain->m_sql.UpdatePreferencesVar("NotificationSwitchInterval",atoi(m_pWebEm->FindValue("NotificationSwitchInterval").c_str()));
 
-	m_pMain->m_sql.UpdatePreferencesVar("RemoteSharedPort",atoi(m_pWebEm->FindValue("RemoteSharedPort").c_str()));
-	
+	int rnOldvalue=0;
+	m_pMain->m_sql.GetPreferencesVar("RemoteSharedPort", rnOldvalue);
 
+	m_pMain->m_sql.UpdatePreferencesVar("RemoteSharedPort",atoi(m_pWebEm->FindValue("RemoteSharedPort").c_str()));
+
+	int rnvalue=0;
+	m_pMain->m_sql.GetPreferencesVar("RemoteSharedPort", rnvalue);
+
+	if (rnvalue!=rnOldvalue)
+	{
+		if (rnvalue!=0)
+		{
+			char szPort[100];
+			sprintf(szPort,"%d",rnvalue);
+			m_pMain->m_sharedserver.StopServer();
+			m_pMain->m_sharedserver.StartServer("0.0.0.0",szPort);
+			m_pMain->LoadSharedUsers();
+		}
+	}
 	return (char*)m_retstr.c_str();
 }
 

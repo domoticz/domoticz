@@ -204,15 +204,6 @@ const char *sqlCreateHardware =
 "[Mode4] CHAR DEFAULT 0, "
 "[Mode5] CHAR DEFAULT 0);";
 
-const char *sqlCreateHardwareSharing =
-"CREATE TABLE IF NOT EXISTS [HardwareSharing] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[HardwareID] INTEGER NOT NULL, "
-"[Port] INTEGER NOT NULL, "
-"[Username] VARCHAR(100), "
-"[Password] VARCHAR(100), "
-"[Rights] INTEGER DEFAULT 0);";
-
 const char *sqlCreateUsers =
 "CREATE TABLE IF NOT EXISTS [Users] ("
 "[ID] INTEGER PRIMARY KEY, "
@@ -403,7 +394,6 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateMultiMeter_Calendar);
 	query(sqlCreateNotifications);
 	query(sqlCreateHardware);
-	query(sqlCreateHardwareSharing);
 	query(sqlCreateUsers);
 	query(sqlCreateLightSubDevices);
     query(sqlCreateCameras);
@@ -540,6 +530,10 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion<14)
 		{
 			query("ALTER TABLE Users ADD COLUMN [RemoteSharing] INTEGER default 0");
+		}
+		if (dbversion<15)
+		{
+			query("DROP TABLE IF EXISTS [HardwareSharing]");
 		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);

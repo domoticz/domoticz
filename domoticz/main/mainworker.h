@@ -74,8 +74,8 @@ public:
 	bool m_bHaveDownloadedDomoticzUpdate;
 	bool m_bHaveDownloadedDomoticzUpdateSuccessFull;
 
-private:
 	tcp::server::CTCPServer m_sharedserver;
+private:
 
 	void PrintDeviceName(const std::string devname);
 	void GetRaspberryPiTemperature();
