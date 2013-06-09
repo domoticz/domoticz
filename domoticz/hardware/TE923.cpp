@@ -174,7 +174,6 @@ void CTE923::GetSensorDetails()
 				tsen.TEMP_HUM_BARO.forecast=data.forecast;
 
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO);//decode message
-				m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.TEMP_HUM_BARO));
 			}
 			else
 			{
@@ -195,7 +194,6 @@ void CTE923::GetSensorDetails()
 				tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
 
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);//decode message
-				m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.TEMP_HUM));
 			}
 		}
 		else if (data._t[ii]==0)
@@ -218,7 +216,6 @@ void CTE923::GetSensorDetails()
 			tsen.TEMP.temperaturel=(BYTE)(at10);
 
 			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
-			m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.TEMP));
 		}
 		else if (data._h[ii]==0)
 		{
@@ -237,7 +234,6 @@ void CTE923::GetSensorDetails()
 			tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
 
 			sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM);//decode message
-			m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.HUM));
 		}
 	}
 
@@ -297,7 +293,6 @@ void CTE923::GetSensorDetails()
 		}
 
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND);//decode message
-		m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.WIND));
 	}
 
 	//Rain
@@ -324,7 +319,6 @@ void CTE923::GetSensorDetails()
 		tsen.RAIN.raintotal3=(BYTE)(tr10);
 
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN);//decode message
-		m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.RAIN));
 	}
 	//UV
 	if (data._uv==0)
@@ -341,7 +335,6 @@ void CTE923::GetSensorDetails()
 
 		tsen.UV.uv=(BYTE)round(data.uv*10);
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.UV);//decode message
-		m_sharedserver.SendToAll((const char*)&tsen,sizeof(tsen.UV));
 	}
 }
 
