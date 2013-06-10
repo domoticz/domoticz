@@ -730,6 +730,31 @@ void MainWorker::OnHardwareConnected(CDomoticzHardwareBase *pHardware)
 	SendResetCommand(pHardware);
 }
 
+void MainWorker::PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand)
+{
+	return;
+/*
+	// find our original hardware
+	// if it is not a domoticz type, perform the actual command
+	char szTmp[300];
+	std::vector<std::vector<std::string> > result;
+
+	sprintf(szTmp,"SELECT HardwareID FROM DeviceStatus WHERE (ID=%llu)",DeviceRowIdx);
+	result=m_sql.query(szTmp);
+	if (result.size()==1)
+	{
+		CDomoticzHardwareBase *pHardware=GetHardware(atoi(result[0][0].c_str()));
+		if (pHardware!=NULL)
+		{
+			if (pHardware->HwdType != HTYPE_Domoticz)
+			{
+				pHardware->WriteToHardware((const char*)pRXCommand,pRXCommand[0]+1);
+			}
+		}
+	}
+*/
+}
+
 void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand)
 {
 	boost::lock_guard<boost::mutex> l(decodeRXMessageMutex);
@@ -763,6 +788,27 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	sTmp << szDate << " (" << pHardware->Name << ") ";
 	WriteMessage(sTmp.str().c_str(),false);
 #endif
+
+	if (pHardware->HwdType == HTYPE_Domoticz)
+	{
+		switch (pRXCommand[1])
+		{
+		case pTypeLighting1:
+		case pTypeLighting2:
+		case pTypeLighting3:
+		case pTypeLighting4:
+		case pTypeLighting5:
+		case pTypeLighting6:
+		case pTypeBlinds:
+		case pTypeSecurity1:
+			//we received a control message from a domoticz client,
+			//and should actually perform this command ourself switch
+			WriteMessage("Control command received...");
+			WriteMessageEnd();
+			PerformRealActionFromDomoticzClient(pRXCommand);
+			return;
+		}
+	}
 
 	unsigned long long DeviceRowIdx=-1;
 

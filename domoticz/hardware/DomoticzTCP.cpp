@@ -78,7 +78,8 @@ bool DomoticzTCP::StartHardware()
 	}
 
 	char szIP[20];
-	sprintf(szIP,"%d.%d.%d.%d",m_addr.sin_addr.S_un.S_un_b.s_b1,m_addr.sin_addr.S_un.S_un_b.s_b2,m_addr.sin_addr.S_un.S_un_b.s_b3,m_addr.sin_addr.S_un.S_un_b.s_b4);
+	unsigned char *pAddress=(unsigned char *)&m_addr.sin_addr;
+	sprintf(szIP,"%d.%d.%d.%d",pAddress[0],pAddress[1],pAddress[2],pAddress[3]);
 	m_endpoint=szIP;
 
 	m_retrycntr=RETRY_DELAY; //will force reconnect first thing

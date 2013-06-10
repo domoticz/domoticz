@@ -79,6 +79,7 @@ private:
 
 	void PrintDeviceName(const std::string devname);
 	void GetRaspberryPiTemperature();
+	void PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand);
 	struct _tStartScene
 	{
 		unsigned long long SceneRowID;
