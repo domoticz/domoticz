@@ -1769,7 +1769,7 @@ unsigned long long MainWorker::decode_Temp(const int HwdID, const tRBUF *pRespon
 			humidity=atoi(result[0][0].c_str());
 			unsigned char humidity_status=atoi(result[0][1].c_str());
 			sprintf(szTmp,"%.1f;%d;%d",temp,humidity,humidity_status);
-			unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,SignalLevel,BatteryLevel,0,szTmp,devname);
+			DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,SignalLevel,BatteryLevel,0,szTmp,devname);
 		}
 	}
 	PrintDeviceName(devname);
@@ -1892,7 +1892,7 @@ unsigned long long MainWorker::decode_Hum(const int HwdID, const tRBUF *pRespons
 			m_sql.GetAddjustment(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,AddjValue,AddjMulti);
 			temp+=AddjValue;
 			sprintf(szTmp,"%.1f;%d;%d",temp,humidity,pResponse->HUM.humidity_status);
-			unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,SignalLevel,BatteryLevel,0,szTmp,devname);
+			DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,SignalLevel,BatteryLevel,0,szTmp,devname);
 		}
 	}
 	PrintDeviceName(devname);
