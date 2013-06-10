@@ -13,6 +13,7 @@ public:
 	void write(const char *data, size_t size);
 	bool isConnected(){ return m_socket!= INVALID_SOCKET; };
 	void WriteToHardware(const char *pdata, const unsigned char length);
+	std::string m_endpoint;
 public:
 	// signals
 	boost::signals2::signal<void()>	sDisconnected;

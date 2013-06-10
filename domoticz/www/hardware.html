@@ -665,8 +665,8 @@ function RefreshHardwareTable()
 					else
 					if ((data["Type"].indexOf("LAN") >= 0)||(data["Type"].indexOf("Domoticz") >= 0))
 					{
-						$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["4"]);
-						$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["5"]);
+						$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["3"]);
+						$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["4"]);
 					}
 					if (data["Type"].indexOf("Domoticz") >= 0) {
 						$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);

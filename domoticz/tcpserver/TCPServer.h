@@ -24,7 +24,7 @@ public:
 	void stop();
 	void stopAllClients();
 
-	void SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length);
+	void SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const void* pClient2Ignore);
 
 	void SetRemoteUsers(const std::vector<_tRemoteShareUser> users);
 
@@ -63,7 +63,7 @@ public:
 
 	bool StartServer(const std::string address, const std::string port);
 	void StopServer();
-	void SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length);
+	void SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const void* pClient2Ignore);
 	void SetRemoteUsers(const std::vector<CTCPServerInt::_tRemoteShareUser> users);
 	void stopAllClients();
 private:

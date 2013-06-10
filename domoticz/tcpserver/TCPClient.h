@@ -24,6 +24,7 @@ public:
 
 	boost::asio::ip::tcp::socket& socket() { return socket_; }
 	std::string m_username;
+	std::string m_endpoint;
 	bool m_bIsLoggedIn;
 private:
 	void handleRead(const boost::system::error_code& error, size_t length);

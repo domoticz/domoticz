@@ -947,7 +947,10 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	if (DeviceRowIdx!=-1)
 	{
 		//Send to connected Sharing Users
-		m_sharedserver.SendToAll(DeviceRowIdx,(const char*)pRXCommand,pRXCommand[0]+1);
+		void *pClient2Ignore=NULL;
+		if (pHardware->HwdType==HTYPE_Domoticz)
+			pClient2Ignore=(void*)pHardware;
+		m_sharedserver.SendToAll(DeviceRowIdx,(const char*)pRXCommand,pRXCommand[0]+1,pClient2Ignore);
 	}
 }
 

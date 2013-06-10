@@ -5,6 +5,7 @@
 #include "../main/RFXNames.h"
 #include "../main/RFXtrx.h"
 #include "../main/Logger.h"
+#include "../hardware/DomoticzTCP.h"
 
 #include <boost/asio.hpp>
 #include <algorithm>
@@ -71,6 +72,7 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 	{
 		boost::lock_guard<boost::mutex> l(connectionMutex);
 		std::string s = new_connection_->socket().remote_endpoint().address().to_string();
+		new_connection_->m_endpoint=s;
 		_log.Log(LOG_NORM,"Incoming connection from: %s", s.c_str());
 
 		connections_.insert(new_connection_);
@@ -141,7 +143,7 @@ void CTCPServerInt::SetRemoteUsers(const std::vector<_tRemoteShareUser> users)
 	m_users=users;
 }
 
-void CTCPServerInt::SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length)
+void CTCPServerInt::SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const void* pClient2Ignore)
 {
 	boost::lock_guard<boost::mutex> l(connectionMutex);
 
@@ -156,6 +158,15 @@ void CTCPServerInt::SendToAll(const unsigned long long DeviceRowID, const char *
 	for (itt=connections_.begin(); itt!=connections_.end(); ++itt)
 	{
 		CTCPClient *pClient=itt->get();
+
+		if (pClient2Ignore!=NULL)
+		{
+			//prevent endless loop			
+			DomoticzTCP *pTestClient=(DomoticzTCP *)pClient2Ignore;
+			if (pClient->m_endpoint==pTestClient->m_endpoint)
+				continue;
+		}
+
 		if (pClient)
 		{
 			_tRemoteShareUser *pUser=FindUser(pClient->m_username);
@@ -235,10 +246,10 @@ void CTCPServer::Do_Work()
 	//_log.Log(LOG_NORM,"TCPServer stopped...");
 }
 
-void CTCPServer::SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length)
+void CTCPServer::SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const void* pClient2Ignore)
 {
 	if (m_pTCPServer)
-		m_pTCPServer->SendToAll(DeviceRowID,pData,Length);
+		m_pTCPServer->SendToAll(DeviceRowID,pData,Length,pClient2Ignore);
 }
 
 void CTCPServer::SetRemoteUsers(const std::vector<CTCPServerInt::_tRemoteShareUser> users)
