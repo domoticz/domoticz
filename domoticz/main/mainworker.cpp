@@ -575,8 +575,10 @@ void MainWorker::GetRaspberryPiTemperature()
 				sTmp << szDate << " (System) ";
 				WriteMessage(sTmp.str().c_str(),false);
 				WriteMessage("Temperature",false);
-				decode_Temp(1000, (const tRBUF*)&tsen.TEMP);
+				unsigned long long DeviceRowIdx=decode_Temp(1000, (const tRBUF*)&tsen.TEMP);
 				WriteMessageEnd();
+
+				m_sharedserver.SendToAll(DeviceRowIdx,(const char*)&tsen,tsen.TEMP.packetlength+1,NULL);
 			}
 		}
 		infile.close();
