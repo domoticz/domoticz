@@ -730,29 +730,85 @@ void MainWorker::OnHardwareConnected(CDomoticzHardwareBase *pHardware)
 	SendResetCommand(pHardware);
 }
 
-void MainWorker::PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand)
+unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand)
 {
-	return;
-/*
-	// find our original hardware
-	// if it is not a domoticz type, perform the actual command
+	unsigned char devType=pRXCommand[1];
+	unsigned char subType=pRXCommand[2];
+	std::string ID="";
+	unsigned char Unit=0;
+	const tRBUF *pResponse=(const tRBUF *)pRXCommand;
 	char szTmp[300];
 	std::vector<std::vector<std::string> > result;
 
-	sprintf(szTmp,"SELECT HardwareID FROM DeviceStatus WHERE (ID=%llu)",DeviceRowIdx);
-	result=m_sql.query(szTmp);
-	if (result.size()==1)
+	if (devType==pTypeLighting1)
 	{
-		CDomoticzHardwareBase *pHardware=GetHardware(atoi(result[0][0].c_str()));
-		if (pHardware!=NULL)
+		sprintf(szTmp,"%d", pResponse->LIGHTING1.housecode);
+		ID = szTmp;
+		Unit=pResponse->LIGHTING1.unitcode;
+	}
+	else if (devType==pTypeLighting2)
+	{
+		sprintf(szTmp,"%X%02X%02X%02X", pResponse->LIGHTING2.id1, pResponse->LIGHTING2.id2, pResponse->LIGHTING2.id3, pResponse->LIGHTING2.id4);
+		ID = szTmp;
+		Unit=pResponse->LIGHTING2.unitcode;
+	}
+	else if (devType==pTypeLighting5)
+	{
+		if (subType != 	sTypeEMW100)
+			sprintf(szTmp,"%02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+		else
+			sprintf(szTmp,"%02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+		ID = szTmp;
+		Unit=pResponse->LIGHTING5.unitcode;
+	}
+	else if (devType==pTypeLighting6)
+	{
+		sprintf(szTmp,"%02X%02X%02X", pResponse->LIGHTING6.id1, pResponse->LIGHTING6.id2,pResponse->LIGHTING6.groupcode);
+		ID = szTmp;
+		Unit=pResponse->LIGHTING6.unitcode;
+	}
+	else if (devType==pTypeBlinds)
+	{
+		sprintf(szTmp,"%02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2,pResponse->BLINDS1.id3);
+		ID = szTmp;
+		Unit=pResponse->BLINDS1.unitcode;
+	}
+	else if (devType==pTypeSecurity1)
+	{
+		sprintf(szTmp, "%02X%02X%02X", pResponse->SECURITY1.id1, pResponse->SECURITY1.id2, pResponse->SECURITY1.id3);
+		ID=szTmp;
+		Unit=0;
+	}
+	else
+		return -1;
+
+	if (ID!="")
+	{
+		// find our original hardware
+		// if it is not a domoticz type, perform the actual command
+
+		sprintf(szTmp,"SELECT HardwareID,ID,Name FROM DeviceStatus WHERE (DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",ID.c_str(), Unit, devType, subType);
+		result=m_sql.query(szTmp);
+		if (result.size()==1)
 		{
-			if (pHardware->HwdType != HTYPE_Domoticz)
+			std::vector<std::string> sd=result[0];
+
+			CDomoticzHardwareBase *pHardware=GetHardware(atoi(sd[0].c_str()));
+			if (pHardware!=NULL)
 			{
-				pHardware->WriteToHardware((const char*)pRXCommand,pRXCommand[0]+1);
+				if (pHardware->HwdType != HTYPE_Domoticz)
+				{
+					pHardware->WriteToHardware((const char*)pRXCommand,pRXCommand[0]+1);
+					std::stringstream s_strid;
+					s_strid << std::hex << sd[1];
+					unsigned long long ullID;
+					s_strid >> ullID;
+					return ullID;
+				}
 			}
 		}
 	}
-*/
+	return -1;
 }
 
 void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand)
@@ -789,6 +845,8 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	WriteMessage(sTmp.str().c_str(),false);
 #endif
 
+	unsigned long long DeviceRowIdx=-1;
+
 	if (pHardware->HwdType == HTYPE_Domoticz)
 	{
 		switch (pRXCommand[1])
@@ -803,17 +861,19 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		case pTypeSecurity1:
 			//we received a control message from a domoticz client,
 			//and should actually perform this command ourself switch
-			WriteMessage("Control command received...");
-			WriteMessageEnd();
-			PerformRealActionFromDomoticzClient(pRXCommand);
-			return;
+			DeviceRowIdx=PerformRealActionFromDomoticzClient(pRXCommand);
+			if (DeviceRowIdx!=-1)
+			{
+				WriteMessage("Control Command");
+			}
+			break;
 		}
 	}
 
-	unsigned long long DeviceRowIdx=-1;
-
-	switch (pRXCommand[1])
+	if (DeviceRowIdx==-1)
 	{
+		switch (pRXCommand[1])
+		{
 		case pTypeInterfaceMessage:
 			WriteMessage("Interface Message");
 			DeviceRowIdx=decode_InterfaceMessage(HwdID, (tRBUF *)pRXCommand);
@@ -988,6 +1048,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		default:
 			_log.Log(LOG_ERROR,"UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
 			break;
+		}
 	}
 	WriteMessageEnd();
 	if (DeviceRowIdx!=-1)

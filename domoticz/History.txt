@@ -8,6 +8,7 @@ Version 1.0.xxx (June xxth 2013)
 - Implemented: Blinds Stop button
 - Fixed: Setup dropdown, users/notifications selection highlight
 - Implemented: Global hardware sharing system (application settings, user manager)
+- Implemented: Shared clients can now control switches
 
 Version 1.0.666 (May 28th 2013)
 - Implemented: Settings, Doorbell could be send as 'Group On' or 'On' command
