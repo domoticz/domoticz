@@ -7383,7 +7383,7 @@ std::string CWebServer::GetJSonPage()
 			szQuery << "INSERT INTO SharedDevices (SharedUserID,DeviceRowID) VALUES ('" << idx << "','" << strarray[ii] << "')";
 			result=m_pMain->m_sql.query(szQuery.str());
 		}
-
+		m_pMain->LoadSharedUsers();
 	}
 	else if (rtype=="setused")
 	{
