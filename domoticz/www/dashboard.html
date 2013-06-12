@@ -533,9 +533,14 @@ function RefreshFavorites()
 									}
 									status+='<br>\n';
 									if (typeof item.Temp != 'undefined') {
-										status+='Temp: ' + item.Temp + '° C, ';
+										status+='Temp: ' + item.Temp + '° C';
 									}
-									status+='Chill: ' + item.Chill + '° C';
+									if (typeof item.Chill != 'undefined') {
+										if (typeof item.Temp != 'undefined') {
+											status+=', ';
+										}
+										status+='Chill: ' + item.Chill + '° C';
+									}
 									bigtext=item.DirectionStr + '/' + item.Speedms + ' ms';
 								}
 								else if (typeof item.Barometer != 'undefined') {
@@ -1576,9 +1581,14 @@ function ShowFavorites()
 								}
 								xhtm+='<br>\n';
 								if (typeof item.Temp != 'undefined') {
-									xhtm+='Temp: ' + item.Temp + '° C, ';
+									xhtm+='Temp: ' + item.Temp + '° C';
 								}
-								xhtm+='Chill: ' + item.Chill + '° C';
+								if (typeof item.Chill != 'undefined') {
+									if (typeof item.Temp != 'undefined') {
+										xhtm+=', ';
+									}
+									xhtm+='Chill: ' + item.Chill + '° C';
+								}
 							}
 							else if (typeof item.Barometer != 'undefined') {
 								xhtm+='baro48.png" height="40"></td>\n' +

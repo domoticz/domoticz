@@ -1701,7 +1701,9 @@ function RefreshWeathers()
 								status+='Chill: ' + item.Chill + '\u00B0 C';
 							}
 							else {
-								status+='Chill: ' + item.Chill + '\u00B0 C';
+								if (typeof item.Chill != 'undefined') {
+									status+='Chill: ' + item.Chill + '\u00B0 C';
+								}
 							}
 						}
 						
@@ -1848,7 +1850,9 @@ function ShowWeathers()
 							xhtm+='Chill: ' + item.Chill + '\u00B0 C';
 						}
 						else  {
-							xhtm+='Chill: ' + item.Chill + '\u00B0 C';
+							if (typeof item.Chill != 'undefined') {
+								xhtm+='Chill: ' + item.Chill + '\u00B0 C';
+							}
 						}
 					}
 					xhtm+=      
