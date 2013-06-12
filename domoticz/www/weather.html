@@ -1690,7 +1690,11 @@ function RefreshWeathers()
 						}
 						else if (typeof item.Direction != 'undefined') {
 							img='<img src="images/Wind' + item.DirectionStr + '.png" height="48">';
-							status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
+							status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms';
+							if (typeof item.Gustms != 'undefined') {
+								status+=', Gust: ' + item.Gustms + ' ms';
+							}
+							status+='<br>\n';
 							bigtext=item.DirectionStr + ' / ' + item.Speedms + ' ms';
 							if ((typeof item.Temp != 'undefined')&&(typeof item.Chill != 'undefined')) {
 								status+='Temp: ' + item.Temp + '\u00B0 C, ';
@@ -1834,7 +1838,11 @@ function ShowWeathers()
 					else if (typeof item.Direction != 'undefined') {
 						bHaveWind=true;
 						xhtm+='Wind' + item.DirectionStr + '.png" height="48"></td>\n' +
-						'\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
+						'\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms';
+						if (typeof item.Gustms != 'undefined') {
+							xhtm+=', Gust: ' + item.Gustms + ' ms<br>\n';
+						}
+						xhtm+='<br>\n';
 						if ((typeof item.Temp != 'undefined')&&(typeof item.Chill != 'undefined')) {
 							xhtm+='Temp: ' + item.Temp + '\u00B0 C, ';
 							xhtm+='Chill: ' + item.Chill + '\u00B0 C';

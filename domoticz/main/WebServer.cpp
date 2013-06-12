@@ -1327,13 +1327,15 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					sprintf(szTmp,"%.1f",((float(intSpeed) * 0.223693629f) / 10.0f));
 					root["result"][ii]["Speedmph"]=szTmp;
 					int intGust=atoi(strarray[3].c_str());
-					sprintf(szTmp,"%.1f",float(intGust) / 10.0f);
-					root["result"][ii]["Gustms"]=szTmp;
-					sprintf(szTmp,"%.1f",(float(intGust )* 0.36f));
-					root["result"][ii]["Gustkmhr"]=szTmp;
-					sprintf(szTmp,"%.1f",(float(intGust) * 0.223693629f) / 10.0f);
-					root["result"][ii]["Gustmph"]=szTmp;
-
+					if (dSubType!=sTypeWIND6)
+					{
+						sprintf(szTmp,"%.1f",float(intGust) / 10.0f);
+						root["result"][ii]["Gustms"]=szTmp;
+						sprintf(szTmp,"%.1f",(float(intGust )* 0.36f));
+						root["result"][ii]["Gustkmhr"]=szTmp;
+						sprintf(szTmp,"%.1f",(float(intGust) * 0.223693629f) / 10.0f);
+						root["result"][ii]["Gustmph"]=szTmp;
+					}
 					if (
 						((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
 						((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))

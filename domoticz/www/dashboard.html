@@ -405,7 +405,11 @@ function RefreshFavorites()
 									bHaveBefore=true;
 								}
 								if (typeof item.Direction != 'undefined') {
-									status+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms\n';
+									status+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms';
+									if (typeof item.Gustms != 'undefined') {
+										status+=', Gust: ' + item.Gustms + ' ms';
+									}
+									status+='\n';
 								}
 								if (typeof item.Humidity != 'undefined') {
 									if (bHaveBefore==true) {
@@ -479,7 +483,10 @@ function RefreshFavorites()
 								}
 								else if (typeof item.Direction != 'undefined') {
 									img='<img src="images/Wind' + item.DirectionStr + '.png" height="40">';
-									status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms';
+									status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms';
+									if (typeof item.Gustms != 'undefined') {
+										status+=', Gust: ' + item.Gustms + ' ms';
+									}
 								}
 								else if (typeof item.Barometer != 'undefined') {
 									if (typeof item.ForecastStr != 'undefined') {
@@ -520,7 +527,11 @@ function RefreshFavorites()
 								}
 								else if (typeof item.Direction != 'undefined') {
 									img='<img src="images/Wind' + item.DirectionStr + '.png" height="40">';
-									status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
+									status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms';
+									if (typeof item.Gustms != 'undefined') {
+										status+=', Gust: ' + item.Gustms + ' ms';
+									}
+									status+='<br>\n';
 									if (typeof item.Temp != 'undefined') {
 										status+='Temp: ' + item.Temp + '° C, ';
 									}
@@ -1389,7 +1400,11 @@ function ShowFavorites()
 								bHaveBefore=true;
 							}
 							if (typeof item.Direction != 'undefined') {
-								xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms\n';
+								xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms';
+								if (typeof item.Gustms != 'undefined') {
+									xhtm+=', Gust: ' + item.Gustms + ' ms';
+								}
+								xhtm+='\n';
 							}
 							if (typeof item.Humidity != 'undefined') {
 								if (bHaveBefore==true) {
@@ -1486,7 +1501,10 @@ function ShowFavorites()
 								status+=item.UVI + ' UVI';
 							}
 							else if (typeof item.Direction != 'undefined') {
-								status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms';
+								status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms';
+								if (typeof item.Gustms != 'undefined') {
+									status+=', Gust: ' + item.Gustms + ' ms';
+								}
 							}
 							else if (typeof item.Barometer != 'undefined') {
 								if (typeof item.ForecastStr != 'undefined') {
@@ -1552,7 +1570,11 @@ function ShowFavorites()
 							}
 							else if (typeof item.Direction != 'undefined') {
 								xhtm+='Wind' + item.DirectionStr + '.png" height="40"></td>\n' +
-								'\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms, Gust: ' + item.Gustms + ' ms<br>\n';
+								'\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms';
+								if (typeof item.Gustms != 'undefined') {
+									xhtm+=', Gust: ' + item.Gustms + ' ms';
+								}
+								xhtm+='<br>\n';
 								if (typeof item.Temp != 'undefined') {
 									xhtm+='Temp: ' + item.Temp + '° C, ';
 								}
