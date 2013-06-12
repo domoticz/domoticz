@@ -391,6 +391,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting1, sTypeIMPULS, "Impuls" },
 		{ pTypeLighting1, sTypeRisingSun, "RisingSun" },
 		{ pTypeLighting1, sTypePhilips, "Philips" },
+		{ pTypeLighting1, sTypeEnergenie, "Energenie" },
+		
 
 		{ pTypeLighting2, sTypeAC, "AC" },
 		{ pTypeLighting2, sTypeHEU, "HomeEasy EU" },
@@ -403,6 +405,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeLightwaveRF, "LightwaveRF" },
 		{ pTypeLighting5, sTypeEMW100, "EMW100" },
 		{ pTypeLighting5, sTypeBBSB, "BBSB new" },
+		{ pTypeLighting5, sTypeMDREMOTE, "MDRemote" },
+		{ pTypeLighting5, sTypeRSL, "Conrad RSL" },
 
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
 
@@ -529,6 +533,7 @@ void GetLightStatus(
 			break;
 		case sTypeARC:
 		case sTypePhilips:
+		case sTypeEnergenie:
 			bHaveGroupCmd=true;
 			switch (nValue)
 			{
@@ -684,6 +689,7 @@ void GetLightStatus(
 			}
 			break;
 		case sTypeBBSB:
+		case sTypeRSL:
 			bHaveGroupCmd=true;
 			switch (nValue)
 			{

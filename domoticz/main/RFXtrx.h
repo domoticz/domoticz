@@ -21,10 +21,17 @@
 // portions of this Software.
 //-----------------------------------------------------------------------------
 
-/*
+/* 
+SDK version 6.06
+	Lighting1 Energenie added
+	Lighting5 MDREMOTE LED dimmer added
+	Lighting5 RSL2 added
+	msg3_RSL - Enable RSL protocol added
+	#define sTypeUrsl 0x0E = un-decoded Conrad RSL added
+
 SDK version 6.02b
 	msg3-5 replaced by MODEbits in IRESPONSE structure
-	LIGHTING4enabled added in struct MODEbits
+	LIGHTING4 enabled added in struct MODEbits
 
 SDK version 6.02a
 	#define sTypeBlindsT5 0x5  added
@@ -171,7 +178,7 @@ SDK version 4.9
 #define msg3_RUBICSON 0x02
 #define msg3_FINEOFFSET 0x04
 #define msg3_LIGHTING4 0x08
-#define msg3_RFU4 0x10
+#define msg3_RSL 0x10
 #define msg3_RFU5 0x20
 #define msg3_RFU6 0x40
 #define msg3_undec 0x80
@@ -214,6 +221,7 @@ SDK version 4.9
 #define sTypeUvisonic 0x0B
 #define sTypeUnec 0x0C
 #define sTypeUfs20 0x0D
+#define sTypeUrsl 0x0E
 #define sTypeUblinds 0x0F
 #define sTypeUrubicson 0x10
 #define sTypeUae 0x11
@@ -229,6 +237,8 @@ SDK version 4.9
 #define sTypeIMPULS 0x5
 #define sTypeRisingSun 0x6
 #define sTypePhilips 0x7
+#define sTypeEnergenie 0x8
+
 #define light1_sOff 0x0
 #define light1_sOn 0x1
 #define light1_sDim 0x2
@@ -272,6 +282,8 @@ SDK version 4.9
 #define sTypeLightwaveRF 0x0
 #define sTypeEMW100 0x1
 #define sTypeBBSB 0x2
+#define sTypeMDREMOTE 0x03
+#define sTypeRSL 0x04
 #define light5_sOff 0x0
 #define light5_sOn 0x1
 #define light5_sGroupOff 0x2
@@ -289,6 +301,17 @@ SDK version 4.9
 #define light5_sStop 0xE
 #define light5_sOpen 0xF
 #define light5_sSetLevel 0x10
+#define light5_sPower 0x0
+#define light5_sLight 0x1
+#define light5_sBright 0x2
+#define light5_sDim 0x3
+#define light5_s100 0x4
+#define light5_s50 0x5
+#define light5_s25 0x6
+#define light5_sModePlus 0x7
+#define light5_sSpeedMin 0x8
+#define light5_sSpeedPlus 0x9
+#define light5_sModeMin 0xA
 
 #define pTypeLighting6 0x15
 #define sTypeBlyss 0x0

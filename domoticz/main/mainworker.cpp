@@ -2591,7 +2591,30 @@ unsigned long long MainWorker::decode_Lighting1(const int HwdID, const tRBUF *pR
 			}
 			break;
 		case sTypeAB400D:
-			WriteMessage("subtype       = ELRO AB400");
+		case sTypeWaveman:
+		case sTypeEMW200:
+		case sTypeIMPULS:
+		case sTypeRisingSun:
+			//decoding of these types is only implemented for use by simulate and verbose
+			//these types are not received by the RFXtrx433
+			switch (pResponse->LIGHTING1.subtype)
+			{
+			case sTypeAB400D:
+				WriteMessage("subtype       = ELRO AB400");
+				break;
+			case sTypeWaveman:
+				WriteMessage("subtype       = Waveman");
+				break;
+			case sTypeEMW200:
+				WriteMessage("subtype       = EMW200");
+				break;
+			case sTypeIMPULS:
+				WriteMessage("subtype       = IMPULS");
+				break;
+			case sTypeRisingSun:
+				WriteMessage("subtype       = RisingSun");
+				break;
+			}
 			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING1.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp,"housecode     = %c", pResponse->LIGHTING1.housecode);
@@ -2607,6 +2630,37 @@ unsigned long long MainWorker::decode_Lighting1(const int HwdID, const tRBUF *pR
 				break;
 			case light1_sOn:
 				WriteMessage("On");
+				break;
+			default:
+				WriteMessage("UNKNOWN");
+				break;
+			}
+			break;
+		case sTypePhilips:
+			//decoding of this type is only implemented for use by simulate and verbose
+			//this type is not received by the RFXtrx433
+			WriteMessage("subtype       = Philips SBC");
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING1.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"housecode     = %c", pResponse->LIGHTING1.housecode);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"unitcode      = %d", pResponse->LIGHTING1.unitcode);
+			WriteMessage(szTmp);
+			WriteMessage("Command       = ", false);
+
+			switch (pResponse->LIGHTING1.cmnd)
+			{
+			case light1_sOff:
+				WriteMessage("Off");
+				break;
+			case light1_sOn:
+				WriteMessage("On");
+				break;
+			case light1_sAllOff:
+				WriteMessage("All Off");
+				break;
+			case light1_sAllOn:
+				WriteMessage("All On");
 				break;
 			default:
 				WriteMessage("UNKNOWN");
@@ -3032,6 +3086,34 @@ unsigned long long MainWorker::decode_Lighting5(const int HwdID, const tRBUF *pR
 			break;
 		case sTypeBBSB:
 			WriteMessage("subtype       = BBSB new");
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"Unit          = %d", pResponse->LIGHTING5.unitcode);
+			WriteMessage(szTmp);
+			WriteMessage("Command       = ", false);
+			switch (pResponse->LIGHTING5.cmnd)
+			{
+			case light5_sOff:
+				WriteMessage("Off");
+				break;
+			case light5_sOn:
+				WriteMessage("On");
+				break;
+			case light5_sGroupOff:
+				WriteMessage("Group Off");
+				break;
+			case light5_sGroupOn:
+				WriteMessage("Group On");
+				break;
+			default:
+				WriteMessage("UNKNOWN");
+				break;
+			}
+			break;
+		case sTypeRSL:
+			WriteMessage("subtype       = Conrad RSL");
 			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp,"ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);

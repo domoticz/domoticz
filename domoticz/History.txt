@@ -9,7 +9,8 @@ Version 1.0.xxx (June xxth 2013)
 - Fixed: Setup dropdown, users/notifications selection highlight
 - Implemented: Global hardware sharing system (application settings, user manager)
 - Implemented: Shared clients can now control switches
-- Fixed: Some RFXCOM protocols could not be set in the hardware setup (Meiantech,Visonic,FS20,RFU 4)
+- Fixed: Some RFXCOM protocols could not be set in the hardware setup (Meiantech,Visonic,FS20,RSL)
+- Implemented: Latest RFXCOM SDK (#67)
 
 Version 1.0.666 (May 28th 2013)
 - Implemented: Settings, Doorbell could be send as 'Group On' or 'On' command
