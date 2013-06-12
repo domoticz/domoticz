@@ -1103,11 +1103,11 @@ $(document).ready(function() {
 						"Add Scene": function() {
 								var bValid = true;
 								bValid = bValid && checkLength( $("#dialog-addscene #scenename"), 2, 100 );
-								
 								if ( bValid ) {
 										$.pDialog=$( this );
+										var SceneName=$("#dialog-addscene #scenename").val();
 										$.ajax({
-											 url: "json.htm?type=addscene&name=" + $("#dialog-addscene #scenename").val(),
+											 url: "json.htm?type=addscene&name=" + SceneName,
 											 async: false, 
 											 dataType: 'json',
 											 success: function(data) {

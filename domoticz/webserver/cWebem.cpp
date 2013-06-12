@@ -335,6 +335,10 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 		std::string uri=params;
 		while( ! flag_done ) {
 			q = uri.find("=",p);
+			if (q==-1)
+			{
+				break;
+			}
 			name = uri.substr(p,q-p);
 			p = q + 1;
 			q = uri.find("&",p);

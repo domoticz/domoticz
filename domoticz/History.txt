@@ -12,6 +12,7 @@ Version 1.0.xxx (June xxth 2013)
 - Fixed: Some RFXCOM protocols could not be set in the hardware setup (Meiantech,Visonic,FS20,RSL)
 - Implemented: Latest RFXCOM SDK (#67)
 - Changed: Wind Station LaCrosse WS2300 will not display 'gust' any more
+- Fixed: Ampersand in name could cause domoticz to go in endless loop
 
 Version 1.0.666 (May 28th 2013)
 - Implemented: Settings, Doorbell could be send as 'Group On' or 'On' command
