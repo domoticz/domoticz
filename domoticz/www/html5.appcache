@@ -241,7 +241,6 @@ js/date.format.js
 js/domoticz.js
 js/highcharts-more.js
 js/highcharts.js
-js/i18next-1.6.3.min.js
 js/jquery-1.9.1.min.js
 js/jquery-migrate-1.1.1.min.js
 js/jquery-ui-1.10.1.custom.min.js
@@ -249,6 +248,12 @@ js/jquery.dataTables.min.js
 js/jquery.jeditable.mini.js
 js/jquery.ui.touch-punch.min.js
 js/jquery.uix.multiselect.min.js
+js/jquery.i18n.js
+js/jquery.i18n.emitter.js
+js/jquery.i18n.fallbacks.js
+js/jquery.i18n.language.js
+js/jquery.i18n.messages.js
+js/jquery.i18n.parser.js
 js/TableTools.min.js
 js/ZeroClipboard.js
 js/modules/exporting.js

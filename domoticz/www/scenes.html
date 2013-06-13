@@ -825,7 +825,7 @@ function ShowTimers(id,name)
   
   if (sunRise!="")
   {
-    htmlcontent+='SunRise: ' + sunRise + ', SunSet: ' + sunSet + '<br><br>\n';
+    htmlcontent+=$.i18n('SunRise') + ': ' + sunRise + ', ' + $.i18n('SunSet') + ': ' + sunSet + '<br><br>\n';
   }
   
   htmlcontent+=$('#edittimers').html();

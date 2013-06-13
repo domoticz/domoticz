@@ -1132,10 +1132,10 @@ function RefreshTimeAndSun()
 						var suntext;
 						var bIsMobile=$.myglobals.ismobile;
 						if (bIsMobile == true) {
-							suntext='SunRise: ' + sunRise + ', SunSet: ' + sunSet;
+							suntext=$.i18n('SunRise') + ': ' + sunRise + ', ' + $.i18n('SunSet') + ': ' + sunSet;
 						}
 						else {
-							suntext=ServerTime + ', SunRise: ' + sunRise + ', SunSet: ' + sunSet;
+							suntext=ServerTime + ', ' + $.i18n('SunRise') + ': ' + sunRise + ', ' + $.i18n('SunSet') + ': ' + sunSet;
 						}
 						$("#timesun").html(suntext);
 			}

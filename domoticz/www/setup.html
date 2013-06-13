@@ -470,7 +470,7 @@ function ShowSettings()
 	var suntext="";
   if (sunRise!="")
   {
-    suntext='<br>Current SunRise: ' + sunRise + ', SunSet: ' + sunSet + '<br><br>\n';
+    suntext='<br>' + $.i18n('SunRise') + ': ' + sunRise + ', ' + $.i18n('SunSet') + ': ' + sunSet + '<br><br>\n';
     $("#sunriseset").html(suntext);
   }
   
