@@ -5155,10 +5155,9 @@ unsigned long long MainWorker::decode_Energy(const int HwdID, const tRBUF *pResp
 	double usage;
 
 	instant = (pResponse->ENERGY.instant1 * 0x1000000) + (pResponse->ENERGY.instant2 * 0x10000) + (pResponse->ENERGY.instant3 * 0x100) + pResponse->ENERGY.instant4;
-	usage = double( double(pResponse->ENERGY.total1 * 0x10000000000) + double(pResponse->ENERGY.total2 * 0x100000000) + double(pResponse->ENERGY.total3 * 0x1000000)
-				+ double(pResponse->ENERGY.total4 * 0x10000) + double(pResponse->ENERGY.total5 * 0x100) + double(pResponse->ENERGY.total6)) / 223.666;
-	//usage = double( (pResponse->ENERGY.total3 * 0x1000000)
-		//+ (pResponse->ENERGY.total4 * 0x10000) + (pResponse->ENERGY.total5 * 0x100) + pResponse->ENERGY.total6) / 223.666;
+
+	usage = (double(pResponse->ENERGY.total1) * 0x10000000000 + double(pResponse->ENERGY.total2) * 0x100000000 + double(pResponse->ENERGY.total3) * 0x1000000
+			+ pResponse->ENERGY.total4 * 0x10000 + pResponse->ENERGY.total5 * 0x100 + pResponse->ENERGY.total6) / 223.666;
 
 	sprintf(szTmp,"%ld;%.2f",instant,usage);
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
@@ -5223,8 +5222,8 @@ unsigned long long MainWorker::decode_Current_Energy(const int HwdID, const tRBU
 	float CurrentChannel2= float((pResponse->CURRENT_ENERGY.ch2h * 256) + pResponse->CURRENT_ENERGY.ch2l) / 10.0f;
 	float CurrentChannel3= float((pResponse->CURRENT_ENERGY.ch3h * 256) + pResponse->CURRENT_ENERGY.ch3l) / 10.0f;
 
-	double usage = double( double(pResponse->CURRENT_ENERGY.total1 * 0x10000000000) + double(pResponse->CURRENT_ENERGY.total2 * 0x100000000) + double(pResponse->CURRENT_ENERGY.total3 * 0x1000000)
-				+ double(pResponse->CURRENT_ENERGY.total4 * 0x10000) + double(pResponse->CURRENT_ENERGY.total5 * 0x100) + double(pResponse->CURRENT_ENERGY.total6)) / 223.666;
+	double usage = (double(pResponse->ENERGY.total1) * 0x10000000000 + double(pResponse->ENERGY.total2) * 0x100000000 + double(pResponse->ENERGY.total3) * 0x1000000
+		+ pResponse->ENERGY.total4 * 0x10000 + pResponse->ENERGY.total5 * 0x100 + pResponse->ENERGY.total6) / 223.666;
 
 	sprintf(szTmp,"%.1f;%.1f;%.1f;%.3f",CurrentChannel1,CurrentChannel2,CurrentChannel3,usage);
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);

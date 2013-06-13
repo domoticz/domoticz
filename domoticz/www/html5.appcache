@@ -241,6 +241,7 @@ js/date.format.js
 js/domoticz.js
 js/highcharts-more.js
 js/highcharts.js
+js/i18next-1.6.3.min.js
 js/jquery-1.9.1.min.js
 js/jquery-migrate-1.1.1.min.js
 js/jquery-ui-1.10.1.custom.min.js
