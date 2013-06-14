@@ -1840,3 +1840,8 @@ a:link {
 	width: 750px;
 	height: 500px;
 }
+
+.marginright
+{
+	padding-right:5px;
+}
