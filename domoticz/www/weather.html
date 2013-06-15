@@ -91,7 +91,7 @@ function MakeFavorite(id,isfavorite)
 {
 	if (window.my_config.userrights!=2) {
         HideNotify();
-		ShowNotify('You do not have permission to do that!', 2500, true);
+		ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
 		return;
 	}
 
@@ -134,7 +134,7 @@ function EditWeatherDevice(idx,name)
 
 function AddWeatherDevice()
 {
-  alert('Please use the devices tab for this.');
+  alert($.i18n('Please use the devices tab for this.'));
 }
 
 function ShowWindLog(id,name)
@@ -148,6 +148,7 @@ function ShowWindLog(id,name)
   htmlcontent='<p><center><h2>' + name + '</h2></center></p><br>\n';
   htmlcontent+=$('#windlog').html();
   $('#weathercontent').html(GetBackbuttonHTMLTable('ShowWeathers')+htmlcontent);
+  $('#weathercontent').i18n();
   
   $.DayChart = new Highcharts.Chart({
       chart: {
@@ -853,6 +854,7 @@ function ShowUVLog(id,name)
   htmlcontent='<p><center><h2>' + name + '</h2></center></p><br>\n';
   htmlcontent+=$('#uvlog').html();
   $('#weathercontent').html(GetBackbuttonHTMLTable('ShowWeathers')+htmlcontent);
+  $('#weathercontent').i18n();
   
   $.DayChart = new Highcharts.Chart({
       chart: {
@@ -1113,6 +1115,7 @@ function ShowBaroLog(id,name)
   htmlcontent='<p><center><h2>' + name + '</h2></center></p><br>\n';
   htmlcontent+=$('#barolog').html();
   $('#weathercontent').html(GetBackbuttonHTMLTable('ShowWeathers')+htmlcontent);
+  $('#weathercontent').i18n();
   
   $.DayChart = new Highcharts.Chart({
       chart: {
@@ -1384,6 +1387,7 @@ function ShowRainLog(id,name)
   htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
   htmlcontent+=$('#rainlog').html();
   $('#weathercontent').html(GetBackbuttonHTMLTable('ShowWeathers')+htmlcontent);
+  $('#weathercontent').i18n();
   
   $.DayChart = new Highcharts.Chart({
       chart: {
@@ -1750,7 +1754,7 @@ function ShowWeathers()
         '\t<tr>\n' +
 		'\t  <td align="left"><div id="timesun" /></td>\n' +
         '\t  <td align="right">\n' +
-        '\t    <a class="btnstyle" onclick="AddWeatherDevice();">Add Sensor</a>\n' +
+        '\t    <a class="btnstyle" onclick="AddWeatherDevice();" data-i18n="Add Sensor">Add Sensor</a>\n' +
         '\t  </td>\n' +
         '\t</tr>\n' +
         '\t</table>\n';
@@ -1842,7 +1846,7 @@ function ShowWeathers()
 						xhtm+='Wind' + item.DirectionStr + '.png" height="48"></td>\n' +
 						'\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms';
 						if (typeof item.Gustms != 'undefined') {
-							xhtm+=', Gust: ' + item.Gustms + ' ms<br>\n';
+							xhtm+=', Gust: ' + item.Gustms + ' ms\n';
 						}
 						xhtm+='<br>\n';
 						if ((typeof item.Temp != 'undefined')&&(typeof item.Chill != 'undefined')) {
@@ -1862,41 +1866,41 @@ function ShowWeathers()
 							'\t      <td>';
           if (item.Favorite == 0) {
             xhtm+=      
-                  '<img src="images/nofavorite.png" title="Add to Dashboard" onclick="MakeFavorite(' + item.idx + ',1);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+                  '<img src="images/nofavorite.png" title="' + $.i18n('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
           else {
             xhtm+=      
-                  '<img src="images/favorite.png" title="Remove from Dashboard" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+                  '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
 
           if (typeof item.Barometer != 'undefined') {
-            xhtm+='<a class="btnsmall" onclick="ShowBaroLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
+            xhtm+='<a class="btnsmall" onclick="ShowBaroLog(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
           }
           if (typeof item.Rain != 'undefined') {
-            xhtm+='<a class="btnsmall" onclick="ShowRainLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
+            xhtm+='<a class="btnsmall" onclick="ShowRainLog(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
           }
           else if (typeof item.UVI != 'undefined') {
-            xhtm+='<a class="btnsmall" onclick="ShowUVLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
+            xhtm+='<a class="btnsmall" onclick="ShowUVLog(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
           }
           else if (typeof item.Direction != 'undefined') {
-            xhtm+='<a class="btnsmall" onclick="ShowWindLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
+            xhtm+='<a class="btnsmall" onclick="ShowWindLog(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
           }
           if (window.my_config.userrights==2) {
 			  if (bHaveRain) {
-							xhtm+='<a class="btnsmall" onclick="EditRainDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjMulti +');">Edit</a> ';
+							xhtm+='<a class="btnsmall" onclick="EditRainDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjMulti +');" data-i18n="Edit">Edit</a> ';
 			  }
 			  else if (bHaveBaro) {
-							xhtm+='<a class="btnsmall" onclick="EditBaroDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjValue2 +');">Edit</a> ';
+							xhtm+='<a class="btnsmall" onclick="EditBaroDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjValue2 +');" data-i18n="Edit">Edit</a> ';
 			  }
 			  else {
 							xhtm+=      
-										'<a class="btnsmall" onclick="EditWeatherDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+										'<a class="btnsmall" onclick="EditWeatherDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 			  }
 					
 			  if (item.Notifications == "true")
-				xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#weathercontent\', \'ShowWeathers\');">Notifications</a>';
+				xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#weathercontent\', \'ShowWeathers\');" data-i18n="Notifications">Notifications</a>';
 			  else
-				xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#weathercontent\', \'ShowWeathers\');">Notifications</a>';
+				xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#weathercontent\', \'ShowWeathers\');" data-i18n="Notifications">Notifications</a>';
 		  }
           xhtm+=      
                 '</td>\n' +
@@ -1919,6 +1923,7 @@ function ShowWeathers()
   }
   $('#modal').hide();
   $('#weathercontent').html(tophtm+htmlcontent);
+  $('#weathercontent').i18n();
   
   RefreshTimeAndSun();
 
@@ -1981,7 +1986,7 @@ $(document).ready(function() {
               },
               "Remove Device": function() {
                   var bValid = false;
-                  bValid=(confirm("Are you sure to remove this Device?")==true);
+                  bValid=(confirm($.i18n("Are you sure to remove this Device?"))==true);
                   if ( bValid ) {
                       $( this ).dialog( "close" );
                       $.ajax({
@@ -2040,7 +2045,7 @@ $(document).ready(function() {
               },
               "Remove Device": function() {
                   var bValid = false;
-                  bValid=(confirm("Are you sure to remove this Device?")==true);
+                  bValid=(confirm($.i18n("Are you sure to remove this Device?"))==true);
                   if ( bValid ) {
                       $( this ).dialog( "close" );
                       $.ajax({
@@ -2100,7 +2105,7 @@ $(document).ready(function() {
               },
               "Remove Device": function() {
                   var bValid = false;
-                  bValid=(confirm("Are you sure to remove this Device?")==true);
+                  bValid=(confirm($.i18n("Are you sure to remove this Device?"))==true);
                   if ( bValid ) {
                       $( this ).dialog( "close" );
                       $.ajax({

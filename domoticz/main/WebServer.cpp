@@ -22,6 +22,21 @@
 extern std::string szStartupFolder;
 extern bool bIsRaspberryPi;
 
+struct _tGuiLanguage {
+	char* szShort;
+	char* szLong;
+};
+
+static const _tGuiLanguage guiLanguage[]=
+{
+	{ "en", "English" },
+	{ "nl", "Dutch" },
+	{ "de", "German" },
+	{ "fr", "France" },
+	
+	{ NULL, NULL}
+};
+
 namespace http {
 	namespace server {
 
@@ -146,6 +161,11 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
 		&CWebServer::DisplayTimerTypesCombo,	// member function
 		this ) );			// instance of class
 
+	m_pWebEm->RegisterIncludeCode( "combolanguage",
+		boost::bind(
+		&CWebServer::DisplayLanguageCombo,
+		this ) );
+
 	m_pWebEm->RegisterIncludeCode( "deviceslist",
 		boost::bind(
 		&CWebServer::DisplayDevicesList,
@@ -209,6 +229,20 @@ char * CWebServer::DisplayMeterTypesCombo()
 	{
 		sprintf(szTmp,"<option value=\"%d\">%s</option>\n",ii,Meter_Type_Desc((_eMeterType)ii));
 		m_retstr+=szTmp;
+	}
+	return (char*)m_retstr.c_str();
+}
+
+char * CWebServer::DisplayLanguageCombo()
+{
+	m_retstr="";
+	char szTmp[200];
+	int ii=0;
+	while (guiLanguage[ii].szShort!=NULL)
+	{
+		sprintf(szTmp,"<option value=\"%s\">%s</option>\n",guiLanguage[ii].szShort,guiLanguage[ii].szLong);
+		m_retstr+=szTmp;
+		ii++;
 	}
 	return (char*)m_retstr.c_str();
 }
@@ -585,6 +619,9 @@ char * CWebServer::PostSettings()
 			m_pMain->LoadSharedUsers();
 		}
 	}
+
+	m_pMain->m_sql.UpdatePreferencesVar("Language",m_pWebEm->FindValue("Language").c_str());
+
 	return (char*)m_retstr.c_str();
 }
 
@@ -5008,6 +5045,11 @@ std::string CWebServer::GetJSonPage()
 			root["title"]="GetActiveTabs";
 
 			int nValue;
+			std::string sValue;
+
+			if (m_pMain->m_sql.GetPreferencesVar("Language", sValue))
+				root["language"]=sValue;
+
 			if (m_pMain->m_sql.GetPreferencesVar("EnableTabLights", nValue))
 			{
 				root["result"]["EnableTabLights"]=nValue;
@@ -7786,6 +7828,10 @@ std::string CWebServer::GetJSonPage()
 				else if (Key=="RemoteSharedPort")
 				{
 					root["RemoteSharedPort"]=nValue;
+				}
+				else if (Key=="Language")
+				{
+					root["Language"]=sValue;
 				}
 			}
 		}

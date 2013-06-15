@@ -540,6 +540,7 @@ bool CSQLHelper::OpenDatabase()
 
 	//Make sure we have some default preferences
 	int nValue;
+	std::string sValue;
 	if (!GetPreferencesVar("LightHistoryDays", nValue))
 	{
 		UpdatePreferencesVar("LightHistoryDays", 30);
@@ -675,6 +676,10 @@ bool CSQLHelper::OpenDatabase()
 	if (!GetPreferencesVar("RemoteSharedPort", nValue))
 	{
 		UpdatePreferencesVar("RemoteSharedPort", 6144);
+	}
+	if (!GetPreferencesVar("Language", sValue))
+	{
+		UpdatePreferencesVar("Language", "en");
 	}
 
 	//Start background thread
@@ -1586,6 +1591,23 @@ void CSQLHelper::UpdatePreferencesVar(const char *Key, const int nValue, const c
 			ID);
 		result = query(szTmp);
 	}
+}
+
+bool CSQLHelper::GetPreferencesVar(const char *Key, std::string &sValue)
+{
+	if (!m_dbase)
+		return false;
+
+	char szTmp[200];
+
+	std::vector<std::vector<std::string> > result;
+	sprintf(szTmp,"SELECT sValue FROM Preferences WHERE (Key='%s')",Key);
+	result=query(szTmp);
+	if (result.size()<1)
+		return false;
+	std::vector<std::string> sd=result[0];
+	sValue=sd[0];
+	return true;
 }
 
 bool CSQLHelper::GetPreferencesVar(const char *Key, int &nValue, std::string &sValue)

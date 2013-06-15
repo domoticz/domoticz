@@ -21,32 +21,32 @@
             <td width="20%">
              <table>
               <tr><td style="margin-top:7px; padding-left:10px; vertical-align:top;">
-                Select graph type:
+                <span data-i18n="Select graph type"></span>:
                 <select id="combocustomgraphtype" name="CustomGraphType" style="margin-top:3px; width:200px;" class="combobox ui-corner-all" onChange="ClearCustomGraph()">
-					<option value="1">Short term (5 minute values)</option>
-					<option value="0">Long term (daily values)</option>
+					<option value="1" data-i18n="Short term (5 minute values)">Short term (5 minute values)</option>
+					<option value="0" data-i18n="Long term (daily values)">Long term (daily values)</option>
 				</select>
               </td></tr>
               <tr><td style="margin-top:7px; padding-left:10px; vertical-align:top;">
-              Select device(s) to display:
+              <span data-i18n="Select device(s) to display"></span>:
               <div id="devicecontainer" style="margin-top:3px; background-color: #7D7E7D; background-image: -moz-linear-gradient(center top , #7D7E7D, #0E0E0E); border: 1px solid #616261; width:100%; height: 240px; overflow-y: scroll;"></div>
               <div id="controlbar" style="padding: 5px;" align="center">
                 <table>
                     <tr>
-                      <td align="left"><label for="graphfrom">From:&nbsp;</label></td>
+                      <td align="left"><label for="graphfrom"><span data-i18n="From"></span>:</label></td>
                       <td><input type="text" style="width: 70px;" id="graphfrom" class="datepick" name="graphfrom" /></td>
                     </tr>
                     <tr>
-                      <td align="left"><label for="graphto">To:</label></td>
+                      <td align="left"><label for="graphto"><span data-i18n="To"></span>:</label></td>
                       <td><input type="text" style="width: 70px;" id="graphto" class="datepick" name="graphto" /></td>
                    </tr>
                    <tr>
-                      <td style="padding: 5px;"><input type="checkbox" class="devicecheckbox" id="graphTemp" checked>Temperature</td>
-                      <td style="padding: 5px;"><input type="checkbox" class="devicecheckbox" id="graphChill">Chill factor</td>
+                      <td style="padding: 5px;"><input type="checkbox" class="devicecheckbox" id="graphTemp" checked><span data-i18n="Temperature"></span></td>
+                      <td style="padding: 5px;"><input type="checkbox" class="devicecheckbox" id="graphChill"><span data-i18n="Chill factor"></span></td>
                    </tr>
                    <tr>
-                      <td style="padding: 5px;"><input type="checkbox" class="devicecheckbox" id="graphHum">Humidity</td>
-                      <td style="padding: 5px;"><input type="checkbox" class="devicecheckbox" id="graphBaro">Barometer</td>
+                      <td style="padding: 5px;"><input type="checkbox" class="devicecheckbox" id="graphHum"><span data-i18n="Humidity"></span></td>
+                      <td style="padding: 5px;"><input type="checkbox" class="devicecheckbox" id="graphBaro"><span data-i18n="Barometer"></span></td>
                    </tr>
                 </table>
               </div></td></tr>
@@ -72,7 +72,7 @@ function MakeFavorite(id,isfavorite)
 {
 	if (window.my_config.userrights!=2) {
         HideNotify();
-		ShowNotify('You do not have permission to do that!', 2500, true);
+		ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
 		return;
 	}
 	clearInterval($.myglobals.refreshTimer);
@@ -98,7 +98,7 @@ function EditTempDevice(idx,name,addjvalue)
 
 function AddTempDevice()
 {
-  alert('Please use the devices tab for this.');
+  alert($.i18n('Please use the devices tab for this.'));
 }
 
 function AddDataToTempChart(data,chart,isday)
@@ -393,6 +393,8 @@ function ShowCustomTempLog()
   var htmlcontent = '';
   htmlcontent+=$('#customlog').html();
   $('#tempcontent').html(GetBackbuttonHTMLTable('ShowTemps')+htmlcontent);
+  $('#tempcontent').i18n();
+  
     $('#tempcontent .datepick').each(function() {
         $(this).datepicker({
                            dateFormat: 'yy-mm-dd',
@@ -515,6 +517,7 @@ function ShowTempLog(id,name)
   htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
   htmlcontent+=$('#templog').html();
   $('#tempcontent').html(GetBackbuttonHTMLTable('ShowTemps')+htmlcontent);
+  $('#tempcontent').i18n();
 
   $.DayChart = new Highcharts.Chart({
       chart: {
@@ -965,8 +968,8 @@ function ShowTemps()
         '\t    <div id="timesun" />\n' +
         '\t  </td>\n' +
         '\t  <td align="right">\n' +
-        '\t    <a class="btnstyle" onclick="ShowCustomTempLog();">Custom Graph</a>\n' +
-        '\t    <a class="btnstyle" onclick="AddTempDevice();">Add Sensor</a>\n' +
+        '\t    <a class="btnstyle" onclick="ShowCustomTempLog();" data-i18n="Custom Graph">Custom Graph</a>\n' +
+        '\t    <a class="btnstyle" onclick="AddTempDevice();" data-i18n="Add Sensor">Add Sensor</a>\n' +
         '\t  </td>\n' +
         '\t</tr>\n' +
         '\t</table>\n';
@@ -1077,21 +1080,21 @@ function ShowTemps()
 							'\t      <td>';
           if (item.Favorite == 0) {
             xhtm+=
-                  '<img src="images/nofavorite.png" title="Add to Dashboard" onclick="MakeFavorite(' + item.idx + ',1);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+                  '<img src="images/nofavorite.png" title="' + $.i18n('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
           else {
             xhtm+=
-                  '<img src="images/favorite.png" title="Remove from Dashboard" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+                  '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
           xhtm+=
-                '<a class="btnsmall" onclick="ShowTempLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
+                '<a class="btnsmall" onclick="ShowTempLog(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
 		if (window.my_config.userrights==2) {
           xhtm+=
-                '<a class="btnsmall" onclick="EditTempDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjValue + ');">Edit</a> ';
+                '<a class="btnsmall" onclick="EditTempDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjValue + ');" data-i18n="Edit">Edit</a> ';
           if (item.Notifications == "true")
-            xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#tempcontent\', \'ShowTemps\');">Notifications</a>';
+            xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#tempcontent\', \'ShowTemps\');" data-i18n="Notifications">Notifications</a>';
           else
-            xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#tempcontent\', \'ShowTemps\');">Notifications</a>';
+            xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#tempcontent\', \'ShowTemps\');" data-i18n="Notifications">Notifications</a>';
 		}
 					xhtm+=
                 '</td>\n' +
@@ -1114,6 +1117,7 @@ function ShowTemps()
   }
   $('#modal').hide();
   $('#tempcontent').html(tophtm+htmlcontent);
+  $('#tempcontent').i18n();
 
 	RefreshTimeAndSun();
 	
@@ -1177,7 +1181,7 @@ $(document).ready(function() {
               },
               "Remove Device": function() {
                   var bValid = false;
-                  bValid=(confirm("Are you sure to remove this Device?")==true);
+                  bValid=(confirm($.i18n("Are you sure to remove this Device?"))==true);
                   if ( bValid ) {
                       $( this ).dialog( "close" );
                       $.ajax({

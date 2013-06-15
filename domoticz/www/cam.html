@@ -55,51 +55,51 @@
 	<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
 	<tr>
 		<td align="left"></td>
-		<td align="right"><a class="btnstyle" onclick="AddCameraDevice();">Add Camera</a></td>
+		<td align="right"><a class="btnstyle" onclick="AddCameraDevice();" data-i18n="Add Camera">Add Camera</a></td>
 	</tr>
 	</table>
 	<br>
 	<table class="display" id="cameratable" border="0" cellpadding="0" cellspacing="0" width="100%">
 		<thead>
 			<tr valign="middle">
-				<th width="70" align="left">Preview</th>
-				<th align="left">Name</th>
+				<th width="70" align="left" data-i18n="Preview">Preview</th>
+				<th align="left" data-i18n="Name">Name</th>
 				<th width="48" align="left"></th>
-				<th width="60" align="left">Enabled</th>
-				<th width="100" align="left">Address</th>
-				<th width="80" align="center">Port</th>
-				<th width="80" align="center">VideoURL</th>
-				<th width="80" align="center">ImageURL</th>
+				<th width="60" align="left" data-i18n="Enabled">Enabled</th>
+				<th width="100" align="left" data-i18n="Address">Address</th>
+				<th width="80" align="center" data-i18n="Port">Port</th>
+				<th width="80" align="center" data-i18n="VideoURL">VideoURL</th>
+				<th width="80" align="center" data-i18n="ImageURL">ImageURL</th>
 			</tr>
 		</thead>
 	</table>
 	<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
 		<tr>
 			<td>
-				<a class="btnstyle3-dis" id="cameraedit" >Edit</a>&nbsp;&nbsp;&nbsp;
-				<a class="btnstyle3-dis" id="cameradelete" >Delete</a>
+				<a class="btnstyle3-dis" id="cameraedit" data-i18n="Edit">Edit</a>&nbsp;&nbsp;&nbsp;
+				<a class="btnstyle3-dis" id="cameradelete" data-i18n="Delete">Delete</a>
 			</td>
 		</tr>
 	</table>
 	<br>
-	<h2>Active Devices/Scenes:</h2>(Select Camera first to Edit...)<br>
+	<h2 data-i18n="Active Devices/Scenes">Active Devices/Scenes:</h2><span data-i18n="(Select Camera first to Edit...)"></span><br>
 	<br>
 	<table class="display" id="activetable" border="0" cellpadding="0" cellspacing="0" width="100%">
 		<thead>
 				<tr valign="middle">
-					<th align="left">Name</th>
-					<th width="60" align="center">When</th>
-					<th width="60" align="center">Delay</th>
+					<th align="left" data-i18n="Name">Name</th>
+					<th width="60" align="center" data-i18n="When">When</th>
+					<th width="60" align="center" data-i18n="Delay">Delay</th>
 				</tr>
 		</thead>
 	</table>
     <table id="delclractive" border="0" cellpadding="0" cellspacing="0" width="100%">
 		<tr>
 			<td>
-				<a class="btnstyle3-dis" id="activedevicedelete" >Delete</a>
+				<a class="btnstyle3-dis" id="activedevicedelete" data-i18n="Delete">Delete</a>
 			</td>
 			<td align="right">
-				<a class="btnstyle3" onclick="ClearActiveDevices();">Clear</a>
+				<a class="btnstyle3" onclick="ClearActiveDevices();" data-i18n="Clear">Clear</a>
 			</td>
 		</tr>
 	</table>
@@ -107,18 +107,18 @@
 	<table class="display" id="activeparamstable" border="0" cellpadding="0" cellspacing="20">
 		<tr>
 			<td>
-				<label for="name">Device/Scene: </label>
+				<label for="name"><span data-i18n="Device/Scene"></span>: </label>
 				<select id="comboactivedevice" style="width:250px" class="combobox ui-corner-all">
 				</select>
-				<label for="name"> When: </label>
+				<label for="name"> <span data-i18n="When"></span>: </label>
 				<select id="activewhen" style="width:80px" class="combobox ui-corner-all">
-					<option value="0">On</option>
-					<option value="1">Off</option>
+					<option value="0" data-i18n="On">On</option>
+					<option value="1" data-i18n="Off">Off</option>
 				</select>			
-				<label for="name"> Delay: </label>
+				<label for="name"> <span data-i18n="Delay"></span>: </label>
 				<input type="text" id="delay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="0"/>
-				(seconds, 0=no delay)
-				<a class="btnstyle3" onclick="AddActiveDevice();">Add</a>
+				<span data-i18n="(seconds, 0=no delay)"></span>
+				<a class="btnstyle3" onclick="AddActiveDevice();" data-i18n="Add">Add</a>
 			</td>
 		</tr>
 	</table>
@@ -346,9 +346,9 @@ function RefreshcameraTable()
 		
 	  if (typeof data.result != 'undefined') {
 		$.each(data.result, function(i,item){
-			var enabledstr="No";
+			var enabledstr=$.i18n("No");
 			if (item.Enabled=="true") {
-				enabledstr="Yes";
+				enabledstr=$.i18n("Yes");
 			}
 
 			var previewimg;
@@ -360,7 +360,7 @@ function RefreshcameraTable()
 				previewimg='<img src="" height="40"> ';
 			}
 			
-			var captureimg='<img  src="images/capture.png" title="Take Snapshot" height="32">';
+			var captureimg='<img  src="images/capture.png" title="' + $.i18n('Take Snapshot') +'" height="32">';
 			captureurl="<a href=\"camsnapshot.jpg?idx=" + item.idx + "\">" + captureimg + "</a>";
 			
 			var addId = oTable.fnAddData( {
@@ -465,6 +465,8 @@ function Showcameras()
 	var htmlcontent = "";
 	htmlcontent+=$('#cameramain').html();
 	$('#cameracontent').html(htmlcontent);
+	$('#cameracontent').i18n();
+	
 	oTable = $('#cameratable').dataTable( {
 		"sDom": '<"H"lfrC>t<"F"ip>',
 		"oTableTools": {

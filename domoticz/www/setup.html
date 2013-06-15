@@ -4,13 +4,13 @@
         <tr>
           <td align="right" style="width:60px"><label for="name">Address: </label></td>
           <td>
-						<input type="text" id="address" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
-						(Example: Streetname Number City Country)
+			<input type="text" id="address" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
+			(Example: Streetname Number City Country)
           </td>
         </tr>
         <tr>
-					<td></td>
-					<td><button id="getlatlong">GetLatLong</button></td>
+			<td></td>
+			<td><button id="getlatlong">GetLatLong</button></td>
         </tr>
         <tr>
           <td align="right"><label for="lbllat">Latitude: </label></td>
@@ -50,12 +50,25 @@
 			<div class="page-header-small">
 				<h1 data-i18n="SystemSetup">System Setup</h1>
 			</div>
+			<h2>User Interface:</h2>
+			<table class="display" id="languagetable" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="right" style="width:60px"><label for="Latitude">Language: </label></td>
+				<td>
+					<select id="combolanguage" name="Language" style="width:160px" class="combobox ui-corner-all">
+					<!--#embed combolanguage -->
+					</select>			
+				</td>
+			</tr>
+			</table>
+			<br>
 			<h2><span data-i18n="Location"></span>:</h2>
 			<label id="sunriseset"></label>
 			<table class="display" id="locationtable" border="0" cellpadding="0" cellspacing="0">
 			<tr>
 				<td align="right" style="width:60px"><label for="Latitude"><span data-i18n="Latitude"></span>: </label></td>
 				<td><input type="text" id="Latitude" name="Latitude" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
 			<tr>
 				<td align="right"><label for="Longitude"><span data-i18n="Longitude"></span>: </label></td>
 				<td><input type="text" id="Longitude" name="Longitude" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
@@ -177,7 +190,7 @@
 			<h2><span data-i18n="Prowl (iPhone/iPad)"></span>:</h2>
 			<table class="display" id="prowltable" border="0" cellpadding="0" cellspacing="0">
 			<tr>
-				<td align="right" style="width:60px"><label for="apikey"><span data-i18n="API Key"></span>: </label></td>
+				<td align="right" style="width:80px"><label for="apikey"><span data-i18n="API Key"></span>: </label></td>
 				<td><input type="input" id="apikey" name="ProwlAPIKey" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <a data-i18n="Test" class="btnstyle3" href="javascript:TestProwlNotification()">Test</a></td>
 			</tr>
 			</table>
@@ -186,7 +199,7 @@
 			<h2><span data-i18n="NMA (Android)"></span>:</h2>
 			<table class="display" id="nmatable" border="0" cellpadding="0" cellspacing="0">
 			<tr>
-				<td align="right" style="width:60px"><label for="apikey"><span data-i18n="API Key"></span>: </label></td>
+				<td align="right" style="width:80px"><label for="apikey"><span data-i18n="API Key"></span>: </label></td>
 				<td><input type="input" id="apikey" name="NMAAPIKey" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <a data-i18n="Test" class="btnstyle3" href="javascript:TestNMANotification()">Test</a></td>
 			</tr>
 			</table>
@@ -377,38 +390,38 @@ function TestProwlNotification()
 {
   var ProwlAPI=$("#prowltable #apikey").val();
   if (ProwlAPI=="") {
-    ShowNotify('Please enter the API key!...', 3500, true);
+    ShowNotify($.i18n('Please enter the API key!...'), 3500, true);
     return;
   }
   var url="http://api.prowlapp.com/publicapi/add?apikey=" + ProwlAPI + "&priority=0&application=Domoticz&event=Test Message&description=This is a test message!";
   $.get(url, function(data) {
   });  
-  ShowNotify('Notification send!<br>Should arrive at your device soon...', 3000);
+  ShowNotify($.i18n('Notification send!<br>Should arrive at your device soon...'), 3000);
 }
 
 function TestNMANotification()
 {
   var NMAAPI=$("#nmatable #apikey").val();
   if (NMAAPI=="") {
-    ShowNotify('Please enter the API key!...', 3500, true);
+    ShowNotify($.i18n('Please enter the API key!...'), 3500, true);
     return;
   }
   var url="http://www.notifymyandroid.com/publicapi/notify?apikey=" + NMAAPI + "&priority=0&application=Domoticz&event=Test Message&description=This is a test message!";
   $.get(url, function(data) {
   });  
-  ShowNotify('Notification send!<br>Should arrive at your device soon...', 3000);
+  ShowNotify($.i18n('Notification send!<br>Should arrive at your device soon...'), 3000);
 }
 
 function TestEmailNotification()
 {
 	var EmailServer=$("#emailtable #EmailServer").val();
 	if (EmailServer=="") {
-		ShowNotify('Invalid Email Settings...', 2000, true);
+		ShowNotify($.i18n('Invalid Email Settings...'), 2000, true);
 		return;
 	}
 	var EmailPort=$("#emailtable #EmailPort").val();
 	if (EmailPort=="") {
-		ShowNotify('Invalid Email Settings...', 2000, true);
+		ShowNotify($.i18n('Invalid Email Settings...'), 2000, true);
 		return;
 	}
 	var EmailFrom=$("#emailtable #EmailFrom").val();
@@ -416,11 +429,11 @@ function TestEmailNotification()
 	var EmailUsername=$("#emailtable #EmailUsername").val();
 	var EmailPassword=$("#emailtable #EmailPassword").val();
 	if ((EmailFrom=="")||(EmailTo=="")) {
-		ShowNotify('Invalid Email From/To Settings...', 2000, true);
+		ShowNotify($.i18n('Invalid Email From/To Settings...'), 2000, true);
 		return;
 	}
 	if ((EmailUsername!="")&&(EmailPassword=="")) {
-		ShowNotify('Please enter an Email Password...', 2000, true);
+		ShowNotify($.i18n('Please enter an Email Password...'), 2000, true);
 		return;
 	}
 	$.ajax({
@@ -436,17 +449,17 @@ function TestEmailNotification()
 		success: function(data) {
 			if (data.status != "OK") {
 				HideNotify();
-				ShowNotify('Problem sending Email, please check credentials!', 2500, true);
+				ShowNotify($.i18n('Problem sending Email, please check credentials!'), 2500, true);
 				return;
 			}
 			else {
 				HideNotify();
-				ShowNotify('An Email has been delivered<br>Please check your inbox!', 2500);
+				ShowNotify($.i18n('An Email has been delivered<br>Please check your inbox!'), 2500);
 			}
 		},
 		error: function(){
 			HideNotify();
-			ShowNotify('Problem sending Email, please check credentials!', 2500, true);
+			ShowNotify($.i18n('Problem sending Email, please check credentials!'), 2500, true);
 		}
 	});
 }
@@ -592,6 +605,9 @@ function ShowSettings()
       if (typeof data.RemoteSharedPort != 'undefined') {
         $("#remotesharedtable #RemoteSharedPort").val(data.RemoteSharedPort);
       }
+      if (typeof data.Language != 'undefined') {
+        $("#languagetable #combolanguage").val(data.Language);
+      }
      }
   });
 }
@@ -605,7 +621,7 @@ function StoreSettings(formname)
       ( isNaN(Latitude)||isNaN(Longitude) )
     )
   {
-    ShowNotify('Invalid Location Settings...', 2000, true);
+    ShowNotify($.i18n('Invalid Location Settings...'), 2000, true);
     return;
   }
   
@@ -615,7 +631,7 @@ function StoreSettings(formname)
   {
 	var EmailPort=$("#emailtable #EmailPort").val();
 	if (EmailPort=="") {
-		ShowNotify('Please enter an Email Port...', 2000, true);
+		ShowNotify($.i18n('Please enter an Email Port...'), 2000, true);
 		return;
 	}
 	var EmailFrom=$("#emailtable #EmailFrom").val();
@@ -623,11 +639,11 @@ function StoreSettings(formname)
 	var EmailUsername=$("#emailtable #EmailUsername").val();
 	var EmailPassword=$("#emailtable #EmailPassword").val();
 	if ((EmailFrom=="")||(EmailTo=="")) {
-		ShowNotify('Invalid Email From/To Settings...', 2000, true);
+		ShowNotify($.i18n('Invalid Email From/To Settings...'), 2000, true);
 		return;
 	}
 	if ((EmailUsername!="")&&(EmailPassword=="")) {
-		ShowNotify('Please enter an Email Password...', 2000, true);
+		ShowNotify($.i18n('Please enter an Email Password...'), 2000, true);
 		return;
 	}
   }
@@ -667,14 +683,12 @@ $(document).ready(function() {
                   bValid = bValid && checkLength( $("#dialog-findlatlong #latitude"), 3, 100 );
                   bValid = bValid && checkLength( $("#dialog-findlatlong #longitude"), 3, 100 );
                   if ( bValid ) {
-
-											$("#locationtable #Latitude").val($( '#dialog-findlatlong #latitude' ).val());
-											$("#locationtable #Longitude").val($( '#dialog-findlatlong #longitude' ).val());
-                  
-                      $( this ).dialog( "close" );
+					$("#locationtable #Latitude").val($( '#dialog-findlatlong #latitude' ).val());
+					$("#locationtable #Longitude").val($( '#dialog-findlatlong #longitude' ).val());
+					$( this ).dialog( "close" );
                   } else
                   {
-										alert('Please enter a Latitude and Longitude!...', 3500, true);
+					alert($.i18n('Please enter a Latitude and Longitude!...'), 3500, true);
                   }
               },
               Cancel: function() {
@@ -693,7 +707,7 @@ $(document).ready(function() {
 						var address = $( '#dialog-findlatlong #address' ).val();
 						if (address=="")
 						{
-							alert('Please enter a Address to search for!...', 3500, true);
+							alert($.i18n('Please enter a Address to search for!...'), 3500, true);
 							return false;
 						}
 						geocoder = new google.maps.Geocoder();
@@ -702,7 +716,7 @@ $(document).ready(function() {
 									$( '#dialog-findlatlong #latitude' ).val(results[0].geometry.location.lat().toFixed(6));
 									$( '#dialog-findlatlong #longitude' ).val(results[0].geometry.location.lng().toFixed(6));
 							} else {
-								alert('Geocode was not successful for the following reason: ' + status);
+								alert($.i18n('Geocode was not successful for the following reason') + ': ' +status);
 							}
 						});
 						return false;

@@ -134,7 +134,7 @@ function CheckForUpdate(showdialog) {
 					$("#mCheckUpdate").show();
 				}
 				if (showdialog) {
-					alert("No Update Available...");
+					alert($.i18n("No Update Available..."));
 				}
 			}
 		 },
@@ -142,7 +142,7 @@ function CheckForUpdate(showdialog) {
 				$("#mUpdate").hide();
 				$("#mCheckUpdate").show();
 				if (showdialog) {
-					alert("Error communicating to server!");
+					alert($.i18n("Error communicating to server!"));
 				}
 		 }     
 	});
@@ -157,7 +157,7 @@ function TransferDevice(idx,backfunction)
 		 success: function(data) {
 				if (typeof data.result == 'undefined') 
 				{
-					alert('No devices to Transfer too!');
+					alert($.i18n('No devices to Transfer too!'));
 					return;
 				}
 				$("#dialog-transferdevice #newdevice").html("");
@@ -223,7 +223,7 @@ $(document).ready(function() {
 	if ( browser.msie ) {
 		var bVersion=parseFloat(browser.version);
 		if (bVersion < 10.0) {
-			alert('This Application is is designed for Internet Explorer version 10+!\nPlease upgrade your browser!');
+			alert($.i18n('This Application is is designed for Internet Explorer version 10+!\nPlease upgrade your browser!'));
 		}
 	}
 
@@ -239,7 +239,7 @@ $(document).ready(function() {
 	//		ExportChart2CSV(this);
 	//	}
 	//});
-	
+
 	EnableDisableTabs();
 	
     $( "#dialog-transferdevice" ).dialog({
@@ -255,7 +255,7 @@ $(document).ready(function() {
                   
 									var NewDeviceIdx=$("#dialog-transferdevice #newdevice option:selected").val();
 									if (typeof NewDeviceIdx == 'undefined') {
-										alert('No New Device Selected!');
+										alert($.i18n('No New Device Selected!'));
 										return ;
 									}
 									$.ajax({
@@ -267,12 +267,12 @@ $(document).ready(function() {
 												$.backfunction();
 											}
 											else {
-												ShowNotify('Problem Transfering Device!', 2500, true);
+												ShowNotify($.i18n('Problem Transfering Device!'), 2500, true);
 											}
 										 },
 										 error: function(){
 												HideNotify();
-												ShowNotify('Problem Transfering Device!', 2500, true);
+												ShowNotify($.i18n('Problem Transfering Device!'), 2500, true);
 										 }     
 									});
               },
@@ -294,28 +294,6 @@ $(document).ready(function() {
     });
     
     CheckForUpdate(false);
-	
-	$.i18n.debug = true;
-	var i18n = $.i18n({
-			locale: 'en'
-		});
-	$("#cDashboard").html($("#cDashboard").html().replace("Dashboard", $.i18n( 'Dashboard' )));
-	$("#cLightSwitches").html($("#cLightSwitches").html().replace("Switches", $.i18n( 'Switches' )));
-	$("#cScenes").html($("#cScenes").html().replace("Scenes", $.i18n( 'Scenes' )));
-	$("#cTemperature").html($("#cTemperature").html().replace("Temperature", $.i18n( 'Temperature' )));
-	$("#cWeather").html($("#cWeather").html().replace("Weather", $.i18n( 'Weather' )));
-	$("#cUtility").html($("#cUtility").html().replace("Utility", $.i18n( 'Utility' )));
-	$("#setupmenu").html($("#setupmenu").html().replace("Setup", $.i18n( 'Setup' )));
-	$("#cHardware").html($("#cHardware").html().replace("Hardware", $.i18n( 'Hardware' )));
-	$("#cDevices").html($("#cDevices").html().replace("Devices", $.i18n( 'Devices' )));
-	$("#cSetup").html($("#cSetup").html().replace("Application Settings", $.i18n( 'Application Settings' )));
-	$("#cMoreOptions").html($("#cMoreOptions").html().replace("More options", $.i18n( 'More options' )));
-	$("#cCam").html($("#cCam").html().replace("Cameras", $.i18n( 'Cameras' )));
-	$("#cUsers").html($("#cUsers").html().replace("Edit Users", $.i18n( 'Edit Users' )));
-	$("#cNotification").html($("#cNotification").html().replace("Send Notification", $.i18n( 'Send Notification' )));
-	$("#cLog").html($("#cLog").html().replace("Log", $.i18n( 'Log' )));
-	$("#cUpdate").html($("#cUpdate").html().replace("Update Domoticz", $.i18n( 'Update Domoticz' )));
-	$("#cCheckUpdate").html($("#cCheckUpdate").html().replace("Check for Update", $.i18n( 'Check for Update' )));
 
 	SwitchLayout(GetLayoutFromURL());
 
@@ -344,7 +322,7 @@ $(document).ready(function() {
 				<td>
 				</td>
 				<td align="right">
-					<a class="btnstyle3" id="clearlog" onclick="ClearLightLog();">Clear</a>
+					<a class="btnstyle3" id="clearlog" onclick="ClearLightLog();" data-i18n="Clear">Clear</a>
 				</td>
 			</tr>
 		</table>
@@ -411,37 +389,37 @@ $(document).ready(function() {
 					<a class="brand" href="javascript:SwitchLayout('Dashboard')"><h1>Domoticz</h1> <h2 id="appversion">*</h2></a>
                     <div class="nav-collapse collapse">
                         <ul class="nav">
-                            <li id="mDashboard"><a id="cDashboard" href="javascript:SwitchLayout('Dashboard')"><img src="images/desktop.png"> Dashboard</img></a></li>
+                            <li id="mDashboard"><a id="cDashboard" href="javascript:SwitchLayout('Dashboard')"><img src="images/desktop.png"> <span data-i18n="Dashboard">Dashboard</span></img></a></li>
                             <li class="divider-vertical"></li>
-								<li id="mLightSwitches"><a id="cLightSwitches" href="javascript:SwitchLayout('LightSwitches')"><img src="images/lightbulb.png"> Switches</a></li>
+								<li id="mLightSwitches"><a id="cLightSwitches" href="javascript:SwitchLayout('LightSwitches')"><img src="images/lightbulb.png"> <span data-i18n="Switches">Switches</span></a></li>
                             <li class="divider-vertical"></li>
-								<li id="mScenes"><a id="cScenes" href="javascript:SwitchLayout('Scenes')"><img src="images/scenes.png"> Scenes</a></li>
+								<li id="mScenes"><a id="cScenes" href="javascript:SwitchLayout('Scenes')"><img src="images/scenes.png"> <span data-i18n="Scenes">Scenes</span></a></li>
                             <li class="divider-vertical"></li>
-								<li id="mTemperature"><a id="cTemperature" href="javascript:SwitchLayout('Temperature')"><img src="images/temperature.png"> Temperature</a></li>
+								<li id="mTemperature"><a id="cTemperature" href="javascript:SwitchLayout('Temperature')"><img src="images/temperature.png"> <span data-i18n="Temperature">Temperature</span></a></li>
                             <li class="divider-vertical"></li>
-								<li id="mWeather"><a id="cWeather" href="javascript:SwitchLayout('Weather')"><img src="images/rain.png"> Weather</a></li>
+								<li id="mWeather"><a id="cWeather" href="javascript:SwitchLayout('Weather')"><img src="images/rain.png"> <span data-i18n="Weather">Weather</span></a></li>
                             <li class="divider-vertical"></li>
-								<li id="mUtility"><a id="cUtility" href="javascript:SwitchLayout('Utility')"><img src="images/utility.png"> Utility</a></li>
+								<li id="mUtility"><a id="cUtility" href="javascript:SwitchLayout('Utility')"><img src="images/utility.png"> <span data-i18n="Utility">Utility</span></a></li>
                             <li class="divider-vertical"></li>
                             <li class="dropdown">
-                                <a id="setupmenu" class="dropdown-toggle" data-toggle="dropdown" onmouseover="cursorhand()" onmouseout="cursordefault()"><img src="images/setup.png"> Setup <b class="caret"></b></a>
+                                <a id="setupmenu" class="dropdown-toggle" data-toggle="dropdown" onmouseover="cursorhand()" onmouseout="cursordefault()"><img src="images/setup.png"> <span data-i18n="Setup">Setup</span> <b class="caret"></b></a>
                                 <ul class="dropdown-menu pull-right">
-									<li id="mHardware"><a id="cHardware" href="javascript:SwitchLayout('Hardware')"><img src="images/hardware.png"> Hardware</a></li>
-									<li id="mDevices"><a id="cDevices" href="javascript:SwitchLayout('Devices')"><img src="images/devices.png"> Devices</a></li>
-                                    <li id="mSetup"><a id="cSetup" href="javascript:SwitchLayout('Setup')"><img src="images/setup.png"> Application Settings</a></li>
+									<li id="mHardware"><a id="cHardware" href="javascript:SwitchLayout('Hardware')"><img src="images/hardware.png"> <span data-i18n="Hardware">Hardware</span></a></li>
+									<li id="mDevices"><a id="cDevices" href="javascript:SwitchLayout('Devices')"><img src="images/devices.png"> <span data-i18n="Devices">Devices</span></a></li>
+                                    <li id="mSetup"><a id="cSetup" href="javascript:SwitchLayout('Setup')"><img src="images/setup.png"> <span data-i18n="Application Settings">Application Settings</span></a></li>
                                     <li id="dUpdate" class="divider"></li>
-                                    <li id="mUpdate"><a id="cUpdate" href="javascript:SwitchLayout('Update')"><img src="images/utility.png"> Update Domoticz</a></li>
-                                    <li id="mCheckUpdate"><a id="cCheckUpdate" href="javascript:CheckForUpdate(true)"><img src="images/utility.png"> Check for Update</a></li>
+                                    <li id="mUpdate"><a id="cUpdate" href="javascript:SwitchLayout('Update')"><img src="images/utility.png"> <span data-i18n="Update Domoticz">Update Domoticz</span></a></li>
+                                    <li id="mCheckUpdate"><a id="cCheckUpdate" href="javascript:CheckForUpdate(true)"><img src="images/utility.png"> <span data-i18n="Check for Update">Check for Update</span></a></li>
                                     <li class="dropdown-submenu">
-										<a id="cMoreOptions" tabindex="-1">More options</a>
+										<a id="cMoreOptions" tabindex="-1" data-i18n="More options">More options</a>
 										<ul class="dropdown-menu pull-left">
-											<li id="mCam"><a id="cCam" href="javascript:SwitchLayout('Cam')"><img src="images/camera-web.png"> Cameras</a></li>
-											<li id="mUsers"><a id="cUsers" href="javascript:SwitchLayout('Users')"><img src="images/users.png"> Edit Users</a></li>
-											<li id="mNotification"><a id="cNotification" href="javascript:SwitchLayout('Notification')"><img src="images/notification.png"> Send Notification</a></li>
+											<li id="mCam"><a id="cCam" href="javascript:SwitchLayout('Cam')"><img src="images/camera-web.png"> <span data-i18n="Cameras">Cameras</span></a></li>
+											<li id="mUsers"><a id="cUsers" href="javascript:SwitchLayout('Users')"><img src="images/users.png"> <span data-i18n="Edit Users">Edit Users</span></a></li>
+											<li id="mNotification"><a id="cNotification" href="javascript:SwitchLayout('Notification')"><img src="images/notification.png"> <span data-i18n="Send Notification">Send Notification</span></a></li>
 										</ul>
                                     </li>
                                     <li class="divider"></li>
-                                    <li id="mLog"><a id="cLog" href="javascript:SwitchLayout('Log')"><img src="images/log.png"> Log</a></li>
+                                    <li id="mLog"><a id="cLog" href="javascript:SwitchLayout('Log')"><img src="images/log.png"> <span data-i18n="Log">Log</span></a></li>
                                 </ul>
                             </li>
                         </ul>

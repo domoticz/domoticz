@@ -76,34 +76,34 @@
     <table class="display" id="hardwaretable" border="0" cellpadding="0" cellspacing="0" width="100%">
         <thead>
             <tr>
-                <th width="120" align="left">Name</th>
-                <th width="60" align="left">Enabled</th>
-                <th width="240" align="left">Type</th>
-                <th width="200" align="left">Address</th>
-                <th width="80" align="center">Port</th>
+                <th width="120" align="left" data-i18n="Name">Name</th>
+                <th width="60" align="left" data-i18n="Enabled">Enabled</th>
+                <th width="240" align="left" data-i18n="Type">Type</th>
+                <th width="200" align="left" data-i18n="Address">Address</th>
+                <th width="80" align="center" data-i18n="Port">Port</th>
             </tr>
         </thead>
     </table>
     <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
 			<tr>
 				<td>
-					<a class="btnstyle3-dis" id="hardwareupdate" >Update</a>&nbsp;&nbsp;&nbsp;
-					<a class="btnstyle3-dis" id="hardwaredelete" >Delete</a>
+					<a class="btnstyle3-dis" id="hardwareupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+					<a class="btnstyle3-dis" id="hardwaredelete" data-i18n="Delete">Delete</a>
 				</td>
 			</tr>
 		</table>
 		<br>
 		<table class="display" id="hardwareparamstable" border="0" cellpadding="0" cellspacing="20">
 			<tr>
-				<td align="right" style="width:80px"><label for="enabled">Enabled:</label></td>
+				<td align="right" style="width:80px"><label for="enabled"><span data-i18n="Enabled"></span>:</label></td>
 				<td><input type="checkbox" id="enabled" checked></td>
 			</tr>
 			<tr>
-				<td align="right" style="width:110px"><label for="name">Name:</label></td>
+				<td align="right" style="width:110px"><label for="name"><span data-i18n="Name"></span>:</label></td>
 				<td><input type="text" id="hardwarename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 			</tr>
 			<tr>
-				<td align="right" style="width:110px"><label for="name">Type:</label></td>
+				<td align="right" style="width:110px"><label for="name"><span data-i18n="Type"></span>:</label></td>
 				<td><select id="combotype" style="width:410px" class="combobox ui-corner-all">
 						<!--#embed hardwaretypes -->
 						</select>
@@ -114,7 +114,7 @@
 			<br>
 			<table class="display" id="hardwareparamsserial" border="0" cellpadding="0" cellspacing="20">
 				<tr>
-					<td align="right" style="width:110px"><label id="lblserialport" for="name">Serial Port:</label></td>
+					<td align="right" style="width:110px"><label id="lblserialport" for="name"><span data-i18n="Serial Port"></span>:</label></td>
 					<td><select id="comboserialport" style="width:210px" class="combobox ui-corner-all">
 							<!--#embed serialdevices -->
 							</select>
@@ -126,11 +126,11 @@
 			<br>
 			<table class="display" id="hardwareparamsremote" border="0" cellpadding="0" cellspacing="20">
 				<tr>
-					<td align="right" style="width:110px"><label id="lblremoteaddress" for="name">Remote Address:</label></td>
+					<td align="right" style="width:110px"><label id="lblremoteaddress" for="name"><span data-i18n="Remote Address"></span>:</label></td>
 					<td><input type="text" id="tcpaddress" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 				</tr>
 				<tr>
-					<td align="right" style="width:110px"><label id="lblremoteport" for="name">port:</label></td>
+					<td align="right" style="width:110px"><label id="lblremoteport" for="name"><span data-i18n="Port"></span>:</label></td>
 					<td><input type="text" id="tcpport" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 				</tr>
 			</table>
@@ -139,17 +139,17 @@
 			<br>
 			<table class="display" id="hardwareparamslogin" border="0" cellpadding="0" cellspacing="20">
 				<tr>
-					<td align="right" style="width:110px"><label id="lblusername" for="name">Username:</label></td>
+					<td align="right" style="width:110px"><label id="lblusername" for="name"><span data-i18n="Username"></span>:</label></td>
 					<td><input type="text" id="username" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
 				</tr>
 				<tr>
-					<td align="right" style="width:110px"><label id="lblpassword" for="name">Password:</label></td>
+					<td align="right" style="width:110px"><label id="lblpassword" for="name"><span data-i18n="Password"></span>:</label></td>
 					<td><input type="password" id="password" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
 				</tr>
 			</table>
 		</div>
 		<br>
-    <a class="btnstyle3" onclick="AddHardware();">Add</a>
+    <a class="btnstyle3" onclick="AddHardware();" data-i18n="Add">Add</a>
 </div>
 
 <script type="text/javascript" charset="utf-8">
@@ -157,7 +157,7 @@
 function DeleteHardware(idx)
 {
 	var bValid = false;
-	bValid=(confirm("Are you sure to delete this Hardware?\n\nThis action can not be undone...\nAll Devices attached will be removed!")==true);
+	bValid=(confirm($.i18n("Are you sure to delete this Hardware?\n\nThis action can not be undone...\nAll Devices attached will be removed!"))==true);
 	if (bValid == false) {
 		return;
 	}
@@ -170,7 +170,7 @@ function DeleteHardware(idx)
 		 },
 		 error: function(){
 				HideNotify();
-				ShowNotify('Problem deleting hardware!', 2500, true);
+				ShowNotify($.i18n('Problem deleting hardware!'), 2500, true);
 		 }     
 	});
 }
@@ -180,13 +180,13 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 	var name=$("#hardwarecontent #hardwareparamstable #hardwarename").val();
 	if (name=="")
 	{
-		ShowNotify('Please enter a Name!', 2500, true);
+		ShowNotify($.i18n('Please enter a Name!'), 2500, true);
 		return;
 	}
 
 	var hardwaretype=$("#hardwarecontent #hardwareparamstable #combotype option:selected").val();
 	if (typeof hardwaretype == 'undefined') {
-		ShowNotify('Unknown device selected!', 2500, true);
+		ShowNotify($.i18n('Unknown device selected!'), 2500, true);
 		return;
 	}
 	
@@ -207,7 +207,7 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 				RefreshHardwareTable();
 			 },
 			 error: function(){
-					ShowNotify('Problem updating hardware!', 2500, true);
+					ShowNotify($.i18n('Problem updating hardware!'), 2500, true);
 			 }     
 		});
 	}
@@ -216,7 +216,7 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 		var serialport=$("#hardwarecontent #divserial #comboserialport option:selected").val();
 		if (typeof serialport == 'undefined')
 		{
-			ShowNotify('No serial port selected!', 2500, true);
+			ShowNotify($.i18n('No serial port selected!'), 2500, true);
 			return;
 		}
 		$.ajax({
@@ -232,7 +232,7 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 				RefreshHardwareTable();
 			 },
 			 error: function(){
-					ShowNotify('Problem updating hardware!', 2500, true);
+					ShowNotify($.i18n('Problem updating hardware!'), 2500, true);
 			 }     
 		});
 	}
@@ -241,18 +241,18 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 		var address=$("#hardwarecontent #divremote #tcpaddress").val();
 		if (address=="")
 		{
-			ShowNotify('Please enter an Address!', 2500, true);
+			ShowNotify($.i18n('Please enter an Address!'), 2500, true);
 			return;
 		}
 		var port=$("#hardwarecontent #divremote #tcpport").val();
 		if (port=="")
 		{
-			ShowNotify('Please enter an Port!', 2500, true);
+			ShowNotify($.i18n('Please enter an Port!'), 2500, true);
 			return;
 		}
 		var intRegex = /^\d+$/;
 		if(!intRegex.test(port)) {
-			ShowNotify('Please enter an Valid Port!', 2500, true);
+			ShowNotify($.i18n('Please enter an Valid Port!'), 2500, true);
 			return;
 		}		
 		$.ajax({
@@ -269,7 +269,7 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 				RefreshHardwareTable();
 			 },
 			 error: function(){
-					ShowNotify('Problem updating hardware!', 2500, true);
+					ShowNotify($.i18n('Problem updating hardware!'), 2500, true);
 			 }     
 		});
 	}
@@ -278,18 +278,18 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 		var address=$("#hardwarecontent #divremote #tcpaddress").val();
 		if (address=="")
 		{
-			ShowNotify('Please enter an Address!', 2500, true);
+			ShowNotify($.i18n('Please enter an Address!'), 2500, true);
 			return;
 		}
 		var port=$("#hardwarecontent #divremote #tcpport").val();
 		if (port=="")
 		{
-			ShowNotify('Please enter an Port!', 2500, true);
+			ShowNotify($.i18n('Please enter an Port!'), 2500, true);
 			return;
 		}
 		var intRegex = /^\d+$/;
 		if(!intRegex.test(port)) {
-			ShowNotify('Please enter an Valid Port!', 2500, true);
+			ShowNotify($.i18n('Please enter an Valid Port!'), 2500, true);
 			return;
 		}		
 		var username=$("#hardwarecontent #divlogin #username").val();
@@ -310,7 +310,7 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 				RefreshHardwareTable();
 			 },
 			 error: function(){
-					ShowNotify('Problem updating hardware!', 2500, true);
+					ShowNotify($.i18n('Problem updating hardware!'), 2500, true);
 			 }     
 		});
 	}
@@ -321,13 +321,13 @@ function AddHardware()
 	var name=$("#hardwarecontent #hardwareparamstable #hardwarename").val();
 	if (name=="")
 	{
-		ShowNotify('Please enter a Name!', 2500, true);
+		ShowNotify($.i18n('Please enter a Name!'), 2500, true);
 		return false;
 	}
 
 	var hardwaretype=$("#hardwarecontent #hardwareparamstable #combotype option:selected").val();
 	if (typeof hardwaretype == 'undefined') {
-		ShowNotify('Unknown device selected!', 2500, true);
+		ShowNotify($.i18n('Unknown device selected!'), 2500, true);
 		return;
 	}
 	
@@ -344,7 +344,7 @@ function AddHardware()
 				RefreshHardwareTable();
 			 },
 			 error: function(){
-					ShowNotify('Problem adding hardware!', 2500, true);
+					ShowNotify($.i18n('Problem adding hardware!'), 2500, true);
 			 }     
 		});
 	}
@@ -353,7 +353,7 @@ function AddHardware()
 		var serialport=$("#hardwarecontent #divserial #comboserialport option:selected").val();
 		if (typeof serialport == 'undefined')
 		{
-			ShowNotify('No serial port selected!', 2500, true);
+			ShowNotify($.i18n('No serial port selected!'), 2500, true);
 			return;
 		}
 		$.ajax({
@@ -364,7 +364,7 @@ function AddHardware()
 				RefreshHardwareTable();
 			 },
 			 error: function(){
-					ShowNotify('Problem adding hardware!', 2500, true);
+					ShowNotify($.i18n('Problem adding hardware!'), 2500, true);
 			 }     
 		});
 	}
@@ -373,18 +373,18 @@ function AddHardware()
 		var address=$("#hardwarecontent #divremote #tcpaddress").val();
 		if (address=="")
 		{
-			ShowNotify('Please enter an Address!', 2500, true);
+			ShowNotify($.i18n('Please enter an Address!'), 2500, true);
 			return;
 		}
 		var port=$("#hardwarecontent #divremote #tcpport").val();
 		if (port=="")
 		{
-			ShowNotify('Please enter an Port!', 2500, true);
+			ShowNotify($.i18n('Please enter an Port!'), 2500, true);
 			return;
 		}
 		var intRegex = /^\d+$/;
 		if(!intRegex.test(port)) {
-			ShowNotify('Please enter an Valid Port!', 2500, true);
+			ShowNotify($.i18n('Please enter an Valid Port!'), 2500, true);
 			return;
 		}		
 		$.ajax({
@@ -395,7 +395,7 @@ function AddHardware()
 				RefreshHardwareTable();
 			 },
 			 error: function(){
-					ShowNotify('Problem adding hardware!', 2500, true);
+					ShowNotify($.i18n('Problem adding hardware!'), 2500, true);
 			 }     
 		});
 	}
@@ -404,18 +404,18 @@ function AddHardware()
 		var address=$("#hardwarecontent #divremote #tcpaddress").val();
 		if (address=="")
 		{
-			ShowNotify('Please enter an Address!', 2500, true);
+			ShowNotify($.i18n('Please enter an Address!'), 2500, true);
 			return;
 		}
 		var port=$("#hardwarecontent #divremote #tcpport").val();
 		if (port=="")
 		{
-			ShowNotify('Please enter an Port!', 2500, true);
+			ShowNotify($.i18n('Please enter an Port!'), 2500, true);
 			return;
 		}
 		var intRegex = /^\d+$/;
 		if(!intRegex.test(port)) {
-			ShowNotify('Please enter an Valid Port!', 2500, true);
+			ShowNotify($.i18n('Please enter an Valid Port!'), 2500, true);
 			return;
 		}		
 		var username=$("#hardwarecontent #divlogin #username").val();
@@ -428,7 +428,7 @@ function AddHardware()
 				RefreshHardwareTable();
 			 },
 			 error: function(){
-					ShowNotify('Problem adding hardware!', 2500, true);
+					ShowNotify($.i18n('Problem adding hardware!'), 2500, true);
 			 }     
 		});
 	}
@@ -441,6 +441,7 @@ function EditRFXCOMMode(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 	htmlcontent='<p><center><h2>Device: ' + name + '</h2></center></p>\n';
 	htmlcontent+=$('#hardwaremode').html();
 	$('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
+	$('#hardwarecontent').i18n();
 
 	$('#hardwarecontent #submitbutton').click(function (e) {
 		e.preventDefault();
@@ -510,6 +511,7 @@ function EditRego6XXType(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 	htmlcontent='<p><center><h2>Device: ' + name + '</h2></center></p>\n';
 	htmlcontent+=$('#rego6xxtypeedit').html();
 	$('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
+	$('#hardwarecontent').i18n();
 
 	$('#hardwarecontent #submitbuttonrego').click(function (e) {
 		e.preventDefault();
@@ -725,6 +727,7 @@ function ShowHardware()
 	var htmlcontent = "";
 	htmlcontent+=$('#hardwaremain').html();
 	$('#hardwarecontent').html(htmlcontent);
+	$('#hardwarecontent').i18n();
 	oTable = $('#hardwaretable').dataTable( {
 	  "sDom": '<"H"lfrC>t<"F"ip>',
 	  "oTableTools": {

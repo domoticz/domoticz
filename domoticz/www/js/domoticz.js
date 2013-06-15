@@ -29,7 +29,7 @@ function GetBackbuttonHTMLTable(backfunction)
         '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
         '\t<tr>\n' +
         '\t  <td>\n' +
-        '\t    <a class="btnstylerev" onclick="' + backfunction + '()">Back</a>\n' +
+        '\t    <a class="btnstylerev" onclick="' + backfunction + '()" data-i18n="Back">Back</a>\n' +
         '\t  </td>\n' +
         '\t</tr>\n' +
         '\t</table>\n' +
@@ -43,10 +43,10 @@ function GetBackbuttonTransferHTMLTable(backfunction, id)
         '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
         '\t<tr>\n' +
         '\t  <td align="left">\n' +
-        '\t    <a class="btnstylerev" onclick="' + backfunction + '()">Back</a>\n' +
+        '\t    <a class="btnstylerev" onclick="' + backfunction + '()" data-i18n="Back">Back</a>\n' +
         '\t  </td>\n' +
         '\t  <td align="right">\n' +
-        '\t    <a class="btnstyle" onclick="TransferSensor(' + id + ')">Transfer</a>\n' +
+        '\t    <a class="btnstyle" onclick="TransferSensor(' + id + ')" data-i18n="Transfer">Transfer</a>\n' +
         '\t  </td>\n' +
         '\t</tr>\n' +
         '\t</table>\n' +
@@ -67,11 +67,11 @@ function SwitchLight(idx,switchcmd, refreshfunction)
 {
 	if (window.my_config.userrights==0) {
         HideNotify();
-		ShowNotify('You do not have permission to do that!', 2500, true);
+		ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
 		return;
 	}
   clearInterval($.myglobals.refreshTimer);
-  ShowNotify('Switching ' + switchcmd);
+  ShowNotify($.i18n('Switching') + ' ' + switchcmd);
  
   $.ajax({
      url: "json.htm?type=command&param=switchlight&idx=" + idx + "&switchcmd=" + switchcmd + "&level=0",
@@ -86,7 +86,7 @@ function SwitchLight(idx,switchcmd, refreshfunction)
      },
      error: function(){
         HideNotify();
-        alert('Problem sending switch command');
+        alert($.i18n('Problem sending switch command'));
      }     
   });
 }
@@ -95,12 +95,12 @@ function SwitchScene(idx,switchcmd, refreshfunction)
 {
 	if (window.my_config.userrights==0) {
         HideNotify();
-		ShowNotify('You do not have permission to do that!', 2500, true);
+		ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
 		return;
 	}
 
   clearInterval($.myglobals.refreshTimer);
-  ShowNotify('Switching ' + switchcmd);
+  ShowNotify($.i18n('Switching') + ' ' + switchcmd);
  
   $.ajax({
      url: "json.htm?type=command&param=switchscene&idx=" + idx + "&switchcmd=" + switchcmd,
@@ -115,7 +115,7 @@ function SwitchScene(idx,switchcmd, refreshfunction)
      },
      error: function(){
         HideNotify();
-        alert('Problem sending switch command');
+        alert($.i18n('Problem sending switch command'));
      }     
   });
 }
@@ -124,12 +124,12 @@ function ResetSecurityStatus(idx,switchcmd, refreshfunction)
 {
 	if (window.my_config.userrights==0) {
         HideNotify();
-		ShowNotify('You do not have permission to do that!', 2500, true);
+		ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
 		return;
 	}
 
   clearInterval($.myglobals.refreshTimer);
-  ShowNotify('Switching ' + switchcmd);
+  ShowNotify($.i18n('Switching') + ' ' + switchcmd);
  
   $.ajax({
      url: "json.htm?type=command&param=resetsecuritystatus&idx=" + idx + "&switchcmd=" + switchcmd,
@@ -144,7 +144,7 @@ function ResetSecurityStatus(idx,switchcmd, refreshfunction)
      },
      error: function(){
         HideNotify();
-        alert('Problem sending switch command');
+        alert($.i18n('Problem sending switch command'));
      }     
   });
 }
@@ -216,11 +216,11 @@ function ClearLightLog()
 {
 	if (window.my_config.userrights!=2) {
         HideNotify();
-		ShowNotify('You do not have permission to do that!', 2500, true);
+		ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
 		return;
 	}
 	var bValid = false;
-	bValid=(confirm("Are you sure to delete the Log?\n\nThis action can not be undone!!")==true);
+	bValid=(confirm($.i18n("Are you sure to delete the Log?\n\nThis action can not be undone!"))==true);
 	if (bValid == false)
 		return;
 	$.ajax({
@@ -232,7 +232,7 @@ function ClearLightLog()
 		 },
 		 error: function(){
 				HideNotify();
-				ShowNotify('Problem clearing the Log!', 2500, true);
+				ShowNotify($.i18n('Problem clearing the Log!'), 2500, true);
 		 }     
 	});
 }
@@ -249,6 +249,7 @@ function ShowLightLog(id,name,content,backfunction)
 	htmlcontent='<p><h2>Name: ' + name + '</h2></p>\n';
 	htmlcontent+=$('#lightlog').html();
 	$($.content).html(GetBackbuttonHTMLTable(backfunction)+htmlcontent);
+	$($.content).i18n();
 	$.LogChart = $($.content + ' #lightgraph');
 	$.LogChart.highcharts({
 		chart: {
@@ -349,7 +350,7 @@ function GetNotificationSettings()
 		nsettings.value=$($.content + " #notificationparamstable #value").val();
 		if ((nsettings.value=="")||(isNaN(nsettings.value)))
 		{
-			ShowNotify('Please correct the Value!', 2500, true);
+			ShowNotify($.i18n('Please correct the Value!'), 2500, true);
 			return null;
 		}
 	}
@@ -359,7 +360,7 @@ function GetNotificationSettings()
 function ClearNotifications()
 {
 	var bValid = false;
-	bValid=(confirm("Are you sure to delete ALL notifications?\n\nThis action can not be undone!!")==true);
+	bValid=(confirm($.i18n("Are you sure to delete ALL notifications?\n\nThis action can not be undone!!"))==true);
 	if (bValid == false)
 		return;
 
@@ -372,7 +373,7 @@ function ClearNotifications()
 		 },
 		 error: function(){
 				HideNotify();
-				ShowNotify('Problem clearing notifications!', 2500, true);
+				ShowNotify($.i18n('Problem clearing notifications!'), 2500, true);
 		 }     
 	});
 }
@@ -396,7 +397,7 @@ function UpdateNotification(idx)
 		 },
 		 error: function(){
 				HideNotify();
-				ShowNotify('Problem updating notification!', 2500, true);
+				ShowNotify($.i18n('Problem updating notification!'), 2500, true);
 		 }     
 	});
 }
@@ -404,7 +405,7 @@ function UpdateNotification(idx)
 function DeleteNotification(idx)
 {
 	var bValid = false;
-	bValid=(confirm("Are you sure to delete this notification?\n\nThis action can not be undone...")==true);
+	bValid=(confirm($.i18n("Are you sure to delete this notification?\n\nThis action can not be undone..."))==true);
 	if (bValid == false)
 		return;
 		
@@ -417,7 +418,7 @@ function DeleteNotification(idx)
 		 },
 		 error: function(){
 				HideNotify();
-				ShowNotify('Problem deleting notification!', 2500, true);
+				ShowNotify($.i18n('Problem deleting notification!'), 2500, true);
 		 }     
 	});
 }
@@ -427,7 +428,7 @@ function AddNotification()
 	var nsettings=GetNotificationSettings();
 	if (nsettings==null)
 	{
-	alert("Invalid Notification Settings");
+	alert($.i18n("Invalid Notification Settings"));
 		return;
 	}
 	$.ajax({
@@ -440,14 +441,14 @@ function AddNotification()
 		success: function(data) {
 			if (data.status != "OK") {
 				HideNotify();
-				ShowNotify('Problem adding notification!<br>Duplicate Value?', 2500, true);
+				ShowNotify($.i18n('Problem adding notification!<br>Duplicate Value?'), 2500, true);
 				return;
 			}
 			RefreshNotificationTable($.devIdx);
 		},
 		error: function(){
 			HideNotify();
-			ShowNotify('Problem adding notification!', 2500, true);
+			ShowNotify($.i18n('Problem adding notification!'), 2500, true);
 		}     
 	});
 }
@@ -694,6 +695,7 @@ function ShowNotifications(id,name,content,backfunction)
 				htmlcontent='<p><h2>Name: ' + name + '</h2></p><br>\n';
 				htmlcontent+=$('#editnotifications').html();
 				$($.content).html(GetBackbuttonHTMLTable(backfunction)+htmlcontent);
+				$($.content).i18n();
 				
 				//add types to combobox
 				$.each($.NTypeStr, function(i,item){
@@ -727,7 +729,7 @@ function ShowNotifications(id,name,content,backfunction)
 		 },
 		 error: function(){
 				HideNotify();
-				ShowNotify('Problem clearing notifications!', 2500, true);
+				ShowNotify($.i18n('Problem clearing notifications!'), 2500, true);
 		 }     
 	});
 }
@@ -911,7 +913,7 @@ function SetDimValue(idx, value)
 
 	if (window.my_config.userrights==0) {
         HideNotify();
-		ShowNotify('You do not have permission to do that!', 2500, true);
+		ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
 		return;
 	}
 
@@ -1036,12 +1038,12 @@ function chartPointClick(event, retChart) {
 	}
 	if (window.my_config.userrights!=2) {
         HideNotify();
-		ShowNotify('You do not have permission to do that!', 2500, true);
+		ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
 		return;
 	}
 	var dateString=Highcharts.dateFormat('%Y-%m-%d', event.point.x);
 	var bValid = false;
-	bValid=(confirm("Are you sure to remove this value at ?:\n\nDate: " + dateString + " \nValue: " + event.point.y)==true);
+	bValid=(confirm($.i18n("Are you sure to remove this value at") + " ?:\n\nDate: " + dateString + " \nValue: " + event.point.y)==true);
 	if (bValid == false) {
 		return;
 	}
@@ -1054,11 +1056,11 @@ function chartPointClick(event, retChart) {
 				retChart($.devIdx,$.devName);
 			}
 			else {
-				ShowNotify('Problem deleting data point!', 2500, true);
+				ShowNotify($.i18n('Problem deleting data point!'), 2500, true);
 			}
 		 },
 		 error: function(){
-			ShowNotify('Problem deleting data point!', 2500, true);
+			ShowNotify($.i18n('Problem deleting data point!'), 2500, true);
 		 }     
 	}); 	
 }
@@ -1069,12 +1071,12 @@ function chartPointClickEx(event, retChart) {
 	}
 	if (window.my_config.userrights!=2) {
         HideNotify();
-		ShowNotify('You do not have permission to do that!', 2500, true);
+		ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
 		return;
 	}
 	var dateString=Highcharts.dateFormat('%Y-%m-%d', event.point.x);
 	var bValid = false;
-	bValid=(confirm("Are you sure to remove this value at ?:\n\nDate: " + dateString + " \nValue: " + event.point.y)==true);
+	bValid=(confirm($.i18n("Are you sure to remove this value at") + " ?:\n\nDate: " + dateString + " \nValue: " + event.point.y)==true);
 	if (bValid == false) {
 		return;
 	}
@@ -1087,11 +1089,11 @@ function chartPointClickEx(event, retChart) {
 				retChart($.devIdx,$.devName,$.devSwitchType);
 			}
 			else {
-				ShowNotify('Problem deleting data point!', 2500, true);
+				ShowNotify($.i18n('Problem deleting data point!'), 2500, true);
 			}
 		 },
 		 error: function(){
-			ShowNotify('Problem deleting data point!', 2500, true);
+			ShowNotify($.i18n('Problem deleting data point!'), 2500, true);
 		 }     
 	}); 	
 }
@@ -1166,6 +1168,12 @@ function EnableDisableTabs()
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {
+			if (typeof data.language != 'undefined') {
+				SetLanguage(data.language);
+			}
+			else {
+				SetLanguage('en');
+			}
 			if (data.result["EnableTabLights"]==0) {
 				$("#mLightSwitches").hide();
 			}
@@ -1199,8 +1207,17 @@ function EnableDisableTabs()
 		 },
 		 error: function(){
 			if (showdialog) {
-				alert("Error communicating to server!");
+				alert($.i18n("Error communicating to server!"));
 			}
 		 }     
 	});
+}
+
+function SetLanguage(lng)
+{
+	$.i18n.debug = true;
+	var i18n = $.i18n({
+			locale: lng
+		});
+	$(".nav").i18n();
 }

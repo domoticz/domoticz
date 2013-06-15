@@ -46,7 +46,7 @@
 					<a class="btnstyle3-dis" id="devicedelete" >Delete</a>
 				</td>
 				<td align="right">
-					<a class="btnstyle3" onclick="ClearDevices();">Clear</a>
+					<a class="btnstyle3" onclick="ClearDevices();" data-i18n="Clear">Clear</a>
 				</td>
 			</tr>
 		</table>
@@ -82,7 +82,7 @@
 					<a class="btnstyle3-dis" id="timerdelete" >Delete</a>
 				</td>
 				<td align="right">
-					<a class="btnstyle3" onclick="ClearTimers();">Clear</a>
+					<a class="btnstyle3" onclick="ClearTimers();" data-i18n="Clear">Clear</a>
 				</td>
 			</tr>
 		</table>
@@ -186,7 +186,7 @@ function RemoveCode()
 
 function LearnCode()
 {
-  ShowNotify('Press button on Remote...');
+  ShowNotify($.i18n('Press button on Remote...'));
   
   setTimeout(function() {
     var bHaveFoundDevice = false;
@@ -233,7 +233,7 @@ function LearnCode()
 				});
       }
       else {
-         ShowNotify('Timeout...<br>Please try again!', 2500, true);
+         ShowNotify($.i18n('Timeout...<br>Please try again!'), 2500, true);
       }
     }, 200);
 	}, 600);
@@ -247,7 +247,7 @@ function AddScene()
 function DeleteScene()
 {
 	var bValid = false;
-	bValid=(confirm("Are you sure to remove this Scene?")==true);
+	bValid=(confirm($.i18n("Are you sure to remove this Scene?"))==true);
 	if ( bValid ) {
 		$.ajax({
 			 url: "json.htm?type=deletescene&idx=" + $.devIdx,
@@ -280,7 +280,7 @@ function AddDevice()
 {
 	var DeviceIdx=$("#scenecontent #combodevice option:selected").val();
 	if (typeof DeviceIdx == 'undefined') {
-		alert('No Device Selected!');
+		alert($.i18n('No Device Selected!'));
 		return ;
 	}
 	$.ajax({
@@ -292,12 +292,12 @@ function AddDevice()
 				RefreshDeviceTable($.devIdx);
 			}
 			else {
-				ShowNotify('Problem adding Device!', 2500, true);
+				ShowNotify($.i18n('Problem adding Device!'), 2500, true);
 			}
 		 },
 		 error: function(){
 				HideNotify();
-				ShowNotify('Problem adding Device!', 2500, true);
+				ShowNotify($.i18n('Problem adding Device!'), 2500, true);
 		 }     
 	});
 }
@@ -305,7 +305,7 @@ function AddDevice()
 function ClearDevices()
 {
 	var bValid = false;
-	bValid=(confirm("Are you sure to delete ALL Devices?\n\nThis action can not be undone!!")==true);
+	bValid=(confirm($.i18n("Are you sure to delete ALL Devices?\n\nThis action can not be undone!"))==true);
 	if (bValid == false)
 		return;
 	$.ajax({
@@ -322,7 +322,7 @@ function MakeFavorite(id,isfavorite)
 {
 	if (window.my_config.userrights!=2) {
         HideNotify();
-		ShowNotify('You do not have permission to do that!', 2500, true);
+		ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
 		return;
 	}
 
@@ -403,7 +403,7 @@ function RefreshDeviceTable(idx)
 function DeleteDevice(idx)
 {
 	var bValid = false;
-	bValid=(confirm("Are you sure to delete this Device?\n\nThis action can not be undone...")==true);
+	bValid=(confirm($.i18n("Are you sure to delete this Device?\n\nThis action can not be undone..."))==true);
 	if (bValid == false)
 		return;
 
@@ -427,6 +427,7 @@ function EditSceneDevice(idx,name,havecode)
   var htmlcontent = '';
   htmlcontent+=$('#editscene').html();
   $('#scenecontent').html(GetBackbuttonHTMLTable('ShowScenes')+htmlcontent);
+  $('#scenecontent').i18n();
  
   oTable = $('#scenecontent #devicestable').dataTable( {
                   "sDom": '<"H"frC>t<"F"i>',
@@ -510,7 +511,7 @@ function EnableDisableDays(TypeStr, bDisabled)
 function ClearTimers()
 {
 	var bValid = false;
-	bValid=(confirm("Are you sure to delete ALL timers?\n\nThis action can not be undone!!")==true);
+	bValid=(confirm($.i18n("Are you sure to delete ALL timers?\n\nThis action can not be undone!"))==true);
 	if (bValid == false)
 		return;
 	$.ajax({
@@ -522,7 +523,7 @@ function ClearTimers()
 		 },
 		 error: function(){
 				HideNotify();
-				ShowNotify('Problem clearing timers!', 2500, true);
+				ShowNotify($.i18n('Problem clearing timers!'), 2500, true);
 		 }     
 	});
 }
@@ -530,7 +531,7 @@ function ClearTimers()
 function DeleteTimer(idx)
 {
 	var bValid = false;
-	bValid=(confirm("Are you sure to delete this timers?\n\nThis action can not be undone...")==true);
+	bValid=(confirm($.i18n("Are you sure to delete this timers?\n\nThis action can not be undone..."))==true);
 	if (bValid == false)
 		return;
 		
@@ -543,7 +544,7 @@ function DeleteTimer(idx)
 		 },
 		 error: function(){
 				HideNotify();
-				ShowNotify('Problem deleting timer!', 2500, true);
+				ShowNotify($.i18n('Problem deleting timer!'), 2500, true);
 		 }     
 	});
 }
@@ -597,7 +598,7 @@ function UpdateTimer(idx)
 	var tsettings=GetTimerSettings();
 	if (tsettings.days==0)
 	{
-		ShowNotify('Please select some days!', 2500, true);
+		ShowNotify($.i18n('Please select some days!'), 2500, true);
 		return;
 	}
 	$.ajax({
@@ -616,7 +617,7 @@ function UpdateTimer(idx)
 		 },
 		 error: function(){
 				HideNotify();
-				ShowNotify('Problem updating timer!', 2500, true);
+				ShowNotify($.i18n('Problem updating timer!'), 2500, true);
 		 }     
 	});
 }
@@ -626,7 +627,7 @@ function AddTimer()
 	var tsettings=GetTimerSettings();
 	if (tsettings.days==0)
 	{
-		ShowNotify('Please select some days!', 2500, true);
+		ShowNotify($.i18n('Please select some days!'), 2500, true);
 		return;
 	}
 	$.ajax({
@@ -645,7 +646,7 @@ function AddTimer()
 		 },
 		 error: function(){
 				HideNotify();
-				ShowNotify('Problem adding timer!', 2500, true);
+				ShowNotify($.i18n('Problem adding timer!'), 2500, true);
 		 }     
 	});
 }
@@ -830,6 +831,7 @@ function ShowTimers(id,name)
   
   htmlcontent+=$('#edittimers').html();
   $('#scenecontent').html(GetBackbuttonHTMLTable('ShowScenes')+htmlcontent);
+  $('#scenecontent').i18n();
   oTable = $('#timertable').dataTable( {
                   "sDom": '<"H"lfrC>t<"F"ip>',
                   "oTableTools": {
@@ -956,7 +958,7 @@ function ShowScenes()
         '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
         '\t<tr>\n' +
         '\t  <td align="right">\n' +
-        '\t    <a class="btnstyle" onclick="AddScene();">Add Scene</a>\n' +
+        '\t    <a class="btnstyle" onclick="AddScene();" data-i18n="Add Scene">Add Scene</a>\n' +
         '\t  </td>\n' +
         '\t</tr>\n' +
         '\t</table>\n';
@@ -1007,20 +1009,20 @@ function ShowScenes()
 								'\t      <td>';
           if (item.Favorite == 0) {
             xhtm+=      
-                  '<img src="images/nofavorite.png" title="Add to Dashboard" onclick="MakeFavorite(' + item.idx + ',1);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+                  '<img src="images/nofavorite.png" title="' + $.i18n('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
           else {
             xhtm+=      
-                  '<img src="images/favorite.png" title="Remove from Dashboard" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+                  '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
           if (window.my_config.userrights==2) {
-				xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + item.Name + '\',' + item.HardwareID + ');">Edit</a> ';
+				xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + item.Name + '\',' + item.HardwareID + ');" data-i18n="Edit">Edit</a> ';
 				if (bAddTimer == true) {
 					if (item.Timers == "true") {
-						xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';
+						xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Timers">Timers</a> ';
 					}
 					else {
-						xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');">Timers</a> ';
+						xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Timers">Timers</a> ';
 					}
 				}
 		  }
@@ -1045,6 +1047,7 @@ function ShowScenes()
     htmlcontent='<h2>No Scenes defined yet...</h2>';
   }
   $('#scenecontent').html(tophtm+htmlcontent);
+  $('#scenecontent').i18n();
 
 	if (window.my_config.userrights==2) {
 	  if ($.myglobals.ismobile==false) {

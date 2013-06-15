@@ -104,7 +104,7 @@ function MakeFavorite(id,isfavorite)
 {
 	if (window.my_config.userrights!=2) {
         HideNotify();
-		ShowNotify('You do not have permission to do that!', 2500, true);
+		ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
 		return;
 	}
 
@@ -138,7 +138,7 @@ function EditMeterDevice(idx,name, switchtype)
 
 function AddUtilityDevice()
 {
-  alert('Please use the devices tab for this.');
+  alert($.i18n('Please use the devices tab for this.'));
 }
 
 function AddDataToUtilityChart(data,chart,switchtype)
@@ -607,6 +607,7 @@ function ShowCurrentLog(id,name,switchtype)
   htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
   htmlcontent+=$('#currentlog').html();
   $('#utilitycontent').html(GetBackbuttonHTMLTable('ShowUtilities')+htmlcontent);
+  $('#utilitycontent').i18n();
   
   $.DayChart = new Highcharts.Chart({
       chart: {
@@ -866,6 +867,7 @@ function ShowAirQualityLog(id,name)
   htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
   htmlcontent+=$('#airlog').html();
   $('#utilitycontent').html(GetBackbuttonHTMLTable('ShowUtilities')+htmlcontent);
+  $('#utilitycontent').i18n();
 
   $.DayChart = new Highcharts.Chart({
       chart: {
@@ -1317,6 +1319,7 @@ function ShowUsageLog(id,name)
   htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
   htmlcontent+=$('#usagelog').html();
   $('#utilitycontent').html(GetBackbuttonHTMLTable('ShowUtilities')+htmlcontent);
+  $('#utilitycontent').i18n();
 
   $.DayChart = new Highcharts.Chart({
       chart: {
@@ -1604,6 +1607,7 @@ function ShowCounterLog(id,name,switchtype)
   htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
   htmlcontent+=$('#counterlog').html();
   $('#utilitycontent').html(GetBackbuttonHTMLTable('ShowUtilities')+htmlcontent);
+  $('#utilitycontent').i18n();
   
   $.DayChart = new Highcharts.Chart({
       chart: {
@@ -1896,6 +1900,7 @@ function ShowGenericLog(id,name,switchtype)
   htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
   htmlcontent+=$('#genericlog').html();
   $('#utilitycontent').html(GetBackbuttonHTMLTable('ShowUtilities')+htmlcontent);
+  $('#utilitycontent').i18n();
   
   $.DayChart = new Highcharts.Chart({
       chart: {
@@ -2185,6 +2190,7 @@ function ShowSmartLog(id,name,switchtype)
   htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
   htmlcontent+=$('#smartlog').html();
   $('#utilitycontent').html(GetBackbuttonHTMLTable('ShowUtilities')+htmlcontent);
+  $('#utilitycontent').i18n();
   
   $.DayChart = new Highcharts.Chart({
       chart: {
@@ -2587,7 +2593,7 @@ function ShowUtilities()
         '\t<tr>\n' +
 		'\t  <td align="left"><div id="timesun" /></td>\n' +
         '\t  <td align="right">\n' +
-        '\t    <a class="btnstyle" onclick="AddUtilityDevice();">Add Sensor</a>\n' +
+        '\t    <a class="btnstyle" onclick="AddUtilityDevice();" data-i18n="Add Sensor">Add Sensor</a>\n' +
         '\t  </td>\n' +
         '\t</tr>\n' +
         '\t</table>\n';
@@ -2685,68 +2691,68 @@ function ShowUtilities()
                 '\t      <td>';
           if (item.Favorite == 0) {
             xhtm+=      
-                  '<img src="images/nofavorite.png" title="Add to Dashboard" onclick="MakeFavorite(' + item.idx + ',1);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+                  '<img src="images/nofavorite.png" title="' + $.i18n('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
           else {
             xhtm+=      
-                  '<img src="images/favorite.png" title="Remove from Dashboard" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+                  '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
 
           if (typeof item.Counter != 'undefined') {
 			if ((item.Type == "P1 Smart Meter")&&(item.SubType=="Energy")) {
-				xhtm+='<a class="btnsmall" onclick="ShowSmartLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">Log</a> ';
+				xhtm+='<a class="btnsmall" onclick="ShowSmartLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
 			}
 			else if ((item.Type == "Value")&&(item.SubType=="Rego 6XX")) {
-				xhtm+='<a class="btnsmall" onclick="ShowGenericLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">Log</a> ';
+				xhtm+='<a class="btnsmall" onclick="ShowGenericLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
 			}
 			else {
-				xhtm+='<a class="btnsmall" onclick="ShowCounterLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">Log</a> ';
+				xhtm+='<a class="btnsmall" onclick="ShowCounterLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
 			}
 			if (window.my_config.userrights==2) {
 				if (item.Type == "P1 Smart Meter") {
 					xhtm+=      
-								'<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+								'<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 				}
 				else {
 					xhtm+=      
-								'<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +');">Edit</a> ';
+								'<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +');" data-i18n="Edit">Edit</a> ';
 				}
 			}
           }
 		  else if (item.Type == "Air Quality") {
-			xhtm+='<a class="btnsmall" onclick="ShowAirQualityLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
+			xhtm+='<a class="btnsmall" onclick="ShowAirQualityLog(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
 			if (window.my_config.userrights==2) {
-				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 			}
 		  }
 		  else if (item.Type == "Usage") {
-			xhtm+='<a class="btnsmall" onclick="ShowUsageLog(' + item.idx + ',\'' + item.Name + '\');">Log</a> ';
+			xhtm+='<a class="btnsmall" onclick="ShowUsageLog(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
 			if (window.my_config.userrights==2) {
-				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 			}
 		  }
           else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
-			xhtm+='<a class="btnsmall" onclick="ShowCurrentLog(' + item.idx + ',\'' + item.Name + '\', ' + item.displaytype + ');">Log</a> ';
+			xhtm+='<a class="btnsmall" onclick="ShowCurrentLog(' + item.idx + ',\'' + item.Name + '\', ' + item.displaytype + ');" data-i18n="Log">Log</a> ';
 			if (window.my_config.userrights==2) {
-				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 			}
           }
           else if (item.Type == "Energy") {
-				xhtm+='<a class="btnsmall" onclick="ShowCounterLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">Log</a> ';
+				xhtm+='<a class="btnsmall" onclick="ShowCounterLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
 				if (window.my_config.userrights==2) {
-					xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+					xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 				}
           }
           else {
 			if (window.my_config.userrights==2) {
-				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');">Edit</a> ';
+				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 			}
 		  }
 		  if (window.my_config.userrights==2) {              
 			  if (item.Notifications == "true")
-				xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#utilitycontent\', \'ShowUtilities\');">Notifications</a>';
+				xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#utilitycontent\', \'ShowUtilities\');" data-i18n="Notifications">Notifications</a>';
 			  else
-				xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#utilitycontent\', \'ShowUtilities\');">Notifications</a>';
+				xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#utilitycontent\', \'ShowUtilities\');" data-i18n="Notifications">Notifications</a>';
 		  }
           xhtm+=      
                 '</td>\n' +
@@ -2769,6 +2775,7 @@ function ShowUtilities()
   }
   $('#modal').hide();
   $('#utilitycontent').html(tophtm+htmlcontent);
+  $('#utilitycontent').i18n();
 
 	if (window.my_config.userrights==2) {
 		if ($.myglobals.ismobile==false) {
@@ -2830,7 +2837,7 @@ $(document).ready(function() {
               },
               "Remove Device": function() {
                   var bValid = false;
-                  bValid=(confirm("Are you sure to remove this Device?")==true);
+                  bValid=(confirm($.i18n("Are you sure to remove this Device?"))==true);
                   if ( bValid ) {
                       $( this ).dialog( "close" );
                       $.ajax({
@@ -2889,7 +2896,7 @@ $(document).ready(function() {
               },
               "Remove Device": function() {
                   var bValid = false;
-                  bValid=(confirm("Are you sure to remove this Device?")==true);
+                  bValid=(confirm($.i18n("Are you sure to remove this Device?"))==true);
                   if ( bValid ) {
                       $( this ).dialog( "close" );
                       $.ajax({

@@ -30,13 +30,13 @@
 		<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
 		<tr>
 			<td align="Left" style="width:100px">
-				<a id="mUsed" class="btnstyle3" onclick="ShowDevices('used');">Used</a>
+				<a id="mUsed" class="btnstyle3" onclick="ShowDevices('used');" data-i18n="Used">Used</a>
 			</td>
 			<td align="center">
-				<a id="mAll" class="btnstyle3-sel" onclick="ShowDevices('all');">All Devices</a>
+				<a id="mAll" class="btnstyle3-sel" onclick="ShowDevices('all');" data-i18n="All Devices">All Devices</a>
 			</td>
 			<td align="right" style="width:100px">
-				<a id="mUnknown" class="btnstyle3" onclick="ShowDevices('unknown');">Not Used</a>
+				<a id="mUnknown" class="btnstyle3" onclick="ShowDevices('unknown');" data-i18n="Not Used">Not Used</a>
 			</td>
 		</tr>
 		</table>
@@ -46,17 +46,17 @@
 						<tr valign="middle">
 								<th width="60"><img src="images/switch.png" title="Invert selection" onclick="InvertCheck()"/>&nbsp;<img src="images/delete.png" title="Delete selected device(s)" onclick="DeleteMultipleDevices()"/></th>	
 								<th width="30" align="left">Idx</th>
-								<th width="100" align="left">Hardware</th>
+								<th width="100" align="left" data-i18n="Hardware">Hardware</th>
 								<th width="70" align="left">ID</th>
 								<th width="40" align="left">Unit</th>
-								<th width="200" align="left">Name</th>
-								<th width="110">Type</th>
-								<th width="80">SubType</th>
-								<th>Data</th>
+								<th width="200" align="left" data-i18n="Name">Name</th>
+								<th width="110" data-i18n="Type">Type</th>
+								<th width="80" data-i18n="SubType">SubType</th>
+								<th data-i18n="Data">Data</th>
 								<th width="30"><img src="images/air_signal.png" title="RF Signal Level"></img></th>
 								<th width="30"><img src="images/battery.png" title="Battery Level"></img></th>
 								<th width="60"></th>
-								<th width="160" align="left">Last Seen</th>
+								<th width="160" align="left" data-i18n="Last Seen">Last Seen</th>
 						</tr>
 				</thead>
 		</table>
@@ -86,7 +86,7 @@ function AddLightDevice(idx)
 
 function RemoveDevice(idx)
 {
-  if (confirm("Are you sure to remove this Device from your used devices?")==false) {
+  if (confirm($.i18n("Are you sure to remove this Device from your used devices?"))==false) {
     return;
   }
     $.ajax({
@@ -109,10 +109,10 @@ function DeleteMultipleDevices()
 {
 	var totalselected=$('#devices input:checkbox:checked').length;
 	if (totalselected==0) {
-		alert('No Devices selected to Delete!');
+		alert($.i18n('No Devices selected to Delete!'));
 		return;
 	}
-	if (confirm("Are you sure you want to delete the selected Devices?")==false) {
+	if (confirm($.i18n("Are you sure you want to delete the selected Devices?"))==false) {
 		return;
 	}
     var delCount = 0;
@@ -126,7 +126,7 @@ function DeleteMultipleDevices()
 				}
 		});
 	});
-	alert(delCount+" Devices deleted.");
+	alert(delCount+" " + $.i18n("Devices deleted."));
 	ShowDevices();
     
 }
@@ -192,6 +192,7 @@ function ShowDevices(filter)
   var htmlcontent = '';
   htmlcontent+=$('#devicestable').html();
   $('#devicescontent').html(htmlcontent);
+  $('#devicescontent').i18n();
 
 	$('#devicescontent #devices').dataTable( {
 		"sDom": '<"H"lfrC>t<"F"ip>',
@@ -274,7 +275,7 @@ function ShowDevices(filter)
 							}
           }
           if (item.Used!=0) {
-            itemSubIcons+='<img src="images/remove.png" title="Remove Device" onclick="RemoveDevice(' + item.idx +')">';
+            itemSubIcons+='<img src="images/remove.png" title="' + $.i18n('Remove Device') +'" onclick="RemoveDevice(' + item.idx +')">';
           }
           else {
 						if (
@@ -282,10 +283,10 @@ function ShowDevices(filter)
 								(item.Type.indexOf("Security")==0)
 							 )
 						{
-							itemSubIcons+='<img src="images/add.png" title="Add Light/Switch Device" onclick="AddLightDevice(' + item.idx +')">';
+							itemSubIcons+='<img src="images/add.png" title="' + $.i18n('Add Light/Switch Device') + '" onclick="AddLightDevice(' + item.idx +')">';
 						}
 						else {
-							itemSubIcons+='<img src="images/add.png" title="Add Device" onclick="AddDevice(' + item.idx +')">';
+							itemSubIcons+='<img src="images/add.png" title="' + $.i18n('Add Device') +'" onclick="AddDevice(' + item.idx +')">';
 						}
           }
           if (
@@ -293,7 +294,7 @@ function ShowDevices(filter)
 							(item.Type.indexOf("Security")==0)
 						 )
           {
-            itemSubIcons+='&nbsp;<img src="images/log.png" title="Log" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#devicescontent\', \'ShowDevices\');">';
+            itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#devicescontent\', \'ShowDevices\');">';
           }
           else
 						itemSubIcons+='&nbsp;<img src="images/empty16.png">';
@@ -306,7 +307,7 @@ function ShowDevices(filter)
 						BatteryLevel="-";
           }
           else if (BatteryLevel=="0") {
-						BatteryLevel="Low";
+						BatteryLevel=$.i18n("Low");
           }
           var addId = oTable.fnAddData([
 					  itemChecker + "&nbsp;&nbsp;" + itemImage,
@@ -404,7 +405,7 @@ $(document).ready(function() {
                       {
 												var MainDeviceIdx=$("#dialog-addlightdevice #combosubdevice option:selected").val();
 												if (typeof MainDeviceIdx == 'undefined') {
-													alert('No Main Device Selected!');
+													alert($.i18n('No Main Device Selected!'));
 													return;
 												}
                       }

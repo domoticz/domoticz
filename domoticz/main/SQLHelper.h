@@ -137,6 +137,7 @@ public:
 	void UpdatePreferencesVar(const char *Key, const int nValue, const char* sValue);
 	bool GetPreferencesVar(const char *Key, int &nValue, std::string &sValue);
 	bool GetPreferencesVar(const char *Key, int &nValue);
+	bool GetPreferencesVar(const char *Key, std::string &sValue);
 
 	void Set5MinuteHistoryDays(const int Days);
 
