@@ -23,8 +23,8 @@ extern std::string szStartupFolder;
 extern bool bIsRaspberryPi;
 
 struct _tGuiLanguage {
-	char* szShort;
-	char* szLong;
+	const char* szShort;
+	const char* szLong;
 };
 
 static const _tGuiLanguage guiLanguage[]=
