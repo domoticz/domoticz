@@ -1922,9 +1922,11 @@ function ShowFavorites()
 
 	if (htmlcontent == "")
 	{
-    htmlcontent=
-      '<h2>No favorite devices defined ... (Or communication Lost!)</h2><br>\n' +
-      'If this is your first time here, please setup your <a href="javascript:SwitchLayout(\'Hardware\')">hardware</a>, and add some <a href="javascript:SwitchLayout(\'Devices\')">devices</a>.';
+		htmlcontent='<h2>' + 
+			$.i18n('No favorite devices defined ... (Or communication Lost!)') + 
+			'</h2><br>\n' +
+			$.i18n('If this is your first time here, please setup your') + ' <a href="javascript:SwitchLayout(\'Hardware\')" data-idx="Hardware">Hardware</a>, ' +
+			$.i18n('and add some') + ' <a href="javascript:SwitchLayout(\'Devices\')" data-idx="Devices">Devices</a>.';
 	}
 	else {
 		htmlcontent+="<br>";
@@ -1932,6 +1934,7 @@ function ShowFavorites()
 	
 	var suntext='<div id="timesun" /><br>\n';
 	$('#dashcontent').html(suntext+htmlcontent);
+	$('#dashcontent').i18n();
 
 	RefreshTimeAndSun();
 	
