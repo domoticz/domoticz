@@ -1339,7 +1339,7 @@ function ShowFavorites()
 								status+='<br>' + item.Barometer + ' hPa';
 							}
 							if (typeof item.ForecastStr != 'undefined') {
-								status+=', ' $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
+								status+=', ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
 							}
 							if (typeof item.Altitude != 'undefined') {
 								status+=', Altitude: ' + item.Altitude + ' meter';
@@ -1594,7 +1594,7 @@ function ShowFavorites()
 								xhtm+='baro48.png" height="40"></td>\n' +
 								'\t      <td id="status">' + item.Barometer + ' hPa';
 								if (typeof item.ForecastStr != 'undefined') {
-									xhtm+=', ' $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
+									xhtm+=', ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
 								}
 								if (typeof item.Altitude != 'undefined') {
 									xhtm+=', Altitude: ' + item.Altitude + ' meter';
