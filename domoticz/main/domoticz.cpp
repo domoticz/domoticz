@@ -10,7 +10,7 @@
 #include <iostream>
 #include "CmdLine.h"
 #include "Logger.h"
-#include "appversion.h"
+#include "Helper.h"
 
 #if defined WIN32
 	#include "WindowsHelper.h"
@@ -40,6 +40,7 @@ const char *szHelp=
 
 std::string szStartupFolder;
 bool bIsRaspberryPi=false;
+std::string szAppVersion="???";
 
 MainWorker _mainworker;
 CLogger _log;
@@ -104,6 +105,30 @@ void catch_intterm(int sig_num)
 	#error provide your own getExecutablePathName implementation
 #endif /* end of: #if defined(_WIN32) */
 
+void GetAppVersion()
+{
+	std::string sLine = "";
+	std::ifstream infile;
+
+	szAppVersion="???";
+
+	infile.open("svnversion.h");
+	if (infile.is_open())
+	{
+		if (!infile.eof())
+		{
+			getline(infile, sLine);
+			std::vector<std::string> results;
+			StringSplit(sLine," ",results);
+			if (results.size()==3)
+			{
+				szAppVersion="1." + results[2];
+			}
+		}
+		infile.close();
+	}
+}
+
 #if defined WIN32
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 #else
@@ -114,7 +139,8 @@ int main(int argc, char**argv)
 	bool bStartWebBrowser=true;
 	RedirectIOToConsole();
 #endif
-	_log.Log(LOG_NORM,"Domoticz V%s%d (c)2012-2013 GizMoCuz",VERSION_STRING,SVNVERSION);
+	GetAppVersion();
+	_log.Log(LOG_NORM,"Domoticz V%s (c)2012-2013 GizMoCuz",szAppVersion.c_str());
 
 	szStartupFolder="";
 #if !defined WIN32

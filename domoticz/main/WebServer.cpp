@@ -17,10 +17,11 @@
 #else
 	#include "WindowsHelper.h"
 #endif
-#include "appversion.h"
 
 extern std::string szStartupFolder;
 extern bool bIsRaspberryPi;
+extern std::string szAppVersion;
+
 
 struct _tGuiLanguage {
 	const char* szShort;
@@ -203,9 +204,7 @@ void CWebServer::StopServer()
 
 char * CWebServer::DisplayVersion()
 {
-	char szTmp[100];
-	sprintf(szTmp,"%s%d",VERSION_STRING,SVNVERSION);
-	m_retstr=szTmp;
+	m_retstr=szAppVersion;
 	return (char*)m_retstr.c_str();
 }
 
@@ -5259,7 +5258,9 @@ std::string CWebServer::GetJSonPage()
 					root["status"]="OK";
 					root["title"]="CheckForUpdate";
 					root["IsSupported"]=true;
-					bool bHaveUpdate=(SVNVERSION<atoi(strarray[2].c_str()));
+
+					int version=atoi(szAppVersion.substr(szAppVersion.find(".")+1).c_str());
+					bool bHaveUpdate=(version<atoi(strarray[2].c_str()));
 					if ((bHaveUpdate)&&(!bIsForced))
 					{
 						time_t atime=time(NULL);
@@ -5291,7 +5292,8 @@ std::string CWebServer::GetJSonPage()
 			StringSplit(revfile, " ", strarray);
 			if (strarray.size()!=3)
 				goto exitjson;
-			if (SVNVERSION>=atoi(strarray[2].c_str()))
+			int version=atoi(szAppVersion.substr(szAppVersion.find(".")+1).c_str());
+			if (version>=atoi(strarray[2].c_str()))
 				goto exitjson;
 			utsname my_uname;
 			if (uname(&my_uname)<0)
