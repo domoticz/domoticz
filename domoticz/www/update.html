@@ -20,7 +20,7 @@ function progressdownload() {
 	}
 	else {
 		$("#updatecontent #divprogress").hide();
-		$( "#toplabel" ).html("Error while downloading Update,<br>check your internet connection or try again later !...");
+		$( "#toplabel" ).html($.i18n("Error while downloading Update,<br>check your internet connection or try again later !..."));
 	}
 }
 
@@ -56,7 +56,7 @@ function CheckDownloadReady()
 	var val = $( "#progressbar" ).progressbar( "value" ) || 0;
 	if (val == 100) {
 		$("#updatecontent #divprogress").hide();
-		$( "#toplabel" ).html("Error while downloading Update,<br>check your internet connection or try again later !...");
+		$( "#toplabel" ).html($.i18n("Error while downloading Update,<br>check your internet connection or try again later !..."));
 		return;
 	}
 	$.ajax({
@@ -68,7 +68,7 @@ function CheckDownloadReady()
 				if (data.downloadok==true) {
 						clearTimeout($.myglobals.refreshTimer);
 						$( "#progressbar" ).progressbar( "value",0);
-						$( "#toplabel" ).text("Updating system...");
+						$( "#toplabel" ).text($.i18n("Updating system..."));
 						$.myglobals.refreshTimer=setTimeout( progressupdatesystem, 200 );
 						setTimeout( SendUpdateCommand, 5000 );
 				}
@@ -76,7 +76,7 @@ function CheckDownloadReady()
 					clearTimeout($.myglobals.refreshTimer);
 					$.StopProgress=true;
 					$("#updatecontent #divprogress").hide();
-					$( "#toplabel" ).html("Error while downloading Update,<br>check your internet connection or try again later !...");
+					$( "#toplabel" ).html($.i18n("Error while downloading Update,<br>check your internet connection or try again later !..."));
 				}
 			}
 			else {
@@ -87,7 +87,7 @@ function CheckDownloadReady()
 			clearTimeout($.myglobals.refreshTimer);
 			$.StopProgress=true;
 			$("#updatecontent #divprogress").hide();
-			$( "#toplabel" ).html("Error while downloading Update,<br>check your internet connection or try again later !...");
+			$( "#toplabel" ).html($.i18n("Error while downloading Update,<br>check your internet connection or try again later !..."));
 		 }     
 	});
 }
@@ -100,7 +100,7 @@ function CheckForUpdate()
 		 dataType: 'json',
 		 success: function(data) {
 			if (data.HaveUpdate == true) {
-				$( "#toplabel" ).text("Update Available... Downloading Update !...");
+				$( "#toplabel" ).text($.i18n("Update Available... Downloading Update !..."));
 				
 				$.ajax({
 					 url: "json.htm?type=command&param=downloadupdate",
@@ -114,20 +114,20 @@ function CheckForUpdate()
 							setTimeout( CheckDownloadReady, 2000 );
 						}
 						else {
-							$( "#toplabel" ).html("Could not start download,<br>check your internet connection or try again later !...");
+							$( "#toplabel" ).html($.i18n("Could not start download,<br>check your internet connection or try again later !..."));
 						}
 					 },
 					 error: function(){
-							$( "#toplabel" ).text("Error communicating with Server !...");
+							$( "#toplabel" ).text($.i18n("Error communicating with Server !..."));
 					 }     
 				});
 			}
 			else {
-				$( "#toplabel" ).text("No Update Available !...");
+				$( "#toplabel" ).text($.i18n("No Update Available !..."));
 			}
 		 },
 		 error: function(){
-				$( "#toplabel" ).text("Error communicating with Server !...");
+				$( "#toplabel" ).text($.i18n("Error communicating with Server !..."));
 		 }     
 	});
 }
