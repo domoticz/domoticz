@@ -10,7 +10,7 @@
 	<tr>
 		<td></td>
 		<td>
-			<a class="btnstyle3" onclick="SendNotification();">Send</a>
+			<a class="btnstyle3" onclick="SendNotification();" data-i18n="Send">Send</a>
 		</td>
 	</tr>
 </table>
@@ -25,7 +25,7 @@ function GetNotificationSettings()
 	csettings.body=$("#notificationtable #body").val().replace(/\n/gi,"<br>");
 	if ((csettings.subject=="")||(csettings.body==""))
 	{
-		ShowNotify('Please enter a Subject/Message!', 2500, true);
+		ShowNotify($.i18n('Please enter a Subject/Message!'), 2500, true);
 		return;
 	}
 	return csettings;
@@ -43,11 +43,11 @@ function SendNotification()
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {
-			ShowNotify("Notification Send",2500);
+			ShowNotify($.i18n("Notification Send"),2500);
 			return;
 		 },
 		 error: function(){
-			ShowNotify('Problem Sendig Notification!', 2500, true);
+			ShowNotify($.i18n('Problem Sending Notification!'), 2500, true);
 		 }     
 	});		
 }

@@ -237,13 +237,13 @@ function RefreshUserTable()
 			}
 			var rightstr="rights";
 			if (item.Rights==0) {
-				rightstr="Viewer";
+				rightstr=$.i18n("Viewer");
 			}
 			else if (item.Rights==1) {
-				rightstr="User";
+				rightstr=$.i18n("User");
 			}
 			else {
-				rightstr="Admin";
+				rightstr=$.i18n("Admin");
 			}
 			
 			var sharedstr=$.i18n("No");
