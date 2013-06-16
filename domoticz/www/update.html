@@ -1,10 +1,10 @@
 <div id="updatecontent">
-	<h1 id="toplabel" data-i18n="Checking for updates....">Checking for updates....</h1>
+	<h1 id="toplabel">Checking for updates....</h1>
 	<br>
 	<div id="divprogress" style="display:none;">
 		<div id="progressbar"><div id="proglabel" class="progress-label"></div></div>
 		<br>
-		<center><span data-i18n="Do not poweroff the system while updating !..."></span></center>
+		<center>Do not poweroff the system while updating !...</center>
 	</div>
 </div>
 
@@ -20,7 +20,7 @@ function progressdownload() {
 	}
 	else {
 		$("#updatecontent #divprogress").hide();
-		$( "#toplabel" ).html($.i18n("Error while downloading Update,<br>check your internet connection or try again later !..."));
+		$( "#toplabel" ).html("Error while downloading Update,<br>check your internet connection or try again later !...");
 	}
 }
 
@@ -56,7 +56,7 @@ function CheckDownloadReady()
 	var val = $( "#progressbar" ).progressbar( "value" ) || 0;
 	if (val == 100) {
 		$("#updatecontent #divprogress").hide();
-		$( "#toplabel" ).html($.i18n("Error while downloading Update,<br>check your internet connection or try again later !..."));
+		$( "#toplabel" ).html("Error while downloading Update,<br>check your internet connection or try again later !...");
 		return;
 	}
 	$.ajax({
@@ -68,7 +68,7 @@ function CheckDownloadReady()
 				if (data.downloadok==true) {
 						clearTimeout($.myglobals.refreshTimer);
 						$( "#progressbar" ).progressbar( "value",0);
-						$( "#toplabel" ).text("$.i18n(Updating system..."));
+						$( "#toplabel" ).text("Updating system...");
 						$.myglobals.refreshTimer=setTimeout( progressupdatesystem, 200 );
 						setTimeout( SendUpdateCommand, 5000 );
 				}
@@ -76,7 +76,7 @@ function CheckDownloadReady()
 					clearTimeout($.myglobals.refreshTimer);
 					$.StopProgress=true;
 					$("#updatecontent #divprogress").hide();
-					$( "#toplabel" ).html($.i18n("Error while downloading Update,<br>check your internet connection or try again later !..."));
+					$( "#toplabel" ).html("Error while downloading Update,<br>check your internet connection or try again later !...");
 				}
 			}
 			else {
@@ -87,7 +87,7 @@ function CheckDownloadReady()
 			clearTimeout($.myglobals.refreshTimer);
 			$.StopProgress=true;
 			$("#updatecontent #divprogress").hide();
-			$( "#toplabel" ).html($.i18n("Error while downloading Update,<br>check your internet connection or try again later !..."));
+			$( "#toplabel" ).html("Error while downloading Update,<br>check your internet connection or try again later !...");
 		 }     
 	});
 }
@@ -100,7 +100,7 @@ function CheckForUpdate()
 		 dataType: 'json',
 		 success: function(data) {
 			if (data.HaveUpdate == true) {
-				$( "#toplabel" ).text($.i18n("Update Available... Downloading Update !..."));
+				$( "#toplabel" ).text("Update Available... Downloading Update !...");
 				
 				$.ajax({
 					 url: "json.htm?type=command&param=downloadupdate",
@@ -114,27 +114,26 @@ function CheckForUpdate()
 							setTimeout( CheckDownloadReady, 2000 );
 						}
 						else {
-							$( "#toplabel" ).html($.i18n("Could not start download,<br>check your internet connection or try again later !..."));
+							$( "#toplabel" ).html("Could not start download,<br>check your internet connection or try again later !...");
 						}
 					 },
 					 error: function(){
-							$( "#toplabel" ).text($.i18n("Error communicating with Server !..."));
+							$( "#toplabel" ).text("Error communicating with Server !...");
 					 }     
 				});
 			}
 			else {
-				$( "#toplabel" ).text($.i18n("No Update Available !..."));
+				$( "#toplabel" ).text("No Update Available !...");
 			}
 		 },
 		 error: function(){
-				$( "#toplabel" ).text($.i18n("Error communicating with Server !..."));
+				$( "#toplabel" ).text("Error communicating with Server !...");
 		 }     
 	});
 }
 
 $(document).ready(function() {
 	$.StopProgress=false;
-	$("#updatecontent").i18n();
 	var progressbar = $( "#progressbar" );
 	progressLabel = $( ".progress-label" );
 	progressbar.height(22);
