@@ -1664,7 +1664,7 @@ function RefreshWeathers()
 							img='<img src="images/baro48.png" height="48">';
 							bigtext=item.Barometer + ' hPa';
 							if (typeof item.ForecastStr != 'undefined') {
-								status=item.Barometer + ' hPa, Prediction: ' + item.ForecastStr;
+								status=item.Barometer + ' hPa, ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
 							}
 							else
 							{
@@ -1817,7 +1817,7 @@ function ShowWeathers()
 						xhtm+='baro48.png" height="48"></td>\n' +
 							  '\t      <td id="status">' + item.Barometer + ' hPa';
 						if (typeof item.ForecastStr != 'undefined') {
-							xhtm+=', Prediction: ' + item.ForecastStr;
+							xhtm+=', ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
 						}
 						if (typeof item.Altitude != 'undefined') {
 							xhtm+=', Altitude: ' + item.Altitude + ' meter';

@@ -930,8 +930,8 @@ function RefreshScenes()
 						if ($(id + " #img").html()!=img) {
 							$(id + " #img").html(img);
 						}
-						if ($(id + " #status").html()!=item.Status) {
-							$(id + " #status").html(item.Status);
+						if ($(id + " #status").html()!=TranslateStatus(item.Status)) {
+							$(id + " #status").html(TranslateStatus(item.Status));
 						}
 						if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 							$(id + " #lastupdate").html(item.LastUpdate);
@@ -1002,7 +1002,7 @@ function ShowScenes()
 							xhtm+='\t      <td id="img"><img src="images/light-off.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
 					}
           xhtm+=
-                '\t      <td id="status">' + item.Status + '</td>\n' +
+                '\t      <td id="status">' + TranslateStatus(item.Status) + '</td>\n' +
                 '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
                 '\t      <td id="type">Scene</td>\n';
 					xhtm+=

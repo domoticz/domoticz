@@ -905,18 +905,18 @@ function RefreshTemps()
 								status+=', ';
 								bigtext+=' / ';
 							}
-              status+='Humidity: ' + item.Humidity + ' %';
+              status+=$.i18n('Humidity') + ': ' + item.Humidity + ' %';
               bigtext+=item.Humidity + '%';
               bHaveHumidity=true;
             }
             if (typeof item.HumidityStatus != 'undefined') {
-              status+=' (' + item.HumidityStatus + ')';
+              status+=' (' + $.i18n(item.HumidityStatus) + ')';
             }
             if (typeof item.Barometer != 'undefined') {
               status+='<br>Barometer: ' + item.Barometer + ' hPa';
             }
             if (typeof item.ForecastStr != 'undefined') {
-              status+=', Prediction: ' + item.ForecastStr;
+              status+=', ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
             }
 			if (typeof item.Direction != 'undefined') {
               status+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms';
@@ -1054,17 +1054,17 @@ function ShowTemps()
 						if (bHaveBefore==true) {
 							xhtm+=', ';
 						}
-						xhtm+='Humidity: ' + item.Humidity + ' %';
+						xhtm+=$.i18n('Humidity') + ': ' + item.Humidity + ' %';
 						bHaveHumidity=true;
 					}
 					if (typeof item.HumidityStatus != 'undefined') {
-						xhtm+=' (' + item.HumidityStatus + ')';
+						xhtm+=' (' + $.i18n(item.HumidityStatus) + ')';
 					}
 					if (typeof item.Barometer != 'undefined') {
 						xhtm+='<br>Barometer: ' + item.Barometer + ' hPa';
 					}
 					if (typeof item.ForecastStr != 'undefined') {
-						xhtm+=', Prediction: ' + item.ForecastStr;
+						xhtm+=', ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
 					}
 					if (typeof item.Direction != 'undefined') {
 						xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms';
