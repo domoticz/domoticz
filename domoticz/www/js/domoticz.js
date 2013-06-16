@@ -71,7 +71,7 @@ function SwitchLight(idx,switchcmd, refreshfunction)
 		return;
 	}
   clearInterval($.myglobals.refreshTimer);
-  ShowNotify($.i18n('Switching') + ' ' + switchcmd);
+  ShowNotify($.i18n('Switching') + ' ' + $.i18n(switchcmd));
  
   $.ajax({
      url: "json.htm?type=command&param=switchlight&idx=" + idx + "&switchcmd=" + switchcmd + "&level=0",
@@ -100,7 +100,7 @@ function SwitchScene(idx,switchcmd, refreshfunction)
 	}
 
   clearInterval($.myglobals.refreshTimer);
-  ShowNotify($.i18n('Switching') + ' ' + switchcmd);
+  ShowNotify($.i18n('Switching') + ' ' + $.i18n(switchcmd));
  
   $.ajax({
      url: "json.htm?type=command&param=switchscene&idx=" + idx + "&switchcmd=" + switchcmd,
@@ -129,7 +129,7 @@ function ResetSecurityStatus(idx,switchcmd, refreshfunction)
 	}
 
   clearInterval($.myglobals.refreshTimer);
-  ShowNotify($.i18n('Switching') + ' ' + switchcmd);
+  ShowNotify($.i18n('Switching') + ' ' + $.i18n(switchcmd));
  
   $.ajax({
      url: "json.htm?type=command&param=resetsecuritystatus&idx=" + idx + "&switchcmd=" + switchcmd,
@@ -700,7 +700,7 @@ function ShowNotifications(id,name,content,backfunction)
 				//add types to combobox
 				$.each($.NTypeStr, function(i,item){
 					var option = $('<option />');
-					option.attr('value', item.val).text(item.text);
+					option.attr('value', item.val).text($.i18n(item.text));
 					$($.content + ' #notificationparamstable #combotype').append(option);
 				});
 				

@@ -1,10 +1,10 @@
-<div id="dialog-editweatherdevice" title="Edit Device">
+<div id="dialog-editweatherdevice">
     <form>
         <label for="name">Name: </label>
         <input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" />
     </form>
 </div>
-<div id="dialog-editraindevice" title="Edit Device">
+<div id="dialog-editraindevice">
     <form>
         <table class="display" id="edittable" border="0" cellpadding="0" cellspacing="0">
         <tr>
@@ -18,7 +18,7 @@
 				</table>
     </form>
 </div>
-<div id="dialog-editbarodevice" title="Edit Device">
+<div id="dialog-editbarodevice">
     <form>
         <table class="display" id="edittable" border="0" cellpadding="0" cellspacing="0">
         <tr>
@@ -1967,6 +1967,7 @@ $(document).ready(function() {
           height: 160,
           modal: true,
           resizable: false,
+          title: $.i18n("Edit Device"),
           buttons: {
               "Update": function() {
                   var bValid = true;
@@ -2019,13 +2020,14 @@ $(document).ready(function() {
           close: function() {
             $( this ).dialog( "close" );
           }
-    });
+    }).i18n();
     $( "#dialog-editraindevice" ).dialog({
           autoOpen: false,
           width: 450,
           height: 190,
           modal: true,
           resizable: false,
+          title: $.i18n("Edit Device"),
           buttons: {
               "Update": function() {
                   var bValid = true;
@@ -2078,13 +2080,14 @@ $(document).ready(function() {
           close: function() {
             $( this ).dialog( "close" );
           }
-    });
+    }).i18n();
     $( "#dialog-editbarodevice" ).dialog({
           autoOpen: false,
           width: 450,
           height: 190,
           modal: true,
           resizable: false,
+          title: $.i18n("Edit Device"),
           buttons: {
               "Update": function() {
                   var bValid = true;
@@ -2138,7 +2141,7 @@ $(document).ready(function() {
           close: function() {
             $( this ).dialog( "close" );
           }
-    });
+    }).i18n();
 
   ShowWeathers();
  

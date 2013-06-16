@@ -1,10 +1,10 @@
 <div id="scenecontent">
 </div>
-<div id="dialog-addscene" title="Add Scene">
+<div id="dialog-addscene">
     <form>
         <table class="display" id="scenetable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td align="right" style="width:60px"><label for="scenename">Name: </label></td>
+          <td align="right" style="width:60px"><label for="scenename"><span data-i18n="Name"></span>: </label></td>
           <td><input type="text" id="scenename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 		    </table>
     </form>
@@ -12,22 +12,22 @@
 <div id="editscene" style="display:none;">
 		<table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
 			<tr>
-				<td align="right" style="width:60px"><label for="name">Name: </label></td>
+				<td align="right" style="width:60px"><label for="name"><span data-i18n="Name"></span>: </label></td>
 				<td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 			</tr>
 			<tr>
 				<td></td>
 				<td>
-					<a class="btnstyle3" onclick="SaveScene();">Save</a>&nbsp;&nbsp;&nbsp;
-					<a class="btnstyle3" onclick="DeleteScene();">Delete</a>
+					<a class="btnstyle3" onclick="SaveScene();" data-i18n="Save">Save</a>&nbsp;&nbsp;&nbsp;
+					<a class="btnstyle3" onclick="DeleteScene();" data-i18n="Delete">Delete</a>
 				</td>
 			</tr>
 		</table>
 		<br>
 		<h2>Code:</h2>
 		<br>
-			<button id="removecode" class="btn btn-small" type="button" onclick="RemoveCode();">Remove Code</button>
-			<button id="learncode" class="btn btn-small" type="button" onclick="LearnCode();">Learn Code</button>
+			<button id="removecode" class="btn btn-small" type="button" onclick="RemoveCode();" data-i18n="Remove Code">Remove Code</button>
+			<button id="learncode" class="btn btn-small" type="button" onclick="LearnCode();" data-i18n="Learn Code">Learn Code</button>
 		<br>
 		<br>
 		<h2>Devices:</h2>
@@ -35,15 +35,15 @@
 		<table class="display" id="devicestable" border="0" cellpadding="0" cellspacing="0" width="100%">
 				<thead>
 						<tr valign="middle">
-								<th align="left">Name</th>
-								<th align="right" width="80">Command</th>
+								<th align="left" data-i18n="Name">Name</th>
+								<th align="right" width="80" data-i18n="Command">Command</th>
 						</tr>
 				</thead>
 		</table>
     <table id="delclr" border="0" cellpadding="0" cellspacing="0" width="100%">
 			<tr>
 				<td>
-					<a class="btnstyle3-dis" id="devicedelete" >Delete</a>
+					<a class="btnstyle3-dis" id="devicedelete" data-i18n="Delete">Delete</a>
 				</td>
 				<td align="right">
 					<a class="btnstyle3" onclick="ClearDevices();" data-i18n="Clear">Clear</a>
@@ -53,11 +53,11 @@
 		<br>
 		<table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
 			<tr>
-				<td align="right" style="width:110px"><label for="name">Device: </label></td>
+				<td align="right" style="width:110px"><label for="name"><span data-i18n="Device"></span>: </label></td>
 				<td>
 					<select id="combodevice" style="width:250px" class="combobox ui-corner-all">
 					</select>
-					<a class="btnstyle3" onclick="AddDevice();">Add</a>
+					<a class="btnstyle3" onclick="AddDevice();" data-i18n="Add">Add</a>
 				</td>
 			</tr>
 		</table>
@@ -67,19 +67,19 @@
     <table class="display" id="timertable" border="0" cellpadding="0" cellspacing="0" width="100%">
         <thead>
             <tr>
-                <th width="40" align="center">Active</th>
-                <th width="120" align="center">Type</th>
-                <th width="60" align="center">Time</th>
-                <th width="80" align="center">Command</th>
-                <th align="left">Days</th>
+                <th width="40" align="center" data-i18n="Active">Active</th>
+                <th width="120" align="center" data-i18n="Type">Type</th>
+                <th width="60" align="center" data-i18n="Time">Time</th>
+                <th width="80" align="center" data-i18n="Command">Command</th>
+                <th align="left" data-i18n="Days">Days</th>
             </tr>
         </thead>
     </table>
     <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
 			<tr>
 				<td>
-					<a class="btnstyle3-dis" id="timerupdate" >Update</a>&nbsp;&nbsp;&nbsp;
-					<a class="btnstyle3-dis" id="timerdelete" >Delete</a>
+					<a class="btnstyle3-dis" id="timerupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+					<a class="btnstyle3-dis" id="timerdelete" data-i18n="Delete">Delete</a>
 				</td>
 				<td align="right">
 					<a class="btnstyle3" onclick="ClearTimers();" data-i18n="Clear">Clear</a>
@@ -89,35 +89,35 @@
 		<br>
 		<table class="display" id="timerparamstable" border="0" cellpadding="0" cellspacing="20">
 			<tr>
-				<td align="right" style="width:80px"><label for="enabled">Enabled:</label></td>
+				<td align="right" style="width:80px"><label for="enabled"><span data-i18n="Enabled"></span>:</label></td>
 				<td><input type="checkbox" id="enabled" checked></td>
 			</tr>
 			<tr>
-				<td align="right" style="width:80px"><label for="name">Type:</label></td>
+				<td align="right" style="width:80px"><label for="name"><span data-i18n="Type"></span>:</label></td>
 				<td><select id="combotype" style="width:150px" class="combobox ui-corner-all">
 						<!--#embed timertypes -->
 						</select>
 				</td>
 			</tr>
 			<tr>
-				<td align="right" style="width:80px"><label for="name">Time:</label></td>
+				<td align="right" style="width:80px"><label for="name"><span data-i18n="Time"></span>:</label></td>
 				<td><select id="combotimehour" style="width:50px" class="combobox ui-corner-all"></select>
 						:
 						<select id="combotimemin" style="width:50px" class="combobox ui-corner-all"></select>
-						(hour/minute)
+						<span data-i18n="(hour/minute)"></span>
 				</td>
 			</tr>
 			<tr>
-				<td align="right" style="width:80px"><label for="combocommand">Command:</label></td>
+				<td align="right" style="width:80px"><label for="combocommand"><span data-i18n="Command"></span>:</label></td>
 				<td>
-					<select id="combocommand" style="width:50px" class="combobox ui-corner-all">
-					<option value="0">On</option>
-					<option value="1">Off</option>
+					<select id="combocommand" style="width:90px" class="combobox ui-corner-all">
+					<option value="0" data-i18n="On">On</option>
+					<option value="1" data-i18n="Off">Off</option>
 					</select>
 				</td>
 			</tr>
 			<tr id="LevelDiv">
-				<td align="right" style="width:80px"><label for="combolevel">Level:</label></td>
+				<td align="right" style="width:80px"><label for="combolevel"><span data-i18n="Level"></span>:</label></td>
 				<td>
 					<select id="combolevel" style="width:70px" class="combobox ui-corner-all">
 					<option value="10">10%</option>
@@ -135,30 +135,30 @@
 			</tr>
 			<tr><td></td></tr>
 			<tr>
-				<td align="right" style="width:80px"><label for="name">When:</label></td>
+				<td align="right" style="width:80px"><label for="name"><span data-i18n="When"></span>:</label></td>
 				<td>
-					<input type="radio" name="when" id="when_1" value="Everyday" checked>&nbsp;Everyday<br><br>
-					<input type="radio" name="when" id="when_2" value="Weekdays">&nbsp;Weekdays<br><br>
-					<input type="radio" name="when" id="when_3" value="Weekends">&nbsp;Weekends<br><br>
-					<input type="radio" name="when" id="when_4" value="SelectedDays">&nbsp;Selected Days<br><br>
+					<input type="radio" name="when" id="when_1" value="Everyday" checked>&nbsp;<span data-i18n="Everyday"></span><br><br>
+					<input type="radio" name="when" id="when_2" value="Weekdays">&nbsp;<span data-i18n="Weekdays"></span><br><br>
+					<input type="radio" name="when" id="when_3" value="Weekends">&nbsp;<span data-i18n="Weekends"></span><br><br>
+					<input type="radio" name="when" id="when_4" value="SelectedDays">&nbsp;<span data-i18n="Selected Days"></span><br><br>
 				</td>
 			</tr>
 			<tr><td></td></tr>
 			<tr>
-				<td align="right" style="width:80px"><label for="name">Days:</label></td>
+				<td align="right" style="width:80px"><label for="name"><span data-i18n="Days"></span>:</label></td>
 				<td>
-					<input type="checkbox" id="ChkMon"/>&nbsp;Monday&nbsp;
-					<input type="checkbox" id="ChkTue"/>&nbsp;Tuesday&nbsp;
-					<input type="checkbox" id="ChkWed"/>&nbsp;Wednesday&nbsp;
-					<input type="checkbox" id="ChkThu"/>&nbsp;Thursday&nbsp;
-					<input type="checkbox" id="ChkFri"/>&nbsp;Friday&nbsp;
-					<input type="checkbox" id="ChkSat"/>&nbsp;Saturday&nbsp;
-					<input type="checkbox" id="ChkSun"/>&nbsp;Sunday&nbsp;
+					<input type="checkbox" id="ChkMon"/>&nbsp;<span data-i18n="Monday"></span>&nbsp;
+					<input type="checkbox" id="ChkTue"/>&nbsp;<span data-i18n="Tuesday"></span>&nbsp;
+					<input type="checkbox" id="ChkWed"/>&nbsp;<span data-i18n="Wednesday"></span>&nbsp;
+					<input type="checkbox" id="ChkThu"/>&nbsp;<span data-i18n="Thursday"></span>&nbsp;
+					<input type="checkbox" id="ChkFri"/>&nbsp;<span data-i18n="Friday"></span>&nbsp;
+					<input type="checkbox" id="ChkSat"/>&nbsp;<span data-i18n="Saturday"></span>&nbsp;
+					<input type="checkbox" id="ChkSun"/>&nbsp;<span data-i18n="Sunday"></span>&nbsp;
 				</td>
 			</tr>
 		</table>
 		<br>
-    <a class="btnstyle3" onclick="AddTimer();">Add</a>
+    <a class="btnstyle3" onclick="AddTimer();" data-i18n="Add">Add</a>
 </div>
 
 <script type="text/javascript" charset="utf-8">
@@ -222,7 +222,7 @@ function LearnCode()
 
 				$("#scenecontent #removecode").addClass("btn-danger");
 				$("#scenecontent #learncode").addClass("btn-warning");
-				$("#scenecontent #learncode").html("Change Code");
+				$("#scenecontent #learncode").html($.i18n("Change Code"));
 				
 				$.ajax({
 					 url: "json.htm?type=command&param=setscenecode&idx="+$.devIdx+"&devid="+deviceidx, 
@@ -462,7 +462,7 @@ function EditSceneDevice(idx,name,havecode)
 	else {
 			$("#scenecontent #removecode").addClass("btn-danger");
 			$("#scenecontent #learncode").addClass("btn-warning");
-			$("#scenecontent #learncode").html("Change Code");
+			$("#scenecontent #learncode").html($.i18n("Change Code"));
 	}
 
   RefreshDeviceTable(idx);
@@ -1102,37 +1102,41 @@ $(document).ready(function() {
 				height: 156,
 				modal: true,
 				resizable: false,
-				buttons: {
-						"Add Scene": function() {
-								var bValid = true;
-								bValid = bValid && checkLength( $("#dialog-addscene #scenename"), 2, 100 );
-								if ( bValid ) {
-										$.pDialog=$( this );
-										var SceneName=$("#dialog-addscene #scenename").val();
-										$.ajax({
-											 url: "json.htm?type=addscene&name=" + SceneName,
-											 async: false, 
-											 dataType: 'json',
-											 success: function(data) {
-												if (typeof data.status != 'undefined') {
-													if (data.status == 'OK')
-													{
-														$.pDialog.dialog( "close" );
-														ShowScenes();
+				title: $.i18n("Add Scene"),
+				buttons: [{
+							text: $.i18n("Add Scene"),
+							click: function() {
+									var bValid = true;
+									bValid = bValid && checkLength( $("#dialog-addscene #scenename"), 2, 100 );
+									if ( bValid ) {
+											$.pDialog=$( this );
+											var SceneName=$("#dialog-addscene #scenename").val();
+											$.ajax({
+												 url: "json.htm?type=addscene&name=" + SceneName,
+												 async: false, 
+												 dataType: 'json',
+												 success: function(data) {
+													if (typeof data.status != 'undefined') {
+														if (data.status == 'OK')
+														{
+															$.pDialog.dialog( "close" );
+															ShowScenes();
+														}
+														else {
+															ShowNotify(data.message, 3000,true);
+														}
 													}
-													else {
-														ShowNotify(data.message, 3000,true);
-													}
-												}
-											 }
-										});
-										
+												 }
+											});
+											
+									}
 								}
-						},
-						Cancel: function() {
+						  }, {
+							text: $.i18n("Cancel"),
+							click: function() {
 								$( this ).dialog( "close" );
-						}
-				},
+							}
+						 }],
 				open: function() {
 						$(this).keypress(function(e) {
 							if (e.keyCode == $.ui.keyCode.ENTER) {
@@ -1144,7 +1148,7 @@ $(document).ready(function() {
 				close: function() {
 					$( this ).dialog( "close" );
 				}
-	});
+	}).i18n();
 
 	ShowScenes();
 } );  

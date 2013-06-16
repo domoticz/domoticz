@@ -314,8 +314,8 @@ $(document).ready(function() {
 		<table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0" width="100%">
 				<thead>
 						<tr>
-								<th width="140" align="left">Date</th>
-								<th>Data</th>
+								<th width="140" align="left" data-i18n="Date">Date</th>
+								<th data-i18n="Data">Data</th>
 						</tr>
 				</thead>
 		</table>
@@ -335,47 +335,47 @@ $(document).ready(function() {
 			<table class="display" id="notificationtable" border="0" cellpadding="0" cellspacing="0" width="100%">
 					<thead>
 							<tr>
-									<th width="120" align="left">Type</th>
-									<th align="left">When</th>
+									<th width="120" align="left" data-i18n="Type">Type</th>
+									<th align="left" data-i18n="When">When</th>
 							</tr>
 					</thead>
 			</table>
 			<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
 				<tr>
 					<td>
-						<a class="btnstyle3-dis" id="notificationupdate" >Update</a>&nbsp;&nbsp;&nbsp;
-						<a class="btnstyle3-dis" id="notificationdelete" >Delete</a>
+						<a class="btnstyle3-dis" id="notificationupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+						<a class="btnstyle3-dis" id="notificationdelete" data-i18n="Delete">Delete</a>
 					</td>
 					<td align="right">
-						<a class="btnstyle3" onclick="ClearNotifications();">Clear</a>
+						<a class="btnstyle3" onclick="ClearNotifications();" data-i18n="Clear">Clear</a>
 					</td>
 				</tr>
 			</table>
 			<br>
 			<table class="display" id="notificationparamstable" border="0" cellpadding="0" cellspacing="20">
 				<tr>
-					<td align="right" style="width:80px"><label for="name">Type:</label></td>
+					<td align="right" style="width:80px"><label for="name"><span data-i18n="Type"></span>:</label></td>
 					<td><select id="combotype" style="width:120px" class="combobox ui-corner-all"></select></td>
 				</tr>
 				<tr id="notiwhen">
-					<td align="right" style="width:80px"><label for="name">When:</label></td>
+					<td align="right" style="width:80px"><label for="name"><span data-i18n="When"></span>:</label></td>
 					<td><select id="combowhen" style="width:120px" class="combobox ui-corner-all">
-								<option value="0">Greater</option>
-								<option value="1">Below</option>
+								<option value="0" data-i18n="Greater">Greater</option>
+								<option value="1" data-i18n="Below">Below</option>
 							</select>
 					</td>
 				</tr>
 				<tr id="notival">
-					<td align="right" style="width:80px"><label for="name">Value:</label></td>
+					<td align="right" style="width:80px"><label for="name"><span data-i18n="Value"></span>:</label></td>
 					<td><input type="text" id="value" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><label id="valuetype">&nbsp;&deg; C</label></td>
 				</tr>
 			</table>
 			<br>
-			<a class="btnstyle3" onclick="AddNotification();">Add</a>
+			<a class="btnstyle3" onclick="AddNotification();" data-i18n="Add">Add</a>
 	</div>
 	<div id="dialog-transferdevice" title="Transfer Device">
 			<form>
-					<label for="newdevice">New Device: </label>
+					<label for="newdevice"><span data-i18n="New Device"></span>: </label>
 					<select id="newdevice" style="width:250px" class="combobox ui-corner-all">
 					</select>
 			</form>

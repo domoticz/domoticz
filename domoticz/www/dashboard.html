@@ -27,13 +27,13 @@ function RefreshFavorites()
 								if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
 									var status=item.Status;
 									if (item.Status == 'On') {
-											status+='<img src="images/lightbulb.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+											status+='<img src="images/lightbulb.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 									else if (item.Status == 'Mixed') {
-											status+='<img src="images/lightbulbunknown.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+											status+='<img src="images/lightbulbunknown.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 									else {
-											status+='<img src="images/lightbulboff.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+											status+='<img src="images/lightbulboff.png" title="' + $.i18n("Turn On") +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 									if ($(id + " #status").html()!=status) {
 										$(id + " #status").html(status);
@@ -42,13 +42,13 @@ function RefreshFavorites()
 								else {
 									var img="";
 									if (item.Status == 'On') {
-												img='<img src="images/light-on.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+												img='<img src="images/light-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 									else if (item.Status == 'Mixed') {
-												img='<img src="images/light-unknown.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+												img='<img src="images/light-unknown.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 									else {
-												img='<img src="images/light-off.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+												img='<img src="images/light-off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 									if ($(id + " #img").html()!=img) {
 										$(id + " #img").html(img);
@@ -74,26 +74,26 @@ function RefreshFavorites()
 							if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
 								var status=item.Status + " ";
 								if (item.SwitchType == "Doorbell") {
-									status+='<img src="images/doorbell.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									status+='<img src="images/doorbell.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 								else if (item.SwitchType == "Push On Button") {
 									if (item.InternalState=="On") {
-										status+='<img src="images/pushon.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+										status+='<img src="images/pushon.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 									else {
-										status+='<img src="images/push.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+										status+='<img src="images/push.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 								}
 								else if (item.SwitchType == "Door Lock") {
 									if (item.InternalState=="Open") {
-										status+='<img src="images/door48open.png" title="Close Door" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+										status+='<img src="images/door48open.png" title="' + $.i18n("Close Door") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 									else {
-										status+='<img src="images/door.png" title="Open Door" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+										status+='<img src="images/door.png" title="' + $.i18n("Open Door") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 								}
 								else if (item.SwitchType == "Push Off Button") {
-									status+='<img src="images/pushoff.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									status+='<img src="images/pushoff.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 								else if (item.SwitchType == "X10 Siren") {
 									status+='<img src="images/siren.png" height="16">';
@@ -142,10 +142,10 @@ function RefreshFavorites()
 											(item.Status == 'Group On')||
 											(item.Status.indexOf('Set ') == 0)
 										 ) {
-												img='<img src="images/dimmer.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+												img='<img src="images/dimmer.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 									else {
-												img='<img src="images/dimmeroff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+												img='<img src="images/dimmeroff.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 									status="<label id=\"statustext\">" + item.Status + "</label> <label id=\"dimimage\">" + img + "</label>";
 								}
@@ -180,10 +180,10 @@ function RefreshFavorites()
 											(item.Status == 'Group On')||
 											(item.Status.indexOf('Set ') == 0)
 										 ) {
-												status+='<img src="images/lightbulb.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+												status+='<img src="images/lightbulb.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 									else {
-												status+='<img src="images/lightbulboff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+												status+='<img src="images/lightbulboff.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 								}
 								if ($(id + " #status").html()!=status) {
@@ -194,26 +194,26 @@ function RefreshFavorites()
 								var img="";
 								var img3="";
 								if (item.SwitchType == "Doorbell") {
-									img='<img src="images/doorbell48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									img='<img src="images/doorbell48.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 								}
 								else if (item.SwitchType == "Push On Button") {
 									if (item.InternalState=="On") {
-										img='<img src="images/pushon48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+										img='<img src="images/pushon48.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 									else {
-										img='<img src="images/push48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+										img='<img src="images/push48.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 								}
 								else if (item.SwitchType == "Door Lock") {
 									if (item.InternalState=="Open") {
-										img='<img src="images/door48open.png" title="Close Door" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+										img='<img src="images/door48open.png" title="' + $.i18n("Close Door") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 									else {
-										img='<img src="images/door48.png" title="Open Door" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+										img='<img src="images/door48.png" title="' + $.i18n("Open Door") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 								}
 								else if (item.SwitchType == "Push Off Button") {
-									img='<img src="images/pushoff48.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									img='<img src="images/pushoff48.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 								}
 								else if (item.SwitchType == "X10 Siren") {
 									if (
@@ -239,22 +239,22 @@ function RefreshFavorites()
 								}
 								else if (item.SwitchType == "Blinds") {
 									if (item.Status == 'Closed') {
-										img='<img src="images/blindsopen48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
-										img3='<img src="images/blinds48sel.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+										img='<img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+										img3='<img src="images/blinds48sel.png" title="' + $.i18n("Close Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 									else {
-										img='<img src="images/blindsopen48sel.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
-										img3='<img src="images/blinds48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+										img='<img src="images/blindsopen48sel.png" title="' + $.i18n("Open Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+										img3='<img src="images/blinds48.png" title="' + $.i18n("Close Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 								}
 								else if (item.SwitchType == "Blinds Inverted") {
 									if (item.Status == 'Closed') {
-										img='<img src="images/blindsopen48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
-										img3='<img src="images/blinds48sel.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+										img='<img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+										img3='<img src="images/blinds48sel.png" title="' + $.i18n("Close Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 									else {
-										img='<img src="images/blindsopen48sel.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
-										img3='<img src="images/blinds48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+										img='<img src="images/blindsopen48sel.png" title="' + $.i18n("Open Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+										img3='<img src="images/blinds48.png" title="' + $.i18n("Close Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 								}
 								else if (item.SwitchType == "Dimmer") {
@@ -264,10 +264,10 @@ function RefreshFavorites()
 											(item.Status == 'Group On')||
 											(item.Status.indexOf('Set ') == 0)
 										 ) {
-												img='<img src="images/dimmer48-on.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+												img='<img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 									else {
-												img='<img src="images/dimmer48-off.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+												img='<img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 								}
 								else if (item.SwitchType == "Motion Sensor") {
@@ -301,10 +301,10 @@ function RefreshFavorites()
 											(item.Status == 'Group On')||
 											(item.Status.indexOf('Set ') == 0)
 										 ) {
-												img='<img src="images/light-on.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+												img='<img src="images/light-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 									else {
-												img='<img src="images/light-off.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+												img='<img src="images/light-off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 								}
 								if ($(id + " #img").html()!=img) {
@@ -873,13 +873,13 @@ function ShowFavorites()
 									 '</td>\n';
 							var status=item.Status + " ";
 							if (item.Status == 'On') {
-											status+='<img src="images/lightbulb.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+											status+='<img src="images/lightbulb.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 							}
 							else if (item.Status == 'Mixed') {
-											status+='<img src="images/lightbulbunknown.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+											status+='<img src="images/lightbulbunknown.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 							}
 							else {
-										status+='<img src="images/lightbulboff.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+										status+='<img src="images/lightbulboff.png" title="' + $.i18n("Turn On") +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 							}
 							xhtm+=
 										'\t      <td id="status">' + status + '</td>\n' +
@@ -904,13 +904,13 @@ function ShowFavorites()
 									'\t      <td id="name">' + item.Name + '</td>\n'+
 									'\t      <td id="bigtext"></td>\n';
 							if (item.Status == 'On') {
-										xhtm+='\t      <td id="img"><img src="images/light-on.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+										xhtm+='\t      <td id="img"><img src="images/light-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 							}
 							else if (item.Status == 'Mixed') {
-										xhtm+='\t      <td id="img"><img src="images/light-unknown.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+										xhtm+='\t      <td id="img"><img src="images/light-unknown.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 							}
 							else {
-										xhtm+='\t      <td id="img"><img src="images/light-off.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+										xhtm+='\t      <td id="img"><img src="images/light-off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 							}
 							xhtm+=
 										'\t      <td id="status">' + item.Status + '</td>\n' +
@@ -985,26 +985,26 @@ function ShowFavorites()
 									 '</td>\n';
 							var status=item.Status + " ";
 							if (item.SwitchType == "Doorbell") {
-								status+='<img src="images/doorbell.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+								status+='<img src="images/doorbell.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 							}
 							else if (item.SwitchType == "Push On Button") {
 								if (item.InternalState=="On") {
-									status+='<img src="images/pushon.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									status+='<img src="images/pushon.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 								else {
-									status+='<img src="images/push.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									status+='<img src="images/push.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 							}
 							else if (item.SwitchType == "Door Lock") {
 								if (item.InternalState=="Open") {
-									status+='<img src="images/door48open.png" title="Close Door" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									status+='<img src="images/door48open.png" title="' + $.i18n("Close Door") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 								else {
-									status+='<img src="images/door.png" title="Open Door" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									status+='<img src="images/door.png" title="' + $.i18n("Open Door") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 							}
 							else if (item.SwitchType == "Push Off Button") {
-								status+='<img src="images/pushoff.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+								status+='<img src="images/pushoff.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 							}
 							else if (item.SwitchType == "X10 Siren") {
 								status+='<img src="images/siren.png" height="16">';
@@ -1053,10 +1053,10 @@ function ShowFavorites()
 										(item.Status == 'Group On')||
 										(item.Status.indexOf('Set ') == 0)
 									 ) {
-											img='<img src="images/dimmer.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+											img='<img src="images/dimmer.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 								else {
-											img='<img src="images/dimmeroff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+											img='<img src="images/dimmeroff.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 								status="<label id=\"statustext\">" + item.Status + "</label> <label id=\"dimimage\">" + img + "</label>";
 							}
@@ -1091,10 +1091,10 @@ function ShowFavorites()
 										(item.Status == 'Group On')||
 										(item.Status.indexOf('Set ') == 0)
 									 ) {
-											status+='<img src="images/lightbulb.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+											status+='<img src="images/lightbulb.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 								else {
-											status+='<img src="images/lightbulboff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+											status+='<img src="images/lightbulboff.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 							}
 							xhtm+=
@@ -1128,26 +1128,26 @@ function ShowFavorites()
 									'\t      <td id="name">' + item.Name + '</td>\n'+
 									'\t      <td id="bigtext"></td>\n';
 							if (item.SwitchType == "Doorbell") {
-								xhtm+='\t      <td id="img"><img src="images/doorbell48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								xhtm+='\t      <td id="img"><img src="images/doorbell48.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 							}
 							else if (item.SwitchType == "Push On Button") {
 								if (item.InternalState=="On") {
-									xhtm+='\t      <td id="img"><img src="images/pushon48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+									xhtm+='\t      <td id="img"><img src="images/pushon48.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 								else {
-									xhtm+='\t      <td id="img"><img src="images/push48.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+									xhtm+='\t      <td id="img"><img src="images/push48.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 							}
 							else if (item.SwitchType == "Door Lock") {
 								if (item.InternalState=="Open") {
-									xhtm+='\t      <td id="img"><img src="images/door48open.png" title="Close Door" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+									xhtm+='\t      <td id="img"><img src="images/door48open.png" title="' + $.i18n("Close Door") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 								else {
-									xhtm+='\t      <td id="img"><img src="images/door48.png" title="Open Door" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+									xhtm+='\t      <td id="img"><img src="images/door48.png" title="' + $.i18n("Open Door") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 							}
 							else if (item.SwitchType == "Push Off Button") {
-								xhtm+='\t      <td id="img"><img src="images/pushoff48.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								xhtm+='\t      <td id="img"><img src="images/pushoff48.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 							}
 							else if (item.SwitchType == "X10 Siren") {
 								if (
@@ -1173,26 +1173,26 @@ function ShowFavorites()
 							}
 							else if (item.SwitchType == "Blinds") {
 								if (item.Status == 'Closed') {
-									xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+									xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 									xhtm+='\t      <td id="img2"><img src="images/blindsstop.png" title="Stop Blinds" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
-									xhtm+='\t      <td id="img3"><img src="images/blinds48sel.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+									xhtm+='\t      <td id="img3"><img src="images/blinds48sel.png" title="' + $.i18n("Close Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 								else {
-									xhtm+='\t      <td id="img"><img src="images/blindsopen48sel.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+									xhtm+='\t      <td id="img"><img src="images/blindsopen48sel.png" title="' + $.i18n("Open Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 									xhtm+='\t      <td id="img2"><img src="images/blindsstop.png" title="Stop Blinds" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
-									xhtm+='\t      <td id="img3"><img src="images/blinds48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+									xhtm+='\t      <td id="img3"><img src="images/blinds48.png" title="' + $.i18n("Close Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 							}
 							else if (item.SwitchType == "Blinds Inverted") {
 								if (item.Status == 'Closed') {
-									xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+									xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 									xhtm+='\t      <td id="img2"><img src="images/blindsstop.png" title="Stop Blinds" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
-									xhtm+='\t      <td id="img3"><img src="images/blinds48sel.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+									xhtm+='\t      <td id="img3"><img src="images/blinds48sel.png" title="' + $.i18n("Close Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 								else {
-									xhtm+='\t      <td id="img"><img src="images/blindsopen48sel.png" title="Open Blinds" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+									xhtm+='\t      <td id="img"><img src="images/blindsopen48sel.png" title="' + $.i18n("Open Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 									xhtm+='\t      <td id="img2"><img src="images/blindsstop.png" title="Stop Blinds" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
-									xhtm+='\t      <td id="img3"><img src="images/blinds48.png" title="Close Blinds" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+									xhtm+='\t      <td id="img3"><img src="images/blinds48.png" title="' + $.i18n("Close Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 							}               
 							else if (item.SwitchType == "Dimmer") {
@@ -1202,10 +1202,10 @@ function ShowFavorites()
 										(item.Status == 'Group On')||
 										(item.Status.indexOf('Set ') == 0)
 									 ) {
-											xhtm+='\t      <td id="img"><img src="images/dimmer48-on.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+											xhtm+='\t      <td id="img"><img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 								else {
-											xhtm+='\t      <td id="img"><img src="images/dimmer48-off.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+											xhtm+='\t      <td id="img"><img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 							}
 							else if (item.SwitchType == "Motion Sensor") {
@@ -1239,10 +1239,10 @@ function ShowFavorites()
 										(item.Status == 'Group On')||
 										(item.Status.indexOf('Set ') == 0)
 									 ) {
-											xhtm+='\t      <td id="img"><img src="images/light-on.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+											xhtm+='\t      <td id="img"><img src="images/light-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 								else {
-											xhtm+='\t      <td id="img"><img src="images/light-off.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+											xhtm+='\t      <td id="img"><img src="images/light-off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 							}
 							xhtm+=
@@ -1965,11 +1965,11 @@ function ShowFavorites()
 					if (fPercentage==0)
 					{
 						status="Off ";
-						img='<img src="images/dimmeroff.png" title="Turn On" onclick="SwitchLight(' + idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+						img='<img src="images/dimmeroff.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 					}
 					else {
 						status="Set Level: " + fPercentage + " % ";
-						img='<img src="images/dimmer.png" title="Turn Off" onclick="SwitchLight(' + idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+						img='<img src="images/dimmer.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 					}
 					if ($(id + " #statustext").html()!=status) {
 						$(id + " #statustext").html(status);
@@ -1981,11 +1981,11 @@ function ShowFavorites()
 				else {
 					if (fPercentage==0)
 					{
-						img='<img src="images/dimmer48-off.png" title="Turn On" onclick="SwitchLight(' + idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+						img='<img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 						status="Off";
 					}
 					else {
-						img='<img src="images/dimmer48-on.png" title="Turn Off" onclick="SwitchLight(' + idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+						img='<img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 						status="Set Level: " + fPercentage + " %";
 					}
 					if ($(id + " #img").html()!=img) {
