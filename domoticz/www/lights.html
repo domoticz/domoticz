@@ -1202,8 +1202,8 @@ function RefreshLights()
 								$(id + " #img3").html(img3);
 							}
 						}
-						if ($(id + " #status").html()!=item.Status) {
-							$(id + " #status").html(item.Status);
+						if ($(id + " #status").html()!=TranslateStatus(item.Status)) {
+							$(id + " #status").html(TranslateStatus(item.Status));
 						}
 						if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 							$(id + " #lastupdate").html(item.LastUpdate);
@@ -1418,7 +1418,7 @@ function ShowLights()
             }
           }
           xhtm+=
-                '\t      <td id="status">' + item.Status + '</td>\n' +
+                '\t      <td id="status">' + TranslateStatus(item.Status) + '</td>\n' +
                 '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
                 '\t      <td id="type">' + item.Type + ', ' + item.SubType + ', ' + item.SwitchType;
           if (item.SwitchType == "Dimmer") {

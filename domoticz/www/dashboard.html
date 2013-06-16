@@ -25,7 +25,7 @@ function RefreshFavorites()
 							var obj=$(id);
 							if (typeof obj != 'undefined') {
 								if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
-									var status=item.Status;
+									var status=TranslateStatus(item.Status);
 									if (item.Status == 'On') {
 											status+='<img src="images/lightbulb.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
@@ -53,8 +53,8 @@ function RefreshFavorites()
 									if ($(id + " #img").html()!=img) {
 										$(id + " #img").html(img);
 									}
-									if ($(id + " #status").html()!=item.Status) {
-										$(id + " #status").html(item.Status);
+									if ($(id + " #status").html()!=TranslateStatus(item.Status)) {
+										$(id + " #status").html(TranslateStatus(item.Status));
 									}
 									if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 										$(id + " #lastupdate").html(item.LastUpdate);
@@ -72,7 +72,7 @@ function RefreshFavorites()
 						var obj=$(id);
 						if (typeof obj != 'undefined') {
 							if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
-								var status=item.Status + " ";
+								var status=TranslateStatus(item.Status) + " ";
 								if (item.SwitchType == "Doorbell") {
 									status+='<img src="images/doorbell.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
@@ -315,8 +315,8 @@ function RefreshFavorites()
 										$(id + " #img3").html(img3);
 									}
 								}
-								if ($(id + " #status").html()!=item.Status) {
-									$(id + " #status").html(item.Status);
+								if ($(id + " #status").html()!=TranslateStatus(item.Status)) {
+									$(id + " #status").html(TranslateStatus(item.Status));
 								}
 								if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 									$(id + " #lastupdate").html(item.LastUpdate);
@@ -593,8 +593,8 @@ function RefreshFavorites()
 								$(id + " #name").html(item.Name);
 							}
 							if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
-								if ($(id + " #status").html()!=item.Status) {
-									$(id + " #status").html(item.Status);
+								if ($(id + " #status").html()!=TranslateStatus(item.Status)) {
+									$(id + " #status").html(TranslateStatus(item.Status));
 								}
 							}
 							else {
@@ -634,8 +634,8 @@ function RefreshFavorites()
 								if ($(id + " #img").html()!=img) {
 									$(id + " #img").html(img);
 								}
-								if ($(id + " #status").html()!=item.Status) {
-									$(id + " #status").html(item.Status);
+								if ($(id + " #status").html()!=TranslateStatus(item.Status)) {
+									$(id + " #status").html(TranslateStatus(item.Status));
 								}
 								if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 									$(id + " #lastupdate").html(item.LastUpdate);
@@ -871,7 +871,7 @@ function ShowFavorites()
 									'\t      <td id="name">' + item.Name;
 							xhtm+=
 									 '</td>\n';
-							var status=item.Status + " ";
+							var status=TranslateStatus(item.Status) + " ";
 							if (item.Status == 'On') {
 											status+='<img src="images/lightbulb.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 							}
@@ -913,7 +913,7 @@ function ShowFavorites()
 										xhtm+='\t      <td id="img"><img src="images/light-off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 							}
 							xhtm+=
-										'\t      <td id="status">' + item.Status + '</td>\n' +
+										'\t      <td id="status">' + TranslateStatus(item.Status) + '</td>\n' +
 										'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n';
 							if (item.SwitchType == "Dimmer") {
 								xhtm+='<td><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-maxlevel="' + item.MaxDimLevel + '" data-svalue="' + item.LevelInt + '"></div></td>';
@@ -983,7 +983,7 @@ function ShowFavorites()
 									'\t      <td id="name">' + item.Name;
 							xhtm+=
 									 '</td>\n';
-							var status=item.Status + " ";
+							var status=TranslateStatus(item.Status) + " ";
 							if (item.SwitchType == "Doorbell") {
 								status+='<img src="images/doorbell.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 							}
@@ -1246,7 +1246,7 @@ function ShowFavorites()
 								}
 							}
 							xhtm+=
-										'\t      <td id="status">' + item.Status + '</td>\n' +
+										'\t      <td id="status">' + TranslateStatus(item.Status) + '</td>\n' +
 										'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n';
 							if (item.SwitchType == "Dimmer") {
 								xhtm+='<td><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-maxlevel="' + item.MaxDimLevel + '" data-svalue="' + item.LevelInt + '"></div></td>';
@@ -1661,7 +1661,7 @@ function ShowFavorites()
 							xhtm+=
 									'\t    <tr id="security_' + item.idx +'">\n' +
 									'\t      <td id="name">' + item.Name + '</td>\n';
-							var status=item.Status;
+							var status=TranslateStatus(item.Status);
 							xhtm+=
 										'\t      <td id="status">' + status + '</td>\n' +
 										'\t    </tr>\n';
@@ -1708,7 +1708,7 @@ function ShowFavorites()
 								}
 							}
 							xhtm+=
-										'\t      <td id="status">' + item.Status + '</td>\n' +
+										'\t      <td id="status">' + TranslateStatus(item.Status) + '</td>\n' +
 										'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
 										'\t    </tr>\n' +
 										'\t    </table>\n' +

@@ -1221,3 +1221,14 @@ function SetLanguage(lng)
 		});
 	$(".nav").i18n();
 }
+
+function TranslateStatus(status)
+{
+	//should of course be changed, but for now a quick sollution
+	if (status.indexOf("Set Level") != -1) {
+		return status.replace("Set Level",$.i18n('Set Level'));
+	}
+	else {
+		return $.i18n(status);
+	}
+}
