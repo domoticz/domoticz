@@ -111,8 +111,9 @@ void GetAppVersion()
 	std::ifstream infile;
 
 	szAppVersion="???";
+	std::string filename=szStartupFolder+"svnversion.h";
 
-	infile.open("svnversion.h");
+	infile.open(filename.c_str());
 	if (infile.is_open())
 	{
 		if (!infile.eof())
@@ -139,10 +140,18 @@ int main(int argc, char**argv)
 	bool bStartWebBrowser=true;
 	RedirectIOToConsole();
 #endif
+
+	szStartupFolder="";
+#if !defined WIN32
+	char szStartupPath[255];
+	getExecutablePathName((char*)&szStartupPath,255);
+	szStartupFolder=szStartupPath;
+	if (szStartupFolder.find_last_of('/')!=std::string::npos)
+		szStartupFolder=szStartupFolder.substr(0,szStartupFolder.find_last_of('/')+1);
+#endif
 	GetAppVersion();
 	_log.Log(LOG_NORM,"Domoticz V%s (c)2012-2013 GizMoCuz",szAppVersion.c_str());
 
-	szStartupFolder="";
 #if !defined WIN32
 	//Check if we are running on a RaspberryPi
 	std::string sLine = "";
@@ -163,11 +172,6 @@ int main(int argc, char**argv)
 		}
 		infile.close();
 	}
-	char szStartupPath[255];
-	getExecutablePathName((char*)&szStartupPath,255);
-	szStartupFolder=szStartupPath;
-	if (szStartupFolder.find_last_of('/')!=std::string::npos)
-		szStartupFolder=szStartupFolder.substr(0,szStartupFolder.find_last_of('/')+1);
 	_log.Log(LOG_NORM,"Startup Path: %s", szStartupFolder.c_str());
 #endif
 
