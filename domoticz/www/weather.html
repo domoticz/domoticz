@@ -35,53 +35,53 @@
 <div id="weathercontent">
 </div>
 <div id="weatherlog" style="display:none;">
-  <h2>Day</h2>
+  <h2 data-i18n="Day">Day</h2>
   <div id="weatherdaygraph" style="height: 300px;"></div>
   <br>
-  <h2>Month</h2>
+  <h2 data-i18n="Month">Month</h2>
   <br>
-  <h2>Year</h2>
+  <h2 data-i18n="Year">Year</h2>
  </div>
  <div id="windlog" style="display:none;">
-  <h2>Day</h2>
+  <h2 data-i18n="Day">Day</h2>
   <div id="winddaygraph" style="height: 300px;"></div>
   <br>
   <div id="winddirgraph" style="width: 400px; height: 400px;"></div>
   <br>
-  <h2>Month</h2>
+  <h2 data-i18n="Month">Month</h2>
   <div id="windmonthgraph" style="height: 300px;"></div>
   <br>
-  <h2>Year</h2>
+  <h2 data-i18n="Year">Year</h2>
   <div id="windyeargraph" style="height: 300px;"></div>
 </div>
 <div id="uvlog" style="display:none;">
-  <h2>Day</h2>
+  <h2 data-i18n="Day">Day</h2>
   <div id="uvdaygraph" style="height: 300px;"></div>
   <br>
-  <h2>Month</h2>
+  <h2 data-i18n="Month">Month</h2>
   <div id="uvmonthgraph" style="height: 300px;"></div>
   <br>
-  <h2>Year</h2>
+  <h2 data-i18n="Year">Year</h2>
   <div id="uvyeargraph" style="height: 300px;"></div>
 </div>
 <div id="barolog" style="display:none;">
-  <h2>Day</h2>
+  <h2 data-i18n="Day">Day</h2>
   <div id="barodaygraph" style="height: 300px;"></div>
   <br>
-  <h2>Month</h2>
+  <h2 data-i18n="Month">Month</h2>
   <div id="baromonthgraph" style="height: 300px;"></div>
   <br>
-  <h2>Year</h2>
+  <h2 data-i18n="Year">Year</h2>
   <div id="baroyeargraph" style="height: 300px;"></div>
 </div>
 <div id="rainlog" style="display:none;">
-  <h2>Week</h2>
+  <h2 data-i18n="Week">Week</h2>
   <div id="raindaygraph" style="height: 300px;"></div>
   <br>
-  <h2>Month</h2>
+  <h2 data-i18n="Month">Month</h2>
   <div id="rainmonthgraph" style="height: 300px;"></div>
   <br>
-  <h2>Year</h2>
+  <h2 data-i18n="Year">Year</h2>
   <div id="rainyeargraph" style="height: 300px;"></div>
 </div>
 
@@ -182,14 +182,14 @@ function ShowWindLog(id,name)
           text: "Domoticz.com"
         },
         title: {
-            text: 'Wind speed/gust '  + Get5MinuteHistoryDaysGraphTitle()
+            text: $.i18n('Wind') + ' ' + $.i18n('speed/gust') + ' '  + Get5MinuteHistoryDaysGraphTitle()
         },
         xAxis: {
             type: 'datetime'
         },
         yAxis: {
             title: {
-                text: 'Speed (m/s)'
+                text: $.i18n('Speed') + ' (m/s)'
             },
             min: 0,
             minorGridLineWidth: 0,
@@ -200,7 +200,7 @@ function ShowWindLog(id,name)
                 to: 1.5,
                 color: 'rgba(68, 170, 213, 0.3)',
                 label: {
-                    text: 'Light air',
+                    text: $.i18n('Light air'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -210,7 +210,7 @@ function ShowWindLog(id,name)
                 to: 3.5,
                 color: 'rgba(68, 170, 213, 0.5)',
                 label: {
-                    text: 'Light breeze',
+                    text: $.i18n('Light breeze'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -220,7 +220,7 @@ function ShowWindLog(id,name)
                 to: 5.5,
                 color: 'rgba(68, 170, 213, 0.3)',
                 label: {
-                    text: 'Gentle breeze',
+                    text: $.i18n('Gentle breeze'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -230,7 +230,7 @@ function ShowWindLog(id,name)
                 to: 8,
                 color: 'rgba(68, 170, 213, 0.5)',
                 label: {
-                    text: 'Moderate breeze',
+                    text: $.i18n('Moderate breeze'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -240,7 +240,7 @@ function ShowWindLog(id,name)
                 to: 10.8,
                 color: 'rgba(68, 170, 213, 0.3)',
                 label: {
-                    text: 'Fresh breeze',
+                    text: $.i18n('Fresh breeze'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -250,7 +250,7 @@ function ShowWindLog(id,name)
                 to: 13.9,
                 color: 'rgba(68, 170, 213, 0.5)',
                 label: {
-                    text: 'Strong breeze',
+                    text: $.i18n('Strong breeze'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -260,7 +260,7 @@ function ShowWindLog(id,name)
                 to: 17.2,
                 color: 'rgba(68, 170, 213, 0.3)',
                 label: {
-                    text: 'High wind',
+                    text: $.i18n('High wind'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -270,7 +270,7 @@ function ShowWindLog(id,name)
                 to: 20.8,
                 color: 'rgba(68, 170, 213, 0.3)',
                 label: {
-                    text: 'Fresh gale',
+                    text: $.i18n('Fresh gale'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -280,7 +280,7 @@ function ShowWindLog(id,name)
                 to: 24.5,
                 color: 'rgba(68, 170, 213, 0.5)',
                 label: {
-                    text: 'Strong gale',
+                    text: $.i18n('Strong gale'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -290,7 +290,7 @@ function ShowWindLog(id,name)
                 to: 28.5,
                 color: 'rgba(68, 170, 213, 0.3)',
                 label: {
-                    text: 'Storm',
+                    text: $.i18n('Storm'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -300,7 +300,7 @@ function ShowWindLog(id,name)
                 to: 32.7,
                 color: 'rgba(68, 170, 213, 0.5)',
                 label: {
-                    text: 'Violent storm',
+                    text: $.i18n('Violent storm'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -310,7 +310,7 @@ function ShowWindLog(id,name)
                 to: 100,
                 color: 'rgba(68, 170, 213, 0.3)',
                 label: {
-                    text: 'Hurricane',
+                    text: $.i18n('Hurricane'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -346,9 +346,9 @@ function ShowWindLog(id,name)
             }
         },
         series: [{
-            name: 'Speed'
+            name: $.i18n('Speed')
         }, {
-            name: 'Gust',
+            name: $.i18n('Gust')
         }]
         ,
         navigation: {
@@ -379,7 +379,7 @@ function ShowWindLog(id,name)
           }
         },
         title: {
-            text: 'Wind Direction '  + Get5MinuteHistoryDaysGraphTitle()
+            text: $.i18n('Wind') + ' ' + $.i18n('Direction') + ' '  + Get5MinuteHistoryDaysGraphTitle()
         },
         pane: {
             startAngle: 0,
@@ -444,7 +444,7 @@ function ShowWindLog(id,name)
         series: [{
             type: 'area',
             color: 'rgba(68, 170, 213, 0.2)',
-            name: 'Direction'
+            name: $.i18n('Direction')
         }]
     });
 
@@ -481,14 +481,14 @@ function ShowWindLog(id,name)
           text: "Domoticz.com"
         },
         title: {
-            text: 'Wind speed/gust Last Month'
+            text: $.i18n('Wind') + ' ' + $.i18n('speed/gust') + ' ' + $.i18n('Last') + ' ' + $.i18n('Month')
         },
         xAxis: {
             type: 'datetime'
         },
         yAxis: {
             title: {
-                text: 'Speed (m/s)'
+                text: $.i18n('Speed') + ' (m/s)'
             },
             min: 0,
             minorGridLineWidth: 0,
@@ -499,7 +499,7 @@ function ShowWindLog(id,name)
                 to: 1.5,
                 color: 'rgba(68, 170, 213, 0.3)',
                 label: {
-                    text: 'Light air',
+                    text: $.i18n('Light air'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -509,7 +509,7 @@ function ShowWindLog(id,name)
                 to: 3.5,
                 color: 'rgba(68, 170, 213, 0.5)',
                 label: {
-                    text: 'Light breeze',
+                    text: $.i18n('Light breeze'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -519,7 +519,7 @@ function ShowWindLog(id,name)
                 to: 5.5,
                 color: 'rgba(68, 170, 213, 0.3)',
                 label: {
-                    text: 'Gentle breeze',
+                    text: $.i18n('Gentle breeze'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -529,7 +529,7 @@ function ShowWindLog(id,name)
                 to: 8,
                 color: 'rgba(68, 170, 213, 0.5)',
                 label: {
-                    text: 'Moderate breeze',
+                    text: $.i18n('Moderate breeze'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -539,7 +539,7 @@ function ShowWindLog(id,name)
                 to: 10.8,
                 color: 'rgba(68, 170, 213, 0.3)',
                 label: {
-                    text: 'Fresh breeze',
+                    text: $.i18n('Fresh breeze'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -549,7 +549,7 @@ function ShowWindLog(id,name)
                 to: 13.9,
                 color: 'rgba(68, 170, 213, 0.5)',
                 label: {
-                    text: 'Strong breeze',
+                    text: $.i18n('Strong breeze'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -559,7 +559,7 @@ function ShowWindLog(id,name)
                 to: 17.2,
                 color: 'rgba(68, 170, 213, 0.3)',
                 label: {
-                    text: 'High wind',
+                    text: $.i18n('High wind'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -569,7 +569,7 @@ function ShowWindLog(id,name)
                 to: 20.8,
                 color: 'rgba(68, 170, 213, 0.3)',
                 label: {
-                    text: 'Fresh gale',
+                    text: $.i18n('Fresh gale'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -579,7 +579,7 @@ function ShowWindLog(id,name)
                 to: 24.5,
                 color: 'rgba(68, 170, 213, 0.5)',
                 label: {
-                    text: 'Strong gale',
+                    text: $.i18n('Strong gale'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -589,7 +589,7 @@ function ShowWindLog(id,name)
                 to: 28.5,
                 color: 'rgba(68, 170, 213, 0.3)',
                 label: {
-                    text: 'Storm',
+                    text: $.i18n('Storm'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -599,7 +599,7 @@ function ShowWindLog(id,name)
                 to: 32.7,
                 color: 'rgba(68, 170, 213, 0.5)',
                 label: {
-                    text: 'Violent storm',
+                    text: $.i18n('Violent storm'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -609,7 +609,7 @@ function ShowWindLog(id,name)
                 to: 100,
                 color: 'rgba(68, 170, 213, 0.3)',
                 label: {
-                    text: 'Hurricane',
+                    text: $.i18n('Hurricane'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -645,7 +645,7 @@ function ShowWindLog(id,name)
             }
         },
         series: [{
-            name: 'Speed',
+            name: $.i18n('Speed'),
 			point: {
 				events: {
 					click: function(event) {
@@ -654,7 +654,7 @@ function ShowWindLog(id,name)
 				}
 			}
         }, {
-            name: 'Gust',
+            name: $.i18n('Gust'),
 			point: {
 				events: {
 					click: function(event) {
@@ -704,14 +704,14 @@ function ShowWindLog(id,name)
           text: "Domoticz.com"
         },
         title: {
-            text: 'Wind speed/gust Last Year'
+            text: $.i18n('Wind') + ' ' + $.i18n('speed/gust') + ' ' + $.i18n('Last') + ' ' + $.i18n('Year')
         },
         xAxis: {
             type: 'datetime'
         },
         yAxis: {
             title: {
-                text: 'Speed (m/s)'
+                text: $.i18n('Speed') + ' (m/s)'
             },
             min: 0,
             minorGridLineWidth: 0,
@@ -722,7 +722,7 @@ function ShowWindLog(id,name)
                 to: 1.5,
                 color: 'rgba(68, 170, 213, 0.3)',
                 label: {
-                    text: 'Light air',
+                    text: $.i18n('Light air'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -732,7 +732,7 @@ function ShowWindLog(id,name)
                 to: 3.3,
                 color: 'rgba(68, 170, 213, 0.5)',
                 label: {
-                    text: 'Light breeze',
+                    text: $.i18n('Light breeze'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -742,7 +742,7 @@ function ShowWindLog(id,name)
                 to: 5.5,
                 color: 'rgba(68, 170, 213, 0.3)',
                 label: {
-                    text: 'Gentle breeze',
+                    text: $.i18n('Gentle breeze'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -752,7 +752,7 @@ function ShowWindLog(id,name)
                 to: 8,
                 color: 'rgba(68, 170, 213, 0.5)',
                 label: {
-                    text: 'Moderate breeze',
+                    text: $.i18n('Moderate breeze'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -762,7 +762,7 @@ function ShowWindLog(id,name)
                 to: 11,
                 color: 'rgba(68, 170, 213, 0.3)',
                 label: {
-                    text: 'Fresh breeze',
+                    text: $.i18n('Fresh breeze'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -772,7 +772,7 @@ function ShowWindLog(id,name)
                 to: 14,
                 color: 'rgba(68, 170, 213, 0.5)',
                 label: {
-                    text: 'Strong breeze',
+                    text: $.i18n('Strong breeze'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -782,7 +782,7 @@ function ShowWindLog(id,name)
                 to: 15,
                 color: 'rgba(68, 170, 213, 0.3)',
                 label: {
-                    text: 'High wind',
+                    text: $.i18n('High wind'),
                     style: {
                         color: '#CCCCCC'
                     }
@@ -817,7 +817,7 @@ function ShowWindLog(id,name)
             }
         },
         series: [{
-            name: 'Speed',
+            name: $.i18n('Speed'),
 			point: {
 				events: {
 					click: function(event) {
@@ -826,7 +826,7 @@ function ShowWindLog(id,name)
 				}
 			}
         }, {
-            name: 'Gust',
+            name: $.i18n('Gust'),
 			point: {
 				events: {
 					click: function(event) {
@@ -963,7 +963,7 @@ function ShowUVLog(id,name)
           text: "Domoticz.com"
         },
         title: {
-            text: 'UV Last Month'
+            text: 'UV ' + $.i18n('Last') + ' ' + $.i18n('Month')
         },
         xAxis: {
             type: 'datetime'
@@ -1048,7 +1048,7 @@ function ShowUVLog(id,name)
           text: "Domoticz.com"
         },
         title: {
-            text: 'UV Last Year'
+            text: 'UV ' + $.i18n('Last') + ' ' + $.i18n('Year')
         },
         xAxis: {
             type: 'datetime'
@@ -1145,14 +1145,14 @@ function ShowBaroLog(id,name)
           text: "Domoticz.com"
         },
         title: {
-            text: 'Barometer '  + Get5MinuteHistoryDaysGraphTitle()
+            text: $.i18n('Barometer') + ' '  + Get5MinuteHistoryDaysGraphTitle()
         },
         xAxis: {
             type: 'datetime'
         },
         yAxis: {
             title: {
-                text: 'Pressure (hPa)'
+                text: $.i18n('Pressure') + ' (hPa)'
             },
             labels: {
 							formatter: function(){
@@ -1227,14 +1227,14 @@ function ShowBaroLog(id,name)
           text: "Domoticz.com"
         },
         title: {
-            text: 'Barometer Last Month'
+            text: $.i18n('Barometer') + ' ' + $.i18n('Last') + ' ' + $.i18n('Month')
         },
         xAxis: {
             type: 'datetime'
         },
         yAxis: {
             title: {
-                text: 'Pressure (hPa)'
+                text: $.i18n('Pressure') + ' (hPa)'
             },
             labels: {
 							formatter: function(){
@@ -1316,14 +1316,14 @@ function ShowBaroLog(id,name)
           text: "Domoticz.com"
         },
         title: {
-            text: 'Barometer Last Year'
+            text: $.i18n('Barometer') + ' ' + $.i18n('Last') + ' ' + $.i18n('Year')
         },
         xAxis: {
             type: 'datetime'
         },
         yAxis: {
             title: {
-                text: 'Pressure (hPa)'
+                text: $.i18n('Pressure') + ' (hPa)'
             },
             labels: {
 							formatter: function(){
@@ -1417,7 +1417,7 @@ function ShowRainLog(id,name)
           text: "Domoticz.com"
         },
         title: {
-            text: 'Rainfall Last week'
+            text: $.i18n('Rainfall') + ' ' + $.i18n('Last') + ' ' + $.i18n('Week')
         },
         xAxis: {
             type: 'datetime',
@@ -1428,7 +1428,7 @@ function ShowRainLog(id,name)
         },
         yAxis: {
             title: {
-                text: 'Rainfaill (mm)'
+                text: $.i18n('Rainfall') + ' (mm)'
             },
             min: 0
         },
@@ -1497,14 +1497,14 @@ function ShowRainLog(id,name)
           text: "Domoticz.com"
         },
         title: {
-            text: 'Rainfall Last Month'
+            text: $.i18n('Rainfall') + ' ' + $.i18n('Last') + ' ' + $.i18n('Month')
         },
         xAxis: {
             type: 'datetime'
         },
         yAxis: {
             title: {
-                text: 'Rainfaill (mm)'
+                text: $.i18n('Rainfall') + ' (mm)'
             },
             min: 0
         },
@@ -1581,14 +1581,14 @@ function ShowRainLog(id,name)
           text: "Domoticz.com"
         },
         title: {
-            text: 'Rainfall Last Year'
+            text: $.i18n('Rainfall') + ' ' + $.i18n('Last') + ' '  + $.i18n('Year')
         },
         xAxis: {
             type: 'datetime'
         },
         yAxis: {
             title: {
-                text: 'Rainfaill (mm)'
+                text: $.i18n('Rainfall') + ' (mm)'
             },
             min: 0
         },

@@ -56,13 +56,13 @@
     </table>
 </div>
 <div id="templog" style="display:none;">
-<h2>Day</h2>
+<h2 data-i18n="Day">Day</h2>
 <div id="tempdaygraph" style="height: 300px;"></div>
 <br>
-<h2>Month</h2>
+<h2 data-i18n="Month">Month</h2>
 <div id="tempmonthgraph" style="height: 300px;"></div>
 <br>
-<h2>Year</h2>
+<h2  data-i18n="Year">Year</h2>
 <div id="tempyeargraph" style="height: 300px;"></div>
 </div>
 
@@ -546,7 +546,7 @@ function ShowTempLog(id,name)
         text: "Domoticz.com"
       },
       title: {
-          text: 'Temperature ' + Get5MinuteHistoryDaysGraphTitle()
+          text: $.i18n('Temperature') + ' ' + Get5MinuteHistoryDaysGraphTitle()
       },
       xAxis: {
           type: 'datetime'
@@ -648,7 +648,7 @@ function ShowTempLog(id,name)
         text: "Domoticz.com"
       },
       title: {
-          text: 'Temperature Last Month'
+          text: $.i18n('Temperature') + ' ' + $.i18n('Last') + ' ' + $.i18n('Month')
       },
       xAxis: {
           type: 'datetime'
@@ -759,7 +759,7 @@ function ShowTempLog(id,name)
         text: "Domoticz.com"
       },
       title: {
-          text: 'Temperature Last Year'
+          text: $.i18n('Temperature') + ' ' + $.i18n('Last') + ' ' + $.i18n('Year')
       },
       xAxis: {
           type: 'datetime'

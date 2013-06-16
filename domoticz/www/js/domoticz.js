@@ -945,12 +945,12 @@ function matchua ( ua )
 function Get5MinuteHistoryDaysGraphTitle()
 {
 	if ($.FiveMinuteHistoryDays==1) {
-		return "Last 24 hours";
+		return $.i18n("Last") + " 24 " + $.i18n("Hours");
 	}
 	else if  ($.FiveMinuteHistoryDays==2) {
-		return "Last 48 hours";
+		return $.i18n("Last") + " 48 " + $.i18n("Hours");
 	}
-	return "Last " + $.FiveMinuteHistoryDays + " days";
+	return $.i18n("Last") + " " + $.FiveMinuteHistoryDays + " " + $.i18n("Days");
 }
 
 function GenerateCamFeedURL(address,port,username,password,videourl)

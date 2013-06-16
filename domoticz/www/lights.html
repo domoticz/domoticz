@@ -4,45 +4,45 @@
 <div id="editlightswitch" style="display:none;">
 		<table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
 			<tr>
-				<td align="right" style="width:80px"><label for="name">Name: </label></td>
+				<td align="right" style="width:120px"><label for="name"><span data-i18n="Name"></span>: </label></td>
 				<td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 			</tr>
 			<tr>
-				<td align="right"><label for="switchtype">Switch Type: </label></td>
+				<td align="right"><label for="switchtype"><span data-i18n="Switch Type"></span>: </label></td>
 				<td><select id="comboswitchtype" style="width:150px" class="combobox ui-corner-all">
 					<!--#embed switchtypes -->
 				</select></td>
 			</tr>
 			<tr id="MotionDiv">
-				<td align="right"<label for="motionoffdelay">Off Delay:</label></td>
+				<td align="right"<label for="motionoffdelay"><span data-i18n="Off Delay"></span>:</label></td>
 				<td><input type="text" id="motionoffdelay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (Seconds) 0 = Use sensor time</td>
 			</tr>
 			<tr id="OffDelayDiv">
-				<td align="right"><label for="motionoffdelay">Off Delay:</label></td>
+				<td align="right"><label for="motionoffdelay"><span data-i18n="Off Delay"></span>:</label></td>
 				<td><input type="text" id="offdelay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (Seconds) 0 = Disabled</td>
 			</tr>
 			<tr>
 				<td></td>
 				<td>
-					<a class="btnstyle3" onclick="SaveLightSwitch();">Save</a>&nbsp;&nbsp;&nbsp;
-					<a class="btnstyle3" onclick="DeleteLightSwitch();">Delete</a>
+					<a class="btnstyle3" onclick="SaveLightSwitch();" data-i18n="Save">Save</a>&nbsp;&nbsp;&nbsp;
+					<a class="btnstyle3" onclick="DeleteLightSwitch();" data-i18n="Delete">Delete</a>
 				</td>
 			</tr>
 		</table>
 		<br>
-		<h2>Sub/Slave Devices:</h2>
+		<h2><span data-i18n="Sub/Slave Devices"></span>:</h2>
 		<br>
 		<table class="display" id="subdevicestable" border="0" cellpadding="0" cellspacing="0" width="100%">
 				<thead>
 						<tr>
-								<th align="left">Name</th>
+								<th align="left" data-i18n="Name">Name</th>
 						</tr>
 				</thead>
 		</table>
     <table id="delclr" border="0" cellpadding="0" cellspacing="0" width="100%">
 			<tr>
 				<td>
-					<a class="btnstyle3-dis" id="subdevicedelete" >Delete</a>
+					<a class="btnstyle3-dis" id="subdevicedelete" data-i18n="Delete">Delete</a>
 				</td>
 				<td align="right">
 					<a class="btnstyle3" onclick="ClearSubDevices();" data-i18n="Clear">Clear</a>
@@ -52,11 +52,11 @@
 		<br>
 		<table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
 			<tr>
-				<td align="right" style="width:120px"><label for="name">Sub/Slave Device: </label></td>
+				<td align="right" style="width:120px"><label for="name"><span data-i18n="Sub/Slave Device"></span>: </label></td>
 				<td>
 					<select id="combosubdevice" style="width:250px" class="combobox ui-corner-all">
 					</select>
-					<a class="btnstyle3" onclick="AddSubDevice();">Add</a>
+					<a class="btnstyle3" onclick="AddSubDevice();" data-i18n="Add">Add</a>
 				</td>
 			</tr>
 		</table>
