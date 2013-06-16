@@ -1024,9 +1024,7 @@ void cWebemRequestHandler::handle_request( const request& req, reply& rep)
 		request_handler::handle_request( req_modified, rep);
 
 		if (rep.headers[1].value == "text/html" 
-			|| rep.headers[1].value == "text/css"
 			|| rep.headers[1].value == "text/plain" 
-			|| rep.headers[1].value == "text/javascript"
 			)
 		{
 			// Find and include any special cWebem strings
@@ -1040,6 +1038,17 @@ void cWebemRequestHandler::handle_request( const request& req, reply& rep)
 
 			// tell browser that we are using UTF-8 encoding
 			rep.headers[1].value += ";charset=UTF-8";
+		}
+		else if (rep.headers[1].value == "text/css"
+				|| rep.headers[1].value == "text/javascript"
+			)
+		{
+			// adjust content length header
+			// ( Firefox ignores this, but apparently some browsers truncate display without it.
+			// fix provided by http://www.codeproject.com/Members/jaeheung72 )
+
+			rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
+			rep.headers[1].value += ";charset=ISO-8859-1";
 		}
 	}
 }

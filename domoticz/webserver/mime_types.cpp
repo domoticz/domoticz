@@ -28,6 +28,7 @@ struct mapping
   { "css", "text/css" },
   { "xml", "application/css" },
   { "js", "text/javascript" },
+  { "json", "text/javascript" },
   { "swf", "application/x-shockwave-flash" },
   { "manifest", "text/cache-manifest" },
   { "appcache", "text/cache-manifest" },

@@ -15,6 +15,8 @@ Version 1.0.xxx (June xxth 2013)
 - Fixed: Ampersand in name could cause domoticz to go in endless loop
 - Fixed: CM119/160/180 Energy Usage values
 - Implemented: Initial language translation
+- Fixed: JSon character set return from webserver, now again ISO-8859-1
+- Implemented: German language support (thanks to the community!)
 
 Version 1.0.666 (May 28th 2013)
 - Implemented: Settings, Doorbell could be send as 'Group On' or 'On' command
