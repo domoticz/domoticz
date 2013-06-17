@@ -581,7 +581,8 @@ function RefreshHardwareTable()
 				enabledstr="Yes";
 			}
 			
-			var HwTypeStr=$.myglobals.HardwareTypesStr[item.Type];
+			var HwTypeStrOrg=$.myglobals.HardwareTypesStr[item.Type];
+			var HwTypeStr=HwTypeStrOrg;
 			if (typeof HwTypeStr == 'undefined') {
 				HwTypeStr="???? Unknown (NA)";
 			}
@@ -625,7 +626,7 @@ function RefreshHardwareTable()
 				"IntPort": item.Port,
                 "0": item.Name,
                 "1": enabledstr,
-				"2": HwTypeStr,
+				"2": HwTypeStrOrg,
 				"3": item.Address,
 				"4": SerialName
 			} );
@@ -650,27 +651,27 @@ function RefreshHardwareTable()
 					$("#updelclr #hardwareupdate").attr("href", "javascript:UpdateHardware(" + idx + "," + data["Mode1"] + "," + data["Mode2"] + "," + data["Mode3"] + "," + data["Mode4"] + "," + data["Mode5"] + ")");
 					$("#updelclr #hardwaredelete").attr("href", "javascript:DeleteHardware(" + idx + ")");
 					$("#hardwarecontent #hardwareparamstable #hardwarename").val(data["0"]);
-					$("#hardwarecontent #hardwareparamstable #combotype").val(jQuery.inArray(data["Type"], $.myglobals.HardwareTypesStr));
+					$("#hardwarecontent #hardwareparamstable #combotype").val(jQuery.inArray(data["2"], $.myglobals.HardwareTypesStr));
 
 					$('#hardwarecontent #hardwareparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
 
 					UpdateHardwareParamControls();
-					if ((data["Type"].indexOf("TE923") >= 0)||(data["Type"].indexOf("Volcraft") >= 0)||(data["Type"].indexOf("1-Wire") >= 0)||(data["Type"].indexOf("BMP085") >= 0))
+					if ((data["2"].indexOf("TE923") >= 0)||(data["2"].indexOf("Volcraft") >= 0)||(data["2"].indexOf("1-Wire") >= 0)||(data["2"].indexOf("BMP085") >= 0))
 					{
 						//nothing to be set
 					}
 					else
-					if (data["Type"].indexOf("USB") >= 0)
+					if (data["2"].indexOf("USB") >= 0)
 					{
 						$("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
 					}
 					else
-					if ((data["Type"].indexOf("LAN") >= 0)||(data["Type"].indexOf("Domoticz") >= 0))
+					if ((data["2"].indexOf("LAN") >= 0)||(data["2"].indexOf("Domoticz") >= 0))
 					{
 						$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["3"]);
 						$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["4"]);
 					}
-					if (data["Type"].indexOf("Domoticz") >= 0) {
+					if (data["2"].indexOf("Domoticz") >= 0) {
 						$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
 						$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
 					}

@@ -33,7 +33,7 @@ DAEMON=/home/pi/domoticz/domoticz
 NAME=domoticz
 DESC="Domoticz Home Automation System"
 PIDFILE=/var/run/$NAME.pid
-[ "$LOGFILE" = "" ] && LOGFILE="/tmp/domoticz.log"
+[ "$LOGFILE" = "" ] && LOGFILE="/dev/null"
 
 test -f $DAEMON || exit 0
 
