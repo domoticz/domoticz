@@ -11,6 +11,8 @@
 
 #include <ctime>
 
+//#define DEBUG_DAVIS
+
 #define RETRY_DELAY 30
 #define DAVIS_READ_INTERVAL 30
 
@@ -23,6 +25,7 @@ CDavisLoggerSerial::CDavisLoggerSerial(const int ID, const std::string& devname,
 	m_iBaudRate=baud_rate;
 	m_stoprequested=false;
 	m_bIsStarted=false;
+
 }
 
 CDavisLoggerSerial::~CDavisLoggerSerial(void)
@@ -102,6 +105,13 @@ void CDavisLoggerSerial::Do_Work()
 		boost::this_thread::sleep(boost::posix_time::seconds(1));
 		if (m_stoprequested)
 			break;
+
+#ifdef DEBUG_DAVIS
+		sOnConnected(this);
+		HandleLoopData(NULL,0);
+		continue;
+#endif
+
 		if (!isOpen())
 		{
 			if (m_retrycntr==0)
@@ -275,6 +285,9 @@ void CDavisLoggerSerial::UpdateHumSensor(const unsigned char Idx, const int Hum)
 
 bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 {
+	const uint8_t *pData=data+1;
+
+#ifndef DEBUG_DAVIS
 	if (len!=100)
 		return false;
 
@@ -286,29 +299,24 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		(data[97]!=0x0d)
 		)
 		return false;
-/*
-#ifdef _DEBUG
-	FILE *fOut=fopen("davisrob.bin","wb+");
-	fwrite(data,1,len,fOut);
-	fclose(fOut);
-#endif
-*/
-	RBUF tsen;
-	memset(&tsen,0,sizeof(RBUF));
-
 	bool bIsRevA = (data[4]=='P');
-
-	const uint8_t *pData=data+1;
-/*
-#ifdef _DEBUG
+#else
+//	FILE *fOut=fopen("davisrob.bin","wb+");
+//	fwrite(data,1,len,fOut);
+//	fclose(fOut);
 	unsigned char szBuffer[200];
 	FILE *fIn=fopen("E:\\davis3.bin","rb+");
 	//FILE *fIn=fopen("davisrob.bin","rb+");
 	fread(&szBuffer,1,100,fIn);
 	fclose(fIn);
 	pData=szBuffer+1;
+	bool bIsRevA(szBuffer[4]=='P');
 #endif
-*/
+
+	RBUF tsen;
+	memset(&tsen,0,sizeof(RBUF));
+
+
 	unsigned char tempIdx=1;
 
 	bool bBaroValid=false;
