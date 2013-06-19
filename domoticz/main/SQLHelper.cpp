@@ -3415,15 +3415,15 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		{
 			std::vector<std::string> sd=result[0];
 
-			float total_min=(float)atof(sd[0].c_str());
-			float total_max=(float)atof(sd[1].c_str());
+			double total_min=(double)atof(sd[0].c_str());
+			double total_max=(double)atof(sd[1].c_str());
 
 			if (
 				(devType!=pTypeAirQuality)&&
 				(devType!=pTypeUsage)
 				)
 			{
-				float total_real=total_max-total_min;
+				double total_real=total_max-total_min;
 
 				//insert into calendar table
 				sprintf(szTmp,
