@@ -173,7 +173,7 @@ function RemoveCode()
 
 	$("#scenecontent #removecode").addClass("disabled");
 	$("#scenecontent #learncode").addClass("btn-success");
-	$("#scenecontent #learncode").html("Learn Code");
+	$("#scenecontent #learncode").html($.i18n("Learn Code"));
 
 	$.ajax({
 		 url: "json.htm?type=command&param=removescenecode&idx="+$.devIdx,
@@ -363,10 +363,10 @@ function RefreshDeviceTable(idx)
         $.each(data.result, function(i,item){
 					var commandbtns;
 					if (item.IsOn==true) {
-						commandbtns='<button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.DevID + ',\'On\',RefreshDeviceTableEx);">ON</button> <button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.DevID + ',\'Off\',RefreshDeviceTableEx);">OFF</button>';
+						commandbtns='<button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.DevID + ',\'On\',RefreshDeviceTableEx);">' + $.i18n('ON') + '</button> <button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.DevID + ',\'Off\',RefreshDeviceTableEx);">' + $.i18n('OFF') + '</button>';
 					}
 					else {
-						commandbtns='<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.DevID + ',\'On\',RefreshDeviceTableEx);">ON</button> <button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.DevID + ',\'Off\',RefreshDeviceTableEx);">OFF</button>';
+						commandbtns='<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.DevID + ',\'On\',RefreshDeviceTableEx);">' + $.i18n('ON') + '</button> <button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.DevID + ',\'Off\',RefreshDeviceTableEx);">' + $.i18n('OFF') + '</button>';
 					}
           var addId = oTable.fnAddData( {
 								"DT_RowId": item.ID,
@@ -457,7 +457,7 @@ function EditSceneDevice(idx,name,havecode)
 	if (havecode==0) {
 			$("#scenecontent #removecode").addClass("disabled");
 			$("#scenecontent #learncode").addClass("btn-success");
-			$("#scenecontent #learncode").html("Learn Code");
+			$("#scenecontent #learncode").html($.i18n("Learn Code"));
 	}
 	else {
 			$("#scenecontent #removecode").addClass("btn-danger");
