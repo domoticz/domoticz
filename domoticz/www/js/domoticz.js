@@ -482,85 +482,85 @@ function RefreshNotificationTable(idx)
 			var stype="";
 			if (parts[0]=="T")
 			{
-				ntype="Temperature";
+				ntype=$.i18n("Temperature");
 				stype=" &deg; C";
 			}
 			else if (parts[0]=="H")
 			{
-				ntype="Humidity";
+				ntype=$.i18n("Humidity");
 				stype=" %";
 			}
 			else if (parts[0]=="R")
 			{
-				ntype="Rain";
+				ntype=$.i18n("Rain");
 				stype=" mm";
 			}
 			else if (parts[0]=="W")
 			{
-				ntype="Wind";
+				ntype=$.i18n("Wind");
 				stype=" m/s";
 			}
 			else if (parts[0]=="U")
 			{
-				ntype="UV";
+				ntype=$.i18n("UV");
 				stype=" UVI";
 			}
 			else if (parts[0]=="M")
 			{
-				ntype="Usage";
+				ntype=$.i18n("Usage");
 			}
 			else if (parts[0]=="B")
 			{
-				ntype="Baro";
+				ntype=$.i18n("Baro");
 				stype=" hPa";
 			}
 			else if (parts[0]=="S")
 			{
-				ntype="Switch On";
+				ntype=$.i18n("Switch On");
 			}
 			else if (parts[0]=="O")
 			{
-				ntype="Switch Off";
+				ntype=$.i18n("Switch Off");
 			}
 			else if (parts[0]=="E")
 			{
-				ntype="Today";
+				ntype=$.i18n("Today");
 				stype=" kWh";
 			}
 			else if (parts[0]=="G")
 			{
-				ntype="Today";
+				ntype=$.i18n("Today");
 				stype=" m3";
 			}
 			else if (parts[0]=="1")
 			{
-				ntype="Ampere 1";
+				ntype=$.i18n("Ampere 1");
 				stype=" A";
 			}
 			else if (parts[0]=="2")
 			{
-				ntype="Ampere 2";
+				ntype=$.i18n("Ampere 2");
 				stype=" A";
 			}
 			else if (parts[0]=="3")
 			{
-				ntype="Ampere 3";
+				ntype=$.i18n("Ampere 3");
 				stype=" A";
 			}
 
 			var nwhen="";
-			if (ntype=="Switch On") {
-				whenstr="On";
+			if (ntype==$.i18n("Switch On")) {
+				whenstr=$.i18n("On");
 			}
-			else if (ntype=="Switch Off") {
-				whenstr="Off";
+			else if (ntype==$.i18n("Switch Off")) {
+				whenstr=$.i18n("Off");
 			}
 			else {
 				if (parts[1]==">") {
-					nwhen="Greater than ";
+					nwhen=$.i18n("Greater") + " than ";
 				}
 				else {
-					nwhen="Below ";
+					nwhen=$.i18n("Below") + " ";
 				}
 				whenstr= nwhen + nvalue + stype;
 			}
@@ -594,7 +594,8 @@ function RefreshNotificationTable(idx)
 					//update user interface with the paramters of this row
 					$($.content + " #notificationparamstable #combotype").val(GetValTextInNTypeStrArray(data["0"]));
 					ShowNotificationTypeLabel();
-					if (data["1"].match("^Greater")) {
+					var matchstr="^" + $.i18n("Greater");
+					if (data["1"].match(matchstr)) {
 						$($.content + " #notificationparamstable #combowhen").val(0);
 					}
 					else {
@@ -614,7 +615,7 @@ function ShowNotificationTypeLabel()
 {
 	var typetext = $($.content + " #notificationparamstable #combotype option:selected").text();
 	
-	if ((typetext == "Switch On")||(typetext == "Switch Off")) {
+	if ((typetext == $.i18n("Switch On"))||(typetext == $.i18n("Switch Off"))) {
 		$($.content + " #notificationparamstable #notiwhen").hide();
 		$($.content + " #notificationparamstable #notival").hide();
 		return;
@@ -622,29 +623,29 @@ function ShowNotificationTypeLabel()
 	$($.content + " #notificationparamstable #notiwhen").show();
 	$($.content + " #notificationparamstable #notival").show();
 	
-	if (typetext == 'Temperature')
+	if (typetext == $.i18n('Temperature'))
 		$($.content + " #notificationparamstable #valuetype").html('&nbsp;&deg; C');
-	else if (typetext == 'Humidity')
+	else if (typetext == $.i18n('Humidity'))
 		$($.content + " #notificationparamstable #valuetype").html('&nbsp;%');
-	else if (typetext == 'UV')
+	else if (typetext == $.i18n('UV'))
 		$($.content + " #notificationparamstable #valuetype").html('&nbsp;UVI');
-	else if (typetext == 'Rain')
+	else if (typetext == $.i18n('Rain'))
 		$($.content + " #notificationparamstable #valuetype").html('&nbsp;mm');
-	else if (typetext == 'Wind')
+	else if (typetext == $.i18n('Wind'))
 		$($.content + " #notificationparamstable #valuetype").html('&nbsp;m/s');
-	else if (typetext == 'Baro')
+	else if (typetext == $.i18n('Baro'))
 		$($.content + " #notificationparamstable #valuetype").html('&nbsp;hPa');
-	else if (typetext == 'Usage')
+	else if (typetext == $.i18n('Usage'))
 		$($.content + " #notificationparamstable #valuetype").html('&nbsp;');
-	else if (typetext == 'Today')
+	else if (typetext == $.i18n('Today'))
 		$($.content + " #notificationparamstable #valuetype").html('&nbsp;');
-	else if (typetext == 'Total')
+	else if (typetext == $.i18n('Total'))
 		$($.content + " #notificationparamstable #valuetype").html('&nbsp;');
-	else if (typetext == 'Ampere 1')
+	else if (typetext == $.i18n('Ampere 1'))
 		$($.content + " #notificationparamstable #valuetype").html('&nbsp;A');
-	else if (typetext == 'Ampere 2')
+	else if (typetext == $.i18n('Ampere 2'))
 		$($.content + " #notificationparamstable #valuetype").html('&nbsp;A');
-	else if (typetext == 'Ampere 3')
+	else if (typetext == $.i18n('Ampere 3'))
 		$($.content + " #notificationparamstable #valuetype").html('&nbsp;A');
 	else
 		$($.content + " #notificationparamstable #valuetype").html('&nbsp;??');
