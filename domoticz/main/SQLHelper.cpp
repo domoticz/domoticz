@@ -4267,3 +4267,10 @@ bool CSQLHelper::BackupDatabase(const std::string OutputFile)
 	return ( rc==SQLITE_OK );
 }
 
+void CSQLHelper::Lighting2GroupOff(const std::string ID, const unsigned char subType)
+{
+	char szTmp[100];
+	sprintf(szTmp,"UPDATE DeviceStatus SET nValue = %d WHERE (DeviceID=='%s') And (Type==%d) And (SubType==%d)",light2_sOff,ID.c_str(),pTypeLighting2,subType);
+	query(szTmp);
+}
+

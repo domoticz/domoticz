@@ -2697,6 +2697,12 @@ unsigned long long MainWorker::decode_Lighting2(const int HwdID, const tRBUF *pR
 	PrintDeviceName(devname);
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
+	if (cmnd==light2_sGroupOff)
+	{
+		//Switch all lights with the same code off
+		m_sql.Lighting2GroupOff(ID,subType);
+	}
+
 	if (m_verboselevel == EVBL_ALL)
 	{
 		switch (pResponse->LIGHTING2.subtype)
