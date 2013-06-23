@@ -16,6 +16,8 @@
 
 #define round(a) ( int ) ( a + .5 )
 
+//#define DEBUG_ZWAVE_INT
+
 bool isInt(std::string s)
 {
 	for(size_t i = 0; i < s.length(); i++){
@@ -121,8 +123,9 @@ const std::string CRazberry::GetRunURL(const std::string cmd)
 bool CRazberry::GetInitialDevices()
 {
 	std::string sResult;
-	
+#ifndef DEBUG_ZWAVE_INT	
 	std::string szURL=GetControllerURL();
+
 	bool bret;
 	bret=HTTPClient::GET(szURL,sResult);
 	if (!bret)
@@ -130,7 +133,9 @@ bool CRazberry::GetInitialDevices()
 		_log.Log(LOG_ERROR,"Error getting Razberry data!");
 		return 0;
 	}
-	//sResult=readInputTestFile("test.json");
+#else
+	sResult=readInputTestFile("test.json");
+#endif
 	Json::Value root;
 
 	Json::Reader jReader;
@@ -167,7 +172,7 @@ bool CRazberry::GetInitialDevices()
 bool CRazberry::GetUpdates()
 {
 	std::string sResult;
-	
+#ifndef	DEBUG_ZWAVE_INT
 	std::string szURL=GetControllerURL();
 	bool bret;
 	bret=HTTPClient::GET(szURL,sResult);
@@ -176,7 +181,9 @@ bool CRazberry::GetUpdates()
 		_log.Log(LOG_ERROR,"Razberry: Error getting update data!");
 		return 0;
 	}
-	//sResult=readInputTestFile("update.json");
+#else
+	sResult=readInputTestFile("update.json");
+#endif
 	Json::Value root;
 
 	Json::Reader jReader;
@@ -299,6 +306,20 @@ void CRazberry::parseDevices(const Json::Value devroot)
 							_device.devType = ZDTYPE_SENSOR_POWER;
 							InsertOrUpdateDevice(_device,false);
 						}
+					}
+					else if (sensorTypeString=="Temperature")
+					{
+						_device.floatValue=(*itt2)["val"]["value"].asFloat();
+						_device.commandClassID=49;
+						_device.devType = ZDTYPE_SENSOR_TEMPERATURE;
+						InsertOrUpdateDevice(_device,false);
+					}
+					else if (sensorTypeString=="Humidity")
+					{
+						_device.intvalue=(*itt2)["val"]["value"].asInt();
+						_device.commandClassID=49;
+						_device.devType = ZDTYPE_SENSOR_HUMIDITY;
+						InsertOrUpdateDevice(_device,false);
 					}
 				}
 				//InsertOrUpdateDevice(_device);
@@ -423,6 +444,14 @@ void CRazberry::UpdateDevice(const std::string path, const Json::Value obj)
 		//meters
 		pDevice->floatValue=obj["val"]["value"].asFloat();
 		break;
+	case ZDTYPE_SENSOR_TEMPERATURE:
+		//meters
+		pDevice->floatValue=obj["val"]["value"].asFloat();
+		break;
+	case ZDTYPE_SENSOR_HUMIDITY:
+		//switch
+		pDevice->intvalue=obj["val"]["value"].asInt();
+		break;
 	}
 
 	pDevice->lastreceived=atime;
@@ -517,6 +546,80 @@ void CRazberry::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		umeter.fusage=pDevice->floatValue;
 		sDecodeRXMessage(this, (const unsigned char *)&umeter);//decode message
 	}
+	else if (pDevice->devType==ZDTYPE_SENSOR_TEMPERATURE)
+	{
+		RBUF tsen;
+		memset(&tsen,0,sizeof(RBUF));
+		tsen.TEMP_HUM.battery_level=9;
+		tsen.TEMP_HUM.rssi=6;
+		tsen.TEMP.id1=ID3;
+		tsen.TEMP.id2=ID4;
+
+		const _tZWaveDevice *pHumDevice=FindDevice(pDevice->nodeID,-1,ZDTYPE_SENSOR_HUMIDITY);
+		if (pHumDevice)
+		{
+			tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
+			tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
+			tsen.TEMP_HUM.subtype=sTypeTH5;
+
+			tsen.TEMP_HUM.tempsign=(pDevice->floatValue>=0)?0:1;
+			int at10=round(abs(pDevice->floatValue*10.0f));
+			tsen.TEMP_HUM.temperatureh=(BYTE)(at10/256);
+			at10-=(tsen.TEMP_HUM.temperatureh*256);
+			tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
+			tsen.TEMP_HUM.humidity=(BYTE)pHumDevice->intvalue;
+			tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
+		}
+		else
+		{
+			tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
+			tsen.TEMP.packettype=pTypeTEMP;
+			tsen.TEMP.subtype=sTypeTEMP10;
+			tsen.TEMP.tempsign=(pDevice->floatValue>=0)?0:1;
+			int at10=round(abs(pDevice->floatValue*10.0f));
+			tsen.TEMP.temperatureh=(BYTE)(at10/256);
+			at10-=(tsen.TEMP.temperatureh*256);
+			tsen.TEMP.temperaturel=(BYTE)(at10);
+		}
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
+	}
+	else if (pDevice->devType==ZDTYPE_SENSOR_HUMIDITY)
+	{
+		RBUF tsen;
+		memset(&tsen,0,sizeof(RBUF));
+		tsen.TEMP_HUM.battery_level=9;
+		tsen.TEMP_HUM.rssi=6;
+		tsen.TEMP.id1=ID3;
+		tsen.TEMP.id2=ID4;
+
+		const _tZWaveDevice *pTempDevice=FindDevice(pDevice->nodeID,-1,ZDTYPE_SENSOR_TEMPERATURE);
+		if (pTempDevice)
+		{
+			tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
+			tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
+			tsen.TEMP_HUM.subtype=sTypeTH5;
+			ID4=pTempDevice->instanceID;
+			tsen.TEMP.id2=ID4;
+
+			tsen.TEMP_HUM.tempsign=(pTempDevice->floatValue>=0)?0:1;
+			int at10=round(abs(pTempDevice->floatValue*10.0f));
+			tsen.TEMP_HUM.temperatureh=(BYTE)(at10/256);
+			at10-=(tsen.TEMP_HUM.temperatureh*256);
+			tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
+			tsen.TEMP_HUM.humidity=(BYTE)pDevice->intvalue;
+			tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
+		}
+		else
+		{
+			memset(&tsen,0,sizeof(RBUF));
+			tsen.HUM.packetlength=sizeof(tsen.HUM)-1;
+			tsen.HUM.packettype=pTypeHUM;
+			tsen.HUM.subtype=sTypeHUM2;
+			tsen.HUM.humidity=(BYTE)pDevice->intvalue;
+			tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
+		}
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
+	}
 }
 
 const CRazberry::_tZWaveDevice* CRazberry::FindDevice(int nodeID, int instanceID, _eZWaveDeviceType devType)
@@ -526,7 +629,7 @@ const CRazberry::_tZWaveDevice* CRazberry::FindDevice(int nodeID, int instanceID
 	{
 		if (
 			(itt->second.nodeID==nodeID)&&
-			(itt->second.instanceID==instanceID)&&
+			((itt->second.instanceID==instanceID)||(instanceID==-1))&&
 			(itt->second.devType==devType)
 			)
 			return &itt->second;
