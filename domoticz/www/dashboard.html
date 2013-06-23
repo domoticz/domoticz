@@ -405,7 +405,10 @@ function RefreshFavorites()
 									bHaveBefore=true;
 								}
 								if (typeof item.Direction != 'undefined') {
-									status+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms';
+									status+='<br>' + item.Direction + ' ' + item.DirectionStr;
+									if (typeof item.Speedms != 'undefined') {
+										status+=', Speed: ' + item.Speedms + ' ms';
+									}
 									if (typeof item.Gustms != 'undefined') {
 										status+=', Gust: ' + item.Gustms + ' ms';
 									}
@@ -483,7 +486,10 @@ function RefreshFavorites()
 								}
 								else if (typeof item.Direction != 'undefined') {
 									img='<img src="images/Wind' + item.DirectionStr + '.png" height="40">';
-									status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms';
+									status=item.Direction + ' ' + item.DirectionStr;
+									if (typeof item.Speedms != 'undefined') {
+										status+=', Speed: ' + item.Speedms + ' ms';
+									}
 									if (typeof item.Gustms != 'undefined') {
 										status+=', Gust: ' + item.Gustms + ' ms';
 									}
@@ -527,7 +533,10 @@ function RefreshFavorites()
 								}
 								else if (typeof item.Direction != 'undefined') {
 									img='<img src="images/Wind' + item.DirectionStr + '.png" height="40">';
-									status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms';
+									status=item.Direction + ' ' + item.DirectionStr;
+									if (typeof item.Speedms != 'undefined') {
+										status+=', Speed: ' + item.Speedms + ' ms';
+									}
 									if (typeof item.Gustms != 'undefined') {
 										status+=', Gust: ' + item.Gustms + ' ms';
 									}
@@ -541,7 +550,13 @@ function RefreshFavorites()
 										}
 										status+='Chill: ' + item.Chill + '° C';
 									}
-									bigtext=item.DirectionStr + '/' + item.Speedms + ' ms';
+									bigtext=item.DirectionStr;
+									if (typeof item.Speedms != 'undefined') {
+										bigtext+='/' + item.Speedms + ' ms';
+									}
+									else if (typeof item.Gustms != 'undefined') {
+										bigtext+='/' + item.Gustms + ' ms';
+									}
 								}
 								else if (typeof item.Barometer != 'undefined') {
 									img='<img src="images/baro48.png" height="40">';
@@ -1405,7 +1420,10 @@ function ShowFavorites()
 								bHaveBefore=true;
 							}
 							if (typeof item.Direction != 'undefined') {
-								xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms';
+								xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr;
+								if (typeof item.Speedms != 'undefined') {
+									xhtm+=', Speed: ' + item.Speedms + ' ms';
+								}
 								if (typeof item.Gustms != 'undefined') {
 									xhtm+=', Gust: ' + item.Gustms + ' ms';
 								}
@@ -1506,7 +1524,10 @@ function ShowFavorites()
 								status+=item.UVI + ' UVI';
 							}
 							else if (typeof item.Direction != 'undefined') {
-								status=item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms';
+								status=item.Direction + ' ' + item.DirectionStr;
+								if (typeof item.Speedms != 'undefined') {
+									status+=', Speed: ' + item.Speedms + ' ms';
+								}
 								if (typeof item.Gustms != 'undefined') {
 									status+=', Gust: ' + item.Gustms + ' ms';
 								}
@@ -1553,7 +1574,13 @@ function ShowFavorites()
 								xhtm+=item.UVI + ' UVI';
 							}
 							else if (typeof item.Direction != 'undefined') {
-								xhtm+=item.DirectionStr + '/' + item.Speedms + ' ms';
+								xhtm+=item.DirectionStr;
+								if (typeof item.Speedms != 'undefined') {
+									xhtm+='/' + item.Speedms + ' ms';
+								}
+								else if (typeof item.Gustms != 'undefined') {
+									xhtm+='/' + item.Gustms + ' ms';
+								}
 							}
 							xhtm+='</td>\n';
 							xhtm+='\t      <td id="img"><img src="images/';
@@ -1575,7 +1602,10 @@ function ShowFavorites()
 							}
 							else if (typeof item.Direction != 'undefined') {
 								xhtm+='Wind' + item.DirectionStr + '.png" height="40"></td>\n' +
-								'\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms';
+								'\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr;
+								if (typeof item.Speedms != 'undefined') {
+									xhtm+=', Speed: ' + item.Speedms + ' ms';
+								}
 								if (typeof item.Gustms != 'undefined') {
 									xhtm+=', Gust: ' + item.Gustms + ' ms';
 								}

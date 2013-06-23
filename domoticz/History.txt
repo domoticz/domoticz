@@ -24,6 +24,7 @@ Version 1.0.xxx (June xxth 2013)
 - Implemented: Lighting2, when a Group Off is received, all switched with the same ID will be set to 'Off' (internally)
 - Implemented: Z-Wave Temp/Humidity sensor
 - Changed: Wind Station LaCrosse WS2300 will again display 'gust'
+- Changed: WindType5 (WS2300) will not display speed in widgets
 
 Version 1.0.666 (May 28th 2013)
 - Implemented: Settings, Doorbell could be send as 'Group On' or 'On' command

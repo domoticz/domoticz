@@ -1355,17 +1355,21 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				{
 					root["result"][ii]["Direction"]=atof(strarray[0].c_str());
 					root["result"][ii]["DirectionStr"]=strarray[1];
-					int intSpeed=atoi(strarray[2].c_str());
-					sprintf(szTmp,"%.1f",float(intSpeed) / 10.0f);
-					root["result"][ii]["Speedms"]=szTmp;
-					sprintf(szTmp,"%.1f",(float(intSpeed) * 0.36f));
-					root["result"][ii]["Speedkmhr"]=szTmp;
-					sprintf(szTmp,"%.1f",((float(intSpeed) * 0.223693629f) / 10.0f));
-					root["result"][ii]["Speedmph"]=szTmp;
-					int intGust=atoi(strarray[3].c_str());
+
+					if (dSubType!=sTypeWIND5)
+					{
+						int intSpeed=atoi(strarray[2].c_str());
+						sprintf(szTmp,"%.1f",float(intSpeed) / 10.0f);
+						root["result"][ii]["Speedms"]=szTmp;
+						sprintf(szTmp,"%.1f",(float(intSpeed) * 0.36f));
+						root["result"][ii]["Speedkmhr"]=szTmp;
+						sprintf(szTmp,"%.1f",((float(intSpeed) * 0.223693629f) / 10.0f));
+						root["result"][ii]["Speedmph"]=szTmp;
+					}
 
 					//if (dSubType!=sTypeWIND6) //problem in RFXCOM firmware? gust=speed?
 					{
+						int intGust=atoi(strarray[3].c_str());
 						sprintf(szTmp,"%.1f",float(intGust) / 10.0f);
 						root["result"][ii]["Gustms"]=szTmp;
 						sprintf(szTmp,"%.1f",(float(intGust )* 0.36f));
