@@ -7655,7 +7655,119 @@ std::string CWebServer::GetJSonPage()
 		}
 
 	} //(rtype=="scenes")
-	else if (rtype=="settings")
+	else if (rtype=="events")
+	{
+		//root["status"]="OK";
+		root["title"]="Events";
+        
+        std::string cparam=m_pWebEm->FindValue("param");
+
+        if (cparam=="list")
+		{
+			root["title"]="ListEvents";
+            
+            int ii=0;
+            
+            szQuery.clear();
+            szQuery.str("");
+            szQuery << "SELECT * FROM Events ORDER BY ID ASC";
+            result=m_pMain->m_sql.query(szQuery.str());
+            if (result.size()>0)
+            {
+                std::vector<std::vector<std::string> >::const_iterator itt;
+                for (itt=result.begin(); itt!=result.end(); ++itt)
+                {
+                    std::vector<std::string> sd=*itt;
+                    std::string ID=sd[0];
+					std::string Name=sd[1];
+                    std::string XMLStatement=sd[2];
+                    std::string ExecStatement=sd[3];
+                    root["result"][ii]["id"]=ID;
+                    root["result"][ii]["name"]=Name;
+                    ii++;
+                }
+            }
+            
+            
+            root["status"]="OK";
+        }
+        
+        
+        if (cparam=="load")
+		{
+			root["title"]="LoadEvent";
+            
+            std::string idx=m_pWebEm->FindValue("event");
+            if (idx=="")
+                goto exitjson;
+   
+            int ii=0;
+            
+            szQuery.clear();
+            szQuery.str("");
+            szQuery << "SELECT ID, Name, XMLStatement, ExecuteStatement FROM Events WHERE (ID==" << idx << ")";
+            result=m_pMain->m_sql.query(szQuery.str());
+            if (result.size()>0)
+            {
+                std::vector<std::vector<std::string> >::const_iterator itt;
+                for (itt=result.begin(); itt!=result.end(); ++itt)
+                {
+                    std::vector<std::string> sd=*itt;
+                    std::string ID=sd[0];
+					std::string Name=sd[1];
+                    std::string XMLStatement=sd[2];
+                    std::string ExecStatement=sd[3];
+                    root["result"][ii]["id"]=ID;
+                    root["result"][ii]["name"]=Name;
+                    root["result"][ii]["xmlstatement"]=XMLStatement;
+                    root["result"][ii]["execstatement"]=ExecStatement;
+                    ii++;
+                }
+                root["status"]="OK";
+            }
+            
+            
+            
+        }
+        
+        if (cparam=="create")
+		{
+			root["title"]="AddEvent";
+
+            std::string eventname=m_pWebEm->FindValue("name");
+			if (eventname=="")
+				goto exitjson;
+            
+            std::string eventxml=m_pWebEm->FindValue("xml");
+			if (eventxml=="")
+				goto exitjson;
+            
+            std::string eventtranslated=m_pWebEm->FindValue("translated");
+			if (eventtranslated=="")
+				goto exitjson;
+         
+            sprintf(szTmp,
+					"INSERT INTO Events (Name, XMLStatement, ExecuteStatement) VALUES ('%s','%s','%s')",
+					eventname.c_str(),
+                    eventxml.c_str(),
+					eventtranslated.c_str()
+					);
+            result=m_pMain->m_sql.query(szTmp);
+            root["status"]="OK";
+        }
+        if (cparam=="delete")
+		{
+            root["title"]="DeleteEvent";
+            std::string idx=m_pWebEm->FindValue("event");
+            if (idx=="")
+                goto exitjson;
+            m_pMain->m_sql.DeleteEvent(idx);
+            root["status"]="OK";
+                
+        }
+   
+	} //(rtype=="events")
+    else if (rtype=="settings")
 	{
 		root["status"]="OK";
 		root["title"]="settings";

@@ -312,6 +312,13 @@ const char *sqlCreateSharedDevices =
 "[SharedUserID] BIGINT NOT NULL, "
 "[DeviceRowID] BIGINT NOT NULL);";
 
+const char *sqlCreateEvents =
+"CREATE TABLE IF NOT EXISTS [Events] ("
+"[ID] INTEGER PRIMARY KEY,  "
+"[Name] VARCHAR(200) NOT NULL, "
+"[XMLStatement] TEXT NOT NULL, "
+"[ExecuteStatement] TEXT NOT NULL);";
+
 extern std::string szStartupFolder;
 
 CSQLHelper::CSQLHelper(void)
@@ -405,6 +412,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateSceneDevices);
 	query(sqlCreateSceneTimers);
 	query(sqlCreateSharedDevices);
+    query(sqlCreateEvents);
 
 	int dbversion=0;
 	GetPreferencesVar("DB_Version", dbversion);
@@ -3841,6 +3849,14 @@ void CSQLHelper::DeletePlan(const std::string idx)
 	std::vector<std::vector<std::string> > result;
 	char szTmp[1000];
 	sprintf(szTmp,"DELETE FROM Plans WHERE (ID == %s)",idx.c_str());
+	result=query(szTmp);
+}
+
+void CSQLHelper::DeleteEvent(const std::string idx)
+{
+	std::vector<std::vector<std::string> > result;
+	char szTmp[1000];
+	sprintf(szTmp,"DELETE FROM Events WHERE (ID == %s)",idx.c_str());
 	result=query(szTmp);
 }
 

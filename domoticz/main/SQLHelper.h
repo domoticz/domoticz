@@ -234,6 +234,8 @@ public:
     void DeleteCamera(const std::string idx);
 
     void DeletePlan(const std::string idx);
+
+    void DeleteEvent(const std::string idx);
     
 	void DeleteDevice(const std::string idx);
 

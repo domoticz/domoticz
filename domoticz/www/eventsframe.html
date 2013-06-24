@@ -41,44 +41,68 @@
         load_blocks();
       }
       
-      function loadSelectedEvent(name) {
-      	if(typeof(Storage)!=="undefined"){
-	      	if(localStorage.getItem(name)!=null){
-		      	var xml = Blockly.Xml.textToDom(localStorage.getItem(name));
-		      	Blockly.mainWorkspace.clear();
-			    Blockly.Xml.domToWorkspace( Blockly.mainWorkspace, xml );
-			    $("#blockName").val(name);
-			}
-		}
+      function loadSelectedEvent(id) {
+      		$.ajax({
+			  	url: "json.htm?type=events&param=load&event="+id, 
+			  	async: false, 
+			  	dataType: 'json',
+			  	success: function(data) {
+				  	if (typeof data.result != 'undefined') {
+				  		if (data.status=="OK") {
+					  		var xml = Blockly.Xml.textToDom(data.result[0].xmlstatement);
+					  		Blockly.mainWorkspace.clear();
+					  		Blockly.Xml.domToWorkspace( Blockly.mainWorkspace, xml );
+					  		$("#blockName").val(data.result[0].name);
+
+				  		}
+				  		else { alert("Error loading event!");}
+					}
+				}
+			});
+
 	  }
 	  
       function delete_block() {
-        var name = document.getElementById("savedEvents").value;
-      	if(typeof(Storage)!=="undefined"){
-	      	if(localStorage.getItem(name)!=null){
-		      	localStorage.removeItem(name);
-		      	load_blocks();
-			}
-			else {alert("Nothing selected!")}
+        var id = document.getElementById("savedEvents").value;
+        if (id!=null) {
+	        $.ajax({
+			  	url: "json.htm?type=events&param=delete&event="+id, 
+			  	async: false, 
+			  	dataType: 'json',
+			  	success: function(data) {
+				  	if (typeof data != 'undefined') {
+				  		if (data.status=="OK") {
+				  			alert("Event deleted");
+				  			Blockly.mainWorkspace.clear();
+					  		$("#blockName").val("");
+				  			load_blocks();
+				  		}
+					}
+				}
+			  });
 		}
-	  }	  
+        else {alert("Nothing selected!")}
+	  }
 	  
 	  	  
 	  function load_blocks() {
 		  var select = document.getElementById("savedEvents");
 		  select.options.length = 0;
-		  for (i=0;i<localStorage.length;i++) 
-		  	{
-			  	var key = localStorage.key(i);
-			  	if(key != null) 
-			  	{
-				  	var value = localStorage.getItem(key); 
-				  	var option = document.createElement("option");
-					option.text = key;
-					option.value = key;
-					select.appendChild(option);
-				 }
+		  $.ajax({
+		  	url: "json.htm?type=events&param=list", 
+		  	async: false, 
+		  	dataType: 'json',
+		  	success: function(data) {
+			  	if (typeof data.result != 'undefined') {
+				  	$.each(data.result, function(i,item){
+						var option = document.createElement("option");
+						option.text = item.name;
+						option.value = item.id;
+						select.appendChild(option);
+					});
+				}
 			}
+		  });
 	  }
 	  
       
@@ -86,12 +110,42 @@
       	var xml = Blockly.Xml.workspaceToDom( Blockly.mainWorkspace );
       	//alert(Blockly.Xml.domToText( xml ));
       	var blockName = $("#blockName").val();
-      	if (blockName) {
-      	    var blockXml  = Blockly.Xml.domToText( xml );
-      		localStorage.setItem(blockName,blockXml );
-      		load_blocks();
-      		document.getElementById('textarea').value = blockXml;
-      	}
+      	if (blockName) { 
+      		var exists = false; 
+      		var doSave = false;
+      		$('#savedEvents  option').each(function(){
+	      		if (this.text == blockName) {
+		      		exists = true;
+		      	}
+		     });
+		     if (exists) {
+			 	var answer = confirm("Overwrite "+blockName+"?")
+			    if (answer){
+					doSave = true;
+				}
+				else{
+					doSave = false;
+				}
+			}
+			else {doSave = true;}
+      		if (doSave) {
+      	    	var blockXml  = Blockly.Xml.domToText( xml );
+      	    	$.ajax({
+	      	    	url : "json.htm?type=events&param=create&name="+blockName+"&xml="+blockXml+"&translated="+blockXml, 
+	      	    	async: false, 
+	      	    	dataType: 'json',
+	      	    	success: function(data) {
+		      	    	if (typeof data != 'undefined') {
+				  			if (data.status=="OK") {
+				  				alert("Event saved:\n"+blockName);
+				  				load_blocks();
+				  			}
+				  		}
+				  	}
+			  }); 	    
+			}
+			else {alert("Save aborted!")}
+		}
       	else {alert('no event name entered!');}
       }
       
@@ -146,14 +200,14 @@
 		    </td>
 		    <td valign="top" >
 		    <label for="blockName">Event name: </label><br>
-		    	<input type="input" id="blockName" name="blockName" style="width: 100px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+		    	<input type="input" id="blockName" name="blockName" style="width: 12em; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+		    	<br/>
 			    <a class="btnstyle3" href="javascript:save_block()">Save</a>
 			    <P>
 			    <label for="savedEvents">Saved events: </label><br>
 			    <select size="10" width="100%" style="width: 100%" id="savedEvents" name="savedEvents" onchange="loadSelectedEvent(this.value);">> 
   				</select>
   				<br><a class="btnstyle3" href="javascript:delete_block()">Delete selected</a>
-  				<textarea id="textarea" width="100%" heigt="100"></textarea>
 			</td>
 		</tr>
     </table>
