@@ -3481,7 +3481,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 					);
 				result=query(szTmp);
 			}
-
+/*
 			//Insert the last (max) counter value into the meter table to get the "today" value correct.
 			sprintf(szTmp,
 				"INSERT INTO Meter (DeviceRowID, Value, Date) "
@@ -3491,6 +3491,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				szDateEnd
 				);
 			result=query(szTmp);
+*/
 		}
 		else
 		{
