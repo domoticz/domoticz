@@ -7687,13 +7687,9 @@ std::string CWebServer::GetJSonPage()
                     ii++;
                 }
             }
-            
-            
             root["status"]="OK";
         }
-        
-        
-        if (cparam=="load")
+        else if (cparam=="load")
 		{
 			root["title"]="LoadEvent";
             
@@ -7725,12 +7721,8 @@ std::string CWebServer::GetJSonPage()
                 }
                 root["status"]="OK";
             }
-            
-            
-            
         }
-        
-        if (cparam=="create")
+        else if (cparam=="create")
 		{
 			root["title"]="AddEvent";
 
@@ -7746,13 +7738,10 @@ std::string CWebServer::GetJSonPage()
 			if (eventtranslated=="")
 				goto exitjson;
          
-            sprintf(szTmp,
-					"INSERT INTO Events (Name, XMLStatement, ExecuteStatement) VALUES ('%s','%s','%s')",
-					eventname.c_str(),
-                    eventxml.c_str(),
-					eventtranslated.c_str()
-					);
-            result=m_pMain->m_sql.query(szTmp);
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "INSERT INTO Events (Name, XMLStatement, ExecuteStatement) VALUES ('" << eventname << "','" << eventxml << "','" << eventtranslated << "')";
+            m_pMain->m_sql.query(szQuery.str());
             root["status"]="OK";
         }
         if (cparam=="delete")
@@ -7763,7 +7752,6 @@ std::string CWebServer::GetJSonPage()
                 goto exitjson;
             m_pMain->m_sql.DeleteEvent(idx);
             root["status"]="OK";
-                
         }
    
 	} //(rtype=="events")
