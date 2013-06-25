@@ -16,7 +16,9 @@
 
 #define round(a) ( int ) ( a + .5 )
 
+#ifdef _DEBUG
 //#define DEBUG_ZWAVE_INT
+#endif
 
 bool isInt(std::string s)
 {
@@ -410,16 +412,37 @@ void CRazberry::UpdateDevice(const std::string path, const Json::Value obj)
 {
 	_tZWaveDevice *pDevice=NULL;
 
-	std::map<std::string,_tZWaveDevice>::iterator itt;
-	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
+	//Possible fix for Everspring ST814. maybe others, my multi sensor is coming soon to find out!
+	if (path.find("instances.0.commandClasses.49.data.")!=std::string::npos)
 	{
-		std::string::size_type loc = path.find(itt->second.string_id,0);
-		if (loc!=std::string::npos)
+		std::vector<std::string> results;
+		StringSplit(path,".",results);
+		//Find device by data id
+		if (results.size()==8)
 		{
-			pDevice=&itt->second;
-			break;
+			int cmdID=atoi(results[5].c_str());
+			if (cmdID==49)
+			{
+				int devID=atoi(results[1].c_str());
+				int scaleID=atoi(results[7].c_str());
+				pDevice=FindDevice(devID,scaleID);
+			}
 		}
 	}
+	if (pDevice==NULL)
+	{
+		std::map<std::string,_tZWaveDevice>::iterator itt;
+		for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
+		{
+			std::string::size_type loc = path.find(itt->second.string_id,0);
+			if (loc!=std::string::npos)
+			{
+				pDevice=&itt->second;
+				break;
+			}
+		}
+	}
+
 	if (pDevice==NULL)
 	{
 		return; //don't know you
@@ -622,7 +645,7 @@ void CRazberry::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	}
 }
 
-const CRazberry::_tZWaveDevice* CRazberry::FindDevice(int nodeID, int instanceID, _eZWaveDeviceType devType)
+CRazberry::_tZWaveDevice* CRazberry::FindDevice(int nodeID, int instanceID, _eZWaveDeviceType devType)
 {
 	std::map<std::string,_tZWaveDevice>::iterator itt;
 	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
@@ -631,6 +654,20 @@ const CRazberry::_tZWaveDevice* CRazberry::FindDevice(int nodeID, int instanceID
 			(itt->second.nodeID==nodeID)&&
 			((itt->second.instanceID==instanceID)||(instanceID==-1))&&
 			(itt->second.devType==devType)
+			)
+			return &itt->second;
+	}
+	return NULL;
+}
+
+CRazberry::_tZWaveDevice* CRazberry::FindDevice(int nodeID, int scaleID)
+{
+	std::map<std::string,_tZWaveDevice>::iterator itt;
+	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
+	{
+		if (
+			(itt->second.nodeID==nodeID)&&
+			(itt->second.scaleID==scaleID)
 			)
 			return &itt->second;
 	}

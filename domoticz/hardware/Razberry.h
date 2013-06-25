@@ -62,7 +62,8 @@ private:
 	void UpdateDevice(const std::string path, const Json::Value obj);
 	void Do_Work();
 	void SendDevice2Domoticz(const _tZWaveDevice *pDevice);
-	const _tZWaveDevice* FindDevice(int nodeID, int instanceID, _eZWaveDeviceType devType);
+	_tZWaveDevice* FindDevice(int nodeID, int instanceID, _eZWaveDeviceType devType);
+	_tZWaveDevice* FindDevice(int nodeID, int scaleID);
 	void RunCMD(const std::string cmd);
 
 	bool m_bInitState;
