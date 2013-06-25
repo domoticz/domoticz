@@ -3481,17 +3481,19 @@ void CSQLHelper::AddCalendarUpdateMeter()
 					);
 				result=query(szTmp);
 			}
-/*
-			//Insert the last (max) counter value into the meter table to get the "today" value correct.
-			sprintf(szTmp,
-				"INSERT INTO Meter (DeviceRowID, Value, Date) "
-				"VALUES (%llu, %s, '%s')",
-				ID,
-				sd[1].c_str(),
-				szDateEnd
-				);
-			result=query(szTmp);
-*/
+			if (devType!=pTypeAirQuality)
+			{
+				//Insert the last (max) counter value into the meter table to get the "today" value correct.
+				sprintf(szTmp,
+					"INSERT INTO Meter (DeviceRowID, Value, Date) "
+					"VALUES (%llu, %s, '%s')",
+					ID,
+					sd[1].c_str(),
+					szDateEnd
+					);
+				result=query(szTmp);
+
+			}
 		}
 		else
 		{
