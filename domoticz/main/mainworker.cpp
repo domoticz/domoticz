@@ -364,7 +364,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CTE923(ID);
 		break;
 	case HTYPE_VOLCRAFTCO20:
-		//TE923 compatible weather station
+		//Voltcrafr CO-20 Air Quality
 		pHardware = new CVolcraftCO20(ID);
 		break;
 #endif
@@ -6533,6 +6533,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, std::string s
 			{
 			case sTypeKD101:
 				{
+					lcmd.SECURITY1.subtype=sTypeKD101;
 					if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.SECURITY1.status))
 						return false;
 					//send it twice
@@ -6547,6 +6548,19 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, std::string s
 				break;
 			case sTypeSecX10M:
 				{
+					lcmd.SECURITY1.subtype=sTypeSecX10M;
+					if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.SECURITY1.status))
+						return false;
+					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.SECURITY1));
+					if (!IsTesting) {
+						//send to internal for now (later we use the ACK)
+						DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+					}
+				}
+				break;
+			case sTypeSecX10R:
+				{
+					lcmd.SECURITY1.subtype=sTypeSecX10R;
 					if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.SECURITY1.status))
 						return false;
 					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.SECURITY1));

@@ -1083,6 +1083,19 @@ bool GetLightCommand(
 				return true;
 			}
 		}
+		else if (dSubType==sTypeSecX10R)
+		{
+			if (switchcmd=="On")
+			{
+				cmd=sStatusArmAway;
+				return true;
+			}
+			else if (switchcmd=="Off")
+			{
+				cmd=sStatusDisarm;
+				return true;
+			}
+		}
 		break;
 	case pTypeBlinds:
 		if (switchcmd=="On")

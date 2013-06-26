@@ -26,6 +26,7 @@ Version 1.0.xxx (June xxth 2013)
 - Changed: Wind Station LaCrosse WS2300 will again display 'gust'
 - Changed: WindType5 (WS2300) will not display speed in widgets
 - Implemented: Lux Meter Type (Currently used by Z-Wave hardware)
+- Implemented: X10 Security Arm/Disarm from dashboard/switches tab
 
 Version 1.0.666 (May 28th 2013)
 - Implemented: Settings, Doorbell could be send as 'Group On' or 'On' command

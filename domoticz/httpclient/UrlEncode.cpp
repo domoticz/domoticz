@@ -145,3 +145,4 @@ std::string CURLEncode::URLDecode(const std::string SRC)
 	}
 	return (ret);
 }
+
