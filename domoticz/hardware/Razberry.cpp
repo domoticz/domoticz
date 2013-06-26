@@ -17,7 +17,7 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-//#define DEBUG_ZWAVE_INT
+	//#define DEBUG_ZWAVE_INT
 #endif
 
 bool isInt(std::string s)
@@ -323,6 +323,14 @@ void CRazberry::parseDevices(const Json::Value devroot)
 						_device.devType = ZDTYPE_SENSOR_HUMIDITY;
 						InsertOrUpdateDevice(_device,false);
 					}
+					else if (sensorTypeString=="Luminiscence")
+					{
+						_device.floatValue=(*itt2)["val"]["value"].asFloat();
+						_device.commandClassID=49;
+						_device.devType = ZDTYPE_SENSOR_LIGHT;
+						InsertOrUpdateDevice(_device,false);
+					}
+					
 				}
 				//InsertOrUpdateDevice(_device);
 			}
@@ -474,6 +482,10 @@ void CRazberry::UpdateDevice(const std::string path, const Json::Value obj)
 	case ZDTYPE_SENSOR_HUMIDITY:
 		//switch
 		pDevice->intvalue=obj["val"]["value"].asInt();
+		break;
+	case ZDTYPE_SENSOR_LIGHT:
+		//switch
+		pDevice->floatValue=obj["val"]["value"].asFloat();
 		break;
 	}
 
@@ -642,6 +654,17 @@ void CRazberry::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
 		}
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
+	}
+	else if (pDevice->devType==ZDTYPE_SENSOR_LIGHT)
+	{
+		_tLightMeter lmeter;
+		lmeter.id1=ID1;
+		lmeter.id2=ID2;
+		lmeter.id3=ID3;
+		lmeter.id4=ID4;
+		lmeter.dunit=pDevice->scaleID;
+		lmeter.fLux=pDevice->floatValue;
+		sDecodeRXMessage(this, (const unsigned char *)&lmeter);
 	}
 }
 

@@ -319,6 +319,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeAirQuality, "Air Quality" , "air" },
 		{ pTypeUsage, "Usage" , "current" },
 		{ pTypeTEMP_BARO, "Temp + Baro" , "temperature" },
+		{ pTypeLux, "Lux" , "lux" },
 		
 		{  0,NULL,NULL }
 	};
@@ -480,6 +481,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 
 		{ pTypeTEMP_BARO, sTypeBMP085, "BMP085 I2C" },
 		
+		{ pTypeLux, sTypeLux, "Lux" },
 
 		{  0,0,NULL }
 	};

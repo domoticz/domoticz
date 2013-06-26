@@ -11,6 +11,9 @@
 #define wsbaroforcast_some_clouds 0x05
 #define wsbaroforcast_sunny 0x06
 
+#define pTypeLux		0xF6
+#define sTypeLux		0x01
+
 #define pTypeTEMP_BARO	0xF7
 #define sTypeBMP085		0x01
 
@@ -98,3 +101,26 @@ typedef struct _tUsageMeter {
 		id4=0;
 	}
 } UsageMeter;
+
+typedef struct _tLightMeter {
+	unsigned char len;
+	unsigned char type;
+	unsigned char subtype;
+	BYTE	id1;
+	BYTE	id2;
+	BYTE	id3;
+	BYTE	id4;
+	unsigned char dunit;
+	float fLux;
+
+	_tLightMeter()
+	{
+		len=sizeof(_tLightMeter)-1;
+		type=pTypeLux;
+		subtype=sTypeLux;
+		id1=0;
+		id2=0;
+		id3=0;
+		id4=0;
+	}
+} LightMeter;

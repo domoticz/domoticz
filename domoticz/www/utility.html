@@ -48,6 +48,17 @@
   <div id="airyeargraph" style="height: 300px;"></div>
 </div>
 
+<div id="luxlog" style="display:none;">
+  <h2 data-i18n="Day">Day</h2>
+  <div id="luxdaygraph" style="height: 300px;"></div>
+  <br>
+  <h2 data-i18n="Month">Month</h2>
+  <div id="luxmonthgraph" style="height: 300px;"></div>
+  <br>
+  <h2 data-i18n="Year">Year</h2>
+  <div id="luxyeargraph" style="height: 300px;"></div>
+</div>
+
 <div id="usagelog" style="display:none;">
   <h2 data-i18n="Day">Day</h2>
   <div id="usagedaygraph" style="height: 300px;"></div>
@@ -1309,6 +1320,302 @@ function ShowAirQualityLog(id,name)
     });
 }
 
+function ShowLuxLog(id,name)
+{
+	clearInterval($.myglobals.refreshTimer);
+  $('#modal').show();
+  $.devIdx=id;
+  $.devName=name;
+  var htmlcontent = '';
+  htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
+  htmlcontent+=$('#luxlog').html();
+  $('#utilitycontent').html(GetBackbuttonHTMLTable('ShowUtilities')+htmlcontent);
+  $('#utilitycontent').i18n();
+
+  $.DayChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'luxdaygraph',
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=day",
+                function(data) {
+                      var series = $.DayChart.series[0];
+                      var datatable = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable.push( [GetUTCFromString(item.d), parseInt(item.lux) ] );
+                      });
+                      series.setData(datatable);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: $.i18n('Lux') + ' '  + Get5MinuteHistoryDaysGraphTitle()
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: 'Lux'
+            },
+            min: 0,
+            minorGridLineWidth: 0,
+            gridLineWidth: 0,
+            alternateGridColor: null
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' Lux';
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'lux'
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+
+  $.MonthChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'luxmonthgraph',
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=month",
+                function(data) {
+                      var datatable1 = [];
+                      var datatable2 = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable1.push( [GetDateFromString(item.d), parseInt(item.lux_min) ] );
+                        datatable2.push( [GetDateFromString(item.d), parseInt(item.lux_max) ] );
+                      });
+                      var series1 = $.MonthChart.series[0];
+                      var series2 = $.MonthChart.series[1];
+                      series1.setData(datatable1);
+                      series2.setData(datatable2);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: $.i18n('Lux') + ' ' + $.i18n('Last Month')
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: 'Lux'
+            },
+            min: 0,
+            minorGridLineWidth: 0,
+            gridLineWidth: 0,
+            alternateGridColor: null
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' Lux';
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'lux_min',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,ShowCounterLog);
+					}
+				}
+			}
+		}, {
+            name: 'lux_max',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,ShowCounterLog);
+					}
+				}
+			}
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+
+  $.YearChart = new Highcharts.Chart({
+      chart: {
+          renderTo: 'luxyeargraph',
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=year",
+                function(data) {
+                      var datatable1 = [];
+                      var datatable2 = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable1.push( [GetDateFromString(item.d), parseInt(item.lux_min) ] );
+                        datatable2.push( [GetDateFromString(item.d), parseInt(item.lux_max) ] );
+                      });
+                      var series1 = $.YearChart.series[0];
+                      var series2 = $.YearChart.series[1];
+                      series1.setData(datatable1);
+                      series2.setData(datatable2);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: $.i18n('Lux') + ' ' + $.i18n('Last Year')
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: 'Lux'
+            },
+            min: 0,
+            minorGridLineWidth: 0,
+            gridLineWidth: 0,
+            alternateGridColor: null
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' Lux';
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'lux_min',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,ShowCounterLog);
+					}
+				}
+			}
+		}, {
+            name: 'lux_max',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,ShowCounterLog);
+					}
+				}
+			}
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+}
+
 function ShowUsageLog(id,name)
 {
 	clearInterval($.myglobals.refreshTimer);
@@ -2533,6 +2840,11 @@ function RefreshUtilities()
 				status=item.Data + " (" + item.Quality + ")";
 				bigtext=item.Data;
             }
+            else if (item.Type == "Lux") {
+				img='<img src="images/lux48.png" height="48">';
+				status=item.Data;
+				bigtext=item.Data;
+            }
             else if (item.Type == "Usage") {
 				img='<img src="images/current48.png" height="48">';
 				status=item.Data;
@@ -2647,6 +2959,9 @@ function ShowUtilities()
 				else if (item.Type == "Air Quality") {
 				  xhtm+=item.Data;
 				}
+				else if (item.Type == "Lux") {
+				  xhtm+=item.Data;
+				}
 				else if (item.Type == "Usage") {
 				  xhtm+=item.Data;
 				}
@@ -2668,6 +2983,10 @@ function ShowUtilities()
             else if (item.Type == "Air Quality") {
               xhtm+='air48.png" height="48"></td>\n';
               status=item.Data + " (" + item.Quality + ")";
+            }
+            else if (item.Type == "Lux") {
+              xhtm+='lux48.png" height="48"></td>\n';
+              status=item.Data;
             }
             else if (item.Type == "Usage") {
               xhtm+='current48.png" height="48"></td>\n';
@@ -2721,6 +3040,12 @@ function ShowUtilities()
           }
 		  else if (item.Type == "Air Quality") {
 			xhtm+='<a class="btnsmall" onclick="ShowAirQualityLog(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
+			if (window.my_config.userrights==2) {
+				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
+			}
+		  }
+		  else if (item.Type == "Lux") {
+			xhtm+='<a class="btnsmall" onclick="ShowLuxLog(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
 			if (window.my_config.userrights==2) {
 				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 			}

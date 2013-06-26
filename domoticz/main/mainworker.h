@@ -170,4 +170,5 @@ private:
 	unsigned long long decode_Rego6XXTemp(const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_Rego6XXValue(const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_Usage(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Lux(const int HwdID, const tRBUF *pResponse);
 };

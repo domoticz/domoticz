@@ -1047,6 +1047,10 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			WriteMessage("FS20");
 			DeviceRowIdx=decode_FS20(HwdID, (tRBUF *)pRXCommand);
 			break;
+		case pTypeLux:
+			WriteMessage("Lux Meter",false);
+			DeviceRowIdx=decode_Lux(HwdID, (tRBUF *)pRXCommand);
+			break;
 		default:
 			_log.Log(LOG_ERROR,"UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
 			break;
@@ -6016,6 +6020,47 @@ unsigned long long MainWorker::decode_Usage(const int HwdID, const tRBUF *pRespo
 			WriteMessage("subtype       = Electric");
 
 			sprintf(szTmp,"Usage = %.1f W", pMeter->fusage);
+			WriteMessage(szTmp);
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+	}
+	return DevRowIdx;
+}
+
+unsigned long long MainWorker::decode_Lux(const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[200];
+	std::string devname;
+
+	const _tLightMeter *pMeter=(const _tLightMeter*)pResponse;
+	unsigned char devType=pMeter->type;
+	unsigned char subType=pMeter->subtype;
+	sprintf(szTmp,"%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
+	std::string ID=szTmp;
+	unsigned char Unit=pMeter->dunit;
+	unsigned char cmnd=0;
+	unsigned char SignalLevel=12;
+	unsigned char BatteryLevel = 255;
+
+	sprintf(szTmp,"%.0f",pMeter->fLux);
+
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
+	PrintDeviceName(devname);
+
+	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->fLux);
+
+	if (m_verboselevel == EVBL_ALL)
+	{
+		switch (pMeter->subtype)
+		{
+		case sTypeLux:
+			WriteMessage("subtype       = Lux");
+
+			sprintf(szTmp,"Lux = %.1f W", pMeter->fLux);
 			WriteMessage(szTmp);
 			break;
 		default:

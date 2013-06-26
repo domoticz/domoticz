@@ -2879,14 +2879,15 @@ void CSQLHelper::UpdateMeter()
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
 
-	sprintf(szTmp,"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d))",
+	sprintf(szTmp,"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR Type=%d)",
 		pTypeRFXMeter,
 		pTypeP1Gas,
 		pTypeYouLess,
 		pTypeENERGY,
 		pTypeAirQuality,
 		pTypeUsage,
-        pTypeRego6XXValue,sTypeRego6XXCounter
+        pTypeRego6XXValue,sTypeRego6XXCounter,
+		pTypeLux
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -2954,6 +2955,12 @@ void CSQLHelper::UpdateMeter()
 				sprintf(szTmp,"%d",nValue);
 				sValue=szTmp;
 				CheckAndHandleNotification(hardwareID, DeviceID, Unit, dType, dSubType, NTYPE_USAGE, (float)nValue);
+			}
+			else if (dType==pTypeLux)
+			{
+				double fValue=atof(sValue.c_str());
+				sprintf(szTmp,"%.0f",fValue);
+				sValue=szTmp;
 			}
 
 			unsigned long long MeterValue;
@@ -3428,6 +3435,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 
 			if (
 				(devType!=pTypeAirQuality)&&
+				(devType!=pTypeLux)&&
 				(devType!=pTypeUsage)
 				)
 			{
@@ -3481,7 +3489,10 @@ void CSQLHelper::AddCalendarUpdateMeter()
 					);
 				result=query(szTmp);
 			}
-			if (devType!=pTypeAirQuality)
+			if (
+				(devType!=pTypeAirQuality)&&
+				(devType!=pTypeLux)
+				)
 			{
 				//Insert the last (max) counter value into the meter table to get the "today" value correct.
 				sprintf(szTmp,
