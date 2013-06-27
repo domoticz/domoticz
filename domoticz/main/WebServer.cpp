@@ -1304,7 +1304,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 
 					if (strarray.size()==4)
 					{
-						root["result"][ii]["Altitude"]=atof(strarray[3].c_str());
+						//root["result"][ii]["Altitude"]=atof(strarray[3].c_str());
 						sprintf(szData,"%.1f C, %.1f hPa",
 							atof(strarray[0].c_str()),
 							atof(strarray[1].c_str())
