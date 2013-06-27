@@ -298,7 +298,7 @@ void CRego6XXSerial::Do_Work()
 			}
 		}
 	}
-	std::cout << "Serial Worker stopped..." << std::endl;
+	std::cout << "Rego6XX: Serial Worker stopped..." << std::endl;
 } 
 
 

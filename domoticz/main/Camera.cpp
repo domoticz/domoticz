@@ -21,6 +21,7 @@ CCamScheduler::~CCamScheduler(void)
 {
 }
 
+/*
 void CCamScheduler::StartCameraGrabber(MainWorker *pMainWorker)
 {
 	m_pMain=pMainWorker;
@@ -37,6 +38,7 @@ void CCamScheduler::StopCameraGrabber()
 		m_thread->join();
 	}
 }
+*/
 
 std::vector<cameraDevice> CCamScheduler::GetCameraDevices()
 {
@@ -83,6 +85,7 @@ void CCamScheduler::ReloadCameras()
 	}
 }
 
+/*
 void CCamScheduler::Do_Work()
 {
 	while (!m_stoprequested)
@@ -111,6 +114,7 @@ void CCamScheduler::CheckCameras()
     //_log.Log(LOG_NORM,"Camera tick");
 
 }
+*/
 
 std::string CCamScheduler::GetCameraURL(cameraDevice *pCamera)
 {

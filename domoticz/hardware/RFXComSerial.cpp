@@ -94,7 +94,7 @@ void RFXComSerial::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_NORM,"Serial Worker stopped...");
+	_log.Log(LOG_NORM,"RFXCOM: Serial Worker stopped...");
 } 
 
 

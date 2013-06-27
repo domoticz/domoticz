@@ -22,11 +22,11 @@ class CCamScheduler
 public:
 	CCamScheduler(void);
 	~CCamScheduler(void);
-
+/*
 	void StartCameraGrabber(MainWorker *pMainWorker);
 	void StopCameraGrabber();
+*/
     void ReloadCameras();
-    void CheckCameras();
 	std::vector<cameraDevice> GetCameraDevices();
 
 	bool TakeSnapshot(const unsigned long long CamID, std::vector<unsigned char> &camimage);
@@ -43,10 +43,11 @@ private:
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 	std::vector<cameraDevice> m_cameradevices;
-
+/*
 	//our thread
 	void Do_Work();
-
+	void CheckCameras();
+*/
 	std::string GetCameraURL(cameraDevice *pCamera);
 };
 

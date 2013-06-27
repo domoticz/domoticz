@@ -432,7 +432,7 @@ bool MainWorker::Start()
 bool MainWorker::Stop()
 {
 	m_scheduler.StopScheduler();
-    m_cameras.StopCameraGrabber();
+//    m_cameras.StopCameraGrabber();
 	StopDomoticzHardware();
 	m_webserver.StopServer();
 
@@ -457,7 +457,7 @@ bool MainWorker::StartThread()
 	//Start Scheduler
 	m_scheduler.StartScheduler(this);
     //Start camera grabber
-    m_cameras.StartCameraGrabber(this);
+    //m_cameras.StartCameraGrabber(this);
 	//m_sql.DeleteHardware("999");
 
 #ifdef PARSE_RFXCOM_DEVICE_LOG
