@@ -24,6 +24,7 @@ class CRazberry : public CDomoticzHardwareBase
 		int commandClassID;
 		_eZWaveDeviceType devType;
 		int scaleID;
+		int scaleMultiply;
 		int basicType;
 		int genericType;
 		int specificType;
@@ -38,6 +39,9 @@ class CRazberry : public CDomoticzHardwareBase
 		std::string valueType;
 		float floatValue;
 		int intvalue;
+
+		//battery
+		int batValue;
 
 		//main_id
 		std::string string_id;

@@ -265,6 +265,11 @@ void CRazberry::parseDevices(const Json::Value devroot)
 
 			const Json::Value instance=(*ittInstance);
 
+			if (_device.hasBattery)
+			{
+				_device.batValue=instance["commandClasses"]["128"]["data"]["last"]["value"].asInt();
+			}
+
 			// Switches
 			// We choose SwitchMultilevel first, if not available, SwhichBinary is chosen
 			if (instance["commandClasses"]["38"].empty()==false)
@@ -285,8 +290,10 @@ void CRazberry::parseDevices(const Json::Value devroot)
 			// Add SensorMultilevel
 			if (instance["commandClasses"]["48"].empty()==false)
 			{
-				_device.commandClassID=48;
-				//InsertOrUpdateDevice(_device);
+				_device.commandClassID=48; //(binary switch, for example motion detector(PIR)
+				_device.devType= ZDTYPE_SWITCHNORMAL;
+				_device.intvalue=instance["commandClasses"]["48"]["data"]["level"]["value"].asInt();
+				InsertOrUpdateDevice(_device,true);
 			}
 			if (instance["commandClasses"]["49"].empty()==false)
 			{
@@ -330,7 +337,6 @@ void CRazberry::parseDevices(const Json::Value devroot)
 						_device.devType = ZDTYPE_SENSOR_LIGHT;
 						InsertOrUpdateDevice(_device,false);
 					}
-					
 				}
 				//InsertOrUpdateDevice(_device);
 			}
@@ -348,10 +354,14 @@ void CRazberry::parseDevices(const Json::Value devroot)
 					int sensorType=(*itt2)["sensorType"]["value"].asInt();
 					_device.floatValue=(*itt2)["val"]["value"].asFloat();
 					std::string scaleString = (*itt2)["scaleString"]["value"].asString();
-					if ((_device.scaleID == 2 || _device.scaleID == 4 || _device.scaleID == 6) && (sensorType == 1))
+					if ((_device.scaleID == 0 || _device.scaleID == 2 || _device.scaleID == 4 || _device.scaleID == 6) && (sensorType == 1))
 					{
 						_device.commandClassID=50;
 						_device.devType = ZDTYPE_SENSOR_POWER;
+						_device.scaleMultiply=1;
+						if (scaleString=="kWh")
+							_device.scaleMultiply=1000;
+
 						InsertOrUpdateDevice(_device,false);
 					}
 				}
@@ -370,9 +380,12 @@ void CRazberry::parseDevices(const Json::Value devroot)
 					int sensorType=(*itt2)["sensorType"]["value"].asInt();
 					_device.floatValue=(*itt2)["val"]["value"].asFloat();
 					std::string scaleString = (*itt2)["scaleString"]["value"].asString();
-					if ((_device.scaleID == 2 || _device.scaleID == 4 || _device.scaleID == 6) && (sensorType == 1))
+					if ((_device.scaleID == 0 || _device.scaleID == 2 || _device.scaleID == 4 || _device.scaleID == 6) && (sensorType == 1))
 						continue; // we don't want to have measurable here (W, V, PowerFactor)
 					_device.commandClassID=50;
+					_device.scaleMultiply=1;
+					if (scaleString=="kWh")
+						_device.scaleMultiply=1000;
 					_device.devType = ZDTYPE_SENSOR_POWER;
 					InsertOrUpdateDevice(_device,false);
 				}
@@ -473,7 +486,7 @@ void CRazberry::UpdateDevice(const std::string path, const Json::Value obj)
 		break;
 	case ZDTYPE_SENSOR_POWER:
 		//meters
-		pDevice->floatValue=obj["val"]["value"].asFloat();
+		pDevice->floatValue=obj["val"]["value"].asFloat()*pDevice->scaleMultiply;
 		break;
 	case ZDTYPE_SENSOR_TEMPERATURE:
 		//meters
