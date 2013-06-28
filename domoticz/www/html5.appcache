@@ -275,6 +275,7 @@ i18n/domoticz-de.json
 i18n/domoticz-en.json
 i18n/domoticz-fr.json
 i18n/domoticz-nl.json
+i18n/domoticz-it.json
 
 # Resources that require the user to be online.
 NETWORK:

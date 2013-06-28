@@ -33,6 +33,7 @@ Version 1.0.xxx (June xxth 2013)
 - Fixed: Camera Snapshot emailing
 - Implemented: Scenes can now be re-ordered (dashboard/scenes tab)
 - Implemented: Dimmer devices keep there dim value when not setting the level (on/off)
+- Implemented: Italian language support (thanks to the community!)
 
 Version 1.0.666 (May 28th 2013)
 - Implemented: Settings, Doorbell could be send as 'Group On' or 'On' command
