@@ -7817,10 +7817,18 @@ std::string CWebServer::GetJSonPage()
             std::string eventtranslated=m_pWebEm->FindValue("translated");
 			if (eventtranslated=="")
 				goto exitjson;
-         
+
+            std::string eventid=m_pWebEm->FindValue("eventid");
+            
 			szQuery.clear();
 			szQuery.str("");
-			szQuery << "INSERT INTO Events (Name, XMLStatement, ExecuteStatement) VALUES ('" << eventname << "','" << eventxml << "','" << eventtranslated << "')";
+            
+            if (eventid=="") {
+                    szQuery << "INSERT INTO Events (Name, XMLStatement, ExecuteStatement) VALUES ('" << eventname << "','" << eventxml << "','" << eventtranslated << "')";
+            }
+            else {
+                    szQuery << "UPDATE Events SET Name='" << eventname << "', XMLStatement ='" << eventxml << "', ExecuteStatement ='" << eventtranslated << "' WHERE (ID == '" << eventid << "')";
+            }
             m_pMain->m_sql.query(szQuery.str());
             root["status"]="OK";
         }
