@@ -2124,9 +2124,15 @@ function ShowFavorites()
 							alert($.i18n('Only possible between Sensors of the same kind!'));
 							$.myglobals.refreshTimer = setInterval(ShowFavorites, 10000);
 						} else {
-						
+							var jsonCmd="";
+							if ($.devIdx.indexOf('Scene') == 0) {
+								jsonCmd="switchsceneorder";
+							}
+							else {
+								jsonCmd="switchdeviceorder";
+							}
 							$.ajax({
-								 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + parts1[1] + "&idx2=" + parts2[1],
+								 url: "json.htm?type=command&param=" + jsonCmd + "&idx1=" + parts1[1] + "&idx2=" + parts2[1],
 								 async: false, 
 								 dataType: 'json',
 								 success: function(data) {
