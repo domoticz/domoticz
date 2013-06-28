@@ -6360,15 +6360,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, std::string s
 	if (hindex==-1)
 		return false;
 
-	//when level = 0, set switch command to Off
-	if (switchcmd=="Set Level")
-	{
-		if (level > 0)
-			level-=1;
-		if (level==0)
-			switchcmd="Off";
-	}
-
 	unsigned long ID;
 	std::stringstream s_strid;
 	s_strid << std::hex << sd[1];
@@ -6382,6 +6373,15 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, std::string s
 	unsigned char dType=atoi(sd[3].c_str());
 	unsigned char dSubType=atoi(sd[4].c_str());
 	_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
+
+	//when level = 0, set switch command to Off
+	if (switchcmd=="Set Level")
+	{
+		if (level > 0)
+			level-=1;
+		if (level==0)
+			switchcmd="Off";
+	}
 
 	switch (dType)
 	{

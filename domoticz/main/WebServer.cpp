@@ -808,9 +808,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 	szQuery.clear();
 	szQuery.str("");
 	if (rowid!="")
-		szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2 FROM DeviceStatus WHERE (ID==" << rowid << ")";
+		szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel FROM DeviceStatus WHERE (ID==" << rowid << ")";
 	else
-		szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2 FROM DeviceStatus ORDER BY " << szOrderBy;
+		szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel FROM DeviceStatus ORDER BY " << szOrderBy;
 	result=m_pMain->m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -833,6 +833,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 			double AddjMulti=atof(sd[16].c_str());
 			double AddjValue2=atof(sd[17].c_str());
 			double AddjMulti2=atof(sd[18].c_str());
+			int LastLevel=atoi(sd[19].c_str());
 
 			struct tm ntime;
 			ntime.tm_isdst=tm1.tm_isdst;
@@ -1012,8 +1013,17 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				GetLightStatus(dType,dSubType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
 
 				root["result"][ii]["Status"]=lstatus;
-				root["result"][ii]["Level"]=llevel;
-				root["result"][ii]["LevelInt"]=atoi(sValue.c_str());
+				if (switchtype==STYPE_Dimmer)
+				{
+					root["result"][ii]["Level"]=LastLevel;
+					int iLevel=int((float(maxDimLevel)/100.0f)*LastLevel);
+					root["result"][ii]["LevelInt"]=iLevel;
+				}
+				else
+				{
+					root["result"][ii]["Level"]=llevel;
+					root["result"][ii]["LevelInt"]=atoi(sValue.c_str());
+				}
 				root["result"][ii]["HaveDimmer"]=bHaveDimmer;
 				root["result"][ii]["MaxDimLevel"]=maxDimLevel;
 				root["result"][ii]["HaveGroupCmd"]=bHaveGroupCmd;

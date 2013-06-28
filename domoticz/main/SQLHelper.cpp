@@ -14,7 +14,7 @@
 #include "../smtpclient/SMTPClient.h"
 #include "../webserver/Base64.h"
 
-#define DB_VERSION 14
+#define DB_VERSION 15
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -37,7 +37,8 @@ const char *sqlCreateDeviceStatus =
 "[AddjValue] FLOAT DEFAULT 0, "
 "[AddjMulti] FLOAT DEFAULT 1, "
 "[AddjValue2] FLOAT DEFAULT 0, "
-"[AddjMulti2] FLOAT DEFAULT 1);";
+"[AddjMulti2] FLOAT DEFAULT 1, "
+"[LastLevel] INTEGER DEFAULT 0);";
 
 const char *sqlCreateDeviceStatusTrigger =
 "CREATE TRIGGER IF NOT EXISTS devicestatusupdate AFTER INSERT ON DeviceStatus\n"
@@ -542,6 +543,7 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion<15)
 		{
 			query("DROP TABLE IF EXISTS [HardwareSharing]");
+			query("ALTER TABLE DeviceStatus ADD COLUMN [LastLevel] INTEGER default 0");
 		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
@@ -1180,6 +1182,17 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 			GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
 
 			bool bIsLightSwitchOn=IsLightSwitchOn(lstatus);
+
+			if ((bIsLightSwitchOn)&&(llevel!=0))
+			{
+				//update level for device
+				sprintf(szTmp,
+					"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %llu)",
+					llevel,
+					ulID);
+				query(szTmp);
+
+			}
 
 			//Check if we need to email a snapshot of a Camera
 			std::string emailserver;

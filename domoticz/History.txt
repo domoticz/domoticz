@@ -32,6 +32,7 @@ Version 1.0.xxx (June xxth 2013)
 - Fixed: Possible read error for YouLess devices (extra space in front of total power)
 - Fixed: Camera Snapshot emailing
 - Implemented: Scenes can now be re-ordered (dashboard/scenes tab)
+- Implemented: Dimmer devices keep there dim value when not setting the level (on/off)
 
 Version 1.0.666 (May 28th 2013)
 - Implemented: Settings, Doorbell could be send as 'Group On' or 'On' command

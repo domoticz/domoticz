@@ -76,6 +76,7 @@ function ArmSystem(idx,switchcmd, refreshfunction)
 
    var $dialog = $('<div>How would you like to Arm the System?</div>').dialog({
 			modal: true,
+			width: 340,
 			resizable: false,
 			draggable: false,
 			open: function() {
@@ -89,7 +90,7 @@ function ArmSystem(idx,switchcmd, refreshfunction)
 			},
             buttons: [
                   {
-                        text: "Arm Home",
+                        text: $.i18n("Arm Home"),
                         click: function(){
 							$dialog.remove();
 							switchcmd="Arm Home";
@@ -113,7 +114,7 @@ function ArmSystem(idx,switchcmd, refreshfunction)
                         }
                   },
                   {
-                        text: "Arm Away",
+                        text: $.i18n("Arm Away"),
                         click: function(){
 							$dialog.remove();
 							switchcmd="Arm Away";
