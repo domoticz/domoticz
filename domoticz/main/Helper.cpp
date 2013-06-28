@@ -7,6 +7,8 @@
 #include <sys/stat.h>
 #include <fstream>
 #include <math.h>
+#include <algorithm>
+
 
 void StringSplit(std::string str, std::string delim, std::vector<std::string> &results)
 {
@@ -139,3 +141,22 @@ double CalculateAltitudeFromPressure(double pressure)
 	double altitude = 44330.0 * (1.0 - pow( (pressure / seaLevelPressure), 0.1903));
 	return altitude;
 }
+
+std::string &stdstring_ltrim(std::string &s)
+{
+	s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+	return s;
+}
+
+std::string &stdstring_rtrim(std::string &s)
+{
+	s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+	return s;
+}
+
+// trim from both ends
+std::string &stdstring_trim(std::string &s)
+{
+	return stdstring_ltrim(stdstring_rtrim(s));
+}
+

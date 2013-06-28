@@ -8,3 +8,8 @@ std::string stdreplace(
 bool file_exist (const char *filename);
 std::vector<std::string> GetSerialPorts(bool &bUseDirectPath);
 double CalculateAltitudeFromPressure(double pressure);
+
+std::string &stdstring_ltrim(std::string &s);
+std::string &stdstring_rtrim(std::string &s);
+std::string &stdstring_trim(std::string &s);
+
