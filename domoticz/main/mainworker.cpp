@@ -454,10 +454,10 @@ bool MainWorker::StartThread()
 	}
 	_log.Log(LOG_NORM,"Webserver started on port: %s", m_webserverport.c_str());
 
+	m_cameras.SetMainWorker(this);
+
 	//Start Scheduler
 	m_scheduler.StartScheduler(this);
-    //Start camera grabber
-    //m_cameras.StartCameraGrabber(this);
 	//m_sql.DeleteHardware("999");
 
 #ifdef PARSE_RFXCOM_DEVICE_LOG

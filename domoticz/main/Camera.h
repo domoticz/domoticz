@@ -22,6 +22,8 @@ class CCamScheduler
 public:
 	CCamScheduler(void);
 	~CCamScheduler(void);
+
+	void SetMainWorker(MainWorker *pMainWorker);
 /*
 	void StartCameraGrabber(MainWorker *pMainWorker);
 	void StopCameraGrabber();

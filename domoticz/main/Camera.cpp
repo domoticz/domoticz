@@ -21,11 +21,15 @@ CCamScheduler::~CCamScheduler(void)
 {
 }
 
-/*
-void CCamScheduler::StartCameraGrabber(MainWorker *pMainWorker)
+void CCamScheduler::SetMainWorker(MainWorker *pMainWorker)
 {
 	m_pMain=pMainWorker;
 	ReloadCameras();
+}
+
+/*
+void CCamScheduler::StartCameraGrabber(MainWorker *pMainWorker)
+{
 	m_seconds_counter=CAMERA_POLL_INTERVAL;
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CCamScheduler::Do_Work, this)));
 }
@@ -55,6 +59,9 @@ std::vector<cameraDevice> CCamScheduler::GetCameraDevices()
 
 void CCamScheduler::ReloadCameras()
 {
+	if (m_pMain==NULL)
+		return;
+
 	boost::lock_guard<boost::mutex> l(m_mutex);
 	m_cameradevices.clear();
 	std::stringstream szQuery;
@@ -168,6 +175,9 @@ bool CCamScheduler::TakeSnapshot(const unsigned long long CamID, std::vector<uns
 
 bool CCamScheduler::EmailCameraSnapshot(const std::string CamIdx, const std::string subject)
 {
+	if (m_pMain==NULL)
+		return false;
+
 	int nValue;
 	std::string sValue;
 	if (!m_pMain->m_sql.GetPreferencesVar("EmailServer",nValue,sValue))

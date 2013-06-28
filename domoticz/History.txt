@@ -30,6 +30,7 @@ Version 1.0.xxx (June xxth 2013)
 - Removed: Altitude from BMP085 sensor
 - Implemented: X10 Security Remote Arm Home/Arm Away prompt
 - Fixed: Possible read error for YouLess devices (extra space in front of total power)
+- Fixed: Camera Snapshot emailing
 
 Version 1.0.666 (May 28th 2013)
 - Implemented: Settings, Doorbell could be send as 'Group On' or 'On' command
