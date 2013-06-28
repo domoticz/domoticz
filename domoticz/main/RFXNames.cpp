@@ -1095,6 +1095,16 @@ bool GetLightCommand(
 				cmd=sStatusDisarm;
 				return true;
 			}
+			else if (switchcmd=="Arm Home")
+			{
+				cmd=sStatusArmHome;
+				return true;
+			}
+			else if (switchcmd=="Arm Away")
+			{
+				cmd=sStatusArmAway;
+				return true;
+			}
 		}
 		break;
 	case pTypeBlinds:

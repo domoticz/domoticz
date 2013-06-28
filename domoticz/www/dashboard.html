@@ -608,8 +608,18 @@ function RefreshFavorites()
 								$(id + " #name").html(item.Name);
 							}
 							if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
-								if ($(id + " #status").html()!=TranslateStatus(item.Status)) {
-									$(id + " #status").html(TranslateStatus(item.Status));
+								var tmpStatus=TranslateStatus(item.Status);
+								if (item.SubType.indexOf('remote') > 0) {
+									if (item.Status.indexOf('Arm') >= 0) {
+										tmpStatus+=' <img src="images/remote.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									}
+									else {
+										tmpStatus+=' <img src="images/remote.png" title="' + $.i18n("Turn Alarm On") + '" onclick="ArmSystem(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									}
+								}
+							
+								if ($(id + " #status").html()!=tmpStatus) {
+									$(id + " #status").html(tmpStatus);
 								}
 							}
 							else {
@@ -619,7 +629,7 @@ function RefreshFavorites()
 										img+='<img src="images/remote48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">\n';
 									}
 									else {
-										img+='<img src="images/remote48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">\n';
+										img+='<img src="images/remote48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="ArmSystem(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">\n';
 									}
 								}
 								else if (item.SwitchType == "Smoke Detector") {
@@ -1702,9 +1712,19 @@ function ShowFavorites()
 									'\t    <tr id="security_' + item.idx +'">\n' +
 									'\t      <td id="name">' + item.Name + '</td>\n';
 							var status=TranslateStatus(item.Status);
-							xhtm+=
-										'\t      <td id="status">' + status + '</td>\n' +
-										'\t    </tr>\n';
+							
+							xhtm+='\t      <td id="status">';
+							xhtm+=status;
+							if (item.SubType.indexOf('remote') > 0) {
+								if (item.Status.indexOf('Arm') >= 0) {
+									xhtm+=' <img src="images/remote.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+								}
+								else {
+									xhtm+=' <img src="images/remote.png" title="' + $.i18n("Turn Alarm On") + '" onclick="ArmSystem(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+								}
+							}
+							
+							xhtm+='</td>\n\t    </tr>\n';
 						}
 						else {
 							if (data.DashboardType==0) {
@@ -1730,7 +1750,7 @@ function ShowFavorites()
 									xhtm+='\t      <td id="img"><img src="images/remote48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 								else {
-									xhtm+='\t      <td id="img"><img src="images/remote48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+									xhtm+='\t      <td id="img"><img src="images/remote48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="ArmSystem(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 							}
 							else if (item.SwitchType == "Smoke Detector") {

@@ -63,6 +63,83 @@ function isiPhone(){
     );
 }
 
+function ArmSystem(idx,switchcmd, refreshfunction)
+{
+	if (window.my_config.userrights==0) {
+        HideNotify();
+		ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
+		return;
+	}
+	clearInterval($.myglobals.refreshTimer);
+
+	$.devIdx=idx;
+
+   var $dialog = $('<div>How would you like to Arm the System?</div>').dialog({
+			modal: true,
+			resizable: false,
+			draggable: false,
+			open: function() {
+			  $(".ui-dialog-titlebar").hide();
+              $(this).keypress(function(e) {
+                if (e.keyCode == $.ui.keyCode.ENTER) {
+                  e.preventDefault();
+                  $(this).parent().find("button:eq(0)").trigger("click");
+                }
+              });
+			},
+            buttons: [
+                  {
+                        text: "Arm Home",
+                        click: function(){
+							$dialog.remove();
+							switchcmd="Arm Home";
+							ShowNotify($.i18n('Switching') + ' ' + $.i18n(switchcmd));
+							$.ajax({
+							 url: "json.htm?type=command&param=switchlight&idx=" + $.devIdx + "&switchcmd=" + switchcmd + "&level=0",
+							 async: false, 
+							 dataType: 'json',
+							 success: function(data) {
+							  //wait 1 second
+							  setTimeout(function() {
+								HideNotify();
+								refreshfunction();
+							  }, 1000);
+							 },
+							 error: function(){
+								HideNotify();
+								alert($.i18n('Problem sending switch command'));
+							 }     
+							});
+                        }
+                  },
+                  {
+                        text: "Arm Away",
+                        click: function(){
+							$dialog.remove();
+							switchcmd="Arm Away";
+							ShowNotify($.i18n('Switching') + ' ' + $.i18n(switchcmd));
+							$.ajax({
+							 url: "json.htm?type=command&param=switchlight&idx=" + $.devIdx + "&switchcmd=" + switchcmd + "&level=0",
+							 async: false, 
+							 dataType: 'json',
+							 success: function(data) {
+							  //wait 1 second
+							  setTimeout(function() {
+								HideNotify();
+								refreshfunction();
+							  }, 1000);
+							 },
+							 error: function(){
+								HideNotify();
+								alert($.i18n('Problem sending switch command'));
+							 }     
+							});
+                        }
+                  }
+            ]
+      });
+}
+
 function SwitchLight(idx,switchcmd, refreshfunction)
 {
 	if (window.my_config.userrights==0) {
