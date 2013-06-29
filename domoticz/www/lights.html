@@ -1143,7 +1143,7 @@ function RefreshLights()
 						}
 						else if (item.Type == "Security") {
 							if (item.SubType.indexOf('remote') > 0) {
-								if (item.Status.indexOf('Arm') >= 0) {
+								if ((item.Status.indexOf('Arm') >= 0)||(item.Status.indexOf('Panic') >= 0)) {
 									img+='<img src="images/remote48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">\n';
 								}
 								else {
@@ -1369,7 +1369,7 @@ function ShowLights()
 			}
 					else if (item.Type == "Security") {
 						if (item.SubType.indexOf('remote') > 0) {
-							if (item.Status.indexOf('Arm') >= 0) {
+							if ((item.Status.indexOf('Arm') >= 0)||(item.Status.indexOf('Panic') >= 0)) {
 								xhtm+='\t      <td id="img"><img src="images/remote48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
 							}
 							else {

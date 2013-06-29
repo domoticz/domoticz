@@ -610,7 +610,7 @@ function RefreshFavorites()
 							if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
 								var tmpStatus=TranslateStatus(item.Status);
 								if (item.SubType.indexOf('remote') > 0) {
-									if (item.Status.indexOf('Arm') >= 0) {
+									if ((item.Status.indexOf('Arm') >= 0)||(item.Status.indexOf('Panic') >= 0)) {
 										tmpStatus+=' <img src="images/remote.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 									else {
@@ -625,7 +625,7 @@ function RefreshFavorites()
 							else {
 								var img="";
 								if (item.SubType.indexOf('remote') > 0) {
-									if (item.Status.indexOf('Arm') >= 0) {
+									if ((item.Status.indexOf('Arm') >= 0)||(item.Status.indexOf('Panic') >= 0)) {
 										img+='<img src="images/remote48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">\n';
 									}
 									else {
@@ -1716,7 +1716,7 @@ function ShowFavorites()
 							xhtm+='\t      <td id="status">';
 							xhtm+=status;
 							if (item.SubType.indexOf('remote') > 0) {
-								if (item.Status.indexOf('Arm') >= 0) {
+								if ((item.Status.indexOf('Arm') >= 0)||(item.Status.indexOf('Panic') >= 0)) {
 									xhtm+=' <img src="images/remote.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 								else {
@@ -1746,7 +1746,7 @@ function ShowFavorites()
 										'\t      <td id="bigtext"></td>\n';
 
 							if (item.SubType.indexOf('remote') > 0) {
-								if (item.Status.indexOf('Arm') >= 0) {
+								if ((item.Status.indexOf('Arm') >= 0)||(item.Status.indexOf('Panic') >= 0)) {
 									xhtm+='\t      <td id="img"><img src="images/remote48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 								else {
