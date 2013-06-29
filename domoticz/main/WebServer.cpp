@@ -768,6 +768,22 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 		sprintf(szOrderBy,"[Order],%s ASC",order.c_str());
 	}
 
+	bool bHaveUser=(m_pWebEm->m_actualuser!="");
+	int iUser=-1;
+	unsigned int totUserDevices=0;
+	if (bHaveUser)
+	{
+		iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+		if (iUser!=-1)
+		{
+			_eUserRights urights=m_users[iUser].userrights;
+			if (urights!=URIGHTS_ADMIN)
+			{
+				totUserDevices=m_pMain->m_sharedserver.GetUserDevicesCount(m_pWebEm->m_actualuser);
+			}
+		}
+	}
+
 	int ii=0;
 	if (rfilter=="all")
 	{
@@ -808,10 +824,24 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 
 	szQuery.clear();
 	szQuery.str("");
-	if (rowid!="")
-		szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel FROM DeviceStatus WHERE (ID==" << rowid << ")";
+
+	if (totUserDevices==0)
+	{
+		//All
+		if (rowid!="")
+			szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel FROM DeviceStatus WHERE (ID==" << rowid << ")";
+		else
+			szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel FROM DeviceStatus ORDER BY " << szOrderBy;
+	}
 	else
-		szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel FROM DeviceStatus ORDER BY " << szOrderBy;
+	{
+		//Specific devices
+		if (rowid!="")
+			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==1) AND (A.ID==" << rowid << ")";
+		else
+			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==1) ORDER BY " << szOrderBy;
+	}
+
 	result=m_pMain->m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -2108,7 +2138,9 @@ std::string CWebServer::GetJSonPage()
 	bool bHaveUser=(m_pWebEm->m_actualuser!="");
 	int iUser=-1;
 	if (bHaveUser)
+	{
 		iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+	}
 
 	m_retstr="";
 	if (!m_pWebEm->HasParams())

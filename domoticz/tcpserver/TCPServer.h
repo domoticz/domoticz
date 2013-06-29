@@ -27,6 +27,7 @@ public:
 	void SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const void* pClient2Ignore);
 
 	void SetRemoteUsers(const std::vector<_tRemoteShareUser> users);
+	unsigned int GetUserDevicesCount(const std::string username);
 
 private:
 	/// Stop the specified connection.
@@ -65,6 +66,7 @@ public:
 	void StopServer();
 	void SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const void* pClient2Ignore);
 	void SetRemoteUsers(const std::vector<CTCPServerInt::_tRemoteShareUser> users);
+	unsigned int GetUserDevicesCount(const std::string username);
 	void stopAllClients();
 private:
 	CTCPServerInt *m_pTCPServer;

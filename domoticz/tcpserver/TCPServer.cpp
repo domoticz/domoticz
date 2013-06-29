@@ -143,6 +143,14 @@ void CTCPServerInt::SetRemoteUsers(const std::vector<_tRemoteShareUser> users)
 	m_users=users;
 }
 
+unsigned int CTCPServerInt::GetUserDevicesCount(const std::string username)
+{
+	_tRemoteShareUser *pUser=FindUser(username);
+	if (pUser==NULL)
+		return 0;
+	return (unsigned int) pUser->Devices.size();
+}
+
 void CTCPServerInt::SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const void* pClient2Ignore)
 {
 	boost::lock_guard<boost::mutex> l(connectionMutex);
@@ -256,6 +264,13 @@ void CTCPServer::SetRemoteUsers(const std::vector<CTCPServerInt::_tRemoteShareUs
 {
 	if (m_pTCPServer)
 		m_pTCPServer->SetRemoteUsers(users);
+}
+
+unsigned int CTCPServer::GetUserDevicesCount(const std::string username)
+{
+	if (m_pTCPServer)
+		return m_pTCPServer->GetUserDevicesCount(username);
+	return 0;
 }
 
 void CTCPServer::stopAllClients()
