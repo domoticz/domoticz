@@ -293,7 +293,7 @@ void CTCPServer::stopAllClients()
 void CTCPServer::DoDecodeMessage(const unsigned char *pRXCommand)
 {
 	HwdType = HTYPE_Domoticz;
-	m_HwdID=123;
+	m_HwdID=8765;
 	Name="Domoticz Shared";
 	m_SeqNr=1;
 	sDecodeRXMessage(this, pRXCommand);//decode message

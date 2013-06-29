@@ -1063,6 +1063,13 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	{
 		//Send to connected Sharing Users
 		void *pClient2Ignore=NULL;
+		if (pHardware->HwdType==HTYPE_Domoticz)
+		{
+			if (pHardware->m_HwdID!=8765)
+			{
+				pClient2Ignore=(void*)pHardware;
+			}
+		}
 		m_sharedserver.SendToAll(DeviceRowIdx,(const char*)pRXCommand,pRXCommand[0]+1,pClient2Ignore);
 	}
 }
