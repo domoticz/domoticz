@@ -37,6 +37,7 @@ Version 1.0.xxx (June xxth 2013)
 - Implemented: User now sees only allowed devices
 - Implemented: X10 Security Remote, When status is 'Panic' the alarm can now be disarmed
 
+
 Version 1.0.666 (May 28th 2013)
 - Implemented: Settings, Doorbell could be send as 'Group On' or 'On' command
 - Fixed: Power Usage Graph, Problem with other devices then P1 Smart Meter

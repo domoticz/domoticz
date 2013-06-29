@@ -59,7 +59,10 @@ void CTCPClient::handleRead(const boost::system::error_code& e,
 					m_username=strarray[1];
 				}
 			}
-			
+			else
+			{
+				pConnectionManager->DoDecodeMessage((const unsigned char *)buffer_.data());
+			}
 		}
 
 		//ready for next read

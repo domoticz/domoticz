@@ -513,7 +513,9 @@ bool MainWorker::StartThread()
 	{
 		char szPort[100];
 		sprintf(szPort,"%d",rnvalue);
+		m_sharedserver.sDecodeRXMessage.connect( boost::bind( &MainWorker::DecodeRXMessage, this, _1, _2 ) );
 		m_sharedserver.StartServer("0.0.0.0",szPort);
+
 		LoadSharedUsers();
 	}
 
@@ -802,7 +804,7 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 				{
 					pHardware->WriteToHardware((const char*)pRXCommand,pRXCommand[0]+1);
 					std::stringstream s_strid;
-					s_strid << std::hex << sd[1];
+					s_strid << std::dec << sd[1];
 					unsigned long long ullID;
 					s_strid >> ullID;
 					return ullID;
@@ -1061,8 +1063,6 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	{
 		//Send to connected Sharing Users
 		void *pClient2Ignore=NULL;
-		if (pHardware->HwdType==HTYPE_Domoticz)
-			pClient2Ignore=(void*)pHardware;
 		m_sharedserver.SendToAll(DeviceRowIdx,(const char*)pRXCommand,pRXCommand[0]+1,pClient2Ignore);
 	}
 }

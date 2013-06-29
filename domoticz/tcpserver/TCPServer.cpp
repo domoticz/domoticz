@@ -14,10 +14,11 @@
 namespace tcp {
 namespace server {
 
-CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port):
+CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port, CTCPServer *pRoot):
 	io_service_(),
 	acceptor_(io_service_)
 {
+	m_pRoot=pRoot;
 	// Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
 	boost::asio::ip::tcp::resolver resolver(io_service_);
 	boost::asio::ip::tcp::resolver::query query(address, port);
@@ -107,6 +108,11 @@ bool CTCPServerInt::HandleAuthentication(CTCPClient_ptr c, const std::string use
 		return false;
 
 	return ((pUser->Username==username)&&(pUser->Password==password));
+}
+
+void CTCPServerInt::DoDecodeMessage(const unsigned char *pRXCommand)
+{
+	m_pRoot->DoDecodeMessage(pRXCommand);
 }
 
 void CTCPServerInt::stopClient(CTCPClient_ptr c)
@@ -209,6 +215,11 @@ CTCPServer::CTCPServer()
 	m_pTCPServer=NULL;
 }
 
+CTCPServer::CTCPServer(const int ID)
+{
+	m_pTCPServer=NULL;
+}
+
 CTCPServer::~CTCPServer()
 {
 	StopServer();
@@ -224,7 +235,7 @@ bool CTCPServer::StartServer(const std::string address, const std::string port)
 		StopServer();
 		if (m_pTCPServer!=NULL)
 			delete m_pTCPServer;
-		m_pTCPServer=new CTCPServerInt(address,port);
+		m_pTCPServer=new CTCPServerInt(address,port,this);
 		if (!m_pTCPServer)
 			return false;
 	}
@@ -278,6 +289,16 @@ void CTCPServer::stopAllClients()
 	if (m_pTCPServer)
 		m_pTCPServer->stopAllClients();
 }
+
+void CTCPServer::DoDecodeMessage(const unsigned char *pRXCommand)
+{
+	HwdType = HTYPE_Domoticz;
+	m_HwdID=123;
+	Name="Domoticz Shared";
+	m_SeqNr=1;
+	sDecodeRXMessage(this, pRXCommand);//decode message
+}
+
 
 } // namespace server
 } // namespace tcp
