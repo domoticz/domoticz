@@ -9,9 +9,10 @@
           <td align="right" style="width:60px"><label for="adjustment">Adjustment: </label></td>
           <td><input type="text" id="adjustment" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> &deg; C</td>
         <tr>
-				</table>
+		</table>
     </form>
 </div>
+
 <div id="tempcontent">
 </div>
 <div id="customlog" style="display:none;">
@@ -86,14 +87,13 @@ function MakeFavorite(id,isfavorite)
   });
 }
     
-
 function EditTempDevice(idx,name,addjvalue)
 {
 	clearInterval($.myglobals.refreshTimer);
-  $.devIdx=idx;
-  $("#dialog-edittempdevice #devicename").val(name);
-  $("#dialog-edittempdevice #adjustment").val(addjvalue);
-  $( "#dialog-edittempdevice" ).dialog( "open" );
+	$.devIdx=idx;
+	$("#dialog-edittempdevice #devicename").val(name);
+	$("#dialog-edittempdevice #adjustment").val(addjvalue);
+	$( "#dialog-edittempdevice" ).dialog( "open" );
 }
 
 function AddTempDevice()

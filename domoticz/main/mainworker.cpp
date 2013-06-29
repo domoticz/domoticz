@@ -2028,7 +2028,7 @@ unsigned long long MainWorker::decode_TempHum(const int HwdID, const tRBUF *pRes
 	m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
 	temp+=AddjValue;
 
-	unsigned char Humidity = pResponse->TEMP_HUM.humidity;
+	int Humidity = (int)pResponse->TEMP_HUM.humidity;
 	unsigned char HumidityStatus = pResponse->TEMP_HUM.humidity_status;
 
 	if (Humidity>100)
@@ -2036,7 +2036,16 @@ unsigned long long MainWorker::decode_TempHum(const int HwdID, const tRBUF *pRes
 		WriteMessage(" Invalid Humidity");
 		return -1;
 	}
-
+/*
+	AddjValue=0.0f;
+	AddjMulti=1.0f;
+	m_sql.GetAddjustment2(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
+	Humidity+=int(AddjValue);
+	if (Humidity>100)
+		Humidity=100;
+	if (Humidity<0)
+		Humidity=0;
+*/
 	sprintf(szTmp,"%.1f;%d;%d",temp,Humidity,HumidityStatus);
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
 	PrintDeviceName(devname);
