@@ -7782,7 +7782,7 @@ std::string CWebServer::GetJSonPage()
             
             szQuery.clear();
             szQuery.str("");
-            szQuery << "SELECT * FROM Events ORDER BY ID ASC";
+            szQuery << "SELECT ID, Name, XMLStatement FROM Events ORDER BY ID ASC";
             result=m_pMain->m_sql.query(szQuery.str());
             if (result.size()>0)
             {
