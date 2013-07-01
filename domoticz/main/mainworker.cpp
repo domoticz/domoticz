@@ -6749,6 +6749,8 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string swi
 			{
 				SwitchLightInt(sd2,"On",0,false);
 			}
+			boost::this_thread::sleep(boost::posix_time::milliseconds(50));
+
 		}
 	}
 
