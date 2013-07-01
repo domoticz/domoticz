@@ -74,6 +74,19 @@ Blockly.Language.switchvariables = {
  };
 
 
+Blockly.Language.domoticzcontrols_if = {
+  category: null,  // Variables are handled specially.
+  init: function() {
+    this.setColour(120);
+    this.appendValueInput('IF0')
+        .appendTitle(Blockly.LANG_CONTROLS_IF_MSG_IF);
+    this.appendStatementInput('DO0')
+        .appendTitle(Blockly.LANG_CONTROLS_IF_MSG_THEN);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+  }
+ };
+
 Blockly.Language.temperaturevariables = {
   // Variable getter.
   category: null,  // Variables are handled specially.

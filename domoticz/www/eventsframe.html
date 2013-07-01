@@ -41,6 +41,88 @@
         load_blocks();
       }
       
+      function parseXml(xml) {
+
+	      var parseBlock = {
+		     logic_timeofday: function(block,operand) {
+		     	var ifA = $(block).find("title")[1];
+		     	return $(ifA).attr("name")+" "+operand+" "+$(ifA).text();
+		     },
+		     logic_weekday: function(block,operand) {
+		     	var ifA = $(block).find("title")[1];
+		     	return $(ifA).attr("name")+" "+operand+" "+$(ifA).text();
+		     },
+		     logic_compare: function(block,operand) {
+		     	var objA = $(block).find("title")[1];
+		     	var stateA = $(block).find("title")[2];	 
+		     	return $(objA).attr("name")+'('+$(objA).text()+')'+" "+operand+" "+$(stateA).attr("name")+'('+$(stateA).text()+')';
+		     }
+		  };
+
+	      var translatedString = "";
+	      var setArray = [];
+	      var conditionArray = [];
+		  //$(data).children('page')
+		  if ($(xml).children().length > 1) {
+		  	return "err:Please make sure there is only a single block structure";
+		  }
+		  var firstBlockType = $(xml).find("block").first().attr("type");
+	      if (firstBlockType !="domoticzcontrols_if") {
+		  	return "err:Please start with a control block";
+	      }	
+	      var ifBlock = $($(xml).find("value[name='IF0']")[0]).children('block:first');
+	      var doBlock = $($(xml).find("statement[name='DO0']")[0]);
+	      var operand = "noop?";
+	      operand = $($(ifBlock).find("title")[0]).text();
+	      //if($(opA).text() == "EQ") { operand = "="}
+	      
+	      if (ifBlock.attr("type")=="logic_operation") {
+		      // multiple statements, execute parseBlock function for each value
+		      var conditionString = "";
+		      $(ifBlock).children('value').each (function(){ 
+			      var thisBlock = $(this).children('block:first');
+			      var locOperand = $($(thisBlock).find("title")[0]).text();
+			      var oneConditionString = parseBlock[thisBlock.attr("type")](thisBlock,locOperand);
+			      if (conditionString == "") {
+				      conditionString = oneConditionString
+				  }
+				  else {
+				  	conditionString = conditionString+" "+operand+" "+oneConditionString
+			      }
+			  });
+			  conditionArray.push(conditionString);
+	      }
+	      else {
+	      	  // single statement, the block type and execute its parseBlock function
+		      var conditionString = parseBlock[ifBlock.attr("type")](ifBlock,operand);
+		      conditionArray.push(conditionString);
+	      }
+	      
+	      //get setters from do
+	      $(doBlock).find('block').each (function(){ 
+	      	if ($(this).attr('type') == 'logic_set') {
+		   		var valueA = $(this).find("value[name='A']")[0];
+	        	var titleA = $(valueA).find("title")[0];
+	        	var valueB = $(this).find("value[name='B']")[0];
+	        	var titleB = $(valueB).find("title")[0];
+	        	var setString = $(titleA).attr("name")+'('+$(titleA).text()+')='+$(titleB).attr("name")+'('+$(titleB).text()+')';
+	        	setArray.push(setString);		      	
+		    }
+		    else if ($(this).attr('type') == 'send_email') {
+			    var titleText = $(this).find("title[name='TEXT']")[0];
+	        	var setString = 'Mail('+$(titleText).text()+')';
+	        	setArray.push(setString);		      	
+		    }
+		    else if ($(this).attr('type') == 'send_notification') {
+			    var titleText = $(this).find("title[name='TEXT']")[0];
+	        	var setString = 'Notification('+$(titleText).text()+')';
+	        	setArray.push(setString);		      	
+		    }
+		  });
+	      return [conditionArray,setArray];
+	      
+      }
+      
       function loadSelectedEvent(id) {
       		$.ajax({
 			  	url: "json.htm?type=events&param=load&event="+id, 
@@ -53,6 +135,7 @@
 					  		Blockly.mainWorkspace.clear();
 					  		Blockly.Xml.domToWorkspace( Blockly.mainWorkspace, xml );
 					  		$("#blockName").val(data.result[0].name);
+					  		$("#blockId").html(id);
 
 				  		}
 				  		else { alert("Error loading event!");}
@@ -104,12 +187,18 @@
 			}
 		  });
 	  }
-	  
+	  function new_block() {
+	  	$("#blockName").val("");
+	  	$("#blockId").html("");
+	  	Blockly.mainWorkspace.clear();
+	  	$("#savedEvents").val("");
+	  }
       
       function save_block() {
       	var xml = Blockly.Xml.workspaceToDom( Blockly.mainWorkspace );
       	//alert(Blockly.Xml.domToText( xml ));
       	var blockName = $("#blockName").val();
+      	var id = "";
       	if (blockName) { 
       		var exists = false; 
       		var doSave = false;
@@ -122,6 +211,7 @@
 			 	var answer = confirm("Overwrite "+blockName+"?")
 			    if (answer){
 					doSave = true;
+					id = $("#blockId").html();
 				}
 				else{
 					doSave = false;
@@ -129,20 +219,31 @@
 			}
 			else {doSave = true;}
       		if (doSave) {
-      	    	var blockXml  = Blockly.Xml.domToText( xml );
-      	    	$.ajax({
-	      	    	url : "json.htm?type=events&param=create&name="+blockName+"&xml="+blockXml+"&translated="+blockXml, 
-	      	    	async: false, 
-	      	    	dataType: 'json',
-	      	    	success: function(data) {
-		      	    	if (typeof data != 'undefined') {
-				  			if (data.status=="OK") {
-				  				alert("Event saved:\n"+blockName);
-				  				load_blocks();
+      		   var blockXml  = Blockly.Xml.domToText( xml );
+      		   var blockXmlTranslated = parseXml(xml);
+      		   if (typeof(blockXmlTranslated)=='string') {
+      		   	var answerparts = blockXmlTranslated.split(':');
+      		   	if (answerparts[0]=="err") {
+      		   		alert(answerparts[1]);
+      		   	}
+      		   }
+      		   else if (typeof(blockXmlTranslated)=='object') {
+      	    		var conditions = blockXmlTranslated[0];
+      	    		var actions = blockXmlTranslated[1];
+      	    		$.ajax({
+	      	    		url : "json.htm?type=events&param=create&name="+blockName+"&xml="+blockXml+"&conditions="+conditions+"&actions="+actions+"&eventid="+id, 
+	      	    		async: false, 
+	      	    		dataType: 'json',
+	      	    		success: function(data) {
+		      	    		if (typeof data != 'undefined') {
+				  				if (data.status=="OK") {
+				  					alert("Event saved:\n"+blockName);
+				  					load_blocks();
+				  				}
 				  			}
 				  		}
-				  	}
-			  }); 	    
+				  	});
+			  } 	    
 			}
 			else {alert("Save aborted!")}
 		}
@@ -161,7 +262,7 @@
   <body onload="init()">
     <xml id="toolbox" style="display: none">
    		<category name="Control">
-	   		<block type="controls_if"></block>
+	   		<block type="domoticzcontrols_if"></block>
    		</category>
    		<category name="Logic">
 	   		<block type="logic_compare"></block>
@@ -203,11 +304,13 @@
 		    	<input type="input" id="blockName" name="blockName" style="width: 12em; padding: .2em;" class="text ui-widget-content ui-corner-all" />
 		    	<br/>
 			    <a class="btnstyle3" href="javascript:save_block()">Save</a>
+			    <a class="btnstyle3" href="javascript:new_block()">New</a>
 			    <P>
 			    <label for="savedEvents">Saved events: </label><br>
 			    <select size="10" width="100%" style="width: 100%" id="savedEvents" name="savedEvents" onchange="loadSelectedEvent(this.value);">> 
   				</select>
   				<br><a class="btnstyle3" href="javascript:delete_block()">Delete selected</a>
+  				<br><div id="blockId" style="display:none;"/>
 			</td>
 		</tr>
     </table>
