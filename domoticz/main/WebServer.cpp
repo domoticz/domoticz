@@ -7793,7 +7793,6 @@ std::string CWebServer::GetJSonPage()
                     std::string ID=sd[0];
 					std::string Name=sd[1];
                     std::string XMLStatement=sd[2];
-                    std::string ExecStatement=sd[3];
                     root["result"][ii]["id"]=ID;
                     root["result"][ii]["name"]=Name;
                     ii++;
@@ -7813,7 +7812,7 @@ std::string CWebServer::GetJSonPage()
             
             szQuery.clear();
             szQuery.str("");
-            szQuery << "SELECT ID, Name, XMLStatement, ExecuteStatement FROM Events WHERE (ID==" << idx << ")";
+            szQuery << "SELECT ID, Name, XMLStatement FROM Events WHERE (ID==" << idx << ")";
             result=m_pMain->m_sql.query(szQuery.str());
             if (result.size()>0)
             {
@@ -7824,11 +7823,9 @@ std::string CWebServer::GetJSonPage()
                     std::string ID=sd[0];
 					std::string Name=sd[1];
                     std::string XMLStatement=sd[2];
-                    std::string ExecStatement=sd[3];
                     root["result"][ii]["id"]=ID;
                     root["result"][ii]["name"]=Name;
                     root["result"][ii]["xmlstatement"]=XMLStatement;
-                    root["result"][ii]["execstatement"]=ExecStatement;
                     ii++;
                 }
                 root["status"]="OK";
@@ -7846,20 +7843,24 @@ std::string CWebServer::GetJSonPage()
 			if (eventxml=="")
 				goto exitjson;
             
-            std::string eventtranslated=m_pWebEm->FindValue("translated");
-			if (eventtranslated=="")
+            std::string eventconditions=m_pWebEm->FindValue("conditions");
+			if (eventconditions=="")
 				goto exitjson;
-
+            
+            std::string eventactions=m_pWebEm->FindValue("actions");
+			if (eventactions=="")
+				goto exitjson;
+            
             std::string eventid=m_pWebEm->FindValue("eventid");
             
 			szQuery.clear();
 			szQuery.str("");
             
             if (eventid=="") {
-                    szQuery << "INSERT INTO Events (Name, XMLStatement, ExecuteStatement) VALUES ('" << eventname << "','" << eventxml << "','" << eventtranslated << "')";
+                    szQuery << "INSERT INTO Events (Name, XMLStatement, Conditions, Actions) VALUES ('" << eventname << "','" << eventxml <<  "','" << eventconditions <<"','" << eventactions <<"')";
             }
             else {
-                    szQuery << "UPDATE Events SET Name='" << eventname << "', XMLStatement ='" << eventxml << "', ExecuteStatement ='" << eventtranslated << "' WHERE (ID == '" << eventid << "')";
+                    szQuery << "UPDATE Events SET Name='" << eventname << "', XMLStatement ='" << eventxml << "', Conditions ='" << eventconditions << "', Actions ='" << eventactions << "' WHERE (ID == '" << eventid << "')";
             }
             m_pMain->m_sql.query(szQuery.str());
             root["status"]="OK";
