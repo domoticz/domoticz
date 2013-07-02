@@ -1257,9 +1257,11 @@ function EnableDisableTabs()
 				if( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {
 					$.myglobals.ismobile=true;
 					$.myglobals.ismobileint=true;
-				}			
+				}
 				if (data.MobileType!=0) {
-					$.myglobals.ismobile=false;
+					if(!(/iPhone/i.test(navigator.userAgent) )) {
+						$.myglobals.ismobile=false;
+					}
 				}
 			}			
 			if (data.result["EnableTabLights"]==0) {

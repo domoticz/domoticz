@@ -1,7 +1,7 @@
 Version 1.0.xxx (July xxth 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)
 - Fixed: Z-Wave, Wattage scale factor was not initialized
-- Implemented: Application settings, mobile view (mobile, or as normal dashboard)
+- Implemented: Application settings, mobile view (mobile, or as normal dashboard), iPhone will always be mobile theme
 
 Version 1.0.762 (July 1th 2013)
 - Changed: Motion Sensors, Off delay now sends 'Off' to Lighting 1/6 devices, and 'No Motion' to X10 motion sensors
