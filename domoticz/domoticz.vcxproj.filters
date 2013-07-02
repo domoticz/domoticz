@@ -78,6 +78,9 @@
     <Filter Include="Devices\I2C">
       <UniqueIdentifier>{f241a5bf-887e-41fe-a92c-e1cc990598b8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="EventSystem">
+      <UniqueIdentifier>{2d51924f-03d7-4afb-8b48-329a7d18317c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -271,6 +274,9 @@
     <ClInclude Include="hardware\smbus.h">
       <Filter>Devices\I2C</Filter>
     </ClInclude>
+    <ClInclude Include="main\EventSystem.h">
+      <Filter>EventSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -428,6 +434,9 @@
     </ClCompile>
     <ClCompile Include="hardware\smbus.cpp">
       <Filter>Devices\I2C</Filter>
+    </ClCompile>
+    <ClCompile Include="main\EventSystem.cpp">
+      <Filter>EventSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

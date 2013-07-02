@@ -125,6 +125,7 @@ main/stdafx.cpp
 main/Logger.cpp
 main/domoticz.cpp
 main/CmdLine.cpp
+main/EventSystem.cpp
 main/mainworker.cpp
 main/SQLHelper.cpp
 main/WebServer.cpp

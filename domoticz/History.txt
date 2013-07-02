@@ -1,4 +1,7 @@
-Version 1.0.xxx (June xxth 2013)
+Version 1.0.xxx (July xxth 2013)
+- Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)
+
+Version 1.0.762 (July 1th 2013)
 - Changed: Motion Sensors, Off delay now sends 'Off' to Lighting 1/6 devices, and 'No Motion' to X10 motion sensors
 - Implemented: On/Off switches, Off Delay option
 - Implemented: BMP085 I2C sensor (Rasberry Pi/arm only)

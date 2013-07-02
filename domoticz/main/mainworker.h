@@ -5,6 +5,7 @@
 #include "RFXtrx.h"
 #include "../hardware/DomoticzHardware.h"
 #include "Scheduler.h"
+#include "EventSystem.h"
 #include "Camera.h"
 #include <map>
 #include <deque>
@@ -67,6 +68,7 @@ public:
 
 	CSQLHelper m_sql;
 	CScheduler m_scheduler;
+	CEventSystem m_eventsystem;
     CCamScheduler m_cameras;
 	bool m_bIgnoreUsernamePassword;
 

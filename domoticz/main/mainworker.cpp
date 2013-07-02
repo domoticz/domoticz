@@ -432,6 +432,7 @@ bool MainWorker::Start()
 bool MainWorker::Stop()
 {
 	m_scheduler.StopScheduler();
+	m_eventsystem.StopEventSystem();
 //    m_cameras.StopCameraGrabber();
 	StopDomoticzHardware();
 	m_webserver.StopServer();
@@ -458,6 +459,7 @@ bool MainWorker::StartThread()
 
 	//Start Scheduler
 	m_scheduler.StartScheduler(this);
+	m_eventsystem.StartEventSystem(this);
 	//m_sql.DeleteHardware("999");
 
 #ifdef PARSE_RFXCOM_DEVICE_LOG
@@ -2717,10 +2719,10 @@ unsigned long long MainWorker::decode_Lighting2(const int HwdID, const tRBUF *pR
 	PrintDeviceName(devname);
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
-	if (cmnd==light2_sGroupOff)
+	if ((cmnd==light2_sGroupOff)||(cmnd==light2_sGroupOn))
 	{
-		//Switch all lights with the same code off
-		m_sql.Lighting2GroupOff(ID,subType);
+		//set the status of all lights with the same code to on/off
+		m_sql.Lighting2GroupCmd(ID,subType,(cmnd==light2_sGroupOff)?light2_sOff:light2_sOn);
 	}
 
 	if (m_verboselevel == EVBL_ALL)
@@ -6749,7 +6751,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string swi
 			{
 				SwitchLightInt(sd2,"On",0,false);
 			}
-			boost::this_thread::sleep(boost::posix_time::milliseconds(50));
+			//boost::this_thread::sleep(boost::posix_time::milliseconds(50));
 
 		}
 	}

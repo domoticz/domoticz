@@ -1148,6 +1148,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 			ulID);
 		result = query(szTmp);
 	}
+
 	switch (devType)
 	{
 	case pTypeRego6XXValue:
@@ -1335,6 +1336,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		CheckSceneStatusWithDevice(ulID);
 		break;
 	}
+	m_pMain->m_eventsystem.ProcessDevice(HardwareID,ulID,unit,devType,subType,signallevel,batterylevel,nValue,sValue,devname);
 	return ulID;
 }
 
@@ -4320,10 +4322,10 @@ bool CSQLHelper::BackupDatabase(const std::string OutputFile)
 	return ( rc==SQLITE_OK );
 }
 
-void CSQLHelper::Lighting2GroupOff(const std::string ID, const unsigned char subType)
+void CSQLHelper::Lighting2GroupCmd(const std::string ID, const unsigned char subType, const unsigned char GroupCmd)
 {
 	char szTmp[100];
-	sprintf(szTmp,"UPDATE DeviceStatus SET nValue = %d WHERE (DeviceID=='%s') And (Type==%d) And (SubType==%d)",light2_sOff,ID.c_str(),pTypeLighting2,subType);
+	sprintf(szTmp,"UPDATE DeviceStatus SET nValue = %d WHERE (DeviceID=='%s') And (Type==%d) And (SubType==%d)",GroupCmd,ID.c_str(),pTypeLighting2,subType);
 	query(szTmp);
 }
 
