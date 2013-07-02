@@ -7863,6 +7863,7 @@ std::string CWebServer::GetJSonPage()
                     szQuery << "UPDATE Events SET Name='" << eventname << "', XMLStatement ='" << eventxml << "', Conditions ='" << eventconditions << "', Actions ='" << eventactions << "' WHERE (ID == '" << eventid << "')";
             }
             m_pMain->m_sql.query(szQuery.str());
+            m_pMain->m_eventsystem.LoadEvents();
             root["status"]="OK";
         }
         if (cparam=="delete")
