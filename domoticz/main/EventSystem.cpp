@@ -7,13 +7,13 @@
 CEventSystem::CEventSystem(void)
 {
 	m_pMain=NULL;
-	m_thread=NULL;
 	m_stoprequested=false;
 }
 
 
 CEventSystem::~CEventSystem(void)
 {
+	StopEventSystem();
 }
 
 void CEventSystem::StartEventSystem(MainWorker *pMainWorker)
@@ -22,12 +22,18 @@ void CEventSystem::StartEventSystem(MainWorker *pMainWorker)
 
 	LoadEvents();
 
+	m_secondcounter=(58*2);
+
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
 }
 
 void CEventSystem::StopEventSystem()
 {
-
+	if (m_thread!=NULL)
+	{
+		m_stoprequested = true;
+		m_thread->join();
+	}
 }
 
 void CEventSystem::LoadEvents()
@@ -65,17 +71,18 @@ void CEventSystem::LoadEvents()
 
 void CEventSystem::Do_Work()
 {
-	unsigned char cntr=0;
 	m_stoprequested=false;
+
+	time_t lasttime=time(NULL);
 
 	while (!m_stoprequested)
 	{
 		//sleep 1 second
 		boost::this_thread::sleep(boost::posix_time::milliseconds(500));
-		cntr++;
-		if (cntr==2)
+		m_secondcounter++;
+		if (m_secondcounter==60*2)
 		{
-			cntr=0;
+			m_secondcounter=0;
 			ProcessMinute();
 		}
 	}

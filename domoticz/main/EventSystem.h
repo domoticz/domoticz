@@ -26,6 +26,7 @@ private:
 	boost::mutex eventMutex;
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
+	unsigned char m_secondcounter;
 
 	//our thread
 	void Do_Work();
