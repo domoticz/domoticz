@@ -17,7 +17,7 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-	//#define DEBUG_ZWAVE_INT
+//	#define DEBUG_ZWAVE_INT
 #endif
 
 bool isInt(std::string s)
@@ -298,6 +298,7 @@ void CRazberry::parseDevices(const Json::Value devroot)
 			if (instance["commandClasses"]["49"].empty()==false)
 			{
 				_device.commandClassID=49;
+				_device.scaleMultiply=1;
 				const Json::Value inVal=instance["commandClasses"]["49"]["data"];
 				for (Json::Value::iterator itt2=inVal.begin(); itt2!=inVal.end(); ++itt2)
 				{
