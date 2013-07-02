@@ -8,7 +8,7 @@ var switches = [];
 var temperatures = [];
 var weather = [];
 var utilities = [];
-
+var scenes = [];
 
 $.ajax({
 	url: "json.htm?type=devices&filter=light&used=true&order=Name", 
@@ -61,6 +61,20 @@ $.ajax({
 		}
 	}
 });
+
+$.ajax({
+	url: "json.htm?type=scenes&order=Name", 
+	async: false, 
+	dataType: 'json',
+	success: function(data) {
+		if (typeof data.result != 'undefined') {
+			$.each(data.result, function(i,item){
+				scenes.push([item.Name,item.idx])
+			})
+		}
+	}
+});
+
 
 Blockly.Language.switchvariables = {
   // Variable getter.
@@ -119,6 +133,18 @@ Blockly.Language.utilityvariables = {
     this.setOutput(true, null);
   }
  };
+
+Blockly.Language.scenevariables = {
+  // Variable getter.
+  category: null,  // Variables are handled specially.
+  init: function() {
+    this.setColour(290);
+    this.appendDummyInput()
+        .appendTitle(new Blockly.FieldDropdown(scenes), 'Scene');
+    this.setOutput(true, null);
+  }
+ };
+
 
 Blockly.Language.logic_states = {
   helpUrl: null,
