@@ -1122,7 +1122,7 @@ function ShowTemps()
 	RefreshTimeAndSun();
 	
 	if (window.my_config.userrights==2) {
-		if ($.myglobals.ismobile==false) {
+		if ($.myglobals.ismobileint==false) {
 			$("#tempcontent .span4").draggable({
 					drag: function() {
 						clearInterval($.myglobals.refreshTimer);

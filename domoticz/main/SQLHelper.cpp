@@ -701,6 +701,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("Language", "en");
 	}
+	if (!GetPreferencesVar("MobileType", nValue))
+	{
+		UpdatePreferencesVar("MobileType", 0);
+	}
 
 	//Start background thread
 	if (!StartThread())

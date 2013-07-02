@@ -492,6 +492,8 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("NMAAPI",NMAAPI.c_str());
 	std::string DashboardType=m_pWebEm->FindValue("DashboardType");
 	m_pMain->m_sql.UpdatePreferencesVar("DashboardType",atoi(DashboardType.c_str()));
+	std::string MobileType=m_pWebEm->FindValue("MobileType");
+	m_pMain->m_sql.UpdatePreferencesVar("MobileType",atoi(MobileType.c_str()));
 
 	std::string LightHistoryDays=m_pWebEm->FindValue("LightHistoryDays");
 	m_pMain->m_sql.UpdatePreferencesVar("LightHistoryDays",atoi(LightHistoryDays.c_str()));
@@ -752,6 +754,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 	int nValue=0;
 	m_pMain->m_sql.GetPreferencesVar("DashboardType",nValue);
 	root["DashboardType"]=nValue;
+	m_pMain->m_sql.GetPreferencesVar("MobileType",nValue);
+	root["MobileType"]=nValue;
 
 	nValue=1;
 	m_pMain->m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
@@ -5157,8 +5161,13 @@ std::string CWebServer::GetJSonPage()
 			std::string sValue;
 
 			if (m_pMain->m_sql.GetPreferencesVar("Language", sValue))
+			{
 				root["language"]=sValue;
-
+			}
+			if (m_pMain->m_sql.GetPreferencesVar("MobileType", nValue))
+			{
+				root["MobileType"]=nValue;
+			}
 			if (m_pMain->m_sql.GetPreferencesVar("EnableTabLights", nValue))
 			{
 				root["result"]["EnableTabLights"]=nValue;
@@ -7918,6 +7927,10 @@ std::string CWebServer::GetJSonPage()
 				else if (Key=="DashboardType")
 				{
 					root["DashboardType"]=nValue;
+				}
+				else if (Key=="MobileType")
+				{
+					root["MobileType"]=nValue;
 				}
 				else if (Key=="LightHistoryDays")
 				{

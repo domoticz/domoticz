@@ -208,11 +208,13 @@ $(document).ready(function() {
 		actlayout : "",
 		prevlayout : "",
 		ismobile: false,
+		ismobileint: false,
 		historytype : 1
 	};
 	
 	if( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {
 		$.myglobals.ismobile=true;
+		$.myglobals.ismobileint=true;
 	}
 
 	var matched = matchua( navigator.userAgent );

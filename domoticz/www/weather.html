@@ -1946,7 +1946,7 @@ function ShowWeathers()
   RefreshTimeAndSun();
 
 	if (window.my_config.userrights==2) {
-		if ($.myglobals.ismobile==false) {
+		if ($.myglobals.ismobileint==false) {
 			$("#weathercontent .span4").draggable({
 					drag: function() {
 						clearInterval($.myglobals.refreshTimer);

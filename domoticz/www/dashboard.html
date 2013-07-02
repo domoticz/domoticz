@@ -887,8 +887,6 @@ function ShowFavorites()
   var jj=0;
   var bHaveAddedDevider = false;
 
-  $.myglobals.ismobile=( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) );
-
 	var htmlcontent = "";
 
   var sunRise="";
@@ -2192,7 +2190,7 @@ function ShowFavorites()
 	ResizeDimSliders();
 
 	if (window.my_config.userrights==2) {
-		if ($.myglobals.ismobile==false) {
+		if ($.myglobals.ismobileint==false) {
 			$("#dashcontent .span4").draggable({
 					drag: function() {
 						clearInterval($.myglobals.refreshTimer);
@@ -2273,10 +2271,6 @@ function ResizeDimSliders()
 }
 
 $(document).ready(function() {
-	if( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {
-		$.myglobals.ismobile=true;
-	}
-	
 	$(window).resize(function() { ResizeDimSliders(); });
   ShowFavorites();
 } );
