@@ -576,7 +576,7 @@ function RefreshNotificationTable(idx)
 			else if (parts[0]=="W")
 			{
 				ntype=$.i18n("Wind");
-				stype=" m/s";
+				stype=" " + $.myglobals.windsign;
 			}
 			else if (parts[0]=="U")
 			{
@@ -710,7 +710,7 @@ function ShowNotificationTypeLabel()
 	else if (typetext == $.i18n('Rain'))
 		$($.content + " #notificationparamstable #valuetype").html('&nbsp;mm');
 	else if (typetext == $.i18n('Wind'))
-		$($.content + " #notificationparamstable #valuetype").html('&nbsp;m/s');
+		$($.content + " #notificationparamstable #valuetype").html('&nbsp;' + $.myglobals.windsign);
 	else if (typetext == $.i18n('Baro'))
 		$($.content + " #notificationparamstable #valuetype").html('&nbsp;hPa');
 	else if (typetext == $.i18n('Usage'))
@@ -1264,6 +1264,13 @@ function EnableDisableTabs()
 					}
 				}
 			}			
+			if (typeof data.WindScale != 'undefined') {
+				$.myglobals.windscale=parseFloat(data.WindScale);
+			}
+			if (typeof data.WindSign != 'undefined') {
+				$.myglobals.windsign=data.WindSign;
+			}
+
 			if (data.result["EnableTabLights"]==0) {
 				$("#mLightSwitches").hide();
 			}

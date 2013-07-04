@@ -1640,7 +1640,6 @@ unsigned long long MainWorker::decode_Wind(const int HwdID, const tRBUF *pRespon
 			chill = -(float(((pResponse->WIND.chillh) & 0x7F) * 256 + pResponse->WIND.chilll) / 10.0f);
 		}
 		chill+=AddjValue;
-		float wspeedms=float(intSpeed)/10.0f;
 	}
 
 	sprintf(szTmp,"%.2f;%s;%d;%d;%.1f;%.1f",dDirection,strDirection.c_str(),intSpeed,intGust,temp,chill);
@@ -1694,11 +1693,11 @@ unsigned long long MainWorker::decode_Wind(const int HwdID, const tRBUF *pRespon
 
 		if (pResponse->WIND.subtype != sTypeWIND5)
 		{
-			sprintf(szTmp,"Average speed = %.1f mtr/sec, %.2f km/hr, %.2f mph",float(intSpeed) / 10.0f, (float(intSpeed) * 0.36f), ((float(intSpeed) * 0.223693629f) / 10.0f));
+			sprintf(szTmp,"Average speed = %.1f mtr/sec, %.2f km/hr, %.2f mph",float(intSpeed) / 10.0f, (float(intSpeed) * 0.36f), (float(intSpeed) * 0.223693629f));
 			WriteMessage(szTmp);
 		}
 
-		sprintf(szTmp,"Wind gust     = %.1f mtr/sec, %.2f km/hr, %.2f mph", float(intGust) / 10.0f,  (float(intGust )* 0.36f),  (float(intGust) * 0.223693629f) / 10.0f);
+		sprintf(szTmp,"Wind gust     = %.1f mtr/sec, %.2f km/hr, %.2f mph", float(intGust) / 10.0f,  (float(intGust )* 0.36f),  (float(intGust) * 0.223693629f));
 		WriteMessage(szTmp);
 
 		if (pResponse->WIND.subtype == sTypeWIND4)

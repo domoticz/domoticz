@@ -464,11 +464,11 @@ function RefreshFavorites()
 								}
 								if (typeof item.Direction != 'undefined') {
 									status+='<br>' + item.Direction + ' ' + item.DirectionStr;
-									if (typeof item.Speedms != 'undefined') {
-										status+=', Speed: ' + item.Speedms + ' ms';
+									if (typeof item.Speed != 'undefined') {
+										status+=', Speed: ' + item.Speed + ' ' + $.myglobals.windsign;
 									}
-									if (typeof item.Gustms != 'undefined') {
-										status+=', Gust: ' + item.Gustms + ' ms';
+									if (typeof item.Gust != 'undefined') {
+										status+=', Gust: ' + item.Gust + ' ' + $.myglobals.windsign;
 									}
 									status+='\n';
 								}
@@ -545,11 +545,11 @@ function RefreshFavorites()
 								else if (typeof item.Direction != 'undefined') {
 									img='<img src="images/Wind' + item.DirectionStr + '.png" height="40">';
 									status=item.Direction + ' ' + item.DirectionStr;
-									if (typeof item.Speedms != 'undefined') {
-										status+=', Speed: ' + item.Speedms + ' ms';
+									if (typeof item.Speed != 'undefined') {
+										status+=', Speed: ' + item.Speed + ' ' + $.myglobals.windsign;
 									}
-									if (typeof item.Gustms != 'undefined') {
-										status+=', Gust: ' + item.Gustms + ' ms';
+									if (typeof item.Gust != 'undefined') {
+										status+=', Gust: ' + item.Gust + ' ' + $.myglobals.windsign;
 									}
 								}
 								else if (typeof item.Barometer != 'undefined') {
@@ -592,11 +592,11 @@ function RefreshFavorites()
 								else if (typeof item.Direction != 'undefined') {
 									img='<img src="images/Wind' + item.DirectionStr + '.png" height="40">';
 									status=item.Direction + ' ' + item.DirectionStr;
-									if (typeof item.Speedms != 'undefined') {
-										status+=', Speed: ' + item.Speedms + ' ms';
+									if (typeof item.Speed != 'undefined') {
+										status+=', Speed: ' + item.Speed + ' ' + $.myglobals.windsign;
 									}
-									if (typeof item.Gustms != 'undefined') {
-										status+=', Gust: ' + item.Gustms + ' ms';
+									if (typeof item.Gust != 'undefined') {
+										status+=', Gust: ' + item.Gust + ' ' + $.myglobals.windsign;
 									}
 									status+='<br>\n';
 									if (typeof item.Temp != 'undefined') {
@@ -609,11 +609,11 @@ function RefreshFavorites()
 										status+='Chill: ' + item.Chill + '° C';
 									}
 									bigtext=item.DirectionStr;
-									if (typeof item.Speedms != 'undefined') {
-										bigtext+='/' + item.Speedms + ' ms';
+									if (typeof item.Speed != 'undefined') {
+										bigtext+=' / ' + item.Speed + ' ' + $.myglobals.windsign;
 									}
-									else if (typeof item.Gustms != 'undefined') {
-										bigtext+='/' + item.Gustms + ' ms';
+									else if (typeof item.Gust != 'undefined') {
+										bigtext+=' / ' + item.Gust + ' ' + $.myglobals.windsign;
 									}
 								}
 								else if (typeof item.Barometer != 'undefined') {
@@ -1554,11 +1554,11 @@ function ShowFavorites()
 							}
 							if (typeof item.Direction != 'undefined') {
 								xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr;
-								if (typeof item.Speedms != 'undefined') {
-									xhtm+=', Speed: ' + item.Speedms + ' ms';
+								if (typeof item.Speed != 'undefined') {
+									xhtm+=', Speed: ' + item.Speed + ' ' + $.myglobals.windsign;
 								}
-								if (typeof item.Gustms != 'undefined') {
-									xhtm+=', Gust: ' + item.Gustms + ' ms';
+								if (typeof item.Gust != 'undefined') {
+									xhtm+=', Gust: ' + item.Gust + ' ' + $.myglobals.windsign;
 								}
 								xhtm+='\n';
 							}
@@ -1658,11 +1658,11 @@ function ShowFavorites()
 							}
 							else if (typeof item.Direction != 'undefined') {
 								status=item.Direction + ' ' + item.DirectionStr;
-								if (typeof item.Speedms != 'undefined') {
-									status+=', Speed: ' + item.Speedms + ' ms';
+								if (typeof item.Speed != 'undefined') {
+									status+=', Speed: ' + item.Speed + ' ' + $.myglobals.windsign;
 								}
-								if (typeof item.Gustms != 'undefined') {
-									status+=', Gust: ' + item.Gustms + ' ms';
+								if (typeof item.Gust != 'undefined') {
+									status+=', Gust: ' + item.Gust + ' ' + $.myglobals.windsign;
 								}
 							}
 							else if (typeof item.Barometer != 'undefined') {
@@ -1708,11 +1708,11 @@ function ShowFavorites()
 							}
 							else if (typeof item.Direction != 'undefined') {
 								xhtm+=item.DirectionStr;
-								if (typeof item.Speedms != 'undefined') {
-									xhtm+='/' + item.Speedms + ' ms';
+								if (typeof item.Speed != 'undefined') {
+									xhtm+=' / ' + item.Speed + ' ' + $.myglobals.windsign;
 								}
-								else if (typeof item.Gustms != 'undefined') {
-									xhtm+='/' + item.Gustms + ' ms';
+								else if (typeof item.Gust != 'undefined') {
+									xhtm+=' / ' + item.Gust + ' ' + $.myglobals.windsign;
 								}
 							}
 							xhtm+='</td>\n';
@@ -1736,11 +1736,11 @@ function ShowFavorites()
 							else if (typeof item.Direction != 'undefined') {
 								xhtm+='Wind' + item.DirectionStr + '.png" height="40"></td>\n' +
 								'\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr;
-								if (typeof item.Speedms != 'undefined') {
-									xhtm+=', Speed: ' + item.Speedms + ' ms';
+								if (typeof item.Speed != 'undefined') {
+									xhtm+=', Speed: ' + item.Speed + ' ' + $.myglobals.windsign;
 								}
-								if (typeof item.Gustms != 'undefined') {
-									xhtm+=', Gust: ' + item.Gustms + ' ms';
+								if (typeof item.Gust != 'undefined') {
+									xhtm+=', Gust: ' + item.Gust + ' ' + $.myglobals.windsign;
 								}
 								xhtm+='<br>\n';
 								if (typeof item.Temp != 'undefined') {

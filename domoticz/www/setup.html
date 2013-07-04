@@ -300,6 +300,19 @@
 		  <div class="page-header-small">
 			<h1 data-i18n="Meter/Counter Setup">Meter/Counter Setup</h1>
 		  </div>
+			<h2>Wind Meter:</h2>
+			<table class="display" id="windmetertable" border="0" cellpadding="0" cellspacing="0">
+				<tr>
+					<td align="right" style="width:60px"><label><span data-i18n="Display"></span>: </label></td>
+					<td><select id="comboWindUnit" name="WindUnit" style="width:120px" class="combobox ui-corner-all">
+						<option value="0">m/s</option>
+						<option value="1">km/h</option>
+						<option value="2">mph</option>
+						<option value="3">Knots</option>
+					</select></td>
+				</tr>
+			</table>
+			<br>
 			<h2><span data-i18n="RFXMeter/Counter Dividers"></span>:</h2>
 			<table class="display" id="rfxmetertable" border="0" cellpadding="0" cellspacing="0">
 			<tr>
@@ -561,6 +574,9 @@ function ShowSettings()
       }
       if (typeof data.CM113DisplayType != 'undefined') {
         $("#owl113table #comboscm113type").val(data.CM113DisplayType);
+      }
+      if (typeof data.WindUnit != 'undefined') {
+        $("#windmetertable #comboWindUnit").val(data.WindUnit);
       }
       if (typeof data.UseAutoUpdate != 'undefined') {
         $("#autoupdatetable #checkforupdates").prop('checked',data.UseAutoUpdate==1);

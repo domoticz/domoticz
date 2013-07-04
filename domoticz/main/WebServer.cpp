@@ -495,6 +495,16 @@ char * CWebServer::PostSettings()
 	std::string MobileType=m_pWebEm->FindValue("MobileType");
 	m_pMain->m_sql.UpdatePreferencesVar("MobileType",atoi(MobileType.c_str()));
 
+	int nUnit=atoi(m_pWebEm->FindValue("WindUnit").c_str());
+	m_pMain->m_sql.UpdatePreferencesVar("WindUnit",nUnit);
+	m_pMain->m_sql.m_windunit=(_eWindUnit)nUnit;
+/*
+	nUnit=atoi(m_pWebEm->FindValue("TempUnit").c_str());
+	m_pMain->m_sql.UpdatePreferencesVar("TempUnit",nUnit);
+	m_pMain->m_sql.m_tempunit=(_eTempUnit)nUnit;
+*/
+	m_pMain->m_sql.SetUnitsAndScale();
+
 	std::string LightHistoryDays=m_pWebEm->FindValue("LightHistoryDays");
 	m_pMain->m_sql.UpdatePreferencesVar("LightHistoryDays",atoi(LightHistoryDays.c_str()));
 
@@ -1404,23 +1414,15 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					if (dSubType!=sTypeWIND5)
 					{
 						int intSpeed=atoi(strarray[2].c_str());
-						sprintf(szTmp,"%.1f",float(intSpeed) / 10.0f);
-						root["result"][ii]["Speedms"]=szTmp;
-						sprintf(szTmp,"%.1f",(float(intSpeed) * 0.36f));
-						root["result"][ii]["Speedkmhr"]=szTmp;
-						sprintf(szTmp,"%.1f",((float(intSpeed) * 0.223693629f) / 10.0f));
-						root["result"][ii]["Speedmph"]=szTmp;
+						sprintf(szTmp,"%.1f",float(intSpeed) * m_pMain->m_sql.m_windscale);
+						root["result"][ii]["Speed"]=szTmp;
 					}
 
 					//if (dSubType!=sTypeWIND6) //problem in RFXCOM firmware? gust=speed?
 					{
 						int intGust=atoi(strarray[3].c_str());
-						sprintf(szTmp,"%.1f",float(intGust) / 10.0f);
-						root["result"][ii]["Gustms"]=szTmp;
-						sprintf(szTmp,"%.1f",(float(intGust )* 0.36f));
-						root["result"][ii]["Gustkmhr"]=szTmp;
-						sprintf(szTmp,"%.1f",(float(intGust) * 0.223693629f) / 10.0f);
-						root["result"][ii]["Gustmph"]=szTmp;
+						sprintf(szTmp,"%.1f",float(intGust) *m_pMain->m_sql.m_windscale);
+						root["result"][ii]["Gust"]=szTmp;
 					}
 					if (
 						((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
@@ -2469,8 +2471,8 @@ std::string CWebServer::GetJSonPage()
 			root["result"][ii]["Name"]=tempjson["result"][itt]["Name"];
 			root["result"][ii]["Direction"]=tempjson["result"][itt]["Direction"];
 			root["result"][ii]["DirectionStr"]=tempjson["result"][itt]["DirectionStr"];
-			root["result"][ii]["Gustms"]=tempjson["result"][itt]["Gustms"];
-			root["result"][ii]["Speedms"]=tempjson["result"][itt]["Speedms"];
+			root["result"][ii]["Gust"]=tempjson["result"][itt]["Gust"];
+			root["result"][ii]["Speed"]=tempjson["result"][itt]["Speed"];
 			root["result"][ii]["LastUpdate"]=tempjson["result"][itt]["LastUpdate"];
 
 			ii++;
@@ -3497,10 +3499,10 @@ std::string CWebServer::GetJSonPage()
 						root["result"][ii]["di"]=sd[0];
 
 						int intSpeed=atoi(sd[1].c_str());
-						sprintf(szTmp,"%.1f",float(intSpeed) / 10.0f);
+						sprintf(szTmp,"%.1f",float(intSpeed) * m_pMain->m_sql.m_windscale);
 						root["result"][ii]["sp"]=szTmp;
 						int intGust=atoi(sd[2].c_str());
-						sprintf(szTmp,"%.1f",float(intGust) / 10.0f);
+						sprintf(szTmp,"%.1f",float(intGust) * m_pMain->m_sql.m_windscale);
 						root["result"][ii]["gu"]=szTmp;
 						ii++;
 					}
@@ -4515,10 +4517,10 @@ std::string CWebServer::GetJSonPage()
 						root["result"][ii]["di"]=sd[0];
 
 						int intSpeed=atoi(sd[2].c_str());
-						sprintf(szTmp,"%.1f",float(intSpeed) / 10.0f);
+						sprintf(szTmp,"%.1f",float(intSpeed) * m_pMain->m_sql.m_windscale);
 						root["result"][ii]["sp"]=szTmp;
 						int intGust=atoi(sd[4].c_str());
-						sprintf(szTmp,"%.1f",float(intGust) / 10.0f);
+						sprintf(szTmp,"%.1f",float(intGust) * m_pMain->m_sql.m_windscale);
 						root["result"][ii]["gu"]=szTmp;
 						ii++;
 					}
@@ -4536,10 +4538,10 @@ std::string CWebServer::GetJSonPage()
 					root["result"][ii]["di"]=sd[0];
 
 					int intSpeed=atoi(sd[2].c_str());
-					sprintf(szTmp,"%.1f",float(intSpeed) / 10.0f);
+					sprintf(szTmp,"%.1f",float(intSpeed) * m_pMain->m_sql.m_windscale);
 					root["result"][ii]["sp"]=szTmp;
 					int intGust=atoi(sd[4].c_str());
-					sprintf(szTmp,"%.1f",float(intGust) / 10.0f);
+					sprintf(szTmp,"%.1f",float(intGust) * m_pMain->m_sql.m_windscale);
 					root["result"][ii]["gu"]=szTmp;
 					ii++;
 				}
@@ -5028,10 +5030,10 @@ std::string CWebServer::GetJSonPage()
 						root["result"][ii]["di"]=sd[0];
 
 						int intSpeed=atoi(sd[2].c_str());
-						sprintf(szTmp,"%.1f",float(intSpeed) / 10.0f);
+						sprintf(szTmp,"%.1f",float(intSpeed) * m_pMain->m_sql.m_windscale);
 						root["result"][ii]["sp"]=szTmp;
 						int intGust=atoi(sd[4].c_str());
-						sprintf(szTmp,"%.1f",float(intGust) / 10.0f);
+						sprintf(szTmp,"%.1f",float(intGust) * m_pMain->m_sql.m_windscale);
 						root["result"][ii]["gu"]=szTmp;
 						ii++;
 					}
@@ -5049,10 +5051,10 @@ std::string CWebServer::GetJSonPage()
 					root["result"][ii]["di"]=sd[0];
 
 					int intSpeed=atoi(sd[2].c_str());
-					sprintf(szTmp,"%.1f",float(intSpeed) / 10.0f);
+					sprintf(szTmp,"%.1f",float(intSpeed) * m_pMain->m_sql.m_windscale);
 					root["result"][ii]["sp"]=szTmp;
 					int intGust=atoi(sd[4].c_str());
-					sprintf(szTmp,"%.1f",float(intGust) / 10.0f);
+					sprintf(szTmp,"%.1f",float(intGust) * m_pMain->m_sql.m_windscale);
 					root["result"][ii]["gu"]=szTmp;
 					ii++;
 				}
@@ -5168,6 +5170,10 @@ std::string CWebServer::GetJSonPage()
 			{
 				root["MobileType"]=nValue;
 			}
+
+			root["WindScale"]=m_pMain->m_sql.m_windscale*10.0f;
+			root["WindSign"]=m_pMain->m_sql.m_windsign;
+
 			if (m_pMain->m_sql.GetPreferencesVar("EnableTabLights", nValue))
 			{
 				root["result"]["EnableTabLights"]=nValue;
@@ -8074,6 +8080,14 @@ std::string CWebServer::GetJSonPage()
 				else if (Key=="Language")
 				{
 					root["Language"]=sValue;
+				}
+				else if (Key=="WindUnit")
+				{
+					root["WindUnit"]=nValue;
+				}
+				else if (Key=="TempUnit")
+				{
+					root["TempUnit"]=nValue;
 				}
 			}
 		}

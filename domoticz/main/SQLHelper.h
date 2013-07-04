@@ -27,6 +27,21 @@ struct _tDeviceNameRef
 	std::string Name;
 };
 
+enum _eWindUnit
+{
+	WINDUNIT_MS=0,
+	WINDUNIT_KMH,
+	WINDUNIT_MPH,
+	WINDUNIT_Knots,
+	WINDUNIT_Beaufort,
+};
+
+enum _eTempUnit
+{
+	TEMPUNIT_C=0,
+	TEMPUNIT_F,
+};
+
 enum _eTaskItemType
 {
 	TITEM_SWITCHCMD=0,
@@ -245,10 +260,18 @@ public:
 
 	void AddTaskItem(const _tTaskItem tItem);
 
-	std::vector<std::vector<std::string> > query(const std::string szQuery);
+	void SetUnitsAndScale();
 
+	std::vector<std::vector<std::string> > query(const std::string szQuery);
+public:
 	std::string m_LastSwitchID;	//for learning command
 	unsigned long long m_LastSwitchRowID;
+	_eWindUnit	m_windunit;
+	std::string	m_windsign;
+	float		m_windscale;
+	_eTempUnit	m_tempunit;
+	std::string	m_tempsign;
+	float		m_tempscale;
 private:
 	boost::mutex m_sqlQueryMutex;
 	CURLEncode m_urlencoder;

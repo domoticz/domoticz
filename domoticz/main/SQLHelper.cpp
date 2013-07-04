@@ -331,6 +331,11 @@ CSQLHelper::CSQLHelper(void)
 	m_dbase=NULL;
 	m_demo_dbase=NULL;
 	m_stoprequested=false;
+
+	m_windunit=WINDUNIT_MS;
+	m_tempunit=TEMPUNIT_C;
+	SetUnitsAndScale();
+
 	SetDatabaseName("domoticz.db");
 }
 
@@ -705,6 +710,24 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("MobileType", 0);
 	}
+	if (!GetPreferencesVar("WindUnit", nValue))
+	{
+		UpdatePreferencesVar("WindUnit", (int)WINDUNIT_MS);
+	}
+	else
+	{
+		m_windunit=(_eWindUnit)nValue;
+	}
+	if (!GetPreferencesVar("TempUnit", nValue))
+	{
+		UpdatePreferencesVar("TempUnit", (int)TEMPUNIT_C);
+	}
+	else
+	{
+		m_tempunit=(_eTempUnit)nValue;
+
+	}
+	SetUnitsAndScale();
 
 	//Start background thread
 	if (!StartThread())
@@ -4331,5 +4354,42 @@ void CSQLHelper::Lighting2GroupCmd(const std::string ID, const unsigned char sub
 	char szTmp[100];
 	sprintf(szTmp,"UPDATE DeviceStatus SET nValue = %d WHERE (DeviceID=='%s') And (Type==%d) And (SubType==%d)",GroupCmd,ID.c_str(),pTypeLighting2,subType);
 	query(szTmp);
+}
+
+void CSQLHelper::SetUnitsAndScale()
+{
+	//Wind
+	if (m_windunit==WINDUNIT_MS)
+	{
+		m_windsign="m/s";
+		m_windscale=0.1f;
+	}
+	else if (m_windunit==WINDUNIT_KMH)
+	{
+		m_windsign="km/h";
+		m_windscale=0.36f;
+	}
+	else if (m_windunit==WINDUNIT_MPH)
+	{
+		m_windsign="mph";
+		m_windscale=0.223693629205f;
+	}
+	else if (m_windunit==WINDUNIT_Knots)
+	{
+		m_windsign="kn";
+		m_windscale=0.1943844492457398f;
+	}
+
+	//Temp
+	if (m_tempunit==TEMPUNIT_C)
+	{
+		m_tempsign="° C";
+		m_tempscale=1.0f;
+	}
+	if (m_tempunit==TEMPUNIT_F)
+	{
+		m_tempsign="° F";
+		m_tempscale=1.0f; //*1.8 + 32
+	}
 }
 
