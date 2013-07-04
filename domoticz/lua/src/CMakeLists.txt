@@ -9,9 +9,7 @@ SET (LIB lauxlib.c lbaselib.c lbitlib.c lcorolib.c ldblib.c liolib.c
 
 ADD_LIBRARY(lua ${LIB} ${CORE})
 ADD_EXECUTABLE(luaexec lua.c)
-TARGET_LINK_LIBRARIES(luaexec lua) 
-
-set(CMAKE_EXE_LINKER_FLAGS "-lm")
+TARGET_LINK_LIBRARIES(luaexec lua m) 
 
 ADD_EXECUTABLE(luac luac.c)
-TARGET_LINK_LIBRARIES(luac lua) 
+TARGET_LINK_LIBRARIES(luac lua m) 
