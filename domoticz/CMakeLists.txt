@@ -220,6 +220,17 @@ else()
   MESSAGE(FATAL_ERROR "Could not find LIBUSB on your system, see install.txt how to get them installed.")
 ENDIF(LIBUSB_FOUND)
 
+find_path(LUA_INCLUDE_DIR lua.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/lua/src)
+
+IF(LUA_INCLUDE_DIR)
+  MESSAGE(STATUS "LUA found at: ${LUA_INCLUDE_DIR}")
+else()
+  MESSAGE(FATAL_ERROR "Could not find LUA on your system. Check if lua source directory exists.")
+ENDIF(LUA_INCLUDE_DIR)
+
+include_directories(${LUA_INCLUDE_DIR})
+
 target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread curl ${LIBUSB_LIBRARIES} lua)
 #target_link_libraries(domoticz ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
 
