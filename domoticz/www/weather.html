@@ -1828,6 +1828,13 @@ function ShowWeathers()
      success: function(data) {
       if (typeof data.result != 'undefined') {
 
+		if (typeof data.WindScale != 'undefined') {
+			$.myglobals.windscale=parseFloat(data.WindScale);
+		}
+		if (typeof data.WindSign != 'undefined') {
+			$.myglobals.windsign=data.WindSign;
+		}
+
 				$.FiveMinuteHistoryDays=data["5MinuteHistoryDays"];
 
         $.each(data.result, function(i,item){

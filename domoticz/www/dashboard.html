@@ -920,8 +920,23 @@ function ShowFavorites()
 			}
 			$.myglobals.DashboardType=data.DashboardType;
 
+		if (typeof data.WindScale != 'undefined') {
+			$.myglobals.windscale=parseFloat(data.WindScale);
+		}
+		if (typeof data.WindSign != 'undefined') {
+			$.myglobals.windsign=data.WindSign;
+		}
+
       if (typeof data.result != 'undefined') {
 				//Scenes
+				
+		if (typeof data.WindScale != 'undefined') {
+			$.myglobals.windscale=parseFloat(data.WindScale);
+		}
+		if (typeof data.WindSign != 'undefined') {
+			$.myglobals.windsign=data.WindSign;
+		}
+				
         jj=0;
         bHaveAddedDevider = false;
         $.each(data.result, function(i,item){

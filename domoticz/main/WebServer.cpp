@@ -2248,6 +2248,10 @@ std::string CWebServer::GetJSonPage()
 		root["title"]="Devices";
 
 		GetJSonDevices(root, rused, rfilter,order,rid);
+
+		root["WindScale"]=m_pMain->m_sql.m_windscale*10.0f;
+		root["WindSign"]=m_pMain->m_sql.m_windsign;
+
 	} //if (rtype=="devices")
     else if (rtype=="cameras")
 	{
