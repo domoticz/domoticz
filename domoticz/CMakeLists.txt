@@ -7,6 +7,10 @@ get_directory_property (CMAKE_LUA_INCLUDES DIRECTORY lua
 get_directory_property (CMAKE_LUA_LIBRARIES DIRECTORY lua
     DEFINITION LUA_LIBRARIES)
 
+SET(EXECUTABLE_OUTPUT_PATH "" CACHE INTERNAL 
+  "Where to put the executables for Domoticz"
+  )
+
 #set(CMAKE_EXE_LINKER_FLAGS "-static")
 
 # Macro for setting up precompiled headers. Usage:
@@ -215,17 +219,6 @@ IF(LIBUSB_FOUND)
 else()
   MESSAGE(FATAL_ERROR "Could not find LIBUSB on your system, see install.txt how to get them installed.")
 ENDIF(LIBUSB_FOUND)
-
-find_path(LUA_INCLUDE_DIR lua.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/lua/src)
-
-IF(LUA_INCLUDE_DIR)
-  MESSAGE(STATUS "LUA found at: ${LUA_INCLUDE_DIR}")
-else()
-  MESSAGE(FATAL_ERROR "Could not find LUA on your system. Check if lua source directory exists.")
-ENDIF(LUA_INCLUDE_DIR)
-
-INCLUDE_DIRECTORIES(${LUA_INCLUDE_DIR})
 
 target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread curl ${LIBUSB_LIBRARIES} lua)
 #target_link_libraries(domoticz ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
