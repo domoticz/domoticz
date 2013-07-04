@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 2.6)
 project(domoticz)
 
+add_subdirectory (lua)
+get_directory_property (CMAKE_LUA_INCLUDES DIRECTORY lua
+    DEFINITION LUA_INCLUDE_DIRS)
+get_directory_property (CMAKE_LUA_LIBRARIES DIRECTORY lua
+    DEFINITION LUA_LIBRARIES)
+
 #set(CMAKE_EXE_LINKER_FLAGS "-static")
 
 # Macro for setting up precompiled headers. Usage:
@@ -219,16 +225,9 @@ else()
   MESSAGE(FATAL_ERROR "Could not find LUA on your system. Check if lua source directory exists.")
 ENDIF(LUA_INCLUDE_DIR)
 
-SET(LUA_LIBRARY ${LUA_INCLUDE_DIR}/lapi.c ${LUA_INCLUDE_DIR}/lauxlib.c ${LUA_INCLUDE_DIR}/lbaselib.c ${LUA_INCLUDE_DIR}/lcode.c ${LUA_INCLUDE_DIR}/ldblib.c ${LUA_INCLUDE_DIR}/ldebug.c ${LUA_INCLUDE_DIR}/ldo.c ${LUA_INCLUDE_DIR}/ldump.c ${LUA_INCLUDE_DIR}/lfunc.c ${LUA_INCLUDE_DIR}/lgc.c ${LUA_INCLUDE_DIR}/linit.c ${LUA_INCLUDE_DIR}/liolib.c ${LUA_INCLUDE_DIR}/llex.c ${LUA_INCLUDE_DIR}/lmathlib.c ${LUA_INCLUDE_DIR}/lmem.c ${LUA_INCLUDE_DIR}/loadlib.c ${LUA_INCLUDE_DIR}/lobject.c ${LUA_INCLUDE_DIR}/lopcodes.c ${LUA_INCLUDE_DIR}/loslib.c ${LUA_INCLUDE_DIR}/lparser.c ${LUA_INCLUDE_DIR}/lstate.c ${LUA_INCLUDE_DIR}/lstring.c ${LUA_INCLUDE_DIR}/lstrlib.c ${LUA_INCLUDE_DIR}/ltable.c ${LUA_INCLUDE_DIR}/ltablib.c ${LUA_INCLUDE_DIR}/ltm.c ${LUA_INCLUDE_DIR}/lundump.c ${LUA_INCLUDE_DIR}/lvm.c ${LUA_INCLUDE_DIR}/lzio.c
-	                )
-include_directories(${LUA_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${LUA_INCLUDE_DIR})
 
-ADD_LIBRARY(liblua-static STATIC ${LUA_LIBRARY})
-SET_TARGET_PROPERTIES(liblua-static PROPERTIES 
-				    COMPILE_DEFINITIONS "liblua_STATIC"
-				    OUTPUT_NAME "lua-static")
-
-target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread curl ${LIBUSB_LIBRARIES} ${liblua-static})
+target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread curl ${LIBUSB_LIBRARIES} lua)
 #target_link_libraries(domoticz ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")

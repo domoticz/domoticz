@@ -8,8 +8,8 @@ SET (LIB lauxlib.c lbaselib.c lbitlib.c lcorolib.c ldblib.c liolib.c
 	lmathlib.c loslib.c lstrlib.c ltablib.c loadlib.c linit.c)
 
 ADD_LIBRARY(lua ${LIB} ${CORE})
-ADD_EXECUTABLE(luaexec lua.c)
-TARGET_LINK_LIBRARIES(luaexec lua m) 
+#ADD_EXECUTABLE(luaexec lua.c)
+#TARGET_LINK_LIBRARIES(luaexec lua m) 
 
-ADD_EXECUTABLE(luac luac.c)
-TARGET_LINK_LIBRARIES(luac lua m) 
+#ADD_EXECUTABLE(luac luac.c)
+#TARGET_LINK_LIBRARIES(luac lua m) 
