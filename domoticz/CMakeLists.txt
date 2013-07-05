@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 2.6)
-project(domoticz)
 
 add_subdirectory (lua)
 get_directory_property (CMAKE_LUA_INCLUDES DIRECTORY lua
     DEFINITION LUA_INCLUDE_DIRS)
 get_directory_property (CMAKE_LUA_LIBRARIES DIRECTORY lua
     DEFINITION LUA_LIBRARIES)
+
+project(domoticz)
 
 SET(EXECUTABLE_OUTPUT_PATH "" CACHE INTERNAL 
   "Where to put the executables for Domoticz"
