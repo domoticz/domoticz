@@ -4,8 +4,18 @@
 #include "localtime_r.h"
 #include "Logger.h"
 
+extern "C" {
+#include "../lua/src/lualib.h"
+#include "../lua/src/lauxlib.h"
+}
+
 CEventSystem::CEventSystem(void)
 {
+	m_pLUA=luaL_newstate();
+	if (m_pLUA!=NULL)
+	{
+		luaL_openlibs(m_pLUA);
+	}
 	m_pMain=NULL;
 	m_stoprequested=false;
 }
@@ -14,6 +24,11 @@ CEventSystem::CEventSystem(void)
 CEventSystem::~CEventSystem(void)
 {
 	StopEventSystem();
+	if (m_pLUA!=NULL)
+	{
+		lua_close(m_pLUA);
+		m_pLUA=NULL;
+	}
 }
 
 void CEventSystem::StartEventSystem(MainWorker *pMainWorker)

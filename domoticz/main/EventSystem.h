@@ -7,6 +7,8 @@ class MainWorker;
 
 class CEventSystem
 {
+	typedef struct lua_State lua_State;
+
 	struct _tEventItem
 	{
 		unsigned long long ID;
@@ -22,6 +24,7 @@ public:
 	void LoadEvents();
 	bool ProcessDevice(const int HardwareID, const unsigned long long ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string devname);
 private:
+	lua_State	*m_pLUA;
 	MainWorker *m_pMain;
 	boost::mutex eventMutex;
 	volatile bool m_stoprequested;
