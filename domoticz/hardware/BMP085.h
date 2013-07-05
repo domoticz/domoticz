@@ -39,5 +39,4 @@ private:
 	short int md;
 
 	int b5; 
-
 };
