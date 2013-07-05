@@ -1,0 +1,6 @@
+-- demo time script
+-- script names have three name components: script_trigger_name.lu
+-- trigger can be 'time' or 'device', name can be any string
+-- domoticz will execute all time and device triggers when the relevant trigger occurs
+-- ingests tables: svalues,nvalues
+-- arrays svalues and nvalues contain complete value lists for all enabled devices
