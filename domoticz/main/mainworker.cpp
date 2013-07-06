@@ -1782,6 +1782,7 @@ unsigned long long MainWorker::decode_Temp(const int HwdID, const tRBUF *pRespon
 			unsigned char humidity_status=atoi(result[0][1].c_str());
 			sprintf(szTmp,"%.1f;%d;%d",temp,humidity,humidity_status);
 			DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,SignalLevel,BatteryLevel,0,szTmp,devname);
+			m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, 2, pTypeTEMP_HUM, sTypeTH_LC_TC, temp, humidity, true, true);
 		}
 	}
 	PrintDeviceName(devname);
@@ -1905,6 +1906,8 @@ unsigned long long MainWorker::decode_Hum(const int HwdID, const tRBUF *pRespons
 			temp+=AddjValue;
 			sprintf(szTmp,"%.1f;%d;%d",temp,humidity,pResponse->HUM.humidity_status);
 			DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,SignalLevel,BatteryLevel,0,szTmp,devname);
+			m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, 2, pTypeTEMP_HUM, sTypeTH_LC_TC, temp, humidity, true, true);
+
 		}
 	}
 	PrintDeviceName(devname);

@@ -858,6 +858,14 @@ function RefreshTemps()
      dataType: 'json',
      success: function(data) {
       if (typeof data.result != 'undefined') {
+      
+		if (typeof data.WindScale != 'undefined') {
+			$.myglobals.windscale=parseFloat(data.WindScale);
+		}
+		if (typeof data.WindSign != 'undefined') {
+			$.myglobals.windsign=data.WindSign;
+		}
+      
         $.each(data.result, function(i,item){
 					id="#tempcontent #" + item.idx;
 					var obj=$(id);
@@ -919,9 +927,9 @@ function RefreshTemps()
               status+=', ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
             }
 			if (typeof item.Direction != 'undefined') {
-              status+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms';
-              if (typeof item.Gustms != 'undefined') {
-				status+=', Gust: ' + item.Gustms + ' ms';
+              status+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speed + ' ' + $.myglobals.windsign;
+              if (typeof item.Gust != 'undefined') {
+				status+=', Gust: ' + item.Gust + ' ' + $.myglobals.windsign;
 			  }
               status+='\n';
             }
@@ -1067,9 +1075,9 @@ function ShowTemps()
 						xhtm+=', ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
 					}
 					if (typeof item.Direction != 'undefined') {
-						xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speedms + ' ms';
-						if (typeof item.Gustms != 'undefined') {
-							xhtm+=', Gust: ' + item.Gustms + ' ms';
+						xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speed + ' ' + $.myglobals.windsign;
+						if (typeof item.Gust != 'undefined') {
+							xhtm+=', Gust: ' + item.Gust + ' ' + $.myglobals.windsign;
 						}
 						xhtm+='\n';
 					}
