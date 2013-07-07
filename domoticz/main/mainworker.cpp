@@ -2619,6 +2619,7 @@ unsigned long long MainWorker::decode_Lighting1(const int HwdID, const tRBUF *pR
 		case sTypeEMW200:
 		case sTypeIMPULS:
 		case sTypeRisingSun:
+		case sTypeEnergenie:
 			//decoding of these types is only implemented for use by simulate and verbose
 			//these types are not received by the RFXtrx433
 			switch (pResponse->LIGHTING1.subtype)
@@ -2637,6 +2638,9 @@ unsigned long long MainWorker::decode_Lighting1(const int HwdID, const tRBUF *pR
 				break;
 			case sTypeRisingSun:
 				WriteMessage("subtype       = RisingSun");
+				break;
+			case sTypeEnergenie:
+				WriteMessage("subtype       = Energenie");
 				break;
 			}
 			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING1.seqnbr);
