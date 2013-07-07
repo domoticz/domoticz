@@ -4,6 +4,8 @@ Version 1.0.xxx (July xxth 2013)
 - Implemented: Application settings, mobile view (mobile, or as normal dashboard), iPhone will always be mobile theme
 - Implemented: Wind Speed Unit option (m/s, km/h, mph, knots)
 - Fixed: Notification for internal combined temp/hum sensors (La Crosse TX3)
+- Implemented: Moisture Sensor (for example from Davis)
+- Fixed: Wind Speed/Gust should now be translated
 
 Version 1.0.762 (July 1th 2013)
 - Changed: Motion Sensors, Off delay now sends 'Off' to Lighting 1/6 devices, and 'No Motion' to X10 motion sensors

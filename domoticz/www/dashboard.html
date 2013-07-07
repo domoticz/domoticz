@@ -465,10 +465,10 @@ function RefreshFavorites()
 								if (typeof item.Direction != 'undefined') {
 									status+='<br>' + item.Direction + ' ' + item.DirectionStr;
 									if (typeof item.Speed != 'undefined') {
-										status+=', Speed: ' + item.Speed + ' ' + $.myglobals.windsign;
+										status+=', ' + $.i18n('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
 									}
 									if (typeof item.Gust != 'undefined') {
-										status+=', Gust: ' + item.Gust + ' ' + $.myglobals.windsign;
+										status+=', ' + $.i18n('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
 									}
 									status+='\n';
 								}
@@ -546,10 +546,10 @@ function RefreshFavorites()
 									img='<img src="images/Wind' + item.DirectionStr + '.png" height="40">';
 									status=item.Direction + ' ' + item.DirectionStr;
 									if (typeof item.Speed != 'undefined') {
-										status+=', Speed: ' + item.Speed + ' ' + $.myglobals.windsign;
+										status+=', ' + $.i18n('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
 									}
 									if (typeof item.Gust != 'undefined') {
-										status+=', Gust: ' + item.Gust + ' ' + $.myglobals.windsign;
+										status+=', ' + $.i18n('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
 									}
 								}
 								else if (typeof item.Barometer != 'undefined') {
@@ -593,10 +593,10 @@ function RefreshFavorites()
 									img='<img src="images/Wind' + item.DirectionStr + '.png" height="40">';
 									status=item.Direction + ' ' + item.DirectionStr;
 									if (typeof item.Speed != 'undefined') {
-										status+=', Speed: ' + item.Speed + ' ' + $.myglobals.windsign;
+										status+=', ' + $.i18n('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
 									}
 									if (typeof item.Gust != 'undefined') {
-										status+=', Gust: ' + item.Gust + ' ' + $.myglobals.windsign;
+										status+=', ' + $.i18n('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
 									}
 									status+='<br>\n';
 									if (typeof item.Temp != 'undefined') {
@@ -736,7 +736,7 @@ function RefreshFavorites()
         //Utility Sensors
         $.each(data.result, function(i,item){
           if (
-                ( (typeof item.Counter != 'undefined') || (item.Type == "Current") || (item.Type == "Energy") || (item.Type == "Current/Energy") || (item.Type == "Air Quality") || (item.Type == "Lux") || (item.Type == "Usage")) &&
+                ( (typeof item.Counter != 'undefined') || (item.Type == "Current") || (item.Type == "Energy") || (item.Type == "Current/Energy") || (item.Type == "Air Quality") || (item.Type == "Moisture") || (item.Type == "Lux") || (item.Type == "Usage")) &&
                 (item.Favorite!=0)
               )
           {
@@ -759,7 +759,7 @@ function RefreshFavorites()
 								else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
 									status+=item.Data;
 								}
-								else if ((item.Type == "Energy")||(item.Type == "Air Quality")||(item.Type == "Lux")||(item.Type == "Usage")) {
+								else if ((item.Type == "Energy")||(item.Type == "Air Quality")||(item.Type == "Moisture")||(item.Type == "Lux")||(item.Type == "Usage")) {
 									status+=item.Data;
 								}
 								if (typeof item.Usage != 'undefined') {
@@ -811,6 +811,11 @@ function RefreshFavorites()
 								else if (item.Type == "Air Quality") {
 									img='<img src="images/air48.png" height="40">';
 									status=item.Data + " (" + item.Quality + ")";
+									bigtext=item.Data;
+								}
+								else if (item.Type == "Moisture") {
+									img='<img src="images/moisture48.png" height="40">';
+									status=item.Data;
 									bigtext=item.Data;
 								}
 								else if (item.Type == "Lux") {
@@ -1570,10 +1575,10 @@ function ShowFavorites()
 							if (typeof item.Direction != 'undefined') {
 								xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr;
 								if (typeof item.Speed != 'undefined') {
-									xhtm+=', Speed: ' + item.Speed + ' ' + $.myglobals.windsign;
+									xhtm+=', ' + $.i18n('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
 								}
 								if (typeof item.Gust != 'undefined') {
-									xhtm+=', Gust: ' + item.Gust + ' ' + $.myglobals.windsign;
+									xhtm+=', ' + $.i18n('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
 								}
 								xhtm+='\n';
 							}
@@ -1674,10 +1679,10 @@ function ShowFavorites()
 							else if (typeof item.Direction != 'undefined') {
 								status=item.Direction + ' ' + item.DirectionStr;
 								if (typeof item.Speed != 'undefined') {
-									status+=', Speed: ' + item.Speed + ' ' + $.myglobals.windsign;
+									status+=', ' + $.i18n('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
 								}
 								if (typeof item.Gust != 'undefined') {
-									status+=', Gust: ' + item.Gust + ' ' + $.myglobals.windsign;
+									status+=', ' + $.i18n('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
 								}
 							}
 							else if (typeof item.Barometer != 'undefined') {
@@ -1752,10 +1757,10 @@ function ShowFavorites()
 								xhtm+='Wind' + item.DirectionStr + '.png" height="40"></td>\n' +
 								'\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr;
 								if (typeof item.Speed != 'undefined') {
-									xhtm+=', Speed: ' + item.Speed + ' ' + $.myglobals.windsign;
+									xhtm+=', ' + $.i18n('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
 								}
 								if (typeof item.Gust != 'undefined') {
-									xhtm+=', Gust: ' + item.Gust + ' ' + $.myglobals.windsign;
+									xhtm+=', ' + $.i18n('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
 								}
 								xhtm+='<br>\n';
 								if (typeof item.Temp != 'undefined') {
@@ -1925,7 +1930,7 @@ function ShowFavorites()
         bHaveAddedDevider = false;
         $.each(data.result, function(i,item){
           if (
-                ( (typeof item.Counter != 'undefined') || (item.Type == "Current") || (item.Type == "Energy") || (item.Type == "Current/Energy") || (item.Type == "Air Quality") || (item.Type == "Lux") || (item.Type == "Usage")) &&
+                ( (typeof item.Counter != 'undefined') || (item.Type == "Current") || (item.Type == "Energy") || (item.Type == "Current/Energy") || (item.Type == "Air Quality") || (item.Type == "Moisture") || (item.Type == "Lux") || (item.Type == "Usage")) &&
                 (item.Favorite!=0)
               )
           {
@@ -1976,7 +1981,7 @@ function ShowFavorites()
 							else if ((item.Type == "Current") || (item.Type == "Current/Energy")){
 								status=item.Data;
 							}
-							else if ((item.Type == "Energy")||(item.Type == "Air Quality")||(item.Type == "Lux")||(item.Type == "Usage")) {
+							else if ((item.Type == "Energy")||(item.Type == "Air Quality")||(item.Type == "Moisture")||(item.Type == "Lux")||(item.Type == "Usage")) {
 								status=item.Data;
 							}
 							if (typeof item.Usage != 'undefined') {
@@ -2035,6 +2040,9 @@ function ShowFavorites()
 							else if (item.Type == "Air Quality") {
 								xhtm+=item.Data;
 							}
+							else if (item.Type == "Moisture") {
+								xhtm+=item.Data;
+							}
 							else if (item.Type == "Lux") {
 								xhtm+=item.Data;
 							}
@@ -2064,6 +2072,10 @@ function ShowFavorites()
 							else if (item.Type == "Air Quality") {
 								xhtm+='air48.png" height="40"></td>\n';
 								status=item.Data + " (" + item.Quality + ")";
+							}
+							else if (item.Type == "Moisture") {
+								xhtm+='moisture48.png" height="40"></td>\n';
+								status=item.Data;
 							}
 							else if (item.Type == "Lux") {
 								xhtm+='lux48.png" height="40"></td>\n';

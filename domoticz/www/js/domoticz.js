@@ -625,6 +625,11 @@ function RefreshNotificationTable(idx)
 				ntype=$.i18n("Ampere 3");
 				stype=" A";
 			}
+			else if (parts[0]=="P")
+			{
+				ntype=$.i18n("Percentage");
+				stype=" %";
+			}
 
 			var nwhen="";
 			if (ntype==$.i18n("Switch On")) {
@@ -725,6 +730,8 @@ function ShowNotificationTypeLabel()
 		$($.content + " #notificationparamstable #valuetype").html('&nbsp;A');
 	else if (typetext == $.i18n('Ampere 3'))
 		$($.content + " #notificationparamstable #valuetype").html('&nbsp;A');
+	else if (typetext == $.i18n('Percentage'))
+		$($.content + " #notificationparamstable #valuetype").html('&nbsp;%');
 	else
 		$($.content + " #notificationparamstable #valuetype").html('&nbsp;??');
 }

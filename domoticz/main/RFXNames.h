@@ -85,6 +85,7 @@ enum _eNotificationTypes
 	NTYPE_TODAYGAS,
 	NTYPE_TODAYCOUNTER,
 	NTYPE_SWITCH_OFF,//16
+	NTYPE_PERCENTAGE,
 };
 
 enum _eShareRights

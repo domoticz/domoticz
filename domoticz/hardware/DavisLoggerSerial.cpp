@@ -305,7 +305,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 //	fwrite(data,1,len,fOut);
 //	fclose(fOut);
 	unsigned char szBuffer[200];
-	FILE *fIn=fopen("E:\\davis3.bin","rb+");
+	FILE *fIn=fopen("E:\\davis4.bin","rb+");
 	//FILE *fIn=fopen("davisrob.bin","rb+");
 	fread(&szBuffer,1,100,fIn);
 	fclose(fIn);
@@ -659,6 +659,11 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		if (pData[62+iMoister]!=0xFF)
 		{
 			int moister=pData[62+iMoister];
+
+			_tMoistureMeter mMoisture;
+			mMoisture.id=1+iMoister;
+			mMoisture.moisture=moister;
+			sDecodeRXMessage(this, (const unsigned char *)&mMoisture);
 		}
 	}
 

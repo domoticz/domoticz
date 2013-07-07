@@ -2931,7 +2931,7 @@ void CSQLHelper::UpdateMeter()
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
 
-	sprintf(szTmp,"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR Type=%d)",
+	sprintf(szTmp,"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR Type=%d OR Type=%d)",
 		pTypeRFXMeter,
 		pTypeP1Gas,
 		pTypeYouLess,
@@ -2939,7 +2939,8 @@ void CSQLHelper::UpdateMeter()
 		pTypeAirQuality,
 		pTypeUsage,
         pTypeRego6XXValue,sTypeRego6XXCounter,
-		pTypeLux
+		pTypeLux,
+		pTypeMoisture
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -3007,6 +3008,11 @@ void CSQLHelper::UpdateMeter()
 				sprintf(szTmp,"%d",nValue);
 				sValue=szTmp;
 				CheckAndHandleNotification(hardwareID, DeviceID, Unit, dType, dSubType, NTYPE_USAGE, (float)nValue);
+			}
+			else if (dType==pTypeMoisture)
+			{
+				sprintf(szTmp,"%d",nValue);
+				sValue=szTmp;
 			}
 			else if (dType==pTypeLux)
 			{
@@ -3487,6 +3493,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 
 			if (
 				(devType!=pTypeAirQuality)&&
+				(devType!=pTypeMoisture)&&
 				(devType!=pTypeLux)&&
 				(devType!=pTypeUsage)
 				)
@@ -3531,7 +3538,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			}
 			else
 			{
-				//AirQuality/Usage Meter insert into MultiMeter_Calendar table
+				//AirQuality/Usage Meter/Moisture insert into MultiMeter_Calendar table
 				sprintf(szTmp,
 					"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1,Value2,Value3,Value4,Value5,Value6, Date) "
 					"VALUES (%llu, %.2f,%.2f,%.2f,%.2f,%.2f,%.2f, '%s')",
@@ -3543,6 +3550,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			}
 			if (
 				(devType!=pTypeAirQuality)&&
+				(devType!=pTypeMoisture)&&
 				(devType!=pTypeLux)
 				)
 			{

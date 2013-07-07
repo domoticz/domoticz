@@ -1055,6 +1055,10 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			WriteMessage("Lux Meter",false);
 			DeviceRowIdx=decode_Lux(HwdID, (tRBUF *)pRXCommand);
 			break;
+		case pTypeMoisture:
+			WriteMessage("Moisture Meter",false);
+			DeviceRowIdx=decode_Moisture(HwdID, (tRBUF *)pRXCommand);
+			break;
 		default:
 			_log.Log(LOG_ERROR,"UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
 			break;
@@ -6097,6 +6101,45 @@ unsigned long long MainWorker::decode_Lux(const int HwdID, const tRBUF *pRespons
 			WriteMessage("subtype       = Lux");
 
 			sprintf(szTmp,"Lux = %.1f W", pMeter->fLux);
+			WriteMessage(szTmp);
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+	}
+	return DevRowIdx;
+}
+
+unsigned long long MainWorker::decode_Moisture(const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[200];
+	std::string devname;
+
+	const _tMoistureMeter *pMeter=(const _tMoistureMeter*)pResponse;
+	unsigned char devType=pMeter->type;
+	unsigned char subType=pMeter->subtype;
+	sprintf(szTmp,"%d", pMeter->id);
+	std::string ID=szTmp;
+	unsigned char Unit=1;
+	unsigned char cmnd=pMeter->moisture;
+	unsigned char SignalLevel=12;
+	unsigned char BatteryLevel = 255;
+
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,devname);
+	PrintDeviceName(devname);
+
+	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_PERCENTAGE, float(pMeter->moisture));
+
+	if (m_verboselevel == EVBL_ALL)
+	{
+		switch (pMeter->subtype)
+		{
+		case sTypeMoisture:
+			WriteMessage("subtype       = Moisture");
+
+			sprintf(szTmp,"Moisture = %d %%", pMeter->moisture);
 			WriteMessage(szTmp);
 			break;
 		default:

@@ -208,6 +208,8 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_TODAYGAS, "Today", "G" },
 		{ NTYPE_TODAYCOUNTER, "Today", "C" },
 		{ NTYPE_SWITCH_OFF, "Switch Off", "O" },
+		{ NTYPE_PERCENTAGE, "Percentage", "P" },
+		
 		{  0,NULL,NULL }
 	};
 	if (snum==0)
@@ -236,6 +238,7 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_TODAYGAS, "m3" },
 		{ NTYPE_TODAYCOUNTER, "cnt" },
 		{ NTYPE_SWITCH_OFF, "On" },
+		{ NTYPE_PERCENTAGE, "%%" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, nType);
@@ -320,6 +323,8 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeUsage, "Usage" , "current" },
 		{ pTypeTEMP_BARO, "Temp + Baro" , "temperature" },
 		{ pTypeLux, "Lux" , "lux" },
+		{ pTypeMoisture, "Moisture" , "moisture" },
+		{ pTypeSolarRadiation, "Solar Radiation" , "radiation" },
 		
 		{  0,NULL,NULL }
 	};
@@ -482,6 +487,9 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeTEMP_BARO, sTypeBMP085, "BMP085 I2C" },
 		
 		{ pTypeLux, sTypeLux, "Lux" },
+
+		{ pTypeMoisture, sTypeMoisture, "Moisture" },
+		{ pTypeSolarRadiation, sTypeSolarRadiation, "Solar Radiation" },
 
 		{  0,0,NULL }
 	};

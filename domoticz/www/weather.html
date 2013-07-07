@@ -1747,10 +1747,10 @@ function RefreshWeathers()
 							img='<img src="images/Wind' + item.DirectionStr + '.png" height="48">';
 							status=item.Direction + ' ' + item.DirectionStr;
 							if (typeof item.Speed != 'undefined') {
-								status+=', Speed: ' + item.Speed + ' ' + $.myglobals.windsign;
+								status+=', ' + $.i18n('Speed') +': ' + item.Speed + ' ' + $.myglobals.windsign;
 							}
 							if (typeof item.Gust != 'undefined') {
-								status+=', Gust: ' + item.Gust + ' ' + $.myglobals.windsign;
+								status+=', ' + $.i18n('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
 							}
 							status+='<br>\n';
 							bigtext=item.DirectionStr;
@@ -1919,10 +1919,10 @@ function ShowWeathers()
 						xhtm+='Wind' + item.DirectionStr + '.png" height="48"></td>\n' +
 						'\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr;
 						if (typeof item.Speed != 'undefined') {
-							xhtm+=', Speed: ' + item.Speed + ' ' + $.myglobals.windsign;
+							xhtm+=', ' + $.i18n('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
 						}
 						if (typeof item.Gust != 'undefined') {
-							xhtm+=', Gust: ' + item.Gust + ' ' + $.myglobals.windsign;
+							xhtm+=', ' + $.i18n('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
 						}
 						xhtm+='<br>\n';
 						if ((typeof item.Temp != 'undefined')&&(typeof item.Chill != 'undefined')) {

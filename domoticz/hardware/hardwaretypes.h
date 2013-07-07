@@ -11,6 +11,12 @@
 #define wsbaroforcast_some_clouds 0x05
 #define wsbaroforcast_sunny 0x06
 
+#define pTypeSolarRadiation	0xF4
+#define sTypeSolarRadiation	0x01
+
+#define pTypeMoisture	0xF5
+#define sTypeMoisture	0x01
+
 #define pTypeLux		0xF6
 #define sTypeLux		0x01
 
@@ -124,3 +130,19 @@ typedef struct _tLightMeter {
 		id4=0;
 	}
 } LightMeter;
+
+typedef struct _tMoistureMeter {
+	unsigned char len;
+	unsigned char type;
+	unsigned char subtype;
+	unsigned char id;
+	int moisture;
+	_tMoistureMeter()
+	{
+		len=sizeof(_tMoistureMeter)-1;
+		type=pTypeMoisture;
+		subtype=sTypeMoisture;
+		id=0;
+	}
+} MoistureMeter;
+
