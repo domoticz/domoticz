@@ -149,6 +149,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_VOLCRAFTCO20,		"Volcraft CO-20 USB air quality sensor" },
 		{ HTYPE_1WIRE,				"1-Wire (System)" },
 		{ HTYPE_RaspberryBMP085,	"BMP085 Temp+Baro I2C sensor" },
+		{ HTYPE_Wunderground,		"Weather Underground" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

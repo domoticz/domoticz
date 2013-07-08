@@ -6718,6 +6718,13 @@ std::string CWebServer::GetJSonPage()
 			else if (htype == HTYPE_RaspberryBMP085) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_Wunderground) {
+				if (
+					(username=="")||
+					(password=="")
+					)
+					goto exitjson;
+			}
 			else
 				goto exitjson;
 
@@ -6796,6 +6803,13 @@ std::string CWebServer::GetJSonPage()
 			}
 			else if (htype == HTYPE_RaspberryBMP085) {
 				//All fine here
+			}
+			else if (htype == HTYPE_Wunderground) {
+				if (
+					(username=="")||
+					(password=="")
+					)
+					goto exitjson;
 			}
 			else
 				goto exitjson;

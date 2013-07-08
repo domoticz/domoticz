@@ -63,6 +63,7 @@ enum _eHardwareTypes {
 	HTYPE_VOLCRAFTCO20,
 	HTYPE_1WIRE,
 	HTYPE_RaspberryBMP085,
+	HTYPE_Wunderground,
 	HTYPE_END
 };
 

@@ -81,6 +81,9 @@
     <Filter Include="EventSystem">
       <UniqueIdentifier>{2d51924f-03d7-4afb-8b48-329a7d18317c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\wunderground.com">
+      <UniqueIdentifier>{2d9af04c-846a-4309-9bcd-a1d43a077de6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -277,6 +280,9 @@
     <ClInclude Include="main\EventSystem.h">
       <Filter>EventSystem</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\Wunderground.h">
+      <Filter>Devices\wunderground.com</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -437,6 +443,9 @@
     </ClCompile>
     <ClCompile Include="main\EventSystem.cpp">
       <Filter>EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\Wunderground.cpp">
+      <Filter>Devices\wunderground.com</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

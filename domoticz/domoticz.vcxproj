@@ -111,6 +111,7 @@
     <ClInclude Include="hardware\TE923Tool.h" />
     <ClInclude Include="hardware\VolcraftCO20.h" />
     <ClInclude Include="hardware\VolcraftCO20Tool.h" />
+    <ClInclude Include="hardware\Wunderground.h" />
     <ClInclude Include="httpclient\HTTPClient.h" />
     <ClInclude Include="main\appversion.h" />
     <ClInclude Include="hardware\ASyncSerial.h" />
@@ -174,6 +175,7 @@
     <ClCompile Include="hardware\TE923Tool.cpp" />
     <ClCompile Include="hardware\VolcraftCO20.cpp" />
     <ClCompile Include="hardware\VolcraftCO20Tool.cpp" />
+    <ClCompile Include="hardware\Wunderground.cpp" />
     <ClCompile Include="httpclient\HTTPClient.cpp" />
     <ClCompile Include="main\Camera.cpp" />
     <ClCompile Include="hardware\Rego6XXSerial.cpp" />

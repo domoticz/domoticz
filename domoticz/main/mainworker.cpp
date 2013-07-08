@@ -23,6 +23,7 @@
 #include "../hardware/VolcraftCO20.h"
 #include "../hardware/1Wire.h"
 #include "../hardware/BMP085.h"
+#include "../hardware/Wunderground.h"
 
 #ifdef _DEBUG
 	//#define DEBUG_RECEIVE
@@ -370,6 +371,9 @@ bool MainWorker::AddHardwareFromParams(
 #endif
 	case HTYPE_RaspberryBMP085:
 		pHardware = new CBMP085(ID);
+		break;
+	case HTYPE_Wunderground:
+		pHardware = new CWunderground(ID,Username,Password);
 		break;
 	}
 	if (pHardware)
