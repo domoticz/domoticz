@@ -11,6 +11,7 @@ Version 1.0.xxx (July xxth 2013)
 - Changed: Weather Underground updates now every 15 minutes
 - Fixed: Users with old event table could have a crash when starting domoticz
 - Fixed: Set RFXCOM mode, Visonic was not working
+- Changed: Weather Underground updates now every 5 minutes
 
 Version 1.0.762 (July 1th 2013)
 - Changed: Motion Sensors, Off delay now sends 'Off' to Lighting 1/6 devices, and 'No Motion' to X10 motion sensors

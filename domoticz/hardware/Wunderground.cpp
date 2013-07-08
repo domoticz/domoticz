@@ -60,10 +60,10 @@ void CWunderground::Do_Work()
 		time_t atime=time(NULL);
 		struct tm ltime;
 		localtime_r(&atime,&ltime);
-		if ((ltime.tm_min/15!=m_LastMinute))
+		if ((ltime.tm_min/5!=m_LastMinute))
 		{
 			GetMeterDetails();
-			m_LastMinute=ltime.tm_min/15;
+			m_LastMinute=ltime.tm_min/5;
 		}
 	}
 	_log.Log(LOG_NORM,"Wunderground Worker stopped...");
