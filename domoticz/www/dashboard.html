@@ -519,7 +519,7 @@ function RefreshFavorites()
         //Weather Sensors
         $.each(data.result, function(i,item){
           if (
-                ( (typeof item.Rain != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined') ) &&
+                ( (typeof item.Rain != 'undefined') || (typeof item.Visibility != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined') ) &&
                 (item.Favorite!=0)
               )
           {
@@ -538,6 +538,9 @@ function RefreshFavorites()
 											status+=', Rate: ' + item.RainRate + ' mm/h';
 										}
 									}
+								}
+								else if (typeof item.Visibility != 'undefined') {
+									status=item.Data;
 								}
 								else if (typeof item.UVI != 'undefined') {
 									status=item.UVI + ' UVI';
@@ -580,6 +583,11 @@ function RefreshFavorites()
 											status+=', Rate: ' + item.RainRate + ' mm/h';
 										}
 									}
+								}
+								else if (typeof item.Visibility != 'undefined') {
+									img='<img src="images/visibility48.png" height="40">';
+									status=item.Data;
+									bigtext=item.Data;
 								}
 								else if (typeof item.UVI != 'undefined') {
 									img='<img src="images/uv48.png" height="40">';
@@ -1625,7 +1633,7 @@ function ShowFavorites()
         bHaveAddedDevider = false;
         $.each(data.result, function(i,item){
           if (
-                ( (typeof item.Rain != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined') ) &&
+                ( (typeof item.Rain != 'undefined') || (typeof item.Visibility != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined') ) &&
                 (item.Favorite!=0)
               )
           {
@@ -1672,6 +1680,9 @@ function ShowFavorites()
 										status+=', Rate: ' + item.RainRate + ' mm/h';
 									}
 								}
+							}
+							else if (typeof item.Visibility != 'undefined') {
+								status+=item.Data;
 							}
 							else if (typeof item.UVI != 'undefined') {
 								status+=item.UVI + ' UVI';
@@ -1723,6 +1734,9 @@ function ShowFavorites()
 							else if (typeof item.Rain != 'undefined') {
 								xhtm+=item.Rain + ' mm';
 							}
+							else if (typeof item.Visibility != 'undefined') {
+								xhtm+=item.Data;
+							}
 							else if (typeof item.UVI != 'undefined') {
 								xhtm+=item.UVI + ' UVI';
 							}
@@ -1745,6 +1759,10 @@ function ShowFavorites()
 										xhtm+=', Rate: ' + item.RainRate + ' mm/h';
 									}
 								}
+							}
+							else if (typeof item.Visibility != 'undefined') {
+								xhtm+='visibility48.png" height="40"></td>\n' +
+								'\t      <td id="status">' + item.Data;
 							}
 							else if (typeof item.UVI != 'undefined') {
 								xhtm+='uv48.png" height="40"></td>\n' +
