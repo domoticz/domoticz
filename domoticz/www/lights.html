@@ -121,6 +121,7 @@
 						<option value="4">EMW200</option>
 						<option value="5">Impuls</option>
 						<option value="6">Blyss</option>
+						<option value="8">Energenie</option>
 						<option value="10">AC</option>
 						<option value="11">HE EU</option>
 						<option value="12">ANSLUT</option>
@@ -1678,6 +1679,11 @@ function UpdateAddManualDialog()
 		bIsARCType=1;
 		tothousecodes=16;
 		totunits=8;
+	}
+	else if (lighttype==8) {
+		bIsARCType=1;
+		tothousecodes=16;
+		totunits=4;
 	}
 	else if (lighttype==13) {
 		bIsType5=1;
