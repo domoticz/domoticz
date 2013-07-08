@@ -72,13 +72,21 @@ void CEventSystem::LoadEvents()
 		{
 			std::vector<std::string> sd=*itt;
             
-			_tEventItem eitem;
-			std::stringstream s_str( sd[0] );
-			s_str >> eitem.ID;
-            eitem.Name		= sd[1];
-            eitem.Conditions	= sd[2];
-			eitem.Actions		= sd[3];
-            m_events.push_back(eitem);
+			if (sd.size()==4)
+			{
+				_tEventItem eitem;
+				std::stringstream s_str( sd[0] );
+				s_str >> eitem.ID;
+				eitem.Name		= sd[1];
+				eitem.Conditions	= sd[2];
+				eitem.Actions		= sd[3];
+				m_events.push_back(eitem);
+			}
+			else
+			{
+				m_pMain->m_sql.query("DROP TABLE IF EXISTS [Events]");
+				return;
+			}
         }
         _log.Log(LOG_NORM,"Events (re)loaded");
 	}
