@@ -169,6 +169,7 @@ hardware/Rego6XXSerial.cpp
 hardware/DavisLoggerSerial.cpp
 hardware/BMP085.cpp
 hardware/smbus.cpp
+hardware/Wunderground.cpp
 tcpserver/TCPServer.cpp
 tcpserver/TCPClient.cpp
 webserver/cWebem.cpp
