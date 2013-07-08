@@ -325,18 +325,21 @@ void CWunderground::GetMeterDetails()
 		if (root["current_observation"]["UV"]!="N/A")
 		{
 			float UV=(float)atof(root["current_observation"]["UV"].asString().c_str());
-			RBUF tsen;
-			memset(&tsen,0,sizeof(RBUF));
-			tsen.UV.packetlength=sizeof(tsen.UV)-1;
-			tsen.UV.packettype=pTypeUV;
-			tsen.UV.subtype=sTypeUV1;
-			tsen.UV.battery_level=9;
-			tsen.UV.rssi=6;
-			tsen.UV.id1=0;
-			tsen.UV.id2=1;
+			if (UV!=-1)
+			{
+				RBUF tsen;
+				memset(&tsen,0,sizeof(RBUF));
+				tsen.UV.packetlength=sizeof(tsen.UV)-1;
+				tsen.UV.packettype=pTypeUV;
+				tsen.UV.subtype=sTypeUV1;
+				tsen.UV.battery_level=9;
+				tsen.UV.rssi=6;
+				tsen.UV.id1=0;
+				tsen.UV.id2=1;
 
-			tsen.UV.uv=(BYTE)round(UV*10);
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.UV);//decode message
+				tsen.UV.uv=(BYTE)round(UV*10);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.UV);//decode message
+			}
 		}
 	}
 
@@ -346,38 +349,44 @@ void CWunderground::GetMeterDetails()
 		if (root["current_observation"]["precip_today_metric"]!="N/A")
 		{
 			float RainCount=(float)atof(root["current_observation"]["precip_today_metric"].asString().c_str());
-			RBUF tsen;
-			memset(&tsen,0,sizeof(RBUF));
-			tsen.RAIN.packetlength=sizeof(tsen.RAIN)-1;
-			tsen.RAIN.packettype=pTypeRAIN;
-			tsen.RAIN.subtype=sTypeRAIN3;
-			tsen.RAIN.battery_level=9;
-			tsen.RAIN.rssi=6;
-			tsen.RAIN.id1=0;
-			tsen.RAIN.id2=1;
-
-			tsen.RAIN.rainrateh=0;
-			tsen.RAIN.rainratel=0;
-
-			if (root["current_observation"]["precip_1hr_metric"].empty()==false)
+			if (RainCount!=-9999.00f)
 			{
-				if (root["current_observation"]["precip_1hr_metric"]!="N/A")
+				RBUF tsen;
+				memset(&tsen,0,sizeof(RBUF));
+				tsen.RAIN.packetlength=sizeof(tsen.RAIN)-1;
+				tsen.RAIN.packettype=pTypeRAIN;
+				tsen.RAIN.subtype=sTypeRAIN3;
+				tsen.RAIN.battery_level=9;
+				tsen.RAIN.rssi=6;
+				tsen.RAIN.id1=0;
+				tsen.RAIN.id2=1;
+
+				tsen.RAIN.rainrateh=0;
+				tsen.RAIN.rainratel=0;
+
+				if (root["current_observation"]["precip_1hr_metric"].empty()==false)
 				{
-					float rainrateph=(float)atof(root["current_observation"]["precip_1hr_metric"].asString().c_str());
-					int at10=round(abs(rainrateph*10.0f));
-					tsen.RAIN.rainrateh=(BYTE)(at10/256);
-					at10-=(tsen.RAIN.rainrateh*256);
-					tsen.RAIN.rainratel=(BYTE)(at10);
+					if (root["current_observation"]["precip_1hr_metric"]!="N/A")
+					{
+						float rainrateph=(float)atof(root["current_observation"]["precip_1hr_metric"].asString().c_str());
+						if (rainrateph!=-9999.00f)
+						{
+							int at10=round(abs(rainrateph*10.0f));
+							tsen.RAIN.rainrateh=(BYTE)(at10/256);
+							at10-=(tsen.RAIN.rainrateh*256);
+							tsen.RAIN.rainratel=(BYTE)(at10);
+						}
+					}
 				}
+
+				int tr10=int((float(RainCount)*10.0f));
+				tsen.RAIN.raintotal1=0;
+				tsen.RAIN.raintotal2=(BYTE)(tr10/256);
+				tr10-=(tsen.RAIN.raintotal2*256);
+				tsen.RAIN.raintotal3=(BYTE)(tr10);
+
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN);//decode message
 			}
-
-			int tr10=int((float(RainCount)*10.0f));
-			tsen.RAIN.raintotal1=0;
-			tsen.RAIN.raintotal2=(BYTE)(tr10/256);
-			tr10-=(tsen.RAIN.raintotal2*256);
-			tsen.RAIN.raintotal3=(BYTE)(tr10);
-
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN);//decode message
 		}
 	}
 
