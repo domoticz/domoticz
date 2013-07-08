@@ -174,4 +174,5 @@ private:
 	unsigned long long decode_Usage(const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_Lux(const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_Moisture(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_General(const int HwdID, const tRBUF *pResponse);
 };

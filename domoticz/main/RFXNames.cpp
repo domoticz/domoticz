@@ -326,6 +326,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeLux, "Lux" , "lux" },
 		{ pTypeMoisture, "Moisture" , "moisture" },
 		{ pTypeSolarRadiation, "Solar Radiation" , "radiation" },
+		{ pTypeGeneral, "General" , "General" },
 		
 		{  0,NULL,NULL }
 	};
@@ -491,6 +492,9 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 
 		{ pTypeMoisture, sTypeMoisture, "Moisture" },
 		{ pTypeSolarRadiation, sTypeSolarRadiation, "Solar Radiation" },
+
+		{ pTypeGeneral, sTypeVisibility, "Visibility" },
+		
 
 		{  0,0,NULL }
 	};

@@ -11,6 +11,9 @@
 #define wsbaroforcast_some_clouds 0x05
 #define wsbaroforcast_sunny 0x06
 
+#define pTypeGeneral	0xF3
+#define sTypeVisibility	0x01
+
 #define pTypeSolarRadiation	0xF4
 #define sTypeSolarRadiation	0x01
 
@@ -145,4 +148,22 @@ typedef struct _tMoistureMeter {
 		id=0;
 	}
 } MoistureMeter;
+
+typedef struct _tGeneralDevice {
+	unsigned char len;
+	unsigned char type;
+	unsigned char subtype;
+	unsigned char id;
+	float floatval1;
+	float floatval2;
+	int intval1;
+	int intval2;
+	_tGeneralDevice()
+	{
+		len=sizeof(_tGeneralDevice)-1;
+		type=pTypeGeneral;
+		subtype=sTypeVisibility;
+		id=0;
+	}
+} GeneralDevice;
 

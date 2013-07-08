@@ -1735,6 +1735,11 @@ function RefreshWeathers()
 								}
 							}
 						}
+						if (typeof item.Visibility != 'undefined') {
+							img='<img src="images/visibility48.png" height="48">';
+							status=item.Data;
+							bigtext=item.Data;
+						}
 						else if (typeof item.UVI != 'undefined') {
 							img='<img src="images/uv48.png" height="48">';
 							status=item.UVI + ' UVI';
@@ -1871,6 +1876,9 @@ function ShowWeathers()
 					else if (typeof item.Rain != 'undefined') {
 						xhtm+=item.Rain + ' mm';
 					}
+					else if (typeof item.Visibility != 'undefined') {
+						xhtm+=item.Data;
+					}
 					else if (typeof item.UVI != 'undefined') {
 						xhtm+=item.UVI + ' UVI';
 					}
@@ -1905,6 +1913,10 @@ function ShowWeathers()
 								xhtm+=', Rate: ' + item.RainRate + ' mm/h';
 							}
 						}
+					}
+					else if (typeof item.Visibility != 'undefined') {
+						xhtm+='visibility48.png" height="48"></td>\n' +
+						'\t      <td  id="status">' + item.Data;
 					}
 					else if (typeof item.UVI != 'undefined') {
 						bHaveUV=true;

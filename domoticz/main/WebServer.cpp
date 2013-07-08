@@ -940,7 +940,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 						(dType!=pTypeRAIN)&&
 						(dType!=pTypeTEMP_HUM_BARO)&&
 						(dType!=pTypeTEMP_BARO)&&
-						(dType!=pTypeUV)
+						(dType!=pTypeUV)&&
+						(!((dType==pTypeGeneral)&&(dSubType==sTypeVisibility)))
 						)
 						continue;
 				}
@@ -1986,6 +1987,18 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				sprintf(szTmp,"%d %%",nValue);
 				root["result"][ii]["Data"]=szTmp;
 				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+			}
+			else if (dType == pTypeGeneral)
+			{
+				if (dSubType==sTypeVisibility)
+				{
+					float vis=(float)atof(sValue.c_str());
+					sprintf(szTmp,"%.1f km / %.1f mi",vis,vis*0.6214f);
+					root["result"][ii]["Data"]=szTmp;
+					root["result"][ii]["Visibility"]=atof(sValue.c_str());
+					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+					root["result"][ii]["TypeImg"]="visibility";
+				}
 			}
 			else if (dType == pTypeLux)
 			{

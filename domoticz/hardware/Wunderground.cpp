@@ -3,6 +3,7 @@
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../httpclient/mynetwork.h"
+#include "../httpclient/UrlEncode.h"
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
@@ -99,7 +100,9 @@ void CWunderground::GetMeterDetails()
 	sResult=readWUndergroundTestFile("E:\\underground.json");
 #else
 	std::stringstream sURL;
-	sURL << "http://api.wunderground.com/api/" << m_APIKey << "/conditions/q/" << m_Location << ".json";
+	CURLEncode m_urlencoder;
+	std::string szLoc=m_urlencoder.URLEncode(m_Location);
+	sURL << "http://api.wunderground.com/api/" << m_APIKey << "/conditions/q/" << szLoc << ".json";
 	bool bret;
 	std::string szURL=sURL.str();
 	bret=HTTPClient::GET(szURL,sResult);
@@ -314,7 +317,6 @@ void CWunderground::GetMeterDetails()
 		tsen.WIND.chilll=(BYTE)(at10);
 
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND);//decode message
-
 	}
 
 	//UV
@@ -376,6 +378,19 @@ void CWunderground::GetMeterDetails()
 			tsen.RAIN.raintotal3=(BYTE)(tr10);
 
 			sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN);//decode message
+		}
+	}
+
+	//Visibility
+	if (root["current_observation"]["visibility_km"].empty()==false)
+	{
+		if (root["current_observation"]["visibility_km"]!="N/A")
+		{
+			float visibility=(float)atof(root["current_observation"]["visibility_km"].asString().c_str());
+			_tGeneralDevice gdevice;
+			gdevice.subtype=sTypeVisibility;
+			gdevice.floatval1=visibility;
+			sDecodeRXMessage(this, (const unsigned char *)&gdevice);
 		}
 	}
 }
