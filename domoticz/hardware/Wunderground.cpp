@@ -16,7 +16,7 @@
 CWunderground::CWunderground(const int ID, const std::string APIKey, const std::string Location)
 {
 	m_HwdID=ID;
-	m_LastHour=26;
+	m_LastMinute=26;
 	m_APIKey=APIKey;
 	m_Location=Location;
 	m_stoprequested=false;
@@ -60,10 +60,10 @@ void CWunderground::Do_Work()
 		time_t atime=time(NULL);
 		struct tm ltime;
 		localtime_r(&atime,&ltime);
-		if (ltime.tm_hour!=m_LastHour)
+		if ((ltime.tm_min/15!=m_LastMinute))
 		{
 			GetMeterDetails();
-			m_LastHour=ltime.tm_hour;
+			m_LastMinute=ltime.tm_min/15;
 		}
 	}
 	_log.Log(LOG_NORM,"Wunderground Worker stopped...");

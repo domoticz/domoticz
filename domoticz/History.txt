@@ -8,6 +8,7 @@ Version 1.0.xxx (July xxth 2013)
 - Fixed: Wind Speed/Gust should now be translated
 - Implemented: Initial Support for Weather Underground sensors
 - Implemented: Add manual switch support for Lighting1/Energenie
+- Changed: Weather Underground updates now every 15 minutes
 
 Version 1.0.762 (July 1th 2013)
 - Changed: Motion Sensors, Off delay now sends 'Off' to Lighting 1/6 devices, and 'No Motion' to X10 motion sensors
