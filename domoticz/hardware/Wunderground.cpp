@@ -325,21 +325,20 @@ void CWunderground::GetMeterDetails()
 		if (root["current_observation"]["UV"]!="N/A")
 		{
 			float UV=(float)atof(root["current_observation"]["UV"].asString().c_str());
-			if (UV!=-1)
-			{
-				RBUF tsen;
-				memset(&tsen,0,sizeof(RBUF));
-				tsen.UV.packetlength=sizeof(tsen.UV)-1;
-				tsen.UV.packettype=pTypeUV;
-				tsen.UV.subtype=sTypeUV1;
-				tsen.UV.battery_level=9;
-				tsen.UV.rssi=6;
-				tsen.UV.id1=0;
-				tsen.UV.id2=1;
+			if (UV<0)
+				UV=0;
+			RBUF tsen;
+			memset(&tsen,0,sizeof(RBUF));
+			tsen.UV.packetlength=sizeof(tsen.UV)-1;
+			tsen.UV.packettype=pTypeUV;
+			tsen.UV.subtype=sTypeUV1;
+			tsen.UV.battery_level=9;
+			tsen.UV.rssi=6;
+			tsen.UV.id1=0;
+			tsen.UV.id2=1;
 
-				tsen.UV.uv=(BYTE)round(UV*10);
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.UV);//decode message
-			}
+			tsen.UV.uv=(BYTE)round(UV*10);
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.UV);//decode message
 		}
 	}
 
