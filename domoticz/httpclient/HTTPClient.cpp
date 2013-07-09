@@ -60,6 +60,7 @@ void HTTPClient::SetGlobalOptions(void *curlobj)
 	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, m_iConnectionTimeout);
 	curl_easy_setopt(curl, CURLOPT_TIMEOUT,m_iTimeout); 
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, false);
+	curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
 }
 
 //Configuration functions

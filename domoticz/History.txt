@@ -13,6 +13,7 @@ Version 1.0.xxx (July xxth 2013)
 - Fixed: Set RFXCOM mode, Visonic was not working
 - Implemented: Visibility Sensor (for example from Weather Underground)
 - Changed: Weather Underground updates now every 10 minutes
+- Fixed: possible curl bug when DNS timeouts
 
 Version 1.0.762 (July 1th 2013)
 - Changed: Motion Sensors, Off delay now sends 'Off' to Lighting 1/6 devices, and 'No Motion' to X10 motion sensors
