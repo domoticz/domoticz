@@ -1336,3 +1336,326 @@ function TranslateStatus(status)
 		return $.i18n(status);
 	}
 }
+
+function ShowGeneralGraph(id,name,switchtype,sensortype)
+{
+	clearInterval($.myglobals.refreshTimer);
+  $('#modal').show();
+  $.devIdx=id;
+  $.devName=name;
+  var htmlcontent = '';
+  htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
+  htmlcontent+=$('#globaldaylog').html();
+  
+  var txtLabelOrg="?";
+  var txtUnit="?";
+  var graphReturn;
+  var graphcontent;
+  
+  if (sensortype=="Visibility") {
+	graphReturn="ShowWeathers";
+	txtLabelOrg="Visibility";
+	$.content="#weathercontent";
+	graphcontent=$('#weathercontent');
+	txtUnit="km";
+	if (switchtype==1) {
+		txtUnit="mi";
+	}
+  }
+  else if (sensortype=="Moisture") {
+	graphReturn="ShowUtilities";
+	txtLabelOrg="Moisture";
+	$.content="#utilitycontent";
+	graphcontent=$('#utilitycontent');
+	txtUnit="cb";
+  }
+  else {
+	return;
+  }
+  graphcontent.html(GetBackbuttonHTMLTable(graphReturn)+htmlcontent);
+  graphcontent.i18n();
+  
+  var txtLabel= txtLabelOrg + " (" + txtUnit + ")";
+
+	$.LogChart1 = $($.content + ' #globaldaygraph');
+	$.LogChart1.highcharts({
+      chart: {
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=day",
+                function(data) {
+                      var datatable = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable.push( [GetUTCFromString(item.d), parseFloat(item.v) ] );
+                      });
+                      var series = $.LogChart1.highcharts().series[0];
+                      series.setData(datatable);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: $.i18n(txtLabelOrg) + ' '  + Get5MinuteHistoryDaysGraphTitle()
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: txtLabel
+            },
+            min: 0,
+            minorGridLineWidth: 0,
+            gridLineWidth: 0,
+            alternateGridColor: null
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' ' + txtUnit;
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: txtLabelOrg
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+
+	$.LogChart2 = $($.content + ' #globalmonthgraph');
+	$.LogChart2.highcharts({
+      chart: {
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=month",
+                function(data) {
+                      var datatable1 = [];
+                      var datatable2 = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable1.push( [GetDateFromString(item.d), parseFloat(item.v_min) ] );
+                        datatable2.push( [GetDateFromString(item.d), parseFloat(item.v_max) ] );
+                      });
+                      var series1 = $.LogChart2.highcharts().series[0];
+                      var series2 = $.LogChart2.highcharts().series[1];
+                      series1.setData(datatable1);
+                      series2.setData(datatable2);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: $.i18n(txtLabelOrg) + ' ' + $.i18n('Last Month')
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: txtLabel
+            },
+            min: 0,
+            minorGridLineWidth: 0,
+            gridLineWidth: 0,
+            alternateGridColor: null
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' ' + txtUnit;
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'min',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,arguments.callee.name);
+					}
+				}
+			}
+		}, {
+            name: 'max',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,arguments.callee.name);
+					}
+				}
+			}
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+
+	$.LogChart3 = $($.content + ' #globalyeargraph');
+	$.LogChart3.highcharts({
+      chart: {
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=year",
+                function(data) {
+                      var datatable1 = [];
+                      var datatable2 = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable1.push( [GetDateFromString(item.d), parseFloat(item.v_min) ] );
+                        datatable2.push( [GetDateFromString(item.d), parseFloat(item.v_max) ] );
+                      });
+                      var series1 = $.LogChart3.highcharts().series[0];
+                      var series2 = $.LogChart3.highcharts().series[1];
+                      series1.setData(datatable1);
+                      series2.setData(datatable2);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: $.i18n(txtLabelOrg) + ' ' + $.i18n('Last Year')
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: txtLabel
+            },
+            min: 0,
+            minorGridLineWidth: 0,
+            gridLineWidth: 0,
+            alternateGridColor: null
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' ' + txtUnit;
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'min',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,arguments.callee.name);
+					}
+				}
+			}
+		}, {
+            name: 'max',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClick(event,arguments.callee.name);
+					}
+				}
+			}
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+}

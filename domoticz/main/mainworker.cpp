@@ -6138,14 +6138,14 @@ unsigned long long MainWorker::decode_Moisture(const int HwdID, const tRBUF *pRe
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,devname);
 	PrintDeviceName(devname);
 
-	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_PERCENTAGE, float(pMeter->moisture));
+	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, float(pMeter->moisture));
 
 	if (m_verboselevel == EVBL_ALL)
 	{
 		switch (pMeter->subtype)
 		{
-		case sTypeMoisture:
-			WriteMessage("subtype       = Moisture");
+		case sTypeSoilMoisture:
+			WriteMessage("subtype       = Soil Moisture");
 
 			sprintf(szTmp,"Moisture = %d %%", pMeter->moisture);
 			WriteMessage(szTmp);
@@ -6181,7 +6181,15 @@ unsigned long long MainWorker::decode_General(const int HwdID, const tRBUF *pRes
 		sprintf(szTmp,"%.1f",pMeter->floatval1);
 		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
 		PrintDeviceName(devname);
-		//m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_PERCENTAGE, float(pMeter->moisture));
+		int meterType=0;
+		m_sql.GetMeterType(HwdID, ID.c_str(),Unit,devType,subType,meterType);
+		float fValue=pMeter->floatval1;
+		if (meterType==1)
+		{
+			//miles
+			fValue*=0.6214f;//convert to miles
+		}
+		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, fValue);
 	}
 
 	if (m_verboselevel == EVBL_ALL)

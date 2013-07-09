@@ -661,6 +661,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 			int moister=pData[62+iMoister];
 
 			_tMoistureMeter mMoisture;
+			mMoisture.subtype=sTypeSoilMoisture;
 			mMoisture.id=1+iMoister;
 			mMoisture.moisture=moister;
 			sDecodeRXMessage(this, (const unsigned char *)&mMoisture);

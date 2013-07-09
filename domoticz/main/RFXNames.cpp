@@ -228,7 +228,7 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_RAIN, "mm" },
 		{ NTYPE_UV, "UVI" },
 		{ NTYPE_WIND, "m/s" },
-		{ NTYPE_USAGE, "On" },
+		{ NTYPE_USAGE, "" },
 		{ NTYPE_BARO, "hPa" },
 		{ NTYPE_SWITCH_ON, "" },
 		{ NTYPE_AMPERE1, "Ampere"},
@@ -490,7 +490,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		
 		{ pTypeLux, sTypeLux, "Lux" },
 
-		{ pTypeMoisture, sTypeMoisture, "Moisture" },
+		{ pTypeMoisture, sTypeSoilMoisture, "Soil Moisture" },
+		{ pTypeMoisture, sTypeLeafWetness, "Leaf Wetness" },
 		{ pTypeSolarRadiation, sTypeSolarRadiation, "Solar Radiation" },
 
 		{ pTypeGeneral, sTypeVisibility, "Visibility" },
@@ -1156,3 +1157,18 @@ bool IsLightSwitchOn(const std::string lstatus)
 		(lstatus.find("Set Level")!=std::string::npos)
 		);
 }
+
+const char *Get_Moisture_Desc(const int moisture)
+{
+	if (moisture<10)
+		return "saturated";
+	else if (moisture<20)
+		return "adequately wet";
+	else if (moisture<60)
+		return "irrigation advise";
+	else if (moisture<100)
+		return "irrigation";
+	else
+		return "dangerously dry";
+}
+

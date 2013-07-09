@@ -1984,8 +1984,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 			}
 			else if (dType == pTypeMoisture)
 			{
-				sprintf(szTmp,"%d %%",nValue);
+				sprintf(szTmp,"%d cb",nValue);
 				root["result"][ii]["Data"]=szTmp;
+				root["result"][ii]["Desc"]=Get_Moisture_Desc(nValue);
 				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 			}
 			else if (dType == pTypeGeneral)
@@ -1993,11 +1994,21 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				if (dSubType==sTypeVisibility)
 				{
 					float vis=(float)atof(sValue.c_str());
-					sprintf(szTmp,"%.1f km / %.1f mi",vis,vis*0.6214f);
+					if (metertype==0)
+					{
+						//km
+						sprintf(szTmp,"%.1f km",vis);
+					}
+					else
+					{
+						//miles
+						sprintf(szTmp,"%.1f mi",vis*0.6214f);
+					}
 					root["result"][ii]["Data"]=szTmp;
 					root["result"][ii]["Visibility"]=atof(sValue.c_str());
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 					root["result"][ii]["TypeImg"]="visibility";
+					root["result"][ii]["SwitchTypeVal"]=metertype;
 				}
 			}
 			else if (dType == pTypeLux)
@@ -2859,7 +2870,7 @@ std::string CWebServer::GetJSonPage()
 				dbasetable="Rain_Calendar";
 			else if (sensor=="counter")
 			{
-				if ((dType==pTypeP1Power)||(dType==pTypeCURRENT)||(dType==pTypeCURRENTENERGY)||(dType==pTypeAirQuality)||(dType==pTypeMoisture)||(dType==pTypeLux)||(dType==pTypeUsage))
+				if ((dType==pTypeP1Power)||(dType==pTypeCURRENT)||(dType==pTypeCURRENTENERGY)||(dType==pTypeAirQuality)||(dType==pTypeMoisture)||((dType==pTypeGeneral)&&(dSubType==sTypeVisibility))||(dType==pTypeLux)||(dType==pTypeUsage))
 					dbasetable="MultiMeter_Calendar";
 				else
 					dbasetable="Meter_Calendar";
@@ -3106,6 +3117,33 @@ std::string CWebServer::GetJSonPage()
 
 							root["result"][ii]["d"]=sd[1].substr(0,16);
 							root["result"][ii]["v"]=sd[0];
+							ii++;
+						}
+					}
+				}
+				else if ((dType==pTypeGeneral)&&(dSubType==sTypeVisibility))
+				{//day
+					root["status"]="OK";
+					root["title"]="Graph " + sensor + " " + srange;
+
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator itt;
+						int ii=0;
+						for (itt=result.begin(); itt!=result.end(); ++itt)
+						{
+							std::vector<std::string> sd=*itt;
+
+							root["result"][ii]["d"]=sd[1].substr(0,16);
+							float fValue=float(atof(sd[0].c_str()))/10.0f;
+							if (metertype==1)
+								fValue*=0.6214f;
+							sprintf(szTmp,"%.1f",fValue);
+							root["result"][ii]["v"]=szTmp;
 							ii++;
 						}
 					}
@@ -4186,6 +4224,37 @@ std::string CWebServer::GetJSonPage()
 						}
 					}
 				}
+				else if ((dType==pTypeGeneral)&&(dSubType==sTypeVisibility))
+				{//month/year
+					root["status"]="OK";
+					root["title"]="Graph " + sensor + " " + srange;
+
+					szQuery << "SELECT Value1,Value2, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator itt;
+						for (itt=result.begin(); itt!=result.end(); ++itt)
+						{
+							std::vector<std::string> sd=*itt;
+
+							root["result"][ii]["d"]=sd[2].substr(0,16);
+
+							float fValue1=float(atof(sd[0].c_str()))/10.0f;
+							float fValue2=float(atof(sd[1].c_str()))/10.0f;
+							if (metertype==1)
+							{
+								fValue1*=0.6214f;
+								fValue2*=0.6214f;
+							}
+							sprintf(szTmp,"%.1f",fValue1);
+							root["result"][ii]["v_min"]=szTmp;
+							sprintf(szTmp,"%.1f",fValue2);
+							root["result"][ii]["v_max"]=szTmp;
+							ii++;
+						}
+					}
+				}
 				else if (dType==pTypeLux)
 				{//month/year
 					root["status"]="OK";
@@ -4510,6 +4579,28 @@ std::string CWebServer::GetJSonPage()
 						root["result"][ii]["d"]=szDateEnd;
 						root["result"][ii]["v_min"]=result[0][0];
 						root["result"][ii]["v_max"]=result[0][1];
+						ii++;
+					}
+				}
+				else if ((dType==pTypeGeneral)&&(dSubType==sTypeVisibility))
+				{
+					szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						root["result"][ii]["d"]=szDateEnd;
+						float fValue1=float(atof(result[0][0].c_str()))/10.0f;
+						float fValue2=float(atof(result[0][1].c_str()))/10.0f;
+						if (metertype==1)
+						{
+							fValue1*=0.6214f;
+							fValue2*=0.6214f;
+						}
+
+						sprintf(szTmp,"%.1f",fValue1);
+						root["result"][ii]["v_min"]=szTmp;
+						sprintf(szTmp,"%.1f",fValue2);
+						root["result"][ii]["v_max"]=szTmp;
 						ii++;
 					}
 				}
@@ -6423,9 +6514,16 @@ std::string CWebServer::GetJSonPage()
 			}
 			if (dType==pTypeMoisture)
 			{
-				root["result"][ii]["val"]=NTYPE_PERCENTAGE;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_PERCENTAGE,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_PERCENTAGE,1);
+				root["result"][ii]["val"]=NTYPE_USAGE;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+				ii++;
+			}
+			if ((dType==pTypeGeneral)&&(dSubType==sTypeVisibility))
+			{
+				root["result"][ii]["val"]=NTYPE_USAGE;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
 				ii++;
 			}
 			if (dType==pTypeLux)

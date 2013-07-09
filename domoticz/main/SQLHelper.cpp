@@ -1426,6 +1426,19 @@ void CSQLHelper::GetAddjustment(const int HardwareID, const char* ID, const unsi
 	}
 }
 
+void CSQLHelper::GetMeterType(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, int &meterType)
+{
+	meterType=0;
+	std::vector<std::vector<std::string> > result;
+	char szTmp[1000];
+	sprintf(szTmp,"SELECT SwitchType FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
+	result=query(szTmp);
+	if (result.size()!=0)
+	{
+		meterType=atoi(result[0][0].c_str());
+	}
+}
+
 void CSQLHelper::GetAddjustment2(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, float &AddjValue, float &AddjMulti)
 {
 	AddjValue=0.0f;
@@ -2931,7 +2944,7 @@ void CSQLHelper::UpdateMeter()
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
 
-	sprintf(szTmp,"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR Type=%d OR Type=%d)",
+	sprintf(szTmp,"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d))",
 		pTypeRFXMeter,
 		pTypeP1Gas,
 		pTypeYouLess,
@@ -2940,7 +2953,8 @@ void CSQLHelper::UpdateMeter()
 		pTypeUsage,
         pTypeRego6XXValue,sTypeRego6XXCounter,
 		pTypeLux,
-		pTypeMoisture
+		pTypeMoisture,
+		pTypeGeneral,sTypeVisibility
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -3012,6 +3026,12 @@ void CSQLHelper::UpdateMeter()
 			else if (dType==pTypeMoisture)
 			{
 				sprintf(szTmp,"%d",nValue);
+				sValue=szTmp;
+			}
+			else if ((dType==pTypeGeneral)&&(dSubType==sTypeVisibility))
+			{
+				double fValue=atof(sValue.c_str())*10.0f;
+				sprintf(szTmp,"%d",int(fValue));
 				sValue=szTmp;
 			}
 			else if (dType==pTypeLux)
@@ -3494,6 +3514,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			if (
 				(devType!=pTypeAirQuality)&&
 				(devType!=pTypeMoisture)&&
+				((devType!=pTypeGeneral)&&(subType!=sTypeVisibility))&&
 				(devType!=pTypeLux)&&
 				(devType!=pTypeUsage)
 				)
@@ -3551,6 +3572,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			if (
 				(devType!=pTypeAirQuality)&&
 				(devType!=pTypeMoisture)&&
+				((devType!=pTypeGeneral)&&(subType!=sTypeVisibility))&&
 				(devType!=pTypeLux)
 				)
 			{

@@ -117,6 +117,7 @@ const char *Hardware_Type_Desc(int hType);
 const char *Security_Status_Desc(const unsigned char status);
 const char *Notification_Type_Desc(const int nType, const unsigned char snum);
 const char *Notification_Type_Label(const int nType);
+const char *Get_Moisture_Desc(const int moisture);
 
 void GetLightStatus(
 	const unsigned char dType, 

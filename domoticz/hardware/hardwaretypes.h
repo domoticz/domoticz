@@ -17,8 +17,9 @@
 #define pTypeSolarRadiation	0xF4
 #define sTypeSolarRadiation	0x01
 
-#define pTypeMoisture	0xF5
-#define sTypeMoisture	0x01
+#define pTypeMoisture		0xF5
+#define sTypeSoilMoisture	0x01
+#define sTypeLeafWetness	0x02
 
 #define pTypeLux		0xF6
 #define sTypeLux		0x01
@@ -144,7 +145,7 @@ typedef struct _tMoistureMeter {
 	{
 		len=sizeof(_tMoistureMeter)-1;
 		type=pTypeMoisture;
-		subtype=sTypeMoisture;
+		subtype=sTypeSoilMoisture;
 		id=0;
 	}
 } MoistureMeter;

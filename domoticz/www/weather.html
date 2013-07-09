@@ -4,6 +4,25 @@
         <input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" />
     </form>
 </div>
+<div id="dialog-editvisibilitydevice">
+    <form>
+        <table class="display" id="edittable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="width:60px"><label>Name: </label></td>
+          <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        <tr>
+        <tr>
+          <td align="right" style="width:60px"><label>Display: </label></td>
+          <td>
+			<select id="combometertype" style="width:150px" class="combobox ui-corner-all">
+				<option value="0">Kilometers</option>
+				<option value="1">Miles</option>
+			</select>
+		  </td>
+        <tr>
+		</table>
+    </form>
+</div>
 <div id="dialog-editraindevice">
     <form>
         <table class="display" id="edittable" border="0" cellpadding="0" cellspacing="0">
@@ -15,7 +34,7 @@
           <td align="right" style="width:60px"><label for="multiply">Multiply: </label></td>
           <td><input type="text" id="multiply" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
         <tr>
-				</table>
+		</table>
     </form>
 </div>
 <div id="dialog-editbarodevice">
@@ -122,6 +141,15 @@ function EditBaroDevice(idx,name,addjvalue)
   $("#dialog-editbarodevice #devicename").val(name);
   $("#dialog-editbarodevice #adjustment").val(addjvalue);
   $("#dialog-editbarodevice" ).dialog( "open" );
+}
+
+function EditVisibilityDevice(idx,name,switchtype)
+{
+  clearInterval($.myglobals.refreshTimer);
+  $.devIdx=idx;
+  $("#dialog-editvisibilitydevice #devicename").val(name);
+  $("#dialog-editvisibilitydevice #combometertype").val(switchtype);
+  $("#dialog-editvisibilitydevice" ).dialog( "open" );
 }
 
 function EditWeatherDevice(idx,name)
@@ -1853,6 +1881,7 @@ function ShowWeathers()
             htmlcontent+='<div class="row divider">\n';
             bHaveAddedDevider=true;
           }
+          var bHaveVisibility = false;
           var bHaveRain = false;
           var bHaveBaro = false;
           var bHaveUV = false;
@@ -1915,6 +1944,7 @@ function ShowWeathers()
 						}
 					}
 					else if (typeof item.Visibility != 'undefined') {
+						bHaveVisibility=true;
 						xhtm+='visibility48.png" height="48"></td>\n' +
 						'\t      <td  id="status">' + item.Data;
 					}
@@ -1964,7 +1994,7 @@ function ShowWeathers()
           if (typeof item.Barometer != 'undefined') {
             xhtm+='<a class="btnsmall" onclick="ShowBaroLog(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
           }
-          if (typeof item.Rain != 'undefined') {
+          else if (typeof item.Rain != 'undefined') {
             xhtm+='<a class="btnsmall" onclick="ShowRainLog(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
           }
           else if (typeof item.UVI != 'undefined') {
@@ -1973,28 +2003,26 @@ function ShowWeathers()
           else if (typeof item.Direction != 'undefined') {
             xhtm+='<a class="btnsmall" onclick="ShowWindLog(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
           }
+          else if (typeof item.Visibility != 'undefined') {
+            xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'Visibility\');" data-i18n="Log">Log</a> ';
+          }
           if (window.my_config.userrights==2) {
 			  if (bHaveRain) {
-							xhtm+='<a class="btnsmall" onclick="EditRainDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjMulti +');" data-i18n="Edit">Edit</a> ';
+				xhtm+='<a class="btnsmall" onclick="EditRainDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjMulti +');" data-i18n="Edit">Edit</a> ';
+			  }
+			  else if (bHaveVisibility) {
+				xhtm+='<a class="btnsmall" onclick="EditVisibilityDevice(' + item.idx + ',\'' + item.Name + '\',' + item.SwitchTypeVal +');" data-i18n="Edit">Edit</a> ';
 			  }
 			  else if (bHaveBaro) {
-							xhtm+='<a class="btnsmall" onclick="EditBaroDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjValue2 +');" data-i18n="Edit">Edit</a> ';
+				xhtm+='<a class="btnsmall" onclick="EditBaroDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjValue2 +');" data-i18n="Edit">Edit</a> ';
 			  }
 			  else {
-							xhtm+=      
-										'<a class="btnsmall" onclick="EditWeatherDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
+				xhtm+='<a class="btnsmall" onclick="EditWeatherDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 			  }
-			  var bShowNotifications=true;
-			  if (item.Visibility!='undefined') {
-				bShowNotifications=false;
-			  }
-			  if (bShowNotifications==true)
-			  {
-				  if (item.Notifications == "true")
-					xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#weathercontent\', \'ShowWeathers\');" data-i18n="Notifications">Notifications</a>';
-				  else
-					xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#weathercontent\', \'ShowWeathers\');" data-i18n="Notifications">Notifications</a>';
-			  }
+			  if (item.Notifications == "true")
+				xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#weathercontent\', \'ShowWeathers\');" data-i18n="Notifications">Notifications</a>';
+			  else
+				xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#weathercontent\', \'ShowWeathers\');" data-i18n="Notifications">Notifications</a>';
 		  }
           xhtm+=      
                 '</td>\n' +
@@ -2219,6 +2247,62 @@ $(document).ready(function() {
               "Transfer": function() {
                   $( this ).dialog( "close" );
                   TransferDevice($.devIdx,ShowWeathers);
+              },
+              Cancel: function() {
+                  $( this ).dialog( "close" );
+              }
+          },
+          open: function() {
+              $(this).keypress(function(e) {
+                if (e.keyCode == $.ui.keyCode.ENTER) {
+                  e.preventDefault();
+                  $(this).parent().find("button:eq(0)").trigger("click");
+                }
+              });
+          },
+          close: function() {
+            $( this ).dialog( "close" );
+          }
+    }).i18n();
+    $( "#dialog-editvisibilitydevice" ).dialog({
+          autoOpen: false,
+          width: 370,
+          height: 200,
+          modal: true,
+          resizable: false,
+          title: $.i18n("Edit Device"),
+          buttons: {
+              "Update": function() {
+                  var bValid = true;
+                  bValid = bValid && checkLength( $("#dialog-editvisibilitydevice #devicename"), 2, 100 );
+                  if ( bValid ) {
+                      $( this ).dialog( "close" );
+                      $.ajax({
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editvisibilitydevice #devicename").val() + '&switchtype=' + $("#dialog-editvisibilitydevice #combometertype").val() + '&used=true',
+                         async: false, 
+                         dataType: 'json',
+                         success: function(data) {
+                            ShowWeathers();
+                         }
+                      });
+                      
+                  }
+              },
+              "Remove Device": function() {
+                  var bValid = false;
+                  bValid=(confirm($.i18n("Are you sure to remove this Device?"))==true);
+                  if ( bValid ) {
+                      $( this ).dialog( "close" );
+                      $.ajax({
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editvisibilitydevice #devicename").val() + '&used=false',
+                         async: false, 
+                         dataType: 'json',
+                         success: function(data) {
+                            ShowWeathers();
+                         }
+                      });
+                      
+                  }
               },
               Cancel: function() {
                   $( this ).dialog( "close" );

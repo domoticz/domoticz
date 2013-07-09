@@ -149,13 +149,13 @@ function EditUtilityDevice(idx,name)
   $( "#dialog-editutilitydevice" ).dialog( "open" );
 }
 
-function EditMeterDevice(idx,name, switchtype)
+function EditMeterDevice(idx,name,switchtype)
 {
 	clearInterval($.myglobals.refreshTimer);
   $.devIdx=idx;
   $("#dialog-editmeterdevice #devicename").val(name);
   $("#dialog-editmeterdevice #combometertype").val(switchtype);
-  $( "#dialog-editmeterdevice" ).dialog( "open" );
+  $("#dialog-editmeterdevice" ).dialog( "open" );
 }
 
 function AddUtilityDevice()
@@ -3149,7 +3149,7 @@ function RefreshUtilities()
             }
             else if (item.Type == "Moisture") {
 				img='<img src="images/moisture48.png" height="48">';
-				status=item.Data;
+				status=item.Data + " (" + item.Desc + ")";
 				bigtext=item.Data;
             }
             else if (item.Type == "Lux") {
@@ -3301,7 +3301,7 @@ function ShowUtilities()
             }
             else if (item.Type == "Moisture") {
               xhtm+='moisture48.png" height="48"></td>\n';
-              status=item.Data;
+              status=item.Data + " (" + item.Desc + ")";;
             }
             else if (item.Type == "Lux") {
               xhtm+='lux48.png" height="48"></td>\n';
@@ -3364,7 +3364,7 @@ function ShowUtilities()
 			}
 		  }
 		  else if (item.Type == "Moisture") {
-			xhtm+='<a class="btnsmall" onclick="ShowPercentageLog(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
+			xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'Moisture\');" data-i18n="Log">Log</a> ';
 			if (window.my_config.userrights==2) {
 				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 			}
