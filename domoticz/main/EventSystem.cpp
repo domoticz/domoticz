@@ -10,13 +10,12 @@
 
 extern std::string szStartupFolder;
 
+std::string lua_Dir = szStartupFolder;
+
 #ifdef WIN32
     #include "../main/dirent_windows.h"
-    std::string lua_Dir = szStartupFolder + "scripts\\lua\\";
-#include "../main/dirent_windows.h"
 #else
     #include <dirent.h>
-    std::string lua_Dir = szStartupFolder + "scripts/lua/";
 #endif
 
 extern "C" {
@@ -230,13 +229,21 @@ void CEventSystem::EvaluateEvent(const std::string reason)
 
 void CEventSystem::EvaluateEvent(const std::string reason, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording)
 {
+
+    std::string lua_Dir = szStartupFolder;
+    
+    #ifdef WIN32
+        lua_Dir.append("scripts\\lua\\");
+    #else
+        lua_Dir.append("scripts/lua/");
+    #endif
     
     DIR *lDir;
     struct dirent *ent;
     
 	if ((lDir = opendir(lua_Dir.c_str())) != NULL)
 	{
-		while ((ent = readdir (lDir)) != NULL)
+     	while ((ent = readdir (lDir)) != NULL)
 		{
 			std::string filename = ent->d_name;
 			if (ent->d_type==DT_REG) {
@@ -253,7 +260,7 @@ void CEventSystem::EvaluateEvent(const std::string reason, const unsigned long l
 		closedir(lDir);
 	}
     else {
-        _log.Log(LOG_ERROR,"Error accessing lua script directory..");
+        _log.Log(LOG_ERROR,"Error accessing lua script directory %s", lua_Dir.c_str());
     }
 }
 
