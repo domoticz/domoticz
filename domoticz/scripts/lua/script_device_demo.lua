@@ -32,6 +32,6 @@ print('this will end up in the domoticz log')
 
 commandArray = {}
 if (devicechanged['MyDeviceName'] == 'On' and otherdevices['MyOtherDeviceName'] == 'Off') then
-	commandArray["MyOtherDeviceName]='On'
+	commandArray['MyOtherDeviceName']='On'
 end
 return commandArray
