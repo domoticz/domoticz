@@ -911,32 +911,43 @@ function RefreshScenes()
      success: function(data) {
       if (typeof data.result != 'undefined') {
         $.each(data.result, function(i,item){
-					id="#scenecontent #" + item.idx;
-					var obj=$(id);
-					if (typeof obj != 'undefined') {
-						if ($(id + " #name").html()!=item.Name) {
-							$(id + " #name").html(item.Name);
-						}
-						var img="";
-						if (item.Status == 'On') {
-							img='<img src="images/light-on.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
-						}
-						else if (item.Status == 'Mixed') {
-							img='<img src="images/light-unknown.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
-						}
-						else {
-							img='<img src="images/light-off.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
-						}
-						if ($(id + " #img").html()!=img) {
-							$(id + " #img").html(img);
-						}
-						if ($(id + " #status").html()!=TranslateStatus(item.Status)) {
-							$(id + " #status").html(TranslateStatus(item.Status));
-						}
-						if ($(id + " #lastupdate").html()!=item.LastUpdate) {
-							$(id + " #lastupdate").html(item.LastUpdate);
-						}
-					}
+			id="#scenecontent #" + item.idx;
+			var obj=$(id);
+			if (typeof obj != 'undefined') {
+				if ($(id + " #name").html()!=item.Name) {
+					$(id + " #name").html(item.Name);
+				}
+				var img1="";
+				var img2="";
+						
+				var onclass="";
+				var offclass="";
+				if (item.Status == 'On') {
+					onclass="transimg";
+					offclass="";
+				}
+				else if (item.Status == 'Off') {
+					onclass="";
+					offclass="transimg";
+				}
+
+				img1='<img class="' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+				img2='<img class="' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+						
+				if ($(id + " #img1").html()!=img1) {
+					$(id + " #img1").html(img1);
+				}
+				if ($(id + " #img2").html()!=img2) {
+					$(id + " #img2").html(img2);
+				}
+
+				if ($(id + " #status").html()!=TranslateStatus(item.Status)) {
+					$(id + " #status").html(TranslateStatus(item.Status));
+				}
+				if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+					$(id + " #lastupdate").html(item.LastUpdate);
+				}
+			}
         });
       }
      }
@@ -987,21 +998,25 @@ function ShowScenes()
           var xhtm=
                 '\t<div class="span4" id="' + item.idx + '">\n' +
                 '\t  <section>\n' +
-                '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
+                '\t    <table id="itemtabledoubleicon" border="0" cellpadding="0" cellspacing="0">\n' +
                 '\t    <tr>\n' +
                 '\t      <td id="name">' + item.Name + '</td>\n' +
                 '\t      <td id="bigtext"></td>\n';
 
-					if (item.Status == 'On') {
-							xhtm+='\t      <td id="img"><img src="images/light-on.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
-					}
-					else if (item.Status == 'Mixed') {
-							xhtm+='\t      <td id="img"><img src="images/light-unknown.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
-					}
-					else {
-							xhtm+='\t      <td id="img"><img src="images/light-off.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
-					}
-          xhtm+=
+			var onclass="";
+			var offclass="";
+			if (item.Status == 'On') {
+				onclass="transimg";
+				offclass="";
+			}
+			else if (item.Status == 'Off') {
+				onclass="";
+				offclass="transimg";
+			}
+
+			xhtm+='<td id="img1"><img class="' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+			xhtm+='<td id="img2"><img class="' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+			xhtm+=
                 '\t      <td id="status">' + TranslateStatus(item.Status) + '</td>\n' +
                 '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
                 '\t      <td id="type">Scene</td>\n';

@@ -25,33 +25,39 @@ function RefreshFavorites()
 							var obj=$(id);
 							if (typeof obj != 'undefined') {
 								if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
-									var status=TranslateStatus(item.Status);
-									if (item.Status == 'On') {
-											status+='<img src="images/lightbulb.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
-									}
-									else if (item.Status == 'Mixed') {
-											status+='<img src="images/lightbulbunknown.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+									var status="";
+									if (item.Status == 'Off') {
+										status+='<button class="btn btn-mini" type="button" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);">On</button> ' +
+												'<button class="btn btn-mini btn-info" type="button" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);">Off</button>';
 									}
 									else {
-											status+='<img src="images/lightbulboff.png" title="' + $.i18n("Turn On") +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+										status+='<button class="btn btn-mini btn-info" type="button" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);">On</button> ' +
+												'<button class="btn btn-mini" type="button" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);">Off</button>';
 									}
 									if ($(id + " #status").html()!=status) {
 										$(id + " #status").html(status);
 									}
 								}
 								else {
-									var img="";
+									var img1="";
+									var img2="";
+									var onclass="";
+									var offclass="";
 									if (item.Status == 'On') {
-												img='<img src="images/light-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+										onclass="transimg";
+										offclass="";
 									}
-									else if (item.Status == 'Mixed') {
-												img='<img src="images/light-unknown.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									else if (item.Status == 'Off') {
+										onclass="";
+										offclass="transimg";
 									}
-									else {
-												img='<img src="images/light-off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									img1='<img class="' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									img2='<img class="' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									if ($(id + " #img1").html()!=img1) {
+										$(id + " #img1").html(img1);
 									}
-									if ($(id + " #img").html()!=img) {
-										$(id + " #img").html(img);
+									if ($(id + " #img2").html()!=img2) {
+										$(id + " #img2").html(img2);
 									}
 									if ($(id + " #status").html()!=TranslateStatus(item.Status)) {
 										$(id + " #status").html(TranslateStatus(item.Status));
@@ -990,15 +996,14 @@ function ShowFavorites()
 									'\t      <td id="name">' + item.Name;
 							xhtm+=
 									 '</td>\n';
-							var status=TranslateStatus(item.Status) + " ";
-							if (item.Status == 'On') {
-											status+='<img src="images/lightbulb.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
-							}
-							else if (item.Status == 'Mixed') {
-											status+='<img src="images/lightbulbunknown.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+							var status="";
+							if (item.Status == 'Off') {
+								status+='<button class="btn btn-mini" type="button" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);">On</button> ' +
+										'<button class="btn btn-mini btn-info" type="button" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);">Off</button>';
 							}
 							else {
-										status+='<img src="images/lightbulboff.png" title="' + $.i18n("Turn On") +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
+								status+='<button class="btn btn-mini btn-info" type="button" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);">On</button> ' +
+										'<button class="btn btn-mini" type="button" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);">Off</button>';
 							}
 							xhtm+=
 										'\t      <td id="status">' + status + '</td>\n' +
@@ -1013,24 +1018,27 @@ function ShowFavorites()
 							}
 							xhtm+='\t  <section>\n';
 							if (data.DashboardType==0) {
-								xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+								xhtm+='\t    <table id="itemtablesmalldoubleicon" border="0" cellpadding="0" cellspacing="0">\n';
 							}
 							else if (data.DashboardType==1) {
-								xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+								xhtm+='\t    <table id="itemtablesmalldoubleicon" border="0" cellpadding="0" cellspacing="0">\n';
 							}
 							xhtm+=
 									'\t    <tr>\n' +
 									'\t      <td id="name">' + item.Name + '</td>\n'+
 									'\t      <td id="bigtext"></td>\n';
+							var onclass="";
+							var offclass="";
 							if (item.Status == 'On') {
-										xhtm+='\t      <td id="img"><img src="images/light-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								onclass="transimg";
+								offclass="";
 							}
-							else if (item.Status == 'Mixed') {
-										xhtm+='\t      <td id="img"><img src="images/light-unknown.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+							else if (item.Status == 'Off') {
+								onclass="";
+								offclass="transimg";
 							}
-							else {
-										xhtm+='\t      <td id="img"><img src="images/light-off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
-							}
+							xhtm+='<td id="img1"><img class="' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+							xhtm+='<td id="img2"><img class="' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 							xhtm+=
 										'\t      <td id="status">' + TranslateStatus(item.Status) + '</td>\n' +
 										'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n';

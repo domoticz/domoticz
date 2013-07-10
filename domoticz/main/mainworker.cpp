@@ -6862,16 +6862,13 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string swi
 			GetLightStatus(dType,dSubType,rnValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
 			if (switchtype != STYPE_PushOn)
 			{
-				if ((IsLightSwitchOn(lstatus)==false)&&(nValue==1))
-					SwitchLightInt(sd2,switchcmd,0,false);
-				else if ((IsLightSwitchOn(lstatus)==true)&&(nValue==0))
-					SwitchLightInt(sd2,switchcmd,0,false);
+				SwitchLightInt(sd2,switchcmd,0,false);
 			}
 			else
 			{
 				SwitchLightInt(sd2,"On",0,false);
 			}
-			//boost::this_thread::sleep(boost::posix_time::milliseconds(50));
+			boost::this_thread::sleep(boost::posix_time::milliseconds(50));
 
 		}
 	}

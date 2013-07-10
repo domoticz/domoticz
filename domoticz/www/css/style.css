@@ -1845,3 +1845,14 @@ a:link {
 {
 	padding-right:5px;
 }
+
+.transimg
+{
+	opacity:0.5;
+	filter:alpha(opacity=50); /* For IE8 and earlier */
+}
+.transimg:hover
+{
+	opacity:1.0;
+	filter:alpha(opacity=100); /* For IE8 and earlier */
+}
