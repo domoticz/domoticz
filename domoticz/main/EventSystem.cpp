@@ -345,10 +345,16 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
 
             if ((std::string(luaL_typename(lua_state, -2))=="string") && (std::string(luaL_typename(lua_state, -1)))=="string") {
                 scriptTrue = true;
-                ScheduleEvent(lua_tostring(lua_state, -2),lua_tostring(lua_state, -1));
+                if (std::string(lua_tostring(lua_state, -2))== "SendNotification") {
+                    std::string luaString = lua_tostring(lua_state, -1);
+                    SendEventNotification(luaString.substr(0,luaString.find('#')), luaString.substr(luaString.find('#')+1));
+                }
+                else {
+                    ScheduleEvent(lua_tostring(lua_state, -2),lua_tostring(lua_state, -1));
+                }
             }
             else {
-                _log.Log(LOG_ERROR,"commandArray should only return ['DeviceNamestring']='Actionstring'");
+                _log.Log(LOG_ERROR,"commandArray should only return ['string']='Actionstring'");
             }
             // removes 'value'; keeps 'key' for next iteration
             lua_pop(lua_state, 1);
@@ -364,6 +370,11 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
     
     lua_close(lua_state);
 
+}
+
+void CEventSystem::SendEventNotification(const std::string Subject, const std::string Body)
+{
+    m_pMain->m_sql.SendNotificationEx(Subject,Body);
 }
 
 void CEventSystem::ScheduleEvent(std::string deviceName, std::string Action)

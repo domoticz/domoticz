@@ -59,6 +59,7 @@ private:
     std::string nValueToWording (const unsigned char dType, const unsigned char dSubType, const unsigned char switchtype, const unsigned char nValue,const std::string sValue);
     static int l_domoticz_print(lua_State* lua_state);
     void report_errors(lua_State *lua_state, int status);
+    void SendEventNotification(const std::string Subject, const std::string Body);
     void ScheduleEvent(std::string ID, std::string Action);
     std::vector<_tEventItem> m_events;
     std::map<unsigned long long,_tDeviceStatus> m_devicestates;
