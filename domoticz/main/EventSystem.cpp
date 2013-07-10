@@ -5,12 +5,12 @@
 #include "Helper.h"
 #include "SQLHelper.h"
 #include "Logger.h"
-#include <dirent.h>
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 #ifdef WIN32
     #include "../main/dirent_windows.h"
     #define lua_Dir "scripts\\lua\\"
+#include "../main/dirent_windows.h"
 #else
     #include <dirent.h>
     #define lua_Dir "scripts/lua/"
@@ -160,7 +160,7 @@ void CEventSystem::GetCurrentStates()
             std::stringstream nv_str( sd[2] );
 			nv_str >> sitem.nValue;
             sitem.sValue	= sd[3];
-            sitem.nValueWording = nValueToWording(atoi(sd[4].c_str()), atoi(sd[5].c_str()), atoi(sd[6].c_str()), sitem.nValue,sitem.sValue);
+            sitem.nValueWording = nValueToWording(atoi(sd[4].c_str()), atoi(sd[5].c_str()), atoi(sd[6].c_str()), (unsigned char)sitem.nValue,sitem.sValue);
             m_devicestates[sitem.ID] = sitem;
         }
   	}
