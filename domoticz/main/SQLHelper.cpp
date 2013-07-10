@@ -877,6 +877,11 @@ void CSQLHelper::Do_Work()
 					}
 				}
 			}
+            else if (itt->_ItemType == TITEM_SWITCHCMD_EVENT)
+            {
+                if (m_pMain)
+                    m_pMain->SwitchLight(itt->_idx,itt->_command.c_str(),itt->_level);
+            }
 
 			itt++;
 		}

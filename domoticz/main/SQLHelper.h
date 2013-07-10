@@ -48,6 +48,7 @@ enum _eTaskItemType
 	TITEM_EXECUTE_SCRIPT,
 	TITEM_EMAIL_CAMERA_SNAPSHOT,
 	TITEM_SEND_EMAIL,
+    TITEM_SWITCHCMD_EVENT,
 };
 
 struct _tTaskItem
@@ -65,6 +66,8 @@ struct _tTaskItem
 	int _switchtype;
 	int _nValue;
 	std::string _sValue;
+    std::string _command;
+    unsigned char _level;
 
 	_tTaskItem()
 	{
@@ -114,6 +117,17 @@ struct _tTaskItem
 		tItem._DelayTime=DelayTime;
 		tItem._ID=Subject;
 		tItem._sValue=Body;
+		return tItem;
+	}
+    static _tTaskItem SwitchLightEvent(const int DelayTime, const unsigned long long idx, const std::string Command, unsigned char Level)
+	{
+		_tTaskItem tItem;
+		tItem._ItemType=TITEM_SWITCHCMD_EVENT;
+		tItem._DelayTime=DelayTime;
+		tItem._idx=idx;
+        tItem._command= Command;
+        tItem._level= Level;
+
 		return tItem;
 	}
 };
