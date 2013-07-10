@@ -7,13 +7,16 @@
 #include "Logger.h"
 #include <iostream>
 #include <boost/lexical_cast.hpp>
+
+extern std::string szStartupFolder;
+
 #ifdef WIN32
     #include "../main/dirent_windows.h"
-    #define lua_Dir "scripts\\lua\\"
+    std::string lua_Dir = szStartupFolder + "scripts\\lua\\";
 #include "../main/dirent_windows.h"
 #else
     #include <dirent.h>
-    #define lua_Dir "scripts/lua/"
+    std::string lua_Dir = szStartupFolder + "scripts/lua/";
 #endif
 
 extern "C" {
@@ -231,7 +234,7 @@ void CEventSystem::EvaluateEvent(const std::string reason, const unsigned long l
     DIR *lDir;
     struct dirent *ent;
     
-	if ((lDir = opendir(lua_Dir)) != NULL)
+	if ((lDir = opendir(lua_Dir.c_str())) != NULL)
 	{
 		while ((ent = readdir (lDir)) != NULL)
 		{
@@ -249,6 +252,9 @@ void CEventSystem::EvaluateEvent(const std::string reason, const unsigned long l
 		}
 		closedir(lDir);
 	}
+    else {
+        _log.Log(LOG_ERROR,"Error accessing lua script directory..");
+    }
 }
 
 void CEventSystem::EvaluateLua(const std::string reason, const std::string filename)
