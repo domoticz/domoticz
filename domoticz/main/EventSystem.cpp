@@ -147,7 +147,7 @@ void CEventSystem::GetCurrentStates()
     
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ID,Name,nValue,sValue, Type, SubType, SwitchType FROM DeviceStatus WHERE (Used = '1')";
+	szQuery << "SELECT ID,Name,nValue,sValue, Type, SubType, SwitchType, LastUpdate FROM DeviceStatus WHERE (Used = '1')";
 	result=m_pMain->m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -163,6 +163,7 @@ void CEventSystem::GetCurrentStates()
 			nv_str >> sitem.nValue;
             sitem.sValue	= sd[3];
             sitem.nValueWording = nValueToWording(atoi(sd[4].c_str()), atoi(sd[5].c_str()), atoi(sd[6].c_str()), (unsigned char)sitem.nValue,sitem.sValue);
+            sitem.lastUpdate = sd[7];
             m_devicestates[sitem.ID] = sitem;
         }
   	}
@@ -170,7 +171,7 @@ void CEventSystem::GetCurrentStates()
     
 }
 
-std::string CEventSystem::UpdateSingleState(unsigned long long ulDevID, std::string devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const unsigned char switchType)
+std::string CEventSystem::UpdateSingleState(unsigned long long ulDevID, std::string devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const unsigned char switchType, std::string lastUpdate)
 {
     
     boost::lock_guard<boost::mutex> l(deviceStateMutex);
@@ -184,6 +185,7 @@ std::string CEventSystem::UpdateSingleState(unsigned long long ulDevID, std::str
         replaceitem.nValue = nValue;
         replaceitem.sValue = sValue;
         replaceitem.nValueWording = nValueWording;
+        replaceitem.lastUpdate = lastUpdate;
         it->second = replaceitem;
     }
     else {
@@ -193,6 +195,7 @@ std::string CEventSystem::UpdateSingleState(unsigned long long ulDevID, std::str
         newitem.nValue = nValue;
         newitem.sValue = sValue;
         newitem.nValueWording = nValueWording;
+        newitem.lastUpdate = lastUpdate;
         m_devicestates[newitem.ID] = newitem;
     }
     return nValueWording;
@@ -201,17 +204,18 @@ std::string CEventSystem::UpdateSingleState(unsigned long long ulDevID, std::str
 
 bool CEventSystem::ProcessDevice(const int HardwareID, const unsigned long long ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string devname)
 {
-    // query to get switchtype, can't seem to get it from SQLHelper? 
+    // query to get switchtype & LastUpdate, can't seem to get it from SQLHelper? 
     std::vector<std::vector<std::string> > result;
     std::stringstream szQuery;
-    szQuery << "SELECT ID, SwitchType FROM DeviceStatus WHERE (Name == '" << devname << "')";
+    szQuery << "SELECT ID, SwitchType, LastUpdate FROM DeviceStatus WHERE (Name == '" << devname << "')";
     result=m_pMain->m_sql.query(szQuery.str());
     if (result.size()>0) {
         std::vector<std::string> sd=result[0];
         unsigned char switchType;
         std::stringstream switchType_str( sd[1] );
         switchType_str >> switchType;
-        std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType);
+        
+        std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, sd[2]);
         EvaluateEvent("device", ulDevID, devname, nValue, sValue, nValueWording);
     }
     else {
@@ -322,6 +326,16 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
         lua_rawset( lua_state, -3 );
     }
     lua_setglobal(lua_state, "otherdevices");
+
+    lua_createtable(lua_state, m_devicestates.size(), 0);
+    typedef std::map<unsigned long long,_tDeviceStatus>::iterator it_type;
+    for(it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); iterator++) {
+        _tDeviceStatus sitem = iterator->second;
+        lua_pushstring( lua_state, sitem.deviceName.c_str() );
+        lua_pushstring( lua_state, sitem.lastUpdate.c_str() );
+        lua_rawset( lua_state, -3 );
+    }
+    lua_setglobal(lua_state, "otherdevices_lastupdate");
     
     lua_createtable(lua_state, m_devicestates.size(), 0);
     typedef std::map<unsigned long long,_tDeviceStatus>::iterator it_type;
@@ -333,7 +347,7 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
     }
     lua_setglobal(lua_state, "otherdevices_svalues");
     
-    //TBD: blockly parse using luaL_dostring(lua_state, blockly conditions");
+    //TBD: blockly parse using luaL_dostring(lua_state, blockly conditions"); or lua_eval?
     
     int status = luaL_loadfile(lua_state, filename.c_str());
     
@@ -433,17 +447,19 @@ std::string CEventSystem::nValueToWording (const unsigned char dType, const unsi
     GetLightStatus(dType,dSubType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
     
     
-    if (switchtype==STYPE_Dimmer) {
+    if (switchtype==STYPE_Dimmer)
+    {
         //?
     }
-    else if (switchtype==STYPE_Contact) {
+    else if (switchtype==STYPE_Contact)
+    {
         if (lstatus=="On") {
             lstatus="Open";
         } else {
             lstatus="Closed";
         }
     }
-    else if (switchtype==STYPE_Blinds)
+    else if ((switchtype==STYPE_Blinds) || (switchtype==STYPE_BlindsInverted))
     {
         if (lstatus=="On") {
             lstatus="Closed";

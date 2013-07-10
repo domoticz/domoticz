@@ -25,6 +25,7 @@ class CEventSystem
         unsigned long long nValue;
         std::string sValue;
         std::string nValueWording;
+        std::string lastUpdate;
         
 	};
 
@@ -51,7 +52,7 @@ private:
 	void Do_Work();
 	void ProcessMinute();
     void GetCurrentStates();
-    std::string UpdateSingleState(unsigned long long ulDevID, std::string devname, const int nValue, const char* sValue,const unsigned char devType, const unsigned char subType, const unsigned char switchType);
+    std::string UpdateSingleState(unsigned long long ulDevID, std::string devname, const int nValue, const char* sValue,const unsigned char devType, const unsigned char subType, const unsigned char switchType, std::string lastUpdate);
     void EvaluateEvent(const std::string reason);
 	void EvaluateEvent(const std::string reason, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording);
     void EvaluateLua(const std::string reason, const std::string filename);
