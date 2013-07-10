@@ -5680,6 +5680,7 @@ std::string CWebServer::GetJSonPage()
 			std::string devidx=m_pWebEm->FindValue("devidx");
 			if (devidx=="")
 				goto exitjson;
+			int level=atoi(m_pWebEm->FindValue("level").c_str());
 			//first check if this device is not the scene code!
 			szQuery.clear();
 			szQuery.str("");
@@ -5717,9 +5718,10 @@ std::string CWebServer::GetJSonPage()
 				root["title"]="AddSceneDevice";
 				//no it is not, add it
 				sprintf(szTmp,
-					"INSERT INTO SceneDevices (DeviceRowID, SceneRowID) VALUES ('%s','%s')",
+					"INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Level) VALUES ('%s','%s',%d)",
 					devidx.c_str(),
-					idx.c_str()
+					idx.c_str(),
+					level
 					);
 				result=m_pMain->m_sql.query(szTmp);
 			}
@@ -5802,7 +5804,7 @@ std::string CWebServer::GetJSonPage()
 			root["title"]="GetSceneDevices";
 			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;
-			szQuery << "SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='" << idx << "') AND (b.ID == a.DeviceRowID) ORDER BY b.Name";
+			szQuery << "SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Level FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='" << idx << "') AND (b.ID == a.DeviceRowID) ORDER BY b.Name";
 			result=m_pMain->m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
@@ -5820,6 +5822,7 @@ std::string CWebServer::GetJSonPage()
 					unsigned char subType=atoi(sd[4].c_str());
 					unsigned char nValue=(unsigned char)atoi(sd[5].c_str());
 					std::string sValue=sd[6];
+					int level=atoi(sd[7].c_str());
 
 					std::string lstatus="";
 					int llevel=0;
@@ -5828,6 +5831,7 @@ std::string CWebServer::GetJSonPage()
 					int maxDimLevel=0;
 					GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
 					root["result"][ii]["IsOn"]=IsLightSwitchOn(lstatus);
+					root["result"][ii]["Level"]=level;
 					ii++;
 				}
 			}
@@ -5848,7 +5852,7 @@ std::string CWebServer::GetJSonPage()
 			root["title"]="GetLightSwitches";
 			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;
-			szQuery << "SELECT ID, Name, Type, Used FROM DeviceStatus ORDER BY Name";
+			szQuery << "SELECT ID, Name, Type, Used, SwitchType FROM DeviceStatus ORDER BY Name";
 			result=m_pMain->m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
@@ -5862,6 +5866,7 @@ std::string CWebServer::GetJSonPage()
 					std::string Name=sd[1];
 					int Type=atoi(sd[2].c_str());
 					int used=atoi(sd[3].c_str());
+					_eSwitchType switchtype=(_eSwitchType)atoi(sd[4].c_str());
 					bool bdoAdd;
 					switch (Type)
 					{
@@ -5892,6 +5897,8 @@ std::string CWebServer::GetJSonPage()
 						{
 							root["result"][ii]["idx"]=ID;
 							root["result"][ii]["Name"]=Name;
+							bool bIsDimmer=(switchtype==STYPE_Dimmer);
+							root["result"][ii]["IsDimmer"]=bIsDimmer;
 							ii++;
 						}
 						break;

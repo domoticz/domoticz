@@ -6762,7 +6762,7 @@ bool MainWorker::SwitchLight(std::string idx, std::string switchcmd,std::string 
 	return SwitchLight(ID,switchcmd,atoi(level.c_str()));
 }
 
-bool MainWorker::SwitchScene(const std::string idx, const std::string switchcmd)
+bool MainWorker::SwitchScene(const std::string idx, std::string switchcmd)
 {
 	unsigned long long ID;
 	std::stringstream s_str( idx );
@@ -6771,7 +6771,7 @@ bool MainWorker::SwitchScene(const std::string idx, const std::string switchcmd)
 	return SwitchScene(ID,switchcmd);
 }
 
-bool MainWorker::SwitchScene(const unsigned long long idx, const std::string switchcmd)
+bool MainWorker::SwitchScene(const unsigned long long idx, std::string switchcmd)
 {
 	//Get Scene details
 	std::vector<std::vector<std::string> > result;
@@ -6831,7 +6831,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string swi
 
 	//now switch all attached devices
 	std::stringstream szQuery;
-	szQuery << "SELECT DeviceRowID FROM SceneDevices WHERE (SceneRowID == " << idx << ")";
+	szQuery << "SELECT DeviceRowID, Level FROM SceneDevices WHERE (SceneRowID == " << idx << ")";
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return false;
@@ -6839,6 +6839,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string swi
 	for (itt=result.begin(); itt!=result.end(); ++itt)
 	{
 		std::vector<std::string> sd=*itt;
+		int level=atoi(sd[1].c_str());
 		std::vector<std::vector<std::string> > result2;
 		std::stringstream szQuery2;
 		szQuery2 << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType, nValue, sValue FROM DeviceStatus WHERE (ID == " << sd[0] << ")";
@@ -6860,13 +6861,26 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string swi
 			int maxDimLevel=0;
 
 			GetLightStatus(dType,dSubType,rnValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+			int ilevel=maxDimLevel;
+			if ((switchtype == STYPE_Dimmer)&&(maxDimLevel!=0))
+			{
+				if (switchcmd == "On")
+				{
+					switchcmd="Set Level";
+					float fLevel=(maxDimLevel/100.0f)*level;
+					if (fLevel>100)
+						fLevel=100;
+					ilevel=int(fLevel);
+				}
+			}
+
 			if (switchtype != STYPE_PushOn)
 			{
-				SwitchLightInt(sd2,switchcmd,0,false);
+				SwitchLightInt(sd2,switchcmd,ilevel,false);
 			}
 			else
 			{
-				SwitchLightInt(sd2,"On",0,false);
+				SwitchLightInt(sd2,"On",ilevel,false);
 			}
 			boost::this_thread::sleep(boost::posix_time::milliseconds(50));
 

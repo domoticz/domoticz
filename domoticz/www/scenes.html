@@ -37,6 +37,7 @@
 						<tr valign="middle">
 								<th align="left" data-i18n="Name">Name</th>
 								<th align="right" width="80" data-i18n="Command">Command</th>
+								<th align="right" width="40" data-i18n="Level">Level</th>
 						</tr>
 				</thead>
 		</table>
@@ -58,6 +59,23 @@
 					<select id="combodevice" style="width:250px" class="combobox ui-corner-all">
 					</select>
 					<a class="btnstyle3" onclick="AddDevice();" data-i18n="Add">Add</a>
+				</td>
+			</tr>
+			<tr id="LevelDiv">
+				<td align="right" style="width:80px"><label for="combolevel"><span data-i18n="Level"></span>:</label></td>
+				<td>
+					<select id="combolevel" style="width:70px" class="combobox ui-corner-all">
+					<option value="10">10%</option>
+					<option value="20">20%</option>
+					<option value="30">30%</option>
+					<option value="40">40%</option>
+					<option value="50">50%</option>
+					<option value="60">60%</option>
+					<option value="70">70%</option>
+					<option value="80">80%</option>
+					<option value="90">90%</option>
+					<option value="100">100%</option>
+					</select>
 				</td>
 			</tr>
 		</table>
@@ -283,8 +301,18 @@ function AddDevice()
 		alert($.i18n('No Device Selected!'));
 		return ;
 	}
+	
+	var level=100;
+	$.each($.LightsAndSwitches, function(i,item){
+		if (item.idx==DeviceIdx) {
+			if (item.isdimmer==true) {
+				level=$("#scenecontent #combolevel").val();
+			}
+		}
+	});
+	
 	$.ajax({
-		 url: "json.htm?type=command&param=addscenedevice&idx=" + $.devIdx + "&devidx=" + DeviceIdx,
+		 url: "json.htm?type=command&param=addscenedevice&idx=" + $.devIdx + "&devidx=" + DeviceIdx + "&level=" + level,
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {
@@ -369,10 +397,11 @@ function RefreshDeviceTable(idx)
 						commandbtns='<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.DevID + ',\'On\',RefreshDeviceTableEx);">' + $.i18n('ON') + '</button> <button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.DevID + ',\'Off\',RefreshDeviceTableEx);">' + $.i18n('OFF') + '</button>';
 					}
           var addId = oTable.fnAddData( {
-								"DT_RowId": item.ID,
+				"DT_RowId": item.ID,
                 "0": item.Name,
-                "1": commandbtns
-							} );
+                "1": commandbtns,
+                "2": item.Level + " %"
+		  } );
         });
         
 				/* Add a click handler to the rows - this could be used as a callback */
@@ -417,6 +446,28 @@ function DeleteDevice(idx)
 	});
 }
 
+function OnSelChangeDevice()
+{
+	var DeviceIdx=$("#scenecontent #combodevice option:selected").val();
+	if (typeof DeviceIdx == 'undefined') {
+		$("#scenecontent #LevelDiv").hide();
+		return ;
+	}
+	var bShowLevel=false;
+	$.each($.LightsAndSwitches, function(i,item){
+		if (item.idx==DeviceIdx) {
+			bShowLevel=item.isdimmer;
+		}
+	});
+	
+	if (bShowLevel==true) {
+		$("#scenecontent #LevelDiv").show();
+	}
+	else {
+		$("#scenecontent #LevelDiv").hide();
+	}
+}
+
 function EditSceneDevice(idx,name,havecode)
 {
   clearInterval($.myglobals.refreshTimer);
@@ -428,6 +479,7 @@ function EditSceneDevice(idx,name,havecode)
   htmlcontent+=$('#editscene').html();
   $('#scenecontent').html(GetBackbuttonHTMLTable('ShowScenes')+htmlcontent);
   $('#scenecontent').i18n();
+  $("#scenecontent #LevelDiv").hide();
  
   oTable = $('#scenecontent #devicestable').dataTable( {
                   "sDom": '<"H"frC>t<"F"i>',
@@ -452,6 +504,13 @@ function EditSceneDevice(idx,name,havecode)
 		var option = $('<option />');
 		option.attr('value', item.idx).text(item.name);
 		$("#scenecontent #combodevice").append(option);
+	});
+
+	$("#scenecontent #combodevice").change(function() { 
+		OnSelChangeDevice();
+	});
+	$('#scenecontent #combodevice').keypress(function() {
+	  $(this).change();
 	});
 
 	if (havecode==0) {
@@ -480,7 +539,8 @@ function RefreshLightSwitchesComboArray()
         $.each(data.result, function(i,item){
 					$.LightsAndSwitches.push({
 							idx: item.idx,
-							name: item.Name
+							name: item.Name,
+							isdimmer: item.IsDimmer
 						 }
 					);
         });

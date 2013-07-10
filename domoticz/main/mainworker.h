@@ -44,8 +44,8 @@ public:
 	bool SwitchLight(unsigned long long idx, std::string switchcmd, unsigned char level);
 	bool SwitchLightInt(const std::vector<std::string> sd, std::string switchcmd, unsigned char level, const bool IsTesting);
 
-	bool SwitchScene(const std::string idx, const std::string switchcmd);
-	bool SwitchScene(const unsigned long long idx, const std::string switchcmd);
+	bool SwitchScene(const std::string idx, std::string switchcmd);
+	bool SwitchScene(const unsigned long long idx, std::string switchcmd);
 	void CheckSceneCode(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int nValue, const char* sValue);
 
 	bool SetRFXCOMHardwaremodes(const int HardwareID, const unsigned char Mode1,const unsigned char Mode2,const unsigned char Mode3,const unsigned char Mode4,const unsigned char Mode5);

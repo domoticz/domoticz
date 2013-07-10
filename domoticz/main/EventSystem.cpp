@@ -88,7 +88,9 @@ void CEventSystem::LoadEvents()
 				return;
 			}
         }
+#ifdef _DEBUG
         _log.Log(LOG_NORM,"Events (re)loaded");
+#endif
 	}
 }
 
@@ -167,10 +169,10 @@ void CEventSystem::EvaluateEvent(const std::string reason, const unsigned long l
     char timeBuffer[100];
 
     sprintf(timeBuffer, "%d:%d", aTime->tm_hour, aTime->tm_min);
-    
+#ifdef _DEBUG    
     if (reason=="Time") {_log.Log(LOG_NORM,"EventSystem %s trigger: %s",reason.c_str(),timeBuffer);};
     if (reason=="Device") {_log.Log(LOG_NORM,"EventSystem %s trigger: deviceno: %d",reason.c_str(),DeviceID);};
-   
+#endif
     GetCurrentStates();
     
     // pass conditions and actions over to lua here
