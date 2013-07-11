@@ -52,12 +52,12 @@ private:
 	void Do_Work();
 	void ProcessMinute();
     void GetCurrentStates();
-    std::string UpdateSingleState(unsigned long long ulDevID, std::string devname, const int nValue, const char* sValue,const unsigned char devType, const unsigned char subType, const unsigned char switchType, std::string lastUpdate);
+    std::string UpdateSingleState(unsigned long long ulDevID, std::string devname, const int nValue, const char* sValue,const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, std::string lastUpdate);
     void EvaluateEvent(const std::string reason);
 	void EvaluateEvent(const std::string reason, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording);
     void EvaluateLua(const std::string reason, const std::string filename);
     void EvaluateLua(const std::string reason, const std::string filename, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording);
-    std::string nValueToWording (const unsigned char dType, const unsigned char dSubType, const unsigned char switchtype, const unsigned char nValue,const std::string sValue);
+    std::string nValueToWording (const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue,const std::string sValue);
     static int l_domoticz_print(lua_State* lua_state);
     void report_errors(lua_State *lua_state, int status);
     void SendEventNotification(const std::string Subject, const std::string Body);

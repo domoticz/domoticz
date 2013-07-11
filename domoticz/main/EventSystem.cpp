@@ -118,7 +118,7 @@ void CEventSystem::Do_Work()
 
 	while (!m_stoprequested)
 	{
-		//sleep 1 second
+		//sleep 500 milliseconds
 		boost::this_thread::sleep(boost::posix_time::milliseconds(500));
 		m_secondcounter++;
 		if (m_secondcounter==60*2)
@@ -162,7 +162,8 @@ void CEventSystem::GetCurrentStates()
             std::stringstream nv_str( sd[2] );
 			nv_str >> sitem.nValue;
             sitem.sValue	= sd[3];
-            sitem.nValueWording = nValueToWording(atoi(sd[4].c_str()), atoi(sd[5].c_str()), atoi(sd[6].c_str()), (unsigned char)sitem.nValue,sitem.sValue);
+			_eSwitchType switchtype=(_eSwitchType)atoi(sd[6].c_str());
+            sitem.nValueWording = nValueToWording(atoi(sd[4].c_str()), atoi(sd[5].c_str()), switchtype, (unsigned char)sitem.nValue,sitem.sValue);
             sitem.lastUpdate = sd[7];
             m_devicestates[sitem.ID] = sitem;
         }
@@ -171,24 +172,26 @@ void CEventSystem::GetCurrentStates()
     
 }
 
-std::string CEventSystem::UpdateSingleState(unsigned long long ulDevID, std::string devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const unsigned char switchType, std::string lastUpdate)
+std::string CEventSystem::UpdateSingleState(unsigned long long ulDevID, std::string devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, std::string lastUpdate)
 {
     
     boost::lock_guard<boost::mutex> l(deviceStateMutex);
     
     std::string nValueWording = nValueToWording(devType, subType, switchType, nValue, sValue);
     
-    std::map<unsigned long long,_tDeviceStatus>::iterator it = m_devicestates.find(ulDevID);
-    if (it != m_devicestates.end()) {
-        _tDeviceStatus replaceitem = it->second;
+    std::map<unsigned long long,_tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
+    if (itt != m_devicestates.end()) {
+		//Update
+        _tDeviceStatus replaceitem = itt->second;
         replaceitem.deviceName = devname;
         replaceitem.nValue = nValue;
         replaceitem.sValue = sValue;
         replaceitem.nValueWording = nValueWording;
         replaceitem.lastUpdate = lastUpdate;
-        it->second = replaceitem;
+        itt->second = replaceitem;
     }
     else {
+		//Insert
         _tDeviceStatus newitem;
         newitem.ID = ulDevID;
         newitem.deviceName = devname;
@@ -211,10 +214,8 @@ bool CEventSystem::ProcessDevice(const int HardwareID, const unsigned long long 
     result=m_pMain->m_sql.query(szQuery.str());
     if (result.size()>0) {
         std::vector<std::string> sd=result[0];
-        unsigned char switchType;
-        std::stringstream switchType_str( sd[1] );
-        switchType_str >> switchType;
-        
+        _eSwitchType switchType=(_eSwitchType)atoi(sd[1].c_str());
+       
         std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, sd[2]);
         EvaluateEvent("device", ulDevID, devname, nValue, sValue, nValueWording);
     }
@@ -435,7 +436,7 @@ void CEventSystem::ScheduleEvent(std::string deviceName, std::string Action)
     }
 }
 
-std::string CEventSystem::nValueToWording (const unsigned char dType, const unsigned char dSubType, const unsigned char switchtype, const unsigned char nValue,const std::string sValue)
+std::string CEventSystem::nValueToWording (const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue,const std::string sValue)
 {
     
     std::string lstatus="";
