@@ -6861,7 +6861,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, std::string switchcmd
 			int maxDimLevel=0;
 
 			GetLightStatus(dType,dSubType,rnValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
-			int ilevel=maxDimLevel;
+			int ilevel=maxDimLevel-1;
 			if ((switchtype == STYPE_Dimmer)&&(maxDimLevel!=0))
 			{
 				if (switchcmd == "On")
@@ -6870,7 +6870,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, std::string switchcmd
 					float fLevel=(maxDimLevel/100.0f)*level;
 					if (fLevel>100)
 						fLevel=100;
-					ilevel=int(fLevel);
+					ilevel=round(fLevel)+1;
 				}
 			}
 
