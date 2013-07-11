@@ -460,7 +460,7 @@ std::string CEventSystem::nValueToWording (const unsigned char dType, const unsi
             lstatus="Closed";
         }
     }
-    else if ((switchtype==STYPE_Blinds) || (switchtype==STYPE_BlindsInverted))
+    else if (switchtype==STYPE_Blinds)
     {
         if (lstatus=="On") {
             lstatus="Closed";
@@ -468,7 +468,14 @@ std::string CEventSystem::nValueToWording (const unsigned char dType, const unsi
             lstatus="Open";
         }
     }
-    
+    else if (switchtype==STYPE_BlindsInverted)
+    {
+        if (lstatus=="Off") {
+            lstatus="Closed";
+        } else {
+            lstatus="Open";
+        }
+    }
     return lstatus;
     
 }
