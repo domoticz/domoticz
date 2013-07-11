@@ -236,22 +236,12 @@ Blockly.Language.send_notification = {
     this.setColour(120);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.appendValueInput('notificationText')
-    	.appendTitle("Send notification with text:");
+    this.appendValueInput('notificationTextSubject')
+    	.appendTitle("Send notification with subject:");
+    this.appendValueInput('notificationTextBody')
+    	.appendTitle("and message:");
     this.setInputsInline(true);
 
-  }
-};
-
-Blockly.Language.send_email = {
-  // Comparison operator.
-  init: function() {
-    this.setColour(120);
-    this.setPreviousStatement(true);
-    this.setNextStatement(true);
-    this.appendValueInput('emailText')
-    	.appendTitle("Send email with text:");
-    this.setInputsInline(true);
   }
 };
 

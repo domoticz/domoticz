@@ -31,6 +31,7 @@
       }
     </style>
     <script>
+	  
       function init() {
       	Blockly.inject(document.getElementById('blocklyDiv'),
         {path: './', toolbox: document.getElementById('toolbox')});
@@ -41,86 +42,131 @@
         load_blocks();
       }
       
+      function opSymbol(operand) {
+	     switch(operand)
+		{
+		case 'EQ':
+		  operand = '=';
+		  break;
+		case 'NEQ':
+		  operand = '!=';
+		  break;
+		case 'LT':
+		  operand = '<';
+		  break;
+		case 'GT':
+		  operand = '>';
+		  break;
+		case 'LTE':
+		  operand = '<=';
+		  break;
+		case 'GTE':
+		  operand = '>=';
+		  break;
+		default:
+		} 
+		return operand;		     
+      }
+      
       function parseXml(xml) {
+      	
+      	var boolString = "";
 
-	      var parseBlock = {
-		     logic_timeofday: function(block,operand) {
-		     	var ifA = $(block).find("title")[1];
-		     	return $(ifA).attr("name")+" "+operand+" "+$(ifA).text();
-		     },
-		     logic_weekday: function(block,operand) {
-		     	var ifA = $(block).find("title")[1];
-		     	return $(ifA).attr("name")+" "+operand+" "+$(ifA).text();
-		     },
-		     logic_compare: function(block,operand) {
-		     	var objA = $(block).find("title")[1];
-		     	var stateA = $(block).find("title")[2];	 
-		     	return $(objA).attr("name")+'('+$(objA).text()+')'+" "+operand+" "+$(stateA).attr("name")+'('+$(stateA).text()+')';
-		     }
-		  };
-
-	      var translatedString = "";
-	      var setArray = [];
-	      var conditionArray = [];
-		  //$(data).children('page')
-		  if ($(xml).children().length > 1) {
+		function parseLogicCompare(thisBlock){
+			var locOperand = opSymbol($($(thisBlock).children("title:first")).text());
+			var valueA = $(thisBlock).children("value[name='A']")[0];
+			var titleA = $(valueA).find("title")[0];
+			var valueB = $(thisBlock).children("value[name='B']")[0];
+			var titleB = $(valueB).find("title")[0];
+			var compareString = "(device["+$(titleA).text()+"]";
+			if ($(titleB).attr("name") == "State") {
+				var Action = 'Off';
+				if ($(titleB).text() == 1) { Action = 'On'};
+				compareString += locOperand;
+				compareString += Action+'")'; 
+			}
+			return compareString;
+		}
+		
+		function parseValueBlock(thisBlock,locOperand,Sequence) {
+			var firstBlock = $(thisBlock).children("block:first");
+			if (firstBlock.attr("type")=="logic_compare") {
+				var locOperand = opSymbol($($(thisBlock).children("title:first")).text());
+				var compareString = parseLogicCompare(firstBlock);
+			  	return compareString;
+			}
+			else if (firstBlock.attr("type")=="logic_operation") {
+				if(Sequence == "B") {boolString += locOperand }
+				parseLogicOperation(firstBlock);
+			}
+		}
+		
+    	function parseLogicOperation(thisBlock){
+    		//boolString += "(";
+			var locOperand = opSymbol($($(thisBlock).children("title:first")).text());
+			var valueA = $(thisBlock).children("value[name='A']")[0];
+			var valueB = $(thisBlock).children("value[name='B']")[0];
+			conditionA = parseValueBlock(valueA,locOperand,"A");
+			conditionB = parseValueBlock(valueB,locOperand,"B");
+			var conditionstring = "("+conditionA+" "+locOperand+" "+conditionB+")";
+			if ((conditionA!=undefined)&&(conditionB!=undefined)) {boolString += conditionstring};
+		}
+  
+      	if ($(xml).children().length > 1) {
 		  	return "err:Please make sure there is only a single block structure";
-		  }
-		  var firstBlockType = $(xml).find("block").first().attr("type");
-	      if (firstBlockType !="domoticzcontrols_if") {
-		  	return "err:Please start with a control block";
-	      }	
-	      var ifBlock = $($(xml).find("value[name='IF0']")[0]).children('block:first');
-	      var doBlock = $($(xml).find("statement[name='DO0']")[0]);
-	      var operand = "noop?";
-	      operand = $($(ifBlock).find("title")[0]).text();
-	      //if($(opA).text() == "EQ") { operand = "="}
-	      
-	      if (ifBlock.attr("type")=="logic_operation") {
-		      // multiple statements, execute parseBlock function for each value
-		      var conditionString = "";
-		      $(ifBlock).children('value').each (function(){ 
-			      var thisBlock = $(this).children('block:first');
-			      var locOperand = $($(thisBlock).find("title")[0]).text();
-			      var oneConditionString = parseBlock[thisBlock.attr("type")](thisBlock,locOperand);
-			      if (conditionString == "") {
-				      conditionString = oneConditionString
-				  }
-				  else {
-				  	conditionString = conditionString+" "+operand+" "+oneConditionString
-			      }
-			  });
-			  conditionArray.push(conditionString);
-	      }
-	      else {
-	      	  // single statement, the block type and execute its parseBlock function
-		      var conditionString = parseBlock[ifBlock.attr("type")](ifBlock,operand);
-		      conditionArray.push(conditionString);
-	      }
-	      
-	      //get setters from do
-	      $(doBlock).find('block').each (function(){ 
+		}
+		var firstBlockType = $(xml).find("block").first().attr("type");
+	    if (firstBlockType !="domoticzcontrols_if") {
+			return "err:Please start with a control block";
+	    }	
+	    
+	    
+	    var ifBlock = $($(xml).find("value[name='IF0']")[0]).children('block:first');
+
+      	if (ifBlock.attr("type")=="logic_compare") {
+      		// just the one compare, easy
+      		var compareString = parseLogicCompare(ifBlock);
+      		boolString += compareString;
+      	}
+
+      	else if (ifBlock.attr("type")=="logic_operation") {
+      		// nested logic operation, drill down
+      		parseLogicOperation(ifBlock);
+    
+      	}
+      	
+      	var setArray = [];
+      	var doBlock = $($(xml).find("statement[name='DO0']")[0]);
+ 	      $(doBlock).find('block').each (function(){ 
 	      	if ($(this).attr('type') == 'logic_set') {
 		   		var valueA = $(this).find("value[name='A']")[0];
 	        	var titleA = $(valueA).find("title")[0];
 	        	var valueB = $(this).find("value[name='B']")[0];
 	        	var titleB = $(valueB).find("title")[0];
-	        	var setString = $(titleA).attr("name")+'('+$(titleA).text()+')='+$(titleB).attr("name")+'('+$(titleB).text()+')';
-	        	setArray.push(setString);		      	
-		    }
-		    else if ($(this).attr('type') == 'send_email') {
-			    var titleText = $(this).find("title[name='TEXT']")[0];
-	        	var setString = 'Mail('+$(titleText).text()+')';
-	        	setArray.push(setString);		      	
+	        	var setString = "commandArray["+$(titleA).text()+"]";
+	        	if ($(titleB).attr("name") == "State") {
+	        		var Action = 'Off';
+	        		if ($(titleB).text() == 1) { Action = 'On'};
+	        		setString += '="'+Action+'"'; 
+	        	}
+	        	setArray.push(setString);
 		    }
 		    else if ($(this).attr('type') == 'send_notification') {
-			    var titleText = $(this).find("title[name='TEXT']")[0];
-	        	var setString = 'Notification('+$(titleText).text()+')';
+		    	var subjectBlock = $(this).find("value[name='notificationTextSubject']")[0];
+		    	var bodyBlock = $(this).find("value[name='notificationTextBody']")[0];
+		    	var sTitleText = $(subjectBlock).find("title[name='TEXT']")[0];
+		    	var bTitleText = $(bodyBlock).find("title[name='TEXT']")[0];
+		    	var sTT = $(sTitleText).text().replace(/\,/g, ' ');
+		    	var bTT = $(bTitleText).text().replace(/\,/g, ' ');
+		    	// message separator here cannot be # like in scripts, changed to $..
+		    	// also removed commas as we need to separate commandArray later.
+	        	var setString = 'commandArray["SendNotification"]="'+sTT+'$'+bTT+'"';
 	        	setArray.push(setString);		      	
 		    }
 		  });
-	      return [conditionArray,setArray];
-	      
+		  var conditionArray = [];
+		  conditionArray.push(boolString);
+	      return [conditionArray,setArray];     
       }
       
       function loadSelectedEvent(id) {
@@ -196,7 +242,7 @@
       
       function save_block() {
       	var xml = Blockly.Xml.workspaceToDom( Blockly.mainWorkspace );
-      	//alert(Blockly.Xml.domToText( xml ));
+      	$("#blockDebug").html(Blockly.Xml.domToPrettyText(xml));
       	var blockName = $("#blockName").val();
       	var id = "";
       	if (blockName) { 
@@ -267,7 +313,7 @@
    		<category name="Logic">
 	   		<block type="logic_compare"></block>
 	   		<block type="logic_operation"></block>
-	   		<block type="logic_boolean"></block>
+	   		<!--<block type="logic_boolean"></block>-->
 	   		<block type="logic_states"></block>
 	   		<block type="logic_set"></block>
 	   		<block type="logic_timeofday"></block>
@@ -276,7 +322,6 @@
    		</category>
    		<category name="Messages">
    			<block type="send_notification"></block>
-   			<block type="send_email"></block>
    			<block type="text"></block>
    		</category>
    		<category name="Devices">   		
@@ -312,8 +357,10 @@
 			    <label for="savedEvents">Saved events: </label><br>
 			    <select size="10" width="100%" style="width: 100%" id="savedEvents" name="savedEvents" onchange="loadSelectedEvent(this.value);">> 
   				</select>
-  				<br><a class="btnstyle3" href="javascript:delete_block()">Delete selected</a>
-  				<br><div id="blockId" style="display:none;"/>
+  				<br/><a class="btnstyle3" href="javascript:delete_block()">Delete selected</a>
+  				<br/><textarea id="blockDebug" width="100em" height="100em"></textarea>
+  				<br/><div id="blockId" style="display:none;"/>
+  				
 			</td>
 		</tr>
     </table>
