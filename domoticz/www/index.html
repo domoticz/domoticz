@@ -203,7 +203,6 @@ $(document).ready(function() {
 				}
 		}, false);
 	}
-		
 	$.myglobals = {
 		actlayout : "",
 		prevlayout : "",
@@ -248,6 +247,8 @@ $(document).ready(function() {
 
 	EnableDisableTabs();
 	
+	window.myglobals=$.myglobals;
+
     $( "#dialog-transferdevice" ).dialog({
           autoOpen: false,
           width: 380,
@@ -431,6 +432,7 @@ $(document).ready(function() {
 										<ul class="dropdown-menu pull-left">
 											<li id="mCam"><a id="cCam" href="javascript:SwitchLayout('Cam')"><img src="images/camera-web.png"> <span data-i18n="Cameras">Cameras</span></a></li>
 											<li id="mUsers"><a id="cUsers" href="javascript:SwitchLayout('Users')"><img src="images/users.png"> <span data-i18n="Edit Users">Edit Users</span></a></li>
+											<li id="mEvents"><a id="cEvents" href="javascript:SwitchLayout('Events')"><img src="images/events.png"> <span data-i18n="Events">Events</span></a></li>
 											<li id="mNotification"><a id="cNotification" href="javascript:SwitchLayout('Notification')"><img src="images/notification.png"> <span data-i18n="Send Notification">Send Notification</span></a></li>
 										</ul>
                                     </li>

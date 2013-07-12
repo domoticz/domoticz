@@ -2243,7 +2243,7 @@ function ShowFavorites()
 	ResizeDimSliders();
 
 	if (window.my_config.userrights==2) {
-		if ($.myglobals.ismobileint==false) {
+		if (window.myglobals.ismobileint==false) {
 			$("#dashcontent .span4").draggable({
 					drag: function() {
 						clearInterval($.myglobals.refreshTimer);

@@ -1260,6 +1260,7 @@ function EnableDisableTabs()
 			else {
 				SetLanguage('en');
 			}
+			$.myglobals.ismobileint=false;
 			if (typeof data.MobileType != 'undefined') {
 				if( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {
 					$.myglobals.ismobile=true;

@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 234
+# ref 235
 
 CACHE:
 favicon.ico
@@ -112,6 +112,7 @@ images/doorbell48.png
 images/door48open.png
 images/edit.png
 images/empty16.png
+images/events.png
 images/favorite.png
 images/forward_disabled.png
 images/forward_enabled.png

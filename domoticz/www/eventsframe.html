@@ -295,12 +295,27 @@
 		}
       	else {alert('no event name entered!');}
       }
-      
-      jQuery(document).ready(function(){
-	      $("#blocklyDiv").css("width", $(window).width()*0.8);
-	      $("#blocklyDiv").css("height", $(window).height()*0.9);
-	      $("#toolbox").css("font-color", "black");
-	  });
+/*
+	$(window).resize(function() {
+		ResizeLogWindow();
+	});
+
+	function ResizeLogWindow()
+	{
+		var pheight=$(window).innerHeight();
+		var pwidth=$(window).innerWidth();
+		$("#maindiv").height(pheight-120);
+		$("#maindiv").width(pwidth-20);
+	}
+*/
+	$(document).ready(function() 
+	{
+		//ResizeLogWindow();
+		//return;
+		//$("#blocklyDiv").css("width", $(window).width()-20);
+		$("#blocklyDiv").css("height", $(window).height()-20);
+		$("#toolbox").css("font-color", "black");
+	});
       
     </script>
 
@@ -342,27 +357,31 @@
 		   	</category>
    		</category>	
     </xml>
-    <table id="saveTable">
-	    <tr>
-		    <td>
-			    <div id="blocklyDiv" style="height: 480px; width: 600px;"></div>
-		    </td>
-		    <td valign="top" >
-		    <label for="blockName">Event name: </label><br>
-		    	<input type="input" id="blockName" name="blockName" style="width: 12em; padding: .2em;" class="text ui-widget-content ui-corner-all" />
-		    	<br/>
-			    <a class="btnstyle3" href="javascript:save_block()">Save</a>
-			    <a class="btnstyle3" href="javascript:new_block()">New</a>
-			    <P>
-			    <label for="savedEvents">Saved events: </label><br>
-			    <select size="10" width="100%" style="width: 100%" id="savedEvents" name="savedEvents" onchange="loadSelectedEvent(this.value);">> 
-  				</select>
-  				<br/><a class="btnstyle3" href="javascript:delete_block()">Delete selected</a>
-  				<!--<br/><textarea id="blockDebug" width="100em" height="100em"></textarea>-->
-  				<br/><div id="blockId" style="display:none;"/>
-  				
-			</td>
-		</tr>
-    </table>
+    <div id="maindiv" class="container-fluid">
+		<div class="row-fluid">
+			<table id="saveTable" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td valign="top">
+					<div id="blocklyDiv"></div>
+				</td>
+				<td style="width:200px" valign="top">
+					<label for="blockName">Event name: </label><br>
+					<input type="input" id="blockName" name="blockName" style="width: 12em; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+					<br/>
+					<a class="btnstyle3" href="javascript:save_block()">Save</a>
+					<a class="btnstyle3" href="javascript:new_block()">New</a>
+					<P>
+					<label for="savedEvents">Saved events: </label><br>
+					<select size="10" width="100%" style="width: 100%" id="savedEvents" name="savedEvents" onchange="loadSelectedEvent(this.value);">> 
+					</select>
+					<br/><a class="btnstyle3" href="javascript:delete_block()">Delete selected</a>
+					<!--<br/><textarea id="blockDebug" width="100em" height="100em"></textarea>-->
+					<br/><div id="blockId" style="display:none;"/>
+					
+				</td>
+			</tr>
+			</table>
+		</div>
+	</div>
   </body>
 </html>
