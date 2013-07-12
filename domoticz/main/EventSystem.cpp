@@ -7,6 +7,7 @@
 #include "Logger.h"
 #include <iostream>
 #include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
 
 extern std::string szStartupFolder;
 
@@ -267,7 +268,122 @@ void CEventSystem::EvaluateEvent(const std::string reason, const unsigned long l
     else {
         _log.Log(LOG_ERROR,"Error accessing lua script directory %s", lua_Dir.c_str());
     }
+    
+    EvaluateBlockly(reason, DeviceID, devname, nValue, sValue, nValueWording);
+    
+    
 }
+
+void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording)
+{
+    
+    boost::lock_guard<boost::mutex> l(eventMutex);
+    
+    lua_State *lua_state;
+    lua_state = luaL_newstate();
+    
+    // load Lua libraries
+    static const luaL_Reg lualibs[] =
+    {
+        {"base", luaopen_base},
+        {"io", luaopen_io},
+        {"table", luaopen_table},
+        {"string", luaopen_string},
+        {"math", luaopen_math},
+        {NULL, NULL}
+    };
+    
+    const luaL_Reg *lib = lualibs;
+    for(; lib->func != NULL; lib++)
+    {
+        lib->func(lua_state);
+        lua_settop(lua_state, 0);
+    }
+    
+    lua_createtable(lua_state, m_devicestates.size(), 0);
+    
+    typedef std::map<unsigned long long,_tDeviceStatus>::iterator it_type;
+    for(it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); iterator++) {
+        _tDeviceStatus sitem = iterator->second;
+        lua_pushnumber( lua_state, sitem.ID);
+        lua_pushstring( lua_state, sitem.nValueWording.c_str() );
+        lua_rawset( lua_state, -3 );
+    }
+    lua_setglobal(lua_state, "device");
+    
+ 
+    if ((reason == "device") && (DeviceID >0)) {
+        
+        std::string IDString;
+        std::size_t found;
+        
+        std::vector<_tEventItem>::iterator it;
+        for ( it = m_events.begin(); it != m_events.end(); ++it ) {
+    
+            IDString = "["+boost::lexical_cast<std::string>(DeviceID)+"]";
+            found = it->Conditions.find(IDString);
+
+            if (found!=std::string::npos) {
+                std::string ifCondition = "result = 0; if " + it->Conditions + " then result = 1 end; return result";
+                if( luaL_dostring(lua_state, ifCondition.c_str()))
+                {
+                    _log.Log(LOG_ERROR,"Lua script error: %s",lua_tostring(lua_state, -1));
+                }
+                else {
+                    int ruleTrue = lua_tonumber(lua_state,-1);
+                
+                    if (ruleTrue) {
+                        _log.Log(LOG_NORM,"UI Event triggered: %s",it->Name.c_str());
+                        std::istringstream ss(it->Actions);
+                        std::string csubstr;
+                        while (!ss.eof()) {
+                            getline(ss, csubstr, ',');
+                            int eQPos = csubstr.find_first_of("=")+1;
+                            std::string doWhat = csubstr.substr(eQPos);
+                            doWhat = doWhat.substr(1,doWhat.size()-2);
+                            int sPos = csubstr.find_first_of("[")+1;
+                            int ePos = csubstr.find_first_of("]");
+                            int sDiff = ePos - sPos;
+                            if (sDiff>0) {
+                                std::string deviceName = csubstr.substr(sPos,sDiff);
+                                int deviceNo = atoi(deviceName.c_str());
+                                if (deviceNo) {
+                                    ScheduleEvent(deviceNo,doWhat);
+                                }
+                                else {
+                                    std::string devNameNoQuotes = deviceName.substr(1,deviceName.size()-2);
+                                    if (devNameNoQuotes == "SendNotification") {
+                                        SendEventNotification(doWhat.substr(0,doWhat.find('#')), doWhat.substr(doWhat.find('#')+1));
+                                    }
+                                }
+                            }
+                        }
+                    }                    
+                }
+            }
+        }
+    }
+    else if (reason == "time") {
+        
+        std::string IDString;
+        std::size_t found;
+        
+        std::vector<_tEventItem>::iterator it;
+        for ( it = m_events.begin(); it != m_events.end(); ++it ) {
+            // time rules will only run when time or date based critera are found
+            if ((it->Conditions.find("timeofday")!=std::string::npos) || (it->Conditions.find("os.date")!=std::string::npos)) {
+                _log.Log(LOG_NORM,"UI Event triggered: %s. Sadly, UI events based on time are not implemented yet",it->Name.c_str());
+                std::string ifCondition = "result = 0; if " + it->Conditions + " then result = 1 end; return result";
+                luaL_dostring(lua_state, ifCondition.c_str());
+                int ruleTrue = lua_tonumber(lua_state,-1);
+                if (ruleTrue) {
+                    _log.Log(LOG_NORM,"UI Event triggered: %s",it->Name.c_str());
+                }
+            }
+        }
+    }
+}
+
 
 void CEventSystem::EvaluateLua(const std::string reason, const std::string filename)
 {
@@ -348,21 +464,22 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
     }
     lua_setglobal(lua_state, "otherdevices_svalues");
     
-    //TBD: blockly parse using luaL_dostring(lua_state, blockly conditions"); or lua_eval?
-    
     int status = luaL_loadfile(lua_state, filename.c_str());
     
-    int result = 0;
+    int luaError = 0;
     if(status == LUA_OK)
     {
-        result = lua_pcall(lua_state, 0, LUA_MULTRET, 0);
+        luaError = lua_pcall(lua_state, 0, LUA_MULTRET, 0);
     }
     else
     {
         _log.Log(LOG_ERROR,"Could not load lua script %s",filename.c_str());
     }
     
-    report_errors(lua_state, result);
+    if (luaError)
+    {
+        _log.Log(LOG_ERROR,"Lua script failed (%s): %s",describeError(luaError).c_str(), lua_tostring(lua_state, -1));
+    }
     
     bool scriptTrue = false;
     lua_getglobal(lua_state, "commandArray");
@@ -393,7 +510,7 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
     }
     
     if (scriptTrue) {
-        _log.Log(LOG_NORM,"Event triggered: %s",filename.c_str());
+        _log.Log(LOG_NORM,"Script event triggered: %s",filename.c_str());
     }
     
     lua_close(lua_state);
@@ -403,6 +520,19 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
 void CEventSystem::SendEventNotification(const std::string Subject, const std::string Body)
 {
     m_pMain->m_sql.SendNotificationEx(Subject,Body);
+}
+
+void CEventSystem::ScheduleEvent(int deviceID, std::string Action)
+{
+    std::vector<std::vector<std::string> > result;
+    std::stringstream szQuery;
+    szQuery << "SELECT Name FROM DeviceStatus WHERE (ID == '" << deviceID << "')";
+    result=m_pMain->m_sql.query(szQuery.str());
+    if (result.size()>0) {
+        std::vector<std::string> sd=result[0];
+        ScheduleEvent(sd[0], Action);
+    }
+    
 }
 
 void CEventSystem::ScheduleEvent(std::string deviceName, std::string Action)
@@ -496,13 +626,26 @@ int CEventSystem::l_domoticz_print(lua_State* lua_state) {
     return 0;
 }
 
-void CEventSystem::report_errors(lua_State *lua_state, int status)
+std::string CEventSystem::describeError(int resultcode)
 {
-    if ( status!=0 ) {
-        _log.Log(LOG_ERROR,"Lua parse error: %s", lua_tostring(lua_state, -1));
-        lua_pop(lua_state, 1); // remove error message
+    switch (resultcode)
+    {
+        case 0:
+            return "Success";
+        case LUA_ERRRUN:
+            return "Runtime error";
+        case LUA_ERRSYNTAX:
+            return "Syntax error";
+        case LUA_ERRERR:
+            return "Error with error alert mechanism.";
+        case LUA_ERRFILE:
+            return "Couldn't open or read file";
+        default:
+            return "Unknown state";
     }
 }
+
+
   
     
     

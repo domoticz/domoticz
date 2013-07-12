@@ -8074,6 +8074,18 @@ std::string CWebServer::GetJSonPage()
             
             std::string eventid=m_pWebEm->FindValue("eventid");
             
+            // replace placeholder chars for url encode illegal ones
+            
+            if(eventconditions.find("os.date(\"*")!= std::string::npos) {
+                eventconditions = boost::algorithm::replace_all_copy(eventconditions, "os.date(\"*", "os.date(\"%");
+            }
+            
+            // this should be more selective...
+            if (eventactions.find("SendNotification")!= std::string::npos) {
+                eventactions = boost::algorithm::replace_all_copy(eventactions, "$", "#");
+            }
+            
+            
 			szQuery.clear();
 			szQuery.str("");
             

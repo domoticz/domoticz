@@ -55,15 +55,17 @@ private:
     std::string UpdateSingleState(unsigned long long ulDevID, std::string devname, const int nValue, const char* sValue,const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, std::string lastUpdate);
     void EvaluateEvent(const std::string reason);
 	void EvaluateEvent(const std::string reason, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording);
+    void EvaluateBlockly(const std::string reason, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording);
     void EvaluateLua(const std::string reason, const std::string filename);
     void EvaluateLua(const std::string reason, const std::string filename, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording);
     std::string nValueToWording (const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue,const std::string sValue);
     static int l_domoticz_print(lua_State* lua_state);
-    void report_errors(lua_State *lua_state, int status);
     void SendEventNotification(const std::string Subject, const std::string Body);
+    void ScheduleEvent(int deviceID, std::string Action);
     void ScheduleEvent(std::string ID, std::string Action);
     std::vector<_tEventItem> m_events;
     std::map<unsigned long long,_tDeviceStatus> m_devicestates;
+    std::string describeError(int resultcode);
     
 };
 
