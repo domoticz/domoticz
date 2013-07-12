@@ -426,18 +426,6 @@ function RefreshFavorites()
 								if (typeof item.HumidityStatus != 'undefined') {
 									status+=' (' + $.i18n(item.HumidityStatus) + ')';
 								}
-								if (typeof item.Barometer != 'undefined') {
-									status+='<br>' + item.Barometer + ' hPa';
-								}
-								if (typeof item.ForecastStr != 'undefined') {
-									status+=', ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
-								}
-								if (typeof item.Altitude != 'undefined') {
-									status+=', Altitude: ' + item.Altitude + ' meter';
-								}
-								if ($(id + " #status").html()!=status) {
-									$(id + " #status").html(status);
-								}
 							}
 							else {
 								var img='<img src="images/';
@@ -489,16 +477,7 @@ function RefreshFavorites()
 								if (typeof item.HumidityStatus != 'undefined') {
 									status+=' (' + $.i18n(item.HumidityStatus) + ')';
 								}
-								if (typeof item.Barometer != 'undefined') {
-									status+='<br>' + item.Barometer + ' hPa';
-								}
-								if (typeof item.ForecastStr != 'undefined') {
-									status+=', ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
-								}
-								if (typeof item.Altitude != 'undefined') {
-									status+=', Altitude: ' + item.Altitude + ' meter';
-								}
-								
+							
 								var nbackcolor="#D4E1EE";
 								if (item.HaveTimeout==true) {
 									nbackcolor="#DF2D3A";
@@ -1519,15 +1498,6 @@ function ShowFavorites()
 							if (typeof item.HumidityStatus != 'undefined') {
 								status+=' (' + $.i18n(item.HumidityStatus) + ')';
 							}
-							if (typeof item.Barometer != 'undefined') {
-								status+='<br>' + item.Barometer + ' hPa';
-							}
-							if (typeof item.ForecastStr != 'undefined') {
-								status+=', ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
-							}
-							if (typeof item.Altitude != 'undefined') {
-								status+=', Altitude: ' + item.Altitude + ' meter';
-							}
 							xhtm+=
 										'\t      <td id="status">' + status + '</td>\n' +
 										'\t    </tr>\n';
@@ -1606,15 +1576,6 @@ function ShowFavorites()
 							}
 							if (typeof item.HumidityStatus != 'undefined') {
 								xhtm+=' (' + $.i18n(item.HumidityStatus) + ')';
-							}
-							if (typeof item.Barometer != 'undefined') {
-								xhtm+='<br>' + item.Barometer + ' hPa';
-							}
-							if (typeof item.ForecastStr != 'undefined') {
-								xhtm+=', ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
-							}
-							if (typeof item.Altitude != 'undefined') {
-								xhtm+=', Altitude: ' + item.Altitude + ' meter';
 							}
 							xhtm+=
 									'</td>\n' +
