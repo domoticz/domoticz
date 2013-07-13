@@ -333,25 +333,22 @@
 		}
       	else {alert('no event name entered!');}
       }
-/*
+
 	$(window).resize(function() {
-		ResizeLogWindow();
+		ResizeBlockyWindow();
 	});
 
-	function ResizeLogWindow()
+
+	function ResizeBlockyWindow()
 	{
-		var pheight=$(window).innerHeight();
-		var pwidth=$(window).innerWidth();
-		$("#maindiv").height(pheight-120);
-		$("#maindiv").width(pwidth-20);
+		$("#blocklyDiv").css("width", $(window).width()-250);
+		$("#blocklyDiv").css("height", $(window).height()-20);
 	}
-*/
+
 	$(document).ready(function() 
 	{
-		//ResizeLogWindow();
+		ResizeBlockyWindow();
 		//return;
-		//$("#blocklyDiv").css("width", $(window).width()-20);
-		$("#blocklyDiv").css("height", $(window).height()-20);
 		$("#toolbox").css("font-color", "black");
 	});
       
