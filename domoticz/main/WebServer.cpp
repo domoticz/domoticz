@@ -8102,6 +8102,7 @@ std::string CWebServer::GetJSonPage()
             if (idx=="")
                 goto exitjson;
             m_pMain->m_sql.DeleteEvent(idx);
+            m_pMain->m_eventsystem.LoadEvents();
             root["status"]="OK";
         }
    
