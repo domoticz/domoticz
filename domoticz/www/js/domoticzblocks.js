@@ -153,13 +153,16 @@ Blockly.Language.logic_states = {
     this.setOutput(true, null);
     this.appendDummyInput()
         .appendTitle(new Blockly.FieldDropdown(this.STATES), 'State');
-    this.setTooltip("tip");
   }
 };
 
 Blockly.Language.logic_states.STATES =
-    [["on", '1'],
-     ["off", '0']];
+    [["On", 'On'],
+     ["Off", 'Off'],
+     ["Group On", 'Group On'],
+     ["Group Off", 'Group Off'],
+     ["Open", 'Open'],
+     ["Closed", 'Closed']];
 
 Blockly.Language.logic_set = {
   // Comparison operator.
@@ -221,13 +224,13 @@ Blockly.Language.logic_weekday = {
      ['\u2265', 'GTE']];  
 
 Blockly.Language.logic_weekday.DAYS =
-    [["Monday", '1'],
-    ["Tuesday",'2'],
-    ["Wednesday",'3'],
-    ["Thursday",'4'],
-    ["Friday",'5'],
-    ["Saturday",'6'],
-     ["Sunday", '0']];
+    [["Monday", '2'],
+    ["Tuesday",'3'],
+    ["Wednesday",'4'],
+    ["Thursday",'5'],
+    ["Friday",'6'],
+    ["Saturday",'7'],
+     ["Sunday", '1']];
 
 
 Blockly.Language.send_notification = {

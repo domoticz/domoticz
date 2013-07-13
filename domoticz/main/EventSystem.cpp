@@ -293,12 +293,19 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
         {NULL, NULL}
     };
     
+    luaL_requiref(lua_state, "os", luaopen_os, 1);
+    
     const luaL_Reg *lib = lualibs;
     for(; lib->func != NULL; lib++)
     {
         lib->func(lua_state);
         lua_settop(lua_state, 0);
     }
+    
+    // reroute print library to domoticz logger
+    luaL_openlibs(lua_state);
+    lua_pushcfunction(lua_state, l_domoticz_print);
+    lua_setglobal(lua_state, "print");
     
     lua_createtable(lua_state, m_devicestates.size(), 0);
     
@@ -324,7 +331,7 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
             found = it->Conditions.find(IDString);
 
             if (found!=std::string::npos) {
-                std::string ifCondition = "result = 0; if " + it->Conditions + " then result = 1 end; return result";
+                std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; if " + it->Conditions + " then result = 1 end; return result";
                 if( luaL_dostring(lua_state, ifCondition.c_str()))
                 {
                     _log.Log(LOG_ERROR,"Lua script error: %s",lua_tostring(lua_state, -1));
@@ -371,17 +378,24 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
         std::vector<_tEventItem>::iterator it;
         for ( it = m_events.begin(); it != m_events.end(); ++it ) {
             // time rules will only run when time or date based critera are found
-            if ((it->Conditions.find("timeofday")!=std::string::npos) || (it->Conditions.find("os.date")!=std::string::npos)) {
-                _log.Log(LOG_NORM,"UI Event triggered: %s. Sadly, UI events based on time are not implemented yet",it->Name.c_str());
-                std::string ifCondition = "result = 0; if " + it->Conditions + " then result = 1 end; return result";
-                luaL_dostring(lua_state, ifCondition.c_str());
-                int ruleTrue = lua_tonumber(lua_state,-1);
-                if (ruleTrue) {
-                    _log.Log(LOG_NORM,"UI Event triggered: %s",it->Name.c_str());
+            if ((it->Conditions.find("timeofday")!=std::string::npos) || (it->Conditions.find("weekday")!=std::string::npos)) {
+                std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; if " + it->Conditions + " then result = 1 end; return result";
+                //_log.Log(LOG_NORM,"ifc: %s",ifCondition.c_str());
+                if( luaL_dostring(lua_state, ifCondition.c_str()))
+                {
+                    _log.Log(LOG_ERROR,"Lua script error: %s",lua_tostring(lua_state, -1));
+                }
+                else {
+                    int ruleTrue = lua_tonumber(lua_state,-1);
+                    if (ruleTrue) {
+                        _log.Log(LOG_NORM,"UI Event triggered: %s",it->Name.c_str());
+                
+                    }
                 }
             }
         }
     }
+    lua_close(lua_state);
 }
 
 

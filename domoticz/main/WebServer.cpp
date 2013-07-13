@@ -8076,13 +8076,9 @@ std::string CWebServer::GetJSonPage()
             
             // replace placeholder chars for url encode illegal ones
             
-            if(eventconditions.find("os.date(\"*")!= std::string::npos) {
-                stdreplace(eventconditions,"os.date(\"*", "os.date(\"%");
-            }
-            
             // this should be more selective...
             if (eventactions.find("SendNotification")!= std::string::npos) {
-                stdreplace(eventactions, "$", "#");
+                eventactions = stdreplace(eventactions, "$", "#");
             }
             
             

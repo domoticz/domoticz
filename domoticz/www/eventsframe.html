@@ -69,10 +69,9 @@
       }
       
       function parseXml(xml) {
-      	//os.date("%w") = weekdag
       	
       	var boolString = "";
-
+     
 		function parseLogicCompare(thisBlock){
 			var locOperand = opSymbol($($(thisBlock).children("title:first")).text());
 			var valueA = $(thisBlock).children("value[name='A']")[0];
@@ -81,10 +80,8 @@
 			var titleB = $(valueB).find("title")[0];
 			var compareString = "device["+$(titleA).text()+"]";
 			if ($(titleB).attr("name") == "State") {
-				var Action = 'Off';
-				if ($(titleB).text() == 1) { Action = 'On'};
 				compareString += locOperand;
-				compareString += '"'+Action+'"'; 
+				compareString += '"'+$(titleB).text()+'"'; 
 			}
 			return compareString;
 		}
@@ -94,49 +91,52 @@
 				var valueA = $(thisBlock).children("title[name='Time']")[0];
 				var hoursNoColon = $(valueA).text().replace(/\:/g, '');
 				var compareString = 'timeofday '+locOperand+' '+hoursNoColon;
-			  	return compareString;			
+			  	return compareString;		
 		}
 		
 		function parseLogicWeekday(thisBlock) {
 				var locOperand = opSymbol($($(thisBlock).children("title:first")).text());
 				var valueA = $(thisBlock).children("title[name='Weekday']")[0];
-				var compareString = 'os.date("*w") '+locOperand+' '+$(valueA).text(); // change % to *
+				var compareString = 'weekday '+locOperand+' '+$(valueA).text(); 
 			  	return compareString;
 		}		
 		
 		function parseValueBlock(thisBlock,locOperand,Sequence) {
 			var firstBlock = $(thisBlock).children("block:first");
 			if (firstBlock.attr("type")=="logic_compare") {
-				var locOperand = opSymbol($($(thisBlock).children("title:first")).text());
 				var compareString = parseLogicCompare(firstBlock);
 			  	return compareString;
 			}
 			else if (firstBlock.attr("type")=="logic_weekday") {
-				if(Sequence == "B") {boolString += locOperand }	
 				conditionstring = parseLogicWeekday(firstBlock);
-				boolString += conditionstring;
+				return conditionstring;
 			}
 			else if (firstBlock.attr("type")=="logic_timeofday") {
-				if(Sequence == "B") {boolString += locOperand }
 				conditionstring = parseLogicTimeOfDay(firstBlock);
-				boolString += conditionstring;
+				return conditionstring;
 			}
 			else if (firstBlock.attr("type")=="logic_operation") {
-				if(Sequence == "B") {boolString += locOperand }
 				parseLogicOperation(firstBlock);
 			}
 		}
 		
     	function parseLogicOperation(thisBlock){
-    		//boolString += "(";
-			//var locOperand = opSymbol($($(thisBlock).children("title:first")).text());
-			var locOperand = ' '+$($(thisBlock).children("title:first")).text().toLowerCase()+' ';
+    		var locOperand = ' '+$($(thisBlock).children("title:first")).text().toLowerCase()+' ';
 			var valueA = $(thisBlock).children("value[name='A']")[0];
 			var valueB = $(thisBlock).children("value[name='B']")[0];
 			conditionA = parseValueBlock(valueA,locOperand,"A");
 			conditionB = parseValueBlock(valueB,locOperand,"B");
 			var conditionstring = "("+conditionA+" "+locOperand+" "+conditionB+")";
-			if ((conditionA!=undefined)&&(conditionB!=undefined)) {boolString += conditionstring};
+			
+			if((conditionA!=undefined)&&(conditionB!=undefined)) {
+				if (boolString == "") {
+					{boolString += conditionstring};
+				}
+				else {
+					{boolString += locOperand}
+					{boolString += conditionstring}
+				}
+			} 
 		}
   
       	if ($(xml).children().length > 1) {
@@ -183,9 +183,7 @@
 	        	var titleB = $(valueB).find("title")[0];
 	        	var setString = "commandArray["+$(titleA).text()+"]";
 	        	if ($(titleB).attr("name") == "State") {
-	        		var Action = 'Off';
-	        		if ($(titleB).text() == 1) { Action = 'On'};
-	        		setString += '="'+Action+'"'; 
+	        		setString += '="'+$(titleB).text()+'"'; 
 	        	}
 	        	setArray.push(setString);
 		    }
