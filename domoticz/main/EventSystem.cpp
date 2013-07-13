@@ -331,7 +331,8 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
             found = it->Conditions.find(IDString);
 
             if (found!=std::string::npos) {
-                std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; if " + it->Conditions + " then result = 1 end; return result";
+                std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + it->Conditions + " then result = 1 end; return result";
+                //_log.Log(LOG_NORM,"ifc: %s",ifCondition.c_str());
                 if( luaL_dostring(lua_state, ifCondition.c_str()))
                 {
                     _log.Log(LOG_ERROR,"Lua script error: %s",lua_tostring(lua_state, -1));
@@ -379,7 +380,7 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
         for ( it = m_events.begin(); it != m_events.end(); ++it ) {
             // time rules will only run when time or date based critera are found
             if ((it->Conditions.find("timeofday")!=std::string::npos) || (it->Conditions.find("weekday")!=std::string::npos)) {
-                std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; if " + it->Conditions + " then result = 1 end; return result";
+                std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + it->Conditions + " then result = 1 end; return result";
                 //_log.Log(LOG_NORM,"ifc: %s",ifCondition.c_str());
                 if( luaL_dostring(lua_state, ifCondition.c_str()))
                 {

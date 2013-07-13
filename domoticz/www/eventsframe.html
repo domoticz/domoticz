@@ -88,9 +88,12 @@
 		
 		function parseLogicTimeOfDay(thisBlock) {
 				var locOperand = opSymbol($($(thisBlock).children("title:first")).text());
-				var valueA = $(thisBlock).children("title[name='Time']")[0];
-				var hoursNoColon = $(valueA).text().replace(/\:/g, '');
-				var compareString = 'timeofday '+locOperand+' '+hoursNoColon;
+				var valueA = $(thisBlock).children("title[name='Time']")[0];				
+				var hours=parseInt($(valueA).text().substr(0,2));
+				var minutes=parseInt($(valueA).text().substr(3,2));
+				var totalminutes=(hours*60)+minutes;
+				//var hoursNoColon = $(valueA).text().replace(/\:/g, '');
+				var compareString = 'timeofday '+locOperand+' '+totalminutes;
 			  	return compareString;		
 		}
 		
