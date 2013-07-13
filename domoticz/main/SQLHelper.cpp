@@ -732,7 +732,6 @@ bool CSQLHelper::OpenDatabase()
 	//Start background thread
 	if (!StartThread())
 		return false;
-
 	return true;
 }
 
@@ -3519,7 +3518,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			if (
 				(devType!=pTypeAirQuality)&&
 				(devType!=pTypeMoisture)&&
-				((devType!=pTypeGeneral)&&(subType!=sTypeVisibility))&&
+				(!((devType==pTypeGeneral)&&(subType==sTypeVisibility)))&&
 				(devType!=pTypeLux)&&
 				(devType!=pTypeUsage)
 				)
