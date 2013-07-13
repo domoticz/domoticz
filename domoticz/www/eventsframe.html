@@ -245,7 +245,7 @@
 			  	success: function(data) {
 				  	if (typeof data != 'undefined') {
 				  		if (data.status=="OK") {
-				  			alert("Event deleted");
+				  			generate_noty('alert', '<b>Event Deleted<br>'+$("#blockName").val(), 2000);
 				  			Blockly.mainWorkspace.clear();
 					  		$("#blockName").val("");
 				  			load_blocks();
