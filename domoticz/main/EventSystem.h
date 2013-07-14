@@ -81,6 +81,7 @@ private:
     void SendEventNotification(const std::string Subject, const std::string Body);
     void ScheduleEvent(int deviceID, std::string Action);
     void ScheduleEvent(std::string ID, std::string Action);
+    std::string reciprokalAction (std::string Action);
     std::vector<_tEventItem> m_events;
     std::vector<_tDeviceTemp> tempValues;
     std::vector<_tDeviceHum> humValues;

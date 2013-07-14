@@ -682,6 +682,17 @@ void CEventSystem::ScheduleEvent(int deviceID, std::string Action)
 void CEventSystem::ScheduleEvent(std::string deviceName, std::string Action)
 {
     
+    int suspendTimer = 0;
+    int aFind = Action.find(" FOR ");
+    if (aFind > 0) {
+        std::string delayString = Action.substr(aFind+5);
+        std::string newAction = Action.substr(0,aFind);
+        suspendTimer = atoi(delayString.c_str());
+        if (suspendTimer > 0) {
+            Action = newAction;
+        }
+    }
+    
     unsigned char _level = 0;
     if (Action.substr(0,9) == "Set Level") {
         _level = atoi(Action.substr(11).c_str());
@@ -704,10 +715,59 @@ void CEventSystem::ScheduleEvent(std::string deviceName, std::string Action)
         
         m_pMain->m_sql.AddTaskItem(tItem);
         
+        if (suspendTimer > 0) {
+            std::string reciprokal = reciprokalAction(Action);
+            if (reciprokal !="Undefined") {
+                DelayTime =  suspendTimer * 60;
+                _tTaskItem tItem=_tTaskItem::SwitchLightEvent(DelayTime,idx,reciprokal,_level);
+                m_pMain->m_sql.AddTaskItem(tItem);
+            }
+            else {
+                _log.Log(LOG_ERROR,"Can't find reciprokal action for %s", Action.c_str());
+            }
+        }
     }
     else {
         _log.Log(LOG_ERROR,"Could not find device '%s' mentioned in script", deviceName.c_str());
     }
+}
+
+std::string CEventSystem::reciprokalAction (std::string Action)
+{
+    std::map<std::string, std::string> mapObject;
+    int i;
+    std::string Counterpart = "Undefined";
+    
+    mapObject.insert(std::pair<std::string, std::string>("On", "Off"));
+    mapObject.insert(std::pair<std::string, std::string>("Open", "Closed"));
+    mapObject.insert(std::pair<std::string, std::string>("Dim", "Bright"));
+    mapObject.insert(std::pair<std::string, std::string>("All On", "All Off"));
+    mapObject.insert(std::pair<std::string, std::string>("Group On", "Group Off"));
+    mapObject.insert(std::pair<std::string, std::string>("Motion", "No Motion"));
+    mapObject.insert(std::pair<std::string, std::string>("Panic", "Panic End"));
+    mapObject.insert(std::pair<std::string, std::string>("Arm Away", "Disarm"));
+    mapObject.insert(std::pair<std::string, std::string>("Light On", "Light Off"));
+
+    std::map<std::string, std::string>::iterator p;
+    
+    p = mapObject.find(Action);
+    if(p != mapObject.end()) {
+        Counterpart = p->second;
+    }
+    else {
+        std::map<std::string, std::string>::const_iterator it;
+        for (it = mapObject.begin(); it != mapObject.end(); ++it)
+        {
+            if (it->second == Action)
+            {
+                Counterpart = it->first;
+                break;
+            }
+        }
+    }
+    
+    return Counterpart;
+    
 }
 
 std::string CEventSystem::nValueToWording (const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue,const std::string sValue)
