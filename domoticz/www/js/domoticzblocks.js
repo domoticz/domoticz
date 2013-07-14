@@ -106,8 +106,8 @@ Blockly.Language.domoticzcontrols_if = {
         .appendTitle(Blockly.LANG_CONTROLS_IF_MSG_IF);
     this.appendStatementInput('DO0')
         .appendTitle(Blockly.LANG_CONTROLS_IF_MSG_THEN);
-    this.setPreviousStatement(true);
-    this.setNextStatement(true);
+    //this.setPreviousStatement(true);
+    //this.setNextStatement(true);
   }
  };
 
