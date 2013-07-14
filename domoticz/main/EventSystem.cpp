@@ -173,6 +173,38 @@ void CEventSystem::GetCurrentStates()
     
 }
 
+void CEventSystem::GetCurrentMeasurementStates()
+{
+    tempValues.clear();
+    humValues.clear();
+    baroValues.clear();
+
+    typedef std::map<unsigned long long,_tDeviceStatus>::iterator it_type;
+    for(it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); iterator++) {
+        _tDeviceStatus sitem = iterator->second;
+        std::vector<std::string> splitresults;
+        StringSplit(sitem.sValue, ";", splitresults);
+        if (splitresults.size()>=1) {
+            _tDeviceTemp titem;
+            titem.ID  = sitem.ID;
+            titem.temperatureValue = splitresults[0];
+            tempValues.push_back(titem);
+        }
+        if (splitresults.size()>=2) {
+            _tDeviceHum hitem;
+            hitem.ID  = sitem.ID;
+            hitem.humidityValue = splitresults[1];
+            humValues.push_back(hitem);
+        }
+        if (splitresults.size()>=4) {
+            _tDeviceBaro bitem;
+            bitem.ID  = sitem.ID;
+            bitem.barometerValue = splitresults[3];
+            baroValues.push_back(bitem);
+        }
+    }
+}
+
 std::string CEventSystem::UpdateSingleState(unsigned long long ulDevID, std::string devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, std::string lastUpdate)
 {
     
@@ -317,8 +349,40 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
         lua_rawset( lua_state, -3 );
     }
     lua_setglobal(lua_state, "device");
+
+    GetCurrentMeasurementStates();
     
- 
+    if (tempValues.size()>0) {
+        lua_createtable(lua_state, tempValues.size(), 0);
+        std::vector<_tDeviceTemp>::iterator it;
+        for ( it = tempValues.begin(); it != tempValues.end(); ++it ) {
+            lua_pushnumber( lua_state, it->ID);
+            lua_pushstring( lua_state, it->temperatureValue.c_str() );
+            lua_rawset( lua_state, -3 );
+        }
+        lua_setglobal(lua_state, "temperaturedevice");
+    }
+    if (humValues.size()>0) {
+        lua_createtable(lua_state, humValues.size(), 0);
+        std::vector<_tDeviceHum>::iterator it;
+        for ( it = humValues.begin(); it != humValues.end(); ++it ) {
+            lua_pushnumber( lua_state, it->ID);
+            lua_pushstring( lua_state, it->humidityValue.c_str() );
+            lua_rawset( lua_state, -3 );
+        }
+        lua_setglobal(lua_state, "humiditydevice");
+    }
+    if (baroValues.size()>0) {
+        lua_createtable(lua_state, baroValues.size(), 0);
+        std::vector<_tDeviceBaro>::iterator it;
+        for ( it = baroValues.begin(); it != baroValues.end(); ++it ) {
+            lua_pushnumber( lua_state, it->ID);
+            lua_pushstring( lua_state, it->barometerValue.c_str() );
+            lua_rawset( lua_state, -3 );
+        }
+        lua_setglobal(lua_state, "barometerdevice");
+    }
+             
     if ((reason == "device") && (DeviceID >0)) {
         
         std::string IDString;
@@ -448,7 +512,42 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
         lua_rawset( lua_state, -3 );
         lua_setglobal(lua_state, "devicechanged");
     }
-
+ 
+    GetCurrentMeasurementStates();
+    
+    if (tempValues.size()>0) {
+        lua_createtable(lua_state, tempValues.size(), 0);
+        std::vector<_tDeviceTemp>::iterator it;
+        for ( it = tempValues.begin(); it != tempValues.end(); ++it ) {
+            lua_pushnumber( lua_state, it->ID);
+            lua_pushstring( lua_state, it->temperatureValue.c_str() );
+            lua_rawset( lua_state, -3 );
+        }
+        lua_setglobal(lua_state, "temperaturedevice");
+    }
+    if (humValues.size()>0) {
+        lua_createtable(lua_state, humValues.size(), 0);
+        std::vector<_tDeviceHum>::iterator it;
+        for ( it = humValues.begin(); it != humValues.end(); ++it ) {
+            lua_pushnumber( lua_state, it->ID);
+            lua_pushstring( lua_state, it->humidityValue.c_str() );
+            lua_rawset( lua_state, -3 );
+        }
+        lua_setglobal(lua_state, "humiditydevice");
+    }
+    if (baroValues.size()>0) {
+        lua_createtable(lua_state, baroValues.size(), 0);
+        std::vector<_tDeviceBaro>::iterator it;
+        for ( it = baroValues.begin(); it != baroValues.end(); ++it ) {
+            lua_pushnumber( lua_state, it->ID);
+            lua_pushstring( lua_state, it->barometerValue.c_str() );
+            lua_rawset( lua_state, -3 );
+        }
+        lua_setglobal(lua_state, "barometerdevice");
+    }
+  
+    
+    
     lua_createtable(lua_state, m_devicestates.size(), 0);
     typedef std::map<unsigned long long,_tDeviceStatus>::iterator it_type;
     for(it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); iterator++) {

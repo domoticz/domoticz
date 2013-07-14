@@ -29,6 +29,23 @@ class CEventSystem
         
 	};
 
+    struct _tDeviceTemp
+	{
+		unsigned long long ID;
+        std::string temperatureValue;
+	};
+    struct _tDeviceHum
+	{
+		unsigned long long ID;
+        std::string humidityValue;
+	};
+    struct _tDeviceBaro
+	{
+		unsigned long long ID;
+        std::string barometerValue;
+	};
+
+    
 public:
 	CEventSystem(void);
 	~CEventSystem(void);
@@ -52,6 +69,7 @@ private:
 	void Do_Work();
 	void ProcessMinute();
     void GetCurrentStates();
+    void GetCurrentMeasurementStates();
     std::string UpdateSingleState(unsigned long long ulDevID, std::string devname, const int nValue, const char* sValue,const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, std::string lastUpdate);
     void EvaluateEvent(const std::string reason);
 	void EvaluateEvent(const std::string reason, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording);
@@ -64,6 +82,9 @@ private:
     void ScheduleEvent(int deviceID, std::string Action);
     void ScheduleEvent(std::string ID, std::string Action);
     std::vector<_tEventItem> m_events;
+    std::vector<_tDeviceTemp> tempValues;
+    std::vector<_tDeviceHum> humValues;
+    std::vector<_tDeviceBaro> baroValues;
     std::map<unsigned long long,_tDeviceStatus> m_devicestates;
     std::string describeError(int resultcode);
     
