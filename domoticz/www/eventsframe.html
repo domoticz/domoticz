@@ -234,7 +234,7 @@
 	        	}
 	        	setArray.push(setString);
 		    }
-	      	if ($(this).attr('type') == 'logic_setdelayed') {
+	      	else if ($(this).attr('type') == 'logic_setdelayed') {
 		   		var valueA = $(this).find("value[name='A']")[0];
 	        	var titleA = $(valueA).find("title")[0];
 	        	var valueB = $(this).find("value[name='B']")[0];
@@ -244,6 +244,19 @@
 	        	var setString = "commandArray["+$(titleA).text()+"]";
 	        	if ($(titleB).attr("name") == "State") {
 	        		setString += '="'+$(titleB).text()+' FOR '+ $(titleC).text()+'"'; 
+	        	}
+	        	setArray.push(setString);
+		    }
+	      	else if ($(this).attr('type') == 'logic_setrandom') {
+		   		var valueA = $(this).find("value[name='A']")[0];
+	        	var titleA = $(valueA).find("title")[0];
+	        	var valueB = $(this).find("value[name='B']")[0];
+	        	var titleB = $(valueB).find("title")[0];
+	        	var valueC = $(this).find("value[name='C']")[0];
+	        	var titleC = $(valueC).find("title")[0];
+	        	var setString = "commandArray["+$(titleA).text()+"]";
+	        	if ($(titleB).attr("name") == "State") {
+	        		setString += '="'+$(titleB).text()+' RANDOM '+ $(titleC).text()+'"'; 
 	        	}
 	        	setArray.push(setString);
 		    }
@@ -425,6 +438,7 @@
 	   		<block type="logic_states"></block>
 	   		<block type="logic_set"></block>
 	   		<block type="logic_setdelayed"></block>
+	   		<block type="logic_setrandom"></block>
 	   		<block type="logic_timeofday"></block>
 	   		<block type="logic_weekday"></block>
 	   		<block type="math_number"></block>

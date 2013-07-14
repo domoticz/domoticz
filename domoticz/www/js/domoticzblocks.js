@@ -238,6 +238,24 @@ Blockly.Language.logic_setdelayed = {
   }
 };
 
+Blockly.Language.logic_setrandom = {
+  // Comparison operator.
+  init: function() {
+    this.setColour(120);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.appendValueInput('A')
+    	.appendTitle("Set");
+    this.appendValueInput('B')
+        .appendTitle("=");
+    this.appendValueInput('C')
+        .appendTitle("Random within");
+    this.appendDummyInput()
+	    .appendTitle('minutes');
+    this.setInputsInline(true);
+  }
+};
+
 Blockly.Language.logic_timeofday = {
   // Comparison operator.
   init: function() {

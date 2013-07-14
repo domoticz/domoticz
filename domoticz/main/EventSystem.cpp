@@ -683,12 +683,22 @@ void CEventSystem::ScheduleEvent(std::string deviceName, std::string Action)
 {
     
     int suspendTimer = 0;
+    int randomTimer = 0;
     int aFind = Action.find(" FOR ");
+    int rFind = Action.find(" RANDOM ");
     if (aFind > 0) {
         std::string delayString = Action.substr(aFind+5);
         std::string newAction = Action.substr(0,aFind);
         suspendTimer = atoi(delayString.c_str());
         if (suspendTimer > 0) {
+            Action = newAction;
+        }
+    }
+    if (rFind > 0) {
+        std::string delayString = Action.substr(rFind+8);
+        std::string newAction = Action.substr(0,rFind);
+        randomTimer = atoi(delayString.c_str());
+        if (randomTimer > 0) {
             Action = newAction;
         }
     }
@@ -709,6 +719,14 @@ void CEventSystem::ScheduleEvent(std::string deviceName, std::string Action)
     if (result.size()>0) {
         std::vector<std::string> sd=result[0];
         int DelayTime=1;
+        
+        if (randomTimer > 0) {
+            int rTime;
+            srand (time(NULL));
+            rTime = rand() % randomTimer + 1;
+            DelayTime = rTime * 60;
+        }
+        
         int idx = atoi(sd[0].c_str());
         
         _tTaskItem tItem=_tTaskItem::SwitchLightEvent(DelayTime,idx,Action,_level);
