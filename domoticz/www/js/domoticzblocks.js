@@ -6,6 +6,8 @@ Blockly.JavaScript = Blockly.Generator.get('JavaScript');
 
 var switches = [];
 var temperatures = [];
+var humidity = [];
+var barometer = [];
 var weather = [];
 var utilities = [];
 var scenes = [];
@@ -30,7 +32,15 @@ $.ajax({
 	success: function(data) {
 		if (typeof data.result != 'undefined') {
 			$.each(data.result, function(i,item){
-				temperatures.push([item.Name,item.idx])
+				if (item.Type.toLowerCase().indexOf("temp") >= 0) {
+					temperatures.push([item.Name,item.idx])
+				}
+				if (item.Type.toLowerCase().indexOf("hum") >= 0) {
+					humidity.push([item.Name,item.idx])
+				}
+				if (item.Type.toLowerCase().indexOf("baro") >= 0) {
+					barometer.push([item.Name,item.idx])
+				}
 			})
 		}
 	}
@@ -108,6 +118,37 @@ Blockly.Language.temperaturevariables = {
     this.setColour(330);
     this.appendDummyInput()
         .appendTitle(new Blockly.FieldDropdown(temperatures), 'Temperature');
+    this.appendDummyInput()
+	    .appendTitle('temp.','TemperatureLabel');
+	this.setInputsInline(true);
+    this.setOutput(true, null);
+  }
+ };
+
+Blockly.Language.humidityvariables = {
+  // Variable getter.
+  category: null,  // Variables are handled specially.
+  init: function() {
+    this.setColour(226);
+    this.appendDummyInput()
+        .appendTitle(new Blockly.FieldDropdown(humidity), 'Humidity');
+    this.appendDummyInput()
+	    .appendTitle('hum.','TemperatureLabel');
+    this.setInputsInline(true);
+    this.setOutput(true, null);
+  }
+ };
+
+Blockly.Language.barometervariables = {
+  // Variable getter.
+  category: null,  // Variables are handled specially.
+  init: function() {
+    this.setColour(68);
+    this.appendDummyInput()
+        .appendTitle(new Blockly.FieldDropdown(barometer), 'Barometer');
+    this.appendDummyInput()
+	    .appendTitle('baro.','TemperatureLabel');
+    this.setInputsInline(true);
     this.setOutput(true, null);
   }
  };

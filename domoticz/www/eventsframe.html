@@ -80,15 +80,54 @@
 		function parseLogicCompare(thisBlock){
 			var locOperand = opSymbol($($(thisBlock).children("title:first")).text());
 			var valueA = $(thisBlock).children("value[name='A']")[0];
-			var titleA = $(valueA).find("title")[0];
-			var valueB = $(thisBlock).children("value[name='B']")[0];
-			var titleB = $(valueB).find("title")[0];
-			var compareString = "device["+$(titleA).text()+"]";
-			if ($(titleB).attr("name") == "State") {
-				compareString += locOperand;
-				compareString += '"'+$(titleB).text()+'"'; 
+			var variableType = $(valueA).children("block:first").attr("type");
+			if (variableType == "switchvariables") {
+				var titleA = $(valueA).find("title")[0];
+				var valueB = $(thisBlock).children("value[name='B']")[0];
+				var titleB = $(valueB).find("title")[0];
+				var compareString = "device["+$(titleA).text()+"]";
+				if ($(titleB).attr("name") == "State") {
+					compareString += locOperand;
+					compareString += '"'+$(titleB).text()+'"'; 
+				}
+				return compareString;
 			}
-			return compareString;
+			else if (variableType == "temperaturevariables") {
+				var titleA = $(valueA).find("title")[0];
+				var valueB = $(thisBlock).children("value[name='B']")[0];
+				var titleB = $(valueB).find("title")[0];
+				var compareString = "temperaturedevice["+$(titleA).text()+"]";
+				if ($(titleB).attr("name") == "NUM") {
+					compareString += locOperand;
+					compareString += '"'+$(titleB).text()+'"'; 
+				}
+				return compareString;						
+			}
+			else if (variableType == "humidityvariables") {
+				var titleA = $(valueA).find("title")[0];
+				var valueB = $(thisBlock).children("value[name='B']")[0];
+				var titleB = $(valueB).find("title")[0];
+				var compareString = "humiditydevice["+$(titleA).text()+"]";
+				if ($(titleB).attr("name") == "NUM") {
+					compareString += locOperand;
+					compareString += '"'+$(titleB).text()+'"'; 
+				}
+				return compareString;						
+			}
+			else if (variableType == "barometervariables") {
+				var titleA = $(valueA).find("title")[0];
+				var valueB = $(thisBlock).children("value[name='B']")[0];
+				var titleB = $(valueB).find("title")[0];
+				var compareString = "barometerdevice["+$(titleA).text()+"]";
+				if ($(titleB).attr("name") == "NUM") {
+					compareString += locOperand;
+					compareString += '"'+$(titleB).text()+'"'; 
+				}
+				return compareString;						
+			}
+			else {
+				return "unknown comparevariable "+variableType;
+			}
 		}
 		
 		function parseLogicTimeOfDay(thisBlock) {
@@ -387,6 +426,12 @@
 		   	<category name="Temperature">
 			   	<block type="temperaturevariables"></block>
 		   	</category>	   		   		
+		   	<category name="Humidity">
+			   	<block type="humidityvariables"></block>
+		   	</category>	
+		   	<category name="Barometer">
+			   	<block type="barometervariables"></block>
+		   	</category>	
 		   	<category name="Weather">
 			   	<block type="weathervariables"></block>
 		   	</category>
