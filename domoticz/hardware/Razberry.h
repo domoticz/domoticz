@@ -13,6 +13,7 @@ enum _eZWaveDeviceType
 	ZDTYPE_SENSOR_TEMPERATURE,
 	ZDTYPE_SENSOR_HUMIDITY,
 	ZDTYPE_SENSOR_LIGHT,
+	ZDTYPE_SENSOR_SETPOINT,
 };
 
 class CRazberry : public CDomoticzHardwareBase

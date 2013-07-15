@@ -961,7 +961,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 						(dType!=pTypeMoisture)&&
 						(dType!=pTypeLux)&&
 						(dType!=pTypeUsage)&&
-						(!((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXCounter)))
+						(!((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXCounter)))&&
+						(!((dType==pTypeThermostat)&&(dSubType==sTypeThermSetpoint)))
 						)
 						continue;
 				}
@@ -1988,6 +1989,17 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				root["result"][ii]["Data"]=szTmp;
 				root["result"][ii]["Desc"]=Get_Moisture_Desc(nValue);
 				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+			}
+			else if (dType == pTypeThermostat)
+			{
+				if (sTypeThermSetpoint)
+				{
+					sprintf(szTmp,"%.1f",atof(sValue.c_str()));
+					root["result"][ii]["Data"]=szTmp;
+					root["result"][ii]["SetPoint"]=(float)atof(szTmp);
+					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+					root["result"][ii]["TypeImg"]="override_mini";
+				}
 			}
 			else if (dType == pTypeGeneral)
 			{
@@ -7780,7 +7792,8 @@ std::string CWebServer::GetJSonPage()
 		std::string addjmulti=m_pWebEm->FindValue("addjmulti");
 		std::string addjvalue2=m_pWebEm->FindValue("addjvalue2");
 		std::string addjmulti2=m_pWebEm->FindValue("addjmulti2");
-		
+		std::string setPoint=m_pWebEm->FindValue("setpoint");
+
 		int switchtype=-1;
 		if (sswitchtype!="")
 			switchtype=atoi(sswitchtype.c_str());
@@ -7793,18 +7806,33 @@ std::string CWebServer::GetJSonPage()
 
 		szQuery.clear();
 		szQuery.str("");
-		if (name=="")
+
+		if (setPoint!="")
 		{
-			szQuery << "UPDATE DeviceStatus SET Used=" << used << " WHERE (ID == " << idx << ")";
+			szQuery << "UPDATE DeviceStatus SET Used=" << used << ", sValue='" << setPoint << "' WHERE (ID == " << idx << ")";
 		}
 		else
 		{
-			if (switchtype==-1)
-				szQuery << "UPDATE DeviceStatus SET Used=" << used << ", Name='" << name << "' WHERE (ID == " << idx << ")";
+
+			if (name=="")
+			{
+				szQuery << "UPDATE DeviceStatus SET Used=" << used << " WHERE (ID == " << idx << ")";
+			}
 			else
-				szQuery << "UPDATE DeviceStatus SET Used=" << used << ", Name='" << name << "', SwitchType=" << switchtype << " WHERE (ID == " << idx << ")";
+			{
+				if (switchtype==-1)
+					szQuery << "UPDATE DeviceStatus SET Used=" << used << ", Name='" << name << "' WHERE (ID == " << idx << ")";
+				else
+					szQuery << "UPDATE DeviceStatus SET Used=" << used << ", Name='" << name << "', SwitchType=" << switchtype << " WHERE (ID == " << idx << ")";
+			}
 		}
 		result=m_pMain->m_sql.query(szQuery.str());
+
+		if (setPoint!="")
+		{
+			m_pMain->SetSetPoint(idx,(float)atof(setPoint.c_str()));
+		}
+
 		if (addjvalue!="")
 		{
 			double faddjvalue=atof(addjvalue.c_str());

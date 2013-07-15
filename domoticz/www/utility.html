@@ -19,6 +19,19 @@
 		    </table>
     </form>
 </div>
+<div id="dialog-editsetpointdevice" title="Edit Meter Device">
+    <form>
+        <table class="display" id="metertable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="width:60px"><label for="name">Name: </label></td>
+          <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
+        <tr>
+          <td align="right"><label>Value: </label></td>
+          <td><input type="text" id="setpoint" style="width: 50px; padding: .4em;" class="text ui-widget-content ui-corner-all" /> &deg; C</td>
+		</tr>
+		</table>
+    </form>
+</div>
 
 <div id="utilitycontent">
 </div>
@@ -156,6 +169,15 @@ function EditMeterDevice(idx,name,switchtype)
   $("#dialog-editmeterdevice #devicename").val(name);
   $("#dialog-editmeterdevice #combometertype").val(switchtype);
   $("#dialog-editmeterdevice" ).dialog( "open" );
+}
+
+function EditSetPoint(idx,name,setpoint)
+{
+	clearInterval($.myglobals.refreshTimer);
+	$.devIdx=idx;
+	$("#dialog-editsetpointdevice #devicename").val(name);
+	$("#dialog-editsetpointdevice #setpoint").val(setpoint);
+	$("#dialog-editsetpointdevice" ).dialog( "open" );
 }
 
 function AddUtilityDevice()
@@ -3162,6 +3184,11 @@ function RefreshUtilities()
 				status=item.Data;
 				bigtext=item.Data;
             }
+            else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
+				img='<img src="images/override.png" height="48">';
+				status=item.Data + '\u00B0 C';
+				bigtext=item.Data + '\u00B0 C';
+            }
             if (typeof item.Usage != 'undefined') {
 							status+=", Actual: " + item.Usage;
 							bigtext=item.Usage;
@@ -3280,6 +3307,9 @@ function ShowUtilities()
 				else if (item.Type == "Usage") {
 				  xhtm+=item.Data;
 				}
+				else if (item.Type == "Thermostat") {
+				  xhtm+=item.Data + '\u00B0 C';
+				}
 				xhtm+='</td>\n';
           xhtm+='\t      <td id="img"><img src="images/';
             var status="";
@@ -3310,6 +3340,10 @@ function ShowUtilities()
             else if (item.Type == "Usage") {
               xhtm+='current48.png" height="48"></td>\n';
               status=item.Data;
+            }
+            else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
+              xhtm+='override.png" height="48"></td>\n';
+              status=item.Data + '\u00B0 C';
             }
             if (typeof item.Usage != 'undefined') {
 							status+=", Actual: " + item.Usage;
@@ -3391,6 +3425,11 @@ function ShowUtilities()
 				xhtm+='<a class="btnsmall" onclick="ShowCounterLog(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
 				if (window.my_config.userrights==2) {
 					xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
+				}
+          }
+          else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
+				if (window.my_config.userrights==2) {
+					xhtm+='<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + item.Name + '\', ' + item.SetPoint + ');" data-i18n="Edit">Edit</a> ';
 				}
           }
           else {
@@ -3551,6 +3590,62 @@ $(document).ready(function() {
                       $( this ).dialog( "close" );
                       $.ajax({
                          url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editmeterdevice #devicename").val() + '&used=false',
+                         async: false, 
+                         dataType: 'json',
+                         success: function(data) {
+                            ShowUtilities();
+                         }
+                      });
+                      
+                  }
+              },
+              Cancel: function() {
+                  $( this ).dialog( "close" );
+              }
+          },
+          open: function() {
+              $(this).keypress(function(e) {
+                if (e.keyCode == $.ui.keyCode.ENTER) {
+                  e.preventDefault();
+                  $(this).parent().find("button:eq(0)").trigger("click");
+                }
+              });
+          },
+          close: function() {
+            $( this ).dialog( "close" );
+          }
+    });
+
+    $( "#dialog-editsetpointdevice" ).dialog({
+          autoOpen: false,
+          width: 370,
+          height: 230,
+          modal: true,
+          resizable: false,
+          buttons: {
+              "Update": function() {
+                  var bValid = true;
+                  bValid = bValid && checkLength( $("#dialog-editsetpointdevice #devicename"), 2, 100 );
+                  if ( bValid ) {
+                      $( this ).dialog( "close" );
+                      $.ajax({
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editsetpointdevice #devicename").val() + '&setpoint=' + $("#dialog-editsetpointdevice #setpoint").val() + '&used=true',
+                         async: false, 
+                         dataType: 'json',
+                         success: function(data) {
+                            ShowUtilities();
+                         }
+                      });
+                      
+                  }
+              },
+              "Remove Device": function() {
+                  var bValid = false;
+                  bValid=(confirm($.i18n("Are you sure to remove this Device?"))==true);
+                  if ( bValid ) {
+                      $( this ).dialog( "close" );
+                      $.ajax({
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editsetpointdevice #devicename").val() + '&used=false',
                          async: false, 
                          dataType: 'json',
                          success: function(data) {

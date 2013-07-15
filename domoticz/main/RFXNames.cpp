@@ -327,6 +327,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeMoisture, "Moisture" , "moisture" },
 		{ pTypeSolarRadiation, "Solar Radiation" , "radiation" },
 		{ pTypeGeneral, "General" , "General" },
+		{ pTypeThermostat, "Thermostat" , "thermostat" },
 		
 		{  0,NULL,NULL }
 	};
@@ -496,6 +497,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 
 		{ pTypeGeneral, sTypeVisibility, "Visibility" },
 		
+		{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
+		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
 
 		{  0,0,NULL }
 	};

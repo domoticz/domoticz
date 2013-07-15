@@ -48,6 +48,9 @@ public:
 	bool SwitchScene(const unsigned long long idx, std::string switchcmd);
 	void CheckSceneCode(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int nValue, const char* sValue);
 
+	bool SetSetPoint(const std::string idx, const float TempValue);
+	bool SetSetPointInt(const std::vector<std::string> sd, const float TempValue);
+
 	bool SetRFXCOMHardwaremodes(const int HardwareID, const unsigned char Mode1,const unsigned char Mode2,const unsigned char Mode3,const unsigned char Mode4,const unsigned char Mode5);
 
 	bool GetSunSettings();
@@ -175,4 +178,5 @@ private:
 	unsigned long long decode_Lux(const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_Moisture(const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_General(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Thermostat(const int HwdID, const tRBUF *pResponse);
 };

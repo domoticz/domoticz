@@ -115,7 +115,7 @@ const std::string CRazberry::GetControllerURL()
 const std::string CRazberry::GetRunURL(const std::string cmd)
 {
 	std::stringstream sUrl;
-	if (m_username!="")
+	if (m_username=="")
 		sUrl << "http://" << m_ipaddress << ":" << m_port << "/ZWaveAPI/Run/" << cmd;
 	else
 		sUrl << "http://"  << m_username << ":" << m_password << "@" << m_ipaddress << ":" << m_port << "/ZWaveAPI/Run/" << cmd;
@@ -295,6 +295,7 @@ void CRazberry::parseDevices(const Json::Value devroot)
 				_device.intvalue=instance["commandClasses"]["48"]["data"]["level"]["value"].asInt();
 				InsertOrUpdateDevice(_device,true);
 			}
+
 			if (instance["commandClasses"]["49"].empty()==false)
 			{
 				_device.commandClassID=49;
@@ -391,6 +392,25 @@ void CRazberry::parseDevices(const Json::Value devroot)
 					InsertOrUpdateDevice(_device,false);
 				}
 			}
+
+			// Thermostat Set Point
+			if (instance["commandClasses"]["67"].empty()==false)
+			{
+				const Json::Value inVal=instance["commandClasses"]["67"]["data"];
+				for (Json::Value::iterator itt2=inVal.begin(); itt2!=inVal.end(); ++itt2)
+				{
+					const std::string sKey=itt2.key().asString();
+					if (!isInt(sKey))
+						continue; //not a scale
+					_device.floatValue=(*itt2)["val"]["value"].asFloat();
+					_device.commandClassID=67;
+					_device.scaleMultiply=1;
+					_device.devType = ZDTYPE_SENSOR_SETPOINT;
+					InsertOrUpdateDevice(_device,false);
+				}
+			}
+
+			//COMMAND_CLASS_CLIMATE_CONTROL_SCHEDULE 70
 		}
 	}
 }
@@ -500,6 +520,17 @@ void CRazberry::UpdateDevice(const std::string path, const Json::Value obj)
 	case ZDTYPE_SENSOR_LIGHT:
 		//switch
 		pDevice->floatValue=obj["val"]["value"].asFloat();
+		break;
+	case ZDTYPE_SENSOR_SETPOINT:
+		//meters
+		if (obj["val"]["value"].empty()==false)
+		{
+			pDevice->floatValue=obj["val"]["value"].asFloat();
+		}
+		else if (obj["value"].empty()==false)
+		{
+			pDevice->floatValue=obj["value"].asFloat();
+		}
 		break;
 	}
 
@@ -680,6 +711,18 @@ void CRazberry::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		lmeter.fLux=pDevice->floatValue;
 		sDecodeRXMessage(this, (const unsigned char *)&lmeter);
 	}
+	else if (pDevice->devType==ZDTYPE_SENSOR_SETPOINT)
+	{
+		_tThermostat tmeter;
+		tmeter.subtype=sTypeThermSetpoint;
+		tmeter.id1=ID1;
+		tmeter.id2=ID2;
+		tmeter.id3=ID3;
+		tmeter.id4=ID4;
+		tmeter.dunit=1;
+		tmeter.temp=pDevice->floatValue;
+		sDecodeRXMessage(this, (const unsigned char *)&tmeter);
+	}
 }
 
 CRazberry::_tZWaveDevice* CRazberry::FindDevice(int nodeID, int instanceID, _eZWaveDeviceType devType)
@@ -721,7 +764,11 @@ void CRazberry::WriteToHardware(const char *pdata, const unsigned char length)
 	const _tZWaveDevice* pDevice=NULL;
 
 	tRBUF *pSen=(tRBUF*)pdata;
-	if (pSen->LIGHTING2.packettype=pTypeLighting2)
+
+	unsigned char packettype=pSen->ICMND.packettype;
+	unsigned char subtype=pSen->ICMND.subtype;
+
+	if (packettype==pTypeLighting2)
 	{
 		//light command
 
@@ -763,6 +810,23 @@ void CRazberry::WriteToHardware(const char *pdata, const unsigned char length)
 		std::stringstream sstr;
 		sstr << "devices[" << nodeID << "].instances[" << instanceID << "].commandClasses[" << pDevice->commandClassID << "].Set(" << svalue << ")";
 		RunCMD(sstr.str());
+	}
+	else if ((packettype==pTypeThermostat)&&(subtype==sTypeThermSetpoint))
+	{
+		//Set Point
+		_tThermostat *pMeter=(_tThermostat *)pSen;
+
+		int nodeID=(pMeter->id2<<8)|pMeter->id3;
+		int instanceID=pMeter->id4;
+
+		//find normal
+		pDevice=FindDevice(nodeID,instanceID,ZDTYPE_SENSOR_SETPOINT);
+		if (pDevice)
+		{
+			std::stringstream sstr;
+			sstr << "devices[" << nodeID << "].instances[" << instanceID << "].commandClasses[" << pDevice->commandClassID << "].Set(1," << pMeter->temp << ",null)";
+			RunCMD(sstr.str());
+		}
 	}
 }
 

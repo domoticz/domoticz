@@ -11,6 +11,11 @@
 #define wsbaroforcast_some_clouds 0x05
 #define wsbaroforcast_sunny 0x06
 
+#define pTypeThermostat			0xF2
+#define sTypeThermSetpoint		0x01
+#define sTypeThermTemperature	0x02
+
+
 #define pTypeGeneral	0xF3
 #define sTypeVisibility	0x01
 
@@ -54,6 +59,35 @@
 //Z-Wave
 //#define pTypeENERGY 0x5A
 #define sTypeZWaveUsage 0xA0
+
+typedef struct _tThermostat {
+	unsigned char len;
+	unsigned char type;
+	unsigned char subtype;
+	BYTE	id1;
+	BYTE	id2;
+	BYTE	id3;
+	BYTE	id4;
+	unsigned char dunit;
+	float temp;
+	float temp1;
+	float temp2;
+	float temp3;
+	unsigned char utemp1;
+	unsigned char utemp2;
+	unsigned char utemp3;
+
+	_tThermostat()
+	{
+		len=sizeof(_tThermostat)-1;
+		type=pTypeThermostat;
+		subtype=sTypeThermTemperature;
+		id1=1;
+		id2=0;
+		id3=0;
+		id4=0;
+	}
+} tThermostat;
 
 typedef struct _tTempBaro {
 	unsigned char len;

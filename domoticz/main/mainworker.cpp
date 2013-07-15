@@ -939,6 +939,10 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			WriteMessage("Remote control & IR",false);
 			DeviceRowIdx=decode_Remote(HwdID, (tRBUF *)pRXCommand);
 			break;
+		case pTypeThermostat: //own type
+			WriteMessage("Thermostat",false);
+			DeviceRowIdx=decode_Thermostat(HwdID, (tRBUF *)pRXCommand);
+			break;
 		case pTypeThermostat1:
 			WriteMessage("Thermostat 1",false);
 			DeviceRowIdx=decode_Thermostat1(HwdID, (tRBUF *)pRXCommand);
@@ -6159,6 +6163,56 @@ unsigned long long MainWorker::decode_Moisture(const int HwdID, const tRBUF *pRe
 	return DevRowIdx;
 }
 
+unsigned long long MainWorker::decode_Thermostat(const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[200];
+	std::string devname;
+
+	const _tThermostat *pMeter=(const _tThermostat*)pResponse;
+	unsigned char devType=pMeter->type;
+	unsigned char subType=pMeter->subtype;
+	sprintf(szTmp,"%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
+	std::string ID=szTmp;
+	unsigned char Unit=pMeter->dunit;
+	unsigned char cmnd=0;
+	unsigned char SignalLevel=12;
+	unsigned char BatteryLevel = 255;
+
+	switch (pMeter->subtype)
+	{
+	case sTypeThermSetpoint:
+		sprintf(szTmp,"%.1f",pMeter->temp);
+		break;
+	default:
+		sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
+		WriteMessage(szTmp);
+		return -1;
+	}
+
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
+	PrintDeviceName(devname);
+
+	//m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->fLux);
+
+	if (m_verboselevel == EVBL_ALL)
+	{
+		switch (pMeter->subtype)
+		{
+		case sTypeThermSetpoint:
+			WriteMessage("subtype       = SetPoint");
+
+			sprintf(szTmp,"Temp = %.1f", pMeter->temp);
+			WriteMessage(szTmp);
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+	}
+	return DevRowIdx;
+}
+
 unsigned long long MainWorker::decode_General(const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[200];
@@ -6762,6 +6816,53 @@ bool MainWorker::SwitchLight(std::string idx, std::string switchcmd,std::string 
 	return SwitchLight(ID,switchcmd,atoi(level.c_str()));
 }
 
+bool MainWorker::SetSetPointInt(const std::vector<std::string> sd, const float TempValue)
+{
+	int HardwareID = atoi(sd[0].c_str());
+	int hindex=FindDomoticzHardware(HardwareID);
+	if (hindex==-1)
+		return false;
+
+	unsigned long ID;
+	std::stringstream s_strid;
+	s_strid << std::hex << sd[1];
+	s_strid >> ID;
+	unsigned char ID1=(unsigned char)((ID&0xFF000000)>>24);
+	unsigned char ID2=(unsigned char)((ID&0x00FF0000)>>16);
+	unsigned char ID3=(unsigned char)((ID&0x0000FF00)>>8);
+	unsigned char ID4=(unsigned char)((ID&0x000000FF));
+
+	unsigned char Unit=atoi(sd[2].c_str());
+	unsigned char dType=atoi(sd[3].c_str());
+	unsigned char dSubType=atoi(sd[4].c_str());
+	_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
+
+	_tThermostat tmeter;
+	tmeter.subtype=sTypeThermSetpoint;
+	tmeter.id1=ID1;
+	tmeter.id2=ID2;
+	tmeter.id3=ID3;
+	tmeter.id4=ID4;
+	tmeter.dunit=1;
+	tmeter.temp=TempValue;
+	WriteToHardware(HardwareID,(const char*)&tmeter,sizeof(_tThermostat));
+	return true;
+}
+
+bool MainWorker::SetSetPoint(const  std::string idx, const float TempValue)
+{
+	//Get Device details
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
+	result=m_sql.query(szQuery.str());
+	if (result.size()<1)
+		return false;
+
+	std::vector<std::string> sd=result[0];
+	return SetSetPointInt(sd,TempValue);
+}
+
 bool MainWorker::SwitchScene(const std::string idx, std::string switchcmd)
 {
 	unsigned long long ID;
@@ -6979,3 +7080,4 @@ void MainWorker::LoadSharedUsers()
 	m_sharedserver.SetRemoteUsers(users);
 	m_sharedserver.stopAllClients();
 }
+

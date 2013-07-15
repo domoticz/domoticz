@@ -18,6 +18,7 @@ Version 1.0.xxx (July xxth 2013)
 - Implemented: Scenes, Dimmer Level
 - Fixed: Drag/Drop of devices
 - Fixed: YouLess day measurement
+- Implemented: Z-Wave, thermostat SetPoint
 
 Version 1.0.762 (July 1th 2013)
 - Changed: Motion Sensors, Off delay now sends 'Off' to Lighting 1/6 devices, and 'No Motion' to X10 motion sensors
