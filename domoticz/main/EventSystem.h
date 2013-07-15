@@ -56,6 +56,8 @@ public:
 
 	void LoadEvents();
 	bool ProcessDevice(const int HardwareID, const unsigned long long ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string devname);
+    void RemoveSingleState(int ulDevID);
+    
 private:
 	//lua_State	*m_pLUA;
 	MainWorker *m_pMain;
@@ -88,6 +90,7 @@ private:
     std::vector<_tDeviceHum> humValues;
     std::vector<_tDeviceBaro> baroValues;
     std::map<unsigned long long,_tDeviceStatus> m_devicestates;
+    void reportMissingDevice (int deviceID, std::string EventName, unsigned long long eventID);
     std::string describeError(int resultcode);
     
 };

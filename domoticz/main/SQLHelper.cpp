@@ -4013,6 +4013,9 @@ void CSQLHelper::DeleteDevice(const std::string idx)
 
 	//and now delete all records in the DeviceStatus table itself
 	sprintf(szTmp,"DELETE FROM DeviceStatus WHERE (ID == %s)",idx.c_str());
+    //notify eventsystem device is no longer present
+    m_pMain->m_eventsystem.RemoveSingleState(atoi(idx.c_str()));
+    
 	query(szTmp);
 }
 

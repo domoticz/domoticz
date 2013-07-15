@@ -199,6 +199,13 @@ void CEventSystem::GetCurrentMeasurementStates()
     }
 }
 
+void CEventSystem::RemoveSingleState(int ulDevID) {
+    
+    //_log.Log(LOG_NORM,"deleted device %d",ulDevID);
+    m_devicestates.erase(ulDevID);
+
+}
+
 std::string CEventSystem::UpdateSingleState(unsigned long long ulDevID, std::string devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, std::string lastUpdate)
 {
     
@@ -423,7 +430,12 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
                                 std::string deviceName = csubstr.substr(sPos,sDiff);
                                 int deviceNo = atoi(deviceName.c_str());
                                 if (deviceNo) {
-                                    ScheduleEvent(deviceNo,doWhat);
+                                    if(m_devicestates.count(deviceNo)) {
+                                        ScheduleEvent(deviceNo,doWhat);
+                                    }
+                                    else {
+                                        reportMissingDevice (deviceNo, it->Name, it->ID);
+                                    }
                                 }
                                 else {
                                     std::string devNameNoQuotes = deviceName.substr(1,deviceName.size()-2);
@@ -475,7 +487,12 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
                                     std::string deviceName = csubstr.substr(sPos,sDiff);
                                     int deviceNo = atoi(deviceName.c_str());
                                     if (deviceNo) {
-                                        ScheduleEvent(deviceNo,doWhat);
+                                        if(m_devicestates.count(deviceNo)) {
+                                            ScheduleEvent(deviceNo,doWhat);
+                                        }
+                                        else {
+                                            reportMissingDevice (deviceNo, it->Name, it->ID);
+                                        }
                                     }
                                     else {
                                         std::string devNameNoQuotes = deviceName.substr(1,deviceName.size()-2);
@@ -483,6 +500,7 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
                                             SendEventNotification(doWhat.substr(0,doWhat.find('#')), doWhat.substr(doWhat.find('#')+1));
                                         }
                                     }
+
                                 }
                             }
                         }
@@ -877,6 +895,16 @@ int CEventSystem::l_domoticz_print(lua_State* lua_state) {
     }
     
     return 0;
+}
+    
+void CEventSystem::reportMissingDevice (int deviceID, std::string eventName, unsigned long long eventID)
+{
+    _log.Log(LOG_ERROR,"Device no. '%d' used in event '%s' no longer exists, disabling event!", deviceID ,eventName.c_str());
+    
+    std::stringstream szQuery;
+    int eventStatus = 2;
+    szQuery << "UPDATE Events SET Status ='" << eventStatus << "' WHERE (ID == '" << eventID << "')";
+    m_pMain->m_sql.query(szQuery.str());
 }
 
 std::string CEventSystem::describeError(int resultcode)
