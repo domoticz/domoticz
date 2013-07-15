@@ -79,7 +79,7 @@ void CEventSystem::LoadEvents()
 
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ID,Name,Conditions,Actions FROM Events ORDER BY ID";
+	szQuery << "SELECT ID,Name,Conditions,Actions,Status FROM Events ORDER BY ID";
 	result=m_pMain->m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -89,7 +89,7 @@ void CEventSystem::LoadEvents()
 		{
 			std::vector<std::string> sd=*itt;
             
-			if (sd.size()==4)
+			if (sd.size()==5)
 			{
 				_tEventItem eitem;
 				std::stringstream s_str( sd[0] );
@@ -97,6 +97,7 @@ void CEventSystem::LoadEvents()
 				eitem.Name		= sd[1];
 				eitem.Conditions	= sd[2];
 				eitem.Actions		= sd[3];
+                eitem.EventStatus = atoi(sd[4].c_str());
 				m_events.push_back(eitem);
 			}
 			else
@@ -132,13 +133,6 @@ void CEventSystem::Do_Work()
 
 }
 
-
-void CEventSystem::ProcessMinute()
-{
-    
-	EvaluateEvent("time");
-
-}
 
 void CEventSystem::GetCurrentStates()
 {
@@ -259,6 +253,12 @@ bool CEventSystem::ProcessDevice(const int HardwareID, const unsigned long long 
 	return true;
 }
 
+void CEventSystem::ProcessMinute()
+{
+    
+	EvaluateEvent("time");
+    
+}
 
 void CEventSystem::EvaluateEvent(const std::string reason)
 {
@@ -382,19 +382,22 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
         }
         lua_setglobal(lua_state, "barometerdevice");
     }
-             
+    
+    
     if ((reason == "device") && (DeviceID >0)) {
         
         std::string IDString;
         std::size_t found;
+        bool eventActive = false;
         
         std::vector<_tEventItem>::iterator it;
         for ( it = m_events.begin(); it != m_events.end(); ++it ) {
     
             IDString = "["+boost::lexical_cast<std::string>(DeviceID)+"]";
             found = it->Conditions.find(IDString);
+            if (it->EventStatus == 1) { eventActive = true;};
 
-            if (found!=std::string::npos) {
+            if (eventActive && found!=std::string::npos) {
                 std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + it->Conditions + " then result = 1 end; return result";
                 //_log.Log(LOG_NORM,"ifc: %s",ifCondition.c_str());
                 if( luaL_dostring(lua_state, ifCondition.c_str()))
@@ -439,22 +442,50 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
         
         std::string IDString;
         std::size_t found;
+        bool eventActive = false;
         
         std::vector<_tEventItem>::iterator it;
         for ( it = m_events.begin(); it != m_events.end(); ++it ) {
-            // time rules will only run when time or date based critera are found
-            if ((it->Conditions.find("timeofday")!=std::string::npos) || (it->Conditions.find("weekday")!=std::string::npos)) {
-                std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + it->Conditions + " then result = 1 end; return result";
-                //_log.Log(LOG_NORM,"ifc: %s",ifCondition.c_str());
-                if( luaL_dostring(lua_state, ifCondition.c_str()))
-                {
-                    _log.Log(LOG_ERROR,"Lua script error: %s",lua_tostring(lua_state, -1));
-                }
-                else {
-                    int ruleTrue = lua_tonumber(lua_state,-1);
-                    if (ruleTrue) {
-                        _log.Log(LOG_NORM,"UI Event triggered: %s",it->Name.c_str());
-                
+            if (it->EventStatus == 1) { eventActive = true;};
+            
+            if (eventActive) {
+                // time rules will only run when time or date based critera are found
+                if ((it->Conditions.find("timeofday")!=std::string::npos) || (it->Conditions.find("weekday")!=std::string::npos)) {
+                    std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + it->Conditions + " then result = 1 end; return result";
+                    //_log.Log(LOG_NORM,"ifc: %s",ifCondition.c_str());
+                    if( luaL_dostring(lua_state, ifCondition.c_str()))
+                    {
+                        _log.Log(LOG_ERROR,"Lua script error: %s",lua_tostring(lua_state, -1));
+                    }
+                    else {
+                        int ruleTrue = lua_tonumber(lua_state,-1);
+                        if (ruleTrue) {
+                            _log.Log(LOG_NORM,"UI Event triggered: %s",it->Name.c_str());
+                            std::istringstream ss(it->Actions);
+                            std::string csubstr;
+                            while (!ss.eof()) {
+                                getline(ss, csubstr, ',');
+                                int eQPos = csubstr.find_first_of("=")+1;
+                                std::string doWhat = csubstr.substr(eQPos);
+                                doWhat = doWhat.substr(1,doWhat.size()-2);
+                                int sPos = csubstr.find_first_of("[")+1;
+                                int ePos = csubstr.find_first_of("]");
+                                int sDiff = ePos - sPos;
+                                if (sDiff>0) {
+                                    std::string deviceName = csubstr.substr(sPos,sDiff);
+                                    int deviceNo = atoi(deviceName.c_str());
+                                    if (deviceNo) {
+                                        ScheduleEvent(deviceNo,doWhat);
+                                    }
+                                    else {
+                                        std::string devNameNoQuotes = deviceName.substr(1,deviceName.size()-2);
+                                        if (devNameNoQuotes == "SendNotification") {
+                                            SendEventNotification(doWhat.substr(0,doWhat.find('#')), doWhat.substr(doWhat.find('#')+1));
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

@@ -14,7 +14,7 @@
 #include "../smtpclient/SMTPClient.h"
 #include "../webserver/Base64.h"
 
-#define DB_VERSION 16
+#define DB_VERSION 17
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -319,7 +319,8 @@ const char *sqlCreateEvents =
 "[Name] VARCHAR(200) NOT NULL, "
 "[XMLStatement] TEXT NOT NULL, "
 "[Conditions] TEXT, "
-"[Actions] TEXT);";
+"[Actions] TEXT, "
+"[Status] INTEGER DEFAULT 0);";
 
 extern std::string szStartupFolder;
 
@@ -558,7 +559,11 @@ bool CSQLHelper::OpenDatabase()
             query("INSERT INTO Events(Name, XMLStatement) SELECT Name, XMLStatement FROM tmp_Events;");
             query("DROP TABLE tmp_Events;");
      	}
-	
+		if (dbversion<17)
+		{
+            query("ALTER TABLE Events ADD COLUMN [Status] INTEGER default 0");
+     	}
+        
     
     }
 	UpdatePreferencesVar("DB_Version",DB_VERSION);

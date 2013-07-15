@@ -15,6 +15,7 @@ class CEventSystem
         std::string Name;
         std::string Conditions;
         std::string Actions;
+        int EventStatus;
         
 	};
 

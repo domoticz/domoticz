@@ -8031,7 +8031,7 @@ std::string CWebServer::GetJSonPage()
             
             szQuery.clear();
             szQuery.str("");
-            szQuery << "SELECT ID, Name, XMLStatement FROM Events ORDER BY ID ASC";
+            szQuery << "SELECT ID, Name, XMLStatement, Status FROM Events ORDER BY ID ASC";
             result=m_pMain->m_sql.query(szQuery.str());
             if (result.size()>0)
             {
@@ -8042,8 +8042,10 @@ std::string CWebServer::GetJSonPage()
                     std::string ID=sd[0];
 					std::string Name=sd[1];
                     std::string XMLStatement=sd[2];
+                    std::string eventStatus = sd[3];
                     root["result"][ii]["id"]=ID;
                     root["result"][ii]["name"]=Name;
+                    root["result"][ii]["eventstatus"]=eventStatus;
                     ii++;
                 }
             }
@@ -8061,7 +8063,7 @@ std::string CWebServer::GetJSonPage()
             
             szQuery.clear();
             szQuery.str("");
-            szQuery << "SELECT ID, Name, XMLStatement FROM Events WHERE (ID==" << idx << ")";
+            szQuery << "SELECT ID, Name, XMLStatement, Status FROM Events WHERE (ID==" << idx << ")";
             result=m_pMain->m_sql.query(szQuery.str());
             if (result.size()>0)
             {
@@ -8072,9 +8074,13 @@ std::string CWebServer::GetJSonPage()
                     std::string ID=sd[0];
 					std::string Name=sd[1];
                     std::string XMLStatement=sd[2];
+                    std::string eventStatus = sd[3];
+                    //int Status=atoi(sd[3].c_str());
+                    
                     root["result"][ii]["id"]=ID;
                     root["result"][ii]["name"]=Name;
                     root["result"][ii]["xmlstatement"]=XMLStatement;
+                    root["result"][ii]["eventstatus"]=eventStatus;
                     ii++;
                 }
                 root["status"]="OK";
@@ -8099,6 +8105,10 @@ std::string CWebServer::GetJSonPage()
             std::string eventactions=m_pWebEm->FindValue("actions");
 			if (eventactions=="")
 				goto exitjson;
+
+            std::string eventactive=m_pWebEm->FindValue("eventstatus");
+			if (eventactive=="")
+				goto exitjson;
             
             std::string eventid=m_pWebEm->FindValue("eventid");
             
@@ -8108,16 +8118,16 @@ std::string CWebServer::GetJSonPage()
             if (eventactions.find("SendNotification")!= std::string::npos) {
                 eventactions = stdreplace(eventactions, "$", "#");
             }
-            
+            int eventStatus = atoi(eventactive.c_str());
             
 			szQuery.clear();
 			szQuery.str("");
             
             if (eventid=="") {
-                    szQuery << "INSERT INTO Events (Name, XMLStatement, Conditions, Actions) VALUES ('" << eventname << "','" << eventxml <<  "','" << eventconditions <<"','" << eventactions <<"')";
+                    szQuery << "INSERT INTO Events (Name, XMLStatement, Conditions, Actions, Status) VALUES ('" << eventname << "','" << eventxml <<  "','" << eventconditions <<"','" << eventactions <<"','" << eventStatus <<  "')";
             }
             else {
-                    szQuery << "UPDATE Events SET Name='" << eventname << "', XMLStatement ='" << eventxml << "', Conditions ='" << eventconditions << "', Actions ='" << eventactions << "' WHERE (ID == '" << eventid << "')";
+                    szQuery << "UPDATE Events SET Name='" << eventname << "', XMLStatement ='" << eventxml << "', Conditions ='" << eventconditions << "', Actions ='" << eventactions << "', Status ='" << eventStatus << "' WHERE (ID == '" << eventid << "')";
             }
             m_pMain->m_sql.query(szQuery.str());
             m_pMain->m_eventsystem.LoadEvents();

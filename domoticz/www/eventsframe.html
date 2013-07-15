@@ -288,10 +288,16 @@
 				  		if (data.status=="OK") {
 					  		var xml = Blockly.Xml.textToDom(data.result[0].xmlstatement);
 					  		Blockly.mainWorkspace.clear();
+					  		
 					  		Blockly.Xml.domToWorkspace( Blockly.mainWorkspace, xml );
 					  		$("#blockName").val(data.result[0].name);
 					  		$("#blockId").html(id);
-
+					  		if (data.result[0].eventstatus == '1') {
+					  			$("#eventActive").prop('checked', true);
+					  		}
+					  		else {
+						  		$("#eventActive").prop('checked',false);
+					  		}
 				  		}
 				  		else { alert("Error loading event!");}
 					}
@@ -336,6 +342,10 @@
 						var option = document.createElement("option");
 						option.text = item.name;
 						option.value = item.id;
+						option.style.color = 'red';
+						if (item.eventstatus == '1') {
+							option.style.color = 'black';
+						}
 						select.appendChild(option);
 					});
 				}
@@ -385,8 +395,10 @@
       		   else if (typeof(blockXmlTranslated)=='object') {
       	    		var conditions = blockXmlTranslated[0];
       	    		var actions = blockXmlTranslated[1];
+      	    		var isActive = 0;
+      	    		if ($('#eventActive').is(':checked')) {isActive = 1};
       	    		$.ajax({
-	      	    		url : "json.htm?type=events&param=create&name="+blockName+"&xml="+blockXml+"&conditions="+conditions+"&actions="+actions+"&eventid="+id, 
+	      	    		url : "json.htm?type=events&param=create&name="+blockName+"&xml="+blockXml+"&conditions="+conditions+"&actions="+actions+"&eventid="+id+"&eventstatus="+isActive, 
 	      	    		async: false, 
 	      	    		dataType: 'json',
 	      	    		success: function(data) {
@@ -481,10 +493,13 @@
 				<td style="width:200px" valign="top">
 					<label for="blockName">Event name: </label><br>
 					<input type="input" id="blockName" name="blockName" style="width: 12em; padding: .2em;" class="text ui-widget-content ui-corner-all" />
-					<br/>
+					<p>
+					<label for="eventActive">Event active: </label>
+					<input type="checkbox" id="eventActive" name="eventActive"/>
+					<p>
 					<a class="btnstyle3" href="javascript:save_block()">Save</a>
 					<a class="btnstyle3" href="javascript:new_block()">New</a>
-					<P>
+					<p>
 					<label for="savedEvents">Saved events: </label><br>
 					<select size="10" width="100%" style="width: 100%" id="savedEvents" name="savedEvents" onchange="loadSelectedEvent(this.value);">> 
 					</select>
