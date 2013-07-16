@@ -931,8 +931,10 @@ function RefreshTemps()
               if (typeof item.Gust != 'undefined') {
 				status+=', Gust: ' + item.Gust + ' ' + $.myglobals.windsign;
 			  }
-              status+='\n';
             }
+			if (typeof item.DewPoint != 'undefined') {
+				status+="\nDew Point: " + item.DewPoint + '\u00B0 C';
+			}
 
             var nbackcolor="#D4E1EE";
 						if (item.HaveTimeout==true) {
@@ -1079,7 +1081,9 @@ function ShowTemps()
 						if (typeof item.Gust != 'undefined') {
 							xhtm+=', Gust: ' + item.Gust + ' ' + $.myglobals.windsign;
 						}
-						xhtm+='\n';
+					}
+					if (typeof item.DewPoint != 'undefined') {
+						xhtm+="\nDew Point: " + item.DewPoint + '\u00B0 C';
 					}
 					xhtm+=
 							'</td>\n' +

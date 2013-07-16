@@ -12,4 +12,5 @@ double CalculateAltitudeFromPressure(double pressure);
 std::string &stdstring_ltrim(std::string &s);
 std::string &stdstring_rtrim(std::string &s);
 std::string &stdstring_trim(std::string &s);
+double CalculateDewPoint(double temp, int humidity);
 

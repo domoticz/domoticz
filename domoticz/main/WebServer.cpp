@@ -1289,12 +1289,21 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					root["result"][ii]["AddjMulti"]=AddjMulti;
 					root["result"][ii]["AddjValue2"]=AddjValue2;
 					root["result"][ii]["AddjMulti2"]=AddjMulti2;
-					root["result"][ii]["Temp"]=atof(strarray[0].c_str());
-					root["result"][ii]["Humidity"]=atoi(strarray[1].c_str());
+
+					double temp=atof(strarray[0].c_str());
+					int humidity=atoi(strarray[1].c_str());
+
+					root["result"][ii]["Temp"]=temp;
+					root["result"][ii]["Humidity"]=humidity;
 					root["result"][ii]["HumidityStatus"]=RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
 					sprintf(szData,"%.1f C, %d %%", atof(strarray[0].c_str()),atoi(strarray[1].c_str()));
 					root["result"][ii]["Data"]=szData;
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+
+					//Calculate dew point
+
+					sprintf(szTmp,"%.2f",CalculateDewPoint(temp,humidity));
+					root["result"][ii]["DewPoint"]=szTmp;
 				}
 			}
 			else if (dType == pTypeTEMP_HUM_BARO)
@@ -1307,10 +1316,18 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					root["result"][ii]["AddjMulti"]=AddjMulti;
 					root["result"][ii]["AddjValue2"]=AddjValue2;
 					root["result"][ii]["AddjMulti2"]=AddjMulti2;
-					root["result"][ii]["Temp"]=atof(strarray[0].c_str());
-					root["result"][ii]["Humidity"]=atoi(strarray[1].c_str());
+
+					double temp=atof(strarray[0].c_str());
+					int humidity=atoi(strarray[1].c_str());
+
+					root["result"][ii]["Temp"]=temp;
+					root["result"][ii]["Humidity"]=humidity;
 					root["result"][ii]["HumidityStatus"]=RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
 					root["result"][ii]["Forecast"]=atoi(strarray[4].c_str());
+
+					sprintf(szTmp,"%.2f",CalculateDewPoint(temp,humidity));
+					root["result"][ii]["DewPoint"]=szTmp;
+
 					if (dSubType==sTypeTHBFloat)
 					{
 						root["result"][ii]["Barometer"]=atof(strarray[3].c_str());

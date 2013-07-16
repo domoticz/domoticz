@@ -426,6 +426,9 @@ function RefreshFavorites()
 								if (typeof item.HumidityStatus != 'undefined') {
 									status+=' (' + $.i18n(item.HumidityStatus) + ')';
 								}
+								if (typeof item.DewPoint != 'undefined') {
+									status+="<br>Dew Point: " + item.DewPoint + '° C';
+								}
 							}
 							else {
 								var img='<img src="images/';
@@ -466,6 +469,15 @@ function RefreshFavorites()
 								}
 								if (typeof item.HumidityStatus != 'undefined') {
 									status+=' (' + $.i18n(item.HumidityStatus) + ')';
+								}
+								if (typeof item.DewPoint != 'undefined') {
+									if (data.DashboardType==1) {
+										status+=", ";
+									}
+									else {
+										status+="<br>";
+									}
+									status+="Dew Point: " + item.DewPoint + '° C';
 								}
 							
 								var nbackcolor="#D4E1EE";
@@ -1506,6 +1518,9 @@ function ShowFavorites()
 							if (typeof item.HumidityStatus != 'undefined') {
 								status+=' (' + $.i18n(item.HumidityStatus) + ')';
 							}
+							if (typeof item.DewPoint != 'undefined') {
+								status+="<br>Dew Point: " + item.DewPoint + '° C';
+							}
 							xhtm+=
 										'\t      <td id="status">' + status + '</td>\n' +
 										'\t    </tr>\n';
@@ -1574,6 +1589,15 @@ function ShowFavorites()
 							}
 							if (typeof item.HumidityStatus != 'undefined') {
 								xhtm+=' (' + $.i18n(item.HumidityStatus) + ')';
+							}
+							if (typeof item.DewPoint != 'undefined') {
+								if (data.DashboardType==1) {
+									xhtm+=", ";
+								}
+								else {
+									xhtm+="<br>";
+								}
+								xhtm+="Dew Point: " + item.DewPoint + '° C';
 							}
 							xhtm+=
 									'</td>\n' +
