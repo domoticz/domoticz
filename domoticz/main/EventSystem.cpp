@@ -11,8 +11,6 @@
 
 extern std::string szStartupFolder;
 
-std::string lua_Dir = szStartupFolder;
-
 #ifdef WIN32
     #include "../main/dirent_windows.h"
 #else
@@ -275,13 +273,15 @@ void CEventSystem::EvaluateEvent(const std::string reason)
 void CEventSystem::EvaluateEvent(const std::string reason, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording)
 {
 
-    std::string lua_Dir = szStartupFolder;
+    std::stringstream lua_DirT;
     
     #ifdef WIN32
-        lua_Dir.append("scripts\\lua\\");
+        lua_DirT << szStartupFolder << "scripts\\lua\\";
     #else
-        lua_Dir.append("scripts/lua/");
+        lua_DirT << szStartupFolder << "scripts/lua/";
     #endif
+    
+    std::string lua_Dir = lua_DirT.str();
     
     DIR *lDir;
     struct dirent *ent;
