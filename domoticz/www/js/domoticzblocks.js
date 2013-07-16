@@ -256,6 +256,20 @@ Blockly.Language.logic_setrandom = {
   }
 };
 
+Blockly.Language.logic_setlevel = {
+  init: function() {
+    this.setColour(120);
+    this.appendDummyInput()
+    	.appendTitle("Set Level");
+    this.appendDummyInput()
+        .appendTitle(new Blockly.FieldTextInput('0',
+        Blockly.FieldTextInput.numberValidator), 'NUM');
+    this.setOutput(true, 'Number');
+    this.setInputsInline(true);
+  }
+};
+
+
 Blockly.Language.logic_timeofday = {
   // Comparison operator.
   init: function() {

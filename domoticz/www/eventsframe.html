@@ -151,19 +151,20 @@
 		function parseValueBlock(thisBlock,locOperand,Sequence) {
 			var firstBlock = $(thisBlock).children("block:first");
 			if (firstBlock.attr("type")=="logic_compare") {
-				var compareString = parseLogicCompare(firstBlock);
-			  	return compareString;
+				var conditionstring = parseLogicCompare(firstBlock);
+			  	return conditionstring;
 			}
 			else if (firstBlock.attr("type")=="logic_weekday") {
-				conditionstring = parseLogicWeekday(firstBlock);
+				var conditionstring = parseLogicWeekday(firstBlock);
 				return conditionstring;
 			}
 			else if (firstBlock.attr("type")=="logic_timeofday") {
-				conditionstring = parseLogicTimeOfDay(firstBlock);
+				var conditionstring = parseLogicTimeOfDay(firstBlock);
 				return conditionstring;
 			}
 			else if (firstBlock.attr("type")=="logic_operation") {
-				parseLogicOperation(firstBlock);
+				var conditionstring = parseLogicOperation(firstBlock);
+				return conditionstring;
 			}
 		}
 		
@@ -171,19 +172,10 @@
     		var locOperand = ' '+$($(thisBlock).children("title:first")).text().toLowerCase()+' ';
 			var valueA = $(thisBlock).children("value[name='A']")[0];
 			var valueB = $(thisBlock).children("value[name='B']")[0];
-			conditionA = parseValueBlock(valueA,locOperand,"A");
-			conditionB = parseValueBlock(valueB,locOperand,"B");
+			var conditionA = parseValueBlock(valueA,locOperand,"A");
+			var conditionB = parseValueBlock(valueB,locOperand,"B");
 			var conditionstring = "("+conditionA+" "+locOperand+" "+conditionB+")";
-			
-			if((conditionA!=undefined)&&(conditionB!=undefined)) {
-				if (boolString == "") {
-					{boolString += conditionstring};
-				}
-				else {
-					{boolString += locOperand}
-					{boolString += conditionstring}
-				}
-			} 
+			return conditionstring; 
 		}
   
       	if ($(xml).children().length > 1) {
@@ -205,7 +197,8 @@
 
       	else if (ifBlock.attr("type")=="logic_operation") {
       		// nested logic operation, drill down
-      		parseLogicOperation(ifBlock);
+      		var compareString = parseLogicOperation(ifBlock);
+       		boolString += compareString;
     
       	}
       	else if (ifBlock.attr("type")=="logic_timeofday") {
@@ -226,13 +219,18 @@
 	      	if ($(this).attr('type') == 'logic_set') {
 		   		var valueA = $(this).find("value[name='A']")[0];
 	        	var titleA = $(valueA).find("title")[0];
+	        	var setString = "commandArray["+$(titleA).text()+"]";
 	        	var valueB = $(this).find("value[name='B']")[0];
 	        	var titleB = $(valueB).find("title")[0];
-	        	var setString = "commandArray["+$(titleA).text()+"]";
-	        	if ($(titleB).attr("name") == "State") {
+	        	var blockB = $(valueB).children("block:first");
+	        	if ((blockB.attr("type")=="logic_states") && ($(titleB).attr("name") == "State")) {
 	        		setString += '="'+$(titleB).text()+'"'; 
+	        		setArray.push(setString);
 	        	}
-	        	setArray.push(setString);
+	        	else if ((blockB.attr("type")=="logic_setlevel") && ($(titleB).attr("name") == "NUM")) {
+	        		setString += '="Set Level '+$(titleB).text()+'"'; 
+	        		setArray.push(setString);
+	        	}
 		    }
 	      	else if ($(this).attr('type') == 'logic_setdelayed') {
 		   		var valueA = $(this).find("value[name='A']")[0];
@@ -452,6 +450,7 @@
 	   		<!--<block type="logic_boolean"></block>-->
 	   		<block type="logic_states"></block>
 	   		<block type="logic_set"></block>
+	   		<block type="logic_setlevel"></block>
 	   		<block type="logic_setdelayed"></block>
 	   		<block type="logic_setrandom"></block>
 	   		<block type="logic_timeofday"></block>
