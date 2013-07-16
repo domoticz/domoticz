@@ -351,7 +351,7 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
     typedef std::map<unsigned long long,_tDeviceStatus>::iterator it_type;
     for(it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); iterator++) {
         _tDeviceStatus sitem = iterator->second;
-        lua_pushnumber( lua_state, sitem.ID);
+        lua_pushnumber( lua_state, (lua_Number)sitem.ID);
         lua_pushstring( lua_state, sitem.nValueWording.c_str() );
         lua_rawset( lua_state, -3 );
     }
@@ -363,7 +363,7 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
         lua_createtable(lua_state, tempValues.size(), 0);
         std::vector<_tDeviceTemp>::iterator it;
         for ( it = tempValues.begin(); it != tempValues.end(); ++it ) {
-            lua_pushnumber( lua_state, it->ID);
+            lua_pushnumber( lua_state, (lua_Number)it->ID);
             lua_pushstring( lua_state, it->temperatureValue.c_str() );
             lua_rawset( lua_state, -3 );
         }
@@ -373,7 +373,7 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
         lua_createtable(lua_state, humValues.size(), 0);
         std::vector<_tDeviceHum>::iterator it;
         for ( it = humValues.begin(); it != humValues.end(); ++it ) {
-            lua_pushnumber( lua_state, it->ID);
+            lua_pushnumber( lua_state, (lua_Number)it->ID);
             lua_pushstring( lua_state, it->humidityValue.c_str() );
             lua_rawset( lua_state, -3 );
         }
@@ -383,7 +383,7 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
         lua_createtable(lua_state, baroValues.size(), 0);
         std::vector<_tDeviceBaro>::iterator it;
         for ( it = baroValues.begin(); it != baroValues.end(); ++it ) {
-            lua_pushnumber( lua_state, it->ID);
+            lua_pushnumber( lua_state, (lua_Number)it->ID);
             lua_pushstring( lua_state, it->barometerValue.c_str() );
             lua_rawset( lua_state, -3 );
         }
@@ -412,7 +412,7 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
                     _log.Log(LOG_ERROR,"Lua script error: %s",lua_tostring(lua_state, -1));
                 }
                 else {
-                    int ruleTrue = lua_tonumber(lua_state,-1);
+                    lua_Number ruleTrue = lua_tonumber(lua_state,-1);
                 
                     if (ruleTrue) {
                         _log.Log(LOG_NORM,"UI Event triggered: %s",it->Name.c_str());
@@ -453,7 +453,7 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
     else if (reason == "time") {
         
         std::string IDString;
-        std::size_t found;
+//        std::size_t found;
         bool eventActive = false;
         
         std::vector<_tEventItem>::iterator it;
@@ -470,7 +470,7 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
                         _log.Log(LOG_ERROR,"Lua script error: %s",lua_tostring(lua_state, -1));
                     }
                     else {
-                        int ruleTrue = lua_tonumber(lua_state,-1);
+                        lua_Number ruleTrue = lua_tonumber(lua_state,-1);
                         if (ruleTrue) {
                             _log.Log(LOG_NORM,"UI Event triggered: %s",it->Name.c_str());
                             std::istringstream ss(it->Actions);
@@ -561,7 +561,7 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
         lua_createtable(lua_state, tempValues.size(), 0);
         std::vector<_tDeviceTemp>::iterator it;
         for ( it = tempValues.begin(); it != tempValues.end(); ++it ) {
-            lua_pushnumber( lua_state, it->ID);
+            lua_pushnumber( lua_state, (lua_Number)it->ID);
             lua_pushstring( lua_state, it->temperatureValue.c_str() );
             lua_rawset( lua_state, -3 );
             if (it->ID ==  DeviceID) {
@@ -574,7 +574,7 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
         lua_createtable(lua_state, humValues.size(), 0);
         std::vector<_tDeviceHum>::iterator it;
         for ( it = humValues.begin(); it != humValues.end(); ++it ) {
-            lua_pushnumber( lua_state, it->ID);
+            lua_pushnumber( lua_state, (lua_Number)it->ID);
             lua_pushstring( lua_state, it->humidityValue.c_str() );
             lua_rawset( lua_state, -3 );
             if (it->ID ==  DeviceID) {
@@ -587,7 +587,7 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
         lua_createtable(lua_state, baroValues.size(), 0);
         std::vector<_tDeviceBaro>::iterator it;
         for ( it = baroValues.begin(); it != baroValues.end(); ++it ) {
-            lua_pushnumber( lua_state, it->ID);
+            lua_pushnumber( lua_state, (lua_Number)it->ID);
             lua_pushstring( lua_state, it->barometerValue.c_str() );
             lua_rawset( lua_state, -3 );
             if (it->ID ==  DeviceID) {
@@ -771,7 +771,7 @@ void CEventSystem::ScheduleEvent(std::string deviceName, std::string Action)
         
         if (randomTimer > 0) {
             int rTime;
-            srand (time(NULL));
+            srand ((unsigned int)time(NULL));
             rTime = rand() % randomTimer + 1;
             DelayTime = rTime * 60;
         }
@@ -802,7 +802,7 @@ void CEventSystem::ScheduleEvent(std::string deviceName, std::string Action)
 std::string CEventSystem::reciprokalAction (std::string Action)
 {
     std::map<std::string, std::string> mapObject;
-    int i;
+//    int i;
     std::string Counterpart = "Undefined";
     
     mapObject.insert(std::pair<std::string, std::string>("On", "Off"));

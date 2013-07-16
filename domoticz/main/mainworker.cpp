@@ -6192,6 +6192,11 @@ unsigned long long MainWorker::decode_Thermostat(const int HwdID, const tRBUF *p
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
 	PrintDeviceName(devname);
 
+	if (pMeter->subtype==sTypeThermSetpoint)
+	{
+		m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, pMeter->temp, 0, true, false);
+	}
+
 	//m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->fLux);
 
 	if (m_verboselevel == EVBL_ALL)

@@ -6614,6 +6614,13 @@ std::string CWebServer::GetJSonPage()
 				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TODAYGAS,1);
 				ii++;
 			}
+			if ((dType==pTypeThermostat)&&(dSubType==sTypeThermSetpoint))
+			{
+				root["result"][ii]["val"]=NTYPE_TEMPERATURE;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TEMPERATURE,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TEMPERATURE,1);
+				ii++;
+			}
 		}
 		else if (cparam=="addnotification")
 		{
