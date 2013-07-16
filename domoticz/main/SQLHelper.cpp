@@ -2997,6 +2997,8 @@ void CSQLHelper::UpdateMeter()
 			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
 			time_t checktime=mktime(&ntime);
 
+			bool bSkipSameValue=true;
+
 			if (dType!=pTypeP1Gas)
 			{
 				if (now-checktime>=SensorTimeOut*60)
@@ -3031,38 +3033,45 @@ void CSQLHelper::UpdateMeter()
 				sprintf(szTmp,"%d",nValue);
 				sValue=szTmp;
 				CheckAndHandleNotification(hardwareID, DeviceID, Unit, dType, dSubType, NTYPE_USAGE, (float)nValue);
+				bSkipSameValue=false;
 			}
 			else if (dType==pTypeMoisture)
 			{
 				sprintf(szTmp,"%d",nValue);
 				sValue=szTmp;
+				bSkipSameValue=false;
 			}
 			else if ((dType==pTypeGeneral)&&(dSubType==sTypeVisibility))
 			{
 				double fValue=atof(sValue.c_str())*10.0f;
 				sprintf(szTmp,"%d",int(fValue));
 				sValue=szTmp;
+				bSkipSameValue=false;
 			}
 			else if (dType==pTypeLux)
 			{
 				double fValue=atof(sValue.c_str());
 				sprintf(szTmp,"%.0f",fValue);
 				sValue=szTmp;
+				bSkipSameValue=false;
 			}
 
 			unsigned long long MeterValue;
 			std::stringstream s_str2( sValue );
 			s_str2 >> MeterValue;
 
-			//if last value == actual value, then do not insert it
-			sprintf(szTmp,"SELECT Value FROM Meter WHERE (DeviceRowID=%llu) AND (Date>='%s') ORDER BY ROWID DESC LIMIT 1",ID,szDateToday);
-			result2=query(szTmp);
-			if (result2.size()>0)
+			if (bSkipSameValue)
 			{
-				std::vector<std::string> sd2=result2[0];
-				std::string sValueLast=sd2[0];
-				if (sValueLast==sValue)
-					continue; //skip same value
+				//if last value == actual value, then do not insert it
+				sprintf(szTmp,"SELECT Value FROM Meter WHERE (DeviceRowID=%llu) AND (Date>='%s') ORDER BY ROWID DESC LIMIT 1",ID,szDateToday);
+				result2=query(szTmp);
+				if (result2.size()>0)
+				{
+					std::vector<std::string> sd2=result2[0];
+					std::string sValueLast=sd2[0];
+					if (sValueLast==sValue)
+						continue; //skip same value
+				}
 			}
 
 			//insert record
