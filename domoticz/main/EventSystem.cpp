@@ -5,6 +5,7 @@
 #include "Helper.h"
 #include "SQLHelper.h"
 #include "Logger.h"
+#include "../hardware/hardwaretypes.h"
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
@@ -155,6 +156,8 @@ void CEventSystem::GetCurrentStates()
             std::stringstream nv_str( sd[2] );
 			nv_str >> sitem.nValue;
             sitem.sValue	= sd[3];
+            sitem.devType = atoi(sd[4].c_str());
+            sitem.subType = atoi(sd[5].c_str());
 			_eSwitchType switchtype=(_eSwitchType)atoi(sd[6].c_str());
             sitem.nValueWording = nValueToWording(atoi(sd[4].c_str()), atoi(sd[5].c_str()), switchtype, (unsigned char)sitem.nValue,sitem.sValue);
             sitem.lastUpdate = sd[7];
@@ -178,16 +181,96 @@ void CEventSystem::GetCurrentMeasurementStates()
         _tDeviceStatus sitem = iterator->second;
         std::vector<std::string> splitresults;
         StringSplit(sitem.sValue, ";", splitresults);
+ 
+        if (splitresults.size()<1)
+            continue;
         
-        if (splitresults.size()>=1) {
-            tempValues[sitem.ID] = splitresults[0];
+        float temp=0;
+        float chill=0;
+        unsigned char humidity=0;
+        int barometer=0;
+        float dewpoint=0;
+        bool isTemp = false;
+        bool isHum = false;
+        bool isBaro = false;
+
+        switch (sitem.devType)
+        {
+			case pTypeRego6XXTemp:
+			case pTypeTEMP:
+				temp=(float)atof(splitresults[0].c_str());
+				isTemp = true;
+                break;
+			case pTypeThermostat1:
+				temp=(float)atof(splitresults[0].c_str());
+				isTemp = true;
+                break;
+			case pTypeHUM:
+				humidity=sitem.nValue;
+				isHum = true;
+                break;
+			case pTypeTEMP_HUM:
+				temp=(float)atof(splitresults[0].c_str());
+				humidity=atoi(splitresults[1].c_str());
+				dewpoint=(float)CalculateDewPoint(temp,humidity);
+				isTemp = true;
+                isHum = true;
+                break;
+			case pTypeTEMP_HUM_BARO:
+				temp=(float)atof(splitresults[0].c_str());
+				humidity=atoi(splitresults[1].c_str());
+                if (sitem.subType==sTypeTHBFloat)
+					barometer=int(atof(splitresults[3].c_str())*10.0f);
+				else
+					barometer=atoi(splitresults[3].c_str());
+				dewpoint=(float)CalculateDewPoint(temp,humidity);
+                isTemp = true;
+                isHum = true;
+                isBaro = true;
+				break;
+			case pTypeTEMP_BARO:
+				temp=(float)atof(splitresults[0].c_str());
+				barometer=int(atof(splitresults[1].c_str())*10.0f);
+                isTemp = true;
+                isBaro = true;
+				break;
+			case pTypeUV:
+				if (sitem.subType!=sTypeUV3)
+					continue;
+				temp=(float)atof(splitresults[1].c_str());
+                isTemp = true;
+				break;
+			case pTypeWIND:
+				if ((sitem.subType!=sTypeWIND4)&&(sitem.subType!=sTypeWINDNoTemp))
+					continue;
+				temp=(float)atof(splitresults[4].c_str());
+				chill=(float)atof(splitresults[5].c_str());
+                isTemp = true;
+				break;
+			case pTypeRFXSensor:
+				if (sitem.subType!=sTypeRFXSensorTemp)
+					continue;
+				temp=(float)atof(splitresults[0].c_str());
+				isTemp = true;
+                break;
         }
-        if (splitresults.size()>=2) {
-            humValues[sitem.ID] = splitresults[1];
+        // Store as a string since Lua has a simpler concept of numbers anyway and stuff gets converted later
+        
+        if (isTemp) {
+            std::stringstream ssTemp;
+            ssTemp << temp;
+            tempValues[sitem.ID] = ssTemp.str();
         }
-        if (splitresults.size()>=4) {
-            baroValues[sitem.ID] = splitresults[3];
+        if (isHum) {
+            char sHum[1000];
+            sprintf(sHum,"%d",humidity);
+            humValues[sitem.ID] = sHum;
         }
+        if (isBaro) {
+            std::stringstream ssBaro;
+            ssBaro << barometer;
+            baroValues[sitem.ID] = ssBaro.str();
+        }        
     }
 }
 

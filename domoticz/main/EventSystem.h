@@ -18,19 +18,6 @@ class CEventSystem
         int EventStatus;
         
 	};
-    /*
-	struct _tDeviceStatus
-	{
-		unsigned long long ID;
-        std::string deviceName;
-        unsigned long long nValue;
-        std::string sValue;
-        std::string nValueWording;
-        std::string lastUpdate;
-        
-	};
-     */
-
     
 public:
     
@@ -40,6 +27,8 @@ public:
         std::string deviceName;
         unsigned long long nValue;
         std::string sValue;
+        unsigned char devType;
+        unsigned char subType;
         std::string nValueWording;
         std::string lastUpdate;
         
