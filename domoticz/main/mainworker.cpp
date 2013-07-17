@@ -1799,6 +1799,8 @@ unsigned long long MainWorker::decode_Temp(const int HwdID, const tRBUF *pRespon
 			sprintf(szTmp,"%.1f;%d;%d",temp,humidity,humidity_status);
 			DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,SignalLevel,BatteryLevel,0,szTmp,devname);
 			m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, 2, pTypeTEMP_HUM, sTypeTH_LC_TC, temp, humidity, true, true);
+			float dewpoint=(float)CalculateDewPoint(temp,humidity);
+			m_sql.CheckAndHandleDewPointNotification(HwdID, ID, 2, pTypeTEMP_HUM, sTypeTH_LC_TC,temp,dewpoint);
 		}
 	}
 	PrintDeviceName(devname);
@@ -1923,7 +1925,8 @@ unsigned long long MainWorker::decode_Hum(const int HwdID, const tRBUF *pRespons
 			sprintf(szTmp,"%.1f;%d;%d",temp,humidity,pResponse->HUM.humidity_status);
 			DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,SignalLevel,BatteryLevel,0,szTmp,devname);
 			m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, 2, pTypeTEMP_HUM, sTypeTH_LC_TC, temp, humidity, true, true);
-
+			float dewpoint=(float)CalculateDewPoint(temp,humidity);
+			m_sql.CheckAndHandleDewPointNotification(HwdID, ID, 2, pTypeTEMP_HUM, sTypeTH_LC_TC,temp,dewpoint);
 		}
 	}
 	PrintDeviceName(devname);
@@ -2071,6 +2074,9 @@ unsigned long long MainWorker::decode_TempHum(const int HwdID, const tRBUF *pRes
 	PrintDeviceName(devname);
 
 	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, Humidity, true, true);
+
+	float dewpoint=(float)CalculateDewPoint(temp,Humidity);
+	m_sql.CheckAndHandleDewPointNotification(HwdID, ID, Unit, devType, subType,temp,dewpoint);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -2257,6 +2263,9 @@ unsigned long long MainWorker::decode_TempHumBaro(const int HwdID, const tRBUF *
 	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, Humidity, true, true);
 
 	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_BARO, fbarometer);
+
+	float dewpoint=(float)CalculateDewPoint(temp,Humidity);
+	m_sql.CheckAndHandleDewPointNotification(HwdID, ID, Unit, devType, subType,temp,dewpoint);
 
 	if (m_verboselevel == EVBL_ALL)
 	{

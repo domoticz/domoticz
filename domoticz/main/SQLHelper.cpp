@@ -14,7 +14,7 @@
 #include "../smtpclient/SMTPClient.h"
 #include "../webserver/Base64.h"
 
-#define DB_VERSION 17
+#define DB_VERSION 18
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -99,6 +99,7 @@ const char *sqlCreateTemperature =
 "[Chill] FLOAT DEFAULT 0, "
 "[Humidity] INTEGER DEFAULT 0, "
 "[Barometer] INTEGER DEFAULT 0, "
+"[DewPoint] FLOAT DEFAULT 0, "
 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
 const char *sqlCreateTemperature_Calendar =
@@ -110,6 +111,7 @@ const char *sqlCreateTemperature_Calendar =
 "[Chill_Max] FLOAT, "
 "[Humidity] INTEGER DEFAULT 0, "
 "[Barometer] INTEGER DEFAULT 0, "
+"[DewPoint] FLOAT DEFAULT 0, "
 "[Date] DATE NOT NULL);";
 
 const char *sqlCreateTempVars =
@@ -563,6 +565,11 @@ bool CSQLHelper::OpenDatabase()
 		{
             query("ALTER TABLE Events ADD COLUMN [Status] INTEGER default 0");
      	}
+		if (dbversion<18)
+		{
+			query("ALTER TABLE Temperature ADD COLUMN [DewPoint] FLOAT default 0");
+			query("ALTER TABLE Temperature_Calendar ADD COLUMN [DewPoint] FLOAT default 0");
+		}
         
     
     }
@@ -1836,6 +1843,80 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(
 	return true;
 }
 
+bool CSQLHelper::CheckAndHandleDewPointNotification(
+	const int HardwareID, 
+	const std::string ID, 
+	const unsigned char unit, 
+	const unsigned char devType, 
+	const unsigned char subType, 
+	const float temp,
+	const float dewpoint)
+{
+	if (!m_dbase)
+		return false;
+
+	char szTmp[1000];
+
+	unsigned long long ulID=0;
+
+	std::vector<std::vector<std::string> > result;
+	sprintf(szTmp,"SELECT ID, Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID.c_str(), unit, devType, subType);
+	result=query(szTmp);
+	if (result.size()==0)
+		return false;
+	std::stringstream s_str( result[0][0] );
+	s_str >> ulID;
+	std::string devicename=result[0][1];
+
+	std::vector<_tNotification> notifications=GetNotifications(ulID);
+	if (notifications.size()==0)
+		return false;
+
+	time_t atime=time(NULL);
+
+	//check if not send 12 hours ago, and if applicable
+
+	int nNotificationInterval=12*3600;
+	GetPreferencesVar("NotificationSensorInterval", nNotificationInterval);
+	atime-=nNotificationInterval;
+
+	std::string msg="";
+
+	std::string signdewpoint=Notification_Type_Desc(NTYPE_DEWPOINT,1);
+
+	std::vector<_tNotification>::const_iterator itt;
+	for (itt=notifications.begin(); itt!=notifications.end(); ++itt)
+	{
+		if (atime>=itt->LastSend)
+		{
+			std::vector<std::string> splitresults;
+			StringSplit(itt->Params, ";", splitresults);
+			if (splitresults.size()<1)
+				continue; //impossible
+			std::string ntype=splitresults[0];
+
+			bool bSendNotification=false;
+
+			if (ntype==signdewpoint)
+			{
+				//dewpoint
+				if (temp<=dewpoint)
+				{
+					bSendNotification=true;
+					sprintf(szTmp,"%s Dew Point reached (%.1f degrees)", devicename.c_str(), temp);
+					msg=szTmp;
+				}
+			}
+			if (bSendNotification)
+			{
+				SendNotification("", m_urlencoder.URLEncode(msg));
+				TouchNotification(itt->ID);
+			}
+		}
+	}
+	return true;
+}
+
 bool CSQLHelper::CheckAndHandleAmpere123Notification(
 	const int HardwareID, 
 	const std::string ID, 
@@ -2575,6 +2656,7 @@ void CSQLHelper::UpdateTemperatureLog()
 			float chill=0;
 			unsigned char humidity=0;
 			int barometer=0;
+			float dewpoint=0;
 
 			switch (dType)
 			{
@@ -2591,6 +2673,7 @@ void CSQLHelper::UpdateTemperatureLog()
 			case pTypeTEMP_HUM:
 				temp=(float)atof(splitresults[0].c_str());
 				humidity=atoi(splitresults[1].c_str());
+				dewpoint=(float)CalculateDewPoint(temp,humidity);
 				break;
 			case pTypeTEMP_HUM_BARO:
 				temp=(float)atof(splitresults[0].c_str());
@@ -2599,6 +2682,7 @@ void CSQLHelper::UpdateTemperatureLog()
 					barometer=int(atof(splitresults[3].c_str())*10.0f);
 				else
 					barometer=atoi(splitresults[3].c_str());
+				dewpoint=(float)CalculateDewPoint(temp,humidity);
 				break;
 			case pTypeTEMP_BARO:
 				temp=(float)atof(splitresults[0].c_str());
@@ -2623,17 +2707,17 @@ void CSQLHelper::UpdateTemperatureLog()
 			}
 			//insert record
 			sprintf(szTmp,
-				"INSERT INTO Temperature (DeviceRowID, Temperature, Chill, Humidity, Barometer) "
-				"VALUES (%llu, %.2f, %.2f, %d, %d)",
+				"INSERT INTO Temperature (DeviceRowID, Temperature, Chill, Humidity, Barometer, DewPoint) "
+				"VALUES (%llu, %.2f, %.2f, %d, %d, %.2f)",
 				ID,
 				temp,
 				chill,
 				humidity,
-				barometer
+				barometer,
+				dewpoint
 				);
 			std::vector<std::vector<std::string> > result2;
 			result2=query(szTmp);
-
 		}
 	}
 	//truncate the temperature table (remove items older then 48 hours)
@@ -3304,7 +3388,7 @@ void CSQLHelper::AddCalendarTemperature()
 		std::stringstream s_str( sddev[0] );
 		s_str >> ID;
 
-		sprintf(szTmp,"SELECT MIN(Temperature), MAX(Temperature), MIN(Chill), MAX(Chill), MAX(Humidity), MAX(Barometer) FROM Temperature WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s')",
+		sprintf(szTmp,"SELECT MIN(Temperature), MAX(Temperature), MIN(Chill), MAX(Chill), MAX(Humidity), MAX(Barometer), MIN(DewPoint) FROM Temperature WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s')",
 			ID,
 			szDateStart,
 			szDateEnd
@@ -3320,11 +3404,12 @@ void CSQLHelper::AddCalendarTemperature()
 			float chill_max=(float)atof(sd[3].c_str());
 			int humidity=atoi(sd[4].c_str());
 			int barometer=atoi(sd[5].c_str());
+			float dewpoint=(float)atof(sd[6].c_str());
 
 			//insert into calendar table
 			sprintf(szTmp,
-				"INSERT INTO Temperature_Calendar (DeviceRowID, Temp_Min, Temp_Max, Chill_Min, Chill_Max, Humidity, Barometer, Date) "
-				"VALUES (%llu, %.2f, %.2f, %.2f, %.2f, %d, %d, '%s')",
+				"INSERT INTO Temperature_Calendar (DeviceRowID, Temp_Min, Temp_Max, Chill_Min, Chill_Max, Humidity, Barometer, DewPoint, Date) "
+				"VALUES (%llu, %.2f, %.2f, %.2f, %.2f, %d, %d, %.2f, '%s')",
 				ID,
 				temp_min,
 				temp_max,
@@ -3332,6 +3417,7 @@ void CSQLHelper::AddCalendarTemperature()
 				chill_max,
 				humidity,
 				barometer,
+				dewpoint,
 				szDateStart
 				);
 			result=query(szTmp);

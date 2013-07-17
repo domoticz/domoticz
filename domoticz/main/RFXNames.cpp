@@ -210,6 +210,7 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_TODAYCOUNTER, "Today", "C" },
 		{ NTYPE_SWITCH_OFF, "Switch Off", "O" },
 		{ NTYPE_PERCENTAGE, "Percentage", "P" },
+		{ NTYPE_DEWPOINT, "Dew Point", "D" },
 		
 		{  0,NULL,NULL }
 	};
@@ -240,6 +241,7 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_TODAYCOUNTER, "cnt" },
 		{ NTYPE_SWITCH_OFF, "On" },
 		{ NTYPE_PERCENTAGE, "%%" },
+		{ NTYPE_DEWPOINT, "degrees" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, nType);

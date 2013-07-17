@@ -194,6 +194,14 @@ public:
 		const int humidity, 
 		const bool bHaveTemp, 
 		const bool bHaveHumidity);
+	bool CheckAndHandleDewPointNotification(
+		const int HardwareID, 
+		const std::string ID, 
+		const unsigned char unit, 
+		const unsigned char devType, 
+		const unsigned char subType, 
+		const float temp,
+		const float dewpoint);
 	bool CheckAndHandleNotification(
 		const int HardwareID, 
 		const std::string ID, 

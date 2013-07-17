@@ -6470,6 +6470,16 @@ std::string CWebServer::GetJSonPage()
 				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_HUMIDITY,1);
 				ii++;
 			}
+			if (
+				(dType==pTypeTEMP_HUM)||
+				(dType==pTypeTEMP_HUM_BARO)
+				)
+			{
+				root["result"][ii]["val"]=NTYPE_DEWPOINT;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_DEWPOINT,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_DEWPOINT,1);
+				ii++;
+			}
 			if (dType==pTypeRAIN)
 			{
 				root["result"][ii]["val"]=NTYPE_RAIN;
@@ -6656,7 +6666,8 @@ std::string CWebServer::GetJSonPage()
 			std::string ttype=Notification_Type_Desc(ntype,1);
 			if (
 				(ntype==NTYPE_SWITCH_ON)||
-				(ntype==NTYPE_SWITCH_OFF)
+				(ntype==NTYPE_SWITCH_OFF)||
+				(ntype==NTYPE_DEWPOINT)
 				)
 			{
 				strcpy(szTmp,ttype.c_str());
@@ -6694,7 +6705,8 @@ std::string CWebServer::GetJSonPage()
 			std::string ttype=Notification_Type_Desc(ntype,1);
 			if (
 				(ntype==NTYPE_SWITCH_ON)||
-				(ntype==NTYPE_SWITCH_OFF)
+				(ntype==NTYPE_SWITCH_OFF)||
+				(ntype==NTYPE_DEWPOINT)
 				)
 			{
 				strcpy(szTmp,ttype.c_str());

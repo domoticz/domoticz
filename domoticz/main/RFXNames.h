@@ -87,6 +87,7 @@ enum _eNotificationTypes
 	NTYPE_TODAYCOUNTER,
 	NTYPE_SWITCH_OFF,//16
 	NTYPE_PERCENTAGE,
+	NTYPE_DEWPOINT,
 };
 
 enum _eShareRights

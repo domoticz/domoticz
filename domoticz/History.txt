@@ -22,6 +22,8 @@ Version 1.0.xxx (July xxth 2013)
 - Implemented: Dew Point calculation for sensors with Temperature + Humidity
 - Changed: Last xx hours/days graph, Only Gas/Electricity sensors with same previous value will be ignored
 - Implemented: Spanish language support (thanks to the community!)
+- Implemented: Dew Point notifications
+- Implemented: Dew Point logging (not visible yet!)
 
 Version 1.0.762 (July 1th 2013)
 - Changed: Motion Sensors, Off delay now sends 'Off' to Lighting 1/6 devices, and 'No Motion' to X10 motion sensors

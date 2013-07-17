@@ -933,7 +933,7 @@ function RefreshTemps()
 			  }
             }
 			if (typeof item.DewPoint != 'undefined') {
-				status+="<br>Dew Point: " + item.DewPoint + '\u00B0 C';
+				status+="<br>"+$.i18n("Dew Point") + ": " + item.DewPoint + '\u00B0 C';
 			}
 
             var nbackcolor="#D4E1EE";
@@ -1083,7 +1083,7 @@ function ShowTemps()
 						}
 					}
 					if (typeof item.DewPoint != 'undefined') {
-						xhtm+="<br>Dew Point: " + item.DewPoint + '\u00B0 C';
+						xhtm+="<br>"+$.i18n("Dew Point") + ": " + item.DewPoint + '\u00B0 C';
 					}
 					xhtm+=
 							'</td>\n' +

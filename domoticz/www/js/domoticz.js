@@ -563,6 +563,11 @@ function RefreshNotificationTable(idx)
 				ntype=$.i18n("Temperature");
 				stype=" &deg; C";
 			}
+			else if (parts[0]=="D")
+			{
+				ntype=$.i18n("Dew Point");
+				stype=" &deg; C";
+			}
 			else if (parts[0]=="H")
 			{
 				ntype=$.i18n("Humidity");
@@ -638,6 +643,9 @@ function RefreshNotificationTable(idx)
 			else if (ntype==$.i18n("Switch Off")) {
 				whenstr=$.i18n("Off");
 			}
+			else if (ntype==$.i18n("Dew Point")) {
+				whenstr=$.i18n("Dew Point");
+			}
 			else {
 				if (parts[1]==">") {
 					nwhen=$.i18n("Greater") + " than ";
@@ -698,7 +706,11 @@ function ShowNotificationTypeLabel()
 {
 	var typetext = $($.content + " #notificationparamstable #combotype option:selected").text();
 	
-	if ((typetext == $.i18n("Switch On"))||(typetext == $.i18n("Switch Off"))) {
+	if (
+		(typetext == $.i18n("Switch On"))||
+		(typetext == $.i18n("Switch Off"))||
+		(typetext == $.i18n("Dew Point"))
+		) {
 		$($.content + " #notificationparamstable #notiwhen").hide();
 		$($.content + " #notificationparamstable #notival").hide();
 		return;
@@ -707,6 +719,8 @@ function ShowNotificationTypeLabel()
 	$($.content + " #notificationparamstable #notival").show();
 	
 	if (typetext == $.i18n('Temperature'))
+		$($.content + " #notificationparamstable #valuetype").html('&nbsp;&deg; C');
+	else if (typetext == $.i18n('Dew Point'))
 		$($.content + " #notificationparamstable #valuetype").html('&nbsp;&deg; C');
 	else if (typetext == $.i18n('Humidity'))
 		$($.content + " #notificationparamstable #valuetype").html('&nbsp;%');
@@ -740,7 +754,7 @@ function GetValTextInNTypeStrArray(stext)
 {
 	var pos=-1;
 	$.each($.NTypeStr, function(i,item){
-		if (item.text == stext)
+		if ($.i18n(item.text) == stext)
 		{
 			pos = item.val;
 		}
