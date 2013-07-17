@@ -31,6 +31,7 @@ struct _tGuiLanguage {
 static const _tGuiLanguage guiLanguage[]=
 {
 	{ "en", "English" },
+	{ "es", "Spanish" },
 	{ "nl", "Dutch" },
 	{ "de", "German" },
 	{ "fr", "French" },

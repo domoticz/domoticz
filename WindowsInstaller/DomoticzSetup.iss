@@ -34,7 +34,8 @@ WizardSmallImageFile=compiler:WizModernSmallImage-IS.bmp
 
 [Tasks]
 Name: desktopicon; Description: {cm:CreateDesktopIcon}; GroupDescription: {cm:AdditionalIcons}; 
-Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
+Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked;
+Name: "startupicon"; Description: "Create a Startup Shortcut"; GroupDescription: "{cm:AdditionalIcons}";
 
 [Files]
 Source: "..\Release\domoticz.exe"; DestDir: {app}; Flags: ignoreversion;
@@ -51,7 +52,7 @@ Name: "{group}\Domoticz"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\DomoticzManual.pdf"; Filename: "{app}\DomoticzManual.pdf"
 Name: "{group}\{cm:ProgramOnTheWeb,Domoticz}"; Filename: "{#MyAppURL}"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-Name: "{commonstartup}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "-startupdelay 10"
+Name: "{commonstartup}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "-startupdelay 10" ; Tasks: startupicon
 Name: "{commondesktop}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
 
