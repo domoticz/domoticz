@@ -31,22 +31,6 @@ class CEventSystem
 	};
      */
 
-    struct _tDeviceTemp
-	{
-		unsigned long long ID;
-        std::string temperatureValue;
-	};
-    struct _tDeviceHum
-	{
-		unsigned long long ID;
-        std::string humidityValue;
-	};
-    struct _tDeviceBaro
-	{
-		unsigned long long ID;
-        std::string barometerValue;
-	};
-
     
 public:
     
@@ -100,9 +84,9 @@ private:
     void ScheduleEvent(std::string ID, std::string Action);
     std::string reciprokalAction (std::string Action);
     std::vector<_tEventItem> m_events;
-    std::vector<_tDeviceTemp> tempValues;
-    std::vector<_tDeviceHum> humValues;
-    std::vector<_tDeviceBaro> baroValues;
+    std::map<unsigned long long,std::string> tempValues;
+    std::map<unsigned long long,std::string> humValues;
+    std::map<unsigned long long,std::string> baroValues;
     void reportMissingDevice (int deviceID, std::string EventName, unsigned long long eventID);
     std::string describeError(int resultcode);
     
