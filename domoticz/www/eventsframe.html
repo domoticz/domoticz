@@ -418,6 +418,40 @@
       	else {alert('no event name entered!');}
       }
 
+	  function show_states() {
+	  	$.ajax({
+	    	url : "json.htm?type=events&param=currentstates", 
+	      	async: false, 
+	      	dataType: 'json',
+	      	success: function(data) {
+		    	if (typeof data != 'undefined') {
+					if (data.status=="OK") {
+						var devicestates = "<div style='overflow:scroll; overflow-x: hidden; height: 400px;'><table><thead><tr><th align='left' style='padding-right: 80px;'>ID</th><th align='left' style='padding-right: 80px;'>Name</th><th align='left' style='padding-right: 80px;'>Current state</th><th align='left' style='padding-right: 80px;'>Last updated</th><th align='left' style='padding-right: 10px;'>sValues</th></tr></thead><tbody>";
+						if (typeof data.result != 'undefined') {
+							
+							$.each(data.result, function(i,item){
+								var oneitem = '<tr><td> '+item.id+' </td><td> '+item.name+' </td><td> '+item.value +' </td><td> '+item.lastupdate+' </td><td> '+item.svalues+'</td></tr>'; 
+								devicestates += oneitem;
+							});
+						}
+						devicestates += "</tbody></table></div>";
+						noty({
+							text: devicestates,
+							type: 'information',
+							modal: true,
+							buttons: [
+							{addClass: 'btn btn-primary', text: 'Ok', onClick: function($noty) 
+								{$noty.close();
+									
+								}
+							}]
+						});
+				  	}
+				}
+			}
+		});
+	  }
+
 	$(window).resize(function() {
 		ResizeBlockyWindow();
 	});
@@ -506,6 +540,7 @@
 					<select size="10" width="100%" style="width: 100%" id="savedEvents" name="savedEvents" onchange="loadSelectedEvent(this.value);">> 
 					</select>
 					<br/><a class="btnstyle3" href="javascript:delete_block()">Delete selected</a>
+					<br/><a class="btnstyle3" href="javascript:show_states()">Show current states</a>
 					<!--<br/><textarea id="blockDebug" width="100em" height="100em"></textarea>-->
 					<br/><div id="blockId" style="display:none;"/>
 					

@@ -170,6 +170,8 @@ void CEventSystem::GetCurrentMeasurementStates()
     tempValues.clear();
     humValues.clear();
     baroValues.clear();
+    
+    boost::lock_guard<boost::mutex> l(deviceStateMutex);
 
     typedef std::map<unsigned long long,_tDeviceStatus>::iterator it_type;
     for(it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); iterator++) {
@@ -316,6 +318,10 @@ void CEventSystem::EvaluateEvent(const std::string reason, const unsigned long l
 void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording)
 {
     
+#ifdef _DEBUG
+    _log.Log(LOG_NORM,"EventSystem blockly %s trigger",reason.c_str());
+#endif
+
     boost::lock_guard<boost::mutex> l(eventMutex);
     
     lua_State *lua_state;
@@ -548,7 +554,7 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
     lua_setglobal(lua_state, "print");
     
 #ifdef _DEBUG
-    _log.Log(LOG_NORM,"EventSystem %s trigger",reason.c_str());
+    _log.Log(LOG_NORM,"EventSystem script %s trigger",reason.c_str());
 #endif
     
     GetCurrentMeasurementStates();

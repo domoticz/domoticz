@@ -5,6 +5,7 @@
 #include "mainworker.h"
 #include "Helper.h"
 #include "localtime_r.h"
+#include "EventSystem.h"
 #include "../webserver/cWebem.h"
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
@@ -8180,7 +8181,25 @@ std::string CWebServer::GetJSonPage()
             m_pMain->m_eventsystem.LoadEvents();
             root["status"]="OK";
         }
-   
+        if (cparam=="currentstates")
+		{
+            int ii=0;
+            typedef std::map<unsigned long long,CEventSystem::_tDeviceStatus>::iterator it_type;
+            for(it_type iterator = m_pMain->m_eventsystem.m_devicestates.begin(); iterator != m_pMain->m_eventsystem.m_devicestates.end(); iterator++) {
+                CEventSystem::_tDeviceStatus sitem = iterator->second;
+                root["title"]="Current States";
+                root["result"][ii]["id"]=sitem.ID;
+                root["result"][ii]["name"]=sitem.deviceName;
+                root["result"][ii]["value"]=sitem.nValueWording;
+                root["result"][ii]["svalues"]=sitem.sValue;
+                root["result"][ii]["lastupdate"]=sitem.lastUpdate;
+                ii++;
+            }
+            if (ii==0)
+                goto exitjson;
+            root["status"]="OK";
+        }
+        
 	} //(rtype=="events")
     else if (rtype=="settings")
 	{

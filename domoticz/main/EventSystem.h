@@ -18,7 +18,7 @@ class CEventSystem
         int EventStatus;
         
 	};
-
+    /*
 	struct _tDeviceStatus
 	{
 		unsigned long long ID;
@@ -29,6 +29,7 @@ class CEventSystem
         std::string lastUpdate;
         
 	};
+     */
 
     struct _tDeviceTemp
 	{
@@ -48,6 +49,19 @@ class CEventSystem
 
     
 public:
+    
+    struct _tDeviceStatus
+	{
+		unsigned long long ID;
+        std::string deviceName;
+        unsigned long long nValue;
+        std::string sValue;
+        std::string nValueWording;
+        std::string lastUpdate;
+        
+	};
+    std::map<unsigned long long,_tDeviceStatus> m_devicestates;
+    
 	CEventSystem(void);
 	~CEventSystem(void);
 
@@ -89,7 +103,6 @@ private:
     std::vector<_tDeviceTemp> tempValues;
     std::vector<_tDeviceHum> humValues;
     std::vector<_tDeviceBaro> baroValues;
-    std::map<unsigned long long,_tDeviceStatus> m_devicestates;
     void reportMissingDevice (int deviceID, std::string EventName, unsigned long long eventID);
     std::string describeError(int resultcode);
     
