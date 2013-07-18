@@ -99,7 +99,7 @@
 				var compareString = "temperaturedevice["+$(titleA).text()+"]";
 				if ($(titleB).attr("name") == "NUM") {
 					compareString += locOperand;
-					compareString += '"'+$(titleB).text()+'"'; 
+					compareString += $(titleB).text(); 
 				}
 				return compareString;						
 			}
@@ -110,7 +110,7 @@
 				var compareString = "humiditydevice["+$(titleA).text()+"]";
 				if ($(titleB).attr("name") == "NUM") {
 					compareString += locOperand;
-					compareString += '"'+$(titleB).text()+'"'; 
+					compareString += +$(titleB).text(); 
 				}
 				return compareString;						
 			}
@@ -121,7 +121,7 @@
 				var compareString = "barometerdevice["+$(titleA).text()+"]";
 				if ($(titleB).attr("name") == "NUM") {
 					compareString += locOperand;
-					compareString += '"'+$(titleB).text()+'"'; 
+					compareString += $(titleB).text(); 
 				}
 				return compareString;						
 			}
