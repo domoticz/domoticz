@@ -407,7 +407,7 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
     _log.Log(LOG_NORM,"EventSystem blockly %s trigger",reason.c_str());
 #endif
 
-    boost::lock_guard<boost::mutex> l(eventMutex);
+    boost::lock_guard<boost::mutex> l(deviceStateMutex);
     
     lua_State *lua_state;
     lua_state = luaL_newstate();
@@ -614,6 +614,8 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
 
 void CEventSystem::EvaluateLua(const std::string reason, const std::string filename, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording)
 {
+
+    boost::lock_guard<boost::mutex> l(deviceStateMutex);
 
     lua_State *lua_state;
     lua_state = luaL_newstate();
