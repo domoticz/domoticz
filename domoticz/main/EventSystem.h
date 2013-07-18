@@ -20,7 +20,6 @@ class CEventSystem
 	};
     
 public:
-    
     struct _tDeviceStatus
 	{
 		unsigned long long ID;
@@ -45,11 +44,11 @@ public:
 	bool ProcessDevice(const int HardwareID, const unsigned long long ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string devname);
     void RemoveSingleState(int ulDevID);
     
+	void WWWGetItemStates(std::vector<_tDeviceStatus> &iStates);
 private:
 	//lua_State	*m_pLUA;
 	MainWorker *m_pMain;
 	boost::mutex eventMutex;
-    boost::mutex deviceStateMutex;
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 	unsigned char m_secondcounter;

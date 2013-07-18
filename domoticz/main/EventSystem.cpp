@@ -74,6 +74,7 @@ void CEventSystem::StopEventSystem()
 void CEventSystem::LoadEvents()
 {
 	boost::lock_guard<boost::mutex> l(eventMutex);
+
 	m_events.clear();
 
 	std::stringstream szQuery;
@@ -282,7 +283,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 
 void CEventSystem::RemoveSingleState(int ulDevID)
 {
-    boost::lock_guard<boost::mutex> l(deviceStateMutex);
+	boost::lock_guard<boost::mutex> l(eventMutex);
+
     //_log.Log(LOG_NORM,"deleted device %d",ulDevID);
     m_devicestates.erase(ulDevID);
 
@@ -321,9 +323,8 @@ std::string CEventSystem::UpdateSingleState(unsigned long long ulDevID, std::str
 
 bool CEventSystem::ProcessDevice(const int HardwareID, const unsigned long long ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string devname)
 {
-    
-    boost::lock_guard<boost::mutex> l(deviceStateMutex);
-    
+	boost::lock_guard<boost::mutex> l(eventMutex);
+
     // query to get switchtype & LastUpdate, can't seem to get it from SQLHelper?
     std::vector<std::vector<std::string> > result;
     std::stringstream szQuery;
@@ -345,11 +346,8 @@ bool CEventSystem::ProcessDevice(const int HardwareID, const unsigned long long 
 
 void CEventSystem::ProcessMinute()
 {
-    
-    boost::lock_guard<boost::mutex> l(deviceStateMutex);
-    
+	boost::lock_guard<boost::mutex> l(eventMutex);
 	EvaluateEvent("time");
-    
 }
 
 void CEventSystem::EvaluateEvent(const std::string reason)
@@ -1056,10 +1054,15 @@ std::string CEventSystem::describeError(int resultcode)
     }
 }
 
+void CEventSystem::WWWGetItemStates(std::vector<_tDeviceStatus> &iStates)
+{
+	boost::lock_guard<boost::mutex> l(eventMutex);
 
-  
-    
-    
-
-
+	iStates.clear();
+	typedef std::map<unsigned long long,_tDeviceStatus>::iterator it_type;
+	for(it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); iterator++) 
+	{
+		iStates.push_back(iterator->second);
+	}
+}
 

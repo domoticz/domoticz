@@ -8183,20 +8183,23 @@ std::string CWebServer::GetJSonPage()
         }
         if (cparam=="currentstates")
 		{
-            int ii=0;
-            typedef std::map<unsigned long long,CEventSystem::_tDeviceStatus>::iterator it_type;
-            for(it_type iterator = m_pMain->m_eventsystem.m_devicestates.begin(); iterator != m_pMain->m_eventsystem.m_devicestates.end(); iterator++) {
-                CEventSystem::_tDeviceStatus sitem = iterator->second;
+			std::vector<CEventSystem::_tDeviceStatus> devStates;
+			m_pMain->m_eventsystem.WWWGetItemStates(devStates);
+			if (devStates.size()==0)
+				goto exitjson;
+			
+			int ii=0;
+            std::vector<CEventSystem::_tDeviceStatus>::iterator itt;
+            for(itt = devStates.begin(); itt != devStates.end(); itt++) 
+			{
                 root["title"]="Current States";
-                root["result"][ii]["id"]=sitem.ID;
-                root["result"][ii]["name"]=sitem.deviceName;
-                root["result"][ii]["value"]=sitem.nValueWording;
-                root["result"][ii]["svalues"]=sitem.sValue;
-                root["result"][ii]["lastupdate"]=sitem.lastUpdate;
+                root["result"][ii]["id"]=itt->ID;
+                root["result"][ii]["name"]=itt->deviceName;
+                root["result"][ii]["value"]=itt->nValueWording;
+                root["result"][ii]["svalues"]=itt->sValue;
+                root["result"][ii]["lastupdate"]=itt->lastUpdate;
                 ii++;
             }
-            if (ii==0)
-                goto exitjson;
             root["status"]="OK";
         }
         
