@@ -136,7 +136,6 @@ void CEventSystem::Do_Work()
 void CEventSystem::GetCurrentStates()
 {
     
-    boost::lock_guard<boost::mutex> l(deviceStateMutex);
     m_devicestates.clear();
     
 	std::stringstream szQuery;
@@ -292,8 +291,6 @@ void CEventSystem::RemoveSingleState(int ulDevID)
 std::string CEventSystem::UpdateSingleState(unsigned long long ulDevID, std::string devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, std::string lastUpdate)
 {
     
-    boost::lock_guard<boost::mutex> l(deviceStateMutex);
-    
     std::string nValueWording = nValueToWording(devType, subType, switchType, nValue, sValue);
     
     std::map<unsigned long long,_tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
@@ -324,7 +321,10 @@ std::string CEventSystem::UpdateSingleState(unsigned long long ulDevID, std::str
 
 bool CEventSystem::ProcessDevice(const int HardwareID, const unsigned long long ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string devname)
 {
-    // query to get switchtype & LastUpdate, can't seem to get it from SQLHelper? 
+    
+    boost::lock_guard<boost::mutex> l(deviceStateMutex);
+    
+    // query to get switchtype & LastUpdate, can't seem to get it from SQLHelper?
     std::vector<std::vector<std::string> > result;
     std::stringstream szQuery;
     szQuery << "SELECT ID, SwitchType, LastUpdate FROM DeviceStatus WHERE (Name == '" << devname << "')";
@@ -345,6 +345,8 @@ bool CEventSystem::ProcessDevice(const int HardwareID, const unsigned long long 
 
 void CEventSystem::ProcessMinute()
 {
+    
+    boost::lock_guard<boost::mutex> l(deviceStateMutex);
     
 	EvaluateEvent("time");
     
@@ -405,9 +407,7 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
     _log.Log(LOG_NORM,"EventSystem blockly %s trigger",reason.c_str());
 #endif
 
-    boost::lock_guard<boost::mutex> l(deviceStateMutex);
-    
-    lua_State *lua_state;
+       lua_State *lua_state;
     lua_state = luaL_newstate();
     
     // load Lua libraries
@@ -612,8 +612,6 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
 
 void CEventSystem::EvaluateLua(const std::string reason, const std::string filename, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording)
 {
-
-    boost::lock_guard<boost::mutex> l(deviceStateMutex);
 
     lua_State *lua_state;
     lua_state = luaL_newstate();
