@@ -176,8 +176,6 @@ void CEventSystem::GetCurrentMeasurementStates()
     
 	char szTmp[300];
 
-    boost::lock_guard<boost::mutex> l(deviceStateMutex);
-
     typedef std::map<unsigned long long,_tDeviceStatus>::iterator it_type;
     for(it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); iterator++) 
 	{
