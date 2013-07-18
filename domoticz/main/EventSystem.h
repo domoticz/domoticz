@@ -73,9 +73,9 @@ private:
     void ScheduleEvent(std::string ID, std::string Action);
     std::string reciprokalAction (std::string Action);
     std::vector<_tEventItem> m_events;
-    std::map<unsigned long long,std::string> tempValues;
-    std::map<unsigned long long,std::string> humValues;
-    std::map<unsigned long long,std::string> baroValues;
+    std::map<unsigned long long,std::string> m_tempValues;
+    std::map<unsigned long long,std::string> m_humValues;
+    std::map<unsigned long long,std::string> m_baroValues;
     void reportMissingDevice (int deviceID, std::string EventName, unsigned long long eventID);
     std::string describeError(int resultcode);
     
