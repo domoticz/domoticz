@@ -585,14 +585,17 @@ function ShowTempLog(id,name)
       }],
       tooltip: {
           formatter: function() {
-            var unit = {
-                        'Humidity': '%',
-                        'Temperature': '\u00B0 C',
-                        'Temperature_min': '\u00B0 C',
-                        'Chill': '\u00B0 C',
-                        'Chill_min': '\u00B0 C'
-                  }[this.series.name];
-                  return $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
+			var unit="";
+			if (this.series.name==$.i18n('Humidity')) {
+				unit="%";
+			}
+			else if (this.series.name.indexOf($.i18n('Temperature'))==0) {
+				unit="\u00B0 C";
+			}
+			else if (this.series.name.indexOf($.i18n('Chill'))==0) {
+				unit="\u00B0 C";
+			}
+            return $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
           }
       },
       legend: {
@@ -687,14 +690,17 @@ function ShowTempLog(id,name)
       }],
       tooltip: {
           formatter: function() {
-            var unit = {
-                        'Humidity': '%',
-                        'Temperature': '\u00B0 C',
-                        'Temperature_min': '\u00B0 C',
-                        'Chill': '\u00B0 C',
-                        'Chill_min': '\u00B0 C'
-                  }[this.series.name];
-                  return $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
+			var unit="";
+			if (this.series.name==$.i18n('Humidity')) {
+				unit="%";
+			}
+			else if (this.series.name.indexOf($.i18n('Temperature'))==0) {
+				unit="\u00B0 C";
+			}
+			else if (this.series.name.indexOf($.i18n('Chill'))==0) {
+				unit="\u00B0 C";
+			}
+            return $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
           }
       },
       legend: {
@@ -798,14 +804,17 @@ function ShowTempLog(id,name)
       }],
       tooltip: {
           formatter: function() {
-            var unit = {
-                        'Humidity': '%',
-                        'Temperature': '\u00B0 C',
-                        'Temperature_min': '\u00B0 C',
-                        'Chill': '\u00B0 C',
-                        'Chill_min': '\u00B0 C'
-                  }[this.series.name];
-                  return $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
+			var unit="";
+			if (this.series.name==$.i18n('Humidity')) {
+				unit="%";
+			}
+			else if (this.series.name.indexOf($.i18n('Temperature'))==0) {
+				unit="\u00B0 C";
+			}
+			else if (this.series.name.indexOf($.i18n('Chill'))==0) {
+				unit="\u00B0 C";
+			}
+            return $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
           }
       },
       legend: {
