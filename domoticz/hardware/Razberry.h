@@ -70,6 +70,7 @@ private:
 	void SendDevice2Domoticz(const _tZWaveDevice *pDevice);
 	_tZWaveDevice* FindDevice(int nodeID, int instanceID, _eZWaveDeviceType devType);
 	_tZWaveDevice* FindDevice(int nodeID, int scaleID);
+	void UpdateDeviceBatteryStatus(int nodeID, int value);
 	void RunCMD(const std::string cmd);
 
 	bool m_bInitState;

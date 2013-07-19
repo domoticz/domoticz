@@ -17,7 +17,7 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-//	#define DEBUG_ZWAVE_INT
+	#define DEBUG_ZWAVE_INT
 #endif
 
 bool isInt(std::string s)
@@ -79,7 +79,8 @@ bool CRazberry::StopHardware()
 	{
 		assert(m_thread);
 		m_stoprequested = true;
-		m_thread->join();
+		if (m_thread!=NULL)
+			m_thread->join();
 	}
 	return true;
 }
@@ -89,6 +90,8 @@ void CRazberry::Do_Work()
 	while (!m_stoprequested)
 	{
 		boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+		if (m_stoprequested)
+			return;
 		if (m_bInitState)
 		{
 			if (GetInitialDevices())
@@ -450,13 +453,36 @@ void CRazberry::InsertOrUpdateDevice(_tZWaveDevice device, const bool bSend2Domo
 */
 }
 
+void CRazberry::UpdateDeviceBatteryStatus(int nodeID, int value)
+{
+	std::map<std::string,_tZWaveDevice>::iterator itt;
+	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
+	{
+		if (itt->second.nodeID==nodeID)
+		{
+			itt->second.batValue=value;
+		}
+	}
+}
+
 void CRazberry::UpdateDevice(const std::string path, const Json::Value obj)
 {
 	_tZWaveDevice *pDevice=NULL;
 
-	//Possible fix for Everspring ST814. maybe others, my multi sensor is coming soon to find out!
-	if (path.find("instances.0.commandClasses.49.data.")!=std::string::npos)
+	if (path.find("instances.0.commandClasses.128.data.last")!=std::string::npos)
 	{
+		if (obj["value"].empty()==false)
+		{
+			int batValue=obj["value"].asInt();
+			std::vector<std::string> results;
+			StringSplit(path,".",results);
+			int devID=atoi(results[1].c_str());
+			UpdateDeviceBatteryStatus(devID,batValue);
+		}
+	}
+	else if (path.find("instances.0.commandClasses.49.data.")!=std::string::npos)
+	{
+		//Possible fix for Everspring ST814. maybe others, my multi sensor is coming soon to find out!
 		std::vector<std::string> results;
 		StringSplit(path,".",results);
 		//Find device by data id
@@ -630,10 +656,6 @@ void CRazberry::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	{
 		RBUF tsen;
 		memset(&tsen,0,sizeof(RBUF));
-		tsen.TEMP_HUM.battery_level=9;
-		tsen.TEMP_HUM.rssi=6;
-		tsen.TEMP.id1=ID3;
-		tsen.TEMP.id2=ID4;
 
 		const _tZWaveDevice *pHumDevice=FindDevice(pDevice->nodeID,-1,ZDTYPE_SENSOR_HUMIDITY);
 		if (pHumDevice)
@@ -641,6 +663,15 @@ void CRazberry::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
 			tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
 			tsen.TEMP_HUM.subtype=sTypeTH5;
+			tsen.TEMP_HUM.battery_level=9;
+			tsen.TEMP_HUM.rssi=6;
+			tsen.TEMP_HUM.id1=ID3;
+			tsen.TEMP_HUM.id2=ID4;
+
+			if (pDevice->hasBattery)
+			{
+				tsen.TEMP_HUM.battery_level=(pDevice->batValue<20)?0:1;
+			}
 
 			tsen.TEMP_HUM.tempsign=(pDevice->floatValue>=0)?0:1;
 			int at10=round(abs(pDevice->floatValue*10.0f));
@@ -655,6 +686,16 @@ void CRazberry::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
 			tsen.TEMP.packettype=pTypeTEMP;
 			tsen.TEMP.subtype=sTypeTEMP10;
+			tsen.TEMP.battery_level=9;
+			tsen.TEMP.rssi=6;
+			tsen.TEMP.id1=ID3;
+			tsen.TEMP.id2=ID4;
+
+			if (pDevice->hasBattery)
+			{
+				tsen.TEMP.battery_level=(pDevice->batValue<20)?0:1;
+			}
+
 			tsen.TEMP.tempsign=(pDevice->floatValue>=0)?0:1;
 			int at10=round(abs(pDevice->floatValue*10.0f));
 			tsen.TEMP.temperatureh=(BYTE)(at10/256);
@@ -667,10 +708,6 @@ void CRazberry::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	{
 		RBUF tsen;
 		memset(&tsen,0,sizeof(RBUF));
-		tsen.TEMP_HUM.battery_level=9;
-		tsen.TEMP_HUM.rssi=6;
-		tsen.TEMP.id1=ID3;
-		tsen.TEMP.id2=ID4;
 
 		const _tZWaveDevice *pTempDevice=FindDevice(pDevice->nodeID,-1,ZDTYPE_SENSOR_TEMPERATURE);
 		if (pTempDevice)
@@ -678,8 +715,18 @@ void CRazberry::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
 			tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
 			tsen.TEMP_HUM.subtype=sTypeTH5;
+			tsen.TEMP_HUM.battery_level=9;
+			tsen.TEMP_HUM.rssi=6;
+			tsen.TEMP_HUM.id1=ID3;
+			tsen.TEMP_HUM.id2=ID4;
 			ID4=pTempDevice->instanceID;
-			tsen.TEMP.id2=ID4;
+			tsen.TEMP_HUM.id2=ID4;
+
+			tsen.TEMP_HUM.battery_level=1;
+			if (pDevice->hasBattery)
+			{
+				tsen.TEMP_HUM.battery_level=(pDevice->batValue<20)?0:1;
+			}
 
 			tsen.TEMP_HUM.tempsign=(pTempDevice->floatValue>=0)?0:1;
 			int at10=round(abs(pTempDevice->floatValue*10.0f));
@@ -695,6 +742,15 @@ void CRazberry::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.HUM.packetlength=sizeof(tsen.HUM)-1;
 			tsen.HUM.packettype=pTypeHUM;
 			tsen.HUM.subtype=sTypeHUM2;
+			tsen.HUM.battery_level=1;
+			tsen.HUM.battery_level=9;
+			tsen.HUM.rssi=6;
+			tsen.HUM.id1=ID3;
+			tsen.HUM.id2=ID4;
+			if (pDevice->hasBattery)
+			{
+				tsen.HUM.battery_level=(pDevice->batValue<20)?0:1;
+			}
 			tsen.HUM.humidity=(BYTE)pDevice->intvalue;
 			tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
 		}
@@ -709,6 +765,8 @@ void CRazberry::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		lmeter.id4=ID4;
 		lmeter.dunit=pDevice->scaleID;
 		lmeter.fLux=pDevice->floatValue;
+		if (pDevice->hasBattery)
+			lmeter.battery_level=pDevice->batValue;
 		sDecodeRXMessage(this, (const unsigned char *)&lmeter);
 	}
 	else if (pDevice->devType==ZDTYPE_SENSOR_SETPOINT)
@@ -720,6 +778,8 @@ void CRazberry::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		tmeter.id3=ID3;
 		tmeter.id4=ID4;
 		tmeter.dunit=1;
+		if (pDevice->hasBattery)
+			tmeter.battery_level=pDevice->batValue;
 		tmeter.temp=pDevice->floatValue;
 		sDecodeRXMessage(this, (const unsigned char *)&tmeter);
 	}

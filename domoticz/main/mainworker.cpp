@@ -6105,7 +6105,7 @@ unsigned long long MainWorker::decode_Lux(const int HwdID, const tRBUF *pRespons
 	unsigned char Unit=pMeter->dunit;
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=12;
-	unsigned char BatteryLevel = 255;
+	unsigned char BatteryLevel = pMeter->battery_level;
 
 	sprintf(szTmp,"%.0f",pMeter->fLux);
 
@@ -6185,7 +6185,7 @@ unsigned long long MainWorker::decode_Thermostat(const int HwdID, const tRBUF *p
 	unsigned char Unit=pMeter->dunit;
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=12;
-	unsigned char BatteryLevel = 255;
+	unsigned char BatteryLevel = pMeter->battery_level;
 
 	switch (pMeter->subtype)
 	{

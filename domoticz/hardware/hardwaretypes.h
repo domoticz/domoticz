@@ -69,6 +69,7 @@ typedef struct _tThermostat {
 	BYTE	id3;
 	BYTE	id4;
 	unsigned char dunit;
+	unsigned char battery_level;
 	float temp;
 	float temp1;
 	float temp2;
@@ -82,6 +83,7 @@ typedef struct _tThermostat {
 		len=sizeof(_tThermostat)-1;
 		type=pTypeThermostat;
 		subtype=sTypeThermTemperature;
+		battery_level=255;
 		id1=1;
 		id2=0;
 		id3=0;
@@ -155,6 +157,7 @@ typedef struct _tLightMeter {
 	BYTE	id3;
 	BYTE	id4;
 	unsigned char dunit;
+	unsigned char battery_level;
 	float fLux;
 
 	_tLightMeter()
@@ -166,6 +169,7 @@ typedef struct _tLightMeter {
 		id2=0;
 		id3=0;
 		id4=0;
+		battery_level=255;
 	}
 } LightMeter;
 
