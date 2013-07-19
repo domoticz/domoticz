@@ -43,7 +43,7 @@ public:
 	void LoadEvents();
 	bool ProcessDevice(const int HardwareID, const unsigned long long ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string devname);
     void RemoveSingleState(int ulDevID);
-    
+    void UpdateSingleState(unsigned long long ulDevID, std::string devname);
 	void WWWGetItemStates(std::vector<_tDeviceStatus> &iStates);
 private:
 	//lua_State	*m_pLUA;
@@ -76,6 +76,7 @@ private:
     std::map<unsigned long long,unsigned char> m_humValues;
     std::map<unsigned long long,int> m_baroValues;
     void reportMissingDevice (int deviceID, std::string EventName, unsigned long long eventID);
+    int getSunRiseSunSetMinutes(std::string what);
     std::string describeError(int resultcode);
     
 };

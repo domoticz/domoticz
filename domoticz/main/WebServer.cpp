@@ -7842,6 +7842,11 @@ std::string CWebServer::GetJSonPage()
 		if (maindeviceidx!="")
 			used=0;
 
+        std::stringstream sstridx(idx);
+        unsigned long long ullidx;
+        sstridx >> ullidx;
+        m_pMain->m_eventsystem.UpdateSingleState(ullidx, name);
+        
 		szQuery.clear();
 		szQuery.str("");
 

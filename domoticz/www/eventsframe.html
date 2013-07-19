@@ -81,7 +81,7 @@
 			var locOperand = opSymbol($($(thisBlock).children("title:first")).text());
 			var valueA = $(thisBlock).children("value[name='A']")[0];
 			var variableType = $(valueA).children("block:first").attr("type");
-			if (variableType == "switchvariables") {
+			if (variableType.indexOf("switchvariables") >= 0) {
 				var titleA = $(valueA).find("title")[0];
 				var valueB = $(thisBlock).children("value[name='B']")[0];
 				var titleB = $(valueB).find("title")[0];
@@ -131,14 +131,22 @@
 		}
 		
 		function parseLogicTimeOfDay(thisBlock) {
+				var compareString = "";
 				var locOperand = opSymbol($($(thisBlock).children("title:first")).text());
-				var valueA = $(thisBlock).children("title[name='Time']")[0];				
-				var hours=parseInt($(valueA).text().substr(0,2));
-				var minutes=parseInt($(valueA).text().substr(3,2));
-				var totalminutes=(hours*60)+minutes;
-				//var hoursNoColon = $(valueA).text().replace(/\:/g, '');
-				var compareString = 'timeofday '+locOperand+' '+totalminutes;
-			  	return compareString;		
+				var valueTime = $(thisBlock).children("value[name='Time']")[0];
+				var timeBlock = $(valueTime).children("block:first");
+				if (timeBlock.attr("type")=="logic_timevalue") {	
+					var valueA = $(timeBlock).children("title[name='TEXT']")[0];			
+					var hours=parseInt($(valueA).text().substr(0,2));
+					var minutes=parseInt($(valueA).text().substr(3,2));
+					var totalminutes=(hours*60)+minutes;
+					compareString = 'timeofday '+locOperand+' '+totalminutes;
+				}
+				else if (timeBlock.attr("type")=="logic_sunrisesunset") {
+					var valueA = $(timeBlock).children("title[name='SunriseSunset']")[0];
+					compareString = 'timeofday '+locOperand+' @'+$(valueA).text(); 
+				}
+				return compareString;	
 		}
 		
 		function parseLogicWeekday(thisBlock) {
@@ -487,9 +495,13 @@
 	   		<block type="logic_setlevel"></block>
 	   		<block type="logic_setdelayed"></block>
 	   		<block type="logic_setrandom"></block>
+	   		<block type="math_number"></block>
+   		</category>
+   		<category name="Time">
 	   		<block type="logic_timeofday"></block>
 	   		<block type="logic_weekday"></block>
-	   		<block type="math_number"></block>
+	   		<block type="logic_timevalue"></block>
+	   		<block type="logic_sunrisesunset"></block>
    		</category>
    		<category name="Messages">
    			<block type="send_notification"></block>
@@ -497,7 +509,10 @@
    		</category>
    		<category name="Devices">   		
 		   	<category name="Switches">
-			   	<block type="switchvariables"></block>
+			   	<block type="switchvariablesAF"></block>
+			   	<block type="switchvariablesGL"></block>
+			   	<block type="switchvariablesMR"></block>
+			   	<block type="switchvariablesSZ"></block>
 			</category>   		
 		   	<category name="Temperature">
 			   	<block type="temperaturevariables"></block>

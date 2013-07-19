@@ -290,6 +290,20 @@ void CEventSystem::RemoveSingleState(int ulDevID)
 
 }
 
+void CEventSystem::UpdateSingleState(unsigned long long ulDevID, std::string devname)
+
+{
+    
+    std::map<unsigned long long,_tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
+    if (itt != m_devicestates.end()) {
+		//Update
+        _tDeviceStatus replaceitem = itt->second;
+        replaceitem.deviceName = devname;
+        itt->second = replaceitem;
+    }
+}
+
+
 std::string CEventSystem::UpdateSingleState(unsigned long long ulDevID, std::string devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, std::string lastUpdate)
 {
     
@@ -333,7 +347,7 @@ bool CEventSystem::ProcessDevice(const int HardwareID, const unsigned long long 
     if (result.size()>0) {
         std::vector<std::string> sd=result[0];
         _eSwitchType switchType=(_eSwitchType)atoi(sd[1].c_str());
-       
+        _log.Log(LOG_NORM,"update single state %s",devname.c_str());
         std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, sd[2]);
         EvaluateEvent("device", ulDevID, devname, nValue, sValue, nValueWording);
     }
@@ -405,7 +419,7 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
     _log.Log(LOG_NORM,"EventSystem blockly %s trigger",reason.c_str());
 #endif
 
-       lua_State *lua_state;
+    lua_State *lua_state;
     lua_state = luaL_newstate();
     
     // load Lua libraries
@@ -543,7 +557,6 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
     else if (reason == "time") {
         
         std::string IDString;
-//        std::size_t found;
         bool eventActive = false;
         
         std::vector<_tEventItem>::iterator it;
@@ -553,6 +566,22 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
             if (eventActive) {
                 // time rules will only run when time or date based critera are found
                 if ((it->Conditions.find("timeofday")!=std::string::npos) || (it->Conditions.find("weekday")!=std::string::npos)) {
+                    
+                    // Replace Sunrise and sunset placeholder with actual time for query
+                    if (it->Conditions.find("@Sunrise")!=std::string::npos) {
+                        int intRise = getSunRiseSunSetMinutes("Sunrise");
+                        std::stringstream ssRise;
+                        ssRise << intRise;
+                        it->Conditions = stdreplace(it->Conditions, "@Sunrise", ssRise.str());
+                    }
+                    if (it->Conditions.find("@Sunset")!=std::string::npos) {
+                        int intSet = getSunRiseSunSetMinutes("Sunset");
+                        std::stringstream ssSet;
+                        ssSet << intSet;
+                        it->Conditions = stdreplace(it->Conditions, "@Sunset", ssSet.str());
+                    }
+                    _log.Log(LOG_NORM,"Query is now: %s",it->Conditions.c_str());
+                    
                     std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + it->Conditions + " then result = 1 end; return result";
                     //_log.Log(LOG_NORM,"ifc: %s",ifCondition.c_str());
                     if( luaL_dostring(lua_state, ifCondition.c_str()))
@@ -1066,3 +1095,32 @@ void CEventSystem::WWWGetItemStates(std::vector<_tDeviceStatus> &iStates)
 	}
 }
 
+int CEventSystem::getSunRiseSunSetMinutes(std::string what)
+{
+    std::vector<std::string> strarray;
+    std::vector<std::string> sunRisearray;
+    std::vector<std::string> sunSetarray;
+    std::vector<int> returnarray;
+    
+    int nValue=0;
+    std::string sValue;
+    if (m_pMain->m_sql.GetTempVar("SunRiseSet",nValue,sValue))
+    {
+        StringSplit(sValue, ";", strarray);
+        StringSplit(strarray[0], ":", sunRisearray);
+        StringSplit(strarray[1], ":", sunSetarray);
+       
+        int sunRiseInMinutes = (atoi(sunRisearray[0].c_str())*60)+atoi(sunRisearray[1].c_str());
+        int sunSetInMinutes = (atoi(sunSetarray[0].c_str())*60)+atoi(sunSetarray[1].c_str());
+       
+        if (what == "Sunrise") {
+            return sunRiseInMinutes;
+        }
+        else {
+            return sunSetInMinutes;
+        }
+        
+    }
+    
+    return 0;
+}

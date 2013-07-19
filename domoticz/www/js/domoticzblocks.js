@@ -4,7 +4,11 @@
 
 Blockly.JavaScript = Blockly.Generator.get('JavaScript');
 
-var switches = [];
+var switchesAF = [];
+var switchesGL = [];
+var switchesMR = [];
+var switchesSZ = [];
+
 var temperatures = [];
 var humidity = [];
 var barometer = [];
@@ -19,11 +23,36 @@ $.ajax({
 	success: function(data) {
 		if (typeof data.result != 'undefined') {
 			$.each(data.result, function(i,item){
-				switches.push([item.Name,item.idx])
+				if ("ghijkl".indexOf(item.Name.charAt(0).toLowerCase()) > -1) {
+					switchesGL.push([item.Name,item.idx])
+				}
+				else if ("mnopqr".indexOf(item.Name.charAt(0).toLowerCase()) > -1) {
+					switchesMR.push([item.Name,item.idx])
+				}
+				else if ("stuvwxyz".indexOf(item.Name.charAt(0).toLowerCase()) > -1) {
+					switchesSZ.push([item.Name,item.idx])
+				}
+				// numbers etc with the a list
+				else {
+					switchesAF.push([item.Name,item.idx])
+				}
+
 			})
 		}
 	}
 });
+
+switchesAF.sort();
+switchesGL.sort();
+switchesMR.sort();
+switchesSZ.sort();
+
+temperatures.sort();
+humidity.sort();
+barometer.sort();
+weather.sort();
+utilities.sort();
+scenes.sort();
 
 $.ajax({
 	url: "json.htm?type=devices&filter=temp&used=true&order=Name", 
@@ -86,17 +115,53 @@ $.ajax({
 });
 
 
-Blockly.Language.switchvariables = {
+Blockly.Language.switchvariablesAF = {
   // Variable getter.
   category: null,  // Variables are handled specially.
   init: function() {
     this.setColour(30);
     this.appendDummyInput()
-        .appendTitle(new Blockly.FieldDropdown(switches), 'Switch');
+	    .appendTitle('A-F ')    
+        .appendTitle(new Blockly.FieldDropdown(switchesAF), 'Switch');
     this.setOutput(true, null);
   }
  };
 
+Blockly.Language.switchvariablesGL = {
+  // Variable getter.
+  category: null,  // Variables are handled specially.
+  init: function() {
+    this.setColour(30);
+    this.appendDummyInput()
+	    .appendTitle('G-L ')
+        .appendTitle(new Blockly.FieldDropdown(switchesGL), 'Switch');
+    this.setOutput(true, null);
+  }
+ };
+ 
+ Blockly.Language.switchvariablesMR = {
+  // Variable getter.
+  category: null,  // Variables are handled specially.
+  init: function() {
+    this.setColour(30);
+    this.appendDummyInput()
+	    .appendTitle('M-R ')
+        .appendTitle(new Blockly.FieldDropdown(switchesMR), 'Switch');
+    this.setOutput(true, null);
+  }
+ };
+
+ Blockly.Language.switchvariablesSZ = {
+  // Variable getter.
+  category: null,  // Variables are handled specially.
+  init: function() {
+    this.setColour(30);
+    this.appendDummyInput()
+	    .appendTitle('S-Z ')
+        .appendTitle(new Blockly.FieldDropdown(switchesSZ), 'Switch');
+    this.setOutput(true, null);
+  }
+ };
 
 Blockly.Language.domoticzcontrols_if = {
   category: null,  // Variables are handled specially.
@@ -274,16 +339,24 @@ Blockly.Language.logic_timeofday = {
   // Comparison operator.
   init: function() {
     this.setColour(120);
-    this.setOutput(true, Boolean);
-    this.appendDummyInput()
-	    .appendTitle("Time ")
-        .appendTitle(new Blockly.FieldDropdown(this.OPERATORS), 'OP')
-        .appendTitle(" ")
-        .appendTitle(new Blockly.FieldTextInput('00:00'), 'Time');
+    this.setOutput(true, null);
+    this.appendValueInput('Time')
+    	.appendTitle("Time:")
+    	.appendTitle(new Blockly.FieldDropdown(this.OPERATORS), 'OP');
     this.setInputsInline(true);
   }
 }; 
+
+Blockly.Language.logic_timevalue = {
+  init: function() {
+    this.setColour(230);
+    this.appendDummyInput()
+        .appendTitle(new Blockly.FieldTextInput('00:00'), 'TEXT');
+    this.setOutput(true, 'String');
  
+  }
+};
+
  Blockly.Language.logic_timeofday.OPERATORS =
     [['=', 'EQ'],
      ['\u2260', 'NEQ'],
@@ -305,8 +378,18 @@ Blockly.Language.logic_weekday = {
     	.appendTitle(new Blockly.FieldDropdown(this.DAYS), 'Weekday');
     }
  };   
+
+Blockly.Language.logic_sunrisesunset = {
+  init: function() {
+	this.setOutput(true, null);
+    this.setColour(230);
+    this.appendDummyInput()
+        .appendTitle(new Blockly.FieldDropdown(this.VALUES), 'SunriseSunset')
+	    .appendTitle(" ");
+  }
+ };
  
-  Blockly.Language.logic_weekday.OPERATORS =
+Blockly.Language.logic_weekday.OPERATORS =
     [['=', 'EQ'],
      ['\u2260', 'NEQ'],
      ['<', 'LT'],
@@ -323,6 +406,9 @@ Blockly.Language.logic_weekday.DAYS =
     ["Saturday",'7'],
      ["Sunday", '1']];
 
+Blockly.Language.logic_sunrisesunset.VALUES =
+    [["Sunrise", 'Sunrise'],
+    ["Sunset",'Sunset']];
 
 Blockly.Language.send_notification = {
   // Comparison operator.
