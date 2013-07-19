@@ -290,10 +290,9 @@ void CEventSystem::RemoveSingleState(int ulDevID)
 
 }
 
-void CEventSystem::UpdateSingleState(unsigned long long ulDevID, std::string devname)
-
+void CEventSystem::WWWUpdateSingleState(unsigned long long ulDevID, std::string devname)
 {
-    
+	boost::lock_guard<boost::mutex> l(eventMutex);
     std::map<unsigned long long,_tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
     if (itt != m_devicestates.end()) {
 		//Update

@@ -7845,7 +7845,7 @@ std::string CWebServer::GetJSonPage()
         std::stringstream sstridx(idx);
         unsigned long long ullidx;
         sstridx >> ullidx;
-        m_pMain->m_eventsystem.UpdateSingleState(ullidx, name);
+        m_pMain->m_eventsystem.WWWUpdateSingleState(ullidx, name);
         
 		szQuery.clear();
 		szQuery.str("");
