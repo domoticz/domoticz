@@ -349,7 +349,7 @@ function ShowWindLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' ' + $.myglobals.windsign;
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' ' + $.myglobals.windsign;
             }
         },
         plotOptions: {
@@ -648,7 +648,7 @@ function ShowWindLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' ' + $.myglobals.windsign;
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' ' + $.myglobals.windsign;
             }
         },
         plotOptions: {
@@ -871,7 +871,7 @@ function ShowWindLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' ' + $.myglobals.windsign;
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' ' + $.myglobals.windsign;
             }
         },
         plotOptions: {
@@ -978,7 +978,7 @@ function ShowUVLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' UVI';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' UVI';
             }
         },
         plotOptions: {
@@ -1056,7 +1056,7 @@ function ShowUVLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' UVI';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' UVI';
             }
         },
         plotOptions: {
@@ -1141,7 +1141,7 @@ function ShowUVLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' UVI';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' UVI';
             }
         },
         plotOptions: {
@@ -1242,7 +1242,7 @@ function ShowBaroLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' hPa';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' hPa';
             }
         },
         plotOptions: {
@@ -1324,7 +1324,7 @@ function ShowBaroLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' hPa';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' hPa';
             }
         },
         plotOptions: {
@@ -1413,7 +1413,7 @@ function ShowBaroLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' hPa';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' hPa';
             }
         },
         plotOptions: {
@@ -1514,7 +1514,7 @@ function ShowRainLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d', this.x) +': '+ this.y +' mm';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y +' mm';
             }
         },
         plotOptions: {
@@ -1590,7 +1590,7 @@ function ShowRainLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d', this.x) +': '+ this.y +' mm';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y +' mm';
             }
         },
         plotOptions: {
@@ -1674,7 +1674,7 @@ function ShowRainLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d', this.x) +': '+ this.y +' mm';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y +' mm';
             }
         },
         plotOptions: {

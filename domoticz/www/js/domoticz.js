@@ -348,7 +348,7 @@ function ShowLightLog(id,name,content,backfunction)
 		},
 		yAxis: {
 			title: {
-				text: 'Percent (%)'
+				text: $.i18n('Percentage') +' (%)'
 			},
 			endOnTick: false,
 			startOnTick: false

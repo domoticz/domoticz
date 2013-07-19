@@ -141,7 +141,7 @@ function AddDataToTempChart(data,chart,isday)
       chart.addSeries(
         {
           id: 'humidity',
-          name: 'Humidity',
+          name: $.i18n('Humidity'),
           color: 'limegreen',
           yAxis: 1
         }
@@ -182,7 +182,7 @@ function AddDataToTempChart(data,chart,isday)
       chart.addSeries(
         {
           id: 'temperature',
-          name: 'Temperature',
+          name: $.i18n('Temperature'),
           color: 'yellow',
           yAxis: 0
         }
@@ -193,7 +193,7 @@ function AddDataToTempChart(data,chart,isday)
         chart.addSeries(
           {
             id: 'temperaturemin',
-            name: 'Temperature_min',
+            name: $.i18n('Temperature') + '_min',
             color: 'rgba(3,190,252,0.8)',
             yAxis: 0
           }
@@ -251,7 +251,7 @@ function AddMultipleDataToTempChart(data,chart,isday,deviceid,devicename)
       chart.addSeries(
         {
           id: 'humidity'+deviceid,
-          name: devicename+':humidity',
+          name: devicename+':'+$.i18n('Humidity'),
           yAxis: 1
         }
       );
@@ -289,7 +289,7 @@ function AddMultipleDataToTempChart(data,chart,isday,deviceid,devicename)
       chart.addSeries(
         {
           id: 'temperature'+deviceid,
-          name: devicename+':temperature',
+          name: devicename+':'+$.i18n('Temperature'),
           yAxis: 0
         }
       );
@@ -299,7 +299,7 @@ function AddMultipleDataToTempChart(data,chart,isday,deviceid,devicename)
         chart.addSeries(
           {
             id: 'temperaturemin'+deviceid,
-            name: devicename+':temperature_min',
+            name: devicename+':'+$.i18n('Temperature')+'_min',
             yAxis: 0
           }
         );
@@ -462,7 +462,7 @@ function ShowCustomTempLog()
                    }
           },
           title: {
-              text: 'humidity %',
+              text: $.i18n('Humidity') +' %',
                style: {
                   color: 'white'
                }
@@ -473,8 +473,8 @@ function ShowCustomTempLog()
           formatter: function() {
                 var unit = '';
                 var baseName = this.series.name.split(':')[1];
-                if (baseName=="humidity") {unit = '%'} else {unit = '\u00B0 C'};
-                return Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit ;
+                if (baseName==$.i18n("Humidity")) {unit = '%'} else {unit = '\u00B0 C'};
+                return $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit ;
           }
       },
       legend: {
@@ -576,7 +576,7 @@ function ShowTempLog(id,name)
                    }
           },
           title: {
-              text: 'humidity %',
+              text: $.i18n('Humidity') +' %',
                style: {
                   color: '#00CC00'
                }
@@ -592,7 +592,7 @@ function ShowTempLog(id,name)
                         'Chill': '\u00B0 C',
                         'Chill_min': '\u00B0 C'
                   }[this.series.name];
-                  return Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
+                  return $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
           }
       },
       legend: {
@@ -678,7 +678,7 @@ function ShowTempLog(id,name)
                    }
           },
           title: {
-              text: 'humidity %',
+              text: $.i18n('Humidity')+' %',
                style: {
                   color: '#00CC00'
                }
@@ -694,7 +694,7 @@ function ShowTempLog(id,name)
                         'Chill': '\u00B0 C',
                         'Chill_min': '\u00B0 C'
                   }[this.series.name];
-                  return Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
+                  return $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
           }
       },
       legend: {
@@ -789,7 +789,7 @@ function ShowTempLog(id,name)
                    }
           },
           title: {
-              text: 'humidity %',
+              text: $.i18n('Humidity')+' %',
                style: {
                   color: '#00CC00'
                }
@@ -805,7 +805,7 @@ function ShowTempLog(id,name)
                         'Chill': '\u00B0 C',
                         'Chill_min': '\u00B0 C'
                   }[this.series.name];
-                  return Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
+                  return $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
           }
       },
       legend: {

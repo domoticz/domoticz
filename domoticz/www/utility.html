@@ -695,7 +695,7 @@ function ShowCurrentLog(id,name,switchtype)
 																'Usage_L2': 'Watt',
 																'Usage_L3': 'Watt'
 													}[this.series.name];
-                    return this.series.name + ':<br/>' + Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y + ' ' + unit;
+                    return this.series.name + ':<br/>' + $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -774,7 +774,7 @@ function ShowCurrentLog(id,name,switchtype)
 																'Usage_L3_Min': 'Watt',
 																'Usage_L3_Max': 'Watt'
 													}[this.series.name];
-                    return this.series.name + ':<br/>' + Highcharts.dateFormat('%A<br/>%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
+                    return this.series.name + ':<br/>' + $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -862,7 +862,7 @@ function ShowCurrentLog(id,name,switchtype)
 																'Usage_L3_Min': 'Watt',
 																'Usage_L3_Max': 'Watt'
 													}[this.series.name];
-                    return this.series.name + ':<br/>' + Highcharts.dateFormat('%A<br/>%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
+                    return this.series.name + ':<br/>' + $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -1011,7 +1011,7 @@ function ShowAirQualityLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' ppm';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' ppm';
             }
         },
         plotOptions: {
@@ -1148,7 +1148,7 @@ function ShowAirQualityLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' ppm';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' ppm';
             }
         },
         plotOptions: {
@@ -1301,7 +1301,7 @@ function ShowAirQualityLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' ppm';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' ppm';
             }
         },
         plotOptions: {
@@ -1411,7 +1411,7 @@ function ShowLuxLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' Lux';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' Lux';
             }
         },
         plotOptions: {
@@ -1496,7 +1496,7 @@ function ShowLuxLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' Lux';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' Lux';
             }
         },
         plotOptions: {
@@ -1597,7 +1597,7 @@ function ShowLuxLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' Lux';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' Lux';
             }
         },
         plotOptions: {
@@ -1707,7 +1707,7 @@ function ShowPercentageLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' %%';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' %%';
             }
         },
         plotOptions: {
@@ -1792,7 +1792,7 @@ function ShowPercentageLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' %';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' %';
             }
         },
         plotOptions: {
@@ -1893,7 +1893,7 @@ function ShowPercentageLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' %';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' %';
             }
         },
         plotOptions: {
@@ -2000,7 +2000,7 @@ function ShowUsageLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' Watt';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' Watt';
             }
         },
         plotOptions: {
@@ -2082,7 +2082,7 @@ function ShowUsageLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' Watt';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' Watt';
             }
         },
         plotOptions: {
@@ -2180,7 +2180,7 @@ function ShowUsageLog(id,name)
         tooltip: {
             formatter: function() {
                     return ''+
-                    Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y +' Watt';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' Watt';
             }
         },
         plotOptions: {
@@ -2290,7 +2290,7 @@ function ShowCounterLog(id,name,switchtype)
 																'Gas': 'm3',
 																'Water': 'm3'
 													}[this.series.name];
-                    return Highcharts.dateFormat('%A %Y-%m-%d %H:%M', this.x) + '<br/>' + this.series.name + ': ' + this.y + ' ' + unit;
+                    return $.i18n(Highcharts.dateFormat('%A',this.x)) + ' ' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) + '<br/>' + this.series.name + ': ' + this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -2349,7 +2349,7 @@ function ShowCounterLog(id,name,switchtype)
 																'Gas': 'm3',
 																'Water': 'm3'
 													}[this.series.name];
-                    return Highcharts.dateFormat('%A %Y-%m-%d %H:%M', this.x) + '<br/>' + this.series.name + ': ' + this.y + ' ' + unit;
+                    return $.i18n(Highcharts.dateFormat('%A',this.x)) + ' ' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) + '<br/>' + this.series.name + ': ' + this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -2406,7 +2406,7 @@ function ShowCounterLog(id,name,switchtype)
 																'Gas': 'm3',
 																'Water': 'm3'
 													}[this.series.name];
-                    return Highcharts.dateFormat('%A %Y-%m-%d %H:%M', this.x) + '<br/>' + this.series.name + ': ' + this.y + ' ' + unit;
+                    return $.i18n(Highcharts.dateFormat('%A',this.x)) + ' ' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) + '<br/>' + this.series.name + ': ' + this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -2486,7 +2486,7 @@ function ShowCounterLog(id,name,switchtype)
 																'Gas': 'm3',
 																'Water': 'm3'
 													}[this.series.name];
-                    return Highcharts.dateFormat('%A %Y-%m-%d %H:%M', this.x) + '<br/>' + this.series.name + ': ' + this.y + ' ' + unit;
+                    return $.i18n(Highcharts.dateFormat('%A',this.x)) + ' ' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) + '<br/>' + this.series.name + ': ' + this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -2579,7 +2579,7 @@ function ShowGenericLog(id,name,switchtype)
 																'Water': 'm3',
                                                                 'Counter': 'cnt'
 													}[this.series.name];
-                    return this.series.name + ':<br/>' + Highcharts.dateFormat('%A<br/>%Y-%m-%d %H:%M', this.x) +': '+ this.y + ' ' + unit;
+                    return this.series.name + ':<br/>' + $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -2639,7 +2639,7 @@ function ShowGenericLog(id,name,switchtype)
 																'Water': 'm3',
                                                                 'Counter': 'cnt'
 													}[this.series.name];
-                    return this.series.name + ':<br/>' + Highcharts.dateFormat('%A<br/>%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
+                    return this.series.name + ':<br/>' + $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -2696,7 +2696,7 @@ function ShowGenericLog(id,name,switchtype)
 																'Water': 'm3',
                                                                 'Counter': 'cnt'
 													}[this.series.name];
-                    return this.series.name + ':<br/>' + Highcharts.dateFormat('%A<br/>%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
+                    return this.series.name + ':<br/>' + $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -2776,7 +2776,7 @@ function ShowGenericLog(id,name,switchtype)
 																'Water': 'm3',
                                                                 'Counter': 'cnt'
 													}[this.series.name];
-                    return this.series.name + ':<br/>' + Highcharts.dateFormat('%A<br/>%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
+                    return this.series.name + ':<br/>' + $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d', this.x) +': '+ this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -2872,7 +2872,7 @@ function ShowSmartLog(id,name,switchtype)
 								'Gas': 'm3',
 								'Water': 'm3'
 							}[this.series.name];
-				return Highcharts.dateFormat('%A %Y-%m-%d %H:%M', this.x) + '<br />' + this.series.name + ':  ' + this.y + ' ' + unit;
+				return $.i18n(Highcharts.dateFormat('%A',this.x)) + ' ' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) + '<br />' + this.series.name + ':  ' + this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -2947,7 +2947,7 @@ function ShowSmartLog(id,name,switchtype)
 						'Gas': 'm3',
 						'Water': 'm3'
 					}[this.series.name];
-                    return Highcharts.dateFormat('%A %Y-%m-%d', this.x) +'<br/>'+ this.series.name + ': ' + this.y + ' ' + unit + '<br/>Total: '+ this.point.stackTotal + ' ' + unit;
+                    return $.i18n(Highcharts.dateFormat('%A',this.x)) + ' ' + Highcharts.dateFormat('%Y-%m-%d', this.x) +'<br/>'+ this.series.name + ': ' + this.y + ' ' + unit + '<br/>Total: '+ this.point.stackTotal + ' ' + unit;
             }
         },
         plotOptions: {
@@ -3008,7 +3008,7 @@ function ShowSmartLog(id,name,switchtype)
 						'Gas': 'm3',
 						'Water': 'm3'
 					}[this.series.name];
-                    return Highcharts.dateFormat('%A %Y-%m-%d', this.x) + '<br/>' + this.series.name + ': ' + this.y + ' ' + unit;
+                    return $.i18n(Highcharts.dateFormat('%A',this.x)) + ' ' + Highcharts.dateFormat('%Y-%m-%d', this.x) + '<br/>' + this.series.name + ': ' + this.y + ' ' + unit;
             }
         },
         plotOptions: {
@@ -3091,7 +3091,7 @@ function ShowSmartLog(id,name,switchtype)
 						'Gas': 'm3',
 						'Water': 'm3'
 					}[this.series.name];
-                    return Highcharts.dateFormat('%A %Y-%m-%d', this.x) + '<br/>' + this.series.name + ': ' +  this.y + ' ' + unit;
+                    return $.i18n(Highcharts.dateFormat('%A',this.x)) + ' ' + Highcharts.dateFormat('%Y-%m-%d', this.x) + '<br/>' + this.series.name + ': ' +  this.y + ' ' + unit;
             }
         },
         plotOptions: {
