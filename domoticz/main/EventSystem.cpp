@@ -347,7 +347,7 @@ bool CEventSystem::ProcessDevice(const int HardwareID, const unsigned long long 
     if (result.size()>0) {
         std::vector<std::string> sd=result[0];
         _eSwitchType switchType=(_eSwitchType)atoi(sd[1].c_str());
-        _log.Log(LOG_NORM,"update single state %s",devname.c_str());
+        //_log.Log(LOG_NORM,"update single state %s",devname.c_str());
         std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, sd[2]);
         EvaluateEvent("device", ulDevID, devname, nValue, sValue, nValueWording);
     }
@@ -580,7 +580,6 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
                         ssSet << intSet;
                         it->Conditions = stdreplace(it->Conditions, "@Sunset", ssSet.str());
                     }
-                    _log.Log(LOG_NORM,"Query is now: %s",it->Conditions.c_str());
                     
                     std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + it->Conditions + " then result = 1 end; return result";
                     //_log.Log(LOG_NORM,"ifc: %s",ifCondition.c_str());
