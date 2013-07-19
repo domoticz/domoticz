@@ -116,13 +116,13 @@ function CheckForUpdate(showdialog) {
 				$("#mCheckUpdate").hide();
 				if (showdialog) {
 					var bValid = false;
-					bValid=(confirm("Update Available !... Update Now?")==true);
+					bValid=(confirm($.i18n("Update Available !... Update Now?"))==true);
 					if (bValid) {
 						SwitchLayout('Update');
 					}
 				}
 				else {
-					generate_noty('success', 'A new version of Domoticz is Available!...<br>Use the Setup tab to update.', false);
+					generate_noty('success', $.i18n('A new version of Domoticz is Available!...<br>Use the Setup tab to update.'), false);
 				}
 			}
 			else
@@ -137,7 +137,7 @@ function CheckForUpdate(showdialog) {
 					$("#mCheckUpdate").show();
 				}
 				if (showdialog) {
-					alert($.i18n("No Update Available..."));
+					alert($.i18n("No Update Available !..."));
 				}
 			}
 		 },
