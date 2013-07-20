@@ -1,0 +1,231 @@
+// Origin:
+// Modern CSS3 Calculator without images.
+// by @jofelipe_
+// www.jonathanfelipe.com.br
+//
+// tweaked to a security panel by GizMoCuz
+
+// Importando o CSS Reset
+@import 'reset.less';
+
+// Fonte personalizada
+@import 'font.less';
+
+body { 
+	background: url(../bg.jpg) repeat;
+}
+
+.clear { clear: both; height: 0 }
+
+// Estilo da div#geral quando a calculadora estiver "desligada"
+
+#geral { // Tela de apresentação
+	width: 100%px;
+	height: 100%px;
+	overflow: hidden;
+
+	.borda-calculadora { // Borda da calculadora
+		width: 566px;
+		padding: 8px;
+		border-radius: 43px;
+position: absolute;
+   left: 50%;
+   top: 50%; 
+   margin-left: -283px;
+   margin-top: -314px;
+     		overflow: hidden;
+
+		// Borda em gradiente
+		background-image: linear-gradient(right bottom, rgb(54,54,54) 27%, rgb(128,128,128) 64%, rgb(59,59,59) 82%);
+		background-image: -o-linear-gradient(right bottom, rgb(54,54,54) 27%, rgb(128,128,128) 64%, rgb(59,59,59) 82%);
+		background-image: -moz-linear-gradient(right bottom, rgb(54,54,54) 27%, rgb(128,128,128) 64%, rgb(59,59,59) 82%);
+		background-image: -webkit-linear-gradient(right bottom, rgb(54,54,54) 27%, rgb(128,128,128) 64%, rgb(59,59,59) 82%);
+		background-image: -ms-linear-gradient(right bottom, rgb(54,54,54) 27%, rgb(128,128,128) 64%, rgb(59,59,59) 82%);
+
+		background-image: -webkit-gradient(
+			linear,
+			right bottom,
+			left top,
+			color-stop(0.27, rgb(54,54,54)),
+			color-stop(0.64, rgb(128,128,128)),
+			color-stop(0.82, rgb(59,59,59))
+		);
+
+
+		#calculadora { // Estrutura da calculadora
+			width: 536px;
+			background: #ccc;
+			overflow: hidden;
+			border-radius: 35px;
+			padding: 15px;
+
+			// Fundo com gradiente
+			background: #e0e0e0;
+			background: -moz-linear-gradient(-45deg,  #e0e0e0 0%, #b2b2b2 45%, #e0e0e0 80%, #e5e5e5 100%);
+			background: -webkit-gradient(linear, left top, right bottom, color-stop(0%,#e0e0e0), color-stop(45%,#b2b2b2), color-stop(80%,#e0e0e0), color-stop(100%,#e5e5e5));
+			background: -webkit-linear-gradient(-45deg,  #e0e0e0 0%,#b2b2b2 45%,#e0e0e0 80%,#e5e5e5 100%);
+			background: -o-linear-gradient(-45deg,  #e0e0e0 0%,#b2b2b2 45%,#e0e0e0 80%,#e5e5e5 100%);
+			background: -ms-linear-gradient(-45deg,  #e0e0e0 0%,#b2b2b2 45%,#e0e0e0 80%,#e5e5e5 100%);
+			background: linear-gradient(135deg,  #e0e0e0 0%,#b2b2b2 45%,#e0e0e0 80%,#e5e5e5 100%);
+			filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e0e0e0', endColorstr='#e5e5e5',GradientType=1 );
+
+
+			.topo-calculadora { // Topo da calculadora (Elementos)
+				overflow: hidden;
+
+				.titulo { // Alinhar título e descricão da calculadora
+					float: left;
+					padding: 10px 15px;
+
+					h1 { // Nome da calculadora
+						color: rgba(0, 0, 0, .5);
+						display: block;
+					    font: 40px/35px 'Audiowide';
+					    text-transform: uppercase;
+					    -webkit-font-smoothing: none;
+						-webkit-font-smoothing: subpixel-antialiased;
+						-webkit-font-smoothing: antialiased;
+					}
+
+					.descricao { // Estilo da descrição
+						color: rgba(139, 137, 137, .95);
+						font: 18px 'Audiowide';
+					    text-transform: uppercase;
+					    -webkit-font-smoothing: none;
+						-webkit-font-smoothing: subpixel-antialiased;
+						-webkit-font-smoothing: antialiased;
+					}
+				}
+
+				.quadrados { // Quadrados da calculadora
+					float: right;
+				    overflow: hidden;
+				    padding: 25px 0 10px;
+
+				    ul {
+				    	height: 25px;
+					    overflow: hidden;
+					    width: 150px;
+
+					    li {
+					    	width: 30px;
+					    	height: 30px;
+					    	float: left;
+					    	background: #8B0000;
+					    	border-right: 1px solid #B52828;
+					    }
+					    li:last-child {
+					    	border-right: none;
+					    }
+				    }
+				}
+			}
+
+			input[type="text"] { // Estilo do campo de números
+
+				// Fundo com gradiente
+				background: rgb(73,155,234); /* Old browsers */
+				background: -moz-linear-gradient(top,  rgba(73,155,234,1) 0%, rgba(32,124,229,1) 100%); /* FF3.6+ */
+				background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(73,155,234,1)), color-stop(100%,rgba(32,124,229,1))); /* Chrome,Safari4+ */
+				background: -webkit-linear-gradient(top,  rgba(73,155,234,1) 0%,rgba(32,124,229,1) 100%); /* Chrome10+,Safari5.1+ */
+				background: -o-linear-gradient(top,  rgba(73,155,234,1) 0%,rgba(32,124,229,1) 100%); /* Opera 11.10+ */
+				background: -ms-linear-gradient(top,  rgba(73,155,234,1) 0%,rgba(32,124,229,1) 100%); /* IE10+ */
+				background: linear-gradient(to bottom,  rgba(73,155,234,1) 0%,rgba(32,124,229,1) 100%); /* W3C */
+				filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#499bea', endColorstr='#207ce5',GradientType=0 ); /* IE6-9 */
+				padding: 2px 10px 0;
+				width: 96%; // Tamanho do campo em porcentagem
+				height: 100px;
+				border: 0;
+				margin-bottom: 20px;
+
+				// Fontes do campo no estilo digital
+				font: 98px 'Digital', sans-serif;
+				color: rgba(255, 255, 255, .75); // Cor com opacidade
+				text-align: right;
+				-webkit-font-smoothing: none;
+				-webkit-font-smoothing: subpixel-antialiased;
+				-webkit-font-smoothing: antialiased;
+			}
+
+			#botoes-opcoes { // Botoes de opções de cálculo
+				overflow: hidden;
+
+				li {
+					display: block;
+					float: left;
+					cursor: pointer;
+					width: 61px;
+					background: #757575;
+					text-align: center;
+					white-space: nowrap;
+
+					// Fundo dos botões com gradiente
+					background: -moz-radial-gradient(center, ellipse cover,  #757575 0%, #494949 47%, #383838 100%);
+					background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,#757575), color-stop(47%,#494949), color-stop(100%,#383838));
+					background: -webkit-radial-gradient(center, ellipse cover,  #757575 0%,#494949 47%,#383838 100%);
+					background: -o-radial-gradient(center, ellipse cover,  #757575 0%,#494949 47%,#383838 100%);
+					background: -ms-radial-gradient(center, ellipse cover,  #757575 0%,#494949 47%,#383838 100%);
+					background: radial-gradient(ellipse at center,  #757575 0%,#494949 47%,#383838 100%);
+					filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#757575', endColorstr='#383838',GradientType=1 );
+					margin: 0 15px 15px 0;
+					border-radius: 10px;
+					font: 40px/35px 'Audiowide';
+					color: #FFF;
+					padding: 20px;
+
+						&:hover {
+							background: #939393;
+							background: -moz-radial-gradient(center, ellipse cover,  #939393 0%, #606060 47%, #191919 100%);
+							background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,#939393), color-stop(47%,#606060), color-stop(100%,#191919));
+							background: -webkit-radial-gradient(center, ellipse cover,  #939393 0%,#606060 47%,#191919 100%);
+							background: -o-radial-gradient(center, ellipse cover,  #939393 0%,#606060 47%,#191919 100%);
+							background: -ms-radial-gradient(center, ellipse cover,  #939393 0%,#606060 47%,#191919 100%);
+							background: radial-gradient(ellipse at center,  #939393 0%,#606060 47%,#191919 100%);
+							filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#939393', endColorstr='#191919',GradientType=1 );
+
+					}
+				}
+
+						li:nth-child(4n+4) { margin-right: 0 }
+						li.disarm {
+						 width: 147px;
+						 font-size: 27px;
+							background: rgb(30,168,3); /* Old browsers */
+							background: -moz-radial-gradient(center, ellipse cover,  rgba(30,168,3,1) 0%, rgba(2,143,34,1) 44%, rgba(0,109,25,1) 100%); /* FF3.6+ */
+							background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(30,168,3,1)), color-stop(44%,rgba(2,143,34,1)), color-stop(100%,rgba(0,109,25,1))); /* Chrome,Safari4+ */
+							background: -webkit-radial-gradient(center, ellipse cover,  rgba(30,168,3,1) 0%,rgba(2,143,34,1) 44%,rgba(0,109,25,1) 100%); /* Chrome10+,Safari5.1+ */
+							background: -o-radial-gradient(center, ellipse cover,  rgba(30,168,3,1) 0%,rgba(2,143,34,1) 44%,rgba(0,109,25,1) 100%); /* Opera 12+ */
+							background: -ms-radial-gradient(center, ellipse cover,  rgba(30,168,3,1) 0%,rgba(2,143,34,1) 44%,rgba(0,109,25,1) 100%); /* IE10+ */
+							background: radial-gradient(ellipse at center,  rgba(30,168,3,1) 0%,rgba(2,143,34,1) 44%,rgba(0,109,25,1) 100%); /* W3C */
+							filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#1ea803', endColorstr='#006d19',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+						}
+						li.arm {
+						 width: 147px;
+						 font-size: 27px;
+							background: rgb(216,58,95); /* Old browsers */
+							background: -moz-radial-gradient(center, ellipse cover,  rgba(216,58,95,1) 0%, rgba(197,3,48,1) 44%, rgba(170,0,40,1) 100%); /* FF3.6+ */
+							background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(216,58,95,1)), color-stop(44%,rgba(197,3,48,1)), color-stop(100%,rgba(170,0,40,1))); /* Chrome,Safari4+ */
+							background: -webkit-radial-gradient(center, ellipse cover,  rgba(216,58,95,1) 0%,rgba(197,3,48,1) 44%,rgba(170,0,40,1) 100%); /* Chrome10+,Safari5.1+ */
+							background: -o-radial-gradient(center, ellipse cover,  rgba(216,58,95,1) 0%,rgba(197,3,48,1) 44%,rgba(170,0,40,1) 100%); /* Opera 12+ */
+							background: -ms-radial-gradient(center, ellipse cover,  rgba(216,58,95,1) 0%,rgba(197,3,48,1) 44%,rgba(170,0,40,1) 100%); /* IE10+ */
+							background: radial-gradient(ellipse at center,  rgba(216,58,95,1) 0%,rgba(197,3,48,1) 44%,rgba(170,0,40,1) 100%); /* W3C */
+							filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d83a5f', endColorstr='#aa0028',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+						}
+						li.btnclear {
+						 width: 147px;
+						 font-size: 27px;
+							background: rgb(0,183,234); /* Old browsers */
+							background: -moz-radial-gradient(center, ellipse cover,  rgba(0,183,234,1) 0%, rgba(0,158,195,1) 100%); /* FF3.6+ */
+							background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(0,183,234,1)), color-stop(100%,rgba(0,158,195,1))); /* Chrome,Safari4+ */
+							background: -webkit-radial-gradient(center, ellipse cover,  rgba(0,183,234,1) 0%,rgba(0,158,195,1) 100%); /* Chrome10+,Safari5.1+ */
+							background: -o-radial-gradient(center, ellipse cover,  rgba(0,183,234,1) 0%,rgba(0,158,195,1) 100%); /* Opera 12+ */
+							background: -ms-radial-gradient(center, ellipse cover,  rgba(0,183,234,1) 0%,rgba(0,158,195,1) 100%); /* IE10+ */
+							background: radial-gradient(ellipse at center,  rgba(0,183,234,1) 0%,rgba(0,158,195,1) 100%); /* W3C */
+							filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00b7ea', endColorstr='#009ec3',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+						}
+			}
+
+			.numero-serie { color: rgba(51, 51, 51, .75); font: 15px Tahoma; text-align: right }
+		}
+	}
+}

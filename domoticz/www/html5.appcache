@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 244
+# ref 245
 
 CACHE:
 favicon.ico
@@ -10,6 +10,9 @@ css/style.css
 css/TableTools.css
 css/ui-darkness/jquery-ui-1.10.1.custom.min.css
 css/jquery.uix.multiselect.css
+secpanel/css/style.less
+secpanel/css/font.less
+secpanel/css/reset.less
 
 # fonts
 css/fonts/Abel.eot
@@ -20,6 +23,10 @@ css/fonts/Oswald-Regular.eot
 css/fonts/Oswald-Regular.ttf
 css/fonts/Satisfy.eot
 css/fonts/Satisfy.ttf
+secpanel/font/Digital.eot
+secpanel/font/Digital.svg
+secpanel/font/Digital.ttf
+secpanel/font/Digital.woff
 
 # images
 css/images/bg-track.png
@@ -242,6 +249,7 @@ images/startup/apple-touch-startup-image-640x920.png
 images/startup/apple-touch-startup-image-768x1004.png
 media/swf/copy_csv_xls.swf
 media/swf/copy_csv_xls_pdf.swf
+secpanel/bg.jpg
 
 # js
 js/bootstrap.min.js
@@ -274,6 +282,7 @@ js/themes/dark-green.js
 js/themes/gray.js
 js/themes/grid.js
 js/themes/skies.js
+secpanel/js/less.js
 
 #Languages
 i18n/domoticz-de.json
@@ -301,4 +310,5 @@ utility.html
 users.html
 weather.html
 json.htm
+secpanel/index.html
 *

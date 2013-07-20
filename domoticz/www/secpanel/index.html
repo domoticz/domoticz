@@ -1,0 +1,81 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title>Domoticz Security Panel</title>
+
+	<link href="css/style.less" rel="stylesheet/less" />
+	<script src="js/less.js"></script>
+
+	<!-- Fontes personalizadas -->
+	<link href='http://fonts.googleapis.com/css?family=Audiowide' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Orbitron:500' rel='stylesheet' type='text/css'>
+</head>
+<body>
+
+	<div id="geral">
+
+		<div class="borda-calculadora">
+
+			<div id="calculadora">
+
+				<div class="topo-calculadora">
+
+					<div class="titulo">
+						<h1>Domoticz</h1>
+						<p class="descricao">Security Panel</p>
+					</div><!-- titulo -->
+
+					<div class="quadrados">
+						<ul>
+							<li></li>
+							<li></li>
+							<li></li>
+							<li></li>
+						</ul>
+					</div><!-- quadrados -->
+				</div>
+
+				<div class="clear"></div>
+
+				<form name="Calc">
+
+					<input type="text" id="txtCalculadora" value="19283" name="txtCalculadora" maxlength="8" />
+
+					<div class="clear"></div>
+
+					<ul id="botoes-opcoes">
+						<li onClick="Calc.txtCalculadora.value += '1'">1</li>
+						<li onClick="Calc.txtCalculadora.value += '2'">2</li>
+						<li onClick="Calc.txtCalculadora.value += '3'">3</li>
+						<li class="disarm" onClick="Calc.txtCalculadora.value = '*DISARMED*'">Disarm</li>
+						<li onClick="Calc.txtCalculadora.value += '4'">4</li>
+						<li onClick="Calc.txtCalculadora.value += '5'">5</li>
+						<li onClick="Calc.txtCalculadora.value += '6'">6</li>
+						<li class="arm" onClick="Calc.txtCalculadora.value = '*ARMED HOME*'">Arm Home</li>
+						<li onClick="Calc.txtCalculadora.value += '7'">7</li>
+						<li onClick="Calc.txtCalculadora.value += '8'">8</li>
+						<li onClick="Calc.txtCalculadora.value += '9'">9</li>
+						<li class="arm" onClick="Calc.txtCalculadora.value= '*ARMED AWAY*'">Arm Away</li>
+						<li onClick="Calc.txtCalculadora.value += '*'">*</li>
+						<li onClick="Calc.txtCalculadora.value += '0'">0</li>
+						<li onClick="Calc.txtCalculadora.value += '#'">#</li>
+						<li class="btnclear" onClick="Calc.txtCalculadora.value = ''">Clear</li>
+					</ul>
+
+				</form>
+
+				<p class="numero-serie">SEC05 - 20H1</p>
+
+			</div><!-- calculadora -->
+
+		</div><!-- borda-calculadora -->
+
+	</div><!-- geral -->
+
+	<script type="text/javascript">
+
+	</script>
+
+</body>
+</html>
