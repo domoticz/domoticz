@@ -42,6 +42,11 @@ $.ajax({
 	}
 });
 
+if (switchesAF.length === 0) {switchesAF.push(["No items",0]);}
+if (switchesGL.length === 0) {switchesGL.push(["No items",0]);}
+if (switchesMR.length === 0) {switchesMR.push(["No items",0]);}
+if (switchesSZ.length === 0) {switchesSZ.push(["No items",0]);}
+
 switchesAF.sort();
 switchesGL.sort();
 switchesMR.sort();
