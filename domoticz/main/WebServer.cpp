@@ -1979,7 +1979,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				StringSplit(sValue, ";", strarray);
 				if (strarray.size()==2)
 				{
-					sprintf(szData,"%ld Watt, %.2f Wh",atol(strarray[0].c_str()),atof(strarray[1].c_str()));
+					double total=atof(strarray[1].c_str())/1000;
+					sprintf(szData,"%ld Watt, %.3f kWh",atol(strarray[0].c_str()),total);
 					root["result"][ii]["Data"]=szData;
 					root["result"][ii]["SwitchTypeVal"]=MTYPE_ENERGY;
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
