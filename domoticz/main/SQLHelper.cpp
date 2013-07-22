@@ -2595,6 +2595,8 @@ void CSQLHelper::UpdateTemperatureLog()
 {
 	char szTmp[1000];
 	time_t now = time(NULL);
+	if (now==0)
+		return;
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
@@ -2721,34 +2723,24 @@ void CSQLHelper::UpdateTemperatureLog()
 		}
 	}
 	//truncate the temperature table (remove items older then 48 hours)
-	char szDateEnd[40];
-	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-	ltime.tm_hour=tm1.tm_hour;
-	ltime.tm_min=tm1.tm_min;
-	ltime.tm_sec=tm1.tm_sec;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-	//subtract xx days
-	ltime.tm_mday -= m_5MinuteHistoryDays;
-	time_t daybefore = mktime(&ltime);
-	struct tm tm2;
-	localtime_r(&daybefore,&tm2);
-
-	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min);
-
-	sprintf(szTmp,"DELETE FROM Temperature WHERE (Date<'%s')",
-		szDateEnd
-		);
-	result=query(szTmp);
-
+	if (m_5MinuteHistoryDays!=0)
+	{
+		now-=(m_5MinuteHistoryDays*24*3600);
+		struct tm tm2;
+		localtime_r(&now,&tm2);
+		sprintf(szTmp,"DELETE FROM Temperature WHERE (Date<'%04d-%02d-%02d %02d:%02d:00')",
+			tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min
+			);
+		result=query(szTmp);
+	}
 }
 
 void CSQLHelper::UpdateRainLog()
 {
 	char szTmp[1000];
 	time_t now = time(NULL);
+	if (now==0)
+		return;
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
@@ -2815,32 +2807,24 @@ void CSQLHelper::UpdateRainLog()
 		}
 	}
 	//truncate the rain table (remove items older then 48 hours)
-	char szDateEnd[40];
-	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-	ltime.tm_hour=tm1.tm_hour;
-	ltime.tm_min=tm1.tm_min;
-	ltime.tm_sec=tm1.tm_sec;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-	//subtract xx days
-	ltime.tm_mday -= m_5MinuteHistoryDays;
-	time_t daybefore = mktime(&ltime);
-	struct tm tm2;
-	localtime_r(&daybefore,&tm2);
-	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min);
-
-	sprintf(szTmp,"DELETE FROM Rain WHERE (Date<'%s')",
-		szDateEnd
-		);
-	result=query(szTmp);
+	if (m_5MinuteHistoryDays!=0)
+	{
+		now-=(m_5MinuteHistoryDays*24*3600);
+		struct tm tm2;
+		localtime_r(&now,&tm2);
+		sprintf(szTmp,"DELETE FROM Rain WHERE (Date<'%04d-%02d-%02d %02d:%02d:00')",
+			tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min
+			);
+		result=query(szTmp);
+	}
 }
 
 void CSQLHelper::UpdateWindLog()
 {
 	char szTmp[1000];
 	time_t now = time(NULL);
+	if (now==0)
+		return;
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
@@ -2904,32 +2888,24 @@ void CSQLHelper::UpdateWindLog()
 		}
 	}
 	//truncate the wind table (remove items older then 48 hours)
-	char szDateEnd[40];
-	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-	ltime.tm_hour=tm1.tm_hour;
-	ltime.tm_min=tm1.tm_min;
-	ltime.tm_sec=tm1.tm_sec;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-	//subtract xx days
-	ltime.tm_mday -= m_5MinuteHistoryDays;
-	time_t daybefore = mktime(&ltime);
-	struct tm tm2;
-	localtime_r(&daybefore,&tm2);
-	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min);
-
-	sprintf(szTmp,"DELETE FROM Wind WHERE (Date<'%s')",
-		szDateEnd
-		);
-	result=query(szTmp);
+	if (m_5MinuteHistoryDays!=0)
+	{
+		now-=(m_5MinuteHistoryDays*24*3600);
+		struct tm tm2;
+		localtime_r(&now,&tm2);
+		sprintf(szTmp,"DELETE FROM Wind WHERE (Date<'%04d-%02d-%02d %02d:%02d:00')",
+			tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min
+			);
+		result=query(szTmp);
+	}
 }
 
 void CSQLHelper::UpdateUVLog()
 {
 	char szTmp[1000];
 	time_t now = time(NULL);
+	if (now==0)
+		return;
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
@@ -2989,32 +2965,24 @@ void CSQLHelper::UpdateUVLog()
 		}
 	}
 	//truncate the uv table (remove items older then 48 hours)
-	char szDateEnd[40];
-	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-	ltime.tm_hour=tm1.tm_hour;
-	ltime.tm_min=tm1.tm_min;
-	ltime.tm_sec=tm1.tm_sec;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-	//subtract xx days
-	ltime.tm_mday -= m_5MinuteHistoryDays;
-	time_t daybefore = mktime(&ltime);
-	struct tm tm2;
-	localtime_r(&daybefore,&tm2);
-	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min);
-
-	sprintf(szTmp,"DELETE FROM UV WHERE (Date<'%s')",
-		szDateEnd
-		);
-	result=query(szTmp);
+	if (m_5MinuteHistoryDays!=0)
+	{
+		now-=(m_5MinuteHistoryDays*24*3600);
+		struct tm tm2;
+		localtime_r(&now,&tm2);
+		sprintf(szTmp,"DELETE FROM UV WHERE (Date<'%04d-%02d-%02d %02d:%02d:00')",
+			tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min
+			);
+		result=query(szTmp);
+	}
 }
 
 void CSQLHelper::UpdateMeter()
 {
 	char szTmp[1000];
 	time_t now = time(NULL);
+	if (now==0)
+		return;
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
@@ -3170,31 +3138,24 @@ void CSQLHelper::UpdateMeter()
 		}
 	}
 	//truncate the Meter table (remove items older then 48 hours)
-	char szDateEnd[40];
-	ltime.tm_isdst=tm1.tm_isdst;
-	ltime.tm_hour=tm1.tm_hour;
-	ltime.tm_min=tm1.tm_min;
-	ltime.tm_sec=tm1.tm_sec;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-	//subtract xx days
-	ltime.tm_mday -= m_5MinuteHistoryDays;
-	time_t daybefore = mktime(&ltime);
-	struct tm tm2;
-	localtime_r(&daybefore,&tm2);
-	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min);
-
-	sprintf(szTmp,"DELETE FROM Meter WHERE (Date<'%s')",
-		szDateEnd
-		);
-	result=query(szTmp);
+	if (m_5MinuteHistoryDays!=0)
+	{
+		now-=(m_5MinuteHistoryDays*24*3600);
+		struct tm tm2;
+		localtime_r(&now,&tm2);
+		sprintf(szTmp,"DELETE FROM Meter WHERE (Date<'%04d-%02d-%02d %02d:%02d:00')",
+			tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min
+			);
+		result=query(szTmp);
+	}
 }
 
 void CSQLHelper::UpdateMultiMeter()
 {
 	char szTmp[1000];
 	time_t now = time(NULL);
+	if (now==0)
+		return;
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
@@ -3319,26 +3280,16 @@ void CSQLHelper::UpdateMultiMeter()
 		}
 	}
 	//truncate the MultiMeter table (remove items older then 48 hours)
-	char szDateEnd[40];
-	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-	ltime.tm_hour=tm1.tm_hour;
-	ltime.tm_min=tm1.tm_min;
-	ltime.tm_sec=tm1.tm_sec;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-	//subtract xx days
-	ltime.tm_mday -= m_5MinuteHistoryDays;
-	time_t daybefore = mktime(&ltime);
-	struct tm tm2;
-	localtime_r(&daybefore,&tm2);
-	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min);
-
-	sprintf(szTmp,"DELETE FROM MultiMeter WHERE (Date<'%s')",
-		szDateEnd
-		);
-	result=query(szTmp);
+	if (m_5MinuteHistoryDays!=0)
+	{
+		now-=(m_5MinuteHistoryDays*24*3600);
+		struct tm tm2;
+		localtime_r(&now,&tm2);
+		sprintf(szTmp,"DELETE FROM MultiMeter WHERE (Date<'%04d-%02d-%02d %02d:%02d:00')",
+			tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min
+			);
+		result=query(szTmp);
+	}
 }
 
 void CSQLHelper::AddCalendarTemperature()
