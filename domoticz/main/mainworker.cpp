@@ -5896,7 +5896,8 @@ unsigned long long MainWorker::decode_YouLessMeter(const int HwdID, const tRBUF 
 	const _tYouLessMeter *pMeter=(const _tYouLessMeter*)pResponse;
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
-	std::string ID=pMeter->ID;
+	sprintf(szTmp,"%d",pMeter->ID1);
+	std::string ID=szTmp;
 	unsigned char Unit=subType;
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=12;

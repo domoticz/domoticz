@@ -7,7 +7,7 @@ typedef struct _tYouLessMeter {
 	unsigned char len;
 	unsigned char type;
 	unsigned char subtype;
-	std::string ID;
+	unsigned short ID1;
 	unsigned long powerusage;
 	unsigned long usagecurrent;
 } YouLessMeter;

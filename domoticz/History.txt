@@ -29,6 +29,8 @@ Version 1.0.xxx (July xxth 2013)
 - Fixed: Temperature graphs legend translation
 - Fixed: 'No Update Available !' translation
 - Fixed: Temperature graphs tooltip unit
+- Removed: Device Type on Temperature/Weather tab
+- Fixed: YouLess meter structure
 
 Version 1.0.762 (July 1th 2013)
 - Changed: Motion Sensors, Off delay now sends 'Off' to Lighting 1/6 devices, and 'No Motion' to X10 motion sensors

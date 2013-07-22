@@ -28,8 +28,7 @@ void CYouLess::Init()
 	m_meter.subtype=sTypeYouLess;
 	m_meter.powerusage=0;
 	m_meter.usagecurrent=0;
-
-	m_meter.ID=boost::to_string(m_usIPPort);
+	m_meter.ID1=m_usIPPort;
 }
 
 bool CYouLess::StartHardware()
