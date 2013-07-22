@@ -2040,7 +2040,7 @@ function ShowWeathers()
   }
   if (htmlcontent == '')
   {
-    htmlcontent='<h2>No Weather sensors found or added in the system...</h2>';
+    htmlcontent='<h2>' + $.i18n('No Weather sensors found or added in the system...') + '</h2>';
   }
   $('#modal').hide();
   $('#weathercontent').html(tophtm+htmlcontent);

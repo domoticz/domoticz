@@ -3460,7 +3460,7 @@ function ShowUtilities()
   }
   if (htmlcontent == '')
   {
-    htmlcontent='<h2>No Utility sensors found or added in the system...</h2>';
+    htmlcontent='<h2>' + $.i18n('No Utility sensors found or added in the system...') + '</h2>';
   }
   $('#modal').hide();
   $('#utilitycontent').html(tophtm+htmlcontent);

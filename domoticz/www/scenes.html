@@ -1119,7 +1119,7 @@ function ShowScenes()
   }
   if (htmlcontent == '')
   {
-    htmlcontent='<h2>No Scenes defined yet...</h2>';
+    htmlcontent='<h2>' + $.i18n('No Scenes defined yet...') + '</h2>';
   }
   $('#scenecontent').html(tophtm+htmlcontent);
   $('#scenecontent').i18n();

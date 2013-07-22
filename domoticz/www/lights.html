@@ -1548,7 +1548,7 @@ function ShowLights()
   }
   if (htmlcontent == '')
   {
-    htmlcontent='<h2>No Lights/Switches found or added in the system...</h2>';
+    htmlcontent='<h2>' + $.i18n('No Lights/Switches found or added in the system...') + '</h2>';
   }
   $('#modal').hide();
   $('#lightcontent').html(tophtm+htmlcontent);

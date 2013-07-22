@@ -1133,7 +1133,7 @@ function ShowTemps()
   }
   if (htmlcontent == '')
   {
-    htmlcontent='<h2>No Temperature sensors found or added in the system...</h2>';
+    htmlcontent='<h2>' + $.i18n('No Temperature sensors found or added in the system...') + '</h2>';
   }
   $('#modal').hide();
   $('#tempcontent').html(tophtm+htmlcontent);
