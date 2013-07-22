@@ -70,14 +70,16 @@ private:
     void SendEventNotification(const std::string Subject, const std::string Body);
     void ScheduleEvent(int deviceID, std::string Action);
     void ScheduleEvent(std::string ID, std::string Action);
-    std::string reciprokalAction (std::string Action);
+    std::string reciprocalAction (std::string Action);
     std::vector<_tEventItem> m_events;
     std::map<unsigned long long,float> m_tempValues;
     std::map<unsigned long long,unsigned char> m_humValues;
     std::map<unsigned long long,int> m_baroValues;
     void reportMissingDevice (int deviceID, std::string EventName, unsigned long long eventID);
     int getSunRiseSunSetMinutes(std::string what);
+    bool isEventscheduled(int idx, int timeframe);
     std::string describeError(int resultcode);
+    int calculateDimLevel(int deviceID , int percentageLevel);
     
 };
 

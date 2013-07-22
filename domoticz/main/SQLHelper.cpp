@@ -4397,6 +4397,20 @@ void CSQLHelper::AddTaskItem(const _tTaskItem tItem)
 	m_background_task_queue.push_back(tItem);
 }
 
+void CSQLHelper::EventsGetTaskItems(std::vector<_tTaskItem> &currentTasks)
+{
+	boost::lock_guard<boost::mutex> l(m_background_task_mutex);
+    
+	currentTasks.clear();
+    
+    for(std::vector<_tTaskItem>::iterator it = m_background_task_queue.begin(); it != m_background_task_queue.end(); ++it)
+    {
+		currentTasks.push_back(*it);
+	}
+}
+
+
+
 bool CSQLHelper::BackupDatabase(const std::string OutputFile)
 {
 	if (!m_dbase)

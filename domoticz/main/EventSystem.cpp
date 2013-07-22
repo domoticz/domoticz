@@ -849,20 +849,25 @@ void CEventSystem::SendEventNotification(const std::string Subject, const std::s
     m_pMain->m_sql.SendNotificationEx(Subject,Body);
 }
 
-void CEventSystem::ScheduleEvent(int deviceID, std::string Action)
+void CEventSystem::ScheduleEvent(std::string deviceName, std::string Action)
+
 {
+
     std::vector<std::vector<std::string> > result;
     std::stringstream szQuery;
-    szQuery << "SELECT Name FROM DeviceStatus WHERE (ID == '" << deviceID << "')";
+    szQuery << "SELECT ID FROM DeviceStatus WHERE (Name == '" << deviceName << "')";
     result=m_pMain->m_sql.query(szQuery.str());
-    if (result.size()>0) {
+    if (result.size()>0)
+	{
         std::vector<std::string> sd=result[0];
-        ScheduleEvent(sd[0], Action);
+        int idx = atoi(sd[0].c_str());
+        ScheduleEvent(idx, Action);
     }
-    
 }
 
-void CEventSystem::ScheduleEvent(std::string deviceName, std::string Action)
+
+void CEventSystem::ScheduleEvent(int deviceID, std::string Action)
+
 {
     int suspendTimer = 0;
     int randomTimer = 0;
@@ -891,57 +896,49 @@ void CEventSystem::ScheduleEvent(std::string deviceName, std::string Action)
     unsigned char _level = 0;
     if (Action.substr(0,9) == "Set Level") 
 	{
-        _level = atoi(Action.substr(11).c_str());
+        _level = calculateDimLevel(deviceID, atoi(Action.substr(10).c_str()));
         Action = Action.substr(0,9);
     }
-#ifdef _DEBUG
-    _log.Log(LOG_NORM,"Setting device %s to state %s", deviceName.c_str(),Action.c_str());
-#endif
+
+    //_log.Log(LOG_NORM,"Setting device %d to state %s level: %d", deviceID,Action.c_str(),_level);
     
-    std::vector<std::vector<std::string> > result;
-    std::stringstream szQuery;
-    szQuery << "SELECT ID FROM DeviceStatus WHERE (Name == '" << deviceName << "')";
-    result=m_pMain->m_sql.query(szQuery.str());
-    if (result.size()>0) 
-	{
-        std::vector<std::string> sd=result[0];
-        int DelayTime=1;
+    int DelayTime=1;
+    bool alreadyScheduled = false;
+    
+    if (randomTimer > 0) {
+        int rTime;
+        srand ((unsigned int)time(NULL));
+        rTime = rand() % randomTimer + 1;
+        DelayTime = rTime * 60;
+        alreadyScheduled = isEventscheduled(deviceID, randomTimer);
         
-        if (randomTimer > 0) {
-            int rTime;
-            srand ((unsigned int)time(NULL));
-            rTime = rand() % randomTimer + 1;
-            DelayTime = rTime * 60;
-        }
-        
-        int idx = atoi(sd[0].c_str());
-        
-        _tTaskItem tItem=_tTaskItem::SwitchLightEvent(DelayTime,idx,Action,_level);
-        
-        m_pMain->m_sql.AddTaskItem(tItem);
-        
-        if (suspendTimer > 0) 
-		{
-            std::string reciprokal = reciprokalAction(Action);
-            if (reciprokal !="Undefined") 
-			{
-                DelayTime =  suspendTimer * 60;
-                _tTaskItem tItem=_tTaskItem::SwitchLightEvent(DelayTime,idx,reciprokal,_level);
-                m_pMain->m_sql.AddTaskItem(tItem);
-            }
-            else 
-			{
-                _log.Log(LOG_ERROR,"Can't find reciprokal action for %s", Action.c_str());
-            }
-        }
     }
-    else 
-	{
-        _log.Log(LOG_ERROR,"Could not find device '%s' mentioned in script", deviceName.c_str());
+    if (alreadyScheduled) {
+        _log.Log(LOG_NORM,"Already waiting for random trigger for this event, skipping");
+        return;
+    }
+    
+    _tTaskItem tItem=_tTaskItem::SwitchLightEvent(DelayTime,deviceID,Action,_level);
+        
+    m_pMain->m_sql.AddTaskItem(tItem);
+        
+    if (suspendTimer > 0)
+    {
+        std::string reciprocal = reciprocalAction(Action);
+        if (reciprocal !="Undefined")
+        {
+            DelayTime =  suspendTimer * 60;
+            _tTaskItem tItem=_tTaskItem::SwitchLightEvent(DelayTime,deviceID,reciprocal,_level);
+            m_pMain->m_sql.AddTaskItem(tItem);
+        }
+        else
+        {
+            _log.Log(LOG_ERROR,"Can't find reciprocal action for %s", Action.c_str());
+        }
     }
 }
 
-std::string CEventSystem::reciprokalAction (std::string Action)
+std::string CEventSystem::reciprocalAction (std::string Action)
 {
     std::map<std::string, std::string> mapObject;
 //    int i;
@@ -1121,4 +1118,61 @@ int CEventSystem::getSunRiseSunSetMinutes(std::string what)
     }
     
     return 0;
+}
+
+bool CEventSystem::isEventscheduled(int idx, int timeframe)
+{
+    bool foundIt = false;
+    std::vector<_tTaskItem> currentTasks;
+    m_pMain->m_sql.EventsGetTaskItems(currentTasks);
+    if (currentTasks.size()==0) {
+        return foundIt;
+    }
+    else {
+        for(std::vector<_tTaskItem>::iterator it = currentTasks.begin(); it != currentTasks.end(); ++it)
+        {
+            if (it->_ItemType == TITEM_SWITCHCMD_EVENT) {
+                if ((it->_idx == idx) && ((timeframe*60) >= it->_DelayTime)) {
+                    foundIt = true;
+                }
+            }
+        }
+        return foundIt;
+    }
+    
+}
+
+int CEventSystem::calculateDimLevel(int deviceID , int percentageLevel)
+{
+    
+    std::vector<std::vector<std::string> > result;
+    std::stringstream szQuery;
+    szQuery << "SELECT Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << deviceID << ")";
+    result=m_pMain->m_sql.query(szQuery.str());
+    int ilevel = 0;
+    if (result.size()>0)
+    {
+        std::vector<std::string> sd=result[0];
+        
+        unsigned char dType=atoi(sd[0].c_str());
+        unsigned char dSubType=atoi(sd[1].c_str());
+        _eSwitchType switchtype=(_eSwitchType) atoi(sd[2].c_str());
+        std::string lstatus="";
+        int llevel=0;
+        bool bHaveDimmer=false;
+        bool bHaveGroupCmd=false;
+        int maxDimLevel=0;
+        
+        GetLightStatus(dType,dSubType,0,"",lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+        ilevel=maxDimLevel;
+        if ((switchtype == STYPE_Dimmer)&&(maxDimLevel!=0))
+        {
+            float fLevel=(maxDimLevel/100.0f)*percentageLevel;
+            if (fLevel>100)
+                fLevel=100;
+            ilevel=int(fLevel);
+        }
+    }
+    return ilevel;
+
 }

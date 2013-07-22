@@ -283,7 +283,9 @@ public:
 	bool DoesSceneByNameExits(const std::string SceneName);
 
 	void AddTaskItem(const _tTaskItem tItem);
-
+    
+    void EventsGetTaskItems(std::vector<_tTaskItem> &currentTasks);
+   
 	void SetUnitsAndScale();
 
 	std::vector<std::vector<std::string> > query(const std::string szQuery);
