@@ -14,6 +14,7 @@ enum _eZWaveDeviceType
 	ZDTYPE_SENSOR_HUMIDITY,
 	ZDTYPE_SENSOR_LIGHT,
 	ZDTYPE_SENSOR_SETPOINT,
+	ZDTYPE_SENSOR_POWERENERGYMETER,
 };
 
 class CRazberry : public CDomoticzHardwareBase
