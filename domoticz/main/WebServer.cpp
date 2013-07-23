@@ -188,6 +188,16 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
 		&CWebServer::GetDatabaseBackup,
 		this ) );
 
+	m_pWebEm->RegisterPageCode( "/snapshot.cgi",
+		boost::bind(
+		&CWebServer::GetInternalCameraSnapshot,	// member function
+		this ) );			// instance of class
+	m_pWebEm->RegisterPageCode( "/videostream.cgi",
+		boost::bind(
+		&CWebServer::GetInternalCameraSnapshot,	// member function
+		this ) );			// instance of class
+	
+
 	m_pWebEm->RegisterActionCode( "storesettings",boost::bind(&CWebServer::PostSettings,this));
 	m_pWebEm->RegisterActionCode( "setrfxcommode",boost::bind(&CWebServer::SetRFXCOMMode,this));
 	m_pWebEm->RegisterActionCode( "setrego6xxtype",boost::bind(&CWebServer::SetRego6XXType,this));
@@ -2165,11 +2175,24 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 	}
 }
 
+
+std::string CWebServer::GetInternalCameraSnapshot()
+{
+	m_retstr="";
+	std::vector<unsigned char> camimage;
+	if (!m_pMain->m_cameras.TakeRaspberrySnapshot(camimage))
+		goto exitproc;
+	m_retstr.insert( m_retstr.begin(), camimage.begin(), camimage.end() );
+	m_pWebEm->m_outputfilename="snapshot.jpg";
+exitproc:
+	return m_retstr;
+}
+
 std::string CWebServer::GetCameraSnapshot()
 {
 	m_retstr="";
-	std::string idx=m_pWebEm->FindValue("idx");
 	std::vector<unsigned char> camimage;
+	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		goto exitproc;
 

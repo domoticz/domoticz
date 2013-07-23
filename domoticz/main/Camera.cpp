@@ -10,6 +10,8 @@
 
 #define CAMERA_POLL_INTERVAL 30
 
+extern std::string szStartupFolder;
+
 CCamScheduler::CCamScheduler(void)
 {
 	m_pMain=NULL;
@@ -126,10 +128,10 @@ void CCamScheduler::CheckCameras()
 std::string CCamScheduler::GetCameraURL(cameraDevice *pCamera)
 {
 	std::stringstream s_str;
-	if (pCamera->Username!="")
+	if ((pCamera->Username!="")||(pCamera->Password!=""))
 		s_str << "http://" << pCamera->Username << ":" << pCamera->Password << "@" << pCamera->Address << ":" << pCamera->Port;
 	else
-		s_str << "http://" << pCamera->Username << ":" << pCamera->Password << "@" << pCamera->Address << ":" << pCamera->Port;
+		s_str << "http://" << pCamera->Address << ":" << pCamera->Port;
 	return s_str.str();
 }
 
@@ -161,6 +163,32 @@ bool CCamScheduler::TakeSnapshot(const std::string CamID, std::vector<unsigned c
 	return TakeSnapshot(ulID,camimage);
 }
 
+bool CCamScheduler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
+{
+#ifndef WIN32
+	camimage.clear();
+	std::string OutputFileName=szStartupFolder + "tempcam.jpg";
+	std::string raspistillcmd="raspistill -w 800 -h 600 -t 0 -o " + OutputFileName;
+	std::remove(OutputFileName.c_str());
+	
+	//Get our image
+	system(raspistillcmd.c_str());
+	//If all went correct, we should have our file
+	std::ifstream is(OutputFileName.c_str(), std::ios::in | std::ios::binary);
+	if (is)
+	{
+		char buf[512];
+		while (is.read(buf, sizeof(buf)).gcount() > 0)
+			camimage.insert(camimage.end(),buf, buf+(unsigned int)is.gcount());
+		is.close();
+		std::remove(OutputFileName.c_str());
+		return true;
+	}
+#endif
+
+	return false;
+}
+
 bool CCamScheduler::TakeSnapshot(const unsigned long long CamID, std::vector<unsigned char> &camimage)
 {
 	cameraDevice *pCamera=GetCamera(CamID);
@@ -170,6 +198,9 @@ bool CCamScheduler::TakeSnapshot(const unsigned long long CamID, std::vector<uns
 	std::string szURL=GetCameraURL(pCamera);
 	szURL+="/" + pCamera->ImageURL;
 
+	if (szURL.find("127.0.0.1")!=std::string::npos)
+		return TakeRaspberrySnapshot(camimage);
+	
 	return HTTPClient::GETBinary(szURL,camimage);
 }
 

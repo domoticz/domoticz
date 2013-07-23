@@ -30,6 +30,7 @@ public:
 	char * DisplayDevicesList();
 	std::string GetJSonPage();
 	std::string GetCameraSnapshot();
+	std::string GetInternalCameraSnapshot();
 	std::string GetDatabaseBackup();
 	char * PostSettings();
 	char * SetRFXCOMMode();
