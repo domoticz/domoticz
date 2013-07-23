@@ -1257,7 +1257,7 @@ function ShowFavorites()
 							if (item.SwitchType == "Dimmer") {
 								xhtm+='<tr>';
 								xhtm+='<td colspan="2" style="border:0px solid red;">';
-								xhtm+='<div style="margin-top: -11px; margin-left: 4px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-maxlevel="' + item.MaxDimLevel + '" data-svalue="' + item.LevelInt + '"></div>';
+								xhtm+='<div style="margin-top: -11px; margin-left: 24px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-maxlevel="' + item.MaxDimLevel + '" data-svalue="' + item.LevelInt + '"></div>';
 								xhtm+='</td>';
 								xhtm+='</tr>';
 							}
@@ -2328,7 +2328,7 @@ function ResizeDimSliders()
 	$("#dashcontent .span4 .dimslider").width(width);
 	width=$(".span3").width()-70;
 	$("#dashcontent .span3 .dimslider").width(width);
-	width=$(".mobileitem").width()-23;
+	width=$(".mobileitem").width()-63;
 	$("#dashcontent .mobileitem .dimslider").width(width);
 }
 
