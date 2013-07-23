@@ -188,14 +188,14 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
 		&CWebServer::GetDatabaseBackup,
 		this ) );
 
-	m_pWebEm->RegisterPageCode( "/snapshot.cgi",
+	m_pWebEm->RegisterPageCode( "/raspberry.cgi",
 		boost::bind(
 		&CWebServer::GetInternalCameraSnapshot,	// member function
 		this ) );			// instance of class
-	m_pWebEm->RegisterPageCode( "/videostream.cgi",
-		boost::bind(
-		&CWebServer::GetInternalCameraSnapshot,	// member function
-		this ) );			// instance of class
+//	m_pWebEm->RegisterPageCode( "/videostream.cgi",
+	//	boost::bind(
+		//&CWebServer::GetInternalCameraSnapshot,	// member function
+		//this ) );			// instance of class
 	
 
 	m_pWebEm->RegisterActionCode( "storesettings",boost::bind(&CWebServer::PostSettings,this));

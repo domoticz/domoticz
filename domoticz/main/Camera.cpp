@@ -165,8 +165,18 @@ bool CCamScheduler::TakeSnapshot(const std::string CamID, std::vector<unsigned c
 
 bool CCamScheduler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
 {
-#ifndef WIN32
-	camimage.clear();
+#ifdef WIN32
+	//get our test image
+	std::ifstream is("E:\\test.jpg", std::ios::in | std::ios::binary);
+	if (is)
+	{
+		char buf[512];
+		while (is.read(buf, sizeof(buf)).gcount() > 0)
+			camimage.insert(camimage.end(),buf, buf+(unsigned int)is.gcount());
+		is.close();
+		return true;
+	}
+#else
 	std::string OutputFileName=szStartupFolder + "tempcam.jpg";
 	std::string raspistillcmd="raspistill -w 800 -h 600 -t 0 -o " + OutputFileName;
 	std::remove(OutputFileName.c_str());
@@ -198,7 +208,7 @@ bool CCamScheduler::TakeSnapshot(const unsigned long long CamID, std::vector<uns
 	std::string szURL=GetCameraURL(pCamera);
 	szURL+="/" + pCamera->ImageURL;
 
-	if (szURL.find("127.0.0.1")!=std::string::npos)
+	if (pCamera->ImageURL=="raspberry.cgi")
 		return TakeRaspberrySnapshot(camimage);
 	
 	return HTTPClient::GETBinary(szURL,camimage);
