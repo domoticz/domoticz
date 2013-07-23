@@ -482,18 +482,20 @@ function EditSceneDevice(idx,name,havecode)
   $("#scenecontent #LevelDiv").hide();
  
   oTable = $('#scenecontent #devicestable').dataTable( {
-                  "sDom": '<"H"frC>t<"F"i>',
+                  "sDom": '<"H"lfrC>t<"F"ip>',
                   "oTableTools": {
                     "sRowSelect": "single",
                   },
-									"aoColumnDefs": [
-										{ "bSortable": false, "aTargets": [ 1 ] }
-									],
+					"aoColumnDefs": [
+						{ "bSortable": false, "aTargets": [ 1 ] }
+					],
                   "aaSorting": [[ 0, "asc" ]],
                   "bSortClasses": false,
                   "bProcessing": true,
                   "bStateSave": true,
                   "bJQueryUI": true,
+				  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+				  "iDisplayLength" : 25,
                   "sPaginationType": "full_numbers"
                 } );
   $("#scenecontent #devicename").val(name);
