@@ -2604,6 +2604,7 @@ void CSQLHelper::ScheduleDay()
 void CSQLHelper::UpdateTemperatureLog()
 {
 	char szTmp[1000];
+
 	time_t now = time(NULL);
 	if (now==0)
 		return;
@@ -3453,7 +3454,7 @@ void CSQLHelper::AddCalendarUpdateRain()
 		}
 		else
 		{
-			sprintf(szTmp,"SELECT LAST(Total), LAST(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s')",
+			sprintf(szTmp,"SELECT Total, Total, MAX(Rate) FROM Rain WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s') ORDER BY ROWID DESC LIMIT 1",
 				ID,
 				szDateStart,
 				szDateEnd

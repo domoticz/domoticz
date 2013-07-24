@@ -1508,7 +1508,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					}
 					else
 					{
-						szQuery << "SELECT LAST(Total), LAST(Total), LAST(Rate) FROM Rain WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
+						szQuery << "SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "') ORDER BY ROWID DESC LIMIT 1";
 					}
 					result2=m_pMain->m_sql.query(szQuery.str());
 					if (result2.size()>0)
@@ -3625,7 +3625,7 @@ std::string CWebServer::GetJSonPage()
 				}
 				else
 				{
-					szQuery << "SELECT LAST(Total), LAST(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+					szQuery << "SELECT Total, Total, MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "') ORDER BY ROWID DESC LIMIT 1";
 				}
 				result=m_pMain->m_sql.query(szQuery.str());
 				if (result.size()>0)
@@ -4186,7 +4186,7 @@ std::string CWebServer::GetJSonPage()
 				}
 				else
 				{
-					szQuery << "SELECT LAST(Total), LAST(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+					szQuery << "SELECT Total, Total, MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "') ORDER BY ROWID DESC LIMIT 1";
 				}
 				result=m_pMain->m_sql.query(szQuery.str());
 				if (result.size()>0)
@@ -5080,7 +5080,7 @@ std::string CWebServer::GetJSonPage()
 				}
 				else
 				{
-					szQuery << "SELECT LAST(Total), LAST(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+					szQuery << "SELECT Total, Total, MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "') ORDER BY ROWID DESC LIMIT 1";
 				}
 				result=m_pMain->m_sql.query(szQuery.str());
 				if (result.size()>0)
