@@ -414,7 +414,7 @@ function RefreshFavorites()
 									if (status!="") {
 										status+=', ';
 									}
-									status+='Chill: ' + item.Chill + '° C';
+									status+=$.i18n('Chill') + ': ' + item.Chill + '° C';
 									bHaveBefore=true;
 								}
 								if (typeof item.Humidity != 'undefined') {
@@ -455,7 +455,7 @@ function RefreshFavorites()
 										status+=', ';
 										bigtext+=' / ';
 									}
-									status+='Chill: ' + item.Chill + '° C';
+									status+=$.i18n('Chill') + ': ' + item.Chill + '° C';
 									bigtext+=item.Chill + '\u00B0';
 									bHaveBefore=true;
 								}
@@ -595,13 +595,13 @@ function RefreshFavorites()
 									}
 									status+='<br>\n';
 									if (typeof item.Temp != 'undefined') {
-										status+='Temp: ' + item.Temp + '° C';
+										status+=$.i18n('Temp') + ': ' + item.Temp + '° C';
 									}
 									if (typeof item.Chill != 'undefined') {
 										if (typeof item.Temp != 'undefined') {
 											status+=', ';
 										}
-										status+='Chill: ' + item.Chill + '° C';
+										status+=$.i18n('Chill') +': ' + item.Chill + '° C';
 									}
 									bigtext=item.DirectionStr;
 									if (typeof item.Speed != 'undefined') {
@@ -1506,7 +1506,7 @@ function ShowFavorites()
 								if (bHaveBefore) {
 									status+=', ';
 								}
-								status+='Chill: ' + item.Chill + '° C';
+								status+=$.i18n('Chill') +': ' + item.Chill + '° C';
 								bHaveBefore=true;
 							}
 							if (typeof item.Humidity != 'undefined') {
@@ -1578,7 +1578,7 @@ function ShowFavorites()
 								if (bHaveBefore) {
 									xhtm+=', ';
 								}
-								xhtm+='Chill: ' + item.Chill + '° C';
+								xhtm+=$.i18n('Chill') + ': ' + item.Chill + '° C';
 								bHaveBefore=true;
 							}
 							if (typeof item.Humidity != 'undefined') {
@@ -1773,13 +1773,13 @@ function ShowFavorites()
 								}
 								xhtm+='<br>\n';
 								if (typeof item.Temp != 'undefined') {
-									xhtm+='Temp: ' + item.Temp + '° C';
+									xhtm+=$.i18n('Temp') + ': ' + item.Temp + '° C';
 								}
 								if (typeof item.Chill != 'undefined') {
 									if (typeof item.Temp != 'undefined') {
 										xhtm+=', ';
 									}
-									xhtm+='Chill: ' + item.Chill + '° C';
+									xhtm+=$.i18n('Chill') + ': ' + item.Chill + '° C';
 								}
 							}
 							else if (typeof item.Barometer != 'undefined') {

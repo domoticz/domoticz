@@ -1773,7 +1773,7 @@ function RefreshWeathers()
 							status=item.UVI + ' UVI';
 							bigtext=item.UVI + ' UVI';
 							if (typeof item.Temp!= 'undefined') {
-								status+=', Temp: ' + item.Temp + '\u00B0 C';
+								status+=', ' + $.i18n('Temp') + ': ' + item.Temp + '\u00B0 C';
 							}
 						}
 						else if (typeof item.Direction != 'undefined') {
@@ -1794,12 +1794,12 @@ function RefreshWeathers()
 								bigtext+=  ' / ' + item.Gust + ' ' + $.myglobals.windsign;
 							}
 							if ((typeof item.Temp != 'undefined')&&(typeof item.Chill != 'undefined')) {
-								status+='Temp: ' + item.Temp + '\u00B0 C, ';
-								status+='Chill: ' + item.Chill + '\u00B0 C';
+								status+=$.i18n('Temp') + ': ' + item.Temp + '\u00B0 C, ';
+								status+=$.i18n('Chill') +': ' + item.Chill + '\u00B0 C';
 							}
 							else {
 								if (typeof item.Chill != 'undefined') {
-									status+='Chill: ' + item.Chill + '\u00B0 C';
+									status+=$.i18n('Chill') + ': ' + item.Chill + '\u00B0 C';
 								}
 							}
 						}
@@ -1953,7 +1953,7 @@ function ShowWeathers()
 						xhtm+='uv48.png" height="48"></td>\n' +
 						'\t      <td id="status">' + item.UVI + ' UVI';
 						if (typeof item.Temp!= 'undefined') {
-							xhtm+=', Temp: ' + item.Temp + '\u00B0 C';
+							xhtm+=', ' + $.i18n('Temp') +': ' + item.Temp + '\u00B0 C';
 						}
 					}
 					else if (typeof item.Direction != 'undefined') {
@@ -1968,12 +1968,12 @@ function ShowWeathers()
 						}
 						xhtm+='<br>\n';
 						if ((typeof item.Temp != 'undefined')&&(typeof item.Chill != 'undefined')) {
-							xhtm+='Temp: ' + item.Temp + '\u00B0 C, ';
-							xhtm+='Chill: ' + item.Chill + '\u00B0 C';
+							xhtm+=$.i18n('Temp') +': ' + item.Temp + '\u00B0 C, ';
+							xhtm+=$.i18n('Chill') +': ' + item.Chill + '\u00B0 C';
 						}
 						else  {
 							if (typeof item.Chill != 'undefined') {
-								xhtm+='Chill: ' + item.Chill + '\u00B0 C';
+								xhtm+=$.i18n('Chill') +': ' + item.Chill + '\u00B0 C';
 							}
 						}
 					}
