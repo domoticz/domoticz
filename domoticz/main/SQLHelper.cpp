@@ -2295,18 +2295,28 @@ bool CSQLHelper::CheckAndHandleRainNotification(
 	ltime.tm_mday=tm1.tm_mday;
 	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
-	std::stringstream szQuery;
-	szQuery << "SELECT MIN(Total) FROM Rain WHERE (DeviceRowID=" << devidx << " AND Date>='" << szDateEnd << "')";
-	result=query(szQuery.str());
-	if (result.size()>0)
+	if (subType!=sTypeRAINWU)
 	{
-		std::vector<std::string> sd=result[0];
+		std::stringstream szQuery;
+		szQuery << "SELECT MIN(Total) FROM Rain WHERE (DeviceRowID=" << devidx << " AND Date>='" << szDateEnd << "')";
+		result=query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::string> sd=result[0];
 
-		float total_min=(float)atof(sd[0].c_str());
-		float total_max=mvalue;
-		double total_real=total_max-total_min;
+			float total_min=(float)atof(sd[0].c_str());
+			float total_max=mvalue;
+			double total_real=total_max-total_min;
+			total_real*=AddjMulti;
+
+			CheckAndHandleNotification(HardwareID, ID, unit, devType, subType, NTYPE_RAIN, (float)total_real);
+		}
+	}
+	else
+	{
+		//value is already total rain
+		double total_real=mvalue;
 		total_real*=AddjMulti;
-
 		CheckAndHandleNotification(HardwareID, ID, unit, devType, subType, NTYPE_RAIN, (float)total_real);
 	}
 	return false;
@@ -3424,11 +3434,32 @@ void CSQLHelper::AddCalendarUpdateRain()
 		std::stringstream s_str( sddev[0] );
 		s_str >> ID;
 
-		sprintf(szTmp,"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s')",
-			ID,
-			szDateStart,
-			szDateEnd
-			);
+		//Get Device Information
+		sprintf(szTmp,"SELECT SubType FROM DeviceStatus WHERE (ID='%llu')",ID);
+		result=query(szTmp);
+		if (result.size()<1)
+			continue;
+		std::vector<std::string> sd=result[0];
+
+		unsigned char subType=atoi(sd[0].c_str());
+
+		if (subType!=sTypeRAINWU)
+		{
+			sprintf(szTmp,"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s')",
+				ID,
+				szDateStart,
+				szDateEnd
+				);
+		}
+		else
+		{
+			sprintf(szTmp,"SELECT LAST(Total), LAST(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s')",
+				ID,
+				szDateStart,
+				szDateEnd
+				);
+		}
+
 		result=query(szTmp);
 		if (result.size()>0)
 		{
@@ -3438,7 +3469,16 @@ void CSQLHelper::AddCalendarUpdateRain()
 			float total_max=(float)atof(sd[1].c_str());
 			int rate=atoi(sd[2].c_str());
 
-			float total_real=total_max-total_min;
+			float total_real=0;
+			if (subType!=sTypeRAINWU)
+			{
+				total_real=total_max-total_min;
+			}
+			else
+			{
+				total_real=total_max;
+			}
+			
 
 			if (total_real<1000)
 			{

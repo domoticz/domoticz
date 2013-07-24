@@ -381,6 +381,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeRAIN, sTypeRAIN4, "UPM RG700" },
 		{ pTypeRAIN, sTypeRAIN5, "LaCrosse WS2300" },
 		{ pTypeRAIN, sTypeRAIN6, "LaCrosse TX5" },
+		{ pTypeRAIN, sTypeRAINWU, "Weather Underground" },
 
 		{ pTypeWIND, sTypeWIND1, "WTGR800" },
 		{ pTypeWIND, sTypeWIND2, "WGR800" },

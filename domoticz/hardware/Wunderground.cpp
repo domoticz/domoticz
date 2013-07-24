@@ -354,7 +354,7 @@ void CWunderground::GetMeterDetails()
 				memset(&tsen,0,sizeof(RBUF));
 				tsen.RAIN.packetlength=sizeof(tsen.RAIN)-1;
 				tsen.RAIN.packettype=pTypeRAIN;
-				tsen.RAIN.subtype=sTypeRAIN3;
+				tsen.RAIN.subtype=sTypeRAINWU;
 				tsen.RAIN.battery_level=9;
 				tsen.RAIN.rssi=6;
 				tsen.RAIN.id1=0;

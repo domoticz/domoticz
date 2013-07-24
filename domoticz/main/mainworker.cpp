@@ -1491,6 +1491,9 @@ unsigned long long MainWorker::decode_Rain(const int HwdID, const tRBUF *pRespon
 		case sTypeRAIN6:
 			WriteMessage("subtype       = RAIN6 - LaCrosse TX5");
 			break;
+		case sTypeRAINWU:
+			WriteMessage("subtype       = Weather Underground (Total Rain)");
+			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X : %02X", pResponse->RAIN.packettype, pResponse->RAIN.subtype);
 			WriteMessage(szTmp);

@@ -1502,7 +1502,14 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 
 					szQuery.clear();
 					szQuery.str("");
-					szQuery << "SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
+					if (dSubType!=sTypeRAINWU)
+					{
+						szQuery << "SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
+					}
+					else
+					{
+						szQuery << "SELECT LAST(Total), LAST(Total), LAST(Rate) FROM Rain WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
+					}
 					result2=m_pMain->m_sql.query(szQuery.str());
 					if (result2.size()>0)
 					{
@@ -1510,13 +1517,24 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 						root["result"][ii]["AddjMulti"]=AddjMulti;
 						root["result"][ii]["AddjValue2"]=AddjValue2;
 						root["result"][ii]["AddjMulti2"]=AddjMulti2;
+
+						double total_real=0;
+						float rate=0;
 						std::vector<std::string> sd2=result2[0];
-						float total_min=(float)atof(sd2[0].c_str());
-						float total_max=(float)atof(sd2[1].c_str());
-						float rate=(float)atof(sd2[2].c_str());
-						if (dSubType==sTypeRAIN2)
-							rate/=100.0f;
-						double total_real=total_max-total_min;
+						if (dSubType!=sTypeRAINWU)
+						{
+							float total_min=(float)atof(sd2[0].c_str());
+							float total_max=(float)atof(sd2[1].c_str());
+							rate=(float)atof(sd2[2].c_str());
+							if (dSubType==sTypeRAIN2)
+								rate/=100.0f;
+							total_real=total_max-total_min;
+						}
+						else
+						{
+							rate=(float)atof(sd2[2].c_str());
+							total_real=atof(sd2[1].c_str());
+						}
 						total_real*=AddjMulti;
 
 						sprintf(szTmp,"%.1f",total_real);
@@ -3601,7 +3619,14 @@ std::string CWebServer::GetJSonPage()
 				//add today (have to calculate it)
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				if (dSubType!=sTypeRAINWU)
+				{
+					szQuery << "SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				}
+				else
+				{
+					szQuery << "SELECT LAST(Total), LAST(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				}
 				result=m_pMain->m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
@@ -3611,7 +3636,15 @@ std::string CWebServer::GetJSonPage()
 					float total_max=(float)atof(sd[1].c_str());
 					int rate=atoi(sd[2].c_str());
 
-					double total_real=total_max-total_min;
+					double total_real=0;
+					if (dSubType!=sTypeRAINWU)
+					{
+						total_real=total_max-total_min;
+					}
+					else
+					{
+						total_real=total_max;
+					}
 					total_real*=AddjMulti;
 					sprintf(szTmp,"%.1f",total_real);
 					root["result"][ii]["d"]=szDateEnd;
@@ -4147,7 +4180,14 @@ std::string CWebServer::GetJSonPage()
 				//add today (have to calculate it)
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				if (dSubType!=sTypeRAINWU)
+				{
+					szQuery << "SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				}
+				else
+				{
+					szQuery << "SELECT LAST(Total), LAST(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				}
 				result=m_pMain->m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
@@ -4157,7 +4197,15 @@ std::string CWebServer::GetJSonPage()
 					float total_max=(float)atof(sd[1].c_str());
 					int rate=atoi(sd[2].c_str());
 
-					double total_real=total_max-total_min;
+					double total_real=0;
+					if (dSubType!=sTypeRAINWU)
+					{
+						total_real=total_max-total_min;
+					}
+					else
+					{
+						total_real=total_max;
+					}
 					total_real*=AddjMulti;
 					sprintf(szTmp,"%.1f",total_real);
 					root["result"][ii]["d"]=szDateEnd;
@@ -5026,7 +5074,14 @@ std::string CWebServer::GetJSonPage()
 				//add today (have to calculate it)
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				if (dSubType!=sTypeRAINWU)
+				{
+					szQuery << "SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				}
+				else
+				{
+					szQuery << "SELECT LAST(Total), LAST(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				}
 				result=m_pMain->m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
@@ -5036,7 +5091,15 @@ std::string CWebServer::GetJSonPage()
 					float total_max=(float)atof(sd[1].c_str());
 					int rate=atoi(sd[2].c_str());
 
-					float total_real=total_max-total_min;
+					float total_real=0;
+					if (dSubType!=sTypeRAINWU)
+					{
+						total_real=total_max-total_min;
+					}
+					else
+					{
+						total_real=total_max;
+					}
 					sprintf(szTmp,"%.1f",total_real);
 					root["result"][ii]["d"]=szDateEnd;
 					root["result"][ii]["mm"]=szTmp;

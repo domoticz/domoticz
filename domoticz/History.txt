@@ -34,6 +34,7 @@ Version 1.0.xxx (July xxth 2013)
 - Changed: Dim Slider for mobile items now smaller
 - Fixed: Scenes table now includes pagination at the bottom
 - Implemented: Raspberry Pi camera
+- Fixed: (Possible) WU rain sensor (will have a new sensor type, old one needs to be removed)
 
 Version 1.0.762 (July 1th 2013)
 - Changed: Motion Sensors, Off delay now sends 'Off' to Lighting 1/6 devices, and 'No Motion' to X10 motion sensors
