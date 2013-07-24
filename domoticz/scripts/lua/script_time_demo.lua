@@ -21,11 +21,27 @@
 --   for i, v in pairs(otherdevices) do print(i, v) end
 -- List all otherdevices svalues for debugging: 
 --   for i, v in pairs(otherdevices_svalues) do print(i, v) end
---
--- TBD: nice time example, for instance get temp from svalue string, if time is past 22.00 and before 00:00 and temp is bloody hot turn on fan. 
 
 print('this will end up in the domoticz log')
 
+t1 = os.time()
+s = otherdevices_lastupdate['Garagedoor']
+-- returns a date time like 2013-07-11 17:23:12
+
+year = string.sub(s, 1, 4)
+month = string.sub(s, 6, 7)
+day = string.sub(s, 9, 10)
+hour = string.sub(s, 12, 13)
+minutes = string.sub(s, 15, 16)
+seconds = string.sub(s, 18, 19)
+
 commandArray = {}
--- logic
+
+t2 = os.time{year=year, month=month, day=day, hour=hour, min=minutes, sec=seconds}
+difference = (os.difftime (t1, t2))
+if (otherdevices['Garagedoor'] == 'Open' and difference > 600 and difference < 700) then
+	commandArray['SendNotification']='Garage door alert#The garage door has been open for more than 10 minutes!'
+
+end 
+
 return commandArray

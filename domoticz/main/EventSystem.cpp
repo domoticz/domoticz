@@ -98,7 +98,7 @@ void CEventSystem::LoadEvents()
 				eitem.Conditions		= sd[2];
 				eitem.Actions			= sd[3];
                 eitem.EventStatus = atoi( sd[4].c_str());
-				m_events.push_back(eitem);
+                m_events.push_back(eitem);
 			}
 			else
 			{
@@ -519,35 +519,7 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
                 
                     if (ruleTrue) {
                         _log.Log(LOG_NORM,"UI Event triggered: %s",it->Name.c_str());
-                        std::istringstream ss(it->Actions);
-                        std::string csubstr;
-                        while (!ss.eof()) {
-                            getline(ss, csubstr, ',');
-                            int eQPos = csubstr.find_first_of("=")+1;
-                            std::string doWhat = csubstr.substr(eQPos);
-                            doWhat = doWhat.substr(1,doWhat.size()-2);
-                            int sPos = csubstr.find_first_of("[")+1;
-                            int ePos = csubstr.find_first_of("]");
-                            int sDiff = ePos - sPos;
-                            if (sDiff>0) {
-                                std::string deviceName = csubstr.substr(sPos,sDiff);
-                                int deviceNo = atoi(deviceName.c_str());
-                                if (deviceNo) {
-                                    if(m_devicestates.count(deviceNo)) {
-                                        ScheduleEvent(deviceNo,doWhat);
-                                    }
-                                    else {
-                                        reportMissingDevice (deviceNo, it->Name, it->ID);
-                                    }
-                                }
-                                else {
-                                    std::string devNameNoQuotes = deviceName.substr(1,deviceName.size()-2);
-                                    if (devNameNoQuotes == "SendNotification") {
-                                        SendEventNotification(doWhat.substr(0,doWhat.find('#')), doWhat.substr(doWhat.find('#')+1));
-                                    }
-                                }
-                            }
-                        }
+                        parseBlocklyActions(it->Actions, it->Name, it->ID);
                     }                    
                 }
             }
@@ -560,8 +532,8 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
         
         std::vector<_tEventItem>::iterator it;
         for ( it = m_events.begin(); it != m_events.end(); ++it ) {
+            eventActive = false;
             if (it->EventStatus == 1) { eventActive = true;};
-            
             if (eventActive) {
                 // time rules will only run when time or date based critera are found
                 if ((it->Conditions.find("timeofday")!=std::string::npos) || (it->Conditions.find("weekday")!=std::string::npos)) {
@@ -590,36 +562,7 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
                         lua_Number ruleTrue = lua_tonumber(lua_state,-1);
                         if (ruleTrue) {
                             _log.Log(LOG_NORM,"UI Event triggered: %s",it->Name.c_str());
-                            std::istringstream ss(it->Actions);
-                            std::string csubstr;
-                            while (!ss.eof()) {
-                                getline(ss, csubstr, ',');
-                                int eQPos = csubstr.find_first_of("=")+1;
-                                std::string doWhat = csubstr.substr(eQPos);
-                                doWhat = doWhat.substr(1,doWhat.size()-2);
-                                int sPos = csubstr.find_first_of("[")+1;
-                                int ePos = csubstr.find_first_of("]");
-                                int sDiff = ePos - sPos;
-                                if (sDiff>0) {
-                                    std::string deviceName = csubstr.substr(sPos,sDiff);
-                                    int deviceNo = atoi(deviceName.c_str());
-                                    if (deviceNo) {
-                                        if(m_devicestates.count(deviceNo)) {
-                                            ScheduleEvent(deviceNo,doWhat);
-                                        }
-                                        else {
-                                            reportMissingDevice (deviceNo, it->Name, it->ID);
-                                        }
-                                    }
-                                    else {
-                                        std::string devNameNoQuotes = deviceName.substr(1,deviceName.size()-2);
-                                        if (devNameNoQuotes == "SendNotification") {
-                                            SendEventNotification(doWhat.substr(0,doWhat.find('#')), doWhat.substr(doWhat.find('#')+1));
-                                        }
-                                    }
-
-                                }
-                            }
+                            parseBlocklyActions(it->Actions, it->Name, it->ID );
                         }
                     }
                 }
@@ -629,6 +572,49 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
     lua_close(lua_state);
 }
 
+
+void CEventSystem::parseBlocklyActions(const std::string Actions, const std::string DevName, const unsigned long long ID)
+{
+
+    std::istringstream ss(Actions);
+    std::string csubstr;
+    while (!ss.eof()) {
+        getline(ss, csubstr, ',');
+        int eQPos = csubstr.find_first_of("=")+1;
+        std::string doWhat = csubstr.substr(eQPos);
+        doWhat = doWhat.substr(1,doWhat.size()-2);
+        int sPos = csubstr.find_first_of("[")+1;
+        int ePos = csubstr.find_first_of("]");
+        int sDiff = ePos - sPos;
+        if (sDiff>0) {
+            std::string deviceName = csubstr.substr(sPos,sDiff);
+            bool isScene = false;
+            if (deviceName.substr(0,6)=="Scene:") {
+                isScene = true;
+                deviceName = deviceName.substr(6);
+            }
+            int deviceNo = atoi(deviceName.c_str());
+            if (deviceNo && !isScene) {
+                if(m_devicestates.count(deviceNo)) {
+                    ScheduleEvent(deviceNo,doWhat,isScene);
+                }
+                else {
+                    reportMissingDevice (deviceNo, DevName, ID);
+                }
+            }
+            else if (deviceNo && isScene) {
+                ScheduleEvent(deviceNo,doWhat,isScene);
+            }
+            else {
+                std::string devNameNoQuotes = deviceName.substr(1,deviceName.size()-2);
+                if (devNameNoQuotes == "SendNotification") {
+                    SendEventNotification(doWhat.substr(0,doWhat.find('#')), doWhat.substr(doWhat.find('#')+1));
+                }
+            }
+            
+        }
+    }
+}
 
 void CEventSystem::EvaluateLua(const std::string reason, const std::string filename)
 {
@@ -852,21 +838,34 @@ void CEventSystem::SendEventNotification(const std::string Subject, const std::s
 void CEventSystem::ScheduleEvent(std::string deviceName, std::string Action)
 
 {
+    bool isScene = false;
+    
+    if (deviceName.substr(0,6)=="Scene:") {
+        isScene = true;
+        deviceName = deviceName.substr(6);
+    }
+    
 
     std::vector<std::vector<std::string> > result;
     std::stringstream szQuery;
-    szQuery << "SELECT ID FROM DeviceStatus WHERE (Name == '" << deviceName << "')";
+    
+    if (isScene) {
+        szQuery << "SELECT ID FROM Scenes WHERE (Name == '" << deviceName << "')";
+    }
+    else {
+        szQuery << "SELECT ID FROM DeviceStatus WHERE (Name == '" << deviceName << "')";
+    }
     result=m_pMain->m_sql.query(szQuery.str());
     if (result.size()>0)
 	{
         std::vector<std::string> sd=result[0];
         int idx = atoi(sd[0].c_str());
-        ScheduleEvent(idx, Action);
+        ScheduleEvent(idx, Action,isScene);
     }
 }
 
 
-void CEventSystem::ScheduleEvent(int deviceID, std::string Action)
+void CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene)
 
 {
     int suspendTimer = 0;
@@ -903,32 +902,46 @@ void CEventSystem::ScheduleEvent(int deviceID, std::string Action)
     //_log.Log(LOG_NORM,"Setting device %d to state %s level: %d", deviceID,Action.c_str(),_level);
     
     int DelayTime=1;
-    bool alreadyScheduled = false;
+    bool alreadyScheduled = isEventscheduled(deviceID, isScene);
+
+    if (alreadyScheduled) {
+        _log.Log(LOG_NORM,"Already scheduled this event, skipping");
+        return;
+    }
+    
     
     if (randomTimer > 0) {
         int rTime;
         srand ((unsigned int)time(NULL));
         rTime = rand() % randomTimer + 1;
         DelayTime = rTime * 60;
-        alreadyScheduled = isEventscheduled(deviceID, randomTimer);
+        //alreadyScheduled = isEventscheduled(deviceID, randomTimer, isScene);
         
-    }
-    if (alreadyScheduled) {
-        _log.Log(LOG_NORM,"Already waiting for random trigger for this event, skipping");
-        return;
     }
     
-    _tTaskItem tItem=_tTaskItem::SwitchLightEvent(DelayTime,deviceID,Action,_level);
-        
+    _tTaskItem tItem;
+    
+    if (isScene) {
+        tItem=_tTaskItem::SwitchSceneEvent(DelayTime,deviceID,Action);
+    }
+    else {
+        tItem=_tTaskItem::SwitchLightEvent(DelayTime,deviceID,Action,_level);
+    }
+   
     m_pMain->m_sql.AddTaskItem(tItem);
-        
+    
     if (suspendTimer > 0)
     {
         std::string reciprocal = reciprocalAction(Action);
         if (reciprocal !="Undefined")
         {
             DelayTime =  suspendTimer * 60;
-            _tTaskItem tItem=_tTaskItem::SwitchLightEvent(DelayTime,deviceID,reciprocal,_level);
+            if (isScene) {
+                tItem=_tTaskItem::SwitchSceneEvent(DelayTime,deviceID,reciprocal);
+            }
+            else {
+                _tTaskItem tItem=_tTaskItem::SwitchLightEvent(DelayTime,deviceID,reciprocal,_level);
+            }
             m_pMain->m_sql.AddTaskItem(tItem);
         }
         else
@@ -1120,7 +1133,7 @@ int CEventSystem::getSunRiseSunSetMinutes(std::string what)
     return 0;
 }
 
-bool CEventSystem::isEventscheduled(int idx, int timeframe)
+bool CEventSystem::isEventscheduled(int idx, bool isScene)
 {
     bool foundIt = false;
     std::vector<_tTaskItem> currentTasks;
@@ -1131,11 +1144,19 @@ bool CEventSystem::isEventscheduled(int idx, int timeframe)
     else {
         for(std::vector<_tTaskItem>::iterator it = currentTasks.begin(); it != currentTasks.end(); ++it)
         {
-            if (it->_ItemType == TITEM_SWITCHCMD_EVENT) {
-                if ((it->_idx == idx) && ((timeframe*60) >= it->_DelayTime)) {
+            if (!isScene && it->_ItemType == TITEM_SWITCHCMD_EVENT) {
+                //if ((it->_idx == idx) && ((timeframe*60) >= it->_DelayTime)) {
+                if (it->_idx == idx) {
                     foundIt = true;
                 }
             }
+            else if (isScene && it->_ItemType == TITEM_SWITCHCMD_SCENE) {
+                //if ((it->_idx == idx) && ((timeframe*60) >= it->_DelayTime)) {
+                if (it->_idx == idx) {
+                    foundIt = true;
+                }
+            }
+
         }
         return foundIt;
     }

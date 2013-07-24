@@ -185,6 +185,109 @@ Blockly.Language.domoticzcontrols_if = {
     //this.setNextStatement(true);
   }
  };
+ 
+Blockly.Language.controls_ifelseif = {
+  // If/elseif/else condition.
+  helpUrl: Blockly.LANG_CONTROLS_IF_HELPURL,
+  init: function() {
+    this.setColour(120);
+    this.appendValueInput('IF0')
+        .appendTitle(Blockly.DOMOTICZCONTROLS_MSG_IF);
+    this.appendStatementInput('DO0')
+        .appendTitle(Blockly.DOMOTICZCONTROLS_MSG_DO);
+    this.setMutator(new Blockly.Mutator(['controls_if_elseif']));
+    // Assign 'this' to a variable for use in the tooltip closure below.
+    this.setTooltip(Blockly.DOMOTICZCONTROLS_IF_TOOLTIP);
+    this.elseifCount_ = 0;
+    this.elseCount_ = 0;
+  },
+  mutationToDom: function() {
+    if (!this.elseifCount_) {
+      return null;
+    }
+    var container = document.createElement('mutation');
+    if (this.elseifCount_) {
+      container.setAttribute('elseif', this.elseifCount_);
+    }
+    return container;
+  },
+  domToMutation: function(xmlElement) {
+    this.elseifCount_ = window.parseInt(xmlElement.getAttribute('elseif'), 10);
+    for (var x = 1; x <= this.elseifCount_; x++) {
+      this.appendValueInput('IF' + x)
+          .appendTitle(Blockly.DOMOTICZCONTROLS_MSG_ELSEIF);
+      this.appendStatementInput('DO' + x)
+          .appendTitle(Blockly.DOMOTICZCONTROLS_MSG_DO);
+    }
+  },
+  decompose: function(workspace) {
+    var containerBlock = new Blockly.Block(workspace, 'controls_if_if');
+    containerBlock.initSvg();
+    var connection = containerBlock.getInput('STACK').connection;
+    for (var x = 1; x <= this.elseifCount_; x++) {
+      var elseifBlock = new Blockly.Block(workspace, 'controls_if_elseif');
+      elseifBlock.initSvg();
+      connection.connect(elseifBlock.previousConnection);
+      connection = elseifBlock.nextConnection;
+    }
+    return containerBlock;
+  },
+  compose: function(containerBlock) {
+    // Disconnect all the elseif input blocks and remove the inputs.
+    for (var x = this.elseifCount_; x > 0; x--) {
+      this.removeInput('IF' + x);
+      this.removeInput('DO' + x);
+    }
+    this.elseifCount_ = 0;
+    // Rebuild the block's optional inputs.
+    var clauseBlock = containerBlock.getInputTargetBlock('STACK');
+    while (clauseBlock) {
+      switch (clauseBlock.type) {
+        case 'controls_if_elseif':
+          this.elseifCount_++;
+          var ifInput = this.appendValueInput('IF' + this.elseifCount_)
+              .appendTitle(Blockly.DOMOTICZCONTROLS_MSG_ELSEIF);
+          var doInput = this.appendStatementInput('DO' + this.elseifCount_);
+          doInput.appendTitle(Blockly.DOMOTICZCONTROLS_MSG_DO);
+          // Reconnect any child blocks.
+          if (clauseBlock.valueConnection_) {
+            ifInput.connection.connect(clauseBlock.valueConnection_);
+          }
+          if (clauseBlock.statementConnection_) {
+            doInput.connection.connect(clauseBlock.statementConnection_);
+          }
+          break;
+        default:
+          throw 'Unknown block type.';
+      }
+      clauseBlock = clauseBlock.nextConnection &&
+          clauseBlock.nextConnection.targetBlock();
+    }
+  },
+  saveConnections: function(containerBlock) {
+    // Store a pointer to any connected child blocks.
+    var clauseBlock = containerBlock.getInputTargetBlock('STACK');
+    var x = 1;
+    while (clauseBlock) {
+      switch (clauseBlock.type) {
+        case 'controls_if_elseif':
+          var inputIf = this.getInput('IF' + x);
+          var inputDo = this.getInput('DO' + x);
+          clauseBlock.valueConnection_ =
+              inputIf && inputIf.connection.targetConnection;
+          clauseBlock.statementConnection_ =
+              inputDo && inputDo.connection.targetConnection;
+          x++;
+          break;
+        default:
+          throw 'Unknown block type.';
+      }
+      clauseBlock = clauseBlock.nextConnection &&
+          clauseBlock.nextConnection.targetBlock();
+    }
+  }
+};
+ 
 
 Blockly.Language.temperaturevariables = {
   // Variable getter.
@@ -464,7 +567,10 @@ Blockly.Language.logic_states.STATES =
      ["Group On", 'Group On'],
      ["Group Off", 'Group Off'],
      ["Open", 'Open'],
-     ["Closed", 'Closed']];  
+     ["Closed", 'Closed'],
+     ["Panic", 'Panic'],
+     ["Panic End", 'Panic End'],
+     ["Normal", 'Normal']]; 
 
 Blockly.Language.logic_weekday.OPERATORS =
     [['=', 'EQ'],

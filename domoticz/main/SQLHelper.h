@@ -49,6 +49,7 @@ enum _eTaskItemType
 	TITEM_EMAIL_CAMERA_SNAPSHOT,
 	TITEM_SEND_EMAIL,
     TITEM_SWITCHCMD_EVENT,
+    TITEM_SWITCHCMD_SCENE,
 };
 
 struct _tTaskItem
@@ -128,6 +129,16 @@ struct _tTaskItem
         tItem._command= Command;
         tItem._level= Level;
 
+		return tItem;
+	}
+    static _tTaskItem SwitchSceneEvent(const int DelayTime, const unsigned long long idx, const std::string Command)
+	{
+		_tTaskItem tItem;
+		tItem._ItemType=TITEM_SWITCHCMD_SCENE;
+		tItem._DelayTime=DelayTime;
+		tItem._idx=idx;
+        tItem._command= Command;
+        
 		return tItem;
 	}
 };

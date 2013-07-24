@@ -894,6 +894,12 @@ void CSQLHelper::Do_Work()
                     m_pMain->SwitchLight(itt->_idx,itt->_command.c_str(),itt->_level);
             }
 
+            else if (itt->_ItemType == TITEM_SWITCHCMD_SCENE)
+            {
+                if (m_pMain)
+                    m_pMain->SwitchScene(itt->_idx,itt->_command.c_str());
+            }
+            
 			itt++;
 		}
 		_items2do.clear();

@@ -63,12 +63,13 @@ private:
     void EvaluateEvent(const std::string reason);
 	void EvaluateEvent(const std::string reason, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording);
     void EvaluateBlockly(const std::string reason, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording);
+    void parseBlocklyActions(const std::string Actions, const std::string DevName, const unsigned long long ID);
     void EvaluateLua(const std::string reason, const std::string filename);
     void EvaluateLua(const std::string reason, const std::string filename, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording);
     std::string nValueToWording (const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue,const std::string sValue);
     static int l_domoticz_print(lua_State* lua_state);
     void SendEventNotification(const std::string Subject, const std::string Body);
-    void ScheduleEvent(int deviceID, std::string Action);
+    void ScheduleEvent(int deviceID, std::string Action, bool isScene);
     void ScheduleEvent(std::string ID, std::string Action);
     std::string reciprocalAction (std::string Action);
     std::vector<_tEventItem> m_events;
@@ -77,7 +78,7 @@ private:
     std::map<unsigned long long,int> m_baroValues;
     void reportMissingDevice (int deviceID, std::string EventName, unsigned long long eventID);
     int getSunRiseSunSetMinutes(std::string what);
-    bool isEventscheduled(int idx, int timeframe);
+    bool isEventscheduled(int idx, bool isScene);
     std::string describeError(int resultcode);
     int calculateDimLevel(int deviceID , int percentageLevel);
     

@@ -228,7 +228,13 @@
 	      	if ($(this).attr('type') == 'logic_set') {
 		   		var valueA = $(this).find("value[name='A']")[0];
 	        	var titleA = $(valueA).find("title")[0];
-	        	var setString = "commandArray["+$(titleA).text()+"]";
+	        	var blockA = $(valueA).children("block:first");
+	        	if ((blockA.attr("type")=="scenevariables")) {
+	        		var setString = "commandArray[Scene:"+$(titleA).text()+"]";
+	        	}
+	        	else {
+		        	var setString = "commandArray["+$(titleA).text()+"]";
+	        	}
 	        	var valueB = $(this).find("value[name='B']")[0];
 	        	var titleB = $(valueB).find("title")[0];
 	        	var blockB = $(valueB).children("block:first");
@@ -248,7 +254,13 @@
 	        	var titleB = $(valueB).find("title")[0];
 	        	var valueC = $(this).find("value[name='C']")[0];
 	        	var titleC = $(valueC).find("title")[0];
-	        	var setString = "commandArray["+$(titleA).text()+"]";
+	        	var blockA = $(valueA).children("block:first");
+	        	if ((blockA.attr("type")=="scenevariables")) {
+	        		var setString = "commandArray[Scene:"+$(titleA).text()+"]";
+	        	}
+	        	else {
+		        	var setString = "commandArray["+$(titleA).text()+"]";
+	        	}
 	        	if ($(titleB).attr("name") == "State") {
 	        		setString += '="'+$(titleB).text()+' FOR '+ $(titleC).text()+'"'; 
 	        	}
@@ -261,7 +273,13 @@
 	        	var titleB = $(valueB).find("title")[0];
 	        	var valueC = $(this).find("value[name='C']")[0];
 	        	var titleC = $(valueC).find("title")[0];
-	        	var setString = "commandArray["+$(titleA).text()+"]";
+	        	var blockA = $(valueA).children("block:first");
+	        	if ((blockA.attr("type")=="scenevariables")) {
+	        		var setString = "commandArray[Scene:"+$(titleA).text()+"]";
+	        	}
+	        	else {
+		        	var setString = "commandArray["+$(titleA).text()+"]";
+	        	}
 	        	if ($(titleB).attr("name") == "State") {
 	        		setString += '="'+$(titleB).text()+' RANDOM '+ $(titleC).text()+'"'; 
 	        	}
@@ -486,6 +504,7 @@
     <xml id="toolbox" style="display: none">
    		<category name="Control">
 	   		<block type="domoticzcontrols_if"></block>
+	   		<!--block type="controls_ifelseif"></block>-->
    		</category>
    		<category name="Logic">
 	   		<block type="logic_compare"></block>
