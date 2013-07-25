@@ -69,7 +69,8 @@ struct _tTaskItem
 	std::string _sValue;
     std::string _command;
     unsigned char _level;
-
+    std::string _relatedEvent;
+    
 	_tTaskItem()
 	{
 
@@ -120,7 +121,7 @@ struct _tTaskItem
 		tItem._sValue=Body;
 		return tItem;
 	}
-    static _tTaskItem SwitchLightEvent(const int DelayTime, const unsigned long long idx, const std::string Command, unsigned char Level)
+    static _tTaskItem SwitchLightEvent(const int DelayTime, const unsigned long long idx, const std::string Command, unsigned char Level, const std::string eventName)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_SWITCHCMD_EVENT;
@@ -128,16 +129,18 @@ struct _tTaskItem
 		tItem._idx=idx;
         tItem._command= Command;
         tItem._level= Level;
+        tItem._relatedEvent = eventName;
 
 		return tItem;
 	}
-    static _tTaskItem SwitchSceneEvent(const int DelayTime, const unsigned long long idx, const std::string Command)
+    static _tTaskItem SwitchSceneEvent(const int DelayTime, const unsigned long long idx, const std::string Command, const std::string eventName)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_SWITCHCMD_SCENE;
 		tItem._DelayTime=DelayTime;
 		tItem._idx=idx;
         tItem._command= Command;
+        tItem._relatedEvent = eventName;
         
 		return tItem;
 	}

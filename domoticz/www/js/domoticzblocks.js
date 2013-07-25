@@ -389,7 +389,7 @@ Blockly.Language.logic_set = {
     this.setPreviousStatement(true);
     this.setNextStatement(true);
     this.appendValueInput('A')
-    	.appendTitle("Set");
+    	.appendTitle(Blockly.DOMOTICZCONTROLS_MSG_SET);
     this.appendValueInput('B')
         .appendTitle("=");
     this.setInputsInline(true);
@@ -424,7 +424,7 @@ Blockly.Language.logic_setrandom = {
     this.setPreviousStatement(true);
     this.setNextStatement(true);
     this.appendValueInput('A')
-    	.appendTitle("Set");
+    	.appendTitle(Blockly.DOMOTICZCONTROLS_MSG_SET);
     this.appendValueInput('B')
         .appendTitle("=");
     this.appendValueInput('C')

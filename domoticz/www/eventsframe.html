@@ -250,8 +250,6 @@
 	      	else if ($(this).attr('type') == 'logic_setdelayed') {
 		   		var valueA = $(this).find("value[name='A']")[0];
 	        	var titleA = $(valueA).find("title")[0];
-	        	var valueB = $(this).find("value[name='B']")[0];
-	        	var titleB = $(valueB).find("title")[0];
 	        	var valueC = $(this).find("value[name='C']")[0];
 	        	var titleC = $(valueC).find("title")[0];
 	        	var blockA = $(valueA).children("block:first");
@@ -261,10 +259,18 @@
 	        	else {
 		        	var setString = "commandArray["+$(titleA).text()+"]";
 	        	}
-	        	if ($(titleB).attr("name") == "State") {
+	        	var valueB = $(this).find("value[name='B']")[0];
+	        	var titleB = $(valueB).find("title")[0];
+	        	var blockB = $(valueB).children("block:first");
+		        if ((blockB.attr("type")=="logic_states") && ($(titleB).attr("name") == "State")) {
 	        		setString += '="'+$(titleB).text()+' FOR '+ $(titleC).text()+'"'; 
-	        	}
-	        	setArray.push(setString);
+	        		setArray.push(setString);
+	        	}        	
+	        	else if ((blockB.attr("type")=="logic_setlevel") && ($(titleB).attr("name") == "NUM")) {
+	        		setString += '="Set Level '+$(titleB).text()+' FOR '+ $(titleC).text()+'"'; 
+	        		setArray.push(setString);
+	        	}	        	
+
 		    }
 	      	else if ($(this).attr('type') == 'logic_setrandom') {
 		   		var valueA = $(this).find("value[name='A']")[0];
@@ -280,11 +286,16 @@
 	        	else {
 		        	var setString = "commandArray["+$(titleA).text()+"]";
 	        	}
-	        	if ($(titleB).attr("name") == "State") {
+	        	var blockB = $(valueB).children("block:first");
+		        if ((blockB.attr("type")=="logic_states") && ($(titleB).attr("name") == "State")) {	        	
 	        		setString += '="'+$(titleB).text()+' RANDOM '+ $(titleC).text()+'"'; 
+	        		setArray.push(setString);
 	        	}
-	        	setArray.push(setString);
-		    }
+		       	else if ((blockB.attr("type")=="logic_setlevel") && ($(titleB).attr("name") == "NUM")) {
+	        		setString += '="Set Level '+$(titleB).text()+' RANDOM '+ $(titleC).text()+'"'; 
+	        		setArray.push(setString);
+	        	}        	
+	 	    }
 		    else if ($(this).attr('type') == 'send_notification') {
 		    	var subjectBlock = $(this).find("value[name='notificationTextSubject']")[0];
 		    	var bodyBlock = $(this).find("value[name='notificationTextBody']")[0];

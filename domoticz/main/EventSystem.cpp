@@ -263,11 +263,11 @@ void CEventSystem::GetCurrentMeasurementStates()
         }
         
         if (isTemp) {
-            m_tempValues[sitem.ID] = temp;
+            m_tempValues[sitem.deviceName] = temp;
         }
         if (isHum) {
             //sprintf(szTmp,"%d",humidity);
-            m_humValues[sitem.ID] = humidity;
+            m_humValues[sitem.deviceName] = humidity;
         }
         if (isBaro) {
 			/*
@@ -276,7 +276,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			else
 				sprintf(szTmp,"%.1f",float(barometer)/10.0f);
             */
-            m_baroValues[sitem.ID] = barometer;
+            m_baroValues[sitem.deviceName] = barometer;
         }
     }
 }
@@ -461,10 +461,10 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
     
     if (m_tempValues.size()>0) {
         lua_createtable(lua_state, m_tempValues.size(), 0);
-        std::map<unsigned long long,float>::iterator p;
+        std::map<std::string,float>::iterator p;
         for(p = m_tempValues.begin(); p != m_tempValues.end(); p++) 
 		{
-            lua_pushnumber( lua_state, (lua_Number)p->first);
+            lua_pushstring( lua_state, p->first.c_str());
             lua_pushnumber( lua_state, (lua_Number)p->second);
             lua_rawset( lua_state, -3 );
         }
@@ -472,10 +472,10 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
     }
     if (m_humValues.size()>0) {
         lua_createtable(lua_state, m_humValues.size(), 0);
-        std::map<unsigned long long,unsigned char>::iterator p;
+        std::map<std::string,unsigned char>::iterator p;
         for(p = m_humValues.begin(); p != m_humValues.end(); p++) 
 		{
-            lua_pushnumber( lua_state, (lua_Number)p->first);
+            lua_pushstring( lua_state, p->first.c_str());
             lua_pushnumber( lua_state, (lua_Number)p->second);
             lua_rawset( lua_state, -3 );
         }
@@ -483,10 +483,10 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
     }
     if (m_baroValues.size()>0) {
         lua_createtable(lua_state, m_baroValues.size(), 0);
-        std::map<unsigned long long,int>::iterator p;
+        std::map<std::string,int>::iterator p;
         for(p = m_baroValues.begin(); p != m_baroValues.end(); p++) 
 		{
-            lua_pushnumber( lua_state, (lua_Number)p->first);
+            lua_pushstring( lua_state, p->first.c_str());
             lua_pushnumber( lua_state, (lua_Number)p->second);
             lua_rawset( lua_state, -3 );
         }
@@ -518,8 +518,9 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
                     lua_Number ruleTrue = lua_tonumber(lua_state,-1);
                 
                     if (ruleTrue) {
-                        _log.Log(LOG_NORM,"UI Event triggered: %s",it->Name.c_str());
-                        parseBlocklyActions(it->Actions, it->Name, it->ID);
+                        if (parseBlocklyActions(it->Actions, it->Name, it->ID)) {
+                            _log.Log(LOG_NORM,"UI Event triggered: %s",it->Name.c_str());
+                        }
                     }                    
                 }
             }
@@ -561,8 +562,9 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
                     else {
                         lua_Number ruleTrue = lua_tonumber(lua_state,-1);
                         if (ruleTrue) {
-                            _log.Log(LOG_NORM,"UI Event triggered: %s",it->Name.c_str());
-                            parseBlocklyActions(it->Actions, it->Name, it->ID );
+                            if (parseBlocklyActions(it->Actions, it->Name, it->ID )) {
+                                _log.Log(LOG_NORM,"UI Event triggered: %s",it->Name.c_str());
+                            }
                         }
                     }
                 }
@@ -573,18 +575,30 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
 }
 
 
-void CEventSystem::parseBlocklyActions(const std::string Actions, const std::string DevName, const unsigned long long ID)
+bool CEventSystem::parseBlocklyActions(const std::string Actions, const std::string eventName, const unsigned long long eventID)
 {
+    
+    if (isEventscheduled(eventName))
+    {
+        //_log.Log(LOG_NORM,"Already scheduled this event, skipping");
+        return false;
+    }
 
     std::istringstream ss(Actions);
     std::string csubstr;
+    bool actionsDone = false;
     while (!ss.eof()) {
         getline(ss, csubstr, ',');
+        if ((csubstr.find_first_of("=") == std::string::npos) || (csubstr.find_first_of("[") == std::string::npos) || (csubstr.find_first_of("]") == std::string::npos)) {
+            _log.Log(LOG_ERROR,"Malformed action sequence!");
+            break;
+        }
         int eQPos = csubstr.find_first_of("=")+1;
         std::string doWhat = csubstr.substr(eQPos);
         doWhat = doWhat.substr(1,doWhat.size()-2);
         int sPos = csubstr.find_first_of("[")+1;
         int ePos = csubstr.find_first_of("]");
+
         int sDiff = ePos - sPos;
         if (sDiff>0) {
             std::string deviceName = csubstr.substr(sPos,sDiff);
@@ -596,24 +610,30 @@ void CEventSystem::parseBlocklyActions(const std::string Actions, const std::str
             int deviceNo = atoi(deviceName.c_str());
             if (deviceNo && !isScene) {
                 if(m_devicestates.count(deviceNo)) {
-                    ScheduleEvent(deviceNo,doWhat,isScene);
+                    if (ScheduleEvent(deviceNo,doWhat,isScene,eventName)) {
+                        actionsDone = true;
+                    }
                 }
                 else {
-                    reportMissingDevice (deviceNo, DevName, ID);
+                    reportMissingDevice (deviceNo, eventName, eventID);
                 }
             }
             else if (deviceNo && isScene) {
-                ScheduleEvent(deviceNo,doWhat,isScene);
+                if (ScheduleEvent(deviceNo,doWhat,isScene,eventName)) {
+                    actionsDone = true;
+                }
             }
             else {
                 std::string devNameNoQuotes = deviceName.substr(1,deviceName.size()-2);
                 if (devNameNoQuotes == "SendNotification") {
                     SendEventNotification(doWhat.substr(0,doWhat.find('#')), doWhat.substr(doWhat.find('#')+1));
+                    actionsDone = true;
                 }
             }
             
         }
     }
+    return actionsDone;
 }
 
 void CEventSystem::EvaluateLua(const std::string reason, const std::string filename)
@@ -623,6 +643,12 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
 
 void CEventSystem::EvaluateLua(const std::string reason, const std::string filename, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording)
 {
+    
+    if (isEventscheduled(filename))
+    {
+        //_log.Log(LOG_NORM,"Already scheduled this event, skipping");
+        return;
+    }
 
     lua_State *lua_state;
     lua_state = luaL_newstate();
@@ -663,13 +689,13 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
     if (m_tempValues.size()>0) 
 	{
         lua_createtable(lua_state, m_tempValues.size(), 0);
-        std::map<unsigned long long,float>::iterator p;
+        std::map<std::string,float>::iterator p;
         for(p = m_tempValues.begin(); p != m_tempValues.end(); p++)
 		{
-            lua_pushnumber( lua_state, (lua_Number)p->first);
+            lua_pushstring( lua_state, p->first.c_str());
             lua_pushnumber( lua_state, (lua_Number)p->second);
             lua_rawset( lua_state, -3 );
-            if (p->first ==  DeviceID) {
+            if (p->first ==  devname) {
                 thisDeviceTemp = p->second;
             }
         }
@@ -678,13 +704,13 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
     if (m_humValues.size()>0) 
 	{
         lua_createtable(lua_state, m_humValues.size(), 0);
-        std::map<unsigned long long,unsigned char>::iterator p;
+        std::map<std::string,unsigned char>::iterator p;
         for(p = m_humValues.begin(); p != m_humValues.end(); p++)
 		{
-            lua_pushnumber( lua_state, (lua_Number)p->first);
+            lua_pushstring( lua_state, p->first.c_str());
             lua_pushnumber( lua_state, (lua_Number)p->second);
             lua_rawset( lua_state, -3 );
-            if (p->first ==  DeviceID) {
+            if (p->first ==  devname) {
                 thisDeviceTemp = p->second;
             }
         }
@@ -693,13 +719,13 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
     if (m_baroValues.size()>0) 
 	{
         lua_createtable(lua_state, m_baroValues.size(), 0);
-        std::map<unsigned long long,int>::iterator p;
+        std::map<std::string,int>::iterator p;
         for(p = m_baroValues.begin(); p != m_baroValues.end(); p++)
 		{
-            lua_pushnumber( lua_state, (lua_Number)p->first);
+            lua_pushstring( lua_state, p->first.c_str());
             lua_pushnumber( lua_state, (lua_Number)p->second);
             lua_rawset( lua_state, -3 );
-            if (p->first ==  DeviceID) {
+            if (p->first ==  devname) {
                 thisDeviceTemp = p->second;
             }
         }
@@ -791,21 +817,25 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
     lua_getglobal(lua_state, "commandArray");
     if( lua_istable( lua_state, -1 ) )
 	{
+        
         int tIndex=lua_gettop(lua_state);
         lua_pushnil(lua_state); // first key
         while (lua_next(lua_state, tIndex) != 0)
 		{
             if ((std::string(luaL_typename(lua_state, -2))=="string") && (std::string(luaL_typename(lua_state, -1)))=="string") 
 			{
-                scriptTrue = true;
+                
                 if (std::string(lua_tostring(lua_state, -2))== "SendNotification") 
 				{
                     std::string luaString = lua_tostring(lua_state, -1);
                     SendEventNotification(luaString.substr(0,luaString.find('#')), luaString.substr(luaString.find('#')+1));
+                    scriptTrue = true;
                 }
                 else
 				{
-                    ScheduleEvent(lua_tostring(lua_state, -2),lua_tostring(lua_state, -1));
+                    if (ScheduleEvent(lua_tostring(lua_state, -2),lua_tostring(lua_state, -1),filename)) {
+                        scriptTrue = true;
+                    }
                 }
             }
             else 
@@ -835,7 +865,7 @@ void CEventSystem::SendEventNotification(const std::string Subject, const std::s
     m_pMain->m_sql.SendNotificationEx(Subject,Body);
 }
 
-void CEventSystem::ScheduleEvent(std::string deviceName, std::string Action)
+bool CEventSystem::ScheduleEvent(std::string deviceName, std::string Action, const std::string eventName)
 
 {
     bool isScene = false;
@@ -860,14 +890,17 @@ void CEventSystem::ScheduleEvent(std::string deviceName, std::string Action)
 	{
         std::vector<std::string> sd=result[0];
         int idx = atoi(sd[0].c_str());
-        ScheduleEvent(idx, Action,isScene);
+        return (ScheduleEvent(idx, Action,isScene, eventName));
     }
+    
+    return false;
 }
 
 
-void CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene)
+bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string eventName)
 
 {
+
     int suspendTimer = 0;
     int randomTimer = 0;
     int aFind = Action.find(" FOR ");
@@ -899,22 +932,14 @@ void CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene)
         Action = Action.substr(0,9);
     }
 
-    //_log.Log(LOG_NORM,"Setting device %d to state %s level: %d", deviceID,Action.c_str(),_level);
-    
+   
     int DelayTime=1;
-    bool alreadyScheduled = isEventscheduled(deviceID, isScene);
-
-    if (alreadyScheduled) {
-        _log.Log(LOG_NORM,"Already scheduled this event, skipping");
-        return;
-    }
-    
     
     if (randomTimer > 0) {
         int rTime;
         srand ((unsigned int)time(NULL));
         rTime = rand() % randomTimer + 1;
-        DelayTime = rTime * 60;
+        DelayTime = (rTime * 60) +5; //prevent it from running again immediately the next minute if blockly script doesn't handle that
         //alreadyScheduled = isEventscheduled(deviceID, randomTimer, isScene);
         
     }
@@ -922,33 +947,36 @@ void CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene)
     _tTaskItem tItem;
     
     if (isScene) {
-        tItem=_tTaskItem::SwitchSceneEvent(DelayTime,deviceID,Action);
+        tItem=_tTaskItem::SwitchSceneEvent(DelayTime,deviceID,Action,eventName);
     }
     else {
-        tItem=_tTaskItem::SwitchLightEvent(DelayTime,deviceID,Action,_level);
+        tItem=_tTaskItem::SwitchLightEvent(DelayTime,deviceID,Action,_level,eventName);
     }
-   
     m_pMain->m_sql.AddTaskItem(tItem);
     
     if (suspendTimer > 0)
     {
         std::string reciprocal = reciprocalAction(Action);
+        if (Action == "Set Level") { _level = 0;}
         if (reciprocal !="Undefined")
         {
-            DelayTime =  suspendTimer * 60;
+            DelayTime =  (suspendTimer * 60) + 5; //prevent it from running again immediately the next minute if blockly script doesn't handle that
+            _tTaskItem delayedtItem;
             if (isScene) {
-                tItem=_tTaskItem::SwitchSceneEvent(DelayTime,deviceID,reciprocal);
+                delayedtItem = _tTaskItem::SwitchSceneEvent(DelayTime,deviceID,reciprocal,eventName);
             }
             else {
-                _tTaskItem tItem=_tTaskItem::SwitchLightEvent(DelayTime,deviceID,reciprocal,_level);
+                delayedtItem = _tTaskItem::SwitchLightEvent(DelayTime,deviceID,reciprocal,_level,eventName);
             }
-            m_pMain->m_sql.AddTaskItem(tItem);
+            m_pMain->m_sql.AddTaskItem(delayedtItem);
         }
         else
         {
             _log.Log(LOG_ERROR,"Can't find reciprocal action for %s", Action.c_str());
         }
     }
+    
+    return true;
 }
 
 std::string CEventSystem::reciprocalAction (std::string Action)
@@ -956,6 +984,10 @@ std::string CEventSystem::reciprocalAction (std::string Action)
     std::map<std::string, std::string> mapObject;
 //    int i;
     std::string Counterpart = "Undefined";
+    
+    if (Action == "Set Level") {
+        return "Off";
+    }
     
     mapObject.insert(std::pair<std::string, std::string>("On", "Off"));
     mapObject.insert(std::pair<std::string, std::string>("Open", "Closed"));
@@ -1133,7 +1165,7 @@ int CEventSystem::getSunRiseSunSetMinutes(std::string what)
     return 0;
 }
 
-bool CEventSystem::isEventscheduled(int idx, bool isScene)
+bool CEventSystem::isEventscheduled(const std::string eventName)
 {
     bool foundIt = false;
     std::vector<_tTaskItem> currentTasks;
@@ -1144,33 +1176,23 @@ bool CEventSystem::isEventscheduled(int idx, bool isScene)
     else {
         for(std::vector<_tTaskItem>::iterator it = currentTasks.begin(); it != currentTasks.end(); ++it)
         {
-            if (!isScene && it->_ItemType == TITEM_SWITCHCMD_EVENT) {
-                //if ((it->_idx == idx) && ((timeframe*60) >= it->_DelayTime)) {
-                if (it->_idx == idx) {
-                    foundIt = true;
-                }
+            if (it->_relatedEvent == eventName) {
+                foundIt = true;
             }
-            else if (isScene && it->_ItemType == TITEM_SWITCHCMD_SCENE) {
-                //if ((it->_idx == idx) && ((timeframe*60) >= it->_DelayTime)) {
-                if (it->_idx == idx) {
-                    foundIt = true;
-                }
-            }
-
         }
-        return foundIt;
     }
-    
+    return foundIt;
 }
 
-int CEventSystem::calculateDimLevel(int deviceID , int percentageLevel)
+
+unsigned char CEventSystem::calculateDimLevel(int deviceID , int percentageLevel)
 {
     
     std::vector<std::vector<std::string> > result;
     std::stringstream szQuery;
     szQuery << "SELECT Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << deviceID << ")";
     result=m_pMain->m_sql.query(szQuery.str());
-    int ilevel = 0;
+    unsigned char ilevel = 0;
     if (result.size()>0)
     {
         std::vector<std::string> sd=result[0];
@@ -1186,12 +1208,14 @@ int CEventSystem::calculateDimLevel(int deviceID , int percentageLevel)
         
         GetLightStatus(dType,dSubType,0,"",lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
         ilevel=maxDimLevel;
+        
         if ((switchtype == STYPE_Dimmer)&&(maxDimLevel!=0))
         {
             float fLevel=(maxDimLevel/100.0f)*percentageLevel;
             if (fLevel>100)
                 fLevel=100;
             ilevel=int(fLevel);
+            if (ilevel >0) { ilevel++; }
         }
     }
     return ilevel;
