@@ -186,8 +186,6 @@ public:
 	bool GetPreferencesVar(const char *Key, int &nValue);
 	bool GetPreferencesVar(const char *Key, std::string &sValue);
 
-	void Set5MinuteHistoryDays(const int Days);
-
 	//notification functions
 	bool AddNotification(const std::string DevIdx, const std::string Param);
 	bool RemoveDeviceNotifications(const std::string DevIdx);
@@ -319,7 +317,6 @@ private:
 	sqlite3 *m_demo_dbase;
 	MainWorker *m_pMain;
 	std::string m_dbase_name;
-	int m_5MinuteHistoryDays;
 
 	std::vector<_tTaskItem> m_background_task_queue;
 	boost::shared_ptr<boost::thread> m_background_task_thread;
@@ -347,5 +344,6 @@ private:
 	void AddCalendarUpdateUV();
 	void AddCalendarUpdateMeter();
 	void AddCalendarUpdateMultiMeter();
+	void CleanupShortLog();
 };
 

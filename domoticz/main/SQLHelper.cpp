@@ -609,9 +609,7 @@ bool CSQLHelper::OpenDatabase()
 	if (!GetPreferencesVar("5MinuteHistoryDays", nValue))
 	{
 		UpdatePreferencesVar("5MinuteHistoryDays", 1);
-		nValue=1;
 	}
-	Set5MinuteHistoryDays(nValue);
 	if (!GetPreferencesVar("SensorTimeout", nValue))
 	{
 		UpdatePreferencesVar("SensorTimeout", 60);
@@ -745,15 +743,6 @@ bool CSQLHelper::OpenDatabase()
 	if (!StartThread())
 		return false;
 	return true;
-}
-
-void CSQLHelper::Set5MinuteHistoryDays(const int Days)
-{
-	if (Days<1)
-		m_5MinuteHistoryDays=1;
-	else
-		m_5MinuteHistoryDays=Days;
-	UpdatePreferencesVar("5MinuteHistoryDays", Days);
 }
 
 bool CSQLHelper::StartThread()
@@ -2591,6 +2580,10 @@ void CSQLHelper::Schedule5Minute()
 	UpdateUVLog();
 	UpdateMeter();
 	UpdateMultiMeter();
+
+	//Removing the line below could cause a very large database,
+	//and slow(large) data transfer (specially when working remote!!)
+	CleanupShortLog(); 
 }
 
 void CSQLHelper::ScheduleDay()
@@ -2739,17 +2732,6 @@ void CSQLHelper::UpdateTemperatureLog()
 			result2=query(szTmp);
 		}
 	}
-	//truncate the temperature table (remove items older then 48 hours)
-	if (m_5MinuteHistoryDays!=0)
-	{
-		now-=(m_5MinuteHistoryDays*24*3600);
-		struct tm tm2;
-		localtime_r(&now,&tm2);
-		sprintf(szTmp,"DELETE FROM Temperature WHERE (Date<'%04d-%02d-%02d %02d:%02d:00')",
-			tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min
-			);
-		result=query(szTmp);
-	}
 }
 
 void CSQLHelper::UpdateRainLog()
@@ -2823,17 +2805,6 @@ void CSQLHelper::UpdateRainLog()
 			result2=query(szTmp);
 		}
 	}
-	//truncate the rain table (remove items older then 48 hours)
-	if (m_5MinuteHistoryDays!=0)
-	{
-		now-=(m_5MinuteHistoryDays*24*3600);
-		struct tm tm2;
-		localtime_r(&now,&tm2);
-		sprintf(szTmp,"DELETE FROM Rain WHERE (Date<'%04d-%02d-%02d %02d:%02d:00')",
-			tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min
-			);
-		result=query(szTmp);
-	}
 }
 
 void CSQLHelper::UpdateWindLog()
@@ -2904,17 +2875,6 @@ void CSQLHelper::UpdateWindLog()
 			result2=query(szTmp);
 		}
 	}
-	//truncate the wind table (remove items older then 48 hours)
-	if (m_5MinuteHistoryDays!=0)
-	{
-		now-=(m_5MinuteHistoryDays*24*3600);
-		struct tm tm2;
-		localtime_r(&now,&tm2);
-		sprintf(szTmp,"DELETE FROM Wind WHERE (Date<'%04d-%02d-%02d %02d:%02d:00')",
-			tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min
-			);
-		result=query(szTmp);
-	}
 }
 
 void CSQLHelper::UpdateUVLog()
@@ -2980,17 +2940,6 @@ void CSQLHelper::UpdateUVLog()
 			std::vector<std::vector<std::string> > result2;
 			result2=query(szTmp);
 		}
-	}
-	//truncate the uv table (remove items older then 48 hours)
-	if (m_5MinuteHistoryDays!=0)
-	{
-		now-=(m_5MinuteHistoryDays*24*3600);
-		struct tm tm2;
-		localtime_r(&now,&tm2);
-		sprintf(szTmp,"DELETE FROM UV WHERE (Date<'%04d-%02d-%02d %02d:%02d:00')",
-			tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min
-			);
-		result=query(szTmp);
 	}
 }
 
@@ -3154,17 +3103,6 @@ void CSQLHelper::UpdateMeter()
 			result2=query(szTmp);
 		}
 	}
-	//truncate the Meter table (remove items older then 48 hours)
-	if (m_5MinuteHistoryDays!=0)
-	{
-		now-=(m_5MinuteHistoryDays*24*3600);
-		struct tm tm2;
-		localtime_r(&now,&tm2);
-		sprintf(szTmp,"DELETE FROM Meter WHERE (Date<'%04d-%02d-%02d %02d:%02d:00')",
-			tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min
-			);
-		result=query(szTmp);
-	}
 }
 
 void CSQLHelper::UpdateMultiMeter()
@@ -3295,17 +3233,6 @@ void CSQLHelper::UpdateMultiMeter()
 			std::vector<std::vector<std::string> > result2;
 			result2=query(szTmp);
 		}
-	}
-	//truncate the MultiMeter table (remove items older then 48 hours)
-	if (m_5MinuteHistoryDays!=0)
-	{
-		now-=(m_5MinuteHistoryDays*24*3600);
-		struct tm tm2;
-		localtime_r(&now,&tm2);
-		sprintf(szTmp,"DELETE FROM MultiMeter WHERE (Date<'%04d-%02d-%02d %02d:%02d:00')",
-			tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min
-			);
-		result=query(szTmp);
 	}
 }
 
@@ -4006,6 +3933,40 @@ void CSQLHelper::AddCalendarUpdateUV()
 			result=query(szTmp);
 		}
 	}
+}
+
+void CSQLHelper::CleanupShortLog()
+{
+	int n5MinuteHistoryDays=1;
+	GetPreferencesVar("5MinuteHistoryDays", n5MinuteHistoryDays);
+
+	time_t now = time(NULL);
+	now-=(n5MinuteHistoryDays*24*3600);
+	struct tm tm2;
+	localtime_r(&now,&tm2);
+
+	char szDateStr[40];
+	char szTmp[200];
+
+	sprintf(szDateStr,"%04d-%02d-%02d %02d:%02d:00",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min);
+
+	sprintf(szTmp,"DELETE FROM Temperature WHERE (Date<'%s')",szDateStr);
+	query(szTmp);
+
+	sprintf(szTmp,"DELETE FROM Rain WHERE (Date<'%s')",szDateStr);
+	query(szTmp);
+
+	sprintf(szTmp,"DELETE FROM Wind WHERE (Date<'%s')",szDateStr);
+	query(szTmp);
+
+	sprintf(szTmp,"DELETE FROM UV WHERE (Date<'%s')",szDateStr);
+	query(szTmp);
+
+	sprintf(szTmp,"DELETE FROM Meter WHERE (Date<'%s')",szDateStr);
+	query(szTmp);
+
+	sprintf(szTmp,"DELETE FROM MultiMeter WHERE (Date<'%s')",szDateStr);
+	query(szTmp);
 }
 
 void CSQLHelper::DeleteHardware(const std::string idx)

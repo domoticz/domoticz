@@ -520,11 +520,8 @@ char * CWebServer::PostSettings()
 	std::string LightHistoryDays=m_pWebEm->FindValue("LightHistoryDays");
 	m_pMain->m_sql.UpdatePreferencesVar("LightHistoryDays",atoi(LightHistoryDays.c_str()));
 
-	std::string ShortLogDays=m_pWebEm->FindValue("ShortLogDays");
-	if (ShortLogDays!="")
-	{
-		m_pMain->m_sql.Set5MinuteHistoryDays(atoi(ShortLogDays.c_str()));
-	}
+	std::string s5MinuteHistoryDays=m_pWebEm->FindValue("ShortLogDays");
+	m_pMain->m_sql.UpdatePreferencesVar("5MinuteHistoryDays",atoi(s5MinuteHistoryDays.c_str()));
 
 	std::string sElectricVoltage=m_pWebEm->FindValue("ElectricVoltage");
 	m_pMain->m_sql.UpdatePreferencesVar("ElectricVoltage",atoi(sElectricVoltage.c_str()));
