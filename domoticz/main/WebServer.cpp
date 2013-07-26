@@ -5525,13 +5525,34 @@ std::string CWebServer::GetJSonPage()
 		}
 		else if (cparam=="udevice")
 		{
+			std::string nvalue=m_pWebEm->FindValue("nvalue");
+			std::string svalue=m_pWebEm->FindValue("svalue");
+
+			std::string idx=m_pWebEm->FindValue("idx");
+
 			std::string hid=m_pWebEm->FindValue("hid");
 			std::string did=m_pWebEm->FindValue("did");
 			std::string dunit=m_pWebEm->FindValue("dunit");
 			std::string dtype=m_pWebEm->FindValue("dtype");
 			std::string dsubtype=m_pWebEm->FindValue("dsubtype");
-			std::string nvalue=m_pWebEm->FindValue("nvalue");
-			std::string svalue=m_pWebEm->FindValue("svalue");
+
+			if (idx!="")
+			{
+				//Get device parameters
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << idx << ")";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					hid=result[0][0];
+					did=result[0][1];
+					dunit=result[0][2];
+					dtype=result[0][3];
+					dsubtype=result[0][4];
+				}
+			}
+
 			if (
 				(hid=="")||
 				(did=="")||
