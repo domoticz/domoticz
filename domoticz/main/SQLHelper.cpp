@@ -3387,7 +3387,7 @@ void CSQLHelper::AddCalendarUpdateRain()
 		}
 		else
 		{
-			sprintf(szTmp,"SELECT Total, Total, MAX(Rate) FROM Rain WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s') ORDER BY ROWID DESC LIMIT 1",
+			sprintf(szTmp,"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s') ORDER BY ROWID DESC LIMIT 1",
 				ID,
 				szDateStart,
 				szDateEnd

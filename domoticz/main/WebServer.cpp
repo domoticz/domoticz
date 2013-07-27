@@ -3622,7 +3622,7 @@ std::string CWebServer::GetJSonPage()
 				}
 				else
 				{
-					szQuery << "SELECT Total, Total, MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "') ORDER BY ROWID DESC LIMIT 1";
+					szQuery << "SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "') ORDER BY ROWID DESC LIMIT 1";
 				}
 				result=m_pMain->m_sql.query(szQuery.str());
 				if (result.size()>0)
@@ -4183,7 +4183,7 @@ std::string CWebServer::GetJSonPage()
 				}
 				else
 				{
-					szQuery << "SELECT Total, Total, MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "') ORDER BY ROWID DESC LIMIT 1";
+					szQuery << "SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "') ORDER BY ROWID DESC LIMIT 1";
 				}
 				result=m_pMain->m_sql.query(szQuery.str());
 				if (result.size()>0)
@@ -5077,7 +5077,7 @@ std::string CWebServer::GetJSonPage()
 				}
 				else
 				{
-					szQuery << "SELECT Total, Total, MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "') ORDER BY ROWID DESC LIMIT 1";
+					szQuery << "SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "') ORDER BY ROWID DESC LIMIT 1";
 				}
 				result=m_pMain->m_sql.query(szQuery.str());
 				if (result.size()>0)
