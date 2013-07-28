@@ -141,7 +141,7 @@ void CEventSystem::GetCurrentStates()
     
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ID,Name,nValue,sValue, Type, SubType, SwitchType, LastUpdate FROM DeviceStatus WHERE (Used = '1')";
+	szQuery << "SELECT ID,Name,nValue,sValue, Type, SubType, SwitchType, LastUpdate, LastLevel FROM DeviceStatus WHERE (Used = '1')";
 	result=m_pMain->m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -161,6 +161,7 @@ void CEventSystem::GetCurrentStates()
 			_eSwitchType switchtype=(_eSwitchType)atoi(sd[6].c_str());
             sitem.nValueWording = nValueToWording(atoi(sd[4].c_str()), atoi(sd[5].c_str()), switchtype, (unsigned char)sitem.nValue,sitem.sValue);
             sitem.lastUpdate = sd[7];
+            sitem.lastLevel = atoi(sd[8].c_str());
             m_devicestates[sitem.ID] = sitem;
         }
   	}
@@ -309,11 +310,11 @@ void CEventSystem::WWWUpdateSingleState(unsigned long long ulDevID, std::string 
 }
 
 
-std::string CEventSystem::UpdateSingleState(unsigned long long ulDevID, std::string devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, std::string lastUpdate)
+std::string CEventSystem::UpdateSingleState(unsigned long long ulDevID, std::string devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, std::string lastUpdate, unsigned char lastLevel)
 {
     
     std::string nValueWording = nValueToWording(devType, subType, switchType, nValue, sValue);
-    
+   
     std::map<unsigned long long,_tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
     if (itt != m_devicestates.end()) {
 		//Update
@@ -323,6 +324,7 @@ std::string CEventSystem::UpdateSingleState(unsigned long long ulDevID, std::str
         replaceitem.sValue = sValue;
         replaceitem.nValueWording = nValueWording;
         replaceitem.lastUpdate = lastUpdate;
+        replaceitem.lastLevel = lastLevel;
         itt->second = replaceitem;
     }
     else {
@@ -334,6 +336,7 @@ std::string CEventSystem::UpdateSingleState(unsigned long long ulDevID, std::str
         newitem.sValue = sValue;
         newitem.nValueWording = nValueWording;
         newitem.lastUpdate = lastUpdate;
+        newitem.lastLevel = lastLevel;
         m_devicestates[newitem.ID] = newitem;
     }
     return nValueWording;
@@ -347,13 +350,13 @@ bool CEventSystem::ProcessDevice(const int HardwareID, const unsigned long long 
     // query to get switchtype & LastUpdate, can't seem to get it from SQLHelper?
     std::vector<std::vector<std::string> > result;
     std::stringstream szQuery;
-    szQuery << "SELECT ID, SwitchType, LastUpdate FROM DeviceStatus WHERE (Name == '" << devname << "')";
+    szQuery << "SELECT ID, SwitchType, LastUpdate, LastLevel FROM DeviceStatus WHERE (Name == '" << devname << "')";
     result=m_pMain->m_sql.query(szQuery.str());
     if (result.size()>0) {
         std::vector<std::string> sd=result[0];
         _eSwitchType switchType=(_eSwitchType)atoi(sd[1].c_str());
-        //_log.Log(LOG_NORM,"update single state %s",devname.c_str());
-        std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, sd[2]);
+        
+        std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, sd[2], atoi(sd[3].c_str()));
         EvaluateEvent("device", ulDevID, devname, nValue, sValue, nValueWording);
     }
     else {
@@ -499,6 +502,24 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
         lua_setglobal(lua_state, "barometerdevice");
     }
     
+    int secstatus=0;
+    std::string secstatusw = "";
+    m_pMain->m_sql.GetPreferencesVar("SecStatus", secstatus);
+    if (secstatus == 1) {
+        secstatusw = "Armed Home";
+    }
+    else if (secstatus == 2) {
+        secstatusw = "Armed Away";
+    }
+    else {
+        secstatusw = "Disarmed";
+    }
+    
+    lua_createtable(lua_state, 1, 0);
+    lua_pushstring( lua_state, "Security" );
+    lua_pushstring( lua_state, secstatusw.c_str() );
+    lua_rawset( lua_state, -3 );
+    lua_setglobal(lua_state, "globalvariables");
     
     if ((reason == "device") && (DeviceID >0)) {
         
@@ -906,7 +927,10 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, std::string Action, con
 bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string eventName)
 
 {
-
+ 
+    std::string previousState = m_devicestates[deviceID].nValueWording;
+    unsigned char previousLevel = calculateDimLevel(deviceID, m_devicestates[deviceID].lastLevel);
+    
     int suspendTimer = 0;
     int randomTimer = 0;
     int aFind = Action.find(" FOR ");
@@ -962,29 +986,37 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
     
     if (suspendTimer > 0)
     {
-        std::string reciprocal = reciprocalAction(Action);
-        if (Action == "Set Level") { _level = 0;}
-        if (reciprocal !="Undefined")
-        {
-            DelayTime =  (suspendTimer * 60) + 5; //prevent it from running again immediately the next minute if blockly script doesn't handle that
-            _tTaskItem delayedtItem;
-            if (isScene) {
-                delayedtItem = _tTaskItem::SwitchSceneEvent(DelayTime,deviceID,reciprocal,eventName);
+        //std::string reciprocal = reciprocalAction(Action);
+        //if (Action == "Set Level") { _level = 0;}
+        //if (reciprocal !="Undefined")
+        //{
+        DelayTime =  (suspendTimer * 60) + 5; //prevent it from running again immediately the next minute if blockly script doesn't handle that
+        _tTaskItem delayedtItem;
+        if (isScene) {
+            if (Action == "On") {
+                delayedtItem = _tTaskItem::SwitchSceneEvent(DelayTime,deviceID,"Off",eventName);
             }
             else {
-                delayedtItem = _tTaskItem::SwitchLightEvent(DelayTime,deviceID,reciprocal,_level,eventName);
+                delayedtItem = _tTaskItem::SwitchSceneEvent(DelayTime,deviceID,"On",eventName);
             }
-            m_pMain->m_sql.AddTaskItem(delayedtItem);
+        }
+        else {
+            delayedtItem = _tTaskItem::SwitchLightEvent(DelayTime,deviceID,previousState,previousLevel,eventName);
+        }
+        m_pMain->m_sql.AddTaskItem(delayedtItem);
+        /*
         }
         else
         {
             _log.Log(LOG_ERROR,"Can't find reciprocal action for %s", Action.c_str());
         }
+        */
     }
     
     return true;
 }
 
+/*
 std::string CEventSystem::reciprocalAction (std::string Action)
 {
     std::map<std::string, std::string> mapObject;
@@ -1028,6 +1060,7 @@ std::string CEventSystem::reciprocalAction (std::string Action)
     return Counterpart;
     
 }
+ */
 
 std::string CEventSystem::nValueToWording (const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue,const std::string sValue)
 {
@@ -1040,6 +1073,9 @@ std::string CEventSystem::nValueToWording (const unsigned char dType, const unsi
     
     GetLightStatus(dType,dSubType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
     
+    if (lstatus.substr(0,9) == "Set Level") {
+        lstatus = "Set Level";
+    }
     
     if (switchtype==STYPE_Dimmer)
     {

@@ -30,6 +30,7 @@ public:
         unsigned char subType;
         std::string nValueWording;
         std::string lastUpdate;
+        unsigned char lastLevel;
         
 	};
     std::map<unsigned long long,_tDeviceStatus> m_devicestates;
@@ -59,7 +60,7 @@ private:
 	void ProcessMinute();
     void GetCurrentStates();
     void GetCurrentMeasurementStates();
-    std::string UpdateSingleState(unsigned long long ulDevID, std::string devname, const int nValue, const char* sValue,const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, std::string lastUpdate);
+    std::string UpdateSingleState(unsigned long long ulDevID, std::string devname, const int nValue, const char* sValue,const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, std::string lastUpdate, unsigned char lastLevel);
     void EvaluateEvent(const std::string reason);
 	void EvaluateEvent(const std::string reason, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording);
     void EvaluateBlockly(const std::string reason, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording);
@@ -71,7 +72,7 @@ private:
     void SendEventNotification(const std::string Subject, const std::string Body);
     bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string eventName);
     bool ScheduleEvent(std::string ID, std::string Action, const std::string eventName);
-    std::string reciprocalAction (std::string Action);
+    //std::string reciprocalAction (std::string Action);
     std::vector<_tEventItem> m_events;
     std::map<std::string,float> m_tempValuesByName;
     std::map<std::string,unsigned char> m_humValuesByName;
