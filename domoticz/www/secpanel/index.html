@@ -6,72 +6,162 @@
 
 	<link href="css/style.less" rel="stylesheet/less" />
 	<script src="js/less.js"></script>
+	<script src="../js/jquery-1.9.1.min.js"></script>
+	<script src="../js/jquery.i18n.js"></script>
+	<script src="../js/jquery.i18n.messages.js"></script>
+	<script src="../js/jquery.i18n.fallbacks.js"></script>
+	<script src="../js/jquery.i18n.parser.js"></script>
+	<script src="../js/jquery.i18n.emitter.js"></script>
+	<script src="../js/jquery.i18n.language.js"></script>
+		
+	<script type="text/javascript">
+		function SetStatus()
+		{
+			$.ajax({
+				url: "../json.htm?type=command&param=getsecstatus",
+				async: false, 
+				dataType: 'json',
+				success: function(data) {
+					if (data.status != "OK") {
+						alert($.i18n('Problem getting security status!'), 2500, true);
+						return;
+					}
+					else {
+						var quadHtml="";
+						var quadtext="";
+						var quadtextlong="";
+						var quadclass="quadarmed";
+						if (data.secstatus==0) {
+							quadtext="DISARMED";
+							quadtextlong="  DISARMED  ";
+							quadclass="quaddisarmed";
+						}
+						else if (data.secstatus==1) {
+							quadtext="ARM HOME";
+							quadtextlong="ARMED HOME";
+							quadclass="quadarmed";
+						}
+						else if (data.secstatus==2) {
+							quadtext="ARM AWAY";
+							quadtextlong="ARMED AWAY";
+							quadclass="quadarmed";
+						}
+						
+						quadHtml="<ul>"+
+								"<li>" + quadtext[0] + "</li>"+
+								"<li>" + quadtext[1] + "</li>"+
+								"<li>" + quadtext[2] + "</li>"+
+								"<li>" + quadtext[3] + "</li>"+
+								"<li>" + quadtext[4] + "</li>"+
+								"<li>" + quadtext[5] + "</li>"+
+								"<li>" + quadtext[6] + "</li>"+
+								"<li>" + quadtext[7] + "</li>"+
+								"</ul>";
+						$('#quad').html(quadHtml);
+						$('#quad').attr("class", quadclass);
+						$('#txtCalculadora').val("*"+quadtextlong+"*");
+					}
+				},
+				error: function(){
+					alert($.i18n('Problem getting security status!'), 2500, true);
+				}
+			});
+		}
+
+		function SetSecStatus(status)
+		{
+			var seccode=$('#txtCalculadora').val().replace("#","^");
+			$.ajax({
+				url: "../json.htm?type=command&param=setsecstatus&secstatus=" + status + "&seccode=" + seccode,
+				async: false, 
+				dataType: 'json',
+				success: function(data) {
+					if (data.status != "OK") {
+						$('#txtCalculadora').val($.i18n(data.message));
+						return;
+					}
+					else {
+						SetStatus();
+					}
+				},
+				error: function(){
+					alert($.i18n('Problem setting security status!'), 2500, true);
+				}
+			});
+		}
+		
+		function AddDigit(digit)
+		{
+			var orgtext=$('#txtCalculadora').val();
+			if (
+				(orgtext=="*  DISARMED  *")||
+				(orgtext=="*ARMED HOME*")||
+				(orgtext=="*ARMED AWAY*")||
+				(orgtext==$.i18n("WRONG CODE"))
+				) {
+					orgtext="";
+				}
+				
+			var newtext=orgtext+digit;
+			$('#txtCalculadora').val(newtext);
+		}
+		
+		$(document).ready(function() {
+			SetStatus();
+		});
+	</script>
+
 </head>
 <body>
-
 	<div id="geral">
-
 		<div class="borda-calculadora">
-
 			<div id="calculadora">
-
 				<div class="topo-calculadora">
-
 					<div class="titulo">
 						<h1>Domoticz</h1>
 						<p class="descricao">Security Panel</p>
-					</div><!-- titulo -->
+					</div>
 
-					<div class="quadrados">
+					<div id="quad" class="quaddisarmed">
 						<ul>
-							<li></li>
-							<li></li>
-							<li></li>
-							<li></li>
+							<li>D</li>
+							<li>I</li>
+							<li>S</li>
+							<li>A</li>
+							<li>R</li>
+							<li>M</li>
+							<li>E</li>
+							<li>D</li>
 						</ul>
-					</div><!-- quadrados -->
+					</div>
 				</div>
 
 				<div class="clear"></div>
-
 				<form name="Calc">
-
-					<input type="text" id="txtCalculadora" value="19283" name="txtCalculadora" maxlength="8" />
-
+					<input type="text" id="txtCalculadora" value="19283" name="txtCalculadora" maxlength="8" disabled="disabled"/>
 					<div class="clear"></div>
-
 					<ul id="botoes-opcoes">
-						<li onClick="Calc.txtCalculadora.value += '1'">1</li>
-						<li onClick="Calc.txtCalculadora.value += '2'">2</li>
-						<li onClick="Calc.txtCalculadora.value += '3'">3</li>
-						<li class="disarm" onClick="Calc.txtCalculadora.value = '*DISARMED*'">Disarm</li>
-						<li onClick="Calc.txtCalculadora.value += '4'">4</li>
-						<li onClick="Calc.txtCalculadora.value += '5'">5</li>
-						<li onClick="Calc.txtCalculadora.value += '6'">6</li>
-						<li class="arm" onClick="Calc.txtCalculadora.value = '*ARMED HOME*'">Arm Home</li>
-						<li onClick="Calc.txtCalculadora.value += '7'">7</li>
-						<li onClick="Calc.txtCalculadora.value += '8'">8</li>
-						<li onClick="Calc.txtCalculadora.value += '9'">9</li>
-						<li class="arm" onClick="Calc.txtCalculadora.value= '*ARMED AWAY*'">Arm Away</li>
-						<li onClick="Calc.txtCalculadora.value += '*'">*</li>
-						<li onClick="Calc.txtCalculadora.value += '0'">0</li>
-						<li onClick="Calc.txtCalculadora.value += '#'">#</li>
+						<li onClick="javascript:AddDigit('1')">1</li>
+						<li onClick="javascript:AddDigit('2')">2</li>
+						<li onClick="javascript:AddDigit('3')">3</li>
+						<li class="disarm" onClick="javascript:SetSecStatus(0)">Disarm</li>
+						<li onClick="javascript:AddDigit('4')">4</li>
+						<li onClick="javascript:AddDigit('5')">5</li>
+						<li onClick="javascript:AddDigit('6')">6</li>
+						<li class="arm" onClick="javascript:SetSecStatus(1)">Arm Home</li>
+						<li onClick="javascript:AddDigit('7')">7</li>
+						<li onClick="javascript:AddDigit('8')">8</li>
+						<li onClick="javascript:AddDigit('9')">9</li>
+						<li class="arm" onClick="javascript:SetSecStatus(2)">Arm Away</li>
+						<li onClick="javascript:AddDigit('*')">*</li>
+						<li onClick="javascript:AddDigit('0')">0</li>
+						<li onClick="javascript:AddDigit('#')">#</li>
 						<li class="btnclear" onClick="Calc.txtCalculadora.value = ''">Clear</li>
 					</ul>
-
 				</form>
-
 				<p class="numero-serie">SEC05 - 20H1</p>
-
-			</div><!-- calculadora -->
-
-		</div><!-- borda-calculadora -->
-
-	</div><!-- geral -->
-
-	<script type="text/javascript">
-
-	</script>
-
+			</div>
+		</div>
+	</div>
 </body>
 </html>

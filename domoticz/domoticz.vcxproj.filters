@@ -283,6 +283,9 @@
     <ClInclude Include="hardware\Wunderground.h">
       <Filter>Devices\wunderground.com</Filter>
     </ClInclude>
+    <ClInclude Include="main\mainstructs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">

@@ -564,6 +564,11 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("WebPassword",WebPassword.c_str());
 	m_pMain->m_sql.UpdatePreferencesVar("WebLocalNetworks",WebLocalNetworks.c_str());
 
+	std::string SecPassword=m_pWebEm->FindValue("SecPassword");
+	SecPassword=CURLEncode::URLDecode(SecPassword);
+	SecPassword=base64_encode((const unsigned char*)SecPassword.c_str(),SecPassword.size());
+	m_pMain->m_sql.UpdatePreferencesVar("SecPassword",SecPassword.c_str());
+
 	int EnergyDivider=atoi(m_pWebEm->FindValue("EnergyDivider").c_str());
 	int GasDivider=atoi(m_pWebEm->FindValue("GasDivider").c_str());
 	int WaterDivider=atoi(m_pWebEm->FindValue("WaterDivider").c_str());
@@ -7872,6 +7877,37 @@ std::string CWebServer::GetJSonPage()
 			root["title"]="getServerTime";
 			root["ServerTime"]=szTmp;
 		}
+		else if (cparam=="getsecstatus")
+		{
+			root["status"]="OK";
+			root["title"]="GetSecStatus";
+			int secstatus=0;
+			m_pMain->m_sql.GetPreferencesVar("SecStatus", secstatus);
+			root["secstatus"]=secstatus;
+		}
+		else if (cparam=="setsecstatus")
+		{
+			std::string ssecstatus=m_pWebEm->FindValue("secstatus");
+			std::string seccode=m_pWebEm->FindValue("seccode");
+			if ((ssecstatus=="")||(seccode==""))
+			{
+				root["message"]="WRONG CODE";
+				goto exitjson;
+			}
+			root["title"]="SetSecStatus";
+			seccode=base64_encode((const unsigned char*)seccode.c_str(),seccode.size());
+			std::string rpassword;
+			int nValue=1;
+			m_pMain->m_sql.GetPreferencesVar("SecPassword",nValue,rpassword);
+			if (seccode!=rpassword)
+			{
+				root["status"]="ERROR";
+				root["message"]="WRONG CODE";
+				goto exitjson;
+			}
+			root["status"]="OK";
+			m_pMain->m_sql.UpdatePreferencesVar("SecStatus", atoi(ssecstatus.c_str()));
+		}
 	} //(rtype=="command")
 	else if (rtype=="getshareduserdevices")
 	{
@@ -8375,6 +8411,10 @@ std::string CWebServer::GetJSonPage()
 				else if (Key=="WebPassword")
 				{
 					root["WebPassword"]=base64_decode(sValue);
+				}
+				else if (Key=="SecPassword")
+				{
+					root["SecPassword"]=base64_decode(sValue);
 				}
 				else if (Key=="WebLocalNetworks")
 				{

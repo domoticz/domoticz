@@ -13,6 +13,7 @@
 #include "../httpclient/mynetwork.h"
 #include "../smtpclient/SMTPClient.h"
 #include "../webserver/Base64.h"
+#include "mainstructs.h"
 
 #define DB_VERSION 18
 
@@ -736,6 +737,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		m_tempunit=(_eTempUnit)nValue;
 
+	}
+	if (!GetPreferencesVar("SecStatus", nValue))
+	{
+		UpdatePreferencesVar("SecStatus", (int)SECSTATUS_DISARMED);
 	}
 	SetUnitsAndScale();
 
