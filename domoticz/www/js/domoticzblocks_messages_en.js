@@ -62,6 +62,7 @@ Blockly.DOMOTICZ_LOGIC_TIMEVALUE_TOOLTIP = 'Enter a valid time in 24 hour format
 Blockly.DOMOTICZ_LOGIC_WEEKDAY_TOOLTIP = 'Use this block in an IF statement to check the day of the week.';
 Blockly.DOMOTICZ_LOGIC_SUNRISESUNSET_TOOLTIP = 'Use this block to check against sunrise/sunset time as specified in the Domoticz preferences.';
 Blockly.DOMOTICZ_LOGIC_NOTIFICATION_TOOLTIP = 'Use this block in a DO statement to send a notification based on the IF statement. Use text blocks from this group to specify subject and message.\nDepending on the preferences setting the message will go to either email or notification service or both.';     
+Blockly.DOMOTICZ_SECURITY_STATUS_TOOLTIP = 'The current state of the Domoticz security system. Can only be checked, not set through an event.';
 Blockly.DOMOTICZCONTROLS_MSG_IF = 'If';
 Blockly.DOMOTICZCONTROLS_MSG_ELSEIF = 'Else if';
 Blockly.DOMOTICZCONTROLS_MSG_DO = 'Do';
@@ -75,6 +76,7 @@ Blockly.DOMOTICZCONTROLS_MSG_RANDOM = 'Random within';
 Blockly.DOMOTICZCONTROLS_MSG_SETLEVEL = 'Level (%)';
 Blockly.DOMOTICZCONTROLS_MSG_TIME = 'Time';
 Blockly.DOMOTICZCONTROLS_MSG_DAY = 'Day ';
+Blockly.DOMOTICZCONTROLS_MSG_SECURITY = 'Security status';
 
 
 

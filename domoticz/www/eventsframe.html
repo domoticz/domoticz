@@ -156,6 +156,12 @@
 				var compareString = 'weekday '+locOperand+' '+$(valueA).text(); 
 			  	return compareString;
 		}		
+
+		function parseSecurityStatus(thisBlock) {
+				var valueA = $(thisBlock).children("title[name='Status']")[0];
+				var compareString = 'securitystatus == '+$(valueA).text(); 
+			  	return compareString;
+		}
 		
 		function parseValueBlock(thisBlock,locOperand,Sequence) {
 			var firstBlock = $(thisBlock).children("block:first");
@@ -175,6 +181,10 @@
 				var conditionstring = parseLogicOperation(firstBlock);
 				return conditionstring;
 			}
+			else if (ifBlock.attr("type")=="security_status") {
+      			var conditionstring = parseSecurityStatus(ifBlock);
+      			return conditionstring;
+      		} 
 		}
 		
     	function parseLogicOperation(thisBlock){
@@ -220,7 +230,11 @@
       		var compareString = parseLogicWeekday(ifBlock);
       		boolString += compareString;
       	}
-
+      	else if (ifBlock.attr("type")=="security_status") {
+      		// nested logic operation, drill down
+      		var compareString = parseSecurityStatus(ifBlock);
+      		boolString += compareString;
+      	}      	
       	
       	var setArray = [];
       	var doBlock = $($(xml).find("statement[name='DO0']")[0]);
@@ -537,6 +551,9 @@
    		<category name="Messages">
    			<block type="send_notification"></block>
    			<block type="text"></block>
+   		</category>
+   		<category name="Security">
+   			<block type="security_status"></block>
    		</category>
    		<category name="Devices">   		
 		   	<category name="Switches">

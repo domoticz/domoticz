@@ -547,6 +547,24 @@ Blockly.Language.send_notification = {
 
   }
 };
+
+Blockly.Language.security_status = {
+  // Variable getter.
+  init: function() {
+    this.setColour(120);
+    this.setOutput(true, null);
+    this.appendDummyInput()
+	    .appendTitle(Blockly.DOMOTICZCONTROLS_MSG_SECURITY)
+	    .appendTitle(" = ")
+    	.appendTitle(new Blockly.FieldDropdown(this.STATE), 'Status');
+    this.setTooltip(Blockly.DOMOTICZ_SECURITY_STATUS_TOOLTIP);
+    }
+ };
+
+Blockly.Language.security_status.STATE =
+    [["Disarmed", '0'],
+    ["Armed Home",'1'],
+     ["Armed Away", '2']];
   
 Blockly.Language.logic_weekday.DAYS =
     [["Monday", '2'],

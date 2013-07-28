@@ -503,23 +503,11 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
     }
     
     int secstatus=0;
-    std::string secstatusw = "";
     m_pMain->m_sql.GetPreferencesVar("SecStatus", secstatus);
-    if (secstatus == 1) {
-        secstatusw = "Armed Home";
-    }
-    else if (secstatus == 2) {
-        secstatusw = "Armed Away";
-    }
-    else {
-        secstatusw = "Disarmed";
-    }
     
-    lua_createtable(lua_state, 1, 0);
-    lua_pushstring( lua_state, "Security" );
-    lua_pushstring( lua_state, secstatusw.c_str() );
+    lua_pushstring( lua_state, "securitystatus" );
+    lua_pushnumber( lua_state, (lua_Number)secstatus);
     lua_rawset( lua_state, -3 );
-    lua_setglobal(lua_state, "globalvariables");
     
     if ((reason == "device") && (DeviceID >0)) {
         
@@ -822,6 +810,26 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
         lua_rawset( lua_state, -3 );
     }
     lua_setglobal(lua_state, "otherdevices_svalues");
+    
+    int secstatus=0;
+    std::string secstatusw = "";
+    m_pMain->m_sql.GetPreferencesVar("SecStatus", secstatus);
+    if (secstatus == 1) {
+        secstatusw = "Armed Home";
+    }
+    else if (secstatus == 2) {
+        secstatusw = "Armed Away";
+    }
+    else {
+        secstatusw = "Disarmed";
+    }
+    
+    lua_createtable(lua_state, 1, 0);
+    lua_pushstring( lua_state, "Security" );
+    lua_pushstring( lua_state, secstatusw.c_str() );
+    lua_rawset( lua_state, -3 );
+    lua_setglobal(lua_state, "globalvariables");
+    
     
     int status = luaL_loadfile(lua_state, filename.c_str());
     
