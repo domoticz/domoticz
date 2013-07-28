@@ -170,9 +170,12 @@ void CEventSystem::GetCurrentStates()
 
 void CEventSystem::GetCurrentMeasurementStates()
 {
-    m_tempValues.clear();
-    m_humValues.clear();
-    m_baroValues.clear();
+    m_tempValuesByName.clear();
+    m_humValuesByName.clear();
+    m_baroValuesByName.clear();
+    m_tempValuesByID.clear();
+    m_humValuesByID.clear();
+    m_baroValuesByID.clear();
     
 	char szTmp[300];
 
@@ -263,11 +266,13 @@ void CEventSystem::GetCurrentMeasurementStates()
         }
         
         if (isTemp) {
-            m_tempValues[sitem.deviceName] = temp;
+            m_tempValuesByName[sitem.deviceName] = temp;
+            m_tempValuesByID[sitem.ID] = temp;
         }
         if (isHum) {
             //sprintf(szTmp,"%d",humidity);
-            m_humValues[sitem.deviceName] = humidity;
+            m_humValuesByName[sitem.deviceName] = humidity;
+            m_humValuesByID[sitem.ID] = humidity;
         }
         if (isBaro) {
 			/*
@@ -276,7 +281,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 			else
 				sprintf(szTmp,"%.1f",float(barometer)/10.0f);
             */
-            m_baroValues[sitem.deviceName] = barometer;
+            m_baroValuesByName[sitem.deviceName] = barometer;
+            m_baroValuesByID[sitem.ID] = barometer;
         }
     }
 }
@@ -459,34 +465,34 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
 
     GetCurrentMeasurementStates();
     
-    if (m_tempValues.size()>0) {
-        lua_createtable(lua_state, m_tempValues.size(), 0);
-        std::map<std::string,float>::iterator p;
-        for(p = m_tempValues.begin(); p != m_tempValues.end(); p++) 
+    if (m_tempValuesByID.size()>0) {
+        lua_createtable(lua_state, m_tempValuesByID.size(), 0);
+        std::map<unsigned long long,float>::iterator p;
+        for(p = m_tempValuesByID.begin(); p != m_tempValuesByID.end(); p++)
 		{
-            lua_pushstring( lua_state, p->first.c_str());
+            lua_pushnumber( lua_state, (lua_Number)p->first);
             lua_pushnumber( lua_state, (lua_Number)p->second);
             lua_rawset( lua_state, -3 );
         }
         lua_setglobal(lua_state, "temperaturedevice");
     }
-    if (m_humValues.size()>0) {
-        lua_createtable(lua_state, m_humValues.size(), 0);
-        std::map<std::string,unsigned char>::iterator p;
-        for(p = m_humValues.begin(); p != m_humValues.end(); p++) 
+    if (m_humValuesByID.size()>0) {
+        lua_createtable(lua_state, m_humValuesByID.size(), 0);
+        std::map<unsigned long long,unsigned char>::iterator p;
+        for(p = m_humValuesByID.begin(); p != m_humValuesByID.end(); p++)
 		{
-            lua_pushstring( lua_state, p->first.c_str());
+            lua_pushnumber( lua_state, (lua_Number)p->first);
             lua_pushnumber( lua_state, (lua_Number)p->second);
             lua_rawset( lua_state, -3 );
         }
         lua_setglobal(lua_state, "humiditydevice");
     }
-    if (m_baroValues.size()>0) {
-        lua_createtable(lua_state, m_baroValues.size(), 0);
-        std::map<std::string,int>::iterator p;
-        for(p = m_baroValues.begin(); p != m_baroValues.end(); p++) 
+    if (m_baroValuesByID.size()>0) {
+        lua_createtable(lua_state, m_baroValuesByID.size(), 0);
+        std::map<unsigned long long,int>::iterator p;
+        for(p = m_baroValuesByID.begin(); p != m_baroValuesByID.end(); p++)
 		{
-            lua_pushstring( lua_state, p->first.c_str());
+            lua_pushnumber( lua_state, (lua_Number)p->first);
             lua_pushnumber( lua_state, (lua_Number)p->second);
             lua_rawset( lua_state, -3 );
         }
@@ -686,11 +692,11 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
     unsigned char thisDeviceHum = 0;
     int thisDeviceBaro = 0;
     
-    if (m_tempValues.size()>0) 
+    if (m_tempValuesByName.size()>0)
 	{
-        lua_createtable(lua_state, m_tempValues.size(), 0);
+        lua_createtable(lua_state, m_tempValuesByName.size(), 0);
         std::map<std::string,float>::iterator p;
-        for(p = m_tempValues.begin(); p != m_tempValues.end(); p++)
+        for(p = m_tempValuesByName.begin(); p != m_tempValuesByName.end(); p++)
 		{
             lua_pushstring( lua_state, p->first.c_str());
             lua_pushnumber( lua_state, (lua_Number)p->second);
@@ -701,11 +707,11 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
         }
         lua_setglobal(lua_state, "otherdevices_temperature");
     }
-    if (m_humValues.size()>0) 
+    if (m_humValuesByName.size()>0)
 	{
-        lua_createtable(lua_state, m_humValues.size(), 0);
+        lua_createtable(lua_state, m_humValuesByName.size(), 0);
         std::map<std::string,unsigned char>::iterator p;
-        for(p = m_humValues.begin(); p != m_humValues.end(); p++)
+        for(p = m_humValuesByName.begin(); p != m_humValuesByName.end(); p++)
 		{
             lua_pushstring( lua_state, p->first.c_str());
             lua_pushnumber( lua_state, (lua_Number)p->second);
@@ -716,11 +722,11 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
         }
         lua_setglobal(lua_state, "otherdevices_humidity");
     }
-    if (m_baroValues.size()>0) 
+    if (m_baroValuesByName.size()>0)
 	{
-        lua_createtable(lua_state, m_baroValues.size(), 0);
+        lua_createtable(lua_state, m_baroValuesByName.size(), 0);
         std::map<std::string,int>::iterator p;
-        for(p = m_baroValues.begin(); p != m_baroValues.end(); p++)
+        for(p = m_baroValuesByName.begin(); p != m_baroValuesByName.end(); p++)
 		{
             lua_pushstring( lua_state, p->first.c_str());
             lua_pushnumber( lua_state, (lua_Number)p->second);

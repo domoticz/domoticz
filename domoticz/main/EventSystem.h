@@ -73,9 +73,12 @@ private:
     bool ScheduleEvent(std::string ID, std::string Action, const std::string eventName);
     std::string reciprocalAction (std::string Action);
     std::vector<_tEventItem> m_events;
-    std::map<std::string,float> m_tempValues;
-    std::map<std::string,unsigned char> m_humValues;
-    std::map<std::string,int> m_baroValues;
+    std::map<std::string,float> m_tempValuesByName;
+    std::map<std::string,unsigned char> m_humValuesByName;
+    std::map<std::string,int> m_baroValuesByName;
+    std::map<unsigned long long,float> m_tempValuesByID;
+    std::map<unsigned long long,unsigned char> m_humValuesByID;
+    std::map<unsigned long long,int> m_baroValuesByID;
     void reportMissingDevice (int deviceID, std::string EventName, unsigned long long eventID);
     int getSunRiseSunSetMinutes(std::string what);
     bool isEventscheduled(const std::string eventName);
