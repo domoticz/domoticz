@@ -38,6 +38,7 @@ Version 1.0.xxx (July xxth 2013)
 - Fixed: WU rain sensor (will have a new sensor type, old one needs to be removed)
 - Implemented: device name in scripts calls (6th parameter)
 - Implemented: Security Panel (first version)
+- Implemented: Temperature tab, translated speed,gust and chill
 
 Version 1.0.762 (July 1th 2013)
 - Changed: Motion Sensors, Off delay now sends 'Off' to Lighting 1/6 devices, and 'No Motion' to X10 motion sensors

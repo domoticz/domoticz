@@ -155,7 +155,7 @@ function AddDataToTempChart(data,chart,isday)
       chart.addSeries(
         {
           id: 'chill',
-          name: 'Chill',
+          name: $.i18n('Chill'),
           color: 'red',
           yAxis: 0
         }
@@ -264,7 +264,7 @@ function AddMultipleDataToTempChart(data,chart,isday,deviceid,devicename)
       chart.addSeries(
         {
           id: 'chill'+deviceid,
-          name: devicename+':chill',
+          name: devicename+':'+$.i18n('Chill'),
           yAxis: 0
         }
       );
@@ -275,7 +275,7 @@ function AddMultipleDataToTempChart(data,chart,isday,deviceid,devicename)
         chart.addSeries(
           {
             id: 'chillmin'+deviceid,
-            name: devicename+':chill_min',
+            name: devicename+':'+$.i18n('Chill')+'_min',
             yAxis: 0
           }
         );
@@ -913,7 +913,7 @@ function RefreshTemps()
 				if (status!="") {
 					status+=', ';
 				}
-				status+='Chill: ' + item.Chill + '\u00B0 C';
+				status+=$.i18n('Chill') + ': ' + item.Chill + '\u00B0 C';
 				bHaveBefore=true;
             }
             var bHaveHumidity=false;
@@ -936,9 +936,9 @@ function RefreshTemps()
               status+=', ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
             }
 			if (typeof item.Direction != 'undefined') {
-              status+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speed + ' ' + $.myglobals.windsign;
+              status+='<br>' + item.Direction + ' ' + item.DirectionStr + ', ' + $.i18n('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
               if (typeof item.Gust != 'undefined') {
-				status+=', Gust: ' + item.Gust + ' ' + $.myglobals.windsign;
+				status+=', ' + $.i18n('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
 			  }
             }
 			if (typeof item.DewPoint != 'undefined') {
@@ -1065,7 +1065,7 @@ function ShowTemps()
 						if (typeof item.Temp != 'undefined') {
 							xhtm+=', ';
 						}
-						xhtm+='Chill: ' + item.Chill + '\u00B0 C';
+						xhtm+=$.i18n('Chill') + ': ' + item.Chill + '\u00B0 C';
 						bHaveBefore=true;
 					}
 					var bHaveHumidity=false;
@@ -1086,9 +1086,9 @@ function ShowTemps()
 						xhtm+=', ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
 					}
 					if (typeof item.Direction != 'undefined') {
-						xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr + ', Speed: ' + item.Speed + ' ' + $.myglobals.windsign;
+						xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr + ', ' + $.i18n('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
 						if (typeof item.Gust != 'undefined') {
-							xhtm+=', Gust: ' + item.Gust + ' ' + $.myglobals.windsign;
+							xhtm+=', ' + $.i18n('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
 						}
 					}
 					if (typeof item.DewPoint != 'undefined') {
