@@ -504,10 +504,8 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
     
     int secstatus=0;
     m_pMain->m_sql.GetPreferencesVar("SecStatus", secstatus);
-    
-    lua_pushstring( lua_state, "securitystatus" );
     lua_pushnumber( lua_state, (lua_Number)secstatus);
-    lua_rawset( lua_state, -3 );
+    lua_setglobal(lua_state, "securitystatus");
     
     if ((reason == "device") && (DeviceID >0)) {
         
