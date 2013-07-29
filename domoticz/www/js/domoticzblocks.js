@@ -555,7 +555,8 @@ Blockly.Language.security_status = {
     this.setOutput(true, null);
     this.appendDummyInput()
 	    .appendTitle(Blockly.DOMOTICZCONTROLS_MSG_SECURITY)
-	    .appendTitle(" = ")
+	    .appendTitle(new Blockly.FieldDropdown(this.OPERATORS), 'OP')
+	    .appendTitle(" ")
     	.appendTitle(new Blockly.FieldDropdown(this.STATE), 'Status');
     this.setTooltip(Blockly.DOMOTICZ_SECURITY_STATUS_TOOLTIP);
     }
@@ -565,6 +566,11 @@ Blockly.Language.security_status.STATE =
     [["Disarmed", '0'],
     ["Armed Home",'1'],
      ["Armed Away", '2']];
+     
+Blockly.Language.security_status.OPERATORS =
+    [['=', 'EQ'],
+     ['\u2260', 'NEQ']];
+  
   
 Blockly.Language.logic_weekday.DAYS =
     [["Monday", '2'],
