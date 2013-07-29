@@ -132,6 +132,8 @@ void CWunderground::GetMeterDetails()
 	float temp;
 	int humidity=0;
 	int barometric=0;
+	int barometric_forcast=baroForecastNoInfo;
+
 	temp=root["current_observation"]["temp_c"].asFloat();
 
 	if (root["current_observation"]["relative_humidity"].empty()==false)
@@ -148,6 +150,36 @@ void CWunderground::GetMeterDetails()
 	if (root["current_observation"]["pressure_mb"].empty()==false)
 	{
 		barometric=atoi(root["current_observation"]["pressure_mb"].asString().c_str());
+		if (barometric<1000)
+			barometric_forcast=baroForecastRain;
+		else if (barometric<1020)
+			barometric_forcast=baroForecastCloudy;
+		else if (barometric<1030)
+			barometric_forcast=baroForecastPartlyCloudy;
+		else
+			barometric_forcast=baroForecastSunny;
+
+		if (root["current_observation"]["icon"].empty()==false)
+		{
+			std::string forcasticon=root["current_observation"]["icon"].asString();
+			if (forcasticon=="partlycloudy")
+			{
+				barometric_forcast=baroForecastPartlyCloudy;
+			}
+			else if (forcasticon=="cloudy")
+			{
+				barometric_forcast=baroForecastCloudy;
+			}
+			else if (forcasticon=="sunny")
+			{
+				barometric_forcast=baroForecastSunny;
+			}
+			else if (forcasticon=="rain")
+			{
+				barometric_forcast=baroForecastRain;
+			}
+		}
+
 	}
 
 	if (barometric!=0)
@@ -175,15 +207,9 @@ void CWunderground::GetMeterDetails()
 		tsen.TEMP_HUM_BARO.baroh=(BYTE)(ab10/256);
 		ab10-=(tsen.TEMP_HUM_BARO.baroh*256);
 		tsen.TEMP_HUM_BARO.barol=(BYTE)(ab10);
-		tsen.TEMP_HUM_BARO.forecast=baroForecastNoInfo;
-		if (barometric<1000)
-			tsen.TEMP_HUM_BARO.forecast=baroForecastRain;
-		else if (barometric<1020)
-			tsen.TEMP_HUM_BARO.forecast=baroForecastCloudy;
-		else if (barometric<1030)
-			tsen.TEMP_HUM_BARO.forecast=baroForecastPartlyCloudy;
-		else
-			tsen.TEMP_HUM_BARO.forecast=baroForecastSunny;
+		
+		tsen.TEMP_HUM_BARO.forecast=barometric_forcast;
+
 
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO);//decode message
 	}

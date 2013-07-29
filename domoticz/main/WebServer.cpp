@@ -819,9 +819,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 		szQuery.clear();
 		szQuery.str("");
 		if (rowid!="")
-			szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite FROM Scenes WHERE (ID==" << rowid << ")";
+			szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType FROM Scenes WHERE (ID==" << rowid << ")";
 		else
-			szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite FROM Scenes ORDER BY " << szOrderBy;
+			szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType FROM Scenes ORDER BY " << szOrderBy;
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -833,7 +833,15 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				int nValue= atoi(sd[2].c_str());
 				std::string sLastUpdate=sd[3].c_str();
 				unsigned char favorite = atoi(sd[4].c_str());
-				root["result"][ii]["Type"]="Scene";
+				unsigned char scenetype = atoi(sd[5].c_str());
+				if (scenetype==0)
+				{
+					root["result"][ii]["Type"]="Scene";
+				}
+				else
+				{
+					root["result"][ii]["Type"]="Group";
+				}
 				root["result"][ii]["idx"]=sd[0];
 				root["result"][ii]["Name"]=sd[1];
 				root["result"][ii]["Favorite"]=favorite;
@@ -8125,6 +8133,13 @@ std::string CWebServer::GetJSonPage()
 			root["message"]="No Scene Name specified!";
 			goto exitjson;
 		}
+		std::string stype=m_pWebEm->FindValue("scenetype");
+		if (stype=="")
+		{
+			root["status"]="ERR";
+			root["message"]="No Scene Type specified!";
+			goto exitjson;
+		}
 		if (m_pMain->m_sql.DoesSceneByNameExits(name)==true)
 		{
 			root["status"]="ERR";
@@ -8134,8 +8149,9 @@ std::string CWebServer::GetJSonPage()
 		root["status"]="OK";
 		root["title"]="AddScene";
 		sprintf(szTmp,
-			"INSERT INTO Scenes (Name) VALUES ('%s')",
-			name.c_str()
+			"INSERT INTO Scenes (Name,SceneType) VALUES ('%s',%d)",
+			name.c_str(),
+			atoi(stype.c_str())
 			);
 		result=m_pMain->m_sql.query(szTmp);
 
@@ -8172,7 +8188,7 @@ std::string CWebServer::GetJSonPage()
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT ID, Name, HardwareID, Favorite, nValue, LastUpdate FROM Scenes ORDER BY [Order]";
+		szQuery << "SELECT ID, Name, HardwareID, Favorite, nValue, SceneType, LastUpdate FROM Scenes ORDER BY [Order]";
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -8183,11 +8199,23 @@ std::string CWebServer::GetJSonPage()
 				std::vector<std::string> sd=*itt;
 
 				unsigned char nValue=atoi(sd[4].c_str());
+				unsigned char scenetype=atoi(sd[5].c_str());
 				root["result"][ii]["idx"]=sd[0];
 				root["result"][ii]["Name"]=sd[1];
 				root["result"][ii]["HardwareID"]=atoi(sd[2].c_str());
 				root["result"][ii]["Favorite"]=atoi(sd[3].c_str());
-				root["result"][ii]["LastUpdate"]=sd[5].c_str();
+
+				if (scenetype==0)
+				{
+					root["result"][ii]["Type"]="Scene";
+				}
+				else
+				{
+					root["result"][ii]["Type"]="Group";
+				}
+
+				root["result"][ii]["LastUpdate"]=sd[6].c_str();
+
 				if (nValue==0)
 					root["result"][ii]["Status"]="Off";
 				else if (nValue==1)

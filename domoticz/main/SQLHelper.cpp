@@ -15,7 +15,7 @@
 #include "../webserver/Base64.h"
 #include "mainstructs.h"
 
-#define DB_VERSION 18
+#define DB_VERSION 19
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -283,6 +283,7 @@ const char *sqlCreateScenes =
 "[Favorite] INTEGER DEFAULT 0, \n"
 "[Order] INTEGER BIGINT(10) default 0, \n"
 "[nValue] INTEGER DEFAULT 0, \n"
+"[SceneType] INTEGER DEFAULT 0, \n"
 "[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')));\n";
 
 const char *sqlCreateScenesTrigger =
@@ -571,8 +572,10 @@ bool CSQLHelper::OpenDatabase()
 			query("ALTER TABLE Temperature ADD COLUMN [DewPoint] FLOAT default 0");
 			query("ALTER TABLE Temperature_Calendar ADD COLUMN [DewPoint] FLOAT default 0");
 		}
-        
-    
+		if (dbversion<19)
+		{
+			query("ALTER TABLE Scenes ADD COLUMN [SceneType] INTEGER default 0");
+		}
     }
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
 

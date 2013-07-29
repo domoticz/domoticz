@@ -19,7 +19,7 @@ function RefreshFavorites()
 
         $.each(data.result, function(i,item){
 						//Scenes
-						if ((item.Type.indexOf('Scene') == 0)&&(item.Favorite!=0))
+						if (((item.Type.indexOf('Scene') == 0)||(item.Type.indexOf('Group') == 0))&&(item.Favorite!=0))
 						{
 							id="#dashcontent #scene_" + item.idx;
 							var obj=$(id);
@@ -958,7 +958,7 @@ function ShowFavorites()
         jj=0;
         bHaveAddedDevider = false;
         $.each(data.result, function(i,item){
-          if ((item.Type.indexOf('Scene') == 0)&&(item.Favorite!=0))
+          if (((item.Type.indexOf('Scene') == 0)||(item.Type.indexOf('Group') == 0))&&(item.Favorite!=0))
           {
             totdevices+=1;
             if (jj == 0)

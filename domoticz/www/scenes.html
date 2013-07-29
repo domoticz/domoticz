@@ -6,7 +6,17 @@
         <tr>
           <td align="right" style="width:60px"><label for="scenename"><span data-i18n="Name"></span>: </label></td>
           <td><input type="text" id="scenename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-		    </table>
+        </tr>
+        <tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Type"></span>: </label></td>
+			<td>
+				<select id="combotype" style="width:120px" class="combobox ui-corner-all">
+					<option value="0" data-i18n="Scene">Scene</option>
+					<option value="1" data-i18n="Group">Group</option>
+				</select>
+			</td>
+        </tr>
+	    </table>
     </form>
 </div>
 <div id="editscene" style="display:none;">
@@ -14,6 +24,15 @@
 			<tr>
 				<td align="right" style="width:60px"><label for="name"><span data-i18n="Name"></span>: </label></td>
 				<td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			<tr>
+				<td align="right" style="width:60px"><label><span data-i18n="Type"></span>: </label></td>
+				<td>
+					<select id="combotype" style="width:120px" class="combobox ui-corner-all">
+						<option value="0" data-i18n="Scene">Scene</option>
+						<option value="1" data-i18n="Group">Group</option>
+					</select>
+				</td>
 			</tr>
 			<tr>
 				<td></td>
@@ -468,10 +487,12 @@ function OnSelChangeDevice()
 	}
 }
 
-function EditSceneDevice(idx,name,havecode)
+function EditSceneDevice(idx,name,havecode,type)
 {
   clearInterval($.myglobals.refreshTimer);
   $.devIdx=idx;
+
+ var bIsScene=(type=="Scene");
  
 	var oTable;
 	
@@ -480,6 +501,13 @@ function EditSceneDevice(idx,name,havecode)
   $('#scenecontent').html(GetBackbuttonHTMLTable('ShowScenes')+htmlcontent);
   $('#scenecontent').i18n();
   $("#scenecontent #LevelDiv").hide();
+  
+  if (bIsScene==true) {
+	$("#scenecontent #combotype").val(0);
+  }
+  else {
+	$("#scenecontent #combotype").val(1);
+  }
  
   oTable = $('#scenecontent #devicestable').dataTable( {
                   "sDom": '<"H"lfrC>t<"F"ip>',
@@ -1081,7 +1109,7 @@ function ShowScenes()
 			xhtm+=
                 '\t      <td id="status">' + TranslateStatus(item.Status) + '</td>\n' +
                 '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
-                '\t      <td id="type">Scene</td>\n';
+                '\t      <td id="type">' + $.i18n(item.Type) +'</td>\n';
 					xhtm+=
 								'\t      <td>';
           if (item.Favorite == 0) {
@@ -1093,7 +1121,7 @@ function ShowScenes()
                   '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
           if (window.my_config.userrights==2) {
-				xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + item.Name + '\',' + item.HardwareID + ');" data-i18n="Edit">Edit</a> ';
+				xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + item.Name + '\',' + item.HardwareID + ',\'' + item.Type + '\');" data-i18n="Edit">Edit</a> ';
 				if (bAddTimer == true) {
 					if (item.Timers == "true") {
 						xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Timers">Timers</a> ';
@@ -1176,7 +1204,7 @@ $(document).ready(function() {
 	$( "#dialog-addscene" ).dialog({
 				autoOpen: false,
 				width: 380,
-				height: 156,
+				height: 186,
 				modal: true,
 				resizable: false,
 				title: $.i18n("Add Scene"),
@@ -1188,8 +1216,9 @@ $(document).ready(function() {
 									if ( bValid ) {
 											$.pDialog=$( this );
 											var SceneName=$("#dialog-addscene #scenename").val();
+											var SceneType=$("#dialog-addscene #combotype").val();
 											$.ajax({
-												 url: "json.htm?type=addscene&name=" + SceneName,
+												 url: "json.htm?type=addscene&name=" + SceneName + "&scenetype=" + SceneType,
 												 async: false, 
 												 dataType: 'json',
 												 success: function(data) {
