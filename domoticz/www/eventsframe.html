@@ -415,7 +415,7 @@
       
       function save_block() {
       	var xml = Blockly.Xml.workspaceToDom( Blockly.mainWorkspace );
-      	$("#blockDebug").html(Blockly.Xml.domToPrettyText(xml));
+      	//$("#blockDebug").html(Blockly.Xml.domToPrettyText(xml));
       	var blockName = $("#blockName").val();
       	var id = "";
       	if (blockName) { 
@@ -605,7 +605,7 @@
 					</select>
 					<br/><a class="btnstyle3" style="width: 80%" href="javascript:delete_block()">Delete selected</a>
 					<br/><a class="btnstyle3" style="width: 80%" href="javascript:show_states()">Show current states</a>
-					<br/><textarea id="blockDebug" width="100em" height="100em"></textarea>
+					<!--<br/><textarea id="blockDebug" width="100em" height="100em"></textarea>-->
 					<br/><div id="blockId" style="display:none;"/>
 					
 				</td>
