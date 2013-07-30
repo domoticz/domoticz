@@ -321,6 +321,7 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 	}
 
 	myNameValues.clear();
+	m_lastRequestPath=request_path;
 
 	int paramPos=request_path.find_first_of('?');
 	if (paramPos!=std::string::npos)

@@ -147,6 +147,7 @@ namespace http {
 			void SetZipPassword(std::string password);
 			std::string m_zippassword;
 			std::string m_actualuser;
+			std::string m_lastRequestPath;
 			std::string m_outputfilename;
 		private:
 			/// store map between include codes and application functions

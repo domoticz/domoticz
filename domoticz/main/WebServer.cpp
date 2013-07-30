@@ -192,6 +192,10 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
 		boost::bind(
 		&CWebServer::GetInternalCameraSnapshot,	// member function
 		this ) );			// instance of class
+	m_pWebEm->RegisterPageCode( "/uvccapture.cgi",
+		boost::bind(
+		&CWebServer::GetInternalCameraSnapshot,	// member function
+		this ) );			// instance of class
 //	m_pWebEm->RegisterPageCode( "/videostream.cgi",
 	//	boost::bind(
 		//&CWebServer::GetInternalCameraSnapshot,	// member function
@@ -2219,8 +2223,16 @@ std::string CWebServer::GetInternalCameraSnapshot()
 {
 	m_retstr="";
 	std::vector<unsigned char> camimage;
-	if (!m_pMain->m_cameras.TakeRaspberrySnapshot(camimage))
-		goto exitproc;
+	if (m_pWebEm->m_lastRequestPath.find("raspberry")!=std::string::npos)
+	{
+		if (!m_pMain->m_cameras.TakeRaspberrySnapshot(camimage))
+			goto exitproc;
+	}
+	else
+	{
+		if (!m_pMain->m_cameras.TakeUVCSnapshot(camimage))
+			goto exitproc;
+	}
 	m_retstr.insert( m_retstr.begin(), camimage.begin(), camimage.end() );
 	m_pWebEm->m_outputfilename="snapshot.jpg";
 exitproc:

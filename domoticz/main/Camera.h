@@ -34,6 +34,7 @@ public:
 	bool TakeSnapshot(const unsigned long long CamID, std::vector<unsigned char> &camimage);
 	bool TakeSnapshot(const std::string CamID, std::vector<unsigned char> &camimage);
 	bool TakeRaspberrySnapshot(std::vector<unsigned char> &camimage);
+	bool TakeUVCSnapshot(std::vector<unsigned char> &camimage);
 	cameraDevice* GetCamera(const unsigned long long CamID);
 	cameraDevice* GetCamera(const std::string CamID);
 

@@ -199,6 +199,31 @@ bool CCamScheduler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
 	return false;
 }
 
+bool CCamScheduler::TakeUVCSnapshot(std::vector<unsigned char> &camimage)
+{
+#ifdef WIN32
+	return false;
+#endif
+	std::string OutputFileName=szStartupFolder + "tempcam.jpg";
+	std::string nvcmd="uvccapture -S80 -B128 -C128 -G80 -x800 -y600 -q100 -o" + OutputFileName;
+	std::remove(OutputFileName.c_str());
+
+	//Get our image
+	system(nvcmd.c_str());
+	//If all went correct, we should have our file
+	std::ifstream is(OutputFileName.c_str(), std::ios::in | std::ios::binary);
+	if (is)
+	{
+		char buf[512];
+		while (is.read(buf, sizeof(buf)).gcount() > 0)
+			camimage.insert(camimage.end(),buf, buf+(unsigned int)is.gcount());
+		is.close();
+		std::remove(OutputFileName.c_str());
+		return true;
+	}
+	return false;
+}
+
 bool CCamScheduler::TakeSnapshot(const unsigned long long CamID, std::vector<unsigned char> &camimage)
 {
 	cameraDevice *pCamera=GetCamera(CamID);
@@ -210,6 +235,8 @@ bool CCamScheduler::TakeSnapshot(const unsigned long long CamID, std::vector<uns
 
 	if (pCamera->ImageURL=="raspberry.cgi")
 		return TakeRaspberrySnapshot(camimage);
+	else if (pCamera->ImageURL=="uvccapture.cgi")
+		return TakeUVCSnapshot(camimage);
 	
 	return HTTPClient::GETBinary(szURL,camimage);
 }
