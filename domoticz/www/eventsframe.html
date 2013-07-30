@@ -483,8 +483,10 @@
 						if (typeof data.result != 'undefined') {
 							
 							$.each(data.result, function(i,item){
-								var oneitem = '<tr><td> '+item.id+' </td><td> '+item.name+' </td><td> '+item.value +' </td><td> '+item.lastupdate+' </td><td> '+item.svalues+'</td></tr>'; 
-								devicestates += oneitem;
+								if (item.name != "Unknown") {
+									var oneitem = '<tr><td> '+item.id+' </td><td> '+item.name+' </td><td> '+item.value +' </td><td> '+item.lastupdate+' </td><td> '+item.svalues+'</td></tr>'; 
+									devicestates += oneitem;
+								}
 							});
 						}
 						devicestates += "</tbody></table></div>";
