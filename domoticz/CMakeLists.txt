@@ -153,6 +153,7 @@ smtpclient/SMTPClient.cpp
 hardware/DomoticzHardware.cpp
 hardware/1Wire.cpp
 hardware/ASyncSerial.cpp
+hardware/Dummy.cpp
 hardware/RFXComSerial.cpp
 hardware/RFXComTCP.cpp
 hardware/DomoticzTCP.cpp
