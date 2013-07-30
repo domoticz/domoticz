@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 253
+# ref 254
 
 CACHE:
 favicon.ico
@@ -181,6 +181,8 @@ images/pushoff.png
 images/pushoff48.png
 images/pushon.png
 images/pushon48.png
+images/radiation.png
+images/radiation48.png
 images/rain.png
 images/rain48.png
 images/rainraining.png

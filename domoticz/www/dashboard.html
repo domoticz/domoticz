@@ -506,7 +506,7 @@ function RefreshFavorites()
         //Weather Sensors
         $.each(data.result, function(i,item){
           if (
-                ( (typeof item.Rain != 'undefined') || (typeof item.Visibility != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined') ) &&
+                ( (typeof item.Rain != 'undefined') || (typeof item.Visibility != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Radiation != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined') ) &&
                 (item.Favorite!=0)
               )
           {
@@ -531,6 +531,9 @@ function RefreshFavorites()
 								}
 								else if (typeof item.UVI != 'undefined') {
 									status=item.UVI + ' UVI';
+								}
+								else if (typeof item.Radiation != 'undefined') {
+									status=item.Data;
 								}
 								else if (typeof item.Direction != 'undefined') {
 									img='<img src="images/Wind' + item.DirectionStr + '.png" height="40">';
@@ -583,6 +586,11 @@ function RefreshFavorites()
 									if (typeof item.Temp!= 'undefined') {
 										status+=', Temp: ' + item.Temp + '° C';
 									}
+								}
+								else if (typeof item.Radiation != 'undefined') {
+									img='<img src="images/radiation48.png" height="40">';
+									status=item.Data;
+									bigtext=item.Data;
 								}
 								else if (typeof item.Direction != 'undefined') {
 									img='<img src="images/Wind' + item.DirectionStr + '.png" height="40">';
@@ -1624,7 +1632,7 @@ function ShowFavorites()
         bHaveAddedDevider = false;
         $.each(data.result, function(i,item){
           if (
-                ( (typeof item.Rain != 'undefined') || (typeof item.Visibility != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined') ) &&
+                ( (typeof item.Rain != 'undefined') || (typeof item.Visibility != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Radiation != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined') ) &&
                 (item.Favorite!=0)
               )
           {
@@ -1677,6 +1685,9 @@ function ShowFavorites()
 							}
 							else if (typeof item.UVI != 'undefined') {
 								status+=item.UVI + ' UVI';
+							}
+							else if (typeof item.Radiation != 'undefined') {
+								status+=item.Data;
 							}
 							else if (typeof item.Direction != 'undefined') {
 								status=item.Direction + ' ' + item.DirectionStr;
@@ -1731,6 +1742,9 @@ function ShowFavorites()
 							else if (typeof item.UVI != 'undefined') {
 								xhtm+=item.UVI + ' UVI';
 							}
+							else if (typeof item.Radiation != 'undefined') {
+								xhtm+=item.Data;
+							}
 							else if (typeof item.Direction != 'undefined') {
 								xhtm+=item.DirectionStr;
 								if (typeof item.Speed != 'undefined') {
@@ -1761,6 +1775,10 @@ function ShowFavorites()
 								if (typeof item.Temp!= 'undefined') {
 									xhtm+=', Temp: ' + item.Temp + '° C';
 								}
+							}
+							else if (typeof item.Radiation != 'undefined') {
+								xhtm+='radiation48.png" height="40"></td>\n' +
+								'\t      <td id="status">' + item.Data;
 							}
 							else if (typeof item.Direction != 'undefined') {
 								xhtm+='Wind' + item.DirectionStr + '.png" height="40"></td>\n' +

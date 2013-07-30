@@ -1776,6 +1776,11 @@ function RefreshWeathers()
 								status+=', ' + $.i18n('Temp') + ': ' + item.Temp + '\u00B0 C';
 							}
 						}
+						if (typeof item.Radiation != 'undefined') {
+							img='<img src="images/radiation48.png" height="48">';
+							status=item.Data;
+							bigtext=item.Data;
+						}
 						else if (typeof item.Direction != 'undefined') {
 							img='<img src="images/Wind' + item.DirectionStr + '.png" height="48">';
 							status=item.Direction + ' ' + item.DirectionStr;
@@ -1885,6 +1890,7 @@ function ShowWeathers()
           var bHaveRain = false;
           var bHaveBaro = false;
           var bHaveUV = false;
+          var bHaveRadiation = false;
           var bHaveWind = false;
           
           var xhtm=
@@ -1910,6 +1916,9 @@ function ShowWeathers()
 					}
 					else if (typeof item.UVI != 'undefined') {
 						xhtm+=item.UVI + ' UVI';
+					}
+					else if (typeof item.Radiation != 'undefined') {
+						xhtm+=item.Data;
 					}
 					else if (typeof item.Direction != 'undefined') {
 						xhtm+=item.DirectionStr;
@@ -1955,6 +1964,11 @@ function ShowWeathers()
 						if (typeof item.Temp!= 'undefined') {
 							xhtm+=', ' + $.i18n('Temp') +': ' + item.Temp + '\u00B0 C';
 						}
+					}
+					else if (typeof item.Radiation != 'undefined') {
+						bHaveRadiation=true;
+						xhtm+='radiation48.png" height="48"></td>\n' +
+						'\t      <td  id="status">' + item.Data;
 					}
 					else if (typeof item.Direction != 'undefined') {
 						bHaveWind=true;
@@ -2005,12 +2019,18 @@ function ShowWeathers()
           else if (typeof item.Visibility != 'undefined') {
             xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'Visibility\');" data-i18n="Log">Log</a> ';
           }
+          else if (typeof item.Radiation != 'undefined') {
+            xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'Radiation\');" data-i18n="Log">Log</a> ';
+          }
           if (window.my_config.userrights==2) {
 			  if (bHaveRain) {
 				xhtm+='<a class="btnsmall" onclick="EditRainDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjMulti +');" data-i18n="Edit">Edit</a> ';
 			  }
 			  else if (bHaveVisibility) {
 				xhtm+='<a class="btnsmall" onclick="EditVisibilityDevice(' + item.idx + ',\'' + item.Name + '\',' + item.SwitchTypeVal +');" data-i18n="Edit">Edit</a> ';
+			  }
+			  else if (bHaveRadiation) {
+				xhtm+='<a class="btnsmall" onclick="EditWeatherDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 			  }
 			  else if (bHaveBaro) {
 				xhtm+='<a class="btnsmall" onclick="EditBaroDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjValue2 +');" data-i18n="Edit">Edit</a> ';

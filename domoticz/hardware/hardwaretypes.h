@@ -18,11 +18,9 @@
 #define sTypeThermTemperature	0x02
 
 
-#define pTypeGeneral	0xF3
-#define sTypeVisibility	0x01
-
-#define pTypeSolarRadiation	0xF4
-#define sTypeSolarRadiation	0x01
+#define pTypeGeneral		0xF3
+#define sTypeVisibility		0x01
+#define sTypeSolarRadiation	0x02
 
 #define pTypeMoisture		0xF5
 #define sTypeSoilMoisture	0x01

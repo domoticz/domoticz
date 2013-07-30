@@ -2979,7 +2979,7 @@ void CSQLHelper::UpdateMeter()
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
 
-	sprintf(szTmp,"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d))",
+	sprintf(szTmp,"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
 		pTypeRFXMeter,
 		pTypeP1Gas,
 		pTypeYouLess,
@@ -2989,7 +2989,8 @@ void CSQLHelper::UpdateMeter()
         pTypeRego6XXValue,sTypeRego6XXCounter,
 		pTypeLux,
 		pTypeMoisture,
-		pTypeGeneral,sTypeVisibility
+		pTypeGeneral,sTypeVisibility,
+		pTypeGeneral,sTypeSolarRadiation
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -3068,6 +3069,13 @@ void CSQLHelper::UpdateMeter()
 				bSkipSameValue=false;
 			}
 			else if ((dType==pTypeGeneral)&&(dSubType==sTypeVisibility))
+			{
+				double fValue=atof(sValue.c_str())*10.0f;
+				sprintf(szTmp,"%d",int(fValue));
+				sValue=szTmp;
+				bSkipSameValue=false;
+			}
+			else if ((dType==pTypeGeneral)&&(dSubType==sTypeSolarRadiation))
 			{
 				double fValue=atof(sValue.c_str())*10.0f;
 				sprintf(szTmp,"%d",int(fValue));
@@ -3552,6 +3560,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				(devType!=pTypeAirQuality)&&
 				(devType!=pTypeMoisture)&&
 				(!((devType==pTypeGeneral)&&(subType==sTypeVisibility)))&&
+				(!((devType==pTypeGeneral)&&(subType==sTypeSolarRadiation)))&&
 				(devType!=pTypeLux)&&
 				(devType!=pTypeUsage)
 				)
@@ -3610,6 +3619,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				(devType!=pTypeAirQuality)&&
 				(devType!=pTypeMoisture)&&
 				((devType!=pTypeGeneral)&&(subType!=sTypeVisibility))&&
+				((devType!=pTypeGeneral)&&(subType!=sTypeSolarRadiation))&&
 				(devType!=pTypeLux)
 				)
 			{

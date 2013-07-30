@@ -1377,6 +1377,13 @@ function ShowGeneralGraph(id,name,switchtype,sensortype)
 		txtUnit="mi";
 	}
   }
+  else if (sensortype=="Radiation") {
+	graphReturn="ShowWeathers";
+	txtLabelOrg="Radiation";
+	$.content="#weathercontent";
+	graphcontent=$('#weathercontent');
+	txtUnit="Watt/m2";
+  }
   else if (sensortype=="Moisture") {
 	graphReturn="ShowUtilities";
 	txtLabelOrg="Moisture";

@@ -427,5 +427,18 @@ void CWunderground::GetMeterDetails()
 			sDecodeRXMessage(this, (const unsigned char *)&gdevice);
 		}
 	}
+	//Solar Radiation
+	if (root["current_observation"]["solarradiation"].empty()==false)
+	{
+		if (root["current_observation"]["solarradiation"]!="N/A")
+		{
+			float radiation=(float)atof(root["current_observation"]["solarradiation"].asString().c_str());
+			_tGeneralDevice gdevice;
+			gdevice.subtype=sTypeSolarRadiation;
+			gdevice.floatval1=radiation;
+			sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+		}
+	}
+
 }
 

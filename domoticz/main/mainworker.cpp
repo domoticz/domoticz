@@ -6263,6 +6263,13 @@ unsigned long long MainWorker::decode_General(const int HwdID, const tRBUF *pRes
 		}
 		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, fValue);
 	}
+	else if (subType==sTypeSolarRadiation)
+	{
+		sprintf(szTmp,"%.1f",pMeter->floatval1);
+		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
+		PrintDeviceName(devname);
+		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->floatval1);
+	}
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -6271,6 +6278,11 @@ unsigned long long MainWorker::decode_General(const int HwdID, const tRBUF *pRes
 		case sTypeVisibility:
 			WriteMessage("subtype       = Visibility");
 			sprintf(szTmp,"Visibility = %.1f km", pMeter->floatval1);
+			WriteMessage(szTmp);
+			break;
+		case sTypeSolarRadiation:
+			WriteMessage("subtype       = Solar Radiation");
+			sprintf(szTmp,"Radiation = %.1f Watt/m2", pMeter->floatval1);
 			WriteMessage(szTmp);
 			break;
 		default:
