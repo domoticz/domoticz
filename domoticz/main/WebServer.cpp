@@ -287,6 +287,7 @@ char * CWebServer::DisplayHardwareCombo()
 			case HTYPE_RFXLAN:
 			case HTYPE_RFXtrx315:
 			case HTYPE_RFXtrx433:
+			case HTYPE_Dummy:
 				sprintf(szTmp,"<option value=\"%d\">%s</option>\n",ID,Name.c_str());
 				m_retstr+=szTmp;
 				break;
@@ -7053,6 +7054,9 @@ std::string CWebServer::GetJSonPage()
 			else if (htype == HTYPE_RaspberryBMP085) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_Dummy) {
+				//all fine here!
+			}
 			else if (htype == HTYPE_Wunderground) {
 				if (
 					(username=="")||
@@ -7137,6 +7141,9 @@ std::string CWebServer::GetJSonPage()
 				//All fine here
 			}
 			else if (htype == HTYPE_RaspberryBMP085) {
+				//All fine here
+			}
+			else if (htype == HTYPE_Dummy) {
 				//All fine here
 			}
 			else if (htype == HTYPE_Wunderground) {

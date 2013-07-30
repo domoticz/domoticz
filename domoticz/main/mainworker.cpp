@@ -24,6 +24,7 @@
 #include "../hardware/1Wire.h"
 #include "../hardware/BMP085.h"
 #include "../hardware/Wunderground.h"
+#include "../hardware/Dummy.h"
 
 #ifdef _DEBUG
 	//#define DEBUG_RECEIVE
@@ -374,6 +375,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Wunderground:
 		pHardware = new CWunderground(ID,Username,Password);
+		break;
+	case HTYPE_Dummy:
+		pHardware = new CDummy(ID);
 		break;
 	}
 	if (pHardware)

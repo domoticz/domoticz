@@ -206,7 +206,7 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 	var bEnabled=$('#hardwarecontent #hardwareparamstable #enabled').is(":checked");
 	
 	var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
-	if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("1-Wire") >= 0)||(text.indexOf("BMP085") >= 0))
+	if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("1-Wire") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0))
 	{
 		$.ajax({
 			 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -380,7 +380,7 @@ function AddHardware()
 	var bEnabled=$('#hardwarecontent #hardwareparamstable #enabled').is(":checked");
 	
 	var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
-	if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("1-Wire") >= 0)||(text.indexOf("BMP085") >= 0))
+	if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("1-Wire") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0))
 	{
 		$.ajax({
 			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=1&name=" + name + "&enabled=" + bEnabled,
@@ -732,7 +732,7 @@ function RefreshHardwareTable()
 					$('#hardwarecontent #hardwareparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
 
 					UpdateHardwareParamControls();
-					if ((data["Type"].indexOf("TE923") >= 0)||(data["Type"].indexOf("Volcraft") >= 0)||(data["Type"].indexOf("1-Wire") >= 0)||(data["Type"].indexOf("BMP085") >= 0))
+					if ((data["Type"].indexOf("TE923") >= 0)||(data["Type"].indexOf("Volcraft") >= 0)||(data["Type"].indexOf("1-Wire") >= 0)||(data["Type"].indexOf("BMP085") >= 0)||(data["Type"].indexOf("Dummy") >= 0))
 					{
 						//nothing to be set
 					}
@@ -770,7 +770,7 @@ function RefreshHardwareTable()
 function UpdateHardwareParamControls()
 {
 	var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
-	if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("BMP085") >= 0))
+	if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0))
 	{
 		$("#hardwarecontent #divserial").hide();
 		$("#hardwarecontent #divremote").hide();

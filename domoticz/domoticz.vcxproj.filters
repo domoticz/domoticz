@@ -84,6 +84,9 @@
     <Filter Include="Devices\wunderground.com">
       <UniqueIdentifier>{2d9af04c-846a-4309-9bcd-a1d43a077de6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Dummy">
+      <UniqueIdentifier>{94a87e33-1ea0-42dc-895c-54802b773fb7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -286,6 +289,9 @@
     <ClInclude Include="main\mainstructs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\Dummy.h">
+      <Filter>Devices\Dummy</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -449,6 +455,9 @@
     </ClCompile>
     <ClCompile Include="hardware\Wunderground.cpp">
       <Filter>Devices\wunderground.com</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\Dummy.cpp">
+      <Filter>Devices\Dummy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -40,6 +40,7 @@ Version 1.0.xxx (July xxth 2013)
 - Implemented: Security Panel (first version)
 - Implemented: Temperature tab, translated speed,gust and chill
 - Implemented: Solar Radiation Sensor (for example from Weather Underground)
+- Implemented: Dummy hardware device, that does nothing, but can be used for virtual switches
 
 Version 1.0.762 (July 1th 2013)
 - Changed: Motion Sensors, Off delay now sends 'Off' to Lighting 1/6 devices, and 'No Motion' to X10 motion sensors

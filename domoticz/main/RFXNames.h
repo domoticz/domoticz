@@ -64,6 +64,7 @@ enum _eHardwareTypes {
 	HTYPE_1WIRE,
 	HTYPE_RaspberryBMP085,
 	HTYPE_Wunderground,
+	HTYPE_Dummy,
 	HTYPE_END
 };
 
