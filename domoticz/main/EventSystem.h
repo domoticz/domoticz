@@ -83,7 +83,7 @@ private:
     void reportMissingDevice (int deviceID, std::string EventName, unsigned long long eventID);
     int getSunRiseSunSetMinutes(std::string what);
     bool isEventscheduled(const std::string eventName);
-    std::string describeError(int resultcode);
+    void report_errors(lua_State *L, int status);
     unsigned char calculateDimLevel(int deviceID , int percentageLevel);
     
 };

@@ -831,20 +831,11 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
     
     int status = luaL_loadfile(lua_state, filename.c_str());
     
-    int luaError = 0;
-    if(status == LUA_OK)
+    if(status == 0)
     {
-        luaError = lua_pcall(lua_state, 0, LUA_MULTRET, 0);
+        status = lua_pcall(lua_state, 0, LUA_MULTRET, 0);
     }
-    else
-	{
-        _log.Log(LOG_ERROR,"Could not load lua script %s",filename.c_str());
-    }
-    
-    if (luaError)
-    {
-        _log.Log(LOG_ERROR,"Lua script failed (%s): %s",describeError(luaError).c_str(), lua_tostring(lua_state, -1));
-    }
+    report_errors(lua_state, status);
     
     bool scriptTrue = false;
     lua_getglobal(lua_state, "commandArray");
@@ -879,9 +870,12 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
             lua_pop(lua_state, 1);
         }
     }
-    else 
+    else
 	{
-        _log.Log(LOG_ERROR,"Lua script did not return a commandArray");
+        if (status ==0)
+        {
+            _log.Log(LOG_ERROR,"Lua script did not return a commandArray");
+        }
     }
     
     if (scriptTrue) 
@@ -891,6 +885,14 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
     
     lua_close(lua_state);
 
+}
+
+void CEventSystem::report_errors(lua_State *L, int status)
+{
+    if ( status!=0 ) {
+        _log.Log(LOG_ERROR,"%s",lua_tostring(L, -1));
+        lua_pop(L, 1); // remove error message
+    }
 }
 
 void CEventSystem::SendEventNotification(const std::string Subject, const std::string Body)
@@ -992,10 +994,6 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
     
     if (suspendTimer > 0)
     {
-        //std::string reciprocal = reciprocalAction(Action);
-        //if (Action == "Set Level") { _level = 0;}
-        //if (reciprocal !="Undefined")
-        //{
         DelayTime =  (suspendTimer * 60) + 5; //prevent it from running again immediately the next minute if blockly script doesn't handle that
         _tTaskItem delayedtItem;
         if (isScene) {
@@ -1010,63 +1008,12 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
             delayedtItem = _tTaskItem::SwitchLightEvent(DelayTime,deviceID,previousState,previousLevel,eventName);
         }
         m_pMain->m_sql.AddTaskItem(delayedtItem);
-        /*
-        }
-        else
-        {
-            _log.Log(LOG_ERROR,"Can't find reciprocal action for %s", Action.c_str());
-        }
-        */
     }
     
     return true;
 }
 
-/*
-std::string CEventSystem::reciprocalAction (std::string Action)
-{
-    std::map<std::string, std::string> mapObject;
-//    int i;
-    std::string Counterpart = "Undefined";
-    
-    if (Action == "Set Level") {
-        return "Off";
-    }
-    
-    mapObject.insert(std::pair<std::string, std::string>("On", "Off"));
-    mapObject.insert(std::pair<std::string, std::string>("Open", "Closed"));
-    mapObject.insert(std::pair<std::string, std::string>("Dim", "Bright"));
-    mapObject.insert(std::pair<std::string, std::string>("All On", "All Off"));
-    mapObject.insert(std::pair<std::string, std::string>("Group On", "Group Off"));
-    mapObject.insert(std::pair<std::string, std::string>("Motion", "No Motion"));
-    mapObject.insert(std::pair<std::string, std::string>("Panic", "Panic End"));
-    mapObject.insert(std::pair<std::string, std::string>("Arm Away", "Disarm"));
-    mapObject.insert(std::pair<std::string, std::string>("Light On", "Light Off"));
 
-    std::map<std::string, std::string>::iterator p;
-    
-    p = mapObject.find(Action);
-    if(p != mapObject.end()) 
-	{
-        Counterpart = p->second;
-    }
-    else 
-	{
-        std::map<std::string, std::string>::const_iterator it;
-        for (it = mapObject.begin(); it != mapObject.end(); ++it)
-        {
-            if (it->second == Action)
-            {
-                Counterpart = it->first;
-                break;
-            }
-        }
-    }
-    
-    return Counterpart;
-    
-}
- */
 
 std::string CEventSystem::nValueToWording (const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue,const std::string sValue)
 {
@@ -1150,25 +1097,6 @@ void CEventSystem::reportMissingDevice (int deviceID, std::string eventName, uns
     int eventStatus = 2;
     szQuery << "UPDATE Events SET Status ='" << eventStatus << "' WHERE (ID == '" << eventID << "')";
     m_pMain->m_sql.query(szQuery.str());
-}
-
-std::string CEventSystem::describeError(int resultcode)
-{
-    switch (resultcode)
-    {
-        case LUA_OK:
-            return "Success";
-        case LUA_ERRRUN:
-            return "Runtime error";
-        case LUA_ERRSYNTAX:
-            return "Syntax error";
-        case LUA_ERRERR:
-            return "Error with error alert mechanism.";
-        case LUA_ERRFILE:
-            return "Couldn't open or read file";
-        default:
-            return "Unknown state";
-    }
 }
 
 void CEventSystem::WWWGetItemStates(std::vector<_tDeviceStatus> &iStates)
