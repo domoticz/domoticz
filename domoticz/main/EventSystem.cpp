@@ -178,7 +178,7 @@ void CEventSystem::GetCurrentMeasurementStates()
     m_humValuesByID.clear();
     m_baroValuesByID.clear();
     
-	char szTmp[300];
+	//char szTmp[300];
 
     typedef std::map<unsigned long long,_tDeviceStatus>::iterator it_type;
     for(it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); iterator++) 
@@ -739,7 +739,7 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
             lua_pushnumber( lua_state, (lua_Number)p->second);
             lua_rawset( lua_state, -3 );
             if (p->first ==  devname) {
-                thisDeviceTemp = p->second;
+                thisDeviceTemp = (float)p->second;
             }
         }
         lua_setglobal(lua_state, "otherdevices_barometer");
