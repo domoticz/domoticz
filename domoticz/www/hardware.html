@@ -644,6 +644,10 @@ function RefreshHardwareTable()
 			{
 				SerialName="WWW";
 			}
+			else if (item.Type == 15)
+			{
+				SerialName="";
+			}
 			else
 			{
 				var serpos=jQuery.inArray(item.Port, $.myglobals.SerialPortVal);
