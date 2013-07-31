@@ -8,7 +8,7 @@
 #include "../hardware/hardwaretypes.h"
 #include <iostream>
 #include <boost/lexical_cast.hpp>
-#include <boost/regex.hpp>
+//#include <boost/regex.hpp>
 
 #ifdef WIN32
     #include "../main/dirent_windows.h"
