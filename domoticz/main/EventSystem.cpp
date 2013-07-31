@@ -7,7 +7,7 @@
 #include "Logger.h"
 #include "../hardware/hardwaretypes.h"
 #include <iostream>
-#include <boost/lexical_cast.hpp>
+//#include <boost/lexical_cast.hpp>
 //#include <boost/regex.hpp>
 
 #ifdef WIN32
@@ -509,15 +509,15 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
     
     if ((reason == "device") && (DeviceID >0)) {
         
-        std::string IDString;
         std::size_t found;
         bool eventActive = false;
         
         std::vector<_tEventItem>::iterator it;
         for ( it = m_events.begin(); it != m_events.end(); ++it ) {
     
-            IDString = "["+boost::lexical_cast<std::string>(DeviceID)+"]";
-            found = it->Conditions.find(IDString);
+			std::stringstream sstr;
+			sstr << "[" << DeviceID << "]";
+            found = it->Conditions.find(sstr.str());
             if (it->EventStatus == 1) { eventActive = true;};
 
             if (eventActive && found!=std::string::npos) {
