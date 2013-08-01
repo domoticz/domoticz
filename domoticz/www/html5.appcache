@@ -147,6 +147,7 @@ images/lock_closed.png
 images/lock_open.png
 images/log.png
 images/logout.png
+images/login-sprite.png
 images/lux.png
 images/lux48.png
 images/moisture.png
@@ -301,6 +302,7 @@ i18n/domoticz-it.json
 # Resources that require the user to be online.
 NETWORK:
 index.html
+login.html
 cam.html
 dashboard.html
 devices.html

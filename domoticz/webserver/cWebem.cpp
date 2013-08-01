@@ -12,6 +12,8 @@
 #include "mime_types.hpp"
 #include "Base64.h"
 #include <stdarg.h>
+#include <fstream>
+#include <sstream>
 
 int m_failcounter=0;
 
@@ -834,7 +836,9 @@ int cWebemRequestHandler::parse_auth_header(const request& req, char *buf,	size_
 
 	(void) memset(ah, 0, sizeof(*ah));
 	if ((auth_header = req.get_req_header(&req, "Authorization")) == NULL)
+	{
 		return 0;
+	}
 
 	if (mg_strncasecmp(auth_header, "Basic ", 6) == 0) {
 		//Basic authentication
@@ -923,15 +927,54 @@ int cWebemRequestHandler::authorize(const request& req)
 	char buf[8191];
 	struct ah _ah;
 
+	std::string uname="";
+	std::string upass="";
+
 	if (!parse_auth_header(req, buf, sizeof(buf), &_ah))
 	{
+		int uPos=req.uri.find("username=");
+		int pPos=req.uri.find("password=");
+		if (
+			(uPos==std::string::npos)||
+			(pPos==std::string::npos)
+			)
+			return 0;
+		size_t ulen=strlen("username=");
+		uname=req.uri.substr(uPos+ulen,pPos-uPos-ulen-1);
+		upass=req.uri.substr(pPos+strlen("username="));
+		std::vector<_tWebUserPassword>::iterator itt;
+		for (itt=myWebem->m_userpasswords.begin(); itt!=myWebem->m_userpasswords.end(); ++itt)
+		{
+			if (itt->Username == uname)
+			{
+				if (itt->Password!=upass)
+				{
+					m_failcounter++;
+					return 0;
+				}
+				myWebem->m_actualuser=uname;
+				m_failcounter=0;
+				return 1;
+			}
+		}
+		m_failcounter++;
 		return 0;
 	}
 
 	std::vector<_tWebUserPassword>::iterator itt;
 	for (itt=myWebem->m_userpasswords.begin(); itt!=myWebem->m_userpasswords.end(); ++itt)
 	{
-		if (itt->Username == _ah.user)
+		if (itt->Username == uname)
+		{
+			if (itt->Password!=upass)
+			{
+				m_failcounter++;
+				return 0;
+			}
+			m_failcounter=0;
+			return 1;
+		}
+		else if (itt->Username == _ah.user)
 		{
 			int bOK=check_password
 				(
@@ -1000,6 +1043,30 @@ void cWebemRequestHandler::send_authorization_request(reply& rep)
 	rep.headers[1].value=szAuthHeader;
 }
 
+void cWebemRequestHandler::send_authorization_page(reply& rep)
+{
+	std::ifstream is("www/login.html", std::ios::in | std::ios::binary);
+	if (!is)
+	{
+		rep = reply::stock_reply(reply::not_found);
+	}
+	else
+	{
+		// Fill out the reply to be sent to the client.
+		rep.status = reply::ok;
+		char buf[512];
+		while (is.read(buf, sizeof(buf)).gcount() > 0)
+			rep.content.append(buf, (unsigned int)is.gcount());
+
+	}
+	rep.headers.resize(2);
+	rep.headers[0].name = "Content-Length";
+	rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
+	rep.headers[1].name = "Content-Type";
+	rep.headers[1].value = mime_types::extension_to_type("html");
+	rep.headers[1].value += ";charset=UTF-8";
+}
+
 void cWebemRequestHandler::handle_request( const request& req, reply& rep)
 {
 	if (!check_authorization(req)) 
@@ -1008,10 +1075,20 @@ void cWebemRequestHandler::handle_request( const request& req, reply& rep)
 		{
 			m_failcounter=0;
 			rep = reply::stock_reply(reply::forbidden);
+			return;
 		}
 		else
+		{
+/*
+			if ((req.uri.find(".htm")!=std::string::npos)||(req.uri.find(".")==std::string::npos))
+			{
+				send_authorization_page(rep);
+				return;
+			}
+*/
 			send_authorization_request(rep);
-		return;
+			return;
+		}
 	}
 
 	// check for webem action request
@@ -1038,9 +1115,25 @@ void cWebemRequestHandler::handle_request( const request& req, reply& rep)
 			// fix provided by http://www.codeproject.com/Members/jaeheung72 )
 
 			rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
-
+/*
+			if (rep.headers[1].value == "text/html")
+			{
+				//serve cookies only on html pages
+				const char *cookie;
+				cookie = request::get_req_header(&req, "Cookie");
+				if (cookie==NULL)
+				{
+					//Add new session ID
+					rep.headers.resize(4);
+					rep.headers[3].name="Set-Cookie";
+					rep.headers[3].value="SID=1234";
+				}
+			}
+*/
 			// tell browser that we are using UTF-8 encoding
 			rep.headers[1].value += ";charset=UTF-8";
+
+
 		}
 	}
 }
