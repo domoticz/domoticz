@@ -79,7 +79,7 @@ void CEventSystem::LoadEvents()
 
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ID,Name,Conditions,Actions,Status FROM Events ORDER BY ID";
+	szQuery << "SELECT EventRules.ID,EventMaster.Name,EventRules.Conditions,EventRules.Actions,EventMaster.Status, EventRules.SequenceNo FROM EventRules INNER JOIN EventMaster ON EventRules.EMID=EventMaster.ID ORDER BY EventRules.ID";
 	result=m_pMain->m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -89,22 +89,16 @@ void CEventSystem::LoadEvents()
 		{
 			std::vector<std::string> sd=*itt;
             
-			if (sd.size()==5)
-			{
-				_tEventItem eitem;
-				std::stringstream s_str(  sd[0] );
-				s_str >> eitem.ID;
-				eitem.Name				= sd[1];
-				eitem.Conditions		= sd[2];
-				eitem.Actions			= sd[3];
-                eitem.EventStatus = atoi( sd[4].c_str());
-                m_events.push_back(eitem);
-			}
-			else
-			{
-				m_pMain->m_sql.query("DROP TABLE IF EXISTS [Events]");
-				return;
-			}
+            _tEventItem eitem;
+            std::stringstream s_str(  sd[0] );
+            s_str >> eitem.ID;
+            eitem.Name				= sd[1]+"_"+sd[5];
+            eitem.Conditions		= sd[2];
+            eitem.Actions			= sd[3];
+            eitem.EventStatus = atoi( sd[4].c_str());
+            eitem.SequenceNo = atoi( sd[5].c_str());
+            m_events.push_back(eitem);
+
         }
 #ifdef _DEBUG
         _log.Log(LOG_NORM,"Events (re)loaded");
@@ -590,7 +584,6 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
 
 bool CEventSystem::parseBlocklyActions(const std::string Actions, const std::string eventName, const unsigned long long eventID)
 {
-    
     if (isEventscheduled(eventName))
     {
         //_log.Log(LOG_NORM,"Already scheduled this event, skipping");
@@ -1093,10 +1086,24 @@ void CEventSystem::reportMissingDevice (int deviceID, std::string eventName, uns
 {
     _log.Log(LOG_ERROR,"Device no. '%d' used in event '%s' no longer exists, disabling event!", deviceID ,eventName.c_str());
     
+    
     std::stringstream szQuery;
-    int eventStatus = 2;
-    szQuery << "UPDATE Events SET Status ='" << eventStatus << "' WHERE (ID == '" << eventID << "')";
-    m_pMain->m_sql.query(szQuery.str());
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT EventMaster.ID FROM EventMaster INNER JOIN EventRules ON EventRules.EMID=EventMaster.ID WHERE (EventRules.ID == '" << eventID << "')";
+	result=m_pMain->m_sql.query(szQuery.str());
+	if (result.size()>0)
+	{
+		
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::vector<std::string> sd=*itt;
+            std::stringstream szRemQuery;
+            int eventStatus = 2;
+            szRemQuery << "UPDATE EventMaster SET Status ='" << eventStatus << "' WHERE (ID == '" << sd[0] << "')";
+            m_pMain->m_sql.query(szQuery.str());
+        }
+    }
 }
 
 void CEventSystem::WWWGetItemStates(std::vector<_tDeviceStatus> &iStates)

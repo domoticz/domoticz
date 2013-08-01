@@ -186,7 +186,7 @@ Blockly.Language.domoticzcontrols_if = {
   }
  };
  
-Blockly.Language.controls_ifelseif = {
+Blockly.Language.domoticzcontrols_ifelseif = {
   // If/elseif/else condition.
   helpUrl: Blockly.LANG_CONTROLS_IF_HELPURL,
   init: function() {

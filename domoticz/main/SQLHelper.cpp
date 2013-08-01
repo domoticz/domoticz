@@ -15,7 +15,7 @@
 #include "../webserver/Base64.h"
 #include "mainstructs.h"
 
-#define DB_VERSION 19
+#define DB_VERSION 20
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -317,14 +317,21 @@ const char *sqlCreateSharedDevices =
 "[SharedUserID] BIGINT NOT NULL, "
 "[DeviceRowID] BIGINT NOT NULL);";
 
-const char *sqlCreateEvents =
-"CREATE TABLE IF NOT EXISTS [Events] ("
+const char *sqlCreateEventMaster =
+"CREATE TABLE IF NOT EXISTS [EventMaster] ("
 "[ID] INTEGER PRIMARY KEY,  "
 "[Name] VARCHAR(200) NOT NULL, "
 "[XMLStatement] TEXT NOT NULL, "
-"[Conditions] TEXT, "
-"[Actions] TEXT, "
 "[Status] INTEGER DEFAULT 0);";
+
+const char *sqlCreateEventRules =
+"CREATE TABLE IF NOT EXISTS [EventRules] ("
+"[ID] INTEGER PRIMARY KEY, "
+"[EMID] INTEGER, "
+"[Conditions] TEXT NOT NULL, "
+"[Actions] TEXT NOT NULL, "
+"[SequenceNo] INTEGER NOT NULL, "
+"FOREIGN KEY (EMID) REFERENCES EventMaster(ID));";
 
 extern std::string szStartupFolder;
 
@@ -386,6 +393,7 @@ bool CSQLHelper::OpenDatabase()
 #else
 	rc=sqlite3_exec(m_dbase, "PRAGMA journal_mode=DELETE", NULL, NULL, NULL);
 #endif
+    rc=sqlite3_exec(m_dbase, "PRAGMA foreign_keys = ON;", NULL, NULL, NULL);
 	bool bNewInstall=false;
 	std::vector<std::vector<std::string> > result=query("SELECT name FROM sqlite_master WHERE type='table' AND name='DeviceStatus'");
 	bNewInstall=(result.size()==0);
@@ -424,7 +432,8 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateSceneDevices);
 	query(sqlCreateSceneTimers);
 	query(sqlCreateSharedDevices);
-    query(sqlCreateEvents);
+    query(sqlCreateEventMaster);
+    query(sqlCreateEventRules);
 
 	int dbversion=0;
 	GetPreferencesVar("DB_Version", dbversion);
@@ -576,6 +585,16 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("ALTER TABLE Scenes ADD COLUMN [SceneType] INTEGER default 0");
 		}
+        
+		if (dbversion<20)
+		{
+			query("INSERT INTO EventMaster(Name, XMLStatement, Status) SELECT Name, XMLStatement, Status FROM Events;");
+			query("INSERT INTO EventRules(EMID, Conditions, Actions, SequenceNo) SELECT EventMaster.ID, Events.Conditions, Events.Actions, 1 FROM Events INNER JOIN EventMaster ON EventMaster.Name = Events.Name;");
+            query("DROP TABLE Events;");
+
+		}
+        
+    
     }
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
 
@@ -4033,7 +4052,9 @@ void CSQLHelper::DeleteEvent(const std::string idx)
 {
 	std::vector<std::vector<std::string> > result;
 	char szTmp[1000];
-	sprintf(szTmp,"DELETE FROM Events WHERE (ID == %s)",idx.c_str());
+	sprintf(szTmp,"DELETE FROM EventRules WHERE (EMID == %s)",idx.c_str());
+	result=query(szTmp);
+	sprintf(szTmp,"DELETE FROM EventMaster WHERE (ID == %s)",idx.c_str());
 	result=query(szTmp);
 }
 

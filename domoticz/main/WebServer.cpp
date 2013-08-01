@@ -12,6 +12,7 @@
 #include "../hardware/1Wire.h"
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
+#include "../json/json.h"
 #include "Logger.h"
 #ifndef WIN32
 	#include <sys/utsname.h>
@@ -8299,7 +8300,7 @@ std::string CWebServer::GetJSonPage()
             
             szQuery.clear();
             szQuery.str("");
-            szQuery << "SELECT ID, Name, XMLStatement, Status FROM Events ORDER BY ID ASC";
+            szQuery << "SELECT ID, Name, XMLStatement, Status FROM EventMaster ORDER BY ID ASC";
             result=m_pMain->m_sql.query(szQuery.str());
             if (result.size()>0)
             {
@@ -8331,7 +8332,7 @@ std::string CWebServer::GetJSonPage()
             
             szQuery.clear();
             szQuery.str("");
-            szQuery << "SELECT ID, Name, XMLStatement, Status FROM Events WHERE (ID==" << idx << ")";
+            szQuery << "SELECT ID, Name, XMLStatement, Status FROM EventMaster WHERE (ID==" << idx << ")";
             result=m_pMain->m_sql.query(szQuery.str());
             if (result.size()>0)
             {
@@ -8354,8 +8355,10 @@ std::string CWebServer::GetJSonPage()
                 root["status"]="OK";
             }
         }
+
         else if (cparam=="create")
 		{
+        
 			root["title"]="AddEvent";
 
             std::string eventname=m_pWebEm->FindValue("name");
@@ -8365,43 +8368,88 @@ std::string CWebServer::GetJSonPage()
             std::string eventxml=m_pWebEm->FindValue("xml");
 			if (eventxml=="")
 				goto exitjson;
-            
-            std::string eventconditions=m_pWebEm->FindValue("conditions");
-			if (eventconditions=="")
-				goto exitjson;
-            
-            std::string eventactions=m_pWebEm->FindValue("actions");
-			if (eventactions=="")
-				goto exitjson;
 
             std::string eventactive=m_pWebEm->FindValue("eventstatus");
-			if (eventactive=="")
-				goto exitjson;
+            if (eventactive=="")
+                goto exitjson;
             
             std::string eventid=m_pWebEm->FindValue("eventid");
             
-            // replace placeholder chars for url encode illegal ones
             
-            // this should be more selective...
-            if (eventactions.find("SendNotification")!= std::string::npos) {
-                eventactions = stdreplace(eventactions, "$", "#");
-            }
+            std::string eventlogic=m_pWebEm->FindValue("logicarray");
+          	if (eventlogic=="")
+				goto exitjson;
+
             int eventStatus = atoi(eventactive.c_str());
             
-			szQuery.clear();
-			szQuery.str("");
+            Json::Value jsonRoot;
+            Json::Reader reader;
+            std::stringstream ssel(eventlogic);
             
-            if (eventid=="") {
-                    szQuery << "INSERT INTO Events (Name, XMLStatement, Conditions, Actions, Status) VALUES ('" << eventname << "','" << eventxml <<  "','" << eventconditions <<"','" << eventactions <<"','" << eventStatus <<  "')";
+            bool parsingSuccessful = reader.parse(ssel, jsonRoot);
+            
+            if (!parsingSuccessful)
+            {
+                
+                _log.Log(LOG_ERROR,"Webserver eventparser: Invalid data received!");
+            
             }
             else {
-                    szQuery << "UPDATE Events SET Name='" << eventname << "', XMLStatement ='" << eventxml << "', Conditions ='" << eventconditions << "', Actions ='" << eventactions << "', Status ='" << eventStatus << "' WHERE (ID == '" << eventid << "')";
+
+                szQuery.clear();
+                szQuery.str("");
+                
+                if (eventid=="") {
+                    szQuery << "INSERT INTO EventMaster (Name, XMLStatement, Status) VALUES ('" << eventname << "','" << eventxml << "','" << eventStatus <<  "')";
+                    m_pMain->m_sql.query(szQuery.str());
+                    szQuery.clear();
+                    szQuery.str("");
+                    szQuery << "SELECT ID FROM EventMaster WHERE (Name == '" << eventname << "')";
+                    result=m_pMain->m_sql.query(szQuery.str());
+                    if (result.size()>0)
+                    {
+                        std::vector<std::string> sd=result[0];
+                        eventid = sd[0];
+                    }
+                }
+                else {
+                    szQuery << "UPDATE EventMaster SET Name='" << eventname << "', XMLStatement ='" << eventxml << "', Status ='" << eventStatus << "' WHERE (ID == '" << eventid << "')";
+                    m_pMain->m_sql.query(szQuery.str());
+                    szQuery.clear();
+                    szQuery.str("");
+                    szQuery << "DELETE FROM EventRules WHERE (EMID == '" << eventid << "')";
+                    m_pMain->m_sql.query(szQuery.str());
+                }
+                
+                if (eventid == "")
+                {
+                    //eventid should now never be empty!
+                    _log.Log(LOG_ERROR,"Error writing event actions to database!");
+                }
+                else {
+                    const Json::Value array = jsonRoot["eventlogic"];
+                   
+                    for(int index=0; index<array.size();++index) {
+                        
+                        std::string conditions = array[index].get("conditions","").asString();
+                        std::string actions = array[index].get("actions","").asString();
+                        
+                        if (actions.find("SendNotification")!= std::string::npos) {
+                            actions = stdreplace(actions, "$", "#");
+                        }
+                        int sequenceNo = index+1;
+                        szQuery.clear();
+                        szQuery.str("");
+                        szQuery << "INSERT INTO EventRules (EMID, Conditions, Actions, SequenceNo) VALUES ('" << eventid << "','" << conditions << "','" << actions << "','" << sequenceNo <<  "')";
+                        m_pMain->m_sql.query(szQuery.str());
+                    }
+                    
+                    m_pMain->m_eventsystem.LoadEvents();
+                    root["status"]="OK";
+                }
             }
-            m_pMain->m_sql.query(szQuery.str());
-            m_pMain->m_eventsystem.LoadEvents();
-            root["status"]="OK";
         }
-        if (cparam=="delete")
+        else if (cparam=="delete")
 		{
             root["title"]="DeleteEvent";
             std::string idx=m_pWebEm->FindValue("event");
@@ -8411,7 +8459,7 @@ std::string CWebServer::GetJSonPage()
             m_pMain->m_eventsystem.LoadEvents();
             root["status"]="OK";
         }
-        if (cparam=="currentstates")
+        else if (cparam=="currentstates")
 		{
 			std::vector<CEventSystem::_tDeviceStatus> devStates;
 			m_pMain->m_eventsystem.WWWGetItemStates(devStates);
