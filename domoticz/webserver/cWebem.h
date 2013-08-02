@@ -21,6 +21,12 @@ namespace http {
 			_eUserRights userrights;
 		} WebUserPassword;
 
+		typedef struct _tWebEmSession
+		{
+			std::string username;
+			time_t lasttouch;
+		} WebEmSession;
+
 		// Parsed Authorization header
 		struct ah {
 			char *user, *uri, *cnonce, *response, *qop, *nc, *nonce;
@@ -81,8 +87,8 @@ namespace http {
 
 			  /// Handle a request and produce a reply.
 			  virtual void handle_request( const request& req, reply& rep);
-
 		private:
+			void check_cookie(const request& req, reply& rep);
 			void send_authorization_request(reply& rep);
 			void send_authorization_page(reply& rep);
 			int check_authorization(const request& req);
@@ -150,6 +156,8 @@ namespace http {
 			std::string m_actualuser;
 			std::string m_lastRequestPath;
 			std::string m_outputfilename;
+			std::map<time_t,WebEmSession> m_sessionids;
+			time_t m_actsessionid;
 		private:
 			/// store map between include codes and application functions
 			std::map < std::string, webem_include_function > myIncludes;

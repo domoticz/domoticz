@@ -29,6 +29,7 @@ public:
 	char * DisplayLanguageCombo();
 	char * DisplayDevicesList();
 	std::string GetJSonPage();
+	std::string GetLanguage();
 	std::string GetCameraSnapshot();
 	std::string GetInternalCameraSnapshot();
 	std::string GetDatabaseBackup();

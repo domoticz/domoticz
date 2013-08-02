@@ -666,6 +666,14 @@ function StoreSettings(formname)
     return;
   }
   
+  var secpanel=$("#sectable #SecPassword").val();
+  if (secpanel != "") {
+	if (!$.isNumeric(secpanel)) {
+		ShowNotify($.i18n('Security Panel password can only contain numbers...'), 2000, true);
+		return;
+	}
+  }
+  
   //Check email settings
   var EmailServer=$("#emailtable #EmailServer").val();
   if (EmailServer!="")

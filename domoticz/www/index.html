@@ -99,9 +99,12 @@ function CheckForUpdate(showdialog) {
 		 success: function(data) {
 			var urights=data.statuscode;
 			if (urights!=3) {
-				//display logout option
+				$("#dLogout").show();
+				$("#mLogout").show();
 			}
 			else {
+				$("#dLogout").hide();
+				$("#mLogout").hide();
 				urights=2;
 			}
 			window.my_config =
@@ -440,6 +443,8 @@ $(document).ready(function() {
                                     </li>
                                     <li class="divider"></li>
                                     <li id="mLog"><a id="cLog" href="javascript:SwitchLayout('Log')"><img src="images/log.png"> <span data-i18n="Log">Log</span></a></li>
+                                    <li id="dLogout" class="divider"></li>
+                                    <li id="mLogout"><a id="cLogout" href="javascript:SwitchLayout('Logout')"><img src="images/logout.png"> <span data-i18n="Logout">Logout</span></a></li>
                                 </ul>
                             </li>
                         </ul>

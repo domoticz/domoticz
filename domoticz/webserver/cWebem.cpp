@@ -41,6 +41,7 @@ myServer( address, port, myRequestHandler )
 {
 	m_DigistRealm = "Domoticz.com";
 	m_zippassword = "";
+	m_actsessionid=0;
 }
 
 /**
@@ -453,6 +454,7 @@ void cWebem::AddUserPassword(const unsigned long ID, const std::string username,
 void cWebem::ClearUserPasswords()
 {
 	m_userpasswords.clear();
+	m_sessionids.clear();
 }
 
 void cWebem::AddLocalNetworks(std::string network)
@@ -940,21 +942,30 @@ int cWebemRequestHandler::authorize(const request& req)
 			)
 			return 0;
 		size_t ulen=strlen("username=");
-		uname=req.uri.substr(uPos+ulen,pPos-uPos-ulen-1);
-		upass=req.uri.substr(pPos+strlen("username="));
-		std::vector<_tWebUserPassword>::iterator itt;
-		for (itt=myWebem->m_userpasswords.begin(); itt!=myWebem->m_userpasswords.end(); ++itt)
+		std::string tmpuname=req.uri.substr(uPos+ulen,pPos-uPos-ulen-1);
+		std::string tmpupass=req.uri.substr(pPos+strlen("username="));
+		if (request_handler::url_decode(tmpuname,uname))
 		{
-			if (itt->Username == uname)
+			if (request_handler::url_decode(tmpupass,upass))
 			{
-				if (itt->Password!=upass)
+				uname=base64_decode(uname);
+				upass=base64_decode(upass);
+
+				std::vector<_tWebUserPassword>::iterator itt;
+				for (itt=myWebem->m_userpasswords.begin(); itt!=myWebem->m_userpasswords.end(); ++itt)
 				{
-					m_failcounter++;
-					return 0;
+					if (itt->Username == uname)
+					{
+						if (itt->Password!=upass)
+						{
+							m_failcounter++;
+							return 0;
+						}
+						myWebem->m_actualuser=uname;
+						m_failcounter=0;
+						return 1;
+					}
 				}
-				myWebem->m_actualuser=uname;
-				m_failcounter=0;
-				return 1;
 			}
 		}
 		m_failcounter++;
@@ -998,8 +1009,58 @@ int cWebemRequestHandler::authorize(const request& req)
 int cWebemRequestHandler::check_authorization(const request& req)
 {
 	myWebem->m_actualuser="";
+	myWebem->m_actsessionid=0;
 	if (myWebem->m_userpasswords.size()==0)
 		return 1;//no username/password
+
+
+	const char* cookie_header = request::get_req_header(&req, "Cookie");
+	if (cookie_header!=NULL)
+	{
+		std::string scookie=cookie_header;
+		int fpos=scookie.find("SID=");
+		if (fpos!=std::string::npos)
+		{
+			std::stringstream sstr;
+
+			int dpos=scookie.find(";");
+			std::string sidstr;
+			if (dpos==std::string::npos)
+				sstr << scookie.substr(fpos+4).c_str();
+			else
+				sstr << scookie.substr(fpos+4,dpos-fpos-4).c_str();
+
+			time_t SID;
+			sstr >> SID;
+			std::map<time_t,WebEmSession>::iterator itt = myWebem->m_sessionids.find(SID);
+			if (itt != myWebem->m_sessionids.end()) 
+			{
+				if (
+					(req.uri.find("login.html")!=std::string::npos)||
+					(req.uri.find("dologout")!=std::string::npos)
+					)
+				{
+					myWebem->m_sessionids.erase(itt);
+				} 
+				else
+				{
+					time_t acttime=time(NULL);
+					if (acttime-myWebem->m_sessionids[SID].lasttouch<10*60)
+					{
+						myWebem->m_actsessionid=SID;
+						myWebem->m_actualuser=myWebem->m_sessionids[SID].username;
+						return 1;
+					}
+					else
+					{
+						//timeout, remove session
+						myWebem->m_sessionids.erase(itt);
+					}
+				}
+			}
+		}
+	}
+
 
 	//check if in local network(s)
 	const char *host_header;
@@ -1067,6 +1128,70 @@ void cWebemRequestHandler::send_authorization_page(reply& rep)
 	rep.headers[1].value += ";charset=UTF-8";
 }
 
+void cWebemRequestHandler::check_cookie(const request& req, reply& rep)
+{
+	if (myWebem->m_userpasswords.size()>0)
+	{
+		if (rep.headers[1].value.find("text/html")!=std::string::npos)
+		{
+			//serve cookies only on html pages
+			const char *cookie;
+			cookie = request::get_req_header(&req, "Cookie");
+			bool bHaveSID=false;
+			std::string scookie="";
+			int fpos=0;
+			if (cookie!=NULL)
+			{
+				scookie=cookie;
+				fpos=scookie.find("SID=");
+				bHaveSID=fpos!=std::string::npos;
+			}
+			if (!bHaveSID)
+			{
+				//Add new session ID
+				rep.headers.resize(4);
+				rep.headers[3].name="Set-Cookie";
+				std::stringstream sstr;
+				time_t sessionid=time(NULL);
+				_tWebEmSession usession;
+				usession.username=myWebem->m_actualuser;
+				usession.lasttouch=sessionid;
+				sstr << "SID=" << std::dec << sessionid;
+				myWebem->m_sessionids[sessionid]=usession;
+				rep.headers[3].value=sstr.str();
+			}
+			else
+			{
+				//check if we need to re-use this SID
+				int dpos=scookie.find(";");
+				std::string sidstr;
+				if (dpos==std::string::npos)
+					sidstr=scookie.substr(fpos+4);
+				else
+					sidstr=scookie.substr(fpos+4,dpos-fpos-4);
+				int fpos=scookie.find("SID=");
+				if (fpos!=std::string::npos)
+				{
+					std::stringstream sstr;
+					sstr << sidstr;
+					time_t SID;
+					sstr >> SID;
+					std::map<time_t,WebEmSession>::iterator itt = myWebem->m_sessionids.find(SID);
+					if (itt == myWebem->m_sessionids.end()) 
+					{
+						time_t atime=time(NULL);
+						_tWebEmSession usession;
+						usession.username=myWebem->m_actualuser;
+						usession.lasttouch=atime;
+						myWebem->m_sessionids[SID]=usession;
+					}
+				}
+
+			}
+		}
+	}
+}
+
 void cWebemRequestHandler::handle_request( const request& req, reply& rep)
 {
 	if (!check_authorization(req)) 
@@ -1079,15 +1204,13 @@ void cWebemRequestHandler::handle_request( const request& req, reply& rep)
 		}
 		else
 		{
-/*
-			if ((req.uri.find(".htm")!=std::string::npos)||(req.uri.find(".")==std::string::npos))
+			if ((req.uri.find(".htm")!=std::string::npos)||(req.uri.find("#")!=std::string::npos)||(req.uri.find(".")==std::string::npos))
 			{
 				send_authorization_page(rep);
 				return;
 			}
-*/
-			send_authorization_request(rep);
-			return;
+//			send_authorization_request(rep);
+	//		return;
 		}
 	}
 
@@ -1115,27 +1238,18 @@ void cWebemRequestHandler::handle_request( const request& req, reply& rep)
 			// fix provided by http://www.codeproject.com/Members/jaeheung72 )
 
 			rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
-/*
-			if (rep.headers[1].value == "text/html")
-			{
-				//serve cookies only on html pages
-				const char *cookie;
-				cookie = request::get_req_header(&req, "Cookie");
-				if (cookie==NULL)
-				{
-					//Add new session ID
-					rep.headers.resize(4);
-					rep.headers[3].name="Set-Cookie";
-					rep.headers[3].value="SID=1234";
-				}
-			}
-*/
+
 			// tell browser that we are using UTF-8 encoding
 			rep.headers[1].value += ";charset=UTF-8";
-
-
 		}
 	}
+	check_cookie(req,rep);
+
+	if (myWebem->m_actsessionid!=0)
+	{
+		myWebem->m_sessionids[myWebem->m_actsessionid].lasttouch=time(NULL);
+	}
+	
 }
 
 } //namespace server {

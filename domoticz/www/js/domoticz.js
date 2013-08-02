@@ -918,6 +918,21 @@ function SetLayoutURL(name)
 
 function SwitchLayout(layout)
 {
+	if (layout=="Logout")
+	{
+		$.ajax({
+		 url: "json.htm?type=command&param=dologout",
+		 async: true, 
+		 dataType: 'json',
+		 success: function(data) {
+			window.location = '/';
+		 },
+		 error: function(){
+			window.location = '/';
+		 }     
+		});
+		return;
+	}
 	var fullLayout = layout;
 	var hyphen = layout.indexOf('-');
 	if( hyphen >= 0 ){
@@ -1274,6 +1289,17 @@ function EnableDisableTabs()
 			else {
 				SetLanguage('en');
 			}
+			
+			var urights=data.statuscode;
+			if (urights!=3) {
+				$("#dLogout").show();
+				$("#mLogout").show();
+			}
+			else {
+				$("#dLogout").hide();
+				$("#mLogout").hide();
+			}
+			
 			$.myglobals.ismobileint=false;
 			if (typeof data.MobileType != 'undefined') {
 				if( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {

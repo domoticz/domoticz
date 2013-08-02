@@ -14,13 +14,7 @@ body
 {
     font: 12px 'Lucida Sans Unicode', 'Trebuchet MS', Arial, Helvetica;    
     margin: 0;
-    background-color: #d9dee2;
-    background-image: -webkit-gradient(linear, left top, left bottom, from(#ebeef2), to(#d9dee2));
-    background-image: -webkit-linear-gradient(top, #ebeef2, #d9dee2);
-    background-image: -moz-linear-gradient(top, #ebeef2, #d9dee2);
-    background-image: -ms-linear-gradient(top, #ebeef2, #d9dee2);
-    background-image: -o-linear-gradient(top, #ebeef2, #d9dee2);
-    background-image: linear-gradient(top, #ebeef2, #d9dee2);    
+	background: #202020 url(css/images/img01.jpg) repeat;
 }
 
 
@@ -63,27 +57,6 @@ body
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
     border-radius: 3px;  
-    -webkit-box-shadow:
-          0 0 2px rgba(0, 0, 0, 0.2),
-          0 1px 1px rgba(0, 0, 0, .2),
-          0 3px 0 #fff,
-          0 4px 0 rgba(0, 0, 0, .2),
-          0 6px 0 #fff,  
-          0 7px 0 rgba(0, 0, 0, .2);
-    -moz-box-shadow:
-          0 0 2px rgba(0, 0, 0, 0.2),  
-          1px 1px   0 rgba(0,   0,   0,   .1),
-          3px 3px   0 rgba(255, 255, 255, 1),
-          4px 4px   0 rgba(0,   0,   0,   .1),
-          6px 6px   0 rgba(255, 255, 255, 1),  
-          7px 7px   0 rgba(0,   0,   0,   .1);
-    box-shadow:
-          0 0 2px rgba(0, 0, 0, 0.2),  
-          0 1px 1px rgba(0, 0, 0, .2),
-          0 3px 0 #fff,
-          0 4px 0 rgba(0, 0, 0, .2),
-          0 6px 0 #fff,  
-          0 7px 0 rgba(0, 0, 0, .2);
 }
 
 #login:before
@@ -103,7 +76,6 @@ body
 
 h1
 {
-    text-shadow: 0 1px 0 rgba(255, 255, 255, .7), 0px 2px 0 rgba(0, 0, 0, .5);
     text-transform: uppercase;
     text-align: center;
     color: #666;
@@ -120,7 +92,7 @@ h1:after, h1:before
     height: 1px;
     position: absolute;
     top: 15px;
-    width: 120px;   
+    width: 110px;   
 }
 
 h1:after
@@ -290,35 +262,67 @@ fieldset
 	<script type="text/javascript">
 		function DoLogin()
 		{
-			var musername=$('#username').val();
-			var mpassword=$('#password').val();
-
+			var musername=encodeURIComponent(btoa($('#username').val()));
+			var mpassword=encodeURIComponent(btoa($('#password').val()));
 			$.ajax({
-				url: "@login&username=" + musername + "&password=" + mpassword,
+				url: "json.htm?type=command&param=logincheck&username=" + musername + "&password=" + mpassword,
 				async: false, 
 				dataType: 'json',
 				success: function(data) {
-				alert(data);
 					if (data.status != "OK") {
 						HideNotify();
 						ShowNotify($.i18n('Incorrect Username/Password!'), 2500, true);
 						return;
 					}
 					else {
-					   window.location = 'index.html';
+					   window.location = '/';
 					}
 				},
 				error: function(){
 					HideNotify();
-					ShowNotify($.i18n('Problem to Login!'), 2500, true);
+					$failcounter+=1;
+					if ($failcounter>3) {
+						alert($.i18n('To many login attempts!'));
+						window.location.href = "http://www.1112.net/lastpage.html";
+						return;
+					}
+					else {
+						ShowNotify($.i18n('Incorrect Username/Password!'), 2500, true);
+					}
 				}
 			});
 		}
 		
 		$(document).ready(function() {
+			$failcounter=0;
+			$.ajax({
+				 url: "getlanguage.js",
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					if (typeof data.language != 'undefined') {
+						SetLanguage(data.language);
+					}
+					else {
+						SetLanguage('en');
+					}
+					
+					var $inputs = $('#login :input');
+					$inputs.each(function() {
+						if ($(this).attr("id")!="submit") {
+							$(this).attr("placeholder",$.i18n($(this).attr("placeholder")));
+						}
+						else {
+							$(this).attr("value",$.i18n("Login"));
+						}
+					});
+				 },
+				 error: function(){
+				 }     
+			});
+			
 		});
 	</script>
-
 </head>
 <body>
 <div id="notification" style="display: none;"></div>

@@ -202,6 +202,11 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
 		//&CWebServer::GetInternalCameraSnapshot,	// member function
 		//this ) );			// instance of class
 	
+	m_pWebEm->RegisterPageCode( "/getlanguage.js",
+		boost::bind(
+		&CWebServer::GetLanguage,	// member function
+		this ) );			// instance of class
+	
 
 	m_pWebEm->RegisterActionCode( "storesettings",boost::bind(&CWebServer::PostSettings,this));
 	m_pWebEm->RegisterActionCode( "setrfxcommode",boost::bind(&CWebServer::SetRFXCOMMode,this));
@@ -2273,6 +2278,21 @@ std::string CWebServer::GetDatabaseBackup()
 		}
 	}
 	return m_retstr;
+}
+
+std::string CWebServer::GetLanguage()
+{
+	Json::Value root;
+	root["status"]="ERR";
+	std::string sValue;
+	if (m_pMain->m_sql.GetPreferencesVar("Language", sValue))
+	{
+		root["status"]="OK";
+		root["title"]="GetLanguage";
+		root["language"]=sValue;
+	}
+	m_retstr=root.toStyledString();
+	return m_retstr.c_str();
 }
 
 std::string CWebServer::GetJSonPage()
@@ -5472,6 +5492,35 @@ std::string CWebServer::GetJSonPage()
 				}
 			}
 		}
+		else if (cparam=="logincheck")
+		{
+			std::string tmpusrname=m_pWebEm->FindValue("username");
+			std::string tmpusrpass=m_pWebEm->FindValue("password");
+			if (
+				(tmpusrname=="")||
+				(tmpusrpass=="")
+				)
+				goto exitjson;
+
+			std::string usrname;
+			std::string usrpass;
+			if (request_handler::url_decode(tmpusrname,usrname))
+			{
+				if (request_handler::url_decode(tmpusrpass,usrpass))
+				{
+					usrname=base64_decode(usrname);
+					usrpass=base64_decode(usrpass);
+					int iUser=-1;
+					iUser=FindUser(usrname.c_str());
+					if (iUser==-1)
+						goto exitjson;
+					if (m_users[iUser].Password!=usrpass)
+						goto exitjson;
+					root["status"]="OK";
+					root["title"]="logincheck";
+				}
+			}
+		}
 		else if (cparam=="getnewhistory")
 		{
 			root["status"]="OK";
@@ -5501,6 +5550,17 @@ std::string CWebServer::GetJSonPage()
 		{
 			root["status"]="OK";
 			root["title"]="GetActiveTabs";
+
+			bool bHaveUser=(m_pWebEm->m_actualuser!="");
+			int urights=3;
+			if (bHaveUser)
+			{
+				int iUser=-1;
+				iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+				if (iUser!=-1)
+					urights=(int)m_users[iUser].userrights;
+			}
+			root["statuscode"]=urights;
 
 			int nValue;
 			std::string sValue;
