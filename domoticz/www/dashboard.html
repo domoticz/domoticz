@@ -24,7 +24,7 @@ function RefreshFavorites()
 							id="#dashcontent #scene_" + item.idx;
 							var obj=$(id);
 							if (typeof obj != 'undefined') {
-								if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+								if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 									var status="";
 									if (item.Status == 'Off') {
 										status+='<button class="btn btn-mini" type="button" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);">On</button> ' +
@@ -77,7 +77,7 @@ function RefreshFavorites()
 						id="#dashcontent #light_" + item.idx;
 						var obj=$(id);
 						if (typeof obj != 'undefined') {
-							if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+							if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								var status=TranslateStatus(item.Status) + " ";
 								if (item.SwitchType == "Doorbell") {
 									status+='<img src="images/doorbell.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
@@ -403,7 +403,7 @@ function RefreshFavorites()
 							if ($(id + " #name").html()!=item.Name) {
 								$(id + " #name").html(item.Name);
 							}
-							if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+							if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								var status="";
 								var bHaveBefore=false;
 								if (typeof item.Temp != 'undefined') {
@@ -516,7 +516,7 @@ function RefreshFavorites()
 							if ($(id + " #name").html()!=item.Name) {
 								$(id + " #name").html(item.Name);
 							}
-							if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+							if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								var status="";
 								if (typeof item.Rain != 'undefined') {
 									status=item.Rain + ' mm';
@@ -668,7 +668,7 @@ function RefreshFavorites()
 							if ($(id + " #name").html()!=item.Name) {
 								$(id + " #name").html(item.Name);
 							}
-							if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+							if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								var tmpStatus=TranslateStatus(item.Status);
 								if (item.SubType.indexOf('remote') > 0) {
 									if ((item.Status.indexOf('Arm') >= 0)||(item.Status.indexOf('Panic') >= 0)) {
@@ -759,7 +759,7 @@ function RefreshFavorites()
 							if ($(id + " #name").html()!=item.Name) {
 								$(id + " #name").html(item.Name);
 							}
-							if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+							if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								var status="";
 								if (typeof item.Counter != 'undefined') {
 									if (data.DashboardType==0) {
@@ -941,7 +941,7 @@ function ShowFavorites()
 			if (data.DashboardType==1) {
 				rowItems=4;
 			}
-			if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+			if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 				rowItems=1000;
 			}
 			$.myglobals.DashboardType=data.DashboardType;
@@ -972,7 +972,7 @@ function ShowFavorites()
             if (jj == 0)
             {
               //first time
-              if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+              if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								htmlcontent+='\t    <table class="mobileitem">\n';
 								htmlcontent+='\t    <thead>\n';
 								htmlcontent+='\t    <tr>\n';
@@ -997,7 +997,7 @@ function ShowFavorites()
             }
             
             var xhtm="";
-						if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+						if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 							xhtm+=
 									'\t    <tr id="scene_' + item.idx +'">\n' +
 									'\t      <td id="name">' + item.Name;
@@ -1066,7 +1066,7 @@ function ShowFavorites()
           //close previous devider
           htmlcontent+='</div>\n';
         }
-        if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+        if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 					htmlcontent+='\t    </table>\n';
         }
         
@@ -1083,7 +1083,7 @@ function ShowFavorites()
             if (jj == 0)
             {
               //first time
-              if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+              if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								if (htmlcontent!="") {
 									htmlcontent+='<br>';
 								}
@@ -1111,7 +1111,7 @@ function ShowFavorites()
             }
             
             var xhtm="";
-						if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+						if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 							xhtm+=
 									'\t    <tr id="light_' + item.idx +'">\n' +
 									'\t      <td id="name">' + item.Name;
@@ -1456,7 +1456,7 @@ function ShowFavorites()
           //close previous devider
           htmlcontent+='</div>\n';
         }
-        if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+        if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 					htmlcontent+='\t    </table>\n';
         }
 
@@ -1473,7 +1473,7 @@ function ShowFavorites()
             if (jj == 0)
             {
               //first time
-              if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+              if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								if (htmlcontent!="") {
 									htmlcontent+='<br>';
 								}
@@ -1500,7 +1500,7 @@ function ShowFavorites()
               bHaveAddedDevider=true;
             }
             var xhtm="";
-						if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+						if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 							xhtm+=
 									'\t    <tr id="temp_' + item.idx +'">\n' +
 									'\t      <td id="name">' + item.Name + '</td>\n';
@@ -1623,7 +1623,7 @@ function ShowFavorites()
           //close previous devider
           htmlcontent+='</div>\n';
         }
-        if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+        if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 					htmlcontent+='\t    </table>\n';
         }
 
@@ -1640,7 +1640,7 @@ function ShowFavorites()
             if (jj == 0)
             {
               //first time
-              if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+              if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								if (htmlcontent!="") {
 									htmlcontent+='<br>';
 								}
@@ -1667,7 +1667,7 @@ function ShowFavorites()
               bHaveAddedDevider=true;
             }
             var xhtm="";
-						if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+						if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 							xhtm+=
 									'\t    <tr id="weather_' + item.idx +'">\n' +
 									'\t      <td id="name">' + item.Name + '</td>\n';
@@ -1826,7 +1826,7 @@ function ShowFavorites()
           //close previous devider
           htmlcontent+='</div>\n';
         }
-        if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+        if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 					htmlcontent+='\t    </table>\n';
         }
 
@@ -1840,7 +1840,7 @@ function ShowFavorites()
             if (jj == 0)
             {
               //first time
-              if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+              if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								if (htmlcontent!="") {
 									htmlcontent+='<br>';
 								}
@@ -1867,7 +1867,7 @@ function ShowFavorites()
               bHaveAddedDevider=true;
             }
             var xhtm="";
-						if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+						if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 							xhtm+=
 									'\t    <tr id="security_' + item.idx +'">\n' +
 									'\t      <td id="name">' + item.Name + '</td>\n';
@@ -1948,7 +1948,7 @@ function ShowFavorites()
           //close previous devider
           htmlcontent+='</div>\n';
         }
-        if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+        if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 					htmlcontent+='\t    </table>\n';
         }
         
@@ -1975,7 +1975,7 @@ function ShowFavorites()
             if (jj == 0)
             {
               //first time
-              if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+              if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								if (htmlcontent!="") {
 									htmlcontent+='<br>';
 								}
@@ -2002,7 +2002,7 @@ function ShowFavorites()
               bHaveAddedDevider=true;
             }
             var xhtm="";
-						if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+						if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 							xhtm+=
 									'\t    <tr id="utility_' + item.idx +'">\n' +
 									'\t      <td id="name">' + item.Name + '</td>\n';
@@ -2177,7 +2177,7 @@ function ShowFavorites()
           //close previous devider
           htmlcontent+='</div>\n';
         }
-        if ((data.DashboardType==2)||($.myglobals.ismobile==true)) {
+        if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 					htmlcontent+='\t    </table>\n';
         }
 
@@ -2229,7 +2229,7 @@ function ShowFavorites()
 			if (typeof obj != 'undefined') {
 				var img="";
 				var status="";
-				if (($.myglobals.DashboardType==2)||($.myglobals.ismobile==true)) {
+				if (($.myglobals.DashboardType==2)||(window.myglobals.ismobile==true)) {
 					if (fPercentage==0)
 					{
 						status="Off ";
