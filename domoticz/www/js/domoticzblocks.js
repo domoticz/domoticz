@@ -69,6 +69,9 @@ $.ajax({
 				if (item.Type.toLowerCase().indexOf("temp") >= 0) {
 					temperatures.push([item.Name,item.idx])
 				}
+				if ((item.Type == "RFXSensor") && (item.SubType == "Temperature")) {
+					temperatures.push([item.Name,item.idx])
+				}
 				if (item.Type.toLowerCase().indexOf("hum") >= 0) {
 					humidity.push([item.Name,item.idx])
 				}
