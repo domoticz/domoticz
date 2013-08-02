@@ -7,8 +7,7 @@
 #include "Logger.h"
 #include "../hardware/hardwaretypes.h"
 #include <iostream>
-//#include <boost/lexical_cast.hpp>
-//#include <boost/regex.hpp>
+#include "../httpclient/HTTPClient.h"
 
 #ifdef WIN32
     #include "../main/dirent_windows.h"
@@ -26,13 +25,6 @@ extern std::string szStartupFolder;
 
 CEventSystem::CEventSystem(void)
 {
-	/*
-    m_pLUA=luaL_newstate();
-	if (m_pLUA!=NULL)
-	{
-		luaL_openlibs(m_pLUA);
-	}
-    */
 	m_pMain=NULL;
 	m_stoprequested=false;
 }
@@ -635,6 +627,10 @@ bool CEventSystem::parseBlocklyActions(const std::string Actions, const std::str
                     SendEventNotification(doWhat.substr(0,doWhat.find('#')), doWhat.substr(doWhat.find('#')+1));
                     actionsDone = true;
                 }
+                else if (devNameNoQuotes == "OpenURL") {
+                    OpenURL(doWhat);
+                    actionsDone = true;
+                }
             }
             
         }
@@ -848,6 +844,12 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
                     SendEventNotification(luaString.substr(0,luaString.find('#')), luaString.substr(luaString.find('#')+1));
                     scriptTrue = true;
                 }
+                else if (std::string(lua_tostring(lua_state, -2))== "OpenURL")
+				{
+                    std::string luaString = lua_tostring(lua_state, -1);
+                    OpenURL(luaString);
+                    scriptTrue = true;
+                }
                 else
 				{
                     if (ScheduleEvent(lua_tostring(lua_state, -2),lua_tostring(lua_state, -1),filename)) {
@@ -891,6 +893,18 @@ void CEventSystem::report_errors(lua_State *L, int status)
 void CEventSystem::SendEventNotification(const std::string Subject, const std::string Body)
 {
     m_pMain->m_sql.SendNotificationEx(Subject,Body);
+}
+
+void CEventSystem::OpenURL(const std::string URL)
+{
+    _log.Log(LOG_NORM,"Fetching url: %s",URL.c_str());
+    std::string sResult;
+	bool ret=HTTPClient::GET(URL,sResult);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR,"Error opening url: %s",URL.c_str());
+	}
+    // maybe do something with sResult in the future.
 }
 
 bool CEventSystem::ScheduleEvent(std::string deviceName, std::string Action, const std::string eventName)

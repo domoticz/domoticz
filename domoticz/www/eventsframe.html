@@ -350,6 +350,12 @@
 	        	var setString = 'commandArray["SendNotification"]="'+sTT+'$'+bTT+'"';
 	        	setArray.push(setString);		      	
 		    }
+		    else if ($(this).attr('type') == 'open_url') {
+		    	var urlBlock = $(this).find("value[name='urlToOpen']")[0];
+		    	var urlText = $(urlBlock).find("title[name='TEXT']")[0];
+		    	var setString = 'commandArray["OpenURL"]="'+$(urlText).text()+'"';
+	        	setArray.push(setString);		      	
+		    }
 		  });
 		  var conditionArray = [];
 		  conditionArray.push(boolString);
@@ -595,6 +601,9 @@
    		<category name="Messages">
    			<block type="send_notification"></block>
    			<block type="text"></block>
+   			<block type="open_url"></block>
+   			<block type="url_text"></block>
+   	
    		</category>
    		<category name="Security">
    			<block type="security_status"></block>

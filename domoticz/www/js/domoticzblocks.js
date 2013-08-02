@@ -551,6 +551,41 @@ Blockly.Language.send_notification = {
   }
 };
 
+Blockly.Language.open_url = {
+  // Comparison operator.
+  init: function() {
+    this.setColour(120);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.appendValueInput('urlToOpen')
+    	.appendTitle("Open url:");
+    this.setInputsInline(true);
+    this.setTooltip(Blockly.DOMOTICZ_LOGIC_OPENURL_TOOLTIP);
+
+  }
+};
+
+Blockly.Language.url_text = {
+  // Text value.
+  init: function() {
+    this.setColour(160);
+    this.appendDummyInput()
+        .appendTitle("http://")
+        .appendTitle(new Blockly.FieldTextInput('',this.URLValidator), 'TEXT')
+       this.setOutput(true, 'String');
+    this.setTooltip(Blockly.DOMOTICZ_LOGIC_URL_TEXT_TOOLTIP);
+  }
+};
+
+Blockly.Language.url_text.URLValidator = function(text) {
+  if (text.substr(0, 7).toLowerCase() == "http://") {
+  	text = text.substr(7);
+  }
+  return text; 
+ 
+};
+
+
 Blockly.Language.security_status = {
   // Variable getter.
   init: function() {
