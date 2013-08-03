@@ -42,7 +42,7 @@ Version 1.0.xxx (July xxth 2013)
 - Implemented: Solar Radiation Sensor (for example from Weather Underground)
 - Implemented: Dummy hardware device, that does nothing, but can be used for virtual switches
 - Implemented: Login page (solves the caching problems)
-- Fixed: Viewer now do not see the add sensor/switch buttons
+- Fixed: buttons add sensor/switch buttons now hidden for 'viewer' users
 
 Version 1.0.762 (July 1th 2013)
 - Changed: Motion Sensors, Off delay now sends 'Off' to Lighting 1/6 devices, and 'No Motion' to X10 motion sensors
