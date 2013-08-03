@@ -172,6 +172,7 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_PushOn, "Push On Button" },
 		{ STYPE_PushOff, "Push Off Button" },
 		{ STYPE_DoorLock, "Door Lock" },
+        { STYPE_Dusk, "Dusk Sensor" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, sType);

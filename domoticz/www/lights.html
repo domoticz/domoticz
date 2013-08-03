@@ -1198,6 +1198,16 @@ function RefreshLights()
 											img='<img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
 							}
             }
+            else if (item.SwitchType == "Dusk Sensor") {
+							if (
+									(item.Status == 'On')
+								 ) {
+											img='<img src="images/uvdark.png" title="' + $.i18n("Nighttime") +'"  height="48">';
+							}
+							else {
+											img='<img src="images/uvsunny.png" title="' + $.i18n("Daytime") +'"  height="48">';
+							}
+            }            
             else if (item.SwitchType == "Motion Sensor") {
 							if (
 									(item.Status == 'On')||
@@ -1459,6 +1469,16 @@ function ShowLights()
                     xhtm+='\t      <td id="img"><img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
             }
 					}
+					else if (item.SwitchType == "Dusk Sensor") {
+					bAddTimer=false;
+            if (item.Status == 'On')
+                {
+                    xhtm+='\t      <td id="img"><img src="images/uvdark.png" title="' + $.i18n("Nighttime") +'  height="48"></td>\n';
+            }
+            else {
+                    xhtm+='\t      <td id="img"><img src="images/uvsunny.png" title="' + $.i18n("Daytime") + '  height="48"></td>\n';
+            }
+					}					
 					else if (item.SwitchType == "Motion Sensor") {
             if (
                 (item.Status == 'On')||

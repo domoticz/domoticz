@@ -183,6 +183,15 @@ function RefreshFavorites()
 									}
 									status="<label id=\"statustext\">" + item.Status + "</label> <label id=\"dimimage\">" + img + "</label>";
 								}
+								else if (item.SwitchType == "Dusk Sensor") {
+									if (item.Status == 'On')
+									{
+												status+='<img src="images/uvdark.png" height="16">';
+									}
+									else {
+												status+='<img src="images/uvsunny.png" height="16">';
+									}
+								}
 								else if (item.SwitchType == "Motion Sensor") {
 									if (
 											(item.Status == 'On')||
@@ -194,6 +203,16 @@ function RefreshFavorites()
 									}
 									else {
 												status+='<img src="images/motionoff.png" height="16">';
+									}
+								}
+								else if (item.SwitchType == "Dusk Sensor") {
+									if (
+											(item.Status == 'On')
+										 ) {
+												status+='<img src="images/uvdark.png" height="16">';
+									}
+									else {
+												status+='<img src="images/uvsunny.png" height="16">';
 									}
 								}
 								else if (item.SwitchType == "Smoke Detector") {
@@ -327,6 +346,16 @@ function RefreshFavorites()
 									}
 									else {
 												img='<img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+									}
+								}
+								else if (item.SwitchType == "Dusk Sensor") {
+									if (
+											(item.Status == 'On')
+										 ) {
+												img='<img src="images/uvdark.png" height="40">';
+									}
+									else {
+												img='<img src="images/uvsunny.png" height="40">';
 									}
 								}
 								else if (item.SwitchType == "Motion Sensor") {
@@ -1222,6 +1251,15 @@ function ShowFavorites()
 								}
 								status="<label id=\"statustext\">" + item.Status + "</label> <label id=\"dimimage\">" + img + "</label>";
 							}
+							else if (item.SwitchType == "Dusk Sensor") {
+								if (item.Status == 'On')
+								{
+											status+='<img src="images/uvdark.png" height="16">';
+								}
+								else {
+											status+='<img src="images/uvsunny.png" height="16">';
+								}
+							}
 							else if (item.SwitchType == "Motion Sensor") {
 								if (
 										(item.Status == 'On')||
@@ -1397,6 +1435,15 @@ function ShowFavorites()
 								}
 								else {
 											xhtm+='\t      <td id="img"><img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								}
+							}
+							else if (item.SwitchType == "Dusk Sensor") {
+								if (item.Status == 'On')
+								{
+											xhtm+='\t      <td id="img"><img src="images/uvdark.png" height="40"></td>\n';
+								}
+								else {
+											xhtm+='\t      <td id="img"><img src="images/uvsunny.png" height="40"></td>\n';
 								}
 							}
 							else if (item.SwitchType == "Motion Sensor") {
