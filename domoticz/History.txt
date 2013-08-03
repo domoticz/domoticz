@@ -1,4 +1,8 @@
-Version 1.0.xxx (July xxth 2013)
+Version 1.0.xxx (August xxth 2013)
+- Implemented: Login page (solves the caching problems)
+- Fixed: buttons add sensor/switch buttons now hidden for 'viewer' users
+
+Version 1.0.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)
 - Fixed: Z-Wave, Wattage scale factor was not initialized
 - Implemented: Application settings, mobile view (mobile, or as normal dashboard), iPhone will always be mobile theme
@@ -41,8 +45,6 @@ Version 1.0.xxx (July xxth 2013)
 - Implemented: Temperature tab, translated speed,gust and chill
 - Implemented: Solar Radiation Sensor (for example from Weather Underground)
 - Implemented: Dummy hardware device, that does nothing, but can be used for virtual switches
-- Implemented: Login page (solves the caching problems)
-- Fixed: buttons add sensor/switch buttons now hidden for 'viewer' users
 
 Version 1.0.762 (July 1th 2013)
 - Changed: Motion Sensors, Off delay now sends 'Off' to Lighting 1/6 devices, and 'No Motion' to X10 motion sensors
