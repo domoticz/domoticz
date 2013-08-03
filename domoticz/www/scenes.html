@@ -1055,7 +1055,9 @@ function ShowScenes()
   var htmlcontent = '';
   var bHaveAddedDevider = false;
 
-  var tophtm=
+  var tophtm="";
+  if (window.my_config.userrights==2) {
+	tophtm+=
         '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
         '\t<tr>\n' +
         '\t  <td align="right">\n' +
@@ -1063,6 +1065,7 @@ function ShowScenes()
         '\t  </td>\n' +
         '\t</tr>\n' +
         '\t</table>\n';
+  }
 
   var i=0;
 	var j=0;

@@ -1293,11 +1293,9 @@ function EnableDisableTabs()
 			var urights=data.statuscode;
 			if (urights!=3) {
 				$("#dLogout").show();
-				$("#mLogout").show();
 			}
 			else {
 				$("#dLogout").hide();
-				$("#mLogout").hide();
 			}
 			
 			$.myglobals.ismobileint=false;
