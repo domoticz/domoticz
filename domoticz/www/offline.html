@@ -1,0 +1,176 @@
+<!DOCTYPE HTML>
+<html manifest="html5.appcache"> 
+<head>
+	<meta charset="UTF-8">
+	<title>Domoticz Offline</title>
+	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=0" /> 
+<style>
+html, body
+{
+    height: 100%;
+}
+
+body
+{
+    font: 12px 'Lucida Sans Unicode', 'Trebuchet MS', Arial, Helvetica;    
+    margin: 0;
+	background: #202020 url(css/images/img01.jpg) repeat;
+}
+
+#offline
+{
+    background-color: #fff;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+    background-image: -webkit-linear-gradient(top, #fff, #eee);
+    background-image: -moz-linear-gradient(top, #fff, #eee);
+    background-image: -ms-linear-gradient(top, #fff, #eee);
+    background-image: -o-linear-gradient(top, #fff, #eee);
+    background-image: linear-gradient(top, #fff, #eee);  
+    height: 50px;
+    width: 300px;
+    margin: -150px 0 0 -180px;
+    padding: 30px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 0;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;  
+}
+
+#offline:before
+{
+    content: '';
+    position: absolute;
+    z-index: -1;
+    border: 1px dashed #ccc;
+    top: 5px;
+    bottom: 5px;
+    left: 5px;
+    right: 5px;
+    -moz-box-shadow: 0 0 0 1px #fff;
+    -webkit-box-shadow: 0 0 0 1px #fff;
+    box-shadow: 0 0 0 1px #fff;
+}
+
+h1
+{
+    text-transform: uppercase;
+    text-align: center;
+    color: #666;
+    margin: 0 0 30px 0;
+    letter-spacing: 4px;
+    font: normal 26px/1 Verdana, Helvetica;
+    position: relative;
+}
+
+h1:after, h1:before
+{
+    background-color: #777;
+    content: "";
+    height: 1px;
+    position: absolute;
+    top: 15px;
+    width: 60px;   
+}
+
+h1:after
+{ 
+    background-image: -webkit-gradient(linear, left top, right top, from(#777), to(#fff));
+    background-image: -webkit-linear-gradient(left, #777, #fff);
+    background-image: -moz-linear-gradient(left, #777, #fff);
+    background-image: -ms-linear-gradient(left, #777, #fff);
+    background-image: -o-linear-gradient(left, #777, #fff);
+    background-image: linear-gradient(left, #777, #fff);      
+    right: 0;
+}
+
+h1:before
+{
+    background-image: -webkit-gradient(linear, right top, left top, from(#777), to(#fff));
+    background-image: -webkit-linear-gradient(right, #777, #fff);
+    background-image: -moz-linear-gradient(right, #777, #fff);
+    background-image: -ms-linear-gradient(right, #777, #fff);
+    background-image: -o-linear-gradient(right, #777, #fff);
+    background-image: linear-gradient(right, #777, #fff);
+    left: 0;
+}
+</style>
+
+	<script src="js/jquery-1.9.1.min.js"></script>
+	<script src="js/jquery.i18n.js"></script>
+	<script src="js/jquery.i18n.messages.js"></script>
+	<script src="js/jquery.i18n.fallbacks.js"></script>
+	<script src="js/jquery.i18n.parser.js"></script>
+	<script src="js/jquery.i18n.emitter.js"></script>
+	<script src="js/jquery.i18n.language.js"></script>
+	<script src="js/domoticz.js"></script>
+ 
+	<link rel="localization" hreflang="de" href="i18n/domoticz-de.json" type="application/l10n+json"/>
+	<link rel="localization" hreflang="en" href="i18n/domoticz-en.json" type="application/l10n+json"/>
+	<link rel="localization" hreflang="es" href="i18n/domoticz-es.json" type="application/l10n+json"/>
+	<link rel="localization" hreflang="fr" href="i18n/domoticz-fr.json" type="application/l10n+json"/>
+	<link rel="localization" hreflang="nl" href="i18n/domoticz-nl.json" type="application/l10n+json"/>
+	<link rel="localization" hreflang="it" href="i18n/domoticz-it.json" type="application/l10n+json"/>  
+	<script type="text/javascript">
+
+function logEvent(event) {
+  
+}
+
+if (window.applicationCache) {
+	window.applicationCache.addEventListener('checking',logEvent,false);
+	window.applicationCache.addEventListener('noupdate',logEvent,false);
+	window.applicationCache.addEventListener('progress',logEvent,false);
+	window.applicationCache.addEventListener('cached',logEvent,false);
+	window.applicationCache.addEventListener('updateready',logEvent,false);
+	window.applicationCache.addEventListener('obsolete',logEvent,false);
+	window.applicationCache.addEventListener('error',logEvent,false);
+}
+	
+		$(document).ready(function() {
+			$.ajax({
+				 url: "getlanguage.js",
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					if (typeof data.language != 'undefined') {
+						SetLanguage(data.language);
+					}
+					else {
+						SetLanguage('en');
+					}
+				 },
+				 error: function(){
+				 }     
+			});
+			
+			if (window.applicationCache) {
+				window.applicationCache.addEventListener('downloading', function(e)
+				{
+					window.parent.NotifyCacheRefresh();
+				}, false);
+				window.applicationCache.addEventListener('updateready', function(e) 
+				{
+						if (window.applicationCache.status == window.applicationCache.UPDATEREADY) 
+						{
+								// Browser downloaded a new app cache.
+								// Swap it in and reload the page to get the new hotness.
+								window.applicationCache.swapCache();
+								window.parent.RefreshMain();
+								window.location.reload();
+						}
+				}, false);
+			}
+			
+			$('#offline').i18n();
+		});
+	</script>
+</head>
+<body>
+<div id="offline">
+    <h1 data-i18n="Domoticz Offline">Domoticz Offline</h1>
+</div>
+</body>
+</html>
