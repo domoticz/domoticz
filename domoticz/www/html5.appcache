@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 259
+# ref 262
 
 CACHE:
 favicon.ico
@@ -303,6 +303,7 @@ i18n/domoticz-it.json
 NETWORK:
 index.html
 login.html
+offlines.html
 cam.html
 dashboard.html
 devices.html
@@ -320,3 +321,7 @@ weather.html
 json.htm
 secpanel/index.html
 *
+
+# Fallback content
+FALLBACK:
+/ offline.html

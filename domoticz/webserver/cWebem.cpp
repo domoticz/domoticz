@@ -1120,12 +1120,17 @@ void cWebemRequestHandler::send_authorization_page(reply& rep)
 			rep.content.append(buf, (unsigned int)is.gcount());
 
 	}
-	rep.headers.resize(2);
+	rep.headers.resize(4);
 	rep.headers[0].name = "Content-Length";
 	rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
 	rep.headers[1].name = "Content-Type";
 	rep.headers[1].value = mime_types::extension_to_type("html");
 	rep.headers[1].value += ";charset=UTF-8";
+
+	rep.headers[2].name = "Cache-Control";
+	rep.headers[2].value= "no-cache, must-revalidate";
+	rep.headers[3].name = "Expires";
+	rep.headers[3].value= "Sat, 26 Jul 1997 05:00:00 GMT";
 }
 
 void cWebemRequestHandler::check_cookie(const request& req, reply& rep)

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html manifest="html5.appcache">
+<html> 
 <head>
 		<meta charset="utf-8">
 		<title>Domoticz</title>
@@ -89,6 +89,16 @@
 
 function logEvent(event) {
   //console.log(event.type);
+}
+
+function NotifyCacheRefresh()
+{
+	generate_noty('information', '<b>' + $.i18n('Browser Cache is being refreshed') + '...</b><br>' + $.i18n('Please standby') + '...', 5000);
+}
+
+function RefreshMain()
+{
+	window.location.reload();
 }
 
 function CheckForUpdate(showdialog) {
@@ -460,6 +470,7 @@ $(document).ready(function() {
 									<p>&copy; 2012-2013 Domoticz | WWW: <a href="http://domoticz.com/">Domoticz.com</a></p>
 							</div>
 					</div> <!-- /container -->
-				</div>
+		</div>
+		<iframe src="/offline.html" style="display: none;"></iframe>
     </body>
 </html>
