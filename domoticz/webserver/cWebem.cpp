@@ -1106,7 +1106,8 @@ void cWebemRequestHandler::send_authorization_request(reply& rep)
 
 void cWebemRequestHandler::send_authorization_page(reply& rep)
 {
-	std::ifstream is("www/login.html", std::ios::in | std::ios::binary);
+	std::string loginpage=doc_root_ + "/login.html";
+	std::ifstream is(loginpage.c_str(), std::ios::in | std::ios::binary);
 	if (!is)
 	{
 		rep = reply::stock_reply(reply::not_found);

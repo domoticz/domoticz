@@ -42,12 +42,12 @@ public:
   /// Perform URL-decoding on a string. Returns false if the encoding was
   /// invalid.
   static bool url_decode(const std::string& in, std::string& out);
-
+  
+  /// The directory containing the files to be served.
+  std::string doc_root_;
 private:
 	// Webem link to application code
 	cWebem* myWebem;
-	  /// The directory containing the files to be served.
-	  std::string doc_root_;
 	  //zip support
 #ifndef WEBSERVER_DONT_USE_ZIP
 	  zlib_filefunc_def m_ffunc;
