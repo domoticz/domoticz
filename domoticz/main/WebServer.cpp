@@ -8486,7 +8486,7 @@ std::string CWebServer::GetJSonPage()
                 }
                 else {
                     const Json::Value array = jsonRoot["eventlogic"];
-                    for(size_t index=0; index<array.size();++index) 
+                    for(int index=0; index<array.size();++index) 
 					{
                         std::string conditions = array[index].get("conditions","").asString();
                         std::string actions = array[index].get("actions","").asString();
