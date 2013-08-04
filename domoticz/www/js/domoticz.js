@@ -1293,6 +1293,7 @@ function EnableDisableTabs()
 			var urights=data.statuscode;
 			if (urights!=3) {
 				$("#dLogout").show();
+				$("#cLogout").attr("title",$.i18n("Logout"));
 			}
 			else {
 				$("#dLogout").hide();
