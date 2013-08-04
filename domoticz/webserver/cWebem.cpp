@@ -1005,6 +1005,34 @@ int cWebemRequestHandler::authorize(const request& req)
 	return 0;
 }
 
+//Returns true is the connected host is in the local network
+bool cWebemRequestHandler::AreWeInLocalNetwork(const request& req)
+{
+	//check if in local network(s)
+
+	if (myWebem->m_localnetworks.size()==0)
+		return false;
+
+	const char *host_header;
+	if ((host_header = request::get_req_header(&req, "Host")) != NULL)
+	{
+		std::string host=host_header;
+		int pos=host.find_first_of(":");
+		if (pos!=std::string::npos)
+			host=host.substr(0,pos);
+		std::vector<std::string>::const_iterator itt;
+		for (itt=myWebem->m_localnetworks.begin(); itt!=myWebem->m_localnetworks.end(); ++itt)
+		{
+			std::string network=*itt;
+			if (host.compare(0, network.length(), network) == 0)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 // Return 1 if request is authorized, 0 otherwise.
 int cWebemRequestHandler::check_authorization(const request& req)
 {
@@ -1013,6 +1041,8 @@ int cWebemRequestHandler::check_authorization(const request& req)
 	if (myWebem->m_userpasswords.size()==0)
 		return 1;//no username/password
 
+	if (AreWeInLocalNetwork(req))
+		return 1;//we are in the local network, no authentication needed
 
 	const char* cookie_header = request::get_req_header(&req, "Cookie");
 	if (cookie_header!=NULL)
@@ -1060,31 +1090,6 @@ int cWebemRequestHandler::check_authorization(const request& req)
 			}
 		}
 	}
-
-
-	//check if in local network(s)
-	const char *host_header;
-	bool doAuthorize=true;
-	if ((host_header = request::get_req_header(&req, "Host")) != NULL)
-	{
-		std::string host=host_header;
-		int pos=host.find_first_of(":");
-		if (pos!=std::string::npos)
-			host=host.substr(0,pos);
-		std::vector<std::string>::const_iterator itt;
-		for (itt=myWebem->m_localnetworks.begin(); itt!=myWebem->m_localnetworks.end(); ++itt)
-		{
-			std::string network=*itt;
-			if (host.compare(0, network.length(), network) == 0)
-			{
-				doAuthorize=false;
-				break;
-			}
-		}
-	}
-	if (!doAuthorize)
-		return 1;
-
 	return authorize(req);
 }
 
@@ -1136,6 +1141,11 @@ void cWebemRequestHandler::send_authorization_page(reply& rep)
 
 void cWebemRequestHandler::check_cookie(const request& req, reply& rep)
 {
+	if (AreWeInLocalNetwork(req))
+		return;
+	if (myWebem->m_actualuser.size()==0)
+		return;
+
 	if (myWebem->m_userpasswords.size()>0)
 	{
 		if (rep.headers[1].value.find("text/html")!=std::string::npos)

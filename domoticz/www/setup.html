@@ -698,8 +698,7 @@ function StoreSettings(formname)
   }
   
 	$.post("storesettings.webem", $("#settings").serialize(), function(data) {
-		EnableDisableTabs();
-		SwitchLayout('Dashboard');
+		window.location = '/';
 	});
 }
 

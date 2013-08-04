@@ -552,12 +552,13 @@ char * CWebServer::PostSettings()
 		WebUserName="";
 		WebPassword="";
 	}
+	WebUserName=base64_encode((const unsigned char*)WebUserName.c_str(),WebUserName.size());
+	WebPassword=base64_encode((const unsigned char*)WebPassword.c_str(),WebPassword.size());
+	m_pMain->m_sql.UpdatePreferencesVar("WebUserName",WebUserName.c_str());
+	m_pMain->m_sql.UpdatePreferencesVar("WebPassword",WebPassword.c_str());
+	m_pMain->m_sql.UpdatePreferencesVar("WebLocalNetworks",WebLocalNetworks.c_str());
+
 	LoadUsers();
-	if ((WebUserName!="")&&(WebPassword!="")) {
-		AddUser(10000,WebUserName,WebPassword, URIGHTS_ADMIN);
-		WebUserName=base64_encode((const unsigned char*)WebUserName.c_str(),WebUserName.size());
-		WebPassword=base64_encode((const unsigned char*)WebPassword.c_str(),WebPassword.size());
-	}
 	m_pWebEm->ClearLocalNetworks();
 	std::vector<std::string> strarray;
 	StringSplit(WebLocalNetworks, ";", strarray);
@@ -571,9 +572,6 @@ char * CWebServer::PostSettings()
 		m_pWebEm->AddLocalNetworks(network);
 	}
 
-	m_pMain->m_sql.UpdatePreferencesVar("WebUserName",WebUserName.c_str());
-	m_pMain->m_sql.UpdatePreferencesVar("WebPassword",WebPassword.c_str());
-	m_pMain->m_sql.UpdatePreferencesVar("WebLocalNetworks",WebLocalNetworks.c_str());
 
 	std::string SecPassword=m_pWebEm->FindValue("SecPassword");
 	SecPassword=CURLEncode::URLDecode(SecPassword);
@@ -8488,13 +8486,13 @@ std::string CWebServer::GetJSonPage()
                 }
                 else {
                     const Json::Value array = jsonRoot["eventlogic"];
-                   
-                    for(int index=0; index<array.size();++index) {
-                        
+                    for(size_t index=0; index<array.size();++index) 
+					{
                         std::string conditions = array[index].get("conditions","").asString();
                         std::string actions = array[index].get("actions","").asString();
                         
-                        if (actions.find("SendNotification")!= std::string::npos) {
+                        if (actions.find("SendNotification")!= std::string::npos) 
+						{
                             actions = stdreplace(actions, "$", "#");
                         }
                         int sequenceNo = index+1;
