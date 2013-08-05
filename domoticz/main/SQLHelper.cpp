@@ -766,6 +766,11 @@ bool CSQLHelper::OpenDatabase()
 	}
 	SetUnitsAndScale();
 
+	if (!GetPreferencesVar("AuthenticationMethod", nValue))
+	{
+		UpdatePreferencesVar("AuthenticationMethod", 0);//AUTH_LOGIN=0, AUTH_BASIC=1
+	}
+
 	//Start background thread
 	if (!StartThread())
 		return false;

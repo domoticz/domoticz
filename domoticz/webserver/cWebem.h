@@ -12,6 +12,11 @@ namespace http {
 			URIGHTS_SWITCHER,
 			URIGHTS_ADMIN
 		};
+		enum _eAuthenticationMethod
+		{
+			AUTH_LOGIN=0,
+			AUTH_BASIC,
+		};
 		typedef struct _tWebUserPassword
 		{
 			unsigned long ID;
@@ -143,6 +148,8 @@ namespace http {
 			bool HasParams() { return (myNameValues.size()>0); };
 
 			bool CheckForPageOverride( const request& req, reply& rep);
+			
+			void SetAuthenticationMethod(const _eAuthenticationMethod amethod);
 
 			void AddUserPassword(const unsigned long ID, const std::string username, const std::string password, const _eUserRights userrights);
 			void ClearUserPasswords();
@@ -159,6 +166,8 @@ namespace http {
 			std::string m_outputfilename;
 			std::map<time_t,WebEmSession> m_sessionids;
 			time_t m_actsessionid;
+			_eAuthenticationMethod m_authmethod;
+			bool m_bForceRelogin;
 		private:
 			/// store map between include codes and application functions
 			std::map < std::string, webem_include_function > myIncludes;
@@ -178,8 +187,6 @@ namespace http {
 			server myServer;
 			/// port server is listening on
 			std::string myPort;
-
-
 		};
 
 	}

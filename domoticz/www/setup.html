@@ -109,6 +109,14 @@
 				<td align="right" style="width:60px"><label><span data-i18n="Password"></span>: </label></td>
 				<td><input type="password" id="WebPassword" name="WebPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 			</tr>
+			<tr>
+				<td align="right" style="width:60px"><label><span data-i18n="Authentication"></span>: </label></td>
+				<td><select id="comboauthmethod" name="AuthenticationMethod" style="width:140px" class="combobox ui-corner-all">
+					<option data-i18n="Login Page" value="0">Login Page</option>
+					<option data-i18n="Basic-Auth" value="1">Basic-Auth</option>
+				</select></td>
+			</tr>
+			
 			</table>
 			<br>
 			<h2><span data-i18n="SecPanelProtection">Security Panel</span>:</h2>
@@ -648,6 +656,9 @@ function ShowSettings()
       }
       if (typeof data.Language != 'undefined') {
         $("#languagetable #combolanguage").val(data.Language);
+      }
+      if (typeof data.AuthenticationMethod != 'undefined') {
+        $("#webtable #comboauthmethod").val(data.AuthenticationMethod);
       }
      }
   });

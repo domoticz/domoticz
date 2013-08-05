@@ -462,6 +462,12 @@ bool MainWorker::StartThread()
         return false;
 	}
 	_log.Log(LOG_NORM,"Webserver started on port: %s", m_webserverport.c_str());
+	int nValue=0;
+	if (m_sql.GetPreferencesVar("AuthenticationMethod", nValue))
+	{
+		m_webserver.SetAuthenticationMethod(nValue);
+	}
+
 
 	m_cameras.SetMainWorker(this);
 

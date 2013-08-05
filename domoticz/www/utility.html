@@ -3008,7 +3008,7 @@ function ShowSmartLog(id,name,switchtype)
 						'Gas': 'm3',
 						'Water': 'm3'
 					}[this.series.name];
-                    return $.i18n(Highcharts.dateFormat('%A',this.x)) + ' ' + Highcharts.dateFormat('%Y-%m-%d', this.x) + '<br/>' + this.series.name + ': ' + this.y + ' ' + unit;
+                    return $.i18n(Highcharts.dateFormat('%A',this.x)) + ' ' + Highcharts.dateFormat('%Y-%m-%d', this.x) + '<br/>' + this.series.name + ': ' + this.y.toFixed(2) + ' ' + unit;
             }
         },
         plotOptions: {
@@ -3091,7 +3091,7 @@ function ShowSmartLog(id,name,switchtype)
 						'Gas': 'm3',
 						'Water': 'm3'
 					}[this.series.name];
-                    return $.i18n(Highcharts.dateFormat('%A',this.x)) + ' ' + Highcharts.dateFormat('%Y-%m-%d', this.x) + '<br/>' + this.series.name + ': ' +  this.y + ' ' + unit;
+                    return $.i18n(Highcharts.dateFormat('%A',this.x)) + ' ' + Highcharts.dateFormat('%Y-%m-%d', this.x) + '<br/>' + this.series.name + ': ' +  this.y.toFixed(2) + ' ' + unit;
             }
         },
         plotOptions: {

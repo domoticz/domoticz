@@ -225,6 +225,13 @@ void CWebServer::StopServer()
 	m_pWebEm->Stop();
 }
 
+void CWebServer::SetAuthenticationMethod(int amethod)
+{
+	if (m_pWebEm==NULL)
+		return;
+	m_pWebEm->SetAuthenticationMethod((_eAuthenticationMethod)amethod);
+}
+
 char * CWebServer::DisplayVersion()
 {
 	m_retstr=szAppVersion;
@@ -527,6 +534,12 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.m_tempunit=(_eTempUnit)nUnit;
 */
 	m_pMain->m_sql.SetUnitsAndScale();
+
+	std::string AuthenticationMethod=m_pWebEm->FindValue("AuthenticationMethod");
+	_eAuthenticationMethod amethod=(_eAuthenticationMethod)atoi(AuthenticationMethod.c_str());
+	m_pMain->m_sql.UpdatePreferencesVar("AuthenticationMethod",(int)amethod);
+	m_pWebEm->SetAuthenticationMethod(amethod);
+	
 
 	std::string LightHistoryDays=m_pWebEm->FindValue("LightHistoryDays");
 	m_pMain->m_sql.UpdatePreferencesVar("LightHistoryDays",atoi(LightHistoryDays.c_str()));
@@ -8486,7 +8499,7 @@ std::string CWebServer::GetJSonPage()
                 }
                 else {
                     const Json::Value array = jsonRoot["eventlogic"];
-                    for(int index=0; index<array.size();++index) 
+                    for(int index=0; index<(int)array.size();++index) 
 					{
                         std::string conditions = array[index].get("conditions","").asString();
                         std::string actions = array[index].get("actions","").asString();
@@ -8740,6 +8753,10 @@ std::string CWebServer::GetJSonPage()
 				else if (Key=="TempUnit")
 				{
 					root["TempUnit"]=nValue;
+				}
+				else if (Key=="AuthenticationMethod")
+				{
+					root["AuthenticationMethod"]=nValue;
 				}
 			}
 		}

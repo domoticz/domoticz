@@ -45,6 +45,7 @@ public:
 	void ClearUserPasswords();
 	bool FindAdminUser();
 	int FindUser(const char* szUserName);
+	void SetAuthenticationMethod(int amethod);
 	std::vector<_tWebUserPassword> m_users;
 
 private:

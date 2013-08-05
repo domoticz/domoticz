@@ -42,6 +42,8 @@ myServer( address, port, myRequestHandler )
 	m_DigistRealm = "Domoticz.com";
 	m_zippassword = "";
 	m_actsessionid=0;
+	m_authmethod=AUTH_LOGIN;
+	m_bForceRelogin=false;
 }
 
 /**
@@ -57,6 +59,12 @@ If application needs to continue, start new thread with call to this method.
 void cWebem::Run() { myServer.run(); }
 
 void cWebem::Stop() { myServer.stop(); }
+
+
+void cWebem::SetAuthenticationMethod(const _eAuthenticationMethod amethod)
+{
+	m_authmethod=amethod;
+}
 
 /**
 
@@ -1071,6 +1079,7 @@ int cWebemRequestHandler::check_authorization(const request& req)
 					)
 				{
 					myWebem->m_sessionids.erase(itt);
+					myWebem->m_bForceRelogin=true;
 				} 
 				else
 				{
@@ -1210,8 +1219,9 @@ void cWebemRequestHandler::check_cookie(const request& req, reply& rep)
 
 void cWebemRequestHandler::handle_request( const request& req, reply& rep)
 {
-	if (!check_authorization(req)) 
+	if ((!check_authorization(req))||(myWebem->m_bForceRelogin))
 	{
+		myWebem->m_bForceRelogin=false;
 		if (m_failcounter==4)
 		{
 			m_failcounter=0;
@@ -1220,13 +1230,19 @@ void cWebemRequestHandler::handle_request( const request& req, reply& rep)
 		}
 		else
 		{
-			if ((req.uri.find(".htm")!=std::string::npos)||(req.uri.find("#")!=std::string::npos)||(req.uri.find(".")==std::string::npos))
+			if (myWebem->m_authmethod==AUTH_LOGIN)
 			{
-				send_authorization_page(rep);
+				if ((req.uri.find(".htm")!=std::string::npos)||(req.uri.find("#")!=std::string::npos)||(req.uri.find(".")==std::string::npos))
+				{
+					send_authorization_page(rep);
+					return;
+				}
+			}
+			else
+			{
+				send_authorization_request(rep);
 				return;
 			}
-//			send_authorization_request(rep);
-	//		return;
 		}
 	}
 
