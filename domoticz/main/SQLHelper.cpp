@@ -3003,7 +3003,7 @@ void CSQLHelper::UpdateMeter()
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
 
-	sprintf(szTmp,"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
+	sprintf(szTmp,"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
 		pTypeRFXMeter,
 		pTypeP1Gas,
 		pTypeYouLess,
@@ -3012,9 +3012,10 @@ void CSQLHelper::UpdateMeter()
 		pTypeUsage,
         pTypeRego6XXValue,sTypeRego6XXCounter,
 		pTypeLux,
-		pTypeMoisture,
 		pTypeGeneral,sTypeVisibility,
-		pTypeGeneral,sTypeSolarRadiation
+		pTypeGeneral,sTypeSolarRadiation,
+		pTypeGeneral,sTypeSoilMoisture,
+		pTypeGeneral,sTypeLeafWetness
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -3086,7 +3087,7 @@ void CSQLHelper::UpdateMeter()
 				CheckAndHandleNotification(hardwareID, DeviceID, Unit, dType, dSubType, NTYPE_USAGE, (float)nValue);
 				bSkipSameValue=false;
 			}
-			else if (dType==pTypeMoisture)
+			else if ((dType==pTypeGeneral)&&((dSubType==sTypeSoilMoisture)||(dSubType==sTypeLeafWetness)))
 			{
 				sprintf(szTmp,"%d",nValue);
 				sValue=szTmp;
@@ -3582,9 +3583,10 @@ void CSQLHelper::AddCalendarUpdateMeter()
 
 			if (
 				(devType!=pTypeAirQuality)&&
-				(devType!=pTypeMoisture)&&
 				(!((devType==pTypeGeneral)&&(subType==sTypeVisibility)))&&
 				(!((devType==pTypeGeneral)&&(subType==sTypeSolarRadiation)))&&
+				(!((devType==pTypeGeneral)&&(subType==sTypeSoilMoisture)))&&
+				(!((devType==pTypeGeneral)&&(subType==sTypeLeafWetness)))&&
 				(devType!=pTypeLux)&&
 				(devType!=pTypeUsage)
 				)
@@ -3641,9 +3643,10 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			}
 			if (
 				(devType!=pTypeAirQuality)&&
-				(devType!=pTypeMoisture)&&
 				((devType!=pTypeGeneral)&&(subType!=sTypeVisibility))&&
 				((devType!=pTypeGeneral)&&(subType!=sTypeSolarRadiation))&&
+				((devType!=pTypeGeneral)&&(subType!=sTypeSoilMoisture))&&
+				((devType!=pTypeGeneral)&&(subType!=sTypeLeafWetness))&&
 				(devType!=pTypeLux)
 				)
 			{

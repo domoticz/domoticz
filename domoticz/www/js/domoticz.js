@@ -1423,12 +1423,19 @@ function ShowGeneralGraph(id,name,switchtype,sensortype)
 	graphcontent=$('#weathercontent');
 	txtUnit="Watt/m2";
   }
-  else if (sensortype=="Moisture") {
+  else if (sensortype=="Soil Moisture") {
 	graphReturn="ShowUtilities";
 	txtLabelOrg="Moisture";
 	$.content="#utilitycontent";
 	graphcontent=$('#utilitycontent');
 	txtUnit="cb";
+  }
+  else if (sensortype=="Leaf Wetness") {
+	graphReturn="ShowUtilities";
+	txtLabelOrg="Wetness";
+	$.content="#utilitycontent";
+	graphcontent=$('#utilitycontent');
+	txtUnit="Range";
   }
   else {
 	return;

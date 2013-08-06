@@ -1003,7 +1003,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 						(dType!=pTypeP1Gas)&&
 						(dType!=pTypeYouLess)&&
 						(dType!=pTypeAirQuality)&&
-						(dType!=pTypeMoisture)&&
+						(!((dType==pTypeGeneral)&&(dSubType==sTypeSoilMoisture)))&&
+						(!((dType==pTypeGeneral)&&(dSubType==sTypeLeafWetness)))&&
 						(dType!=pTypeLux)&&
 						(dType!=pTypeUsage)&&
 						(!((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXCounter)))&&
@@ -2064,13 +2065,6 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				else
 					root["result"][ii]["Quality"]="Bad";
 			}
-			else if (dType == pTypeMoisture)
-			{
-				sprintf(szTmp,"%d cb",nValue);
-				root["result"][ii]["Data"]=szTmp;
-				root["result"][ii]["Desc"]=Get_Moisture_Desc(nValue);
-				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
-			}
 			else if (dType == pTypeThermostat)
 			{
 				if (sTypeThermSetpoint)
@@ -2103,7 +2097,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					root["result"][ii]["TypeImg"]="visibility";
 					root["result"][ii]["SwitchTypeVal"]=metertype;
 				}
-				if (dSubType==sTypeSolarRadiation)
+				else if (dSubType==sTypeSolarRadiation)
 				{
 					float radiation=(float)atof(sValue.c_str());
 					sprintf(szTmp,"%.1f Watt/m2",radiation);
@@ -2111,6 +2105,23 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					root["result"][ii]["Radiation"]=atof(sValue.c_str());
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 					root["result"][ii]["TypeImg"]="radiation";
+					root["result"][ii]["SwitchTypeVal"]=metertype;
+				}
+				else if (dSubType==sTypeSoilMoisture)
+				{
+					sprintf(szTmp,"%d cb",nValue);
+					root["result"][ii]["Data"]=szTmp;
+					root["result"][ii]["Desc"]=Get_Moisture_Desc(nValue);
+					root["result"][ii]["TypeImg"]="moisture";
+					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+					root["result"][ii]["SwitchTypeVal"]=metertype;
+				}
+				else if (dSubType==sTypeLeafWetness)
+				{
+					sprintf(szTmp,"%d",nValue);
+					root["result"][ii]["Data"]=szTmp;
+					root["result"][ii]["TypeImg"]="leaf";
+					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 					root["result"][ii]["SwitchTypeVal"]=metertype;
 				}
 			}
@@ -3014,9 +3025,10 @@ std::string CWebServer::GetJSonPage()
 					(dType==pTypeCURRENT)||
 					(dType==pTypeCURRENTENERGY)||
 					(dType==pTypeAirQuality)||
-					(dType==pTypeMoisture)||
 					((dType==pTypeGeneral)&&(dSubType==sTypeVisibility))||
 					((dType==pTypeGeneral)&&(dSubType==sTypeSolarRadiation))||
+					((dType==pTypeGeneral)&&(dSubType==sTypeSoilMoisture))||
+					((dType==pTypeGeneral)&&(dSubType==sTypeLeafWetness))||
 					(dType==pTypeLux)||
 					(dType==pTypeUsage)
 					)
@@ -3247,7 +3259,7 @@ std::string CWebServer::GetJSonPage()
 						}
 					}
 				}
-				else if (dType==pTypeMoisture)
+				else if ((dType==pTypeGeneral)&&((dSubType==sTypeSoilMoisture)||(dSubType==sTypeLeafWetness)))
 				{//day
 					root["status"]="OK";
 					root["title"]="Graph " + sensor + " " + srange;
@@ -4385,7 +4397,7 @@ std::string CWebServer::GetJSonPage()
 						}
 					}
 				}
-				else if (dType==pTypeMoisture)
+				else if ((dType==pTypeGeneral)&&((dSubType==sTypeSoilMoisture)||(dSubType==sTypeLeafWetness)))
 				{//month/year
 					root["status"]="OK";
 					root["title"]="Graph " + sensor + " " + srange;
@@ -4755,7 +4767,7 @@ std::string CWebServer::GetJSonPage()
 						ii++;
 					}
 				}
-				else if (dType==pTypeMoisture)
+				else if ((dType==pTypeGeneral)&&((dSubType==sTypeSoilMoisture)||(dSubType==sTypeLeafWetness)))
 				{
 					szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 					result=m_pMain->m_sql.query(szQuery.str());
@@ -6793,7 +6805,7 @@ std::string CWebServer::GetJSonPage()
 				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
 				ii++;
 			}
-			if (dType==pTypeMoisture)
+			else if ((dType==pTypeGeneral)&&((dSubType==sTypeSoilMoisture)||(dSubType==sTypeLeafWetness)))
 			{
 				root["result"][ii]["val"]=NTYPE_USAGE;
 				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);

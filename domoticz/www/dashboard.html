@@ -774,10 +774,11 @@ function RefreshFavorites()
 					(item.Type == "Energy") || 
 					(item.Type == "Current/Energy") || 
 					(item.Type == "Air Quality") || 
-					(item.Type == "Moisture") || 
 					(item.Type == "Lux") || 
 					(item.Type == "Usage")||
-					((item.Type == "Thermostat")&&(item.SubType=="SetPoint"))
+					((item.Type == "Thermostat")&&(item.SubType=="SetPoint"))||
+					(item.SubType=="Soil Moisture")||
+					(item.SubType=="Leaf Wetness")
 				) &&
                 (item.Favorite!=0)
               )
@@ -801,7 +802,14 @@ function RefreshFavorites()
 								else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
 									status+=item.Data;
 								}
-								else if ((item.Type == "Energy")||(item.Type == "Air Quality")||(item.Type == "Moisture")||(item.Type == "Lux")||(item.Type == "Usage")) {
+								else if (
+											(item.Type == "Energy")||
+											(item.Type == "Air Quality")||
+											(item.Type == "Lux")||
+											(item.Type == "Usage")||
+											(item.SubType=="Soil Moisture")||
+											(item.SubType=="Leaf Wetness")
+										) {
 									status+=item.Data;
 								}
 								else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
@@ -858,8 +866,13 @@ function RefreshFavorites()
 									status=item.Data + " (" + item.Quality + ")";
 									bigtext=item.Data;
 								}
-								else if (item.Type == "Moisture") {
+								else if (item.SubType=="Soil Moisture") {
 									img='<img src="images/moisture48.png" height="40">';
+									status=item.Data;
+									bigtext=item.Data;
+								}
+								else if (item.SubType=="Leaf Wetness") {
+									img='<img src="images/leaf48.png" height="40">';
 									status=item.Data;
 									bigtext=item.Data;
 								}
@@ -2010,10 +2023,11 @@ function ShowFavorites()
 					(item.Type == "Energy") || 
 					(item.Type == "Current/Energy") || 
 					(item.Type == "Air Quality") || 
-					(item.Type == "Moisture") || 
 					(item.Type == "Lux") || 
 					(item.Type == "Usage")||
-					((item.Type == "Thermostat")&&(item.SubType=="SetPoint"))
+					((item.Type == "Thermostat")&&(item.SubType=="SetPoint"))||
+					(item.SubType=="Soil Moisture")||
+					(item.SubType=="Leaf Wetness")
 				) &&
                 (item.Favorite!=0)
               )
@@ -2068,9 +2082,10 @@ function ShowFavorites()
 							else if (
 										(item.Type == "Energy")||
 										(item.Type == "Air Quality")||
-										(item.Type == "Moisture")||
 										(item.Type == "Lux")||
-										(item.Type == "Usage")
+										(item.Type == "Usage")||
+										(item.SubType=="Soil Moisture")||
+										(item.SubType=="Leaf Wetness")
 									) {
 								status=item.Data;
 							}
@@ -2130,16 +2145,13 @@ function ShowFavorites()
 									xhtm+='-' + item.UsageDeliv;
 								}
 							}
-							else if (item.Type == "Air Quality") {
-								xhtm+=item.Data;
-							}
-							else if (item.Type == "Moisture") {
-								xhtm+=item.Data;
-							}
-							else if (item.Type == "Lux") {
-								xhtm+=item.Data;
-							}
-							else if (item.Type == "Usage") {
+							else if (
+									(item.Type == "Air Quality")||
+									(item.Type == "Lux")||
+									(item.Type == "Usage")||
+									(item.SubType=="Soil Moisture")||
+									(item.SubType=="Leaf Wetness")
+								) {
 								xhtm+=item.Data;
 							}
 							else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
@@ -2169,16 +2181,20 @@ function ShowFavorites()
 								xhtm+='air48.png" height="40"></td>\n';
 								status=item.Data + " (" + item.Quality + ")";
 							}
-							else if (item.Type == "Moisture") {
-								xhtm+='moisture48.png" height="40"></td>\n';
-								status=item.Data;
-							}
 							else if (item.Type == "Lux") {
 								xhtm+='lux48.png" height="40"></td>\n';
 								status=item.Data;
 							}
 							else if (item.Type == "Usage") {
 								xhtm+='current48.png" height="40"></td>\n';
+								status=item.Data;
+							}
+							else if (item.SubType=="Soil Moisture") {
+								xhtm+='moisture48.png" height="40"></td>\n';
+								status=item.Data;
+							}
+							else if (item.SubType=="Leaf Wetness") {
+								xhtm+='leaf48.png" height="40"></td>\n';
 								status=item.Data;
 							}
 							else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {

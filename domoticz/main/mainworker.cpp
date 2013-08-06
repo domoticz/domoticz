@@ -1073,10 +1073,6 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			WriteMessage("Lux Meter",false);
 			DeviceRowIdx=decode_Lux(HwdID, (tRBUF *)pRXCommand);
 			break;
-		case pTypeMoisture:
-			WriteMessage("Moisture Meter",false);
-			DeviceRowIdx=decode_Moisture(HwdID, (tRBUF *)pRXCommand);
-			break;
 		case pTypeGeneral:
 			WriteMessage("General",false);
 			DeviceRowIdx=decode_General(HwdID, (tRBUF *)pRXCommand);
@@ -6147,45 +6143,6 @@ unsigned long long MainWorker::decode_Lux(const int HwdID, const tRBUF *pRespons
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Moisture(const int HwdID, const tRBUF *pResponse)
-{
-	char szTmp[200];
-	std::string devname;
-
-	const _tMoistureMeter *pMeter=(const _tMoistureMeter*)pResponse;
-	unsigned char devType=pMeter->type;
-	unsigned char subType=pMeter->subtype;
-	sprintf(szTmp,"%d", pMeter->id);
-	std::string ID=szTmp;
-	unsigned char Unit=1;
-	unsigned char cmnd=pMeter->moisture;
-	unsigned char SignalLevel=12;
-	unsigned char BatteryLevel = 255;
-
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,devname);
-	PrintDeviceName(devname);
-
-	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, float(pMeter->moisture));
-
-	if (m_verboselevel == EVBL_ALL)
-	{
-		switch (pMeter->subtype)
-		{
-		case sTypeSoilMoisture:
-			WriteMessage("subtype       = Soil Moisture");
-
-			sprintf(szTmp,"Moisture = %d %%", pMeter->moisture);
-			WriteMessage(szTmp);
-			break;
-		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
-			WriteMessage(szTmp);
-			break;
-		}
-	}
-	return DevRowIdx;
-}
-
 unsigned long long MainWorker::decode_Thermostat(const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[200];
@@ -6280,6 +6237,18 @@ unsigned long long MainWorker::decode_General(const int HwdID, const tRBUF *pRes
 		PrintDeviceName(devname);
 		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->floatval1);
 	}
+	else if (subType==sTypeSoilMoisture)
+	{
+		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,pMeter->intval1,devname);
+		PrintDeviceName(devname);
+		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (float)pMeter->intval1);
+	}
+	else if (subType==sTypeLeafWetness)
+	{
+		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,pMeter->intval1,devname);
+		PrintDeviceName(devname);
+		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (float)pMeter->intval1);
+	}
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -6293,6 +6262,16 @@ unsigned long long MainWorker::decode_General(const int HwdID, const tRBUF *pRes
 		case sTypeSolarRadiation:
 			WriteMessage("subtype       = Solar Radiation");
 			sprintf(szTmp,"Radiation = %.1f Watt/m2", pMeter->floatval1);
+			WriteMessage(szTmp);
+			break;
+		case sTypeSoilMoisture:
+			WriteMessage("subtype       = Soil Moisture");
+			sprintf(szTmp,"Moisture = %d cb", pMeter->intval1);
+			WriteMessage(szTmp);
+			break;
+		case sTypeLeafWetness:
+			WriteMessage("subtype       = Leaf Wetness");
+			sprintf(szTmp,"Wetness = %d", pMeter->intval1);
 			WriteMessage(szTmp);
 			break;
 		default:

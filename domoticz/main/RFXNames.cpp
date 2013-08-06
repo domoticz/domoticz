@@ -328,7 +328,6 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeUsage, "Usage" , "current" },
 		{ pTypeTEMP_BARO, "Temp + Baro" , "temperature" },
 		{ pTypeLux, "Lux" , "lux" },
-		{ pTypeMoisture, "Moisture" , "moisture" },
 		{ pTypeGeneral, "General" , "General" },
 		{ pTypeThermostat, "Thermostat" , "thermostat" },
 		
@@ -495,11 +494,10 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		
 		{ pTypeLux, sTypeLux, "Lux" },
 
-		{ pTypeMoisture, sTypeSoilMoisture, "Soil Moisture" },
-		{ pTypeMoisture, sTypeLeafWetness, "Leaf Wetness" },
-
 		{ pTypeGeneral, sTypeVisibility, "Visibility" },
 		{ pTypeGeneral, sTypeSolarRadiation, "Solar Radiation" },
+		{ pTypeGeneral, sTypeSoilMoisture, "Soil Moisture" },
+		{ pTypeGeneral, sTypeLeafWetness, "Leaf Wetness" },
 		
 		{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },

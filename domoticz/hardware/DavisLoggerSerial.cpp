@@ -305,7 +305,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 //	fwrite(data,1,len,fOut);
 //	fclose(fOut);
 	unsigned char szBuffer[200];
-	FILE *fIn=fopen("E:\\davis4.bin","rb+");
+	FILE *fIn=fopen("E:\\davis.bin","rb+");
 	//FILE *fIn=fopen("davisrob.bin","rb+");
 	fread(&szBuffer,1,100,fIn);
 	fclose(fIn);
@@ -660,11 +660,26 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		{
 			int moister=pData[62+iMoister];
 
-			_tMoistureMeter mMoisture;
-			mMoisture.subtype=sTypeSoilMoisture;
-			mMoisture.id=1+iMoister;
-			mMoisture.moisture=moister;
-			sDecodeRXMessage(this, (const unsigned char *)&mMoisture);
+			_tGeneralDevice gdevice;
+			gdevice.subtype=sTypeSoilMoisture;
+			gdevice.intval1=moister;
+			gdevice.id=1+iMoister;
+			sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+		}
+	}
+
+	//Leaf Wetness
+	for (int iLeaf=0; iLeaf<4; iLeaf++)
+	{
+		if (pData[66+iLeaf]!=0xFF)
+		{
+			int leaf_wetness=pData[66+iLeaf];
+
+			_tGeneralDevice gdevice;
+			gdevice.subtype=sTypeLeafWetness;
+			gdevice.intval1=leaf_wetness;
+			gdevice.id=1+iLeaf;
+			sDecodeRXMessage(this, (const unsigned char *)&gdevice);
 		}
 	}
 

@@ -21,10 +21,8 @@
 #define pTypeGeneral		0xF3
 #define sTypeVisibility		0x01
 #define sTypeSolarRadiation	0x02
-
-#define pTypeMoisture		0xF5
-#define sTypeSoilMoisture	0x01
-#define sTypeLeafWetness	0x02
+#define sTypeSoilMoisture	0x03
+#define sTypeLeafWetness	0x04
 
 #define pTypeLux		0xF6
 #define sTypeLux		0x01
@@ -172,21 +170,6 @@ typedef struct _tLightMeter {
 		battery_level=255;
 	}
 } LightMeter;
-
-typedef struct _tMoistureMeter {
-	unsigned char len;
-	unsigned char type;
-	unsigned char subtype;
-	unsigned char id;
-	int moisture;
-	_tMoistureMeter()
-	{
-		len=sizeof(_tMoistureMeter)-1;
-		type=pTypeMoisture;
-		subtype=sTypeSoilMoisture;
-		id=0;
-	}
-} MoistureMeter;
 
 typedef struct _tGeneralDevice {
 	unsigned char len;
