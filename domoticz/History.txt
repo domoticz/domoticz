@@ -2,6 +2,7 @@ Version 1.0.xxx (August xxth 2013)
 - Implemented: Login page (solves the caching problems)
 - Fixed: buttons add sensor/switch buttons now hidden for 'viewer' users
 - Implemented: option in settings for basic-auth login type
+- Changed: Logout button now placed under setup for users with admin rights
 
 Version 1.0.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)

@@ -648,7 +648,7 @@ function RefreshNotificationTable(idx)
 			}
 			else {
 				if (parts[1]==">") {
-					nwhen=$.i18n("Greater") + " than ";
+					nwhen=$.i18n("Greater") + " ";
 				}
 				else {
 					nwhen=$.i18n("Below") + " ";
@@ -1292,11 +1292,25 @@ function EnableDisableTabs()
 			
 			var urights=data.statuscode;
 			if (urights!=3) {
-				$("#dLogout").show();
-				$("#cLogout").attr("title",$.i18n("Logout"));
+				if (urights!=2) {
+					//no setup menu
+					$("#dLogout").show();
+					$("#mLogout").show();
+					$("#dLogoutSetup").hide();
+					$("#mLogoutSetup").hide();
+				}
+				else {
+					$("#dLogout").hide();
+					$("#mLogout").hide();
+					$("#dLogoutSetup").show();
+					$("#mLogoutSetup").show();
+				}
 			}
 			else {
 				$("#dLogout").hide();
+				$("#mLogout").hide();
+				$("#dLogoutSetup").hide();
+				$("#mLogoutSetup").hide();
 			}
 			
 			$.myglobals.ismobileint=false;

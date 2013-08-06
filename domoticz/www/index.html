@@ -108,23 +108,45 @@ function CheckForUpdate(showdialog) {
 		 dataType: 'json',
 		 success: function(data) {
 			var urights=data.statuscode;
+			var bDisplayLogout=false;
 			if (urights!=3) {
-				$("#dLogout").show();
-				$("#mLogout").show();
-				$("#cLogout").attr("title",$.i18n("Logout"));
+				bDisplayLogout=true;
 			}
 			else {
-				$("#dLogout").hide();
-				$("#mLogout").hide();
+				bDisplayLogout=false;
 				urights=2;
 			}
 			window.my_config =
 			{
 				userrights : urights
 			};
+			
+			if (bDisplayLogout) {
+				if (window.my_config.userrights!=2) {
+					//no setup menu
+					$("#dLogout").show();
+					$("#mLogout").show();
+					$("#dLogoutSetup").hide();
+					$("#mLogoutSetup").hide();
+				}
+				else {
+					$("#dLogout").hide();
+					$("#mLogout").hide();
+					$("#dLogoutSetup").show();
+					$("#mLogoutSetup").show();
+				}
+			}
+			else {
+				$("#dLogout").hide();
+				$("#mLogout").hide();
+				$("#dLogoutSetup").hide();
+				$("#mLogoutSetup").hide();
+			}
+			
 			if (window.my_config.userrights!=2) {
 				$("#setupmenu").hide();
 			}
+			
 			if (data.HaveUpdate == true) {
 				$("#mUpdate").show();
 				$("#mCheckUpdate").hide();
@@ -428,11 +450,12 @@ $(document).ready(function() {
                                     </li>
                                     <li class="divider"></li>
                                     <li id="mLog"><a id="cLog" href="javascript:SwitchLayout('Log')"><img src="images/log.png"> <span data-i18n="Log">Log</span></a></li>
+                                    <li id="dLogoutSetup" class="divider" style="display: none;"></li>
+									<li id="mLogoutSetup" style="display: none;"><a id="cLogout" href="javascript:SwitchLayout('Logout')"><img src="images/logout.png"> <span data-i18n="Logout">Logout</span></a></li>
                                 </ul>
                             </li>
-                            <li id="dLogout" class="divider-vertical"></li>
-								<li id="mLogout"><a id="cLogout" href="javascript:SwitchLayout('Logout')" title="Logout"><img src="images/logout.png"></a></li>
-                            <li class="divider-vertical"></li>
+                            <li id="dLogout" class="divider-vertical" style="display: none;"></li>
+							<li id="mLogout" style="display: none;"><a id="cLogout" href="javascript:SwitchLayout('Logout')"><img src="images/logout.png"> <span data-i18n="Logout">Logout</span></a></li>
                         </ul>
                     </div><!--/.nav-collapse -->
                 </div>
