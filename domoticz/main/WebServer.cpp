@@ -6122,6 +6122,7 @@ std::string CWebServer::GetJSonPage()
 
 			root["status"]="OK";
 			root["title"]="GetSceneDevices";
+/*
 			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;
 			szQuery << "SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Cmd, a.Level, b.ID FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='" << idx << "') AND (b.ID == a.DeviceRowID) ORDER BY b.Name";
@@ -6160,6 +6161,7 @@ std::string CWebServer::GetJSonPage()
 					ii++;
 				}
 			}
+*/
 		}
 		else if (cparam=="deleteallscenedevices")
 		{
