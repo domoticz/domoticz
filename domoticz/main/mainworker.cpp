@@ -6904,14 +6904,16 @@ bool MainWorker::SwitchScene(const unsigned long long idx, std::string switchcmd
 	//first set actual scene status
 	char szTmp[300];
 	std::string Name="Unknown?";
+	int scenetype=0;
 
 	//Get Scene Name
-	sprintf(szTmp, "SELECT Name FROM Scenes WHERE (ID == %llu)",
+	sprintf(szTmp, "SELECT Name, SceneType FROM Scenes WHERE (ID == %llu)",
 		idx);
 	result=m_sql.query(szTmp);
 	if (result.size()>0)
 	{
 		Name=result[0][0];
+		scenetype=atoi(result[0][1].c_str());
 	}
 
 	sprintf(szTmp, "UPDATE Scenes SET nValue=%d, LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == %llu)",
@@ -6941,7 +6943,11 @@ bool MainWorker::SwitchScene(const unsigned long long idx, std::string switchcmd
 					std::vector<std::string> sd=*ittCam;
 					std::string camidx=sd[0];
 					int delay=atoi(sd[1].c_str());
-					std::string subject=Name + " Status: " + switchcmd;
+					std::string subject;
+					if (scenetype==0)
+						subject=Name + " Activated";
+					else
+						subject=Name + " Status: " + switchcmd;
 					m_sql.AddTaskItem(_tTaskItem::EmailCameraSnapshot(delay+1,camidx,subject));
 				}
 			}
@@ -6951,7 +6957,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, std::string switchcmd
 
 	//now switch all attached devices
 	std::stringstream szQuery;
-	szQuery << "SELECT DeviceRowID, Level FROM SceneDevices WHERE (SceneRowID == " << idx << ")";
+	szQuery << "SELECT DeviceRowID, Cmd, Level FROM SceneDevices WHERE (SceneRowID == " << idx << ")";
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return false;
@@ -6959,7 +6965,8 @@ bool MainWorker::SwitchScene(const unsigned long long idx, std::string switchcmd
 	for (itt=result.begin(); itt!=result.end(); ++itt)
 	{
 		std::vector<std::string> sd=*itt;
-		int level=atoi(sd[1].c_str());
+		int cmd=atoi(sd[1].c_str());
+		int level=atoi(sd[2].c_str());
 		std::vector<std::vector<std::string> > result2;
 		std::stringstream szQuery2;
 		szQuery2 << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType, nValue, sValue FROM DeviceStatus WHERE (ID == " << sd[0] << ")";
@@ -6979,8 +6986,16 @@ bool MainWorker::SwitchScene(const unsigned long long idx, std::string switchcmd
 			bool bHaveDimmer=false;
 			bool bHaveGroupCmd=false;
 			int maxDimLevel=0;
-
-			GetLightStatus(dType,dSubType,rnValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+			if (scenetype==0)
+			{
+				GetLightStatus(dType,dSubType,cmd,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+				if (cmd==0)
+					switchcmd="Off";
+				else
+					switchcmd="On";
+			}
+			else
+				GetLightStatus(dType,dSubType,rnValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
 			int ilevel=maxDimLevel-1;
 			if ((switchtype == STYPE_Dimmer)&&(maxDimLevel!=0))
 			{

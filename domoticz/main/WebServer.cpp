@@ -5951,10 +5951,15 @@ std::string CWebServer::GetJSonPage()
 		else if (cparam=="addscenedevice")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
 			std::string devidx=m_pWebEm->FindValue("devidx");
-			if (devidx=="")
+			std::string isscene=m_pWebEm->FindValue("isscene");
+			int command=atoi(m_pWebEm->FindValue("command").c_str());
+			
+			if (
+				(idx=="")||
+				(devidx=="")||
+				(isscene=="")
+				)
 				goto exitjson;
 			int level=atoi(m_pWebEm->FindValue("level").c_str());
 			//first check if this device is not the scene code!
@@ -5993,14 +5998,48 @@ std::string CWebServer::GetJSonPage()
 				root["status"]="OK";
 				root["title"]="AddSceneDevice";
 				//no it is not, add it
-				sprintf(szTmp,
-					"INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Level) VALUES ('%s','%s',%d)",
-					devidx.c_str(),
-					idx.c_str(),
-					level
-					);
+				if (isscene=="true")
+				{
+					sprintf(szTmp,
+						"INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Cmd, Level) VALUES ('%s','%s',%d,%d)",
+						devidx.c_str(),
+						idx.c_str(),
+						command,
+						level
+						);
+				}
+				else
+				{
+					sprintf(szTmp,
+						"INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Level) VALUES ('%s','%s',%d)",
+						devidx.c_str(),
+						idx.c_str(),
+						level
+						);
+				}
 				result=m_pMain->m_sql.query(szTmp);
 			}
+		}
+		else if (cparam=="updatescenedevice")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			std::string devidx=m_pWebEm->FindValue("devidx");
+			std::string isscene=m_pWebEm->FindValue("isscene");
+			int command=atoi(m_pWebEm->FindValue("command").c_str());
+
+			if (
+				(idx=="")||
+				(devidx=="")||
+				(isscene!="true")
+				)
+				goto exitjson;
+			int level=atoi(m_pWebEm->FindValue("level").c_str());
+			root["status"]="OK";
+			root["title"]="UpdateSceneDevice";
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE SceneDevices SET Cmd=" << command << ", Level=" << level << " WHERE (ID == " << idx << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
 		}
 		else if (cparam=="deletescenedevice")
 		{
@@ -6073,14 +6112,19 @@ std::string CWebServer::GetJSonPage()
 		else if (cparam=="getscenedevices")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
+			std::string isscene=m_pWebEm->FindValue("isscene");
+			
+			if (
+				(idx=="")||
+				(isscene=="")
+				)
 				goto exitjson;
 
 			root["status"]="OK";
 			root["title"]="GetSceneDevices";
 			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;
-			szQuery << "SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Level FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='" << idx << "') AND (b.ID == a.DeviceRowID) ORDER BY b.Name";
+			szQuery << "SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Cmd, a.Level, b.ID FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='" << idx << "') AND (b.ID == a.DeviceRowID) ORDER BY b.Name";
 			result=m_pMain->m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
@@ -6093,19 +6137,24 @@ std::string CWebServer::GetJSonPage()
 					root["result"][ii]["ID"]=sd[0];
 					root["result"][ii]["Name"]=sd[1];
 					root["result"][ii]["DevID"]=sd[2];
+					root["result"][ii]["DevRealIdx"]=sd[9];
 
 					unsigned char devType=atoi(sd[3].c_str());
 					unsigned char subType=atoi(sd[4].c_str());
 					unsigned char nValue=(unsigned char)atoi(sd[5].c_str());
 					std::string sValue=sd[6];
-					int level=atoi(sd[7].c_str());
+					int command=atoi(sd[7].c_str());
+					int level=atoi(sd[8].c_str());
 
 					std::string lstatus="";
 					int llevel=0;
 					bool bHaveDimmer=false;
 					bool bHaveGroupCmd=false;
 					int maxDimLevel=0;
-					GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+					if (isscene=="true")
+						GetLightStatus(devType,subType,command,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+					else
+						GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
 					root["result"][ii]["IsOn"]=IsLightSwitchOn(lstatus);
 					root["result"][ii]["Level"]=level;
 					ii++;
@@ -8316,9 +8365,21 @@ std::string CWebServer::GetJSonPage()
 		std::string name=m_pWebEm->FindValue("name");
 		if ((idx=="")||(name==""))
 			goto exitjson;
+		std::string stype=m_pWebEm->FindValue("scenetype");
+		if (stype=="")
+		{
+			root["status"]="ERR";
+			root["message"]="No Scene Type specified!";
+			goto exitjson;
+		}
+
 		root["status"]="OK";
 		root["title"]="UpdateScene";
-		sprintf(szTmp,"UPDATE Scenes SET Name='%s' WHERE (ID == %s)",name.c_str(),idx.c_str());
+		sprintf(szTmp,"UPDATE Scenes SET Name='%s', SceneType=%d WHERE (ID == %s)",
+				name.c_str(),
+				atoi(stype.c_str()),
+				idx.c_str()
+				);
 		m_pMain->m_sql.query(szTmp);
 	} //(rtype=="updatescene")
 	else if (rtype=="scenes")
