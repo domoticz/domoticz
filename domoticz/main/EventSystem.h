@@ -51,6 +51,7 @@ private:
 	//lua_State	*m_pLUA;
 	MainWorker *m_pMain;
 	boost::mutex eventMutex;
+	boost::mutex luaMutex;
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 	unsigned char m_secondcounter;

@@ -102,8 +102,6 @@ void CEventSystem::Do_Work()
 {
 	m_stoprequested=false;
 
-	time_t lasttime=time(NULL);
-
 	while (!m_stoprequested)
 	{
 		//sleep 500 milliseconds
@@ -365,7 +363,6 @@ void CEventSystem::EvaluateEvent(const std::string reason)
 
 void CEventSystem::EvaluateEvent(const std::string reason, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording)
 {
-
     std::stringstream lua_DirT;
     
     #ifdef WIN32
@@ -645,7 +642,8 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
 
 void CEventSystem::EvaluateLua(const std::string reason, const std::string filename, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording)
 {
-    
+	boost::lock_guard<boost::mutex> l(luaMutex);
+
     if (isEventscheduled(filename))
     {
         //_log.Log(LOG_NORM,"Already scheduled this event, skipping");

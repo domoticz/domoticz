@@ -6912,8 +6912,9 @@ bool MainWorker::SwitchScene(const unsigned long long idx, std::string switchcmd
 	result=m_sql.query(szTmp);
 	if (result.size()>0)
 	{
-		Name=result[0][0];
-		scenetype=atoi(result[0][1].c_str());
+		std::vector<std::string> sds=result[0];
+		Name=sds[0];
+		scenetype=atoi(sds[1].c_str());
 	}
 
 	sprintf(szTmp, "UPDATE Scenes SET nValue=%d, LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == %llu)",
