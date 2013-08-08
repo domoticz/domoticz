@@ -5,6 +5,7 @@ Version 1.0.xxx (August xxth 2013)
 - Changed: Logout button now placed under setup for users with admin rights
 - Changed: Soil Moister sensor type moved as subtype of general sensors
 - Implemented: Leaf Wetness sensor
+- Changed: Removed actual meter values for meters sensors in dashboard, only usage/return is displayed
 
 Version 1.0.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)
