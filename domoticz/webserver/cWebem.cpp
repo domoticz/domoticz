@@ -14,6 +14,7 @@
 #include <stdarg.h>
 #include <fstream>
 #include <sstream>
+#include "../main/Helper.h"
 
 int m_failcounter=0;
 
@@ -467,7 +468,55 @@ void cWebem::ClearUserPasswords()
 
 void cWebem::AddLocalNetworks(std::string network)
 {
-	m_localnetworks.push_back(network);
+	std::string inetwork=network;
+	std::string mask=network;
+
+	_tIPNetwork ipnetwork;
+
+	int pos=network.find_first_of("*");
+	if (pos>0)
+	{
+		inetwork=stdreplace(inetwork,"*","0");
+		int a, b, c, d;
+		if (sscanf(inetwork.c_str(), "%d.%d.%d.%d", &a, &b, &c, &d) != 4)
+			return;
+		std::stringstream newnetwork;
+		newnetwork << std::dec << a << "." << std::dec << b << "." << std::dec << c << "." << std::dec << d;
+		inetwork=newnetwork.str();
+
+		std::stringstream newmask;
+		if (a!=0) newmask << "255"; else newmask << "0";
+		newmask << ".";
+		if (b!=0) newmask << "255"; else newmask << "0";
+		newmask << ".";
+		if (c!=0) newmask << "255"; else newmask << "0";
+		newmask << ".";
+		if (d!=0) newmask << "255"; else newmask << "0";
+		mask=newmask.str();
+
+		ipnetwork.network=IPToUInt(inetwork);
+		ipnetwork.mask=IPToUInt(mask);
+	}
+	else
+	{
+		pos=network.find_first_of("/");
+		if (pos>0)
+		{
+			unsigned char keepbits = (unsigned char)atoi(network.substr(pos+1).c_str());
+			uint32_t imask = keepbits > 0 ? 0x00 - (1<<(32 - keepbits)) : 0xFFFFFFFF;
+			inetwork=network.substr(0,pos);
+			ipnetwork.network=IPToUInt(inetwork);
+			ipnetwork.mask=imask;
+		}
+		else
+		{
+			//single IP?
+			ipnetwork.network=IPToUInt(inetwork);
+			ipnetwork.mask=IPToUInt("255.255.255.255");
+		}
+	}
+
+	m_localnetworks.push_back(ipnetwork);
 }
 
 void cWebem::ClearLocalNetworks()
@@ -1013,6 +1062,21 @@ int cWebemRequestHandler::authorize(const request& req)
 	return 0;
 }
 
+bool IsIPInRange(const std::string ip, const _tIPNetwork ipnetwork) 
+{
+	uint32_t ip_addr = IPToUInt(ip);
+	if (ip_addr==0)
+		return false;
+
+	uint32_t net_lower = (ipnetwork.network & ipnetwork.mask);
+	uint32_t net_upper = (net_lower | (~ipnetwork.mask));
+
+	if (ip_addr >= net_lower &&
+		ip_addr <= net_upper)
+		return true;
+	return false;
+}
+
 //Returns true is the connected host is in the local network
 bool cWebemRequestHandler::AreWeInLocalNetwork(const request& req)
 {
@@ -1028,11 +1092,10 @@ bool cWebemRequestHandler::AreWeInLocalNetwork(const request& req)
 		int pos=host.find_first_of(":");
 		if (pos!=std::string::npos)
 			host=host.substr(0,pos);
-		std::vector<std::string>::const_iterator itt;
+		std::vector<_tIPNetwork>::const_iterator itt;
 		for (itt=myWebem->m_localnetworks.begin(); itt!=myWebem->m_localnetworks.end(); ++itt)
 		{
-			std::string network=*itt;
-			if (host.compare(0, network.length(), network) == 0)
+			if (IsIPInRange(host,*itt))
 			{
 				return true;
 			}

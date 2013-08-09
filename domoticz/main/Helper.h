@@ -13,4 +13,6 @@ std::string &stdstring_ltrim(std::string &s);
 std::string &stdstring_rtrim(std::string &s);
 std::string &stdstring_trim(std::string &s);
 double CalculateDewPoint(double temp, int humidity);
+uint32_t IPToUInt(const std::string ip);
+
 

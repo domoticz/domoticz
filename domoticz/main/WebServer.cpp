@@ -122,9 +122,6 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
 			for (itt=strarray.begin(); itt!=strarray.end(); ++itt)
 			{
 				std::string network=*itt;
-				int pos=network.find_first_of("*");
-				if (pos>0)
-					network=network.substr(0,pos);
 				m_pWebEm->AddLocalNetworks(network);
 			}
 		}
@@ -579,9 +576,6 @@ char * CWebServer::PostSettings()
 	for (itt=strarray.begin(); itt!=strarray.end(); ++itt)
 	{
 		std::string network=*itt;
-		int pos=network.find_first_of("*");
-		if (pos>0)
-			network=network.substr(0,pos);
 		m_pWebEm->AddLocalNetworks(network);
 	}
 
@@ -895,9 +889,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 	{
 		//Specific devices
 		if (rowid!="")
-			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==1) AND (A.ID==" << rowid << ")";
+			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << iUser << ") AND (A.ID==" << rowid << ")";
 		else
-			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==1) ORDER BY " << szOrderBy;
+			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << iUser << ") ORDER BY " << szOrderBy;
 	}
 
 	result=m_pMain->m_sql.query(szQuery.str());
@@ -2345,37 +2339,6 @@ std::string CWebServer::GetJSonPage()
 	{
 		std::stringstream s_str( m_pWebEm->FindValue("idx") );
 		s_str >> idx;
-	}
-
-
-	int day=1;
-	int month=-1;
-	int year=-1;
-
-	if (rdate!="")
-	{
-		std::string datestr=rdate.c_str();
-		if (datestr.size()==10)
-		{
-			if (
-				(datestr[2]=='-')&&
-				(datestr[5]=='-')
-				)
-			{
-				day=atoi(datestr.substr(0,2).c_str());
-				month=atoi(datestr.substr(3,2).c_str());
-				year=atoi(datestr.substr(6,4).c_str());
-			}
-		}
-		else if (datestr.size()==7)
-		{
-			if (datestr[2]=='-')
-			{
-				day=1;
-				month=atoi(datestr.substr(0,2).c_str());
-				year=atoi(datestr.substr(3,4).c_str());
-			}
-		}
 	}
 
 	std::vector<std::vector<std::string> > result;

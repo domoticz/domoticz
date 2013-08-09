@@ -32,6 +32,12 @@ namespace http {
 			time_t lasttouch;
 		} WebEmSession;
 
+		typedef struct _tIPNetwork
+		{
+			uint32_t network;
+			uint32_t mask;
+		} IPNetwork;
+
 		// Parsed Authorization header
 		struct ah {
 			char *user, *uri, *cnonce, *response, *qop, *nc, *nonce;
@@ -156,7 +162,7 @@ namespace http {
 			std::vector<_tWebUserPassword> m_userpasswords;
 			void AddLocalNetworks(std::string network);
 			void ClearLocalNetworks();
-			std::vector<std::string> m_localnetworks;
+			std::vector<_tIPNetwork> m_localnetworks;
 			void SetDigistRealm(std::string realm);
 			std::string m_DigistRealm;
 			void SetZipPassword(std::string password);
