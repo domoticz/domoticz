@@ -49,6 +49,10 @@
                       <td style="padding: 5px;"><input type="checkbox" class="devicecheckbox" id="graphHum"><span data-i18n="Humidity"></span></td>
                       <td style="padding: 5px;"><input type="checkbox" class="devicecheckbox" id="graphBaro"><span data-i18n="Barometer"></span></td>
                    </tr>
+                   <tr>
+                      <td style="padding: 5px;"><input type="checkbox" class="devicecheckbox" id="graphDew"><span data-i18n="Dew Point"></span></td>
+                      <td style="padding: 5px;">&nbsp;</td>
+                   </tr>
                 </table>
               </div></td></tr>
              </table>
@@ -108,6 +112,7 @@ function AddDataToTempChart(data,chart,isday)
     var datatablehu = [];
     var datatablech = [];
     var datatablecm = [];
+    var datatabledp = [];
 
     $.each(data.result, function(i,item)
     {
@@ -121,6 +126,9 @@ function AddDataToTempChart(data,chart,isday)
         if (typeof item.ch != 'undefined') {
           datatablech.push( [GetUTCFromString(item.d), parseFloat(item.ch) ] );
         }
+        if (typeof item.dp != 'undefined') {
+          datatabledp.push( [GetUTCFromString(item.d), parseFloat(item.dp) ] );
+        }
       } else {
         if (typeof item.te != 'undefined') {
           datatablete.push( [GetDateFromString(item.d), parseFloat(item.te) ] );
@@ -132,6 +140,9 @@ function AddDataToTempChart(data,chart,isday)
         if (typeof item.ch != 'undefined') {
           datatablech.push( [GetDateFromString(item.d), parseFloat(item.ch) ] );
           datatablecm.push( [GetDateFromString(item.d), parseFloat(item.cm) ] );
+        }
+        if (typeof item.dp != 'undefined') {
+          datatabledp.push( [GetDateFromString(item.d), parseFloat(item.dp) ] );
         }
       }
     });
@@ -202,6 +213,20 @@ function AddDataToTempChart(data,chart,isday)
         series.setData(datatabletm);
       }
     }
+    if (datatabledp.length!=0)
+    {
+      chart.addSeries(
+        {
+          id: 'dewpoint',
+          name: $.i18n('Dew Point'),
+          color: 'blue',
+          yAxis: 0
+        }
+      );
+      series = chart.get('dewpoint');
+      series.setData(datatabledp);
+    }
+
     //hide humidity label if not used
     //if (datatablehu.length==0) {
     //  var title = chart.yAxis[0].axisTitle;
@@ -217,6 +242,7 @@ function AddMultipleDataToTempChart(data,chart,isday,deviceid,devicename)
     var datatablehu = [];
     var datatablech = [];
     var datatablecm = [];
+    var datatabledp = [];
 
     $.each(data.result, function(i,item)
     {
@@ -230,6 +256,9 @@ function AddMultipleDataToTempChart(data,chart,isday,deviceid,devicename)
         if (typeof item.ch != 'undefined') {
           datatablech.push( [GetUTCFromString(item.d), parseFloat(item.ch) ] );
         }
+        if (typeof item.dp != 'undefined') {
+          datatabledp.push( [GetUTCFromString(item.d), parseFloat(item.dp) ] );
+        }
       } else {
         if (typeof item.te != 'undefined') {
           datatablete.push( [GetDateFromString(item.d), parseFloat(item.te) ] );
@@ -241,6 +270,9 @@ function AddMultipleDataToTempChart(data,chart,isday,deviceid,devicename)
         if (typeof item.ch != 'undefined') {
           datatablech.push( [GetDateFromString(item.d), parseFloat(item.ch) ] );
           datatablecm.push( [GetDateFromString(item.d), parseFloat(item.cm) ] );
+        }
+        if (typeof item.dp != 'undefined') {
+          datatabledp.push( [GetDateFromString(item.d), parseFloat(item.dp) ] );
         }
       }
     });
@@ -307,6 +339,20 @@ function AddMultipleDataToTempChart(data,chart,isday,deviceid,devicename)
         series.setData(datatabletm);
       }
     }
+    
+    if (datatabledp.length!=0)
+    {
+      chart.addSeries(
+        {
+          id: 'dewpoint'+deviceid,
+          name: devicename+':'+$.i18n('Dew Point'),
+          yAxis: 0
+        }
+      );
+      series = chart.get('dewpoint'+deviceid);
+      series.setData(datatabledp);
+    }
+
 }    
 
 function RemoveMultipleDataFromTempChart(chart,deviceid)
@@ -321,6 +367,8 @@ function RemoveMultipleDataFromTempChart(chart,deviceid)
     if(temperature!=null) {temperature.remove()};
     temperaturemin=chart.get('temperaturemin'+deviceid);
     if(temperaturemin!=null) {temperaturemin.remove()};
+    dew=chart.get('dewpoint'+deviceid);
+    if(dew!=null) {dew.remove()};
 }
 
 function ClearCustomGraph()
@@ -354,7 +402,7 @@ function AddDeviceToGraph(cb)
     if (cb.checked==true) {
         $.ajax({
            url: "json.htm?type=graph&sensor=temp&idx="+cb.id+"&range="+$("#graphfrom").val()+"T"+$("#graphto").val()+"&graphtype="+$("#combocustomgraphtype").val()+
-           "&graphTemp="+$("#graphTemp").prop("checked")+"&graphChill="+$("#graphChill").prop("checked")+"&graphHum="+$("#graphHum").prop("checked")+"&graphBaro="+$("#graphBaro").prop("checked"),
+           "&graphTemp="+$("#graphTemp").prop("checked")+"&graphChill="+$("#graphChill").prop("checked")+"&graphHum="+$("#graphHum").prop("checked")+"&graphBaro="+$("#graphBaro").prop("checked")+"&graphDew="+$("#graphDew").prop("checked"),
            async: false,
            dataType: 'json',
            success: function(data) {
@@ -374,7 +422,7 @@ function datePickerChanged()
         RemoveMultipleDataFromTempChart($.CustomChart,$(this).attr('id'));
         $.ajax({
            url: "json.htm?type=graph&sensor=temp&idx="+$(this).attr('id')+"&range="+$("#graphfrom").val()+"T"+$("#graphto").val()+"&graphtype="+$("#combocustomgraphtype").val()+
-           "&graphTemp="+$("#graphTemp").prop("checked")+"&graphChill="+$("#graphChill").prop("checked")+"&graphHum="+$("#graphHum").prop("checked")+"&graphBaro="+$("#graphBaro").prop("checked"),
+           "&graphTemp="+$("#graphTemp").prop("checked")+"&graphChill="+$("#graphChill").prop("checked")+"&graphHum="+$("#graphHum").prop("checked")+"&graphBaro="+$("#graphBaro").prop("checked")+"&graphDew="+$("#graphDew").prop("checked"),
            async: false,
            dataType: 'json',
            graphid: $(this).attr('id'),
@@ -509,7 +557,7 @@ function ShowCustomTempLog()
 
 function ShowTempLog(id,name)
 {
-	clearInterval($.myglobals.refreshTimer);
+  clearInterval($.myglobals.refreshTimer);
   $('#modal').show();
   $.devIdx=id;
   $.devName=name;

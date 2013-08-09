@@ -4890,6 +4890,7 @@ std::string CWebServer::GetJSonPage()
  		    std::string sgraphChill=m_pWebEm->FindValue("graphChill");
  		    std::string sgraphHum=m_pWebEm->FindValue("graphHum");
  		    std::string sgraphBaro=m_pWebEm->FindValue("graphBaro");
+ 		    std::string sgraphDew=m_pWebEm->FindValue("graphDew");
           
 			if (sensor=="temp") {
 				root["status"]="OK";
@@ -4899,6 +4900,7 @@ std::string CWebServer::GetJSonPage()
                 bool sendChill = false;
                 bool sendHum = false;
                 bool sendBaro = false;
+                bool sendDew = false;
 
 			    if ((sgraphTemp=="true") && 
 				    ((dType==pTypeRego6XXTemp)||(dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeTEMP_BARO)||(dType==pTypeWIND)||(dType==pTypeThermostat1)||
@@ -4923,9 +4925,13 @@ std::string CWebServer::GetJSonPage()
 			    {
                     sendHum = true;
 			    }
-			    if (((sgraphHum=="true") && (dType==pTypeTEMP_HUM_BARO))||(dType==pTypeTEMP_BARO))
+			    if ((sgraphBaro=="true") && ((dType==pTypeTEMP_HUM_BARO)||(dType==pTypeTEMP_BARO)))
 			    {
                     sendBaro = true;
+                }
+			    if ((sgraphDew=="true") && ((dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)))
+			    {
+                    sendDew = true;
                 }
 
 				szQuery.clear();
@@ -4933,7 +4939,7 @@ std::string CWebServer::GetJSonPage()
                 if(sgraphtype=="1")
                 {
                     // Need to get all values of the end date so 23:59:59 is appended to the date string
-				    szQuery << "SELECT Temperature, Chill, Humidity, Barometer, Date FROM Temperature WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << " 23:59:59') ORDER BY Date ASC";
+				    szQuery << "SELECT Temperature, Chill, Humidity, Barometer, Date, DewPoint FROM Temperature WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << " 23:59:59') ORDER BY Date ASC";
 				    result=m_pMain->m_sql.query(szQuery.str());
 				    int ii=0;
 				    if (result.size()>0)
@@ -4976,13 +4982,17 @@ std::string CWebServer::GetJSonPage()
 									root["result"][ii]["ba"]=szTmp;
 								}
 						    }
+						    if (sendDew)
+						    {
+							    root["result"][ii]["dp"]=sd[5];
+						    }
 						    ii++;
 					    }
                     }
 				}
                 else
                 {
-				    szQuery << "SELECT Temp_Min, Temp_Max, Chill_Min, Chill_Max, Humidity, Barometer, Date FROM Temperature_Calendar WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+				    szQuery << "SELECT Temp_Min, Temp_Max, Chill_Min, Chill_Max, Humidity, Barometer, Date, DewPoint FROM Temperature_Calendar WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 				    result=m_pMain->m_sql.query(szQuery.str());
 				    int ii=0;
 				    if (result.size()>0)
@@ -5025,6 +5035,10 @@ std::string CWebServer::GetJSonPage()
 									root["result"][ii]["ba"]=szTmp;
 								}
 						    }
+						    if (sendDew)
+						    {
+							    root["result"][ii]["dp"]=sd[7];
+						    }
 						    ii++;
 					    }
                     }
@@ -5032,7 +5046,7 @@ std::string CWebServer::GetJSonPage()
 				    //add today (have to calculate it)
 				    szQuery.clear();
 				    szQuery.str("");
-				    szQuery << "SELECT MIN(Temperature), MAX(Temperature), MIN(Chill), MAX(Chill), MAX(Humidity), MAX(Barometer) FROM Temperature WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				    szQuery << "SELECT MIN(Temperature), MAX(Temperature), MIN(Chill), MAX(Chill), MAX(Humidity), MAX(Barometer), MIN(DewPoint) FROM Temperature WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 				    result=m_pMain->m_sql.query(szQuery.str());
 				    if (result.size()>0)
 				    {
@@ -5070,6 +5084,10 @@ std::string CWebServer::GetJSonPage()
 								sprintf(szTmp,"%.1f",atof(sd[5].c_str())/10.0f);
 								root["result"][ii]["ba"]=szTmp;
 							}
+					    }
+					    if (sendDew)
+					    {
+						    root["result"][ii]["dp"]=sd[6];
 					    }
 					    ii++;
 				    }
