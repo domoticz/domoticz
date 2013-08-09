@@ -830,11 +830,11 @@ function RefreshFavorites()
 								if (typeof item.CounterDeliv != 'undefined') {
 									if (item.CounterDeliv!=0) {
 										if (data.DashboardType==0) {
-											status+='<br>Return: Today: ' + item.CounterDelivToday;
+											status+='<br>Return: ' + item.CounterDelivToday;
 											status+=", Actual: " + item.UsageDeliv;
 										}
 										else {
-											status+='<br>R: T: ' + item.CounterDelivToday;
+											status+='<br>R: ' + item.CounterDelivToday;
 											status+=", A: " + item.UsageDeliv;
 										}
 									}
@@ -911,11 +911,11 @@ function RefreshFavorites()
 										}
 										status+='<br>';
 										if (data.DashboardType==0) {
-											status+='Return: Today: ' + item.CounterDelivToday;
+											status+='Return: ' + item.CounterDelivToday;
 											status+=", Actual: " + item.UsageDeliv;
 										}
 										else {
-											status+='R: T: ' + item.CounterDelivToday;
+											status+='R: ' + item.CounterDelivToday;
 											status+=", A: " + item.UsageDeliv;
 										}
 									}
@@ -2226,11 +2226,11 @@ function ShowFavorites()
 								if (item.CounterDeliv!=0) {
 									status+='<br>';
 									if (data.DashboardType==0) {
-										status+='Return: Today: ' + item.CounterDelivToday;
+										status+='Return: ' + item.CounterDelivToday;
 										status+=", Actual: " + item.UsageDeliv;
 									}
 									else {
-										status+='R: T: ' + item.CounterDelivToday;
+										status+='R: ' + item.CounterDelivToday;
 										status+=", A: " + item.UsageDeliv;
 									}
 								}
