@@ -24,15 +24,12 @@ typedef enum {
 	REGO_TYPE_TEMP,
 	REGO_TYPE_STATUS,
     REGO_TYPE_COUNTER,
-    REGO_TYPE_COLDDELTA,
-    REGO_TYPE_HOTDELTA,
-    REGO_TYPE_TOTCOMP,
 	REGO_TYPE_END
 } RegoRegType;
 
 typedef struct _tRegoRegisters 
 {
-	std::string name;
+	char name[25];
 	unsigned short regNum_type1;
 	unsigned short regNum_type2;
 	unsigned short regNum_type3;
@@ -86,12 +83,12 @@ RegoRegisters g_allRegisters[] = {
 	{ "P2 Heat fluid",  		0x0204, 0x0206, 0x0208, REGO_TYPE_STATUS,       -50.0, -1, 0 },
 	{ "Three-way valve",        0x0205, 0x0207, 0x0209, REGO_TYPE_STATUS,       -50.0, -1, 0 },
 	{ "Alarm",                  0x0206, 0x0208, 0x020A, REGO_TYPE_STATUS,       -50.0, -1, 0 },
-	{ "Compressor starts",      0x0046, 0x0048, 0x004A, REGO_TYPE_COUNTER,      -50.0, -1, 0 },
+	{ "Operating hours",        0x0046, 0x0048, 0x004A, REGO_TYPE_COUNTER,      -50.0, -1, 0 },
 	{ "Radiator hours",         0x0048, 0x004A, 0x004C, REGO_TYPE_COUNTER,      -50.0, -1, 0 },
 	{ "Hot water hours",        0x004A, 0x004C, 0x004E, REGO_TYPE_COUNTER,      -50.0, -1, 0 },
-	{ "Cold fluid delta",		     0,	     0,	     0,	REGO_TYPE_COLDDELTA,    -50.0, -1, 0 },
-	{ "Hot fluid delta",		     0,	     0,	     0,	REGO_TYPE_HOTDELTA,     -50.0, -1, 0 },
-	{ "Total compressor hours",      0,      0,      0, REGO_TYPE_TOTCOMP,      -50.0, -1, 0 },
+	{ "GT1 Target",             0x006E,	0x006E,	0x006E,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
+	{ "GT3 Target",             0x002B,	0x002B,	0x002B,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
+	{ "GT4 Target",             0x006D,	0x006D,	0x006D,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
 	{ "",                            0,      0,      0, REGO_TYPE_NONE,             0,  0, 0}
 };
 
@@ -199,58 +196,7 @@ void CRego6XXSerial::Do_Work()
 
    				m_pollDelaycntr = 0;
 				m_pollcntr++;
-                if(g_allRegisters[m_pollcntr].type == REGO_TYPE_COLDDELTA)
-                {
-    		        time_t atime=time(NULL);
-                    if((atime - g_allRegisters[8].lastSent <= 600) && // Cold fluid in is fresh
-                       (atime - g_allRegisters[9].lastSent <= 600)) // Cold fluid out is fresh 
-                    {
-        			    m_Rego6XXTemp.ID = g_allRegisters[m_pollcntr].name;
- 					    m_Rego6XXTemp.temperature =  g_allRegisters[8].lastTemp - g_allRegisters[9].lastTemp;
-                        if((fabs(m_Rego6XXTemp.temperature - g_allRegisters[m_pollcntr].lastTemp) > 0.09) || // Only send changes.
-                             (atime - g_allRegisters[m_pollcntr].lastSent >= 300)) // Send at least every 5 minutes
-                        {
-                            g_allRegisters[m_pollcntr].lastSent = atime;
-                            g_allRegisters[m_pollcntr].lastTemp = m_Rego6XXTemp.temperature;
-					        sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXTemp);//decode message
-                        }
-                    }
-                }
-                else if(g_allRegisters[m_pollcntr].type == REGO_TYPE_HOTDELTA)
-                {
-    		        time_t atime=time(NULL);
-                    if((atime - g_allRegisters[7].lastSent <= 600) && // Hot fluid in is fresh
-                       (atime - g_allRegisters[6].lastSent <= 600)) // Hot fluid out is fresh 
-                    {
-        			    m_Rego6XXTemp.ID = g_allRegisters[m_pollcntr].name;
- 					    m_Rego6XXTemp.temperature =  g_allRegisters[6].lastTemp - g_allRegisters[7].lastTemp;
-                        if((fabs(m_Rego6XXTemp.temperature - g_allRegisters[m_pollcntr].lastTemp) > 0.09) || // Only send changes.
-                             (atime - g_allRegisters[m_pollcntr].lastSent >= 300)) // Send at least every 5 minutes
-                        {
-                            g_allRegisters[m_pollcntr].lastSent = atime;
-                            g_allRegisters[m_pollcntr].lastTemp = m_Rego6XXTemp.temperature;
-					        sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXTemp);//decode message
-                        }
-                    }
-                }
-                else if(g_allRegisters[m_pollcntr].type == REGO_TYPE_TOTCOMP)
-                {
-    		        time_t atime=time(NULL);
-                    if((atime - g_allRegisters[20].lastSent <= 6000) && // Radiator hours is fresh
-                       (atime - g_allRegisters[21].lastSent <= 6000)) // Hot water hours is fresh 
-                    {
-        			    m_Rego6XXValue.ID = g_allRegisters[m_pollcntr].name;
- 					    m_Rego6XXValue.value =  g_allRegisters[20].lastValue + g_allRegisters[21].lastValue;
-                        if((m_Rego6XXValue.value != g_allRegisters[m_pollcntr].lastValue) || // Only send changes.
-                             (atime - g_allRegisters[m_pollcntr].lastSent >= 3000)) // Send at least every 50 minutes
-                        {
-                            g_allRegisters[m_pollcntr].lastSent = atime;
-                            g_allRegisters[m_pollcntr].lastValue = m_Rego6XXValue.value;
-					        sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXValue);//decode message
-                        }
-                    }
-                }
-				else if(g_allRegisters[m_pollcntr].type != REGO_TYPE_NONE)
+				if(g_allRegisters[m_pollcntr].type != REGO_TYPE_NONE)
 				{
 					RegoCommand cmd;
 					cmd.data.address = 0x81;
@@ -400,7 +346,7 @@ void CRego6XXSerial::ParseData()
 
 				if(g_allRegisters[m_pollcntr].type == REGO_TYPE_TEMP)
 				{
-        			m_Rego6XXTemp.ID = g_allRegisters[m_pollcntr].name;
+        			strcpy(m_Rego6XXTemp.ID, g_allRegisters[m_pollcntr].name);
 					m_Rego6XXTemp.temperature =  (float)(data * 0.1);
                     if((m_Rego6XXTemp.temperature >= -48.2) && // -48.3 means no sensor.
                         ((fabs(m_Rego6XXTemp.temperature - g_allRegisters[m_pollcntr].lastTemp) > 0.09) || // Only send changes.
@@ -413,7 +359,7 @@ void CRego6XXSerial::ParseData()
 				}
 				else if(g_allRegisters[m_pollcntr].type == REGO_TYPE_STATUS)
 				{
-        			m_Rego6XXValue.ID = g_allRegisters[m_pollcntr].name;
+        			strcpy(m_Rego6XXValue.ID, g_allRegisters[m_pollcntr].name);
 					m_Rego6XXValue.value = data; 
                 	m_Rego6XXValue.subtype=sTypeRego6XXStatus;
                     if((m_Rego6XXValue.value != g_allRegisters[m_pollcntr].lastValue) || // Only send changes.
@@ -426,7 +372,7 @@ void CRego6XXSerial::ParseData()
 				}
 				else if(g_allRegisters[m_pollcntr].type == REGO_TYPE_COUNTER)
 				{
-        			m_Rego6XXValue.ID = g_allRegisters[m_pollcntr].name;
+        			strcpy(m_Rego6XXValue.ID, g_allRegisters[m_pollcntr].name);
 					m_Rego6XXValue.value = data; 
                 	m_Rego6XXValue.subtype=sTypeRego6XXCounter;
                     if((m_Rego6XXValue.value != g_allRegisters[m_pollcntr].lastValue) || // Only send changes.
