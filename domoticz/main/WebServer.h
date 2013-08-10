@@ -2,10 +2,13 @@
 
 #include <string>
 #include <vector>
-#include "../json/config.h"
-#include "../json/json.h"
 
 class MainWorker;
+
+namespace Json
+{
+	class Value;
+};
 
 namespace http {
 	namespace server {

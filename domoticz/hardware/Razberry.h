@@ -2,23 +2,26 @@
 
 #include <map>
 #include <time.h>
-#include "../json/json.h"
 #include "DomoticzHardware.h"
 
-enum _eZWaveDeviceType
+namespace Json
 {
-	ZDTYPE_SWITCHNORMAL = 0,
-	ZDTYPE_SWITCHDIMMER,
-	ZDTYPE_SENSOR_POWER,
-	ZDTYPE_SENSOR_TEMPERATURE,
-	ZDTYPE_SENSOR_HUMIDITY,
-	ZDTYPE_SENSOR_LIGHT,
-	ZDTYPE_SENSOR_SETPOINT,
-	ZDTYPE_SENSOR_POWERENERGYMETER,
+	class Value;
 };
 
 class CRazberry : public CDomoticzHardwareBase
 {
+	enum _eZWaveDeviceType
+	{
+		ZDTYPE_SWITCHNORMAL = 0,
+		ZDTYPE_SWITCHDIMMER,
+		ZDTYPE_SENSOR_POWER,
+		ZDTYPE_SENSOR_TEMPERATURE,
+		ZDTYPE_SENSOR_HUMIDITY,
+		ZDTYPE_SENSOR_LIGHT,
+		ZDTYPE_SENSOR_SETPOINT,
+		ZDTYPE_SENSOR_POWERENERGYMETER,
+	};
 	struct _tZWaveDevice
 	{
 		int nodeID;
@@ -86,4 +89,6 @@ private:
 	bool m_stoprequested;
 
 };
+
+
 

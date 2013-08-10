@@ -7,15 +7,15 @@
 	#include "targetver.h"
 #endif
 
-#include <stdio.h>
-//#include <stdlib.h>
-#include <string>
 
 // TODO: reference additional headers your program requires here
 
 typedef unsigned char       BYTE;
 
 #if !defined WIN32
+#include <stdio.h>
+//#include <stdlib.h>
+#include <string>
 	#include <sys/socket.h> // Needed for the socket functions
 	#include <netdb.h>
 	#include <arpa/inet.h>

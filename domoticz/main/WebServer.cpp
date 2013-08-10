@@ -12,6 +12,7 @@
 #include "../hardware/1Wire.h"
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
+#include "../json/config.h"
 #include "../json/json.h"
 #include "Logger.h"
 #ifndef WIN32

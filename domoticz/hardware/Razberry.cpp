@@ -12,6 +12,8 @@
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
 
+#include "../json/json.h"
+
 #pragma warning(disable: 4996)
 
 #define round(a) ( int ) ( a + .5 )
