@@ -147,7 +147,6 @@ main/localtime_r.cpp
 main/RFXNames.cpp
 main/Helper.cpp
 main/SunRiseSet.cpp
-httpclient/mynetwork.cpp
 httpclient/UrlEncode.cpp
 httpclient/HTTPClient.cpp
 smtpclient/SMTPClient.cpp
