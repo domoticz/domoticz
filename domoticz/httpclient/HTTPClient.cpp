@@ -150,6 +150,7 @@ bool HTTPClient::GET(const std::string url, std::string &response)
 	std::vector<unsigned char> vHTTPResponse;
 	if (!GETBinary(url,vHTTPResponse))
 		return false;
+	response="";
 	response.insert( response.begin(), vHTTPResponse.begin(), vHTTPResponse.end() );
 	return true;
 }

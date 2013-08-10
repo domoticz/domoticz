@@ -20,7 +20,7 @@
 	//#define DEBUG_ZWAVE_INT
 #endif
 
-bool isInt(std::string s)
+bool isInt(const std::string s)
 {
 	for(size_t i = 0; i < s.length(); i++){
 		if(!isdigit(s[i]))
@@ -47,7 +47,7 @@ static std::string readInputTestFile( const char *path )
 	return text;
 }
 
-CRazberry::CRazberry(const int ID, const std::string ipaddress, const int port, const std::string username, const std::string password)
+CRazberry::CRazberry(const int ID, const std::string &ipaddress, const int port, const std::string &username, const std::string &password)
 {
 	m_HwdID=ID;
 	m_ipaddress=ipaddress;
@@ -115,7 +115,7 @@ const std::string CRazberry::GetControllerURL()
 	return sUrl.str();
 }
 
-const std::string CRazberry::GetRunURL(const std::string cmd)
+const std::string CRazberry::GetRunURL(const std::string &cmd)
 {
 	std::stringstream sUrl;
 	if (m_username=="")
@@ -228,7 +228,7 @@ bool CRazberry::GetUpdates()
 	return true;
 }
 
-void CRazberry::parseDevices(const Json::Value devroot)
+void CRazberry::parseDevices(const Json::Value &devroot)
 {
 	for (Json::Value::iterator itt=devroot.begin(); itt!=devroot.end(); ++itt)
 	{
@@ -477,7 +477,7 @@ void CRazberry::UpdateDeviceBatteryStatus(int nodeID, int value)
 	}
 }
 
-void CRazberry::UpdateDevice(const std::string path, const Json::Value obj)
+void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 {
 	_tZWaveDevice *pDevice=NULL;
 
@@ -792,7 +792,6 @@ void CRazberry::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.TEMP_HUM.id1=ID3;
 			tsen.TEMP_HUM.id2=ID4;
 			ID4=pTempDevice->instanceID;
-			tsen.TEMP_HUM.id2=ID4;
 
 			tsen.TEMP_HUM.battery_level=1;
 			if (pDevice->hasBattery)
@@ -814,7 +813,6 @@ void CRazberry::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.HUM.packetlength=sizeof(tsen.HUM)-1;
 			tsen.HUM.packettype=pTypeHUM;
 			tsen.HUM.subtype=sTypeHUM2;
-			tsen.HUM.battery_level=1;
 			tsen.HUM.battery_level=9;
 			tsen.HUM.rssi=6;
 			tsen.HUM.id1=ID3;
@@ -962,7 +960,7 @@ void CRazberry::WriteToHardware(const char *pdata, const unsigned char length)
 	}
 }
 
-void CRazberry::RunCMD(const std::string cmd)
+void CRazberry::RunCMD(const std::string &cmd)
 {
 	std::string szURL=GetRunURL(cmd);
 	bool bret;

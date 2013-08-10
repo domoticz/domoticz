@@ -84,7 +84,7 @@ void CWebServer::Do_Work()
 
 
 
-bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::string listenport, std::string serverpath, bool bIgnoreUsernamePassword)
+bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword)
 {
 	m_pMain=pMain;
 	StopServer();
@@ -96,11 +96,9 @@ bool CWebServer::StartServer(MainWorker *pMain, std::string listenaddress, std::
                                            listenaddress.c_str(),						// address
                                            listenport.c_str(),							// port
                                            serverpath.c_str());
-        if (m_pWebEm==NULL)
-            return false;
     }
     catch(...) {
-        _log.Log(LOG_ERROR,"Failed to start the webserver");
+        _log.Log(LOG_ERROR,"Failed to start the web server");
         if(atoi(listenport.c_str())<1024)
             _log.Log(LOG_ERROR,"check privileges for opening ports below 1024");
 		else
@@ -350,7 +348,7 @@ char * CWebServer::DisplaySerialDevicesCombo()
 		int snumber=-1;
 		if (!bUseDirectPath)
 		{
-			int pos=serialname.find_first_of("01234567890");
+			size_t pos=serialname.find_first_of("01234567890");
 			if (pos!=std::string::npos) {
 				snumber=atoi(serialname.substr(pos).c_str());
 			}
@@ -388,7 +386,6 @@ char * CWebServer::DisplayDevicesList()
 	char szTmp[300];
 
 	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
 	result=m_pMain->m_sql.query("SELECT ID, Name FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
 	if (result.size()>0)
 	{
@@ -420,7 +417,6 @@ void CWebServer::LoadUsers()
 				AddUser(10000,WebUserName, WebPassword, URIGHTS_ADMIN);
 
 				std::vector<std::vector<std::string> > result;
-				std::stringstream szQuery;
 				result=m_pMain->m_sql.query("SELECT ID, Active, Username, Password, Rights FROM Users");
 				if (result.size()>0)
 				{
@@ -453,7 +449,7 @@ void CWebServer::LoadUsers()
 	m_pMain->LoadSharedUsers();
 }
 
-void CWebServer::AddUser(const unsigned long ID, const std::string username, const std::string password, const int userrights)
+void CWebServer::AddUser(const unsigned long ID, const std::string &username, const std::string &password, const int userrights)
 {
 	_tWebUserPassword wtmp;
 	wtmp.ID=ID;
@@ -502,8 +498,6 @@ bool CWebServer::FindAdminUser()
 char * CWebServer::PostSettings()
 {
 	m_retstr="/index.html";
-	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
 
 	std::string Latitude=m_pWebEm->FindValue("Latitude");
 	std::string Longitude=m_pWebEm->FindValue("Longitude");
@@ -761,7 +755,7 @@ char * CWebServer::SetRego6XXType()
 	return (char*)m_retstr.c_str();
 }
 
-void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, const std::string rfilter, const std::string order, const std::string rowid)
+void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid)
 {
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
@@ -847,7 +841,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				std::vector<std::string> sd=*itt;
 
 				int nValue= atoi(sd[2].c_str());
-				std::string sLastUpdate=sd[3].c_str();
+				std::string sLastUpdate=sd[3];
 				unsigned char favorite = atoi(sd[4].c_str());
 				unsigned char scenetype = atoi(sd[5].c_str());
 				if (scenetype==0)
@@ -907,7 +901,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 			unsigned char used = atoi(sd[4].c_str());
 			int nValue = atoi(sd[9].c_str());
 			std::string sValue=sd[10];
-			std::string sLastUpdate=sd[11].c_str();
+			std::string sLastUpdate=sd[11];
 			unsigned char favorite = atoi(sd[12].c_str());
 			_eSwitchType switchtype=(_eSwitchType) atoi(sd[13].c_str());
 			_eMeterType metertype=(_eMeterType)switchtype;
@@ -1220,14 +1214,6 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				{
 					root["result"][ii]["TypeImg"]="dimmer";
 				}
-				else if (switchtype==STYPE_PushOn)
-				{
-					root["result"][ii]["TypeImg"]="push";
-				}
-				else if (switchtype==STYPE_PushOff)
-				{
-					root["result"][ii]["TypeImg"]="pushoff";
-				}
 				else if (switchtype==STYPE_Motion)
 				{
 					root["result"][ii]["TypeImg"]="motion";
@@ -1417,21 +1403,10 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					}
 					root["result"][ii]["Barometer"]=atof(strarray[1].c_str());
 
-					if (strarray.size()==4)
-					{
-						//root["result"][ii]["Altitude"]=atof(strarray[3].c_str());
-						sprintf(szData,"%.1f C, %.1f hPa",
+					sprintf(szData,"%.1f C, %.1f hPa",
 							atof(strarray[0].c_str()),
 							atof(strarray[1].c_str())
 							);
-					}
-					else
-					{
-						sprintf(szData,"%.1f C, %.1f hPa",
-							atof(strarray[0].c_str()),
-							atof(strarray[1].c_str())
-							);
-					}
 					root["result"][ii]["Data"]=szData;
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				}
@@ -1484,16 +1459,13 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 						sprintf(szTmp,"%.1f",float(intGust) *m_pMain->m_sql.m_windscale);
 						root["result"][ii]["Gust"]=szTmp;
 					}
-					if (
-						((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
-						((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))
-						)
+					if ((dSubType==sTypeWIND4)||(dSubType==sTypeWINDNoTemp))
 					{
 						root["result"][ii]["AddjValue"]=AddjValue;
 						root["result"][ii]["AddjMulti"]=AddjMulti;
 						root["result"][ii]["AddjValue2"]=AddjValue2;
 						root["result"][ii]["AddjMulti2"]=AddjMulti2;
-						if ((dType==pTypeWIND)&&(dSubType==sTypeWIND4))
+						if (dSubType==sTypeWIND4)
 						{
 							root["result"][ii]["Temp"]=atof(strarray[4].c_str());
 						}
@@ -1663,6 +1635,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				root["result"][ii]["CounterToday"]=szTmp;
 				root["result"][ii]["SwitchTypeVal"]=metertype;
 				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+				//root["result"][ii]["Data"]=sValue;
 			}
 			else if (dType == pTypeYouLess)
 			{
@@ -1904,8 +1877,6 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 					std::stringstream s_str4( sd2[3] );
 					s_str4 >> total_min_deliv_2;
 
-					musage=0;
-
 					total_real_usage=powerusage-(total_min_usage_1+total_min_usage_2);
 					total_real_deliv=powerdeliv-(total_min_deliv_1+total_min_deliv_2);
 
@@ -2138,11 +2109,6 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				}
 				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 			}
-			else if (dType == pTypeRFXMeter)
-			{
-				root["result"][ii]["Data"]=sValue;
-				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
-			}
 			else if (dType == pTypeRFXSensor)
 			{
 				switch (dSubType)
@@ -2158,11 +2124,6 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string rused, cons
 				}
 				root["result"][ii]["Data"]=szData;
 				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
-			}
-			else if (dType == pTypeSecurity1)
-			{
-				sprintf(szData,"%s",Security_Status_Desc(nValue));
-				root["result"][ii]["Data"]=szData;
 			}
 			else if (dType == pTypeRego6XXValue)
 			{
@@ -2308,7 +2269,7 @@ std::string CWebServer::GetLanguage()
 		root["language"]=sValue;
 	}
 	m_retstr=root.toStyledString();
-	return m_retstr.c_str();
+	return m_retstr;
 }
 
 std::string CWebServer::GetJSonPage()
@@ -2328,11 +2289,10 @@ std::string CWebServer::GetJSonPage()
 	{
 		m_retstr=root.toStyledString();
 
-		return m_retstr.c_str();
+		return m_retstr;
 	}
 
 	std::string rtype=m_pWebEm->FindValue("type");
-	std::string rdate=m_pWebEm->FindValue("date");
 
 	unsigned long long idx=0;
 	if (m_pWebEm->FindValue("idx")!="")
@@ -5602,20 +5562,6 @@ std::string CWebServer::GetJSonPage()
 				root["result"]["EnableTabScenes"]=nValue;
 			}
 		}
-		else if (cparam=="emailcamerasnapshot")
-		{
-			std::string camidx=m_pWebEm->FindValue("camidx");
-			std::string subject=m_pWebEm->FindValue("subject");
-			if (
-				(camidx=="")||
-				(subject=="")
-				)
-				goto exitjson;
-			//Add to queue
-			m_pMain->m_sql.AddTaskItem(_tTaskItem::EmailCameraSnapshot(1,camidx,subject));
-			root["status"]="OK";
-			root["title"]="Email Camera Snapshot";
-		}
 		else if (cparam=="sendnotification")
 		{
 			std::string subject=m_pWebEm->FindValue("subject");
@@ -5775,8 +5721,6 @@ std::string CWebServer::GetJSonPage()
 					urights=(int)m_users[iUser].userrights;
 			}
 			root["statuscode"]=urights;
-
-			std::string auser=m_pWebEm->m_actualuser;
 
 			utsname my_uname;
 			if (uname(&my_uname)<0)
@@ -6032,7 +5976,7 @@ std::string CWebServer::GetJSonPage()
 			sprintf(szTmp,"DELETE FROM SceneDevices WHERE (ID == %s)",idx.c_str());
 			result=m_pMain->m_sql.query(szTmp);
 			sprintf(szTmp,"DELETE FROM CamerasActiveDevices WHERE (DevSceneType==1) AND (DevSceneRowID == %s)",idx.c_str());
-			result=m_pMain->m_sql.query(szTmp);
+			result=m_pMain->m_sql.query(szTmp); //-V519
 
 		}
 		else if (cparam=="getsubdevices")
@@ -6943,7 +6887,7 @@ std::string CWebServer::GetJSonPage()
 			std::string stype=m_pWebEm->FindValue("ttype");
 			std::string swhen=m_pWebEm->FindValue("twhen");
 			std::string svalue=m_pWebEm->FindValue("tvalue");
-			if ((stype=="")||(swhen=="")||(swhen==""))
+			if ((stype=="")||(swhen=="")||(svalue==""))
 				goto exitjson;
 
 			_eNotificationTypes ntype=(_eNotificationTypes)atoi(stype.c_str());
@@ -6977,7 +6921,7 @@ std::string CWebServer::GetJSonPage()
 			std::string stype=m_pWebEm->FindValue("ttype");
 			std::string swhen=m_pWebEm->FindValue("twhen");
 			std::string svalue=m_pWebEm->FindValue("tvalue");
-			if ((stype=="")||(swhen=="")||(swhen==""))
+			if ((stype=="")||(swhen=="")||(svalue==""))
 				goto exitjson;
 			root["status"]="OK";
 			root["title"]="UpdateNotification";
@@ -7005,7 +6949,6 @@ std::string CWebServer::GetJSonPage()
 		else if (cparam=="deletenotification")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
-			std::string ntype=m_pWebEm->FindValue("ntype");
 			if (idx=="")
 				goto exitjson;
 
@@ -7199,7 +7142,7 @@ std::string CWebServer::GetJSonPage()
 
 			//add the device for real in our system
 			strcpy(szTmp,"SELECT MAX(ID) FROM Hardware");
-			result=m_pMain->m_sql.query(szTmp);
+			result=m_pMain->m_sql.query(szTmp); //-V519
 			if (result.size()>0)
 			{
 				std::vector<std::string> sd=result[0];
@@ -7309,7 +7252,6 @@ std::string CWebServer::GetJSonPage()
 			std::string imageurl=m_pWebEm->FindValue("imageurl");
 			if (
 				(name=="")||
-				(address=="")||
 				(address=="")||
 				(videourl=="")||
 				(imageurl=="")
@@ -7514,7 +7456,7 @@ std::string CWebServer::GetJSonPage()
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "DELETE FROM SharedDevices WHERE (SharedUserID == " << idx << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
+			result=m_pMain->m_sql.query(szQuery.str()); //-V519
 
 			LoadUsers();
 		}
@@ -7819,7 +7761,7 @@ std::string CWebServer::GetJSonPage()
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "DELETE FROM SceneDevices WHERE (SceneRowID==" << idx << " AND DeviceRowID==" << devid << ")";
-				result=m_pMain->m_sql.query(szQuery.str());
+				result=m_pMain->m_sql.query(szQuery.str()); //-V519
 			}
 		}
 		else if (cparam=="removescenecode")
@@ -8436,7 +8378,7 @@ std::string CWebServer::GetJSonPage()
                     std::vector<std::string> sd=*itt;
                     std::string ID=sd[0];
 					std::string Name=sd[1];
-                    std::string XMLStatement=sd[2];
+                    //std::string XMLStatement=sd[2];
                     std::string eventStatus = sd[3];
                     root["result"][ii]["id"]=ID;
                     root["result"][ii]["name"]=Name;
@@ -8594,7 +8536,7 @@ std::string CWebServer::GetJSonPage()
 			
 			int ii=0;
             std::vector<CEventSystem::_tDeviceStatus>::iterator itt;
-            for(itt = devStates.begin(); itt != devStates.end(); itt++) 
+            for(itt = devStates.begin(); itt != devStates.end(); ++itt) 
 			{
                 root["title"]="Current States";
                 root["result"][ii]["id"]=itt->ID;
@@ -8818,7 +8760,7 @@ std::string CWebServer::GetJSonPage()
 	} //(rtype=="settings")
 exitjson:
 	m_retstr=root.toStyledString();
-	return m_retstr.c_str();
+	return m_retstr;
 }
 
 

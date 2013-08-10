@@ -10,7 +10,7 @@
 #include <algorithm>
 
 
-void StringSplit(std::string str, std::string delim, std::vector<std::string> &results)
+void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results)
 {
 	size_t cutAt;
 	while( (cutAt = str.find_first_of(delim)) != str.npos )
@@ -169,7 +169,7 @@ double CalculateDewPoint(double temp, int humidity)
 	return dew_numer/dew_denom;
 }
 
-uint32_t IPToUInt(const std::string ip) 
+uint32_t IPToUInt(const std::string &ip) 
 {
 	int a, b, c, d;
 	uint32_t addr = 0;

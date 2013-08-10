@@ -2,7 +2,6 @@
 #include "Wunderground.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
-#include "../httpclient/mynetwork.h"
 #include "../httpclient/UrlEncode.h"
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"

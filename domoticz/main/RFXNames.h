@@ -126,7 +126,7 @@ void GetLightStatus(
 	const unsigned char dType, 
 	const unsigned char dSubType, 
 	const unsigned char nValue, 
-	const std::string sValue, 
+	const std::string &sValue, 
 	std::string &lstatus, 
 	int &llevel, 
 	bool &bHaveDimmer,
@@ -141,4 +141,4 @@ bool GetLightCommand(
 	unsigned char &cmd
 	);
 
-bool IsLightSwitchOn(const std::string lstatus);
+bool IsLightSwitchOn(const std::string &lstatus);

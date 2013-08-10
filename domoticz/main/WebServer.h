@@ -16,7 +16,7 @@ class CWebServer
 public:
 	CWebServer(void);
 	~CWebServer(void);
-	bool StartServer(MainWorker *pMain, std::string listenaddress, std::string listenport,std::string serverpath, bool bIgnoreUsernamePassword);
+	bool StartServer(MainWorker *pMain, const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword);
 	void StopServer();
 
 	char * DisplayVersion();
@@ -41,7 +41,7 @@ public:
 
 	void LoadUsers();
 	void SaveUsers();
-	void AddUser(const unsigned long ID, const std::string username, const std::string password, const int userrights);
+	void AddUser(const unsigned long ID, const std::string &username, const std::string &password, const int userrights);
 	void ClearUserPasswords();
 	bool FindAdminUser();
 	int FindUser(const char* szUserName);
@@ -57,7 +57,7 @@ private:
 	time_t m_LastUpdateCheck;
 
 	//JSon
-	void GetJSonDevices(Json::Value &root, const std::string rused, const std::string rfilter, const std::string order, const std::string rowid);
+	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid);
 };
 
 } //server

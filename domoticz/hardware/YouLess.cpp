@@ -2,7 +2,7 @@
 #include "YouLess.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
-#include "../httpclient/mynetwork.h"
+#include "../httpclient/HTTPClient.h"
 #include "hardwaretypes.h"
 
 #define YOULESS_POLL_INTERVAL 10
@@ -80,29 +80,19 @@ void CYouLess::WriteToHardware(const char *pdata, const unsigned char length)
 
 void CYouLess::GetMeterDetails()
 {
-	unsigned char *pData=NULL;
-	unsigned long ulLength=0;
+	std::string sResult;
 
 	char szURL[200];
 	sprintf(szURL,"http://%s:%d/a",m_szIPAddress.c_str(), m_usIPPort);
-	I_HTTPRequest * r = NewHTTPRequest( szURL );
-	if (r!=NULL)
-	{
-		if (r->readDataInVecBuffer())
-		{
-			r->getBuffer(pData, ulLength);
-		}
-		r->dispose();
-	}
-	if ((pData==NULL)||(ulLength<5))
+
+	if (!HTTPClient::GET(szURL,sResult))
 	{
 		_log.Log(LOG_NORM,"YouLess error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
-	std::string response=(char*)pData;
-	delete [] pData;
+
 	std::vector<std::string> results;
-	StringSplit(response, "\n", results);
+	StringSplit(sResult, "\n", results);
 	if (results.size()<2)
 	{
 		_log.Log(LOG_ERROR,"YouLess error connecting to: %s", m_szIPAddress.c_str());

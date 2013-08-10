@@ -12,6 +12,11 @@ CDomoticzHardwareBase::CDomoticzHardwareBase()
 	m_bIsStarted=false;
 };
 
+CDomoticzHardwareBase::~CDomoticzHardwareBase()
+{
+
+}
+
 bool CDomoticzHardwareBase::Start()
 {
 	return StartHardware();

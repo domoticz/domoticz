@@ -173,7 +173,7 @@ void CTCPServerInt::SendToAll(const unsigned long long DeviceRowID, const char *
 	{
 		CTCPClient *pClient=itt->get();
 
-		if (pClient2Ignore!=NULL)
+		if ((pClient2Ignore!=NULL)&&(pClient!=NULL))
 		{
 			//prevent endless loop			
 			DomoticzTCP *pTestClient=(DomoticzTCP *)pClient2Ignore;
@@ -236,8 +236,6 @@ bool CTCPServer::StartServer(const std::string address, const std::string port)
 		if (m_pTCPServer!=NULL)
 			delete m_pTCPServer;
 		m_pTCPServer=new CTCPServerInt(address,port,this);
-		if (!m_pTCPServer)
-			return false;
 	}
 	catch(std::exception& e)
 	{

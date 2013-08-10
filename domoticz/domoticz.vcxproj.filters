@@ -166,15 +166,6 @@
     <ClInclude Include="hardware\hardwaretypes.h">
       <Filter>Devices</Filter>
     </ClInclude>
-    <ClInclude Include="httpclient\mUri.h">
-      <Filter>HTTPClient</Filter>
-    </ClInclude>
-    <ClInclude Include="httpclient\mynetwork.h">
-      <Filter>HTTPClient</Filter>
-    </ClInclude>
-    <ClInclude Include="httpclient\sock_port.h">
-      <Filter>HTTPClient</Filter>
-    </ClInclude>
     <ClInclude Include="httpclient\UrlEncode.h">
       <Filter>HTTPClient</Filter>
     </ClInclude>
@@ -362,9 +353,6 @@
     </ClCompile>
     <ClCompile Include="hardware\DomoticzHardware.cpp">
       <Filter>Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="httpclient\mynetwork.cpp">
-      <Filter>HTTPClient</Filter>
     </ClCompile>
     <ClCompile Include="httpclient\UrlEncode.cpp">
       <Filter>HTTPClient</Filter>

@@ -37,19 +37,19 @@ public:
 	CDomoticzHardwareBase* GetHardware(int HwdId);
 
 	void SetVerboseLevel(eVerboseLevel Level);
-	void SetWebserverPort(std::string Port);
+	void SetWebserverPort(const std::string &Port);
 	std::string GetWebserverPort();
 
-	bool SwitchLight(std::string idx, std::string switchcmd,std::string level);
-	bool SwitchLight(unsigned long long idx, std::string switchcmd, unsigned char level);
-	bool SwitchLightInt(const std::vector<std::string> sd, std::string switchcmd, unsigned char level, const bool IsTesting);
+	bool SwitchLight(const std::string &idx, const std::string &switchcmd,const std::string &level);
+	bool SwitchLight(unsigned long long idx, const std::string &switchcmd, unsigned char level);
+	bool SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, unsigned char level, const bool IsTesting);
 
-	bool SwitchScene(const std::string idx, std::string switchcmd);
+	bool SwitchScene(const std::string &idx, const std::string &switchcmd);
 	bool SwitchScene(const unsigned long long idx, std::string switchcmd);
 	void CheckSceneCode(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int nValue, const char* sValue);
 
-	bool SetSetPoint(const std::string idx, const float TempValue);
-	bool SetSetPointInt(const std::vector<std::string> sd, const float TempValue);
+	bool SetSetPoint(const std::string &idx, const float TempValue);
+	bool SetSetPointInt(const std::vector<std::string> &sd, const float TempValue);
 
 	bool SetRFXCOMHardwaremodes(const int HardwareID, const unsigned char Mode1,const unsigned char Mode2,const unsigned char Mode3,const unsigned char Mode4,const unsigned char Mode5);
 
@@ -75,14 +75,14 @@ public:
     CCamScheduler m_cameras;
 	bool m_bIgnoreUsernamePassword;
 
-	void GetDomoticzUpdate(const std::string UpdateURL);
+	void GetDomoticzUpdate(const std::string &UpdateURL);
 	bool m_bHaveDownloadedDomoticzUpdate;
 	bool m_bHaveDownloadedDomoticzUpdateSuccessFull;
 
 	tcp::server::CTCPServer m_sharedserver;
 private:
 
-	void PrintDeviceName(const std::string devname);
+	void PrintDeviceName(const std::string &devname);
 	void GetRaspberryPiTemperature();
 	unsigned long long PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand);
 	struct _tStartScene

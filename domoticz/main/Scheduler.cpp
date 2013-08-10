@@ -53,7 +53,6 @@ void CScheduler::ReloadSchedules()
 
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	std::vector<std::vector<std::string> > result2;
 
 	//Add Device Timers
 	szQuery << "SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T2.Used FROM Timers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID";
@@ -140,7 +139,7 @@ void CScheduler::ReloadSchedules()
 
 }
 
-void CScheduler::SetSunRiseSetTimers(std::string sSunRise, std::string sSunSet)
+void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::string &sSunSet)
 {
 	bool bReloadSchedules=false;
 	{	//needed private scope for the lock

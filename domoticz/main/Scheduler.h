@@ -32,7 +32,7 @@ public:
 
 	void ReloadSchedules();
 
-	void SetSunRiseSetTimers(std::string sSunRise, std::string sSunSet);
+	void SetSunRiseSetTimers(const std::string &sSunRise, const std::string &sSunSet);
 
 	std::vector<tScheduleItem> GetScheduleItems();
 

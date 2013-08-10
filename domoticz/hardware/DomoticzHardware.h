@@ -20,7 +20,7 @@ class CDomoticzHardwareBase
 	friend class CBMP085;
 public:
 	CDomoticzHardwareBase();
-	~CDomoticzHardwareBase() {};
+	virtual ~CDomoticzHardwareBase();
 
 	bool Start();
 	bool Stop();

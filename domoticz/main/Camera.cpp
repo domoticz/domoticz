@@ -135,7 +135,7 @@ std::string CCamScheduler::GetCameraURL(cameraDevice *pCamera)
 	return s_str.str();
 }
 
-cameraDevice* CCamScheduler::GetCamera(const std::string CamID)
+cameraDevice* CCamScheduler::GetCamera(const std::string &CamID)
 {
 	unsigned long long ulID;
 	std::stringstream s_str( CamID );
@@ -155,7 +155,7 @@ cameraDevice* CCamScheduler::GetCamera(const unsigned long long CamID)
 	return NULL;
 }
 
-bool CCamScheduler::TakeSnapshot(const std::string CamID, std::vector<unsigned char> &camimage)
+bool CCamScheduler::TakeSnapshot(const std::string &CamID, std::vector<unsigned char> &camimage)
 {
 	unsigned long long ulID;
 	std::stringstream s_str( CamID );
@@ -241,7 +241,7 @@ bool CCamScheduler::TakeSnapshot(const unsigned long long CamID, std::vector<uns
 	return HTTPClient::GETBinary(szURL,camimage);
 }
 
-bool CCamScheduler::EmailCameraSnapshot(const std::string CamIdx, const std::string subject)
+bool CCamScheduler::EmailCameraSnapshot(const std::string &CamIdx, const std::string &subject)
 {
 	if (m_pMain==NULL)
 		return false;

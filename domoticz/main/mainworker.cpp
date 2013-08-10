@@ -256,7 +256,7 @@ void MainWorker::SetVerboseLevel(eVerboseLevel Level)
 	m_verboselevel=Level;
 }
 
-void MainWorker::SetWebserverPort(std::string Port)
+void MainWorker::SetWebserverPort(const std::string &Port)
 {
 	m_webserverport=Port;
 }
@@ -543,7 +543,7 @@ bool MainWorker::StartThread()
 #define HEX( x ) \
 	std::setw(2) << std::setfill('0') << std::hex << std::uppercase << (int)( x )
 
-void MainWorker::GetDomoticzUpdate(const std::string UpdateURL)
+void MainWorker::GetDomoticzUpdate(const std::string &UpdateURL)
 {
 	m_szDomoticzUpdateURL=UpdateURL;
 	m_bHaveDownloadedDomoticzUpdate=false;
@@ -626,7 +626,7 @@ void MainWorker::Do_Work()
 			while (itt!=m_scenes_to_start.end())
 			{
 				SwitchScene(itt->SceneRowID,itt->switchcmd);
-				itt++;
+				++itt;
 			}
 			m_scenes_to_start.clear();
 		}
@@ -6564,7 +6564,7 @@ bool MainWorker::SetRFXCOMHardwaremodes(const int HardwareID, const unsigned cha
 	return true;
 }
 
-bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, std::string switchcmd, unsigned char level, const bool IsTesting)
+bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, unsigned char level, const bool IsTesting)
 {
 	int HardwareID = atoi(sd[0].c_str());
 	int hindex=FindDomoticzHardware(HardwareID);
@@ -6812,7 +6812,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> sd, std::string s
 	return false;
 }
 
-bool MainWorker::SwitchLight(unsigned long long idx, std::string switchcmd, unsigned char level)
+bool MainWorker::SwitchLight(unsigned long long idx, const std::string &switchcmd, unsigned char level)
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
@@ -6826,7 +6826,7 @@ bool MainWorker::SwitchLight(unsigned long long idx, std::string switchcmd, unsi
 	return SwitchLightInt(sd,switchcmd,level,false);
 }
 
-bool MainWorker::SwitchLight(std::string idx, std::string switchcmd,std::string level)
+bool MainWorker::SwitchLight(const std::string &idx, const std::string &switchcmd,const std::string &level)
 {
 	unsigned long long ID;
 	std::stringstream s_str( idx );
@@ -6835,7 +6835,7 @@ bool MainWorker::SwitchLight(std::string idx, std::string switchcmd,std::string 
 	return SwitchLight(ID,switchcmd,atoi(level.c_str()));
 }
 
-bool MainWorker::SetSetPointInt(const std::vector<std::string> sd, const float TempValue)
+bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float TempValue)
 {
 	int HardwareID = atoi(sd[0].c_str());
 	int hindex=FindDomoticzHardware(HardwareID);
@@ -6868,7 +6868,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> sd, const float T
 	return true;
 }
 
-bool MainWorker::SetSetPoint(const  std::string idx, const float TempValue)
+bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue)
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
@@ -6882,7 +6882,7 @@ bool MainWorker::SetSetPoint(const  std::string idx, const float TempValue)
 	return SetSetPointInt(sd,TempValue);
 }
 
-bool MainWorker::SwitchScene(const std::string idx, std::string switchcmd)
+bool MainWorker::SwitchScene(const std::string &idx, const std::string &switchcmd)
 {
 	unsigned long long ID;
 	std::stringstream s_str( idx );
@@ -7058,7 +7058,7 @@ void MainWorker::CheckSceneCode(const int HardwareID, const char* ID, const unsi
 	}
 }
 
-void MainWorker::PrintDeviceName(std::string devname)
+void MainWorker::PrintDeviceName(const std::string &devname)
 {
 	if (devname!="Unknown")
 	{

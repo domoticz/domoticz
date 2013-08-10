@@ -281,7 +281,7 @@ void CEventSystem::RemoveSingleState(int ulDevID)
 
 }
 
-void CEventSystem::WWWUpdateSingleState(unsigned long long ulDevID, std::string devname)
+void CEventSystem::WWWUpdateSingleState(const unsigned long long ulDevID, const std::string &devname)
 {
 	boost::lock_guard<boost::mutex> l(eventMutex);
     std::map<unsigned long long,_tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
@@ -294,7 +294,7 @@ void CEventSystem::WWWUpdateSingleState(unsigned long long ulDevID, std::string 
 }
 
 
-std::string CEventSystem::UpdateSingleState(unsigned long long ulDevID, std::string devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, std::string lastUpdate, unsigned char lastLevel)
+std::string CEventSystem::UpdateSingleState(const unsigned long long ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel)
 {
     
     std::string nValueWording = nValueToWording(devType, subType, switchType, nValue, sValue);
@@ -327,7 +327,7 @@ std::string CEventSystem::UpdateSingleState(unsigned long long ulDevID, std::str
 }
 
 
-bool CEventSystem::ProcessDevice(const int HardwareID, const unsigned long long ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string devname)
+bool CEventSystem::ProcessDevice(const int HardwareID, const unsigned long long ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname)
 {
 	boost::lock_guard<boost::mutex> l(eventMutex);
 
@@ -356,12 +356,12 @@ void CEventSystem::ProcessMinute()
 	EvaluateEvent("time");
 }
 
-void CEventSystem::EvaluateEvent(const std::string reason)
+void CEventSystem::EvaluateEvent(const std::string &reason)
 {
     EvaluateEvent(reason, 0, "", 0, "", "");
 }
 
-void CEventSystem::EvaluateEvent(const std::string reason, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording)
+void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording)
 {
     std::stringstream lua_DirT;
     
@@ -403,7 +403,7 @@ void CEventSystem::EvaluateEvent(const std::string reason, const unsigned long l
     
 }
 
-void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording)
+void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording)
 {
     
 #ifdef _DEBUG
@@ -438,7 +438,7 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
     lua_pushcfunction(lua_state, l_domoticz_print);
     lua_setglobal(lua_state, "print");
     
-    lua_createtable(lua_state, m_devicestates.size(), 0);
+    lua_createtable(lua_state, (int)m_devicestates.size(), 0);
     
     typedef std::map<unsigned long long,_tDeviceStatus>::iterator it_type;
     for(it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); iterator++) {
@@ -452,9 +452,9 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
     GetCurrentMeasurementStates();
     
     if (m_tempValuesByID.size()>0) {
-        lua_createtable(lua_state, m_tempValuesByID.size(), 0);
+        lua_createtable(lua_state, (int)m_tempValuesByID.size(), 0);
         std::map<unsigned long long,float>::iterator p;
-        for(p = m_tempValuesByID.begin(); p != m_tempValuesByID.end(); p++)
+        for(p = m_tempValuesByID.begin(); p != m_tempValuesByID.end(); ++p)
 		{
             lua_pushnumber( lua_state, (lua_Number)p->first);
             lua_pushnumber( lua_state, (lua_Number)p->second);
@@ -463,9 +463,9 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
         lua_setglobal(lua_state, "temperaturedevice");
     }
     if (m_humValuesByID.size()>0) {
-        lua_createtable(lua_state, m_humValuesByID.size(), 0);
+        lua_createtable(lua_state, (int)m_humValuesByID.size(), 0);
         std::map<unsigned long long,unsigned char>::iterator p;
-        for(p = m_humValuesByID.begin(); p != m_humValuesByID.end(); p++)
+        for(p = m_humValuesByID.begin(); p != m_humValuesByID.end(); ++p)
 		{
             lua_pushnumber( lua_state, (lua_Number)p->first);
             lua_pushnumber( lua_state, (lua_Number)p->second);
@@ -474,9 +474,9 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
         lua_setglobal(lua_state, "humiditydevice");
     }
     if (m_baroValuesByID.size()>0) {
-        lua_createtable(lua_state, m_baroValuesByID.size(), 0);
+        lua_createtable(lua_state, (int)m_baroValuesByID.size(), 0);
         std::map<unsigned long long,int>::iterator p;
-        for(p = m_baroValuesByID.begin(); p != m_baroValuesByID.end(); p++)
+        for(p = m_baroValuesByID.begin(); p != m_baroValuesByID.end(); ++p)
 		{
             lua_pushnumber( lua_state, (lua_Number)p->first);
             lua_pushnumber( lua_state, (lua_Number)p->second);
@@ -513,8 +513,10 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
                 else {
                     lua_Number ruleTrue = lua_tonumber(lua_state,-1);
                 
-                    if (ruleTrue) {
-                        if (parseBlocklyActions(it->Actions, it->Name, it->ID)) {
+                    if (ruleTrue!=0) 
+					{
+                        if (parseBlocklyActions(it->Actions, it->Name, it->ID)) 
+						{
                             _log.Log(LOG_NORM,"UI Event triggered: %s",it->Name.c_str());
                         }
                     }                    
@@ -524,7 +526,6 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
     }
     else if (reason == "time") {
         
-        std::string IDString;
         bool eventActive = false;
         
         std::vector<_tEventItem>::iterator it;
@@ -557,8 +558,10 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
                     }
                     else {
                         lua_Number ruleTrue = lua_tonumber(lua_state,-1);
-                        if (ruleTrue) {
-                            if (parseBlocklyActions(it->Actions, it->Name, it->ID )) {
+                        if (ruleTrue!=0)
+						{
+                            if (parseBlocklyActions(it->Actions, it->Name, it->ID )) 
+							{
                                 _log.Log(LOG_NORM,"UI Event triggered: %s",it->Name.c_str());
                             }
                         }
@@ -571,7 +574,7 @@ void CEventSystem::EvaluateBlockly(const std::string reason, const unsigned long
 }
 
 
-bool CEventSystem::parseBlocklyActions(const std::string Actions, const std::string eventName, const unsigned long long eventID)
+bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::string &eventName, const unsigned long long eventID)
 {
     if (isEventscheduled(eventName))
     {
@@ -588,13 +591,13 @@ bool CEventSystem::parseBlocklyActions(const std::string Actions, const std::str
             _log.Log(LOG_ERROR,"Malformed action sequence!");
             break;
         }
-        int eQPos = csubstr.find_first_of("=")+1;
+        size_t eQPos = csubstr.find_first_of("=")+1;
         std::string doWhat = csubstr.substr(eQPos);
         doWhat = doWhat.substr(1,doWhat.size()-2);
-        int sPos = csubstr.find_first_of("[")+1;
-        int ePos = csubstr.find_first_of("]");
+        size_t sPos = csubstr.find_first_of("[")+1;
+        size_t ePos = csubstr.find_first_of("]");
 
-        int sDiff = ePos - sPos;
+        size_t sDiff = ePos - sPos;
         if (sDiff>0) {
             std::string deviceName = csubstr.substr(sPos,sDiff);
             bool isScene = false;
@@ -635,12 +638,12 @@ bool CEventSystem::parseBlocklyActions(const std::string Actions, const std::str
     return actionsDone;
 }
 
-void CEventSystem::EvaluateLua(const std::string reason, const std::string filename)
+void CEventSystem::EvaluateLua(const std::string &reason, const std::string &filename)
 {
     EvaluateLua(reason, filename, 0, "", 0, "", "");
 }
 
-void CEventSystem::EvaluateLua(const std::string reason, const std::string filename, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording)
+void CEventSystem::EvaluateLua(const std::string &reason, const std::string &filename, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording)
 {
 	boost::lock_guard<boost::mutex> l(luaMutex);
 
@@ -688,9 +691,9 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
     
     if (m_tempValuesByName.size()>0)
 	{
-        lua_createtable(lua_state, m_tempValuesByName.size(), 0);
+        lua_createtable(lua_state, (int)m_tempValuesByName.size(), 0);
         std::map<std::string,float>::iterator p;
-        for(p = m_tempValuesByName.begin(); p != m_tempValuesByName.end(); p++)
+        for(p = m_tempValuesByName.begin(); p != m_tempValuesByName.end(); ++p)
 		{
             lua_pushstring( lua_state, p->first.c_str());
             lua_pushnumber( lua_state, (lua_Number)p->second);
@@ -703,9 +706,9 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
     }
     if (m_humValuesByName.size()>0)
 	{
-        lua_createtable(lua_state, m_humValuesByName.size(), 0);
+        lua_createtable(lua_state, (int)m_humValuesByName.size(), 0);
         std::map<std::string,unsigned char>::iterator p;
-        for(p = m_humValuesByName.begin(); p != m_humValuesByName.end(); p++)
+        for(p = m_humValuesByName.begin(); p != m_humValuesByName.end(); ++p)
 		{
             lua_pushstring( lua_state, p->first.c_str());
             lua_pushnumber( lua_state, (lua_Number)p->second);
@@ -718,9 +721,9 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
     }
     if (m_baroValuesByName.size()>0)
 	{
-        lua_createtable(lua_state, m_baroValuesByName.size(), 0);
+        lua_createtable(lua_state, (int)m_baroValuesByName.size(), 0);
         std::map<std::string,int>::iterator p;
-        for(p = m_baroValuesByName.begin(); p != m_baroValuesByName.end(); p++)
+        for(p = m_baroValuesByName.begin(); p != m_baroValuesByName.end(); ++p)
 		{
             lua_pushstring( lua_state, p->first.c_str());
             lua_pushnumber( lua_state, (lua_Number)p->second);
@@ -763,7 +766,7 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
         lua_setglobal(lua_state, "devicechanged");
     }    
     
-    lua_createtable(lua_state, m_devicestates.size(), 0);
+    lua_createtable(lua_state, (int)m_devicestates.size(), 0);
     typedef std::map<unsigned long long,_tDeviceStatus>::iterator it_type;
     for(it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); iterator++) 
 	{
@@ -774,7 +777,7 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
     }
     lua_setglobal(lua_state, "otherdevices");
 
-    lua_createtable(lua_state, m_devicestates.size(), 0);
+    lua_createtable(lua_state, (int)m_devicestates.size(), 0);
     typedef std::map<unsigned long long,_tDeviceStatus>::iterator it_type;
     for(it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); iterator++) 
 	{
@@ -785,7 +788,7 @@ void CEventSystem::EvaluateLua(const std::string reason, const std::string filen
     }
     lua_setglobal(lua_state, "otherdevices_lastupdate");
     
-    lua_createtable(lua_state, m_devicestates.size(), 0);
+    lua_createtable(lua_state, (int)m_devicestates.size(), 0);
     typedef std::map<unsigned long long,_tDeviceStatus>::iterator it_type;
     for(it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); iterator++) 
 	{
@@ -888,12 +891,12 @@ void CEventSystem::report_errors(lua_State *L, int status)
     }
 }
 
-void CEventSystem::SendEventNotification(const std::string Subject, const std::string Body)
+void CEventSystem::SendEventNotification(const std::string &Subject, const std::string &Body)
 {
     m_pMain->m_sql.SendNotificationEx(Subject,Body);
 }
 
-void CEventSystem::OpenURL(const std::string URL)
+void CEventSystem::OpenURL(const std::string &URL)
 {
     _log.Log(LOG_NORM,"Fetching url: %s",URL.c_str());
     std::string sResult;
@@ -905,7 +908,7 @@ void CEventSystem::OpenURL(const std::string URL)
     // maybe do something with sResult in the future.
 }
 
-bool CEventSystem::ScheduleEvent(std::string deviceName, std::string Action, const std::string eventName)
+bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Action, const std::string &eventName)
 
 {
     bool isScene = false;
@@ -937,7 +940,7 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, std::string Action, con
 }
 
 
-bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string eventName)
+bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName)
 
 {
  
@@ -946,8 +949,8 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
     
     int suspendTimer = 0;
     int randomTimer = 0;
-    int aFind = Action.find(" FOR ");
-    int rFind = Action.find(" RANDOM ");
+    size_t aFind = Action.find(" FOR ");
+    size_t rFind = Action.find(" RANDOM ");
     if (aFind > 0) {
         std::string delayString = Action.substr(aFind+5);
         std::string newAction = Action.substr(0,aFind);
@@ -1020,7 +1023,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 
 
 
-std::string CEventSystem::nValueToWording (const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue,const std::string sValue)
+std::string CEventSystem::nValueToWording (const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue,const std::string &sValue)
 {
     
     std::string lstatus="";
@@ -1094,7 +1097,7 @@ int CEventSystem::l_domoticz_print(lua_State* lua_state)
     return 0;
 }
     
-void CEventSystem::reportMissingDevice (int deviceID, std::string eventName, unsigned long long eventID)
+void CEventSystem::reportMissingDevice (const int deviceID, const std::string &eventName, const unsigned long long eventID)
 {
     _log.Log(LOG_ERROR,"Device no. '%d' used in event '%s' no longer exists, disabling event!", deviceID ,eventName.c_str());
     
@@ -1130,12 +1133,11 @@ void CEventSystem::WWWGetItemStates(std::vector<_tDeviceStatus> &iStates)
 	}
 }
 
-int CEventSystem::getSunRiseSunSetMinutes(std::string what)
+int CEventSystem::getSunRiseSunSetMinutes(const std::string &what)
 {
     std::vector<std::string> strarray;
     std::vector<std::string> sunRisearray;
     std::vector<std::string> sunSetarray;
-    std::vector<int> returnarray;
     
     int nValue=0;
     std::string sValue;
@@ -1160,7 +1162,7 @@ int CEventSystem::getSunRiseSunSetMinutes(std::string what)
     return 0;
 }
 
-bool CEventSystem::isEventscheduled(const std::string eventName)
+bool CEventSystem::isEventscheduled(const std::string &eventName)
 {
     bool foundIt = false;
     std::vector<_tTaskItem> currentTasks;

@@ -52,7 +52,7 @@ class CRazberry : public CDomoticzHardwareBase
 		unsigned char sequence_number;
 	};
 public:
-	CRazberry(const int ID, const std::string ipaddress, const int port, const std::string username, const std::string password);
+	CRazberry(const int ID, const std::string &ipaddress, const int port, const std::string &username, const std::string &password);
 	~CRazberry(void);
 
 	bool GetInitialDevices();
@@ -63,16 +63,16 @@ public:
 
 private:
 	const std::string GetControllerURL();
-	const std::string GetRunURL(const std::string cmd);
-	void parseDevices(const Json::Value devroot);
+	const std::string GetRunURL(const std::string &cmd);
+	void parseDevices(const Json::Value &devroot);
 	void InsertOrUpdateDevice(_tZWaveDevice device, const bool bSend2Domoticz);
-	void UpdateDevice(const std::string path, const Json::Value obj);
+	void UpdateDevice(const std::string &path, const Json::Value &obj);
 	void Do_Work();
 	void SendDevice2Domoticz(const _tZWaveDevice *pDevice);
 	_tZWaveDevice* FindDevice(int nodeID, int instanceID, _eZWaveDeviceType devType);
 	_tZWaveDevice* FindDevice(int nodeID, int scaleID);
 	void UpdateDeviceBatteryStatus(int nodeID, int value);
-	void RunCMD(const std::string cmd);
+	void RunCMD(const std::string &cmd);
 
 	bool m_bInitState;
 	std::string m_ipaddress;

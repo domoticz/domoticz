@@ -94,7 +94,7 @@ struct _tTaskItem
 		tItem._sValue=sValue;
 		return tItem;
 	}
-	static _tTaskItem ExecuteScript(const int DelayTime, const std::string ScriptPath, const std::string ScriptParams)
+	static _tTaskItem ExecuteScript(const int DelayTime, const std::string &ScriptPath, const std::string &ScriptParams)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_EXECUTE_SCRIPT;
@@ -103,7 +103,7 @@ struct _tTaskItem
 		tItem._sValue=ScriptParams;
 		return tItem;
 	}
-	static _tTaskItem EmailCameraSnapshot(const int DelayTime, const std::string CamIdx, const std::string Subject)
+	static _tTaskItem EmailCameraSnapshot(const int DelayTime, const std::string &CamIdx, const std::string &Subject)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_EMAIL_CAMERA_SNAPSHOT;
@@ -112,7 +112,7 @@ struct _tTaskItem
 		tItem._sValue=Subject;
 		return tItem;
 	}
-	static _tTaskItem SendEmail(const int DelayTime, const std::string Subject, const std::string Body)
+	static _tTaskItem SendEmail(const int DelayTime, const std::string &Subject, const std::string &Body)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_SEND_EMAIL;
@@ -121,7 +121,7 @@ struct _tTaskItem
 		tItem._sValue=Body;
 		return tItem;
 	}
-    static _tTaskItem SwitchLightEvent(const int DelayTime, const unsigned long long idx, const std::string Command, unsigned char Level, const std::string eventName)
+    static _tTaskItem SwitchLightEvent(const int DelayTime, const unsigned long long idx, const std::string &Command, unsigned char Level, const std::string &eventName)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_SWITCHCMD_EVENT;
@@ -133,7 +133,7 @@ struct _tTaskItem
 
 		return tItem;
 	}
-    static _tTaskItem SwitchSceneEvent(const int DelayTime, const unsigned long long idx, const std::string Command, const std::string eventName)
+    static _tTaskItem SwitchSceneEvent(const int DelayTime, const unsigned long long idx, const std::string &Command, const std::string &eventName)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_SWITCHCMD_SCENE;
@@ -154,16 +154,16 @@ public:
 
 	void SetMainWorker(MainWorker *pWorker);
 	bool OpenDatabase();
-	void SetDatabaseName(const std::string DBName);
+	void SetDatabaseName(const std::string &DBName);
 
-	bool BackupDatabase(const std::string OutputFile);
+	bool BackupDatabase(const std::string &OutputFile);
 
 	//Returns DeviceRowID
 	unsigned long long UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, std::string &devname);
 	unsigned long long UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const char* sValue, std::string &devname);
 	unsigned long long UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname);
 
-	void Lighting2GroupCmd(const std::string ID, const unsigned char subType, const unsigned char GroupCmd);
+	void Lighting2GroupCmd(const std::string &ID, const unsigned char subType, const unsigned char GroupCmd);
 
 	bool NeedToUpdateHardwareDevice(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname);
 
@@ -187,18 +187,18 @@ public:
 	bool GetPreferencesVar(const char *Key, std::string &sValue);
 
 	//notification functions
-	bool AddNotification(const std::string DevIdx, const std::string Param);
-	bool RemoveDeviceNotifications(const std::string DevIdx);
-	bool RemoveNotification(const std::string ID);
+	bool AddNotification(const std::string &DevIdx, const std::string &Param);
+	bool RemoveDeviceNotifications(const std::string &DevIdx);
+	bool RemoveNotification(const std::string &ID);
 	std::vector<_tNotification> GetNotifications(const unsigned long long DevIdx);
-	std::vector<_tNotification> GetNotifications(const std::string DevIdx);
+	std::vector<_tNotification> GetNotifications(const std::string &DevIdx);
 	void TouchNotification(const unsigned long long ID);
 	bool HasNotifications(const unsigned long long DevIdx);
-	bool HasNotifications(const std::string DevIdx);
+	bool HasNotifications(const std::string &DevIdx);
 
 	bool CheckAndHandleTempHumidityNotification(
 		const int HardwareID, 
-		const std::string ID, 
+		const std::string &ID, 
 		const unsigned char unit, 
 		const unsigned char devType, 
 		const unsigned char subType, 
@@ -208,7 +208,7 @@ public:
 		const bool bHaveHumidity);
 	bool CheckAndHandleDewPointNotification(
 		const int HardwareID, 
-		const std::string ID, 
+		const std::string &ID, 
 		const unsigned char unit, 
 		const unsigned char devType, 
 		const unsigned char subType, 
@@ -216,7 +216,7 @@ public:
 		const float dewpoint);
 	bool CheckAndHandleNotification(
 		const int HardwareID, 
-		const std::string ID, 
+		const std::string &ID, 
 		const unsigned char unit, 
 		const unsigned char devType, 
 		const unsigned char subType, 
@@ -224,14 +224,14 @@ public:
 		const float mvalue);
 	bool CheckAndHandleSwitchNotification(
 		const int HardwareID, 
-		const std::string ID, 
+		const std::string &ID, 
 		const unsigned char unit, 
 		const unsigned char devType, 
 		const unsigned char subType, 
 		const _eNotificationTypes ntype);
 	bool CheckAndHandleRainNotification(
 		const int HardwareID, 
-		const std::string ID, 
+		const std::string &ID, 
 		const unsigned char unit, 
 		const unsigned char devType, 
 		const unsigned char subType, 
@@ -239,7 +239,7 @@ public:
 		const float mvalue);
 	bool CheckAndHandleTotalNotification(
 		const int HardwareID, 
-		const std::string ID, 
+		const std::string &ID, 
 		const unsigned char unit, 
 		const unsigned char devType, 
 		const unsigned char subType, 
@@ -247,7 +247,7 @@ public:
 		const float mvalue);
 	bool CheckAndHandleUsageNotification(
 		const int HardwareID, 
-		const std::string ID, 
+		const std::string &ID, 
 		const unsigned char unit, 
 		const unsigned char devType, 
 		const unsigned char subType, 
@@ -255,7 +255,7 @@ public:
 		const float mvalue);
 	bool CheckAndHandleAmpere123Notification(
 		const int HardwareID, 
-		const std::string ID, 
+		const std::string &ID, 
 		const unsigned char unit, 
 		const unsigned char devType, 
 		const unsigned char subType, 
@@ -265,42 +265,42 @@ public:
 		);
 
 	bool HasTimers(const unsigned long long Idx);
-	bool HasTimers(const std::string Idx);
+	bool HasTimers(const std::string &Idx);
 	bool HasSceneTimers(const unsigned long long Idx);
-	bool HasSceneTimers(const std::string Idx);
+	bool HasSceneTimers(const std::string &Idx);
 
 	void CheckSceneStatus(const unsigned long long Idx);
-	void CheckSceneStatus(const std::string Idx);
+	void CheckSceneStatus(const std::string &Idx);
 	void CheckSceneStatusWithDevice(const unsigned long long DevIdx);
-	void CheckSceneStatusWithDevice(const std::string DevIdx);
+	void CheckSceneStatusWithDevice(const std::string &DevIdx);
 
-	bool SendNotification(const std::string EventID, const std::string Message);
-	bool SendNotificationEx(const std::string Subject, const std::string Body);
+	bool SendNotification(const std::string &EventID, const std::string &Message);
+	bool SendNotificationEx(const std::string &Subject, const std::string &Body);
 
 	void Schedule5Minute();
 	void ScheduleDay();
 
-	void DeleteHardware(const std::string idx);
+	void DeleteHardware(const std::string &idx);
     
-    void DeleteCamera(const std::string idx);
+    void DeleteCamera(const std::string &idx);
 
-    void DeletePlan(const std::string idx);
+    void DeletePlan(const std::string &idx);
 
-    void DeleteEvent(const std::string idx);
+    void DeleteEvent(const std::string &idx);
     
-	void DeleteDevice(const std::string idx);
+	void DeleteDevice(const std::string &idx);
 
-	void TransferDevice(const std::string oldidx, const std::string newidx);
+	void TransferDevice(const std::string &oldidx, const std::string &newidx);
 
-	bool DoesSceneByNameExits(const std::string SceneName);
+	bool DoesSceneByNameExits(const std::string &SceneName);
 
-	void AddTaskItem(const _tTaskItem tItem);
+	void AddTaskItem(const _tTaskItem &tItem);
     
     void EventsGetTaskItems(std::vector<_tTaskItem> &currentTasks);
    
 	void SetUnitsAndScale();
 
-	std::vector<std::vector<std::string> > query(const std::string szQuery);
+	std::vector<std::vector<std::string> > query(const std::string &szQuery);
 public:
 	std::string m_LastSwitchID;	//for learning command
 	unsigned long long m_LastSwitchRowID;

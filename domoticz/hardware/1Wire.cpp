@@ -38,6 +38,8 @@ C1Wire::C1Wire(const int ID)
 {
 	m_HwdID=ID;
 	m_stoprequested=false;
+	m_bIsGPIO=false;
+	m_bIsOWFS=false;
 	Init();
 #ifdef _DEBUG
 	GetOWFSSensorDetails();

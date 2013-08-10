@@ -133,14 +133,11 @@
     <ClInclude Include="main\Scheduler.h" />
     <ClInclude Include="main\SQLHelper.h" />
     <ClInclude Include="main\Helper.h" />
-    <ClInclude Include="httpclient\mUri.h" />
-    <ClInclude Include="httpclient\mynetwork.h" />
     <ClInclude Include="hardware\RFXComSerial.h" />
     <ClInclude Include="main\mainworker.h" />
     <ClInclude Include="hardware\RFXComTCP.h" />
     <ClInclude Include="main\RFXNames.h" />
     <ClInclude Include="main\RFXtrx.h" />
-    <ClInclude Include="httpclient\sock_port.h" />
     <ClInclude Include="main\WindCalculation.h" />
     <ClInclude Include="smtpclient\SMTPClient.h" />
     <ClInclude Include="sqlite\sqlite3.h" />
@@ -198,7 +195,6 @@
     <ClCompile Include="json\json_value.cpp" />
     <ClCompile Include="json\json_writer.cpp" />
     <ClCompile Include="main\mainworker.cpp" />
-    <ClCompile Include="httpclient\mynetwork.cpp" />
     <ClCompile Include="hardware\RFXComSerial.cpp" />
     <ClCompile Include="main\domoticz.cpp" />
     <ClCompile Include="hardware\RFXComTCP.cpp" />

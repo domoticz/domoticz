@@ -10,7 +10,7 @@
 #include "mainworker.h"
 #include "../sqlite/sqlite3.h"
 #include "../hardware/hardwaretypes.h"
-#include "../httpclient/mynetwork.h"
+#include "../httpclient/HTTPClient.h"
 #include "../smtpclient/SMTPClient.h"
 #include "../webserver/Base64.h"
 #include "mainstructs.h"
@@ -543,7 +543,7 @@ bool CSQLHelper::OpenDatabase()
 				std::vector<std::vector<std::string> >::const_iterator itt;
 				for (itt=result.begin(); itt!=result.end(); ++itt)
 				{
-					itt++;
+					++itt;
 					std::vector<std::string> sd=*itt;
 					std::stringstream szQuery2;
 					szQuery2 << "DELETE FROM MultiMeter_Calendar WHERE (RowID=='" << sd[0] << "')";
@@ -808,7 +808,7 @@ void CSQLHelper::Do_Work()
 					itt=m_background_task_queue.erase(itt);
 				}
 				else
-					itt++;
+					++itt;
 			}
 		}
 		if (_items2do.size()<1)
@@ -921,18 +921,18 @@ void CSQLHelper::Do_Work()
                     m_pMain->SwitchScene(itt->_idx,itt->_command.c_str());
             }
             
-			itt++;
+			++itt;
 		}
 		_items2do.clear();
 	}
 }
 
-void CSQLHelper::SetDatabaseName(const std::string DBName)
+void CSQLHelper::SetDatabaseName(const std::string &DBName)
 {
 	m_dbase_name=DBName;
 }
 
-std::vector<std::vector<std::string> > CSQLHelper::query(const std::string szQuery)
+std::vector<std::vector<std::string> > CSQLHelper::query(const std::string &szQuery)
 {
 	if (!m_dbase)
 	{
@@ -1166,7 +1166,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 	if (!m_dbase)
 		return -1;
 
-	char szTmp[1000];
+	char szTmp[400];
 
 	unsigned long long ulID=0;
 
@@ -1393,7 +1393,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 								itt=m_background_task_queue.erase(itt);
 							}
 							else
-								itt++;
+								++itt;
 						}
 						//finally add it to the queue
 						m_background_task_queue.push_back(tItem);
@@ -1424,7 +1424,7 @@ bool CSQLHelper::NeedToUpdateHardwareDevice(const int HardwareID, const char* ID
 
 	//Check if nValue and sValue are the same, if true, then just update the date
 	std::vector<std::vector<std::string> > result;
-	char szTmp[1000];
+	char szTmp[400];
 	sprintf(szTmp,"SELECT ID, nValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
 	result=query(szTmp);
 	if (result.size()<1)
@@ -1459,7 +1459,7 @@ void CSQLHelper::GetAddjustment(const int HardwareID, const char* ID, const unsi
 	AddjValue=0.0f;
 	AddjMulti=1.0f;
 	std::vector<std::vector<std::string> > result;
-	char szTmp[1000];
+	char szTmp[400];
 	sprintf(szTmp,"SELECT AddjValue,AddjMulti FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
 	result=query(szTmp);
 	if (result.size()!=0)
@@ -1473,7 +1473,7 @@ void CSQLHelper::GetMeterType(const int HardwareID, const char* ID, const unsign
 {
 	meterType=0;
 	std::vector<std::vector<std::string> > result;
-	char szTmp[1000];
+	char szTmp[400];
 	sprintf(szTmp,"SELECT SwitchType FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
 	result=query(szTmp);
 	if (result.size()!=0)
@@ -1487,7 +1487,7 @@ void CSQLHelper::GetAddjustment2(const int HardwareID, const char* ID, const uns
 	AddjValue=0.0f;
 	AddjMulti=1.0f;
 	std::vector<std::vector<std::string> > result;
-	char szTmp[1000];
+	char szTmp[400];
 	sprintf(szTmp,"SELECT AddjValue2,AddjMulti2 FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
 	result=query(szTmp);
 	if (result.size()!=0)
@@ -1497,13 +1497,12 @@ void CSQLHelper::GetAddjustment2(const int HardwareID, const char* ID, const uns
 	}
 }
 
-bool CSQLHelper::SendNotification(const std::string EventID, const std::string Message)
+bool CSQLHelper::SendNotification(const std::string &EventID, const std::string &Message)
 {
 	int nValue;
 	std::string sValue;
 	char szURL[300];
-	unsigned char *pData=NULL;
-	unsigned long ulLength=0;
+	std::string sResult;
 
 #if defined WIN32
 	//Make a system tray message
@@ -1518,16 +1517,14 @@ bool CSQLHelper::SendNotification(const std::string EventID, const std::string M
 			//send message to Prowl
 			sprintf(szURL,"http://api.prowlapp.com/publicapi/add?apikey=%s&application=Domoticz&event=%s&description=%s&priority=0",
 				sValue.c_str(),Message.c_str(),Message.c_str());
-			I_HTTPRequest * r = NewHTTPRequest( szURL );
-			if (r!=NULL)
+			if (!HTTPClient::GET(szURL,sResult))
 			{
-				if (r->readDataInVecBuffer())
-				{
-					r->getBuffer(pData, ulLength);
-				}
-				r->dispose();
+				_log.Log(LOG_ERROR,"Error sending Prowl Notification!");
 			}
-			_log.Log(LOG_NORM,"Notification send (Prowl)");
+			else
+			{
+				_log.Log(LOG_NORM,"Notification send (Prowl)");
+			}
 		}
 	}
 	//check if NMA enabled
@@ -1538,16 +1535,14 @@ bool CSQLHelper::SendNotification(const std::string EventID, const std::string M
 			//send message to Prowl
 			sprintf(szURL,"http://www.notifymyandroid.com/publicapi/notify?apikey=%s&application=Domoticz&event=%s&priority=0&description=%s",
 				sValue.c_str(),Message.c_str(),Message.c_str());
-			I_HTTPRequest * r = NewHTTPRequest( szURL );
-			if (r!=NULL)
+			if (!HTTPClient::GET(szURL,sResult))
 			{
-				if (r->readDataInVecBuffer())
-				{
-					r->getBuffer(pData, ulLength);
-				}
-				r->dispose();
+				_log.Log(LOG_ERROR,"Error sending NMA Notification!");
 			}
-			_log.Log(LOG_NORM,"Notification send (NMA)");
+			else
+			{
+				_log.Log(LOG_NORM,"Notification send (NMA)");
+			}
 		}
 	}
 	//check if Email enabled
@@ -1575,13 +1570,12 @@ bool CSQLHelper::SendNotification(const std::string EventID, const std::string M
 	return true;
 }
 
-bool CSQLHelper::SendNotificationEx(const std::string Subject, const std::string Body)
+bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::string &Body)
 {
 	int nValue;
 	std::string sValue;
 	char szURL[300];
-	unsigned char *pData=NULL;
-	unsigned long ulLength=0;
+	std::string sResult;
 
 #if defined WIN32
 	//Make a system tray message
@@ -1600,16 +1594,14 @@ bool CSQLHelper::SendNotificationEx(const std::string Subject, const std::string
 			//send message to Prowl
 			sprintf(szURL,"http://api.prowlapp.com/publicapi/add?apikey=%s&application=Domoticz&event=%s&description=%s&priority=0",
 				sValue.c_str(),uencode.URLEncode(Subject).c_str(),uencode.URLEncode(notimessage).c_str());
-			I_HTTPRequest * r = NewHTTPRequest( szURL );
-			if (r!=NULL)
+			if (!HTTPClient::GET(szURL,sResult))
 			{
-				if (r->readDataInVecBuffer())
-				{
-					r->getBuffer(pData, ulLength);
-				}
-				r->dispose();
+				_log.Log(LOG_ERROR,"Error sending Prowl Notification!");
 			}
-			_log.Log(LOG_NORM,"Notification send (Prowl)");
+			else
+			{
+				_log.Log(LOG_NORM,"Notification send (Prowl)");
+			}
 		}
 	}
 	//check if NMA enabled
@@ -1620,16 +1612,14 @@ bool CSQLHelper::SendNotificationEx(const std::string Subject, const std::string
 			//send message to Prowl
 			sprintf(szURL,"http://www.notifymyandroid.com/publicapi/notify?apikey=%s&application=Domoticz&event=%s&priority=0&description=%s",
 				sValue.c_str(),uencode.URLEncode(Subject).c_str(),uencode.URLEncode(notimessage).c_str());
-			I_HTTPRequest * r = NewHTTPRequest( szURL );
-			if (r!=NULL)
+			if (!HTTPClient::GET(szURL,sResult))
 			{
-				if (r->readDataInVecBuffer())
-				{
-					r->getBuffer(pData, ulLength);
-				}
-				r->dispose();
+				_log.Log(LOG_ERROR,"Error sending NMA Notification!");
 			}
-			_log.Log(LOG_NORM,"Notification send (NMA)");
+			else
+			{
+				_log.Log(LOG_NORM,"Notification send (NMA)");
+			}
 		}
 	}
 	//check if Email enabled
@@ -1672,7 +1662,7 @@ void CSQLHelper::UpdatePreferencesVar(const char *Key, const int nValue, const c
 	if (!m_dbase)
 		return;
 
-	char szTmp[1000];
+	char szTmp[600];
 
 	unsigned long long ID=0;
 
@@ -1759,7 +1749,7 @@ void CSQLHelper::UpdateRFXCOMHardwareDetails(const int HardwareID, const int msg
 
 bool CSQLHelper::CheckAndHandleTempHumidityNotification(
 	const int HardwareID, 
-	const std::string ID, 
+	const std::string &ID, 
 	const unsigned char unit, 
 	const unsigned char devType, 
 	const unsigned char subType, 
@@ -1771,7 +1761,7 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(
 	if (!m_dbase)
 		return false;
 
-	char szTmp[1000];
+	char szTmp[600];
 
 	unsigned long long ulID=0;
 
@@ -1872,7 +1862,7 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(
 
 bool CSQLHelper::CheckAndHandleDewPointNotification(
 	const int HardwareID, 
-	const std::string ID, 
+	const std::string &ID, 
 	const unsigned char unit, 
 	const unsigned char devType, 
 	const unsigned char subType, 
@@ -1882,7 +1872,7 @@ bool CSQLHelper::CheckAndHandleDewPointNotification(
 	if (!m_dbase)
 		return false;
 
-	char szTmp[1000];
+	char szTmp[600];
 
 	unsigned long long ulID=0;
 
@@ -1946,7 +1936,7 @@ bool CSQLHelper::CheckAndHandleDewPointNotification(
 
 bool CSQLHelper::CheckAndHandleAmpere123Notification(
 	const int HardwareID, 
-	const std::string ID, 
+	const std::string &ID, 
 	const unsigned char unit, 
 	const unsigned char devType, 
 	const unsigned char subType, 
@@ -1957,7 +1947,7 @@ bool CSQLHelper::CheckAndHandleAmpere123Notification(
 	if (!m_dbase)
 		return false;
 
-	char szTmp[1000];
+	char szTmp[600];
 
 	unsigned long long ulID=0;
 
@@ -2081,7 +2071,7 @@ bool CSQLHelper::CheckAndHandleAmpere123Notification(
 
 bool CSQLHelper::CheckAndHandleNotification(
 	const int HardwareID, 
-	const std::string ID, 
+	const std::string &ID, 
 	const unsigned char unit, 
 	const unsigned char devType, 
 	const unsigned char subType, 
@@ -2091,7 +2081,7 @@ bool CSQLHelper::CheckAndHandleNotification(
 	if (!m_dbase)
 		return false;
 
-	char szTmp[1000];
+	char szTmp[600];
 
 	unsigned long long ulID=0;
 	double intpart;
@@ -2187,7 +2177,7 @@ bool CSQLHelper::CheckAndHandleNotification(
 
 bool CSQLHelper::CheckAndHandleSwitchNotification(
 	const int HardwareID, 
-	const std::string ID, 
+	const std::string &ID, 
 	const unsigned char unit, 
 	const unsigned char devType, 
 	const unsigned char subType, 
@@ -2196,7 +2186,7 @@ bool CSQLHelper::CheckAndHandleSwitchNotification(
 	if (!m_dbase)
 		return false;
 
-	char szTmp[1000];
+	char szTmp[600];
 
 	unsigned long long ulID=0;
 
@@ -2286,7 +2276,7 @@ bool CSQLHelper::CheckAndHandleSwitchNotification(
 
 bool CSQLHelper::CheckAndHandleRainNotification(
 	const int HardwareID, 
-	const std::string ID, 
+	const std::string &ID, 
 	const unsigned char unit, 
 	const unsigned char devType, 
 	const unsigned char subType, 
@@ -2296,7 +2286,7 @@ bool CSQLHelper::CheckAndHandleRainNotification(
 	if (!m_dbase)
 		return false;
 
-	char szTmp[1000];
+	char szTmp[600];
 
 	std::vector<std::vector<std::string> > result;
 	sprintf(szTmp,"SELECT ID,AddjValue,AddjMulti FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID.c_str(), unit, devType, subType);
@@ -2364,7 +2354,7 @@ void CSQLHelper::TouchNotification(const unsigned long long ID)
 	query(szTmp);
 }
 
-bool CSQLHelper::AddNotification(const std::string DevIdx, const std::string Param)
+bool CSQLHelper::AddNotification(const std::string &DevIdx, const std::string &Param)
 {
 	if (!m_dbase)
 		return false;
@@ -2386,7 +2376,7 @@ bool CSQLHelper::AddNotification(const std::string DevIdx, const std::string Par
 	return true;
 }
 
-bool CSQLHelper::RemoveDeviceNotifications(const std::string DevIdx)
+bool CSQLHelper::RemoveDeviceNotifications(const std::string &DevIdx)
 {
 	std::vector<std::vector<std::string> > result;
 
@@ -2398,7 +2388,7 @@ bool CSQLHelper::RemoveDeviceNotifications(const std::string DevIdx)
 	return true;
 }
 
-bool CSQLHelper::RemoveNotification(const std::string ID)
+bool CSQLHelper::RemoveNotification(const std::string &ID)
 {
 	std::vector<std::vector<std::string> > result;
 
@@ -2465,7 +2455,7 @@ std::vector<_tNotification> CSQLHelper::GetNotifications(const unsigned long lon
 	return ret;
 }
 
-std::vector<_tNotification> CSQLHelper::GetNotifications(const std::string DevIdx)
+std::vector<_tNotification> CSQLHelper::GetNotifications(const std::string &DevIdx)
 {
 	std::stringstream s_str( DevIdx );
 	unsigned long long idxll;
@@ -2491,7 +2481,7 @@ bool CSQLHelper::HasNotifications(const unsigned long long DevIdx)
 	int totnotifications=atoi(sd[0].c_str());
 	return (totnotifications>0);
 }
-bool CSQLHelper::HasNotifications(const std::string DevIdx)
+bool CSQLHelper::HasNotifications(const std::string &DevIdx)
 {
 	std::stringstream s_str( DevIdx );
 	unsigned long long idxll;
@@ -2518,7 +2508,7 @@ bool CSQLHelper::HasTimers(const unsigned long long Idx)
 	return (totaltimers>0);
 }
 
-bool CSQLHelper::HasTimers(const std::string Idx)
+bool CSQLHelper::HasTimers(const std::string &Idx)
 {
 	std::stringstream s_str( Idx );
 	unsigned long long idxll;
@@ -2545,7 +2535,7 @@ bool CSQLHelper::HasSceneTimers(const unsigned long long Idx)
 	return (totaltimers>0);
 }
 
-bool CSQLHelper::HasSceneTimers(const std::string Idx)
+bool CSQLHelper::HasSceneTimers(const std::string &Idx)
 {
 	std::stringstream s_str( Idx );
 	unsigned long long idxll;
@@ -2558,7 +2548,7 @@ void CSQLHelper::UpdateTempVar(const char *Key, const char* sValue)
 	if (!m_dbase)
 		return;
 
-	char szTmp[1000];
+	char szTmp[600];
 
 	unsigned long long ID=0;
 
@@ -2634,7 +2624,7 @@ void CSQLHelper::ScheduleDay()
 
 void CSQLHelper::UpdateTemperatureLog()
 {
-	char szTmp[1000];
+	char szTmp[600];
 
 	time_t now = time(NULL);
 	if (now==0)
@@ -2768,7 +2758,7 @@ void CSQLHelper::UpdateTemperatureLog()
 
 void CSQLHelper::UpdateRainLog()
 {
-	char szTmp[1000];
+	char szTmp[600];
 	time_t now = time(NULL);
 	if (now==0)
 		return;
@@ -2841,7 +2831,7 @@ void CSQLHelper::UpdateRainLog()
 
 void CSQLHelper::UpdateWindLog()
 {
-	char szTmp[1000];
+	char szTmp[600];
 	time_t now = time(NULL);
 	if (now==0)
 		return;
@@ -2911,7 +2901,7 @@ void CSQLHelper::UpdateWindLog()
 
 void CSQLHelper::UpdateUVLog()
 {
-	char szTmp[1000];
+	char szTmp[600];
 	time_t now = time(NULL);
 	if (now==0)
 		return;
@@ -2977,7 +2967,7 @@ void CSQLHelper::UpdateUVLog()
 
 void CSQLHelper::UpdateMeter()
 {
-	char szTmp[1000];
+	char szTmp[600];
 	time_t now = time(NULL);
 	if (now==0)
 		return;
@@ -3148,7 +3138,7 @@ void CSQLHelper::UpdateMeter()
 
 void CSQLHelper::UpdateMultiMeter()
 {
-	char szTmp[1000];
+	char szTmp[600];
 	time_t now = time(NULL);
 	if (now==0)
 		return;
@@ -3279,7 +3269,7 @@ void CSQLHelper::UpdateMultiMeter()
 
 void CSQLHelper::AddCalendarTemperature()
 {
-	char szTmp[1000];
+	char szTmp[600];
 
 	//Get All temperature devices in the Temperature Table
 	std::vector<std::vector<std::string> > resultdevices;
@@ -3364,7 +3354,7 @@ void CSQLHelper::AddCalendarTemperature()
 
 void CSQLHelper::AddCalendarUpdateRain()
 {
-	char szTmp[1000];
+	char szTmp[600];
 
 	//Get All UV devices
 	std::vector<std::vector<std::string> > resultdevices;
@@ -3474,7 +3464,7 @@ void CSQLHelper::AddCalendarUpdateRain()
 
 void CSQLHelper::AddCalendarUpdateMeter()
 {
-	char szTmp[1000];
+	char szTmp[600];
 
 	float EnergyDivider=1000.0f;
 	float GasDivider=100.0f;
@@ -3526,7 +3516,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 	localtime_r(&later,&tm2);
 	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
-	std::vector<std::vector<std::string> > result,result2;
+	std::vector<std::vector<std::string> > result;
 
 	std::vector<std::vector<std::string> >::const_iterator itt;
 	for (itt=resultdevices.begin(); itt!=resultdevices.end(); ++itt)
@@ -3680,7 +3670,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 
 void CSQLHelper::AddCalendarUpdateMultiMeter()
 {
-	char szTmp[1000];
+	char szTmp[600];
 
 	float EnergyDivider=1000.0f;
 	float GasDivider=100.0f;
@@ -3830,7 +3820,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 
 void CSQLHelper::AddCalendarUpdateWind()
 {
-	char szTmp[1000];
+	char szTmp[600];
 
 	//Get All Wind devices
 	std::vector<std::vector<std::string> > resultdevices;
@@ -3910,7 +3900,7 @@ void CSQLHelper::AddCalendarUpdateWind()
 
 void CSQLHelper::AddCalendarUpdateUV()
 {
-	char szTmp[1000];
+	char szTmp[600];
 
 	//Get All UV devices
 	std::vector<std::vector<std::string> > resultdevices;
@@ -4014,10 +4004,10 @@ void CSQLHelper::CleanupShortLog()
 	query(szTmp);
 }
 
-void CSQLHelper::DeleteHardware(const std::string idx)
+void CSQLHelper::DeleteHardware(const std::string &idx)
 {
 	std::vector<std::vector<std::string> > result;
-	char szTmp[1000];
+	char szTmp[200];
 	sprintf(szTmp,"DELETE FROM Hardware WHERE (ID == %s)",idx.c_str());
 	result=query(szTmp);
 	//also delete all records in other tables
@@ -4038,37 +4028,37 @@ void CSQLHelper::DeleteHardware(const std::string idx)
 	result=query(szTmp);
 }
 
-void CSQLHelper::DeleteCamera(const std::string idx)
+void CSQLHelper::DeleteCamera(const std::string &idx)
 {
 	std::vector<std::vector<std::string> > result;
-	char szTmp[1000];
+	char szTmp[200];
 	sprintf(szTmp,"DELETE FROM Cameras WHERE (ID == %s)",idx.c_str());
 	result=query(szTmp);
 	sprintf(szTmp,"DELETE FROM CamerasActiveDevices WHERE (CameraRowID == %s)",idx.c_str());
 	result=query(szTmp);
 }
 
-void CSQLHelper::DeletePlan(const std::string idx)
+void CSQLHelper::DeletePlan(const std::string &idx)
 {
 	std::vector<std::vector<std::string> > result;
-	char szTmp[1000];
+	char szTmp[200];
 	sprintf(szTmp,"DELETE FROM Plans WHERE (ID == %s)",idx.c_str());
 	result=query(szTmp);
 }
 
-void CSQLHelper::DeleteEvent(const std::string idx)
+void CSQLHelper::DeleteEvent(const std::string &idx)
 {
 	std::vector<std::vector<std::string> > result;
-	char szTmp[1000];
+	char szTmp[200];
 	sprintf(szTmp,"DELETE FROM EventRules WHERE (EMID == %s)",idx.c_str());
 	result=query(szTmp);
 	sprintf(szTmp,"DELETE FROM EventMaster WHERE (ID == %s)",idx.c_str());
 	result=query(szTmp);
 }
 
-void CSQLHelper::DeleteDevice(const std::string idx)
+void CSQLHelper::DeleteDevice(const std::string &idx)
 {
-	char szTmp[1000];
+	char szTmp[200];
 	sprintf(szTmp,"DELETE FROM LightingLog WHERE (DeviceRowID == %s)",idx.c_str());
 	query(szTmp);
 	sprintf(szTmp,"DELETE FROM LightSubDevices WHERE (ParentID == %s)",idx.c_str());
@@ -4120,9 +4110,9 @@ void CSQLHelper::DeleteDevice(const std::string idx)
 	query(szTmp);
 }
 
-void CSQLHelper::TransferDevice(const std::string idx, const std::string newidx)
+void CSQLHelper::TransferDevice(const std::string &idx, const std::string &newidx)
 {
-	char szTmp[1000];
+	char szTmp[400];
 	std::vector<std::vector<std::string> > result;
 
 	sprintf(szTmp,"UPDATE LightingLog SET DeviceRowID=%s WHERE (DeviceRowID == '%s')",newidx.c_str(),idx.c_str());
@@ -4293,7 +4283,7 @@ void CSQLHelper::CleanupLightLog()
 	query(szTmp);
 }
 
-bool CSQLHelper::DoesSceneByNameExits(const std::string SceneName)
+bool CSQLHelper::DoesSceneByNameExits(const std::string &SceneName)
 {
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
@@ -4306,7 +4296,7 @@ bool CSQLHelper::DoesSceneByNameExits(const std::string SceneName)
 	return (result.size()>0);
 }
 
-void CSQLHelper::CheckSceneStatusWithDevice(const std::string DevIdx)
+void CSQLHelper::CheckSceneStatusWithDevice(const std::string &DevIdx)
 {
 	std::stringstream s_str( DevIdx );
 	unsigned long long idxll;
@@ -4329,7 +4319,7 @@ void CSQLHelper::CheckSceneStatusWithDevice(const unsigned long long DevIdx)
 	}
 }
 
-void CSQLHelper::CheckSceneStatus(const std::string Idx)
+void CSQLHelper::CheckSceneStatus(const std::string &Idx)
 {
 	std::stringstream s_str( Idx );
 	unsigned long long idxll;
@@ -4446,7 +4436,7 @@ void CSQLHelper::DeleteDataPoint(const char *ID, const char *Date)
 	result=query(szTmp);
 }
 
-void CSQLHelper::AddTaskItem(const _tTaskItem tItem)
+void CSQLHelper::AddTaskItem(const _tTaskItem &tItem)
 {
 	boost::lock_guard<boost::mutex> l(m_background_task_mutex);
 	m_background_task_queue.push_back(tItem);
@@ -4466,7 +4456,7 @@ void CSQLHelper::EventsGetTaskItems(std::vector<_tTaskItem> &currentTasks)
 
 
 
-bool CSQLHelper::BackupDatabase(const std::string OutputFile)
+bool CSQLHelper::BackupDatabase(const std::string &OutputFile)
 {
 	if (!m_dbase)
 		return false; //database not open!
@@ -4506,7 +4496,7 @@ bool CSQLHelper::BackupDatabase(const std::string OutputFile)
 	return ( rc==SQLITE_OK );
 }
 
-void CSQLHelper::Lighting2GroupCmd(const std::string ID, const unsigned char subType, const unsigned char GroupCmd)
+void CSQLHelper::Lighting2GroupCmd(const std::string &ID, const unsigned char subType, const unsigned char GroupCmd)
 {
 	char szTmp[100];
 	sprintf(szTmp,"UPDATE DeviceStatus SET nValue = %d WHERE (DeviceID=='%s') And (Type==%d) And (SubType==%d)",GroupCmd,ID.c_str(),pTypeLighting2,subType);

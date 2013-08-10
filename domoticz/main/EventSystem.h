@@ -43,9 +43,9 @@ public:
 	void StopEventSystem();
 
 	void LoadEvents();
-	bool ProcessDevice(const int HardwareID, const unsigned long long ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string devname);
+	bool ProcessDevice(const int HardwareID, const unsigned long long ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname);
     void RemoveSingleState(int ulDevID);
-    void WWWUpdateSingleState(unsigned long long ulDevID, std::string devname);
+    void WWWUpdateSingleState(const unsigned long long ulDevID, const std::string &devname);
 	void WWWGetItemStates(std::vector<_tDeviceStatus> &iStates);
 private:
 	//lua_State	*m_pLUA;
@@ -62,19 +62,19 @@ private:
 	void ProcessMinute();
     void GetCurrentStates();
     void GetCurrentMeasurementStates();
-    std::string UpdateSingleState(unsigned long long ulDevID, std::string devname, const int nValue, const char* sValue,const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, std::string lastUpdate, unsigned char lastLevel);
-    void EvaluateEvent(const std::string reason);
-	void EvaluateEvent(const std::string reason, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording);
-    void EvaluateBlockly(const std::string reason, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording);
-    bool parseBlocklyActions(const std::string Actions, const std::string eventName, const unsigned long long eventID);
-    void EvaluateLua(const std::string reason, const std::string filename);
-    void EvaluateLua(const std::string reason, const std::string filename, const unsigned long long DeviceID, const std::string devname, const int nValue, const char* sValue, std::string nValueWording);
-    std::string nValueToWording (const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue,const std::string sValue);
+    std::string UpdateSingleState(const unsigned long long ulDevID, const std::string &devname, const int nValue, const char* sValue,const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel);
+    void EvaluateEvent(const std::string &reason);
+	void EvaluateEvent(const std::string &reason, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording);
+    void EvaluateBlockly(const std::string &reason, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording);
+    bool parseBlocklyActions(const std::string &Actions, const std::string &eventName, const unsigned long long eventID);
+    void EvaluateLua(const std::string &reason, const std::string &filename);
+    void EvaluateLua(const std::string &reason, const std::string &filename, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording);
+    std::string nValueToWording (const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue,const std::string &sValue);
     static int l_domoticz_print(lua_State* lua_state);
-    void SendEventNotification(const std::string Subject, const std::string Body);
-    void OpenURL(const std::string URL);
-    bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string eventName);
-    bool ScheduleEvent(std::string ID, std::string Action, const std::string eventName);
+    void SendEventNotification(const std::string &Subject, const std::string &Body);
+    void OpenURL(const std::string &URL);
+    bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName);
+    bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
     //std::string reciprocalAction (std::string Action);
     std::vector<_tEventItem> m_events;
     std::map<std::string,float> m_tempValuesByName;
@@ -83,9 +83,9 @@ private:
     std::map<unsigned long long,float> m_tempValuesByID;
     std::map<unsigned long long,unsigned char> m_humValuesByID;
     std::map<unsigned long long,int> m_baroValuesByID;
-    void reportMissingDevice (int deviceID, std::string EventName, unsigned long long eventID);
-    int getSunRiseSunSetMinutes(std::string what);
-    bool isEventscheduled(const std::string eventName);
+    void reportMissingDevice (const int deviceID, const std::string &EventName, const unsigned long long eventID);
+    int getSunRiseSunSetMinutes(const std::string &what);
+    bool isEventscheduled(const std::string &eventName);
     void report_errors(lua_State *L, int status);
     unsigned char calculateDimLevel(int deviceID , int percentageLevel);
     
