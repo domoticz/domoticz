@@ -601,7 +601,9 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
         if (sDiff>0) {
             std::string deviceName = csubstr.substr(sPos,sDiff);
             bool isScene = false;
-            if (deviceName.substr(0,6)=="Scene:") {
+			int sspos=deviceName.find("Scene:");
+            if ((sspos==0)&&(sspos!=std::string::npos))
+			{
                 isScene = true;
                 deviceName = deviceName.substr(6);
             }
@@ -909,16 +911,15 @@ void CEventSystem::OpenURL(const std::string &URL)
 }
 
 bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Action, const std::string &eventName)
-
 {
     bool isScene = false;
     
-    if (deviceName.substr(0,6)=="Scene:") {
+	int spos=deviceName.find("Scene:");
+    if ((spos==0)&&(spos!=std::string::npos))
         isScene = true;
         deviceName = deviceName.substr(6);
     }
     
-
     std::vector<std::vector<std::string> > result;
     std::stringstream szQuery;
     
@@ -941,9 +942,7 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 
 
 bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName)
-
 {
- 
     std::string previousState = m_devicestates[deviceID].nValueWording;
     unsigned char previousLevel = calculateDimLevel(deviceID, m_devicestates[deviceID].lastLevel);
     
@@ -951,7 +950,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
     int randomTimer = 0;
     size_t aFind = Action.find(" FOR ");
     size_t rFind = Action.find(" RANDOM ");
-    if (aFind > 0) {
+    if ((aFind > 0)&&(aFind!=std::string::npos)) {
         std::string delayString = Action.substr(aFind+5);
         std::string newAction = Action.substr(0,aFind);
         suspendTimer = atoi(delayString.c_str());
@@ -960,7 +959,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
             Action = newAction;
         }
     }
-    if (rFind > 0) 
+    if ((rFind > 0)&&(rFind!=std::string::npos))
 	{
         std::string delayString = Action.substr(rFind+8);
         std::string newAction = Action.substr(0,rFind);
@@ -972,7 +971,8 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
     }
     
     unsigned char _level = 0;
-    if (Action.substr(0,9) == "Set Level") 
+	int slpos=Action.find("Set Level");
+    if ((slpos==0)&&(slpos!=std::string::npos))
 	{
         _level = calculateDimLevel(deviceID, atoi(Action.substr(10).c_str()));
         Action = Action.substr(0,9);
@@ -1034,7 +1034,8 @@ std::string CEventSystem::nValueToWording (const unsigned char dType, const unsi
     
     GetLightStatus(dType,dSubType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
     
-    if (lstatus.substr(0,9) == "Set Level") {
+	int slpos=lstatus.find("Set Level");
+    if ((slpos==0)&&(slpos!=std::string::npos))
         lstatus = "Set Level";
     }
     
