@@ -915,7 +915,8 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
     bool isScene = false;
     
 	int spos=deviceName.find("Scene:");
-    if ((spos==0)&&(spos!=std::string::npos))
+    if ((spos==0)&&(spos!=std::string::npos))\
+	{
         isScene = true;
         deviceName = deviceName.substr(6);
     }
@@ -1036,6 +1037,7 @@ std::string CEventSystem::nValueToWording (const unsigned char dType, const unsi
     
 	int slpos=lstatus.find("Set Level");
     if ((slpos==0)&&(slpos!=std::string::npos))
+	{
         lstatus = "Set Level";
     }
     
