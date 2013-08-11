@@ -121,8 +121,10 @@ images/door48.png
 images/doorbell.png
 images/doorbell48.png
 images/door48open.png
+images/down.png
 images/edit.png
 images/empty16.png
+images/equal.png
 images/events.png
 images/favorite.png
 images/forward_disabled.png
@@ -219,6 +221,7 @@ images/temp-gt-30.png
 images/temp48.png
 images/temperature.png
 images/unknown.png
+images/up.png
 images/users.png
 images/utility.png
 images/uv.png
