@@ -9,6 +9,7 @@ Version 1.0.xxx (August xxth 2013)
 - Implemented: Option to specify local networks with mask (192.168.0.0/24, 192.168.0.10/32)
 - Fixed: non admin user devices view (was only working correct for user with ID=1)
 - Implemented: Temperature Dewpoint in custom graph
+- Fixed: Camera special video/image url characters
 
 Version 1.0.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)

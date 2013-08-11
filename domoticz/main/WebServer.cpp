@@ -7249,31 +7249,43 @@ std::string CWebServer::GetJSonPage()
 			std::string sport=m_pWebEm->FindValue("port");
 			std::string username=m_pWebEm->FindValue("username");
 			std::string password=m_pWebEm->FindValue("password");
-			std::string videourl=m_pWebEm->FindValue("videourl");
-			std::string imageurl=m_pWebEm->FindValue("imageurl");
+			std::string tvideourl=m_pWebEm->FindValue("videourl");
+			std::string timageurl=m_pWebEm->FindValue("imageurl");
 			if (
 				(name=="")||
 				(address=="")||
-				(videourl=="")||
-				(imageurl=="")
+				(tvideourl=="")||
+				(timageurl=="")
 				)
 				goto exitjson;
-			int port=atoi(sport.c_str());
-			root["status"]="OK";
-			root["title"]="AddCamera";
-			sprintf(szTmp,
-                    "INSERT INTO Cameras (Name, Enabled, Address, Port, Username, Password, VideoURL, ImageURL) VALUES ('%s',%d,'%s',%d,'%s','%s','%s','%s')",
-                    name.c_str(),
-                    (senabled=="true")?1:0,
-                    address.c_str(),
-                    port,
-                    base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
-					base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
-					videourl.c_str(),
-					imageurl.c_str()
-                    );
-			result=m_pMain->m_sql.query(szTmp);
-            m_pMain->m_cameras.ReloadCameras();
+
+			std::string videourl;
+			std::string imageurl;
+			if (request_handler::url_decode(tvideourl,videourl))
+			{
+				if (request_handler::url_decode(timageurl,imageurl))
+				{
+					videourl=base64_decode(videourl);
+					imageurl=base64_decode(imageurl);
+
+					int port=atoi(sport.c_str());
+					root["status"]="OK";
+					root["title"]="AddCamera";
+					sprintf(szTmp,
+							"INSERT INTO Cameras (Name, Enabled, Address, Port, Username, Password, VideoURL, ImageURL) VALUES ('%s',%d,'%s',%d,'%s','%s','%s','%s')",
+							name.c_str(),
+							(senabled=="true")?1:0,
+							address.c_str(),
+							port,
+							base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
+							base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
+							videourl.c_str(),
+							imageurl.c_str()
+							);
+					result=m_pMain->m_sql.query(szTmp);
+					m_pMain->m_cameras.ReloadCameras();
+				}
+			}
 		}
 		else if (cparam=="updatecamera")
 		{
@@ -7286,35 +7298,47 @@ std::string CWebServer::GetJSonPage()
 			std::string sport=m_pWebEm->FindValue("port");
     		std::string username=m_pWebEm->FindValue("username");
 			std::string password=m_pWebEm->FindValue("password");
-			std::string videourl=m_pWebEm->FindValue("videourl");
-			std::string imageurl=m_pWebEm->FindValue("imageurl");
+			std::string tvideourl=m_pWebEm->FindValue("videourl");
+			std::string timageurl=m_pWebEm->FindValue("imageurl");
 			if (
 				(name=="")||
 				(senabled=="")||
 				(address=="")||
-				(videourl=="")||
-				(imageurl=="")
+				(tvideourl=="")||
+				(timageurl=="")
                 )
 				goto exitjson;
-            int port=atoi(sport.c_str());
+
+			std::string videourl;
+			std::string imageurl;
+			if (request_handler::url_decode(tvideourl,videourl))
+			{
+				if (request_handler::url_decode(timageurl,imageurl))
+				{
+					videourl=base64_decode(videourl);
+					imageurl=base64_decode(imageurl);
+
+					int port=atoi(sport.c_str());
 		
-            root["status"]="OK";
-			root["title"]="UpdateCamera";
+					root["status"]="OK";
+					root["title"]="UpdateCamera";
             
-			sprintf(szTmp,
-                    "UPDATE Cameras SET Name='%s', Enabled=%d, Address='%s', Port=%d, Username='%s', Password='%s', VideoURL='%s', ImageURL='%s' WHERE (ID == %s)",
-                    name.c_str(),
-                    (senabled=="true")?1:0,
-                    address.c_str(),
-                    port,
-					base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
-					base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
-					videourl.c_str(),
-					imageurl.c_str(),
-                    idx.c_str()
-                    );
-			result=m_pMain->m_sql.query(szTmp);
-            m_pMain->m_cameras.ReloadCameras();
+					sprintf(szTmp,
+							"UPDATE Cameras SET Name='%s', Enabled=%d, Address='%s', Port=%d, Username='%s', Password='%s', VideoURL='%s', ImageURL='%s' WHERE (ID == %s)",
+							name.c_str(),
+							(senabled=="true")?1:0,
+							address.c_str(),
+							port,
+							base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
+							base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
+							videourl.c_str(),
+							imageurl.c_str(),
+							idx.c_str()
+							);
+					result=m_pMain->m_sql.query(szTmp);
+					m_pMain->m_cameras.ReloadCameras();
+				}
+			}
         }
 		else if (cparam=="deletecamera")
 		{

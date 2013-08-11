@@ -254,7 +254,7 @@ function GetCameraSettings()
 	}
 	csettings.username=$('#dialog-add-edit-camera #cameraparamstable #username').val();
 	csettings.password=$('#dialog-add-edit-camera #cameraparamstable #password').val();
-	
+
 	csettings.videourl=$('#dialog-add-edit-camera #cameraparamstable #videourl').val();
 	csettings.imageurl=$('#dialog-add-edit-camera #cameraparamstable #imageurl').val();
 
@@ -283,11 +283,14 @@ function Updatecamera(idx)
 		return;
 	}
 
+	var mvideourl=encodeURIComponent(btoa(csettings.videourl));
+	var mimageurl=encodeURIComponent(btoa(csettings.imageurl));
+
 	$.ajax({
 		 url: "json.htm?type=command&param=updatecamera&address=" + csettings.address + 
 					"&port=" + csettings.port + "&name=" + csettings.name + "&enabled=" + csettings.bEnabled + "&idx=" + idx + 
 					"&username=" + csettings.username + "&password=" + csettings.password +
-					"&videourl=" + csettings.videourl + "&imageurl=" + csettings.imageurl,
+					"&videourl=" + mvideourl + "&imageurl=" + mimageurl,
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {
@@ -306,11 +309,14 @@ function Addcamera()
 		return;
 	}
 
+	var mvideourl=encodeURIComponent(btoa(csettings.videourl));
+	var mimageurl=encodeURIComponent(btoa(csettings.imageurl));
+
 	$.ajax({
 		 url: "json.htm?type=command&param=addcamera&address=" + csettings.address +
 					"&port=" + csettings.port + "&name=" + csettings.name + "&enabled=" + csettings.bEnabled +
 					"&username=" + csettings.username + "&password=" + csettings.password +
-					"&videourl=" + csettings.videourl + "&imageurl=" + csettings.imageurl,
+					"&videourl=" + mvideourl + "&imageurl=" + mimageurl,
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {

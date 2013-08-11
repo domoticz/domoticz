@@ -601,8 +601,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
         if (sDiff>0) {
             std::string deviceName = csubstr.substr(sPos,sDiff);
             bool isScene = false;
-			int sspos=deviceName.find("Scene:");
-            if ((sspos==0)&&(sspos!=std::string::npos))
+            if (deviceName.find("Scene:")==0)
 			{
                 isScene = true;
                 deviceName = deviceName.substr(6);
@@ -914,8 +913,7 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 {
     bool isScene = false;
     
-	int spos=deviceName.find("Scene:");
-    if ((spos==0)&&(spos!=std::string::npos))\
+    if (deviceName.find("Scene:")==0)
 	{
         isScene = true;
         deviceName = deviceName.substr(6);
@@ -972,8 +970,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
     }
     
     unsigned char _level = 0;
-	int slpos=Action.find("Set Level");
-    if ((slpos==0)&&(slpos!=std::string::npos))
+    if (Action.find("Set Level")==0)
 	{
         _level = calculateDimLevel(deviceID, atoi(Action.substr(10).c_str()));
         Action = Action.substr(0,9);
@@ -1035,8 +1032,7 @@ std::string CEventSystem::nValueToWording (const unsigned char dType, const unsi
     
     GetLightStatus(dType,dSubType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
     
-	int slpos=lstatus.find("Set Level");
-    if ((slpos==0)&&(slpos!=std::string::npos))
+    if (lstatus.find("Set Level")==0)
 	{
         lstatus = "Set Level";
     }
