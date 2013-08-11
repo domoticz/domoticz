@@ -3026,7 +3026,7 @@ function ShowP1MonthReport(actMonth,actYear)
 	  var greturn=totalR1+totalR2;
 	  $("#utilitycontent #tu").html(gtotal.toFixed(3));
 	  $("#utilitycontent #tr").html(greturn.toFixed(3));
-	  var montlycosts=(totalT1*$.costsT1)+(totalT2*$.costsT2)+(totalR1*$.costsR1)+(totalR2*$.costsR2);
+	  var montlycosts=(totalT1*$.costsT1)+(totalT2*$.costsT2)-(totalR1*$.costsR1)-(totalR2*$.costsR2);
 	  $("#utilitycontent #mc").html(montlycosts.toFixed(2));
 	  
 	  mTable.fnDraw();
@@ -3244,7 +3244,7 @@ function ShowP1YearReport(actYear)
 	  var greturn=globalR1+globalR2;
 	  $("#utilitycontent #tu").html(gtotal.toFixed(3));
 	  $("#utilitycontent #tr").html(greturn.toFixed(3));
-	  var montlycosts=(globalT1*$.costsT1)+(globalT2*$.costsT2)+(globalR1*$.costsR1)+(globalR2*$.costsR2);
+	  var montlycosts=(globalT1*$.costsT1)+(globalT2*$.costsT2)-(globalR1*$.costsR1)-(globalR2*$.costsR2);
 	  $("#utilitycontent #mc").html(montlycosts.toFixed(2));
 	  
 	  mTable.fnDraw();
