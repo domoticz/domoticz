@@ -37,6 +37,23 @@ function GetBackbuttonHTMLTable(backfunction)
   return xhtm;
 }
 
+function GetBackbuttonHTMLTableWithRight(backfunction,rightfunction,rightlabel)
+{
+  var xhtm=
+        '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+        '\t<tr>\n' +
+        '\t  <td align="left">\n' +
+        '\t    <a class="btnstylerev" onclick="' + backfunction + '()" data-i18n="Back">Back</a>\n' +
+        '\t  </td>\n' +
+        '\t  <td align="right">\n' +
+        '\t    <a class="btnstyle" onclick="' + rightfunction + '" data-i18n="'+rightlabel+'">'+rightlabel+'</a>\n' +
+        '\t  </td>\n' +
+        '\t</tr>\n' +
+        '\t</table>\n' +
+        '\t<br>\n';
+  return xhtm;
+}
+
 function GetBackbuttonTransferHTMLTable(backfunction, id)
 {
   var xhtm=

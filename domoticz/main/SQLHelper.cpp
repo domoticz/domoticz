@@ -670,6 +670,11 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("CostEnergy", 2149);
 	}
+	if (!GetPreferencesVar("CostEnergyT2", nValue))
+	{
+		GetPreferencesVar("CostEnergy", nValue);
+		UpdatePreferencesVar("CostEnergyT2", nValue);
+	}
 	if (!GetPreferencesVar("CostGas", nValue))
 	{
 		UpdatePreferencesVar("CostGas", 6218);

@@ -36,6 +36,80 @@
 <div id="utilitycontent">
 </div>
 
+<div id="toptextmonth" style="display:none;">
+    <a class="btnstylerev" onclick="ShowYearReport(0)" data-i18n="Back">Back</a>&nbsp;
+    <h1 id="theader">Usage this Month</h1>
+	<br>
+	<span>Total Usage:</span> <span>T1:</span> <span id="tut1">-</span> kWh, <span>T2:</span> <span id="tut2">-</span> kWh, <span>Total:</span> <span id="tu">-</span> kWh<br>
+	<div id="dreturn" style="display:none;"><span>Total Return:</span> <span>T1:</span> <span id="trt1">-</span> kWh, <span>T2:</span> <span id="trt2">-</span> kWh, <span>Total:</span> <span id="tr">-</span> kWh<br></div>
+	<span>Montly Cost:</span> <span id="mc">-</span><br>
+	<br>
+</div>
+<div id="toptextyear" style="display:none;">
+	<table class="display" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+	  <td align="left">
+		<a class="btnstylerev" onclick="ShowUtilities()" data-i18n="Back">Back</a>&nbsp;
+		<h1 id="theader">Usage this Year</h1>
+	  </td>
+	  <td align="right">
+			<span data-i18n="Year">Year</span>:
+			<select id="comboyear" style="width:60px" class="combobox ui-corner-all">
+				<option value="2013">2013</option>
+				<option value="2014">2014</option>
+				<option value="2015">2015</option>
+				<option value="2016">2016</option>
+				<option value="2017">2017</option>
+				<option value="2018">2018</option>
+			</select>
+	  </td>
+	</tr>
+	</table>
+	<br>
+	<span>Total Usage:</span> <span>T1:</span> <span id="tut1">-</span> kWh, <span>T2:</span> <span id="tut2">-</span> kWh, <span>Total:</span> <span id="tu">-</span> kWh<br>
+	<div id="dreturn" style="display:none;"><span>Total Return:</span> <span>T1:</span> <span id="trt1">-</span> kWh, <span>T2:</span> <span id="trt2">-</span> kWh, <span>Total:</span> <span id="tr">-</span> kWh<br></div>
+	<span>Year Cost:</span> <span id="mc">-</span><br>
+	<br>
+</div>
+<div id="monthreportview" style="display:none;">
+	<table class="display myrighttable" id="monthreport" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<thead>
+			<tr valign="middle">
+				<th width="30" align="right" data-i18n="Day">Day</th>
+				<th width="60" align="right">Usage T1</th>
+				<th width="60" align="right">Costs</th>
+				<th width="60" align="right">Usage T2</th>
+				<th width="60" align="right">Costs</th>
+				<th width="60" align="right">Return T1</th>
+				<th width="60" align="right">Costs</th>
+				<th width="60" align="right">Return T2</th>
+				<th width="60" align="right">Costs</th>
+				<th width="60" align="right">Total</th>
+				<th width="40" align="right"><></th>
+			</tr>
+		</thead>
+	</table>
+</div>
+<div id="yearreportview" style="display:none;">
+	<table class="display myrighttable" id="yearreport" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<thead>
+			<tr valign="middle">
+				<th width="30" align="right">Month</th>
+				<th width="60" align="right">Usage T1</th>
+				<th width="60" align="right">Costs</th>
+				<th width="60" align="right">Usage T2</th>
+				<th width="60" align="right">Costs</th>
+				<th width="60" align="right">Return T1</th>
+				<th width="60" align="right">Costs</th>
+				<th width="60" align="right">Return T2</th>
+				<th width="60" align="right">Costs</th>
+				<th width="60" align="right">Total</th>
+				<th width="40" align="right"><></th>
+			</tr>
+		</thead>
+	</table>
+</div>
+
 <div id="counterlog" style="display:none;">
   <h2 data-i18n="Day">Day</h2>
   <div id="counterdaygraph" style="height: 300px;"></div>
@@ -2815,6 +2889,380 @@ function ShowGenericLog(id,name,switchtype)
     });
 }
 
+function ShowP1MonthReport(actMonth,actYear)
+{
+  var htmlcontent = '';
+
+  htmlcontent+=$('#toptextmonth').html();
+  htmlcontent+=$('#monthreportview').html();
+  $('#utilitycontent').html(htmlcontent);
+  $('#utilitycontent').i18n();
+
+  $("#utilitycontent #theader").html($.i18n("Usage")+ " "+ $.i18n($.monthNames[actMonth-1])+" " + actYear);
+
+  $('#utilitycontent #monthreport').dataTable( {
+		"sDom": '<"H"rC>t<"F">',
+		"oTableTools": {
+			"sRowSelect": "single"
+		},
+		"aaSorting": [[ 0, "asc" ]],
+		"aoColumnDefs": [
+			{ "bSortable": false, "aTargets": [ 10 ] }
+		],
+		"bSortClasses": false,
+		"bProcessing": true,
+		"bStateSave": false,
+		"bJQueryUI": true,
+		"aLengthMenu": [[50, 100, -1], [50, 100, "All"]],
+		"iDisplayLength" : 50
+  });
+  var mTable = $('#utilitycontent #monthreport');
+  var oTable = mTable.dataTable();
+  //some test data
+  oTable.fnClearTable();
+  
+  var totalT1=0;
+  var totalT2=0;
+  var totalR1=0;
+  var totalR2=0;
+  
+	$.getJSON("json.htm?type=graph&sensor=counter&idx="+$.devIdx+"&range=year",
+	function(data) {
+		var bHaveDelivered=(typeof data.delivered!= 'undefined');
+		if (bHaveDelivered==false) {
+			$("#utilitycontent #dreturn").hide();
+		}
+		else {
+			$("#utilitycontent #dreturn").show();
+		}
+		oTable.fnSetColumnVis( 5, bHaveDelivered);
+		oTable.fnSetColumnVis( 6, bHaveDelivered);
+		oTable.fnSetColumnVis( 7, bHaveDelivered);
+		oTable.fnSetColumnVis( 8, bHaveDelivered);
+	
+		var lastTotal=-1;
+		
+	    $.each(data.result, function(i,item)
+		{
+			var month=parseInt(item.d.substring(5, 7), 10);
+			var year=parseInt(item.d.substring(0, 4), 10);
+
+			if ((month==actMonth)&&(year==actYear)) {
+				var day=parseInt(item.d.substring(8, 10), 10);
+				var UsageT1=0;
+				var UsageT2=0;
+				var ReturnT1=0;
+				var ReturnT2=0;
+
+				UsageT1=parseFloat(item.v);
+				if (typeof item.v2!= 'undefined') {
+					UsageT2=parseFloat(item.v2);
+				}
+				if (typeof item.r1!= 'undefined') {
+					ReturnT1=parseFloat(item.r1);
+				}
+				if (typeof item.r2!= 'undefined') {
+					ReturnT2=parseFloat(item.r2);
+				}
+			
+				totalT1+=UsageT1;
+				totalT2+=UsageT2;
+				totalR1+=ReturnT1;
+				totalR2+=ReturnT2;
+
+				var rcostT1=UsageT1*$.costsT1;
+				var rcostT2=UsageT2*$.costsT2;
+				var rcostR1=-(ReturnT1*$.costsR1);
+				var rcostR2=-(ReturnT2*$.costsR2);
+				var rTotal=rcostT1+rcostT2+rcostR1+rcostR2;
+
+				var textR1="";
+				var textR2="";
+				var textCostR1="";
+				var textCostR2="";
+				
+				if (ReturnT1!=0) {
+					textR1=ReturnT1.toFixed(3);
+					textCostR1=rcostR1.toFixed(2);
+				}
+				if (ReturnT2!=0) {
+					textR2=ReturnT2.toFixed(3);
+					textCostR2=rcostR2.toFixed(2);
+				}
+				
+				var img;
+				if ((lastTotal==-1)||(lastTotal==rTotal)) {
+					img='<img src="images/equal.png"></img>';
+				}
+				else if (rTotal<lastTotal) {
+					img='<img src="images/down.png"></img>';
+				}
+				else {
+					img='<img src="images/up.png"></img>';
+				}
+				lastTotal=rTotal;
+
+				var addId = oTable.fnAddData([
+					  day,
+					  UsageT1.toFixed(3),
+					  rcostT1.toFixed(2),
+					  UsageT2.toFixed(3),
+					  rcostT2.toFixed(2),
+					  textR1,
+					  textCostR1,
+					  textR2,
+					  textCostR2,
+					  rTotal.toFixed(2),
+					  img
+					], false);
+			}
+		});
+
+	  $("#utilitycontent #tut1").html(totalT1.toFixed(3));
+	  $("#utilitycontent #tut2").html(totalT2.toFixed(3));
+	  $("#utilitycontent #trt1").html(totalR1.toFixed(3));
+	  $("#utilitycontent #trt2").html(totalR2.toFixed(3));
+	  var gtotal=totalT1+totalT2;
+	  var greturn=totalR1+totalR2;
+	  $("#utilitycontent #tu").html(gtotal.toFixed(3));
+	  $("#utilitycontent #tr").html(greturn.toFixed(3));
+	  var montlycosts=(totalT1*$.costsT1)+(totalT2*$.costsT2)+(totalR1*$.costsR1)+(totalR2*$.costsR2);
+	  $("#utilitycontent #mc").html(montlycosts.toFixed(2));
+	  
+	  mTable.fnDraw();
+		/* Add a click handler to the rows - this could be used as a callback */
+		$("#utilitycontent #monthreport tbody tr").click( function( e ) {
+			if ( $(this).hasClass('row_selected') ) {
+				$(this).removeClass('row_selected');
+			}
+			else {
+				oTable.$('tr.row_selected').removeClass('row_selected');
+				$(this).addClass('row_selected');
+			}
+		});  
+	});
+
+  return false;
+}
+
+function OnSelChangeYearP1Report()
+{
+	var yearidx=$("#utilitycontent #comboyear option:selected").val();
+	if (typeof yearidx == 'undefined') {
+		return ;
+	}
+	ShowP1YearReport(yearidx);
+}
+
+
+function Add2YearTableP1Report(oTable,totalT1,totalT2,totalR1,totalR2,lastTotal,lastMonth,actYear)
+{
+
+	var rcostT1=totalT1*$.costsT1;
+	var rcostT2=totalT2*$.costsT2;
+	var rcostR1=-(totalR1*$.costsR1);
+	var rcostR2=-(totalR2*$.costsR2);
+	var rTotal=rcostT1+rcostT2+rcostR1+rcostR2;
+
+	var textR1="";
+	var textR2="";
+	var textCostR1="";
+	var textCostR2="";
+
+	if (totalT1!=0) {
+		textR1=totalT1.toFixed(3);
+		textCostR1=rcostR1.toFixed(2);
+	}
+	if (totalT1!=0) {
+		textR2=totalT1.toFixed(3);
+		textCostR2=rcostR2.toFixed(2);
+	}
+
+	
+	var img;
+	if ((lastTotal==-1)||(lastTotal==rTotal)) {
+		img='<img src="images/equal.png"></img>';
+	}
+	else if (rTotal<lastTotal) {
+		img='<img src="images/down.png"></img>';
+	}
+	else {
+		img='<img src="images/up.png"></img>';
+	}
+
+	var monthtxt=lastMonth + ". " + $.i18n($.monthNames[lastMonth-1]) + " ";
+	monthtxt+='<img src="images/next.png" onclick="ShowP1MonthReport(' + lastMonth +',' + actYear + ')">';
+
+	var addId = oTable.fnAddData([
+		  monthtxt,
+		  totalT1.toFixed(3),
+		  rcostT1.toFixed(2),
+		  totalT2.toFixed(3),
+		  rcostT2.toFixed(2),
+		  textR1,
+		  textCostR1,
+		  textR2,
+		  textCostR2,
+		  rTotal.toFixed(2),
+		  img
+		], false);
+	return rTotal;
+}
+
+function ShowP1YearReport(actYear)
+{
+	if (actYear==0) {
+		actYear=$.actYear;
+	}
+	else {
+		$.actYear=actYear;
+	}
+  var htmlcontent = '';
+  htmlcontent+=$('#toptextyear').html();
+  htmlcontent+=$('#yearreportview').html();
+  $('#utilitycontent').html(htmlcontent);
+  $('#utilitycontent').i18n();
+
+  $("#utilitycontent #theader").html($.i18n("Usage") + " "+actYear);
+
+	$("#utilitycontent #comboyear").val(actYear);
+	
+	$("#utilitycontent #comboyear").change(function() { 
+		OnSelChangeYearP1Report();
+	});
+	$('#utilitycontent #comboyear').keypress(function() {
+	  $(this).change();
+	});
+
+  $('#utilitycontent #yearreport').dataTable( {
+		"sDom": '<"H"rC>t<"F">',
+		"oTableTools": {
+			"sRowSelect": "single"
+		},
+		"aaSorting": [[ 0, "asc" ]],
+		"aoColumnDefs": [
+			{ "bSortable": false, "aTargets": [ 10 ] }
+		],
+		"bSortClasses": false,
+		"bProcessing": true,
+		"bStateSave": false,
+		"bJQueryUI": true,
+		"aLengthMenu": [[50, 100, -1], [50, 100, "All"]],
+		"iDisplayLength" : 50
+  });
+  var mTable = $('#utilitycontent #yearreport');
+  var oTable = mTable.dataTable();
+
+  oTable.fnClearTable();
+  
+  var totalT1=0;
+  var totalT2=0;
+  var totalR1=0;
+  var totalR2=0;
+
+  var globalT1=0;
+  var globalT2=0;
+  var globalR1=0;
+  var globalR2=0;
+  
+	$.getJSON("json.htm?type=graph&sensor=counter&idx="+$.devIdx+"&range=year",
+	function(data) {
+		var bHaveDelivered=(typeof data.delivered!= 'undefined');
+		if (bHaveDelivered==false) {
+			$("#utilitycontent #dreturn").hide();
+		}
+		else {
+			$("#utilitycontent #dreturn").show();
+		}
+		oTable.fnSetColumnVis( 5, bHaveDelivered);
+		oTable.fnSetColumnVis( 6, bHaveDelivered);
+		oTable.fnSetColumnVis( 7, bHaveDelivered);
+		oTable.fnSetColumnVis( 8, bHaveDelivered);
+	
+		var lastTotal=-1;
+		var lastMonth=-1;
+		
+	    $.each(data.result, function(i,item)
+		{
+			var month=parseInt(item.d.substring(5, 7), 10);
+			var year=parseInt(item.d.substring(0, 4), 10);
+
+			if (year==actYear) {
+				if (lastMonth==-1) {
+					lastMonth=month;
+				}
+				if (lastMonth!=month)
+				{
+					//add totals to table
+					lastTotal=Add2YearTableP1Report(oTable,totalT1,totalT2,totalR1,totalR2,lastTotal,lastMonth,actYear);
+					
+					lastMonth=month;
+					globalT1+=totalT1;
+					globalT2+=totalT2;
+					globalR1+=totalR1;
+					globalR2+=totalR2;
+
+					totalT1=0;
+					totalT2=0;
+					totalR1=0;
+					totalR2=0;
+				}
+				var day=parseInt(item.d.substring(8, 10), 10);
+				var UsageT1=0;
+				var UsageT2=0;
+				var ReturnT1=0;
+				var ReturnT2=0;
+
+				UsageT1=parseFloat(item.v);
+				if (typeof item.v2!= 'undefined') {
+					UsageT2=parseFloat(item.v2);
+				}
+				if (typeof item.r1!= 'undefined') {
+					ReturnT1=parseFloat(item.r1);
+				}
+				if (typeof item.r2!= 'undefined') {
+					ReturnT2=parseFloat(item.r2);
+				}
+			
+				totalT1+=UsageT1;
+				totalT2+=UsageT2;
+				totalR1+=ReturnT1;
+				totalR2+=ReturnT2;
+			}
+		});
+
+	//add last month
+	if ((globalT1!=0)||(globalT2!=0)||(globalR1!=0)||(globalR2!=0)) {
+		lastTotal=Add2YearTableP1Report(oTable,totalT1,totalT2,totalR1,totalR2,lastTotal,lastMonth,actYear);
+	}
+
+	$("#utilitycontent #tut1").html(globalT1.toFixed(3));
+	  $("#utilitycontent #tut2").html(globalT2.toFixed(3));
+	  $("#utilitycontent #trt1").html(globalR1.toFixed(3));
+	  $("#utilitycontent #trt2").html(globalR2.toFixed(3));
+	  var gtotal=globalT1+globalT2;
+	  var greturn=globalR1+globalR2;
+	  $("#utilitycontent #tu").html(gtotal.toFixed(3));
+	  $("#utilitycontent #tr").html(greturn.toFixed(3));
+	  var montlycosts=(globalT1*$.costsT1)+(globalT2*$.costsT2)+(globalR1*$.costsR1)+(globalR2*$.costsR2);
+	  $("#utilitycontent #mc").html(montlycosts.toFixed(2));
+	  
+	  mTable.fnDraw();
+		/* Add a click handler to the rows - this could be used as a callback */
+		$("#utilitycontent #yearreport tbody tr").click( function( e ) {
+			if ( $(this).hasClass('row_selected') ) {
+				$(this).removeClass('row_selected');
+			}
+			else {
+				oTable.$('tr.row_selected').removeClass('row_selected');
+				$(this).addClass('row_selected');
+			}
+		});  
+	});
+
+  return false;
+}
+
 function ShowSmartLog(id,name,switchtype)
 {
 	clearInterval($.myglobals.refreshTimer);
@@ -2825,7 +3273,31 @@ function ShowSmartLog(id,name,switchtype)
   var htmlcontent = '';
   htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
   htmlcontent+=$('#smartlog').html();
-  $('#utilitycontent').html(GetBackbuttonHTMLTable('ShowUtilities')+htmlcontent);
+
+	$.costsT1=0.2389;
+	$.costsT2=0.2389;
+
+	$.ajax({
+		 url: "json.htm?type=command&param=getelectracosts",
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			$.costsT1=parseFloat(data.CostEnergy)/10000;
+			$.costsT2=parseFloat(data.CostEnergyT2)/10000;
+		 }
+	});
+
+	$.costsR1=$.costsT1;
+	$.costsR2=$.costsT2;
+
+	$.monthNames = [ "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December" ];
+    
+	var d = new Date();
+	var actMonth = d.getMonth()+1;
+	var actYear = d.getYear()+1900;
+
+  $('#utilitycontent').html(GetBackbuttonHTMLTableWithRight('ShowUtilities','ShowP1YearReport('+actYear+')',$.i18n('Report'))+htmlcontent);
   $('#utilitycontent').i18n();
   
   $.DayChart = new Highcharts.Chart({

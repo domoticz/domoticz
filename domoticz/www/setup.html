@@ -334,8 +334,10 @@
 			<tr>
 				<td align="right" style="width:60px"><label><span data-i18n="Energy"></span>: </label></td>
 				<td><input type="input" id="EnergyDivider" name="EnergyDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-				<td align="right" style="width:60px"><label><span data-i18n="Costs"></span>: </label></td>
+				<td align="right" style="width:90px"><label><span data-i18n="Costs"></span> T1: </label></td>
 				<td><input type="input" id="CostEnergy" name="CostEnergy" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
+				<td align="right" style="width:90px"><label><span data-i18n="Costs"></span> T2: </label></td>
+				<td><input type="input" id="CostEnergyT2" name="CostEnergyT2" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
 			</tr>
 			<tr>
 				<td align="right" style="width:60px"><label><span data-i18n="Gas"></span>: </label></td>
@@ -572,6 +574,9 @@ function ShowSettings()
       }
       if (typeof data.CostEnergy != 'undefined') {
         $("#rfxmetertable #CostEnergy").val(data.CostEnergy);
+      }
+      if (typeof data.CostEnergyT2 != 'undefined') {
+        $("#rfxmetertable #CostEnergyT2").val(data.CostEnergyT2);
       }
       if (typeof data.GasDivider != 'undefined') {
         $("#rfxmetertable #GasDivider").val(data.GasDivider );

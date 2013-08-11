@@ -597,9 +597,11 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("UseAutoUpdate",(scheckforupdates=="on"?1:0));
 
 	float CostEnergy=(float)atof(m_pWebEm->FindValue("CostEnergy").c_str());
+	float CostEnergyT2=(float)atof(m_pWebEm->FindValue("CostEnergyT2").c_str());
 	float CostGas=(float)atof(m_pWebEm->FindValue("CostGas").c_str());
 	float CostWater=(float)atof(m_pWebEm->FindValue("CostWater").c_str());
 	m_pMain->m_sql.UpdatePreferencesVar("CostEnergy",int(CostEnergy*10000.0f));
+	m_pMain->m_sql.UpdatePreferencesVar("CostEnergyT2",int(CostEnergyT2*10000.0f));
 	m_pMain->m_sql.UpdatePreferencesVar("CostGas",int(CostGas*10000.0f));
 	m_pMain->m_sql.UpdatePreferencesVar("CostWater",int(CostWater*10000.0f));
 
@@ -5710,6 +5712,16 @@ std::string CWebServer::GetJSonPage()
 			root["status"]="OK";
 			root["title"]="ExecuteScript";
 		}
+		else if (cparam=="getelectracosts")
+		{
+			int nValue=0;
+			root["status"]="OK";
+			root["title"]="GetElectraCosts";
+			m_pMain->m_sql.GetPreferencesVar("CostEnergy",nValue);
+			root["CostEnergy"]=nValue;
+			m_pMain->m_sql.GetPreferencesVar("CostEnergyT2",nValue);
+			root["CostEnergyT2"]=nValue;
+		}
 		else if (cparam=="checkforupdate")
 		{
 			bool bHaveUser=(m_pWebEm->m_actualuser!="");
@@ -8681,6 +8693,11 @@ std::string CWebServer::GetJSonPage()
 				{
 					sprintf(szTmp,"%.4f",(float)(nValue)/10000.0f);
 					root["CostEnergy"]=szTmp;
+				}
+				else if (Key=="CostEnergyT2")
+				{
+					sprintf(szTmp,"%.4f",(float)(nValue)/10000.0f);
+					root["CostEnergyT2"]=szTmp;
 				}
 				else if (Key=="CostGas")
 				{
