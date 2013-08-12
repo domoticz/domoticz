@@ -15,7 +15,7 @@
 #include "../webserver/Base64.h"
 #include "mainstructs.h"
 
-#define DB_VERSION 20
+#define DB_VERSION 21
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -244,8 +244,8 @@ const char *sqlCreateCameras =
 "[Port] INTEGER, "
 "[Username] VARCHAR(100) DEFAULT (''), "
 "[Password] VARCHAR(100) DEFAULT (''), "
-"[VideoURL] VARCHAR(100) DEFAULT (''), "
-"[ImageURL] VARCHAR(100) DEFAULT (''));";
+"[VideoURL] VARCHAR(200) DEFAULT (''), "
+"[ImageURL] VARCHAR(200) DEFAULT (''));";
 
 const char *sqlCreateCamerasActiveDevices =
 "CREATE TABLE IF NOT EXISTS [CamerasActiveDevices] ("
@@ -591,10 +591,22 @@ bool CSQLHelper::OpenDatabase()
 			query("INSERT INTO EventMaster(Name, XMLStatement, Status) SELECT Name, XMLStatement, Status FROM Events;");
 			query("INSERT INTO EventRules(EMID, Conditions, Actions, SequenceNo) SELECT EventMaster.ID, Events.Conditions, Events.Actions, 1 FROM Events INNER JOIN EventMaster ON EventMaster.Name = Events.Name;");
             query("DROP TABLE Events;");
-
 		}
-        
-    
+		if (dbversion<21)
+		{
+			//increase Video/Image URL for camera's
+			//create a backup
+			query("ALTER TABLE Cameras RENAME TO tmp_Cameras");
+			//Create the new table
+			query(sqlCreateCameras);
+			//Copy values from tmp_Cameras back into our new table
+			query(
+				"INSERT INTO Cameras([ID],[Name],[Enabled],[Address],[Port],[Username],[Password],[VideoURL],[ImageURL])"
+				"SELECT [ID],[Name],[Enabled],[Address],[Port],[Username],[Password],[VideoURL],[ImageURL]"
+				"FROM tmp_Cameras");
+			//Drop the tmp_Cameras table
+			query("DROP TABLE tmp_Cameras");
+		}
     }
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
 

@@ -36,6 +36,64 @@
 <div id="utilitycontent">
 </div>
 
+<div id="toptextmonthgas" style="display:none;">
+    <a class="btnstylerev" onclick="ShowP1YearReportGas(0)" data-i18n="Back">Back</a>&nbsp;
+    <h1 id="theader">Usage this Month</h1>
+	<br>
+	<span>Total Usage:</span> <span id="tu">-</span> <span id="munit">m3</span><br>
+	<span>Montly Cost:</span> <span id="mc">-</span><br>
+	<br>
+</div>
+<div id="toptextyeargas" style="display:none;">
+	<table class="display" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+	  <td align="left">
+		<a class="btnstylerev" onclick="ShowUtilities()" data-i18n="Back">Back</a>&nbsp;
+		<h1 id="theader">Usage this Year</h1>
+	  </td>
+	  <td align="right">
+			<span data-i18n="Year">Year</span>:
+			<select id="comboyear" style="width:60px" class="combobox ui-corner-all">
+				<option value="2013">2013</option>
+				<option value="2014">2014</option>
+				<option value="2015">2015</option>
+				<option value="2016">2016</option>
+				<option value="2017">2017</option>
+				<option value="2018">2018</option>
+			</select>
+	  </td>
+	</tr>
+	</table>
+	<br>
+	<span>Total Usage:</span> <span id="tu">-</span> <span id="munit">m3</span><br>
+	<span>Year Cost:</span> <span id="mc">-</span><br>
+	<br>
+</div>
+
+<div id="monthreportviewgas" style="display:none;">
+	<table class="display myrighttable" id="monthreport" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<thead>
+			<tr valign="middle">
+				<th width="30" align="right" data-i18n="Day">Day</th>
+				<th width="60" align="right">Usage</th>
+				<th width="60" align="right">Costs</th>
+				<th width="40" align="right"><></th>
+			</tr>
+		</thead>
+	</table>
+</div>
+<div id="yearreportviewgas" style="display:none;">
+	<table class="display myrighttable" id="yearreport" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<thead>
+			<tr valign="middle">
+				<th width="30" align="right">Month</th>
+				<th width="60" align="right">Usage</th>
+				<th width="60" align="right">Costs</th>
+				<th width="40" align="right"><></th>
+			</tr>
+		</thead>
+	</table>
+</div>
 <div id="toptextmonth" style="display:none;">
     <a class="btnstylerev" onclick="ShowP1YearReport(0)" data-i18n="Back">Back</a>&nbsp;
     <h1 id="theader">Usage this Month</h1>
@@ -2316,7 +2374,38 @@ function ShowCounterLog(id,name,switchtype)
   var htmlcontent = '';
   htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
   htmlcontent+=$('#counterlog').html();
-  $('#utilitycontent').html(GetBackbuttonHTMLTable('ShowUtilities')+htmlcontent);
+
+  if ((switchtype==0)||(switchtype==1)) {
+	$.costsT1=0.2389;
+	$.costsT2=0.2389;
+	$.costsGas=0.6218;
+
+	$.ajax({
+		 url: "json.htm?type=command&param=getelectragascosts",
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			$.costsT1=parseFloat(data.CostEnergy)/10000;
+			$.costsT2=parseFloat(data.CostEnergyT2)/10000;
+			$.costsGas=parseFloat(data.CostGas)/10000;
+		 }
+	});
+
+	$.costsR1=$.costsT1;
+	$.costsR2=$.costsT2;
+
+	$.monthNames = [ "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December" ];
+    
+	var d = new Date();
+	var actMonth = d.getMonth()+1;
+	var actYear = d.getYear()+1900;
+	$('#utilitycontent').html(GetBackbuttonHTMLTableWithRight('ShowUtilities','ShowP1YearReportGas('+actYear+')',$.i18n('Report'))+htmlcontent);
+  }
+  else {
+	$('#utilitycontent').html(GetBackbuttonHTMLTable('ShowUtilities')+htmlcontent);
+  }
+
   $('#utilitycontent').i18n();
   
   $.DayChart = new Highcharts.Chart({
@@ -3263,6 +3352,294 @@ function ShowP1YearReport(actYear)
   return false;
 }
 
+function ShowP1MonthReportGas(actMonth,actYear)
+{
+  var htmlcontent = '';
+
+  htmlcontent+=$('#toptextmonthgas').html();
+  htmlcontent+=$('#monthreportviewgas').html();
+  $('#utilitycontent').html(htmlcontent);
+  $('#utilitycontent').i18n();
+
+  $("#utilitycontent #theader").html($.i18n("Usage")+ " "+$.monthNames[actMonth-1]+" " + actYear);
+
+	if ($.devSwitchType==0) {
+		//Electra
+		$("#utilitycontent #munit").html("kWh");
+	}
+	else {
+		//Gas
+		$("#utilitycontent #munit").html("m3");
+	}
+
+  $('#utilitycontent #monthreport').dataTable( {
+		"sDom": '<"H"rC>t<"F">',
+		"oTableTools": {
+			"sRowSelect": "single"
+		},
+		"aaSorting": [[ 0, "asc" ]],
+		"aoColumnDefs": [
+			{ "bSortable": false, "aTargets": [ 3 ] }
+		],
+		"bSortClasses": false,
+		"bProcessing": true,
+		"bStateSave": false,
+		"bJQueryUI": true,
+		"aLengthMenu": [[50, 100, -1], [50, 100, "All"]],
+		"iDisplayLength" : 50
+  });
+  var mTable = $('#utilitycontent #monthreport');
+  var oTable = mTable.dataTable();
+  //some test data
+  oTable.fnClearTable();
+  
+  var total=0;
+  
+	$.getJSON("json.htm?type=graph&sensor=counter&idx="+$.devIdx+"&range=year",
+	function(data) {
+		var lastTotal=-1;
+		
+	    $.each(data.result, function(i,item)
+		{
+			var month=parseInt(item.d.substring(5, 7), 10);
+			var year=parseInt(item.d.substring(0, 4), 10);
+
+			if ((month==actMonth)&&(year==actYear)) {
+				var day=parseInt(item.d.substring(8, 10), 10);
+				var Usage=parseFloat(item.v);
+			
+				total+=Usage;
+
+				var rcost;
+				if ($.devSwitchType==0) {
+					//Electra
+					rcost=Usage*$.costsT1;
+				}
+				else {
+					//Gas
+					rcost=Usage*$.costsGas;
+				}
+
+				var img;
+				if ((lastTotal==-1)||(lastTotal==Usage)) {
+					img='<img src="images/equal.png"></img>';
+				}
+				else if (Usage<lastTotal) {
+					img='<img src="images/down.png"></img>';
+				}
+				else {
+					img='<img src="images/up.png"></img>';
+				}
+				lastTotal=Usage;
+
+				var addId = oTable.fnAddData([
+					  day,
+					  Usage.toFixed(3),
+					  rcost.toFixed(2),
+					  img
+					], false);
+			}
+		});
+
+	  $("#utilitycontent #tu").html(total.toFixed(3));
+	  
+		var montlycosts;
+		if ($.devSwitchType==0) {
+			//Electra
+			montlycosts=(total*$.costsT1)
+		}
+		else {
+			//Gas
+			montlycosts=(total*$.costsGas)
+		}
+		$("#utilitycontent #mc").html(montlycosts.toFixed(2));
+	  
+	  mTable.fnDraw();
+		/* Add a click handler to the rows - this could be used as a callback */
+		$("#utilitycontent #monthreport tbody tr").click( function( e ) {
+			if ( $(this).hasClass('row_selected') ) {
+				$(this).removeClass('row_selected');
+			}
+			else {
+				oTable.$('tr.row_selected').removeClass('row_selected');
+				$(this).addClass('row_selected');
+			}
+		});  
+	});
+
+  return false;
+}
+
+function OnSelChangeYearP1ReportGas()
+{
+	var yearidx=$("#utilitycontent #comboyear option:selected").val();
+	if (typeof yearidx == 'undefined') {
+		return ;
+	}
+	ShowP1YearReportGas(yearidx);
+}
+
+
+function Add2YearTableP1ReportGas(oTable,total,lastTotal,lastMonth,actYear)
+{
+	var rcost;
+	if ($.devSwitchType==0) {
+		//Electra
+		rcost=total*$.costsT1;
+	}
+	else {
+		//Gas
+		rcost=total*$.costsGas;
+	}
+
+	var img;
+	if ((lastTotal==-1)||(lastTotal==total)) {
+		img='<img src="images/equal.png"></img>';
+	}
+	else if (total<lastTotal) {
+		img='<img src="images/down.png"></img>';
+	}
+	else {
+		img='<img src="images/up.png"></img>';
+	}
+
+	var monthtxt=lastMonth + ". " + $.monthNames[lastMonth-1] + " ";
+	monthtxt+='<img src="images/next.png" onclick="ShowP1MonthReportGas(' + lastMonth +',' + actYear + ')">';
+
+	var addId = oTable.fnAddData([
+		  monthtxt,
+		  total.toFixed(3),
+		  rcost.toFixed(2),
+		  img
+		], false);
+	return total;
+}
+
+function ShowP1YearReportGas(actYear)
+{
+	if (actYear==0) {
+		actYear=$.actYear;
+	}
+	else {
+		$.actYear=actYear;
+	}
+  var htmlcontent = '';
+  htmlcontent+=$('#toptextyeargas').html();
+  htmlcontent+=$('#yearreportviewgas').html();
+  $('#utilitycontent').html(htmlcontent);
+  $('#utilitycontent').i18n();
+
+  $("#utilitycontent #theader").html($.i18n("Usage") + " "+actYear);
+
+	if ($.devSwitchType==0) {
+		//Electra
+		$("#utilitycontent #munit").html("kWh");
+	}
+	else {
+		//Gas
+		$("#utilitycontent #munit").html("m3");
+	}
+
+	$("#utilitycontent #comboyear").val(actYear);
+	
+	$("#utilitycontent #comboyear").change(function() { 
+		OnSelChangeYearP1ReportGas();
+	});
+	$('#utilitycontent #comboyear').keypress(function() {
+	  $(this).change();
+	});
+
+  $('#utilitycontent #yearreport').dataTable( {
+		"sDom": '<"H"rC>t<"F">',
+		"oTableTools": {
+			"sRowSelect": "single"
+		},
+		"aaSorting": [[ 0, "asc" ]],
+		"aoColumnDefs": [
+			{ "bSortable": false, "aTargets": [ 3 ] }
+		],
+		"bSortClasses": false,
+		"bProcessing": true,
+		"bStateSave": false,
+		"bJQueryUI": true,
+		"aLengthMenu": [[50, 100, -1], [50, 100, "All"]],
+		"iDisplayLength" : 50
+  });
+
+  var mTable = $('#utilitycontent #yearreport');
+  var oTable = mTable.dataTable();
+  //some test data
+  oTable.fnClearTable();
+  
+  var total=0;
+  var global=0;
+  
+	$.getJSON("json.htm?type=graph&sensor=counter&idx="+$.devIdx+"&range=year",
+	function(data) {
+		var lastTotal=-1;
+		var lastMonth=-1;
+		
+	    $.each(data.result, function(i,item)
+		{
+			var month=parseInt(item.d.substring(5, 7), 10);
+			var year=parseInt(item.d.substring(0, 4), 10);
+			if (year==actYear) {
+				if (lastMonth==-1) {
+					lastMonth=month;
+				}
+				if (lastMonth!=month)
+				{
+					//add totals to table
+					lastTotal=Add2YearTableP1ReportGas(oTable,total,lastTotal,lastMonth,actYear);
+					
+					lastMonth=month;
+					global+=total;
+
+					total=0;
+				}
+				var day=parseInt(item.d.substring(8, 10), 10);
+				var Usage=0;
+
+				Usage=parseFloat(item.v);
+				total+=Usage;
+			}
+		});
+
+	//add last month
+	if (global!=0) {
+		lastTotal=Add2YearTableP1ReportGas(oTable,total,lastTotal,lastMonth,actYear);
+		global+=lastTotal;
+	}
+
+	$("#utilitycontent #tu").html(global.toFixed(3));
+	var montlycosts=0;
+	if ($.devSwitchType==0) {
+		//Electra
+		montlycosts=(global*$.costsT1);
+	}
+	else {
+		//Gas
+		montlycosts=(global*$.costsGas);
+	}
+	
+	$("#utilitycontent #mc").html(montlycosts.toFixed(2));
+	  
+	mTable.fnDraw();
+		/* Add a click handler to the rows - this could be used as a callback */
+		$("#utilitycontent #yearreport tbody tr").click( function( e ) {
+			if ( $(this).hasClass('row_selected') ) {
+				$(this).removeClass('row_selected');
+			}
+			else {
+				oTable.$('tr.row_selected').removeClass('row_selected');
+				$(this).addClass('row_selected');
+			}
+		});  
+	});
+
+  return false;
+}
+
 function ShowSmartLog(id,name,switchtype)
 {
 	clearInterval($.myglobals.refreshTimer);
@@ -3276,14 +3653,16 @@ function ShowSmartLog(id,name,switchtype)
 
 	$.costsT1=0.2389;
 	$.costsT2=0.2389;
+	$.costsGas=0.6218;
 
 	$.ajax({
-		 url: "json.htm?type=command&param=getelectracosts",
+		 url: "json.htm?type=command&param=getelectragascosts",
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {
 			$.costsT1=parseFloat(data.CostEnergy)/10000;
 			$.costsT2=parseFloat(data.CostEnergyT2)/10000;
+			$.costsGas=parseFloat(data.CostGas)/10000;
 		 }
 	});
 

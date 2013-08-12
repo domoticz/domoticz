@@ -13,6 +13,7 @@ Version 1.0.xxx (August xxth 2013)
 - Implemented: P1 Smart Meter electra, Report view
 - Changed: New splash screens for iOS
 - Changed: Dutch translation, and added extra TO field
+- Implemented: Report view for: P1 Smart Gas electra, CM119/160
 
 Version 1.0.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)

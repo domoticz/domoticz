@@ -5712,7 +5712,7 @@ std::string CWebServer::GetJSonPage()
 			root["status"]="OK";
 			root["title"]="ExecuteScript";
 		}
-		else if (cparam=="getelectracosts")
+		else if (cparam=="getelectragascosts")
 		{
 			int nValue=0;
 			root["status"]="OK";
@@ -5721,6 +5721,8 @@ std::string CWebServer::GetJSonPage()
 			root["CostEnergy"]=nValue;
 			m_pMain->m_sql.GetPreferencesVar("CostEnergyT2",nValue);
 			root["CostEnergyT2"]=nValue;
+			m_pMain->m_sql.GetPreferencesVar("CostGas",nValue);
+			root["CostGas"]=nValue;
 		}
 		else if (cparam=="checkforupdate")
 		{
