@@ -11,6 +11,8 @@ Version 1.0.xxx (August xxth 2013)
 - Implemented: Temperature Dewpoint in custom graph
 - Fixed: Camera special video/image url characters
 - Implemented: P1 Smart Meter electra, Report view
+- Changed: New splash screens for iOS
+- Changed: Dutch translation, and added extra TO field
 
 Version 1.0.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)
