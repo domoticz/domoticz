@@ -147,6 +147,7 @@ function CheckForUpdate(showdialog) {
 				$("#setupmenu").hide();
 			}
 			
+			//data.HaveUpdate=true;
 			if (data.HaveUpdate == true) {
 				$("#mUpdate").show();
 				$("#mCheckUpdate").hide();
@@ -158,7 +159,11 @@ function CheckForUpdate(showdialog) {
 					}
 				}
 				else {
-					generate_noty('success', $.i18n('A new version of Domoticz is Available!...<br>Use the Setup tab to update.'), false);
+					var msgtxt=$.i18n('A new version of Domoticz is Available!...<br>Use the Setup tab to update.');
+					//msgtxt+=
+						//'<br>Version: <b>1923</b>, Latest Changes: <b>Click Here</b>'+
+						//'<br><center><b>Update Now</b></center>';
+					generate_noty('success', msgtxt, false);
 				}
 			}
 			else

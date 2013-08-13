@@ -2381,7 +2381,7 @@ function ShowCounterLog(id,name,switchtype)
 	$.costsGas=0.6218;
 
 	$.ajax({
-		 url: "json.htm?type=command&param=getelectragascosts",
+		 url: "json.htm?type=command&param=getelectragascosts&idx="+$.devIdx,
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {
@@ -3361,7 +3361,7 @@ function ShowP1MonthReportGas(actMonth,actYear)
   $('#utilitycontent').html(htmlcontent);
   $('#utilitycontent').i18n();
 
-  $("#utilitycontent #theader").html($.i18n("Usage")+ " "+$.monthNames[actMonth-1]+" " + actYear);
+  $("#utilitycontent #theader").html($.i18n("Usage")+ " "+ $.i18n($.monthNames[actMonth-1])+" " + actYear);
 
 	if ($.devSwitchType==0) {
 		//Electra
@@ -3503,7 +3503,7 @@ function Add2YearTableP1ReportGas(oTable,total,lastTotal,lastMonth,actYear)
 		img='<img src="images/up.png"></img>';
 	}
 
-	var monthtxt=lastMonth + ". " + $.monthNames[lastMonth-1] + " ";
+	var monthtxt=lastMonth + ". " + $.i18n($.monthNames[lastMonth-1]) + " ";
 	monthtxt+='<img src="images/next.png" onclick="ShowP1MonthReportGas(' + lastMonth +',' + actYear + ')">';
 
 	var addId = oTable.fnAddData([
@@ -3656,7 +3656,7 @@ function ShowSmartLog(id,name,switchtype)
 	$.costsGas=0.6218;
 
 	$.ajax({
-		 url: "json.htm?type=command&param=getelectragascosts",
+		 url: "json.htm?type=command&param=getelectragascosts&idx="+$.devIdx,
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {

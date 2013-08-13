@@ -5714,15 +5714,78 @@ std::string CWebServer::GetJSonPage()
 		}
 		else if (cparam=="getelectragascosts")
 		{
-			int nValue=0;
-			root["status"]="OK";
-			root["title"]="GetElectraCosts";
-			m_pMain->m_sql.GetPreferencesVar("CostEnergy",nValue);
-			root["CostEnergy"]=nValue;
-			m_pMain->m_sql.GetPreferencesVar("CostEnergyT2",nValue);
-			root["CostEnergyT2"]=nValue;
-			m_pMain->m_sql.GetPreferencesVar("CostGas",nValue);
-			root["CostGas"]=nValue;
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT Type, SubType, nValue, sValue FROM DeviceStatus WHERE (ID==" << idx << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()>0)
+			{
+				std::vector<std::string> sd=result[0];
+
+				int nValue=0;
+				root["status"]="OK";
+				root["title"]="GetElectraCosts";
+				m_pMain->m_sql.GetPreferencesVar("CostEnergy",nValue);
+				root["CostEnergy"]=nValue;
+				m_pMain->m_sql.GetPreferencesVar("CostEnergyT2",nValue);
+				root["CostEnergyT2"]=nValue;
+				m_pMain->m_sql.GetPreferencesVar("CostGas",nValue);
+				root["CostGas"]=nValue;
+
+				unsigned char dType=atoi(sd[0].c_str());
+				unsigned char subType=atoi(sd[1].c_str());
+				nValue=(unsigned char)atoi(sd[2].c_str());
+				std::string sValue=sd[3];
+
+				if (dType == pTypeP1Power)
+				{
+					//also provide the counter values
+
+					std::vector<std::string> splitresults;
+					StringSplit(sValue, ";", splitresults);
+					if (splitresults.size()!=6)
+						goto exitjson;
+
+					float EnergyDivider=1000.0f;
+					int tValue;
+					if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+					{
+						EnergyDivider=float(tValue);
+					}
+
+					unsigned long long powerusage1;
+					unsigned long long powerusage2;
+					unsigned long long powerdeliv1;
+					unsigned long long powerdeliv2;
+					unsigned long long usagecurrent;
+					unsigned long long delivcurrent;
+
+					std::stringstream s_powerusage1(splitresults[0]);
+					std::stringstream s_powerusage2(splitresults[1]);
+					std::stringstream s_powerdeliv1(splitresults[2]);
+					std::stringstream s_powerdeliv2(splitresults[3]);
+					std::stringstream s_usagecurrent(splitresults[4]);
+					std::stringstream s_delivcurrent(splitresults[5]);
+
+					s_powerusage1 >> powerusage1;
+					s_powerusage2 >> powerusage2;
+					s_powerdeliv1 >> powerdeliv1;
+					s_powerdeliv2 >> powerdeliv2;
+					s_usagecurrent >> usagecurrent;
+					s_delivcurrent >> delivcurrent;
+
+					unsigned long long powerusage=powerusage1+powerusage2;
+					unsigned long long powerdeliv=powerdeliv1+powerdeliv2;
+					sprintf(szTmp,"%.03f",float(powerusage1)/EnergyDivider);
+					root["CounterT1"]=szTmp;
+					sprintf(szTmp,"%.03f",float(powerusage2)/EnergyDivider);
+					root["CounterT2"]=szTmp;
+				}
+
+			}
 		}
 		else if (cparam=="checkforupdate")
 		{
@@ -5746,7 +5809,7 @@ std::string CWebServer::GetJSonPage()
 			std::string systemname=my_uname.sysname;
 			std::string machine=my_uname.machine;
 			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
-			if ((systemname=="windows")||(machine!="armv6l"))
+			if ((systemname=="windows")||((machine!="armv6l")&&(machine!="armv7l")))
 			{
 				//Only Raspberry Pi (Wheezy) for now!
 				root["status"]="OK";
@@ -5785,6 +5848,7 @@ std::string CWebServer::GetJSonPage()
 					}
 					root["HaveUpdate"]=bHaveUpdate;
 					root["Revision"]=atoi(strarray[2].c_str());
+					root["ActVersion"]=version;
 				}
 				else
 				{
@@ -5813,7 +5877,7 @@ std::string CWebServer::GetJSonPage()
 			std::string systemname=my_uname.sysname;
 			std::string machine=my_uname.machine;
 			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
-			if ((machine!="armv6l")||(strstr(my_uname.release,"ARCH+")!=NULL))
+			if (((machine!="armv6l")&&(machine!="armv7l"))||(strstr(my_uname.release,"ARCH+")!=NULL))
 				goto exitjson;	//only Raspberry Pi for now
 			root["status"]="OK";
 			root["title"]="DownloadUpdate";
