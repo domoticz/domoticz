@@ -17,7 +17,7 @@ Version 1.0.xxx (August xxth 2013)
 - Implemented: Web Update now also supported for armv7l systems (cubieboard2)
 - Changed: P1 Smart Meter Energy, removed Actual as it is displayed in Big
 - Changed: P1 Smart Meter Gas, added Today value in Big
-- Implemented: Option to restart/shutdown the system
+- Implemented: Option to Restart/Shutdown the system
 - Implemented: Option to update to Stable or Beta versions
 
 Version 1.0.940 (July 31th 2013)
