@@ -5812,10 +5812,8 @@ std::string CWebServer::GetJSonPage()
 			bool bIsForced=(forced=="true");
 			std::string systemname=my_uname.sysname;
 			std::string machine=my_uname.machine;
-			if (machine=="armv7l")
-				machine="armv6l";
 			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
-			if ((systemname=="windows")||(machine!="armv6l"))
+			if ((systemname=="windows")||((machine!="armv6l")&&(machine!="armv7l")))
 			{
 				//Only Raspberry Pi (Wheezy) for now!
 				root["status"]="OK";
@@ -5897,11 +5895,9 @@ std::string CWebServer::GetJSonPage()
 				goto exitjson;
 			std::string systemname=my_uname.sysname;
 			std::string machine=my_uname.machine;
-			if (machine=="armv7l")
-				machine="armv6l";
 
 			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
-			if ((machine!="armv6l")||(strstr(my_uname.release,"ARCH+")!=NULL))
+			if (((machine!="armv6l")&&(machine!="armv7l"))||(strstr(my_uname.release,"ARCH+")!=NULL))
 				goto exitjson;	//only Raspberry Pi for now
 			root["status"]="OK";
 			root["title"]="DownloadUpdate";

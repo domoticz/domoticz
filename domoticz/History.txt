@@ -19,6 +19,7 @@ Version 1.0.xxx (August xxth 2013)
 - Changed: P1 Smart Meter Gas, added Today value in Big
 - Implemented: Option to Restart/Shutdown the system
 - Implemented: Option to update to Stable or Beta versions
+- Changed: webupdate for armv7l (cubieboard2)
 
 Version 1.0.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)
