@@ -787,6 +787,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("AuthenticationMethod", 0);//AUTH_LOGIN=0, AUTH_BASIC=1
 	}
+	if (!GetPreferencesVar("ReleaseChannel", nValue))
+	{
+		UpdatePreferencesVar("ReleaseChannel", 0);//Stable=0, Beta=1
+	}
 
 	//Start background thread
 	if (!StartThread())

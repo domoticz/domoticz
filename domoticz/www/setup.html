@@ -150,7 +150,14 @@
 				<h2><span data-i18n="SoftwareUpdates"></span>:</h2>
 				<table class="display" id="autoupdatetable" border="0" cellpadding="0" cellspacing="0">
 					<tr>
-						<td><input type="checkbox" id="checkforupdates" name="checkforupdates"/> <span data-i18n="CheckForSoftwareUpdates"></span></td>
+						<td colspan="2"><input type="checkbox" id="checkforupdates" name="checkforupdates"/> <span data-i18n="CheckForSoftwareUpdates"></span></td>
+					</tr>
+					<tr>
+						<td align="right" style="width:130px"><label><span data-i18n="Release Channel">Release Channel</span>: </label></td>
+						<td><select id="comboReleaseChannel" name="ReleaseChannel" style="width:140px" class="combobox ui-corner-all">
+							<option data-i18n="Stable" value="0">Stable</option>
+							<option data-i18n="Beta" value="1">Beta</option>
+						</select></td>
 					</tr>
 				</table>
 			</div>
@@ -664,6 +671,9 @@ function ShowSettings()
       }
       if (typeof data.AuthenticationMethod != 'undefined') {
         $("#webtable #comboauthmethod").val(data.AuthenticationMethod);
+      }
+      if (typeof data.ReleaseChannel != 'undefined') {
+        $("#autoupdatetable #comboReleaseChannel").val(data.ReleaseChannel);
       }
      }
   });

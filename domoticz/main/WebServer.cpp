@@ -532,6 +532,8 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("AuthenticationMethod",(int)amethod);
 	m_pWebEm->SetAuthenticationMethod(amethod);
 	
+	std::string ReleaseChannel=m_pWebEm->FindValue("ReleaseChannel");
+	m_pMain->m_sql.UpdatePreferencesVar("ReleaseChannel",atoi(ReleaseChannel.c_str()));
 
 	std::string LightHistoryDays=m_pWebEm->FindValue("LightHistoryDays");
 	m_pMain->m_sql.UpdatePreferencesVar("LightHistoryDays",atoi(LightHistoryDays.c_str()));
@@ -5827,8 +5829,13 @@ std::string CWebServer::GetJSonPage()
 				m_pMain->m_sql.GetPreferencesVar("UseAutoUpdate",nValue);
 				if (nValue==1)
 				{
+					m_pMain->m_sql.GetPreferencesVar("ReleaseChannel", nValue);
+					bool bIsBetaChannel=(nValue!=0);
+					std::string szURL="http://domoticz.sourceforge.net/svnversion.h";
+					if (bIsBetaChannel)
+						szURL="http://domoticz.sourceforge.net/beta/svnversion.h";
 					std::string revfile;
-					if (!HTTPClient::GET("http://domoticz.sourceforge.net/svnversion.h",revfile))
+					if (!HTTPClient::GET(szURL,revfile))
 						goto exitjson;
 					std::vector<std::string> strarray;
 					StringSplit(revfile, " ", strarray);
@@ -5865,8 +5872,18 @@ std::string CWebServer::GetJSonPage()
 		}
 		else if (cparam=="downloadupdate")
 		{
+			int nValue;
+			m_pMain->m_sql.GetPreferencesVar("ReleaseChannel", nValue);
+			bool bIsBetaChannel=(nValue!=0);
+			std::string szURL;
+
+			if (!bIsBetaChannel)
+				szURL="http://domoticz.sourceforge.net/svnversion.h";
+			else
+				szURL="http://domoticz.sourceforge.net/beta/svnversion.h";
+
 			std::string revfile;
-			if (!HTTPClient::GET("http://domoticz.sourceforge.net/svnversion.h",revfile))
+			if (!HTTPClient::GET(szURL,revfile))
 				goto exitjson;
 			std::vector<std::string> strarray;
 			StringSplit(revfile, " ", strarray);
@@ -5889,6 +5906,8 @@ std::string CWebServer::GetJSonPage()
 			root["status"]="OK";
 			root["title"]="DownloadUpdate";
 			std::string downloadURL="http://domoticz.sourceforge.net/domoticz_" + systemname + "_" + machine + ".tgz";
+			if (bIsBetaChannel)
+				downloadURL="http://domoticz.sourceforge.net/beta/domoticz_" + systemname + "_" + machine + ".tgz";
 			m_pMain->GetDomoticzUpdate(downloadURL);
 		}
 		else if (cparam=="downloadready")
@@ -8869,6 +8888,10 @@ std::string CWebServer::GetJSonPage()
 				else if (Key=="AuthenticationMethod")
 				{
 					root["AuthenticationMethod"]=nValue;
+				}
+				else if (Key=="ReleaseChannel")
+				{
+					root["ReleaseChannel"]=nValue;
 				}
 			}
 		}
