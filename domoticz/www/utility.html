@@ -125,7 +125,11 @@
 	</table>
 	<br>
 	<span>Total Usage:</span> <span>T1:</span> <span id="tut1">-</span> kWh, <span>T2:</span> <span id="tut2">-</span> kWh, <span>Total:</span> <span id="tu">-</span> kWh<br>
-	<div id="dreturn" style="display:none;"><span>Total Return:</span> <span>T1:</span> <span id="trt1">-</span> kWh, <span>T2:</span> <span id="trt2">-</span> kWh, <span>Total:</span> <span id="tr">-</span> kWh<br></div>
+	<span>Meter Usage:</span> <span>T1:</span> <span id="cntrt1">-</span>, <span>T2:</span> <span id="cntrt2">-</span><br>
+	<div id="dreturn" style="display:none;">
+		<span>Total Return:</span> <span>R1:</span> <span id="trt1">-</span> kWh, <span>R2:</span> <span id="trt2">-</span> kWh, <span>Total:</span> <span id="tr">-</span> kWh<br>
+		<span>Meter Return:</span> <span>R1:</span> <span id="cntrr1">-</span>, <span>R2:</span> <span id="cntrr2">-</span><br>
+	</div>
 	<span>Year Cost:</span> <span id="mc">-</span><br>
 	<br>
 </div>
@@ -3111,6 +3115,7 @@ function ShowP1MonthReport(actMonth,actYear)
 	  $("#utilitycontent #tut2").html(totalT2.toFixed(3));
 	  $("#utilitycontent #trt1").html(totalR1.toFixed(3));
 	  $("#utilitycontent #trt2").html(totalR2.toFixed(3));
+	  
 	  var gtotal=totalT1+totalT2;
 	  var greturn=totalR1+totalR2;
 	  $("#utilitycontent #tu").html(gtotal.toFixed(3));
@@ -3329,6 +3334,12 @@ function ShowP1YearReport(actYear)
 	  $("#utilitycontent #tut2").html(globalT2.toFixed(3));
 	  $("#utilitycontent #trt1").html(globalR1.toFixed(3));
 	  $("#utilitycontent #trt2").html(globalR2.toFixed(3));
+
+	  $("#utilitycontent #cntrt1").html($.CounterT1.toFixed(3));
+	  $("#utilitycontent #cntrt2").html($.CounterT2.toFixed(3));
+	  $("#utilitycontent #cntrr1").html($.CounterR1.toFixed(3));
+	  $("#utilitycontent #cntrr2").html($.CounterR2.toFixed(3));
+	  
 	  var gtotal=globalT1+globalT2;
 	  var greturn=globalR1+globalR2;
 	  $("#utilitycontent #tu").html(gtotal.toFixed(3));
@@ -3663,6 +3674,10 @@ function ShowSmartLog(id,name,switchtype)
 			$.costsT1=parseFloat(data.CostEnergy)/10000;
 			$.costsT2=parseFloat(data.CostEnergyT2)/10000;
 			$.costsGas=parseFloat(data.CostGas)/10000;
+			$.CounterT1=parseFloat(data.CounterT1);
+			$.CounterT2=parseFloat(data.CounterT2);
+			$.CounterR1=parseFloat(data.CounterR1);
+			$.CounterR2=parseFloat(data.CounterR2);
 		 }
 	});
 
@@ -3993,92 +4008,83 @@ function RefreshUtilities()
      success: function(data) {
       if (typeof data.result != 'undefined') {
         $.each(data.result, function(i,item){
-					id="#utilitycontent #" + item.idx;
-					var obj=$(id);
-					if (typeof obj != 'undefined') {
-						if ($(id + " #name").html()!=item.Name) {
-							$(id + " #name").html(item.Name);
-						}
-						var img="";
-						var status="";
-						var bigtext="";
-						
-            if (typeof item.Counter != 'undefined') {
-              img='<img src="images/counter.png" height="48">';
-              status=item.Counter + ', Today: ' + item.CounterToday;
-            }
-            else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
-							img='<img src="images/current48.png" height="48">';
-              status=item.Data;
-            }
-            else if (item.Type == "Energy") {
-				img='<img src="images/current48.png" height="48">';
-				status=item.Data;
-            }
-            else if (item.Type == "Air Quality") {
-				img='<img src="images/air48.png" height="48">';
-				status=item.Data + " (" + item.Quality + ")";
-				bigtext=item.Data;
-            }
-            else if (item.SubType == "Soil Moisture") {
-				img='<img src="images/moisture48.png" height="48">';
-				status=item.Data + " (" + item.Desc + ")";
-				bigtext=item.Data;
-            }
-            else if (item.SubType == "Leaf Wetness") {
-				img='<img src="images/leaf48.png" height="48">';
-				status=item.Data;
-				bigtext=item.Data;
-            }
-            else if (item.Type == "Lux") {
-				img='<img src="images/lux48.png" height="48">';
-				status=item.Data;
-				bigtext=item.Data;
-            }
-            else if (item.Type == "Usage") {
-				img='<img src="images/current48.png" height="48">';
-				status=item.Data;
-				bigtext=item.Data;
-            }
-            else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-				img='<img src="images/override.png" height="48">';
-				status=item.Data + '\u00B0 C';
-				bigtext=item.Data + '\u00B0 C';
-            }
-            if (typeof item.Usage != 'undefined') {
-							status+=", Actual: " + item.Usage;
-							bigtext=item.Usage;
-            }
-            if (typeof item.CounterDeliv != 'undefined') {
-				if (item.CounterDeliv!=0) {
-					status+='<br>Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
-					status+=", Actual: " + item.UsageDeliv;
-					if (item.UsageDeliv.charAt(0) != 0) {
-						bigtext='-' + item.UsageDeliv;
+			id="#utilitycontent #" + item.idx;
+			var obj=$(id);
+			if (typeof obj != 'undefined') {
+				if ($(id + " #name").html()!=item.Name) {
+					$(id + " #name").html(item.Name);
+				}
+				var status="";
+				var bigtext="";
+							
+				if (typeof item.Counter != 'undefined') {
+					if (item.SubType == "Gas") {
+						status=item.Counter;
+						bigtext=item.CounterToday;
+					}
+					else {
+						status=item.Counter + ', Today: ' + item.CounterToday;
 					}
 				}
-            }
-            
-            var nbackcolor="#D4E1EE";
-						if (item.HaveTimeout==true) {
-							nbackcolor="#DF2D3A";
-						}
-            var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
-            if (obackcolor!=nbackcolor) {
-							$(id + " #name").css( "background-color", nbackcolor );
-            }
-
-						if ($(id + " #img").html()!=img) {
-							$(id + " #img").html(img);
-						}
-						if ($(id + " #status").html()!=status) {
-							$(id + " #bigtext").html(bigtext);
-							$(id + " #status").html(status);
-						}
-						if ($(id + " #lastupdate").html()!=item.LastUpdate) {
-							$(id + " #lastupdate").html(item.LastUpdate);
-						}
+				else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
+				  status=item.Data;
+				}
+				else if (item.Type == "Energy") {
+					status=item.Data;
+				}
+				else if (item.Type == "Air Quality") {
+					status=item.Data + " (" + item.Quality + ")";
+					bigtext=item.Data;
+				}
+				else if (item.SubType == "Soil Moisture") {
+					status=item.Data + " (" + item.Desc + ")";
+					bigtext=item.Data;
+				}
+				else if (item.SubType == "Leaf Wetness") {
+					status=item.Data;
+					bigtext=item.Data;
+				}
+				else if (item.Type == "Lux") {
+					status=item.Data;
+					bigtext=item.Data;
+				}
+				else if (item.Type == "Usage") {
+					status=item.Data;
+					bigtext=item.Data;
+				}
+				else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
+					status=item.Data + '\u00B0 C';
+					bigtext=item.Data + '\u00B0 C';
+				}
+				if (typeof item.Usage != 'undefined') {
+					if (item.Type!="P1 Smart Meter") {
+						status+=", Actual: " + item.Usage;
 					}
+					bigtext=item.Usage;
+				}
+				if (typeof item.CounterDeliv != 'undefined') {
+					if (item.CounterDeliv!=0) {
+						status+='<br>Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
+					}
+				}
+				
+				var nbackcolor="#D4E1EE";
+				if (item.HaveTimeout==true) {
+					nbackcolor="#DF2D3A";
+				}
+				var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
+				if (obackcolor!=nbackcolor) {
+					$(id + " #name").css( "background-color", nbackcolor );
+				}
+
+				if ($(id + " #status").html()!=status) {
+					$(id + " #bigtext").html(bigtext);
+					$(id + " #status").html(status);
+				}
+				if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+					$(id + " #lastupdate").html(item.LastUpdate);
+				}
+			}
         });
       }
      }
@@ -4155,6 +4161,9 @@ function ShowUtilities()
 						xhtm+='-' + item.UsageDeliv;
 					}
 				}
+				else if (item.SubType == "Gas") {
+				  xhtm+=item.CounterToday;
+				}
 				else if (item.Type == "Air Quality") {
 				  xhtm+=item.Data;
 				}
@@ -4178,7 +4187,12 @@ function ShowUtilities()
             var status="";
             if (typeof item.Counter != 'undefined') {
               xhtm+='counter.png" height="48"></td>\n';
-              status=item.Counter + ', Today: ' + item.CounterToday;
+              if (item.SubType == "Gas") {
+				status=item.Counter;
+              }
+              else {
+				status=item.Counter + ', Today: ' + item.CounterToday;
+              }
             }
             else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
               xhtm+='current48.png" height="48"></td>\n';
@@ -4213,14 +4227,14 @@ function ShowUtilities()
               status=item.Data + '\u00B0 C';
             }
             if (typeof item.Usage != 'undefined') {
-							status+=", Actual: " + item.Usage;
+				if (item.Type != "P1 Smart Meter") {
+					status+=", Actual: " + item.Usage;
+				}
             }
             if (typeof item.CounterDeliv != 'undefined') {
-							if (item.CounterDeliv!=0) {
-								status+='<br>Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
-								status+=", Actual: " + item.UsageDeliv;
-
-							}
+				if (item.CounterDeliv!=0) {
+					status+='<br>Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
+				}
             }
             
 						xhtm+=      
@@ -4249,12 +4263,10 @@ function ShowUtilities()
 			}
 			if (window.my_config.userrights==2) {
 				if (item.Type == "P1 Smart Meter") {
-					xhtm+=      
-								'<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
+					xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 				}
 				else {
-					xhtm+=      
-								'<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +');" data-i18n="Edit">Edit</a> ';
+					xhtm+='<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +');" data-i18n="Edit">Edit</a> ';
 				}
 			}
           }

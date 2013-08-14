@@ -950,6 +950,40 @@ function SwitchLayout(layout)
 		});
 		return;
 	}
+	else if (layout=="Restart") {
+		var bValid = false;
+		bValid=(confirm($.i18n("Are you sure to Restart the system?"))==true);
+		if ( bValid ) {
+			$.ajax({
+			 url: "json.htm?type=command&param=system_reboot",
+			 async: true, 
+			 dataType: 'json',
+			 success: function(data) {
+			 },
+			 error: function(){
+			 }     
+			});
+			alert($.i18n("Restarting System (This could take some time...)"));
+		}
+		return;
+	}
+	else if (layout=="Shutdown") {
+		var bValid = false;
+		bValid=(confirm($.i18n("Are you sure to Shutdown the system?"))==true);
+		if ( bValid ) {
+			$.ajax({
+			 url: "json.htm?type=command&param=system_shutdown",
+			 async: true, 
+			 dataType: 'json',
+			 success: function(data) {
+			 },
+			 error: function(){
+			 }     
+			});
+			alert($.i18n("The system is being Shutdown (This could take some time...)"));
+		}
+		return;
+	}
 	var fullLayout = layout;
 	var hyphen = layout.indexOf('-');
 	if( hyphen >= 0 ){

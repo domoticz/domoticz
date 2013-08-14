@@ -14,7 +14,10 @@ Version 1.0.xxx (August xxth 2013)
 - Changed: New splash screens for iOS
 - Changed: Dutch translation, and added extra TO field
 - Implemented: Report view for: P1 Smart Gas electra, CM119/160
-- Implemented: web update now also supported for armv7l systems (cubieboard2)
+- Implemented: Web Update now also supported for armv7l systems (cubieboard2)
+- Changed: P1 Smart Meter Energy, removed Actual as it is displayed in Big
+- Changed: P1 Smart Meter Gas, added Today value in Big
+- Implemented: option to restart/shutdown the system
 
 Version 1.0.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)

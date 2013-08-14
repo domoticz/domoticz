@@ -5777,12 +5777,14 @@ std::string CWebServer::GetJSonPage()
 					s_usagecurrent >> usagecurrent;
 					s_delivcurrent >> delivcurrent;
 
-					unsigned long long powerusage=powerusage1+powerusage2;
-					unsigned long long powerdeliv=powerdeliv1+powerdeliv2;
 					sprintf(szTmp,"%.03f",float(powerusage1)/EnergyDivider);
 					root["CounterT1"]=szTmp;
 					sprintf(szTmp,"%.03f",float(powerusage2)/EnergyDivider);
 					root["CounterT2"]=szTmp;
+					sprintf(szTmp,"%.03f",float(powerdeliv1)/EnergyDivider);
+					root["CounterR1"]=szTmp;
+					sprintf(szTmp,"%.03f",float(powerdeliv2)/EnergyDivider);
+					root["CounterR2"]=szTmp;
 				}
 
 			}

@@ -770,7 +770,7 @@ function RefreshFavorites()
         }); //security devices
         
         //Utility Sensors
-        $.each(data.result, function(i,item){
+        $.each(data.result, function(i,item) {
           if (
                 ( 
 					(typeof item.Counter != 'undefined') || 
@@ -787,163 +787,151 @@ function RefreshFavorites()
                 (item.Favorite!=0)
               )
           {
-						id="#dashcontent #utility_" + item.idx;
-						var obj=$(id);
-						if (typeof obj != 'undefined') {
-							if ($(id + " #name").html()!=item.Name) {
-								$(id + " #name").html(item.Name);
-							}
-							if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
-								var status="";
-								if (typeof item.Counter != 'undefined') {
-									if (data.DashboardType==0) {
-										status+='Today: ' + item.CounterToday;
-									}
-									else {
-										status+='U: T: ' + item.CounterToday;
-									}
-								}
-								else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
-									status+=item.Data;
-								}
-								else if (
-											(item.Type == "Energy")||
-											(item.Type == "Air Quality")||
-											(item.Type == "Lux")||
-											(item.Type == "Usage")||
-											(item.SubType=="Soil Moisture")||
-											(item.SubType=="Leaf Wetness")
-										) {
-									status+=item.Data;
-								}
-								else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-									status+=item.Data + '\u00B0 C';
-								}
-								if (typeof item.Usage != 'undefined') {
-									if (data.DashboardType==0) {
-										status+=", Actual: " + item.Usage;
-									}
-									else {
-										status+=", A: " + item.Usage;
-									}
-								}
-								if (typeof item.CounterDeliv != 'undefined') {
-									if (item.CounterDeliv!=0) {
-										if (data.DashboardType==0) {
-											status+='<br>Return: ' + item.CounterDelivToday;
-											status+=", Actual: " + item.UsageDeliv;
-										}
-										else {
-											status+='<br>R: ' + item.CounterDelivToday;
-											status+=", A: " + item.UsageDeliv;
-										}
-									}
-								}
-								if ($(id + " #status").html()!=status) {
-									$(id + " #status").html(status);
-								}
+				id="#dashcontent #utility_" + item.idx;
+				var obj=$(id);
+				if (typeof obj != 'undefined') {
+					if ($(id + " #name").html()!=item.Name) {
+						$(id + " #name").html(item.Name);
+					}
+					if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+						var status="";
+						if (typeof item.Counter != 'undefined') {
+							if (data.DashboardType==0) {
+								status+='Today: ' + item.CounterToday;
 							}
 							else {
-								var img="";
-								var status="";
-								var bigtext="";
-								
-								if (typeof item.Counter != 'undefined') {
-									img='<img src="images/counter.png" height="40">';
-									if (data.DashboardType==0) {
-										status='Today: ' + item.CounterToday;
-									}
-									else {
-										status='U: T: ' + item.CounterToday;
-									}
+								status+='U: T: ' + item.CounterToday;
+							}
+						}
+						else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
+							status+=item.Data;
+						}
+						else if (
+									(item.Type == "Energy")||
+									(item.Type == "Air Quality")||
+									(item.Type == "Lux")||
+									(item.Type == "Usage")||
+									(item.SubType=="Soil Moisture")||
+									(item.SubType=="Leaf Wetness")
+								) {
+							status+=item.Data;
+						}
+						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
+							status+=item.Data + '\u00B0 C';
+						}
+						if (typeof item.Usage != 'undefined') {
+							if (data.DashboardType==0) {
+								status+=", Actual: " + item.Usage;
+							}
+							else {
+								status+=", A: " + item.Usage;
+							}
+						}
+						if (typeof item.CounterDeliv != 'undefined') {
+							if (item.CounterDeliv!=0) {
+								if (data.DashboardType==0) {
+									status+='<br>Return: ' + item.CounterDelivToday;
+									status+=", Actual: " + item.UsageDeliv;
 								}
-								else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
-									img='<img src="images/current48.png" height="40">';
-									status=item.Data;
-								}
-								else if (item.Type == "Energy") {
-									img='<img src="images/current48.png" height="40">';
-									status=item.Data;
-								}
-								else if (item.Type == "Air Quality") {
-									img='<img src="images/air48.png" height="40">';
-									status=item.Data + " (" + item.Quality + ")";
-									bigtext=item.Data;
-								}
-								else if (item.SubType=="Soil Moisture") {
-									img='<img src="images/moisture48.png" height="40">';
-									status=item.Data;
-									bigtext=item.Data;
-								}
-								else if (item.SubType=="Leaf Wetness") {
-									img='<img src="images/leaf48.png" height="40">';
-									status=item.Data;
-									bigtext=item.Data;
-								}
-								else if (item.Type == "Lux") {
-									img='<img src="images/lux48.png" height="40">';
-									status=item.Data;
-									bigtext=item.Data;
-								}
-								else if (item.Type == "Usage") {
-									img='<img src="images/current48.png" height="40">';
-									status=item.Data;
-									bigtext=item.Data;
-								}
-								else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-									img='<img src="images/override.png" height="40">';
-									status=item.Data + '\u00B0 C';
-									bigtext=item.Data + '\u00B0 C';
-								}
-								if (typeof item.Usage != 'undefined') {
-									bigtext=item.Usage;
-									if (data.DashboardType==0) {
-										status+=", Actual: " + item.Usage;
-									}
-									else {
-										status+=", A: " + item.Usage;
-									}
-								}
-								if (typeof item.CounterDeliv != 'undefined') {
-									if (item.CounterDeliv!=0) {
-										if (item.UsageDeliv.charAt(0) != 0) {
-											bigtext='-' + item.UsageDeliv;
-										}
-										status+='<br>';
-										if (data.DashboardType==0) {
-											status+='Return: ' + item.CounterDelivToday;
-											status+=", Actual: " + item.UsageDeliv;
-										}
-										else {
-											status+='R: ' + item.CounterDelivToday;
-											status+=", A: " + item.UsageDeliv;
-										}
-									}
-								}
-								
-								var nbackcolor="#D4E1EE";
-								if (item.HaveTimeout==true) {
-									nbackcolor="#DF2D3A";
-								}
-								var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
-								if (obackcolor!=nbackcolor) {
-									$(id + " #name").css( "background-color", nbackcolor );
-								}
-								
-								if ($(id + " #img").html()!=img) {
-									$(id + " #img").html(img);
-								}
-								if ($(id + " #status").html()!=status) {
-									$(id + " #status").html(status);
-								}
-								if ($(id + " #bigtext").html()!=bigtext) {
-									$(id + " #bigtext").html(bigtext);
-								}
-								if ($(id + " #lastupdate").html()!=item.LastUpdate) {
-									$(id + " #lastupdate").html(item.LastUpdate);
+								else {
+									status+='<br>R: T: ' + item.CounterDelivToday;
+									status+=", A: " + item.UsageDeliv;
 								}
 							}
 						}
+						if ($(id + " #status").html()!=status) {
+							$(id + " #status").html(status);
+						}
+					}
+					else {
+						var status="";
+						var bigtext="";
+						
+						if (typeof item.Counter != 'undefined') {
+							if (item.SubType=="Gas") {
+								status="&nbsp;";
+								bigtext=item.CounterToday;
+							}
+							else {
+								status='Usage: ' + item.CounterToday;
+							}
+						}
+						else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
+							status=item.Data;
+						}
+						else if (item.Type == "Energy") {
+							status=item.Data;
+						}
+						else if (item.Type == "Air Quality") {
+							status=item.Data + " (" + item.Quality + ")";
+							bigtext=item.Data;
+						}
+						else if (item.SubType=="Soil Moisture") {
+							status=item.Data;
+							bigtext=item.Data;
+						}
+						else if (item.SubType=="Leaf Wetness") {
+							status=item.Data;
+							bigtext=item.Data;
+						}
+						else if (item.Type == "Lux") {
+							status=item.Data;
+							bigtext=item.Data;
+						}
+						else if (item.Type == "Usage") {
+							status=item.Data;
+							bigtext=item.Data;
+						}
+						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
+							status=item.Data + '\u00B0 C';
+							bigtext=item.Data + '\u00B0 C';
+						}
+						if (typeof item.Usage != 'undefined') {
+							bigtext=item.Usage;
+							if (item.Type != "P1 Smart Meter") {
+								if (data.DashboardType==0) {
+									status+=", Actual: " + item.Usage;
+								}
+								else {
+									status+=", A: " + item.Usage;
+								}
+							}
+						}
+						if (typeof item.CounterDeliv != 'undefined') {
+							if (item.CounterDeliv!=0) {
+								if (item.UsageDeliv.charAt(0) != 0) {
+									bigtext='-' + item.UsageDeliv;
+								}
+								status+='<br>';
+								if (data.DashboardType==0) {
+									status+='Return: ' + item.CounterDelivToday;
+								}
+								else {
+									status+='R: ' + item.CounterDelivToday;
+								}
+							}
+						}
+						
+						var nbackcolor="#D4E1EE";
+						if (item.HaveTimeout==true) {
+							nbackcolor="#DF2D3A";
+						}
+						var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
+						if (obackcolor!=nbackcolor) {
+							$(id + " #name").css( "background-color", nbackcolor );
+						}
+						
+						if ($(id + " #status").html()!=status) {
+							$(id + " #status").html(status);
+						}
+						if ($(id + " #bigtext").html()!=bigtext) {
+							$(id + " #bigtext").html(bigtext);
+						}
+						if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+							$(id + " #lastupdate").html(item.LastUpdate);
+						}
+					}
+				}
           }
         }); //Utility devices
       }
@@ -2075,175 +2063,173 @@ function ShowFavorites()
               bHaveAddedDevider=true;
             }
             var xhtm="";
-						if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
-							xhtm+=
-									'\t    <tr id="utility_' + item.idx +'">\n' +
-									'\t      <td id="name">' + item.Name + '</td>\n';
-							var status="";
-							if (typeof item.Counter != 'undefined') {
-								if (data.DashboardType==0) {
-									status='Today: ' + item.CounterToday;
-								}
-								else {
-									status='U: T: ' + item.CounterToday;
-								}
-							}
-							else if ((item.Type == "Current") || (item.Type == "Current/Energy")){
-								status=item.Data;
-							}
-							else if (
-										(item.Type == "Energy")||
-										(item.Type == "Air Quality")||
-										(item.Type == "Lux")||
-										(item.Type == "Usage")||
-										(item.SubType=="Soil Moisture")||
-										(item.SubType=="Leaf Wetness")
-									) {
-								status=item.Data;
-							}
-							else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-								status=item.Data + '\u00B0 C';
-							}
-							if (typeof item.Usage != 'undefined') {
-								if (data.DashboardType==0) {
-									status+=", Actual: " + item.Usage;
-								}
-								else {
-									status+=", A: " + item.Usage;
-								}
-							}
-							if (typeof item.CounterDeliv != 'undefined') {
-								if (item.CounterDeliv!=0) {
-									status+='<br>R: ';
-									if (data.DashboardType==0) {
-										status+='Today: ' + item.CounterDelivToday;
-										status+=", Actual: " + item.UsageDeliv;
-									}
-									else {
-										status+='T: ' + item.CounterDelivToday;
-										status+=", A: " + item.UsageDeliv;
-									}
-								}
-							}
-							xhtm+=
-										'\t      <td id="status">' + status + '</td>\n' +
-										'\t    </tr>\n';
+			if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+				xhtm+=
+						'\t    <tr id="utility_' + item.idx +'">\n' +
+						'\t      <td id="name">' + item.Name + '</td>\n';
+				var status="";
+				if (typeof item.Counter != 'undefined') {
+					if (data.DashboardType==0) {
+						status='Today: ' + item.CounterToday;
+					}
+					else {
+						status='U: T: ' + item.CounterToday;
+					}
+				}
+				else if ((item.Type == "Current") || (item.Type == "Current/Energy")){
+					status=item.Data;
+				}
+				else if (
+							(item.Type == "Energy")||
+							(item.Type == "Air Quality")||
+							(item.Type == "Lux")||
+							(item.Type == "Usage")||
+							(item.SubType=="Soil Moisture")||
+							(item.SubType=="Leaf Wetness")
+						) {
+					status=item.Data;
+				}
+				else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
+					status=item.Data + '\u00B0 C';
+				}
+				if (typeof item.Usage != 'undefined') {
+					if (data.DashboardType==0) {
+						status+=", Actual: " + item.Usage;
+					}
+					else {
+						status+=", A: " + item.Usage;
+					}
+				}
+				if (typeof item.CounterDeliv != 'undefined') {
+					if (item.CounterDeliv!=0) {
+						status+='<br>R: ';
+						if (data.DashboardType==0) {
+							status+='Today: ' + item.CounterDelivToday;
+							status+=", Actual: " + item.UsageDeliv;
 						}
 						else {
-							if (data.DashboardType==0) {
-								xhtm='\t<div class="span4" id="utility_' + item.idx +'">\n';
-							}
-							else if (data.DashboardType==1) {
-								xhtm='\t<div class="span3" id="utility_' + item.idx +'">\n';
-							}
-							xhtm+='\t  <span>\n';
-							xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
-							xhtm+='\t    <tr>\n';
-							if (item.HaveTimeout==false) {			
-								xhtm+='\t      <td id="name">' + item.Name + '</td>\n';
-							}
-							else {
-								xhtm+='\t      <td id="name" style="background-color: #DF2D3A;">' + item.Name + '</td>\n';
-							}
-							xhtm+='\t      <td id="bigtext">';
-							if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
-								xhtm+=item.Usage;
-							}
-							else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
-								if (item.Usage.charAt(0) != 0) {
-									xhtm+=item.Usage;
-								}
-								if (item.UsageDeliv.charAt(0) != 0) {
-									xhtm+='-' + item.UsageDeliv;
-								}
-							}
-							else if (
-									(item.Type == "Air Quality")||
-									(item.Type == "Lux")||
-									(item.Type == "Usage")||
-									(item.SubType=="Soil Moisture")||
-									(item.SubType=="Leaf Wetness")
-								) {
-								xhtm+=item.Data;
-							}
-							else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-								xhtm+=item.Data + '\u00B0 C';
-							}
-							xhtm+='</td>\n';
-							xhtm+='\t      <td id="img"><img src="images/';
-							var status="";
-							if (typeof item.Counter != 'undefined') {
-								xhtm+='counter.png" height="40"></td>\n';
-								if (data.DashboardType==0) {
-									status='Today: ' + item.CounterToday;
-								}
-								else {
-									status='U: T: ' + item.CounterToday;
-								}
-							}
-							else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
-								xhtm+='current48.png" height="40"></td>\n';
-								status=item.Data;
-							}
-							else if (item.Type == "Energy") {
-								xhtm+='current48.png" height="40"></td>\n';
-								status=item.Data;
-							}
-							else if (item.Type == "Air Quality") {
-								xhtm+='air48.png" height="40"></td>\n';
-								status=item.Data + " (" + item.Quality + ")";
-							}
-							else if (item.Type == "Lux") {
-								xhtm+='lux48.png" height="40"></td>\n';
-								status=item.Data;
-							}
-							else if (item.Type == "Usage") {
-								xhtm+='current48.png" height="40"></td>\n';
-								status=item.Data;
-							}
-							else if (item.SubType=="Soil Moisture") {
-								xhtm+='moisture48.png" height="40"></td>\n';
-								status=item.Data;
-							}
-							else if (item.SubType=="Leaf Wetness") {
-								xhtm+='leaf48.png" height="40"></td>\n';
-								status=item.Data;
-							}
-							else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-								xhtm+='override.png" height="40"></td>\n';
-								status=item.Data + '\u00B0 C';
-							}
-							
-							if (typeof item.Usage != 'undefined') {
-								if (data.DashboardType==0) {
-									status+=", Actual: " + item.Usage;
-								}
-								else {
-									status+=", A: " + item.Usage;
-								}
-							}
-							if (typeof item.CounterDeliv != 'undefined') {
-								if (item.CounterDeliv!=0) {
-									status+='<br>';
-									if (data.DashboardType==0) {
-										status+='Return: ' + item.CounterDelivToday;
-										status+=", Actual: " + item.UsageDeliv;
-									}
-									else {
-										status+='R: ' + item.CounterDelivToday;
-										status+=", A: " + item.UsageDeliv;
-									}
-								}
-							}
-							
-							xhtm+=
-									'\t      <td id="status">' + status + '</td>\n' +
-									'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
-							'\t    </tr>\n' +
-							'\t    </table>\n' +
-							'\t  </span>\n' +
-							'\t</div>\n';
+							status+='T: ' + item.CounterDelivToday;
+							status+=", A: " + item.UsageDeliv;
 						}
+					}
+				}
+				xhtm+=
+							'\t      <td id="status">' + status + '</td>\n' +
+							'\t    </tr>\n';
+			}
+			else {
+				if (data.DashboardType==0) {
+					xhtm='\t<div class="span4" id="utility_' + item.idx +'">\n';
+				}
+				else if (data.DashboardType==1) {
+					xhtm='\t<div class="span3" id="utility_' + item.idx +'">\n';
+				}
+				xhtm+='\t  <span>\n';
+				xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
+				xhtm+='\t    <tr>\n';
+				if (item.HaveTimeout==false) {			
+					xhtm+='\t      <td id="name">' + item.Name + '</td>\n';
+				}
+				else {
+					xhtm+='\t      <td id="name" style="background-color: #DF2D3A;">' + item.Name + '</td>\n';
+				}
+				xhtm+='\t      <td id="bigtext">';
+				if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
+					xhtm+=item.Usage;
+				}
+				else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
+					if (item.Usage.charAt(0) != 0) {
+						xhtm+=item.Usage;
+					}
+					if (item.UsageDeliv.charAt(0) != 0) {
+						xhtm+='-' + item.UsageDeliv;
+					}
+				}
+				else if (item.SubType == "Gas") {
+				  xhtm+=item.CounterToday;
+				}
+				else if (
+						(item.Type == "Air Quality")||
+						(item.Type == "Lux")||
+						(item.Type == "Usage")||
+						(item.SubType=="Soil Moisture")||
+						(item.SubType=="Leaf Wetness")
+					) {
+					xhtm+=item.Data;
+				}
+				else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
+					xhtm+=item.Data + '\u00B0 C';
+				}
+				xhtm+='</td>\n';
+				xhtm+='\t      <td id="img"><img src="images/';
+				var status="";
+				if (typeof item.Counter != 'undefined') {
+					xhtm+='counter.png" height="40"></td>\n';
+					if (item.SubType!="Gas") {
+						status='Usage: ' + item.CounterToday;
+					}
+					else {
+						status="&nbsp;";
+					}
+				}
+				else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
+					xhtm+='current48.png" height="40"></td>\n';
+					status=item.Data;
+				}
+				else if (item.Type == "Energy") {
+					xhtm+='current48.png" height="40"></td>\n';
+					status=item.Data;
+				}
+				else if (item.Type == "Air Quality") {
+					xhtm+='air48.png" height="40"></td>\n';
+					status=item.Data + " (" + item.Quality + ")";
+				}
+				else if (item.Type == "Lux") {
+					xhtm+='lux48.png" height="40"></td>\n';
+					status=item.Data;
+				}
+				else if (item.Type == "Usage") {
+					xhtm+='current48.png" height="40"></td>\n';
+					status=item.Data;
+				}
+				else if (item.SubType=="Soil Moisture") {
+					xhtm+='moisture48.png" height="40"></td>\n';
+					status=item.Data;
+				}
+				else if (item.SubType=="Leaf Wetness") {
+					xhtm+='leaf48.png" height="40"></td>\n';
+					status=item.Data;
+				}
+				else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
+					xhtm+='override.png" height="40"></td>\n';
+					status=item.Data + '\u00B0 C';
+				}
+				
+				if (typeof item.Usage != 'undefined') {
+					if (item.Type!="P1 Smart Meter") {
+						if (data.DashboardType==0) {
+							status+=", Actual: " + item.Usage;
+						}
+						else {
+							status+=", A: " + item.Usage;
+						}
+					}
+				}
+				if (typeof item.CounterDeliv != 'undefined') {
+					if (item.CounterDeliv!=0) {
+						status+='<br>';
+						status+='Return: ' + item.CounterDelivToday;
+					}
+				}
+				
+				xhtm+=
+						'\t      <td id="status">' + status + '</td>\n' +
+						'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
+				'\t    </tr>\n' +
+				'\t    </table>\n' +
+				'\t  </span>\n' +
+				'\t</div>\n';
+			}
             htmlcontent+=xhtm;
             jj+=1;
           }
