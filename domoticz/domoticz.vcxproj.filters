@@ -447,6 +447,9 @@
     <ClCompile Include="hardware\Dummy.cpp">
       <Filter>Devices\Dummy</Filter>
     </ClCompile>
+    <ClCompile Include="main\WindCalculation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="main\domoticz.rc" />

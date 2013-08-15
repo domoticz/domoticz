@@ -3,8 +3,16 @@
 #include <iostream>     /* standard I/O functions                         */
 #include <stdarg.h>
 #include <time.h>
+#include "localtime_r.h"
 
 #define MAX_LOG_LINE_BUFFER 100
+
+CLogger::_tLogLineStruct::_tLogLineStruct(const _eLogLevel nlevel, const std::string &nlogmessage)
+{
+	logtime=mytime(NULL);
+	level=nlevel;
+	logmessage=nlogmessage;
+}
 
 CLogger::CLogger(void)
 {

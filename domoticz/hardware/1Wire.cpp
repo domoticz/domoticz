@@ -4,6 +4,7 @@
 #include "../main/Logger.h"
 #include "../main/RFXtrx.h"
 #include "../main/Helper.h"
+#include "../main/localtime_r.h"
 
 #include <fcntl.h>
 #include <sys/stat.h>

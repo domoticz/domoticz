@@ -13,6 +13,7 @@
 #include "hardwaretypes.h"
 
 #include "../json/json.h"
+#include "../main/localtime_r.h"
 
 #pragma warning(disable: 4996)
 

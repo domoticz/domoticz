@@ -204,6 +204,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="main\SunRiseSet.cpp" />
+    <ClCompile Include="main\WindCalculation.cpp" />
     <ClCompile Include="smtpclient\SMTPClient.cpp" />
     <ClCompile Include="tcpserver\TCPClient.cpp" />
     <ClCompile Include="tcpserver\TCPServer.cpp" />

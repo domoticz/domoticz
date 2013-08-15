@@ -13,6 +13,7 @@
 #include <boost/bind.hpp>
 #include <iostream>
 #include "../main/Logger.h"
+#include "../main/localtime_r.h"
 
 namespace http {
 namespace server {

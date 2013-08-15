@@ -8,9 +8,10 @@
 #include "../hardware/hardwaretypes.h"
 #include <iostream>
 #include "../httpclient/HTTPClient.h"
+#include "localtime_r.h"
 
 #ifdef WIN32
-    #include "../main/dirent_windows.h"
+    #include "dirent_windows.h"
 #else
     #include <dirent.h>
 #endif
