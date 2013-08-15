@@ -7,6 +7,7 @@
 #include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
 #include "TE923Tool.h"
+#include "../main/localtime_r.h"
 
 #define TE923_POLL_INTERVAL 30
 
