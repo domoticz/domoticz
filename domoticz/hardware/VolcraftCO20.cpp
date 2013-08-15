@@ -7,6 +7,7 @@
 #include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
 #include "VolcraftCO20Tool.h"
+#include "../main/localtime_r.h"
 
 #define VolcraftCO20_POLL_INTERVAL 30
 
