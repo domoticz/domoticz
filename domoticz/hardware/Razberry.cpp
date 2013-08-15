@@ -444,7 +444,7 @@ void CRazberry::InsertOrUpdateDevice(_tZWaveDevice device, const bool bSend2Domo
 
 	bool bNewDevice=(m_devices.find(device.string_id)==m_devices.end());
 	
-	device.lastreceived=time(NULL);
+	device.lastreceived=mytime(NULL);
 #ifdef _DEBUG
 	if (bNewDevice)
 	{
@@ -530,7 +530,7 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 		return; //don't know you
 	}
 
-	time_t atime=time(NULL);
+	time_t atime=mytime(NULL);
 //	if (atime-pDevice->lastreceived<2)
 	//	return; //to soon
 #ifdef _DEBUG

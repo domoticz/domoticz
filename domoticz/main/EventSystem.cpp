@@ -981,7 +981,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
     
     if (randomTimer > 0) {
         int rTime;
-        srand ((unsigned int)time(NULL));
+        srand ((unsigned int)mytime(NULL));
         rTime = rand() % randomTimer + 1;
         DelayTime = (rTime * 60) +5; //prevent it from running again immediately the next minute if blockly script doesn't handle that
         //alreadyScheduled = isEventscheduled(deviceID, randomTimer, isScene);

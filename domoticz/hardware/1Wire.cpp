@@ -53,7 +53,7 @@ C1Wire::~C1Wire(void)
 void C1Wire::Init()
 {
 	m_bDetectSystem=true;
-	m_LastPollTime=time(NULL);
+	m_LastPollTime=mytime(NULL);
 }
 
 bool C1Wire::StartHardware()
@@ -82,7 +82,7 @@ void C1Wire::Do_Work()
 	while (!m_stoprequested)
 	{
 		boost::this_thread::sleep(boost::posix_time::seconds(1));
-		atime=time(NULL);
+		atime=mytime(NULL);
 		if (atime-m_LastPollTime>=Wire1_POLL_INTERVAL)
 		{
 			if (m_bDetectSystem)
@@ -93,7 +93,7 @@ void C1Wire::Do_Work()
 			}
 
 			GetSensorDetails();
-			m_LastPollTime=time(NULL);
+			m_LastPollTime=mytime(NULL);
 		}
 	}
 	_log.Log(LOG_NORM,"1-Wire Worker stopped...");

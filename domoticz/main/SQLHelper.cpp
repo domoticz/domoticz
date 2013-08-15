@@ -482,7 +482,7 @@ bool CSQLHelper::OpenDatabase()
 		{
 			//P1 Smart meter power change, need to delete all short logs from today
 			char szDateStart[40];
-			time_t now = time(NULL);
+			time_t now = mytime(NULL);
 			struct tm tm1;
 			localtime_r(&now,&tm1);
 			struct tm ltime;
@@ -1799,7 +1799,7 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(
 	if (notifications.size()==0)
 		return false;
 
-	time_t atime=time(NULL);
+	time_t atime=mytime(NULL);
 
 	//check if not send 12 hours ago, and if applicable
 
@@ -1910,7 +1910,7 @@ bool CSQLHelper::CheckAndHandleDewPointNotification(
 	if (notifications.size()==0)
 		return false;
 
-	time_t atime=time(NULL);
+	time_t atime=mytime(NULL);
 
 	//check if not send 12 hours ago, and if applicable
 
@@ -1985,7 +1985,7 @@ bool CSQLHelper::CheckAndHandleAmpere123Notification(
 	if (notifications.size()==0)
 		return false;
 
-	time_t atime=time(NULL);
+	time_t atime=mytime(NULL);
 
 	//check if not send 12 hours ago, and if applicable
 
@@ -2126,7 +2126,7 @@ bool CSQLHelper::CheckAndHandleNotification(
 	if (notifications.size()==0)
 		return false;
 
-	time_t atime=time(NULL);
+	time_t atime=mytime(NULL);
 
 	//check if not send 12 hours ago, and if applicable
 
@@ -2229,7 +2229,7 @@ bool CSQLHelper::CheckAndHandleSwitchNotification(
 
 	std::string ltype=Notification_Type_Desc(ntype,1);
 
-	time_t atime=time(NULL);
+	time_t atime=mytime(NULL);
 	int nNotificationInterval=0;
 	GetPreferencesVar("NotificationSwitchInterval", nNotificationInterval);
 	atime-=nNotificationInterval;
@@ -2320,7 +2320,7 @@ bool CSQLHelper::CheckAndHandleRainNotification(
 
 	char szDateEnd[40];
 
-	time_t now = time(NULL);
+	time_t now = mytime(NULL);
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 	struct tm ltime;
@@ -2364,7 +2364,7 @@ void CSQLHelper::TouchNotification(const unsigned long long ID)
 {
 	char szTmp[300];
 	char szDate[100];
-	time_t atime = time(NULL);
+	time_t atime = mytime(NULL);
 	struct tm ltime;
 	localtime_r(&atime,&ltime);
 	sprintf(szDate,"%04d-%02d-%02d %02d:%02d:%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,ltime.tm_hour,ltime.tm_min,ltime.tm_sec);
@@ -2438,7 +2438,7 @@ std::vector<_tNotification> CSQLHelper::GetNotifications(const unsigned long lon
 	if (result.size()==0)
 		return ret;
 
-	time_t mtime=time(NULL);
+	time_t mtime=mytime(NULL);
 	struct tm atime;
 	localtime_r(&mtime,&atime);
 
@@ -2647,7 +2647,7 @@ void CSQLHelper::UpdateTemperatureLog()
 {
 	char szTmp[600];
 
-	time_t now = time(NULL);
+	time_t now = mytime(NULL);
 	if (now==0)
 		return;
 	struct tm tm1;
@@ -2780,7 +2780,7 @@ void CSQLHelper::UpdateTemperatureLog()
 void CSQLHelper::UpdateRainLog()
 {
 	char szTmp[600];
-	time_t now = time(NULL);
+	time_t now = mytime(NULL);
 	if (now==0)
 		return;
 	struct tm tm1;
@@ -2853,7 +2853,7 @@ void CSQLHelper::UpdateRainLog()
 void CSQLHelper::UpdateWindLog()
 {
 	char szTmp[600];
-	time_t now = time(NULL);
+	time_t now = mytime(NULL);
 	if (now==0)
 		return;
 	struct tm tm1;
@@ -2923,7 +2923,7 @@ void CSQLHelper::UpdateWindLog()
 void CSQLHelper::UpdateUVLog()
 {
 	char szTmp[600];
-	time_t now = time(NULL);
+	time_t now = mytime(NULL);
 	if (now==0)
 		return;
 	struct tm tm1;
@@ -2989,7 +2989,7 @@ void CSQLHelper::UpdateUVLog()
 void CSQLHelper::UpdateMeter()
 {
 	char szTmp[600];
-	time_t now = time(NULL);
+	time_t now = mytime(NULL);
 	if (now==0)
 		return;
 	struct tm tm1;
@@ -3160,7 +3160,7 @@ void CSQLHelper::UpdateMeter()
 void CSQLHelper::UpdateMultiMeter()
 {
 	char szTmp[600];
-	time_t now = time(NULL);
+	time_t now = mytime(NULL);
 	if (now==0)
 		return;
 	struct tm tm1;
@@ -3302,7 +3302,7 @@ void CSQLHelper::AddCalendarTemperature()
 	char szDateStart[40];
 	char szDateEnd[40];
 
-	time_t now = time(NULL);
+	time_t now = mytime(NULL);
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
@@ -3387,7 +3387,7 @@ void CSQLHelper::AddCalendarUpdateRain()
 	char szDateStart[40];
 	char szDateEnd[40];
 
-	time_t now = time(NULL);
+	time_t now = mytime(NULL);
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
@@ -3515,7 +3515,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 	char szDateStart[40];
 	char szDateEnd[40];
 
-	time_t now = time(NULL);
+	time_t now = mytime(NULL);
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
@@ -3721,7 +3721,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 	char szDateStart[40];
 	char szDateEnd[40];
 
-	time_t now = time(NULL);
+	time_t now = mytime(NULL);
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
@@ -3853,7 +3853,7 @@ void CSQLHelper::AddCalendarUpdateWind()
 	char szDateStart[40];
 	char szDateEnd[40];
 
-	time_t now = time(NULL);
+	time_t now = mytime(NULL);
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
@@ -3933,7 +3933,7 @@ void CSQLHelper::AddCalendarUpdateUV()
 	char szDateStart[40];
 	char szDateEnd[40];
 
-	time_t now = time(NULL);
+	time_t now = mytime(NULL);
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
@@ -3996,10 +3996,16 @@ void CSQLHelper::CleanupShortLog()
 	int n5MinuteHistoryDays=1;
 	GetPreferencesVar("5MinuteHistoryDays", n5MinuteHistoryDays);
 
-	time_t now = time(NULL);
+	time_t now = mytime(NULL);
 	now-=(n5MinuteHistoryDays*24*3600);
 	struct tm tm2;
 	localtime_r(&now,&tm2);
+
+	if (tm2.tm_year==70)
+	{
+		//Lost our time?
+		return;
+	}
 
 	char szDateStr[40];
 	char szTmp[200];
@@ -4278,7 +4284,7 @@ void CSQLHelper::CleanupLightLog()
 	GetPreferencesVar("LightHistoryDays", nMaxDays);
 
 	char szDateEnd[40];
-	time_t now = time(NULL);
+	time_t now = mytime(NULL);
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 

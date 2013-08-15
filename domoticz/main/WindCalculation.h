@@ -2,6 +2,7 @@
 
 #include <deque>
 #include <time.h>
+#include "../main/localtime_r.h"
 
 #define WIND_HISTORY_MINUTES 10
 #define WIND_DEGREE_RESOLUTION 5
@@ -37,7 +38,7 @@ struct _tWindCalculationStruct
 	{
 		//clear buffer
 		memset(&m_minute_counter,0,sizeof(m_minute_counter));
-		m_FirstMeasureTime=time(NULL);
+		m_FirstMeasureTime=mytime(NULL);
 		m_history_fifo.clear();
 		m_bHaveLastDirection=false;
 	}
@@ -62,7 +63,7 @@ struct _tWindCalculationStruct
 			dirresult+=360;
 		return dirresult;
 /*
-		time_t atime=time(NULL);
+		time_t atime=mytime(NULL);
 		long tot_minutes=(long)((atime-m_FirstMeasureTime)/60);
 		if (tot_minutes<0)
 		{

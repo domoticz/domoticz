@@ -765,7 +765,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
 
-	time_t now = time(NULL);
+	time_t now = mytime(NULL);
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 	int SensorTimeOut=60;
@@ -1487,7 +1487,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				if (strarray.size()==2)
 				{
 					//get lowest value of today, and max rate
-					time_t now = time(NULL);
+					time_t now = mytime(NULL);
 					struct tm tm1;
 					localtime_r(&now,&tm1);
 
@@ -1581,7 +1581,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				}
 
 				//get value of today
-				time_t now = time(NULL);
+				time_t now = mytime(NULL);
 				struct tm tm1;
 				localtime_r(&now,&tm1);
 
@@ -1663,7 +1663,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				}
 
 				//get value of today
-				time_t now = time(NULL);
+				time_t now = mytime(NULL);
 				struct tm tm1;
 				localtime_r(&now,&tm1);
 
@@ -1844,7 +1844,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 
 				//get value of today
-				time_t now = time(NULL);
+				time_t now = mytime(NULL);
 				struct tm tm1;
 				localtime_r(&now,&tm1);
 
@@ -1903,7 +1903,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			{
 				float GasDivider=1000.0f;
 				//get lowest value of today
-				time_t now = time(NULL);
+				time_t now = mytime(NULL);
 				struct tm tm1;
 				localtime_r(&now,&tm1);
 
@@ -2157,7 +2157,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				case sTypeRego6XXCounter:
                     {
 				        //get value of today
-				        time_t now = time(NULL);
+				        time_t now = mytime(NULL);
 				        struct tm tm1;
 				        localtime_r(&now,&tm1);
 
@@ -2895,7 +2895,7 @@ std::string CWebServer::GetJSonPage()
 		if (srange=="")
 			goto exitjson;
 
-		time_t now = time(NULL);
+		time_t now = mytime(NULL);
 		struct tm tm1;
 		localtime_r(&now,&tm1);
 
@@ -5847,7 +5847,7 @@ std::string CWebServer::GetJSonPage()
 					bool bHaveUpdate=(version<atoi(strarray[2].c_str()));
 					if ((bHaveUpdate)&&(!bIsForced))
 					{
-						time_t atime=time(NULL);
+						time_t atime=mytime(NULL);
 						if (atime-m_LastUpdateCheck<12*3600)
 						{
 							bHaveUpdate=false;
@@ -8098,7 +8098,7 @@ std::string CWebServer::GetJSonPage()
 				if (strarray.size()==2)
 				{
 					struct tm loctime;
-					time_t now = time(NULL);
+					time_t now = mytime(NULL);
 
 					localtime_r (&now, &loctime );
 					strftime (szTmp,80,"%b %d %Y %X",&loctime);
@@ -8114,7 +8114,7 @@ std::string CWebServer::GetJSonPage()
         else if (cparam =="getServerTime") {
 
             struct tm loctime;
-			time_t now = time(NULL);
+			time_t now = mytime(NULL);
 
             localtime_r (&now, &loctime );
 			strftime (szTmp,80,"%b %d %Y %X",&loctime);

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "P1MeterBase.h"
 #include "hardwaretypes.h"
+#include "../main/localtime_r.h"
 
 typedef enum { 
 	ID=0, 
@@ -199,7 +200,7 @@ void P1MeterBase::MatchLine()
 
 		if (m_exclmarkfound) {
 			bool bSend2Shared=false;
-			time_t atime=time(NULL);
+			time_t atime=mytime(NULL);
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1power);//decode message
 			bSend2Shared=(atime-m_lastSharedSendElectra>59);
 			if (abs(double(m_lastelectrausage)-double(m_p1power.usagecurrent))>40)

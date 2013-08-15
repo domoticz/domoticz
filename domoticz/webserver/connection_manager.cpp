@@ -47,7 +47,7 @@ void connection_manager::stop_all()
 
 void connection_manager::check_timeouts()
 {
-	time_t atime=time(NULL);
+	time_t atime=mytime(NULL);
 	std::set<connection_ptr>::const_iterator itt;
 	for (itt=connections_.begin(); itt!=connections_.end(); ++itt)
 	{

@@ -117,7 +117,7 @@ void CCamScheduler::CheckCameras()
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 
-	time_t atime=time(NULL);
+	time_t atime=mytime(NULL);
 	struct tm ltime;
 	localtime_r(&atime,&ltime);
     //_log.Log(LOG_NORM,"Camera tick");

@@ -4,6 +4,7 @@
 #include <list>
 #include <string>
 #include <fstream>
+#include "localtime_r.h"
 
 enum _eLogLevel
 {
@@ -21,7 +22,7 @@ public:
 		std::string logmessage;
 		_tLogLineStruct(const _eLogLevel nlevel, const std::string &nlogmessage)
 		{
-			logtime=time(NULL);
+			logtime=mytime(NULL);
 			level=nlevel;
 			logmessage=nlogmessage;
 		}

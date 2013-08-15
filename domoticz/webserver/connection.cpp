@@ -13,6 +13,7 @@
 #include <boost/bind.hpp>
 #include "connection_manager.hpp"
 #include "request_handler.hpp"
+#include "../main/localtime_r.h"
 
 namespace http {
 namespace server {
@@ -23,7 +24,7 @@ connection::connection(boost::asio::io_service& io_service,
     connection_manager_(manager),
     request_handler_(handler)
 {
-	m_lastresponse=time(NULL);
+	m_lastresponse=mytime(NULL);
 }
 
 boost::asio::ip::tcp::socket& connection::socket()
@@ -49,7 +50,7 @@ void connection::handle_read(const boost::system::error_code& e,
 {
   if (!e)
   {
-	  m_lastresponse=time(NULL);
+	  m_lastresponse=mytime(NULL);
     boost::tribool result;
 	try
 	{
@@ -101,7 +102,7 @@ void connection::handle_write(const boost::system::error_code& e)
   {
     connection_manager_.stop(shared_from_this());
   }
-  m_lastresponse=time(NULL);
+  m_lastresponse=mytime(NULL);
 }
 
 } // namespace server

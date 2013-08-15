@@ -11,6 +11,7 @@
 #include <iostream>
 #include <boost/bind.hpp>
 #include "hardwaretypes.h"
+#include "../main/localtime_r.h"
 
 #include <ctime>
 
@@ -338,7 +339,7 @@ void CRego6XXSerial::ParseData()
 				 m_readBuffer[(tail + 3) & Rego6XX_READ_BUFFER_MASK]))
 			{
 				// This is a proper message
-		        time_t atime=time(NULL);
+		        time_t atime=mytime(NULL);
                 signed short data = 0;
 				data = (m_readBuffer[(tail + 1) & Rego6XX_READ_BUFFER_MASK] << 14) |
 					   (m_readBuffer[(tail + 2) & Rego6XX_READ_BUFFER_MASK] << 7) | 

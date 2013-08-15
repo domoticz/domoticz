@@ -11,7 +11,7 @@ CScheduler::CScheduler(void)
 	m_tSunSet=0;
 	m_pMain=NULL;
 	m_stoprequested=false;
-	srand((int)time(NULL));
+	srand((int)mytime(NULL));
 }
 
 CScheduler::~CScheduler(void)
@@ -147,7 +147,7 @@ void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::str
 		unsigned char hour,min,sec;
 
 		time_t temptime;
-		time_t atime=time(NULL);
+		time_t atime=mytime(NULL);
 		struct tm ltime;
 		localtime_r(&atime,&ltime);
 
@@ -187,7 +187,7 @@ void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::str
 
 bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 {
-	time_t atime=time(NULL);
+	time_t atime=mytime(NULL);
 	time_t rtime=atime;
 	struct tm ltime;
 	localtime_r(&atime,&ltime);
@@ -269,7 +269,7 @@ void CScheduler::CheckSchedules()
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 
-	time_t atime=time(NULL);
+	time_t atime=mytime(NULL);
 	struct tm ltime;
 	localtime_r(&atime,&ltime);
 

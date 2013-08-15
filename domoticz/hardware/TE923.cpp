@@ -28,7 +28,7 @@ CTE923::~CTE923(void)
 
 void CTE923::Init()
 {
-	m_LastPollTime=time(NULL)-TE923_POLL_INTERVAL+2;
+	m_LastPollTime=mytime(NULL)-TE923_POLL_INTERVAL+2;
 }
 
 bool CTE923::StartHardware()
@@ -64,11 +64,11 @@ void CTE923::Do_Work()
 	while (!m_stoprequested)
 	{
 		boost::this_thread::sleep(boost::posix_time::seconds(1));
-		atime=time(NULL);
+		atime=mytime(NULL);
 		if (atime-m_LastPollTime>=TE923_POLL_INTERVAL)
 		{
 			GetSensorDetails();
-			m_LastPollTime=time(NULL);
+			m_LastPollTime=mytime(NULL);
 		}
 	}
 	_log.Log(LOG_NORM,"TE923 Worker stopped...");

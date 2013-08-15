@@ -15,6 +15,7 @@
 #include <fstream>
 #include <sstream>
 #include "../main/Helper.h"
+#include "../main/localtime_r.h"
 
 int m_failcounter=0;
 
@@ -1146,7 +1147,7 @@ int cWebemRequestHandler::check_authorization(const request& req)
 				} 
 				else
 				{
-					time_t acttime=time(NULL);
+					time_t acttime=mytime(NULL);
 					if (acttime-myWebem->m_sessionids[SID].lasttouch<10*60)
 					{
 						myWebem->m_actsessionid=SID;
@@ -1240,7 +1241,7 @@ void cWebemRequestHandler::check_cookie(const request& req, reply& rep)
 				rep.headers.resize(4);
 				rep.headers[3].name="Set-Cookie";
 				std::stringstream sstr;
-				time_t sessionid=time(NULL);
+				time_t sessionid=mytime(NULL);
 				_tWebEmSession usession;
 				usession.username=myWebem->m_actualuser;
 				usession.lasttouch=sessionid;
@@ -1267,7 +1268,7 @@ void cWebemRequestHandler::check_cookie(const request& req, reply& rep)
 					std::map<time_t,WebEmSession>::iterator itt = myWebem->m_sessionids.find(SID);
 					if (itt == myWebem->m_sessionids.end()) 
 					{
-						time_t atime=time(NULL);
+						time_t atime=mytime(NULL);
 						_tWebEmSession usession;
 						usession.username=myWebem->m_actualuser;
 						usession.lasttouch=atime;
@@ -1342,7 +1343,7 @@ void cWebemRequestHandler::handle_request( const request& req, reply& rep)
 
 	if (myWebem->m_actsessionid!=0)
 	{
-		myWebem->m_sessionids[myWebem->m_actsessionid].lasttouch=time(NULL);
+		myWebem->m_sessionids[myWebem->m_actsessionid].lasttouch=mytime(NULL);
 	}
 	
 }

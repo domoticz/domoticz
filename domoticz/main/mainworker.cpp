@@ -51,7 +51,7 @@ MainWorker::MainWorker()
 	m_webserverport="8080";
 	m_bIgnoreUsernamePassword=false;
 
-	time_t atime=time(NULL);
+	time_t atime=mytime(NULL);
 	struct tm ltime;
 	localtime_r(&atime,&ltime);
 	m_ScheduleLastMinute=ltime.tm_min;
@@ -222,7 +222,7 @@ bool MainWorker::GetSunSettings()
 
 	unsigned char *pData=NULL;
 	unsigned long ulLength=0;
-	time_t atime=time(NULL);
+	time_t atime=mytime(NULL);
 	struct tm ltime;
 	localtime_r(&atime,&ltime);
 
@@ -646,7 +646,7 @@ void MainWorker::Do_Work()
 			}
 		}
 
-		time_t atime=time(NULL);
+		time_t atime=mytime(NULL);
 		struct tm ltime;
 		localtime_r(&atime,&ltime);
 
