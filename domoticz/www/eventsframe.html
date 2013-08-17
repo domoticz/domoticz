@@ -353,7 +353,8 @@
 		    else if ($(this).attr('type') == 'open_url') {
 		    	var urlBlock = $(this).find("value[name='urlToOpen']")[0];
 		    	var urlText = $(urlBlock).find("title[name='TEXT']")[0];
-		    	var setString = 'commandArray["OpenURL"]="'+$(urlText).text()+'"';
+		    	var urlNoAmpersands =  $(urlText).text().replace(/\&/g, '~amp~');
+		    	var setString = 'commandArray["OpenURL"]="'+urlNoAmpersands+'"';
 	        	setArray.push(setString);		      	
 		    }
 		  });
@@ -370,9 +371,9 @@
 			  	success: function(data) {
 				  	if (typeof data.result != 'undefined') {
 				  		if (data.status=="OK") {
-					  		var xml = Blockly.Xml.textToDom(data.result[0].xmlstatement);
+				  			var xmltemp = data.result[0].xmlstatement;
+				  			var xml = Blockly.Xml.textToDom(xmltemp.replace(/\~amp~/g, '&'));
 					  		Blockly.mainWorkspace.clear();
-					  		
 					  		Blockly.Xml.domToWorkspace( Blockly.mainWorkspace, xml );
 					  		$("#blockName").val(data.result[0].name);
 					  		$("#blockId").html(id);
@@ -473,6 +474,7 @@
       		if (doSave) {
       		   var blockXml  = Blockly.Xml.domToText( xml );
       		   var logicArray = parseXml(xml);
+      		   blockXml = blockXml.replace(/\&/g, '~amp~');
       		   if (typeof(logicArray)=='string') {
       		   	var answerparts = logicArray.split(':');
       		   	if (answerparts[0]=="err") {

@@ -900,12 +900,13 @@ void CEventSystem::SendEventNotification(const std::string &Subject, const std::
 
 void CEventSystem::OpenURL(const std::string &URL)
 {
-    _log.Log(LOG_NORM,"Fetching url: %s",URL.c_str());
+    std::string ampURL = stdreplace(URL, "~amp~", "&");
+    _log.Log(LOG_NORM,"Fetching url: %s",ampURL.c_str());
     std::string sResult;
-	bool ret=HTTPClient::GET(URL,sResult);
+	bool ret=HTTPClient::GET(ampURL,sResult);
 	if (!ret)
 	{
-		_log.Log(LOG_ERROR,"Error opening url: %s",URL.c_str());
+		_log.Log(LOG_ERROR,"Error opening url: %s",ampURL.c_str());
 	}
     // maybe do something with sResult in the future.
 }
