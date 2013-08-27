@@ -207,7 +207,7 @@ void C1Wire::GetGPIOSensorDetails()
 				{
 					std::string stemp=sLine.substr(tpos+2);
 					float temp=(float)atoi(stemp.c_str())/1000.0f;
-					if ((temp>-300)&&(temp<300))
+					if (((temp>-300)&&(temp<300))&&(temp!=85))
 					{
 						std::string sID=devid.substr(devid.size()-4);
 

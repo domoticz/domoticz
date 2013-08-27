@@ -5393,7 +5393,6 @@ std::string CWebServer::GetJSonPage()
 				}
 			}
 		}//custom range
-
 	}
 	else if (rtype=="command")
 	{
