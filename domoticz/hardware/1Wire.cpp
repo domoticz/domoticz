@@ -252,6 +252,10 @@ bool HaveSupported1WireSensor(const std::string basedir)
 	if (file_exist(devfile.c_str()))
 		return true;
 
+	devfile=basedir+"/volt.ALL";
+	if (file_exist(devfile.c_str()))
+		return true;
+
 	return false;
 }
 
@@ -392,6 +396,11 @@ void C1Wire::GetOWFSSensorDetails()
 		float temp=0x1234;
 		float humidity=0x1234;
 		unsigned long counterA=0xFEDCBA98;
+		int voltage[4];
+		voltage[0]=0x1234;
+		voltage[1]=0x1234;
+		voltage[2]=0x1234;
+		voltage[3]=0x1234;
 
 		unsigned int xID;   
 		std::stringstream ss;
@@ -436,6 +445,25 @@ void C1Wire::GetOWFSSensorDetails()
 				getline(infile3, sLine);
 				counterA=(unsigned long)atol(sLine.c_str());
 				infile3.close();
+			}
+			//try to read voltages
+			std::ifstream infile4;
+			filename=itt->filename+"/volt.ALL";
+			infile4.open(filename.c_str());
+			if (infile4.is_open())
+			{
+				std::string sLine;
+				getline(infile4, sLine);
+				infile4.close();
+				std::vector<std::string> results;
+				StringSplit(sLine,",",results);
+				int tvolts=(int)results.size();
+				if (tvolts>4)
+					tvolts=4;
+				for (int iv=0; iv<tvolts; iv++)
+				{
+					voltage[iv]=(int)(atof(results[iv].c_str())*1000.0);
+				}
 			}
 			if ((temp!=0x1234)&&(humidity==0x1234))
 			{
@@ -516,7 +544,26 @@ void C1Wire::GetOWFSSensorDetails()
 				tsen.RFXMETER.count3 = (BYTE)((counterA & 0x0000FF00) >> 8);
 				tsen.RFXMETER.count4 = (BYTE)(counterA & 0x000000FF);
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);//decode message
+			}
+			else if (voltage[0]!=0x1234)
+			{
+				for (int iv=0; iv<4; iv++)
+				{
+					if (voltage[iv]!=0x1234)
+					{
+						RBUF tsen;
+						memset(&tsen,0,sizeof(RBUF));
+						tsen.RFXSENSOR.packetlength=sizeof(tsen.RFXSENSOR)-1;
+						tsen.RFXSENSOR.packettype=pTypeRFXSensor;
+						tsen.RFXSENSOR.subtype=sTypeRFXSensorVolt;
+						tsen.RFXSENSOR.rssi=6;
+						tsen.RFXSENSOR.id=iv+1;
 
+						tsen.RFXSENSOR.msg1 = (BYTE)(voltage[iv]/256);
+						tsen.RFXSENSOR.msg2 = (BYTE)(voltage[iv]-(tsen.RFXSENSOR.msg1*256));
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR);//decode message
+					}
+				}
 			}
 		}
 	}

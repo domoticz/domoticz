@@ -782,7 +782,8 @@ function RefreshFavorites()
 					(item.Type == "Usage")||
 					((item.Type == "Thermostat")&&(item.SubType=="SetPoint"))||
 					(item.SubType=="Soil Moisture")||
-					(item.SubType=="Leaf Wetness")
+					(item.SubType=="Leaf Wetness")||
+					(item.SubType=="Voltage")
 				) &&
                 (item.Favorite!=0)
               )
@@ -812,7 +813,8 @@ function RefreshFavorites()
 									(item.Type == "Lux")||
 									(item.Type == "Usage")||
 									(item.SubType=="Soil Moisture")||
-									(item.SubType=="Leaf Wetness")
+									(item.SubType=="Leaf Wetness")||
+									(item.SubType=="Voltage")
 								) {
 							status+=item.Data;
 						}
@@ -871,6 +873,10 @@ function RefreshFavorites()
 							bigtext=item.Data;
 						}
 						else if (item.SubType=="Leaf Wetness") {
+							status=item.Data;
+							bigtext=item.Data;
+						}
+						else if (item.SubType=="Voltage") {
 							status=item.Data;
 							bigtext=item.Data;
 						}
@@ -2027,7 +2033,8 @@ function ShowFavorites()
 					(item.Type == "Usage")||
 					((item.Type == "Thermostat")&&(item.SubType=="SetPoint"))||
 					(item.SubType=="Soil Moisture")||
-					(item.SubType=="Leaf Wetness")
+					(item.SubType=="Leaf Wetness")||
+					(item.SubType=="Voltage")
 				) &&
                 (item.Favorite!=0)
               )
@@ -2085,7 +2092,8 @@ function ShowFavorites()
 							(item.Type == "Lux")||
 							(item.Type == "Usage")||
 							(item.SubType=="Soil Moisture")||
-							(item.SubType=="Leaf Wetness")
+							(item.SubType=="Leaf Wetness")||
+							(item.SubType=="Voltage")
 						) {
 					status=item.Data;
 				}
@@ -2153,7 +2161,8 @@ function ShowFavorites()
 						(item.Type == "Lux")||
 						(item.Type == "Usage")||
 						(item.SubType=="Soil Moisture")||
-						(item.SubType=="Leaf Wetness")
+						(item.SubType=="Leaf Wetness")||
+						(item.SubType=="Voltage")
 					) {
 					xhtm+=item.Data;
 				}
@@ -2198,6 +2207,10 @@ function ShowFavorites()
 				}
 				else if (item.SubType=="Leaf Wetness") {
 					xhtm+='leaf48.png" height="40"></td>\n';
+					status=item.Data;
+				}
+				else if (item.SubType=="Voltage") {
+					xhtm+='current48.png" height="40"></td>\n';
 					status=item.Data;
 				}
 				else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
