@@ -4024,17 +4024,6 @@ function RefreshUtilities()
 					}
 					else {
 						status=item.Counter + ', Today: ' + item.CounterToday;
-						if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
-							bigtext=item.Usage;
-						}
-						else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
-							if (item.Usage.charAt(0) != 0) {
-								bigtext=item.Usage;
-							}
-							if (item.UsageDeliv.charAt(0) != 0) {
-								bigtext='-' + item.UsageDeliv;
-							}
-						}
 					}
 				}
 				else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
@@ -4080,6 +4069,7 @@ function RefreshUtilities()
 				if (typeof item.CounterDeliv != 'undefined') {
 					if (item.CounterDeliv!=0) {
 						status+='<br>Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
+						bigtext='-' + item.UsageDeliv;
 					}
 				}
 				
