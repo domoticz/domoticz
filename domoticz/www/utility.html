@@ -4069,7 +4069,9 @@ function RefreshUtilities()
 				if (typeof item.CounterDeliv != 'undefined') {
 					if (item.CounterDeliv!=0) {
 						status+='<br>Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
-						bigtext='-' + item.UsageDeliv;
+						if (item.UsageDeliv.charAt(0) != 0) {
+							bigtext='-' + item.UsageDeliv;
+						}
 					}
 				}
 				
