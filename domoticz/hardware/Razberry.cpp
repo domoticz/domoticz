@@ -929,7 +929,7 @@ void CRazberry::WriteToHardware(const char *pdata, const unsigned char length)
 
 			if (pSen->LIGHTING2.cmnd==light2_sOff)
 				svalue=0;
-			if (pSen->LIGHTING2.cmnd==light2_sOn)
+			else if (pSen->LIGHTING2.cmnd==light2_sOn)
 				svalue=255;
 			else
 			{
