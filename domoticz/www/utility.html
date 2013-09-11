@@ -156,15 +156,15 @@
 	<table class="display myrighttable" id="yearreport" border="0" cellpadding="0" cellspacing="0" width="100%">
 		<thead>
 			<tr valign="middle">
-				<th width="30" align="right">Month</th>
+				<th width="70" align="right">Month</th>
 				<th width="60" align="right">Usage T1</th>
-				<th width="60" align="right">Costs</th>
+				<th width="50" align="right">Costs</th>
 				<th width="60" align="right">Usage T2</th>
-				<th width="60" align="right">Costs</th>
+				<th width="50" align="right">Costs</th>
 				<th width="60" align="right">Return T1</th>
-				<th width="60" align="right">Costs</th>
+				<th width="50" align="right">Costs</th>
 				<th width="60" align="right">Return T2</th>
-				<th width="60" align="right">Costs</th>
+				<th width="50" align="right">Costs</th>
 				<th width="60" align="right">Total</th>
 				<th width="40" align="right"><></th>
 			</tr>
@@ -3326,8 +3326,12 @@ function ShowP1YearReport(actYear)
 		});
 
 	//add last month
-	if ((globalT1!=0)||(globalT2!=0)||(globalR1!=0)||(globalR2!=0)) {
+	if ((totalT1!=0)||(totalT2!=0)||(totalR1!=0)||(totalR2!=0)) {
 		lastTotal=Add2YearTableP1Report(oTable,totalT1,totalT2,totalR1,totalR2,lastTotal,lastMonth,actYear);
+		globalT1+=totalT1;
+		globalT2+=totalT2;
+		globalR1+=totalR1;
+		globalR2+=totalR2;
 	}
 
 	$("#utilitycontent #tut1").html(globalT1.toFixed(3));
@@ -3617,7 +3621,7 @@ function ShowP1YearReportGas(actYear)
 		});
 
 	//add last month
-	if (global!=0) {
+	if (total!=0) {
 		lastTotal=Add2YearTableP1ReportGas(oTable,total,lastTotal,lastMonth,actYear);
 		global+=lastTotal;
 	}

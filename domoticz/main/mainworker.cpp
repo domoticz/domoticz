@@ -1552,7 +1552,7 @@ unsigned long long MainWorker::decode_Wind(const int HwdID, const tRBUF *pRespon
 	unsigned char BatteryLevel=get_BateryLevel(pResponse->WIND.subtype==sTypeWIND3, pResponse->WIND.battery_level & 0x0F);
 
 	double dDirection;
-	dDirection = (pResponse->WIND.directionh * 256) + pResponse->WIND.directionl;
+	dDirection = (double)(pResponse->WIND.directionh * 256) + pResponse->WIND.directionl;
 	dDirection=m_wind_calculator[windID].AddValueAndReturnAvarage(dDirection);
 
 	std::string strDirection;
@@ -2921,22 +2921,22 @@ unsigned long long MainWorker::decode_Lighting4(const int HwdID, const tRBUF *pR
 				WriteMessage("1 ", false);
 			
 
-			if ((pResponse->LIGHTING4.cmd1 & 0x8)==0)
+			if ((pResponse->LIGHTING4.cmd1 & 0x08)==0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 			
-			if ((pResponse->LIGHTING4.cmd1 & 0x4)==0)
+			if ((pResponse->LIGHTING4.cmd1 & 0x04)==0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 			
-			if ((pResponse->LIGHTING4.cmd1 & 0x2)==0)
+			if ((pResponse->LIGHTING4.cmd1 & 0x02)==0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 			
-			if ((pResponse->LIGHTING4.cmd1 & 0x1)==0)
+			if ((pResponse->LIGHTING4.cmd1 & 0x01)==0)
 				WriteMessage("0 ", false);
 			else
 				WriteMessage("1 ", false);
@@ -2963,22 +2963,22 @@ unsigned long long MainWorker::decode_Lighting4(const int HwdID, const tRBUF *pR
 				WriteMessage("1 ", false);
 			
 
-			if ((pResponse->LIGHTING4.cmd2 & 0x8)==0)
+			if ((pResponse->LIGHTING4.cmd2 & 0x08)==0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 			
-			if ((pResponse->LIGHTING4.cmd2 & 0x4)==0)
+			if ((pResponse->LIGHTING4.cmd2 & 0x04)==0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 			
-			if ((pResponse->LIGHTING4.cmd2 & 0x2)==0)
+			if ((pResponse->LIGHTING4.cmd2 & 0x02)==0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 			
-			if ((pResponse->LIGHTING4.cmd2 & 0x1)==0)
+			if ((pResponse->LIGHTING4.cmd2 & 0x01)==0)
 				WriteMessage("0 ", false);
 			else
 				WriteMessage("1 ", false);
@@ -3005,22 +3005,22 @@ unsigned long long MainWorker::decode_Lighting4(const int HwdID, const tRBUF *pR
 				WriteMessage("1 ", false);
 			
 
-			if ((pResponse->LIGHTING4.cmd3 & 0x8)==0)
+			if ((pResponse->LIGHTING4.cmd3 & 0x08)==0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 			
-			if ((pResponse->LIGHTING4.cmd3 & 0x4)==0)
+			if ((pResponse->LIGHTING4.cmd3 & 0x04)==0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 			
-			if ((pResponse->LIGHTING4.cmd3 & 0x2)==0)
+			if ((pResponse->LIGHTING4.cmd3 & 0x02)==0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 			
-			if ((pResponse->LIGHTING4.cmd3 & 0x1)==0)
+			if ((pResponse->LIGHTING4.cmd3 & 0x01)==0)
 				WriteMessage("0");
 			else
 				WriteMessage("1");
@@ -5300,8 +5300,8 @@ unsigned long long MainWorker::decode_Current_Energy(const int HwdID, const tRBU
 					double(pResponse->ENERGY.total1) * 0x10000000000ULL +
 					double(pResponse->ENERGY.total2) * 0x100000000ULL +
 					double(pResponse->ENERGY.total3) * 0x1000000 +
-					pResponse->ENERGY.total4 * 0x10000 +
-					pResponse->ENERGY.total5 * 0x100 +
+					double(pResponse->ENERGY.total4) * 0x10000 +
+					double(pResponse->ENERGY.total5) * 0x100 +
 					pResponse->ENERGY.total6
 				   ) / 223.666;
 
@@ -5594,7 +5594,7 @@ unsigned long long MainWorker::decode_RFXMeter(const int HwdID, const tRBUF *pRe
 		unsigned long counter = (pResponse->RFXMETER.count1 << 24) + (pResponse->RFXMETER.count2 << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4;
 		//float RFXPwr = float(counter) / 1000.0f;
 
-		sprintf(szTmp,"%ld",counter);
+		sprintf(szTmp,"%lu",counter);
 		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
 		PrintDeviceName(devname);
 	}
@@ -5612,7 +5612,7 @@ unsigned long long MainWorker::decode_RFXMeter(const int HwdID, const tRBUF *pRe
 			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
 			counter = (pResponse->RFXMETER.count1 << 24) + (pResponse->RFXMETER.count2 << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4;
-			sprintf(szTmp,"Counter       = %ld", counter);
+			sprintf(szTmp,"Counter       = %lu", counter);
 			WriteMessage(szTmp);
 			sprintf(szTmp,"if RFXPwr     = %.3f kWh", float(counter) / 1000.0f);
 			WriteMessage(szTmp);
@@ -5669,7 +5669,7 @@ unsigned long long MainWorker::decode_RFXMeter(const int HwdID, const tRBUF *pRe
 			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
 			counter = ( ((pResponse->RFXMETER.count2 & 0x3F) << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4 ) / 1000;
-			sprintf(szTmp,"Calibrate cnt = %ld msec", counter);
+			sprintf(szTmp,"Calibrate cnt = %lu msec", counter);
 			WriteMessage(szTmp);
 
 			sprintf(szTmp,"RFXPwr        = %.3f kW", 1.0f / ( float(16 * counter) / (3600000.0f / 62.5f)) );
@@ -5718,7 +5718,7 @@ unsigned long long MainWorker::decode_RFXMeter(const int HwdID, const tRBUF *pRe
 			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
 			counter =  (pResponse->RFXMETER.count1 << 24) + (pResponse->RFXMETER.count2 << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4;
-			sprintf(szTmp,"Counter       = %ld", counter);
+			sprintf(szTmp,"Counter       = %lu", counter);
 			WriteMessage(szTmp);
 			break;
 		case sTypeRFXMeterSetInterval:
@@ -5816,7 +5816,7 @@ unsigned long long MainWorker::decode_P1MeterPower(const int HwdID, const tRBUF 
 	unsigned char SignalLevel=12;
 	unsigned char BatteryLevel = 255;
 
-	sprintf(szTmp,"%ld;%ld;%ld;%ld;%ld;%ld",
+	sprintf(szTmp,"%lu;%lu;%lu;%lu;%lu;%lu",
 		p1Power->powerusage1,
 		p1Power->powerusage2,
 		p1Power->powerdeliv1,
@@ -5846,9 +5846,9 @@ unsigned long long MainWorker::decode_P1MeterPower(const int HwdID, const tRBUF 
 			sprintf(szTmp,"powerdeliv2 = %.3f kWh", float(p1Power->powerdeliv2) / 1000.0f);
 			WriteMessage(szTmp);
 
-			sprintf(szTmp,"current usage = %03ld Watt", p1Power->usagecurrent);
+			sprintf(szTmp,"current usage = %03lu Watt", p1Power->usagecurrent);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"current deliv = %03ld Watt", p1Power->delivcurrent);
+			sprintf(szTmp,"current deliv = %03lu Watt", p1Power->delivcurrent);
 			WriteMessage(szTmp);
 			break;
 		default:
@@ -5874,7 +5874,7 @@ unsigned long long MainWorker::decode_P1MeterGas(const int HwdID, const tRBUF *p
 	unsigned char SignalLevel=12;
 	unsigned char BatteryLevel = 255;
 
-	sprintf(szTmp,"%ld",p1Gas->gasusage);
+	sprintf(szTmp,"%lu",p1Gas->gasusage);
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
 	PrintDeviceName(devname);
 
@@ -5912,7 +5912,7 @@ unsigned long long MainWorker::decode_YouLessMeter(const int HwdID, const tRBUF 
 	unsigned char SignalLevel=12;
 	unsigned char BatteryLevel = 255;
 
-	sprintf(szTmp,"%ld;%ld",
+	sprintf(szTmp,"%lu;%lu",
 		pMeter->powerusage,
 		pMeter->usagecurrent
 		);
@@ -5930,7 +5930,7 @@ unsigned long long MainWorker::decode_YouLessMeter(const int HwdID, const tRBUF 
 
 			sprintf(szTmp,"powerusage = %.3f kWh", float(pMeter->powerusage) / 1000.0f);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"current usage = %03ld kWh", pMeter->usagecurrent);
+			sprintf(szTmp,"current usage = %03lu kWh", pMeter->usagecurrent);
 			WriteMessage(szTmp);
 			break;
 		default:
