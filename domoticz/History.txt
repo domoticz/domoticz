@@ -27,6 +27,7 @@ Version 1.0.xxx (August xxth 2013)
 - Fixed: P1 Smart Meter Electra Utility refresh value for meters with return supply
 - Fixed: Cost reports where meter had no previous month
 - Fixed: Razberry Dimmer On/Off command
+- Implemented: WU, extra protection for wind speed/gust
 
 Version 1.0.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)

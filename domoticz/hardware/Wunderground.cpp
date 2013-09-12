@@ -274,15 +274,29 @@ void CWunderground::GetMeterDetails()
 	}
 	if (root["current_observation"]["wind_mph"].empty()==false)
 	{
-		wind_mph=(float)atof(root["current_observation"]["wind_mph"].asString().c_str());
-		//convert to m/s
-		windspeed_ms=wind_mph*0.44704f;
+		if (root["current_observation"]["wind_mph"]!="N/A")
+		{
+			float temp_wind_mph=(float)atof(root["current_observation"]["wind_mph"].asString().c_str());
+			if (temp_wind_mph!=-9999.00f)
+			{
+				wind_mph=temp_wind_mph;
+				//convert to m/s
+				windspeed_ms=wind_mph*0.44704f;
+			}
+		}
 	}
 	if (root["current_observation"]["wind_gust_mph"].empty()==false)
 	{
-		wind_gust_mph=(float)atof(root["current_observation"]["wind_gust_mph"].asString().c_str());
-		//convert to m/s
-		windgust_ms=wind_gust_mph*0.44704f;
+		if (root["current_observation"]["wind_gust_mph"]!="N/A")
+		{
+			float temp_wind_gust_mph=(float)atof(root["current_observation"]["wind_gust_mph"].asString().c_str());
+			if (temp_wind_gust_mph!=-9999.00f)
+			{
+				wind_gust_mph=temp_wind_gust_mph;
+				//convert to m/s
+				windgust_ms=wind_gust_mph*0.44704f;
+			}
+		}
 	}
 	if (root["current_observation"]["feelslike_c"].empty()==false)
 	{
