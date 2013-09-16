@@ -113,6 +113,7 @@ function AddDataToTempChart(data,chart,isday)
     var datatablech = [];
     var datatablecm = [];
     var datatabledp = [];
+    var datatableba = [];
 
     $.each(data.result, function(i,item)
     {
@@ -129,6 +130,9 @@ function AddDataToTempChart(data,chart,isday)
         if (typeof item.dp != 'undefined') {
           datatabledp.push( [GetUTCFromString(item.d), parseFloat(item.dp) ] );
         }
+        if (typeof item.ba != 'undefined') {
+          datatableba.push( [GetUTCFromString(item.d), parseFloat(item.ba) ] );
+        }
       } else {
         if (typeof item.te != 'undefined') {
           datatablete.push( [GetDateFromString(item.d), parseFloat(item.te) ] );
@@ -143,6 +147,9 @@ function AddDataToTempChart(data,chart,isday)
         }
         if (typeof item.dp != 'undefined') {
           datatabledp.push( [GetDateFromString(item.d), parseFloat(item.dp) ] );
+        }
+        if (typeof item.ba != 'undefined') {
+          datatableba.push( [GetDateFromString(item.d), parseFloat(item.ba) ] );
         }
       }
     });
@@ -226,12 +233,19 @@ function AddDataToTempChart(data,chart,isday)
       series = chart.get('dewpoint');
       series.setData(datatabledp);
     }
-
-    //hide humidity label if not used
-    //if (datatablehu.length==0) {
-    //  var title = chart.yAxis[0].axisTitle;
-    //  title.hide();
-    //}
+    if (datatableba.length!=0)
+    {
+      chart.addSeries(
+        {
+          id: 'baro',
+          name: $.i18n('Barometer'),
+          color: 'pink',
+          yAxis: 2
+        }
+      );
+      series = chart.get('baro');
+      series.setData(datatableba);
+    }
 }
 
     
@@ -243,6 +257,7 @@ function AddMultipleDataToTempChart(data,chart,isday,deviceid,devicename)
     var datatablech = [];
     var datatablecm = [];
     var datatabledp = [];
+    var datatableba = [];
 
     $.each(data.result, function(i,item)
     {
@@ -259,6 +274,9 @@ function AddMultipleDataToTempChart(data,chart,isday,deviceid,devicename)
         if (typeof item.dp != 'undefined') {
           datatabledp.push( [GetUTCFromString(item.d), parseFloat(item.dp) ] );
         }
+        if (typeof item.ba != 'undefined') {
+          datatableba.push( [GetUTCFromString(item.d), parseFloat(item.ba) ] );
+        }
       } else {
         if (typeof item.te != 'undefined') {
           datatablete.push( [GetDateFromString(item.d), parseFloat(item.te) ] );
@@ -273,6 +291,9 @@ function AddMultipleDataToTempChart(data,chart,isday,deviceid,devicename)
         }
         if (typeof item.dp != 'undefined') {
           datatabledp.push( [GetDateFromString(item.d), parseFloat(item.dp) ] );
+        }
+        if (typeof item.ba != 'undefined') {
+          datatableba.push( [GetDateFromString(item.d), parseFloat(item.ba) ] );
         }
       }
     });
@@ -352,6 +373,19 @@ function AddMultipleDataToTempChart(data,chart,isday,deviceid,devicename)
       series = chart.get('dewpoint'+deviceid);
       series.setData(datatabledp);
     }
+    
+    if (datatableba.length!=0)
+    {
+      chart.addSeries(
+        {
+          id: 'baro'+deviceid,
+          name: devicename+':'+$.i18n('Barometer'),
+          yAxis: 2
+        }
+      );
+      series = chart.get('baro'+deviceid);
+      series.setData(datatableba);
+    }
 
 }    
 
@@ -369,6 +403,8 @@ function RemoveMultipleDataFromTempChart(chart,deviceid)
     if(temperaturemin!=null) {temperaturemin.remove()};
     dew=chart.get('dewpoint'+deviceid);
     if(dew!=null) {dew.remove()};
+    baro=chart.get('baro'+deviceid);
+    if(baro!=null) {baro.remove()};
 }
 
 function ClearCustomGraph()
@@ -495,11 +531,12 @@ function ShowCustomTempLog()
                    }
           },
           title: {
-              text: 'degrees Celsius',
+               text: 'degrees Celsius',
                style: {
                   color: 'white'
                }
-          }
+          },
+          showEmpty: false
       }, { //humidity label
           labels:  {
                    formatter: function() {
@@ -510,12 +547,28 @@ function ShowCustomTempLog()
                    }
           },
           title: {
-              text: $.i18n('Humidity') +' %',
+               text: $.i18n('Humidity') +' %',
                style: {
                   color: 'white'
                }
           },
-          opposite: true
+          showEmpty: false
+      }, { //pressure label
+          labels:  {
+                   formatter: function() {
+                        return this.value;
+                   },
+                   style: {
+                      color: 'white'
+                   }
+          },
+          title: {
+               text: $.i18n('Pressure') + ' (hPa)',
+               style: {
+                  color: 'white'
+               }
+          },
+          showEmpty: false
       }],
       tooltip: {
           formatter: function() {
