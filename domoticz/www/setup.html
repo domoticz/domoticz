@@ -411,6 +411,17 @@
 					</select></td>
 				</tr>
 			</table>
+			<br>
+			<h2><span data-i18n="Raspberry Pi Camera Parameters"></span>:</h2>
+			<table class="display" id="picamtable" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="right" style="width:60px"><label><span data-i18n="Params"></span>: </label></td>
+				<td>
+					<input type="input" id="RaspCamParams" name="RaspCamParams" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
+					(<span data-i18n="default"></span>: -w 800 -h 600 -t 0)
+				</td>
+			</tr>
+			</table>
 		</section>
 		<br>
 		<section id="savesettings">
@@ -674,6 +685,9 @@ function ShowSettings()
       }
       if (typeof data.ReleaseChannel != 'undefined') {
         $("#autoupdatetable #comboReleaseChannel").val(data.ReleaseChannel);
+      }
+      if (typeof data.RaspCamParams != 'undefined') {
+        $("#picamtable #RaspCamParams").val(data.RaspCamParams );
       }
      }
   });

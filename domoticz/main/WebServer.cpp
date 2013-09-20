@@ -642,6 +642,11 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("NotificationSensorInterval",atoi(m_pWebEm->FindValue("NotificationSensorInterval").c_str()));
 	m_pMain->m_sql.UpdatePreferencesVar("NotificationSwitchInterval",atoi(m_pWebEm->FindValue("NotificationSwitchInterval").c_str()));
 
+	std::string RaspCamParams=m_pWebEm->FindValue("RaspCamParams");
+	if (RaspCamParams!="")
+		m_pMain->m_sql.UpdatePreferencesVar("RaspCamParams",RaspCamParams.c_str());
+
+
 	int rnOldvalue=0;
 	m_pMain->m_sql.GetPreferencesVar("RemoteSharedPort", rnOldvalue);
 
@@ -8888,6 +8893,10 @@ std::string CWebServer::GetJSonPage()
 				else if (Key=="ReleaseChannel")
 				{
 					root["ReleaseChannel"]=nValue;
+				}
+				else if (Key=="RaspCamParams")
+				{
+					root["RaspCamParams"]=sValue;
 				}
 			}
 		}

@@ -791,7 +791,11 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("ReleaseChannel", 0);//Stable=0, Beta=1
 	}
-
+	if (!GetPreferencesVar("RaspCamParams", sValue))
+	{
+		UpdatePreferencesVar("RaspCamParams", "-w 800 -h 600 -t 0"); //width/height/time2wait
+	}
+	
 	//Start background thread
 	if (!StartThread())
 		return false;

@@ -165,6 +165,9 @@ bool CCamScheduler::TakeSnapshot(const std::string &CamID, std::vector<unsigned 
 
 bool CCamScheduler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
 {
+	std::string raspparams="-w 800 -h 600 -t 0";
+	m_pMain->m_sql.GetPreferencesVar("RaspCamParams", raspparams);
+
 #ifdef WIN32
 	//get our test image
 	std::ifstream is("E:\\test.jpg", std::ios::in | std::ios::binary);
@@ -178,7 +181,8 @@ bool CCamScheduler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
 	}
 #else
 	std::string OutputFileName=szStartupFolder + "tempcam.jpg";
-	std::string raspistillcmd="raspistill -w 800 -h 600 -t 0 -o " + OutputFileName;
+
+	std::string raspistillcmd="raspistill " + raspparams + " -o " + OutputFileName;
 	std::remove(OutputFileName.c_str());
 	
 	//Get our image
