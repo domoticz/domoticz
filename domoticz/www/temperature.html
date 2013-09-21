@@ -634,6 +634,7 @@ function ShowTempLog(id,name)
                       AddDataToTempChart(data,$.DayChart,1);
                       $.DayChart.hideLoading();
                 });
+                this.hideLoading();
               }
           }
       },
@@ -739,6 +740,7 @@ function ShowTempLog(id,name)
                       AddDataToTempChart(data,$.MonthChart,0);
                       $.MonthChart.hideLoading();
                 });
+                this.hideLoading();
               }
           }
       },
@@ -853,6 +855,7 @@ function ShowTempLog(id,name)
                       AddDataToTempChart(data,$.YearChart,0);
                       $.YearChart.hideLoading();
                 });
+                this.hideLoading();
               }
           }
       },

@@ -30,6 +30,7 @@ Version 1.0.xxx (August xxth 2013)
 - Implemented: WU, extra protection for wind speed/gust
 - Changed: iPhone/iPad shortcut icon
 - Implemented: Raspberry Pi camera parameters
+- Fixed: Baro meter temperature graph keep showing loading effect
 
 Version 1.0.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)
