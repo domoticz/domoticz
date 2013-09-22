@@ -87,6 +87,9 @@
     <Filter Include="Devices\Dummy">
       <UniqueIdentifier>{94a87e33-1ea0-42dc-895c-54802b773fb7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\S0 Meter">
+      <UniqueIdentifier>{d33c473c-6718-4c9d-9b29-4f9f81e1a2d5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -283,6 +286,9 @@
     <ClInclude Include="hardware\Dummy.h">
       <Filter>Devices\Dummy</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\S0MeterSerial.h">
+      <Filter>Devices\S0 Meter</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -449,6 +455,9 @@
     </ClCompile>
     <ClCompile Include="main\WindCalculation.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\S0MeterSerial.cpp">
+      <Filter>Devices\S0 Meter</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -170,6 +170,7 @@ hardware/Razberry.cpp
 hardware/Rego6XXSerial.cpp
 hardware/DavisLoggerSerial.cpp
 hardware/BMP085.cpp
+hardware/S0MeterSerial.cpp
 hardware/smbus.cpp
 hardware/Wunderground.cpp
 tcpserver/TCPServer.cpp

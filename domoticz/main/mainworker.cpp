@@ -25,6 +25,7 @@
 #include "../hardware/BMP085.h"
 #include "../hardware/Wunderground.h"
 #include "../hardware/Dummy.h"
+#include "../hardware/S0MeterSerial.h"
 
 #ifdef _DEBUG
 	//#define DEBUG_RECEIVE
@@ -294,6 +295,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_P1SmartMeter:
 	case HTYPE_Rego6XX:
 	case HTYPE_DavisVantage:
+	case HTYPE_S0SmartMeter:
 		{
 			//USB/Serial
 #if defined WIN32
@@ -333,6 +335,10 @@ bool MainWorker::AddHardwareFromParams(
 			else if (Type==HTYPE_DavisVantage)
 			{
 				pHardware = new CDavisLoggerSerial(ID,szSerialPort, 19200);
+			}
+			else if (Type==HTYPE_S0SmartMeter)
+			{
+				pHardware = new S0MeterSerial(ID,szSerialPort, 9600);
 			}
 		}
 		break;
@@ -384,6 +390,7 @@ bool MainWorker::AddHardwareFromParams(
 	{
 		pHardware->HwdType=Type;
 		pHardware->Name=Name;
+		pHardware->m_pMainWorker=this;
 		AddDomoticzHardware(pHardware);
 		m_hardwareStartCounter=0;
 		m_bStartHardware=true;

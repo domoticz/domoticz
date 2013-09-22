@@ -2018,8 +2018,10 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				if (strarray.size()==2)
 				{
 					double total=atof(strarray[1].c_str())/1000;
-					sprintf(szData,"%ld Watt, %.3f kWh",atol(strarray[0].c_str()),total);
+					sprintf(szData,"%.3f kWh",total);
 					root["result"][ii]["Data"]=szData;
+					sprintf(szData,"%ld Watt",atol(strarray[0].c_str()));
+					root["result"][ii]["Usage"]=szData;
 					root["result"][ii]["SwitchTypeVal"]=MTYPE_ENERGY;
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				}
@@ -7189,7 +7191,7 @@ std::string CWebServer::GetJSonPage()
 			unsigned char mode4=0;
 			unsigned char mode5=0;
 			int port=atoi(sport.c_str());
-			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX)||(htype==HTYPE_DavisVantage))
+			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX)||(htype==HTYPE_DavisVantage)||(htype==HTYPE_S0SmartMeter))
 			{
 				//USB
 				if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433))
@@ -7281,7 +7283,7 @@ std::string CWebServer::GetJSonPage()
 
 			int port=atoi(sport.c_str());
 
-			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX)||(htype==HTYPE_DavisVantage))
+			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX)||(htype==HTYPE_DavisVantage)||(htype==HTYPE_S0SmartMeter))
 			{
 				//USB
 			}

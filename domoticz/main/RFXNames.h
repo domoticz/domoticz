@@ -66,6 +66,7 @@ enum _eHardwareTypes {
 	HTYPE_RaspberryBMP085,
 	HTYPE_Wunderground,
 	HTYPE_Dummy,
+	HTYPE_S0SmartMeter,
 	HTYPE_END
 };
 

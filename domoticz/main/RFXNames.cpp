@@ -151,6 +151,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_RaspberryBMP085,	"BMP085 Temp+Baro I2C sensor" },
 		{ HTYPE_Wunderground,		"Weather Underground" },
 		{ HTYPE_Dummy,				"Dummy (Does nothing, use for virtual switches only)" },
+		{ HTYPE_S0SmartMeter,		"S0 Meter USB" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
