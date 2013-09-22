@@ -249,8 +249,6 @@ void S0MeterSerial::ParseLine()
 	double s0_m1_volume=( s0_m1_pulse / m_pulse_per_unit_1 );
 	double s0_m2_volume=( s0_m2_pulse / m_pulse_per_unit_2 );
 
-	_log.Log(LOG_NORM,"M1: %f, M2: %f\n",s0_m1_pulse,s0_m2_pulse);
-
 	//Calculate average here (5 values)
 	double s0_m1_act_watt=s0_m1_volume*(3600.0/s0_pulse_interval);
 	double s0_m2_act_watt=s0_m2_volume*(3600.0/s0_pulse_interval);
@@ -269,7 +267,7 @@ void S0MeterSerial::ParseLine()
 	m_s0_m1_volume_total+=s0_m1_volume;
 	m_s0_m2_volume_total+=s0_m2_volume;
 
-	_log.Log(LOG_NORM,"S0 Meter M1-Int=%0.3f, M1-Tot=%0.3f, M2-Int=%0.3f, M2-Tot=%0.3f",s0_m1_watt_hour,m_s0_m1_volume_total,s0_m2_watt_hour,m_s0_m2_volume_total);
+//	_log.Log(LOG_NORM,"S0 Meter M1-Int=%0.3f, M1-Tot=%0.3f, M2-Int=%0.3f, M2-Tot=%0.3f",s0_m1_watt_hour,m_s0_m1_volume_total,s0_m2_watt_hour,m_s0_m2_volume_total);
 
 	if (m_s0_m1_volume_total!=0) {
 		SendMeter(1,s0_m1_watt_hour,m_s0_m1_volume_total);
