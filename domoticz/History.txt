@@ -32,6 +32,7 @@ Version 1.0.xxx (August xxth 2013)
 - Implemented: Raspberry Pi camera parameters
 - Fixed: Baro meter temperature graph keep showing loading effect
 - Implemented: HighCharts 3.0.5
+- Fixed: P1 Smart Meter power, now reports 0, when timeout
 
 Version 1.0.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)

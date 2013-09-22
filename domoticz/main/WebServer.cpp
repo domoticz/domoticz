@@ -1842,6 +1842,11 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				sprintf(szTmp,"%.03f",musage);
 				root["result"][ii]["CounterDeliv"]=szTmp;
 
+				if (bHaveTimeout)
+				{
+					usagecurrent=0;
+					delivcurrent=0;
+				}
 				sprintf(szTmp,"%llu Watt",usagecurrent);
 				root["result"][ii]["Usage"]=szTmp;
 				sprintf(szTmp,"%llu Watt",delivcurrent);
@@ -2028,6 +2033,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			}
 			else if (dType == pTypeAirQuality)
 			{
+				if (bHaveTimeout)
+					nValue=0;
 				sprintf(szTmp,"%d ppm",nValue);
 				root["result"][ii]["Data"]=szTmp;
 				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
