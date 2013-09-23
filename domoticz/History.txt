@@ -31,7 +31,6 @@ Version 1.0.xxx (August xxth 2013)
 - Changed: iPhone/iPad shortcut icon
 - Implemented: Raspberry Pi camera parameters
 - Fixed: Baro meter temperature graph keep showing loading effect
-- Implemented: HighCharts 3.0.5
 - Fixed: P1 Smart Meter power, now reports 0, when timeout
 - Fixed: Rain week chart (caused by new highcharts version)
 
