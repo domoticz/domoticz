@@ -69,7 +69,7 @@ void CEventSystem::LoadEvents()
 	boost::lock_guard<boost::mutex> l(eventMutex);
 
 	m_events.clear();
-
+  
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT EventRules.ID,EventMaster.Name,EventRules.Conditions,EventRules.Actions,EventMaster.Status, EventRules.SequenceNo FROM EventRules INNER JOIN EventMaster ON EventRules.EMID=EventMaster.ID ORDER BY EventRules.ID";
@@ -294,6 +294,10 @@ void CEventSystem::WWWUpdateSingleState(const unsigned long long ulDevID, const 
     }
 }
 
+void CEventSystem::WWWUpdateSecurityState(int securityStatus)
+{
+    EvaluateEvent("security");
+}
 
 std::string CEventSystem::UpdateSingleState(const unsigned long long ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel)
 {
@@ -387,7 +391,11 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
                     //_log.Log(LOG_NORM,"found device file: %s",filename.c_str());
                     EvaluateLua(reason,lua_Dir+filename, DeviceID, devname, nValue, sValue, nValueWording);
                 }
-                if (((filename.find("_time_") != -1)) && (reason == "time") && (filename.find("_demo.lua") == -1)) {
+                else if (((filename.find("_time_") != -1)) && (reason == "time") && (filename.find("_demo.lua") == -1)) {
+                    //_log.Log(LOG_NORM,"found time file: %s",filename.c_str());
+                    EvaluateLua(reason,lua_Dir+filename);
+                }
+                else if (((filename.find("_security_") != -1)) && (reason == "security") && (filename.find("_demo.lua") == -1)) {
                     //_log.Log(LOG_NORM,"found time file: %s",filename.c_str());
                     EvaluateLua(reason,lua_Dir+filename);
                 }
@@ -498,13 +506,13 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
         
         std::vector<_tEventItem>::iterator it;
         for ( it = m_events.begin(); it != m_events.end(); ++it ) {
-    
+            eventActive = false;
 			std::stringstream sstr;
 			sstr << "[" << DeviceID << "]";
             found = it->Conditions.find(sstr.str());
             if (it->EventStatus == 1) { eventActive = true;};
 
-            if (eventActive && found!=std::string::npos) {
+            if ((eventActive) && (found!=std::string::npos)) {
                 std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + it->Conditions + " then result = 1 end; return result";
                 //_log.Log(LOG_NORM,"ifc: %s",ifCondition.c_str());
                 if( luaL_dostring(lua_state, ifCondition.c_str()))
@@ -525,6 +533,41 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
             }
         }
     }
+    if (reason == "security") {
+        // security status change
+        std::size_t found;
+        bool eventActive = false;
+        
+        std::vector<_tEventItem>::iterator it;
+        for ( it = m_events.begin(); it != m_events.end(); ++it ) {
+            eventActive = false;
+			std::stringstream sstr;
+			sstr << "securitystatus";
+            found = it->Conditions.find(sstr.str());
+            if (it->EventStatus == 1) { eventActive = true;};
+            
+            if ((eventActive) && (found!=std::string::npos)) {
+                std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + it->Conditions + " then result = 1 end; return result";
+                //_log.Log(LOG_NORM,"ifc: %s",ifCondition.c_str());
+                if( luaL_dostring(lua_state, ifCondition.c_str()))
+                {
+                    _log.Log(LOG_ERROR,"Lua script error: %s",lua_tostring(lua_state, -1));
+                }
+                else {
+                    lua_Number ruleTrue = lua_tonumber(lua_state,-1);
+                    
+                    if (ruleTrue!=0)
+					{
+                        if (parseBlocklyActions(it->Actions, it->Name, it->ID))
+						{
+                            _log.Log(LOG_NORM,"UI Event triggered: %s",it->Name.c_str());
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     else if (reason == "time") {
         
         bool eventActive = false;
@@ -600,17 +643,22 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 
         size_t sDiff = ePos - sPos;
         if (sDiff>0) {
+            int sceneType = 0;
             std::string deviceName = csubstr.substr(sPos,sDiff);
             bool isScene = false;
-            if (deviceName.find("Scene:")==0)
+            if ((deviceName.find("Scene:")==0) || (deviceName.find("Group:")==0))
 			{
                 isScene = true;
+                sceneType = 1;
+                if (deviceName.find("Group:")==0) {
+                    sceneType = 2;
+                }
                 deviceName = deviceName.substr(6);
             }
             int deviceNo = atoi(deviceName.c_str());
             if (deviceNo && !isScene) {
                 if(m_devicestates.count(deviceNo)) {
-                    if (ScheduleEvent(deviceNo,doWhat,isScene,eventName)) {
+                    if (ScheduleEvent(deviceNo,doWhat,isScene,eventName, sceneType)) {
                         actionsDone = true;
                     }
                 }
@@ -619,7 +667,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
                 }
             }
             else if (deviceNo && isScene) {
-                if (ScheduleEvent(deviceNo,doWhat,isScene,eventName)) {
+                if (ScheduleEvent(deviceNo,doWhat,isScene,eventName, sceneType)) {
                     actionsDone = true;
                 }
             }
@@ -901,6 +949,7 @@ void CEventSystem::SendEventNotification(const std::string &Subject, const std::
 void CEventSystem::OpenURL(const std::string &URL)
 {
     std::string ampURL = stdreplace(URL, "~amp~", "&");
+    ampURL = stdreplace(ampURL, "~comma~", ",");
     _log.Log(LOG_NORM,"Fetching url: %s",ampURL.c_str());
     std::string sResult;
 	bool ret=HTTPClient::GET(ampURL,sResult);
@@ -914,10 +963,14 @@ void CEventSystem::OpenURL(const std::string &URL)
 bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Action, const std::string &eventName)
 {
     bool isScene = false;
-    
-    if (deviceName.find("Scene:")==0)
-	{
+    int sceneType = 0;
+    if ((deviceName.find("Scene:")==0) || (deviceName.find("Group:")==0))
+    {
         isScene = true;
+        sceneType = 1;
+        if (deviceName.find("Group:")==0) {
+            sceneType = 2;
+        }
         deviceName = deviceName.substr(6);
     }
     
@@ -935,14 +988,14 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 	{
         std::vector<std::string> sd=result[0];
         int idx = atoi(sd[0].c_str());
-        return (ScheduleEvent(idx, Action,isScene, eventName));
+        return (ScheduleEvent(idx, Action,isScene, eventName,sceneType));
     }
     
     return false;
 }
 
 
-bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName)
+bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName, int sceneType)
 {
     std::string previousState = m_devicestates[deviceID].nValueWording;
     unsigned char previousLevel = calculateDimLevel(deviceID, m_devicestates[deviceID].lastLevel);
@@ -993,7 +1046,23 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
     _tTaskItem tItem;
     
     if (isScene) {
-        tItem=_tTaskItem::SwitchSceneEvent(DelayTime,deviceID,Action,eventName);
+        if ((Action == "On") || (Action == "Off")) {
+            tItem=_tTaskItem::SwitchSceneEvent(DelayTime,deviceID,Action,eventName);
+        }
+        else if (Action == "Active") {
+            char szTmp[200];
+            std::vector<std::vector<std::string> > result;
+            sprintf(szTmp, "UPDATE SceneTimers SET Active=1 WHERE (SceneRowID == %d)",deviceID);
+			result=m_pMain->m_sql.query(szTmp);
+			m_pMain->m_scheduler.ReloadSchedules();
+        }
+        else if (Action == "Inactive") {
+            char szTmp[200];
+            std::vector<std::vector<std::string> > result;
+            sprintf(szTmp, "UPDATE SceneTimers SET Active=0 WHERE (SceneRowID == %d)",deviceID);
+			result=m_pMain->m_sql.query(szTmp);
+			m_pMain->m_scheduler.ReloadSchedules();
+        }
     }
     else {
         tItem=_tTaskItem::SwitchLightEvent(DelayTime,deviceID,Action,_level,eventName);

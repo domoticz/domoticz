@@ -8167,6 +8167,7 @@ std::string CWebServer::GetJSonPage()
 			}
 			root["status"]="OK";
 			m_pMain->m_sql.UpdatePreferencesVar("SecStatus", atoi(ssecstatus.c_str()));
+            m_pMain->m_eventsystem.WWWUpdateSecurityState(atoi(ssecstatus.c_str()));
 		}
 	} //(rtype=="command")
 	else if (rtype=="getshareduserdevices")

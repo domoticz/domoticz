@@ -15,6 +15,7 @@ var barometer = [];
 var weather = [];
 var utilities = [];
 var scenes = [];
+var groups = [];
 
 $.ajax({
 	url: "json.htm?type=devices&filter=light&used=true&order=Name", 
@@ -116,7 +117,12 @@ $.ajax({
 	success: function(data) {
 		if (typeof data.result != 'undefined') {
 			$.each(data.result, function(i,item){
-				scenes.push([item.Name,item.idx])
+				if (item.Type == 'Scene') {
+					scenes.push([item.Name,item.idx])
+				}
+				else if (item.Type == 'Group') {
+					groups.push([item.Name,item.idx])
+				}
 			})
 		}
 	}
@@ -365,14 +371,48 @@ Blockly.Language.scenevariables = {
   // Variable getter.
   category: null,  // Variables are handled specially.
   init: function() {
-    this.setColour(290);
+    this.setColour(100);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);     
     this.appendDummyInput()
-        .appendTitle(new Blockly.FieldDropdown(scenes), 'Scene');
-    this.setOutput(true, null);
+	    .appendTitle(Blockly.DOMOTICZCONTROLS_MSG_SET)
+	    .appendTitle(Blockly.DOMOTICZCONTROLS_MSG_SCENE)
+        .appendTitle(new Blockly.FieldDropdown(scenes), 'Scene')
+        .appendTitle(" = ")
+    	.appendTitle(new Blockly.FieldDropdown(this.STATE), 'Status');
+    this.setInputsInline(true);
     this.setTooltip(Blockly.DOMOTICZVARIABLES_SCENES_TOOLTIP);
   }
  };
 
+Blockly.Language.scenevariables.STATE =
+    [["Active", 'Active'],
+    ["Inactive",'Inactive'],
+     ["On", 'On']]; 
+ 
+Blockly.Language.groupvariables = {
+  // Variable getter.
+  category: null,  // Variables are handled specially.
+  init: function() {
+    this.setColour(200);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);   
+    this.appendDummyInput()
+	    .appendTitle(Blockly.DOMOTICZCONTROLS_MSG_SET)
+	    .appendTitle(Blockly.DOMOTICZCONTROLS_MSG_GROUP)
+        .appendTitle(new Blockly.FieldDropdown(groups), 'Group')
+        .appendTitle(" = ")
+    	.appendTitle(new Blockly.FieldDropdown(this.STATE), 'Status');        
+    this.setInputsInline(true);
+    this.setTooltip(Blockly.DOMOTICZVARIABLES_GROUPS_TOOLTIP);
+  }
+ };
+
+Blockly.Language.groupvariables.STATE =
+    [["Active", 'Active'],
+    ["Inactive",'Inactive'],
+    ["On",'On'],
+     ["Off", 'Off']]; 
 
 Blockly.Language.logic_states = {
   helpUrl: null,

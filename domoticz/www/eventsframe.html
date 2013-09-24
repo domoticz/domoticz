@@ -271,12 +271,7 @@
 		   		var valueA = $(this).find("value[name='A']")[0];
 	        	var titleA = $(valueA).find("title")[0];
 	        	var blockA = $(valueA).children("block:first");
-	        	if ((blockA.attr("type")=="scenevariables")) {
-	        		var setString = "commandArray[Scene:"+$(titleA).text()+"]";
-	        	}
-	        	else {
-		        	var setString = "commandArray["+$(titleA).text()+"]";
-	        	}
+	        	var setString = "commandArray["+$(titleA).text()+"]";
 	        	var valueB = $(this).find("value[name='B']")[0];
 	        	var titleB = $(valueB).find("title")[0];
 	        	var blockB = $(valueB).children("block:first");
@@ -295,12 +290,12 @@
 	        	var valueC = $(this).find("value[name='C']")[0];
 	        	var titleC = $(valueC).find("title")[0];
 	        	var blockA = $(valueA).children("block:first");
-	        	if ((blockA.attr("type")=="scenevariables")) {
+	        	/*if ((blockA.attr("type")=="scenevariables")) {
 	        		var setString = "commandArray[Scene:"+$(titleA).text()+"]";
 	        	}
-	        	else {
-		        	var setString = "commandArray["+$(titleA).text()+"]";
-	        	}
+	        	else { */
+		        var setString = "commandArray["+$(titleA).text()+"]";
+	        	//}
 	        	var valueB = $(this).find("value[name='B']")[0];
 	        	var titleB = $(valueB).find("title")[0];
 	        	var blockB = $(valueB).children("block:first");
@@ -322,12 +317,12 @@
 	        	var valueC = $(this).find("value[name='C']")[0];
 	        	var titleC = $(valueC).find("title")[0];
 	        	var blockA = $(valueA).children("block:first");
-	        	if ((blockA.attr("type")=="scenevariables")) {
+	        	/* if ((blockA.attr("type")=="scenevariables")) {
 	        		var setString = "commandArray[Scene:"+$(titleA).text()+"]";
 	        	}
-	        	else {
-		        	var setString = "commandArray["+$(titleA).text()+"]";
-	        	}
+	        	else { */
+		        var setString = "commandArray["+$(titleA).text()+"]";
+	        	//}
 	        	var blockB = $(valueB).children("block:first");
 		        if ((blockB.attr("type")=="logic_states") && ($(titleB).attr("name") == "State")) {	        	
 	        		setString += '="'+$(titleB).text()+' RANDOM '+ $(titleC).text()+'"'; 
@@ -354,9 +349,24 @@
 		    	var urlBlock = $(this).find("value[name='urlToOpen']")[0];
 		    	var urlText = $(urlBlock).find("title[name='TEXT']")[0];
 		    	var urlNoAmpersands =  $(urlText).text().replace(/\&/g, '~amp~');
+		    	urlNoAmpersands =  urlNoAmpersands.replace(/\,/g, '~comma~');
 		    	var setString = 'commandArray["OpenURL"]="'+urlNoAmpersands+'"';
 	        	setArray.push(setString);		      	
 		    }
+		    else if ($(this).attr('type') == 'groupvariables') {
+			   	var titleA = $(this).find("title[name='Group']")[0];
+			   	var titleB = $(this).find("title[name='Status']")[0];
+	        	var setString = "commandArray[Group:"+$(titleA).text()+"]";
+	        	setString += '="'+$(titleB).text()+'"'; 
+	        	setArray.push(setString);
+		    }
+		    else if ($(this).attr('type') == 'scenevariables') {
+			   	var titleA = $(this).find("title[name='Scene']")[0];
+			   	var titleB = $(this).find("title[name='Status']")[0];
+	        	var setString = "commandArray[Scene:"+$(titleA).text()+"]";
+	        	setString += '="'+$(titleB).text()+'"'; 
+	        	setArray.push(setString);
+		    }		    
 		  });
 		  var conditionArray = [];
 		  conditionArray.push(boolString);
@@ -449,7 +459,7 @@
       
       function save_block() {
       	var xml = Blockly.Xml.workspaceToDom( Blockly.mainWorkspace );
-      	//$("#blockDebug").html(Blockly.Xml.domToPrettyText(xml));
+      	$("#blockDebug").html(Blockly.Xml.domToPrettyText(xml));
       	var blockName = $("#blockName").val();
       	var id = "";
       	if (blockName) { 
@@ -632,10 +642,11 @@
 		   	<category name="Utility">
 			   	<block type="utilityvariables"></block>
 		   	</category>
-		   	<category name="Scenes">
+		   	<category name="Scenes/groups">
 			   	<block type="scenevariables"></block>
+			   	<block type="groupvariables"></block>
 		   	</category>
-   		</category>	
+		</category>	
     </xml>
     <div id="maindiv" class="container-fluid">
 		<div class="row-fluid">
@@ -662,7 +673,7 @@
 					<br/>
 					<!--<a class="btnstyle3" href="javascript:block_export()">Export</a>
 					<a class="btnstyle3" href="javascript:block_import()">Import</a>-->
-					<!--<br/><textarea id="blockDebug" width="100em" height="100em"></textarea>-->
+					<br/><textarea id="blockDebug" width="100em" height="100em"></textarea>
 					<br/><div id="blockId" style="display:none;"/>
 					
 				</td>

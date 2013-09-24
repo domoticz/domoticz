@@ -46,6 +46,7 @@ public:
 	bool ProcessDevice(const int HardwareID, const unsigned long long ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname);
     void RemoveSingleState(int ulDevID);
     void WWWUpdateSingleState(const unsigned long long ulDevID, const std::string &devname);
+    void WWWUpdateSecurityState(int securityStatus);
 	void WWWGetItemStates(std::vector<_tDeviceStatus> &iStates);
 private:
 	//lua_State	*m_pLUA;
@@ -73,7 +74,7 @@ private:
     static int l_domoticz_print(lua_State* lua_state);
     void SendEventNotification(const std::string &Subject, const std::string &Body);
     void OpenURL(const std::string &URL);
-    bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName);
+    bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName, int sceneType);
     bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
     //std::string reciprocalAction (std::string Action);
     std::vector<_tEventItem> m_events;

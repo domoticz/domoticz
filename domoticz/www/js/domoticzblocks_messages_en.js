@@ -54,6 +54,7 @@ Blockly.DOMOTICZVARIABLES_BAROMETER_TOOLTIP = 'This is a barometer measurement d
 Blockly.DOMOTICZVARIABLES_WEATHER_TOOLTIP = 'NOT WORKING YET. This is a weather measurement device. Use it in an IF statement to check valid values. Cannot be used in Set blocks.';
 Blockly.DOMOTICZVARIABLES_UTILITY_TOOLTIP = 'NOT WORKING YET. This is a utility measurement device. Use it in an IF statement to check valid values. Cannot be used in Set blocks.';
 Blockly.DOMOTICZVARIABLES_SCENES_TOOLTIP = ' Scenes can only be used in a Do statement (i.e cannot be checked for a status).';
+Blockly.DOMOTICZVARIABLES_GROUPS_TOOLTIP = ' Groups can only be used in a Do statement (i.e cannot be checked for a status).';
 Blockly.DOMOTICZ_LOGIC_SET_TOOLTIP = 'Use this block in a "Do" statement to change the state of a designated device.'; 
 Blockly.DOMOTICZ_LOGIC_SETDELAYED_TOOLTIP = 'Use this block in a "Do" statement to change the state of a designated device for a specified number of minutes.\n E.g. if you want to switch a lamp on for only 10 minutes.'; 
 Blockly.DOMOTICZ_LOGIC_SETRANDOM_TOOLTIP = 'Use this block in a "Do" statement to change the state of a designated device randomly within a specified timeframe.\n E.g. switch on a lamp somewhere in the next 30 minutes.'; 
@@ -79,7 +80,8 @@ Blockly.DOMOTICZCONTROLS_MSG_SETLEVEL = 'Level (%)';
 Blockly.DOMOTICZCONTROLS_MSG_TIME = 'Time';
 Blockly.DOMOTICZCONTROLS_MSG_DAY = 'Day ';
 Blockly.DOMOTICZCONTROLS_MSG_SECURITY = 'Security status';
-
+Blockly.DOMOTICZCONTROLS_MSG_GROUP = 'group';
+Blockly.DOMOTICZCONTROLS_MSG_SCENE = 'scene';
 
 
 
