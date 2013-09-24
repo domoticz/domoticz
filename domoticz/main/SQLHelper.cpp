@@ -2992,7 +2992,7 @@ void CSQLHelper::UpdateUVLog()
 
 void CSQLHelper::UpdateMeter()
 {
-	char szTmp[600];
+	char szTmp[700];
 	time_t now = mytime(NULL);
 	if (now==0)
 		return;
@@ -3018,7 +3018,7 @@ void CSQLHelper::UpdateMeter()
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
 
-	sprintf(szTmp,"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
+	sprintf(szTmp,"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
 		pTypeRFXMeter,
 		pTypeP1Gas,
 		pTypeYouLess,
@@ -3030,7 +3030,9 @@ void CSQLHelper::UpdateMeter()
 		pTypeGeneral,sTypeVisibility,
 		pTypeGeneral,sTypeSolarRadiation,
 		pTypeGeneral,sTypeSoilMoisture,
-		pTypeGeneral,sTypeLeafWetness
+		pTypeGeneral,sTypeLeafWetness,
+		pTypeRFXSensor,sTypeRFXSensorAD,
+		pTypeRFXSensor,sTypeRFXSensorVolt
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -3126,6 +3128,13 @@ void CSQLHelper::UpdateMeter()
 			{
 				double fValue=atof(sValue.c_str());
 				sprintf(szTmp,"%.0f",fValue);
+				sValue=szTmp;
+				bSkipSameValue=false;
+			}
+			else if (dType==pTypeRFXSensor)
+			{
+				double fValue=atof(sValue.c_str());
+				sprintf(szTmp,"%d",int(fValue));
 				sValue=szTmp;
 				bSkipSameValue=false;
 			}
@@ -3598,6 +3607,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 
 			if (
 				(devType!=pTypeAirQuality)&&
+				(devType!=pTypeRFXSensor)&&
 				(!((devType==pTypeGeneral)&&(subType==sTypeVisibility)))&&
 				(!((devType==pTypeGeneral)&&(subType==sTypeSolarRadiation)))&&
 				(!((devType==pTypeGeneral)&&(subType==sTypeSoilMoisture)))&&
@@ -3646,7 +3656,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			}
 			else
 			{
-				//AirQuality/Usage Meter/Moisture insert into MultiMeter_Calendar table
+				//AirQuality/Usage Meter/Moisture/RFXSensor insert into MultiMeter_Calendar table
 				sprintf(szTmp,
 					"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1,Value2,Value3,Value4,Value5,Value6, Date) "
 					"VALUES (%llu, %.2f,%.2f,%.2f,%.2f,%.2f,%.2f, '%s')",
@@ -3658,6 +3668,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			}
 			if (
 				(devType!=pTypeAirQuality)&&
+				(devType!=pTypeRFXSensor)&&
 				((devType!=pTypeGeneral)&&(subType!=sTypeVisibility))&&
 				((devType!=pTypeGeneral)&&(subType!=sTypeSolarRadiation))&&
 				((devType!=pTypeGeneral)&&(subType!=sTypeSoilMoisture))&&
