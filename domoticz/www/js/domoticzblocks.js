@@ -43,22 +43,10 @@ $.ajax({
 	}
 });
 
-if (switchesAF.length === 0) {switchesAF.push(["No items",0]);}
-if (switchesGL.length === 0) {switchesGL.push(["No items",0]);}
-if (switchesMR.length === 0) {switchesMR.push(["No items",0]);}
-if (switchesSZ.length === 0) {switchesSZ.push(["No items",0]);}
-
-switchesAF.sort();
-switchesGL.sort();
-switchesMR.sort();
-switchesSZ.sort();
-
-temperatures.sort();
-humidity.sort();
-barometer.sort();
-weather.sort();
-utilities.sort();
-scenes.sort();
+if (switchesAF.length === 0) {switchesAF.push(["No devices found",0]);}
+if (switchesGL.length === 0) {switchesGL.push(["No devices found",0]);}
+if (switchesMR.length === 0) {switchesMR.push(["No devices found",0]);}
+if (switchesSZ.length === 0) {switchesSZ.push(["No devices found",0]);}
 
 $.ajax({
 	url: "json.htm?type=devices&filter=temp&used=true&order=Name", 
@@ -128,6 +116,26 @@ $.ajax({
 	}
 });
 
+if (temperatures.length === 0) {temperatures.push(["No temperatures found",0]);}
+if (humidity.length === 0) {humidity.push(["No humidity found",0]);}
+if (barometer.length === 0) {barometer.push(["No barometer found",0]);}
+if (weather.length === 0) {weather.push(["No weather found",0]);}
+if (utilities.length === 0) {utilities.push(["No utilities found",0]);}
+if (groups.length === 0) {groups.push(["No groups found",0]);}
+if (scenes.length === 0) {scenes.push(["No scenes found",0]);}
+
+switchesAF.sort();
+switchesGL.sort();
+switchesMR.sort();
+switchesSZ.sort();
+
+temperatures.sort();
+humidity.sort();
+barometer.sort();
+weather.sort();
+utilities.sort();
+groups.sort();
+scenes.sort();
 
 Blockly.Language.switchvariablesAF = {
   // Variable getter.
