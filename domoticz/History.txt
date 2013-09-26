@@ -1,4 +1,4 @@
-Version 1.0.xxx (August xxth 2013)
+Version 1.0.xxx (September xxth 2013)
 - Implemented: Login page (solves the caching problems)
 - Fixed: buttons add sensor/switch buttons now hidden for 'viewer' users
 - Implemented: option in settings for basic-auth login type
@@ -34,6 +34,11 @@ Version 1.0.xxx (August xxth 2013)
 - Fixed: P1 Smart Meter power, now reports 0, when timeout
 - Fixed: Rain week chart (caused by new highcharts version)
 - Implemented: Logging RFXSensor AD/Volt
+- Fixed: Eventsystem, ampersands in OpenUrl not stored in database
+- Fixed: Eventsystem, problem where inactive event would still trigger when multiple events apply
+- Implemented: Eventsystem, Comma now supported in event OpenURL
+- Implemented: Eventsystem, Events now triggered by security state change implemented script_security_name.lua for sec panel triggers in lua.
+
 
 Version 1.0.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)
