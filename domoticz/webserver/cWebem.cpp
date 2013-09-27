@@ -17,6 +17,10 @@
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 
+#ifndef WIN32
+	#include <unistd.h> //gethostbyname
+#endif
+
 int m_failcounter=0;
 
 namespace http {
@@ -469,11 +473,23 @@ void cWebem::ClearUserPasswords()
 
 void cWebem::AddLocalNetworks(std::string network)
 {
+	_tIPNetwork ipnetwork;
+
+	if (network=="")
+	{
+		//add local host
+		char ac[256];
+		if (gethostname(ac, sizeof(ac)) != SOCKET_ERROR) {
+			ipnetwork.hostname=ac;
+			std::transform(ipnetwork.hostname.begin(), ipnetwork.hostname.end(), ipnetwork.hostname.begin(), ::tolower);
+			m_localnetworks.push_back(ipnetwork);
+		}
+		return;
+	}
 	std::string inetwork=network;
 	std::string inetworkmask=network;
 	std::string mask=network;
 
-	_tIPNetwork ipnetwork;
 
 	int pos=network.find_first_of("*");
 	if (pos>0)
@@ -522,7 +538,9 @@ void cWebem::AddLocalNetworks(std::string network)
 			boost::asio::ip::address::from_string( network, ec );
 			if ( ec )
 			{
-				ipnetwork.hostname=network;
+				//only allow ip's, localhost is covered above
+				return;
+				//ipnetwork.hostname=network;
 			}
 			else
 			{

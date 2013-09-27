@@ -124,6 +124,8 @@ bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress
 				std::string network=*itt;
 				m_pWebEm->AddLocalNetworks(network);
 			}
+			//add local hostname
+			m_pWebEm->AddLocalNetworks("");
 		}
 	}
 
@@ -576,7 +578,8 @@ char * CWebServer::PostSettings()
 		std::string network=*itt;
 		m_pWebEm->AddLocalNetworks(network);
 	}
-
+	//add local hostname
+	m_pWebEm->AddLocalNetworks("");
 
 	std::string SecPassword=m_pWebEm->FindValue("SecPassword");
 	SecPassword=CURLEncode::URLDecode(SecPassword);
