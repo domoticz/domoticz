@@ -470,6 +470,7 @@ void cWebem::ClearUserPasswords()
 void cWebem::AddLocalNetworks(std::string network)
 {
 	std::string inetwork=network;
+	std::string inetworkmask=network;
 	std::string mask=network;
 
 	_tIPNetwork ipnetwork;
@@ -485,14 +486,19 @@ void cWebem::AddLocalNetworks(std::string network)
 		newnetwork << std::dec << a << "." << std::dec << b << "." << std::dec << c << "." << std::dec << d;
 		inetwork=newnetwork.str();
 
+		inetworkmask=stdreplace(inetworkmask,"*","999");
+		int e, f, g, h;
+		if (sscanf(inetworkmask.c_str(), "%d.%d.%d.%d", &e, &f, &g, &h) != 4)
+			return;
+
 		std::stringstream newmask;
-		if (a!=0) newmask << "255"; else newmask << "0";
+		if (e!=999) newmask << "255"; else newmask << "0";
 		newmask << ".";
-		if (b!=0) newmask << "255"; else newmask << "0";
+		if (f!=999) newmask << "255"; else newmask << "0";
 		newmask << ".";
-		if (c!=0) newmask << "255"; else newmask << "0";
+		if (g!=999) newmask << "255"; else newmask << "0";
 		newmask << ".";
-		if (d!=0) newmask << "255"; else newmask << "0";
+		if (h!=999) newmask << "255"; else newmask << "0";
 		mask=newmask.str();
 
 		ipnetwork.network=IPToUInt(inetwork);
@@ -511,9 +517,19 @@ void cWebem::AddLocalNetworks(std::string network)
 		}
 		else
 		{
-			//single IP?
-			ipnetwork.network=IPToUInt(inetwork);
-			ipnetwork.mask=IPToUInt("255.255.255.255");
+			//Is it an IP address of hostname?
+			boost::system::error_code ec;
+			boost::asio::ip::address::from_string( network, ec );
+			if ( ec )
+			{
+				ipnetwork.hostname=network;
+			}
+			else
+			{
+				//single IP?
+				ipnetwork.network=IPToUInt(inetwork);
+				ipnetwork.mask=IPToUInt("255.255.255.255");
+			}
 		}
 	}
 
@@ -1065,6 +1081,10 @@ int cWebemRequestHandler::authorize(const request& req)
 
 bool IsIPInRange(const std::string ip, const _tIPNetwork ipnetwork) 
 {
+	if (ipnetwork.hostname.size()!=0)
+	{
+		return (ip==ipnetwork.hostname);
+	}
 	uint32_t ip_addr = IPToUInt(ip);
 	if (ip_addr==0)
 		return false;
@@ -1093,6 +1113,7 @@ bool cWebemRequestHandler::AreWeInLocalNetwork(const request& req)
 		int pos=host.find_first_of(":");
 		if (pos!=std::string::npos)
 			host=host.substr(0,pos);
+
 		std::vector<_tIPNetwork>::const_iterator itt;
 		for (itt=myWebem->m_localnetworks.begin(); itt!=myWebem->m_localnetworks.end(); ++itt)
 		{

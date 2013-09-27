@@ -36,6 +36,7 @@ namespace http {
 		{
 			uint32_t network;
 			uint32_t mask;
+			std::string hostname;
 		} IPNetwork;
 
 		// Parsed Authorization header
