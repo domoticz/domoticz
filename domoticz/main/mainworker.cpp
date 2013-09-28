@@ -5487,6 +5487,8 @@ unsigned long long MainWorker::decode_RFXSensor(const int HwdID, const tRBUF *pR
 		{
 			int volt=(pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2;
 			sprintf(szTmp,"%d",volt);
+			m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, float(volt));
+
 		}
 		break;
 	}

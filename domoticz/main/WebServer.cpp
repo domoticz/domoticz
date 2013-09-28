@@ -2975,6 +2975,8 @@ std::string CWebServer::GetJSonPage()
 					((dType==pTypeGeneral)&&(dSubType==sTypeSolarRadiation))||
 					((dType==pTypeGeneral)&&(dSubType==sTypeSoilMoisture))||
 					((dType==pTypeGeneral)&&(dSubType==sTypeLeafWetness))||
+					((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorAD))||
+					((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorVolt))||
 					(dType==pTypeLux)||
 					(dType==pTypeUsage)
 					)
@@ -3254,6 +3256,29 @@ std::string CWebServer::GetJSonPage()
 								fValue*=0.6214f;
 							sprintf(szTmp,"%.1f",fValue);
 							root["result"][ii]["v"]=szTmp;
+							ii++;
+						}
+					}
+				}
+				else if ((dType==pTypeRFXSensor)&&((dSubType==sTypeRFXSensorAD)||(dSubType==sTypeRFXSensorVolt)))
+				{//day
+					root["status"]="OK";
+					root["title"]="Graph " + sensor + " " + srange;
+
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator itt;
+						int ii=0;
+						for (itt=result.begin(); itt!=result.end(); ++itt)
+						{
+							std::vector<std::string> sd=*itt;
+
+							root["result"][ii]["d"]=sd[1].substr(0,16);
+							root["result"][ii]["v"]=sd[0];
 							ii++;
 						}
 					}
@@ -4343,7 +4368,10 @@ std::string CWebServer::GetJSonPage()
 						}
 					}
 				}
-				else if ((dType==pTypeGeneral)&&((dSubType==sTypeSoilMoisture)||(dSubType==sTypeLeafWetness)))
+				else if (
+					((dType==pTypeGeneral)&&((dSubType==sTypeSoilMoisture)||(dSubType==sTypeLeafWetness)))||
+					((dType==pTypeRFXSensor)&&((dSubType==sTypeRFXSensorAD)||(dSubType==sTypeRFXSensorVolt)))
+					)
 				{//month/year
 					root["status"]="OK";
 					root["title"]="Graph " + sensor + " " + srange;
@@ -6993,6 +7021,13 @@ std::string CWebServer::GetJSonPage()
 				root["result"][ii]["val"]=NTYPE_TEMPERATURE;
 				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TEMPERATURE,0);
 				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TEMPERATURE,1);
+				ii++;
+			}
+			if ((dType==pTypeRFXSensor)&&((dSubType==sTypeRFXSensorAD)||(dSubType==sTypeRFXSensorVolt)))
+			{
+				root["result"][ii]["val"]=NTYPE_USAGE;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
 				ii++;
 			}
 		}

@@ -1488,6 +1488,13 @@ function ShowGeneralGraph(id,name,switchtype,sensortype)
 	graphcontent=$('#utilitycontent');
 	txtUnit="Range";
   }
+  else if (sensortype=="Voltage") {
+	graphReturn="ShowUtilities";
+	txtLabelOrg="Voltage";
+	$.content="#utilitycontent";
+	graphcontent=$('#utilitycontent');
+	txtUnit="mV";
+  }
   else {
 	return;
   }
@@ -1533,7 +1540,15 @@ function ShowGeneralGraph(id,name,switchtype,sensortype)
             title: {
                 text: txtLabel
             },
-            min: 0,
+			labels: {
+				formatter: function() {
+					if (txtUnit=="mV") {
+						return Highcharts.numberFormat(this.value, 0);
+					}
+					return this.value;
+				}
+			},
+			min: 0,
             minorGridLineWidth: 0,
             gridLineWidth: 0,
             alternateGridColor: null
@@ -1618,6 +1633,14 @@ function ShowGeneralGraph(id,name,switchtype,sensortype)
             title: {
                 text: txtLabel
             },
+			labels: {
+				formatter: function() {
+					if (txtUnit=="mV") {
+						return Highcharts.numberFormat(this.value, 0);
+					}
+					return this.value;
+				}
+			},
             min: 0,
             minorGridLineWidth: 0,
             gridLineWidth: 0,
@@ -1719,6 +1742,14 @@ function ShowGeneralGraph(id,name,switchtype,sensortype)
             title: {
                 text: txtLabel
             },
+			labels: {
+				formatter: function() {
+					if (txtUnit=="mV") {
+						return Highcharts.numberFormat(this.value, 0);
+					}
+					return this.value;
+				}
+			},
             min: 0,
             minorGridLineWidth: 0,
             gridLineWidth: 0,

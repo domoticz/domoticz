@@ -4008,6 +4008,8 @@ void CSQLHelper::AddCalendarUpdateUV()
 
 void CSQLHelper::CleanupShortLog()
 {
+	//Rob
+	return;
 	int n5MinuteHistoryDays=1;
 	if(GetPreferencesVar("5MinuteHistoryDays", n5MinuteHistoryDays))
     {
