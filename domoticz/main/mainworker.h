@@ -71,6 +71,8 @@ public:
 				int Mode4,
 				int Mode5);
 
+	void UpdateDomoticzSecurityStatus(const int iSecStatus);
+
 	CSQLHelper m_sql;
 	CScheduler m_scheduler;
 	CEventSystem m_eventsystem;

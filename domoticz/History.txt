@@ -42,6 +42,7 @@ Version 1.0.xxx (September xxth 2013)
 - Implemented: RFXSensor Voltage, Log/Notifications
 - Implemented: S0 Meter USB
 - Changed: Dutch translation, now UTF8 based
+- Implemented: Security Panel status now in device list
 
 Version 1.0.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)
@@ -82,7 +83,7 @@ Version 1.0.940 (July 31th 2013)
 - Implemented: JSon, updating device based on idx (json.htm?type=command&param=udevice&idx=123&nvalue=1&svalue=2)
 - Fixed: WU rain sensor (will have a new sensor type, old one needs to be removed)
 - Implemented: device name in scripts calls (6th parameter)
-- Implemented: Security Panel (first version)
+- Implemented: Security Panel
 - Implemented: Temperature tab, translated speed,gust and chill
 - Implemented: Solar Radiation Sensor (for example from Weather Underground)
 - Implemented: Dummy hardware device, that does nothing, but can be used for virtual switches

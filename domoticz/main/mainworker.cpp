@@ -27,6 +27,8 @@
 #include "../hardware/Dummy.h"
 #include "../hardware/S0MeterSerial.h"
 
+#include "mainstructs.h"
+
 #ifdef _DEBUG
 	//#define DEBUG_RECEIVE
 #endif
@@ -3607,6 +3609,9 @@ unsigned long long MainWorker::decode_Security1(const int HwdID, const tRBUF *pR
 		case sTypeMeiantech:
 			WriteMessage("subtype       = Meiantech/Atlantic/Aidebao");
 			break;
+		case sTypeDomoticzSecurity:
+			WriteMessage("subtype       = Security Panel");
+			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->SECURITY1.packettype, pResponse->SECURITY1.subtype);
 			WriteMessage(szTmp);
@@ -7152,3 +7157,42 @@ void MainWorker::LoadSharedUsers()
 	m_sharedserver.stopAllClients();
 }
 
+void MainWorker::UpdateDomoticzSecurityStatus(const int iSecStatus)
+{
+	m_sql.UpdatePreferencesVar("SecStatus", iSecStatus);
+	m_eventsystem.WWWUpdateSecurityState(iSecStatus);
+
+	//Update Domoticz Security Device
+	RBUF tsen;
+	memset(&tsen,0,sizeof(RBUF));
+	tsen.SECURITY1.packetlength=sizeof(tsen.TEMP)-1;
+	tsen.SECURITY1.packettype=pTypeSecurity1;
+	tsen.SECURITY1.subtype=sTypeDomoticzSecurity;
+	tsen.SECURITY1.battery_level=9;
+	tsen.SECURITY1.rssi=6;
+	tsen.SECURITY1.id1=0x14;
+	tsen.SECURITY1.id2=0x87;
+	tsen.SECURITY1.id3=0x02;
+	tsen.SECURITY1.seqnbr=1;
+	if (iSecStatus==SECSTATUS_DISARMED)
+		tsen.SECURITY1.status=sStatusNormal;
+	else if (iSecStatus==SECSTATUS_ARMEDHOME)
+		tsen.SECURITY1.status=sStatusArmHome;
+	else
+		tsen.SECURITY1.status=sStatusArmAway;
+
+	// convert now to string form
+	time_t now = time(0);
+	char *szDate = asctime(localtime(&now));
+	szDate[strlen(szDate)-1]=0;
+
+	WriteMessageStart();
+
+	std::stringstream sTmp;
+	sTmp << szDate << " (System) ";
+	WriteMessage(sTmp.str().c_str(),false);
+	WriteMessage("Domoticz Security Status",false);
+	unsigned long long DeviceRowIdx=decode_Security1(1000, (const tRBUF*)&tsen.SECURITY1);
+	WriteMessageEnd();
+	m_sharedserver.SendToAll(DeviceRowIdx,(const char*)&tsen,tsen.TEMP.packetlength+1,NULL);
+}

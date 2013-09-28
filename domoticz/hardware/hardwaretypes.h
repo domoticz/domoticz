@@ -1,5 +1,7 @@
 #pragma once
 
+#define sTypeDomoticzSecurity 0x83
+
 #define sTypeRAINWU 0x70	 //Weather Underground (Total rain reported, no counter)
 
 #define sTypeTHBFloat 0x10   //Weather Station

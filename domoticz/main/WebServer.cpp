@@ -21,6 +21,8 @@
 	#include "WindowsHelper.h"
 #endif
 
+#include "mainstructs.h"
+
 extern std::string szStartupFolder;
 extern bool bIsRaspberryPi;
 extern std::string szAppVersion;
@@ -8237,8 +8239,8 @@ std::string CWebServer::GetJSonPage()
 				goto exitjson;
 			}
 			root["status"]="OK";
-			m_pMain->m_sql.UpdatePreferencesVar("SecStatus", atoi(ssecstatus.c_str()));
-            m_pMain->m_eventsystem.WWWUpdateSecurityState(atoi(ssecstatus.c_str()));
+			int iSecStatus=atoi(ssecstatus.c_str());
+			m_pMain->UpdateDomoticzSecurityStatus(iSecStatus);
 		}
 	} //(rtype=="command")
 	else if (rtype=="getshareduserdevices")
