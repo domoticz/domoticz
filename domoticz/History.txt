@@ -40,6 +40,8 @@ Version 1.0.xxx (September xxth 2013)
 - Implemented: Eventsystem, Events now triggered by security state change implemented script_security_name.lua for sec panel triggers in lua.
 - Implemented: Local hostname now automatically included in Local Network setup
 - Implemented: RFXSensor Voltage, Log/Notifications
+- Implemented: S0 Meter USB
+- Changed: Dutch translation, now UTF8 based
 
 Version 1.0.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)

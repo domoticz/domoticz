@@ -1,6 +1,6 @@
 <div id="hardwarecontent">
 </div>
-<div id="hardwaremode" style="display:none;">
+<div id="rfxhardwaremode" style="display:none;">
 <center>
 <form id="settings">
 	<table>
@@ -69,6 +69,49 @@
 	<br>
 	<input type="hidden" id="idx" name="idx" value="-1">
 	<button class="btn btn-danger" id="submitbuttonrego">Set Mode</button>
+</form>
+</center>
+</div>
+<div id="s0metertypeedit" style="display:none;">
+<center>
+<form id="s0metertype">
+	<br>
+	<h2>Meter 1:</h2>
+	<table>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Type"></span>: </label></td>
+			<td><select id="combom1type" name="S0M1Type" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">Energy</option>
+				<option value="1">Gas</option>
+				<option value="2">Water</option>
+				<option value="3">Counter</option>
+			</select></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Pulses/Hour"></span>: </label></td>
+			<td><input type="input" id="M1PulsesPerHour" name="M1PulsesPerHour" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+	</table>
+	<br>
+	<h2>Meter 2:</h2>
+	<table>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Type"></span>: </label></td>
+			<td><select id="combom2type" name="S0M2Type" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">Energy</option>
+				<option value="1">Gas</option>
+				<option value="2">Water</option>
+				<option value="3">Counter</option>
+			</select></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Pulses/Hour"></span>: </label></td>
+			<td><input type="input" id="M2PulsesPerHour" name="M2PulsesPerHour" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+	</table>
+	<br>
+	<input type="hidden" id="idx" name="idx" value="-1">
+	<button class="btn btn-danger" id="submitbuttons0meter">Set Mode</button>
 </form>
 </center>
 </div>
@@ -510,8 +553,8 @@ function EditRFXCOMMode(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 {
 	cursordefault();
 	var htmlcontent = '';
-	htmlcontent='<p><center><h2>Device: ' + name + '</h2></center></p>\n';
-	htmlcontent+=$('#hardwaremode').html();
+	htmlcontent='<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
+	htmlcontent+=$('#rfxhardwaremode').html();
 	$('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
 	$('#hardwarecontent').i18n();
 
@@ -580,7 +623,7 @@ function EditRego6XXType(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 {
 	cursordefault();
 	var htmlcontent = '';
-	htmlcontent='<p><center><h2>Device: ' + name + '</h2></center></p>\n';
+	htmlcontent='<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
 	htmlcontent+=$('#rego6xxtypeedit').html();
 	$('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
 	$('#hardwarecontent').i18n();
@@ -594,6 +637,38 @@ function EditRego6XXType(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 	$('#hardwarecontent #comborego6xxtype').val(Mode1);
 }
 
+function EditS0MeterType(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
+{
+	cursordefault();
+	var htmlcontent = '';
+	htmlcontent='<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
+	htmlcontent+=$('#s0metertypeedit').html();
+	$('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
+	$('#hardwarecontent').i18n();
+
+	$('#hardwarecontent #submitbuttons0meter').click(function (e) {
+		e.preventDefault();
+		SetS0MeterType();
+	});
+
+	$('#hardwarecontent #idx').val(idx);
+	$('#hardwarecontent #combom1type').val(Mode1);
+	if (Mode2!=0) {
+		$('#hardwarecontent #M1PulsesPerHour').val(Mode2);
+	}
+	else {
+		$('#hardwarecontent #M1PulsesPerHour').val(2000);
+	}
+
+	$('#hardwarecontent #combom2type').val(Mode3);
+	if (Mode4!=0) {
+		$('#hardwarecontent #M2PulsesPerHour').val(Mode4);
+	}
+	else {
+		$('#hardwarecontent #M2PulsesPerHour').val(2000);
+	}
+}
+
 function SetRFXCOMMode()
 {
   $.post("setrfxcommode.webem", $("#hardwarecontent #settings").serialize(), function(data) {
@@ -604,6 +679,13 @@ function SetRFXCOMMode()
 function SetRego6XXType()
 {
   $.post("setrego6xxtype.webem", $("#hardwarecontent #regotype").serialize(), function(data) {
+   ShowHardware();
+  });
+}
+
+function SetS0MeterType()
+{
+  $.post("sets0metertype.webem", $("#hardwarecontent #s0metertype").serialize(), function(data) {
    ShowHardware();
   });
 }
@@ -673,6 +755,9 @@ function RefreshHardwareTable()
 			{
 				HwTypeStr+='<br>Firmware version: ' + item.Mode2;
 				HwTypeStr+=' <span class="label label-info" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Set Mode</span>';
+			}
+			else if (HwTypeStr.indexOf("S0 Meter USB") >= 0) {
+				HwTypeStr+=' <span class="label label-info" onclick="EditS0MeterType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Set Mode</span>';
 			}
 			else if (HwTypeStr.indexOf("Rego 6XX") >= 0)
 			{

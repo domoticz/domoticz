@@ -267,6 +267,33 @@ std::string MainWorker::GetWebserverPort()
 	return m_webserverport;
 }
 
+bool MainWorker::RestartHardware(const std::string &idx)
+{
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "SELECT Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID==" << idx << ")";
+	result=m_sql.query(szQuery.str());
+	if (result.size()<1)
+		return false;
+	std::vector<std::string> sd=result[0];
+	std::string Name=sd[0];
+	std::string senabled=(sd[1]=="1")?"true":"false";
+	_eHardwareTypes htype=(_eHardwareTypes)atoi(sd[2].c_str());
+	std::string address=sd[3];
+	int port=atoi(sd[4].c_str());
+	std::string username=sd[5];
+	std::string password=sd[6];
+	int Mode1=atoi(sd[7].c_str());
+	int Mode2=atoi(sd[8].c_str());
+	int Mode3=atoi(sd[9].c_str());
+	int Mode4=atoi(sd[10].c_str());
+	int Mode5=atoi(sd[11].c_str());
+
+	return AddHardwareFromParams(atoi(idx.c_str()),Name,(senabled=="true")?true:false,htype,address,port,username,password,Mode1,Mode2,Mode3,Mode4,0);
+}
+
 bool MainWorker::AddHardwareFromParams(
 	int ID,
 	std::string Name,
@@ -274,11 +301,11 @@ bool MainWorker::AddHardwareFromParams(
 	_eHardwareTypes Type,
 	std::string Address, unsigned short Port, 
 	std::string Username, std::string Password, 
-	unsigned char Mode1,
-	unsigned char Mode2, 
-	unsigned char Mode3,
-	unsigned char Mode4,
-	unsigned char Mode5)
+	int Mode1,
+	int Mode2, 
+	int Mode3,
+	int Mode4,
+	int Mode5)
 {
 	RemoveDomoticzHardware(ID);
 
@@ -338,7 +365,7 @@ bool MainWorker::AddHardwareFromParams(
 			}
 			else if (Type==HTYPE_S0SmartMeter)
 			{
-				pHardware = new S0MeterSerial(ID,szSerialPort, 9600);
+				pHardware = new S0MeterSerial(ID,szSerialPort, 9600, Mode1, Mode2, Mode3, Mode4);
 			}
 		}
 		break;
@@ -429,11 +456,11 @@ bool MainWorker::Start()
 			unsigned short Port=atoi(sd[5].c_str());
 			std::string Username=sd[6];
 			std::string Password=sd[7];
-			unsigned char mode1=(unsigned char)atoi(sd[8].c_str());
-			unsigned char mode2=(unsigned char)atoi(sd[9].c_str());
-			unsigned char mode3=(unsigned char)atoi(sd[10].c_str());
-			unsigned char mode4=(unsigned char)atoi(sd[11].c_str());
-			unsigned char mode5=(unsigned char)atoi(sd[12].c_str());
+			int mode1=atoi(sd[8].c_str());
+			int mode2=atoi(sd[9].c_str());
+			int mode3=atoi(sd[10].c_str());
+			int mode4=atoi(sd[11].c_str());
+			int mode5=atoi(sd[12].c_str());
 			AddHardwareFromParams(ID,Name,Enabled,Type,Address,Port,Username,Password,mode1,mode2,mode3,mode4,mode5);
 		}
 	}

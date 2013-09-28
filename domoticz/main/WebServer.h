@@ -39,6 +39,7 @@ public:
 	char * PostSettings();
 	char * SetRFXCOMMode();
 	char * SetRego6XXType();
+	char * SetS0MeterType();
 
 	cWebem *m_pWebEm;
 

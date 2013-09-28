@@ -56,6 +56,8 @@ public:
 	bool GetSunSettings();
 	void LoadSharedUsers();
 
+	bool RestartHardware(const std::string &idx);
+
 	bool AddHardwareFromParams(
 				int ID,
 				std::string Name,
@@ -63,11 +65,11 @@ public:
 				_eHardwareTypes Type,
 				std::string Address, unsigned short Port, 
 				std::string Username, std::string Password, 
-				unsigned char Mode1,
-				unsigned char Mode2, 
-				unsigned char Mode3,
-				unsigned char Mode4,
-				unsigned char Mode5);
+				int Mode1,
+				int Mode2, 
+				int Mode3,
+				int Mode4,
+				int Mode5);
 
 	CSQLHelper m_sql;
 	CScheduler m_scheduler;

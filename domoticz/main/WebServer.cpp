@@ -210,6 +210,7 @@ bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress
 	m_pWebEm->RegisterActionCode( "storesettings",boost::bind(&CWebServer::PostSettings,this));
 	m_pWebEm->RegisterActionCode( "setrfxcommode",boost::bind(&CWebServer::SetRFXCOMMode,this));
 	m_pWebEm->RegisterActionCode( "setrego6xxtype",boost::bind(&CWebServer::SetRego6XXType,this));
+	m_pWebEm->RegisterActionCode( "sets0metertype",boost::bind(&CWebServer::SetS0MeterType,this));
 
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWebServer::Do_Work, this)));
@@ -737,6 +738,7 @@ char * CWebServer::SetRFXCOMMode()
 	return (char*)m_retstr.c_str();
 }
 
+
 char * CWebServer::SetRego6XXType()
 {
 	m_retstr="";
@@ -766,6 +768,37 @@ char * CWebServer::SetRego6XXType()
         m_pMain->m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), newMode1, 0, 0, 0, 0);
     }
 	
+	return (char*)m_retstr.c_str();
+}
+
+char * CWebServer::SetS0MeterType()
+{
+	m_retstr="";
+	std::string idx=m_pWebEm->FindValue("idx");
+	if (idx=="") {
+		return (char*)m_retstr.c_str();
+	}
+
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
+	result=m_pMain->m_sql.query(szQuery.str());
+	if (result.size()<1)
+		return (char*)m_retstr.c_str();
+
+	m_retstr="/index.html";
+
+	int Mode1=atoi(m_pWebEm->FindValue("S0M1Type").c_str());
+	int Mode2=atoi(m_pWebEm->FindValue("M1PulsesPerHour").c_str());
+	int Mode3=atoi(m_pWebEm->FindValue("S0M2Type").c_str());
+	int Mode4=atoi(m_pWebEm->FindValue("M2PulsesPerHour").c_str());
+	m_pMain->m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, 0);
+
+	m_pMain->RestartHardware(idx);
+
 	return (char*)m_retstr.c_str();
 }
 
@@ -2355,11 +2388,11 @@ std::string CWebServer::GetJSonPage()
 				root["result"][ii]["Port"]=atoi(sd[5].c_str());
 				root["result"][ii]["Username"]=sd[6];
 				root["result"][ii]["Password"]=sd[7];
-				root["result"][ii]["Mode1"]=(unsigned char)atoi(sd[8].c_str());
-				root["result"][ii]["Mode2"]=(unsigned char)atoi(sd[9].c_str());
-				root["result"][ii]["Mode3"]=(unsigned char)atoi(sd[10].c_str());
-				root["result"][ii]["Mode4"]=(unsigned char)atoi(sd[11].c_str());
-				root["result"][ii]["Mode5"]=(unsigned char)atoi(sd[12].c_str());
+				root["result"][ii]["Mode1"]=atoi(sd[8].c_str());
+				root["result"][ii]["Mode2"]=atoi(sd[9].c_str());
+				root["result"][ii]["Mode3"]=atoi(sd[10].c_str());
+				root["result"][ii]["Mode4"]=atoi(sd[11].c_str());
+				root["result"][ii]["Mode5"]=atoi(sd[12].c_str());
 				ii++;
 			}
 		}
@@ -7230,11 +7263,11 @@ std::string CWebServer::GetJSonPage()
 				)
 				goto exitjson;
 			_eHardwareTypes htype=(_eHardwareTypes)atoi(shtype.c_str());
-			unsigned char mode1=0;
-			unsigned char mode2=0;
-			unsigned char mode3=0;
-			unsigned char mode4=0;
-			unsigned char mode5=0;
+			int mode1=0;
+			int mode2=0;
+			int mode3=0;
+			int mode4=0;
+			int mode5=0;
 			int port=atoi(sport.c_str());
 			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX)||(htype==HTYPE_DavisVantage)||(htype==HTYPE_S0SmartMeter))
 			{
@@ -7367,11 +7400,11 @@ std::string CWebServer::GetJSonPage()
 			else
 				goto exitjson;
 
-			unsigned char mode1=(unsigned char)atoi(m_pWebEm->FindValue("Mode1").c_str());
-			unsigned char mode2=(unsigned char)atoi(m_pWebEm->FindValue("Mode2").c_str());
-			unsigned char mode3=(unsigned char)atoi(m_pWebEm->FindValue("Mode3").c_str());
-			unsigned char mode4=(unsigned char)atoi(m_pWebEm->FindValue("Mode4").c_str());
-			unsigned char mode5=(unsigned char)atoi(m_pWebEm->FindValue("Mode5").c_str());
+			int mode1=atoi(m_pWebEm->FindValue("Mode1").c_str());
+			int mode2=atoi(m_pWebEm->FindValue("Mode2").c_str());
+			int mode3=atoi(m_pWebEm->FindValue("Mode3").c_str());
+			int mode4=atoi(m_pWebEm->FindValue("Mode4").c_str());
+			int mode5=atoi(m_pWebEm->FindValue("Mode5").c_str());
 			root["status"]="OK";
 			root["title"]="UpdateHardware";
 

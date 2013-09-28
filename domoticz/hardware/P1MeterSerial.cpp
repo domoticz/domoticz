@@ -79,6 +79,8 @@ bool P1MeterSerial::StopHardware()
 		try {
 			clearReadCallback();
 			close();
+			doClose();
+			setErrorStatus(true);
 		} catch(...)
 		{
 			//Don't throw from a Stop command

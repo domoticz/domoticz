@@ -7,7 +7,7 @@
 class S0MeterSerial: public AsyncSerial, public CDomoticzHardwareBase
 {
 public:
-	S0MeterSerial(const int ID, const std::string& devname, unsigned int baud_rate);
+	S0MeterSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const int M1Type, const int M1PPH, const int M2Type, const int M2PPH);
     /**
     * Opens a serial device.
     * \param devname serial device name, example "/dev/ttyS0" or "COM1"
@@ -54,6 +54,8 @@ private:
 	double m_s0_m2_last_values[4];
 	double m_s0_m1_volume_total;
 	double m_s0_m2_volume_total;
+	int m_s0_m1_type;
+	int m_s0_m2_type;
 	double m_pulse_per_unit_1;
 	double m_pulse_per_unit_2;
 };

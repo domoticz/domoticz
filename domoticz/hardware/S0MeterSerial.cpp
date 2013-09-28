@@ -4,7 +4,8 @@
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
-
+#include "P1MeterBase.h"
+#include "hardwaretypes.h"
 #include <string>
 #include <algorithm>
 #include <iostream>
@@ -15,11 +16,21 @@
 //
 //Class S0MeterSerial
 //
-S0MeterSerial::S0MeterSerial(const int ID, const std::string& devname, unsigned int baud_rate)
+S0MeterSerial::S0MeterSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const int M1Type, const int M1PPH, const int M2Type, const int M2PPH)
 {
 	m_HwdID=ID;
 	m_szSerialPort=devname;
 	m_iBaudRate=baud_rate;
+
+	m_s0_m1_type=M1Type;
+	m_s0_m2_type=M2Type;
+	m_pulse_per_unit_1=2000.0;
+	m_pulse_per_unit_2=2000.0;
+
+	if (M1PPH!=0)
+		m_pulse_per_unit_1=float(M1PPH);
+	if (M2PPH!=0)
+		m_pulse_per_unit_2=float(M2PPH);
 }
 
 S0MeterSerial::S0MeterSerial(const std::string& devname,
@@ -74,11 +85,14 @@ bool S0MeterSerial::StartHardware()
 
 bool S0MeterSerial::StopHardware()
 {
+	m_bIsStarted=false;
 	if (isOpen())
 	{
 		try {
 			clearReadCallback();
 			close();
+			doClose();
+			setErrorStatus(true);
 		} catch(...)
 		{
 			//Don't throw from a Stop command
@@ -91,6 +105,8 @@ bool S0MeterSerial::StopHardware()
 void S0MeterSerial::readCallback(const char *data, size_t len)
 {
 	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	if (!m_bIsStarted)
+		return;
 
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
@@ -106,9 +122,6 @@ void S0MeterSerial::ReloadLastTotals()
 {
 	m_s0_m1_volume_total=0;
 	m_s0_m2_volume_total=0;
-
-	m_pulse_per_unit_1=2000.0;
-	m_pulse_per_unit_2=2000.0;
 
 	m_s0_m1_last_values[0]=0;
 	m_s0_m1_last_values[1]=0;
@@ -179,38 +192,84 @@ void S0MeterSerial::SendMeter(unsigned char ID, double musage, double mtotal)
 	RBUF tsen;
 	memset(&tsen,0,sizeof(RBUF));
 
-	tsen.ENERGY.packettype=pTypeENERGY;
-	tsen.ENERGY.subtype=sTypeELEC2;
-	tsen.ENERGY.id1=0;
-	tsen.ENERGY.id2=ID;
-	tsen.ENERGY.count=1;
-	tsen.ENERGY.rssi=6;
+	int meterype=MTYPE_ENERGY;
+	if (ID==1)
+	{
+		meterype=m_s0_m1_type;
+	}
+	else
+	{
+		meterype=m_s0_m2_type;
+	}
 
-	tsen.ENERGY.battery_level=9;
+	if (meterype==MTYPE_ENERGY)
+	{
+		tsen.ENERGY.packettype=pTypeENERGY;
+		tsen.ENERGY.subtype=sTypeELEC2;
+		tsen.ENERGY.id1=0;
+		tsen.ENERGY.id2=ID;
+		tsen.ENERGY.count=1;
+		tsen.ENERGY.rssi=6;
 
-	unsigned long long instant=(unsigned long long)(musage*1000.0);
-	tsen.ENERGY.instant1=(unsigned char)(instant/0x1000000);
-	instant-=tsen.ENERGY.instant1*0x1000000;
-	tsen.ENERGY.instant2=(unsigned char)(instant/0x10000);
-	instant-=tsen.ENERGY.instant2*0x10000;
-	tsen.ENERGY.instant3=(unsigned char)(instant/0x100);
-	instant-=tsen.ENERGY.instant3*0x100;
-	tsen.ENERGY.instant4=(unsigned char)(instant);
+		tsen.ENERGY.battery_level=9;
 
-	double total=(mtotal*1000.0)*223.666;
-	tsen.ENERGY.total1=(unsigned char)(total/0x10000000000ULL);
-	total-=tsen.ENERGY.total1*0x10000000000ULL;
-	tsen.ENERGY.total2=(unsigned char)(total/0x100000000ULL);
-	total-=tsen.ENERGY.total2*0x100000000ULL;
-	tsen.ENERGY.total3=(unsigned char)(total/0x1000000);
-	total-=tsen.ENERGY.total3*0x1000000;
-	tsen.ENERGY.total4=(unsigned char)(total/0x10000);
-	total-=tsen.ENERGY.total4*0x10000;
-	tsen.ENERGY.total5=(unsigned char)(total/0x100);
-	total-=tsen.ENERGY.total5*0x100;
-	tsen.ENERGY.total6=(unsigned char)(total);
+		unsigned long long instant=(unsigned long long)(musage*1000.0);
+		tsen.ENERGY.instant1=(unsigned char)(instant/0x1000000);
+		instant-=tsen.ENERGY.instant1*0x1000000;
+		tsen.ENERGY.instant2=(unsigned char)(instant/0x10000);
+		instant-=tsen.ENERGY.instant2*0x10000;
+		tsen.ENERGY.instant3=(unsigned char)(instant/0x100);
+		instant-=tsen.ENERGY.instant3*0x100;
+		tsen.ENERGY.instant4=(unsigned char)(instant);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY);//decode message
+		double total=(mtotal*1000.0)*223.666;
+		tsen.ENERGY.total1=(unsigned char)(total/0x10000000000ULL);
+		total-=tsen.ENERGY.total1*0x10000000000ULL;
+		tsen.ENERGY.total2=(unsigned char)(total/0x100000000ULL);
+		total-=tsen.ENERGY.total2*0x100000000ULL;
+		tsen.ENERGY.total3=(unsigned char)(total/0x1000000);
+		total-=tsen.ENERGY.total3*0x1000000;
+		tsen.ENERGY.total4=(unsigned char)(total/0x10000);
+		total-=tsen.ENERGY.total4*0x10000;
+		tsen.ENERGY.total5=(unsigned char)(total/0x100);
+		total-=tsen.ENERGY.total5*0x100;
+		tsen.ENERGY.total6=(unsigned char)(total);
+
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY);//decode message
+
+	}
+	else if (meterype==MTYPE_GAS)
+	{
+		//can only be one gas meter...
+		P1Gas	m_p1gas;
+		m_p1gas.len=sizeof(P1Gas)-1;
+		m_p1gas.type=pTypeP1Gas;
+		m_p1gas.subtype=sTypeP1Gas;
+		m_p1gas.gasusage=(unsigned long)(mtotal*1000.0);
+		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas);//decode message
+	}
+	else
+	{
+		//show as a counter, user needs to change meter type later
+		//Counter
+		RBUF tsen;
+		memset(&tsen,0,sizeof(RBUF));
+		tsen.RFXMETER.packetlength=sizeof(tsen.RFXMETER)-1;
+		tsen.RFXMETER.packettype=pTypeRFXMeter;
+		tsen.RFXMETER.subtype=sTypeRFXMeterCount;
+		tsen.RFXMETER.rssi=6;
+		tsen.RFXMETER.id1=0;
+		tsen.RFXMETER.id2=ID;
+
+		unsigned long counterA=(unsigned long)(mtotal*1000.0);
+
+		tsen.RFXMETER.count1 = (BYTE)((counterA & 0xFF000000) >> 24);
+		tsen.RFXMETER.count2 = (BYTE)((counterA & 0x00FF0000) >> 16);
+		tsen.RFXMETER.count3 = (BYTE)((counterA & 0x0000FF00) >> 8);
+		tsen.RFXMETER.count4 = (BYTE)(counterA & 0x000000FF);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);//decode message
+
+	}
 }
 
 void S0MeterSerial::ParseLine()
