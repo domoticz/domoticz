@@ -3634,3 +3634,280 @@ function ShowRainLog(contentdiv,backfunction,id,name)
   cursordefault();
   return false;
 }
+
+function ShowBaroLog(contentdiv,backfunction,id,name)
+{
+	clearInterval($.myglobals.refreshTimer);
+  $('#modal').show();
+  $.content=contentdiv;
+  $.backfunction=backfunction;
+  $.devIdx=id;
+  $.devName=name;
+  var htmlcontent = '';
+  htmlcontent='<p><center><h2>' + name + '</h2></center></p><br>\n';
+  htmlcontent+=$('#barolog').html();
+  $($.content).html(GetBackbuttonHTMLTable(backfunction)+htmlcontent);
+  $($.content).i18n();
+  
+  $.DayChart = $($.content + ' #barodaygraph');
+  $.DayChart.highcharts({
+      chart: {
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=temp&idx="+id+"&range=day",
+                function(data) {
+                      var series = $.DayChart.highcharts().series[0];
+                      var datatable = [];
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable.push( [GetUTCFromString(item.d), parseFloat(item.ba) ] );
+                      });
+                      series.setData(datatable);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: $.i18n('Barometer') + ' '  + Get5MinuteHistoryDaysGraphTitle()
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: $.i18n('Pressure') + ' (hPa)'
+            },
+            labels: {
+							formatter: function(){
+									return this.value;       
+							}
+						}
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' hPa';
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'hPa'
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+
+  $.MonthChart = $($.content + ' #baromonthgraph');
+  $.MonthChart.highcharts({
+      chart: {
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=temp&idx="+id+"&range=month",
+                function(data) {
+                      var series = $.MonthChart.highcharts().series[0];
+                      var datatable = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable.push( [GetDateFromString(item.d), parseFloat(item.ba) ] );
+                      });
+                      series.setData(datatable);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: $.i18n('Barometer') + ' ' + $.i18n('Last Month')
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: $.i18n('Pressure') + ' (hPa)'
+            },
+            labels: {
+							formatter: function(){
+									return this.value;       
+							}
+						}
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' hPa';
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'hPa',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClickNew(event,ShowBaroLog);
+					}
+				}
+			}
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+
+  $.YearChart = $($.content + ' #baroyeargraph');
+  $.YearChart.highcharts({
+      chart: {
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=temp&idx="+id+"&range=year",
+                function(data) {
+                      var series = $.YearChart.highcharts().series[0];
+                      var datatable = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable.push( [GetDateFromString(item.d), parseFloat(item.ba) ] );
+                      });
+                      series.setData(datatable);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: $.i18n('Barometer') + ' ' + $.i18n('Last Year')
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: $.i18n('Pressure') + ' (hPa)'
+            },
+            labels: {
+							formatter: function(){
+									return this.value;       
+							}
+						}
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' hPa';
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'hPa',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClickNew(event,ShowBaroLog);
+					}
+				}
+			}
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+  $('#modal').hide();
+  cursordefault();
+  return false;
+}
