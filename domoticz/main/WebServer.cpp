@@ -5965,12 +5965,12 @@ std::string CWebServer::GetJSonPage()
 			if (!bIsBetaChannel)
 			{
 				szURL="http://domoticz.sourceforge.net/svnversion.h";
-				HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=DownloadNewVersion&amp;idgoal=2",revfile);
+				//HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=DownloadNewVersion&amp;idgoal=2",revfile);
 			}
 			else
 			{
 				szURL="http://domoticz.sourceforge.net/beta/svnversion.h";
-				HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=DownloadNewVersion&amp;idgoal=1",revfile);
+				//HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=DownloadNewVersion&amp;idgoal=1",revfile);
 			}
 			if (!HTTPClient::GET(szURL,revfile))
 				goto exitjson;
