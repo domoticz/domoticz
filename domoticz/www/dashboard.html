@@ -433,8 +433,12 @@ function RefreshFavorites()
 						id="#dashcontent #temp_" + item.idx;
 						var obj=$(id);
 						if (typeof obj != 'undefined') {
-							if ($(id + " #name").html()!=item.Name) {
-								$(id + " #name").html(item.Name);
+							var vname=item.Name;
+							if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+								var vname='<img src="images/next.png" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="16">' + " " + item.Name;
+							}
+							if ($(id + " #name").html()!=vname) {
+								$(id + " #name").html(vname);
 							}
 							if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								var status="";
@@ -471,7 +475,7 @@ function RefreshFavorites()
 								else {
 									img+=GetTemp48Item(item.Chill);
 								}
-								img+='" height="40">';
+								img+='" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40">';
 								if ($(id + " #img").html()!=img) {
 									$(id + " #img").html(img);
 								}
@@ -598,7 +602,7 @@ function RefreshFavorites()
 								var status="";
 								var bigtext="";
 								if (typeof item.Rain != 'undefined') {
-									img='<img src="images/rain48.png" height="40">';
+									img='<img src="images/rain48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowRainLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40">';
 									status=item.Rain + ' mm';
 									bigtext=item.Rain + ' mm';
 									if (typeof item.RainRate != 'undefined') {
@@ -613,7 +617,7 @@ function RefreshFavorites()
 									bigtext=item.Data;
 								}
 								else if (typeof item.UVI != 'undefined') {
-									img='<img src="images/uv48.png" height="40">';
+									img='<img src="images/uv48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowUVLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40">';
 									status=item.UVI + ' UVI';
 									bigtext=item.UVI + ' UVI';
 									if (typeof item.Temp!= 'undefined') {
@@ -626,7 +630,7 @@ function RefreshFavorites()
 									bigtext=item.Data;
 								}
 								else if (typeof item.Direction != 'undefined') {
-									img='<img src="images/Wind' + item.DirectionStr + '.png" height="40">';
+									img='<img src="images/Wind' + item.DirectionStr + '.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowWindLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40">';
 									status=item.Direction + ' ' + item.DirectionStr;
 									if (typeof item.Speed != 'undefined') {
 										status+=', ' + $.i18n('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
@@ -653,7 +657,7 @@ function RefreshFavorites()
 									}
 								}
 								else if (typeof item.Barometer != 'undefined') {
-									img='<img src="images/baro48.png" height="40">';
+									img='<img src="images/baro48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowBaroLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40">';
 									bigtext=item.Barometer + ' hPa';
 									if (typeof item.ForecastStr != 'undefined') {
 										status=item.Barometer + ' hPa, ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
@@ -1567,9 +1571,11 @@ function ShowFavorites()
             }
             var xhtm="";
 						if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+							var vname='<img src="images/next.png" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="16">' + " " + item.Name;
+
 							xhtm+=
 									'\t    <tr id="temp_' + item.idx +'">\n' +
-									'\t      <td id="name">' + item.Name + '</td>\n';
+									'\t      <td id="name">' + vname + '</td>\n';
 							var status="";
 							var bHaveBefore=false;
 							if (typeof item.Temp != 'undefined') {
@@ -1641,7 +1647,7 @@ function ShowFavorites()
 							else {
 								xhtm+=GetTemp48Item(item.Chill);
 							}
-							xhtm+='" height="40"></td>\n' +
+							xhtm+='" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40"></td>\n' +
 									'\t      <td id="status">';
 							var bHaveBefore=false;
 							if (typeof item.Temp != 'undefined') {
@@ -1823,7 +1829,7 @@ function ShowFavorites()
 							xhtm+='</td>\n';
 							xhtm+='\t      <td id="img"><img src="images/';
 							if (typeof item.Rain != 'undefined') {
-								xhtm+='rain48.png" height="40"></td>\n' +
+								xhtm+='rain48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowRainLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40"></td>\n' +
 								'\t      <td id="status">' + item.Rain + ' mm';
 								if (typeof item.RainRate != 'undefined') {
 									if (item.RainRate!=0) {
@@ -1836,7 +1842,7 @@ function ShowFavorites()
 								'\t      <td id="status">' + item.Data;
 							}
 							else if (typeof item.UVI != 'undefined') {
-								xhtm+='uv48.png" height="40"></td>\n' +
+								xhtm+='uv48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowUVLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40"></td>\n' +
 								'\t      <td id="status">' + item.UVI + ' UVI';
 								if (typeof item.Temp!= 'undefined') {
 									xhtm+=', Temp: ' + item.Temp + '° C';
@@ -1847,7 +1853,7 @@ function ShowFavorites()
 								'\t      <td id="status">' + item.Data;
 							}
 							else if (typeof item.Direction != 'undefined') {
-								xhtm+='Wind' + item.DirectionStr + '.png" height="40"></td>\n' +
+								xhtm+='Wind' + item.DirectionStr + '.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowWindLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40"></td>\n' +
 								'\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr;
 								if (typeof item.Speed != 'undefined') {
 									xhtm+=', ' + $.i18n('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
@@ -1867,7 +1873,7 @@ function ShowFavorites()
 								}
 							}
 							else if (typeof item.Barometer != 'undefined') {
-								xhtm+='baro48.png" height="40"></td>\n' +
+								xhtm+='baro48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowBaroLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40"></td>\n' +
 								'\t      <td id="status">' + item.Barometer + ' hPa';
 								if (typeof item.ForecastStr != 'undefined') {
 									xhtm+=', ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);

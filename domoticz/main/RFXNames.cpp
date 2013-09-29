@@ -332,6 +332,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeGeneral, "General" , "General" },
 		{ pTypeThermostat, "Thermostat" , "thermostat" },
 		{ pTypeTEMP_RAIN, "Temp + Rain" , "Temp + Rain" },
+		{ pTypeChime, "Chime" , "Chime" },
 		
 		{  0,NULL,NULL }
 	};

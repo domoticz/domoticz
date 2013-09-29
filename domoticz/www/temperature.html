@@ -12,63 +12,53 @@
 		</table>
     </form>
 </div>
-
-<div id="tempcontent">
-</div>
 <div id="customlog" style="display:none;">
-    <table width="100%">
-        <tr>
-            <td width="75%"><div id="customgraph" style="height: 400px; vertical-align:top;"></div></td>
-            <td width="25%">
-             <table>
-              <tr><td style="margin-top:7px; padding-left:10px; vertical-align:top;">
-                <span data-i18n="Select graph type"></span>:
-                <select id="combocustomgraphtype" name="CustomGraphType" style="margin-top:3px; width:200px;" class="combobox ui-corner-all" onChange="ClearCustomGraph()">
+	<table width="100%">
+		<tr>
+			<td width="75%"><div id="customgraph" style="height: 400px; vertical-align:top;"></div></td>
+			<td width="25%">
+			 <table>
+			  <tr><td style="margin-top:7px; padding-left:10px; vertical-align:top;">
+				<span data-i18n="Select graph type"></span>:
+				<select id="combocustomgraphtype" name="CustomGraphType" style="margin-top:3px; width:200px;" class="combobox ui-corner-all" onChange="ClearCustomGraph()">
 					<option value="1" data-i18n="Short term (5 minute values)">Short term (5 minute values)</option>
 					<option value="0" data-i18n="Long term (daily values)">Long term (daily values)</option>
 				</select>
-              </td></tr>
-              <tr><td style="margin-top:7px; padding-left:10px; vertical-align:top;">
-              <span data-i18n="Select device(s) to display"></span>:
-              <div id="devicecontainer" style="margin-top:3px; background-color: #7D7E7D; background-image: -moz-linear-gradient(center top , #7D7E7D, #0E0E0E); border: 1px solid #616261; width:100%; height: 240px; overflow-y: scroll;"></div>
-              <div id="controlbar" style="padding: 5px;" align="center">
-                <table>
-                    <tr>
-                      <td align="left"><label for="graphfrom"><span data-i18n="From"></span>:</label></td>
-                      <td><input type="text" style="width: 80px;" id="graphfrom" class="datepick" name="graphfrom" /></td>
-                    </tr>
-                    <tr>
-                      <td align="left"><label for="graphto"><span data-i18n="TO1">To</span>:</label></td>
-                      <td><input type="text" style="width: 80px;" id="graphto" class="datepick" name="graphto" /></td>
-                   </tr>
-                   <tr>
-                      <td style="padding: 2px;"><input type="checkbox" class="devicecheckbox" id="graphTemp" checked><span data-i18n="Temperature"></span></td>
-                      <td style="padding: 2px;"><input type="checkbox" class="devicecheckbox" id="graphChill"><span data-i18n="Chill factor"></span></td>
-                   </tr>
-                   <tr>
-                      <td style="padding: 2px;"><input type="checkbox" class="devicecheckbox" id="graphHum"><span data-i18n="Humidity"></span></td>
-                      <td style="padding: 2px;"><input type="checkbox" class="devicecheckbox" id="graphBaro"><span data-i18n="Barometer"></span></td>
-                   </tr>
-                   <tr>
-                      <td style="padding: 2px;"><input type="checkbox" class="devicecheckbox" id="graphDew"><span data-i18n="Dew Point"></span></td>
-                      <td style="padding: 2px;">&nbsp;</td>
-                   </tr>
-                </table>
-              </div></td></tr>
-             </table>
-            </td>
-        </tr>
-    </table>
+			  </td></tr>
+			  <tr><td style="margin-top:7px; padding-left:10px; vertical-align:top;">
+			  <span data-i18n="Select device(s) to display"></span>:
+			  <div id="devicecontainer" style="margin-top:3px; background-color: #7D7E7D; background-image: -moz-linear-gradient(center top , #7D7E7D, #0E0E0E); border: 1px solid #616261; width:100%; height: 240px; overflow-y: scroll;"></div>
+			  <div id="controlbar" style="padding: 5px;" align="center">
+				<table>
+					<tr>
+					  <td align="left"><label for="graphfrom"><span data-i18n="From"></span>:</label></td>
+					  <td><input type="text" style="width: 80px;" id="graphfrom" class="datepick" name="graphfrom" /></td>
+					</tr>
+					<tr>
+					  <td align="left"><label for="graphto"><span data-i18n="TO1">To</span>:</label></td>
+					  <td><input type="text" style="width: 80px;" id="graphto" class="datepick" name="graphto" /></td>
+				   </tr>
+				   <tr>
+					  <td style="padding: 2px;"><input type="checkbox" class="devicecheckbox" id="graphTemp" checked><span data-i18n="Temperature"></span></td>
+					  <td style="padding: 2px;"><input type="checkbox" class="devicecheckbox" id="graphChill"><span data-i18n="Chill factor"></span></td>
+				   </tr>
+				   <tr>
+					  <td style="padding: 2px;"><input type="checkbox" class="devicecheckbox" id="graphHum"><span data-i18n="Humidity"></span></td>
+					  <td style="padding: 2px;"><input type="checkbox" class="devicecheckbox" id="graphBaro"><span data-i18n="Barometer"></span></td>
+				   </tr>
+				   <tr>
+					  <td style="padding: 2px;"><input type="checkbox" class="devicecheckbox" id="graphDew"><span data-i18n="Dew Point"></span></td>
+					  <td style="padding: 2px;">&nbsp;</td>
+				   </tr>
+				</table>
+			  </div></td></tr>
+			 </table>
+			</td>
+		</tr>
+	</table>
 </div>
-<div id="templog" style="display:none;">
-<h2 data-i18n="Day">Day</h2>
-<div id="tempdaygraph" style="height: 300px;"></div>
-<br>
-<h2 data-i18n="Month">Month</h2>
-<div id="tempmonthgraph" style="height: 300px;"></div>
-<br>
-<h2  data-i18n="Year">Year</h2>
-<div id="tempyeargraph" style="height: 300px;"></div>
+
+<div id="tempcontent">
 </div>
 
 <script type="text/javascript" charset="utf-8">
@@ -105,148 +95,6 @@ function AddTempDevice()
   alert($.i18n('Please use the devices tab for this.'));
 }
 
-function AddDataToTempChart(data,chart,isday)
-{
-    var datatablete = [];
-    var datatabletm = [];
-    var datatablehu = [];
-    var datatablech = [];
-    var datatablecm = [];
-    var datatabledp = [];
-    var datatableba = [];
-
-    $.each(data.result, function(i,item)
-    {
-      if (isday==1) {
-        if (typeof item.te != 'undefined') {
-          datatablete.push( [GetUTCFromString(item.d), parseFloat(item.te) ] );
-        }
-        if (typeof item.hu != 'undefined') {
-          datatablehu.push( [GetUTCFromString(item.d), parseFloat(item.hu) ] );
-        }
-        if (typeof item.ch != 'undefined') {
-          datatablech.push( [GetUTCFromString(item.d), parseFloat(item.ch) ] );
-        }
-        if (typeof item.dp != 'undefined') {
-          datatabledp.push( [GetUTCFromString(item.d), parseFloat(item.dp) ] );
-        }
-        if (typeof item.ba != 'undefined') {
-          datatableba.push( [GetUTCFromString(item.d), parseFloat(item.ba) ] );
-        }
-      } else {
-        if (typeof item.te != 'undefined') {
-          datatablete.push( [GetDateFromString(item.d), parseFloat(item.te) ] );
-          datatabletm.push( [GetDateFromString(item.d), parseFloat(item.tm) ] );
-        }
-        if (typeof item.hu != 'undefined') {
-          datatablehu.push( [GetDateFromString(item.d), parseFloat(item.hu) ] );
-        }
-        if (typeof item.ch != 'undefined') {
-          datatablech.push( [GetDateFromString(item.d), parseFloat(item.ch) ] );
-          datatablecm.push( [GetDateFromString(item.d), parseFloat(item.cm) ] );
-        }
-        if (typeof item.dp != 'undefined') {
-          datatabledp.push( [GetDateFromString(item.d), parseFloat(item.dp) ] );
-        }
-        if (typeof item.ba != 'undefined') {
-          datatableba.push( [GetDateFromString(item.d), parseFloat(item.ba) ] );
-        }
-      }
-    });
-    var series;
-    if (datatablehu.length!=0)
-    {
-      chart.addSeries(
-        {
-          id: 'humidity',
-          name: $.i18n('Humidity'),
-          color: 'limegreen',
-          yAxis: 1
-        }
-      );
-      series = chart.get('humidity');
-      series.setData(datatablehu);
-    }
-
-    if (datatablech.length!=0)
-    {
-      chart.addSeries(
-        {
-          id: 'chill',
-          name: $.i18n('Chill'),
-          color: 'red',
-          yAxis: 0
-        }
-      );
-      series = chart.get('chill');
-      series.setData(datatablech);
-      
-      if (isday==0) {
-        chart.addSeries(
-          {
-            id: 'chillmin',
-            name: $.i18n('Chill') + '_min',
-            color: 'rgba(255,127,39,0.8)',
-            yAxis: 0
-          }
-        );
-        series = chart.get('chillmin');
-        series.setData(datatablecm);
-      }
-    }
-    if (datatablete.length!=0)
-    {
-      //Add Temperature series
-      chart.addSeries(
-        {
-          id: 'temperature',
-          name: $.i18n('Temperature'),
-          color: 'yellow',
-          yAxis: 0
-        }
-      );
-      series = chart.get('temperature');
-      series.setData(datatablete);
-      if (isday==0) {
-        chart.addSeries(
-          {
-            id: 'temperaturemin',
-            name: $.i18n('Temperature') + '_min',
-            color: 'rgba(3,190,252,0.8)',
-            yAxis: 0
-          }
-        );
-        series = chart.get('temperaturemin');
-        series.setData(datatabletm);
-      }
-    }
-    if (datatabledp.length!=0)
-    {
-      chart.addSeries(
-        {
-          id: 'dewpoint',
-          name: $.i18n('Dew Point'),
-          color: 'blue',
-          yAxis: 0
-        }
-      );
-      series = chart.get('dewpoint');
-      series.setData(datatabledp);
-    }
-    if (datatableba.length!=0)
-    {
-      chart.addSeries(
-        {
-          id: 'baro',
-          name: $.i18n('Barometer'),
-          color: 'pink',
-          yAxis: 2
-        }
-      );
-      series = chart.get('baro');
-      series.setData(datatableba);
-    }
-}
 
     
 function AddMultipleDataToTempChart(data,chart,isday,deviceid,devicename)
@@ -608,358 +456,6 @@ function ShowCustomTempLog()
   return false;
 }
 
-function ShowTempLog(id,name)
-{
-  clearInterval($.myglobals.refreshTimer);
-  $('#modal').show();
-  $.devIdx=id;
-  $.devName=name;
-  var htmlcontent = '';
-  htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
-  htmlcontent+=$('#templog').html();
-  $('#tempcontent').html(GetBackbuttonHTMLTable('ShowTemps')+htmlcontent);
-  $('#tempcontent').i18n();
-
-  $.DayChart = new Highcharts.Chart({
-      chart: {
-          renderTo: 'tempdaygraph',
-          type: 'line',
-          zoomType: 'xy',
-          alignTicks: false,
-          events: {
-              load: function() {
-                this.showLoading();
-                $.getJSON("json.htm?type=graph&sensor=temp&idx="+id+"&range=day",
-                function(data) {
-                      AddDataToTempChart(data,$.DayChart,1);
-                      $.DayChart.hideLoading();
-                });
-                this.hideLoading();
-              }
-          }
-      },
-      loading: {
-          hideDuration: 1000,
-          showDuration: 1000
-      },
-      credits: {
-        enabled: true,
-        href: "http://www.domoticz.com",
-        text: "Domoticz.com"
-      },
-      title: {
-          text: $.i18n('Temperature') + ' ' + Get5MinuteHistoryDaysGraphTitle()
-      },
-      xAxis: {
-          type: 'datetime'
-      },
-      yAxis: [{ //temp label
-          labels:  {
-                   formatter: function() {
-                        return this.value +'\u00B0 C';
-                   },
-                   style: {
-                      color: '#CCCC00'
-                   }
-          },
-          title: {
-              text: 'degrees Celsius',
-               style: {
-                  color: '#CCCC00'
-               }
-          }
-      }, { //humidity label
-          labels:  {
-                   formatter: function() {
-                        return this.value +'%';
-                   },
-                   style: {
-                      color: 'limegreen'
-                   }
-          },
-          title: {
-              text: $.i18n('Humidity') +' %',
-               style: {
-                  color: '#00CC00'
-               }
-          },
-          opposite: true
-      }],
-      tooltip: {
-          formatter: function() {
-			var unit="";
-			if (this.series.name==$.i18n('Humidity')) {
-				unit="%";
-			}
-			else if (this.series.name.indexOf($.i18n('Temperature'))==0) {
-				unit="\u00B0 C";
-			}
-			else if (this.series.name.indexOf($.i18n('Chill'))==0) {
-				unit="\u00B0 C";
-			}
-            return $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
-          }
-      },
-      legend: {
-          enabled: true
-      },
-      plotOptions: {
-               line: {
-                    lineWidth: 3,
-                    states: {
-                        hover: {
-                            lineWidth: 3
-                        }
-                    },
-                    marker: {
-                        enabled: false,
-                        states: {
-                            hover: {
-                                enabled: true,
-                                symbol: 'circle',
-                                radius: 5,
-                                lineWidth: 1
-                            }
-                        }
-                    }
-                }
-      }
-  });
-
-  $.MonthChart = new Highcharts.Chart({
-      chart: {
-          renderTo: 'tempmonthgraph',
-          type: 'spline',
-          zoomType: 'xy',
-          alignTicks: false,
-          events: {
-              load: function() {
-                this.showLoading();
-                $.getJSON("json.htm?type=graph&sensor=temp&idx="+id+"&range=month",
-                function(data) {
-                      AddDataToTempChart(data,$.MonthChart,0);
-                      $.MonthChart.hideLoading();
-                });
-                this.hideLoading();
-              }
-          }
-      },
-      loading: {
-          hideDuration: 1000,
-          showDuration: 1000
-      },
-      credits: {
-        enabled: true,
-        href: "http://www.domoticz.com",
-        text: "Domoticz.com"
-      },
-      title: {
-          text: $.i18n('Temperature') + ' ' + $.i18n('Last Month')
-      },
-      xAxis: {
-          type: 'datetime'
-      },
-      yAxis: [{ //temp label
-          labels:  {
-                   formatter: function() {
-                        return this.value +'\u00B0 C';
-                   },
-                   style: {
-                      color: '#CCCC00'
-                   }
-          },
-          title: {
-              text: 'degrees Celsius',
-               style: {
-                  color: '#CCCC00'
-               }
-          }
-      }, { //humidity label
-          labels:  {
-                   formatter: function() {
-                        return this.value +'%';
-                   },
-                   style: {
-                      color: 'limegreen'
-                   }
-          },
-          title: {
-              text: $.i18n('Humidity')+' %',
-               style: {
-                  color: '#00CC00'
-               }
-          },
-          opposite: true
-      }],
-      tooltip: {
-          formatter: function() {
-			var unit="";
-			if (this.series.name==$.i18n('Humidity')) {
-				unit="%";
-			}
-			else if (this.series.name.indexOf($.i18n('Temperature'))==0) {
-				unit="\u00B0 C";
-			}
-			else if (this.series.name.indexOf($.i18n('Chill'))==0) {
-				unit="\u00B0 C";
-			}
-            return $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
-          }
-      },
-      legend: {
-          enabled: true
-      },
-      plotOptions: {
-				series: {
-					point: {
-						events: {
-							click: function(event) {
-								chartPointClick(event,ShowTempLog);
-							}
-						}
-					}
-				},
-				spline: {
-                    lineWidth: 3,
-                    states: {
-                        hover: {
-                            lineWidth: 3
-                        }
-                    },
-                    marker: {
-                        enabled: false,
-                        states: {
-                            hover: {
-                                enabled: true,
-                                symbol: 'circle',
-                                radius: 5,
-                                lineWidth: 1
-                            }
-                        }
-                    }
-                }
-      }
-  });
-
-  $.YearChart = new Highcharts.Chart({
-      chart: {
-          renderTo: 'tempyeargraph',
-          type: 'spline',
-          zoomType: 'xy',
-          alignTicks: false,
-          events: {
-              load: function() {
-                this.showLoading();
-                $.getJSON("json.htm?type=graph&sensor=temp&idx="+id+"&range=year",
-                function(data) {
-                      AddDataToTempChart(data,$.YearChart,0);
-                      $.YearChart.hideLoading();
-                });
-                this.hideLoading();
-              }
-          }
-      },
-      loading: {
-          hideDuration: 1000,
-          showDuration: 1000
-      },
-      credits: {
-        enabled: true,
-        href: "http://www.domoticz.com",
-        text: "Domoticz.com"
-      },
-      title: {
-          text: $.i18n('Temperature') + ' ' + $.i18n('Last Year')
-      },
-      xAxis: {
-          type: 'datetime'
-      },
-      yAxis: [{ //temp label
-          labels:  {
-                   formatter: function() {
-                        return this.value +'\u00B0 C';
-                   },
-                   style: {
-                      color: '#CCCC00'
-                   }
-          },
-          title: {
-              text: 'degrees Celsius',
-               style: {
-                  color: '#CCCC00'
-               }
-          }
-      }, { //humidity label
-          labels:  {
-                   formatter: function() {
-                        return this.value +'%';
-                   },
-                   style: {
-                      color: 'limegreen'
-                   }
-          },
-          title: {
-              text: $.i18n('Humidity')+' %',
-               style: {
-                  color: '#00CC00'
-               }
-          },
-          opposite: true
-      }],
-      tooltip: {
-          formatter: function() {
-			var unit="";
-			if (this.series.name==$.i18n('Humidity')) {
-				unit="%";
-			}
-			else if (this.series.name.indexOf($.i18n('Temperature'))==0) {
-				unit="\u00B0 C";
-			}
-			else if (this.series.name.indexOf($.i18n('Chill'))==0) {
-				unit="\u00B0 C";
-			}
-            return $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit;
-          }
-      },
-      legend: {
-          enabled: true
-      },
-      plotOptions: {
-				series: {
-					point: {
-						events: {
-							click: function(event) {
-								chartPointClick(event,ShowTempLog);
-							}
-						}
-					}
-				},
-				spline: {
-                    lineWidth: 3,
-                    states: {
-                        hover: {
-                            lineWidth: 3
-                        }
-                    },
-                    marker: {
-                        enabled: false,
-                        states: {
-                            hover: {
-                                enabled: true,
-                                symbol: 'circle',
-                                radius: 5,
-                                lineWidth: 1
-                            }
-                        }
-                    }
-                }
-      }
-  });
-
-  $('#modal').hide();
-  return false;
-}
-
 function RefreshTemps()
 {
   clearInterval($.myglobals.refreshTimer);
@@ -1215,7 +711,7 @@ function ShowTemps()
                   '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
           xhtm+=
-                '<a class="btnsmall" onclick="ShowTempLog(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
+                '<a class="btnsmall" onclick="ShowTempLog(\'#tempcontent\',\'ShowTemps\',' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
 		if (window.my_config.userrights==2) {
           xhtm+=
                 '<a class="btnsmall" onclick="EditTempDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjValue + ');" data-i18n="Edit">Edit</a> ';

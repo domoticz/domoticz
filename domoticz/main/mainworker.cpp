@@ -3450,9 +3450,9 @@ unsigned long long MainWorker::decode_Chime(const int HwdID, const tRBUF *pRespo
 
 	unsigned char devType=pTypeChime;
 	unsigned char subType=pResponse->CHIME.subtype;
-	sprintf(szTmp,"%02X%02", pResponse->CHIME.id1, pResponse->CHIME.id2);
+	sprintf(szTmp,"%02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
 	std::string ID = szTmp;
-	unsigned char Unit=0;
+	unsigned char Unit=8;
 	unsigned char cmnd=pResponse->CHIME.sound;
 	unsigned char SignalLevel=pResponse->CHIME.rssi;
 
