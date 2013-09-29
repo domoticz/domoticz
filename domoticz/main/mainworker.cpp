@@ -7136,7 +7136,7 @@ bool MainWorker::SwitchScene(const std::string &idx, const std::string &switchcm
 	return SwitchScene(ID,switchcmd);
 }
 
-bool MainWorker::SwitchScene(const unsigned long long idx, std::string switchcmd)
+bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &switchcmd)
 {
 	//Get Scene details
 	std::vector<std::vector<std::string> > result;

@@ -45,7 +45,7 @@ public:
 	bool SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, unsigned char level, const bool IsTesting);
 
 	bool SwitchScene(const std::string &idx, const std::string &switchcmd);
-	bool SwitchScene(const unsigned long long idx, std::string switchcmd);
+	bool SwitchScene(const unsigned long long idx, const std::string &switchcmd);
 	void CheckSceneCode(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int nValue, const char* sValue);
 
 	bool SetSetPoint(const std::string &idx, const float TempValue);
