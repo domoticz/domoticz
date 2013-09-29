@@ -5914,8 +5914,11 @@ std::string CWebServer::GetJSonPage()
 					bool bIsBetaChannel=(nValue!=0);
 					std::string szURL="http://domoticz.sourceforge.net/svnversion.h";
 					if (bIsBetaChannel)
+					{
 						szURL="http://domoticz.sourceforge.net/beta/svnversion.h";
+					}
 					std::string revfile;
+
 					if (!HTTPClient::GET(szURL,revfile))
 						goto exitjson;
 					std::vector<std::string> strarray;
@@ -5957,13 +5960,18 @@ std::string CWebServer::GetJSonPage()
 			m_pMain->m_sql.GetPreferencesVar("ReleaseChannel", nValue);
 			bool bIsBetaChannel=(nValue!=0);
 			std::string szURL;
+			std::string revfile;
 
 			if (!bIsBetaChannel)
+			{
 				szURL="http://domoticz.sourceforge.net/svnversion.h";
+				HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=DownloadNewVersion&amp;idgoal=2",revfile);
+			}
 			else
+			{
 				szURL="http://domoticz.sourceforge.net/beta/svnversion.h";
-
-			std::string revfile;
+				HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=DownloadNewVersion&amp;idgoal=1",revfile);
+			}
 			if (!HTTPClient::GET(szURL,revfile))
 				goto exitjson;
 			std::vector<std::string> strarray;
