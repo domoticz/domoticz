@@ -15,7 +15,7 @@
 #include "../webserver/Base64.h"
 #include "mainstructs.h"
 
-#define DB_VERSION 21
+#define DB_VERSION 22
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -263,7 +263,14 @@ const char *sqlCreatePlanMappings =
 "[PlanID] BIGINT NOT NULL, "
 "[HPos] FLOAT NOT NULL, "
 "[VPos] FLOAT NOT NULL, "
+"[Order] INTEGER BIGINT(10) default 0, "
 "[Name] VARCHAR(200) NOT NULL);";
+
+const char *sqlCreateDevicesToPlanStatusTrigger =
+	"CREATE TRIGGER IF NOT EXISTS deviceplantatusupdate AFTER INSERT ON DeviceToPlansMap\n"
+	"BEGIN\n"
+	"	UPDATE DeviceToPlansMap SET [Order] = (SELECT MAX([Order]) FROM DeviceToPlansMap)+1 WHERE DeviceToPlansMap.ID = NEW.ID;\n"
+	"END;\n";
 
 const char *sqlCreatePlans =
 "CREATE TABLE IF NOT EXISTS [Plans] ("
@@ -606,6 +613,11 @@ bool CSQLHelper::OpenDatabase()
 				"FROM tmp_Cameras");
 			//Drop the tmp_Cameras table
 			query("DROP TABLE tmp_Cameras");
+		}
+		if (dbversion<22)
+		{
+			query("ALTER TABLE DeviceToPlansMap ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
+			query(sqlCreateDevicesToPlanStatusTrigger);
 		}
     }
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
