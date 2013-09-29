@@ -7227,6 +7227,8 @@ bool MainWorker::SwitchScene(const unsigned long long idx, std::string switchcmd
 			unsigned char dSubType=atoi(sd2[4].c_str());
 			_eSwitchType switchtype=(_eSwitchType)atoi(sd2[5].c_str());
 
+			std::string intswitchcmd=switchcmd;
+
 			std::string lstatus="";
 			int llevel=0;
 			bool bHaveDimmer=false;
@@ -7236,18 +7238,19 @@ bool MainWorker::SwitchScene(const unsigned long long idx, std::string switchcmd
 			{
 				GetLightStatus(dType,dSubType,cmd,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
 				if (cmd==0)
-					switchcmd="Off";
+					intswitchcmd="Off";
 				else
-					switchcmd="On";
+					intswitchcmd="On";
 			}
 			else
 				GetLightStatus(dType,dSubType,rnValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
 			int ilevel=maxDimLevel-1;
+
 			if ((switchtype == STYPE_Dimmer)&&(maxDimLevel!=0))
 			{
-				if (switchcmd == "On")
+				if (intswitchcmd == "On")
 				{
-					switchcmd="Set Level";
+					intswitchcmd="Set Level";
 					float fLevel=(maxDimLevel/100.0f)*level;
 					if (fLevel>100)
 						fLevel=100;
@@ -7257,7 +7260,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, std::string switchcmd
 
 			if (switchtype != STYPE_PushOn)
 			{
-				SwitchLightInt(sd2,switchcmd,ilevel,false);
+				SwitchLightInt(sd2,intswitchcmd,ilevel,false);
 			}
 			else
 			{

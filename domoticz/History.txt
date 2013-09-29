@@ -45,6 +45,7 @@ Version 1.0.xxx (September xxth 2013)
 - Implemented: Security Panel status now in device list
 - Implemented: Chime Byron SX
 - Implemented: Alecto WS1200 (Temp+Rain sensor)
+- Fixed: Light/Dimmer status when switching groups
 
 Version 1.0.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)
