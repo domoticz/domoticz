@@ -331,6 +331,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeLux, "Lux" , "lux" },
 		{ pTypeGeneral, "General" , "General" },
 		{ pTypeThermostat, "Thermostat" , "thermostat" },
+		{ pTypeTEMP_RAIN, "Temp + Rain" , "Temp + Rain" },
 		
 		{  0,NULL,NULL }
 	};
@@ -503,6 +504,9 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		
 		{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
+
+		{ pTypeChime, sTypeByronSX, "ByronSX" },
+		{ pTypeTEMP_RAIN, sTypeTR1, "Alecto WS1200" },
 
 		{  0,0,NULL }
 	};
@@ -862,6 +866,9 @@ void GetLightStatus(
 			lstatus="On";
 			break;
 		}
+		break;
+	case pTypeChime:
+		lstatus="On";
 		break;
 	}
 }

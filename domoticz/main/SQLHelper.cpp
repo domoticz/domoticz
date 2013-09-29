@@ -1259,6 +1259,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 	case pTypeLighting6:
 	case pTypeSecurity1:
 	case pTypeBlinds:
+	case pTypeChime:
 		//Add Lighting log
 		m_LastSwitchID=ID;
 		m_LastSwitchRowID=ulID;

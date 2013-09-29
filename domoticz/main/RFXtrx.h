@@ -21,7 +21,15 @@
 // portions of this Software.
 //-----------------------------------------------------------------------------
 
-/* 
+/*
+SDK version 6.07
+	Lighting5 colour modes added for LWRF
+	TEMP_RAIN structure and pTypeTEMP_RAIN added for WS1200 - Temperature and rain sensor
+	CHIME structure and pTypeChime added for Byron SX Chime
+
+SDK version 6.06a
+    RFU4 changed to RSLenabled in IRESPONSE
+
 SDK version 6.06
 	Lighting1 Energenie added
 	Lighting5 MDREMOTE LED dimmer added
@@ -301,6 +309,9 @@ SDK version 4.9
 #define light5_sStop 0xE
 #define light5_sOpen 0xF
 #define light5_sSetLevel 0x10
+#define light5_sColourPalette 0x11
+#define light5_sColourTone 0x12
+#define light5_sColourCycle 0x13
 #define light5_sPower 0x0
 #define light5_sLight 0x1
 #define light5_sBright 0x2
@@ -319,6 +330,17 @@ SDK version 4.9
 #define light6_sOff 0x1
 #define light6_sGroupOn 0x2
 #define light6_sGroupOff 0x3
+
+#define pTypeChime 0x16
+#define sTypeByronSX 0x0
+#define chime_sound0 0x1
+#define chime_sound1 0x3
+#define chime_sound2 0x5
+#define chime_sound3 0x9
+#define chime_sound4 0xD
+#define chime_sound5 0xE
+#define chime_sound6 0x6
+#define chime_sound7 0x2
 
 //types for Curtain
 #define pTypeCurtain 0x18
@@ -445,6 +467,10 @@ SDK version 4.9
 #define thermostat3_sRunDown 0x5
 #define thermostat3_On2nd 0x5
 #define thermostat3_sStop 0x6
+
+//types for temperature+rain
+#define pTypeTEMP_RAIN 0x4F
+#define sTypeTR1 0x1  //WS1200
 
 //types for temperature
 #define pTypeTEMP 0x50
@@ -605,7 +631,7 @@ typedef union tRBUF {
 		BYTE	RUBICSONenabled : 1;
 		BYTE	FINEOFFSETenabled : 1;
 		BYTE	LIGHTING4enabled : 1;
-		BYTE	RFU4 : 1;
+		BYTE	RSLenabled : 1;
 		BYTE	RFU5 : 1;
 		BYTE	RFU6 : 1;
 		BYTE	UNDECODEDenabled : 1;
@@ -772,6 +798,18 @@ typedef union tRBUF {
 		BYTE	packettype;
 		BYTE	subtype;
 		BYTE	seqnbr;
+		BYTE	id1;
+		BYTE	id2;
+		BYTE	sound;
+		BYTE	filler  : 4;
+		BYTE	rssi : 4;
+	} CHIME;
+
+	struct {
+		BYTE	packetlength;
+		BYTE	packettype;
+		BYTE	subtype;
+		BYTE	seqnbr;
 		BYTE	housecode;
 		BYTE	unitcode;
 		BYTE	cmnd;
@@ -867,6 +905,22 @@ typedef union tRBUF {
 		BYTE	filler : 4;
 		BYTE	rssi : 4;
 	} THERMOSTAT3;
+
+	struct {
+		BYTE	packetlength;
+		BYTE	packettype;
+		BYTE	subtype;
+		BYTE	seqnbr;
+		BYTE	id1;
+		BYTE	id2;
+		BYTE	temperatureh : 7;
+		BYTE	tempsign : 1;
+		BYTE	temperaturel;
+		BYTE	raintotal1;
+		BYTE	raintotal2;
+		BYTE	battery_level : 4;
+		BYTE	rssi : 4;
+	} TEMP_RAIN;
 
 	struct {
 		BYTE	packetlength;

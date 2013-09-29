@@ -145,6 +145,7 @@ private:
 	unsigned long long decode_Temp(const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_Hum(const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_TempHum(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_TempRain(const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_UV(const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_Lighting1(const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_Lighting2(const int HwdID, const tRBUF *pResponse);
@@ -182,4 +183,5 @@ private:
 	unsigned long long decode_Lux(const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_General(const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_Thermostat(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Chime(const int HwdID, const tRBUF *pResponse);
 };

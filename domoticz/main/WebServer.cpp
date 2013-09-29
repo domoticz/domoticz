@@ -731,7 +731,7 @@ char * CWebServer::SetRFXCOMMode()
 	Response.IRESPONSE.RUBICSONenabled=(m_pWebEm->FindValue("Rubicson")=="on")?1:0;
 	Response.IRESPONSE.FINEOFFSETenabled=(m_pWebEm->FindValue("FineOffsetViking")=="on")?1:0;
 	Response.IRESPONSE.LIGHTING4enabled=(m_pWebEm->FindValue("Lighting4")=="on")?1:0;
-	Response.IRESPONSE.RFU4=(m_pWebEm->FindValue("rfu4")=="on")?1:0;
+	Response.IRESPONSE.RSLenabled=(m_pWebEm->FindValue("RSL")=="on")?1:0;
 	Response.IRESPONSE.RFU5=(m_pWebEm->FindValue("rfu5")=="on")?1:0;
 	Response.IRESPONSE.RFU6=(m_pWebEm->FindValue("rfu6")=="on")?1:0;
 
@@ -993,6 +993,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						(dType!=pTypeLighting6)&&
 						(dType!=pTypeSecurity1)&&
 						(dType!=pTypeBlinds)&&
+						(dType!=pTypeChime)&&
 						(!((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXStatus)))
 						)
 						continue;
@@ -1131,7 +1132,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				(dType==pTypeLighting4)||
 				(dType==pTypeLighting5)||
 				(dType==pTypeLighting6)||
-				(dType==pTypeBlinds)
+				(dType==pTypeBlinds)||
+				(dType==pTypeChime)
 				)
 			{
 				//add light details
@@ -2726,7 +2728,8 @@ std::string CWebServer::GetJSonPage()
 			(dType!=pTypeLighting6)&&
 			(dType!=pTypeSecurity1)&&
 			(dType!=pTypeBlinds)&&
-			(dType!=pTypeRego6XXValue)
+			(dType!=pTypeRego6XXValue)&&
+			(dType!=pTypeChime)
 			)
 			goto exitjson; //no light device! we should not be here!
 
@@ -6310,6 +6313,7 @@ std::string CWebServer::GetJSonPage()
 					case pTypeLighting6:
 					case pTypeSecurity1:
 					case pTypeBlinds:
+					case pTypeChime:
 						bdoAdd=true;
 						if (!used)
 						{
@@ -6372,6 +6376,7 @@ std::string CWebServer::GetJSonPage()
 						case pTypeLighting6:
 						case pTypeSecurity1:
 						case pTypeBlinds:
+						case pTypeChime:
 							{
 								root["result"][ii]["type"]=0;
 								root["result"][ii]["idx"]=ID;
@@ -6823,7 +6828,8 @@ std::string CWebServer::GetJSonPage()
 				(dType==pTypeLighting5)||
 				(dType==pTypeLighting6)||
 				(dType==pTypeSecurity1)||
-				(dType==pTypeBlinds)
+				(dType==pTypeBlinds)||
+				(dType==pTypeChime)
 				)
 			{
 				if (switchtype!=STYPE_PushOff)
@@ -7903,7 +7909,8 @@ std::string CWebServer::GetJSonPage()
 				(dType!=pTypeLighting5)&&
 				(dType!=pTypeLighting6)&&
 				(dType!=pTypeSecurity1)&&
-				(dType!=pTypeBlinds)
+				(dType!=pTypeBlinds)&&
+				(dType!=pTypeChime)
 				)
 				goto exitjson; //no light device! we should not be here!
 

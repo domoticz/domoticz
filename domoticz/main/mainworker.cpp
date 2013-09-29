@@ -835,6 +835,12 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 		ID=szTmp;
 		Unit=0;
 	}
+	else if (devType==pTypeChime)
+	{
+		sprintf(szTmp,"%02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
+		ID = szTmp;
+		Unit=pResponse->BLINDS1.unitcode;
+	}
 	else
 		return -1;
 
@@ -915,6 +921,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		case pTypeLighting6:
 		case pTypeBlinds:
 		case pTypeSecurity1:
+		case pTypeChime:
 			//we received a control message from a domoticz client,
 			//and should actually perform this command ourself switch
 			DeviceRowIdx=PerformRealActionFromDomoticzClient(pRXCommand);
@@ -1012,6 +1019,10 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		case pTypeTEMP_HUM:
 			WriteMessage("Temperature + Humidity",false);
 			DeviceRowIdx=decode_TempHum(HwdID, (tRBUF *)pRXCommand);
+			break;
+		case pTypeTEMP_RAIN:
+			WriteMessage("Temperature + Rain",false);
+			DeviceRowIdx=decode_TempRain(HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeBARO:
 			WriteMessage("Barometric",false);
@@ -1112,6 +1123,10 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		case pTypeGeneral:
 			WriteMessage("General",false);
 			DeviceRowIdx=decode_General(HwdID, (tRBUF *)pRXCommand);
+			break;
+		case pTypeChime:
+			WriteMessage("Chime",false);
+			DeviceRowIdx=decode_Chime(HwdID, (tRBUF *)pRXCommand);
 			break;
 		default:
 			_log.Log(LOG_ERROR,"UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
@@ -1353,10 +1368,10 @@ unsigned long long MainWorker::decode_InterfaceMessage(const int HwdID, const tR
 					else
 						WriteMessage("Lighting4         disabled");
 
-					if (pResponse->IRESPONSE.RFU4)
-						WriteMessage("RFU protocol 4    enabled");
+					if (pResponse->IRESPONSE.RSLenabled)
+						WriteMessage("Conrad RSL        enabled");
 					else
-						WriteMessage("RFU protocol 4    disabled");
+						WriteMessage("Conrad RSL        disabled");
 
 					if (pResponse->IRESPONSE.RFU5)
 						WriteMessage("RFU protocol 5    enabled");
@@ -2489,6 +2504,93 @@ unsigned long long MainWorker::decode_TempBaro(const int HwdID, const tRBUF *pRe
 	return DevRowIdx;
 }
 
+unsigned long long MainWorker::decode_TempRain(const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[100];
+	std::string devname;
+
+
+	//We are (also) going to split this device into two separate sensors (temp + rain)
+
+	unsigned char devType=pTypeTEMP_RAIN;
+	unsigned char subType=pResponse->TEMP_RAIN.subtype;
+
+	sprintf(szTmp,"%d",(pResponse->TEMP_RAIN.id1 * 256) + pResponse->TEMP_RAIN.id2);
+	std::string ID=szTmp;
+	int Unit=pResponse->TEMP_RAIN.id2;
+	int cmnd=0;
+
+	unsigned char SignalLevel=pResponse->TEMP_RAIN.rssi;
+	unsigned char BatteryLevel = 0;
+	if ((pResponse->TEMP_RAIN.battery_level &0x0F) == 0)
+		BatteryLevel=0;
+	else
+		BatteryLevel=100;
+
+	float temp;
+	if (!pResponse->TEMP_RAIN.tempsign)
+	{
+		temp=float((pResponse->TEMP_RAIN.temperatureh * 256) + pResponse->TEMP_RAIN.temperaturel) / 10.0f;
+	}
+	else
+	{
+		temp=-(float(((pResponse->TEMP_RAIN.temperatureh & 0x7F) * 256) + pResponse->TEMP_RAIN.temperaturel) / 10.0f);
+	}
+
+	float AddjValue=0.0f;
+	float AddjMulti=1.0f;
+	m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,pTypeTEMP,sTypeTEMP3,AddjValue,AddjMulti);
+	temp+=AddjValue;
+
+	if ((temp<-60)||(temp>260))
+	{
+		WriteMessage(" Invalid Temperature");
+		return -1;
+	}
+	float TotalRain=float((pResponse->TEMP_RAIN.raintotal1 * 256) + pResponse->TEMP_RAIN.raintotal2) / 10.0f;
+
+	sprintf(szTmp,"%.1f;%.1f",temp,TotalRain);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
+	PrintDeviceName(devname);
+
+	sprintf(szTmp,"%.1f",temp);
+	unsigned long long DevRowIdxTemp=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,pTypeTEMP,sTypeTEMP3,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
+	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, pTypeTEMP, sTypeTEMP3, temp, 0, true, false);
+
+	sprintf(szTmp,"%d;%.1f",0,TotalRain);
+	unsigned long long DevRowIdxRain=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,pTypeRAIN,sTypeRAIN3,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
+	m_sql.CheckAndHandleRainNotification(HwdID, ID, Unit, pTypeRAIN, sTypeRAIN3, NTYPE_RAIN, TotalRain);
+
+	if (m_verboselevel == EVBL_ALL)
+	{
+		switch (pResponse->TEMP_RAIN.subtype)
+		{
+		case sTypeTR1:
+			WriteMessage("Subtype       = Alecto WS1200");
+			break;
+		}
+		sprintf(szTmp,"Sequence nbr  = %d", pResponse->TEMP_RAIN.seqnbr);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"ID            = %d", (pResponse->TEMP_RAIN.id1 * 256) + pResponse->TEMP_RAIN.id2);
+		WriteMessage(szTmp);
+
+		sprintf(szTmp,"Temperature   = %.1f C", temp);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"Total Rain    = %.1f mm", TotalRain);
+		WriteMessage(szTmp);
+
+		sprintf(szTmp,"Signal level  = %d", pResponse->TEMP_RAIN.rssi);
+		WriteMessage(szTmp);
+
+		if ((pResponse->TEMP_RAIN.battery_level & 0x0F) == 0)
+			WriteMessage("Battery       = Low");
+		else
+			WriteMessage("Battery       = OK");
+	}
+
+	return DevRowIdx;
+}
+
 unsigned long long MainWorker::decode_UV(const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
@@ -3158,6 +3260,24 @@ unsigned long long MainWorker::decode_Lighting5(const int HwdID, const tRBUF *pR
 				sprintf(szTmp,"Set dim level to: %.2f %%" , flevel);
 				WriteMessage(szTmp);
 				break;
+			case light5_sColourPalette:
+				if (pResponse->LIGHTING5.level==0)
+					WriteMessage("Color Palette (Even command)");
+				else
+					WriteMessage("Color Palette (Odd command)");
+				break;
+			case light5_sColourTone:
+				if (pResponse->LIGHTING5.level==0)
+					WriteMessage("Color Tone (Even command)");
+				else
+					WriteMessage("Color Tone (Odd command)");
+				break;
+			case light5_sColourCycle:
+				if (pResponse->LIGHTING5.level==0)
+					WriteMessage("Color Cycle (Even command)");
+				else
+					WriteMessage("Color Cycle (Odd command)");
+				break;
 			default:
 				WriteMessage("UNKNOWN");
 				break;
@@ -3322,6 +3442,69 @@ unsigned long long MainWorker::decode_Lighting6(const int HwdID, const tRBUF *pR
 	}
 	return DevRowIdx;
 }
+
+unsigned long long MainWorker::decode_Chime(const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[100];
+	std::string devname;
+
+	unsigned char devType=pTypeChime;
+	unsigned char subType=pResponse->CHIME.subtype;
+	sprintf(szTmp,"%02X%02", pResponse->CHIME.id1, pResponse->CHIME.id2);
+	std::string ID = szTmp;
+	unsigned char Unit=0;
+	unsigned char cmnd=pResponse->CHIME.sound;
+	unsigned char SignalLevel=pResponse->CHIME.rssi;
+
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,devname);
+	PrintDeviceName(devname);
+	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
+
+	if (m_verboselevel == EVBL_ALL)
+	{
+		switch (pResponse->CHIME.subtype)
+		{
+		case sTypeByronSX:
+			WriteMessage("subtype       = Byron SX");
+			sprintf(szTmp,"Sequence nbr  = %d",  pResponse->CHIME.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"ID            = %02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
+			WriteMessage(szTmp);
+			WriteMessage("Sound          = ", false);
+			switch (pResponse->CHIME.sound)
+			{
+			case chime_sound0:
+			case chime_sound4:
+				WriteMessage("Tubular 3 notes");
+				break;
+			case chime_sound1:
+			case chime_sound5:
+				WriteMessage("Big Ben");
+				break;
+			case chime_sound2:
+			case chime_sound6:
+				WriteMessage("Tubular 3 notes");
+				break;
+			case chime_sound3:
+			case chime_sound7:
+				WriteMessage("Solo");
+				break;
+			default:
+				WriteMessage("UNKNOWN?");
+				break;
+			}
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->CHIME.packettype, pResponse->CHIME.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+		sprintf(szTmp,"Signal level  = %d", pResponse->CHIME.rssi);
+		WriteMessage(szTmp);
+	}
+	return DevRowIdx;
+}
+
 
 unsigned long long MainWorker::decode_UNDECODED(const int HwdID, const tRBUF *pResponse)
 {
@@ -6842,6 +7025,27 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.BLINDS1.filler=0;
 			lcmd.BLINDS1.rssi=7;
 			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.BLINDS1));
+			if (!IsTesting) {
+				//send to internal for now (later we use the ACK)
+				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+			}
+			return true;
+		}
+		break;
+	case pTypeChime:
+		{
+			tRBUF lcmd;
+			lcmd.CHIME.packetlength=sizeof(lcmd.CHIME)-1;
+			lcmd.CHIME.packettype=dType;
+			lcmd.CHIME.subtype=dSubType;
+			lcmd.CHIME.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
+			lcmd.CHIME.id1=ID1;
+			lcmd.CHIME.id2=ID2;
+			level=15;
+			lcmd.CHIME.sound=chime_sound0;
+			lcmd.CHIME.filler=0;
+			lcmd.CHIME.rssi=7;
+			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.CHIME));
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
