@@ -1996,12 +1996,12 @@ function ShowTempLog(contentdiv,backfunction,id,name)
   $.devName=name;
   var htmlcontent = '';
   htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
-  htmlcontent+=$('#templog').html();
+  htmlcontent+=$('#daymonthyearlog').html();
 
   $($.content).html(GetBackbuttonHTMLTable(backfunction)+htmlcontent);
   $($.content).i18n();
 
-  $.DayChart = $($.content + ' #tempdaygraph');
+  $.DayChart = $($.content + ' #daygraph');
   $.DayChart.highcharts({
       chart: {
           type: 'line',
@@ -2107,7 +2107,7 @@ function ShowTempLog(contentdiv,backfunction,id,name)
       }
   });
 
-  $.MonthChart = $($.content + ' #tempmonthgraph');
+  $.MonthChart = $($.content + ' #monthgraph');
   $.MonthChart.highcharts({
       chart: {
           type: 'spline',
@@ -2222,7 +2222,7 @@ function ShowTempLog(contentdiv,backfunction,id,name)
       }
   });
 
-  $.YearChart = $($.content + ' #tempyeargraph');
+  $.YearChart = $($.content + ' #yeargraph');
   $.YearChart.highcharts({
       chart: {
           type: 'spline',
@@ -2352,11 +2352,11 @@ function ShowUVLog(contentdiv,backfunction,id,name)
   $.devName=name;
   var htmlcontent = '';
   htmlcontent='<p><center><h2>' + name + '</h2></center></p><br>\n';
-  htmlcontent+=$('#uvlog').html();
+  htmlcontent+=$('#daymonthyearlog').html();
   $($.content).html(GetBackbuttonHTMLTable(backfunction)+htmlcontent);
   $($.content).i18n();
   
-  $.DayChart = $($.content + ' #uvdaygraph');
+  $.DayChart = $($.content + ' #daygraph');
   $.DayChart.highcharts({
       chart: {
           type: 'spline',
@@ -2434,7 +2434,7 @@ function ShowUVLog(contentdiv,backfunction,id,name)
         }
     });
 
-  $.MonthChart = $($.content + ' #uvmonthgraph');
+  $.MonthChart = $($.content + ' #monthgraph');
   $.MonthChart.highcharts({
       chart: {
           type: 'spline',
@@ -2519,7 +2519,7 @@ function ShowUVLog(contentdiv,backfunction,id,name)
         }
     });
 
-  $.YearChart = $($.content + ' #uvyeargraph');
+  $.YearChart = $($.content + ' #yeargraph');
   $.YearChart.highcharts({
       chart: {
           type: 'spline',
@@ -3381,11 +3381,11 @@ function ShowRainLog(contentdiv,backfunction,id,name)
   $.devName=name;
   var htmlcontent = '';
   htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
-  htmlcontent+=$('#rainlog').html();
+  htmlcontent+=$('#daymonthyearlog').html();
   $($.content).html(GetBackbuttonHTMLTable(backfunction)+htmlcontent);
   $($.content).i18n();
   
-  $.DayChart = $($.content + ' #raindaygraph');
+  $.DayChart = $($.content + ' #daygraph');
   $.DayChart.highcharts({
       chart: {
           type: 'column',
@@ -3464,7 +3464,7 @@ function ShowRainLog(contentdiv,backfunction,id,name)
         }
     });
 
-  $.MonthChart = $($.content + ' #rainmonthgraph');
+  $.MonthChart = $($.content + ' #monthgraph');
   $.MonthChart.highcharts({
       chart: {
           type: 'spline',
@@ -3547,7 +3547,7 @@ function ShowRainLog(contentdiv,backfunction,id,name)
         }
     });
 
-  $.YearChart = $($.content + ' #rainyeargraph');
+  $.YearChart = $($.content + ' #yeargraph');
   $.YearChart.highcharts({
       chart: {
           type: 'spline',
@@ -3645,11 +3645,11 @@ function ShowBaroLog(contentdiv,backfunction,id,name)
   $.devName=name;
   var htmlcontent = '';
   htmlcontent='<p><center><h2>' + name + '</h2></center></p><br>\n';
-  htmlcontent+=$('#barolog').html();
+  htmlcontent+=$('#daymonthyearlog').html();
   $($.content).html(GetBackbuttonHTMLTable(backfunction)+htmlcontent);
   $($.content).i18n();
   
-  $.DayChart = $($.content + ' #barodaygraph');
+  $.DayChart = $($.content + ' #daygraph');
   $.DayChart.highcharts({
       chart: {
           type: 'spline',
@@ -3730,7 +3730,7 @@ function ShowBaroLog(contentdiv,backfunction,id,name)
         }
     });
 
-  $.MonthChart = $($.content + ' #baromonthgraph');
+  $.MonthChart = $($.content + ' #monthgraph');
   $.MonthChart.highcharts({
       chart: {
           type: 'spline',
@@ -3819,7 +3819,7 @@ function ShowBaroLog(contentdiv,backfunction,id,name)
         }
     });
 
-  $.YearChart = $($.content + ' #baroyeargraph');
+  $.YearChart = $($.content + ' #yeargraph');
   $.YearChart.highcharts({
       chart: {
           type: 'spline',
@@ -3896,6 +3896,463 @@ function ShowBaroLog(contentdiv,backfunction,id,name)
 				events: {
 					click: function(event) {
 						chartPointClickNew(event,ShowBaroLog);
+					}
+				}
+			}
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+  $('#modal').hide();
+  cursordefault();
+  return false;
+}
+
+function ShowAirQualityLog(contentdiv,backfunction,id,name)
+{
+	clearInterval($.myglobals.refreshTimer);
+  $('#modal').show();
+  $.content=contentdiv;
+  $.backfunction=backfunction;
+  $.devIdx=id;
+  $.devName=name;
+  var htmlcontent = '';
+  htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
+  htmlcontent+=$('#daymonthyearlog').html();
+  $($.content).html(GetBackbuttonHTMLTable(backfunction)+htmlcontent);
+  $($.content).i18n();
+
+  $.DayChart = $($.content + ' #daygraph');
+  $.DayChart.highcharts({
+      chart: {
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=day",
+                function(data) {
+                      var series = $.DayChart.highcharts().series[0];
+                      var datatable = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable.push( [GetUTCFromString(item.d), parseInt(item.co2) ] );
+                      });
+                      series.setData(datatable);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: $.i18n('Air Quality') + ' '  + Get5MinuteHistoryDaysGraphTitle()
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: 'co2 (ppm)'
+            },
+            min: 0,
+            minorGridLineWidth: 0,
+            gridLineWidth: 0,
+            alternateGridColor: null,
+            plotBands: [{ // Excellent
+                from: 0,
+                to: 700,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: $.i18n('Excellent'),
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Good
+                from: 700,
+                to: 900,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: $.i18n('Good'),
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Fair
+                from: 900,
+                to: 1100,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: $.i18n('Fair'),
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Mediocre
+                from: 1100,
+                to: 1600,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: $.i18n('Mediocre'),
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Bad
+                from: 1600,
+                to: 6000,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: $.i18n('Bad'),
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }
+           ]
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' ppm';
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'co2'
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+
+  $.MonthChart = $($.content + ' #monthgraph');
+  $.MonthChart.highcharts({
+      chart: {
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=month",
+                function(data) {
+                      var datatable1 = [];
+                      var datatable2 = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable1.push( [GetDateFromString(item.d), parseInt(item.co2_min) ] );
+                        datatable2.push( [GetDateFromString(item.d), parseInt(item.co2_max) ] );
+                      });
+                      var series1 = $.MonthChart.highcharts().series[0];
+                      var series2 = $.MonthChart.highcharts().series[1];
+                      series1.setData(datatable1);
+                      series2.setData(datatable2);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: $.i18n('Air Quality') + ' ' + $.i18n('Last Month')
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: 'co2 (ppm)'
+            },
+            min: 0,
+            minorGridLineWidth: 0,
+            gridLineWidth: 0,
+            alternateGridColor: null,
+            plotBands: [{ // Excellent
+                from: 0,
+                to: 700,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: $.i18n('Excellent'),
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Good
+                from: 700,
+                to: 900,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: $.i18n('Good'),
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Fair
+                from: 900,
+                to: 1100,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: $.i18n('Fair'),
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Mediocre
+                from: 1100,
+                to: 1600,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: $.i18n('Mediocre'),
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Bad
+                from: 1600,
+                to: 6000,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: $.i18n('Bad'),
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }
+           ]
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' ppm';
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'co2_min',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClickNew(event,ShowAirQualityLog);
+					}
+				}
+			}
+		}, {
+            name: 'co2_max',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClickNew(event,ShowAirQualityLog);
+					}
+				}
+			}
+        }]
+        ,
+        navigation: {
+            menuItemStyle: {
+                fontSize: '10px'
+            }
+        }
+    });
+
+  $.YearChart = $($.content + ' #yeargraph');
+  $.YearChart.highcharts({
+      chart: {
+          type: 'spline',
+          zoomType: 'xy',
+          marginRight: 10,
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=counter&idx="+id+"&range=year",
+                function(data) {
+                      var datatable1 = [];
+                      var datatable2 = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable1.push( [GetDateFromString(item.d), parseInt(item.co2_min) ] );
+                        datatable2.push( [GetDateFromString(item.d), parseInt(item.co2_max) ] );
+                      });
+                      var series1 = $.YearChart.highcharts().series[0];
+                      var series2 = $.YearChart.highcharts().series[1];
+                      series1.setData(datatable1);
+                      series2.setData(datatable2);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: $.i18n('Air Quality') + ' ' + $.i18n('Last Year')
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: 'co2 (ppm)'
+            },
+            min: 0,
+            minorGridLineWidth: 0,
+            gridLineWidth: 0,
+            alternateGridColor: null,
+            plotBands: [{ // Excellent
+                from: 0,
+                to: 700,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: $.i18n('Excellent'),
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Good
+                from: 700,
+                to: 900,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: $.i18n('Good'),
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Fair
+                from: 900,
+                to: 1100,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: $.i18n('Fair'),
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Mediocre
+                from: 1100,
+                to: 1600,
+                color: 'rgba(68, 170, 213, 0.5)',
+                label: {
+                    text: $.i18n('Mediocre'),
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }, { // Bad
+                from: 1600,
+                to: 6000,
+                color: 'rgba(68, 170, 213, 0.3)',
+                label: {
+                    text: $.i18n('Bad'),
+                    style: {
+                        color: '#CCCCCC'
+                    }
+                }
+            }
+           ]
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' ppm';
+            }
+        },
+        plotOptions: {
+            spline: {
+                lineWidth: 3,
+                states: {
+                    hover: {
+                        lineWidth: 3
+                    }
+                },
+                marker: {
+                    enabled: false,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            symbol: 'circle',
+                            radius: 5,
+                            lineWidth: 1
+                        }
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'co2_min',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClickNew(event,ShowAirQualityLog);
+					}
+				}
+			}
+		}, {
+            name: 'co2_max',
+			point: {
+				events: {
+					click: function(event) {
+						chartPointClickNew(event,ShowAirQualityLog);
 					}
 				}
 			}

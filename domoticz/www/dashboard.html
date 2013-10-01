@@ -913,11 +913,11 @@ function RefreshFavorites()
 									bigtext='-' + item.UsageDeliv;
 								}
 								status+='<br>';
-								if (data.DashboardType==0) {
-									status+='Return: ' + item.CounterDelivToday;
+								if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+									status+='R: ' + item.CounterDelivToday;
 								}
 								else {
-									status+='R: ' + item.CounterDelivToday;
+									status+='Return: ' + item.CounterDelivToday;
 								}
 							}
 						}
@@ -2196,7 +2196,7 @@ function ShowFavorites()
 					status=item.Data;
 				}
 				else if (item.Type == "Air Quality") {
-					xhtm+='air48.png" height="40"></td>\n';
+					xhtm+='air48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowAirQualityLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40"></td>\n';
 					status=item.Data + " (" + item.Quality + ")";
 				}
 				else if (item.Type == "Lux") {

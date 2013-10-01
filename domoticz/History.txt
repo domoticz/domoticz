@@ -46,7 +46,8 @@ Version 1.0.xxx (September xxth 2013)
 - Implemented: Chime Byron SX
 - Implemented: Alecto WS1200 (Temp+Rain sensor)
 - Fixed: Light/Dimmer status when switching groups
-- Implemented: Dashboard, clicking on the Temperature/UV/Wind/Rain/Baro icons displays the log
+- Implemented: Dashboard, clicking on the Temperature/UV/Wind/Rain/Baro/Lux icons displays the log
+- Implemented: Temperature Average is now being logged, needed later for Degree Days
 
 Version 1.0.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)

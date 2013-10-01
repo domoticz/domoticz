@@ -15,7 +15,7 @@
 #include "../webserver/Base64.h"
 #include "mainstructs.h"
 
-#define DB_VERSION 22
+#define DB_VERSION 23
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -108,6 +108,7 @@ const char *sqlCreateTemperature_Calendar =
 "[DeviceRowID] BIGINT(10) NOT NULL, "
 "[Temp_Min] FLOAT NOT NULL, "
 "[Temp_Max] FLOAT NOT NULL, "
+"[Temp_Avg] FLOAT DEFAULT 0, "
 "[Chill_Min] FLOAT DEFAULT 0, "
 "[Chill_Max] FLOAT, "
 "[Humidity] INTEGER DEFAULT 0, "
@@ -618,6 +619,26 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("ALTER TABLE DeviceToPlansMap ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
 			query(sqlCreateDevicesToPlanStatusTrigger);
+		}
+		if (dbversion<23)
+		{
+			query("ALTER TABLE Temperature_Calendar ADD COLUMN [Temp_Avg] FLOAT default 0");
+
+			std::vector<std::vector<std::string> > result;
+			result=query("SELECT RowID, (Temp_Max+Temp_Min)/2 FROM Temperature_Calendar");
+			if (result.size()>0)
+			{
+				char szTmp[100];
+				sqlite3_exec(m_dbase, "BEGIN TRANSACTION;", NULL, NULL, NULL);
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt=result.begin(); itt!=result.end(); ++itt)
+				{
+					std::vector<std::string> sd=*itt;
+					sprintf(szTmp,"UPDATE Temperature_Calendar SET Temp_Avg=%.1f WHERE RowID='%s'",atof(sd[1].c_str()),sd[0].c_str());
+					query(szTmp);
+				}
+				sqlite3_exec(m_dbase, "END TRANSACTION;", NULL, NULL, NULL);
+			}
 		}
     }
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
@@ -3361,7 +3382,7 @@ void CSQLHelper::AddCalendarTemperature()
 		std::stringstream s_str( sddev[0] );
 		s_str >> ID;
 
-		sprintf(szTmp,"SELECT MIN(Temperature), MAX(Temperature), MIN(Chill), MAX(Chill), MAX(Humidity), MAX(Barometer), MIN(DewPoint) FROM Temperature WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s')",
+		sprintf(szTmp,"SELECT MIN(Temperature), MAX(Temperature), AVG(Temperature), MIN(Chill), MAX(Chill), MAX(Humidity), MAX(Barometer), MIN(DewPoint) FROM Temperature WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s')",
 			ID,
 			szDateStart,
 			szDateEnd
@@ -3373,19 +3394,20 @@ void CSQLHelper::AddCalendarTemperature()
 
 			float temp_min=(float)atof(sd[0].c_str());
 			float temp_max=(float)atof(sd[1].c_str());
-			float chill_min=(float)atof(sd[2].c_str());
-			float chill_max=(float)atof(sd[3].c_str());
-			int humidity=atoi(sd[4].c_str());
-			int barometer=atoi(sd[5].c_str());
-			float dewpoint=(float)atof(sd[6].c_str());
-
+			float temp_avg=(float)atof(sd[2].c_str());
+			float chill_min=(float)atof(sd[3].c_str());
+			float chill_max=(float)atof(sd[4].c_str());
+			int humidity=atoi(sd[5].c_str());
+			int barometer=atoi(sd[6].c_str());
+			float dewpoint=(float)atof(sd[7].c_str());
 			//insert into calendar table
 			sprintf(szTmp,
-				"INSERT INTO Temperature_Calendar (DeviceRowID, Temp_Min, Temp_Max, Chill_Min, Chill_Max, Humidity, Barometer, DewPoint, Date) "
-				"VALUES (%llu, %.2f, %.2f, %.2f, %.2f, %d, %d, %.2f, '%s')",
+				"INSERT INTO Temperature_Calendar (DeviceRowID, Temp_Min, Temp_Max, Temp_Avg, Chill_Min, Chill_Max, Humidity, Barometer, DewPoint, Date) "
+				"VALUES (%llu, %.2f, %.2f, %.2f, %.2f, %.2f, %d, %d, %.2f, '%s')",
 				ID,
 				temp_min,
 				temp_max,
+				temp_avg,
 				chill_min,
 				chill_max,
 				humidity,
