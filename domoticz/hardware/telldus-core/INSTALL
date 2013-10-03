@@ -1,0 +1,51 @@
+Unpacking
+---------
+
+Unpack the archive if you have not done so already:
+
+	cd /usr/src
+	gunzip telldus-core-{version}.tar.gz #Change {version} to the downloaded version
+	tar xvf telldus-core-{version}.tar
+
+This creates the directory /usr/src/telldus-core-{version} containing the files
+from the archive. We only support the GNU version of tar archiving utility. Note
+on some systems it is called gtar.
+
+Configuring
+-----------
+
+Telldus Core is built using CMake (http://www.cmake.org), version 2.4.0 is the
+minimum required version. This means there is no configure-script, but you
+need to run cmake.
+
+To configure telldus-core for your machine type:
+
+	cmake .
+
+in the package directory.
+
+By default, Telldus Core is configured for installation in the /usr/local
+directory, but this can be changed by using the -DCMAKE_INSTALL_PREFIX=/usr
+option. Alternatively, the DESTDIR="/opt" option can be used to specify a "local"
+installation within the source directory when running "make install".
+
+Building
+--------
+
+To create the library and compile all the tools type:
+
+	make
+
+If you did not configure Telldus Core using the -DCMAKE_INSTALL_PREFIX=/usr
+option, you need to install the library and tools in the appropriate place. To
+do this, type:
+
+	su -c "make install"
+
+and enter the root password.
+
+If you want to install in another directory, type:
+
+	su -c "make DESTDIR=/opt install"
+
+Note that on some systems the make utility is named differently, e.g. gmake.

@@ -1,0 +1,18 @@
+#include <winresrc.h>
+
+VS_VERSION_INFO VERSIONINFO
+  FILEVERSION ${PACKAGE_MAJOR_VERSION},${PACKAGE_MINOR_VERSION},${PACKAGE_PATCH_VERSION},0
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "04090000"
+    BEGIN
+      VALUE "FileDescription", "Utilities and driver to control wireless receivers through a TellStick"
+      VALUE "FileVersion", "${PACKAGE_VERSION}"
+      VALUE "LegalCopyright", "Copyright (C) 2010 Telldus Technologies AB"
+      VALUE "OriginalFilename", "TelldusCore.dll"
+      VALUE "ProductName", "TelldusCore"
+      VALUE "ProductVersion", "${PACKAGE_MAJOR_VERSION}.${PACKAGE_MINOR_VERSION}"
+    END
+  END
+END

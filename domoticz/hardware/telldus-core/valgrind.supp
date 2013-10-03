@@ -1,0 +1,57 @@
+{
+   Glibc
+   Memcheck:Cond
+   fun:_dl_relocate_object
+   fun:dl_main
+   fun:_dl_sysdep_start
+   fun:_dl_start
+   obj:/lib64/ld-2.11.2.so
+}
+{
+   LibUSB problems
+   Memcheck:Leak
+   fun:malloc
+   fun:usb_parse_configuration
+   fun:usb_os_find_devices
+   fun:usb_find_devices
+}
+{
+   libUSB
+   Memcheck:Leak
+   fun:malloc
+   fun:usb_os_determine_children
+   fun:usb_find_devices
+}
+{
+   libUSB
+   Memcheck:Leak
+   fun:malloc
+   fun:usb_os_find_devices
+   fun:usb_find_devices
+}
+{
+   libUSB
+   Memcheck:Leak
+   fun:malloc
+   fun:realloc
+   fun:usb_parse_configuration
+   fun:usb_os_find_devices
+   fun:usb_find_devices
+}
+{
+   libUSB
+   Memcheck:Leak
+   fun:malloc
+   fun:usb_os_find_busses
+   fun:usb_find_busses
+}
+{
+   libConfuse
+   Memcheck:Leak
+   fun:realloc
+   fun:cfg_yyensure_buffer_stack
+   fun:cfg_yy_switch_to_buffer
+   fun:cfg_parse_fp
+   fun:cfg_parse
+}
+
