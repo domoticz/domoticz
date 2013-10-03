@@ -121,7 +121,6 @@ void CEventSystem::Do_Work()
 
 void CEventSystem::GetCurrentStates()
 {
-    
     m_devicestates.clear();
     
 	std::stringstream szQuery;
@@ -143,15 +142,14 @@ void CEventSystem::GetCurrentStates()
             sitem.sValue	= sd[3];
             sitem.devType = atoi(sd[4].c_str());
             sitem.subType = atoi(sd[5].c_str());
-			_eSwitchType switchtype=(_eSwitchType)atoi(sd[6].c_str());
-            sitem.nValueWording = nValueToWording(atoi(sd[4].c_str()), atoi(sd[5].c_str()), switchtype, (unsigned char)sitem.nValue,sitem.sValue);
+			sitem.switchtype = atoi(sd[6].c_str());
+			_eSwitchType switchtype=(_eSwitchType)sitem.switchtype;
+            sitem.nValueWording = nValueToWording(sitem.devType, sitem.subType, switchtype, (unsigned char)sitem.nValue,sitem.sValue);
             sitem.lastUpdate = sd[7];
             sitem.lastLevel = atoi(sd[8].c_str());
             m_devicestates[sitem.ID] = sitem;
         }
   	}
-    
-    
 }
 
 void CEventSystem::GetCurrentMeasurementStates()
@@ -159,10 +157,30 @@ void CEventSystem::GetCurrentMeasurementStates()
     m_tempValuesByName.clear();
     m_humValuesByName.clear();
     m_baroValuesByName.clear();
+	m_utilityValuesByName.clear();
+
     m_tempValuesByID.clear();
     m_humValuesByID.clear();
     m_baroValuesByID.clear();
+	m_utilityValuesByID.clear();
     
+	float EnergyDivider=1000.0f;
+	float GasDivider=100.0f;
+	float WaterDivider=100.0f;
+	int tValue;
+	if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+	{
+		EnergyDivider=float(tValue);
+	}
+	if (m_pMain->m_sql.GetPreferencesVar("MeterDividerGas", tValue))
+	{
+		GasDivider=float(tValue);
+	}
+	if (m_pMain->m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+	{
+		WaterDivider=float(tValue);
+	}
+
 	//char szTmp[300];
 
     typedef std::map<unsigned long long,_tDeviceStatus>::iterator it_type;
@@ -172,18 +190,17 @@ void CEventSystem::GetCurrentMeasurementStates()
         std::vector<std::string> splitresults;
         StringSplit(sitem.sValue, ";", splitresults);
  
-        if (splitresults.size()<1)
-            continue;
-        
         float temp=0;
         float chill=0;
         unsigned char humidity=0;
         int barometer=0;
         float dewpoint=0;
+		float utilityval=0;
         bool isTemp = false;
         bool isHum = false;
         bool isBaro = false;
 		bool isBaroFloat = false;
+		bool isUtility = false;
 
         switch (sitem.devType)
         {
@@ -244,11 +261,138 @@ void CEventSystem::GetCurrentMeasurementStates()
                 isTemp = true;
 				break;
 			case pTypeRFXSensor:
-				if (sitem.subType!=sTypeRFXSensorTemp)
-					continue;
-				temp=(float)atof(splitresults[0].c_str());
-				isTemp = true;
+				if (sitem.subType==sTypeRFXSensorTemp)
+				{
+					temp=(float)atof(splitresults[0].c_str());
+					isTemp = true;
+				}
+				else if ((sitem.subType==sTypeRFXSensorVolt)||(sitem.subType==sTypeRFXSensorAD))
+				{
+					utilityval=(float)atof(sitem.sValue.c_str());
+					isUtility = true;
+				}
                 break;
+			case pTypeAirQuality:
+				utilityval=(float)(sitem.nValue);
+				isUtility = true;
+				break;
+			case pTypeENERGY:
+				utilityval=(float)atof(splitresults[0].c_str());
+				isUtility = true;
+				break;
+			case pTypeP1Power:
+				utilityval=(float)atof(splitresults[4].c_str());
+				isUtility = true;
+				break;
+			case pTypeP1Gas:
+				{
+					//get lowest value of today
+					float GasDivider=1000.0f;
+					time_t now = mytime(NULL);
+					struct tm tm1;
+					localtime_r(&now,&tm1);
+
+					struct tm ltime;
+					ltime.tm_isdst=tm1.tm_isdst;
+					ltime.tm_hour=0;
+					ltime.tm_min=0;
+					ltime.tm_sec=0;
+					ltime.tm_year=tm1.tm_year;
+					ltime.tm_mon=tm1.tm_mon;
+					ltime.tm_mday=tm1.tm_mday;
+
+					char szDate[40];
+					sprintf(szDate,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
+
+					std::vector<std::vector<std::string> > result2;
+					std::stringstream szQuery;
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=" << sitem.ID << " AND Date>='" << szDate << "')";
+					result2=m_pMain->m_sql.query(szQuery.str());
+					if (result2.size()>0)
+					{
+						std::vector<std::string> sd2=result2[0];
+
+						unsigned long long total_min_gas,total_real_gas;
+						unsigned long long gasactual;
+
+						std::stringstream s_str1( sd2[0] );
+						s_str1 >> total_min_gas;
+						std::stringstream s_str2( sitem.sValue );
+						s_str2 >> gasactual;
+						total_real_gas=gasactual-total_min_gas;
+						utilityval=float(total_real_gas)/GasDivider;
+						isUtility = true;
+					}
+				}
+				break;
+			case pTypeRFXMeter:
+				if (sitem.subType==sTypeRFXMeterCount)
+				{
+					//get value of today
+					time_t now = mytime(NULL);
+					struct tm tm1;
+					localtime_r(&now,&tm1);
+
+					struct tm ltime;
+					ltime.tm_isdst=tm1.tm_isdst;
+					ltime.tm_hour=0;
+					ltime.tm_min=0;
+					ltime.tm_sec=0;
+					ltime.tm_year=tm1.tm_year;
+					ltime.tm_mon=tm1.tm_mon;
+					ltime.tm_mday=tm1.tm_mday;
+
+					char szDate[40];
+					sprintf(szDate,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
+
+					std::vector<std::vector<std::string> > result2;
+					std::stringstream szQuery;
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << sitem.ID << " AND Date>='" << szDate << "')";
+					result2=m_pMain->m_sql.query(szQuery.str());
+					if (result2.size()>0)
+					{
+						std::vector<std::string> sd2=result2[0];
+
+						unsigned long long total_min,total_max,total_real;
+
+						std::stringstream s_str1( sd2[0] );
+						s_str1 >> total_min;
+						std::stringstream s_str2( sd2[1] );
+						s_str2 >> total_max;
+						total_real=total_max-total_min;
+
+						char szTmp[100];
+						sprintf(szTmp,"%llu",total_real);
+
+						float musage=0;
+						_eMeterType metertype=(_eMeterType)sitem.switchtype;
+						switch (metertype)
+						{
+						case MTYPE_ENERGY:
+							musage=float(total_real)/EnergyDivider;
+							sprintf(szTmp,"%.03f kWh",musage);
+							break;
+						case MTYPE_GAS:
+							musage=float(total_real)/GasDivider;
+							sprintf(szTmp,"%.02f m3",musage);
+							break;
+						case MTYPE_WATER:
+							musage=float(total_real)/WaterDivider;
+							sprintf(szTmp,"%.02f m3",musage);
+							break;
+						case MTYPE_COUNTER:
+							sprintf(szTmp,"%llu",total_real);
+							break;
+						}
+						utilityval=(float)atof(szTmp);
+						isUtility = true;
+					}
+				}
+				break;
         }
         
         if (isTemp) {
@@ -270,6 +414,11 @@ void CEventSystem::GetCurrentMeasurementStates()
             m_baroValuesByName[sitem.deviceName] = barometer;
             m_baroValuesByID[sitem.ID] = barometer;
         }
+		if (isUtility)
+		{
+			m_utilityValuesByName[sitem.deviceName] = utilityval;
+			m_utilityValuesByID[sitem.ID] = utilityval;
+		}
     }
 }
 
@@ -493,6 +642,17 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
         }
         lua_setglobal(lua_state, "barometerdevice");
     }
+	if (m_utilityValuesByID.size()>0) {
+		lua_createtable(lua_state, (int)m_utilityValuesByID.size(), 0);
+		std::map<unsigned long long,float>::iterator p;
+		for(p = m_utilityValuesByID.begin(); p != m_utilityValuesByID.end(); ++p)
+		{
+			lua_pushnumber( lua_state, (lua_Number)p->first);
+			lua_pushnumber( lua_state, (lua_Number)p->second);
+			lua_rawset( lua_state, -3 );
+		}
+		lua_setglobal(lua_state, "utilitydevice");
+	}
     
     int secstatus=0;
     m_pMain->m_sql.GetPreferencesVar("SecStatus", secstatus);
@@ -738,6 +898,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
     float thisDeviceTemp = 0;
     unsigned char thisDeviceHum = 0;
     int thisDeviceBaro = 0;
+	float thisDeviceUtility = 0;
     
     if (m_tempValuesByName.size()>0)
 	{
@@ -784,6 +945,21 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
         }
         lua_setglobal(lua_state, "otherdevices_barometer");
     }
+	if (m_utilityValuesByName.size()>0)
+	{
+		lua_createtable(lua_state, (int)m_utilityValuesByName.size(), 0);
+		std::map<std::string,float>::iterator p;
+		for(p = m_utilityValuesByName.begin(); p != m_utilityValuesByName.end(); ++p)
+		{
+			lua_pushstring( lua_state, p->first.c_str());
+			lua_pushnumber( lua_state, (lua_Number)p->second);
+			lua_rawset( lua_state, -3 );
+			if (p->first ==  devname) {
+				thisDeviceUtility = p->second;
+			}
+		}
+		lua_setglobal(lua_state, "otherdevices_utility");
+	}
     
     if (reason == "device") 
 	{
@@ -813,6 +989,13 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
             lua_pushnumber( lua_state, (lua_Number)thisDeviceBaro);
             lua_rawset( lua_state, -3 );
         }
+		if (thisDeviceUtility != 0) {
+			std::string utilityName = devname;
+			utilityName += "_Utility";
+			lua_pushstring( lua_state, utilityName.c_str() );
+			lua_pushnumber( lua_state, (lua_Number)thisDeviceUtility);
+			lua_rawset( lua_state, -3 );
+		}
         lua_setglobal(lua_state, "devicechanged");
     }    
     

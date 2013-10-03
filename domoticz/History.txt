@@ -1,4 +1,4 @@
-Version 1.0.xxx (September xxth 2013)
+Version 1.0.xxx (Oktober xxth 2013)
 - Implemented: Login page (solves the caching problems)
 - Fixed: buttons add sensor/switch buttons now hidden for 'viewer' users
 - Implemented: option in settings for basic-auth login type
@@ -48,6 +48,7 @@ Version 1.0.xxx (September xxth 2013)
 - Fixed: Light/Dimmer status when switching groups
 - Implemented: Dashboard, clicking on the Temperature/UV/Wind/Rain/Baro/Lux icons displays the log
 - Implemented: Temperature Average is now being logged, needed later for Degree Days
+- Implemented: Eventsystem, Utility Device support for Energy,Gas,AirQuality,RFXSensor(Volt/AD),RFXMeter
 
 Version 1.0.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)

@@ -32,7 +32,7 @@ public:
         std::string nValueWording;
         std::string lastUpdate;
         unsigned char lastLevel;
-        
+		unsigned char switchtype;
 	};
     std::map<unsigned long long,_tDeviceStatus> m_devicestates;
     
@@ -78,12 +78,17 @@ private:
     bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
     //std::string reciprocalAction (std::string Action);
     std::vector<_tEventItem> m_events;
-    std::map<std::string,float> m_tempValuesByName;
+    
+	std::map<std::string,float> m_tempValuesByName;
     std::map<std::string,unsigned char> m_humValuesByName;
-    std::map<std::string,int> m_baroValuesByName;
+	std::map<std::string,int> m_baroValuesByName;
+	std::map<std::string,float> m_utilityValuesByName;
+
     std::map<unsigned long long,float> m_tempValuesByID;
     std::map<unsigned long long,unsigned char> m_humValuesByID;
     std::map<unsigned long long,int> m_baroValuesByID;
+	std::map<unsigned long long,float> m_utilityValuesByID;
+
     void reportMissingDevice (const int deviceID, const std::string &EventName, const unsigned long long eventID);
     int getSunRiseSunSetMinutes(const std::string &what);
     bool isEventscheduled(const std::string &eventName);

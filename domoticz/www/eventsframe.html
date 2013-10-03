@@ -115,6 +115,7 @@
 			var locOperand = opSymbol($($(thisBlock).children("title:first")).text());
 			var valueA = $(thisBlock).children("value[name='A']")[0];
 			var variableType = $(valueA).children("block:first").attr("type");
+			
 			if (variableType.indexOf("switchvariables") >= 0) {
 				var titleA = $(valueA).find("title")[0];
 				var valueB = $(thisBlock).children("value[name='B']")[0];
@@ -153,6 +154,17 @@
 				var valueB = $(thisBlock).children("value[name='B']")[0];
 				var titleB = $(valueB).find("title")[0];
 				var compareString = "barometerdevice["+$(titleA).text()+"]";
+				if ($(titleB).attr("name") == "NUM") {
+					compareString += locOperand;
+					compareString += $(titleB).text(); 
+				}
+				return compareString;						
+			}
+			else if (variableType == "utilityvariables") {
+				var titleA = $(valueA).find("title")[0];
+				var valueB = $(thisBlock).children("value[name='B']")[0];
+				var titleB = $(valueB).find("title")[0];
+				var compareString = "utilitydevice["+$(titleA).text()+"]";
 				if ($(titleB).attr("name") == "NUM") {
 					compareString += locOperand;
 					compareString += $(titleB).text(); 

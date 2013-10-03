@@ -3787,26 +3787,70 @@ std::string CWebServer::GetJSonPage()
 
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "SELECT Direction FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
+				szQuery << "SELECT Direction, Speed FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 				result=m_pMain->m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
 					std::map<int,int> _directions;
+					float wdirtable[17][8];
+					int wdirtabletemp[17][8];
+					int ii=0;
+
 					int totalvalues=0;
 					//init dir list
 					int idir;
 					for (idir=0; idir<360+1; idir++)
 						_directions[idir]=0;
+					for (ii=0; ii<17; ii++)
+					{
+						for (int jj=0; jj<8; jj++)
+						{
+							wdirtable[ii][jj]=0;
+							wdirtabletemp[ii][jj]=0;
+						}
+					}
 
 					for (itt=result.begin(); itt!=result.end(); ++itt)
 					{
 						std::vector<std::string> sd=*itt;
-						int direction=atoi(sd[0].c_str());
+						float fdirection=(float)atof(sd[0].c_str());
+						if (fdirection==360)
+							fdirection=0;
+						int direction=int(fdirection);
+						float speed=(float)atof(sd[1].c_str());
+						int bucket=int(fdirection/22.5f);
+
+						int speedpos=0;
+						if (speed<0.5f) speedpos=0;
+						else if (speed<2.0f) speedpos=1;
+						else if (speed<4.0f) speedpos=2;
+						else if (speed<6.0f) speedpos=3;
+						else if (speed<8.0f) speedpos=4;
+						else if (speed<10.0f) speedpos=5;
+						else speedpos=6;
+						wdirtabletemp[bucket][speedpos]++;
 						_directions[direction]++;
 						totalvalues++;
 					}
-					int ii=0;
+
+					float totals[16];
+					for (ii=0; ii<16; ii++)
+					{
+						totals[ii]=0;
+					}
+					for (ii=0; ii<16; ii++)
+					{
+						float total=0;
+						for (int jj=0; jj<8; jj++)
+						{
+							float svalue=(100.0f/totalvalues)*wdirtabletemp[ii][jj];
+							wdirtable[ii][jj]=svalue;
+							total+=svalue;
+						}
+						wdirtable[ii][7]=total;
+					}
+					ii=0;
 					for (idir=0; idir<360+1; idir++)
 					{
 						if (_directions[idir]!=0)

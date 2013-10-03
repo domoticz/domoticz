@@ -370,6 +370,9 @@ Blockly.Language.utilityvariables = {
     this.setColour(290);
     this.appendDummyInput()
         .appendTitle(new Blockly.FieldDropdown(utilities), 'Utility');
+    this.appendDummyInput()
+	    .appendTitle(Blockly.DOMOTICZCONTROLS_MSG_UTILITY,'UtilityLabel');
+	this.setInputsInline(true);
     this.setOutput(true, null);
     this.setTooltip(Blockly.DOMOTICZVARIABLES_UTILITY_TOOLTIP); 
   }
