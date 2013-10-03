@@ -1,0 +1,60 @@
+LIBRARY tellduscore
+EXPORTS
+	tdGetNumberOfDevices @1
+	tdGetDeviceId @2
+
+	tdGetName @3
+	tdGetProtocol @4
+	tdGetModel @5
+	tdGetDeviceParameter @6
+
+	tdSetName @7
+	tdSetProtocol @8
+	tdSetModel @9
+	tdSetDeviceParameter @10
+
+	tdAddDevice @11
+	tdRemoveDevice @12
+
+	tdMethods @13
+	tdTurnOn	@14
+	tdTurnOff	@15
+	tdBell @16
+	tdDim @17
+	
+	tdGetErrorString @18
+	
+	tdClose @19
+	
+	tdInit @20
+	tdRegisterDeviceEvent @21
+	tdLastSentCommand @22
+	tdGetDeviceType @23
+
+	tdSendRawCommand @24
+	tdRegisterRawDeviceEvent @25
+	
+	tdLearn @26
+	tdLastSentValue @27
+	
+	tdReleaseString @28
+	tdUnregisterCallback @29
+
+	tdConnectTellStickController @30
+	tdDisconnectTellStickController @31
+
+	tdRegisterDeviceChangeEvent @32
+	tdExecute @33
+	tdUp @34
+	tdDown @35
+	tdStop @36
+	
+	tdRegisterSensorEvent @37
+	tdSensor @38
+	tdSensorValue @39
+	
+	tdController @40
+	tdControllerValue @41
+	tdSetControllerValue @42
+	tdRemoveController @43
+	tdRegisterControllerEvent @44
