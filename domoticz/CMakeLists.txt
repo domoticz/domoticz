@@ -63,6 +63,7 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
 
   IF(CMAKE_COMPILER_IS_GNUCXX)
 	#ADD_DEFINITIONS( -Wall -O0 -ggdb )
+	#ADD_DEFINITIONS( -Wfatal-errors -Wformat=2 -Werror=format-security )
     GET_FILENAME_COMPONENT(_name ${_input} NAME)
     SET(_source "${CMAKE_CURRENT_SOURCE_DIR}/${_input}")
     SET(_outdir "${CMAKE_CURRENT_BINARY_DIR}/${_name}.gch")
@@ -173,6 +174,7 @@ hardware/BMP085.cpp
 hardware/S0MeterSerial.cpp
 hardware/smbus.cpp
 hardware/Wunderground.cpp
+hardware/PiFace.cpp
 tcpserver/TCPServer.cpp
 tcpserver/TCPClient.cpp
 webserver/cWebem.cpp

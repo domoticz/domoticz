@@ -20,8 +20,10 @@ class CDomoticzHardwareBase
 	friend class CRego6XXSerial;
 	friend class CDavisLoggerSerial;
 	friend class CBMP085;
+	friend class CPiFace;
 	friend class S0MeterSerial;
-public:
+
+public: 
 	CDomoticzHardwareBase();
 	virtual ~CDomoticzHardwareBase();
 

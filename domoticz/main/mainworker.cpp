@@ -25,6 +25,7 @@
 #include "../hardware/BMP085.h"
 #include "../hardware/Wunderground.h"
 #include "../hardware/Dummy.h"
+#include "../hardware/PiFace.h"
 #include "../hardware/S0MeterSerial.h"
 
 #include "mainstructs.h"
@@ -413,6 +414,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Dummy:
 		pHardware = new CDummy(ID);
+		break;
+	case HTYPE_PiFace:
+		pHardware = new CPiFace(ID);
 		break;
 	}
 	if (pHardware)

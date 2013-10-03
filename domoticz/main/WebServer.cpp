@@ -7361,6 +7361,9 @@ std::string CWebServer::GetJSonPage()
 			else if (htype == HTYPE_Dummy) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_PiFace) {
+				//all fine here!
+			}
 			else if (htype == HTYPE_Wunderground) {
 				if (
 					(username=="")||
@@ -7448,6 +7451,9 @@ std::string CWebServer::GetJSonPage()
 				//All fine here
 			}
 			else if (htype == HTYPE_Dummy) {
+				//All fine here
+			}
+			else if (htype == HTYPE_PiFace) {
 				//All fine here
 			}
 			else if (htype == HTYPE_Wunderground) {
