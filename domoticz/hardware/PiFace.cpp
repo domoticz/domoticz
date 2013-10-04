@@ -211,7 +211,7 @@ int CPiFace::LoadConfig(void)
 			EndPos=GetParameterString(Line,".",StartPos,Parameter);
 			if (EndPos>=0)
 			  {
-				Address=strtol(Parameter.c_str(),NULL,0);
+				Address=(unsigned char)(strtol(Parameter.c_str(),NULL,0) & 0xFF); //data can be restricted further but as we check later on keep it wide for future use.
 				StartPos=EndPos;
 			  }
 			  
@@ -222,7 +222,7 @@ int CPiFace::LoadConfig(void)
 				if ( Parameter.compare("input") == 0)
 				  {
 					// we have an input
-					PortType='I';
+					PortType='I'; 
 				  }
 				  else if ( Parameter.compare("output") == 0)
 						  {
@@ -237,7 +237,7 @@ int CPiFace::LoadConfig(void)
 			EndPos=GetParameterString(Line,".",StartPos,Parameter);
 			if (EndPos>=0)
 			  {
-				PinNumber=strtol(Parameter.c_str(),NULL,0);
+				PinNumber=(unsigned char)(strtol(Parameter.c_str(),NULL,0) & 0xFF); //data can be restricted further but as we check later on keep it wide for future use.
 				StartPos=EndPos;
 			  }
 			
@@ -251,6 +251,7 @@ int CPiFace::LoadConfig(void)
 			  
 			//finaly lets get parameter value
 			Parametervalue=Line.substr(StartPos,Line.length()-StartPos);
+            Parametervalue=preprocess(Parametervalue);
 		   
 			if ((Address >=0) &&  (Address <= 3) && (PinNumber >=0) && (PinNumber <= 7) && ((PortType=='I') || (PortType=='O')) && (Parametername.length() >0 ) && (Parametervalue.length() >0 ))
 			{
@@ -298,7 +299,10 @@ int CPiFace::LoadConfig(void)
 						  switch (ValueFound )
 						   {
 							  default:
-								 _log.Log(LOG_ERROR,"Error PiFace config file: unknown value %s found =>setting default level", Parametervalue.c_str() );
+										_log.Log(LOG_ERROR,"Error PiFace config file: unknown value %s found =>setting default level %d", Parametervalue.c_str(),ValueFound );
+										IOport->Pin[PinNumber].Type=LEVEL;
+									break;
+								 
 							  case 0:
 										IOport->Pin[PinNumber].Type=LEVEL;
 									break;

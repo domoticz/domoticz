@@ -72,7 +72,7 @@ class CIOPort
 	   ~CIOPort();
 	   int Update(unsigned char New);
 	   int UpdateInterrupt(unsigned char IntFlag,unsigned char PinState);
-	   bool GetCurrent(void) const { return Current;}
+	   unsigned char GetCurrent(void) const { return Current;}
 	   int GetDevId(void) const { return devId;}
 	   bool IsDevicePresent(void) const { return Present;}
 	   void Init(bool Available, unsigned char housecode, unsigned char initial_state);
