@@ -364,8 +364,6 @@ void CWunderground::GetMeterDetails()
 		if (root["current_observation"]["UV"]!="N/A")
 		{
 			float UV=(float)atof(root["current_observation"]["UV"].asString().c_str());
-			if (UV<0)
-				UV=0;
 			RBUF tsen;
 			memset(&tsen,0,sizeof(RBUF));
 			tsen.UV.packetlength=sizeof(tsen.UV)-1;

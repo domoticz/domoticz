@@ -1,4 +1,6 @@
-﻿<div id="dashcontent">
+﻿
+
+<div id="dashcontent">
 </div>
 
 <script type="text/javascript" charset="utf-8">
@@ -28,12 +30,12 @@ function RefreshFavorites()
 									var status="";
 									if (item.Type.indexOf('Group')==0) {
 										if (item.Status == 'Off') {
-											status+='<button class="btn btn-mini" type="button" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);">On</button> ' +
-													'<button class="btn btn-mini btn-info" type="button" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);">Off</button>';
+											status+='<button class="btn btn-mini" type="button" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);">' + $.i18n("On") +'</button> ' +
+													'<button class="btn btn-mini btn-info" type="button" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);">' + $.i18n("Off") +'</button>';
 										}
 										else {
-											status+='<button class="btn btn-mini btn-info" type="button" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);">On</button> ' +
-													'<button class="btn btn-mini" type="button" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);">Off</button>';
+											status+='<button class="btn btn-mini btn-info" type="button" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);">' + $.i18n("On") +'</button> ' +
+													'<button class="btn btn-mini" type="button" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);">' + $.i18n("Off") +'</button>';
 										}
 										if ($(id + " #status").html()!=status) {
 											$(id + " #status").html(status);
@@ -54,8 +56,8 @@ function RefreshFavorites()
 											onclass="";
 											offclass="transimg";
 										}
-										img1='<img class="' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
-										img2='<img class="' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+										img1='<img class="' + onclass + '" src="images/push48.png" title="' + $.i18n("Turn On") +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+										img2='<img class="' + offclass + '"src="images/pushoff48.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 										if ($(id + " #img1").html()!=img1) {
 											$(id + " #img1").html(img1);
 										}
@@ -802,7 +804,7 @@ function RefreshFavorites()
 						var status="";
 						if (typeof item.Counter != 'undefined') {
 							if (data.DashboardType==0) {
-								status+='Today: ' + item.CounterToday;
+								status+='' + $.i18n("Usage") + ': ' + item.CounterToday;
 							}
 							else {
 								status+='U: T: ' + item.CounterToday;
@@ -827,7 +829,7 @@ function RefreshFavorites()
 						}
 						if (typeof item.Usage != 'undefined') {
 							if (data.DashboardType==0) {
-								status+=", Actual: " + item.Usage;
+								status+='<br>' + $.i18n("Actual") + ': ' + item.Usage;
 							}
 							else {
 								status+=", A: " + item.Usage;
@@ -836,8 +838,8 @@ function RefreshFavorites()
 						if (typeof item.CounterDeliv != 'undefined') {
 							if (item.CounterDeliv!=0) {
 								if (data.DashboardType==0) {
-									status+='<br>Return: ' + item.CounterDelivToday;
-									status+=", Actual: " + item.UsageDeliv;
+									status+='<br>' + $.i18n("Return") + ': ' + item.CounterDelivToday;
+									status+='<br>' + $.i18n("Actual") + ': ' + item.UsageDeliv;
 								}
 								else {
 									status+='<br>R: T: ' + item.CounterDelivToday;
@@ -859,7 +861,7 @@ function RefreshFavorites()
 								bigtext=item.CounterToday;
 							}
 							else {
-								status='Usage: ' + item.CounterToday;
+								status='' + $.i18n("Usage") + ': ' + item.CounterToday;
 							}
 						}
 						else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
@@ -900,7 +902,7 @@ function RefreshFavorites()
 							bigtext=item.Usage;
 							if (item.Type != "P1 Smart Meter") {
 								if (data.DashboardType==0) {
-									status+=", Actual: " + item.Usage;
+									status+='<br>' + $.i18n("Actual") + ': ' + item.Usage;
 								}
 								else {
 									status+=", A: " + item.Usage;
@@ -917,7 +919,7 @@ function RefreshFavorites()
 									status+='R: ' + item.CounterDelivToday;
 								}
 								else {
-									status+='Return: ' + item.CounterDelivToday;
+									status+='' + $.i18n("Return") + ': ' + item.CounterDelivToday;
 								}
 							}
 						}
@@ -1050,16 +1052,16 @@ function ShowFavorites()
 									 '</td>\n';
 							var status="";
 							if (item.Type.indexOf('Scene')==0) {
-								status+='<button class="btn btn-mini" type="button" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);">On</button>';
+								status+='<button class="btn btn-mini" type="button" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);">' + $.i18n("On") +'</button>';
 							}
 							else {
 								if (item.Status == 'Off') {
-									status+='<button class="btn btn-mini" type="button" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);">On</button> ' +
-											'<button class="btn btn-mini btn-info" type="button" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);">Off</button>';
+									status+='<button class="btn btn-mini" type="button" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);">' + $.i18n("On") +'</button> ' +
+											'<button class="btn btn-mini btn-info" type="button" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);">' + $.i18n("Off") +'</button>';
 								}
 								else {
-									status+='<button class="btn btn-mini btn-info" type="button" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);">On</button> ' +
-											'<button class="btn btn-mini" type="button" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);">Off</button>';
+									status+='<button class="btn btn-mini btn-info" type="button" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);">' + $.i18n("On") +'</button> ' +
+											'<button class="btn btn-mini" type="button" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);">' + $.i18n("Off") +'</button>';
 								}
 							}
 							xhtm+=
@@ -1099,8 +1101,8 @@ function ShowFavorites()
 									onclass="";
 									offclass="transimg";
 								}
-								xhtm+='<td id="img1"><img class="' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
-								xhtm+='<td id="img2"><img class="' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								xhtm+='<td id="img1"><img class="' + onclass + '" src="images/push48.png" title="' + $.i18n("Turn On") +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+								xhtm+='<td id="img2"><img class="' + offclass + '"src="images/pushoff48.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								xhtm+='\t      <td id="status">' + TranslateStatus(item.Status) + '</td>\n';
 							}
 							xhtm+='\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n';
@@ -2083,7 +2085,7 @@ function ShowFavorites()
 				var status="";
 				if (typeof item.Counter != 'undefined') {
 					if (data.DashboardType==0) {
-						status='Today: ' + item.CounterToday;
+						status='' + $.i18n("Usage") + ': ' + item.CounterToday;
 					}
 					else {
 						status='U: T: ' + item.CounterToday;
@@ -2108,7 +2110,7 @@ function ShowFavorites()
 				}
 				if (typeof item.Usage != 'undefined') {
 					if (data.DashboardType==0) {
-						status+=", Actual: " + item.Usage;
+						status+='<br>' + $.i18n("Actual") + ': ' + item.Usage;
 					}
 					else {
 						status+=", A: " + item.Usage;
@@ -2116,10 +2118,9 @@ function ShowFavorites()
 				}
 				if (typeof item.CounterDeliv != 'undefined') {
 					if (item.CounterDeliv!=0) {
-						status+='<br>R: ';
 						if (data.DashboardType==0) {
-							status+='Today: ' + item.CounterDelivToday;
-							status+=", Actual: " + item.UsageDeliv;
+							status+='<br>' + $.i18n("Return") + ': ' + item.CounterDelivToday;
+							status+='<br>' + $.i18n("Actual") + ': ' + item.UsageDeliv;
 						}
 						else {
 							status+='T: ' + item.CounterDelivToday;
@@ -2181,7 +2182,7 @@ function ShowFavorites()
 				if (typeof item.Counter != 'undefined') {
 					xhtm+='counter.png" height="40"></td>\n';
 					if (item.SubType!="Gas") {
-						status='Usage: ' + item.CounterToday;
+						status='' + $.i18n("Usage") + ': ' + item.CounterToday;
 					}
 					else {
 						status="&nbsp;";
@@ -2227,7 +2228,7 @@ function ShowFavorites()
 				if (typeof item.Usage != 'undefined') {
 					if (item.Type!="P1 Smart Meter") {
 						if (data.DashboardType==0) {
-							status+=", Actual: " + item.Usage;
+							status+='<br>' + $.i18n("Actual") + ': ' + item.Usage;
 						}
 						else {
 							status+=", A: " + item.Usage;
@@ -2237,7 +2238,7 @@ function ShowFavorites()
 				if (typeof item.CounterDeliv != 'undefined') {
 					if (item.CounterDeliv!=0) {
 						status+='<br>';
-						status+='Return: ' + item.CounterDelivToday;
+						status+='' + $.i18n("Return") + ': ' + item.CounterDelivToday;
 					}
 				}
 				
@@ -2312,11 +2313,11 @@ function ShowFavorites()
 				if (($.myglobals.DashboardType==2)||(window.myglobals.ismobile==true)) {
 					if (fPercentage==0)
 					{
-						status="Off ";
+						status="Off";
 						img='<img src="images/dimmeroff.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 					}
 					else {
-						status="Set Level: " + fPercentage + " % ";
+						status='' + $.i18n("Set Level") +': ' + fPercentage + " % ";
 						img='<img src="images/dimmer.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 					}
 					if ($(id + " #statustext").html()!=status) {
@@ -2334,7 +2335,7 @@ function ShowFavorites()
 					}
 					else {
 						img='<img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
-						status="Set Level: " + fPercentage + " %";
+						status='' + $.i18n("Set Level") +': ' + fPercentage + " %";
 					}
 					if ($(id + " #img").html()!=img) {
 						$(id + " #img").html(img);
