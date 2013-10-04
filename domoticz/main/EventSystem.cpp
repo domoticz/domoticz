@@ -1301,7 +1301,7 @@ std::string CEventSystem::nValueToWording (const unsigned char dType, const unsi
 		{
             lstatus="Open";
         }
-		else 
+		else if (lstatus=="Off") 
 		{
             lstatus="Closed";
         }
