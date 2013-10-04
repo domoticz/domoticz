@@ -15,7 +15,7 @@
 #include "../webserver/Base64.h"
 #include "mainstructs.h"
 
-#define DB_VERSION 23
+#define DB_VERSION 24
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -303,10 +303,17 @@ const char *sqlCreateScenesTrigger =
 const char *sqlCreateSceneDevices =
 "CREATE TABLE IF NOT EXISTS [SceneDevices] ("
 "[ID] INTEGER PRIMARY KEY, "
+"[Order] INTEGER BIGINT(10) default 0, "
 "[SceneRowID] BIGINT NOT NULL, "
 "[DeviceRowID] BIGINT NOT NULL, "
 "[Cmd] INTEGER DEFAULT 1, "
 "[Level] INTEGER DEFAULT 100);";
+
+const char *sqlCreateSceneDeviceTrigger =
+	"CREATE TRIGGER IF NOT EXISTS scenedevicesupdate AFTER INSERT ON SceneDevices\n"
+	"BEGIN\n"
+	"	UPDATE SceneDevices SET [Order] = (SELECT MAX([Order]) FROM SceneDevices)+1 WHERE SceneDevices.ID = NEW.ID;\n"
+	"END;\n";
 
 const char *sqlCreateSceneTimers =
 "CREATE TABLE IF NOT EXISTS [SceneTimers] ("
@@ -434,10 +441,12 @@ bool CSQLHelper::OpenDatabase()
     query(sqlCreateCameras);
 	query(sqlCreateCamerasActiveDevices);
     query(sqlCreatePlanMappings);
+	query(sqlCreateDevicesToPlanStatusTrigger);
     query(sqlCreatePlans);
 	query(sqlCreateScenes);
 	query(sqlCreateScenesTrigger);
 	query(sqlCreateSceneDevices);
+	query(sqlCreateSceneDeviceTrigger);
 	query(sqlCreateSceneTimers);
 	query(sqlCreateSharedDevices);
     query(sqlCreateEventMaster);
@@ -639,6 +648,12 @@ bool CSQLHelper::OpenDatabase()
 				}
 				sqlite3_exec(m_dbase, "END TRANSACTION;", NULL, NULL, NULL);
 			}
+		}
+		if (dbversion<24)
+		{
+			query("ALTER TABLE SceneDevices ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
+			query(sqlCreateSceneDeviceTrigger);
+			CheckAndUpdateSceneDeviceOrder();
 		}
     }
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
@@ -4330,6 +4345,31 @@ void CSQLHelper::CheckAndUpdateDeviceOrder()
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "UPDATE DeviceStatus SET [Order] = (SELECT MAX([Order]) FROM DeviceStatus)+1 WHERE (ROWID == " << sd[0] << ")";
+			query(szQuery.str());
+		}
+	}
+}
+
+void CSQLHelper::CheckAndUpdateSceneDeviceOrder()
+{
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+
+	//Get All ID's where Order=0
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "SELECT ROWID FROM SceneDevices WHERE ([Order]==0)";
+	result=query(szQuery.str());
+	if (result.size()>0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::vector<std::string> sd=*itt;
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE SceneDevices SET [Order] = (SELECT MAX([Order]) FROM SceneDevices)+1 WHERE (ROWID == " << sd[0] << ")";
 			query(szQuery.str());
 		}
 	}
