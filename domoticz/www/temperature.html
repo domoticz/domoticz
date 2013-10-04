@@ -258,7 +258,7 @@ function RemoveMultipleDataFromTempChart(chart,deviceid)
 function ClearCustomGraph()
 {
     $('div[id="devicecontainer"] input:checkbox:checked').each(function() {
-        RemoveMultipleDataFromTempChart($.CustomChart,$(this).attr('id'));
+        RemoveMultipleDataFromTempChart($.CustomChart.highcharts(),$(this).attr('id'));
         $(this).prop("checked", false);
     });   
 }
@@ -274,7 +274,7 @@ function SelectGraphDevices()
            success: function(data) {
             if (typeof data.result != 'undefined') {
                 $.each(data.result, function(i,item){
-                    $("#devicecontainer").append('<input type="checkbox" class="devicecheckbox" id="'+item.idx+'" value="'+item.Name+'" onChange="AddDeviceToGraph(this)">'+item.Name+'<br />');
+                    $("#tempcontent #devicecontainer").append('<input type="checkbox" class="devicecheckbox" id="'+item.idx+'" value="'+item.Name+'" onChange="AddDeviceToGraph(this)">'+item.Name+'<br />');
                     });
             }
            }
@@ -285,37 +285,45 @@ function AddDeviceToGraph(cb)
 {
     if (cb.checked==true) {
         $.ajax({
-           url: "json.htm?type=graph&sensor=temp&idx="+cb.id+"&range="+$("#graphfrom").val()+"T"+$("#graphto").val()+"&graphtype="+$("#combocustomgraphtype").val()+
-           "&graphTemp="+$("#graphTemp").prop("checked")+"&graphChill="+$("#graphChill").prop("checked")+"&graphHum="+$("#graphHum").prop("checked")+"&graphBaro="+$("#graphBaro").prop("checked")+"&graphDew="+$("#graphDew").prop("checked"),
+           url: "json.htm?type=graph&sensor=temp&idx="+cb.id+"&range="+$("#tempcontent #graphfrom").val()+"T"+$("#tempcontent #graphto").val()+"&graphtype="+$("#tempcontent #combocustomgraphtype").val()+
+           "&graphTemp="+$("#tempcontent #graphTemp").prop("checked")+"&graphChill="+$("#tempcontent #graphChill").prop("checked")+"&graphHum="+$("#tempcontent #graphHum").prop("checked")+"&graphBaro="+$("#tempcontent #graphBaro").prop("checked")+"&graphDew="+$("#tempcontent #graphDew").prop("checked"),
            async: false,
            dataType: 'json',
            success: function(data) {
-            AddMultipleDataToTempChart(data,$.CustomChart,$("#combocustomgraphtype").val(),cb.id,cb.value);
+            AddMultipleDataToTempChart(data,$.CustomChart.highcharts(),$("#tempcontent #combocustomgraphtype").val(),cb.id,cb.value);
            }
         });
     }
     else {
-        RemoveMultipleDataFromTempChart($.CustomChart,cb.id);
+        RemoveMultipleDataFromTempChart($.CustomChart.highcharts(),cb.id);
     }
 }
-function datePickerChanged()
+function datePickerChanged(dpicker)
 {
-    $( "#tempcontent #graphfrom" ).datepicker('option', 'maxDate', $("#graphto").val());
-    $( "#tempcontent #graphto" ).datepicker('option', 'minDate', $("#graphfrom").val());
+	if ($("#graphfrom").val()!='') {
+		$("#tempcontent #graphfrom").datepicker("setDate",$("#graphfrom").val());
+	}
+	else {
+		$("#tempcontent #graphto").datepicker("setDate",$("#graphto").val());
+	}
+	$( "#tempcontent #graphfrom" ).datepicker('option', 'maxDate', $("#tempcontent #graphto").val());
+	$( "#tempcontent #graphto" ).datepicker('option', 'minDate', $("#tempcontent #graphfrom").val());
+
     $('div[id="devicecontainer"] input:checkbox:checked').each(function() {
-        RemoveMultipleDataFromTempChart($.CustomChart,$(this).attr('id'));
+        RemoveMultipleDataFromTempChart($.CustomChart.highcharts(),$(this).attr('id'));
         $.ajax({
-           url: "json.htm?type=graph&sensor=temp&idx="+$(this).attr('id')+"&range="+$("#graphfrom").val()+"T"+$("#graphto").val()+"&graphtype="+$("#combocustomgraphtype").val()+
-           "&graphTemp="+$("#graphTemp").prop("checked")+"&graphChill="+$("#graphChill").prop("checked")+"&graphHum="+$("#graphHum").prop("checked")+"&graphBaro="+$("#graphBaro").prop("checked")+"&graphDew="+$("#graphDew").prop("checked"),
+           url: "json.htm?type=graph&sensor=temp&idx="+$(this).attr('id')+"&range="+$("#tempcontent #graphfrom").val()+"T"+$("#tempcontent #graphto").val()+"&graphtype="+$("#tempcontent #combocustomgraphtype").val()+
+           "&graphTemp="+$("#tempcontent #graphTemp").prop("checked")+"&graphChill="+$("#tempcontent #graphChill").prop("checked")+"&graphHum="+$("#tempcontent #graphHum").prop("checked")+"&graphBaro="+$("#tempcontent #graphBaro").prop("checked")+"&graphDew="+$("#tempcontent #graphDew").prop("checked"),
            async: false,
            dataType: 'json',
            graphid: $(this).attr('id'),
            graphval: $(this).val(),
            success: function(data) {
-            AddMultipleDataToTempChart(data,$.CustomChart,$("#combocustomgraphtype").val(),this.graphid,this.graphval);
+            AddMultipleDataToTempChart(data,$.CustomChart.highcharts(),$("#tempcontent #combocustomgraphtype").val(),this.graphid,this.graphval);
            }
         });
-    });   
+    }); 
+    return false;
 }
     
 function ShowCustomTempLog()
@@ -327,17 +335,22 @@ function ShowCustomTempLog()
   $('#tempcontent').html(GetBackbuttonHTMLTable('ShowTemps')+htmlcontent);
   $('#tempcontent').i18n();
   
-    $('#tempcontent .datepick').each(function() {
-        $(this).datepicker({
+  $.content="#tempcontent";
+
+    $('.datepick').datepicker({
                            dateFormat: 'yy-mm-dd',
-                           onClose:function(){ datePickerChanged() }});
-        $(this).datepicker('setDate', new Date());
-    });
+                           onClose:function() {
+								datePickerChanged(this);
+						   }
+						  });
+    $("#graphfrom").datepicker('setDate', '-7');
+    $("#graphto").datepicker('setDate', '-0');
     $("#tempcontent #graphfrom").datepicker('setDate', '-7');
+    $("#tempcontent #graphto").datepicker('setDate', '-0');
     
-  $.CustomChart = new Highcharts.Chart({
+  $.CustomChart = $($.content + ' #customgraph');
+  $.CustomChart.highcharts({
       chart: {
-          renderTo: 'customgraph',
           type: 'line',
           zoomType: 'xy',
           alignTicks: false,

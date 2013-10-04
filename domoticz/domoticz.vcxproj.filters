@@ -90,6 +90,9 @@
     <Filter Include="Devices\S0 Meter">
       <UniqueIdentifier>{d33c473c-6718-4c9d-9b29-4f9f81e1a2d5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\PiFace">
+      <UniqueIdentifier>{9d351bef-effa-483f-bc87-03d85479a74f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -289,6 +292,9 @@
     <ClInclude Include="hardware\S0MeterSerial.h">
       <Filter>Devices\S0 Meter</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\PiFace.h">
+      <Filter>Devices\PiFace</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -458,6 +464,9 @@
     </ClCompile>
     <ClCompile Include="hardware\S0MeterSerial.cpp">
       <Filter>Devices\S0 Meter</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\PiFace.cpp">
+      <Filter>Devices\PiFace</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

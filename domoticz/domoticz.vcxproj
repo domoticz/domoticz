@@ -105,6 +105,7 @@
     <ClInclude Include="hardware\DavisLoggerSerial.h" />
     <ClInclude Include="hardware\Dummy.h" />
     <ClInclude Include="hardware\hidapi.h" />
+    <ClInclude Include="hardware\PiFace.h" />
     <ClInclude Include="hardware\Razberry.h" />
     <ClInclude Include="hardware\Rego6XXSerial.h" />
     <ClInclude Include="hardware\S0MeterSerial.h" />
@@ -170,6 +171,7 @@
     <ClCompile Include="hardware\DavisLoggerSerial.cpp" />
     <ClCompile Include="hardware\Dummy.cpp" />
     <ClCompile Include="hardware\libusbwinusbbridge.cpp" />
+    <ClCompile Include="hardware\PiFace.cpp" />
     <ClCompile Include="hardware\Razberry.cpp" />
     <ClCompile Include="hardware\S0MeterSerial.cpp" />
     <ClCompile Include="hardware\smbus.cpp" />
