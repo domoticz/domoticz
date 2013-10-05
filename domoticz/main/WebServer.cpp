@@ -1294,7 +1294,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				root["result"][ii]["MaxDimLevel"]=maxDimLevel;
 				root["result"][ii]["HaveGroupCmd"]=bHaveGroupCmd;
                 root["result"][ii]["SwitchType"]="Security";
-				root["result"][ii]["SwitchTypeVal"]=0;
+				root["result"][ii]["SwitchTypeVal"]=switchtype; //was 0?;
 				root["result"][ii]["TypeImg"]="security";
 				if ((dSubType==sTypeKD101) || (switchtype == STYPE_SMOKEDETECTOR)) 
 				{
