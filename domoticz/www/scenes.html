@@ -57,6 +57,7 @@
 								<th align="left" data-i18n="Name">Name</th>
 								<th align="right" width="100" id="CommandHeader" data-i18n="Command">Command</th>
 								<th align="right" width="40" data-i18n="Level">Level</th>
+								<th align="center" width="40" data-i18n="Order">Order</th>
 						</tr>
 				</thead>
 		</table>
@@ -397,6 +398,23 @@ function MakeFavorite(id,isfavorite)
   });
 }
 
+function ChangeDeviceOrder(order, devid)
+{
+	if (window.my_config.userrights!=2) {
+        HideNotify();
+		ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
+		return;
+	}
+  $.ajax({
+     url: "json.htm?type=command&param=changescenedeviceorder&idx=" + devid + "&way=" + order, 
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+		RefreshDeviceTableEx();
+     }
+  });
+}
+
 function RefreshDeviceTableEx()
 {
 	RefreshDeviceTable($.SceneIdx);
@@ -421,33 +439,54 @@ function RefreshDeviceTable(idx)
      success: function(data) {
         
       if (typeof data.result != 'undefined') {
+		var totalItems=data.result.length;
         $.each(data.result, function(i,item){
-					var commandbtns;
-					if ($.isScene==false) {
-						if (item.IsOn==true) {
-							commandbtns='<button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.DevID + ',\'On\',RefreshDeviceTableEx);">' + $.i18n('ON') + '</button> <button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.DevID + ',\'Off\',RefreshDeviceTableEx);">' + $.i18n('OFF') + '</button>';
-						}
-						else {
-							commandbtns='<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.DevID + ',\'On\',RefreshDeviceTableEx);">' + $.i18n('ON') + '</button> <button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.DevID + ',\'Off\',RefreshDeviceTableEx);">' + $.i18n('OFF') + '</button>';
-						}
+				var commandbtns;
+				if ($.isScene==false) {
+					if (item.IsOn==true) {
+						commandbtns='<button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.DevID + ',\'On\',RefreshDeviceTableEx);">' + $.i18n('ON') + '</button> <button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.DevID + ',\'Off\',RefreshDeviceTableEx);">' + $.i18n('OFF') + '</button>';
 					}
 					else {
-						if (item.IsOn==true) {
-							commandbtns='<button class="btn btn-mini btn-info" type="button">' + $.i18n('ON') + '</button> <button class="btn btn-mini" type="button">' + $.i18n('OFF') + '</button>';
-						}
-						else {
-							commandbtns='<button class="btn btn-mini" type="button">' + $.i18n('ON') + '</button> <button class="btn btn-mini btn-info" type="button">' + $.i18n('OFF') + '</button>';
-						}
+						commandbtns='<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.DevID + ',\'On\',RefreshDeviceTableEx);">' + $.i18n('ON') + '</button> <button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.DevID + ',\'Off\',RefreshDeviceTableEx);">' + $.i18n('OFF') + '</button>';
 					}
-          var addId = oTable.fnAddData( {
-				"DT_RowId": item.ID,
-				"IsOn": item.IsOn,
-				"RealIdx": item.DevRealIdx,
-				"Level": item.Level,
-                "0": item.Name,
-                "1": commandbtns,
-                "2": item.Level + " %"
-		  } );
+				}
+				else {
+					if (item.IsOn==true) {
+						commandbtns='<button class="btn btn-mini btn-info" type="button">' + $.i18n('ON') + '</button> <button class="btn btn-mini" type="button">' + $.i18n('OFF') + '</button>';
+					}
+					else {
+						commandbtns='<button class="btn btn-mini" type="button">' + $.i18n('ON') + '</button> <button class="btn btn-mini btn-info" type="button">' + $.i18n('OFF') + '</button>';
+					}
+				}
+				var updownImg="";
+				if (i!=totalItems-1) {
+					//Add Down Image
+					if (updownImg!="") {
+						updownImg+="&nbsp;";
+					}
+					updownImg+='<img src="images/down.png" onclick="ChangeDeviceOrder(1,' + item.ID + ');" onmouseover="cursorhand()" onmouseout="cursordefault()" width="16" height="16"></img>';
+				}
+				else {
+					updownImg+='<img src="images/empty16.png" width="16" height="16"></img>';
+				}
+				if (i!=0) {
+					//Add Up image
+					if (updownImg!="") {
+						updownImg+="&nbsp;";
+					}
+					updownImg+='<img src="images/up.png" onclick="ChangeDeviceOrder(0,' + item.ID + ');" onmouseover="cursorhand()" onmouseout="cursordefault()" width="16" height="16"></img>';
+				}
+				var addId = oTable.fnAddData( {
+					"DT_RowId": item.ID,
+					"IsOn": item.IsOn,
+					"RealIdx": item.DevRealIdx,
+					"Level": item.Level,
+					"Order": item.Order,
+					"0": item.Name,
+					"1": commandbtns,
+					"2": item.Level + " %",
+					"3": updownImg
+				} );
         });
         
 				/* Add a click handler to the rows - this could be used as a callback */
@@ -614,10 +653,9 @@ function EditSceneDevice(idx,name,havecode,type)
 					"aoColumnDefs": [
 						{ "bSortable": false, "aTargets": [ 1 ] }
 					],
-                  "aaSorting": [[ 0, "asc" ]],
-                  "bSortClasses": false,
+				  "bSort": false,
                   "bProcessing": true,
-                  "bStateSave": true,
+                  "bStateSave": false,
                   "bJQueryUI": true,
 				  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
 				  "iDisplayLength" : 25,

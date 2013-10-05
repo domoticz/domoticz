@@ -2676,7 +2676,6 @@ void CSQLHelper::Schedule5Minute()
 	UpdateUVLog();
 	UpdateMeter();
 	UpdateMultiMeter();
-
 	//Removing the line below could cause a very large database,
 	//and slow(large) data transfer (specially when working remote!!)
 	CleanupShortLog(); 

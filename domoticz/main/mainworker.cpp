@@ -7209,7 +7209,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 
 	//now switch all attached devices
 	std::stringstream szQuery;
-	szQuery << "SELECT DeviceRowID, Cmd, Level FROM SceneDevices WHERE (SceneRowID == " << idx << ")";
+	szQuery << "SELECT DeviceRowID, Cmd, Level FROM SceneDevices WHERE (SceneRowID == " << idx << ")  ORDER BY [Order] ASC";
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return false;

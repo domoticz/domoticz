@@ -6286,7 +6286,7 @@ std::string CWebServer::GetJSonPage()
 
 			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;
-			szQuery << "SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Cmd, a.Level, b.ID FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='" << idx << "') AND (b.ID == a.DeviceRowID) ORDER BY b.Name";
+			szQuery << "SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Cmd, a.Level, b.ID, a.[Order] FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='" << idx << "') AND (b.ID == a.DeviceRowID) ORDER BY a.[Order]";
 			result=m_pMain->m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
@@ -6300,6 +6300,7 @@ std::string CWebServer::GetJSonPage()
 					root["result"][ii]["Name"]=sd[1];
 					root["result"][ii]["DevID"]=sd[2];
 					root["result"][ii]["DevRealIdx"]=sd[9];
+					root["result"][ii]["Order"]=atoi(sd[10].c_str());
 
 					unsigned char devType=atoi(sd[3].c_str());
 					unsigned char subType=atoi(sd[4].c_str());
@@ -6322,6 +6323,65 @@ std::string CWebServer::GetJSonPage()
 					ii++;
 				}
 			}
+		}
+		else if (cparam=="changescenedeviceorder")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			std::string sway=m_pWebEm->FindValue("way");
+			if (sway=="")
+				goto exitjson;
+			bool bGoUp=(sway=="0");
+
+			std::string aScene,aOrder,oID,oOrder;
+
+			//Get actual device order
+			std::vector<std::vector<std::string> > result;
+			std::stringstream szQuery;
+			szQuery << "SELECT SceneRowID, [Order] FROM SceneDevices WHERE (ID=='" << idx << "')";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()<1)
+				goto exitjson;
+			aScene=result[0][0];
+			aOrder=result[0][1];
+
+			szQuery.clear();
+			szQuery.str("");
+
+			if (!bGoUp)
+			{
+				//Get next device order
+				szQuery << "SELECT ID, [Order] FROM SceneDevices WHERE (SceneRowID=='" << aScene << "' AND [Order]>'" << aOrder << "') ORDER BY [Order] ASC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()<1)
+					goto exitjson;
+				oID=result[0][0];
+				oOrder=result[0][1];
+			}
+			else
+			{
+				//Get previous device order
+				szQuery << "SELECT ID, [Order] FROM SceneDevices WHERE (SceneRowID=='" << aScene << "' AND [Order]<'" << aOrder << "') ORDER BY [Order] DESC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()<1)
+					goto exitjson;
+				oID=result[0][0];
+				oOrder=result[0][1];
+			}
+			//Swap them
+			root["status"]="OK";
+			root["title"]="ChangeSceneDeviceOrder";
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE SceneDevices SET [Order] = '" << oOrder << "' WHERE (ID='" << idx << "')";
+			result=m_pMain->m_sql.query(szQuery.str());
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE SceneDevices SET [Order] = '" << aOrder << "' WHERE (ID='" << oID << "')";
+			result=m_pMain->m_sql.query(szQuery.str());
+
 		}
 		else if (cparam=="deleteallscenedevices")
 		{
