@@ -15,7 +15,7 @@
 			<td><input type="checkbox" id="ATIremote" name="ATIremote">&nbsp;<label for="ATIremote">ATI remote</label></td>
 		</tr>
 		<tr>
-			<td><input type="checkbox" id="rfu5" name="rfu5">&nbsp;<label for="rfu5">RFU 5</label></td>
+			<td><input type="checkbox" id="ByronSX" name="ByronSX">&nbsp;<label for="rfu5">Byron SX</label></td>
 			<td><input type="checkbox" id="ProGuard" name="ProGuard">&nbsp;<label for="ProGuard">ProGuard</label></td>
 			<td><input type="checkbox" id="OregonScientific" name="OregonScientific">&nbsp;<label for="OregonScientific">Oregon Scientific</label></td>
 		</tr>
@@ -587,7 +587,7 @@ function EditRFXCOMMode(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 	$('#hardwarecontent #FineOffsetViking').prop('checked',((Mode3 & 0x04)!=0));
 	$('#hardwarecontent #Lighting4').prop('checked',((Mode3 & 0x08)!=0));
 	$('#hardwarecontent #RSL').prop('checked',((Mode3 & 0x10)!=0));
-	$('#hardwarecontent #rfu5').prop('checked',((Mode3 & 0x20)!=0));
+	$('#hardwarecontent #ByronSX').prop('checked',((Mode3 & 0x20)!=0));
 	$('#hardwarecontent #rfu6').prop('checked',((Mode3 & 0x40)!=0));
 
 	$('#hardwarecontent #defaultbutton').click(function (e) {
@@ -614,7 +614,7 @@ function EditRFXCOMMode(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 		$('#hardwarecontent #FineOffsetViking').prop('checked',false);
 		$('#hardwarecontent #Lighting4').prop('checked',false);
 		$('#hardwarecontent #RSL').prop('checked',false);
-		$('#hardwarecontent #rfu5').prop('checked',false);
+		$('#hardwarecontent #ByronSX').prop('checked',false);
 		$('#hardwarecontent #rfu6').prop('checked',false);
 	});
 }

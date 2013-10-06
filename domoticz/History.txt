@@ -51,6 +51,9 @@ Version 1.0.xxx (Oktober xxth 2013)
 - Implemented: Eventsystem, Utility Device support for Energy,Gas,AirQuality,RFXSensor(Volt/AD),RFXMeter
 - Changed: Dashboard Smart meter display in mobile mode
 - Implemented: Scenes/Groups device ordering
+- Changed: RFXCOM mode setup, RFU5 -> ByronSX
+- Fixed: Shortlog History days display when showing graph from dashboard
+- Fixed: Security devices always showing as switchtype 0
 
 Version 1.0.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)
