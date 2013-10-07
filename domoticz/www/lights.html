@@ -315,42 +315,41 @@
 
 function DeleteTimer(idx)
 {
-	var bValid = false;
-	bValid=(confirm($.i18n("Are you sure to delete this timers?\n\nThis action can not be undone..."))==true);
-	if (bValid == false)
-		return;
-		
-	$.ajax({
-		 url: "json.htm?type=command&param=deletetimer&idx=" + idx,
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
-			RefreshTimerTable($.devIdx);
-		 },
-		 error: function(){
-				HideNotify();
-				ShowNotify($.i18n('Problem deleting timer!'), 2500, true);
-		 }     
+	bootbox.confirm($.i18n("Are you sure to delete this timers?\n\nThis action can not be undone..."), function(result) {
+		if (result==true) {
+			$.ajax({
+				 url: "json.htm?type=command&param=deletetimer&idx=" + idx,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					RefreshTimerTable($.devIdx);
+				 },
+				 error: function(){
+						HideNotify();
+						ShowNotify($.i18n('Problem deleting timer!'), 2500, true);
+				 }     
+			});
+		}
 	});
 }
 
 function ClearTimers()
 {
-	var bValid = false;
-	bValid=(confirm($.i18n("Are you sure to delete ALL timers?\n\nThis action can not be undone!"))==true);
-	if (bValid == false)
-		return;
-	$.ajax({
-		 url: "json.htm?type=command&param=cleartimers&idx=" + $.devIdx,
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
-			RefreshTimerTable($.devIdx);
-		 },
-		 error: function(){
-				HideNotify();
-				ShowNotify($.i18n('Problem clearing timers!'), 2500, true);
-		 }     
+	bootbox.confirm($.i18n("Are you sure to delete ALL timers?\n\nThis action can not be undone!"), function(result) {
+		if (result==true) {
+			$.ajax({
+				 url: "json.htm?type=command&param=cleartimers&idx=" + $.devIdx,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					RefreshTimerTable($.devIdx);
+				 },
+				 error: function(){
+						HideNotify();
+						ShowNotify($.i18n('Problem clearing timers!'), 2500, true);
+				 }     
+			});
+		}
 	});
 }
 
@@ -747,33 +746,33 @@ function DeleteLightSwitchIntern(bRemoveSubDevices)
 
 function DeleteLightSwitch()
 {
-	var bValid = false;
-	bValid=(confirm($.i18n("Are you sure to remove this Light/Switch?"))==true);
-	if ( bValid ) {
-		var bRemoveSubDevices=true;
-		if ($.isslave==true) {
-				var result=false;
-				$( "#dialog-confirm-delete-subs" ).dialog({
-					resizable: false,
-					width: 440,
-					height:180,
-					modal: true,
-					buttons: {
-						"Yes": function() {
-								$( this ).dialog( "close" );
-								DeleteLightSwitchIntern(true);
-					},
-						"No": function() {
-								$( this ).dialog( "close" );
-								DeleteLightSwitchIntern(false);
+	bootbox.confirm($.i18n("Are you sure to remove this Light/Switch?"), function(result) {
+		if (result==true) {
+			var bRemoveSubDevices=true;
+			if ($.isslave==true) {
+					var result=false;
+					$( "#dialog-confirm-delete-subs" ).dialog({
+						resizable: false,
+						width: 440,
+						height:180,
+						modal: true,
+						buttons: {
+							"Yes": function() {
+									$( this ).dialog( "close" );
+									DeleteLightSwitchIntern(true);
+						},
+							"No": function() {
+									$( this ).dialog( "close" );
+									DeleteLightSwitchIntern(false);
+						}
 					}
-				}
-			});
+				});
+			}
+			else {
+				DeleteLightSwitchIntern(false);
+			}
 		}
-		else {
-			DeleteLightSwitchIntern(false);
-		}
-	}
+	});
 }
 
 function SaveLightSwitch()
@@ -802,34 +801,33 @@ function SaveLightSwitch()
 
 function ClearSubDevices()
 {
-	var bValid = false;
-	bValid=(confirm($.i18n("Are you sure to delete ALL Sub/Slave Devices?\n\nThis action can not be undone!"))==true);
-	if (bValid == false)
-		return;
-	$.ajax({
-			url: "json.htm?type=command&param=deleteallsubdevices&idx=" + $.devIdx,
-			async: false, 
-			dataType: 'json',
-			success: function(data) {
-			RefreshSubDeviceTable($.devIdx);
+	bootbox.confirm($.i18n("Are you sure to delete ALL Sub/Slave Devices?\n\nThis action can not be undone!"), function(result) {
+		if (result==true) {
+			$.ajax({
+					url: "json.htm?type=command&param=deleteallsubdevices&idx=" + $.devIdx,
+					async: false, 
+					dataType: 'json',
+					success: function(data) {
+					RefreshSubDeviceTable($.devIdx);
+				}
+			});
 		}
 	});
 }
 
 function DeleteSubDevice(idx)
 {
-	var bValid = false;
-	bValid=(confirm($.i18n("Are you sure to delete this Sub/Slave Device?\n\nThis action can not be undone..."))==true);
-	if (bValid == false)
-		return;
-
-	$.ajax({
-		 url: "json.htm?type=command&param=deletesubdevice&idx=" + idx,
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
-			RefreshSubDeviceTable($.devIdx);
-		 }
+	bootbox.confirm($.i18n("Are you sure to delete this Sub/Slave Device?\n\nThis action can not be undone..."), function(result) {
+		if (result==true) {
+			$.ajax({
+				 url: "json.htm?type=command&param=deletesubdevice&idx=" + idx,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					RefreshSubDeviceTable($.devIdx);
+				 }
+			});
+		}
 	});
 }
 
@@ -883,7 +881,7 @@ function AddSubDevice()
 {
 	var SubDeviceIdx=$("#lightcontent #combosubdevice option:selected").val();
 	if (typeof SubDeviceIdx == 'undefined') {
-		alert($.i18n('No Sub/Slave Device Selected!'));
+		bootbox.alert($.i18n('No Sub/Slave Device Selected!'));
 		return ;
 	}
 	$.ajax({
@@ -1821,7 +1819,7 @@ function GetManualLightSettings(isTest)
 	{
 		var MainDeviceIdx=$("#dialog-addmanuallightdevice #combosubdevice option:selected").val();
 		if (typeof MainDeviceIdx == 'undefined') {
-			alert($.i18n('No Main Device Selected!'));
+			bootbox.alert($.i18n('No Main Device Selected!'));
 			return "";
 		}
 	}
@@ -1903,7 +1901,7 @@ $(document).ready(function() {
 									{
 										var MainDeviceIdx=$("#dialog-addlightdevice #combosubdevice option:selected").val();
 										if (typeof MainDeviceIdx == 'undefined') {
-											alert($.i18n('No Main Device Selected!'));
+											bootbox.alert($.i18n('No Main Device Selected!'));
 											return;
 										}
 									}

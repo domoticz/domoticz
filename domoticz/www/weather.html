@@ -112,7 +112,7 @@ function EditWeatherDevice(idx,name)
 
 function AddWeatherDevice()
 {
-  alert($.i18n('Please use the devices tab for this.'));
+  bootbox.alert($.i18n('Please use the devices tab for this.'));
 }
 
 function RefreshWeathers()
@@ -530,10 +530,9 @@ $(document).ready(function() {
                   }
               },
               "Remove Device": function() {
-                  var bValid = false;
-                  bValid=(confirm($.i18n("Are you sure to remove this Device?"))==true);
-                  if ( bValid ) {
-                      $( this ).dialog( "close" );
+                $( this ).dialog( "close" );
+				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
                       $.ajax({
                          url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editweatherdevice #devicename").val() + '&used=false',
                          async: false, 
@@ -542,8 +541,8 @@ $(document).ready(function() {
                             ShowWeathers();
                          }
                       });
-                      
-                  }
+					}
+				});
               },
               "Transfer": function() {
                   $( this ).dialog( "close" );
@@ -590,10 +589,9 @@ $(document).ready(function() {
                   }
               },
               "Remove Device": function() {
-                  var bValid = false;
-                  bValid=(confirm($.i18n("Are you sure to remove this Device?"))==true);
-                  if ( bValid ) {
-                      $( this ).dialog( "close" );
+                $( this ).dialog( "close" );
+				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
                       $.ajax({
                          url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editweatherdevice #devicename").val() + '&used=false',
                          async: false, 
@@ -602,8 +600,8 @@ $(document).ready(function() {
                             ShowWeathers();
                          }
                       });
-                      
-                  }
+					}
+				});
               },
               "Transfer": function() {
                   $( this ).dialog( "close" );
@@ -651,10 +649,9 @@ $(document).ready(function() {
                   }
               },
               "Remove Device": function() {
-                  var bValid = false;
-                  bValid=(confirm($.i18n("Are you sure to remove this Device?"))==true);
-                  if ( bValid ) {
-                      $( this ).dialog( "close" );
+                $( this ).dialog( "close" );
+				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
                       $.ajax({
                          url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editbarodevice #devicename").val() + '&used=false',
                          async: false,
@@ -663,8 +660,8 @@ $(document).ready(function() {
                             ShowWeathers();
                          }
                       });
-
-                  }
+					}
+				});
               },
               "Transfer": function() {
                   $( this ).dialog( "close" );
@@ -711,10 +708,9 @@ $(document).ready(function() {
                   }
               },
               "Remove Device": function() {
-                  var bValid = false;
-                  bValid=(confirm($.i18n("Are you sure to remove this Device?"))==true);
-                  if ( bValid ) {
-                      $( this ).dialog( "close" );
+                $( this ).dialog( "close" );
+				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
                       $.ajax({
                          url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editvisibilitydevice #devicename").val() + '&used=false',
                          async: false, 
@@ -723,8 +719,8 @@ $(document).ready(function() {
                             ShowWeathers();
                          }
                       });
-                      
-                  }
+					}
+				});
               },
               Cancel: function() {
                   $( this ).dialog( "close" );

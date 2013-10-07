@@ -22,6 +22,8 @@
 //-----------------------------------------------------------------------------
 
 /*
+SDK version 6.07b
+	in the IRESPONSE struct: RFU5enabled changed to SXenabled
 SDK version 6.07a
 	#define msg3_RFU5 0x20   changed to   #define msg3_SX 0x20
 
@@ -635,7 +637,7 @@ typedef union tRBUF {
 		BYTE	FINEOFFSETenabled : 1;
 		BYTE	LIGHTING4enabled : 1;
 		BYTE	RSLenabled : 1;
-		BYTE	RFU5 : 1;
+		BYTE	SXenabled : 1;
 		BYTE	RFU6 : 1;
 		BYTE	UNDECODEDenabled : 1;
 		//BYTE	msg4;

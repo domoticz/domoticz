@@ -86,17 +86,18 @@ function AddLightDevice(idx)
 
 function RemoveDevice(idx)
 {
-  if (confirm($.i18n("Are you sure to remove this Device from your used devices?"))==false) {
-    return;
-  }
-    $.ajax({
-       url: "json.htm?type=setused&idx=" + idx + '&used=false',
-       async: false, 
-       dataType: 'json',
-       success: function(data) {
-          ShowDevices();
-       }
-    });
+	bootbox.confirm($.i18n("Are you sure to remove this Device from your used devices?"), function(result) {
+		if (result==true) {
+			$.ajax({
+			   url: "json.htm?type=setused&idx=" + idx + '&used=false',
+			   async: false, 
+			   dataType: 'json',
+			   success: function(data) {
+				  ShowDevices();
+			   }
+			});
+		}
+	});
 }
 
 function InvertCheck()
@@ -109,26 +110,26 @@ function DeleteMultipleDevices()
 {
 	var totalselected=$('#devices input:checkbox:checked').length;
 	if (totalselected==0) {
-		alert($.i18n('No Devices selected to Delete!'));
+		bootbox.alert($.i18n('No Devices selected to Delete!'));
 		return;
 	}
-	if (confirm($.i18n("Are you sure you want to delete the selected Devices?"))==false) {
-		return;
-	}
-    var delCount = 0;
-		$('#devices input:checkbox:checked').each(function() {
-			$.ajax({
-				url: "json.htm?type=deletedevice&idx=" + $(this).val(),
-				async: false, 
-				dataType: 'json',
-				success: function(data) {
-					delCount++;
-				}
-		});
+	bootbox.confirm($.i18n("Are you sure you want to delete the selected Devices?"), function(result) {
+		if (result==true) {
+			var delCount = 0;
+				$('#devices input:checkbox:checked').each(function() {
+					$.ajax({
+						url: "json.htm?type=deletedevice&idx=" + $(this).val(),
+						async: false, 
+						dataType: 'json',
+						success: function(data) {
+							delCount++;
+						}
+				});
+			});
+			bootbox.alert(delCount+" " + $.i18n("Devices deleted."));
+			ShowDevices();
+		}
 	});
-	alert(delCount+" " + $.i18n("Devices deleted."));
-	ShowDevices();
-    
 }
 
 function RefreshLightSwitchesComboArray()
@@ -405,7 +406,7 @@ $(document).ready(function() {
                       {
 												var MainDeviceIdx=$("#dialog-addlightdevice #combosubdevice option:selected").val();
 												if (typeof MainDeviceIdx == 'undefined') {
-													alert($.i18n('No Main Device Selected!'));
+													bootbox.alert($.i18n('No Main Device Selected!'));
 													return;
 												}
                       }

@@ -294,18 +294,18 @@ function AddScene()
 
 function DeleteScene()
 {
-	var bValid = false;
-	bValid=(confirm($.i18n("Are you sure to remove this Scene?"))==true);
-	if ( bValid ) {
-		$.ajax({
-			 url: "json.htm?type=deletescene&idx=" + $.devIdx,
-			 async: false, 
-			 dataType: 'json',
-			 success: function(data) {
-					ShowScenes();
-			 }
-		});
-	}
+	bootbox.confirm($.i18n("Are you sure to remove this Scene?"), function(result) {
+		if (result==true) {
+			$.ajax({
+				 url: "json.htm?type=deletescene&idx=" + $.devIdx,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+						ShowScenes();
+				 }
+			});
+		}
+	});
 }
 
 function SaveScene()
@@ -329,7 +329,7 @@ function AddDevice()
 {
 	var DeviceIdx=$("#scenecontent #combodevice option:selected").val();
 	if (typeof DeviceIdx == 'undefined') {
-		alert($.i18n('No Device Selected!'));
+		bootbox.alert($.i18n('No Device Selected!'));
 		return ;
 	}
 
@@ -366,16 +366,17 @@ function AddDevice()
 function ClearDevices()
 {
 	var bValid = false;
-	bValid=(confirm($.i18n("Are you sure to delete ALL Devices?\n\nThis action can not be undone!"))==true);
-	if (bValid == false)
-		return;
-	$.ajax({
-		 url: "json.htm?type=command&param=deleteallscenedevices&idx=" + $.devIdx,
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
-			RefreshDeviceTable($.devIdx);
-		 }
+	bootbox.confirm($.i18n("Are you sure to delete ALL Devices?\n\nThis action can not be undone!"), function(result) {
+		if (result==true) {
+			$.ajax({
+				 url: "json.htm?type=command&param=deleteallscenedevices&idx=" + $.devIdx,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					RefreshDeviceTable($.devIdx);
+				 }
+			});
+		}
 	});
 }
 
@@ -541,11 +542,11 @@ function UpdateDevice(idx, devidx)
 {
 	var DeviceIdx=$("#scenecontent #combodevice option:selected").val();
 	if (typeof DeviceIdx == 'undefined') {
-		alert($.i18n('No Device Selected!'));
+		bootbox.alert($.i18n('No Device Selected!'));
 		return ;
 	}
 	if (DeviceIdx!=devidx) {
-		alert($.i18n('Device change not allowed!'));
+		bootbox.alert($.i18n('Device change not allowed!'));
 		return ;
 	}
 
@@ -581,18 +582,17 @@ function UpdateDevice(idx, devidx)
 
 function DeleteDevice(idx)
 {
-	var bValid = false;
-	bValid=(confirm($.i18n("Are you sure to delete this Device?\n\nThis action can not be undone..."))==true);
-	if (bValid == false)
-		return;
-
-	$.ajax({
-		 url: "json.htm?type=command&param=deletescenedevice&idx=" + idx,
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
-			RefreshDeviceTable($.devIdx);
-		 }
+	bootbox.confirm($.i18n("Are you sure to delete this Device?\n\nThis action can not be undone..."), function(result) {
+		if (result==true) {
+			$.ajax({
+				 url: "json.htm?type=command&param=deletescenedevice&idx=" + idx,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					RefreshDeviceTable($.devIdx);
+				 }
+			});
+		}
 	});
 }
 
@@ -742,42 +742,41 @@ function EnableDisableDays(TypeStr, bDisabled)
 
 function ClearTimers()
 {
-	var bValid = false;
-	bValid=(confirm($.i18n("Are you sure to delete ALL timers?\n\nThis action can not be undone!"))==true);
-	if (bValid == false)
-		return;
-	$.ajax({
-		 url: "json.htm?type=command&param=clearscenetimers&idx=" + $.devIdx,
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
-			RefreshTimerTable($.devIdx);
-		 },
-		 error: function(){
-				HideNotify();
-				ShowNotify($.i18n('Problem clearing timers!'), 2500, true);
-		 }     
+	bootbox.confirm($.i18n("Are you sure to delete ALL timers?\n\nThis action can not be undone!"), function(result) {
+		if (result==true) {
+			$.ajax({
+				 url: "json.htm?type=command&param=clearscenetimers&idx=" + $.devIdx,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					RefreshTimerTable($.devIdx);
+				 },
+				 error: function(){
+						HideNotify();
+						ShowNotify($.i18n('Problem clearing timers!'), 2500, true);
+				 }     
+			});
+		}
 	});
 }
 
 function DeleteTimer(idx)
 {
-	var bValid = false;
-	bValid=(confirm($.i18n("Are you sure to delete this timers?\n\nThis action can not be undone..."))==true);
-	if (bValid == false)
-		return;
-		
-	$.ajax({
-		 url: "json.htm?type=command&param=deletescenetimer&idx=" + idx,
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
-			RefreshTimerTable($.devIdx);
-		 },
-		 error: function(){
-				HideNotify();
-				ShowNotify($.i18n('Problem deleting timer!'), 2500, true);
-		 }     
+	bootbox.confirm($.i18n("Are you sure to delete this timers?\n\nThis action can not be undone..."), function(result) {
+		if (result==true) {
+			$.ajax({
+				 url: "json.htm?type=command&param=deletescenetimer&idx=" + idx,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					RefreshTimerTable($.devIdx);
+				 },
+				 error: function(){
+						HideNotify();
+						ShowNotify($.i18n('Problem deleting timer!'), 2500, true);
+				 }     
+			});
+		}
 	});
 }
 

@@ -1379,10 +1379,10 @@ unsigned long long MainWorker::decode_InterfaceMessage(const int HwdID, const tR
 					else
 						WriteMessage("Conrad RSL        disabled");
 
-					if (pResponse->IRESPONSE.RFU5)
-						WriteMessage("RFU protocol 5    enabled");
+					if (pResponse->IRESPONSE.SXenabled)
+						WriteMessage("ByronSX           enabled");
 					else
-						WriteMessage("RFU protocol 5    disabled");
+						WriteMessage("ByronSX           disabled");
 
 					if (pResponse->IRESPONSE.RFU6)
 						WriteMessage("RFU protocol 6    enabled");

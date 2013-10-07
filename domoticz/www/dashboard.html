@@ -2366,7 +2366,7 @@ function ShowFavorites()
 						var parts1 = myid.split('_');
 						var parts2 = $.devIdx.split('_');
 						if (parts1[0]!=parts2[0]) {
-							alert($.i18n('Only possible between Sensors of the same kind!'));
+							bootbox.alert($.i18n('Only possible between Sensors of the same kind!'));
 							$.myglobals.refreshTimer = setInterval(ShowFavorites, 10000);
 						} else {
 						
@@ -2395,7 +2395,7 @@ function ShowFavorites()
 						var parts1 = myid.split('_');
 						var parts2 = $.devIdx.split('_');
 						if (parts1[0]!=parts2[0]) {
-							alert($.i18n('Only possible between Sensors of the same kind!'));
+							bootbox.alert($.i18n('Only possible between Sensors of the same kind!'));
 							$.myglobals.refreshTimer = setInterval(ShowFavorites, 10000);
 						} else {
 							var jsonCmd="";

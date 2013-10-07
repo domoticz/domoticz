@@ -173,7 +173,7 @@ function EditSetPoint(idx,name,setpoint)
 
 function AddUtilityDevice()
 {
-  alert($.i18n('Please use the devices tab for this.'));
+  bootbox.alert($.i18n('Please use the devices tab for this.'));
 }
 
 function AddDataToUtilityChart(data,chart,switchtype)
@@ -3831,10 +3831,9 @@ $(document).ready(function() {
                   }
               },
               "Remove Device": function() {
-                  var bValid = false;
-                  bValid=(confirm($.i18n("Are you sure to remove this Device?"))==true);
-                  if ( bValid ) {
-                      $( this ).dialog( "close" );
+                $( this ).dialog( "close" );
+				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
                       $.ajax({
                          url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editutilitydevice #devicename").val() + '&used=false',
                          async: false, 
@@ -3843,8 +3842,8 @@ $(document).ready(function() {
                             ShowUtilities();
                          }
                       });
-                      
-                  }
+					}
+				});
               },
               "Transfer": function() {
                   $( this ).dialog( "close" );
@@ -3890,10 +3889,9 @@ $(document).ready(function() {
                   }
               },
               "Remove Device": function() {
-                  var bValid = false;
-                  bValid=(confirm($.i18n("Are you sure to remove this Device?"))==true);
-                  if ( bValid ) {
-                      $( this ).dialog( "close" );
+                $( this ).dialog( "close" );
+				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
                       $.ajax({
                          url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editmeterdevice #devicename").val() + '&used=false',
                          async: false, 
@@ -3902,8 +3900,8 @@ $(document).ready(function() {
                             ShowUtilities();
                          }
                       });
-                      
-                  }
+					}
+				});
               },
               Cancel: function() {
                   $( this ).dialog( "close" );
@@ -3946,10 +3944,9 @@ $(document).ready(function() {
                   }
               },
               "Remove Device": function() {
-                  var bValid = false;
-                  bValid=(confirm($.i18n("Are you sure to remove this Device?"))==true);
-                  if ( bValid ) {
-                      $( this ).dialog( "close" );
+                $( this ).dialog( "close" );
+				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
                       $.ajax({
                          url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editsetpointdevice #devicename").val() + '&used=false',
                          async: false, 
@@ -3958,8 +3955,8 @@ $(document).ready(function() {
                             ShowUtilities();
                          }
                       });
-                      
-                  }
+					}
+				});
               },
               Cancel: function() {
                   $( this ).dialog( "close" );

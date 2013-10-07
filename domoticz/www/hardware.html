@@ -212,22 +212,21 @@
 
 function DeleteHardware(idx)
 {
-	var bValid = false;
-	bValid=(confirm($.i18n("Are you sure to delete this Hardware?\n\nThis action can not be undone...\nAll Devices attached will be removed!"))==true);
-	if (bValid == false) {
-		return;
-	}
-	$.ajax({
-		 url: "json.htm?type=command&param=deletehardware&idx=" + idx,
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
-			RefreshHardwareTable();
-		 },
-		 error: function(){
-				HideNotify();
-				ShowNotify($.i18n('Problem deleting hardware!'), 2500, true);
-		 }     
+	bootbox.confirm($.i18n("Are you sure to delete this Hardware?\n\nThis action can not be undone...\nAll Devices attached will be removed!"), function(result) {
+		if (result==true) {
+			$.ajax({
+				 url: "json.htm?type=command&param=deletehardware&idx=" + idx,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					RefreshHardwareTable();
+				 },
+				 error: function(){
+						HideNotify();
+						ShowNotify($.i18n('Problem deleting hardware!'), 2500, true);
+				 }     
+			});
+		}
 	});
 }
 

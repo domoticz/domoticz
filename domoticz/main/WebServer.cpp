@@ -732,7 +732,7 @@ char * CWebServer::SetRFXCOMMode()
 	Response.IRESPONSE.FINEOFFSETenabled=(m_pWebEm->FindValue("FineOffsetViking")=="on")?1:0;
 	Response.IRESPONSE.LIGHTING4enabled=(m_pWebEm->FindValue("Lighting4")=="on")?1:0;
 	Response.IRESPONSE.RSLenabled=(m_pWebEm->FindValue("RSL")=="on")?1:0;
-	Response.IRESPONSE.RFU5=(m_pWebEm->FindValue("ByronSX")=="on")?1:0;
+	Response.IRESPONSE.SXenabled=(m_pWebEm->FindValue("ByronSX")=="on")?1:0;
 	Response.IRESPONSE.RFU6=(m_pWebEm->FindValue("rfu6")=="on")?1:0;
 
 	m_pMain->SetRFXCOMHardwaremodes(atoi(idx.c_str()),Response.ICMND.msg1,Response.ICMND.msg2,Response.ICMND.msg3,Response.ICMND.msg4,Response.ICMND.msg5);

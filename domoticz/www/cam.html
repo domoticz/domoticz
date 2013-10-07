@@ -202,22 +202,21 @@ function EditCamera(idx)
 
 function Deletecamera(idx)
 {
-	var bValid = false;
-	bValid=(confirm("Are you sure you want to delete this camera?")==true);
-	if (bValid == false) {
-		return;
-	}
-	$.ajax({
-		 url: "json.htm?type=command&param=deletecamera&idx=" + idx,
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
-			RefreshcameraTable();
-		 },
-		 error: function(){
-				HideNotify();
-				ShowNotify('Problem deleting camera!', 2500, true);
-		 }     
+	bootbox.confirm($.i18n("Are you sure you want to delete this camera?"), function(result) {
+		if (result==true) {
+			$.ajax({
+				 url: "json.htm?type=command&param=deletecamera&idx=" + idx,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					RefreshcameraTable();
+				 },
+				 error: function(){
+						HideNotify();
+						ShowNotify('Problem deleting camera!', 2500, true);
+				 }     
+			});
+		}
 	});
 }
 
@@ -569,12 +568,12 @@ function RefreshActiveDevicesTable(idx)
 function AddActiveDevice()
 {
 	if ($.devIdx==-1) {
-		alert('No Camera Selected!');
+		bootbox.alert('No Camera Selected!');
 		return;
 	}
 	var ActiveDeviceIdx=$("#cameracontent #comboactivedevice option:selected").val();
 	if (typeof ActiveDeviceIdx == 'undefined') {
-		alert('No Active Device Selected!');
+		bootbox.alert('No Active Device Selected!');
 		return ;
 	}
 	var ADType=0;
@@ -583,7 +582,7 @@ function AddActiveDevice()
 	}
 	var ADWhen=$("#cameracontent #activewhen option:selected").val();
 	if (typeof ADWhen == 'undefined') {
-		alert('Choose When On or Off!');
+		bootbox.alert('Choose When On or Off!');
 		return ;
 	}
 	var sdelay=$("#cameracontent #delay").val();
@@ -618,33 +617,32 @@ function AddActiveDevice()
 
 function DeleteActiveDevice(idx)
 {
-	var bValid = false;
-	bValid=(confirm("Are you sure to delete this Active Device?\n\nThis action can not be undone...")==true);
-	if (bValid == false)
-		return;
-
-	$.ajax({
-		 url: "json.htm?type=command&param=deleteamactivedevice&idx=" + idx,
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
-			RefreshActiveDevicesTable($.devIdx);
-		 }
+	bootbox.confirm($.i18n("Are you sure to delete this Active Device?\n\nThis action can not be undone..."), function(result) {
+		if (result==true) {
+			$.ajax({
+				 url: "json.htm?type=command&param=deleteamactivedevice&idx=" + idx,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					RefreshActiveDevicesTable($.devIdx);
+				 }
+			});
+		}
 	});
 }
 
 function ClearActiveDevices()
 {
-	var bValid = false;
-	bValid=(confirm("Are you sure to delete ALL Active Devices?\n\nThis action can not be undone!!")==true);
-	if (bValid == false)
-		return;
-	$.ajax({
-			url: "json.htm?type=command&param=deleteallactivecamdevices&idx=" + $.devIdx,
-			async: false, 
-			dataType: 'json',
-			success: function(data) {
-			RefreshActiveDevicesTable($.devIdx);
+	bootbox.confirm($.i18n("Are you sure to delete ALL Active Devices?\n\nThis action can not be undone!!"), function(result) {
+		if (result==true) {
+			$.ajax({
+					url: "json.htm?type=command&param=deleteallactivecamdevices&idx=" + $.devIdx,
+					async: false, 
+					dataType: 'json',
+					success: function(data) {
+					RefreshActiveDevicesTable($.devIdx);
+				}
+			});
 		}
 	});
 }

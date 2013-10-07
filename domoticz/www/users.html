@@ -75,22 +75,21 @@
 
 function DeleteUser(idx)
 {
-	var bValid = false;
-	bValid=(confirm($.i18n("Are you sure you want to delete this User?"))==true);
-	if (bValid == false) {
-		return;
-	}
-	$.ajax({
-		 url: "json.htm?type=command&param=deleteuser&idx=" + idx,
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
-			RefreshUserTable();
-		 },
-		 error: function(){
-				HideNotify();
-				ShowNotify($.i18n('Problem deleting User!'), 2500, true);
-		 }     
+	bootbox.confirm($.i18n("Are you sure you want to delete this User?"), function(result) {
+		if (result==true) {
+			$.ajax({
+				 url: "json.htm?type=command&param=deleteuser&idx=" + idx,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					RefreshUserTable();
+				 },
+				 error: function(){
+						HideNotify();
+						ShowNotify($.i18n('Problem deleting User!'), 2500, true);
+				 }     
+			});
+		}
 	});
 }
 

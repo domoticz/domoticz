@@ -55,6 +55,7 @@ Version 1.0.xxx (Oktober xxth 2013)
 - Fixed: Shortlog History days display when showing graph from dashboard
 - Fixed: Security devices always showing as switchtype 0
 - Implemented: Notification intervals extended
+- Implemented/Fixed: HTML5, New Alert/Confirmation system to solve iOS issue
 
 Version 1.0.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)

@@ -818,7 +818,7 @@ $(document).ready(function() {
 					$( this ).dialog( "close" );
                   } else
                   {
-					alert($.i18n('Please enter a Latitude and Longitude!...'), 3500, true);
+					bootbox.alert($.i18n('Please enter a Latitude and Longitude!...'), 3500, true);
                   }
               },
               Cancel: function() {
@@ -837,7 +837,7 @@ $(document).ready(function() {
 						var address = $( '#dialog-findlatlong #address' ).val();
 						if (address=="")
 						{
-							alert($.i18n('Please enter a Address to search for!...'), 3500, true);
+							bootbox.alert($.i18n('Please enter a Address to search for!...'), 3500, true);
 							return false;
 						}
 						geocoder = new google.maps.Geocoder();
@@ -846,7 +846,7 @@ $(document).ready(function() {
 									$( '#dialog-findlatlong #latitude' ).val(results[0].geometry.location.lat().toFixed(6));
 									$( '#dialog-findlatlong #longitude' ).val(results[0].geometry.location.lng().toFixed(6));
 							} else {
-								alert($.i18n('Geocode was not successful for the following reason') + ': ' +status);
+								bootbox.alert($.i18n('Geocode was not successful for the following reason') + ': ' +status);
 							}
 						});
 						return false;
