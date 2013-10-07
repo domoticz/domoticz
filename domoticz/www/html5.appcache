@@ -264,6 +264,7 @@ media/swf/copy_csv_xls_pdf.swf
 secpanel/bg.jpg
 
 # js
+js/bootbox.min.js
 js/bootstrap.min.js
 js/date.format.js
 js/domoticz.js

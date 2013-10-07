@@ -45,6 +45,16 @@ body {
 	color: #FFF;
 }
 
+.bootbox-body {
+	color: #000;
+}
+.bootbox-form {
+	color: #000;
+}
+.bootbox-input {
+	color: #000;
+}
+
 a, a:hover, a:focus { 
 	outline: 0 none; 
 }

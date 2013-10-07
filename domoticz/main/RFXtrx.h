@@ -22,6 +22,9 @@
 //-----------------------------------------------------------------------------
 
 /*
+SDK version 6.07a
+	#define msg3_RFU5 0x20   changed to   #define msg3_SX 0x20
+
 SDK version 6.07
 	Lighting5 colour modes added for LWRF
 	TEMP_RAIN structure and pTypeTEMP_RAIN added for WS1200 - Temperature and rain sensor
@@ -187,7 +190,7 @@ SDK version 4.9
 #define msg3_FINEOFFSET 0x04
 #define msg3_LIGHTING4 0x08
 #define msg3_RSL 0x10
-#define msg3_RFU5 0x20
+#define msg3_SX 0x20
 #define msg3_RFU6 0x40
 #define msg3_undec 0x80
 
