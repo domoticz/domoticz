@@ -925,7 +925,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
             lua_pushnumber( lua_state, (lua_Number)p->second);
             lua_rawset( lua_state, -3 );
             if (p->first ==  devname) {
-                thisDeviceTemp = p->second;
+                thisDeviceHum = p->second;
             }
         }
         lua_setglobal(lua_state, "otherdevices_humidity");
@@ -940,7 +940,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
             lua_pushnumber( lua_state, (lua_Number)p->second);
             lua_rawset( lua_state, -3 );
             if (p->first ==  devname) {
-                thisDeviceTemp = (float)p->second;
+                thisDeviceBaro = (float)p->second;
             }
         }
         lua_setglobal(lua_state, "otherdevices_barometer");
