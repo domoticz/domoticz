@@ -310,7 +310,7 @@ i18n/domoticz-sv.json
 NETWORK:
 index.html
 login.html
-offlines.html
+offline.html
 cam.html
 dashboard.html
 devices.html
