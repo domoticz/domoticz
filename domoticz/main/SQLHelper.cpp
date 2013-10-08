@@ -358,6 +358,7 @@ CSQLHelper::CSQLHelper(void)
 	m_dbase=NULL;
 	m_demo_dbase=NULL;
 	m_stoprequested=false;
+	m_sensortimeoutcounter=0;
 
 	m_windunit=WINDUNIT_MS;
 	m_tempunit=TEMPUNIT_C;
@@ -695,8 +696,17 @@ bool CSQLHelper::OpenDatabase()
 	}
 	if (!GetPreferencesVar("SensorTimeout", nValue))
 	{
-		UpdatePreferencesVar("SensorTimeout", 60);
+		UpdatePreferencesVar("SensorTimeout", 3600);
 	}
+	if (!GetPreferencesVar("SensorTimeoutNotification", nValue))
+	{
+		UpdatePreferencesVar("SensorTimeoutNotification", 0); //default disabled
+	}
+	if (!GetPreferencesVar("SensorBatteryLowtNotification", nValue))
+	{
+		UpdatePreferencesVar("SensorBatteryLowtNotification", 0); //default disabled
+	}
+	
 	if (!GetPreferencesVar("UseAutoUpdate", nValue))
 	{
 		UpdatePreferencesVar("UseAutoUpdate", 1);
@@ -4664,3 +4674,68 @@ void CSQLHelper::SetUnitsAndScale()
 	}
 }
 
+//Executed every hour
+void CSQLHelper::CheckDeviceTimeout()
+{
+	int TimeoutCheckInterval=1;
+	GetPreferencesVar("SensorTimeoutNotification", TimeoutCheckInterval);
+	if (TimeoutCheckInterval==0)
+		return;//disabled
+
+	m_sensortimeoutcounter+=1;
+	if (m_sensortimeoutcounter<TimeoutCheckInterval)
+		return;
+	m_sensortimeoutcounter=0;
+
+	int SensorTimeOut=60;
+	GetPreferencesVar("SensorTimeout", SensorTimeOut);
+	time_t now = mytime(NULL);
+	struct tm stoday;
+	localtime_r(&now,&stoday);
+	now-=(SensorTimeOut*60);
+	struct tm ltime;
+	localtime_r(&now,&ltime);
+
+	std::vector<std::vector<std::string> > result;
+	char szTmp[300];
+	sprintf(szTmp,
+		"SELECT ID,Name,LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) ORDER BY Name",
+		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+		pTypeLighting1,
+		pTypeLighting2,
+		pTypeLighting3,
+		pTypeLighting4,
+		pTypeLighting5,
+		pTypeLighting6,
+		pTypeSecurity1,
+		pTypeBlinds,
+		pTypeChime
+		);
+	result=query(szTmp);
+	if (result.size()<1)
+		return;
+
+	unsigned long long ulID;
+	std::vector<std::vector<std::string> >::const_iterator itt;
+
+	//check if last timeout_notification is not send today and if true, send notification
+	for (itt=result.begin(); itt!=result.end(); ++itt)
+	{
+		std::vector<std::string> sd=*itt;
+		std::stringstream s_str( sd[0] );
+		s_str >> ulID;
+		bool bDoSend=true;
+		std::map<unsigned long long,int>::const_iterator sitt;
+		sitt=m_timeoutlastsend.find(ulID);
+		if (sitt!=m_timeoutlastsend.end())
+		{
+			bDoSend=(stoday.tm_mday!=sitt->second);
+		}
+		if (bDoSend)
+		{
+			sprintf_s(szTmp,"Sensor Timeout: %s, Last Received: %s",sd[1].c_str(),sd[2].c_str());
+			SendNotification("", m_urlencoder.URLEncode(szTmp));
+			m_timeoutlastsend[ulID]=stoday.tm_mday;
+		}
+	}
+}

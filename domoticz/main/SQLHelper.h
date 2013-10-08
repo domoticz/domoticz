@@ -4,6 +4,7 @@
 #include <string>
 #include "RFXNames.h"
 #include "../httpclient/UrlEncode.h"
+#include <map>
 
 struct sqlite3;
 
@@ -14,17 +15,6 @@ struct _tNotification
 	unsigned long long ID;
 	std::string Params;
 	time_t LastSend;
-};
-
-struct _tDeviceNameRef
-{
-	unsigned long long ID;
-	int _HardwareID;
-	std::string _ID;
-	unsigned char _unit;
-	unsigned char _devType;
-	unsigned char _subType;
-	std::string Name;
 };
 
 enum _eWindUnit
@@ -300,6 +290,8 @@ public:
    
 	void SetUnitsAndScale();
 
+	void CheckDeviceTimeout();
+
 	std::vector<std::vector<std::string> > query(const std::string &szQuery);
 public:
 	std::string m_LastSwitchID;	//for learning command
@@ -317,6 +309,8 @@ private:
 	sqlite3 *m_demo_dbase;
 	MainWorker *m_pMain;
 	std::string m_dbase_name;
+	unsigned char m_sensortimeoutcounter;
+	std::map<unsigned long long,int> m_timeoutlastsend;
 
 	std::vector<_tTaskItem> m_background_task_queue;
 	boost::shared_ptr<boost::thread> m_background_task_thread;
