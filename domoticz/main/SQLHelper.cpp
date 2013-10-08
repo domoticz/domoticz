@@ -4733,7 +4733,7 @@ void CSQLHelper::CheckDeviceTimeout()
 		}
 		if (bDoSend)
 		{
-			sprintf_s(szTmp,"Sensor Timeout: %s, Last Received: %s",sd[1].c_str(),sd[2].c_str());
+			sprintf(szTmp,"Sensor Timeout: %s, Last Received: %s",sd[1].c_str(),sd[2].c_str());
 			SendNotification("", m_urlencoder.URLEncode(szTmp));
 			m_timeoutlastsend[ulID]=stoday.tm_mday;
 		}
