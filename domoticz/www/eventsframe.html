@@ -406,7 +406,7 @@
 						  		$("#eventActive").prop('checked',false);
 					  		}
 				  		}
-				  		else { alert("Error loading event!");}
+				  		else { bootbox.alert("Error loading event!");}
 					}
 				}
 			});
@@ -432,7 +432,7 @@
 				}
 			  });
 		}
-        else {alert("Nothing selected!")}
+        else {bootbox.alert("Nothing selected!")}
 	  }
 	  
 	  	  
@@ -500,7 +500,7 @@
       		   if (typeof(logicArray)=='string') {
       		   	var answerparts = logicArray.split(':');
       		   	if (answerparts[0]=="err") {
-      		   		alert(answerparts[1]);
+      		   		bootbox.alert(answerparts[1]);
       		   	}
       		   }
       		   else if (typeof(logicArray)=='object') {
@@ -527,9 +527,9 @@
 				  	});
 			  } 	    
 			}
-			else {alert("Save aborted!")}
+			else {bootbox.alert("Save aborted!")}
 		}
-      	else {alert('no event name entered!');}
+      	else {bootbox.alert('no event name entered!');}
       }
 
 	  function show_states() {

@@ -181,7 +181,7 @@ function CheckForUpdate(showdialog) {
 					$("#mCheckUpdate").show();
 				}
 				if (showdialog) {
-					alert($.i18n("No Update Available !..."));
+					bootbox.alert($.i18n("No Update Available !..."));
 				}
 			}
 		 },
@@ -189,7 +189,7 @@ function CheckForUpdate(showdialog) {
 				$("#mUpdate").hide();
 				$("#mCheckUpdate").show();
 				if (showdialog) {
-					alert($.i18n("Error communicating to server!"));
+					bootbox.alert($.i18n("Error communicating to server!"));
 				}
 		 }     
 	});
@@ -204,7 +204,7 @@ function TransferDevice(idx,backfunction)
 		 success: function(data) {
 				if (typeof data.result == 'undefined') 
 				{
-					alert($.i18n('No devices to Transfer too!'));
+					bootbox.alert($.i18n('No devices to Transfer too!'));
 					return;
 				}
 				$("#dialog-transferdevice #newdevice").html("");
@@ -247,7 +247,7 @@ $(document).ready(function() {
 	if ( browser.msie ) {
 		var bVersion=parseFloat(browser.version);
 		if (bVersion < 10.0) {
-			alert($.i18n('This Application is is designed for Internet Explorer version 10+!\nPlease upgrade your browser!'));
+			bootbox.alert($.i18n('This Application is is designed for Internet Explorer version 10+!\nPlease upgrade your browser!'));
 		}
 	}
 
@@ -281,7 +281,7 @@ $(document).ready(function() {
                   
 									var NewDeviceIdx=$("#dialog-transferdevice #newdevice option:selected").val();
 									if (typeof NewDeviceIdx == 'undefined') {
-										alert($.i18n('No New Device Selected!'));
+										bootbox.alert($.i18n('No New Device Selected!'));
 										return ;
 									}
 									$.ajax({
