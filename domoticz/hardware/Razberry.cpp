@@ -20,7 +20,7 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-	//#define DEBUG_ZWAVE_INT
+	#define DEBUG_ZWAVE_INT
 #endif
 
 bool isInt(const std::string s)
@@ -223,7 +223,8 @@ bool CRazberry::GetUpdates()
 
 			if (results.size()>1)
 			{
-				UpdateDevice(kName,obj);
+				if (kName.find("lastReceived")==std::string::npos)
+					UpdateDevice(kName,obj);
 			}
 		}
 	}
@@ -298,8 +299,27 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 			{
 				_device.commandClassID=48; //(binary switch, for example motion detector(PIR)
 				_device.devType= ZDTYPE_SWITCHNORMAL;
-				_device.intvalue=instance["commandClasses"]["48"]["data"]["level"]["value"].asInt();
-				InsertOrUpdateDevice(_device,true);
+				bool bFoundSensor=false;
+				if (instance["commandClasses"]["48"]["data"]["level"].empty()==false)
+				{
+					_device.intvalue=instance["commandClasses"]["48"]["data"]["level"]["value"].asInt();
+					bFoundSensor=true;
+				}
+				else
+				{
+					if (instance["commandClasses"]["48"]["data"]["0"].empty()==false)
+					{
+						_device.intvalue=instance["commandClasses"]["48"]["data"]["0"]["level"]["value"].asInt();
+						bFoundSensor=true;
+					}
+					else if (instance["commandClasses"]["48"]["data"]["1"].empty()==false)
+					{
+						_device.intvalue=instance["commandClasses"]["48"]["data"]["1"]["level"]["value"].asInt();
+						bFoundSensor=true;
+					}
+				}
+				if (bFoundSensor)
+					InsertOrUpdateDevice(_device,true);
 			}
 
 			if (instance["commandClasses"]["49"].empty()==false)
