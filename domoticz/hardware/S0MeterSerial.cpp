@@ -33,16 +33,6 @@ S0MeterSerial::S0MeterSerial(const int ID, const std::string& devname, const uns
 		m_pulse_per_unit_2=float(M2PPH);
 }
 
-S0MeterSerial::S0MeterSerial(const std::string& devname,
-        unsigned int baud_rate,
-        boost::asio::serial_port_base::parity opt_parity,
-        boost::asio::serial_port_base::character_size opt_csize,
-        boost::asio::serial_port_base::flow_control opt_flow,
-        boost::asio::serial_port_base::stop_bits opt_stop)
-        :AsyncSerial(devname,baud_rate,opt_parity,opt_csize,opt_flow,opt_stop)
-{
-}
-
 S0MeterSerial::~S0MeterSerial()
 {
 	clearReadCallback();
@@ -276,8 +266,7 @@ void S0MeterSerial::ParseLine()
 {
 	if (m_bufferpos<2)
 		return;
-	std::string sLine;
-	sLine.insert(sLine.begin(),m_buffer,m_buffer+m_bufferpos);
+	std::string sLine((char*)&m_buffer);
 
 	std::vector<std::string> results;
 	StringSplit(sLine,":",results);
@@ -296,7 +285,7 @@ void S0MeterSerial::ParseLine()
 	}
 	if (results.size()!=10)
 	{
-		_log.Log(LOG_NORM,"S0 Meter Invalid Data received!");
+		_log.Log(LOG_NORM,"S0 Meter Invalid Data received!: Len:%d",sLine.size());
 		return;
 	}
 	//ID:0001:I:99:M1:123:456:M2:234:567 = ID(1)/Pulse Interval(3)/M1Actual(5)/M1Total(7)/M2Actual(8)/M2Total(9)
