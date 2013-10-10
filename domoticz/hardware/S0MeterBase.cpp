@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "S0MeterBase.h"
 #include "../main/Logger.h"
 #include "../main/Helper.h"
