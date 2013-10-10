@@ -44,13 +44,11 @@ bool S0MeterSerial::StartHardware()
 	try
 	{
 		_log.Log(LOG_NORM,"S0 Meter Using serial port: %s", m_szSerialPort.c_str());
-		open(
+		openOnlyBaud(
 			m_szSerialPort,
 			m_iBaudRate,
 			boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::even),
-			boost::asio::serial_port_base::character_size(7),
-			boost::asio::serial_port_base::flow_control(boost::asio::serial_port_base::flow_control::none),
-			boost::asio::serial_port_base::stop_bits(boost::asio::serial_port_base::stop_bits::one)
+			boost::asio::serial_port_base::character_size(7)
 			);
 	}
 	catch (boost::exception & e)

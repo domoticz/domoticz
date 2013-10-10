@@ -116,6 +116,34 @@ void AsyncSerial::open(const std::string& devname, unsigned int baud_rate,
     pimpl->open=true; //Port is now open
 }
 
+void AsyncSerial::openOnlyBaud(const std::string& devname, unsigned int baud_rate,
+	boost::asio::serial_port_base::parity opt_parity,
+	boost::asio::serial_port_base::character_size opt_csize,
+	boost::asio::serial_port_base::flow_control opt_flow,
+	boost::asio::serial_port_base::stop_bits opt_stop)
+{
+	if(isOpen()) close();
+
+	setErrorStatus(true);//If an exception is thrown, error_ remains true
+	pimpl->port.open(devname);
+	pimpl->port.set_option(boost::asio::serial_port_base::baud_rate(baud_rate));
+/*
+	pimpl->port.set_option(opt_parity);
+	pimpl->port.set_option(opt_csize);
+	pimpl->port.set_option(opt_flow);
+	pimpl->port.set_option(opt_stop);
+*/
+	pimpl->io.reset();
+
+	//This gives some work to the io_service before it is started
+	pimpl->io.post(boost::bind(&AsyncSerial::doRead, this));
+
+	boost::thread t(boost::bind(&boost::asio::io_service::run, &pimpl->io));
+	pimpl->backgroundThread.swap(t);
+	setErrorStatus(false);//If we get here, no error
+	pimpl->open=true; //Port is now open
+}
+
 bool AsyncSerial::isOpen() const
 {
     return pimpl->open;
