@@ -1585,7 +1585,6 @@ bool CSQLHelper::SendNotification(const std::string &EventID, const std::string 
 {
 	int nValue;
 	std::string sValue;
-	char szURL[300];
 	std::string sResult;
 
 #if defined WIN32
@@ -1599,9 +1598,9 @@ bool CSQLHelper::SendNotification(const std::string &EventID, const std::string 
 		if (sValue!="")
 		{
 			//send message to Prowl
-			sprintf(szURL,"http://api.prowlapp.com/publicapi/add?apikey=%s&application=Domoticz&event=%s&description=%s&priority=0",
-				sValue.c_str(),Message.c_str(),Message.c_str());
-			if (!HTTPClient::GET(szURL,sResult))
+			std::stringstream sUrl;
+			sUrl << "http://api.prowlapp.com/publicapi/add?apikey=" << sValue << "&application=Domoticz&event=" << Message << "&description=" << Message << "&priority=0";
+			if (!HTTPClient::GET(sUrl.str(),sResult))
 			{
 				_log.Log(LOG_ERROR,"Error sending Prowl Notification!");
 			}
@@ -1617,9 +1616,9 @@ bool CSQLHelper::SendNotification(const std::string &EventID, const std::string 
 		if (sValue!="")
 		{
 			//send message to Prowl
-			sprintf(szURL,"http://www.notifymyandroid.com/publicapi/notify?apikey=%s&application=Domoticz&event=%s&priority=0&description=%s",
-				sValue.c_str(),Message.c_str(),Message.c_str());
-			if (!HTTPClient::GET(szURL,sResult))
+			std::stringstream sUrl;
+			sUrl << "http://www.notifymyandroid.com/publicapi/notify?apikey=" << sValue << "&application=Domoticz&event=" << Message << "&priority=0&description=" << Message;
+			if (!HTTPClient::GET(sUrl.str(),sResult))
 			{
 				_log.Log(LOG_ERROR,"Error sending NMA Notification!");
 			}
