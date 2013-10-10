@@ -77,7 +77,7 @@ const char *sqlCreatePreferences =
 "CREATE TABLE IF NOT EXISTS [Preferences] ("
 "[Key] VARCHAR(50) NOT NULL, "
 "[nValue] INTEGER DEFAULT 0, "
-"[sValue] CHARCHAR(200));";
+"[sValue] VARCHAR(200));";
 
 const char *sqlCreateRain =
 "CREATE TABLE IF NOT EXISTS [Rain] ("
@@ -149,8 +149,8 @@ const char *sqlCreateWind =
 "CREATE TABLE IF NOT EXISTS [Wind] ("
 "[DeviceRowID] BIGINT(10) NOT NULL, "
 "[Direction] FLOAT NOT NULL, "
-"[Speed] INTERGER NOT NULL, "
-"[Gust] INTERGER NOT NULL, "
+"[Speed] INTEGER NOT NULL, "
+"[Gust] INTEGER NOT NULL, "
 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
 const char *sqlCreateWind_Calendar =
