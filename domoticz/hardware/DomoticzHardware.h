@@ -22,6 +22,7 @@ class CDomoticzHardwareBase
 	friend class CBMP085;
 	friend class CPiFace;
 	friend class S0MeterSerial;
+	friend class S0MeterTCP;
 
 public: 
 	CDomoticzHardwareBase();

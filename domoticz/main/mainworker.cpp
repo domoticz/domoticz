@@ -27,6 +27,7 @@
 #include "../hardware/Dummy.h"
 #include "../hardware/PiFace.h"
 #include "../hardware/S0MeterSerial.h"
+//#include "../hardware/S0MeterTCP.h"
 
 #include "mainstructs.h"
 
@@ -369,6 +370,7 @@ bool MainWorker::AddHardwareFromParams(
 			else if (Type==HTYPE_S0SmartMeter)
 			{
 				pHardware = new S0MeterSerial(ID,szSerialPort, 9600, Mode1, Mode2, Mode3, Mode4);
+				//pHardware = new S0MeterTCP(ID,"127.0.0.1",2001, Mode1, Mode2, Mode3, Mode4);
 			}
 		}
 		break;

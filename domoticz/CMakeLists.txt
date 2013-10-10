@@ -172,6 +172,7 @@ hardware/Rego6XXSerial.cpp
 hardware/DavisLoggerSerial.cpp
 hardware/BMP085.cpp
 hardware/S0MeterSerial.cpp
+hardware/S0MeterBase.cpp
 hardware/smbus.cpp
 hardware/Wunderground.cpp
 hardware/PiFace.cpp

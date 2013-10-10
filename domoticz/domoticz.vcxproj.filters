@@ -295,6 +295,12 @@
     <ClInclude Include="hardware\PiFace.h">
       <Filter>Devices\PiFace</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\S0MeterBase.h">
+      <Filter>Devices\S0 Meter</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\S0MeterTCP.h">
+      <Filter>Devices\S0 Meter</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -467,6 +473,12 @@
     </ClCompile>
     <ClCompile Include="hardware\PiFace.cpp">
       <Filter>Devices\PiFace</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\S0MeterBase.cpp">
+      <Filter>Devices\S0 Meter</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\S0MeterTCP.cpp">
+      <Filter>Devices\S0 Meter</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
