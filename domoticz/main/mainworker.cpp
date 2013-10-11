@@ -7048,8 +7048,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.CHIME.packettype=dType;
 			lcmd.CHIME.subtype=dSubType;
 			lcmd.CHIME.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
-			lcmd.CHIME.id1=ID1;
-			lcmd.CHIME.id2=ID2;
+			lcmd.CHIME.id1=ID3;
+			lcmd.CHIME.id2=ID4;
 			level=15;
 			lcmd.CHIME.sound=chime_sound0;
 			lcmd.CHIME.filler=0;

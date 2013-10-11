@@ -59,6 +59,7 @@ Version 1.0.xxx (Oktober xxth 2013)
 - Fixed: devicechanged values in lua incorrect for humidity and barometer
 - Fixed: Typo's in SQLHelper.cpp
 - Implemented: Option to create virtual sensors for dummy hardware (hardware tab)
+- Fixed: Chime (ByronSX) when turning on manualy inside domoticz
 
 Version 1.0.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)
