@@ -8647,6 +8647,70 @@ std::string CWebServer::GetJSonPage()
 				);
 		m_pMain->m_sql.query(szTmp);
 	} //(rtype=="updatescene")
+	else if (rtype=="createvirtualsensor")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string ssensortype=m_pWebEm->FindValue("sensortype");
+		if ((idx=="")||(ssensortype==""))
+			goto exitjson;
+
+		bool bCreated=false;
+		int iSensorType=atoi(ssensortype.c_str());
+
+		int HwdID=atoi(idx.c_str());
+
+		//Make a unique number for ID
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT MAX(ID) FROM DeviceStatus";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()<1)
+			goto exitjson;
+		unsigned long nid=atol(result[0][0].c_str());
+		nid+=82000;
+		char ID[40];
+		sprintf_s(ID,"%ld",nid);
+
+		std::string devname;
+
+		switch (iSensorType)
+		{
+		case pTypeTEMP:
+			m_pMain->m_sql.UpdateValue(HwdID, ID,1,pTypeTEMP,sTypeTEMP1,10,255,0,"0.0",devname);
+			bCreated=true;
+			break;
+		case pTypeHUM:
+			m_pMain->m_sql.UpdateValue(HwdID, ID,1,pTypeHUM,sTypeTEMP1,10,255,0,"50",devname);
+			bCreated=true;
+			break;
+		case pTypeTEMP_HUM:
+			m_pMain->m_sql.UpdateValue(HwdID, ID,1,pTypeTEMP_HUM,sTypeTH1,10,255,0,"0.0;50;1",devname);
+			bCreated=true;
+			break;
+		case pTypeTEMP_HUM_BARO:
+			m_pMain->m_sql.UpdateValue(HwdID, ID,1,pTypeTEMP_HUM_BARO,sTypeTHB1,10,255,0,"0.0;50;1;1010;1",devname);
+			bCreated=true;
+			break;
+		case pTypeWIND:
+			m_pMain->m_sql.UpdateValue(HwdID, ID,1,pTypeWIND,sTypeWIND1,10,255,0,"0;N;0;0;0;0",devname);
+			bCreated=true;
+			break;
+		case pTypeRAIN:
+			m_pMain->m_sql.UpdateValue(HwdID, ID,1,pTypeRAIN,sTypeRAIN3,10,255,0,"0;0",devname);
+			bCreated=true;
+			break;
+		case pTypeUV:
+			m_pMain->m_sql.UpdateValue(HwdID, ID,1,pTypeUV,sTypeUV1,10,255,0,"0;0",devname);
+			bCreated=true;
+			break;
+		}
+		if (bCreated)
+		{
+			root["status"]="OK";
+			root["title"]="CreateVirtualSensor";
+		}
+
+	} //(rtype=="createvirtualsensor")
 	else if (rtype=="scenes")
 	{
 		root["status"]="OK";

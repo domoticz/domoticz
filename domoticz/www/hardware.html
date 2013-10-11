@@ -207,6 +207,20 @@
 		<br>
     <a class="btnstyle3" onclick="AddHardware();" data-i18n="Add">Add</a>
 </div>
+<div id="dialog-createsensor" title="Create Virtual Sensor" style="display:none;">
+		<form>
+				<label for="sensortype"><span data-i18n="Sensor Type"></span>: </label>
+				<select id="sensortype" style="width:250px" class="combobox ui-corner-all">
+					<option value="80" data-i18n="Temperature">Temperature</option>
+					<option value="81" data-i18n="Humidity">Humidity</option>
+					<option value="82" data-i18n="Temp+Hum">Temp+Hum</option>
+					<option value="84" data-i18n="Temp+Hum+Baro">Temp+Hum+Baro</option>
+					<option value="85" data-i18n="Rain">Rain</option>
+					<option value="86" data-i18n="Wind">Wind</option>
+					<option value="87" data-i18n="UV">UV</option>
+				</select>
+		</form>
+</div>
 
 <script type="text/javascript" charset="utf-8">
 
@@ -689,6 +703,64 @@ function SetS0MeterType()
   });
 }
 
+function CreateDummySensors(idx,name)
+{
+	$.devIdx=idx;
+    $( "#dialog-createsensor" ).dialog({
+          autoOpen: false,
+          width: 380,
+          height: 160,
+          modal: true,
+          resizable: false,
+          buttons: {
+              "OK": function() {
+                  var bValid = true;
+                  $( this ).dialog( "close" );
+                  
+					var SensorType=$("#dialog-createsensor #sensortype option:selected").val();
+					if (typeof SensorType == 'undefined') {
+						bootbox.alert($.i18n('No Sensor Type Selected!'));
+						return ;
+					}
+					$.ajax({
+						 url: "json.htm?type=createvirtualsensor&idx=" + $.devIdx + "&sensortype=" + SensorType,
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+							if (data.status == 'OK') {
+								ShowNotify($.i18n('Sensor Created, and can be found in the devices tab!'), 2500);
+							}
+							else {
+								ShowNotify($.i18n('Problem creating Sensor!'), 2500, true);
+							}
+						 },
+						 error: function(){
+								HideNotify();
+								ShowNotify($.i18n('Problem creating Sensor!'), 2500, true);
+						 }     
+					});
+              },
+              Cancel: function() {
+                  $( this ).dialog( "close" );
+              }
+          },
+          open: function() {
+              $(this).keypress(function(e) {
+                if (e.keyCode == $.ui.keyCode.ENTER) {
+                  e.preventDefault();
+                  $(this).parent().find("button:eq(0)").trigger("click");
+                }
+              });
+          },
+          close: function() {
+            $( this ).dialog( "close" );
+          }
+    });
+	
+	$( "#dialog-createsensor" ).i18n();
+	$( "#dialog-createsensor" ).dialog( "open" );
+}
+
 function RefreshHardwareTable()
 {
   $('#modal').show();
@@ -757,6 +829,9 @@ function RefreshHardwareTable()
 			}
 			else if (HwTypeStr.indexOf("S0 Meter USB") >= 0) {
 				HwTypeStr+=' <span class="label label-info" onclick="EditS0MeterType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Set Mode</span>';
+			}
+			else if (HwTypeStr.indexOf("Dummy") >= 0) {
+				HwTypeStr+=' <span class="label label-info" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');" onmouseover="cursorhand()" onmouseout="cursordefault()">Create Virtual Sensors</span>';
 			}
 			else if (HwTypeStr.indexOf("Rego 6XX") >= 0)
 			{
