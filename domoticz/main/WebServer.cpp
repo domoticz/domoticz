@@ -8669,7 +8669,7 @@ std::string CWebServer::GetJSonPage()
 		unsigned long nid=atol(result[0][0].c_str());
 		nid+=82000;
 		char ID[40];
-		sprintf_s(ID,"%ld",nid);
+		sprintf(ID,"%ld",nid);
 
 		std::string devname;
 
