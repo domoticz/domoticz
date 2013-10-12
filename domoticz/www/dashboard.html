@@ -3,6 +3,50 @@
 <div id="dashcontent">
 </div>
 
+<div id="FloorPlan" style="display:none;">
+<ul class="accordion">
+    <li id="one">
+        <a href="#one">All<span>10</span></a>
+        <ul class="sub-menu">
+            <li><a href="#">Living Room Left<span>1</span></a></li>
+            <li><a href="#">Living Room Right<span>1</span></a></li>
+            <li><a href="#">Rain Sensor</a></li>
+            <li><a href="#">Dinner Table<span>1</span></a></li>
+            <li><a href="#">Fireplace<span>1</span></a></li>
+            <li><a href="#">Bathroom Main<span>1</span></a></li>
+            <li><a href="#">Bathroom Mirror<span>1</span></a></li>
+            <li><a href="#">Garden Lights<span>1</span></a></li>
+        </ul>
+    </li>
+ 
+    <li id="two">
+        <a href="#two">Living Room<span>17</span></a>
+        <ul class="sub-menu">
+            <li><a href="#">Living Room Left<span>1</span></a></li>
+            <li><a href="#">Living Room Right<span>1</span></a></li>
+            <li><a href="#">Dinner Table<span>1</span></a></li>
+        </ul>
+    </li>
+ 
+    <li id="three">
+        <a href="#three">Bathroom<span>2</span></a>
+        <ul class="sub-menu">
+            <li><a href="#">Bathroom Main<span>1</span></a></li>
+            <li><a href="#">Bathroom Mirror<span>1</span></a></li>
+        </ul>
+    </li>
+ 
+    <li id="four">
+        <a href="#four">Garden<span>6</span></a>
+        <ul class="sub-menu">
+            <li><a href="#">Garden Lights<span>1</span></a></li>
+            <li><a href="#">Rain Sensor</a></li>
+        </ul>
+    </li>
+ 
+</ul>
+</div>
+
 <script type="text/javascript" charset="utf-8">
 
 function RefreshFavorites()
@@ -510,13 +554,7 @@ function RefreshFavorites()
 									status+=' (' + $.i18n(item.HumidityStatus) + ')';
 								}
 								if (typeof item.DewPoint != 'undefined') {
-									if (data.DashboardType==1) {
-										status+=", ";
-									}
-									else {
-										status+="<br>";
-									}
-									status+=$.i18n("Dew Point") + ": " + item.DewPoint + '° C';
+									status+="<br>"+$.i18n("Dew Point") + ": " + item.DewPoint + '° C';
 								}
 							
 								var nbackcolor="#D4E1EE";
@@ -978,6 +1016,11 @@ function ShowFavorites()
      }
   });
 
+	var bShowFloorplan=false;
+	if (window.myglobals.ismobile==true) {
+		bShowFloorplan=false;
+	}
+
   $.ajax({
      url: "json.htm?type=devices&filter=all&used=true&order=Name",
      async: false,
@@ -1070,10 +1113,10 @@ function ShowFavorites()
 						}
 						else {
 							if (data.DashboardType==0) {
-								xhtm='\t<div class="span4" id="scene_' + item.idx +'">\n';
+								xhtm='\t<div class="span4 movable" id="scene_' + item.idx +'">\n';
 							}
 							else if (data.DashboardType==1) {
-								xhtm='\t<div class="span3" id="scene_' + item.idx +'">\n';
+								xhtm='\t<div class="span3 movable" id="scene_' + item.idx +'">\n';
 							}
 							xhtm+='\t  <section>\n';
 							if (item.Type.indexOf('Scene')==0) {
@@ -1336,10 +1379,10 @@ function ShowFavorites()
 						}
 						else {
 							if (data.DashboardType==0) {
-								xhtm='\t<div class="span4" id="light_' + item.idx +'">\n';
+								xhtm='\t<div class="span4 movable" id="light_' + item.idx +'">\n';
 							}
 							else if (data.DashboardType==1) {
-								xhtm='\t<div class="span3" id="light_' + item.idx +'">\n';
+								xhtm='\t<div class="span3 movable" id="light_' + item.idx +'">\n';
 							}
 							xhtm+='\t  <section>\n';
 							if ((item.Type.indexOf('Blind') == 0)||(item.SwitchType == "Blinds")||(item.SwitchType == "Blinds Inverted")) {
@@ -1609,10 +1652,10 @@ function ShowFavorites()
 						}
 						else {
 							if (data.DashboardType==0) {
-								xhtm='\t<div class="span4" id="temp_' + item.idx +'">\n';
+								xhtm='\t<div class="span4 movable" id="temp_' + item.idx +'">\n';
 							}
 							else if (data.DashboardType==1) {
-								xhtm='\t<div class="span3" id="temp_' + item.idx +'">\n';
+								xhtm='\t<div class="span3 movable" id="temp_' + item.idx +'">\n';
 							}
 							xhtm+='\t  <section>\n';
 							xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
@@ -1673,13 +1716,7 @@ function ShowFavorites()
 								xhtm+=' (' + $.i18n(item.HumidityStatus) + ')';
 							}
 							if (typeof item.DewPoint != 'undefined') {
-								if (data.DashboardType==1) {
-									xhtm+=", ";
-								}
-								else {
-									xhtm+="<br>";
-								}
-								xhtm+=$.i18n("Dew Point") + ": " + item.DewPoint + '° C';
+								xhtm+="<br>"+$.i18n("Dew Point") + ": " + item.DewPoint + '° C';
 							}
 							xhtm+=
 									'</td>\n' +
@@ -1789,10 +1826,10 @@ function ShowFavorites()
 						}
 						else {
 							if (data.DashboardType==0) {
-								xhtm='\t<div class="span4" id="weather_' + item.idx +'">\n';
+								xhtm='\t<div class="span4 movable" id="weather_' + item.idx +'">\n';
 							}
 							else if (data.DashboardType==1) {
-								xhtm='\t<div class="span3" id="weather_' + item.idx +'">\n';
+								xhtm='\t<div class="span3 movable" id="weather_' + item.idx +'">\n';
 							}
 							xhtm+='\t  <section>\n';
 							xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
@@ -1962,10 +1999,10 @@ function ShowFavorites()
 						}
 						else {
 							if (data.DashboardType==0) {
-								xhtm='\t<div class="span4" id="security_' + item.idx +'">\n';
+								xhtm='\t<div class="span4 movable" id="security_' + item.idx +'">\n';
 							}
 							else if (data.DashboardType==1) {
-								xhtm='\t<div class="span3" id="security_' + item.idx +'">\n';
+								xhtm='\t<div class="span3 movable" id="security_' + item.idx +'">\n';
 							}
 							xhtm+='\t  <section>\n';
 							if (data.DashboardType==0) {
@@ -2134,10 +2171,10 @@ function ShowFavorites()
 			}
 			else {
 				if (data.DashboardType==0) {
-					xhtm='\t<div class="span4" id="utility_' + item.idx +'">\n';
+					xhtm='\t<div class="span4 movable" id="utility_' + item.idx +'">\n';
 				}
 				else if (data.DashboardType==1) {
-					xhtm='\t<div class="span3" id="utility_' + item.idx +'">\n';
+					xhtm='\t<div class="span3 movable" id="utility_' + item.idx +'">\n';
 				}
 				xhtm+='\t  <span>\n';
 				xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
@@ -2279,8 +2316,40 @@ function ShowFavorites()
 	}
 	
 	var suntext='<div id="timesun" /><br>\n';
-	$('#dashcontent').html(suntext+htmlcontent);
+	
+	if (bShowFloorplan==false) {
+		$('#dashcontent').html(suntext+htmlcontent);
+	}
+	else {
+		var nHTML=
+			'<div class="row">'+
+			'<div class="span3 hidden-phone">' + $('#FloorPlan').html() + '</div>'+
+			'<div class="span9">' + suntext+htmlcontent + '</div>'+
+			'</div>';
+		$('#dashcontent').html(nHTML);
+	}
 	$('#dashcontent').i18n();
+
+        // Store variables
+        var accordion_head = $('#dashcontent .accordion > li > a'),
+            accordion_body = $('#dashcontent .accordion li > .sub-menu');
+ 
+        // Open the first tab on load
+		accordion_head.first().addClass('active').next().slideDown('normal');
+ 
+        // Click function
+		accordion_head.on('click', function(event) {
+            // Disable header links
+            event.preventDefault();
+ 
+            // Show and hide the tabs on click
+            if ($(this).attr('class') != 'active'){
+                accordion_body.slideUp('normal');
+                $(this).next().stop(true,true).slideToggle('normal');
+                accordion_head.removeClass('active');
+                $(this).addClass('active');
+            }
+        });
 
 	RefreshTimeAndSun();
 	
@@ -2352,7 +2421,7 @@ function ShowFavorites()
 
 	if (window.my_config.userrights==2) {
 		if (window.myglobals.ismobileint==false) {
-			$("#dashcontent .span4").draggable({
+			$("#dashcontent .movable").draggable({
 					drag: function() {
 						clearInterval($.myglobals.refreshTimer);
 						$.devIdx=$(this).attr("id");
@@ -2360,7 +2429,7 @@ function ShowFavorites()
 					},
 					revert: true
 			});
-			$("#dashcontent .span4").droppable({
+			$("#dashcontent .movable").droppable({
 					drop: function() {
 						var myid=$(this).attr("id");
 						var parts1 = myid.split('_');
@@ -2372,41 +2441,6 @@ function ShowFavorites()
 						
 							$.ajax({
 								 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + parts1[1] + "&idx2=" + parts2[1],
-								 async: false, 
-								 dataType: 'json',
-								 success: function(data) {
-										ShowFavorites();
-								 }
-							});
-						}
-					}
-			});
-			$("#dashcontent .span3").draggable({
-					drag: function() {
-						clearInterval($.myglobals.refreshTimer);
-						$.devIdx=$(this).attr("id");
-						$(this).css("z-index", 2);
-					},
-					revert: true
-			});
-			$("#dashcontent .span3").droppable({
-					drop: function() {
-						var myid=$(this).attr("id");
-						var parts1 = myid.split('_');
-						var parts2 = $.devIdx.split('_');
-						if (parts1[0]!=parts2[0]) {
-							bootbox.alert($.i18n('Only possible between Sensors of the same kind!'));
-							$.myglobals.refreshTimer = setInterval(ShowFavorites, 10000);
-						} else {
-							var jsonCmd="";
-							if ($.devIdx.indexOf('Scene') == 0) {
-								jsonCmd="switchsceneorder";
-							}
-							else {
-								jsonCmd="switchdeviceorder";
-							}
-							$.ajax({
-								 url: "json.htm?type=command&param=" + jsonCmd + "&idx1=" + parts1[1] + "&idx2=" + parts2[1],
 								 async: false, 
 								 dataType: 'json',
 								 success: function(data) {
@@ -2433,6 +2467,7 @@ function ResizeDimSliders()
 
 $(document).ready(function() {
 	$(window).resize(function() { ResizeDimSliders(); });
+	
   ShowFavorites();
 } );
 </script>

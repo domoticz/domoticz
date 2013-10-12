@@ -15,7 +15,7 @@
 #include "../webserver/Base64.h"
 #include "mainstructs.h"
 
-#define DB_VERSION 24
+#define DB_VERSION 26
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -262,10 +262,7 @@ const char *sqlCreatePlanMappings =
 "[ID] INTEGER PRIMARY KEY, "
 "[DeviceRowID] BIGINT NOT NULL, "
 "[PlanID] BIGINT NOT NULL, "
-"[HPos] FLOAT NOT NULL, "
-"[VPos] FLOAT NOT NULL, "
-"[Order] INTEGER BIGINT(10) default 0, "
-"[Name] VARCHAR(200) NOT NULL);";
+"[Order] INTEGER BIGINT(10) default 0);";
 
 const char *sqlCreateDevicesToPlanStatusTrigger =
 	"CREATE TRIGGER IF NOT EXISTS deviceplantatusupdate AFTER INSERT ON DeviceToPlansMap\n"
@@ -276,8 +273,14 @@ const char *sqlCreateDevicesToPlanStatusTrigger =
 const char *sqlCreatePlans =
 "CREATE TABLE IF NOT EXISTS [Plans] ("
 "[ID] INTEGER PRIMARY KEY, "
-"[PlanOrder] BIGINT NOT NULL, "
+"[Order] INTEGER BIGINT(10) default 0, "
 "[Name] VARCHAR(200) NOT NULL);";
+
+const char *sqlCreatePlanOrderTrigger =
+	"CREATE TRIGGER IF NOT EXISTS planordertrigger AFTER INSERT ON Plans\n"
+	"BEGIN\n"
+	"	UPDATE Plans SET [Order] = (SELECT MAX([Order]) FROM Plans)+1 WHERE Plans.ID = NEW.ID;\n"
+	"END;\n";
 
 const char *sqlCreateScenes =
 "CREATE TABLE IF NOT EXISTS [Scenes] (\n"
@@ -444,6 +447,7 @@ bool CSQLHelper::OpenDatabase()
     query(sqlCreatePlanMappings);
 	query(sqlCreateDevicesToPlanStatusTrigger);
     query(sqlCreatePlans);
+	query(sqlCreatePlanOrderTrigger);
 	query(sqlCreateScenes);
 	query(sqlCreateScenesTrigger);
 	query(sqlCreateSceneDevices);
@@ -655,6 +659,18 @@ bool CSQLHelper::OpenDatabase()
 			query("ALTER TABLE SceneDevices ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
 			query(sqlCreateSceneDeviceTrigger);
 			CheckAndUpdateSceneDeviceOrder();
+		}
+		if (dbversion<25)
+		{
+			query("DROP TABLE IF EXISTS [Plans]");
+			query(sqlCreatePlans);
+			query(sqlCreatePlanOrderTrigger);
+		}
+		if (dbversion<26)
+		{
+			query("DROP TABLE IF EXISTS [DeviceToPlansMap]");
+			query(sqlCreatePlanMappings);
+			query(sqlCreateDevicesToPlanStatusTrigger);
 		}
     }
 	UpdatePreferencesVar("DB_Version",DB_VERSION);

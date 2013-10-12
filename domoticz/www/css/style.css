@@ -1986,3 +1986,125 @@ a:link {
 .myrighttable td {
     text-align: right;
 }
+
+
+/* Reset */
+
+.accordion,
+.accordion ul,
+.accordion li,
+.accordion a,
+.accordion span {
+	margin: 0;
+	padding: 0;
+	border: none;
+	outline: none;
+}
+
+.accordion li {
+	list-style: none;
+}
+
+/* Layout & Style */
+
+.accordion li > a {
+	display: block;
+	position: relative;
+	min-width: 150px;
+	padding: 0 10px 0 10px;
+	height: 32px;
+
+	color: #eee;
+	font: bold 13px/32px Arial, sans-serif;
+	text-decoration: none;
+	text-shadow: 0px 1px 0px rgba(0,0,0, .35);
+
+	background: #6c6e74;
+	background: -moz-linear-gradient(top,  #6c6e74 0%, #4b4d51 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#6c6e74), color-stop(100%,#4b4d51));
+	background: -webkit-linear-gradient(top,  #6c6e74 0%,#4b4d51 100%);
+	background: -o-linear-gradient(top,  #6c6e74 0%,#4b4d51 100%);
+	background: -ms-linear-gradient(top,  #6c6e74 0%,#4b4d51 100%);
+	background: linear-gradient(top,  #6c6e74 0%,#4b4d51 100%);
+
+	-webkit-box-shadow: inset 0px 1px 0px 0px rgba(255,255,255, .1), 0px 1px 0px 0px rgba(0,0,0, .1);
+	-moz-box-shadow: inset 0px 1px 0px 0px rgba(255,255,255, .1), 0px 1px 0px 0px rgba(0,0,0, .1);
+	box-shadow: inset 0px 1px 0px 0px rgba(255,255,255, .1), 0px 1px 0px 0px rgba(0,0,0, .1);
+}
+
+.accordion > li:hover > a,
+.accordion > li:target > a,
+.accordion > li > a.active {
+	color: #3e5706;
+	text-shadow: 1px 1px 1px rgba(255,255,255, .2);
+	
+	/*background: url(../img/active.png) repeat-x;*/
+	background: #a5cd4e;
+	background: -moz-linear-gradient(top,  #a5cd4e 0%, #6b8f1a 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#a5cd4e), color-stop(100%,#6b8f1a));
+	background: -webkit-linear-gradient(top,  #a5cd4e 0%,#6b8f1a 100%);
+	background: -o-linear-gradient(top,  #a5cd4e 0%,#6b8f1a 100%);
+	background: -ms-linear-gradient(top,  #a5cd4e 0%,#6b8f1a 100%);
+	background: linear-gradient(top,  #a5cd4e 0%,#6b8f1a 100%);	
+}
+
+.accordion li > a span {
+	display: block;
+	position: absolute;
+	top: 7px;
+	right: 0;
+	padding: 0 10px;
+	margin-right: 10px;
+	
+	font: normal bold 12px/18px Arial, sans-serif;
+	background: #404247;
+	
+	-webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+
+	-webkit-box-shadow: inset 1px 1px 1px rgba(0,0,0, .2), 1px 1px 1px rgba(255,255,255, .1);
+	-moz-box-shadow: inset 1px 1px 1px rgba(0,0,0, .2), 1px 1px 1px rgba(255,255,255, .1);
+	box-shadow: inset 1px 1px 1px rgba(0,0,0, .2), 1px 1px 1px rgba(255,255,255, .1);
+}
+
+.accordion > li:hover > a span,
+.accordion > li:target > a span,
+.accordion > li > a.active span {
+	color: #eee;
+	text-shadow: 0px 1px 0px rgba(0,0,0, .35);
+	background: #3e5706;
+}
+
+/* Sub Menu */
+
+.sub-menu li a {
+	color: #fff;
+	background: #252525;
+	border-bottom: 1px solid #393939;
+}
+
+.sub-menu li:hover a { background: #25253f; }
+
+.sub-menu li:last-child a { border: none; }
+
+.sub-menu li > a span {
+	color: #eee;
+	text-shadow: 1px 1px 0px rgba(255,255,255, .2);
+	background: transparent;
+	border: 1px solid #898989;
+
+	-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+	box-shadow: none;
+}
+
+/* Functionality */
+
+.accordion li > .sub-menu {
+	display: none;
+}
+
+.accordion li:target > .sub-menu {
+	display: block;
+}

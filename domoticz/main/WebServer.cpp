@@ -972,6 +972,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			time_t checktime=mktime(&ntime);
 			bool bHaveTimeout=(now-checktime>=SensorTimeOut*60);
 
+			if (dType==pTypeTEMP_RAIN)
+				continue; //dont want you for now
+
 			if ((rused=="true")&&(!used))
 				continue;
 
@@ -2493,104 +2496,6 @@ std::string CWebServer::GetJSonPage()
 			}
 		}
 	} //if (rtype=="users")
-    else if (rtype=="plans")
-	{
-     	root["title"]="Plans";
-        
-        std::string cparam=m_pWebEm->FindValue("param");
-
-        if (cparam=="create")
-		{
-			root["title"]="AddPlan";
-            
-            std::string name=m_pWebEm->FindValue("name");
-			if (name=="")
-				goto exitjson;
-			
-            int planOrder=0;
-            szQuery.clear();
-            szQuery.str("");
-            szQuery << "SELECT MAX(PlanOrder) FROM Plans";
-            result=m_pMain->m_sql.query(szQuery.str());
-            
-            if (result.size()>0)
-            {
-                std::vector<std::string> sd=result[0];
-                
-                planOrder=(int)atoi(sd[0].c_str());
-                planOrder++;
-            }
-            sprintf(szTmp,
-					"INSERT INTO Plans (Name, PlanOrder) VALUES ('%s',%d)",
-					name.c_str(),
-					planOrder
-					);
-            result=m_pMain->m_sql.query(szTmp);
-            root["status"]="OK";
-        }
-        if (cparam=="update")
-		{
-			root["title"]="UpdatePlan";
-            
-            std::string plan=m_pWebEm->FindValue("plan");
-			if (plan=="")
-				goto exitjson;
-        
-            std::string name=m_pWebEm->FindValue("name");
-            std::string order=m_pWebEm->FindValue("order");
-            if (name!="") {
-                sprintf(szTmp,
-                    "UPDATE Plans SET Name='%s' WHERE (ID == %s)",
-                    name.c_str(),
-                    plan.c_str()
-                    );
-                result=m_pMain->m_sql.query(szTmp);
-                root["status"]="OK";
-            }
-            if (order!="") {
-                sprintf(szTmp,
-                        "UPDATE Plans SET PlanOrder=%d WHERE (ID == %s)",
-                        atoi(order.c_str()),
-                        plan.c_str()
-                        );
-                result=m_pMain->m_sql.query(szTmp);
-                root["status"]="OK";
-            }
-            
-        }
-        else if (cparam=="delete")
-		{
-            root["title"]="DeletePlan";
-			std::string idx=m_pWebEm->FindValue("plan");
-			if (idx=="")
-				goto exitjson;
-			m_pMain->m_sql.DeletePlan(idx);
-            root["status"]="OK";
-        }
-        else
-        { 
-            szQuery.clear();
-            szQuery.str("");
-
-            szQuery << "SELECT ROWID, Name, PlanOrder FROM Plans ORDER BY PlanOrder ASC";
-            result=m_pMain->m_sql.query(szQuery.str());
-            if (result.size()>0)
-            {
-                std::vector<std::vector<std::string> >::const_iterator itt;
-                int ii=0;
-                for (itt=result.begin(); itt!=result.end(); ++itt)
-                {
-                    std::vector<std::string> sd=*itt;
-                    root["result"][ii]["idx"]=atoi(sd[0].c_str());
-                    root["result"][ii]["name"]=sd[1].c_str();
-                    root["result"][ii]["planorder"]=atoi(sd[2].c_str());
-                    ii++;
-                }
-            }
-            root["status"]="OK";
-        }
-        
-    }//if (rtype=="plans")
 	else if (rtype=="status-temp")
 	{
 		root["status"]="OK";
@@ -5562,6 +5467,260 @@ std::string CWebServer::GetJSonPage()
 				}
 			}
 		}
+		else if (cparam=="addplan")
+		{
+			std::string name=m_pWebEm->FindValue("name");
+			root["status"]="OK";
+			root["title"]="AddPlan";
+			sprintf(szTmp,
+				"INSERT INTO Plans (Name) VALUES ('%s')",
+				name.c_str()
+				);
+			result=m_pMain->m_sql.query(szTmp);
+		}
+		else if (cparam=="updateplan")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			std::string name=m_pWebEm->FindValue("name");
+			if (
+				(name=="")
+				)
+				goto exitjson;
+
+			root["status"]="OK";
+			root["title"]="UpdatePlan";
+
+			sprintf(szTmp,
+				"UPDATE Plans SET Name='%s' WHERE (ID == %s)",
+				name.c_str(),
+				idx.c_str()
+				);
+			result=m_pMain->m_sql.query(szTmp);
+		}
+		else if (cparam=="deleteplan")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="DeletePlan";
+			sprintf(szTmp,
+				"DELETE FROM DeviceToPlansMap WHERE (PlanID == %s)",
+				idx.c_str()
+				);
+			result=m_pMain->m_sql.query(szTmp);
+			sprintf(szTmp,
+				"DELETE FROM Plans WHERE (ID == %s)",
+				idx.c_str()
+				);
+			result=m_pMain->m_sql.query(szTmp);
+		}
+		else if (cparam=="getunusedplandevices")
+		{
+			root["status"]="OK";
+			root["title"]="GetUnusedPlanDevices";
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT ID, Name FROM DeviceStatus WHERE (Used==1) ORDER BY Name";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()>0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii=0;
+				for (itt=result.begin(); itt!=result.end(); ++itt)
+				{
+					std::vector<std::string> sd=*itt;
+
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << sd[0] << ")";
+					result2=m_pMain->m_sql.query(szQuery.str());
+					if (result2.size()==0)
+					{
+						root["result"][ii]["idx"]=sd[0];
+						root["result"][ii]["Name"]=sd[1];
+						ii++;
+					}
+				}
+			}
+		}
+		else if (cparam=="addplanactivedevice")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			std::string activeidx=m_pWebEm->FindValue("activeidx");
+			if ((idx=="")||(activeidx==""))
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="AddPlanActiveDevice";
+
+			sprintf(szTmp,
+				"INSERT INTO DeviceToPlansMap (DeviceRowID, PlanID) VALUES (%s,%s)",
+				activeidx.c_str(),
+				idx.c_str()
+				);
+			result=m_pMain->m_sql.query(szTmp);
+		}
+		else if (cparam=="getplandevices")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="GetPlanDevices";
+			std::vector<std::vector<std::string> > result;
+			std::stringstream szQuery;
+			//First List/Switch Devices
+			szQuery << "SELECT A.ID, A.[Order], B.Name FROM DeviceToPlansMap as A, DeviceStatus as B WHERE ((A.PlanID=='" << idx << "') AND (B.ID==A.DeviceRowID)) ORDER BY A.[Order]";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()>0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii=0;
+				for (itt=result.begin(); itt!=result.end(); ++itt)
+				{
+					std::vector<std::string> sd=*itt;
+					root["result"][ii]["idx"]=sd[0];
+					root["result"][ii]["order"]=sd[1];
+					root["result"][ii]["Name"]=sd[2];
+					ii++;
+				}
+			}
+		}
+		else if (cparam=="deleteplandevice")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="DeletePlanDevice";
+			sprintf(szTmp,"DELETE FROM DeviceToPlansMap WHERE (ID == '%s')",idx.c_str());
+			result=m_pMain->m_sql.query(szTmp);
+		}
+		else if (cparam=="deleteallplandevices")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="DeleteAllPlanDevices";
+			sprintf(szTmp,"DELETE FROM DeviceToPlansMap WHERE (PlanID == '%s')",idx.c_str());
+			result=m_pMain->m_sql.query(szTmp);
+		}
+		else if (cparam=="changeplanorder")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			std::string sway=m_pWebEm->FindValue("way");
+			if (sway=="")
+				goto exitjson;
+			bool bGoUp=(sway=="0");
+
+			std::string aScene,aOrder,oID,oOrder;
+
+			std::vector<std::vector<std::string> > result;
+			std::stringstream szQuery;
+			szQuery << "SELECT [Order] FROM Plans WHERE (ID=='" << idx << "')";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()<1)
+				goto exitjson;
+			aOrder=result[0][0];
+
+			szQuery.clear();
+			szQuery.str("");
+
+			if (!bGoUp)
+			{
+				//Get next device order
+				szQuery << "SELECT ID, [Order] FROM Plans WHERE ([Order]>'" << aOrder << "') ORDER BY [Order] ASC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()<1)
+					goto exitjson;
+				oID=result[0][0];
+				oOrder=result[0][1];
+			}
+			else
+			{
+				//Get previous device order
+				szQuery << "SELECT ID, [Order] FROM Plans WHERE ([Order]<'" << aOrder << "') ORDER BY [Order] DESC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()<1)
+					goto exitjson;
+				oID=result[0][0];
+				oOrder=result[0][1];
+			}
+			//Swap them
+			root["status"]="OK";
+			root["title"]="ChangePlanOrder";
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE Plans SET [Order] = '" << oOrder << "' WHERE (ID='" << idx << "')";
+			result=m_pMain->m_sql.query(szQuery.str());
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE Plans SET [Order] = '" << aOrder << "' WHERE (ID='" << oID << "')";
+			result=m_pMain->m_sql.query(szQuery.str());
+		}
+		else if (cparam=="changeplandeviceorder")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			std::string sway=m_pWebEm->FindValue("way");
+			if (sway=="")
+				goto exitjson;
+			bool bGoUp=(sway=="0");
+
+			std::string aScene,aOrder,oID,oOrder;
+
+			std::vector<std::vector<std::string> > result;
+			std::stringstream szQuery;
+			szQuery << "SELECT [Order] FROM DeviceToPlansMap WHERE (ID=='" << idx << "')";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()<1)
+				goto exitjson;
+			aOrder=result[0][0];
+
+			szQuery.clear();
+			szQuery.str("");
+
+			if (!bGoUp)
+			{
+				//Get next device order
+				szQuery << "SELECT ID, [Order] FROM DeviceToPlansMap WHERE ([Order]>'" << aOrder << "') ORDER BY [Order] ASC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()<1)
+					goto exitjson;
+				oID=result[0][0];
+				oOrder=result[0][1];
+			}
+			else
+			{
+				//Get previous device order
+				szQuery << "SELECT ID, [Order] FROM DeviceToPlansMap WHERE ([Order]<'" << aOrder << "') ORDER BY [Order] DESC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()<1)
+					goto exitjson;
+				oID=result[0][0];
+				oOrder=result[0][1];
+			}
+			//Swap them
+			root["status"]="OK";
+			root["title"]="ChangePlanOrder";
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE DeviceToPlansMap SET [Order] = '" << oOrder << "' WHERE (ID='" << idx << "')";
+			result=m_pMain->m_sql.query(szQuery.str());
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE DeviceToPlansMap SET [Order] = '" << aOrder << "' WHERE (ID='" << oID << "')";
+			result=m_pMain->m_sql.query(szQuery.str());
+		}
 		else if (cparam=="getactualhistory")
 		{
 			root["status"]="OK";
@@ -6384,7 +6543,6 @@ std::string CWebServer::GetJSonPage()
 			szQuery.str("");
 			szQuery << "UPDATE SceneDevices SET [Order] = '" << aOrder << "' WHERE (ID='" << oID << "')";
 			result=m_pMain->m_sql.query(szQuery.str());
-
 		}
 		else if (cparam=="deleteallscenedevices")
 		{
@@ -6650,7 +6808,7 @@ std::string CWebServer::GetJSonPage()
 			if (idx=="")
 				goto exitjson;
 			root["status"]="OK";
-			root["title"]="DeleteAllCameraActiveDeviced";
+			root["title"]="DeleteAllCameraActiveDevices";
 			sprintf(szTmp,"DELETE FROM CamerasActiveDevices WHERE (CameraRowID == '%s')",idx.c_str());
 			result=m_pMain->m_sql.query(szTmp);
 		}
@@ -8711,6 +8869,43 @@ std::string CWebServer::GetJSonPage()
 		}
 
 	} //(rtype=="createvirtualsensor")
+	else if (rtype=="plans")
+	{
+		root["status"]="OK";
+		root["title"]="Plans";
+
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT ID, Name, [Order] FROM Plans ORDER BY [Order]";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			int ii=0;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+
+				root["result"][ii]["idx"]=sd[0];
+				root["result"][ii]["Name"]=sd[1];
+				root["result"][ii]["Order"]=sd[2];
+
+				unsigned int totDevices=0;
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT COUNT(*) FROM DeviceToPlansMap WHERE (PlanID=='" << sd[0] << "')";
+				result2=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					totDevices=(unsigned int)atoi(result2[0][0].c_str());
+				}
+				root["result"][ii]["Devices"]=totDevices;
+
+				ii++;
+			}
+		}
+	} //plans
 	else if (rtype=="scenes")
 	{
 		root["status"]="OK";
@@ -8756,7 +8951,6 @@ std::string CWebServer::GetJSonPage()
 				ii++;
 			}
 		}
-
 	} //(rtype=="scenes")
 	else if (rtype=="events")
 	{
