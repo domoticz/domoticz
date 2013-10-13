@@ -16,6 +16,12 @@ namespace http {
 		struct _tWebUserPassword;
 class CWebServer
 {
+	struct _tCustomIcon
+	{
+		std::string RootFile;
+		std::string Title;
+		std::string Description;
+	};
 public:
 	CWebServer(void);
 	~CWebServer(void);
@@ -59,6 +65,7 @@ private:
 	std::string m_retstr;
 	std::wstring m_wretstr;
 	time_t m_LastUpdateCheck;
+	std::vector<_tCustomIcon> m_custom_light_icons;
 
 	//JSon
 	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid);

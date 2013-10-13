@@ -15,7 +15,7 @@
 #include "../webserver/Base64.h"
 #include "mainstructs.h"
 
-#define DB_VERSION 26
+#define DB_VERSION 27
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -39,7 +39,8 @@ const char *sqlCreateDeviceStatus =
 "[AddjMulti] FLOAT DEFAULT 1, "
 "[AddjValue2] FLOAT DEFAULT 0, "
 "[AddjMulti2] FLOAT DEFAULT 1, "
-"[LastLevel] INTEGER DEFAULT 0);";
+"[LastLevel] INTEGER DEFAULT 0, "
+"[CustomImage] INTEGER DEFAULT 0);";
 
 const char *sqlCreateDeviceStatusTrigger =
 "CREATE TRIGGER IF NOT EXISTS devicestatusupdate AFTER INSERT ON DeviceStatus\n"
@@ -671,6 +672,10 @@ bool CSQLHelper::OpenDatabase()
 			query("DROP TABLE IF EXISTS [DeviceToPlansMap]");
 			query(sqlCreatePlanMappings);
 			query(sqlCreateDevicesToPlanStatusTrigger);
+		}
+		if (dbversion<27)
+		{
+			query("ALTER TABLE DeviceStatus ADD COLUMN [CustomImage] INTEGER default 0");
 		}
     }
 	UpdatePreferencesVar("DB_Version",DB_VERSION);

@@ -1,0 +1,2 @@
+Light;Light/Switch;A Lamp or Switch
+WallSocket;Wall Socket;Power Wall Socket

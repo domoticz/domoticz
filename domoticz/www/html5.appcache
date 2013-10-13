@@ -139,12 +139,10 @@ images/hold_mini.png
 images/ice.png
 images/insert.png
 images/iphone-icon.png
-images/light-off.png
-images/light-on.png
-images/light-unknown.png
+images/Light48_Off.png
+images/Light48_On.png
 images/lightbulb.png
 images/lightbulboff.png
-images/lightbulbunknown.png
 images/lock_closed.png
 images/lock_open.png
 images/log.png
@@ -232,6 +230,9 @@ images/uvdark.png
 images/uvsunny.png
 images/visibility.png
 images/visibility48.png
+images/WallSocket.png
+images/WallSocket48_On.png
+images/WallSocket48_Off.png
 images/wind.png
 images/wind48.png
 images/Wind0.png
@@ -267,6 +268,7 @@ secpanel/bg.jpg
 js/bootbox.min.js
 js/bootstrap.min.js
 js/date.format.js
+js/jquery.ddslick.min.js
 js/domoticz.js
 js/highcharts-more.js
 js/highcharts.js

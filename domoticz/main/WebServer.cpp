@@ -93,6 +93,33 @@ bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress
 	m_pMain=pMain;
 	StopServer();
 
+	m_custom_light_icons.clear();
+	std::string sLine = "";
+	std::ifstream infile;
+	std::string switchlightsfile=serverpath+"/switch_icons.txt";
+	infile.open(switchlightsfile.c_str());
+	if (infile.is_open())
+	{
+		while (!infile.eof())
+		{
+			getline(infile, sLine);
+			if (sLine.size()!=0)
+			{
+				std::vector<std::string> results;
+				StringSplit(sLine,";",results);
+				if (results.size()==3)
+				{
+					_tCustomIcon cImage;
+					cImage.RootFile=results[0];
+					cImage.Title=results[1];
+					cImage.Description=results[2];
+					m_custom_light_icons.push_back(cImage);
+				}
+			}
+		}
+	}
+
+
 	if (m_pWebEm!=NULL)
 		delete m_pWebEm;
     try {
@@ -924,17 +951,17 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 	{
 		//All
 		if (rowid!="")
-			szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel FROM DeviceStatus WHERE (ID==" << rowid << ")";
+			szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel, CustomImage FROM DeviceStatus WHERE (ID==" << rowid << ")";
 		else
-			szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel FROM DeviceStatus ORDER BY " << szOrderBy;
+			szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel, CustomImage FROM DeviceStatus ORDER BY " << szOrderBy;
 	}
 	else
 	{
 		//Specific devices
 		if (rowid!="")
-			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << m_users[iUser].ID << ") AND (A.ID==" << rowid << ")";
+			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << m_users[iUser].ID << ") AND (A.ID==" << rowid << ")";
 		else
-			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << m_users[iUser].ID << ") ORDER BY " << szOrderBy;
+			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << m_users[iUser].ID << ") ORDER BY " << szOrderBy;
 	}
 
 	result=m_pMain->m_sql.query(szQuery.str());
@@ -960,6 +987,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			double AddjValue2=atof(sd[17].c_str());
 			double AddjMulti2=atof(sd[18].c_str());
 			int LastLevel=atoi(sd[19].c_str());
+			int CustomImage=atoi(sd[20].c_str());
 
 			struct tm ntime;
 			ntime.tm_isdst=tm1.tm_isdst;
@@ -1121,6 +1149,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			root["result"][ii]["SignalLevel"]=atoi(sd[7].c_str());
 			root["result"][ii]["BatteryLevel"]=atoi(sd[8].c_str());
 			root["result"][ii]["LastUpdate"]=sLastUpdate;
+			root["result"][ii]["CustomImage"]=CustomImage;
 
 			sprintf(szData,"%d, %s", nValue,sValue.c_str());
 			root["result"][ii]["Data"]=szData;
@@ -1149,6 +1178,13 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				GetLightStatus(dType,dSubType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
 
 				root["result"][ii]["Status"]=lstatus;
+
+				if (CustomImage<(int)m_custom_light_icons.size())
+					root["result"][ii]["Image"]=m_custom_light_icons[CustomImage].RootFile;
+				else
+					root["result"][ii]["Image"]="Light";
+				
+
 				if (switchtype==STYPE_Dimmer)
 				{
 					root["result"][ii]["Level"]=LastLevel;
@@ -8595,6 +8631,7 @@ std::string CWebServer::GetJSonPage()
 		std::string addjvalue2=m_pWebEm->FindValue("addjvalue2");
 		std::string addjmulti2=m_pWebEm->FindValue("addjmulti2");
 		std::string setPoint=m_pWebEm->FindValue("setpoint");
+		std::string sCustomImage=m_pWebEm->FindValue("customimage");
 
 		int switchtype=-1;
 		if (sswitchtype!="")
@@ -8605,6 +8642,10 @@ std::string CWebServer::GetJSonPage()
 		int used=(sused=="true")?1:0;
 		if (maindeviceidx!="")
 			used=0;
+
+		int CustomImage=0;
+		if (sCustomImage!="")
+			CustomImage=atoi(sCustomImage.c_str());
 
         std::stringstream sstridx(idx);
         unsigned long long ullidx;
@@ -8630,7 +8671,7 @@ std::string CWebServer::GetJSonPage()
 				if (switchtype==-1)
 					szQuery << "UPDATE DeviceStatus SET Used=" << used << ", Name='" << name << "' WHERE (ID == " << idx << ")";
 				else
-					szQuery << "UPDATE DeviceStatus SET Used=" << used << ", Name='" << name << "', SwitchType=" << switchtype << " WHERE (ID == " << idx << ")";
+					szQuery << "UPDATE DeviceStatus SET Used=" << used << ", Name='" << name << "', SwitchType=" << switchtype << ", CustomImage=" << CustomImage << " WHERE (ID == " << idx << ")";
 			}
 		}
 		result=m_pMain->m_sql.query(szQuery.str());
@@ -8872,6 +8913,18 @@ std::string CWebServer::GetJSonPage()
 		}
 
 	} //(rtype=="createvirtualsensor")
+	else if (rtype=="custom_light_icons")
+	{
+		std::vector<_tCustomIcon>::const_iterator itt;
+		int ii=0;
+		for (itt=m_custom_light_icons.begin(); itt!=m_custom_light_icons.end(); ++itt)
+		{
+			root["result"][ii]["imageSrc"]=itt->RootFile;
+			root["result"][ii]["text"]=itt->Title;
+			root["result"][ii]["description"]=itt->Description;
+			ii++;
+		}
+	}
 	else if (rtype=="plans")
 	{
 		root["status"]="OK";

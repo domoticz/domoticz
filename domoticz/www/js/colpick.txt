@@ -1,0 +1,7 @@
+<script src="js/colpick.js" type="text/javascript"></script>
+<link rel="stylesheet" href="css/colpick.css" type="text/css"/>
+
+<button id="picker">Show Color Picker</button>
+$('#picker').colpick();
+
+http://colpick.com/plugin
