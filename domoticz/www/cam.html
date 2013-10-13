@@ -149,14 +149,6 @@ function AddCameraDevice()
 				Addcamera();
 			}
 		},
-		open: function() {
-			$(this).keypress(function(e) {
-				if (e.keyCode == $.ui.keyCode.ENTER) {
-					e.preventDefault();
-					$(this).parent().find("button:eq(0)").trigger("click");
-				}
-			});
-          },
 		close: function() {
             $( this ).dialog( "close" );
 		}
@@ -186,14 +178,6 @@ function EditCamera(idx)
 				Updatecamera(idx);
 			}
 		},
-		open: function() {
-			$(this).keypress(function(e) {
-				if (e.keyCode == $.ui.keyCode.ENTER) {
-					e.preventDefault();
-					$(this).parent().find("button:eq(0)").trigger("click");
-				}
-			});
-          },
 		close: function() {
             $( this ).dialog( "close" );
 		}

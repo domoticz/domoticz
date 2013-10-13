@@ -3853,14 +3853,6 @@ $(document).ready(function() {
                   $( this ).dialog( "close" );
               }
           },
-          open: function() {
-              $(this).keypress(function(e) {
-                if (e.keyCode == $.ui.keyCode.ENTER) {
-                  e.preventDefault();
-                  $(this).parent().find("button:eq(0)").trigger("click");
-                }
-              });
-          },
           close: function() {
             $( this ).dialog( "close" );
           }
@@ -3906,14 +3898,6 @@ $(document).ready(function() {
               Cancel: function() {
                   $( this ).dialog( "close" );
               }
-          },
-          open: function() {
-              $(this).keypress(function(e) {
-                if (e.keyCode == $.ui.keyCode.ENTER) {
-                  e.preventDefault();
-                  $(this).parent().find("button:eq(0)").trigger("click");
-                }
-              });
           },
           close: function() {
             $( this ).dialog( "close" );
@@ -3962,20 +3946,18 @@ $(document).ready(function() {
                   $( this ).dialog( "close" );
               }
           },
-          open: function() {
-              $(this).keypress(function(e) {
-                if (e.keyCode == $.ui.keyCode.ENTER) {
-                  e.preventDefault();
-                  $(this).parent().find("button:eq(0)").trigger("click");
-                }
-              });
-          },
           close: function() {
             $( this ).dialog( "close" );
           }
     });
 
   ShowUtilities();
- 
+
+	$( "#dialog-editutilitydevice" ).keydown(function (event) {
+        if (event.keyCode == 13) {
+			$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').trigger("click");
+            return false;
+        }
+    });
 } );  
 </script>

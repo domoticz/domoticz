@@ -1407,14 +1407,6 @@ $(document).ready(function() {
 								$( this ).dialog( "close" );
 							}
 						 }],
-				open: function() {
-						$(this).keypress(function(e) {
-							if (e.keyCode == $.ui.keyCode.ENTER) {
-								e.preventDefault();
-								$(this).parent().find("button:eq(0)").trigger("click");
-							}
-						});
-				},
 				close: function() {
 					$( this ).dialog( "close" );
 				}

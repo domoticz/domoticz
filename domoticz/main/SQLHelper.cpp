@@ -869,7 +869,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("RaspCamParams", "-w 800 -h 600 -t 0"); //width/height/time2wait
 	}
-	
+
+	//Rob
+	CleanupShortLog();
+
 	//Start background thread
 	if (!StartThread())
 		return false;
@@ -2703,7 +2706,7 @@ void CSQLHelper::Schedule5Minute()
 	UpdateMultiMeter();
 	//Removing the line below could cause a very large database,
 	//and slow(large) data transfer (specially when working remote!!)
-	CleanupShortLog(); 
+	CleanupShortLog();
 }
 
 void CSQLHelper::ScheduleDay()
@@ -4085,45 +4088,34 @@ void CSQLHelper::CleanupShortLog()
 	int n5MinuteHistoryDays=1;
 	if(GetPreferencesVar("5MinuteHistoryDays", n5MinuteHistoryDays))
     {
-        // If the history days is zero then all data in the short losgs is deleted!
+        // If the history days is zero then all data in the short logs is deleted!
         if(n5MinuteHistoryDays == 0)
         {
             _log.Log(LOG_ERROR,"CleanupShortLog(): MinuteHistoryDays is zero!");
             return;
         }
 
-	    time_t now = mytime(NULL);
-	    now-=(n5MinuteHistoryDays*24*3600);
-	    struct tm tm2;
-	    localtime_r(&now,&tm2);
+		char szDateStr[40];
+		char szTmp[200];
 
-	    if (tm2.tm_year==70)
-	    {
-		    //Lost our time?
-		    return;
-	    }
+	    sprintf(szDateStr,"datetime('now','-%d day', 'localtime')",n5MinuteHistoryDays);
 
-	    char szDateStr[40];
-	    char szTmp[200];
-
-	    sprintf(szDateStr,"%04d-%02d-%02d %02d:%02d:00",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min);
-
-	    sprintf(szTmp,"DELETE FROM Temperature WHERE (Date<'%s')",szDateStr);
+	    sprintf(szTmp,"DELETE FROM Temperature WHERE (Date<%s)",szDateStr);
 	    query(szTmp);
 
-	    sprintf(szTmp,"DELETE FROM Rain WHERE (Date<'%s')",szDateStr);
+	    sprintf(szTmp,"DELETE FROM Rain WHERE (Date<%s)",szDateStr);
 	    query(szTmp);
 
-	    sprintf(szTmp,"DELETE FROM Wind WHERE (Date<'%s')",szDateStr);
+	    sprintf(szTmp,"DELETE FROM Wind WHERE (Date<%s)",szDateStr);
 	    query(szTmp);
 
-	    sprintf(szTmp,"DELETE FROM UV WHERE (Date<'%s')",szDateStr);
+	    sprintf(szTmp,"DELETE FROM UV WHERE (Date<%s)",szDateStr);
 	    query(szTmp);
 
-	    sprintf(szTmp,"DELETE FROM Meter WHERE (Date<'%s')",szDateStr);
+	    sprintf(szTmp,"DELETE FROM Meter WHERE (Date<%s)",szDateStr);
 	    query(szTmp);
 
-	    sprintf(szTmp,"DELETE FROM MultiMeter WHERE (Date<'%s')",szDateStr);
+	    sprintf(szTmp,"DELETE FROM MultiMeter WHERE (Date<%s)",szDateStr);
 	    query(szTmp);
     }
 }

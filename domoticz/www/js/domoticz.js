@@ -96,15 +96,6 @@ function ArmSystem(idx,switchcmd, refreshfunction)
 			width: 340,
 			resizable: false,
 			draggable: false,
-			open: function() {
-			  $(".ui-dialog-titlebar").hide();
-              $(this).keypress(function(e) {
-                if (e.keyCode == $.ui.keyCode.ENTER) {
-                  e.preventDefault();
-                  $(this).parent().find("button:eq(0)").trigger("click");
-                }
-              });
-			},
             buttons: [
                   {
                         text: $.i18n("Arm Home"),

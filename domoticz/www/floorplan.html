@@ -91,7 +91,7 @@ function ChangeDeviceOrder(order, devid)
 		return;
 	}
   $.ajax({
-	 url: "json.htm?type=command&param=changeplandeviceorder&idx=" + devid + "&way=" + order, 
+	 url: "json.htm?type=command&param=changeplandeviceorder&planid=" + $.LastPlan + "&idx=" + devid + "&way=" + order, 
 	 async: false, 
 	 dataType: 'json',
 	 success: function(data) {
@@ -121,14 +121,6 @@ function AddNewPlan()
 				AddPlan();
 			}
 		},
-		open: function() {
-			$(this).keypress(function(e) {
-				if (e.keyCode == $.ui.keyCode.ENTER) {
-					e.preventDefault();
-					$(this).parent().find("button:eq(0)").trigger("click");
-				}
-			});
-          },
 		close: function() {
             $( this ).dialog( "close" );
 		}
@@ -156,14 +148,6 @@ function EditPlan(idx)
 				UpdatePlan(idx);
 			}
 		},
-		open: function() {
-			$(this).keypress(function(e) {
-				if (e.keyCode == $.ui.keyCode.ENTER) {
-					e.preventDefault();
-					$(this).parent().find("button:eq(0)").trigger("click");
-				}
-			});
-          },
 		close: function() {
             $( this ).dialog( "close" );
 		}

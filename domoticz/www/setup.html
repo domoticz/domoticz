@@ -826,12 +826,6 @@ $(document).ready(function() {
               }
           },
           open: function() {
-              $(this).keypress(function(e) {
-                if (e.keyCode == $.ui.keyCode.ENTER) {
-                  e.preventDefault();
-                  $(this).parent().find("button:eq(0)").trigger("click");
-                }
-              });
 				$( '#getlatlong' ).click( function()
 				{
 						var address = $( '#dialog-findlatlong #address' ).val();

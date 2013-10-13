@@ -5667,11 +5667,14 @@ std::string CWebServer::GetJSonPage()
 		}
 		else if (cparam=="changeplandeviceorder")
 		{
+			std::string planid=m_pWebEm->FindValue("planid");
 			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
 			std::string sway=m_pWebEm->FindValue("way");
-			if (sway=="")
+			if (
+				(planid=="")||
+				(idx=="")||
+				(sway=="")
+				)
 				goto exitjson;
 			bool bGoUp=(sway=="0");
 
@@ -5679,7 +5682,7 @@ std::string CWebServer::GetJSonPage()
 
 			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;
-			szQuery << "SELECT [Order] FROM DeviceToPlansMap WHERE (ID=='" << idx << "')";
+			szQuery << "SELECT [Order] FROM DeviceToPlansMap WHERE ((ID=='" << idx << "') AND (PlanID=='" << planid << "'))";
 			result=m_pMain->m_sql.query(szQuery.str());
 			if (result.size()<1)
 				goto exitjson;
@@ -5691,7 +5694,7 @@ std::string CWebServer::GetJSonPage()
 			if (!bGoUp)
 			{
 				//Get next device order
-				szQuery << "SELECT ID, [Order] FROM DeviceToPlansMap WHERE ([Order]>'" << aOrder << "') ORDER BY [Order] ASC";
+				szQuery << "SELECT ID, [Order] FROM DeviceToPlansMap WHERE (([Order]>'" << aOrder << "') AND (PlanID=='" << planid << "')) ORDER BY [Order] ASC";
 				result=m_pMain->m_sql.query(szQuery.str());
 				if (result.size()<1)
 					goto exitjson;
@@ -5701,7 +5704,7 @@ std::string CWebServer::GetJSonPage()
 			else
 			{
 				//Get previous device order
-				szQuery << "SELECT ID, [Order] FROM DeviceToPlansMap WHERE ([Order]<'" << aOrder << "') ORDER BY [Order] DESC";
+				szQuery << "SELECT ID, [Order] FROM DeviceToPlansMap WHERE (([Order]<'" << aOrder << "') AND (PlanID=='" << planid << "')) ORDER BY [Order] DESC";
 				result=m_pMain->m_sql.query(szQuery.str());
 				if (result.size()<1)
 					goto exitjson;

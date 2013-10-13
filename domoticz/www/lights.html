@@ -1923,14 +1923,6 @@ $(document).ready(function() {
                   $( this ).dialog( "close" );
               }
           },
-          open: function() {
-              $(this).keypress(function(e) {
-                if (e.keyCode == $.ui.keyCode.ENTER) {
-                  e.preventDefault();
-                  $(this).parent().find("button:eq(0)").trigger("click");
-                }
-              });
-          },
           close: function() {
             $( this ).dialog( "close" );
           }
@@ -1978,13 +1970,6 @@ $(document).ready(function() {
               }
           },
           open: function() {
-              $(this).keypress(function(e) {
-                if (e.keyCode == $.ui.keyCode.ENTER) {
-                  e.preventDefault();
-                  $(this).parent().find("button:eq(0)").trigger("click");
-                }
-              });
-              
              	$("#dialog-addmanuallightdevice #lighttable #comboswitchtype").change(function() { 
 								var switchtype=$("#dialog-addmanuallightdevice #lighttable #comboswitchtype option:selected").val();
 								if (switchtype==1)
