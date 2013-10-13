@@ -870,9 +870,6 @@ bool CSQLHelper::OpenDatabase()
 		UpdatePreferencesVar("RaspCamParams", "-w 800 -h 600 -t 0"); //width/height/time2wait
 	}
 
-	//Rob
-	CleanupShortLog();
-
 	//Start background thread
 	if (!StartThread())
 		return false;
