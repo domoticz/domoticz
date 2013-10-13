@@ -33,6 +33,26 @@ secpanel/font/Audiowide.ttf
 secpanel/font/Audiowide.woff
 
 # images
+images/Light48_Off.png
+images/Light48_On.png
+images/WallSocket.png
+images/WallSocket48_On.png
+images/WallSocket48_Off.png
+images/Printer.png
+images/Printer48_On.png
+images/Printer48_Off.png
+images/TV48.png
+images/TV48_On.png
+images/TV48_Of.png
+images/Harddisk48.png
+images/Harddisk48_On.png
+images/Harddisk48_Off.png
+images/Amplifier48.png
+images/Amplifier48_On.png
+images/Amplifier48_Off.png
+images/Computer48.png
+images/Computer48_On.png
+images/Computer48_Off.png
 css/images/bg-track.png
 css/images/handle.png
 css/images/img01.jpg
@@ -139,8 +159,6 @@ images/hold_mini.png
 images/ice.png
 images/insert.png
 images/iphone-icon.png
-images/Light48_Off.png
-images/Light48_On.png
 images/lightbulb.png
 images/lightbulboff.png
 images/lock_closed.png
@@ -230,9 +248,6 @@ images/uvdark.png
 images/uvsunny.png
 images/visibility.png
 images/visibility48.png
-images/WallSocket.png
-images/WallSocket48_On.png
-images/WallSocket48_Off.png
 images/wind.png
 images/wind48.png
 images/Wind0.png

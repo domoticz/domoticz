@@ -1,2 +1,7 @@
 Light;Light/Switch;A Lamp or Switch
 WallSocket;Wall Socket;Power Wall Socket
+TV;Television;Television Screen
+Harddisk;Hard disk;Hard disk drive
+Printer;Printer;Printer
+Amplifier;Amplifier;Device that controls audio
+Computer;Computer;Personal Computer System
