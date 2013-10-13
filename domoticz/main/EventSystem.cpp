@@ -1134,12 +1134,9 @@ void CEventSystem::OpenURL(const std::string &URL)
     std::string ampURL = stdreplace(URL, "~amp~", "&");
     ampURL = stdreplace(ampURL, "~comma~", ",");
     _log.Log(LOG_NORM,"Fetching url: %s",ampURL.c_str());
-    std::string sResult;
-	bool ret=HTTPClient::GET(ampURL,sResult);
-	if (!ret)
-	{
-		_log.Log(LOG_ERROR,"Error opening url: %s",ampURL.c_str());
-	}
+	_tTaskItem tItem;
+	tItem=_tTaskItem::GetHTTPPage(1,ampURL,"OpenURL");
+	m_pMain->m_sql.AddTaskItem(tItem);
     // maybe do something with sResult in the future.
 }
 

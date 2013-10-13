@@ -971,6 +971,15 @@ void CSQLHelper::Do_Work()
 			{
 				m_pMain->m_cameras.EmailCameraSnapshot(itt->_ID,itt->_sValue);
 			}
+			else if (itt->_ItemType == TITEM_GETURL)
+			{
+				std::string sResult;
+				bool ret=HTTPClient::GET(itt->_sValue,sResult);
+				if (!ret)
+				{
+					_log.Log(LOG_ERROR,"Error opening url: %s",itt->_sValue.c_str());
+				}
+			}
 			else if (itt->_ItemType == TITEM_SEND_EMAIL)
 			{
 				int nValue;

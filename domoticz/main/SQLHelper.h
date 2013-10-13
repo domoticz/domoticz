@@ -39,7 +39,8 @@ enum _eTaskItemType
 	TITEM_EMAIL_CAMERA_SNAPSHOT,
 	TITEM_SEND_EMAIL,
     TITEM_SWITCHCMD_EVENT,
-    TITEM_SWITCHCMD_SCENE,
+	TITEM_SWITCHCMD_SCENE,
+	TITEM_GETURL,
 };
 
 struct _tTaskItem
@@ -132,6 +133,16 @@ struct _tTaskItem
         tItem._command= Command;
         tItem._relatedEvent = eventName;
         
+		return tItem;
+	}
+	static _tTaskItem GetHTTPPage(const int DelayTime, const std::string &URL, const std::string &eventName)
+	{
+		_tTaskItem tItem;
+		tItem._ItemType=TITEM_GETURL;
+		tItem._DelayTime=DelayTime;
+		tItem._sValue= URL;
+		tItem._relatedEvent = eventName;
+
 		return tItem;
 	}
 };
