@@ -5,3 +5,5 @@ Harddisk;Hard disk;Hard disk drive
 Printer;Printer;Printer
 Amplifier;Amplifier;Device that controls audio
 Computer;Computer;Personal Computer System
+Fan;Fan;Airflow Producer
+Speaker;Speaker;Audio Speaker
