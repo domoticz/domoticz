@@ -52,14 +52,15 @@ private:
 	bool StopHardware();
 	bool OpenSerialDevice();
 	void Do_Work();
-	void ParseData();
+	bool ParseData();
 
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
 	int m_retrycntr;
 	int m_pollDelaycntr;
-	int m_pollcntr;
+	unsigned int m_pollcntr;
     int m_regoType;
+    unsigned int m_errorcntr;
 
 	// Create a circular buffer.
     char m_readBuffer[Rego6XX_READ_BUFFER_SIZE];

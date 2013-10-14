@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Rego6XXSerial.h"
+#include "../main/Logger.h"
 
 // This code is inspired by the Rago600 project:
 // http://rago600.sourceforge.net/
@@ -19,6 +20,7 @@
 #define Rego6XX_RETRY_DELAY 30
 #define Rego6XX_COMMAND_DELAY 5
 #define Rego6XX_READ_BUFFER_MASK (Rego6XX_READ_BUFFER_SIZE - 1)
+#define Rego6XX_MAX_ERRORS_UNITL_RESTART 20
 
 typedef enum {
 	REGO_TYPE_NONE=0,
@@ -102,10 +104,11 @@ CRego6XXSerial::CRego6XXSerial(const int ID, const std::string& devname, const i
 	m_HwdID=ID;
 	m_szSerialPort=devname;
     m_regoType = type;
+    m_errorcntr = 0;
 
 	m_stoprequested=false;
 	m_retrycntr = 0;
-	m_pollcntr = -1;
+	m_pollcntr = 0;
 	m_pollDelaycntr = 0;
 	m_readBufferHead = 0;
 	m_readBufferTail = 0;
@@ -168,20 +171,45 @@ void CRego6XXSerial::Do_Work()
 		{
 			if (m_retrycntr==0)
 			{
-				std::cout << "Rego6XX serial retrying in " << std::dec << Rego6XX_RETRY_DELAY << " seconds..." << std::endl;
+				_log.Log(LOG_NORM,"Rego6XX serial retrying in %d seconds...", Rego6XX_RETRY_DELAY);
 			}
 			m_retrycntr++;
 			if (m_retrycntr>=Rego6XX_RETRY_DELAY)
 			{
 				m_retrycntr=0;
-				m_pollcntr = -1;
+				m_pollcntr = 0;
 				m_pollDelaycntr = 0;
 				m_readBufferHead = 0;
 				m_readBufferTail = 0;
 				OpenSerialDevice();
 			}
 		}
-		else
+		else if(m_errorcntr > Rego6XX_MAX_ERRORS_UNITL_RESTART)
+        {
+            // Reopen the port and clear the error counter.
+		    try {
+			    clearReadCallback();
+			    close();
+			    doClose();
+			    setErrorStatus(true);
+		    } catch(...)
+		    {
+			    //Don't throw from a Stop command
+		    }
+
+		    _log.Log(LOG_ERROR,"Rego6XX Reopening serial port");
+		    boost::this_thread::sleep(boost::posix_time::seconds(2));
+
+			m_retrycntr=0;
+			m_pollcntr = 0;
+			m_pollDelaycntr = 0;
+			m_readBufferHead = 0;
+			m_readBufferTail = 0;
+            m_errorcntr = 0;
+
+		    OpenSerialDevice();
+        }
+        else
 		{
 			m_pollDelaycntr++;
 
@@ -196,7 +224,6 @@ void CRego6XXSerial::Do_Work()
 				m_readBufferTail = 0;
 
    				m_pollDelaycntr = 0;
-				m_pollcntr++;
 				if(g_allRegisters[m_pollcntr].type != REGO_TYPE_NONE)
 				{
 					RegoCommand cmd;
@@ -220,7 +247,7 @@ void CRego6XXSerial::Do_Work()
 					    cmd.data.regNum[2] = g_allRegisters[m_pollcntr].regNum_type3 & 0x007F;
                         break;
                     default:
-                		std::cerr << "Rego6XX Unknown type!" << std::endl;
+		                _log.Log(LOG_ERROR,"Rego6XX Unknown type!");
                         break;
                     }
 					cmd.data.value[0] = 0;
@@ -235,17 +262,28 @@ void CRego6XXSerial::Do_Work()
 				}
 				else
 				{
-					m_pollcntr = -1;
+					m_pollcntr = 0;
 				}
 			}
 			else
 			{
 				// Try to parse data
-				ParseData();
+				if(ParseData())
+                {
+                    // Get the next message
+       				m_pollcntr++;
+
+                    m_errorcntr = 0;
+                }
+                else
+                {
+                    m_errorcntr++;
+                }
+
 			}
 		}
 	}
-	std::cout << "Rego6XX: Serial Worker stopped..." << std::endl;
+	_log.Log(LOG_NORM,"Rego6XX: Serial Worker stopped...");
 } 
 
 
@@ -255,19 +293,19 @@ bool CRego6XXSerial::OpenSerialDevice()
 	try
 	{
 		open(m_szSerialPort, 19200);
-		std::cout << "Rego6XX Using serial port: " << m_szSerialPort << std::endl;
+		_log.Log(LOG_NORM,"Rego6XX Using serial port: %s", m_szSerialPort.c_str());
 	}
 	catch (boost::exception & e)
 	{
-		std::cerr << "Rego6XX Error opening serial port!" << std::endl;
+		_log.Log(LOG_ERROR,"Rego6XX Error opening serial port!");
 #ifdef _DEBUG
-		std::cerr << "-----------------" << std::endl << boost::diagnostic_information(e) << "-----------------" << std::endl;
+		_log.Log(LOG_ERROR,"-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
 #endif
 		return false;
 	}
 	catch ( ... )
 	{
-		std::cerr << "Rego6XX Error opening serial port!!!" << std::endl;
+		_log.Log(LOG_ERROR,"Rego6XX Error opening serial port!!!");
 		return false;
 	}
 	m_bIsStarted=true;
@@ -323,8 +361,9 @@ void CRego6XXSerial::WriteToHardware(const char *pdata, const unsigned char leng
 	}
 }
 
-void CRego6XXSerial::ParseData()
+bool CRego6XXSerial::ParseData()
 {
+    bool messageOK = false;
     while(((m_readBufferHead - m_readBufferTail) & Rego6XX_READ_BUFFER_MASK) >= 5)
     {
 		// get a potential message
@@ -339,6 +378,7 @@ void CRego6XXSerial::ParseData()
 				 m_readBuffer[(tail + 3) & Rego6XX_READ_BUFFER_MASK]))
 			{
 				// This is a proper message
+                messageOK = true;
 		        time_t atime=mytime(NULL);
                 signed short data = 0;
 				data = (m_readBuffer[(tail + 1) & Rego6XX_READ_BUFFER_MASK] << 14) |
@@ -400,4 +440,5 @@ void CRego6XXSerial::ParseData()
 			m_readBufferTail = (tail + 1) & Rego6XX_READ_BUFFER_MASK;
 		}
     }
+    return messageOK;
 }

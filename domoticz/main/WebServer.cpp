@@ -2246,6 +2246,12 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				        sprintf(szData,"%d", atoi(sValue.c_str()));
 				        root["result"][ii]["Data"]=szData;
          			    root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+
+                        if (CustomImage<(int)m_custom_light_icons.size())
+					        root["result"][ii]["Image"]=m_custom_light_icons[CustomImage].RootFile;
+				        else
+					        root["result"][ii]["Image"]="Light";
+				
                     }
                     break;
 				case sTypeRego6XXCounter:
