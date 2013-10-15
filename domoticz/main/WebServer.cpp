@@ -4770,7 +4770,10 @@ std::string CWebServer::GetJSonPage()
 						ii++;
 					}
 				}
-				else if ((dType==pTypeGeneral)&&((dSubType==sTypeSoilMoisture)||(dSubType==sTypeLeafWetness)))
+				else if (
+					((dType==pTypeGeneral)&&((dSubType==sTypeSoilMoisture)||(dSubType==sTypeLeafWetness)))||
+					((dType==pTypeRFXSensor)&&((dSubType==sTypeRFXSensorAD)||(dSubType==sTypeRFXSensorVolt)))
+					)
 				{
 					szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 					result=m_pMain->m_sql.query(szQuery.str());

@@ -1634,6 +1634,7 @@ function ShowGeneralGraph(id,name,switchtype,sensortype)
                         datatable1.push( [GetDateFromString(item.d), parseFloat(item.v_min) ] );
                         datatable2.push( [GetDateFromString(item.d), parseFloat(item.v_max) ] );
                       });
+                      
                       var series1 = $.LogChart2.highcharts().series[0];
                       var series2 = $.LogChart2.highcharts().series[1];
                       series1.setData(datatable1);

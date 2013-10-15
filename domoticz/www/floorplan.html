@@ -1,520 +1,75 @@
 <div id="plancontent">
-</div>
-<div id="dialog-add-edit-plan" style="display:none;">
-	<table border="0" cellpadding="0" cellspacing="20" width="100%">
-		<tr>
-			<td align="right" style="width:60px"><label for="planname">Name:</label></td>
-			<td><input type="text" id="planname" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-		</tr>
-	</table>
-</div>
-<div id="planmain" style="display:none;">
-	<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
-	<tr>
-		<td align="left"></td>
-		<td align="right"><a class="btnstyle" onclick="AddNewPlan();" data-i18n="Add Plan">Add Plan</a></td>
-	</tr>
-	</table>
-	<br>
-	<table class="display" id="plantable" border="0" cellpadding="0" cellspacing="0" width="100%">
-		<thead>
-			<tr valign="middle">
-				<th align="left" data-i18n="Name">Name</th>
-				<th width="60" align="center" data-i18n="Order">Order</th>
-			</tr>
-		</thead>
-	</table>
-	<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-		<tr>
-			<td>
-				<a class="btnstyle3-dis" id="planedit" data-i18n="Edit">Edit</a>&nbsp;&nbsp;&nbsp;
-				<a class="btnstyle3-dis" id="plandelete" data-i18n="Delete">Delete</a>
-			</td>
-		</tr>
-	</table>
-	<br>
-	<h2 data-i18n="Devices">Devices:</h2><span data-i18n="(Select Plan first to Edit...)"></span><br>
-	<br>
-	<table class="display" id="activetable" border="0" cellpadding="0" cellspacing="0" width="100%">
-		<thead>
-				<tr valign="middle">
-					<th align="left" data-i18n="Name">Name</th>
-					<th width="60" align="center" data-i18n="Order">Order</th>
-				</tr>
-		</thead>
-	</table>
-    <table id="delclractive" border="0" cellpadding="0" cellspacing="0" width="100%">
-		<tr>
-			<td>
-				<a class="btnstyle3-dis" id="activedevicedelete" data-i18n="Delete">Delete</a>
-			</td>
-			<td align="right">
-				<a class="btnstyle3" onclick="ClearActiveDevices();" data-i18n="Clear">Clear</a>
-			</td>
-		</tr>
-	</table>
-	<br>
-	<table class="display" id="activeparamstable" border="0" cellpadding="0" cellspacing="20">
-		<tr>
-			<td>
-				<label><span data-i18n="Device"></span>: </label>
-				<select id="comboactivedevice" style="width:300px" class="combobox ui-corner-all">
-				</select>
-				<a class="btnstyle3" onclick="AddActiveDevice();" data-i18n="Add">Add</a>
-			</td>
-		</tr>
-	</table>
+    <div class="container-fluid">
+		<div class="row-fluid">
+			<div class="span2">
+				<button>A button element</button>
+				<button>A button element</button>
+				<!--Sidebar content-->
+					<div id="accordion">
+					<h3>Section 1</h3>
+					<div>
+					<p>
+					Mauris mauris ante, blandit et, ultrices a, suscipit eget, quam. Integer
+					ut neque. Vivamus nisi metus, molestie vel, gravida in, condimentum sit
+					amet, nunc. Nam a nibh. Donec suscipit eros. Nam mi. Proin viverra leo ut
+					odio. Curabitur malesuada. Vestibulum a velit eu ante scelerisque vulputate.
+					</p>
+					</div>
+					<h3>Section 2</h3>
+					<div>
+					<p>
+					Sed non urna. Donec et ante. Phasellus eu ligula. Vestibulum sit amet
+					purus. Vivamus hendrerit, dolor at aliquet laoreet, mauris turpis porttitor
+					velit, faucibus interdum tellus libero ac justo. Vivamus non quam. In
+					suscipit faucibus urna.
+					</p>
+					</div>
+					<h3>Section 3</h3>
+					<div>
+					<p>
+					Nam enim risus, molestie et, porta ac, aliquam ac, risus. Quisque lobortis.
+					Phasellus pellentesque purus in massa. Aenean in pede. Phasellus ac libero
+					ac tellus pellentesque semper. Sed ac felis. Sed commodo, magna quis
+					lacinia ornare, quam ante aliquam nisi, eu iaculis leo purus venenatis dui.
+					</p>
+					<ul>
+					<li>List item one</li>
+					<li>List item two</li>
+					<li>List item three</li>
+					</ul>
+					</div>
+					<h3>Section 4</h3>
+					<div>
+					<p>
+					Cras dictum. Pellentesque habitant morbi tristique senectus et netus
+					et malesuada fames ac turpis egestas. Vestibulum ante ipsum primis in
+					faucibus orci luctus et ultrices posuere cubilia Curae; Aenean lacinia
+					mauris vel est.
+					</p>
+					<p>
+					Suspendisse eu nisl. Nullam ut libero. Integer dignissim consequat lectus.
+					Class aptent taciti sociosqu ad litora torquent per conubia nostra, per
+					inceptos himenaeos.
+					</p>
+					</div>
+					</div>			</div>
+			<div class="span10">
+				<!--Body content-->
+				Body
+			</div>
+		</div>
+    </div>
 </div>
 
 <script type="text/javascript" charset="utf-8">
-function ChangePlanOrder(order, planid)
+
+function ShowPlan()
 {
-	if (window.my_config.userrights!=2) {
-		HideNotify();
-		ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
-		return;
-	}
-  $.ajax({
-	 url: "json.htm?type=command&param=changeplanorder&idx=" + planid + "&way=" + order, 
-	 async: false, 
-	 dataType: 'json',
-	 success: function(data) {
-		RefreshPlanTable();
-	 }
-  });
-}
-function ChangeDeviceOrder(order, devid)
-{
-	if (window.my_config.userrights!=2) {
-		HideNotify();
-		ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
-		return;
-	}
-  $.ajax({
-	 url: "json.htm?type=command&param=changeplandeviceorder&planid=" + $.LastPlan + "&idx=" + devid + "&way=" + order, 
-	 async: false, 
-	 dataType: 'json',
-	 success: function(data) {
-		RefreshActiveDevicesTable($.LastPlan);
-	 }
-  });
-}
-
-function AddNewPlan()
-{
-	$( "#dialog-add-edit-plan" ).dialog({
-		resizable: false,
-		width: 390,
-		height:200,
-		modal: true,
-		title: 'Add New Plan',
-		buttons: {
-			"Cancel": function() {
-				$( this ).dialog( "close" );
-			},
-			"Add": function() {
-				var csettings=GetPlanSettings();
-				if (typeof csettings == 'undefined') {
-					return;
-				}
-				$( this ).dialog( "close" );
-				AddPlan();
-			}
-		},
-		close: function() {
-            $( this ).dialog( "close" );
-		}
-	});
-}
-
-function EditPlan(idx)
-{
-	$( "#dialog-add-edit-plan" ).dialog({
-		resizable: false,
-		width: 390,
-		height:200,
-		modal: true,
-		title: 'Edit Plan',
-		buttons: {
-			"Cancel": function() {
-				$( this ).dialog( "close" );
-			},
-			"Update": function() {
-				var csettings=GetPlanSettings();
-				if (typeof csettings == 'undefined') {
-					return;
-				}
-				$( this ).dialog( "close" );
-				UpdatePlan(idx);
-			}
-		},
-		close: function() {
-            $( this ).dialog( "close" );
-		}
-	});
-}
-
-function DeletePlan(idx)
-{
-	bootbox.confirm($.i18n("Are you sure you want to delete this Plan?"), function(result) {
-		if (result==true) {
-			$.ajax({
-				 url: "json.htm?type=command&param=deleteplan&idx=" + idx,
-				 async: false, 
-				 dataType: 'json',
-				 success: function(data) {
-					RefreshPlanTable();
-				 },
-				 error: function(){
-						HideNotify();
-						ShowNotify('Problem deleting Plan!', 2500, true);
-				 }     
-			});
-		}
-	});
-}
-
-function GetPlanSettings()
-{
-	var csettings = {};
-
-	csettings.name=$("#dialog-add-edit-plan #planname").val();
-	if (csettings.name=="")
-	{
-		ShowNotify('Please enter a Name!', 2500, true);
-		return;
-	}
-	return csettings;
-}
-
-function UpdatePlan(idx)
-{
-	var csettings=GetPlanSettings();
-	if (typeof csettings == 'undefined') {
-		return;
-	}
-
-	$.ajax({
-		 url: "json.htm?type=command&param=updateplan&idx=" + idx +"&name=" + csettings.name,
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
-			RefreshPlanTable();
-		 },
-		 error: function(){
-			ShowNotify('Problem updating Plan settings!', 2500, true);
-		 }     
-	});
-}
-
-function AddPlan()
-{
-	var csettings=GetPlanSettings();
-	if (typeof csettings == 'undefined') {
-		return;
-	}
-
-	$.ajax({
-		 url: "json.htm?type=command&param=addplan&name=" + csettings.name,
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
-			RefreshPlanTable();
-		 },
-		 error: function(){
-			ShowNotify('Problem adding Plan!', 2500, true);
-		 }
-	});
-}
-
-function RefreshPlanTable()
-{
-	$('#modal').show();
-
-	$.devIdx=-1;
-
-	$('#updelclr #planedit').attr("class", "btnstyle3-dis");
-	$('#updelclr #plandelete').attr("class", "btnstyle3-dis");
-
-	var oTable = $('#plantable').dataTable();
-	oTable.fnClearTable();
-	$.ajax({
-	 url: "json.htm?type=plans", 
-	 async: false, 
-	 dataType: 'json',
-	 success: function(data) {
-		
-	  if (typeof data.result != 'undefined') {
-		var totalItems=data.result.length;
-		$.each(data.result, function(i,item){
-			var updownImg="";
-			if (i!=totalItems-1) {
-				//Add Down Image
-				if (updownImg!="") {
-					updownImg+="&nbsp;";
-				}
-				updownImg+='<img src="images/down.png" onclick="ChangePlanOrder(1,' + item.idx + ');" onmouseover="cursorhand()" onmouseout="cursordefault()" width="16" height="16"></img>';
-			}
-			else {
-				updownImg+='<img src="images/empty16.png" width="16" height="16"></img>';
-			}
-			if (i!=0) {
-				//Add Up image
-				if (updownImg!="") {
-					updownImg+="&nbsp;";
-				}
-				updownImg+='<img src="images/up.png" onclick="ChangePlanOrder(0,' + item.idx + ');" onmouseover="cursorhand()" onmouseout="cursordefault()" width="16" height="16"></img>';
-			}
-			var addId = oTable.fnAddData( {
-				"DT_RowId": item.idx,
-				"Name": item.Name,
-				"Order": item.Order,
-				"0": item.Name,
-				"1": updownImg
-			} );
-		});
-		/* Add a click handler to the rows - this could be used as a callback */
-		$("#plantable tbody tr").click( function( e ) {
-			$.devIdx=-1;
-
-			if ( $(this).hasClass('row_selected') ) {
-				$(this).removeClass('row_selected');
-				$('#updelclr #planedit').attr("class", "btnstyle3-dis");
-				$('#updelclr #plandelete').attr("class", "btnstyle3-dis");
-				$("#dialog-add-edit-plan #planname").val("");
-			}
-			else {
-				oTable.$('tr.row_selected').removeClass('row_selected');
-				$(this).addClass('row_selected');
-				$('#updelclr #planedit').attr("class", "btnstyle3");
-				$('#updelclr #plandelete').attr("class", "btnstyle3");
-				var anSelected = fnGetSelected( oTable );
-				if ( anSelected.length !== 0 ) {
-					var data = oTable.fnGetData( anSelected[0] );
-					var idx= data["DT_RowId"];
-					$.devIdx=idx;
-					$("#updelclr #planedit").attr("href", "javascript:EditPlan(" + idx + ")");
-					$("#updelclr #plandelete").attr("href", "javascript:DeletePlan(" + idx + ")");
-					$("#dialog-add-edit-plan #planname").val(data["Name"]);
-					RefreshActiveDevicesTable(idx);
-				}
-			}
-		}); 
-	  }
-	 }
-	});
-  
-  $('#modal').hide();
-}
-
-function RefreshUnusedDevicesComboArray()
-{
-	$.UnusedDevices = [];
-	$("#plancontent #comboactivedevice").empty();
-	$.ajax({
-		url: "json.htm?type=command&param=getunusedplandevices", 
-		async: false, 
-		dataType: 'json',
-		success: function(data) {
-			if (typeof data.result != 'undefined') {
-				$.each(data.result, function(i,item) {
-					$.UnusedDevices.push({
-						type: item.type,
-						idx: item.idx,
-						name: item.Name
-					});
-				});
-				$.each($.UnusedDevices, function(i,item){
-					var option = $('<option />');
-					option.attr('value', item.idx).text(item.name);
-					$("#plancontent #comboactivedevice").append(option);
-				});
-			}
-		}
-	});
-}
-
-function ShowPlans()
-{
-	var oTable;
-	
-	$('#modal').show();
-	
-	$.devIdx=-1;
-	
-	var htmlcontent = "";
-	htmlcontent+=$('#planmain').html();
-	$('#plancontent').html(htmlcontent);
-	$('#plancontent').i18n();
-	
-	oTable = $('#plantable').dataTable( {
-		"sDom": '<"H"lfrC>t<"F"ip>',
-		"oTableTools": {
-			"sRowSelect": "single",
-		},
-	    "bSort": false,
-		"bProcessing": true,
-		"bStateSave": true,
-		"bJQueryUI": true,
-	    "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
-	    "iDisplayLength" : 25,
-		"sPaginationType": "full_numbers"
-		} );
-
-	oTable = $('#activetable').dataTable( {
-		"sDom": '<"H"lfrC>t<"F"ip>',
-		"oTableTools": {
-			"sRowSelect": "single",
-		},
-	    "bSort": false,
-		"bProcessing": true,
-		"bStateSave": false,
-		"bJQueryUI": true,
-	    "iDisplayLength" : -1,
-	});
-
-	RefreshUnusedDevicesComboArray();
-	
-	$('#modal').hide();
-	RefreshPlanTable();
-}
-
-function RefreshActiveDevicesTable(idx)
-{
-	$.LastPlan=idx;
-	$('#modal').show();
-
-	$('#plancontent #delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
-
-	var oTable = $('#plancontent #activetable').dataTable();
-	oTable.fnClearTable();
-  
-	$.ajax({
-		url: "json.htm?type=command&param=getplandevices&idx=" + idx, 
-		async: false, 
-		dataType: 'json',
-		success: function(data) {
-			if (typeof data.result != 'undefined') {
-				var totalItems=data.result.length;
-				$.each(data.result, function(i,item){
-					var updownImg="";
-					if (i!=totalItems-1) {
-						//Add Down Image
-						if (updownImg!="") {
-							updownImg+="&nbsp;";
-						}
-						updownImg+='<img src="images/down.png" onclick="ChangeDeviceOrder(1,' + item.idx + ');" onmouseover="cursorhand()" onmouseout="cursordefault()" width="16" height="16"></img>';
-					}
-					else {
-						updownImg+='<img src="images/empty16.png" width="16" height="16"></img>';
-					}
-					if (i!=0) {
-						//Add Up image
-						if (updownImg!="") {
-							updownImg+="&nbsp;";
-						}
-						updownImg+='<img src="images/up.png" onclick="ChangeDeviceOrder(0,' + item.idx + ');" onmouseover="cursorhand()" onmouseout="cursordefault()" width="16" height="16"></img>';
-					}
-					var addId = oTable.fnAddData( {
-						"DT_RowId": item.idx,
-						"Order": item.Order,
-						"0": item.Name,
-						"1": updownImg
-					} );
-				});
-				/* Add a click handler to the rows - this could be used as a callback */
-				$("#plancontent #activetable tbody tr").click( function( e ) {
-					if ( $(this).hasClass('row_selected') ) {
-						$(this).removeClass('row_selected');
-						$('#plancontent #delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
-					}
-					else {
-						oTable.$('tr.row_selected').removeClass('row_selected');
-						$(this).addClass('row_selected');
-						$('#plancontent #delclractive #activedevicedelete').attr("class", "btnstyle3");
-						
-						var anSelected = fnGetSelected( oTable );
-						if ( anSelected.length !== 0 ) {
-							var data = oTable.fnGetData( anSelected[0] );
-							var idx= data["DT_RowId"];
-							$("#plancontent #delclractive #activedevicedelete").attr("href", "javascript:DeleteActiveDevice(" + idx + ")");
-						}
-					}
-				}); 
-			}
-		}
-	});
-  $('#modal').hide();
-}
-
-function AddActiveDevice()
-{
-	if ($.devIdx==-1) {
-		bootbox.alert('No Plan Selected!');
-		return;
-	}
-	var ActiveDeviceIdx=$("#plancontent #comboactivedevice option:selected").val();
-	if (typeof ActiveDeviceIdx == 'undefined') {
-		bootbox.alert('No Active Device Selected!');
-		return ;
-	}
-	$.ajax({
-		url: "json.htm?type=command&param=addplanactivedevice&idx=" + $.devIdx + 
-			"&activeidx=" + ActiveDeviceIdx,
-		async: false, 
-		dataType: 'json',
-		success: function(data) {
-			if (data.status == 'OK') {
-				RefreshActiveDevicesTable($.devIdx);
-				RefreshUnusedDevicesComboArray();
-			}
-			else {
-				ShowNotify('Problem adding Device!', 2500, true);
-			}
-		},
-		error: function(){
-			HideNotify();
-			ShowNotify('Problem adding Device!', 2500, true);
-		}     
-	});
-	
-}
-
-function DeleteActiveDevice(idx)
-{
-	bootbox.confirm($.i18n("Are you sure to delete this Active Device?\n\nThis action can not be undone..."), function(result) {
-		if (result==true) {
-			$.ajax({
-				 url: "json.htm?type=command&param=deleteplandevice&idx=" + idx,
-				 async: false, 
-				 dataType: 'json',
-				 success: function(data) {
-					RefreshActiveDevicesTable($.devIdx);
-					RefreshUnusedDevicesComboArray();
-				 }
-			});
-		}
-	});
-}
-
-function ClearActiveDevices()
-{
-	bootbox.confirm($.i18n("Are you sure to delete ALL Active Devices?\n\nThis action can not be undone!!"), function(result) {
-		if (result==true) {
-			$.ajax({
-					url: "json.htm?type=command&param=deleteallplandevices&idx=" + $.devIdx,
-					async: false, 
-					dataType: 'json',
-					success: function(data) {
-					RefreshActiveDevicesTable($.devIdx);
-					RefreshUnusedDevicesComboArray();
-				}
-			});
-		}
-	});
+	$( "#plancontent #accordion" ).accordion();
 }
 
 $(document).ready(function() {
-  ShowPlans();
+  ShowPlan();
 } );  
-</script>
+
+</script> 
