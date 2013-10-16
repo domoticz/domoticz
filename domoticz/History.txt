@@ -1,4 +1,8 @@
 Version 1.0.xxx (Oktober xxth 2013)
+- Fixed: rain week log, some top legend values did not show on the chart
+- Implemented: Counterlog, Week chart, legend values
+
+Version 1.0.1087 (Oktober 16th 2013)
 - Implemented: Login page (solves the caching problems)
 - Fixed: buttons add sensor/switch buttons now hidden for 'viewer' users
 - Implemented: option in settings for basic-auth login type

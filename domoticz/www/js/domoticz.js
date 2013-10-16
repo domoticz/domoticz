@@ -3381,7 +3381,6 @@ function ShowRainLog(contentdiv,backfunction,id,name)
   $.DayChart.highcharts({
       chart: {
           type: 'column',
-          marginRight: 10,
           events: {
               load: function() {
                   
@@ -3415,10 +3414,12 @@ function ShowRainLog(contentdiv,backfunction,id,name)
             tickInterval: 24 * 3600 * 1000
         },
         yAxis: {
+            min: 0,
+            maxPadding: 0.2,
+            endOnTick: false,
             title: {
                 text: $.i18n('Rainfall') + ' (mm)'
-            },
-            min: 0
+            }
         },
         tooltip: {
             formatter: function() {
@@ -3430,25 +3431,16 @@ function ShowRainLog(contentdiv,backfunction,id,name)
             column: {
                 minPointLength: 4,
                 pointPadding: 0.1,
-                groupPadding: 0
+                groupPadding: 0,
+				dataLabels: {
+                        enabled: true,
+                        color: 'white'
+                }                
             }
         },
         series: [{
             name: 'mm',
-            color: 'rgba(3,190,252,0.8)',
-            dataLabels: {
-                    verticalAlign: 'top',
-                    enabled: true,
-                    color: '#FFFFFF',
-                    y: -23,
-                    formatter: function() {
-                        return this.y;
-                    },
-                    style: {
-                        fontSize: '13px',
-                        fontFamily: 'Verdana, sans-serif'
-                    }
-                }
+            color: 'rgba(3,190,252,0.8)'
         }]
         ,
         legend: {

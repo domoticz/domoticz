@@ -1906,10 +1906,12 @@ function ShowCounterLog(id,name,switchtype)
             tickInterval: 24 * 3600 * 1000
         },
         yAxis: {
+            min: 0,
+            maxPadding: 0.2,
+            endOnTick: false,
             title: {
                 text: $.i18n('Energy') + ' (kWh)'
-            },
-            min: 0
+            }
         },
         tooltip: {
             formatter: function() {
@@ -1926,7 +1928,11 @@ function ShowCounterLog(id,name,switchtype)
             column: {
                 minPointLength: 4,
                 pointPadding: 0.1,
-                groupPadding: 0
+                groupPadding: 0,
+				dataLabels: {
+                        enabled: true,
+                        color: 'white'
+                }
             }
         },
         legend: {
