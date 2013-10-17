@@ -68,7 +68,7 @@ private:
 	std::vector<_tCustomIcon> m_custom_light_icons;
 
 	//JSon
-	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid);
+	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID);
 };
 
 } //server

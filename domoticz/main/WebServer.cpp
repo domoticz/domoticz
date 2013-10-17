@@ -831,7 +831,7 @@ char * CWebServer::SetS0MeterType()
 	return (char*)m_retstr.c_str();
 }
 
-void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid)
+void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID)
 {
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
@@ -952,6 +952,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 		//All
 		if (rowid!="")
 			szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel, CustomImage FROM DeviceStatus WHERE (ID==" << rowid << ")";
+		else if ((planID!="")&&(planID!="0"))
+			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage "
+			"FROM DeviceStatus as A, DeviceToPlansMap as B WHERE (B.PlanID==" << planID << ") AND (B.DeviceRowID==a.ID) ORDER BY B.[Order]";
 		else
 			szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel, CustomImage FROM DeviceStatus ORDER BY " << szOrderBy;
 	}
@@ -960,6 +963,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 		//Specific devices
 		if (rowid!="")
 			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << m_users[iUser].ID << ") AND (A.ID==" << rowid << ")";
+		else if ((planID!="")&&(planID!="0"))
+			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage "
+			"FROM DeviceStatus as A, SharedDevices as B, DeviceToPlansMap as C  WHERE (C.PlanID==" << planID << ") AND (C.DeviceRowID==a.ID) AND (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << m_users[iUser].ID << ") ORDER BY C.[Order]";
 		else
 			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << m_users[iUser].ID << ") ORDER BY " << szOrderBy;
 	}
@@ -979,6 +985,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			std::string sValue=sd[10];
 			std::string sLastUpdate=sd[11];
 			unsigned char favorite = atoi(sd[12].c_str());
+			if ((planID!="")&&(planID!="0"))
+				favorite=1;
 			_eSwitchType switchtype=(_eSwitchType) atoi(sd[13].c_str());
 			_eMeterType metertype=(_eMeterType)switchtype;
 			int hardwareID= atoi(sd[14].c_str());
@@ -2452,11 +2460,12 @@ std::string CWebServer::GetJSonPage()
 		std::string order=m_pWebEm->FindValue("order");
 		std::string rused=m_pWebEm->FindValue("used");
 		std::string rid=m_pWebEm->FindValue("rid");
+		std::string planid=m_pWebEm->FindValue("plan");
 
 		root["status"]="OK";
 		root["title"]="Devices";
 
-		GetJSonDevices(root, rused, rfilter,order,rid);
+		GetJSonDevices(root, rused, rfilter,order,rid,planid);
 
 		root["WindScale"]=m_pMain->m_sql.m_windscale*10.0f;
 		root["WindSign"]=m_pMain->m_sql.m_windsign;
@@ -2545,7 +2554,7 @@ std::string CWebServer::GetJSonPage()
 
 		Json::Value tempjson;
 
-		GetJSonDevices(tempjson, "", "temp","ID","");
+		GetJSonDevices(tempjson, "", "temp","ID","","");
 
 		Json::Value::const_iterator itt;
 		int ii=0;
@@ -2575,7 +2584,7 @@ std::string CWebServer::GetJSonPage()
 
 		Json::Value tempjson;
 
-		GetJSonDevices(tempjson, "", "wind","ID","");
+		GetJSonDevices(tempjson, "", "wind","ID","","");
 
 		Json::Value::const_iterator itt;
 		int ii=0;
@@ -2600,7 +2609,7 @@ std::string CWebServer::GetJSonPage()
 
 		Json::Value tempjson;
 
-		GetJSonDevices(tempjson, "", "rain","ID","");
+		GetJSonDevices(tempjson, "", "rain","ID","","");
 
 		Json::Value::const_iterator itt;
 		int ii=0;
@@ -2620,7 +2629,7 @@ std::string CWebServer::GetJSonPage()
 
 		Json::Value tempjson;
 
-		GetJSonDevices(tempjson, "", "uv","ID","");
+		GetJSonDevices(tempjson, "", "uv","ID","","");
 
 		Json::Value::const_iterator itt;
 		int ii=0;
@@ -2640,7 +2649,7 @@ std::string CWebServer::GetJSonPage()
 
 		Json::Value tempjson;
 
-		GetJSonDevices(tempjson, "", "baro","ID","");
+		GetJSonDevices(tempjson, "", "baro","ID","","");
 
 		Json::Value::const_iterator itt;
 		int ii=0;
@@ -5664,7 +5673,7 @@ std::string CWebServer::GetJSonPage()
 				goto exitjson;
 			bool bGoUp=(sway=="0");
 
-			std::string aScene,aOrder,oID,oOrder;
+			std::string aOrder,oID,oOrder;
 
 			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;
@@ -5723,7 +5732,7 @@ std::string CWebServer::GetJSonPage()
 				goto exitjson;
 			bool bGoUp=(sway=="0");
 
-			std::string aScene,aOrder,oID,oOrder;
+			std::string aOrder,oID,oOrder;
 
 			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;

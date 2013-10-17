@@ -230,7 +230,8 @@ $(document).ready(function() {
 		ismobileint: false,
 		windscale: 1.0,
 		windsign: "m/s",
-		historytype : 1
+		historytype : 1,
+		LastPlanSelected: 0
 	};
 	
 	if( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {
@@ -601,6 +602,7 @@ $(document).ready(function() {
 											<li id="mCam"><a id="cCam" href="javascript:SwitchLayout('Cam')"><img src="images/camera-web.png"> <span data-i18n="Cameras">Cameras</span></a></li>
 											<li id="mUsers"><a id="cUsers" href="javascript:SwitchLayout('Users')"><img src="images/users.png"> <span data-i18n="Edit Users">Edit Users</span></a></li>
 											<li id="mEvents"><a id="cEvents" href="javascript:SwitchLayout('Events')"><img src="images/events.png"> <span data-i18n="Events">Events</span></a></li>
+											<li id="mRoomplan"><a id="cRoomplan" href="javascript:SwitchLayout('Roomplan')"><img src="images/house.png"> <span data-i18n="Roomplan">Roomplan</span></a></li>
 											<li id="mSecurity"><a id="cSecurity" href="secpanel/index.html"><img src="images/security.png"> <span data-i18n="SecurityPanel">Security Panel</span></a></li>
 											<li id="mNotification"><a id="cNotification" href="javascript:SwitchLayout('Notification')"><img src="images/notification.png"> <span data-i18n="Send Notification">Send Notification</span></a></li>
 											<li class="divider"></li>

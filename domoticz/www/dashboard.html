@@ -1,50 +1,4 @@
-﻿
-
-<div id="dashcontent">
-</div>
-
-<div id="FloorPlan" style="display:none;">
-<ul class="accordion">
-    <li id="one">
-        <a href="#one">All<span>10</span></a>
-        <ul class="sub-menu">
-            <li><a href="#">Living Room Left<span>1</span></a></li>
-            <li><a href="#">Living Room Right<span>1</span></a></li>
-            <li><a href="#">Rain Sensor</a></li>
-            <li><a href="#">Dinner Table<span>1</span></a></li>
-            <li><a href="#">Fireplace<span>1</span></a></li>
-            <li><a href="#">Bathroom Main<span>1</span></a></li>
-            <li><a href="#">Bathroom Mirror<span>1</span></a></li>
-            <li><a href="#">Garden Lights<span>1</span></a></li>
-        </ul>
-    </li>
- 
-    <li id="two">
-        <a href="#two">Living Room<span>17</span></a>
-        <ul class="sub-menu">
-            <li><a href="#">Living Room Left<span>1</span></a></li>
-            <li><a href="#">Living Room Right<span>1</span></a></li>
-            <li><a href="#">Dinner Table<span>1</span></a></li>
-        </ul>
-    </li>
- 
-    <li id="three">
-        <a href="#three">Bathroom<span>2</span></a>
-        <ul class="sub-menu">
-            <li><a href="#">Bathroom Main<span>1</span></a></li>
-            <li><a href="#">Bathroom Mirror<span>1</span></a></li>
-        </ul>
-    </li>
- 
-    <li id="four">
-        <a href="#four">Garden<span>6</span></a>
-        <ul class="sub-menu">
-            <li><a href="#">Garden Lights<span>1</span></a></li>
-            <li><a href="#">Rain Sensor</a></li>
-        </ul>
-    </li>
- 
-</ul>
+﻿<div id="dashcontent">
 </div>
 
 <script type="text/javascript" charset="utf-8">
@@ -57,7 +11,7 @@ function RefreshFavorites()
 	RefreshTimeAndSun();
   
   $.ajax({
-     url: "json.htm?type=devices&filter=all&used=true&order=Name",
+     url: "json.htm?type=devices&filter=all&used=true&order=Name&plan="+window.myglobals.LastPlanSelected,
      async: false,
      dataType: 'json',
      success: function(data) {
@@ -1016,13 +970,33 @@ function ShowFavorites()
      }
   });
 
-	var bShowFloorplan=false;
-	if (window.myglobals.ismobile==true) {
-		bShowFloorplan=false;
-	}
+	var bShowRoomplan=false;
+	$.RoomPlans = [];
+  $.ajax({
+     url: "json.htm?type=plans",
+     async: false, 
+     dataType: 'json',
+     success: function(data) {
+		var totalItems=data.result.length;
+		if (totalItems>0) {
+			bShowRoomplan=true;
+			if (window.myglobals.ismobile==true) {
+				bShowRoomplan=false;
+			}
+			if (bShowRoomplan==true) {
+				$.each(data.result, function(i,item) {
+					$.RoomPlans.push({
+						idx: item.idx,
+						name: item.Name
+					});
+				});
+			}
+		}
+     }
+  });
 
   $.ajax({
-     url: "json.htm?type=devices&filter=all&used=true&order=Name",
+     url: "json.htm?type=devices&filter=all&used=true&order=Name&plan="+window.myglobals.LastPlanSelected,
      async: false,
      dataType: 'json',
      success: function(data) {
@@ -2315,21 +2289,47 @@ function ShowFavorites()
 		htmlcontent+="<br>";
 	}
 	
-	var suntext='<div id="timesun" /><br>\n';
-	
-	if (bShowFloorplan==false) {
-		$('#dashcontent').html(suntext+htmlcontent);
+	var suntext="";
+	if (bShowRoomplan==false) {
+		suntext='<div id="timesun" /><br>\n';
 	}
 	else {
-		var nHTML=
-			'<div class="row">'+
-			'<div class="span3 hidden-phone">' + $('#FloorPlan').html() + '</div>'+
-			'<div class="span9">' + suntext+htmlcontent + '</div>'+
-			'</div>';
-		$('#dashcontent').html(nHTML);
+		suntext=
+			'<div>'+
+			'<table border="0" cellpadding="0" cellspacing="0" width="100%">'+
+			'<tr>'+
+				'<td align="left" id="timesun">aaa</td>'+
+				'<td align="right">'+
+				'<span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" style="width:160px" class="combobox ui-corner-all">'+
+				'<option value="0">All</option>'+
+				'</select>'+
+				'</td>'+
+			'</tr>'+
+			'</table>'+
+			'</div><br>';
 	}
+		
+	
+	$('#dashcontent').html(suntext+htmlcontent);
 	$('#dashcontent').i18n();
 
+	if (bShowRoomplan==true) {
+		$.each($.RoomPlans, function(i,item){
+			var option = $('<option />');
+			option.attr('value', item.idx).text(item.name);
+			$("#dashcontent #comboroom").append(option);
+		});
+		if (typeof window.myglobals.LastPlanSelected!= 'undefined') {
+			$("#dashcontent #comboroom").val(window.myglobals.LastPlanSelected);
+		}
+		$("#dashcontent #comboroom").change(function() { 
+			var idx = $("#dashcontent #comboroom option:selected").val();
+			window.myglobals.LastPlanSelected=idx;
+			ShowFavorites();
+		});
+	}
+
+	
         // Store variables
         var accordion_head = $('#dashcontent .accordion > li > a'),
             accordion_body = $('#dashcontent .accordion li > .sub-menu');
@@ -2419,37 +2419,46 @@ function ShowFavorites()
 	});
 	ResizeDimSliders();
 
-	if (window.my_config.userrights==2) {
-		if (window.myglobals.ismobileint==false) {
-			$("#dashcontent .movable").draggable({
-					drag: function() {
-						clearInterval($.myglobals.refreshTimer);
-						$.devIdx=$(this).attr("id");
-						$(this).css("z-index", 2);
-					},
-					revert: true
-			});
-			$("#dashcontent .movable").droppable({
-					drop: function() {
-						var myid=$(this).attr("id");
-						var parts1 = myid.split('_');
-						var parts2 = $.devIdx.split('_');
-						if (parts1[0]!=parts2[0]) {
-							bootbox.alert($.i18n('Only possible between Sensors of the same kind!'));
-							$.myglobals.refreshTimer = setInterval(ShowFavorites, 10000);
-						} else {
-						
-							$.ajax({
-								 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + parts1[1] + "&idx2=" + parts2[1],
-								 async: false, 
-								 dataType: 'json',
-								 success: function(data) {
-										ShowFavorites();
-								 }
-							});
+	var bAllowReorder=true;
+	if (typeof window.myglobals.LastPlanSelected!= 'undefined') {
+		if (window.myglobals.LastPlanSelected!=0) {
+			bAllowReorder=false;
+		}
+	}
+
+	if (bAllowReorder==true) {
+		if (window.my_config.userrights==2) {
+			if (window.myglobals.ismobileint==false) {
+				$("#dashcontent .movable").draggable({
+						drag: function() {
+							clearInterval($.myglobals.refreshTimer);
+							$.devIdx=$(this).attr("id");
+							$(this).css("z-index", 2);
+						},
+						revert: true
+				});
+				$("#dashcontent .movable").droppable({
+						drop: function() {
+							var myid=$(this).attr("id");
+							var parts1 = myid.split('_');
+							var parts2 = $.devIdx.split('_');
+							if (parts1[0]!=parts2[0]) {
+								bootbox.alert($.i18n('Only possible between Sensors of the same kind!'));
+								$.myglobals.refreshTimer = setInterval(ShowFavorites, 10000);
+							} else {
+							
+								$.ajax({
+									 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + parts1[1] + "&idx2=" + parts2[1],
+									 async: false, 
+									 dataType: 'json',
+									 success: function(data) {
+											ShowFavorites();
+									 }
+								});
+							}
 						}
-					}
-			});
+				});
+			}
 		}
 	}
   $.myglobals.refreshTimer = setInterval(RefreshFavorites, 10000);
