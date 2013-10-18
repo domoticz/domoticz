@@ -977,24 +977,25 @@ function ShowFavorites()
      async: false, 
      dataType: 'json',
      success: function(data) {
-		var totalItems=data.result.length;
-		if (totalItems>0) {
-			bShowRoomplan=true;
-			if (window.myglobals.ismobile==true) {
-				bShowRoomplan=false;
-			}
-			if (bShowRoomplan==true) {
-				$.each(data.result, function(i,item) {
-					$.RoomPlans.push({
-						idx: item.idx,
-						name: item.Name
+		if (typeof data.result != 'undefined') {
+			var totalItems=data.result.length;
+			if (totalItems>0) {
+				bShowRoomplan=true;
+				if (window.myglobals.ismobile==true) {
+					bShowRoomplan=false;
+				}
+				if (bShowRoomplan==true) {
+					$.each(data.result, function(i,item) {
+						$.RoomPlans.push({
+							idx: item.idx,
+							name: item.Name
+						});
 					});
-				});
+				}
 			}
 		}
      }
   });
-
   $.ajax({
      url: "json.htm?type=devices&filter=all&used=true&order=Name&plan="+window.myglobals.LastPlanSelected,
      async: false,
