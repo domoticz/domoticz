@@ -49,7 +49,7 @@
 				<a class="btnstyle3-dis" id="activedevicedelete" data-i18n="Delete">Delete</a>
 			</td>
 			<td align="right">
-				<a class="btnstyle3" onclick="ClearActiveDevices();" data-i18n="Clear">Clear</a>
+				<a class="btnstyle3-dis" id="activedeviceclear" onclick="ClearActiveDevices();" data-i18n="Clear">Clear</a>
 			</td>
 		</tr>
 	</table>
@@ -164,6 +164,7 @@ function DeletePlan(idx)
 				 dataType: 'json',
 				 success: function(data) {
 					RefreshPlanTable();
+					RefreshActiveDevicesTable($.devIdx);
 				 },
 				 error: function(){
 						HideNotify();
@@ -235,6 +236,7 @@ function RefreshPlanTable()
 
 	$('#updelclr #planedit').attr("class", "btnstyle3-dis");
 	$('#updelclr #plandelete').attr("class", "btnstyle3-dis");
+	$('#plancontent #delclractive #activedeviceclear').attr("class", "btnstyle3-dis");
 
 	var oTable = $('#plantable').dataTable();
 	oTable.fnClearTable();
@@ -281,13 +283,16 @@ function RefreshPlanTable()
 				$(this).removeClass('row_selected');
 				$('#updelclr #planedit').attr("class", "btnstyle3-dis");
 				$('#updelclr #plandelete').attr("class", "btnstyle3-dis");
+				$('#plancontent #delclractive #activedeviceclear').attr("class", "btnstyle3-dis");
 				$("#dialog-add-edit-plan #planname").val("");
+				RefreshActiveDevicesTable(-1);
 			}
 			else {
 				oTable.$('tr.row_selected').removeClass('row_selected');
 				$(this).addClass('row_selected');
 				$('#updelclr #planedit').attr("class", "btnstyle3");
 				$('#updelclr #plandelete').attr("class", "btnstyle3");
+				$('#plancontent #delclractive #activedeviceclear').attr("class", "btnstyle3");
 				var anSelected = fnGetSelected( oTable );
 				if ( anSelected.length !== 0 ) {
 					var data = oTable.fnGetData( anSelected[0] );

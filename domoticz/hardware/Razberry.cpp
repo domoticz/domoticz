@@ -496,6 +496,7 @@ void CRazberry::UpdateDeviceBatteryStatus(int nodeID, int value)
 		if (itt->second.nodeID==nodeID)
 		{
 			itt->second.batValue=value;
+			itt->second.hasBattery=true;//we got an update, so it should have a battery then...
 		}
 	}
 }
@@ -548,7 +549,67 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 
 	if (pDevice==NULL)
 	{
-		return; //don't know you
+		//Special Case for Controller received light commands
+		size_t iPos= path.find("commandClasses.32.data.level");
+		if (iPos==std::string::npos)
+			return;
+		std::string tmpStr;
+		//create this device
+		_tZWaveDevice _device;
+
+		//Get device node ID
+		size_t pPos=path.find(".");
+		if (pPos==std::string::npos)
+			return;
+		tmpStr=path.substr(pPos+1);
+		pPos=pPos=tmpStr.find(".");
+		if (pPos==std::string::npos)
+			return;
+		std::string sNodeID=tmpStr.substr(0,pPos);
+		_device.nodeID=atoi(sNodeID.c_str());
+
+		//Find instance ID
+		pPos=path.find("instances.");
+		if (pPos==std::string::npos)
+			return;
+		tmpStr=path.substr(pPos+sizeof("instances.")-1);
+		pPos=pPos=tmpStr.find(".");
+		if (pPos==std::string::npos)
+			return;
+		std::string sInstanceID=tmpStr.substr(0,pPos);
+		_device.instanceID=atoi(sInstanceID.c_str());
+		
+
+		// Device status and battery
+		_device.basicType =		1;
+		_device.genericType =	1;
+		_device.specificType =	1;
+		_device.isListening =	false;
+		_device.sensor250=		false;
+		_device.sensor1000=		false;
+		_device.isFLiRS =		!_device.isListening && (_device.sensor250 || _device.sensor1000);
+		_device.hasWakeup =		false;
+		_device.hasBattery =	false;
+		_device.scaleID=-1;
+
+		_device.commandClassID=32;
+		_device.devType= ZDTYPE_SWITCHNORMAL;
+		_device.intvalue=obj["value"].asInt();
+		InsertOrUpdateDevice(_device,true);
+
+		//find device again
+		std::map<std::string,_tZWaveDevice>::iterator itt;
+		for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
+		{
+			std::string::size_type loc = path.find(itt->second.string_id,0);
+			if (loc!=std::string::npos)
+			{
+				pDevice=&itt->second;
+				break;
+			}
+		}
+		if (pDevice==NULL)
+			return;//ehuh?
 	}
 
 	time_t atime=mytime(NULL);
