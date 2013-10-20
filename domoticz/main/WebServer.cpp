@@ -2746,7 +2746,7 @@ std::string CWebServer::GetJSonPage()
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT ID, Active, Time, Type, Cmd, Level, Days FROM Timers WHERE (DeviceRowID==" << idx << ") ORDER BY ID";
+		szQuery << "SELECT ID, Active, Time, Type, Cmd, Level, Days, UseRandomness FROM Timers WHERE (DeviceRowID==" << idx << ") ORDER BY ID";
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -2767,6 +2767,7 @@ std::string CWebServer::GetJSonPage()
 				root["result"][ii]["Cmd"]=atoi(sd[4].c_str());
 				root["result"][ii]["Level"]=iLevel;
 				root["result"][ii]["Days"]=atoi(sd[6].c_str());
+				root["result"][ii]["Randomness"]=(atoi(sd[7].c_str())!=0);
 				ii++;
 			}
 		}
@@ -2778,7 +2779,7 @@ std::string CWebServer::GetJSonPage()
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT ID, Active, Time, Type, Cmd, Level, Days FROM SceneTimers WHERE (SceneRowID==" << idx << ") ORDER BY ID";
+		szQuery << "SELECT ID, Active, Time, Type, Cmd, Level, Days, UseRandomness FROM SceneTimers WHERE (SceneRowID==" << idx << ") ORDER BY ID";
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -2799,6 +2800,7 @@ std::string CWebServer::GetJSonPage()
 				root["result"][ii]["Cmd"]=atoi(sd[4].c_str());
 				root["result"][ii]["Level"]=iLevel;
 				root["result"][ii]["Days"]=atoi(sd[6].c_str());
+				root["result"][ii]["Randomness"]=(atoi(sd[7].c_str())!=0);
 				ii++;
 			}
 		}
@@ -8032,6 +8034,7 @@ std::string CWebServer::GetJSonPage()
 			std::string stimertype=m_pWebEm->FindValue("timertype");
 			std::string shour=m_pWebEm->FindValue("hour");
 			std::string smin=m_pWebEm->FindValue("min");
+			std::string randomness=m_pWebEm->FindValue("randomness");
 			std::string scmd=m_pWebEm->FindValue("command");
 			std::string sdays=m_pWebEm->FindValue("days");
 			std::string slevel=m_pWebEm->FindValue("level");	//in percentage
@@ -8041,6 +8044,7 @@ std::string CWebServer::GetJSonPage()
 				(stimertype=="")||
 				(shour=="")||
 				(smin=="")||
+				(randomness=="")||
 				(scmd=="")||
 				(sdays=="")
 				)
@@ -8055,11 +8059,12 @@ std::string CWebServer::GetJSonPage()
 			root["status"]="OK";
 			root["title"]="AddTimer";
 			sprintf(szTmp,
-				"INSERT INTO Timers (Active, DeviceRowID, Time, Type, Cmd, Level, Days) VALUES (%d,%s,'%s',%d,%d,%d,%d)",
+				"INSERT INTO Timers (Active, DeviceRowID, Time, Type, UseRandomness, Cmd, Level, Days) VALUES (%d,%s,'%s',%d,%d,%d,%d,%d)",
 				(active=="true")?1:0,
 				idx.c_str(),
 				szData,
 				iTimerType,
+				(randomness=="true")?1:0,
 				icmd,
 				level,
 				days
@@ -8074,6 +8079,7 @@ std::string CWebServer::GetJSonPage()
 			std::string stimertype=m_pWebEm->FindValue("timertype");
 			std::string shour=m_pWebEm->FindValue("hour");
 			std::string smin=m_pWebEm->FindValue("min");
+			std::string randomness=m_pWebEm->FindValue("randomness");
 			std::string scmd=m_pWebEm->FindValue("command");
 			std::string sdays=m_pWebEm->FindValue("days");
 			std::string slevel=m_pWebEm->FindValue("level");	//in percentage
@@ -8083,6 +8089,7 @@ std::string CWebServer::GetJSonPage()
 				(stimertype=="")||
 				(shour=="")||
 				(smin=="")||
+				(randomness=="")||
 				(scmd=="")||
 				(sdays=="")
 				)
@@ -8097,11 +8104,12 @@ std::string CWebServer::GetJSonPage()
 			root["status"]="OK";
 			root["title"]="AddSceneTimer";
 			sprintf(szTmp,
-				"INSERT INTO SceneTimers (Active, SceneRowID, Time, Type, Cmd, Level, Days) VALUES (%d,%s,'%s',%d,%d,%d,%d)",
+				"INSERT INTO SceneTimers (Active, SceneRowID, Time, Type, UseRandomness, Cmd, Level, Days) VALUES (%d,%s,'%s',%d,%d,%d,%d,%d)",
 				(active=="true")?1:0,
 				idx.c_str(),
 				szData,
 				iTimerType,
+				(randomness=="true")?1:0,
 				icmd,
 				level,
 				days
@@ -8116,6 +8124,7 @@ std::string CWebServer::GetJSonPage()
 			std::string stimertype=m_pWebEm->FindValue("timertype");
 			std::string shour=m_pWebEm->FindValue("hour");
 			std::string smin=m_pWebEm->FindValue("min");
+			std::string randomness=m_pWebEm->FindValue("randomness");
 			std::string scmd=m_pWebEm->FindValue("command");
 			std::string sdays=m_pWebEm->FindValue("days");
 			std::string slevel=m_pWebEm->FindValue("level");	//in percentage
@@ -8125,6 +8134,7 @@ std::string CWebServer::GetJSonPage()
 				(stimertype=="")||
 				(shour=="")||
 				(smin=="")||
+				(randomness=="")||
 				(scmd=="")||
 				(sdays=="")
 				)
@@ -8139,10 +8149,11 @@ std::string CWebServer::GetJSonPage()
 			root["status"]="OK";
 			root["title"]="UpdateTimer";
 			sprintf(szTmp,
-				"UPDATE Timers SET Active=%d, Time='%s', Type=%d, Cmd=%d, Level=%d, Days=%d WHERE (ID == %s)",
+				"UPDATE Timers SET Active=%d, Time='%s', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Days=%d WHERE (ID == %s)",
 				(active=="true")?1:0,
 				szData,
 				iTimerType,
+				(randomness=="true")?1:0,
 				icmd,
 				level,
 				days,
@@ -8158,6 +8169,7 @@ std::string CWebServer::GetJSonPage()
 			std::string stimertype=m_pWebEm->FindValue("timertype");
 			std::string shour=m_pWebEm->FindValue("hour");
 			std::string smin=m_pWebEm->FindValue("min");
+			std::string randomness=m_pWebEm->FindValue("randomness");
 			std::string scmd=m_pWebEm->FindValue("command");
 			std::string sdays=m_pWebEm->FindValue("days");
 			std::string slevel=m_pWebEm->FindValue("level");	//in percentage
@@ -8167,6 +8179,7 @@ std::string CWebServer::GetJSonPage()
 				(stimertype=="")||
 				(shour=="")||
 				(smin=="")||
+				(randomness=="")||
 				(scmd=="")||
 				(sdays=="")
 				)
@@ -8181,10 +8194,11 @@ std::string CWebServer::GetJSonPage()
 			root["status"]="OK";
 			root["title"]="UpdateSceneTimer";
 			sprintf(szTmp,
-				"UPDATE SceneTimers SET Active=%d, Time='%s', Type=%d, Cmd=%d, Level=%d, Days=%d WHERE (ID == %s)",
+				"UPDATE SceneTimers SET Active=%d, Time='%s', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Days=%d WHERE (ID == %s)",
 				(active=="true")?1:0,
 				szData,
 				iTimerType,
+				(randomness=="true")?1:0,
 				icmd,
 				level,
 				days,

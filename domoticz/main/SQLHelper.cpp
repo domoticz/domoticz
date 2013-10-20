@@ -15,7 +15,7 @@
 #include "../webserver/Base64.h"
 #include "mainstructs.h"
 
-#define DB_VERSION 27
+#define DB_VERSION 28
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -132,6 +132,7 @@ const char *sqlCreateTimers =
 "[Type] INTEGER NOT NULL, "
 "[Cmd] INTEGER NOT NULL, "
 "[Level] INTEGER DEFAULT 15, "
+"[UseRandomness] INTEGER DEFAULT 0, "
 "[Days] INTEGER NOT NULL);";
 
 const char *sqlCreateUV =
@@ -328,6 +329,7 @@ const char *sqlCreateSceneTimers =
 "[Type] INTEGER NOT NULL, "
 "[Cmd] INTEGER NOT NULL, "
 "[Level] INTEGER DEFAULT 15, "
+"[UseRandomness] INTEGER DEFAULT 0, "
 "[Days] INTEGER NOT NULL);";
 
 const char *sqlCreateSharedDevices =
@@ -676,6 +678,14 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion<27)
 		{
 			query("ALTER TABLE DeviceStatus ADD COLUMN [CustomImage] INTEGER default 0");
+		}
+		if (dbversion<28)
+		{
+			query("ALTER TABLE Timers ADD COLUMN [UseRandomness] INTEGER default 0");
+			query("ALTER TABLE SceneTimers ADD COLUMN [UseRandomness] INTEGER default 0");
+			query("UPDATE Timers SET [Type]=2, [UseRandomness]=1 WHERE ([Type]=5)");
+			query("UPDATE SceneTimers SET [Type]=2, [UseRandomness]=1 WHERE ([Type]=5)");
+			//"[] INTEGER DEFAULT 0, "
 		}
     }
 	UpdatePreferencesVar("DB_Version",DB_VERSION);

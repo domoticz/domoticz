@@ -55,7 +55,7 @@ void CScheduler::ReloadSchedules()
 	std::vector<std::vector<std::string> > result;
 
 	//Add Device Timers
-	szQuery << "SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T2.Used FROM Timers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID";
+	szQuery << "SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T2.Used, T1.UseRandomness FROM Timers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID";
 	result=m_pMain->m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -81,6 +81,7 @@ void CScheduler::ReloadSchedules()
 				titem.timerType=(_eTimerType)atoi(sd[2].c_str());
 				titem.timerCmd=(_eTimerCommand)atoi(sd[3].c_str());
 				titem.Level=(unsigned char)atoi(sd[4].c_str());
+				titem.bUseRandmoness=(atoi(sd[8].c_str())!=0);
 				if ((titem.timerCmd==TCMD_ON)&&(titem.Level==0))
 				{
 					titem.Level=100;
@@ -104,7 +105,7 @@ void CScheduler::ReloadSchedules()
 	//Add Scene Timers
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT T1.SceneRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name FROM SceneTimers as T1, Scenes as T2 WHERE ((T1.Active == 1) AND (T2.ID == T1.SceneRowID)) ORDER BY T1.ID";
+	szQuery << "SELECT T1.SceneRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T1.UseRandomness FROM SceneTimers as T1, Scenes as T2 WHERE ((T1.Active == 1) AND (T2.ID == T1.SceneRowID)) ORDER BY T1.ID";
 	result=m_pMain->m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -126,6 +127,7 @@ void CScheduler::ReloadSchedules()
 			titem.timerType=(_eTimerType)atoi(sd[2].c_str());
 			titem.timerCmd=(_eTimerCommand)atoi(sd[3].c_str());
 			titem.Level=(unsigned char)atoi(sd[4].c_str());
+			titem.bUseRandmoness=(atoi(sd[7].c_str())!=0);
 			if ((titem.timerCmd==TCMD_ON)&&(titem.Level==0))
 			{
 				titem.Level=100;
@@ -198,14 +200,10 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	int nRandomTimerFrame=15;
 	m_pMain->m_sql.GetPreferencesVar("RandomTimerFrame", nRandomTimerFrame);
 	int roffset=rand() % (nRandomTimerFrame*2)-nRandomTimerFrame;
+	if (!pItem->bUseRandmoness)
+		roffset=0;
 
 	if (pItem->timerType == TTYPE_ONTIME)
-	{
-		ltime.tm_hour=pItem->startHour;
-		ltime.tm_min=pItem->startMin;
-		rtime=mktime(&ltime);
-	}
-	else if (pItem->timerType == TTYPE_ONTIMERANDOM)
 	{
 		ltime.tm_hour=pItem->startHour;
 		ltime.tm_min=pItem->startMin;
@@ -215,25 +213,25 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	{
 		if (m_tSunSet==0)
 			return false;
-		rtime=m_tSunSet-HourMinuteOffset;
+		rtime=m_tSunSet-HourMinuteOffset-(roffset*60);
 	}
 	else if (pItem->timerType == TTYPE_AFTERSUNSET)
 	{
 		if (m_tSunSet==0)
 			return false;
-		rtime=m_tSunSet+HourMinuteOffset;
+		rtime=m_tSunSet+HourMinuteOffset+(roffset*60);
 	}
 	else if (pItem->timerType == TTYPE_BEFORESUNRISE)
 	{
 		if (m_tSunRise==0)
 			return false;
-		rtime=m_tSunRise-HourMinuteOffset;
+		rtime=m_tSunRise-HourMinuteOffset-(roffset*60);
 	}
 	else if (pItem->timerType == TTYPE_AFTERSUNRISE)
 	{
 		if (m_tSunRise==0)
 			return false;
-		rtime=m_tSunRise+HourMinuteOffset;
+		rtime=m_tSunRise+HourMinuteOffset+(roffset*60);
 	}
 	else
 		return false; //unknown timer type

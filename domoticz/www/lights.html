@@ -227,6 +227,7 @@
                 <th width="40" align="center" data-i18n="Active">Active</th>
                 <th width="120" align="center" data-i18n="Type">Type</th>
                 <th width="60" align="center" data-i18n="Time">Time</th>
+                <th width="60" align="center" data-i18n="Randomness">Randomness</th>
                 <th width="80" align="center" data-i18n="Command">Command</th>
                 <th align="left" data-i18n="Days">Days</th>
             </tr>
@@ -265,6 +266,10 @@
 				</td>
 			</tr>
 			<tr>
+				<td align="right" style="width:80px"><label for="randomness"><span data-i18n="Randomness"></span>:</label></td>
+				<td><input type="checkbox" id="randomness"></td>
+			</tr>
+			<tr>
 				<td align="right" style="width:80px"><label for="combocommand"><span data-i18n="Command"></span>:</label></td>
 				<td>
 					<select id="combocommand" style="width:90px" class="combobox ui-corner-all">
@@ -292,7 +297,7 @@
 			</tr>
 			<tr><td></td></tr>
 			<tr>
-				<td align="right" style="width:80px"><label for="name">When:</label></td>
+				<td align="right" style="width:80px"><label for="when"><span data-i18n="When"></span>:</label></td>
 				<td>
 					<input type="radio" name="when" id="when_1" value="Everyday" checked>&nbsp;<span data-i18n="Everyday"></span><br><br>
 					<input type="radio" name="when" id="when_2" value="Weekdays">&nbsp;<span data-i18n="Weekdays"></span><br><br>
@@ -368,6 +373,7 @@ function GetTimerSettings()
 	tsettings.timertype=$("#lightcontent #timerparamstable #combotype").val();
 	tsettings.hour=$("#lightcontent #timerparamstable #combotimehour").val();
 	tsettings.min=$("#lightcontent #timerparamstable #combotimemin").val();
+	tsettings.Randomness=$('#lightcontent #timerparamstable #randomness').is(":checked");
 	tsettings.cmd=$("#lightcontent #timerparamstable #combocommand").val();
 	tsettings.days=0;
 	var everyday=$("#lightcontent #timerparamstable #when_1").is(":checked");
@@ -418,6 +424,7 @@ function UpdateTimer(idx)
 					"&timertype=" + tsettings.timertype +
 					"&hour=" + tsettings.hour +
 					"&min=" + tsettings.min +
+					"&randomness=" + tsettings.Randomness +
 					"&command=" + tsettings.cmd +
 					"&level=" + tsettings.level +
 					"&days=" + tsettings.days,
@@ -447,6 +454,7 @@ function AddTimer()
 					"&timertype=" + tsettings.timertype +
 					"&hour=" + tsettings.hour +
 					"&min=" + tsettings.min +
+					"&randomness=" + tsettings.Randomness +
 					"&command=" + tsettings.cmd +
 					"&level=" + tsettings.level +
 					"&days=" + tsettings.days,
@@ -549,6 +557,10 @@ function RefreshTimerTable(idx)
 					DayStr+="Sun";
 				}
 			}
+			var rEnabled="No";
+			if (item.Randomness==true) {
+				rEnabled="Yes";
+			}
 						
 			var addId = oTable.fnAddData( {
 				"DT_RowId": item.idx,
@@ -557,8 +569,9 @@ function RefreshTimerTable(idx)
 				"0": active,
 				"1": $.myglobals.TimerTypesStr[item.Type],
 				"2": item.Time,
-				"3": tCommand,
-				"4": DayStr
+				"3": rEnabled,
+				"4": tCommand,
+				"5": DayStr
 			} );
         });
 		/* Add a click handler to the rows - this could be used as a callback */
@@ -585,28 +598,29 @@ function RefreshTimerTable(idx)
 					$("#lightcontent #timerparamstable #combotype").val(jQuery.inArray(data["1"], $.myglobals.TimerTypesStr));
 					$("#lightcontent #timerparamstable #combotimehour").val(parseInt(data["2"].substring(0,2)));
 					$("#lightcontent #timerparamstable #combotimemin").val(parseInt(data["2"].substring(3,5)));
+					$('#lightcontent #timerparamstable #randomness').prop('checked', (data["3"]=="Yes") ? true : false);
 					$("#lightcontent #timerparamstable #combocommand").val(jQuery.inArray(data["Command"], $.myglobals.CommandStr));
 					if ($.isDimmer) {
 						$("#lightcontent #timerparamstable #combolevel").val(data["Level"]);
 					}
 					
 					var disableDays=false;
-					if (data["4"]=="Everyday") {
+					if (data["5"]=="Everyday") {
 						$("#lightcontent #timerparamstable #when_1").prop('checked', 'checked');
 						disableDays=true;
 					}
-					else if (data["4"]=="Weekdays") {
+					else if (data["5"]=="Weekdays") {
 						$("#lightcontent #timerparamstable #when_2").prop('checked', 'checked');
 						disableDays=true;
 					}
-					else if (data["4"]=="Weekends") {
+					else if (data["5"]=="Weekends") {
 						$("#lightcontent #timerparamstable #when_3").prop('checked', 'checked');
 						disableDays=true;
 					}
 					else
 						$("#lightcontent #timerparamstable #when_4").prop('checked', 'checked');
 						
-					EnableDisableDays(data["4"],disableDays);
+					EnableDisableDays(data["5"],disableDays);
 				}
 			}
 		}); 
@@ -629,7 +643,7 @@ function ShowTimers(id,name, isdimmer)
 	
 	$('#modal').show();
 	var htmlcontent = '';
-	htmlcontent='<p><h2>Name: ' + name + '</h2></p><br>\n';
+	htmlcontent='<p><h2><span data-i18n="Name"></span>: ' + name + '</h2></p><br>\n';
 
 	var sunRise="";
 	var sunSet="";

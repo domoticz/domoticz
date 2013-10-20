@@ -332,7 +332,7 @@ function ShowLightLog(id,name,content,backfunction)
 
 	$('#modal').show();
 	var htmlcontent = '';
-	htmlcontent='<p><h2>Name: ' + name + '</h2></p>\n';
+	htmlcontent='<p><h2><span data-i18n="Name"></span>: ' + name + '</h2></p>\n';
 	htmlcontent+=$('#lightlog').html();
 	$($.content).html(GetBackbuttonHTMLTable(backfunction)+htmlcontent);
 	$($.content).i18n();
@@ -800,7 +800,7 @@ function ShowNotifications(id,name,content,backfunction)
 				
 				$('#modal').show();
 				var htmlcontent = '';
-				htmlcontent='<p><h2>Name: ' + name + '</h2></p><br>\n';
+				htmlcontent='<p><h2><span data-i18n="Name"></span>: ' + name + '</h2></p><br>\n';
 				htmlcontent+=$('#editnotifications').html();
 				$($.content).html(GetBackbuttonHTMLTable(backfunction)+htmlcontent);
 				$($.content).i18n();
