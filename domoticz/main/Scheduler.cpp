@@ -199,9 +199,14 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 
 	int nRandomTimerFrame=15;
 	m_pMain->m_sql.GetPreferencesVar("RandomTimerFrame", nRandomTimerFrame);
-	int roffset=rand() % (nRandomTimerFrame*2)-nRandomTimerFrame;
-	if (!pItem->bUseRandmoness)
-		roffset=0;
+	int roffset=0;
+	if (pItem->bUseRandmoness)
+	{
+		if (pItem->timerType == TTYPE_ONTIME)
+			roffset=rand() % (nRandomTimerFrame*2)-nRandomTimerFrame;
+		else
+			roffset=rand() % (nRandomTimerFrame);
+	}
 
 	if (pItem->timerType == TTYPE_ONTIME)
 	{
