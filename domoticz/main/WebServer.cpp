@@ -5577,6 +5577,10 @@ std::string CWebServer::GetJSonPage()
 		{
 			root["status"]="OK";
 			root["title"]="GetUnusedPlanDevices";
+			std::string sunique=m_pWebEm->FindValue("unique");
+			if (sunique=="")
+				goto exitjson;
+			int iUnique=(sunique=="true")?1:0;
 
 			szQuery.clear();
 			szQuery.str("");
@@ -5590,11 +5594,16 @@ std::string CWebServer::GetJSonPage()
 				{
 					std::vector<std::string> sd=*itt;
 
-					szQuery.clear();
-					szQuery.str("");
-					szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << sd[0] << ")";
-					result2=m_pMain->m_sql.query(szQuery.str());
-					if (result2.size()==0)
+					bool bDoAdd=true;
+					if (iUnique)
+					{
+						szQuery.clear();
+						szQuery.str("");
+						szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << sd[0] << ")";
+						result2=m_pMain->m_sql.query(szQuery.str());
+						bDoAdd=(result2.size()==0);
+					}
+					if (bDoAdd)
 					{
 						root["result"][ii]["idx"]=sd[0];
 						root["result"][ii]["Name"]=sd[1];
@@ -5612,12 +5621,20 @@ std::string CWebServer::GetJSonPage()
 			root["status"]="OK";
 			root["title"]="AddPlanActiveDevice";
 
-			sprintf(szTmp,
-				"INSERT INTO DeviceToPlansMap (DeviceRowID, PlanID) VALUES (%s,%s)",
-				activeidx.c_str(),
-				idx.c_str()
-				);
-			result=m_pMain->m_sql.query(szTmp);
+			//check if it is not already there
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << activeidx << ")";
+			result2=m_pMain->m_sql.query(szQuery.str());
+			if (result2.size()==0)
+			{
+				sprintf(szTmp,
+					"INSERT INTO DeviceToPlansMap (DeviceRowID, PlanID) VALUES (%s,%s)",
+					activeidx.c_str(),
+					idx.c_str()
+					);
+				result=m_pMain->m_sql.query(szTmp);
+			}
 		}
 		else if (cparam=="getplandevices")
 		{

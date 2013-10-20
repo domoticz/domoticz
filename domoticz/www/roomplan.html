@@ -317,7 +317,7 @@ function RefreshUnusedDevicesComboArray()
 	$.UnusedDevices = [];
 	$("#plancontent #comboactivedevice").empty();
 	$.ajax({
-		url: "json.htm?type=command&param=getunusedplandevices", 
+		url: "json.htm?type=command&param=getunusedplandevices&unique=false", 
 		async: false, 
 		dataType: 'json',
 		success: function(data) {
