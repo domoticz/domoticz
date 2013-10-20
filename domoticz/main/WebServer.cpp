@@ -8303,7 +8303,11 @@ std::string CWebServer::GetJSonPage()
 		else if (cparam=="setscenecode")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
+			std::string cmnd=m_pWebEm->FindValue("cmnd");
+			if (
+				(idx=="")||
+				(cmnd=="")
+				)
 				goto exitjson;
 			std::string devid=m_pWebEm->FindValue("devid");
 			if (devid=="")
@@ -8317,12 +8321,13 @@ std::string CWebServer::GetJSonPage()
 			if (result.size()>0)
 			{
 				sprintf(szTmp,
-					"UPDATE Scenes SET HardwareID=%d, DeviceID='%s', Unit=%d, Type=%d, SubType=%d WHERE (ID == %s)",
+					"UPDATE Scenes SET HardwareID=%d, DeviceID='%s', Unit=%d, Type=%d, SubType=%d, ListenCmd=%d WHERE (ID == %s)",
 					atoi(result[0][0].c_str()),
 					result[0][1].c_str(),
 					atoi(result[0][2].c_str()),
 					atoi(result[0][3].c_str()),
 					atoi(result[0][4].c_str()),
+					atoi(cmnd.c_str()),
 					idx.c_str()
 					);
 				result=m_pMain->m_sql.query(szTmp);
@@ -8375,7 +8380,7 @@ std::string CWebServer::GetJSonPage()
 				//check if used
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "SELECT Name, Used FROM DeviceStatus WHERE (ID==" << m_pMain->m_sql.m_LastSwitchRowID << ")";
+				szQuery << "SELECT Name, Used, nValue FROM DeviceStatus WHERE (ID==" << m_pMain->m_sql.m_LastSwitchRowID << ")";
 				result=m_pMain->m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
@@ -8385,6 +8390,7 @@ std::string CWebServer::GetJSonPage()
 					root["idx"]=m_pMain->m_sql.m_LastSwitchRowID;
 					root["Name"]=result[0][0];
 					root["Used"]=atoi(result[0][1].c_str());
+					root["Cmd"]=atoi(result[0][2].c_str());
 				}
 			}
 		} //learnsw

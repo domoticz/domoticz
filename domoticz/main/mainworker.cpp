@@ -7289,29 +7289,45 @@ void MainWorker::CheckSceneCode(const int HardwareID, const char* ID, const unsi
 	char szTmp[200];
 	std::vector<std::vector<std::string> > result;
 
-	sprintf(szTmp,"SELECT ID FROM Scenes WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
+	sprintf(szTmp,"SELECT ID, SceneType, ListenCmd FROM Scenes WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
 	result = m_sql.query(szTmp);
 	if (result.size()>0)
 	{
-		std::string lstatus="";
-		int llevel=0;
-		bool bHaveDimmer=false;
-		bool bHaveGroupCmd=false;
-		int maxDimLevel=0;
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::vector<std::string> sd=*itt;
 
-		GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
-		std::string switchcmd=(IsLightSwitchOn(lstatus)==true)?"On":"Off";
-		unsigned long long ID;
-		std::stringstream s_str( result[0][0] );
-		s_str >> ID;
+			unsigned long long ID;
+			std::stringstream s_str( sd[0] );
+			s_str >> ID;
+			int scenetype=atoi(sd[1].c_str());
+			int listencmd=atoi(sd[2].c_str());
 
-		_tStartScene sscene;
-		sscene.SceneRowID=ID;
-		sscene.switchcmd=switchcmd;
+			if (scenetype==0)
+			{
+				//it is a 'Scene' match the nValue/Command
+				if (nValue!=listencmd)
+					continue;
+			}
 
-		//we have to start it outside this function/loop else we have a deadlock because of the mutex in ::DecodeRXMessage
-		boost::lock_guard<boost::mutex> l(m_startscene_mutex);
-		m_scenes_to_start.push_back(sscene);
+			std::string lstatus="";
+			int llevel=0;
+			bool bHaveDimmer=false;
+			bool bHaveGroupCmd=false;
+			int maxDimLevel=0;
+
+			GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+			std::string switchcmd=(IsLightSwitchOn(lstatus)==true)?"On":"Off";
+
+			_tStartScene sscene;
+			sscene.SceneRowID=ID;
+			sscene.switchcmd=switchcmd;
+
+			//we have to start it outside this function/loop else we have a deadlock because of the mutex in ::DecodeRXMessage
+			boost::lock_guard<boost::mutex> l(m_startscene_mutex);
+			m_scenes_to_start.push_back(sscene);
+		}
 	}
 }
 

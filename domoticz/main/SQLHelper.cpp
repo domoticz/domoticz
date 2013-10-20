@@ -15,7 +15,7 @@
 #include "../webserver/Base64.h"
 #include "mainstructs.h"
 
-#define DB_VERSION 28
+#define DB_VERSION 29
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -297,6 +297,7 @@ const char *sqlCreateScenes =
 "[Order] INTEGER BIGINT(10) default 0, \n"
 "[nValue] INTEGER DEFAULT 0, \n"
 "[SceneType] INTEGER DEFAULT 0, \n"
+"[ListenCmd] INTEGER DEFAULT 1, \n"
 "[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')));\n";
 
 const char *sqlCreateScenesTrigger =
@@ -686,6 +687,10 @@ bool CSQLHelper::OpenDatabase()
 			query("UPDATE Timers SET [Type]=2, [UseRandomness]=1 WHERE ([Type]=5)");
 			query("UPDATE SceneTimers SET [Type]=2, [UseRandomness]=1 WHERE ([Type]=5)");
 			//"[] INTEGER DEFAULT 0, "
+		}
+		if (dbversion<29)
+		{
+			query("ALTER TABLE Scenes ADD COLUMN [ListenCmd] INTEGER default 1");
 		}
     }
 	UpdatePreferencesVar("DB_Version",DB_VERSION);

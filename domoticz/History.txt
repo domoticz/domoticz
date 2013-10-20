@@ -5,6 +5,7 @@ Version 1.0.xxx (Oktober xxth 2013)
 - Implemented: Razberry, support for switch only devices (will be reported to controller NodeID)
 - Changed: ByronSX now uses the sound type as Unit ID
 - Implemented: Option for each timer type to enable 'Randomness'
+- Implemented/Changed: Scenes 'Learn' command will now listen to the status (pressing On/Off/Mood)
 
 Version 1.0.1087 (Oktober 16th 2013)
 - Implemented: Login page (solves the caching problems)

@@ -246,6 +246,7 @@ function LearnCode()
     var deviceID = "";
     var deviceidx = 0;
     var bIsUsed = false;
+    var Cmd = 0;
     var Name = "";
     
     $.ajax({
@@ -261,6 +262,7 @@ function LearnCode()
             deviceidx=data.idx;
             bIsUsed=data.Used;
             Name=data.Name;
+            Cmd=data.Cmd;
           }
         }
        }
@@ -278,7 +280,7 @@ function LearnCode()
 				$("#scenecontent #learncode").html($.i18n("Change Code"));
 				
 				$.ajax({
-					 url: "json.htm?type=command&param=setscenecode&idx="+$.devIdx+"&devid="+deviceidx, 
+					 url: "json.htm?type=command&param=setscenecode&idx="+$.devIdx+"&devid="+deviceidx+"&cmnd="+Cmd, 
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
