@@ -3461,7 +3461,7 @@ unsigned long long MainWorker::decode_Chime(const int HwdID, const tRBUF *pRespo
 	unsigned char subType=pResponse->CHIME.subtype;
 	sprintf(szTmp,"%02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
 	std::string ID = szTmp;
-	unsigned char Unit=8;
+	unsigned char Unit=pResponse->CHIME.sound;
 	unsigned char cmnd=pResponse->CHIME.sound;
 	unsigned char SignalLevel=pResponse->CHIME.rssi;
 
@@ -7051,7 +7051,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.CHIME.id1=ID3;
 			lcmd.CHIME.id2=ID4;
 			level=15;
-			lcmd.CHIME.sound=chime_sound0;
+			lcmd.CHIME.sound=Unit;
 			lcmd.CHIME.filler=0;
 			lcmd.CHIME.rssi=7;
 			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.CHIME));
