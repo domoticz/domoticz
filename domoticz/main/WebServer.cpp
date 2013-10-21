@@ -6876,6 +6876,7 @@ std::string CWebServer::GetJSonPage()
 					activedelay
 					);
 				result=m_pMain->m_sql.query(szTmp);
+				m_pMain->m_cameras.ReloadCameraActiveDevices(idx);
 			}
 		}
 		else if (cparam=="deleteamactivedevice")
