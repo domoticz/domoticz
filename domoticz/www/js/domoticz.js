@@ -4357,10 +4357,36 @@ function ShowCameraLiveStream(Name,FeedURL)
 {
 	$('#dialog-camera-live #camfeed').attr("src", FeedURL);
 
+	var dwidth=$(window).width()/2;
+	var dheight=$(window).height()/2;
+	
+	if (dwidth>630) {
+		dwidth=630;
+		dheight=parseInt((dwidth/16)*9);
+	}
+	if (dheight>470) {
+		dheight=470;
+		dwidth=parseInt((dheight/9)*16);
+	}
+	if (dwidth>dheight) {
+		dwidth=parseInt((dheight/9)*16);
+	}
+	else {
+		dheight=parseInt((dwidth/16)*9);
+	}
+	//Set inner Camera feed width/height
+	$( "#dialog-camera-live #camfeed" ).width(dwidth-30);
+	$( "#dialog-camera-live #camfeed" ).height(dheight-16);
+
 	$( "#dialog-camera-live" ).dialog({
 		resizable: false,
-		width: 630,
-		height:470,
+		width: dwidth,
+		height:dheight+116,
+		position: {
+			my: "center",
+			at: "center",
+			of: window
+		},
 		modal: true,
 		title: Name,
 		buttons: {
