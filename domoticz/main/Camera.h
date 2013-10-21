@@ -5,6 +5,13 @@
 
 class MainWorker;
 
+struct cameraActiveDevice
+{
+	unsigned long long ID;
+	unsigned long long DevSceneRowID;
+	unsigned char DevSceneType;
+};
+
 struct cameraDevice
 {
 	unsigned long long ID;
@@ -15,6 +22,7 @@ struct cameraDevice
 	int Port;
 	std::string VideoURL;
 	std::string ImageURL;
+	std::vector<cameraActiveDevice> mActiveDevices;
 };
 
 class CCamScheduler
@@ -37,9 +45,16 @@ public:
 	bool TakeUVCSnapshot(std::vector<unsigned char> &camimage);
 	cameraDevice* GetCamera(const unsigned long long CamID);
 	cameraDevice* GetCamera(const std::string &CamID);
+	unsigned long long IsDevSceneInCamera(const unsigned char DevSceneType, const unsigned long long DevSceneID);
+	unsigned long long IsDevSceneInCamera(const unsigned char DevSceneType, const std::string &DevSceneID);
 
 	bool EmailCameraSnapshot(const std::string &CamIdx, const std::string &subject);
-
+	void ReloadCameraActiveDevices(const std::string &CamID);
+	std::string GetCameraURL(cameraDevice *pCamera);
+	std::string GetCameraURL(const std::string &CamID);
+	std::string GetCameraURL(const unsigned long long CamID);
+	std::string GetCameraFeedURL(const std::string &CamID);
+	std::string GetCameraFeedURL(const unsigned long long CamID);
 private:
 	MainWorker *m_pMain;
 	boost::mutex m_mutex;
@@ -52,6 +67,5 @@ private:
 	void Do_Work();
 	void CheckCameras();
 */
-	std::string GetCameraURL(cameraDevice *pCamera);
 };
 

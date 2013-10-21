@@ -7,6 +7,8 @@ Version 1.0.xxx (Oktober xxth 2013)
 - Implemented: Option for each timer type to enable 'Randomness'
 - Implemented/Changed: Scenes 'Learn' command will now listen to the status (pressing On/Off/Mood)
 - Changed: Room Plan editor, now allows to assign devices to multiple rooms
+- Implemented: Camera Setup, Streaming Icon
+- Implemented: Dashboard/Lights/Scenes now displays a webcam icon when used in a Camera Setup
 
 Version 1.0.1087 (Oktober 16th 2013)
 - Implemented: Login page (solves the caching problems)

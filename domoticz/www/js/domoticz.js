@@ -4352,3 +4352,25 @@ function ShowAirQualityLog(contentdiv,backfunction,id,name)
   cursordefault();
   return false;
 }
+
+function ShowCameraLiveStream(Name,FeedURL)
+{
+	$('#dialog-camera-live #camfeed').attr("src", FeedURL);
+
+	$( "#dialog-camera-live" ).dialog({
+		resizable: false,
+		width: 630,
+		height:470,
+		modal: true,
+		title: Name,
+		buttons: {
+			"OK": function() {
+				$( this ).dialog( "close" );
+			}
+		},
+		close: function() {
+			$('#dialog-camera-live #camfeed').attr("src", "images/camera_default.png");
+            $( this ).dialog( "close" );
+		}
+	});
+}

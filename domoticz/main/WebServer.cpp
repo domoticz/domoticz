@@ -939,6 +939,11 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["Status"]="On";
 				else
 					root["result"][ii]["Status"]="Mixed";
+				unsigned long long camIDX=m_pMain->m_cameras.IsDevSceneInCamera(1,sd[0]);
+				root["result"][ii]["UsedByCamera"]=(camIDX!=0)?true:false;
+				if (camIDX!=0) {
+					root["result"][ii]["CameraFeed"]=m_pMain->m_cameras.GetCameraFeedURL(camIDX);
+				}
 				ii++;
 			}
 		}
@@ -1209,6 +1214,11 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				root["result"][ii]["HaveGroupCmd"]=bHaveGroupCmd;
 				root["result"][ii]["SwitchType"]=Switch_Type_Desc(switchtype);
 				root["result"][ii]["SwitchTypeVal"]=switchtype;
+				unsigned long long camIDX=m_pMain->m_cameras.IsDevSceneInCamera(0,sd[0]);
+				root["result"][ii]["UsedByCamera"]=(camIDX!=0)?true:false;
+				if (camIDX!=0) {
+					root["result"][ii]["CameraFeed"]=m_pMain->m_cameras.GetCameraFeedURL(camIDX);
+				}
 
 				bool bIsSubDevice=false;
 				std::vector<std::vector<std::string> > resultSD;
@@ -9059,6 +9069,11 @@ std::string CWebServer::GetJSonPage()
 				else
 					root["result"][ii]["Status"]="Mixed";
 				root["result"][ii]["Timers"]=(m_pMain->m_sql.HasSceneTimers(sd[0])==true)?"true":"false";
+				unsigned long long camIDX=m_pMain->m_cameras.IsDevSceneInCamera(1,sd[0]);
+				root["result"][ii]["UsedByCamera"]=(camIDX!=0)?true:false;
+				if (camIDX!=0) {
+					root["result"][ii]["CameraFeed"]=m_pMain->m_cameras.GetCameraFeedURL(camIDX);
+				}
 				ii++;
 			}
 		}

@@ -1384,7 +1384,13 @@ function ShowLights()
 			xhtm+=
                 '\t    <tr>\n' +
                 '\t      <td id="name">' + item.Name + '</td>\n' +
-								'\t      <td id="bigtext"></td>\n';
+								'\t      <td id="bigtext">';
+		  if (item.UsedByCamera==true) {
+			var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="16">';
+			streamurl="<a href=\"javascript:ShowCameraLiveStream('" + item.Name + "','" + item.CameraFeed + "')\">" + streamimg + "</a>";
+			xhtm+=streamurl;
+		  }
+		  xhtm+='</td>\n';
           if (item.SwitchType == "X10 Siren") {
             if (
                 (item.Status == 'On')||

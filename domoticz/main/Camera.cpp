@@ -61,37 +61,104 @@ std::vector<cameraDevice> CCamScheduler::GetCameraDevices()
 
 void CCamScheduler::ReloadCameras()
 {
-	if (m_pMain==NULL)
+	std::vector<std::string> _AddedCameras;
+	if (m_pMain!=NULL)
+	{
+		boost::lock_guard<boost::mutex> l(m_mutex);
+		m_cameradevices.clear();
+		std::stringstream szQuery;
+		std::vector<std::vector<std::string> > result;
+		std::vector<std::vector<std::string> >::const_iterator itt;
+
+		szQuery << "SELECT ID, Name, Address, Port, Username, Password, VideoURL, ImageURL FROM Cameras WHERE (Enabled == 1) ORDER BY ID";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			_log.Log(LOG_NORM,"Camera settings (re)loaded");
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+
+				cameraDevice citem;
+				std::stringstream s_str( sd[0] );
+				s_str >> citem.ID;
+				citem.Name		= sd[1];
+				citem.Address	= sd[2];
+				citem.Port		= atoi(sd[3].c_str());
+				citem.Username	= base64_decode(sd[4]);
+				citem.Password	= base64_decode(sd[5]);
+				citem.VideoURL	= sd[6];
+				citem.ImageURL	= sd[7];
+				m_cameradevices.push_back(citem);
+				_AddedCameras.push_back(sd[0]);
+			}
+		}
+	}
+	std::vector<std::string>::const_iterator ittCam;
+	for (ittCam=_AddedCameras.begin(); ittCam!=_AddedCameras.end(); ++ittCam)
+	{
+		//Get Active Devices/Scenes
+		ReloadCameraActiveDevices(*ittCam);
+	}
+}
+
+void CCamScheduler::ReloadCameraActiveDevices(const std::string &CamID)
+{
+	cameraDevice *pCamera=GetCamera(CamID);
+	if (pCamera==NULL)
 		return;
-
-	boost::lock_guard<boost::mutex> l(m_mutex);
-	m_cameradevices.clear();
-	std::stringstream szQuery;
+	pCamera->mActiveDevices.clear();
 	std::vector<std::vector<std::string> > result;
+	std::vector<std::vector<std::string> >::const_iterator itt;
+	std::stringstream szQuery;
 
-	szQuery << "SELECT ID, Name, Address, Port, Username, Password, VideoURL, ImageURL FROM Cameras WHERE (Enabled == 1) ORDER BY ID";
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "SELECT ID, DevSceneType, DevSceneRowID FROM CamerasActiveDevices WHERE (CameraRowID=='" << CamID << "') ORDER BY ID";
 	result=m_pMain->m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
-		_log.Log(LOG_NORM,"Camera settings (re)loaded");
-		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt=result.begin(); itt!=result.end(); ++itt)
 		{
 			std::vector<std::string> sd=*itt;
-
-			cameraDevice citem;
+			cameraActiveDevice aDevice;
 			std::stringstream s_str( sd[0] );
-			s_str >> citem.ID;
-            citem.Name		= sd[1];
-            citem.Address	= sd[2];
-			citem.Port		= atoi(sd[3].c_str());
-		    citem.Username	= base64_decode(sd[4]);
-            citem.Password	= base64_decode(sd[5]);
-			citem.VideoURL	= sd[6];
-			citem.ImageURL	= sd[7];
-            m_cameradevices.push_back(citem);
+			s_str >> aDevice.ID;
+			aDevice.DevSceneType=(unsigned char)atoi(sd[1].c_str());
+			std::stringstream s_str2( sd[2] );
+			s_str2 >> aDevice.DevSceneRowID;
+			pCamera->mActiveDevices.push_back(aDevice);
 		}
 	}
+}
+
+//Return 0 if NO, otherwise Cam IDX
+unsigned long long CCamScheduler::IsDevSceneInCamera(const unsigned char DevSceneType, const std::string &DevSceneID)
+{
+	unsigned long long ulID;
+	std::stringstream s_str( DevSceneID );
+	s_str >> ulID;
+	return IsDevSceneInCamera(DevSceneType,ulID);
+}
+
+unsigned long long CCamScheduler::IsDevSceneInCamera(const unsigned char DevSceneType, const unsigned long long DevSceneID)
+{
+	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::vector<cameraDevice>::iterator itt;
+	for (itt=m_cameradevices.begin(); itt!=m_cameradevices.end(); ++itt)
+	{
+		cameraDevice *pCamera=&(*itt);
+		std::vector<cameraActiveDevice>::iterator itt2;
+		for (itt2=pCamera->mActiveDevices.begin(); itt2!=pCamera->mActiveDevices.end(); ++itt2)
+		{
+			if (
+				(itt2->DevSceneType==DevSceneType)&&
+				(itt2->DevSceneRowID==DevSceneID)
+				)
+				return itt->ID;
+		}
+	}
+	return 0;
 }
 
 /*
@@ -124,6 +191,41 @@ void CCamScheduler::CheckCameras()
 
 }
 */
+
+std::string CCamScheduler::GetCameraFeedURL(const std::string &CamID)
+{
+	cameraDevice* pCamera=GetCamera(CamID);
+	if (pCamera==NULL)
+		return "";
+	std::string szURL=GetCameraURL(pCamera);
+	return szURL+="/" + pCamera->VideoURL;
+}
+
+std::string CCamScheduler::GetCameraFeedURL(const unsigned long long CamID)
+{
+	cameraDevice* pCamera=GetCamera(CamID);
+	if (pCamera==NULL)
+		return "";
+	std::string szURL=GetCameraURL(pCamera);
+	return szURL+="/" + pCamera->VideoURL;
+}
+
+
+std::string CCamScheduler::GetCameraURL(const std::string &CamID)
+{
+	cameraDevice* pCamera=GetCamera(CamID);
+	if (pCamera==NULL)
+		return "";
+	return GetCameraURL(pCamera);
+}
+
+std::string CCamScheduler::GetCameraURL(const unsigned long long CamID)
+{
+	cameraDevice* pCamera=GetCamera(CamID);
+	if (pCamera==NULL)
+		return "";
+	return GetCameraURL(pCamera);
+}
 
 std::string CCamScheduler::GetCameraURL(cameraDevice *pCamera)
 {

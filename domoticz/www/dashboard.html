@@ -1103,7 +1103,13 @@ function ShowFavorites()
 							xhtm+=
 									'\t    <tr>\n' +
 									'\t      <td id="name">' + item.Name + '</td>\n'+
-									'\t      <td id="bigtext"></td>\n';
+									'\t      <td id="bigtext">';
+							  if (item.UsedByCamera==true) {
+								var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="16">';
+								streamurl="<a href=\"javascript:ShowCameraLiveStream('" + item.Name + "','" + item.CameraFeed + "')\">" + streamimg + "</a>";
+								xhtm+=streamurl;
+							  }
+							  xhtm+='</td>\n';
 							if (item.Type.indexOf('Scene')==0) {
 								xhtm+='<td id="img1"><img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								xhtm+='\t      <td id="status">&nbsp;</td>\n';
@@ -1374,7 +1380,13 @@ function ShowFavorites()
 							xhtm+=
 									'\t    <tr>\n' +
 									'\t      <td id="name">' + item.Name + '</td>\n'+
-									'\t      <td id="bigtext"></td>\n';
+									'\t      <td id="bigtext">';
+						  if (item.UsedByCamera==true) {
+							var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="16">';
+							streamurl="<a href=\"javascript:ShowCameraLiveStream('" + item.Name + "','" + item.CameraFeed + "')\">" + streamimg + "</a>";
+							xhtm+=streamurl;
+						  }
+						  xhtm+='</td>\n';
 							if (item.SwitchType == "Doorbell") {
 								xhtm+='\t      <td id="img"><img src="images/doorbell48.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 							}

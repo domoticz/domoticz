@@ -151,6 +151,7 @@ function AddCameraDevice()
 			}
 		},
 		close: function() {
+			$('#dialog-add-edit-camera #camfeed').attr("src", "images/camera_default.png");
             $( this ).dialog( "close" );
 		}
 	});
@@ -180,6 +181,7 @@ function EditCamera(idx)
 			}
 		},
 		close: function() {
+			$('#dialog-add-edit-camera #camfeed').attr("src", "images/camera_default.png");
             $( this ).dialog( "close" );
 		}
 	});
@@ -347,8 +349,10 @@ function RefreshcameraTable()
 			
 			var captureimg='<img src="images/capture.png" title="' + $.i18n('Take Snapshot') +'" height="32">';
 			var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="32">';
+			
+			var feedsrc=GenerateCamFeedURL(item.Address,item.Port,item.Username,item.Password,item.VideoURL);
 			captureurl="<a href=\"camsnapshot.jpg?idx=" + item.idx + "\">" + captureimg + "</a>";
-			streamurl="<a href=\"camsnapshot.jpg?idx=" + item.idx + "\">" + streamimg + "</a>";
+			streamurl="<a href=\"javascript:ShowCameraLiveStream('" + item.Name + "','" + feedsrc + "')\">" + streamimg + "</a>";
 			
 			var addId = oTable.fnAddData( {
 				"DT_RowId": item.idx,
