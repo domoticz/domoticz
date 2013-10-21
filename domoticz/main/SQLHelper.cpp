@@ -15,7 +15,7 @@
 #include "../webserver/Base64.h"
 #include "mainstructs.h"
 
-#define DB_VERSION 29
+#define DB_VERSION 30
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -263,8 +263,9 @@ const char *sqlCreatePlanMappings =
 "CREATE TABLE IF NOT EXISTS [DeviceToPlansMap] ("
 "[ID] INTEGER PRIMARY KEY, "
 "[DeviceRowID] BIGINT NOT NULL, "
+"[DevSceneType] INTEGER DEFAULT 0, "
 "[PlanID] BIGINT NOT NULL, "
-"[Order] INTEGER BIGINT(10) default 0);";
+"[Order] INTEGER BIGINT(10) DEFAULT 0);";
 
 const char *sqlCreateDevicesToPlanStatusTrigger =
 	"CREATE TRIGGER IF NOT EXISTS deviceplantatusupdate AFTER INSERT ON DeviceToPlansMap\n"
@@ -691,6 +692,10 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion<29)
 		{
 			query("ALTER TABLE Scenes ADD COLUMN [ListenCmd] INTEGER default 1");
+		}
+		if (dbversion<30)
+		{
+			query("ALTER TABLE DeviceToPlansMap ADD COLUMN [DevSceneType] INTEGER default 0");
 		}
     }
 	UpdatePreferencesVar("DB_Version",DB_VERSION);

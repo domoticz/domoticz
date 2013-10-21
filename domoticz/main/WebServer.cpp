@@ -8932,9 +8932,13 @@ std::string CWebServer::GetJSonPage()
 		szQuery.str("");
 		szQuery << "SELECT MAX(ID) FROM DeviceStatus";
 		result=m_pMain->m_sql.query(szQuery.str());
-		if (result.size()<1)
-			goto exitjson;
-		unsigned long nid=atol(result[0][0].c_str());
+
+		unsigned long nid=1; //could be the first device ever
+
+		if (result.size()>0)
+		{
+			nid=atol(result[0][0].c_str());
+		}
 		nid+=82000;
 		char ID[40];
 		sprintf(ID,"%ld",nid);
