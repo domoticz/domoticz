@@ -65,6 +65,7 @@
 				<th width="70" align="left" data-i18n="Preview">Preview</th>
 				<th align="left" data-i18n="Name">Name</th>
 				<th width="48" align="left"></th>
+				<th width="48" align="left"></th>
 				<th width="60" align="left" data-i18n="Enabled">Enabled</th>
 				<th width="100" align="left" data-i18n="Address">Address</th>
 				<th width="80" align="center" data-i18n="Port">Port</th>
@@ -311,11 +312,6 @@ function Addcamera()
 	});		
 }
 
-function GetCameraSnapshot(idx)
-{
-	window.location = "camsnapshot.jpg?idx=" + idx;
-}
-
 function RefreshcameraTable()
 {
 	$('#modal').show();
@@ -349,8 +345,10 @@ function RefreshcameraTable()
 				previewimg='<img src="" height="40"> ';
 			}
 			
-			var captureimg='<img  src="images/capture.png" title="' + $.i18n('Take Snapshot') +'" height="32">';
+			var captureimg='<img src="images/capture.png" title="' + $.i18n('Take Snapshot') +'" height="32">';
+			var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="32">';
 			captureurl="<a href=\"camsnapshot.jpg?idx=" + item.idx + "\">" + captureimg + "</a>";
+			streamurl="<a href=\"camsnapshot.jpg?idx=" + item.idx + "\">" + streamimg + "</a>";
 			
 			var addId = oTable.fnAddData( {
 				"DT_RowId": item.idx,
@@ -365,11 +363,12 @@ function RefreshcameraTable()
 				"0": previewimg,
 				"1": item.Name,
 				"2": captureurl,
-				"3": enabledstr,
-				"4": item.Address,
-				"5": item.Port,
-				"6": item.VideoURL,
-				"7": item.ImageURL
+				"3": streamurl,
+				"4": enabledstr,
+				"5": item.Address,
+				"6": item.Port,
+				"7": item.VideoURL,
+				"8": item.ImageURL
 			} );
 		});
 		/* Add a click handler to the rows - this could be used as a callback */
@@ -462,7 +461,7 @@ function Showcameras()
 			"sRowSelect": "single",
 		},
 		"aoColumnDefs": [
-			{ "bSortable": false, "aTargets": [ 0,2 ] }
+			{ "bSortable": false, "aTargets": [ 0,2 ,3] }
 		],
 		"aaSorting": [[ 1, "asc" ]],
 		"bSortClasses": false,

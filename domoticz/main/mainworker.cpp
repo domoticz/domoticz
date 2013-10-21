@@ -848,7 +848,7 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 	{
 		sprintf(szTmp,"%02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
 		ID = szTmp;
-		Unit=pResponse->BLINDS1.unitcode;
+		Unit=pResponse->CHIME.sound;
 	}
 	else
 		return -1;
