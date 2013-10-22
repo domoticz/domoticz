@@ -25,10 +25,13 @@ class CIOCount
 	   int Update(unsigned long Counts);
 	   unsigned long GetCurrent(void) const {return Current;};
 	   unsigned long GetTotal(void) const {return Total;};
+	   void SetCurrent(unsigned long NewCurValue) {Current=NewCurValue;};
+	   void SetTotal(unsigned long NewTotalValue) {Total=NewTotalValue;};
 	   void ResetCurrent(void) {Current=0;};
 	   void ResetTotal(void) {Total=0;};
 	   bool ProcessUpdateInterval(unsigned long PassedTime_ms);
 	   void SetUpdateInterval(unsigned long NewValue_ms);
+	   unsigned long GetUpdateInterval(void) {return UpdateInterval_ms;};
 	   bool Enabled;
 	   bool InitialStateSent;
    
@@ -124,6 +127,7 @@ private:
 	int Detect_PiFace_Hardware(void);
 	
 	int m_fd;
+	//int m_HwdID;
 	
 	CIOPort m_Inputs[4];
 	CIOPort m_Outputs[4];
@@ -139,6 +143,9 @@ private:
 	int GetParameterString(std::string TargetString,const char * SearchStr, int StartPos,  std::string &Parameter);
 	int LoadConfig(void);
 	void LoadDefaultConfig(void);
+	void AutoCreate_piface_config(void);
+	
+	void GetLastKnownValues(void);
 };
 
 

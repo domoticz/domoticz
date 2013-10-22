@@ -1584,7 +1584,43 @@ bool CSQLHelper::NeedToUpdateHardwareDevice(const int HardwareID, const char* ID
 		ulID);
 	result = query(szTmp);
 
-	return false;
+	return false; 
+}
+
+
+bool CSQLHelper::GetLastValue(const int HardwareID, const char* DeviceID, const unsigned char unit, const unsigned char devType, const unsigned char subType, int &nValue, std::string &sValue, struct tm &LastUpdateTime)
+{
+    bool result=false;
+    std::vector<std::vector<std::string> > sqlresult;
+	char szTmp[400];
+	std::string sLastUpdate;
+	//std::string sValue;
+	//struct tm LastUpdateTime;
+	time_t now = mytime(NULL);
+	struct tm tm1;
+	localtime_r(&now,&tm1);
+		
+	sprintf(szTmp,"SELECT nValue,sValue,LastUpdate FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID=%s AND Unit=%d AND Type=%d AND SubType=%d) order by LastUpdate desc limit 1",HardwareID,DeviceID,unit,devType,subType);
+	sqlresult=query(szTmp);
+	
+	if (sqlresult.size()!=0)
+	{
+		nValue=(int)atoi(sqlresult[0][0].c_str());
+		sValue=sqlresult[0][1].c_str();
+	    sLastUpdate=sqlresult[0][2].c_str();
+		
+		LastUpdateTime.tm_isdst=tm1.tm_isdst;
+		LastUpdateTime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
+		LastUpdateTime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
+		LastUpdateTime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
+		LastUpdateTime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
+		LastUpdateTime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
+		LastUpdateTime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
+	
+		result=true;
+	}
+	
+	return result;
 }
 
 
