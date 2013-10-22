@@ -906,6 +906,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 		szQuery.str("");
 		if (rowid!="")
 			szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType FROM Scenes WHERE (ID==" << rowid << ")";
+		else if ((planID!="")&&(planID!="0"))
+			szQuery << "SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType FROM Scenes as A, DeviceToPlansMap as B WHERE (B.PlanID==" << planID << ") AND (B.DeviceRowID==a.ID) AND (B.DevSceneType==1) ORDER BY B.[Order]";
 		else
 			szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType FROM Scenes ORDER BY " << szOrderBy;
 		result=m_pMain->m_sql.query(szQuery.str());
@@ -959,7 +961,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel, CustomImage FROM DeviceStatus WHERE (ID==" << rowid << ")";
 		else if ((planID!="")&&(planID!="0"))
 			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage "
-			"FROM DeviceStatus as A, DeviceToPlansMap as B WHERE (B.PlanID==" << planID << ") AND (B.DeviceRowID==a.ID) ORDER BY B.[Order]";
+			"FROM DeviceStatus as A, DeviceToPlansMap as B WHERE (B.PlanID==" << planID << ") AND (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) ORDER BY B.[Order]";
 		else
 			szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel, CustomImage FROM DeviceStatus ORDER BY " << szOrderBy;
 	}
@@ -5591,6 +5593,7 @@ std::string CWebServer::GetJSonPage()
 			if (sunique=="")
 				goto exitjson;
 			int iUnique=(sunique=="true")?1:0;
+			int ii=0;
 
 			szQuery.clear();
 			szQuery.str("");
@@ -5599,7 +5602,6 @@ std::string CWebServer::GetJSonPage()
 			if (result.size()>0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
-				int ii=0;
 				for (itt=result.begin(); itt!=result.end(); ++itt)
 				{
 					std::vector<std::string> sd=*itt;
@@ -5609,37 +5611,77 @@ std::string CWebServer::GetJSonPage()
 					{
 						szQuery.clear();
 						szQuery.str("");
-						szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << sd[0] << ")";
+						szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << sd[0] << ") AND (DevSceneType==0)";
 						result2=m_pMain->m_sql.query(szQuery.str());
 						bDoAdd=(result2.size()==0);
 					}
 					if (bDoAdd)
 					{
+						root["result"][ii]["type"]=0;
 						root["result"][ii]["idx"]=sd[0];
 						root["result"][ii]["Name"]=sd[1];
 						ii++;
 					}
 				}
 			}
+			//Add Scenes
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT ID, Name FROM Scenes ORDER BY Name";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()>0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt=result.begin(); itt!=result.end(); ++itt)
+				{
+					std::vector<std::string> sd=*itt;
+
+					bool bDoAdd=true;
+					if (iUnique)
+					{
+						szQuery.clear();
+						szQuery.str("");
+						szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << sd[0] << ") AND (DevSceneType==1)";
+						result2=m_pMain->m_sql.query(szQuery.str());
+						bDoAdd=(result2.size()==0);
+					}
+					if (bDoAdd)
+					{
+						root["result"][ii]["type"]=1;
+						root["result"][ii]["idx"]=sd[0];
+						root["result"][ii]["Name"]="[Scene] " + sd[1];
+						ii++;
+					}
+				}
+			}//end light/switches
+
 		}
 		else if (cparam=="addplanactivedevice")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
+			std::string sactivetype=m_pWebEm->FindValue("activetype");
 			std::string activeidx=m_pWebEm->FindValue("activeidx");
-			if ((idx=="")||(activeidx==""))
+			if (
+				(idx=="")||
+				(sactivetype=="")||
+				(activeidx=="")
+				)
 				goto exitjson;
 			root["status"]="OK";
 			root["title"]="AddPlanActiveDevice";
 
+			int activetype=atoi(sactivetype.c_str());
+
 			//check if it is not already there
 			szQuery.clear();
 			szQuery.str("");
-			szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << activeidx << ")";
+			szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << activeidx << ") AND (DevSceneType=="<< activetype << ")";
 			result2=m_pMain->m_sql.query(szQuery.str());
 			if (result2.size()==0)
 			{
 				sprintf(szTmp,
-					"INSERT INTO DeviceToPlansMap (DeviceRowID, PlanID) VALUES (%s,%s)",
+					"INSERT INTO DeviceToPlansMap (DevSceneType,DeviceRowID, PlanID) VALUES (%d,%s,%s)",
+					activetype,
 					activeidx.c_str(),
 					idx.c_str()
 					);
@@ -5655,8 +5697,8 @@ std::string CWebServer::GetJSonPage()
 			root["title"]="GetPlanDevices";
 			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;
-			//First List/Switch Devices
-			szQuery << "SELECT A.ID, A.[Order], B.Name FROM DeviceToPlansMap as A, DeviceStatus as B WHERE ((A.PlanID=='" << idx << "') AND (B.ID==A.DeviceRowID)) ORDER BY A.[Order]";
+			
+			szQuery << "SELECT ID, DevSceneType, DeviceRowID, [Order] FROM DeviceToPlansMap WHERE (PlanID=='" << idx << "') ORDER BY [Order]";
 			result=m_pMain->m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
@@ -5665,10 +5707,43 @@ std::string CWebServer::GetJSonPage()
 				for (itt=result.begin(); itt!=result.end(); ++itt)
 				{
 					std::vector<std::string> sd=*itt;
-					root["result"][ii]["idx"]=sd[0];
-					root["result"][ii]["order"]=sd[1];
-					root["result"][ii]["Name"]=sd[2];
-					ii++;
+
+					std::string ID=sd[0];
+					int DevSceneType=atoi(sd[1].c_str());
+					std::string DevSceneRowID=sd[2];
+
+					std::string Name="";
+					if (DevSceneType==0)
+					{
+						std::vector<std::vector<std::string> > result2;
+						std::stringstream szQuery2;
+						szQuery2 << "SELECT Name FROM DeviceStatus WHERE (ID=='" << DevSceneRowID << "')";
+						result2=m_pMain->m_sql.query(szQuery2.str());
+						if (result2.size()>0)
+						{
+							Name=result2[0][0];
+						}
+					}
+					else
+					{
+						std::vector<std::vector<std::string> > result2;
+						std::stringstream szQuery2;
+						szQuery2 << "SELECT Name FROM Scenes WHERE (ID=='" << DevSceneRowID << "')";
+						result2=m_pMain->m_sql.query(szQuery2.str());
+						if (result2.size()>0)
+						{
+							Name="[Scene] " + result2[0][0];
+						}
+					}
+					if (Name!="")
+					{
+						root["result"][ii]["idx"]=ID;
+						root["result"][ii]["type"]=DevSceneType;
+						root["result"][ii]["DevSceneRowID"]=DevSceneRowID;
+						root["result"][ii]["order"]=sd[3];
+						root["result"][ii]["Name"]=Name;
+						ii++;
+					}
 				}
 			}
 		}
@@ -6460,7 +6535,7 @@ std::string CWebServer::GetJSonPage()
 			sprintf(szTmp,"DELETE FROM SceneDevices WHERE (ID == %s)",idx.c_str());
 			result=m_pMain->m_sql.query(szTmp);
 			sprintf(szTmp,"DELETE FROM CamerasActiveDevices WHERE (DevSceneType==1) AND (DevSceneRowID == %s)",idx.c_str());
-			result=m_pMain->m_sql.query(szTmp); //-V519
+			result=m_pMain->m_sql.query(szTmp);
 
 		}
 		else if (cparam=="getsubdevices")

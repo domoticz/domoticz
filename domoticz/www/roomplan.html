@@ -458,6 +458,12 @@ function AddActiveDevice()
 		bootbox.alert('No Plan Selected!');
 		return;
 	}
+
+	var ADType=0;
+	if ($("#plancontent #comboactivedevice option:selected").text().indexOf("[Scene]") == 0) {
+		ADType=1;
+	}
+
 	var ActiveDeviceIdx=$("#plancontent #comboactivedevice option:selected").val();
 	if (typeof ActiveDeviceIdx == 'undefined') {
 		bootbox.alert('No Active Device Selected!');
@@ -465,6 +471,7 @@ function AddActiveDevice()
 	}
 	$.ajax({
 		url: "json.htm?type=command&param=addplanactivedevice&idx=" + $.devIdx + 
+			"&activetype=" + ADType +
 			"&activeidx=" + ActiveDeviceIdx,
 		async: false, 
 		dataType: 'json',
