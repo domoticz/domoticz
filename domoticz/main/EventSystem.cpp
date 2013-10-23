@@ -536,17 +536,22 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 		{
 			std::string filename = ent->d_name;
 			if (ent->d_type==DT_REG) {
-                if ((filename.find("_device_") != -1) && (reason == "device") && (filename.find("_demo.lua") == -1)) {
-                    //_log.Log(LOG_NORM,"found device file: %s",filename.c_str());
-                    EvaluateLua(reason,lua_Dir+filename, DeviceID, devname, nValue, sValue, nValueWording);
+                if ( (filename.length() < 4) || (filename.compare(filename.length()-4,4,".lua") != 0)) {
+                    //_log.Log(LOG_NORM,"ignore file not .lua: %s",filename.c_str());
                 }
-                else if (((filename.find("_time_") != -1)) && (reason == "time") && (filename.find("_demo.lua") == -1)) {
-                    //_log.Log(LOG_NORM,"found time file: %s",filename.c_str());
-                    EvaluateLua(reason,lua_Dir+filename);
-                }
-                else if (((filename.find("_security_") != -1)) && (reason == "security") && (filename.find("_demo.lua") == -1)) {
-                    //_log.Log(LOG_NORM,"found time file: %s",filename.c_str());
-                    EvaluateLua(reason,lua_Dir+filename);
+                else {
+                    if ((filename.find("_device_") != -1) && (reason == "device") && (filename.find("_demo.lua") == -1)) {
+                        //_log.Log(LOG_NORM,"found device file: %s",filename.c_str());
+                        EvaluateLua(reason,lua_Dir+filename, DeviceID, devname, nValue, sValue, nValueWording);
+                    }
+                    else if (((filename.find("_time_") != -1)) && (reason == "time") && (filename.find("_demo.lua") == -1)) {
+                        //_log.Log(LOG_NORM,"found time file: %s",filename.c_str());
+                        EvaluateLua(reason,lua_Dir+filename);
+                    }
+                    else if (((filename.find("_security_") != -1)) && (reason == "security") && (filename.find("_demo.lua") == -1)) {
+                        //_log.Log(LOG_NORM,"found time file: %s",filename.c_str());
+                        EvaluateLua(reason,lua_Dir+filename);
+                    }
                 }
 			}
 		}
