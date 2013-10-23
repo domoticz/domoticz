@@ -6279,10 +6279,12 @@ std::string CWebServer::GetJSonPage()
 				{
 					m_pMain->m_sql.GetPreferencesVar("ReleaseChannel", nValue);
 					bool bIsBetaChannel=(nValue!=0);
-					std::string szURL="http://domoticz.sourceforge.net/svnversion.h";
+					std::string szURL="http://domoticz.sourceforge.net/version_" + systemname + "_" + machine + ".h";
+					//std::string szURL="http://domoticz.sourceforge.net/svnversion.h";
 					if (bIsBetaChannel)
 					{
-						szURL="http://domoticz.sourceforge.net/beta/svnversion.h";
+						//szURL="http://domoticz.sourceforge.net/beta/svnversion.h";
+						szURL="http://domoticz.sourceforge.net/beta/version_" + systemname + "_" + machine + ".h";
 					}
 					std::string revfile;
 
@@ -6329,14 +6331,26 @@ std::string CWebServer::GetJSonPage()
 			std::string szURL;
 			std::string revfile;
 
+			utsname my_uname;
+			if (uname(&my_uname)<0)
+				goto exitjson;
+
+			std::string forced=m_pWebEm->FindValue("forced");
+			bool bIsForced=(forced=="true");
+			std::string systemname=my_uname.sysname;
+			std::string machine=my_uname.machine;
+			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
+
 			if (!bIsBetaChannel)
 			{
-				szURL="http://domoticz.sourceforge.net/svnversion.h";
+				//szURL="http://domoticz.sourceforge.net/svnversion.h";
+				szURL="http://domoticz.sourceforge.net/version_" + systemname + "_" + machine + ".h";
 				//HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=DownloadNewVersion&amp;idgoal=2",revfile);
 			}
 			else
 			{
-				szURL="http://domoticz.sourceforge.net/beta/svnversion.h";
+				//szURL="http://domoticz.sourceforge.net/beta/svnversion.h";
+				szURL="http://domoticz.sourceforge.net/beta/version_" + systemname + "_" + machine + ".h";
 				//HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=DownloadNewVersion&amp;idgoal=1",revfile);
 			}
 			if (!HTTPClient::GET(szURL,revfile))
@@ -6348,13 +6362,6 @@ std::string CWebServer::GetJSonPage()
 			int version=atoi(szAppVersion.substr(szAppVersion.find(".")+1).c_str());
 			if (version>=atoi(strarray[2].c_str()))
 				goto exitjson;
-			utsname my_uname;
-			if (uname(&my_uname)<0)
-				goto exitjson;
-			std::string systemname=my_uname.sysname;
-			std::string machine=my_uname.machine;
-
-			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
 			if (((machine!="armv6l")&&(machine!="armv7l"))||(strstr(my_uname.release,"ARCH+")!=NULL))
 				goto exitjson;	//only Raspberry Pi for now
 			root["status"]="OK";

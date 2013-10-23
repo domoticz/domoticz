@@ -11,6 +11,7 @@ Version 1.0.xxx (Oktober xxth 2013)
 - Implemented: Dashboard/Lights/Scenes now displays a webcam icon when used in a Camera Setup
 - Fixed: Creating a virtual device when there where no devices in the system did not work
 - Implemented: Room Plan editor, now possible to add Scenes/Groups
+- Changed: Lua scripts, now only works when file ends with .lua
 
 Version 1.0.1087 (Oktober 16th 2013)
 - Implemented: Login page (solves the caching problems)
