@@ -2539,7 +2539,7 @@ std::string CWebServer::GetJSonPage()
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT ID, Active, Username, Password, Rights, RemoteSharing FROM USERS ORDER BY ID ASC";
+		szQuery << "SELECT ID, Active, Username, Password, Rights, RemoteSharing, TabsEnabled FROM USERS ORDER BY ID ASC";
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -2555,6 +2555,7 @@ std::string CWebServer::GetJSonPage()
 				root["result"][ii]["Password"]=base64_decode(sd[3]);
 				root["result"][ii]["Rights"]=atoi(sd[4].c_str());
 				root["result"][ii]["RemoteSharing"]=atoi(sd[5].c_str());
+				root["result"][ii]["TabsEnabled"]=atoi(sd[6].c_str());
 				ii++;
 			}
 		}
@@ -5969,12 +5970,17 @@ std::string CWebServer::GetJSonPage()
 
 			bool bHaveUser=(m_pWebEm->m_actualuser!="");
 			int urights=3;
+			unsigned long UserID=0;
 			if (bHaveUser)
 			{
 				int iUser=-1;
 				iUser=FindUser(m_pWebEm->m_actualuser.c_str());
 				if (iUser!=-1)
+				{
 					urights=(int)m_users[iUser].userrights;
+					UserID=m_users[iUser].ID;
+				}
+				
 			}
 			root["statuscode"]=urights;
 
@@ -5993,26 +5999,41 @@ std::string CWebServer::GetJSonPage()
 			root["WindScale"]=m_pMain->m_sql.m_windscale*10.0f;
 			root["WindSign"]=m_pMain->m_sql.m_windsign;
 
-			if (m_pMain->m_sql.GetPreferencesVar("EnableTabLights", nValue))
-			{
-				root["result"]["EnableTabLights"]=nValue;
+			int bEnableTabLight=1;
+			int bEnableTabScenes=1;
+			int bEnableTabTemp=1;
+			int bEnableTabWeather=1;
+			int bEnableTabUtility=1;
+
+			if (UserID!=0) {
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT TabsEnabled FROM Users WHERE (ID==" << UserID << ")";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					int TabsEnabled=atoi(result[0][0].c_str());
+					bEnableTabLight=(TabsEnabled&(1<<0));
+					bEnableTabScenes=(TabsEnabled&(1<<1));
+					bEnableTabTemp=(TabsEnabled&(1<<2));
+					bEnableTabWeather=(TabsEnabled&(1<<3));
+					bEnableTabUtility=(TabsEnabled&(1<<4));
+				}
 			}
-			if (m_pMain->m_sql.GetPreferencesVar("EnableTabTemp", nValue))
+			else
 			{
-				root["result"]["EnableTabTemp"]=nValue;
+				m_pMain->m_sql.GetPreferencesVar("EnableTabLights", bEnableTabLight);
+				m_pMain->m_sql.GetPreferencesVar("EnableTabScenes", bEnableTabScenes);
+				m_pMain->m_sql.GetPreferencesVar("EnableTabTemp", bEnableTabTemp);
+				m_pMain->m_sql.GetPreferencesVar("EnableTabWeather", bEnableTabWeather);
+				m_pMain->m_sql.GetPreferencesVar("EnableTabUtility", bEnableTabUtility);
 			}
-			if (m_pMain->m_sql.GetPreferencesVar("EnableTabWeather", nValue))
-			{
-				root["result"]["EnableTabWeather"]=nValue;
-			}
-			if (m_pMain->m_sql.GetPreferencesVar("EnableTabUtility", nValue))
-			{
-				root["result"]["EnableTabUtility"]=nValue;
-			}
-			if (m_pMain->m_sql.GetPreferencesVar("EnableTabScenes", nValue))
-			{
-				root["result"]["EnableTabScenes"]=nValue;
-			}
+
+			root["result"]["EnableTabLights"]=bEnableTabLight;
+			root["result"]["EnableTabScenes"]=bEnableTabScenes;
+			root["result"]["EnableTabTemp"]=bEnableTabTemp;
+			root["result"]["EnableTabWeather"]=bEnableTabWeather;
+			root["result"]["EnableTabUtility"]=bEnableTabUtility;
 		}
 		else if (cparam=="sendnotification")
 		{
@@ -8011,12 +8032,14 @@ std::string CWebServer::GetJSonPage()
 			std::string password=m_pWebEm->FindValue("password");
 			std::string srights=m_pWebEm->FindValue("rights");
 			std::string sRemoteSharing=m_pWebEm->FindValue("RemoteSharing");
+			std::string sTabsEnabled=m_pWebEm->FindValue("TabsEnabled");
 			if (
 				(senabled=="")||
 				(username=="")||
 				(password=="")||
 				(srights=="")||
-				(sRemoteSharing=="")
+				(sRemoteSharing=="")||
+				(sTabsEnabled=="")
 				)
 				goto exitjson;
 			int rights=atoi(srights.c_str());
@@ -8031,12 +8054,13 @@ std::string CWebServer::GetJSonPage()
 			root["status"]="OK";
 			root["title"]="AddUser";
 			sprintf(szTmp,
-				"INSERT INTO Users (Active, Username, Password, Rights, RemoteSharing) VALUES (%d,'%s','%s','%d','%d')",
+				"INSERT INTO Users (Active, Username, Password, Rights, RemoteSharing, TabsEnabled) VALUES (%d,'%s','%s','%d','%d','%d')",
 				(senabled=="true")?1:0,
 				base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
 				base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
 				rights,
-				(sRemoteSharing=="true")?1:0
+				(sRemoteSharing=="true")?1:0,
+				atoi(sTabsEnabled.c_str())
 				);
 			result=m_pMain->m_sql.query(szTmp);
 			LoadUsers();
@@ -8063,12 +8087,14 @@ std::string CWebServer::GetJSonPage()
 			std::string password=m_pWebEm->FindValue("password");
 			std::string srights=m_pWebEm->FindValue("rights");
 			std::string sRemoteSharing=m_pWebEm->FindValue("RemoteSharing");
+			std::string sTabsEnabled=m_pWebEm->FindValue("TabsEnabled");
 			if (
 				(senabled=="")||
 				(username=="")||
 				(password=="")||
 				(srights=="")||
-				(sRemoteSharing=="")
+				(sRemoteSharing=="")||
+				(sTabsEnabled=="")
 				)
 				goto exitjson;
 			int rights=atoi(srights.c_str());
@@ -8085,12 +8111,13 @@ std::string CWebServer::GetJSonPage()
 			root["title"]="UpdateUser";
 
 			sprintf(szTmp,
-				"UPDATE Users SET Active=%d, Username='%s', Password='%s', Rights=%d, RemoteSharing=%d WHERE (ID == %s)",
+				"UPDATE Users SET Active=%d, Username='%s', Password='%s', Rights=%d, RemoteSharing=%d, TabsEnabled=%d WHERE (ID == %s)",
 				(senabled=="true")?1:0,
 				base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
 				base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
 				rights,
 				(sRemoteSharing=="true")?1:0,
+				atoi(sTabsEnabled.c_str()),
 				idx.c_str()
 				);
 			result=m_pMain->m_sql.query(szTmp);

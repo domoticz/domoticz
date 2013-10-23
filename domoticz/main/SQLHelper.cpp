@@ -15,7 +15,7 @@
 #include "../webserver/Base64.h"
 #include "mainstructs.h"
 
-#define DB_VERSION 30
+#define DB_VERSION 31
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -218,6 +218,7 @@ const char *sqlCreateUsers =
 "[Username] VARCHAR(200) NOT NULL, "
 "[Password] VARCHAR(200) NOT NULL, "
 "[Rights] INTEGER DEFAULT 255, "
+"[TabsEnabled] INTEGER DEFAULT 255, "
 "[RemoteSharing] INTEGER DEFAULT 0);";
 
 const char *sqlCreateMeter =
@@ -696,6 +697,10 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion<30)
 		{
 			query("ALTER TABLE DeviceToPlansMap ADD COLUMN [DevSceneType] INTEGER default 0");
+		}
+		if (dbversion<31)
+		{
+			query("ALTER TABLE Users ADD COLUMN [TabsEnabled] INTEGER default 255");
 		}
     }
 	UpdatePreferencesVar("DB_Version",DB_VERSION);

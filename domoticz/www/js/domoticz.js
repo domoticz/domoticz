@@ -1407,35 +1407,45 @@ function EnableDisableTabs()
 				$.myglobals.windsign=data.WindSign;
 			}
 
+			var bAnyTabEnabled=false;
 			if (data.result["EnableTabLights"]==0) {
 				$("#mLightSwitches").hide();
 			}
 			else {
 				$("#mLightSwitches").show();
+				bAnyTabEnabled=true;
 			}
 			if (data.result["EnableTabScenes"]==0) {
 				$("#mScenes").hide();
 			}
 			else {
 				$("#mScenes").show();
+				bAnyTabEnabled=true;
 			}
 			if (data.result["EnableTabTemp"]==0) {
 				$("#mTemperature").hide();
 			}
 			else {
 				$("#mTemperature").show();
+				bAnyTabEnabled=true;
 			}
 			if (data.result["EnableTabWeather"]==0) {
 				$("#mWeather").hide();
 			}
 			else {
 				$("#mWeather").show();
+				bAnyTabEnabled=true;
 			}
 			if (data.result["EnableTabUtility"]==0) {
 				$("#mUtility").hide();
 			}
 			else {
 				$("#mUtility").show();
+				bAnyTabEnabled=true;
+			}
+			if (bAnyTabEnabled==false) {
+				//nothing enabled, no need to show dashboard tab
+				$("#mDashboard").hide();
 			}
 		 },
 		 error: function(){

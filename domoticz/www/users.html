@@ -24,6 +24,7 @@
 				<th align="left" data-i18n="Name">Name</th>
 				<th width="80" align="center" data-i18n="Rights">Rights</th>
 				<th width="120" align="center" data-i18n="Sharing">Sharing</th>
+				<th width="80" align="center" data-i18n="Devices">Devices</th>
 			</tr>
 		</thead>
 	</table>
@@ -42,15 +43,15 @@
 			<td><input type="checkbox" id="enabled" checked></td>
 		</tr>
 		<tr>
-			<td align="right" style="width:110px"><label for="name"><span data-i18n="Username"></span>:</label></td>
+			<td align="right" style="width:110px"><label for="username"><span data-i18n="Username"></span>:</label></td>
 			<td><input type="text" id="username" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 		</tr>
 		<tr>
-			<td align="right" style="width:110px"><label for="name"><span data-i18n="Password"></span>:</label></td>
+			<td align="right" style="width:110px"><label for="userpassword"><span data-i18n="Password"></span>:</label></td>
 			<td><input type="password" id="userpassword" name="userpassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 		</tr>
 		<tr>
-			<td align="right" style="width:110px"><label for="name"><span data-i18n="Rights"></span>:</label></td>
+			<td align="right" style="width:110px"><label for="comborights"><span data-i18n="Rights"></span>:</label></td>
 			<td><select id="comborights" style="width:110px" class="combobox ui-corner-all">
 					<option value="0" data-i18n="Viewer">Viewer</option>
 					<option value="1" data-i18n="User">User</option>
@@ -59,8 +60,18 @@
 			</td>
 		</tr>
 		<tr>
-			<td align="right" style="width:80px"><label for="enabled"><span data-i18n="Sharing"></span>:</label></td>
-			<td><input type="checkbox" id="enablesharing"> <span data-i18n="(Enables remote sharing of devices with this user)"></span></td>
+			<td align="right" style="width:80px"><label for="enablesharing"><span data-i18n="Sharing"></span>:</label></td>
+			<td><input type="checkbox" id="enablesharing"> <label for="enablesharing"><span data-i18n="(Enables remote sharing of devices with this user)"></span></label></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:80px; vertical-align:top;"><label><span data-i18n="ActiveMenus"></span>:</label></td>
+			<td>
+				<input type="checkbox" id="EnableTabLights" name="EnableTabLights"/> <label for="EnableTabLights"><span data-i18n="Switches"></span></label></br>
+				<input type="checkbox" id="EnableTabScenes" name="EnableTabScenes"/> <label for="EnableTabScenes"><span data-i18n="Scenes"></span></label></br>
+				<input type="checkbox" id="EnableTabTemp" name="EnableTabTemp"/> <label for="EnableTabTemp"><span data-i18n="Temperature"></span></label></br>
+				<input type="checkbox" id="EnableTabWeather" name="EnableTabWeather"/> <label for="EnableTabWeather"><span data-i18n="Weather"></span></label></br>
+				<input type="checkbox" id="EnableTabUtility" name="EnableTabUtility"/> <label for="EnableTabUtility"><span data-i18n="Utility"></span></label></br>
+			</td>
 		</tr>
 		<tr>
 			<td></td>
@@ -112,7 +123,23 @@ function GetUserSettings()
 	}
 	csettings.rights=$("#usercontent #userparamstable #comborights").val();
 	csettings.bEnableSharing=$('#usercontent #userparamstable #enablesharing').is(":checked");
-	
+
+	csettings.TabsEnabled=0;
+	if ($('#usercontent #userparamstable #EnableTabLights').is(":checked")) {
+		csettings.TabsEnabled|=(1<<0);
+	}
+	if ($('#usercontent #userparamstable #EnableTabScenes').is(":checked")) {
+		csettings.TabsEnabled|=(1<<1);
+	}
+	if ($('#usercontent #userparamstable #EnableTabTemp').is(":checked")) {
+		csettings.TabsEnabled|=(1<<2);
+	}
+	if ($('#usercontent #userparamstable #EnableTabWeather').is(":checked")) {
+		csettings.TabsEnabled|=(1<<3);
+	}
+	if ($('#usercontent #userparamstable #EnableTabUtility').is(":checked")) {
+		csettings.TabsEnabled|=(1<<4);
+	}
 	return csettings;
 }
 
@@ -124,7 +151,13 @@ function UpdateUser(idx)
 	}
 
 	$.ajax({
-		 url: "json.htm?type=command&param=updateuser&idx=" + idx + "&enabled=" + csettings.bEnabled + "&username=" + csettings.username + "&password=" + csettings.password + "&rights=" + csettings.rights + "&RemoteSharing=" + csettings.bEnableSharing,
+		 url: "json.htm?type=command&param=updateuser&idx=" + idx + 
+				"&enabled=" + csettings.bEnabled + 
+				"&username=" + csettings.username + 
+				"&password=" + csettings.password + 
+				"&rights=" + csettings.rights + 
+				"&RemoteSharing=" + csettings.bEnableSharing +
+				"&TabsEnabled=" + csettings.TabsEnabled,
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {
@@ -195,7 +228,12 @@ function AddUser()
 	}
 
 	$.ajax({
-		 url: "json.htm?type=command&param=adduser&enabled=" + csettings.bEnabled +"&username=" + csettings.username + "&password=" + csettings.password + "&rights=" + csettings.rights + "&RemoteSharing=" + csettings.bEnableSharing,
+		 url: "json.htm?type=command&param=adduser&enabled=" + csettings.bEnabled +
+				"&username=" + csettings.username + 
+				"&password=" + csettings.password + 
+				"&rights=" + csettings.rights + 
+				"&RemoteSharing=" + csettings.bEnableSharing +
+				"&TabsEnabled=" + csettings.TabsEnabled,
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {
@@ -247,8 +285,9 @@ function RefreshUserTable()
 			
 			var sharedstr=$.i18n("No");
 			if (item.RemoteSharing==true) {
-				sharedstr=$.i18n('Yes') +'  <span class="label label-info" onclick="EditSharedDevices(' + item.idx + ',\'' + item.Username + '\');" onmouseover="cursorhand()" onmouseout="cursordefault()">' + $.i18n('Set Devices') +'</span>';
+				sharedstr=$.i18n('Yes');
 			}
+			var devicesstr='<span class="label label-info" onclick="EditSharedDevices(' + item.idx + ',\'' + item.Username + '\');" onmouseover="cursorhand()" onmouseout="cursordefault()">' + $.i18n('Set Devices') +'</span>';
 			
 			var addId = oTable.fnAddData( {
 				"DT_RowId": item.idx,
@@ -257,10 +296,12 @@ function RefreshUserTable()
 				"Password": item.Password,
 				"Rights": item.rights,
 				"Sharing": item.RemoteSharing,
+				"TabsEnabled": item.TabsEnabled,
 				"0": enabledstr,
 				"1": item.Username,
 				"2": rightstr,
-				"3": sharedstr
+				"3": sharedstr,
+				"4": devicesstr
 			} );
 		});
 		/* Add a click handler to the rows - this could be used as a callback */
@@ -289,6 +330,13 @@ function RefreshUserTable()
 					$("#usercontent #userparamstable #userpassword").val(data["Password"]);
 					$("#usercontent #userparamstable #comborights").val(data["Rights"]);
 					$('#usercontent #userparamstable #enablesharing').prop('checked',(data["Sharing"]=="1"));
+					
+					var EnabledTabs=parseInt(data["TabsEnabled"]);
+					$('#usercontent #userparamstable #EnableTabLights').prop('checked',(EnabledTabs & 1));
+					$('#usercontent #userparamstable #EnableTabScenes').prop('checked',(EnabledTabs & 2));
+					$('#usercontent #userparamstable #EnableTabTemp').prop('checked',(EnabledTabs & 4));
+					$('#usercontent #userparamstable #EnableTabWeather').prop('checked',(EnabledTabs & 8));
+					$('#usercontent #userparamstable #EnableTabUtility').prop('checked',(EnabledTabs & 16));
 				}
 			}
 		}); 
