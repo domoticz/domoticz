@@ -14,7 +14,6 @@ Version 1.0.xxx (Oktober xxth 2013)
 - Changed: Lua scripts, now only works when file ends with .lua
 - Implemented: Option to enable/disable menu tabs per user
 
-
 Version 1.0.1087 (Oktober 16th 2013)
 - Implemented: Login page (solves the caching problems)
 - Fixed: buttons add sensor/switch buttons now hidden for 'viewer' users

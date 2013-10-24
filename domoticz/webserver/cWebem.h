@@ -169,6 +169,7 @@ namespace http {
 			void SetZipPassword(std::string password);
 			std::string m_zippassword;
 			std::string m_actualuser;
+			std::string m_guestuser;
 			std::string m_lastRequestPath;
 			std::string m_outputfilename;
 			std::map<time_t,WebEmSession> m_sessionids;

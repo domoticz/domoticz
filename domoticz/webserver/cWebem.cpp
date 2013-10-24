@@ -1032,7 +1032,14 @@ int cWebemRequestHandler::authorize(const request& req)
 			(uPos==std::string::npos)||
 			(pPos==std::string::npos)
 			)
+		{
+			if (myWebem->m_guestuser!="")
+			{
+				myWebem->m_actualuser=myWebem->m_guestuser;
+				return 1;
+			}
 			return 0;
+		}
 		size_t ulen=strlen("username=");
 		std::string tmpuname=req.uri.substr(uPos+ulen,pPos-uPos-ulen-1);
 		std::string tmpupass=req.uri.substr(pPos+strlen("username="));
