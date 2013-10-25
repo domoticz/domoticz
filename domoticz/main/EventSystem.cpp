@@ -902,7 +902,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
     
     float thisDeviceTemp = 0;
     unsigned char thisDeviceHum = 0;
-    int thisDeviceBaro = 0;
+    float thisDeviceBaro = 0;
 	float thisDeviceUtility = 0;
     
     if (m_tempValuesByName.size()>0)
@@ -1089,6 +1089,12 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
                     OpenURL(luaString);
                     scriptTrue = true;
                 }
+				else if (std::string(lua_tostring(lua_state, -2))== "UpdateDevice")
+				{
+					std::string luaString = lua_tostring(lua_state, -1);
+					UpdateDevice(luaString);
+					scriptTrue = true;
+				}
                 else
 				{
                     if (ScheduleEvent(lua_tostring(lua_state, -2),lua_tostring(lua_state, -1),filename)) {
@@ -1127,6 +1133,36 @@ void CEventSystem::report_errors(lua_State *L, int status)
         _log.Log(LOG_ERROR,"%s",lua_tostring(L, -1));
         lua_pop(L, 1); // remove error message
     }
+}
+
+void CEventSystem::UpdateDevice(const std::string &DevParams)
+{
+	std::vector<std::string> strarray;
+	StringSplit(DevParams, "|", strarray);
+	if (strarray.size()!=3)
+		return; //Invalid!
+	std::string idx=strarray[0];
+	std::string nvalue=strarray[1];
+	std::string svalue=strarray[2];
+	//Get device parameters
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+	szQuery << "SELECT HardwareID FROM DeviceStatus WHERE (ID==" << idx << ")";
+	result=m_pMain->m_sql.query(szQuery.str());
+	if (result.size()>0)
+	{
+		time_t now = time(0);
+		struct tm ltime;
+		localtime_r(&now,&ltime);
+
+		char szLastUpdate[40];
+		sprintf(szLastUpdate,"%04d-%02d-%02d %02d:%02d:%02d",ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET nValue=" << nvalue << ", sValue='" << svalue << "', LastUpdate='" << szLastUpdate << "' WHERE (ID = " << idx << ")";
+		result = m_pMain->m_sql.query(szQuery.str());
+	}
 }
 
 void CEventSystem::SendEventNotification(const std::string &Subject, const std::string &Body)
