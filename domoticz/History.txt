@@ -13,6 +13,7 @@ Version 1.0.xxx (Oktober xxth 2013)
 - Implemented: Room Plan editor, now possible to add Scenes/Groups
 - Changed: Lua scripts, now only works when file ends with .lua
 - Implemented: Option to enable/disable menu tabs per user
+- Implemented: Dim levels in steps of 5%
 
 Version 1.0.1087 (Oktober 16th 2013)
 - Implemented: Login page (solves the caching problems)
