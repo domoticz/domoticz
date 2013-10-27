@@ -1766,6 +1766,7 @@ bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::strin
 		if (sValue!="")
 		{
 			//send message to Prowl
+			sValue=stdstring_trim(sValue);
 			sprintf(szURL,"http://api.prowlapp.com/publicapi/add?apikey=%s&application=Domoticz&event=%s&description=%s&priority=0",
 				sValue.c_str(),uencode.URLEncode(Subject).c_str(),uencode.URLEncode(notimessage).c_str());
 			if (!HTTPClient::GET(szURL,sResult))
@@ -1784,6 +1785,7 @@ bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::strin
 		if (sValue!="")
 		{
 			//send message to Prowl
+			sValue=stdstring_trim(sValue);
 			sprintf(szURL,"http://www.notifymyandroid.com/publicapi/notify?apikey=%s&application=Domoticz&event=%s&priority=0&description=%s",
 				sValue.c_str(),uencode.URLEncode(Subject).c_str(),uencode.URLEncode(notimessage).c_str());
 			if (!HTTPClient::GET(szURL,sResult))
