@@ -20,7 +20,7 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-	//#define DEBUG_ZWAVE_INT
+	#define DEBUG_ZWAVE_INT
 #endif
 
 bool isInt(const std::string s)
@@ -314,7 +314,13 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 					}
 					else if (instance["commandClasses"]["48"]["data"]["1"].empty()==false)
 					{
-						_device.intvalue=instance["commandClasses"]["48"]["data"]["1"]["level"]["value"].asInt();
+						std::string vstring=instance["commandClasses"]["48"]["data"]["1"]["level"]["value"].asString();
+						if (vstring=="true")
+							_device.intvalue=255;
+						else if (vstring=="false")
+							_device.intvalue=0;
+						else
+							_device.intvalue=atoi(vstring.c_str());
 						bFoundSensor=true;
 					}
 				}
@@ -624,8 +630,24 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 	{
 	case ZDTYPE_SWITCHNORMAL:
 	case ZDTYPE_SWITCHDIMMER:
-		//switch
-		pDevice->intvalue=obj["value"].asInt();
+		{
+			//switch
+			std::string vstring="";
+			if (obj["value"].empty()==false)
+				vstring=obj["value"].asString();
+			else if (obj["level"].empty()==false)
+			{
+				if (obj["level"]["value"].empty()==false)
+					vstring=obj["level"]["value"].asString();
+			}
+
+			if (vstring=="true")
+				pDevice->intvalue=255;
+			else if (vstring=="false")
+				pDevice->intvalue=0;
+			else
+				pDevice->intvalue=atoi(vstring.c_str());
+		}
 		break;
 	case ZDTYPE_SENSOR_POWER:
 		//meters
