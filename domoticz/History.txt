@@ -15,6 +15,7 @@ Version 1.0.xxx (Oktober xxth 2013)
 - Implemented: Option to enable/disable menu tabs per user
 - Implemented: Dim levels in steps of 5%
 - Fixed: Notifications (NMA) was not send if the API key contained spaces
+- Fixed: Siren Switch type can now be switched on/off
 
 Version 1.0.1087 (Oktober 16th 2013)
 - Implemented: Login page (solves the caching problems)

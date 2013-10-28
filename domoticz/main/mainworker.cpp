@@ -6840,9 +6840,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.LIGHTING1.unitcode=Unit;
 			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING1.cmnd))
 				return false;
-			if ((switchtype==STYPE_Doorbell)||(switchtype==STYPE_X10Siren))
+			if (switchtype==STYPE_Doorbell)
 			{
-				level=15;
 				int rnvalue=0;
 				m_sql.GetPreferencesVar("DoorbellCommand", rnvalue);
 				if (rnvalue==0)
