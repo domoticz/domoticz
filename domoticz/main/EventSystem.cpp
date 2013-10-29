@@ -9,6 +9,8 @@
 #include <iostream>
 #include "../httpclient/HTTPClient.h"
 #include "localtime_r.h"
+//#include <codecvt>
+//#include <locale>
 
 #ifdef WIN32
     #include "dirent_windows.h"
@@ -117,7 +119,18 @@ void CEventSystem::Do_Work()
 	_log.Log(LOG_NORM,"EventSystem stopped...");
 
 }
-
+/*
+std::string utf8_to_string(const char *utf8str, const std::locale& loc)
+{
+	// UTF-8 to wstring
+	std::wstring_convert<std::codecvt_utf8<wchar_t>> wconv;
+	std::wstring wstr = wconv.from_bytes(utf8str);
+	// wstring to string
+	std::vector<char> buf(wstr.size());
+	std::use_facet<std::ctype<wchar_t>>(loc).narrow(wstr.data(), wstr.data() + wstr.size(), '?', buf.data());
+	return std::string(buf.data(), buf.size());
+}
+*/
 
 void CEventSystem::GetCurrentStates()
 {
@@ -136,7 +149,8 @@ void CEventSystem::GetCurrentStates()
             _tDeviceStatus sitem;
 			std::stringstream s_str( sd[0] );
 			s_str >> sitem.ID;
-            sitem.deviceName = sd[1];
+            sitem.deviceName = sd[1];//utf8_to_string(sd[1].c_str(),std::locale(".1252"));
+
             std::stringstream nv_str( sd[2] );
 			nv_str >> sitem.nValue;
             sitem.sValue	= sd[3];

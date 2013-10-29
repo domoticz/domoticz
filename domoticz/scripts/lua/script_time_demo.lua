@@ -5,6 +5,8 @@
 -- 
 -- copy this script and change the "name" part, all scripts named "demo" are ignored. 
 --
+-- Make sure the encoding is UTF8 of the file
+--
 -- ingests tables: otherdevices,otherdevices_svalues
 -- 
 -- otherdevices and otherdevices_svalues are two item array for all devices: 

@@ -16,6 +16,7 @@ Version 1.0.xxx (Oktober xxth 2013)
 - Implemented: Dim levels in steps of 5%
 - Fixed: Notifications (NMA) was not send if the API key contained spaces
 - Fixed: Siren Switch type can now be switched on/off
+- Changed: Lua example scripts now in UTF8
 
 Version 1.0.1087 (Oktober 16th 2013)
 - Implemented: Login page (solves the caching problems)

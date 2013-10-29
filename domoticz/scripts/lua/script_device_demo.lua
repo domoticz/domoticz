@@ -5,6 +5,8 @@
 -- 
 -- copy this script and change the "name" part, all scripts named "demo" are ignored. 
 --
+-- Make sure the encoding is UTF8 of the file
+--
 -- ingests tables: devicechanged, otherdevices,otherdevices_svalues
 --
 -- device changed contains state and svalues for the device that changed.
