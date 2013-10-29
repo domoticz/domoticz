@@ -1019,7 +1019,7 @@ void CRazberry::WriteToHardware(const char *pdata, const unsigned char length)
 		pDevice=FindDevice(nodeID,instanceID,ZDTYPE_SWITCHNORMAL);
 		if (pDevice)
 		{
-			if (pSen->LIGHTING2.cmnd==light2_sOff)
+			if ((pSen->LIGHTING2.cmnd==light2_sOff)||(pSen->LIGHTING2.cmnd==light2_sGroupOff))
 				svalue=0;
 			else
 				svalue=255;
@@ -1030,9 +1030,9 @@ void CRazberry::WriteToHardware(const char *pdata, const unsigned char length)
 			if (!pDevice)
 				return;//ehh dont know you!
 
-			if (pSen->LIGHTING2.cmnd==light2_sOff)
+			if ((pSen->LIGHTING2.cmnd==light2_sOff)||(pSen->LIGHTING2.cmnd==light2_sGroupOff))
 				svalue=0;
-			else if (pSen->LIGHTING2.cmnd==light2_sOn)
+			else if ((pSen->LIGHTING2.cmnd==light2_sOn)||(pSen->LIGHTING2.cmnd==light2_sGroupOn))
 				svalue=255;
 			else
 			{
