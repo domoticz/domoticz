@@ -4,7 +4,9 @@
     <script type="text/javascript" src="js/blockly_compressed.js"></script>
     <script type="text/javascript" src="js/en_compressed.js"></script>
     <script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
-    <scrip  type="text/javascript" src="js/jquery-ui-1.10.1.custom.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/bootbox.min.js"></script> 
+    <script type="text/javascript" src="js/jquery-ui-1.10.1.custom.min.js"></script>
 	<script type="text/javascript" src="js/noty/jquery.noty.js"></script>
     <script type="text/javascript" src="js/noty/layouts/top.js"></script>
     <script type="text/javascript" src="js/noty/layouts/topRight.js"></script>
@@ -415,7 +417,7 @@
 	  
       function delete_block() {
         var id = document.getElementById("savedEvents").value;
-        if (id!=null) {
+        if ((id!=null)&&(id!="")) {
 	        $.ajax({
 			  	url: "json.htm?type=events&param=delete&event="+id, 
 			  	async: false, 
@@ -432,7 +434,9 @@
 				}
 			  });
 		}
-        else {bootbox.alert("Nothing selected!")}
+        else {
+			bootbox.alert("Nothing selected!")
+		}
 	  }
 	  
 	  	  
@@ -527,9 +531,13 @@
 				  	});
 			  } 	    
 			}
-			else {bootbox.alert("Save aborted!")}
+			else {
+				bootbox.alert("Save aborted!")
+			}
 		}
-      	else {bootbox.alert('no event name entered!');}
+      	else {
+			bootbox.alert('no event name entered!');
+		}
       }
 
 	  function show_states() {
