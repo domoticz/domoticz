@@ -5676,7 +5676,7 @@ std::string CWebServer::GetJSonPage()
 			//check if it is not already there
 			szQuery.clear();
 			szQuery.str("");
-			szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << activeidx << ") AND (DevSceneType=="<< activetype << ")";
+			szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << activeidx << ") AND (DevSceneType=="<< activetype << ") AND (PlanID==" << idx << ")";
 			result2=m_pMain->m_sql.query(szQuery.str());
 			if (result2.size()==0)
 			{
