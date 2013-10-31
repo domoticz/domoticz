@@ -6005,7 +6005,7 @@ std::string CWebServer::GetJSonPage()
 			int bEnableTabWeather=1;
 			int bEnableTabUtility=1;
 
-			if (UserID!=0) {
+			if ((UserID!=0)&&(UserID!=10000)) {
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT TabsEnabled FROM Users WHERE (ID==" << UserID << ")";
