@@ -11,7 +11,9 @@
 
 #include <ctime>
 
-//#define DEBUG_DAVIS
+#ifdef _DEBUG
+	#define DEBUG_DAVIS
+#endif
 
 #define RETRY_DELAY 30
 #define DAVIS_READ_INTERVAL 30
@@ -305,7 +307,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 //	fwrite(data,1,len,fOut);
 //	fclose(fOut);
 	unsigned char szBuffer[200];
-	FILE *fIn=fopen("E:\\davis.bin","rb+");
+	FILE *fIn=fopen("E:\\davis2.bin","rb+");
 	//FILE *fIn=fopen("davisrob.bin","rb+");
 	fread(&szBuffer,1,100,fIn);
 	fclose(fIn);
@@ -651,6 +653,11 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	if ((pData[44]!=0xFF)&&(pData[45]!=0x7F))
 	{
 		unsigned int solarRadiation=((unsigned int)((pData[45] << 8) | pData[44]));//Watt/M2
+		_tGeneralDevice gdevice;
+		gdevice.subtype=sTypeSolarRadiation;
+		gdevice.floatval1=float(solarRadiation);
+		sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+
 	}
 
 	//Soil Moistures
