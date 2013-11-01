@@ -33,6 +33,7 @@ The WiringPi project
 #include <string.h>
 #include <string>
 #ifdef __arm__
+	#include <linux/types.h>
     #include <linux/spi/spidev.h>
     #include <unistd.h>
     #include <sys/ioctl.h>
