@@ -2107,9 +2107,13 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					m_pMain->m_sql.GetPreferencesVar("ElectricVoltage", voltage);
 
 					if (displaytype==0)
-						sprintf(szData,"%.1f A, %.1f A, %.1f A",atof(strarray[0].c_str()),atof(strarray[1].c_str()),atof(strarray[2].c_str()));
+					{
+						sprintf(szData,"%.1f A, %.1f A, %.1f A, Total: %.3f Wh",atof(strarray[0].c_str()),atof(strarray[1].c_str()),atof(strarray[2].c_str()),atof(strarray[3].c_str()));
+					}
 					else
-						sprintf(szData,"%d Watt, %d Watt, %d Watt",int(atof(strarray[0].c_str())*voltage),int(atof(strarray[1].c_str())*voltage),int(atof(strarray[2].c_str())*voltage));
+					{
+						sprintf(szData,"%d Watt, %d Watt, %d Watt, Total: %.3f Wh",int(atof(strarray[0].c_str())*voltage),int(atof(strarray[1].c_str())*voltage),int(atof(strarray[2].c_str())*voltage),atof(strarray[3].c_str()));
+					}
 					root["result"][ii]["Data"]=szData;
 					root["result"][ii]["displaytype"]=displaytype;
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;

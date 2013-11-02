@@ -249,7 +249,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/updatedomo DESTINATION /opt/domoticz P
 # build a CPack driven installer package
 INCLUDE(InstallRequiredSystemLibraries)
 
-SET(CPACK_GENERATOR "DEB;ZIP")
+SET(CPACK_GENERATOR "DEB")
 SET(CPACK_PACKAGE_NAME "domoticz")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${domoticz}-A program for home automation (Domotica).")
 SET(CPACK_PACKAGE_VENDOR "Domoticz.com")

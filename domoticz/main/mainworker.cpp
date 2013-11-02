@@ -5574,12 +5574,6 @@ unsigned long long MainWorker::decode_Current_Energy(const int HwdID, const tRBU
 
 		if (pResponse->CURRENT_ENERGY.count == 0)
 		{
-			//usage = (CDbl(pResponse->CURRENT_ENERGY.total1)) * &H10000000000 + CDbl(pResponse->CURRENT_ENERGY.total2)) * &H100000000 + CDbl(pResponse->CURRENT_ENERGY.total3)) * &H1000000 _
-				//+ pResponse->CURRENT_ENERGY.total4) * &H10000 + pResponse->CURRENT_ENERGY.total5) * &H100 + pResponse->CURRENT_ENERGY.total6)) / 223.666
-			//usage = double( (pResponse->CURRENT_ENERGY.total1 * 0x10000000000) + (pResponse->CURRENT_ENERGY.total2 * 0x100000000) + (pResponse->CURRENT_ENERGY.total3 * 0x1000000)
-			//+ (pResponse->CURRENT_ENERGY.total4 * 0x10000) + (pResponse->CURRENT_ENERGY.total5 * 0x100) + pResponse->CURRENT_ENERGY.total6) / 223.666;
-			//usage = double( (pResponse->CURRENT_ENERGY.total3 * 0x1000000)
-				//+ (pResponse->CURRENT_ENERGY.total4 * 0x10000) + (pResponse->CURRENT_ENERGY.total5 * 0x100) + pResponse->CURRENT_ENERGY.total6) / 223.666;
 			sprintf(szTmp,"total usage   = %.3f Wh", usage);
 			WriteMessage(szTmp);
 		}

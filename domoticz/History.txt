@@ -19,6 +19,7 @@ Version 1.0.xxx (Oktober xxth 2013)
 - Changed: Lua example scripts now in UTF8
 - Implemented: Solar Radiation for Davis
 - Fixed: Enable/disable menus for remote admin users
+- Implemented: CM180i, now also displaying total usage
 
 Version 1.0.1087 (Oktober 16th 2013)
 - Implemented: Login page (solves the caching problems)
