@@ -298,6 +298,20 @@ void CEventSystem::GetCurrentMeasurementStates()
 				utilityval=(float)atof(splitresults[4].c_str());
 				isUtility = true;
 				break;
+			case pTypeGeneral:
+				{
+					if (sitem.subType==sTypeVisibility)
+					{
+						utilityval=(float)atof(splitresults[0].c_str());
+						isUtility = true;
+					}
+					else if (sitem.subType==sTypeSolarRadiation)
+					{
+						utilityval=(float)atof(splitresults[0].c_str());
+						isUtility = true;
+					}
+				}
+				break;
 			case pTypeP1Gas:
 				{
 					//get lowest value of today
