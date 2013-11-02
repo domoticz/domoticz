@@ -981,9 +981,9 @@ function ShowFavorites()
 			var totalItems=data.result.length;
 			if (totalItems>0) {
 				bShowRoomplan=true;
-				if (window.myglobals.ismobile==true) {
-					bShowRoomplan=false;
-				}
+//				if (window.myglobals.ismobile==true) {
+	//				bShowRoomplan=false;
+		//		}
 				if (bShowRoomplan==true) {
 					$.each(data.result, function(i,item) {
 						$.RoomPlans.push({
