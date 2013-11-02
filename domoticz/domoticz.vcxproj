@@ -105,6 +105,9 @@
     <ClInclude Include="hardware\DavisLoggerSerial.h" />
     <ClInclude Include="hardware\Dummy.h" />
     <ClInclude Include="hardware\hidapi.h" />
+    <ClInclude Include="hardware\OTGWBase.h" />
+    <ClInclude Include="hardware\OTGWSerial.h" />
+    <ClInclude Include="hardware\OTGWTCP.h" />
     <ClInclude Include="hardware\PiFace.h" />
     <ClInclude Include="hardware\Razberry.h" />
     <ClInclude Include="hardware\Rego6XXSerial.h" />
@@ -173,6 +176,9 @@
     <ClCompile Include="hardware\DavisLoggerSerial.cpp" />
     <ClCompile Include="hardware\Dummy.cpp" />
     <ClCompile Include="hardware\libusbwinusbbridge.cpp" />
+    <ClCompile Include="hardware\OTGWBase.cpp" />
+    <ClCompile Include="hardware\OTGWSerial.cpp" />
+    <ClCompile Include="hardware\OTGWTCP.cpp" />
     <ClCompile Include="hardware\PiFace.cpp" />
     <ClCompile Include="hardware\Razberry.cpp" />
     <ClCompile Include="hardware\S0MeterBase.cpp" />

@@ -93,6 +93,9 @@
     <Filter Include="Devices\PiFace">
       <UniqueIdentifier>{9d351bef-effa-483f-bc87-03d85479a74f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\OpenTherm-Gateway">
+      <UniqueIdentifier>{9b834e19-65cb-442c-bfd7-c39e44279cb7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -301,6 +304,15 @@
     <ClInclude Include="hardware\S0MeterTCP.h">
       <Filter>Devices\S0 Meter</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\OTGWBase.h">
+      <Filter>Devices\OpenTherm-Gateway</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\OTGWSerial.h">
+      <Filter>Devices\OpenTherm-Gateway</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\OTGWTCP.h">
+      <Filter>Devices\OpenTherm-Gateway</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -479,6 +491,15 @@
     </ClCompile>
     <ClCompile Include="hardware\S0MeterTCP.cpp">
       <Filter>Devices\S0 Meter</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\OTGWBase.cpp">
+      <Filter>Devices\OpenTherm-Gateway</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\OTGWSerial.cpp">
+      <Filter>Devices\OpenTherm-Gateway</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\OTGWTCP.cpp">
+      <Filter>Devices\OpenTherm-Gateway</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

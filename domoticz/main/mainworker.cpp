@@ -27,6 +27,7 @@
 #include "../hardware/Dummy.h"
 #include "../hardware/PiFace.h"
 #include "../hardware/S0MeterSerial.h"
+#include "../hardware/OTGWSerial.h"
 //#include "../hardware/S0MeterTCP.h"
 
 #include "mainstructs.h"
@@ -327,6 +328,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Rego6XX:
 	case HTYPE_DavisVantage:
 	case HTYPE_S0SmartMeter:
+	case HTYPE_OpenThermGateway:
 		{
 			//USB/Serial
 #if defined WIN32
@@ -370,6 +372,10 @@ bool MainWorker::AddHardwareFromParams(
 			else if (Type==HTYPE_S0SmartMeter)
 			{
 				pHardware = new S0MeterSerial(ID,szSerialPort, 9600, Mode1, Mode2, Mode3, Mode4);
+			}
+			else if (Type==HTYPE_OpenThermGateway)
+			{
+				pHardware = new OTGWSerial(ID,szSerialPort, 9600);
 				//pHardware = new S0MeterTCP(ID,"127.0.0.1",2001, Mode1, Mode2, Mode3, Mode4);
 			}
 		}

@@ -152,6 +152,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_Dummy,				"Dummy (Does nothing, use for virtual switches only)" },
 		{ HTYPE_PiFace,				"PiFace - Raspberry Pi IO expansion board"},
 		{ HTYPE_S0SmartMeter,		"S0 Meter USB" },
+		{ HTYPE_OpenThermGateway,	"OpenTherm Gateway USB" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

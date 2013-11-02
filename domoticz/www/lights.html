@@ -7,7 +7,7 @@
 				<td align="right" style="width:120px"><label for="name"><span data-i18n="Name"></span>: </label></td>
 				<td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 			</tr>
-			<tr>
+			<tr id="SwitchType">
 				<td align="right"><label for="comboswitchtype"><span data-i18n="Switch Type"></span>: </label></td>
 				<td><select id="comboswitchtype" style="width:150px" class="combobox ui-corner-all">
 					<!--#embed switchtypes -->
@@ -811,26 +811,38 @@ function SaveLightSwitch()
 	var bValid = true;
 	bValid = bValid && checkLength( $("#lightcontent #devicename"), 2, 100 );
 	if ( bValid ) {
-		var addjvalstr="";
-		var switchtype=$("#lightcontent #comboswitchtype").val();
-		if (switchtype==8) {
-			addjvalstr="&addjvalue=" + $("#lightcontent #motionoffdelay").val();
+		if ($.stype=="Security") {
+			$.ajax({
+				 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#lightcontent #devicename").val() + '&used=true',
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+						ShowLights();
+				 }
+			});
 		}
-		else if ((switchtype==0)||(switchtype==9)||(switchtype==11)) {
-			addjvalstr="&addjvalue=" + $("#lightcontent #offdelay").val();
+		else {
+			var addjvalstr="";
+			var switchtype=$("#lightcontent #comboswitchtype").val();
+			if (switchtype==8) {
+				addjvalstr="&addjvalue=" + $("#lightcontent #motionoffdelay").val();
+			}
+			else if ((switchtype==0)||(switchtype==9)||(switchtype==11)) {
+				addjvalstr="&addjvalue=" + $("#lightcontent #offdelay").val();
+			}
+			var CustomImage=0;
+			if (switchtype==0) {
+				CustomImage=$('#lightcontent #comboswitchicon').data('ddslick').selectedIndex;
+			}
+			$.ajax({
+				 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#lightcontent #devicename").val() + '&switchtype=' + $("#lightcontent #comboswitchtype").val() + '&customimage=' + CustomImage + '&used=true' + addjvalstr ,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+						ShowLights();
+				 }
+			});
 		}
-		var CustomImage=0;
-		if (switchtype==0) {
-			CustomImage=$('#lightcontent #comboswitchicon').data('ddslick').selectedIndex;
-		}
-		$.ajax({
-			 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#lightcontent #devicename").val() + '&switchtype=' + $("#lightcontent #comboswitchtype").val() + '&customimage=' + CustomImage + '&used=true' + addjvalstr ,
-			 async: false, 
-			 dataType: 'json',
-			 success: function(data) {
-					ShowLights();
-			 }
-		});
 	}
 }
 
@@ -938,11 +950,12 @@ function AddSubDevice()
 	});
 }
 
-function EditLightDevice(idx,name,switchtype,addjvalue,isslave,customimage)
+function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage)
 {
 	clearInterval($.myglobals.refreshTimer);
 	$.devIdx=idx;
 	$.isslave=isslave;
+	$.stype=stype;
 
 	var oTable;
 	
@@ -967,8 +980,34 @@ function EditLightDevice(idx,name,switchtype,addjvalue,isslave,customimage)
 
 	$("#lightcontent #devicename").val(name);
 	
-	$("#lightcontent #comboswitchtype").change(function() {
-		var switchtype=$("#lightcontent #comboswitchtype").val();
+	if ($.stype=="Security") {
+		$("#lightcontent #SwitchType").hide();
+		$("#lightcontent #OffDelayDiv").hide();
+		$("#lightcontent #MotionDiv").hide();
+		$("#lightcontent #SwitchIconDiv").hide();
+	}
+	else {
+		$("#lightcontent #SwitchType").show();
+		$("#lightcontent #comboswitchtype").change(function() {
+			var switchtype=$("#lightcontent #comboswitchtype").val();
+			$("#lightcontent #OffDelayDiv").hide();
+			$("#lightcontent #MotionDiv").hide();
+			$("#lightcontent #SwitchIconDiv").hide();
+			if (switchtype==8) {
+				$("#lightcontent #MotionDiv").show();
+				$("#lightcontent #motionoffdelay").val(addjvalue);
+			}
+			else if ((switchtype==0)||(switchtype==9)||(switchtype==11)) {
+				$("#lightcontent #OffDelayDiv").show();
+				$("#lightcontent #offdelay").val(addjvalue);
+			}
+			if (switchtype==0) {
+				$("#lightcontent #SwitchIconDiv").show();
+			}
+		});
+		
+		$("#lightcontent #comboswitchtype").val(switchtype);
+
 		$("#lightcontent #OffDelayDiv").hide();
 		$("#lightcontent #MotionDiv").hide();
 		$("#lightcontent #SwitchIconDiv").hide();
@@ -983,41 +1022,25 @@ function EditLightDevice(idx,name,switchtype,addjvalue,isslave,customimage)
 		if (switchtype==0) {
 			$("#lightcontent #SwitchIconDiv").show();
 		}
-	});
-	
-	$("#lightcontent #comboswitchtype").val(switchtype);
+		$("#lightcontent #combosubdevice").html("");
+		
+		$.each($.LightsAndSwitches, function(i,item){
+			var option = $('<option />');
+			option.attr('value', item.idx).text(item.name);
+			$("#lightcontent #combosubdevice").append(option);
+		});
 
-	$("#lightcontent #OffDelayDiv").hide();
-	$("#lightcontent #MotionDiv").hide();
-	$("#lightcontent #SwitchIconDiv").hide();
-	if (switchtype==8) {
-		$("#lightcontent #MotionDiv").show();
-		$("#lightcontent #motionoffdelay").val(addjvalue);
+		$('#lightcontent #comboswitchicon').ddslick({
+			data: $.ddData,
+			width:200,
+			selectText: "Select Switch Icon",
+			imagePosition:"left"
+		});
+		//alert(customimage);
+		 var i=customimage;
+		 $('#lightcontent #comboswitchicon').ddslick('select', {index: i });
 	}
-	else if ((switchtype==0)||(switchtype==9)||(switchtype==11)) {
-		$("#lightcontent #OffDelayDiv").show();
-		$("#lightcontent #offdelay").val(addjvalue);
-	}
-	if (switchtype==0) {
-		$("#lightcontent #SwitchIconDiv").show();
-	}
- 	$("#lightcontent #combosubdevice").html("");
 	
-	$.each($.LightsAndSwitches, function(i,item){
-		var option = $('<option />');
-		option.attr('value', item.idx).text(item.name);
-		$("#lightcontent #combosubdevice").append(option);
-	});
-
-	$('#lightcontent #comboswitchicon').ddslick({
-		data: $.ddData,
-		width:200,
-		selectText: "Select Switch Icon",
-		imagePosition:"left"
-	});
-	//alert(customimage);
-	 var i=customimage;
-	 $('#lightcontent #comboswitchicon').ddslick('select', {index: i });
 	RefreshSubDeviceTable(idx);
 }
 
@@ -1598,7 +1621,7 @@ function ShowLights()
                 '<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Log">Log</a> ';
           if (window.my_config.userrights==2) {
 			  xhtm+=
-					'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.IsSubDevice + ', ' + item.CustomImage +');" data-i18n="Edit">Edit</a> ';
+					'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + '\'' + item.Type + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.IsSubDevice + ', ' + item.CustomImage +');" data-i18n="Edit">Edit</a> ';
 						if (bAddTimer == true) {
 									if (item.Timers == "true") {
 										xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',' + bIsDimmer + ');" data-i18n="Timers">Timers</a> ';

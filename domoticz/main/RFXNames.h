@@ -67,6 +67,7 @@ enum _eHardwareTypes {
 	HTYPE_Dummy,
 	HTYPE_PiFace,
 	HTYPE_S0SmartMeter,
+	HTYPE_OpenThermGateway,
 	HTYPE_END
 };
 

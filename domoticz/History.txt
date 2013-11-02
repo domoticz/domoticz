@@ -21,6 +21,7 @@ Version 1.0.xxx (Oktober xxth 2013)
 - Fixed: Enable/disable menus for remote admin users
 - Implemented: CM180i, now also displaying total usage
 - Implemented: Room Selector now also vissible on mobile devices
+- Fixed: Editing (changing the name) of security devices
 
 Version 1.0.1087 (Oktober 16th 2013)
 - Implemented: Login page (solves the caching problems)
