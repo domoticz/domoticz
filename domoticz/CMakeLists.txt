@@ -176,6 +176,9 @@ hardware/S0MeterBase.cpp
 hardware/smbus.cpp
 hardware/Wunderground.cpp
 hardware/PiFace.cpp
+hardware/OTGWBase.cpp
+hardware/OTGWSerial.cpp
+hardware/OTGWTCP.cpp
 tcpserver/TCPServer.cpp
 tcpserver/TCPClient.cpp
 webserver/cWebem.cpp
