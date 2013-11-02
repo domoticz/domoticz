@@ -6793,11 +6793,6 @@ bool MainWorker::SetRFXCOMHardwaremodes(const int HardwareID, const unsigned cha
 
 bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, unsigned char level, const bool IsTesting)
 {
-	int HardwareID = atoi(sd[0].c_str());
-	int hindex=FindDomoticzHardware(HardwareID);
-	if (hindex==-1)
-		return false;
-
 	unsigned long ID;
 	std::stringstream s_strid;
 	s_strid << std::hex << sd[1];
@@ -6806,6 +6801,32 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	unsigned char ID2=(unsigned char)((ID&0x00FF0000)>>16);
 	unsigned char ID3=(unsigned char)((ID&0x0000FF00)>>8);
 	unsigned char ID4=(unsigned char)((ID&0x000000FF));
+
+	int HardwareID = atoi(sd[0].c_str());
+
+	if (HardwareID==1000)
+	{
+		//Special cases
+		if (ID==0x00148702)
+		{
+			int iSecStatus=2;
+			if (switchcmd=="Disarm")
+				iSecStatus=0;
+			else if (switchcmd=="Arm Home")
+				iSecStatus=1;
+			else if (switchcmd=="Arm Away")
+				iSecStatus=2;
+			else
+				return false;
+			UpdateDomoticzSecurityStatus(iSecStatus);
+			return true;
+		}
+	}
+
+	int hindex=FindDomoticzHardware(HardwareID);
+	if (hindex==-1)
+		return false;
+
 
 	unsigned char Unit=atoi(sd[2].c_str());
 	unsigned char dType=atoi(sd[3].c_str());
