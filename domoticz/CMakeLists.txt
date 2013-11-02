@@ -241,6 +241,9 @@ endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 install(TARGETS domoticz DESTINATION /opt/domoticz)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION /opt/domoticz)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/License.txt DESTINATION /opt/domoticz)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/History.txt DESTINATION /opt/domoticz)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/svnversion.h DESTINATION /opt/domoticz)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts DESTINATION /opt/domoticz)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/updatedomo DESTINATION /opt/domoticz PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ)
 
 # build a CPack driven installer package
