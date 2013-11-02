@@ -453,6 +453,20 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 					InsertOrUpdateDevice(_device,false);
 				}
 			}
+			else if (instance["commandClasses"]["156"].empty()==false)
+			{
+				const Json::Value inVal=instance["commandClasses"]["156"]["data"];
+				for (Json::Value::iterator itt2=inVal.begin(); itt2!=inVal.end(); ++itt2)
+				{
+					const std::string sKey=itt2.key().asString();
+					if (!isInt(sKey))
+						continue; //not a scale
+					_device.intvalue=(*itt2)["sensorSate"]["value"].asInt();
+					_device.commandClassID=156;
+					_device.devType = ZDTYPE_SWITCHNORMAL;
+					InsertOrUpdateDevice(_device,false);
+				}
+			}
 
 			//COMMAND_CLASS_CLIMATE_CONTROL_SCHEDULE 70
 		}
@@ -510,6 +524,12 @@ void CRazberry::UpdateDeviceBatteryStatus(int nodeID, int value)
 void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 {
 	_tZWaveDevice *pDevice=NULL;
+
+	if (
+		(path.find("srcId")!=std::string::npos)||
+		(path.find("sensorTime")!=std::string::npos)
+		)
+		return;
 
 	if (path.find("instances.0.commandClasses.128.data.last")!=std::string::npos)
 	{
