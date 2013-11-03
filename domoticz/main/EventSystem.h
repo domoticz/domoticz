@@ -81,14 +81,28 @@ private:
     std::vector<_tEventItem> m_events;
     
 	std::map<std::string,float> m_tempValuesByName;
+	std::map<std::string,float> m_dewValuesByName;
+	std::map<std::string,float> m_rainValuesByName;
+	std::map<std::string,float> m_rainLastHourValuesByName;
+	std::map<std::string,float> m_uvValuesByName;
     std::map<std::string,unsigned char> m_humValuesByName;
 	std::map<std::string,int> m_baroValuesByName;
 	std::map<std::string,float> m_utilityValuesByName;
+	std::map<std::string,float> m_winddirValuesByName;
+	std::map<std::string,float> m_windspeedValuesByName;
+	std::map<std::string,float> m_windgustValuesByName;
 
-    std::map<unsigned long long,float> m_tempValuesByID;
+	std::map<unsigned long long,float> m_tempValuesByID;
+	std::map<unsigned long long,float> m_dewValuesByID;
+	std::map<unsigned long long,float> m_rainValuesByID;
+	std::map<unsigned long long,float> m_rainLastHourValuesByID;
+	std::map<unsigned long long,float> m_uvValuesByID;
     std::map<unsigned long long,unsigned char> m_humValuesByID;
     std::map<unsigned long long,int> m_baroValuesByID;
 	std::map<unsigned long long,float> m_utilityValuesByID;
+	std::map<unsigned long long,float> m_winddirValuesByID;
+	std::map<unsigned long long,float> m_windspeedValuesByID;
+	std::map<unsigned long long,float> m_windgustValuesByID;
 
     void reportMissingDevice (const int deviceID, const std::string &EventName, const unsigned long long eventID);
     int getSunRiseSunSetMinutes(const std::string &what);
