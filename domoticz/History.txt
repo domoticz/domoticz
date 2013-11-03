@@ -25,7 +25,7 @@ Version 1.0.xxx (Oktober xxth 2013)
 - Implemented: Added Visibility/Solar Radiation to Lua scripts
 - Implemented: Razberry Smoke Alarm
 - Changed: Rain values will now update in realtime (was every 5 minutes)
-- Implemented: Added otherdevices_dewpointto Lua scripts
+- Implemented: Added otherdevices_dewpoint to Lua scripts
 - Implemented: Added otherdevices_rain to Lua scripts
 - Implemented: Added otherdevices_rain_lasthour to Lua scripts
 - Implemented: Added otherdevices_uv to Lua scripts
