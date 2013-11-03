@@ -224,7 +224,7 @@ void CEventSystem::GetCurrentMeasurementStates()
         float temp=0;
         float chill=0;
         unsigned char humidity=0;
-        int barometer=0;
+        float barometer=0;
 		float rainmm=0;
 		float rainmmlasthour=0;
 		float uv=0;
@@ -277,12 +277,12 @@ void CEventSystem::GetCurrentMeasurementStates()
 				humidity=atoi(splitresults[1].c_str());
                 if (sitem.subType==sTypeTHBFloat)
 				{
-					barometer=int(atof(splitresults[3].c_str())*10.0f);
+					barometer=(float)atof(splitresults[3].c_str());
 					isBaroFloat=true;
 				}
 				else
 				{
-					barometer=atoi(splitresults[3].c_str());
+					barometer=(float)atof(splitresults[3].c_str());
 				}
 				dewpoint=(float)CalculateDewPoint(temp,humidity);
                 isTemp = true;
@@ -292,7 +292,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 				break;
 			case pTypeTEMP_BARO:
 				temp=(float)atof(splitresults[0].c_str());
-				barometer=int(atof(splitresults[1].c_str())*10.0f);
+				barometer=(float)atof(splitresults[1].c_str());
                 isTemp = true;
                 isBaro = true;
 				break;
@@ -574,12 +574,6 @@ void CEventSystem::GetCurrentMeasurementStates()
             m_humValuesByID[sitem.ID] = humidity;
         }
         if (isBaro) {
-			/*
-            if (isBaroFloat==false)
-				sprintf(szTmp,"%d",barometer);
-			else
-				sprintf(szTmp,"%.1f",float(barometer)/10.0f);
-            */
             m_baroValuesByName[sitem.deviceName] = barometer;
             m_baroValuesByID[sitem.ID] = barometer;
         }
@@ -840,7 +834,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
     }
     if (m_baroValuesByID.size()>0) {
         lua_createtable(lua_state, (int)m_baroValuesByID.size(), 0);
-        std::map<unsigned long long,int>::iterator p;
+        std::map<unsigned long long,float>::iterator p;
         for(p = m_baroValuesByID.begin(); p != m_baroValuesByID.end(); ++p)
 		{
             lua_pushnumber( lua_state, (lua_Number)p->first);
@@ -1228,7 +1222,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
     if (m_baroValuesByName.size()>0)
 	{
         lua_createtable(lua_state, (int)m_baroValuesByName.size(), 0);
-        std::map<std::string,int>::iterator p;
+        std::map<std::string,float>::iterator p;
         for(p = m_baroValuesByName.begin(); p != m_baroValuesByName.end(); ++p)
 		{
             lua_pushstring( lua_state, p->first.c_str());
