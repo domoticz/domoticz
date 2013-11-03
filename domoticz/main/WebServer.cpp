@@ -1634,7 +1634,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						if (dSubType!=sTypeRAINWU)
 						{
 							float total_min=(float)atof(sd2[0].c_str());
-							float total_max=(float)atof(sd2[1].c_str());
+							float total_max=(float)atof(strarray[1].c_str());
 							rate=(float)atof(sd2[2].c_str());
 							if (dSubType==sTypeRAIN2)
 								rate/=100.0f;

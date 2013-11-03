@@ -24,6 +24,7 @@ Version 1.0.xxx (Oktober xxth 2013)
 - Fixed: Editing (changing the name) of security devices
 - Implemented: Added Visibility/Solar Radiation to Lua scripts
 - Implemented: Razberry Smoke Alarm
+- Changed: Rain values will now update realtime (was every 5 minutes)
 
 Version 1.0.1087 (Oktober 16th 2013)
 - Implemented: Login page (solves the caching problems)
