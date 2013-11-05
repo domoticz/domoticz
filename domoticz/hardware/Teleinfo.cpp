@@ -201,7 +201,7 @@ void Teleinfo::MatchLine()
 			unsigned char * pos = (unsigned char *)strchr((char*)m_buffer, ' ');
 			if (pos == NULL)
 				continue;
-			int position = (int)pos - (int)m_buffer;
+			int position = int(pos - (unsigned char*)&m_buffer);
 			strncpy(value, (char*)&(m_buffer[position + 1]), t.width);
 		}
 
