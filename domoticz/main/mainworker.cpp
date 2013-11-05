@@ -5603,7 +5603,7 @@ unsigned long long MainWorker::decode_Current_Energy(const int HwdID, const tRBU
 		int voltage=230;
 		m_sql.GetPreferencesVar("ElectricVoltage", voltage);
 
-		sprintf(szTmp,"%ld;%.2f",round((CurrentChannel1+CurrentChannel2+CurrentChannel3)*voltage),usage);
+		sprintf(szTmp,"%ld;%.2f",(long)round((CurrentChannel1+CurrentChannel2+CurrentChannel3)*voltage),usage);
 		m_sql.UpdateValue(HwdID, ID.c_str(),Unit,pTypeENERGY,sTypeELEC3,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
 
 	}
