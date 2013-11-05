@@ -5579,8 +5579,34 @@ unsigned long long MainWorker::decode_Current_Energy(const int HwdID, const tRBU
 					double(pResponse->CURRENT_ENERGY.total5) * 0x100 +
 					pResponse->CURRENT_ENERGY.total6
 				   ) / 223.666;
+
 	if (pResponse->CURRENT_ENERGY.count!=0)
+	{
+		//no usage provided, get the last usage
 		usage=0;
+		std::vector<std::vector<std::string> > result2;
+		std::stringstream szQuery2;
+		szQuery2 << "SELECT nValue,sValue FROM DeviceStatus WHERE (HardwareID=" << HwdID << " AND DeviceID='" << ID << "' AND Unit=" << int(Unit) << " AND Type=" << int(devType) << " AND SubType=" << int(subType) << ")";
+		result2=m_sql.query(szQuery2.str());
+		if (result2.size()>0)
+		{
+			std::vector<std::string> strarray;
+			StringSplit(result2[0][1], ";", strarray);
+			if (strarray.size()==4)
+			{
+				usage = atof(strarray[3].c_str());
+			}
+		}
+	}
+	else
+	{
+		int voltage=230;
+		m_sql.GetPreferencesVar("ElectricVoltage", voltage);
+
+		sprintf(szTmp,"%ld;%.2f",round((CurrentChannel1+CurrentChannel2+CurrentChannel3)*voltage),usage);
+		m_sql.UpdateValue(HwdID, ID.c_str(),Unit,pTypeENERGY,sTypeELEC3,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
+
+	}
 	sprintf(szTmp,"%.1f;%.1f;%.1f;%.3f",CurrentChannel1,CurrentChannel2,CurrentChannel3,usage);
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
 	PrintDeviceName(devname);
