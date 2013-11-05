@@ -22,6 +22,9 @@
 //-----------------------------------------------------------------------------
 
 /*
+SDK version 6.09
+	BBQ structure added
+
 SDK version 6.08
 	FAN structure and pTypeFan and sTypeSiemensSF01 added
 	Lighting5 - Livolo added
@@ -491,6 +494,10 @@ SDK version 4.9
 #define thermostat3_On2nd 0x5
 #define thermostat3_sStop 0x6
 
+//types for BBQ temperature
+#define pTypeBBQ 0x4E
+#define sTypeBBQ1 0x1  //Maverick ET-732
+
 //types for temperature+rain
 #define pTypeTEMP_RAIN 0x4F
 #define sTypeTR1 0x1  //WS1200
@@ -941,6 +948,21 @@ typedef union tRBUF {
 		BYTE	filler : 4;
 		BYTE	rssi : 4;
 	} THERMOSTAT3;
+
+	struct {
+		BYTE	packetlength;
+		BYTE	packettype;
+		BYTE	subtype;
+		BYTE	seqnbr;
+		BYTE	id1;
+		BYTE	id2;
+		BYTE	sensor1h;
+		BYTE	sensor1l;
+		BYTE	sensor2h;
+		BYTE	sensor2l;
+		BYTE	battery_level : 4;
+		BYTE	rssi : 4;
+	} BBQ;
 
 	struct {
 		BYTE	packetlength;

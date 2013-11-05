@@ -335,6 +335,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeThermostat, "Thermostat" , "thermostat" },
 		{ pTypeTEMP_RAIN, "Temp + Rain" , "Temp + Rain" },
 		{ pTypeChime, "Chime" , "Chime" },
+		{ pTypeBBQ, "BBQ Meter", "bbq" },
 		
 		{  0,NULL,NULL }
 	};
@@ -511,6 +512,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 
 		{ pTypeChime, sTypeByronSX, "ByronSX" },
 		{ pTypeTEMP_RAIN, sTypeTR1, "Alecto WS1200" },
+
+		{ pTypeBBQ, sTypeBBQ1, "Maverick ET-732" },
 
 		{  0,0,NULL }
 	};

@@ -34,6 +34,8 @@ Version 1.0.xxx (Oktober xxth 2013)
 - Implemented: Added otherdevices_windgust to Lua scripts
 - Implemented: Rain, Short Log in graph
 - Implemented: Teleinfo UDF French power meter
+- Implemented: Livolo hardware supported (switches/dimmers)
+- Implemented: BBQ hardware supported (Maverick ET-732)
 
 
 Version 1.0.1087 (Oktober 16th 2013)

@@ -1149,6 +1149,10 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			WriteMessage("Chime",false);
 			DeviceRowIdx=decode_Chime(HwdID, (tRBUF *)pRXCommand);
 			break;
+		case pTypeBBQ:
+			WriteMessage("BBQ",false);
+			DeviceRowIdx=decode_BBQ(HwdID, (tRBUF *)pRXCommand);
+			break;
 		default:
 			_log.Log(LOG_ERROR,"UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
 			break;
@@ -6578,6 +6582,101 @@ unsigned long long MainWorker::decode_General(const int HwdID, const tRBUF *pRes
 			break;
 		}
 	}
+	return DevRowIdx;
+}
+
+//BBQ sensor has two temperature sensors, add them as two temperature devices
+unsigned long long MainWorker::decode_BBQ(const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[100];
+	std::string devname;
+
+	unsigned char devType=pTypeBBQ;
+	unsigned char subType=pResponse->BBQ.subtype;
+	sprintf(szTmp,"%d",(pResponse->BBQ.id1 * 256) + pResponse->BBQ.id2);
+	std::string ID=szTmp;
+
+	unsigned char Unit=pResponse->BBQ.id2;
+
+	unsigned char cmnd=0;
+	unsigned char SignalLevel=pResponse->BBQ.rssi;
+	unsigned char BatteryLevel = 0;
+	if ((pResponse->BBQ.battery_level &0x0F) == 0)
+		BatteryLevel=0;
+	else
+		BatteryLevel=100;
+
+	unsigned long long DevRowIdx=0;
+
+	float temp1,temp2;
+	temp1=float((pResponse->BBQ.sensor1h * 256) + pResponse->BBQ.sensor1l);// / 10.0f;
+	temp2=float((pResponse->BBQ.sensor2h * 256) + pResponse->BBQ.sensor2l);// / 10.0f;
+
+	sprintf(szTmp,"%.0f;%.0f",temp1,temp2);
+	DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
+	PrintDeviceName(devname);
+	if (m_verboselevel == EVBL_ALL)
+	{
+		switch (pResponse->BBQ.subtype)
+		{
+		case sTypeBBQ1:
+			WriteMessage("subtype       = Maverick ET-732");
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->BBQ.packettype, pResponse->BBQ.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+
+		sprintf(szTmp,"Sequence nbr  = %d", pResponse->BBQ.seqnbr);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"ID            = %d", (pResponse->BBQ.id1 * 256) + pResponse->BBQ.id2);
+		WriteMessage(szTmp);
+
+		sprintf(szTmp,"Sensor1 Temp  = %.1f C", temp1);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"Sensor2 Temp  = %.1f C", temp2);
+		WriteMessage(szTmp);
+
+		sprintf(szTmp,"Signal level  = %d", pResponse->TEMP.rssi);
+		WriteMessage(szTmp);
+
+		if ((pResponse->TEMP.battery_level &0x0F) == 0)
+			WriteMessage("Battery       = Low");
+		else
+			WriteMessage("Battery       = OK");
+	}
+
+	//Send the two sensors
+
+	//Temp
+	RBUF tsen;
+	memset(&tsen,0,sizeof(RBUF));
+	tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
+	tsen.TEMP.packettype=pTypeTEMP;
+	tsen.TEMP.subtype=sTypeTEMP6;
+	tsen.TEMP.battery_level=9;
+	tsen.TEMP.rssi=6;
+	tsen.TEMP.id1=pResponse->BBQ.id1;
+	tsen.TEMP.id2=pResponse->BBQ.id2;
+
+	tsen.TEMP.tempsign=(temp1>=0)?0:1;
+	int at10=round(abs(temp1*10.0f));
+	tsen.TEMP.temperatureh=(BYTE)(at10/256);
+	at10-=(tsen.TEMP.temperatureh*256);
+	tsen.TEMP.temperaturel=(BYTE)(at10);
+	decode_Temp(HwdID, (const tRBUF*)&tsen.TEMP);
+
+	tsen.TEMP.id1=pResponse->BBQ.id2;
+	tsen.TEMP.id2=pResponse->BBQ.id1;
+
+	tsen.TEMP.tempsign=(temp2>=0)?0:1;
+	at10=round(abs(temp2*10.0f));
+	tsen.TEMP.temperatureh=(BYTE)(at10/256);
+	at10-=(tsen.TEMP.temperatureh*256);
+	tsen.TEMP.temperaturel=(BYTE)(at10);
+	decode_Temp(HwdID, (const tRBUF*)&tsen.TEMP);
+
 	return DevRowIdx;
 }
 

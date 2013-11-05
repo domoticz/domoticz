@@ -184,4 +184,5 @@ private:
 	unsigned long long decode_General(const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_Thermostat(const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_Chime(const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_BBQ(const int HwdID, const tRBUF *pResponse);
 };
