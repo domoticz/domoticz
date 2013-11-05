@@ -2955,7 +2955,7 @@ std::string CWebServer::GetJSonPage()
 			if (sensor=="temp")
 				dbasetable="Temperature";
 			else if (sensor=="rain")
-				dbasetable="Rain_Calendar";
+				dbasetable="Rain";
 			else if (sensor=="counter") 
 			{
 				if ((dType==pTypeP1Power)||(dType==pTypeCURRENT)||(dType==pTypeCURRENTENERGY))
@@ -3648,83 +3648,37 @@ std::string CWebServer::GetJSonPage()
 				root["status"]="OK";
 				root["title"]="Graph " + sensor + " " + srange;
 
-				char szDateStart[40];
-				char szDateEnd[40];
-
-				struct tm ltime;
-				ltime.tm_isdst=tm1.tm_isdst;
-				ltime.tm_hour=0;
-				ltime.tm_min=0;
-				ltime.tm_sec=0;
-				ltime.tm_year=tm1.tm_year;
-				ltime.tm_mon=tm1.tm_mon;
-				ltime.tm_mday=tm1.tm_mday;
-
-				sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
-
-				//Subtract one week
-
-				ltime.tm_mday -= 7;
-				time_t later = mktime(&ltime);
-				struct tm tm2;
-				localtime_r(&later,&tm2);
-
-				sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
+				int LastHour=-1;
+				float LastTotal=-1;
 
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "SELECT Total, Rate, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+				szQuery << "SELECT Total, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 				result=m_pMain->m_sql.query(szQuery.str());
-				int ii=0;
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
+					int ii=0;
 					for (itt=result.begin(); itt!=result.end(); ++itt)
 					{
 						std::vector<std::string> sd=*itt;
 
-						root["result"][ii]["d"]=sd[2].substr(0,16);
-						double mmval=atof(sd[0].c_str());
-						mmval*=AddjMulti;
-						sprintf(szTmp,"%.1f",mmval);
-						root["result"][ii]["mm"]=szTmp;
-						ii++;
+						int Hour=atoi(sd[1].substr(12,2).c_str());
+						if (Hour!=LastHour)
+						{
+							if (LastHour!=-1)
+							{
+								root["result"][ii]["d"]=sd[1].substr(0,16);
+								double mmval=(float)atof(sd[0].c_str())-LastTotal;
+								mmval*=AddjMulti;
+								sprintf(szTmp,"%.1f",mmval);
+								root["result"][ii]["mm"]=szTmp;
+								ii++;
+							}
+							LastHour=Hour;
+							LastTotal=(float)atof(sd[0].c_str());
+						}
 					}
-				}
-				//add today (have to calculate it)
-				szQuery.clear();
-				szQuery.str("");
-				if (dSubType!=sTypeRAINWU)
-				{
-					szQuery << "SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
-				}
-				else
-				{
-					szQuery << "SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "') ORDER BY ROWID DESC LIMIT 1";
-				}
-				result=m_pMain->m_sql.query(szQuery.str());
-				if (result.size()>0)
-				{
-					std::vector<std::string> sd=result[0];
-
-					float total_min=(float)atof(sd[0].c_str());
-					float total_max=(float)atof(sd[1].c_str());
-					int rate=atoi(sd[2].c_str());
-
-					double total_real=0;
-					if (dSubType!=sTypeRAINWU)
-					{
-						total_real=total_max-total_min;
-					}
-					else
-					{
-						total_real=total_max;
-					}
-					total_real*=AddjMulti;
-					sprintf(szTmp,"%.1f",total_real);
-					root["result"][ii]["d"]=szDateEnd;
-					root["result"][ii]["mm"]=szTmp;
-					ii++;
 				}
 			}
 			else if (sensor=="wind") {
@@ -3843,7 +3797,90 @@ std::string CWebServer::GetJSonPage()
 		}//day
 		else if (srange=="week")
 		{
-			if (sensor=="counter") 
+			if (sensor=="rain") {
+				root["status"]="OK";
+				root["title"]="Graph " + sensor + " " + srange;
+
+				char szDateStart[40];
+				char szDateEnd[40];
+
+				struct tm ltime;
+				ltime.tm_isdst=tm1.tm_isdst;
+				ltime.tm_hour=0;
+				ltime.tm_min=0;
+				ltime.tm_sec=0;
+				ltime.tm_year=tm1.tm_year;
+				ltime.tm_mon=tm1.tm_mon;
+				ltime.tm_mday=tm1.tm_mday;
+
+				sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
+
+				//Subtract one week
+
+				ltime.tm_mday -= 7;
+				time_t later = mktime(&ltime);
+				struct tm tm2;
+				localtime_r(&later,&tm2);
+
+				sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT Total, Rate, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				int ii=0;
+				if (result.size()>0)
+				{
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					for (itt=result.begin(); itt!=result.end(); ++itt)
+					{
+						std::vector<std::string> sd=*itt;
+
+						root["result"][ii]["d"]=sd[2].substr(0,16);
+						double mmval=atof(sd[0].c_str());
+						mmval*=AddjMulti;
+						sprintf(szTmp,"%.1f",mmval);
+						root["result"][ii]["mm"]=szTmp;
+						ii++;
+					}
+				}
+				//add today (have to calculate it)
+				szQuery.clear();
+				szQuery.str("");
+				if (dSubType!=sTypeRAINWU)
+				{
+					szQuery << "SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				}
+				else
+				{
+					szQuery << "SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "') ORDER BY ROWID DESC LIMIT 1";
+				}
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					std::vector<std::string> sd=result[0];
+
+					float total_min=(float)atof(sd[0].c_str());
+					float total_max=(float)atof(sd[1].c_str());
+					int rate=atoi(sd[2].c_str());
+
+					double total_real=0;
+					if (dSubType!=sTypeRAINWU)
+					{
+						total_real=total_max-total_min;
+					}
+					else
+					{
+						total_real=total_max;
+					}
+					total_real*=AddjMulti;
+					sprintf(szTmp,"%.1f",total_real);
+					root["result"][ii]["d"]=szDateEnd;
+					root["result"][ii]["mm"]=szTmp;
+					ii++;
+				}
+			}
+			else if (sensor=="counter") 
 			{
 				root["status"]="OK";
 				root["title"]="Graph " + sensor + " " + srange;

@@ -3383,10 +3383,10 @@ function ShowRainLog(contentdiv,backfunction,id,name)
   $.devName=name;
   var htmlcontent = '';
   htmlcontent='<p><center><h2>' + name + '</h2></center></p>\n';
-  htmlcontent+=$('#daymonthyearlog').html();
+  htmlcontent+=$('#dayweekmonthyearlog').html();
   $($.content).html(GetBackbuttonHTMLTable(backfunction)+htmlcontent);
   $($.content).i18n();
-  
+
   $.DayChart = $($.content + ' #daygraph');
   $.DayChart.highcharts({
       chart: {
@@ -3397,6 +3397,73 @@ function ShowRainLog(contentdiv,backfunction,id,name)
                 $.getJSON("json.htm?type=graph&sensor=rain&idx="+id+"&range=day",
                 function(data) {
                       var series = $.DayChart.highcharts().series[0];
+                      var datatable = [];
+                      
+                      $.each(data.result, function(i,item)
+                      {
+                        datatable.push( [GetUTCFromString(item.d), parseFloat(item.mm) ] );
+                      });
+                      series.setData(datatable);
+                });
+              }
+          }
+        },
+       credits: {
+          enabled: true,
+          href: "http://www.domoticz.com",
+          text: "Domoticz.com"
+        },
+        title: {
+            text: $.i18n('Rainfall') + ' ' + Get5MinuteHistoryDaysGraphTitle()
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            min: 0,
+            maxPadding: 0.2,
+            endOnTick: false,
+            title: {
+                text: $.i18n('Rainfall') + ' (mm)'
+            }
+        },
+        tooltip: {
+            formatter: function() {
+                    return ''+
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' mm';
+            }
+        },
+        plotOptions: {
+            column: {
+                minPointLength: 3,
+                pointPadding: 0.1,
+                groupPadding: 0,
+				dataLabels: {
+                        enabled: false,
+                        color: 'white'
+                }                
+            }
+        },
+        series: [{
+            name: 'mm',
+            color: 'rgba(3,190,252,0.8)'
+        }]
+        ,
+        legend: {
+            enabled: false
+        }
+    });
+
+  $.WeekChart = $($.content + ' #weekgraph');
+  $.WeekChart.highcharts({
+      chart: {
+          type: 'column',
+          events: {
+              load: function() {
+                  
+                $.getJSON("json.htm?type=graph&sensor=rain&idx="+id+"&range=week",
+                function(data) {
+                      var series = $.WeekChart.highcharts().series[0];
                       var datatable = [];
                       
                       $.each(data.result, function(i,item)
