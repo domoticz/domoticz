@@ -96,6 +96,9 @@
     <Filter Include="Devices\OpenTherm-Gateway">
       <UniqueIdentifier>{9b834e19-65cb-442c-bfd7-c39e44279cb7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Teleinfo">
+      <UniqueIdentifier>{9b098c6e-b49d-404b-b9a2-5904c1d92edd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -313,6 +316,9 @@
     <ClInclude Include="hardware\OTGWTCP.h">
       <Filter>Devices\OpenTherm-Gateway</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\Teleinfo.h">
+      <Filter>Devices\Teleinfo</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -500,6 +506,9 @@
     </ClCompile>
     <ClCompile Include="hardware\OTGWTCP.cpp">
       <Filter>Devices\OpenTherm-Gateway</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\Teleinfo.cpp">
+      <Filter>Devices\Teleinfo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

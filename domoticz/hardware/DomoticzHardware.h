@@ -25,6 +25,7 @@ class CDomoticzHardwareBase
 	friend class S0MeterTCP;
 	friend class OTGWSerial;
 	friend class OTGWTCP;
+	friend class Teleinfo;
 
 public: 
 	CDomoticzHardwareBase();
