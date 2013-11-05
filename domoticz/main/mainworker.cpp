@@ -3205,14 +3205,18 @@ unsigned long long MainWorker::decode_Lighting5(const int HwdID, const tRBUF *pR
 
 	unsigned char devType=pTypeLighting5;
 	unsigned char subType=pResponse->LIGHTING5.subtype;
-	if (subType != 	sTypeEMW100)
+	if ((subType != sTypeEMW100)&&(subType != sTypeLivolo))
 		sprintf(szTmp,"%02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 	else
 		sprintf(szTmp,"%02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 	std::string ID = szTmp;
 	unsigned char Unit=pResponse->LIGHTING5.unitcode;
 	unsigned char cmnd=pResponse->LIGHTING5.cmnd;
-	float flevel=(100.0f/31.0f)*float(pResponse->LIGHTING5.level);
+	float flevel;
+	if (subType==sTypeLivolo)
+		flevel=(100.0f/7.0f)*float(pResponse->LIGHTING5.level);
+	else
+		flevel=(100.0f/31.0f)*float(pResponse->LIGHTING5.level);
 	unsigned char SignalLevel=pResponse->LIGHTING5.rssi;
 
 	sprintf(szTmp,"%d",pResponse->LIGHTING5.level);
@@ -6992,7 +6996,32 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.LIGHTING5.level=level;
 			lcmd.LIGHTING5.filler=0;
 			lcmd.LIGHTING5.rssi=7;
-			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING5));
+			if (dSubType==sTypeLivolo)
+			{
+				if ((switchcmd=="Set Level")&&(level==0))
+				{
+					switchcmd="Off";
+					GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING5.cmnd);
+				}
+				if (switchcmd!="Off")
+				{
+					//Special Case, turn off first
+					unsigned char oldCmd=lcmd.LIGHTING5.cmnd;
+					lcmd.LIGHTING5.cmnd=light5_sLivoloAllOff;
+					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING5));
+					lcmd.LIGHTING5.cmnd=oldCmd;
+				}
+				if (switchcmd=="Set Level")
+				{
+					//dim value we have to send multiple times
+					for (int iDim=0; iDim<level; iDim++)
+						WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING5));
+				}
+				else
+					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING5));
+			}
+			else
+				WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING5));
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);

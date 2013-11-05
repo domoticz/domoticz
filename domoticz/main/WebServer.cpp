@@ -23,6 +23,8 @@
 
 #include "mainstructs.h"
 
+#define round(a) ( int ) ( a + .5 )
+
 extern std::string szStartupFolder;
 extern bool bIsRaspberryPi;
 extern std::string szAppVersion;
@@ -1203,7 +1205,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				if (switchtype==STYPE_Dimmer)
 				{
 					root["result"][ii]["Level"]=LastLevel;
-					int iLevel=int((float(maxDimLevel)/100.0f)*LastLevel);
+					int iLevel=round((float(maxDimLevel)/100.0f)*LastLevel);
 					root["result"][ii]["LevelInt"]=iLevel;
 				}
 				else

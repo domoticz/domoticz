@@ -133,6 +133,7 @@
 						<option value="11">HE EU</option>
 						<option value="12">ANSLUT</option>
 						<option value="13">LightwaveRF</option>
+						<option value="18">Linovo</option>
           </select></td>
 		    </tr>
 		    </table>
@@ -168,7 +169,7 @@
 								<select id="combocmd4" style="width:60px" class="combobox ui-corner-all"></select>
 							</td>
 						</tr>
-						<tr>
+						<tr id="lighting2paramsUnitCode">
 							<td align="right"><label>Unit Code:</label></td>
 							<td><select id="combounitcode" style="width:60px" class="combobox ui-corner-all">
 									</select>
@@ -1799,8 +1800,13 @@ function UpdateAddManualDialog()
 		totunits=4;
 	}
 	else if (lighttype==13) {
+		//LightwaveRF
 		bIsType5=1;
 		totunits=16;
+	}
+	else if (lighttype==18) {
+		//Linovo
+		bIsType5=1;
 	}
 	if (lighttype==6) {
 		$('#dialog-addmanuallightdevice #lightparams3 #combogroupcode >option').remove();
@@ -1833,15 +1839,21 @@ function UpdateAddManualDialog()
 		$("#dialog-addmanuallightdevice #lighting3params").hide();
 	}
 	else {
-			if (bIsType5==0) {
-				$("#dialog-addmanuallightdevice #lighting2params #combocmd1").show();
+		$("#dialog-addmanuallightdevice #lighting2paramsUnitCode").show();
+		$("#dialog-addmanuallightdevice #lighting2params #combocmd2").show();
+		if (bIsType5==0) {
+			$("#dialog-addmanuallightdevice #lighting2params #combocmd1").show();
+		}
+		else {
+			$("#dialog-addmanuallightdevice #lighting2params #combocmd1").hide();
+			if (lighttype==18) {
+				$("#dialog-addmanuallightdevice #lighting2params #combocmd2").hide();
+				$("#dialog-addmanuallightdevice #lighting2paramsUnitCode").hide();
 			}
-			else {
-				$("#dialog-addmanuallightdevice #lighting2params #combocmd1").hide();
-			}
-			$("#dialog-addmanuallightdevice #lighting1params").hide();
-			$("#dialog-addmanuallightdevice #lighting2params").show();
-			$("#dialog-addmanuallightdevice #lighting3params").hide();
+		}
+		$("#dialog-addmanuallightdevice #lighting1params").hide();
+		$("#dialog-addmanuallightdevice #lighting2params").show();
+		$("#dialog-addmanuallightdevice #lighting3params").hide();
 	}
 }
 
@@ -1883,7 +1895,7 @@ function GetManualLightSettings(isTest)
 		//AC
 		var ID="";
 		var bIsType5=0;
-		if (lighttype==13)
+		if ((lighttype==13)||(lighttype==18))
 		{
 			bIsType5=1;
 		}
@@ -1895,12 +1907,19 @@ function GetManualLightSettings(isTest)
 				$("#dialog-addmanuallightdevice #lightparams2 #combocmd4 option:selected").text();
 		}
 		else {
-			ID=
-				$("#dialog-addmanuallightdevice #lightparams2 #combocmd2 option:selected").text()+
-				$("#dialog-addmanuallightdevice #lightparams2 #combocmd3 option:selected").text()+
-				$("#dialog-addmanuallightdevice #lightparams2 #combocmd4 option:selected").text();
+			if (lighttype!=18) {
+				ID=
+					$("#dialog-addmanuallightdevice #lightparams2 #combocmd2 option:selected").text()+
+					$("#dialog-addmanuallightdevice #lightparams2 #combocmd3 option:selected").text()+
+					$("#dialog-addmanuallightdevice #lightparams2 #combocmd4 option:selected").text();
+			}
+			else {
+				ID=
+					$("#dialog-addmanuallightdevice #lightparams2 #combocmd3 option:selected").text()+
+					$("#dialog-addmanuallightdevice #lightparams2 #combocmd4 option:selected").text();
+			}
 		}
-		if ((ID=="0000000")||(ID=="000000")) {
+		if (parseInt(ID)==0) {
 			ShowNotify($.i18n('Invalid Switch ID!'), 2500, true);
 			return "";
 		}

@@ -645,7 +645,10 @@ void GetLightStatus(
 		}
 		break;
 	case pTypeLighting5:
-		llevel=int((100.0f/31.0f)*atof(sValue.c_str()));
+		if (dSubType==sTypeLivolo)
+			llevel=int((100.0f/7.0f)*atof(sValue.c_str()));
+		else
+			llevel=int((100.0f/31.0f)*atof(sValue.c_str()));
 		switch (dSubType)
 		{
 		case sTypeLightwaveRF:
@@ -740,6 +743,8 @@ void GetLightStatus(
 			break;
 		case sTypeLivolo:
 			bHaveGroupCmd=true;
+			bHaveDimmer=true;
+			maxDimLevel=7;
 			switch (nValue)
 			{
 			case light5_sOff:
@@ -748,11 +753,11 @@ void GetLightStatus(
 			case light5_sOn:
 				lstatus="On";
 				break;
-			case light5_sGroupOff:
-				lstatus="Group Off";
+			case light5_sLivoloGang2Toggle:
+				lstatus="Set Level";
 				break;
-			case light5_sGroupOn:
-				lstatus="Group On";
+			case light5_sLivoloGang3Toggle:
+				lstatus="Set Level";
 				break;
 			}
 			break;
@@ -1029,7 +1034,15 @@ bool GetLightCommand(
 			return false;
 		break;
 	case pTypeLighting5:
-		if (dSubType!=sTypeLightwaveRF)
+		if (dSubType==sTypeLivolo)
+		{
+			if (switchcmd=="Set Level")
+			{
+				cmd=light5_sLivoloGang2Toggle;
+				return true;
+			}
+		}
+		else if (dSubType!=sTypeLightwaveRF)
 		{
 			//Only LightwaveRF devices have a set-level
 			if (switchcmd=="Set Level")
