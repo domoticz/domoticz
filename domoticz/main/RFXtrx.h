@@ -22,6 +22,10 @@
 //-----------------------------------------------------------------------------
 
 /*
+SDK version 6.08
+	FAN structure and pTypeFan and sTypeSiemensSF01 added
+	Lighting5 - Livolo added
+
 SDK version 6.07b
 	in the IRESPONSE struct: RFU5enabled changed to SXenabled
 SDK version 6.07a
@@ -297,6 +301,7 @@ SDK version 4.9
 #define sTypeBBSB 0x2
 #define sTypeMDREMOTE 0x03
 #define sTypeRSL 0x04
+#define sTypeLivolo 0x05
 #define light5_sOff 0x0
 #define light5_sOn 0x1
 #define light5_sGroupOff 0x2
@@ -328,6 +333,10 @@ SDK version 4.9
 #define light5_sSpeedMin 0x8
 #define light5_sSpeedPlus 0x9
 #define light5_sModeMin 0xA
+#define light5_sLivoloAllOff 0x00
+#define light5_sLivoloGang1Toggle 0x01
+#define light5_sLivoloGang2Toggle 0x02	//dim+ for dimmer
+#define light5_sLivoloGang3Toggle 0x03	//dim- for dimmer
 
 #define pTypeLighting6 0x15
 #define sTypeBlyss 0x0
@@ -346,6 +355,15 @@ SDK version 4.9
 #define chime_sound5 0xE
 #define chime_sound6 0x6
 #define chime_sound7 0x2
+
+#define pTypeFan 0x17
+#define sTypeSiemensSF01 0x0
+#define fan_sTimer 0x1
+#define fan_sMin 0x2
+#define fan_sLearn 0x3
+#define fan_sPlus 0x4
+#define fan_sConfirm 0x5
+#define fan_sLight 0x6
 
 //types for Curtain
 #define pTypeCurtain 0x18
@@ -809,6 +827,19 @@ typedef union tRBUF {
 		BYTE	filler  : 4;
 		BYTE	rssi : 4;
 	} CHIME;
+
+	struct {
+		BYTE	packetlength;
+		BYTE	packettype;
+		BYTE	subtype;
+		BYTE	seqnbr;
+		BYTE	id1;
+		BYTE	id2;
+		BYTE	id3;
+		BYTE	cmnd;
+		BYTE	filler  : 4;
+		BYTE	rssi : 4;
+	} FAN;
 
 	struct {
 		BYTE	packetlength;

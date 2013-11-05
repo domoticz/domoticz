@@ -3385,6 +3385,34 @@ unsigned long long MainWorker::decode_Lighting5(const int HwdID, const tRBUF *pR
 				break;
 			}
 			break;
+		case sTypeLivolo:
+			WriteMessage("subtype       = Livolo");
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"Unit          = %d", pResponse->LIGHTING5.unitcode);
+			WriteMessage(szTmp);
+			WriteMessage("Command       = ", false);
+			switch (pResponse->LIGHTING5.cmnd)
+			{
+			case light5_sOff:
+				WriteMessage("Off");
+				break;
+			case light5_sOn:
+				WriteMessage("On");
+				break;
+			case light5_sGroupOff:
+				WriteMessage("Group Off");
+				break;
+			case light5_sGroupOn:
+				WriteMessage("Group On");
+				break;
+			default:
+				WriteMessage("UNKNOWN");
+				break;
+			}
+			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING5.packettype, pResponse->LIGHTING5.subtype);
 			WriteMessage(szTmp);
@@ -5547,7 +5575,7 @@ unsigned long long MainWorker::decode_Current_Energy(const int HwdID, const tRBU
 					double(pResponse->CURRENT_ENERGY.total5) * 0x100 +
 					pResponse->CURRENT_ENERGY.total6
 				   ) / 223.666;
-	if (pResponse->CURRENT_ENERGY.count==2)
+	if (pResponse->CURRENT_ENERGY.count!=0)
 		usage=0;
 	sprintf(szTmp,"%.1f;%.1f;%.1f;%.3f",CurrentChannel1,CurrentChannel2,CurrentChannel3,usage);
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);

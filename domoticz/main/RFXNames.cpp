@@ -424,6 +424,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeBBSB, "BBSB new" },
 		{ pTypeLighting5, sTypeMDREMOTE, "MDRemote" },
 		{ pTypeLighting5, sTypeRSL, "Conrad RSL" },
+		{ pTypeLighting5, sTypeLivolo, "Livolo" },
 
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
 
@@ -720,6 +721,24 @@ void GetLightStatus(
 			break;
 		case sTypeBBSB:
 		case sTypeRSL:
+			bHaveGroupCmd=true;
+			switch (nValue)
+			{
+			case light5_sOff:
+				lstatus="Off";
+				break;
+			case light5_sOn:
+				lstatus="On";
+				break;
+			case light5_sGroupOff:
+				lstatus="Group Off";
+				break;
+			case light5_sGroupOn:
+				lstatus="Group On";
+				break;
+			}
+			break;
+		case sTypeLivolo:
 			bHaveGroupCmd=true;
 			switch (nValue)
 			{
