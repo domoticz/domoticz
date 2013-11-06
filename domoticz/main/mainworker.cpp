@@ -6593,7 +6593,8 @@ unsigned long long MainWorker::decode_BBQ(const int HwdID, const tRBUF *pRespons
 
 	unsigned char devType=pTypeBBQ;
 	unsigned char subType=pResponse->BBQ.subtype;
-	sprintf(szTmp,"%d",(pResponse->BBQ.id1 * 256) + pResponse->BBQ.id2);
+
+	sprintf(szTmp,"%d",1);//(pResponse->BBQ.id1 * 256) + pResponse->BBQ.id2); //this because every time you turn the device on, you get a new ID
 	std::string ID=szTmp;
 
 	unsigned char Unit=pResponse->BBQ.id2;
@@ -6638,10 +6639,10 @@ unsigned long long MainWorker::decode_BBQ(const int HwdID, const tRBUF *pRespons
 		sprintf(szTmp,"Sensor2 Temp  = %.1f C", temp2);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Signal level  = %d", pResponse->TEMP.rssi);
+		sprintf(szTmp,"Signal level  = %d", pResponse->BBQ.rssi);
 		WriteMessage(szTmp);
 
-		if ((pResponse->TEMP.battery_level &0x0F) == 0)
+		if ((pResponse->BBQ.battery_level &0x0F) == 0)
 			WriteMessage("Battery       = Low");
 		else
 			WriteMessage("Battery       = OK");
@@ -6656,9 +6657,9 @@ unsigned long long MainWorker::decode_BBQ(const int HwdID, const tRBUF *pRespons
 	tsen.TEMP.packettype=pTypeTEMP;
 	tsen.TEMP.subtype=sTypeTEMP6;
 	tsen.TEMP.battery_level=9;
-	tsen.TEMP.rssi=6;
-	tsen.TEMP.id1=pResponse->BBQ.id1;
-	tsen.TEMP.id2=pResponse->BBQ.id2;
+	tsen.TEMP.rssi=SignalLevel;
+	tsen.TEMP.id1=0;
+	tsen.TEMP.id2=1;
 
 	tsen.TEMP.tempsign=(temp1>=0)?0:1;
 	int at10=round(abs(temp1*10.0f));
@@ -6667,8 +6668,8 @@ unsigned long long MainWorker::decode_BBQ(const int HwdID, const tRBUF *pRespons
 	tsen.TEMP.temperaturel=(BYTE)(at10);
 	decode_Temp(HwdID, (const tRBUF*)&tsen.TEMP);
 
-	tsen.TEMP.id1=pResponse->BBQ.id2;
-	tsen.TEMP.id2=pResponse->BBQ.id1;
+	tsen.TEMP.id1=0;
+	tsen.TEMP.id2=2;
 
 	tsen.TEMP.tempsign=(temp2>=0)?0:1;
 	at10=round(abs(temp2*10.0f));

@@ -704,6 +704,15 @@ char * CWebServer::PostSettings()
 
 	m_pMain->m_sql.UpdatePreferencesVar("Language",m_pWebEm->FindValue("Language").c_str());
 
+	m_pMain->m_sql.GetPreferencesVar("RandomTimerFrame", rnOldvalue);
+	rnvalue=atoi(m_pWebEm->FindValue("RandomSpread").c_str());
+	if (rnOldvalue!=rnvalue)
+	{
+		m_pMain->m_sql.UpdatePreferencesVar("RandomTimerFrame",rnvalue);
+		m_pMain->m_scheduler.ReloadSchedules();
+	}
+
+
 	return (char*)m_retstr.c_str();
 }
 
