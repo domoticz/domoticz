@@ -1057,8 +1057,8 @@ void CRazberry::WriteToHardware(const char *pdata, const unsigned char length)
 			else
 			{
 				float fvalue=(100.0f/15.0f)*float(pSen->LIGHTING2.level);
-				if (fvalue>100.0f)
-					fvalue=100.0f;
+				if (fvalue>99.0f)
+					fvalue=255.0f;
 				svalue=round(fvalue);
 			}
 		}
