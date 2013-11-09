@@ -6008,7 +6008,14 @@ std::string CWebServer::GetJSonPage()
 			root["title"]="GetNewHistory";
 
 			std::string historyfile;
-			if (!HTTPClient::GET("http://domoticz.sourceforge.net/History.txt",historyfile))
+			int nValue;
+			m_pMain->m_sql.GetPreferencesVar("ReleaseChannel", nValue);
+			bool bIsBetaChannel=(nValue!=0);
+
+			std::string szHistoryURL="http://domoticz.sourceforge.net/History.txt";
+			if (bIsBetaChannel)
+				szHistoryURL="http://domoticz.sourceforge.net/beta/History.txt";
+			if (!HTTPClient::GET(szHistoryURL,historyfile))
 			{
 				historyfile="Unable to get Online History document !!";
 			}
@@ -6365,11 +6372,13 @@ std::string CWebServer::GetJSonPage()
 					m_pMain->m_sql.GetPreferencesVar("ReleaseChannel", nValue);
 					bool bIsBetaChannel=(nValue!=0);
 					std::string szURL="http://domoticz.sourceforge.net/version_" + systemname + "_" + machine + ".h";
+					std::string szHistoryURL="http://domoticz.sourceforge.net/History.txt";
 					//std::string szURL="http://domoticz.sourceforge.net/svnversion.h";
 					if (bIsBetaChannel)
 					{
 						//szURL="http://domoticz.sourceforge.net/beta/svnversion.h";
 						szURL="http://domoticz.sourceforge.net/beta/version_" + systemname + "_" + machine + ".h";
+						szHistoryURL="http://domoticz.sourceforge.net/beta/History.txt";
 					}
 					std::string revfile;
 
@@ -6397,6 +6406,7 @@ std::string CWebServer::GetJSonPage()
 					}
 					root["HaveUpdate"]=bHaveUpdate;
 					root["Revision"]=atoi(strarray[2].c_str());
+					root["HistoryURL"]=szHistoryURL;
 					root["ActVersion"]=version;
 				}
 				else

@@ -164,9 +164,7 @@ function CheckForUpdate(showdialog) {
 				}
 				else {
 					var msgtxt=$.i18n('A new version of Domoticz is Available!...<br>Use the Setup tab to update.');
-					//msgtxt+=
-						//'<br>Version: <b>1923</b>, Latest Changes: <b>Click Here</b>'+
-						//'<br><center><b>Update Now</b></center>';
+					msgtxt+='<br>' + $.i18n('Version') + ': <b>' + data.Revision + '</b>, ' + $.i18n('Latest Changes') + ': <b><a onclick="ShowLatestHistory();">' + $.i18n('Click Here') + '</a></b>';
 					generate_noty('success', msgtxt, false);
 				}
 			}
@@ -220,6 +218,12 @@ function TransferDevice(idx,backfunction)
         $( "#dialog-transferdevice" ).dialog( "open" );
 		 }
 	});
+}
+
+function ShowLatestHistory()
+{
+	$.myglobals.historytype=2;
+	SwitchLayout('History');
 }
 
 $(document).ready(function() {
