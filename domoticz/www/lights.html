@@ -1919,7 +1919,7 @@ function GetManualLightSettings(isTest)
 					$("#dialog-addmanuallightdevice #lightparams2 #combocmd4 option:selected").text();
 			}
 		}
-		if (parseInt(ID)==0) {
+		if (ID=="") {
 			ShowNotify($.i18n('Invalid Switch ID!'), 2500, true);
 			return "";
 		}
