@@ -374,7 +374,7 @@ $(document).ready(function() {
 	</div>
 	<div id="dayweekmonthyearlog" style="display:none;">
 		<h2 data-i18n="Day">Day</h2>
-		<div id="daygraph" style="height: 180px;"></div>
+		<div id="daygraph" style="height: 250px;"></div>
 		<br>
 		<h2 data-i18n="Week">Week</h2>
 		<div id="weekgraph" style="height: 300px;"></div>
@@ -397,6 +397,19 @@ $(document).ready(function() {
 		<h2 data-i18n="Year">Year</h2>
 		<div id="windyeargraph" style="height: 300px;"></div>
 	</div>
+	<div id="smartlog" style="display:none;">
+	  <h2 data-i18n="Day">Day</h2>
+	  <div id="smartdaygraph" style="height: 300px;"></div>
+	  <br>
+	  <h2 data-i18n="Week">Week</h2>
+	  <div id="smartweekgraph" style="height: 300px;"></div>
+	  <br>
+	  <h2 data-i18n="Month">Month</h2>
+	  <div id="smartmonthgraph" style="height: 300px;"></div>
+	  <br>
+	  <h2 data-i18n="Year">Year</h2>
+	  <div id="smartyeargraph" style="height: 300px;"></div>
+	</div>
 	<div id="toptextmonthgas" style="display:none;">
 		<a class="btnstylerev" onclick="ShowP1YearReportGas(0)" data-i18n="Back">Back</a>&nbsp;
 		<h1 id="theader">Usage this Month</h1>
@@ -409,7 +422,7 @@ $(document).ready(function() {
 		<table class="display" border="0" cellpadding="0" cellspacing="0">
 		<tr>
 		  <td align="left">
-			<a class="btnstylerev" onclick="ShowUtilities()" data-i18n="Back">Back</a>&nbsp;
+			<a id="backbutton" class="btnstylerev" onclick="ShowUtilities()" data-i18n="Back">Back</a>&nbsp;
 			<h1 id="theader">Usage this Year</h1>
 		  </td>
 		  <td align="right">
@@ -467,7 +480,7 @@ $(document).ready(function() {
 		<table class="display" border="0" cellpadding="0" cellspacing="0">
 		<tr>
 		  <td align="left">
-			<a class="btnstylerev" onclick="ShowUtilities()" data-i18n="Back">Back</a>&nbsp;
+			<a id="backbutton" class="btnstylerev" onclick="ShowUtilities()" data-i18n="Back">Back</a>&nbsp;
 			<h1 id="theader">Usage this Year</h1>
 		  </td>
 		  <td align="right">

@@ -69,6 +69,7 @@ enum _eHardwareTypes {
 	HTYPE_S0SmartMeter,
 	HTYPE_OpenThermGateway,
 	HTYPE_TeleinfoMeter,
+	HTYPE_OpenThermGatewayTCP,
 	HTYPE_END
 };
 

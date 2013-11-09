@@ -37,7 +37,8 @@ Version 1.0.xxx (Oktober xxth 2013)
 - Implemented: Livolo hardware supported (switches/dimmers)
 - Implemented: BBQ hardware supported (Maverick ET-732)
 - Fixed: Random Timer interval in the setting page was not stored
-
+- Implemented: Dashboard, clicking on Energy/P1 Smart Meter/Lux icons displays the log
+- Implemented: Hardware type list is now sorted
 
 Version 1.0.1087 (Oktober 16th 2013)
 - Implemented: Login page (solves the caching problems)

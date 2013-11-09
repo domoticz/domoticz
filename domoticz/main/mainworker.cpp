@@ -28,6 +28,7 @@
 #include "../hardware/PiFace.h"
 #include "../hardware/S0MeterSerial.h"
 #include "../hardware/OTGWSerial.h"
+#include "../hardware/OTGWTCP.h"
 //#include "../hardware/S0MeterTCP.h"
 #include "../hardware/Teleinfo.h"
 
@@ -401,6 +402,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_P1SmartMeterLAN:
 		//LAN
 		pHardware = new P1MeterTCP(ID, Address, Port);
+		break;
+	case HTYPE_OpenThermGatewayTCP:
+		//LAN
+		pHardware = new OTGWTCP(ID, Address, Port);
 		break;
 	case HTYPE_YouLess:
 		//LAN

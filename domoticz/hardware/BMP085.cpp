@@ -66,6 +66,9 @@ CBMP085::~CBMP085()
 
 bool CBMP085::StartHardware()
 {
+#ifndef __arm__
+	return false;
+#endif
 	m_waitcntr=(I2C_READ_INTERVAL-5)*2;
 	m_stoprequested=false;
 	//Start worker thread
@@ -77,7 +80,8 @@ bool CBMP085::StartHardware()
 bool CBMP085::StopHardware()
 {
 	m_stoprequested=true;
-	m_thread->join();
+	if (m_thread!=NULL)
+		m_thread->join();
 	return true;
 }
 
@@ -169,8 +173,10 @@ bool CBMP085::bmp085_Calibration()
 	mc = bmp085_i2c_Read_Int(fd,0xBC);
 	md = bmp085_i2c_Read_Int(fd,0xBE);
 	close(fd);
-#endif
 	return true;
+#else
+	return false;
+#endif
 }
 
 // Read the uncompensated temperature value

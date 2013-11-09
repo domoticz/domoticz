@@ -344,6 +344,7 @@ char * CWebServer::DisplayHardwareCombo()
 char * CWebServer::DisplayHardwareTypesCombo()
 {
 	m_retstr="";
+	std::map<std::string,int> _htypes;
 	char szTmp[200];
 	for (int ii=0; ii<HTYPE_END; ii++)
 	{
@@ -362,10 +363,15 @@ char * CWebServer::DisplayHardwareTypesCombo()
 			bDoAdd=false;
 
 		if (bDoAdd)
-		{
-			sprintf(szTmp,"<option value=\"%d\">%s</option>\n",ii,Hardware_Type_Desc(ii));
-			m_retstr+=szTmp;
-		}
+			_htypes[Hardware_Type_Desc(ii)]=ii;
+	}
+	//return a sorted hardware list
+	std::map<std::string,int>::const_iterator itt;
+	for (itt=_htypes.begin(); itt!=_htypes.end(); ++itt)
+	{
+		sprintf(szTmp,"<option value=\"%d\">%s</option>\n",itt->second,itt->first.c_str());
+		m_retstr+=szTmp;
+
 	}
 	return (char*)m_retstr.c_str();
 }
@@ -3556,8 +3562,8 @@ std::string CWebServer::GetJSonPage()
 									{
 										//Could be the P1 Gas Meter, only transmits one every 1 a 2 hours
 										ulTotalValue=ulLastValue-ulFirstRealValue;
-										ulFirstRealValue=ulLastValue;
 									}
+									ulFirstRealValue=ulLastValue;
 									float TotalValue=float(ulTotalValue);
 									if (TotalValue!=0)
 									{
@@ -7805,7 +7811,7 @@ std::string CWebServer::GetJSonPage()
 				{
 				}
 			}
-			else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)||(htype == HTYPE_RazberryZWave)) {
+			else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)||(htype == HTYPE_RazberryZWave)||(htype == HTYPE_OpenThermGatewayTCP)) {
 				//Lan
 				if (address=="")
 					goto exitjson;
@@ -7897,7 +7903,7 @@ std::string CWebServer::GetJSonPage()
 			{
 				//USB
 			}
-			else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)||(htype == HTYPE_RazberryZWave)) {
+			else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)||(htype == HTYPE_RazberryZWave)||(htype == HTYPE_OpenThermGatewayTCP)) {
 				//Lan
 				if (address=="")
 					goto exitjson;

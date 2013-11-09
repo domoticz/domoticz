@@ -2204,7 +2204,12 @@ function ShowFavorites()
 				xhtm+='\t      <td id="img"><img src="images/';
 				var status="";
 				if (typeof item.Counter != 'undefined') {
-					xhtm+='counter.png" height="40"></td>\n';
+					if ((item.Type == "P1 Smart Meter")&&(item.SubType=="Energy")) {
+						xhtm+='counter.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowSmartLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');" height="40"></td>\n';
+					}
+					else {
+						xhtm+='counter.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');" height="40"></td>\n';
+					}
 					if (item.SubType!="Gas") {
 						status='' + $.i18n("Usage") + ': ' + item.CounterToday;
 					}
@@ -2217,7 +2222,7 @@ function ShowFavorites()
 					status=item.Data;
 				}
 				else if (item.Type == "Energy") {
-					xhtm+='current48.png" height="40"></td>\n';
+					xhtm+='current48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');" height="40"></td>\n';
 					status=item.Data;
 				}
 				else if (item.Type == "Air Quality") {
@@ -2225,11 +2230,11 @@ function ShowFavorites()
 					status=item.Data + " (" + item.Quality + ")";
 				}
 				else if (item.Type == "Lux") {
-					xhtm+='lux48.png" height="40"></td>\n';
+					xhtm+='lux48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowLuxLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');" height="40"></td>\n';
 					status=item.Data;
 				}
 				else if (item.Type == "Usage") {
-					xhtm+='current48.png" height="40"></td>\n';
+					xhtm+='current48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowUsageLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');" height="40"></td>\n';
 					status=item.Data;
 				}
 				else if (item.SubType=="Soil Moisture") {
