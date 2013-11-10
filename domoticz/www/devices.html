@@ -1,7 +1,11 @@
 <div id="dialog-adddevice" title="Add Device">
     <form>
-        <label for="name">Name: </label>
-        <input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+		<table border="0" cellpadding="0" cellspacing="4">
+		<tr>
+			<td align="right" style="width:80px"><label for="devicename"><span data-i18n="Name"></span>:</label></td>
+			<td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		</table>
     </form>
 </div>
 <div id="dialog-addlightdevice" title="Add Light/Switch Device">
@@ -66,6 +70,7 @@
 function AddDevice(idx)
 {
     $.devIdx = idx;
+    $( "#dialog-adddevice" ).i18n();
     $( "#dialog-adddevice" ).dialog( "open" );
 }
 
@@ -352,8 +357,8 @@ $(document).ready(function() {
 			
         $( "#dialog-adddevice" ).dialog({
               autoOpen: false,
-              width: 350,
-              height: 150,
+              width: 420,
+              height: 170,
               modal: true,
               resizable: false,
               buttons: {
