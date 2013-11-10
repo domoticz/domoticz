@@ -130,7 +130,24 @@ void RFXComSerial::readCallback(const char *data, size_t len)
 	boost::lock_guard<boost::mutex> l(readQueueMutex);
 	try
 	{
-		onRFXMessage((const unsigned char *)data,len);
+		bool bRet=onRFXMessage((const unsigned char *)data,len);
+		if (bRet==false)
+		{
+			//close serial connection, and restart
+			if (isOpen())
+			{
+				try {
+					clearReadCallback();
+					close();
+					doClose();
+					setErrorStatus(true);
+				} catch(...)
+				{
+					//Don't throw from a Stop command
+				}
+			}
+
+		}
 	}
 	catch (...)
 	{

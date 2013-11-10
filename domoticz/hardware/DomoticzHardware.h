@@ -50,7 +50,7 @@ private:
 	boost::mutex readQueueMutex;
 	virtual bool StartHardware()=0;
 	virtual bool StopHardware()=0;
-	void onRFXMessage(const unsigned char *pBuffer, const size_t Len);
+	bool onRFXMessage(const unsigned char *pBuffer, const size_t Len);
 	unsigned char m_rxbuffer[RX_BUFFER_SIZE];
 	bool m_bIsStarted;
 };

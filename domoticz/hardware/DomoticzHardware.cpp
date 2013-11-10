@@ -29,10 +29,10 @@ bool CDomoticzHardwareBase::Stop()
 }
 
 
-void CDomoticzHardwareBase::onRFXMessage(const unsigned char *pBuffer, const size_t Len)
+bool CDomoticzHardwareBase::onRFXMessage(const unsigned char *pBuffer, const size_t Len)
 {
 	if (!m_bEnableReceive)
-		return; //receiving not enabled
+		return true; //receiving not enabled
 
 	size_t ii=0;
 	while (ii<Len)
@@ -40,7 +40,7 @@ void CDomoticzHardwareBase::onRFXMessage(const unsigned char *pBuffer, const siz
 		if (m_rxbufferpos == 0)	//1st char of a packet received
 		{
 			if (pBuffer[ii]==0) //ignore first char if 00
-				return;
+				return true;
 		}
 		m_rxbuffer[m_rxbufferpos]=pBuffer[ii];
 		m_rxbufferpos++;
@@ -50,7 +50,7 @@ void CDomoticzHardwareBase::onRFXMessage(const unsigned char *pBuffer, const siz
 			//restart
 			_log.Log(LOG_ERROR,"input buffer out of sync, going to restart!....");
 			m_rxbufferpos=0;
-			return;
+			return false;
 		}
 		if (m_rxbufferpos > m_rxbuffer[0])
 		{
@@ -59,4 +59,5 @@ void CDomoticzHardwareBase::onRFXMessage(const unsigned char *pBuffer, const siz
 		}
 		ii++;
 	}
+	return true;
 }
