@@ -296,14 +296,47 @@ function ShowDevices(filter)
 						}
           }
           if (
-							(item.Type.indexOf("Light")==0)||
-							(item.Type.indexOf("Security")==0)
-						 )
+				(item.Type.indexOf("Light")==0)||
+				(item.Type.indexOf("Security")==0)
+			 )
           {
             itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#devicescontent\', \'ShowDevices\');">';
           }
-          else
-						itemSubIcons+='&nbsp;<img src="images/empty16.png">';
+          else if (item.Type.indexOf("Temp")==0) {
+            itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowTempLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
+          }
+          else if (typeof item.Counter != 'undefined') {
+			  if ((item.Type == "P1 Smart Meter")&&(item.SubType=="Energy")) {
+				itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowSmartLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">';
+			  }
+			  else {
+				itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowCounterLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">';
+			  }
+          }
+		  else if (typeof item.Direction != 'undefined') {
+            itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowWindLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
+		  }
+		  else if (typeof item.UVI != 'undefined') {
+            itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowUVLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
+		  }
+		  else if (typeof item.Rain != 'undefined') {
+            itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowRainLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
+		  }
+		  else if (item.Type == "Energy") {
+            itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowCounterLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">';
+		  }
+		  else if (item.Type == "Air Quality") {
+            itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowAirQualityLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
+		  }
+		  else if (item.Type == "Lux") {
+            itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowLuxLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">';
+		  }
+		  else if (item.Type == "Usage") {
+            itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowUsageLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">';
+		  }
+          else {
+			itemSubIcons+='&nbsp;<img src="images/empty16.png">';
+          }
           var ID = item.ID;
           if (item.Type=="Lighting 1") {
 						ID = String.fromCharCode(item.ID);

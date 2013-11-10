@@ -41,6 +41,7 @@ Version 1.0.xxx (Oktober xxth 2013)
 - Implemented: Hardware type list is now sorted
 - Fixed: Possible problems when adding a manual switch (Invalid Switch ID message)
 - Implemented: New Version notification with version info, and option to review the latest changes
+- Implemented: Added more log buttons to the devices tab
 
 Version 1.0.1087 (Oktober 16th 2013)
 - Implemented: Login page (solves the caching problems)
