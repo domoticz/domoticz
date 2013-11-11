@@ -234,7 +234,15 @@ else()
   MESSAGE(FATAL_ERROR "Could not find LIBUSB on your system, see install.txt how to get them installed.")
 ENDIF(LIBUSB_FOUND)
 
-target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread curl ${LIBUSB_LIBRARIES} lua ./hardware/openzwave/*.a)
+find_library(OpenZWave NAMES libopenzwave.a)
+IF(OpenZWave)
+  message(STATUS ${OpenZWave})
+  target_link_libraries(domoticz ${OpenZWave} udev)
+else()
+  MESSAGE(FATAL_ERROR "Could not find LIB OpenZWave on your system, see install.txt how to get them installed.")
+ENDIF(OpenZWave)
+
+target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread curl ${LIBUSB_LIBRARIES} lua ./hardware/openzwave/libopenzwave)
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
 

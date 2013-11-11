@@ -210,6 +210,9 @@ void Teleinfo::MatchLine()
 			case TELEINFO_TYPE_ADCO :
 				//structure initialization
 				memset(&m_p1power,0,sizeof(m_p1power));
+				m_p1power.len=sizeof(P1Power)-1;
+				m_p1power.type=pTypeP1Power;			
+				m_p1power.subtype=sTypeP1Power; 
 			break;
 			case TELEINFO_TYPE_OPTARIF :	
 			break;
