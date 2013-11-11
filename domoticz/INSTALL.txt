@@ -26,6 +26,7 @@ Prerequisites: (or in other words, setup your compile enviroment):
 
 All:
 - Compiled OpenZWave (http://code.google.com/p/open-zwave/)
+sudo apt-get install libudev-dev
 svn co http://open-zwave.googlecode.com/svn/trunk/ open-zwave-read-only
 cd open-zwave-read-only/cpp/build/linux
 make
