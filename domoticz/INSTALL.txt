@@ -25,6 +25,8 @@ Compiling from source code:
 Prerequisites: (or in other words, setup your compile enviroment): 
 
 All:
+(Assuming domoticz development is in a subfolder of the user)
+cd ~
 - Compiled OpenZWave (http://code.google.com/p/open-zwave/)
 sudo apt-get install libudev-dev
 svn co http://open-zwave.googlecode.com/svn/trunk/ open-zwave-read-only

@@ -234,7 +234,7 @@ else()
   MESSAGE(FATAL_ERROR "Could not find LIBUSB on your system, see install.txt how to get them installed.")
 ENDIF(LIBUSB_FOUND)
 
-find_library(OpenZWave NAMES libopenzwave.a)
+find_library(OpenZWave NAMES libopenzwave.a HINTS "../open-zwave-read-only/cpp/lib/linux" "../open-zwave-read-only/cpp/lib/mac")
 IF(OpenZWave)
   message(STATUS ${OpenZWave})
   target_link_libraries(domoticz ${OpenZWave} udev)
