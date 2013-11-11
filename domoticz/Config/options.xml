@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- To be effective, this file should be placed in the user data folder specified in the Options::Create method -->
+<Options xmlns='http://code.google.com/p/open-zwave/'>
+  <Option name="logging" value="true" />
+  <Option name="Associate" value="true" />
+  <Option name="NotifyTransactions" value="false" />
+  <Option name="DriverMaxAttempts" value="0" />
+  <Option name="SaveConfiguration" value="true" />
+</Options>

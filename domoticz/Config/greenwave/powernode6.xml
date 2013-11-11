@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value type="byte" genre="config" instance="1" index="1" label="No communication light" min="1" max="255" value="2">
+      <Help>After how many minutes the GreenWave device should start flashing if the controller didn't communicate with this device</Help>
+    </Value>
+
+    <Value type="list" genre="config" instance="1" index="2" label="Room color" read_only="true" size="1">
+      <Help>The room color (Corner wheel color) on the GreenWave device</Help>
+      <Item label="Black (empty)" value="128" />
+      <Item label="Green (1)" value="129" />
+      <Item label="Dark Blue (2)" value="130" />
+      <Item label="Red (3)" value="131" />
+      <Item label="Yellow (4)" value="132" />
+      <Item label="Purple (5)" value="133" />
+      <Item label="Orange (6)" value="134" />
+      <Item label="Light Blue (7)" value="135" />
+      <Item label="Pink (8)" value="136" />
+      <Item label="Locked" value="137" />
+    </Value>
+  </CommandClass>
+
+  <CommandClass id="96" mapping="endpoints" />
+  <!-- COMMAND_CLASS_ALARM. This class is in the list reported by the GreenWave PowerNode 6, but it does not respond to requests -->
+  <CommandClass id="113" action="remove" /> 
+  <!-- COMMAND_CLASS_INDICATOR. This class is in the list reported by the GreenWave PowerNode 6, but it does not respond to requests -->
+  <CommandClass id="135" action="remove" /> 
+
+</Product>

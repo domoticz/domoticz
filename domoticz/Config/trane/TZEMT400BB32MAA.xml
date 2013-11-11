@@ -1,0 +1,955 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+	<!-- Trane Thermostat Model TZEMT400BB32MAA -->
+
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+	  <Value type="byte" index="1" genre="config" label="System Type" units="" min="0" max="1" value="0">
+	    <Help>
+	      0 = Gas/Elec, 1 = HeatPump
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="2" genre="config" label="Fan Type" units="" min="0" max="1" value="0">
+	    <Help>
+	      0 = Gas, 1 = Elec
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="3" genre="config" label="Change Over Type" units="" min="0" max="1" value="0">
+	    <Help>
+	      0 = w/Cool, 1 = w/Heat
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="4" genre="config" label="F/C Units" units="" min="0" max="1" value="1">
+	    <Help>
+	      0 = C, 1 = F
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="5" genre="config" label="Unknown-5" units="" min="" max="" value="1">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="9" genre="config" label="Display Lock" units="" min="0" max="1" value="0">
+	    <Help>
+	      0 = Unlocked, 1 = Locked
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="10" genre="config" label="Minimum Off Time" units="minutes" min="5" max="9" value="5">
+	    <Help>
+	      Sets the minimum off time before another heating/cooling cycle can begin to provide compressor short cycle protection.  The thermostat screen will display WAIT when minimum off time is being enforced.
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="11" genre="config" label="Minimum Run Time" units="minutes" min="1" max="9" value="6">
+	    <Help>
+	      Sets the minimum run time before a heating/cooling cycle can turn off to prevent rapid cycling.  Thermostat screen will display "Cool ON" or "Heat ON" while the minimum run time is being enforced.
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="12" genre="config" label="Heating Delta Stage 1 ON" units="degrees" min="1" max="8" value="1">
+	    <Help>
+	      Sets the delta from setpoint that stage 1 heating starts.
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="13" genre="config" label="Heating Delta Stage 1 OFF" units="degrees" min="0" max="8" value="0">
+	    <Help>
+	      Sets the delta from setpoint that stage 1 heating stops. Stage 1 turns off at setpoint minus (-) Delta Stage 1.
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="14" genre="config" label="Heating Delta Stage 2 ON" units="degrees" min="1" max="8" value="2">
+	    <Help>
+	      Sets the delta from setpoint that stage 2 heating starts.
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="15" genre="config" label="Heating Delta Stage 2 OFF" units="degrees" min="0" max="8" value="0">
+	    <Help>
+	      Sets the delta from setpoint that stage 2 heating stops. Stage 1 turns off at setpoint minus (-) Delta Stage 2.
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="16" genre="config" label="Heating Delta Stage 3 ON" units="degrees" min="1" max="8" value="3">
+	    <Help>
+	      Sets the delta from setpoint that stage 3 heating starts.
+			</Help>
+	  </Value>
+	  <Value type="byte" index="17" genre="config" label="Heating Delta Stage 3 OFF" units="degrees" min="0" max="8" value="0">
+	    <Help>
+	      Sets the delta from setpoint that stage 3 heating stops. Stage 1 turns off at setpoint minus (-) Delta Stage 3.
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="18" genre="config" label="Cooling Delta Stage 1 ON" units="degrees" min="1" max="8" value="1">
+	    <Help>
+	      Sets the delta from setpoint that stage 1 cooling starts.
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="19" genre="config" label="Cooling Delta Stage 1 OFF" units="degrees" min="0" max="8" value="0">
+	    <Help>
+	      Sets the delta from setpoint that stage 1 cooling stops. Stage 1 turns off at setpoint minus (-) Delta Stage 1.
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="20" genre="config" label="Cooling Delta Stage 2 ON" units="degrees" min="1" max="8" value="2">
+	    <Help>
+	      Sets the delta from setpoint that stage 2 cooling starts.
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="21" genre="config" label="Cooling Delta Stage 2 OFF" units="degrees" min="0" max="8" value="0">
+	    <Help>
+	      Sets the delta from setpoint that stage 2 cooling stops. Stage 1 turns off at setpoint minus (-) Delta Stage 2.
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="22" genre="config" label="Unknown-22" units="" min="" max="" value="5">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="23" genre="config" label="Unknown-23" units="" min="" max="" value="5">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="24" genre="config" label="H/C Delta" units="degrees" min="3" max="15" value="3">
+	    <Help>
+	      Sets the minimum separation between the heating and cooling setpoints.  Attempts to lower the cooling below the heating setpoint by this amount will PUSH the heating setpoint down to maintain this separation. Same for setting the heating setpoint above the cooling setpoint, it will PUSH the cooling setpoint up to maintain this separation. Settings in F.
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="25" genre="config" label="SetBack Mode" units="" min="0" max="2" value="0">
+	    <Help>
+	      0 = No Setback, 1 = Setback, 2 if ESM
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="26" genre="config" label="Unknown-26" units="" min="" max="" value="5">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="27" genre="config" label="Unknown-27" units="" min="" max="" value="5">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="28" genre="config" label="Unknown-28" units="" min="" max="" value="5">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="29" genre="config" label="ESM Setpoint--Heating" units="degrees" min="" max="" value="65">
+	    <Help>
+	      Energy Saving Mode (ESM) Setpoints are the setpoints used when the Energy Saving Mode schedule is selected in the Schedule Mode screen (or via Z-Wave control). Setting in F.
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="30" genre="config" label="ESM Setpoint--Cooling" units="degrees" min="" max="" value="80">
+	    <Help>
+	      Energy Saving Mode (ESM) Setpoints are the setpoints used when the Energy Saving Mode schedule is selected in the Schedule Mode screen (or via Z-Wave control).
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="31" genre="config" label="Unknown-31" units="" min="" max="" value="5">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="32" genre="config" label="Unknown-32" units="" min="" max="" value="5">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="33" genre="config" label="Unknown-33" units="" min="" max="" value="5">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="34" genre="config" label="Unknown-34" units="" min="" max="" value="3">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="35" genre="config" label="Unknown-35" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="36" genre="config" label="Unknown-36" units="" min="" max="" value="5">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="37" genre="config" label="Unknown-37" units="" min="" max="" value="5">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="69" genre="config" label="Unknown-69" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="74" genre="config" label="Unknown-74" units="" min="" max="" value="1">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="75" genre="config" label="Fan ON Time" units="minutes" min="0" max="120" value="0">
+	    <Help>
+	      The fan cycler function cycles the HVAC system fan for an ON period followed by an OFF period continuously. Used to provide minimum air ventilation requirements. When the Fan ON time is set to a value greater than 0, an additional Cycler Fan mode is present when pressing the FAN button on the thermostat.
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="76" genre="config" label="Fan OFF Time" units="minutes" min="10" max="120" value="0">
+	    <Help>
+	      The fan cycler function cycles the HVAC system fan for an ON period followed by an OFF period continuously. Used to provide minimum air ventilation requirements. When the Fan ON time is set to a value greater than 0, an additional Cycler Fan mode is present when pressing the FAN button on the thermostat.
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="77" genre="config" label="2nd Stage Heat Enable" units="" min="0" max="1" value="0">
+	    <Help>
+	      0 = no 2nd stage heat, 1 = 2nd stage heat.
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="78" genre="config" label="Aux Heat Enable" units="" min="0" max="1" value="1">
+	    <Help>
+	      0 = no aux heat, 1 = aux heat enabled.
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="79" genre="config" label="2nd Stage Cool Enable" units="" min="0" max="1" value="0">
+	    <Help>
+	      0 = no 2nd stage cool, 1 = 2nd stage cool
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="128" genre="config" label="Unknown-128" units="" min="" max="" value="1">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="129" genre="config" label="Unknown-129" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="130" genre="config" label="Unknown-130" units="" min="" max="" value="90">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="131" genre="config" label="Unknown-131" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="132" genre="config" label="Run Schedule" units="" min="" max="" value="0">
+	    <Help>
+	      Set to 1 if running schedule (RUN is displayed on the thermostat screen).
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="133" genre="config" label="Unknown-133" units="" min="" max="" value="13">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="134" genre="config" label="Cooling 1 Setpoint" units="degrees" min="" max="" value="80">
+	    <Help>
+	      Default:  
+	      HOLD   80F / 26C
+	      RUN    84F / xxC
+	      ESM
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="135" genre="config" label="Unknown-135" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="136" genre="config" label="Heating 1 Setpoint" units="degrees" min="" max="" value="60">
+	    <Help>
+	      Heating 1 Setpoint (does this vary with ESM, etc. or is this for the "Hold" setting?
+	      Default:
+	      HOLD   55F / 13C
+	      RUN    60F / xxC
+	      ESM    64F / xxC (unless parameter xx has been changed)
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="137" genre="config" label="Backlight Timeout" units="seconds" min="0" max="120" value="30">
+	    <Help>
+	      Backlight Timeout is the time (in seconds) from the last 
+	      button press to the backlight going out.  The time-out
+	      can be set between 0 and 120
+	      seconds.  When set to 0, the backlight will remain
+	      always on.
+	      Default:  30
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="138" genre="config" label="Max Heat Setpoint" units="degrees" min="55" max="90" value="90">
+	    <Help>
+	      Sets the maximum heating setpoint value.  Will not ramp
+	      or accept setpoints higher than this maximum.
+	      Minimum:  55F / xxC
+	      Maximum:  90F / xxC
+	      Default:  90F / 32C
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="139" genre="config" label="Min Cool Setpoint" units="degrees" min="60" max="99" value="60">
+	    <Help>
+	      Sets the minimum cooling setpoint value.  Will not ramp
+	      or accept setpoints lower than this minimum.
+	      Minimum:  60F / xxC
+	      Maximum:  99F / xxC
+	      Default:  60F / 15C
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="140" genre="config" label="Unknown-140" units="" min="" max="" value="10">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="141" genre="config" label="Screen Timeout" units="seconds" min="0" max="120" value="0">
+	    <Help>
+	      This is the time before any screen reverts to the Minimized
+	      Screen (temperature display only), after you stop pushing
+	      buttons.  Minimized Screen feature is disabled by setting this
+	      time to 0. 
+	      Default:  0 
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="142" genre="config" label="Unknown-142" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="143" genre="config" label="Sensor (Internal) Offset" units="degrees" min="-7" max="+7" value="0">
+	    <Help>
+	      The internal temperature sensor can be calibrated to report
+	      values different from its actual reading.  The offset can
+	      range from -7 degrees to +7 degrees.
+	      Default:  0
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="144" genre="config" label="Unknown-144" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="145" genre="config" label="Unknown-145" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="146" genre="config" label="Unknown-146" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="147" genre="config" label="Unknown-147" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="148" genre="config" label="Screen Contrast" units="" min="0" max="20" value="10">
+	    <Help>
+	      The Screen Contrast sets the contrast level of the LCD display.
+	      The contrast can be set between 0 and 20.  If the display 
+	      is too light, use a higher number.  If dark lines appear on 
+	      the screen, use a lower number.
+	      Default:  10
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="161" genre="config" label="Unknown-161" units="" min="" max="" value="1">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="162" genre="config" label="Unknown-162" units="" min="" max="" value="30">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="163" genre="config" label="Unknown-163" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="166" genre="config" label="Unknown-166" units="" min="" max="" value="1">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="167" genre="config" label="Unknown-167" units="" min="" max="" value="1">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="162" genre="config" label="Unknown-162" units="" min="" max="" value="30">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="169" genre="config" label="Unknown-169" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="170" genre="config" label="Unknown-170" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="171" genre="config" label="Unknown-171" units="" min="" max="">
+	    <Help>
+	      0x2c after reset
+	      0xf4 after reset
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="172" genre="config" label="Unknown-172" units="" min="" max="">
+	    <Help>
+	      0x2c after reset
+	      0xf4 after reset
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="173" genre="config" label="Unknown-173" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="174" genre="config" label="Unknown-174" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="175" genre="config" label="Unknown-175" units="" min="" max="" value="1">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="176" genre="config" label="Unknown-176" units="" min="" max="" value="44">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="177" genre="config" label="Unknown-177" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="178" genre="config" label="Unknown-178" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="179" genre="config" label="Unknown-179" units="" min="" max="" value="1">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="180" genre="config" label="Unknown-180" units="" min="" max="" value="44">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="181" genre="config" label="Unknown-181" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="182" genre="config" label="Unknown-182" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="183" genre="config" label="Unknown-183" units="" min="" max="">
+	    <Help>
+	      0xb8 after reset
+	      0xe4 after reset
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="184" genre="config" label="Unknown-184" units="" min="" max="">
+	    <Help>
+	      0xb8 after reset
+	      0xe4 after reset
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="185" genre="config" label="Schedule Enable" units="" min="0" max="1" value="0">
+	    <Help>
+	      When enabled (set to 1), the local thermostat's scheduler 
+	      function is enabled.
+	      Default:  0
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="186" genre="config" label="Unknown-186" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="187" genre="config" label="Unknown-187" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="190" genre="config" label="Unknown-190" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="191" genre="config" label="Unknown-191" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="192" genre="config" label="Unknown-192" units="" min="" max="" value="0">
+	    <Help>
+	      0xff after reset
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="193" genre="config" label="Unknown-193" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="194" genre="config" label="Unknown-194" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="195" genre="config" label="Unknown-195" units="" min="" max="" value="0">
+	    <Help>
+	      0xff after reset
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="196" genre="config" label="Unknown-196" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="197" genre="config" label="Unknown-197" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="198" genre="config" label="Unknown-198" units="" min="" max="" value="0">
+	    <Help>
+	      0xff after reset
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="199" genre="config" label="Unknown-199" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="200" genre="config" label="Unknown-200" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="201" genre="config" label="Unknown-201" units="" min="" max="" value="0">
+	    <Help>
+	      0xff after reset
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="202" genre="config" label="Unknown-202" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="203" genre="config" label="Unknown-203" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="204" genre="config" label="Unknown-204" units="" min="" max="" value="0">
+	    <Help>
+	      0xff after reset
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="205" genre="config" label="Unknown-205" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="206" genre="config" label="Unknown-206" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="207" genre="config" label="Unknown-207" units="" min="" max="" value="0">
+	    <Help>
+	      0xff after reset
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="208" genre="config" label="Unknown-208" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="209" genre="config" label="Unknown-209" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="210" genre="config" label="Unknown-210" units="" min="" max="" value="0">
+	    <Help>
+	      0xff after reset
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="211" genre="config" label="Unknown-211" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="212" genre="config" label="Unknown-212" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="213" genre="config" label="Unknown-213" units="" min="" max="" value="1">
+	    <Help>
+	      Recovery enable?
+	      Default:  1
+	      0x00
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="214" genre="config" label="Unknown-214" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="215" genre="config" label="Unknown-215" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="216" genre="config" label="Unknown-216" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="217" genre="config" label="Unknown-217" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="218" genre="config" label="Unknown-218" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="219" genre="config" label="Unknown-219" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="220" genre="config" label="Unknown-220" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="byte" index="221" genre="config" label="Unknown-221" units="" min="" max="" value="0">
+	    <Help>
+	    </Help>
+	  </Value>
+	  <Value type="int" index="228" genre="config" label="Schedule Sun-1" units="" min="" max="" value="100681283">
+	    <Help>
+	      This value holds information about the first schedule
+	      setpoints for Sundays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x06004643 06:00AM 70F / 67F
+	      0x06001519 06:00AM 21C / 25C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="229" genre="config" label="Schedule Sun-2" units="" min="" max="" value="134233685">
+	    <Help>
+	      This value holds information about the second schedule
+	      setpoints for Sundays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x08003e55 08:00AM 62F / 85F
+	      0x0800101d 08:00AM 16C / 29C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="230" genre="config" label="Schedule Sun-3" units="" min="" max="" value="302007886">
+	    <Help>
+	      This value holds information about the third schedule
+	      setpoints for Sundays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x1200464e 06:00PM 70F / 78F
+	      0x12001519 06:00PM 21C / 25C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="231" genre="config" label="Schedule Sun-4" units="" min="" max="" value="369114706">
+	    <Help>
+	      This value holds information about the fourth schedule
+	      setpoints for Sundays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x16003e52 10:00PM 62F / 82F
+	      0x1600101b 10:00PM 16C / 27C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="232" genre="config" label="Schedule Mon-1" units="" min="" max="" value="">
+	    <Help>
+	      This value holds information about the first schedule
+	      setpoints for Mondays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x06004643 06:00AM 70F / 67F
+	      0x06001519 06:00AM 21C / 25C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="233" genre="config" label="Schedule Mon-2" units="" min="" max="">
+	    <Help>
+	      This value holds information about the second schedule
+	      setpoints for Mondays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x08003e55 08:00AM 62F / 85F
+	      0x0800101d 08:00AM 16C / 29C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="234" genre="config" label="Schedule Mon-3" units="" min="" max="">
+	    <Help>
+	      This value holds information about the third schedule
+	      setpoints for Mondays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x1200464e 06:00PM 70F / 78F
+	      0x12001519 06:00PM 21C / 25C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="235" genre="config" label="Schedule Mon-4" units="" min="" max="">
+	    <Help>
+	      This value holds information about the fourth schedule
+	      setpoints for Mondays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x16003e52 10:00PM 62F / 82F
+	      0x1600101b 10:00PM 16C / 27C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="236" genre="config" label="Schedule Tue-1" units="" min="" max="">
+	    <Help>
+	      This value holds information about the first schedule
+	      setpoints for Tuesdays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x06004643 06:00AM 70F / 67F
+	      0x06001519 06:00AM 21C / 25C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="237" genre="config" label="Schedule Tue-2" units="" min="" max="">
+	    <Help>
+	      This value holds information about the second schedule
+	      setpoints for Tuesdays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x08003e55 08:00AM 62F / 85F
+	      0x0800101d 08:00AM 16C / 29C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="238" genre="config" label="Schedule Tue-3" units="" min="" max="">
+	    <Help>
+	      This value holds information about the third schedule
+	      setpoints for Tuesdays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x1200464e 06:00PM 70F / 78F
+	      0x12001519 06:00PM 21C / 25C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="239" genre="config" label="Schedule Tue-4" units="" min="" max="">
+	    <Help>
+	      This value holds information about the fourth schedule
+	      setpoints for Tuesdays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x16003e52 10:00PM 62F / 82F
+	      0x1600101b 10:00PM 16C / 27C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="240" genre="config" label="Schedule Wed-1" units="" min="" max="">
+	    <Help>
+	      This value holds information about the first schedule
+	      setpoints for Wednesdays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x06004643 06:00AM 70F / 67F
+	      0x06001519 06:00AM 21C / 25C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="241" genre="config" label="Schedule Wed-2" units="" min="" max="">
+	    <Help>
+	      This value holds information about the second schedule setpoints for Wednesdays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x08003e55 08:00AM 62F / 85F
+	      0x0800101d 08:00AM 16C / 29C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="242" genre="config" label="Schedule Wed-3" units="" min="" max="">
+	    <Help>
+	      This value holds information about the third schedule setpoints for Wednesdays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x1200464e 06:00PM 70F / 78F
+	      0x12001519 06:00PM 21C / 25C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="243" genre="config" label="Schedule Wed-4" units="" min="" max="">
+	    <Help>
+	      This value holds information about the fourth schedule setpoints for Wednesdays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x16003e52 10:00PM 62F / 82F
+	      0x1600101b 10:00PM 16C / 27C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="244" genre="config" label="Schedule Thu-1" units="" min="" max="">
+	    <Help>
+	      This value holds information about the first schedule setpoints for Thursdays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x06004643 06:00AM 70F / 67F
+	      0x06001519 06:00AM 21C / 25C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="245" genre="config" label="Schedule Thu-2" units="" min="" max="">
+	    <Help>
+	      This value holds information about the second schedule setpoints for Thursdays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x08003e55 08:00AM 62F / 85F
+	      0x0800101d 08:00AM 16C / 29C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="246" genre="config" label="Schedule Thu-3" units="" min="" max="">
+	    <Help>
+	      This value holds information about the third schedule setpoints for Thursdays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x1200464e 06:00PM 70F / 78F
+	      0x12001519 06:00PM 21C / 25C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="247" genre="config" label="Schedule Thu-4" units="" min="" max="">
+	    <Help>
+	      This value holds information about the fourth schedule setpoints for Thursdays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x16003e52 10:00PM 62F / 82F
+	      0x1600101b 10:00PM 16C / 27C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="248" genre="config" label="Schedule Fri-1" units="" min="" max="">
+	    <Help>
+	      This value holds information about the first schedule setpoints for Fridays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x06004643 06:00AM 70F / 67F
+	      0x06001519 06:00AM 21C / 25C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="249" genre="config" label="Schedule Fri-2" units="" min="" max="">
+	    <Help>
+	      This value holds information about the second schedule setpoints for Fridays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x08003e55 08:00AM 62F / 85F
+	      0x0800101d 08:00AM 16C / 29C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="250" genre="config" label="Schedule Fri-3" units="" min="" max="">
+	    <Help>
+	      This value holds information about the third schedule setpoints for Fridays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x1200464e 06:00PM 70F / 78F
+	      0x12001519 06:00PM 21C / 25C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="251" genre="config" label="Schedule Fri-4" units="" min="" max="">
+	    <Help>
+	      This value holds information about the fourth schedule setpoints for Fridays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x16003e52 10:00PM 62F / 82F
+	      0x1600101b 10:00PM 16C / 27C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="252" genre="config" label="Schedule Sat-1" units="" min="" max="">
+	    <Help>
+	      This value holds information about the first schedule setpoints for Saturdays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x06004643 06:00AM 70F / 67F
+	      0x06001519 06:00AM 21C / 25C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="253" genre="config" label="Schedule Sat-2" units="" min="" max="">
+	    <Help>
+	      This value holds information about the second schedule setpoints for Saturdays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x08003e55 08:00AM 62F / 85F
+	      0x0800101d 08:00AM 16C / 29C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="254" genre="config" label="Schedule Sat-3" units="" min="" max="">
+	    <Help>
+	      This value holds information about the third schedule setpoints for Saturdays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x1200464e 06:00PM 70F / 78F
+	      0x12001519 06:00PM 21C / 25C
+	    </Help>
+	  </Value>
+	  <Value type="int" index="255" genre="config" label="Schedule Sat-4" units="" min="" max="">
+	    <Help>
+	      This value holds information about the fourth schedule setpoints for Saturdays.
+	      
+	      Byte 1: Hour   (0-23)
+	      Byte 2: Minute (0-59)
+	      Byte 3: Heat Setpoint (degrees)
+	      Byte 4: Cool Setpoint (degrees)
+	      
+	      Default:  0x16003e52 10:00PM 62F / 82F
+	      0x1600101b 10:00PM 16C / 27C
+	    </Help>
+	  </Value>
+	</CommandClass>
+	
+	<!-- Association Groups -->
+	<CommandClass id="133">
+	</CommandClass>
+	<!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
+	<CommandClass id="67" base="0" />
+</Product>

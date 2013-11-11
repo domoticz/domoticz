@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- COMMAND_CLASS_CONFIGURATION. Configuration Parameters -->
+  <CommandClass id="112">
+	<Value type="byte" index="1" genre="config" label="Modes for Button 1 and 3" units="" min="0" max="255" value="1">
+		<Help>
+		0 Separate buttons
+		1 Buttons are grouped (one is on, one if off), no double click supported (default)
+		2 Buttons are grouped (one is on, one if off), double click supported
+		</Help>
+	</Value>
+	<Value type="byte" index="2" genre="config" label="Modes for Button 2 and 4" units="" min="0" max="255" value="1">
+		<Help>
+		0 Separate buttons
+		1 Buttons are grouped (one is on, one if off), no double click supported (default)
+		2 Buttons are grouped (one is on, one if off), double click supported
+		</Help>
+	</Value>
+	<Value type="byte" index="11" genre="config" label="Action on group 1" units="" min="0" max="255" value="1">
+		<Help>
+		0 Disabled
+		1 Control Dimmer, Motor Control and Switches using Basic+Multilevel Switch Commands (default)
+		2 Control Switches only, click and hold sends only Basic Commands
+		3 Switch All On/Off
+		4 Send Scene Activation
+		5 Control preconfigured Scenes
+		6 Control devices in proximity
+		</Help>
+	</Value>
+	<Value type="byte" index="12" genre="config" label="Action on group 2" units="" min="0" max="255" value="1">
+		<Help>
+		0 Disabled
+		1 Control Dimmer, Motor Control and Switches using Basic+Multilevel Switch Commands (default)
+		2 Control Switches only, click and hold sends only Basic Commands
+		3 Switch All On/Off
+		4 Send Scene Activation
+		5 Control preconfigured Scenes
+		6 Control devices in proximity
+		</Help>
+	</Value>
+	<Value type="byte" index="13" genre="config" label="Action on group 3" units="" min="0" max="255" value="1">
+		<Help>
+		0 Disabled
+		1 Control Dimmer, Motor Control and Switches using Basic+Multilevel Switch Commands (default)
+		2 Control Switches only, click and hold sends only Basic Commands
+		3 Switch All On/Off
+		4 Send Scene Activation
+		5 Control preconfigured Scenes
+		6 Control devices in proximity
+		</Help>
+	</Value>
+	<Value type="byte" index="14" genre="config" label="Action on group 4" units="" min="0" max="255" value="1">
+		<Help>
+		0 Disabled
+		1 Control Dimmer, Motor Control and Switches using Basic+Multilevel Switch Commands (default)
+		2 Control Switches only, click and hold sends only Basic Commands
+		3 Switch All On/Off
+		4 Send Scene Activation
+		5 Control preconfigured Scenes
+		6 Control devices in proximity
+		</Help>
+	</Value>
+	<Value type="byte" index="20" genre="config" label="Typical click timeout" units="ms" min="1" max="100" value="50">
+		<Help>
+		Typical time used to differentiate click, hold, double and click-holds.
+		1 100 in 10 ms units (default is 50, that is equivalent to 500 ms)
+		</Help>
+	</Value>
+	<Value type="byte" index="11" genre="config" label="Send the following Switch All commands" units="" min="1" max="255" value="1">
+		<Help>
+		1 Switch All Off only (default)
+		2 Switch All On only
+		255 Switch All On and Off
+		</Help>
+	</Value>
+	<Value type="byte" index="22" genre="config" label="Invert buttons" units="" min="0" max="255" value="0">
+		<Help>
+		Invert meaning of On/Dim up and Off/Dim down in pairs of buttons. This applies only to pairs in grouped mode. 
+		Buttons 1 and 2 will become Off/Dim down, buttons 3 and 4 On/Dim up.
+		0 No (default)
+		1 Yes
+		</Help>
+	</Value>
+	<Value type="byte" index="24" genre="config" label="LED confirmation mode" units="" min="0" max="255" value="2">
+		<Help>
+		To save batteries LED confirmation can be disabled.
+		0 No confirmations
+		1 Confirm button press
+		2 Confirm button press and delivery (default) 
+		</Help>
+	</Value>
+	<Value type="byte" index="30" genre="config" label="Send unsolicited battery report on wakeup" units="" min="0" max="255" value="0">
+		<Help>
+		0 No (default)
+		1 To same node as wakeup notification
+		2 Broadcast
+		</Help>
+	</Value>
+  </CommandClass>
+
+  <!-- COMMAND_CLASS_MULTI_CHANNEL_V2 
+  <CommandClass id="96" version="2"/>
+	-->
+  <!--COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION_V2.
+  <CommandClass id="142" version="2"/>
+  --> 
+  <!-- COMMAND_CLASS_ASSOCIATION.  -->
+  <CommandClass id="133"> 
+    <Associations num_groups="4">
+      <Group index="1" max_associations="8" label="Button #1" auto="false" />
+      <Group index="2" max_associations="8" label="Button #3" auto="false" />
+      <Group index="3" max_associations="8" label="Button #2" auto="false" />
+      <Group index="4" max_associations="8" label="Button #4" auto="false" />
+    </Associations>
+  </CommandClass>
+
+
+</Product>

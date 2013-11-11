@@ -1,0 +1,34 @@
+<?xml version='1.0'?>
+<xs:schema
+  xmlns:xs='http://www.w3.org/2001/XMLSchema'
+  targetNamespace='http://code.google.com/p/open-zwave/'
+  xmlns:ManufacturerSpecificData='http://code.google.com/p/open-zwave/'
+  elementFormDefault='qualified'>
+
+ <xs:element name='ManufacturerSpecificData'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='ManufacturerSpecificData:Manufacturer' minOccurs='0' maxOccurs='unbounded'/>
+   </xs:sequence>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Manufacturer'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='ManufacturerSpecificData:Product' minOccurs='0' maxOccurs='unbounded'/>
+   </xs:sequence>
+   <xs:attribute name='id' type='xs:string' use='required'/>
+   <xs:attribute name='name' type='xs:string' use='required'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Product'>
+  <xs:complexType>
+   <xs:attribute name='type' type='xs:string' use='required'/>
+   <xs:attribute name='id' type='xs:string' use='required'/>
+   <xs:attribute name='name' type='xs:string' use='required'/>
+   <xs:attribute name='config' type='xs:string' use='optional'/>
+  </xs:complexType>
+ </xs:element>
+</xs:schema>

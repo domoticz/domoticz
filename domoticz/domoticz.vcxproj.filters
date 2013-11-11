@@ -63,9 +63,6 @@
     <Filter Include="Devices\Rego6XX">
       <UniqueIdentifier>{f7b93c2a-b061-4a1b-9a68-75151cb727cb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\Razberry-ZWave">
-      <UniqueIdentifier>{3d63876c-62b2-4fbf-a50c-5132dcfbcb3b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\Davis">
       <UniqueIdentifier>{c3024a2d-5f67-4780-8d26-cc53d91624ac}</UniqueIdentifier>
     </Filter>
@@ -98,6 +95,15 @@
     </Filter>
     <Filter Include="Devices\Teleinfo">
       <UniqueIdentifier>{9b098c6e-b49d-404b-b9a2-5904c1d92edd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\ZWave">
+      <UniqueIdentifier>{8541fa16-1ca3-4b1c-8658-7075b91f73a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\ZWave\Razberry-ZWave">
+      <UniqueIdentifier>{3d63876c-62b2-4fbf-a50c-5132dcfbcb3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\ZWave\OpenZWave">
+      <UniqueIdentifier>{2eca1afb-1a1f-4158-ab8d-0616c1fbd279}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -257,7 +263,7 @@
       <Filter>SMTP</Filter>
     </ClInclude>
     <ClInclude Include="hardware\Razberry.h">
-      <Filter>Devices\Razberry-ZWave</Filter>
+      <Filter>Devices\ZWave\Razberry-ZWave</Filter>
     </ClInclude>
     <ClInclude Include="hardware\DavisLoggerSerial.h">
       <Filter>Devices\Davis</Filter>
@@ -318,6 +324,12 @@
     </ClInclude>
     <ClInclude Include="hardware\Teleinfo.h">
       <Filter>Devices\Teleinfo</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\ZWaveBase.h">
+      <Filter>Devices\ZWave</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\OpenZWave.h">
+      <Filter>Devices\ZWave\OpenZWave</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -451,7 +463,7 @@
       <Filter>SMTP</Filter>
     </ClCompile>
     <ClCompile Include="hardware\Razberry.cpp">
-      <Filter>Devices\Razberry-ZWave</Filter>
+      <Filter>Devices\ZWave\Razberry-ZWave</Filter>
     </ClCompile>
     <ClCompile Include="hardware\DavisLoggerSerial.cpp">
       <Filter>Devices\Davis</Filter>
@@ -509,6 +521,12 @@
     </ClCompile>
     <ClCompile Include="hardware\Teleinfo.cpp">
       <Filter>Devices\Teleinfo</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\ZWaveBase.cpp">
+      <Filter>Devices\ZWave</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\OpenZWave.cpp">
+      <Filter>Devices\ZWave\OpenZWave</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

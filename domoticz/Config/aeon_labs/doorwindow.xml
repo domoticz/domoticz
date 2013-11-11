@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Aeon Labs Door/Window Sensor -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters not supported -->
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<!-- Information from http://www.pepper1.net/zwavedb/uploads/resources/1804efacf71a36402c53209c0991c04f20b31588.pdf -->
+		<!-- Or is original entry correct?: max_associations="5" label="Report" -->
+		<Associations num_groups="1">
+			<Group index="1" max_associations="6" label="Reports" auto="true"/>
+		</Associations>
+	</CommandClass>
+</Product>

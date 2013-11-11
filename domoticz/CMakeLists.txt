@@ -176,10 +176,12 @@ hardware/S0MeterSerial.cpp
 hardware/S0MeterBase.cpp
 hardware/smbus.cpp
 hardware/Wunderground.cpp
+hardware/OpenZWave.cpp
 hardware/PiFace.cpp
 hardware/OTGWBase.cpp
 hardware/OTGWSerial.cpp
 hardware/OTGWTCP.cpp
+hardware/ZWaveBase.cpp
 tcpserver/TCPServer.cpp
 tcpserver/TCPClient.cpp
 webserver/cWebem.cpp
@@ -232,8 +234,7 @@ else()
   MESSAGE(FATAL_ERROR "Could not find LIBUSB on your system, see install.txt how to get them installed.")
 ENDIF(LIBUSB_FOUND)
 
-target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread curl ${LIBUSB_LIBRARIES} lua)
-#target_link_libraries(domoticz ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
+target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread curl ${LIBUSB_LIBRARIES} lua ./hardware/openzwave/*.a)
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
 
@@ -248,6 +249,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/License.txt DESTINATION /opt/domoticz)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/History.txt DESTINATION /opt/domoticz)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/svnversion.h DESTINATION /opt/domoticz)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts DESTINATION /opt/domoticz USE_SOURCE_PERMISSIONS)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Config DESTINATION /opt/domoticz USE_SOURCE_PERMISSIONS)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/updatedomo DESTINATION /opt/domoticz PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ)
 
 # build a CPack driven installer package

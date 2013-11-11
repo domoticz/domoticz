@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="29" genre="config" label="Load Sensing" size="1" value="0">
+			<Help>Turn on the module when the attached load is connected</Help>
+			<Item label="No" value="0" />
+			<Item label="Yes" value="1" />
+		</Value>
+		<Value type="list" index="5" genre="config" label="Ignore Start-Level (Receiving)" size="1" value="1">
+			<Help>This dimmer will start dimming from its current level.</Help>
+			<Item label="No" value="0" />
+			<Item label="Yes" value="1" />
+		</Value>
+		<Value type="byte" index="7" genre="config" label="On/Off Command Dim Step" units="" min="1" max="99" value="1">
+			<Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
+		</Value>
+		<Value type="byte" index="8" genre="config" label="On/Off Command Dim Rate" units="x 10 milliseconds" min="1" max="255" value="3">
+			<Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
+		</Value>
+		<Value type="byte" index="9" genre="config" label="Local Control Dim Step" units="" min="1" max="99" value="1">
+			<Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
+		</Value>
+		<Value type="byte" index="10" genre="config" label="Local Control Dim Rate" units="x 10 milliseconds" min="1" max="255" value="3">
+			<Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
+		</Value>
+		<Value type="byte" index="11" genre="config" label="ALL ON/ALL OFF Dim Step" units="" min="1" max="99" value="1">
+			<Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
+		</Value>
+		<Value type="byte" index="12" genre="config" label="ALL ON/ALL OFF Dim Rate" units="x 10 milliseconds" min="1" max="255" value="3">
+			<Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
+		</Value>
+	</CommandClass>
+</Product>
+

@@ -19,6 +19,7 @@
 #include "../hardware/TE923.h"
 #include "../hardware/Rego6XXSerial.h"
 #include "../hardware/Razberry.h"
+#include "../hardware/OpenZWave.h"
 #include "../hardware/DavisLoggerSerial.h"
 #include "../hardware/VolcraftCO20.h"
 #include "../hardware/1Wire.h"
@@ -332,6 +333,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_S0SmartMeter:
 	case HTYPE_OpenThermGateway:
 	case HTYPE_TeleinfoMeter:
+	case HTYPE_OpenZWave:
 		{
 			//USB/Serial
 #if defined WIN32
@@ -384,6 +386,11 @@ bool MainWorker::AddHardwareFromParams(
 			else if (Type==HTYPE_TeleinfoMeter)
 			{
 				pHardware = new Teleinfo(ID, szSerialPort);
+			}
+			else if (Type==HTYPE_OpenZWave)
+			{
+				pHardware = new COpenZWave(ID, szSerialPort);
+
 			}
 		}
 		break;

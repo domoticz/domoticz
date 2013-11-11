@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="bool" index="241" genre="config" label="Button #1 Programmable" units="" min="0" max="1" />
+    <Value type="bool" index="242" genre="config" label="Button #2 Programmable" units="" min="0" max="1" />
+    <Value type="bool" index="243" genre="config" label="Button #3 Programmable" units="" min="0" max="1" />
+    <Value type="bool" index="244" genre="config" label="Button #4 Programmable" units="" min="0" max="1" />
+  </CommandClass>
+
+  <!-- COMMAND_CLASS_VERSION.  This class is in the list reported by the Minimote, but it does not respond to requests -->
+  <CommandClass id="134" action="remove" />
+
+  <!-- COMMAND_CLASS_WAKE_UP.  This class is in the list reported by the Minimote, but it does not
+  respond to requests.  It still needs to be supported so that wake up notifications are handled. -->
+  <CommandClass id="132" create_vars="false" />
+
+  <!-- COMMAND_CLASS_ASSOCIATION.  This class is in the list reported by the Minimote, but it does not respond to requests -->
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" max_associations="5" label="Button #1" auto="false" write_only="true" />
+      <Group index="2" max_associations="5" label="Button #2" auto="false" write_only="true" />
+      <Group index="3" max_associations="5" label="Button #3" auto="false" write_only="true" />
+      <Group index="4" max_associations="5" label="Button #4" auto="false" write_only="true" />
+    </Associations>
+  </CommandClass>
+
+  <!-- COMMAND_CLASS_ASSOCIATION_COMMAND_CONFIGURATION.  This class is supported but is missing from the list reported by the Minimote -->
+  <CommandClass id="155" action="add" />
+
+</Product>
+

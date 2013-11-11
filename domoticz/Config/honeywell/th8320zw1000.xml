@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- This thermostat's setpoint descriptions are 1 based, not 0 -->
+  <CommandClass id="67" name="COMMAND_CLASS_THERMOSTAT_SETPOINT" base="0" />
+</Product>

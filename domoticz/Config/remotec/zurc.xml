@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="16">
+      <Group index="1" max_associations="232" label="Button1" auto="false" />
+      <Group index="2" max_associations="232" label="Button2" auto="false" />
+      <Group index="3" max_associations="232" label="Button3" auto="false" />
+      <Group index="4" max_associations="232" label="Button4" auto="false" />
+      <Group index="5" max_associations="232" label="Button5" auto="false" />
+      <Group index="6" max_associations="232" label="Button6" auto="false" />
+      <Group index="7" max_associations="232" label="Button7" auto="false" />
+      <Group index="8" max_associations="232" label="Button8" auto="false" />
+      <Group index="9" max_associations="232" label="Button9" auto="false" />
+      <Group index="10" max_associations="232" label="Button10" auto="false" />
+      <Group index="11" max_associations="232" label="Button11" auto="false" />
+      <Group index="12" max_associations="232" label="Button12" auto="false" />
+      <Group index="13" max_associations="232" label="Button13" auto="false" />
+      <Group index="14" max_associations="232" label="Button14" auto="false" />
+      <Group index="15" max_associations="232" label="Button15" auto="false" />
+      <Group index="16" max_associations="232" label="Button16" auto="false" />
+    </Associations>
+  </CommandClass>
+  <!-- COMMAND_CLASS_WAKE_UP.  This class is in the list reported by the device, but it does not
+  respond to requests.  It still needs to be supported so that wake up notifications are handled. -->
+  <CommandClass id="132" create_vars="false" />
+</Product>

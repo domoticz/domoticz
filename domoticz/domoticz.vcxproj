@@ -55,7 +55,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>S:\Boost\stage\lib\x86;./libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>curl/libcurl_imp.lib;sqlite/sqlite3.lib;lua/src/LuaMSVS/Debug/LuaMSVS.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>curl/libcurl_imp.lib;sqlite/sqlite3.lib;lua/src/LuaMSVS/Debug/LuaMSVS.lib;./hardware/openzwave/win32/OpenZWaveD.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <PreBuildEvent>
@@ -82,7 +82,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>S:\Boost\stage\lib\x86;./libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>curl/libcurl_imp.lib;sqlite/sqlite3.lib;lua/src/LuaMSVS/Release/LuaMSVS.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>curl/libcurl_imp.lib;sqlite/sqlite3.lib;lua/src/LuaMSVS/Release/LuaMSVS.lib;./hardware/openzwave/win32/OpenZWave.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
@@ -105,6 +105,7 @@
     <ClInclude Include="hardware\DavisLoggerSerial.h" />
     <ClInclude Include="hardware\Dummy.h" />
     <ClInclude Include="hardware\hidapi.h" />
+    <ClInclude Include="hardware\OpenZWave.h" />
     <ClInclude Include="hardware\OTGWBase.h" />
     <ClInclude Include="hardware\OTGWSerial.h" />
     <ClInclude Include="hardware\OTGWTCP.h" />
@@ -121,6 +122,7 @@
     <ClInclude Include="hardware\VolcraftCO20.h" />
     <ClInclude Include="hardware\VolcraftCO20Tool.h" />
     <ClInclude Include="hardware\Wunderground.h" />
+    <ClInclude Include="hardware\ZWaveBase.h" />
     <ClInclude Include="httpclient\HTTPClient.h" />
     <ClInclude Include="main\appversion.h" />
     <ClInclude Include="hardware\ASyncSerial.h" />
@@ -177,6 +179,7 @@
     <ClCompile Include="hardware\DavisLoggerSerial.cpp" />
     <ClCompile Include="hardware\Dummy.cpp" />
     <ClCompile Include="hardware\libusbwinusbbridge.cpp" />
+    <ClCompile Include="hardware\OpenZWave.cpp" />
     <ClCompile Include="hardware\OTGWBase.cpp" />
     <ClCompile Include="hardware\OTGWSerial.cpp" />
     <ClCompile Include="hardware\OTGWTCP.cpp" />
@@ -192,6 +195,7 @@
     <ClCompile Include="hardware\VolcraftCO20.cpp" />
     <ClCompile Include="hardware\VolcraftCO20Tool.cpp" />
     <ClCompile Include="hardware\Wunderground.cpp" />
+    <ClCompile Include="hardware\ZWaveBase.cpp" />
     <ClCompile Include="httpclient\HTTPClient.cpp" />
     <ClCompile Include="main\Camera.cpp" />
     <ClCompile Include="hardware\Rego6XXSerial.cpp" />

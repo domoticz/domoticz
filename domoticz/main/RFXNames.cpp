@@ -155,6 +155,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_OpenThermGateway,	"OpenTherm Gateway USB" },
 		{ HTYPE_TeleinfoMeter,		"Teleinfo EDF USB"},
 		{ HTYPE_OpenThermGatewayTCP,"OpenTherm Gateway with LAN interface" },
+		{ HTYPE_OpenZWave,			"OpenZWave USB" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

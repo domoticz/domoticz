@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Taken from http://en.z-wave.me/docs/ZME_0643x_UserManual.pdf-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<!--IMPORTANT: Controllers may only allow to configure signed values. 
+	    In order to set values in the range  128?255 for parameters 4,  5 and 6 the
+	    value sent in the application shall be the desired value minus 256. 
+	    For example: to set parameter 4 in Window Blind to 200? sit may be  needed
+	    to set a value of 200?256=?56.
+	    Similar rule applies to parameter 2: to set values in range 32768?65535
+	    use value equal to desired value minus 65536. For example, to set auto
+	    switch off period to 10 hours =36000s it may be needed to set a value
+	    36000?65536=?29536.-->
+
+	<CommandClass id="112">
+		<Value type="list" index="1" genre="config" label="Set LED indication mode" units="" min="1" max="99" value="3" size="1">
+			<Item label="Disabled" value="0" />
+			<Item label="Show switch/dimmer state / when in motion or inactive (for blinds)" value="1" />
+			<Item label="Night mode (inverted switch state)" value="2" />
+			<Item label="Operated by Indicator Command Class (default)" value="3" />
+			<Item label="Show if not closed (for blinds only)" value="4" />
+		</Value>
+		<Value type="int" index="2" genre="config" label="Automatically switch off after" units="seconds" min="0" max="65535" value="0">
+			<Help>If not zero, automatically switch off/close blind after a user defined time</Help>
+		</Value>
+		<Value type="list" index="3" genre="config" label="What to do on RF off command" value="0" size="1">
+			<Help>If not zero, automatically switch off/close blind after a user defined time</Help>
+			<Item label="Switch off (default)" value="0" />
+			<Item label="Ignore" value="1" />
+			<Item label="Switch on" value="2" />
+		</Value>
+		<Value type="list" index="4" genre="config" label="Ignore Start Level" value="1" size="1">
+			<Help>Defines if the dimmer shall ignore start level in StartLevelChange command despite it is specified or not.</Help>
+			<Item label="No" value="0" />
+			<Item label="Yes (default)" value="1" />
+		</Value>
+		<Value type="byte" index="5" genre="config" label="Dimmer speed" units="x 10 milliseconds" min="0" max="255" value="30">
+			<Help>Time to dim on button presses and Set command (if it has no duration specified). If not 0, dimming will be done smoothly to preserve bulb life.</Help>
+		</Value>
+		<Value type="byte" index="6" genre="config" label="Dimming long speed" units="Seconds" min="1" max="255" value="3">
+			<Help>Time to dim on button holds and StartLevel Change command (if it has no duration specified).</Help>
+		</Value>
+		<Value type="list" index="7" genre="config" label="Set Maximum Light on On click" value="0" size="1">
+			<Help>Defines if the dimmer shall set maximum light level on On command. By default on On command dimmer restores last level. This parameter allows to configure to set maximum level on second On command (if already On) or to always switch on to maximum level.</Help>
+			<Item label="No (default)" value="0" />
+			<Item label="If already in On state" value="1" />
+			<Item label="Always" value="2" />
+		</Value>
+		<Value type="byte" index="8" genre="config" label="Baby Dimming Time" units="minutes" min="0" max="255" value="0">
+			<Help>Time to dim on double click Off  button for Baby- Dim function. This function works only if the load is operated by single press and hold button action. If enabled, the device will wait for a click timeout to see if the second click would be pressed. This will introduce a small delay for single click commands, unprotected.</Help>
+		</Value>
+		<Value type="byte" index="9" genre="config" label="Target Dimming Level for Baby Dimming" units="dimmer level %" min="0" max="99" value="0">
+			<Help>Target level on which to stop while executing Baby Dimming. Can be 0 to completely switch off the light. </Help>
+		</Value>
+		<Value type="byte" index="10" genre="config" label="Typical click timeout" units="x 10 milliseconds" min="1" max="100" value="50">
+			<Help>Typical time used to differentiate click, hold, double and triple clicks.</Help>
+		</Value>
+		<Value type="list" index="11" genre="config" label="Invert buttons" value="0" size="1">
+		  <Item label="No default)" value="0" />
+		  <Item label="Yes" value="1" />
+		</Value>
+		<Value type="list" index="12" genre="config" label="Switch by buttons" value="1" size="1">
+			<Help>If disabled, the local operations by buttons will not switch the load, but only send commands to On/Off association group. In  this mode buttons are not linked with the switch anymore. They can be used separately: buttons to control remote device, switch will operate by RF commands only. </Help>
+			<Item label="No" value="0" />
+			<Item label="By single press and hold (default)" value="1" />
+			<Item label="By double press and hold" value="1" />
+		</Value>
+		<Value type="list" index="13" genre="config" label="Action on button single press or hold" value="1" size="1">
+			<Help>Defines which command should be sent on button single press or hold. Basic commands are sent to Association group. Switch All commands are sent broadcast. </Help>
+			<Item label="Disabled" value="0" />
+			<Item label="Switch On, Off and dim using Basic Set(default)" value="1" />
+			<Item label="Switch All On/Off" value="1" />
+		</Value>
+		<Value type="list" index="13" genre="config" label="Action on button double press or hold" value="0" size="1">
+			<Help>Defines which command should be sent on button double press or press-hold. Basic commands are sent to Association group.   Switch   All commands are sent broadcast. If not disabled, the device will wait for a click timeout to see if the second click would be pressed. This will introduce a small delay for single click commands.</Help>
+			<Item label="Disabled (don't wait for double click,default)" value="0" />
+			<Item label="Switch On, Off and dim using Basic Set" value="1" />
+			<Item label="Switch All On/Off" value="1" />
+		</Value>
+		<Value type="list" index="15" genre="config" label="Send the following Switch All commands" value="1" size="1">
+			<Item label="Switch All Off only (default)" value="1" />
+			<Item label="Switch All On only" value="1" />
+			<Item label="Switch All On and Off" value="255" />
+		</Value>
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="3">
+			<Group index="1" max_associations="8" label="Group 1" auto="false"/>
+			<Group index="2" max_associations="8" label="Group 2" auto="false" />
+			<Group index="3" max_associations="8" label="Send updates" auto="true"/>
+		</Associations>
+	</CommandClass>
+</Product>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value type="list" genre="config" instance="1" index="1" label="1. Enable/Disable ALL ON/OFF" size="1" value="255">
+      <Help>Activate/Deactive ALL ON/OFF</Help>
+      <Item label="ALL ON disabled/ ALL OFF disabled" value="0" />
+      <Item label="ALL ON disabled/ ALL OFF active" value="1" />
+      <Item label="ALL ON active / ALL OFF disabled" value="2" />
+      <Item label="ALL ON active / ALL OFF active" value="255" />
+    </Value>
+    <Value type="list" genre="config" instance="1" index="6" label="6. Separation of association sending (key 1)" size="1" value="0">
+      <Help>Activate/Deactivate association sending for group 1 - Note: Parameter 15 must set to 1 to work properly.</Help>
+      <Item label="Map status to all devices in group 1 (default)" value="0" />
+      <Item label="Map OFF status to all devices in group 1, Double click on key 1 will send ON to all devices in group 1, all dimmers set to prev.value" value="1" />
+      <Item label="Map OFF status to all devices in group 1, Double click on key 1 will send ON to all devices in group 1, all dimmers set to 100%" value="2" />                
+    </Value>
+    <Value type="list" genre="config" instance="1" index="7" label="7. Control key #2 behaviour" size="1" value="1">
+      <Help>Key no.2 is not represented by any physical device except of devices on association list. 
+      This functionality prevents of lack of reaction on pressing key no.2 through polling devices 
+      from association list one by one and checking their actual statuses.
+      </Help>
+      <Item label="Device status is not checked" value="0" />
+      <Item label="Device status is checked" value="1" />
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="8" label="8. Dimming step at automatic control" min="1" max="99" units="%" value="1">
+      <Help>Options for changing parameter 1-99</Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="9" label="9. Time of MANUALLY moving between the extreme dimming values" units="ms" min="1" max="255" value="5">
+      <Help>Options for changing parameter 1-255 (10ms - 2,5s)</Help>
+    </Value>
+    <!-- Version 1.9 has a bug that requires this value be set to 0 or the
+	 dimmer gets stuck and won't respond to switch presses -->
+    <Value type="byte" genre="config" instance="1" index="10" label="10. Time of AUTOMATIC moving between the extreme dimming values" min="0" max="255" units="ms" value="1">
+      <Help>Options for changing parameter 1-255 (10ms - 2,5s) - 0: this value disables the smooth change in light intensity. NOTE: value 0 is required for inductive and capacitive devices unsuitable for dimming (e.g. fluorescent lamps, motors, etc...)</Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="11" label="11. Dimming step at manual control" min="1" max="99" units="%" value="1">
+      <Help>Options for changing parameter 1-99</Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="12" label="12. Maximum dimmer level control" min="2" max="99" units="%" value="99">
+      <Help>Options for changing parameter 2-99</Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="13" label="13. Minimum dimmer level control" min="1" max="98" units="5" value="2">
+      <Help>Options for changing parameter 1-98</Help>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="14" label="14. Inputs Button/Switch configuration" size="1" value="0">
+      <Help>Binary inputs type configuration</Help>
+      <Item label="Mono-stable input (button)" value="0"/>
+      <Item label="Bi-stable input (switch)" value="1"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="15" label="15. Double click option" size="1" value="1">
+      <Help>Double-click set lighting at 100%</Help>
+      <Item label="Disable double click" value="0"/>
+      <Item label="Enable double click" value="1"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="16" label="16. Saving state before power faillure" size="1" value="1">
+      <Help>Saving state before power faillure</Help>
+      <Item label="State NOT saved at power failure, all outputs are set to OFF upon power restore" value="0"/>
+      <Item label="State saved at power failure, all outputs are set to previous state upon power restore" value="1"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="17" label="17. 3-way switch" size="1" value="0">
+      <Help>The function of 3-way switch provides the option to double key no. 1. The dimmer may control two bi-stable push-buttons or an infinite number of mono-stable push-buttons. (default value 0)</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="18" label="18. Synchronizing light level for associated devices" size="1" value="0">
+      <Help>The dimmer communicate the level to the associated devices. (default value 0)</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="19" label="19. Change [On-Off] bi-stable keys" size="1" value="0">
+      <Help>This function allow user to change [On-Off] bi-stable keys (parameter no. 14) (default value 0)</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="20" label="20. ADVANCED Impulse length" min="100" max="170" value="110">
+      <Help>This function will enable decreasing the minimum level of the Dimmer by extending the control impulse.[100 - 170]
+      By changing the minimem level, the user may completely dim LED bulbs. 
+      Not all LED bulbs available on the market have the dimmming option.
+      WARNING: Wrong setting of the function may cause incorrect operation of the Dimmer.</Help>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="30" label="30. Alarm" size="1" value="3">
+      <Help>Alarm of any type (general alarm, water flooding alarm, smoke alarm: CO, CO2, temperature alarm) défault value 3-alarm flashing</Help>
+      <Item label="DEACTIVATION - no response to alarm frames" value="0"/>
+      <Item label="ALARM DIMMER ON - device turn ON upon receipt of alarm frame" value="1"/>
+      <Item label="ALARM DIMMER OFF - device will turn OFF upon receipt of alarm frame" value="2"/>
+      <Item label="ALARM FLASHING - device will turn ON and OFF periodically (see param.39)" value="3"/>
+    </Value>
+    <Value type="short" genre="config" instance="1" index="39" label="39. ALARM FLASHING alarm time" min="1" max="65535" units="s" value="600">
+      <Help>Amount of time the device keeps on flashing after receipt of Alarm Frame (1s-65535s)</Help>
+    </Value>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" max_associations="5" label="Group 1" auto="true"/>
+      <Group index="2" max_associations="5" label="Group 2" auto="true" />
+      <Group index="3" max_associations="1" label="Controller Updates" auto="true"/>
+    </Associations>
+  </CommandClass>
+
+</Product>

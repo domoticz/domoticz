@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    
+    <Value type="list" genre="config" instance="1" index="1" label="1. Always on function" value="1" size="1">
+      <Help>Once activated, Wall Plug will keep a connected device constantly 
+								 ON, will stop reacting to alarm frames and B-button push.
+								 "Always on" function turns the Plug into a power and energy meter. 
+                 Also, connected device will not be turned off upon receiving an alarm 
+                 frame from another Z-Wave device (parameter 35 will be ignored).
+                 In "Always on" mode, connected device may be turned off only after 
+                 user defined power has been exceeded (parameter 70). In such a 
+                 case, connected device can be turned on again by pushing the 
+                 B-button or sending a control frame. By default, overload protection 
+                 is inactive. Default setting: 1</Help>
+      <Item label="function activated" value="0" />
+      <Item label="function inactive" value="1" />
+
+    </Value>
+    
+     <Value type="list" genre="config" instance="1" index="16" label="16 - Remember device status after power failure" value="1" size="1">
+      <Help>Define how will the Plug react after the power supply is back on. Default setting: 1</Help>
+      <Item label="Wall Plug does not memorize its state after a power failure" value="0" />
+      <Item label="Wall Plug memorizes its state after a power failure" value="1" />
+
+    </Value>
+    
+    <Value type="list" genre="config" instance="1" index="34" label="34. Reaction to alarms" value="255" size="1">
+			<Help>Type of transmitted control frame for association group 1, activated via input IN1. The parameter allows to specify the type of alarm frame or to force transmission of control commands (BASIC_SET)</Help>
+			<Item label="ALARM GENERIC" value="1" />
+			<Item label="ALARM SMOKE" value="2" />
+			<Item label="ALARM CO" value="4" />
+			<Item label="ALARM CO2" value="8" />
+			<Item label="ALARM HEAT" value="16" />
+			<Item label="ALARM WATER" value="32" />
+			<Item label="ALARM ALL" value="63" />
+		</Value>
+    
+    <Value type="list" genre="config" instance="1" index="35" label="35. Wall Plug's response to alarm frames" value="255" size="1">
+			<Help>Parameter defines how the Wall Plug will respond to alarms (device's 
+								status change) Default setting: 0
+									0 - no reaction,
+									1 - turn on connected device. LED ring signals an alarm through 
+									defined time period (parameter 39) or untill the alarm is cancelled.
+									2 - turn off connected device. LED ring signals an alarm through 
+									defined time period (parameter 39) or untill the alarm is cancelled.
+									3 - cyclically change device state, each 1second. In alarm mode Wall 
+									Plug does not report status change, power changes, ignores alarm 
+									frames. After the defined time period has passed (parameter 39) or 
+									after the alarm cancellation, connected device is set to the previous 
+									state.
+									Parameter: 1[byte]
+									NOTE:
+									If "always on" function is active (parameter 1), this parameter's 
+									settings are ignored.
+
+			</Help>
+			<Item label="No reaction" value="0" />
+			<Item label="Turn on connected device" value="1" />
+			<Item label="Turn off connected device" value="2" />
+			<Item label="Cyclically change device state, each 1second" value="2" />
+		</Value>
+    
+    <Value type="byte" genre="config" instance="1" index="39" label="39. Alarm duration" value="600"  size="2">
+      <Help>Wall Plug's alarm mode duration. If a device sending an alarm frame through the Z-Wave network sets alarm duration as well, this parameter's settings are ignored.</Help>
+    </Value>
+    
+     <Value type="byte" genre="config" instance="1" index="40" label="40. Immediate power report" value="80"  size="1">
+     <Help>Parameter defines by how much power load must change, in 
+									percents, to be reported to the main controller, with the highest 
+									priority in the Z-Wave network. By default, Fibaro Wall Plug 
+									immediately sends power report if the power load changes by 80%.
+									Default setting: 80 (%)
+		</Help>
+    </Value>
+    
+    <Value type="byte" genre="config" instance="1" index="42" label="42. Standard power load reporting" value="15"  size="1">
+     <Help>Parameter defines by how much power load must change, in 
+								percents, to be reported to the main controller. By default, Fibaro 
+								Wall Plug sends power report if the power load changes by 15%.
+								By default such changes in power load may be reported up to 5 times 
+								per 30 seconds. Wall Plug sends 5 reports during time period 
+								specified in paramater 43. Default setting: 15 (%)
+		</Help>
+    </Value>    
+		<Value type="byte" genre="config" instance="1" index="43" label="43. Power reporting frequency" value="30"  size="1">
+     <Help>This parameter defines how frequently standard power reports 
+								(parameter 42) will be sent. By default Wall Plug sends up to 5 
+						    reports each 30 seconds, provided the power load changes by 15%.
+                Default seting: 30 (s)
+		</Help>
+    </Value>        
+    <Value type="byte" genre="config" instance="1" index="45" label="45. Reporting changes in energy consumed by controlled devices" value="30"  size="1">
+     <Help>New, reported energy value is calculated based on last reported value. Default setting: 10 (0,1 kWh). 
+     						Available settings: 1 - 254 (0,01kWh - 2,54kWh).
+     						Value of 25 - changes in consumed energy will not be reported. 
+								Reports will be sent only in case of polling.
+		</Help>
+    </Value>  
+    
+     <Value type="byte" genre="config" instance="1" index="47" label="47. Time period between reports on power load and energy consumption." value="3600"  size="2">
+      <Help>Parameter defines time period between reports sent when changes 
+									in power load have not been recorded. By default, if power load 
+								  changes have not been recorded, reports are sent every hour.
+								  Default setting: 3 600 (s), Available settings: 1 - 65534 (s)
+								  Value of 65535 - no periodic reports. Reports will be sent only in 
+								 case of power load / energy consumption changes (parameters 40, 42, 43,45) or in case of polling.</Help>
+    </Value>
+    
+     <Value type="list" genre="config" instance="1" index="49" label="49. Metering energy consumed by the Wall Plug itself" value="0" size="1">
+      <Help>This parameter determines whether energy metering should include the amount of energy consumed by the Wall Plug itself. Results are being added to energy consumed by controlled device. Default setting: 0</Help>
+      <Item label="function activated" value="0" />
+      <Item label="function inactive" value="1" />
+     </Value>
+    
+    <Value type="byte" genre="config" instance="1" index="50" label="50. DOWN value" value="300"  size="2">
+      <Help>Lower power threshold, used in parameter 52. Default setting: 300 (30 W) Available settings: 0 - 25 000 (0,0W - 2 500W) DOWN value cannot be higher than a value specified in parameter 51.</Help>
+    </Value>
+    
+    <Value type="byte" genre="config" instance="1" index="51" label="51. UP value " value="500"  size="2">
+      <Help>Upper power threshold, used in parameter 52. Default setting: 500 (50 W) Available settings: 1 - 25 000 (0,1W - 2 500W) UP value cannot be lower than a value specified in parameter 50.</Help>
+    </Value>
+    
+    
+    <Value type="list" genre="config" instance="1" index="52" label="52. Action in case of exceeding defined power values" value="255" size="1">
+			<Help>Parameter deifines the way 2nd association group devices are controlled, depending on the current power load.
+									Default setting: 6 Available settings:
+										0 - function inactive,
+										1 - turn the associated devices on, once the power drops below 
+										DOWN value (parameter 50),
+										2 - turn the associated devices off, once the power drops below 
+										DOWN value (parameter 50),
+										3 - turn the associated devices on, once the power rises above UP 
+										value (parameter 51),
+										4 - turn the associated devices off, once the power rises above UP 
+										value (parameter 51),
+										5 - 1 and 4 combined. Turn the associated devices on, once the 
+										power drops below DOWN value (parameter 50). Turn the 
+										associated devices off, once the power rises above UP value 
+										(parameter 51).
+										6 - 2 and 3 combined. Turn the associated devices off, once the 
+										power drops below DOWN value (parameter 50). Turn the 
+										associated devices on, once the power rises above UP value 
+										(parameter 51).
+
+			</Help>
+			<Item label="Function inactive" value="0" />
+			<Item label="Turn the associated devices on,Power below DOWN" value="1" />
+			<Item label="Turn the associated devices off,Power below DOWN" value="2" />
+			<Item label="Turn the associated devices on,Power above UP" value="3" />
+			<Item label="Turn the associated devices off,Power above UP" value="4" />
+			<Item label="1 and 4 combine" value="5" />
+			<Item label="2 and 3 combined" value="6" />
+			
+		</Value>
+   
+    <Value type="byte" genre="config" instance="1" index="60" label="60. Power load, which when exceeded, makes the LED ring flash violet." value="25000"  size="2">
+      <Help>Function is active only when parameter 61 is set to 0 or 1.Default setting: 25 000 (2 500W) Available settings: 1 000 - 32 000 (100W - 3200W).</Help>
+    </Value>	
+   
+     <Value type="list" genre="config" instance="1" index="61" label="61. LED ring illumination colour when controlled device is on" value="1" size="1">
+			<Help>   0 - LED ring illumination colour changes in predefined steps, depending on power consumption changes,
+										1 - LED ring illumination colour changes continuously, using full spectrum of available colorus, depending on power consumption changes.
+										2 - White illumination,
+										3 - Red illumination,
+										4 - Green illumination,
+										5 - Blue illumination,
+										6 - Yellow illumination,
+										7 - Cyan illumination,
+										8 - Magenta illumination,
+										9 - illumination turned off completely
+
+			</Help>
+			<Item label="Depending on power consumption changes" value="0" />
+			<Item label=" using full spectrum of available colorus" value="1" />
+			<Item label="White illumination" value="2" />
+			<Item label="Red illumination" value="3" />
+			<Item label="Green illumination" value="4" />
+			<Item label="Blue illumination" value="5" />
+			<Item label="Yellow illumination" value="6" />
+			<Item label="Cyan illuminatio" value="7" />
+			<Item label="Magenta illumination" value="8" />
+			<Item label="illumination turned off completely" value="9" />
+		
+			
+		</Value>
+   
+   
+   <Value type="list" genre="config" instance="1" index="63" label="63. LED ring illumination colour at the Z-Wave network alarm detection. " value="1" size="1">
+			<Help>   
+										 Default setting: 1
+											0 - No change in colour. LED ring illumination colour determined by parameters 61 or 62 settings,
+											1 - LED ring flashes red / blue / white (default),
+											2 - White illumination,
+											3 - Red illumination,
+											4 - Green illumination,
+											5 - Blue illumination,
+											6 - Yellow illumination,
+											7 - Cyan illumination,
+											 8 - Magenta illumination,
+											9 - illumination turned off completely.
+
+			</Help>
+			<Item label="No change in colour" value="0" />
+			<Item label="LED ring flashes red / blue / white" value="1" />
+			<Item label="White illumination" value="2" />
+			<Item label="Red illumination" value="3" />
+			<Item label="Green illumination" value="4" />
+			<Item label="Blue illumination" value="5" />
+			<Item label="Yellow illumination" value="6" />
+			<Item label="Cyan illuminatio" value="7" />
+			<Item label="Magenta illumination" value="8" />
+			<Item label="illumination turned off completely" value="9" />
+   </Value>
+   
+       <Value type="byte" genre="config" instance="1" index="70" label="70. Oveload safety switch" value="65535"  size="2">
+      <Help>This function allows for turning off the controlled device in case of exceeding the defined power. Controlled device will be turned off even if "always on" function is active (parameter 1).
+									Controlled device can be turned back on via B-button or sending a 
+									control frame. By default this function is inactive.
+									Default setting: 65 535 (6 553,5W)
+									Available settings: 10 - 65 535 (1W - 6 553,5W).
+									Value higher than 32 000 (3 200W) turns the overload safety switch 
+									off, i.e. this functionality is turned off by default.</Help>
+    </Value>
+  </CommandClass>
+  
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" max_associations="16" label="Group 1" auto="false"/>
+      <Group index="2" max_associations="16" label="Group 2" auto="false" />
+      <Group index="3" max_associations="1" label="Send updates" auto="true"/>
+    </Associations>
+  </CommandClass>
+
+</Product>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="1" genre="config" label="Ignore Start-Level (Transmitting)" value="1">
+			<Help>Dimmers controlled by this switch will start dimming from their current level.</Help>
+			<Item label="No" value="0" />
+			<Item label="Yes" value="1" />
+		</Value>
+		<Value type="list" index="3" genre="config" label="Night Light" value="0">
+			<Help>In night-light mode the LED on the switch will turn ON when the switch is turned OFF.</Help>
+			<Item label="No" value="0" />
+			<Item label="Yes" value="1" />
+		</Value>
+		<Value type="list" index="4" genre="config" label="Invert Switch" value="0">
+			<Help>Change the top of the switch to OFF and the bottom of the switch to ON.</Help>
+			<Item label="No" value="0" />
+			<Item label="Yes" value="1" />
+		</Value>
+		<Value type="list" index="19" genre="config" label="LED Transmission Indication" value="2">
+			<Help>The ZRW103 will flicker its LED when it is transmitting to any of its 4 groups. This flickering can be set to not flicker at all, to flicker the entire time it is transmitting, or to flicker for only 1 second when it begins transmitting.</Help>
+			<Item label="None" value="0" />
+			<Item label="While Transmitting" value="1" />
+			<Item label="One Second Maximum" value="2" />
+		</Value>
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="3">
+			<Group index="1" max_associations="5" label="Group 1" />
+			<Group index="2" max_associations="5" label="Group 2 (two taps)" />
+			<Group index="3" max_associations="5" label="Group 3 (three taps)" />
+		</Associations>
+	</CommandClass>
+</Product>

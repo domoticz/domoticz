@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="short" index="1" genre="config" label="Country Voltage" units="volts" min="0" max="240" value="120">
+      <Help>
+	Voltage to calculate wattage from amperage. US=120. EU,ANZ=240.
+      </Help>
+    </Value>
+    <Value type="byte" index="3" genre="config" label="Power changed" units="" min="0" max="1" value="0">
+      <Help>
+	Automatic report only when power is changed.
+      </Help>
+    </Value>
+    <Value type="short" index="4" genre="config" label="Wattage Threshold" units="watts" value="50">
+      <Help>
+	Threshold change in wattage to induce a automatic report (whole HEM).
+      </Help>
+    </Value>
+    <Value type="short" index="5" genre="config" label="Wattage Threshold C1" units="watts" value="50">
+      <Help>
+	Threshold change in wattage to induce a automatic report (Clamp 1).
+      </Help>
+    </Value>
+    <Value type="short" index="6" genre="config" label="Wattage Threshold C2" units="watts" value="50">
+      <Help>
+	Threshold change in wattage to induce a automatic report (Clamp 2).
+      </Help>
+    </Value>
+    <Value type="short" index="7" genre="config" label="Wattage Threshold C3" units="watts" value="50">
+      <Help>
+	Threshold change in wattage to induce a automatic report (Clamp 3).
+      </Help>
+    </Value>
+    <Value type="byte" index="8" genre="config" label="Wattage Percentage Change" units="%" value="10">
+      <Help>
+	Percentage change in wattage to induce a automatic report (whole HEM).
+      </Help>
+    </Value>
+    <Value type="byte" index="9" genre="config" label="Wattage Percentage Change C1" units="%" value="10">
+      <Help>
+	Percentage change in wattage to induce a automatic report (Clamp 1).
+      </Help>
+    </Value>
+    <Value type="byte" index="10" genre="config" label="Wattage Percentage Change C2" units="%" value="10">
+      <Help>
+	Percentage change in wattage to induce a automatic report (Clamp 2).
+      </Help>
+    </Value>
+    <Value type="byte" index="11" genre="config" label="Wattage Percentage Change C3" units="%" value="10">
+      <Help>
+	Percentage change in wattage to induce a automatic report (Clamp 3).
+      </Help>
+    </Value>
+    <Value type="byte" index="12" genre="config" label="Accumulate energy" units="" min="0" max="1" value="0">
+      <Help>
+	Accumulate energy when Battery Powered.
+      </Help>
+    </Value>
+    <Value type="byte" index="20" genre="config" label="USB powered" units="" min="0" max="1" read_only="true" value="0">
+      <Help>
+	This byte denotes whether the product is using batteries (value = 0) or using USB power (value = 1).
+      </Help>
+    </Value>
+    <Value type="int" index="100" genre="config" label="Reset #101-103" units="" value="0" write_only="true" affects="101,102,103">
+      <Help>
+	Reset to default parameters number 101-103. Any value other then 0 will initiate this reset.
+      </Help>
+    </Value>
+    <Value type="int" index="101" genre="config" label="Group 1 Reports" units="" value="0">
+      <Help>
+	Which reports need to send in group1. Format is as follows:
+	Byte 1 (msb): Reserved
+	Byte 2: Reserved
+	Byte 3: Bit 7: reserved
+                Bit 6: reserved
+                Bit 5: Auto Send Meter Report (for kWh) at the group time interval (Clamp 3)
+                Bit 4: Auto Send Meter Report (for kWh) at the group time interval (Clamp 2)
+                Bit 3: Auto Send Meter Report (for kWh) at the group time interval (Clamp 1)
+                Bit 2: Auto Send Meter Report (for watts) at the group time interval (Clamp 3)
+                Bit 1: Auto Send Meter Report (for watts) at the group time interval (Clamp 2)
+                Bit 0: Auto Send Meter Report (for watts) at the group time interval (Clamp 1)
+	Byte 4 (lsb): Bit 7: reserved
+                Bit 6: reserved
+                Bit 5: reserved
+                Bit 4: reserved
+                Bit 3: Auto Send Meter Report (for kWh) at the group time interval (whole HEM)
+                Bit 2: Auto Send Meter Report (for watts) at the group time interval (whole HEM)
+                Bit 1: Auto Send Multilevel Sensor Report (for watts) at the group time interval (whole HEM)
+                Bit 0: Auto Send Battery Report at the group time interval (whole HEM)
+      </Help>
+    </Value>
+    <Value type="int" index="102" genre="config" label="Group 2 Reports" units="" value="0">
+      <Help>
+	Which reports need to send in group2. Format is as follows:
+	Byte 1 (msb): Reserved
+	Byte 2: Reserved
+	Byte 3: Bit 7: reserved
+                Bit 6: reserved
+                Bit 5: Auto Send Meter Report (for kWh) at the group time interval (Clamp 3)
+                Bit 4: Auto Send Meter Report (for kWh) at the group time interval (Clamp 2)
+                Bit 3: Auto Send Meter Report (for kWh) at the group time interval (Clamp 1)
+                Bit 2: Auto Send Meter Report (for watts) at the group time interval (Clamp 3)
+                Bit 1: Auto Send Meter Report (for watts) at the group time interval (Clamp 2)
+                Bit 0: Auto Send Meter Report (for watts) at the group time interval (Clamp 1)
+	Byte 4 (lsb): Bit 7: reserved
+                Bit 6: reserved
+                Bit 5: reserved
+                Bit 4: reserved
+                Bit 3: Auto Send Meter Report (for kWh) at the group time interval (whole HEM)
+                Bit 2: Auto Send Meter Report (for watts) at the group time interval (whole HEM)
+                Bit 1: Auto Send Multilevel Sensor Report (for watts) at the group time interval (whole HEM)
+                Bit 0: Auto Send Battery Report at the group time interval (whole HEM)
+      </Help>
+    </Value>
+    <Value type="int" index="103" genre="config" label="Group 3 Reports" units="" value="0">
+      <Help>
+	Which reports need to send in group3. Format is as follows:
+	Byte 1 (msb): Reserved
+	Byte 2: Reserved
+	Byte 3: Bit 7: reserved
+	Bit 6: reserved
+                Bit 5: Auto Send Meter Report (for kWh) at the group time interval (Clamp 3)
+                Bit 4: Auto Send Meter Report (for kWh) at the group time interval (Clamp 2)
+                Bit 3: Auto Send Meter Report (for kWh) at the group time interval (Clamp 1)
+                Bit 2: Auto Send Meter Report (for watts) at the group time interval (Clamp 3)
+                Bit 1: Auto Send Meter Report (for watts) at the group time interval (Clamp 2)
+                Bit 0: Auto Send Meter Report (for watts) at the group time interval (Clamp 1)
+	Byte 4 (lsb): Bit 7: reserved
+                Bit 6: reserved
+                Bit 5: reserved
+                Bit 4: reserved
+                Bit 3: Auto Send Meter Report (for kWh) at the group time interval (whole HEM)
+                Bit 2: Auto Send Meter Report (for watts) at the group time interval (whole HEM)
+                Bit 1: Auto Send Multilevel Sensor Report (for watts) at the group time interval (whole HEM)
+                Bit 0: Auto Send Battery Report at the group time interval (whole HEM)
+      </Help>
+    </Value>
+    <Value type="int" index="110" genre="config" label="Reset #111-113" units="" value="0" write_only="true" affects="111,112,113">
+      <Help>
+	Reset to default parameters number 111-113. Any value other then 0 will initiate this reset.
+      </Help>
+    </Value>
+    <Value type="int" index="111" genre="config" label="Group 1 Interval" units="seconds" value="720">
+      <Help>
+	The interval of sending report group 1.
+      </Help>
+    </Value>
+    <Value type="int" index="112" genre="config" label="Group 2 Interval" units="seconds" value="720">
+      <Help>
+	The interval of sending report group 2.
+      </Help>
+    </Value>
+    <Value type="int" index="113" genre="config" label="Group 3 Interval" units="seconds" value="720">
+      <Help>
+	The interval of sending report group 3.
+      </Help>
+    </Value>
+    <Value type="int" index="253" genre="config" label="Unit Recalibration (dangerous)" units="" value="0" write_only="true">
+      <Help>
+	Re-calibrate (will destroy factory calibration). CONTACT AEON LABS before using.
+      </Help>
+    </Value>
+    <Value type="short" index="254" genre="config" label="Device Tag" units="" value="0">
+      <Help>
+	Device tag.
+      </Help>
+    </Value>
+    <Value type="int" index="255" genre="config" label="Reset default configuration" units="" value="0" write_only="true" affects="all">
+      <Help>
+	Reset to the default configuration.
+      </Help>
+    </Value>
+  </CommandClass>
+
+  <!-- COMMAND_CLASS_WAKE_UP.  This class is in the list reported by the HEM, but it does not
+  respond to requests.  It still needs to be supported so that wake up notifications are handled. -->
+  <CommandClass id="132" create_vars="false" />
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" max_associations="5" label="Report" auto="true" />
+    </Associations>
+  </CommandClass>
+</Product>
+

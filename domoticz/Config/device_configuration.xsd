@@ -1,0 +1,242 @@
+<?xml version='1.0'?>
+<xs:schema
+  xmlns:xs='http://www.w3.org/2001/XMLSchema'
+  targetNamespace='http://code.google.com/p/open-zwave/'
+  xmlns:Product='http://code.google.com/p/open-zwave/'
+  elementFormDefault='qualified'>
+
+ <xs:element name='Product'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='Product:Protocol' minOccurs='0' maxOccurs='1'/>
+    <xs:element ref='Product:CommandClass' minOccurs='0' maxOccurs='unbounded'/>
+   </xs:sequence>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Protocol'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='Product:APIcall' minOccurs='0' maxOccurs='1'/>
+   </xs:sequence>
+   <xs:attribute name='nodeinfosupported' use='optional'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='APIcall'>
+  <xs:complexType>
+   <xs:attribute name='function' type='xs:string' use='required'/>
+   <xs:attribute name='present' use='required'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='CommandClass'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='Product:Instance' minOccurs='0' maxOccurs='unbounded'/>
+    <xs:element ref='Product:Associations' minOccurs='0' maxOccurs='unbounded'/>
+    <xs:element ref='Product:Value' minOccurs='0' maxOccurs='unbounded'/>
+    <xs:element ref='Product:SupportedModes' minOccurs='0' maxOccurs='unbounded'/>
+   </xs:sequence>
+   <xs:attribute name='id' type='xs:string' use='required'/>
+   <xs:attribute name='action' type='xs:string' use='optional'/>
+   <xs:attribute name='base' type='xs:string' use='optional'/>
+   <xs:attribute name='override_precision' type='xs:string' use='optional'/>
+   <xs:attribute name='create_vars' use='optional'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='name' type='xs:string' use='optional'/>
+   <xs:attribute name='setasreport' use='optional'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='ignoremapping' use='optional'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='getsupported' use='optional'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='classgetsupported' use='optional'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='version' type='xs:string' use='optional'/>
+   <xs:attribute name='request_flags' type='xs:string' use='optional'/>
+   <xs:attribute name='endpoints' type='xs:string' use='optional'/>
+   <xs:attribute name='mapping' type='xs:string' use='optional'/>
+   <xs:attribute name='codes' type='xs:string' use='optional'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Instance'>
+  <xs:complexType>
+   <xs:attribute name='index' type='xs:string' use='required'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Associations'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='Product:Group' minOccurs='0' maxOccurs='unbounded'/>
+   </xs:sequence>
+   <xs:attribute name='num_groups' type='xs:string' use='required'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Group'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='Product:Node' minOccurs='0' maxOccurs='unbounded'/>
+   </xs:sequence>
+   <xs:attribute name='index' type='xs:string' use='required'/>
+   <xs:attribute name='max_associations' type='xs:string' use='required'/>
+   <xs:attribute name='label' type='xs:string' use='required'/>
+   <xs:attribute name='auto' use='optional'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='write_only' use='optional'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Value'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='Product:Help' minOccurs='0' maxOccurs='1'/>
+    <xs:element ref='Product:Item' minOccurs='0' maxOccurs='unbounded'/>
+   </xs:sequence>
+   <xs:attribute name='type' use='required'>
+     <xs:simpleType>
+       <xs:restriction base='xs:string'>
+	 <xs:enumeration value='bool'/>
+	 <xs:enumeration value='byte'/>
+	 <xs:enumeration value='decimal'/>
+	 <xs:enumeration value='int'/>
+	 <xs:enumeration value='list'/>
+	 <xs:enumeration value='schedule'/>
+	 <xs:enumeration value='short'/>
+	 <xs:enumeration value='string'/>
+	 <xs:enumeration value='button'/>
+	 <xs:enumeration value='raw'/>
+       </xs:restriction>
+     </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='size' use='optional'>
+     <xs:simpleType>
+       <xs:restriction base='xs:string'>
+	 <xs:enumeration value='1'/>
+	 <xs:enumeration value='2'/>
+	 <xs:enumeration value='4'/>
+       </xs:restriction>
+     </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='index' type='xs:string' use='required'/>
+   <xs:attribute name='genre' type='xs:string' use='required'/>
+   <xs:attribute name='label' type='xs:string' use='required'/>
+   <xs:attribute name='units' type='xs:string' use='optional'/>
+   <xs:attribute name='min' type='xs:string' use='optional'/>
+   <xs:attribute name='max' type='xs:string' use='optional'/>
+   <xs:attribute name='value' type='xs:string' use='optional'/>
+   <xs:attribute name='length' type='xs:string' use='optional'/>
+   <xs:attribute name='read_only' use='optional'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='write_only' use='optional'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='affects' type='xs:string' use='optional'/>
+   <xs:attribute name='instance' type='xs:string' use='optional'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Help'>
+  <xs:complexType mixed='true'>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Item'>
+  <xs:complexType>
+   <xs:attribute name='label' type='xs:string' use='required'/>
+   <xs:attribute name='value' type='xs:string' use='required'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='SupportedModes'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='Product:Mode' maxOccurs='unbounded'/>
+   </xs:sequence>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Mode'>
+  <xs:complexType>
+   <xs:attribute name='index' type='xs:string' use='required'/>
+   <xs:attribute name='label' type='xs:string' use='required'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Node'>
+  <xs:complexType>
+   <xs:attribute name='id' type='xs:string' use='required'/>
+  </xs:complexType>
+ </xs:element>
+</xs:schema>

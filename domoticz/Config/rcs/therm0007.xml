@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+	<!-- COMMAND_CLASS_ASSOCIATION.  This class is in the list reported by the thermostat, but it does not respond to requests -->  
+	<CommandClass id="133" name="COMMAND_CLASS_ASSOCIATION" version="1" request_flags="4" create_vars="true">
+		<Instance index="1" />
+		<Associations num_groups="1">
+		  <Group index="1" max_associations="5" label="Group 1" auto="true">
+		    <Node id="1" />
+		  </Group>
+		</Associations>
+	</CommandClass>
+
+	<!-- The thermostat does not properly report its operating modes -->
+	<CommandClass id="64" name="COMMAND_CLASS_THERMOSTAT_MODE" version="1" request_flags="4" create_vars="true">
+		<Value type="list" genre="user" instance="1" index="0" label="Mode" units="" read_only="false" write_only="false" min="0" max="0" value="0">
+		  <Item label="Off" value="0" />
+		  <Item label="Heat" value="1" />
+		  <Item label="Cool" value="2" />
+		  <Item label="Auto" value="3" />
+		  <Item label="Aux Heat" value="4" />
+		</Value>
+		<SupportedModes>
+		  <Mode index="0" label="Off" />
+		  <Mode index="1" label="Heat" />
+		  <Mode index="2" label="Cool" />
+		  <Mode index="3" label="Auto" />
+		  <Mode index="4" label="Aux Heat" />
+		</SupportedModes>
+	</CommandClass>
+
+	<CommandClass id="67" name="COMMAND_CLASS_THERMOSTAT_SETPOINT" version="1" request_flags="4" create_vars="true" base="0">
+		<Instance index="1" />
+		  <Value type="decimal" genre="user" instance="1" index="1" label="Heating 1" units="F" read_only="false" write_only="false" min="0" max="0" value="65" />
+		  <Value type="decimal" genre="user" instance="1" index="2" label="Cooling 1" units="F" read_only="false" write_only="false" min="0" max="0" value="80" />
+	</CommandClass>
+
+</Product>
+
