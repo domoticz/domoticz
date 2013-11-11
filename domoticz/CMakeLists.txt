@@ -250,7 +250,7 @@ else()
   MESSAGE(FATAL_ERROR "Could not find LIB UDEV on your system, see install.txt how to get them installed.\nsudo apt-get install libudev-dev")
 ENDIF(UDEV)
 
-target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread curl ${LIBUSB_LIBRARIES} lua ./hardware/openzwave/libopenzwave)
+target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread curl ${LIBUSB_LIBRARIES} lua)
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
 
