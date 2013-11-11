@@ -24,6 +24,9 @@ Compiling from source code:
 
 Prerequisites: (or in other words, setup your compile enviroment): 
 
+All:
+- Compiled OpenZWave (http://code.google.com/p/open-zwave/)
+
 Windows:
 - VS2010 (headers can be modified to support a less version)
 - boost libraries, you probably have to set the correct include/lib folder in the project properties as i did not bootstrap mine
