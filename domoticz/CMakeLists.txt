@@ -242,6 +242,14 @@ else()
   MESSAGE(FATAL_ERROR "Could not find LIB OpenZWave on your system, see install.txt how to get them installed.")
 ENDIF(OpenZWave)
 
+find_library(UDEV NAMES libudev.a)
+IF(UDEV)
+  message(STATUS ${UDEV})
+  target_link_libraries(domoticz ${UDEV})
+else()
+  MESSAGE(FATAL_ERROR "Could not find LIB UDEV on your system, see install.txt how to get them installed.\nsudo apt-get install libudev-dev")
+ENDIF(UDEV)
+
 target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread curl ${LIBUSB_LIBRARIES} lua ./hardware/openzwave/libopenzwave)
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")

@@ -26,6 +26,9 @@ Prerequisites: (or in other words, setup your compile enviroment):
 
 All:
 - Compiled OpenZWave (http://code.google.com/p/open-zwave/)
+svn co http://open-zwave.googlecode.com/svn/trunk/ open-zwave-read-only
+cd open-zwave-read-only/cpp/build/linux
+make
 
 Windows:
 - VS2010 (headers can be modified to support a less version)
@@ -34,7 +37,7 @@ Windows:
 ------------------------------------------------------------------------------------------------
 Ubuntu / Raspberry Pi (wheezy):
 sudo apt-get install build-essential -y
-sudo apt-get install cmake libboost-dev libboost-thread-dev libboost-system-dev libsqlite3-dev subversion curl libcurl4-openssl-dev libusb-dev
+sudo apt-get install cmake libboost-dev libboost-thread-dev libboost-system-dev libsqlite3-dev subversion curl libcurl4-openssl-dev libusb-dev libudev-dev
 
 Raspberry Pi (wheezy, 22 November 2012): (First time compile time: 25 minutes)
 At this moment (First generation RPi (128MB) (And possible the last generation too), there is a issue with the FTDI drivers (USB).
@@ -45,7 +48,7 @@ When using the Arch Linux image, it looks like you do not have to apply the abov
 
 ------------------------------------------------------------------------------------------------
 Raspberry Pi (Arch Linux):
-sudo pacman -S gcc cmake subversion boost sqlite make curl libusb
+sudo pacman -S gcc cmake subversion boost sqlite make curl libusb libudev-dev
 
 ------------------------------------------------------------------------------------------------
 Debian (Mac OS)
@@ -58,6 +61,7 @@ sudo port install cmake
 sudo port install boost
 sudo port install libusb
 sudo port install libusb-compat
+sudo port install libudev-dev
 
 ------------------------------------------------------------------------------------------------
 Synology: (Initial setup time is 30 minutes)
@@ -73,6 +77,7 @@ ipkg install boost-system
 ipkg install boost-date-time
 ipkg install libcurl-dev
 ipkg install libusb
+ipkg install libudev-dev
 
 download/install cmake (take a coffee while doing the bootstrap and make commands)
 wget http://www.cmake.org/files/v2.8/cmake-2.8.11.1.tar.gz
