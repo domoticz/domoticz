@@ -117,7 +117,7 @@ function RefreshFavorites()
 									}
 								}
 								else if (item.SwitchType == "Blinds") {
-									if (item.SubType=="RAEX") {
+									if ((item.SubType=="RAEX")||(item.SubType.indexOf('RollerTrol') == 0)) {
 										if (item.Status == 'Closed') {
 											status=
 												'<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);">Open</button> ' +
@@ -145,7 +145,7 @@ function RefreshFavorites()
 									}
 								}
 								else if (item.SwitchType == "Blinds Inverted") {
-									if (item.SubType=="RAEX") {
+									if ((item.SubType=="RAEX")||(item.SubType.indexOf('RollerTrol') == 0)) {
 										if (item.Status == 'Closed') {
 											status=
 												'<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);">Open</button> ' +
@@ -296,7 +296,7 @@ function RefreshFavorites()
 									}
 								}
 								else if (item.SwitchType == "Blinds") {
-									if (item.SubType=="RAEX") {
+									if ((item.SubType=="RAEX")||(item.SubType.indexOf('RollerTrol') == 0)) {
 										if (item.Status == 'Closed') {
 											img='<img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 											img3='<img src="images/blinds48sel.png" title="' + $.i18n("Close Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
@@ -318,7 +318,7 @@ function RefreshFavorites()
 									}
 								}
 								else if (item.SwitchType == "Blinds Inverted") {
-									if (item.SubType=="RAEX") {
+									if ((item.SubType=="RAEX")||(item.SubType.indexOf('RollerTrol') == 0)) {
 										if (item.Status == 'Closed') {
 											img='<img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 											img3='<img src="images/blinds48sel.png" title="' + $.i18n("Close Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
@@ -1230,7 +1230,7 @@ function ShowFavorites()
 									}
 							}
 							else if (item.SwitchType == "Blinds") {
-								if (item.SubType=="RAEX") {
+								if ((item.SubType=="RAEX")||(item.SubType.indexOf('RollerTrol') == 0)) {
 									if (item.Status == 'Closed') {
 										status=
 											'<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);">Open</button> ' +
@@ -1258,7 +1258,7 @@ function ShowFavorites()
 								}
 							}
 							else if (item.SwitchType == "Blinds Inverted") {
-								if (item.SubType=="RAEX") {
+								if ((item.SubType=="RAEX")||(item.SubType.indexOf('RollerTrol') == 0)) {
 									if (item.Status == 'Closed') {
 										status=
 											'<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);">Open</button> ' +
@@ -1367,7 +1367,7 @@ function ShowFavorites()
 							}
 							xhtm+='\t  <section>\n';
 							if ((item.Type.indexOf('Blind') == 0)||(item.SwitchType == "Blinds")||(item.SwitchType == "Blinds Inverted")) {
-								if (item.SubType=="RAEX") {
+								if ((item.SubType=="RAEX")||(item.SubType.indexOf('RollerTrol') == 0)) {
 									xhtm+='\t    <table id="itemtablesmalltrippleicon" border="0" cellpadding="0" cellspacing="0">\n';
 								}
 								else {
@@ -1432,7 +1432,7 @@ function ShowFavorites()
 								}
 							}
 							else if (item.SwitchType == "Blinds") {
-								if (item.SubType=="RAEX") {
+								if ((item.SubType=="RAEX")||(item.SubType.indexOf('RollerTrol') == 0)) {
 									if (item.Status == 'Closed') {
 										xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 										xhtm+='\t      <td id="img2"><img src="images/blindsstop.png" title="Stop Blinds" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
@@ -1456,7 +1456,7 @@ function ShowFavorites()
 								}
 							}
 							else if (item.SwitchType == "Blinds Inverted") {
-								if (item.SubType=="RAEX") {
+								if ((item.SubType=="RAEX")||(item.SubType.indexOf('RollerTrol') == 0)) {
 									if (item.Status == 'Closed') {
 										xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 										xhtm+='\t      <td id="img2"><img src="images/blindsstop.png" title="Stop Blinds" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';

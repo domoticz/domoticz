@@ -1,4 +1,4 @@
-Version 1.0.xxx (Oktober xxth 2013)
+Version 1.0.xxx (November xxth 2013)
 - Fixed: rain week log, some top legend values did not show on the chart
 - Implemented: Counterlog, Week chart, legend values
 - Implemented: Room Plan editor, dashboard room selector
@@ -42,6 +42,7 @@ Version 1.0.xxx (Oktober xxth 2013)
 - Fixed: Possible problems when adding a manual switch (Invalid Switch ID message)
 - Implemented: New Version notification with version info, and option to review the latest changes
 - Implemented: Added more log buttons to the devices tab
+- Implemented: Rollertrol now displays a stop button
 
 Version 1.0.1087 (Oktober 16th 2013)
 - Implemented: Login page (solves the caching problems)

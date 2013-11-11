@@ -890,11 +890,35 @@ void GetLightStatus(
 	case pTypeBlinds:
 		switch (nValue)
 		{
-		case 0:
+		case blinds_sOpen:
 			lstatus="Off";
 			break;
-		case 1:
+		case blinds_sClose:
 			lstatus="On";
+			break;
+		case blinds_sStop:
+			lstatus="Stop";
+			break;
+		case blinds_sConfirm:
+			lstatus="Confirm";
+			break;
+		case blinds_sLimit:
+			lstatus="Limit";
+			break;
+		case blinds_slowerLimit:
+			lstatus="Lower Limit";
+			break;
+		case blinds_sDeleteLimits:
+			lstatus="Delete Limits";
+			break;
+		case blinds_sChangeDirection:
+			lstatus="Change Direction";
+			break;
+		case blinds_sLeft:
+			lstatus="Left";
+			break;
+		case blinds_sRight:
+			lstatus="Right";
 			break;
 		}
 		break;
