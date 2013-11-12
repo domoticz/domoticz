@@ -2858,7 +2858,19 @@ std::string CWebServer::GetJSonPage()
 		{
 			szQuery.clear();
 			szQuery.str("");
-			szQuery << "SELECT ID, Name FROM DeviceStatus WHERE (Type==" << result[0][0] << ") AND (SubType==" << result[0][1] << ") AND (ID!=" << idx << ")";
+
+			int dType=atoi(result[0][0].c_str());
+			if (
+				(dType==pTypeTEMP)||
+				(dType==pTypeTEMP_HUM)
+				)
+			{
+				szQuery << "SELECT ID, Name FROM DeviceStatus WHERE (Type==" << result[0][0] << ") AND (ID!=" << idx << ")";
+			}
+			else
+			{
+				szQuery << "SELECT ID, Name FROM DeviceStatus WHERE (Type==" << result[0][0] << ") AND (SubType==" << result[0][1] << ") AND (ID!=" << idx << ")";
+			}
 			result=m_pMain->m_sql.query(szQuery.str());
 
 			std::vector<std::vector<std::string> >::const_iterator itt;

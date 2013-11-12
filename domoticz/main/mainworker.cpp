@@ -5587,19 +5587,11 @@ unsigned long long MainWorker::decode_Current_Energy(const int HwdID, const tRBU
 	float CurrentChannel2= float((pResponse->CURRENT_ENERGY.ch2h * 256) + pResponse->CURRENT_ENERGY.ch2l) / 10.0f;
 	float CurrentChannel3= float((pResponse->CURRENT_ENERGY.ch3h * 256) + pResponse->CURRENT_ENERGY.ch3l) / 10.0f;
 
-	double usage = (
-					double(pResponse->CURRENT_ENERGY.total1) * 0x10000000000ULL +
-					double(pResponse->CURRENT_ENERGY.total2) * 0x100000000ULL +
-					double(pResponse->CURRENT_ENERGY.total3) * 0x1000000 +
-					double(pResponse->CURRENT_ENERGY.total4) * 0x10000 +
-					double(pResponse->CURRENT_ENERGY.total5) * 0x100 +
-					pResponse->CURRENT_ENERGY.total6
-				   ) / 223.666;
+	double usage=0;
 
 	if (pResponse->CURRENT_ENERGY.count!=0)
 	{
 		//no usage provided, get the last usage
-		usage=0;
 		std::vector<std::vector<std::string> > result2;
 		std::stringstream szQuery2;
 		szQuery2 << "SELECT nValue,sValue FROM DeviceStatus WHERE (HardwareID=" << HwdID << " AND DeviceID='" << ID << "' AND Unit=" << int(Unit) << " AND Type=" << int(devType) << " AND SubType=" << int(subType) << ")";
@@ -5616,12 +5608,20 @@ unsigned long long MainWorker::decode_Current_Energy(const int HwdID, const tRBU
 	}
 	else
 	{
+		usage = (
+			double(pResponse->CURRENT_ENERGY.total1) * 0x10000000000ULL +
+			double(pResponse->CURRENT_ENERGY.total2) * 0x100000000ULL +
+			double(pResponse->CURRENT_ENERGY.total3) * 0x1000000 +
+			double(pResponse->CURRENT_ENERGY.total4) * 0x10000 +
+			double(pResponse->CURRENT_ENERGY.total5) * 0x100 +
+			pResponse->CURRENT_ENERGY.total6
+			) / 223.666;
+
 		int voltage=230;
 		m_sql.GetPreferencesVar("ElectricVoltage", voltage);
 
 		sprintf(szTmp,"%ld;%.2f",(long)round((CurrentChannel1+CurrentChannel2+CurrentChannel3)*voltage),usage);
 		m_sql.UpdateValue(HwdID, ID.c_str(),Unit,pTypeENERGY,sTypeELEC3,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-
 	}
 	sprintf(szTmp,"%.1f;%.1f;%.1f;%.3f",CurrentChannel1,CurrentChannel2,CurrentChannel3,usage);
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
