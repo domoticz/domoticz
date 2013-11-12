@@ -26,6 +26,8 @@
 #include "openzwave/ValueBool.h"
 #include "openzwave/Log.h"
 
+#include "ZWaveCommands.h"
+
 #pragma warning(disable: 4996)
 
 extern std::string szStartupFolder;
@@ -409,6 +411,26 @@ COpenZWave::NodeInfo* COpenZWave::GetNodeInfo( OpenZWave::Notification const* _n
 	return NULL;
 }
 
+COpenZWave::NodeInfo* COpenZWave::GetNodeInfo( const int homeID, const int nodeID)
+{
+	for( std::list<NodeInfo*>::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it )
+	{
+		NodeInfo* nodeInfo = *it;
+		if( ( nodeInfo->m_homeId == homeID ) && ( nodeInfo->m_nodeId == nodeID ) )
+		{
+			return nodeInfo;
+		}
+	}
+
+	return NULL;
+}
+
+void OnDeviceStatusUpdate(OpenZWave::Driver::ControllerState cs, OpenZWave::Driver::ControllerError err, void *_context)
+{
+	COpenZWave *pClass=(COpenZWave*)_context;
+	pClass->OnZWaveDeviceStatusUpdate(cs,err);
+}
+
 //-----------------------------------------------------------------------------
 // <OnNotification>
 // Callback that is triggered when a value, group or node changes
@@ -434,6 +456,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 			{
 				// Add the new value to our list
 				nodeInfo->m_values.push_back( vID );
+				nodeInfo->m_LastSeen=mytime(NULL);
 				AddValue(vID);
 			}
 			break;
@@ -449,6 +472,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 					if( (*it) == vID )
 					{
 						nodeInfo->m_values.erase( it );
+						nodeInfo->m_LastSeen=mytime(NULL);
 						break;
 					}
 				}
@@ -461,6 +485,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 			// One of the node values has changed
 			if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
 			{
+				nodeInfo->m_LastSeen=mytime(NULL);
 				UpdateValue(vID);
 			}
 			break;
@@ -491,7 +516,8 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 			NodeInfo* nodeInfo = new NodeInfo();
 			nodeInfo->m_homeId = _notification->GetHomeId();
 			nodeInfo->m_nodeId = _notification->GetNodeId();
-			nodeInfo->m_polled = false;		
+			nodeInfo->m_polled = false;
+			nodeInfo->m_LastSeen=mytime(NULL);
 			m_nodes.push_back( nodeInfo );
 			break;
 		}
@@ -563,6 +589,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 		{
 			m_nodesQueried = true;
 			OpenZWave::Manager::Get()->WriteConfig( m_controllerID );
+			//IncludeDevice();
 			break;
 		}
 	case OpenZWave::Notification::Type_NodeNaming:
@@ -657,22 +684,56 @@ bool COpenZWave::GetUpdates()
 	return true;
 }
 
+bool COpenZWave::GetValueByCommandClass(const int nodeID, const int instanceID, const int commandClass, OpenZWave::ValueID &nValue)
+{
+	COpenZWave::NodeInfo *pNode=GetNodeInfo( m_controllerID, nodeID);
+	if (!pNode)
+		return false;
+	for( std::list<OpenZWave::ValueID>::iterator itt = pNode->m_values.begin(); itt != pNode->m_values.end(); ++itt )
+	{
+		unsigned char cmdClass=itt->GetCommandClassId();
+		if( cmdClass == commandClass )
+		{
+			nValue=*itt;
+			return true;
+		}
+	}
+	return false;
+}
+
 void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)
 {
 	if (m_pManager==NULL)
 		return;
-	int svalue=value;
-	if (svalue==0) {
-		//Off
-		m_pManager->SetNodeOff(m_controllerID,nodeID);
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+
+	OpenZWave::ValueID vID(0,0,OpenZWave::ValueID::ValueGenre_Basic,0,0,0,OpenZWave::ValueID::ValueType_Bool);
+
+	unsigned char svalue=(unsigned char)value;
+
+	bool bIsDimmer=(GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SWITCH_MULTILEVEL,vID)==true);
+	if (bIsDimmer==false)
+	{
+		if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SWITCH_BINARY,vID)==true)
+		{
+			if (svalue==0) {
+				//Off
+				m_pManager->SetValue(vID,false);
+			}
+			else {
+				//On
+				m_pManager->SetValue(vID,true);
+			}
+		}
 	}
-	else if (svalue==255) {
-		//On
-		m_pManager->SetNodeOn(m_controllerID,nodeID);
-	}
-	else {
-		//Dim value (99 is fully on)
-		m_pManager->SetNodeLevel(m_controllerID,nodeID,svalue);
+	else
+	{
+		if (svalue>99)
+			svalue=99;
+		if (!m_pManager->SetValue(vID,svalue))
+		{
+			_log.Log(LOG_ERROR,"OpenZWave: Error setting Switch Value!");
+		}
 	}
 }
 
@@ -680,6 +741,130 @@ void COpenZWave::SetThermostatSetPoint(const int nodeID, const int instanceID, c
 {
 	if (m_pManager==NULL)
 		return;
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	OpenZWave::ValueID vID(0,0,OpenZWave::ValueID::ValueGenre_Basic,0,0,0,OpenZWave::ValueID::ValueType_Bool);
+	if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_SETPOINT,vID)==true)
+	{
+		m_pManager->SetValue(vID,value);
+	}
+}
+
+void COpenZWave::AddValue(const OpenZWave::ValueID vID)
+{
+	if (m_pManager==NULL)
+		return;
+	unsigned char commandclass=vID.GetCommandClassId();
+
+	//Ignore some command classes, values are already added before calling this function
+	if (
+		(commandclass==COMMAND_CLASS_BASIC)||
+		(commandclass==COMMAND_CLASS_SWITCH_ALL)||
+		(commandclass==COMMAND_CLASS_CONFIGURATION)||
+		(commandclass==COMMAND_CLASS_VERSION)||
+		(commandclass==COMMAND_CLASS_POWERLEVEL)
+		)
+		return;
+
+	unsigned char instance=vID.GetInstance();
+	OpenZWave::ValueID::ValueType vType=vID.GetType();
+	OpenZWave::ValueID::ValueGenre vGenre=vID.GetGenre();
+
+	//Ignore non-user types
+	if (vGenre!=OpenZWave::ValueID::ValueGenre_User)
+		return;
+
+	unsigned char NodeID = vID.GetNodeId();
+	_log.Log(LOG_NORM, "Value_Added: Node: %d, CommandClass: %s",NodeID, cclassStr(commandclass));
+
+	_tZWaveDevice _device;
+	_device.nodeID=NodeID;
+	_device.commandClassID=commandclass;
+	_device.scaleID=-1;
+	_device.instanceID=instance;
+	_device.hasWakeup=m_pManager->IsNodeAwake(m_controllerID,NodeID);
+	_device.isListening=m_pManager->IsNodeListeningDevice(m_controllerID,NodeID);
+
+	if ((_device.instanceID==0)&&(NodeID==m_controllerID))
+		return;// We skip instance 0 if there are more, since it should be mapped to other instances or their superposition
+
+	std::string vLabel=m_pManager->GetValueLabel(vID);
+	std::string vUnits=m_pManager->GetValueUnits(vID);
+
+
+	float fValue=0;
+	int iValue=0;
+	bool bValue=false;
+	unsigned char byteValue=0;
+
+	// We choose SwitchMultilevel first, if not available, SwhichBinary is chosen
+	if (commandclass==COMMAND_CLASS_SWITCH_BINARY)
+	{
+		if (vLabel=="Switch")
+		{
+			if (m_pManager->GetValueAsBool(vID,&bValue)==true)
+			{
+				_device.devType= ZDTYPE_SWITCHNORMAL;
+				if (bValue==true)
+					_device.intvalue=255;
+				else
+					_device.intvalue=0;
+				InsertOrUpdateDevice(_device,false);
+			}
+		}
+	}
+	else if (commandclass==COMMAND_CLASS_SWITCH_MULTILEVEL)
+	{
+		if (vLabel=="Level")
+		{
+			if (m_pManager->GetValueAsByte(vID,&byteValue)==true)
+			{
+				_device.devType= ZDTYPE_SWITCHDIMMER;
+				_device.intvalue=byteValue;
+				InsertOrUpdateDevice(_device,false);
+			}
+		}
+	}
+	else if (commandclass==COMMAND_CLASS_METER)
+	{
+		//Meter device
+		if (
+			(vLabel=="Energy")||
+			(vLabel=="Power")
+			)
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
+				{
+					_device.floatValue=fValue;
+					_device.scaleMultiply=1;
+					if (vUnits=="kWh")
+					{
+						_device.scaleMultiply=1000;
+						_device.devType = ZDTYPE_SENSOR_POWERENERGYMETER;
+					}
+					else
+					{
+						_device.devType = ZDTYPE_SENSOR_POWER;
+					}
+					InsertOrUpdateDevice(_device,false);
+				}
+			}
+		}
+	}
+	else
+	{
+		//Unhanded
+		_log.Log(LOG_NORM, "^Unhanded^");
+		if (vType== OpenZWave::ValueID::ValueType_List)
+		{
+			std::vector<std::string > vStringList;
+			if (m_pManager->GetValueListItems(vID,&vStringList)==true)
+			{
+				_asm nop;
+			}
+		}
+	}
 }
 
 void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
@@ -709,6 +894,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 	float fValue=0;
 	int iValue=0;
 	bool bValue=false;
+	unsigned char byteValue=0;
 
 	_tZWaveDevice *pDevice=NULL;
 	std::map<std::string,_tZWaveDevice>::iterator itt;
@@ -734,6 +920,11 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 		if (m_pManager->GetValueAsBool(vID,&bValue)==false)
 			return;
 	}
+	if (vType== OpenZWave::ValueID::ValueType_Byte)
+	{
+		if (m_pManager->GetValueAsByte(vID,&byteValue)==false)
+			return;
+	}
 	switch (pDevice->devType)
 	{
 	case ZDTYPE_SWITCHNORMAL:
@@ -748,6 +939,17 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 			else
 				intValue=0;
 			pDevice->intvalue=intValue;
+		}
+		break;
+	case ZDTYPE_SWITCHDIMMER:
+		{
+			if (vLabel!="Level")
+				return;
+			if (vType!=OpenZWave::ValueID::ValueType_Byte)
+				return;
+			if (byteValue==99)
+				byteValue=255;
+			pDevice->intvalue=byteValue;
 		}
 		break;
 	case ZDTYPE_SENSOR_POWER:
@@ -780,85 +982,96 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 
 }
 
-void COpenZWave::AddValue(const OpenZWave::ValueID vID)
+bool COpenZWave::IncludeDevice()
 {
 	if (m_pManager==NULL)
-		return;
-	unsigned char commandclass=vID.GetCommandClassId();
-	unsigned char instance=vID.GetInstance();
-	OpenZWave::ValueID::ValueType vType=vID.GetType();
-	OpenZWave::ValueID::ValueGenre vGenre=vID.GetGenre();
+		return false;
+	m_LastIncludedNode=0;
+	m_ControllerCommandStartTime=mytime(NULL);
+	m_bControllerCommandInProgress=true;
+	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_AddDevice, OnDeviceStatusUpdate, this, true);
 
-	unsigned char NodeID = vID.GetNodeId();
+	return true;
+}
 
-	_tZWaveDevice _device;
-	_device.nodeID=NodeID;
-	_device.commandClassID=commandclass;
-	_device.scaleID=-1;
-	_device.instanceID=instance;
-	_device.hasWakeup=m_pManager->IsNodeAwake(m_controllerID,NodeID);
-	_device.isListening=m_pManager->IsNodeListeningDevice(m_controllerID,NodeID);
+bool COpenZWave::ExcludeDevice(const int nodeID)
+{
+	if (m_pManager==NULL)
+		return false;
 
-	if ((_device.instanceID==0)&&(NodeID==m_controllerID))
-		return;// We skip instance 0 if there are more, since it should be mapped to other instances or their superposition
+	m_ControllerCommandStartTime=mytime(NULL);
+	m_bControllerCommandInProgress=true;
+	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_RemoveDevice, OnDeviceStatusUpdate, this, true);
 
-	std::string vLabel=m_pManager->GetValueLabel(vID);
-	std::string vUnits=m_pManager->GetValueUnits(vID);
-	_log.Log(LOG_NORM, "Value_Added: Node: %d, CommandClass: %s",NodeID, cclassStr(commandclass));
+	return true;
+}
 
-	float fValue=0;
-	int iValue=0;
-	bool bValue=false;
+bool COpenZWave::RemoveFailedDevice(const int nodeID)
+{
+	if (m_pManager==NULL)
+		return false;
 
-	// We choose SwitchMultilevel first, if not available, SwhichBinary is chosen
-	if (commandclass==38)
+	m_ControllerCommandStartTime=mytime(NULL);
+	m_bControllerCommandInProgress=true;
+	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_RemoveFailedNode, OnDeviceStatusUpdate, this,true,(unsigned char)nodeID);
+
+	return true;
+}
+
+bool COpenZWave::CancelControllerCommand()
+{
+	if (m_pManager==NULL)
+		return false;
+	m_bControllerCommandInProgress=false;
+	return m_pManager->CancelControllerCommand(m_controllerID);
+}
+
+
+void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
+{
+	OpenZWave::Driver::ControllerState cs=(OpenZWave::Driver::ControllerState)_cs;
+	OpenZWave::Driver::ControllerError err=(OpenZWave::Driver::ControllerError)_err;
+
+	std::string szLog;
+
+	switch (cs)
 	{
-		_device.devType= ZDTYPE_SWITCHDIMMER;
-		_device.intvalue=0;//instance["commandClasses"]["38"]["data"]["level"]["value"].asInt();
-		InsertOrUpdateDevice(_device,true);
+	case OpenZWave::Driver::ControllerState_Normal:
+		szLog="No Command in progress";
+		break;
+	case OpenZWave::Driver::ControllerState_Starting:
+		szLog="Starting controller command";
+		break;
+	case OpenZWave::Driver::ControllerState_Cancel:
+		szLog="The command was canceled";
+		break;
+	case OpenZWave::Driver::ControllerState_Error:
+		szLog="Command invocation had error(s) and was aborted";
+		break;
+	case OpenZWave::Driver::ControllerState_Waiting:
+		szLog="Controller is waiting for a user action";
+		break;
+	case OpenZWave::Driver::ControllerState_Sleeping:
+		szLog="Controller command is on a sleep queue wait for device";
+		break;
+	case OpenZWave::Driver::ControllerState_InProgress:
+		szLog="The controller is communicating with the other device to carry out the command";
+		break;
+	case OpenZWave::Driver::ControllerState_Completed:
+		szLog="The command has completed successfully";
+		break;
+	case OpenZWave::Driver::ControllerState_Failed:
+		szLog="The command has failed";
+		break;
+	case OpenZWave::Driver::ControllerState_NodeOK:
+		szLog="Used only with ControllerCommand_HasNodeFailed to indicate that the controller thinks the node is OK";
+		break;
+	case OpenZWave::Driver::ControllerState_NodeFailed:
+		szLog="Used only with ControllerCommand_HasNodeFailed to indicate that the controller thinks the node has failed";
+		break;
+	default:
+		szLog="Unknown Device Response!";
+		break;
 	}
-	else if (commandclass==37)
-	{
-		if (vLabel=="Switch")
-		{
-			if (m_pManager->GetValueAsBool(vID,&bValue)==true)
-			{
-				_device.devType= ZDTYPE_SWITCHNORMAL;
-				if (bValue==true)
-					_device.intvalue=255;
-				else
-					_device.intvalue=0;
-				InsertOrUpdateDevice(_device,true);
-			}
-		}
-	}
-	else if (commandclass==50)
-	{
-		//Meter device
-		if (
-			(vLabel=="Energy")||
-			(vLabel=="Power")
-			)
-		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
-				{
-					_device.floatValue=fValue;
-					_device.scaleMultiply=1;
-					if (vUnits=="kWh")
-					{
-						_device.scaleMultiply=1000;
-						_device.devType = ZDTYPE_SENSOR_POWERENERGYMETER;
-					}
-					else
-					{
-						_device.devType = ZDTYPE_SENSOR_POWER;
-					}
-					InsertOrUpdateDevice(_device,false);
-				}
-			}
-		}
-	}
-
+	_log.Log(LOG_NORM,"Device Response: %s",szLog.c_str());
 }

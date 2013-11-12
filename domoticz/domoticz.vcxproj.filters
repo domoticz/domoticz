@@ -331,6 +331,9 @@
     <ClInclude Include="hardware\OpenZWave.h">
       <Filter>Devices\ZWave\OpenZWave</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\ZWaveCommands.h">
+      <Filter>Devices\ZWave</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">

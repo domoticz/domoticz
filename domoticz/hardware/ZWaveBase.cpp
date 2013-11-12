@@ -12,6 +12,9 @@
 
 #include "../json/json.h"
 #include "../main/localtime_r.h"
+#include "../main/Logger.h"
+
+#define CONTROLLER_COMMAND_TIMEOUT 20
 
 #pragma warning(disable: 4996)
 
@@ -19,6 +22,8 @@
 
 ZWaveBase::ZWaveBase()
 {
+	m_LastIncludedNode=0;
+	m_bControllerCommandInProgress=false;
 }
 
 
@@ -31,6 +36,8 @@ bool ZWaveBase::StartHardware()
 	m_bInitState=true;
 	m_stoprequested=false;
 	m_updateTime=0;
+	m_LastIncludedNode=0;
+	m_bControllerCommandInProgress=false;
 
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&ZWaveBase::Do_Work, this)));
@@ -65,7 +72,19 @@ void ZWaveBase::Do_Work()
 			}
 		}
 		else
+		{
 			GetUpdates();
+			if (m_bControllerCommandInProgress==true)
+			{
+				time_t atime=mytime(NULL);
+				time_t tdiff=atime-m_ControllerCommandStartTime;
+				if (tdiff>=CONTROLLER_COMMAND_TIMEOUT)
+				{
+					_log.Log(LOG_ERROR,"ZWave: Stopping Controller command (Timeout!)");
+					CancelControllerCommand();
+				}
+			}
+		}
 	}
 }
 

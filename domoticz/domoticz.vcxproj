@@ -123,6 +123,7 @@
     <ClInclude Include="hardware\VolcraftCO20Tool.h" />
     <ClInclude Include="hardware\Wunderground.h" />
     <ClInclude Include="hardware\ZWaveBase.h" />
+    <ClInclude Include="hardware\ZWaveCommands.h" />
     <ClInclude Include="httpclient\HTTPClient.h" />
     <ClInclude Include="main\appversion.h" />
     <ClInclude Include="hardware\ASyncSerial.h" />

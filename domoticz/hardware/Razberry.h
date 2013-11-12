@@ -26,7 +26,10 @@ private:
 	void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value);
 	void RunCMD(const std::string &cmd);
 	void StopHardwareIntern();
-
+	bool IncludeDevice();
+	bool ExcludeDevice(const int nodeID);
+	bool RemoveFailedDevice(const int nodeID);
+	bool CancelControllerCommand();
 	std::string m_ipaddress;
 	int m_port;
 	std::string m_username;

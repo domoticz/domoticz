@@ -247,7 +247,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 				InsertOrUpdateDevice(_device,true);
 			}
 
-			// Add SensorMultilevel
+			// Add Sensor Binary
 			if (instance["commandClasses"]["48"].empty()==false)
 			{
 				_device.commandClassID=48; //(binary switch, for example motion detector(PIR)
@@ -281,6 +281,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 					InsertOrUpdateDevice(_device,true);
 			}
 
+			// Add Sensor Multilevel
 			if (instance["commandClasses"]["49"].empty()==false)
 			{
 				_device.commandClassID=49;
@@ -640,3 +641,22 @@ void CRazberry::RunCMD(const std::string &cmd)
 	}
 }
 
+bool CRazberry::IncludeDevice()
+{
+	return false;
+}
+
+bool CRazberry::ExcludeDevice(const int nodeID)
+{
+	return false;
+}
+
+bool CRazberry::RemoveFailedDevice(const int nodeID)
+{
+	return false;
+}
+
+bool CRazberry::CancelControllerCommand()
+{
+	return true;
+}

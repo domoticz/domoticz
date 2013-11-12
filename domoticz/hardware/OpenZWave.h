@@ -16,10 +16,11 @@ class COpenZWave : public AsyncSerial, public ZWaveBase
 {
 	typedef struct
 	{
-		unsigned long			m_homeId;
-		unsigned char			m_nodeId;
-		bool			m_polled;
+		unsigned long					m_homeId;
+		unsigned char					m_nodeId;
+		bool							m_polled;
 		std::list<OpenZWave::ValueID>	m_values;
+		time_t							m_LastSeen;
 	}NodeInfo;
 
 public:
@@ -29,13 +30,20 @@ public:
 	bool GetInitialDevices();
 	bool GetUpdates();
 	void OnZWaveNotification( OpenZWave::Notification const* _notification);
+	void OnZWaveDeviceStatusUpdate(int cs, int err);
 private:
+	bool GetValueByCommandClass(const int nodeID, const int instanceID, const int commandClass, OpenZWave::ValueID &nValue);
 	void AddValue(const OpenZWave::ValueID vID);
 	void UpdateValue(const OpenZWave::ValueID vID);
 	NodeInfo* GetNodeInfo( OpenZWave::Notification const* _notification );
+	NodeInfo* GetNodeInfo( const int homeID, const int nodeID);
 	void SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value);
 	void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value);
 	void StopHardwareIntern();
+	bool CancelControllerCommand();
+	bool IncludeDevice();
+	bool ExcludeDevice(const int nodeID);
+	bool RemoveFailedDevice(const int nodeID);
 
 	bool OpenSerialConnector();
 	void CloseSerialConnector();

@@ -84,7 +84,14 @@ private:
 	virtual void SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)=0;
 	virtual void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value)=0;
 	virtual void StopHardwareIntern()=0;
+	virtual bool IncludeDevice()=0;
+	virtual bool ExcludeDevice(const int nodeID)=0;
+	virtual bool RemoveFailedDevice(const int nodeID)=0;
+	virtual bool CancelControllerCommand()=0;
 
+	bool m_bControllerCommandInProgress;
+	time_t m_ControllerCommandStartTime;
+	int m_LastIncludedNode;
 	time_t m_updateTime;
 	bool m_bInitState;
 	std::map<std::string,_tZWaveDevice> m_devices;
