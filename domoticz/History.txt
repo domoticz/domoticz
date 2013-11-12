@@ -43,6 +43,8 @@ Version 1.0.xxx (November xxth 2013)
 - Implemented: New Version notification with version info, and option to review the latest changes
 - Implemented: Added more log buttons to the devices tab
 - Implemented: Rollertrol now displays a stop button
+- Changed: Added leading zero's in the Power/Gas reports for the months (work around)
+
 
 Version 1.0.1087 (Oktober 16th 2013)
 - Implemented: Login page (solves the caching problems)
