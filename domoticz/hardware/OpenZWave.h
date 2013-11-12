@@ -33,7 +33,8 @@ private:
 	void AddValue(const OpenZWave::ValueID vID);
 	void UpdateValue(const OpenZWave::ValueID vID);
 	NodeInfo* GetNodeInfo( OpenZWave::Notification const* _notification );
-	void RunCMD(const std::string &cmd);
+	void SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value);
+	void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value);
 	void StopHardwareIntern();
 
 	bool OpenSerialConnector();

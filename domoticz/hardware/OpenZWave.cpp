@@ -424,6 +424,8 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 	// Must do this inside a critical section to avoid conflicts with the main thread
 	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 
+	OpenZWave::ValueID vID=_notification->GetValueID();
+
 	switch( _notification->GetType() )
 	{
 	case OpenZWave::Notification::Type_ValueAdded:
@@ -431,9 +433,8 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 			if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
 			{
 				// Add the new value to our list
-				OpenZWave::ValueID id=_notification->GetValueID();
-				nodeInfo->m_values.push_back( id );
-				AddValue(id);
+				nodeInfo->m_values.push_back( vID );
+				AddValue(vID);
 			}
 			break;
 		}
@@ -445,7 +446,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 				// Remove the value from out list
 				for( std::list<OpenZWave::ValueID>::iterator it = nodeInfo->m_values.begin(); it != nodeInfo->m_values.end(); ++it )
 				{
-					if( (*it) == _notification->GetValueID() )
+					if( (*it) == vID )
 					{
 						nodeInfo->m_values.erase( it );
 						break;
@@ -460,7 +461,16 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 			// One of the node values has changed
 			if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
 			{
-				UpdateValue(_notification->GetValueID());
+				UpdateValue(vID);
+			}
+			break;
+		}
+	case OpenZWave::Notification::Type_ValueRefreshed:
+		{
+			// One of the node values has changed
+			if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
+			{
+				UpdateValue(vID);
 			}
 			break;
 		}
@@ -582,9 +592,15 @@ bool COpenZWave::OpenSerialConnector()
 	// The second argument is the path for saved Z-Wave network state and the log file.  If you leave it NULL 
 	// the log file will appear in the program's working directory.
 	OpenZWave::Options::Create( ConfigPath.c_str(), ConfigPath.c_str(), "--SaveConfiguration=true " );
+#ifdef _DEBUG
 	OpenZWave::Options::Get()->AddOptionInt( "SaveLogLevel", OpenZWave::LogLevel_Detail );
 	OpenZWave::Options::Get()->AddOptionInt( "QueueLogLevel", OpenZWave::LogLevel_Debug );
 	OpenZWave::Options::Get()->AddOptionInt( "DumpTrigger", OpenZWave::LogLevel_Error );
+#else
+	OpenZWave::Options::Get()->AddOptionInt( "SaveLogLevel", OpenZWave::LogLevel_Error );
+	OpenZWave::Options::Get()->AddOptionInt( "QueueLogLevel", OpenZWave::LogLevel_Error );
+	OpenZWave::Options::Get()->AddOptionInt( "DumpTrigger", OpenZWave::LogLevel_Error );
+#endif
 	OpenZWave::Options::Get()->AddOptionInt( "PollInterval", 500 );
 	OpenZWave::Options::Get()->AddOptionBool( "IntervalBetweenPolls", true );
 	OpenZWave::Options::Get()->AddOptionBool("ValidateValueChanges", true);
@@ -641,8 +657,29 @@ bool COpenZWave::GetUpdates()
 	return true;
 }
 
-void COpenZWave::RunCMD(const std::string &cmd)
+void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)
 {
+	if (m_pManager==NULL)
+		return;
+	int svalue=value;
+	if (svalue==0) {
+		//Off
+		m_pManager->SetNodeOff(m_controllerID,nodeID);
+	}
+	else if (svalue==255) {
+		//On
+		m_pManager->SetNodeOn(m_controllerID,nodeID);
+	}
+	else {
+		//Dim value (99 is fully on)
+		m_pManager->SetNodeLevel(m_controllerID,nodeID,svalue);
+	}
+}
+
+void COpenZWave::SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value)
+{
+	if (m_pManager==NULL)
+		return;
 }
 
 void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)

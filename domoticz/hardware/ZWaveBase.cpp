@@ -453,6 +453,7 @@ void ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 				svalue=0;
 			else
 				svalue=255;
+			SwitchLight(nodeID,instanceID,pDevice->commandClassID,svalue);
 		}
 		else {
 			//find dimmer
@@ -468,14 +469,11 @@ void ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 			{
 				float fvalue=(100.0f/15.0f)*float(pSen->LIGHTING2.level);
 				if (fvalue>99.0f)
-					fvalue=255.0f;
+					fvalue=99.0f; //99 is fully on
 				svalue=round(fvalue);
 			}
+			SwitchLight(nodeID,instanceID,pDevice->commandClassID,svalue);
 		}
-		//Send command
-		std::stringstream sstr;
-		sstr << "devices[" << nodeID << "].instances[" << instanceID << "].commandClasses[" << pDevice->commandClassID << "].Set(" << svalue << ")";
-		RunCMD(sstr.str());
 	}
 	else if ((packettype==pTypeThermostat)&&(subtype==sTypeThermSetpoint))
 	{
@@ -489,9 +487,7 @@ void ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 		pDevice=FindDevice(nodeID,instanceID,ZDTYPE_SENSOR_SETPOINT);
 		if (pDevice)
 		{
-			std::stringstream sstr;
-			sstr << "devices[" << nodeID << "].instances[" << instanceID << "].commandClasses[" << pDevice->commandClassID << "].Set(1," << pMeter->temp << ",null)";
-			RunCMD(sstr.str());
+			SetThermostatSetPoint(nodeID,instanceID,pDevice->commandClassID,pMeter->temp);
 		}
 	}
 }

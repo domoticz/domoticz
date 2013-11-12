@@ -613,6 +613,21 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 	SendDevice2Domoticz(pDevice);
 }
 
+void CRazberry::SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)
+{
+	//Send command
+	std::stringstream sstr;
+	sstr << "devices[" << nodeID << "].instances[" << instanceID << "].commandClasses[" << commandClass << "].Set(" << value << ")";
+	RunCMD(sstr.str());
+}
+
+void CRazberry::SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value)
+{
+	std::stringstream sstr;
+	sstr << "devices[" << nodeID << "].instances[" << instanceID << "].commandClasses[" << commandClass << "].Set(1," << value << ",null)";
+	RunCMD(sstr.str());
+}
+
 void CRazberry::RunCMD(const std::string &cmd)
 {
 	std::string szURL=GetRunURL(cmd);

@@ -22,6 +22,8 @@ private:
 	const std::string GetRunURL(const std::string &cmd);
 	void parseDevices(const Json::Value &devroot);
 	void UpdateDevice(const std::string &path, const Json::Value &obj);
+	void SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value);
+	void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value);
 	void RunCMD(const std::string &cmd);
 	void StopHardwareIntern();
 

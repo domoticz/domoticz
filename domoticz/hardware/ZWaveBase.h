@@ -81,7 +81,8 @@ private:
 	_tZWaveDevice* FindDevice(int nodeID, int scaleID);
 	void InsertOrUpdateDevice(_tZWaveDevice device, const bool bSend2Domoticz);
 	void UpdateDeviceBatteryStatus(int nodeID, int value);
-	virtual void RunCMD(const std::string &cmd)=0;
+	virtual void SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)=0;
+	virtual void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value)=0;
 	virtual void StopHardwareIntern()=0;
 
 	time_t m_updateTime;
