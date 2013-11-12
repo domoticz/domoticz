@@ -856,14 +856,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	{
 		//Unhanded
 		_log.Log(LOG_NORM, "^Unhanded^");
-		if (vType== OpenZWave::ValueID::ValueType_List)
-		{
-			std::vector<std::string > vStringList;
-			if (m_pManager->GetValueListItems(vID,&vStringList)==true)
-			{
-				_asm nop;
-			}
-		}
 	}
 }
 
