@@ -701,54 +701,6 @@ bool COpenZWave::GetValueByCommandClass(const int nodeID, const int instanceID, 
 	return false;
 }
 
-void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)
-{
-	if (m_pManager==NULL)
-		return;
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
-
-	OpenZWave::ValueID vID(0,0,OpenZWave::ValueID::ValueGenre_Basic,0,0,0,OpenZWave::ValueID::ValueType_Bool);
-
-	unsigned char svalue=(unsigned char)value;
-
-	bool bIsDimmer=(GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SWITCH_MULTILEVEL,vID)==true);
-	if (bIsDimmer==false)
-	{
-		if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SWITCH_BINARY,vID)==true)
-		{
-			if (svalue==0) {
-				//Off
-				m_pManager->SetValue(vID,false);
-			}
-			else {
-				//On
-				m_pManager->SetValue(vID,true);
-			}
-		}
-	}
-	else
-	{
-		if (svalue>99)
-			svalue=99;
-		if (!m_pManager->SetValue(vID,svalue))
-		{
-			_log.Log(LOG_ERROR,"OpenZWave: Error setting Switch Value!");
-		}
-	}
-}
-
-void COpenZWave::SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value)
-{
-	if (m_pManager==NULL)
-		return;
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
-	OpenZWave::ValueID vID(0,0,OpenZWave::ValueID::ValueGenre_Basic,0,0,0,OpenZWave::ValueID::ValueType_Bool);
-	if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_SETPOINT,vID)==true)
-	{
-		m_pManager->SetValue(vID,value);
-	}
-}
-
 void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 {
 	if (m_pManager==NULL)
@@ -1066,4 +1018,52 @@ void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
 		break;
 	}
 	_log.Log(LOG_NORM,"Device Response: %s",szLog.c_str());
+}
+
+void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)
+{
+	if (m_pManager==NULL)
+		return;
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+
+	OpenZWave::ValueID vID(0,0,OpenZWave::ValueID::ValueGenre_Basic,0,0,0,OpenZWave::ValueID::ValueType_Bool);
+
+	unsigned char svalue=(unsigned char)value;
+
+	bool bIsDimmer=(GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SWITCH_MULTILEVEL,vID)==true);
+	if (bIsDimmer==false)
+	{
+		if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SWITCH_BINARY,vID)==true)
+		{
+			if (svalue==0) {
+				//Off
+				m_pManager->SetValue(vID,false);
+			}
+			else {
+				//On
+				m_pManager->SetValue(vID,true);
+			}
+		}
+	}
+	else
+	{
+		if (svalue>99)
+			svalue=99;
+		if (!m_pManager->SetValue(vID,svalue))
+		{
+			_log.Log(LOG_ERROR,"OpenZWave: Error setting Switch Value!");
+		}
+	}
+}
+
+void COpenZWave::SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value)
+{
+	if (m_pManager==NULL)
+		return;
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	OpenZWave::ValueID vID(0,0,OpenZWave::ValueID::ValueGenre_Basic,0,0,0,OpenZWave::ValueID::ValueType_Bool);
+	if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_SETPOINT,vID)==true)
+	{
+		m_pManager->SetValue(vID,value);
+	}
 }
