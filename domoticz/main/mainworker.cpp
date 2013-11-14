@@ -5617,6 +5617,25 @@ unsigned long long MainWorker::decode_Current_Energy(const int HwdID, const tRBU
 			pResponse->CURRENT_ENERGY.total6
 			) / 223.666;
 
+		if (usage==0)
+		{
+			//That should not be, let's get the previous value
+			//no usage provided, get the last usage
+			std::vector<std::vector<std::string> > result2;
+			std::stringstream szQuery2;
+			szQuery2 << "SELECT nValue,sValue FROM DeviceStatus WHERE (HardwareID=" << HwdID << " AND DeviceID='" << ID << "' AND Unit=" << int(Unit) << " AND Type=" << int(devType) << " AND SubType=" << int(subType) << ")";
+			result2=m_sql.query(szQuery2.str());
+			if (result2.size()>0)
+			{
+				std::vector<std::string> strarray;
+				StringSplit(result2[0][1], ";", strarray);
+				if (strarray.size()==4)
+				{
+					usage = atof(strarray[3].c_str());
+				}
+			}
+		}
+
 		int voltage=230;
 		m_sql.GetPreferencesVar("ElectricVoltage", voltage);
 
