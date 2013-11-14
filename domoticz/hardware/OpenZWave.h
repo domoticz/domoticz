@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <string>
 #include <time.h>
 #include "ZWaveBase.h"
 #include "ASyncSerial.h"
@@ -14,12 +15,29 @@ namespace OpenZWave
 }
 class COpenZWave : public AsyncSerial, public ZWaveBase
 {
+	typedef struct  
+	{
+		std::list<OpenZWave::ValueID>	Values;
+		time_t							m_LastSeen;
+	}NodeCommandClass;
+
 	typedef struct
 	{
 		unsigned long					m_homeId;
 		unsigned char					m_nodeId;
 		bool							m_polled;
-		std::list<OpenZWave::ValueID>	m_values;
+
+		std::string						szType;
+		int								iVersion;
+		std::string						Manufacturer_id;
+		std::string						Manufacturer_name;
+		std::string						Product_type;
+		std::string						Product_id;
+		std::string						Product_name;
+
+		std::map<int, std::map<int, NodeCommandClass> >	Instances;
+
+		bool							m_WasSleeping;
 		time_t							m_LastSeen;
 	}NodeInfo;
 
@@ -50,7 +68,7 @@ private:
 
 	OpenZWave::Manager *m_pManager;
 
-	std::list<NodeInfo*> m_nodes;
+	std::list<NodeInfo> m_nodes;
 	boost::mutex m_NotificationMutex;
 
 	std::string m_szSerialPort;
@@ -58,7 +76,6 @@ private:
 
 	bool m_initFailed;
 	bool m_nodesQueried;
-
 };
 
 

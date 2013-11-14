@@ -35,7 +35,7 @@ bool ZWaveBase::StartHardware()
 {
 	m_bInitState=true;
 	m_stoprequested=false;
-	m_updateTime=0;
+	m_updateTime=mytime(NULL);
 	m_LastIncludedNode=0;
 	m_bControllerCommandInProgress=false;
 
@@ -124,7 +124,7 @@ void ZWaveBase::InsertOrUpdateDevice(_tZWaveDevice device, const bool bSend2Domo
 */
 }
 
-void ZWaveBase::UpdateDeviceBatteryStatus(int nodeID, int value)
+void ZWaveBase::UpdateDeviceBatteryStatus(const int nodeID, const int value)
 {
 	std::map<std::string,_tZWaveDevice>::iterator itt;
 	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
