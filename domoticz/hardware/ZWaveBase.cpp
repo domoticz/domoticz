@@ -24,6 +24,7 @@ ZWaveBase::ZWaveBase()
 {
 	m_LastIncludedNode=0;
 	m_bControllerCommandInProgress=false;
+	m_updateTime=0;
 }
 
 
@@ -35,7 +36,7 @@ bool ZWaveBase::StartHardware()
 {
 	m_bInitState=true;
 	m_stoprequested=false;
-	m_updateTime=mytime(NULL);
+	m_updateTime=0;
 	m_LastIncludedNode=0;
 	m_bControllerCommandInProgress=false;
 

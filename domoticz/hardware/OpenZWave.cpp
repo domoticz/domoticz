@@ -641,6 +641,7 @@ void COpenZWave::StopHardwareIntern()
 
 bool COpenZWave::OpenSerialConnector()
 {
+	m_updateTime=mytime(NULL);
 	CloseSerialConnector();
 	std::string ConfigPath=szStartupFolder + "Config/";
 	// Create the OpenZWave Manager.
