@@ -3602,7 +3602,11 @@ std::string CWebServer::GetJSonPage()
 								bHaveFirstValue=false;
 							}
 							std::stringstream s_str1( sd[0] );
-							s_str1 >> ulLastValue;
+							unsigned long long actValue;
+							s_str1 >> actValue;
+
+							if (actValue>=ulLastValue)
+								ulLastValue=actValue;
 
 							if (!bHaveFirstValue)
 							{

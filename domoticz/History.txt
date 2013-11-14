@@ -45,7 +45,7 @@ Version 1.0.xxx (November xxth 2013)
 - Implemented: Rollertrol now displays a stop button
 - Changed: Added leading zero's in the Power/Gas reports for the months (work around)
 - Implemented: Transfer Temp/Temp+Hum now possible between different subtypes
-
+- Implemented: OpenZWave initial support (Aeon USB Stick V2), with Temp/Hum/Lux/Power/Energy/Switches
 
 Version 1.0.1087 (Oktober 16th 2013)
 - Implemented: Login page (solves the caching problems)
