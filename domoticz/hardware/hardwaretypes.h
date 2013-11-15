@@ -196,3 +196,17 @@ typedef struct _tGeneralDevice {
 	}
 } GeneralDevice;
 
+typedef struct _tLimitlessLights {
+	unsigned char len;
+	unsigned char type;
+	unsigned char subtype;
+	unsigned char command;
+	unsigned char value;
+	_tLimitlessLights()
+	{
+		len=sizeof(_tLimitlessLights)-1;
+		type=pTypeLimitlessLights;
+		subtype=sTypeLimitlessRGBW;
+	}
+} _tLimitlessLights;
+
