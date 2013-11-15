@@ -156,6 +156,7 @@ hardware/DomoticzHardware.cpp
 hardware/1Wire.cpp
 hardware/ASyncSerial.cpp
 hardware/Dummy.cpp
+hardware/Limitless.cpp
 hardware/RFXComSerial.cpp
 hardware/RFXComTCP.cpp
 hardware/DomoticzTCP.cpp
