@@ -141,7 +141,9 @@ CLimitLess::CLimitLess(const int ID, const std::string IPAddress, const unsigned
 
 CLimitLess::~CLimitLess(void)
 {
+#if defined WIN32
 	WSACleanup();
+#endif
 }
 
 void CLimitLess::Init()
