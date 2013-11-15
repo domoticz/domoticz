@@ -61,17 +61,16 @@ const unsigned char RGBWOff[3] = { 0x41, 0x0, 0x55 };
 const unsigned char RGBWDiscoSpeedSlower[3] = { 0x43, 0x0, 0x55 };
 const unsigned char RGBWDiscoSpeedFaster[3] = { 0x44, 0x0, 0x55 };
 
-const unsigned char RGBWGroup1AllOff[3] = { 0x45, 0x0, 0x55 };	//(SYNC/PAIR RGB+W Bulb within 2 seconds of Wall Switch Power being turned ON)
-const unsigned char RGBWGroup1AllOn[3] = { 0x46, 0x0, 0x55 };
-const unsigned char RGBWGroup2AllOff[3] = { 0x47, 0x0, 0x55 };	//(SYNC/PAIR RGB+W Bulb within 2 seconds of Wall Switch Power being turned ON)
-const unsigned char RGBWGroup2AllOn[3] = { 0x48, 0x0, 0x55 };
-const unsigned char RGBWGroup3AllOff[3] = { 0x49, 0x0, 0x55 };	//(SYNC/PAIR RGB+W Bulb within 2 seconds of Wall Switch Power being turned ON)
-const unsigned char RGBWGroup3AllOn[3] = { 0x4A, 0x0, 0x55 };
-const unsigned char RGBWGroup4AllOff[3] = { 0x4B, 0x0, 0x55 };	//(SYNC/PAIR RGB+W Bulb within 2 seconds of Wall Switch Power being turned ON)
-const unsigned char RGBWGroup4AllOn[3] = { 0x4C, 0x0, 0x55 };
+const unsigned char RGBWGroup1AllOn[3] = { 0x45, 0x0, 0x55 };	//(SYNC/PAIR RGB+W Bulb within 2 seconds of Wall Switch Power being turned ON)
+const unsigned char RGBWGroup1AllOff[3] = { 0x46, 0x0, 0x55 };
+const unsigned char RGBWGroup2AllOn[3] = { 0x47, 0x0, 0x55 };	//(SYNC/PAIR RGB+W Bulb within 2 seconds of Wall Switch Power being turned ON)
+const unsigned char RGBWGroup2AllOff[3] = { 0x48, 0x0, 0x55 };
+const unsigned char RGBWGroup3AllOn[3] = { 0x49, 0x0, 0x55 };	//(SYNC/PAIR RGB+W Bulb within 2 seconds of Wall Switch Power being turned ON)
+const unsigned char RGBWGroup3AllOff[3] = { 0x4A, 0x0, 0x55 };
+const unsigned char RGBWGroup4AllOn[3] = { 0x4B, 0x0, 0x55 };	//(SYNC/PAIR RGB+W Bulb within 2 seconds of Wall Switch Power being turned ON)
+const unsigned char RGBWGroup4AllOff[3] = { 0x4C, 0x0, 0x55 };
 const unsigned char RGBWDisco[3] = { 0x4D, 0x0, 0x55 };
 
-//Not to sure about these below, think we should send the 'on' command
 const unsigned char RGBWSetColorToWhiteAll[3]={0xC2,0x0,0x55};	//SET COLOR TO WHITE (GROUP ALL) 0x42 100ms followed by: 0xC2
 const unsigned char RGBWSetColorToWhiteGroup1[3]={0xC5,0x0,0x55};	//SET COLOR TO WHITE (GROUP 1) 0x45 100ms followed by: 0xC5
 const unsigned char RGBWSetColorToWhiteGroup2[3]={0xC7,0x0,0x55};	//SET COLOR TO WHITE (GROUP 2) 0x47 100ms followed by: 0xC7
@@ -84,8 +83,8 @@ const unsigned char RGBWSetBrightnessLevel[3]={0x4E,0,0x55};
 //Byte2: 0×00 to 0xFF (full brightness 0x3B)
 //Byte3: Always 0×55 (decimal: 85)
 
-const unsigned char RGBWSetColor[3]={0x40,0,0x55};
-//LIMITLESSLED RGBW COLOR SETTING is by a 3BYTE COMMAND: (First send the Group ON for the group you want to set the colour for. You send the group ON command 100ms before sending the 40)
+unsigned char RGBWSetColor[3]={0x40,0,0x55};
+//LIMITLESSLED RGBW COLOR SETTING is by a 3BYTE COMMAND: (First send the Group ON for the group you want to set the color for. You send the group ON command 100ms before sending the 40)
 //Byte1: 0×40 (decimal: 64)
 //Byte2: 0×00 to 0xFF (255 colors) Color Matrix Chart [COMING SOON]
 //Byte3: Always 0×55 (decimal: 85)
@@ -164,6 +163,15 @@ bool CLimitLess::StartHardware()
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CLimitLess::Do_Work, this)));
 
+	//WriteToHardware((const char*)&RGBWOn,sizeof(RGBWOn));
+	//Sleep(100);
+	//WriteToHardware((const char*)&RGBWSetColorToWhiteAll,sizeof(RGBWSetColorToWhiteAll));
+	
+	//RGBWSetColor[1]=90;
+	//WriteToHardware((const char*)&RGBWGroup1AllOn,sizeof(RGBWGroup1AllOn));
+	//Sleep(100);
+	//WriteToHardware((const char*)&RGBWSetColor,sizeof(RGBWSetColor));
+	
 	return (m_thread!=NULL);
 }
 

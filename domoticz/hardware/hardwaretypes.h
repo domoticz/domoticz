@@ -15,6 +15,11 @@
 #define wsbaroforcast_some_clouds 0x05
 #define wsbaroforcast_sunny 0x06
 
+#define pTypeLimitlessLights	0xF1
+#define sTypeLimitlessRGBW		0x01
+#define sTypeLimitlessRGB		0x02
+#define sTypeLimitlessWhite		0x03
+
 #define pTypeThermostat			0xF2
 #define sTypeThermSetpoint		0x01
 #define sTypeThermTemperature	0x02

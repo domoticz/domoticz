@@ -71,6 +71,7 @@ enum _eHardwareTypes {
 	HTYPE_TeleinfoMeter,
 	HTYPE_OpenThermGatewayTCP,
 	HTYPE_OpenZWave,
+	HTYPE_LimitlessLights,
 	HTYPE_END
 };
 

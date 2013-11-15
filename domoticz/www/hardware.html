@@ -772,8 +772,11 @@ function RefreshHardwareTable()
       if (typeof data.result != 'undefined') {
         $.each(data.result, function(i,item){
         
+			var HwTypeStrOrg=$.myglobals.HardwareTypesStr[item.Type];
+			var HwTypeStr=HwTypeStrOrg;
+        
 			var SerialName="Unknown!?";
-			if ((item.Type == 2)||(item.Type == 3)||(item.Type == 5)||(item.Type == 6)||(item.Type == 9))
+			if (HwTypeStr.indexOf("LAN") >= 0)
 			{
 				SerialName=item.Port;
 			}
@@ -806,8 +809,6 @@ function RefreshHardwareTable()
 				enabledstr="Yes";
 			}
 			
-			var HwTypeStrOrg=$.myglobals.HardwareTypesStr[item.Type];
-			var HwTypeStr=HwTypeStrOrg;
 			if (typeof HwTypeStr == 'undefined') {
 				HwTypeStr="???? Unknown (NA)";
 			}

@@ -32,6 +32,7 @@
 #include "../hardware/OTGWTCP.h"
 //#include "../hardware/S0MeterTCP.h"
 #include "../hardware/Teleinfo.h"
+#include "../hardware/Limitless.h"
 
 #include "mainstructs.h"
 
@@ -413,6 +414,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_OpenThermGatewayTCP:
 		//LAN
 		pHardware = new OTGWTCP(ID, Address, Port);
+		break;
+	case HTYPE_LimitlessLights:
+		//LAN
+		pHardware = new CLimitLess(ID, Address, Port);
 		break;
 	case HTYPE_YouLess:
 		//LAN
