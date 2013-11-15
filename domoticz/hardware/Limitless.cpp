@@ -208,5 +208,5 @@ void CLimitLess::Do_Work()
 
 void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	sendto(m_RemoteSocket,pdata,length,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(SOCKADDR_IN));
+	sendto(m_RemoteSocket,pdata,length,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 }

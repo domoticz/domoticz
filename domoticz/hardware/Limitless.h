@@ -14,7 +14,7 @@ private:
 	unsigned short m_usIPPort;
 
 	SOCKET	m_RemoteSocket;
-	SOCKADDR_IN m_stRemoteDestAddr;
+	sockaddr_in m_stRemoteDestAddr;
 
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
