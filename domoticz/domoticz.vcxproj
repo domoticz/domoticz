@@ -105,6 +105,7 @@
     <ClInclude Include="hardware\DavisLoggerSerial.h" />
     <ClInclude Include="hardware\Dummy.h" />
     <ClInclude Include="hardware\hidapi.h" />
+    <ClInclude Include="hardware\Limitless.h" />
     <ClInclude Include="hardware\OpenZWave.h" />
     <ClInclude Include="hardware\OTGWBase.h" />
     <ClInclude Include="hardware\OTGWSerial.h" />
@@ -180,6 +181,7 @@
     <ClCompile Include="hardware\DavisLoggerSerial.cpp" />
     <ClCompile Include="hardware\Dummy.cpp" />
     <ClCompile Include="hardware\libusbwinusbbridge.cpp" />
+    <ClCompile Include="hardware\Limitless.cpp" />
     <ClCompile Include="hardware\OpenZWave.cpp" />
     <ClCompile Include="hardware\OTGWBase.cpp" />
     <ClCompile Include="hardware\OTGWSerial.cpp" />

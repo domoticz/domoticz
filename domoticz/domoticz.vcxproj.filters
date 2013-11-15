@@ -105,6 +105,9 @@
     <Filter Include="Devices\ZWave\OpenZWave">
       <UniqueIdentifier>{2eca1afb-1a1f-4158-ab8d-0616c1fbd279}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\LimitlessLed">
+      <UniqueIdentifier>{80714ac8-8783-4ef2-8836-3bb5b15adbb0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -334,6 +337,9 @@
     <ClInclude Include="hardware\ZWaveCommands.h">
       <Filter>Devices\ZWave</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\Limitless.h">
+      <Filter>Devices\LimitlessLed</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -530,6 +536,9 @@
     </ClCompile>
     <ClCompile Include="hardware\OpenZWave.cpp">
       <Filter>Devices\ZWave\OpenZWave</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\Limitless.cpp">
+      <Filter>Devices\LimitlessLed</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

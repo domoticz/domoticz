@@ -26,6 +26,7 @@ class CDomoticzHardwareBase
 	friend class OTGWSerial;
 	friend class OTGWTCP;
 	friend class Teleinfo;
+	friend class CLimitLess;
 
 public: 
 	CDomoticzHardwareBase();
