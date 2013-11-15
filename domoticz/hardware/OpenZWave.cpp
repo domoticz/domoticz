@@ -508,7 +508,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 			// One of the node values has changed
 			if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
 			{
-				UpdateValue(vID);
+				//UpdateValue(vID);
 				nodeInfo->Instances[instance][commandClass].m_LastSeen=act_time;
 			}
 			break;
