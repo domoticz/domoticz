@@ -7228,7 +7228,7 @@ std::string CWebServer::GetJSonPage()
 					goto exitjson;
 				devid=id;
 			}
-			else
+			else if (lighttype<100)
 			{
 				dtype=pTypeLighting5;
 				subtype=lighttype-13;
@@ -7240,6 +7240,26 @@ std::string CWebServer::GetJSonPage()
 					)
 					goto exitjson;
 				devid=id;
+			}
+			else
+			{
+				if (lighttype==100)
+				{
+					//Chime/ByronSX
+					dtype=pTypeChime;
+					subtype=sTypeByronSX;
+					std::string id=m_pWebEm->FindValue("id");
+					sunitcode=m_pWebEm->FindValue("unitcode");
+					if (
+						(id=="")||
+						(sunitcode=="")
+						)
+						goto exitjson;
+					int iUnitCode=atoi(sunitcode.c_str())-1;
+					sprintf(szTmp,"%d",iUnitCode);
+					sunitcode=szTmp;
+					devid=id;
+				}
 			}
 			root["status"]="OK";
 			root["title"]="TestSwitch";
@@ -7322,7 +7342,7 @@ std::string CWebServer::GetJSonPage()
 					goto exitjson;
 				devid=id;
 			}
-			else
+			else if (lighttype<100)
 			{
 				dtype=pTypeLighting5;
 				subtype=lighttype-13;
@@ -7334,6 +7354,26 @@ std::string CWebServer::GetJSonPage()
 					)
 					goto exitjson;
 				devid=id;
+			}
+			else
+			{
+				if (lighttype==100)
+				{
+					//Chime/ByronSX
+					dtype=pTypeChime;
+					subtype=sTypeByronSX;
+					std::string id=m_pWebEm->FindValue("id");
+					sunitcode=m_pWebEm->FindValue("unitcode");
+					if (
+						(id=="")||
+						(sunitcode=="")
+						)
+						goto exitjson;
+					int iUnitCode=atoi(sunitcode.c_str())-1;
+					sprintf(szTmp,"%d",iUnitCode);
+					sunitcode=szTmp;
+					devid=id;
+				}
 			}
 
 			//check if switch is unique

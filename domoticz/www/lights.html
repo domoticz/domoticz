@@ -134,6 +134,7 @@
 						<option value="12">ANSLUT</option>
 						<option value="13">LightwaveRF</option>
 						<option value="18">Linovo</option>
+						<option value="100">ByronSX</option>
           </select></td>
 		    </tr>
 		    </table>
@@ -1814,6 +1815,12 @@ function UpdateAddManualDialog()
 		//Linovo
 		bIsType5=1;
 	}
+	else if (lighttype==100) {
+		//Chime/ByronSX
+		bIsType5=1;
+		totunits=4;
+	}
+	
 	if (lighttype==6) {
 		$('#dialog-addmanuallightdevice #lightparams3 #combogroupcode >option').remove();
 		$('#dialog-addmanuallightdevice #lightparams3 #combounitcode >option').remove();
@@ -1852,9 +1859,11 @@ function UpdateAddManualDialog()
 		}
 		else {
 			$("#dialog-addmanuallightdevice #lighting2params #combocmd1").hide();
-			if (lighttype==18) {
+			if ((lighttype==18)||(lighttype==100)) {
 				$("#dialog-addmanuallightdevice #lighting2params #combocmd2").hide();
-				$("#dialog-addmanuallightdevice #lighting2paramsUnitCode").hide();
+				if (lighttype!=100) {
+					$("#dialog-addmanuallightdevice #lighting2paramsUnitCode").hide();
+				}
 			}
 		}
 		$("#dialog-addmanuallightdevice #lighting1params").hide();
@@ -1901,7 +1910,7 @@ function GetManualLightSettings(isTest)
 		//AC
 		var ID="";
 		var bIsType5=0;
-		if ((lighttype==13)||(lighttype==18))
+		if ((lighttype==13)||(lighttype==18)||(lighttype==100))
 		{
 			bIsType5=1;
 		}
@@ -1913,7 +1922,7 @@ function GetManualLightSettings(isTest)
 				$("#dialog-addmanuallightdevice #lightparams2 #combocmd4 option:selected").text();
 		}
 		else {
-			if (lighttype!=18) {
+			if ((lighttype!=18)&&(lighttype!=100)) {
 				ID=
 					$("#dialog-addmanuallightdevice #lightparams2 #combocmd2 option:selected").text()+
 					$("#dialog-addmanuallightdevice #lightparams2 #combocmd3 option:selected").text()+
