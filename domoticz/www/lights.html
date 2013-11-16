@@ -1156,7 +1156,10 @@ function RefreshLights()
 						var img="";
 						var img2="";
 						var img3="";
-						if (item.SwitchType == "X10 Siren") {
+						if (item.SubType=="Security Panel") {
+							img='<a href="secpanel/"><img src="images/security48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></a>';
+						}
+						else if (item.SwitchType == "X10 Siren") {
 							if (
 									(item.Status == 'On')||
 									(item.Status == 'Chime')||
@@ -1425,7 +1428,10 @@ function ShowLights()
 			xhtm+=streamurl;
 		  }
 		  xhtm+='</td>\n';
-          if (item.SwitchType == "X10 Siren") {
+		  if (item.SubType=="Security Panel") {
+			xhtm+='\t      <td id="img"><a href="secpanel/"><img src="images/security48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></a></td>\n';
+		  }
+          else if (item.SwitchType == "X10 Siren") {
             if (
                 (item.Status == 'On')||
                 (item.Status == 'Chime')||
@@ -1551,55 +1557,55 @@ function ShowLights()
 					}
 					else if (item.SwitchType == "Dimmer") {
 						bIsDimmer=true;
-            if (
-                (item.Status == 'On')||
-                (item.Status == 'Chime')||
-                (item.Status == 'Group On')||
-                (item.Status.indexOf('Set ') == 0)
-               ) {
-                    xhtm+='\t      <td id="img"><img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
-            }
-            else {
-                    xhtm+='\t      <td id="img"><img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
-            }
+						if (
+							(item.Status == 'On')||
+							(item.Status == 'Chime')||
+							(item.Status == 'Group On')||
+							(item.Status.indexOf('Set ') == 0)
+						   ) {
+								xhtm+='\t      <td id="img"><img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+							 }
+							 else {
+								xhtm+='\t      <td id="img"><img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+							 }
 					}
 					else if (item.SwitchType == "Dusk Sensor") {
-					bAddTimer=false;
-            if (item.Status == 'On')
-                {
-                    xhtm+='\t      <td id="img"><img src="images/uvdark.png" title="' + $.i18n("Nighttime") +'  height="48"></td>\n';
-            }
-            else {
-                    xhtm+='\t      <td id="img"><img src="images/uvsunny.png" title="' + $.i18n("Daytime") + '  height="48"></td>\n';
-            }
+						bAddTimer=false;
+						if (item.Status == 'On')
+							{
+								xhtm+='\t      <td id="img"><img src="images/uvdark.png" title="' + $.i18n("Nighttime") +'  height="48"></td>\n';
+							}
+							else {
+								xhtm+='\t      <td id="img"><img src="images/uvsunny.png" title="' + $.i18n("Daytime") + '  height="48"></td>\n';
+							}
 					}					
 					else if (item.SwitchType == "Motion Sensor") {
-            if (
-                (item.Status == 'On')||
-                (item.Status == 'Chime')||
-                (item.Status == 'Group On')||
-                (item.Status.indexOf('Set ') == 0)
-               ) {
-                    xhtm+='\t      <td id="img"><img src="images/motion48-on.png" height="48"></td>\n';
-            }
-            else {
-                    xhtm+='\t      <td id="img"><img src="images/motion48-off.png" height="48"></td>\n';
-            }
-            bAddTimer=false;
+						if (
+							(item.Status == 'On')||
+							(item.Status == 'Chime')||
+							(item.Status == 'Group On')||
+							(item.Status.indexOf('Set ') == 0)
+						   ) {
+								xhtm+='\t      <td id="img"><img src="images/motion48-on.png" height="48"></td>\n';
+							}
+							else {
+								xhtm+='\t      <td id="img"><img src="images/motion48-off.png" height="48"></td>\n';
+							}
+							bAddTimer=false;
 					}
-          else {
-            if (
-                (item.Status == 'On')||
-                (item.Status == 'Chime')||
-                (item.Status == 'Group On')||
-                (item.Status.indexOf('Set ') == 0)
-               ) {
-                    xhtm+='\t      <td id="img"><img src="images/' + item.Image + '48_On.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
-            }
-            else {
-                    xhtm+='\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
-            }
-          }
+				  else {
+					if (
+						(item.Status == 'On')||
+						(item.Status == 'Chime')||
+						(item.Status == 'Group On')||
+						(item.Status.indexOf('Set ') == 0)
+					   ) {
+							xhtm+='\t      <td id="img"><img src="images/' + item.Image + '48_On.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+						}
+						else {
+							xhtm+='\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+						}
+				  }
           xhtm+=
                 '\t      <td id="status">' + TranslateStatus(item.Status) + '</td>\n' +
                 '\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +

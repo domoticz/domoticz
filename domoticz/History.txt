@@ -50,6 +50,7 @@ Version 1.0.xxx (November xxth 2013)
 - Implemented: Oregon EW109 Temp+Humidity sensor support
 - Implemented: Revolt Power meter hardware support
 - Implemented: Limitless/AppLamp/WifiLedLamp (with Wifi Hub) hardware support
+- Implemented: Clicking on the security-panel icon in the dashboard/switch tab brings you to the actual security panel
 
 Version 1.0.1087 (Oktober 16th 2013)
 - Implemented: Login page (solves the caching problems)

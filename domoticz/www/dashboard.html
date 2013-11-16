@@ -701,7 +701,10 @@ function RefreshFavorites()
 							}
 							if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								var tmpStatus=TranslateStatus(item.Status);
-								if (item.SubType.indexOf('remote') > 0) {
+								if (item.SubType=="Security Panel") {
+									tmpStatus+=' <a href="secpanel/"><img src="images/security48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16"></a>';
+								}
+								else if (item.SubType.indexOf('remote') > 0) {
 									if ((item.Status.indexOf('Arm') >= 0)||(item.Status.indexOf('Panic') >= 0)) {
 										tmpStatus+=' <img src="images/remote.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
@@ -716,7 +719,10 @@ function RefreshFavorites()
 							}
 							else {
 								var img="";
-								if (item.SubType.indexOf('remote') > 0) {
+								if (item.SubType=="Security Panel") {
+									img='<a href="secpanel/"><img src="images/security48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></a>';
+								}
+								else if (item.SubType.indexOf('remote') > 0) {
 									if ((item.Status.indexOf('Arm') >= 0)||(item.Status.indexOf('Panic') >= 0)) {
 										img+='<img src="images/remote48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">\n';
 									}
@@ -1975,7 +1981,10 @@ function ShowFavorites()
 							
 							xhtm+='\t      <td id="status">';
 							xhtm+=status;
-							if (item.SubType.indexOf('remote') > 0) {
+							if (item.SubType=="Security Panel") {
+								xhtm+=' <a href="secpanel/"><img src="images/security48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16"></a>';
+							}
+							else if (item.SubType.indexOf('remote') > 0) {
 								if ((item.Status.indexOf('Arm') >= 0)||(item.Status.indexOf('Panic') >= 0)) {
 									xhtm+=' <img src="images/remote.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
@@ -2005,7 +2014,10 @@ function ShowFavorites()
 										'\t      <td id="name">' + item.Name + '</td>\n' +
 										'\t      <td id="bigtext"></td>\n';
 
-							if (item.SubType.indexOf('remote') > 0) {
+						    if (item.SubType=="Security Panel") {
+								xhtm+='\t      <td id="img"><a href="secpanel/"><img src="images/security48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></a></td>\n';
+						    }
+							else if (item.SubType.indexOf('remote') > 0) {
 								if ((item.Status.indexOf('Arm') >= 0)||(item.Status.indexOf('Panic') >= 0)) {
 									xhtm+='\t      <td id="img"><img src="images/remote48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
