@@ -417,7 +417,11 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_LimitlessLights:
 		//LAN
-		pHardware = new CLimitLess(ID, Address, Port);
+		{
+			if (Mode1==0)
+				Mode1=1;
+			pHardware = new CLimitLess(ID, Mode1,Address, Port);
+		}
 		break;
 	case HTYPE_YouLess:
 		//LAN
@@ -861,6 +865,12 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 		ID = szTmp;
 		Unit=pResponse->LIGHTING6.unitcode;
 	}
+	else if (devType==pTypeLimitlessLights)
+	{
+		_tLimitlessLights *pLed=(_tLimitlessLights *)pResponse;
+		ID = "1";
+		Unit=pLed->dunit;
+	}
 	else if (devType==pTypeBlinds)
 	{
 		sprintf(szTmp,"%02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2,pResponse->BLINDS1.id3);
@@ -957,6 +967,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		case pTypeLighting4:
 		case pTypeLighting5:
 		case pTypeLighting6:
+		case pTypeLimitlessLights:
 		case pTypeBlinds:
 		case pTypeSecurity1:
 		case pTypeChime:
@@ -1169,6 +1180,14 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		case pTypeBBQ:
 			WriteMessage("BBQ",false);
 			DeviceRowIdx=decode_BBQ(HwdID, (tRBUF *)pRXCommand);
+			break;
+		case pTypePOWER:
+			WriteMessage("Power Current/Energy Meter",false);
+			DeviceRowIdx=decode_Power(HwdID, (tRBUF *)pRXCommand);
+			break;
+		case pTypeLimitlessLights:
+			WriteMessage("Limitless Lights",false);
+			DeviceRowIdx=decode_LimitlessLights(HwdID, (tRBUF *)pRXCommand);
 			break;
 		default:
 			_log.Log(LOG_ERROR,"UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
@@ -2112,6 +2131,7 @@ unsigned long long MainWorker::decode_TempHum(const int HwdID, const tRBUF *pRes
 	case sTypeTH6:
 	case sTypeTH8:
 	case sTypeTH10:
+	case sTypeTH11:
 		Unit = pResponse->TEMP_HUM.id2;
 		break;
 	case sTypeTH5:
@@ -2237,6 +2257,11 @@ unsigned long long MainWorker::decode_TempHum(const int HwdID, const tRBUF *pRes
 			break;
 		case sTypeTH10:
 			WriteMessage("subtype       = TH10 - Rubicson/IW008T/TX95");
+			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);
+			WriteMessage(szTmp);
+			break;
+		case sTypeTH11:
+			WriteMessage("subtype       = TH11 - Oregon EW109");
 			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
 			break;
@@ -3517,6 +3542,27 @@ unsigned long long MainWorker::decode_Lighting6(const int HwdID, const tRBUF *pR
 	return DevRowIdx;
 }
 
+unsigned long long MainWorker::decode_LimitlessLights(const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[100];
+	std::string devname;
+
+	_tLimitlessLights *pLed=(_tLimitlessLights*)pResponse;
+
+	unsigned char devType=pTypeLimitlessLights;
+	unsigned char subType=pLed->subtype;
+	sprintf(szTmp,"%d", 1);
+	std::string ID = szTmp;
+	unsigned char Unit=pLed->dunit;
+	unsigned char cmnd=pLed->command;
+	unsigned char value=pLed->value;
+
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,12,-1,cmnd,devname);
+	PrintDeviceName(devname);
+	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
+	return DevRowIdx;
+}
+
 unsigned long long MainWorker::decode_Chime(const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
@@ -3828,8 +3874,14 @@ unsigned long long MainWorker::decode_Security1(const int HwdID, const tRBUF *pR
 	unsigned char cmnd=pResponse->SECURITY1.status;
 	unsigned char SignalLevel=pResponse->SECURITY1.rssi;
 	unsigned char BatteryLevel = get_BateryLevel(false, pResponse->SECURITY1.battery_level & 0x0F);
-	if (pResponse->SECURITY1.subtype == sTypeKD101)
+	if (
+		(pResponse->SECURITY1.subtype == sTypeKD101)||
+		(pResponse->SECURITY1.subtype == sTypeSA30)
+		)
+	{
+		//KD101 & SA30 do not support battery low indication
 		BatteryLevel=255;
+	}
 
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,devname);
 	PrintDeviceName(devname);
@@ -3865,6 +3917,9 @@ unsigned long long MainWorker::decode_Security1(const int HwdID, const tRBUF *pR
 			break;
 		case sTypeMeiantech:
 			WriteMessage("subtype       = Meiantech/Atlantic/Aidebao");
+			break;
+		case sTypeSA30:
+			WriteMessage("subtype       = Alecto SA30 smoke detector");
 			break;
 		case sTypeDomoticzSecurity:
 			WriteMessage("subtype       = Security Panel");
@@ -3973,7 +4028,10 @@ unsigned long long MainWorker::decode_Security1(const int HwdID, const tRBUF *pR
 			break;
 		}
 
-		if (pResponse->SECURITY1.subtype != sTypeKD101)		//KD101 does not support battery low indication
+		if (
+			(pResponse->SECURITY1.subtype != sTypeKD101)&&		//KD101 & SA30 does not support battery low indication
+			(pResponse->SECURITY1.subtype != sTypeSA30)
+			)
 		{
 			if ((pResponse->SECURITY1.battery_level &0xF) == 0)
 				WriteMessage("battery level = Low");
@@ -5569,6 +5627,69 @@ unsigned long long MainWorker::decode_Energy(const int HwdID, const tRBUF *pResp
 			WriteMessage("Battery       = Low");
 		else
 			WriteMessage("Battery       = OK");
+	}
+	return DevRowIdx;
+}
+
+unsigned long long MainWorker::decode_Power(const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[100];
+	std::string devname;
+
+	unsigned char devType=pTypePOWER;
+	unsigned char subType=pResponse->POWER.subtype;
+	std::string ID;
+	sprintf(szTmp,"%d",(pResponse->POWER.id1 * 256) + pResponse->POWER.id2);
+	ID=szTmp;
+	unsigned char Unit=0;
+	unsigned char cmnd=0;
+	unsigned char SignalLevel=pResponse->POWER.rssi;
+	unsigned char BatteryLevel = 255;
+
+	int Voltage=pResponse->POWER.voltage;
+	double current= ((pResponse->POWER.currentH * 256) + pResponse->POWER.currentL) / 100.0;
+	double instant= ((pResponse->POWER.powerH * 256) + pResponse->POWER.powerL) / 10.0;// Watt
+	double usage= ((pResponse->POWER.energyH * 256) + pResponse->POWER.energyL) / 100.0; //kWh
+	double powerfactor = pResponse->POWER.pf / 100.0;
+	int frequency = pResponse->POWER.freq; //Hz
+
+	sprintf(szTmp,"%ld;%.2f",long(round(instant)),usage*1000.0);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
+	PrintDeviceName(devname);
+
+	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (const float)instant);
+
+	if (m_verboselevel == EVBL_ALL)
+	{
+		switch (pResponse->POWER.subtype)
+		{
+		case sTypeELEC5:
+			WriteMessage("subtype       = ELEC5 - Revolt");
+			break;
+		}
+
+		sprintf(szTmp,"Sequence nbr  = %d", pResponse->POWER.seqnbr);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"ID            = %d", (pResponse->POWER.id1 * 256) + pResponse->POWER.id2);
+		WriteMessage(szTmp);
+
+		sprintf(szTmp,"Voltage       = %d Volt", Voltage);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"Current       = %.2f Ampere",current);
+		WriteMessage(szTmp);
+
+		sprintf(szTmp,"Instant usage = %.2f Watt", instant);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"total usage   = %.2f kWh", usage);
+		WriteMessage(szTmp);
+
+		sprintf(szTmp,"Power factor  = %.2f", powerfactor);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"Frequency     = %d Hz", frequency);
+		WriteMessage(szTmp);
+
+		sprintf(szTmp,"Signal level  = %d", pResponse->POWER.rssi);
+		WriteMessage(szTmp);
 	}
 	return DevRowIdx;
 }
@@ -7216,12 +7337,29 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			return true;
 		}
 		break;
+	case pTypeLimitlessLights:
+		{
+			_tLimitlessLights lcmd;
+			lcmd.len=sizeof(_tLimitlessLights)-1;
+			lcmd.type=dType;
+			lcmd.subtype=dSubType;
+			lcmd.dunit=Unit;
+			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.command))
+				return false;
+			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(_tLimitlessLights));
+			if (!IsTesting) {
+				//send to internal for now (later we use the ACK)
+				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+			}
+			return true;
+		}
+		break;
 	case pTypeSecurity1:
 		{
 			tRBUF lcmd;
 			lcmd.SECURITY1.packetlength=sizeof(lcmd.SECURITY1)-1;
 			lcmd.SECURITY1.packettype=dType;
-			lcmd.SECURITY1.subtype=sTypeKD101;
+			lcmd.SECURITY1.subtype=dSubType;
 			lcmd.SECURITY1.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
 			lcmd.SECURITY1.id1=ID2;
 			lcmd.SECURITY1.id2=ID3;
@@ -7229,8 +7367,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			switch (dSubType)
 			{
 			case sTypeKD101:
+			case sTypeSA30:
 				{
-					lcmd.SECURITY1.subtype=sTypeKD101;
 					if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.SECURITY1.status))
 						return false;
 					//send it twice
@@ -7245,7 +7383,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				break;
 			case sTypeSecX10M:
 				{
-					lcmd.SECURITY1.subtype=sTypeSecX10M;
 					if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.SECURITY1.status))
 						return false;
 					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.SECURITY1));
@@ -7257,7 +7394,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				break;
 			case sTypeSecX10R:
 				{
-					lcmd.SECURITY1.subtype=sTypeSecX10R;
 					if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.SECURITY1.status))
 						return false;
 					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.SECURITY1));

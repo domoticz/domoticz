@@ -115,6 +115,23 @@
 </form>
 </center>
 </div>
+<div id="limitlessmetertype" style="display:none;">
+<center>
+<form id="limitform">
+	<br>
+	<center>
+		<label><span data-i18n="Type"></span>: <select id="combom1type" name="LimitlessType" style="width:100px" class="combobox ui-corner-all">
+			<option value="1">RGBW</option>
+			<option value="2">RGB</option>
+			<option value="3">White</option>
+		</select>
+		<br><br>
+		<input type="hidden" id="idx" name="idx" value="-1">
+		<button class="btn btn-danger" id="submitbuttonlimitless">Set Mode</button>
+	</center>
+</form>
+</center>
+</div>
 <div id="hardwaremain" style="display:none;">
     <table class="display" id="hardwaretable" border="0" cellpadding="0" cellspacing="0" width="100%">
         <thead>
@@ -682,6 +699,24 @@ function EditS0MeterType(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 	}
 }
 
+function EditLimitlessType(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
+{
+	cursordefault();
+	var htmlcontent = '';
+	htmlcontent='<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
+	htmlcontent+=$('#limitlessmetertype').html();
+	$('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
+	$('#hardwarecontent').i18n();
+
+	$('#hardwarecontent #submitbuttonlimitless').click(function (e) {
+		e.preventDefault();
+		SetLimitlessType();
+	});
+
+	$('#hardwarecontent #idx').val(idx);
+	$('#hardwarecontent #combom1type').val(Mode1);
+}
+
 function SetRFXCOMMode()
 {
   $.post("setrfxcommode.webem", $("#hardwarecontent #settings").serialize(), function(data) {
@@ -699,6 +734,13 @@ function SetRego6XXType()
 function SetS0MeterType()
 {
   $.post("sets0metertype.webem", $("#hardwarecontent #s0metertype").serialize(), function(data) {
+   ShowHardware();
+  });
+}
+
+function SetLimitlessType()
+{
+  $.post("setlimitlesstype.webem", $("#hardwarecontent #limitform").serialize(), function(data) {
    ShowHardware();
   });
 }
@@ -822,6 +864,9 @@ function RefreshHardwareTable()
 			}
 			else if (HwTypeStr.indexOf("S0 Meter USB") >= 0) {
 				HwTypeStr+=' <span class="label label-info" onclick="EditS0MeterType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Set Mode</span>';
+			}
+			else if (HwTypeStr.indexOf("Limitless") >= 0) {
+				HwTypeStr+=' <span class="label label-info" onclick="EditLimitlessType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Set Mode</span>';
 			}
 			else if (HwTypeStr.indexOf("Dummy") >= 0) {
 				HwTypeStr+=' <span class="label label-info" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');" onmouseover="cursorhand()" onmouseout="cursordefault()">Create Virtual Sensors</span>';

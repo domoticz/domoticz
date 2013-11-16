@@ -350,6 +350,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 				isUtility = true;
 				break;
 			case pTypeENERGY:
+			case pTypePOWER:
 				utilityval=(float)atof(splitresults[0].c_str());
 				isUtility = true;
 				break;

@@ -242,6 +242,7 @@ bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress
 	m_pWebEm->RegisterActionCode( "setrfxcommode",boost::bind(&CWebServer::SetRFXCOMMode,this));
 	m_pWebEm->RegisterActionCode( "setrego6xxtype",boost::bind(&CWebServer::SetRego6XXType,this));
 	m_pWebEm->RegisterActionCode( "sets0metertype",boost::bind(&CWebServer::SetS0MeterType,this));
+	m_pWebEm->RegisterActionCode( "setlimitlesstype",boost::bind(&CWebServer::SetLimitlessType,this));
 
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWebServer::Do_Work, this)));
@@ -848,6 +849,37 @@ char * CWebServer::SetS0MeterType()
 	return (char*)m_retstr.c_str();
 }
 
+char * CWebServer::SetLimitlessType()
+{
+	m_retstr="";
+	std::string idx=m_pWebEm->FindValue("idx");
+	if (idx=="") {
+		return (char*)m_retstr.c_str();
+	}
+
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
+	result=m_pMain->m_sql.query(szQuery.str());
+	if (result.size()<1)
+		return (char*)m_retstr.c_str();
+
+	m_retstr="/index.html";
+
+	int Mode1=atoi(m_pWebEm->FindValue("LimitlessType").c_str());
+	int Mode2=atoi(result[0][1].c_str());
+	int Mode3=atoi(result[0][2].c_str());
+	int Mode4=atoi(result[0][3].c_str());
+	m_pMain->m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, 0);
+
+	m_pMain->RestartHardware(idx);
+
+	return (char*)m_retstr.c_str();
+}
+
 void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID)
 {
 	std::vector<std::vector<std::string> > result;
@@ -1054,6 +1086,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						(dType!=pTypeLighting4)&&
 						(dType!=pTypeLighting5)&&
 						(dType!=pTypeLighting6)&&
+						(dType!=pTypeLimitlessLights)&&
 						(dType!=pTypeSecurity1)&&
 						(dType!=pTypeBlinds)&&
 						(dType!=pTypeChime)&&
@@ -1100,6 +1133,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						(dType!=pTypeCURRENT)&&
 						(dType!=pTypeCURRENTENERGY)&&
 						(dType!=pTypeENERGY)&&
+						(dType!=pTypePOWER)&&
 						(dType!=pTypeP1Power)&&
 						(dType!=pTypeP1Gas)&&
 						(dType!=pTypeYouLess)&&
@@ -1196,6 +1230,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				(dType==pTypeLighting4)||
 				(dType==pTypeLighting5)||
 				(dType==pTypeLighting6)||
+				(dType==pTypeLimitlessLights)||
 				(dType==pTypeBlinds)||
 				(dType==pTypeChime)
 				)
@@ -1372,7 +1407,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
                 root["result"][ii]["SwitchType"]="Security";
 				root["result"][ii]["SwitchTypeVal"]=switchtype; //was 0?;
 				root["result"][ii]["TypeImg"]="security";
-				if ((dSubType==sTypeKD101) || (switchtype == STYPE_SMOKEDETECTOR)) 
+				if ((dSubType==sTypeKD101) || (dSubType==sTypeSA30) || (switchtype == STYPE_SMOKEDETECTOR)) 
 				{
 					root["result"][ii]["SwitchTypeVal"]=STYPE_SMOKEDETECTOR;
 					root["result"][ii]["TypeImg"]="smoke";
@@ -2142,7 +2177,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				}
 			}
-			else if (dType == pTypeENERGY)
+			else if ((dType == pTypeENERGY)||(dType == pTypePOWER))
 			{
 				std::vector<std::string> strarray;
 				StringSplit(sValue, ";", strarray);
@@ -2722,6 +2757,7 @@ std::string CWebServer::GetJSonPage()
 			(dType!=pTypeLighting4)&&
 			(dType!=pTypeLighting5)&&
 			(dType!=pTypeLighting6)&&
+			(dType!=pTypeLimitlessLights)&&
 			(dType!=pTypeSecurity1)&&
 			(dType!=pTypeBlinds)&&
 			(dType!=pTypeRego6XXValue)&&
@@ -2975,7 +3011,7 @@ std::string CWebServer::GetJSonPage()
 		unsigned char dType=atoi(result[0][0].c_str());
 		unsigned char dSubType=atoi(result[0][1].c_str());
 		_eMeterType metertype = (_eMeterType)atoi(result[0][2].c_str());
-		if ((dType==pTypeP1Power)||(dType==pTypeENERGY))
+		if ((dType==pTypeP1Power)||(dType==pTypeENERGY)||(dType==pTypePOWER))
 			metertype= MTYPE_ENERGY;
 		else if (dType==pTypeP1Gas)
 			metertype= MTYPE_GAS;
@@ -3538,7 +3574,7 @@ std::string CWebServer::GetJSonPage()
 					}
 					if (dType==pTypeP1Gas)
 						GasDivider=1000;
-					else if (dType==pTypeENERGY)
+					else if ((dType==pTypeENERGY)||(dType==pTypePOWER))
 						EnergyDivider*=100.0f;
 
 					szQuery.clear();
@@ -3942,7 +3978,7 @@ std::string CWebServer::GetJSonPage()
 				}
 				if (dType==pTypeP1Gas)
 					GasDivider=1000;
-				else if (dType==pTypeENERGY)
+				else if ((dType==pTypeENERGY)||(dType==pTypePOWER))
 					EnergyDivider*=100.0f;
 				//else if (dType==pTypeRFXMeter)
 					//EnergyDivider*=1000.0f;
@@ -4430,7 +4466,7 @@ std::string CWebServer::GetJSonPage()
 				}
 				if (dType==pTypeP1Gas)
 					GasDivider=1000;
-				else if (dType==pTypeENERGY)
+				else if ((dType==pTypeENERGY)||(dType==pTypePOWER))
 					EnergyDivider*=100.0f;
 //				else if (dType==pTypeRFXMeter)
 	//				EnergyDivider*=1000.0f;
@@ -5353,7 +5389,7 @@ std::string CWebServer::GetJSonPage()
 				}
 				if (dType==pTypeP1Gas)
 					GasDivider=1000;
-				else if (dType==pTypeENERGY)
+				else if ((dType==pTypeENERGY)||(dType==pTypePOWER))
 					EnergyDivider*=100.0f;
 
 				szQuery.clear();
@@ -6863,6 +6899,7 @@ std::string CWebServer::GetJSonPage()
 					case pTypeLighting4:
 					case pTypeLighting5:
 					case pTypeLighting6:
+					case pTypeLimitlessLights:
 					case pTypeSecurity1:
 					case pTypeBlinds:
 					case pTypeChime:
@@ -6926,6 +6963,7 @@ std::string CWebServer::GetJSonPage()
 						case pTypeLighting4:
 						case pTypeLighting5:
 						case pTypeLighting6:
+						case pTypeLimitlessLights:
 						case pTypeSecurity1:
 						case pTypeBlinds:
 						case pTypeChime:
@@ -7380,6 +7418,7 @@ std::string CWebServer::GetJSonPage()
 				(dType==pTypeLighting4)||
 				(dType==pTypeLighting5)||
 				(dType==pTypeLighting6)||
+				(dType==pTypeLimitlessLights)||
 				(dType==pTypeSecurity1)||
 				(dType==pTypeBlinds)||
 				(dType==pTypeChime)
@@ -7556,6 +7595,13 @@ std::string CWebServer::GetJSonPage()
 				ii++;
 			}
 			if (dType==pTypeENERGY)
+			{
+				root["result"][ii]["val"]=NTYPE_USAGE;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+				ii++;
+			}
+			if (dType==pTypePOWER)
 			{
 				root["result"][ii]["val"]=NTYPE_USAGE;
 				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
@@ -8485,6 +8531,7 @@ std::string CWebServer::GetJSonPage()
 				(dType!=pTypeLighting4)&&
 				(dType!=pTypeLighting5)&&
 				(dType!=pTypeLighting6)&&
+				(dType!=pTypeLimitlessLights)&&
 				(dType!=pTypeSecurity1)&&
 				(dType!=pTypeBlinds)&&
 				(dType!=pTypeChime)

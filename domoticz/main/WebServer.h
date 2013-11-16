@@ -46,6 +46,7 @@ public:
 	char * SetRFXCOMMode();
 	char * SetRego6XXType();
 	char * SetS0MeterType();
+	char * SetLimitlessType();
 
 	cWebem *m_pWebEm;
 

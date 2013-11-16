@@ -46,6 +46,10 @@ Version 1.0.xxx (November xxth 2013)
 - Changed: Added leading zero's in the Power/Gas reports for the months (work around)
 - Implemented: Transfer Temp/Temp+Hum now possible between different subtypes
 - Implemented: OpenZWave initial support (Aeon USB Stick V2), with Temp/Hum/Lux/Power/Energy/Switches
+- Implemented: Alecto SA30 smoke detector hardware support
+- Implemented: Oregon EW109 Temp+Humidity sensor support
+- Implemented: Revolt Power meter hardware support
+- Implemented: Limitless/AppLamp/WifiLedLamp (with Wifi Hub) hardware support
 
 Version 1.0.1087 (Oktober 16th 2013)
 - Implemented: Login page (solves the caching problems)

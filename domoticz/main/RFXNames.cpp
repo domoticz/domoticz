@@ -299,6 +299,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeLighting4, "Lighting 4" , "lightbulb", },
 		{ pTypeLighting5, "Lighting 5" , "lightbulb", },
 		{ pTypeLighting6, "Lighting 6" , "lightbulb", },
+		{ pTypeLimitlessLights, "Lighting Limitless" , "lightbulb" },
 		{ pTypeCurtain, "Curtain" , "blinds" },
 		{ pTypeBlinds, "Blinds" , "blinds" },
 		{ pTypeSecurity1, "Security" , "security" },
@@ -339,6 +340,8 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeTEMP_RAIN, "Temp + Rain" , "Temp + Rain" },
 		{ pTypeChime, "Chime" , "Chime" },
 		{ pTypeBBQ, "BBQ Meter", "bbq" },
+		{ pTypePOWER, "Current/Energy" , "current" },
+		
 		
 		{  0,NULL,NULL }
 	};
@@ -377,6 +380,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeTEMP_HUM, sTypeTH8, "WT450H" },
 		{ pTypeTEMP_HUM, sTypeTH9, "Viking 02035, 02038" },
 		{ pTypeTEMP_HUM, sTypeTH10, "Rubicson/IW008T/TX95" },
+		{ pTypeTEMP_HUM, sTypeTH11, "Oregon EW109" },
 		{ pTypeTEMP_HUM, sTypeTH_LC_TC, "LaCrosse TX3" },
 		
 
@@ -450,6 +454,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeSecurity1, sTypeCodesecure, "Visonic CodeSecure" },
 		{ pTypeSecurity1, sTypePowercodeAux, "Visonic PowerCode sensor - auxiliary contact" },
 		{ pTypeSecurity1, sTypeMeiantech, "Meiantech/Atlantic/Aidebao" },
+		{ pTypeSecurity1, sTypeSA30, "Alecto SA30 smoke detector" },
 		{ pTypeSecurity1, sTypeDomoticzSecurity, "Security Panel" },
 		
 		{ pTypeCamera, sTypeNinja, "Meiantech" },
@@ -517,6 +522,12 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeTEMP_RAIN, sTypeTR1, "Alecto WS1200" },
 
 		{ pTypeBBQ, sTypeBBQ1, "Maverick ET-732" },
+
+		{ pTypePOWER, sTypeELEC5, "Revolt" },
+		
+		{ pTypeLimitlessLights, sTypeLimitlessRGBW, "RGBW" },
+		{ pTypeLimitlessLights, sTypeLimitlessRGB, "RGB" },
+		{ pTypeLimitlessLights, sTypeLimitlessWhite, "White" },
 
 		{  0,0,NULL }
 	};
@@ -789,6 +800,17 @@ void GetLightStatus(
 				lstatus="Group On";
 				break;
 			}
+		}
+		break;
+	case pTypeLimitlessLights:
+		switch (nValue)
+		{
+		case Limitless_LedOff:
+			lstatus="Off";
+			break;
+		case Limitless_LedOn:
+			lstatus="On";
+			break;
 		}
 		break;
 	case pTypeSecurity1:
@@ -1154,8 +1176,25 @@ bool GetLightCommand(
 		else
 			return false;
 		break;
+	case pTypeLimitlessLights:
+		if (switchcmd=="Off")
+		{
+			cmd=Limitless_LedOff;
+			return true;
+		}
+		else if (switchcmd=="On")
+		{
+			cmd=Limitless_LedOn;
+			return true;
+		}
+		else
+			return false;
+		break;
 	case pTypeSecurity1:
-		if (dSubType==sTypeKD101)
+		if (
+			(dSubType==sTypeKD101)||
+			(dSubType==sTypeSA30)
+			)
 		{
 			if ((switchcmd=="On")||(switchcmd=="All On"))
 			{

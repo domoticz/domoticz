@@ -959,6 +959,7 @@ void CSQLHelper::Do_Work()
 					case pTypeLighting4:
 					case pTypeLighting5:
 					case pTypeLighting6:
+					case pTypeLimitlessLights:
 						if (m_pMain)
 							m_pMain->SwitchLight(itt->_idx,"Off",0);
 						break;
@@ -1143,6 +1144,7 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 	case pTypeLighting4:
 	case pTypeLighting5:
 	case pTypeLighting6:
+	case pTypeLimitlessLights:
 	case pTypeSecurity1:
 	case pTypeBlinds:
 		bIsLightSwitch=true;
@@ -1221,6 +1223,9 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 					case pTypeLighting6:
 						newnValue=light6_sOff;
 						break;
+					case pTypeLimitlessLights:
+						newnValue=Limitless_LedOff;
+						break;
 					case pTypeSecurity1:
 						newnValue=sStatusNormal;
 						break;
@@ -1276,6 +1281,9 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 				break;
 			case pTypeLighting6:
 				newnValue=light6_sOff;
+				break;
+			case pTypeLimitlessLights:
+				newnValue=Limitless_LedOff;
 				break;
 			case pTypeSecurity1:
 				newnValue=sStatusNormal;
@@ -1370,6 +1378,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 	case pTypeLighting4:
 	case pTypeLighting5:
 	case pTypeLighting6:
+	case pTypeLimitlessLights:
 	case pTypeSecurity1:
 	case pTypeBlinds:
 	case pTypeChime:
@@ -1502,12 +1511,16 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 							cmd=light6_sOff;
 							bAdd2DelayQueue=true;
 							break;
+						case pTypeLimitlessLights:
+							cmd=Limitless_LedOff;
+							bAdd2DelayQueue=true;
+							break;
 						}
 					}
 	/* Smoke detectors are manually reset!
 					else if (
 						(devType==pTypeSecurity1)&&
-						(subType==sTypeKD101)
+						((subType==sTypeKD101)||(subType==sTypeSA30))
 						)
 					{
 						cmd=sStatusPanicOff;
@@ -3168,11 +3181,12 @@ void CSQLHelper::UpdateMeter()
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
 
-	sprintf(szTmp,"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
+	sprintf(szTmp,"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
 		pTypeRFXMeter,
 		pTypeP1Gas,
 		pTypeYouLess,
 		pTypeENERGY,
+		pTypePOWER,
 		pTypeAirQuality,
 		pTypeUsage,
         pTypeRego6XXValue,sTypeRego6XXCounter,
@@ -3237,7 +3251,7 @@ void CSQLHelper::UpdateMeter()
 					continue;
 				sValue=splitresults[0];
 			}
-			else if (dType==pTypeENERGY)
+			else if ((dType==pTypeENERGY)||(dType==pTypePOWER))
 			{
 				std::vector<std::string> splitresults;
 				StringSplit(sValue, ";", splitresults);
@@ -4780,7 +4794,7 @@ void CSQLHelper::CheckDeviceTimeout()
 	std::vector<std::vector<std::string> > result;
 	char szTmp[300];
 	sprintf(szTmp,
-		"SELECT ID,Name,LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) ORDER BY Name",
+		"SELECT ID,Name,LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) ORDER BY Name",
 		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 		pTypeLighting1,
 		pTypeLighting2,
@@ -4788,6 +4802,7 @@ void CSQLHelper::CheckDeviceTimeout()
 		pTypeLighting4,
 		pTypeLighting5,
 		pTypeLighting6,
+		pTypeLimitlessLights,
 		pTypeSecurity1,
 		pTypeBlinds,
 		pTypeChime

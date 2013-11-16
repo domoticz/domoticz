@@ -200,6 +200,7 @@ typedef struct _tLimitlessLights {
 	unsigned char len;
 	unsigned char type;
 	unsigned char subtype;
+	unsigned char dunit; //0=All, 1=Group1,2=Group2,3=Group3,4=Group4
 	unsigned char command;
 	unsigned char value;
 	_tLimitlessLights()
@@ -209,4 +210,21 @@ typedef struct _tLimitlessLights {
 		subtype=sTypeLimitlessRGBW;
 	}
 } _tLimitlessLights;
+
+#define Limitless_LedOff 0
+#define Limitless_LedOn 1
+#define Limitless_LedNight 2
+#define Limitless_LedFull 3
+#define Limitless_BrightnessUp 4
+#define Limitless_BrightnessDown 5
+#define Limitless_ColorTempUp 6
+#define Limitless_ColorTempDown 7
+#define Limitless_RGBDiscoNext 8
+#define Limitless_RGBDiscoLast 9
+#define Limitless_SetRGBColour 10
+#define Limitless_DiscoSpeedSlower 11
+#define Limitless_DiscoSpeedFaster 12
+#define Limitless_DiscoMode 13
+#define Limitless_SetColorToWhite 14
+#define Limitless_SetBrightnessLevel 15
 

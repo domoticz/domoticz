@@ -22,6 +22,11 @@
 //-----------------------------------------------------------------------------
 
 /*
+SDK version 6.10
+	Security1 - SA30 added
+	TEMP_HUM - TH11 EW109 added
+	POWER - Revolt added
+
 SDK version 6.09
 	BBQ structure added
 
@@ -406,6 +411,7 @@ SDK version 4.9
 #define sTypeCodesecure 0x06		//Visonic CodeSecure
 #define sTypePowercodeAux 0x07		//Visonic PowerCode sensor - auxiliary contact
 #define sTypeMeiantech 0x8			//Meiantech
+#define sTypeSA30 0x9				//SA30 smoke detector
 
 //status security
 #define sStatusNormal 0x0
@@ -538,6 +544,7 @@ SDK version 4.9
 #define sTypeTH8 0x8  //WT450H
 #define sTypeTH9 0x9  //Viking 02035,02038 (02035 has no humidity)
 #define sTypeTH10 0xA   //Rubicson
+#define sTypeTH11 0xB   //EW109
 
 //types for barometric
 #define pTypeBARO 0x53
@@ -592,6 +599,10 @@ SDK version 4.9
 //types for current-energy
 #define pTypeCURRENTENERGY 0x5B
 #define sTypeELEC4 0x1   //CM180i
+
+//types for power
+#define pTypePOWER 0x5C
+#define sTypeELEC5 0x1   //revolt
 
 //types for weight scales
 #define pTypeWEIGHT 0x5D
@@ -1191,6 +1202,26 @@ typedef union tRBUF {
 		BYTE	battery_level : 4;
 		BYTE	rssi : 4;
 	} CURRENT_ENERGY;
+
+	struct {
+        BYTE	packetlength;
+        BYTE	packettype;
+        BYTE	subtype;
+        BYTE	seqnbr;
+        BYTE	id1;
+        BYTE	id2;
+        BYTE	voltage;
+        BYTE	currentH;
+        BYTE	currentL;
+        BYTE	powerH;
+        BYTE	powerL;
+        BYTE	energyH;
+        BYTE	energyL;
+        BYTE	pf;
+        BYTE	freq;
+        BYTE	filler : 4;
+        BYTE	rssi : 4;
+    } POWER;
 
 	struct {
 		BYTE	packetlength;
