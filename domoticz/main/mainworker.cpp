@@ -7120,7 +7120,7 @@ bool MainWorker::SetRFXCOMHardwaremodes(const int HardwareID, const unsigned cha
 	return true;
 }
 
-bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, unsigned char level, const bool IsTesting)
+bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, const bool IsTesting)
 {
 	unsigned long ID;
 	std::stringstream s_strid;
@@ -7231,7 +7231,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			}
 			if (level>15)
 				level=15;
-			lcmd.LIGHTING2.level=level;
+			lcmd.LIGHTING2.level=(unsigned char)level;
 			lcmd.LIGHTING2.filler=0;
 			lcmd.LIGHTING2.rssi=7;
 			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING2));
@@ -7277,7 +7277,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			}
 			if (level>31)
 				level=31;
-			lcmd.LIGHTING5.level=level;
+			lcmd.LIGHTING5.level=(unsigned char)level;
 			lcmd.LIGHTING5.filler=0;
 			lcmd.LIGHTING5.rssi=7;
 			if (dSubType==sTypeLivolo)
@@ -7457,7 +7457,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	return false;
 }
 
-bool MainWorker::SwitchLight(unsigned long long idx, const std::string &switchcmd, unsigned char level)
+bool MainWorker::SwitchLight(unsigned long long idx, const std::string &switchcmd, int level)
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;

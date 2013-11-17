@@ -381,6 +381,8 @@ void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				int ival=round(dval);
 				if (ival<2)
 					ival=2;
+				if (ival>27)
+					ival=27;
 				RGBWSetBrightnessLevel[1]=(unsigned char)ival;
 				pCMD=(unsigned char*)&RGBWSetBrightnessLevel;
 			}

@@ -803,6 +803,8 @@ void GetLightStatus(
 		}
 		break;
 	case pTypeLimitlessLights:
+		bHaveDimmer=true;
+		maxDimLevel=100;
 		switch (nValue)
 		{
 		case Limitless_LedOff:
@@ -810,6 +812,9 @@ void GetLightStatus(
 			break;
 		case Limitless_LedOn:
 			lstatus="On";
+			break;
+		case Limitless_SetBrightnessLevel:
+			lstatus="Set Level";
 			break;
 		}
 		break;
@@ -1192,7 +1197,10 @@ bool GetLightCommand(
 			cmd=Limitless_SetRGBColour;
 			return true;
 		}
-		else if (switchcmd=="Set Brightness")
+		else if (
+			(switchcmd=="Set Brightness")||
+			(switchcmd=="Set Level")
+			)
 		{
 			cmd=Limitless_SetBrightnessLevel;
 			return true;

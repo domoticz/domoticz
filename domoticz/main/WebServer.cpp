@@ -6875,7 +6875,7 @@ std::string CWebServer::GetJSonPage()
 			root["title"]="GetLightSwitches";
 			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;
-			szQuery << "SELECT ID, Name, Type, Used, SwitchType FROM DeviceStatus ORDER BY Name";
+			szQuery << "SELECT ID, Name, Type, SubType, Used, SwitchType FROM DeviceStatus ORDER BY Name";
 			result=m_pMain->m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
@@ -6888,8 +6888,9 @@ std::string CWebServer::GetJSonPage()
 					std::string ID=sd[0];
 					std::string Name=sd[1];
 					int Type=atoi(sd[2].c_str());
-					int used=atoi(sd[3].c_str());
-					_eSwitchType switchtype=(_eSwitchType)atoi(sd[4].c_str());
+					int SubType=atoi(sd[3].c_str());
+					int used=atoi(sd[4].c_str());
+					_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
 					bool bdoAdd;
 					switch (Type)
 					{
@@ -6922,6 +6923,8 @@ std::string CWebServer::GetJSonPage()
 						{
 							root["result"][ii]["idx"]=ID;
 							root["result"][ii]["Name"]=Name;
+							root["result"][ii]["Type"]=Hardware_Type_Desc(Type);
+							root["result"][ii]["SubType"]=RFX_Type_SubType_Desc(Type,SubType);
 							bool bIsDimmer=(switchtype==STYPE_Dimmer);
 							root["result"][ii]["IsDimmer"]=bIsDimmer;
 							ii++;

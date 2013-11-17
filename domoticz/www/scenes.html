@@ -118,6 +118,39 @@
 					</select>
 				</td>
 			</tr>
+			<tr id="LedColor">
+				<td align="right"><label><span data-i18n="Color">Color</span>:</label></td>
+				<td>
+					<table class="display" id="ledtable" border="0" cellpadding="0" cellspacing="0">
+					<tr>
+						<td align="left" style="width:200px">
+							<div id="picker" width="100px" height="100px"></div>
+						</td>
+						<td align="left" style="vertical-align: top;">
+							<input type="text" id="Hue" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Hue"></span><br>
+							<input type="text" id="Brightness" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Brightness"></span><br>
+							<div class="radio">
+								<label>
+									<input type="radio" name="optionsType" id="optionsRGB" value="false" checked>
+										RGB
+								</label>
+								<label>
+									<input type="radio" name="optionsType" id="optionsWhite" value="true">
+										White
+								</label>
+							</div>
+						</td>
+					</tr>
+					</table>
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td>
+					<a class="btnstyle3" onclick="SaveLightSwitch();" data-i18n="Save">Save</a>&nbsp;&nbsp;&nbsp;
+					<a class="btnstyle3" onclick="DeleteLightSwitch();" data-i18n="Delete">Delete</a>
+				</td>
+			</tr>
 		</table>
 		<br>
 </div>
@@ -365,8 +398,14 @@ function AddDevice()
 	var level=100;
 	$.each($.LightsAndSwitches, function(i,item){
 		if (item.idx==DeviceIdx) {
-			if (item.isdimmer==true) {
-				level=$("#scenecontent #combolevel").val();
+			var bIsLED=((item.SubType=="RGBW")||(item.SubType=="RGB"))
+			if (bIsLED==true) {
+				level=$("#scenecontent #Brightness").val();
+			}
+			else {
+				if (item.isdimmer==true) {
+					level=$("#scenecontent #combolevel").val();
+				}
 			}
 		}
 	});
@@ -555,7 +594,18 @@ function RefreshDeviceTable(idx)
 										$("#scenecontent #combocommand").val(0);
 									}
 									OnSelChangeDevice();
-									$("#scenecontent #combolevel").val(data["Level"]);
+									var level=data["Level"];
+
+									$("#scenecontent #combolevel").val(level);
+									
+									$('#scenecontent #Brightness').val(level);
+									var hue=80;
+									$('#scenecontent #Hue').val(hue);
+									var cHSB=[];
+									cHSB.h=hue;
+									cHSB.s=100;
+									cHSB.b=level;
+									$('#scenecontent #picker').colpickSetColor(cHSB);
 								}
 						}
 				}); 
@@ -582,8 +632,14 @@ function UpdateDevice(idx, devidx)
 	var level=100;
 	$.each($.LightsAndSwitches, function(i,item){
 		if (item.idx==DeviceIdx) {
-			if (item.isdimmer==true) {
-				level=$("#scenecontent #combolevel").val();
+			var bIsLED=((item.SubType=="RGBW")||(item.SubType=="RGB"))
+			if (bIsLED==true) {
+				level=$("#scenecontent #Brightness").val();
+			}
+			else {
+				if (item.isdimmer==true) {
+					level=$("#scenecontent #combolevel").val();
+				}
 			}
 		}
 	});
@@ -631,17 +687,25 @@ function OnSelChangeDevice()
 		return ;
 	}
 	var bShowLevel=false;
+	var bIsLED=false;
 	$.each($.LightsAndSwitches, function(i,item){
 		if (item.idx==DeviceIdx) {
 			bShowLevel=item.isdimmer;
+			bIsLED=((item.SubType=="RGBW")||(item.SubType=="RGB"))
 		}
 	});
 	
-	if (bShowLevel==true) {
-		$("#scenecontent #LevelDiv").show();
+	if (bIsLED) {
+		$("#scenecontent #LedColor").show();
 	}
 	else {
-		$("#scenecontent #LevelDiv").hide();
+		$("#scenecontent #LedColor").hide();
+		if (bShowLevel==true) {
+			$("#scenecontent #LevelDiv").show();
+		}
+		else {
+			$("#scenecontent #LevelDiv").hide();
+		}
 	}
 }
 
@@ -660,6 +724,7 @@ function EditSceneDevice(idx,name,havecode,type)
   $('#scenecontent').html(GetBackbuttonHTMLTable('ShowScenes')+htmlcontent);
   $('#scenecontent').i18n();
   $("#scenecontent #LevelDiv").hide();
+  $("#scenecontent #LedColor").hide();
   
   if (bIsScene==true) {
 	$("#scenecontent #combotype").val(0);
@@ -671,7 +736,22 @@ function EditSceneDevice(idx,name,havecode,type)
 	$("#scenecontent #CommandDiv").hide();
 	$("#scenecontent #CommandHeader").html($.i18n("State"));
   }
-  
+
+	$('#scenecontent #picker').colpick({
+		flat:true,
+		layout:'hex',
+		submit:0,
+		onChange:function(hsb,hex,rgb,fromSetColor) {
+			if(!fromSetColor) {
+				$('#scenecontent #Hue').val(hsb.h);
+				$('#scenecontent #Brightness').val(hsb.b);
+				var bIsWhite=(hsb.s<20);
+				$("#scenecontent #optionsRGB").prop('checked',!bIsWhite);
+				$("#scenecontent #optionsWhite").prop('checked',bIsWhite);
+			}
+		}
+	});
+
   oTable = $('#scenecontent #devicestable').dataTable( {
                   "sDom": '<"H"lfrC>t<"F"ip>',
                   "oTableTools": {
@@ -739,6 +819,7 @@ function RefreshLightSwitchesComboArray()
 					$.LightsAndSwitches.push({
 							idx: item.idx,
 							name: item.Name,
+							SubType: item.SubType,
 							isdimmer: item.IsDimmer
 						 }
 					);

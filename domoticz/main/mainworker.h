@@ -41,8 +41,8 @@ public:
 	std::string GetWebserverPort();
 
 	bool SwitchLight(const std::string &idx, const std::string &switchcmd,const std::string &level);
-	bool SwitchLight(unsigned long long idx, const std::string &switchcmd, unsigned char level);
-	bool SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, unsigned char level, const bool IsTesting);
+	bool SwitchLight(unsigned long long idx, const std::string &switchcmd, int level);
+	bool SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, const bool IsTesting);
 
 	bool SwitchScene(const std::string &idx, const std::string &switchcmd);
 	bool SwitchScene(const unsigned long long idx, const std::string &switchcmd);

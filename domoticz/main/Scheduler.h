@@ -15,7 +15,7 @@ struct tScheduleItem
 	unsigned char startMin;
 	_eTimerType	timerType; 
 	_eTimerCommand timerCmd;
-	unsigned char Level;
+	int Level;
 	bool bUseRandmoness;
 	int Days;
 	//internal
