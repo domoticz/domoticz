@@ -50,6 +50,7 @@
 #define round(a) ( int ) ( a + .5 )
 
 extern std::string szStartupFolder;
+extern std::string szWWWFolder;
 extern bool bIsRaspberryPi;
 
 MainWorker::MainWorker()
@@ -534,7 +535,7 @@ bool MainWorker::Stop()
 bool MainWorker::StartThread()
 {
 	//Start WebServer
-	if (!m_webserver.StartServer(this, "0.0.0.0",m_webserverport,szStartupFolder+"www",m_bIgnoreUsernamePassword))
+	if (!m_webserver.StartServer(this, "0.0.0.0",m_webserverport,szWWWFolder,m_bIgnoreUsernamePassword))
 	{
         return false;
 	}

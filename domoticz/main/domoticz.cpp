@@ -21,8 +21,10 @@ const char *szHelp=
 	"Usage: Domoticz -www port -verbose x\n"
 	"\t-www port (for example -www 8080)\n"
 #if defined WIN32
+	"\t-wwwroot file_path (for example D:\\www)\n"
 	"\t-dbase file_path (for example D:\\domoticz.db)\n"
 #else
+	"\t-wwwroot file_path (for example /opt/domoticz/www)\n"
 	"\t-dbase file_path (for example /opt/domoticz/domoticz.db)\n"
 #endif
 	"\t-verbose x (where x=0 is none, x=1 is debug)\n"
@@ -39,6 +41,7 @@ const char *szHelp=
 	"";
 
 std::string szStartupFolder;
+std::string szWWWFolder;
 bool bIsRaspberryPi=false;
 std::string szAppVersion="???";
 
@@ -142,6 +145,7 @@ int main(int argc, char**argv)
 #endif
 
 	szStartupFolder="";
+	szWWWFolder="";
 #if !defined WIN32
 	char szStartupPath[255];
 	getExecutablePathName((char*)&szStartupPath,255);
@@ -174,6 +178,8 @@ int main(int argc, char**argv)
 	}
 	_log.Log(LOG_NORM,"Startup Path: %s", szStartupFolder.c_str());
 #endif
+
+	szWWWFolder=szStartupFolder+"www";
 
 	CCmdLine cmdLine;
 
@@ -254,6 +260,17 @@ int main(int argc, char**argv)
 	}
 	_mainworker.m_sql.SetDatabaseName(dbasefile);
 
+	if (cmdLine.HasSwitch("-wwwroot"))
+	{
+		if (cmdLine.GetArgumentCount("-wwwroot")!=1)
+		{
+			_log.Log(LOG_ERROR,"Please specify a WWW root path");
+			return 0;
+		}
+		std::string szroot=cmdLine.GetSafeArgument("-wwwroot",0,"");
+		if (szroot.size()!=0)
+			szWWWFolder=szroot;
+	}
 
 	if (cmdLine.HasSwitch("-verbose"))
 	{
@@ -281,7 +298,7 @@ int main(int argc, char**argv)
 		std::string logfile=cmdLine.GetSafeArgument("-log",0,"domoticz.log");
 		_log.SetOutputFile(logfile.c_str());
 	}
-	
+
 	if (!_mainworker.Start())
 	{
 		return 0;

@@ -1,4 +1,7 @@
-Version 1.0.xxx (November xxth 2013)
+Version 1.0.xxxx (November xxth 2013)
+- Implemented: new commandline option to specify www root folder (-wwwroot)
+
+Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart
 - Implemented: Counterlog, Week chart, legend values
 - Implemented: Room Plan editor, dashboard room selector

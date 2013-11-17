@@ -156,7 +156,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_TeleinfoMeter,		"Teleinfo EDF USB"},
 		{ HTYPE_OpenThermGatewayTCP,"OpenTherm Gateway with LAN interface" },
 		{ HTYPE_OpenZWave,			"OpenZWave USB" },
-		{ HTYPE_LimitlessLights,	"Limitless Lights with LAN interface" },
+		{ HTYPE_LimitlessLights,	"Limitless/AppLamp with LAN interface" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -299,7 +299,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeLighting4, "Lighting 4" , "lightbulb", },
 		{ pTypeLighting5, "Lighting 5" , "lightbulb", },
 		{ pTypeLighting6, "Lighting 6" , "lightbulb", },
-		{ pTypeLimitlessLights, "Lighting Limitless" , "lightbulb" },
+		{ pTypeLimitlessLights, "Lighting Limitless/Applamp" , "lightbulb" },
 		{ pTypeCurtain, "Curtain" , "blinds" },
 		{ pTypeBlinds, "Blinds" , "blinds" },
 		{ pTypeSecurity1, "Security" , "security" },

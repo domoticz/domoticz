@@ -5,6 +5,8 @@
 #include "../main/mainworker.h"
 #include "hardwaretypes.h"
 
+//This hardware goes under a few different names, i was talled the original name was AppLamp
+
 // Commands
 // White LEDs
 const unsigned char AllOn[3] = { 0x35, 0x0, 0x55 };
@@ -187,15 +189,15 @@ bool CLimitLess::StartHardware()
 	m_RemoteSocket = socket( AF_INET, SOCK_DGRAM, 0 );
 
 	//Add the Default switches
-	if (!AddSwitchIfNotExits(0,"Limitless All"))
+	if (!AddSwitchIfNotExits(0,"AppLamp All"))
 	{
-		if (!AddSwitchIfNotExits(1,"Limitless Group1"))
+		if (!AddSwitchIfNotExits(1,"AppLamp Group1"))
 		{
-			if (!AddSwitchIfNotExits(2,"Limitless Group2"))
+			if (!AddSwitchIfNotExits(2,"AppLamp Group2"))
 			{
-				if (!AddSwitchIfNotExits(3,"Limitless Group3"))
+				if (!AddSwitchIfNotExits(3,"AppLamp Group3"))
 				{
-					AddSwitchIfNotExits(4,"Limitless Group4");
+					AddSwitchIfNotExits(4,"AppLamp Group4");
 				}
 			}
 		}
@@ -204,7 +206,7 @@ bool CLimitLess::StartHardware()
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CLimitLess::Do_Work, this)));
 
-	_log.Log(LOG_NORM,"LimitLess Worker Started...");
+	_log.Log(LOG_NORM,"AppLamp Worker Started...");
 
 	//WriteToHardware((const char*)&RGBWOn,sizeof(RGBWOn));
 	//Sleep(100);
@@ -246,7 +248,7 @@ void CLimitLess::Do_Work()
 	{
 		boost::this_thread::sleep(boost::posix_time::seconds(1));
 	}
-	_log.Log(LOG_NORM,"LimitLess Worker stopped...");
+	_log.Log(LOG_NORM,"AppLamp Worker stopped...");
 }
 
 void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)

@@ -7256,6 +7256,33 @@ std::string CWebServer::GetJSonPage()
 						)
 						goto exitjson;
 					int iUnitCode=atoi(sunitcode.c_str())-1;
+					switch (iUnitCode)
+					{
+					case 0:
+						iUnitCode=chime_sound0;
+						break;
+					case 1:
+						iUnitCode=chime_sound1;
+						break;
+					case 2:
+						iUnitCode=chime_sound2;
+						break;
+					case 3:
+						iUnitCode=chime_sound3;
+						break;
+					case 4:
+						iUnitCode=chime_sound4;
+						break;
+					case 5:
+						iUnitCode=chime_sound5;
+						break;
+					case 6:
+						iUnitCode=chime_sound6;
+						break;
+					case 7:
+						iUnitCode=chime_sound7;
+						break;
+					}
 					sprintf(szTmp,"%d",iUnitCode);
 					sunitcode=szTmp;
 					devid=id;
@@ -7370,6 +7397,33 @@ std::string CWebServer::GetJSonPage()
 						)
 						goto exitjson;
 					int iUnitCode=atoi(sunitcode.c_str())-1;
+					switch (iUnitCode)
+					{
+					case 0:
+						iUnitCode=chime_sound0;
+						break;
+					case 1:
+						iUnitCode=chime_sound1;
+						break;
+					case 2:
+						iUnitCode=chime_sound2;
+						break;
+					case 3:
+						iUnitCode=chime_sound3;
+						break;
+					case 4:
+						iUnitCode=chime_sound4;
+						break;
+					case 5:
+						iUnitCode=chime_sound5;
+						break;
+					case 6:
+						iUnitCode=chime_sound6;
+						break;
+					case 7:
+						iUnitCode=chime_sound7;
+						break;
+					}
 					sprintf(szTmp,"%d",iUnitCode);
 					sunitcode=szTmp;
 					devid=id;
