@@ -1187,6 +1187,21 @@ bool GetLightCommand(
 			cmd=Limitless_LedOn;
 			return true;
 		}
+		else if (switchcmd=="Set Color")
+		{
+			cmd=Limitless_SetRGBColour;
+			return true;
+		}
+		else if (switchcmd=="Set Brightness")
+		{
+			cmd=Limitless_SetBrightnessLevel;
+			return true;
+		}
+		else if (switchcmd=="Set White")
+		{
+			cmd=Limitless_SetColorToWhite;
+			return true;
+		}
 		else
 			return false;
 		break;

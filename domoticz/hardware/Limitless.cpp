@@ -5,6 +5,8 @@
 #include "../main/mainworker.h"
 #include "hardwaretypes.h"
 
+#define round(a) ( int ) ( a + .5 )
+
 //This hardware goes under a few different names, i was talled the original name was AppLamp
 
 // Commands
@@ -216,7 +218,6 @@ bool CLimitLess::StartHardware()
 	//WriteToHardware((const char*)&RGBWGroup1AllOn,sizeof(RGBWGroup1AllOn));
 	//Sleep(100);
 	//WriteToHardware((const char*)&RGBWSetColor,sizeof(RGBWSetColor));
-	
 	return (m_thread!=NULL);
 }
 
@@ -286,29 +287,33 @@ void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD=(unsigned char*)&RGBWGroup4AllOff;
 			break;
 		case Limitless_SetRGBColour:
-			//First send ON , sleep 100ms, then the command
-			if (pLed->dunit==0) {
-				sendto(m_RemoteSocket,(const char*)&RGBWOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit==0) {
+					sendto(m_RemoteSocket,(const char*)&RGBWOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+				}
+				else if (pLed->dunit==1) {
+					sendto(m_RemoteSocket,(const char*)&RGBWGroup1AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+				}
+				else if (pLed->dunit==2) {
+					sendto(m_RemoteSocket,(const char*)&RGBWGroup2AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+				}
+				else if (pLed->dunit==3) {
+					sendto(m_RemoteSocket,(const char*)&RGBWGroup3AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+				}
+				else if (pLed->dunit==4) {
+					sendto(m_RemoteSocket,(const char*)&RGBWGroup1AllOn,4,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+				}
+				//The Hue is inverted/swifted 90 degrees
+				int iHue=((255-pLed->value)+192)&0xFF;
+				RGBWSetColor[1]=(unsigned char)iHue;
+				pCMD=(unsigned char*)&RGBWSetColor;
 			}
-			else if (pLed->dunit==1) {
-				sendto(m_RemoteSocket,(const char*)&RGBWGroup1AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-			}
-			else if (pLed->dunit==2) {
-				sendto(m_RemoteSocket,(const char*)&RGBWGroup2AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-			}
-			else if (pLed->dunit==3) {
-				sendto(m_RemoteSocket,(const char*)&RGBWGroup3AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-			}
-			else if (pLed->dunit==4) {
-				sendto(m_RemoteSocket,(const char*)&RGBWGroup1AllOn,4,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-			}
-			RGBWSetColor[1]=pLed->value;
-			pCMD=(unsigned char*)&RGBWSetColor;
 			break;
 		case Limitless_DiscoSpeedSlower:
 			pCMD=(unsigned char*)&RGBWDiscoSpeedSlower;
@@ -349,31 +354,37 @@ void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			pCMD=(unsigned char*)&RGBWSetColorToWhiteAll;
 			break;
 		case Limitless_SetBrightnessLevel:
-			//First send ON , sleep 100ms, then the command
-			if (pLed->dunit==0) {
-				sendto(m_RemoteSocket,(const char*)&RGBWOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit==0) {
+					sendto(m_RemoteSocket,(const char*)&RGBWOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+				}
+				else if (pLed->dunit==1) {
+					sendto(m_RemoteSocket,(const char*)&RGBWGroup1AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+				}
+				else if (pLed->dunit==2) {
+					sendto(m_RemoteSocket,(const char*)&RGBWGroup2AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+				}
+				else if (pLed->dunit==3) {
+					sendto(m_RemoteSocket,(const char*)&RGBWGroup3AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+				}
+				else if (pLed->dunit==4) {
+					sendto(m_RemoteSocket,(const char*)&RGBWGroup1AllOn,4,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+				}
+				//convert brightness (0-100) to (0-50) to 0-59
+				double dval=(59.0/100.0)*float(pLed->value/2);
+				int ival=round(dval);
+				if (ival<2)
+					ival=2;
+				RGBWSetBrightnessLevel[1]=(unsigned char)ival;
+				pCMD=(unsigned char*)&RGBWSetBrightnessLevel;
 			}
-			else if (pLed->dunit==1) {
-				sendto(m_RemoteSocket,(const char*)&RGBWGroup1AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-			}
-			else if (pLed->dunit==2) {
-				sendto(m_RemoteSocket,(const char*)&RGBWGroup2AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-			}
-			else if (pLed->dunit==3) {
-				sendto(m_RemoteSocket,(const char*)&RGBWGroup3AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-			}
-			else if (pLed->dunit==4) {
-				sendto(m_RemoteSocket,(const char*)&RGBWGroup1AllOn,4,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-			}
-			RGBWSetBrightnessLevel[1]=pLed->value;
-			pCMD=(unsigned char*)&RGBWSetBrightnessLevel;
 			break;
-
 		}
 	}
 	else if (m_LEDType==sTypeLimitlessRGB)
@@ -405,29 +416,33 @@ void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD=(unsigned char*)&Group4Off;
 			break;
 		case Limitless_SetRGBColour:
-			//First send ON , sleep 100ms, then the command
-			if (pLed->dunit==0) {
-				sendto(m_RemoteSocket,(const char*)&RGBOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit==0) {
+					sendto(m_RemoteSocket,(const char*)&RGBOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+				}
+				else if (pLed->dunit==1) {
+					sendto(m_RemoteSocket,(const char*)&Group1On,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+				}
+				else if (pLed->dunit==2) {
+					sendto(m_RemoteSocket,(const char*)&Group2On,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+				}
+				else if (pLed->dunit==3) {
+					sendto(m_RemoteSocket,(const char*)&Group3On,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+				}
+				else if (pLed->dunit==4) {
+					sendto(m_RemoteSocket,(const char*)&Group4On,4,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+				}
+				//The Hue is inverted/swifted 90 degrees
+				int iHue=((255-pLed->value)+192)&0xFF;
+				RGBWSetColor[1]=(unsigned char)iHue;
+				pCMD=(unsigned char*)&RGBSetColour;
 			}
-			else if (pLed->dunit==1) {
-				sendto(m_RemoteSocket,(const char*)&Group1On,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-			}
-			else if (pLed->dunit==2) {
-				sendto(m_RemoteSocket,(const char*)&Group2On,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-			}
-			else if (pLed->dunit==3) {
-				sendto(m_RemoteSocket,(const char*)&Group3On,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-			}
-			else if (pLed->dunit==4) {
-				sendto(m_RemoteSocket,(const char*)&Group4On,4,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-			}
-			RGBSetColour[1]=pLed->value;
-			pCMD=(unsigned char*)&RGBSetColour;
 			break;
 		case Limitless_DiscoSpeedSlower:
 			pCMD=(unsigned char*)&RGBDiscoSpeedSlower;

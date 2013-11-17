@@ -8973,6 +8973,39 @@ std::string CWebServer::GetJSonPage()
 			int iSecStatus=atoi(ssecstatus.c_str());
 			m_pMain->UpdateDomoticzSecurityStatus(iSecStatus);
 		}
+		else if (cparam=="setcolbrightnessvalue")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			std::string hue=m_pWebEm->FindValue("hue");
+			std::string brightness=m_pWebEm->FindValue("brightness");
+			std::string iswhite=m_pWebEm->FindValue("iswhite");
+			
+			if ((idx=="")||(hue=="")||(brightness=="")||(iswhite==""))
+			{
+				goto exitjson;
+			}
+
+			unsigned long long ID;
+			std::stringstream s_strid;
+			s_strid << idx;
+			s_strid >> ID;
+
+			if (iswhite!="true")
+			{
+				//convert hue from 360 steps to 255
+				double dval;
+				dval=(255.0/360.0)*atof(hue.c_str());
+				int ival;
+				ival=round(dval);
+				m_pMain->SwitchLight(ID,"Set Color",ival);
+			}
+			else
+			{
+				m_pMain->SwitchLight(ID,"Set White",0);
+			}
+			boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+			m_pMain->SwitchLight(ID,"Set Brightness",(unsigned char)atoi(brightness.c_str()));
+		}
 	} //(rtype=="command")
 	else if (rtype=="getshareduserdevices")
 	{

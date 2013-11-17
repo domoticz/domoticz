@@ -28,6 +28,30 @@
 				<td align="right"><label for="motionoffdelay"><span data-i18n="Off Delay"></span>:</label></td>
 				<td><input type="text" id="offdelay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (Seconds) 0 = Disabled</td>
 			</tr>
+			<tr id="LedColor">
+				<td align="right"><label><span data-i18n="Color">Color</span>:</label></td>
+				<td>
+					<table class="display" id="ledtable" border="0" cellpadding="0" cellspacing="0">
+					<tr>
+						<td align="left" style="width:200px">
+							<div id="picker" width="100px" height="100px"></div>
+						</td>
+						<td align="left" style="vertical-align: top;">
+							<div class="radio">
+								<label>
+									<input type="radio" name="optionsType" id="optionsRGB" value="false" checked>
+										RGB
+								</label>
+								<label>
+									<input type="radio" name="optionsType" id="optionsWhite" value="true">
+										White
+								</label>
+							</div>
+						</td>
+					</tr>
+					</table>
+				</td>
+			</tr>
 			<tr>
 				<td></td>
 				<td>
@@ -952,6 +976,23 @@ function AddSubDevice()
 	});
 }
 
+function SetColValue(idx,hue,brightness)
+{
+	clearInterval($.setColValue);
+
+	if (window.my_config.userrights==0) {
+        HideNotify();
+		ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
+		return;
+	}
+	var bIsWhite=$('#lightcontent #ledtable #optionsWhite').is(":checked");
+	$.ajax({
+		 url: "json.htm?type=command&param=setcolbrightnessvalue&idx=" + idx + "&hue=" + hue + "&brightness=" + brightness + "&iswhite=" + bIsWhite,
+		 async: false, 
+		 dataType: 'json'
+	});
+}
+
 function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage)
 {
 	clearInterval($.myglobals.refreshTimer);
@@ -981,6 +1022,25 @@ function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage
 	});
 
 	$("#lightcontent #devicename").val(name);
+	var bIsLED=(stype=="Lighting Limitless/Applamp");
+	if (bIsLED) {
+		$("#lightcontent #LedColor").show();
+		$('#lightcontent #picker').colpick({
+			flat:true,
+			layout:'hex',
+			submit:0,
+			onChange:function(hsb,hex,rgb,fromSetColor) {
+				//alert(hsb.h + ' - ' + hsb.b);
+				if(!fromSetColor) {
+					clearInterval($.setColValue);
+					$.setColValue = setInterval(function() { SetColValue($.devIdx,hsb.h,hsb.b); }, 200);
+				}
+			}
+		});
+	}
+	else {
+		$("#lightcontent #LedColor").hide();
+	}
 	
 	if ($.stype=="Security") {
 		$("#lightcontent #SwitchType").hide();

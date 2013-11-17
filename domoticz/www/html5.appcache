@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 342
+# ref 344
 
 CACHE:
 favicon.ico
@@ -7,6 +7,7 @@ css/bootstrap-responsive.css
 css/bootstrap.css
 css/demo_table_jui.css
 css/style.css
+css/colpick.css
 css/TableTools.css
 css/ui-darkness/jquery-ui-1.10.1.custom.min.css
 css/jquery.uix.multiselect.css
@@ -297,6 +298,7 @@ js/bootstrap.min.js
 js/date.format.js
 js/jquery.ddslick.min.js
 js/domoticz.js
+js/colpick.js
 js/highcharts-more.js
 js/highcharts.js
 js/jquery-1.9.1.min.js

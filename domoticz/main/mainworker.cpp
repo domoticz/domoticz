@@ -7345,6 +7345,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.type=dType;
 			lcmd.subtype=dSubType;
 			lcmd.dunit=Unit;
+			lcmd.value=level;
 			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.command))
 				return false;
 			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(_tLimitlessLights));
