@@ -16,6 +16,7 @@ struct tScheduleItem
 	_eTimerType	timerType; 
 	_eTimerCommand timerCmd;
 	int Level;
+	int Hue;
 	bool bUseRandmoness;
 	int Days;
 	//internal

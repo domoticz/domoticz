@@ -2822,7 +2822,7 @@ std::string CWebServer::GetJSonPage()
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT ID, Active, Time, Type, Cmd, Level, Days, UseRandomness FROM Timers WHERE (DeviceRowID==" << idx << ") ORDER BY ID";
+		szQuery << "SELECT ID, Active, Time, Type, Cmd, Level, Hue, Days, UseRandomness FROM Timers WHERE (DeviceRowID==" << idx << ") ORDER BY ID";
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -2842,8 +2842,9 @@ std::string CWebServer::GetJSonPage()
 				root["result"][ii]["Type"]=atoi(sd[3].c_str());
 				root["result"][ii]["Cmd"]=atoi(sd[4].c_str());
 				root["result"][ii]["Level"]=iLevel;
-				root["result"][ii]["Days"]=atoi(sd[6].c_str());
-				root["result"][ii]["Randomness"]=(atoi(sd[7].c_str())!=0);
+				root["result"][ii]["Hue"]=atoi(sd[6].c_str());
+				root["result"][ii]["Days"]=atoi(sd[7].c_str());
+				root["result"][ii]["Randomness"]=(atoi(sd[8].c_str())!=0);
 				ii++;
 			}
 		}
@@ -2855,7 +2856,7 @@ std::string CWebServer::GetJSonPage()
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT ID, Active, Time, Type, Cmd, Level, Days, UseRandomness FROM SceneTimers WHERE (SceneRowID==" << idx << ") ORDER BY ID";
+		szQuery << "SELECT ID, Active, Time, Type, Cmd, Level, Hue, Days, UseRandomness FROM SceneTimers WHERE (SceneRowID==" << idx << ") ORDER BY ID";
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -2876,7 +2877,8 @@ std::string CWebServer::GetJSonPage()
 				root["result"][ii]["Cmd"]=atoi(sd[4].c_str());
 				root["result"][ii]["Level"]=iLevel;
 				root["result"][ii]["Days"]=atoi(sd[6].c_str());
-				root["result"][ii]["Randomness"]=(atoi(sd[7].c_str())!=0);
+				root["result"][ii]["Hue"]=atoi(sd[7].c_str());
+				root["result"][ii]["Randomness"]=(atoi(sd[8].c_str())!=0);
 				ii++;
 			}
 		}
@@ -6600,6 +6602,7 @@ std::string CWebServer::GetJSonPage()
 				)
 				goto exitjson;
 			int level=atoi(m_pWebEm->FindValue("level").c_str());
+			int hue=atoi(m_pWebEm->FindValue("hue").c_str());
 			//first check if this device is not the scene code!
 			szQuery.clear();
 			szQuery.str("");
@@ -6639,20 +6642,22 @@ std::string CWebServer::GetJSonPage()
 				if (isscene=="true")
 				{
 					sprintf(szTmp,
-						"INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Cmd, Level) VALUES ('%s','%s',%d,%d)",
+						"INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Cmd, Level, Hue) VALUES ('%s','%s',%d,%d,%d)",
 						devidx.c_str(),
 						idx.c_str(),
 						command,
-						level
+						level,
+						hue
 						);
 				}
 				else
 				{
 					sprintf(szTmp,
-						"INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Level) VALUES ('%s','%s',%d)",
+						"INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Level,Hue) VALUES ('%s','%s',%d,%d)",
 						devidx.c_str(),
 						idx.c_str(),
-						level
+						level,
+						hue
 						);
 				}
 				result=m_pMain->m_sql.query(szTmp);
@@ -6672,11 +6677,12 @@ std::string CWebServer::GetJSonPage()
 				)
 				goto exitjson;
 			int level=atoi(m_pWebEm->FindValue("level").c_str());
+			int hue=atoi(m_pWebEm->FindValue("hue").c_str());
 			root["status"]="OK";
 			root["title"]="UpdateSceneDevice";
 			szQuery.clear();
 			szQuery.str("");
-			szQuery << "UPDATE SceneDevices SET Cmd=" << command << ", Level=" << level << " WHERE (ID == " << idx << ")";
+			szQuery << "UPDATE SceneDevices SET Cmd=" << command << ", Level=" << level << ", Hue=" << hue << " WHERE (ID == " << idx << ")";
 			result=m_pMain->m_sql.query(szQuery.str());
 		}
 		else if (cparam=="deletescenedevice")
@@ -6763,7 +6769,7 @@ std::string CWebServer::GetJSonPage()
 
 			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;
-			szQuery << "SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Cmd, a.Level, b.ID, a.[Order] FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='" << idx << "') AND (b.ID == a.DeviceRowID) ORDER BY a.[Order]";
+			szQuery << "SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Cmd, a.Level, b.ID, a.[Order], a.Hue FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='" << idx << "') AND (b.ID == a.DeviceRowID) ORDER BY a.[Order]";
 			result=m_pMain->m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
@@ -6797,6 +6803,9 @@ std::string CWebServer::GetJSonPage()
 						GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
 					root["result"][ii]["IsOn"]=IsLightSwitchOn(lstatus);
 					root["result"][ii]["Level"]=level;
+					root["result"][ii]["Hue"]=atoi(sd[11].c_str());
+					root["result"][ii]["Type"]=RFX_Type_Desc(devType,1);
+					root["result"][ii]["SubType"]=RFX_Type_SubType_Desc(devType,subType);
 					ii++;
 				}
 			}
@@ -7306,7 +7315,7 @@ std::string CWebServer::GetJSonPage()
 			sd.push_back(szTmp);
 
 			std::string switchcmd="On";
-			m_pMain->SwitchLightInt(sd,switchcmd,0,true);
+			m_pMain->SwitchLightInt(sd,switchcmd,0,-1,true);
 		}
 		else if (cparam=="addswitch")
 		{
@@ -8408,6 +8417,7 @@ std::string CWebServer::GetJSonPage()
 			std::string scmd=m_pWebEm->FindValue("command");
 			std::string sdays=m_pWebEm->FindValue("days");
 			std::string slevel=m_pWebEm->FindValue("level");	//in percentage
+			std::string shue=m_pWebEm->FindValue("hue");
 			if (
 				(idx=="")||
 				(active=="")||
@@ -8425,11 +8435,12 @@ std::string CWebServer::GetJSonPage()
 			unsigned char iTimerType=atoi(stimertype.c_str());
 			int days=atoi(sdays.c_str());
 			unsigned char level=atoi(slevel.c_str());
+			int hue=atoi(shue.c_str());
 			sprintf(szData,"%02d:%02d",hour,min);
 			root["status"]="OK";
 			root["title"]="AddTimer";
 			sprintf(szTmp,
-				"INSERT INTO Timers (Active, DeviceRowID, Time, Type, UseRandomness, Cmd, Level, Days) VALUES (%d,%s,'%s',%d,%d,%d,%d,%d)",
+				"INSERT INTO Timers (Active, DeviceRowID, Time, Type, UseRandomness, Cmd, Level, Hue, Days) VALUES (%d,%s,'%s',%d,%d,%d,%d,%d,%d)",
 				(active=="true")?1:0,
 				idx.c_str(),
 				szData,
@@ -8437,6 +8448,7 @@ std::string CWebServer::GetJSonPage()
 				(randomness=="true")?1:0,
 				icmd,
 				level,
+				hue,
 				days
 				);
 			result=m_pMain->m_sql.query(szTmp);
@@ -8498,6 +8510,7 @@ std::string CWebServer::GetJSonPage()
 			std::string scmd=m_pWebEm->FindValue("command");
 			std::string sdays=m_pWebEm->FindValue("days");
 			std::string slevel=m_pWebEm->FindValue("level");	//in percentage
+			std::string shue=m_pWebEm->FindValue("hue");
 			if (
 				(idx=="")||
 				(active=="")||
@@ -8515,17 +8528,19 @@ std::string CWebServer::GetJSonPage()
 			unsigned char iTimerType=atoi(stimertype.c_str());
 			int days=atoi(sdays.c_str());
 			unsigned char level=atoi(slevel.c_str());
+			int hue=atoi(shue.c_str());
 			sprintf(szData,"%02d:%02d",hour,min);
 			root["status"]="OK";
 			root["title"]="UpdateTimer";
 			sprintf(szTmp,
-				"UPDATE Timers SET Active=%d, Time='%s', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Days=%d WHERE (ID == %s)",
+				"UPDATE Timers SET Active=%d, Time='%s', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Hue=%d, Days=%d WHERE (ID == %s)",
 				(active=="true")?1:0,
 				szData,
 				iTimerType,
 				(randomness=="true")?1:0,
 				icmd,
 				level,
+				hue,
 				days,
 				idx.c_str()
 				);
@@ -8879,7 +8894,7 @@ std::string CWebServer::GetJSonPage()
 			if ((idx=="")||(switchcmd==""))
 				goto exitjson;
 
-			if (m_pMain->SwitchLight(idx,switchcmd,level)==true)
+			if (m_pMain->SwitchLight(idx,switchcmd,level,"-1")==true)
 			{
 				root["status"]="OK";
 				root["title"]="SwitchLight";
@@ -9000,14 +9015,14 @@ std::string CWebServer::GetJSonPage()
 				dval=(255.0/360.0)*atof(hue.c_str());
 				int ival;
 				ival=round(dval);
-				m_pMain->SwitchLight(ID,"Set Color",ival);
+				m_pMain->SwitchLight(ID,"Set Color",ival,-1);
 			}
 			else
 			{
-				m_pMain->SwitchLight(ID,"Set White",0);
+				m_pMain->SwitchLight(ID,"Set White",0,-1);
 			}
 			boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-			m_pMain->SwitchLight(ID,"Set Brightness",(unsigned char)atoi(brightness.c_str()));
+			m_pMain->SwitchLight(ID,"Set Brightness",(unsigned char)atoi(brightness.c_str()),-1);
 		}
 	} //(rtype=="command")
 	else if (rtype=="getshareduserdevices")

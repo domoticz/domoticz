@@ -2109,3 +2109,10 @@ a:link {
 	display: block;
 }
 
+.ex-color-box {
+    float: left;
+    width: 14px;
+    height: 14px;
+    margin: 1px;
+    border: 1px solid white;
+}

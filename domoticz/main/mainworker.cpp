@@ -7120,7 +7120,7 @@ bool MainWorker::SetRFXCOMHardwaremodes(const int HardwareID, const unsigned cha
 	return true;
 }
 
-bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, const bool IsTesting)
+bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, int hue, const bool IsTesting)
 {
 	unsigned long ID;
 	std::stringstream s_strid;
@@ -7345,6 +7345,34 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.type=dType;
 			lcmd.subtype=dSubType;
 			lcmd.dunit=Unit;
+
+			if ((switchcmd=="On")||(switchcmd=="Set Level"))
+			{
+				if (hue!=-1)
+				{
+					_tLimitlessLights lcmd;
+					lcmd.len=sizeof(_tLimitlessLights)-1;
+					lcmd.type=dType;
+					lcmd.subtype=dSubType;
+					lcmd.dunit=Unit;
+					if (hue!=1000)
+					{
+						double dval;
+						dval=(255.0/360.0)*float(hue);
+						int ival;
+						ival=round(dval);
+						lcmd.value=ival;
+						lcmd.command=Limitless_SetRGBColour;
+					}
+					else
+					{
+						lcmd.command=Limitless_SetColorToWhite;
+					}
+					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(_tLimitlessLights));
+					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+				}
+			}
+
 			lcmd.value=level;
 			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.command))
 				return false;
@@ -7457,7 +7485,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	return false;
 }
 
-bool MainWorker::SwitchLight(unsigned long long idx, const std::string &switchcmd, int level)
+bool MainWorker::SwitchLight(unsigned long long idx, const std::string &switchcmd, int level, int hue)
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
@@ -7468,16 +7496,16 @@ bool MainWorker::SwitchLight(unsigned long long idx, const std::string &switchcm
 		return false;
 
 	std::vector<std::string> sd=result[0];
-	return SwitchLightInt(sd,switchcmd,level,false);
+	return SwitchLightInt(sd,switchcmd,level,hue,false);
 }
 
-bool MainWorker::SwitchLight(const std::string &idx, const std::string &switchcmd,const std::string &level)
+bool MainWorker::SwitchLight(const std::string &idx, const std::string &switchcmd,const std::string &level,const std::string &hue)
 {
 	unsigned long long ID;
 	std::stringstream s_str( idx );
 	s_str >> ID;
 
-	return SwitchLight(ID,switchcmd,atoi(level.c_str()));
+	return SwitchLight(ID,switchcmd,atoi(level.c_str()),atoi(hue.c_str()));
 }
 
 bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float TempValue)
@@ -7603,7 +7631,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 
 	//now switch all attached devices
 	std::stringstream szQuery;
-	szQuery << "SELECT DeviceRowID, Cmd, Level FROM SceneDevices WHERE (SceneRowID == " << idx << ")  ORDER BY [Order] ASC";
+	szQuery << "SELECT DeviceRowID, Cmd, Level, Hue FROM SceneDevices WHERE (SceneRowID == " << idx << ")  ORDER BY [Order] ASC";
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return false;
@@ -7613,6 +7641,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 		std::vector<std::string> sd=*itt;
 		int cmd=atoi(sd[1].c_str());
 		int level=atoi(sd[2].c_str());
+		int hue=atoi(sd[3].c_str());
 		std::vector<std::vector<std::string> > result2;
 		std::stringstream szQuery2;
 		szQuery2 << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType, nValue, sValue FROM DeviceStatus WHERE (ID == " << sd[0] << ")";
@@ -7660,11 +7689,11 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 
 			if (switchtype != STYPE_PushOn)
 			{
-				SwitchLightInt(sd2,intswitchcmd,ilevel,false);
+				SwitchLightInt(sd2,intswitchcmd,ilevel,hue,false);
 			}
 			else
 			{
-				SwitchLightInt(sd2,"On",ilevel,false);
+				SwitchLightInt(sd2,"On",ilevel,hue,false);
 			}
 			boost::this_thread::sleep(boost::posix_time::milliseconds(50));
 

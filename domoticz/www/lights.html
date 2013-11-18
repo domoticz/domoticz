@@ -37,6 +37,8 @@
 							<div id="picker" width="100px" height="100px"></div>
 						</td>
 						<td align="left" style="vertical-align: top;">
+							<input type="text" id="Hue" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Hue"></span><br>
+							<input type="text" id="Brightness" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Brightness"></span><br>
 							<div class="radio">
 								<label>
 									<input type="radio" name="optionsType" id="optionsRGB" value="false" checked>
@@ -331,6 +333,32 @@
 					</select>
 				</td>
 			</tr>
+			<tr id="LedColor">
+				<td align="right"><label><span data-i18n="Color">Color</span>:</label></td>
+				<td>
+					<table class="display" id="ledtable" border="0" cellpadding="0" cellspacing="0">
+					<tr>
+						<td align="left" style="width:200px">
+							<div id="picker" width="100px" height="100px"></div>
+						</td>
+						<td align="left" style="vertical-align: top;">
+							<input type="text" id="Hue" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Hue"></span><br>
+							<input type="text" id="Brightness" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Brightness"></span><br>
+							<div class="radio">
+								<label>
+									<input type="radio" name="optionsType" id="optionsRGB" value="false" checked>
+										RGB
+								</label>
+								<label>
+									<input type="radio" name="optionsType" id="optionsWhite" value="true">
+										White
+								</label>
+							</div>
+						</td>
+					</tr>
+					</table>
+				</td>
+			</tr>
 			<tr><td></td></tr>
 			<tr>
 				<td align="right" style="width:80px"><label for="when"><span data-i18n="When"></span>:</label></td>
@@ -405,6 +433,7 @@ function GetTimerSettings()
 {
 	var tsettings = {};
 	tsettings.level=100;
+	tsettings.hue=0;
 	tsettings.Active=$('#lightcontent #timerparamstable #enabled').is(":checked");
 	tsettings.timertype=$("#lightcontent #timerparamstable #combotype").val();
 	tsettings.hour=$("#lightcontent #timerparamstable #combotimehour").val();
@@ -439,8 +468,18 @@ function GetTimerSettings()
 	}
 	if (tsettings.cmd==0)
 	{
-		if ($.isDimmer) {
-			tsettings.level=$("#lightcontent #timerparamstable #combolevel").val();
+		if ($.bIsLED) {
+			tsettings.level=$("#lightcontent #Brightness").val();
+			tsettings.hue=$("#lightcontent #Hue").val();
+			var bIsWhite=$('#lightcontent #ledtable #optionsWhite').is(":checked")
+			if (bIsWhite==true) {
+				tsettings.hue=1000;
+			}
+		}
+		else {
+			if ($.isDimmer) {
+				tsettings.level=$("#lightcontent #timerparamstable #combolevel").val();
+			}
 		}
 	}
 	return tsettings;
@@ -463,6 +502,7 @@ function UpdateTimer(idx)
 					"&randomness=" + tsettings.Randomness +
 					"&command=" + tsettings.cmd +
 					"&level=" + tsettings.level +
+					"&hue=" + tsettings.hue +
 					"&days=" + tsettings.days,
 		 async: false, 
 		 dataType: 'json',
@@ -493,6 +533,7 @@ function AddTimer()
 					"&randomness=" + tsettings.Randomness +
 					"&command=" + tsettings.cmd +
 					"&level=" + tsettings.level +
+					"&hue=" + tsettings.hue +
 					"&days=" + tsettings.days,
 		 async: false, 
 		 dataType: 'json',
@@ -553,6 +594,19 @@ function RefreshTimerTable(idx)
 			var tCommand=Command;
 			if ((Command=="On") && ($.isDimmer)) {
 				tCommand+=" (" + item.Level + "%)";
+				if ($.bIsLED) {
+					var hue=item.Hue;
+					var sat=100;
+					if (hue==1000) {
+						hue=0;
+						sat=0;
+					}
+					var cHSB=[];
+					cHSB.h=hue;
+					cHSB.s=sat;
+					cHSB.b=item.Level;
+					tCommand+='<div id="picker4" class="ex-color-box" style="background-color: #' + $.colpickHsbToHex(cHSB) + ';"></div>';
+				}
 			}
 			
 			var DayStr = "";
@@ -602,6 +656,7 @@ function RefreshTimerTable(idx)
 				"DT_RowId": item.idx,
 				"Command": Command,
 				"Level": item.Level,
+				"Hue": item.Hue,
 				"0": active,
 				"1": $.myglobals.TimerTypesStr[item.Type],
 				"2": item.Time,
@@ -636,8 +691,28 @@ function RefreshTimerTable(idx)
 					$("#lightcontent #timerparamstable #combotimemin").val(parseInt(data["2"].substring(3,5)));
 					$('#lightcontent #timerparamstable #randomness').prop('checked', (data["3"]=="Yes") ? true : false);
 					$("#lightcontent #timerparamstable #combocommand").val(jQuery.inArray(data["Command"], $.myglobals.CommandStr));
-					if ($.isDimmer) {
-						$("#lightcontent #timerparamstable #combolevel").val(data["Level"]);
+					var level=data["Level"];
+					if ($.bIsLED) {
+						$('#lightcontent #Brightness').val(level&255);
+						var hue=data["Hue"];
+						var sat=100;
+						if (hue==1000) {
+							hue=0;
+							sat=0;
+						}
+						$('#lightcontent #Hue').val(hue);
+						var cHSB=[];
+						cHSB.h=hue;
+						cHSB.s=sat;
+						cHSB.b=level;
+						
+						$("#lightcontent #optionsRGB").prop('checked',(sat==100));
+						$("#lightcontent #optionsWhite").prop('checked',!(sat==100));
+
+						$('#lightcontent #picker').colpickSetColor(cHSB);
+					}
+					else if ($.isDimmer) {
+						$("#lightcontent #timerparamstable #combolevel").val(level);
 					}
 					
 					var disableDays=false;
@@ -669,11 +744,12 @@ function RefreshTimerTable(idx)
   $('#modal').hide();
 }
 
-function ShowTimers(id,name, isdimmer)
+function ShowTimers(id,name, isdimmer, stype)
 {
 	clearInterval($.myglobals.refreshTimer);
 	$.devIdx=id;
 	$.isDimmer=isdimmer;
+	$.bIsLED=(stype.indexOf("Limitless") >= 0);
   
 	var oTable;
 	
@@ -703,6 +779,40 @@ function ShowTimers(id,name, isdimmer)
 	$('#lightcontent').i18n();
 
 	RefreshTimeAndSun();
+
+	var sat=180;
+	var cHSB=[];
+	cHSB.h=128;
+	cHSB.s=sat;
+	cHSB.b=100;
+	$('#lightcontent #Brightness').val(100);
+	$('#lightcontent #Hue').val(128);
+	
+	if ($.bIsLED==true) {
+		$("#lightcontent #LedColor").show();
+	}
+	else {
+		$("#lightcontent #LedColor").hide();
+	}
+	$('#lightcontent #picker').colpick({
+		flat:true,
+		layout:'hex',
+		submit:0,
+		onChange:function(hsb,hex,rgb,fromSetColor) {
+			if(!fromSetColor) {
+				$('#lightcontent #Hue').val(hsb.h);
+				$('#lightcontent #Brightness').val(hsb.b);
+				var bIsWhite=(hsb.s<20);
+				$("#lightcontent #optionsRGB").prop('checked',!bIsWhite);
+				$("#lightcontent #optionsWhite").prop('checked',bIsWhite);
+			}
+		}
+	});
+
+	$("#lightcontent #optionsRGB").prop('checked',(sat==180));
+	$("#lightcontent #optionsWhite").prop('checked',!(sat==180));
+
+	$('#lightcontent #picker').colpickSetColor(cHSB);
 
 	oTable = $('#timertable').dataTable( {
 	  "sDom": '<"H"lfrC>t<"F"ip>',
@@ -747,9 +857,11 @@ function ShowTimers(id,name, isdimmer)
 	$("#lightcontent #timerparamstable #combocommand").change(function() {
 		var cval=$("#lightcontent #timerparamstable #combocommand").val();
 		var bShowLevel=false;
-		if ($.isDimmer) {
-			if (cval==0) {
-				bShowLevel=true;
+		if (!$.bIsLED) {
+			if ($.isDimmer) {
+				if (cval==0) {
+					bShowLevel=true;
+				}
 			}
 		}
 		if (bShowLevel==true) {
@@ -760,7 +872,7 @@ function ShowTimers(id,name, isdimmer)
 		}
 	});
 
-	if ($.isDimmer) {
+	if (($.isDimmer)&&(!$.bIsLED)) {
 		$("#lightcontent #LevelDiv").show();
 	}
 	else {
@@ -1021,26 +1133,43 @@ function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage
 		"sPaginationType": "full_numbers"
 	});
 
-	$("#lightcontent #devicename").val(name);
-	var bIsLED=(stype=="Lighting Limitless/Applamp");
-	if (bIsLED) {
+	var sat=100;
+	var cHSB=[];
+	cHSB.h=128;
+	cHSB.s=sat;
+	cHSB.b=100;
+	$('#lightcontent #Brightness').val(100);
+	$('#lightcontent #Hue').val(128);
+	
+	$.bIsLED=(stype=="Lighting Limitless/Applamp");	
+	if ($.bIsLED==true) {
 		$("#lightcontent #LedColor").show();
-		$('#lightcontent #picker').colpick({
-			flat:true,
-			layout:'hex',
-			submit:0,
-			onChange:function(hsb,hex,rgb,fromSetColor) {
-				//alert(hsb.h + ' - ' + hsb.b);
-				if(!fromSetColor) {
-					clearInterval($.setColValue);
-					$.setColValue = setInterval(function() { SetColValue($.devIdx,hsb.h,hsb.b); }, 200);
-				}
-			}
-		});
 	}
 	else {
 		$("#lightcontent #LedColor").hide();
 	}
+	$('#lightcontent #picker').colpick({
+		flat:true,
+		layout:'hex',
+		submit:0,
+		onChange:function(hsb,hex,rgb,fromSetColor) {
+			if(!fromSetColor) {
+				$('#lightcontent #Hue').val(hsb.h);
+				$('#lightcontent #Brightness').val(hsb.b);
+				var bIsWhite=(hsb.s<20);
+				$("#lightcontent #optionsRGB").prop('checked',!bIsWhite);
+				$("#lightcontent #optionsWhite").prop('checked',bIsWhite);
+				clearInterval($.setColValue);
+				$.setColValue = setInterval(function() { SetColValue($.devIdx,hsb.h,hsb.b); }, 200);
+			}
+		}
+	});
+	$("#lightcontent #optionsRGB").prop('checked',(sat==100));
+	$("#lightcontent #optionsWhite").prop('checked',!(sat==100));
+
+	$('#lightcontent #picker').colpickSetColor(cHSB);
+
+	$("#lightcontent #devicename").val(name);
 	
 	if ($.stype=="Security") {
 		$("#lightcontent #SwitchType").hide();
@@ -1692,10 +1821,10 @@ function ShowLights()
 					'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + '\'' + item.Type + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.IsSubDevice + ', ' + item.CustomImage +');" data-i18n="Edit">Edit</a> ';
 						if (bAddTimer == true) {
 									if (item.Timers == "true") {
-										xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',' + bIsDimmer + ');" data-i18n="Timers">Timers</a> ';
+										xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',' + bIsDimmer + ',\'' + item.Type + '\');" data-i18n="Timers">Timers</a> ';
 									}
 									else {
-										xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',' + bIsDimmer + ');" data-i18n="Timers">Timers</a> ';
+										xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',' + bIsDimmer + ',\'' + item.Type + '\');" data-i18n="Timers">Timers</a> ';
 									}
 						}
 						if (item.SwitchType == "Smoke Detector") {

@@ -56,7 +56,7 @@
 						<tr valign="middle">
 								<th align="left" data-i18n="Name">Name</th>
 								<th align="right" width="100" id="CommandHeader" data-i18n="Command">Command</th>
-								<th align="right" width="40" data-i18n="Level">Level</th>
+								<th align="right" width="60" data-i18n="Level">Level</th>
 								<th align="center" width="40" data-i18n="Order">Order</th>
 						</tr>
 				</thead>
@@ -396,11 +396,17 @@ function AddDevice()
 	var Command=$("#scenecontent #combocommand option:selected").val();
 	
 	var level=100;
+	var hue=0;
 	$.each($.LightsAndSwitches, function(i,item){
 		if (item.idx==DeviceIdx) {
 			var bIsLED=((item.SubType=="RGBW")||(item.SubType=="RGB"))
 			if (bIsLED==true) {
 				level=$("#scenecontent #Brightness").val();
+				hue=$("#scenecontent #Hue").val();
+				var bIsWhite=$('#scenecontent #ledtable #optionsWhite').is(":checked")
+				if (bIsWhite==true) {
+					hue=1000;
+				}
 			}
 			else {
 				if (item.isdimmer==true) {
@@ -411,7 +417,7 @@ function AddDevice()
 	});
 	
 	$.ajax({
-		 url: "json.htm?type=command&param=addscenedevice&idx=" + $.devIdx + "&isscene=" + $.isScene + "&devidx=" + DeviceIdx + "&command=" + Command + "&level=" + level,
+		 url: "json.htm?type=command&param=addscenedevice&idx=" + $.devIdx + "&isscene=" + $.isScene + "&devidx=" + DeviceIdx + "&command=" + Command + "&level=" + level + "&hue=" + hue,
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {
@@ -508,6 +514,7 @@ function RefreshDeviceTable(idx)
       if (typeof data.result != 'undefined') {
 		var totalItems=data.result.length;
         $.each(data.result, function(i,item){
+				var bIsLED=(item.Type.indexOf("Applamp") >= 0);
 				var commandbtns;
 				if ($.isScene==false) {
 					if (item.IsOn==true) {
@@ -543,15 +550,33 @@ function RefreshDeviceTable(idx)
 					}
 					updownImg+='<img src="images/up.png" onclick="ChangeDeviceOrder(0,' + item.ID + ');" onmouseover="cursorhand()" onmouseout="cursordefault()" width="16" height="16"></img>';
 				}
+				var levelstr=item.Level + " %";
+				
+				if (bIsLED) {
+					var hue=item.Hue;
+					var sat=100;
+					if (hue==1000) {
+						hue=0;
+						sat=0;
+					}
+					var cHSB=[];
+					cHSB.h=hue;
+					cHSB.s=sat;
+					cHSB.b=item.Level;
+					levelstr+='<div id="picker4" class="ex-color-box" style="background-color: #' + $.colpickHsbToHex(cHSB) + ';"></div>';
+				}
+				
+				
 				var addId = oTable.fnAddData( {
 					"DT_RowId": item.ID,
 					"IsOn": item.IsOn,
 					"RealIdx": item.DevRealIdx,
 					"Level": item.Level,
+					"Hue": item.Hue,
 					"Order": item.Order,
 					"0": item.Name,
 					"1": commandbtns,
-					"2": item.Level + " %",
+					"2": levelstr,
 					"3": updownImg
 				} );
         });
@@ -598,13 +623,22 @@ function RefreshDeviceTable(idx)
 
 									$("#scenecontent #combolevel").val(level);
 									
-									$('#scenecontent #Brightness').val(level);
-									var hue=80;
+									$('#scenecontent #Brightness').val(level&255);
+									var hue=data["Hue"];
+									var sat=100;
+									if (hue==1000) {
+										hue=0;
+										sat=0;
+									}
 									$('#scenecontent #Hue').val(hue);
 									var cHSB=[];
 									cHSB.h=hue;
-									cHSB.s=100;
+									cHSB.s=sat;
 									cHSB.b=level;
+									
+									$("#scenecontent #optionsRGB").prop('checked',(sat==100));
+									$("#scenecontent #optionsWhite").prop('checked',!(sat==100));
+
 									$('#scenecontent #picker').colpickSetColor(cHSB);
 								}
 						}
@@ -630,11 +664,18 @@ function UpdateDevice(idx, devidx)
 	var Command=$("#scenecontent #combocommand option:selected").val();
 	
 	var level=100;
+	var hue=0;
+
 	$.each($.LightsAndSwitches, function(i,item){
 		if (item.idx==DeviceIdx) {
 			var bIsLED=((item.SubType=="RGBW")||(item.SubType=="RGB"))
 			if (bIsLED==true) {
 				level=$("#scenecontent #Brightness").val();
+				hue=$("#scenecontent #Hue").val();
+				var bIsWhite=$('#scenecontent #ledtable #optionsWhite').is(":checked")
+				if (bIsWhite==true) {
+					hue=1000;
+				}
 			}
 			else {
 				if (item.isdimmer==true) {
@@ -645,7 +686,7 @@ function UpdateDevice(idx, devidx)
 	});
 
 	$.ajax({
-		 url: "json.htm?type=command&param=updatescenedevice&idx=" + idx + "&isscene=" + $.isScene + "&devidx=" + DeviceIdx + "&command=" + Command + "&level=" + level,
+		 url: "json.htm?type=command&param=updatescenedevice&idx=" + idx + "&isscene=" + $.isScene + "&devidx=" + DeviceIdx + "&command=" + Command + "&level=" + level + "&hue=" + hue,
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {

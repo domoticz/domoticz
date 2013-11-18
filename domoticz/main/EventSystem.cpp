@@ -1694,7 +1694,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
         }
     }
     else {
-        tItem=_tTaskItem::SwitchLightEvent(DelayTime,deviceID,Action,_level,eventName);
+        tItem=_tTaskItem::SwitchLightEvent(DelayTime,deviceID,Action,_level,-1,eventName);
     }
     m_pMain->m_sql.AddTaskItem(tItem);
     
@@ -1711,7 +1711,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
             }
         }
         else {
-            delayedtItem = _tTaskItem::SwitchLightEvent(DelayTime,deviceID,previousState,previousLevel,eventName);
+            delayedtItem = _tTaskItem::SwitchLightEvent(DelayTime,deviceID,previousState,previousLevel,-1,eventName);
         }
         m_pMain->m_sql.AddTaskItem(delayedtItem);
     }

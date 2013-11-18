@@ -15,7 +15,7 @@
 #include "../webserver/Base64.h"
 #include "mainstructs.h"
 
-#define DB_VERSION 31
+#define DB_VERSION 32
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -132,6 +132,7 @@ const char *sqlCreateTimers =
 "[Type] INTEGER NOT NULL, "
 "[Cmd] INTEGER NOT NULL, "
 "[Level] INTEGER DEFAULT 15, "
+"[Hue] INTEGER DEFAULT 0, "
 "[UseRandomness] INTEGER DEFAULT 0, "
 "[Days] INTEGER NOT NULL);";
 
@@ -315,7 +316,8 @@ const char *sqlCreateSceneDevices =
 "[SceneRowID] BIGINT NOT NULL, "
 "[DeviceRowID] BIGINT NOT NULL, "
 "[Cmd] INTEGER DEFAULT 1, "
-"[Level] INTEGER DEFAULT 100);";
+"[Level] INTEGER DEFAULT 100, "
+"[Hue] INTEGER DEFAULT 0);";
 
 const char *sqlCreateSceneDeviceTrigger =
 	"CREATE TRIGGER IF NOT EXISTS scenedevicesupdate AFTER INSERT ON SceneDevices\n"
@@ -332,6 +334,7 @@ const char *sqlCreateSceneTimers =
 "[Type] INTEGER NOT NULL, "
 "[Cmd] INTEGER NOT NULL, "
 "[Level] INTEGER DEFAULT 15, "
+"[Hue] INTEGER DEFAULT 0, "
 "[UseRandomness] INTEGER DEFAULT 0, "
 "[Days] INTEGER NOT NULL);";
 
@@ -702,6 +705,12 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("ALTER TABLE Users ADD COLUMN [TabsEnabled] INTEGER default 255");
 		}
+		if (dbversion<32)
+		{
+			query("ALTER TABLE SceneDevices ADD COLUMN [Hue] INTEGER default 0");
+			query("ALTER TABLE SceneTimers ADD COLUMN [Hue] INTEGER default 0");
+			query("ALTER TABLE Timers ADD COLUMN [Hue] INTEGER default 0");
+		}
     }
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
 
@@ -961,14 +970,14 @@ void CSQLHelper::Do_Work()
 					case pTypeLighting6:
 					case pTypeLimitlessLights:
 						if (m_pMain)
-							m_pMain->SwitchLight(itt->_idx,"Off",0);
+							m_pMain->SwitchLight(itt->_idx,"Off",0,-1);
 						break;
 					case pTypeSecurity1:
 						switch (itt->_subType)
 						{
 						case sTypeSecX10M:
 							if (m_pMain)
-								m_pMain->SwitchLight(itt->_idx,"No Motion",0);
+								m_pMain->SwitchLight(itt->_idx,"No Motion",0,-1);
 							break;
 						default:
 							//just update internally
@@ -985,7 +994,7 @@ void CSQLHelper::Do_Work()
 				else
 				{
 					if (m_pMain)
-						m_pMain->SwitchLight(itt->_idx,"Off",0);
+						m_pMain->SwitchLight(itt->_idx,"Off",0,-1);
 				}
 			}
 			else if (itt->_ItemType == TITEM_EXECUTE_SCRIPT)
@@ -1051,7 +1060,7 @@ void CSQLHelper::Do_Work()
             else if (itt->_ItemType == TITEM_SWITCHCMD_EVENT)
             {
                 if (m_pMain)
-                    m_pMain->SwitchLight(itt->_idx,itt->_command.c_str(),itt->_level);
+                    m_pMain->SwitchLight(itt->_idx,itt->_command.c_str(),itt->_level, itt->_Hue);
             }
 
             else if (itt->_ItemType == TITEM_SWITCHCMD_SCENE)

@@ -55,7 +55,7 @@ void CScheduler::ReloadSchedules()
 	std::vector<std::vector<std::string> > result;
 
 	//Add Device Timers
-	szQuery << "SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T2.Used, T1.UseRandomness FROM Timers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID";
+	szQuery << "SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T2.Used, T1.UseRandomness, T1.Hue FROM Timers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID";
 	result=m_pMain->m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -82,6 +82,7 @@ void CScheduler::ReloadSchedules()
 				titem.timerCmd=(_eTimerCommand)atoi(sd[3].c_str());
 				titem.Level=(unsigned char)atoi(sd[4].c_str());
 				titem.bUseRandmoness=(atoi(sd[8].c_str())!=0);
+				titem.Hue=atoi(sd[9].c_str());
 				if ((titem.timerCmd==TCMD_ON)&&(titem.Level==0))
 				{
 					titem.Level=100;
@@ -368,7 +369,7 @@ void CScheduler::CheckSchedules()
 									ilevel=int(fLevel);
 								}
 							}
-							if (!m_pMain->SwitchLight(itt->RowID,switchcmd,ilevel))
+							if (!m_pMain->SwitchLight(itt->RowID,switchcmd,ilevel, itt->Hue))
 							{
 								_log.Log(LOG_ERROR,"Error sending switch command, DevID: %llu, Time: %s", itt->RowID, asctime(&ltime));
 							}
