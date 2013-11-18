@@ -31,7 +31,14 @@ cd ~
 sudo apt-get install libudev-dev
 svn co http://open-zwave.googlecode.com/svn/trunk/ open-zwave-read-only
 cd open-zwave-read-only/cpp/build/linux
+
+* Darwin (Mac)
+There is a problem in the MakeFile, change the DEBUG/RELEASE defines with:
+DEBUG_CFLAGS    := -Wall -Wno-unknown-pragmas -Wno-inline -Werror -Wno-self-assign -Wno-unused-private-field -Wno-format -g -DDEBUG -DLOG_STDERR -fPIC
+RELEASE_CFLAGS  := -Wall -Wno-unknown-pragmas -Werror -Wno-self-assign -Wno-unused-private-field -Wno-format -O3 -DNDEBUG -fPIC
+
 make
+
 
 Windows:
 - VS2010 (headers can be modified to support a less version)
