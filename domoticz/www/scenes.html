@@ -375,7 +375,7 @@ function SaveScene()
 		if ( bValid ) {
 				var SceneType=$("#scenecontent #combotype").val();
 				$.ajax({
-					 url: "json.htm?type=updatescene&idx=" + $.devIdx + "&scenetype=" + SceneType + "&name=" + $("#scenecontent #devicename").val(),
+					 url: "json.htm?type=updatescene&idx=" + $.devIdx + "&scenetype=" + SceneType + "&name=" + encodeURIComponent($("#scenecontent #devicename").val()),
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -1545,7 +1545,7 @@ $(document).ready(function() {
 									bValid = bValid && checkLength( $("#dialog-addscene #scenename"), 2, 100 );
 									if ( bValid ) {
 											$.pDialog=$( this );
-											var SceneName=$("#dialog-addscene #scenename").val();
+											var SceneName=encodeURIComponent($("#dialog-addscene #scenename").val());
 											var SceneType=$("#dialog-addscene #combotype").val();
 											$.ajax({
 												 url: "json.htm?type=addscene&name=" + SceneName + "&scenetype=" + SceneType,

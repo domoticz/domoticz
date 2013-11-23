@@ -519,7 +519,7 @@ $(document).ready(function() {
                   if ( bValid ) {
                       $( this ).dialog( "close" );
                       $.ajax({
-                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editweatherdevice #devicename").val() + '&used=true',
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editweatherdevice #devicename").val()) + '&used=true',
                          async: false, 
                          dataType: 'json',
                          success: function(data) {
@@ -534,7 +534,7 @@ $(document).ready(function() {
 				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
                       $.ajax({
-                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editweatherdevice #devicename").val() + '&used=false',
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editweatherdevice #devicename").val()) + '&used=false',
                          async: false, 
                          dataType: 'json',
                          success: function(data) {
@@ -570,7 +570,7 @@ $(document).ready(function() {
                   if ( bValid ) {
                       $( this ).dialog( "close" );
                       $.ajax({
-                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editraindevice #devicename").val() + '&addjmulti=' + $("#dialog-editraindevice #edittable #multiply").val() + '&used=true',
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editraindevice #devicename").val()) + '&addjmulti=' + $("#dialog-editraindevice #edittable #multiply").val() + '&used=true',
                          async: false, 
                          dataType: 'json',
                          success: function(data) {
@@ -585,7 +585,7 @@ $(document).ready(function() {
 				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
                       $.ajax({
-                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editweatherdevice #devicename").val() + '&used=false',
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editweatherdevice #devicename").val()) + '&used=false',
                          async: false, 
                          dataType: 'json',
                          success: function(data) {
@@ -622,7 +622,7 @@ $(document).ready(function() {
                       $( this ).dialog( "close" );
                       var aValue=$("#dialog-editbarodevice #edittable #adjustment").val();
                       $.ajax({
-                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editbarodevice #devicename").val() + '&addjvalue2=' + aValue + '&used=true',
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editbarodevice #devicename").val()) + '&addjvalue2=' + aValue + '&used=true',
                          async: false,
                          dataType: 'json',
                          success: function(data) {
@@ -637,7 +637,7 @@ $(document).ready(function() {
 				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
                       $.ajax({
-                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editbarodevice #devicename").val() + '&used=false',
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editbarodevice #devicename").val()) + '&used=false',
                          async: false,
                          dataType: 'json',
                          success: function(data) {
@@ -673,7 +673,7 @@ $(document).ready(function() {
                   if ( bValid ) {
                       $( this ).dialog( "close" );
                       $.ajax({
-                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editvisibilitydevice #devicename").val() + '&switchtype=' + $("#dialog-editvisibilitydevice #combometertype").val() + '&used=true',
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editvisibilitydevice #devicename").val()) + '&switchtype=' + $("#dialog-editvisibilitydevice #combometertype").val() + '&used=true',
                          async: false, 
                          dataType: 'json',
                          success: function(data) {
@@ -688,7 +688,7 @@ $(document).ready(function() {
 				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
                       $.ajax({
-                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editvisibilitydevice #devicename").val() + '&used=false',
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editvisibilitydevice #devicename").val()) + '&used=false',
                          async: false, 
                          dataType: 'json',
                          success: function(data) {

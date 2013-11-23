@@ -1633,7 +1633,7 @@ $(document).ready(function() {
                   if ( bValid ) {
                       $( this ).dialog( "close" );
                       $.ajax({
-                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editutilitydevice #devicename").val() + '&used=true',
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) + '&used=true',
                          async: false, 
                          dataType: 'json',
                          success: function(data) {
@@ -1648,7 +1648,7 @@ $(document).ready(function() {
 				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
                       $.ajax({
-                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editutilitydevice #devicename").val() + '&used=false',
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) + '&used=false',
                          async: false, 
                          dataType: 'json',
                          success: function(data) {
@@ -1683,7 +1683,7 @@ $(document).ready(function() {
                   if ( bValid ) {
                       $( this ).dialog( "close" );
                       $.ajax({
-                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editmeterdevice #devicename").val() + '&switchtype=' + $("#dialog-editmeterdevice #combometertype").val() + '&used=true',
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editmeterdevice #devicename").val()) + '&switchtype=' + $("#dialog-editmeterdevice #combometertype").val() + '&used=true',
                          async: false, 
                          dataType: 'json',
                          success: function(data) {
@@ -1698,7 +1698,7 @@ $(document).ready(function() {
 				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
                       $.ajax({
-                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editmeterdevice #devicename").val() + '&used=false',
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editmeterdevice #devicename").val()) + '&used=false',
                          async: false, 
                          dataType: 'json',
                          success: function(data) {
@@ -1730,7 +1730,7 @@ $(document).ready(function() {
                   if ( bValid ) {
                       $( this ).dialog( "close" );
                       $.ajax({
-                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editsetpointdevice #devicename").val() + '&setpoint=' + $("#dialog-editsetpointdevice #setpoint").val() + '&used=true',
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editsetpointdevice #devicename").val()) + '&setpoint=' + $("#dialog-editsetpointdevice #setpoint").val() + '&used=true',
                          async: false, 
                          dataType: 'json',
                          success: function(data) {
@@ -1745,7 +1745,7 @@ $(document).ready(function() {
 				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
                       $.ajax({
-                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-editsetpointdevice #devicename").val() + '&used=false',
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editsetpointdevice #devicename").val()) + '&used=false',
                          async: false, 
                          dataType: 'json',
                          success: function(data) {

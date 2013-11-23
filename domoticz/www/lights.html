@@ -904,7 +904,7 @@ function MakeFavorite(id,isfavorite)
 function DeleteLightSwitchIntern(bRemoveSubDevices)
 {
 	$.ajax({
-		 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#lightcontent #devicename").val() + '&used=false&RemoveSubDevices=' + bRemoveSubDevices,
+		 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#lightcontent #devicename").val()) + '&used=false&RemoveSubDevices=' + bRemoveSubDevices,
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {
@@ -951,7 +951,7 @@ function SaveLightSwitch()
 	if ( bValid ) {
 		if ($.stype=="Security") {
 			$.ajax({
-				 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#lightcontent #devicename").val() + '&used=true',
+				 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#lightcontent #devicename").val()) + '&used=true',
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
@@ -973,7 +973,7 @@ function SaveLightSwitch()
 				CustomImage=$('#lightcontent #comboswitchicon').data('ddslick').selectedIndex;
 			}
 			$.ajax({
-				 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#lightcontent #devicename").val() + '&switchtype=' + $("#lightcontent #comboswitchtype").val() + '&customimage=' + CustomImage + '&used=true' + addjvalstr ,
+				 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#lightcontent #devicename").val()) + '&switchtype=' + $("#lightcontent #comboswitchtype").val() + '&customimage=' + CustomImage + '&used=true' + addjvalstr ,
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
@@ -2078,7 +2078,7 @@ function GetManualLightSettings(isTest)
 			return "";
 		}
 	}
-	mParams+="&name="+name.val();
+	mParams+="&name="+encodeURIComponent(name.val());
 	mParams+="&switchtype="+$("#dialog-addmanuallightdevice #lighttable #comboswitchtype option:selected").val();
 	var lighttype=$("#dialog-addmanuallightdevice #lighttable #combolighttype option:selected").val();
 	mParams+="&lighttype="+lighttype;
@@ -2227,7 +2227,7 @@ $(document).ready(function() {
                   if ( bValid ) {
                       $( this ).dialog( "close" );
                       $.ajax({
-                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-addlightdevice #devicename").val() + '&switchtype=' + $("#dialog-addlightdevice #comboswitchtype").val() + '&used=true&maindeviceidx=' + MainDeviceIdx,
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-addlightdevice #devicename").val()) + '&switchtype=' + $("#dialog-addlightdevice #comboswitchtype").val() + '&used=true&maindeviceidx=' + MainDeviceIdx,
                          async: false, 
                          dataType: 'json',
                          success: function(data) {
