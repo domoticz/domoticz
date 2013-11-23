@@ -43,17 +43,17 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
     FOREACH(_source ${sources})
       SET(PCH_COMPILE_FLAGS "")
       IF(_source MATCHES \\.\(cc|cxx|cpp\)$)
-        GET_FILENAME_COMPONENT(_sourceWe ${_source} NAME_WE)
-        IF(_sourceWe STREQUAL ${_inputWe})
-          SET(PCH_COMPILE_FLAGS "${PCH_COMPILE_FLAGS} /Yc${_input}")
-          SET(_sourceFound TRUE)
-        ELSE(_sourceWe STREQUAL ${_inputWe})
-          SET(PCH_COMPILE_FLAGS "${PCH_COMPILE_FLAGS} /Yu${_input}")
-          IF(FORCEINCLUDE)
-            SET(PCH_COMPILE_FLAGS "${PCH_COMPILE_FLAGS} /FI${_input}")
-          ENDIF(FORCEINCLUDE)
-        ENDIF(_sourceWe STREQUAL ${_inputWe})
-        SET_SOURCE_FILES_PROPERTIES(${_source} PROPERTIES COMPILE_FLAGS "${PCH_COMPILE_FLAGS}")
+	GET_FILENAME_COMPONENT(_sourceWe ${_source} NAME_WE)
+	IF(_sourceWe STREQUAL ${_inputWe})
+	  SET(PCH_COMPILE_FLAGS "${PCH_COMPILE_FLAGS} /Yc${_input}")
+	  SET(_sourceFound TRUE)
+	ELSE(_sourceWe STREQUAL ${_inputWe})
+	  SET(PCH_COMPILE_FLAGS "${PCH_COMPILE_FLAGS} /Yu${_input}")
+	  IF(FORCEINCLUDE)
+	    SET(PCH_COMPILE_FLAGS "${PCH_COMPILE_FLAGS} /FI${_input}")
+	  ENDIF(FORCEINCLUDE)
+	ENDIF(_sourceWe STREQUAL ${_inputWe})
+	SET_SOURCE_FILES_PROPERTIES(${_source} PROPERTIES COMPILE_FLAGS "${PCH_COMPILE_FLAGS}")
       ENDIF(_source MATCHES \\.\(cc|cxx|cpp\)$)
     ENDFOREACH()
     IF(NOT _sourceFound)
@@ -121,7 +121,7 @@ set (domoticz_VERSION_MAJOR 1)
 set (domoticz_VERSION_MINOR 0)
 set (domoticz_VERSION_PATCH ${ProjectRevision})
 
-include_directories(${CMAKE_SOURCE_DIR}/main ${CMAKE_SOURCE_DIR}/hardware) 
+include_directories(${CMAKE_SOURCE_DIR}/main) 
 
 # a custom target that is always built
 ADD_CUSTOM_TARGET(revisiontag ALL)
@@ -130,12 +130,6 @@ ADD_CUSTOM_TARGET(revisiontag ALL)
 ADD_CUSTOM_COMMAND(TARGET revisiontag COMMAND ${CMAKE_COMMAND}
    -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR} 
    -P ${CMAKE_CURRENT_SOURCE_DIR}/getsvn.cmake)
-
-# This needs to be before the add_executable below
-IF(MSVC)
-CMAKE_POLICY(SET CMP0015 NEW)
-LINK_DIRECTORIES(${Boost_LIBRARY_DIR} )
-ENDIF(MSVC)
 
 ## Target
 set(
@@ -204,96 +198,11 @@ json/json_writer.cpp
 json/json_reader.cpp
 json/json_value.cpp
 )
-
-if(WIN32)
-set(
-domoticz_SRCS
-${domoticz_SRCS}
-main/WindowsHelper.cpp
-)
-endif(WIN32)
-
-set(
-domoticz_HEADERS
-main/appversion.h
-main/Camera.h
-main/CmdLine.h
-main/dirent_windows.h
-main/EventSystem.h
-main/Helper.h
-main/localtime_r.h
-main/Logger.h
-main/mainstructs.h
-main/mainworker.h
-main/resource.h
-main/RFXNames.h
-main/RFXtrx.h
-main/Scheduler.h
-main/SQLHelper.h
-main/stdafx.h
-main/SunRiseSet.h
-main/targetver.h
-main/WebServer.h
-main/WindCalculation.h
-main/WindowsHelper.h
-hardware/1Wire.h
-hardware/ASyncSerial.h
-hardware/BMP085.h
-hardware/DavisLoggerSerial.h
-hardware/DomoticzHardware.h
-hardware/DomoticzTCP.h
-hardware/Dummy.h
-hardware/hardwaretypes.h
-hardware/hidapi.h
-hardware/libusbwinusbbridge.h
-hardware/Limitless.h
-hardware/MCP23x17.h
-hardware/OpenZWave.h
-hardware/OTGWBase.h
-hardware/OTGWSerial.h
-hardware/OTGWTCP.h
-hardware/P1MeterBase.h
-hardware/P1MeterSerial.h
-hardware/P1MeterTCP.h
-hardware/PiFace.h
-hardware/Razberry.h
-hardware/Rego6XXSerial.h
-hardware/RFXComSerial.h
-hardware/RFXComTCP.h
-hardware/S0MeterBase.h
-hardware/S0MeterSerial.h
-hardware/S0MeterTCP.h
-hardware/smbus.h
-hardware/TE923.h
-hardware/TE923Tool.h
-hardware/Teleinfo.h
-hardware/VolcraftCO20.h
-hardware/VolcraftCO20Tool.h
-hardware/Wunderground.h
-hardware/YouLess.h
-hardware/ZWaveBase.h
-hardware/ZWaveCommands.h
-)
-IF(MSVC)
-add_executable(domoticz WIN32 ${domoticz_SRCS} ${domoticz_HEADERS})
-else()
-add_executable(domoticz ${domoticz_SRCS} ${domoticz_HEADERS})
-endif(MSVC)
+add_executable(domoticz ${domoticz_SRCS})
 
 # explicitly say that the executable depends on the revisiontag
 add_dependencies(domoticz revisiontag)
 
-IF(MSVC)
-    SET_TARGET_PROPERTIES(lua PROPERTIES
-            COMPILE_DEFINITIONS "_CRT_SECURE_NO_WARNINGS")
-    SET_TARGET_PROPERTIES(lua PROPERTIES
-            COMPILE_FLAGS "/wd4996 /nologo")
-
-    SET_TARGET_PROPERTIES(domoticz PROPERTIES
-            COMPILE_DEFINITIONS "_CRT_SECURE_NO_WARNINGS")
-    SET_TARGET_PROPERTIES(domoticz PROPERTIES
-            COMPILE_FLAGS "/wd4996 /nologo")
-ENDIF(MSVC)
 
 ## Link libraries
 #set(BOOST_USE_STATIC_LIBS ON)
@@ -326,46 +235,36 @@ else()
   MESSAGE(FATAL_ERROR "Could not find LIBUSB on your system, see install.txt how to get them installed.")
 ENDIF(LIBUSB_FOUND)
 
-find_path(OPENZWAVE_INCLUDE_DIR Manager.h)
-find_library(OPENZWAVE_LIBRARY NAMES libopenzwave.a OpenZWave.lib HINTS "../open-zwave-read-only/cpp/lib/linux" "../open-zwave-read-only/cpp/lib/mac")
-IF(OPENZWAVE_LIBRARY)
-  message(STATUS ${OPENZWAVE_LIBRARY})
-  target_link_libraries(domoticz ${OPENZWAVE_LIBRARY})
-  INCLUDE_DIRECTORIES(${OPENZWAVE_INCLUDE_DIR})
+find_library(OpenZWave NAMES libopenzwave.a HINTS "../open-zwave-read-only/cpp/lib/linux" "../open-zwave-read-only/cpp/lib/mac")
+IF(OpenZWave)
+  message(STATUS ${OpenZWave})
+  target_link_libraries(domoticz ${OpenZWave})
 else()
-  MESSAGE(FATAL_ERROR "Could not find OpenZWave on your system, see install.txt how to get it installed.")
-ENDIF(OPENZWAVE_LIBRARY)
+  MESSAGE(FATAL_ERROR "Could not find LIB OpenZWave on your system, see install.txt how to get them installed.")
+ENDIF(OpenZWave)
 
 IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  set(IOKIT_LIBRARY "-framework IOKit -framework CoreFoundation" CACHE FILEPATH "IOKit framework" FORCE)
-  target_link_libraries(domoticz ${IOKIT_LIBRARY})
-elseif("WIN32")
-  # No additional requirements for notification system on Windows
+   set(IOKIT_LIBRARY "-framework IOKit -framework CoreFoundation" CACHE FILEPATH "IOKit framework" FORCE)
+   target_link_libraries(domoticz ${IOKIT_LIBRARY})
 else()
-  find_library(UDEV NAMES libudev.a)
-  IF(UDEV)
-    message(STATUS ${UDEV})
-    target_link_libraries(domoticz ${UDEV})
-  else()
-    find_library(UDEV NAMES libudev.so)
-    IF(UDEV)
-      message(STATUS ${UDEV})
-      target_link_libraries(domoticz ${UDEV})
-    else()
-      MESSAGE(FATAL_ERROR "Could not find LIB UDEV on your system, see install.txt how to get them installed.\nsudo apt-get install libudev-dev")
-    ENDIF(UDEV)
-  ENDIF(UDEV)
+   find_library(UDEV NAMES libudev.a)
+   IF(UDEV)
+     message(STATUS ${UDEV})
+     target_link_libraries(domoticz ${UDEV})
+   else()
+     find_library(UDEV NAMES libudev.so)
+     IF(UDEV)
+       message(STATUS ${UDEV})
+       target_link_libraries(domoticz ${UDEV})
+     else()
+       MESSAGE(FATAL_ERROR "Could not find LIB UDEV on your system, see install.txt how to get them installed.\nsudo apt-get install libudev-dev")
+     ENDIF(UDEV)
+   ENDIF(UDEV)
 ENDIF()
 
-TARGET_LINK_LIBRARIES(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} ${LIBUSB_LIBRARIES} ${OPENZWAVE_LIBRARY} lua)
+target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread curl ${LIBUSB_LIBRARIES} lua)
 
-IF(MSVC)
-TARGET_LINK_LIBRARIES(domoticz ${CURL_LIBRARIES})
-ELSE()
-TARGET_LINK_LIBRARIES(domoticz pthread curl)
-ENDIF(MSVC)
-
-ADD_PRECOMPILED_HEADER(domoticz "stdafx.h")
+ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
 
 # If it wasn't overridden from command line / cache.
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
