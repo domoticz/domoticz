@@ -24,7 +24,10 @@ typedef unsigned char       BYTE;
 	#define SOCKET_ERROR   -1
 	#define closesocket(s) close(s);
 #else
+
+#if _MSC_VER > 1500
 	#pragma warning(disable : 4996)
+#endif
 	#include <winsock2.h>
 
 	#if defined _M_IX86
@@ -36,6 +39,13 @@ typedef unsigned char       BYTE;
 	#else
 	#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 	#endif
+
+#if _MSC_VER <= 1500
+	// For Visual Studio 2008 and below, no stdint.h comes with the header files. Use boost's implementation.
+	#include <boost/cstdint.hpp>
+	using boost::uint32_t;
+	using boost::uint8_t;
+#endif
 
 #endif
 

@@ -31,7 +31,6 @@ Circuit detail:
 #include "stdafx.h"
 #include "BMP085.h"
 #include <stdio.h>
-#include <stdint.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #ifdef __arm__

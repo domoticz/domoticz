@@ -26,7 +26,6 @@ The WiringPi project
 #include "stdafx.h"
 #include "PiFace.h"
 #include <stdio.h>
-#include <stdint.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <errno.h>

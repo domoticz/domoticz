@@ -98,6 +98,10 @@ const void *g_pQuitFunction=NULL;
 HANDLE g_hConsoleOut=NULL;
 HWND g_hWnd;
 
+#ifndef NIF_SHOWTIP
+#define NIF_SHOWTIP 0x00000000
+#endif
+
 BOOL TrayMessage(DWORD dwMessage, const char *szInfo)
 {
 	NOTIFYICONDATA tnd;
