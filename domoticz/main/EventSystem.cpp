@@ -192,7 +192,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 	m_windspeedValuesByID.clear();
 	m_windgustValuesByID.clear();
     
-	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
 
 	float EnergyDivider=1000.0f;

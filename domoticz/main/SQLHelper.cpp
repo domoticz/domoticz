@@ -1633,8 +1633,8 @@ bool CSQLHelper::GetLastValue(const int HardwareID, const char* DeviceID, const 
 	if (sqlresult.size()!=0)
 	{
 		nValue=(int)atoi(sqlresult[0][0].c_str());
-		sValue=sqlresult[0][1].c_str();
-	    sLastUpdate=sqlresult[0][2].c_str();
+		sValue=sqlresult[0][1];
+	    sLastUpdate=sqlresult[0][2];
 		
 		LastUpdateTime.tm_isdst=tm1.tm_isdst;
 		LastUpdateTime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;

@@ -184,7 +184,7 @@ uint32_t IPToUInt(const std::string &ip)
 	return addr;
 }
 
-bool isInt(const std::string s)
+bool isInt(const std::string &s)
 {
 	for(size_t i = 0; i < s.length(); i++){
 		if(!isdigit(s[i]))
