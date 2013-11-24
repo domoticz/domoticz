@@ -2,6 +2,8 @@
 
 #ifndef WIN32
 
+#ifdef WITH_LIBUSB
+
 #include "DomoticzHardware.h"
 #include <iostream>
 
@@ -24,4 +26,5 @@ private:
 	void GetSensorDetails();
 };
 
-#endif
+#endif //WITH_LIBUSB
+#endif //WIN32

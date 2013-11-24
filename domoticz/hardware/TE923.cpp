@@ -1,6 +1,7 @@
 
 #include "stdafx.h"
 #ifndef WIN32
+#ifdef WITH_LIBUSB
 #include "TE923.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
@@ -338,5 +339,5 @@ void CTE923::GetSensorDetails()
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.UV);//decode message
 	}
 }
-
-#endif
+#endif //WITH_LIBUSB
+#endif //WIN32

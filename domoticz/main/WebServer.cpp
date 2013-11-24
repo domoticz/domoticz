@@ -353,12 +353,29 @@ char * CWebServer::DisplayHardwareTypesCombo()
 #ifndef _DEBUG
 #ifdef WIN32
 		if (
-			(ii == HTYPE_VOLCRAFTCO20)||
-			(ii == HTYPE_TE923)||
 			(ii == HTYPE_RaspberryBMP085)
 			)
+		{
 			bDoAdd=false;
+		}
+		else
+		{
+#ifndef WITH_LIBUSB
+			if (
+				(ii == HTYPE_VOLCRAFTCO20)||
+				(ii == HTYPE_TE923)||
+				)
+			{
+				bDoAdd=false;
+			}
 #endif
+
+		}
+#endif
+#endif
+#ifndef WITH_OPENZWAVE
+		if (ii == HTYPE_OpenZWave)
+			bDoAdd=false;
 #endif
 		if ((ii == HTYPE_1WIRE)&&(!C1Wire::Have1WireSystem()))
 			bDoAdd=false;

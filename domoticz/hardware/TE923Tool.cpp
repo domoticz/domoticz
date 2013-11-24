@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #ifndef WIN32
+#ifdef WITH_LIBUSB
 
 #include "TE923Tool.h"
 #include <iostream>     /* standard I/O functions                         */
@@ -499,4 +500,5 @@ bool CTE923Tool::GetData(Te923DataSet_t *data)
 	//printData( data, iText);
 }
 
-#endif
+#endif //WITH_LIBUSB
+#endif //WIN32

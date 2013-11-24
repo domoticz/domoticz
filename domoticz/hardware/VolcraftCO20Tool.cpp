@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #ifndef WIN32
-
+#ifdef WITH_LIBUSB
 #include "VolcraftCO20Tool.h"
 #include <iostream>     /* standard I/O functions                         */
 #include <time.h>
@@ -175,4 +175,5 @@ unsigned short CVolcraftCO20Tool::GetVOC()
 	return voc;
 }
 
-#endif
+#endif //WITH_LIBUSB
+#endif //WIN32

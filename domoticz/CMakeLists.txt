@@ -231,8 +231,10 @@ set(LIBUSB_LIBRARIES ${LIBUSB_LIBRARY})
 find_package_handle_standard_args(LIBUSB  DEFAULT_MSG  LIBUSB_LIBRARIES LIBUSB_INCLUDE_DIR)
 IF(LIBUSB_FOUND)
   MESSAGE(STATUS "LIBUSB found at: ${LIBUSB_LIBRARIES}")
+  add_definitions(-DWITH_LIBUSB)
+  target_link_libraries(domoticz ${LIBUSB_LIBRARIES})
 else()
-  MESSAGE(FATAL_ERROR "Could not find LIBUSB on your system, see install.txt how to get them installed.")
+  MESSAGE(STATUS "==== LibUSB not found, support for TE923/Voltcraft disabled!")
 ENDIF(LIBUSB_FOUND)
 
 # try to find open-zwave, if found, include support
@@ -264,7 +266,7 @@ else()
 	MESSAGE(STATUS "==== OpenZWave not found, support disabled!")
 ENDIF(OpenZWave)
 
-target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread curl ${LIBUSB_LIBRARIES} lua)
+target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread curl lua)
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
 

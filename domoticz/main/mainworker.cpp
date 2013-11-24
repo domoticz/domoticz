@@ -16,14 +16,16 @@
 #include "../hardware/P1MeterSerial.h"
 #include "../hardware/P1MeterTCP.h"
 #include "../hardware/YouLess.h"
-#include "../hardware/TE923.h"
+#ifdef WITH_LIBUSB
+	#include "../hardware/TE923.h"
+#include "../hardware/VolcraftCO20.h"
+#endif
 #include "../hardware/Rego6XXSerial.h"
 #include "../hardware/Razberry.h"
 #ifdef WITH_OPENZWAVE
 	#include "../hardware/OpenZWave.h"
 #endif
 #include "../hardware/DavisLoggerSerial.h"
-#include "../hardware/VolcraftCO20.h"
 #include "../hardware/1Wire.h"
 #include "../hardware/BMP085.h"
 #include "../hardware/Wunderground.h"
@@ -438,11 +440,15 @@ bool MainWorker::AddHardwareFromParams(
 #ifndef WIN32
 	case HTYPE_TE923:
 		//TE923 compatible weather station
+#ifdef WITH_LIBUSB
 		pHardware = new CTE923(ID);
+#endif
 		break;
 	case HTYPE_VOLCRAFTCO20:
 		//Voltcrafr CO-20 Air Quality
+#ifdef WITH_LIBUSB
 		pHardware = new CVolcraftCO20(ID);
+#endif
 		break;
 #endif
 	case HTYPE_RaspberryBMP085:

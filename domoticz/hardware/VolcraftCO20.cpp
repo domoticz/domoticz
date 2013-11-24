@@ -1,6 +1,7 @@
 
 #include "stdafx.h"
 #ifndef WIN32
+#ifdef WITH_LIBUSB
 #include "VolcraftCO20.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
@@ -123,4 +124,5 @@ void CVolcraftCO20::GetSensorDetails()
 	sDecodeRXMessage(this, (const unsigned char *)&meter);//decode message
 }
 
-#endif
+#endif //WITH_LIBUSB
+#endif //WIN32

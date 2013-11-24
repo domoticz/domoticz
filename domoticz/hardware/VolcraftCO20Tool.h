@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef WIN32
-
+#ifdef WITH_LIBUSB
 class CVolcraftCO20Tool
 {
 public:
@@ -22,4 +22,5 @@ public:
 	unsigned short GetVOC();
 };
 
-#endif
+#endif //WITH_LIBUSB
+#endif //WIN32
