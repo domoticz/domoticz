@@ -4,6 +4,8 @@ Version 1.0.xxxx (November xxth 2013)
 - Implemented: Limitless/AppLamp, can now also be used as 'Dimmer'
 - Implemented: Limitless/AppLamp, can now be set to a defined color in scenes/groups/timers
 - Fixed: Device/Scene/Group names can now included special characters like %
+- Fixed: Edit Users, right combobox did not correctly update when selecting a user
+- Fixed: User Devices for Users that did not have 'Shared' rights
 
 Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart

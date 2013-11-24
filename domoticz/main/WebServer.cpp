@@ -959,7 +959,11 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			_eUserRights urights=m_users[iUser].userrights;
 			if (urights!=URIGHTS_ADMIN)
 			{
-				totUserDevices=m_pMain->m_sharedserver.GetUserDevicesCount(m_pWebEm->m_actualuser);
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == " << m_users[iUser].ID << ")";
+				result=m_pMain->m_sql.query(szQuery.str());
+				totUserDevices=(unsigned int)result.size();
 			}
 		}
 	}

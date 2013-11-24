@@ -288,13 +288,12 @@ function RefreshUserTable()
 				sharedstr=$.i18n('Yes');
 			}
 			var devicesstr='<span class="label label-info" onclick="EditSharedDevices(' + item.idx + ',\'' + item.Username + '\');" onmouseover="cursorhand()" onmouseout="cursordefault()">' + $.i18n('Set Devices') +'</span>';
-			
 			var addId = oTable.fnAddData( {
 				"DT_RowId": item.idx,
 				"Enabled": item.Enabled,
 				"Username": item.Username,
 				"Password": item.Password,
-				"Rights": item.rights,
+				"Rights": item.Rights,
 				"Sharing": item.RemoteSharing,
 				"TabsEnabled": item.TabsEnabled,
 				"0": enabledstr,
