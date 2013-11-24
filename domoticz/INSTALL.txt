@@ -27,6 +27,10 @@ Prerequisites: (or in other words, setup your compile enviroment):
 All:
 (Assuming domoticz development is in a subfolder of the user)
 cd ~
+
+[OpenZWave support]
+If you need support for Open-ZWave (for example if you want to use an Aeon USB V2 zwave adapter),
+you need to compile open zwave
 - Compile OpenZWave (http://code.google.com/p/open-zwave/)
 (On non-darwin install libudev-dev (sudo apt-get install libudev-dev)
 svn co http://open-zwave.googlecode.com/svn/trunk/ open-zwave-read-only
@@ -45,12 +49,12 @@ cd open-zwave-read-only/cpp/build/linux
 make
 
 
-Windows:
+[Windows]
 - VS2010 (headers can be modified to support a less version)
 - boost libraries, you probably have to set the correct include/lib folder in the project properties as i did not bootstrap mine
 
 ------------------------------------------------------------------------------------------------
-Ubuntu / Raspberry Pi (wheezy):
+[Ubuntu / Raspberry Pi (wheezy)]
 sudo apt-get install build-essential -y
 sudo apt-get install cmake libboost-dev libboost-thread-dev libboost-system-dev libsqlite3-dev subversion curl libcurl4-openssl-dev libusb-dev libudev-dev
 
@@ -62,11 +66,11 @@ This will cause the USB to switch back to version 1.1, but also the network spee
 When using the Arch Linux image, it looks like you do not have to apply the above fix.
 
 ------------------------------------------------------------------------------------------------
-Raspberry Pi (Arch Linux):
+[Raspberry Pi (Arch Linux)]
 sudo pacman -S gcc cmake subversion boost sqlite make curl libusb libudev-dev
 
 ------------------------------------------------------------------------------------------------
-Debian (Mac OS)
+[Debian (Mac OS)]
 Mac OS Installation:
 Prerequistics:
 - XCode with Command Line Tools
@@ -79,7 +83,7 @@ sudo port install libusb-compat
 sudo port install libudev-dev
 
 ------------------------------------------------------------------------------------------------
-Synology: (Initial setup time is 30 minutes, DSM 4.2+/tested with 212+)
+[Synology: (Initial setup time is 30 minutes, DSM 4.2+/tested with 212+)]
 - Make sure the device is bootstrapped (http://www.robvanhamersveld.nl/2013/02/21/ipkg-bootstrap-installer-for-synology-ds/), then:
 ipkg update
 ipkg upgrade
@@ -92,7 +96,6 @@ ipkg install boost-system
 ipkg install boost-date-time
 ipkg install libcurl-dev
 ipkg install libusb
-*ipkg install libudev-dev (not available)
 
 download/install cmake (take a coffee while doing the bootstrap and make commands)
 wget http://www.cmake.org/files/v2.8/cmake-2.8.12.1.tar.gz

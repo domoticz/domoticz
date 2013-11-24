@@ -159,6 +159,7 @@ hardware/DomoticzHardware.cpp
 hardware/DomoticzTCP.cpp
 hardware/Dummy.cpp
 hardware/Limitless.cpp
+hardware/OpenZWave.cpp
 hardware/OTGWBase.cpp
 hardware/OTGWSerial.cpp
 hardware/OTGWTCP.cpp
@@ -239,7 +240,6 @@ find_library(OpenZWave NAMES libopenzwave.a HINTS "../open-zwave-read-only/cpp/l
 IF(OpenZWave)
   message(STATUS ${OpenZWave})
   target_link_libraries(domoticz ${OpenZWave})
-  set(domoticz_SRCS ${domoticz_SRCS} hardware/OpenZWave.cpp)
   add_definitions(-DWITH_OPENZWAVE)
   # open-zwave needs libudev
   IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
