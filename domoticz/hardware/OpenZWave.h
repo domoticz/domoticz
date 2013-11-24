@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef WITH_OPENZWAVE
+
 #include <map>
 #include <string>
 #include <time.h>
@@ -78,5 +80,5 @@ private:
 	bool m_nodesQueried;
 };
 
-
+#endif //WITH_OPENZWAVE
 

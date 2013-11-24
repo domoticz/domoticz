@@ -135,68 +135,67 @@ ADD_CUSTOM_COMMAND(TARGET revisiontag COMMAND ${CMAKE_COMMAND}
 set(
 domoticz_SRCS
 main/stdafx.cpp
-main/Logger.cpp
-main/domoticz.cpp
 main/CmdLine.cpp
-main/EventSystem.cpp
-main/mainworker.cpp
-main/SQLHelper.cpp
-main/WebServer.cpp
-main/Scheduler.cpp
 main/Camera.cpp
-main/localtime_r.cpp
-main/RFXNames.cpp
+main/domoticz.cpp
+main/EventSystem.cpp
 main/Helper.cpp
+main/localtime_r.cpp
+main/Logger.cpp
+main/mainworker.cpp
+main/RFXNames.cpp
+main/Scheduler.cpp
+main/SQLHelper.cpp
 main/SunRiseSet.cpp
+main/WebServer.cpp
 main/WindCalculation.cpp
-httpclient/UrlEncode.cpp
 httpclient/HTTPClient.cpp
-smtpclient/SMTPClient.cpp
-hardware/DomoticzHardware.cpp
+httpclient/UrlEncode.cpp
 hardware/1Wire.cpp
 hardware/ASyncSerial.cpp
+hardware/BMP085.cpp
+hardware/DavisLoggerSerial.cpp
+hardware/DomoticzHardware.cpp
+hardware/DomoticzTCP.cpp
 hardware/Dummy.cpp
 hardware/Limitless.cpp
+hardware/OTGWBase.cpp
+hardware/OTGWSerial.cpp
+hardware/OTGWTCP.cpp
+hardware/P1MeterBase.cpp
+hardware/P1MeterSerial.cpp
+hardware/P1MeterTCP.cpp
+hardware/PiFace.cpp
+hardware/Razberry.cpp
+hardware/Rego6XXSerial.cpp
 hardware/RFXComSerial.cpp
 hardware/RFXComTCP.cpp
-hardware/DomoticzTCP.cpp
-hardware/P1MeterBase.cpp
-hardware/P1MeterTCP.cpp
-hardware/P1MeterSerial.cpp
-hardware/YouLess.cpp
+hardware/S0MeterBase.cpp
+hardware/S0MeterSerial.cpp
+hardware/smbus.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
 hardware/Teleinfo.cpp
 hardware/VolcraftCO20.cpp
 hardware/VolcraftCO20Tool.cpp
-hardware/Razberry.cpp
-hardware/Rego6XXSerial.cpp
-hardware/DavisLoggerSerial.cpp
-hardware/BMP085.cpp
-hardware/S0MeterSerial.cpp
-hardware/S0MeterBase.cpp
-hardware/smbus.cpp
 hardware/Wunderground.cpp
-hardware/OpenZWave.cpp
-hardware/PiFace.cpp
-hardware/OTGWBase.cpp
-hardware/OTGWSerial.cpp
-hardware/OTGWTCP.cpp
+hardware/YouLess.cpp
 hardware/ZWaveBase.cpp
-tcpserver/TCPServer.cpp
+smtpclient/SMTPClient.cpp
 tcpserver/TCPClient.cpp
-webserver/cWebem.cpp
+tcpserver/TCPServer.cpp
 webserver/Base64.cpp
 webserver/connection.cpp
 webserver/connection_manager.cpp
+webserver/cWebem.cpp
 webserver/mime_types.cpp
 webserver/reply.cpp
 webserver/request_handler.cpp
 webserver/request_parser.cpp
 webserver/server.cpp
-json/json_writer.cpp
 json/json_reader.cpp
 json/json_value.cpp
+json/json_writer.cpp
 )
 add_executable(domoticz ${domoticz_SRCS})
 
@@ -235,32 +234,35 @@ else()
   MESSAGE(FATAL_ERROR "Could not find LIBUSB on your system, see install.txt how to get them installed.")
 ENDIF(LIBUSB_FOUND)
 
+# try to find open-zwave, if found, include support
 find_library(OpenZWave NAMES libopenzwave.a HINTS "../open-zwave-read-only/cpp/lib/linux" "../open-zwave-read-only/cpp/lib/mac")
 IF(OpenZWave)
   message(STATUS ${OpenZWave})
   target_link_libraries(domoticz ${OpenZWave})
+  set(domoticz_SRCS ${domoticz_SRCS} hardware/OpenZWave.cpp)
+  add_definitions(-DWITH_OPENZWAVE)
+  # open-zwave needs libudev
+  IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(IOKIT_LIBRARY "-framework IOKit -framework CoreFoundation" CACHE FILEPATH "IOKit framework" FORCE)
+    target_link_libraries(domoticz ${IOKIT_LIBRARY})
+  else()
+    find_library(UDEV NAMES libudev.a)
+    IF(UDEV)
+      message(STATUS ${UDEV})
+      target_link_libraries(domoticz ${UDEV})
+    else()
+      find_library(UDEV NAMES libudev.so)
+      IF(UDEV)
+         message(STATUS ${UDEV})
+         target_link_libraries(domoticz ${UDEV})
+      else()
+         MESSAGE(FATAL_ERROR "Could not find LIB UDEV on your system, see install.txt how to get them installed.\nsudo apt-get install libudev-dev")
+      ENDIF(UDEV)
+    ENDIF(UDEV)
+  ENDIF()
 else()
-  MESSAGE(FATAL_ERROR "Could not find LIB OpenZWave on your system, see install.txt how to get them installed.")
+	MESSAGE(STATUS "==== OpenZWave not found, support disabled!")
 ENDIF(OpenZWave)
-
-IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-   set(IOKIT_LIBRARY "-framework IOKit -framework CoreFoundation" CACHE FILEPATH "IOKit framework" FORCE)
-   target_link_libraries(domoticz ${IOKIT_LIBRARY})
-else()
-   find_library(UDEV NAMES libudev.a)
-   IF(UDEV)
-     message(STATUS ${UDEV})
-     target_link_libraries(domoticz ${UDEV})
-   else()
-     find_library(UDEV NAMES libudev.so)
-     IF(UDEV)
-       message(STATUS ${UDEV})
-       target_link_libraries(domoticz ${UDEV})
-     else()
-       MESSAGE(FATAL_ERROR "Could not find LIB UDEV on your system, see install.txt how to get them installed.\nsudo apt-get install libudev-dev")
-     ENDIF(UDEV)
-   ENDIF(UDEV)
-ENDIF()
 
 target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} pthread curl ${LIBUSB_LIBRARIES} lua)
 

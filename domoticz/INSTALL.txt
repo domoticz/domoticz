@@ -79,8 +79,8 @@ sudo port install libusb-compat
 sudo port install libudev-dev
 
 ------------------------------------------------------------------------------------------------
-Synology: (Initial setup time is 30 minutes)
-- Make sure the device is bootstrapped, then:
+Synology: (Initial setup time is 30 minutes, DSM 4.2+/tested with 212+)
+- Make sure the device is bootstrapped (http://www.robvanhamersveld.nl/2013/02/21/ipkg-bootstrap-installer-for-synology-ds/), then:
 ipkg update
 ipkg upgrade
 ipkg install gcc
@@ -92,18 +92,18 @@ ipkg install boost-system
 ipkg install boost-date-time
 ipkg install libcurl-dev
 ipkg install libusb
-ipkg install libudev-dev
+*ipkg install libudev-dev (not available)
 
 download/install cmake (take a coffee while doing the bootstrap and make commands)
-wget http://www.cmake.org/files/v2.8/cmake-2.8.11.1.tar.gz
-tar xvf cmake-2.8.11.1.tar.gz
-cd cmake-2.8.11.1
+wget http://www.cmake.org/files/v2.8/cmake-2.8.12.1.tar.gz
+tar xvf cmake-2.8.12.1.tar.gz
+cd cmake-2.8.12.1
 ./bootstrap
 make
 make install
 cd ..
-rm -R cmake-2.8.11.1
-rm cmake-2.8.11.1.tar.gz
+rm -R cmake-2.8.12.1
+rm cmake-2.8.12.1.tar.gz
 
 fix known pthread problem:
 

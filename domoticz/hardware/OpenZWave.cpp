@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#ifdef WITH_OPENZWAVE
 #include "OpenZWave.h"
 
 #include <iostream>     // std::cout
@@ -1268,3 +1269,6 @@ void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
 	}
 	_log.Log(LOG_NORM,"Device Response: %s",szLog.c_str());
 }
+
+#endif //WITH_OPENZWAVE
+

@@ -19,7 +19,9 @@
 #include "../hardware/TE923.h"
 #include "../hardware/Rego6XXSerial.h"
 #include "../hardware/Razberry.h"
-#include "../hardware/OpenZWave.h"
+#ifdef WITH_OPENZWAVE
+	#include "../hardware/OpenZWave.h"
+#endif
 #include "../hardware/DavisLoggerSerial.h"
 #include "../hardware/VolcraftCO20.h"
 #include "../hardware/1Wire.h"
@@ -391,8 +393,9 @@ bool MainWorker::AddHardwareFromParams(
 			}
 			else if (Type==HTYPE_OpenZWave)
 			{
+#ifdef WITH_OPENZWAVE
 				pHardware = new COpenZWave(ID, szSerialPort);
-
+#endif
 			}
 		}
 		break;
