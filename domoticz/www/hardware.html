@@ -818,7 +818,7 @@ function RefreshHardwareTable()
 			var HwTypeStr=HwTypeStrOrg;
         
 			var SerialName="Unknown!?";
-			if (HwTypeStr.indexOf("LAN") >= 0)
+			if ((HwTypeStr.indexOf("LAN") >= 0)||(HwTypeStr.indexOf("Domoticz") >= 0))
 			{
 				SerialName=item.Port;
 			}
