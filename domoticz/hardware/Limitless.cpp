@@ -120,29 +120,6 @@ CLimitLess::CLimitLess(const int ID, const int LedType, const std::string IPAddr
 		}
 	}		
 #endif
-
-	memset(&m_stRemoteDestAddr,0,sizeof(m_stRemoteDestAddr));
-	m_stRemoteDestAddr.sin_family = AF_UNSPEC;
-	m_stRemoteDestAddr.sin_family = PF_INET; 
-
-	unsigned long ip;
-	ip=inet_addr(m_szIPAddress.c_str());
-
-	// if we have a error in the ip, it means we have entered a string
-	if(ip!=INADDR_NONE)
-	{
-		m_stRemoteDestAddr.sin_addr.s_addr=ip;
-	}
-	else
-	{
-		// change Hostname in server address
-		hostent *he=gethostbyname(m_szIPAddress.c_str());
-		if(he!=NULL)
-			memcpy(&(m_stRemoteDestAddr.sin_addr),he->h_addr_list[0],4);
-	}
-
-	m_stRemoteDestAddr.sin_port = htons (usIPPort); 
-
 	Init();
 }
 
@@ -188,7 +165,28 @@ bool CLimitLess::StartHardware()
 		m_RemoteSocket=INVALID_SOCKET;
 	}
 
+
+	struct hostent *he;
+	if ((he=gethostbyname(m_szIPAddress.c_str())) == NULL) {  // get the host info
+		_log.Log(LOG_ERROR,"AppLamp: Error with IP address!...");
+		return false;
+	}
 	m_RemoteSocket = socket( AF_INET, SOCK_DGRAM, 0 );
+
+	// this call is what allows broadcast packets to be sent:
+	int broadcast = 1;
+	if (setsockopt(m_RemoteSocket, SOL_SOCKET, SO_BROADCAST, (const char*)&broadcast, sizeof(broadcast)) == -1) {
+			_log.Log(LOG_ERROR,"AppLamp: Error with IP address (SO_BROADCAST)!...");
+			return false;
+	}
+
+	memset(&m_stRemoteDestAddr,0,sizeof(m_stRemoteDestAddr));
+	m_stRemoteDestAddr.sin_family = AF_UNSPEC;
+	m_stRemoteDestAddr.sin_family = PF_INET; 
+	m_stRemoteDestAddr.sin_family = AF_INET;     // host byte order
+	m_stRemoteDestAddr.sin_port = htons(m_usIPPort); // short, network byte order
+	m_stRemoteDestAddr.sin_addr = *((struct in_addr *)he->h_addr);
+	memset(m_stRemoteDestAddr.sin_zero, '\0', sizeof m_stRemoteDestAddr.sin_zero);
 
 	//Add the Default switches
 	if (!AddSwitchIfNotExits(0,"AppLamp All"))
