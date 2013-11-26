@@ -2435,6 +2435,7 @@ bool CSQLHelper::CheckAndHandleSwitchNotification(
 					case STYPE_Doorbell:
 						msg+=" pressed";
 						break;
+					case STYPE_Contact:
 					case STYPE_DoorLock:
 						msg+=" Open";
 						break;
@@ -2454,6 +2455,7 @@ bool CSQLHelper::CheckAndHandleSwitchNotification(
 					switch (switchtype)
 					{
 					case STYPE_DoorLock:
+					case STYPE_Contact:
 						msg+=" Closed";
 						break;
 					default:

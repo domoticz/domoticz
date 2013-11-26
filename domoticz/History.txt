@@ -7,6 +7,7 @@ Version 1.0.xxxx (November xxth 2013)
 - Fixed: Edit Users, right combobox did not correctly update when selecting a user
 - Fixed: User Devices for Users that did not have 'Shared' rights
 - Fixed: Hardware Settings, Domoticz remote server port display
+- Changed: Contact notifications now says 'Open/Closed' instead of 'On/Off'
 
 Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart
