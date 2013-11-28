@@ -30,7 +30,7 @@
 #include "ZWaveCommands.h"
 
 //Note!, Some devices uses the same instance for multiple values,
-//to solve this we are going to use the Index value!
+//to solve this we are going to use the Index value!, Except for COMMAND_CLASS_MULTI_INSTANCE
 
 
 #pragma warning(disable: 4996)
@@ -452,10 +452,19 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 	m_updateTime=mytime(NULL);
 
 	OpenZWave::ValueID vID=_notification->GetValueID();
-	int instance=vID.GetIndex();//(See not on top of this file)GetInstance();
 	int commandClass=vID.GetCommandClassId();
 	unsigned long _homeID = _notification->GetHomeId();
 	unsigned char _nodeID = _notification->GetNodeId();
+
+	unsigned char instance;
+	if (GetValueByCommandClass(_nodeID, vID.GetInstance(), COMMAND_CLASS_MULTI_INSTANCE, vID)==true)
+	{
+		instance=vID.GetInstance();//(See note on top of this file) GetInstance();
+	}
+	else
+	{
+		instance=vID.GetIndex();//(See note on top of this file) GetInstance();
+	}
 
 	time_t act_time=mytime(NULL);
 
@@ -659,7 +668,7 @@ bool COpenZWave::OpenSerialConnector()
 	OpenZWave::Options::Get()->AddOptionInt( "QueueLogLevel", OpenZWave::LogLevel_Error );
 	OpenZWave::Options::Get()->AddOptionInt( "DumpTrigger", OpenZWave::LogLevel_Error );
 #endif
-	OpenZWave::Options::Get()->AddOptionInt( "PollInterval", 500 );
+	OpenZWave::Options::Get()->AddOptionInt( "PollInterval", 60000 ); //enable polling each 60 seconds
 	OpenZWave::Options::Get()->AddOptionBool( "IntervalBetweenPolls", true );
 	OpenZWave::Options::Get()->AddOptionBool("ValidateValueChanges", true);
 	OpenZWave::Options::Get()->Lock();
@@ -712,6 +721,9 @@ bool COpenZWave::GetInitialDevices()
 
 bool COpenZWave::GetUpdates()
 {
+	if (m_pManager==NULL)
+		return false;
+
 	return true;
 }
 
@@ -799,7 +811,18 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 		)
 		return;
 
-	unsigned char instance=vID.GetIndex();//(See not on top of this file) GetInstance();
+	unsigned char NodeID = vID.GetNodeId();
+
+	unsigned char instance;
+	if (commandclass==COMMAND_CLASS_MULTI_INSTANCE)
+	{
+		instance=vID.GetInstance();//(See note on top of this file) GetInstance();
+	}
+	else
+	{
+		instance=vID.GetIndex();//(See note on top of this file) GetInstance();
+	}
+
 	OpenZWave::ValueID::ValueType vType=vID.GetType();
 	OpenZWave::ValueID::ValueGenre vGenre=vID.GetGenre();
 
@@ -807,7 +830,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	if (vGenre!=OpenZWave::ValueID::ValueGenre_User)
 		return;
 
-	unsigned char NodeID = vID.GetNodeId();
 	std::string vLabel=m_pManager->GetValueLabel(vID);
 	std::string vUnits=m_pManager->GetValueUnits(vID);
 
@@ -846,7 +868,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 					_device.intvalue=255;
 				else
 					_device.intvalue=0;
-				InsertOrUpdateDevice(_device,false);
+				InsertDevice(_device);
+				m_pManager->EnablePoll(vID,1);
 			}
 		}
 	}
@@ -858,7 +881,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 			{
 				_device.devType= ZDTYPE_SWITCHDIMMER;
 				_device.intvalue=byteValue;
-				InsertOrUpdateDevice(_device,false);
+				InsertDevice(_device);
 			}
 		}
 	}
@@ -873,7 +896,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 					_device.intvalue=255;
 				else
 					_device.intvalue=0;
-				InsertOrUpdateDevice(_device,false);
+				InsertDevice(_device);
 			}
 		}
 	}
@@ -900,7 +923,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 					{
 						_device.devType = ZDTYPE_SENSOR_POWER;
 					}
-					InsertOrUpdateDevice(_device,false);
+					InsertDevice(_device);
+					m_pManager->EnablePoll(vID,2);
 				}
 			}
 		}
@@ -919,7 +943,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				_device.floatValue=fValue;
 				_device.commandClassID=49;
 				_device.devType = ZDTYPE_SENSOR_TEMPERATURE;
-				InsertOrUpdateDevice(_device,false);
+				InsertDevice(_device);
+				m_pManager->EnablePoll(vID,2);
 			}
 		}
 		else if (vLabel=="Luminance")
@@ -929,7 +954,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				_device.floatValue=fValue;
 				_device.commandClassID=49;
 				_device.devType = ZDTYPE_SENSOR_LIGHT;
-				InsertOrUpdateDevice(_device,false);
+				InsertDevice(_device);
+				m_pManager->EnablePoll(vID,2);
 			}
 		}
 		else if (vLabel=="Relative Humidity")
@@ -939,7 +965,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				_device.intvalue=int(fValue);
 				_device.commandClassID=49;
 				_device.devType = ZDTYPE_SENSOR_HUMIDITY;
-				InsertOrUpdateDevice(_device,false);
+				InsertDevice(_device);
+				m_pManager->EnablePoll(vID,2);
 			}
 		}
 		else if (
@@ -962,7 +989,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 					{
 						_device.devType = ZDTYPE_SENSOR_POWER;
 					}
-					InsertOrUpdateDevice(_device,false);
+					InsertDevice(_device);
+					m_pManager->EnablePoll(vID,2);
 				}
 			}
 		}
@@ -974,6 +1002,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 			if (vType== OpenZWave::ValueID::ValueType_Byte)
 			{
 				UpdateDeviceBatteryStatus(NodeID,byteValue);
+				m_pManager->EnablePoll(vID,2);
 			}
 		}
 	}
@@ -996,11 +1025,21 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 	if (m_nodesQueried==false)
 		return; //only allow updates when node Query is done
 	unsigned char commandclass=vID.GetCommandClassId();
-	unsigned char instance=vID.GetIndex();//(See not on top of this file) GetInstance();
-	OpenZWave::ValueID::ValueType vType=vID.GetType();
-	OpenZWave::ValueID::ValueGenre vGenre=vID.GetGenre();
 	unsigned char HomeID = vID.GetHomeId();
 	unsigned char NodeID = vID.GetNodeId();
+
+	unsigned char instance;
+	if (commandclass==COMMAND_CLASS_MULTI_INSTANCE)
+	{
+		instance=vID.GetInstance();//(See note on top of this file) GetInstance();
+	}
+	else
+	{
+		instance=vID.GetIndex();//(See note on top of this file) GetInstance();
+	}
+
+	OpenZWave::ValueID::ValueType vType=vID.GetType();
+	OpenZWave::ValueID::ValueGenre vGenre=vID.GetGenre();
 	std::string vLabel=m_pManager->GetValueLabel(vID);
 	std::string vUnits=m_pManager->GetValueUnits(vID);
 

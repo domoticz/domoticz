@@ -13,6 +13,7 @@
 #include "../json/json.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
+#include "../main/mainworker.h"
 
 #define CONTROLLER_COMMAND_TIMEOUT 20
 
@@ -90,7 +91,7 @@ void ZWaveBase::Do_Work()
 }
 
 
-void ZWaveBase::InsertOrUpdateDevice(_tZWaveDevice device, const bool bSend2Domoticz)
+void ZWaveBase::InsertDevice(_tZWaveDevice device)
 {
 	std::stringstream sstr;
 	sstr << device.nodeID << ".instances." << device.instanceID << ".commandClasses." << device.commandClassID << ".data";
@@ -116,13 +117,8 @@ void ZWaveBase::InsertOrUpdateDevice(_tZWaveDevice device, const bool bSend2Domo
 	//insert or update device in internal record
 	device.sequence_number=1;
 	m_devices[device.string_id]=device;
-	//do not send (for now), as this will trigger event/notifications
-/*
-	if (bSend2Domoticz)
-	{
-		SendDevice2Domoticz(&device);
-	}
-*/
+
+	SendSwitchIfNotExists(&device);
 }
 
 void ZWaveBase::UpdateDeviceBatteryStatus(const int nodeID, const int value)
@@ -135,6 +131,96 @@ void ZWaveBase::UpdateDeviceBatteryStatus(const int nodeID, const int value)
 			itt->second.batValue=value;
 			itt->second.hasBattery=true;//we got an update, so it should have a battery then...
 		}
+	}
+}
+
+void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
+{
+	if (
+		(pDevice->devType!=ZDTYPE_SWITCHNORMAL)&&
+		(pDevice->devType!=ZDTYPE_SWITCHDIMMER)
+		)
+		return; //only for switches
+	if (m_pMainWorker==NULL)
+		return;
+
+	unsigned char ID1=0;
+	unsigned char ID2=0;
+	unsigned char ID3=0;
+	unsigned char ID4=0;
+
+	//make device ID
+	ID1=0;
+	ID2=(unsigned char)((pDevice->nodeID&0xFF00)>>8);
+	ID3=(unsigned char)pDevice->nodeID&0xFF;
+	ID4=pDevice->instanceID;
+
+	char szID[10];
+	sprintf(szID,"%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+	std::string ID = szID;
+
+	//Send as Lighting 2
+
+	tRBUF lcmd;
+	memset(&lcmd,0,sizeof(RBUF));
+	lcmd.LIGHTING2.packetlength=sizeof(lcmd.LIGHTING2)-1;
+	lcmd.LIGHTING2.packettype=pTypeLighting2;
+	lcmd.LIGHTING2.subtype=sTypeAC;
+	lcmd.LIGHTING2.seqnbr=pDevice->sequence_number;
+	lcmd.LIGHTING2.id1=ID1;
+	lcmd.LIGHTING2.id2=ID2;
+	lcmd.LIGHTING2.id3=ID3;
+	lcmd.LIGHTING2.id4=ID4;
+	lcmd.LIGHTING2.unitcode=1;
+	int level=15;
+	if (pDevice->devType==ZDTYPE_SWITCHNORMAL)
+	{
+		//simple on/off device
+		if (pDevice->intvalue==0)
+		{
+			level=0;
+			lcmd.LIGHTING2.cmnd=light2_sOff;
+		}
+		else
+		{
+			level=15;
+			lcmd.LIGHTING2.cmnd=light2_sOn;
+		}
+	}
+	else
+	{
+		//dimmer able device
+		if (pDevice->intvalue==0)
+			level=0;
+		if (pDevice->intvalue==255)
+			level=15;
+		else
+		{
+			float flevel=(15.0f/100.0f)*float(pDevice->intvalue);
+			level=round(flevel);
+			if (level>15)
+				level=15;
+		}
+		if (level==0)
+			lcmd.LIGHTING2.cmnd=light2_sOff;
+		else if (level==15)
+			lcmd.LIGHTING2.cmnd=light2_sOn;
+		else
+			lcmd.LIGHTING2.cmnd=light2_sSetLevel;
+	}
+	lcmd.LIGHTING2.level=level;
+	lcmd.LIGHTING2.filler=0;
+	lcmd.LIGHTING2.rssi=7;
+
+	//Check if we already exist
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Unit==" << int(lcmd.LIGHTING2.unitcode) << ") AND (Type==" << pTypeLighting2 << ") AND (SubType==" << sTypeAC << ") AND (DeviceID=='" << ID << "')";
+	result=m_pMainWorker->m_sql.query(szQuery.str());
+	if (result.size()<1)
+	{
+		//Not Found
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
 	}
 }
 

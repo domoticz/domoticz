@@ -76,9 +76,10 @@ public:
 private:
 	void Do_Work();
 	void SendDevice2Domoticz(const _tZWaveDevice *pDevice);
+	void SendSwitchIfNotExists(const _tZWaveDevice *pDevice);
 	_tZWaveDevice* FindDevice(int nodeID, int instanceID, _eZWaveDeviceType devType);
 	_tZWaveDevice* FindDevice(int nodeID, int scaleID);
-	void InsertOrUpdateDevice(_tZWaveDevice device, const bool bSend2Domoticz);
+	void InsertDevice(_tZWaveDevice device);
 	void UpdateDeviceBatteryStatus(const int nodeID, const int value);
 	virtual void SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)=0;
 	virtual void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value)=0;

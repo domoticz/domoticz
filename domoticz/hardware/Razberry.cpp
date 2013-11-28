@@ -238,14 +238,14 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 				_device.commandClassID=38;
 				_device.devType= ZDTYPE_SWITCHDIMMER;
 				_device.intvalue=instance["commandClasses"]["38"]["data"]["level"]["value"].asInt();
-				InsertOrUpdateDevice(_device,true);
+				InsertDevice(_device);
 			}
 			else if (instance["commandClasses"]["37"].empty()==false)
 			{
 				_device.commandClassID=37;
 				_device.devType= ZDTYPE_SWITCHNORMAL;
 				_device.intvalue=instance["commandClasses"]["37"]["data"]["level"]["value"].asInt();
-				InsertOrUpdateDevice(_device,true);
+				InsertDevice(_device);
 			}
 
 			// Add Sensor Binary
@@ -279,7 +279,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 					}
 				}
 				if (bFoundSensor)
-					InsertOrUpdateDevice(_device,true);
+					InsertDevice(_device);
 			}
 
 			// Add Sensor Multilevel
@@ -302,7 +302,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 						{
 							_device.commandClassID=49;
 							_device.devType = ZDTYPE_SENSOR_POWER;
-							InsertOrUpdateDevice(_device,false);
+							InsertDevice(_device);
 						}
 					}
 					else if (sensorTypeString=="Temperature")
@@ -310,24 +310,24 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 						_device.floatValue=(*itt2)["val"]["value"].asFloat();
 						_device.commandClassID=49;
 						_device.devType = ZDTYPE_SENSOR_TEMPERATURE;
-						InsertOrUpdateDevice(_device,false);
+						InsertDevice(_device);
 					}
 					else if (sensorTypeString=="Humidity")
 					{
 						_device.intvalue=(*itt2)["val"]["value"].asInt();
 						_device.commandClassID=49;
 						_device.devType = ZDTYPE_SENSOR_HUMIDITY;
-						InsertOrUpdateDevice(_device,false);
+						InsertDevice(_device);
 					}
 					else if (sensorTypeString=="Luminiscence")
 					{
 						_device.floatValue=(*itt2)["val"]["value"].asFloat();
 						_device.commandClassID=49;
 						_device.devType = ZDTYPE_SENSOR_LIGHT;
-						InsertOrUpdateDevice(_device,false);
+						InsertDevice(_device);
 					}
 				}
-				//InsertOrUpdateDevice(_device);
+				//InsertDevice(_device);
 			}
 
 			// Meters which are supposed to be sensors (measurable)
@@ -357,7 +357,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 							_device.devType = ZDTYPE_SENSOR_POWER;
 						}
 
-						InsertOrUpdateDevice(_device,false);
+						InsertDevice(_device);
 					}
 				}
 			}
@@ -388,7 +388,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 					{
 						_device.devType = ZDTYPE_SENSOR_POWER;
 					}
-					InsertOrUpdateDevice(_device,false);
+					InsertDevice(_device);
 				}
 			}
 
@@ -405,7 +405,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 					_device.commandClassID=67;
 					_device.scaleMultiply=1;
 					_device.devType = ZDTYPE_SENSOR_SETPOINT;
-					InsertOrUpdateDevice(_device,false);
+					InsertDevice(_device);
 				}
 			}
 			else if (instance["commandClasses"]["156"].empty()==false)
@@ -419,7 +419,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 					_device.intvalue=(*itt2)["sensorSate"]["value"].asInt();
 					_device.commandClassID=156;
 					_device.devType = ZDTYPE_SWITCHNORMAL;
-					InsertOrUpdateDevice(_device,false);
+					InsertDevice(_device);
 				}
 			}
 
@@ -528,7 +528,7 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 		_device.commandClassID=32;
 		_device.devType= ZDTYPE_SWITCHNORMAL;
 		_device.intvalue=obj["value"].asInt();
-		InsertOrUpdateDevice(_device,true);
+		InsertDevice(_device);
 
 		//find device again
 		std::map<std::string,_tZWaveDevice>::iterator itt;
