@@ -495,7 +495,7 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 		if (pPos==std::string::npos)
 			return;
 		tmpStr=path.substr(pPos+1);
-		pPos=pPos=tmpStr.find(".");
+		pPos=tmpStr.find(".");
 		if (pPos==std::string::npos)
 			return;
 		std::string sNodeID=tmpStr.substr(0,pPos);
@@ -506,7 +506,7 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 		if (pPos==std::string::npos)
 			return;
 		tmpStr=path.substr(pPos+sizeof("instances.")-1);
-		pPos=pPos=tmpStr.find(".");
+		pPos=tmpStr.find(".");
 		if (pPos==std::string::npos)
 			return;
 		std::string sInstanceID=tmpStr.substr(0,pPos);

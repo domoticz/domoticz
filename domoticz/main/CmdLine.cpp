@@ -134,12 +134,14 @@ bool CCmdLine::IsSwitch(const char *pParam)
       // ie., don't count them as switches
       return (!isdigit(pParam[1]));
    }
+#ifdef WIN32
    else if (pParam[0]=='/')
    {
 		// allow negative numbers as arguments.
 		// ie., don't count them as switches
 		return (!isdigit(pParam[1]));
    }
+#endif
    else
    {
       return false;
