@@ -965,11 +965,11 @@ function SaveLightSwitch()
 			if (switchtype==8) {
 				addjvalstr="&addjvalue=" + $("#lightcontent #motionoffdelay").val();
 			}
-			else if ((switchtype==0)||(switchtype==9)||(switchtype==11)) {
+			else if ((switchtype==0)||(switchtype==9)||(switchtype==11)||(switchtype==13)) {
 				addjvalstr="&addjvalue=" + $("#lightcontent #offdelay").val();
 			}
 			var CustomImage=0;
-			if (switchtype==0) {
+			if ((switchtype==0)||(switchtype==13)) {
 				CustomImage=$('#lightcontent #comboswitchicon').data('ddslick').selectedIndex;
 			}
 			$.ajax({
@@ -1188,11 +1188,11 @@ function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage
 				$("#lightcontent #MotionDiv").show();
 				$("#lightcontent #motionoffdelay").val(addjvalue);
 			}
-			else if ((switchtype==0)||(switchtype==9)||(switchtype==11)) {
+			else if ((switchtype==0)||(switchtype==9)||(switchtype==11)||(switchtype==13)) {
 				$("#lightcontent #OffDelayDiv").show();
 				$("#lightcontent #offdelay").val(addjvalue);
 			}
-			if (switchtype==0) {
+			if ((switchtype==0)||(switchtype==13)) {
 				$("#lightcontent #SwitchIconDiv").show();
 			}
 		});
@@ -1206,11 +1206,11 @@ function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage
 			$("#lightcontent #MotionDiv").show();
 			$("#lightcontent #motionoffdelay").val(addjvalue);
 		}
-		else if ((switchtype==0)||(switchtype==9)||(switchtype==11)) {
+		else if ((switchtype==0)||(switchtype==9)||(switchtype==11)||(switchtype==13)) {
 			$("#lightcontent #OffDelayDiv").show();
 			$("#lightcontent #offdelay").val(addjvalue);
 		}
-		if (switchtype==0) {
+		if ((switchtype==0)||(switchtype==13)) {
 			$("#lightcontent #SwitchIconDiv").show();
 		}
 		$("#lightcontent #combosubdevice").html("");

@@ -179,6 +179,7 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_PushOff, "Push Off Button" },
 		{ STYPE_DoorLock, "Door Lock" },
         { STYPE_Dusk, "Dusk Sensor" },
+		{ STYPE_GroupOnOff, "Group On/Off" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, sType);
@@ -1057,6 +1058,18 @@ bool GetLightCommand(
 			}
 			return false;
 		}
+		else if (switchtype==STYPE_GroupOnOff)
+		{
+			if (switchcmd=="Off")
+			{
+				cmd=light2_sGroupOff;
+			}
+			else
+			{
+				cmd=light2_sGroupOn;
+			}
+			return true;
+		}
 		if (switchcmd=="Off")
 		{
 			cmd=light2_sOff;
@@ -1129,6 +1142,14 @@ bool GetLightCommand(
 			}
 			return false;
 		}
+		else if (switchtype==STYPE_GroupOnOff)
+		{
+			if (switchcmd=="Off")
+				cmd=light5_sGroupOff;
+			else
+				cmd=light5_sGroupOn;
+			return true;
+		}
 		if (switchcmd=="Off")
 		{
 			cmd=light5_sOff;
@@ -1158,6 +1179,14 @@ bool GetLightCommand(
 			return false;
 		break;
 	case pTypeLighting6:
+		if (switchtype==STYPE_GroupOnOff)
+		{
+			if (switchcmd=="Off")
+				cmd=light6_sGroupOff;
+			else
+				cmd=light6_sGroupOn;
+			return true;
+		}
 		if (switchcmd=="Off")
 		{
 			cmd=light6_sOff;

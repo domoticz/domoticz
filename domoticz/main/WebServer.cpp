@@ -1307,7 +1307,10 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 
 				root["result"][ii]["IsSubDevice"]=bIsSubDevice;
 				
-				if (switchtype==STYPE_OnOff)
+				if (
+					(switchtype==STYPE_OnOff)||
+					(switchtype==STYPE_GroupOnOff)
+					)
 				{
 					root["result"][ii]["AddjValue"]=AddjValue;
 					root["result"][ii]["AddjMulti"]=AddjMulti;
