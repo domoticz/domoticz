@@ -20,7 +20,6 @@ enum _eSwitchType
 	STYPE_PushOff,			//10
 	STYPE_DoorLock,			//11
     STYPE_Dusk,             //12
-	STYPE_GroupOnOff,		//13
 	STYPE_END
 };
 

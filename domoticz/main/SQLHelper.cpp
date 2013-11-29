@@ -1526,36 +1526,6 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 							break;
 						}
 					}
-					else if (switchtype==STYPE_GroupOnOff)
-					{
-						switch (devType)
-						{
-						case pTypeLighting1:
-							cmd=light1_sOff;
-							bAdd2DelayQueue=true;
-							break;
-						case pTypeLighting2:
-							cmd=light2_sGroupOff;
-							bAdd2DelayQueue=true;
-							break;
-						case pTypeLighting3:
-							cmd=light3_sOff;
-							bAdd2DelayQueue=true;
-							break;
-						case pTypeLighting5:
-							cmd=light5_sGroupOff;
-							bAdd2DelayQueue=true;
-							break;
-						case pTypeLighting6:
-							cmd=light6_sGroupOff;
-							bAdd2DelayQueue=true;
-							break;
-						case pTypeLimitlessLights:
-							cmd=Limitless_LedOff;
-							bAdd2DelayQueue=true;
-							break;
-						}
-					}
 	/* Smoke detectors are manually reset!
 					else if (
 						(devType==pTypeSecurity1)&&
