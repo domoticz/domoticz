@@ -8778,7 +8778,7 @@ std::string CWebServer::GetJSonPage()
 				else
 				{
 					//sleep 100ms
-					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+					sleep_milliseconds(100);
 					cntr++;
 				}
 			}
@@ -9042,7 +9042,7 @@ std::string CWebServer::GetJSonPage()
 			{
 				m_pMain->SwitchLight(ID,"Set White",0,-1);
 			}
-			boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+			sleep_milliseconds(100);
 			m_pMain->SwitchLight(ID,"Set Brightness",(unsigned char)atoi(brightness.c_str()),-1);
 		}
 	} //(rtype=="command")

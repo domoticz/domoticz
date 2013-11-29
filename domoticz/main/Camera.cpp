@@ -167,7 +167,7 @@ void CCamScheduler::Do_Work()
 	while (!m_stoprequested)
 	{
 		//sleep 1 second
-		boost::this_thread::sleep(boost::posix_time::seconds(1));
+		sleep_seconds1);
 		if (m_stoprequested)
 			break;
 		m_seconds_counter++;

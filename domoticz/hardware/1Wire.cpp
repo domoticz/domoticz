@@ -82,7 +82,7 @@ void C1Wire::Do_Work()
 	time_t atime;
 	while (!m_stoprequested)
 	{
-		boost::this_thread::sleep(boost::posix_time::seconds(1));
+		sleep_seconds(1);
 		atime=mytime(NULL);
 		if (atime-m_LastPollTime>=Wire1_POLL_INTERVAL)
 		{

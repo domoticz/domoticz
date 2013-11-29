@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Rego6XXSerial.h"
 #include "../main/Logger.h"
+#include "../main/Helper.h"
 
 // This code is inspired by the Rago600 project:
 // http://rago600.sourceforge.net/
@@ -143,7 +144,7 @@ bool CRego6XXSerial::StopHardware()
 	m_stoprequested=true;
 	m_thread->join();
     // Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
-    boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+    sleep_milliseconds(10);
 	if (isOpen())
 	{
 		try {
@@ -164,7 +165,7 @@ void CRego6XXSerial::Do_Work()
 {
 	while (!m_stoprequested)
 	{
-		boost::this_thread::sleep(boost::posix_time::seconds(Rego6XX_THREAD_SLEEP_TIME));
+		sleep_seconds(Rego6XX_THREAD_SLEEP_TIME);
 		if (m_stoprequested)
 			break;
 		if (!isOpen())
@@ -198,7 +199,7 @@ void CRego6XXSerial::Do_Work()
 		    }
 
 		    _log.Log(LOG_ERROR,"Rego6XX Reopening serial port");
-		    boost::this_thread::sleep(boost::posix_time::seconds(2));
+		    sleep_seconds(2);
 
 			m_retrycntr=0;
 			m_pollcntr = 0;

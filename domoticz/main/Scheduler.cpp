@@ -4,6 +4,7 @@
 #include "mainworker.h"
 #include "localtime_r.h"
 #include "Logger.h"
+#include "Helper.h"
 
 CScheduler::CScheduler(void)
 {
@@ -263,7 +264,7 @@ void CScheduler::Do_Work()
 	while (!m_stoprequested)
 	{
 		//sleep 1 second
-		boost::this_thread::sleep(boost::posix_time::seconds(1));
+		sleep_seconds(1);
 		CheckSchedules();
 	}
 	_log.Log(LOG_NORM,"Scheduler stopped...");

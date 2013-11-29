@@ -3,6 +3,7 @@
 #include "../main/Logger.h"
 //#include <boost/bind.hpp>
 //#include <boost/asio.hpp>
+#include "../main/Helper.h"
 
 #define RETRY_DELAY 30
 
@@ -139,7 +140,7 @@ void RFXComTCP::Do_Work()
 			(!m_stoprequested)
 			)
 		{
-			boost::this_thread::sleep(boost::posix_time::seconds(1));
+			sleep_seconds(1);
 			m_retrycntr++;
 			if (m_retrycntr>=RETRY_DELAY)
 			{

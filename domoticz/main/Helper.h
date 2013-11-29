@@ -16,3 +16,5 @@ double CalculateDewPoint(double temp, int humidity);
 uint32_t IPToUInt(const std::string &ip);
 bool isInt(const std::string &s);
 
+void sleep_seconds(const long seconds);
+void sleep_milliseconds(const long milliseconds);

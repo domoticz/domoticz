@@ -62,7 +62,7 @@ void CYouLess::Do_Work()
 {
 	while (!m_stoprequested)
 	{
-		boost::this_thread::sleep(boost::posix_time::seconds(1));
+		sleep_seconds(1);
 		m_PollCounter++;
 		if (m_PollCounter>=YOULESS_POLL_INTERVAL)
 		{

@@ -27,6 +27,7 @@
 #include "stdafx.h"
 #include "ASyncSerial.h"
 #include "../main/Logger.h"
+#include "../main/Helper.h"
 
 #include <string>
 #include <algorithm>
@@ -257,7 +258,7 @@ void AsyncSerial::writeEnd(const boost::system::error_code& error)
         {
             pimpl->writeBuffer.reset();
             pimpl->writeBufferSize=0;
-            boost::this_thread::sleep(boost::posix_time::milliseconds(75));
+            sleep_milliseconds(75);
             return;
         }
         pimpl->writeBufferSize=pimpl->writeQueue.size();

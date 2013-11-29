@@ -108,7 +108,7 @@ void CEventSystem::Do_Work()
 	while (!m_stoprequested)
 	{
 		//sleep 500 milliseconds
-		boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+		sleep_milliseconds(500);
 		m_secondcounter++;
 		if (m_secondcounter==60*2)
 		{

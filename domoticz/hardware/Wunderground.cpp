@@ -56,7 +56,7 @@ void CWunderground::Do_Work()
 {
 	while (!m_stoprequested)
 	{
-		boost::this_thread::sleep(boost::posix_time::seconds(1));
+		sleep_seconds(1);
 		time_t atime=mytime(NULL);
 		struct tm ltime;
 		localtime_r(&atime,&ltime);

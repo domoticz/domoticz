@@ -205,7 +205,7 @@ int main(int argc, char**argv)
 		}
 		int DelaySeconds=atoi(cmdLine.GetSafeArgument("-startupdelay",0,"").c_str());
 		_log.Log(LOG_NORM,"Startup delay... waiting %d seconds...",DelaySeconds);
-		boost::this_thread::sleep(boost::posix_time::seconds(DelaySeconds));
+		sleep_seconds(DelaySeconds);
 	}
 
 	if (cmdLine.HasSwitch("-www"))
@@ -322,7 +322,7 @@ int main(int argc, char**argv)
 	}
 #else
 	for ( ;; )
-		boost::this_thread::sleep(boost::posix_time::seconds(1));
+		sleep_seconds(1);
 #endif
 	return 0;
 }

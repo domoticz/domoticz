@@ -62,7 +62,7 @@ void ZWaveBase::Do_Work()
 {
 	while (!m_stoprequested)
 	{
-		boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+		sleep_milliseconds(500);
 		if (m_stoprequested)
 			return;
 		if (m_bInitState)

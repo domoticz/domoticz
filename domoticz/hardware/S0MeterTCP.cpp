@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "S0MeterTCP.h"
 #include "../main/Logger.h"
+#include "../main/Helper.h"
 #include <iostream>
 
 #define RETRY_DELAY 30
@@ -153,7 +154,7 @@ void S0MeterTCP::Do_Work()
 			(!m_stoprequested)
 			)
 		{
-			boost::this_thread::sleep(boost::posix_time::seconds(1));
+			sleep_seconds(1);
 			m_retrycntr++;
 			if (m_retrycntr>=RETRY_DELAY)
 			{

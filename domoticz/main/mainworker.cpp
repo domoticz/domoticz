@@ -696,7 +696,7 @@ void MainWorker::Do_Work()
 	while (!m_stoprequested)
 	{
 		//sleep 500 milliseconds
-		boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+		sleep_milliseconds(500);
 
 		if (m_bDoDownloadDomoticzUpdate)
 		{
@@ -7378,7 +7378,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 						lcmd.command=Limitless_SetColorToWhite;
 					}
 					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(_tLimitlessLights));
-					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+					sleep_milliseconds(100);
 				}
 			}
 
@@ -7412,7 +7412,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 						return false;
 					//send it twice
 					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.SECURITY1));
-					boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+					sleep_milliseconds(500);
 					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.SECURITY1));
 					if (!IsTesting) {
 						//send to internal for now (later we use the ACK)
@@ -7704,7 +7704,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 			{
 				SwitchLightInt(sd2,"On",ilevel,hue,false);
 			}
-			boost::this_thread::sleep(boost::posix_time::milliseconds(50));
+			sleep_milliseconds(50);
 
 		}
 	}

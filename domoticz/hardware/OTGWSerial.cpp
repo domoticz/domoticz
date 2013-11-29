@@ -125,7 +125,7 @@ void OTGWSerial::Do_PollWork()
 	bool bFirstTime=true;
 	while (!m_stoprequestedpoller)
 	{
-		boost::this_thread::sleep(boost::posix_time::seconds(1));
+		sleep_seconds(1);
 
 		if (!isOpen())
 		{

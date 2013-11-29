@@ -3,6 +3,7 @@
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
+#include "../main/Helper.h"
 
 #include <string>
 #include <algorithm>
@@ -50,7 +51,7 @@ bool CDavisLoggerSerial::StopHardware()
 	m_stoprequested=true;
 	m_thread->join();
 	// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
-	boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+	sleep_milliseconds(10);
 	if (isOpen())
 	{
 		try {
@@ -104,7 +105,7 @@ void CDavisLoggerSerial::Do_Work()
 {
 	while (!m_stoprequested)
 	{
-		boost::this_thread::sleep(boost::posix_time::seconds(1));
+		sleep_seconds(1);
 		if (m_stoprequested)
 			break;
 

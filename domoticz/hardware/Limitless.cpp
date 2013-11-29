@@ -245,7 +245,7 @@ void CLimitLess::Do_Work()
 {
 	while (!m_stoprequested)
 	{
-		boost::this_thread::sleep(boost::posix_time::seconds(1));
+		sleep_seconds(1);
 	}
 	_log.Log(LOG_NORM,"AppLamp Worker stopped...");
 }
@@ -289,23 +289,23 @@ void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				//First send ON , sleep 100ms, then the command
 				if (pLed->dunit==0) {
 					sendto(m_RemoteSocket,(const char*)&RGBWOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+					sleep_milliseconds(100);
 				}
 				else if (pLed->dunit==1) {
 					sendto(m_RemoteSocket,(const char*)&RGBWGroup1AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+					sleep_milliseconds(100);
 				}
 				else if (pLed->dunit==2) {
 					sendto(m_RemoteSocket,(const char*)&RGBWGroup2AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+					sleep_milliseconds(100);
 				}
 				else if (pLed->dunit==3) {
 					sendto(m_RemoteSocket,(const char*)&RGBWGroup3AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+					sleep_milliseconds(100);
 				}
 				else if (pLed->dunit==4) {
 					sendto(m_RemoteSocket,(const char*)&RGBWGroup1AllOn,4,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+					sleep_milliseconds(100);
 				}
 				//The Hue is inverted/swifted 90 degrees
 				int iHue=((255-pLed->value)+192)&0xFF;
@@ -326,27 +326,27 @@ void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			//First send ON , sleep 100ms, then the command
 			if (pLed->dunit==0) {
 				sendto(m_RemoteSocket,(const char*)&RGBWOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+				sleep_milliseconds(100);
 				pCMD=(unsigned char*)&RGBWSetColorToWhiteAll;
 			}
 			else if (pLed->dunit==1) {
 				sendto(m_RemoteSocket,(const char*)&RGBWGroup1AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+				sleep_milliseconds(100);
 				pCMD=(unsigned char*)&RGBWSetColorToWhiteGroup1;
 			}
 			else if (pLed->dunit==2) {
 				sendto(m_RemoteSocket,(const char*)&RGBWGroup2AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+				sleep_milliseconds(100);
 				pCMD=(unsigned char*)&RGBWSetColorToWhiteGroup2;
 			}
 			else if (pLed->dunit==3) {
 				sendto(m_RemoteSocket,(const char*)&RGBWGroup3AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+				sleep_milliseconds(100);
 				pCMD=(unsigned char*)&RGBWSetColorToWhiteGroup3;
 			}
 			else if (pLed->dunit==4) {
 				sendto(m_RemoteSocket,(const char*)&RGBWGroup1AllOn,4,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+				sleep_milliseconds(100);
 				pCMD=(unsigned char*)&RGBWSetColorToWhiteGroup4;
 			}
 			pCMD=(unsigned char*)&RGBWSetColorToWhiteAll;
@@ -356,23 +356,23 @@ void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				//First send ON , sleep 100ms, then the command
 				if (pLed->dunit==0) {
 					sendto(m_RemoteSocket,(const char*)&RGBWOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+					sleep_milliseconds(100);
 				}
 				else if (pLed->dunit==1) {
 					sendto(m_RemoteSocket,(const char*)&RGBWGroup1AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+					sleep_milliseconds(100);
 				}
 				else if (pLed->dunit==2) {
 					sendto(m_RemoteSocket,(const char*)&RGBWGroup2AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+					sleep_milliseconds(100);
 				}
 				else if (pLed->dunit==3) {
 					sendto(m_RemoteSocket,(const char*)&RGBWGroup3AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+					sleep_milliseconds(100);
 				}
 				else if (pLed->dunit==4) {
 					sendto(m_RemoteSocket,(const char*)&RGBWGroup1AllOn,4,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+					sleep_milliseconds(100);
 				}
 				//convert brightness (0-100) to (0-50) to 0-59
 				double dval=(59.0/100.0)*float(pLed->value/2);
@@ -420,23 +420,23 @@ void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				//First send ON , sleep 100ms, then the command
 				if (pLed->dunit==0) {
 					sendto(m_RemoteSocket,(const char*)&RGBOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+					sleep_milliseconds(100);
 				}
 				else if (pLed->dunit==1) {
 					sendto(m_RemoteSocket,(const char*)&Group1On,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+					sleep_milliseconds(100);
 				}
 				else if (pLed->dunit==2) {
 					sendto(m_RemoteSocket,(const char*)&Group2On,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+					sleep_milliseconds(100);
 				}
 				else if (pLed->dunit==3) {
 					sendto(m_RemoteSocket,(const char*)&Group3On,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+					sleep_milliseconds(100);
 				}
 				else if (pLed->dunit==4) {
 					sendto(m_RemoteSocket,(const char*)&Group4On,4,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-					boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+					sleep_milliseconds(100);
 				}
 				//The Hue is inverted/swifted 90 degrees
 				int iHue=((255-pLed->value)+192)&0xFF;

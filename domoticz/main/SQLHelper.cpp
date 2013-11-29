@@ -929,7 +929,7 @@ void CSQLHelper::Do_Work()
 	while (!m_stoprequested)
 	{
 		//sleep 1 second
-		boost::this_thread::sleep(boost::posix_time::seconds(1));
+		sleep_seconds(1);
 
 		if (m_background_task_queue.size()>0)
 		{

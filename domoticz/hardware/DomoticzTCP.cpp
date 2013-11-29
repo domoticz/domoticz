@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "DomoticzTCP.h"
 #include "../main/Logger.h"
+#include "../main/Helper.h"
 //#include <boost/bind.hpp>
 //#include <boost/asio.hpp>
 
@@ -154,7 +155,7 @@ void DomoticzTCP::disconnect()
 	{
 		closesocket(m_socket);	//will terminate the thread
 		m_socket=INVALID_SOCKET;
-		boost::this_thread::sleep(boost::posix_time::seconds(1));
+		sleep_seconds(1);
 	}
 	//m_thread-> join();
 }
@@ -169,7 +170,7 @@ void DomoticzTCP::Do_Work()
 			(!m_stoprequested)
 			)
 		{
-			boost::this_thread::sleep(boost::posix_time::seconds(1));
+			sleep_seconds(1);
 			if (m_stoprequested)
 				break;
 			m_retrycntr++;
