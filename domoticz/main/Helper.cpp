@@ -208,7 +208,7 @@ void sleep_milliseconds(const long milliseconds)
 {
 #if (BOOST_VERSION < 105000)
 	boost::this_thread::sleep(boost::posix_time::milliseconds(milliseconds));
-else
+#else
 	boost::this_thread::sleep_for(boost::chrono::milliseconds(milliseconds));
 #endif
 }
