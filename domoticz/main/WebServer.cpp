@@ -364,7 +364,7 @@ char * CWebServer::DisplayHardwareTypesCombo()
 #ifndef WITH_LIBUSB
 			if (
 				(ii == HTYPE_VOLCRAFTCO20)||
-				(ii == HTYPE_TE923)||
+				(ii == HTYPE_TE923)
 				)
 			{
 				bDoAdd=false;
