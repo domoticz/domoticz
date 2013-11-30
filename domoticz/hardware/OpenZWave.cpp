@@ -10,6 +10,7 @@
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/Logger.h"
+#include "../main/mainworker.h"
 #include "hardwaretypes.h"
 
 #include "../json/json.h"
@@ -553,6 +554,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 
 			nodeInfo.m_LastSeen=act_time;
 			m_nodes.push_back( nodeInfo );
+			AddNode(_homeID, _nodeID, &nodeInfo);
 			break;
 		}
 
@@ -623,6 +625,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 	case OpenZWave::Notification::Type_AllNodesQueriedSomeDead:
 		{
 			m_nodesQueried = true;
+			NodesQueried();
 			OpenZWave::Manager::Get()->WriteConfig( m_controllerID );
 			//IncludeDevice();
 			break;
@@ -631,6 +634,16 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 		{
 			if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
 			{
+				std::string product_name=m_pManager->GetNodeProductName(_homeID,_nodeID);
+				if (nodeInfo->Product_name!=product_name)
+				{
+					nodeInfo->Manufacturer_id = m_pManager->GetNodeManufacturerId(_homeID,_nodeID);
+					nodeInfo->Manufacturer_name = m_pManager->GetNodeManufacturerName(_homeID,_nodeID);
+					nodeInfo->Product_type = m_pManager->GetNodeProductType(_homeID,_nodeID);
+					nodeInfo->Product_id = m_pManager->GetNodeProductId(_homeID,_nodeID);
+					nodeInfo->Product_name = product_name;
+					AddNode(_homeID,_nodeID,nodeInfo);
+				}
 				nodeInfo->m_LastSeen=act_time;
 			}
 			break;
@@ -869,7 +882,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				else
 					_device.intvalue=0;
 				InsertDevice(_device);
-				m_pManager->EnablePoll(vID,1);
+				//m_pManager->EnablePoll(vID,1);
 			}
 		}
 	}
@@ -924,7 +937,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 						_device.devType = ZDTYPE_SENSOR_POWER;
 					}
 					InsertDevice(_device);
-					m_pManager->EnablePoll(vID,2);
+					//m_pManager->EnablePoll(vID,2);
 				}
 			}
 		}
@@ -944,7 +957,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				_device.commandClassID=49;
 				_device.devType = ZDTYPE_SENSOR_TEMPERATURE;
 				InsertDevice(_device);
-				m_pManager->EnablePoll(vID,2);
+				//m_pManager->EnablePoll(vID,2);
 			}
 		}
 		else if (vLabel=="Luminance")
@@ -955,7 +968,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				_device.commandClassID=49;
 				_device.devType = ZDTYPE_SENSOR_LIGHT;
 				InsertDevice(_device);
-				m_pManager->EnablePoll(vID,2);
+				//m_pManager->EnablePoll(vID,2);
 			}
 		}
 		else if (vLabel=="Relative Humidity")
@@ -966,7 +979,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				_device.commandClassID=49;
 				_device.devType = ZDTYPE_SENSOR_HUMIDITY;
 				InsertDevice(_device);
-				m_pManager->EnablePoll(vID,2);
+				//m_pManager->EnablePoll(vID,2);
 			}
 		}
 		else if (
@@ -990,7 +1003,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 						_device.devType = ZDTYPE_SENSOR_POWER;
 					}
 					InsertDevice(_device);
-					m_pManager->EnablePoll(vID,2);
+					//m_pManager->EnablePoll(vID,2);
 				}
 			}
 		}
@@ -1002,7 +1015,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 			if (vType== OpenZWave::ValueID::ValueType_Byte)
 			{
 				UpdateDeviceBatteryStatus(NodeID,byteValue);
-				m_pManager->EnablePoll(vID,2);
+				//m_pManager->EnablePoll(vID,2);
 			}
 		}
 	}
@@ -1307,6 +1320,171 @@ void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
 		break;
 	}
 	_log.Log(LOG_NORM,"Device Response: %s",szLog.c_str());
+}
+
+void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int pollTime)
+{
+	NodeInfo *pNode=GetNodeInfo(homeID, nodeID);
+	if (pNode==NULL)
+		return; //Not found
+
+
+	for (std::map<int, std::map<int, NodeCommandClass> >::const_iterator ittInstance=pNode->Instances.begin(); ittInstance!=pNode->Instances.end(); ++ittInstance)
+	{
+		for( std::map<int, NodeCommandClass>::const_iterator ittCmds = ittInstance->second.begin(); ittCmds != ittInstance->second.end(); ++ittCmds )
+		{
+			for( std::list<OpenZWave::ValueID>::const_iterator ittValue = ittCmds->second.Values.begin(); ittValue!= ittCmds->second.Values.end(); ++ittValue)
+			{
+				unsigned char commandclass=ittValue->GetCommandClassId();
+				OpenZWave::ValueID::ValueGenre vGenre=ittValue->GetGenre();
+
+				//Ignore non-user types
+				if (vGenre!=OpenZWave::ValueID::ValueGenre_User)
+					return;
+
+				std::string vLabel=m_pManager->GetValueLabel(*ittValue);
+
+				if (commandclass==COMMAND_CLASS_SWITCH_BINARY)
+				{
+					if ((vLabel=="Switch")||(vLabel=="Sensor"))
+					{
+						m_pManager->EnablePoll(*ittValue,1);
+					}
+				}
+				else if (commandclass==COMMAND_CLASS_SWITCH_MULTILEVEL)
+				{
+					if (vLabel=="Level")
+					{
+						m_pManager->EnablePoll(*ittValue,1);
+					}
+				}
+				else if (commandclass==COMMAND_CLASS_SENSOR_BINARY)
+				{
+					if ((vLabel=="Switch")||(vLabel=="Sensor"))
+					{
+						m_pManager->EnablePoll(*ittValue,1);
+					}
+				}
+				else if (commandclass==COMMAND_CLASS_METER)
+				{
+					//Meter device
+					if (
+						(vLabel=="Energy")||
+						(vLabel=="Power")
+						)
+					{
+						m_pManager->EnablePoll(*ittValue,2);
+					}
+				}
+				else if (commandclass==COMMAND_CLASS_SENSOR_MULTILEVEL)
+				{
+					if (vLabel=="Temperature")
+					{
+						m_pManager->EnablePoll(*ittValue,2);
+					}
+					else if (vLabel=="Luminance")
+					{
+						m_pManager->EnablePoll(*ittValue,2);
+					}
+					else if (vLabel=="Relative Humidity")
+					{
+						m_pManager->EnablePoll(*ittValue,2);
+					}
+					else if (
+						(vLabel=="Energy")||
+						(vLabel=="Power")
+						)
+					{
+						m_pManager->EnablePoll(*ittValue,2);
+					}
+				}
+				else if (commandclass==COMMAND_CLASS_BATTERY)
+				{
+					m_pManager->EnablePoll(*ittValue,2);
+				}
+			}
+		}
+	}
+}
+
+void COpenZWave::DisableNodePoll(const int homeID, const int nodeID)
+{
+	NodeInfo *pNode=GetNodeInfo(homeID, nodeID);
+	if (pNode==NULL)
+		return; //Not found
+
+	for (std::map<int, std::map<int, NodeCommandClass> >::const_iterator ittInstance=pNode->Instances.begin(); ittInstance!=pNode->Instances.end(); ++ittInstance)
+	{
+		for( std::map<int, NodeCommandClass>::const_iterator ittCmds = ittInstance->second.begin(); ittCmds != ittInstance->second.end(); ++ittCmds )
+		{
+			for( std::list<OpenZWave::ValueID>::const_iterator ittValue = ittCmds->second.Values.begin(); ittValue!= ittCmds->second.Values.end(); ++ittValue)
+			{
+				if (m_pManager->isPolled(*ittValue))
+					m_pManager->DisablePoll(*ittValue);
+			}
+		}
+	}
+}
+
+void COpenZWave::AddNode(const int homeID, const int nodeID,const NodeInfo *pNode)
+{
+	//Check if node already exist
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT ID FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
+	result=m_pMainWorker->m_sql.query(szQuery.str());
+	szQuery.clear();
+	szQuery.str("");
+
+	std::string sProductDescription=pNode->Manufacturer_name +" " + pNode->Product_name;
+
+	if (result.size()<1)
+	{
+		//Not Found, Add it to the database
+		szQuery << "INSERT INTO ZWaveNodes (HardwareID, HomeID, NodeID, ProductDescription) VALUES (" << m_HwdID << "," << homeID << "," << nodeID << ",'" << sProductDescription << "')";
+	}
+	else
+	{
+		//Update ProductDescription
+		szQuery << "UPDATE ZWaveNodes SET ProductDescription='" <<  sProductDescription << "' WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
+	}
+	m_pMainWorker->m_sql.query(szQuery.str());
+}
+
+void COpenZWave::EnableDisableNodePolling()
+{
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT HomeID,NodeID,PollTime FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ")";
+	result=m_pMainWorker->m_sql.query(szQuery.str());
+	if (result.size()<1)
+		return;
+
+	std::vector<std::vector<std::string> >::const_iterator itt;
+	for (itt=result.begin(); itt!=result.end(); ++itt)
+	{
+		std::vector<std::string> sd=*itt;
+		int HomeID=atoi(sd[0].c_str());
+		int NodeID=atoi(sd[1].c_str());
+		int PollTime=atoi(sd[2].c_str());
+
+		if (
+			(HomeID==m_controllerID)&&
+			(NodeID>2)
+			)
+		{
+			if (PollTime>0)
+				EnableNodePoll(HomeID,NodeID,PollTime);
+			else
+				DisableNodePoll(HomeID,NodeID);
+		}
+	}
+}
+
+void COpenZWave::NodesQueried()
+{
+	//All nodes have been queried, enable/disable node polling
+	EnableDisableNodePolling();
 }
 
 #endif //WITH_OPENZWAVE

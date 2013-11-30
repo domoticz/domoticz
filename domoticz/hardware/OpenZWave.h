@@ -51,12 +51,17 @@ public:
 	bool GetUpdates();
 	void OnZWaveNotification( OpenZWave::Notification const* _notification);
 	void OnZWaveDeviceStatusUpdate(int cs, int err);
+	void EnableDisableNodePolling();
 private:
+	void NodesQueried();
+	void AddNode(const int homeID, const int nodeID,const NodeInfo *pNode);
+	void EnableNodePoll(const int homeID, const int nodeID, const int pollTime);
+	void DisableNodePoll(const int homeID, const int nodeID);
 	bool GetValueByCommandClass(const int nodeID, const int instanceID, const int commandClass, OpenZWave::ValueID &nValue);
 	void AddValue(const OpenZWave::ValueID vID);
 	void UpdateValue(const OpenZWave::ValueID vID);
 	NodeInfo* GetNodeInfo( OpenZWave::Notification const* _notification );
-	NodeInfo* GetNodeInfo( const int homeID, const int nodeID);
+	NodeInfo* GetNodeInfo( const int homeID, const int nodeID );
 	void SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value);
 	void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value);
 	void StopHardwareIntern();

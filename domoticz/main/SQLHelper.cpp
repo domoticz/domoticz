@@ -360,6 +360,16 @@ const char *sqlCreateEventRules =
 "[SequenceNo] INTEGER NOT NULL, "
 "FOREIGN KEY (EMID) REFERENCES EventMaster(ID));";
 
+const char *sqlCreateZWaveNodes =
+	"CREATE TABLE IF NOT EXISTS [ZWaveNodes] ("
+	"[ID] INTEGER PRIMARY KEY, "
+	"[HardwareID] INTEGER NOT NULL, "
+	"[HomeID] INTEGER NOT NULL, "
+	"[NodeID] INTEGER NOT NULL, "
+	"[Name] VARCHAR(100) DEFAULT Unknown, "
+	"[ProductDescription] VARCHAR(100) DEFAULT Unknown, "
+	"[PollTime] INTEGER DEFAULT 0);";
+
 extern std::string szStartupFolder;
 
 CSQLHelper::CSQLHelper(void)
@@ -465,6 +475,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateSharedDevices);
     query(sqlCreateEventMaster);
     query(sqlCreateEventRules);
+	query(sqlCreateZWaveNodes);
 
 	int dbversion=0;
 	GetPreferencesVar("DB_Version", dbversion);

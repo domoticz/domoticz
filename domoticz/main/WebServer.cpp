@@ -10,6 +10,7 @@
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
 #include "../hardware/1Wire.h"
+#include "../hardware/OpenZWave.h"
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
 #include "../json/config.h"
@@ -2549,6 +2550,51 @@ std::string CWebServer::GetJSonPage()
 			}
 		}
 	} //if (rtype=="hardware")
+	else if (rtype=="openzwavenodes")
+	{
+		std::string hwid=m_pWebEm->FindValue("idx");
+		if (hwid=="")
+			goto exitjson;
+		int iHardwareID=atoi(hwid.c_str());
+		CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(iHardwareID);
+		if (pHardware==NULL)
+			goto exitjson;
+		if (pHardware->HwdType!=HTYPE_OpenZWave) //later we also do the Razberry
+			goto exitjson;
+
+		root["status"]="OK";
+		root["title"]="OpenZWaveNodes";
+
+		std::stringstream szQuery;
+		std::vector<std::vector<std::string> > result;
+		szQuery << "SELECT ID,HomeID,NodeID,Name,ProductDescription,PollTime FROM ZWaveNodes WHERE (HardwareID==" << iHardwareID << ")";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			int ii=0;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+
+				int nodeID=atoi(sd[2].c_str());
+				if (nodeID>2)
+				{
+					//Don't include the controller
+					root["result"][ii]["idx"]=sd[0];
+					root["result"][ii]["HomeID"]=atoi(sd[1].c_str());
+					root["result"][ii]["NodeID"]=nodeID;
+					root["result"][ii]["Name"]=sd[3];
+					root["result"][ii]["Description"]=sd[4];
+					root["result"][ii]["PollEnabled"]=(atoi(sd[5].c_str())==1)?"true":"false";
+
+					//Add configuration parameters here
+					ii++;
+				}
+			}
+		}
+
+	}
 	else if (rtype=="devices")
 	{
 		std::string rfilter=m_pWebEm->FindValue("filter");
@@ -8072,6 +8118,41 @@ std::string CWebServer::GetJSonPage()
 				int ID=atoi(sd[0].c_str());
 
 				m_pMain->AddHardwareFromParams(ID,name,(senabled=="true")?true:false,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
+			}
+		}
+		else if (cparam=="updatezwavenode")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			std::string name=m_pWebEm->FindValue("name");
+			std::string senablepolling=m_pWebEm->FindValue("EnablePolling");
+			if (
+				(name=="")||
+				(senablepolling=="")
+				)
+				goto exitjson;
+			root["status"]="OK";
+			root["title"]="UpdateZWaveNode";
+
+			sprintf(szTmp,
+				"UPDATE ZWaveNodes SET Name='%s', PollTime=%d WHERE (ID==%s)",
+				name.c_str(),
+				(senablepolling=="true")?1:0,
+				idx.c_str()
+				);
+			result=m_pMain->m_sql.query(szTmp);
+			sprintf(szTmp,"SELECT HardwareID from ZWaveNodes WHERE (ID==%s)",idx.c_str());
+			result=m_pMain->m_sql.query(szTmp);
+			if (result.size()>0)
+			{
+				int hwid=atoi(result[0][0].c_str());
+				CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hwid);
+				if (pHardware!=NULL)
+				{
+					COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+					pOZWHardware->EnableDisableNodePolling();
+				}
 			}
 		}
 		else if (cparam=="updatehardware")
