@@ -625,6 +625,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 	case OpenZWave::Notification::Type_AllNodesQueriedSomeDead:
 		{
 			m_nodesQueried = true;
+			_log.Log(LOG_NORM,"OpenZWave: All Nodes queried");
 			NodesQueried();
 			OpenZWave::Manager::Get()->WriteConfig( m_controllerID );
 			//IncludeDevice();
