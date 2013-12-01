@@ -5,6 +5,7 @@
 #define MyAppPublisher "Domoticz.com"
 #define MyAppURL "http://www.domoticz.com/"
 #define MyAppExeName "domoticz.exe"
+#define NSSM "nssm.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -33,9 +34,11 @@ WizardImageFile=compiler:WizModernImage-IS.bmp
 WizardSmallImageFile=compiler:WizModernSmallImage-IS.bmp
 
 [Tasks]
-Name: desktopicon; Description: {cm:CreateDesktopIcon}; GroupDescription: {cm:AdditionalIcons}; 
-Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked;
-Name: "startupicon"; Description: "Create a Startup Shortcut"; GroupDescription: "{cm:AdditionalIcons}";
+Name: RunAsApp; Description: "Run as application "; Flags: exclusive;
+Name: RunAsApp\desktopicon; Description: {cm:CreateDesktopIcon}; GroupDescription: {cm:AdditionalIcons}; 
+Name: RunAsApp\quicklaunchicon; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked;
+Name: RunAsApp\startupicon; Description: "Create a Startup Shortcut"; GroupDescription: "{cm:AdditionalIcons}"; 
+Name: RunAsService; Description: "Run as service"; Flags: exclusive;
 
 [Files]
 Source: "..\Release\domoticz.exe"; DestDir: {app}; Flags: ignoreversion;
@@ -46,19 +49,47 @@ Source: "..\Debug\libcurl.dll"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\Manual\DomoticzManual.pdf"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\domoticz\History.txt"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\domoticz\svnversion.h"; DestDir: {app}; Flags: ignoreversion;
+Source: "..\Release\nssm.exe"; DestDir: {app}; Flags: ignoreversion;
 
 [Icons]
-Name: "{group}\Domoticz"; Filename: "{app}\{#MyAppExeName}"
-Name: "{group}\DomoticzManual.pdf"; Filename: "{app}\DomoticzManual.pdf"
-Name: "{group}\{cm:ProgramOnTheWeb,Domoticz}"; Filename: "{#MyAppURL}"
-Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-Name: "{commonstartup}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "-startupdelay 10" ; Tasks: startupicon
-Name: "{commondesktop}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
-Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
+Name: "{group}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Tasks: RunAsApp
+Name: "{group}\DomoticzManual.pdf"; Filename: "{app}\DomoticzManual.pdf"; Tasks: RunAsApp
+Name: "{group}\{cm:ProgramOnTheWeb,Domoticz}"; Filename: "{#MyAppURL}"; Tasks: RunAsApp
+Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; Tasks: RunAsApp
+Name: "{commonstartup}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "-startupdelay 10 -www {code:GetParams}" ; Tasks: RunAsApp\startupicon
+Name: "{commondesktop}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "-www {code:GetParams}" ; Tasks: RunAsApp\desktopicon
+Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Tasks: RunAsApp\quicklaunchicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; Flags: nowait postinstall skipifsilent runascurrentuser
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; Flags: nowait postinstall skipifsilent runascurrentuser; Tasks: RunAsApp
+Filename: "{sys}\net.exe"; Parameters: "stop {#MyAppName}"; Flags: runhidden;
+Filename: "{app}\{#NSSM}"; Parameters: "install {#MyAppName} ""{app}\{#MyAppExeName}"" ""-www {code:GetParams}"""; Flags: runhidden; Tasks: RunAsService
+Filename: "{sys}\net.exe"; Parameters: "start {#MyAppName}"; Flags: runhidden; Tasks: RunAsService
 
+[UninstallRun]
+
+Filename: "{sys}\net.exe"; Parameters: "stop {#MyAppName}"; Flags: runhidden; Tasks: RunAsService
+Filename: "{app}\{#NSSM}"; Parameters: "remove {#MyAppName}"; Flags: runhidden; Tasks: RunAsService
 
 [PostCompile]
 Name: "makedist.bat"
+
+[Code]
+var
+  ConfigPage: TInputQueryWizardPage;
+
+function GetParams(Value: string): string;
+begin
+  Result := ConfigPage.Values[0];
+end;
+
+procedure InitializeWizard;
+begin
+  // Create the page
+  ConfigPage := CreateInputQueryPage(wpSelectComponents,
+  'User settings', 'Port number', 'Please specify the port on which Domoticz will run');
+  // Add items (False means it's not a password edit)
+  ConfigPage.Add('Port number:', False);
+  // Set initial values (optional)
+  ConfigPage.Values[0] := ExpandConstant('8080');
+end;
