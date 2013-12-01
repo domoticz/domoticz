@@ -759,6 +759,30 @@ bool COpenZWave::GetValueByCommandClass(const int nodeID, const int instanceID, 
 	return false;
 }
 
+bool COpenZWave::GetNodeConfigValueByIndex(const NodeInfo *pNode, const int index, OpenZWave::ValueID &nValue)
+{
+	for (std::map<int, std::map<int, NodeCommandClass> >::const_iterator ittInstance=pNode->Instances.begin(); ittInstance!=pNode->Instances.end(); ++ittInstance)
+	{
+		for( std::map<int, NodeCommandClass>::const_iterator ittCmds = ittInstance->second.begin(); ittCmds != ittInstance->second.end(); ++ittCmds )
+		{
+			for( std::list<OpenZWave::ValueID>::const_iterator ittValue = ittCmds->second.Values.begin(); ittValue!= ittCmds->second.Values.end(); ++ittValue)
+			{
+				int vindex=ittValue->GetIndex();
+				unsigned char commandclass=ittValue->GetCommandClassId();
+				if( 
+					(commandclass == COMMAND_CLASS_CONFIGURATION)&&
+					(vindex==index)
+					)
+				{
+					nValue=*ittValue;
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
 void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)
 {
 	if (m_pManager==NULL)
@@ -1486,6 +1510,117 @@ void COpenZWave::NodesQueried()
 {
 	//All nodes have been queried, enable/disable node polling
 	EnableDisableNodePolling();
+}
+
+void COpenZWave::GetNodeValuesJson(const int homeID, const int nodeID, Json::Value &root, const int index)
+{
+	NodeInfo *pNode=GetNodeInfo(homeID, nodeID);
+	if (pNode==NULL)
+		return;
+
+	int ivalue=0;
+	for (std::map<int, std::map<int, NodeCommandClass> >::const_iterator ittInstance=pNode->Instances.begin(); ittInstance!=pNode->Instances.end(); ++ittInstance)
+	{
+		for( std::map<int, NodeCommandClass>::const_iterator ittCmds = ittInstance->second.begin(); ittCmds != ittInstance->second.end(); ++ittCmds )
+		{
+			for( std::list<OpenZWave::ValueID>::const_iterator ittValue = ittCmds->second.Values.begin(); ittValue!= ittCmds->second.Values.end(); ++ittValue)
+			{
+				unsigned char commandclass=ittValue->GetCommandClassId();
+				if (commandclass==COMMAND_CLASS_CONFIGURATION)
+				{
+					if (m_pManager->IsValueReadOnly(*ittValue)==true)
+						continue;
+
+					std::string szValue;
+
+					OpenZWave::ValueID::ValueType vType=ittValue->GetType();
+
+					if (vType== OpenZWave::ValueID::ValueType_Decimal)
+					{
+						root["result"][index]["config"][ivalue]["type"]="float";
+					}
+					else if (vType== OpenZWave::ValueID::ValueType_Bool)
+					{
+						root["result"][index]["config"][ivalue]["type"]="bool";
+					}
+					else if (vType== OpenZWave::ValueID::ValueType_Byte)
+					{
+						root["result"][index]["config"][ivalue]["type"]="byte";
+					}
+					else if (vType== OpenZWave::ValueID::ValueType_Short)
+					{
+						root["result"][index]["config"][ivalue]["type"]="short";
+					}
+					else if (vType== OpenZWave::ValueID::ValueType_Int)
+					{
+						root["result"][index]["config"][ivalue]["type"]="int";
+					}
+					else if (vType== OpenZWave::ValueID::ValueType_Button)
+					{
+						continue; //not supported (reset to defaults)
+						//root["result"][index]["config"][ivalue]["type"]="button";
+					}
+					else
+					{
+						//not supported
+						continue;
+					}
+
+					if (m_pManager->GetValueAsString(*ittValue,&szValue)==false)
+						continue;
+					root["result"][index]["config"][ivalue]["value"]=szValue;
+
+					root["result"][index]["config"][ivalue]["index"]=ittValue->GetIndex();
+					root["result"][index]["config"][ivalue]["label"]=m_pManager->GetValueLabel(*ittValue);
+					root["result"][index]["config"][ivalue]["units"]=m_pManager->GetValueUnits(*ittValue);
+					root["result"][index]["config"][ivalue]["help"]=m_pManager->GetValueHelp(*ittValue);
+					root["result"][index]["config"][ivalue]["LastUpdate"]=ittCmds->second.m_LastSeen;
+					ivalue++;
+				}
+			}
+		}
+	}
+
+}
+
+bool COpenZWave::RequestNodeConfig(const int homeID, const int nodeID)
+{
+	NodeInfo *pNode=GetNodeInfo( homeID, nodeID);
+	if (pNode==NULL)
+		return false;
+	m_pManager->RequestAllConfigParams(homeID,nodeID);
+	return true;
+}
+
+bool COpenZWave::ApplyNodeConfig(const int homeID, const int nodeID, const std::string &svaluelist)
+{
+	NodeInfo *pNode=GetNodeInfo( homeID, nodeID);
+	if (pNode==NULL)
+		return false;
+
+	std::vector<std::string> results;
+	StringSplit(svaluelist,"_",results);
+	if (results.size()<1)
+		return false;
+
+	size_t vindex=0;
+	while (vindex!=results.size())
+	{
+		OpenZWave::ValueID vID(0,0,OpenZWave::ValueID::ValueGenre_Basic,0,0,0,OpenZWave::ValueID::ValueType_Bool);
+
+		if (GetNodeConfigValueByIndex(pNode, atoi(results[vindex].c_str()), vID))
+		{
+			std::string vstring;
+			m_pManager->GetValueAsString(vID,&vstring);
+			if (vstring!=results[vindex+1])
+			{
+				m_pManager->SetValue(vID,results[vindex+1]);
+			}
+		}
+		vindex+=2;
+	}
+	return true;
+
 }
 
 #endif //WITH_OPENZWAVE

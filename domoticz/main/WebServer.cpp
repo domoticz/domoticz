@@ -2550,6 +2550,7 @@ std::string CWebServer::GetJSonPage()
 			}
 		}
 	} //if (rtype=="hardware")
+#ifdef WITH_OPENZWAVE
 	else if (rtype=="openzwavenodes")
 	{
 		std::string hwid=m_pWebEm->FindValue("idx");
@@ -2561,6 +2562,7 @@ std::string CWebServer::GetJSonPage()
 			goto exitjson;
 		if (pHardware->HwdType!=HTYPE_OpenZWave) //later we also do the Razberry
 			goto exitjson;
+		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
 
 		root["status"]="OK";
 		root["title"]="OpenZWaveNodes";
@@ -2577,24 +2579,36 @@ std::string CWebServer::GetJSonPage()
 			{
 				std::vector<std::string> sd=*itt;
 
+				int homeID=atoi(sd[1].c_str());
 				int nodeID=atoi(sd[2].c_str());
 				if (nodeID>2)
 				{
 					//Don't include the controller
+					COpenZWave::NodeInfo *pNode=pOZWHardware->GetNodeInfo(homeID, nodeID);
+					if (pNode==NULL)
+						continue;
 					root["result"][ii]["idx"]=sd[0];
-					root["result"][ii]["HomeID"]=atoi(sd[1].c_str());
+					root["result"][ii]["HomeID"]=homeID;
 					root["result"][ii]["NodeID"]=nodeID;
 					root["result"][ii]["Name"]=sd[3];
 					root["result"][ii]["Description"]=sd[4];
 					root["result"][ii]["PollEnabled"]=(atoi(sd[5].c_str())==1)?"true":"false";
+					root["result"][ii]["Version"]=pNode->iVersion;
+					root["result"][ii]["Manufacturer_id"]=pNode->Manufacturer_id;
+					root["result"][ii]["Manufacturer_name"]=pNode->Manufacturer_name;
+					root["result"][ii]["Product_type"]=pNode->Product_type;
+					root["result"][ii]["Product_id"]=pNode->Product_id;
+					root["result"][ii]["Product_name"]=pNode->Product_name;
+					root["result"][ii]["LastUpdate"]=pNode->m_LastSeen;
 
 					//Add configuration parameters here
+					pOZWHardware->GetNodeValuesJson(homeID,nodeID,root,ii);
 					ii++;
 				}
 			}
 		}
-
 	}
+#endif
 	else if (rtype=="devices")
 	{
 		std::string rfilter=m_pWebEm->FindValue("filter");
@@ -8120,6 +8134,7 @@ std::string CWebServer::GetJSonPage()
 				m_pMain->AddHardwareFromParams(ID,name,(senabled=="true")?true:false,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
 			}
 		}
+#ifdef WITH_OPENZWAVE
 		else if (cparam=="updatezwavenode")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");
@@ -8155,6 +8170,56 @@ std::string CWebServer::GetJSonPage()
 				}
 			}
 		}
+		else if (cparam=="applyzwavenodeconfig")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			std::string svaluelist=m_pWebEm->FindValue("valuelist");
+			if (
+				(idx=="")||
+				(svaluelist=="")
+				)
+				goto exitjson;
+			sprintf(szTmp,"SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)",idx.c_str());
+			result=m_pMain->m_sql.query(szTmp);
+			if (result.size()>0)
+			{
+				int hwid=atoi(result[0][0].c_str());
+				int homeID=atoi(result[0][1].c_str());
+				int nodeID=atoi(result[0][2].c_str());
+				CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hwid);
+				if (pHardware!=NULL)
+				{
+					COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+					if (!pOZWHardware->ApplyNodeConfig(homeID,nodeID,svaluelist))
+						goto exitjson;
+					root["status"]="OK";
+					root["title"]="ApplyZWaveNodeConfig";
+				}
+			}
+		}
+		else if (cparam=="requestzwavenodeconfig")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			sprintf(szTmp,"SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)",idx.c_str());
+			result=m_pMain->m_sql.query(szTmp);
+			if (result.size()>0)
+			{
+				int hwid=atoi(result[0][0].c_str());
+				int homeID=atoi(result[0][1].c_str());
+				int nodeID=atoi(result[0][2].c_str());
+				CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hwid);
+				if (pHardware!=NULL)
+				{
+					COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+					pOZWHardware->RequestNodeConfig(homeID,nodeID);
+					root["status"]="OK";
+					root["title"]="RequestZWaveNodeConfig";
+				}
+			}
+		}
+#endif
 		else if (cparam=="updatehardware")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");

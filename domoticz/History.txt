@@ -1,9 +1,4 @@
-Version 1.0.1228 (November 30th 2013)
-- Implemented: various improvements to have Domoticz compile in VS2010 straight from the repository
-- Implemented: Windows installer option to install as service (for server implementations, no icons will be installed)
-- Implemented: www port can be specified in windows installer
-
-Version 1.0.xxxx (November xxth 2013)
+Version 1.0.xxxx (December xxth 2013)
 - Implemented: new commandline option to specify www root folder (-wwwroot)
 - Implemented: Limitless/AppLamp, option to set Hue/Brightness in the Edit option
 - Implemented: Limitless/AppLamp, can now also be used as 'Dimmer'
@@ -14,7 +9,10 @@ Version 1.0.xxxx (November xxth 2013)
 - Fixed: Hardware Settings, Domoticz remote server port display
 - Changed: Contact notifications now says 'Open/Closed' instead of 'On/Off'
 - Fixed: Commandline option for linux now ignores slash character /
-- Implemented: new switch type 'Group On/Off'
+- Implemented: various improvements to have Domoticz compile in VS2010 straight from the repository
+- Implemented: Windows installer option to install as service (for server implementations, no icons will be installed)
+- Implemented: www port can be specified in windows installer
+- Implemented: OpenZWave, now possible to set Node configuration settings
 
 Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart

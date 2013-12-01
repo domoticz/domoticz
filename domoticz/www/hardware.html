@@ -18,6 +18,9 @@
 				<a class="btnstyle3-dis" id="nodeupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
 				<a class="btnstyle3-dis" id="nodedelete" data-i18n="Delete">Delete</a>
 			</td>
+			<td align="right">
+				<a class="btnstyle3" id="nodelistrefresh" data-i18n="Refresh" onclick="RefreshOpenZWaveNodeTable();">Refresh</a>
+			</td>
 		</tr>
 	</table>
 	<br>
@@ -31,6 +34,10 @@
 			<td><input type="checkbox" id="EnablePolling" checked></td>
 		</tr>
 	</table>
+	<br>
+	<h2 data-i18n="Configuration">Configuration</h2>
+	<br>
+	<div id="configuration"></div>
 </div>
 
 <div id="rfxhardwaremode" style="display:none;">
@@ -781,6 +788,54 @@ function UpdateNode(idx)
 	});
 }
 
+function RequestZWaveConfiguration(idx)
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=requestzwavenodeconfig" +
+			"&idx=" + idx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			bootbox.alert($.i18n('Configuration requested from Node. It the Node is asleep, this could take a while!'));
+		 },
+		 error: function(){
+				ShowNotify($.i18n('Problem requesting Node Configuration!'), 2500, true);
+		 }     
+	});
+}
+
+function ApplyZWaveConfiguration(idx)
+{
+	var $list = $('#hardwarecontent #configuration input');
+
+	var ControlCnt = $list.length;
+	// Now loop through list of controls
+	
+	var valueList="";
+	
+	$list.each( function() {
+		var id = $(this).prop("id");      // get id
+		var value = $(this).prop("value");      // get value
+		
+		valueList+=id+"_"+value+"__";
+	});
+	if (valueList!="") {
+		$.ajax({
+			 url: "json.htm?type=command&param=applyzwavenodeconfig" +
+				"&idx=" + idx +
+				"&valuelist=" + valueList,
+			 async: false, 
+			 dataType: 'json',
+			 success: function(data) {
+				bootbox.alert($.i18n('Configuration send to node. It the node is asleep, this could take a while!'));
+			 },
+			 error: function(){
+					ShowNotify($.i18n('Problem updating Node Configuration!'), 2500, true);
+			 }     
+		});
+	}
+}
+
 function RefreshOpenZWaveNodeTable()
 {
   $('#modal').show();
@@ -802,6 +857,7 @@ function RefreshOpenZWaveNodeTable()
 				"DT_RowId": item.idx,
 				"Name": item.Name,
 				"PollEnabled": item.PollEnabled,
+				"Config": item.config,
                 "0": item.NodeID,
                 "1": item.Name,
 				"2": item.Description,
@@ -829,6 +885,26 @@ function RefreshOpenZWaveNodeTable()
 					$("#updelclr #nodedelete").attr("href", "javascript:DeleteNode(" + idx + ")");
 					$("#hardwarecontent #nodeparamstable #nodename").val(data["1"]);
 					$('#hardwarecontent #nodeparamstable #EnablePolling').prop('checked',(data["PollEnabled"]=="true"));
+					
+					//Create configuration setup
+					var szConfig='<a class="btnstyle3" id="nodedelete" data-i18n="RequestConfiguration" onclick="RequestZWaveConfiguration(' + idx + ');">Request current stored values from device</a><br /><br />';
+					var bHaveConfiguration=false;
+					$.each(data["Config"], function(i,item){
+						bHaveConfiguration=true;
+						szConfig+="<b>"+item.index+". "+item.label+":</b> ";
+						szConfig+='<input type="text" id="'+item.index+'" value="' + item.value + '" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />';
+						if (item.units!="") {
+							szConfig+=' (' + item.units + ')';
+						}
+						szConfig+=" (" + $.i18n("actual") + ": " + item.value + ")";
+						szConfig+="<br />";
+						szConfig+=item.help;
+						szConfig+="<br /><br />";
+					});
+					if (bHaveConfiguration==true) {
+						szConfig+='<a class="btnstyle3" id="nodedelete" data-i18n="ApplyConfiguration" onclick="ApplyZWaveConfiguration(' + idx + ');" >Apply configuration for this device</a><br />';
+					}
+					$("#hardwarecontent #configuration").html(szConfig);
 				}
 			}
 		}); 
