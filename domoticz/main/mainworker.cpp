@@ -5472,26 +5472,26 @@ unsigned long long MainWorker::decode_DateTime(const int HwdID, const tRBUF *pRe
 
 	switch (pResponse->DT.dow)
 	{
-	case 0:
+	case 1:
 		WriteMessage(" Sunday");
 		break;
-	case 1:
+	case 2:
 		WriteMessage(" Monday");
 		break;
-	case 2:
+	case 3:
 		WriteMessage(" Tuesday");
 		break;
-	case 3:
+	case 4:
 		WriteMessage(" Wednesday");
 		break;
-	case 4:
+	case 5:
 		WriteMessage(" Thursday");
 		break;
-	case 5:
+	case 6:
 		WriteMessage(" Friday");
 		break;
-	case 6:
-		WriteMessage(" Saterday");
+	case 7:
+		WriteMessage(" Saturday");
 		break;
 	}
 	sprintf(szTmp,"Date yy/mm/dd = %02d/%02d/%02d", pResponse->DT.yy, pResponse->DT.mm, pResponse->DT.dd);
