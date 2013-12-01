@@ -1574,7 +1574,7 @@ void COpenZWave::GetNodeValuesJson(const int homeID, const int nodeID, Json::Val
 					root["result"][index]["config"][ivalue]["label"]=m_pManager->GetValueLabel(*ittValue);
 					root["result"][index]["config"][ivalue]["units"]=m_pManager->GetValueUnits(*ittValue);
 					root["result"][index]["config"][ivalue]["help"]=m_pManager->GetValueHelp(*ittValue);
-					root["result"][index]["config"][ivalue]["LastUpdate"]=ittCmds->second.m_LastSeen;
+					//root["result"][index]["config"][ivalue]["LastUpdate"]=ittCmds->second.m_LastSeen;
 					ivalue++;
 				}
 			}

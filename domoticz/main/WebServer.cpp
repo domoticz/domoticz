@@ -2599,7 +2599,7 @@ std::string CWebServer::GetJSonPage()
 					root["result"][ii]["Product_type"]=pNode->Product_type;
 					root["result"][ii]["Product_id"]=pNode->Product_id;
 					root["result"][ii]["Product_name"]=pNode->Product_name;
-					root["result"][ii]["LastUpdate"]=pNode->m_LastSeen;
+					//root["result"][ii]["LastUpdate"]=pNode->m_LastSeen;
 
 					//Add configuration parameters here
 					pOZWHardware->GetNodeValuesJson(homeID,nodeID,root,ii);
