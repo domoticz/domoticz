@@ -4,6 +4,7 @@
 
 #define sTypeTH_LC_TC 0xA0   //La Cross Temp_Hum combined
 #define sTypeTEMP_RPI 0xA0  //Raspberry Pi
+#define sTypeTEMP_WIN 0xB0  //Windows hardware
 
 enum _eSwitchType
 {

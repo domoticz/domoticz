@@ -366,6 +366,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeTEMP, sTypeTEMP9, "RUBiCSON" },
 		{ pTypeTEMP, sTypeTEMP10, "TFA 30.3133" },
 		{ pTypeTEMP, sTypeTEMP_RPI, "Raspberry Pi" },
+		{ pTypeTEMP, sTypeTEMP_WIN, "Windows" },
 
 		{ pTypeHUM, sTypeHUM1, "LaCrosse TX3" },
 		{ pTypeHUM, sTypeHUM2, "LaCrosse WS2300" },

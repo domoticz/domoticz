@@ -9,8 +9,15 @@
 #include "Camera.h"
 #include <map>
 #include <deque>
+#if defined WIN32 
+// for windows system info
+#include <wbemidl.h>
+#pragma comment(lib, "wbemuuid.lib")
+#endif
 #include "WindCalculation.h"
 #include "../tcpserver/TCPServer.h"
+
+
 
 enum eVerboseLevel
 {
@@ -88,6 +95,7 @@ private:
 
 	void PrintDeviceName(const std::string &devname);
 	void GetRaspberryPiTemperature();
+	void GetWinCpuTemperature();
 	unsigned long long PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand);
 	struct _tStartScene
 	{

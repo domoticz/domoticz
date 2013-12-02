@@ -1,4 +1,7 @@
 #include "stdafx.h"
+#if defined WIN32
+#include <comdef.h>
+#endif
 #include "mainworker.h"
 #include "Helper.h"
 #include "SunRiseSet.h"
@@ -690,6 +693,127 @@ void MainWorker::GetRaspberryPiTemperature()
 	}
 }
 
+void MainWorker::GetWinCpuTemperature()
+{
+#if defined WIN32
+	LONG pTemperature = -1;
+    HRESULT ci = CoInitialize(NULL); 
+    HRESULT hr = CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
+    if (SUCCEEDED(hr))
+    {
+		IWbemLocator *pLocator;  
+        hr = CoCreateInstance(CLSID_WbemAdministrativeLocator, NULL, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLocator);
+        if (SUCCEEDED(hr))
+        {
+			IWbemServices *pServices;
+         	 if(FAILED(hr = pLocator->ConnectServer(L"root\\OpenHardwareMonitor",NULL, NULL, NULL, 0, NULL, NULL, &pServices)))  
+			 {  
+				pLocator->Release();  
+				_log.Log(LOG_NORM, "Unable to connect to OpenHardWareMonitor");
+				if (ci == S_OK)
+				{
+					CoUninitialize();
+				}
+        		return;  
+			 } 
+			 else 
+			 {
+				pLocator->Release();
+				IEnumWbemClassObject* pEnumerator = NULL;  
+				hr = pServices->ExecQuery(L"WQL", L"SELECT * FROM Sensor WHERE SensorType = 'Temperature'", WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);  
+                pServices->Release();
+                if (SUCCEEDED(hr))
+                {
+					_log.Log(LOG_NORM, "Query OK");
+					IWbemClassObject *pclsObj = NULL;
+					ULONG uReturn = 0;
+					while (pEnumerator)
+					{
+						
+						hr = pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
+						if(0 == uReturn || FAILED(hr))
+							break;
+						
+						VARIANT vRet;  
+						VariantInit(&vRet);  
+						if(SUCCEEDED(pclsObj->Get(L"Name", 0, &vRet, NULL, NULL)) && vRet.vt == VT_BSTR) //String 
+						{  
+							std::string itemName = _bstr_t (vRet.bstrVal);
+							//_log.Log(LOG_NORM, "Name: %s",itemName.c_str());
+							VariantClear(&vRet);  
+							if(SUCCEEDED(pclsObj->Get(L"Value", 0, &vRet, NULL, NULL))) //Float 
+							{  
+								float temperature = float (vRet.fltVal);
+								_log.Log(LOG_NORM, "Temp: %d",temperature);
+								VariantClear(&vRet); 
+								if(SUCCEEDED(pclsObj->Get(L"InstanceId", 0, &vRet, NULL, NULL))) //Float 
+								{ 
+									std::string instanceIdS = _bstr_t (vRet.bstrVal);
+									int instanceId = atoi(instanceIdS.c_str()); 
+
+									_log.Log(LOG_NORM, "id: %d",instanceId);
+									
+									VariantClear(&vRet); 
+									RBUF tsen;
+									memset(&tsen,0,sizeof(RBUF));
+									tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
+									tsen.TEMP.packettype=pTypeTEMP;
+									tsen.TEMP.subtype=sTypeTEMP_WIN;
+									tsen.TEMP.battery_level=9;
+									tsen.TEMP.rssi=6;
+									tsen.TEMP.id1=0;
+									tsen.TEMP.id2=instanceId;
+									tsen.TEMP.tempsign=(temperature>=0)?0:1;
+									int at10=round(abs(temperature*10.0f));
+									tsen.TEMP.temperatureh=(BYTE)(at10/256);
+									at10-=(tsen.TEMP.temperatureh*256);
+									tsen.TEMP.temperaturel=(BYTE)(at10);
+
+									// convert now to string form
+									time_t now = time(0);
+									char *szDate = asctime(localtime(&now));
+									szDate[strlen(szDate)-1]=0;
+
+									WriteMessageStart();
+
+									std::stringstream sTmp;
+									sTmp << szDate << " (" <<itemName << ") ";
+									WriteMessage(sTmp.str().c_str(),false);
+									WriteMessage("Temperature",false);
+									unsigned long long DeviceRowIdx=decode_Temp(1000, (const tRBUF*)&tsen.TEMP);
+									WriteMessageEnd();
+
+									m_sharedserver.SendToAll(DeviceRowIdx,(const char*)&tsen,tsen.TEMP.packetlength+1,NULL);
+								}
+							}
+						}
+						pclsObj->Release();
+						pclsObj=NULL;
+					}
+		        }
+				pEnumerator->Release();
+            }
+            if (ci == S_OK)
+            {
+                CoUninitialize();
+            }
+        }
+		else {
+			if (ci == S_OK)
+			{
+				CoUninitialize();
+			}
+		}
+    }
+	else {
+		if (ci == S_OK)
+		{
+			CoUninitialize();
+		}
+	}
+#endif
+}
+
 void MainWorker::Do_Work()
 {
 	int second_counter=0;
@@ -770,6 +894,13 @@ void MainWorker::Do_Work()
 		{
 			GetRaspberryPiTemperature();
 		}
+#if defined WIN32
+		if (ltime.tm_sec%30==0)
+		{
+			GetWinCpuTemperature();
+		}			
+#endif
+
 	}
 	_log.Log(LOG_NORM, "Mainworker Stopped...");
 }
@@ -1983,6 +2114,9 @@ unsigned long long MainWorker::decode_Temp(const int HwdID, const tRBUF *pRespon
 			break;
 		case sTypeTEMP_RPI:
 			WriteMessage("subtype       = Raspberry Pi");
+			break;
+		case sTypeTEMP_WIN:
+			WriteMessage("subtype       = Windows");
 			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->TEMP.packettype, pResponse->TEMP.subtype);
