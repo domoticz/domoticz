@@ -1265,14 +1265,11 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 			return;
 		if (vLabel!="Temperature")
 			return;
-		//Seems like we get Celcius anyway?
-/*
 		if (vUnits=="F")
 		{
 			//Convert to celcius
 			fValue=float((fValue-32)*(5.0/9.0));
 		}
-*/
 		pDevice->bValidValue=(abs(pDevice->floatValue-fValue)<10);
 		pDevice->floatValue=fValue;
 		break;
