@@ -698,6 +698,8 @@ bool COpenZWave::OpenSerialConnector()
 	// avoid the need for the notification handler to be a static.
 	OpenZWave::Manager::Get()->AddWatcher( OnNotification, this );
 
+	//m_pManager->SetPollInterval(60000,true);
+
 	// Add a Z-Wave Driver
 	// Modify this line to set the correct serial port for your PC interface.
 

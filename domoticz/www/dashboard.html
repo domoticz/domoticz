@@ -190,10 +190,10 @@ function RefreshFavorites()
 								else if (item.SwitchType == "Dusk Sensor") {
 									if (item.Status == 'On')
 									{
-												status+='<img src="images/uvdark.png" height="16">';
+												status+='<img src="images/uvdark.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 									else {
-												status+='<img src="images/uvsunny.png" height="16">';
+												status+='<img src="images/uvsunny.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 								}
 								else if (item.SwitchType == "Motion Sensor") {
@@ -203,20 +203,20 @@ function RefreshFavorites()
 											(item.Status == 'Group On')||
 											(item.Status.indexOf('Set ') == 0)
 										 ) {
-												status+='<img src="images/motion.png" height="16">';
+												status+='<img src="images/motion.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 									else {
-												status+='<img src="images/motionoff.png" height="16">';
+												status+='<img src="images/motionoff.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 								}
 								else if (item.SwitchType == "Dusk Sensor") {
 									if (
 											(item.Status == 'On')
 										 ) {
-												status+='<img src="images/uvdark.png" height="16">';
+												status+='<img src="images/uvdark.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 									else {
-												status+='<img src="images/uvsunny.png" height="16">';
+												status+='<img src="images/uvsunny.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 								}
 								else if (item.SwitchType == "Smoke Detector") {
@@ -224,10 +224,10 @@ function RefreshFavorites()
 												(item.Status == "Panic")||
 												(item.Status == "On")
 											 ) {
-												status+='<img src="images/smoke.png" height="16">';
+												status+='<img src="images/smoke.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 										}
 										else {
-												status+='<img src="images/smokeoff.png" height="16">';
+												status+='<img src="images/smokeoff.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 										}
 								}
 								else {
@@ -356,10 +356,10 @@ function RefreshFavorites()
 									if (
 											(item.Status == 'On')
 										 ) {
-												img='<img src="images/uvdark.png" height="40">';
+												img='<img src="images/uvdark.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 									else {
-												img='<img src="images/uvsunny.png" height="40">';
+												img='<img src="images/uvsunny.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 								}
 								else if (item.SwitchType == "Motion Sensor") {
@@ -369,10 +369,10 @@ function RefreshFavorites()
 											(item.Status == 'Group On')||
 											(item.Status.indexOf('Set ') == 0)
 										 ) {
-												img='<img src="images/motion48-on.png" height="40">';
+												img='<img src="images/motion48-on.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 									else {
-												img='<img src="images/motion48-off.png" height="40">';
+												img='<img src="images/motion48-off.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 									}
 								}
 								else if (item.SwitchType == "Smoke Detector") {
@@ -380,10 +380,10 @@ function RefreshFavorites()
 												(item.Status == "Panic")||
 												(item.Status == "On")
 											 ) {
-												img='<img src="images/smoke48on.png" height="40">';
+												img='<img src="images/smoke48on.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 										}
 										else {
-												img='<img src="images/smoke48off.png" height="40">';
+												img='<img src="images/smoke48off.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
 										}
 								}
 								else {
@@ -1311,10 +1311,10 @@ function ShowFavorites()
 							else if (item.SwitchType == "Dusk Sensor") {
 								if (item.Status == 'On')
 								{
-											status+='<img src="images/uvdark.png" height="16">';
+											status+='<img src="images/uvdark.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 								else {
-											status+='<img src="images/uvsunny.png" height="16">';
+											status+='<img src="images/uvsunny.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 							}
 							else if (item.SwitchType == "Motion Sensor") {
@@ -1324,10 +1324,10 @@ function ShowFavorites()
 										(item.Status == 'Group On')||
 										(item.Status.indexOf('Set ') == 0)
 									 ) {
-											status+='<img src="images/motion.png" height="16">';
+											status+='<img src="images/motion.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 								else {
-											status+='<img src="images/motionoff.png" height="16">';
+											status+='<img src="images/motionoff.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 								}
 							}
 							else if (item.SwitchType == "Smoke Detector") {
@@ -1335,10 +1335,10 @@ function ShowFavorites()
 											(item.Status == "Panic")||
 											(item.Status == "On")
 										 ) {
-											status+='<img src="images/smoke.png" height="16">';
+											status+='<img src="images/smoke.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 									else {
-											status+='<img src="images/smokeoff.png" height="16">';
+											status+='<img src="images/smokeoff.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16">';
 									}
 							}
 							else {
@@ -1503,10 +1503,10 @@ function ShowFavorites()
 							else if (item.SwitchType == "Dusk Sensor") {
 								if (item.Status == 'On')
 								{
-											xhtm+='\t      <td id="img"><img src="images/uvdark.png" height="40"></td>\n';
+											xhtm+='\t      <td id="img"><img src="images/uvdark.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 								else {
-											xhtm+='\t      <td id="img"><img src="images/uvsunny.png" height="40"></td>\n';
+											xhtm+='\t      <td id="img"><img src="images/uvsunny.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 							}
 							else if (item.SwitchType == "Motion Sensor") {
@@ -1516,10 +1516,10 @@ function ShowFavorites()
 										(item.Status == 'Group On')||
 										(item.Status.indexOf('Set ') == 0)
 									 ) {
-											xhtm+='\t      <td id="img"><img src="images/motion48-on.png" height="40"></td>\n';
+											xhtm+='\t      <td id="img"><img src="images/motion48-on.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 								else {
-											xhtm+='\t      <td id="img"><img src="images/motion48-off.png" height="40"></td>\n';
+											xhtm+='\t      <td id="img"><img src="images/motion48-off.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 								}
 							}
 							else if (item.SwitchType == "Smoke Detector") {
@@ -1527,10 +1527,10 @@ function ShowFavorites()
 											(item.Status == "Panic")||
 											(item.Status == "On")
 										 ) {
-											xhtm+='\t      <td id="img"><img src="images/smoke48on.png" height="40"></td>\n';
+											xhtm+='\t      <td id="img"><img src="images/smoke48on.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 									}
 									else {
-											xhtm+='\t      <td id="img"><img src="images/smoke48off.png" height="40"></td>\n';
+											xhtm+='\t      <td id="img"><img src="images/smoke48off.png" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
 									}
 							}
 							else {

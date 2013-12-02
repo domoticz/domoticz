@@ -797,6 +797,7 @@ function RequestZWaveConfiguration(idx)
 		 dataType: 'json',
 		 success: function(data) {
 			bootbox.alert($.i18n('Configuration requested from Node. It the Node is asleep, this could take a while!'));
+			RefreshOpenZWaveNodeTable();
 		 },
 		 error: function(){
 				ShowNotify($.i18n('Problem requesting Node Configuration!'), 2500, true);

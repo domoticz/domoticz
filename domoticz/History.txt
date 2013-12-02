@@ -14,6 +14,7 @@ Version 1.0.xxxx (December xxth 2013)
 - Implemented: www port can be specified in windows installer
 - Implemented: OpenZWave, now possible to set Node configuration settings
 - Fixed: Day string logging for the DT1 - RTGR328N device
+- Implemented: Dashboard, clicking on a Motion/Dusk/Rain sensor icon will display the log
 
 Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart
