@@ -368,12 +368,16 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	}
 	else if (pDevice->devType==ZDTYPE_SENSOR_TEMPERATURE)
 	{
+		if (!pDevice->bValidValue)
+			return;
 		RBUF tsen;
 		memset(&tsen,0,sizeof(RBUF));
 
 		const _tZWaveDevice *pHumDevice=FindDevice(pDevice->nodeID,-1,ZDTYPE_SENSOR_HUMIDITY);
 		if (pHumDevice)
 		{
+			if (!pHumDevice->bValidValue)
+				return;
 			tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
 			tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
 			tsen.TEMP_HUM.subtype=sTypeTH5;
@@ -420,12 +424,17 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	}
 	else if (pDevice->devType==ZDTYPE_SENSOR_HUMIDITY)
 	{
+		if (!pDevice->bValidValue)
+			return;
 		RBUF tsen;
 		memset(&tsen,0,sizeof(RBUF));
 
 		const _tZWaveDevice *pTempDevice=FindDevice(pDevice->nodeID,-1,ZDTYPE_SENSOR_TEMPERATURE);
 		if (pTempDevice)
 		{
+			if (!pTempDevice->bValidValue)
+				return;
+
 			tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
 			tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
 			tsen.TEMP_HUM.subtype=sTypeTH5;

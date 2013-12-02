@@ -1203,6 +1203,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 		return;
 	}
 
+	pDevice->bValidValue=true;
+
 	switch (pDevice->devType)
 	{
 	case ZDTYPE_SWITCHNORMAL:
@@ -1271,6 +1273,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 			fValue=float((fValue-32)*(5.0/9.0));
 		}
 */
+		pDevice->bValidValue=(abs(pDevice->floatValue-fValue)<10);
 		pDevice->floatValue=fValue;
 		break;
 	case ZDTYPE_SENSOR_HUMIDITY:
@@ -1293,7 +1296,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 	pDevice->sequence_number+=1;
 	if (pDevice->sequence_number==0)
 		pDevice->sequence_number=1;
-	SendDevice2Domoticz(pDevice);
+	if (pDevice->bValidValue)
+		SendDevice2Domoticz(pDevice);
 
 }
 

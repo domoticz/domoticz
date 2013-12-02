@@ -41,6 +41,7 @@ class ZWaveBase : public CDomoticzHardwareBase
 		//values
 		float floatValue;
 		int intvalue;
+		bool bValidValue;
 
 		//battery
 		int batValue;
@@ -62,6 +63,9 @@ class ZWaveBase : public CDomoticzHardwareBase
 			isFLiRS=false;
 			hasWakeup=false;
 			hasBattery=false;
+			floatValue=0;
+			intvalue=0;
+			bValidValue=true;
 		}
 	};
 public:
