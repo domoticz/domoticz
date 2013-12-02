@@ -709,7 +709,7 @@ void MainWorker::GetWinCpuTemperature()
          	 if(FAILED(hr = pLocator->ConnectServer(L"root\\OpenHardwareMonitor",NULL, NULL, NULL, 0, NULL, NULL, &pServices)))  
 			 {  
 				pLocator->Release();  
-				_log.Log(LOG_NORM, "Unable to connect to OpenHardWareMonitor");
+				//_log.Log(LOG_NORM, "Unable to connect to OpenHardWareMonitor");
 				if (ci == S_OK)
 				{
 					CoUninitialize();
@@ -724,7 +724,7 @@ void MainWorker::GetWinCpuTemperature()
                 pServices->Release();
                 if (SUCCEEDED(hr))
                 {
-					_log.Log(LOG_NORM, "Query OK");
+					//_log.Log(LOG_NORM, "Query OK");
 					IWbemClassObject *pclsObj = NULL;
 					ULONG uReturn = 0;
 					while (pEnumerator)
@@ -744,15 +744,12 @@ void MainWorker::GetWinCpuTemperature()
 							if(SUCCEEDED(pclsObj->Get(L"Value", 0, &vRet, NULL, NULL))) //Float 
 							{  
 								float temperature = float (vRet.fltVal);
-								_log.Log(LOG_NORM, "Temp: %d",temperature);
+								//_log.Log(LOG_NORM, "Temp: %d",temperature);
 								VariantClear(&vRet); 
 								if(SUCCEEDED(pclsObj->Get(L"InstanceId", 0, &vRet, NULL, NULL))) //Float 
 								{ 
 									std::string instanceIdS = _bstr_t (vRet.bstrVal);
 									int instanceId = atoi(instanceIdS.c_str()); 
-
-									_log.Log(LOG_NORM, "id: %d",instanceId);
-									
 									VariantClear(&vRet); 
 									RBUF tsen;
 									memset(&tsen,0,sizeof(RBUF));
