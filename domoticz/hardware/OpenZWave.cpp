@@ -457,14 +457,20 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 	unsigned long _homeID = _notification->GetHomeId();
 	unsigned char _nodeID = _notification->GetNodeId();
 
+	if (_nodeID==10)
+		_asm nop;
 	unsigned char instance;
-	if (GetValueByCommandClass(_nodeID, vID.GetInstance(), COMMAND_CLASS_MULTI_INSTANCE, vID)==true)
+
+	if (
+		(commandClass==COMMAND_CLASS_MULTI_INSTANCE)||
+		(commandClass==COMMAND_CLASS_SENSOR_MULTILEVEL)
+		)
 	{
-		instance=vID.GetInstance();//(See note on top of this file) GetInstance();
+		instance=vID.GetIndex();//(See note on top of this file) GetInstance();
 	}
 	else
 	{
-		instance=vID.GetIndex();//(See note on top of this file) GetInstance();
+		instance=vID.GetInstance();//(See note on top of this file) GetInstance();
 	}
 
 	time_t act_time=mytime(NULL);
@@ -853,14 +859,20 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 
 	unsigned char NodeID = vID.GetNodeId();
 
+	if (NodeID==10)
+		_asm nop;
+
 	unsigned char instance;
-	if (commandclass==COMMAND_CLASS_MULTI_INSTANCE)
+	if (
+		(commandclass==COMMAND_CLASS_MULTI_INSTANCE)||
+		(commandclass==COMMAND_CLASS_SENSOR_MULTILEVEL)
+		)
 	{
-		instance=vID.GetInstance();//(See note on top of this file) GetInstance();
+		instance=vID.GetIndex();//(See note on top of this file) GetInstance();
 	}
 	else
 	{
-		instance=vID.GetIndex();//(See note on top of this file) GetInstance();
+		instance=vID.GetInstance();//(See note on top of this file) GetInstance();
 	}
 
 	OpenZWave::ValueID::ValueType vType=vID.GetType();
@@ -873,10 +885,15 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	std::string vLabel=m_pManager->GetValueLabel(vID);
 	std::string vUnits=m_pManager->GetValueUnits(vID);
 
-	if (vLabel=="Exporting")
+	if (
+		(vLabel=="Exporting")||
+		(vLabel=="Interval")||
+		(vLabel=="Previous Reading")
+		)
 		return;
 
 	_log.Log(LOG_NORM, "Value_Added: Node: %d, CommandClass: %s, Label: %s",NodeID, cclassStr(commandclass),vLabel.c_str());
+
 
 	_tZWaveDevice _device;
 	_device.nodeID=NodeID;
@@ -952,6 +969,10 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 			{
 				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
 				{
+					if (vLabel=="Energy")
+						_device.scaleID=1;
+					else
+						_device.scaleID=2;
 					_device.floatValue=fValue;
 					_device.scaleMultiply=1;
 					if (vUnits=="kWh")
@@ -1018,6 +1039,10 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 			{
 				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
 				{
+					if (vLabel=="Energy")
+						_device.scaleID=1;
+					else
+						_device.scaleID=2;
 					_device.floatValue=fValue;
 					_device.scaleMultiply=1;
 					if (vUnits=="kWh")
@@ -1049,7 +1074,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	else
 	{
 		//Unhanded
-		_log.Log(LOG_NORM, "^Unhanded^");
+		_log.Log(LOG_NORM, "OpenZWave: Unhanded class");
 		if (vType== OpenZWave::ValueID::ValueType_List)
 		{
 			//std::vector<std::string > vStringList;
@@ -1069,13 +1094,16 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 	unsigned char NodeID = vID.GetNodeId();
 
 	unsigned char instance;
-	if (commandclass==COMMAND_CLASS_MULTI_INSTANCE)
+	if (
+		(commandclass==COMMAND_CLASS_MULTI_INSTANCE)||
+		(commandclass==COMMAND_CLASS_SENSOR_MULTILEVEL)
+		)
 	{
-		instance=vID.GetInstance();//(See note on top of this file) GetInstance();
+		instance=vID.GetIndex();//(See note on top of this file) GetInstance();
 	}
 	else
 	{
-		instance=vID.GetIndex();//(See note on top of this file) GetInstance();
+		instance=vID.GetInstance();//(See note on top of this file) GetInstance();
 	}
 
 	OpenZWave::ValueID::ValueType vType=vID.GetType();
@@ -1104,16 +1132,35 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 		return;
 	}
 
-	if (vLabel=="Exporting")
+	if (
+		(vLabel=="Exporting")||
+		(vLabel=="Interval")||
+		(vLabel=="Previous Reading")
+		)
 		return;
 
 	time_t atime=mytime(NULL);
 	std::stringstream sstr;
 	sstr << int(NodeID) << ".instances." << int(instance) << ".commandClasses." << int(commandclass) << ".data";
+
+	if (
+		(vLabel=="Energy")||
+		(vLabel=="Power")
+		)
+	{
+		int scaleID=0;
+		if (vLabel=="Energy")
+			scaleID=1;
+		else
+			scaleID=2;
+
+		sstr << "." << scaleID;
+	}
+
 	std::string path=sstr.str();
-
+#ifdef _DEBUG
 	_log.Log(LOG_NORM, "Value_Changed: Node: %d, CommandClass: %s, Label: %s",NodeID, cclassStr(commandclass),vLabel.c_str());
-
+#endif
 	float fValue=0;
 	int iValue=0;
 	bool bValue=false;
@@ -1367,7 +1414,7 @@ void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int po
 
 				//Ignore non-user types
 				if (vGenre!=OpenZWave::ValueID::ValueGenre_User)
-					return;
+					continue;
 
 				std::string vLabel=m_pManager->GetValueLabel(*ittValue);
 
