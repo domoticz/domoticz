@@ -457,8 +457,6 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 	unsigned long _homeID = _notification->GetHomeId();
 	unsigned char _nodeID = _notification->GetNodeId();
 
-	if (_nodeID==10)
-		_asm nop;
 	unsigned char instance;
 
 	if (
@@ -858,9 +856,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 		return;
 
 	unsigned char NodeID = vID.GetNodeId();
-
-	if (NodeID==10)
-		_asm nop;
 
 	unsigned char instance;
 	if (
