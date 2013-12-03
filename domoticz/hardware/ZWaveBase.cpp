@@ -314,7 +314,10 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		RBUF tsen;
 		memset(&tsen,0,sizeof(RBUF));
 
-		const _tZWaveDevice *pPowerDevice=FindDevice(pDevice->nodeID,-1,ZDTYPE_SENSOR_POWER);
+		const _tZWaveDevice *pPowerDevice=NULL;
+		pPowerDevice=FindDevice(pDevice->nodeID,pDevice->instanceID,ZDTYPE_SENSOR_POWER);
+		if (pPowerDevice==NULL)
+			pPowerDevice=FindDevice(pDevice->nodeID,-1,ZDTYPE_SENSOR_POWER);
 		if (pPowerDevice)
 		{
 			tsen.ENERGY.packettype=pTypeENERGY;
@@ -330,7 +333,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 				tsen.ENERGY.battery_level=(pDevice->batValue<20)?0:1;
 			}
 
-			unsigned long long instant=(unsigned long long)pPowerDevice->floatValue;
+			unsigned long long instant=(unsigned long long)round(pPowerDevice->floatValue);
 			tsen.ENERGY.instant1=(unsigned char)(instant/0x1000000);
 			instant-=tsen.ENERGY.instant1*0x1000000;
 			tsen.ENERGY.instant2=(unsigned char)(instant/0x10000);

@@ -921,7 +921,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				else
 					_device.intvalue=0;
 				InsertDevice(_device);
-				//m_pManager->EnablePoll(vID,1);
 			}
 		}
 	}
@@ -980,7 +979,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 						_device.devType = ZDTYPE_SENSOR_POWER;
 					}
 					InsertDevice(_device);
-					//m_pManager->EnablePoll(vID,2);
 				}
 			}
 		}
@@ -1000,7 +998,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				_device.commandClassID=49;
 				_device.devType = ZDTYPE_SENSOR_TEMPERATURE;
 				InsertDevice(_device);
-				//m_pManager->EnablePoll(vID,2);
 			}
 		}
 		else if (vLabel=="Luminance")
@@ -1011,7 +1008,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				_device.commandClassID=49;
 				_device.devType = ZDTYPE_SENSOR_LIGHT;
 				InsertDevice(_device);
-				//m_pManager->EnablePoll(vID,2);
 			}
 		}
 		else if (vLabel=="Relative Humidity")
@@ -1022,7 +1018,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				_device.commandClassID=49;
 				_device.devType = ZDTYPE_SENSOR_HUMIDITY;
 				InsertDevice(_device);
-				//m_pManager->EnablePoll(vID,2);
 			}
 		}
 		else if (
@@ -1050,7 +1045,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 						_device.devType = ZDTYPE_SENSOR_POWER;
 					}
 					InsertDevice(_device);
-					//m_pManager->EnablePoll(vID,2);
 				}
 			}
 		}
@@ -1062,7 +1056,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 			if (vType== OpenZWave::ValueID::ValueType_Byte)
 			{
 				UpdateDeviceBatteryStatus(NodeID,byteValue);
-				//m_pManager->EnablePoll(vID,2);
 			}
 		}
 	}
@@ -1416,6 +1409,7 @@ void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int po
 
 				if (m_pManager->isPolled(*ittValue))
 					continue; //already polled
+
 				if (commandclass==COMMAND_CLASS_SWITCH_BINARY)
 				{
 					if ((vLabel=="Switch")||(vLabel=="Sensor"))
