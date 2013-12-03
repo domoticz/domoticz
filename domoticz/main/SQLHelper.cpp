@@ -3203,7 +3203,25 @@ void CSQLHelper::UpdateMeter()
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
 
-	sprintf(szTmp,"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
+	sprintf(szTmp,
+		"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE ("
+		"Type=%d OR " //pTypeRFXMeter
+		"Type=%d OR " //pTypeP1Gas
+		"Type=%d OR " //pTypeYouLess
+		"Type=%d OR " //pTypeENERGY
+		"Type=%d OR " //pTypePOWER
+		"Type=%d OR " //pTypeAirQuality
+		"Type=%d OR " //pTypeUsage
+		"Type=%d OR " //pTypeLux
+		"Type=%d OR " //pTypeWEIGHT
+		"(Type=%d AND SubType=%d) OR " //pTypeRego6XXValue,sTypeRego6XXCounter
+		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeVisibility
+		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeSolarRadiation
+		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeSoilMoisture
+		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeLeafWetness
+		"(Type=%d AND SubType=%d) OR " //pTypeRFXSensor,sTypeRFXSensorAD
+		"(Type=%d AND SubType=%d)" //pTypeRFXSensor,sTypeRFXSensorVolt
+		")",
 		pTypeRFXMeter,
 		pTypeP1Gas,
 		pTypeYouLess,
@@ -3211,9 +3229,9 @@ void CSQLHelper::UpdateMeter()
 		pTypePOWER,
 		pTypeAirQuality,
 		pTypeUsage,
-        pTypeRego6XXValue,sTypeRego6XXCounter,
 		pTypeLux,
 		pTypeWEIGHT,
+		pTypeRego6XXValue,sTypeRego6XXCounter,
 		pTypeGeneral,sTypeVisibility,
 		pTypeGeneral,sTypeSolarRadiation,
 		pTypeGeneral,sTypeSoilMoisture,
