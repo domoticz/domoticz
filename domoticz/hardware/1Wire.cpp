@@ -62,8 +62,8 @@ bool C1Wire::StartHardware()
 	Init();
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::Do_Work, this)));
+	m_bIsStarted=true;
 	sOnConnected(this);
-
 	return (m_thread!=NULL);
 }
 
@@ -74,6 +74,7 @@ bool C1Wire::StopHardware()
 		m_stoprequested = true;
 		m_thread->join();
 	}
+	m_bIsStarted=false;
     return true;
 }
 

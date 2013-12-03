@@ -36,6 +36,7 @@ bool CWunderground::StartHardware()
 	Init();
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWunderground::Do_Work, this)));
+	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread!=NULL);
 }
@@ -48,7 +49,7 @@ bool CWunderground::StopHardware()
 		m_stoprequested = true;
 		m_thread->join();
 	}
-    
+    m_bIsStarted=false;
     return true;
 }
 

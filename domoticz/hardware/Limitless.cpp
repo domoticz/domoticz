@@ -103,6 +103,7 @@ CLimitLess::CLimitLess(const int ID, const int LedType, const std::string IPAddr
 	m_stoprequested=false;
 	m_RemoteSocket=INVALID_SOCKET;
 	m_LEDType=LedType;
+	m_bIsStarted=false;
 #if defined WIN32
 	//Init winsock
 	WSADATA data;
@@ -202,6 +203,7 @@ bool CLimitLess::StartHardware()
 			}
 		}
 	}
+	m_bIsStarted=true;
 	sOnConnected(this);
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CLimitLess::Do_Work, this)));
@@ -238,6 +240,7 @@ bool CLimitLess::StopHardware()
 		closesocket(m_RemoteSocket);
 		m_RemoteSocket=INVALID_SOCKET;
 	}
+	m_bIsStarted=false;
     return true;
 }
 

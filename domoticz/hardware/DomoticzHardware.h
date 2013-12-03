@@ -10,12 +10,14 @@ class MainWorker;
 
 class CDomoticzHardwareBase
 {
-	friend class RFXComSerial;
-	friend class RFXComTCP;
+	friend class C1Wire;
+	friend class CDummy;
 	friend class DomoticzTCP;
 	friend class P1MeterBase;
 	friend class P1MeterSerial;
 	friend class P1MeterTCP;
+	friend class RFXComSerial;
+	friend class RFXComTCP;
 	friend class CYouLess;
 	friend class CRego6XXSerial;
 	friend class CDavisLoggerSerial;
@@ -27,7 +29,10 @@ class CDomoticzHardwareBase
 	friend class OTGWTCP;
 	friend class Teleinfo;
 	friend class CLimitLess;
-
+	friend class ZWaveBase;
+	friend class CWunderground;
+	friend class CTE923;
+	friend class CVolcraftCO20;
 public: 
 	CDomoticzHardwareBase();
 	virtual ~CDomoticzHardwareBase();

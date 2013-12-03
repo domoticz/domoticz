@@ -139,6 +139,7 @@ bool Teleinfo::StartHardware()
 		return false;
 	}
 	setReadCallback(boost::bind(&Teleinfo::readCallback, this, _1, _2));
+	m_bIsStarted=true;
 	sOnConnected(this);
 
 	return true;
@@ -156,6 +157,7 @@ bool Teleinfo::StopHardware()
 			//Don't throw from a Stop command
 		}
 	}
+	m_bIsStarted=false;
 	return true;
 }
 

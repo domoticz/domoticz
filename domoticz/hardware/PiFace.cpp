@@ -632,7 +632,7 @@ bool CPiFace::StartHardware()
          else m_stoprequested=true;
      }
      else m_stoprequested=true;
-    
+    m_bIsStarted=true;
     sOnConnected(this);
     return (m_thread!=NULL);
 }
@@ -650,6 +650,7 @@ bool CPiFace::StopHardware()
 #ifdef __arm__
     if (m_fd > 0) close(m_fd);
 #endif
+	m_bIsStarted=false;
     return true;
 }
 

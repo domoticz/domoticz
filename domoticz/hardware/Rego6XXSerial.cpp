@@ -157,6 +157,7 @@ bool CRego6XXSerial::StopHardware()
 			//Don't throw from a Stop command
 		}
 	}
+	m_bIsStarted=false;
 	return true;
 }
 

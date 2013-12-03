@@ -54,9 +54,6 @@
     <Filter Include="Devices\YouLess">
       <UniqueIdentifier>{ddea03ec-8176-4bdf-8402-b73040b73584}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\Camera">
-      <UniqueIdentifier>{adaa661b-4aaf-443c-a368-2c2f384d9c1a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\TE923">
       <UniqueIdentifier>{591cadc8-1b94-461a-b993-3d2e72c4fb0c}</UniqueIdentifier>
     </Filter>
@@ -107,6 +104,9 @@
     </Filter>
     <Filter Include="Devices\LimitlessLed">
       <UniqueIdentifier>{80714ac8-8783-4ef2-8836-3bb5b15adbb0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Camera">
+      <UniqueIdentifier>{adaa661b-4aaf-443c-a368-2c2f384d9c1a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -245,7 +245,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="main\Camera.h">
-      <Filter>Devices\Camera</Filter>
+      <Filter>Camera</Filter>
     </ClInclude>
     <ClInclude Include="httpclient\HTTPClient.h">
       <Filter>HTTPClient</Filter>
@@ -454,7 +454,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main\Camera.cpp">
-      <Filter>Devices\Camera</Filter>
+      <Filter>Camera</Filter>
     </ClCompile>
     <ClCompile Include="httpclient\HTTPClient.cpp">
       <Filter>HTTPClient</Filter>

@@ -56,7 +56,6 @@ CBMP085::CBMP085(const int ID)
 {
 	m_stoprequested=false;
 	m_HwdID=ID;
-	m_bIsStarted=false;
 }
 
 CBMP085::~CBMP085()
@@ -73,6 +72,7 @@ bool CBMP085::StartHardware()
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CBMP085::Do_Work, this)));
 	sOnConnected(this);
+	m_bIsStarted=true;
 	return (m_thread!=NULL);
 }
 
@@ -81,6 +81,7 @@ bool CBMP085::StopHardware()
 	m_stoprequested=true;
 	if (m_thread!=NULL)
 		m_thread->join();
+	m_bIsStarted=false;
 	return true;
 }
 

@@ -8,6 +8,7 @@ CDummy::CDummy(const int ID)
 
 CDummy::~CDummy(void)
 {
+	m_bIsStarted=false;
 }
 
 void CDummy::Init()
@@ -17,12 +18,14 @@ void CDummy::Init()
 bool CDummy::StartHardware()
 {
 	Init();
+	m_bIsStarted=true;
 	sOnConnected(this);
 	return true;
 }
 
 bool CDummy::StopHardware()
 {
+	m_bIsStarted=false;
     return true;
 }
 

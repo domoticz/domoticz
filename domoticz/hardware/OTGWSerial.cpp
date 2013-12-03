@@ -25,7 +25,6 @@ OTGWSerial::OTGWSerial(const int ID, const std::string& devname, const unsigned 
 	m_szSerialPort=devname;
 	m_iBaudRate=baud_rate;
 	m_stoprequestedpoller=false;
-	m_bIsStarted=false;
 }
 
 OTGWSerial::~OTGWSerial()

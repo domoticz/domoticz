@@ -27,8 +27,6 @@ CDavisLoggerSerial::CDavisLoggerSerial(const int ID, const std::string& devname,
 	m_szSerialPort=devname;
 	m_iBaudRate=baud_rate;
 	m_stoprequested=false;
-	m_bIsStarted=false;
-
 }
 
 CDavisLoggerSerial::~CDavisLoggerSerial(void)
@@ -64,6 +62,7 @@ bool CDavisLoggerSerial::StopHardware()
 			//Don't throw from a Stop command
 		}
 	}
+	m_bIsStarted=false;
 	return true;
 }
 

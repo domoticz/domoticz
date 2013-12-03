@@ -40,6 +40,7 @@ bool ZWaveBase::StartHardware()
 	m_updateTime=0;
 	m_LastIncludedNode=0;
 	m_bControllerCommandInProgress=false;
+	m_bIsStarted=true;
 
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&ZWaveBase::Do_Work, this)));
@@ -55,6 +56,7 @@ bool ZWaveBase::StopHardware()
 		if (m_thread!=NULL)
 			m_thread->join();
 	}
+	m_bIsStarted=false;
 	return true;
 }
 
