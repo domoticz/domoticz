@@ -819,8 +819,20 @@ void MainWorker::UpdateSystemSensor(const std::string& wmiId, const std::string&
 		szQuery.clear();
 		szQuery.str("");
 
-		szQuery << "UPDATE DeviceStatus SET HardwareID = " << hwId << ", nValue=" << devValue << ", sValue ='" << devValue << "' WHERE (DeviceID == '" << wmiId << "')";
-        m_sql.query(szQuery.str());
+		time_t now = time(0);
+		struct tm ltime;
+		localtime_r(&now,&ltime);
+
+		char szLastUpdate[40];
+		sprintf(szLastUpdate,"%04d-%02d-%02d %02d:%02d:%02d",ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+
+
+		szQuery << "UPDATE DeviceStatus SET HardwareID = " << hwId << ", nValue=" << devValue << ", sValue ='" << devValue << "', LastUpdate='" << szLastUpdate << "' WHERE (DeviceID == '" << wmiId << "')";
+
+		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+		
+		
+		m_sql.query(szQuery.str());
 	}
 	return;
 }
