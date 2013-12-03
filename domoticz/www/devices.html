@@ -67,9 +67,12 @@
 </div>
 <script type="text/javascript" charset="utf-8">
 
-function AddDevice(idx)
+function AddDevice(idx,itemname)
 {
-    $.devIdx = idx;
+	$.devIdx = idx;
+	if (itemname!='Undefined') {
+		$("#devicename").val(itemname);
+	}
     $( "#dialog-adddevice" ).i18n();
     $( "#dialog-adddevice" ).dialog( "open" );
 }
@@ -292,7 +295,7 @@ function ShowDevices(filter)
 							itemSubIcons+='<img src="images/add.png" title="' + $.i18n('Add Light/Switch Device') + '" onclick="AddLightDevice(' + item.idx +')">';
 						}
 						else {
-							itemSubIcons+='<img src="images/add.png" title="' + $.i18n('Add Device') +'" onclick="AddDevice(' + item.idx +')">';
+							itemSubIcons+='<img src="images/add.png" title="' + $.i18n('Add Device') +'" onclick="AddDevice(' + item.idx +',\'' + item.Name + '\')">';
 						}
           }
           if (
