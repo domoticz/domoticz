@@ -3203,7 +3203,7 @@ void CSQLHelper::UpdateMeter()
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
 
-	sprintf(szTmp,"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
+	sprintf(szTmp,"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
 		pTypeRFXMeter,
 		pTypeP1Gas,
 		pTypeYouLess,
@@ -3213,6 +3213,7 @@ void CSQLHelper::UpdateMeter()
 		pTypeUsage,
         pTypeRego6XXValue,sTypeRego6XXCounter,
 		pTypeLux,
+		pTypeWEIGHT,
 		pTypeGeneral,sTypeVisibility,
 		pTypeGeneral,sTypeSolarRadiation,
 		pTypeGeneral,sTypeSoilMoisture,
@@ -3314,6 +3315,13 @@ void CSQLHelper::UpdateMeter()
 			{
 				double fValue=atof(sValue.c_str());
 				sprintf(szTmp,"%.0f",fValue);
+				sValue=szTmp;
+				bSkipSameValue=false;
+			}
+			else if (dType==pTypeWEIGHT)
+			{
+				double fValue=atof(sValue.c_str());
+				sprintf(szTmp,"%.1f",fValue);
 				sValue=szTmp;
 				bSkipSameValue=false;
 			}
@@ -3800,6 +3808,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				(!((devType==pTypeGeneral)&&(subType==sTypeSoilMoisture)))&&
 				(!((devType==pTypeGeneral)&&(subType==sTypeLeafWetness)))&&
 				(devType!=pTypeLux)&&
+				(devType!=pTypeWEIGHT)&&
 				(devType!=pTypeUsage)
 				)
 			{
@@ -3860,7 +3869,8 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				((devType!=pTypeGeneral)&&(subType!=sTypeSolarRadiation))&&
 				((devType!=pTypeGeneral)&&(subType!=sTypeSoilMoisture))&&
 				((devType!=pTypeGeneral)&&(subType!=sTypeLeafWetness))&&
-				(devType!=pTypeLux)
+				(devType!=pTypeLux)||
+				(devType!=pTypeWEIGHT)
 				)
 			{
 				//Insert the last (max) counter value into the meter table to get the "today" value correct.

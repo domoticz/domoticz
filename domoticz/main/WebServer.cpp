@@ -1165,7 +1165,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						(dType!=pTypeLux)&&
 						(dType!=pTypeUsage)&&
 						(!((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXCounter)))&&
-						(!((dType==pTypeThermostat)&&(dSubType==sTypeThermSetpoint)))
+						(!((dType==pTypeThermostat)&&(dSubType==sTypeThermSetpoint)))&&
+						(dType!=pTypeWEIGHT)
 						)
 						continue;
 				}
@@ -2299,6 +2300,12 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				root["result"][ii]["Data"]=szTmp;
 				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 			}
+			else if (dType == pTypeWEIGHT)
+			{
+				sprintf(szTmp,"%.1f kg",atof(sValue.c_str()));
+				root["result"][ii]["Data"]=szTmp;
+				root["result"][ii]["HaveTimeout"]=false;
+			}
 			else if (dType == pTypeUsage)
 			{
 				if (dSubType==sTypeElectric)
@@ -3145,6 +3152,7 @@ std::string CWebServer::GetJSonPage()
 					((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorAD))||
 					((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorVolt))||
 					(dType==pTypeLux)||
+					(dType==pTypeWEIGHT)||
 					(dType==pTypeUsage)
 					)
 					dbasetable="MultiMeter_Calendar";
@@ -3469,6 +3477,29 @@ std::string CWebServer::GetJSonPage()
 
 							root["result"][ii]["d"]=sd[1].substr(0,16);
 							root["result"][ii]["lux"]=sd[0];
+							ii++;
+						}
+					}
+				}
+				else if (dType==pTypeWEIGHT)
+				{//day
+					root["status"]="OK";
+					root["title"]="Graph " + sensor + " " + srange;
+
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator itt;
+						int ii=0;
+						for (itt=result.begin(); itt!=result.end(); ++itt)
+						{
+							std::vector<std::string> sd=*itt;
+
+							root["result"][ii]["d"]=sd[1].substr(0,16);
+							root["result"][ii]["v"]=sd[0];
 							ii++;
 						}
 					}
@@ -4699,6 +4730,27 @@ std::string CWebServer::GetJSonPage()
 						}
 					}
 				}
+				else if (dType==pTypeWEIGHT)
+				{//month/year
+					root["status"]="OK";
+					root["title"]="Graph " + sensor + " " + srange;
+
+					szQuery << "SELECT Value1,Value2, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator itt;
+						for (itt=result.begin(); itt!=result.end(); ++itt)
+						{
+							std::vector<std::string> sd=*itt;
+
+							root["result"][ii]["d"]=sd[2].substr(0,16);
+							root["result"][ii]["v_min"]=sd[0];
+							root["result"][ii]["v_max"]=sd[1];
+							ii++;
+						}
+					}
+				}
 				else if (dType==pTypeUsage)
 				{//month/year
 					root["status"]="OK";
@@ -5042,6 +5094,18 @@ std::string CWebServer::GetJSonPage()
 						root["result"][ii]["d"]=szDateEnd;
 						root["result"][ii]["lux_min"]=result[0][0];
 						root["result"][ii]["lux_max"]=result[0][1];
+						ii++;
+					}
+				}
+				else if (dType==pTypeWEIGHT)
+				{
+					szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						root["result"][ii]["d"]=szDateEnd;
+						root["result"][ii]["v_min"]=result[0][0];
+						root["result"][ii]["v_max"]=result[0][1];
 						ii++;
 					}
 				}
@@ -7768,6 +7832,13 @@ std::string CWebServer::GetJSonPage()
 				ii++;
 			}
 			if (dType==pTypeLux)
+			{
+				root["result"][ii]["val"]=NTYPE_USAGE;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+				ii++;
+			}
+			if (dType==pTypeWEIGHT)
 			{
 				root["result"][ii]["val"]=NTYPE_USAGE;
 				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);

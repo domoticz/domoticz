@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 358
+# ref 359
 
 CACHE:
 favicon.ico
@@ -222,6 +222,8 @@ images/remote48.png
 images/remove.png
 images/rename.png
 images/restart.png
+images/scale.png
+images/scale48.png
 images/scenes.png
 images/security.png
 images/security48.png

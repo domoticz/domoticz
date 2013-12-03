@@ -15,6 +15,7 @@ Version 1.0.xxxx (December xxth 2013)
 - Implemented: OpenZWave, now possible to set Node configuration settings
 - Fixed: Day string logging for the DT1 - RTGR328N device
 - Implemented: Dashboard, clicking on a Motion/Dusk/Rain sensor icon will display the log
+- Fixed: RFXtrx hardware can now also be compiled/used accross big-little endianess systems
 
 Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart

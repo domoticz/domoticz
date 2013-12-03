@@ -157,7 +157,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_OpenThermGatewayTCP,"OpenTherm Gateway with LAN interface" },
 		{ HTYPE_OpenZWave,			"OpenZWave USB" },
 		{ HTYPE_LimitlessLights,	"Limitless/AppLamp with LAN interface" },
-		{ HTYPE_System,				"Computer onboard sensors (automatically added when detected)" },
+		{ HTYPE_System,				"Computer Onboard sensors (automatically added when detected)" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -323,7 +323,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeCURRENTENERGY, "Current/Energy" , "current" },
 		{ pTypeGAS, "Gas" , "counter" },
 		{ pTypeWATER, "Water" , "counter" },
-		{ pTypeWEIGHT, "Weight" , "unknown" },
+		{ pTypeWEIGHT, "Weight" , "scale" },
 		{ pTypeRFXSensor, "RFXSensor" , "unknown" },
 		{ pTypeRFXMeter, "RFXMeter" , "counter" },
 		{ pTypeP1Power, "P1 Smart Meter" , "counter" },

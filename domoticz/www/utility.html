@@ -1272,6 +1272,10 @@ function RefreshUtilities()
 					status=item.Data;
 					bigtext=item.Data;
 				}
+				else if (item.Type == "Weight") {
+					status=item.Data;
+					bigtext=item.Data;
+				}
 				else if (item.Type == "Usage") {
 					status=item.Data;
 					bigtext=item.Data;
@@ -1406,6 +1410,9 @@ function ShowUtilities()
 				else if (item.Type == "Lux") {
 				  xhtm+=item.Data;
 				}
+				else if (item.Type == "Weight") {
+				  xhtm+=item.Data;
+				}
 				else if (item.Type == "Usage") {
 				  xhtm+=item.Data;
 				}
@@ -1450,6 +1457,10 @@ function ShowUtilities()
             }
             else if (item.Type == "Lux") {
               xhtm+='lux48.png" height="48"></td>\n';
+              status=item.Data;
+            }
+            else if (item.Type == "Weight") {
+              xhtm+='scale48.png" height="48"></td>\n';
               status=item.Data;
             }
             else if (item.Type == "Usage") {
@@ -1518,6 +1529,12 @@ function ShowUtilities()
 		  }
 		  else if (item.Type == "Lux") {
 			xhtm+='<a class="btnsmall" onclick="ShowLuxLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
+			if (window.my_config.userrights==2) {
+				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
+			}
+		  }
+		  else if (item.Type == "Weight") {
+			xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(' + item.idx + ',\'' + item.Name+ '\',\'' + item.Type +'\', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
 			if (window.my_config.userrights==2) {
 				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 			}

@@ -783,6 +783,7 @@ function RefreshFavorites()
 					(item.Type == "Current/Energy") || 
 					(item.Type == "Air Quality") || 
 					(item.Type == "Lux") || 
+					(item.Type == "Weight") || 
 					(item.Type == "Usage")||
 					((item.Type == "Thermostat")&&(item.SubType=="SetPoint"))||
 					(item.SubType=="Soil Moisture")||
@@ -816,6 +817,7 @@ function RefreshFavorites()
 									(item.Type == "Energy")||
 									(item.Type == "Air Quality")||
 									(item.Type == "Lux")||
+									(item.Type == "Weight")||
 									(item.Type == "Usage")||
 									(item.SubType=="Soil Moisture")||
 									(item.SubType=="Leaf Wetness")||
@@ -887,6 +889,10 @@ function RefreshFavorites()
 							bigtext=item.Data;
 						}
 						else if (item.Type == "Lux") {
+							status=item.Data;
+							bigtext=item.Data;
+						}
+						else if (item.Type == "Weight") {
 							status=item.Data;
 							bigtext=item.Data;
 						}
@@ -2076,6 +2082,7 @@ function ShowFavorites()
 					(item.Type == "Current/Energy") || 
 					(item.Type == "Air Quality") || 
 					(item.Type == "Lux") || 
+					(item.Type == "Weight") || 
 					(item.Type == "Usage")||
 					((item.Type == "Thermostat")&&(item.SubType=="SetPoint"))||
 					(item.SubType=="Soil Moisture")||
@@ -2137,6 +2144,7 @@ function ShowFavorites()
 							(item.Type == "Energy")||
 							(item.Type == "Air Quality")||
 							(item.Type == "Lux")||
+							(item.Type == "Weight")||
 							(item.Type == "Usage")||
 							(item.SubType=="Soil Moisture")||
 							(item.SubType=="Leaf Wetness")||
@@ -2206,6 +2214,7 @@ function ShowFavorites()
 				else if (
 						(item.Type == "Air Quality")||
 						(item.Type == "Lux")||
+						(item.Type == "Weight")||
 						(item.Type == "Usage")||
 						(item.SubType=="Soil Moisture")||
 						(item.SubType=="Leaf Wetness")||
@@ -2248,6 +2257,10 @@ function ShowFavorites()
 				}
 				else if (item.Type == "Lux") {
 					xhtm+='lux48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowLuxLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');" height="40"></td>\n';
+					status=item.Data;
+				}
+				else if (item.Type == "Weight") {
+					xhtm+='scale48.png" height="40"></td>\n';
 					status=item.Data;
 				}
 				else if (item.Type == "Usage") {
