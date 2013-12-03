@@ -739,6 +739,7 @@ void MainWorker::GetWinCpuTemperature()
 						if(SUCCEEDED(pclsObj->Get(L"Name", 0, &vRet, NULL, NULL)) && vRet.vt == VT_BSTR) //String 
 						{  
 							std::string itemName = _bstr_t (vRet.bstrVal);
+							itemName = stdreplace(itemName, "#", "");
 							//_log.Log(LOG_NORM, "Name: %s",itemName.c_str());
 							VariantClear(&vRet);  
 							if(SUCCEEDED(pclsObj->Get(L"Value", 0, &vRet, NULL, NULL))) //Float 
