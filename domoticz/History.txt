@@ -1,3 +1,6 @@
+Version 1.0.1250 (December 3rd 2013)
+- Support for OpenHardwareMonitor supplied sensor data in Windows version of Domoticz. See wiki for info.
+
 Version 1.0.xxxx (December xxth 2013)
 - Implemented: new commandline option to specify www root folder (-wwwroot)
 - Implemented: Limitless/AppLamp, option to set Hue/Brightness in the Edit option
