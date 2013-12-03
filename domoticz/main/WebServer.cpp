@@ -7415,7 +7415,7 @@ std::string CWebServer::GetJSonPage()
 				goto exitjson;
 			_eSwitchType switchtype=(_eSwitchType)atoi(sswitchtype.c_str());
 			int lighttype=atoi(slighttype.c_str());
-			int dtype;
+			int dtype=0;
 			int subtype=0;
 			std::string sunitcode;
 			std::string devid;
