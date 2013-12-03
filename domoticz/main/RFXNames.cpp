@@ -157,6 +157,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_OpenThermGatewayTCP,"OpenTherm Gateway with LAN interface" },
 		{ HTYPE_OpenZWave,			"OpenZWave USB" },
 		{ HTYPE_LimitlessLights,	"Limitless/AppLamp with LAN interface" },
+		{ HTYPE_System,				"Computer onboard sensors (automatically added when detected)" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -365,8 +366,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeTEMP, sTypeTEMP8, "LaCrosse WS2300" },
 		{ pTypeTEMP, sTypeTEMP9, "RUBiCSON" },
 		{ pTypeTEMP, sTypeTEMP10, "TFA 30.3133" },
-		{ pTypeTEMP, sTypeTEMP_RPI, "Raspberry Pi" },
-		{ pTypeTEMP, sTypeTEMP_WIN, "Windows" },
+		{ pTypeTEMP, sTypeTEMP_SYSTEM, "System" },
 
 		{ pTypeHUM, sTypeHUM1, "LaCrosse TX3" },
 		{ pTypeHUM, sTypeHUM2, "LaCrosse WS2300" },

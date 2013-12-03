@@ -660,7 +660,7 @@ void MainWorker::GetRaspberryPiTemperature()
 				memset(&tsen,0,sizeof(RBUF));
 				tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
 				tsen.TEMP.packettype=pTypeTEMP;
-				tsen.TEMP.subtype=sTypeTEMP_RPI;
+				tsen.TEMP.subtype=sTypeTEMP_SYSTEM;
 				tsen.TEMP.battery_level=9;
 				tsen.TEMP.rssi=6;
 				tsen.TEMP.id1=0;
@@ -748,39 +748,23 @@ void MainWorker::GetWinCpuTemperature()
 								VariantClear(&vRet); 
 								if(SUCCEEDED(pclsObj->Get(L"InstanceId", 0, &vRet, NULL, NULL))) //Float 
 								{ 
-									std::string instanceIdS = _bstr_t (vRet.bstrVal);
-									int instanceId = atoi(instanceIdS.c_str()); 
+									std::string instanceId = _bstr_t (vRet.bstrVal);
+									instanceId = "WMI"+instanceId;
+									//int instanceId = atoi(instanceIdS.c_str()); 
 									VariantClear(&vRet); 
-									RBUF tsen;
-									memset(&tsen,0,sizeof(RBUF));
-									tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-									tsen.TEMP.packettype=pTypeTEMP;
-									tsen.TEMP.subtype=sTypeTEMP_WIN;
-									tsen.TEMP.battery_level=9;
-									tsen.TEMP.rssi=6;
-									tsen.TEMP.id1=0;
-									tsen.TEMP.id2=instanceId;
-									tsen.TEMP.tempsign=(temperature>=0)?0:1;
-									int at10=round(abs(temperature*10.0f));
-									tsen.TEMP.temperatureh=(BYTE)(at10/256);
-									at10-=(tsen.TEMP.temperatureh*256);
-									tsen.TEMP.temperaturel=(BYTE)(at10);
-
 									// convert now to string form
 									time_t now = time(0);
 									char *szDate = asctime(localtime(&now));
 									szDate[strlen(szDate)-1]=0;
 
 									WriteMessageStart();
-
 									std::stringstream sTmp;
 									sTmp << szDate << " (" <<itemName << ") ";
 									WriteMessage(sTmp.str().c_str(),false);
-									WriteMessage("Temperature",false);
-									unsigned long long DeviceRowIdx=decode_Temp(1000, (const tRBUF*)&tsen.TEMP);
+									WriteMessage("Temperature",true);
 									WriteMessageEnd();
 
-									m_sharedserver.SendToAll(DeviceRowIdx,(const char*)&tsen,tsen.TEMP.packetlength+1,NULL);
+									UpdateSystemSensor(instanceId, itemName, temperature);
 								}
 							}
 						}
@@ -809,6 +793,74 @@ void MainWorker::GetWinCpuTemperature()
 		}
 	}
 #endif
+}
+
+void MainWorker::UpdateSystemSensor(const std::string& wmiId, const std::string& devName, const float& devValue)
+{
+	int hwId = CheckSystemHardware();
+	if (!hwId) return;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT ID FROM DeviceStatus WHERE (DeviceID=='" << wmiId << "') AND (Type==" << pTypeTEMP << ") AND (SubType=='" << sTypeTEMP_SYSTEM << "')";
+	result=m_sql.query(szQuery.str());
+	if (result.size()<1)
+	{
+		szQuery.clear();
+		szQuery.str("");
+
+		szQuery << 
+			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
+			"VALUES (" << hwId << ",'" << wmiId << "',"<< 0 << "," << pTypeTEMP << "," <<sTypeTEMP_SYSTEM << ",12,255,'" << devName << "'," << devValue << ",'" << devValue << "')";
+		m_sql.query(szQuery.str());
+	}
+	else 
+	{
+		szQuery.clear();
+		szQuery.str("");
+
+		szQuery << "UPDATE DeviceStatus SET HardwareID = " << hwId << ", nValue=" << devValue << ", sValue ='" << devValue << "' WHERE (DeviceID == '" << wmiId << "')";
+        m_sql.query(szQuery.str());
+	}
+	return;
+}
+int MainWorker::CheckSystemHardware()
+{
+	int hwId = 0;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT ID FROM Hardware WHERE (Type=='" <<HTYPE_System << "') AND (Name=='Internal sensors') LIMIT 1";
+	result=m_sql.query(szQuery.str());
+	if (result.size()<1)
+	{
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5) VALUES ('Internal sensors',1, '" << HTYPE_System << "','',1,'','',0,0,0,0,0)";
+		m_sql.query(szQuery.str());
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT MAX(ID) FROM Hardware";
+		result=m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::string> sd=result[0];
+			hwId=atoi(sd[0].c_str());
+			AddHardwareFromParams(hwId,"Internal sensors",1,HTYPE_System,"",1,"","",0,0,0,0,0);
+		}
+
+		m_sql.query(szQuery.str());
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT ID FROM Hardware WHERE (Type==" <<HTYPE_System << ") AND (Name=='Internal sensors') LIMIT 1";
+		result=m_sql.query(szQuery.str());
+	}
+	
+	if (result.size()>0)
+    {
+		std::vector<std::string> sd=result[0];
+		hwId=atoi(sd[0].c_str());
+	}
+	
+	return hwId;
 }
 
 void MainWorker::Do_Work()
@@ -2109,11 +2161,8 @@ unsigned long long MainWorker::decode_Temp(const int HwdID, const tRBUF *pRespon
 		case sTypeTEMP10:
 			WriteMessage("subtype       = TEMP10 - TFA 30.3133");
 			break;
-		case sTypeTEMP_RPI:
-			WriteMessage("subtype       = Raspberry Pi");
-			break;
-		case sTypeTEMP_WIN:
-			WriteMessage("subtype       = Windows");
+		case sTypeTEMP_SYSTEM:
+			WriteMessage("subtype       = System");
 			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->TEMP.packettype, pResponse->TEMP.subtype);

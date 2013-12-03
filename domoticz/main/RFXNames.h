@@ -3,8 +3,7 @@
 #include <string>
 
 #define sTypeTH_LC_TC 0xA0   //La Cross Temp_Hum combined
-#define sTypeTEMP_RPI 0xA0  //Raspberry Pi
-#define sTypeTEMP_WIN 0xB0  //Windows hardware
+#define sTypeTEMP_SYSTEM 0xA0  //Internal sensor
 
 enum _eSwitchType
 {
@@ -73,6 +72,7 @@ enum _eHardwareTypes {
 	HTYPE_OpenThermGatewayTCP,
 	HTYPE_OpenZWave,
 	HTYPE_LimitlessLights,
+	HTYPE_System,
 	HTYPE_END
 };
 
