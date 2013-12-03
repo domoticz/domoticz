@@ -1,6 +1,3 @@
-Version 1.0.1250 (December 3rd 2013)
-- Support for OpenHardwareMonitor supplied sensor data in Windows version of Domoticz. See wiki for info.
-
 Version 1.0.xxxx (December xxth 2013)
 - Implemented: new commandline option to specify www root folder (-wwwroot)
 - Implemented: Limitless/AppLamp, option to set Hue/Brightness in the Edit option
@@ -19,6 +16,7 @@ Version 1.0.xxxx (December xxth 2013)
 - Fixed: Day string logging for the DT1 - RTGR328N device
 - Implemented: Dashboard, clicking on a Motion/Dusk/Rain sensor icon will display the log
 - Fixed: RFXtrx hardware can now also be compiled/used accross big-little endianess systems
+- Support for OpenHardwareMonitor supplied sensor data in Windows version of Domoticz. See wiki for info.
 
 Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart
