@@ -1154,7 +1154,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 
 	std::string path=sstr.str();
 #ifdef _DEBUG
-	_log.Log(LOG_NORM, "Value_Changed: Node: %d, CommandClass: %s, Label: %s",NodeID, cclassStr(commandclass),vLabel.c_str());
+	_log.Log(LOG_NORM, "Value_Changed: Node: %d, CommandClass: %s, Label: %s, Instance: %d, Index: %d",NodeID, cclassStr(commandclass),vLabel.c_str(),vID.GetInstance(),vID.GetIndex());
 #endif
 	float fValue=0;
 	int iValue=0;
@@ -1414,6 +1414,8 @@ void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int po
 
 				std::string vLabel=m_pManager->GetValueLabel(*ittValue);
 
+				if (m_pManager->isPolled(*ittValue))
+					continue; //already polled
 				if (commandclass==COMMAND_CLASS_SWITCH_BINARY)
 				{
 					if ((vLabel=="Switch")||(vLabel=="Sensor"))
