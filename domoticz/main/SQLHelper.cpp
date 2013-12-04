@@ -4721,17 +4721,17 @@ void CSQLHelper::DeleteDataPoint(const char *ID, const std::string &Date)
 	}
 	else
 	{
-		sprintf(szTmp,"DELETE FROM Rain_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date);
+		sprintf(szTmp,"DELETE FROM Rain_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date.c_str());
 		result=query(szTmp);
-		sprintf(szTmp,"DELETE FROM Wind_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date);
+		sprintf(szTmp,"DELETE FROM Wind_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date.c_str());
 		result=query(szTmp);
-		sprintf(szTmp,"DELETE FROM UV_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date);
+		sprintf(szTmp,"DELETE FROM UV_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date.c_str());
 		result=query(szTmp);
-		sprintf(szTmp,"DELETE FROM Temperature_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date);
+		sprintf(szTmp,"DELETE FROM Temperature_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date.c_str());
 		result=query(szTmp);
-		sprintf(szTmp,"DELETE FROM Meter_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date);
+		sprintf(szTmp,"DELETE FROM Meter_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date.c_str());
 		result=query(szTmp);
-		sprintf(szTmp,"DELETE FROM MultiMeter_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date);
+		sprintf(szTmp,"DELETE FROM MultiMeter_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date.c_str());
 		result=query(szTmp);
 	}
 }
