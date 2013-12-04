@@ -4689,7 +4689,7 @@ void CSQLHelper::CheckSceneStatus(const unsigned long long Idx)
 	}
 }
 
-void CSQLHelper::DeleteDataPoint(const char *ID, const char *Date)
+void CSQLHelper::DeleteDataPoint(const char *ID, const std::string &Date)
 {
 	std::vector<std::vector<std::string> > result;
 	char szTmp[200];
@@ -4701,20 +4701,22 @@ void CSQLHelper::DeleteDataPoint(const char *ID, const char *Date)
 	//unsigned char dType=atoi(sd[0].c_str());
 	//unsigned char dSubType=atoi(sd[1].c_str());
 
-	if (strchr(Date,':')!=NULL)
+	if (Date.find(':')!=std::string::npos)
 	{
+		char szDateEnd[100];
+		sprintf(szDateEnd,"datetime('%s','+2 Minute', 'localtime')",Date.c_str());
 		//Short log
-		sprintf(szTmp,"DELETE FROM Rain WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date);
+		sprintf(szTmp,"DELETE FROM Rain WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<=%s)",ID,Date.c_str(),szDateEnd);
 		result=query(szTmp);
-		sprintf(szTmp,"DELETE FROM Wind WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date);
+		sprintf(szTmp,"DELETE FROM Wind WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<=%s)",ID,Date.c_str(),szDateEnd);
 		result=query(szTmp);
-		sprintf(szTmp,"DELETE FROM UV WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date);
+		sprintf(szTmp,"DELETE FROM UV WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<=%s)",ID,Date.c_str(),szDateEnd);
 		result=query(szTmp);
-		sprintf(szTmp,"DELETE FROM Temperature WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date);
+		sprintf(szTmp,"DELETE FROM Temperature WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<=%s)",ID,Date.c_str(),szDateEnd);
 		result=query(szTmp);
-		sprintf(szTmp,"DELETE FROM Meter WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date);
+		sprintf(szTmp,"DELETE FROM Meter WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<=%s)",ID,Date.c_str(),szDateEnd);
 		result=query(szTmp);
-		sprintf(szTmp,"DELETE FROM MultiMeter WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date);
+		sprintf(szTmp,"DELETE FROM MultiMeter WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<=%s)",ID,Date.c_str(),szDateEnd);
 		result=query(szTmp);
 	}
 	else

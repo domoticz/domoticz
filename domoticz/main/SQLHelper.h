@@ -178,7 +178,7 @@ public:
 
 	void GetMeterType(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, int &meterType);
 
-	void DeleteDataPoint(const char *ID, const char *Date);
+	void DeleteDataPoint(const char *ID, const std::string &Date);
 
 	void UpdateRFXCOMHardwareDetails(const int HardwareID, const int msg1, const int msg2, const int msg3, const int msg4, const int msg5);
 

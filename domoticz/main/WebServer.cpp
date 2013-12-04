@@ -6684,7 +6684,7 @@ std::string CWebServer::GetJSonPage()
 				goto exitjson;
 			root["status"]="OK";
 			root["title"]="deletedatapoint";
-			m_pMain->m_sql.DeleteDataPoint(idx.c_str(),Date.c_str());
+			m_pMain->m_sql.DeleteDataPoint(idx.c_str(),Date);
 		}
 		else if (cparam=="deleteallsubdevices")
 		{
