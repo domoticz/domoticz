@@ -3887,7 +3887,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				((devType!=pTypeGeneral)&&(subType!=sTypeSolarRadiation))&&
 				((devType!=pTypeGeneral)&&(subType!=sTypeSoilMoisture))&&
 				((devType!=pTypeGeneral)&&(subType!=sTypeLeafWetness))&&
-				(devType!=pTypeLux)||
+				(devType!=pTypeLux)&&
 				(devType!=pTypeWEIGHT)
 				)
 			{

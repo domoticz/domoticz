@@ -18,6 +18,7 @@ Version 1.0.xxxx (December xxth 2013)
 - Fixed: RFXtrx hardware can now also be compiled/used accross big-little endianess systems
 - Implemented: Windows, Support for OpenHardwareMonitor supplied sensor data in Windows version of Domoticz. See wiki for info
 - Fixed: Hardware started/stopped state, should fix the double starting of hardware
+- Fixed: Fixed problem with lux day value
 
 Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart
