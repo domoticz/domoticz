@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <Product xmlns='http://code.google.com/p/open-zwave/'>
+
+  <!-- COMMAND_CLASS_ALARM AlarmCmd_Get not supported -->
+  <CommandClass id="113" getsupported="false" />
+
+  <!-- COMMAND_CLASS_SWITCH_ALL SwitchAllCmd_Get not supported -->
+  <CommandClass id="39" getsupported="false" />
   <!-- Configuration -->
   <CommandClass id="112">
     
@@ -63,7 +69,7 @@
 			<Item label="Cyclically change device state, each 1second" value="2" />
 		</Value>
     
-    <Value type="byte" genre="config" instance="1" index="39" label="39. Alarm duration" value="600"  size="2">
+    <Value type="short" genre="config" instance="1" index="39" label="39. Alarm duration" value="600"  size="2">
       <Help>Wall Plug's alarm mode duration. If a device sending an alarm frame through the Z-Wave network sets alarm duration as well, this parameter's settings are ignored.</Help>
     </Value>
     
@@ -100,7 +106,7 @@
 		</Help>
     </Value>  
     
-     <Value type="byte" genre="config" instance="1" index="47" label="47. Time period between reports on power load and energy consumption." value="3600"  size="2">
+     <Value type="short" genre="config" instance="1" index="47" label="47. Time period between reports on power load and energy consumption." value="3600"  size="2">
       <Help>Parameter defines time period between reports sent when changes 
 									in power load have not been recorded. By default, if power load 
 								  changes have not been recorded, reports are sent every hour.
@@ -115,11 +121,11 @@
       <Item label="function inactive" value="1" />
      </Value>
     
-    <Value type="byte" genre="config" instance="1" index="50" label="50. DOWN value" value="300"  size="2">
+    <Value type="short" genre="config" instance="1" index="50" label="50. DOWN value" value="300"  size="2">
       <Help>Lower power threshold, used in parameter 52. Default setting: 300 (30 W) Available settings: 0 - 25 000 (0,0W - 2 500W) DOWN value cannot be higher than a value specified in parameter 51.</Help>
     </Value>
     
-    <Value type="byte" genre="config" instance="1" index="51" label="51. UP value " value="500"  size="2">
+    <Value type="short" genre="config" instance="1" index="51" label="51. UP value " value="500"  size="2">
       <Help>Upper power threshold, used in parameter 52. Default setting: 500 (50 W) Available settings: 1 - 25 000 (0,1W - 2 500W) UP value cannot be lower than a value specified in parameter 50.</Help>
     </Value>
     
@@ -156,7 +162,7 @@
 			
 		</Value>
    
-    <Value type="byte" genre="config" instance="1" index="60" label="60. Power load, which when exceeded, makes the LED ring flash violet." value="25000"  size="2">
+    <Value type="short" genre="config" instance="1" index="60" label="60. Power load, which when exceeded, makes the LED ring flash violet." value="25000"  size="2">
       <Help>Function is active only when parameter 61 is set to 0 or 1.Default setting: 25 000 (2 500W) Available settings: 1 000 - 32 000 (100W - 3200W).</Help>
     </Value>	
    
@@ -215,7 +221,7 @@
 			<Item label="illumination turned off completely" value="9" />
    </Value>
    
-       <Value type="byte" genre="config" instance="1" index="70" label="70. Oveload safety switch" value="65535"  size="2">
+       <Value type="short" genre="config" instance="1" index="70" label="70. Oveload safety switch" value="65535"  size="2">
       <Help>This function allows for turning off the controlled device in case of exceeding the defined power. Controlled device will be turned off even if "always on" function is active (parameter 1).
 									Controlled device can be turned back on via B-button or sending a 
 									control frame. By default this function is inactive.

@@ -385,6 +385,14 @@ namespace OpenZWave
 		 * \param _valueId The ID of the value whose intensity should be set
 		 */
 		void SetPollIntensity( ValueID const _valueId, uint8 const _intensity );
+
+		/**
+		 * \brief Get the polling intensity of a device's state.
+		 * \param _valueId The ID of the value to check polling.
+		 * \return Intensity, number of polling for one polling interval.
+		 */
+		uint8 GetPollIntensity( ValueID const _valueId );		
+
 	/*@}*/
 
 	//-----------------------------------------------------------------------------

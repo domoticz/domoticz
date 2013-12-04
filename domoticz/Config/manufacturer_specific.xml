@@ -60,6 +60,7 @@
 	</Manufacturer>
 	<Manufacturer id="008a" name="BeNext">
 		<Product type="0004" id="0100" name="Door Sensor" config="BeNext/DoorSensor.xml"/>
+		<Product type="0005" id="0101" name="Alarm Sound" config="BeNext/AlarmSound.xml"/>
 		<Product type="0006" id="0101" name="Energy Switch" config="BeNext/EnergySwitch.xml"/>
 		<Product type="0007" id="0101" name="Tag Reader" config="BeNext/TagReader.xml"/>
 		<Product type="0008" id="0101" name="Power Switch"/>
@@ -118,6 +119,9 @@
 	</Manufacturer>
 	<Manufacturer id="0035" name="Embedit A/S">
 	</Manufacturer>
+	<Manufacturer id="0148" name="EUROtronic">
+		<Product type="0001" id="0001" name="EUR_STELLAZ Wall Radiator Thermostat Valve Control" config="eurotronic/eur_stellaz.xml"/>
+	</Manufacturer>
 	<Manufacturer id="0060" name="Everspring">
 		<Product type="0003" id="0001" name="AD142 Plug-in Dimmer Module"/>
 		<Product type="0104" id="0001" name="AN145 Lamp Screw In Module" config="everspring/an145.xml"/>
@@ -152,6 +156,7 @@
 		<Product type="0100" id="0104" name="FGD211 Universal Dimmer 500W" />
 		<Product type="0100" id="0107" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
 		<Product type="0100" id="0109" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
+		<Product type="0100" id="100a" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
 		<Product type="0700" id="1000" name="FGK101 Door Opening Sensor" config="fibaro/fgk001.xml" />
 		<Product type="0300" id="100a" name="FGR221 Roller Shutter Controller" config="fibaro/fgr221.xml"/>
 		<Product type="0300" id="0106" name="FGR221 Roller Shutter Controller" config="fibaro/fgr221.xml"/>
@@ -170,8 +175,9 @@
 		<Product type="0200" id="0109" name="FGS221 Double Relay Switch 2x1.5kW" config="fibaro/fgs221.xml" />
 		<Product type="0200" id="100a" name="FGS221 Double Relay Switch 2x1.5kW" config="fibaro/fgs221.xml" />
 		<Product type="0600" id="1000" name="FGWPE Wall Plug" config="fibaro/fgwpe.xml" />
-    <Product type="0900" id="1000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
-  </Manufacturer>
+		<Product type="0b00" id="3001" name="FGFS101 Flood Sensor" config ="fibaro/fgfs101.xml" />
+    		<Product type="0900" id="1000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
+  	</Manufacturer>
 	<Manufacturer id="0037" name="Foard Sys">
 	</Manufacturer>
 	<Manufacturer id="0110" name="Frostdale">
@@ -205,6 +211,7 @@
 	<Manufacturer id="001e" name="Homeseer">
 		<Product type="0001" id="0002" name="ZTroller" config="homeseer/ztroller.xml"/>
 		<Product type="0002" id="0001" name="HSM100 Wireless Multi-Sensor" config="homeseer/hsm100.xml"/>
+		<Product type="0002" id="0002" name="EZMotion+ 3-in-1 Sensor" config="homeseer/hsm100.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0039" name="Honeywell">
 		<Product type="0011" id="0001" name="TH8320ZW1000 Touchscreen Thermostat" config="honeywell/th8320zw1000.xml"/>
@@ -319,6 +326,7 @@
 		<Product type="3001" id="0000" name="ZW ZS 3500 Plugin Switch" />
 		<Product type="3002" id="0000" name="ZW ZSA 3500 Plugin Switch" />
 		<Product type="4001" id="0000" name="ZW ESJ Blind Control" />
+		<Product type="5002" id="0000" name="Wireless Flush Mounted Switch" />
 	</Manufacturer>
 	<Manufacturer id="0016" name="PowerLynx">
 	</Manufacturer>
@@ -332,6 +340,7 @@
 	</Manufacturer>
 	<Manufacturer id="5254" name="Remotec">
 		<Product type="0000" id="531f" name="Z-URC" config="remotec/zurc.xml"/>
+		<Product type="0101" id="8377" name="ZXT-120" config="remotec/zxt-120.xml" />
 	</Manufacturer>
 	<Manufacturer id="0010" name="RCS">
 	  <Product type="0001" id="0002" name="TZ43 Thermostat" />
@@ -407,6 +416,7 @@
 		<Product type="0007" id="0020" name="WDTC-20 Thermostat" config="waynedalton/WDTC-20.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0118" name="Wenzhou TKB Control System">
+		<Product type="0001" id="0001" name="TZ88 Smart Energy Plug-in Switch" config="wenzhou/tz88.xml"/>
 	</Manufacturer>
 	<Manufacturer id="004c" name="Woodward Labs">
 	</Manufacturer>
@@ -418,6 +428,9 @@
 	</Manufacturer>
 	<Manufacturer id="0000" name="Zensys">
 		<Product type="0001" id="0001" name="Controller"/>
+	</Manufacturer>
+	<Manufacturer id="0109" name="Vision">
+		<Product type="1001" id="0101" name="Z-Wave USB Stick"/>
 	</Manufacturer>
 	<Manufacturer id="0115" name="Z-Wave.Me">
 		<Product type="1000" id="0002" name="ZME_06433 Wall Flush-Mountable Dimmer" config="zwave.me/ZME_06433.xml"/>

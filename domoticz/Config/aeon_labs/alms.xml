@@ -39,7 +39,7 @@
 				Reset to default parameters number 101-103. Any value other then 0 will initiate this reset.
 			</Help>
 		</Value>
-                <Value type="int" index="101" genre="config" label="Group 1 Reports" units="" value="225">
+                <Value type="int" index="101" genre="config" label="Group 1 Reports" units="" value="0">
                         <Help>
                                 Which reports need to send automatically in timing intervals for group 1
 				Bitsets:
@@ -74,7 +74,7 @@
 				Reset to default parameters number 111-113. Any value other then 0 will initiate this reset.
 			</Help>
 		</Value>
-		<Value type="int" index="111" genre="config" label="Group 1 Interval" units="seconds" min="1" max="2678400" value="600">
+		<Value type="int" index="111" genre="config" label="Group 1 Interval" units="seconds" min="1" max="2678400" value="720">
 			<Help>
 				The interval of sending report group 1.
 				1 seconds - 2678400 seconds
