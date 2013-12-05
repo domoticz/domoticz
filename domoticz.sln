@@ -5,14 +5,28 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "domoticz", "domoticz\domoti
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
 		Debug|Win32 = Debug|Win32
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
 		Release|Win32 = Release|Win32
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6AD96441-5B2C-467B-AAB6-A1B8368D503A}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{6AD96441-5B2C-467B-AAB6-A1B8368D503A}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{6AD96441-5B2C-467B-AAB6-A1B8368D503A}.Debug|Mixed Platforms.Build.0 = Debug|Win32
 		{6AD96441-5B2C-467B-AAB6-A1B8368D503A}.Debug|Win32.ActiveCfg = Debug|Win32
 		{6AD96441-5B2C-467B-AAB6-A1B8368D503A}.Debug|Win32.Build.0 = Debug|Win32
+		{6AD96441-5B2C-467B-AAB6-A1B8368D503A}.Debug|x86.ActiveCfg = Debug|Win32
+		{6AD96441-5B2C-467B-AAB6-A1B8368D503A}.Release|Any CPU.ActiveCfg = Release|Win32
+		{6AD96441-5B2C-467B-AAB6-A1B8368D503A}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{6AD96441-5B2C-467B-AAB6-A1B8368D503A}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{6AD96441-5B2C-467B-AAB6-A1B8368D503A}.Release|Win32.ActiveCfg = Release|Win32
 		{6AD96441-5B2C-467B-AAB6-A1B8368D503A}.Release|Win32.Build.0 = Release|Win32
+		{6AD96441-5B2C-467B-AAB6-A1B8368D503A}.Release|x86.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

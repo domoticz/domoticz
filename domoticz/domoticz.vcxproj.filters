@@ -340,6 +340,18 @@
     <ClInclude Include="hardware\Limitless.h">
       <Filter>Devices\LimitlessLed</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\1Wire\1WireForWindows.h">
+      <Filter>Devices\1-Wire</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\1Wire\1WireCommon.h">
+      <Filter>Devices\1-Wire</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\1Wire\1WireByKernel.h">
+      <Filter>Devices\1-Wire</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\1Wire\1WireByOWFS.h">
+      <Filter>Devices\1-Wire</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -539,6 +551,18 @@
     </ClCompile>
     <ClCompile Include="hardware\Limitless.cpp">
       <Filter>Devices\LimitlessLed</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\1Wire\1WireForWindows.cpp">
+      <Filter>Devices\1-Wire</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\1Wire\1WireCommon.cpp">
+      <Filter>Devices\1-Wire</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\1Wire\1WireByKernel.cpp">
+      <Filter>Devices\1-Wire</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\1Wire\1WireByOWFS.cpp">
+      <Filter>Devices\1-Wire</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

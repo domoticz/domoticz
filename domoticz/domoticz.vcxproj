@@ -101,6 +101,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hardware\1Wire.h" />
+    <ClInclude Include="hardware\1Wire\1WireByKernel.h" />
+    <ClInclude Include="hardware\1Wire\1WireByOWFS.h" />
+    <ClInclude Include="hardware\1Wire\1WireCommon.h" />
+    <ClInclude Include="hardware\1Wire\1WireForWindows.h" />
     <ClInclude Include="hardware\BMP085.h" />
     <ClInclude Include="hardware\DavisLoggerSerial.h" />
     <ClInclude Include="hardware\Dummy.h" />
@@ -176,6 +180,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hardware\1Wire.cpp" />
+    <ClCompile Include="hardware\1Wire\1WireByKernel.cpp" />
+    <ClCompile Include="hardware\1Wire\1WireByOWFS.cpp" />
+    <ClCompile Include="hardware\1Wire\1WireCommon.cpp" />
+    <ClCompile Include="hardware\1Wire\1WireForWindows.cpp" />
     <ClCompile Include="hardware\ASyncSerial.cpp" />
     <ClCompile Include="hardware\BMP085.cpp" />
     <ClCompile Include="hardware\DavisLoggerSerial.cpp" />

@@ -20,6 +20,7 @@ Version 1.0.xxxx (December xxth 2013)
 - Fixed: Hardware started/stopped state, should fix the double starting of hardware
 - Fixed: Fixed problem with lux day value
 - Implemented: Option to delete data point from sensor by Shift-Left click on short log for temp/uv/lux/usage graphs
+- Implemented: New 1-Wire system (thanks to Sébastien)
 
 Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart

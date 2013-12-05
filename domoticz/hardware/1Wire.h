@@ -3,29 +3,33 @@
 
 #include "DomoticzHardware.h"
 
+class I_1WireSystem;
 class C1Wire : public CDomoticzHardwareBase
 {
 public:
 	C1Wire(const int ID);
-	~C1Wire(void);
+	virtual ~C1Wire();
 
 	static bool Have1WireSystem();
-	static bool IsGPIOSystem();
-	static bool IsOWFSSystem();
 	void WriteToHardware(const char *pdata, const unsigned char length);
+
 private:
 	volatile bool m_stoprequested;
-	time_t m_LastPollTime;
 	boost::shared_ptr<boost::thread> m_thread;
-	bool m_bDetectSystem;
-	bool m_bIsGPIO;
-	bool m_bIsOWFS;
+   I_1WireSystem* m_system;
 
-	void Init();
+   static void LogSystem();
+   void DetectSystem();
 	bool StartHardware();
 	bool StopHardware();
 	void Do_Work();
-	void GetSensorDetails();
-	void GetGPIOSensorDetails();
-	void GetOWFSSensorDetails();
+	void GetDeviceDetails();
+
+   // Messages to Domoticz
+   void ReportLightState(const std::string& deviceId,int unit,bool state);
+   void ReportTemperature(const std::string& deviceId,float temperature);
+   void ReportTemperatureHumidity(const std::string& deviceId,float temperature,float humidity);
+   void ReportHumidity(const std::string& deviceId,float humidity);
+   void ReportCounter(const std::string& deviceId,unsigned long counter);
+   void ReportVoltage(int unit,int voltage);
 };
