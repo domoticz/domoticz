@@ -108,6 +108,9 @@
     <Filter Include="Camera">
       <UniqueIdentifier>{adaa661b-4aaf-443c-a368-2c2f384d9c1a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\OpenHardwareMonitor">
+      <UniqueIdentifier>{51868f28-9b4c-49aa-b7b1-f1c4a479b741}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -352,6 +355,9 @@
     <ClInclude Include="hardware\1Wire\1WireByOWFS.h">
       <Filter>Devices\1-Wire</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\OpenHardwareMonitor.h">
+      <Filter>Devices\OpenHardwareMonitor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -563,6 +569,9 @@
     </ClCompile>
     <ClCompile Include="hardware\1Wire\1WireByOWFS.cpp">
       <Filter>Devices\1-Wire</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\OpenHardwareMonitor.cpp">
+      <Filter>Devices\OpenHardwareMonitor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

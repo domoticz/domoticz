@@ -6,14 +6,10 @@
 #include "../hardware/DomoticzHardware.h"
 #include "Scheduler.h"
 #include "EventSystem.h"
+#include "../hardware/OpenHardwareMonitor.h"
 #include "Camera.h"
 #include <map>
 #include <deque>
-#if defined WIN32 
-// for windows system info
-#include <wbemidl.h>
-#pragma comment(lib, "wbemuuid.lib")
-#endif
 #include "WindCalculation.h"
 #include "../tcpserver/TCPServer.h"
 
@@ -83,6 +79,7 @@ public:
 	CSQLHelper m_sql;
 	CScheduler m_scheduler;
 	CEventSystem m_eventsystem;
+	COpenHardwareMonitor m_openhardwaremonitor;
     CCamScheduler m_cameras;
 	bool m_bIgnoreUsernamePassword;
 
@@ -95,9 +92,7 @@ private:
 
 	void PrintDeviceName(const std::string &devname);
 	void GetRaspberryPiTemperature();
-	void GetWinCpuTemperature();
-	void UpdateSystemSensor(const std::string& wmiId, const std::string& devName, const float& devValue);
-	int CheckSystemHardware();
+	void CheckWindowsSystemHardware();
 	unsigned long long PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand);
 	struct _tStartScene
 	{

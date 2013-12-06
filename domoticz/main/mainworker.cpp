@@ -1,7 +1,4 @@
 #include "stdafx.h"
-#if defined WIN32
-#include <comdef.h>
-#endif
 #include "mainworker.h"
 #include "Helper.h"
 #include "SunRiseSet.h"
@@ -15,6 +12,7 @@
 #include "../hardware/RFXComSerial.h"
 #include "../hardware/RFXComTCP.h"
 #include "../hardware/DomoticzTCP.h"
+#include "../hardware/OpenHardwareMonitor.h"
 #include "../hardware/P1MeterBase.h"
 #include "../hardware/P1MeterSerial.h"
 #include "../hardware/P1MeterTCP.h"
@@ -488,7 +486,9 @@ bool MainWorker::Start()
 	{
 		return false;
 	}
-
+#if defined WIN32
+	CheckWindowsSystemHardware();
+#endif
 	//Add Hardware devices
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
@@ -531,6 +531,9 @@ bool MainWorker::Stop()
 {
 	m_scheduler.StopScheduler();
 	m_eventsystem.StopEventSystem();
+#ifdef WIN32
+	m_openhardwaremonitor.StopOpenHardwareMonitor();
+#endif
 //    m_cameras.StopCameraGrabber();
 	StopDomoticzHardware();
 	m_webserver.StopServer();
@@ -563,6 +566,9 @@ bool MainWorker::StartThread()
 
 	//Start Scheduler
 	m_scheduler.StartScheduler(this);
+#ifdef WIN32
+	m_openhardwaremonitor.StartOpenHardwareMonitor(this);
+#endif
 	m_eventsystem.StartEventSystem(this);
 	//m_sql.DeleteHardware("999");
 
@@ -693,150 +699,7 @@ void MainWorker::GetRaspberryPiTemperature()
 	}
 }
 
-void MainWorker::GetWinCpuTemperature()
-{
-#if defined WIN32
-	LONG pTemperature = -1;
-    HRESULT ci = CoInitialize(NULL); 
-    HRESULT hr = CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
-    if (SUCCEEDED(hr))
-    {
-		IWbemLocator *pLocator;  
-        hr = CoCreateInstance(CLSID_WbemAdministrativeLocator, NULL, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLocator);
-        if (SUCCEEDED(hr))
-        {
-			IWbemServices *pServices;
-         	 if(FAILED(hr = pLocator->ConnectServer(L"root\\OpenHardwareMonitor",NULL, NULL, NULL, 0, NULL, NULL, &pServices)))  
-			 {  
-				pLocator->Release();  
-				//_log.Log(LOG_NORM, "Unable to connect to OpenHardWareMonitor");
-				if (ci == S_OK)
-				{
-					CoUninitialize();
-				}
-        		return;  
-			 } 
-			 else 
-			 {
-				pLocator->Release();
-				IEnumWbemClassObject* pEnumerator = NULL;  
-				hr = pServices->ExecQuery(L"WQL", L"SELECT * FROM Sensor WHERE SensorType = 'Temperature'", WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);  
-                pServices->Release();
-                if (SUCCEEDED(hr))
-                {
-					//_log.Log(LOG_NORM, "Query OK");
-					IWbemClassObject *pclsObj = NULL;
-					ULONG uReturn = 0;
-					while (pEnumerator)
-					{
-						
-						hr = pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
-						if(0 == uReturn || FAILED(hr))
-							break;
-						
-						VARIANT vRet;  
-						VariantInit(&vRet);  
-						if(SUCCEEDED(pclsObj->Get(L"Name", 0, &vRet, NULL, NULL)) && vRet.vt == VT_BSTR) //String 
-						{  
-							std::string itemName = _bstr_t (vRet.bstrVal);
-							itemName = stdreplace(itemName, "#", "");
-							//_log.Log(LOG_NORM, "Name: %s",itemName.c_str());
-							VariantClear(&vRet);  
-							if(SUCCEEDED(pclsObj->Get(L"Value", 0, &vRet, NULL, NULL))) //Float 
-							{  
-								float temperature = float (vRet.fltVal);
-								//_log.Log(LOG_NORM, "Temp: %d",temperature);
-								VariantClear(&vRet); 
-								if(SUCCEEDED(pclsObj->Get(L"InstanceId", 0, &vRet, NULL, NULL))) //Float 
-								{ 
-									std::string instanceId = _bstr_t (vRet.bstrVal);
-									instanceId = "WMI"+instanceId;
-									//int instanceId = atoi(instanceIdS.c_str()); 
-									VariantClear(&vRet); 
-									// convert now to string form
-									time_t now = time(0);
-									char *szDate = asctime(localtime(&now));
-									szDate[strlen(szDate)-1]=0;
-
-									WriteMessageStart();
-									std::stringstream sTmp;
-									sTmp << szDate << " (" <<itemName << ") ";
-									WriteMessage(sTmp.str().c_str(),false);
-									WriteMessage("Temperature",true);
-									WriteMessageEnd();
-
-									UpdateSystemSensor(instanceId, itemName, temperature);
-								}
-							}
-						}
-						pclsObj->Release();
-						pclsObj=NULL;
-					}
-		        }
-				pEnumerator->Release();
-            }
-            if (ci == S_OK)
-            {
-                CoUninitialize();
-            }
-        }
-		else {
-			if (ci == S_OK)
-			{
-				CoUninitialize();
-			}
-		}
-    }
-	else {
-		if (ci == S_OK)
-		{
-			CoUninitialize();
-		}
-	}
-#endif
-}
-
-void MainWorker::UpdateSystemSensor(const std::string& wmiId, const std::string& devName, const float& devValue)
-{
-	int hwId = CheckSystemHardware();
-	if (!hwId) return;
-	std::stringstream szQuery;
-	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ID FROM DeviceStatus WHERE (DeviceID=='" << wmiId << "') AND (Type==" << pTypeTEMP << ") AND (SubType=='" << sTypeTEMP_SYSTEM << "')";
-	result=m_sql.query(szQuery.str());
-	if (result.size()<1)
-	{
-		szQuery.clear();
-		szQuery.str("");
-
-		szQuery << 
-			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-			"VALUES (" << hwId << ",'" << wmiId << "',"<< 0 << "," << pTypeTEMP << "," <<sTypeTEMP_SYSTEM << ",12,255,'" << devName << "'," << devValue << ",'" << devValue << "')";
-		m_sql.query(szQuery.str());
-	}
-	else 
-	{
-		szQuery.clear();
-		szQuery.str("");
-
-		time_t now = time(0);
-		struct tm ltime;
-		localtime_r(&now,&ltime);
-
-		char szLastUpdate[40];
-		sprintf(szLastUpdate,"%04d-%02d-%02d %02d:%02d:%02d",ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-
-
-		szQuery << "UPDATE DeviceStatus SET HardwareID = " << hwId << ", nValue=" << devValue << ", sValue ='" << devValue << "', LastUpdate='" << szLastUpdate << "' WHERE (DeviceID == '" << wmiId << "')";
-
-		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
-		
-		
-		m_sql.query(szQuery.str());
-	}
-	return;
-}
-int MainWorker::CheckSystemHardware()
+void MainWorker::CheckWindowsSystemHardware()
 {
 	int hwId = 0;
 	std::stringstream szQuery;
@@ -851,29 +714,7 @@ int MainWorker::CheckSystemHardware()
 		m_sql.query(szQuery.str());
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT MAX(ID) FROM Hardware";
-		result=m_sql.query(szQuery.str());
-		if (result.size()>0)
-		{
-			std::vector<std::string> sd=result[0];
-			hwId=atoi(sd[0].c_str());
-			AddHardwareFromParams(hwId,"Internal sensors",1,HTYPE_System,"",1,"","",0,0,0,0,0);
-		}
-
-		m_sql.query(szQuery.str());
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "SELECT ID FROM Hardware WHERE (Type==" <<HTYPE_System << ") AND (Name=='Internal sensors') LIMIT 1";
-		result=m_sql.query(szQuery.str());
 	}
-	
-	if (result.size()>0)
-    {
-		std::vector<std::string> sd=result[0];
-		hwId=atoi(sd[0].c_str());
-	}
-	
-	return hwId;
 }
 
 void MainWorker::Do_Work()
@@ -956,13 +797,6 @@ void MainWorker::Do_Work()
 		{
 			GetRaspberryPiTemperature();
 		}
-#if defined WIN32
-		if (ltime.tm_sec%30==0)
-		{
-			GetWinCpuTemperature();
-		}			
-#endif
-
 	}
 	_log.Log(LOG_NORM, "Mainworker Stopped...");
 }
