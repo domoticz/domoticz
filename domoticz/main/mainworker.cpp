@@ -12,7 +12,6 @@
 #include "../hardware/RFXComSerial.h"
 #include "../hardware/RFXComTCP.h"
 #include "../hardware/DomoticzTCP.h"
-#include "../hardware/OpenHardwareMonitor.h"
 #include "../hardware/P1MeterBase.h"
 #include "../hardware/P1MeterSerial.h"
 #include "../hardware/P1MeterTCP.h"
@@ -38,6 +37,9 @@
 //#include "../hardware/S0MeterTCP.h"
 #include "../hardware/Teleinfo.h"
 #include "../hardware/Limitless.h"
+#ifdef WIN32
+#include "../hardware/OpenHardwareMonitor.h"
+#endif
 
 #include "mainstructs.h"
 
