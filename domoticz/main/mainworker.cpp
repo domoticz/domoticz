@@ -488,9 +488,6 @@ bool MainWorker::Start()
 	{
 		return false;
 	}
-#if defined WIN32
-	CheckWindowsSystemHardware();
-#endif
 	//Add Hardware devices
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
@@ -698,24 +695,6 @@ void MainWorker::GetRaspberryPiTemperature()
 			}
 		}
 		infile.close();
-	}
-}
-
-void MainWorker::CheckWindowsSystemHardware()
-{
-	int hwId = 0;
-	std::stringstream szQuery;
-	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ID FROM Hardware WHERE (Type=='" <<HTYPE_System << "') AND (Name=='Internal sensors') LIMIT 1";
-	result=m_sql.query(szQuery.str());
-	if (result.size()<1)
-	{
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5) VALUES ('Internal sensors',1, '" << HTYPE_System << "','',1,'','',0,0,0,0,0)";
-		m_sql.query(szQuery.str());
-		szQuery.clear();
-		szQuery.str("");
 	}
 }
 

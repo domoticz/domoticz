@@ -1252,6 +1252,10 @@ function RefreshUtilities()
 				else if (item.Type == "Energy") {
 					status=item.Data;
 				}
+				else if (item.Type == "Load") {
+					status=item.Data;
+					bigtext=item.Data;
+				}
 				else if (item.Type == "Air Quality") {
 					status=item.Data + " (" + item.Quality + ")";
 					bigtext=item.Data;
@@ -1398,6 +1402,9 @@ function ShowUtilities()
 				else if (item.Type == "Air Quality") {
 				  xhtm+=item.Data;
 				}
+				else if (item.Type == "Load") {
+				  xhtm+=item.Data;
+				}
 				else if (item.SubType == "Soil Moisture") {
 				  xhtm+=item.Data;
 				}
@@ -1446,6 +1453,10 @@ function ShowUtilities()
             else if (item.SubType == "Soil Moisture") {
               xhtm+='moisture48.png" height="48"></td>\n';
               status=item.Data + " (" + item.Desc + ")";
+            }
+            else if (item.SubType == "Internal sensor") {
+              xhtm+='Computer48_On.png" height="48"></td>\n';
+              status=item.Data;
             }
             else if (item.SubType == "Leaf Wetness") {
               xhtm+='leaf48.png" height="48"></td>\n';
@@ -1517,6 +1528,11 @@ function ShowUtilities()
           }
 		  else if (item.Type == "Air Quality") {
 			xhtm+='<a class="btnsmall" onclick="ShowAirQualityLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
+			if (window.my_config.userrights==2) {
+				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
+			}
+		  }
+		  else if (item.Type == "Load") {
 			if (window.my_config.userrights==2) {
 				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 			}

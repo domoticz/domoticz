@@ -1024,7 +1024,6 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 
 	szQuery.clear();
 	szQuery.str("");
-
 	if (totUserDevices==0)
 	{
 		//All
@@ -1166,7 +1165,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						(dType!=pTypeUsage)&&
 						(!((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXCounter)))&&
 						(!((dType==pTypeThermostat)&&(dSubType==sTypeThermSetpoint)))&&
-						(dType!=pTypeWEIGHT)
+						(dType!=pTypeWEIGHT)&&
+						(dType!=pTypeLoad)
 						)
 						continue;
 				}
@@ -1217,7 +1217,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			sprintf(szData,"%04X",(unsigned int)atoi(sd[1].c_str()));
 			if (
 				(dType==pTypeTEMP_BARO)||
-				(dType==pTypeTEMP)||
+				((dType==pTypeTEMP)&&(dSubType!=sTypeTEMP11))||
 				(dType==pTypeTEMP_HUM)||
 				(dType==pTypeTEMP_HUM_BARO)||
 				(dType==pTypeBARO)||
@@ -2411,6 +2411,16 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
                     }
                     break;
                 }
+			}
+			else if (dType == pTypeLoad)
+			{
+				if (dSubType==sTypeLoad)
+				{
+					sprintf(szData,"%.1f%%",atof(sValue.c_str()));
+					root["result"][ii]["Data"]=szData;
+				}
+				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+				root["result"][ii]["Image"]="Computer";
 			}
 
 			ii++;

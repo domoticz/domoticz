@@ -96,7 +96,6 @@ private:
 
 	void PrintDeviceName(const std::string &devname);
 	void GetRaspberryPiTemperature();
-	void CheckWindowsSystemHardware();
 	unsigned long long PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand);
 	struct _tStartScene
 	{

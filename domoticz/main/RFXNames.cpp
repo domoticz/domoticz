@@ -342,8 +342,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeChime, "Chime" , "Chime" },
 		{ pTypeBBQ, "BBQ Meter", "bbq" },
 		{ pTypePOWER, "Current/Energy" , "current" },
-		
-		
+		{ pTypeLoad, "Load" , "hardware" },
 		{  0,NULL,NULL }
 	};
 	if (snum==1)
@@ -366,7 +365,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeTEMP, sTypeTEMP8, "LaCrosse WS2300" },
 		{ pTypeTEMP, sTypeTEMP9, "RUBiCSON" },
 		{ pTypeTEMP, sTypeTEMP10, "TFA 30.3133" },
-		{ pTypeTEMP, sTypeTEMP_SYSTEM, "System" },
+		{ pTypeTEMP, sTypeTEMP11, "Internal sensor" },
 
 		{ pTypeHUM, sTypeHUM1, "LaCrosse TX3" },
 		{ pTypeHUM, sTypeHUM2, "LaCrosse WS2300" },
@@ -529,7 +528,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLimitlessLights, sTypeLimitlessRGBW, "RGBW" },
 		{ pTypeLimitlessLights, sTypeLimitlessRGB, "RGB" },
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "White" },
-
+		{ pTypeLoad, sTypeLoad, "Internal sensor" },
+	
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);

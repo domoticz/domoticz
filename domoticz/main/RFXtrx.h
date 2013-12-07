@@ -520,6 +520,7 @@ SDK version 4.9
 #define sTypeTEMP8 0x8  //LaCrosse WS2300
 #define sTypeTEMP9 0x9  //RUBiCSON
 #define sTypeTEMP10 0xA  //TFA 30.3133
+#define sTypeTEMP11 0xB  //Internal windows
 
 //types for humidity
 #define pTypeHUM 0x51
@@ -640,6 +641,10 @@ SDK version 4.9
 #define sTypeFS20 0x0
 #define sTypeFHT8V 0x1
 #define sTypeFHT80 0x2
+
+//System load
+#define pTypeLoad 0x73
+#define sTypeLoad 0x0
 
 // taken from boost endian.hpp
 #if defined(__GLIBC__)

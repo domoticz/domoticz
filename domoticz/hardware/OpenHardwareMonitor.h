@@ -1,9 +1,5 @@
 #pragma once
-
-#include "DomoticzHardware.h"
-#include "../main/RFXtrx.h" //for ptypetemp, needs to go
-#include <string>
-#include <vector>
+#include "../main/RFXtrx.h" 
 #if defined WIN32 
 // for windows system info
 #include <wbemidl.h>
@@ -26,9 +22,16 @@ private:
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 	void Init();
+	void InitWMI();
 	int hwId;
-	void GetWinCpuTemperature();
-	void UpdateSystemSensor(const std::string& wmiId, const std::string& devName, const float& devValue);
+	IWbemLocator *pLocator; 
+	IWbemServices *pServicesOHM;
+	IWbemServices *pServicesSystem;
+	HRESULT hr;
+	void FetchData();
+	bool COpenHardwareMonitor::IsOHMRunning();
+	void RunWMIQuery(const char* qTable, const char* qType);
+	void UpdateSystemSensor(const std::string& qType, const std::string& wmiId, const std::string& devName, const std::string& devValue);
 	void WriteMessageStart();
 	void WriteMessage(const char *szMessage);
 	void WriteMessage(const char *szMessage, bool linefeed);
