@@ -277,6 +277,9 @@ void COpenHardwareMonitor::UpdateSystemSensor(const std::string& qType, const st
 		if (qType == "Load") {
 			m_pMain->m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeLoad, sTypeLoad, NTYPE_PERCENTAGE, (const float)atof(devValue.c_str()));
 		}
+		else if (qType == "Temperature") {
+			m_pMain->m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeTEMP, sTypeTEMP11, NTYPE_TEMPERATURE, (const float)atof(devValue.c_str()));
+		}
 	}
 	return;
 }
