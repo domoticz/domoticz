@@ -8001,6 +8001,13 @@ std::string CWebServer::GetJSonPage()
 				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
 				ii++;
 			}
+			if (dType==pTypeLoad)
+			{
+				root["result"][ii]["val"]=NTYPE_PERCENTAGE;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_PERCENTAGE,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_PERCENTAGE,1);
+				ii++;
+			}
 		}
 		else if (cparam=="addnotification")
 		{

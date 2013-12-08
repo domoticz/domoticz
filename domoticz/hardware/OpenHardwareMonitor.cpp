@@ -273,6 +273,10 @@ void COpenHardwareMonitor::UpdateSystemSensor(const std::string& qType, const st
 		
 		
 		m_pMain->m_sql.query(szQuery.str());
+
+		if (qType == "Load") {
+			m_pMain->m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeLoad, sTypeLoad, NTYPE_PERCENTAGE, (const float)atof(devValue.c_str()));
+		}
 	}
 	return;
 }
