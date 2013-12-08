@@ -65,9 +65,6 @@
   <h2 data-i18n="Day">Day</h2>
   <div id="percentagedaygraph" style="height: 300px;"></div>
   <br>
-  <h2 data-i18n="Week">Week</h2>
-  <div id="percentageweekgraph" style="height: 300px;"></div>
-  <br>
   <h2 data-i18n="Month">Month</h2>
   <div id="percentagemonthgraph" style="height: 300px;"></div>
   <br>
@@ -736,107 +733,7 @@ function ShowPercentageLog(id,name,sensor)
             }
         }
     });
-  $.WeekChart = new Highcharts.Chart({
-      chart: {
-          renderTo: 'percentageweekgraph',
-          type: 'spline',
-          zoomType: 'xy',
-          marginRight: 10,
-          events: {
-              load: function() {
-                  
-                $.getJSON("json.htm?type=graph&sensor="+sensor+"&idx="+id+"&range=week",
-                function(data) {
-                      var datatable1 = [];
-                      var datatable2 = [];
-                      
-                      $.each(data.result, function(i,item)
-                      {
-                        datatable1.push( [GetDateFromString(item.d), parseInt(item.v_min) ] );
-                        datatable2.push( [GetDateFromString(item.d), parseInt(item.v_max) ] );
-                      });
-                      var series1 = $.WeekChart.series[0];
-                      var series2 = $.WeekChart.series[1];
-                      series1.setData(datatable1);
-                      series2.setData(datatable2);
-                });
-              }
-          }
-        },
-       credits: {
-          enabled: true,
-          href: "http://www.domoticz.com",
-          text: "Domoticz.com"
-        },
-        title: {
-            text: $.i18n('Percentage') + ' ' + $.i18n('Last Week')
-        },
-        xAxis: {
-            type: 'datetime'
-        },
-        yAxis: {
-            title: {
-                text: 'Percentage'
-            },
-            min: 0,
-            minorGridLineWidth: 0,
-            gridLineWidth: 0,
-            alternateGridColor: null
-        },
-        tooltip: {
-            formatter: function() {
-                    return ''+
-                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' %';
-            }
-        },
-        plotOptions: {
-            spline: {
-                lineWidth: 3,
-                states: {
-                    hover: {
-                        lineWidth: 3
-                    }
-                },
-                marker: {
-                    enabled: false,
-                    states: {
-                        hover: {
-                            enabled: true,
-                            symbol: 'circle',
-                            radius: 5,
-                            lineWidth: 1
-                        }
-                    }
-                }
-            }
-        },
-        series: [{
-            name: 'min',
-			point: {
-				events: {
-					click: function(event) {
-						chartPointClick(event,ShowPercentageLog);
-					}
-				}
-			}
-		}, {
-            name: 'max',
-			point: {
-				events: {
-					click: function(event) {
-						chartPointClick(event,ShowPercentageLog);
-					}
-				}
-			}
-        }]
-        ,
-        navigation: {
-            menuItemStyle: {
-                fontSize: '10px'
-            }
-        }
-    });
-  $.MonthChart = new Highcharts.Chart({
+    $.MonthChart = new Highcharts.Chart({
       chart: {
           renderTo: 'percentagemonthgraph',
           type: 'spline',

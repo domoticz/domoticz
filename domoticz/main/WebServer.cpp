@@ -3180,8 +3180,7 @@ std::string CWebServer::GetJSonPage()
 			else
 				goto exitjson;
 		}
-
-
+	
 		if (srange=="day")
 		{
 			if (sensor=="temp") {
@@ -4505,7 +4504,7 @@ std::string CWebServer::GetJSonPage()
 
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "SELECT Load_Min, Load_Max, Date FROM Load WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+				szQuery << "SELECT Load_Min, Load_Max, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 				result=m_pMain->m_sql.query(szQuery.str());
 				int ii=0;
 				if (result.size()>0)
