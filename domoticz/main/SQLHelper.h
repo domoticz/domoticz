@@ -349,12 +349,14 @@ private:
 	void UpdateUVLog();
 	void UpdateMeter();
 	void UpdateMultiMeter();
+	void UpdateLoadLog();
 	void AddCalendarTemperature();
 	void AddCalendarUpdateRain();
 	void AddCalendarUpdateWind();
 	void AddCalendarUpdateUV();
 	void AddCalendarUpdateMeter();
 	void AddCalendarUpdateMultiMeter();
+	void AddCalendarUpdateLoad();
 	void CleanupShortLog();
 };
 

@@ -370,6 +370,20 @@ const char *sqlCreateZWaveNodes =
 	"[ProductDescription] VARCHAR(100) DEFAULT Unknown, "
 	"[PollTime] INTEGER DEFAULT 0);";
 
+const char *sqlCreateLoad =
+"CREATE TABLE IF NOT EXISTS [Load] ("
+"[DeviceRowID] BIGINT(10) NOT NULL, "
+"[Load] FLOAT NOT NULL, "
+"[Date] DATETIME DEFAULT (datetime('now','localtime')));";
+
+const char *sqlCreateLoad_Calendar =
+"CREATE TABLE IF NOT EXISTS [Load_Calendar] ("
+"[DeviceRowID] BIGINT(10) NOT NULL, "
+"[Load_Min] FLOAT NOT NULL, "
+"[Load_Max] FLOAT NOT NULL, "
+"[Load_Avg] FLOAT DEFAULT 0, "
+"[Date] DATE NOT NULL);";
+
 extern std::string szStartupFolder;
 
 CSQLHelper::CSQLHelper(void)
@@ -476,6 +490,8 @@ bool CSQLHelper::OpenDatabase()
     query(sqlCreateEventMaster);
     query(sqlCreateEventRules);
 	query(sqlCreateZWaveNodes);
+	query(sqlCreateLoad);
+	query(sqlCreateLoad_Calendar);
 
 	int dbversion=0;
 	GetPreferencesVar("DB_Version", dbversion);
@@ -722,7 +738,7 @@ bool CSQLHelper::OpenDatabase()
 			query("ALTER TABLE SceneTimers ADD COLUMN [Hue] INTEGER default 0");
 			query("ALTER TABLE Timers ADD COLUMN [Hue] INTEGER default 0");
 		}
-    }
+	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
 
 	//Make sure we have some default preferences
@@ -2813,6 +2829,7 @@ void CSQLHelper::Schedule5Minute()
 	UpdateUVLog();
 	UpdateMeter();
 	UpdateMultiMeter();
+	UpdateLoadLog();
 	//Removing the line below could cause a very large database,
 	//and slow(large) data transfer (specially when working remote!!)
 	CleanupShortLog();
@@ -2829,6 +2846,7 @@ void CSQLHelper::ScheduleDay()
 	AddCalendarUpdateWind();
 	AddCalendarUpdateMeter();
 	AddCalendarUpdateMultiMeter();
+	AddCalendarUpdateLoad();
 	CleanupLightLog();
 }
 
@@ -3512,6 +3530,77 @@ void CSQLHelper::UpdateMultiMeter()
 		}
 	}
 }
+
+void CSQLHelper::UpdateLoadLog()
+{
+	char szTmp[600];
+
+	time_t now = mytime(NULL);
+	if (now==0)
+		return;
+	struct tm tm1;
+	localtime_r(&now,&tm1);
+
+	int SensorTimeOut=60;
+	GetPreferencesVar("SensorTimeout", SensorTimeOut);
+
+	unsigned long long ID=0;
+
+	std::vector<std::vector<std::string> > result;
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)",
+		pTypeLoad
+		);
+	result=query(szTmp);
+	if (result.size()>0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::vector<std::string> sd=*itt;
+
+			unsigned long long ID;
+			std::stringstream s_str( sd[0] );
+			s_str >> ID;
+
+			unsigned char dType=atoi(sd[1].c_str());
+			unsigned char dSubType=atoi(sd[2].c_str());
+			int nValue=atoi(sd[3].c_str());
+			std::string sValue=sd[4];
+
+			//do not include sensors that have no reading within an hour
+			std::string sLastUpdate=sd[5];
+			struct tm ntime;
+			ntime.tm_isdst=tm1.tm_isdst;
+			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
+			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
+			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
+			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
+			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
+			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
+			time_t checktime=mktime(&ntime);
+			if (now-checktime>=SensorTimeOut*60)
+				continue;
+
+			std::vector<std::string> splitresults;
+			StringSplit(sValue, ";", splitresults);
+			if (splitresults.size()<1)
+				continue; //impossible
+
+			float load= (float)atof(sValue.c_str());
+
+			//insert record
+			sprintf(szTmp,
+				"INSERT INTO Load (DeviceRowID, Load) "
+				"VALUES (%llu, %.2f)",
+				ID,
+				load
+				);
+			std::vector<std::vector<std::string> > result2;
+			result2=query(szTmp);
+		}
+	}
+}
+
 
 void CSQLHelper::AddCalendarTemperature()
 {
@@ -4217,6 +4306,82 @@ void CSQLHelper::AddCalendarUpdateUV()
 				szDateStart
 				);
 			result=query(szTmp);
+		}
+	}
+}
+
+void CSQLHelper::AddCalendarUpdateLoad()
+{
+	char szTmp[600];
+
+	//Get All load devices in the Load Table
+	std::vector<std::vector<std::string> > resultdevices;
+	strcpy(szTmp,"SELECT DISTINCT(DeviceRowID) FROM Load ORDER BY DeviceRowID");
+	resultdevices=query(szTmp);
+	if (resultdevices.size()<1)
+		return; //nothing to do
+
+	char szDateStart[40];
+	char szDateEnd[40];
+
+	time_t now = mytime(NULL);
+	struct tm tm1;
+	localtime_r(&now,&tm1);
+
+	struct tm ltime;
+	ltime.tm_isdst=tm1.tm_isdst;
+	ltime.tm_hour=0;
+	ltime.tm_min=0;
+	ltime.tm_sec=0;
+	ltime.tm_year=tm1.tm_year;
+	ltime.tm_mon=tm1.tm_mon;
+	ltime.tm_mday=tm1.tm_mday;
+
+	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
+
+	//Subtract one day
+
+	ltime.tm_mday -= 1;
+	time_t later = mktime(&ltime);
+	struct tm tm2;
+	localtime_r(&later,&tm2);
+	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
+
+	std::vector<std::vector<std::string> > result;
+
+	std::vector<std::vector<std::string> >::const_iterator itt;
+	for (itt=resultdevices.begin(); itt!=resultdevices.end(); ++itt)
+	{
+		std::vector<std::string> sddev=*itt;
+		unsigned long long ID;
+		std::stringstream s_str( sddev[0] );
+		s_str >> ID;
+
+		sprintf(szTmp,"SELECT MIN(Load), MAX(Load), AVG(Load) FROM Load WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s')",
+			ID,
+			szDateStart,
+			szDateEnd
+			);
+		result=query(szTmp);
+		if (result.size()>0)
+		{
+			std::vector<std::string> sd=result[0];
+
+			float load_min=(float)atof(sd[0].c_str());
+			float load_max=(float)atof(sd[1].c_str());
+			float load_avg=(float)atof(sd[2].c_str());
+			//insert into calendar table
+			sprintf(szTmp,
+				"INSERT INTO Load_Calendar (DeviceRowID, Load_Min, Load_Max, Load_Avg, Date) "
+				"VALUES (%llu, %.2f, %.2f, %.2f,'%s')",
+				ID,
+				load_min,
+				load_max,
+				load_avg,
+				szDateStart
+				);
+			result=query(szTmp);
+
 		}
 	}
 }
