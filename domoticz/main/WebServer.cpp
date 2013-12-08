@@ -3127,6 +3127,8 @@ std::string CWebServer::GetJSonPage()
 				dbasetable="Temperature";
 			else if (sensor=="rain")
 				dbasetable="Rain";
+			else if (sensor=="load")
+				dbasetable="Load";
 			else if (sensor=="counter") 
 			{
 				if ((dType==pTypeP1Power)||(dType==pTypeCURRENT)||(dType==pTypeCURRENTENERGY))
@@ -3148,6 +3150,8 @@ std::string CWebServer::GetJSonPage()
 				dbasetable="Temperature_Calendar";
 			else if (sensor=="rain")
 				dbasetable="Rain_Calendar";
+			else if (sensor=="load")
+				dbasetable="Load_Calendar";
 			else if (sensor=="counter")
 			{
 				if (
@@ -3245,6 +3249,28 @@ std::string CWebServer::GetJSonPage()
 							}
 						}
 
+						ii++;
+					}
+				}
+			}
+			else if (sensor=="load") {
+				root["status"]="OK";
+				root["title"]="Graph " + sensor + " " + srange;
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT Load, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					int ii=0;
+					for (itt=result.begin(); itt!=result.end(); ++itt)
+					{
+						std::vector<std::string> sd=*itt;
+
+						root["result"][ii]["d"]=sd[1].substr(0,16);
+						root["result"][ii]["v"]=sd[0];
 						ii++;
 					}
 				}
@@ -4469,6 +4495,43 @@ std::string CWebServer::GetJSonPage()
 							root["result"][ii]["ba"]=szTmp;
 						}
 					}
+					ii++;
+				}
+
+			}
+			else if (sensor=="load") {
+				root["status"]="OK";
+				root["title"]="Graph " + sensor + " " + srange;
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT Load_Min, Load_Max, Date FROM Load WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				int ii=0;
+				if (result.size()>0)
+				{
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					for (itt=result.begin(); itt!=result.end(); ++itt)
+					{
+						std::vector<std::string> sd=*itt;
+
+						root["result"][ii]["d"]=sd[2].substr(0,16);
+						root["result"][ii]["v_max"]=sd[1];
+						root["result"][ii]["v_min"]=sd[0];
+						ii++;
+					}
+				}
+				//add today (have to calculate it)
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT MIN(Load), MAX(Load) FROM Load WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					std::vector<std::string> sd=result[0];
+					root["result"][ii]["d"]=szDateEnd;
+					root["result"][ii]["v_max"]=sd[1];
+					root["result"][ii]["v_min"]=sd[0];
 					ii++;
 				}
 
