@@ -702,7 +702,7 @@ function ShowPercentageLog(id,name,sensor)
         tooltip: {
             formatter: function() {
                     return ''+
-                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' %%';
+                    $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +': '+ this.y +' %';
             }
         },
         plotOptions: {
