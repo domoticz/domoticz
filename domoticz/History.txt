@@ -16,7 +16,7 @@ Version 1.0.xxxx (December xxth 2013)
 - Fixed: Day string logging for the DT1 - RTGR328N device
 - Implemented: Dashboard, clicking on a Motion/Dusk/Rain sensor icon will display the log
 - Fixed: RFXtrx hardware can now also be compiled/used accross big-little endianess systems
-- Implemented: Windows, Support for OpenHardwareMonitor supplied sensor data in Windows version of Domoticz. See wiki for info
+- Implemented: Windows, Support for OpenHardwareMonitor supplied sensor data in Windows version of Domoticz. See wiki for info. If you see a hardware device "Internal sensors", please delete it. The correct one to use is "Motherboard".
 - Fixed: Hardware started/stopped state, should fix the double starting of hardware
 - Fixed: Fixed problem with lux day value
 - Implemented: Option to delete data point from sensor by Shift-Left click on short log for temp/uv/lux/usage graphs
