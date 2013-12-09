@@ -157,7 +157,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_OpenThermGatewayTCP,"OpenTherm Gateway with LAN interface" },
 		{ HTYPE_OpenZWave,			"OpenZWave USB" },
 		{ HTYPE_LimitlessLights,	"Limitless/AppLamp with LAN interface" },
-		{ HTYPE_System,				"Computer Onboard sensors (automatically added when detected)" },
+		{ HTYPE_System,				"Motherboard sensors" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
