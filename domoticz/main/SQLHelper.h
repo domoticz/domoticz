@@ -350,6 +350,7 @@ private:
 	void UpdateMeter();
 	void UpdateMultiMeter();
 	void UpdateLoadLog();
+	void UpdateFanLog();
 	void AddCalendarTemperature();
 	void AddCalendarUpdateRain();
 	void AddCalendarUpdateWind();
@@ -357,6 +358,7 @@ private:
 	void AddCalendarUpdateMeter();
 	void AddCalendarUpdateMultiMeter();
 	void AddCalendarUpdateLoad();
+	void AddCalendarUpdateFan();
 	void CleanupShortLog();
 };
 

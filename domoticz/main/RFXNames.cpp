@@ -219,6 +219,7 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_TODAYCOUNTER, "Today", "C" },
 		{ NTYPE_SWITCH_OFF, "Switch Off", "O" },
 		{ NTYPE_PERCENTAGE, "Percentage", "P" },
+		{ NTYPE_RPM, "RPM", "Z" },
 		{ NTYPE_DEWPOINT, "Dew Point", "D" },
 		
 		{  0,NULL,NULL }
@@ -251,6 +252,7 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_SWITCH_OFF, "On" },
 		{ NTYPE_PERCENTAGE, "%%" },
 		{ NTYPE_DEWPOINT, "degrees" },
+		{ NTYPE_RPM, "RPM" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, nType);
@@ -343,6 +345,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeBBQ, "BBQ Meter", "bbq" },
 		{ pTypePOWER, "Current/Energy" , "current" },
 		{ pTypeLoad, "Load" , "hardware" },
+		{ pTypeFan, "Fan" , "hardware" },
 		{  0,NULL,NULL }
 	};
 	if (snum==1)
@@ -529,6 +532,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLimitlessLights, sTypeLimitlessRGB, "RGB" },
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "White" },
 		{ pTypeLoad, sTypeLoad, "Internal sensor" },
+		{ pTypeFan, sTypeFan, "Internal fan" },
 	
 		{  0,0,NULL }
 	};

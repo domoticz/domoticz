@@ -1166,7 +1166,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						(!((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXCounter)))&&
 						(!((dType==pTypeThermostat)&&(dSubType==sTypeThermSetpoint)))&&
 						(dType!=pTypeWEIGHT)&&
-						(dType!=pTypeLoad)
+						(dType!=pTypeLoad)&&
+						(dType!=pTypeFan)
 						)
 						continue;
 				}
@@ -2422,7 +2423,16 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				root["result"][ii]["Image"]="Computer";
 			}
-
+			else if (dType == pTypeFan)
+			{
+				if (dSubType==sTypeFan)
+				{
+					sprintf(szData,"%d RPM",atoi(sValue.c_str()));
+					root["result"][ii]["Data"]=szData;
+				}
+				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+				root["result"][ii]["Image"]="Fan";
+			}
 			ii++;
 		}
 	}
@@ -3129,6 +3139,8 @@ std::string CWebServer::GetJSonPage()
 				dbasetable="Rain";
 			else if (sensor=="load")
 				dbasetable="Load";
+			else if (sensor=="fan")
+				dbasetable="Fan";
 			else if (sensor=="counter") 
 			{
 				if ((dType==pTypeP1Power)||(dType==pTypeCURRENT)||(dType==pTypeCURRENTENERGY))
@@ -3152,6 +3164,8 @@ std::string CWebServer::GetJSonPage()
 				dbasetable="Rain_Calendar";
 			else if (sensor=="load")
 				dbasetable="Load_Calendar";
+			else if (sensor=="fan")
+				dbasetable="Fan_Calendar";
 			else if (sensor=="counter")
 			{
 				if (
@@ -3274,6 +3288,29 @@ std::string CWebServer::GetJSonPage()
 					}
 				}
 			}
+			else if (sensor=="fan") {
+				root["status"]="OK";
+				root["title"]="Graph " + sensor + " " + srange;
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT Speed, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					int ii=0;
+					for (itt=result.begin(); itt!=result.end(); ++itt)
+					{
+						std::vector<std::string> sd=*itt;
+
+						root["result"][ii]["d"]=sd[1].substr(0,16);
+						root["result"][ii]["v"]=sd[0];
+						ii++;
+					}
+				}
+			}
+
 			else if (sensor=="counter")
 			{
 				if (dType==pTypeP1Power)
@@ -4524,6 +4561,43 @@ std::string CWebServer::GetJSonPage()
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT MIN(Load), MAX(Load) FROM Load WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					std::vector<std::string> sd=result[0];
+					root["result"][ii]["d"]=szDateEnd;
+					root["result"][ii]["v_max"]=sd[1];
+					root["result"][ii]["v_min"]=sd[0];
+					ii++;
+				}
+
+			}
+			else if (sensor=="fan") {
+				root["status"]="OK";
+				root["title"]="Graph " + sensor + " " + srange;
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT Speed_Min, Speed_Max, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				int ii=0;
+				if (result.size()>0)
+				{
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					for (itt=result.begin(); itt!=result.end(); ++itt)
+					{
+						std::vector<std::string> sd=*itt;
+
+						root["result"][ii]["d"]=sd[2].substr(0,16);
+						root["result"][ii]["v_max"]=sd[1];
+						root["result"][ii]["v_min"]=sd[0];
+						ii++;
+					}
+				}
+				//add today (have to calculate it)
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT MIN(Speed), MAX(Speed) FROM Fan WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 				result=m_pMain->m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
@@ -8005,6 +8079,13 @@ std::string CWebServer::GetJSonPage()
 				root["result"][ii]["val"]=NTYPE_PERCENTAGE;
 				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_PERCENTAGE,0);
 				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_PERCENTAGE,1);
+				ii++;
+			}
+			if (dType==pTypeFan)
+			{
+				root["result"][ii]["val"]=NTYPE_RPM;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_RPM,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_RPM,1);
 				ii++;
 			}
 		}

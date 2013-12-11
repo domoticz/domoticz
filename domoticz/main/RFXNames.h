@@ -97,6 +97,7 @@ enum _eNotificationTypes
 	NTYPE_SWITCH_OFF,//16
 	NTYPE_PERCENTAGE,
 	NTYPE_DEWPOINT,
+	NTYPE_RPM,
 };
 
 enum _eShareRights

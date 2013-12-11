@@ -646,6 +646,10 @@ SDK version 4.9
 #define pTypeLoad 0x73
 #define sTypeLoad 0x0
 
+//System fan
+#define pTypeFan 0x74
+#define sTypeFan 0x0
+
 // taken from boost endian.hpp
 #if defined(__GLIBC__)
 # include <endian.h>
