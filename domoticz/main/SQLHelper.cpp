@@ -15,7 +15,7 @@
 #include "../webserver/Base64.h"
 #include "mainstructs.h"
 
-#define DB_VERSION 32
+#define DB_VERSION 33
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -754,6 +754,36 @@ bool CSQLHelper::OpenDatabase()
 			query("ALTER TABLE SceneDevices ADD COLUMN [Hue] INTEGER default 0");
 			query("ALTER TABLE SceneTimers ADD COLUMN [Hue] INTEGER default 0");
 			query("ALTER TABLE Timers ADD COLUMN [Hue] INTEGER default 0");
+		}
+		if (dbversion<33)
+		{
+			query("DROP TABLE IF EXISTS [Load]");
+			query("DROP TABLE IF EXISTS [Load_Calendar]");
+			query("DROP TABLE IF EXISTS [Fan]");
+			query("DROP TABLE IF EXISTS [Fan_Calendar]");
+			query(sqlCreateLoad);
+			query(sqlCreateLoad_Calendar);
+			query(sqlCreateFan);
+			query(sqlCreateFan_Calendar);
+
+			char szTmp[200];
+
+			std::vector<std::vector<std::string> > result;
+			result=query("SELECT ID FROM DeviceStatus WHERE (DeviceID LIKE 'WMI%')");
+			if (result.size()>0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt=result.begin(); itt!=result.end(); ++itt)
+				{
+					std::vector<std::string> sd=*itt;
+					std::string idx=sd[0];
+					sprintf(szTmp,"DELETE FROM Temperature WHERE (DeviceRowID='%s')",idx.c_str());
+					query(szTmp);
+					sprintf(szTmp,"DELETE FROM Temperature_Calendar WHERE (DeviceRowID='%s')",idx.c_str());
+					query(szTmp);
+				}
+			}
+			query("DELETE FROM DeviceStatus WHERE (DeviceID LIKE 'WMI%')");
 		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
@@ -2885,7 +2915,7 @@ void CSQLHelper::UpdateTemperatureLog()
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d)",
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d))",
 		pTypeTEMP,
 		pTypeHUM,
 		pTypeTEMP_HUM,
@@ -2895,7 +2925,9 @@ void CSQLHelper::UpdateTemperatureLog()
 		pTypeWIND,
 		pTypeThermostat1,
 		pTypeRFXSensor,
-		pTypeRego6XXTemp
+		pTypeRego6XXTemp,
+		pTypeGeneral,
+		sTypeSystemTemp
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -2984,6 +3016,10 @@ void CSQLHelper::UpdateTemperatureLog()
 				if (dSubType!=sTypeRFXSensorTemp)
 					continue;
 				temp=(float)atof(splitresults[0].c_str());
+				break;
+			case pTypeGeneral:
+				if (dSubType==sTypeSystemTemp)
+					temp=(float)atof(splitresults[0].c_str());
 				break;
 			}
 			//insert record
@@ -3566,8 +3602,8 @@ void CSQLHelper::UpdateLoadLog()
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)",
-		pTypeLoad
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d AND SubType=%d)",
+		pTypeGeneral,sTypeSystemLoad
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -3636,8 +3672,8 @@ void CSQLHelper::UpdateFanLog()
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)",
-		pTypeFan
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d AND SubType=%d)",
+		pTypeGeneral,sTypeSystemFan
 		);
 	result=query(szTmp);
 	if (result.size()>0)

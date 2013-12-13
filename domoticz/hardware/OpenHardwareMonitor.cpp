@@ -247,19 +247,19 @@ void COpenHardwareMonitor::UpdateSystemSensor(const std::string& qType, const st
 		if (qType=="Temperature") {
 			szQuery << 
 				"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-				"VALUES (" << hwId << ",'" << wmiId << "',"<< 0 << "," << pTypeTEMP << "," <<sTypeTEMP11 << ",12,255,'" << devName << "'," << devValue << ",'" << devValue << "')";
+				"VALUES (" << hwId << ",'" << wmiId << "',"<< 0 << "," << pTypeGeneral << "," <<sTypeSystemTemp << ",12,255,'" << devName << "'," << devValue << ",'" << devValue << "')";
 			m_pMain->m_sql.query(szQuery.str());
 		}
 		else if (qType=="Load") {
 			szQuery << 
 				"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-				"VALUES (" << hwId << ",'" << wmiId << "',"<< 0 << "," << pTypeLoad << "," <<sTypeLoad << ",12,255,'" << devName << "'," << devValue << ",'" << devValue << "')";
+				"VALUES (" << hwId << ",'" << wmiId << "',"<< 0 << "," << pTypeGeneral << "," <<sTypeSystemLoad << ",12,255,'" << devName << "'," << devValue << ",'" << devValue << "')";
 			m_pMain->m_sql.query(szQuery.str());
 		}
 		else if (qType=="Fan") {
 			szQuery << 
 				"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-				"VALUES (" << hwId << ",'" << wmiId << "',"<< 0 << "," << pTypeFan << "," <<sTypeFan << ",12,255,'" << devName << "'," << devValue << ",'" << devValue << "')";
+				"VALUES (" << hwId << ",'" << wmiId << "',"<< 0 << "," << pTypeGeneral << "," <<sTypeSystemFan << ",12,255,'" << devName << "'," << devValue << ",'" << devValue << "')";
 			m_pMain->m_sql.query(szQuery.str());
 		}
 	}
@@ -284,13 +284,13 @@ void COpenHardwareMonitor::UpdateSystemSensor(const std::string& qType, const st
 		m_pMain->m_sql.query(szQuery.str());
 
 		if (qType == "Load") {
-			m_pMain->m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeLoad, sTypeLoad, NTYPE_PERCENTAGE, (const float)atof(devValue.c_str()));
+			m_pMain->m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeGeneral, sTypeSystemLoad, NTYPE_PERCENTAGE, (const float)atof(devValue.c_str()));
 		}
 		else if (qType == "Temperature") {
-			m_pMain->m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeTEMP, sTypeTEMP11, NTYPE_TEMPERATURE, (const float)atof(devValue.c_str()));
+			m_pMain->m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeGeneral, sTypeSystemTemp, NTYPE_TEMPERATURE, (const float)atof(devValue.c_str()));
 		}
 		else if (qType == "Fan") {
-			m_pMain->m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeFan, sTypeFan, NTYPE_RPM, (const float)atof(devValue.c_str()));
+			m_pMain->m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeGeneral, sTypeSystemFan, NTYPE_RPM, (const float)atof(devValue.c_str()));
 		}
 
 	}

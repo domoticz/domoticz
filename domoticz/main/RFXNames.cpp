@@ -344,8 +344,6 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeChime, "Chime" , "Chime" },
 		{ pTypeBBQ, "BBQ Meter", "bbq" },
 		{ pTypePOWER, "Current/Energy" , "current" },
-		{ pTypeLoad, "Load" , "hardware" },
-		{ pTypeFan, "Fan" , "hardware" },
 		{  0,NULL,NULL }
 	};
 	if (snum==1)
@@ -368,8 +366,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeTEMP, sTypeTEMP8, "LaCrosse WS2300" },
 		{ pTypeTEMP, sTypeTEMP9, "RUBiCSON" },
 		{ pTypeTEMP, sTypeTEMP10, "TFA 30.3133" },
-		{ pTypeTEMP, sTypeTEMP11, "Internal sensor" },
-
+		
 		{ pTypeHUM, sTypeHUM1, "LaCrosse TX3" },
 		{ pTypeHUM, sTypeHUM2, "LaCrosse WS2300" },
 
@@ -517,6 +514,9 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeSolarRadiation, "Solar Radiation" },
 		{ pTypeGeneral, sTypeSoilMoisture, "Soil Moisture" },
 		{ pTypeGeneral, sTypeLeafWetness, "Leaf Wetness" },
+		{ pTypeGeneral, sTypeSystemTemp, "System temperature" },
+		{ pTypeGeneral, sTypeSystemLoad, "System load" },
+		{ pTypeGeneral, sTypeSystemFan, "System fan" },
 		
 		{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -531,8 +531,6 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLimitlessLights, sTypeLimitlessRGBW, "RGBW" },
 		{ pTypeLimitlessLights, sTypeLimitlessRGB, "RGB" },
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "White" },
-		{ pTypeLoad, sTypeLoad, "Internal sensor" },
-		{ pTypeFan, sTypeFan, "Internal fan" },
 	
 		{  0,0,NULL }
 	};

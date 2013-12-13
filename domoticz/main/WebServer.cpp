@@ -1126,6 +1126,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						(!((dType==pTypeWIND)&&(dSubType==sTypeWIND4)))&&
 						(!((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp)))&&
 						(!((dType==pTypeUV)&&(dSubType==sTypeUV3)))&&
+						(!((dType==pTypeGeneral)&&(dSubType==sTypeSystemTemp)))&&
 						(dType!=pTypeThermostat1)&&
 						(!((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp)))&&
 						(dType!=pTypeRego6XXTemp)
@@ -1161,13 +1162,13 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						(dType!=pTypeAirQuality)&&
 						(!((dType==pTypeGeneral)&&(dSubType==sTypeSoilMoisture)))&&
 						(!((dType==pTypeGeneral)&&(dSubType==sTypeLeafWetness)))&&
+						(!((dType==pTypeGeneral)&&(dSubType==sTypeSystemLoad)))&&
+						(!((dType==pTypeGeneral)&&(dSubType==sTypeSystemFan)))&&
 						(dType!=pTypeLux)&&
 						(dType!=pTypeUsage)&&
 						(!((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXCounter)))&&
 						(!((dType==pTypeThermostat)&&(dSubType==sTypeThermSetpoint)))&&
-						(dType!=pTypeWEIGHT)&&
-						(dType!=pTypeLoad)&&
-						(dType!=pTypeFan)
+						(dType!=pTypeWEIGHT)
 						)
 						continue;
 				}
@@ -1218,7 +1219,6 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			sprintf(szData,"%04X",(unsigned int)atoi(sd[1].c_str()));
 			if (
 				(dType==pTypeTEMP_BARO)||
-				((dType==pTypeTEMP)&&(dSubType!=sTypeTEMP11))||
 				(dType==pTypeTEMP_HUM)||
 				(dType==pTypeTEMP_HUM_BARO)||
 				(dType==pTypeBARO)||
@@ -2294,6 +2294,36 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 					root["result"][ii]["SwitchTypeVal"]=metertype;
 				}
+				else if (dSubType==sTypeSystemTemp)
+				{
+					root["result"][ii]["AddjValue"]=AddjValue;
+					root["result"][ii]["AddjMulti"]=AddjMulti;
+					root["result"][ii]["Temp"]=atof(sValue.c_str());
+					sprintf(szData,"%.1f C", atof(sValue.c_str()));
+					root["result"][ii]["Data"]=szData;
+					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+					root["result"][ii]["Image"]="Computer";
+					root["result"][ii]["TypeImg"]="temperature";
+					root["result"][ii]["Type"]="temperature";
+				}
+				else if (dSubType==sTypeSystemLoad)
+				{
+					sprintf(szData,"%.1f%%",atof(sValue.c_str()));
+					root["result"][ii]["Data"]=szData;
+					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+					root["result"][ii]["Image"]="Computer";
+					root["result"][ii]["TypeImg"]="hardware";
+					root["result"][ii]["Type"]="Load";
+				}
+				else if ((dType == pTypeGeneral)&&(dSubType==sTypeSystemFan))
+				{
+					sprintf(szData,"%d RPM",atoi(sValue.c_str()));
+					root["result"][ii]["Data"]=szData;
+					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+					root["result"][ii]["Image"]="Fan";
+					root["result"][ii]["TypeImg"]="Fan";
+					root["result"][ii]["Type"]="Fan";
+				}
 			}
 			else if (dType == pTypeLux)
 			{
@@ -2412,26 +2442,6 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
                     }
                     break;
                 }
-			}
-			else if (dType == pTypeLoad)
-			{
-				if (dSubType==sTypeLoad)
-				{
-					sprintf(szData,"%.1f%%",atof(sValue.c_str()));
-					root["result"][ii]["Data"]=szData;
-				}
-				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
-				root["result"][ii]["Image"]="Computer";
-			}
-			else if (dType == pTypeFan)
-			{
-				if (dSubType==sTypeFan)
-				{
-					sprintf(szData,"%d RPM",atoi(sValue.c_str()));
-					root["result"][ii]["Data"]=szData;
-				}
-				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
-				root["result"][ii]["Image"]="Fan";
 			}
 			ii++;
 		}
@@ -3224,7 +3234,8 @@ std::string CWebServer::GetJSonPage()
 							((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))||
 							((dType==pTypeUV)&&(dSubType==sTypeUV3))||
 							(dType==pTypeThermostat1)||
-							((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))
+							((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))||
+							((dType==pTypeGeneral)&&(dSubType==sTypeSystemTemp))
 							)
 						{
 							root["result"][ii]["te"]=sd[0];
@@ -4428,7 +4439,8 @@ std::string CWebServer::GetJSonPage()
 						if (
 							(dType==pTypeRego6XXTemp)||(dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeTEMP_BARO)||(dType==pTypeWIND)||(dType==pTypeThermostat1)||
 							((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))||
-							((dType==pTypeUV)&&(dSubType==sTypeUV3))
+							((dType==pTypeUV)&&(dSubType==sTypeUV3))||
+							((dType==pTypeGeneral)&&(dSubType==sTypeSystemTemp))
 							)
 						{
 							bool bOK=true;
@@ -8074,14 +8086,14 @@ std::string CWebServer::GetJSonPage()
 				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
 				ii++;
 			}
-			if (dType==pTypeLoad)
+			if ((dType==pTypeGeneral)&&(dSubType==sTypeSystemLoad))
 			{
 				root["result"][ii]["val"]=NTYPE_PERCENTAGE;
 				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_PERCENTAGE,0);
 				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_PERCENTAGE,1);
 				ii++;
 			}
-			if (dType==pTypeFan)
+			if ((dType==pTypeGeneral)&&(dSubType==sTypeSystemFan))
 			{
 				root["result"][ii]["val"]=NTYPE_RPM;
 				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_RPM,0);
