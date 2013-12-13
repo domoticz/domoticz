@@ -70,9 +70,7 @@
 function AddDevice(idx,itemname)
 {
 	$.devIdx = idx;
-	if (itemname!='Undefined') {
-		$("#devicename").val(itemname);
-	}
+	$("#devicename").val(itemname);
     $( "#dialog-adddevice" ).i18n();
     $( "#dialog-adddevice" ).dialog( "open" );
 }

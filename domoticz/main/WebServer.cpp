@@ -7860,7 +7860,8 @@ std::string CWebServer::GetJSonPage()
 				)||
 				((dType==pTypeUV)&&(dSubType==sTypeUV3))||
 				((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
-				((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))
+				((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))||
+				((dType==pTypeGeneral)&&(dSubType==sTypeSystemTemp))
 				)
 			{
 				root["result"][ii]["val"]=NTYPE_TEMPERATURE;
