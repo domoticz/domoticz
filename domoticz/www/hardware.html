@@ -872,7 +872,7 @@ function RequestZWaveConfiguration(idx)
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {
-			bootbox.alert($.i18n('Configuration requested from Node. It the Node is asleep, this could take a while!'));
+			bootbox.alert($.i18n('Configuration requested from Node. If the Node is asleep, this could take a while!'));
 			RefreshOpenZWaveNodeTable();
 		 },
 		 error: function(){
@@ -904,7 +904,7 @@ function ApplyZWaveConfiguration(idx)
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
-				bootbox.alert($.i18n('Configuration send to node. It the node is asleep, this could take a while!'));
+				bootbox.alert($.i18n('Configuration send to node. If the node is asleep, this could take a while!'));
 			 },
 			 error: function(){
 					ShowNotify($.i18n('Problem updating Node Configuration!'), 2500, true);
