@@ -276,7 +276,7 @@ void C1Wire::GetDeviceDetails()
 
       default: // Device is not actually supported
          {
-            _log.Log(LOG_NORM,"1-Wire : Device family (%02x) is not actualy supported", device.family);
+            _log.Log(LOG_NORM,"1-Wire : Device family (%02x) is not actually supported", device.family);
             break;
          }
       }

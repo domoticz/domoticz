@@ -15,7 +15,7 @@ typedef struct _tYouLessMeter {
 class CYouLess : public CDomoticzHardwareBase
 {
 public:
-	CYouLess(const int ID, const std::string IPAddress, const unsigned short usIPPort);
+	CYouLess(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string password);
 	~CYouLess(void);
 
 	YouLessMeter	m_meter;
@@ -23,6 +23,7 @@ public:
 private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
+	std::string m_Password;
 	volatile bool m_stoprequested;
 	unsigned char m_PollCounter;
 	boost::shared_ptr<boost::thread> m_thread;

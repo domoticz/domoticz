@@ -796,7 +796,7 @@ char * CWebServer::SetRFXCOMMode()
 	Response.IRESPONSE.LIGHTING4enabled=(m_pWebEm->FindValue("Lighting4")=="on")?1:0;
 	Response.IRESPONSE.RSLenabled=(m_pWebEm->FindValue("RSL")=="on")?1:0;
 	Response.IRESPONSE.SXenabled=(m_pWebEm->FindValue("ByronSX")=="on")?1:0;
-	Response.IRESPONSE.RFU6=(m_pWebEm->FindValue("rfu6")=="on")?1:0;
+	Response.IRESPONSE.RFU6enabled=(m_pWebEm->FindValue("rfu6")=="on")?1:0;
 
 	m_pMain->SetRFXCOMHardwaremodes(atoi(idx.c_str()),Response.ICMND.msg1,Response.ICMND.msg2,Response.ICMND.msg3,Response.ICMND.msg4,Response.ICMND.msg5);
 
@@ -2994,8 +2994,8 @@ std::string CWebServer::GetJSonPage()
 				root["result"][ii]["Type"]=atoi(sd[3].c_str());
 				root["result"][ii]["Cmd"]=atoi(sd[4].c_str());
 				root["result"][ii]["Level"]=iLevel;
-				root["result"][ii]["Days"]=atoi(sd[6].c_str());
-				root["result"][ii]["Hue"]=atoi(sd[7].c_str());
+				root["result"][ii]["Hue"]=atoi(sd[6].c_str());
+				root["result"][ii]["Days"]=atoi(sd[7].c_str());
 				root["result"][ii]["Randomness"]=(atoi(sd[8].c_str())!=0);
 				ii++;
 			}

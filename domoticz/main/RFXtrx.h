@@ -22,6 +22,11 @@
 //-----------------------------------------------------------------------------
 
 /*
+SDK version 6.11
+	Lighting5 - RGB driver TRC02 added
+	Lighting6 - Blyss rfu replaced by seqnbr2
+	Endian check added
+
 SDK version 6.10
 	Security1 - SA30 added
 	TEMP_HUM - TH11 EW109 added
@@ -251,6 +256,7 @@ SDK version 4.9
 #define sTypeUrubicson 0x10
 #define sTypeUae 0x11
 #define sTypeUfineoffset 0x12
+#define sTypeUrgb 0x13
 
 //types for Lighting
 #define pTypeLighting1 0x10
@@ -310,6 +316,7 @@ SDK version 4.9
 #define sTypeMDREMOTE 0x03
 #define sTypeRSL 0x04
 #define sTypeLivolo 0x05
+#define sTypeTRC02 0x06
 #define light5_sOff 0x0
 #define light5_sOn 0x1
 #define light5_sGroupOff 0x2
@@ -345,6 +352,12 @@ SDK version 4.9
 #define light5_sLivoloGang1Toggle 0x01
 #define light5_sLivoloGang2Toggle 0x02	//dim+ for dimmer
 #define light5_sLivoloGang3Toggle 0x03	//dim- for dimmer
+#define light5_sRGBoff 0x00
+#define light5_sRGBon 0x01
+#define light5_sRGBbright 0x02
+#define light5_sRGBdim 0x03
+#define light5_sRGBcolorplus 0x04
+#define light5_sRGBcolormin 0x05
 
 #define pTypeLighting6 0x15
 #define sTypeBlyss 0x0
@@ -641,7 +654,6 @@ SDK version 4.9
 #define sTypeFHT8V 0x1
 #define sTypeFHT80 0x2
 
-
 // taken from boost endian.hpp
 #if defined(__GLIBC__)
 # include <endian.h>
@@ -702,7 +714,7 @@ typedef union tRBUF {
 		//BYTE	msg3;
 #if __BYTE_ORDER == __BIG_ENDIAN
 		BYTE	UNDECODEDenabled : 1;
-		BYTE	RFU6 : 1;
+		BYTE	RFU6enabled : 1;
 		BYTE	SXenabled : 1;
 		BYTE	RSLenabled : 1;
 		BYTE	LIGHTING4enabled : 1;
@@ -716,7 +728,7 @@ typedef union tRBUF {
 		BYTE	LIGHTING4enabled : 1;
 		BYTE	RSLenabled : 1;
 		BYTE	SXenabled : 1;
-		BYTE	RFU6 : 1;
+		BYTE	RFU6enabled : 1;
 		BYTE	UNDECODEDenabled : 1;
 #endif
 		//BYTE	msg4;
@@ -919,7 +931,7 @@ typedef union tRBUF {
 		BYTE	unitcode;
 		BYTE	cmnd;
 		BYTE	cmndseqnbr;
-		BYTE	rfu;
+		BYTE	seqnbr2;
 #if __BYTE_ORDER == __BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	filler : 4;

@@ -7,10 +7,11 @@
 
 #define YOULESS_POLL_INTERVAL 10
 
-CYouLess::CYouLess(const int ID, const std::string IPAddress, const unsigned short usIPPort)
+CYouLess::CYouLess(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string password)
 {
 	m_HwdID=ID;
 	m_szIPAddress=IPAddress;
+	m_Password = password;
 	m_usIPPort=usIPPort;
 	m_stoprequested=false;
 	Init();
@@ -84,7 +85,15 @@ void CYouLess::GetMeterDetails()
 	std::string sResult;
 
 	char szURL[200];
-	sprintf(szURL,"http://%s:%d/a",m_szIPAddress.c_str(), m_usIPPort);
+
+	if(m_Password.size() == 0)
+	{
+		sprintf(szURL,"http://%s:%d/a",m_szIPAddress.c_str(), m_usIPPort);
+	}
+	else
+	{
+		sprintf(szURL,"http://%s:%d/a&w=%s",m_szIPAddress.c_str(), m_usIPPort, m_Password.c_str());
+	}
 
 	if (!HTTPClient::GET(szURL,sResult))
 	{

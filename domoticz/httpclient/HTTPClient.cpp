@@ -61,6 +61,8 @@ void HTTPClient::SetGlobalOptions(void *curlobj)
 	curl_easy_setopt(curl, CURLOPT_TIMEOUT,m_iTimeout); 
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, false);
 	curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
+	curl_easy_setopt(curl, CURLOPT_COOKIEFILE, "domocookie.txt"); 
+	curl_easy_setopt(curl, CURLOPT_COOKIEJAR,  "domocookie.txt"); 
 }
 
 //Configuration functions

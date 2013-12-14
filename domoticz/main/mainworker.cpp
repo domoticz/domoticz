@@ -434,7 +434,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_YouLess:
 		//LAN
-		pHardware = new CYouLess(ID, Address, Port);
+		pHardware = new CYouLess(ID, Address, Port, Password);
 		break;
 	case HTYPE_1WIRE:
 		//1-Wire file system
@@ -1457,7 +1457,7 @@ unsigned long long MainWorker::decode_InterfaceMessage(const int HwdID, const tR
 					else
 						WriteMessage("ByronSX           disabled");
 
-					if (pResponse->IRESPONSE.RFU6)
+					if (pResponse->IRESPONSE.RFU6enabled)
 						WriteMessage("RFU protocol 6    enabled");
 					else
 						WriteMessage("RFU protocol 6    disabled");
@@ -3503,7 +3503,7 @@ unsigned long long MainWorker::decode_Lighting6(const int HwdID, const tRBUF *pR
 	std::string ID = szTmp;
 	unsigned char Unit=pResponse->LIGHTING6.unitcode;
 	unsigned char cmnd=pResponse->LIGHTING6.cmnd;
-	unsigned char rfu=pResponse->LIGHTING6.rfu;
+	unsigned char rfu=pResponse->LIGHTING6.seqnbr2;
 	unsigned char SignalLevel=pResponse->LIGHTING6.rssi;
 
 	sprintf(szTmp,"%d",rfu);
@@ -3546,7 +3546,7 @@ unsigned long long MainWorker::decode_Lighting6(const int HwdID, const tRBUF *pR
 			}
 			sprintf(szTmp,"Command seqnbr= %d", pResponse->LIGHTING6.cmndseqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"rfu           = %d", pResponse->LIGHTING6.rfu);
+			sprintf(szTmp,"seqnbr2       = %d", pResponse->LIGHTING6.seqnbr2);
 			WriteMessage(szTmp);
 			break;
 		default:
@@ -7337,6 +7337,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.LIGHTING6.packettype=dType;
 			lcmd.LIGHTING6.subtype=dSubType;
 			lcmd.LIGHTING6.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
+			lcmd.LIGHTING6.seqnbr2=0;
 			lcmd.LIGHTING6.id1=ID2;
 			lcmd.LIGHTING6.id2=ID3;
 			lcmd.LIGHTING6.groupcode=ID4;
