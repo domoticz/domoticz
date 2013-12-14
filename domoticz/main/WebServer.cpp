@@ -2315,7 +2315,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["TypeImg"]="hardware";
 					root["result"][ii]["Type"]="Load";
 				}
-				else if ((dType == pTypeGeneral)&&(dSubType==sTypeSystemFan))
+				else if (dSubType==sTypeSystemFan)
 				{
 					sprintf(szData,"%d RPM",atoi(sValue.c_str()));
 					root["result"][ii]["Data"]=szData;
