@@ -24,9 +24,9 @@ private:
 	void Init();
 	void InitWMI();
 	int hwId;
-	IWbemLocator *m_pLocator; 
-	IWbemServices *m_pServicesOHM;
-	IWbemServices *m_pServicesSystem;
+	IWbemLocator *pLocator; 
+	IWbemServices *pServicesOHM;
+	IWbemServices *pServicesSystem;
 	HRESULT hr;
 	void FetchData();
 	bool COpenHardwareMonitor::IsOHMRunning();
