@@ -68,6 +68,10 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 Filename: "{app}\{#NSSM}"; Parameters: "install {#MyAppName} ""{app}\{#MyAppExeName}"" ""-www {code:GetParams}"""; Flags: runhidden; Tasks: RunAsService
 Filename: "{sys}\net.exe"; Parameters: "start {#MyAppName}"; Flags: runhidden; Tasks: RunAsService
 
+[Dirs]
+Name: "{app}\backups\hourly"
+Name: "{app}\backups\daily"
+Name: "{app}\backups\monthly"
 
 [PostCompile]
 Name: "makedist.bat"
