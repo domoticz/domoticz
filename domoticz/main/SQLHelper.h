@@ -191,6 +191,8 @@ public:
 	bool GetPreferencesVar(const char *Key, int &nValue, std::string &sValue);
 	bool GetPreferencesVar(const char *Key, int &nValue);
 	bool GetPreferencesVar(const char *Key, std::string &sValue);
+	int GetLastBackupNo(const char *Key, int &nValue);
+	void SetLastBackupNo(const char *Key, const int nValue);
 
 	//notification functions
 	bool AddNotification(const std::string &DevIdx, const std::string &Param);

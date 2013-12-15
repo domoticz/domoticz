@@ -167,6 +167,15 @@
 				</table>
 			</div>
 			<br>
+			<div id="AutoBackup">
+				<h2><span data-i18n="AutoBackup"></span>:</h2>
+				<table class="display" id="autobackuptable" border="0" cellpadding="0" cellspacing="0">
+					<tr>
+						<td colspan="2"><input type="checkbox" id="enableautobackup" name="enableautobackup"/> <span data-i18n="EnableAutoBackup"></span></td>
+					</tr>
+				</table>
+			</div>
+			<br>			
 			<div id="ActiveTabs">
 				<h2><span data-i18n="ActiveMenus"></span>:</h2>
 				<table class="display" id="activemenustable" border="0" cellpadding="0" cellspacing="0">
@@ -669,6 +678,9 @@ function ShowSettings()
       }
       if (typeof data.UseAutoUpdate != 'undefined') {
         $("#autoupdatetable #checkforupdates").prop('checked',data.UseAutoUpdate==1);
+      }
+	  if (typeof data.UseAutoBackup != 'undefined') {
+        $("#autobackuptable #enableautobackup").prop('checked',data.UseAutoBackup==1);
       }
       if (typeof data.EmailFrom!= 'undefined') {
         $("#emailtable #EmailFrom").val(data.EmailFrom);

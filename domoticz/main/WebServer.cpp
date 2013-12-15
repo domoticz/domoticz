@@ -659,6 +659,9 @@ char * CWebServer::PostSettings()
 	std::string scheckforupdates=m_pWebEm->FindValue("checkforupdates");
 	m_pMain->m_sql.UpdatePreferencesVar("UseAutoUpdate",(scheckforupdates=="on"?1:0));
 
+	std::string senableautobackup=m_pWebEm->FindValue("enableautobackup");
+	m_pMain->m_sql.UpdatePreferencesVar("UseAutoBackup",(senableautobackup=="on"?1:0));
+
 	float CostEnergy=(float)atof(m_pWebEm->FindValue("CostEnergy").c_str());
 	float CostEnergyT2=(float)atof(m_pWebEm->FindValue("CostEnergyT2").c_str());
 	float CostGas=(float)atof(m_pWebEm->FindValue("CostGas").c_str());
@@ -10179,6 +10182,10 @@ std::string CWebServer::GetJSonPage()
 				else if (Key=="UseAutoUpdate")
 				{
 					root["UseAutoUpdate"]=nValue;
+				}
+				else if (Key=="UseAutoBackup")
+				{
+					root["UseAutoBackup"]=nValue;
 				}
 				else if (Key=="Rego6XXType")
 				{

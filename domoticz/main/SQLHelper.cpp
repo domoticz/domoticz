@@ -398,6 +398,10 @@ const char *sqlCreateFan_Calendar =
 "[Speed_Avg] INTEGER DEFAULT 0, "
 "[Date] DATE NOT NULL);";
 
+const char *sqlCreateBackupLog =
+"CREATE TABLE IF NOT EXISTS [BackupLog] ("
+"[Key] VARCHAR(50) NOT NULL, "
+"[nValue] INTEGER DEFAULT 0); ";
 
 extern std::string szStartupFolder;
 
@@ -509,6 +513,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateLoad_Calendar);
 	query(sqlCreateFan);
 	query(sqlCreateFan_Calendar);
+	query(sqlCreateBackupLog);
 
 	int dbversion=0;
 	GetPreferencesVar("DB_Version", dbversion);
@@ -2005,6 +2010,62 @@ bool CSQLHelper::GetPreferencesVar(const char *Key, int &nValue, std::string &sV
 	sValue=sd[1];
 	return true;
 }
+
+int CSQLHelper::GetLastBackupNo(const char *Key, int &nValue)
+{
+	if (!m_dbase)
+		return false;
+
+	char szTmp[200];
+
+	std::vector<std::vector<std::string> > result;
+	sprintf(szTmp,"SELECT nValue FROM BackupLog WHERE (Key='%s')",Key);
+	result=query(szTmp);
+	if (result.size()<1)
+		return -1;
+	std::vector<std::string> sd=result[0];
+	nValue=atoi(sd[0].c_str());
+	return nValue;
+}
+
+void CSQLHelper::SetLastBackupNo(const char *Key, const int nValue)
+{
+	if (!m_dbase)
+		return;
+
+	char szTmp[600];
+
+	unsigned long long ID=0;
+
+	std::vector<std::vector<std::string> > result;
+	sprintf(szTmp,"SELECT ROWID FROM BackupLog WHERE (Key='%s')",Key);
+	result=query(szTmp);
+	if (result.size()==0)
+	{
+		//Insert
+		sprintf(szTmp,
+			"INSERT INTO BackupLog (Key, nValue) "
+			"VALUES ('%s',%d)",
+			Key,
+			nValue);
+		result=query(szTmp);
+	}
+	else
+	{
+		//Update
+		std::stringstream s_str( result[0][0] );
+		s_str >> ID;
+
+		sprintf(szTmp,
+			"UPDATE BackupLog SET Key='%s', nValue=%d "
+			"WHERE (ROWID = %llu)",
+			Key,
+			nValue,
+			ID);
+		result = query(szTmp);
+	}
+}
+
 
 bool CSQLHelper::GetPreferencesVar(const char *Key, int &nValue)
 {
