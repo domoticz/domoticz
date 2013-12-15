@@ -433,6 +433,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeMDREMOTE, "MDRemote" },
 		{ pTypeLighting5, sTypeRSL, "Conrad RSL" },
 		{ pTypeLighting5, sTypeLivolo, "Livolo" },
+		{ pTypeLighting5, sTypeTRC02, "TRC02 (RGB)" },
+		
 
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
 
@@ -781,6 +783,20 @@ void GetLightStatus(
 				break;
 			}
 			break;
+		case sTypeTRC02:
+			bHaveGroupCmd=true;
+			bHaveDimmer=true;
+			maxDimLevel=7;
+			switch (nValue)
+			{
+			case light5_sOff:
+				lstatus="Off";
+				break;
+			case light5_sOn:
+				lstatus="On";
+				break;
+			}
+			break;
 		}
 		break;
 	case pTypeLighting6:
@@ -1102,12 +1118,21 @@ bool GetLightCommand(
 				return true;
 			}
 		}
-		else if (dSubType!=sTypeLightwaveRF)
+		else if (dSubType==sTypeTRC02)
+		{
+			if (switchcmd=="Set Color")
+			{
+				cmd=light5_sRGBcolormin+1; //color set is light5_sRGBcolormin+1 till 255?
+				return true;
+			}
+		}
+		else if (dSubType==sTypeLightwaveRF)
 		{
 			//Only LightwaveRF devices have a set-level
 			if (switchcmd=="Set Level")
 				switchcmd="On";
 		}
+
 		if (switchtype==STYPE_Doorbell)
 		{
 			if ((switchcmd=="On")||(switchcmd=="Group On"))

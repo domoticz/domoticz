@@ -16,19 +16,28 @@
 COpenHardwareMonitor::COpenHardwareMonitor()
 {
 	m_pMain=NULL;
+	m_pLocator=NULL; 
+	m_pServicesOHM=NULL;
+	m_pServicesSystem=NULL;
 	m_stoprequested=false;
-	pLocator=0; 
-	pServicesOHM=0;
-	pServicesSystem=0;
 	InitWMI();
 }
 
 
 COpenHardwareMonitor::~COpenHardwareMonitor(void)
 {
-	pServicesOHM->Release();
-	pServicesSystem->Release();
-	pLocator->Release();
+	if (m_pServicesOHM!=NULL)
+		m_pServicesOHM->Release();
+	m_pServicesOHM=NULL;
+
+	if (m_pServicesSystem!=NULL)
+		m_pServicesSystem->Release();
+	m_pServicesSystem=NULL;
+
+	if (m_pLocator!=NULL)
+		m_pLocator->Release();
+	m_pLocator=NULL;
+
 	CoUninitialize();
 	StopOpenHardwareMonitor();
 }
@@ -95,11 +104,11 @@ void COpenHardwareMonitor::InitWMI()
 		hr = CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
 		if (SUCCEEDED(hr)) 
 		{
-			hr = CoCreateInstance(CLSID_WbemAdministrativeLocator, NULL, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLocator);
+			hr = CoCreateInstance(CLSID_WbemAdministrativeLocator, NULL, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&m_pLocator);
 			if (SUCCEEDED(hr))
 			{
-				hr = pLocator->ConnectServer(L"root\\OpenHardwareMonitor",NULL, NULL, NULL, 0, NULL, NULL, &pServicesOHM);
-				hr = pLocator->ConnectServer(L"root\\CIMV2",NULL, NULL, NULL, 0, NULL, NULL, &pServicesSystem);
+				hr = m_pLocator->ConnectServer(L"root\\OpenHardwareMonitor",NULL, NULL, NULL, 0, NULL, NULL, &m_pServicesOHM);
+				hr = m_pLocator->ConnectServer(L"root\\CIMV2",NULL, NULL, NULL, 0, NULL, NULL, &m_pServicesSystem);
 			}
 		}
 	}
@@ -112,10 +121,18 @@ void COpenHardwareMonitor::StopOpenHardwareMonitor()
 	{
 		m_stoprequested = true;
 		m_thread->join();
-		pLocator->Release(); 
-		pServicesOHM->Release();
-		pServicesSystem->Release();
 	}
+	if (m_pLocator!=NULL)
+		m_pLocator->Release(); 
+	m_pLocator=NULL;
+
+	if (m_pServicesOHM!=NULL)
+		m_pServicesOHM->Release();
+	m_pServicesOHM=NULL;
+
+	if (m_pServicesSystem!=NULL)
+		m_pServicesSystem->Release();
+	m_pServicesSystem=NULL;
 }
 
 
@@ -144,7 +161,8 @@ void COpenHardwareMonitor::Do_Work()
 
 void COpenHardwareMonitor::FetchData()
 {
-	if (IsOHMRunning()) {
+	if (IsOHMRunning()) 
+	{
 		RunWMIQuery("Sensor","Temperature");
 		RunWMIQuery("Sensor","Load");
 		RunWMIQuery("Sensor","Fan");
@@ -153,8 +171,10 @@ void COpenHardwareMonitor::FetchData()
 
 bool COpenHardwareMonitor::IsOHMRunning()
 {
+	if (m_pServicesSystem==NULL)
+		return false;
 	IEnumWbemClassObject* pEnumerator = NULL;  
-	hr = pServicesSystem->ExecQuery(L"WQL", L"Select * from win32_Process WHERE Name='OpenHardwareMonitor.exe'" , WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);  
+	hr = m_pServicesSystem->ExecQuery(L"WQL", L"Select * from win32_Process WHERE Name='OpenHardwareMonitor.exe'" , WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);  
 	if (SUCCEEDED(hr))  
 	{
 		IWbemClassObject *pclsObj;  
@@ -175,7 +195,7 @@ bool COpenHardwareMonitor::IsOHMRunning()
 
 void COpenHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 {
-	if (pServicesOHM && pServicesSystem)
+	if (m_pServicesOHM && m_pServicesSystem)
 	{
 		std::string query = "SELECT * FROM ";
 		query.append(qTable);
@@ -183,7 +203,7 @@ void COpenHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 		query.append(qType);
 		query.append("'");
 		IEnumWbemClassObject* pEnumerator = NULL; 
-		hr = pServicesOHM->ExecQuery(L"WQL", bstr_t(query.c_str()), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
+		hr = m_pServicesOHM->ExecQuery(L"WQL", bstr_t(query.c_str()), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
 		if (!FAILED(hr))
 		{
 			// Get the data from the query

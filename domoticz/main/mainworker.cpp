@@ -3283,10 +3283,25 @@ unsigned long long MainWorker::decode_Lighting5(const int HwdID, const tRBUF *pR
 		flevel=(100.0f/31.0f)*float(pResponse->LIGHTING5.level);
 	unsigned char SignalLevel=pResponse->LIGHTING5.rssi;
 
-	sprintf(szTmp,"%d",pResponse->LIGHTING5.level);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
-	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
+	bool bDoUpdate=true;
+	if (subType==sTypeTRC02)
+	{
+		if (
+			(pResponse->LIGHTING5.cmnd!=light5_sOff)&&
+			(pResponse->LIGHTING5.cmnd!=light5_sOn)
+			)
+		{
+			bDoUpdate=false;
+		}
+	}
+	unsigned long long DevRowIdx=-1;
+	if (bDoUpdate)
+	{
+		sprintf(szTmp,"%d",pResponse->LIGHTING5.level);
+		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp,devname);
+		PrintDeviceName(devname);
+		CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
+	}
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -3478,6 +3493,41 @@ unsigned long long MainWorker::decode_Lighting5(const int HwdID, const tRBUF *pR
 				break;
 			default:
 				WriteMessage("UNKNOWN");
+				break;
+			}
+			break;
+		case sTypeTRC02:
+			WriteMessage("subtype       = TRC02 (RGB)");
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"Unit          = %d", pResponse->LIGHTING5.unitcode);
+			WriteMessage(szTmp);
+			WriteMessage("Command       = ", false);
+			switch (pResponse->LIGHTING5.cmnd)
+			{
+			case light5_sOff:
+				WriteMessage("Off");
+				break;
+			case light5_sOn:
+				WriteMessage("On");
+				break;
+			case light5_sRGBbright:
+				WriteMessage("Bright+");
+				break;
+			case light5_sRGBdim:
+				WriteMessage("Bright-");
+				break;
+			case light5_sRGBcolorplus:
+				WriteMessage("Color+");
+				break;
+			case light5_sRGBcolormin:
+				WriteMessage("Color-");
+				break;
+			default:
+				sprintf(szTmp,"Color = %d",pResponse->LIGHTING5.cmnd);
+				WriteMessage(szTmp);
 				break;
 			}
 			break;
@@ -7267,6 +7317,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		break;
 	case pTypeLighting5:
 		{
+			int oldlevel=level;
 			tRBUF lcmd;
 			lcmd.LIGHTING5.packetlength=sizeof(lcmd.LIGHTING5)-1;
 			lcmd.LIGHTING5.packettype=dType;
@@ -7320,6 +7371,43 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				}
 				else
 					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING5));
+			}
+			else if (dSubType==sTypeTRC02)
+			{
+				if ((hue!=-1)&&(hue!=1000))
+				{
+					double dval;
+					dval=(255.0/360.0)*float(hue);
+					oldlevel=round(dval);
+					switchcmd="Set Color";
+				}
+				if (((switchcmd=="Off")||(switchcmd=="On"))&&(switchcmd!="Set Color"))
+				{
+					//Special Case, turn off first
+					unsigned char oldCmd=lcmd.LIGHTING5.cmnd;
+					lcmd.LIGHTING5.cmnd=light5_sRGBoff;
+					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING5));
+					lcmd.LIGHTING5.cmnd=oldCmd;
+					sleep_milliseconds(100);
+				}
+				if ((switchcmd=="On")||(switchcmd=="Set Color"))
+				{
+					//turn on
+					lcmd.LIGHTING5.cmnd=light5_sRGBon;
+					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING5));
+					sleep_milliseconds(100);
+
+					if (switchcmd=="Set Color")
+					{
+						if ((oldlevel!=-1)&&(oldlevel!=1000))
+						{
+							double dval;
+							dval=(78.0/255.0)*float(oldlevel);
+							lcmd.LIGHTING5.cmnd=light5_sRGBcolormin+1+round(dval);
+							WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING5));
+						}
+					}
+				}
 			}
 			else
 				WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING5));

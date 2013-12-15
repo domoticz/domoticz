@@ -56,7 +56,7 @@
 						<tr valign="middle">
 								<th align="left" data-i18n="Name">Name</th>
 								<th align="right" width="100" id="CommandHeader" data-i18n="Command">Command</th>
-								<th align="right" width="60" data-i18n="Level">Level</th>
+								<th align="right" width="70" data-i18n="Level">Level</th>
 								<th align="center" width="40" data-i18n="Order">Order</th>
 						</tr>
 				</thead>
@@ -399,7 +399,7 @@ function AddDevice()
 	var hue=0;
 	$.each($.LightsAndSwitches, function(i,item){
 		if (item.idx==DeviceIdx) {
-			var bIsLED=((item.SubType=="RGBW")||(item.SubType=="RGB"))
+			var bIsLED=(item.SubType.indexOf("RGB") >= 0);
 			if (bIsLED==true) {
 				level=$("#scenecontent #Brightness").val();
 				hue=$("#scenecontent #Hue").val();
@@ -514,7 +514,7 @@ function RefreshDeviceTable(idx)
       if (typeof data.result != 'undefined') {
 		var totalItems=data.result.length;
         $.each(data.result, function(i,item){
-				var bIsLED=(item.Type.indexOf("Applamp") >= 0);
+				var bIsLED=(item.SubType.indexOf("RGB") >= 0);
 				var commandbtns;
 				if ($.isScene==false) {
 					if (item.IsOn==true) {
@@ -668,7 +668,7 @@ function UpdateDevice(idx, devidx)
 
 	$.each($.LightsAndSwitches, function(i,item){
 		if (item.idx==DeviceIdx) {
-			var bIsLED=((item.SubType=="RGBW")||(item.SubType=="RGB"))
+			var bIsLED=(item.SubType.indexOf("RGB") >= 0);
 			if (bIsLED==true) {
 				level=$("#scenecontent #Brightness").val();
 				hue=$("#scenecontent #Hue").val();
@@ -732,7 +732,7 @@ function OnSelChangeDevice()
 	$.each($.LightsAndSwitches, function(i,item){
 		if (item.idx==DeviceIdx) {
 			bShowLevel=item.isdimmer;
-			bIsLED=((item.SubType=="RGBW")||(item.SubType=="RGB"))
+			bIsLED=(item.SubType.indexOf("RGB") >= 0);
 		}
 	});
 	
