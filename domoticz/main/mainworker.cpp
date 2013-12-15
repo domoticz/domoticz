@@ -707,7 +707,8 @@ void MainWorker::GetRaspberryPiTemperature()
 void MainWorker::HandleAutomaticBackups()
 {
 	int nValue=0;
-	m_sql.GetPreferencesVar("UseAutoUpdate",nValue);
+	if (!m_sql.GetPreferencesVar("UseAutoBackup",nValue))
+		return;
 	if (nValue==1)
 	{
 		std::stringstream backup_DirH;
@@ -885,12 +886,12 @@ void MainWorker::Do_Work()
 			{
 				m_sql.ScheduleDay();
 			}
+			HandleAutomaticBackups();
 		}
 		if ((bIsRaspberryPi)&&(ltime.tm_sec%30==0))
 		{
 			GetRaspberryPiTemperature();
 		}
-		HandleAutomaticBackups();
 	}
 	_log.Log(LOG_NORM, "Mainworker Stopped...");
 }

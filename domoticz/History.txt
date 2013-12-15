@@ -23,6 +23,7 @@ Version 1.0.xxxx (December xxth 2013)
 - Implemented: New 1-Wire system (thanks to Sébastien)
 - Fixed: Scene/Group timer editing (specified days was incorrectly handled)
 - Implemented: Initial support for RGB driver TRC02
+- Fixed: Autobackup
 
 Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart
