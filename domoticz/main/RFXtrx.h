@@ -3,7 +3,7 @@
 #ifndef _RXFCOMLIB_F11DD459_E67E_4B26_8E44_B964E99304BF
 #define _RXFCOMLIB_F11DD459_E67E_4B26_8E44_B964E99304BF
 
-//#define BIG_ENDIAN
+//#define IS_BIG_ENDIAN
 
 //----------------------------------------------------------------------------
 //                     Software License Agreement                      
@@ -684,7 +684,7 @@ typedef union tRBUF {
 		BYTE	msg1;	//receiver/transceiver type
 		BYTE	msg2;	//firmware version
 
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		//BYTE	msg3;
 		BYTE	UNDECODEDenabled : 1;
 		BYTE	RFU6enabled : 1;
@@ -808,7 +808,7 @@ typedef union tRBUF {
 		BYTE	housecode;
 		BYTE	unitcode;
 		BYTE	cmnd;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	filler : 4;
 #else
@@ -829,7 +829,7 @@ typedef union tRBUF {
 		BYTE	unitcode;
 		BYTE	cmnd;
 		BYTE	level;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	filler : 4;
 #else
@@ -847,7 +847,7 @@ typedef union tRBUF {
 		BYTE	channel8_1;
 		BYTE	channel10_9;
 		BYTE	cmnd;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	filler : 4;
 #else
@@ -866,7 +866,7 @@ typedef union tRBUF {
 		BYTE	cmd3;
 		BYTE	pulseHigh;
 		BYTE	pulseLow;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	filler : 4;
 #else
@@ -886,7 +886,7 @@ typedef union tRBUF {
 		BYTE	unitcode;
 		BYTE	cmnd;
 		BYTE	level;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	filler : 4;
 #else
@@ -907,7 +907,7 @@ typedef union tRBUF {
 		BYTE	cmnd;
 		BYTE	cmndseqnbr;
 		BYTE	seqnbr2;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	filler : 4;
 #else
@@ -924,7 +924,7 @@ typedef union tRBUF {
 		BYTE	id1;
 		BYTE	id2;
 		BYTE	sound;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	filler : 4;
 #else
@@ -942,7 +942,7 @@ typedef union tRBUF {
 		BYTE	id2;
 		BYTE	id3;
 		BYTE	cmnd;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	filler : 4;
 #else
@@ -972,7 +972,7 @@ typedef union tRBUF {
 		BYTE	id3;
 		BYTE	unitcode;
 		BYTE	cmnd;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	filler : 4;
 #else
@@ -990,7 +990,7 @@ typedef union tRBUF {
 		BYTE	id2;
 		BYTE	id3;
 		BYTE	status;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	battery_level : 4;
 #else
@@ -1006,7 +1006,7 @@ typedef union tRBUF {
 		BYTE	seqnbr;
 		BYTE	housecode;
 		BYTE	cmnd;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	filler : 4;
 #else
@@ -1022,7 +1022,7 @@ typedef union tRBUF {
 		BYTE	seqnbr;
 		BYTE	id;
 		BYTE	cmnd;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	cmndtype : 3;
 		BYTE	toggle : 1;
@@ -1042,7 +1042,7 @@ typedef union tRBUF {
 		BYTE	id2;
 		BYTE	temperature;
 		BYTE	set_point;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	mode : 1;
 		BYTE	filler : 5;
 		BYTE	status : 2;
@@ -1051,7 +1051,7 @@ typedef union tRBUF {
 		BYTE	filler : 5;
 		BYTE	mode : 1;
 #endif
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	filler1 : 4;
 #else
@@ -1067,7 +1067,7 @@ typedef union tRBUF {
 		BYTE	seqnbr;
 		BYTE	unitcode;
 		BYTE	cmnd;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	filler : 4;
 #else
@@ -1085,7 +1085,7 @@ typedef union tRBUF {
 		BYTE	unitcode2;
 		BYTE	unitcode3;
 		BYTE	cmnd;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	filler : 4;
 #else
@@ -1105,7 +1105,7 @@ typedef union tRBUF {
 		BYTE	sensor1l;
 		BYTE	sensor2h;
 		BYTE	sensor2l;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	battery_level : 4;
 #else
@@ -1121,7 +1121,7 @@ typedef union tRBUF {
 		BYTE	seqnbr;
 		BYTE	id1;
 		BYTE	id2;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	tempsign : 1;
 		BYTE	temperatureh : 7;
 #else
@@ -1131,7 +1131,7 @@ typedef union tRBUF {
 		BYTE	temperaturel;
 		BYTE	raintotal1;
 		BYTE	raintotal2;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	battery_level : 4;
 #else
@@ -1147,7 +1147,7 @@ typedef union tRBUF {
 		BYTE	seqnbr;
 		BYTE	id1;
 		BYTE	id2;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	tempsign : 1;
 		BYTE	temperatureh : 7;
 #else
@@ -1155,7 +1155,7 @@ typedef union tRBUF {
 		BYTE	tempsign : 1;
 #endif
 		BYTE	temperaturel;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	battery_level : 4;
 #else
@@ -1173,7 +1173,7 @@ typedef union tRBUF {
 		BYTE	id2;
 		BYTE	humidity; 
 		BYTE	humidity_status;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	battery_level : 4;
 #else
@@ -1189,7 +1189,7 @@ typedef union tRBUF {
 		BYTE	seqnbr;
 		BYTE	id1;
 		BYTE	id2;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	tempsign : 1;
 		BYTE	temperatureh : 7;
 #else
@@ -1199,7 +1199,7 @@ typedef union tRBUF {
 		BYTE	temperaturel;
 		BYTE	humidity; 
 		BYTE	humidity_status;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	battery_level : 4;
 #else
@@ -1218,7 +1218,7 @@ typedef union tRBUF {
 		BYTE	baro1;
 		BYTE	baro2;
 		BYTE	forecast;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	battery_level : 4;
 #else
@@ -1234,7 +1234,7 @@ typedef union tRBUF {
 		BYTE	seqnbr;
 		BYTE	id1;
 		BYTE	id2;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	tempsign : 1;
 		BYTE	temperatureh : 7;
 #else
@@ -1247,7 +1247,7 @@ typedef union tRBUF {
 		BYTE	baroh;
 		BYTE	barol;
 		BYTE	forecast;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	battery_level : 4;
 #else
@@ -1268,7 +1268,7 @@ typedef union tRBUF {
 		BYTE	raintotal1;
 		BYTE	raintotal2;
 		BYTE	raintotal3;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	battery_level : 4;
 #else
@@ -1290,7 +1290,7 @@ typedef union tRBUF {
 		BYTE	av_speedl;
 		BYTE	gusth;
 		BYTE	gustl;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	tempsign : 1;
 		BYTE	temperatureh : 7;
 
@@ -1327,7 +1327,7 @@ typedef union tRBUF {
 		BYTE	id1;
 		BYTE	id2;
 		BYTE	uv;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	tempsign : 1;
 		BYTE	temperatureh : 7;
 
@@ -1360,7 +1360,7 @@ typedef union tRBUF {
 		BYTE	hr;
 		BYTE	min;
 		BYTE	sec;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	battery_level : 4;
 #else
@@ -1383,7 +1383,7 @@ typedef union tRBUF {
 		BYTE	ch2l;
 		BYTE	ch3h;
 		BYTE	ch3l;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	battery_level : 4;
 #else
@@ -1410,7 +1410,7 @@ typedef union tRBUF {
 		BYTE	total4;
 		BYTE	total5;
 		BYTE	total6;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	battery_level : 4;
 #else
@@ -1439,7 +1439,7 @@ typedef union tRBUF {
 		BYTE	total4;
 		BYTE	total5;
 		BYTE	total6;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	battery_level : 4;
 #else
@@ -1464,7 +1464,7 @@ typedef union tRBUF {
         BYTE	energyL;
         BYTE	pf;
         BYTE	freq;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
         BYTE	rssi : 4;
         BYTE	filler : 4;
 #else
@@ -1482,7 +1482,7 @@ typedef union tRBUF {
 		BYTE	id2;
 		BYTE	weighthigh;
 		BYTE	weightlow;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	filler : 4;
 #else
@@ -1499,7 +1499,7 @@ typedef union tRBUF {
 		BYTE	id;
 		BYTE	msg1;
 		BYTE	msg2;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	filler : 4;
 #else
@@ -1519,7 +1519,7 @@ typedef union tRBUF {
 		BYTE	count2;
 		BYTE	count3;
 		BYTE	count4;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	filler : 4;
 #else
@@ -1538,7 +1538,7 @@ typedef union tRBUF {
 	BYTE	addr;
 	BYTE	cmd1;
 	BYTE	cmd2;
-#ifdef BIG_ENDIAN
+#ifdef IS_BIG_ENDIAN
 	BYTE	rssi : 4;
 	BYTE	filler : 4;
 #else
