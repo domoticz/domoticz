@@ -112,9 +112,9 @@ void COpenHardwareMonitor::StopOpenHardwareMonitor()
 	{
 		m_stoprequested = true;
 		m_thread->join();
-		pLocator->Release(); 
-		pServicesOHM->Release();
-		pServicesSystem->Release();
+		//pLocator->Release(); 
+		//pServicesOHM->Release();
+		//pServicesSystem->Release();
 	}
 }
 
