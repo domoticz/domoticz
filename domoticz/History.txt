@@ -26,6 +26,8 @@ Version 1.0.xxxx (December xxth 2013)
 - Fixed: Autobackup
 - Fixed: Endianess problems
 - Implemented: New 1-Wire system (Thanks to Sebastien!), Kernel users have to transfer old sensors to new ones (device id is swapped in hex)
+- Fixed: PiFace hardware port notation
+- Fixed: I2C BMP085 hardware port notation
 
 Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart

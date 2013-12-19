@@ -1135,6 +1135,10 @@ function RefreshHardwareTable()
 			{
 				SerialName="System";
 			}
+			else if (item.Type == 13)
+			{
+				SerialName="I2C";
+			}
 			else if (item.Type == 14)
 			{
 				SerialName="WWW";
@@ -1142,6 +1146,10 @@ function RefreshHardwareTable()
 			else if (item.Type == 15)
 			{
 				SerialName="";
+			}
+			else if (item.Type == 16)
+			{
+				SerialName="GPIO";
 			}
 			else
 			{

@@ -26,9 +26,12 @@ COpenHardwareMonitor::COpenHardwareMonitor()
 
 COpenHardwareMonitor::~COpenHardwareMonitor(void)
 {
-	pServicesOHM->Release();
-	pServicesSystem->Release();
-	pLocator->Release();
+	if (pServicesOHM!=NULL)
+		pServicesOHM->Release();
+	if (pServicesSystem!=NULL)
+		pServicesSystem->Release();
+	if (pLocator!=NULL)
+		pLocator->Release();
 	CoUninitialize();
 	StopOpenHardwareMonitor();
 }
@@ -112,8 +115,11 @@ void COpenHardwareMonitor::StopOpenHardwareMonitor()
 	{
 		m_stoprequested = true;
 		m_thread->join();
+		//if (pLocator!=NULL)
 		//pLocator->Release(); 
+		//if (pServicesOHM!=NULL)
 		//pServicesOHM->Release();
+		//if (pServicesSystem!=NULL)
 		//pServicesSystem->Release();
 	}
 }

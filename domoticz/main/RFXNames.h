@@ -49,30 +49,30 @@ enum _eTimerCommand
 };
 
 enum _eHardwareTypes {
-	HTYPE_RFXtrx315=0,
-	HTYPE_RFXtrx433,
-	HTYPE_RFXLAN,
-	HTYPE_Domoticz,
-	HTYPE_P1SmartMeter,
-	HTYPE_P1SmartMeterLAN,
-	HTYPE_YouLess,
-	HTYPE_TE923,
-	HTYPE_Rego6XX,
-	HTYPE_RazberryZWave,
-	HTYPE_DavisVantage,
-	HTYPE_VOLCRAFTCO20,
-	HTYPE_1WIRE,
-	HTYPE_RaspberryBMP085,
-	HTYPE_Wunderground,
-	HTYPE_Dummy,
-	HTYPE_PiFace,
-	HTYPE_S0SmartMeter,
-	HTYPE_OpenThermGateway,
-	HTYPE_TeleinfoMeter,
-	HTYPE_OpenThermGatewayTCP,
-	HTYPE_OpenZWave,
-	HTYPE_LimitlessLights,
-	HTYPE_System,
+	HTYPE_RFXtrx315=0,			//0
+	HTYPE_RFXtrx433,			//1
+	HTYPE_RFXLAN,				//2
+	HTYPE_Domoticz,				//3
+	HTYPE_P1SmartMeter,			//4
+	HTYPE_P1SmartMeterLAN,		//5
+	HTYPE_YouLess,				//6
+	HTYPE_TE923,				//7
+	HTYPE_Rego6XX,				//8
+	HTYPE_RazberryZWave,		//9
+	HTYPE_DavisVantage,			//10
+	HTYPE_VOLCRAFTCO20,			//11
+	HTYPE_1WIRE,				//12
+	HTYPE_RaspberryBMP085,		//13
+	HTYPE_Wunderground,			//14
+	HTYPE_Dummy,				//15
+	HTYPE_PiFace,				//16
+	HTYPE_S0SmartMeter,			//17
+	HTYPE_OpenThermGateway,		//18
+	HTYPE_TeleinfoMeter,		//19
+	HTYPE_OpenThermGatewayTCP,	//20
+	HTYPE_OpenZWave,			//21
+	HTYPE_LimitlessLights,		//22
+	HTYPE_System,				//23
 	HTYPE_END
 };
 
