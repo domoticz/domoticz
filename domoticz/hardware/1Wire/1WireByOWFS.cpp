@@ -304,9 +304,9 @@ unsigned int C1WireByOWFS::GetNbChannels(const _t1WireDevice& device) const
 
 unsigned long C1WireByOWFS::GetCounter(const _t1WireDevice& device,int unit) const
 {
-   std::string readValue=readRawData(std::string(device.filename+"/counters.").append(1,'A'+unit));
-      return 0;
+   std::string readValue=readRawData(std::string(device.filename+"/counter.").append(1,'A'+unit));
    if (readValue.empty())
+      return 0;
    return (unsigned long)atol(readValue.c_str());
 }
 
@@ -358,9 +358,18 @@ void C1WireByOWFS::GetDevice(const std::string inDir, const std::string dirname,
     device.family=ToFamily(dirname.substr(0,2));
 
     // Device Id (6 chars after '.')
-    device.devid=dirname.substr(3,3+6*2);
-    std::reverse(device.devid.begin(),device.devid.end());
-
+    std::string id=dirname.substr(3,3+6*2);
+    // OWFS give us the device ID inverted, so reinvert it
+    char c;
+    for (int i=0;i<6/2;i++)
+    {
+       int left_position=i*2;          // Point on first byte
+       int right_position=(6-i-1)*2;   // Point on last byte
+       c=id[left_position]; id[left_position]=id[right_position]; id[right_position]=c;
+       c=id[left_position+1]; id[left_position+1]=id[right_position+1]; id[right_position+1]=c;
+    }
+    device.devid=id;
+    
     // Filename (full path)
     device.filename=inDir;
     device.filename+="/" + dirname;

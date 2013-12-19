@@ -152,6 +152,10 @@ main/WindCalculation.cpp
 httpclient/HTTPClient.cpp
 httpclient/UrlEncode.cpp
 hardware/1Wire.cpp
+hardware/1Wire/1WireByOWFS.cpp
+hardware/1Wire/1WireByKernel.cpp
+hardware/1Wire/1WireCommon.cpp
+hardware/1Wire/1WireForWindows.cpp
 hardware/ASyncSerial.cpp
 hardware/BMP085.cpp
 hardware/DavisLoggerSerial.cpp

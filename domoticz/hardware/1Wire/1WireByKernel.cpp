@@ -70,6 +70,7 @@ void C1WireByKernel::ThreadFunction()
                switch(device->GetDevice().family)
                {
                case high_precision_digital_thermometer:
+	       case programmable_resolution_digital_thermometer:
                   {
                      Locker l(m_Mutex);
                      device->m_Temperature=ThreadReadRawDataHighPrecisionDigitalThermometer(device->GetDevice().filename);
@@ -207,9 +208,12 @@ void C1WireByKernel::ThreadBuildDevicesList()
          case high_precision_digital_thermometer:
          case dual_channel_addressable_switch:
          case _8_channel_addressable_switch:
+	 case programmable_resolution_digital_thermometer:
             m_Devices[device.devid]=new DeviceState(device);
+	_log.Log(LOG_NORM,"Added Device: %s",sLine.c_str());
             break;
          default: // Device not supported in kernel mode (maybe later...), use OWFS solution.
+		_log.Log(LOG_NORM,"Device not yet supported in Kernal mode (Please report!) ID:%s, family: %02X",sLine.c_str(),device.family);
             break;
          }
       }
@@ -245,6 +249,7 @@ float C1WireByKernel::GetTemperature(const _t1WireDevice& device) const
    switch (device.family)
    {
       case high_precision_digital_thermometer:
+      case programmable_resolution_digital_thermometer:
          {
             DeviceCollection::const_iterator devIt=m_Devices.find(device.devid);
             return (devIt==m_Devices.end())?0.0f:(*devIt).second->m_Temperature;
@@ -486,7 +491,7 @@ void C1WireByKernel::GetDevice(const std::string& deviceName, /*out*/_t1WireDevi
    // Retrieve family from the first 2 chars
    device.family=ToFamily(deviceName.substr(0,2));
 
-   // Device Id (6 chars after '-'), upper case
+    // Device Id (6 chars after '.')
    std_to_upper(deviceName.substr(3,3+6*2),device.devid);
 
    // Filename (full path)

@@ -1,6 +1,11 @@
 
 #include "stdafx.h"
 #include "1Wire.h"
+#include "1Wire/1WireByOWFS.h"
+#include "1Wire/1WireByKernel.h"
+#ifdef WIN32
+#include "1Wire/1WireForWindows.h"
+#endif // WIN32
 #include "../main/Logger.h"
 #include "../main/RFXtrx.h"
 #include "../main/Helper.h"
@@ -9,58 +14,85 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#ifdef WIN32
-	#include "../main/dirent_windows.h"
-#else
-	#include <dirent.h>
-#endif
-
-#define Wire1_POLL_INTERVAL 30
-
-//Support for w1-gpio and OWFS
 
 #ifdef _DEBUG
-	#define Wire1_Base_Dir "E:\\w1\\devices"
-	#define OWFS_Base_Dir "E:\\w1\\1wire\\uncached"
-#else
-	#define Wire1_Base_Dir "/sys/bus/w1/devices"
-	#define OWFS_Base_Dir "/mnt/1wire/uncached"
-#endif
+#define Wire1_POLL_INTERVAL 5
+#else // _DEBUG
+#define Wire1_POLL_INTERVAL 30
+#endif //_DEBUG
 
 #define round(a) ( int ) ( a + .5 )
 
-typedef struct _t1WireSensor
+C1Wire::C1Wire(const int ID) :
+	m_stoprequested(false),
+   m_system(NULL)
 {
-	std::string devid;
-	std::string filename;
-} T1WIRESENSOR;
-
-C1Wire::C1Wire(const int ID)
-{
-	m_HwdID=ID;
-	m_stoprequested=false;
-	m_bIsGPIO=false;
-	m_bIsOWFS=false;
-	Init();
-#ifdef _DEBUG
-	GetOWFSSensorDetails();
-#endif
+   m_HwdID=ID;
+	DetectSystem();
 }
 
-C1Wire::~C1Wire(void)
+C1Wire::~C1Wire()
 {
 }
 
-void C1Wire::Init()
+bool C1Wire::Have1WireSystem()
 {
-	m_bDetectSystem=true;
-	m_LastPollTime=mytime(NULL);
+   LogSystem();
+
+#ifdef WIN32
+	return (C1WireForWindows::IsAvailable());
+#else // WIN32
+   return (C1WireByOWFS::IsAvailable()||C1WireByKernel::IsAvailable());
+#endif // WIN32
+}
+
+void C1Wire::DetectSystem()
+{
+   LogSystem();
+
+#ifdef WIN32
+   if (!m_system && C1WireForWindows::IsAvailable())
+      m_system=new C1WireForWindows();
+#else // WIN32
+
+   // Using the both systems at same time results in conflicts,
+   // see http://owfs.org/index.php?page=w1-project.
+   // So priority is given to OWFS (more powerfull than kernel)
+   if (C1WireByOWFS::IsAvailable()) {
+      m_system=new C1WireByOWFS();
+	_log.Log(LOG_NORM,"1-Wire: Using OWFS...");
+   }
+   else if (C1WireByKernel::IsAvailable()) {
+      m_system=new C1WireByKernel();
+	_log.Log(LOG_NORM,"1-Wire: Using Kernel...");
+   }
+
+#endif // WIN32
+}
+
+void C1Wire::LogSystem()
+{
+   static bool alreadyLogged=false;
+   if (alreadyLogged)
+      return;
+   alreadyLogged=true;
+
+#ifdef WIN32
+   if (C1WireForWindows::IsAvailable())
+      { _log.Log(LOG_NORM,"1-Wire support available..."); return; }
+#else // WIN32
+
+   if (C1WireByOWFS::IsAvailable())
+      { _log.Log(LOG_NORM,"1-Wire support available (By OWFS)..."); return; }
+   if (C1WireByKernel::IsAvailable())
+      { _log.Log(LOG_NORM,"1-Wire support available (By Kernel)..."); return; }
+
+#endif // WIN32
 }
 
 bool C1Wire::StartHardware()
 {
-	Init();
-	//Start worker thread
+	// Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::Do_Work, this)));
 	m_bIsStarted=true;
 	sOnConnected(this);
@@ -69,503 +101,317 @@ bool C1Wire::StartHardware()
 
 bool C1Wire::StopHardware()
 {
-	if (m_thread!=NULL)
-	{
-		m_stoprequested = true;
-		m_thread->join();
-	}
-	m_bIsStarted=false;
-    return true;
+   if (m_thread)
+   {
+      m_stoprequested = true;
+      m_thread->join();
+   }
+   m_bIsStarted=false;
+   if (m_system)
+   {
+      delete m_system;
+      m_system=NULL;
+   }
+
+   return true;
 }
 
 void C1Wire::Do_Work()
 {
-	time_t atime;
+ 	time_t lastPollTime=mytime(NULL);
+   GetDeviceDetails();
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
-		atime=mytime(NULL);
-		if (atime-m_LastPollTime>=Wire1_POLL_INTERVAL)
+		if (mytime(NULL)-lastPollTime>=Wire1_POLL_INTERVAL)
 		{
-			if (m_bDetectSystem)
-			{
-				m_bDetectSystem=false;
-				m_bIsGPIO=IsGPIOSystem();
-				m_bIsOWFS=IsOWFSSystem();
-			}
-
-			GetSensorDetails();
-			m_LastPollTime=mytime(NULL);
+         GetDeviceDetails();
+			lastPollTime=mytime(NULL);
 		}
 	}
-	_log.Log(LOG_NORM,"1-Wire Worker stopped...");
 }
 
 void C1Wire::WriteToHardware(const char *pdata, const unsigned char length)
 {
+	tRBUF *pSen=(tRBUF*)pdata;
 
-}
+   if (!m_system)
+      return;//no 1-wire support
 
-bool C1Wire::IsGPIOSystem()
-{
-	//Check if system have the w1-gpio interface
-	std::ifstream infile1wire;
-#ifdef _DEBUG
-	std::string wire1catfile="E:\\w1\\devices";
-#else
-	std::string wire1catfile="/sys/bus/w1/devices";
-#endif
-	wire1catfile+="/w1_bus_master1/w1_master_slaves";
-	infile1wire.open(wire1catfile.c_str());
-	if (infile1wire.is_open())
+   if (pSen->ICMND.packettype==pTypeLighting2 && pSen->LIGHTING2.subtype==sTypeAC)
 	{
-		infile1wire.close();
-		return true;
-	}
-	return false;
-}
+		//light command
 
-bool C1Wire::IsOWFSSystem()
-{
-	DIR *d=NULL;
+      unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
+      deviceIdByteArray[0]=pSen->LIGHTING2.id4;
+      deviceIdByteArray[1]=pSen->LIGHTING2.id3;
+      deviceIdByteArray[2]=pSen->LIGHTING2.id2;
+      deviceIdByteArray[3]=pSen->LIGHTING2.id1;
 
-	d=opendir(OWFS_Base_Dir);
-	if (d != NULL)
-	{
-		struct dirent *de=NULL;
-		// Loop while not NULL
-		while(de = readdir(d))
-		{
-			std::string dirname = de->d_name;
-			if (de->d_type==DT_DIR) {
-				if ((dirname!=".")&&(dirname!=".."))
-				{
-					closedir(d);
-					return true;
-				}
-			}
-		}
-		closedir(d);
-	}
-	return false;
-}
-
-
-bool C1Wire::Have1WireSystem()
-{
-	return (IsGPIOSystem()||IsOWFSSystem());
-}
-
-void C1Wire::GetSensorDetails()
-{
-	if (m_bIsOWFS)
-		GetOWFSSensorDetails();
-	else if (m_bIsGPIO)
-		GetGPIOSensorDetails();
-}
-
-void C1Wire::GetGPIOSensorDetails()
-{
-	std::string catfile=Wire1_Base_Dir;
-	catfile+="/w1_bus_master1/w1_master_slaves";
-	std::vector<std::string> _devices;
-	std::string sLine = "";
-	std::ifstream infile;
-
-	infile.open(catfile.c_str());
-	if (infile.is_open())
-	{
-		while (!infile.eof())
-		{
-			getline(infile, sLine);
-			if (sLine.size()!=0)
-				_devices.push_back(sLine);
-		}
-	}
-	if (_devices.size()==0)
-		return;
-	std::vector<std::string>::const_iterator itt;
-	for (itt=_devices.begin(); itt!=_devices.end(); ++itt)
-	{
-		std::string devfile=Wire1_Base_Dir;
-		std::string devid=(*itt);
-		devfile+="/"+devid+"/w1_slave";
-		std::ifstream infile2;
-		infile2.open(devfile.c_str());
-		if (infile2.is_open())
-		{
-			bool bFoundCRC=false;
-			while (!infile2.eof())
-			{
-				getline(infile2, sLine);
-				if (sLine.find("crc=")!=std::string::npos)
-				{
-					if (sLine.find("YES")!=std::string::npos)
-						bFoundCRC=true;
-				}
-				int tpos=sLine.find("t=");
-				if ((tpos!=std::string::npos)&&(bFoundCRC))
-				{
-					std::string stemp=sLine.substr(tpos+2);
-					float temp=(float)atoi(stemp.c_str())/1000.0f;
-					if (((temp>-300)&&(temp<300))&&(temp!=85))
-					{
-						std::string sID=devid.substr(devid.size()-4);
-
-						unsigned int xID;   
-						std::stringstream ss;
-						ss << std::hex << sID;
-						ss >> xID;
-						//Temp
-						RBUF tsen;
-						memset(&tsen,0,sizeof(RBUF));
-						tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-						tsen.TEMP.packettype=pTypeTEMP;
-						tsen.TEMP.subtype=sTypeTEMP10;
-						tsen.TEMP.battery_level=9;
-						tsen.TEMP.rssi=6;
-						tsen.TEMP.id1=(BYTE)((xID&0xFF00)>>8);
-						tsen.TEMP.id2=(BYTE)(xID&0xFF);
-
-						tsen.TEMP.tempsign=(temp>=0)?0:1;
-						int at10=round(abs(temp*10.0f));
-						tsen.TEMP.temperatureh=(BYTE)(at10/256);
-						at10-=(tsen.TEMP.temperatureh*256);
-						tsen.TEMP.temperaturel=(BYTE)(at10);
-
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
-					}
-				}
-			}
-		}
+      _t1WireDevice device;
+      m_system->SetLightState(ByteArrayToDeviceId(deviceIdByteArray),pSen->LIGHTING2.unitcode,pSen->LIGHTING2.cmnd==light2_sOn);
 	}
 }
 
-bool HaveSupported1WireSensor(const std::string basedir)
+bool IsTemperatureValid(_e1WireFamilyType deviceFamily, float temperature)
 {
-	std::string devfile=basedir+"/temperature";
-	if (file_exist(devfile.c_str()))
-		return true;
-	devfile=basedir+"/humidity";
-	if (file_exist(devfile.c_str()))
-		return true;
-	devfile=basedir+"/counters.A";
-	if (file_exist(devfile.c_str()))
-		return true;
+   if (temperature<=-300 || temperature>=300)
+      return false;
 
-	devfile=basedir+"/volt.ALL";
-	if (file_exist(devfile.c_str()))
-		return true;
+   // Some devices has a power-on value at 85°, we have to filter it
+   switch (deviceFamily)
+   {
+      case high_precision_digital_thermometer:
+      case Econo_Digital_Thermometer:
+      case programmable_resolution_digital_thermometer:
+      case Temperature_memory:
+      case Temperature_IO:
+         if (temperature == 85)
+            return false;
+   }
 
-	return false;
+   return true;
 }
 
-void C1Wire::GetOWFSSensorDetails()
+void C1Wire::GetDeviceDetails()
 {
-	DIR *d=NULL;
+   if (!m_system)
+      return;
 
-	std::vector<_t1WireSensor> _wiresensors;
+   // Get all devices
+	std::vector<_t1WireDevice> devices;
+   m_system->GetDevices(devices);
 
-	d=opendir(OWFS_Base_Dir);
-	if (d != NULL)
+	// Parse our devices (have to test m_stoprequested because it can take some time in case of big networks)
+	std::vector<_t1WireDevice>::const_iterator itt;
+	for (itt=devices.begin(); itt!=devices.end() && !m_stoprequested; ++itt)
 	{
-		struct dirent *de=NULL;
-		// Loop while not NULL
-		while(de = readdir(d))
-		{
-			if (de->d_type==DT_DIR)
-			{
-				std::string dirname = de->d_name;
-				if ((dirname==".")||(dirname=="..")||(dirname.size()<3))
-					continue;
-				unsigned char fchar=dirname[0];
-				if (
-					(dirname[2]=='.')&&
-						(
-							((fchar>='0')&&(fchar<='9'))||
-							((fchar>='A')&&(fchar<='F'))
-						)
-					)
-				{
-					_t1WireSensor sensor;
-					std::string devid=dirname;
-					devid=devid.substr(3,4);
-					sensor.devid=devid;
-					sensor.filename=OWFS_Base_Dir;
-					sensor.filename+="/" + dirname;
+      const _t1WireDevice& device=*itt;
 
-					std::string devfile=OWFS_Base_Dir;
-					devfile+="/" + dirname;
-					if (HaveSupported1WireSensor(devfile))
-					{
-						_wiresensors.push_back(sensor);
-					}
-					else
-					{
-						//Might be a w-wire hub
-						DIR *d2=NULL;
+      // Manage families specificities
+      switch(device.family)
+      {
+      case high_precision_digital_thermometer:
+      case Thermachron:
+      case Econo_Digital_Thermometer:
+      case Temperature_memory:
+      case programmable_resolution_digital_thermometer:
+         {
+            float temperature=m_system->GetTemperature(device);
 
-						//First scan all /main folders
-						std::string dirname2=OWFS_Base_Dir;
-						dirname2+="/"+dirname;
-						dirname2+="/main";
-						d2=opendir(dirname2.c_str());
-						if (d2!=NULL)
-						{
-							struct dirent *de2=NULL;
-							while(de2 = readdir(d2))
-							{
-								if (de2->d_type==DT_DIR)
-								{
-									std::string dirname3 = de2->d_name;
-									if ((dirname3!=".")&&(dirname3!=".."))
-									{
-										unsigned char fchar=dirname3[0];
-										if (
-											((fchar>='0')&&(fchar<='9'))||
-											((fchar>='A')&&(fchar<='F'))
-											)
-										{
-											std::string devfile=dirname2+"/"+dirname3;
-											if (HaveSupported1WireSensor(devfile))
-											{
-												_t1WireSensor sensor;
-												std::string devid=dirname3;
-												devid=devid.substr(3,4);
-												sensor.devid=devid;
-												sensor.filename=dirname2+"/"+dirname3;
-												_wiresensors.push_back(sensor);
-											}
-										}
-									}
-								}
-							}
-							closedir(d2);
-						}
-						//Next scan all /_aux folders
-						dirname2=OWFS_Base_Dir;
-						dirname2+="/"+dirname;
-#ifdef WIN32							
-						dirname2+="/_aux";
-#else
-						dirname2+="/aux";
-#endif
-						d2=opendir(dirname2.c_str());
-						if (d2!=NULL)
-						{
-							struct dirent *de2=NULL;
-							while(de2 = readdir(d2))
-							{
-								if (de2->d_type==DT_DIR)
-								{
-									std::string dirname3 = de2->d_name;
-									if ((dirname3!=".")&&(dirname3!=".."))
-									{
-										unsigned char fchar=dirname3[0];
-										if (
-											((fchar>='0')&&(fchar<='9'))||
-											((fchar>='A')&&(fchar<='F'))
-											)
-										{
-											std::string devfile=dirname2+"/"+dirname3;
-											if (HaveSupported1WireSensor(devfile))
-											{
-												_t1WireSensor sensor;
-												std::string devid=dirname3;
-												devid=devid.substr(3,4);
-												sensor.devid=devid;
-												sensor.filename=dirname2+"/"+dirname3;
-												_wiresensors.push_back(sensor);
-											}
-										}
-									}
-								}
-							}
-							closedir(d2);
-						}
-					}
-				}
-			}
-		}
-		closedir(d);
+            // Filter invalid temperature
+            if (IsTemperatureValid(device.family,temperature))
+               ReportTemperature(device.devid,temperature);
+
+            break;
+         }
+
+      case Addresable_Switch:
+      case microlan_coupler:
+         {
+            ReportLightState(device.devid,0,m_system->GetLightState(device,0));
+            break;
+         }
+
+      case dual_addressable_switch_plus_1k_memory:
+         {
+            ReportLightState(device.devid,0,m_system->GetLightState(device,0));
+            if (m_system->GetNbChannels(device) == 2)
+               ReportLightState(device.devid,1,m_system->GetLightState(device,1));
+            break;
+         }
+
+      case _8_channel_addressable_switch:
+         {
+            ReportLightState(device.devid,0,m_system->GetLightState(device,0));
+            ReportLightState(device.devid,1,m_system->GetLightState(device,1));
+            ReportLightState(device.devid,2,m_system->GetLightState(device,2));
+            ReportLightState(device.devid,3,m_system->GetLightState(device,3));
+            ReportLightState(device.devid,4,m_system->GetLightState(device,4));
+            ReportLightState(device.devid,5,m_system->GetLightState(device,5));
+            ReportLightState(device.devid,6,m_system->GetLightState(device,6));
+            ReportLightState(device.devid,7,m_system->GetLightState(device,7));
+            break;
+         }
+
+      case Temperature_IO:
+         {
+            ReportTemperature(device.devid,m_system->GetTemperature(device));
+            ReportLightState(device.devid,0,m_system->GetLightState(device,0));
+            ReportLightState(device.devid,1,m_system->GetLightState(device,1));
+            break;
+         }
+
+      case dual_channel_addressable_switch:
+      case _4k_EEPROM_with_PIO:
+         {
+            ReportLightState(device.devid,0,m_system->GetLightState(device,0));
+            ReportLightState(device.devid,1,m_system->GetLightState(device,1));
+            break;
+         }
+
+      case Environmental_Monitors:
+         {
+            ReportTemperatureHumidity(device.devid,m_system->GetTemperature(device),m_system->GetHumidity(device));
+            break;
+         }
+
+      case _4k_ram_with_counter:
+         {
+            ReportCounter(device.devid,0,m_system->GetCounter(device,0));
+            ReportCounter(device.devid,1,m_system->GetCounter(device,1));
+            break;
+         }
+
+      case quad_ad_converter:
+         {
+            ReportVoltage(0,m_system->GetVoltage(device,0));
+            ReportVoltage(1,m_system->GetVoltage(device,1));
+            ReportVoltage(2,m_system->GetVoltage(device,2));
+            ReportVoltage(3,m_system->GetVoltage(device,3));
+            break;
+         }
+
+      case Serial_ID_Button:
+         {
+            // Nothing to do with these devices for Domoticz ==> Filtered
+            break;
+         }
+
+      default: // Device is not actually supported
+         {
+            _log.Log(LOG_NORM,"1-Wire : Device family (%02x) is not actualy supported", device.family);
+            break;
+         }
+      }
 	}
-	//parse our sensors
-	std::vector<_t1WireSensor>::const_iterator itt;
-	for (itt=_wiresensors.begin(); itt!=_wiresensors.end(); ++itt)
-	{
-		std::string filename;
-		float temp=0x1234;
-		float humidity=0x1234;
-		unsigned long counterA=0xFEDCBA98;
-		int voltage[4];
-		voltage[0]=0x1234;
-		voltage[1]=0x1234;
-		voltage[2]=0x1234;
-		voltage[3]=0x1234;
+}
 
-		unsigned int xID;   
-		std::stringstream ss;
-		ss << std::hex << itt->devid;
-		ss >> xID;
+void C1Wire::ReportTemperature(const std::string& deviceId,float temperature)
+{
+   unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
+   DeviceIdToByteArray(deviceId,deviceIdByteArray);
 
-		if (xID!=0)
-		{
-			//try to read temperature
-			std::ifstream infile;
-			filename=itt->filename+"/temperature";
-			infile.open(filename.c_str());
-			if (infile.is_open())
-			{
-				std::string sLine;
-				getline(infile, sLine);
-				float temp2=(float)atof(sLine.c_str());
-				if ((temp2>-300)&&(temp2<300))
-					temp=temp2;
-				infile.close();
-			}
-			//try to read humidity
-			std::ifstream infile2;
-			filename=itt->filename+"/humidity";
-			infile2.open(filename.c_str());
-			if (infile2.is_open())
-			{
-				std::string sLine;
-				getline(infile2, sLine);
-				float himidity2=(float)atof(sLine.c_str());
-				if ((himidity2>=0)&&(himidity2<=100))
-					humidity=himidity2;
-				infile2.close();
-			}
-			//try to read counters.A
-			std::ifstream infile3;
-			filename=itt->filename+"/counters.A";
-			infile3.open(filename.c_str());
-			if (infile3.is_open())
-			{
-				std::string sLine;
-				getline(infile3, sLine);
-				counterA=(unsigned long)atol(sLine.c_str());
-				infile3.close();
-			}
-			//try to read voltages
-			std::ifstream infile4;
-			filename=itt->filename+"/volt.ALL";
-			infile4.open(filename.c_str());
-			if (infile4.is_open())
-			{
-				std::string sLine;
-				getline(infile4, sLine);
-				infile4.close();
-				std::vector<std::string> results;
-				StringSplit(sLine,",",results);
-				int tvolts=(int)results.size();
-				if (tvolts>4)
-					tvolts=4;
-				for (int iv=0; iv<tvolts; iv++)
-				{
-					voltage[iv]=(int)(atof(results[iv].c_str())*1000.0);
-				}
-			}
-			if ((temp!=0x1234)&&(humidity==0x1234))
-			{
-				//temp
-				RBUF tsen;
-				memset(&tsen,0,sizeof(RBUF));
-				tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-				tsen.TEMP.packettype=pTypeTEMP;
-				tsen.TEMP.subtype=sTypeTEMP10;
-				tsen.TEMP.battery_level=9;
-				tsen.TEMP.rssi=6;
-				tsen.TEMP.id1=(BYTE)((xID&0xFF00)>>8);
-				tsen.TEMP.id2=(BYTE)(xID&0xFF);
+   RBUF tsen;
+   memset(&tsen,0,sizeof(RBUF));
+   tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
+   tsen.TEMP.packettype=pTypeTEMP;
+   tsen.TEMP.subtype=sTypeTEMP10;
+   tsen.TEMP.battery_level=9;
+   tsen.TEMP.rssi=6;
+   tsen.TEMP.id1=(BYTE)deviceIdByteArray[0];
+   tsen.TEMP.id2=(BYTE)deviceIdByteArray[1];
 
-				tsen.TEMP.tempsign=(temp>=0)?0:1;
-				int at10=round(abs(temp*10.0f));
-				tsen.TEMP.temperatureh=(BYTE)(at10/256);
-				at10-=(tsen.TEMP.temperatureh*256);
-				tsen.TEMP.temperaturel=(BYTE)(at10);
+   tsen.TEMP.tempsign=(temperature>=0)?0:1;
+   int at10=round(abs(temperature*10.0f));
+   tsen.TEMP.temperatureh=(BYTE)(at10/256);
+   at10-=(tsen.TEMP.temperatureh*256);
+   tsen.TEMP.temperaturel=(BYTE)(at10);
 
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
-			}
-			else if ((temp!=0x1234)&&(humidity!=0x1234))
-			{
-				//temp+hum
-				RBUF tsen;
-				memset(&tsen,0,sizeof(RBUF));
-				tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
-				tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
-				tsen.TEMP_HUM.subtype=sTypeTH5;
-				tsen.TEMP_HUM.battery_level=9;
-				tsen.TEMP_HUM.rssi=6;
-				tsen.TEMP.id1=(BYTE)((xID&0xFF00)>>8);
-				tsen.TEMP.id2=(BYTE)(xID&0xFF);
+   sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
+}
 
-				tsen.TEMP_HUM.tempsign=(temp>=0)?0:1;
-				int at10=round(abs(temp*10.0f));
-				tsen.TEMP_HUM.temperatureh=(BYTE)(at10/256);
-				at10-=(tsen.TEMP_HUM.temperatureh*256);
-				tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
-				tsen.TEMP_HUM.humidity=(BYTE)round(humidity);
-				tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
+void C1Wire::ReportHumidity(const std::string& deviceId,float humidity)
+{
+   unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
+   DeviceIdToByteArray(deviceId,deviceIdByteArray);
 
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);//decode message
-			}
-			else if (humidity!=0x1234)
-			{
-				//humidity
-				RBUF tsen;
-				memset(&tsen,0,sizeof(RBUF));
-				tsen.HUM.packetlength=sizeof(tsen.HUM)-1;
-				tsen.HUM.packettype=pTypeHUM;
-				tsen.HUM.subtype=sTypeHUM2;
-				tsen.HUM.battery_level=9;
-				tsen.HUM.rssi=6;
-				tsen.TEMP.id1=(BYTE)((xID&0xFF00)>>8);
-				tsen.TEMP.id2=(BYTE)(xID&0xFF);
+   RBUF tsen;
+   memset(&tsen,0,sizeof(RBUF));
+   tsen.HUM.packetlength=sizeof(tsen.HUM)-1;
+   tsen.HUM.packettype=pTypeHUM;
+   tsen.HUM.subtype=sTypeHUM2;
+   tsen.HUM.battery_level=9;
+   tsen.HUM.rssi=6;
+   tsen.TEMP.id1=(BYTE)deviceIdByteArray[0];
+   tsen.TEMP.id2=(BYTE)deviceIdByteArray[1];
 
-				tsen.HUM.humidity=(BYTE)round(humidity);
-				tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
+   tsen.HUM.humidity=(BYTE)round(humidity);
+   tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
 
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM);//decode message
-			}
-			else if (counterA!=0xFEDCBA98)
-			{
-				//Counter
-				RBUF tsen;
-				memset(&tsen,0,sizeof(RBUF));
-				tsen.RFXMETER.packetlength=sizeof(tsen.RFXMETER)-1;
-				tsen.RFXMETER.packettype=pTypeRFXMeter;
-				tsen.RFXMETER.subtype=sTypeRFXMeterCount;
-				tsen.RFXMETER.rssi=6;
-				tsen.RFXMETER.id1=(BYTE)((xID&0xFF00)>>8);
-				tsen.RFXMETER.id2=(BYTE)(xID&0xFF);
+   sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM);//decode message
+}
 
-				tsen.RFXMETER.count1 = (BYTE)((counterA & 0xFF000000) >> 24);
-				tsen.RFXMETER.count2 = (BYTE)((counterA & 0x00FF0000) >> 16);
-				tsen.RFXMETER.count3 = (BYTE)((counterA & 0x0000FF00) >> 8);
-				tsen.RFXMETER.count4 = (BYTE)(counterA & 0x000000FF);
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);//decode message
-			}
-			else if (voltage[0]!=0x1234)
-			{
-				for (int iv=0; iv<4; iv++)
-				{
-					if (voltage[iv]!=0x1234)
-					{
-						RBUF tsen;
-						memset(&tsen,0,sizeof(RBUF));
-						tsen.RFXSENSOR.packetlength=sizeof(tsen.RFXSENSOR)-1;
-						tsen.RFXSENSOR.packettype=pTypeRFXSensor;
-						tsen.RFXSENSOR.subtype=sTypeRFXSensorVolt;
-						tsen.RFXSENSOR.rssi=6;
-						tsen.RFXSENSOR.id=iv+1;
+void C1Wire::ReportTemperatureHumidity(const std::string& deviceId,float temperature,float humidity)
+{
+   unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
+   DeviceIdToByteArray(deviceId,deviceIdByteArray);
 
-						tsen.RFXSENSOR.msg1 = (BYTE)(voltage[iv]/256);
-						tsen.RFXSENSOR.msg2 = (BYTE)(voltage[iv]-(tsen.RFXSENSOR.msg1*256));
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR);//decode message
-					}
-				}
-			}
-		}
-	}
+   RBUF tsen;
+   memset(&tsen,0,sizeof(RBUF));
+   tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
+   tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
+   tsen.TEMP_HUM.subtype=sTypeTH5;
+   tsen.TEMP_HUM.battery_level=9;
+   tsen.TEMP_HUM.rssi=6;
+   tsen.TEMP.id1=(BYTE)deviceIdByteArray[0];
+   tsen.TEMP.id2=(BYTE)deviceIdByteArray[1];
+
+   tsen.TEMP_HUM.tempsign=(temperature>=0)?0:1;
+   int at10=round(abs(temperature*10.0f));
+   tsen.TEMP_HUM.temperatureh=(BYTE)(at10/256);
+   at10-=(tsen.TEMP_HUM.temperatureh*256);
+   tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
+   tsen.TEMP_HUM.humidity=(BYTE)round(humidity);
+   tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
+
+   sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);//decode message
+}
+
+void C1Wire::ReportLightState(const std::string& deviceId,int unit,bool state)
+{
+   unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
+   DeviceIdToByteArray(deviceId,deviceIdByteArray);
+
+   RBUF tsen;
+   memset(&tsen,0,sizeof(RBUF));
+   tsen.LIGHTING2.packetlength=sizeof(tsen.LIGHTING2)-1;
+   tsen.LIGHTING2.packettype=pTypeLighting2;
+   tsen.LIGHTING2.subtype=sTypeAC;
+   tsen.LIGHTING2.seqnbr=0;
+   tsen.LIGHTING2.id1=(BYTE)deviceIdByteArray[0];
+   tsen.LIGHTING2.id2=(BYTE)deviceIdByteArray[1];
+   tsen.LIGHTING2.id3=(BYTE)deviceIdByteArray[2];
+   tsen.LIGHTING2.id4=(BYTE)deviceIdByteArray[3];
+   tsen.LIGHTING2.unitcode=unit;
+   tsen.LIGHTING2.cmnd=state?light2_sOn:light2_sOff;
+   tsen.LIGHTING2.level=0;
+   tsen.LIGHTING2.rssi=6;
+   sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);//decode message
+}
+
+void C1Wire::ReportCounter(const std::string& deviceId,int unit,unsigned long counter)
+{
+   unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
+   DeviceIdToByteArray(deviceId,deviceIdByteArray);
+
+   RBUF tsen;
+   memset(&tsen,0,sizeof(RBUF));
+   tsen.RFXMETER.packetlength=sizeof(tsen.RFXMETER)-1;
+   tsen.RFXMETER.packettype=pTypeRFXMeter;
+   tsen.RFXMETER.subtype=sTypeRFXMeterCount;
+   tsen.RFXMETER.rssi=6;
+   tsen.RFXMETER.id1=(BYTE)deviceIdByteArray[0];
+   tsen.RFXMETER.id2=(BYTE)deviceIdByteArray[1] + unit;
+
+   tsen.RFXMETER.count1 = (BYTE)((counter & 0xFF000000) >> 24);
+   tsen.RFXMETER.count2 = (BYTE)((counter & 0x00FF0000) >> 16);
+   tsen.RFXMETER.count3 = (BYTE)((counter & 0x0000FF00) >> 8);
+   tsen.RFXMETER.count4 = (BYTE)(counter & 0x000000FF);
+   sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);//decode message
+}
+
+void C1Wire::ReportVoltage(int unit,int voltage)
+{
+   RBUF tsen;
+   memset(&tsen,0,sizeof(RBUF));
+   tsen.RFXSENSOR.packetlength=sizeof(tsen.RFXSENSOR)-1;
+   tsen.RFXSENSOR.packettype=pTypeRFXSensor;
+   tsen.RFXSENSOR.subtype=sTypeRFXSensorVolt;
+   tsen.RFXSENSOR.rssi=6;
+   tsen.RFXSENSOR.id=unit+1;
+
+   tsen.RFXSENSOR.msg1 = (BYTE)(voltage/256);
+   tsen.RFXSENSOR.msg2 = (BYTE)(voltage-(tsen.RFXSENSOR.msg1*256));
+   sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR);//decode message
 }
