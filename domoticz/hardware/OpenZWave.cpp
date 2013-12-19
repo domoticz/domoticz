@@ -1536,7 +1536,7 @@ void COpenZWave::EnableDisableNodePolling()
 
 		if (
 			(HomeID==m_controllerID)&&
-			(NodeID>2)
+			(NodeID>1)
 			)
 		{
 			if (PollTime>0)

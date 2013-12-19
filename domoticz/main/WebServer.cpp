@@ -2621,7 +2621,7 @@ std::string CWebServer::GetJSonPage()
 
 				int homeID=atoi(sd[1].c_str());
 				int nodeID=atoi(sd[2].c_str());
-				if (nodeID>2)
+				if (nodeID>1)
 				{
 					//Don't include the controller
 					COpenZWave::NodeInfo *pNode=pOZWHardware->GetNodeInfo(homeID, nodeID);
