@@ -168,9 +168,15 @@ void MainWorker::RemoveDomoticzHardware(CDomoticzHardwareBase *pHardware)
 	{
 		CDomoticzHardwareBase *pOrgDevice=*itt;
 		if (pOrgDevice==pHardware) {
-			m_hardwaredevices.erase(itt);
-			pOrgDevice->Stop();
-			delete pOrgDevice;
+			try
+			{
+				m_hardwaredevices.erase(itt);
+				pOrgDevice->Stop();
+				delete pOrgDevice;
+			}
+			catch (...)
+			{
+			}
 			return;
 		}
 	}
