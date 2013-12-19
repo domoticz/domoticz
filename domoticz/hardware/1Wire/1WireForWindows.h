@@ -1,7 +1,5 @@
 #pragma once
-#ifndef WIN32
-#error This file must be only included for Windows platform
-#endif // WIN32
+#ifdef WIN32
 #include "1WireSystem.h"
 #include "../json/json.h"
 
@@ -48,3 +46,4 @@ public:
 protected:
    std::string m_Message;
 };
+#endif // WIN32

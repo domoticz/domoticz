@@ -1,8 +1,6 @@
 
 #include "stdafx.h"
-#ifndef WIN32
-#error This file must be only compiled for Windows platform
-#endif // WIN32
+#ifdef WIN32
 #include "1WireForWindows.h"
 #include "../main/Logger.h"
 #include <boost/thread.hpp>
@@ -421,4 +419,4 @@ void C1WireForWindows::GetDevice(const std::string& deviceName, /*out*/_t1WireDe
    // Filename (full path)
    device.filename=deviceName;
 }
-
+#endif // WIN32
