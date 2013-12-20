@@ -756,7 +756,6 @@ void MainWorker::HandleAutomaticBackups()
 		
 			if ((lDir = opendir(sbackup_DirH.c_str())) != NULL)
 			{
-				std::string m_retstr="";
 				std::stringstream sTmp;
 				sTmp << "backup-hour-" << hour << ".db";
 
@@ -777,7 +776,6 @@ void MainWorker::HandleAutomaticBackups()
 	
 			if ((lDir = opendir(sbackup_DirD.c_str())) != NULL)
 			{
-				std::string m_retstr="";
 				std::stringstream sTmp;
 				sTmp << "backup-day-" << day << ".db";
 
@@ -797,7 +795,6 @@ void MainWorker::HandleAutomaticBackups()
 		if ((lastMonthBackup == -1)||(lastMonthBackup !=month)) {
 			if ((lDir = opendir(sbackup_DirM.c_str())) != NULL)
 			{
-				std::string m_retstr="";
 				std::stringstream sTmp;
 				sTmp << "backup-month-" << month+1 << ".db";
 

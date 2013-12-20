@@ -1118,9 +1118,13 @@ function RefreshHardwareTable()
         
       if (typeof data.result != 'undefined') {
         $.each(data.result, function(i,item){
-        
+
 			var HwTypeStrOrg=$.myglobals.HardwareTypesStr[item.Type];
 			var HwTypeStr=HwTypeStrOrg;
+        
+			if (typeof HwTypeStr == 'undefined') {
+				HwTypeStr="???? Unknown (NA/Not supported)";
+			}
         
 			var SerialName="Unknown!?";
 			if ((HwTypeStr.indexOf("LAN") >= 0)||(HwTypeStr.indexOf("Domoticz") >= 0))
@@ -1163,10 +1167,7 @@ function RefreshHardwareTable()
 			if (item.Enabled=="true") {
 				enabledstr="Yes";
 			}
-			if (typeof HwTypeStr == 'undefined') {
-				HwTypeStr="???? Unknown (NA)";
-			}
-			else if (
+			if (
 				(HwTypeStr.indexOf("RFXtrx433 USB") >= 0)||
 				(HwTypeStr.indexOf("RFXtrx315 USB") >= 0)
 			   )
