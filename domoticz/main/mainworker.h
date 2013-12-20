@@ -48,6 +48,7 @@ public:
 	bool SwitchLight(const std::string &idx, const std::string &switchcmd,const std::string &level, const std::string &hue);
 	bool SwitchLight(unsigned long long idx, const std::string &switchcmd, int level, int hue);
 	bool SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, int hue, const bool IsTesting);
+	bool HandleSwitchAction(const bool bIsOn, const std::string &OnAction, const std::string &OffAction);
 
 	bool SwitchScene(const std::string &idx, const std::string &switchcmd);
 	bool SwitchScene(const unsigned long long idx, const std::string &switchcmd);

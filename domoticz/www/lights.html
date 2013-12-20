@@ -22,11 +22,19 @@
 			</tr>
 			<tr id="MotionDiv">
 				<td align="right"<label for="motionoffdelay"><span data-i18n="Off Delay"></span>:</label></td>
-				<td><input type="text" id="motionoffdelay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (Seconds) 0 = Use sensor time</td>
+				<td><input type="text" id="motionoffdelay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Seconds) 0 = Use sensor time">(Seconds) 0 = Use sensor time</span></td>
 			</tr>
 			<tr id="OffDelayDiv">
-				<td align="right"><label for="motionoffdelay"><span data-i18n="Off Delay"></span>:</label></td>
-				<td><input type="text" id="offdelay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (Seconds) 0 = Disabled</td>
+				<td align="right"><label for="offdelay"><span data-i18n="Off Delay"></span>:</label></td>
+				<td><input type="text" id="offdelay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Seconds) 0 = Disabled">(Seconds) 0 = Disabled</span></td>
+			</tr>
+			<tr id="OnActionDiv">
+				<td align="right"><label for="onaction"><span data-i18n="On Action">On Action</span>:</label></td>
+				<td><input type="text" id="onaction" style="width: 340px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Should start with http:// or script://)">(Should start with http:// or script://)</span></td>
+			</tr>
+			<tr id="OffActionDiv">
+				<td align="right"><label for="offaction"><span data-i18n="Off Action">Off Action</span>:</label></td>
+				<td><input type="text" id="offaction" style="width: 340px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Should start with http:// or script://)">(Should start with http:// or script://)</span></td>
 			</tr>
 			<tr id="LedColor">
 				<td align="right"><label><span data-i18n="Color">Color</span>:</label></td>
@@ -948,10 +956,43 @@ function SaveLightSwitch()
 {
 	var bValid = true;
 	bValid = bValid && checkLength( $("#lightcontent #devicename"), 2, 100 );
+
+	var strParam1=$("#lightcontent #onaction").val();
+	var strParam2=$("#lightcontent #offaction").val();
+
+	if (strParam1!="") {
+		if ( (strParam1.indexOf("http://") !=0) && (strParam1.indexOf("script://") !=0) ) {
+			bootbox.alert($.i18n("Invalid ON Action!"));
+			return;
+		}
+		else {
+			if (checkLength( $("#lightcontent #onaction"), 10, 300 )==false) {
+				bootbox.alert($.i18n("Invalid ON Action!"));
+				return;
+			}
+		}
+	}
+	if (strParam2!="") {
+		if ( (strParam2.indexOf("http://") !=0) && (strParam2.indexOf("script://") !=0) ) {
+			bootbox.alert($.i18n("Invalid Off Action!"));
+			return;
+		}
+		else {
+			if (checkLength( $("#lightcontent #offaction"), 10, 300 )==false) {
+				bootbox.alert($.i18n("Invalid Off Action!"));
+				return;
+			}
+		}
+	}
+
 	if ( bValid ) {
 		if ($.stype=="Security") {
 			$.ajax({
-				 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#lightcontent #devicename").val()) + '&used=true',
+				 url: "json.htm?type=setused&idx=" + $.devIdx +
+				  '&name=' + encodeURIComponent($("#lightcontent #devicename").val()) +
+				  '&strparam1=' + encodeURIComponent(strParam1) +
+				  '&strparam2=' + encodeURIComponent(strParam2) +
+				  '&used=true',
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
@@ -972,8 +1013,15 @@ function SaveLightSwitch()
 			if (switchtype==0) {
 				CustomImage=$('#lightcontent #comboswitchicon').data('ddslick').selectedIndex;
 			}
+			
 			$.ajax({
-				 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#lightcontent #devicename").val()) + '&switchtype=' + $("#lightcontent #comboswitchtype").val() + '&customimage=' + CustomImage + '&used=true' + addjvalstr ,
+				 url: "json.htm?type=setused&idx=" + $.devIdx + 
+					'&name=' + encodeURIComponent($("#lightcontent #devicename").val()) + 
+					'&strparam1=' + encodeURIComponent(strParam1) +
+					'&strparam2=' + encodeURIComponent(strParam2) +
+					'&switchtype=' + $("#lightcontent #comboswitchtype").val() + 
+					'&customimage=' + CustomImage + 
+					'&used=true' + addjvalstr ,
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
@@ -1105,7 +1153,7 @@ function SetColValue(idx,hue,brightness)
 	});
 }
 
-function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage,devsubtype)
+function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage,devsubtype,strParam1,strParam2)
 {
 	clearInterval($.myglobals.refreshTimer);
 	$.devIdx=idx;
@@ -1214,6 +1262,9 @@ function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage
 			$("#lightcontent #SwitchIconDiv").show();
 		}
 		$("#lightcontent #combosubdevice").html("");
+		
+		$("#lightcontent #onaction").val(strParam1);
+		$("#lightcontent #offaction").val(strParam2);
 		
 		$.each($.LightsAndSwitches, function(i,item){
 			var option = $('<option />');
@@ -1819,7 +1870,7 @@ function ShowLights()
                 '<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Log">Log</a> ';
           if (window.my_config.userrights==2) {
 			  xhtm+=
-					'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + '\'' + item.Type + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.IsSubDevice + ', ' + item.CustomImage + ', \'' + item.SubType + '\');" data-i18n="Edit">Edit</a> ';
+					'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + '\'' + item.Type + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.IsSubDevice + ', ' + item.CustomImage + ', \'' + item.SubType + '\', \'' + item.StrParam1.replace("\\","\\\\") + '\', \'' + item.StrParam2.replace("\\","\\\\") + '\');" data-i18n="Edit">Edit</a> ';
 						if (bAddTimer == true) {
 									if (item.Timers == "true") {
 										xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',' + bIsDimmer + ',\'' + item.Type + '\'' + ', \'' + item.SubType + '\');" data-i18n="Timers">Timers</a> ';

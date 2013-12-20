@@ -7304,6 +7304,51 @@ bool MainWorker::SetRFXCOMHardwaremodes(const int HardwareID, const unsigned cha
 	return true;
 }
 
+bool MainWorker::HandleSwitchAction(const bool bIsOn, const std::string &OnAction, const std::string &OffAction)
+{
+	if (bIsOn)
+	{
+		if (OnAction.find("http://")!=std::string::npos)
+		{
+			_tTaskItem tItem;
+			tItem=_tTaskItem::GetHTTPPage(1,OnAction,"SwitchActionOn");
+			m_sql.AddTaskItem(tItem);
+		}
+		else if (OnAction.find("script://")!=std::string::npos)
+		{
+			//Execute possible script
+			std::string scriptname=OnAction.substr(9);
+			if (file_exist(scriptname.c_str()))
+			{
+				//Add parameters
+				std::string scriptparams="";
+				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1,scriptname,scriptparams));
+			}
+		}
+	}
+	else
+	{
+		if (OffAction.find("http://")!=std::string::npos)
+		{
+			_tTaskItem tItem;
+			tItem=_tTaskItem::GetHTTPPage(1,OffAction,"SwitchActionOff");
+			m_sql.AddTaskItem(tItem);
+		}
+		else if (OffAction.find("script://")!=std::string::npos)
+		{
+			//Execute possible script
+			std::string scriptname=OffAction.substr(9);
+			if (file_exist(scriptname.c_str()))
+			{
+				//Add parameters
+				std::string scriptparams="";
+				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1,scriptname,scriptparams));
+			}
+		}
+	}
+	return true;
+}
+
 bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, int hue, const bool IsTesting)
 {
 	unsigned long ID;
@@ -7314,6 +7359,9 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	unsigned char ID2=(unsigned char)((ID&0x00FF0000)>>16);
 	unsigned char ID3=(unsigned char)((ID&0x0000FF00)>>8);
 	unsigned char ID4=(unsigned char)((ID&0x000000FF));
+
+	std::string OnAction=sd[6];
+	std::string OffAction=sd[7];
 
 	int HardwareID = atoi(sd[0].c_str());
 
@@ -7332,7 +7380,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			else
 				return false;
 			UpdateDomoticzSecurityStatus(iSecStatus);
-			return true;
+			return HandleSwitchAction((switchcmd!="Disarm"),OnAction,OffAction);
 		}
 	}
 
@@ -7354,6 +7402,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		if (level==0)
 			switchcmd="Off";
 	}
+
+	bool bIsLightSwitchOn=IsLightSwitchOn(switchcmd);
 
 	switch (dType)
 	{
@@ -7384,7 +7434,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
 			}
-			return true;
+			return HandleSwitchAction(bIsLightSwitchOn,OnAction,OffAction);
 		}
 		break;
 	case pTypeLighting2:
@@ -7423,7 +7473,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
 			}
-			return true;
+			return HandleSwitchAction(bIsLightSwitchOn,OnAction,OffAction);
 		}
 		break;
 	case pTypeLighting3:
@@ -7532,7 +7582,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
 			}
-			return true;
+			return HandleSwitchAction(bIsLightSwitchOn,OnAction,OffAction);
 		}
 		break;
 	case pTypeLighting6:
@@ -7558,7 +7608,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
 			}
-			return true;
+			return HandleSwitchAction(bIsLightSwitchOn,OnAction,OffAction);
 		}
 		break;
 	case pTypeLimitlessLights:
@@ -7604,7 +7654,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
 			}
-			return true;
+			return HandleSwitchAction(bIsLightSwitchOn,OnAction,OffAction);
 		}
 		break;
 	case pTypeSecurity1:
@@ -7657,6 +7707,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				}
 				break;
 			}
+			HandleSwitchAction(bIsLightSwitchOn,OnAction,OffAction);
 		}
 		break;
 	case pTypeBlinds:
@@ -7680,7 +7731,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
 			}
-			return true;
+			return HandleSwitchAction(bIsLightSwitchOn,OnAction,OffAction);
 		}
 		break;
 	case pTypeChime:
@@ -7701,7 +7752,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
 			}
-			return true;
+			return HandleSwitchAction(bIsLightSwitchOn,OnAction,OffAction);
 		}
 		break;
 	}
@@ -7713,7 +7764,7 @@ bool MainWorker::SwitchLight(unsigned long long idx, const std::string &switchcm
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
+	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType, StrParam1, StrParam2 FROM DeviceStatus WHERE (ID == " << idx << ")";
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return false;
@@ -7867,7 +7918,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 		int hue=atoi(sd[3].c_str());
 		std::vector<std::vector<std::string> > result2;
 		std::stringstream szQuery2;
-		szQuery2 << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType, nValue, sValue FROM DeviceStatus WHERE (ID == " << sd[0] << ")";
+		szQuery2 << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType, nValue, sValue, StrParam1, StrParam2 FROM DeviceStatus WHERE (ID == " << sd[0] << ")";
 		result2=m_sql.query(szQuery2.str());
 		if (result2.size()>0)
 		{

@@ -15,7 +15,7 @@
 #include "../webserver/Base64.h"
 #include "mainstructs.h"
 
-#define DB_VERSION 33
+#define DB_VERSION 34
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -789,6 +789,11 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 			query("DELETE FROM DeviceStatus WHERE (DeviceID LIKE 'WMI%')");
+		}
+		if (dbversion<34)
+		{
+			query("ALTER TABLE DeviceStatus ADD COLUMN [StrParam1] VARCHAR(200) DEFAULT ''");
+			query("ALTER TABLE DeviceStatus ADD COLUMN [StrParam2] VARCHAR(200) DEFAULT ''");
 		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
