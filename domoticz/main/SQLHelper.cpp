@@ -4657,7 +4657,7 @@ void CSQLHelper::AddCalendarUpdateFan()
 			int speed_avg=(int)atoi(sd[2].c_str());
 			//insert into calendar table
 			sprintf(szTmp,
-				"INSERT INTO Load_Calendar (DeviceRowID, Speed_Min, Speed_Max, Speed_Avg, Date) "
+				"INSERT INTO Fan_Calendar (DeviceRowID, Speed_Min, Speed_Max, Speed_Avg, Date) "
 				"VALUES (%llu, %d, %d, %d,'%s')",
 				ID,
 				speed_min,
