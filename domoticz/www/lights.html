@@ -1494,10 +1494,13 @@ function RefreshLights()
 										(item.Status == 'On')
 									) {
 									img='<img src="images/smoke48on.png" title="' + $.i18n("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+									$(id + ' #resetbtn').attr("class", "btnsmall-sel");
 								}
 								else {
 									img='<img src="images/smoke48off.png" title="' + $.i18n("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+									$(id + ' #resetbtn').attr("class", "btnsmall-dis");
 								}
+
 						}
 						else if (item.Type == "Security") {
 							if (item.SubType.indexOf('remote') > 0) {
@@ -1884,7 +1887,10 @@ function ShowLights()
 									(item.Status == 'Panic')||
 									(item.Status == 'On')
 								 ) {
-								xhtm+='<a class="btnsmall-sel" onclick="ResetSecurityStatus(' + item.idx + ',\'Normal\',ShowLights);" data-i18n="Reset">Reset</a> ';
+								xhtm+='<a id="resetbtn" class="btnsmall-sel" onclick="ResetSecurityStatus(' + item.idx + ',\'Normal\',ShowLights);" data-i18n="Reset">Reset</a> ';
+							}
+							else {
+								xhtm+='<a id="resetbtn" class="btnsmall-dis" onclick="ResetSecurityStatus(' + item.idx + ',\'Normal\',ShowLights);" data-i18n="Reset">Reset</a> ';
 							}
 			  }					
 			  if (item.Notifications == "true")

@@ -31,6 +31,7 @@ Version 1.0.xxxx (December xxth 2013)
 - Updated: Highcharts 3.0.7
 - Implemented: Option to specify On/Off actions for lights/switches (http/script)
 - Fixed: LightWaveRF dimming
+- Changed: Smoke Detector reset button now gray when there is no panic, purple when there is
 
 Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart

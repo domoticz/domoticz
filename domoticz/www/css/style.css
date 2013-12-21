@@ -356,6 +356,21 @@ height:100%;
 	cursor: pointer;
 }
 
+.btnsmall-dis {
+	display: inline-block;
+	height: 1.60em;
+	padding: 0.1em 0.6em 0.1em 0.6em;
+	background: url(images/img03bd.png) repeat right;
+	border-radius: 5px;
+	line-height: 1.60em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+	cursor: pointer;
+}
+
 /* Hover state*/
 .btnsmall:hover{
 	color: #FFFF00;
