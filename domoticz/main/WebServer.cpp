@@ -43,6 +43,7 @@ static const _tGuiLanguage guiLanguage[]=
 	{ "nl", "Dutch" },
 	{ "de", "German" },
 	{ "fr", "French" },
+	{ "pl", "Polish" },
 	{ "it", "Italian" },
 	{ "sv", "Swedish" },
 	
