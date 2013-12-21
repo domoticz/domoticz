@@ -3,7 +3,6 @@
 
 #include "stdafx.h"
 #include "mainworker.h"
-
 #include <stdio.h>     /* standard I/O functions                         */
 #include <sys/types.h> /* various type definitions, like pid_t           */
 #include <signal.h>    /* signal name macros, and the signal() prototype */ 
