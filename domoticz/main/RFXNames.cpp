@@ -1127,7 +1127,7 @@ bool GetLightCommand(
 				return true;
 			}
 		}
-		else if (dSubType==sTypeLightwaveRF)
+		else if (dSubType!=sTypeLightwaveRF)
 		{
 			//Only LightwaveRF devices have a set-level
 			if (switchcmd=="Set Level")
