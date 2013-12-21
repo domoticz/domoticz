@@ -414,6 +414,7 @@ CSQLHelper::CSQLHelper(void)
 	m_demo_dbase=NULL;
 	m_stoprequested=false;
 	m_sensortimeoutcounter=0;
+	m_bAcceptNewHardware=true;
 
 	m_windunit=WINDUNIT_MS;
 	m_tempunit=TEMPUNIT_C;
@@ -998,7 +999,12 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("RaspCamParams", "-w 800 -h 600 -t 0"); //width/height/time2wait
 	}
-
+	if (!GetPreferencesVar("AcceptNewHardware", nValue))
+	{
+		UpdatePreferencesVar("AcceptNewHardware", 1);
+		nValue=1;
+	}
+	m_bAcceptNewHardware=(nValue==1);
 	//Start background thread
 	if (!StartThread())
 		return false;
@@ -1662,8 +1668,20 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 }
 
 //Special case for Z-Wave, as we receive the same update as we send it
+//also check if we want new devices, if not return false
 bool CSQLHelper::NeedToUpdateHardwareDevice(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname)
 {
+	//Check if nValue and sValue are the same, if true, then just update the date
+	std::vector<std::vector<std::string> > result;
+	char szTmp[400];
+	sprintf(szTmp,"SELECT ID, nValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
+	result=query(szTmp);
+	if (result.size()<1)
+	{
+		//new device
+		return (m_bAcceptNewHardware==true);
+	}
+
 	if (devType!=pTypeLighting2)
 		return true;
 
@@ -1673,13 +1691,6 @@ bool CSQLHelper::NeedToUpdateHardwareDevice(const int HardwareID, const char* ID
 	if (pHardware->HwdType!=HTYPE_RazberryZWave)
 		return true;
 
-	//Check if nValue and sValue are the same, if true, then just update the date
-	std::vector<std::vector<std::string> > result;
-	char szTmp[400];
-	sprintf(szTmp,"SELECT ID, nValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
-	result=query(szTmp);
-	if (result.size()<1)
-		return true; //new device
 	std::string idx=result[0][0];
 	int oldnValue=atoi(result[0][1].c_str());
 	bool bIsSame=(oldnValue==nValue);

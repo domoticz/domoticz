@@ -709,6 +709,10 @@ char * CWebServer::PostSettings()
 	if (RaspCamParams!="")
 		m_pMain->m_sql.UpdatePreferencesVar("RaspCamParams",RaspCamParams.c_str());
 
+	std::string EnableNewHardware=m_pWebEm->FindValue("AcceptNewHardware");
+	int iEnableNewHardware=(EnableNewHardware=="on"?1:0);
+	m_pMain->m_sql.UpdatePreferencesVar("AcceptNewHardware",iEnableNewHardware);
+	m_pMain->m_sql.m_bAcceptNewHardware=(iEnableNewHardware==1);
 
 	int rnOldvalue=0;
 	m_pMain->m_sql.GetPreferencesVar("RemoteSharedPort", rnOldvalue);
@@ -10330,6 +10334,10 @@ std::string CWebServer::GetJSonPage()
 				else if (Key=="RaspCamParams")
 				{
 					root["RaspCamParams"]=sValue;
+				}
+				else if (Key=="AcceptNewHardware")
+				{
+					root["AcceptNewHardware"]=nValue;
 				}
 			}
 		}

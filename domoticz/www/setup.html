@@ -176,6 +176,15 @@
 				</table>
 			</div>
 			<br>			
+			<div id="NewHardware">
+				<h2><span data-i18n="AcceptNewHardware">Hardware/Devices</span>:</h2>
+				<table class="display" id="acceptnewhardwaretable" border="0" cellpadding="0" cellspacing="0">
+					<tr>
+						<td colspan="2"><input type="checkbox" id="AcceptNewHardware" name="AcceptNewHardware"/> <span data-i18n="AcceptNewHardwareDevices">Accept new Hardware Devices</span></td>
+					</tr>
+				</table>
+			</div>
+			<br>			
 			<div id="ActiveTabs">
 				<h2><span data-i18n="ActiveMenus"></span>:</h2>
 				<table class="display" id="activemenustable" border="0" cellpadding="0" cellspacing="0">
@@ -747,6 +756,9 @@ function ShowSettings()
       }
       if (typeof data.RaspCamParams != 'undefined') {
         $("#picamtable #RaspCamParams").val(data.RaspCamParams );
+      }
+	  if (typeof data.AcceptNewHardware != 'undefined') {
+        $("#acceptnewhardwaretable #AcceptNewHardware").prop('checked',data.AcceptNewHardware==1);
       }
      }
   });

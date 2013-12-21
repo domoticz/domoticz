@@ -320,6 +320,7 @@ public:
 	_eTempUnit	m_tempunit;
 	std::string	m_tempsign;
 	float		m_tempscale;
+	bool		m_bAcceptNewHardware;
 private:
 	boost::mutex m_sqlQueryMutex;
 	CURLEncode m_urlencoder;
