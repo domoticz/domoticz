@@ -1081,8 +1081,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			double AddjMulti2=atof(sd[18].c_str());
 			int LastLevel=atoi(sd[19].c_str());
 			int CustomImage=atoi(sd[20].c_str());
-			std::string strParam1=sd[21];
-			std::string strParam2=sd[22];
+			std::string strParam1=base64_encode((const unsigned char*)sd[21].c_str(),sd[21].size());
+			std::string strParam2=base64_encode((const unsigned char*)sd[22].c_str(),sd[22].size());
 
 			struct tm ntime;
 			ntime.tm_isdst=tm1.tm_isdst;
@@ -9518,8 +9518,8 @@ std::string CWebServer::GetJSonPage()
 		std::string setPoint=m_pWebEm->FindValue("setpoint");
 		std::string sCustomImage=m_pWebEm->FindValue("customimage");
 
-		std::string strParam1=m_pWebEm->FindValue("strparam1");
-		std::string strParam2=m_pWebEm->FindValue("strparam2");
+		std::string strParam1=base64_decode(m_pWebEm->FindValue("strparam1"));
+		std::string strParam2=base64_decode(m_pWebEm->FindValue("strparam2"));
 
 		int switchtype=-1;
 		if (sswitchtype!="")

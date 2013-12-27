@@ -1013,12 +1013,11 @@ function SaveLightSwitch()
 			if (switchtype==0) {
 				CustomImage=$('#lightcontent #comboswitchicon').data('ddslick').selectedIndex;
 			}
-			
 			$.ajax({
 				 url: "json.htm?type=setused&idx=" + $.devIdx + 
 					'&name=' + encodeURIComponent($("#lightcontent #devicename").val()) + 
-					'&strparam1=' + encodeURIComponent(strParam1) +
-					'&strparam2=' + encodeURIComponent(strParam2) +
+					'&strparam1=' + btoa(strParam1) +
+					'&strparam2=' + btoa(strParam2) +
 					'&switchtype=' + $("#lightcontent #comboswitchtype").val() + 
 					'&customimage=' + CustomImage + 
 					'&used=true' + addjvalstr ,
@@ -1873,7 +1872,7 @@ function ShowLights()
                 '<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Log">Log</a> ';
           if (window.my_config.userrights==2) {
 			  xhtm+=
-					'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + '\'' + item.Type + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.IsSubDevice + ', ' + item.CustomImage + ', \'' + item.SubType + '\', \'' + item.StrParam1.replace("\\","\\\\") + '\', \'' + item.StrParam2.replace("\\","\\\\") + '\');" data-i18n="Edit">Edit</a> ';
+					'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + '\'' + item.Type + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.IsSubDevice + ', ' + item.CustomImage + ', \'' + item.SubType + '\', \'' + atob(item.StrParam1) + '\', \'' + atob(item.StrParam2) + '\');" data-i18n="Edit">Edit</a> ';
 						if (bAddTimer == true) {
 									if (item.Timers == "true") {
 										xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',' + bIsDimmer + ',\'' + item.Type + '\'' + ', \'' + item.SubType + '\');" data-i18n="Timers">Timers</a> ';
