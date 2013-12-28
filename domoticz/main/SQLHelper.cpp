@@ -39,6 +39,8 @@ const char *sqlCreateDeviceStatus =
 "[AddjMulti] FLOAT DEFAULT 1, "
 "[AddjValue2] FLOAT DEFAULT 0, "
 "[AddjMulti2] FLOAT DEFAULT 1, "
+"[StrParam1] VARCHAR(200) DEFAULT '', "
+"[StrParam2] VARCHAR(200) DEFAULT '', "
 "[LastLevel] INTEGER DEFAULT 0, "
 "[CustomImage] INTEGER DEFAULT 0);";
 
