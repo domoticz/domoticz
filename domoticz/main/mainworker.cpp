@@ -734,6 +734,11 @@ void MainWorker::HandleAutomaticBackups()
 		std::string sbackup_DirH = backup_DirH.str();
 		std::string sbackup_DirD = backup_DirD.str();
 		std::string sbackup_DirM = backup_DirM.str();
+
+		//create folders if they not exists
+		mkdir_deep(sbackup_DirH.c_str(),755);
+		mkdir_deep(sbackup_DirD.c_str(),755);
+		mkdir_deep(sbackup_DirM.c_str(),755);
     	
 		time_t now = mytime(NULL);
 		struct tm tm1;

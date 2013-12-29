@@ -213,3 +213,32 @@ void sleep_milliseconds(const long milliseconds)
 #endif
 }
 
+int mkdir_deep(const char *szDirName, int secattr)
+{
+	char DirName[MAX_PATH];
+	const char* p = szDirName;
+	char* q = DirName; 
+	while(*p)
+	{
+		if (('\\' == *p) || ('/' == *p))
+		{
+		 if (':' != *(p-1))
+		 {
+#if (defined(__WIN32__) || defined(_WIN32)) && !defined(IMN_PIM)
+			CreateDirectory(DirName, NULL);
+#else
+			 mkdir(DirName,secattr);
+#endif
+		 }
+		}
+		*q++ = *p++;
+		*q = '\0';
+	}
+#if (defined(__WIN32__) || defined(_WIN32)) && !defined(IMN_PIM)
+	CreateDirectory(DirName, NULL);
+#else
+	mkdir(DirName,secattr);
+#endif
+	return 0;
+}
+
