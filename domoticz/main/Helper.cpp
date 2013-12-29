@@ -215,7 +215,7 @@ void sleep_milliseconds(const long milliseconds)
 
 int mkdir_deep(const char *szDirName, int secattr)
 {
-	char DirName[MAX_PATH];
+	char DirName[260];
 	const char* p = szDirName;
 	char* q = DirName; 
 	while(*p)
