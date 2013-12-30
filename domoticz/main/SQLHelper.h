@@ -14,6 +14,7 @@ struct _tNotification
 {
 	unsigned long long ID;
 	std::string Params;
+	int Priority;
 	time_t LastSend;
 };
 
@@ -195,7 +196,7 @@ public:
 	void SetLastBackupNo(const char *Key, const int nValue);
 
 	//notification functions
-	bool AddNotification(const std::string &DevIdx, const std::string &Param);
+	bool AddNotification(const std::string &DevIdx, const std::string &Param, const int Priority);
 	bool RemoveDeviceNotifications(const std::string &DevIdx);
 	bool RemoveNotification(const std::string &ID);
 	std::vector<_tNotification> GetNotifications(const unsigned long long DevIdx);
@@ -282,8 +283,8 @@ public:
 	void CheckSceneStatusWithDevice(const unsigned long long DevIdx);
 	void CheckSceneStatusWithDevice(const std::string &DevIdx);
 
-	bool SendNotification(const std::string &EventID, const std::string &Message);
-	bool SendNotificationEx(const std::string &Subject, const std::string &Body);
+	bool SendNotification(const std::string &EventID, const std::string &Message, const int Priority);
+	bool SendNotificationEx(const std::string &Subject, const std::string &Body, const int Priority);
 
 	void Schedule5Minute();
 	void ScheduleDay();

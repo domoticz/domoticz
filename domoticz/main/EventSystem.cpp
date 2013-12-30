@@ -1101,7 +1101,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
             else {
                 std::string devNameNoQuotes = deviceName.substr(1,deviceName.size()-2);
                 if (devNameNoQuotes == "SendNotification") {
-                    SendEventNotification(doWhat.substr(0,doWhat.find('#')), doWhat.substr(doWhat.find('#')+1));
+                    SendEventNotification(doWhat.substr(0,doWhat.find('#')), doWhat.substr(doWhat.find('#')+1),0);
                     actionsDone = true;
                 }
                 else if (devNameNoQuotes == "OpenURL") {
@@ -1486,7 +1486,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
                 if (std::string(lua_tostring(lua_state, -2))== "SendNotification") 
 				{
                     std::string luaString = lua_tostring(lua_state, -1);
-                    SendEventNotification(luaString.substr(0,luaString.find('#')), luaString.substr(luaString.find('#')+1));
+                    SendEventNotification(luaString.substr(0,luaString.find('#')), luaString.substr(luaString.find('#')+1),0);
                     scriptTrue = true;
                 }
                 else if (std::string(lua_tostring(lua_state, -2))== "OpenURL")
@@ -1571,9 +1571,9 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 	}
 }
 
-void CEventSystem::SendEventNotification(const std::string &Subject, const std::string &Body)
+void CEventSystem::SendEventNotification(const std::string &Subject, const std::string &Body, const int Priority)
 {
-    m_pMain->m_sql.SendNotificationEx(Subject,Body);
+    m_pMain->m_sql.SendNotificationEx(Subject,Body,Priority);
 }
 
 void CEventSystem::OpenURL(const std::string &URL)

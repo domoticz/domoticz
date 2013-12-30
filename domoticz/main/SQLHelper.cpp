@@ -15,7 +15,7 @@
 #include "../webserver/Base64.h"
 #include "mainstructs.h"
 
-#define DB_VERSION 34
+#define DB_VERSION 35
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -196,6 +196,7 @@ const char *sqlCreateNotifications =
 "[ID] INTEGER PRIMARY KEY, "
 "[DeviceRowID] BIGINT(10) NOT NULL, "
 "[Params] VARCHAR(100), "
+"[Priority] INTEGER default 0, "
 "[LastSend] DATETIME DEFAULT 0);";
 
 const char *sqlCreateHardware =
@@ -797,6 +798,10 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("ALTER TABLE DeviceStatus ADD COLUMN [StrParam1] VARCHAR(200) DEFAULT ''");
 			query("ALTER TABLE DeviceStatus ADD COLUMN [StrParam2] VARCHAR(200) DEFAULT ''");
+		}
+		if (dbversion<35)
+		{
+			query("ALTER TABLE Notifications ADD COLUMN [Priority] INTEGER default 0");
 		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
@@ -1797,7 +1802,7 @@ void CSQLHelper::GetAddjustment2(const int HardwareID, const char* ID, const uns
 	}
 }
 
-bool CSQLHelper::SendNotification(const std::string &EventID, const std::string &Message)
+bool CSQLHelper::SendNotification(const std::string &EventID, const std::string &Message, const int Priority)
 {
 	int nValue;
 	std::string sValue;
@@ -1815,7 +1820,7 @@ bool CSQLHelper::SendNotification(const std::string &EventID, const std::string 
 		{
 			//send message to Prowl
 			std::stringstream sUrl;
-			sUrl << "http://api.prowlapp.com/publicapi/add?apikey=" << sValue << "&application=Domoticz&event=" << Message << "&description=" << Message << "&priority=0";
+			sUrl << "http://api.prowlapp.com/publicapi/add?apikey=" << sValue << "&application=Domoticz&event=" << Message << "&description=" << Message << "&priority=" << Priority;
 			if (!HTTPClient::GET(sUrl.str(),sResult))
 			{
 				_log.Log(LOG_ERROR,"Error sending Prowl Notification!");
@@ -1833,7 +1838,7 @@ bool CSQLHelper::SendNotification(const std::string &EventID, const std::string 
 		{
 			//send message to Prowl
 			std::stringstream sUrl;
-			sUrl << "http://www.notifymyandroid.com/publicapi/notify?apikey=" << sValue << "&application=Domoticz&event=" << Message << "&priority=0&description=" << Message;
+			sUrl << "http://www.notifymyandroid.com/publicapi/notify?apikey=" << sValue << "&application=Domoticz&event=" << Message << "&priority=" << Priority << "&description=" << Message;
 			if (!HTTPClient::GET(sUrl.str(),sResult))
 			{
 				_log.Log(LOG_ERROR,"Error sending NMA Notification!");
@@ -1869,7 +1874,7 @@ bool CSQLHelper::SendNotification(const std::string &EventID, const std::string 
 	return true;
 }
 
-bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::string &Body)
+bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::string &Body, const int Priority)
 {
 	int nValue;
 	std::string sValue;
@@ -1892,8 +1897,8 @@ bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::strin
 		{
 			//send message to Prowl
 			sValue=stdstring_trim(sValue);
-			sprintf(szURL,"http://api.prowlapp.com/publicapi/add?apikey=%s&application=Domoticz&event=%s&description=%s&priority=0",
-				sValue.c_str(),uencode.URLEncode(Subject).c_str(),uencode.URLEncode(notimessage).c_str());
+			sprintf(szURL,"http://api.prowlapp.com/publicapi/add?apikey=%s&application=Domoticz&event=%s&description=%s&priority=%d",
+				sValue.c_str(),uencode.URLEncode(Subject).c_str(),uencode.URLEncode(notimessage).c_str(),Priority);
 			if (!HTTPClient::GET(szURL,sResult))
 			{
 				_log.Log(LOG_ERROR,"Error sending Prowl Notification!");
@@ -1911,8 +1916,8 @@ bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::strin
 		{
 			//send message to Prowl
 			sValue=stdstring_trim(sValue);
-			sprintf(szURL,"http://www.notifymyandroid.com/publicapi/notify?apikey=%s&application=Domoticz&event=%s&priority=0&description=%s",
-				sValue.c_str(),uencode.URLEncode(Subject).c_str(),uencode.URLEncode(notimessage).c_str());
+			sprintf(szURL,"http://www.notifymyandroid.com/publicapi/notify?apikey=%s&application=Domoticz&event=%s&priority=%d&description=%s",
+				sValue.c_str(),uencode.URLEncode(Subject).c_str(),Priority,uencode.URLEncode(notimessage).c_str());
 			if (!HTTPClient::GET(szURL,sResult))
 			{
 				_log.Log(LOG_ERROR,"Error sending NMA Notification!");
@@ -2209,7 +2214,7 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(
 			}
 			if (bSendNotification)
 			{
-				SendNotification("", m_urlencoder.URLEncode(msg));
+				SendNotification("", m_urlencoder.URLEncode(msg),itt->Priority);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -2283,7 +2288,7 @@ bool CSQLHelper::CheckAndHandleDewPointNotification(
 			}
 			if (bSendNotification)
 			{
-				SendNotification("", m_urlencoder.URLEncode(msg));
+				SendNotification("", m_urlencoder.URLEncode(msg),itt->Priority);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -2418,7 +2423,7 @@ bool CSQLHelper::CheckAndHandleAmpere123Notification(
 			}
 			if (bSendNotification)
 			{
-				SendNotification("", m_urlencoder.URLEncode(msg));
+				SendNotification("", m_urlencoder.URLEncode(msg),itt->Priority);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -2524,7 +2529,7 @@ bool CSQLHelper::CheckAndHandleNotification(
 			}
 			if (bSendNotification)
 			{
-				SendNotification("", m_urlencoder.URLEncode(msg));
+				SendNotification("", m_urlencoder.URLEncode(msg),itt->Priority);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -2625,7 +2630,7 @@ bool CSQLHelper::CheckAndHandleSwitchNotification(
 			}
 			if (bSendNotification)
 			{
-				SendNotification("", m_urlencoder.URLEncode(msg));
+				SendNotification("", m_urlencoder.URLEncode(msg),itt->Priority);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -2713,7 +2718,7 @@ void CSQLHelper::TouchNotification(const unsigned long long ID)
 	query(szTmp);
 }
 
-bool CSQLHelper::AddNotification(const std::string &DevIdx, const std::string &Param)
+bool CSQLHelper::AddNotification(const std::string &DevIdx, const std::string &Param, const int Priority)
 {
 	if (!m_dbase)
 		return false;
@@ -2730,7 +2735,7 @@ bool CSQLHelper::AddNotification(const std::string &DevIdx, const std::string &P
 
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "INSERT INTO Notifications (DeviceRowID, Params) VALUES (" << DevIdx << ",'" << Param << "')";
+	szQuery << "INSERT INTO Notifications (DeviceRowID, Params, Priority) VALUES (" << DevIdx << ",'" << Param << "'," << Priority << ")";
 	result=query(szQuery.str());
 	return true;
 }
@@ -2771,7 +2776,7 @@ std::vector<_tNotification> CSQLHelper::GetNotifications(const unsigned long lon
 	std::stringstream szQuery;
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT ID, Params, LastSend FROM Notifications WHERE (DeviceRowID==" << DevIdx << ")";
+	szQuery << "SELECT ID, Params, Priority, LastSend FROM Notifications WHERE (DeviceRowID==" << DevIdx << ")";
 	result=query(szQuery.str());
 	if (result.size()==0)
 		return ret;
@@ -2790,8 +2795,9 @@ std::vector<_tNotification> CSQLHelper::GetNotifications(const unsigned long lon
 		s_str >> notification.ID;
 
 		notification.Params=sd[1];
+		notification.Priority=atoi(sd[2].c_str());
 
-		std::string stime=sd[2];
+		std::string stime=sd[3];
 		if (stime=="0")
 		{
 			notification.LastSend=0;
@@ -5354,7 +5360,7 @@ void CSQLHelper::CheckDeviceTimeout()
 		if (bDoSend)
 		{
 			sprintf(szTmp,"Sensor Timeout: %s, Last Received: %s",sd[1].c_str(),sd[2].c_str());
-			SendNotification("", m_urlencoder.URLEncode(szTmp));
+			SendNotification("", m_urlencoder.URLEncode(szTmp),1);
 			m_timeoutlastsend[ulID]=stoday.tm_mday;
 		}
 	}

@@ -557,6 +557,7 @@ $(document).ready(function() {
 							<tr>
 									<th width="120" align="left" data-i18n="Type">Type</th>
 									<th align="left" data-i18n="When">When</th>
+									<th width="120" align="left" data-i18n="Priority">Priority</th>
 							</tr>
 					</thead>
 			</table>
@@ -588,6 +589,16 @@ $(document).ready(function() {
 				<tr id="notival">
 					<td align="right" style="width:80px"><label for="name"><span data-i18n="Value"></span>:</label></td>
 					<td><input type="text" id="value" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><label id="valuetype">&nbsp;&deg; C</label></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:80px"><label for="combopriority"><span data-i18n="Priority">Priority</span>:</label></td>
+					<td><select id="combopriority" style="width:120px" class="combobox ui-corner-all">
+                <option value="-2" data-i18n="Very Low">Very Low</option>
+								<option value="-1" data-i18n="Moderate">Moderate</option>
+                <option value="0" data-i18n="Normal" selected="selected">Normal</option>
+                <option value="1" data-i18n="High">High</option>
+                <option value="2" data-i18n="Emergency">Emergency</option>
+					</select></td>
 				</tr>
 			</table>
 			<br>

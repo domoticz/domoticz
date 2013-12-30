@@ -3080,7 +3080,7 @@ std::string CWebServer::GetJSonPage()
 	{
 		root["status"]="OK";
 		root["title"]="Notifications";
-
+		
 		std::vector<_tNotification> notifications=m_pMain->m_sql.GetNotifications(idx);
 		if (notifications.size()>0)
 		{
@@ -3094,6 +3094,7 @@ std::string CWebServer::GetJSonPage()
 					sParams="S";
 				}
 				root["result"][ii]["Params"]=sParams;
+				root["result"][ii]["Priority"]=itt->Priority;
 				ii++;
 			}
 		}
@@ -6488,7 +6489,7 @@ std::string CWebServer::GetJSonPage()
 				)
 				goto exitjson;
 			//Add to queue
-			m_pMain->m_sql.SendNotificationEx(subject,body);
+			m_pMain->m_sql.SendNotificationEx(subject,body,0);
 			root["status"]="OK";
 			root["title"]="SendNotification";
 		}
@@ -8128,7 +8129,8 @@ std::string CWebServer::GetJSonPage()
 			std::string stype=m_pWebEm->FindValue("ttype");
 			std::string swhen=m_pWebEm->FindValue("twhen");
 			std::string svalue=m_pWebEm->FindValue("tvalue");
-			if ((stype=="")||(swhen=="")||(svalue==""))
+			std::string spriority=m_pWebEm->FindValue("tpriority");
+			if ((stype=="")||(swhen=="")||(svalue=="")||(spriority==""))
 				goto exitjson;
 
 			_eNotificationTypes ntype=(_eNotificationTypes)atoi(stype.c_str());
@@ -8146,7 +8148,8 @@ std::string CWebServer::GetJSonPage()
 				unsigned char twhen=(swhen=="0")?'>':'<';
 				sprintf(szTmp,"%s;%c;%s",ttype.c_str(),twhen,svalue.c_str());
 			}
-			bool bOK=m_pMain->m_sql.AddNotification(idx,szTmp);
+			int priority=atoi(spriority.c_str());
+			bool bOK=m_pMain->m_sql.AddNotification(idx,szTmp,priority);
 			if (bOK) {
 				root["status"]="OK";
 				root["title"]="AddNotification";
@@ -8162,7 +8165,8 @@ std::string CWebServer::GetJSonPage()
 			std::string stype=m_pWebEm->FindValue("ttype");
 			std::string swhen=m_pWebEm->FindValue("twhen");
 			std::string svalue=m_pWebEm->FindValue("tvalue");
-			if ((stype=="")||(swhen=="")||(svalue==""))
+			std::string spriority=m_pWebEm->FindValue("tpriority");
+			if ((stype=="")||(swhen=="")||(svalue=="")||(spriority==""))
 				goto exitjson;
 			root["status"]="OK";
 			root["title"]="UpdateNotification";
@@ -8185,7 +8189,8 @@ std::string CWebServer::GetJSonPage()
 				unsigned char twhen=(swhen=="0")?'>':'<';
 				sprintf(szTmp,"%s;%c;%s",ttype.c_str(),twhen,svalue.c_str());
 			}
-			m_pMain->m_sql.AddNotification(devidx,szTmp);
+			int priority=atoi(spriority.c_str());
+			m_pMain->m_sql.AddNotification(devidx,szTmp,priority);
 		}
 		else if (cparam=="deletenotification")
 		{

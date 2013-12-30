@@ -72,7 +72,7 @@ private:
     void EvaluateLua(const std::string &reason, const std::string &filename, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording);
     std::string nValueToWording (const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue,const std::string &sValue);
     static int l_domoticz_print(lua_State* lua_state);
-    void SendEventNotification(const std::string &Subject, const std::string &Body);
+    void SendEventNotification(const std::string &Subject, const std::string &Body, const int Priority);
     void OpenURL(const std::string &URL);
     bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName, int sceneType);
     bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
