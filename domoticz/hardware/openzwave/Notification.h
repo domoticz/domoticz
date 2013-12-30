@@ -39,7 +39,7 @@ namespace OpenZWave
 	 *    A notification object is only ever created or deleted internally by
 	 *    OpenZWave.
 	 */
-	class Notification
+	class OPENZWAVE_EXPORT Notification
 	{
 		friend class Manager;
 		friend class Driver;

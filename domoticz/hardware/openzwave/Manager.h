@@ -105,7 +105,7 @@ namespace OpenZWave
 	 *   on/off state) to be available.  Finally, after all nodes (whether listening or
 	 *   sleeping) have been polled, an "AllNodesQueried" notification is sent.]
 	 */
-	class Manager
+	class OPENZWAVE_EXPORT Manager
 	{
 		friend class Driver;
 		friend class CommandClass;
@@ -328,8 +328,10 @@ namespace OpenZWave
 		Driver* GetDriver( uint32 const _homeId );	/**< Get a pointer to a Driver object from the HomeID.  Only to be used by OpenZWave. */
 		void SetDriverReady( Driver* _driver, bool success );		/**< Indicate that the Driver is ready to be used, and send the notification callback. */
 
+OPENZWAVE_EXPORT_WARNINGS_OFF
 		list<Driver*>		m_pendingDrivers;		/**< Drivers that are in the process of reading saved data and querying their Z-Wave network for basic information. */
 		map<uint32,Driver*>	m_readyDrivers;			/**< Drivers that are ready to be used by the application. */
+OPENZWAVE_EXPORT_WARNINGS_ON
 
 	//-----------------------------------------------------------------------------
 	//	Polling Z-Wave devices
@@ -1405,7 +1407,9 @@ namespace OpenZWave
 			}
 		};
 
+OPENZWAVE_EXPORT_WARNINGS_OFF
 		list<Watcher*>		m_watchers;										// List of all the registered watchers.
+OPENZWAVE_EXPORT_WARNINGS_ON
 		Mutex*				m_notificationMutex;
 
 	//-----------------------------------------------------------------------------

@@ -63,7 +63,7 @@ namespace OpenZWave
 	 * so that no more calls aside from GetOptionAs may be made.
 	 * 4) Create the OpenZWave Manager object.
 	 */
-	class Options
+	class OPENZWAVE_EXPORT Options
 	{
 	public:
 		enum OptionType
@@ -239,7 +239,9 @@ namespace OpenZWave
 		Option* AddOption( string const& _name );							// check lock and create (or open existing) option
 		Option* Find( string const& _name );
 
+OPENZWAVE_EXPORT_WARNINGS_OFF
 		map<string,Option*>	m_options;										// Map of option names to values.
+OPENZWAVE_EXPORT_WARNINGS_ON
 		string				m_xml;											// Path to XML options file.
 		string				m_commandLine;									// String containing command line options.
 		bool				m_locked;										// If true, the options are final and AddOption can no longer be called.

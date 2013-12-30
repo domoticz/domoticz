@@ -53,7 +53,7 @@ namespace OpenZWave
 	/** \brief The Driver class handles communication between OpenZWave 
 	 *  and a device attached via a serial port (typically a controller).
 	 */
-	class Driver
+	class OPENZWAVE_EXPORT Driver
 	{
 		friend class Manager;
 		friend class Node;
@@ -358,7 +358,9 @@ namespace OpenZWave
 			ValueID	m_id;
 			uint8	m_pollCounter;
 		};
+OPENZWAVE_EXPORT_WARNINGS_OFF
 		list<PollEntry>			m_pollList;									// List of nodes that need to be polled
+OPENZWAVE_EXPORT_WARNINGS_ON
 		Mutex*					m_pollMutex;								// Serialize access to the polling list
 		int32					m_pollInterval;								// Time interval during which all nodes must be polled
 		bool					m_bIntervalBetweenPolls;					// if true, the library intersperses m_pollInterval between polls; if false, the library attempts to complete all polls within m_pollInterval
@@ -692,7 +694,9 @@ namespace OpenZWave
 			ControllerCommandItem*		m_cci;
 		};
 
+OPENZWAVE_EXPORT_WARNINGS_OFF
 		list<MsgQueueItem>			m_msgQueue[MsgQueue_Count];
+OPENZWAVE_EXPORT_WARNINGS_ON
 		Event*					m_queueEvent[MsgQueue_Count];				// Events for each queue, which are signalled when the queue is not empty
 		Mutex*					m_sendMutex;						// Serialize access to the queues
 		Msg*					m_currentMsg;
@@ -760,7 +764,9 @@ namespace OpenZWave
 		void QueueNotification( Notification* _notification );				// Adds a notification to the list.  Notifications are queued until a point in the thread where we know we do not have any nodes locked.
 		void NotifyWatchers();												// Passes the notifications to all the registered watcher callbacks in turn.
 
+OPENZWAVE_EXPORT_WARNINGS_OFF
 		list<Notification*>		m_notifications;
+OPENZWAVE_EXPORT_WARNINGS_ON
 		Event*				m_notificationsEvent;
 
 	//-----------------------------------------------------------------------------

@@ -63,7 +63,6 @@ namespace OpenZWave
 		bool HandleSupportedReport( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
 		bool HandleReport( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
 
-		uint32	m_scale;
 	};
 
 } // namespace OpenZWave

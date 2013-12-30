@@ -33,7 +33,7 @@
 
 namespace OpenZWave
 {
-	class Bitfield
+	class OPENZWAVE_EXPORT Bitfield
 	{
 		friend class Iterator;
 
@@ -149,7 +149,9 @@ namespace OpenZWave
 		Iterator End()const{ return Iterator( this, m_bits.size()<<5 ); }
 
 	private:
+OPENZWAVE_EXPORT_WARNINGS_OFF
 		vector<uint32>	m_bits;
+OPENZWAVE_EXPORT_WARNINGS_ON
 		uint32			m_numSetBits;
 	};
 } // namespace OpenZWave

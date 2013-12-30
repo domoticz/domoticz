@@ -44,7 +44,7 @@ namespace OpenZWave
 
 	/** \brief Base class for all Z-Wave command classes.
 	 */
-	class CommandClass
+	class OPENZWAVE_EXPORT CommandClass
 	{
 
 	public:
@@ -136,7 +136,9 @@ namespace OpenZWave
 		uint8		m_nodeId;
 		uint8		m_version;
 		Bitfield	m_instances;
+OPENZWAVE_EXPORT_WARNINGS_OFF
 		map<uint8,uint8> m_endPointMap;
+OPENZWAVE_EXPORT_WARNINGS_ON
 		bool		m_afterMark;		// Set to true if the command class is listed after COMMAND_CLASS_MARK, and should not create any values.
 		bool		m_createVars;		// Do we want to create variables
 		int8		m_overridePrecision;	// Override precision when writing values if >=0

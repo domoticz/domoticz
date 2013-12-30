@@ -50,7 +50,7 @@ namespace OpenZWave
 	 * The packing of the ID is such that a list of Values sorted by ValueID
 	 * will be in a sensible order for display to the user.
 	 */
-	class ValueID
+	class OPENZWAVE_EXPORT ValueID
 	{
 		friend class Manager;
 		friend class Driver;

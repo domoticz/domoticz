@@ -39,7 +39,7 @@ namespace OpenZWave
 
 	/** \brief Message object to be passed to and from devices on the Z-Wave network.
 	 */
-	class Msg
+	class OPENZWAVE_EXPORT Msg
 	{
 	public:
 		enum MessageFlags

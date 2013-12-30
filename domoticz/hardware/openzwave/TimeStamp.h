@@ -36,7 +36,7 @@ namespace OpenZWave
 
 	/** \brief Implements a platform-independent TimeStamp.
 	 */
-	class TimeStamp
+	class OPENZWAVE_EXPORT TimeStamp
 	{
 	public:
 		/**
