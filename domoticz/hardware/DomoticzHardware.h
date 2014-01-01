@@ -4,7 +4,7 @@
 #include "../main/RFXNames.h"
 
 //Base class with functions all notification systems should have
-#define RX_BUFFER_SIZE 40
+#define RX_BUFFER_SIZE 80
 
 class MainWorker;
 

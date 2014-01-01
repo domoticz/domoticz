@@ -41,6 +41,7 @@ Version 1.0.xxxx (December xxth 2013)
 - Implemented: Prowl/NMA notification priority (not in Lua/Blockly yet)
 - Implemented: Russian translation (Thanks to kur1977)
 - Implemented: Ignoring negative WU rain/uv/visibility values
+- Changed: Increased input buffer from 40 to 80 bytes
 
 Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart
