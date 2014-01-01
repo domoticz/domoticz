@@ -365,7 +365,7 @@ void CWunderground::GetMeterDetails()
 		if (root["current_observation"]["UV"]!="N/A")
 		{
 			float UV=(float)atof(root["current_observation"]["UV"].asString().c_str());
-			if (UV<16)
+			if ((UV<16)&&(UV>=0))
 			{
 				RBUF tsen;
 				memset(&tsen,0,sizeof(RBUF));
@@ -389,7 +389,7 @@ void CWunderground::GetMeterDetails()
 		if (root["current_observation"]["precip_today_metric"]!="N/A")
 		{
 			float RainCount=(float)atof(root["current_observation"]["precip_today_metric"].asString().c_str());
-			if (RainCount!=-9999.00f)
+			if ((RainCount!=-9999.00f)&&(RainCount>=0.00f))
 			{
 				RBUF tsen;
 				memset(&tsen,0,sizeof(RBUF));
@@ -436,10 +436,13 @@ void CWunderground::GetMeterDetails()
 		if (root["current_observation"]["visibility_km"]!="N/A")
 		{
 			float visibility=(float)atof(root["current_observation"]["visibility_km"].asString().c_str());
-			_tGeneralDevice gdevice;
-			gdevice.subtype=sTypeVisibility;
-			gdevice.floatval1=visibility;
-			sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+			if (visibility>=0)
+			{
+				_tGeneralDevice gdevice;
+				gdevice.subtype=sTypeVisibility;
+				gdevice.floatval1=visibility;
+				sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+			}
 		}
 	}
 	//Solar Radiation
@@ -448,10 +451,13 @@ void CWunderground::GetMeterDetails()
 		if (root["current_observation"]["solarradiation"]!="N/A")
 		{
 			float radiation=(float)atof(root["current_observation"]["solarradiation"].asString().c_str());
-			_tGeneralDevice gdevice;
-			gdevice.subtype=sTypeSolarRadiation;
-			gdevice.floatval1=radiation;
-			sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+			if (radiation>=0.0f)
+			{
+				_tGeneralDevice gdevice;
+				gdevice.subtype=sTypeSolarRadiation;
+				gdevice.floatval1=radiation;
+				sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+			}
 		}
 	}
 
