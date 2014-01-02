@@ -217,9 +217,10 @@ void COpenHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 				}
 				itemValue << fItemValue;
 				VariantClear(&vtProp);
-				hr = pclsObj->Get(L"InstanceId", 0, &vtProp, 0, 0);
+				//hr = pclsObj->Get(L"InstanceId", 0, &vtProp, 0, 0);
+				hr = pclsObj->Get(L"Identifier", 0, &vtProp, 0, 0); // instance id seems to drift
 				std::string itemId = _bstr_t (vtProp.bstrVal);
-				itemId = "WMI"+itemId;
+				//itemId = "WMI"+itemId;
 				//_log.Log(LOG_NORM, "%s, %s, %s",itemId.c_str(), itemName.c_str(),itemValue.str().c_str());
 				UpdateSystemSensor(qType, itemId, itemName, itemValue.str());
 				VariantClear(&vtProp);
