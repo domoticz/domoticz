@@ -41,7 +41,6 @@ Version 1.0.xxxx (December xxth 2013)
 - Implemented: Prowl/NMA notification priority (not in Lua/Blockly yet)
 - Implemented: Russian translation (Thanks to kur1977)
 - Implemented: Ignoring negative WU rain/uv/visibility values
-- Changed: Increased input buffer from 40 to 80 bytes
 - Fixed: openharwaremonitor drifting WMI id's. Please delete all previous ohwm devices and select the new ones with slash paths in the id.
 - Implemented: day & nighttime boolean variables in Lua
 
