@@ -1160,6 +1160,31 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
     _log.Log(LOG_NORM,"EventSystem script %s trigger",reason.c_str());
 #endif
     
+	int intRise = getSunRiseSunSetMinutes("Sunrise");
+    int intSet = getSunRiseSunSetMinutes("Sunset");
+	time_t now = time(0);
+	struct tm ltime;
+	localtime_r(&now,&ltime);
+	int minutesSinceMidnight = (ltime.tm_hour*60)+ltime.tm_min;
+	bool dayTimeBool = false;
+	bool nightTimeBool = false;
+	if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
+		dayTimeBool = true;
+	}
+	else {
+		nightTimeBool = true;
+	}
+
+	lua_createtable(lua_state, 2, 0);
+    lua_pushstring( lua_state, "Daytime");
+    lua_pushboolean( lua_state, dayTimeBool);
+    lua_rawset( lua_state, -3 );
+    lua_pushstring( lua_state, "Nighttime");
+    lua_pushboolean( lua_state, nightTimeBool);
+    lua_rawset( lua_state, -3 );
+
+    lua_setglobal(lua_state, "timeofday");
+
     GetCurrentMeasurementStates();
     
 	float thisDeviceTemp = 0;
