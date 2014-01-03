@@ -45,6 +45,7 @@ Version 1.0.xxxx (December xxth 2013)
 - Implemented: day & nighttime boolean variables in Lua
 - Implemented: Notification Priority in Lua/Blockly
 - Fixed: Switch On/Off action deletion
+- Implemented: Implemented RisingSun manual add light/switch option
 
 Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart

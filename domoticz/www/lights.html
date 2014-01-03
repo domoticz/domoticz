@@ -161,13 +161,14 @@
 						<option value="3">Waveman</option>
 						<option value="4">EMW200</option>
 						<option value="5">Impuls</option>
-						<option value="6">Blyss</option>
+						<option value="6">RisingSun</option>
 						<option value="8">Energenie</option>
 						<option value="10">AC</option>
 						<option value="11">HE EU</option>
 						<option value="12">ANSLUT</option>
 						<option value="13">LightwaveRF</option>
 						<option value="18">Livolo</option>
+						<option value="66">Blyss</option>
 						<option value="100">ByronSX</option>
           </select></td>
 		    </tr>
@@ -2028,7 +2029,7 @@ function UpdateAddManualDialog()
 		tothousecodes=16;
 		totunits=16;
 	}
-	else if ((lighttype==2)||(lighttype==5)) {
+	else if ((lighttype==2)||(lighttype==5)||(lighttype==6)) {
 		bIsARCType=1;
 		tothousecodes=16;
 		totunits=64;
@@ -2038,7 +2039,7 @@ function UpdateAddManualDialog()
 		tothousecodes=3;
 		totunits=4;
 	}
-	else if (lighttype==6) {
+	else if (lighttype==66) {
 		tothousecodes=4;
 		totunits=5;
 	}
@@ -2067,7 +2068,8 @@ function UpdateAddManualDialog()
 		totunits=4;
 	}
 	
-	if (lighttype==6) {
+	if (lighttype==66) {
+		//Blyss
 		$('#dialog-addmanuallightdevice #lightparams3 #combogroupcode >option').remove();
 		$('#dialog-addmanuallightdevice #lightparams3 #combounitcode >option').remove();
 		for (ii=0; ii<tothousecodes; ii++)
@@ -2139,7 +2141,7 @@ function GetManualLightSettings(isTest)
 	mParams+="&switchtype="+$("#dialog-addmanuallightdevice #lighttable #comboswitchtype option:selected").val();
 	var lighttype=$("#dialog-addmanuallightdevice #lighttable #combolighttype option:selected").val();
 	mParams+="&lighttype="+lighttype;
-	if (lighttype==6) {
+	if (lighttype==66) {
 		//Blyss
 		mParams+="&groupcode="+$("#dialog-addmanuallightdevice #lightparams3 #combogroupcode option:selected").val();
 		mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightparams3 #combounitcode option:selected").val();

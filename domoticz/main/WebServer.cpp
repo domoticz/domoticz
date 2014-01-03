@@ -7518,7 +7518,7 @@ std::string CWebServer::GetJSonPage()
 			std::string sunitcode;
 			std::string devid;
 
-			if (lighttype==6)
+			if (lighttype==66)
 			{
 				//Blyss
 				dtype=pTypeLighting6;
@@ -7661,7 +7661,7 @@ std::string CWebServer::GetJSonPage()
 			std::string sunitcode;
 			std::string devid;
 
-			if (lighttype==6)
+			if (lighttype==66)
 			{
 				//Blyss
 				dtype=pTypeLighting6;
