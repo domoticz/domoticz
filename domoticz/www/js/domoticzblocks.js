@@ -585,6 +585,16 @@ Blockly.Language.logic_sunrisesunset = {
   }
  };
  
+Blockly.Language.logic_notification_priority = {
+  init: function() {
+	this.setOutput(true, null);
+    this.setColour(230);
+    this.appendDummyInput()
+        .appendTitle(new Blockly.FieldDropdown(this.PRIORITY), 'NotificationPriority')
+	    .appendTitle(" ");
+    this.setTooltip(Blockly.DOMOTICZ_LOGIC_NOTIFICATION_PRIORITY_TOOLTIP);
+  }
+ };
 
 Blockly.Language.send_notification = {
   // Comparison operator.
@@ -596,6 +606,9 @@ Blockly.Language.send_notification = {
     	.appendTitle("Send notification with subject:");
     this.appendValueInput('notificationTextBody')
     	.appendTitle("and message:");
+    this.appendDummyInput()
+	    .appendTitle("with priority:")
+    	.appendTitle(new Blockly.FieldDropdown(Blockly.Language.logic_notification_priority.PRIORITY), 'notificationPriority');
     this.setInputsInline(true);
     this.setTooltip(Blockly.DOMOTICZ_LOGIC_NOTIFICATION_TOOLTIP);
 
@@ -673,6 +686,13 @@ Blockly.Language.logic_weekday.DAYS =
 Blockly.Language.logic_sunrisesunset.VALUES =
     [["Sunrise", 'Sunrise'],
     ["Sunset",'Sunset']];
+    
+Blockly.Language.logic_notification_priority.PRIORITY =
+    [["Very Low", '-2'],
+    ["Moderate",'-1'],
+    ["Normal",'0'],
+    ["High",'1'],
+    ["Emergency",'2']];   
     
 Blockly.Language.logic_states.STATES =
     [["On", 'On'],

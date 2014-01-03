@@ -43,6 +43,7 @@ Version 1.0.xxxx (December xxth 2013)
 - Implemented: Ignoring negative WU rain/uv/visibility values
 - Fixed: openharwaremonitor drifting WMI id's. Please delete all previous ohwm devices and select the new ones with slash paths in the id.
 - Implemented: day & nighttime boolean variables in Lua
+- Implemented: Notification Priority in Lua/Blockly
 
 Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart

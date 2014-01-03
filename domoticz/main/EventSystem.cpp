@@ -1101,7 +1101,16 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
             else {
                 std::string devNameNoQuotes = deviceName.substr(1,deviceName.size()-2);
                 if (devNameNoQuotes == "SendNotification") {
-                    SendEventNotification(doWhat.substr(0,doWhat.find('#')), doWhat.substr(doWhat.find('#')+1),0);
+					std::string subject(""),body(""),priority("0");
+					std::vector<std::string> aParam;
+					StringSplit(doWhat, "#", aParam);
+					subject=aParam[0];
+					body=aParam[1];
+					if (aParam.size()==3)
+					{
+						priority=aParam[2];
+					}
+					SendEventNotification(subject, body,atoi(priority.c_str()));
                     actionsDone = true;
                 }
                 else if (devNameNoQuotes == "OpenURL") {
@@ -1511,7 +1520,16 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
                 if (std::string(lua_tostring(lua_state, -2))== "SendNotification") 
 				{
                     std::string luaString = lua_tostring(lua_state, -1);
-                    SendEventNotification(luaString.substr(0,luaString.find('#')), luaString.substr(luaString.find('#')+1),0);
+					std::string subject(""),body(""),priority("0");
+					std::vector<std::string> aParam;
+					StringSplit(luaString, "#", aParam);
+					subject=aParam[0];
+					body=aParam[1];
+					if (aParam.size()==3)
+					{
+						priority=aParam[2];
+					}
+					SendEventNotification(subject, body,atoi(priority.c_str()));
                     scriptTrue = true;
                 }
                 else if (std::string(lua_tostring(lua_state, -2))== "OpenURL")
