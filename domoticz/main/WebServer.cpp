@@ -9570,17 +9570,10 @@ std::string CWebServer::GetJSonPage()
 		}
 		result=m_pMain->m_sql.query(szQuery.str());
 
-		if (
-			(strParam1!="")||
-			(strParam2!="")
-			)
-		{
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "UPDATE DeviceStatus SET StrParam1='" << strParam1 << "', StrParam2='" << strParam2 << "' WHERE (ID == " << idx << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
-
-		}
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET StrParam1='" << strParam1 << "', StrParam2='" << strParam2 << "' WHERE (ID == " << idx << ")";
+		result=m_pMain->m_sql.query(szQuery.str());
 
 		if (setPoint!="")
 		{
