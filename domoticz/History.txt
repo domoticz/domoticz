@@ -47,6 +47,7 @@ Version 1.0.xxxx (December xxth 2013)
 - Fixed: Switch On/Off action deletion
 - Implemented: Implemented RisingSun manual add light/switch option
 - Changed: Door Lock/Contact switch type now also handles 'Set Group Level'
+- Fixed: Rego6XX counter logs did not work
 
 Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart
