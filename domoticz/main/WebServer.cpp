@@ -9811,6 +9811,14 @@ std::string CWebServer::GetJSonPage()
 			m_pMain->m_sql.UpdateValue(HwdID, ID,1,pTypeUV,sTypeUV1,10,255,0,"0;0",devname);
 			bCreated=true;
 			break;
+		case pTypeENERGY:
+			m_pMain->m_sql.UpdateValue(HwdID, ID,1,pTypeENERGY,sTypeELEC2,10,255,0,"0;0.0",devname);
+			bCreated=true;
+			break;
+		case pTypeRFXMeter:
+			m_pMain->m_sql.UpdateValue(HwdID, ID,1,pTypeRFXMeter,sTypeRFXMeterCount,10,255,0,"0",devname);
+			bCreated=true;
+			break;
 		}
 		if (bCreated)
 		{
