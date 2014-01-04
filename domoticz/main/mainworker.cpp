@@ -68,6 +68,7 @@ extern bool bIsRaspberryPi;
 
 MainWorker::MainWorker()
 {
+	m_SecCountdown=-1;
 	m_stoprequested=false;
 	m_verboselevel=EVBL_None;
 	m_bStartHardware=false;
@@ -756,7 +757,7 @@ void MainWorker::HandleAutomaticBackups()
 		m_sql.GetLastBackupNo("Month", lastMonthBackup);
 
 		DIR *lDir;
-		struct dirent *ent;
+		//struct dirent *ent;
 		if ((lastHourBackup == -1)||(lastHourBackup !=hour)) {
 		
 			if ((lDir = opendir(sbackup_DirH.c_str())) != NULL)
@@ -859,6 +860,15 @@ void MainWorker::Do_Work()
 			{
 				m_bStartHardware=false;
 				StartDomoticzHardware();
+			}
+		}
+
+		if (m_SecCountdown>0)
+		{
+			m_SecCountdown--;
+			if (m_SecCountdown==0)
+			{
+				SetInternalSecStatus();
 			}
 		}
 
@@ -8088,10 +8098,9 @@ void MainWorker::LoadSharedUsers()
 	m_sharedserver.stopAllClients();
 }
 
-void MainWorker::UpdateDomoticzSecurityStatus(const int iSecStatus)
+void MainWorker::SetInternalSecStatus()
 {
-	m_sql.UpdatePreferencesVar("SecStatus", iSecStatus);
-	m_eventsystem.WWWUpdateSecurityState(iSecStatus);
+	m_eventsystem.WWWUpdateSecurityState(m_SecStatus);
 
 	//Update Domoticz Security Device
 	RBUF tsen;
@@ -8105,9 +8114,9 @@ void MainWorker::UpdateDomoticzSecurityStatus(const int iSecStatus)
 	tsen.SECURITY1.id2=0x87;
 	tsen.SECURITY1.id3=0x02;
 	tsen.SECURITY1.seqnbr=1;
-	if (iSecStatus==SECSTATUS_DISARMED)
+	if (m_SecStatus==SECSTATUS_DISARMED)
 		tsen.SECURITY1.status=sStatusNormal;
-	else if (iSecStatus==SECSTATUS_ARMEDHOME)
+	else if (m_SecStatus==SECSTATUS_ARMEDHOME)
 		tsen.SECURITY1.status=sStatusArmHome;
 	else
 		tsen.SECURITY1.status=sStatusArmAway;
@@ -8126,4 +8135,26 @@ void MainWorker::UpdateDomoticzSecurityStatus(const int iSecStatus)
 	unsigned long long DeviceRowIdx=decode_Security1(1000, (const tRBUF*)&tsen.SECURITY1);
 	WriteMessageEnd();
 	m_sharedserver.SendToAll(DeviceRowIdx,(const char*)&tsen,tsen.TEMP.packetlength+1,NULL);
+}
+
+void MainWorker::UpdateDomoticzSecurityStatus(const int iSecStatus)
+{
+	m_SecCountdown=-1; //cancel possible previous delay
+	m_SecStatus=iSecStatus;
+
+	m_sql.UpdatePreferencesVar("SecStatus", iSecStatus);
+
+	int nValue=0;
+	m_sql.GetPreferencesVar("SecOnDelay", nValue);
+
+	if ((nValue==0)||(iSecStatus==SECSTATUS_DISARMED))
+	{
+		//Do it Directly
+		SetInternalSecStatus();
+	}
+	else
+	{
+		//Schedule It
+		m_SecCountdown=nValue;
+	}
 }

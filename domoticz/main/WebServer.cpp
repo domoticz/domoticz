@@ -746,6 +746,7 @@ char * CWebServer::PostSettings()
 		m_pMain->m_scheduler.ReloadSchedules();
 	}
 
+	m_pMain->m_sql.UpdatePreferencesVar("SecOnDelay",atoi(m_pWebEm->FindValue("SecOnDelay").c_str()));
 
 	return (char*)m_retstr.c_str();
 }
@@ -10340,6 +10341,10 @@ std::string CWebServer::GetJSonPage()
 				else if (Key=="AcceptNewHardware")
 				{
 					root["AcceptNewHardware"]=nValue;
+				}
+				else if (Key=="SecOnDelay")
+				{
+					root["SecOnDelay"]=nValue;
 				}
 			}
 		}

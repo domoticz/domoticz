@@ -992,6 +992,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("SecStatus", (int)SECSTATUS_DISARMED);
 	}
+	if (!GetPreferencesVar("SecOnDelay", nValue))
+	{
+		UpdatePreferencesVar("SecOnDelay", 30);
+	}
 	SetUnitsAndScale();
 
 	if (!GetPreferencesVar("AuthenticationMethod", nValue))

@@ -130,6 +130,13 @@
 				<td align="right" style="width:60px"><label><span data-i18n="Password"></span>: </label></td>
 				<td><input type="password" id="SecPassword" name="SecPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 			</tr>
+			<tr>
+				<td align="right" style="width:60px"><label><span data-i18n="Delay">Delay</span>: </label></td>
+				<td>
+					<input type="input" id="SecOnDelay" name="SecOnDelay" style="width: 70px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;
+					<span data-i18n="(seconds, 0=no delay)"></span>
+				</td>
+			</tr>
 			</table>
 			<br>
 			<span data-i18n="LocalNetworks(no_username/password)"></span>:<br><br>
@@ -759,6 +766,9 @@ function ShowSettings()
       }
 	  if (typeof data.AcceptNewHardware != 'undefined') {
         $("#acceptnewhardwaretable #AcceptNewHardware").prop('checked',data.AcceptNewHardware==1);
+      }
+      if (typeof data.SecOnDelay != 'undefined') {
+        $("#sectable #SecOnDelay").val(data.SecOnDelay);
       }
      }
   });

@@ -78,6 +78,7 @@ public:
 				int Mode5);
 
 	void UpdateDomoticzSecurityStatus(const int iSecStatus);
+	void SetInternalSecStatus();
 
 	CSQLHelper m_sql;
 	CScheduler m_scheduler;
@@ -104,6 +105,10 @@ private:
 		unsigned long long SceneRowID;
 		std::string switchcmd;
 	};
+
+	int m_SecCountdown;
+	int m_SecStatus;
+
 	unsigned char m_ScheduleLastMinute;
 	unsigned char m_ScheduleLastHour;
 
