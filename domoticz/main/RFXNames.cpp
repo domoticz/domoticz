@@ -1324,7 +1324,8 @@ bool IsLightSwitchOn(const std::string &lstatus)
 		(lstatus=="Light On")||
 		(lstatus=="Light 2 On")||
 		(lstatus=="Open inline relay")||
-		(lstatus.find("Set Level")!=std::string::npos)
+		(lstatus.find("Set Level")!=std::string::npos)||
+		(lstatus.find("Set Group Level")!=std::string::npos)
 		);
 }
 

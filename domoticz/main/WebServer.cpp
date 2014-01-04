@@ -1338,8 +1338,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				else if (switchtype==STYPE_DoorLock)
 				{
 					root["result"][ii]["TypeImg"]="door";
-					root["result"][ii]["InternalState"]=(IsLightSwitchOn(lstatus)==true)?"Open":"Closed";
-					if (lstatus=="On") {
+					bool bIsOn=IsLightSwitchOn(lstatus);
+					root["result"][ii]["InternalState"]=(bIsOn==true)?"Open":"Closed";
+					if (bIsOn) {
 						lstatus="Open";
 					} else {
 						lstatus="Closed";
@@ -1378,7 +1379,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				else if (switchtype==STYPE_Contact)
 				{
 					root["result"][ii]["TypeImg"]="contact";
-					if (lstatus=="On") {
+					bool bIsOn=IsLightSwitchOn(lstatus);
+					if (bIsOn) {
 						lstatus="Open";
 					} else {
 						lstatus="Closed";

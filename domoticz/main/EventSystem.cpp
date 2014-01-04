@@ -1783,9 +1783,10 @@ std::string CEventSystem::nValueToWording (const unsigned char dType, const unsi
     {
         //?
     }
-    else if (switchtype==STYPE_Contact)
+    else if ((switchtype==STYPE_Contact)||(switchtype==STYPE_DoorLock))
     {
-        if (lstatus=="On") 
+		bool bIsOn=IsLightSwitchOn(lstatus);
+        if (bIsOn) 
 		{
             lstatus="Open";
         }
