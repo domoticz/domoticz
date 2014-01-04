@@ -2407,6 +2407,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				        sprintf(szData,"%d", atoi(sValue.c_str()));
 				        root["result"][ii]["Data"]=szData;
          			    root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+        				root["result"][ii]["StrParam1"]=strParam1;
+		        		root["result"][ii]["StrParam2"]=strParam2;
 
                         if (CustomImage<(int)m_custom_light_icons.size())
 					        root["result"][ii]["Image"]=m_custom_light_icons[CustomImage].RootFile;
