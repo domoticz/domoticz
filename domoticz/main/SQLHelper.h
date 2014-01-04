@@ -42,6 +42,7 @@ enum _eTaskItemType
     TITEM_SWITCHCMD_EVENT,
 	TITEM_SWITCHCMD_SCENE,
 	TITEM_GETURL,
+	TITEM_SEND_EMAIL_TO,
 };
 
 struct _tTaskItem
@@ -112,6 +113,16 @@ struct _tTaskItem
 		tItem._DelayTime=DelayTime;
 		tItem._ID=Subject;
 		tItem._sValue=Body;
+		return tItem;
+	}
+	static _tTaskItem SendEmailTo(const int DelayTime, const std::string &Subject, const std::string &Body, const std::string &To)
+	{
+		_tTaskItem tItem;
+		tItem._ItemType=TITEM_SEND_EMAIL_TO;
+		tItem._DelayTime=DelayTime;
+		tItem._ID=Subject;
+		tItem._sValue=Body;
+		tItem._command=To;
 		return tItem;
 	}
     static _tTaskItem SwitchLightEvent(const int DelayTime, const unsigned long long idx, const std::string &Command, const unsigned char Level, const int Hue, const std::string &eventName)

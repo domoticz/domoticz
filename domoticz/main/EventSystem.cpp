@@ -1113,6 +1113,17 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 					SendEventNotification(subject, body,atoi(priority.c_str()));
                     actionsDone = true;
                 }
+				else if (devNameNoQuotes == "SendEmail") {
+					std::string subject(""),body(""),to("");
+					std::vector<std::string> aParam;
+					StringSplit(doWhat, "#", aParam);
+					subject=aParam[0];
+					body=aParam[1];
+					body = stdreplace(body, "\\n", "<br>");
+					to=aParam[2];
+					m_pMain->m_sql.AddTaskItem(_tTaskItem::SendEmailTo(1,subject,body,to));
+					actionsDone = true;
+				}
                 else if (devNameNoQuotes == "OpenURL") {
                     OpenURL(doWhat);
                     actionsDone = true;
@@ -1532,6 +1543,18 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 					SendEventNotification(subject, body,atoi(priority.c_str()));
                     scriptTrue = true;
                 }
+				else if (std::string(lua_tostring(lua_state, -2)) == "SendEmail") {
+					std::string luaString = lua_tostring(lua_state, -1);
+					std::string subject(""),body(""),to("");
+					std::vector<std::string> aParam;
+					StringSplit(luaString, "#", aParam);
+					subject=aParam[0];
+					body=aParam[1];
+					body = stdreplace(body, "\\n", "<br>");
+					to=aParam[2];
+					m_pMain->m_sql.AddTaskItem(_tTaskItem::SendEmailTo(1,subject,body,to));
+					scriptTrue = true;
+				}
                 else if (std::string(lua_tostring(lua_state, -2))== "OpenURL")
 				{
                     std::string luaString = lua_tostring(lua_state, -1);

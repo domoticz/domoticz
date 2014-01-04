@@ -1127,7 +1127,7 @@ void CSQLHelper::Do_Work()
 					_log.Log(LOG_ERROR,"Error opening url: %s",itt->_sValue.c_str());
 				}
 			}
-			else if (itt->_ItemType == TITEM_SEND_EMAIL)
+			else if ((itt->_ItemType == TITEM_SEND_EMAIL)||(itt->_ItemType == TITEM_SEND_EMAIL_TO))
 			{
 				int nValue;
 				std::string sValue;
@@ -1142,7 +1142,14 @@ void CSQLHelper::Do_Work()
 						std::string EmailUsername;
 						std::string EmailPassword;
 						GetPreferencesVar("EmailFrom",nValue,EmailFrom);
-						GetPreferencesVar("EmailTo",nValue,EmailTo);
+						if (itt->_ItemType != TITEM_SEND_EMAIL_TO)
+						{
+							GetPreferencesVar("EmailTo",nValue,EmailTo);
+						}
+						else
+						{
+							EmailTo=itt->_command;
+						}
 						GetPreferencesVar("EmailUsername",nValue,EmailUsername);
 						GetPreferencesVar("EmailPassword",nValue,EmailPassword);
 						GetPreferencesVar("EmailPort", EmailPort);

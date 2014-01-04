@@ -50,6 +50,7 @@ Version 1.0.xxxx (December xxth 2013)
 - Fixed: Rego6XX counter logs did not work
 - Implemented: Security Panel delay
 - Implemented: Dummy hardware, option to add counter/electric sensors
+- Implemented: Blockly/Lua, Send Email notification to
 
 Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart

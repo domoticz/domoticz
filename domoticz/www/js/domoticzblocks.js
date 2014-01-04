@@ -615,6 +615,26 @@ Blockly.Language.send_notification = {
   }
 };
 
+Blockly.Language.send_email = {
+  // Comparison operator.
+  init: function() {
+    this.setColour(120);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.appendDummyInput()
+	    .appendTitle("Send email with subject:")
+    	.appendTitle(new Blockly.FieldTextInput(''), 'TextSubject');
+    this.appendDummyInput()
+	    .appendTitle("and message:")
+    	.appendTitle(new Blockly.FieldTextInput(''), 'TextBody');
+    this.appendDummyInput()
+	    .appendTitle("to:")
+    	.appendTitle(new Blockly.FieldTextInput(''), 'TextTo');
+    this.setInputsInline(true);
+    this.setTooltip(Blockly.DOMOTICZ_LOGIC_EMAIL_TOOLTIP);
+  }
+};
+
 Blockly.Language.open_url = {
   // Comparison operator.
   init: function() {

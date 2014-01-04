@@ -361,6 +361,18 @@
 	        	var setString = 'commandArray["SendNotification"]="'+sTT+'$'+bTT+'$'+pTT+'"';
 	        	setArray.push(setString);		      	
 		    }
+		    else if ($(this).attr('type') == 'send_email') {
+				var subjectBlock = $(this).children("title[name='TextSubject']")[0];
+				var bodyBlock = $(this).children("title[name='TextBody']")[0];
+				var toBlock = $(this).children("title[name='TextTo']")[0];
+				var sSubject = $(subjectBlock).text().replace(/\,/g, ' ');
+		    	var sBody = $(bodyBlock).text().replace(/\,/g, ' ');
+				var sTo = $(toBlock).text();
+		    	// message separator here cannot be # like in scripts, changed to $..
+		    	// also removed commas as we need to separate commandArray later.
+	        	var setString = 'commandArray["SendEmail"]="'+sSubject+'$'+sBody+'$'+sTo+'"';
+	        	setArray.push(setString);		      	
+		    }
 		    else if ($(this).attr('type') == 'open_url') {
 		    	var urlBlock = $(this).find("value[name='urlToOpen']")[0];
 		    	var urlText = $(urlBlock).find("title[name='TEXT']")[0];
@@ -634,6 +646,7 @@
    		</category>
    		<category name="Messages">
    			<block type="send_notification"></block>
+   			<block type="send_email"></block>
    			<block type="text"></block>
    			<block type="open_url"></block>
    			<block type="url_text"></block>

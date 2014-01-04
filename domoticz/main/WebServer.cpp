@@ -10075,7 +10075,7 @@ std::string CWebServer::GetJSonPage()
                         std::string conditions = array[index].get("conditions","").asString();
                         std::string actions = array[index].get("actions","").asString();
                         
-                        if (actions.find("SendNotification")!= std::string::npos) 
+                        if ((actions.find("SendNotification")!= std::string::npos)||(actions.find("SendEmail")!= std::string::npos))
 						{
                             actions = stdreplace(actions, "$", "#");
                         }
