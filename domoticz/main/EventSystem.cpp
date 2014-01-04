@@ -48,6 +48,7 @@ CEventSystem::~CEventSystem(void)
 void CEventSystem::StartEventSystem(MainWorker *pMainWorker)
 {
 	m_pMain=pMainWorker;
+    m_pMain->m_sql.GetPreferencesVar("SecStatus", m_SecStatus);
 
 	LoadEvents();
     GetCurrentStates();
@@ -630,6 +631,7 @@ void CEventSystem::WWWUpdateSingleState(const unsigned long long ulDevID, const 
 
 void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 {
+    m_pMain->m_sql.GetPreferencesVar("SecStatus", m_SecStatus);
     EvaluateEvent("security");
 }
 
@@ -921,9 +923,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 		lua_setglobal(lua_state, "windgustdevice");
 	}
     
-    int secstatus=0;
-    m_pMain->m_sql.GetPreferencesVar("SecStatus", secstatus);
-    lua_pushnumber( lua_state, (lua_Number)secstatus);
+    lua_pushnumber( lua_state, (lua_Number)m_SecStatus);
     lua_setglobal(lua_state, "securitystatus");
     
     if ((reason == "device") && (DeviceID >0)) {
