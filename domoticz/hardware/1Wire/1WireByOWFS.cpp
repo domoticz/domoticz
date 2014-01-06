@@ -304,7 +304,10 @@ unsigned int C1WireByOWFS::GetNbChannels(const _t1WireDevice& device) const
 
 unsigned long C1WireByOWFS::GetCounter(const _t1WireDevice& device,int unit) const
 {
+   // Depending on OWFS version, file can be "counter" or "counters". So try both.
    std::string readValue=readRawData(std::string(device.filename+"/counter.").append(1,'A'+unit));
+   if (readValue.empty())
+      readValue=readRawData(std::string(device.filename+"/counters.").append(1,'A'+unit));
    if (readValue.empty())
       return 0;
    return (unsigned long)atol(readValue.c_str());

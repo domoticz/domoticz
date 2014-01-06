@@ -108,6 +108,7 @@
     <ClInclude Include="hardware\BMP085.h" />
     <ClInclude Include="hardware\DavisLoggerSerial.h" />
     <ClInclude Include="hardware\Dummy.h" />
+    <ClInclude Include="hardware\EnOcean.h" />
     <ClInclude Include="hardware\hidapi.h" />
     <ClInclude Include="hardware\Limitless.h" />
     <ClInclude Include="hardware\OpenHardwareMonitor.h" />
@@ -189,6 +190,7 @@
     <ClCompile Include="hardware\BMP085.cpp" />
     <ClCompile Include="hardware\DavisLoggerSerial.cpp" />
     <ClCompile Include="hardware\Dummy.cpp" />
+    <ClCompile Include="hardware\EnOcean.cpp" />
     <ClCompile Include="hardware\libusbwinusbbridge.cpp" />
     <ClCompile Include="hardware\Limitless.cpp" />
     <ClCompile Include="hardware\OpenHardwareMonitor.cpp" />

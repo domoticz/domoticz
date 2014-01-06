@@ -33,6 +33,7 @@ class CDomoticzHardwareBase
 	friend class CWunderground;
 	friend class CTE923;
 	friend class CVolcraftCO20;
+	friend class CEnOcean;
 public: 
 	CDomoticzHardwareBase();
 	virtual ~CDomoticzHardwareBase();

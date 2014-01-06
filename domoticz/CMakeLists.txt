@@ -162,6 +162,7 @@ hardware/DavisLoggerSerial.cpp
 hardware/DomoticzHardware.cpp
 hardware/DomoticzTCP.cpp
 hardware/Dummy.cpp
+hardware/EnOcean.cpp
 hardware/Limitless.cpp
 hardware/OpenZWave.cpp
 hardware/OTGWBase.cpp

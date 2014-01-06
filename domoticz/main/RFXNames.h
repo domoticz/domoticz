@@ -73,6 +73,7 @@ enum _eHardwareTypes {
 	HTYPE_OpenZWave,			//21
 	HTYPE_LimitlessLights,		//22
 	HTYPE_System,				//23
+	HTYPE_EnOcean,				//24
 	HTYPE_END
 };
 

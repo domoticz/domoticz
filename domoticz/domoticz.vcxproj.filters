@@ -111,6 +111,9 @@
     <Filter Include="Devices\OpenHardwareMonitor">
       <UniqueIdentifier>{51868f28-9b4c-49aa-b7b1-f1c4a479b741}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\EnOcean">
+      <UniqueIdentifier>{0460800e-868d-4e4d-a378-ce25a7d9025d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -358,6 +361,9 @@
     <ClInclude Include="hardware\OpenHardwareMonitor.h">
       <Filter>Devices\OpenHardwareMonitor</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\EnOcean.h">
+      <Filter>Devices\EnOcean</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -572,6 +578,9 @@
     </ClCompile>
     <ClCompile Include="hardware\OpenHardwareMonitor.cpp">
       <Filter>Devices\OpenHardwareMonitor</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\EnOcean.cpp">
+      <Filter>Devices\EnOcean</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

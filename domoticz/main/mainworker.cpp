@@ -37,6 +37,7 @@
 //#include "../hardware/S0MeterTCP.h"
 #include "../hardware/Teleinfo.h"
 #include "../hardware/Limitless.h"
+#include "../hardware/EnOcean.h"
 #ifdef WIN32
 #include "../hardware/OpenHardwareMonitor.h"
 #endif
@@ -356,6 +357,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_OpenThermGateway:
 	case HTYPE_TeleinfoMeter:
 	case HTYPE_OpenZWave:
+	case HTYPE_EnOcean:
 		{
 			//USB/Serial
 #if defined WIN32
@@ -414,6 +416,10 @@ bool MainWorker::AddHardwareFromParams(
 #ifdef WITH_OPENZWAVE
 				pHardware = new COpenZWave(ID, szSerialPort);
 #endif
+			}
+			else if (Type==HTYPE_EnOcean)
+			{
+				pHardware = new CEnOcean(ID,szSerialPort, Mode1);
 			}
 		}
 		break;
