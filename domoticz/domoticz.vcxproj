@@ -156,6 +156,7 @@
     <ClInclude Include="hardware\RFXComTCP.h" />
     <ClInclude Include="main\RFXNames.h" />
     <ClInclude Include="main\RFXtrx.h" />
+    <ClInclude Include="main\Version.h" />
     <ClInclude Include="main\WindCalculation.h" />
     <ClInclude Include="smtpclient\SMTPClient.h" />
     <ClInclude Include="sqlite\sqlite3.h" />

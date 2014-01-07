@@ -364,6 +364,9 @@
     <ClInclude Include="hardware\EnOcean.h">
       <Filter>Devices\EnOcean</Filter>
     </ClInclude>
+    <ClInclude Include="main\Version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
