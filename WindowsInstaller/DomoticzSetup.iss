@@ -80,6 +80,7 @@ Filename: "{sys}\net.exe"; Parameters: "start {#MyAppName}"; Flags: runhidden; T
 Name: "{app}\backups\hourly"
 Name: "{app}\backups\daily"
 Name: "{app}\backups\monthly"
+Name: "{app}\Config"
 
 [PostCompile]
 Name: "makedist.bat"
