@@ -6,6 +6,12 @@
 #define MyAppURL "http://www.domoticz.com/"
 #define MyAppExeName "domoticz.exe"
 #define NSSM "nssm.exe"
+#define SetupBaseName   "DomoticzSetup_"
+#dim Version[4]
+#expr ParseVersion("..\Release\domoticz.exe", Version[0], Version[1], Version[2], Version[3])
+#define AppVersion Str(Version[0]) + "." + Str(Version[1]) + "." + Str(Version[2]) + "." + Str(Version[3])
+#define ShortAppVersion Str(Version[0]) + "." + Str(Version[3])
+#define ShortAppVersionUnderscore Str(Version[0]) + "_" + Str(Version[3])
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -13,7 +19,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{EC4A5746-2655-43CD-AC5F-73F4B2C12F46}
 AppName={#MyAppName}
-AppVersion=1.0
+AppVersion={#ShortAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
@@ -23,7 +29,7 @@ DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 LicenseFile=..\domoticz\License.txt
 OutputDir=.
-OutputBaseFilename=DomoticzSetup
+OutputBaseFilename={#SetupBaseName + ShortAppVersionUnderscore}
 SetupIconFile=install.ico
 Compression=lzma2
 PrivilegesRequired=admin
