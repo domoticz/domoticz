@@ -2,6 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Domoticz"
+#define AppId "{{EC4A5746-2655-43CD-AC5F-73F4B2C12F46}"
 #define MyAppPublisher "Domoticz.com"
 #define MyAppURL "http://www.domoticz.com/"
 #define MyAppExeName "domoticz.exe"
@@ -17,7 +18,7 @@
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{EC4A5746-2655-43CD-AC5F-73F4B2C12F46}
+AppId={#AppId}
 AppName={#MyAppName}
 AppVersion={#ShortAppVersion}
 AppPublisher={#MyAppPublisher}
@@ -122,4 +123,13 @@ begin
     Exec('sc',ExpandConstant('delete "{#MyAppName}"'),'', SW_HIDE, ewWaitUntilTerminated, ResultCode);
     sleep(4000); //allow service to stop before deleting files
   end;
+end;
+
+function InitializeSetup: Boolean;                                    
+
+begin
+  if RegValueExists(HKEY_LOCAL_MACHINE,'Software\Microsoft\Windows\CurrentVersion\Uninstall\{#emit StringChange(SetupSetting("AppId"),"{{","{")}_is1', 'UninstallString') then begin
+    MsgBox('You are upgrading an existing installation of Domoticz.'+ chr(13) +'It is recommended to reboot your system after this upgrade'+ chr(13) +'in order to avoid com port issues.', mbInformation, MB_OK);
+  end
+  Result := True;
 end;
