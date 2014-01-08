@@ -4750,6 +4750,8 @@ void CSQLHelper::DeleteHardware(const std::string &idx)
 	//and now delete all records in the DeviceStatus table itself
 	sprintf(szTmp,"DELETE FROM DeviceStatus WHERE (HardwareID == %s)",idx.c_str());
 	result=query(szTmp);
+	sprintf(szTmp,"DELETE FROM ZWaveNodes WHERE (HardwareID== %s)",idx.c_str());
+	query(szTmp);
 }
 
 void CSQLHelper::DeleteCamera(const std::string &idx)

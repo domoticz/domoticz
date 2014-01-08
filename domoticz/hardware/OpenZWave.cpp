@@ -1386,10 +1386,18 @@ void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int po
 				if (vGenre!=OpenZWave::ValueID::ValueGenre_User)
 					continue;
 
-				std::string vLabel=m_pManager->GetValueLabel(*ittValue);
-
 				if (m_pManager->isPolled(*ittValue))
 					continue; //already polled
+
+				std::string vLabel=m_pManager->GetValueLabel(*ittValue);
+
+				if (
+					(vLabel=="Exporting")||
+					(vLabel=="Interval")||
+					(vLabel=="Previous Reading")
+					)
+					continue;;
+
 
 				if (commandclass==COMMAND_CLASS_SWITCH_BINARY)
 				{
