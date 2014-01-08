@@ -53,7 +53,6 @@ Source: "..\domoticz\www\*"; DestDir: {app}\www; Flags: recursesubdirs createall
 Source: "..\domoticz\Config\*"; DestDir: {app}\Config; Flags: recursesubdirs createallsubdirs;
 Source: "..\domoticz\scripts\*"; DestDir: {app}\scripts; Flags: recursesubdirs createallsubdirs;
 Source: "..\Debug\sqlite3.dll"; DestDir: {app}; Flags: ignoreversion;
-Source: "..\Release\OpenZWave.dll"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\Debug\libcurl.dll"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\Manual\DomoticzManual.pdf"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\domoticz\History.txt"; DestDir: {app}; Flags: ignoreversion;

@@ -475,70 +475,63 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 
 	switch( _notification->GetType() )
 	{
-	case OpenZWave::Notification::Type_ValueAdded:
+	case OpenZWave::Notification::Type_DriverReady:
 		{
-			if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
-			{
-				// Add the new value to our list
-				nodeInfo->Instances[instance][commandClass].Values.push_back( vID );
-				nodeInfo->m_LastSeen=act_time;
-				nodeInfo->Instances[instance][commandClass].m_LastSeen=act_time;
-				AddValue(vID);
-			}
-			break;
+			m_controllerID = _notification->GetHomeId();
+			_log.Log(LOG_NORM,"OpenZWave: Driver Ready");
 		}
-
-	case OpenZWave::Notification::Type_ValueRemoved:
+		break;
+	case OpenZWave::Notification::Type_ValueAdded:
+		if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
 		{
-			if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
+			// Add the new value to our list
+			nodeInfo->Instances[instance][commandClass].Values.push_back( vID );
+			nodeInfo->m_LastSeen=act_time;
+			nodeInfo->Instances[instance][commandClass].m_LastSeen=act_time;
+			AddValue(vID);
+		}
+		break;
+	case OpenZWave::Notification::Type_ValueRemoved:
+		if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
+		{
+			// Remove the value from out list
+			for( std::list<OpenZWave::ValueID>::iterator it = nodeInfo->Instances[instance][commandClass].Values.begin(); it != nodeInfo->Instances[instance][commandClass].Values.end(); ++it )
 			{
-				// Remove the value from out list
-				for( std::list<OpenZWave::ValueID>::iterator it = nodeInfo->Instances[instance][commandClass].Values.begin(); it != nodeInfo->Instances[instance][commandClass].Values.end(); ++it )
+				if( (*it) == vID )
 				{
-					if( (*it) == vID )
-					{
-						nodeInfo->Instances[instance][commandClass].Values.erase( it );
-						nodeInfo->Instances[instance][commandClass].m_LastSeen=act_time;
-						nodeInfo->m_LastSeen=act_time;
-						break;
-					}
+					nodeInfo->Instances[instance][commandClass].Values.erase( it );
+					nodeInfo->Instances[instance][commandClass].m_LastSeen=act_time;
+					nodeInfo->m_LastSeen=act_time;
+					break;
 				}
 			}
-			break;
 		}
-
+		break;
 	case OpenZWave::Notification::Type_ValueChanged:
+		// One of the node values has changed
+		if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
 		{
-			// One of the node values has changed
-			if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
-			{
-				nodeInfo->m_LastSeen=act_time;
-				UpdateValue(vID);
-				nodeInfo->Instances[instance][commandClass].m_LastSeen=act_time;
-			}
-			break;
+			nodeInfo->m_LastSeen=act_time;
+			UpdateValue(vID);
+			nodeInfo->Instances[instance][commandClass].m_LastSeen=act_time;
 		}
+		break;
 	case OpenZWave::Notification::Type_ValueRefreshed:
+		// One of the node values has changed
+		if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
 		{
-			// One of the node values has changed
-			if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
-			{
-				//UpdateValue(vID);
-				nodeInfo->Instances[instance][commandClass].m_LastSeen=act_time;
-			}
-			break;
+			//UpdateValue(vID);
+			nodeInfo->Instances[instance][commandClass].m_LastSeen=act_time;
 		}
+		break;
 
 	case OpenZWave::Notification::Type_Group:
+		// One of the node's association groups has changed
+		if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
 		{
-			// One of the node's association groups has changed
-			if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
-			{
-				nodeInfo->m_LastSeen=act_time;
-			}
-			break;
+			nodeInfo->m_LastSeen=act_time;
 		}
-
+		break;
 	case OpenZWave::Notification::Type_NodeAdded:
 		{
 			// Add the new node to our list
@@ -559,9 +552,8 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 			nodeInfo.m_LastSeen=act_time;
 			m_nodes.push_back( nodeInfo );
 			AddNode(_homeID, _nodeID, &nodeInfo);
-			break;
 		}
-
+		break;
 	case OpenZWave::Notification::Type_NodeRemoved:
 		{
 			// Remove the node from our list
@@ -573,57 +565,39 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 					break;
 				}
 			}
-			break;
 		}
-
+		break;
 	case OpenZWave::Notification::Type_NodeEvent:
+		// We have received an event from the node, caused by a
+		// basic_set or hail message.
+		if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
 		{
-			// We have received an event from the node, caused by a
-			// basic_set or hail message.
-			if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
-			{
-				nodeInfo->m_LastSeen=act_time;
-				UpdateValue(vID);
-				nodeInfo->Instances[instance][commandClass].m_LastSeen=act_time;
-				nodeInfo->m_LastSeen=act_time;
-			}
-			break;
+			nodeInfo->m_LastSeen=act_time;
+			UpdateValue(vID);
+			nodeInfo->Instances[instance][commandClass].m_LastSeen=act_time;
+			nodeInfo->m_LastSeen=act_time;
 		}
-
+		break;
 	case OpenZWave::Notification::Type_PollingDisabled:
+		if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
 		{
-			if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
-			{
-				nodeInfo->m_polled = false;
-				nodeInfo->m_LastSeen=act_time;
-			}
-			break;
+			nodeInfo->m_polled = false;
+			nodeInfo->m_LastSeen=act_time;
 		}
-
+		break;
 	case OpenZWave::Notification::Type_PollingEnabled:
+		if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
 		{
-			if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
-			{
-				nodeInfo->m_polled = true;
-				nodeInfo->m_LastSeen=act_time;
-			}
-			break;
+			nodeInfo->m_polled = true;
+			nodeInfo->m_LastSeen=act_time;
 		}
-
-	case OpenZWave::Notification::Type_DriverReady:
-		{
-			m_controllerID = _notification->GetHomeId();
-			_log.Log(LOG_NORM,"OpenZWave: Driver Ready");
-			break;
-		}
-
+		break;
 	case OpenZWave::Notification::Type_DriverFailed:
 		{
 			m_initFailed = true;
 			_log.Log(LOG_ERROR,"OpenZWave: Driver Failed!!");
-			break;
 		}
-
+		break;
 	case OpenZWave::Notification::Type_AwakeNodesQueried:
 	case OpenZWave::Notification::Type_AllNodesQueried:
 	case OpenZWave::Notification::Type_AllNodesQueriedSomeDead:
@@ -633,32 +607,33 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 			NodesQueried();
 			OpenZWave::Manager::Get()->WriteConfig( m_controllerID );
 			//IncludeDevice();
-			break;
 		}
+		break;
 	case OpenZWave::Notification::Type_NodeNaming:
+		if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
 		{
-			if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
+			std::string product_name=m_pManager->GetNodeProductName(_homeID,_nodeID);
+			if (nodeInfo->Product_name!=product_name)
 			{
-				std::string product_name=m_pManager->GetNodeProductName(_homeID,_nodeID);
-				if (nodeInfo->Product_name!=product_name)
-				{
-					nodeInfo->Manufacturer_id = m_pManager->GetNodeManufacturerId(_homeID,_nodeID);
-					nodeInfo->Manufacturer_name = m_pManager->GetNodeManufacturerName(_homeID,_nodeID);
-					nodeInfo->Product_type = m_pManager->GetNodeProductType(_homeID,_nodeID);
-					nodeInfo->Product_id = m_pManager->GetNodeProductId(_homeID,_nodeID);
-					nodeInfo->Product_name = product_name;
-					AddNode(_homeID,_nodeID,nodeInfo);
-				}
-				nodeInfo->m_LastSeen=act_time;
+				nodeInfo->Manufacturer_id = m_pManager->GetNodeManufacturerId(_homeID,_nodeID);
+				nodeInfo->Manufacturer_name = m_pManager->GetNodeManufacturerName(_homeID,_nodeID);
+				nodeInfo->Product_type = m_pManager->GetNodeProductType(_homeID,_nodeID);
+				nodeInfo->Product_id = m_pManager->GetNodeProductId(_homeID,_nodeID);
+				nodeInfo->Product_name = product_name;
+				AddNode(_homeID,_nodeID,nodeInfo);
 			}
-			break;
+			nodeInfo->m_LastSeen=act_time;
 		}
+		break;
+/*
 	case OpenZWave::Notification::Type_DriverReset:
 	case OpenZWave::Notification::Type_NodeProtocolInfo:
 	case OpenZWave::Notification::Type_NodeQueriesComplete:
 	default:
 		{
 		}
+		break;
+*/
 	}
 }
 
@@ -843,6 +818,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 {
 	if (m_pManager==NULL)
 		return;
+	if (m_controllerID==0)
+		return;
 	unsigned char commandclass=vID.GetCommandClassId();
 
 	//Ignore some command classes, values are already added before calling this function
@@ -878,7 +855,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 		return;
 
 	std::string vLabel=m_pManager->GetValueLabel(vID);
-	std::string vUnits=m_pManager->GetValueUnits(vID);
 
 	if (
 		(vLabel=="Exporting")||
@@ -887,8 +863,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 		)
 		return;
 
-	_log.Log(LOG_NORM, "Value_Added: Node: %d, CommandClass: %s, Label: %s",NodeID, cclassStr(commandclass),vLabel.c_str());
-
+	std::string vUnits=m_pManager->GetValueUnits(vID);
+	_log.Log(LOG_NORM, "Value_Added: Node: %d, CommandClass: %s, Label: %s",(int)NodeID, cclassStr(commandclass),vLabel.c_str());
 
 	_tZWaveDevice _device;
 	_device.nodeID=NodeID;
@@ -1075,6 +1051,11 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 
 void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 {
+	if (m_pManager==NULL)
+		return;
+	if (m_controllerID==0)
+		return;
+
 	if (m_nodesQueried==false)
 		return; //only allow updates when node Query is done
 	unsigned char commandclass=vID.GetCommandClassId();
