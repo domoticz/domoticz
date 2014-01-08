@@ -50,7 +50,7 @@ Name: RunAsService; Description: "Run as service"; Flags: exclusive unchecked
 [Files]
 Source: "..\Release\domoticz.exe"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\domoticz\www\*"; DestDir: {app}\www; Flags: recursesubdirs createallsubdirs;
-Source: "..\domoticz\Config\*"; DestDir: {app}\www; Flags: recursesubdirs createallsubdirs;
+Source: "..\domoticz\Config\*"; DestDir: {app}\Config; Flags: recursesubdirs createallsubdirs;
 Source: "..\domoticz\scripts\*"; DestDir: {app}\scripts; Flags: recursesubdirs createallsubdirs;
 Source: "..\Debug\sqlite3.dll"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\Release\OpenZWave.dll"; DestDir: {app}; Flags: ignoreversion;
@@ -80,7 +80,6 @@ Filename: "{sys}\net.exe"; Parameters: "start {#MyAppName}"; Flags: runhidden; T
 Name: "{app}\backups\hourly"
 Name: "{app}\backups\daily"
 Name: "{app}\backups\monthly"
-Name: "{app}\Config"
 
 [PostCompile]
 Name: "makedist.bat"
