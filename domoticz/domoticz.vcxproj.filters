@@ -125,6 +125,7 @@
     <None Include="getsvn.cmake">
       <Filter>crosscompile</Filter>
     </None>
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="webserver\Base64.h">
