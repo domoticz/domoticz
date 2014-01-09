@@ -395,6 +395,7 @@ COpenZWave::COpenZWave(const int ID, const std::string& devname)
 
 COpenZWave::~COpenZWave(void)
 {
+	CloseSerialConnector();
 }
 
 //-----------------------------------------------------------------------------
@@ -449,6 +450,9 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 {
 	// Must do this inside a critical section to avoid conflicts with the main thread
 	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	OpenZWave::Manager* pManager=OpenZWave::Manager::Get();
+	if (!pManager)
+		return;
 
 	m_updateTime=mytime(NULL);
 
@@ -639,7 +643,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 
 void COpenZWave::StopHardwareIntern()
 {
-	CloseSerialConnector();
+	//CloseSerialConnector();
 }
 
 bool COpenZWave::OpenSerialConnector()
@@ -677,8 +681,6 @@ bool COpenZWave::OpenSerialConnector()
 	// avoid the need for the notification handler to be a static.
 	OpenZWave::Manager::Get()->AddWatcher( OnNotification, this );
 
-	//m_pManager->SetPollInterval(60000,true);
-
 	// Add a Z-Wave Driver
 	// Modify this line to set the correct serial port for your PC interface.
 
@@ -690,14 +692,17 @@ bool COpenZWave::OpenSerialConnector()
 void COpenZWave::CloseSerialConnector()
 {
 	// program exit (clean up)
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
-
 	OpenZWave::Manager* pManager=OpenZWave::Manager::Get();
 	if (pManager)
 	{
+//		boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+		_log.Log(LOG_NORM,"OpenZWave: Closed");
+		OpenZWave::Manager::Get()->RemoveDriver(m_szSerialPort.c_str());
+		OpenZWave::Manager::Get()->RemoveWatcher( OnNotification, this );
+
 		OpenZWave::Manager::Destroy();
 		OpenZWave::Options::Destroy();
-		_log.Log(LOG_NORM,"OpenZWave: Closed");
+		sleep_seconds(1);
 		m_pManager=NULL;
 	}
 }
@@ -1372,9 +1377,23 @@ void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int po
 	if (pNode==NULL)
 		return; //Not found
 
+	bool bSingleIndexPoll=false;
+
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT ProductDescription FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
+	result=m_pMainWorker->m_sql.query(szQuery.str());
+	if (result.size()>0)
+	{
+		std::string ProductDescription=result[0][0];
+		bSingleIndexPoll=(
+			(ProductDescription.find("GreenWave PowerNode 6 port")!=std::string::npos)
+			);
+	}
 
 	for (std::map<int, std::map<int, NodeCommandClass> >::const_iterator ittInstance=pNode->Instances.begin(); ittInstance!=pNode->Instances.end(); ++ittInstance)
 	{
+
 		for( std::map<int, NodeCommandClass>::const_iterator ittCmds = ittInstance->second.begin(); ittCmds != ittInstance->second.end(); ++ittCmds )
 		{
 			for( std::list<OpenZWave::ValueID>::const_iterator ittValue = ittCmds->second.Values.begin(); ittValue!= ittCmds->second.Values.end(); ++ittValue)
@@ -1386,9 +1405,6 @@ void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int po
 				if (vGenre!=OpenZWave::ValueID::ValueGenre_User)
 					continue;
 
-				if (m_pManager->isPolled(*ittValue))
-					continue; //already polled
-
 				std::string vLabel=m_pManager->GetValueLabel(*ittValue);
 
 				if (
@@ -1397,7 +1413,6 @@ void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int po
 					(vLabel=="Previous Reading")
 					)
 					continue;;
-
 
 				if (commandclass==COMMAND_CLASS_SWITCH_BINARY)
 				{
@@ -1428,7 +1443,9 @@ void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int po
 						(vLabel=="Power")
 						)
 					{
-						m_pManager->EnablePoll(*ittValue,2);
+						if (bSingleIndexPoll&&(ittValue->GetIndex()!=0))
+							continue;
+						m_pManager->EnablePoll(*ittValue,1);
 					}
 				}
 				else if (commandclass==COMMAND_CLASS_SENSOR_MULTILEVEL)
@@ -1450,13 +1467,17 @@ void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int po
 						(vLabel=="Power")
 						)
 					{
-						m_pManager->EnablePoll(*ittValue,2);
+						if (bSingleIndexPoll&&(ittValue->GetIndex()!=0))
+							continue;
+						m_pManager->EnablePoll(*ittValue,1);
 					}
 				}
 				else if (commandclass==COMMAND_CLASS_BATTERY)
 				{
 					m_pManager->EnablePoll(*ittValue,2);
 				}
+				else
+					m_pManager->DisablePoll(*ittValue);
 			}
 		}
 	}
@@ -1496,7 +1517,10 @@ void COpenZWave::AddNode(const int homeID, const int nodeID,const NodeInfo *pNod
 	if (result.size()<1)
 	{
 		//Not Found, Add it to the database
-		szQuery << "INSERT INTO ZWaveNodes (HardwareID, HomeID, NodeID, ProductDescription) VALUES (" << m_HwdID << "," << homeID << "," << nodeID << ",'" << sProductDescription << "')";
+		if (nodeID>1)
+			szQuery << "INSERT INTO ZWaveNodes (HardwareID, HomeID, NodeID, ProductDescription) VALUES (" << m_HwdID << "," << homeID << "," << nodeID << ",'" << sProductDescription << "')";
+		else
+			szQuery << "INSERT INTO ZWaveNodes (HardwareID, HomeID, NodeID, Name,ProductDescription) VALUES (" << m_HwdID << "," << homeID << "," << nodeID << ",'Controller','" << sProductDescription << "')";
 	}
 	else
 	{
@@ -1508,6 +1532,11 @@ void COpenZWave::AddNode(const int homeID, const int nodeID,const NodeInfo *pNod
 
 void COpenZWave::EnableDisableNodePolling()
 {
+	int intervalseconds=60;
+	m_pMainWorker->m_sql.GetPreferencesVar("ZWavePollInterval", intervalseconds);
+
+	m_pManager->SetPollInterval(intervalseconds*1000,false);
+
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT HomeID,NodeID,PollTime FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ")";
@@ -1549,6 +1578,27 @@ void COpenZWave::GetNodeValuesJson(const int homeID, const int nodeID, Json::Val
 		return;
 
 	int ivalue=0;
+
+	if (nodeID==1)
+	{
+		//Main ZWave node
+		root["result"][index]["config"][ivalue]["type"]="short";
+
+		int intervalseconds=60;
+		m_pMainWorker->m_sql.GetPreferencesVar("ZWavePollInterval", intervalseconds);
+		root["result"][index]["config"][ivalue]["value"]=intervalseconds;
+
+		root["result"][index]["config"][ivalue]["index"]=1;
+		root["result"][index]["config"][ivalue]["label"]="Poll Interval";
+		root["result"][index]["config"][ivalue]["units"]="Seconds";
+		root["result"][index]["config"][ivalue]["help"]=
+			"Set the time period between polls of a node's state. The length of the interval is the same for all devices. "
+			"To even out the Z-Wave network traffic generated by polling, OpenZWave divides the polling interval by the number of devices that have polling enabled, and polls each "
+			"in turn. It is recommended that if possible, the interval should not be set shorter than the number of polled devices in seconds (so that the network does not have to cope with more than one poll per second).";
+		ivalue++;
+		return;
+	}
+
 	for (std::map<int, std::map<int, NodeCommandClass> >::const_iterator ittInstance=pNode->Instances.begin(); ittInstance!=pNode->Instances.end(); ++ittInstance)
 	{
 		for( std::map<int, NodeCommandClass>::const_iterator ittCmds = ittInstance->second.begin(); ittCmds != ittInstance->second.end(); ++ittCmds )
@@ -1636,15 +1686,30 @@ bool COpenZWave::ApplyNodeConfig(const int homeID, const int nodeID, const std::
 	size_t vindex=0;
 	while (vindex!=results.size())
 	{
-		OpenZWave::ValueID vID(0,0,OpenZWave::ValueID::ValueGenre_Basic,0,0,0,OpenZWave::ValueID::ValueType_Bool);
-
-		if (GetNodeConfigValueByIndex(pNode, atoi(results[vindex].c_str()), vID))
+		int rvIndex=atoi(results[vindex].c_str());
+		if (nodeID==1)
 		{
-			std::string vstring;
-			m_pManager->GetValueAsString(vID,&vstring);
-			if (vstring!=results[vindex+1])
+			//Main ZWave node
+			if (rvIndex==1)
 			{
-				m_pManager->SetValue(vID,results[vindex+1]);
+				//PollInterval
+				int intervalseconds=atoi(results[vindex+1].c_str());
+				m_pMainWorker->m_sql.UpdatePreferencesVar("ZWavePollInterval", intervalseconds);
+				EnableDisableNodePolling();
+			}
+		}
+		else
+		{
+			OpenZWave::ValueID vID(0,0,OpenZWave::ValueID::ValueGenre_Basic,0,0,0,OpenZWave::ValueID::ValueType_Bool);
+
+			if (GetNodeConfigValueByIndex(pNode, rvIndex, vID))
+			{
+				std::string vstring;
+				m_pManager->GetValueAsString(vID,&vstring);
+				if (vstring!=results[vindex+1])
+				{
+					m_pManager->SetValue(vID,results[vindex+1]);
+				}
 			}
 		}
 		vindex+=2;

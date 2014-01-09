@@ -1016,6 +1016,11 @@ bool CSQLHelper::OpenDatabase()
 		nValue=1;
 	}
 	m_bAcceptNewHardware=(nValue==1);
+	if (!GetPreferencesVar("ZWavePollInterval", nValue))
+	{
+		UpdatePreferencesVar("ZWavePollInterval", 60);
+	}
+
 	//Start background thread
 	if (!StartThread())
 		return false;
