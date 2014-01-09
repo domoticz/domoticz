@@ -1453,7 +1453,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		devname="Unknown";
 		sprintf(szTmp,
 			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue) "
-			"VALUES (%d,'%s',%d,%d,%d,%d,%d,%d,'%s')",
+			"VALUES ('%d','%s','%d','%d','%d','%d','%d','%d','%s')",
 			HardwareID,
 			ID,unit,devType,subType,
 			signallevel,batterylevel,
@@ -1515,7 +1515,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		m_LastSwitchRowID=ulID;
 		sprintf(szTmp,
 			"INSERT INTO LightingLog (DeviceRowID, nValue, sValue) "
-			"VALUES (%llu, %d, '%s')",
+			"VALUES ('%llu', '%d', '%s')",
 			ulID,
 			nValue,sValue);
 		result=query(szTmp);
@@ -1996,7 +1996,7 @@ void CSQLHelper::UpdatePreferencesVar(const char *Key, const int nValue, const c
 		//Insert
 		sprintf(szTmp,
 			"INSERT INTO Preferences (Key, nValue, sValue) "
-			"VALUES ('%s',%d,'%s')",
+			"VALUES ('%s','%d','%s')",
 			Key,
 			nValue,sValue);
 		result=query(szTmp);
@@ -2090,7 +2090,7 @@ void CSQLHelper::SetLastBackupNo(const char *Key, const int nValue)
 		//Insert
 		sprintf(szTmp,
 			"INSERT INTO BackupLog (Key, nValue) "
-			"VALUES ('%s',%d)",
+			"VALUES ('%s','%d')",
 			Key,
 			nValue);
 		result=query(szTmp);
@@ -2751,7 +2751,7 @@ bool CSQLHelper::AddNotification(const std::string &DevIdx, const std::string &P
 
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "INSERT INTO Notifications (DeviceRowID, Params, Priority) VALUES (" << DevIdx << ",'" << Param << "'," << Priority << ")";
+	szQuery << "INSERT INTO Notifications (DeviceRowID, Params, Priority) VALUES ('" << DevIdx << "','" << Param << "','" << Priority << "')";
 	result=query(szQuery.str());
 	return true;
 }
@@ -3132,7 +3132,7 @@ void CSQLHelper::UpdateTemperatureLog()
 			//insert record
 			sprintf(szTmp,
 				"INSERT INTO Temperature (DeviceRowID, Temperature, Chill, Humidity, Barometer, DewPoint) "
-				"VALUES (%llu, %.2f, %.2f, %d, %d, %.2f)",
+				"VALUES ('%llu', '%.2f', '%.2f', '%d', '%d', '%.2f')",
 				ID,
 				temp,
 				chill,
@@ -3208,7 +3208,7 @@ void CSQLHelper::UpdateRainLog()
 			//insert record
 			sprintf(szTmp,
 				"INSERT INTO Rain (DeviceRowID, Total, Rate) "
-				"VALUES (%llu, %.2f, %d)",
+				"VALUES ('%llu', '%.2f', '%d')",
 				ID,
 				total,
 				rate
@@ -3277,7 +3277,7 @@ void CSQLHelper::UpdateWindLog()
 			//insert record
 			sprintf(szTmp,
 				"INSERT INTO Wind (DeviceRowID, Direction, Speed, Gust) "
-				"VALUES (%llu, %.2f, %d, %d)",
+				"VALUES ('%llu', '%.2f', '%d', '%d')",
 				ID,
 				direction,
 				speed,
@@ -3345,7 +3345,7 @@ void CSQLHelper::UpdateUVLog()
 			//insert record
 			sprintf(szTmp,
 				"INSERT INTO UV (DeviceRowID, Level) "
-				"VALUES (%llu, %.1f)",
+				"VALUES ('%llu', '%.1f')",
 				ID,
 				level
 				);
@@ -3552,7 +3552,7 @@ void CSQLHelper::UpdateMeter()
 			//insert record
 			sprintf(szTmp,
 				"INSERT INTO Meter (DeviceRowID, Value) "
-				"VALUES (%llu, %llu)",
+				"VALUES ('%llu', '%llu')",
 				ID,
 				MeterValue
 				);
@@ -3678,7 +3678,7 @@ void CSQLHelper::UpdateMultiMeter()
 			//insert record
 			sprintf(szTmp,
 				"INSERT INTO MultiMeter (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6) "
-				"VALUES (%llu, %llu, %llu, %llu, %llu, %llu, %llu)",
+				"VALUES ('%llu', '%llu', '%llu', '%llu', '%llu', '%llu', '%llu')",
 				ID,
 				value1,
 				value2,
@@ -3753,7 +3753,7 @@ void CSQLHelper::UpdateLoadLog()
 			//insert record
 			sprintf(szTmp,
 				"INSERT INTO Load (DeviceRowID, Load) "
-				"VALUES (%llu, %.2f)",
+				"VALUES ('%llu', '%.2f')",
 				ID,
 				load
 				);
@@ -3823,7 +3823,7 @@ void CSQLHelper::UpdateFanLog()
 			//insert record
 			sprintf(szTmp,
 				"INSERT INTO Fan (DeviceRowID, Speed) "
-				"VALUES (%llu, %d)",
+				"VALUES ('%llu', '%d')",
 				ID,
 				speed
 				);
@@ -3902,7 +3902,7 @@ void CSQLHelper::AddCalendarTemperature()
 			//insert into calendar table
 			sprintf(szTmp,
 				"INSERT INTO Temperature_Calendar (DeviceRowID, Temp_Min, Temp_Max, Temp_Avg, Chill_Min, Chill_Max, Humidity, Barometer, DewPoint, Date) "
-				"VALUES (%llu, %.2f, %.2f, %.2f, %.2f, %.2f, %d, %d, %.2f, '%s')",
+				"VALUES ('%llu', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%d', '%d', '%.2f', '%s')",
 				ID,
 				temp_min,
 				temp_max,
@@ -4018,7 +4018,7 @@ void CSQLHelper::AddCalendarUpdateRain()
 				//insert into calendar table
 				sprintf(szTmp,
 					"INSERT INTO Rain_Calendar (DeviceRowID, Total, Rate, Date) "
-					"VALUES (%llu, %.2f, %d, '%s')",
+					"VALUES ('%llu', '%.2f', '%d', '%s')",
 					ID,
 					total_real,
 					rate,
@@ -4156,7 +4156,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				//insert into calendar table
 				sprintf(szTmp,
 					"INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) "
-					"VALUES (%llu, %.2f, '%s')",
+					"VALUES ('%llu', '%.2f', '%s')",
 					ID,
 					total_real,
 					szDateStart
@@ -4194,7 +4194,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				//AirQuality/Usage Meter/Moisture/RFXSensor insert into MultiMeter_Calendar table
 				sprintf(szTmp,
 					"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1,Value2,Value3,Value4,Value5,Value6, Date) "
-					"VALUES (%llu, %.2f,%.2f,%.2f,%.2f,%.2f,%.2f, '%s')",
+					"VALUES ('%llu', '%.2f','%.2f','%.2f','%.2f','%.2f','%.2f', '%s')",
 					ID,
 					total_min,total_max,0.0f,0.0f,0.0f,0.0f,
 					szDateStart
@@ -4215,7 +4215,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				//Insert the last (max) counter value into the meter table to get the "today" value correct.
 				sprintf(szTmp,
 					"INSERT INTO Meter (DeviceRowID, Value, Date) "
-					"VALUES (%llu, %s, '%s')",
+					"VALUES ('%llu', '%s', '%s')",
 					ID,
 					sd[1].c_str(),
 					szDateEnd
@@ -4230,7 +4230,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			//insert into calendar table
 			sprintf(szTmp,
 				"INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) "
-				"VALUES (%llu, %.2f, '%s')",
+				"VALUES ('%llu', '%.2f', '%s')",
 				ID,
 				0.0f,
 				szDateStart
@@ -4352,7 +4352,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 			//insert into calendar table
 			sprintf(szTmp,
 				"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Date) "
-				"VALUES (%llu, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, '%s')",
+				"VALUES ('%llu', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%s')",
 				ID,
 				total_real[0],
 				total_real[1],
@@ -4456,7 +4456,7 @@ void CSQLHelper::AddCalendarUpdateWind()
 			//insert into calendar table
 			sprintf(szTmp,
 				"INSERT INTO Wind_Calendar (DeviceRowID, Direction, Speed_Min, Speed_Max, Gust_Min, Gust_Max, Date) "
-				"VALUES (%llu, %.2f, %d, %d, %d, %d, '%s')",
+				"VALUES ('%llu', '%.2f', '%d', '%d', '%d', '%d', '%s')",
 				ID,
 				Direction,
 				speed_min,
@@ -4532,7 +4532,7 @@ void CSQLHelper::AddCalendarUpdateUV()
 			//insert into calendar table
 			sprintf(szTmp,
 				"INSERT INTO UV_Calendar (DeviceRowID, Level, Date) "
-				"VALUES (%llu, %.2f, '%s')",
+				"VALUES ('%llu', '%.2f', '%s')",
 				ID,
 				level,
 				szDateStart
@@ -4605,7 +4605,7 @@ void CSQLHelper::AddCalendarUpdateLoad()
 			//insert into calendar table
 			sprintf(szTmp,
 				"INSERT INTO Load_Calendar (DeviceRowID, Load_Min, Load_Max, Load_Avg, Date) "
-				"VALUES (%llu, %.2f, %.2f, %.2f,'%s')",
+				"VALUES ('%llu', '%.2f', '%.2f', '%.2f','%s')",
 				ID,
 				load_min,
 				load_max,
@@ -4682,7 +4682,7 @@ void CSQLHelper::AddCalendarUpdateFan()
 			//insert into calendar table
 			sprintf(szTmp,
 				"INSERT INTO Fan_Calendar (DeviceRowID, Speed_Min, Speed_Max, Speed_Avg, Date) "
-				"VALUES (%llu, %d, %d, %d,'%s')",
+				"VALUES ('%llu', '%d', '%d', '%d','%s')",
 				ID,
 				speed_min,
 				speed_max,
