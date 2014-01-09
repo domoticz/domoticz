@@ -746,12 +746,26 @@ void CEnOcean::WriteToHardware(const char *pdata, const unsigned char length)
 		enocean_data_structure iframe = create_base_frame();
 		iframe.H_SEQ_LENGTH=0x6B;//TX+Length
 		iframe.ORG = 0x05;
-		iframe.ID_BYTE3=tsen->LIGHTING2.id1;
-		iframe.ID_BYTE2=tsen->LIGHTING2.id2;
-		iframe.ID_BYTE1=tsen->LIGHTING2.id3;
-		iframe.ID_BYTE0=tsen->LIGHTING2.id4;
 
-		iframe.DATA_BYTE3 = 0x30;
+		unsigned long sID=m_id_base+1;
+
+		iframe.ID_BYTE3=(unsigned char)((sID&0xFF000000)>>24);//tsen->LIGHTING2.id1;
+		iframe.ID_BYTE2=(unsigned char)((sID&0x00FF0000)>>16);//tsen->LIGHTING2.id2;
+		iframe.ID_BYTE1=(unsigned char)((sID&0x0000FF00)>>8);//tsen->LIGHTING2.id3;
+		iframe.ID_BYTE0=(unsigned char)(sID&0x0000FF);//tsen->LIGHTING2.id4;
+
+		unsigned char RockerID=0;
+		unsigned char UpDown=1;
+		unsigned char Pressed=1;
+
+		if (tsen->LIGHTING2.unitcode<10)
+			RockerID=tsen->LIGHTING2.unitcode-1;
+		else
+			return;//double not supported yet!
+		UpDown=((tsen->LIGHTING2.cmnd!=light2_sOff)&&(tsen->LIGHTING2.cmnd!=light2_sGroupOff));
+			
+
+		iframe.DATA_BYTE3 = (RockerID<<DB3_RPS_NU_RID_SHIFT) | (UpDown<<DB3_RPS_NU_UD_SHIFT) | (Pressed<<DB3_RPS_NU_PR_SHIFT);//0x30;
 		iframe.STATUS = 0x30;
 
 		iframe.CHECKSUM = enocean_calc_checksum(&iframe);
