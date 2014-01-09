@@ -2419,6 +2419,18 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				        else
 					        root["result"][ii]["Image"]="Light";
 				
+				        unsigned long long camIDX=m_pMain->m_cameras.IsDevSceneInCamera(0,sd[0]);
+				        root["result"][ii]["UsedByCamera"]=(camIDX!=0)?true:false;
+				        if (camIDX!=0) {
+					        root["result"][ii]["CameraFeed"]=m_pMain->m_cameras.GetCameraFeedURL(camIDX);
+				        }
+
+    					root["result"][ii]["Level"]=0;
+	    				root["result"][ii]["LevelInt"]=atoi(sValue.c_str());
+					    root["result"][ii]["AddjValue"]=AddjValue;
+					    root["result"][ii]["AddjMulti"]=AddjMulti;
+					    root["result"][ii]["AddjValue2"]=AddjValue2;
+					    root["result"][ii]["AddjMulti2"]=AddjMulti2;
                     }
                     break;
 				case sTypeRego6XXCounter:
@@ -8127,6 +8139,17 @@ std::string CWebServer::GetJSonPage()
 				root["result"][ii]["val"]=NTYPE_RPM;
 				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_RPM,0);
 				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_RPM,1);
+				ii++;
+			}
+			if ((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXStatus))
+			{
+				root["result"][ii]["val"]=NTYPE_SWITCH_ON;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_SWITCH_ON,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_SWITCH_ON,1);
+				ii++;
+				root["result"][ii]["val"]=NTYPE_SWITCH_OFF;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_SWITCH_OFF,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_SWITCH_OFF,1);
 				ii++;
 			}
 		}
