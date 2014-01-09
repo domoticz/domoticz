@@ -404,7 +404,7 @@ void CEnOcean::Do_Work()
 		{
 			boost::lock_guard<boost::mutex> l(m_sendMutex);
 
-			std::vector<std::string>::const_iterator itt=m_sendqueue.begin();
+			std::vector<std::string>::iterator itt=m_sendqueue.begin();
 			if (itt!=m_sendqueue.end())
 			{
 				std::string sBytes=*itt;
