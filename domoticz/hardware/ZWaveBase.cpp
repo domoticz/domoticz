@@ -62,6 +62,7 @@ bool ZWaveBase::StopHardware()
 
 void ZWaveBase::Do_Work()
 {
+	_configthreadlocale(_ENABLE_PER_THREAD_LOCALE); //prevent OpenZWave locale from taking over
 	while (!m_stoprequested)
 	{
 		sleep_milliseconds(500);
