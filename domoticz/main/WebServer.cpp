@@ -11,6 +11,7 @@
 #include "../hardware/hardwaretypes.h"
 #include "../hardware/1Wire.h"
 #include "../hardware/OpenZWave.h"
+#include "../hardware/EnOcean.h"
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
 #include "../json/config.h"
@@ -335,6 +336,7 @@ char * CWebServer::DisplayHardwareCombo()
 			case HTYPE_RFXLAN:
 			case HTYPE_RFXtrx315:
 			case HTYPE_RFXtrx433:
+			case HTYPE_EnOcean:
 			case HTYPE_Dummy:
 				sprintf(szTmp,"<option value=\"%d\">%s</option>\n",ID,Name.c_str());
 				m_retstr+=szTmp;
@@ -378,10 +380,6 @@ char * CWebServer::DisplayHardwareTypesCombo()
 #endif
 #ifndef WITH_OPENZWAVE
 		if (ii == HTYPE_OpenZWave)
-			bDoAdd=false;
-#endif
-#ifndef _DEBUG
-		if (ii == HTYPE_EnOcean)
 			bDoAdd=false;
 #endif
 		if ((ii == HTYPE_1WIRE)&&(!C1Wire::Have1WireSystem()))
@@ -7555,6 +7553,32 @@ std::string CWebServer::GetJSonPage()
 					goto exitjson;
 				devid=id+sgroupcode;
 			}
+			else if (lighttype==67)
+			{
+				//EnOcean (Lighting2 with Base_ID offset)
+				dtype=pTypeLighting2;
+				subtype=sTypeAC;
+				sunitcode=m_pWebEm->FindValue("unitcode");
+				int iUnitTest=atoi(sunitcode.c_str());
+				if (
+					(sunitcode=="")||
+					((iUnitTest<1)||(iUnitTest>128))
+					)
+					goto exitjson;
+				sunitcode="1";//only First Rocker_ID at the moment, gives us 128 devices we can control, should be enough!
+				CEnOcean *pEnoceanHardware=(CEnOcean *)m_pMain->GetHardware(atoi(hwdid.c_str()));
+				if (pEnoceanHardware==NULL)
+					goto exitjson;
+				if (pEnoceanHardware->HwdType!=HTYPE_EnOcean)
+					goto exitjson;
+				if (pEnoceanHardware->m_id_base==0)
+					goto exitjson;
+				unsigned long rID=pEnoceanHardware->m_id_base+iUnitTest;
+				//convert to hex, and we have our ID
+				std::stringstream s_strid;
+				s_strid << std::hex << std::uppercase << rID;
+				devid=s_strid.str();
+			}
 			else if (lighttype<10)
 			{
 				dtype=pTypeLighting1;
@@ -7697,6 +7721,35 @@ std::string CWebServer::GetJSonPage()
 					)
 					goto exitjson;
 				devid=id+sgroupcode;
+			}
+			else if (lighttype==67)
+			{
+				//EnOcean (Lighting2 with Base_ID offset)
+				dtype=pTypeLighting2;
+				subtype=sTypeAC;
+				sunitcode=m_pWebEm->FindValue("unitcode");
+				int iUnitTest=atoi(sunitcode.c_str());
+				if (
+					(sunitcode=="")||
+					((iUnitTest<1)||(iUnitTest>128))
+					)
+					goto exitjson;
+				sunitcode="1";//only First Rocker_ID at the moment, gives us 128 devices we can control, should be enough!
+				CEnOcean *pEnoceanHardware=(CEnOcean *)m_pMain->GetHardware(atoi(hwdid.c_str()));
+				if (pEnoceanHardware==NULL)
+					goto exitjson;
+				if (pEnoceanHardware->HwdType!=HTYPE_EnOcean)
+					goto exitjson;
+				if (pEnoceanHardware->m_id_base==0)
+				{
+					root["message"]="BaseID not found, is the hardware running?";
+					goto exitjson;
+				}
+				unsigned long rID=pEnoceanHardware->m_id_base+iUnitTest;
+				//convert to hex, and we have our ID
+				std::stringstream s_strid;
+				s_strid << std::hex << std::uppercase << rID;
+				devid=s_strid.str();
 			}
 			else if (lighttype<10)
 			{

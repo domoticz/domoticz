@@ -32,6 +32,7 @@ public:
 
     ~CEnOcean();
 	void WriteToHardware(const char *pdata, const unsigned char length);
+	unsigned long m_id_base;
 private:
 	void Init();
 	bool StartHardware();
@@ -48,8 +49,6 @@ private:
 	volatile bool m_stoprequested;
     int m_Type;
 	std::string m_szSerialPort;
-
-	unsigned long m_id_base;
 
 	// Create a circular buffer.
     unsigned char m_buffer[ENOCEAN_READ_BUFFER_SIZE];

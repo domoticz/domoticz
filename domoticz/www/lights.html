@@ -154,7 +154,8 @@
 	    </tr>
 	    <tr>
           <td align="right"><label>Type: </label></td>
-          <td><select id="combolighttype" style="width:150px" class="combobox ui-corner-all">
+          <td>
+			<select id="combolighttype" style="width:150px" class="combobox ui-corner-all">
 						<option value="0">X10</option>
 						<option value="1">ARC</option>
 						<option value="2">AB400D</option>
@@ -169,76 +170,88 @@
 						<option value="13">LightwaveRF</option>
 						<option value="18">Livolo</option>
 						<option value="66">Blyss</option>
+						<option value="67">EnOcean</option>
 						<option value="100">ByronSX</option>
-          </select></td>
-		    </tr>
-		    </table>
-				<div id="lighting1params">
-					<table class="display" id="lightparams1" border="0" cellpadding="0" cellspacing="20">
-						<tr>
-							<td align="right" style="width:110px"><label>House Code:</label></td>
-							<td><select id="combohousecode" style="width:60px" class="combobox ui-corner-all">
-									</select>
-							</td>
-						</tr>
-						<tr>
-							<td align="right"><label>Unit Code:</label></td>
-							<td><select id="combounitcode" style="width:60px" class="combobox ui-corner-all">
-									</select>
-							</td>
-						</tr>
-					</table>
-				</div>
-				<div id="lighting2params">
-					<table class="display" id="lightparams2" border="0" cellpadding="0" cellspacing="20">
-						<tr>
-							<td align="right" style="width:110px"><label>ID:</label></td>
-							<td>
-								<select id="combocmd1" style="width:60px" class="combobox ui-corner-all">
-										<option value="0">0</option>
-										<option value="1">1</option>
-										<option value="2">2</option>
-										<option value="3">3</option>
-								</select>
-								<select id="combocmd2" style="width:60px" class="combobox ui-corner-all"></select>
-								<select id="combocmd3" style="width:60px" class="combobox ui-corner-all"></select>
-								<select id="combocmd4" style="width:60px" class="combobox ui-corner-all"></select>
-							</td>
-						</tr>
-						<tr id="lighting2paramsUnitCode">
-							<td align="right"><label>Unit Code:</label></td>
-							<td><select id="combounitcode" style="width:60px" class="combobox ui-corner-all">
-									</select>
-							</td>
-						</tr>
-					</table>
-				</div>
-				<div id="lighting3params">
-					<table class="display" id="lightparams3" border="0" cellpadding="0" cellspacing="20">
-						<tr>
-							<td align="right" style="width:110px"><label>ID:</label></td>
-							<td>
-								<select id="combocmd1" style="width:60px" class="combobox ui-corner-all"></select>
-								<select id="combocmd2" style="width:60px" class="combobox ui-corner-all"></select>
-							</td>
-						</tr>
-						<tr>
-							<td align="right"><label>Group Code:</label></td>
-							<td>
-								<select id="combogroupcode" style="width:60px" class="combobox ui-corner-all"></select>
-							</td>
-						</tr>
-						<tr>
-							<td align="right"><label>Unit Code:</label></td>
-							<td>
-								<select id="combounitcode" style="width:60px" class="combobox ui-corner-all"></select>
-							</td>
-						</tr>
-					</table>
-				</div>
-				<br>
-				<center><a class="btnstyle3" onclick="TestManualLight();">Test</a></center>
-				<br>
+			</select>
+			</td>
+		  </tr>
+		</table>
+		<div id="lighting1params">
+			<table class="display" id="lightparams1" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label>House Code:</label></td>
+					<td><select id="combohousecode" style="width:60px" class="combobox ui-corner-all">
+							</select>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><label>Unit Code:</label></td>
+					<td><select id="combounitcode" style="width:60px" class="combobox ui-corner-all">
+							</select>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div id="lighting2params">
+			<table class="display" id="lightparams2" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label>ID:</label></td>
+					<td>
+						<select id="combocmd1" style="width:60px" class="combobox ui-corner-all">
+								<option value="0">0</option>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+						</select>
+						<select id="combocmd2" style="width:60px" class="combobox ui-corner-all"></select>
+						<select id="combocmd3" style="width:60px" class="combobox ui-corner-all"></select>
+						<select id="combocmd4" style="width:60px" class="combobox ui-corner-all"></select>
+					</td>
+				</tr>
+				<tr id="lighting2paramsUnitCode">
+					<td align="right"><label>Unit Code:</label></td>
+					<td><select id="combounitcode" style="width:60px" class="combobox ui-corner-all">
+							</select>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div id="lighting3params">
+			<table class="display" id="lightparams3" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label>ID:</label></td>
+					<td>
+						<select id="combocmd1" style="width:60px" class="combobox ui-corner-all"></select>
+						<select id="combocmd2" style="width:60px" class="combobox ui-corner-all"></select>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><label>Group Code:</label></td>
+					<td>
+						<select id="combogroupcode" style="width:60px" class="combobox ui-corner-all"></select>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><label>Unit Code:</label></td>
+					<td>
+						<select id="combounitcode" style="width:60px" class="combobox ui-corner-all"></select>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div id="lighting4params">
+			<table class="display" id="lightparams4" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label>Unit Code:</label></td>
+					<td>
+						<select id="combounitcode" style="width:60px" class="combobox ui-corner-all"></select>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<br>
+		<center><a class="btnstyle3" onclick="TestManualLight();">Test</a></center>
+		<br>
         <table class="display" id="howtable" border="0" cellpadding="0" cellspacing="0">
         <tr>
           <td align="right"><label>As: </label></td>
@@ -2043,6 +2056,10 @@ function UpdateAddManualDialog()
 		tothousecodes=4;
 		totunits=5;
 	}
+	else if (lighttype==67) {
+		//EnOcean
+		totunits=128;
+	}
 	else if (lighttype==7) {
 		bIsARCType=1;
 		tothousecodes=16;
@@ -2083,6 +2100,19 @@ function UpdateAddManualDialog()
 		$("#dialog-addmanuallightdevice #lighting1params").hide();
 		$("#dialog-addmanuallightdevice #lighting2params").hide();
 		$("#dialog-addmanuallightdevice #lighting3params").show();
+		$("#dialog-addmanuallightdevice #lighting4params").hide();
+	}
+	else if (lighttype==67) {
+		//EnOcean
+		$('#dialog-addmanuallightdevice #lightparams4 #combounitcode >option').remove();
+		for (ii=1; ii<totunits+1; ii++)
+		{
+			$('#dialog-addmanuallightdevice #lightparams4 #combounitcode').append($('<option></option>').val(ii).html(ii));
+		}
+		$("#dialog-addmanuallightdevice #lighting1params").hide();
+		$("#dialog-addmanuallightdevice #lighting2params").hide();
+		$("#dialog-addmanuallightdevice #lighting3params").hide();
+		$("#dialog-addmanuallightdevice #lighting4params").show();
 	}
 	else if (bIsARCType==1) {
 		$('#dialog-addmanuallightdevice #lightparams1 #combohousecode >option').remove();
@@ -2098,6 +2128,7 @@ function UpdateAddManualDialog()
 		$("#dialog-addmanuallightdevice #lighting1params").show();
 		$("#dialog-addmanuallightdevice #lighting2params").hide();
 		$("#dialog-addmanuallightdevice #lighting3params").hide();
+		$("#dialog-addmanuallightdevice #lighting4params").hide();
 	}
 	else {
 		$("#dialog-addmanuallightdevice #lighting2paramsUnitCode").show();
@@ -2117,6 +2148,7 @@ function UpdateAddManualDialog()
 		$("#dialog-addmanuallightdevice #lighting1params").hide();
 		$("#dialog-addmanuallightdevice #lighting2params").show();
 		$("#dialog-addmanuallightdevice #lighting3params").hide();
+		$("#dialog-addmanuallightdevice #lighting4params").hide();
 	}
 }
 
@@ -2148,6 +2180,12 @@ function GetManualLightSettings(isTest)
 		ID=
 			$("#dialog-addmanuallightdevice #lightparams3 #combocmd1 option:selected").text()+
 			$("#dialog-addmanuallightdevice #lightparams3 #combocmd2 option:selected").text();
+		mParams+="&id="+ID;
+	}
+	else if (lighttype==67) {
+		//EnOcean
+		mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightparams4 #combounitcode option:selected").val();
+		ID="EnOcean";
 		mParams+="&id="+ID;
 	}
 	else if (lighttype<10) {

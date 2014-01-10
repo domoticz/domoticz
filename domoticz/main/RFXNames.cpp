@@ -158,7 +158,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_OpenZWave,			"OpenZWave USB" },
 		{ HTYPE_LimitlessLights,	"Limitless/AppLamp with LAN interface" },
 		{ HTYPE_System,				"Motherboard sensors" },
-		{ HTYPE_EnOcean,			"EnOcean USB" },
+		{ HTYPE_EnOcean,			"EnOcean USB (ESP2)" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

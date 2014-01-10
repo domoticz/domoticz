@@ -747,7 +747,12 @@ void CEnOcean::WriteToHardware(const char *pdata, const unsigned char length)
 		iframe.H_SEQ_LENGTH=0x6B;//TX+Length
 		iframe.ORG = 0x05;
 
-		unsigned long sID=m_id_base+1;
+		unsigned long sID=(tsen->LIGHTING2.id1<<24)|(tsen->LIGHTING2.id2<<16)|(tsen->LIGHTING2.id3<<8)|tsen->LIGHTING2.id4;
+		if ((sID<m_id_base)||(sID>m_id_base+129))
+		{
+			_log.Log(LOG_ERROR,"EnOcean: Can not switch with this DeviceID, use a switch created with our id_base!...");
+			return;
+		}
 
 		iframe.ID_BYTE3=(unsigned char)((sID&0xFF000000)>>24);//tsen->LIGHTING2.id1;
 		iframe.ID_BYTE2=(unsigned char)((sID&0x00FF0000)>>16);//tsen->LIGHTING2.id2;
