@@ -57,6 +57,7 @@ Version 1.0.xxxx (December xxth 2013)
 - Fixed: Notifications for Rego6XX status (switches) were not working
 - Implemented: OpenZWave Controller node configuration (PollInterval)
 - Implemented: Initial support for EnOcean hardware (Only ESP2, protocol V2) at the moment, and switches only
+- Changed: Log file will append, not deleted when domoticz is restarted
 
 Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart

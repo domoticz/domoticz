@@ -36,7 +36,7 @@ void CLogger::SetOutputFile(const char *OutputFile)
 		return;
 
 	try {
-		m_outputfile.open(OutputFile);
+		m_outputfile.open(OutputFile, std::ios::out | std::ios::app);
 	} catch(...)
 	{
 		std::cerr << "Error opening output log file..." << std::endl;
