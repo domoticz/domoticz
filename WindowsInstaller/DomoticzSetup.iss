@@ -60,25 +60,26 @@ Source: "..\domoticz\svnversion.h"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\Release\nssm.exe"; DestDir: {app}; Flags: ignoreversion;
 
 [Icons]
-Name: "{group}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "-www {code:GetParams}"; Tasks: RunAsApp; 
+Name: "{group}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "{code:GetParams}" ; Tasks: RunAsApp; 
 ;Name: "{group}\Start Domoticz service"; Filename: "sc"; Parameters: "start {#MyAppName}"; Tasks: RunAsService; 
 ;Name: "{group}\Stop Domoticz service"; Filename: "sc"; Parameters: "stop {#MyAppName}"; Tasks: RunAsService; 
 Name: "{group}\DomoticzManual.pdf"; Filename: "{app}\DomoticzManual.pdf"; 
 Name: "{group}\{cm:ProgramOnTheWeb,Domoticz}"; Filename: "{#MyAppURL}";
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; 
-Name: "{commonstartup}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "-startupdelay 10 -www {code:GetParams}" ; Tasks: RunAsApp\startupicon
-Name: "{commondesktop}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "-www {code:GetParams}" ; Tasks: RunAsApp\desktopicon
+Name: "{commonstartup}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "-startupdelay 10 {code:GetParams}" ; Tasks: RunAsApp\startupicon
+Name: "{commondesktop}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "{code:GetParams}" ; Tasks: RunAsApp\desktopicon
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Tasks: RunAsApp\quicklaunchicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; Flags: nowait postinstall skipifsilent runascurrentuser; Tasks: RunAsApp
-Filename: "{app}\{#NSSM}"; Parameters: "install {#MyAppName} ""{app}\{#MyAppExeName}"" ""-www {code:GetParams}"""; Flags: runhidden; Tasks: RunAsService
+;Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; Flags: nowait postinstall skipifsilent runascurrentuser; Tasks: RunAsApp
+Filename: "{app}\{#NSSM}"; Parameters: "install {#MyAppName} ""{app}\{#MyAppExeName}"" ""{code:GetParams}"""; Flags: runhidden; Tasks: RunAsService
 Filename: "{sys}\net.exe"; Parameters: "start {#MyAppName}"; Flags: runhidden; Tasks: RunAsService
 
 [Dirs]
 Name: "{app}\backups\hourly"
 Name: "{app}\backups\daily"
 Name: "{app}\backups\monthly"
+Name: "{app}\log"; Permissions: everyone-full
 
 [PostCompile]
 Name: "makedist.bat"
@@ -86,10 +87,11 @@ Name: "makedist.bat"
 [Code]
 var
   ConfigPage: TInputQueryWizardPage;
-
+  LogConfigPage: TInputDirWizardPage;
+ 
 function GetParams(Value: string): string;
 begin
-  Result := ConfigPage.Values[0];
+  Result := '-www '+ConfigPage.Values[0]+' -log "'+ LogConfigPage.Values[0] +'\domoticz.log"';
 end;
 
 procedure InitializeWizard;
@@ -101,6 +103,18 @@ begin
   ConfigPage.Add('Port number:', False);
   // Set initial values (optional)
   ConfigPage.Values[0] := ExpandConstant('8080');
+
+  LogConfigPage := CreateInputDirPage(wpSelectComponents,
+    'Select Log File Location', 'Where should the log file be stored?',
+    'The log file will be stored in the installation folder by default.'#13#10 +
+    'If you do not wish to retain the log file permanently, select a temp folder'#13#10 +
+    '(c:\windows\temp for instance).'#13#10 +
+    'To continue, click Next. If you would like to select a different folder, click Browse.',
+    False, 'New Folder');
+  LogConfigPage.Add('');
+
+  LogConfigPage.Values[0] := WizardDirValue+'\log';
+ 
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
@@ -111,6 +125,14 @@ begin
     Exec('sc',ExpandConstant('stop "{#MyAppName}"'),'', SW_HIDE, ewWaitUntilTerminated, ResultCode);
     Exec('sc',ExpandConstant('delete "{#MyAppName}"'),'', SW_HIDE, ewWaitUntilTerminated, ResultCode);
   end;
+end;
+
+procedure CurPageChanged(CurPageID: Integer);
+begin
+  if CurPageID=wpFinished then
+  begin
+   WizardForm.FinishedLabel.Caption := 'Setup has finished installing Domoticz. If you installed as a service, Domoticz will now start automatically.' + #13#10 + 'Otherwise you may start Domoticz from the start menu.'+ #13#10#13#10 + 'Click Finish to exit Setup.'; 
+ end;
 end;
 
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
