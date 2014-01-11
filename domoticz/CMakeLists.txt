@@ -138,15 +138,6 @@ ADD_CUSTOM_COMMAND(TARGET revisiontag COMMAND ${CMAKE_COMMAND}
    -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR} 
    -P ${CMAKE_CURRENT_SOURCE_DIR}/getsvn.cmake)
 
-# add the zlib static library
-find_library(ZLIB NAMES libz.a PATHS ${PROJECT_SOURCE_DIR}/zlib NO_DEFAULT_PATH)
-IF(ZLIB)
-    message(STATUS ${ZLIB})
-    target_link_libraries(domoticz ${ZLIB})
-else()
-    MESSAGE(FATAL_ERROR "Could not find LIB ZLIB on your system")
-ENDIF(ZLIB)
-
 ## Target
 set(
 domoticz_SRCS
@@ -257,6 +248,15 @@ IF(LIBUSB_FOUND)
 else()
   MESSAGE(STATUS "==== LibUSB not found, support for TE923/Voltcraft disabled!")
 ENDIF(LIBUSB_FOUND)
+
+# add the zlib static library
+find_library(ZLIB NAMES libz.a PATHS ${PROJECT_SOURCE_DIR}/zlib NO_DEFAULT_PATH)
+IF(ZLIB)
+    message(STATUS ${ZLIB})
+    target_link_libraries(domoticz ${ZLIB})
+else()
+    MESSAGE(FATAL_ERROR "Could not find LIB ZLIB on your system")
+ENDIF(ZLIB)
 
 # try to find open-zwave, if found, include support
 find_library(OpenZWave NAMES libopenzwave.a HINTS "../open-zwave-read-only/cpp/lib/linux" "../open-zwave-read-only/cpp/lib/mac")
