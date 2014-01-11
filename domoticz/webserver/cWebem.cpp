@@ -1385,6 +1385,22 @@ void cWebemRequestHandler::handle_request( const request& req, reply& rep)
 			rep.headers[1].value += ";charset=UTF-8";
 		}
 	}
+/* Soon...
+	else
+	{
+		const char *encoding_header;
+		//check gzip support if yes, send it back in gzip format
+		if ((encoding_header = req.get_req_header(&req, "Accept-Encoding")) != NULL)
+		{
+			//see if we support gzip
+			bool bHaveGZipSupport=(strstr(encoding_header,"gzip")!=NULL);
+			if (bHaveGZipSupport)
+			{
+				_asm nop;
+			}
+		}
+	}
+*/
 	check_cookie(req,rep);
 
 	if (myWebem->m_actsessionid!=0)

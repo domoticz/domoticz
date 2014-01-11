@@ -6,6 +6,13 @@ get_directory_property (CMAKE_LUA_INCLUDES DIRECTORY lua
 get_directory_property (CMAKE_LUA_LIBRARIES DIRECTORY lua
     DEFINITION LUA_LIBRARIES)
 
+set(SKIP_INSTALL_ALL ON)
+add_subdirectory (zlib)
+get_directory_property (CMAKE_ZLIB_INCLUDES DIRECTORY zlib
+    DEFINITION ZLIB_INCLUDE_DIRS)
+get_directory_property (CMAKE_ZLIB_LIBRARIES DIRECTORY zlib
+    DEFINITION ZLIB_LIBRARIES)
+
 project(domoticz)
 
 SET(EXECUTABLE_OUTPUT_PATH "" CACHE INTERNAL 
