@@ -146,6 +146,7 @@ main/CmdLine.cpp
 main/Camera.cpp
 main/domoticz.cpp
 main/EventSystem.cpp
+main/GZipHelper.h
 main/Helper.cpp
 main/localtime_r.cpp
 main/Logger.cpp

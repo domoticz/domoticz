@@ -55,7 +55,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>../Windows Libraries/Boost/boost_1_55_0/Debug;./libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>curl/libcurl_imp.lib;sqlite/sqlite3.lib;../Windows Libraries/Lua/Debug/LuaMSVS.lib;../Windows Libraries/OpenZwave/Debug/OpenZWave.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>curl/libcurl_imp.lib;sqlite/sqlite3.lib;../Windows Libraries/Lua/Debug/LuaMSVS.lib;../Windows Libraries/OpenZwave/Debug/OpenZWave.lib;../Windows Libraries/ZLib/zlib.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <PreBuildEvent>
@@ -82,7 +82,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>../Windows Libraries/Boost/boost_1_55_0/Release;./libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>curl/libcurl_imp.lib;sqlite/sqlite3.lib;../Windows Libraries/Lua/Release/LuaMSVS.lib;../Windows Libraries/OpenZwave/Release/OpenZWave.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>curl/libcurl_imp.lib;sqlite/sqlite3.lib;../Windows Libraries/Lua/Release/LuaMSVS.lib;../Windows Libraries/OpenZwave/Release/OpenZWave.lib;../Windows Libraries/ZLib/zlib.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
@@ -142,6 +142,7 @@
     <ClInclude Include="hardware\hardwaretypes.h" />
     <ClInclude Include="main\dirent_windows.h" />
     <ClInclude Include="main\EventSystem.h" />
+    <ClInclude Include="main\GZipHelper.h" />
     <ClInclude Include="main\localtime_r.h" />
     <ClInclude Include="hardware\P1MeterBase.h" />
     <ClInclude Include="hardware\P1MeterSerial.h" />

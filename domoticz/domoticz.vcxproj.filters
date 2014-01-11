@@ -114,6 +114,9 @@
     <Filter Include="Devices\EnOcean">
       <UniqueIdentifier>{0460800e-868d-4e4d-a378-ce25a7d9025d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="zlib">
+      <UniqueIdentifier>{96351f00-f848-4e75-84be-0bccaecc2a02}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -367,6 +370,9 @@
     </ClInclude>
     <ClInclude Include="main\Version.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main\GZipHelper.h">
+      <Filter>zlib</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

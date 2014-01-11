@@ -16,10 +16,12 @@
 #include <sstream>
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
+#include "../main/GZipHelper.h"
 
 #ifndef WIN32
 	#include <unistd.h> //gethostbyname
 #endif
+
 
 int m_failcounter=0;
 
@@ -1385,7 +1387,6 @@ void cWebemRequestHandler::handle_request( const request& req, reply& rep)
 			rep.headers[1].value += ";charset=UTF-8";
 		}
 	}
-/* Soon...
 	else
 	{
 		const char *encoding_header;
@@ -1396,11 +1397,23 @@ void cWebemRequestHandler::handle_request( const request& req, reply& rep)
 			bool bHaveGZipSupport=(strstr(encoding_header,"gzip")!=NULL);
 			if (bHaveGZipSupport)
 			{
-				_asm nop;
+				CA2GZIP gzip((char*)rep.content.c_str(), rep.content.size());
+				if ((gzip.Length>0)&&(gzip.Length<rep.content.size()))
+				{
+					rep.content.clear();
+					rep.content.append((char*)gzip.pgzip, gzip.Length);
+					//Set new content length
+					rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
+					//Add gzip header
+					int ohsize=rep.headers.size();
+					rep.headers.resize(ohsize+1);
+					rep.headers[ohsize].name = "Content-Encoding";
+					rep.headers[ohsize].value = "gzip";
+				}
 			}
 		}
 	}
-*/
+
 	check_cookie(req,rep);
 
 	if (myWebem->m_actsessionid!=0)
