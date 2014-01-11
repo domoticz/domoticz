@@ -1385,30 +1385,75 @@ void cWebemRequestHandler::handle_request( const request& req, reply& rep)
 
 			// tell browser that we are using UTF-8 encoding
 			rep.headers[1].value += ";charset=UTF-8";
+
+			std::string request_path;
+			if (url_decode(req.uri, request_path))
+			{
+				if (
+					(request_path.find(".jpg")==std::string::npos)&&
+					(request_path.find(".png")==std::string::npos)
+					)
+				{
+					const char *encoding_header;
+					//check gzip support if yes, send it back in gzip format
+					if ((encoding_header = req.get_req_header(&req, "Accept-Encoding")) != NULL)
+					{
+						//see if we support gzip
+						bool bHaveGZipSupport=(strstr(encoding_header,"gzip")!=NULL);
+						if (bHaveGZipSupport)
+						{
+							CA2GZIP gzip((char*)rep.content.c_str(), rep.content.size());
+							if ((gzip.Length>0)&&(gzip.Length<(int)rep.content.size()))
+							{
+								rep.content.clear();
+								rep.content.append((char*)gzip.pgzip, gzip.Length);
+								//Set new content length
+								rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
+								//Add gzip header
+								int ohsize=rep.headers.size();
+								rep.headers.resize(ohsize+1);
+								rep.headers[ohsize].name = "Content-Encoding";
+								rep.headers[ohsize].value = "gzip";
+							}
+						}
+					}
+				}
+			}
+
 		}
 	}
 	else
 	{
-		const char *encoding_header;
-		//check gzip support if yes, send it back in gzip format
-		if ((encoding_header = req.get_req_header(&req, "Accept-Encoding")) != NULL)
+		std::string request_path;
+		if (url_decode(req.uri, request_path))
 		{
-			//see if we support gzip
-			bool bHaveGZipSupport=(strstr(encoding_header,"gzip")!=NULL);
-			if (bHaveGZipSupport)
+			if (
+				(request_path.find(".jpg")==std::string::npos)&&
+				(request_path.find(".png")==std::string::npos)
+				)
 			{
-				CA2GZIP gzip((char*)rep.content.c_str(), rep.content.size());
-				if ((gzip.Length>0)&&(gzip.Length<rep.content.size()))
+				const char *encoding_header;
+				//check gzip support if yes, send it back in gzip format
+				if ((encoding_header = req.get_req_header(&req, "Accept-Encoding")) != NULL)
 				{
-					rep.content.clear();
-					rep.content.append((char*)gzip.pgzip, gzip.Length);
-					//Set new content length
-					rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
-					//Add gzip header
-					int ohsize=rep.headers.size();
-					rep.headers.resize(ohsize+1);
-					rep.headers[ohsize].name = "Content-Encoding";
-					rep.headers[ohsize].value = "gzip";
+					//see if we support gzip
+					bool bHaveGZipSupport=(strstr(encoding_header,"gzip")!=NULL);
+					if (bHaveGZipSupport)
+					{
+						CA2GZIP gzip((char*)rep.content.c_str(), rep.content.size());
+						if ((gzip.Length>0)&&(gzip.Length<(int)rep.content.size()))
+						{
+							rep.content.clear();
+							rep.content.append((char*)gzip.pgzip, gzip.Length);
+							//Set new content length
+							rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
+							//Add gzip header
+							int ohsize=rep.headers.size();
+							rep.headers.resize(ohsize+1);
+							rep.headers[ohsize].name = "Content-Encoding";
+							rep.headers[ohsize].value = "gzip";
+						}
+					}
 				}
 			}
 		}
