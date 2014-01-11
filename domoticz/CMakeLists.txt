@@ -249,6 +249,16 @@ else()
   MESSAGE(STATUS "==== LibUSB not found, support for TE923/Voltcraft disabled!")
 ENDIF(LIBUSB_FOUND)
 
+# add the zlib static library
+find_library(ZLIB NAMES libz.a)
+IF(ZLIB)
+    message(STATUS ${ZLIB})
+    target_link_libraries(domoticz ${ZLIB})
+else()
+    MESSAGE(FATAL_ERROR "Could not find LIB ZLIB on your system")
+ENDIF(UDEV)
+
+
 # try to find open-zwave, if found, include support
 find_library(OpenZWave NAMES libopenzwave.a HINTS "../open-zwave-read-only/cpp/lib/linux" "../open-zwave-read-only/cpp/lib/mac")
 IF(OpenZWave)
