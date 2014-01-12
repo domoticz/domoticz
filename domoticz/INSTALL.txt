@@ -56,7 +56,7 @@ make
 ------------------------------------------------------------------------------------------------
 [Ubuntu / Raspberry Pi (wheezy)]
 sudo apt-get install build-essential -y
-sudo apt-get install cmake libboost-dev libboost-thread-dev libboost-system-dev libsqlite3-dev subversion curl libcurl4-openssl-dev libusb-dev libudev-dev
+sudo apt-get install cmake libboost-dev libboost-thread-dev libboost-system-dev libsqlite3-dev subversion curl libcurl4-openssl-dev libusb-dev libudev-dev zlib1g-dev
 
 Raspberry Pi (wheezy, 22 November 2012): (First time compile time: 25 minutes)
 At this moment (First generation RPi (128MB) (And possible the last generation too), there is a issue with the FTDI drivers (USB).
@@ -81,6 +81,7 @@ sudo port install boost
 sudo port install libusb
 sudo port install libusb-compat
 sudo port install libudev-dev
+sudo port install zlib1g-dev
 
 ------------------------------------------------------------------------------------------------
 [Synology: (Initial setup time is 30 minutes, DSM 4.2+/tested with 212+)]
@@ -96,6 +97,7 @@ ipkg install boost-system
 ipkg install boost-date-time
 ipkg install libcurl-dev
 ipkg install libusb
+ipkg install zlib1g-dev
 
 download/install cmake (take a coffee while doing the bootstrap and make commands)
 wget http://www.cmake.org/files/v2.8/cmake-2.8.12.1.tar.gz
