@@ -4428,33 +4428,60 @@ std::string CWebServer::GetJSonPage()
 			char szDateStart[40];
 			char szDateEnd[40];
 
-			struct tm ltime;
-			ltime.tm_isdst=tm1.tm_isdst;
-			ltime.tm_hour=0;
-			ltime.tm_min=0;
-			ltime.tm_sec=0;
-			ltime.tm_year=tm1.tm_year;
-			ltime.tm_mon=tm1.tm_mon;
-			ltime.tm_mday=tm1.tm_mday;
+			std::string sactmonth=m_pWebEm->FindValue("actmonth");
+			std::string sactyear=m_pWebEm->FindValue("actyear");
 
-			sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
+			int actMonth=atoi(sactmonth.c_str());
+			int actYear=atoi(sactyear.c_str());
 
-			if (srange=="month")
+			if ((sactmonth!="")&&(sactyear!=""))
 			{
-				//Subtract one month
-				ltime.tm_mon -= 1;
+				sprintf(szDateStart,"%04d-%02d-%02d",actYear,actMonth,1);
+				actMonth++;
+				if (actMonth==13)
+				{
+					actMonth=1;
+					actYear++;
+				}
+				sprintf(szDateEnd,"%04d-%02d-%02d",actYear,actMonth,1);
+			}
+			else if (sactyear!="")
+			{
+				sprintf(szDateStart,"%04d-%02d-%02d",actYear,1,1);
+				actYear++;
+				sprintf(szDateEnd,"%04d-%02d-%02d",actYear,1,1);
 			}
 			else
 			{
-				//Subtract one year
-				ltime.tm_year -= 1;
+				struct tm ltime;
+				ltime.tm_isdst=tm1.tm_isdst;
+				ltime.tm_hour=0;
+				ltime.tm_min=0;
+				ltime.tm_sec=0;
+				ltime.tm_year=tm1.tm_year;
+				ltime.tm_mon=tm1.tm_mon;
+				ltime.tm_mday=tm1.tm_mday;
+
+				sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
+
+				if (srange=="month")
+				{
+					//Subtract one month
+					ltime.tm_mon -= 1;
+				}
+				else
+				{
+					//Subtract one year
+					ltime.tm_year -= 1;
+				}
+
+				time_t later = mktime(&ltime);
+				struct tm tm2;
+				localtime_r(&later,&tm2);
+
+				sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 			}
 
-			time_t later = mktime(&ltime);
-			struct tm tm2;
-			localtime_r(&later,&tm2);
-
-			sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 			if (sensor=="temp") {
 				root["status"]="OK";
 				root["title"]="Graph " + sensor + " " + srange;
