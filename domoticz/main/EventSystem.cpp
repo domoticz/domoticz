@@ -940,6 +940,21 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
             if (it->EventStatus == 1) { eventActive = true;};
 
             if ((eventActive) && (found!=std::string::npos)) {
+
+                // Replace Sunrise and sunset placeholder with actual time for query
+                if (it->Conditions.find("@Sunrise")!=std::string::npos) {
+                    int intRise = getSunRiseSunSetMinutes("Sunrise");
+                    std::stringstream ssRise;
+                    ssRise << intRise;
+                    it->Conditions = stdreplace(it->Conditions, "@Sunrise", ssRise.str());
+                }
+                if (it->Conditions.find("@Sunset")!=std::string::npos) {
+                    int intSet = getSunRiseSunSetMinutes("Sunset");
+                    std::stringstream ssSet;
+                    ssSet << intSet;
+                    it->Conditions = stdreplace(it->Conditions, "@Sunset", ssSet.str());
+                }
+
                 std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + it->Conditions + " then result = 1 end; return result";
                 //_log.Log(LOG_NORM,"ifc: %s",ifCondition.c_str());
                 if( luaL_dostring(lua_state, ifCondition.c_str()))
@@ -974,6 +989,21 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
             if (it->EventStatus == 1) { eventActive = true;};
             
             if ((eventActive) && (found!=std::string::npos)) {
+
+				// Replace Sunrise and sunset placeholder with actual time for query
+                if (it->Conditions.find("@Sunrise")!=std::string::npos) {
+                    int intRise = getSunRiseSunSetMinutes("Sunrise");
+                    std::stringstream ssRise;
+                    ssRise << intRise;
+                    it->Conditions = stdreplace(it->Conditions, "@Sunrise", ssRise.str());
+                }
+                if (it->Conditions.find("@Sunset")!=std::string::npos) {
+                    int intSet = getSunRiseSunSetMinutes("Sunset");
+                    std::stringstream ssSet;
+                    ssSet << intSet;
+                    it->Conditions = stdreplace(it->Conditions, "@Sunset", ssSet.str());
+                }
+
                 std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + it->Conditions + " then result = 1 end; return result";
                 //_log.Log(LOG_NORM,"ifc: %s",ifCondition.c_str());
                 if( luaL_dostring(lua_state, ifCondition.c_str()))
