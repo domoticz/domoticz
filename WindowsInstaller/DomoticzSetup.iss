@@ -72,7 +72,7 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Domoticz"; Filenam
 
 [Run]
 ;Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; Flags: nowait postinstall skipifsilent runascurrentuser; Tasks: RunAsApp
-Filename: "{app}\{#NSSM}"; Parameters: "install {#MyAppName} ""{app}\{#MyAppExeName}"" ""{code:GetParams}"""; Flags: runhidden; Tasks: RunAsService
+Filename: "{app}\{#NSSM}"; Parameters: "install {#MyAppName} ""{app}\{#MyAppExeName}"" ""{code:GetParamsService}"""; Flags: runhidden; Tasks: RunAsService
 Filename: "{sys}\net.exe"; Parameters: "start {#MyAppName}"; Flags: runhidden; Tasks: RunAsService
 
 [Dirs]
@@ -92,6 +92,11 @@ var
 function GetParams(Value: string): string;
 begin
   Result := '-www '+ConfigPage.Values[0]+' -log "'+ LogConfigPage.Values[0] +'\domoticz.log"';
+end;
+
+function GetParamsService(Value: string): string;
+begin
+  Result := '-www '+ConfigPage.Values[0]+' -log ""'+ LogConfigPage.Values[0] +'\domoticz.log""';
 end;
 
 procedure InitializeWizard;
