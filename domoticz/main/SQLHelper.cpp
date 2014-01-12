@@ -5307,12 +5307,12 @@ void CSQLHelper::SetUnitsAndScale()
 	//Temp
 	if (m_tempunit==TEMPUNIT_C)
 	{
-		m_tempsign="° C";
+		m_tempsign="C";
 		m_tempscale=1.0f;
 	}
 	if (m_tempunit==TEMPUNIT_F)
 	{
-		m_tempsign="° F";
+		m_tempsign="F";
 		m_tempscale=1.0f; //*1.8 + 32
 	}
 }

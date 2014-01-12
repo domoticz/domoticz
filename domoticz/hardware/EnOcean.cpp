@@ -549,13 +549,13 @@ char* enocean_hexToHuman(const enocean_data_structure *pFrame)
 		sprintf(tempstring,HR_SENDER);
 		tempstring += sizeof(HR_SENDER)-1;
 		temphexstring = enocean_gethex_internal((BYTE*)&(pFrame->ID_BYTE3), 4);
-		(void*)strcpy(tempstring,temphexstring);
+		strcpy(tempstring,temphexstring);
 		free(temphexstring);
 		tempstring += 8;  // we converted 4 bytes and each one takes 2 chars
 		sprintf(tempstring,HR_DATA);
 		tempstring += sizeof(HR_DATA)-1;
 		temphexstring = enocean_gethex_internal((BYTE*)&(pFrame->DATA_BYTE3), 4);
-		(void*)strcpy(tempstring,temphexstring);
+		strcpy(tempstring,temphexstring);
 		free(temphexstring);
 		tempstring += 8;  // we converted 4 bytes and each one takes 2 chars
 		break;
@@ -566,13 +566,13 @@ char* enocean_hexToHuman(const enocean_data_structure *pFrame)
 		sprintf(tempstring,HR_SENDER);
 		tempstring += sizeof(HR_SENDER)-1;
 		temphexstring = enocean_gethex_internal((BYTE*)&(frame_6DT->ADDRESS1), 2);
-		(void*)strcpy(tempstring,temphexstring);
+		strcpy(tempstring,temphexstring);
 		free(temphexstring);
 		tempstring += 4;
 		sprintf(tempstring,HR_DATA);
 		tempstring += sizeof(HR_DATA)-1;
 		temphexstring = enocean_gethex_internal((BYTE*)&(frame_6DT->DATA_BYTE5), 6);
-		(void*)strcpy(tempstring,temphexstring);
+		strcpy(tempstring,temphexstring);
 		free(temphexstring);
 		tempstring += 12;
 		break;
@@ -583,7 +583,7 @@ char* enocean_hexToHuman(const enocean_data_structure *pFrame)
 		sprintf(tempstring,HR_SENDER);
 		tempstring += sizeof(HR_SENDER)-1;
 		temphexstring = enocean_gethex_internal((BYTE*)&(frame_MDA->ADDRESS1), 2);
-		(void*)strcpy(tempstring,temphexstring);
+		strcpy(tempstring,temphexstring);
 		free(temphexstring);
 		tempstring += 4;
 		break;
@@ -595,7 +595,7 @@ char* enocean_hexToHuman(const enocean_data_structure *pFrame)
 	sprintf(tempstring,HR_STATUS);
 	tempstring += sizeof(HR_STATUS)-1;
 	temphexstring = enocean_gethex_internal((BYTE*)&(pFrame->STATUS), 1);
-	(void*)strcpy(tempstring,temphexstring);
+	strcpy(tempstring,temphexstring);
 	free(temphexstring);
 	tempstring += 2;
 	return humanString;

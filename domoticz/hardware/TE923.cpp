@@ -283,7 +283,7 @@ void CTE923::GetSensorDetails()
 		tsen.WIND.chillh=0;
 		tsen.WIND.chilll=0;
 		tsen.WIND.temperatureh=0;
-		tsen.WIND.temperaturel;
+		tsen.WIND.temperaturel=0;
 		if (data._wChill==0)
 		{
 			tsen.WIND.tempsign=(data.wChill>=0)?0:1;

@@ -932,6 +932,21 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 			}
 		}
 	}
+	else if ((commandclass==COMMAND_CLASS_ALARM)||(commandclass==COMMAND_CLASS_SENSOR_ALARM))
+	{
+		if (
+			(vLabel=="Alarm Level")||
+			(vLabel=="Flood")
+			)
+		{
+			if (m_pManager->GetValueAsByte(vID,&byteValue)==true)
+			{
+				_device.devType= ZDTYPE_SWITCHNORMAL;
+				_device.intvalue=byteValue;
+				InsertDevice(_device);
+			}
+		}
+	}
 	else if (commandclass==COMMAND_CLASS_METER)
 	{
 		//Meter device
@@ -1188,20 +1203,31 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 	{
 	case ZDTYPE_SWITCHNORMAL:
 		{
-			if ((vLabel!="Switch")&&(vLabel!="Sensor"))
-				return;
-			if (vType!=OpenZWave::ValueID::ValueType_Bool)
-				return;
-			int intValue=0;
-			if (bValue==true)
-				intValue=255;
-			else
-				intValue=0;
-			if (pDevice->intvalue==intValue)
+			if ((vLabel=="Alarm Level")||(vLabel=="Flood"))
 			{
-				return; //dont send same value
+				if (pDevice->intvalue==byteValue)
+				{
+					return; //dont send same value
+				}
+				pDevice->intvalue=byteValue;
 			}
-			pDevice->intvalue=intValue;
+			else
+			{
+				if ((vLabel!="Switch")&&(vLabel!="Sensor"))
+					return;
+				if (vType!=OpenZWave::ValueID::ValueType_Bool)
+					return;
+				int intValue=0;
+				if (bValue==true)
+					intValue=255;
+				else
+					intValue=0;
+				if (pDevice->intvalue==intValue)
+				{
+					return; //dont send same value
+				}
+				pDevice->intvalue=intValue;
+			}
 		}
 		break;
 	case ZDTYPE_SWITCHDIMMER:

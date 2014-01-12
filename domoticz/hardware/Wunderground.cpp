@@ -342,7 +342,7 @@ void CWunderground::GetMeterDetails()
 		tsen.WIND.chillh=0;
 		tsen.WIND.chilll=0;
 		tsen.WIND.temperatureh=0;
-		tsen.WIND.temperaturel;
+		tsen.WIND.temperaturel=0;
 
 		tsen.WIND.tempsign=(wind_temp>=0)?0:1;
 		int at10=round(abs(wind_temp*10.0f));

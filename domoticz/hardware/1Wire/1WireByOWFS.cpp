@@ -37,7 +37,7 @@ bool C1WireByOWFS::IsAvailable()
     {
         struct dirent *de=NULL;
         // Loop while not NULL
-        while(de = readdir(d))
+        while ((de = readdir(d)))
         {
             std::string dirname = de->d_name;
             if (de->d_type==DT_DIR)

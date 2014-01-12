@@ -84,7 +84,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	{
 		struct dirent *de=NULL;
 		// Loop while not NULL
-		while(de = readdir(d))
+		while ((de = readdir(d)))
 		{
 			std::string fname = de->d_name;
 			if (fname.find("ttyUSB")!=std::string::npos)
@@ -113,7 +113,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	{
 		struct dirent *de=NULL;
 		// Loop while not NULL
-		while(de = readdir(d))
+		while ((de = readdir(d)))
 		{
 			std::string fname = de->d_name;
 			if (fname.find("ttyUSB")!=std::string::npos)
