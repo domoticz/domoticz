@@ -62,7 +62,7 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
   ENDIF(MSVC)
 
   IF(CMAKE_COMPILER_IS_GNUCXX)
-	ADD_DEFINITIONS( -Wno-switch )
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-switch")
 	#ADD_DEFINITIONS( -Wall -O0 -ggdb )
 	#ADD_DEFINITIONS( -Wfatal-errors -Wformat=2 -Werror=format-security )
 
