@@ -656,15 +656,24 @@ bool COpenZWave::OpenSerialConnector()
 	// The second argument is the path for saved Z-Wave network state and the log file.  If you leave it NULL 
 	// the log file will appear in the program's working directory.
 	OpenZWave::Options::Create( ConfigPath.c_str(), ConfigPath.c_str(), "--SaveConfiguration=true " );
+	int optInt;
+	if (!(OpenZWave::Options::Get()->GetOptionAsInt("SaveLogLevel",&optInt))) {
 #ifdef _DEBUG
-	OpenZWave::Options::Get()->AddOptionInt( "SaveLogLevel", OpenZWave::LogLevel_Detail );
-	OpenZWave::Options::Get()->AddOptionInt( "QueueLogLevel", OpenZWave::LogLevel_Debug );
-	OpenZWave::Options::Get()->AddOptionInt( "DumpTrigger", OpenZWave::LogLevel_Error );
+		OpenZWave::Options::Get()->AddOptionInt( "SaveLogLevel", OpenZWave::LogLevel_Detail );
 #else
-	OpenZWave::Options::Get()->AddOptionInt( "SaveLogLevel", OpenZWave::LogLevel_Error );
-	OpenZWave::Options::Get()->AddOptionInt( "QueueLogLevel", OpenZWave::LogLevel_Error );
-	OpenZWave::Options::Get()->AddOptionInt( "DumpTrigger", OpenZWave::LogLevel_Error );
+		OpenZWave::Options::Get()->AddOptionInt( "SaveLogLevel", OpenZWave::LogLevel_Error );
 #endif
+	}
+	if (!(OpenZWave::Options::Get()->GetOptionAsInt("QueueLogLevel",&optInt))) {
+#ifdef _DEBUG
+		OpenZWave::Options::Get()->AddOptionInt( "QueueLogLevel", OpenZWave::LogLevel_Debug );
+#else
+		OpenZWave::Options::Get()->AddOptionInt( "QueueLogLevel", OpenZWave::LogLevel_Error );
+#endif
+	}
+	if (!(OpenZWave::Options::Get()->GetOptionAsInt("DumpTriggerLevel",&optInt))) {
+		OpenZWave::Options::Get()->AddOptionInt( "DumpTriggerLevel", OpenZWave::LogLevel_Error );
+	}
 	OpenZWave::Options::Get()->AddOptionInt( "PollInterval", 60000 ); //enable polling each 60 seconds
 	OpenZWave::Options::Get()->AddOptionBool( "IntervalBetweenPolls", true );
 	OpenZWave::Options::Get()->AddOptionBool("ValidateValueChanges", true);
