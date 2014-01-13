@@ -100,6 +100,7 @@ namespace http {
 			  /// Handle a request and produce a reply.
 			  virtual void handle_request( const request& req, reply& rep);
 		private:
+			bool CompressWebOutput(const request& req, reply& rep);
 			void check_cookie(const request& req, reply& rep);
 			void send_authorization_request(reply& rep);
 			void send_authorization_page(reply& rep);

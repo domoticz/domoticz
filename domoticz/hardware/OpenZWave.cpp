@@ -1058,7 +1058,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	else
 	{
 		//Unhanded
-		_log.Log(LOG_NORM, "OpenZWave: Unhanded class");
+		_log.Log(LOG_NORM, "OpenZWave: Unhanded class: 0x%02X",commandclass);
 		if (vType== OpenZWave::ValueID::ValueType_List)
 		{
 			//std::vector<std::string > vStringList;
