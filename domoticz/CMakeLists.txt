@@ -254,7 +254,7 @@ else()
 ENDIF(LIBUSB_FOUND)
 
 # try to find open-zwave, if found, include support
-find_library(OpenZWave NAMES libopenzwave.a HINTS "../open-zwave-read-only/cpp/lib/linux" "../open-zwave-read-only/cpp/lib/mac")
+find_library(OpenZWave NAMES libopenzwave.a HINTS "../open-zwave-read-only/cpp/lib" "../open-zwave-read-only/cpp/lib/linux" "../open-zwave-read-only/cpp/lib/mac")
 IF(OpenZWave)
   message(STATUS ${OpenZWave})
   target_link_libraries(domoticz ${OpenZWave})
