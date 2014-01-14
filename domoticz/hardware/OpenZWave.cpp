@@ -793,6 +793,7 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	{
 		if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SWITCH_BINARY,vID)==true)
 		{
+			_log.Log(LOG_NORM,"OpenZWave: Domoticz has send a Switch command!");
 			if (svalue==0) {
 				//Off
 				m_pManager->SetValue(vID,false);
@@ -807,6 +808,7 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	{
 		if (svalue>99)
 			svalue=99;
+		_log.Log(LOG_NORM,"OpenZWave: Domoticz has send a Switch command!");
 		if (!m_pManager->SetValue(vID,svalue))
 		{
 			_log.Log(LOG_ERROR,"OpenZWave: Error setting Switch Value!");

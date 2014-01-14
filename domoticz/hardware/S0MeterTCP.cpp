@@ -27,15 +27,22 @@ S0MeterTCP::S0MeterTCP(const int ID, const std::string IPAddress, const unsigned
 		}
 	}
 #endif
-	m_s0_m1_type=M1Type;
-	m_s0_m2_type=M2Type;
-	m_pulse_per_unit_1=2000.0;
-	m_pulse_per_unit_2=2000.0;
+	//Quick hack, meters 3 till 5 uses same parameter as 1 for now, till we can configure it
+	m_meters[0].m_type=M1Type;
+	m_meters[1].m_type=M2Type;
+	m_meters[2].m_type=M1Type;
+	m_meters[3].m_type=M1Type;
+	m_meters[4].m_type=M1Type;
+	m_meters[0].m_pulse_per_unit=1000.0;
+	m_meters[1].m_pulse_per_unit=1000.0;
+	m_meters[2].m_pulse_per_unit=1000.0;
+	m_meters[3].m_pulse_per_unit=1000.0;
+	m_meters[4].m_pulse_per_unit=1000.0;
 
 	if (M1PPH!=0)
-		m_pulse_per_unit_1=float(M1PPH);
+		m_meters[0].m_pulse_per_unit=float(M1PPH);
 	if (M2PPH!=0)
-		m_pulse_per_unit_2=float(M2PPH);
+		m_meters[1].m_pulse_per_unit=float(M1PPH);
 	m_socket=INVALID_SOCKET;
 	m_stoprequested=false;
 	m_szIPAddress=IPAddress;

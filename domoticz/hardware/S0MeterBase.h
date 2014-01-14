@@ -4,6 +4,12 @@
 
 class S0MeterBase : public CDomoticzHardwareBase
 {
+	struct _tS0Meter{
+		int m_type;
+		double m_pulse_per_unit;
+		double m_last_values[4];
+		double m_volume_total;
+	};
 	friend class S0MeterSerial;
 	friend class S0MeterTCP;
 public:
@@ -18,14 +24,10 @@ private:
 	void ReloadLastTotals();
 	static const int readBufferSize=1028;
 	unsigned char m_buffer[readBufferSize];
+
+	static const int max_s0_meters=5;
+	_tS0Meter m_meters[max_s0_meters];
+
 	int m_bufferpos;
-	double m_s0_m1_last_values[4];
-	double m_s0_m2_last_values[4];
-	double m_s0_m1_volume_total;
-	double m_s0_m2_volume_total;
-	int m_s0_m1_type;
-	int m_s0_m2_type;
-	double m_pulse_per_unit_1;
-	double m_pulse_per_unit_2;
 };
 

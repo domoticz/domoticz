@@ -25,42 +25,31 @@ S0MeterBase::~S0MeterBase(void)
 
 void S0MeterBase::ReloadLastTotals()
 {
-	m_s0_m1_volume_total=0;
-	m_s0_m2_volume_total=0;
-
-	m_s0_m1_last_values[0]=0;
-	m_s0_m1_last_values[1]=0;
-	m_s0_m1_last_values[2]=0;
-	m_s0_m1_last_values[3]=0;
-	m_s0_m2_last_values[0]=0;
-	m_s0_m2_last_values[1]=0;
-	m_s0_m2_last_values[2]=0;
-	m_s0_m2_last_values[3]=0;
-
-	char szTmp[300];
-	std::vector<std::vector<std::string> > result;
-	std::vector<std::string> results;
-
-	sprintf(szTmp,"SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%d' AND Unit=0 AND Type=%d AND SubType=%d)",m_HwdID, 1, pTypeENERGY, sTypeELEC2);
-	result=m_pMainWorker->m_sql.query(szTmp);
-	if (result.size()==1)
+	//Reset internals
+	int ii;
+	for (ii=0; ii<max_s0_meters; ii++)
 	{
-		StringSplit(result[0][0],";",results);
-		if (results.size()==2)
+		m_meters[ii].m_volume_total=0;
+		m_meters[ii].m_last_values[0]=0;
+		m_meters[ii].m_last_values[1]=0;
+		m_meters[ii].m_last_values[2]=0;
+		m_meters[ii].m_last_values[3]=0;
+
+		char szTmp[300];
+		std::vector<std::vector<std::string> > result;
+		std::vector<std::string> results;
+
+		sprintf(szTmp,"SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%d' AND Unit=0 AND Type=%d AND SubType=%d)",m_HwdID, ii+1, pTypeENERGY, sTypeELEC2);
+		result=m_pMainWorker->m_sql.query(szTmp);
+		if (result.size()==1)
 		{
-			m_s0_m1_volume_total=atof(results[1].c_str())/1000.0;
+			StringSplit(result[0][0],";",results);
+			if (results.size()==2)
+			{
+				m_meters[ii].m_volume_total=atof(results[1].c_str())/1000.0;
+			}
 		}
-	}
-	results.clear();
-	sprintf(szTmp,"SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%d' AND Unit=0 AND Type=%d AND SubType=%d)",m_HwdID, 2, pTypeENERGY, sTypeELEC2);
-	result=m_pMainWorker->m_sql.query(szTmp);
-	if (result.size()==1)
-	{
-		StringSplit(result[0][0],";",results);
-		if (results.size()==2)
-		{
-			m_s0_m2_volume_total=atof(results[1].c_str())/1000.0;
-		}
+
 	}
 }
 
@@ -97,15 +86,7 @@ void S0MeterBase::SendMeter(unsigned char ID, double musage, double mtotal)
 	RBUF tsen;
 	memset(&tsen,0,sizeof(RBUF));
 
-	int meterype=MTYPE_ENERGY;
-	if (ID==1)
-	{
-		meterype=m_s0_m1_type;
-	}
-	else
-	{
-		meterype=m_s0_m2_type;
-	}
+	int meterype=m_meters[ID-1].m_type;
 
 	if (meterype==MTYPE_ENERGY)
 	{
@@ -198,44 +179,37 @@ void S0MeterBase::ParseLine()
 		_log.Log(LOG_NORM,"S0 Meter ID: %s, Version: %s",MeterID.c_str(),SoftwareVersion.c_str());
 		return;
 	}
-	if (results.size()!=10)
+	if (results.size()<4)
 	{
 		_log.Log(LOG_NORM,"S0 Meter Invalid Data received!");
 		return;
 	}
+	int totmeters=(results.size()-4)/3;
+	if (totmeters>max_s0_meters)
+		totmeters=max_s0_meters;
 	//ID:0001:I:99:M1:123:456:M2:234:567 = ID(1)/Pulse Interval(3)/M1Actual(5)/M1Total(7)/M2Actual(8)/M2Total(9)
 	std::string MeterID=results[1];
 	double s0_pulse_interval=atof(results[3].c_str());
 
-	double s0_m1_pulse=atof(results[5].c_str());
-	double s0_m2_pulse=atof(results[8].c_str());
-	double s0_m1_volume=( s0_m1_pulse / m_pulse_per_unit_1 );
-	double s0_m2_volume=( s0_m2_pulse / m_pulse_per_unit_2 );
+	int roffset=4;
+	for (int ii=0; ii<totmeters; ii++)
+	{
+		double s0_pulse=atof(results[roffset+1].c_str());
+		double s0_volume=( s0_pulse / m_meters[ii].m_pulse_per_unit);
+		//Calculate average here (5 values)
+		double s0_act_watt=s0_volume*(3600.0/s0_pulse_interval);
+		double s0_watt_hour=(s0_act_watt+m_meters[ii].m_last_values[0]+m_meters[ii].m_last_values[1]+m_meters[ii].m_last_values[2]+m_meters[ii].m_last_values[3])*0.2;
+		m_meters[ii].m_last_values[0]=m_meters[ii].m_last_values[1];
+		m_meters[ii].m_last_values[1]=m_meters[ii].m_last_values[2];
+		m_meters[ii].m_last_values[2]=m_meters[ii].m_last_values[3];
+		m_meters[ii].m_last_values[3]=s0_act_watt;
 
-	//Calculate average here (5 values)
-	double s0_m1_act_watt=s0_m1_volume*(3600.0/s0_pulse_interval);
-	double s0_m2_act_watt=s0_m2_volume*(3600.0/s0_pulse_interval);
+		m_meters[ii].m_volume_total+=s0_volume;
+		//_log.Log(LOG_NORM,"S0 Meter M1-Int=%0.3f, M1-Tot=%0.3f",s0_m1_watt_hour,m_s0_m1_volume_total);
 
-	double s0_m1_watt_hour=(s0_m1_act_watt+m_s0_m1_last_values[0]+m_s0_m1_last_values[1]+m_s0_m1_last_values[2]+m_s0_m1_last_values[3])*0.2;
-	double s0_m2_watt_hour=(s0_m2_act_watt+m_s0_m2_last_values[0]+m_s0_m2_last_values[1]+m_s0_m2_last_values[2]+m_s0_m2_last_values[3])*0.2;
-	m_s0_m1_last_values[0]=m_s0_m1_last_values[1];
-	m_s0_m1_last_values[1]=m_s0_m1_last_values[2];
-	m_s0_m1_last_values[2]=m_s0_m1_last_values[3];
-	m_s0_m1_last_values[3]=s0_m1_act_watt;
-	m_s0_m2_last_values[0]=m_s0_m2_last_values[1];
-	m_s0_m2_last_values[1]=m_s0_m2_last_values[2];
-	m_s0_m2_last_values[2]=m_s0_m2_last_values[3];
-	m_s0_m2_last_values[3]=s0_m2_act_watt;
-
-	m_s0_m1_volume_total+=s0_m1_volume;
-	m_s0_m2_volume_total+=s0_m2_volume;
-
-	//_log.Log(LOG_NORM,"S0 Meter M1-Int=%0.3f, M1-Tot=%0.3f, M2-Int=%0.3f, M2-Tot=%0.3f",s0_m1_watt_hour,m_s0_m1_volume_total,s0_m2_watt_hour,m_s0_m2_volume_total);
-
-	if (m_s0_m1_volume_total!=0) {
-		SendMeter(1,s0_m1_watt_hour,m_s0_m1_volume_total);
-	}
-	if (m_s0_m2_volume_total!=0) {
-		SendMeter(2,s0_m2_watt_hour,m_s0_m2_volume_total);
+		if (m_meters[ii].m_volume_total!=0) {
+			SendMeter(ii+1,s0_watt_hour,m_meters[ii].m_volume_total);
+		}
+		roffset+=3;
 	}
 }

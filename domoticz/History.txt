@@ -60,6 +60,7 @@ Version 1.0.xxxx (December xxth 2013)
 - Changed: Log file will append, not deleted when domoticz is restarted
 - Implemented: gzip compression for web traffic
 - Fixed: Usage/Meter (year/month) did not report correctly for values older then one year (not also uses less web traffic)
+- Changed: S0Meter extended for devices with 5 wires
 
 Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart
