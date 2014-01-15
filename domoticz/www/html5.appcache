@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 384
+# ref 385
 
 CACHE:
 favicon.ico
@@ -9,7 +9,7 @@ css/demo_table_jui.css
 css/style.css
 css/colpick.css
 css/TableTools.css
-css/ui-darkness/jquery-ui-1.10.1.custom.min.css
+css/ui-darkness/jquery-ui-1.10.3.custom.min.css
 css/jquery.uix.multiselect.css
 secpanel/css/style.less
 secpanel/css/font.less
@@ -303,9 +303,9 @@ js/domoticz.js
 js/colpick.js
 js/highcharts-more.js
 js/highcharts.js
-js/jquery-1.9.1.min.js
-js/jquery-migrate-1.1.1.min.js
-js/jquery-ui-1.10.1.custom.min.js
+js/jquery-1.10.2.min.js
+js/jquery-migrate-1.2.1.min.js
+js/jquery-ui-1.10.3.custom.min.js
 js/jquery.dataTables.min.js
 js/jquery.jeditable.mini.js
 js/jquery.ui.touch-punch.min.js

@@ -61,6 +61,8 @@ Version 1.0.xxxx (December xxth 2013)
 - Implemented: gzip compression for web traffic
 - Fixed: Usage/Meter (year/month) did not report correctly for values older then one year (not also uses less web traffic)
 - Changed: S0Meter extended for devices with 5 wires
+- Updated: Highcharts 3.0.9, JQuery and JQueryUI
+- Fixed: Transfer dialog did not show correct title in front of destination device
 
 Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart
