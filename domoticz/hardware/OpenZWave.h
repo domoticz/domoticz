@@ -80,6 +80,8 @@ private:
 	bool ExcludeDevice(const int nodeID);
 	bool RemoveFailedDevice(const int nodeID);
 
+	void EnableDisableDebug();
+
 	bool OpenSerialConnector();
 	void CloseSerialConnector();
 

@@ -1020,6 +1020,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("ZWavePollInterval", 60);
 	}
+	if (!GetPreferencesVar("ZWaveEnableDebug", nValue))
+	{
+		UpdatePreferencesVar("ZWaveEnableDebug", 0);
+	}
 
 	//Start background thread
 	if (!StartThread())
