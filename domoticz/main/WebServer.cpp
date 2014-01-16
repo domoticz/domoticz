@@ -4783,6 +4783,20 @@ std::string CWebServer::GetJSonPage()
 				root["status"]="OK";
 				root["title"]="Graph " + sensor + " " + srange;
 
+				int nValue=0;
+				std::string sValue="";
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT nValue, sValue FROM DeviceStatus WHERE (ID==" << idx << ")";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					std::vector<std::string> sd=result[0];
+					nValue=atoi(sd[0].c_str());
+					sValue=sd[1];
+				}
+
 				float EnergyDivider=1000.0f;
 				float GasDivider=100.0f;
 				float WaterDivider=100.0f;
@@ -5153,6 +5167,12 @@ std::string CWebServer::GetJSonPage()
 				}
 				else
 				{
+					if (dType==pTypeP1Gas)
+					{
+						//Add last counter value
+						sprintf(szTmp,"%.3f",atof(sValue.c_str())/1000.0);
+						root["counter"]=szTmp;
+					}
 					szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 					result=m_pMain->m_sql.query(szQuery.str());
 					if (result.size()>0)
