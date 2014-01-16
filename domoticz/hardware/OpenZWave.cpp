@@ -1650,7 +1650,7 @@ void COpenZWave::GetNodeValuesJson(const int homeID, const int nodeID, Json::Val
 
 		int debugenabled=0;
 		m_pMainWorker->m_sql.GetPreferencesVar("ZWaveEnableDebug", debugenabled);
-		root["result"][index]["config"][ivalue]["value"]=intervalseconds;
+		root["result"][index]["config"][ivalue]["value"]=debugenabled;
 
 		root["result"][index]["config"][ivalue]["index"]=2;
 		root["result"][index]["config"][ivalue]["label"]="Enable Debug";
