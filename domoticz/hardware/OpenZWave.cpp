@@ -646,7 +646,6 @@ void COpenZWave::StopHardwareIntern()
 	//CloseSerialConnector();
 }
 
-//Should only be called when the driver is started
 void COpenZWave::EnableDisableDebug()
 {
 	int debugenabled=0;
@@ -1658,8 +1657,7 @@ void COpenZWave::GetNodeValuesJson(const int homeID, const int nodeID, Json::Val
 		root["result"][index]["config"][ivalue]["units"]="";
 		root["result"][index]["config"][ivalue]["help"]=
 			"Enable/Disable debug logging. Disabled=0, Enabled=1 "
-			"It is not recommended to enable Debug for a live system as the log files generated will grow large quickly. "
-			"You also need to enable/disable the open-zwave hardware in Domoticz for this setting to take effect";
+			"It is not recommended to enable Debug for a live system as the log files generated will grow large quickly.";
 		ivalue++;
 		return;
 	}
@@ -1765,8 +1763,14 @@ bool COpenZWave::ApplyNodeConfig(const int homeID, const int nodeID, const std::
 			else if (rvIndex==2)
 			{
 				int debugenabled=atoi(results[vindex+1].c_str());
-				m_pMainWorker->m_sql.UpdatePreferencesVar("ZWaveEnableDebug", debugenabled);
-
+				int old_debugenabled=0;
+				m_pMainWorker->m_sql.GetPreferencesVar("ZWaveEnableDebug", old_debugenabled);
+				if (old_debugenabled!=debugenabled)
+				{
+					m_pMainWorker->m_sql.UpdatePreferencesVar("ZWaveEnableDebug", debugenabled);
+					//Restart
+					OpenSerialConnector();
+				}
 			}
 		}
 		else
