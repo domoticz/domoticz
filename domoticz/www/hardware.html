@@ -32,7 +32,7 @@
 			<td align="right" style="width:110px"><label for="name"><span data-i18n="Name"></span>:</label></td>
 			<td><input type="text" id="nodename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 		</tr>
-		<tr name="trEnablePolling>
+		<tr>
 			<td align="right" style="width:80px"><label for="EnablePolling"><span data-i18n="EnablePolling"></span>:</label></td>
 			<td><input type="checkbox" id="EnablePolling" checked></td>
 		</tr>
@@ -967,14 +967,6 @@ function RefreshOpenZWaveNodeTable()
 					$("#updelclr #nodedelete").attr("href", "javascript:DeleteNode(" + idx + ")");
 					$("#hardwarecontent #nodeparamstable #nodename").val(data["1"]);
 					$('#hardwarecontent #nodeparamstable #EnablePolling').prop('checked',(data["PollEnabled"]=="true"));
-					
-					if (idx<2) {
-						$("#hardwarecontent #nodeparamstable #trEnablePolling").hide();
-					}
-					else {
-						$("#hardwarecontent #nodeparamstable #trEnablePolling").show();
-					}
-					
 					
 					//Create configuration setup
 					var szConfig='<a class="btnstyle3" id="nodedelete" data-i18n="RequestConfiguration" onclick="RequestZWaveConfiguration(' + idx + ');">Request current stored values from device</a><br /><br />';
