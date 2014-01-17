@@ -85,6 +85,7 @@ private:
 	_tZWaveDevice* FindDevice(int nodeID, int scaleID);
 	void InsertDevice(_tZWaveDevice device);
 	void UpdateDeviceBatteryStatus(const int nodeID, const int value);
+	unsigned char Convert_Battery_To_PercInt(const unsigned char level);
 	virtual void SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)=0;
 	virtual void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value)=0;
 	virtual void StopHardwareIntern()=0;

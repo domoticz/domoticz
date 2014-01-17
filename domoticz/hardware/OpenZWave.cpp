@@ -1192,7 +1192,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 			return;
 	}
 
-	if (commandclass==128)
+	if (commandclass==COMMAND_CLASS_BATTERY)
 	{
 		//Battery status update
 		if (vType==OpenZWave::ValueID::ValueType_Byte)

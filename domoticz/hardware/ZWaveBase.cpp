@@ -230,6 +230,14 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 	}
 }
 
+unsigned char ZWaveBase::Convert_Battery_To_PercInt(const unsigned char level)
+{
+	int ret=(level/10)-1;
+	if (ret<0)
+		ret = 0;
+	return (unsigned char)ret;
+}
+
 void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 {
 	unsigned char ID1=0;
@@ -336,7 +344,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.ENERGY.battery_level=9;
 			if (pDevice->hasBattery)
 			{
-				tsen.ENERGY.battery_level=(pDevice->batValue<20)?0:1;
+				tsen.ENERGY.battery_level=Convert_Battery_To_PercInt(pDevice->batValue);
 			}
 
 			unsigned long long instant=(unsigned long long)round(pPowerDevice->floatValue);
@@ -390,14 +398,14 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
 			tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
 			tsen.TEMP_HUM.subtype=sTypeTH5;
-			tsen.TEMP_HUM.battery_level=9;
 			tsen.TEMP_HUM.rssi=6;
 			tsen.TEMP_HUM.id1=ID3;
 			tsen.TEMP_HUM.id2=ID4;
 
+			tsen.TEMP_HUM.battery_level=9;
 			if (pDevice->hasBattery)
 			{
-				tsen.TEMP_HUM.battery_level=(pDevice->batValue<20)?0:1;
+				tsen.TEMP_HUM.battery_level=Convert_Battery_To_PercInt(pDevice->batValue);
 			}
 
 			tsen.TEMP_HUM.tempsign=(pDevice->floatValue>=0)?0:1;
@@ -413,14 +421,14 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
 			tsen.TEMP.packettype=pTypeTEMP;
 			tsen.TEMP.subtype=sTypeTEMP10;
-			tsen.TEMP.battery_level=9;
 			tsen.TEMP.rssi=6;
 			tsen.TEMP.id1=ID3;
 			tsen.TEMP.id2=ID4;
 
+			tsen.TEMP.battery_level=9;
 			if (pDevice->hasBattery)
 			{
-				tsen.TEMP.battery_level=(pDevice->batValue<20)?0:1;
+				tsen.TEMP.battery_level=Convert_Battery_To_PercInt(pDevice->batValue);
 			}
 
 			tsen.TEMP.tempsign=(pDevice->floatValue>=0)?0:1;
@@ -447,16 +455,15 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
 			tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
 			tsen.TEMP_HUM.subtype=sTypeTH5;
-			tsen.TEMP_HUM.battery_level=9;
 			tsen.TEMP_HUM.rssi=6;
 			tsen.TEMP_HUM.id1=ID3;
 			tsen.TEMP_HUM.id2=ID4;
 			ID4=pTempDevice->instanceID;
 
-			tsen.TEMP_HUM.battery_level=1;
+			tsen.TEMP_HUM.battery_level=9;
 			if (pDevice->hasBattery)
 			{
-				tsen.TEMP_HUM.battery_level=(pDevice->batValue<20)?0:1;
+				tsen.TEMP_HUM.battery_level=Convert_Battery_To_PercInt(pDevice->batValue);
 			}
 
 			tsen.TEMP_HUM.tempsign=(pTempDevice->floatValue>=0)?0:1;
@@ -473,13 +480,13 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.HUM.packetlength=sizeof(tsen.HUM)-1;
 			tsen.HUM.packettype=pTypeHUM;
 			tsen.HUM.subtype=sTypeHUM2;
-			tsen.HUM.battery_level=9;
 			tsen.HUM.rssi=6;
 			tsen.HUM.id1=ID3;
 			tsen.HUM.id2=ID4;
+			tsen.HUM.battery_level=9;
 			if (pDevice->hasBattery)
 			{
-				tsen.HUM.battery_level=(pDevice->batValue<20)?0:1;
+				tsen.HUM.battery_level=Convert_Battery_To_PercInt(pDevice->batValue);
 			}
 			tsen.HUM.humidity=(BYTE)pDevice->intvalue;
 			tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
