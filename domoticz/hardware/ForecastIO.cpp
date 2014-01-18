@@ -93,6 +93,15 @@ static std::string readForecastIOTestFile( const char *path )
 	return text;
 }
 
+std::string CForecastIO::GetForecastURL()
+{
+	std::stringstream sURL;
+	CURLEncode m_urlencoder;
+	std::string szLoc=m_urlencoder.URLEncode(m_Location);
+	sURL << "http://forecast.io/#/f/" << szLoc;
+	return sURL.str();
+}
+
 void CForecastIO::GetMeterDetails()
 {
 	std::string sResult;

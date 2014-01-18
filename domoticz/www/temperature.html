@@ -733,6 +733,9 @@ function ShowTemps()
           else
             xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#tempcontent\', \'ShowTemps\');" data-i18n="Notifications">Notifications</a>';
 		}
+		if (typeof item.forecast_url != 'undefined') {
+			xhtm+='&nbsp;<a class="btnsmall" onclick="ShowForecast(\'' + atob(item.forecast_url) + '\',\'' + item.Name + '\', \'#tempcontent\', \'ShowTemps\');" data-i18n="Forecast">Forecast</a>';
+		}
 					xhtm+=
                 '</td>\n' +
                 '\t    </tr>\n' +

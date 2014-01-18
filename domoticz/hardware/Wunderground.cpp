@@ -92,6 +92,14 @@ static std::string readWUndergroundTestFile( const char *path )
 	delete[] buffer;
 	return text;
 }
+std::string CWunderground::GetForecastURL()
+{
+	std::stringstream sURL;
+	CURLEncode m_urlencoder;
+	std::string szLoc=m_urlencoder.URLEncode(m_Location);
+	sURL << "http://www.wunderground.com/cgi-bin/findweather/getForecast?query=" << szLoc;
+	return sURL.str();
+}
 
 void CWunderground::GetMeterDetails()
 {

@@ -12,6 +12,8 @@
 #include "../hardware/1Wire.h"
 #include "../hardware/OpenZWave.h"
 #include "../hardware/EnOcean.h"
+#include "../hardware/Wunderground.h"
+#include "../hardware/ForecastIO.h"
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
 #include "../json/config.h"
@@ -1099,6 +1101,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			time_t checktime=mktime(&ntime);
 			bool bHaveTimeout=(now-checktime>=SensorTimeOut*60);
 
+
 			if (dType==pTypeTEMP_RAIN)
 				continue; //dont want you for now
 
@@ -1230,6 +1233,30 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["HardwareName"]=_hardwareNames[hardwareID];
 			}
 			root["result"][ii]["idx"]=sd[0];
+
+			CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hardwareID);
+			if (pHardware!=NULL)
+			{
+				if (pHardware->HwdType==HTYPE_Wunderground)
+				{
+					CWunderground *pWHardware=(CWunderground *)pHardware;
+					std::string forecast_url=pWHardware->GetForecastURL();
+					if (forecast_url!="")
+					{
+						root["result"][ii]["forecast_url"]=base64_encode((const unsigned char*)forecast_url.c_str(),forecast_url.size());
+					}
+				}
+				else if (pHardware->HwdType==HTYPE_ForecastIO)
+				{
+					CForecastIO *pWHardware=(CForecastIO*)pHardware;
+					std::string forecast_url=pWHardware->GetForecastURL();
+					if (forecast_url!="")
+					{
+						root["result"][ii]["forecast_url"]=base64_encode((const unsigned char*)forecast_url.c_str(),forecast_url.size());
+					}
+				}
+			}
+
 			sprintf(szData,"%04X",(unsigned int)atoi(sd[1].c_str()));
 			if (
 				(dType==pTypeTEMP_BARO)||

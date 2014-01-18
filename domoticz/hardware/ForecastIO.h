@@ -9,6 +9,7 @@ public:
 	CForecastIO(const int ID, const std::string APIKey, const std::string Location);
 	~CForecastIO(void);
 	void WriteToHardware(const char *pdata, const unsigned char length);
+	std::string GetForecastURL();
 private:
 	std::string m_APIKey;
 	std::string m_Location;
