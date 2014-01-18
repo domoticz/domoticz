@@ -908,6 +908,7 @@ void MainWorker::Do_Work()
 			m_ScheduleLastHour=ltime.tm_hour;
 			GetSunSettings();
 			m_sql.CheckDeviceTimeout();
+			m_sql.CheckBatteryLow();
 
 			//check for daily schedule
 			if (ltime.tm_hour==0)

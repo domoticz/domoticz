@@ -321,6 +321,7 @@ public:
 	void SetUnitsAndScale();
 
 	void CheckDeviceTimeout();
+	void CheckBatteryLow();
 
 	std::vector<std::vector<std::string> > query(const std::string &szQuery);
 public:

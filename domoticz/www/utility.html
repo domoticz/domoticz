@@ -1323,6 +1323,14 @@ function RefreshUtilities()
 				if (item.HaveTimeout==true) {
 					nbackcolor="#DF2D3A";
 				}
+				else {
+					var BatteryLevel=parseInt(item.BatteryLevel);
+					if (BatteryLevel!=255) {
+						if (BatteryLevel<=10) {
+							nbackcolor="#DDDF2D";
+						}
+					}
+				}
 				var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
 				if (obackcolor!=nbackcolor) {
 					$(id + " #name").css( "background-color", nbackcolor );
@@ -1394,12 +1402,19 @@ function ShowUtilities()
                 '\t  <section>\n' +
                 '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
                 '\t    <tr>\n';
-				if (item.HaveTimeout==false) {
-					xhtm+='\t      <td id="name">' + item.Name + '</td>\n';
+				var nbackcolor="#D4E1EE";
+				if (item.HaveTimeout==true) {
+					nbackcolor="#DF2D3A";
 				}
 				else {
-					xhtm+='\t      <td id="name" style="background-color: #DF2D3A;">' + item.Name + '</td>\n';
+					var BatteryLevel=parseInt(item.BatteryLevel);
+					if (BatteryLevel!=255) {
+						if (BatteryLevel<=10) {
+							nbackcolor="#DDDF2D";
+						}
+					}
 				}
+				xhtm+='\t      <td id="name" style="background-color: ' + nbackcolor + ';">' + item.Name + '</td>\n';
 				xhtm+='\t      <td id="bigtext">';
 				if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
 					xhtm+=item.Usage;

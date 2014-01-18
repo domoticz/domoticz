@@ -1024,6 +1024,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("ZWaveEnableDebug", 0);
 	}
+	if (!GetPreferencesVar("BatteryLowNotification", nValue))
+	{
+		UpdatePreferencesVar("BatteryLowNotification", 0); //default disabled
+	}
 
 	//Start background thread
 	if (!StartThread())
@@ -5319,6 +5323,16 @@ void CSQLHelper::SetUnitsAndScale()
 		m_tempsign="F";
 		m_tempscale=1.0f; //*1.8 + 32
 	}
+}
+
+//Executed every hour
+void CSQLHelper::CheckBatteryLow()
+{
+	int iBatteryLowLevel=0;
+	GetPreferencesVar("BatteryLowNotification", iBatteryLowLevel);
+	if (iBatteryLowLevel==0)
+		return;//disabled
+
 }
 
 //Executed every hour
