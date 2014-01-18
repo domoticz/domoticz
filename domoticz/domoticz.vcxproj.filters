@@ -117,6 +117,9 @@
     <Filter Include="zlib">
       <UniqueIdentifier>{96351f00-f848-4e75-84be-0bccaecc2a02}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Forecast.io">
+      <UniqueIdentifier>{739f5460-5c88-47ba-8cd1-d94035c1819d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -374,6 +377,9 @@
     <ClInclude Include="main\GZipHelper.h">
       <Filter>zlib</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\ForecastIO.h">
+      <Filter>Devices\Forecast.io</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -591,6 +597,9 @@
     </ClCompile>
     <ClCompile Include="hardware\EnOcean.cpp">
       <Filter>Devices\EnOcean</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\ForecastIO.cpp">
+      <Filter>Devices\Forecast.io</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

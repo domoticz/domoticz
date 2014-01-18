@@ -8497,7 +8497,7 @@ std::string CWebServer::GetJSonPage()
 			else if (htype == HTYPE_PiFace) {
 				//all fine here!
 			}
-			else if (htype == HTYPE_Wunderground) {
+			else if ((htype == HTYPE_Wunderground)||(htype == HTYPE_ForecastIO)) {
 				if (
 					(username=="")||
 					(password=="")
@@ -8675,7 +8675,7 @@ std::string CWebServer::GetJSonPage()
 			else if (htype == HTYPE_PiFace) {
 				//All fine here
 			}
-			else if (htype == HTYPE_Wunderground) {
+			else if ((htype == HTYPE_Wunderground)||(htype == HTYPE_ForecastIO)) {
 				if (
 					(username=="")||
 					(password=="")

@@ -29,6 +29,7 @@
 #include "../hardware/1Wire.h"
 #include "../hardware/BMP085.h"
 #include "../hardware/Wunderground.h"
+#include "../hardware/ForecastIO.h"
 #include "../hardware/Dummy.h"
 #include "../hardware/PiFace.h"
 #include "../hardware/S0MeterSerial.h"
@@ -478,6 +479,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Wunderground:
 		pHardware = new CWunderground(ID,Username,Password);
+		break;
+	case HTYPE_ForecastIO:
+		pHardware = new CForecastIO(ID,Username,Password);
 		break;
 	case HTYPE_Dummy:
 		pHardware = new CDummy(ID);

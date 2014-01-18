@@ -31,6 +31,7 @@ class CDomoticzHardwareBase
 	friend class CLimitLess;
 	friend class ZWaveBase;
 	friend class CWunderground;
+	friend class CForecastIO;
 	friend class CTE923;
 	friend class CVolcraftCO20;
 	friend class CEnOcean;

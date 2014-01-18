@@ -74,6 +74,7 @@ enum _eHardwareTypes {
 	HTYPE_LimitlessLights,		//22
 	HTYPE_System,				//23
 	HTYPE_EnOcean,				//24
+	HTYPE_ForecastIO,			//25
 	HTYPE_END
 };
 
