@@ -4515,7 +4515,7 @@ std::string CWebServer::GetJSonPage()
 
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "SELECT Temp_Min, Temp_Max, Chill_Min, Chill_Max, Humidity, Barometer, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+				szQuery << "SELECT Temp_Min, Temp_Max, Chill_Min, Chill_Max, Humidity, Barometer, Temp_Avg, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 				result=m_pMain->m_sql.query(szQuery.str());
 				int ii=0;
 				if (result.size()>0)
@@ -4525,7 +4525,8 @@ std::string CWebServer::GetJSonPage()
 					{
 						std::vector<std::string> sd=*itt;
 
-						root["result"][ii]["d"]=sd[6].substr(0,16);
+						root["result"][ii]["d"]=sd[7].substr(0,16);
+
 						if (
 							(dType==pTypeRego6XXTemp)||(dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeTEMP_BARO)||(dType==pTypeWIND)||(dType==pTypeThermostat1)||
 							((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))||
@@ -4542,6 +4543,7 @@ std::string CWebServer::GetJSonPage()
 							{
 								root["result"][ii]["te"]=sd[1];
 								root["result"][ii]["tm"]=sd[0];
+								root["result"][ii]["ta"]=sd[6];
 							}
 						}
 						if (
@@ -4583,7 +4585,7 @@ std::string CWebServer::GetJSonPage()
 				//add today (have to calculate it)
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "SELECT MIN(Temperature), MAX(Temperature), MIN(Chill), MAX(Chill), MAX(Humidity), MAX(Barometer) FROM Temperature WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				szQuery << "SELECT MIN(Temperature), MAX(Temperature), MIN(Chill), MAX(Chill), MAX(Humidity), MAX(Barometer), AVG(Temperature) FROM Temperature WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 				result=m_pMain->m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
@@ -4599,6 +4601,7 @@ std::string CWebServer::GetJSonPage()
 					{
 						root["result"][ii]["te"]=sd[1];
 						root["result"][ii]["tm"]=sd[0];
+						root["result"][ii]["ta"]=sd[6];
 					}
 					if (
 						((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
@@ -5590,7 +5593,7 @@ std::string CWebServer::GetJSonPage()
 				}
                 else
                 {
-				    szQuery << "SELECT Temp_Min, Temp_Max, Chill_Min, Chill_Max, Humidity, Barometer, Date, DewPoint FROM Temperature_Calendar WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+				    szQuery << "SELECT Temp_Min, Temp_Max, Chill_Min, Chill_Max, Humidity, Barometer, Date, DewPoint, Temp_Avg FROM Temperature_Calendar WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 				    result=m_pMain->m_sql.query(szQuery.str());
 				    int ii=0;
 				    if (result.size()>0)
@@ -5604,7 +5607,8 @@ std::string CWebServer::GetJSonPage()
 						    if (sendTemp)
 						    {
 							    root["result"][ii]["te"]=sd[1];
-							    root["result"][ii]["tm"]=sd[0];
+								root["result"][ii]["tm"]=sd[0];
+								root["result"][ii]["ta"]=sd[8];
 						    }
 						    if (sendChill)
 						    {
@@ -5644,7 +5648,7 @@ std::string CWebServer::GetJSonPage()
 				    //add today (have to calculate it)
 				    szQuery.clear();
 				    szQuery.str("");
-				    szQuery << "SELECT MIN(Temperature), MAX(Temperature), MIN(Chill), MAX(Chill), MAX(Humidity), MAX(Barometer), MIN(DewPoint) FROM Temperature WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				    szQuery << "SELECT MIN(Temperature), MAX(Temperature), MIN(Chill), MAX(Chill), MAX(Humidity), MAX(Barometer), MIN(DewPoint), AVG(Temperature) FROM Temperature WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 				    result=m_pMain->m_sql.query(szQuery.str());
 				    if (result.size()>0)
 				    {
@@ -5654,7 +5658,8 @@ std::string CWebServer::GetJSonPage()
 					    if (sendTemp)
 					    {
 						    root["result"][ii]["te"]=sd[1];
-						    root["result"][ii]["tm"]=sd[0];
+							root["result"][ii]["tm"]=sd[0];
+							root["result"][ii]["ta"]=sd[7];
 					    }
 					    if (sendChill)
 					    {
