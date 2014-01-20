@@ -834,6 +834,8 @@ function EditSceneDevice(idx,name,havecode,type)
 	  $(this).change();
 	});
 
+	OnSelChangeDevice();
+
 	if (havecode==0) {
 			$("#scenecontent #removecode").addClass("disabled");
 			$("#scenecontent #learncode").addClass("btn-success");
