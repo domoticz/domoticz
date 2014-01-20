@@ -5,6 +5,7 @@ Version 1.0.xxxx (January xxth 2014)
 - Implemented: Temperature Month/Year graphs now display min/max as a range
 - Implemented: Temperature Month/Year graphs now displays Average Temperature
 - Fixed: Scene/Group editor now displays Level is the first light/switch supports it when entering the page
+- Changed: Raspberry Pi temperature reporting intern. (should save an extra return in the log output)
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)
