@@ -239,10 +239,16 @@
 				</tr>
 			</table>
 		</div>
-		<div id="lighting4params">
-			<table class="display" id="lightparams4" border="0" cellpadding="0" cellspacing="20">
+		<div id="lightingparams_enocean">
+			<table class="display" id="lightparams_enocean" border="0" cellpadding="0" cellspacing="20">
 				<tr>
-					<td align="right" style="width:110px"><label>Unit Code:</label></td>
+					<td align="right" style="width:110px"><label>ID:</label></td>
+					<td>
+						<select id="comboid" style="width:60px" class="combobox ui-corner-all"></select>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><label>Rocker_ID:</label></td>
 					<td>
 						<select id="combounitcode" style="width:60px" class="combobox ui-corner-all"></select>
 					</td>
@@ -2058,7 +2064,8 @@ function UpdateAddManualDialog()
 	}
 	else if (lighttype==67) {
 		//EnOcean
-		totunits=128;
+		tothousecodes=128;
+		totunits=2;
 	}
 	else if (lighttype==7) {
 		bIsARCType=1;
@@ -2084,6 +2091,7 @@ function UpdateAddManualDialog()
 		bIsType5=1;
 		totunits=4;
 	}
+	$("#dialog-addmanuallightdevice #lightingparams_enocean").hide();
 	
 	if (lighttype==66) {
 		//Blyss
@@ -2100,19 +2108,23 @@ function UpdateAddManualDialog()
 		$("#dialog-addmanuallightdevice #lighting1params").hide();
 		$("#dialog-addmanuallightdevice #lighting2params").hide();
 		$("#dialog-addmanuallightdevice #lighting3params").show();
-		$("#dialog-addmanuallightdevice #lighting4params").hide();
 	}
 	else if (lighttype==67) {
 		//EnOcean
-		$('#dialog-addmanuallightdevice #lightparams4 #combounitcode >option').remove();
+		$("#dialog-addmanuallightdevice #lightparams_enocean #comboid  >option").remove();
+		$("#dialog-addmanuallightdevice #lightparams_enocean #combounitcode  >option").remove();
+		for (ii=1; ii<tothousecodes+1; ii++)
+		{
+			$('#dialog-addmanuallightdevice #lightparams_enocean #comboid').append($('<option></option>').val(ii).html(ii));
+		}
 		for (ii=1; ii<totunits+1; ii++)
 		{
-			$('#dialog-addmanuallightdevice #lightparams4 #combounitcode').append($('<option></option>').val(ii).html(ii));
+			$('#dialog-addmanuallightdevice #lightparams_enocean #combounitcode').append($('<option></option>').val(ii).html(ii));
 		}
 		$("#dialog-addmanuallightdevice #lighting1params").hide();
 		$("#dialog-addmanuallightdevice #lighting2params").hide();
 		$("#dialog-addmanuallightdevice #lighting3params").hide();
-		$("#dialog-addmanuallightdevice #lighting4params").show();
+		$("#dialog-addmanuallightdevice #lightingparams_enocean").show();
 	}
 	else if (bIsARCType==1) {
 		$('#dialog-addmanuallightdevice #lightparams1 #combohousecode >option').remove();
@@ -2128,7 +2140,6 @@ function UpdateAddManualDialog()
 		$("#dialog-addmanuallightdevice #lighting1params").show();
 		$("#dialog-addmanuallightdevice #lighting2params").hide();
 		$("#dialog-addmanuallightdevice #lighting3params").hide();
-		$("#dialog-addmanuallightdevice #lighting4params").hide();
 	}
 	else {
 		$("#dialog-addmanuallightdevice #lighting2paramsUnitCode").show();
@@ -2148,7 +2159,6 @@ function UpdateAddManualDialog()
 		$("#dialog-addmanuallightdevice #lighting1params").hide();
 		$("#dialog-addmanuallightdevice #lighting2params").show();
 		$("#dialog-addmanuallightdevice #lighting3params").hide();
-		$("#dialog-addmanuallightdevice #lighting4params").hide();
 	}
 }
 
@@ -2184,7 +2194,8 @@ function GetManualLightSettings(isTest)
 	}
 	else if (lighttype==67) {
 		//EnOcean
-		mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightparams4 #combounitcode option:selected").val();
+		mParams+="&groupcode="+$("#dialog-addmanuallightdevice #lightingparams_enocean #comboid option:selected").val();
+		mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightingparams_enocean #combounitcode option:selected").val();
 		ID="EnOcean";
 		mParams+="&id="+ID;
 	}

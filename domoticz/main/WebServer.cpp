@@ -7637,14 +7637,16 @@ std::string CWebServer::GetJSonPage()
 				//EnOcean (Lighting2 with Base_ID offset)
 				dtype=pTypeLighting2;
 				subtype=sTypeAC;
+				std::string sgroupcode=m_pWebEm->FindValue("groupcode");
 				sunitcode=m_pWebEm->FindValue("unitcode");
-				int iUnitTest=atoi(sunitcode.c_str());
+				int iUnitTest=atoi(sunitcode.c_str());	//only First Rocker_ID at the moment, gives us 128 devices we can control, should be enough!
 				if (
 					(sunitcode=="")||
+					(sgroupcode=="")||
 					((iUnitTest<1)||(iUnitTest>128))
 					)
 					goto exitjson;
-				sunitcode="1";//only First Rocker_ID at the moment, gives us 128 devices we can control, should be enough!
+				sunitcode=sgroupcode;//Button A or B
 				CEnOcean *pEnoceanHardware=(CEnOcean *)m_pMain->GetHardware(atoi(hwdid.c_str()));
 				if (pEnoceanHardware==NULL)
 					goto exitjson;
@@ -7807,13 +7809,15 @@ std::string CWebServer::GetJSonPage()
 				dtype=pTypeLighting2;
 				subtype=sTypeAC;
 				sunitcode=m_pWebEm->FindValue("unitcode");
-				int iUnitTest=atoi(sunitcode.c_str());
+				std::string sgroupcode=m_pWebEm->FindValue("groupcode");
+				int iUnitTest=atoi(sunitcode.c_str());	//gives us 128 devices we can control, should be enough!
 				if (
 					(sunitcode=="")||
+					(sgroupcode=="")||
 					((iUnitTest<1)||(iUnitTest>128))
 					)
 					goto exitjson;
-				sunitcode="1";//only First Rocker_ID at the moment, gives us 128 devices we can control, should be enough!
+				sunitcode=sgroupcode;//Button A/B
 				CEnOcean *pEnoceanHardware=(CEnOcean *)m_pMain->GetHardware(atoi(hwdid.c_str()));
 				if (pEnoceanHardware==NULL)
 					goto exitjson;
