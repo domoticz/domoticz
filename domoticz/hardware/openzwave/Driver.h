@@ -665,6 +665,14 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		class MsgQueueItem
 		{
 		public:
+			MsgQueueItem() : 
+				m_msg(NULL),
+				m_nodeId(0),
+				m_queryStage(Node::QueryStage_None),
+				m_retry(false),
+				m_cci(NULL)
+		  	{}
+
 			bool operator == ( MsgQueueItem const& _other )const
 			{
 				if( _other.m_command == m_command )
