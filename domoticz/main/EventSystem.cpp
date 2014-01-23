@@ -756,9 +756,9 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording)
 {
     
-#ifdef _DEBUG
-    _log.Log(LOG_NORM,"EventSystem blockly %s trigger",reason.c_str());
-#endif
+//#ifdef _DEBUG
+//    _log.Log(LOG_NORM,"EventSystem blockly %s trigger",reason.c_str());
+//#endif
 
     lua_State *lua_state;
     lua_state = luaL_newstate();

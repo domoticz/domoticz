@@ -3,6 +3,7 @@
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
+#include "../main/mainworker.h"
 
 #include <string>
 #include <algorithm>
@@ -14,6 +15,190 @@
 #include <ctime>
 
 #define ENOCEAN_RETRY_DELAY 30
+
+#define round(a) ( int ) ( a + .5 )
+
+//Acknowledgments:
+//Part of this code/tables is taken from the FHEM project (GPLv2)
+
+struct _tTableLookup2
+{
+	unsigned long ID;
+	const char* Label;
+};
+struct _tTableLookup3
+{
+	unsigned long ID1;
+	unsigned long ID2;
+	const char* Label;
+};
+
+const char *LookupTable2(const _tTableLookup2 *pOrgTable, unsigned long ID)
+{
+	while (pOrgTable->Label) 
+	{
+		if (pOrgTable->ID == ID)
+			return pOrgTable->Label;
+		pOrgTable++;
+	}
+
+	return ">>Unkown... Please report!<<";
+}
+
+const char *LookupTable3(const _tTableLookup3 *pOrgTable, unsigned long ID1, unsigned long ID2)
+{
+	while (pOrgTable->Label) 
+	{
+		if ((pOrgTable->ID1 == ID1)&&(pOrgTable->ID2 == ID2))
+			return pOrgTable->Label;
+		pOrgTable++;
+	}
+
+	return ">>Unkown... Please report!<<";
+}
+
+const char* Get_EnoceanManufacturer(unsigned long ID)
+{
+	const _tTableLookup2 TTable[]=
+	{
+		{ 0x001, "Peha" },
+		{ 0x002, "Thermokon" },
+		{ 0x003, "Servodan" },
+		{ 0x004, "EchoFlex Solutions" },
+		{ 0x005, "Omnio AG" },
+		{ 0x006, "Hardmeier electronics" },
+		{ 0x007, "Regulvar Inc" },
+		{ 0x008, "Ad Hoc Electronics" },
+		{ 0x009, "Distech Controls" },
+		{ 0x00A, "Kieback + Peter" },
+		{ 0x00B, "EnOcean GmbH" },
+		{ 0x00C, "Probare" },
+		{ 0x00D, "Eltako" },
+		{ 0x00E, "Leviton" },
+		{ 0x00F, "Honeywell" },
+		{ 0x010, "Spartan Peripheral Devices" },
+		{ 0x011, "Siemens" },
+		{ 0x012, "T-Mac" },
+		{ 0x013, "Reliable Controls Corporation" },
+		{ 0x014, "Elsner Elektronik GmbH" },
+		{ 0x015, "Diehl Controls" },
+		{ 0x016, "BSC Computer" },
+		{ 0x017, "S+S Regeltechnik GmbH" },
+		{ 0x018, "Masco Corporation" },
+		{ 0x019, "Intesis Software SL" },
+		{ 0x01A, "Res." },
+		{ 0x01B, "Lutuo Technology" },
+		{ 0x01C, "CAN2GO" },
+		{ 0x7FF, "Multi user Manufacturer ID" }, 
+		{ 0, NULL }
+	};
+	return LookupTable2(TTable,ID);
+}
+
+const char* Get_EnoceanSensorTypeSubtype(unsigned long ID1,unsigned long ID2)
+{
+	const _tTableLookup3 TTable[]=
+	{
+		{ 0x02, 0x01, "tempSensor.01" },
+		{ 0x02, 0x02, "tempSensor.02" },
+		{ 0x02, 0x03, "tempSensor.03" },
+		{ 0x02, 0x04, "tempSensor.04" },
+		{ 0x02, 0x05, "tempSensor.05" },
+		{ 0x02, 0x06, "tempSensor.06" },
+		{ 0x02, 0x07, "tempSensor.07" },
+		{ 0x02, 0x08, "tempSensor.08" },
+		{ 0x02, 0x09, "tempSensor.09" },
+		{ 0x02, 0x0A, "tempSensor.0A" },
+		{ 0x02, 0x0B, "tempSensor.0B" },
+		{ 0x02, 0x10, "tempSensor.10" },
+		{ 0x02, 0x11, "tempSensor.11" },
+		{ 0x02, 0x12, "tempSensor.12" },
+		{ 0x02, 0x13, "tempSensor.13" },
+		{ 0x02, 0x14, "tempSensor.14" },
+		{ 0x02, 0x15, "tempSensor.15" },
+		{ 0x02, 0x16, "tempSensor.16" },
+		{ 0x02, 0x17, "tempSensor.17" },
+		{ 0x02, 0x18, "tempSensor.18" },
+		{ 0x02, 0x19, "tempSensor.19" },
+		{ 0x02, 0x1A, "tempSensor.1A" },
+		{ 0x02, 0x1B, "tempSensor.1B" },
+		{ 0x02, 0x20, "tempSensor.20" },
+		{ 0x02, 0x30, "tempSensor.30" },
+		{ 0x04, 0x01, "roomSensorControl.01" },
+		{ 0x04, 0x02, "tempHumiSensor.02" },
+		{ 0x06, 0x01, "lightSensor.01" },
+		{ 0x06, 0x02, "lightSensor.02" },
+		{ 0x06, 0x03, "lightSensor.03" },
+		{ 0x07, 0x01, "occupSensor.01" },
+		{ 0x07, 0x02, "occupSensor.02" },
+		{ 0x07, 0x03, "occupSensor.03" },
+		{ 0x08, 0x01, "lightTempOccupSensor.01" },
+		{ 0x08, 0x02, "lightTempOccupSensor.02" },
+		{ 0x08, 0x03, "lightTempOccupSensor.03" },
+		{ 0x09, 0x01, "COSensor.01" },
+		{ 0x09, 0x04, "tempHumiCO2Sensor.01" },
+		{ 0x09, 0x05, "vocSensor.01" },
+		{ 0x09, 0x06, "radonSensor.01" },
+		{ 0x09, 0x07, "particlesSensor.01" },
+		{ 0x10, 0x01, "roomSensorControl.05" },
+		{ 0x10, 0x02, "roomSensorControl.05" },
+		{ 0x10, 0x03, "roomSensorControl.05" },
+		{ 0x10, 0x04, "roomSensorControl.05" },
+		{ 0x10, 0x05, "roomSensorControl.05" },
+		{ 0x10, 0x06, "roomSensorControl.05" },
+		{ 0x10, 0x07, "roomSensorControl.05" },
+		{ 0x10, 0x08, "roomSensorControl.05" },
+		{ 0x10, 0x09, "roomSensorControl.05" },
+		{ 0x10, 0x0A, "roomSensorControl.05" },
+		{ 0x10, 0x0B, "roomSensorControl.05" },
+		{ 0x10, 0x0C, "roomSensorControl.05" },
+		{ 0x10, 0x0D, "roomSensorControl.05" },
+		{ 0x10, 0x10, "roomSensorControl.01" },
+		{ 0x10, 0x11, "roomSensorControl.01" },
+		{ 0x10, 0x12, "roomSensorControl.01" },
+		{ 0x10, 0x13, "roomSensorControl.01" },
+		{ 0x10, 0x14, "roomSensorControl.01" },
+		{ 0x10, 0x15, "roomSensorControl.02" },
+		{ 0x10, 0x16, "roomSensorControl.02" },
+		{ 0x10, 0x17, "roomSensorControl.02" },
+		{ 0x10, 0x18, "roomSensorControl.18" },
+		{ 0x10, 0x19, "roomSensorControl.19" },
+		{ 0x10, 0x1A, "roomSensorControl.1A" },
+		{ 0x10, 0x1B, "roomSensorControl.1B" },
+		{ 0x10, 0x1C, "roomSensorControl.1C" },
+		{ 0x10, 0x1D, "roomSensorControl.1D" },
+		{ 0x10, 0x1E, "roomSensorControl.1B" },
+		{ 0x10, 0x1F, "roomSensorControl.1F" },
+		{ 0x11, 0x01, "lightCtrlState.01" },
+		{ 0x11, 0x02, "tempCtrlState.01" },
+		{ 0x11, 0x03, "shutterCtrlState.01" },
+		{ 0x11, 0x04, "lightCtrlState.02" },
+		{ 0x12, 0x00, "autoMeterReading.00" },
+		{ 0x12, 0x01, "autoMeterReading.01" },
+		{ 0x12, 0x02, "autoMeterReading.02" },
+		{ 0x12, 0x03, "autoMeterReading.03" },
+		{ 0x13, 0x01, "environmentApp" },
+		{ 0x13, 0x02, "environmentApp" },
+		{ 0x13, 0x03, "environmentApp" },
+		{ 0x13, 0x04, "environmentApp" },
+		{ 0x13, 0x05, "environmentApp" },
+		{ 0x13, 0x06, "environmentApp" },
+		{ 0x13, 0x10, "environmentApp" },
+		{ 0x14, 0x01, "multiFuncSensor" },
+		{ 0x14, 0x02, "multiFuncSensor" },
+		{ 0x14, 0x03, "multiFuncSensor" },
+		{ 0x14, 0x04, "multiFuncSensor" },
+		{ 0x14, 0x05, "multiFuncSensor" },
+		{ 0x14, 0x06, "multiFuncSensor" },
+		{ 0x20, 0x01, "MD15" },
+		{ 0x30, 0x01, "digitalInput.01" },
+		{ 0x30, 0x02, "digitalInput.02" },
+		{ 0x38, 0x08, "gateway" },
+		{ 0x3F, 0x7F, "manufProfile" },
+		{ 0, 0, NULL }
+	};
+	return LookupTable3(TTable,ID1,ID2);
+}
 
 /**
 Class EnOcean
@@ -794,6 +979,8 @@ bool CEnOcean::ParseData()
 		return false; //checksum Mismatch!
 
 	long id = (pFrame->ID_BYTE3 << 24) + (pFrame->ID_BYTE2 << 16) + (pFrame->ID_BYTE1 << 8) + pFrame->ID_BYTE0;
+	char szDeviceID[20];
+	sprintf(szDeviceID,"%08X",id);
 
 	//Handle possible OK/Errors
 	bool bStopProcessing=false;
@@ -889,7 +1076,7 @@ bool CEnOcean::ParseData()
 				tsen.LIGHTING2.id3=(BYTE)pFrame->ID_BYTE1;
 				tsen.LIGHTING2.id4=(BYTE)pFrame->ID_BYTE0;
 				tsen.LIGHTING2.level=0;
-				tsen.LIGHTING2.rssi=7;
+				tsen.LIGHTING2.rssi=12;
 
 				if (SecondAction==0)
 				{
@@ -904,6 +1091,177 @@ bool CEnOcean::ParseData()
 					tsen.LIGHTING2.cmnd=(SecondUpDown==1)?light2_sOn:light2_sOff;
 				}
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);
+			}
+		}
+		break;
+	case C_ORG_4BS:
+		{
+			if ((pFrame->DATA_BYTE0 & 0x08) == 0)
+			{
+				if (pFrame->DATA_BYTE0 & 0x80)
+				{
+					//Tech in datagram
+
+					//DB3		DB3/2	DB2/1			DB0
+					//Profile	Type	Manufacturer-ID	LRN Type	RE2		RE1
+					//6 Bit		7 Bit	11 Bit			1Bit		1Bit	1Bit	1Bit	1Bit	1Bit	1Bit	1Bit
+
+					int manufacturer = ((pFrame->DATA_BYTE2 & 7) << 8) | pFrame->DATA_BYTE1;
+					int ttype = ((pFrame->DATA_BYTE3 & 3) << 5) | (pFrame->DATA_BYTE2 >> 3);
+					int profile = pFrame->DATA_BYTE3 >> 2;
+					_log.Log(LOG_NORM,"EnOcean: 4BS, Teach-in diagram: Sender_ID: 0x%08X, Manufacturer: 0x%02x (%s), Profile: 0x%02X, Type: 0x%02X (%s)", id, manufacturer,Get_EnoceanManufacturer(manufacturer),profile,ttype,Get_EnoceanSensorTypeSubtype(profile,ttype));
+
+
+					std::stringstream szQuery;
+					std::vector<std::vector<std::string> > result;
+					szQuery << "SELECT ID FROM EnoceanSensors WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szDeviceID << "')";
+					result=m_pMainWorker->m_sql.query(szQuery.str());
+					if (result.size()<1)
+					{
+						//Add it to the database
+						szQuery.clear();
+						szQuery.str("");
+						szQuery << "INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (" << m_HwdID << ",'" << szDeviceID << "'," << manufacturer << "," << profile << "," << ttype << ")";
+						result=m_pMainWorker->m_sql.query(szQuery.str());
+					}
+
+				}
+			}
+			else if (pFrame->DATA_BYTE0==0x0C)
+			{
+				//Instant usage
+				int usage=(pFrame->DATA_BYTE2<<8)|(pFrame->DATA_BYTE1);
+				_tUsageMeter umeter;
+				umeter.id1=(BYTE)pFrame->ID_BYTE3;
+				umeter.id2=(BYTE)pFrame->ID_BYTE2;
+				umeter.id3=(BYTE)pFrame->ID_BYTE1;
+				umeter.id4=(BYTE)pFrame->ID_BYTE0;
+				umeter.dunit=1;
+				umeter.fusage=(float)usage;
+				sDecodeRXMessage(this, (const unsigned char *)&umeter);//decode message
+			}
+			else
+			{
+				//Following sensors need to have had a teach-in
+				std::stringstream szQuery;
+				std::vector<std::vector<std::string> > result;
+				szQuery << "SELECT ID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szDeviceID << "')";
+				result=m_pMainWorker->m_sql.query(szQuery.str());
+				if (result.size()<1)
+				{
+					char *pszHumenTxt=enocean_hexToHuman(pFrame);
+					_log.Log(LOG_NORM,"EnOcean: Need Teach-In for %s", pszHumenTxt);
+					free(pszHumenTxt);
+					return true;
+				}
+				int Manufacturer=atoi(result[0][1].c_str());
+				int Profile=atoi(result[0][2].c_str());
+				int iType=atoi(result[0][3].c_str());
+
+				const std::string szST=Get_EnoceanSensorTypeSubtype(Profile,iType);
+
+				if (szST == "roomSensorControl.05")
+				{
+					// Room Sensor and Control Unit (EEP A5-10-01 ... A5-10-0D)
+					// [Eltako FTR55D, FTR55H, Thermokon SR04 *, Thanos SR *, untested]
+					// pFrame->ID_BYTE3 is the fan speed or night reduction for Eltako
+					// pFrame->ID_BYTE2 is the setpoint where 0x00 = min ... 0xFF = max or
+					// reference temperature for Eltako where 0x00 = 0°C ... 0xFF = 40°C
+					// pFrame->ID_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C
+					// pFrame->ID_BYTE0_bit_0 is the occupy button, pushbutton or slide switch
+					float temp = 40.0f - (float(pFrame->ID_BYTE1)/ 6.375f);
+					if (Manufacturer == 0x0D) 
+					{
+						int nightReduction = 0;
+						if (pFrame->ID_BYTE3 == 0x06)
+							nightReduction = 1;
+						else if (pFrame->ID_BYTE3 == 0x0C)
+							nightReduction = 2;
+						else if (pFrame->ID_BYTE3 == 0x13)
+							nightReduction = 3;
+						else if (pFrame->ID_BYTE3 == 0x19)
+							nightReduction = 4;
+						else if (pFrame->ID_BYTE3 == 0x1F)
+							nightReduction = 5;
+						float setpointTemp = float(pFrame->ID_BYTE2) / 6.375f;
+					}
+					else 
+					{
+						int fspeed = 3;
+						if (pFrame->ID_BYTE3 >= 145)
+							fspeed = 2;
+						else if (pFrame->ID_BYTE3 >= 165)
+							fspeed = 1;
+						else if (pFrame->ID_BYTE3 >= 190)
+							fspeed = 0;
+						else if (pFrame->ID_BYTE3 >= 210)
+							fspeed = -1; //auto
+						int iswitch = pFrame->ID_BYTE0 & 1;
+						//my $setpointScaled = EnOcean_ReadingScaled($hash, pFrame->ID_BYTE2, 0, 255);
+					}
+					RBUF tsen;
+					memset(&tsen,0,sizeof(RBUF));
+					tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
+					tsen.TEMP.packettype=pTypeTEMP;
+					tsen.TEMP.subtype=sTypeTEMP10;
+					tsen.TEMP.id1=pFrame->ID_BYTE2;
+					tsen.TEMP.id2=pFrame->ID_BYTE1;
+					tsen.TEMP.battery_level=pFrame->ID_BYTE0&0x0F;
+					tsen.TEMP.rssi=(pFrame->ID_BYTE0&0xF0)>>4;
+
+					tsen.TEMP.tempsign=(temp>=0)?0:1;
+					int at10=round(abs(temp*10.0f));
+					tsen.TEMP.temperatureh=(BYTE)(at10/256);
+					at10-=(tsen.TEMP.temperatureh*256);
+					tsen.TEMP.temperaturel=(BYTE)(at10);
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
+				}
+				else if (szST == "lightSensor.01")
+				{
+					// Light Sensor (EEP A5-06-01)
+					// [Eltako FAH60, FAH63, FIH63, Thermokon SR65 LI, untested]
+					// pFrame->DATA_BYTE3 is the voltage where 0x00 = 0 V ... 0xFF = 5.1 V
+					// pFrame->DATA_BYTE3 is the low illuminance for Eltako devices where
+					// min 0x00 = 0 lx, max 0xFF = 100 lx, if pFrame->DATA_BYTE2 = 0
+					// pFrame->DATA_BYTE2 is the illuminance (ILL2) where min 0x00 = 300 lx, max 0xFF = 30000 lx
+					// pFrame->DATA_BYTE1 is the illuminance (ILL1) where min 0x00 = 600 lx, max 0xFF = 60000 lx
+					// pFrame->DATA_BYTE0_bit_0 is Range select where 0 = ILL1, 1 = ILL2
+					float lux =0;
+					if (Manufacturer == 0x0D)
+					{
+						if(pFrame->DATA_BYTE2 == 0) {
+							lux = float(pFrame->DATA_BYTE3 * 100) / 255.0f;
+						} else {
+							lux = (float(pFrame->DATA_BYTE2) * 116.48f) + 300.0f;
+						}
+					} else {
+						float voltage = float(pFrame->DATA_BYTE3) * 20.0f; //mV
+						if(pFrame->DATA_BYTE0 & 1) {
+							lux = (float(pFrame->DATA_BYTE2) * 116.48f) + 300.0f;
+						} else {
+							lux = (float(pFrame->DATA_BYTE1) * 232.94f) + 600.0f;
+						}
+						RBUF tsen;
+						memset(&tsen,0,sizeof(RBUF));
+						tsen.RFXSENSOR.packetlength=sizeof(tsen.RFXSENSOR)-1;
+						tsen.RFXSENSOR.packettype=pTypeRFXSensor;
+						tsen.RFXSENSOR.subtype=sTypeRFXSensorVolt;
+						tsen.RFXSENSOR.id=pFrame->ID_BYTE1;
+						tsen.RFXSENSOR.filler=pFrame->ID_BYTE0&0x0F;
+						tsen.RFXSENSOR.rssi=(pFrame->ID_BYTE0&0xF0)>>4;
+						tsen.RFXSENSOR.msg1 = (BYTE)(voltage/256);
+						tsen.RFXSENSOR.msg2 = (BYTE)(voltage-(tsen.RFXSENSOR.msg1*256));
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR);
+					}
+					_tLightMeter lmeter;
+					lmeter.id1=(BYTE)pFrame->ID_BYTE3;
+					lmeter.id2=(BYTE)pFrame->ID_BYTE2;
+					lmeter.id3=(BYTE)pFrame->ID_BYTE1;
+					lmeter.id4=(BYTE)pFrame->ID_BYTE0;
+					lmeter.dunit=1;
+					lmeter.fLux=lux;
+					sDecodeRXMessage(this, (const unsigned char *)&lmeter);
+				}
 			}
 		}
 		break;

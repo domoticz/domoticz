@@ -2051,6 +2051,12 @@ unsigned long long MainWorker::decode_Temp(const CDomoticzHardwareBase *pHardwar
 		{
 			BatteryLevel=pResponse->TEMP.battery_level;
 		}
+		else if (pHardware->HwdType == HTYPE_EnOcean)
+		{
+			BatteryLevel=255;
+			SignalLevel=12;
+			Unit=(pResponse->TEMP.rssi<<4)|pResponse->TEMP.battery_level;
+		}
 	}
 
 	float temp;
@@ -6160,6 +6166,15 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 	unsigned char SignalLevel=pResponse->RFXSENSOR.rssi;
 	unsigned char BatteryLevel = 255;
 
+	if (pHardware!=NULL)
+	{
+		if (pHardware->HwdType == HTYPE_EnOcean)
+		{
+			BatteryLevel=255;
+			SignalLevel=12;
+			Unit=(pResponse->RFXSENSOR.rssi<<4)|pResponse->RFXSENSOR.filler;
+		}
+	}
 	switch (pResponse->RFXSENSOR.subtype)
 	{
 	case sTypeRFXSensorTemp:

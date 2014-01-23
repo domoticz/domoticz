@@ -406,6 +406,15 @@ const char *sqlCreateBackupLog =
 "[Key] VARCHAR(50) NOT NULL, "
 "[nValue] INTEGER DEFAULT 0); ";
 
+const char *sqlCreateEnoceanSensors =
+	"CREATE TABLE IF NOT EXISTS [EnoceanSensors] ("
+	"[ID] INTEGER PRIMARY KEY, "
+	"[HardwareID] INTEGER NOT NULL, "
+	"[DeviceID] VARCHAR(25) NOT NULL, "
+	"[Manufacturer] INTEGER NOT NULL, "
+	"[Profile] INTEGER NOT NULL, "
+	"[Type] INTEGER NOT NULL);";
+
 extern std::string szStartupFolder;
 
 CSQLHelper::CSQLHelper(void)
@@ -518,6 +527,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateFan);
 	query(sqlCreateFan_Calendar);
 	query(sqlCreateBackupLog);
+	query(sqlCreateEnoceanSensors);
 
 	int dbversion=0;
 	GetPreferencesVar("DB_Version", dbversion);
@@ -4765,6 +4775,9 @@ void CSQLHelper::DeleteHardware(const std::string &idx)
 	result=query(szTmp);
 	sprintf(szTmp,"DELETE FROM ZWaveNodes WHERE (HardwareID== %s)",idx.c_str());
 	query(szTmp);
+	sprintf(szTmp,"DELETE FROM EnoceanSensors WHERE (HardwareID== %s)",idx.c_str());
+	query(szTmp);
+
 }
 
 void CSQLHelper::DeleteCamera(const std::string &idx)
@@ -4840,6 +4853,7 @@ void CSQLHelper::DeleteDevice(const std::string &idx)
 	query(szTmp);
 	sprintf(szTmp,"DELETE FROM SharedDevices WHERE (DeviceRowID== %s)",idx.c_str());
 	query(szTmp);
+
 
 	//and now delete all records in the DeviceStatus table itself
 	sprintf(szTmp,"DELETE FROM DeviceStatus WHERE (ID == %s)",idx.c_str());
