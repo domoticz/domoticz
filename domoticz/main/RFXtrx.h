@@ -4,25 +4,28 @@
 #define _RXFCOMLIB_F11DD459_E67E_4B26_8E44_B964E99304BF
 
 //#define IS_BIG_ENDIAN
+// users with a big_endian system have to remove the comment slashes before the #define.
+//
 
-//----------------------------------------------------------------------------
-//                     Software License Agreement                      
-//                                                                     
-// Copyright 2011-2013, RFXCOM
-//
-// ALL RIGHTS RESERVED. This code is owned by RFXCOM, and is protected under
-// Netherlands Copyright Laws and Treaties and shall be subject to the 
-// exclusive jurisdiction of the Netherlands Courts. The information from this
-// file may freely be used to create programs to exclusively interface with
-// RFXCOM products only. Any other use or unauthorized reprint of this material
-// is prohibited. No part of this file may be reproduced or transmitted in
-// any form or by any means, electronic or mechanical, including photocopying,
-// recording, or by any information storage and retrieval system without
-// express written permission from RFXCOM.
-//
-// The above copyright notice shall be included in all copies or substantial
-// portions of this Software.
-//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------
+RFXtrx driver
+
+Copyright (C) 2011-2014  RFXCOM Bert Weijenberg
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software Foundation,
+Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+-----------------------------------------------------------------------------*/
 
 /*
 SDK version 6.11
@@ -1046,15 +1049,14 @@ typedef union tRBUF {
 		BYTE	mode : 1;
 		BYTE	filler : 5;
 		BYTE	status : 2;
+
+		BYTE	rssi : 4;
+		BYTE	filler1 : 4;
 #else
 		BYTE	status : 2;
 		BYTE	filler : 5;
 		BYTE	mode : 1;
-#endif
-#ifdef IS_BIG_ENDIAN
-		BYTE	rssi : 4;
-		BYTE	filler1 : 4;
-#else
+
 		BYTE	filler1 : 4;
 		BYTE	rssi : 4;
 #endif
@@ -1124,17 +1126,21 @@ typedef union tRBUF {
 #ifdef IS_BIG_ENDIAN
 		BYTE	tempsign : 1;
 		BYTE	temperatureh : 7;
-#else
-		BYTE	temperatureh : 7;
-		BYTE	tempsign : 1;
-#endif
+
 		BYTE	temperaturel;
 		BYTE	raintotal1;
 		BYTE	raintotal2;
-#ifdef IS_BIG_ENDIAN
+
 		BYTE	rssi : 4;
 		BYTE	battery_level : 4;
 #else
+		BYTE	temperatureh : 7;
+		BYTE	tempsign : 1;
+
+		BYTE	temperaturel;
+		BYTE	raintotal1;
+		BYTE	raintotal2;
+
 		BYTE	battery_level : 4;
 		BYTE	rssi : 4;
 #endif
@@ -1150,15 +1156,17 @@ typedef union tRBUF {
 #ifdef IS_BIG_ENDIAN
 		BYTE	tempsign : 1;
 		BYTE	temperatureh : 7;
-#else
-		BYTE	temperatureh : 7;
-		BYTE	tempsign : 1;
-#endif
+
 		BYTE	temperaturel;
-#ifdef IS_BIG_ENDIAN
+
 		BYTE	rssi : 4;
 		BYTE	battery_level : 4;
 #else
+		BYTE	temperatureh : 7;
+		BYTE	tempsign : 1;
+
+		BYTE	temperaturel;
+
 		BYTE	battery_level : 4;
 		BYTE	rssi : 4;
 #endif
@@ -1192,17 +1200,21 @@ typedef union tRBUF {
 #ifdef IS_BIG_ENDIAN
 		BYTE	tempsign : 1;
 		BYTE	temperatureh : 7;
-#else
-		BYTE	temperatureh : 7;
-		BYTE	tempsign : 1;
-#endif
+
 		BYTE	temperaturel;
 		BYTE	humidity; 
 		BYTE	humidity_status;
-#ifdef IS_BIG_ENDIAN
+
 		BYTE	rssi : 4;
 		BYTE	battery_level : 4;
 #else
+		BYTE	temperatureh : 7;
+		BYTE	tempsign : 1;
+
+		BYTE	temperaturel;
+		BYTE	humidity; 
+		BYTE	humidity_status;
+
 		BYTE	battery_level : 4;
 		BYTE	rssi : 4;
 #endif

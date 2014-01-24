@@ -41,6 +41,7 @@ private:
 	void Do_Work();
 	bool ParseData();
 	void Add2SendQueue(const char* pData, const size_t length);
+	float GetValueRange(const float InValue, const float ScaleMax, const float ScaleMin=0, const float RangeMax=255, const float RangeMin=0);
 
 	_eEnOcean_Receive_State m_receivestate;
 	int m_wantedlength;
