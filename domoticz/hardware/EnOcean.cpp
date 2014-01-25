@@ -289,11 +289,11 @@ const char* Get_Enocean4BSDesc(const int Org, const int Func, const int Type)
  * Data structure for RPS, 1BS, 4BS and HRC packages
  * Since most of the packages are in this format, this
  * is taken as default. Packages of other structure have
- * to be converted with the appropirate functions.
+ * to be converted with the appropriate functions.
  **/
 typedef struct enocean_data_structure {
-  unsigned char SYNC_BYTE1; ///< Synchronisation Byte 1
-  unsigned char SYNC_BYTE2; ///< Synchronisation Byte 2
+  unsigned char SYNC_BYTE1; ///< Synchronization Byte 1
+  unsigned char SYNC_BYTE2; ///< Synchronization Byte 2
   unsigned char H_SEQ_LENGTH; ///< Header identification and number of octets following the header octet
   unsigned char ORG; ///< Type of telegram
   unsigned char DATA_BYTE3; ///< Data Byte 3
@@ -312,8 +312,8 @@ typedef struct enocean_data_structure {
 /** Data structure for 6DT packages
  **/
 typedef struct enocean_data_structure_6DT {
-  unsigned char SYNC_BYTE1; ///< Synchronisation Byte 1
-  unsigned char SYNC_BYTE2; ///< Synchronisation Byte 2
+  unsigned char SYNC_BYTE1; ///< Synchronization Byte 1
+  unsigned char SYNC_BYTE2; ///< Synchronization Byte 2
   unsigned char H_SEQ_LENGTH; ///< Header identification and number of octets following the header octet
   unsigned char ORG; ///< Type of telegram
   unsigned char DATA_BYTE5; ///< Data Byte 5
@@ -322,8 +322,8 @@ typedef struct enocean_data_structure_6DT {
   unsigned char DATA_BYTE2; ///< Data Byte 2
   unsigned char DATA_BYTE1; ///< Data Byte 1
   unsigned char DATA_BYTE0; ///< Data Byte 0
-  unsigned char ADDRESS1; ///< Adress Byte 1
-  unsigned char ADDRESS0; ///< Adress Byte 0
+  unsigned char ADDRESS1; ///< Address Byte 1
+  unsigned char ADDRESS0; ///< Address Byte 0
   unsigned char STATUS; ///< Status field
   unsigned char CHECKSUM; ///< Checksum of the packet
 } enocean_data_structure_6DT;
@@ -332,16 +332,16 @@ typedef struct enocean_data_structure_6DT {
 /** Data structure for MDA packages
  **/
 typedef struct enocean_data_structure_MDA {
-  unsigned char SYNC_BYTE1; ///< Synchronisation Byte 1
-  unsigned char SYNC_BYTE2; ///< Synchronisation Byte 2
+  unsigned char SYNC_BYTE1; ///< Synchronization Byte 1
+  unsigned char SYNC_BYTE2; ///< Synchronization Byte 2
   unsigned char H_SEQ_LENGTH; ///< Header identification and number of octets following the header octet
   unsigned char ORG; ///< Type of telegram
   unsigned char DATA_UNUSED5; ///< Data Byte 5 (unused)
   unsigned char DATA_UNUSED4; ///< Data Byte 4 (unused)
   unsigned char DATA_UNUSED3; ///< Data Byte 3 (unused)
   unsigned char DATA_UNUSED2; ///< Data Byte 2 (unused)
-  unsigned char ADDRESS1; ///< Adress Byte 1
-  unsigned char ADDRESS0; ///< Adress Byte 0
+  unsigned char ADDRESS1; ///< Address Byte 1
+  unsigned char ADDRESS0; ///< Address Byte 0
   unsigned char DATA_UNUSED1; ///< Data Byte 1 (unused)
   unsigned char DATA_UNUSED0; ///< Data Byte 0 (unused)
   unsigned char STATUS; ///< Status field
@@ -1026,19 +1026,134 @@ void CEnOcean::WriteToHardware(const char *pdata, const unsigned char length)
 			RockerID=tsen->LIGHTING2.unitcode-1;
 		else
 			return;//double not supported yet!
-		UpDown=((tsen->LIGHTING2.cmnd!=light2_sOff)&&(tsen->LIGHTING2.cmnd!=light2_sGroupOff));
-			
 
-		iframe.DATA_BYTE3 = (RockerID<<DB3_RPS_NU_RID_SHIFT) | (UpDown<<DB3_RPS_NU_UD_SHIFT) | (Pressed<<DB3_RPS_NU_PR_SHIFT);//0x30;
-		iframe.STATUS = 0x30;
 
-		iframe.CHECKSUM = enocean_calc_checksum(&iframe);
+		//First we need to find out if this is a Dimmer switch,
+		//because they are threaded differently
+		bool bIsDimmer=false;
+		int LastLevel=0;
+		std::stringstream szQuery;
+		std::vector<std::vector<std::string> > result;
+		char szDeviceID[20];
+		sprintf(szDeviceID,"%08X",sID);
+		szQuery << "SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szDeviceID << "') AND (Unit==" << int(tsen->LIGHTING2.unitcode) << ")";
+		result=m_pMainWorker->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			_eSwitchType switchtype=(_eSwitchType)atoi(result[0][0].c_str());
+			if (switchtype==STYPE_Dimmer)
+				bIsDimmer=true;
+			LastLevel=atoi(result[0][1].c_str());
+		}
 
-		Add2SendQueue((const char*)&iframe,sizeof(enocean_data_structure));
+		int iLevel=tsen->LIGHTING2.level;
+		int cmnd=tsen->LIGHTING2.cmnd;
+		int orgcmd=cmnd;
+		if ((tsen->LIGHTING2.level==0)&&(!bIsDimmer))
+			cmnd=light2_sOff;
+		else
+		{
+			if (cmnd==light2_sOn)
+			{
+				iLevel=LastLevel;
+			}
+			else
+			{
+				//scale to 0 - 100 %
+				iLevel=tsen->LIGHTING2.level;
+				if (iLevel>15)
+					iLevel=15;
+				float fLevel=(100.0f/15.0f)*float(iLevel);
+				if (fLevel>99.0f)
+					fLevel=100.0f;
+				iLevel=int(fLevel);
+			}
+			cmnd=light2_sSetLevel;
+		}
 
-		//Next command is send a bit later (button release)
-		iframe.DATA_BYTE3 = 0;
-		iframe.STATUS = 0x20;
+		if (cmnd!=light2_sSetLevel)
+		{
+			//On/Off
+			UpDown=((cmnd!=light2_sOff)&&(cmnd!=light2_sGroupOff));
+
+
+			iframe.DATA_BYTE3 = (RockerID<<DB3_RPS_NU_RID_SHIFT) | (UpDown<<DB3_RPS_NU_UD_SHIFT) | (Pressed<<DB3_RPS_NU_PR_SHIFT);//0x30;
+			iframe.STATUS = 0x30;
+
+			iframe.CHECKSUM = enocean_calc_checksum(&iframe);
+
+			Add2SendQueue((const char*)&iframe,sizeof(enocean_data_structure));
+
+			//Next command is send a bit later (button release)
+			iframe.DATA_BYTE3 = 0;
+			iframe.STATUS = 0x20;
+			iframe.CHECKSUM = enocean_calc_checksum(&iframe);
+			Add2SendQueue((const char*)&iframe,sizeof(enocean_data_structure));
+		}
+		else
+		{
+			//Send dim value
+
+			//Dim On DATA_BYTE0 = 0x09
+			//Dim Off DATA_BYTE0 = 0x08
+
+			iframe.ORG = 0x07;
+			iframe.DATA_BYTE3=2;
+			iframe.DATA_BYTE2=iLevel;
+			iframe.DATA_BYTE1=1;//very fast dimming
+
+			if ((iLevel==0)||(orgcmd==light2_sOff))
+				iframe.DATA_BYTE0=0x08; //Dim Off
+			else
+				iframe.DATA_BYTE0=0x09;//Dim On
+
+			iframe.CHECKSUM = enocean_calc_checksum(&iframe);
+			Add2SendQueue((const char*)&iframe,sizeof(enocean_data_structure));
+		}
+	}
+}
+
+void CEnOcean::SendDimmerTeachIn(const char *pdata, const unsigned char length)
+{
+	if (m_id_base==0)
+		return;
+	if (isOpen()) {
+
+		RBUF *tsen=(RBUF*)pdata;
+		if (tsen->LIGHTING2.packettype!=pTypeLighting2)
+			return; //only allowed to control switches
+
+		enocean_data_structure iframe = create_base_frame();
+		iframe.H_SEQ_LENGTH=0x6B;//TX+Length
+		iframe.ORG = 0x05;
+
+		unsigned long sID=(tsen->LIGHTING2.id1<<24)|(tsen->LIGHTING2.id2<<16)|(tsen->LIGHTING2.id3<<8)|tsen->LIGHTING2.id4;
+		if ((sID<m_id_base)||(sID>m_id_base+129))
+		{
+			_log.Log(LOG_ERROR,"EnOcean: Can not switch with this DeviceID, use a switch created with our id_base!...");
+			return;
+		}
+
+		iframe.ID_BYTE3=(unsigned char)((sID&0xFF000000)>>24);//tsen->LIGHTING2.id1;
+		iframe.ID_BYTE2=(unsigned char)((sID&0x00FF0000)>>16);//tsen->LIGHTING2.id2;
+		iframe.ID_BYTE1=(unsigned char)((sID&0x0000FF00)>>8);//tsen->LIGHTING2.id3;
+		iframe.ID_BYTE0=(unsigned char)(sID&0x0000FF);//tsen->LIGHTING2.id4;
+
+		unsigned char RockerID=0;
+		unsigned char UpDown=1;
+		unsigned char Pressed=1;
+
+		if (tsen->LIGHTING2.unitcode<10)
+			RockerID=tsen->LIGHTING2.unitcode-1;
+		else
+			return;//double not supported yet!
+
+		//Teach in, DATA 2,1,0 set to 0
+		iframe.ORG = 0x07;
+		iframe.DATA_BYTE3=2;
+		iframe.DATA_BYTE2=0;
+		iframe.DATA_BYTE1=0;
+		iframe.DATA_BYTE0=0;
 		iframe.CHECKSUM = enocean_calc_checksum(&iframe);
 		Add2SendQueue((const char*)&iframe,sizeof(enocean_data_structure));
 	}

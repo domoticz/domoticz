@@ -32,6 +32,7 @@ public:
 
     ~CEnOcean();
 	void WriteToHardware(const char *pdata, const unsigned char length);
+	void SendDimmerTeachIn(const char *pdata, const unsigned char length);
 	unsigned long m_id_base;
 private:
 	void Init();

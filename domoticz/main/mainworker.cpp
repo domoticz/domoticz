@@ -7463,7 +7463,9 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	int hindex=FindDomoticzHardware(HardwareID);
 	if (hindex==-1)
 		return false;
-
+	CDomoticzHardwareBase *pHardware=GetHardware(HardwareID);
+	if (pHardware==NULL)
+		return false;
 
 	unsigned char Unit=atoi(sd[2].c_str());
 	unsigned char dType=atoi(sd[3].c_str());
@@ -7505,6 +7507,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			}
 			lcmd.LIGHTING1.filler=0;
 			lcmd.LIGHTING1.rssi=7;
+
 			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING1));
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
@@ -7544,7 +7547,14 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.LIGHTING2.level=(unsigned char)level;
 			lcmd.LIGHTING2.filler=0;
 			lcmd.LIGHTING2.rssi=7;
-			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING2));
+			//Special Teach-In for EnOcean Dimmers
+			if ((pHardware->HwdType == HTYPE_EnOcean)&&(IsTesting)&&(switchtype==STYPE_Dimmer))
+			{
+				CEnOcean *pEnocean=(CEnOcean*)pHardware;
+				pEnocean->SendDimmerTeachIn((const char*)&lcmd,sizeof(lcmd.LIGHTING1));
+			}
+			else
+				WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING2));
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);

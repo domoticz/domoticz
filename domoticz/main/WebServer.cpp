@@ -7763,7 +7763,14 @@ std::string CWebServer::GetJSonPage()
 			sd.push_back(""); //StrParam2
 
 			std::string switchcmd="On";
-			m_pMain->SwitchLightInt(sd,switchcmd,0,-1,true);
+			int level=0;
+			if (lighttype==67)
+			{
+				//Special EnOcean case, if it is a dimmer, set a dim value
+				if (switchtype == STYPE_Dimmer)
+					level=5;
+			}
+			m_pMain->SwitchLightInt(sd,switchcmd,level,-1,true);
 		}
 		else if (cparam=="addswitch")
 		{
