@@ -1250,7 +1250,7 @@ bool CEnOcean::ParseData()
 					tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
 					tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
 					tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);//decode message
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);
 				}
 				else if (szST=="AMR.Electricity")
 				{
@@ -1263,7 +1263,7 @@ bool CEnOcean::ParseData()
 					umeter.id4=(BYTE)pFrame->ID_BYTE0;
 					umeter.dunit=1;
 					umeter.fusage=(float)cvalue;
-					sDecodeRXMessage(this, (const unsigned char *)&umeter);//decode message
+					sDecodeRXMessage(this, (const unsigned char *)&umeter);
 				}
 				else if (szST=="AMR.Gas")
 				{
@@ -1281,7 +1281,7 @@ bool CEnOcean::ParseData()
 					tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
 					tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
 					tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);//decode message
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);
 				}
 				else if (szST=="AMR.Water")
 				{
@@ -1299,7 +1299,7 @@ bool CEnOcean::ParseData()
 					tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
 					tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
 					tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);//decode message
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);
 				}
 				else if (szST.find("RoomOperatingPanel") == 0)
 				{
@@ -1357,7 +1357,7 @@ bool CEnOcean::ParseData()
 						tsen.TEMP.temperatureh=(BYTE)(at10/256);
 						at10-=(tsen.TEMP.temperatureh*256);
 						tsen.TEMP.temperaturel=(BYTE)(at10);
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
 					}
 				}
 				else if (szST == "LightSensor.01")
@@ -1437,7 +1437,11 @@ bool CEnOcean::ParseData()
 					else if (iType==0x20) { ScaleMax=-10; ScaleMin=41.2f; }
 					else if (iType==0x30) { ScaleMax=-40; ScaleMin=62.3f; }
 
-					float temp=GetValueRange(pFrame->DATA_BYTE1,ScaleMax,ScaleMin);
+					float temp;
+					if (iType<0x20)
+						temp=GetValueRange(pFrame->DATA_BYTE1,ScaleMax,ScaleMin);
+					else
+						temp=GetValueRange(float(((pFrame->DATA_BYTE2&3)<<8)|pFrame->DATA_BYTE1),ScaleMax,ScaleMin); //10bit
 					RBUF tsen;
 					memset(&tsen,0,sizeof(RBUF));
 					tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
@@ -1453,8 +1457,30 @@ bool CEnOcean::ParseData()
 					tsen.TEMP.temperatureh=(BYTE)(at10/256);
 					at10-=(tsen.TEMP.temperatureh*256);
 					tsen.TEMP.temperaturel=(BYTE)(at10);
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
-
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
+				}
+				else if (szST=="TempHum.01")
+				{
+					//(EPP A5-04-01)
+					float temp=GetValueRange(pFrame->DATA_BYTE1,40);
+					float hum=GetValueRange(pFrame->DATA_BYTE2,100);
+					RBUF tsen;
+					memset(&tsen,0,sizeof(RBUF));
+					tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
+					tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
+					tsen.TEMP_HUM.subtype=sTypeTH5;
+					tsen.TEMP_HUM.rssi=12;
+					tsen.TEMP_HUM.id1=pFrame->ID_BYTE2;
+					tsen.TEMP_HUM.id2=pFrame->ID_BYTE1;
+					tsen.TEMP_HUM.battery_level=9;
+					tsen.TEMP_HUM.tempsign=(temp>=0)?0:1;
+					int at10=round(abs(temp*10.0f));
+					tsen.TEMP_HUM.temperatureh=(BYTE)(at10/256);
+					at10-=(tsen.TEMP_HUM.temperatureh*256);
+					tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
+					tsen.TEMP_HUM.humidity=(BYTE)hum;
+					tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);
 				}
 			}
 		}

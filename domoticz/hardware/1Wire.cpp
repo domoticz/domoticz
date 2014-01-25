@@ -143,10 +143,10 @@ void C1Wire::WriteToHardware(const char *pdata, const unsigned char length)
 		//light command
 
       unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
-      deviceIdByteArray[0]=pSen->LIGHTING2.id4;
-      deviceIdByteArray[1]=pSen->LIGHTING2.id3;
-      deviceIdByteArray[2]=pSen->LIGHTING2.id2;
-      deviceIdByteArray[3]=pSen->LIGHTING2.id1;
+      deviceIdByteArray[0]=pSen->LIGHTING2.id1;
+      deviceIdByteArray[1]=pSen->LIGHTING2.id2;
+      deviceIdByteArray[2]=pSen->LIGHTING2.id3;
+      deviceIdByteArray[3]=pSen->LIGHTING2.id4;
 
       _t1WireDevice device;
       m_system->SetLightState(ByteArrayToDeviceId(deviceIdByteArray),pSen->LIGHTING2.unitcode,pSen->LIGHTING2.cmnd==light2_sOn);
