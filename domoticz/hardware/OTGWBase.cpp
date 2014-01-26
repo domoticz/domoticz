@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <iostream>
 #include <boost/bind.hpp>
+#include "../json/json.h"
 
 #include <ctime>
 
@@ -17,10 +18,16 @@
 
 OTGWBase::OTGWBase(void)
 {
+	m_OutsideTemperatureIdx=0;//use build in
 }
 
 OTGWBase::~OTGWBase(void)
 {
+}
+
+void OTGWBase::SetModes( const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5)
+{
+	m_OutsideTemperatureIdx=Mode1;
 }
 
 void OTGWBase::ParseData(const unsigned char *pData, int Len)
@@ -143,4 +150,26 @@ void OTGWBase::ParseLine()
 		}
 	}
 
+}
+
+bool OTGWBase::GetOutsideTemperatureFromDomoticz(float &tvalue)
+{
+	if (m_OutsideTemperatureIdx==0)
+		return false;
+	Json::Value tempjson;
+	std::stringstream sstr;
+	sstr << m_OutsideTemperatureIdx;
+	m_pMainWorker->m_webserver.GetJSonDevices(tempjson, "", "temp","ID",sstr.str(),"");
+
+	size_t tsize=tempjson.size();
+	if (tsize<1)
+		return false;
+
+	Json::Value::const_iterator itt;
+	int ii=0;
+	Json::ArrayIndex rsize=tempjson["result"].size();
+	if (rsize<1)
+		return false;
+	tvalue=tempjson["result"][0]["Temp"].asFloat();
+	return true;
 }

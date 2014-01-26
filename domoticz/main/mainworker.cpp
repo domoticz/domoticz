@@ -405,8 +405,7 @@ bool MainWorker::AddHardwareFromParams(
 			}
 			else if (Type==HTYPE_OpenThermGateway)
 			{
-				pHardware = new OTGWSerial(ID,szSerialPort, 9600);
-				//pHardware = new S0MeterTCP(ID,"127.0.0.1",2001, Mode1, Mode2, Mode3, Mode4);
+				pHardware = new OTGWSerial(ID,szSerialPort, 9600, Mode1, Mode2, Mode3, Mode4, Mode5);
 			}
 			else if (Type==HTYPE_TeleinfoMeter)
 			{
@@ -442,7 +441,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_OpenThermGatewayTCP:
 		//LAN
-		pHardware = new OTGWTCP(ID, Address, Port);
+		pHardware = new OTGWTCP(ID, Address, Port, Mode1, Mode2, Mode3, Mode4, Mode5);
 		break;
 	case HTYPE_LimitlessLights:
 		//LAN

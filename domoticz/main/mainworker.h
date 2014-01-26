@@ -94,6 +94,7 @@ public:
 	bool m_bHaveDownloadedDomoticzUpdateSuccessFull;
 
 	tcp::server::CTCPServer m_sharedserver;
+	http::server::CWebServer m_webserver;
 private:
 
 	void PrintDeviceName(const std::string &devname);
@@ -122,7 +123,6 @@ private:
 
 	std::vector<CDomoticzHardwareBase*> m_hardwaredevices;
 	eVerboseLevel m_verboselevel;
-	http::server::CWebServer m_webserver;
 	std::string m_webserverport;
 
 	volatile bool m_stoprequested;

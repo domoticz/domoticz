@@ -120,6 +120,9 @@
     <Filter Include="Devices\Forecast.io">
       <UniqueIdentifier>{739f5460-5c88-47ba-8cd1-d94035c1819d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\AsyncSerialTCP">
+      <UniqueIdentifier>{1d8ff530-0367-4c8a-844f-4d5936d2ab97}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -131,7 +134,6 @@
     <None Include="getsvn.cmake">
       <Filter>crosscompile</Filter>
     </None>
-    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="webserver\Base64.h">
@@ -181,9 +183,6 @@
     </ClInclude>
     <ClInclude Include="hardware\P1MeterTCP.h">
       <Filter>Devices\P1Smart Meter\P1MeterTCP</Filter>
-    </ClInclude>
-    <ClInclude Include="hardware\ASyncSerial.h">
-      <Filter>Devices\RFXSerial</Filter>
     </ClInclude>
     <ClInclude Include="hardware\RFXComSerial.h">
       <Filter>Devices\RFXSerial</Filter>
@@ -380,6 +379,12 @@
     <ClInclude Include="hardware\ForecastIO.h">
       <Filter>Devices\Forecast.io</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\ASyncSerial.h">
+      <Filter>Devices\AsyncSerialTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\ASyncTCP.h">
+      <Filter>Devices\AsyncSerialTCP</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -435,9 +440,6 @@
     </ClCompile>
     <ClCompile Include="hardware\P1MeterTCP.cpp">
       <Filter>Devices\P1Smart Meter\P1MeterTCP</Filter>
-    </ClCompile>
-    <ClCompile Include="hardware\ASyncSerial.cpp">
-      <Filter>Devices\RFXSerial</Filter>
     </ClCompile>
     <ClCompile Include="hardware\RFXComSerial.cpp">
       <Filter>Devices\RFXSerial</Filter>
@@ -600,6 +602,12 @@
     </ClCompile>
     <ClCompile Include="hardware\ForecastIO.cpp">
       <Filter>Devices\Forecast.io</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\ASyncSerial.cpp">
+      <Filter>Devices\AsyncSerialTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\ASyncTCP.cpp">
+      <Filter>Devices\AsyncSerialTCP</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,19 @@
 <div id="hardwarecontent">
 </div>
+<div id="opentherm" style="display:none;">
+	<center>
+	<form id="openthermform">
+		<br>
+		<center>
+			<span data-i18n="Outside Temperature Sensor">Outside Temperature Sensor</span>: <select id="combooutsidesensor" name="combooutsidesensor" style="width:300px" class="combobox ui-corner-all">
+			</select>
+			<br><br>
+			<input type="hidden" id="idx" name="idx" value="-1">
+			<button class="btn btn-danger" id="submitbuttonopentherm">Save</button>
+		</center>
+	</form>
+	</center>
+</div>
 <div id="openzwave" style="display:none;">
 	<div class="page-header-small">
 		<h1 data-i18n="Nodes">Nodes</h1>
@@ -159,21 +173,21 @@
 </center>
 </div>
 <div id="limitlessmetertype" style="display:none;">
-<center>
-<form id="limitform">
-	<br>
 	<center>
-		<label><span data-i18n="Type"></span>: </label><select id="combom1type" name="LimitlessType" style="width:100px" class="combobox ui-corner-all">
-			<option value="1">RGBW</option>
-			<option value="2">RGB</option>
-			<option value="3">White</option>
-		</select>
-		<br><br>
-		<input type="hidden" id="idx" name="idx" value="-1">
-		<button class="btn btn-danger" id="submitbuttonlimitless">Set Mode</button>
+	<form id="limitform">
+		<br>
+		<center>
+			<label><span data-i18n="Type"></span>: </label><select id="combom1type" name="LimitlessType" style="width:100px" class="combobox ui-corner-all">
+				<option value="1">RGBW</option>
+				<option value="2">RGB</option>
+				<option value="3">White</option>
+			</select>
+			<br><br>
+			<input type="hidden" id="idx" name="idx" value="-1">
+			<button class="btn btn-danger" id="submitbuttonlimitless">Set Mode</button>
+		</center>
+	</form>
 	</center>
-</form>
-</center>
 </div>
 <div id="hardwaremain" style="display:none;">
     <table class="display" id="hardwaretable" border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -1033,6 +1047,57 @@ function EditOpenZWave(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 	RefreshOpenZWaveNodeTable();
 }
 
+function SetOpenThermSettings()
+{
+  $.post("setopenthermsettings.webem", $("#hardwarecontent #openthermform").serialize(), function(data) {
+   ShowHardware();
+  });
+}
+
+function EditOpenTherm(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
+{
+//Mode1=Outside Temperature Sensor DeviceIdx, 0=Not Using
+	$.devIdx=idx;
+	cursordefault();
+	var htmlcontent = '';
+	htmlcontent='<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
+	htmlcontent+=$('#opentherm').html();
+	$('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
+	$('#hardwarecontent').i18n();
+
+	$('#hardwarecontent #idx').val(idx);
+	$('#hardwarecontent #combooutsidesensor >option').remove();
+	var option = $('<option />');
+	option.attr('value', 0).text("Use Build In");
+	$("#hardwarecontent #combooutsidesensor").append(option);
+	
+	$('#hardwarecontent #submitbuttonopentherm').click(function (e) {
+		e.preventDefault();
+		SetOpenThermSettings();
+	});
+	
+	//Get Temperature Sensors
+	$.ajax({
+		 url: "json.htm?type=devices&filter=temp&used=true&order=Name",
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			if (typeof data.result != 'undefined') 
+			{
+				$.each(data.result, function(i,item){
+					if (typeof item.Temp != 'undefined') {
+						var option = $('<option />');
+						option.attr('value', item.idx).text(item.Name+" ("+item.Temp +"\u00B0)");
+						$("#hardwarecontent #combooutsidesensor").append(option);
+					}
+				});
+			}
+			$("#hardwarecontent #combooutsidesensor").val(Mode1);
+		 }
+	}); 
+	$("#hardwarecontent #combooutsidesensor").val(Mode1);
+}
+
 function SetRFXCOMMode()
 {
   $.post("setrfxcommode.webem", $("#hardwarecontent #settings").serialize(), function(data) {
@@ -1194,6 +1259,9 @@ function RefreshHardwareTable()
 			}
 			else if (HwTypeStr.indexOf("OpenZWave") >= 0) {
 				HwTypeStr+=' <span class="label label-info" onclick="EditOpenZWave(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Setup</span>';
+			}
+			else if (HwTypeStr.indexOf("OpenTherm") >= 0) {
+				HwTypeStr+=' <span class="label label-info" onclick="EditOpenTherm(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Setup</span>';
 			}
 			else if (HwTypeStr.indexOf("Dummy") >= 0) {
 				HwTypeStr+=' <span class="label label-info" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');" onmouseover="cursorhand()" onmouseout="cursordefault()">Create Virtual Sensors</span>';

@@ -19,12 +19,13 @@
 //
 //Class OTGWSerial
 //
-OTGWSerial::OTGWSerial(const int ID, const std::string& devname, const unsigned int baud_rate)
+OTGWSerial::OTGWSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5)
 {
 	m_HwdID=ID;
 	m_szSerialPort=devname;
 	m_iBaudRate=baud_rate;
 	m_stoprequestedpoller=false;
+	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5);
 }
 
 OTGWSerial::~OTGWSerial()
@@ -146,6 +147,7 @@ void OTGWSerial::Do_PollWork()
 			if ((atime%30==0)||(bFirstTime))	//updates every 30 seconds
 			{
 				bFirstTime=false;
+				SendOutsideTemperature();
 				GetGatewayDetails();
 			}
 		}
@@ -158,6 +160,15 @@ void OTGWSerial::GetGatewayDetails()
 	char szCmd[10];
 	strcpy(szCmd,"PS=1\r\n");
 	WriteToHardware((const char*)&szCmd,strlen(szCmd));
+}
+void OTGWSerial::SendOutsideTemperature()
+{
+	float temp;
+	if (!GetOutsideTemperatureFromDomoticz(temp))
+		return;
+	char szCmd[30];
+	sprintf(szCmd,"OT=%.1f\r\n",temp);
+	write((const char*)&szCmd,strlen(szCmd));
 }
 
 void OTGWSerial::WriteToHardware(const char *pdata, const unsigned char length)

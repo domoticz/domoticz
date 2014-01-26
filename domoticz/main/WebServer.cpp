@@ -249,6 +249,7 @@ bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress
 	m_pWebEm->RegisterActionCode( "setrego6xxtype",boost::bind(&CWebServer::SetRego6XXType,this));
 	m_pWebEm->RegisterActionCode( "sets0metertype",boost::bind(&CWebServer::SetS0MeterType,this));
 	m_pWebEm->RegisterActionCode( "setlimitlesstype",boost::bind(&CWebServer::SetLimitlessType,this));
+	m_pWebEm->RegisterActionCode( "setopenthermsettings",boost::bind(&CWebServer::SetOpenThermSettings,this));
 
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWebServer::Do_Work, this)));
@@ -751,6 +752,39 @@ char * CWebServer::PostSettings()
 	}
 
 	m_pMain->m_sql.UpdatePreferencesVar("SecOnDelay",atoi(m_pWebEm->FindValue("SecOnDelay").c_str()));
+
+	return (char*)m_retstr.c_str();
+}
+
+char * CWebServer::SetOpenThermSettings()
+{
+	m_retstr="";
+	std::string idx=m_pWebEm->FindValue("idx");
+	if (idx=="") {
+		return (char*)m_retstr.c_str();
+	}
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
+	result=m_pMain->m_sql.query(szQuery.str());
+	if (result.size()<1)
+		return (char*)m_retstr.c_str();
+
+	m_retstr="/index.html";
+
+	int currentMode1=atoi(result[0][0].c_str());
+
+	std::string sOutsideTempSensor=m_pWebEm->FindValue("combooutsidesensor");
+	int newMode1=atoi(sOutsideTempSensor.c_str());
+
+	if(currentMode1 != newMode1)
+	{
+		m_pMain->m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), newMode1, 0, 0, 0, 0);
+		m_pMain->RestartHardware(idx);
+	}
 
 	return (char*)m_retstr.c_str();
 }

@@ -40,11 +40,14 @@ public:
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;
 private:
+	void SetModes( const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5);
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();
 	void UpdateTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
+	bool GetOutsideTemperatureFromDomoticz(float &tvalue);
 	static const int readBufferSize=1028;
 	unsigned char m_buffer[readBufferSize];
 	int m_bufferpos;
+	int m_OutsideTemperatureIdx;
 };
 

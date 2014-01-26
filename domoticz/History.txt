@@ -8,6 +8,8 @@ Version 1.0.xxxx (January xxth 2014)
 - Changed: Raspberry Pi temperature reporting intern. (should save an extra return in the log output)
 - Changed: Mobile Dashboard now uses buttons to toggle state
 - Implemented: EnOcean ESP2 (TCM-120) support for On/Off/Dimmer,Temperature,Humidity and LightSensors
+- Changed/Fixed: OTGW TCP/IP working now
+- Implemented: OTGW, option to specify outside temperature sensor (hardware setup)
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)

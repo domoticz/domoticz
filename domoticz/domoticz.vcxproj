@@ -93,7 +93,6 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="ClassDiagram1.cd" />
     <None Include="CMakeLists.txt" />
     <None Include="getsvn.cmake" />
     <None Include="main\domoticz.ico" />
@@ -106,6 +105,7 @@
     <ClInclude Include="hardware\1Wire\1WireByOWFS.h" />
     <ClInclude Include="hardware\1Wire\1WireCommon.h" />
     <ClInclude Include="hardware\1Wire\1WireForWindows.h" />
+    <ClInclude Include="hardware\ASyncTCP.h" />
     <ClInclude Include="hardware\BMP085.h" />
     <ClInclude Include="hardware\DavisLoggerSerial.h" />
     <ClInclude Include="hardware\Dummy.h" />
@@ -191,6 +191,7 @@
     <ClCompile Include="hardware\1Wire\1WireCommon.cpp" />
     <ClCompile Include="hardware\1Wire\1WireForWindows.cpp" />
     <ClCompile Include="hardware\ASyncSerial.cpp" />
+    <ClCompile Include="hardware\ASyncTCP.cpp" />
     <ClCompile Include="hardware\BMP085.cpp" />
     <ClCompile Include="hardware\DavisLoggerSerial.cpp" />
     <ClCompile Include="hardware\Dummy.cpp" />

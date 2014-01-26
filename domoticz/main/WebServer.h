@@ -47,6 +47,7 @@ public:
 	char * SetRego6XXType();
 	char * SetS0MeterType();
 	char * SetLimitlessType();
+	char * SetOpenThermSettings();
 
 	cWebem *m_pWebEm;
 
@@ -59,6 +60,8 @@ public:
 	void SetAuthenticationMethod(int amethod);
 	std::vector<_tWebUserPassword> m_users;
 
+	//JSon
+	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID);
 private:
 	MainWorker *m_pMain;
 	boost::shared_ptr<boost::thread> m_thread;
@@ -68,8 +71,6 @@ private:
 	time_t m_LastUpdateCheck;
 	std::vector<_tCustomIcon> m_custom_light_icons;
 
-	//JSon
-	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID);
 };
 
 } //server
