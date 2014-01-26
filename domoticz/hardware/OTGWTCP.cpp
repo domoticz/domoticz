@@ -143,6 +143,19 @@ void OTGWTCP::SendOutsideTemperature()
 	write((const unsigned char*)&szCmd,strlen(szCmd));
 }
 
+void OTGWTCP::SetSetpoint(const int idx, const float temp)
+{
+	char szCmd[30];
+	if (idx==5)
+	{
+		//Room Set Point
+		//Make this a temporarily Set Point, this will be overridden when the thermostat changes/applying it's program
+		_log.Log(LOG_NORM,"OTGW: Setting Room SetPoint to: %.1f",temp);
+		sprintf(szCmd,"TT=%.1f\r\n",temp);
+		write((const unsigned char*)&szCmd,strlen(szCmd));
+	}
+}
+
 void OTGWTCP::OnData(const unsigned char *pData, size_t length)
 {
 	boost::lock_guard<boost::mutex> l(readQueueMutex);

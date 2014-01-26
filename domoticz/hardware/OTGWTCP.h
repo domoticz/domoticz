@@ -12,6 +12,7 @@ public:
 	~OTGWTCP(void);
 	bool isConnected(){ return mIsConnected; };
 	void WriteToHardware(const char *pdata, const unsigned char length);
+	void SetSetpoint(const int idx, const float temp);
 public:
 	// signals
 	boost::signals2::signal<void()>	sDisconnected;

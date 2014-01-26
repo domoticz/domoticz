@@ -7888,15 +7888,37 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 	unsigned char dSubType=atoi(sd[4].c_str());
 	_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
 
-	_tThermostat tmeter;
-	tmeter.subtype=sTypeThermSetpoint;
-	tmeter.id1=ID1;
-	tmeter.id2=ID2;
-	tmeter.id3=ID3;
-	tmeter.id4=ID4;
-	tmeter.dunit=1;
-	tmeter.temp=TempValue;
-	WriteToHardware(HardwareID,(const char*)&tmeter,sizeof(_tThermostat));
+	CDomoticzHardwareBase *pHardware=GetHardware(HardwareID);
+	if (pHardware==NULL)
+		return false;
+	if (
+		(pHardware->HwdType==HTYPE_OpenThermGateway)||
+		(pHardware->HwdType==HTYPE_OpenThermGatewayTCP)
+		)
+	{
+		if (pHardware->HwdType==HTYPE_OpenThermGateway)
+		{
+			OTGWSerial *pGateway=(OTGWSerial*)pHardware;
+			pGateway->SetSetpoint(ID4,TempValue);
+		}
+		else
+		{
+			OTGWTCP *pGateway=(OTGWTCP*)pHardware;
+			pGateway->SetSetpoint(ID4,TempValue);
+		}
+	}
+	else
+	{
+		_tThermostat tmeter;
+		tmeter.subtype=sTypeThermSetpoint;
+		tmeter.id1=ID1;
+		tmeter.id2=ID2;
+		tmeter.id3=ID3;
+		tmeter.id4=ID4;
+		tmeter.dunit=1;
+		tmeter.temp=TempValue;
+		WriteToHardware(HardwareID,(const char*)&tmeter,sizeof(_tThermostat));
+	}
 	return true;
 }
 

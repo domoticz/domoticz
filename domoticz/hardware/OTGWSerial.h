@@ -10,6 +10,7 @@ public:
     ~OTGWSerial();
 
 	void WriteToHardware(const char *pdata, const unsigned char length);
+	void SetSetpoint(const int idx, const float temp);
 private:
 	bool StartHardware();
 	bool StopHardware();

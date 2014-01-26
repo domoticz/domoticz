@@ -101,6 +101,41 @@ void OTGWBase::UpdateTempSensor(const unsigned char Idx, const float Temp, const
 	}
 }
 
+void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
+{
+	if (m_pMainWorker==NULL)
+		return;
+	bool bDeviceExits=true;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ")";
+	result=m_pMainWorker->m_sql.query(szQuery.str());
+	if (result.size()<1)
+	{
+		bDeviceExits=false;
+	}
+
+	_tThermostat thermos;
+	thermos.subtype=sTypeThermSetpoint;
+	thermos.id1=0;
+	thermos.id2=0;
+	thermos.id3=0;
+	thermos.id4=Idx;
+
+	thermos.temp=Temp;
+
+	sDecodeRXMessage(this, (const unsigned char *)&thermos);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ")";
+		result=m_pMainWorker->m_sql.query(szQuery.str());
+	}
+}
+
 void OTGWBase::ParseLine()
 {
 	if (m_bufferpos<2)
@@ -112,6 +147,31 @@ void OTGWBase::ParseLine()
 	if (results.size()==25)
 	{
 		//status report
+		//0    Status (MsgID=0) - Printed as two 8-bit bitfields
+		//1    Control setpoint (MsgID=1) - Printed as a floating point value
+		//2    Remote parameter flags (MsgID= 6) - Printed as two 8-bit bitfields
+		//3    Maximum relative modulation level (MsgID=14) - Printed as a floating point value
+		//4    Boiler capacity and modulation limits (MsgID=15) - Printed as two bytes
+		//5    Room Setpoint (MsgID=16) - Printed as a floating point value
+		//6    Relative modulation level (MsgID=17) - Printed as a floating point value
+		//7    CH water pressure (MsgID=18) - Printed as a floating point value
+		//8    Room temperature (MsgID=24) - Printed as a floating point value
+		//9    Boiler water temperature (MsgID=25) - Printed as a floating point value
+		//10    DHW temperature (MsgID=26) - Printed as a floating point value
+		//11    Outside temperature (MsgID=27) - Printed as a floating point value
+		//12    Return water temperature (MsgID=28) - Printed as a floating point value
+		//13    DHW setpoint boundaries (MsgID=48) - Printed as two bytes
+		//14    Max CH setpoint boundaries (MsgID=49) - Printed as two bytes
+		//15    DHW setpoint (MsgID=56) - Printed as a floating point value
+		//16    Max CH water setpoint (MsgID=57) - Printed as a floating point value
+		//17    Burner starts (MsgID=116) - Printed as a decimal value
+		//18    CH pump starts (MsgID=117) - Printed as a decimal value
+		//19    DHW pump/valve starts (MsgID=118) - Printed as a decimal value
+		//20    DHW burner starts (MsgID=119) - Printed as a decimal value
+		//21    Burner operation hours (MsgID=120) - Printed as a decimal value
+		//22    CH pump operation hours (MsgID=121) - Printed as a decimal value
+		//23    DHW pump/valve operation hours (MsgID=122) - Printed as a decimal value
+		//24    DHW burner operation hours (MsgID=123) - Printed as a decimal value 
 		_tOTGWStatus _status;
 		int idx=0;
 
@@ -120,7 +180,7 @@ void OTGWBase::ParseLine()
 		_status.Remote_parameter_flags=results[idx++];
 		_status.Maximum_relative_modulation_level=(float)atof(results[idx++].c_str());
 		_status.Boiler_capacity_and_modulation_limits=results[idx++];
-		_status.Room_Setpoint=(float)atof(results[idx++].c_str());							UpdateTempSensor(idx-1,_status.Room_Setpoint,"Room Setpoint");
+		_status.Room_Setpoint=(float)atof(results[idx++].c_str());							UpdateSetPointSensor(idx-1,_status.Room_Setpoint,"Room Setpoint");
 		_status.Relative_modulation_level=(float)atof(results[idx++].c_str());
 		_status.CH_water_pressure=(float)atof(results[idx++].c_str());
 		_status.Room_temperature=(float)atof(results[idx++].c_str());						UpdateTempSensor(idx-1,_status.Room_temperature,"Room Temperature");
@@ -169,6 +229,10 @@ bool OTGWBase::GetOutsideTemperatureFromDomoticz(float &tvalue)
 	int ii=0;
 	Json::ArrayIndex rsize=tempjson["result"].size();
 	if (rsize<1)
+		return false;
+
+	bool bHaveTimeout=tempjson["result"][0]["HaveTimeout"].asBool();
+	if (bHaveTimeout)
 		return false;
 	tvalue=tempjson["result"][0]["Temp"].asFloat();
 	return true;

@@ -44,6 +44,7 @@ private:
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();
 	void UpdateTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
+	void UpdateSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
 	bool GetOutsideTemperatureFromDomoticz(float &tvalue);
 	static const int readBufferSize=1028;
 	unsigned char m_buffer[readBufferSize];

@@ -171,6 +171,19 @@ void OTGWSerial::SendOutsideTemperature()
 	write((const char*)&szCmd,strlen(szCmd));
 }
 
+void OTGWSerial::SetSetpoint(const int idx, const float temp)
+{
+	char szCmd[30];
+	if (idx==5)
+	{
+		//Room Set Point
+		//Make this a temporarily Set Point, this will be overridden when the thermostat changes/applying it's program
+		_log.Log(LOG_NORM,"OTGW: Setting Room SetPoint to: %.1f",temp);
+		sprintf(szCmd,"TT=%.1f\r\n",temp);
+		write((const char*)&szCmd,strlen(szCmd));
+	}
+}
+
 void OTGWSerial::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if (isOpen()) {
