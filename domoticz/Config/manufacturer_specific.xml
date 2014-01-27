@@ -161,6 +161,7 @@
 		<Product type="0300" id="100a" name="FGR221 Roller Shutter Controller" config="fibaro/fgr221.xml"/>
 		<Product type="0300" id="0106" name="FGR221 Roller Shutter Controller" config="fibaro/fgr221.xml"/>
 		<Product type="0300" id="0107" name="FGR221 Roller Shutter Controller" config="fibaro/fgr221.xml"/>
+		<Product type="0301" id="1001" name="FGRM222 Roller Shutter Controller 2" config="fibaro/fgrm222.xml"/>
 		<Product type="0400" id="0104" name="FGS211 Switch 3kW" config="fibaro/fgs211.xml" />
 		<Product type="0400" id="0105" name="FGS211 Switch 3kW" config="fibaro/fgs211.xml" />
 		<Product type="0400" id="0106" name="FGS211 Switch 3kW" config="fibaro/fgs211.xml" />
