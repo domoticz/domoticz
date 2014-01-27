@@ -17,6 +17,8 @@ ASyncTCP::~ASyncTCP(void)
 
 void ASyncTCP::update()
 {
+	if (mIsClosing)
+		return;
 	// calls the poll() function to process network messages
 	mIos.poll();
 }
