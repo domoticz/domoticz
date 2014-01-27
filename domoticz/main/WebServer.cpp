@@ -3332,7 +3332,8 @@ std::string CWebServer::GetJSonPage()
 							((dType==pTypeUV)&&(dSubType==sTypeUV3))||
 							(dType==pTypeThermostat1)||
 							((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))||
-							((dType==pTypeGeneral)&&(dSubType==sTypeSystemTemp))
+							((dType==pTypeGeneral)&&(dSubType==sTypeSystemTemp))||
+							((dType==pTypeThermostat)&&(dSubType==sTypeThermSetpoint))
 							)
 						{
 							root["result"][ii]["te"]=sd[0];
@@ -4565,7 +4566,8 @@ std::string CWebServer::GetJSonPage()
 							(dType==pTypeRego6XXTemp)||(dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeTEMP_BARO)||(dType==pTypeWIND)||(dType==pTypeThermostat1)||
 							((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))||
 							((dType==pTypeUV)&&(dSubType==sTypeUV3))||
-							((dType==pTypeGeneral)&&(dSubType==sTypeSystemTemp))
+							((dType==pTypeGeneral)&&(dSubType==sTypeSystemTemp))||
+							((dType==pTypeThermostat)&&(dSubType==sTypeThermSetpoint))
 							)
 						{
 							bool bOK=true;
@@ -5542,7 +5544,9 @@ std::string CWebServer::GetJSonPage()
 				    ((dType==pTypeUV)&&(dSubType==sTypeUV3))||
 				    ((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
 				    ((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))||
-				    ((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp)))
+				    ((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))||
+					((dType==pTypeThermostat)&&(dSubType==sTypeThermSetpoint))
+					)
 				    )
 			    {
                     sendTemp = true;

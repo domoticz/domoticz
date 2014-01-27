@@ -107,8 +107,12 @@ void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, c
 		return;
 	bool bDeviceExits=true;
 	std::stringstream szQuery;
+
+	char szID[10];
+	sprintf(szID,"%X%02X%02X%02X", 0, 0, 0, Idx);
+
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ")";
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
 	result=m_pMainWorker->m_sql.query(szQuery.str());
 	if (result.size()<1)
 	{
@@ -131,7 +135,7 @@ void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, c
 		//Assign default name for device
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ")";
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
 		result=m_pMainWorker->m_sql.query(szQuery.str());
 	}
 }
@@ -207,6 +211,17 @@ void OTGWBase::ParseLine()
 		if (sLine=="SE")
 		{
 			_log.Log(LOG_ERROR,"OTGW: Error received!");
+		}
+		else
+		{
+			if (
+				(sLine.find("OT")==std::string::npos)&&
+				(sLine.find("PS")==std::string::npos)
+				)
+			{
+				//Dont report OT/PS feedback
+				_log.Log(LOG_NORM,"OTGW: %s",sLine.c_str());
+			}
 		}
 	}
 

@@ -1617,6 +1617,7 @@ function ShowUtilities()
           }
           else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 				if (window.my_config.userrights==2) {
+					xhtm+='<a class="btnsmall" onclick="ShowTempLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
 					xhtm+='<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + item.Name + '\', ' + item.SetPoint + ');" data-i18n="Edit">Edit</a> ';
 				}
           }

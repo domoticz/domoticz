@@ -3040,7 +3040,7 @@ void CSQLHelper::UpdateTemperatureLog()
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d))",
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
 		pTypeTEMP,
 		pTypeHUM,
 		pTypeTEMP_HUM,
@@ -3051,8 +3051,8 @@ void CSQLHelper::UpdateTemperatureLog()
 		pTypeThermostat1,
 		pTypeRFXSensor,
 		pTypeRego6XXTemp,
-		pTypeGeneral,
-		sTypeSystemTemp
+		pTypeGeneral,sTypeSystemTemp,
+		pTypeThermostat,sTypeThermSetpoint
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -3100,6 +3100,7 @@ void CSQLHelper::UpdateTemperatureLog()
 			{
 			case pTypeRego6XXTemp:
 			case pTypeTEMP:
+			case pTypeThermostat:
 				temp=(float)atof(splitresults[0].c_str());
 				break;
 			case pTypeThermostat1:
