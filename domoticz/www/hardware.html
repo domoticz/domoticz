@@ -903,31 +903,33 @@ function RequestZWaveConfiguration(idx)
 function ApplyZWaveConfiguration(idx)
 {
 	var $list = $('#hardwarecontent #configuration input');
-
-	var ControlCnt = $list.length;
-	// Now loop through list of controls
-	
-	var valueList="";
-	
-	$list.each( function() {
-		var id = $(this).prop("id");      // get id
-		var value = $(this).prop("value");      // get value
+	if (typeof $list != 'undefined') {
+		var ControlCnt = $list.length;
+		// Now loop through list of controls
 		
-		valueList+=id+"_"+value+"__";
-	});
+		var valueList="";
+		
+		$list.each( function() {
+			var id = $(this).prop("id");      // get id
+			var value = $(this).prop("value");      // get value
+			
+			valueList+=id+"_"+value+"__";
+		});
+	}
 
 	//Now for the Lists
 	$list = $('#hardwarecontent #configuration select');
-
-	ControlCnt = $list.length;
-	// Now loop through list of controls
-	valueList="";
-	
-	$list.each( function() {
-		var id = $(this).prop("id");      // get id
-		var value = $(this).find(":selected").text();      // get value
-		valueList+=id+"_"+value+"__";
-	});
+	if (typeof $list != 'undefined') {
+		ControlCnt = $list.length;
+		// Now loop through list of controls
+		valueList="";
+		
+		$list.each( function() {
+			var id = $(this).prop("id");      // get id
+			var value = $(this).find(":selected").text();      // get value
+			valueList+=id+"_"+value+"__";
+		});
+	}
 
 	if (valueList!="") {
 		$.ajax({
