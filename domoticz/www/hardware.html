@@ -902,12 +902,11 @@ function RequestZWaveConfiguration(idx)
 
 function ApplyZWaveConfiguration(idx)
 {
+	var valueList="";
 	var $list = $('#hardwarecontent #configuration input');
 	if (typeof $list != 'undefined') {
 		var ControlCnt = $list.length;
 		// Now loop through list of controls
-		
-		var valueList="";
 		
 		$list.each( function() {
 			var id = $(this).prop("id");      // get id
@@ -920,10 +919,8 @@ function ApplyZWaveConfiguration(idx)
 	//Now for the Lists
 	$list = $('#hardwarecontent #configuration select');
 	if (typeof $list != 'undefined') {
-		ControlCnt = $list.length;
+		var ControlCnt = $list.length;
 		// Now loop through list of controls
-		valueList="";
-		
 		$list.each( function() {
 			var id = $(this).prop("id");      // get id
 			var value = $(this).find(":selected").text();      // get value
