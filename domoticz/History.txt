@@ -10,6 +10,7 @@ Version 1.0.xxxx (January xxth 2014)
 - Implemented: EnOcean ESP2 (TCM-120) support for On/Off/Dimmer,Temperature,Humidity and LightSensors
 - Changed/Fixed: OTGW TCP/IP working now
 - Implemented: OTGW, option to specify outside temperature sensor (hardware setup)
+- Implemented: OpenZWave, option to configure node list settings
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)

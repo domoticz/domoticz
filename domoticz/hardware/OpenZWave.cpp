@@ -1658,6 +1658,12 @@ void COpenZWave::GetNodeValuesJson(const int homeID, const int nodeID, Json::Val
 		root["result"][index]["config"][ivalue]["help"]=
 			"Enable/Disable debug logging. Disabled=0, Enabled=1 "
 			"It is not recommended to enable Debug for a live system as the log files generated will grow large quickly.";
+
+		// convert now to string form
+		time_t now=time(NULL);
+		char *szDate = asctime(localtime(&now));
+		root["result"][index]["config"][ivalue]["LastUpdate"]=szDate;
+
 		ivalue++;
 		return;
 	}
@@ -1700,8 +1706,13 @@ void COpenZWave::GetNodeValuesJson(const int homeID, const int nodeID, Json::Val
 					}
 					else if (vType== OpenZWave::ValueID::ValueType_Button)
 					{
-						continue; //not supported (reset to defaults)
 						//root["result"][index]["config"][ivalue]["type"]="button";
+						//Not supported now
+						continue;
+					}
+					else if (vType== OpenZWave::ValueID::ValueType_List)
+					{
+						root["result"][index]["config"][ivalue]["type"]="list";
 					}
 					else
 					{
@@ -1712,12 +1723,27 @@ void COpenZWave::GetNodeValuesJson(const int homeID, const int nodeID, Json::Val
 					if (m_pManager->GetValueAsString(*ittValue,&szValue)==false)
 						continue;
 					root["result"][index]["config"][ivalue]["value"]=szValue;
-
-					root["result"][index]["config"][ivalue]["index"]=ittValue->GetIndex();
-					root["result"][index]["config"][ivalue]["label"]=m_pManager->GetValueLabel(*ittValue);
-					root["result"][index]["config"][ivalue]["units"]=m_pManager->GetValueUnits(*ittValue);
-					root["result"][index]["config"][ivalue]["help"]=m_pManager->GetValueHelp(*ittValue);
-					//root["result"][index]["config"][ivalue]["LastUpdate"]=ittCmds->second.m_LastSeen;
+					if (vType== OpenZWave::ValueID::ValueType_List)
+					{
+						std::vector<std::string> strs;
+						m_pManager->GetValueListItems(*ittValue, &strs);
+						root["result"][index]["config"][ivalue]["list_items"]=strs.size();
+						int vcounter=0;
+						for (std::vector<std::string>::const_iterator it = strs.begin(); it != strs.end(); ++it) 
+						{
+							root["result"][index]["config"][ivalue]["listitem"][vcounter++]=*it;
+						}
+					}
+					int i_index=ittValue->GetIndex();
+					std::string i_label=m_pManager->GetValueLabel(*ittValue);
+					std::string i_units=m_pManager->GetValueUnits(*ittValue);
+					std::string i_help=m_pManager->GetValueHelp(*ittValue);
+					char *szDate = asctime(localtime(&ittCmds->second.m_LastSeen));
+					root["result"][index]["config"][ivalue]["index"]=i_index;
+					root["result"][index]["config"][ivalue]["label"]=i_label;
+					root["result"][index]["config"][ivalue]["units"]=i_units;
+					root["result"][index]["config"][ivalue]["help"]=i_help;
+					root["result"][index]["config"][ivalue]["LastUpdate"]=szDate;
 					ivalue++;
 				}
 			}
@@ -1781,9 +1807,21 @@ bool COpenZWave::ApplyNodeConfig(const int homeID, const int nodeID, const std::
 			{
 				std::string vstring;
 				m_pManager->GetValueAsString(vID,&vstring);
-				if (vstring!=results[vindex+1])
+
+				OpenZWave::ValueID::ValueType vType=vID.GetType();
+				if (vType==OpenZWave::ValueID::ValueType_List)
 				{
-					m_pManager->SetValue(vID,results[vindex+1]);
+					if (vstring!=results[vindex+1])
+					{
+						m_pManager->SetValueListSelection(vID,results[vindex+1]);
+					}
+				}
+				else
+				{
+					if (vstring!=results[vindex+1])
+					{
+						m_pManager->SetValue(vID,results[vindex+1]);
+					}
 				}
 			}
 		}

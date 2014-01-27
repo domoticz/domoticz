@@ -915,6 +915,20 @@ function ApplyZWaveConfiguration(idx)
 		
 		valueList+=id+"_"+value+"__";
 	});
+
+	//Now for the Lists
+	$list = $('#hardwarecontent #configuration select');
+
+	ControlCnt = $list.length;
+	// Now loop through list of controls
+	valueList="";
+	
+	$list.each( function() {
+		var id = $(this).prop("id");      // get id
+		var value = $(this).find(":selected").text();      // get value
+		valueList+=id+"_"+value+"__";
+	});
+
 	if (valueList!="") {
 		$.ajax({
 			 url: "json.htm?type=command&param=applyzwavenodeconfig" +
@@ -988,23 +1002,52 @@ function RefreshOpenZWaveNodeTable()
 					else {
 						$("#hardwarecontent #nodeparamstable #trEnablePolling").show();
 					}
-					//Create configuration setup
-					var szConfig='<a class="btnstyle3" id="nodedelete" data-i18n="RequestConfiguration" onclick="RequestZWaveConfiguration(' + idx + ');">Request current stored values from device</a><br /><br />';
-					var bHaveConfiguration=false;
-					$.each(data["Config"], function(i,item){
-						bHaveConfiguration=true;
-						szConfig+="<b>"+item.index+". "+item.label+":</b> ";
-						szConfig+='<input type="text" id="'+item.index+'" value="' + item.value + '" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />';
-						if (item.units!="") {
-							szConfig+=' (' + item.units + ')';
+					
+					var szConfig="";
+					if (typeof data["Config"] != 'undefined') {
+						//Create configuration setup
+						szConfig='<a class="btnstyle3" id="nodedelete" data-i18n="RequestConfiguration" onclick="RequestZWaveConfiguration(' + idx + ');">Request current stored values from device</a><br /><br />';
+						var bHaveConfiguration=false;
+						$.each(data["Config"], function(i,item){
+							bHaveConfiguration=true;
+							if (item.type=="list") {
+								szConfig+="<b>"+item.index+". "+item.label+":</b><br>";
+								szConfig+='<select style="width:100%" class="combobox ui-corner-all" id="'+item.index+'">';
+								var iListItem=0;
+								var totListItems=parseInt(item.list_items);
+								for (iListItem=0; iListItem<totListItems; iListItem++)
+								{
+									var szComboOption='<option value="' + iListItem + '"';
+									var szOptionTxt=item.listitem[iListItem];
+									if (szOptionTxt==item.value) {
+										szComboOption+=' selected="selected"';
+									}
+									szComboOption+='>' + szOptionTxt +'</option>';
+									szConfig+=szComboOption;
+								}
+								szConfig+='</select>'
+								if (item.units!="") {
+									szConfig+=' (' + item.units + ')';
+								}
+							}
+							else {
+								szConfig+="<b>"+item.index+". "+item.label+":</b> ";
+								szConfig+='<input type="text" id="'+item.index+'" value="' + item.value + '" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />';
+								if (item.units!="") {
+									szConfig+=' (' + item.units + ')';
+								}
+								szConfig+=" (" + $.i18n("actual") + ": " + item.value + ")";
+							}
+							szConfig+="<br />";
+							if (item.help!="") {
+								szConfig+=item.help+"<br>";
+							}
+							szConfig+="Last Update: " + item.LastUpdate;
+							szConfig+="<br /><br />";
+						});
+						if (bHaveConfiguration==true) {
+							szConfig+='<a class="btnstyle3" id="nodedelete" data-i18n="ApplyConfiguration" onclick="ApplyZWaveConfiguration(' + idx + ');" >Apply configuration for this device</a><br />';
 						}
-						szConfig+=" (" + $.i18n("actual") + ": " + item.value + ")";
-						szConfig+="<br />";
-						szConfig+=item.help;
-						szConfig+="<br /><br />";
-					});
-					if (bHaveConfiguration==true) {
-						szConfig+='<a class="btnstyle3" id="nodedelete" data-i18n="ApplyConfiguration" onclick="ApplyZWaveConfiguration(' + idx + ');" >Apply configuration for this device</a><br />';
 					}
 					$("#hardwarecontent #configuration").html(szConfig);
 				}
