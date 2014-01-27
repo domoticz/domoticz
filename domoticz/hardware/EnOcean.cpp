@@ -1035,7 +1035,7 @@ void CEnOcean::WriteToHardware(const char *pdata, const unsigned char length)
 		std::stringstream szQuery;
 		std::vector<std::vector<std::string> > result;
 		char szDeviceID[20];
-		sprintf(szDeviceID,"%08X",sID);
+		sprintf(szDeviceID,"%08X",(unsigned int)sID);
 		szQuery << "SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szDeviceID << "') AND (Unit==" << int(tsen->LIGHTING2.unitcode) << ")";
 		result=m_pMainWorker->m_sql.query(szQuery.str());
 		if (result.size()>0)
@@ -1180,7 +1180,7 @@ bool CEnOcean::ParseData()
 
 	long id = (pFrame->ID_BYTE3 << 24) + (pFrame->ID_BYTE2 << 16) + (pFrame->ID_BYTE1 << 8) + pFrame->ID_BYTE0;
 	char szDeviceID[20];
-	sprintf(szDeviceID,"%08X",id);
+	sprintf(szDeviceID,"%08X",(unsigned int)id);
 
 	//Handle possible OK/Errors
 	bool bStopProcessing=false;
