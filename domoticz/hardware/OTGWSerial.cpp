@@ -185,15 +185,15 @@ void OTGWSerial::SetSetpoint(const int idx, const float temp)
 	else if (idx==15)
 	{
 		//DHW setpoint (MsgID=56)
-		_log.Log(LOG_NORM,"OTGW: Setting SHW SetPoint to: %.1f",temp);
-		sprintf(szCmd,"SH=%.1f\r\n",temp);
+		_log.Log(LOG_NORM,"OTGW: Setting Heating SetPoint to: %.1f",temp);
+		sprintf(szCmd,"SW=%.1f\r\n",temp);
 		write((const char*)&szCmd,strlen(szCmd));
 	}
 	else if (idx==16)
 	{
 		//Max CH water setpoint (MsgID=57) 
 		_log.Log(LOG_NORM,"OTGW: Setting Max CH water SetPoint to: %.1f",temp);
-		sprintf(szCmd,"SW=%.1f\r\n",temp);
+		sprintf(szCmd,"SH=%.1f\r\n",temp);
 		write((const char*)&szCmd,strlen(szCmd));
 	}
 }
