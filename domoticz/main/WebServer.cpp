@@ -8672,6 +8672,8 @@ std::string CWebServer::GetJSonPage()
 					pOZWHardware->RemoveFailedDevice(nodeID);
 					root["status"]="OK";
 					root["title"]="DeleteZWaveNode";
+					sprintf(szTmp,"DELETE FROM ZWaveNodes WHERE (ID==%s)",idx.c_str());
+					result=m_pMain->m_sql.query(szTmp);
 				}
 			}
 		}
