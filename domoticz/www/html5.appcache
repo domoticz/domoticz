@@ -157,6 +157,7 @@ images/edit.png
 images/empty16.png
 images/equal.png
 images/events.png
+images/failed.png
 images/favorite.png
 images/forward_disabled.png
 images/forward_enabled.png
@@ -192,6 +193,7 @@ images/nodemand_mini.png
 images/nofavorite.png
 images/notification.png
 images/off.png
+images/ok.png
 images/on.png
 images/onoff48.png
 images/override.png
@@ -232,6 +234,7 @@ images/shutdown.png
 images/siren-off.png
 images/siren-on.png
 images/siren.png
+images/sleep.png
 images/smoke.png
 images/smoke48off.png
 images/smoke48on.png

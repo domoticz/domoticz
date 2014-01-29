@@ -46,7 +46,9 @@ public:
 
 		std::map<int, std::map<int, NodeCommandClass> >	Instances;
 
-		bool							m_WasSleeping;
+		bool							IsAwake;
+		bool							IsDead;
+
 		time_t							m_LastSeen;
 	}NodeInfo;
 
@@ -62,6 +64,7 @@ public:
 	NodeInfo* GetNodeInfo( const int homeID, const int nodeID );
 	bool ApplyNodeConfig(const int homeID, const int nodeID, const std::string &svaluelist);
 	bool RequestNodeConfig(const int homeID, const int nodeID);
+	bool RemoveFailedDevice(const int nodeID);
 private:
 	void NodesQueried();
 	void AddNode(const int homeID, const int nodeID,const NodeInfo *pNode);
@@ -78,7 +81,6 @@ private:
 	bool CancelControllerCommand();
 	bool IncludeDevice();
 	bool ExcludeDevice(const int nodeID);
-	bool RemoveFailedDevice(const int nodeID);
 
 	void EnableDisableDebug();
 

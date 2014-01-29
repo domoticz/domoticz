@@ -528,7 +528,29 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 			nodeInfo->Instances[instance][commandClass].m_LastSeen=act_time;
 		}
 		break;
-
+	case OpenZWave::Notification::Type_Notification:
+		switch (_notification->GetNotification()) 
+		{
+		case OpenZWave::Notification::Code_Awake:
+			if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
+			{
+				nodeInfo->IsAwake=true;
+			}
+			break;
+		case OpenZWave::Notification::Code_Sleep:
+			if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
+			{
+				nodeInfo->IsAwake=false;
+			}
+			break;
+		case OpenZWave::Notification::Code_Dead:
+			if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
+			{
+				nodeInfo->IsDead=true;
+			}
+			break;
+		}
+		break;
 	case OpenZWave::Notification::Type_Group:
 		// One of the node's association groups has changed
 		if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
@@ -551,7 +573,8 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 			nodeInfo.Product_id = m_pManager->GetNodeProductId(_homeID,_nodeID);
 			nodeInfo.Product_name = m_pManager->GetNodeProductName(_homeID,_nodeID);
 
-			nodeInfo.m_WasSleeping=!m_pManager->IsNodeAwake(_homeID,_nodeID);
+			nodeInfo.IsAwake=m_pManager->IsNodeAwake(_homeID,_nodeID);
+			nodeInfo.IsDead=m_pManager->IsNodeFailed(_homeID,_nodeID);
 
 			nodeInfo.m_LastSeen=act_time;
 			m_nodes.push_back( nodeInfo );
@@ -1415,7 +1438,7 @@ void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
 		szLog="Unknown Device Response!";
 		break;
 	}
-	_log.Log(LOG_NORM,"Device Response: %s",szLog.c_str());
+	_log.Log(LOG_NORM,"OpenZWave: Device Response: %s",szLog.c_str());
 }
 
 void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int pollTime)

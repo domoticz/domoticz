@@ -25,6 +25,7 @@
                 <th width="150" align="left" data-i18n="Name">Name</th>
                 <th align="left" data-i18n="Description">Description</th>
                 <th width="50" align="left" data-i18n="EnablePolling">EnablePolling</th>
+                <th width="50" align="left" data-i18n="Status">Status</th>
             </tr>
         </thead>
     </table>
@@ -854,11 +855,30 @@ function EditLimitlessType(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 
 function DeleteNode(idx)
 {
-	ShowNotify($.i18n('Not implemented yet!'), 2500, true);
+	if ($('#updelclr #nodedelete').attr("class")=="btnstyle3-dis") {
+		return;
+	}
+	bootbox.confirm($.i18n("Are you sure to remove this Node?"), function(result) {
+		if (result==true) {
+		  $.ajax({
+			url: "json.htm?type=command&param=deletezwavenode" +
+				"&idx=" + idx,
+			 async: false, 
+			 dataType: 'json',
+			 success: function(data) {
+				bootbox.alert($.i18n('Node marked for Delete. This could take some time!'));
+				RefreshOpenZWaveNodeTable();
+			 }
+		  });
+		}
+	});
 }
 
 function UpdateNode(idx)
 {
+	if ($('#updelclr #nodeupdate').attr("class")=="btnstyle3-dis") {
+		return;
+	}
 	var name=$("#hardwarecontent #nodeparamstable #nodename").val();
 	if (name=="")
 	{
@@ -949,9 +969,11 @@ function RefreshOpenZWaveNodeTable()
 {
   $('#modal').show();
 
-	$('#updelclr #hardwareupdate').attr("class", "btnstyle3-dis");
-	$('#updelclr #hardwaredelete').attr("class", "btnstyle3-dis");
-
+	$('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
+	$('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
+	$("#hardwarecontent #configuration").html("");
+	$("#hardwarecontent #nodeparamstable #nodename").val("");
+	
   var oTable = $('#nodestable').dataTable();
   oTable.fnClearTable();
   
@@ -962,36 +984,51 @@ function RefreshOpenZWaveNodeTable()
      success: function(data) {
       if (typeof data.result != 'undefined') {
         $.each(data.result, function(i,item){
+			var status="ok";
+			if (item.IsDead==true) {
+				status="failed";
+			}
+			else if (item.IsAwake==false) {
+				status="sleep";
+			}
+			var statusImg='<img src="images/' + status +'.png"/>';
 			var addId = oTable.fnAddData( {
 				"DT_RowId": item.idx,
 				"Name": item.Name,
 				"PollEnabled": item.PollEnabled,
 				"Config": item.config,
+				"IsAwake": item.IsAwake,
+				"IsDead": item.IsDead,
                 "0": item.NodeID,
                 "1": item.Name,
 				"2": item.Description,
-				"3": item.PollEnabled
+				"3": item.PollEnabled,
+				"4": statusImg,
 			} );
         });
 		/* Add a click handler to the rows - this could be used as a callback */
 		$("#nodestable tbody tr").click( function( e ) {
+			$('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
 			if ( $(this).hasClass('row_selected') ) {
 				$(this).removeClass('row_selected');
 				$('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
-				$('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
+				$("#hardwarecontent #configuration").html("");
+				$("#hardwarecontent #nodeparamstable #nodename").val("");
 			}
 			else {
 				oTable.$('tr.row_selected').removeClass('row_selected');
 				$(this).addClass('row_selected');
 				$('#updelclr #nodeupdate').attr("class", "btnstyle3");
-				$('#updelclr #nodedelete').attr("class", "btnstyle3");
 				var anSelected = fnGetSelected( oTable );
 				if ( anSelected.length !== 0 ) {
 					var data = oTable.fnGetData( anSelected[0] );
 					var idx= data["DT_RowId"];
 					$.myglobals.SelectedTimerIdx=idx;
 					$("#updelclr #nodeupdate").attr("href", "javascript:UpdateNode(" + idx + ")");
-					$("#updelclr #nodedelete").attr("href", "javascript:DeleteNode(" + idx + ")");
+					if (data["IsDead"]==true) {
+						$('#updelclr #nodedelete').attr("class", "btnstyle3");
+						$("#updelclr #nodedelete").attr("href", "javascript:DeleteNode(" + idx + ")");
+					}
 					$("#hardwarecontent #nodeparamstable #nodename").val(data["1"]);
 					$('#hardwarecontent #nodeparamstable #EnablePolling').prop('checked',(data["PollEnabled"]=="true"));
 					var iNode=parseInt(data["0"]);
@@ -1005,7 +1042,7 @@ function RefreshOpenZWaveNodeTable()
 					var szConfig="";
 					if (typeof data["Config"] != 'undefined') {
 						//Create configuration setup
-						szConfig='<a class="btnstyle3" id="nodedelete" data-i18n="RequestConfiguration" onclick="RequestZWaveConfiguration(' + idx + ');">Request current stored values from device</a><br /><br />';
+						szConfig='<a class="btnstyle3" id="noderequeststoredvalues" data-i18n="RequestConfiguration" onclick="RequestZWaveConfiguration(' + idx + ');">Request current stored values from device</a><br /><br />';
 						var bHaveConfiguration=false;
 						$.each(data["Config"], function(i,item){
 							bHaveConfiguration=true;
@@ -1045,7 +1082,7 @@ function RefreshOpenZWaveNodeTable()
 							szConfig+="<br /><br />";
 						});
 						if (bHaveConfiguration==true) {
-							szConfig+='<a class="btnstyle3" id="nodedelete" data-i18n="ApplyConfiguration" onclick="ApplyZWaveConfiguration(' + idx + ');" >Apply configuration for this device</a><br />';
+							szConfig+='<a class="btnstyle3" id="nodeapplyconfiguration" data-i18n="ApplyConfiguration" onclick="ApplyZWaveConfiguration(' + idx + ');" >Apply configuration for this device</a><br />';
 						}
 					}
 					$("#hardwarecontent #configuration").html(szConfig);

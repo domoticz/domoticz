@@ -2732,7 +2732,10 @@ std::string CWebServer::GetJSonPage()
 					root["result"][ii]["Product_type"]=pNode->Product_type;
 					root["result"][ii]["Product_id"]=pNode->Product_id;
 					root["result"][ii]["Product_name"]=pNode->Product_name;
-					//root["result"][ii]["LastUpdate"]=pNode->m_LastSeen;
+					root["result"][ii]["IsAwake"]=pNode->IsAwake;
+					root["result"][ii]["IsDead"]=pNode->IsDead;
+					char *szDate = asctime(localtime(&pNode->m_LastSeen));
+					root["result"][ii]["LastUpdate"]=szDate;
 
 					//Add configuration parameters here
 					pOZWHardware->GetNodeValuesJson(homeID,nodeID,root,ii);
@@ -8647,6 +8650,28 @@ std::string CWebServer::GetJSonPage()
 				{
 					COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
 					pOZWHardware->EnableDisableNodePolling();
+				}
+			}
+		}
+		else if (cparam=="deletezwavenode")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			sprintf(szTmp,"SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)",idx.c_str());
+			result=m_pMain->m_sql.query(szTmp);
+			if (result.size()>0)
+			{
+				int hwid=atoi(result[0][0].c_str());
+				int homeID=atoi(result[0][1].c_str());
+				int nodeID=atoi(result[0][2].c_str());
+				CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hwid);
+				if (pHardware!=NULL)
+				{
+					COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+					pOZWHardware->RemoveFailedDevice(nodeID);
+					root["status"]="OK";
+					root["title"]="DeleteZWaveNode";
 				}
 			}
 		}
