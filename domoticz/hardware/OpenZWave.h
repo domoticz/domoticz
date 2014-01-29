@@ -71,6 +71,7 @@ private:
 	void EnableNodePoll(const int homeID, const int nodeID, const int pollTime);
 	void DisableNodePoll(const int homeID, const int nodeID);
 	bool GetValueByCommandClass(const int nodeID, const int instanceID, const int commandClass, OpenZWave::ValueID &nValue);
+	bool GetValueByCommandClassLabel(const int nodeID, const int instanceID, const int commandClass, const std::string &vLabel, OpenZWave::ValueID &nValue);
 	bool GetNodeConfigValueByIndex(const NodeInfo *pNode, const int index, OpenZWave::ValueID &nValue);
 	void AddValue(const OpenZWave::ValueID vID);
 	void UpdateValue(const OpenZWave::ValueID vID);

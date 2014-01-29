@@ -986,7 +986,7 @@ function SaveLightSwitch()
 			return;
 		}
 		else {
-			if (checkLength( $("#lightcontent #onaction"), 10, 300 )==false) {
+			if (checkLength( $("#lightcontent #onaction"), 10, 500 )==false) {
 				bootbox.alert($.i18n("Invalid ON Action!"));
 				return;
 			}
@@ -998,7 +998,7 @@ function SaveLightSwitch()
 			return;
 		}
 		else {
-			if (checkLength( $("#lightcontent #offaction"), 10, 300 )==false) {
+			if (checkLength( $("#lightcontent #offaction"), 10, 500 )==false) {
 				bootbox.alert($.i18n("Invalid Off Action!"));
 				return;
 			}
