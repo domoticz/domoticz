@@ -199,7 +199,7 @@ void CWunderground::GetMeterDetails()
 		tsen.TEMP_HUM_BARO.packettype=pTypeTEMP_HUM_BARO;
 		tsen.TEMP_HUM_BARO.subtype=sTypeTHB1;
 		tsen.TEMP_HUM_BARO.battery_level=9;
-		tsen.TEMP_HUM_BARO.rssi=6;
+		tsen.TEMP_HUM_BARO.rssi=12;
 		tsen.TEMP_HUM_BARO.id1=0;
 		tsen.TEMP_HUM_BARO.id2=1;
 
@@ -230,7 +230,7 @@ void CWunderground::GetMeterDetails()
 		tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
 		tsen.TEMP_HUM.subtype=sTypeTH5;
 		tsen.TEMP_HUM.battery_level=9;
-		tsen.TEMP_HUM.rssi=6;
+		tsen.TEMP_HUM.rssi=12;
 		tsen.TEMP_HUM.id1=0;
 		tsen.TEMP_HUM.id2=1;
 
@@ -253,7 +253,7 @@ void CWunderground::GetMeterDetails()
 		tsen.TEMP.packettype=pTypeTEMP;
 		tsen.TEMP.subtype=sTypeTEMP10;
 		tsen.TEMP.battery_level=9;
-		tsen.TEMP.rssi=6;
+		tsen.TEMP.rssi=12;
 		tsen.TEMP.id1=0;
 		tsen.TEMP.id2=1;
 
@@ -322,7 +322,7 @@ void CWunderground::GetMeterDetails()
 		tsen.WIND.packettype=pTypeWIND;
 		tsen.WIND.subtype=sTypeWIND4;
 		tsen.WIND.battery_level=9;
-		tsen.WIND.rssi=6;
+		tsen.WIND.rssi=12;
 		tsen.WIND.id1=0;
 		tsen.WIND.id2=1;
 
@@ -381,7 +381,7 @@ void CWunderground::GetMeterDetails()
 				tsen.UV.packettype=pTypeUV;
 				tsen.UV.subtype=sTypeUV1;
 				tsen.UV.battery_level=9;
-				tsen.UV.rssi=6;
+				tsen.UV.rssi=12;
 				tsen.UV.id1=0;
 				tsen.UV.id2=1;
 
@@ -405,7 +405,7 @@ void CWunderground::GetMeterDetails()
 				tsen.RAIN.packettype=pTypeRAIN;
 				tsen.RAIN.subtype=sTypeRAINWU;
 				tsen.RAIN.battery_level=9;
-				tsen.RAIN.rssi=6;
+				tsen.RAIN.rssi=12;
 				tsen.RAIN.id1=0;
 				tsen.RAIN.id2=1;
 

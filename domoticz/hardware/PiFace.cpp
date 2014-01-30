@@ -1139,14 +1139,14 @@ void CIOPort::Init(bool Available, unsigned char housecode, unsigned char initia
   IOPinStatusPacket.LIGHTING1.housecode = housecode;//report to user as input
   IOPinStatusPacket.LIGHTING1.packettype = pTypeLighting1;
   IOPinStatusPacket.LIGHTING1.subtype = sTypeIMPULS;
-  IOPinStatusPacket.LIGHTING1.rssi = 0x0F;
+  IOPinStatusPacket.LIGHTING1.rssi = 12;
   IOPinStatusPacket.LIGHTING1.seqnbr = 0;
  
   //set generic packet info for RFXMETER packet, so we do not have every packet
   IOPinCounterPacket.RFXMETER.packetlength = sizeof(IOPinStatusPacket.RFXMETER) -1;
   IOPinCounterPacket.RFXMETER.packettype = pTypeRFXMeter;
   IOPinCounterPacket.RFXMETER.subtype = sTypeRFXMeterCount;
-  IOPinCounterPacket.RFXMETER.rssi = 0x0F;
+  IOPinCounterPacket.RFXMETER.rssi = 12;
   IOPinCounterPacket.RFXMETER.seqnbr = 0;
   
   Last=initial_state; 

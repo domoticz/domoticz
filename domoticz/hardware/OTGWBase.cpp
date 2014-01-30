@@ -79,7 +79,7 @@ void OTGWBase::UpdateTempSensor(const unsigned char Idx, const float Temp, const
 	tsen.TEMP.packettype=pTypeTEMP;
 	tsen.TEMP.subtype=sTypeTEMP10;
 	tsen.TEMP.battery_level=9;
-	tsen.TEMP.rssi=6;
+	tsen.TEMP.rssi=12;
 	tsen.TEMP.id1=0;
 	tsen.TEMP.id2=Idx;
 

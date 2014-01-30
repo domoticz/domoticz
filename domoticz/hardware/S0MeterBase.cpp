@@ -95,7 +95,7 @@ void S0MeterBase::SendMeter(unsigned char ID, double musage, double mtotal)
 		tsen.ENERGY.id1=0;
 		tsen.ENERGY.id2=ID;
 		tsen.ENERGY.count=1;
-		tsen.ENERGY.rssi=6;
+		tsen.ENERGY.rssi=12;
 
 		tsen.ENERGY.battery_level=9;
 
@@ -143,7 +143,7 @@ void S0MeterBase::SendMeter(unsigned char ID, double musage, double mtotal)
 		tsen.RFXMETER.packetlength=sizeof(tsen.RFXMETER)-1;
 		tsen.RFXMETER.packettype=pTypeRFXMeter;
 		tsen.RFXMETER.subtype=sTypeRFXMeterCount;
-		tsen.RFXMETER.rssi=6;
+		tsen.RFXMETER.rssi=12;
 		tsen.RFXMETER.id1=0;
 		tsen.RFXMETER.id2=ID;
 

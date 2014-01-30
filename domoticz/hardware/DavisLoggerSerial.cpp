@@ -229,7 +229,7 @@ void CDavisLoggerSerial::UpdateTempHumSensor(const unsigned char Idx, const floa
 	tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
 	tsen.TEMP_HUM.subtype=sTypeTH5;
 	tsen.TEMP_HUM.battery_level=9;
-	tsen.TEMP_HUM.rssi=6;
+	tsen.TEMP_HUM.rssi=12;
 	tsen.TEMP_HUM.id1=0;
 	tsen.TEMP_HUM.id2=Idx;
 
@@ -253,7 +253,7 @@ void CDavisLoggerSerial::UpdateTempSensor(const unsigned char Idx, const float T
 	tsen.TEMP.packettype=pTypeTEMP;
 	tsen.TEMP.subtype=sTypeTEMP10;
 	tsen.TEMP.battery_level=9;
-	tsen.TEMP.rssi=6;
+	tsen.TEMP.rssi=12;
 	tsen.TEMP.id1=0;
 	tsen.TEMP.id2=Idx;
 
@@ -275,7 +275,7 @@ void CDavisLoggerSerial::UpdateHumSensor(const unsigned char Idx, const int Hum)
 	tsen.HUM.packettype=pTypeHUM;
 	tsen.HUM.subtype=sTypeHUM2;
 	tsen.HUM.battery_level=9;
-	tsen.HUM.rssi=6;
+	tsen.HUM.rssi=12;
 	tsen.HUM.id1=0;
 	tsen.HUM.id2=Idx;
 
@@ -371,7 +371,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		tsen.TEMP_HUM_BARO.packettype=pTypeTEMP_HUM_BARO;
 		tsen.TEMP_HUM_BARO.subtype=sTypeTHBFloat;
 		tsen.TEMP_HUM_BARO.battery_level=9;
-		tsen.TEMP_HUM_BARO.rssi=6;
+		tsen.TEMP_HUM_BARO.rssi=12;
 		tsen.TEMP_HUM_BARO.id1=0;
 		tsen.TEMP_HUM_BARO.id2=tempIdx++;
 
@@ -546,7 +546,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		tsen.WIND.packettype=pTypeWIND;
 		tsen.WIND.subtype=sTypeWINDNoTemp;
 		tsen.WIND.battery_level=9;
-		tsen.WIND.rssi=6;
+		tsen.WIND.rssi=12;
 		tsen.WIND.id1=0;
 		tsen.WIND.id2=1;
 
@@ -600,7 +600,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		tsen.UV.packettype=pTypeUV;
 		tsen.UV.subtype=sTypeUV1;
 		tsen.UV.battery_level=9;
-		tsen.UV.rssi=6;
+		tsen.UV.rssi=12;
 		tsen.UV.id1=0;
 		tsen.UV.id2=1;
 
@@ -632,7 +632,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		tsen.RAIN.packettype=pTypeRAIN;
 		tsen.RAIN.subtype=sTypeRAIN3;
 		tsen.RAIN.battery_level=9;
-		tsen.RAIN.rssi=6;
+		tsen.RAIN.rssi=12;
 		tsen.RAIN.id1=0;
 		tsen.RAIN.id2=1;
 

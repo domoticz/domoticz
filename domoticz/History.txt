@@ -12,6 +12,7 @@ Version 1.0.xxxx (January xxth 2014)
 - Implemented: OTGW, option to specify outside temperature sensor (hardware setup)
 - Implemented: OpenZWave, option to configure node list settings
 - Implemented: OpenZWave, option to delete failed nodes
+- Changed: All external hardware sensors without RF now reports rssi level 12
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)

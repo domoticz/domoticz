@@ -298,7 +298,7 @@ void C1Wire::ReportTemperature(const std::string& deviceId,float temperature)
    tsen.TEMP.packettype=pTypeTEMP;
    tsen.TEMP.subtype=sTypeTEMP10;
    tsen.TEMP.battery_level=9;
-   tsen.TEMP.rssi=6;
+   tsen.TEMP.rssi=12;
    tsen.TEMP.id1=(BYTE)deviceIdByteArray[0];
    tsen.TEMP.id2=(BYTE)deviceIdByteArray[1];
 
@@ -322,7 +322,7 @@ void C1Wire::ReportHumidity(const std::string& deviceId,float humidity)
    tsen.HUM.packettype=pTypeHUM;
    tsen.HUM.subtype=sTypeHUM2;
    tsen.HUM.battery_level=9;
-   tsen.HUM.rssi=6;
+   tsen.HUM.rssi=12;
    tsen.TEMP.id1=(BYTE)deviceIdByteArray[0];
    tsen.TEMP.id2=(BYTE)deviceIdByteArray[1];
 
@@ -343,7 +343,7 @@ void C1Wire::ReportTemperatureHumidity(const std::string& deviceId,float tempera
    tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
    tsen.TEMP_HUM.subtype=sTypeTH5;
    tsen.TEMP_HUM.battery_level=9;
-   tsen.TEMP_HUM.rssi=6;
+   tsen.TEMP_HUM.rssi=12;
    tsen.TEMP.id1=(BYTE)deviceIdByteArray[0];
    tsen.TEMP.id2=(BYTE)deviceIdByteArray[1];
 
@@ -376,7 +376,7 @@ void C1Wire::ReportLightState(const std::string& deviceId,int unit,bool state)
    tsen.LIGHTING2.unitcode=unit;
    tsen.LIGHTING2.cmnd=state?light2_sOn:light2_sOff;
    tsen.LIGHTING2.level=0;
-   tsen.LIGHTING2.rssi=6;
+   tsen.LIGHTING2.rssi=12;
    sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);//decode message
 }
 
@@ -390,7 +390,7 @@ void C1Wire::ReportCounter(const std::string& deviceId,int unit,unsigned long co
    tsen.RFXMETER.packetlength=sizeof(tsen.RFXMETER)-1;
    tsen.RFXMETER.packettype=pTypeRFXMeter;
    tsen.RFXMETER.subtype=sTypeRFXMeterCount;
-   tsen.RFXMETER.rssi=6;
+   tsen.RFXMETER.rssi=12;
    tsen.RFXMETER.id1=(BYTE)deviceIdByteArray[0];
    tsen.RFXMETER.id2=(BYTE)deviceIdByteArray[1] + unit;
 
@@ -408,7 +408,7 @@ void C1Wire::ReportVoltage(int unit,int voltage)
    tsen.RFXSENSOR.packetlength=sizeof(tsen.RFXSENSOR)-1;
    tsen.RFXSENSOR.packettype=pTypeRFXSensor;
    tsen.RFXSENSOR.subtype=sTypeRFXSensorVolt;
-   tsen.RFXSENSOR.rssi=6;
+   tsen.RFXSENSOR.rssi=12;
    tsen.RFXSENSOR.id=unit+1;
 
    tsen.RFXSENSOR.msg1 = (BYTE)(voltage/256);

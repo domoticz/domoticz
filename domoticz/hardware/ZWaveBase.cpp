@@ -216,7 +216,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 	}
 	lcmd.LIGHTING2.level=level;
 	lcmd.LIGHTING2.filler=0;
-	lcmd.LIGHTING2.rssi=7;
+	lcmd.LIGHTING2.rssi=12;
 
 	//Check if we already exist
 	std::stringstream szQuery;
@@ -308,7 +308,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		}
 		lcmd.LIGHTING2.level=level;
 		lcmd.LIGHTING2.filler=0;
-		lcmd.LIGHTING2.rssi=7;
+		lcmd.LIGHTING2.rssi=12;
 		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);//decode message
 		return;
 	}
@@ -339,7 +339,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.ENERGY.id1=ID3;
 			tsen.ENERGY.id2=ID4;
 			tsen.ENERGY.count=1;
-			tsen.ENERGY.rssi=6;
+			tsen.ENERGY.rssi=12;
 
 			tsen.ENERGY.battery_level=9;
 			if (pDevice->hasBattery)
@@ -398,7 +398,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
 			tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
 			tsen.TEMP_HUM.subtype=sTypeTH5;
-			tsen.TEMP_HUM.rssi=6;
+			tsen.TEMP_HUM.rssi=12;
 			tsen.TEMP_HUM.id1=ID3;
 			tsen.TEMP_HUM.id2=ID4;
 
@@ -421,7 +421,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
 			tsen.TEMP.packettype=pTypeTEMP;
 			tsen.TEMP.subtype=sTypeTEMP10;
-			tsen.TEMP.rssi=6;
+			tsen.TEMP.rssi=12;
 			tsen.TEMP.id1=ID3;
 			tsen.TEMP.id2=ID4;
 
@@ -455,7 +455,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
 			tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
 			tsen.TEMP_HUM.subtype=sTypeTH5;
-			tsen.TEMP_HUM.rssi=6;
+			tsen.TEMP_HUM.rssi=12;
 			tsen.TEMP_HUM.id1=ID3;
 			tsen.TEMP_HUM.id2=ID4;
 			ID4=pTempDevice->instanceID;
@@ -480,7 +480,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.HUM.packetlength=sizeof(tsen.HUM)-1;
 			tsen.HUM.packettype=pTypeHUM;
 			tsen.HUM.subtype=sTypeHUM2;
-			tsen.HUM.rssi=6;
+			tsen.HUM.rssi=12;
 			tsen.HUM.id1=ID3;
 			tsen.HUM.id2=ID4;
 			tsen.HUM.battery_level=9;
