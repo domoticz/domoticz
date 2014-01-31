@@ -97,15 +97,20 @@ void ZWaveBase::Do_Work()
 }
 
 
-void ZWaveBase::InsertDevice(_tZWaveDevice device)
+std::string ZWaveBase::GenerateDeviceStringID(const _tZWaveDevice *pDevice)
 {
 	std::stringstream sstr;
-	sstr << device.nodeID << ".instances." << device.instanceID << ".commandClasses." << device.commandClassID << ".data";
-	if (device.scaleID!=-1)
+	sstr << pDevice->nodeID << ".instances." << pDevice->instanceID << ".commandClasses." << pDevice->commandClassID << ".data";
+	if (pDevice->scaleID!=-1)
 	{
-		sstr << "." << device.scaleID;
+		sstr << "." << pDevice->scaleID;
 	}
-	device.string_id=sstr.str();
+	return sstr.str();
+}
+
+void ZWaveBase::InsertDevice(_tZWaveDevice device)
+{
+	device.string_id=GenerateDeviceStringID(&device);
 
 	bool bNewDevice=(m_devices.find(device.string_id)==m_devices.end());
 	

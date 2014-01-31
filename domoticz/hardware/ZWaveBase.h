@@ -83,6 +83,7 @@ private:
 	void SendSwitchIfNotExists(const _tZWaveDevice *pDevice);
 	_tZWaveDevice* FindDevice(int nodeID, int instanceID, _eZWaveDeviceType devType);
 	_tZWaveDevice* FindDevice(int nodeID, int scaleID);
+	std::string GenerateDeviceStringID(const _tZWaveDevice *pDevice);
 	void InsertDevice(_tZWaveDevice device);
 	void UpdateDeviceBatteryStatus(const int nodeID, const int value);
 	unsigned char Convert_Battery_To_PercInt(const unsigned char level);

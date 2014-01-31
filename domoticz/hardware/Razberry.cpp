@@ -20,7 +20,7 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-//	#define DEBUG_ZWAVE_INT
+	#define DEBUG_ZWAVE_INT
 #endif
 
 static std::string readInputTestFile( const char *path )
@@ -483,9 +483,11 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 	if (pDevice==NULL)
 	{
 		//Special Case for Controller received light commands
-		size_t iPos= path.find("commandClasses.32.data.level");
+		size_t iPos= path.find(".data.level");
 		if (iPos==std::string::npos)
+		{
 			return;
+		}
 		std::string tmpStr;
 		//create this device
 		_tZWaveDevice _device;
@@ -511,6 +513,14 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 			return;
 		std::string sInstanceID=tmpStr.substr(0,pPos);
 		_device.instanceID=atoi(sInstanceID.c_str());
+		pPos=path.find("commandClasses.");
+		if (pPos==std::string::npos)
+			return;
+		tmpStr=path.substr(pPos+sizeof("commandClasses.")-1);
+		pPos=tmpStr.find(".");
+		if (pPos==std::string::npos)
+			return;
+		std::string sClassID=tmpStr.substr(0,pPos);
 		
 
 		// Device status and battery
@@ -525,24 +535,40 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 		_device.hasBattery =	false;
 		_device.scaleID=-1;
 
-		_device.commandClassID=32;
+		_device.commandClassID=atoi(sClassID.c_str());
 		_device.devType= ZDTYPE_SWITCHNORMAL;
-		_device.intvalue=obj["value"].asInt();
-		InsertDevice(_device);
+		std::string vstring=obj["value"].asString();
+		if (vstring=="true")
+			_device.intvalue=255;
+		else if (vstring=="false")
+			_device.intvalue=0;
+		else
+			_device.intvalue=obj["value"].asInt();
 
-		//find device again
-		std::map<std::string,_tZWaveDevice>::iterator itt;
-		for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
+		bool bFoundInstance=false;
+		int oldinstance=_device.instanceID;
+		for (int iInst=0; iInst<7; iInst++)
 		{
-			std::string::size_type loc = path.find(itt->second.string_id,0);
-			if (loc!=std::string::npos)
+			_device.instanceID=iInst;
+			std:: string devicestring_id=GenerateDeviceStringID(&_device);
+			std::map<std::string,_tZWaveDevice>::iterator iDevice=m_devices.find(devicestring_id);
+			if (iDevice!=m_devices.end())
 			{
-				pDevice=&itt->second;
+				bFoundInstance=true;
 				break;
 			}
 		}
-		if (pDevice==NULL)
-			return;//ehuh?
+		if (!bFoundInstance)
+			_device.instanceID=oldinstance;
+
+		InsertDevice(_device);
+
+		//find device again
+		std:: string devicestring_id=GenerateDeviceStringID(&_device);
+		std::map<std::string,_tZWaveDevice>::iterator iDevice=m_devices.find(devicestring_id);
+		if (iDevice==m_devices.end())
+			return; //uhuh?
+		pDevice=&iDevice->second;
 	}
 
 	time_t atime=mytime(NULL);
