@@ -20,3 +20,7 @@ void sleep_seconds(const long seconds);
 void sleep_milliseconds(const long milliseconds);
 
 int mkdir_deep(const char *szDirName, int secattr);
+
+double ConvertToCelsius(const double Fahrenheit);
+double ConvertToFahrenheit(const double Celsius);
+double ConvertTemperature(const double tValue, const unsigned char tSign);

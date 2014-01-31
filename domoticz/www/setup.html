@@ -408,6 +408,17 @@
 				</tr>
 			</table>
 			<br>
+			<h2><span data-i18n="Temperature"></span>:</h2>
+			<table class="display" id="temperaturetable" border="0" cellpadding="0" cellspacing="0">
+				<tr>
+					<td align="right" style="width:60px"><label><span data-i18n="Display"></span>: </label></td>
+					<td><select id="comboTempUnit" name="TempUnit" style="width:120px" class="combobox ui-corner-all">
+						<option value="0">Celcius</option>
+						<option value="1">Fahrenheit</option>
+					</select></td>
+				</tr>
+			</table>
+			<br>
 			<h2><span data-i18n="RFXMeter/Counter Dividers"></span>:</h2>
 			<table class="display" id="rfxmetertable" border="0" cellpadding="0" cellspacing="0">
 			<tr>
@@ -691,6 +702,9 @@ function ShowSettings()
       }
       if (typeof data.WindUnit != 'undefined') {
         $("#windmetertable #comboWindUnit").val(data.WindUnit);
+      }
+      if (typeof data.TempUnit != 'undefined') {
+        $("#temperaturetable #comboTempUnit").val(data.TempUnit);
       }
       if (typeof data.UseAutoUpdate != 'undefined') {
         $("#autoupdatetable #checkforupdates").prop('checked',data.UseAutoUpdate==1);

@@ -16,6 +16,18 @@ function RefreshFavorites()
      dataType: 'json',
      success: function(data) {
       if (typeof data.result != 'undefined') {
+		if (typeof data.WindScale != 'undefined') {
+			$.myglobals.windscale=parseFloat(data.WindScale);
+		}
+		if (typeof data.WindSign != 'undefined') {
+			$.myglobals.windsign=data.WindSign;
+		}
+		if (typeof data.TempScale != 'undefined') {
+			$.myglobals.tempscale=parseFloat(data.TempScale);
+		}
+		if (typeof data.TempSign != 'undefined') {
+			$.myglobals.tempsign=data.TempSign;
+		}
 
         $.each(data.result, function(i,item){
 						//Scenes
@@ -463,14 +475,14 @@ function RefreshFavorites()
 								var status="";
 								var bHaveBefore=false;
 								if (typeof item.Temp != 'undefined') {
-										 status+=item.Temp + '° C';
+										 status+=item.Temp + '° ' + $.myglobals.tempsign;
 										 bHaveBefore=true;
 								}
 								if (typeof item.Chill != 'undefined') {
 									if (status!="") {
 										status+=', ';
 									}
-									status+=$.i18n('Chill') + ': ' + item.Chill + '° C';
+									status+=$.i18n('Chill') + ': ' + item.Chill + '° ' + $.myglobals.tempsign;
 									bHaveBefore=true;
 								}
 								if (typeof item.Humidity != 'undefined') {
@@ -483,7 +495,7 @@ function RefreshFavorites()
 									status+=' (' + $.i18n(item.HumidityStatus) + ')';
 								}
 								if (typeof item.DewPoint != 'undefined') {
-									status+="<br>"+$.i18n("Dew Point") + ": " + item.DewPoint + '° C';
+									status+="<br>"+$.i18n("Dew Point") + ": " + item.DewPoint + '° ' + $.myglobals.tempsign;
 								}
 							}
 							else {
@@ -502,7 +514,7 @@ function RefreshFavorites()
 								var bigtext="";
 								var bHaveBefore=false;
 								if (typeof item.Temp != 'undefined') {
-										 status+=item.Temp + '° C';
+										 status+=item.Temp + '° ' + $.myglobals.tempsign;
 										 bigtext=item.Temp + '\u00B0';
 										 bHaveBefore=true;
 								}
@@ -511,7 +523,7 @@ function RefreshFavorites()
 										status+=', ';
 										bigtext+=' / ';
 									}
-									status+=$.i18n('Chill') + ': ' + item.Chill + '° C';
+									status+=$.i18n('Chill') + ': ' + item.Chill + '° ' + $.myglobals.tempsign;
 									bigtext+=item.Chill + '\u00B0';
 									bHaveBefore=true;
 								}
@@ -527,7 +539,7 @@ function RefreshFavorites()
 									status+=' (' + $.i18n(item.HumidityStatus) + ')';
 								}
 								if (typeof item.DewPoint != 'undefined') {
-									status+="<br>"+$.i18n("Dew Point") + ": " + item.DewPoint + '° C';
+									status+="<br>"+$.i18n("Dew Point") + ": " + item.DewPoint + '° ' + $.myglobals.tempsign;
 								}
 							
 								var nbackcolor="#D4E1EE";
@@ -642,7 +654,7 @@ function RefreshFavorites()
 									status=item.UVI + ' UVI';
 									bigtext=item.UVI + ' UVI';
 									if (typeof item.Temp!= 'undefined') {
-										status+=', Temp: ' + item.Temp + '° C';
+										status+=', Temp: ' + item.Temp + '° ' + $.myglobals.tempsign;
 									}
 								}
 								else if (typeof item.Radiation != 'undefined') {
@@ -661,13 +673,13 @@ function RefreshFavorites()
 									}
 									status+='<br>\n';
 									if (typeof item.Temp != 'undefined') {
-										status+=$.i18n('Temp') + ': ' + item.Temp + '° C';
+										status+=$.i18n('Temp') + ': ' + item.Temp + '° ' + $.myglobals.tempsign;
 									}
 									if (typeof item.Chill != 'undefined') {
 										if (typeof item.Temp != 'undefined') {
 											status+=', ';
 										}
-										status+=$.i18n('Chill') +': ' + item.Chill + '° C';
+										status+=$.i18n('Chill') +': ' + item.Chill + '° ' + $.myglobals.tempsign;
 									}
 									bigtext=item.DirectionStr;
 									if (typeof item.Speed != 'undefined') {
@@ -874,7 +886,7 @@ function RefreshFavorites()
 							status+=item.Data;
 						}
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-							status+=item.Data + '\u00B0 C';
+							status+=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 						}
 						if (typeof item.Usage != 'undefined') {
 							if (data.DashboardType==0) {
@@ -956,8 +968,8 @@ function RefreshFavorites()
 							bigtext=item.Data;
 						}
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-							status=item.Data + '\u00B0 C';
-							bigtext=item.Data + '\u00B0 C';
+							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+							bigtext=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 						}
 						if (typeof item.Usage != 'undefined') {
 							bigtext=item.Usage;
@@ -1092,6 +1104,12 @@ function ShowFavorites()
 		}
 		if (typeof data.WindSign != 'undefined') {
 			$.myglobals.windsign=data.WindSign;
+		}
+		if (typeof data.TempScale != 'undefined') {
+			$.myglobals.tempscale=parseFloat(data.TempScale);
+		}
+		if (typeof data.TempSign != 'undefined') {
+			$.myglobals.tempsign=data.TempSign;
 		}
 
       if (typeof data.result != 'undefined') {
@@ -1707,14 +1725,14 @@ function ShowFavorites()
 							var status="";
 							var bHaveBefore=false;
 							if (typeof item.Temp != 'undefined') {
-									 status+=item.Temp + '° C';
+									 status+=item.Temp + '° ' + $.myglobals.tempsign;
 									 bHaveBefore=true;
 							}
 							if (typeof item.Chill != 'undefined') {
 								if (bHaveBefore) {
 									status+=', ';
 								}
-								status+=$.i18n('Chill') +': ' + item.Chill + '° C';
+								status+=$.i18n('Chill') +': ' + item.Chill + '° ' + $.myglobals.tempsign;
 								bHaveBefore=true;
 							}
 							if (typeof item.Humidity != 'undefined') {
@@ -1727,7 +1745,7 @@ function ShowFavorites()
 								status+=' (' + $.i18n(item.HumidityStatus) + ')';
 							}
 							if (typeof item.DewPoint != 'undefined') {
-								status+="<br>"+$.i18n("Dew Point") + ": " + item.DewPoint + '° C';
+								status+="<br>"+$.i18n("Dew Point") + ": " + item.DewPoint + '° ' + $.myglobals.tempsign;
 							}
 							xhtm+=
 										'\t      <td id="status">' + status + '</td>\n' +
@@ -1786,14 +1804,14 @@ function ShowFavorites()
 									'\t      <td id="status">';
 							var bHaveBefore=false;
 							if (typeof item.Temp != 'undefined') {
-									 xhtm+=item.Temp + '° C';
+									 xhtm+=item.Temp + '° ' + $.myglobals.tempsign;
 									 bHaveBefore=true;
 							}
 							if (typeof item.Chill != 'undefined') {
 								if (bHaveBefore) {
 									xhtm+=', ';
 								}
-								xhtm+=$.i18n('Chill') + ': ' + item.Chill + '° C';
+								xhtm+=$.i18n('Chill') + ': ' + item.Chill + '° ' + $.myglobals.tempsign;
 								bHaveBefore=true;
 							}
 							if (typeof item.Humidity != 'undefined') {
@@ -1806,7 +1824,7 @@ function ShowFavorites()
 								xhtm+=' (' + $.i18n(item.HumidityStatus) + ')';
 							}
 							if (typeof item.DewPoint != 'undefined') {
-								xhtm+="<br>"+$.i18n("Dew Point") + ": " + item.DewPoint + '° C';
+								xhtm+="<br>"+$.i18n("Dew Point") + ": " + item.DewPoint + '° ' + $.myglobals.tempsign;
 							}
 							xhtm+=
 									'</td>\n' +
@@ -1981,7 +1999,7 @@ function ShowFavorites()
 								xhtm+='uv48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowUVLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40"></td>\n' +
 								'\t      <td id="status">' + item.UVI + ' UVI';
 								if (typeof item.Temp!= 'undefined') {
-									xhtm+=', Temp: ' + item.Temp + '° C';
+									xhtm+=', Temp: ' + item.Temp + '° ' + $.myglobals.tempsign;
 								}
 							}
 							else if (typeof item.Radiation != 'undefined') {
@@ -1999,13 +2017,13 @@ function ShowFavorites()
 								}
 								xhtm+='<br>\n';
 								if (typeof item.Temp != 'undefined') {
-									xhtm+=$.i18n('Temp') + ': ' + item.Temp + '° C';
+									xhtm+=$.i18n('Temp') + ': ' + item.Temp + '° ' + $.myglobals.tempsign;
 								}
 								if (typeof item.Chill != 'undefined') {
 									if (typeof item.Temp != 'undefined') {
 										xhtm+=', ';
 									}
-									xhtm+=$.i18n('Chill') + ': ' + item.Chill + '° C';
+									xhtm+=$.i18n('Chill') + ': ' + item.Chill + '° ' + $.myglobals.tempsign;
 								}
 							}
 							else if (typeof item.Barometer != 'undefined') {
@@ -2254,7 +2272,7 @@ function ShowFavorites()
 					status=item.Data;
 				}
 				else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-					status=item.Data + '\u00B0 C';
+					status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 				}
 				if (typeof item.Usage != 'undefined') {
 					if (data.DashboardType==0) {
@@ -2333,7 +2351,7 @@ function ShowFavorites()
 					xhtm+=item.Data;
 				}
 				else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-					xhtm+=item.Data + '\u00B0 C';
+					xhtm+=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 				}
 				xhtm+='</td>\n';
 				xhtm+='\t      <td id="img"><img src="images/';
@@ -2398,7 +2416,7 @@ function ShowFavorites()
 				}
 				else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 					xhtm+='override.png" height="40"></td>\n';
-					status=item.Data + '\u00B0 C';
+					status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 				}
 				
 				if (typeof item.Usage != 'undefined') {

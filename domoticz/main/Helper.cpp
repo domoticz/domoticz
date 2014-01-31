@@ -242,3 +242,26 @@ int mkdir_deep(const char *szDirName, int secattr)
 	return 0;
 }
 
+double ConvertToCelsius(const double Fahrenheit)
+{
+	return (Fahrenheit-32.0)/1.8;
+}
+
+double ConvertToFahrenheit(const double Celsius)
+{
+	return (Celsius*1.8)+32.0;
+}
+
+double RoundDouble(const long double invalue, const short numberOfPrecisions)
+{
+	long long p = (long long) powl(10.0L, numberOfPrecisions);
+	double ret= (long long)(invalue * p + 0.5L) / (double)p;
+	return ret;
+}
+
+double ConvertTemperature(const double tValue, const unsigned char tSign)
+{
+	if (tSign=='C')
+		return tValue;
+	return RoundDouble(ConvertToFahrenheit(tValue),1);
+}

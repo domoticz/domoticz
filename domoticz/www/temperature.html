@@ -7,7 +7,7 @@
         <tr>
         <tr>
           <td align="right" style="width:60px"><label for="adjustment">Adjustment: </label></td>
-          <td><input type="text" id="adjustment" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> &deg; C</td>
+          <td><input type="text" id="adjustment" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> &deg; <span id="tempcf">C</span></td>
         <tr>
 		</table>
     </form>
@@ -87,6 +87,7 @@ function EditTempDevice(idx,name,addjvalue)
 	$.devIdx=idx;
 	$("#dialog-edittempdevice #devicename").val(name);
 	$("#dialog-edittempdevice #adjustment").val(addjvalue);
+	$("#dialog-edittempdevice #tempcf").html($.myglobals.tempsign);
 	$( "#dialog-edittempdevice" ).dialog( "open" );
 }
 
@@ -385,7 +386,7 @@ function ShowCustomTempLog()
       yAxis: [{ //temp label
           labels:  {
                    formatter: function() {
-                        return this.value +'\u00B0 C';
+                        return this.value +'\u00B0 ' + $.myglobals.tempsign;
                    },
                    style: {
                       color: 'white'
@@ -435,7 +436,7 @@ function ShowCustomTempLog()
           formatter: function() {
                 var unit = '';
                 var baseName = this.series.name.split(':')[1];
-                if (baseName==$.i18n("Humidity")) {unit = '%'} else {unit = '\u00B0 C'};
+                if (baseName==$.i18n("Humidity")) {unit = '%'} else {unit = '\u00B0 ' + $.myglobals.tempsign};
                 return $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit ;
           }
       },
@@ -487,6 +488,12 @@ function RefreshTemps()
 		if (typeof data.WindSign != 'undefined') {
 			$.myglobals.windsign=data.WindSign;
 		}
+		if (typeof data.TempScale != 'undefined') {
+			$.myglobals.tempscale=parseFloat(data.TempScale);
+		}
+		if (typeof data.TempSign != 'undefined') {
+			$.myglobals.tempsign=data.TempSign;
+		}
       
         $.each(data.result, function(i,item){
 					id="#tempcontent #" + item.idx;
@@ -513,7 +520,7 @@ function RefreshTemps()
             var bHaveTemperature=false;
             var bHaveBefore=false;
             if (typeof item.Temp != 'undefined') {
-                 status+=item.Temp + '\u00B0 C';
+                 status+=item.Temp + '\u00B0 ' + $.myglobals.tempsign;
                  bigtext=item.Temp + '\u00B0';
                  bHaveTemperature=true;
                  bHaveBefore=true;
@@ -526,7 +533,7 @@ function RefreshTemps()
 				if (status!="") {
 					status+=', ';
 				}
-				status+=$.i18n('Chill') + ': ' + item.Chill + '\u00B0 C';
+				status+=$.i18n('Chill') + ': ' + item.Chill + '\u00B0 ' + $.myglobals.tempsign;
 				bHaveBefore=true;
             }
             var bHaveHumidity=false;
@@ -555,7 +562,7 @@ function RefreshTemps()
 			  }
             }
 			if (typeof item.DewPoint != 'undefined') {
-				status+="<br>"+$.i18n("Dew Point") + ": " + item.DewPoint + '\u00B0 C';
+				status+="<br>"+$.i18n("Dew Point") + ": " + item.DewPoint + '\u00B0 ' + $.myglobals.tempsign;
 			}
 
             var nbackcolor="#D4E1EE";
@@ -629,8 +636,20 @@ function ShowTemps()
      success: function(data) {
       if (typeof data.result != 'undefined') {
       
-				$.FiveMinuteHistoryDays=data["5MinuteHistoryDays"];
-      
+		$.FiveMinuteHistoryDays=data["5MinuteHistoryDays"];
+		if (typeof data.WindScale != 'undefined') {
+			$.myglobals.windscale=parseFloat(data.WindScale);
+		}
+		if (typeof data.WindSign != 'undefined') {
+			$.myglobals.windsign=data.WindSign;
+		}
+		if (typeof data.TempScale != 'undefined') {
+			$.myglobals.tempscale=parseFloat(data.TempScale);
+		}
+		if (typeof data.TempSign != 'undefined') {
+			$.myglobals.tempsign=data.TempSign;
+		}
+
         $.each(data.result, function(i,item){
           if (i % 3 == 0)
           {
@@ -690,7 +709,7 @@ function ShowTemps()
 					var bHaveTemperature=false;
 					var bHaveBefore=false;
 					if (typeof item.Temp != 'undefined') {
-							 xhtm+=item.Temp + '\u00B0 C';
+							 xhtm+=item.Temp + '\u00B0 ' + $.myglobals.tempsign;
 							 bHaveTemperature=true;
 							 bHaveBefore=true;
 					}
@@ -698,7 +717,7 @@ function ShowTemps()
 						if (typeof item.Temp != 'undefined') {
 							xhtm+=', ';
 						}
-						xhtm+=$.i18n('Chill') + ': ' + item.Chill + '\u00B0 C';
+						xhtm+=$.i18n('Chill') + ': ' + item.Chill + '\u00B0 ' + $.myglobals.tempsign;
 						bHaveBefore=true;
 					}
 					var bHaveHumidity=false;
@@ -725,7 +744,7 @@ function ShowTemps()
 						}
 					}
 					if (typeof item.DewPoint != 'undefined') {
-						xhtm+="<br>"+$.i18n("Dew Point") + ": " + item.DewPoint + '\u00B0 C';
+						xhtm+="<br>"+$.i18n("Dew Point") + ": " + item.DewPoint + '\u00B0 ' + $.myglobals.tempsign;
 					}
 					xhtm+=
 							'</td>\n' +

@@ -998,6 +998,8 @@ bool CSQLHelper::OpenDatabase()
 		m_tempunit=(_eTempUnit)nValue;
 
 	}
+	SetUnitsAndScale();
+
 	if (!GetPreferencesVar("SecStatus", nValue))
 	{
 		UpdatePreferencesVar("SecStatus", (int)SECSTATUS_DISARMED);
@@ -1006,7 +1008,6 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("SecOnDelay", 30);
 	}
-	SetUnitsAndScale();
 
 	if (!GetPreferencesVar("AuthenticationMethod", nValue))
 	{
@@ -2199,6 +2200,11 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(
 			std::string ntype=splitresults[0];
 			bool bWhenIsGreater = (splitresults[1]==">");
 			float svalue=(float)atof(splitresults[2].c_str());
+			if (m_tempunit==TEMPUNIT_F)
+			{
+				//Convert to Celsius
+				svalue=(svalue/1.8f)-32.0f;
+			}
 
 			bool bSendNotification=false;
 

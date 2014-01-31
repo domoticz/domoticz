@@ -587,11 +587,11 @@ char * CWebServer::PostSettings()
 	int nUnit=atoi(m_pWebEm->FindValue("WindUnit").c_str());
 	m_pMain->m_sql.UpdatePreferencesVar("WindUnit",nUnit);
 	m_pMain->m_sql.m_windunit=(_eWindUnit)nUnit;
-/*
+
 	nUnit=atoi(m_pWebEm->FindValue("TempUnit").c_str());
 	m_pMain->m_sql.UpdatePreferencesVar("TempUnit",nUnit);
 	m_pMain->m_sql.m_tempunit=(_eTempUnit)nUnit;
-*/
+
 	m_pMain->m_sql.SetUnitsAndScale();
 
 	std::string AuthenticationMethod=m_pWebEm->FindValue("AuthenticationMethod");
@@ -996,6 +996,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 	{
 		sprintf(szOrderBy,"[Order],%s ASC",order.c_str());
 	}
+
+	unsigned char tempsign=m_pMain->m_sql.m_tempsign[0];
 
 	bool bHaveUser=(m_pWebEm->m_actualuser!="");
 	int iUser=-1;
@@ -1538,8 +1540,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			{
 				root["result"][ii]["AddjValue"]=AddjValue;
 				root["result"][ii]["AddjMulti"]=AddjMulti;
-				root["result"][ii]["Temp"]=atof(sValue.c_str());
-				sprintf(szData,"%.1f C", atof(sValue.c_str()));
+				double tvalue=ConvertTemperature(atof(sValue.c_str()),tempsign);
+				root["result"][ii]["Temp"]=tvalue;
+				sprintf(szData,"%.1f %c", tvalue,tempsign);
 				root["result"][ii]["Data"]=szData;
 				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 			}
@@ -1549,7 +1552,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				StringSplit(sValue, ";", strarray);
 				if (strarray.size()==4)
 				{
-					root["result"][ii]["Temp"]=atoi(strarray[0].c_str());
+					double tvalue=ConvertTemperature(atof(strarray[0].c_str()),tempsign);
+					root["result"][ii]["Temp"]=tvalue;
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				}
 			}
@@ -1559,8 +1563,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				root["result"][ii]["AddjMulti"]=AddjMulti;
 				root["result"][ii]["AddjValue2"]=AddjValue2;
 				root["result"][ii]["AddjMulti2"]=AddjMulti2;
-				root["result"][ii]["Temp"]=atof(sValue.c_str());
-				sprintf(szData,"%.1f C", atof(sValue.c_str()));
+				double tvalue=ConvertTemperature(atof(sValue.c_str()),tempsign);
+				root["result"][ii]["Temp"]=tvalue;
+				sprintf(szData,"%.1f %c", tvalue,tempsign);
 				root["result"][ii]["Data"]=szData;
 				root["result"][ii]["TypeImg"]="temperature";
 				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
@@ -1584,19 +1589,19 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["AddjValue2"]=AddjValue2;
 					root["result"][ii]["AddjMulti2"]=AddjMulti2;
 
-					double temp=atof(strarray[0].c_str());
+					double temp=ConvertTemperature(atof(strarray[0].c_str()),tempsign);
 					int humidity=atoi(strarray[1].c_str());
 
 					root["result"][ii]["Temp"]=temp;
 					root["result"][ii]["Humidity"]=humidity;
 					root["result"][ii]["HumidityStatus"]=RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
-					sprintf(szData,"%.1f C, %d %%", atof(strarray[0].c_str()),atoi(strarray[1].c_str()));
+					sprintf(szData,"%.1f %c, %d %%", temp,tempsign,atoi(strarray[1].c_str()));
 					root["result"][ii]["Data"]=szData;
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 
 					//Calculate dew point
 
-					sprintf(szTmp,"%.2f",CalculateDewPoint(temp,humidity));
+					sprintf(szTmp,"%.2f",ConvertTemperature(CalculateDewPoint(temp,humidity),tempsign));
 					root["result"][ii]["DewPoint"]=szTmp;
 				}
 			}
@@ -1611,7 +1616,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["AddjValue2"]=AddjValue2;
 					root["result"][ii]["AddjMulti2"]=AddjMulti2;
 
-					double temp=atof(strarray[0].c_str());
+					double temp=ConvertTemperature(atof(strarray[0].c_str()),tempsign);
 					int humidity=atoi(strarray[1].c_str());
 
 					root["result"][ii]["Temp"]=temp;
@@ -1619,7 +1624,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["HumidityStatus"]=RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
 					root["result"][ii]["Forecast"]=atoi(strarray[4].c_str());
 
-					sprintf(szTmp,"%.2f",CalculateDewPoint(temp,humidity));
+					sprintf(szTmp,"%.2f",ConvertTemperature(CalculateDewPoint(temp,humidity),tempsign));
 					root["result"][ii]["DewPoint"]=szTmp;
 
 					if (dSubType==sTypeTHBFloat)
@@ -1634,16 +1639,18 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					}
 					if (dSubType==sTypeTHBFloat)
 					{
-						sprintf(szData,"%.1f C, %d %%, %.1f hPa",
-							atof(strarray[0].c_str()),
+						sprintf(szData,"%.1f %c, %d %%, %.1f hPa",
+							temp,
+							tempsign,
 							atoi(strarray[1].c_str()),
 							atof(strarray[3].c_str())
 							);
 					}
 					else
 					{
-						sprintf(szData,"%.1f C, %d %%, %d hPa",
-							atof(strarray[0].c_str()),
+						sprintf(szData,"%.1f %c, %d %%, %d hPa",
+							temp,
+							tempsign,
 							atoi(strarray[1].c_str()),
 							atoi(strarray[3].c_str())
 							);
@@ -1662,7 +1669,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["AddjMulti"]=AddjMulti;
 					root["result"][ii]["AddjValue2"]=AddjValue2;
 					root["result"][ii]["AddjMulti2"]=AddjMulti2;
-					root["result"][ii]["Temp"]=atof(strarray[0].c_str());
+
+					double tvalue=ConvertTemperature(atof(strarray[0].c_str()),tempsign);
+					root["result"][ii]["Temp"]=tvalue;
 					int forecast=atoi(strarray[2].c_str());
 					if (forecast!=baroForecastNoInfo)
 					{
@@ -1671,8 +1680,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					}
 					root["result"][ii]["Barometer"]=atof(strarray[1].c_str());
 
-					sprintf(szData,"%.1f C, %.1f hPa",
-							atof(strarray[0].c_str()),
+					sprintf(szData,"%.1f %c, %.1f hPa",
+							tvalue,
+							tempsign,
 							atof(strarray[1].c_str())
 							);
 					root["result"][ii]["Data"]=szData;
@@ -1686,7 +1696,6 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				if (strarray.size()==2)
 				{
 					float UVI=(float)atof(strarray[0].c_str());
-					float Temp=(float)atof(strarray[1].c_str());
 					root["result"][ii]["UVI"]=strarray[0];
 					if (dSubType==sTypeUV3)
 					{
@@ -1694,8 +1703,11 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						root["result"][ii]["AddjMulti"]=AddjMulti;
 						root["result"][ii]["AddjValue2"]=AddjValue2;
 						root["result"][ii]["AddjMulti2"]=AddjMulti2;
-						root["result"][ii]["Temp"]=strarray[1];
-						sprintf(szData,"%.1f UVI, %.1f&deg; C",UVI,Temp);
+
+						double tvalue=ConvertTemperature(atof(strarray[1].c_str()),tempsign);
+
+						root["result"][ii]["Temp"]=tvalue;
+						sprintf(szData,"%.1f UVI, %.1f&deg; %c",UVI,tvalue,tempsign);
 					}
 					else
 					{
@@ -1735,9 +1747,11 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						root["result"][ii]["AddjMulti2"]=AddjMulti2;
 						if (dSubType==sTypeWIND4)
 						{
-							root["result"][ii]["Temp"]=atof(strarray[4].c_str());
+							double tvalue=ConvertTemperature(atof(strarray[4].c_str()),tempsign);
+							root["result"][ii]["Temp"]=tvalue;
 						}
-						root["result"][ii]["Chill"]=atof(strarray[5].c_str());
+						double tvalue=ConvertTemperature(atof(strarray[5].c_str()),tempsign);
+						root["result"][ii]["Chill"]=tvalue;
 					}
 					root["result"][ii]["Data"]=sValue;
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
@@ -2380,8 +2394,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				{
 					root["result"][ii]["AddjValue"]=AddjValue;
 					root["result"][ii]["AddjMulti"]=AddjMulti;
-					root["result"][ii]["Temp"]=atof(sValue.c_str());
-					sprintf(szData,"%.1f C", atof(sValue.c_str()));
+					double tvalue=ConvertTemperature(atof(sValue.c_str()),tempsign);
+					root["result"][ii]["Temp"]=tvalue;
+					sprintf(szData,"%.1f %c", tvalue,tempsign);
 					root["result"][ii]["Data"]=szData;
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 					root["result"][ii]["Image"]="Computer";
@@ -2760,6 +2775,8 @@ std::string CWebServer::GetJSonPage()
 
 		root["WindScale"]=m_pMain->m_sql.m_windscale*10.0f;
 		root["WindSign"]=m_pMain->m_sql.m_windsign;
+		root["TempScale"]=m_pMain->m_sql.m_tempscale;
+		root["TempSign"]=m_pMain->m_sql.m_tempsign;
 
 	} //if (rtype=="devices")
     else if (rtype=="cameras")
@@ -3304,6 +3321,7 @@ std::string CWebServer::GetJSonPage()
 			else
 				goto exitjson;
 		}
+		unsigned char tempsign=m_pMain->m_sql.m_tempsign[0];
 	
 		if (srange=="day")
 		{
@@ -3339,14 +3357,16 @@ std::string CWebServer::GetJSonPage()
 							((dType==pTypeThermostat)&&(dSubType==sTypeThermSetpoint))
 							)
 						{
-							root["result"][ii]["te"]=sd[0];
+							double tvalue=ConvertTemperature(atof(sd[0].c_str()),tempsign);
+							root["result"][ii]["te"]=tvalue;
 						}
 						if (
 							((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
 							((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))
 							)
 						{
-							root["result"][ii]["ch"]=sd[1];
+							double tvalue=ConvertTemperature(atof(sd[1].c_str()),tempsign);
+							root["result"][ii]["ch"]=tvalue;
 						}
 						if ((dType==pTypeHUM)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO))
 						{
@@ -4580,9 +4600,12 @@ std::string CWebServer::GetJSonPage()
 							}
 							if (bOK)
 							{
-								root["result"][ii]["te"]=sd[1];
-								root["result"][ii]["tm"]=sd[0];
-								root["result"][ii]["ta"]=sd[6];
+								double te=ConvertTemperature(atof(sd[1].c_str()),tempsign);
+								double tm=ConvertTemperature(atof(sd[0].c_str()),tempsign);
+								double ta=ConvertTemperature(atof(sd[6].c_str()),tempsign);
+								root["result"][ii]["te"]=te;
+								root["result"][ii]["tm"]=tm;
+								root["result"][ii]["ta"]=ta;
 							}
 						}
 						if (
@@ -4590,8 +4613,10 @@ std::string CWebServer::GetJSonPage()
 							((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))
 							)
 						{
-							root["result"][ii]["ch"]=sd[3];
-							root["result"][ii]["cm"]=sd[2];
+							double ch=ConvertTemperature(atof(sd[3].c_str()),tempsign);
+							double cm=ConvertTemperature(atof(sd[2].c_str()),tempsign);
+							root["result"][ii]["ch"]=ch;
+							root["result"][ii]["cm"]=cm;
 						}
 						if ((dType==pTypeHUM)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO))
 						{
@@ -4638,17 +4663,23 @@ std::string CWebServer::GetJSonPage()
 						((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))
 						)
 					{
-						root["result"][ii]["te"]=sd[1];
-						root["result"][ii]["tm"]=sd[0];
-						root["result"][ii]["ta"]=sd[6];
+						double te=ConvertTemperature(atof(sd[1].c_str()),tempsign);
+						double tm=ConvertTemperature(atof(sd[0].c_str()),tempsign);
+						double ta=ConvertTemperature(atof(sd[6].c_str()),tempsign);
+
+						root["result"][ii]["te"]=te;
+						root["result"][ii]["tm"]=tm;
+						root["result"][ii]["ta"]=ta;
 					}
 					if (
 						((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
 						((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))
 						)
 					{
-						root["result"][ii]["ch"]=sd[3];
-						root["result"][ii]["cm"]=sd[2];
+						double ch=ConvertTemperature(atof(sd[3].c_str()),tempsign);
+						double cm=ConvertTemperature(atof(sd[2].c_str()),tempsign);
+						root["result"][ii]["ch"]=ch;
+						root["result"][ii]["cm"]=cm;
 					}
 					if ((dType==pTypeHUM)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO))
 					{
@@ -5594,13 +5625,17 @@ std::string CWebServer::GetJSonPage()
 						    root["result"][ii]["d"]=sd[4];//.substr(0,16);
 						    if (sendTemp)
 						    {
-							    root["result"][ii]["te"]=sd[0];
-							    root["result"][ii]["tm"]=sd[0];
+								double te=ConvertTemperature(atof(sd[0].c_str()),tempsign);
+								double tm=ConvertTemperature(atof(sd[0].c_str()),tempsign);
+							    root["result"][ii]["te"]=te;
+							    root["result"][ii]["tm"]=tm;
 						    }
 						    if (sendChill)
 						    {
-							    root["result"][ii]["ch"]=sd[1];
-							    root["result"][ii]["cm"]=sd[1];
+								double ch=ConvertTemperature(atof(sd[1].c_str()),tempsign);
+								double cm=ConvertTemperature(atof(sd[1].c_str()),tempsign);
+							    root["result"][ii]["ch"]=ch;
+							    root["result"][ii]["cm"]=cm;
 						    }
 						    if (sendHum)
 						    {
@@ -5626,7 +5661,8 @@ std::string CWebServer::GetJSonPage()
 						    }
 						    if (sendDew)
 						    {
-							    root["result"][ii]["dp"]=sd[5];
+								double dp=ConvertTemperature(atof(sd[5].c_str()),tempsign);
+							    root["result"][ii]["dp"]=dp;
 						    }
 						    ii++;
 					    }
@@ -5647,14 +5683,21 @@ std::string CWebServer::GetJSonPage()
 						    root["result"][ii]["d"]=sd[6].substr(0,16);
 						    if (sendTemp)
 						    {
-							    root["result"][ii]["te"]=sd[1];
-								root["result"][ii]["tm"]=sd[0];
-								root["result"][ii]["ta"]=sd[8];
+								double te=ConvertTemperature(atof(sd[1].c_str()),tempsign);
+								double tm=ConvertTemperature(atof(sd[0].c_str()),tempsign);
+								double ta=ConvertTemperature(atof(sd[8].c_str()),tempsign);
+
+								root["result"][ii]["te"]=te;
+								root["result"][ii]["tm"]=tm;
+								root["result"][ii]["ta"]=ta;
 						    }
 						    if (sendChill)
 						    {
-							    root["result"][ii]["ch"]=sd[3];
-							    root["result"][ii]["cm"]=sd[2];
+								double ch=ConvertTemperature(atof(sd[3].c_str()),tempsign);
+								double cm=ConvertTemperature(atof(sd[2].c_str()),tempsign);
+
+							    root["result"][ii]["ch"]=ch;
+							    root["result"][ii]["cm"]=cm;
 						    }
 						    if (sendHum)
 						    {
@@ -5680,7 +5723,8 @@ std::string CWebServer::GetJSonPage()
 						    }
 						    if (sendDew)
 						    {
-							    root["result"][ii]["dp"]=sd[7];
+								double dp=ConvertTemperature(atof(sd[7].c_str()),tempsign);
+							    root["result"][ii]["dp"]=dp;
 						    }
 						    ii++;
 					    }
@@ -5698,14 +5742,20 @@ std::string CWebServer::GetJSonPage()
 					    root["result"][ii]["d"]=szDateEnd;
 					    if (sendTemp)
 					    {
-						    root["result"][ii]["te"]=sd[1];
-							root["result"][ii]["tm"]=sd[0];
-							root["result"][ii]["ta"]=sd[7];
+							double te=ConvertTemperature(atof(sd[1].c_str()),tempsign);
+							double tm=ConvertTemperature(atof(sd[0].c_str()),tempsign);
+							double ta=ConvertTemperature(atof(sd[7].c_str()),tempsign);
+
+						    root["result"][ii]["te"]=te;
+							root["result"][ii]["tm"]=tm;
+							root["result"][ii]["ta"]=ta;
 					    }
 					    if (sendChill)
 					    {
-						    root["result"][ii]["ch"]=sd[3];
-						    root["result"][ii]["cm"]=sd[2];
+							double ch=ConvertTemperature(atof(sd[3].c_str()),tempsign);
+							double cm=ConvertTemperature(atof(sd[2].c_str()),tempsign);
+						    root["result"][ii]["ch"]=ch;
+						    root["result"][ii]["cm"]=cm;
 					    }
 					    if (sendHum)
 					    {
@@ -5731,7 +5781,8 @@ std::string CWebServer::GetJSonPage()
 					    }
 					    if (sendDew)
 					    {
-						    root["result"][ii]["dp"]=sd[6];
+							double dp=ConvertTemperature(atof(sd[6].c_str()),tempsign);
+						    root["result"][ii]["dp"]=dp;
 					    }
 					    ii++;
 				    }
@@ -6582,6 +6633,8 @@ std::string CWebServer::GetJSonPage()
 
 			root["WindScale"]=m_pMain->m_sql.m_windscale*10.0f;
 			root["WindSign"]=m_pMain->m_sql.m_windsign;
+			root["TempScale"]=m_pMain->m_sql.m_tempscale;
+			root["TempSign"]=m_pMain->m_sql.m_tempsign;
 
 			int bEnableTabLight=1;
 			int bEnableTabScenes=1;
