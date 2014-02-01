@@ -793,22 +793,21 @@ function RefreshFavorites()
 										img='<img src="images/alarm48.png" height="40">';
 									}
 									else {
-										img='<img src="images/security48.png" height="40">';
+										if (item.SubType.indexOf('Meiantech') >= 0) {
+											if ((item.Status.indexOf('Arm') >= 0)||(item.Status.indexOf('Panic') >= 0)) {
+												img='<img src="images/security48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+											}
+											else {
+												img='<img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="ArmSystem(' + item.idx + ',\'On\',RefreshFavorites);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40">';
+											}
+										}
+										else {
+											img='<img src="images/security48.png" height="40">';
+										}
 									}
 								}
 								
 								var nbackcolor="#D4E1EE";
-								if (item.HaveTimeout==true) {
-									nbackcolor="#DF2D3A";
-								}
-								else {
-									var BatteryLevel=parseInt(item.BatteryLevel);
-									if (BatteryLevel!=255) {
-										if (BatteryLevel<=10) {
-											nbackcolor="#DDDF2D";
-										}
-									}
-								}
 								var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
 								if (obackcolor!=nbackcolor) {
 									$(id + " #name").css( "background-color", nbackcolor );
@@ -2161,7 +2160,17 @@ function ShowFavorites()
 									xhtm+='\t      <td id="img"><img src="images/alarm48.png" height="40"></td>\n';
 								}
 								else {
-									xhtm+='\t      <td id="img"><img src="images/security48.png" height="40"></td>\n';
+									if (item.SubType.indexOf('Meiantech') >= 0) {
+										if ((item.Status.indexOf('Arm') >= 0)||(item.Status.indexOf('Panic') >= 0)) {
+											xhtm+='\t      <td id="img"><img src="images/security48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+										}
+										else {
+											xhtm+='\t      <td id="img"><img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="ArmSystem(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40"></td>\n';
+										}
+									}
+									else {
+										xhtm+='\t      <td id="img"><img src="images/security48.png" height="40"></td>\n';
+									}
 								}
 							}
 							xhtm+=

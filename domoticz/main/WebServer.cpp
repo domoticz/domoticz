@@ -1494,6 +1494,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				else
 					sprintf(szData,"%s", lstatus.c_str());
 				root["result"][ii]["Data"]=szData;
+				root["result"][ii]["HaveTimeout"]=false;
 			}
 			else if (dType==pTypeSecurity1)
 			{
@@ -1535,6 +1536,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 
 				sprintf(szData,"%s", lstatus.c_str());
 				root["result"][ii]["Data"]=szData;
+				root["result"][ii]["HaveTimeout"]=false;
 			}
 			else if ((dType == pTypeTEMP) || (dType == pTypeRego6XXTemp))
 			{

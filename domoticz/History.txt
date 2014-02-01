@@ -16,6 +16,8 @@ Version 1.0.xxxx (January xxth 2014)
 - Implemented: Option to display temperature in Fahrenheit
 - Fixed: Razberry, problem with door sensors
 - Implemented: Charts have now a dropdown option, export to CVS
+- Implemented: Option to control Meiantech security status
+- Implemented: Light Log, Arm/Disarm now also visible in graph
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)

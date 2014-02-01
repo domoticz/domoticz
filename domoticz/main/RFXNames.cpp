@@ -1269,7 +1269,7 @@ bool GetLightCommand(
 				return true;
 			}
 		}
-		else if (dSubType==sTypeSecX10R)
+		else if ((dSubType==sTypeSecX10R)||(dSubType==sTypeMeiantech))
 		{
 			if (switchcmd=="On")
 			{

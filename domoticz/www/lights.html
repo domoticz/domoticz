@@ -1535,7 +1535,17 @@ function RefreshLights()
 										img='<img src="images/alarm48.png" height="48">';
 									}
 									else {
-										img='<img src="images/security48.png" height="48">';
+										if (item.SubType.indexOf('Meiantech') >= 0) {
+											if ((item.Status.indexOf('Arm') >= 0)||(item.Status.indexOf('Panic') >= 0)) {
+												img='<img src="images/security48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+											}
+											else {
+												img='<img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="ArmSystem(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+											}
+										}
+										else {
+											img='<img src="images/security48.png" height="48">';
+										}
 									}
 							}
 						}
@@ -1814,7 +1824,17 @@ function ShowLights()
 								xhtm+='\t      <td id="img"><img src="images/alarm48.png" height="48"></td>\n';
 							}
 							else {
-								xhtm+='\t      <td id="img"><img src="images/security48.png" height="48"></td>\n';
+								if (item.SubType.indexOf('Meiantech') >= 0) {
+									if ((item.Status.indexOf('Arm') >= 0)||(item.Status.indexOf('Panic') >= 0)) {
+										xhtm+='\t      <td id="img"><img src="images/security48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+									}
+									else {
+										xhtm+='\t      <td id="img"><img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="ArmSystem(' + item.idx + ',\'On\',RefreshLights);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+									}
+								}
+								else {
+									xhtm+='\t      <td id="img"><img src="images/security48.png" height="48"></td>\n';
+								}
 							}
 						}
 						bAddTimer=false;

@@ -7770,17 +7770,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				}
 				break;
 			case sTypeSecX10M:
-				{
-					if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.SECURITY1.status))
-						return false;
-					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.SECURITY1));
-					if (!IsTesting) {
-						//send to internal for now (later we use the ACK)
-						DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
-					}
-				}
-				break;
 			case sTypeSecX10R:
+			case sTypeMeiantech:
 				{
 					if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.SECURITY1.status))
 						return false;
