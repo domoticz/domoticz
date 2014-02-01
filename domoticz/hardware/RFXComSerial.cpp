@@ -122,6 +122,7 @@ bool RFXComSerial::OpenSerialDevice()
 		return false;
 	}
 	m_bIsStarted=true;
+	m_rxbufferpos=0;
 	setReadCallback(boost::bind(&RFXComSerial::readCallback, this, _1, _2));
 	sOnConnected(this);
 	return true;

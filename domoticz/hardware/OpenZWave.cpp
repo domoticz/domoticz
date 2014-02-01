@@ -982,6 +982,14 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 					_device.intvalue=0;
 				InsertDevice(_device);
 			}
+			else if (m_pManager->GetValueAsByte(vID,&byteValue)==true)
+			{
+				if (byteValue==0)
+					_device.intvalue=0;
+				else
+					_device.intvalue=255;
+				InsertDevice(_device);
+			}
 		}
 	}
 	else if (commandclass==COMMAND_CLASS_SWITCH_MULTILEVEL)

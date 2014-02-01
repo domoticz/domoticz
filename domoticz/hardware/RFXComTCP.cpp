@@ -77,7 +77,7 @@ bool RFXComTCP::StartHardware()
 	//force connect the next first time
 	m_retrycntr=RETRY_DELAY;
 	m_bIsStarted=true;
-
+	m_rxbufferpos=0;
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&RFXComTCP::Do_Work, this)));
 	return (m_thread!=NULL);
