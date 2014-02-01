@@ -164,12 +164,12 @@ int CPiFace::LoadConfig(void)
   const std::string ParameterNames[CONFIG_NR_OF_PARAMETER_TYPES]={"enable","enabled","pin_type","count_enable","count_enabled","count_update_interval_sec","count_update_interval_s","count_update_interval"};
   const std::string ParameterBooleanValueNames[CONFIG_NR_OF_PARAMETER_BOOL_TYPES]={"false","0","true","1"};
   const std::string ParameterPinTypeValueNames[CONFIG_NR_OF_PARAMETER_PIN_TYPES]={"level","inv_level","rising","falling"};
-  unsigned char Address;
-  unsigned char PinNumber;
+  unsigned char Address=0;
+  unsigned char PinNumber=0;
   unsigned char PortType=0;
-  int NameFound;
-  int ValueFound; 
-  CIOPort *IOport;
+  int NameFound=0;
+  int ValueFound=0; 
+  CIOPort *IOport=NULL;
   std::string configfile=szStartupFolder + "piface.conf";
   
   fstream ConfigFile(configfile.c_str(), ios::in);

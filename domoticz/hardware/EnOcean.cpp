@@ -741,6 +741,8 @@ unsigned char enocean_calc_checksum(const enocean_data_structure *input_data) {
 
 char* enocean_gethex_internal(BYTE* in, const int framesize) {
 	char* hexstr = (char*) malloc ((framesize*2)+1);  // because every hex-byte needs 2 characters
+	if (!hexstr)
+		return "Out of memory!";
 	char* tempstr = hexstr;
 
 	int i;
@@ -760,6 +762,8 @@ char* enocean_hexToHuman(const enocean_data_structure *pFrame)
 	// every byte of the frame takes 2 characters in the human representation + the length of the text blocks (without trailing '\0');
 	const int stringsize = (framesize*2)+1+sizeof(HR_TYPE)-1+sizeof(HR_RPS)-1+sizeof(HR_DATA)-1+sizeof(HR_SENDER)-1+sizeof(HR_STATUS)-1;
 	char *humanString = (char*) malloc (stringsize);
+	if (!humanString)
+		return "Out of memory!";
 	char *tempstring = humanString;
 	char *temphexstring;
 	sprintf(tempstring,HR_TYPE);

@@ -156,7 +156,7 @@ void cWebem::RegisterActionCode( const char* idname, webem_action_function fun )
 			/// get UTF8 version
 			const char * get8() { return myString8; }
 			/// free buffers
-			~cUTF() { free(myString8); }
+			~cUTF() { if (myString8) free(myString8); }
 		};
 
 		/// Construct from UTF-16
@@ -183,8 +183,11 @@ void cWebem::RegisterActionCode( const char* idname, webem_action_function fun )
 			}
 			int len=dest.size();
 			myString8 = (char * ) malloc( len + 1 );
-			memcpy(myString8, dest.c_str(), len);
-			*(myString8+len) = '\0';
+			if (myString8)
+			{
+				memcpy(myString8, dest.c_str(), len);
+				*(myString8 + len) = '\0';
+			}
 		}
 
 /**

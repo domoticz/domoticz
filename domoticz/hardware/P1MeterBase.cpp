@@ -99,7 +99,7 @@ void P1MeterBase::MatchLine()
 	uint8_t i;
 	uint8_t found=0;
 	Match t;
-	char value[13]="";
+	char value[20]="";
 	std::string vString;
 
 	for(i=0;(i<sizeof(matchlist)/sizeof(Match))&(!found);i++)
@@ -145,6 +145,7 @@ void P1MeterBase::MatchLine()
 			if (ePos==std::string::npos)
 			{
 				strncpy(value, (const char*)&m_buffer+t.start, t.width);
+				value[t.width] = 0;
 			}
 			else
 			{
@@ -158,6 +159,7 @@ void P1MeterBase::MatchLine()
 			if (ePos==std::string::npos)
 			{
 				strncpy(value, (const char*)&m_buffer+t.start, t.width);
+				value[t.width] = 0;
 			}
 			else
 			{
@@ -165,7 +167,10 @@ void P1MeterBase::MatchLine()
 			}
 		}
 		else
-			strncpy(value, (const char*)&m_buffer+t.start, t.width);
+		{
+			strncpy(value, (const char*)&m_buffer + t.start, t.width);
+			value[t.width] = 0;
+		}
 
 		switch (t.type)
 		{

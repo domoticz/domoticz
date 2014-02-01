@@ -218,12 +218,14 @@ int usb_find_devices(void)
 
       // Determine required size for interface detail data
       ULONG requiredLength = 0;
-      SetupDiGetDeviceInterfaceDetail(
-         deviceInfo, &interfaceData, NULL, 0, &requiredLength, NULL);
+	  if (!SetupDiGetDeviceInterfaceDetail(deviceInfo, &interfaceData, NULL, 0, &requiredLength, NULL))
+		  return 0;
 
       // Allocate storage for interface detail data
       PSP_DEVICE_INTERFACE_DETAIL_DATA detailData = 
          (PSP_DEVICE_INTERFACE_DETAIL_DATA) malloc(requiredLength);
+	  if (!detailData)
+		  return 0;
       detailData->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
 
       // Fetch interface detail data
@@ -280,22 +282,23 @@ usb_dev_handle *usb_open(struct usb_device *dev)
    WINUSB_INTERFACE_HANDLE fd;
    if (!WinUsb_Initialize(hnd, &fd))
    {
-	   DWORD lerror=GetLastError();
-
-	   // Translate ErrorCode to String.
-	   LPTSTR Error = 0;
-	   if(::FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+	   /*
+		   DWORD lerror=GetLastError();
+		   // Translate ErrorCode to String.
+		   LPTSTR Error = 0;
+		   if(::FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
 		   NULL,
 		   lerror,
 		   0,
 		   (LPTSTR)&Error,
 		   0,
 		   NULL) == 0)
-	   {
+		   {
 		   // Failed in translating.
-	   }
-	   //MessageBox(NULL,Error,"Failed",MB_OK);
-	   LocalFree(Error);
+		   }
+		   //MessageBox(NULL,Error,"Failed",MB_OK);
+		   LocalFree(Error);
+	   */
       CloseHandle(hnd);
       return NULL;
    }
@@ -342,7 +345,7 @@ int usb_control_msg(usb_dev_handle *dev, int requesttype,
 
    ULONG actlen = 0;
    if (!WinUsb_ControlTransfer(dev->fd, sp, (unsigned char*)bytes, size, &actlen, NULL))
-      return -GetLastError();
+      return -(int)GetLastError();
 
    return actlen;
 }
@@ -356,7 +359,7 @@ int usb_get_string_simple(usb_dev_handle *dev, int index, char *buf,
    if (!WinUsb_GetDescriptor(dev->fd, USB_STRING_DESCRIPTOR_TYPE, index, 0x0409, 
                              temp, sizeof(temp), &actlen))
    {
-      return -GetLastError();
+      return -(int)GetLastError();
    }
 
    // Skip first two bytes of result (descriptor id and length), then take 

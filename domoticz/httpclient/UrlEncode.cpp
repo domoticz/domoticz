@@ -42,7 +42,8 @@ std::string CURLEncode::decToHex(char num, int radix)
 		num_char = (int)floor((float)num_char / radix);
 		csTmp = hexVals[temp];
 	}
-
+	if (num_char>16)
+		num_char = 0; //should not be nececery
 	csTmp += hexVals[num_char];
 
 	if(csTmp.size() < 2)
@@ -135,7 +136,9 @@ std::string CURLEncode::URLDecode(const std::string SRC)
 		if (int(SRC[i])==37) {
 			if ( i+2 >= len )
 				return SRC;
-			sscanf(SRC.substr(i+1,2).c_str(), "%x", &ii);
+			int iret=sscanf(SRC.substr(i+1,2).c_str(), "%x", &ii);
+			if (iret < 1)
+				return "";
 			ch=static_cast<char>(ii);
 			ret+=ch;
 			i=i+2;

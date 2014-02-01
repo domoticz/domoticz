@@ -152,6 +152,8 @@ class CA2GZIPT
 	   int nTimes=(Length+count)/t_nBufferLength +1;
 	   LPGZIP pTemp=pgzip;
 	   pgzip=static_cast<LPGZIP>( malloc(nTimes*t_nBufferLength));
+	   if (!pgzip)
+		   return 0;
 	   m_CurrentBufferSize=nTimes*t_nBufferLength;
 	   memcpy(pgzip,pTemp,Length);
 	   if(pTemp!=m_buffer) free(pTemp);

@@ -179,7 +179,7 @@ void Teleinfo::MatchLine()
 	uint8_t i;
 	uint8_t found=0;
 	Teleinfo::Match t;
-	char value[13]="";
+	char value[20]="";
 	std::string vString;
 	//_log.Log(LOG_NORM,"Frame : #%s#", m_buffer);
 	for(i=0;(i<sizeof(m_matchlist)/sizeof(Teleinfo::Match))&(!found);i++)
@@ -205,8 +205,9 @@ void Teleinfo::MatchLine()
 				continue;
 			int position = int(pos - (unsigned char*)&m_buffer);
 			strncpy(value, (char*)&(m_buffer[position + 1]), t.width);
+			value[t.width] = 0;
 		}
-
+		unsigned long ulValue = (unsigned long)atoi(value);
 		switch (t.type)
 		{
 			case TELEINFO_TYPE_ADCO :
@@ -220,20 +221,23 @@ void Teleinfo::MatchLine()
 			break;
 			case TELEINFO_TYPE_ISOUSC :		
 			break;
-			case TELEINFO_TYPE_BASE :		
-				m_p1power.powerusage1=(unsigned long)atoi(value);	
+			case TELEINFO_TYPE_BASE :
+				if (ulValue!=0)
+					m_p1power.powerusage1 = ulValue;
 			break;
 			case TELEINFO_TYPE_HCHC :	
-				m_p1power.powerusage2=(unsigned long)atol(value);	
+				if (ulValue!=0)
+					m_p1power.powerusage2 = ulValue;
 			break;
-			case TELEINFO_TYPE_HCHP :	
-				m_p1power.powerusage1=(unsigned long)atol(value);	
+			case TELEINFO_TYPE_HCHP :
+				if (ulValue!=0)
+					m_p1power.powerusage1 = ulValue;
 			break;
 			case TELEINFO_TYPE_PTEC :
 			break;
 			case TELEINFO_TYPE_IINST :
 				//we convert A to W setting RFXMeter/Counter Dividers Energy to 1000 / voltage => 1000/230 = 4.35
-				m_p1power.usagecurrent=(unsigned long)atol(value);	
+				m_p1power.usagecurrent = ulValue;
 			break;
 			case TELEINFO_TYPE_IMAX :	
 			break;

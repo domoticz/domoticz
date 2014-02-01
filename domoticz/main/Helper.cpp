@@ -216,6 +216,7 @@ void sleep_milliseconds(const long milliseconds)
 int mkdir_deep(const char *szDirName, int secattr)
 {
 	char DirName[260];
+	DirName[0] = 0;
 	const char* p = szDirName;
 	char* q = DirName; 
 	while(*p)
@@ -234,11 +235,14 @@ int mkdir_deep(const char *szDirName, int secattr)
 		*q++ = *p++;
 		*q = '\0';
 	}
-#if (defined(__WIN32__) || defined(_WIN32)) && !defined(IMN_PIM)
-	CreateDirectory(DirName, NULL);
-#else
-	mkdir(DirName,secattr);
-#endif
+	if (DirName[0])
+	{
+		#if (defined(__WIN32__) || defined(_WIN32)) && !defined(IMN_PIM)
+				CreateDirectory(DirName, NULL);
+		#else
+				mkdir(DirName, secattr);
+		#endif
+	}
 	return 0;
 }
 
