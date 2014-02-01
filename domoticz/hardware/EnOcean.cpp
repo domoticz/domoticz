@@ -742,7 +742,7 @@ unsigned char enocean_calc_checksum(const enocean_data_structure *input_data) {
 char* enocean_gethex_internal(BYTE* in, const int framesize) {
 	char* hexstr = (char*) malloc ((framesize*2)+1);  // because every hex-byte needs 2 characters
 	if (!hexstr)
-		return "Out of memory!";
+		return NULL;
 	char* tempstr = hexstr;
 
 	int i;
@@ -763,7 +763,7 @@ char* enocean_hexToHuman(const enocean_data_structure *pFrame)
 	const int stringsize = (framesize*2)+1+sizeof(HR_TYPE)-1+sizeof(HR_RPS)-1+sizeof(HR_DATA)-1+sizeof(HR_SENDER)-1+sizeof(HR_STATUS)-1;
 	char *humanString = (char*) malloc (stringsize);
 	if (!humanString)
-		return "Out of memory!";
+		return NULL;
 	char *tempstring = humanString;
 	char *temphexstring;
 	sprintf(tempstring,HR_TYPE);
@@ -812,15 +812,21 @@ char* enocean_hexToHuman(const enocean_data_structure *pFrame)
 		sprintf(tempstring,HR_SENDER);
 		tempstring += sizeof(HR_SENDER)-1;
 		temphexstring = enocean_gethex_internal((BYTE*)&(pFrame->ID_BYTE3), 4);
-		strcpy(tempstring,temphexstring);
-		free(temphexstring);
-		tempstring += 8;  // we converted 4 bytes and each one takes 2 chars
+		if (temphexstring)
+		{
+			strcpy(tempstring, temphexstring);
+			free(temphexstring);
+			tempstring += 8;  // we converted 4 bytes and each one takes 2 chars
+		}
 		sprintf(tempstring,HR_DATA);
 		tempstring += sizeof(HR_DATA)-1;
 		temphexstring = enocean_gethex_internal((BYTE*)&(pFrame->DATA_BYTE3), 4);
-		strcpy(tempstring,temphexstring);
-		free(temphexstring);
-		tempstring += 8;  // we converted 4 bytes and each one takes 2 chars
+		if (temphexstring)
+		{
+			strcpy(tempstring, temphexstring);
+			free(temphexstring);
+			tempstring += 8;  // we converted 4 bytes and each one takes 2 chars
+		}
 		break;
 	case C_ORG_6DT:
 		sprintf(tempstring,HR_6DT);
@@ -829,15 +835,21 @@ char* enocean_hexToHuman(const enocean_data_structure *pFrame)
 		sprintf(tempstring,HR_SENDER);
 		tempstring += sizeof(HR_SENDER)-1;
 		temphexstring = enocean_gethex_internal((BYTE*)&(frame_6DT->ADDRESS1), 2);
-		strcpy(tempstring,temphexstring);
-		free(temphexstring);
-		tempstring += 4;
+		if (temphexstring)
+		{
+			strcpy(tempstring, temphexstring);
+			free(temphexstring);
+			tempstring += 4;
+		}
 		sprintf(tempstring,HR_DATA);
 		tempstring += sizeof(HR_DATA)-1;
 		temphexstring = enocean_gethex_internal((BYTE*)&(frame_6DT->DATA_BYTE5), 6);
-		strcpy(tempstring,temphexstring);
-		free(temphexstring);
-		tempstring += 12;
+		if (temphexstring)
+		{
+			strcpy(tempstring, temphexstring);
+			free(temphexstring);
+			tempstring += 12;
+		}
 		break;
 	case C_ORG_MDA:
 		sprintf(tempstring,HR_MDA);
@@ -846,9 +858,12 @@ char* enocean_hexToHuman(const enocean_data_structure *pFrame)
 		sprintf(tempstring,HR_SENDER);
 		tempstring += sizeof(HR_SENDER)-1;
 		temphexstring = enocean_gethex_internal((BYTE*)&(frame_MDA->ADDRESS1), 2);
-		strcpy(tempstring,temphexstring);
-		free(temphexstring);
-		tempstring += 4;
+		if (temphexstring)
+		{
+			strcpy(tempstring, temphexstring);
+			free(temphexstring);
+			tempstring += 4;
+		}
 		break;
 	default:
 		sprintf(tempstring,HR_TYPEUNKN);
@@ -858,9 +873,12 @@ char* enocean_hexToHuman(const enocean_data_structure *pFrame)
 	sprintf(tempstring,HR_STATUS);
 	tempstring += sizeof(HR_STATUS)-1;
 	temphexstring = enocean_gethex_internal((BYTE*)&(pFrame->STATUS), 1);
-	strcpy(tempstring,temphexstring);
-	free(temphexstring);
-	tempstring += 2;
+	if (temphexstring)
+	{
+		strcpy(tempstring, temphexstring);
+		free(temphexstring);
+		tempstring += 2;
+	}
 	return humanString;
 }
 
@@ -1343,8 +1361,11 @@ bool CEnOcean::ParseData()
 				if (result.size()<1)
 				{
 					char *pszHumenTxt=enocean_hexToHuman(pFrame);
-					_log.Log(LOG_NORM,"EnOcean: Need Teach-In for %s", pszHumenTxt);
-					free(pszHumenTxt);
+					if (pszHumenTxt)
+					{
+						_log.Log(LOG_NORM, "EnOcean: Need Teach-In for %s", pszHumenTxt);
+						free(pszHumenTxt);
+					}
 					return true;
 				}
 				int Manufacturer=atoi(result[0][1].c_str());
@@ -1607,8 +1628,11 @@ bool CEnOcean::ParseData()
 	default:
 		{
 			char *pszHumenTxt=enocean_hexToHuman(pFrame);
-			_log.Log(LOG_NORM,"EnOcean: %s", pszHumenTxt);
-			free(pszHumenTxt);
+			if (pszHumenTxt)
+			{
+				_log.Log(LOG_NORM, "EnOcean: %s", pszHumenTxt);
+				free(pszHumenTxt);
+			}
 		}
 		break;
 	}
