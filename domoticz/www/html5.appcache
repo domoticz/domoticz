@@ -304,6 +304,7 @@ js/date.format.js
 js/jquery.ddslick.min.js
 js/domoticz.js
 js/colpick.js
+js/export-csv.js.gz
 js/highcharts-more.js
 js/highcharts.js
 js/jquery-1.10.2.min.js

@@ -15,6 +15,7 @@ Version 1.0.xxxx (January xxth 2014)
 - Changed: All external hardware sensors without RF now reports rssi level 12
 - Implemented: Option to display temperature in Fahrenheit
 - Fixed: Razberry, problem with door sensors
+- Implemented: Charts have now a dropdown option, export to CVS
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)
