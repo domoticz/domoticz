@@ -485,6 +485,9 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 			_log.Log(LOG_NORM,"OpenZWave: Driver Ready");
 		}
 		break;
+	case Notification::Type_NodeNew:
+		_log.Log(LOG_NORM,"OpenZWave: New Node added. HomeID: %d, NodeID: %d",_homeID,_nodeID);
+		break;
 	case OpenZWave::Notification::Type_ValueAdded:
 		if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
 		{
@@ -583,6 +586,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 		break;
 	case OpenZWave::Notification::Type_NodeRemoved:
 		{
+			_log.Log(LOG_NORM,"OpenZWave: Node Removed. HomeID: %d, NodeID: %d",_homeID,_nodeID);
 			// Remove the node from our list
 			for( std::list<NodeInfo>::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it )
 			{
@@ -698,6 +702,8 @@ void COpenZWave::EnableDisableDebug()
 
 bool COpenZWave::OpenSerialConnector()
 {
+	_log.Log(LOG_NORM, "OpenZWave: Starting...");
+
 	m_updateTime=mytime(NULL);
 	CloseSerialConnector();
 	std::string ConfigPath=szStartupFolder + "Config/";
@@ -725,8 +731,20 @@ bool COpenZWave::OpenSerialConnector()
 
 	// Add a Z-Wave Driver
 	// Modify this line to set the correct serial port for your PC interface.
-
+#ifdef WIN32
+	if (m_szSerialPort.size()<4)
+		return false;
+	std::string szPort=m_szSerialPort.substr(3);
+	int iPort=atoi(szPort.c_str());
+	char szComm[15];
+	if (iPort<10)
+		sprintf(szComm,"COM%d",iPort);
+	else
+		sprintf(szComm,"\\\\.\\COM%d",iPort);
+	OpenZWave::Manager::Get()->AddDriver(szComm);
+#else
 	OpenZWave::Manager::Get()->AddDriver( m_szSerialPort.c_str() );
+#endif
 	//Manager::Get()->AddDriver( "HID Controller", Driver::ControllerInterface_Hid );
 	return true;
 }
@@ -1451,6 +1469,8 @@ bool COpenZWave::RemoveFailedDevice(const int nodeID)
 
 bool COpenZWave::CancelControllerCommand()
 {
+	if (m_bControllerCommandInProgress==false)
+		return false;
 	if (m_pManager==NULL)
 		return false;
 	m_bControllerCommandInProgress=false;
@@ -1468,6 +1488,7 @@ void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
 	switch (cs)
 	{
 	case OpenZWave::Driver::ControllerState_Normal:
+		m_bControllerCommandInProgress=false;
 		szLog="No Command in progress";
 		break;
 	case OpenZWave::Driver::ControllerState_Starting:
@@ -1475,11 +1496,14 @@ void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
 		break;
 	case OpenZWave::Driver::ControllerState_Cancel:
 		szLog="The command was canceled";
+		m_bControllerCommandInProgress=false;
 		break;
 	case OpenZWave::Driver::ControllerState_Error:
 		szLog="Command invocation had error(s) and was aborted";
+		m_bControllerCommandInProgress=false;
 		break;
 	case OpenZWave::Driver::ControllerState_Waiting:
+		m_bControllerCommandInProgress=true;
 		szLog="Controller is waiting for a user action";
 		break;
 	case OpenZWave::Driver::ControllerState_Sleeping:
@@ -1493,6 +1517,7 @@ void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
 		break;
 	case OpenZWave::Driver::ControllerState_Failed:
 		szLog="The command has failed";
+		m_bControllerCommandInProgress=false;
 		break;
 	case OpenZWave::Driver::ControllerState_NodeOK:
 		szLog="Used only with ControllerCommand_HasNodeFailed to indicate that the controller thinks the node is OK";
@@ -1502,6 +1527,7 @@ void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
 		break;
 	default:
 		szLog="Unknown Device Response!";
+		m_bControllerCommandInProgress=false;
 		break;
 	}
 	_log.Log(LOG_NORM,"OpenZWave: Device Response: %s",szLog.c_str());

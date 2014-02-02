@@ -8732,6 +8732,48 @@ std::string CWebServer::GetJSonPage()
 				}
 			}
 		}
+		else if (cparam=="zwaveinclude")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+			if (pHardware!=NULL)
+			{
+				COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+				pOZWHardware->IncludeDevice();
+				root["status"]="OK";
+				root["title"]="ZWaveInclude";
+			}
+		}
+		else if (cparam=="zwaveexclude")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+			if (pHardware!=NULL)
+			{
+				COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+				pOZWHardware->IncludeDevice();
+				root["status"]="OK";
+				root["title"]="ZWaveExclude";
+			}
+		}
+		else if (cparam=="zwavecancel")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+			if (pHardware!=NULL)
+			{
+				COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+				pOZWHardware->CancelControllerCommand();
+				root["status"]="OK";
+				root["title"]="ZWaveCancel";
+			}
+		}
 		else if (cparam=="applyzwavenodeconfig")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");

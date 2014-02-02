@@ -16,7 +16,17 @@
 </div>
 <div id="openzwave" style="display:none;">
 	<div class="page-header-small">
-		<h1 data-i18n="Nodes">Nodes</h1>
+		<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td>
+					<h1 data-i18n="Nodes">Nodes</h1>
+				</td>
+				<td align="right">
+					<a class="btnstyle3" id="includedevice" data-i18n="Include Node" onclick="ZWaveIncludeNode();">Include Node</a>&nbsp;&nbsp;&nbsp;
+					<a class="btnstyle3" id="excludedevice" data-i18n="Exclude Node" onclick="ZWaveExcludeNode();">Exclude Node</a>
+				</td>
+			</tr>
+		</table>
 	</div>
     <table class="display" id="nodestable" border="0" cellpadding="0" cellspacing="0" width="100%">
         <thead>
@@ -965,6 +975,29 @@ function ApplyZWaveConfiguration(idx)
 	}
 }
 
+function ZWaveIncludeNode()
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=zwaveinclude&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			bootbox.alert($.i18n('Inclusion mode Started. You have 20 seconds to include the device...!'));
+		 }
+	});
+}
+function ZWaveExcludeNode()
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=zwaveexclude&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			bootbox.alert($.i18n('Exclusion mode Started. You have 20 seconds to exclude the device...!'));
+		 }
+	});
+}
+
 function RefreshOpenZWaveNodeTable()
 {
   $('#modal').show();
@@ -978,7 +1011,7 @@ function RefreshOpenZWaveNodeTable()
   oTable.fnClearTable();
   
   $.ajax({
-     url: "json.htm?type=openzwavenodes&idx="+$.devIdx, 
+     url: "json.htm?type=openzwavenodes&idx="+$.devIdx,
      async: false, 
      dataType: 'json',
      success: function(data) {

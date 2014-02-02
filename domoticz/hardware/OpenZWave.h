@@ -63,8 +63,12 @@ public:
 	void GetNodeValuesJson(const int homeID, const int nodeID, Json::Value &root, const int index);
 	NodeInfo* GetNodeInfo( const int homeID, const int nodeID );
 	bool ApplyNodeConfig(const int homeID, const int nodeID, const std::string &svaluelist);
+	//Controller Commands
 	bool RequestNodeConfig(const int homeID, const int nodeID);
 	bool RemoveFailedDevice(const int nodeID);
+	bool CancelControllerCommand();
+	bool IncludeDevice();
+	bool ExcludeDevice(const int nodeID);
 private:
 	void NodesQueried();
 	void AddNode(const int homeID, const int nodeID,const NodeInfo *pNode);
@@ -79,9 +83,6 @@ private:
 	void SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value);
 	void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value);
 	void StopHardwareIntern();
-	bool CancelControllerCommand();
-	bool IncludeDevice();
-	bool ExcludeDevice(const int nodeID);
 
 	void EnableDisableDebug();
 
