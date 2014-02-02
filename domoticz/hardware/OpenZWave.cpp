@@ -894,7 +894,7 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 */
 		if (svalue>99)
 			svalue=99;
-		_log.Log(LOG_NORM,"OpenZWave: Domoticz has send a Switch command!, Level: %.1f",svalue);
+		_log.Log(LOG_NORM,"OpenZWave: Domoticz has send a Switch command!, Level: %d",svalue);
 		if (!m_pManager->SetValue(vID,svalue))
 		{
 			_log.Log(LOG_ERROR,"OpenZWave: Error setting Switch Value!");

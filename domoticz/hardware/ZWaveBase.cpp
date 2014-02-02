@@ -581,22 +581,10 @@ void ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 
 		int svalue=0;
 
-		//find normal
-		pDevice=FindDevice(nodeID,instanceID,ZDTYPE_SWITCHNORMAL);
+		//First find dimmer
+		pDevice=pDevice=FindDevice(nodeID,instanceID,ZDTYPE_SWITCHDIMMER);
 		if (pDevice)
 		{
-			if ((pSen->LIGHTING2.cmnd==light2_sOff)||(pSen->LIGHTING2.cmnd==light2_sGroupOff))
-				svalue=0;
-			else
-				svalue=255;
-			SwitchLight(nodeID,instanceID,pDevice->commandClassID,svalue);
-		}
-		else {
-			//find dimmer
-			pDevice=FindDevice(nodeID,instanceID,ZDTYPE_SWITCHDIMMER);
-			if (!pDevice)
-				return;//ehh dont know you!
-
 			if ((pSen->LIGHTING2.cmnd==light2_sOff)||(pSen->LIGHTING2.cmnd==light2_sGroupOff))
 				svalue=0;
 			else if ((pSen->LIGHTING2.cmnd==light2_sOn)||(pSen->LIGHTING2.cmnd==light2_sGroupOn))
@@ -609,6 +597,19 @@ void ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 				svalue=round(fvalue);
 			}
 			SwitchLight(nodeID,instanceID,pDevice->commandClassID,svalue);
+		}
+		else
+		{
+			//find normal
+			pDevice=FindDevice(nodeID,instanceID,ZDTYPE_SWITCHNORMAL);
+			if (pDevice)
+			{
+				if ((pSen->LIGHTING2.cmnd==light2_sOff)||(pSen->LIGHTING2.cmnd==light2_sGroupOff))
+					svalue=0;
+				else 
+					svalue=255;
+				SwitchLight(nodeID,instanceID,pDevice->commandClassID,svalue);
+			}
 		}
 	}
 	else if ((packettype==pTypeThermostat)&&(subtype==sTypeThermSetpoint))
