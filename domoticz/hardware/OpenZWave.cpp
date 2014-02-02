@@ -485,7 +485,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 			_log.Log(LOG_NORM,"OpenZWave: Driver Ready");
 		}
 		break;
-	case Notification::Type_NodeNew:
+	case OpenZWave::Notification::Type_NodeNew:
 		_log.Log(LOG_NORM,"OpenZWave: New Node added. HomeID: %d, NodeID: %d",_homeID,_nodeID);
 		break;
 	case OpenZWave::Notification::Type_ValueAdded:
