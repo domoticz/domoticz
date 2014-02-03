@@ -136,7 +136,6 @@
         <tr>
           <td align="right" style="width:120px"><label for="name">Hardware: </label></td>
           <td><select id="combohardware" style="width:260px" class="combobox ui-corner-all">
-            <!--#embed combohardware -->
           </select></td>
         <tr>
         <tr>
@@ -1316,7 +1315,6 @@ function AddManualLightDevice()
 		option.attr('value', item.idx).text(item.name);
 		$("#dialog-addmanuallightdevice #combosubdevice").append(option);
 	});
-  
 	$( "#dialog-addmanuallightdevice" ).dialog( "open" );
 }
 
@@ -1373,6 +1371,26 @@ function AddLightDevice()
 			}
 		}, 200);
 	}, 600);
+}
+
+function RefreshHardwareComboArray()
+{
+	$.ComboHardware = [];
+	$.ajax({
+		url: "json.htm?type=command&param=getmanualhardware", 
+		async: false, 
+		dataType: 'json',
+		success: function(data) {
+			if (typeof data.result != 'undefined') {
+				$.each(data.result, function(i,item) {
+					$.ComboHardware.push({
+						idx: item.idx,
+						name: item.Name
+					});
+				});
+			}
+		}
+	});
 }
 
 function RefreshLightSwitchesComboArray()
@@ -2416,6 +2434,15 @@ $(document).ready(function() {
               }
           },
           open: function() {
+				RefreshHardwareComboArray();
+				
+				$("#dialog-addmanuallightdevice #lighttable #combohardware").html("");
+				$.each($.ComboHardware, function(i,item){
+					var option = $('<option />');
+					option.attr('value', item.idx).text(item.name);
+					$("#dialog-addmanuallightdevice #lighttable #combohardware").append(option);
+				});
+
              	$("#dialog-addmanuallightdevice #lighttable #comboswitchtype").change(function() { 
 								var switchtype=$("#dialog-addmanuallightdevice #lighttable #comboswitchtype option:selected").val();
 								if (switchtype==1)

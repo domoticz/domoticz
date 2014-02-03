@@ -20,7 +20,7 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-	#define DEBUG_ZWAVE_INT
+	//#define DEBUG_ZWAVE_INT
 #endif
 
 static std::string readInputTestFile( const char *path )

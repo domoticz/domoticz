@@ -840,12 +840,18 @@ void MainWorker::Do_Work()
 		{
 			boost::lock_guard<boost::mutex> l(m_startscene_mutex);
 			std::vector<_tStartScene>::iterator itt=m_scenes_to_start.begin();
+
+			//Only one scene each 500ms for now
+			SwitchScene(itt->SceneRowID,itt->switchcmd);
+			m_scenes_to_start.erase(itt);
+/*
 			while (itt!=m_scenes_to_start.end())
 			{
 				SwitchScene(itt->SceneRowID,itt->switchcmd);
 				++itt;
 			}
 			m_scenes_to_start.clear();
+*/
 		}
 
 		second_counter++;
@@ -8085,6 +8091,7 @@ void MainWorker::CheckSceneCode(const int HardwareID, const char* ID, const unsi
 	result = m_sql.query(szTmp);
 	if (result.size()>0)
 	{
+		boost::lock_guard<boost::mutex> l(m_startscene_mutex);
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt=result.begin(); itt!=result.end(); ++itt)
 		{
@@ -8117,8 +8124,22 @@ void MainWorker::CheckSceneCode(const int HardwareID, const char* ID, const unsi
 			sscene.switchcmd=switchcmd;
 
 			//we have to start it outside this function/loop else we have a deadlock because of the mutex in ::DecodeRXMessage
-			boost::lock_guard<boost::mutex> l(m_startscene_mutex);
-			m_scenes_to_start.push_back(sscene);
+			bool bFound=false;
+			//Check if we not already have this scene in our list
+			std::vector<_tStartScene>::const_iterator iScene;
+			for (iScene=m_scenes_to_start.begin(); iScene!=m_scenes_to_start.end(); ++iScene)
+			{
+				if (
+					(iScene->SceneRowID==ID)&&
+					(iScene->switchcmd==switchcmd)
+					)
+				{
+					bFound=true;
+					break;
+				}
+			}
+			if (!bFound)
+				m_scenes_to_start.push_back(sscene);
 		}
 	}
 }
