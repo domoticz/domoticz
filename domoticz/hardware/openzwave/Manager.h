@@ -378,34 +378,34 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _valueId The ID of the value to start polling.
 		 * \return True if polling was enabled.
 		 */
-		bool EnablePoll( ValueID const _valueId, uint8 const _intensity = 1 );
+		bool EnablePoll( ValueID const &_valueId, uint8 const _intensity = 1 );
 
 		/**
 		 * \brief Disable the polling of a device's state.
 		 * \param _valueId The ID of the value to stop polling.
 		 * \return True if polling was disabled.
 		 */
-		bool DisablePoll( ValueID const _valueId );
+		bool DisablePoll( ValueID const &_valueId );
 
 		/**
 		 * \brief Determine the polling of a device's state.
 		 * \param _valueId The ID of the value to check polling.
 		 * \return True if polling is active.
 		 */
-		bool isPolled( ValueID const _valueId );
+		bool isPolled( ValueID const &_valueId );
 
 		/**
 		 * \brief Set the frequency of polling (0=none, 1=every time through the list, 2-every other time, etc)
 		 * \param _valueId The ID of the value whose intensity should be set
 		 */
-		void SetPollIntensity( ValueID const _valueId, uint8 const _intensity );
+		void SetPollIntensity( ValueID const &_valueId, uint8 const _intensity );
 
 		/**
 		 * \brief Get the polling intensity of a device's state.
 		 * \param _valueId The ID of the value to check polling.
 		 * \return Intensity, number of polling for one polling interval.
 		 */
-		uint8 GetPollIntensity( ValueID const _valueId );
+		uint8 GetPollIntensity( ValueID const &_valueId );
 
 	/*@}*/
 

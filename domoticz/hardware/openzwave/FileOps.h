@@ -59,7 +59,7 @@ namespace OpenZWave
 		 * \param string. Folder name.
 		 * \return Bool value indicating existance.
 		 */
-		static bool FolderExists( string _folderName );
+		static bool FolderExists( const string &_folderName );
 
 	private:
 		FileOps();

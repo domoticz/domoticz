@@ -99,7 +99,7 @@ static inline uint16_t version_major(struct ozwversion v) {
  * \param v: the version number to obtain the minor number from
  * \return the Minor Version Number
  */
-static inline uint16_t version_minor(const struct ozwversion v) {
+static inline uint16_t version_minor(const struct ozwversion &v) {
 	return v._v & 0xFFFF;
 }
 

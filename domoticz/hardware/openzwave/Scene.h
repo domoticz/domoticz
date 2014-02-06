@@ -65,7 +65,7 @@ namespace OpenZWave
 		static uint8 GetAllScenes( uint8** _sceneIds );
 
 		string const& GetLabel()const{ return m_label; }
-		void SetLabel( string const _label ){ m_label = _label; }
+		void SetLabel( string const &_label ){ m_label = _label; }
 
 		bool AddValue( ValueID const& _valueId, string const& _value );
 		bool RemoveValue( ValueID const& _valueId );

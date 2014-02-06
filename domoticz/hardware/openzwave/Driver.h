@@ -345,10 +345,10 @@ namespace OpenZWave
 	private:
 		int32 GetPollInterval(){ return m_pollInterval ; }
 		void SetPollInterval( int32 _milliseconds, bool _bIntervalBetweenPolls ){ m_pollInterval = _milliseconds; m_bIntervalBetweenPolls = _bIntervalBetweenPolls; }
-		bool EnablePoll( ValueID _valueId, uint8 _intensity = 1 );
-		bool DisablePoll( ValueID _valueId );
-		bool isPolled( ValueID _valueId );
-		void SetPollIntensity( ValueID _valueId, uint8 _intensity );
+		bool EnablePoll( const ValueID &_valueId, uint8 _intensity = 1 );
+		bool DisablePoll( const ValueID &_valueId );
+		bool isPolled( const ValueID &_valueId );
+		void SetPollIntensity( const ValueID &_valueId, uint8 _intensity );
 		static void PollThreadEntryPoint( Event* _exitEvent, void* _context );
 		void PollThreadProc( Event* _exitEvent );
 
@@ -617,7 +617,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 *  RemoveNodeQuery, Node::AllQueriesCompleted
 		 */
 		bool WriteNextMsg( MsgQueue const _queue );							// Extracts the first message from the queue, and makes it the current one.
-		bool WriteMsg( string const str);									// Sends the current message to the Z-Wave network
+		bool WriteMsg( string const &str);									// Sends the current message to the Z-Wave network
 		void RemoveCurrentMsg();											// Deletes the current message and cleans up the callback etc states
 		bool MoveMessagesToWakeUpQueue(	uint8 const _targetNodeId, bool const _move );		// If a node does not respond, and is of a type that can sleep, this method is used to move all its pending messages to another queue ready for when it mext wakes up.
 		bool HandleErrorResponse( uint8 const _error, uint8 const _nodeId, char const* _funcStr, bool _sleepCheck = false );									    // Handle data errors and process consistently. If message is moved to wake-up queue, return true.
