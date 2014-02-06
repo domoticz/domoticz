@@ -711,7 +711,6 @@ void MainWorker::GetRaspberryPiTemperature()
 	if (pos==std::string::npos)
 		return;
 	tmpline=tmpline.substr(0,pos);
-	_log.Log(LOG_NORM,"Temp=%s",tmpline.c_str());
 	
 	float temperature=(float)atof(tmpline.c_str());
 	if ((temperature != 85) && (temperature > -273))
