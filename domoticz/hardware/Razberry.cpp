@@ -20,7 +20,7 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-	//#define DEBUG_ZWAVE_INT
+	#define DEBUG_ZWAVE_INT
 #endif
 
 static std::string readInputTestFile( const char *path )
@@ -253,33 +253,33 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 			{
 				_device.commandClassID=48; //(binary switch, for example motion detector(PIR)
 				_device.devType= ZDTYPE_SWITCHNORMAL;
-				bool bFoundSensor=false;
 				if (instance["commandClasses"]["48"]["data"]["level"].empty()==false)
 				{
 					_device.intvalue=instance["commandClasses"]["48"]["data"]["level"]["value"].asInt();
-					bFoundSensor=true;
+					InsertDevice(_device);
 				}
 				else
 				{
-					if (instance["commandClasses"]["48"]["data"]["0"].empty()==false)
+					const Json::Value inVal=instance["commandClasses"]["48"]["data"];
+					for (Json::Value::iterator itt2=inVal.begin(); itt2!=inVal.end(); ++itt2)
 					{
-						_device.intvalue=instance["commandClasses"]["48"]["data"]["0"]["level"]["value"].asInt();
-						bFoundSensor=true;
-					}
-					else if (instance["commandClasses"]["48"]["data"]["1"].empty()==false)
-					{
-						std::string vstring=instance["commandClasses"]["48"]["data"]["1"]["level"]["value"].asString();
-						if (vstring=="true")
-							_device.intvalue=255;
-						else if (vstring=="false")
-							_device.intvalue=0;
-						else
-							_device.intvalue=atoi(vstring.c_str());
-						bFoundSensor=true;
+						const std::string sKey=itt2.key().asString();
+						if (!isInt(sKey))
+							continue; //not a scale
+						if ((*itt2)["level"].empty()==false)
+						{
+							_device.instanceID=atoi(sKey.c_str());
+							std::string vstring=(*itt2)["level"]["value"].asString();
+							if (vstring=="true")
+								_device.intvalue=255;
+							else if (vstring=="false")
+								_device.intvalue=0;
+							else
+								_device.intvalue=atoi(vstring.c_str());
+							InsertDevice(_device);
+						}
 					}
 				}
-				if (bFoundSensor)
-					InsertDevice(_device);
 			}
 
 			// Add Sensor Multilevel
@@ -463,6 +463,23 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 				int devID=atoi(results[1].c_str());
 				int scaleID=atoi(results[7].c_str());
 				pDevice=FindDevice(devID,scaleID);
+			}
+		}
+	}
+	else if (path.find("instances.0.commandClasses.48.data.")!=std::string::npos)
+	{
+		//Possible fix for door sensors reporting on another instance number
+		std::vector<std::string> results;
+		StringSplit(path,".",results);
+		//Find device by data id
+		if (results.size()==8)
+		{
+			int cmdID=atoi(results[5].c_str());
+			if (cmdID==48)
+			{
+				int devID=atoi(results[1].c_str());
+				int instanceID=atoi(results[7].c_str());
+				pDevice=FindDeviceInstance(devID,instanceID);
 			}
 		}
 	}

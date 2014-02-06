@@ -556,6 +556,20 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(int nodeID, int scaleID)
 	return NULL;
 }
 
+ZWaveBase::_tZWaveDevice* ZWaveBase::FindDeviceInstance(int nodeID, int instanceID)
+{
+	std::map<std::string,_tZWaveDevice>::iterator itt;
+	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
+	{
+		if (
+			(itt->second.nodeID==nodeID)&&
+			(itt->second.instanceID==instanceID)
+			)
+			return &itt->second;
+	}
+	return NULL;
+}
+
 void ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	unsigned char ID1=0;

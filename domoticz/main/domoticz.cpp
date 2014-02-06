@@ -158,7 +158,7 @@ int main(int argc, char**argv)
 		szStartupFolder=szStartupFolder.substr(0,szStartupFolder.find_last_of('/')+1);
 #endif
 	GetAppVersion();
-	_log.Log(LOG_NORM,"Domoticz V%s (c)2012-2013 GizMoCuz",szAppVersion.c_str());
+	_log.Log(LOG_NORM,"Domoticz V%s (c)2012-2014 GizMoCuz",szAppVersion.c_str());
 
 #if !defined WIN32
 	//Check if we are running on a RaspberryPi
