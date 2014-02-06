@@ -668,46 +668,77 @@ void MainWorker::GetDomoticzUpdate(const std::string &UpdateURL)
 	m_bDoDownloadDomoticzUpdate=true;
 }
 
+std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand)
+{
+	std::vector<std::string> ret;
+
+	FILE *fp;
+	char path[1035];
+
+	/* Open the command for reading. */
+#ifdef WIN32
+	fp = _popen(szCommand.c_str(), "r");
+#else
+	fp = popen(szCommand.c_str(), "r");
+#endif
+	if (fp != NULL) 
+	{
+		/* Read the output a line at a time - output it. */
+		while (fgets(path, sizeof(path)-1, fp) != NULL)
+		{
+			ret.push_back(path);
+		}
+		/* close */
+#ifdef WIN32
+		_pclose(fp);
+#else
+		pclose(fp);
+#endif
+	}
+	return ret;
+}
+
 void MainWorker::GetRaspberryPiTemperature()
 {
-	std::string sLine = "";
-	std::ifstream infile;
-
-	infile.open("/sys/class/thermal/thermal_zone0/temp");
-	if (infile.is_open())
+	std::vector<std::string> ret=ExecuteCommandAndReturn("/opt/vc/bin/vcgencmd measure_temp");
+	if (ret.size()<1)
+		return;
+	std::string tmpline=ret[0];
+	if (tmpline.find("temp=")==std::string::npos)
+		return;
+	tmpline=tmpline.substr(5);
+	int pos=tmpline.find("'");
+	if (pos==std::string::npos)
+		return;
+	tmpline=tmpline.substr(0,pos);
+	_log.Log(LOG_NORM,"Temp=%s",tmpline.c_str());
+	
+	float temperature=(float)atof(tmpline.c_str());
+	if ((temperature != 85) && (temperature > -273))
 	{
-		if (!infile.eof())
-		{
-			getline(infile, sLine);
-			float temperature=(float)atof(sLine.c_str())/1000.0f;
-			if ((temperature != 85) && (temperature > -273))
-			{
-				//Temp
-				RBUF tsen;
-				memset(&tsen,0,sizeof(RBUF));
-				tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-				tsen.TEMP.packettype=pTypeTEMP;
-				tsen.TEMP.subtype=sTypeTEMP_SYSTEM;
-				tsen.TEMP.battery_level=9;
-				tsen.TEMP.rssi=6;
-				tsen.TEMP.id1=0;
-				tsen.TEMP.id2=1;
+		//Temp
+		RBUF tsen;
+		memset(&tsen,0,sizeof(RBUF));
+		tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
+		tsen.TEMP.packettype=pTypeTEMP;
+		tsen.TEMP.subtype=sTypeTEMP_SYSTEM;
+		tsen.TEMP.battery_level=9;
+		tsen.TEMP.rssi=6;
+		tsen.TEMP.id1=0;
+		tsen.TEMP.id2=1;
 
-				tsen.TEMP.tempsign=(temperature>=0)?0:1;
-				int at10=round(abs(temperature*10.0f));
-				tsen.TEMP.temperatureh=(BYTE)(at10/256);
-				at10-=(tsen.TEMP.temperatureh*256);
-				tsen.TEMP.temperaturel=(BYTE)(at10);
+		tsen.TEMP.tempsign=(temperature>=0)?0:1;
+		int at10=round(abs(temperature*10.0f));
+		tsen.TEMP.temperatureh=(BYTE)(at10/256);
+		at10-=(tsen.TEMP.temperatureh*256);
+		tsen.TEMP.temperaturel=(BYTE)(at10);
 
-				CDummy hBase(1000);
-				hBase.HwdType = HTYPE_System;
-				hBase.m_pMainWorker=this;
-				hBase.Name="System";
+		CDummy hBase(1000);
+		hBase.HwdType = HTYPE_System;
+		hBase.m_pMainWorker=this;
+		hBase.Name="System";
 
-				DecodeRXMessage(&hBase,(const unsigned char*)&tsen);
-			}
-		}
-		infile.close();
+		DecodeRXMessage(&hBase,(const unsigned char*)&tsen);
 	}
 }
 
