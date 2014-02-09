@@ -68,7 +68,7 @@ public:
 	bool RemoveFailedDevice(const int nodeID);
 	bool CancelControllerCommand();
 	bool IncludeDevice();
-	bool ExcludeDevice();
+	bool ExcludeDevice(const int homeID);
 	bool SoftResetDevice();
 	bool HardResetDevice();
 	bool HealNetwork();

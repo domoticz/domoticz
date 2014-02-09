@@ -8788,7 +8788,7 @@ std::string CWebServer::GetJSonPage()
 			if (pHardware!=NULL)
 			{
 				COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
-				pOZWHardware->ExcludeDevice();
+				pOZWHardware->ExcludeDevice(1);
 				root["status"]="OK";
 				root["title"]="ZWaveExclude";
 			}
