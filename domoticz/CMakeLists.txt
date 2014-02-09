@@ -185,6 +185,7 @@ hardware/S0MeterSerial.cpp
 hardware/smbus.cpp
 hardware/SolarEdgeBase.cpp
 hardware/SolarEdgeTCP.cpp
+hardware/TCPProxy/tcpproxy_server.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
 hardware/Teleinfo.cpp
@@ -194,7 +195,6 @@ hardware/Wunderground.cpp
 hardware/YouLess.cpp
 hardware/ZWaveBase.cpp
 smtpclient/SMTPClient.cpp
-TCPProxy/tcpproxy_server.cpp
 tcpserver/TCPClient.cpp
 tcpserver/TCPServer.cpp
 webserver/Base64.cpp
