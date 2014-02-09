@@ -22,6 +22,9 @@
 					<h1 data-i18n="Nodes">Nodes</h1>
 				</td>
 				<td align="right">
+					<a class="btnstyle3" id="healnetwork" data-i18n="Heal network" onclick="ZWaveHealNetwork();">Heal network</a>&nbsp;&nbsp;&nbsp;
+					<a class="btnstyle3" id="softresetdevice" data-i18n="Soft reset" onclick="ZWaveSoftResetNode();">Soft reset controller</a>&nbsp;&nbsp;&nbsp;
+					<a class="btnstyle3" id="hardresetdevice" data-i18n="Hard reset" onclick="ZWaveHardResetNode();">Hard reset controller</a>&nbsp;&nbsp;&nbsp;
 					<a class="btnstyle3" id="includedevice" data-i18n="Include Node" onclick="ZWaveIncludeNode();">Include Node</a>&nbsp;&nbsp;&nbsp;
 					<a class="btnstyle3" id="excludedevice" data-i18n="Exclude Node" onclick="ZWaveExcludeNode();">Exclude Node</a>
 				</td>
@@ -994,6 +997,48 @@ function ZWaveExcludeNode()
 		 dataType: 'json',
 		 success: function(data) {
 			bootbox.alert($.i18n('Exclusion mode Started. You have 20 seconds to exclude the device...!'));
+		 }
+	});
+}
+
+function ZWaveSoftResetNode()
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=zwavesoftreset&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			bootbox.alert($.i18n('Soft resetting controller device...!'));
+		 }
+	});
+}
+function ZWaveHardResetNode()
+{
+
+	bootbox.confirm($.i18n("Are you sure you want to hard reset the controller?\n(All associated nodes will be removed)"), function(result) {
+		if (result==true) {
+			$.ajax({
+				 url: "json.htm?type=command&param=zwavehardreset&idx=" + $.devIdx,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					bootbox.alert($.i18n('Hard resetting controller device...!'));
+				 }
+			});
+		}
+	});
+
+
+}
+
+function ZWaveHealNetwork()
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=zwavenetworkheal&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			bootbox.alert($.i18n('Initiating network heal...!'));
 		 }
 	});
 }

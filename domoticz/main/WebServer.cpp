@@ -8788,9 +8788,51 @@ std::string CWebServer::GetJSonPage()
 			if (pHardware!=NULL)
 			{
 				COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
-				pOZWHardware->IncludeDevice();
+				pOZWHardware->ExcludeDevice();
 				root["status"]="OK";
 				root["title"]="ZWaveExclude";
+			}
+		}
+		else if (cparam=="zwavesoftreset")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+			if (pHardware!=NULL)
+			{
+				COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+				pOZWHardware->SoftResetDevice();
+				root["status"]="OK";
+				root["title"]="ZWaveSoftReset";
+			}
+		}
+		else if (cparam=="zwavehardreset")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+			if (pHardware!=NULL)
+			{
+				COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+				pOZWHardware->HardResetDevice();
+				root["status"]="OK";
+				root["title"]="ZWaveHardReset";
+			}
+		}
+		else if (cparam=="zwavenetworkheal")
+		{
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+			if (pHardware!=NULL)
+			{
+				COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+				pOZWHardware->HealNetwork();
+				root["status"]="OK";
+				root["title"]="ZWaveHealNetwork";
 			}
 		}
 		else if (cparam=="zwavecancel")

@@ -532,6 +532,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 		}
 		break;
 	case OpenZWave::Notification::Type_Notification:
+	
 		switch (_notification->GetNotification()) 
 		{
 		case OpenZWave::Notification::Code_Awake:
@@ -1443,7 +1444,7 @@ bool COpenZWave::IncludeDevice()
 	return true;
 }
 
-bool COpenZWave::ExcludeDevice(const int nodeID)
+bool COpenZWave::ExcludeDevice()
 {
 	if (m_pManager==NULL)
 		return false;
@@ -1451,6 +1452,35 @@ bool COpenZWave::ExcludeDevice(const int nodeID)
 	m_ControllerCommandStartTime=mytime(NULL);
 	m_bControllerCommandInProgress=true;
 	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_RemoveDevice, OnDeviceStatusUpdate, this, true);
+
+	return true;
+}
+
+bool COpenZWave::SoftResetDevice()
+{
+	if (m_pManager==NULL)
+		return false;
+
+	m_pManager->SoftReset(m_controllerID);
+	return true;
+}
+
+bool COpenZWave::HardResetDevice()
+{
+	if (m_pManager==NULL)
+		return false;
+
+	m_pManager->ResetController(m_controllerID);
+
+	return true;
+}
+
+bool COpenZWave::HealNetwork()
+{
+	if (m_pManager==NULL)
+		return false;
+	
+	m_pManager->HealNetwork(m_controllerID,true);
 
 	return true;
 }
