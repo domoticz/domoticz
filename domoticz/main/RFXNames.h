@@ -75,6 +75,7 @@ enum _eHardwareTypes {
 	HTYPE_System,				//23
 	HTYPE_EnOcean,				//24
 	HTYPE_ForecastIO,			//25
+	HTYPE_SolarEdgeTCP,			//26
 	HTYPE_END
 };
 

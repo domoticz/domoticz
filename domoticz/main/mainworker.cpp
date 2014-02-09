@@ -42,6 +42,7 @@
 #ifdef WIN32
 #include "../hardware/OpenHardwareMonitor.h"
 #endif
+#include "../hardware/SolarEdgeTCP.h"
 
 #ifdef WIN32
     #include "dirent_windows.h"
@@ -442,6 +443,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_OpenThermGatewayTCP:
 		//LAN
 		pHardware = new OTGWTCP(ID, Address, Port, Mode1, Mode2, Mode3, Mode4, Mode5);
+		break;
+	case HTYPE_SolarEdgeTCP:
+		pHardware = new SolarEdgeTCP(ID, 22222,Address, Port);
 		break;
 	case HTYPE_LimitlessLights:
 		//LAN

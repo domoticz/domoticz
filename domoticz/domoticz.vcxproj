@@ -127,6 +127,9 @@
     <ClInclude Include="hardware\S0MeterSerial.h" />
     <ClInclude Include="hardware\S0MeterTCP.h" />
     <ClInclude Include="hardware\smbus.h" />
+    <ClInclude Include="hardware\SolarEdgeBase.h" />
+    <ClInclude Include="hardware\SolarEdgeTCP.h" />
+    <ClInclude Include="hardware\TCPProxy\tcpproxy_server.h" />
     <ClInclude Include="hardware\TE923.h" />
     <ClInclude Include="hardware\TE923Tool.h" />
     <ClInclude Include="hardware\Teleinfo.h" />
@@ -212,6 +215,9 @@
     <ClCompile Include="hardware\S0MeterSerial.cpp" />
     <ClCompile Include="hardware\S0MeterTCP.cpp" />
     <ClCompile Include="hardware\smbus.cpp" />
+    <ClCompile Include="hardware\SolarEdgeBase.cpp" />
+    <ClCompile Include="hardware\SolarEdgeTCP.cpp" />
+    <ClCompile Include="hardware\TCPProxy\tcpproxy_server.cpp" />
     <ClCompile Include="hardware\TE923.cpp" />
     <ClCompile Include="hardware\TE923Tool.cpp" />
     <ClCompile Include="hardware\Teleinfo.cpp" />

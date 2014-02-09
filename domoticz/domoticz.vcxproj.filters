@@ -123,6 +123,12 @@
     <Filter Include="Devices\AsyncSerialTCP">
       <UniqueIdentifier>{1d8ff530-0367-4c8a-844f-4d5936d2ab97}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\SolarEdge">
+      <UniqueIdentifier>{e30a6865-acaf-4ce1-a43d-37183b91520f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TCPProxy">
+      <UniqueIdentifier>{242d77c7-709a-4c87-8d92-a87a489af891}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -385,6 +391,15 @@
     <ClInclude Include="hardware\ASyncTCP.h">
       <Filter>Devices\AsyncSerialTCP</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\SolarEdgeBase.h">
+      <Filter>Devices\SolarEdge</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\SolarEdgeTCP.h">
+      <Filter>Devices\SolarEdge</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\TCPProxy\tcpproxy_server.h">
+      <Filter>TCPProxy</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -608,6 +623,15 @@
     </ClCompile>
     <ClCompile Include="hardware\ASyncTCP.cpp">
       <Filter>Devices\AsyncSerialTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\SolarEdgeBase.cpp">
+      <Filter>Devices\SolarEdge</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\SolarEdgeTCP.cpp">
+      <Filter>Devices\SolarEdge</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\TCPProxy\tcpproxy_server.cpp">
+      <Filter>TCPProxy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

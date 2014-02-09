@@ -35,6 +35,7 @@ class CDomoticzHardwareBase
 	friend class CTE923;
 	friend class CVolcraftCO20;
 	friend class CEnOcean;
+	friend class SolarEdgeTCP;
 public: 
 	CDomoticzHardwareBase();
 	virtual ~CDomoticzHardwareBase();

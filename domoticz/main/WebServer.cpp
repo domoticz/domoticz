@@ -8641,7 +8641,7 @@ std::string CWebServer::GetJSonPage()
 				{
 				}
 			}
-			else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)||(htype == HTYPE_RazberryZWave)||(htype == HTYPE_OpenThermGatewayTCP)||(htype == HTYPE_LimitlessLights)) {
+			else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)||(htype == HTYPE_RazberryZWave)||(htype == HTYPE_OpenThermGatewayTCP)||(htype == HTYPE_LimitlessLights)||(htype == HTYPE_SolarEdgeTCP)) {
 				//Lan
 				if (address=="")
 					goto exitjson;
@@ -8885,7 +8885,7 @@ std::string CWebServer::GetJSonPage()
 			{
 				//USB
 			}
-			else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)||(htype == HTYPE_RazberryZWave)||(htype == HTYPE_OpenThermGatewayTCP)||(htype == HTYPE_LimitlessLights)) {
+			else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)||(htype == HTYPE_RazberryZWave)||(htype == HTYPE_OpenThermGatewayTCP)||(htype == HTYPE_LimitlessLights)||(htype == HTYPE_SolarEdgeTCP)) {
 				//Lan
 				if (address=="")
 					goto exitjson;
