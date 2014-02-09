@@ -178,6 +178,7 @@
 		<Product type="0600" id="1000" name="FGWPE Wall Plug" config="fibaro/fgwpe.xml" />
 		<Product type="0b00" id="3001" name="FGFS101 Flood Sensor" config ="fibaro/fgfs101.xml" />
     		<Product type="0900" id="1000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
+    		<Product type="0c00" id="1000" name="FGSS101 Smoke Sensor" config="fibaro/fgss101.xml" />
   	</Manufacturer>
 	<Manufacturer id="0037" name="Foard Sys">
 	</Manufacturer>
@@ -320,6 +321,9 @@
 	</Manufacturer>
 	<Manufacturer id="0041" name="OpenPeak Inc.">
 	</Manufacturer>
+	<Manufacturer id="013c" name="Philio Technology Corporation">
+		<Product type="0001" id="0004" name="In Wall Dual Relay (1 Way) Switch Module (PAN06-1)" />
+	</Manufacturer>
 	<Manufacturer id="0064" name="Popp / Duwi">
 		<Product type="0001" id="0000" name="ZW EDAN 300 Flush Mounted Dimmer" />
 		<Product type="1001" id="0000" name="Plugin Dimmer" />
@@ -435,7 +439,7 @@
 	</Manufacturer>
 	<Manufacturer id="0115" name="Z-Wave.Me">
 		<Product type="1000" id="0002" name="ZME_06433 Wall Flush-Mountable Dimmer" config="zwave.me/ZME_06433.xml"/>
-		<Product type="1000" id="0003" name="ZME_06435 Motor Control"/>
+		<Product type="1000" id="0003" name="ZME_06436 Motor Control" config="zwave.me/ZME_06436.xml" />
 		<Product type="1000" id="0004" name="ZME_064435 Wall Controller"/>
 		<Product type="0100" id="0001" name="ZME_KFOB 4 Button Key Fob" config="zwave.me/kfob.xml"/>
 		<Product type="1000" id="0001" name="ZME_054313Z Flush-Mountable Switch" />

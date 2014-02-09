@@ -1,13 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aeon Labs Door/Window Sensor -->
 <Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- Configuration Parameters not supported -->
-	<!-- Association Groups -->
-	<CommandClass id="133">
-		<!-- Information from http://www.pepper1.net/zwavedb/uploads/resources/1804efacf71a36402c53209c0991c04f20b31588.pdf -->
-		<!-- Or is original entry correct?: max_associations="5" label="Report" -->
-		<Associations num_groups="1">
-			<Group index="1" max_associations="6" label="Reports" auto="true"/>
-		</Associations>
-	</CommandClass>
+    <!-- Configuration -->
+    <CommandClass id="112">
+        <Value type="byte" genre="config" instance="1" index="1" label="Toggle the sensor binary report value when the Magnet switch is opened/closed." min="0" max="1" value="0">
+            <Help>0, Open: FF, Close: 00; 1, Open: 00, Close: FF
+              Default setting: 0
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="2" label="Enable wake up 10 minutes when the power is switched on." min="0" max="1" value="0">
+            <Help>0: Disable; 1: Enable
+              Default setting: 0
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="3" label="Toggle the basic set value when Magnet switch is opened/closed." min="0" max="1" value="0">
+            <Help>0, Open: FF, Close: 00; 1, Open: 00, Close: FF;
+              Default setting: 0
+            </Help>
+        </Value>
+        <Value type="int" genre="config" instance="1" index="121" label="Determines which report will be sent when Magnet switch is opened/ closed." min="0" max="1" value="256">
+            <Help>Which reports need to send automatically in timing intervals for group 1
+				Bitsets:
+                0 -> Battery report
+                4 -> Sensor Binary
+                8 -> Basic Set
+              Default setting: 0x00000100 (Basic Set)
+            </Help>
+        </Value>
+        <Value type="short" index="254" genre="config" label="Device Tag" units="" min="0" max="255" value="0">
+			<Help>Device Tag</Help>
+		</Value>
+		<Value type="button" index="255" genre="config" label="Reset configuration settings to factory defaults" write_only="true" value="0" >
+			<Help>Reset to factory defaults.</Help>
+		</Value>
+    </CommandClass>
+    <!-- Basic set as report -->
+	<CommandClass id="32" setasreport="true"/>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <!-- Information from http://www.pepper1.net/zwavedb/uploads/resources/1804efacf71a36402c53209c0991c04f20b31588.pdf -->
+        <!-- Or is original entry correct?: max_associations="5" label="Report" -->
+        <Associations num_groups="1">
+            <Group index="1" max_associations="6" label="Reports" auto="true"/>
+        </Associations>
+    </CommandClass>
 </Product>
