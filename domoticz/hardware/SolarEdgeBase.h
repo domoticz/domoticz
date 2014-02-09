@@ -4,7 +4,7 @@
 
 class SolarEdgeBase : public CDomoticzHardwareBase
 {
-	typedef enum _eSolarState
+	enum _eSolarState
 	{
 		E_WAITING_SYNC=0,
 		E_WAITING_LENGTH,
