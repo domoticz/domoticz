@@ -523,6 +523,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeSystemTemp, "System temperature" },
 		{ pTypeGeneral, sTypeSystemLoad, "System load" },
 		{ pTypeGeneral, sTypeSystemFan, "System fan" },
+		{ pTypeGeneral, sTypeVoltage, "Voltage" },
 		
 		{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },

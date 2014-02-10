@@ -3425,7 +3425,8 @@ void CSQLHelper::UpdateMeter()
 		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeSoilMoisture
 		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeLeafWetness
 		"(Type=%d AND SubType=%d) OR " //pTypeRFXSensor,sTypeRFXSensorAD
-		"(Type=%d AND SubType=%d)" //pTypeRFXSensor,sTypeRFXSensorVolt
+		"(Type=%d AND SubType=%d) OR" //pTypeRFXSensor,sTypeRFXSensorVolt
+		"(Type=%d AND SubType=%d)"	  //pTypeGeneral,sTypeVoltage
 		")",
 		pTypeRFXMeter,
 		pTypeP1Gas,
@@ -3442,7 +3443,8 @@ void CSQLHelper::UpdateMeter()
 		pTypeGeneral,sTypeSoilMoisture,
 		pTypeGeneral,sTypeLeafWetness,
 		pTypeRFXSensor,sTypeRFXSensorAD,
-		pTypeRFXSensor,sTypeRFXSensorVolt
+		pTypeRFXSensor,sTypeRFXSensorVolt,
+		pTypeGeneral,sTypeVoltage
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -3551,6 +3553,13 @@ void CSQLHelper::UpdateMeter()
 			else if (dType==pTypeRFXSensor)
 			{
 				double fValue=atof(sValue.c_str());
+				sprintf(szTmp,"%d",int(fValue));
+				sValue=szTmp;
+				bSkipSameValue=false;
+			}
+			else if ((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
+			{
+				double fValue=atof(sValue.c_str())*10.0f;
 				sprintf(szTmp,"%d",int(fValue));
 				sValue=szTmp;
 				bSkipSameValue=false;
@@ -4171,6 +4180,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				(!((devType==pTypeGeneral)&&(subType==sTypeSolarRadiation)))&&
 				(!((devType==pTypeGeneral)&&(subType==sTypeSoilMoisture)))&&
 				(!((devType==pTypeGeneral)&&(subType==sTypeLeafWetness)))&&
+				(!((devType==pTypeGeneral)&&(subType==sTypeVoltage)))&&
 				(devType!=pTypeLux)&&
 				(devType!=pTypeWEIGHT)&&
 				(devType!=pTypeUsage)
@@ -4216,7 +4226,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			}
 			else
 			{
-				//AirQuality/Usage Meter/Moisture/RFXSensor insert into MultiMeter_Calendar table
+				//AirQuality/Usage Meter/Moisture/RFXSensor/Voltage insert into MultiMeter_Calendar table
 				sprintf(szTmp,
 					"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1,Value2,Value3,Value4,Value5,Value6, Date) "
 					"VALUES ('%llu', '%.2f','%.2f','%.2f','%.2f','%.2f','%.2f', '%s')",
@@ -4231,6 +4241,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				(devType!=pTypeRFXSensor)&&
 				((devType!=pTypeGeneral)&&(subType!=sTypeVisibility))&&
 				((devType!=pTypeGeneral)&&(subType!=sTypeSolarRadiation))&&
+				((devType!=pTypeGeneral)&&(subType!=sTypeVoltage))&&
 				((devType!=pTypeGeneral)&&(subType!=sTypeSoilMoisture))&&
 				((devType!=pTypeGeneral)&&(subType!=sTypeLeafWetness))&&
 				(devType!=pTypeLux)&&

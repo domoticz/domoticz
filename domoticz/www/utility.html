@@ -1610,7 +1610,7 @@ function ShowUtilities()
 			}
           }
           else if (item.Type == "Energy") {
-				xhtm+='<a class="btnsmall" onclick="ShowCounterLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
+				xhtm+='<a class="btnsmall" onclick="ShowCounterLogSpline(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
 				if (window.my_config.userrights==2) {
 					xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 				}

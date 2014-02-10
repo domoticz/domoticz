@@ -6965,7 +6965,15 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 	const _tGeneralDevice *pMeter=(const _tGeneralDevice*)pResponse;
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
-	sprintf(szTmp,"%d", pMeter->id);
+
+	if (subType==sTypeVoltage)
+	{
+		sprintf(szTmp,"%08X", pMeter->intval1);
+	}
+	else
+	{
+		sprintf(szTmp,"%d", pMeter->id);
+	}
 	std::string ID=szTmp;
 	unsigned char Unit=1;
 	unsigned char cmnd=0;
@@ -7008,6 +7016,13 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		PrintDeviceName(devname);
 		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (float)pMeter->intval1);
 	}
+	else if (subType==sTypeVoltage)
+	{
+		sprintf(szTmp,"%.1f",pMeter->floatval1);
+		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
+		PrintDeviceName(devname);
+		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->floatval1);
+	}
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -7031,6 +7046,11 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		case sTypeLeafWetness:
 			WriteMessage("subtype       = Leaf Wetness");
 			sprintf(szTmp,"Wetness = %d", pMeter->intval1);
+			WriteMessage(szTmp);
+			break;
+		case sTypeVoltage:
+			WriteMessage("subtype       = Voltage");
+			sprintf(szTmp,"Visibility = %.1f V", pMeter->floatval1);
 			WriteMessage(szTmp);
 			break;
 		default:

@@ -1205,6 +1205,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						(dType!=pTypeRFXMeter)&&
 						(!((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorAD)))&&
 						(!((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorVolt)))&&
+						(!((dType==pTypeGeneral)&&(dSubType==sTypeVoltage)))&&
 						(dType!=pTypeCURRENT)&&
 						(dType!=pTypeCURRENTENERGY)&&
 						(dType!=pTypeENERGY)&&
@@ -2423,6 +2424,14 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["TypeImg"]="Fan";
 					root["result"][ii]["Type"]="Fan";
 				}
+				else if (dSubType==sTypeVoltage)
+				{
+					sprintf(szData,"%.1f V",atof(sValue.c_str()));
+					root["result"][ii]["TypeImg"]="current";
+					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+					root["result"][ii]["Voltage"]="Fan";
+					break;
+				}
 			}
 			else if (dType == pTypeLux)
 			{
@@ -3308,6 +3317,7 @@ std::string CWebServer::GetJSonPage()
 					((dType==pTypeGeneral)&&(dSubType==sTypeLeafWetness))||
 					((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorAD))||
 					((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorVolt))||
+					((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))||
 					(dType==pTypeLux)||
 					(dType==pTypeWEIGHT)||
 					(dType==pTypeUsage)
@@ -3613,7 +3623,8 @@ std::string CWebServer::GetJSonPage()
 				}
 				else if (
 					((dType==pTypeGeneral)&&(dSubType==sTypeVisibility))||
-					((dType==pTypeGeneral)&&(dSubType==sTypeSolarRadiation))
+					((dType==pTypeGeneral)&&(dSubType==sTypeSolarRadiation))||
+					((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
 					)
 				{//day
 					root["status"]="OK";
@@ -3904,6 +3915,9 @@ std::string CWebServer::GetJSonPage()
 					result=m_pMain->m_sql.query(szQuery.str());
 
 					int method=0;
+					std::string sMethod=m_pWebEm->FindValue("method");
+					if (sMethod.size()>0)
+						method=atoi(sMethod.c_str());
 
 					bool bHaveFirstValue=false;
 					bool bHaveFirstRealValue=false;
@@ -5080,7 +5094,8 @@ std::string CWebServer::GetJSonPage()
 				}
 				else if (
 					((dType==pTypeGeneral)&&(dSubType==sTypeVisibility))||
-					((dType==pTypeGeneral)&&(dSubType==sTypeSolarRadiation))
+					((dType==pTypeGeneral)&&(dSubType==sTypeSolarRadiation))||
+					((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
 					)
 				{//month/year
 					root["status"]="OK";
@@ -5471,7 +5486,8 @@ std::string CWebServer::GetJSonPage()
 				}
 				else if (
 					((dType==pTypeGeneral)&&(dSubType==sTypeVisibility))||
-					((dType==pTypeGeneral)&&(dSubType==sTypeSolarRadiation))
+					((dType==pTypeGeneral)&&(dSubType==sTypeSolarRadiation))||
+					((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
 					)
 				{
 					szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
@@ -8362,6 +8378,13 @@ std::string CWebServer::GetJSonPage()
 				ii++;
 			}
 			if ((dType==pTypeGeneral)&&(dSubType==sTypeSolarRadiation))
+			{
+				root["result"][ii]["val"]=NTYPE_USAGE;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+				ii++;
+			}
+			if ((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
 			{
 				root["result"][ii]["val"]=NTYPE_USAGE;
 				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
