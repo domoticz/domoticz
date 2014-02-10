@@ -3903,6 +3903,8 @@ std::string CWebServer::GetJSonPage()
 					szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 					result=m_pMain->m_sql.query(szQuery.str());
 
+					int method=0;
+
 					bool bHaveFirstValue=false;
 					bool bHaveFirstRealValue=false;
 					float FirstValue=0;
@@ -3910,6 +3912,7 @@ std::string CWebServer::GetJSonPage()
 					unsigned long long ulFirstValue=0;
 					unsigned long long ulLastValue=0;
 					std::string LastDateTime="";
+					time_t lastTime=0;
 
 					if (result.size()>0)
 					{
@@ -3918,21 +3921,98 @@ std::string CWebServer::GetJSonPage()
 						{
 							std::vector<std::string> sd=*itt;
 
-							std::string actDateTimeHour=sd[1].substr(0,13);
-							if (actDateTimeHour!=LastDateTime)
+							if (method==0)
 							{
-								if (bHaveFirstValue)
+								//bars / hour
+								std::string actDateTimeHour=sd[1].substr(0,13);
+								if (actDateTimeHour!=LastDateTime)
 								{
-									root["result"][ii]["d"]=LastDateTime+":00";
-
-									unsigned long long ulTotalValue=ulLastValue-ulFirstValue;
-									if (ulTotalValue==0)
+									if (bHaveFirstValue)
 									{
-										//Could be the P1 Gas Meter, only transmits one every 1 a 2 hours
-										ulTotalValue=ulLastValue-ulFirstRealValue;
+										root["result"][ii]["d"]=LastDateTime+":00";
+
+										unsigned long long ulTotalValue=ulLastValue-ulFirstValue;
+										if (ulTotalValue==0)
+										{
+											//Could be the P1 Gas Meter, only transmits one every 1 a 2 hours
+											ulTotalValue=ulLastValue-ulFirstRealValue;
+										}
+										ulFirstRealValue=ulLastValue;
+										float TotalValue=float(ulTotalValue);
+										if (TotalValue!=0)
+										{
+											switch (metertype)
+											{
+											case MTYPE_ENERGY:
+												sprintf(szTmp,"%.3f",(TotalValue/EnergyDivider)*1000.0f);	//from kWh -> Watt
+												break;
+											case MTYPE_GAS:
+												sprintf(szTmp,"%.2f",TotalValue/GasDivider);
+												break;
+											case MTYPE_WATER:
+												sprintf(szTmp,"%.2f",TotalValue/WaterDivider);
+												break;
+											case MTYPE_COUNTER:
+												sprintf(szTmp,"%.1f",TotalValue);
+												break;
+											}
+											root["result"][ii]["v"]=szTmp;
+											ii++;
+										}
 									}
+									LastDateTime=actDateTimeHour;
+									bHaveFirstValue=false;
+								}
+								std::stringstream s_str1( sd[0] );
+								unsigned long long actValue;
+								s_str1 >> actValue;
+
+								if (actValue>=ulLastValue)
+									ulLastValue=actValue;
+
+								if (!bHaveFirstValue)
+								{
+									ulFirstValue=ulLastValue;
+									bHaveFirstValue=true;
+								}
+								if (!bHaveFirstRealValue)
+								{
+									bHaveFirstRealValue=true;
 									ulFirstRealValue=ulLastValue;
-									float TotalValue=float(ulTotalValue);
+								}
+							}
+							else
+							{
+								//realtime graph
+								std::stringstream s_str1( sd[0] );
+								unsigned long long actValue;
+								s_str1 >> actValue;
+
+								std::string stime=sd[1];
+								struct tm ntime;
+								time_t atime;
+								ntime.tm_isdst=0;
+								ntime.tm_year=atoi(stime.substr(0,4).c_str())-1900;
+								ntime.tm_mon=atoi(stime.substr(5,2).c_str())-1;
+								ntime.tm_mday=atoi(stime.substr(8,2).c_str());
+								ntime.tm_hour=atoi(stime.substr(11,2).c_str());
+								ntime.tm_min=atoi(stime.substr(14,2).c_str());
+								ntime.tm_sec=atoi(stime.substr(17,2).c_str());
+								atime=mktime(&ntime);
+								
+								if (bHaveFirstRealValue)
+								{
+									long long curValue=actValue-ulLastValue;
+
+									time_t tdiff=atime-lastTime;
+									if (tdiff==0)
+										tdiff=1;
+									float tlaps=3600.0f/tdiff;
+									curValue*=int(tlaps);
+
+									root["result"][ii]["d"]=sd[1].substr(0,16);
+
+									float TotalValue=float(curValue);
 									if (TotalValue!=0)
 									{
 										switch (metertype)
@@ -3953,30 +4033,16 @@ std::string CWebServer::GetJSonPage()
 										root["result"][ii]["v"]=szTmp;
 										ii++;
 									}
+
 								}
-								LastDateTime=actDateTimeHour;
-								bHaveFirstValue=false;
-							}
-							std::stringstream s_str1( sd[0] );
-							unsigned long long actValue;
-							s_str1 >> actValue;
-
-							if (actValue>=ulLastValue)
+								else
+									bHaveFirstRealValue=true;
 								ulLastValue=actValue;
-
-							if (!bHaveFirstValue)
-							{
-								ulFirstValue=ulLastValue;
-								bHaveFirstValue=true;
-							}
-							if (!bHaveFirstRealValue)
-							{
-								bHaveFirstRealValue=true;
-								ulFirstRealValue=ulLastValue;
+								lastTime=atime;
 							}
 						}
 					}
-					if (bHaveFirstValue)
+					if ((bHaveFirstValue)&&(method==0))
 					{
 						//add last value
 						root["result"][ii]["d"]=LastDateTime+":00";

@@ -593,7 +593,7 @@ int SolarEdgeBase::ParsePacket0x0500(const unsigned char *pData, int dlen)
 			//Counter
 			float counter=GetFloat(b2);
 			b2+=4;
-			SendMeter(0,1, Pac, counter, "SolarMain");
+			SendMeter(0,1, Pac, counter/1000.0f, "SolarMain");
 			UpdateTempSensor(1,temp,"SolarMain");
 		}
 		b+=restbytes;
