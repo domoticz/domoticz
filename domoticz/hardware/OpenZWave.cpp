@@ -712,6 +712,7 @@ bool COpenZWave::OpenSerialConnector()
 	// The first argument is the path to the config files (where the manufacturer_specific.xml file is located
 	// The second argument is the path for saved Z-Wave network state and the log file.  If you leave it NULL 
 	// the log file will appear in the program's working directory.
+	_log.Log(LOG_NORM, "OpenZWave: using config in: %s",ConfigPath.c_str());
 	OpenZWave::Options::Create( ConfigPath.c_str(), ConfigPath.c_str(), "--SaveConfiguration=true " );
 	EnableDisableDebug();
 	OpenZWave::Options::Get()->AddOptionInt( "PollInterval", 60000 ); //enable polling each 60 seconds
