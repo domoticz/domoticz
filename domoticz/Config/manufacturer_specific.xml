@@ -422,6 +422,7 @@
 	</Manufacturer>
 	<Manufacturer id="0118" name="Wenzhou TKB Control System">
 		<Product type="0001" id="0001" name="TZ88 Smart Energy Plug-in Switch" config="wenzhou/tz88.xml"/>
+		<Product type="0102" id="1020" name="TZ66D Dual Wall Switch" config="wenzhou/tz66d.xml"/>
 	</Manufacturer>
 	<Manufacturer id="004c" name="Woodward Labs">
 	</Manufacturer>

@@ -1918,7 +1918,7 @@ bool COpenZWave::ApplyNodeConfig(const int homeID, const int nodeID, const std::
 		return false;
 
 	size_t vindex=0;
-	while (vindex<=results.size())
+	while (vindex<results.size())
 	{
 		int rvIndex=atoi(results[vindex].c_str());
 		if (nodeID==1)
