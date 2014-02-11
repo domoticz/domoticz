@@ -324,7 +324,7 @@ bool MainWorker::RestartHardware(const std::string &idx)
 	int Mode4=atoi(sd[10].c_str());
 	int Mode5=atoi(sd[11].c_str());
 
-	return AddHardwareFromParams(atoi(idx.c_str()),Name,(senabled=="true")?true:false,htype,address,port,username,password,Mode1,Mode2,Mode3,Mode4,0);
+	return AddHardwareFromParams(atoi(idx.c_str()),Name,(senabled=="true")?true:false,htype,address,port,username,password,Mode1,Mode2,Mode3,Mode4,Mode5);
 }
 
 bool MainWorker::AddHardwareFromParams(
@@ -402,7 +402,10 @@ bool MainWorker::AddHardwareFromParams(
 			}
 			else if (Type==HTYPE_S0SmartMeter)
 			{
-				pHardware = new S0MeterSerial(ID,szSerialPort, 9600, Mode1, Mode2, Mode3, Mode4);
+				int baudrate=9600;
+				if (Mode5==1)
+					baudrate=115200;
+				pHardware = new S0MeterSerial(ID,szSerialPort, baudrate, Mode1, Mode2, Mode3, Mode4);
 			}
 			else if (Type==HTYPE_OpenThermGateway)
 			{

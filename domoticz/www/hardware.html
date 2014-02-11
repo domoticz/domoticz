@@ -147,6 +147,18 @@
 <center>
 <form id="s0metertype">
 	<br>
+	<h2><span data-i18n="Hardware">Hardware</span>:</h2>
+	<table>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Baudrate">Baudrate</span>: </label></td>
+			<td><select id="S0Baudrate" name="S0Baudrate" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">9600</option>
+				<option value="1">115200</option>
+			</select></td>
+		</tr>
+	</table>
+	<br>
+	<br>
 	<h2>Meter 1:</h2>
 	<table>
 		<tr>
@@ -846,6 +858,7 @@ function EditS0MeterType(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 	else {
 		$('#hardwarecontent #M2PulsesPerHour').val(2000);
 	}
+	$('#hardwarecontent #S0Baudrate').val(Mode5);
 }
 
 function EditLimitlessType(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)

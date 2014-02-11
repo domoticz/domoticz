@@ -908,7 +908,8 @@ char * CWebServer::SetS0MeterType()
 	int Mode2=atoi(m_pWebEm->FindValue("M1PulsesPerHour").c_str());
 	int Mode3=atoi(m_pWebEm->FindValue("S0M2Type").c_str());
 	int Mode4=atoi(m_pWebEm->FindValue("M2PulsesPerHour").c_str());
-	m_pMain->m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, 0);
+	int Mode5=atoi(m_pWebEm->FindValue("S0Baudrate").c_str());
+	m_pMain->m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, Mode5);
 
 	m_pMain->RestartHardware(idx);
 
