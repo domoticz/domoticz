@@ -1044,7 +1044,7 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("BatteryLowNotification", 0); //default disabled
 	}
-
+	UpdateMeter();
 	//Start background thread
 	if (!StartThread())
 		return false;
@@ -3579,7 +3579,7 @@ void CSQLHelper::UpdateMeter()
 
 			unsigned long long MeterUsage;
 			std::stringstream s_str3( susage );
-			s_str2 >> MeterUsage;
+			s_str3 >> MeterUsage;
 
 			if (bSkipSameValue)
 			{
