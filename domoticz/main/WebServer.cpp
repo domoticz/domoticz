@@ -3718,7 +3718,13 @@ std::string CWebServer::GetJSonPage()
 							std::vector<std::string> sd=*itt;
 
 							root["result"][ii]["d"]=sd[1].substr(0,16);
-							root["result"][ii]["v"]=sd[0];
+							if (sd[0].size()>2)
+							{
+								sprintf(szTmp,"%.1f",atof(sd[0].c_str())/10.0f);
+								root["result"][ii]["v"]=szTmp;
+							}
+							else
+								root["result"][ii]["v"]=sd[0];
 							ii++;
 						}
 					}
@@ -3884,7 +3890,7 @@ std::string CWebServer::GetJSonPage()
 							root["haveL3"]=true;
 					}
 				}
-				else if (dType==pTypeENERGY)
+				else if ((dType==pTypeENERGY)||(dType==pTypePOWER))
 				{
 					root["status"]="OK";
 					root["title"]="Graph " + sensor + " " + srange;
@@ -4000,6 +4006,9 @@ std::string CWebServer::GetJSonPage()
 							else
 							{
 								//realtime graph
+								if ((dType==pTypeENERGY)||(dType==pTypePOWER))
+									EnergyDivider/=100.0f;
+
 								std::stringstream s_str1( sd[1] );
 								unsigned long long actValue;
 								s_str1 >> actValue;
@@ -5309,8 +5318,18 @@ std::string CWebServer::GetJSonPage()
 							std::vector<std::string> sd=*itt;
 
 							root["result"][ii]["d"]=sd[2].substr(0,16);
-							root["result"][ii]["v_min"]=sd[0];
-							root["result"][ii]["v_max"]=sd[1];
+							if (sd[0].size()>2)
+							{
+								sprintf(szTmp,"%.1f",atof(sd[0].c_str())/10.0f);
+								root["result"][ii]["v_min"]=szTmp;
+								sprintf(szTmp,"%.1f",atof(sd[1].c_str())/10.0f);
+								root["result"][ii]["v_max"]=szTmp;
+							}
+							else
+							{
+								root["result"][ii]["v_min"]=sd[0];
+								root["result"][ii]["v_max"]=sd[1];
+							}
 							ii++;
 						}
 					}

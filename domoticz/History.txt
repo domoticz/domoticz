@@ -23,6 +23,7 @@ Version 1.0.xxxx (January xxth 2014)
 - Changed: Other method to retrieve raspberry pi temperature
 - Implemented: Option to specify S0 Meter serial baudrate
 - Implemented: Slovak translation (Thanks to marek786 !)
+- Implemented: Weight Scale now includes a digit in the graphs
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)

@@ -1045,7 +1045,6 @@ bool CSQLHelper::OpenDatabase()
 		UpdatePreferencesVar("BatteryLowNotification", 0); //default disabled
 	}
 	//Start background thread
-
 	if (!StartThread())
 		return false;
 	return true;
@@ -3553,8 +3552,8 @@ void CSQLHelper::UpdateMeter()
 			}
 			else if (dType==pTypeWEIGHT)
 			{
-				double fValue=atof(sValue.c_str());
-				sprintf(szTmp,"%.1f",fValue);
+				double fValue=atof(sValue.c_str())*10.0f;
+				sprintf(szTmp,"%d",int(fValue));
 				sValue=szTmp;
 				bSkipSameValue=false;
 			}
