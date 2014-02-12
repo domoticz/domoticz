@@ -3926,7 +3926,12 @@ std::string CWebServer::GetJSonPage()
 					std::string sMethod=m_pWebEm->FindValue("method");
 					if (sMethod.size()>0)
 						method=atoi(sMethod.c_str());
-
+					if (method!=0)
+					{
+						//realtime graph
+						if ((dType==pTypeENERGY)||(dType==pTypePOWER))
+							EnergyDivider/=100.0f;
+					}
 					bool bHaveFirstValue=false;
 					bool bHaveFirstRealValue=false;
 					float FirstValue=0;
@@ -4005,10 +4010,6 @@ std::string CWebServer::GetJSonPage()
 							}
 							else
 							{
-								//realtime graph
-								if ((dType==pTypeENERGY)||(dType==pTypePOWER))
-									EnergyDivider/=100.0f;
-
 								std::stringstream s_str1( sd[1] );
 								unsigned long long actValue;
 								s_str1 >> actValue;
