@@ -1044,8 +1044,8 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("BatteryLowNotification", 0); //default disabled
 	}
-	UpdateMeter();
 	//Start background thread
+
 	if (!StartThread())
 		return false;
 	return true;
