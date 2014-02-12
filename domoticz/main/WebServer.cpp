@@ -3884,6 +3884,150 @@ std::string CWebServer::GetJSonPage()
 							root["haveL3"]=true;
 					}
 				}
+				else if (dType==pTypeENERGY)
+				{
+					root["status"]="OK";
+					root["title"]="Graph " + sensor + " " + srange;
+
+					float EnergyDivider=1000.0f;
+					float GasDivider=100.0f;
+					float WaterDivider=100.0f;
+					int tValue;
+					if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+					{
+						EnergyDivider=float(tValue);
+					}
+					if (m_pMain->m_sql.GetPreferencesVar("MeterDividerGas", tValue))
+					{
+						GasDivider=float(tValue);
+					}
+					if (m_pMain->m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+					{
+						WaterDivider=float(tValue);
+					}
+					if (dType==pTypeP1Gas)
+						GasDivider=1000;
+					else if ((dType==pTypeENERGY)||(dType==pTypePOWER))
+						EnergyDivider*=100.0f;
+
+					szQuery.clear();
+					szQuery.str("");
+					int ii=0;
+					szQuery << "SELECT Value,[Usage], Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
+					result=m_pMain->m_sql.query(szQuery.str());
+
+					int method=0;
+					std::string sMethod=m_pWebEm->FindValue("method");
+					if (sMethod.size()>0)
+						method=atoi(sMethod.c_str());
+
+					bool bHaveFirstValue=false;
+					bool bHaveFirstRealValue=false;
+					float FirstValue=0;
+					unsigned long long ulFirstRealValue=0;
+					unsigned long long ulFirstValue=0;
+					unsigned long long ulLastValue=0;
+					std::string LastDateTime="";
+					time_t lastTime=0;
+
+					if (result.size()>0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator itt;
+						for (itt=result.begin(); itt!=result.end(); ++itt)
+						{
+							std::vector<std::string> sd=*itt;
+
+							if (method==0)
+							{
+								//bars / hour
+								std::string actDateTimeHour=sd[2].substr(0,13);
+								if (actDateTimeHour!=LastDateTime)
+								{
+									if (bHaveFirstValue)
+									{
+										root["result"][ii]["d"]=LastDateTime+":00";
+
+										unsigned long long ulTotalValue=ulLastValue-ulFirstValue;
+										if (ulTotalValue==0)
+										{
+											//Could be the P1 Gas Meter, only transmits one every 1 a 2 hours
+											ulTotalValue=ulLastValue-ulFirstRealValue;
+										}
+										ulFirstRealValue=ulLastValue;
+										float TotalValue=float(ulTotalValue);
+										if (TotalValue!=0)
+										{
+											switch (metertype)
+											{
+											case MTYPE_ENERGY:
+												sprintf(szTmp,"%.3f",(TotalValue/EnergyDivider)*1000.0f);	//from kWh -> Watt
+												break;
+											case MTYPE_GAS:
+												sprintf(szTmp,"%.2f",TotalValue/GasDivider);
+												break;
+											case MTYPE_WATER:
+												sprintf(szTmp,"%.2f",TotalValue/WaterDivider);
+												break;
+											case MTYPE_COUNTER:
+												sprintf(szTmp,"%.1f",TotalValue);
+												break;
+											}
+											root["result"][ii]["v"]=szTmp;
+											ii++;
+										}
+									}
+									LastDateTime=actDateTimeHour;
+									bHaveFirstValue=false;
+								}
+								std::stringstream s_str1( sd[0] );
+								unsigned long long actValue;
+								s_str1 >> actValue;
+
+								if (actValue>=ulLastValue)
+									ulLastValue=actValue;
+
+								if (!bHaveFirstValue)
+								{
+									ulFirstValue=ulLastValue;
+									bHaveFirstValue=true;
+								}
+								if (!bHaveFirstRealValue)
+								{
+									bHaveFirstRealValue=true;
+									ulFirstRealValue=ulLastValue;
+								}
+							}
+							else
+							{
+								//realtime graph
+								std::stringstream s_str1( sd[1] );
+								unsigned long long actValue;
+								s_str1 >> actValue;
+
+								root["result"][ii]["d"]=sd[2].substr(0,16);
+
+								float TotalValue=float(actValue);
+								switch (metertype)
+								{
+								case MTYPE_ENERGY:
+									sprintf(szTmp,"%.3f",(TotalValue/EnergyDivider)*1000.0f);	//from kWh -> Watt
+									break;
+								case MTYPE_GAS:
+									sprintf(szTmp,"%.2f",TotalValue/GasDivider);
+									break;
+								case MTYPE_WATER:
+									sprintf(szTmp,"%.2f",TotalValue/WaterDivider);
+									break;
+								case MTYPE_COUNTER:
+									sprintf(szTmp,"%.1f",TotalValue);
+									break;
+								}
+								root["result"][ii]["v"]=szTmp;
+								ii++;
+							}
+						}
+					}
+				}
 				else
 				{
 					root["status"]="OK";

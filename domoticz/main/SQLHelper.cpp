@@ -15,7 +15,7 @@
 #include "../webserver/Base64.h"
 #include "mainstructs.h"
 
-#define DB_VERSION 35
+#define DB_VERSION 36
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -229,6 +229,7 @@ const char *sqlCreateMeter =
 "CREATE TABLE IF NOT EXISTS [Meter] ("
 "[DeviceRowID] BIGINT NOT NULL, "
 "[Value] BIGINT NOT NULL, "
+"[Usage] INTEGER DEFAULT 0, "
 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
 const char *sqlCreateMeter_Calendar =
@@ -812,6 +813,10 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion<35)
 		{
 			query("ALTER TABLE Notifications ADD COLUMN [Priority] INTEGER default 0");
+		}
+		if (dbversion<36)
+		{
+			query("ALTER TABLE Meter ADD COLUMN [Usage] INTEGER default 0");
 		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
@@ -3467,6 +3472,8 @@ void CSQLHelper::UpdateMeter()
 			std::string sValue=sd[7];
 			std::string sLastUpdate=sd[8];
 
+			std::string susage="0";
+
 			//do not include sensors that have no reading within an hour
 			struct tm ntime;
 			ntime.tm_isdst=tm1.tm_isdst;
@@ -3505,6 +3512,7 @@ void CSQLHelper::UpdateMeter()
 				StringSplit(sValue, ";", splitresults);
 				if (splitresults.size()<2)
 					continue;
+				susage=splitresults[2];
 				double fValue=atof(splitresults[1].c_str())*100;
 				sprintf(szTmp,"%.0f",fValue);
 				sValue=szTmp;
@@ -3569,6 +3577,10 @@ void CSQLHelper::UpdateMeter()
 			std::stringstream s_str2( sValue );
 			s_str2 >> MeterValue;
 
+			unsigned long long MeterUsage;
+			std::stringstream s_str3( susage );
+			s_str2 >> MeterUsage;
+
 			if (bSkipSameValue)
 			{
 				//if last value == actual value, then do not insert it
@@ -3585,10 +3597,11 @@ void CSQLHelper::UpdateMeter()
 
 			//insert record
 			sprintf(szTmp,
-				"INSERT INTO Meter (DeviceRowID, Value) "
-				"VALUES ('%llu', '%llu')",
+				"INSERT INTO Meter (DeviceRowID, Value, [Usage]) "
+				"VALUES ('%llu', '%llu', '%llu')",
 				ID,
-				MeterValue
+				MeterValue,
+				MeterUsage
 				);
 			std::vector<std::vector<std::string> > result2;
 			result2=query(szTmp);
