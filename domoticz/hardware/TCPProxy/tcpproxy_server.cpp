@@ -189,7 +189,7 @@ namespace tcp_proxy
 		}
 		catch(std::exception& e)
 		{
-			std::cerr << "acceptor exception: " << e.what() << std::endl;
+			//std::cerr << "acceptor exception: " << e.what() << std::endl;
 			return false;
 		}
 		return true;
@@ -231,13 +231,13 @@ namespace tcp_proxy
 			session_->start(upstream_host_,upstream_port_);
 			if (!accept_connections())
 			{
-				std::cerr << "Failure during call to accept." << std::endl;
+				//std::cerr << "Failure during call to accept." << std::endl;
 			}
 		}
 		else
 		{
-			if (!m_bDoStop)
-				std::cerr << "Error: " << error.message() << std::endl;
+			//if (!m_bDoStop)
+				//std::cerr << "Error: " << error.message() << std::endl;
 		}
 	}
 
