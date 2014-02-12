@@ -3512,7 +3512,7 @@ void CSQLHelper::UpdateMeter()
 				StringSplit(sValue, ";", splitresults);
 				if (splitresults.size()<2)
 					continue;
-				susage=splitresults[2];
+				susage=splitresults[0];
 				double fValue=atof(splitresults[1].c_str())*100;
 				sprintf(szTmp,"%.0f",fValue);
 				sValue=szTmp;
