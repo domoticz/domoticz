@@ -267,7 +267,18 @@
 				<td><input type="input" id="apikey" name="NMAAPIKey" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <a data-i18n="Test" class="btnstyle3" href="javascript:TestNMANotification()">Test</a></td>
 			</tr>
 			</table>
-			<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="http://www.notifymyandroid.com/" target="_blank"><span data-i18n="Here"></span></a><br>
+			<h2><span data-i18n="Pushover (Android/iOs)"></span>:</h2>
+			<table class="display" id="pushovertable" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="right" style="width:40px"><label for="pouserid"><span data-i18n="User ID"></span>: </label></td>
+				<td><input type="input" id="pouserid" name="PushoverUserID" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  </td>
+			</tr>
+			<tr>
+				<td align="right" style="width:80px"><label for="poapikey"><span data-i18n="API Key"></span>: </label></td>
+				<td><input type="input" id="apikey" name="PushoverAPIKey" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <a data-i18n="Test" class="btnstyle3" href="javascript:TestPushoverNotification()">Test</a></td>
+			</tr>
+			</table>
+			<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="https://pushover.net" target="_blank"><span data-i18n="Here"></span></a><br>
 			<br>
 			<h2><span data-i18n="Notification Intervals"></span>:</h2>
 			<table class="display" id="nitable" border="0" cellpadding="0" cellspacing="0">
@@ -555,6 +566,41 @@ function TestNMANotification()
   ShowNotify($.i18n('Notification send!<br>Should arrive at your device soon...'), 3000);
 }
 
+function TestPushoverNotification()
+{
+  var POAPI=$("#pushovertable #apikey").val();
+  if (POAPI=="") {
+    ShowNotify($.i18n('Please enter the API key!...'), 3500, true);
+    return;
+  }
+  var POUSERID=$("#pushovertable #pouserid").val();
+  if (POUSERID=="") {
+    ShowNotify($.i18n('Please enter the user id!...'), 3500, true);
+    return;
+  }
+	$.ajax({
+		url: "json.htm?type=command&param=testpushover",
+		async: false, 
+		dataType: 'json',
+		success: function(data) {
+			if (data.status != "OK") {
+				HideNotify();
+				//ShowNotify($.i18n('Problem sending notification, please check credentials!'), 2500, true);
+				return;
+			}
+			else {
+				HideNotify();
+				ShowNotify($.i18n('Notification send!<br>Should arrive at your device soon...'), 3000);
+			}
+		},
+		error: function(){
+			HideNotify();
+			//ShowNotify($.i18n('Problem sending notification, please check credentials!'), 2500, true);
+		}
+	});
+  
+}
+
 function TestEmailNotification()
 {
 	var EmailServer=$("#emailtable #EmailServer").val();
@@ -645,6 +691,12 @@ function ShowSettings()
       }
       if (typeof data.NMAAPI != 'undefined') {
         $("#nmatable #apikey").val(data.NMAAPI);
+      }
+      if (typeof data.PushoverAPI != 'undefined') {
+        $("#pushovertable #apikey").val(data.PushoverAPI);
+      }
+      if (typeof data.PushoverUser != 'undefined') {
+        $("#pushovertable #pouserid").val(data.PushoverUser);
       }
       if (typeof data.LightHistoryDays != 'undefined') {
         $("#lightlogtable #LightHistoryDays").val(data.LightHistoryDays);

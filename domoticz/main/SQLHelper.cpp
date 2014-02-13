@@ -1967,6 +1967,32 @@ bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::strin
 			}
 		}
 	}
+	if (GetPreferencesVar("PushoverAPI",nValue,sValue))
+	{
+		if (sValue!="")
+		{
+			std::string poApiKey=stdstring_trim(sValue);
+			if (GetPreferencesVar("PushoverUser",nValue,sValue))
+			{
+				if (sValue!="")
+				{
+					char sPostData[300];
+					int poPriority = Priority;
+					if (poPriority > 1) {poPriority = 1;};
+					if (poPriority < -1) {poPriority = -1;};
+					sprintf(sPostData,"token=%s&user=%s&priority=%d&title=%s&message=%s",poApiKey.c_str(),sValue.c_str(),poPriority,uencode.URLEncode(Subject).c_str(),uencode.URLEncode(notimessage).c_str());
+					if (!HTTPClient::POST("https://api.pushover.net/1/messages.json",sPostData,sResult))
+					{
+						_log.Log(LOG_ERROR,"Error sending Pushover Notification!");
+					}
+					else
+					{
+						_log.Log(LOG_NORM,"Notification sent (Pushover)");
+					}
+				}
+			}
+		}
+	}
 	//check if Email enabled
 	if (GetPreferencesVar("UseEmailInNotifications", nValue))
 	{

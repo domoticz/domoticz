@@ -580,6 +580,10 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("ProwlAPI",ProwlAPI.c_str());
 	std::string NMAAPI=m_pWebEm->FindValue("NMAAPIKey");
 	m_pMain->m_sql.UpdatePreferencesVar("NMAAPI",NMAAPI.c_str());
+	std::string PushoverAPI=m_pWebEm->FindValue("PushoverAPIKey");
+	m_pMain->m_sql.UpdatePreferencesVar("PushoverAPI",PushoverAPI.c_str());
+	std::string PushoverUser=m_pWebEm->FindValue("PushoverUserID");
+	m_pMain->m_sql.UpdatePreferencesVar("PushoverUser",PushoverUser.c_str());
 	std::string DashboardType=m_pWebEm->FindValue("DashboardType");
 	m_pMain->m_sql.UpdatePreferencesVar("DashboardType",atoi(DashboardType.c_str()));
 	std::string MobileType=m_pWebEm->FindValue("MobileType");
@@ -7937,6 +7941,39 @@ std::string CWebServer::GetJSonPage()
 			sprintf(szTmp,"DELETE FROM CamerasActiveDevices WHERE (CameraRowID == '%s')",idx.c_str());
 			result=m_pMain->m_sql.query(szTmp);
 		}
+		else if (cparam=="testpushover")
+		{
+			root["title"]="Test Pushover";
+			int nValue;
+			std::string sValue;
+			char sPostData[300];
+			std::string sResult;
+			if (m_pMain->m_sql.GetPreferencesVar("PushoverAPI",nValue,sValue))
+			{
+				if (sValue!="")
+				{
+					std::string poApiKey=stdstring_trim(sValue);
+					if (m_pMain->m_sql.GetPreferencesVar("PushoverUser",nValue,sValue))
+					{
+						if (sValue!="")
+						{
+							std::string poTitle = "Domoticz test";
+							std::string poMessage = "Domoticz test message!";
+							sprintf(sPostData,"token=%s&user=%s&priority=0&title=%s&message=%s",poApiKey.c_str(),sValue.c_str(),poTitle.c_str(),poMessage.c_str());
+							if (!HTTPClient::POST("https://api.pushover.net/1/messages.json",sPostData,sResult))
+							{
+								_log.Log(LOG_ERROR,"Error sending Pushover Notification!");
+							}
+							else
+							{
+							_log.Log(LOG_NORM,"Notification sent (Pushover)");
+							root["status"]="OK";
+							}
+						}
+					}
+				}
+			}
+		}
 		else if (cparam=="testemail")
 		{
 			std::string EmailFrom=m_pWebEm->FindValue("EmailFrom");
@@ -10825,6 +10862,14 @@ std::string CWebServer::GetJSonPage()
 				else if (Key=="NMAAPI")
 				{
 					root["NMAAPI"]=sValue;
+				}
+				else if (Key=="PushoverAPI")
+				{
+					root["PushoverAPI"]=sValue;
+				}
+				else if (Key=="PushoverUser")
+				{
+					root["PushoverUser"]=sValue;
 				}
 				else if (Key=="DashboardType")
 				{
