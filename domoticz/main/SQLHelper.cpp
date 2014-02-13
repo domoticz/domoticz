@@ -1913,7 +1913,7 @@ bool CSQLHelper::SendNotification(const std::string &EventID, const std::string 
 	return true;
 }
 
-bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::string &Body, const int Priority)
+bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::string &Body, const int Priority,const std::string &Sound)
 {
 	int nValue;
 	std::string sValue;
@@ -1978,9 +1978,14 @@ bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::strin
 				{
 					char sPostData[300];
 					int poPriority = Priority;
-					if (poPriority > 1) {poPriority = 1;};
-					if (poPriority < -1) {poPriority = -1;};
-					sprintf(sPostData,"token=%s&user=%s&priority=%d&title=%s&message=%s",poApiKey.c_str(),sValue.c_str(),poPriority,uencode.URLEncode(Subject).c_str(),uencode.URLEncode(notimessage).c_str());
+					if (poPriority < -1) {
+						poPriority = -1;
+					};
+					std::string poSound = Sound;
+					if (poSound=="") {
+						poSound="pushover";
+					};
+					sprintf(sPostData,"token=%s&user=%s&priority=%d&title=%s&message=%s&sound=%s",poApiKey.c_str(),sValue.c_str(),poPriority,uencode.URLEncode(Subject).c_str(),uencode.URLEncode(notimessage).c_str(),poSound.c_str());
 					if (!HTTPClient::POST("https://api.pushover.net/1/messages.json",sPostData,sResult))
 					{
 						_log.Log(LOG_ERROR,"Error sending Pushover Notification!");

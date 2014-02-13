@@ -6936,7 +6936,7 @@ std::string CWebServer::GetJSonPage()
 				)
 				goto exitjson;
 			//Add to queue
-			m_pMain->m_sql.SendNotificationEx(subject,body,0);
+			m_pMain->m_sql.SendNotificationEx(subject,body,0,"");
 			root["status"]="OK";
 			root["title"]="SendNotification";
 		}

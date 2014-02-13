@@ -1131,7 +1131,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
             else {
                 std::string devNameNoQuotes = deviceName.substr(1,deviceName.size()-2);
                 if (devNameNoQuotes == "SendNotification") {
-					std::string subject(""),body(""),priority("0");
+					std::string subject(""),body(""),priority("0"),sound("");
 					std::vector<std::string> aParam;
 					StringSplit(doWhat, "#", aParam);
 					subject=aParam[0];
@@ -1140,7 +1140,12 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 					{
 						priority=aParam[2];
 					}
-					SendEventNotification(subject, body,atoi(priority.c_str()));
+					else if (aParam.size()==4)
+					{
+						priority=aParam[2];
+						sound=aParam[3];
+					}
+					SendEventNotification(subject, body,atoi(priority.c_str()),sound);
                     actionsDone = true;
                 }
 				else if (devNameNoQuotes == "SendEmail") {
@@ -1561,7 +1566,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
                 if (std::string(lua_tostring(lua_state, -2))== "SendNotification") 
 				{
                     std::string luaString = lua_tostring(lua_state, -1);
-					std::string subject(""),body(""),priority("0");
+					std::string subject(""),body(""),priority("0"),sound("");
 					std::vector<std::string> aParam;
 					StringSplit(luaString, "#", aParam);
 					subject=aParam[0];
@@ -1570,7 +1575,12 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 					{
 						priority=aParam[2];
 					}
-					SendEventNotification(subject, body,atoi(priority.c_str()));
+					if (aParam.size()==4)
+					{
+						priority=aParam[2];
+						sound=aParam[3];
+					}
+					SendEventNotification(subject, body,atoi(priority.c_str()),sound);
                     scriptTrue = true;
                 }
 				else if (std::string(lua_tostring(lua_state, -2)) == "SendEmail") {
@@ -1667,9 +1677,9 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 	}
 }
 
-void CEventSystem::SendEventNotification(const std::string &Subject, const std::string &Body, const int Priority)
+void CEventSystem::SendEventNotification(const std::string &Subject, const std::string &Body, const int Priority,const std::string &Sound)
 {
-    m_pMain->m_sql.SendNotificationEx(Subject,Body,Priority);
+    m_pMain->m_sql.SendNotificationEx(Subject,Body,Priority,Sound);
 }
 
 void CEventSystem::OpenURL(const std::string &URL)

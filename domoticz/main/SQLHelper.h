@@ -295,7 +295,7 @@ public:
 	void CheckSceneStatusWithDevice(const std::string &DevIdx);
 
 	bool SendNotification(const std::string &EventID, const std::string &Message, const int Priority);
-	bool SendNotificationEx(const std::string &Subject, const std::string &Body, const int Priority);
+	bool SendNotificationEx(const std::string &Subject, const std::string &Body, const int Priority,const std::string &Sound);
 
 	void Schedule5Minute();
 	void ScheduleDay();

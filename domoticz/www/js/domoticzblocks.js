@@ -609,7 +609,10 @@ Blockly.Language.send_notification = {
     this.appendDummyInput()
 	    .appendTitle("with priority:")
     	.appendTitle(new Blockly.FieldDropdown(Blockly.Language.logic_notification_priority.PRIORITY), 'notificationPriority');
-    this.setInputsInline(true);
+    this.appendDummyInput()
+	    .appendTitle("with sound (Pushover):")
+    	.appendTitle(new Blockly.FieldDropdown(Blockly.Language.logic_notification_priority.SOUND), 'notificationSound');
+	this.setInputsInline(true);
     this.setTooltip(Blockly.DOMOTICZ_LOGIC_NOTIFICATION_TOOLTIP);
 
   }
@@ -713,7 +716,33 @@ Blockly.Language.logic_notification_priority.PRIORITY =
     ["0 (All: Normal)",'0'],
     ["1 (All: High)",'1'],
     ["2 (Prowl/NMA: Emergency, Pushover: confirm)",'2']];   
-    
+ 
+Blockly.Language.logic_notification_priority.SOUND =
+    [["Pushover (default)", 'pushover'],
+    ["Bike",'bike'],
+    ["Bugle",'bugle'],
+	["Cash Register",'cashregister'],
+	["Classical",'classical'],
+	["Cash Register",'cashregister'],
+    ["Cosmic",'cosmic'],
+    ["Falling",'falling'],
+    ["Gamelan",'gamelan'],
+    ["Incoming",'incoming'],
+    ["Intermission",'intermission'],
+    ["Magic",'magic'],
+    ["Mechanical",'mechanical'],
+    ["Piano Bar",'pianobar'],
+    ["Siren",'siren'],
+    ["Space Alarm",'spacealarm'],
+    ["Tug Boat",'tugboat'],
+    ["Alien Alarm (long)",'alien'],
+    ["Climb (long)",'climb'],
+    ["Persistent (long)",'persistent'],
+    ["Pushover Echo (long)",'echo'],
+    ["Up Down (long)",'updown'],
+    ["None (silent)",'none']];
+
+ 
 Blockly.Language.logic_states.STATES =
     [["On", 'On'],
      ["Off", 'Off'],

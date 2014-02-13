@@ -351,14 +351,16 @@
 		    	var subjectBlock = $(this).find("value[name='notificationTextSubject']")[0];
 		    	var bodyBlock = $(this).find("value[name='notificationTextBody']")[0];
 		    	var notificationBlock = $(this).children("title[name='notificationPriority']")[0];
+				var soundBlock = $(this).children("title[name='notificationSound']")[0];
 		    	var sTitleText = $(subjectBlock).find("title[name='TEXT']")[0];
 		    	var bTitleText = $(bodyBlock).find("title[name='TEXT']")[0];
 		    	var sTT = $(sTitleText).text().replace(/\,/g, ' ');
 		    	var bTT = $(bTitleText).text().replace(/\,/g, ' ');
 		    	var pTT=$(notificationBlock).text();
+				var aTT=$(soundBlock).text();
 		    	// message separator here cannot be # like in scripts, changed to $..
 		    	// also removed commas as we need to separate commandArray later.
-	        	var setString = 'commandArray["SendNotification"]="'+sTT+'$'+bTT+'$'+pTT+'"';
+	        	var setString = 'commandArray["SendNotification"]="'+sTT+'$'+bTT+'$'+pTT+'$'+aTT+'"';
 	        	setArray.push(setString);		      	
 		    }
 		    else if ($(this).attr('type') == 'send_email') {

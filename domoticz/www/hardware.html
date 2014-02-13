@@ -1056,6 +1056,44 @@ function ZWaveHealNetwork()
 	});
 }
 
+
+function showNetworkInfo()
+{
+	$.ajax({
+		url: "json.htm?type=command&param=zwavenetworkinfo&idx=" + $.devIdx,
+		async: false, 
+		dataType: 'json',
+		success: function(data) {
+			if (typeof data != 'undefined') {
+				if (data.status=="OK") {
+					var devicestates = "<div style='overflow:scroll; overflow-x: hidden; height: 500px;'><table><thead><tr><th align='left' style='padding-right: 80px;'>ID</th><th align='left' style='padding-right: 80px;'>Name</th><th align='left' style='padding-right: 80px;'>Current state</th><th align='left' style='padding-right: 80px;'>Last updated</th><th align='left' style='padding-right: 10px;'>sValues</th></tr></thead><tbody>";
+					if (typeof data.result != 'undefined') {
+						
+						$.each(data.result, function(i,item){
+							if (item.name != "Unknown") {
+								var oneitem = '<tr><td> '+item.val+' </td><td></td><td></td><td></td><td></td></tr>'; 
+								devicestates += oneitem;
+							}
+						});
+					}
+					devicestates += "</tbody></table></div>";
+					noty({
+						text: devicestates,
+						type: 'information',
+						modal: true,
+						buttons: [
+						{addClass: 'btn btn-primary', text: 'Ok', onClick: function($noty) 
+							{$noty.close();
+								
+							}
+						}]
+					});
+				}
+			}
+		}
+	});
+}
+
 function RefreshOpenZWaveNodeTable()
 {
   $('#modal').show();
@@ -1083,6 +1121,9 @@ function RefreshOpenZWaveNodeTable()
 				status="sleep";
 			}
 			var statusImg='<img src="images/' + status +'.png"/>';
+			if (item.NodeID==1) {
+				item.Description +='&nbsp;&nbsp;<span class="label label-info" onclick="showNetworkInfo();" onmouseover="cursorhand()" onmouseout="cursordefault()">Info</span>';
+			}
 			var addId = oTable.fnAddData( {
 				"DT_RowId": item.idx,
 				"Name": item.Name,
