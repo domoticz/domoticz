@@ -585,7 +585,7 @@ function TestPushoverNotification()
 		success: function(data) {
 			if (data.status != "OK") {
 				HideNotify();
-				//ShowNotify($.i18n('Problem sending notification, please check credentials!'), 2500, true);
+				ShowNotify($.i18n('Problem sending notification, please check credentials!'), 3000, true);
 				return;
 			}
 			else {
@@ -595,7 +595,7 @@ function TestPushoverNotification()
 		},
 		error: function(){
 			HideNotify();
-			//ShowNotify($.i18n('Problem sending notification, please check credentials!'), 2500, true);
+			ShowNotify($.i18n('Problem sending notification, please check credentials!'), 3000, true);
 		}
 	});
   
