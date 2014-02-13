@@ -708,11 +708,11 @@ Blockly.Language.logic_sunrisesunset.VALUES =
     ["Sunset",'Sunset']];
     
 Blockly.Language.logic_notification_priority.PRIORITY =
-    [["Very Low", '-2'],
-    ["Moderate",'-1'],
-    ["Normal",'0'],
-    ["High",'1'],
-    ["Emergency",'2']];   
+    [["-2 (Prowl/NMA: Very Low, Pushover: N/A)", '-2'],
+    ["-1 (Prowl/NMA: Moderate, Pushover:Quiet)",'-1'],
+    ["0 (All: Normal)",'0'],
+    ["1 (All: High)",'1'],
+    ["2 (Prowl/NMA: Emergency, Pushover: confirm)",'2']];   
     
 Blockly.Language.logic_states.STATES =
     [["On", 'On'],
