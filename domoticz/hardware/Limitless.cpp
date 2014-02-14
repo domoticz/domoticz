@@ -529,5 +529,8 @@ void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 	}
 
 	if (pCMD!=NULL)
+	{
 		sendto(m_RemoteSocket,(const char*)pCMD,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+		sleep_milliseconds(100);
+	}
 }

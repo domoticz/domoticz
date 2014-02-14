@@ -8042,6 +8042,18 @@ bool MainWorker::SwitchScene(const std::string &idx, const std::string &switchcm
 	return SwitchScene(ID,switchcmd);
 }
 
+//returns if a device activates a scene
+bool MainWorker::DoesDeviceActiveAScene(const int HwdId, const std::string &idx, const int unit, const int devType, const int subType)
+{
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+
+	szQuery << "SELECT ID FROM Scenes WHERE (DeviceID == '" << idx << "') AND (HardwareID==" << HwdId << ") AND (Unit==" << unit << ") AND ([Type]==" << devType << ")  AND (SubType==" << subType << ")";
+	result=m_sql.query(szQuery.str());
+
+	return (result.size()!=0);
+}
+
 bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &switchcmd)
 {
 	//Get Scene details
@@ -8107,7 +8119,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 	}
 
 
-	//now switch all attached devices
+	//now switch all attached devices, and only the onces that do not trigger a scene
 	std::stringstream szQuery;
 	szQuery << "SELECT DeviceRowID, Cmd, Level, Hue FROM SceneDevices WHERE (SceneRowID == " << idx << ")  ORDER BY [Order] ASC";
 	result=m_sql.query(szQuery.str());
@@ -8117,12 +8129,13 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 	for (itt=result.begin(); itt!=result.end(); ++itt)
 	{
 		std::vector<std::string> sd=*itt;
+
 		int cmd=atoi(sd[1].c_str());
 		int level=atoi(sd[2].c_str());
 		int hue=atoi(sd[3].c_str());
 		std::vector<std::vector<std::string> > result2;
 		std::stringstream szQuery2;
-		szQuery2 << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType, nValue, sValue, StrParam1, StrParam2 FROM DeviceStatus WHERE (ID == " << sd[0] << ")";
+		szQuery2 << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType, nValue, sValue, StrParam1, StrParam2, Name FROM DeviceStatus WHERE (ID == " << sd[0] << ")";
 		result2=m_sql.query(szQuery2.str());
 		if (result2.size()>0)
 		{
@@ -8133,6 +8146,14 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 			unsigned char dType=atoi(sd2[3].c_str());
 			unsigned char dSubType=atoi(sd2[4].c_str());
 			_eSwitchType switchtype=(_eSwitchType)atoi(sd2[5].c_str());
+
+			//Check if this device will not activate a scene
+			int hwID=atoi(sd2[0].c_str());
+			if (DoesDeviceActiveAScene(hwID,sd2[1],Unit,dType,dSubType))
+			{
+				_log.Log(LOG_ERROR,"Skipping sensor '%s' because this triggers another scene!",sd2[10].c_str());
+				continue;
+			}
 
 			std::string intswitchcmd=switchcmd;
 
