@@ -154,6 +154,11 @@ namespace OpenZWave
 	     */
 		ValueType GetType()const{ return( (ValueType)( m_id & 0x0000000f ) ); }
 
+		/**
+		 * Get a 64Bit Integer that represents this ValueID. This Integer is not guaranteed to be valid 
+		 * across restarts of OpenZWave.
+		 * \return a uint64 integer
+		 */
 		uint64 GetId()const{ return (uint64) ( ( (uint64)m_id1 << 32 ) | m_id );}
 
 		// Comparison Operators
@@ -230,6 +235,21 @@ namespace OpenZWave
 			m_id1 = (((uint32)_instance)<<24);
 		}
 
+		/* construct a ValueID based on the HomeID and the unit64 returned from GetID
+		 * \param _homeId - The HomeID 
+		 * \param id - The ID returned from ValueID::GetID
+		 * \see ValueID::GetId
+		 */
+		ValueID
+		(
+		        uint32 _homeId,
+                        uint64 id
+		):
+		        m_homeId(_homeId)
+		{
+		        m_id = ((uint32)(id & 0xFFFFFFFF));
+		        m_id1 = (uint32)(id >> 32);
+		}
 	private:
 		// Construct a value id for use in notifications
 		ValueID( uint32 const _homeId, uint8 const _nodeId ): m_id1( 0 ),m_homeId( _homeId ){ m_id = ((uint32)_nodeId)<<24; }
