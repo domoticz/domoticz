@@ -1170,6 +1170,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						(dType!=pTypeSecurity1)&&
 						(dType!=pTypeBlinds)&&
 						(dType!=pTypeChime)&&
+						(dType!=pTypeThermostat3)&&
 						(!((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXStatus)))
 						)
 						continue;
@@ -1340,7 +1341,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				(dType==pTypeLighting6)||
 				(dType==pTypeLimitlessLights)||
 				(dType==pTypeBlinds)||
-				(dType==pTypeChime)
+				(dType==pTypeChime)||
+				(dType==pTypeThermostat3)
 				)
 			{
 				//add light details
@@ -2342,7 +2344,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			}
 			else if (dType == pTypeThermostat)
 			{
-				if (sTypeThermSetpoint)
+				if (dSubType==sTypeThermSetpoint)
 				{
 					sprintf(szTmp,"%.1f",atof(sValue.c_str()));
 					root["result"][ii]["Data"]=szTmp;
@@ -3012,7 +3014,8 @@ std::string CWebServer::GetJSonPage()
 			(dType!=pTypeSecurity1)&&
 			(dType!=pTypeBlinds)&&
 			(dType!=pTypeRego6XXValue)&&
-			(dType!=pTypeChime)
+			(dType!=pTypeChime)&&
+			(dType!=pTypeThermostat3)
 			)
 			goto exitjson; //no light device! we should not be here!
 
@@ -7712,6 +7715,7 @@ std::string CWebServer::GetJSonPage()
 					case pTypeSecurity1:
 					case pTypeBlinds:
 					case pTypeChime:
+					case pTypeThermostat3:
 						bdoAdd=true;
 						if (!used)
 						{
@@ -7778,6 +7782,7 @@ std::string CWebServer::GetJSonPage()
 						case pTypeSecurity1:
 						case pTypeBlinds:
 						case pTypeChime:
+						case pTypeThermostat3:
 							{
 								root["result"][ii]["type"]=0;
 								root["result"][ii]["idx"]=ID;
@@ -8427,7 +8432,8 @@ std::string CWebServer::GetJSonPage()
 				(dType==pTypeLimitlessLights)||
 				(dType==pTypeSecurity1)||
 				(dType==pTypeBlinds)||
-				(dType==pTypeChime)
+				(dType==pTypeChime)||
+				(dType==pTypeThermostat3)
 				)
 			{
 				if (switchtype!=STYPE_PushOff)
@@ -9784,7 +9790,8 @@ std::string CWebServer::GetJSonPage()
 				(dType!=pTypeLimitlessLights)&&
 				(dType!=pTypeSecurity1)&&
 				(dType!=pTypeBlinds)&&
-				(dType!=pTypeChime)
+				(dType!=pTypeChime)&&
+				(dType!=pTypeThermostat3)
 				)
 				goto exitjson; //no light device! we should not be here!
 

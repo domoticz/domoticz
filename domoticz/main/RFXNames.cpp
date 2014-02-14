@@ -978,6 +978,38 @@ void GetLightStatus(
 	case pTypeChime:
 		lstatus="On";
 		break;
+	case pTypeThermostat3:
+		switch (nValue)
+		{
+		case thermostat3_sOff:
+			lstatus="Off";
+			break;
+		case thermostat3_sOn:
+			lstatus="On";
+			break;
+		case thermostat3_sUp:
+			lstatus="Up";
+			break;
+		case thermostat3_sDown:
+			lstatus="Down";
+			break;
+		case thermostat3_sRunUp:
+			if (dSubType==sTypeMertikG6RH4T1)
+				lstatus="Run Up";
+			else
+				lstatus="2nd Off";
+			break;
+		case thermostat3_sRunDown:
+			if (dSubType==sTypeMertikG6RH4T1)
+				lstatus="Run Down";
+			else
+				lstatus="2nd On";
+			break;
+		case thermostat3_sStop:
+			lstatus="Stop";
+			break;
+		}
+		break;
 	}
 }
 
@@ -1296,19 +1328,38 @@ bool GetLightCommand(
 		}
 		break;
 	case pTypeBlinds:
-		if (switchcmd=="On")
 		{
-			cmd=blinds_sClose;
+			if (switchcmd=="On")
+			{
+				cmd=blinds_sClose;
+			}
+			else if (switchcmd=="Off")
+			{
+				cmd=blinds_sOpen;
+			}
+			else
+			{
+				cmd=blinds_sStop;
+			}
+			return true;
 		}
-		else if (switchcmd=="Off")
+		break;
+	case pTypeThermostat3:
 		{
-			cmd=blinds_sOpen;
+			if (switchcmd=="On")
+			{
+				cmd=thermostat3_sOn;
+			}
+			else if (switchcmd=="Off")
+			{
+				cmd=thermostat3_sOff;
+			}
+			else
+			{
+				cmd=thermostat3_sOff;
+			}
+			return true;
 		}
-		else
-		{
-			cmd=blinds_sStop;
-		}
-		return true;
 		break;
 	}
 	//unknown command

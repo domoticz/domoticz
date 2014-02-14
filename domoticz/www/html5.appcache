@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 417
+# ref 418
 
 CACHE:
 favicon.ico
@@ -63,6 +63,9 @@ images/Speaker48_Off.png
 images/Generic.png
 images/Generic48_On.png
 images/Generic48_Off.png
+images/Fireplace.png
+images/Fireplace48_On.png
+images/Fireplace48_Off.png
 
 css/images/bg-track.png
 css/images/handle.png

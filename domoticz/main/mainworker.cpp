@@ -1083,6 +1083,12 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 		ID = szTmp;
 		Unit=pResponse->CHIME.sound;
 	}
+	else if (devType==pTypeThermostat3)
+	{
+		sprintf(szTmp,"%02X%02X%02X", pResponse->THERMOSTAT3.unitcode1, pResponse->THERMOSTAT3.unitcode2,pResponse->THERMOSTAT3.unitcode3);
+		ID = szTmp;
+		Unit=0;
+	}
 	else
 		return -1;
 
@@ -1165,6 +1171,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		case pTypeBlinds:
 		case pTypeSecurity1:
 		case pTypeChime:
+		case pTypeThermostat3:
 			//we received a control message from a domoticz client,
 			//and should actually perform this command ourself switch
 			DeviceRowIdx=PerformRealActionFromDomoticzClient(pRXCommand);
@@ -5647,71 +5654,84 @@ unsigned long long MainWorker::decode_Thermostat2(const CDomoticzHardwareBase *p
 //not in dbase yet
 unsigned long long MainWorker::decode_Thermostat3(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
-	unsigned long long DevRowIdx=-1;
-	WriteMessage("");
+	char szTmp[100];
+	std::string devname;
 
 	unsigned char devType=pTypeThermostat3;
+	unsigned char subType=pResponse->THERMOSTAT3.subtype;
+	std::string ID;
+	sprintf(szTmp,"%02X%02X%02X", pResponse->THERMOSTAT3.unitcode1, pResponse->THERMOSTAT3.unitcode2,pResponse->THERMOSTAT3.unitcode3);
+	ID=szTmp;
+	unsigned char Unit=0;
+	unsigned char cmnd=pResponse->THERMOSTAT3.cmnd;
+	unsigned char SignalLevel=pResponse->THERMOSTAT3.rssi;
+	unsigned char BatteryLevel = 255;
+	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
 
-	char szTmp[100];
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,devname);
+	PrintDeviceName(devname);
 
-	switch (pResponse->THERMOSTAT3.subtype)
+	if (m_verboselevel == EVBL_ALL)
 	{
-	case sTypeMertikG6RH4T1:
-		WriteMessage("subtype       = Mertik G6R-H4T1");
-		break;
-	case sTypeMertikG6RH4TB:
-		WriteMessage("subtype       = Mertik G6R-H4TB");
-		break;
-	default:
-		sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->THERMOSTAT3.packettype, pResponse->THERMOSTAT3.subtype);
+		switch (pResponse->THERMOSTAT3.subtype)
+		{
+		case sTypeMertikG6RH4T1:
+			WriteMessage("subtype       = Mertik G6R-H4T1");
+			break;
+		case sTypeMertikG6RH4TB:
+			WriteMessage("subtype       = Mertik G6R-H4TB");
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->THERMOSTAT3.packettype, pResponse->THERMOSTAT3.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+
+		sprintf(szTmp,"Sequence nbr  = %d", pResponse->THERMOSTAT3.seqnbr);
 		WriteMessage(szTmp);
-		break;
-	}
 
-	sprintf(szTmp,"Sequence nbr  = %d", pResponse->THERMOSTAT3.seqnbr);
-	WriteMessage(szTmp);
+		sprintf(szTmp, "ID            = 0x%02X%02X%02X", pResponse->THERMOSTAT3.unitcode1,pResponse->THERMOSTAT3.unitcode2,pResponse->THERMOSTAT3.unitcode3);
+		WriteMessage(szTmp);
 
-	sprintf(szTmp, "ID            = 0x%02X%02X%02X", pResponse->THERMOSTAT3.unitcode1,pResponse->THERMOSTAT3.unitcode2,pResponse->THERMOSTAT3.unitcode3);
-	WriteMessage(szTmp);
-
-	switch (pResponse->THERMOSTAT3.cmnd)
-	{
-	case 0:
-		WriteMessage("Command       = Off");
-		break;
-	case 1:
-		WriteMessage("Command       = On");
-		break;
-	case 2:
-		WriteMessage("Command       = Up");
-		break;
-	case 3:
-		WriteMessage("Command       = Down");
-		break;
-	case 4:
-		if (pResponse->THERMOSTAT3.subtype == sTypeMertikG6RH4T1)
-			WriteMessage("Command       = Run Up");
-		else
-			WriteMessage("Command       = 2nd Off");
-		break;
-	case 5:
-		if (pResponse->THERMOSTAT3.subtype == sTypeMertikG6RH4T1)
-			WriteMessage("Command       = Run Down");
-		else
-			WriteMessage("Command       = 2nd On");
-		break;
-	case 6:
-		if (pResponse->THERMOSTAT3.subtype == sTypeMertikG6RH4T1)
-			WriteMessage("Command       = Stop");
-		else
+		switch (pResponse->THERMOSTAT3.cmnd)
+		{
+		case thermostat3_sOff:
+			WriteMessage("Command       = Off");
+			break;
+		case thermostat3_sOn:
+			WriteMessage("Command       = On");
+			break;
+		case thermostat3_sUp:
+			WriteMessage("Command       = Up");
+			break;
+		case thermostat3_sDown:
+			WriteMessage("Command       = Down");
+			break;
+		case thermostat3_sRunUp:
+			if (pResponse->THERMOSTAT3.subtype == sTypeMertikG6RH4T1)
+				WriteMessage("Command       = Run Up");
+			else
+				WriteMessage("Command       = 2nd Off");
+			break;
+		case thermostat3_sRunDown:
+			if (pResponse->THERMOSTAT3.subtype == sTypeMertikG6RH4T1)
+				WriteMessage("Command       = Run Down");
+			else
+				WriteMessage("Command       = 2nd On");
+			break;
+		case thermostat3_sStop:
+			if (pResponse->THERMOSTAT3.subtype == sTypeMertikG6RH4T1)
+				WriteMessage("Command       = Stop");
+			else
+				WriteMessage("Command       = unknown");
+		default:
 			WriteMessage("Command       = unknown");
-	default:
-		WriteMessage("Command       = unknown");
-		break;
-	}
+			break;
+		}
 
-	sprintf(szTmp,"Signal level  = %d", pResponse->THERMOSTAT3.rssi);
-	WriteMessage(szTmp);
+		sprintf(szTmp,"Signal level  = %d", pResponse->THERMOSTAT3.rssi);
+		WriteMessage(szTmp);
+	}
 	return DevRowIdx;
 }
 
@@ -7887,6 +7907,29 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.CHIME.filler=0;
 			lcmd.CHIME.rssi=7;
 			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.CHIME));
+			if (!IsTesting) {
+				//send to internal for now (later we use the ACK)
+				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+			}
+			return HandleSwitchAction(bIsLightSwitchOn,OnAction,OffAction);
+		}
+		break;
+	case pTypeThermostat3:
+		{
+			tRBUF lcmd;
+			lcmd.THERMOSTAT3.packetlength=sizeof(lcmd.THERMOSTAT3)-1;
+			lcmd.THERMOSTAT3.packettype=dType;
+			lcmd.THERMOSTAT3.subtype=dSubType;
+			lcmd.THERMOSTAT3.unitcode1=ID2;
+			lcmd.THERMOSTAT3.unitcode2=ID3;
+			lcmd.THERMOSTAT3.unitcode3=ID4;
+			lcmd.THERMOSTAT3.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
+			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.THERMOSTAT3.cmnd))
+				return false;
+			level=15;
+			lcmd.THERMOSTAT3.filler=0;
+			lcmd.THERMOSTAT3.rssi=7;
+			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.THERMOSTAT3));
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
