@@ -1859,6 +1859,7 @@ bool CSQLHelper::SendNotification(const std::string &EventID, const std::string 
 	//Make a system tray message
 	ShowSystemTrayNotification(Message.c_str());
 #endif
+	CURLEncode uencode;
 
 	//check if prowl enabled
 	if (GetPreferencesVar("ProwlAPI",nValue,sValue))
@@ -1896,6 +1897,37 @@ bool CSQLHelper::SendNotification(const std::string &EventID, const std::string 
 			}
 		}
 	}
+
+	//Check if push over is enabled
+	if (GetPreferencesVar("PushoverAPI",nValue,sValue))
+	{
+		if (sValue!="")
+		{
+			std::string poApiKey=stdstring_trim(sValue);
+			if (GetPreferencesVar("PushoverUser",nValue,sValue))
+			{
+				if (sValue!="")
+				{
+					char sPostData[300];
+					int poPriority = Priority;
+					if (poPriority < -1) {
+						poPriority = -1;
+					};
+					std::string poSound ="pushover";
+					sprintf(sPostData,"token=%s&user=%s&priority=%d&title=%s&message=%s&sound=%s",poApiKey.c_str(),sValue.c_str(),poPriority,Message.c_str(),Message.c_str(),poSound.c_str());
+					if (!HTTPClient::POST("https://api.pushover.net/1/messages.json",sPostData,sResult))
+					{
+						_log.Log(LOG_ERROR,"Error sending Pushover Notification!");
+					}
+					else
+					{
+						_log.Log(LOG_NORM,"Notification sent (Pushover)");
+					}
+				}
+			}
+		}
+	}
+
 	//check if Email enabled
 	if (GetPreferencesVar("UseEmailInNotifications", nValue))
 	{
