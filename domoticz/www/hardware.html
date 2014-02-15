@@ -143,6 +143,27 @@
 </form>
 </center>
 </div>
+<div id="p1usbeedit" style="display:none;">
+<center>
+<form id="p1usbtype">
+	<br>
+	<h2><span data-i18n="Hardware">Hardware</span>:</h2>
+	<table>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Baudrate">Baudrate</span>: </label></td>
+			<td><select id="P1Baudrate" name="P1Baudrate" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">9600</option>
+				<option value="1">115200</option>
+			</select></td>
+		</tr>
+	</table>
+	<br>
+	<br>
+	<input type="hidden" id="idx" name="idx" value="-1">
+	<button class="btn btn-danger" id="submitbuttonp1usb">Set Mode</button>
+</form>
+</center>
+</div>
 <div id="s0metertypeedit" style="display:none;">
 <center>
 <form id="s0metertype">
@@ -828,6 +849,31 @@ function EditRego6XXType(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 	$('#hardwarecontent #comborego6xxtype').val(Mode1);
 }
 
+function SetP1USBType()
+{
+  $.post("setp1usbtype.webem", $("#hardwarecontent #p1usbtype").serialize(), function(data) {
+   ShowHardware();
+  });
+}
+
+function EditP1USB(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
+{
+	cursordefault();
+	var htmlcontent = '';
+	htmlcontent='<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
+	htmlcontent+=$('#p1usbeedit').html();
+	$('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
+	$('#hardwarecontent').i18n();
+
+	$('#hardwarecontent #submitbuttonp1usb').click(function (e) {
+		e.preventDefault();
+		SetP1USBType();
+	});
+
+	$('#hardwarecontent #idx').val(idx);
+	$('#hardwarecontent #P1Baudrate').val(Mode1);
+}
+
 function EditS0MeterType(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 {
 	cursordefault();
@@ -1473,6 +1519,9 @@ function RefreshHardwareTable()
 			}
 			else if (HwTypeStr.indexOf("OpenTherm") >= 0) {
 				HwTypeStr+=' <span class="label label-info" onclick="EditOpenTherm(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Setup</span>';
+			}
+			else if (HwTypeStr.indexOf("P1 Smart Meter USB") >= 0) {
+				HwTypeStr+=' <span class="label label-info" onclick="EditP1USB(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Setup</span>';
 			}
 			else if (HwTypeStr.indexOf("Dummy") >= 0) {
 				HwTypeStr+=' <span class="label label-info" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');" onmouseover="cursorhand()" onmouseout="cursordefault()">Create Virtual Sensors</span>';

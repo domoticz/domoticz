@@ -390,7 +390,10 @@ bool MainWorker::AddHardwareFromParams(
 			}
 			else if (Type==HTYPE_P1SmartMeter)
 			{
-				pHardware = new P1MeterSerial(ID,szSerialPort,9600);
+				int baudrate=9600;
+				if (Mode1==1)
+					baudrate=115200;
+				pHardware = new P1MeterSerial(ID,szSerialPort,baudrate);
 			}
 			else if (Type==HTYPE_Rego6XX)
 			{

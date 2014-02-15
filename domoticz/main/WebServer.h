@@ -48,6 +48,7 @@ public:
 	char * SetS0MeterType();
 	char * SetLimitlessType();
 	char * SetOpenThermSettings();
+	char * SetP1USBType();
 
 	cWebem *m_pWebEm;
 

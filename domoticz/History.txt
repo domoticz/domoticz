@@ -26,6 +26,7 @@ Version 1.0.xxxx (January xxth 2014)
 - Implemented: Weight Scale now includes a digit in the graphs
 - Implemented: Pushover notification support
 - Implemented: Thermostat3 Support (Mertik)
+- Implemented: Support for P1 Cables with baudrate 115200
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)
