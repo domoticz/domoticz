@@ -352,7 +352,7 @@ void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sleep_milliseconds(100);
 				pCMD=(unsigned char*)&RGBWSetColorToWhiteGroup4;
 			}
-			pCMD=(unsigned char*)&RGBWSetColorToWhiteAll;
+			//pCMD=(unsigned char*)&RGBWSetColorToWhiteAll;
 			break;
 		case Limitless_SetBrightnessLevel:
 			{
@@ -475,7 +475,7 @@ void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			else if (pLed->dunit==4) {
 				pCMD=(unsigned char*)&Group4Full;
 			}
-			pCMD=(unsigned char*)&RGBWSetColorToWhiteAll;
+			//pCMD=(unsigned char*)&RGBWSetColorToWhiteAll;
 			break;
 		}
 	}
@@ -523,7 +523,7 @@ void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			else if (pLed->dunit==4) {
 				pCMD=(unsigned char*)&Group4Full;
 			}
-			pCMD=(unsigned char*)&RGBWSetColorToWhiteAll;
+			//pCMD=(unsigned char*)&RGBWSetColorToWhiteAll;
 			break;
 		}
 	}
@@ -531,6 +531,6 @@ void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 	if (pCMD!=NULL)
 	{
 		sendto(m_RemoteSocket,(const char*)pCMD,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-		sleep_milliseconds(100);
+		//sleep_milliseconds(100);
 	}
 }
