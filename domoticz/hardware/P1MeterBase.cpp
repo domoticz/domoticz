@@ -11,15 +11,16 @@ typedef enum {
 	EXCLMARK 
 } MatchType;
 
-#define P1_SMID "/ISk5\\" // Smart Meter ID. Used to detect start of telegram.
-#define P1PU1 "1-0:1.8.1" // total power usage normal tariff
-#define P1PU2 "1-0:1.8.2" // total power usage low tariff
-#define P1PD1 "1-0:2.8.1" // total delivered power normal tariff
-#define P1PD2 "1-0:2.8.2" // total delivered power low tariff
-#define P1TIP "0-0:96.14.0" // tariff indicator power
-#define P1PUC "1-0:1.7.0" // current power usage
-#define P1PDC "1-0:2.7.0" // current power delivery
-#define P1GTS "0-1:24.3.0" // timestamp gas usage sample
+#define P1_SMID		"/ISk5\\" // Smart Meter ID. Used to detect start of telegram.
+#define P1PU1		"1-0:1.8.1" // total power usage normal tariff
+#define P1PU2		"1-0:1.8.2" // total power usage low tariff
+#define P1PD1		"1-0:2.8.1" // total delivered power normal tariff
+#define P1PD2		"1-0:2.8.2" // total delivered power low tariff
+#define P1TIP		"0-0:96.14.0" // tariff indicator power
+#define P1PUC		"1-0:1.7.0" // current power usage
+#define P1PDC		"1-0:2.7.0" // current power delivery
+#define P1GTS		"0-1:24.3.0" // timestamp gas usage sample
+#define P1GTSDSMRv4	"0-1:24.2.1" // timestamp gas usage sample
 
 typedef enum {
 	P1TYPE_SMID=0,
@@ -32,6 +33,7 @@ typedef enum {
 	P1TYPE_DELIVCURRENT,
 	P1TYPE_GASTIMESTAMP,
 	P1TYPE_GASUSAGE,
+	P1TYPE_GASUSAGEDSMRv4,
 	P1TYPE_END,
 } P1Type;
 
@@ -46,16 +48,17 @@ typedef struct _tMatch {
 
 Match matchlist[] = {
 	{ID,	P1TYPE_SMID,	P1_SMID, "", 0, 0},
-	{STD,	P1TYPE_POWERUSAGE1,	P1PU1,	"powerusage1",	10, 9},
-	{STD,	P1TYPE_POWERUSAGE2,	P1PU2,	"powerusage2",	10, 9},
-	{STD,	P1TYPE_POWERDELIV1,	P1PD1,	"powerdeliv1",	10, 9},
-	{STD,	P1TYPE_POWERDELIV2,	P1PD2,	"powerdeliv2",	10, 9},
-	{STD,	P1TYPE_TARIFF,		P1TIP,	"tariff",		12, 4},
-	{STD,	P1TYPE_USAGECURRENT,P1PUC,	"powerusagec",	10, 7},
-	{STD,	P1TYPE_DELIVCURRENT,P1PDC,	"powerdelivc",	10, 7},
-	{LINE17,P1TYPE_GASTIMESTAMP,P1GTS,	"gastimestamp",	11, 12},
-	{LINE18,P1TYPE_GASUSAGE,	"(",	"gasusage",		1, 9},
-	{EXCLMARK,P1TYPE_END,		"!",	"",				0, 0}
+	{STD,	P1TYPE_POWERUSAGE1,		P1PU1,			"powerusage1",	10, 9},
+	{STD,	P1TYPE_POWERUSAGE2,		P1PU2,			"powerusage2",	10, 9},
+	{STD,	P1TYPE_POWERDELIV1,		P1PD1,			"powerdeliv1",	10, 9},
+	{STD,	P1TYPE_POWERDELIV2,		P1PD2,			"powerdeliv2",	10, 9},
+	{STD,	P1TYPE_TARIFF,			P1TIP,			"tariff",		12, 4},
+	{STD,	P1TYPE_USAGECURRENT,	P1PUC,			"powerusagec",	10, 7},
+	{STD,	P1TYPE_DELIVCURRENT,	P1PDC,			"powerdelivc",	10, 7},
+	{LINE17,P1TYPE_GASTIMESTAMP,	P1GTS,			"gastimestamp",	11, 12},
+	{LINE18,P1TYPE_GASUSAGE,		"(",			"gasusage",		1, 9},
+	{STD,	P1TYPE_GASUSAGEDSMRv4,	P1GTSDSMRv4,	"gasusage",		26, 8},
+	{EXCLMARK,P1TYPE_END,			"!",			"",				0, 0}
 };
 
 P1MeterBase::P1MeterBase(void)
@@ -136,73 +139,6 @@ void P1MeterBase::MatchLine()
 			break;
 		} //switch
 
-		if(!found)
-			continue;
-		if (t.matchtype==STD)
-		{
-			vString=(const char*)&m_buffer+t.start;
-			int ePos=vString.find_first_of("*");
-			if (ePos==std::string::npos)
-			{
-				strncpy(value, (const char*)&m_buffer+t.start, t.width);
-				value[t.width] = 0;
-			}
-			else
-			{
-				strcpy(value,vString.substr(0,ePos).c_str());
-			}
-		}
-		else if (t.matchtype==LINE18)
-		{
-			vString=(const char*)&m_buffer+t.start;
-			int ePos=vString.find_first_of(")");
-			if (ePos==std::string::npos)
-			{
-				strncpy(value, (const char*)&m_buffer+t.start, t.width);
-				value[t.width] = 0;
-			}
-			else
-			{
-				strcpy(value,vString.substr(0,ePos).c_str());
-			}
-		}
-		else
-		{
-			strncpy(value, (const char*)&m_buffer + t.start, t.width);
-			value[t.width] = 0;
-		}
-
-		switch (t.type)
-		{
-		case P1TYPE_POWERUSAGE1:
-			m_p1power.powerusage1=(unsigned long)(atof(value)*1000.0f);
-			break;
-		case P1TYPE_POWERUSAGE2:
-			m_p1power.powerusage2=(unsigned long)(atof(value)*1000.0f);
-			break;
-		case P1TYPE_POWERDELIV1:
-			m_p1power.powerdeliv1=(unsigned long)(atof(value)*1000.0f);
-			break;
-		case P1TYPE_POWERDELIV2:
-			m_p1power.powerdeliv2=(unsigned long)(atof(value)*1000.0f);
-			break;
-		case P1TYPE_TARIFF:
-			break;
-		case P1TYPE_USAGECURRENT:
-			m_p1power.usagecurrent=(unsigned long)(atof(value)*1000.0f);	//Watt
-			break;
-		case P1TYPE_DELIVCURRENT:
-			m_p1power.delivcurrent=(unsigned long)(atof(value)*1000.0f);	//Watt
-			break;
-		case P1TYPE_GASTIMESTAMP:
-			break;
-		case P1TYPE_GASUSAGE:
-			m_p1gas.gasusage=(unsigned long)(atof(value)*1000.0f);
-			break;
-		}
-
-		//_log.Log(LOG_NORM,"Key: %s, Value: %s", t.topic,value);
-
 		if (m_exclmarkfound) {
 			bool bSend2Shared=false;
 			time_t atime=mytime(NULL);
@@ -227,7 +163,80 @@ void P1MeterBase::MatchLine()
 			}
 			m_exclmarkfound=0;
 		}
-		return;
+		else
+		{
+			if(!found)
+				continue;
+			if (t.matchtype==STD)
+			{
+				vString=(const char*)&m_buffer+t.start;
+				int ePos=vString.find_first_of("*");
+				if (ePos==std::string::npos)
+				{
+					strncpy(value, (const char*)&m_buffer+t.start, t.width);
+					value[t.width] = 0;
+				}
+				else
+				{
+					strcpy(value,vString.substr(0,ePos).c_str());
+				}
+			}
+			else if (t.matchtype==LINE18)
+			{
+				vString=(const char*)&m_buffer+t.start;
+				int ePos=vString.find_first_of(")");
+				if (ePos==std::string::npos)
+				{
+					strncpy(value, (const char*)&m_buffer+t.start, t.width);
+					value[t.width] = 0;
+				}
+				else
+				{
+					strcpy(value,vString.substr(0,ePos).c_str());
+				}
+			}
+			else
+			{
+				strncpy(value, (const char*)&m_buffer + t.start, t.width);
+				value[t.width] = 0;
+			}
+
+			switch (t.type)
+			{
+			case P1TYPE_POWERUSAGE1:
+				m_p1power.powerusage1=(unsigned long)(atof(value)*1000.0f);
+				break;
+			case P1TYPE_POWERUSAGE2:
+				m_p1power.powerusage2=(unsigned long)(atof(value)*1000.0f);
+				break;
+			case P1TYPE_POWERDELIV1:
+				m_p1power.powerdeliv1=(unsigned long)(atof(value)*1000.0f);
+				break;
+			case P1TYPE_POWERDELIV2:
+				m_p1power.powerdeliv2=(unsigned long)(atof(value)*1000.0f);
+				break;
+			case P1TYPE_TARIFF:
+				break;
+			case P1TYPE_USAGECURRENT:
+				m_p1power.usagecurrent=(unsigned long)(atof(value)*1000.0f);	//Watt
+				break;
+			case P1TYPE_DELIVCURRENT:
+				m_p1power.delivcurrent=(unsigned long)(atof(value)*1000.0f);	//Watt
+				break;
+			case P1TYPE_GASTIMESTAMP:
+				break;
+			case P1TYPE_GASUSAGE:
+				m_p1gas.gasusage=(unsigned long)(atof(value)*1000.0f);
+				break;
+			case P1TYPE_GASUSAGEDSMRv4:
+				m_p1gas.gasusage=(unsigned long)(atof(value)*1000.0f);
+				break;
+			}
+
+			//_log.Log(LOG_NORM,"Key: %s, Value: %s", t.topic,value);
+
+			return;
+		}
 	}
 }
 
