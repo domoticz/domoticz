@@ -7981,35 +7981,25 @@ std::string CWebServer::GetJSonPage()
 		}
 		else if (cparam=="testpushover")
 		{
+			std::string poapi=m_pWebEm->FindValue("poapi");
+			std::string pouser=m_pWebEm->FindValue("pouser");
+			if ((poapi=="")||(pouser==""))
+				goto exitjson;
+
 			root["title"]="Test Pushover";
-			int nValue;
-			std::string sValue;
 			char sPostData[300];
 			std::string sResult;
-			if (m_pMain->m_sql.GetPreferencesVar("PushoverAPI",nValue,sValue))
+			std::string poTitle = "Domoticz test";
+			std::string poMessage = "Domoticz test message!";
+			sprintf(sPostData,"token=%s&user=%s&priority=0&title=%s&message=%s",poapi.c_str(),pouser.c_str(),poTitle.c_str(),poMessage.c_str());
+			if (!HTTPClient::POST("https://api.pushover.net/1/messages.json",sPostData,sResult))
 			{
-				if (sValue!="")
-				{
-					std::string poApiKey=stdstring_trim(sValue);
-					if (m_pMain->m_sql.GetPreferencesVar("PushoverUser",nValue,sValue))
-					{
-						if (sValue!="")
-						{
-							std::string poTitle = "Domoticz test";
-							std::string poMessage = "Domoticz test message!";
-							sprintf(sPostData,"token=%s&user=%s&priority=0&title=%s&message=%s",poApiKey.c_str(),sValue.c_str(),poTitle.c_str(),poMessage.c_str());
-							if (!HTTPClient::POST("https://api.pushover.net/1/messages.json",sPostData,sResult))
-							{
-								_log.Log(LOG_ERROR,"Error sending Pushover Notification!");
-							}
-							else
-							{
-							_log.Log(LOG_NORM,"Notification sent (Pushover)");
-							root["status"]="OK";
-							}
-						}
-					}
-				}
+				_log.Log(LOG_ERROR,"Error sending Pushover Notification!");
+			}
+			else
+			{
+			_log.Log(LOG_NORM,"Notification sent (Pushover)");
+			root["status"]="OK";
 			}
 		}
 		else if (cparam=="testemail")

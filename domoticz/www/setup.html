@@ -579,7 +579,7 @@ function TestPushoverNotification()
     return;
   }
 	$.ajax({
-		url: "json.htm?type=command&param=testpushover",
+		url: "json.htm?type=command&param=testpushover&poapi="+POAPI+"&pouser="+POUSERID,
 		async: false, 
 		dataType: 'json',
 		success: function(data) {

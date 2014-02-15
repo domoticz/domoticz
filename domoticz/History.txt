@@ -27,6 +27,8 @@ Version 1.0.xxxx (January xxth 2014)
 - Implemented: Pushover notification support
 - Implemented: Thermostat3 Support (Mertik)
 - Implemented: Support for P1 Cables with baudrate 115200
+- Fixed: Limitless/AppLamp problem
+- Fixed: Pushover test option in the settings page
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)
