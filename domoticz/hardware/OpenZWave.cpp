@@ -1058,13 +1058,18 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	{
 		if (
 			(vLabel=="Alarm Level")||
-			(vLabel=="Flood")
+			(vLabel=="Flood")||
+			(vLabel=="Smoke")||
+			(vLabel=="Heat")
 			)
 		{
 			if (m_pManager->GetValueAsByte(vID,&byteValue)==true)
 			{
 				_device.devType= ZDTYPE_SWITCHNORMAL;
-				_device.intvalue=byteValue;
+				if (byteValue==0)
+					_device.intvalue=0;
+				else
+					_device.intvalue=255;
 				InsertDevice(_device);
 			}
 		}
@@ -1325,13 +1330,18 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 	{
 	case ZDTYPE_SWITCHNORMAL:
 		{
-			if ((vLabel=="Alarm Level")||(vLabel=="Flood"))
+			if ((vLabel=="Alarm Level")||(vLabel=="Flood")||(vLabel=="Smoke")||(vLabel=="Heat"))
 			{
-				if (pDevice->intvalue==byteValue)
+				int nintvalue=0;
+				if (byteValue==0)
+					nintvalue=0;
+				else
+					nintvalue=255;
+				if (nintvalue==byteValue)
 				{
 					return; //dont send same value
 				}
-				pDevice->intvalue=byteValue;
+				pDevice->intvalue=nintvalue;
 			}
 			else if (vLabel=="Open")
 			{
