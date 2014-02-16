@@ -37,8 +37,17 @@ P1MeterSerial::~P1MeterSerial()
 	clearReadCallback();
 }
 
+#define DEBUG_FROM_FILE
+
 bool P1MeterSerial::StartHardware()
 {
+#ifdef DEBUG_FROM_FILE
+	FILE *fIn=fopen("E:\\meter.txt","rb+");
+	BYTE buffer[1000];
+	int ret=fread((BYTE*)&buffer,1,sizeof(buffer),fIn);
+	fclose(fIn);
+	ParseData((const BYTE*)&buffer,ret);
+#endif
 	//Try to open the Serial Port
 	try
 	{

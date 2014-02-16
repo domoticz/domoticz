@@ -3758,13 +3758,8 @@ std::string CWebServer::GetJSonPage()
 							std::vector<std::string> sd=*itt;
 
 							root["result"][ii]["d"]=sd[1].substr(0,16);
-							if (sd[0].size()>2)
-							{
-								sprintf(szTmp,"%.1f",atof(sd[0].c_str())/10.0f);
-								root["result"][ii]["v"]=szTmp;
-							}
-							else
-								root["result"][ii]["v"]=sd[0];
+							sprintf(szTmp,"%.1f",atof(sd[0].c_str())/10.0f);
+							root["result"][ii]["v"]=szTmp;
 							ii++;
 						}
 					}
@@ -5359,18 +5354,10 @@ std::string CWebServer::GetJSonPage()
 							std::vector<std::string> sd=*itt;
 
 							root["result"][ii]["d"]=sd[2].substr(0,16);
-							if (sd[0].size()>2)
-							{
-								sprintf(szTmp,"%.1f",atof(sd[0].c_str())/10.0f);
-								root["result"][ii]["v_min"]=szTmp;
-								sprintf(szTmp,"%.1f",atof(sd[1].c_str())/10.0f);
-								root["result"][ii]["v_max"]=szTmp;
-							}
-							else
-							{
-								root["result"][ii]["v_min"]=sd[0];
-								root["result"][ii]["v_max"]=sd[1];
-							}
+							sprintf(szTmp,"%.1f",atof(sd[0].c_str())/10.0f);
+							root["result"][ii]["v_min"]=szTmp;
+							sprintf(szTmp,"%.1f",atof(sd[1].c_str())/10.0f);
+							root["result"][ii]["v_max"]=szTmp;
 							ii++;
 						}
 					}
@@ -5735,8 +5722,10 @@ std::string CWebServer::GetJSonPage()
 					if (result.size()>0)
 					{
 						root["result"][ii]["d"]=szDateEnd;
-						root["result"][ii]["v_min"]=result[0][0];
-						root["result"][ii]["v_max"]=result[0][1];
+						sprintf(szTmp,"%.1f",atof(result[0][0].c_str())/10.0f);
+						root["result"][ii]["v_min"]=szTmp;
+						sprintf(szTmp,"%.1f",atof(result[0][1].c_str())/10.0f);
+						root["result"][ii]["v_max"]=szTmp;
 						ii++;
 					}
 				}
