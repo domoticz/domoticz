@@ -3346,18 +3346,16 @@ unsigned long long MainWorker::decode_Lighting4(const CDomoticzHardwareBase *pHa
 	unsigned char subType=pResponse->LIGHTING4.subtype;
 	sprintf(szTmp,"%02X%02X%02X", pResponse->LIGHTING4.cmd1, pResponse->LIGHTING4.cmd2, pResponse->LIGHTING4.cmd3);
 	std::string ID = szTmp;
-	unsigned char Unit=0;
+	int Unit=0;
 	unsigned char cmnd=1; //only an on supported
 	unsigned char SignalLevel=pResponse->LIGHTING4.rssi;
-
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,devname);
+	sprintf(szTmp,"%d",(pResponse->LIGHTING4.pulseHigh*256)+pResponse->LIGHTING4.pulseLow);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp,devname);
 	PrintDeviceName(devname);
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
-		char szTmp[100];
-
 		if (m_verboselevel == EVBL_ALL)
 		{
 			switch (pResponse->LIGHTING4.subtype)
@@ -7625,17 +7623,27 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.LIGHTING4.cmd1=ID2;
 			lcmd.LIGHTING4.cmd2=ID3;
 			lcmd.LIGHTING4.cmd3=ID4;
-			int pulsetimeing=350;
-			lcmd.LIGHTING4.pulseHigh=pulsetimeing/256;
-			lcmd.LIGHTING4.pulseLow=pulsetimeing&0xFF;
-			lcmd.LIGHTING4.filler=0;
-			lcmd.LIGHTING4.rssi=7;
-			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING4));
-			if (!IsTesting) {
-				//send to internal for now (later we use the ACK)
-				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+
+			//Get Pulse timing
+			std::vector<std::vector<std::string> > result;
+			char szTmp[200];
+			sprintf(szTmp,"SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, sd[1].c_str(),Unit,int(dType),int(dSubType));
+			result=m_sql.query(szTmp);
+			if (result.size()==1)
+			{
+				int pulsetimeing=atoi(result[0][0].c_str());
+				lcmd.LIGHTING4.pulseHigh=pulsetimeing/256;
+				lcmd.LIGHTING4.pulseLow=pulsetimeing&0xFF;
+				lcmd.LIGHTING4.filler=0;
+				lcmd.LIGHTING4.rssi=7;
+				WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING4));
+				if (!IsTesting) {
+					//send to internal for now (later we use the ACK)
+					DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+				}
+				return true;
 			}
-			return true;
+			return false;
 		}
 		break;
 	case pTypeLighting5:
