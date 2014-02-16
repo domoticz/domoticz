@@ -5549,6 +5549,15 @@ std::string CWebServer::GetJSonPage()
 						sprintf(szTmp,"%.3f",atof(sValue.c_str())/1000.0);
 						root["counter"]=szTmp;
 					}
+					else if (dType==pTypeENERGY)
+					{
+						size_t spos=sValue.find(";");
+						if (spos!=std::string::npos)
+						{
+							sprintf(szTmp,"%.3f",atof(sValue.substr(spos+1).c_str()));
+							root["counter"]=szTmp;
+						}
+					}
 					szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 					result=m_pMain->m_sql.query(szQuery.str());
 					if (result.size()>0)

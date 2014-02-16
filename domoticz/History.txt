@@ -30,6 +30,7 @@ Version 1.0.xxxx (January xxth 2014)
 - Fixed: Limitless/AppLamp problem
 - Fixed: Pushover test option in the settings page
 - Implemented: Dashboard tiles can now be ordered for room-plans
+- Implemented: Allow interactive emulation of X10 sensors
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)
