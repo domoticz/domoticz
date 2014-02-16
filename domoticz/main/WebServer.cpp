@@ -8824,45 +8824,91 @@ std::string CWebServer::GetJSonPage()
 			std::string idx2=m_pWebEm->FindValue("idx2");
 			if ((idx1=="")||(idx2==""))
 				goto exitjson;
+			std::string sroomid=m_pWebEm->FindValue("roomid");
+			int roomid=atoi(sroomid.c_str());
 
 			std::string Order1,Order2;
-			//get device order 1
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT [Order] FROM DeviceStatus WHERE (ID == " << idx1 << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()<1)
-				goto exitjson;
-			Order1=result[0][0];
-
-			//get device order 2
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT [Order] FROM DeviceStatus WHERE (ID == " << idx2 << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()<1)
-				goto exitjson;
-			Order2=result[0][0];
-
-			root["status"]="OK";
-			root["title"]="SwitchDeviceOrder";
-
-			szQuery.clear();
-			szQuery.str("");
-			if(atoi(Order1.c_str()) < atoi(Order2.c_str()))
+			if (roomid==0)
 			{
-				szQuery << "UPDATE DeviceStatus SET [Order] = [Order]+1 WHERE ([Order] >= " << Order1 << " AND [Order] < " << Order2 << ")";
+				//get device order 1
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT [Order] FROM DeviceStatus WHERE (ID == " << idx1 << ")";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()<1)
+					goto exitjson;
+				Order1=result[0][0];
+
+				//get device order 2
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT [Order] FROM DeviceStatus WHERE (ID == " << idx2 << ")";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()<1)
+					goto exitjson;
+				Order2=result[0][0];
+
+				root["status"]="OK";
+				root["title"]="SwitchDeviceOrder";
+
+				szQuery.clear();
+				szQuery.str("");
+				if(atoi(Order1.c_str()) < atoi(Order2.c_str()))
+				{
+					szQuery << "UPDATE DeviceStatus SET [Order] = [Order]+1 WHERE ([Order] >= " << Order1 << " AND [Order] < " << Order2 << ")";
+				}
+				else
+				{
+					szQuery << "UPDATE DeviceStatus SET [Order] = [Order]-1 WHERE ([Order] > " << Order2 << " AND [Order] <= " << Order1 << ")";
+				}
+				m_pMain->m_sql.query(szQuery.str());
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "UPDATE DeviceStatus SET [Order] = " << Order1 << " WHERE (ID == " << idx2 << ")";
+				m_pMain->m_sql.query(szQuery.str());
 			}
 			else
 			{
-				szQuery << "UPDATE DeviceStatus SET [Order] = [Order]-1 WHERE ([Order] > " << Order2 << " AND [Order] <= " << Order1 << ")";
-			}
-			m_pMain->m_sql.query(szQuery.str());
+				//change order in a room
+				//get device order 1
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT [Order] FROM DeviceToPlansMap WHERE (DeviceRowID == " << idx1 << ") AND (PlanID=="<<roomid << ")";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()<1)
+					goto exitjson;
+				Order1=result[0][0];
 
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "UPDATE DeviceStatus SET [Order] = " << Order1 << " WHERE (ID == " << idx2 << ")";
-			m_pMain->m_sql.query(szQuery.str());
+				//get device order 2
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT [Order] FROM DeviceToPlansMap WHERE (DeviceRowID == " << idx2 << ") AND (PlanID=="<<roomid << ")";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()<1)
+					goto exitjson;
+				Order2=result[0][0];
+
+				root["status"]="OK";
+				root["title"]="SwitchDeviceOrder";
+
+				szQuery.clear();
+				szQuery.str("");
+				if(atoi(Order1.c_str()) < atoi(Order2.c_str()))
+				{
+					szQuery << "UPDATE DeviceToPlansMap SET [Order] = [Order]+1 WHERE ([Order] >= " << Order1 << " AND [Order] < " << Order2 << ") AND (PlanID=="<<roomid << ")";
+				}
+				else
+				{
+					szQuery << "UPDATE DeviceToPlansMap SET [Order] = [Order]-1 WHERE ([Order] > " << Order2 << " AND [Order] <= " << Order1 << ") AND (PlanID=="<<roomid << ")";
+				}
+				m_pMain->m_sql.query(szQuery.str());
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "UPDATE DeviceToPlansMap SET [Order] = " << Order1 << " WHERE (DeviceRowID == " << idx2 << ") AND (PlanID=="<<roomid << ")";
+				m_pMain->m_sql.query(szQuery.str());
+			}
 		}
 		else if (cparam=="switchsceneorder")
 		{

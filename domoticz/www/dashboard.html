@@ -2635,12 +2635,6 @@ function ShowFavorites()
 	ResizeDimSliders();
 
 	var bAllowReorder=true;
-	if (typeof window.myglobals.LastPlanSelected!= 'undefined') {
-		if (window.myglobals.LastPlanSelected!=0) {
-			bAllowReorder=false;
-		}
-	}
-
 	if (bAllowReorder==true) {
 		if (window.my_config.userrights==2) {
 			if (window.myglobals.ismobileint==false) {
@@ -2661,9 +2655,12 @@ function ShowFavorites()
 								bootbox.alert($.i18n('Only possible between Sensors of the same kind!'));
 								$.myglobals.refreshTimer = setInterval(ShowFavorites, 10000);
 							} else {
-							
+								var roomid=0;
+								if (typeof window.myglobals.LastPlanSelected!= 'undefined') {
+									roomid=window.myglobals.LastPlanSelected;
+								}
 								$.ajax({
-									 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + parts1[1] + "&idx2=" + parts2[1],
+									 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + parts1[1] + "&idx2=" + parts2[1] + "&roomid=" + roomid,
 									 async: false, 
 									 dataType: 'json',
 									 success: function(data) {
