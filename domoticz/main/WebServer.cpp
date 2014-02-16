@@ -4785,6 +4785,8 @@ std::string CWebServer::GetJSonPage()
 		{
 			char szDateStart[40];
 			char szDateEnd[40];
+			char szDateStartPrev[40];
+			char szDateEndPrev[40];
 
 			std::string sactmonth=m_pWebEm->FindValue("actmonth");
 			std::string sactyear=m_pWebEm->FindValue("actyear");
@@ -4795,6 +4797,7 @@ std::string CWebServer::GetJSonPage()
 			if ((sactmonth!="")&&(sactyear!=""))
 			{
 				sprintf(szDateStart,"%04d-%02d-%02d",actYear,actMonth,1);
+				sprintf(szDateStartPrev,"%04d-%02d-%02d",actYear-1,actMonth,1);
 				actMonth++;
 				if (actMonth==13)
 				{
@@ -4802,12 +4805,15 @@ std::string CWebServer::GetJSonPage()
 					actYear++;
 				}
 				sprintf(szDateEnd,"%04d-%02d-%02d",actYear,actMonth,1);
+				sprintf(szDateEndPrev,"%04d-%02d-%02d",actYear-1,actMonth,1);
 			}
 			else if (sactyear!="")
 			{
 				sprintf(szDateStart,"%04d-%02d-%02d",actYear,1,1);
+				sprintf(szDateStartPrev,"%04d-%02d-%02d",actYear-1,1,1);
 				actYear++;
 				sprintf(szDateEnd,"%04d-%02d-%02d",actYear,1,1);
+				sprintf(szDateEndPrev,"%04d-%02d-%02d",actYear-1,1,1);
 			}
 			else
 			{
@@ -4821,6 +4827,7 @@ std::string CWebServer::GetJSonPage()
 				ltime.tm_mday=tm1.tm_mday;
 
 				sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
+				sprintf(szDateEndPrev,"%04d-%02d-%02d",ltime.tm_year+1900-1,ltime.tm_mon+1,ltime.tm_mday);
 
 				if (srange=="month")
 				{
@@ -4838,6 +4845,7 @@ std::string CWebServer::GetJSonPage()
 				localtime_r(&later,&tm2);
 
 				sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
+				sprintf(szDateStartPrev,"%04d-%02d-%02d",tm2.tm_year+1900-1,tm2.tm_mon+1,tm2.tm_mday);
 			}
 
 			if (sensor=="temp") {
@@ -5196,8 +5204,10 @@ std::string CWebServer::GetJSonPage()
 				szQuery.clear();
 				szQuery.str("");
 				int ii=0;
+				int iPrev=0;
 				if (dType==pTypeP1Power)
 				{
+					//Actual Year
 					szQuery << "SELECT Value1,Value2,Value5,Value6, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 					result=m_pMain->m_sql.query(szQuery.str());
 					if (result.size()>0)
@@ -5231,6 +5241,48 @@ std::string CWebServer::GetJSonPage()
 							sprintf(szTmp,"%.3f",fDeliv_2/EnergyDivider);
 							root["result"][ii]["r2"]=szTmp;
 							ii++;
+						}
+						if (bHaveDeliverd)
+						{
+							root["delivered"]=true;
+						}
+					}
+					//Previous Year
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT Value1,Value2,Value5,Value6, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStartPrev << "' AND Date<='" << szDateEndPrev << "') ORDER BY Date ASC";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						bool bHaveDeliverd=false;
+						std::vector<std::vector<std::string> >::const_iterator itt;
+						for (itt=result.begin(); itt!=result.end(); ++itt)
+						{
+							std::vector<std::string> sd=*itt;
+
+							root["resultprev"][iPrev]["d"]=sd[4].substr(0,16);
+
+							std::string szUsage1=sd[0];
+							std::string szDeliv1=sd[1];
+							std::string szUsage2=sd[2];
+							std::string szDeliv2=sd[3];
+
+							float fUsage_1=(float)atof(szUsage1.c_str());
+							float fUsage_2=(float)atof(szUsage2.c_str());
+							float fDeliv_1=(float)atof(szDeliv1.c_str());
+							float fDeliv_2=(float)atof(szDeliv2.c_str());
+
+							if ((fDeliv_1!=0)||(fDeliv_2!=0))
+								bHaveDeliverd=true;
+							sprintf(szTmp,"%.3f",fUsage_1/EnergyDivider);
+							root["resultprev"][iPrev]["v"]=szTmp;
+							sprintf(szTmp,"%.3f",fUsage_2/EnergyDivider);
+							root["resultprev"][iPrev]["v2"]=szTmp;
+							sprintf(szTmp,"%.3f",fDeliv_1/EnergyDivider);
+							root["resultprev"][iPrev]["r1"]=szTmp;
+							sprintf(szTmp,"%.3f",fDeliv_2/EnergyDivider);
+							root["resultprev"][iPrev]["r2"]=szTmp;
+							iPrev++;
 						}
 						if (bHaveDeliverd)
 						{
@@ -5558,6 +5610,7 @@ std::string CWebServer::GetJSonPage()
 							root["counter"]=szTmp;
 						}
 					}
+					//Actual Year
 					szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 					result=m_pMain->m_sql.query(szQuery.str());
 					if (result.size()>0)
@@ -5586,6 +5639,39 @@ std::string CWebServer::GetJSonPage()
 							root["result"][ii]["d"]=sd[1].substr(0,16);
 							root["result"][ii]["v"]=szValue;
 							ii++;
+						}
+					}
+					//Past Year
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStartPrev << "' AND Date<='" << szDateEndPrev << "') ORDER BY Date ASC";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator itt;
+						for (itt=result.begin(); itt!=result.end(); ++itt)
+						{
+							std::vector<std::string> sd=*itt;
+
+							std::string szValue=sd[0];
+							switch (metertype)
+							{
+							case MTYPE_ENERGY:
+								sprintf(szTmp,"%.3f",atof(szValue.c_str())/EnergyDivider);
+								szValue=szTmp;
+								break;
+							case MTYPE_GAS:
+								sprintf(szTmp,"%.2f",atof(szValue.c_str())/GasDivider);
+								szValue=szTmp;
+								break;
+							case MTYPE_WATER:
+								sprintf(szTmp,"%.2f",atof(szValue.c_str())/WaterDivider);
+								szValue=szTmp;
+								break;
+							}
+							root["resultprev"][iPrev]["d"]=sd[1].substr(0,16);
+							root["resultprev"][iPrev]["v"]=szValue;
+							iPrev++;
 						}
 					}
 				}

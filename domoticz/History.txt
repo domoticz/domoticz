@@ -32,6 +32,7 @@ Version 1.0.xxxx (January xxth 2014)
 - Implemented: Dashboard tiles can now be ordered for room-plans
 - Implemented: Allow interactive emulation of X10 sensors
 - Implemented: Switch On/Off actions can now also be used from outside domoticz (for instance using them to an actual remote control)
+- Implemented: P1/Counter log, Previous year in charts
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)
