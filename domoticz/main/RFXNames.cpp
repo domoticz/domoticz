@@ -671,6 +671,9 @@ void GetLightStatus(
 			break;
 		}
 		break;
+	case pTypeLighting4:
+		lstatus="On";
+		break;
 	case pTypeLighting5:
 		if (dSubType==sTypeLivolo)
 			llevel=int((100.0f/7.0f)*atof(sValue.c_str()));
@@ -1146,6 +1149,9 @@ bool GetLightCommand(
 		else
 			return false;
 		break;
+	case pTypeLighting4:
+		cmd=light2_sOn;
+		return true;
 	case pTypeLighting5:
 		if (dSubType==sTypeLivolo)
 		{

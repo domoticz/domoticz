@@ -3339,161 +3339,173 @@ unsigned long long MainWorker::decode_Lighting3(const CDomoticzHardwareBase *pHa
 //not in dbase yet
 unsigned long long MainWorker::decode_Lighting4(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
-	unsigned long long DevRowIdx=-1;
-	WriteMessage("");
+	char szTmp[100];
+	std::string devname;
 
 	unsigned char devType=pTypeLighting4;
+	unsigned char subType=pResponse->LIGHTING4.subtype;
+	sprintf(szTmp,"%02X%02X%02X", pResponse->LIGHTING4.cmd1, pResponse->LIGHTING4.cmd2, pResponse->LIGHTING4.cmd3);
+	std::string ID = szTmp;
+	unsigned char Unit=0;
+	unsigned char cmnd=1; //only an on supported
+	unsigned char SignalLevel=pResponse->LIGHTING4.rssi;
 
-	//tRBUF *pResponse=(tRBUF*)m_rxbuffer;
-	char szTmp[100];
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,devname);
+	PrintDeviceName(devname);
+	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
-		switch (pResponse->LIGHTING4.subtype)
+		char szTmp[100];
+
+		if (m_verboselevel == EVBL_ALL)
 		{
-		case sTypePT2262:
-			WriteMessage("subtype       = PT2262");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING4.seqnbr);
-			WriteMessage(szTmp);
-			sprintf(szTmp,"Code          = %02X%02X%02X", pResponse->LIGHTING4.cmd1,pResponse->LIGHTING4.cmd2,pResponse->LIGHTING4.cmd3);
-			WriteMessage(szTmp);
+			switch (pResponse->LIGHTING4.subtype)
+			{
+			case sTypePT2262:
+				WriteMessage("subtype       = PT2262");
+				sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING4.seqnbr);
+				WriteMessage(szTmp);
+				sprintf(szTmp,"Code          = %02X%02X%02X", pResponse->LIGHTING4.cmd1,pResponse->LIGHTING4.cmd2,pResponse->LIGHTING4.cmd3);
+				WriteMessage(szTmp);
 
-			WriteMessage("S1- S24  = ", false);
-			if ((pResponse->LIGHTING4.cmd1 & 0x80)==0)
-				WriteMessage("0", false);
-			else
-				WriteMessage("1", false);
+				WriteMessage("S1- S24  = ", false);
+				if ((pResponse->LIGHTING4.cmd1 & 0x80)==0)
+					WriteMessage("0", false);
+				else
+					WriteMessage("1", false);
 			
-			if ((pResponse->LIGHTING4.cmd1 & 0x40)==0)
-				WriteMessage("0", false);
-			else
-				WriteMessage("1", false);
+				if ((pResponse->LIGHTING4.cmd1 & 0x40)==0)
+					WriteMessage("0", false);
+				else
+					WriteMessage("1", false);
 			
-			if ((pResponse->LIGHTING4.cmd1 & 0x20)==0)
-				WriteMessage("0", false);
-			else
-				WriteMessage("1", false);
+				if ((pResponse->LIGHTING4.cmd1 & 0x20)==0)
+					WriteMessage("0", false);
+				else
+					WriteMessage("1", false);
 			
-			if ((pResponse->LIGHTING4.cmd1 & 0x10)==0)
-				WriteMessage("0 ", false);
-			else
-				WriteMessage("1 ", false);
-			
-
-			if ((pResponse->LIGHTING4.cmd1 & 0x08)==0)
-				WriteMessage("0", false);
-			else
-				WriteMessage("1", false);
-			
-			if ((pResponse->LIGHTING4.cmd1 & 0x04)==0)
-				WriteMessage("0", false);
-			else
-				WriteMessage("1", false);
-			
-			if ((pResponse->LIGHTING4.cmd1 & 0x02)==0)
-				WriteMessage("0", false);
-			else
-				WriteMessage("1", false);
-			
-			if ((pResponse->LIGHTING4.cmd1 & 0x01)==0)
-				WriteMessage("0 ", false);
-			else
-				WriteMessage("1 ", false);
+				if ((pResponse->LIGHTING4.cmd1 & 0x10)==0)
+					WriteMessage("0 ", false);
+				else
+					WriteMessage("1 ", false);
 			
 
-			if ((pResponse->LIGHTING4.cmd2 & 0x80)==0)
-				WriteMessage("0", false);
-			else
-				WriteMessage("1", false);
+				if ((pResponse->LIGHTING4.cmd1 & 0x08)==0)
+					WriteMessage("0", false);
+				else
+					WriteMessage("1", false);
 			
-			if ((pResponse->LIGHTING4.cmd2 & 0x40)==0)
-				WriteMessage("0", false);
-			else
-				WriteMessage("1", false);
+				if ((pResponse->LIGHTING4.cmd1 & 0x04)==0)
+					WriteMessage("0", false);
+				else
+					WriteMessage("1", false);
 			
-			if ((pResponse->LIGHTING4.cmd2 & 0x20)==0)
-				WriteMessage("0", false);
-			else
-				WriteMessage("1", false);
+				if ((pResponse->LIGHTING4.cmd1 & 0x02)==0)
+					WriteMessage("0", false);
+				else
+					WriteMessage("1", false);
 			
-			if ((pResponse->LIGHTING4.cmd2 & 0x10)==0)
-				WriteMessage("0 ", false);
-			else
-				WriteMessage("1 ", false);
-			
-
-			if ((pResponse->LIGHTING4.cmd2 & 0x08)==0)
-				WriteMessage("0", false);
-			else
-				WriteMessage("1", false);
-			
-			if ((pResponse->LIGHTING4.cmd2 & 0x04)==0)
-				WriteMessage("0", false);
-			else
-				WriteMessage("1", false);
-			
-			if ((pResponse->LIGHTING4.cmd2 & 0x02)==0)
-				WriteMessage("0", false);
-			else
-				WriteMessage("1", false);
-			
-			if ((pResponse->LIGHTING4.cmd2 & 0x01)==0)
-				WriteMessage("0 ", false);
-			else
-				WriteMessage("1 ", false);
+				if ((pResponse->LIGHTING4.cmd1 & 0x01)==0)
+					WriteMessage("0 ", false);
+				else
+					WriteMessage("1 ", false);
 			
 
-			if ((pResponse->LIGHTING4.cmd3 & 0x80)==0)
-				WriteMessage("0", false);
-			else
-				WriteMessage("1", false);
+				if ((pResponse->LIGHTING4.cmd2 & 0x80)==0)
+					WriteMessage("0", false);
+				else
+					WriteMessage("1", false);
 			
-			if ((pResponse->LIGHTING4.cmd3 & 0x40)==0)
-				WriteMessage("0", false);
-			else
-				WriteMessage("1", false);
+				if ((pResponse->LIGHTING4.cmd2 & 0x40)==0)
+					WriteMessage("0", false);
+				else
+					WriteMessage("1", false);
 			
-			if ((pResponse->LIGHTING4.cmd3 & 0x20)==0)
-				WriteMessage("0", false);
-			else
-				WriteMessage("1", false);
+				if ((pResponse->LIGHTING4.cmd2 & 0x20)==0)
+					WriteMessage("0", false);
+				else
+					WriteMessage("1", false);
 			
-			if ((pResponse->LIGHTING4.cmd3 & 0x10)==0)
-				WriteMessage("0 ", false);
-			else
-				WriteMessage("1 ", false);
+				if ((pResponse->LIGHTING4.cmd2 & 0x10)==0)
+					WriteMessage("0 ", false);
+				else
+					WriteMessage("1 ", false);
 			
 
-			if ((pResponse->LIGHTING4.cmd3 & 0x08)==0)
-				WriteMessage("0", false);
-			else
-				WriteMessage("1", false);
+				if ((pResponse->LIGHTING4.cmd2 & 0x08)==0)
+					WriteMessage("0", false);
+				else
+					WriteMessage("1", false);
 			
-			if ((pResponse->LIGHTING4.cmd3 & 0x04)==0)
-				WriteMessage("0", false);
-			else
-				WriteMessage("1", false);
+				if ((pResponse->LIGHTING4.cmd2 & 0x04)==0)
+					WriteMessage("0", false);
+				else
+					WriteMessage("1", false);
 			
-			if ((pResponse->LIGHTING4.cmd3 & 0x02)==0)
-				WriteMessage("0", false);
-			else
-				WriteMessage("1", false);
+				if ((pResponse->LIGHTING4.cmd2 & 0x02)==0)
+					WriteMessage("0", false);
+				else
+					WriteMessage("1", false);
 			
-			if ((pResponse->LIGHTING4.cmd3 & 0x01)==0)
-				WriteMessage("0");
-			else
-				WriteMessage("1");
+				if ((pResponse->LIGHTING4.cmd2 & 0x01)==0)
+					WriteMessage("0 ", false);
+				else
+					WriteMessage("1 ", false);
+			
+
+				if ((pResponse->LIGHTING4.cmd3 & 0x80)==0)
+					WriteMessage("0", false);
+				else
+					WriteMessage("1", false);
+			
+				if ((pResponse->LIGHTING4.cmd3 & 0x40)==0)
+					WriteMessage("0", false);
+				else
+					WriteMessage("1", false);
+			
+				if ((pResponse->LIGHTING4.cmd3 & 0x20)==0)
+					WriteMessage("0", false);
+				else
+					WriteMessage("1", false);
+			
+				if ((pResponse->LIGHTING4.cmd3 & 0x10)==0)
+					WriteMessage("0 ", false);
+				else
+					WriteMessage("1 ", false);
+			
+
+				if ((pResponse->LIGHTING4.cmd3 & 0x08)==0)
+					WriteMessage("0", false);
+				else
+					WriteMessage("1", false);
+			
+				if ((pResponse->LIGHTING4.cmd3 & 0x04)==0)
+					WriteMessage("0", false);
+				else
+					WriteMessage("1", false);
+			
+				if ((pResponse->LIGHTING4.cmd3 & 0x02)==0)
+					WriteMessage("0", false);
+				else
+					WriteMessage("1", false);
+			
+				if ((pResponse->LIGHTING4.cmd3 & 0x01)==0)
+					WriteMessage("0");
+				else
+					WriteMessage("1");
 				
-			sprintf(szTmp,"Pulse         = %d usec", (pResponse->LIGHTING4.pulseHigh * 256) + pResponse->LIGHTING4.pulseLow);
+				sprintf(szTmp,"Pulse         = %d usec", (pResponse->LIGHTING4.pulseHigh * 256) + pResponse->LIGHTING4.pulseLow);
+				WriteMessage(szTmp);
+				break;
+			default:
+				sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING4.packettype, pResponse->LIGHTING4.subtype);
+				WriteMessage(szTmp);
+				break;
+			}
+			sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING4.rssi);
 			WriteMessage(szTmp);
-			break;
-		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING4.packettype, pResponse->LIGHTING4.subtype);
-			WriteMessage(szTmp);
-			break;
 		}
-		sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING4.rssi);
-		WriteMessage(szTmp);
 	}
 	return DevRowIdx;
 }
@@ -7604,6 +7616,27 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			level=9;
 		break;
 	case pTypeLighting4:
+		{
+			tRBUF lcmd;
+			lcmd.LIGHTING4.packetlength=sizeof(lcmd.LIGHTING4)-1;
+			lcmd.LIGHTING4.packettype=dType;
+			lcmd.LIGHTING4.subtype=dSubType;
+			lcmd.LIGHTING4.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
+			lcmd.LIGHTING4.cmd1=ID2;
+			lcmd.LIGHTING4.cmd2=ID3;
+			lcmd.LIGHTING4.cmd3=ID4;
+			int pulsetimeing=350;
+			lcmd.LIGHTING4.pulseHigh=pulsetimeing/256;
+			lcmd.LIGHTING4.pulseLow=pulsetimeing&0xFF;
+			lcmd.LIGHTING4.filler=0;
+			lcmd.LIGHTING4.rssi=7;
+			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING4));
+			if (!IsTesting) {
+				//send to internal for now (later we use the ACK)
+				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+			}
+			return true;
+		}
 		break;
 	case pTypeLighting5:
 		{
