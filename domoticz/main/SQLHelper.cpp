@@ -1558,7 +1558,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		int maxDimLevel=0;
 
 		sprintf(szTmp,
-			"SELECT Name,SwitchType,AddjValue FROM DeviceStatus WHERE (ID = %llu)",
+			"SELECT Name,SwitchType,AddjValue,StrParam1,StrParam2 FROM DeviceStatus WHERE (ID = %llu)",
 			ulID);
 		result = query(szTmp);
 		if (result.size()>0)
@@ -1581,6 +1581,12 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 				query(szTmp);
 
 			}
+
+			//Perform any On/Off actions
+			std::string OnAction=sd[3];
+			std::string OffAction=sd[4];
+
+			HandleSwitchAction(bIsLightSwitchOn,OnAction,OffAction);
 
 			//Check if we need to email a snapshot of a Camera
 			std::string emailserver;
@@ -5438,6 +5444,55 @@ void CSQLHelper::SetUnitsAndScale()
 		m_tempsign="F";
 		m_tempscale=1.0f; //*1.8 + 32
 	}
+}
+
+bool CSQLHelper::HandleSwitchAction(const bool bIsOn, const std::string &OnAction, const std::string &OffAction)
+{
+	if (bIsOn)
+	{
+		if (OnAction.size()<1)
+			return true;
+		if (OnAction.find("http://")!=std::string::npos)
+		{
+			_tTaskItem tItem;
+			tItem=_tTaskItem::GetHTTPPage(1,OnAction,"SwitchActionOn");
+			AddTaskItem(tItem);
+		}
+		else if (OnAction.find("script://")!=std::string::npos)
+		{
+			//Execute possible script
+			std::string scriptname=OnAction.substr(9);
+			if (file_exist(scriptname.c_str()))
+			{
+				//Add parameters
+				std::string scriptparams="";
+				AddTaskItem(_tTaskItem::ExecuteScript(1,scriptname,scriptparams));
+			}
+		}
+	}
+	else
+	{
+		if (OffAction.size()<1)
+			return true;
+		if (OffAction.find("http://")!=std::string::npos)
+		{
+			_tTaskItem tItem;
+			tItem=_tTaskItem::GetHTTPPage(1,OffAction,"SwitchActionOff");
+			AddTaskItem(tItem);
+		}
+		else if (OffAction.find("script://")!=std::string::npos)
+		{
+			//Execute possible script
+			std::string scriptname=OffAction.substr(9);
+			if (file_exist(scriptname.c_str()))
+			{
+				//Add parameters
+				std::string scriptparams="";
+				AddTaskItem(_tTaskItem::ExecuteScript(1,scriptname,scriptparams));
+			}
+		}
+	}
+	return true;
 }
 
 //Executed every hour

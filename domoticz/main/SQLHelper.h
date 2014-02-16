@@ -323,6 +323,8 @@ public:
 	void CheckDeviceTimeout();
 	void CheckBatteryLow();
 
+	bool HandleSwitchAction(const bool bIsOn, const std::string &OnAction, const std::string &OffAction);
+
 	std::vector<std::vector<std::string> > query(const std::string &szQuery);
 public:
 	std::string m_LastSwitchID;	//for learning command
