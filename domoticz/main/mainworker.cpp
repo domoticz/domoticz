@@ -7857,6 +7857,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				break;
 			case sTypeSecX10M:
 			case sTypeSecX10R:
+			case sTypeSecX10:
 			case sTypeMeiantech:
 				{
 					if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.SECURITY1.status))
@@ -7869,7 +7870,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				}
 				break;
 			}
-			HandleSwitchAction(bIsLightSwitchOn,OnAction,OffAction);
+			return HandleSwitchAction(bIsLightSwitchOn,OnAction,OffAction);
 		}
 		break;
 	case pTypeBlinds:

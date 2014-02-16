@@ -11,7 +11,7 @@ typedef enum {
 	EXCLMARK 
 } MatchType;
 
-#define P1_SMID		"/ISk5\\" // Smart Meter ID. Used to detect start of telegram.
+#define P1_SMID		"/" // Smart Meter ID. Used to detect start of telegram.
 #define P1PU1		"1-0:1.8.1" // total power usage normal tariff
 #define P1PU2		"1-0:1.8.2" // total power usage low tariff
 #define P1PD1		"1-0:2.8.1" // total delivered power normal tariff
@@ -115,17 +115,23 @@ void P1MeterBase::MatchLine()
 				m_linecount=1;
 				found=1;
 			}
+			else 
+				continue;
 			break;
 		case STD:
 			if(strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0) {
 				found=1;
 			}
+			else 
+				continue;
 			break;
 		case LINE17:
 			if(strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0) {
 				m_linecount = 17;
 				found=1;
 			}
+			else 
+				continue;
 			break;
 		case LINE18:
 			if((m_linecount == 18)&&(strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0)) {
@@ -135,9 +141,17 @@ void P1MeterBase::MatchLine()
 		case EXCLMARK:
 			if(strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0) {
 				m_exclmarkfound=1;
+				found=1;
 			}
+			else 
+				continue;
 			break;
+		default:
+			continue;
 		} //switch
+		
+		if(!found)
+			continue;
 
 		if (m_exclmarkfound) {
 			bool bSend2Shared=false;
@@ -165,16 +179,22 @@ void P1MeterBase::MatchLine()
 		}
 		else
 		{
-			if(!found)
-				continue;
 			if (t.matchtype==STD)
 			{
 				vString=(const char*)&m_buffer+t.start;
 				int ePos=vString.find_first_of("*");
 				if (ePos==std::string::npos)
 				{
-					strncpy(value, (const char*)&m_buffer+t.start, t.width);
-					value[t.width] = 0;
+					ePos=vString.find_first_of(")");
+					if (ePos==std::string::npos)
+					{
+						strncpy(value, (const char*)&m_buffer+t.start, t.width);
+						value[t.width] = 0;
+					}
+					else
+					{
+						strcpy(value,vString.substr(0,ePos).c_str());
+					}
 				}
 				else
 				{
@@ -194,6 +214,10 @@ void P1MeterBase::MatchLine()
 				{
 					strcpy(value,vString.substr(0,ePos).c_str());
 				}
+			}
+			else if (t.matchtype==ID)
+			{
+				//
 			}
 			else
 			{

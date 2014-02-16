@@ -1326,6 +1326,29 @@ bool GetLightCommand(
 				return true;
 			}
 		}
+		else if (dSubType==sTypeSecX10)
+		{
+			if (switchcmd=="Normal")
+			{
+				cmd=sStatusNormal;
+				return true;
+			}
+			else if (switchcmd=="Alarm")
+			{
+				cmd=sStatusAlarm;
+				return true;
+			}
+			else if (switchcmd=="Normal Delayed")
+			{
+				cmd=sStatusNormalDelayed;
+				return true;
+			}
+			else if (switchcmd=="Alarm Delayed")
+			{
+				cmd=sStatusAlarmDelayed;
+				return true;
+			}
+		}
 		break;
 	case pTypeBlinds:
 		{

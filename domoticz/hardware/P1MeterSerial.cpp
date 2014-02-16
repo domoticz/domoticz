@@ -52,13 +52,27 @@ bool P1MeterSerial::StartHardware()
 	try
 	{
 		_log.Log(LOG_NORM,"P1 Smart Meter Using serial port: %s", m_szSerialPort.c_str());
-		open(
-			m_szSerialPort,
-			m_iBaudRate,
-			boost::asio::serial_port_base::parity(
-			boost::asio::serial_port_base::parity::even),
-			boost::asio::serial_port_base::character_size(7)
-			);
+		if (m_iBaudRate==9600)
+		{
+			open(
+				m_szSerialPort,
+				m_iBaudRate,
+				boost::asio::serial_port_base::parity(
+				boost::asio::serial_port_base::parity::even),
+				boost::asio::serial_port_base::character_size(7)
+				);
+		}
+		else
+		{
+			//DSMRv4
+			open(
+				m_szSerialPort,
+				m_iBaudRate,
+				boost::asio::serial_port_base::parity(
+				boost::asio::serial_port_base::parity::none),
+				boost::asio::serial_port_base::character_size(8)
+				);
+		}
 	}
 	catch (boost::exception & e)
 	{
