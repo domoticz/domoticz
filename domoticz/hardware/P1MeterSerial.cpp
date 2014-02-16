@@ -37,7 +37,7 @@ P1MeterSerial::~P1MeterSerial()
 	clearReadCallback();
 }
 
-#define DEBUG_FROM_FILE
+//#define DEBUG_FROM_FILE
 
 bool P1MeterSerial::StartHardware()
 {
