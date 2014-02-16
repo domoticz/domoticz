@@ -4,11 +4,11 @@
 #include "../main/RFXtrx.h"
 
 
-#define CONFIG_NR_OF_PARAMETER_TYPES 8
+#define CONFIG_NR_OF_PARAMETER_TYPES 10
 #define CONFIG_NR_OF_PARAMETER_BOOL_TYPES 4
 #define CONFIG_NR_OF_PARAMETER_PIN_TYPES 4
 
-#define LEVEL			0	
+#define LEVEL			0
 #define INV_LEVEL			1
 #define TOGGLE_RISING	2
 #define TOGGLE_FALLING 	3
@@ -21,12 +21,14 @@ class CIOCount
    public:
 	   CIOCount();
 	   ~CIOCount();
-	   
+
 	   int Update(unsigned long Counts);
 	   unsigned long GetCurrent(void) const {return Current;};
 	   unsigned long GetTotal(void) const {return Total;};
+	   unsigned long GetRateLimit(void) const {return Minimum_Pulse_Period_ms;};
 	   void SetCurrent(unsigned long NewCurValue) {Current=NewCurValue;};
 	   void SetTotal(unsigned long NewTotalValue) {Total=NewTotalValue;};
+	   void SetRateLimit(unsigned long NewRateLimit) {Minimum_Pulse_Period_ms=NewRateLimit;};
 	   void ResetCurrent(void) {Current=0;};
 	   void ResetTotal(void) {Total=0;};
 	   bool ProcessUpdateInterval(unsigned long PassedTime_ms);
@@ -34,12 +36,15 @@ class CIOCount
 	   unsigned long GetUpdateInterval(void) {return UpdateInterval_ms;};
 	   bool Enabled;
 	   bool InitialStateSent;
-   
+
    private:
 	   unsigned long Current;
 	   unsigned long Total;
 	   unsigned long UpdateInterval_ms;
 	   unsigned long UpdateDownCount_ms;
+	   unsigned long Minimum_Pulse_Period_ms;
+	   boost::posix_time::ptime Last_Call;
+	   boost::posix_time::ptime Cur_Call;
 };
 
 class CIOPinState
@@ -47,7 +52,7 @@ class CIOPinState
    public:
 	   CIOPinState();
 	   ~CIOPinState();
-   
+
 	   int Update(bool New);
 	   int UpdateInterrupt(bool IntFlag,bool PinState);
 	   int GetInitialState(void);
@@ -58,17 +63,17 @@ class CIOPinState
 	   CIOCount Count;
 	   bool InitialStateSent;
 	   unsigned char Direction;
-	   
+
    private:
 	   bool Last;
 	   bool Current;
 	   bool Toggle;
-	  
+
 };
 
 
 
-class CIOPort 
+class CIOPort
 {
    public:
 	   CIOPort();
@@ -84,14 +89,14 @@ class CIOPort
 	   void *Callback_pntr;
 	   CIOPinState  Pin[8];
 	   unsigned int PortType;
-		
+
    private:
 	   tRBUF IOPinStatusPacket;
 	   tRBUF IOPinCounterPacket;
 	   unsigned char Last;
 	   unsigned char Current;
 	   int devId;
-	   bool Present;	   
+	   bool Present;
 };
 
 class CPiFace : public CDomoticzHardwareBase
@@ -102,7 +107,7 @@ public:
 	void WriteToHardware(const char *pdata, const unsigned char length);
 	void CallBackSendEvent(const unsigned char *pEventPacket);
 	void CallBackSetPinInterruptMode(unsigned char devId,unsigned char pinID, bool Interrupt_Enable);
-	
+
 private:
 	bool StartHardware();
 	bool StopHardware();
@@ -122,18 +127,18 @@ private:
 	void Sample_and_Process_Outputs(unsigned char devId);
 	void Sample_and_Process_Input_Interrupts(unsigned char devId);
 	void GetAndSetInitialDeviceState(unsigned char devId);
-	
-	
+
+
 	int Detect_PiFace_Hardware(void);
-	
+
 	int m_fd;
 	//int m_HwdID;
-	
+
 	CIOPort m_Inputs[4];
 	CIOPort m_Outputs[4];
-	
+
 	bool m_DetectedHardware[4];
-	
+
 	//config file functions
 	std::string & preprocess(std::string &s);
 	std::string & trim(std::string &s);
@@ -144,7 +149,7 @@ private:
 	int LoadConfig(void);
 	void LoadDefaultConfig(void);
 	void AutoCreate_piface_config(void);
-	
+
 	void GetLastKnownValues(void);
 };
 
