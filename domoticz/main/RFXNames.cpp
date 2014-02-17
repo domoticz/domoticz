@@ -672,7 +672,15 @@ void GetLightStatus(
 		}
 		break;
 	case pTypeLighting4:
-		lstatus="On";
+		switch (nValue)
+		{
+		case light2_sOff:
+			lstatus="Off";
+			break;
+		case light2_sOn:
+			lstatus="On";
+			break;
+		}
 		break;
 	case pTypeLighting5:
 		if (dSubType==sTypeLivolo)

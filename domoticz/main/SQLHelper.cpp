@@ -1100,7 +1100,6 @@ void CSQLHelper::Do_Work()
 					case pTypeLighting1:
 					case pTypeLighting2:
 					case pTypeLighting3:
-					case pTypeLighting4:
 					case pTypeLighting5:
 					case pTypeLighting6:
 					case pTypeLimitlessLights:
@@ -1120,6 +1119,10 @@ void CSQLHelper::Do_Work()
 							break;
 						}
 						break;
+					case pTypeLighting4:
+						//only update internally
+						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname);
+						break;
 					default:
 						//unknown hardware type, sensor will only be updated internally
 						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname);
@@ -1129,7 +1132,16 @@ void CSQLHelper::Do_Work()
 				else
 				{
 					if (m_pMain)
-						m_pMain->SwitchLight(itt->_idx,"Off",0,-1);
+					{
+						if (itt->_devType==pTypeLighting4)
+						{
+							//only update internally
+							std::string devname="";
+							UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname);
+						}
+						else
+							m_pMain->SwitchLight(itt->_idx,"Off",0,-1);
+					}
 				}
 			}
 			else if (itt->_ItemType == TITEM_EXECUTE_SCRIPT)
@@ -1666,6 +1678,10 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 							break;
 						case pTypeLighting3:
 							cmd=light3_sOff;
+							bAdd2DelayQueue=true;
+							break;
+						case pTypeLighting4:
+							cmd=light2_sOff;
 							bAdd2DelayQueue=true;
 							break;
 						case pTypeLighting5:
