@@ -1933,7 +1933,7 @@ unsigned long long MainWorker::decode_Wind(const CDomoticzHardwareBase *pHardwar
 		{
 			temp=-(float(((pResponse->WIND.temperatureh & 0x7F) * 256) + pResponse->WIND.temperaturel) / 10.0f);
 		}
-		if ((temp<-60)||(temp>260))
+		if ((temp<-60)||(temp>380))
 		{
 			WriteMessage(" Invalid Temperature");
 			return -1;
@@ -1971,7 +1971,7 @@ unsigned long long MainWorker::decode_Wind(const CDomoticzHardwareBase *pHardwar
 		{
 			temp=-(float(((pResponse->WIND.temperatureh & 0x7F) * 256) + pResponse->WIND.temperaturel) / 10.0f);
 		}
-		if ((temp<-60)||(temp>260))
+		if ((temp<-60)||(temp>380))
 		{
 			WriteMessage(" Invalid Temperature");
 			return -1;
@@ -2120,7 +2120,7 @@ unsigned long long MainWorker::decode_Temp(const CDomoticzHardwareBase *pHardwar
 	{
 		temp=-(float(((pResponse->TEMP.temperatureh & 0x7F) * 256) + pResponse->TEMP.temperaturel) / 10.0f);
 	}
-	if ((temp<-60)||(temp>260))
+	if ((temp<-60)||(temp>380))
 	{
 		WriteMessage(" Invalid Temperature");
 		return -1;
@@ -2405,7 +2405,7 @@ unsigned long long MainWorker::decode_TempHum(const CDomoticzHardwareBase *pHard
 	{
 		temp=-(float(((pResponse->TEMP_HUM.temperatureh & 0x7F) * 256) + pResponse->TEMP_HUM.temperaturel) / 10.0f);
 	}
-	if ((temp<-60)||(temp>260))
+	if ((temp<-60)||(temp>380))
 	{
 		WriteMessage(" Invalid Temperature");
 		return -1;
@@ -2586,7 +2586,7 @@ unsigned long long MainWorker::decode_TempHumBaro(const CDomoticzHardwareBase *p
 	{
 		temp=-(float(((pResponse->TEMP_HUM_BARO.temperatureh & 0x7F) * 256) + pResponse->TEMP_HUM_BARO.temperaturel) / 10.0f);
 	}
-	if ((temp<-60)||(temp>260))
+	if ((temp<-60)||(temp>380))
 	{
 		WriteMessage(" Invalid Temperature");
 		return -1;
@@ -2753,7 +2753,7 @@ unsigned long long MainWorker::decode_TempBaro(const CDomoticzHardwareBase *pHar
 	BatteryLevel=100;
 
 	float temp=pTempBaro->temp;
-	if ((temp<-60)||(temp>260))
+	if ((temp<-60)||(temp>380))
 	{
 		WriteMessage(" Invalid Temperature");
 		return -1;
@@ -2863,7 +2863,7 @@ unsigned long long MainWorker::decode_TempRain(const CDomoticzHardwareBase *pHar
 	m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,pTypeTEMP,sTypeTEMP3,AddjValue,AddjMulti);
 	temp+=AddjValue;
 
-	if ((temp<-60)||(temp>260))
+	if ((temp<-60)||(temp>380))
 	{
 		WriteMessage(" Invalid Temperature");
 		return -1;
@@ -2946,7 +2946,7 @@ unsigned long long MainWorker::decode_UV(const CDomoticzHardwareBase *pHardware,
 		{
 			temp = -(float(((pResponse->UV.temperatureh & 0x7F) * 256) + pResponse->UV.temperaturel) / 10.0f);
 		}
-		if ((temp<-60)||(temp>260))
+		if ((temp<-60)||(temp>380))
 		{
 			WriteMessage(" Invalid Temperature");
 			return -1;
@@ -6725,7 +6725,7 @@ unsigned long long MainWorker::decode_YouLessMeter(const CDomoticzHardwareBase *
 
 			sprintf(szTmp,"powerusage = %.3f kWh", float(pMeter->powerusage) / 1000.0f);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"current usage = %03lu kWh", pMeter->usagecurrent);
+			sprintf(szTmp,"current usage = %03lu Watt", pMeter->usagecurrent);
 			WriteMessage(szTmp);
 			break;
 		default:

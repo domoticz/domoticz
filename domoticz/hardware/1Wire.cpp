@@ -155,7 +155,7 @@ void C1Wire::WriteToHardware(const char *pdata, const unsigned char length)
 
 bool IsTemperatureValid(_e1WireFamilyType deviceFamily, float temperature)
 {
-   if (temperature<=-300 || temperature>=300)
+   if (temperature<=-300 || temperature>=381)
       return false;
 
    // Some devices has a power-on value at 85°, we have to filter it
