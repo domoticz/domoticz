@@ -35,6 +35,7 @@ Version 1.0.xxxx (January xxth 2014)
 - Implemented: P1/Counter log, Previous year in charts
 - Changed: Temperatures are now valid till 380 degrees
 - Implemented: P1/Gas/Counter log, report charts
+- Changed: no more hour:minute in month/year graphs
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)

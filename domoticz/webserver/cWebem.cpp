@@ -1432,7 +1432,6 @@ void cWebemRequestHandler::handle_request( const request& req, reply& rep)
 			// tell browser that we are using UTF-8 encoding
 			rep.headers[1].value += ";charset=UTF-8";
 
-			const char *encodingcheck;
 			//check gzip support if yes, send it back in gzip format
 			if (!rep.bIsGZIP)
 				CompressWebOutput(req,rep);
