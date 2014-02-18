@@ -161,6 +161,7 @@ void request_handler::handle_request(const request& req, reply& rep)
 		  if (is)
 		  {
 			  bHaveLoadedgzip=true;
+			  rep.bIsGZIP=true;
 			  // Fill out the reply to be sent to the client.
 			  rep.status = reply::ok;
 			  char buf[512];

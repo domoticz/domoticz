@@ -48,6 +48,7 @@ struct reply
 
   /// The content to be sent in the reply.
   std::string content;
+  bool bIsGZIP;
 
   /// Convert the reply into a vector of buffers. The buffers do not own the
   /// underlying memory blocks, therefore the reply object must remain valid and

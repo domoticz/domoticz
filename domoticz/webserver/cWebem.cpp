@@ -1376,6 +1376,7 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 
 void cWebemRequestHandler::handle_request( const request& req, reply& rep)
 {
+	rep.bIsGZIP=false;
 	if ((!check_authorization(req))||(myWebem->m_bForceRelogin))
 	{
 		myWebem->m_bForceRelogin=false;
@@ -1431,12 +1432,16 @@ void cWebemRequestHandler::handle_request( const request& req, reply& rep)
 			// tell browser that we are using UTF-8 encoding
 			rep.headers[1].value += ";charset=UTF-8";
 
-			CompressWebOutput(req,rep);
+			const char *encodingcheck;
+			//check gzip support if yes, send it back in gzip format
+			if (!rep.bIsGZIP)
+				CompressWebOutput(req,rep);
 		}
 	}
 	else
 	{
-		CompressWebOutput(req,rep);
+		if (!rep.bIsGZIP)
+			CompressWebOutput(req,rep);
 	}
 
 	check_cookie(req,rep);
