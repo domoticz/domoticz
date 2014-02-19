@@ -1204,6 +1204,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						(dType!=pTypeBlinds)&&
 						(dType!=pTypeChime)&&
 						(dType!=pTypeThermostat3)&&
+						(dType!=pTypeRemote)&&
 						(!((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXStatus)))
 						)
 						continue;
@@ -1375,7 +1376,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				(dType==pTypeLimitlessLights)||
 				(dType==pTypeBlinds)||
 				(dType==pTypeChime)||
-				(dType==pTypeThermostat3)
+				(dType==pTypeThermostat3)||
+				(dType==pTypeRemote)
 				)
 			{
 				//add light details
@@ -3048,7 +3050,8 @@ std::string CWebServer::GetJSonPage()
 			(dType!=pTypeBlinds)&&
 			(dType!=pTypeRego6XXValue)&&
 			(dType!=pTypeChime)&&
-			(dType!=pTypeThermostat3)
+			(dType!=pTypeThermostat3)&&
+			(dType!=pTypeRemote)
 			)
 			goto exitjson; //no light device! we should not be here!
 
@@ -7833,6 +7836,7 @@ std::string CWebServer::GetJSonPage()
 					case pTypeBlinds:
 					case pTypeChime:
 					case pTypeThermostat3:
+					case pTypeRemote:
 						bdoAdd=true;
 						if (!used)
 						{
@@ -7900,6 +7904,7 @@ std::string CWebServer::GetJSonPage()
 						case pTypeBlinds:
 						case pTypeChime:
 						case pTypeThermostat3:
+						case pTypeRemote:
 							{
 								root["result"][ii]["type"]=0;
 								root["result"][ii]["idx"]=ID;
@@ -8540,7 +8545,8 @@ std::string CWebServer::GetJSonPage()
 				(dType==pTypeSecurity1)||
 				(dType==pTypeBlinds)||
 				(dType==pTypeChime)||
-				(dType==pTypeThermostat3)
+				(dType==pTypeThermostat3)||
+				(dType==pTypeRemote)
 				)
 			{
 				if (switchtype!=STYPE_PushOff)
@@ -9944,7 +9950,8 @@ std::string CWebServer::GetJSonPage()
 				(dType!=pTypeSecurity1)&&
 				(dType!=pTypeBlinds)&&
 				(dType!=pTypeChime)&&
-				(dType!=pTypeThermostat3)
+				(dType!=pTypeThermostat3)&&
+				(dType!=pTypeRemote)
 				)
 				goto exitjson; //no light device! we should not be here!
 

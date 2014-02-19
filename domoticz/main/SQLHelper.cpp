@@ -1311,6 +1311,7 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 	case pTypeSecurity1:
 	case pTypeBlinds:
 	case pTypeThermostat3:
+	case pTypeRemote:
 		bIsLightSwitch=true;
 		break;
 	}
@@ -1553,6 +1554,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 	case pTypeBlinds:
 	case pTypeChime:
 	case pTypeThermostat3:
+	case pTypeRemote:
 		//Add Lighting log
 		m_LastSwitchID=ID;
 		m_LastSwitchRowID=ulID;
@@ -1691,6 +1693,9 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 						case pTypeLighting6:
 							cmd=light6_sOff;
 							bAdd2DelayQueue=true;
+							break;
+						case pTypeRemote:
+							cmd=light2_sOff;
 							break;
 						case pTypeLimitlessLights:
 							cmd=Limitless_LedOff;
@@ -5546,7 +5551,7 @@ void CSQLHelper::CheckDeviceTimeout()
 	std::vector<std::vector<std::string> > result;
 	char szTmp[300];
 	sprintf(szTmp,
-		"SELECT ID,Name,LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) ORDER BY Name",
+		"SELECT ID,Name,LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) ORDER BY Name",
 		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 		pTypeLighting1,
 		pTypeLighting2,
@@ -5558,7 +5563,8 @@ void CSQLHelper::CheckDeviceTimeout()
 		pTypeSecurity1,
 		pTypeBlinds,
 		pTypeChime,
-		pTypeThermostat3
+		pTypeThermostat3,
+		pTypeRemote
 		);
 	result=query(szTmp);
 	if (result.size()<1)

@@ -989,6 +989,9 @@ void GetLightStatus(
 	case pTypeChime:
 		lstatus="On";
 		break;
+	case pTypeRemote:
+		lstatus="On";
+		break;
 	case pTypeThermostat3:
 		switch (nValue)
 		{
@@ -1380,6 +1383,9 @@ bool GetLightCommand(
 			}
 			return true;
 		}
+		break;
+	case pTypeRemote:
+		cmd=light2_sOn;
 		break;
 	case pTypeThermostat3:
 		{

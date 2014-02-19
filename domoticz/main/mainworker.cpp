@@ -4447,1073 +4447,1084 @@ unsigned long long MainWorker::decode_Camera1(const CDomoticzHardwareBase *pHard
 //not in dbase yet
 unsigned long long MainWorker::decode_Remote(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
-	unsigned long long DevRowIdx=-1;
-	WriteMessage("");
+	char szTmp[100];
+	std::string devname;
 
 	unsigned char devType=pTypeRemote;
+	unsigned char subType=pResponse->REMOTE.subtype;
+	sprintf(szTmp,"%d", pResponse->REMOTE.id);
+	std::string ID = szTmp;
+	unsigned char Unit=pResponse->REMOTE.cmnd;
+	unsigned char cmnd=light2_sOn;
+	unsigned char SignalLevel=pResponse->REMOTE.rssi;
 
-	char szTmp[100];
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,devname);
+	PrintDeviceName(devname);
+	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
 
-	switch (pResponse->REMOTE.subtype)
+	if (m_verboselevel == EVBL_ALL)
 	{
-		case sTypeATI:
-			WriteMessage("subtype       = ATI Remote Wonder");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
-			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", pResponse->REMOTE.id);
-			WriteMessage(szTmp);
-			switch (pResponse->REMOTE.cmnd)
-			{
-			case 0x0:
-				WriteMessage("Command       = A");
-				break;
-			case 0x1:
-				WriteMessage("Command       = B");
-				break;
-			case 0x2:
-				WriteMessage("Command       = power");
-				break;
-			case 0x3:
-				WriteMessage("Command       = TV");
-				break;
-			case 0x4:
-				WriteMessage("Command       = DVD");
-				break;
-			case 0x5:
-				WriteMessage("Command       = ?");
-				break;
-			case 0x6:
-				WriteMessage("Command       = Guide");
-				break;
-			case 0x7:
-				WriteMessage("Command       = Drag");
-				break;
-			case 0x8:
-				WriteMessage("Command       = VOL+");
-				break;
-			case 0x9:
-				WriteMessage("Command       = VOL-");
-				break;
-			case 0xA:
-				WriteMessage("Command       = MUTE");
-				break;
-			case 0xB:
-				WriteMessage("Command       = CHAN+");
-				break;
-			case 0xC:
-				WriteMessage("Command       = CHAN-");
-				break;
-			case 0xD:
-				WriteMessage("Command       = 1");
-				break;
-			case 0xE:
-				WriteMessage("Command       = 2");
-				break;
-			case 0xF:
-				WriteMessage("Command       = 3");
-				break;
-			case 0x10:
-				WriteMessage("Command       = 4");
-				break;
-			case 0x11:
-				WriteMessage("Command       = 5");
-				break;
-			case 0x12:
-				WriteMessage("Command       = 6");
-				break;
-			case 0x13:
-				WriteMessage("Command       = 7");
-				break;
-			case 0x14:
-				WriteMessage("Command       = 8");
-				break;
-			case 0x15:
-				WriteMessage("Command       = 9");
-				break;
-			case 0x16:
-				WriteMessage("Command       = txt");
-				break;
-			case 0x17:
-				WriteMessage("Command       = 0");
-				break;
-			case 0x18:
-				WriteMessage("Command       = snapshot ESC");
-				break;
-			case 0x19:
-				WriteMessage("Command       = C");
-				break;
-			case 0x1A:
-				WriteMessage("Command       = ^");
-				break;
-			case 0x1B:
-				WriteMessage("Command       = D");
-				break;
-			case 0x1C:
-				WriteMessage("Command       = TV/RADIO");
-				break;
-			case 0x1D:
-				WriteMessage("Command       = <");
-				break;
-			case 0x1E:
-				WriteMessage("Command       = OK");
-				break;
-			case 0x1F:
-				WriteMessage("Command       = >");
-				break;
-			case 0x20:
-				WriteMessage("Command       = <-");
-				break;
-			case 0x21:
-				WriteMessage("Command       = E");
-				break;
-			case 0x22:
-				WriteMessage("Command       = v");
-				break;
-			case 0x23:
-				WriteMessage("Command       = F");
-				break;
-			case 0x24:
-				WriteMessage("Command       = Rewind");
-				break;
-			case 0x25:
-				WriteMessage("Command       = Play");
-				break;
-			case 0x26:
-				WriteMessage("Command       = Fast forward");
-				break;
-			case 0x27:
-				WriteMessage("Command       = Record");
-				break;
-			case 0x28:
-				WriteMessage("Command       = Stop");
-				break;
-			case 0x29:
-				WriteMessage("Command       = Pause");
-				break;
-			case 0x2C:
-				WriteMessage("Command       = TV");
-				break;
-			case 0x2D:
-				WriteMessage("Command       = VCR");
-				break;
-			case 0x2E:
-				WriteMessage("Command       = RADIO");
-				break;
-			case 0x2F:
-				WriteMessage("Command       = TV Preview");
-				break;
-			case 0x30:
-				WriteMessage("Command       = Channel list");
-				break;
-			case 0x31:
-				WriteMessage("Command       = Video Desktop");
-				break;
-			case 0x32:
-				WriteMessage("Command       = red");
-				break;
-			case 0x33:
-				WriteMessage("Command       = green");
-				break;
-			case 0x34:
-				WriteMessage("Command       = yellow");
-				break;
-			case 0x35:
-				WriteMessage("Command       = blue");
-				break;
-			case 0x36:
-				WriteMessage("Command       = rename TAB");
-				break;
-			case 0x37:
-				WriteMessage("Command       = Acquire image");
-				break;
-			case 0x38:
-				WriteMessage("Command       = edit image");
-				break;
-			case 0x39:
-				WriteMessage("Command       = Full screen");
-				break;
-			case 0x3A:
-				WriteMessage("Command       = DVD Audio");
-				break;
-			case 0x70:
-				WriteMessage("Command       = Cursor-left");
-				break;
-			case 0x71:
-				WriteMessage("Command       = Cursor-right");
-				break;
-			case 0x72:
-				WriteMessage("Command       = Cursor-up");
-				break;
-			case 0x73:
-				WriteMessage("Command       = Cursor-down");
-				break;
-			case 0x74:
-				WriteMessage("Command       = Cursor-up-left");
-				break;
-			case 0x75:
-				WriteMessage("Command       = Cursor-up-right");
-				break;
-			case 0x76:
-				WriteMessage("Command       = Cursor-down-right");
-				break;
-			case 0x77:
-				WriteMessage("Command       = Cursor-down-left");
-				break;
-			case 0x78:
-				WriteMessage("Command       = V");
-				break;
-			case 0x79:
-				WriteMessage("Command       = V-End");
-				break;
-			case 0x7C:
-				WriteMessage("Command       = X");
-				break;
-			case 0x7D:
-				WriteMessage("Command       = X-End");
-				break;
-			default:
-				WriteMessage("Command       = unknown");
-				break;
-			}
-			break;
-		case sTypeATIplus:
-			WriteMessage("subtype       = ATI Remote Wonder Plus");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
-			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", pResponse->REMOTE.id);
-			WriteMessage(szTmp);
+		switch (pResponse->REMOTE.subtype)
+		{
+			case sTypeATI:
+				WriteMessage("subtype       = ATI Remote Wonder");
+				sprintf(szTmp,"Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
+				WriteMessage(szTmp);
+				sprintf(szTmp,"ID            = %d", pResponse->REMOTE.id);
+				WriteMessage(szTmp);
+				switch (pResponse->REMOTE.cmnd)
+				{
+				case 0x0:
+					WriteMessage("Command       = A");
+					break;
+				case 0x1:
+					WriteMessage("Command       = B");
+					break;
+				case 0x2:
+					WriteMessage("Command       = power");
+					break;
+				case 0x3:
+					WriteMessage("Command       = TV");
+					break;
+				case 0x4:
+					WriteMessage("Command       = DVD");
+					break;
+				case 0x5:
+					WriteMessage("Command       = ?");
+					break;
+				case 0x6:
+					WriteMessage("Command       = Guide");
+					break;
+				case 0x7:
+					WriteMessage("Command       = Drag");
+					break;
+				case 0x8:
+					WriteMessage("Command       = VOL+");
+					break;
+				case 0x9:
+					WriteMessage("Command       = VOL-");
+					break;
+				case 0xA:
+					WriteMessage("Command       = MUTE");
+					break;
+				case 0xB:
+					WriteMessage("Command       = CHAN+");
+					break;
+				case 0xC:
+					WriteMessage("Command       = CHAN-");
+					break;
+				case 0xD:
+					WriteMessage("Command       = 1");
+					break;
+				case 0xE:
+					WriteMessage("Command       = 2");
+					break;
+				case 0xF:
+					WriteMessage("Command       = 3");
+					break;
+				case 0x10:
+					WriteMessage("Command       = 4");
+					break;
+				case 0x11:
+					WriteMessage("Command       = 5");
+					break;
+				case 0x12:
+					WriteMessage("Command       = 6");
+					break;
+				case 0x13:
+					WriteMessage("Command       = 7");
+					break;
+				case 0x14:
+					WriteMessage("Command       = 8");
+					break;
+				case 0x15:
+					WriteMessage("Command       = 9");
+					break;
+				case 0x16:
+					WriteMessage("Command       = txt");
+					break;
+				case 0x17:
+					WriteMessage("Command       = 0");
+					break;
+				case 0x18:
+					WriteMessage("Command       = snapshot ESC");
+					break;
+				case 0x19:
+					WriteMessage("Command       = C");
+					break;
+				case 0x1A:
+					WriteMessage("Command       = ^");
+					break;
+				case 0x1B:
+					WriteMessage("Command       = D");
+					break;
+				case 0x1C:
+					WriteMessage("Command       = TV/RADIO");
+					break;
+				case 0x1D:
+					WriteMessage("Command       = <");
+					break;
+				case 0x1E:
+					WriteMessage("Command       = OK");
+					break;
+				case 0x1F:
+					WriteMessage("Command       = >");
+					break;
+				case 0x20:
+					WriteMessage("Command       = <-");
+					break;
+				case 0x21:
+					WriteMessage("Command       = E");
+					break;
+				case 0x22:
+					WriteMessage("Command       = v");
+					break;
+				case 0x23:
+					WriteMessage("Command       = F");
+					break;
+				case 0x24:
+					WriteMessage("Command       = Rewind");
+					break;
+				case 0x25:
+					WriteMessage("Command       = Play");
+					break;
+				case 0x26:
+					WriteMessage("Command       = Fast forward");
+					break;
+				case 0x27:
+					WriteMessage("Command       = Record");
+					break;
+				case 0x28:
+					WriteMessage("Command       = Stop");
+					break;
+				case 0x29:
+					WriteMessage("Command       = Pause");
+					break;
+				case 0x2C:
+					WriteMessage("Command       = TV");
+					break;
+				case 0x2D:
+					WriteMessage("Command       = VCR");
+					break;
+				case 0x2E:
+					WriteMessage("Command       = RADIO");
+					break;
+				case 0x2F:
+					WriteMessage("Command       = TV Preview");
+					break;
+				case 0x30:
+					WriteMessage("Command       = Channel list");
+					break;
+				case 0x31:
+					WriteMessage("Command       = Video Desktop");
+					break;
+				case 0x32:
+					WriteMessage("Command       = red");
+					break;
+				case 0x33:
+					WriteMessage("Command       = green");
+					break;
+				case 0x34:
+					WriteMessage("Command       = yellow");
+					break;
+				case 0x35:
+					WriteMessage("Command       = blue");
+					break;
+				case 0x36:
+					WriteMessage("Command       = rename TAB");
+					break;
+				case 0x37:
+					WriteMessage("Command       = Acquire image");
+					break;
+				case 0x38:
+					WriteMessage("Command       = edit image");
+					break;
+				case 0x39:
+					WriteMessage("Command       = Full screen");
+					break;
+				case 0x3A:
+					WriteMessage("Command       = DVD Audio");
+					break;
+				case 0x70:
+					WriteMessage("Command       = Cursor-left");
+					break;
+				case 0x71:
+					WriteMessage("Command       = Cursor-right");
+					break;
+				case 0x72:
+					WriteMessage("Command       = Cursor-up");
+					break;
+				case 0x73:
+					WriteMessage("Command       = Cursor-down");
+					break;
+				case 0x74:
+					WriteMessage("Command       = Cursor-up-left");
+					break;
+				case 0x75:
+					WriteMessage("Command       = Cursor-up-right");
+					break;
+				case 0x76:
+					WriteMessage("Command       = Cursor-down-right");
+					break;
+				case 0x77:
+					WriteMessage("Command       = Cursor-down-left");
+					break;
+				case 0x78:
+					WriteMessage("Command       = V");
+					break;
+				case 0x79:
+					WriteMessage("Command       = V-End");
+					break;
+				case 0x7C:
+					WriteMessage("Command       = X");
+					break;
+				case 0x7D:
+					WriteMessage("Command       = X-End");
+					break;
+				default:
+					WriteMessage("Command       = unknown");
+					break;
+				}
+				break;
+			case sTypeATIplus:
+				WriteMessage("subtype       = ATI Remote Wonder Plus");
+				sprintf(szTmp,"Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
+				WriteMessage(szTmp);
+				sprintf(szTmp,"ID            = %d", pResponse->REMOTE.id);
+				WriteMessage(szTmp);
 
-			WriteMessage("Command       = ", false);
-			switch (pResponse->REMOTE.cmnd)
-			{
-			case 0x0:
-				WriteMessage("A", false);
-				break;
-			case 0x1:
-				WriteMessage("B", false);
-				break;
-			case 0x2:
-				WriteMessage("power", false);
-				break;
-			case 0x3:
-				WriteMessage("TV", false);
-				break;
-			case 0x4:
-				WriteMessage("DVD", false);
-				break;
-			case 0x5:
-				WriteMessage("?", false);
-				break;
-			case 0x6:
-				WriteMessage("Guide", false);
-				break;
-			case 0x7:
-				WriteMessage("Drag", false);
-				break;
-			case 0x8:
-				WriteMessage("VOL+", false);
-				break;
-			case 0x9:
-				WriteMessage("VOL-", false);
-				break;
-			case 0xA:
-				WriteMessage("MUTE", false);
-				break;
-			case 0xB:
-				WriteMessage("CHAN+", false);
-				break;
-			case 0xC:
-				WriteMessage("CHAN-", false);
-				break;
-			case 0xD:
-				WriteMessage("1", false);
-				break;
-			case 0xE:
-				WriteMessage("2", false);
-				break;
-			case 0xF:
-				WriteMessage("3", false);
-				break;
-			case 0x10:
-				WriteMessage("4", false);
-				break;
-			case 0x11:
-				WriteMessage("5", false);
-				break;
-			case 0x12:
-				WriteMessage("6", false);
-				break;
-			case 0x13:
-				WriteMessage("7", false);
-				break;
-			case 0x14:
-				WriteMessage("8", false);
-				break;
-			case 0x15:
-				WriteMessage("9", false);
-				break;
-			case 0x16:
-				WriteMessage("txt", false);
-				break;
-			case 0x17:
-				WriteMessage("0", false);
-				break;
-			case 0x18:
-				WriteMessage("Open Setup Menu", false);
-				break;
-			case 0x19:
-				WriteMessage("C", false);
-				break;
-			case 0x1A:
-				WriteMessage("^", false);
-				break;
-			case 0x1B:
-				WriteMessage("D", false);
-				break;
-			case 0x1C:
-				WriteMessage("FM", false);
-				break;
-			case 0x1D:
-				WriteMessage("<", false);
-				break;
-			case 0x1E:
-				WriteMessage("OK", false);
-				break;
-			case 0x1F:
-				WriteMessage(">", false);
-				break;
-			case 0x20:
-				WriteMessage("Max/Restore window", false);
-				break;
-			case 0x21:
-				WriteMessage("E", false);
-				break;
-			case 0x22:
-				WriteMessage("v", false);
-				break;
-			case 0x23:
-				WriteMessage("F", false);
-				break;
-			case 0x24:
-				WriteMessage("Rewind", false);
-				break;
-			case 0x25:
-				WriteMessage("Play", false);
-				break;
-			case 0x26:
-				WriteMessage("Fast forward", false);
-				break;
-			case 0x27:
-				WriteMessage("Record", false);
-				break;
-			case 0x28:
-				WriteMessage("Stop", false);
-				break;
-			case 0x29:
-				WriteMessage("Pause", false);
-				break;
-			case 0x2A:
-				WriteMessage("TV2", false);
-				break;
-			case 0x2B:
-				WriteMessage("Clock", false);
-				break;
-			case 0x2C:
-				WriteMessage("i", false);
-				break;
-			case 0x2D:
-				WriteMessage("ATI", false);
-				break;
-			case 0x2E:
-				WriteMessage("RADIO", false);
-				break;
-			case 0x2F:
-				WriteMessage("TV Preview", false);
-				break;
-			case 0x30:
-				WriteMessage("Channel list", false);
-				break;
-			case 0x31:
-				WriteMessage("Video Desktop", false);
-				break;
-			case 0x32:
-				WriteMessage("red", false);
-				break;
-			case 0x33:
-				WriteMessage("green", false);
-				break;
-			case 0x34:
-				WriteMessage("yellow", false);
-				break;
-			case 0x35:
-				WriteMessage("blue", false);
-				break;
-			case 0x36:
-				WriteMessage("rename TAB", false);
-				break;
-			case 0x37:
-				WriteMessage("Acquire image", false);
-				break;
-			case 0x38:
-				WriteMessage("edit image", false);
-				break;
-			case 0x39:
-				WriteMessage("Full screen", false);
-				break;
-			case 0x3A:
-				WriteMessage("DVD Audio", false);
-				break;
-			case 0x70:
-				WriteMessage("Cursor-left", false);
-				break;
-			case 0x71:
-				WriteMessage("Cursor-right", false);
-				break;
-			case 0x72:
-				WriteMessage("Cursor-up", false);
-				break;
-			case 0x73:
-				WriteMessage("Cursor-down", false);
-				break;
-			case 0x74:
-				WriteMessage("Cursor-up-left", false);
-				break;
-			case 0x75:
-				WriteMessage("Cursor-up-right", false);
-				break;
-			case 0x76:
-				WriteMessage("Cursor-down-right", false);
-				break;
-			case 0x77:
-				WriteMessage("Cursor-down-left", false);
-				break;
-			case 0x78:
-				WriteMessage("Left Mouse Button", false);
-				break;
-			case 0x79:
-				WriteMessage("V-End", false);
-				break;
-			case 0x7C:
-				WriteMessage("Right Mouse Button", false);
-				break;
-			case 0x7D:
-				WriteMessage("X-End", false);
-				break;
-			default:
-				WriteMessage("unknown", false);
-				break;
-			}
-			if ((pResponse->REMOTE.toggle & 1) == 1)
-				WriteMessage("  (button press = odd)");
-			else
-				WriteMessage("  (button press = even)");
-			break;
-		case sTypeATIrw2:
-			WriteMessage("subtype       = ATI Remote Wonder II");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
-			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", pResponse->REMOTE.id);
-			WriteMessage(szTmp);
-			WriteMessage("Command type  = ", false);
+				WriteMessage("Command       = ", false);
+				switch (pResponse->REMOTE.cmnd)
+				{
+				case 0x0:
+					WriteMessage("A", false);
+					break;
+				case 0x1:
+					WriteMessage("B", false);
+					break;
+				case 0x2:
+					WriteMessage("power", false);
+					break;
+				case 0x3:
+					WriteMessage("TV", false);
+					break;
+				case 0x4:
+					WriteMessage("DVD", false);
+					break;
+				case 0x5:
+					WriteMessage("?", false);
+					break;
+				case 0x6:
+					WriteMessage("Guide", false);
+					break;
+				case 0x7:
+					WriteMessage("Drag", false);
+					break;
+				case 0x8:
+					WriteMessage("VOL+", false);
+					break;
+				case 0x9:
+					WriteMessage("VOL-", false);
+					break;
+				case 0xA:
+					WriteMessage("MUTE", false);
+					break;
+				case 0xB:
+					WriteMessage("CHAN+", false);
+					break;
+				case 0xC:
+					WriteMessage("CHAN-", false);
+					break;
+				case 0xD:
+					WriteMessage("1", false);
+					break;
+				case 0xE:
+					WriteMessage("2", false);
+					break;
+				case 0xF:
+					WriteMessage("3", false);
+					break;
+				case 0x10:
+					WriteMessage("4", false);
+					break;
+				case 0x11:
+					WriteMessage("5", false);
+					break;
+				case 0x12:
+					WriteMessage("6", false);
+					break;
+				case 0x13:
+					WriteMessage("7", false);
+					break;
+				case 0x14:
+					WriteMessage("8", false);
+					break;
+				case 0x15:
+					WriteMessage("9", false);
+					break;
+				case 0x16:
+					WriteMessage("txt", false);
+					break;
+				case 0x17:
+					WriteMessage("0", false);
+					break;
+				case 0x18:
+					WriteMessage("Open Setup Menu", false);
+					break;
+				case 0x19:
+					WriteMessage("C", false);
+					break;
+				case 0x1A:
+					WriteMessage("^", false);
+					break;
+				case 0x1B:
+					WriteMessage("D", false);
+					break;
+				case 0x1C:
+					WriteMessage("FM", false);
+					break;
+				case 0x1D:
+					WriteMessage("<", false);
+					break;
+				case 0x1E:
+					WriteMessage("OK", false);
+					break;
+				case 0x1F:
+					WriteMessage(">", false);
+					break;
+				case 0x20:
+					WriteMessage("Max/Restore window", false);
+					break;
+				case 0x21:
+					WriteMessage("E", false);
+					break;
+				case 0x22:
+					WriteMessage("v", false);
+					break;
+				case 0x23:
+					WriteMessage("F", false);
+					break;
+				case 0x24:
+					WriteMessage("Rewind", false);
+					break;
+				case 0x25:
+					WriteMessage("Play", false);
+					break;
+				case 0x26:
+					WriteMessage("Fast forward", false);
+					break;
+				case 0x27:
+					WriteMessage("Record", false);
+					break;
+				case 0x28:
+					WriteMessage("Stop", false);
+					break;
+				case 0x29:
+					WriteMessage("Pause", false);
+					break;
+				case 0x2A:
+					WriteMessage("TV2", false);
+					break;
+				case 0x2B:
+					WriteMessage("Clock", false);
+					break;
+				case 0x2C:
+					WriteMessage("i", false);
+					break;
+				case 0x2D:
+					WriteMessage("ATI", false);
+					break;
+				case 0x2E:
+					WriteMessage("RADIO", false);
+					break;
+				case 0x2F:
+					WriteMessage("TV Preview", false);
+					break;
+				case 0x30:
+					WriteMessage("Channel list", false);
+					break;
+				case 0x31:
+					WriteMessage("Video Desktop", false);
+					break;
+				case 0x32:
+					WriteMessage("red", false);
+					break;
+				case 0x33:
+					WriteMessage("green", false);
+					break;
+				case 0x34:
+					WriteMessage("yellow", false);
+					break;
+				case 0x35:
+					WriteMessage("blue", false);
+					break;
+				case 0x36:
+					WriteMessage("rename TAB", false);
+					break;
+				case 0x37:
+					WriteMessage("Acquire image", false);
+					break;
+				case 0x38:
+					WriteMessage("edit image", false);
+					break;
+				case 0x39:
+					WriteMessage("Full screen", false);
+					break;
+				case 0x3A:
+					WriteMessage("DVD Audio", false);
+					break;
+				case 0x70:
+					WriteMessage("Cursor-left", false);
+					break;
+				case 0x71:
+					WriteMessage("Cursor-right", false);
+					break;
+				case 0x72:
+					WriteMessage("Cursor-up", false);
+					break;
+				case 0x73:
+					WriteMessage("Cursor-down", false);
+					break;
+				case 0x74:
+					WriteMessage("Cursor-up-left", false);
+					break;
+				case 0x75:
+					WriteMessage("Cursor-up-right", false);
+					break;
+				case 0x76:
+					WriteMessage("Cursor-down-right", false);
+					break;
+				case 0x77:
+					WriteMessage("Cursor-down-left", false);
+					break;
+				case 0x78:
+					WriteMessage("Left Mouse Button", false);
+					break;
+				case 0x79:
+					WriteMessage("V-End", false);
+					break;
+				case 0x7C:
+					WriteMessage("Right Mouse Button", false);
+					break;
+				case 0x7D:
+					WriteMessage("X-End", false);
+					break;
+				default:
+					WriteMessage("unknown", false);
+					break;
+				}
+				if ((pResponse->REMOTE.toggle & 1) == 1)
+					WriteMessage("  (button press = odd)");
+				else
+					WriteMessage("  (button press = even)");
+				break;
+			case sTypeATIrw2:
+				WriteMessage("subtype       = ATI Remote Wonder II");
+				sprintf(szTmp,"Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
+				WriteMessage(szTmp);
+				sprintf(szTmp,"ID            = %d", pResponse->REMOTE.id);
+				WriteMessage(szTmp);
+				WriteMessage("Command type  = ", false);
 
-			switch (pResponse->REMOTE.cmndtype & 0x0E)
-			{
-			case 0x0:
-				WriteMessage("PC");
-				break;
-			case 0x2:
-				WriteMessage("AUX1");
-				break;
-			case 0x4:
-				WriteMessage("AUX2");
-				break;
-			case 0x6:
-				WriteMessage("AUX3");
-				break;
-			case 0x8:
-				WriteMessage("AUX4");
-				break;
-			default:
-				WriteMessage("unknown");
-				break;
-			}
-			WriteMessage("Command       = ", false);
-			switch (pResponse->REMOTE.cmnd)
-			{
-			case 0x0:
-				WriteMessage("A", false);
-				break;
-			case 0x1:
-				WriteMessage("B", false);
-				break;
-			case 0x2:
-				WriteMessage("power", false);
-				break;
-			case 0x3:
-				WriteMessage("TV", false);
-				break;
-			case 0x4:
-				WriteMessage("DVD", false);
-				break;
-			case 0x5:
-				WriteMessage("?", false);
-				break;
-			case 0x7:
-				WriteMessage("Drag", false);
-				break;
-			case 0x8:
-				WriteMessage("VOL+", false);
-				break;
-			case 0x9:
-				WriteMessage("VOL-", false);
-				break;
-			case 0xA:
-				WriteMessage("MUTE", false);
-				break;
-			case 0xB:
-				WriteMessage("CHAN+", false);
-				break;
-			case 0xC:
-				WriteMessage("CHAN-", false);
-				break;
-			case 0xD:
-				WriteMessage("1", false);
-				break;
-			case 0xE:
-				WriteMessage("2", false);
-				break;
-			case 0xF:
-				WriteMessage("3", false);
-				break;
-			case 0x10:
-				WriteMessage("4", false);
-				break;
-			case 0x11:
-				WriteMessage("5", false);
-				break;
-			case 0x12:
-				WriteMessage("6", false);
-				break;
-			case 0x13:
-				WriteMessage("7", false);
-				break;
-			case 0x14:
-				WriteMessage("8", false);
-				break;
-			case 0x15:
-				WriteMessage("9", false);
-				break;
-			case 0x16:
-				WriteMessage("txt", false);
-				break;
-			case 0x17:
-				WriteMessage("0", false);
-				break;
-			case 0x18:
-				WriteMessage("Open Setup Menu", false);
-				break;
-			case 0x19:
-				WriteMessage("C", false);
-				break;
-			case 0x1A:
-				WriteMessage("^", false);
-				break;
-			case 0x1B:
-				WriteMessage("D", false);
-				break;
-			case 0x1C:
-				WriteMessage("TV/RADIO", false);
-				break;
-			case 0x1D:
-				WriteMessage("<", false);
-				break;
-			case 0x1E:
-				WriteMessage("OK", false);
-				break;
-			case 0x1F:
-				WriteMessage(">", false);
-				break;
-			case 0x20:
-				WriteMessage("Max/Restore window", false);
-				break;
-			case 0x21:
-				WriteMessage("E", false);
-				break;
-			case 0x22:
-				WriteMessage("v", false);
-				break;
-			case 0x23:
-				WriteMessage("F", false);
-				break;
-			case 0x24:
-				WriteMessage("Rewind", false);
-				break;
-			case 0x25:
-				WriteMessage("Play", false);
-				break;
-			case 0x26:
-				WriteMessage("Fast forward", false);
-				break;
-			case 0x27:
-				WriteMessage("Record", false);
-				break;
-			case 0x28:
-				WriteMessage("Stop", false);
-				break;
-			case 0x29:
-				WriteMessage("Pause", false);
-				break;
-			case 0x2C:
-				WriteMessage("i", false);
-				break;
-			case 0x2D:
-				WriteMessage("ATI", false);
-				break;
-			case 0x3B:
-				WriteMessage("PC", false);
-				break;
-			case 0x3C:
-				WriteMessage("AUX1", false);
-				break;
-			case 0x3D:
-				WriteMessage("AUX2", false);
-				break;
-			case 0x3E:
-				WriteMessage("AUX3", false);
-				break;
-			case 0x3F:
-				WriteMessage("AUX4", false);
-				break;
-			case 0x70:
-				WriteMessage("Cursor-left", false);
-				break;
-			case 0x71:
-				WriteMessage("Cursor-right", false);
-				break;
-			case 0x72:
-				WriteMessage("Cursor-up", false);
-				break;
-			case 0x73:
-				WriteMessage("Cursor-down", false);
-				break;
-			case 0x74:
-				WriteMessage("Cursor-up-left", false);
-				break;
-			case 0x75:
-				WriteMessage("Cursor-up-right", false);
-				break;
-			case 0x76:
-				WriteMessage("Cursor-down-right", false);
-				break;
-			case 0x77:
-				WriteMessage("Cursor-down-left", false);
-				break;
-			case 0x78:
-				WriteMessage("Left Mouse Button", false);
-				break;
-			case 0x7C:
-				WriteMessage("Right Mouse Button", false);
-				break;
-			default:
-				WriteMessage("unknown", false);
-				break;
-			}
-			if ((pResponse->REMOTE.toggle & 1) == 1)
-				WriteMessage("  (button press = odd)");
-			else
-				WriteMessage("  (button press = even)");
-			break;
-		case sTypeMedion:
-			WriteMessage("subtype       = Medion Remote");
-			sprintf(szTmp, "Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
-			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", pResponse->REMOTE.id);
-			WriteMessage(szTmp);
+				switch (pResponse->REMOTE.cmndtype & 0x0E)
+				{
+				case 0x0:
+					WriteMessage("PC");
+					break;
+				case 0x2:
+					WriteMessage("AUX1");
+					break;
+				case 0x4:
+					WriteMessage("AUX2");
+					break;
+				case 0x6:
+					WriteMessage("AUX3");
+					break;
+				case 0x8:
+					WriteMessage("AUX4");
+					break;
+				default:
+					WriteMessage("unknown");
+					break;
+				}
+				WriteMessage("Command       = ", false);
+				switch (pResponse->REMOTE.cmnd)
+				{
+				case 0x0:
+					WriteMessage("A", false);
+					break;
+				case 0x1:
+					WriteMessage("B", false);
+					break;
+				case 0x2:
+					WriteMessage("power", false);
+					break;
+				case 0x3:
+					WriteMessage("TV", false);
+					break;
+				case 0x4:
+					WriteMessage("DVD", false);
+					break;
+				case 0x5:
+					WriteMessage("?", false);
+					break;
+				case 0x7:
+					WriteMessage("Drag", false);
+					break;
+				case 0x8:
+					WriteMessage("VOL+", false);
+					break;
+				case 0x9:
+					WriteMessage("VOL-", false);
+					break;
+				case 0xA:
+					WriteMessage("MUTE", false);
+					break;
+				case 0xB:
+					WriteMessage("CHAN+", false);
+					break;
+				case 0xC:
+					WriteMessage("CHAN-", false);
+					break;
+				case 0xD:
+					WriteMessage("1", false);
+					break;
+				case 0xE:
+					WriteMessage("2", false);
+					break;
+				case 0xF:
+					WriteMessage("3", false);
+					break;
+				case 0x10:
+					WriteMessage("4", false);
+					break;
+				case 0x11:
+					WriteMessage("5", false);
+					break;
+				case 0x12:
+					WriteMessage("6", false);
+					break;
+				case 0x13:
+					WriteMessage("7", false);
+					break;
+				case 0x14:
+					WriteMessage("8", false);
+					break;
+				case 0x15:
+					WriteMessage("9", false);
+					break;
+				case 0x16:
+					WriteMessage("txt", false);
+					break;
+				case 0x17:
+					WriteMessage("0", false);
+					break;
+				case 0x18:
+					WriteMessage("Open Setup Menu", false);
+					break;
+				case 0x19:
+					WriteMessage("C", false);
+					break;
+				case 0x1A:
+					WriteMessage("^", false);
+					break;
+				case 0x1B:
+					WriteMessage("D", false);
+					break;
+				case 0x1C:
+					WriteMessage("TV/RADIO", false);
+					break;
+				case 0x1D:
+					WriteMessage("<", false);
+					break;
+				case 0x1E:
+					WriteMessage("OK", false);
+					break;
+				case 0x1F:
+					WriteMessage(">", false);
+					break;
+				case 0x20:
+					WriteMessage("Max/Restore window", false);
+					break;
+				case 0x21:
+					WriteMessage("E", false);
+					break;
+				case 0x22:
+					WriteMessage("v", false);
+					break;
+				case 0x23:
+					WriteMessage("F", false);
+					break;
+				case 0x24:
+					WriteMessage("Rewind", false);
+					break;
+				case 0x25:
+					WriteMessage("Play", false);
+					break;
+				case 0x26:
+					WriteMessage("Fast forward", false);
+					break;
+				case 0x27:
+					WriteMessage("Record", false);
+					break;
+				case 0x28:
+					WriteMessage("Stop", false);
+					break;
+				case 0x29:
+					WriteMessage("Pause", false);
+					break;
+				case 0x2C:
+					WriteMessage("i", false);
+					break;
+				case 0x2D:
+					WriteMessage("ATI", false);
+					break;
+				case 0x3B:
+					WriteMessage("PC", false);
+					break;
+				case 0x3C:
+					WriteMessage("AUX1", false);
+					break;
+				case 0x3D:
+					WriteMessage("AUX2", false);
+					break;
+				case 0x3E:
+					WriteMessage("AUX3", false);
+					break;
+				case 0x3F:
+					WriteMessage("AUX4", false);
+					break;
+				case 0x70:
+					WriteMessage("Cursor-left", false);
+					break;
+				case 0x71:
+					WriteMessage("Cursor-right", false);
+					break;
+				case 0x72:
+					WriteMessage("Cursor-up", false);
+					break;
+				case 0x73:
+					WriteMessage("Cursor-down", false);
+					break;
+				case 0x74:
+					WriteMessage("Cursor-up-left", false);
+					break;
+				case 0x75:
+					WriteMessage("Cursor-up-right", false);
+					break;
+				case 0x76:
+					WriteMessage("Cursor-down-right", false);
+					break;
+				case 0x77:
+					WriteMessage("Cursor-down-left", false);
+					break;
+				case 0x78:
+					WriteMessage("Left Mouse Button", false);
+					break;
+				case 0x7C:
+					WriteMessage("Right Mouse Button", false);
+					break;
+				default:
+					WriteMessage("unknown", false);
+					break;
+				}
+				if ((pResponse->REMOTE.toggle & 1) == 1)
+					WriteMessage("  (button press = odd)");
+				else
+					WriteMessage("  (button press = even)");
+				break;
+			case sTypeMedion:
+				WriteMessage("subtype       = Medion Remote");
+				sprintf(szTmp, "Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
+				WriteMessage(szTmp);
+				sprintf(szTmp,"ID            = %d", pResponse->REMOTE.id);
+				WriteMessage(szTmp);
 
-			WriteMessage("Command       = ", false);
+				WriteMessage("Command       = ", false);
 
-			switch (pResponse->REMOTE.cmnd)
-			{
-			case 0x0:
-				WriteMessage("Mute");
-				break;
-			case 0x1:
-				WriteMessage("B");
-				break;
-			case 0x2:
-				WriteMessage("power");
-				break;
-			case 0x3:
-				WriteMessage("TV");
-				break;
-			case 0x4:
-				WriteMessage("DVD");
-				break;
-			case 0x5:
-				WriteMessage("Photo");
-				break;
-			case 0x6:
-				WriteMessage("Music");
-				break;
-			case 0x7:
-				WriteMessage("Drag");
-				break;
-			case 0x8:
-				WriteMessage("VOL-");
-				break;
-			case 0x9:
-				WriteMessage("VOL+");
-				break;
-			case 0xA:
-				WriteMessage("MUTE");
-				break;
-			case 0xB:
-				WriteMessage("CHAN+");
-				break;
-			case 0xC:
-				WriteMessage("CHAN-");
-				break;
-			case 0xD:
-				WriteMessage("1");
-				break;
-			case 0xE:
-				WriteMessage("2");
-				break;
-			case 0xF:
-				WriteMessage("3");
-				break;
-			case 0x10:
-				WriteMessage("4");
-				break;
-			case 0x11:
-				WriteMessage("5");
-				break;
-			case 0x12:
-				WriteMessage("6");
-				break;
-			case 0x13:
-				WriteMessage("7");
-				break;
-			case 0x14:
-				WriteMessage("8");
-				break;
-			case 0x15:
-				WriteMessage("9");
-				break;
-			case 0x16:
-				WriteMessage("txt");
-				break;
-			case 0x17:
-				WriteMessage("0");
-				break;
-			case 0x18:
-				WriteMessage("snapshot ESC");
-				break;
-			case 0x19:
-				WriteMessage("DVD MENU");
-				break;
-			case 0x1A:
-				WriteMessage("^");
-				break;
-			case 0x1B:
-				WriteMessage("Setup");
-				break;
-			case 0x1C:
-				WriteMessage("TV/RADIO");
-				break;
-			case 0x1D:
-				WriteMessage("<");
-				break;
-			case 0x1E:
-				WriteMessage("OK");
-				break;
-			case 0x1F:
-				WriteMessage(">");
-				break;
-			case 0x20:
-				WriteMessage("<-");
-				break;
-			case 0x21:
-				WriteMessage("E");
-				break;
-			case 0x22:
-				WriteMessage("v");
-				break;
-			case 0x23:
-				WriteMessage("F");
-				break;
-			case 0x24:
-				WriteMessage("Rewind");
-				break;
-			case 0x25:
-				WriteMessage("Play");
-				break;
-			case 0x26:
-				WriteMessage("Fast forward");
-				break;
-			case 0x27:
-				WriteMessage("Record");
-				break;
-			case 0x28:
-				WriteMessage("Stop");
-				break;
-			case 0x29:
-				WriteMessage("Pause");
-				break;
-			case 0x2C:
-				WriteMessage("TV");
-				break;
-			case 0x2D:
-				WriteMessage("VCR");
-				break;
-			case 0x2E:
-				WriteMessage("RADIO");
-				break;
-			case 0x2F:
-				WriteMessage("TV Preview");
-				break;
-			case 0x30:
-				WriteMessage("Channel list");
-				break;
-			case 0x31:
-				WriteMessage("Video Desktop");
-				break;
-			case 0x32:
-				WriteMessage("red");
-				break;
-			case 0x33:
-				WriteMessage("green");
-				break;
-			case 0x34:
-				WriteMessage("yellow");
-				break;
-			case 0x35:
-				WriteMessage("blue");
-				break;
-			case 0x36:
-				WriteMessage("rename TAB");
-				break;
-			case 0x37:
-				WriteMessage("Acquire image");
-				break;
-			case 0x38:
-				WriteMessage("edit image");
-				break;
-			case 0x39:
-				WriteMessage("Full screen");
-				break;
-			case 0x3A:
-				WriteMessage("DVD Audio");
-				break;
-			case 0x70:
-				WriteMessage("Cursor-left");
-				break;
-			case 0x71:
-				WriteMessage("Cursor-right");
-				break;
-			case 0x72:
-				WriteMessage("Cursor-up");
-				break;
-			case 0x73:
-				WriteMessage("Cursor-down");
-				break;
-			case 0x74:
-				WriteMessage("Cursor-up-left");
-				break;
-			case 0x75:
-				WriteMessage("Cursor-up-right");
-				break;
-			case 0x76:
-				WriteMessage("Cursor-down-right");
-				break;
-			case 0x77:
-				WriteMessage("Cursor-down-left");
-				break;
-			case 0x78:
-				WriteMessage("V");
-				break;
-			case 0x79:
-				WriteMessage("V-End");
-				break;
-			case 0x7C:
-				WriteMessage("X");
-				break;
-			case 0x7D:
-				WriteMessage("X-End");
+				switch (pResponse->REMOTE.cmnd)
+				{
+				case 0x0:
+					WriteMessage("Mute");
+					break;
+				case 0x1:
+					WriteMessage("B");
+					break;
+				case 0x2:
+					WriteMessage("power");
+					break;
+				case 0x3:
+					WriteMessage("TV");
+					break;
+				case 0x4:
+					WriteMessage("DVD");
+					break;
+				case 0x5:
+					WriteMessage("Photo");
+					break;
+				case 0x6:
+					WriteMessage("Music");
+					break;
+				case 0x7:
+					WriteMessage("Drag");
+					break;
+				case 0x8:
+					WriteMessage("VOL-");
+					break;
+				case 0x9:
+					WriteMessage("VOL+");
+					break;
+				case 0xA:
+					WriteMessage("MUTE");
+					break;
+				case 0xB:
+					WriteMessage("CHAN+");
+					break;
+				case 0xC:
+					WriteMessage("CHAN-");
+					break;
+				case 0xD:
+					WriteMessage("1");
+					break;
+				case 0xE:
+					WriteMessage("2");
+					break;
+				case 0xF:
+					WriteMessage("3");
+					break;
+				case 0x10:
+					WriteMessage("4");
+					break;
+				case 0x11:
+					WriteMessage("5");
+					break;
+				case 0x12:
+					WriteMessage("6");
+					break;
+				case 0x13:
+					WriteMessage("7");
+					break;
+				case 0x14:
+					WriteMessage("8");
+					break;
+				case 0x15:
+					WriteMessage("9");
+					break;
+				case 0x16:
+					WriteMessage("txt");
+					break;
+				case 0x17:
+					WriteMessage("0");
+					break;
+				case 0x18:
+					WriteMessage("snapshot ESC");
+					break;
+				case 0x19:
+					WriteMessage("DVD MENU");
+					break;
+				case 0x1A:
+					WriteMessage("^");
+					break;
+				case 0x1B:
+					WriteMessage("Setup");
+					break;
+				case 0x1C:
+					WriteMessage("TV/RADIO");
+					break;
+				case 0x1D:
+					WriteMessage("<");
+					break;
+				case 0x1E:
+					WriteMessage("OK");
+					break;
+				case 0x1F:
+					WriteMessage(">");
+					break;
+				case 0x20:
+					WriteMessage("<-");
+					break;
+				case 0x21:
+					WriteMessage("E");
+					break;
+				case 0x22:
+					WriteMessage("v");
+					break;
+				case 0x23:
+					WriteMessage("F");
+					break;
+				case 0x24:
+					WriteMessage("Rewind");
+					break;
+				case 0x25:
+					WriteMessage("Play");
+					break;
+				case 0x26:
+					WriteMessage("Fast forward");
+					break;
+				case 0x27:
+					WriteMessage("Record");
+					break;
+				case 0x28:
+					WriteMessage("Stop");
+					break;
+				case 0x29:
+					WriteMessage("Pause");
+					break;
+				case 0x2C:
+					WriteMessage("TV");
+					break;
+				case 0x2D:
+					WriteMessage("VCR");
+					break;
+				case 0x2E:
+					WriteMessage("RADIO");
+					break;
+				case 0x2F:
+					WriteMessage("TV Preview");
+					break;
+				case 0x30:
+					WriteMessage("Channel list");
+					break;
+				case 0x31:
+					WriteMessage("Video Desktop");
+					break;
+				case 0x32:
+					WriteMessage("red");
+					break;
+				case 0x33:
+					WriteMessage("green");
+					break;
+				case 0x34:
+					WriteMessage("yellow");
+					break;
+				case 0x35:
+					WriteMessage("blue");
+					break;
+				case 0x36:
+					WriteMessage("rename TAB");
+					break;
+				case 0x37:
+					WriteMessage("Acquire image");
+					break;
+				case 0x38:
+					WriteMessage("edit image");
+					break;
+				case 0x39:
+					WriteMessage("Full screen");
+					break;
+				case 0x3A:
+					WriteMessage("DVD Audio");
+					break;
+				case 0x70:
+					WriteMessage("Cursor-left");
+					break;
+				case 0x71:
+					WriteMessage("Cursor-right");
+					break;
+				case 0x72:
+					WriteMessage("Cursor-up");
+					break;
+				case 0x73:
+					WriteMessage("Cursor-down");
+					break;
+				case 0x74:
+					WriteMessage("Cursor-up-left");
+					break;
+				case 0x75:
+					WriteMessage("Cursor-up-right");
+					break;
+				case 0x76:
+					WriteMessage("Cursor-down-right");
+					break;
+				case 0x77:
+					WriteMessage("Cursor-down-left");
+					break;
+				case 0x78:
+					WriteMessage("V");
+					break;
+				case 0x79:
+					WriteMessage("V-End");
+					break;
+				case 0x7C:
+					WriteMessage("X");
+					break;
+				case 0x7D:
+					WriteMessage("X-End");
+					break;
+				default:
+					WriteMessage("unknown");
+					break;
+				}
+				break;
+			case sTypePCremote:
+				WriteMessage("subtype       = PC Remote");
+				sprintf(szTmp,"Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
+				WriteMessage(szTmp);
+				sprintf(szTmp,"ID            = %d", pResponse->REMOTE.id);
+				WriteMessage(szTmp);
+				WriteMessage("Command       = ", false);
+				switch (pResponse->REMOTE.cmnd)
+				{
+				case 0x2:
+					WriteMessage("0");
+					break;
+				case 0x82:
+					WriteMessage("1");
+					break;
+				case 0xD1:
+					WriteMessage("MP3");
+					break;
+				case 0x42:
+					WriteMessage("2");
+					break;
+				case 0xD2:
+					WriteMessage("DVD");
+					break;
+				case 0xC2:
+					WriteMessage("3");
+					break;
+				case 0xD3:
+					WriteMessage("CD");
+					break;
+				case 0x22:
+					WriteMessage("4");
+					break;
+				case 0xD4:
+					WriteMessage("PC or SHIFT-4");
+					break;
+				case 0xA2:
+					WriteMessage("5");
+					break;
+				case 0xD5:
+					WriteMessage("SHIFT-5");
+					break;
+				case 0x62:
+					WriteMessage("6");
+					break;
+				case 0xE2:
+					WriteMessage("7");
+					break;
+				case 0x12:
+					WriteMessage("8");
+					break;
+				case 0x92:
+					WriteMessage("9");
+					break;
+				case 0xC0:
+					WriteMessage("CH-");
+					break;
+				case 0x40:
+					WriteMessage("CH+");
+					break;
+				case 0xE0:
+					WriteMessage("VOL-");
+					break;
+				case 0x60:
+					WriteMessage("VOL+");
+					break;
+				case 0xA0:
+					WriteMessage("MUTE");
+					break;
+				case 0x3A:
+					WriteMessage("INFO");
+					break;
+				case 0x38:
+					WriteMessage("REW");
+					break;
+				case 0xB8:
+					WriteMessage("FF");
+					break;
+				case 0xB0:
+					WriteMessage("PLAY");
+					break;
+				case 0x64:
+					WriteMessage("PAUSE");
+					break;
+				case 0x63:
+					WriteMessage("STOP");
+					break;
+				case 0xB6:
+					WriteMessage("MENU");
+					break;
+				case 0xFF:
+					WriteMessage("REC");
+					break;
+				case 0xC9:
+					WriteMessage("EXIT");
+					break;
+				case 0xD8:
+					WriteMessage("TEXT");
+					break;
+				case 0xD9:
+					WriteMessage("SHIFT-TEXT");
+					break;
+				case 0xF2:
+					WriteMessage("TELETEXT");
+					break;
+				case 0xD7:
+					WriteMessage("SHIFT-TELETEXT");
+					break;
+				case 0xBA:
+					WriteMessage("A+B");
+					break;
+				case 0x52:
+					WriteMessage("ENT");
+					break;
+				case 0xD6:
+					WriteMessage("SHIFT-ENT");
+					break;
+				case 0x70:
+					WriteMessage("Cursor-left");
+					break;
+				case 0x71:
+					WriteMessage("Cursor-right");
+					break;
+				case 0x72:
+					WriteMessage("Cursor-up");
+					break;
+				case 0x73:
+					WriteMessage("Cursor-down");
+					break;
+				case 0x74:
+					WriteMessage("Cursor-up-left");
+					break;
+				case 0x75:
+					WriteMessage("Cursor-up-right");
+					break;
+				case 0x76:
+					WriteMessage("Cursor-down-right");
+					break;
+				case 0x77:
+					WriteMessage("Cursor-down-left");
+					break;
+				case 0x78:
+					WriteMessage("Left mouse");
+					break;
+				case 0x79:
+					WriteMessage("Left mouse-End");
+					break;
+				case 0x7B:
+					WriteMessage("Drag");
+					break;
+				case 0x7C:
+					WriteMessage("Right mouse");
+					break;
+				case 0x7D:
+					WriteMessage("Right mouse-End");
+					break;
+				default:
+					WriteMessage("unknown");
+					break;
+				}
 				break;
 			default:
-				WriteMessage("unknown");
+				sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->REMOTE.packettype, pResponse->REMOTE.subtype);
+				WriteMessage(szTmp);
 				break;
-			}
-			break;
-		case sTypePCremote:
-			WriteMessage("subtype       = PC Remote");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
-			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", pResponse->REMOTE.id);
-			WriteMessage(szTmp);
-			WriteMessage("Command       = ", false);
-			switch (pResponse->REMOTE.cmnd)
-			{
-			case 0x2:
-				WriteMessage("0");
-				break;
-			case 0x82:
-				WriteMessage("1");
-				break;
-			case 0xD1:
-				WriteMessage("MP3");
-				break;
-			case 0x42:
-				WriteMessage("2");
-				break;
-			case 0xD2:
-				WriteMessage("DVD");
-				break;
-			case 0xC2:
-				WriteMessage("3");
-				break;
-			case 0xD3:
-				WriteMessage("CD");
-				break;
-			case 0x22:
-				WriteMessage("4");
-				break;
-			case 0xD4:
-				WriteMessage("PC or SHIFT-4");
-				break;
-			case 0xA2:
-				WriteMessage("5");
-				break;
-			case 0xD5:
-				WriteMessage("SHIFT-5");
-				break;
-			case 0x62:
-				WriteMessage("6");
-				break;
-			case 0xE2:
-				WriteMessage("7");
-				break;
-			case 0x12:
-				WriteMessage("8");
-				break;
-			case 0x92:
-				WriteMessage("9");
-				break;
-			case 0xC0:
-				WriteMessage("CH-");
-				break;
-			case 0x40:
-				WriteMessage("CH+");
-				break;
-			case 0xE0:
-				WriteMessage("VOL-");
-				break;
-			case 0x60:
-				WriteMessage("VOL+");
-				break;
-			case 0xA0:
-				WriteMessage("MUTE");
-				break;
-			case 0x3A:
-				WriteMessage("INFO");
-				break;
-			case 0x38:
-				WriteMessage("REW");
-				break;
-			case 0xB8:
-				WriteMessage("FF");
-				break;
-			case 0xB0:
-				WriteMessage("PLAY");
-				break;
-			case 0x64:
-				WriteMessage("PAUSE");
-				break;
-			case 0x63:
-				WriteMessage("STOP");
-				break;
-			case 0xB6:
-				WriteMessage("MENU");
-				break;
-			case 0xFF:
-				WriteMessage("REC");
-				break;
-			case 0xC9:
-				WriteMessage("EXIT");
-				break;
-			case 0xD8:
-				WriteMessage("TEXT");
-				break;
-			case 0xD9:
-				WriteMessage("SHIFT-TEXT");
-				break;
-			case 0xF2:
-				WriteMessage("TELETEXT");
-				break;
-			case 0xD7:
-				WriteMessage("SHIFT-TELETEXT");
-				break;
-			case 0xBA:
-				WriteMessage("A+B");
-				break;
-			case 0x52:
-				WriteMessage("ENT");
-				break;
-			case 0xD6:
-				WriteMessage("SHIFT-ENT");
-				break;
-			case 0x70:
-				WriteMessage("Cursor-left");
-				break;
-			case 0x71:
-				WriteMessage("Cursor-right");
-				break;
-			case 0x72:
-				WriteMessage("Cursor-up");
-				break;
-			case 0x73:
-				WriteMessage("Cursor-down");
-				break;
-			case 0x74:
-				WriteMessage("Cursor-up-left");
-				break;
-			case 0x75:
-				WriteMessage("Cursor-up-right");
-				break;
-			case 0x76:
-				WriteMessage("Cursor-down-right");
-				break;
-			case 0x77:
-				WriteMessage("Cursor-down-left");
-				break;
-			case 0x78:
-				WriteMessage("Left mouse");
-				break;
-			case 0x79:
-				WriteMessage("Left mouse-End");
-				break;
-			case 0x7B:
-				WriteMessage("Drag");
-				break;
-			case 0x7C:
-				WriteMessage("Right mouse");
-				break;
-			case 0x7D:
-				WriteMessage("Right mouse-End");
-				break;
-			default:
-				WriteMessage("unknown");
-				break;
-			}
-			break;
-		default:
-			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->REMOTE.packettype, pResponse->REMOTE.subtype);
-			WriteMessage(szTmp);
-			break;
+		}
+		sprintf(szTmp, "Signal level  = %d", pResponse->REMOTE.rssi);
+		WriteMessage(szTmp);
 	}
-	sprintf(szTmp, "Signal level  = %d", pResponse->REMOTE.rssi);
-	WriteMessage(szTmp);
 	return DevRowIdx;
 }
 
@@ -7927,6 +7938,26 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.THERMOSTAT3.filler=0;
 			lcmd.THERMOSTAT3.rssi=7;
 			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.THERMOSTAT3));
+			if (!IsTesting) {
+				//send to internal for now (later we use the ACK)
+				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+			}
+			return true;
+		}
+		break;
+	case pTypeRemote:
+		{
+			tRBUF lcmd;
+			lcmd.REMOTE.packetlength=sizeof(lcmd.REMOTE)-1;
+			lcmd.REMOTE.packettype=dType;
+			lcmd.REMOTE.subtype=dSubType;
+			lcmd.REMOTE.id=ID4;
+			lcmd.REMOTE.cmnd=Unit;
+			lcmd.REMOTE.cmndtype=0;
+			lcmd.REMOTE.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
+			lcmd.REMOTE.toggle=0;
+			lcmd.REMOTE.rssi=7;
+			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.REMOTE));
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
