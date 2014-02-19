@@ -125,6 +125,7 @@ void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, c
 	thermos.id2=0;
 	thermos.id3=0;
 	thermos.id4=Idx;
+	thermos.dunit=0;
 
 	thermos.temp=Temp;
 

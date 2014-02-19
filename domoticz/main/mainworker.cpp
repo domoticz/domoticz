@@ -560,6 +560,7 @@ bool MainWorker::Start()
 
 bool MainWorker::Stop()
 {
+	m_webserver.StopServer();
 	m_scheduler.StopScheduler();
 	m_eventsystem.StopEventSystem();
 #ifdef WIN32
@@ -567,7 +568,6 @@ bool MainWorker::Stop()
 #endif
 //    m_cameras.StopCameraGrabber();
 	StopDomoticzHardware();
-	m_webserver.StopServer();
 
 	if (m_thread!=NULL)
 	{
