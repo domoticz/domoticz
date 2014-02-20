@@ -5439,6 +5439,7 @@ bool CSQLHelper::RestoreDatabase(const std::string &dbase)
 	outfile2.close();
 	//change ownership
 #ifndef WIN32
+	struct stat info;
 	if (stat(m_dbase_name.c_str(), &info)==0)
 	{
 		struct passwd *pw = getpwuid(info.st_uid);
