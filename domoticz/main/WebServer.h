@@ -49,6 +49,7 @@ public:
 	char * SetLimitlessType();
 	char * SetOpenThermSettings();
 	char * SetP1USBType();
+	char * RestoreDatabase();
 
 	cWebem *m_pWebEm;
 

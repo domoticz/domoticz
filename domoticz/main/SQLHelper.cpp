@@ -14,6 +14,10 @@
 #include "../smtpclient/SMTPClient.h"
 #include "../webserver/Base64.h"
 #include "mainstructs.h"
+#ifndef WIN32
+	#include <sys/stat.h>
+	#include <unistd.h>
+#endif
 
 #define DB_VERSION 36
 
@@ -5381,7 +5385,68 @@ void CSQLHelper::EventsGetTaskItems(std::vector<_tTaskItem> &currentTasks)
 	}
 }
 
-
+bool CSQLHelper::RestoreDatabase(const std::string &dbase)
+{
+	//write file to disk
+	std::string fpath("");
+#ifdef WIN32
+	size_t bpos=m_dbase_name.rfind('\\');
+#else
+	size_t bpos=m_dbase_name.rfind('/');
+#endif
+	if (bpos!=std::string::npos)
+		fpath=m_dbase_name.substr(0,bpos+1);
+	std::string outputfile=fpath+"restore.db";
+	std::ofstream outfile;
+	outfile.open(outputfile.c_str(),std::ios::out|std::ios::binary|std::ios::trunc);
+	if (!outfile.is_open())
+		return false;
+	outfile << dbase;
+	outfile.flush();
+	outfile.close();
+	//check if we can open the database (check if valid)
+	sqlite3 *dbase_restore=NULL;
+	int rc = sqlite3_open(outputfile.c_str(), &dbase_restore);
+	if (rc)
+	{
+		_log.Log(LOG_ERROR,"Error opening SQLite3 database: %s", sqlite3_errmsg(dbase_restore));
+		sqlite3_close(dbase_restore);
+		return false;
+	}
+	if (dbase_restore==NULL)
+		return false;
+	//could still be not valid
+	std::stringstream ss;
+	ss << "SELECT sValue FROM Preferences WHERE (Key='DB_Version')";
+	sqlite3_stmt *statement;
+	if(sqlite3_prepare_v2(dbase_restore, ss.str().c_str(), -1, &statement, 0) != SQLITE_OK)
+	{
+		sqlite3_close(dbase_restore);
+		return false;
+	}
+	sqlite3_close(dbase_restore);
+	//we have a valid database!
+	std::remove(outputfile.c_str());
+	//stop database
+	sqlite3_close(m_dbase);
+	m_dbase=NULL;
+	std::ofstream outfile2;
+	outfile2.open(m_dbase_name.c_str(),std::ios::out|std::ios::binary|std::ios::trunc);
+	if (!outfile2.is_open())
+		return false;
+	outfile2 << dbase;
+	outfile2.flush();
+	outfile2.close();
+	//change ownership
+#ifndef WIN32
+	if (stat(m_dbase_name.c_str(), &info)==0)
+	{
+		struct passwd *pw = getpwuid(info.st_uid);
+		chown(m_dbase_name.c_str(),pw->pw_uid,pw->pw_gid)
+	}
+#endif
+	return OpenDatabase();
+}
 
 bool CSQLHelper::BackupDatabase(const std::string &OutputFile)
 {

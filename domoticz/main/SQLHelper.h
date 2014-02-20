@@ -173,6 +173,8 @@ public:
 
 	bool BackupDatabase(const std::string &OutputFile);
 
+	bool RestoreDatabase(const std::string &dbase);
+
 	//Returns DeviceRowID
 	unsigned long long UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, std::string &devname);
 	unsigned long long UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const char* sValue, std::string &devname);

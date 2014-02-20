@@ -244,6 +244,20 @@ void cWebem::Include( std::string& reply )
 		p = q + reply.length() - reply_len;
 	}
 }
+
+std::istream & safeGetline( std::istream & is, std::string & line ) {
+	std::string myline;
+	if ( getline( is, myline ) ) {
+		if ( myline.size() && myline[myline.size()-1] == '\r' ) {
+			line = myline.substr( 0, myline.size() - 1 );
+		}
+		else {
+			line = myline;
+		}
+	}
+	return is;
+}
+
 /**
 
 Do not call from application code,
@@ -274,7 +288,72 @@ void cWebem::CheckForAction( request& req )
 
 	// decode the values
 
+	bool bIsMultipart=false;
+
 	if( req.method == "POST" ) {
+		const char *pContent_Type=req.get_req_header(&req,"Content-Type");
+		if (pContent_Type)
+		{
+			if (strstr(pContent_Type,"multipart")!=NULL)
+			{
+				const char *pBoundary=strstr(pContent_Type,"boundary=");
+				if (pBoundary!=NULL)
+				{
+					bIsMultipart=true;
+					std::string szBoundary=std::string("--")+(pBoundary+9);
+					//Find boundary in content
+					std::istringstream ss(req.content);
+					std::string csubstr;
+					bool actionsDone = false;
+					int ii=0;
+					std::string vName="";
+					while (!ss.eof()) 
+					{
+						safeGetline(ss, csubstr);
+						if (ii==0)
+						{
+							//Boundary
+							if (csubstr!=szBoundary)
+								return;
+							ii++;
+						}
+						else if (ii==1)
+						{
+							if (csubstr.find("Content-Disposition:")!=std::string::npos)
+							{
+								size_t npos=csubstr.find("name=\"");
+								if (npos==std::string::npos)
+									return;
+								vName=csubstr.substr(npos+6);
+								npos=vName.find("\"");
+								if (npos==std::string::npos)
+									return;
+								vName=vName.substr(0,npos);
+								ii++;
+							}
+						}
+						else if (ii==2)
+						{
+							if (csubstr.size()==0)
+							{
+								ii++;
+								//2 empty lines, rest is data
+								std::string szContent;
+								size_t bpos=size_t(ss.tellg());
+								szContent=req.content.substr(bpos,ss.rdbuf()->str().size()-bpos-szBoundary.size()-6);
+								myNameValues.insert( std::pair< std::string,std::string > ( vName, szContent) );
+								// call the function
+								req.uri = pfun->second( this );
+								return;
+							}
+						}
+					}
+					return;
+				}
+			}
+		}
+
+
 		uri = req.content;
 		q = 0;
 	} else {

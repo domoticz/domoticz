@@ -252,6 +252,8 @@ bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress
 	m_pWebEm->RegisterActionCode( "setlimitlesstype",boost::bind(&CWebServer::SetLimitlessType,this));
 	m_pWebEm->RegisterActionCode( "setopenthermsettings",boost::bind(&CWebServer::SetOpenThermSettings,this));
 	m_pWebEm->RegisterActionCode( "setp1usbtype",boost::bind(&CWebServer::SetP1USBType,this));
+	m_pWebEm->RegisterActionCode( "restoredatabase",boost::bind(&CWebServer::RestoreDatabase,this));
+	
 
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWebServer::Do_Work, this)));
@@ -887,6 +889,19 @@ char * CWebServer::SetRego6XXType()
         m_pMain->m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), newMode1, 0, 0, 0, 0);
     }
 	
+	return (char*)m_retstr.c_str();
+}
+
+char * CWebServer::RestoreDatabase()
+{
+	m_retstr="";
+	std::string dbasefile=m_pWebEm->FindValue("dbasefile");
+	if (dbasefile=="") {
+		return (char*)m_retstr.c_str();
+	}
+	if (!m_pMain->m_sql.RestoreDatabase(dbasefile))
+		return (char*)m_retstr.c_str();
+	m_retstr="/index.html";
 	return (char*)m_retstr.c_str();
 }
 
