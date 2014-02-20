@@ -17,6 +17,8 @@
 #ifndef WIN32
 	#include <sys/stat.h>
 	#include <unistd.h>
+	#include <sys/types.h>
+	#include <pwd.h>
 #endif
 
 #define DB_VERSION 36
