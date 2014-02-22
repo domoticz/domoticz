@@ -258,6 +258,10 @@ void CSMASpot::GetMeterDetails()
 
 	if (szLastLine.size()==0)
 		return;
+	if (results[1].size()<1)
+		return;
+	if (results[28]!="OK")
+		return;
 	std::string szDate=results[0];
 	if (szDate==m_LastDateTime)
 		return;
@@ -268,6 +272,8 @@ void CSMASpot::GetMeterDetails()
 	strptime(szDate.c_str(), szDateTimeFormat.c_str(), &aitime);
 	time_t t = mktime(&aitime);
 */
+	double LastValue=0;
+
 	std::string szKwhCounter=results[23];
 	szKwhCounter=stdreplace(szKwhCounter,",",".");
 	double kWhCounter=atof(szKwhCounter.c_str());
