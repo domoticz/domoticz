@@ -802,7 +802,6 @@ function AddHardware()
 			ShowNotify($.i18n('Please enter an Location!'), 2500, true);
 			return;
 		}
-		alert(encodeURIComponent(configlocation));
 		$.ajax({
 			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 				"&port=1" + 
