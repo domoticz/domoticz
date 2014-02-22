@@ -9148,6 +9148,10 @@ std::string CWebServer::GetJSonPage()
 					)
 					goto exitjson;
 			}
+			else if (htype == HTYPE_SMASpot) {
+				if (username=="")
+					goto exitjson;
+			}
 			else
 				goto exitjson;
 
@@ -9432,6 +9436,10 @@ std::string CWebServer::GetJSonPage()
 					(username=="")||
 					(password=="")
 					)
+					goto exitjson;
+			}
+			else if (htype == HTYPE_SMASpot) {
+				if (username=="")
 					goto exitjson;
 			}
 			else

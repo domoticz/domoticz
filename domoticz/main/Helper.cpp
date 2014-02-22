@@ -12,6 +12,7 @@
 
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results)
 {
+	results.clear();
 	size_t cutAt;
 	while( (cutAt = str.find_first_of(delim)) != str.npos )
 	{

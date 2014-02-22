@@ -129,6 +129,9 @@
     <Filter Include="TCPProxy">
       <UniqueIdentifier>{242d77c7-709a-4c87-8d92-a87a489af891}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\SMASpot">
+      <UniqueIdentifier>{3d145f2e-6a05-4375-917e-4ac4557915fd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -400,6 +403,9 @@
     <ClInclude Include="hardware\TCPProxy\tcpproxy_server.h">
       <Filter>TCPProxy</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\SMASpot.h">
+      <Filter>Devices\SMASpot</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -632,6 +638,9 @@
     </ClCompile>
     <ClCompile Include="hardware\TCPProxy\tcpproxy_server.cpp">
       <Filter>TCPProxy</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\SMASpot.cpp">
+      <Filter>Devices\SMASpot</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

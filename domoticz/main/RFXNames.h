@@ -76,6 +76,7 @@ enum _eHardwareTypes {
 	HTYPE_EnOcean,				//24
 	HTYPE_ForecastIO,			//25
 	HTYPE_SolarEdgeTCP,			//26
+	HTYPE_SMASpot,				//27
 	HTYPE_END
 };
 

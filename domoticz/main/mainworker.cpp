@@ -43,6 +43,7 @@
 #include "../hardware/OpenHardwareMonitor.h"
 #endif
 #include "../hardware/SolarEdgeTCP.h"
+#include "../hardware/SMASpot.h"
 
 #ifdef WIN32
     #include "dirent_windows.h"
@@ -491,6 +492,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_ForecastIO:
 		pHardware = new CForecastIO(ID,Username,Password);
+		break;
+	case HTYPE_SMASpot:
+		pHardware = new CSMASpot(ID,Username);
 		break;
 	case HTYPE_Dummy:
 		pHardware = new CDummy(ID);

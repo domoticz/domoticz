@@ -126,6 +126,7 @@
     <ClInclude Include="hardware\S0MeterBase.h" />
     <ClInclude Include="hardware\S0MeterSerial.h" />
     <ClInclude Include="hardware\S0MeterTCP.h" />
+    <ClInclude Include="hardware\SMASpot.h" />
     <ClInclude Include="hardware\smbus.h" />
     <ClInclude Include="hardware\SolarEdgeBase.h" />
     <ClInclude Include="hardware\SolarEdgeTCP.h" />
@@ -214,6 +215,7 @@
     <ClCompile Include="hardware\S0MeterBase.cpp" />
     <ClCompile Include="hardware\S0MeterSerial.cpp" />
     <ClCompile Include="hardware\S0MeterTCP.cpp" />
+    <ClCompile Include="hardware\SMASpot.cpp" />
     <ClCompile Include="hardware\smbus.cpp" />
     <ClCompile Include="hardware\SolarEdgeBase.cpp" />
     <ClCompile Include="hardware\SolarEdgeTCP.cpp" />
