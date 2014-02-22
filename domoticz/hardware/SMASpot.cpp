@@ -202,6 +202,29 @@ void CSMASpot::SendMeter(const unsigned char ID1,const unsigned char ID2, const 
 	}
 }
 
+bool CSMASpot::GetMeter(const unsigned char ID1,const unsigned char ID2, double &musage, double &mtotal)
+{
+	if (m_pMainWorker==NULL)
+		return false;
+	int Idx=(ID1 * 256) + ID2;
+	bool bDeviceExits=true;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT Name, sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
+	result=m_pMainWorker->m_sql.query(szQuery.str());
+	if (result.size()<1)
+	{
+		return false;
+	}
+	std::vector<std::string> splitresult;
+	StringSplit(result[0][1],";",splitresult);
+	if (splitresult.size()!=2)
+		return false;
+	musage=atof(splitresult[0].c_str());
+	mtotal=atof(splitresult[1].c_str())/1000.0;
+	return true;
+}
+
 void CSMASpot::GetMeterDetails()
 {
 	if (m_SMADataPath.size()==0)
@@ -272,8 +295,6 @@ void CSMASpot::GetMeterDetails()
 	strptime(szDate.c_str(), szDateTimeFormat.c_str(), &aitime);
 	time_t t = mktime(&aitime);
 */
-	double LastValue=0;
-
 	std::string szKwhCounter=results[23];
 	szKwhCounter=stdreplace(szKwhCounter,",",".");
 	double kWhCounter=atof(szKwhCounter.c_str());
@@ -282,6 +303,13 @@ void CSMASpot::GetMeterDetails()
 	double Pac=atof(szPacActual.c_str());
 	if (kWhCounter!=0)
 	{
+		double LastUsage=0;
+		double LastTotal=0;
+		if (GetMeter(0,1,LastUsage,LastTotal))
+		{
+			if (kWhCounter<LastTotal)
+				return;
+		}
 		SendMeter(0,1, Pac/1000.0, kWhCounter, "SolarMain");
 	}
 }

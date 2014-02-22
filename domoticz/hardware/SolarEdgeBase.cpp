@@ -240,7 +240,7 @@ bool SolarEdgeBase::GetMeter(const unsigned char ID1,const unsigned char ID2, do
 		return false;
 	}
 	std::vector<std::string> splitresult;
-	StringSplit(result[0][0],";",splitresult);
+	StringSplit(result[0][1],";",splitresult);
 	if (splitresult.size()!=2)
 		return false;
 	musage=atof(splitresult[0].c_str());
