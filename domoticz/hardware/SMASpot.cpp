@@ -107,7 +107,7 @@ bool CSMASpot::StopHardware()
     return true;
 }
 
-#define SMA_POLL_INTERVAL 5
+#define SMA_POLL_INTERVAL 1
 
 void CSMASpot::Do_Work()
 {
@@ -118,7 +118,7 @@ void CSMASpot::Do_Work()
 		time_t atime=mytime(NULL);
 		struct tm ltime;
 		localtime_r(&atime,&ltime);
-		if ((ltime.tm_min/SMA_POLL_INTERVAL!=m_LastMinute))
+		if (((ltime.tm_min/SMA_POLL_INTERVAL!=m_LastMinute))&&(ltime.tm_sec>20))
 		{
 			m_LastMinute=ltime.tm_min/SMA_POLL_INTERVAL;
 			GetMeterDetails();

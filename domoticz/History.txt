@@ -39,6 +39,8 @@ Version 1.0.xxxx (February xxth 2014)
 - Fixed: OTGW, dunit was not set
 - Implemented: Support for Remote Control buttons (On action Only!)
 - Changed: Lots of work on charts plotting
+- Implemented: Initial Support for SolarEdge Inverters (SE5000 and similar with TCP/IP interface)
+- Implemented: Initial Support for SMASpot compatible solar Inverters
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)
