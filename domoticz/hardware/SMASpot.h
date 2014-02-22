@@ -15,6 +15,9 @@ private:
 	std::string m_SMAConfigFile;
 	std::string m_SMADataPath;
 	std::string m_SMAPlantName;
+	std::string m_SMADateFormat;
+	std::string m_SMATimeFormat;
+
 	std::string m_LastDateTime;
 	volatile bool m_stoprequested;
 	unsigned char m_LastMinute;

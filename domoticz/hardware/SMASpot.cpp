@@ -30,6 +30,8 @@ void CSMASpot::Init()
 {
 	m_SMADataPath="";
 	m_SMAPlantName="";
+	m_SMADateFormat="";
+	m_SMATimeFormat="";
 	m_LastDateTime="";
 
 	std::string tmpString;
@@ -66,10 +68,18 @@ void CSMASpot::Init()
 			{
 				m_SMAPlantName=sLine.substr(strlen("Plantname="));
 			}
+			else if (sLine.find("DateFormat=")==0)
+			{
+				m_SMADateFormat=sLine.substr(strlen("DateFormat="));
+			}
+			else if (sLine.find("TimeFormat=")==0)
+			{
+				m_SMATimeFormat=sLine.substr(strlen("TimeFormat="));
+			}
 		}
 	}
 	infile.close();
-	if (m_SMADataPath=="")
+	if ((m_SMADataPath.size()==0)||(m_SMADateFormat.size()==0)||(m_SMATimeFormat.size()==0))
 	{
 		_log.Log(LOG_ERROR,"SMASpot: Could not find OutputPath in configuration file!");
 	}
@@ -252,6 +262,12 @@ void CSMASpot::GetMeterDetails()
 	if (szDate==m_LastDateTime)
 		return;
 	m_LastDateTime=szDate;
+/*
+	std::string szDateTimeFormat=m_SMADateFormat + " " + m_SMATimeFormat;
+	struct tm aitime;
+	strptime(szDate.c_str(), szDateTimeFormat.c_str(), &aitime);
+	time_t t = mktime(&aitime);
+*/
 	std::string szKwhCounter=results[23];
 	szKwhCounter=stdreplace(szKwhCounter,",",".");
 	double kWhCounter=atof(szKwhCounter.c_str());
@@ -260,7 +276,7 @@ void CSMASpot::GetMeterDetails()
 	double Pac=atof(szPacActual.c_str());
 	if (kWhCounter!=0)
 	{
-		SendMeter(0,1, Pac/1000.0, kWhCounter/1000.0, "SolarMain");
+		SendMeter(0,1, Pac/1000.0, kWhCounter, "SolarMain");
 	}
 }
 
