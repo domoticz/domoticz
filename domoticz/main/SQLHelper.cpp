@@ -1121,17 +1121,17 @@ void CSQLHelper::Do_Work()
 							break;
 						default:
 							//just update internally
-							UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname);
+							UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname,true);
 							break;
 						}
 						break;
 					case pTypeLighting4:
 						//only update internally
-						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname);
+						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname,true);
 						break;
 					default:
 						//unknown hardware type, sensor will only be updated internally
-						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname);
+						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname,true);
 						break;
 					}
 				}
@@ -1143,7 +1143,7 @@ void CSQLHelper::Do_Work()
 						{
 							//only update internally
 							std::string devname="";
-							UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname);
+							UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname,true);
 						}
 						else
 							m_pMain->SwitchLight(itt->_idx,"Off",0,-1);
@@ -1288,21 +1288,21 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string &szQu
 	return results; 
 }
 
-unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, std::string &devname)
+unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, std::string &devname, const bool bUseOnOffAction)
 {
 	return UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, "", devname);
 }
 
-unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const char* sValue, std::string &devname)
+unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const char* sValue, std::string &devname, const bool bUseOnOffAction)
 {
 	return UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, 0, sValue,devname);
 }
 
-unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname)
+unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction)
 {
 	if (!NeedToUpdateHardwareDevice(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue,devname))
 		return -1;
-	unsigned long long devRowID=UpdateValueInt(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue,devname);
+	unsigned long long devRowID=UpdateValueInt(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue,devname,bUseOnOffAction);
 
 	bool bIsLightSwitch=false;
 	switch (devType)
@@ -1484,7 +1484,7 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 	return devRowID;
 }
 
-unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname)
+unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction)
 {
 	if (!m_dbase)
 		return -1;
@@ -1602,11 +1602,14 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 
 			}
 
-			//Perform any On/Off actions
-			std::string OnAction=sd[3];
-			std::string OffAction=sd[4];
+			if (bUseOnOffAction)
+			{
+				//Perform any On/Off actions
+				std::string OnAction=sd[3];
+				std::string OffAction=sd[4];
 
-			HandleSwitchAction(bIsLightSwitchOn,OnAction,OffAction);
+				HandleSwitchAction(bIsLightSwitchOn,OnAction,OffAction);
+			}
 
 			//Check if we need to email a snapshot of a Camera
 			std::string emailserver;

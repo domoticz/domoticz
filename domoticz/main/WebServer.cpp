@@ -7313,7 +7313,8 @@ std::string CWebServer::GetJSonPage()
 				255,//battery level
 				(const int)atoi(nvalue.c_str()),
 				svalue.c_str(),
-				devname
+				devname,
+				false
 				);
 		}
 		else if (cparam=="system_shutdown")
