@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+ 
+    <Value type="byte" instance="1" index="2" genre="config" label="2. Basic Set Level" min="1" max="255" value="255">
+      <Help>
+          Setting the BASIC command value to turn on the light. The 0xFF (255) means turn on the light. 
+          For dimmer equipment 1 to 100 means the light strength.
+	  </Help>
+    </Value>
+
+    <Value type="byte" instance="1" index="3" genre="config" label="3. PIR Sensitivity" min="0" max="99" value="70">
+       <Help>
+          PIR sensitivity settings. 
+          0 means disable the PIR motion.
+          1 means the lowest sensitivity.
+          99 means the highest sensitivity.
+          High sensitivity means can detect long distance, but if there is more noise signal in the environment, it will re-trigger too frequently. 
+       </Help>
+    </Value>
+	
+    <Value type="byte" instance="1" index="4" genre="config" label="4. Light threshold" min="0" max="100" value="99">
+      <Help>
+          Setting the illummination threshold to turn on the light. When the event triggered and the environment illumination lower then 
+          the threshold, the device will turn on the light.
+          0 means turn off illumination detected function and never turn on the light.
+          1 means darkest.
+          99 means brightest.
+          100 means turn off illumination detected function. And always turn on the light.
+          * Notice * in none test mode, only the value in 1 to 99 will enable the illumination detected function and update the illumination value.
+       </Help>
+    </Value>
+	
+    <Value type="byte" instance="1" index="5" genre="config" label="5. Operation Mode" min="0" max="127" value="0">
+       <Help>
+          Bit 0: 1 means security mode; 0 means home automation mode.
+          Bit 1: 1 means enable test mode; 0 means disable test mode
+          * Notice * Bit 0 and bit 1 will effect when the DIP Switch setting to program mode. If bit1 is enabled, the bit0 is useless.
+          Bit 2: Reserved, always 1.
+          Bit 3: Setting the temperature scale; 0: Fahrenheit, 1:Celsius
+          Bit 4: Disable illumination report after event triggered.
+          Bit 5: Disable temperature report after event triggered
+       </Help>
+    </Value>
+
+    <Value type="byte" instance="1" index="6" genre="config" label="6. Multi-Sensor Function Switch" min="0" max="127" value="4">
+       <Help>
+          Multi-Sensor Function switch. Using bit to control.
+          Bit 0: Reserved, always 1.
+          Bit 1: Disable PIR integrate Illumination.
+          Bit 2: Reserved, always 1.
+          Bit 3: Reserved.
+          Bit 4: Reserved.
+          Bit 5: Reserved.
+          Bit 6: Enable temperature monitoring. When this bit enabled, the temperature changed 3 degree Fahrenheit, it will report. 
+          And also the temperature over 140 degree Fahrenheit, it will report every 64 seconds.
+	  </Help>
+    </Value>
+
+    <Value type="byte" instance="1" index="8" genre="config" label="8. PIR re-detect interval time" units="8 sec" min="3" max="27" value="3">
+       <Help>
+          In the security mode, after the PIR report motion detected, setting the re-detect time. 8 seconds per tick, and minimum time is 24 seconds, default tick is 3 (24 seconds).
+          Setting the suitable value to prevent received the trigger signal too frequency. Also can save the battery energy.
+          * Notice * If this value bigger than the configuration setting NO. 9. There is a period after the light turned off and the PIR not detecting.
+       </Help>
+    </Value>
+	
+    <Value type="byte" instance="1" index="9" genre="config" label="9. Turn Off Light Time" units="8 sec" min="4" max="127" value="4">
+       <Help>
+          After turn on the light, setting the delay time to turn off the light when the PIR motion is not detected.
+          8 seconds per tick, and minimum time is 32 seconds, default tick is 4 (32 seconds).
+       </Help>
+    </Value>
+ 
+    <Value type="byte" instance="1" index="10" genre="config" label="10. Auto Report Battery Time" units="30 min" min="1" max="127" value="12">
+      <Help>
+         The interval time for auto report the battery level.
+         30 minutes per tick and minimum time is 30 minutes, default tick is 12 (6 hours)
+      </Help>
+    </Value>
+ 
+    <Value type="byte" instance="1" index="12" genre="config" label="12. Auto Report Illumination Time" units="30 min" min="1" max="127" value="12">
+      <Help>
+         The interval time for auto report the illumination.
+         30 minutes per tick and minimum time is 30 minutes, default tick is 12 (6 hours)
+      </Help>
+    </Value>
+ 
+    <Value type="byte" instance="1" index="13" genre="config" label="13. Auto Report Temperature time" units="30 min" min="1" max="127" value="12">
+      <Help>
+         The interval time for auto report the temperature.
+         30 minutes per tick and minimum time is 30 minutes, default tick is 12 (6 hours)
+      </Help>
+    </Value>
+ 
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+	  <Group index="1" max_associations="7" label="Report message" auto="true" />
+      <Group index="2" max_associations="7" label="Light control" auto="true" />
+    </Associations>
+  </CommandClass>
+
+</Product>
