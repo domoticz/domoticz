@@ -2365,12 +2365,60 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				if (strarray.size()==2)
 				{
 					double total=atof(strarray[1].c_str())/1000;
-					sprintf(szData,"%.3f kWh",total);
-					root["result"][ii]["Data"]=szData;
-					sprintf(szData,"%ld Watt",atol(strarray[0].c_str()));
-					root["result"][ii]["Usage"]=szData;
-					root["result"][ii]["SwitchTypeVal"]=MTYPE_ENERGY;
-					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+
+					time_t now = mytime(NULL);
+					struct tm tm1;
+					localtime_r(&now,&tm1);
+
+					struct tm ltime;
+					ltime.tm_isdst=tm1.tm_isdst;
+					ltime.tm_hour=0;
+					ltime.tm_min=0;
+					ltime.tm_sec=0;
+					ltime.tm_year=tm1.tm_year;
+					ltime.tm_mon=tm1.tm_mon;
+					ltime.tm_mday=tm1.tm_mday;
+
+					char szDate[40];
+					sprintf(szDate,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
+
+					std::vector<std::vector<std::string> > result2;
+					strcpy(szTmp,"0");
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
+					result2=m_pMain->m_sql.query(szQuery.str());
+					if (result2.size()>0)
+					{
+						float EnergyDivider=1000.0f;
+						int tValue;
+						if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+						{
+							EnergyDivider=float(tValue);
+						}
+						EnergyDivider*=100.0;
+
+						std::vector<std::string> sd2=result2[0];
+						double minimum=atof(sd2[0].c_str())/EnergyDivider;
+
+						sprintf(szData,"%.3f kWh",total);
+						root["result"][ii]["Data"]=szData;
+						sprintf(szData,"%ld Watt",atol(strarray[0].c_str()));
+						root["result"][ii]["Usage"]=szData;
+						root["result"][ii]["SwitchTypeVal"]=MTYPE_ENERGY;
+						root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+						sprintf(szTmp,"%.03f kWh",total-minimum);
+						root["result"][ii]["CounterToday"]=szTmp;
+					}
+					else
+					{
+						sprintf(szData,"%.3f kWh",total);
+						root["result"][ii]["Data"]=szData;
+						sprintf(szData,"%ld Watt",atol(strarray[0].c_str()));
+						root["result"][ii]["Usage"]=szData;
+						root["result"][ii]["SwitchTypeVal"]=MTYPE_ENERGY;
+						root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+					}
 				}
 			}
 			else if (dType == pTypeAirQuality)
@@ -4870,6 +4918,7 @@ std::string CWebServer::GetJSonPage()
 				root["status"]="OK";
 				root["title"]="Graph " + sensor + " " + srange;
 
+				//Actual Year
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT Temp_Min, Temp_Max, Chill_Min, Chill_Max, Humidity, Barometer, Temp_Avg, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
@@ -5007,7 +5056,85 @@ std::string CWebServer::GetJSonPage()
 					}
 					ii++;
 				}
+				//Previous Year
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT Temp_Min, Temp_Max, Chill_Min, Chill_Max, Humidity, Barometer, Temp_Avg, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStartPrev << "' AND Date<='" << szDateEndPrev << "') ORDER BY Date ASC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					int iPrev=0;
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					for (itt=result.begin(); itt!=result.end(); ++itt)
+					{
+						std::vector<std::string> sd=*itt;
 
+						root["resultprev"][iPrev]["d"]=sd[7].substr(0,16);
+
+						if (
+							(dType==pTypeRego6XXTemp)||(dType==pTypeTEMP)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO)||(dType==pTypeTEMP_BARO)||(dType==pTypeWIND)||(dType==pTypeThermostat1)||
+							((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))||
+							((dType==pTypeUV)&&(dSubType==sTypeUV3))||
+							((dType==pTypeGeneral)&&(dSubType==sTypeSystemTemp))||
+							((dType==pTypeThermostat)&&(dSubType==sTypeThermSetpoint))
+							)
+						{
+							bool bOK=true;
+							if (dType==pTypeWIND)
+							{
+								bOK=((dSubType==sTypeWIND4)||(dSubType==sTypeWINDNoTemp));
+							}
+							if (bOK)
+							{
+								double te=ConvertTemperature(atof(sd[1].c_str()),tempsign);
+								double tm=ConvertTemperature(atof(sd[0].c_str()),tempsign);
+								double ta=ConvertTemperature(atof(sd[6].c_str()),tempsign);
+								root["resultprev"][iPrev]["te"]=te;
+								root["resultprev"][iPrev]["tm"]=tm;
+								root["resultprev"][iPrev]["ta"]=ta;
+							}
+						}
+						//No chill/baro/hum for now
+/*
+						if (
+							((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
+							((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))
+							)
+						{
+							double ch=ConvertTemperature(atof(sd[3].c_str()),tempsign);
+							double cm=ConvertTemperature(atof(sd[2].c_str()),tempsign);
+							root["resultprev"][iPrev]["ch"]=ch;
+							root["resultprev"][iPrev]["cm"]=cm;
+						}
+						if ((dType==pTypeHUM)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO))
+						{
+							root["resultprev"][iPrev]["hu"]=sd[4];
+						}
+						if (
+							(dType==pTypeTEMP_HUM_BARO)||
+							(dType==pTypeTEMP_BARO)
+							)
+						{
+							if (dType==pTypeTEMP_HUM_BARO)
+							{
+								if (dSubType==sTypeTHBFloat)
+								{
+									sprintf(szTmp,"%.1f",atof(sd[5].c_str())/10.0f);
+									root["resultprev"][iPrev]["ba"]=szTmp;
+								}
+								else
+									root["resultprev"][iPrev]["ba"]=sd[5];
+							}
+							else if (dType==pTypeTEMP_BARO)
+							{
+								sprintf(szTmp,"%.1f",atof(sd[5].c_str())/10.0f);
+								root["resultprev"][iPrev]["ba"]=szTmp;
+							}
+						}
+*/
+						iPrev++;
+					}
+				}
 			}
 			else if (sensor=="load") {
 				root["status"]="OK";
@@ -5117,6 +5244,24 @@ std::string CWebServer::GetJSonPage()
 					root["result"][ii]["uvi"]=sd[0];
 					ii++;
 				}
+				//Previous Year
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT Level, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStartPrev << "' AND Date<='" << szDateEndPrev << "') ORDER BY Date ASC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					int iPrev=0;
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					for (itt=result.begin(); itt!=result.end(); ++itt)
+					{
+						std::vector<std::string> sd=*itt;
+
+						root["resultprev"][iPrev]["d"]=sd[1].substr(0,16);
+						root["resultprev"][iPrev]["uvi"]=sd[0];
+						iPrev++;
+					}
+				}
 			}
 			else if (sensor=="rain") {
 				root["status"]="OK";
@@ -5176,6 +5321,27 @@ std::string CWebServer::GetJSonPage()
 					root["result"][ii]["d"]=szDateEnd;
 					root["result"][ii]["mm"]=szTmp;
 					ii++;
+				}
+				//Previous Year
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT Total, Rate, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStartPrev << "' AND Date<='" << szDateEndPrev << "') ORDER BY Date ASC";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					int iPrev=0;
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					for (itt=result.begin(); itt!=result.end(); ++itt)
+					{
+						std::vector<std::string> sd=*itt;
+
+						root["resultprev"][iPrev]["d"]=sd[2].substr(0,16);
+						double mmval=atof(sd[0].c_str());
+						mmval*=AddjMulti;
+						sprintf(szTmp,"%.1f",mmval);
+						root["resultprev"][iPrev]["mm"]=szTmp;
+						iPrev++;
+					}
 				}
 			}
 			else if (sensor=="counter") {

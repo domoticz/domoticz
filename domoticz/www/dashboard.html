@@ -988,10 +988,16 @@ function RefreshFavorites()
 							bigtext=item.Usage;
 							if (item.Type != "P1 Smart Meter") {
 								if (data.DashboardType==0) {
-									status+='<br>' + $.i18n("Actual") + ': ' + item.Usage;
+									//status+='<br>' + $.i18n("Actual") + ': ' + item.Usage;
+									if (typeof item.CounterToday != 'undefined') {
+										status+='<br>' + $.i18n("Today") + ': ' + item.CounterToday;
+									}
 								}
 								else {
-									status+=", A: " + item.Usage;
+									//status+=", A: " + item.Usage;
+									if (typeof item.CounterToday != 'undefined') {
+										status+=', T: ' + item.CounterToday;
+									}
 								}
 							}
 						}
@@ -2457,10 +2463,16 @@ function ShowFavorites()
 				if (typeof item.Usage != 'undefined') {
 					if (item.Type!="P1 Smart Meter") {
 						if (data.DashboardType==0) {
-							status+='<br>' + $.i18n("Actual") + ': ' + item.Usage;
+							//status+='<br>' + $.i18n("Actual") + ': ' + item.Usage;
+							if (typeof item.CounterToday != 'undefined') {
+								status+='<br>' + $.i18n("Today") + ': ' + item.CounterToday;
+							}
 						}
 						else {
-							status+=", A: " + item.Usage;
+							//status+=", A: " + item.Usage;
+							if (typeof item.CounterToday != 'undefined') {
+								status+=', T: ' + item.CounterToday;
+							}
 						}
 					}
 				}

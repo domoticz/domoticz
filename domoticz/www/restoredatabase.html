@@ -1,0 +1,19 @@
+<div id="maincontent">
+<h1><font color="red"><span data-i18n="A Database restore will overwrite the actual settings/logs.">A Database restore will overwrite the actual settings/logs</span><br><span data-i18n="Please be sure that this is what you want to do!">Please be sure that this is what you want to do!</span></font></h1>
+<br>
+<form method="POST" enctype="multipart/form-data" action="restoredatabase.webem">
+<label for="dbasefile"  data-i18n="Select Database File:">Select Database File:</label>
+<input type="file" name="dbasefile"/><br>
+<br>
+<input type="submit" value="Upload"/>
+<br><br>
+<span data-i18n="Upload might take some time, depending on your network connection.">Upload might take some time, depending on your network connection.</span><br>
+<font color="red"><span data-i18n="Wait until you will see the dashboard again!">Wait until you will see the dashboard again!</span></font>
+</form>
+</div>
+
+<script type="text/javascript" charset="utf-8">
+$(document).ready(function() {
+  $('#maincontent').i18n();
+});  
+</script>

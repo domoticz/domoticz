@@ -34,6 +34,7 @@
 			  <li><a class="sb-link" id="idemailsetup" onmouseover="cursorhand()" onmouseout="cursordefault()"><i class="icon-chevron-right marginright"></i><span data-i18n="Email Setup"></span></a></li>
 			  <li><a class="sb-link" id="idmetercounters" onmouseover="cursorhand()" onmouseout="cursordefault()"><i class="icon-chevron-right marginright"></i><span data-i18n="Meter/Counter Setup"></span></a></li>
 			  <li><a class="sb-link" id="idothersettings" onmouseover="cursorhand()" onmouseout="cursordefault()"><i class="icon-chevron-right marginright"></i><span data-i18n="Other Settings"></span></a></li>
+			  <li><a class="sb-link" id="idrestoredatabase" onmouseover="cursorhand()" onmouseout="cursordefault()"><i class="icon-chevron-right marginright"></i><span data-i18n="Restore Database"></span></a></li>
 			  <li class="divider"></li>
 			  <center><a data-i18n="Backup Database" class="btn btn-inverse" href="backupdatabase.php">Backup Database</a></center>
 			  <li class="divider"></li>
@@ -518,7 +519,19 @@
 			</table>
 		</section>
 		<br>
+		
+		<!-- Restore Database
+		================================================== -->
+		<section id="restoredatabase">
+		  <div class="page-header-small">
+			<h1 data-i18n="Restore Database"></h1>
+			<center><a data-i18n="Restore Database" class="btn btn-warning" href="javascript:SwitchLayout('RestoreDatabase')">Restore Database</a></center>
+		  </div>
+		</section>
+		<br>
 		<section id="savesettings">
+		  <div class="page-header-small">
+		  </div>
 			<a data-i18n="Save" class="btn btn-danger" href="javascript:StoreSettings()">Save</a>
 		</section>
 		<br>
@@ -905,6 +918,7 @@ $(document).ready(function() {
   MakeScrollLink("#idemailsetup","#emailsetup");
   MakeScrollLink("#idmetercounters","#metercounters");
   MakeScrollLink("#idothersettings","#othersettings");
+  MakeScrollLink("#idrestoredatabase","#restoredatabase");
 
     $( "#dialog-findlatlong" ).dialog({
           autoOpen: false,

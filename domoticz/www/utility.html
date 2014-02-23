@@ -665,7 +665,7 @@ function RefreshUtilities()
 						bigtext=item.CounterToday;
 					}
 					else {
-						status=item.Counter + ', Today: ' + item.CounterToday;
+						status=item.Counter + ', ' + $.i18n("Today") + ': ' + item.CounterToday;
 					}
 				}
 				else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
@@ -716,13 +716,16 @@ function RefreshUtilities()
 				}
 				if (typeof item.Usage != 'undefined') {
 					if (item.Type!="P1 Smart Meter") {
-						status+=", Actual: " + item.Usage;
+						//status+=", Actual: " + item.Usage;
+						if (typeof item.CounterToday != 'undefined') {
+							status+=", " + $.i18n("Today") + ": " + item.CounterToday;
+						}
 					}
 					bigtext=item.Usage;
 				}
 				if (typeof item.CounterDeliv != 'undefined') {
 					if (item.CounterDeliv!=0) {
-						status+='<br>Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
+						status+='<br>' + $.i18n("Return") + ': ' + item.CounterDeliv + ', ' + $.i18n("Today") + ': ' + item.CounterDelivToday;
 						if (item.UsageDeliv.charAt(0) != 0) {
 							bigtext='-' + item.UsageDeliv;
 						}
@@ -879,7 +882,7 @@ function ShowUtilities()
 				status=item.Counter;
               }
               else {
-				status=item.Counter + ', Today: ' + item.CounterToday;
+				status=item.Counter + ', ' + $.i18n("Today") + ': ' + item.CounterToday;
               }
             }
             else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
@@ -932,12 +935,15 @@ function ShowUtilities()
             }
             if (typeof item.Usage != 'undefined') {
 				if (item.Type != "P1 Smart Meter") {
-					status+=", Actual: " + item.Usage;
+					//status+=", Actual: " + item.Usage;
+					if (typeof item.CounterToday != 'undefined') {
+						status+=", " + $.i18n("Today") + ": " + item.CounterToday;
+					}
 				}
             }
             if (typeof item.CounterDeliv != 'undefined') {
 				if (item.CounterDeliv!=0) {
-					status+='<br>Return: ' + item.CounterDeliv + ', Today: ' + item.CounterDelivToday;
+					status+='<br>' + $.i18n("Return") + ': ' + item.CounterDeliv + ', ' + $.i18n("Today") + ': ' + item.CounterDelivToday;
 				}
             }
             

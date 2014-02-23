@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 431
+# ref 433
 
 CACHE:
 favicon.ico
@@ -354,6 +354,7 @@ NETWORK:
 index.html
 login.html
 offline.html
+restoredatabase.html
 cam.html
 dashboard.html
 devices.html

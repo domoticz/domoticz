@@ -323,6 +323,7 @@
 	</Manufacturer>
 	<Manufacturer id="013c" name="Philio Technology Corporation">
 		<Product type="0001" id="0004" name="In Wall Dual Relay (1 Way) Switch Module (PAN06-1)" />
+		<Product type="0002" id="0002" name="Slim Multi-Sensor PSP01-1" config="philio/psp01.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0064" name="Popp / Duwi">
 		<Product type="0001" id="0000" name="ZW EDAN 300 Flush Mounted Dimmer" />
