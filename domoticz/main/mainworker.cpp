@@ -2105,7 +2105,7 @@ unsigned long long MainWorker::decode_Temp(const CDomoticzHardwareBase *pHardwar
 			(pHardware->HwdType == HTYPE_OpenZWave)
 			)
 		{
-			BatteryLevel=pResponse->TEMP.battery_level;
+			BatteryLevel=pResponse->TEMP.battery_level*10;
 		}
 		else if (pHardware->HwdType == HTYPE_EnOcean)
 		{
