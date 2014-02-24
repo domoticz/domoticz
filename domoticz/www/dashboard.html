@@ -1058,7 +1058,8 @@ function ShowFavorites()
   var totdevices=0;
   var jj=0;
   var bHaveAddedDevider = false;
-
+  var bAllowWidgetReorder = true;
+  
 	var htmlcontent = "";
 
   var sunRise="";
@@ -1109,6 +1110,7 @@ function ShowFavorites()
      async: false,
      dataType: 'json',
      success: function(data) {
+			bAllowWidgetReorder=data.AllowWidgetOrdering;
 			var rowItems=3;
 			if (data.DashboardType==1) {
 				rowItems=4;
@@ -2646,7 +2648,7 @@ function ShowFavorites()
 	});
 	ResizeDimSliders();
 
-	var bAllowReorder=true;
+	var bAllowReorder=bAllowWidgetReorder;
 	if (bAllowReorder==true) {
 		if (window.my_config.userrights==2) {
 			if (window.myglobals.ismobileint==false) {

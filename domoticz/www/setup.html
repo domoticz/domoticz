@@ -87,6 +87,10 @@
 					<option data-i18n="Mobile" value="2">Mobile</option>
 				</select></td>
 			</tr>
+			<tr>
+				<td></td>
+				<td><input type="checkbox" id="AllowWidgetOrdering" name="AllowWidgetOrdering"/> <span data-i18n="AllowWidgetOrdering">Allow Widget Re-Order</span></td>
+			</tr>
 			</table>
 			<br>
 			<h2><span data-i18n="Mobile"></span>:</h2>
@@ -845,6 +849,9 @@ function ShowSettings()
       }
 	  if (typeof data.AcceptNewHardware != 'undefined') {
         $("#acceptnewhardwaretable #AcceptNewHardware").prop('checked',data.AcceptNewHardware==1);
+      }
+	  if (typeof data.AllowWidgetOrdering != 'undefined') {
+        $("#dashmodetable #AllowWidgetOrdering").prop('checked',data.AllowWidgetOrdering==1);
       }
       if (typeof data.SecOnDelay != 'undefined') {
         $("#sectable #SecOnDelay").val(data.SecOnDelay);

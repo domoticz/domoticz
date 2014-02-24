@@ -41,6 +41,7 @@ Version 1.0.xxxx (February xxth 2014)
 - Changed: Lots of work on charts plotting
 - Implemented: Initial Support for SolarEdge Inverters (SE5000 and similar with TCP/IP interface)
 - Implemented: Initial Support for SMASpot compatible solar Inverters
+- Implemented: Option to Enable/Disable Widget Re-Ordering (settings page)
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)

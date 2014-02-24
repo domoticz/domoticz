@@ -265,6 +265,8 @@ function ShowWeathers()
   
   var htmlcontent = '';
   var bHaveAddedDevider = false;
+	var bAllowWidgetReorder=true;
+
 
   var tophtm=
         '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
@@ -303,6 +305,7 @@ function ShowWeathers()
 		}
 
 		$.FiveMinuteHistoryDays=data["5MinuteHistoryDays"];
+		bAllowWidgetReorder=data.AllowWidgetOrdering;
 
         $.each(data.result, function(i,item){
           if (i % 3 == 0)
@@ -507,30 +510,32 @@ function ShowWeathers()
   
   RefreshTimeAndSun();
 
-	if (window.my_config.userrights==2) {
-		if (window.myglobals.ismobileint==false) {
-			$("#weathercontent .span4").draggable({
-					drag: function() {
-						clearInterval($.myglobals.refreshTimer);
-						$.devIdx=$(this).attr("id");
-						$(this).css("z-index", 2);
-					},
-					revert: true
-			});
-			$("#weathercontent .span4").droppable({
-					drop: function() {
-						var myid=$(this).attr("id");
-						$.devIdx.split(' ');
-						$.ajax({
-							 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
-							 async: false, 
-							 dataType: 'json',
-							 success: function(data) {
-									ShowWeathers();
-							 }
-						});
-					}
-			});
+	if (bAllowWidgetReorder==true) {
+		if (window.my_config.userrights==2) {
+			if (window.myglobals.ismobileint==false) {
+				$("#weathercontent .span4").draggable({
+						drag: function() {
+							clearInterval($.myglobals.refreshTimer);
+							$.devIdx=$(this).attr("id");
+							$(this).css("z-index", 2);
+						},
+						revert: true
+				});
+				$("#weathercontent .span4").droppable({
+						drop: function() {
+							var myid=$(this).attr("id");
+							$.devIdx.split(' ');
+							$.ajax({
+								 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
+								 async: false, 
+								 dataType: 'json',
+								 success: function(data) {
+										ShowWeathers();
+								 }
+							});
+						}
+				});
+			}
 		}
 	}
   $.myglobals.refreshTimer = setInterval(RefreshWeathers, 10000);

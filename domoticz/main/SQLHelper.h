@@ -338,6 +338,7 @@ public:
 	std::string	m_tempsign;
 	float		m_tempscale;
 	bool		m_bAcceptNewHardware;
+	bool		m_bAllowWidgetOrdering;
 private:
 	boost::mutex m_sqlQueryMutex;
 	CURLEncode m_urlencoder;

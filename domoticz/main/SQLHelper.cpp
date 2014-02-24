@@ -434,6 +434,7 @@ CSQLHelper::CSQLHelper(void)
 	m_stoprequested=false;
 	m_sensortimeoutcounter=0;
 	m_bAcceptNewHardware=true;
+	m_bAllowWidgetOrdering=true;
 
 	m_windunit=WINDUNIT_MS;
 	m_tempunit=TEMPUNIT_C;
@@ -1050,6 +1051,12 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("BatteryLowNotification", 0); //default disabled
 	}
+	if (!GetPreferencesVar("AllowWidgetOrdering", nValue))
+	{
+		UpdatePreferencesVar("AllowWidgetOrdering", 1); //default enabled
+		nValue=1;
+	}
+	m_bAllowWidgetOrdering=(nValue==1);
 	//Start background thread
 	if (!StartThread())
 		return false;

@@ -608,6 +608,8 @@ function ShowTemps()
 
   var htmlcontent = '';
   var bHaveAddedDevider = false;
+	var bAllowWidgetReorder=true;
+
 
   var tophtm=
         '\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
@@ -649,6 +651,7 @@ function ShowTemps()
 		if (typeof data.TempSign != 'undefined') {
 			$.myglobals.tempsign=data.TempSign;
 		}
+		bAllowWidgetReorder=data.AllowWidgetOrdering;
 
         $.each(data.result, function(i,item){
           if (i % 3 == 0)
@@ -796,30 +799,32 @@ function ShowTemps()
 
 	RefreshTimeAndSun();
 	
-	if (window.my_config.userrights==2) {
-		if (window.myglobals.ismobileint==false) {
-			$("#tempcontent .span4").draggable({
-					drag: function() {
-						clearInterval($.myglobals.refreshTimer);
-						$.devIdx=$(this).attr("id");
-						$(this).css("z-index", 2);
-					},
-					revert: true
-			});
-			$("#tempcontent .span4").droppable({
-					drop: function() {
-						var myid=$(this).attr("id");
-						$.devIdx.split(' ');
-						$.ajax({
-							 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
-							 async: false, 
-							 dataType: 'json',
-							 success: function(data) {
-									ShowTemps();
-							 }
-						});
-					}
-			});
+	if (bAllowWidgetReorder==true) {
+		if (window.my_config.userrights==2) {
+			if (window.myglobals.ismobileint==false) {
+				$("#tempcontent .span4").draggable({
+						drag: function() {
+							clearInterval($.myglobals.refreshTimer);
+							$.devIdx=$(this).attr("id");
+							$(this).css("z-index", 2);
+						},
+						revert: true
+				});
+				$("#tempcontent .span4").droppable({
+						drop: function() {
+							var myid=$(this).attr("id");
+							$.devIdx.split(' ');
+							$.ajax({
+								 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
+								 async: false, 
+								 dataType: 'json',
+								 success: function(data) {
+										ShowTemps();
+								 }
+							});
+						}
+				});
+			}
 		}
 	}
 	$.myglobals.refreshTimer = setInterval(RefreshTemps, 10000);

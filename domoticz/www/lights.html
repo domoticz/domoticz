@@ -1669,6 +1669,7 @@ function ShowLights()
   
   var htmlcontent = '';
   var bHaveAddedDevider = false;
+	var bAllowWidgetReorder=true;
 
 	var suntext='<div id="timesun" />\n';
 
@@ -1693,6 +1694,8 @@ function ShowLights()
      dataType: 'json',
      success: function(data) {
       if (typeof data.result != 'undefined') {
+		bAllowWidgetReorder=data.AllowWidgetOrdering;
+
         $.each(data.result, function(i,item){
           if (j % 3 == 0)
           {
@@ -2007,30 +2010,32 @@ function ShowLights()
   $('#lightcontent').html(tophtm+htmlcontent);
   $('#lightcontent').i18n();
 
-	if (window.my_config.userrights==2) {
-	  if (window.myglobals.ismobileint==false) {
-			$("#lightcontent .span4").draggable({
-					drag: function() {
-						clearInterval($.myglobals.refreshTimer);
-						$.devIdx=$(this).attr("id");
-						$(this).css("z-index", 2);
-					},
-					revert: true
-			});
-			$("#lightcontent .span4").droppable({
-					drop: function() {
-						var myid=$(this).attr("id");
-						$.devIdx.split(' ');
-						$.ajax({
-							 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
-							 async: false, 
-							 dataType: 'json',
-							 success: function(data) {
-									ShowLights();
-							 }
-						});
-					}
-			});
+	if (bAllowWidgetReorder==true) {
+		if (window.my_config.userrights==2) {
+		  if (window.myglobals.ismobileint==false) {
+				$("#lightcontent .span4").draggable({
+						drag: function() {
+							clearInterval($.myglobals.refreshTimer);
+							$.devIdx=$(this).attr("id");
+							$(this).css("z-index", 2);
+						},
+						revert: true
+				});
+				$("#lightcontent .span4").droppable({
+						drop: function() {
+							var myid=$(this).attr("id");
+							$.devIdx.split(' ');
+							$.ajax({
+								 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
+								 async: false, 
+								 dataType: 'json',
+								 success: function(data) {
+										ShowLights();
+								 }
+							});
+						}
+				});
+			}
 		}
 	}
 	RefreshTimeAndSun();

@@ -729,6 +729,11 @@ char * CWebServer::PostSettings()
 	m_pMain->m_sql.UpdatePreferencesVar("AcceptNewHardware",iEnableNewHardware);
 	m_pMain->m_sql.m_bAcceptNewHardware=(iEnableNewHardware==1);
 
+	std::string EnableWidgetOrdering=m_pWebEm->FindValue("AllowWidgetOrdering");
+	int iEnableAllowWidgetOrdering=(EnableWidgetOrdering=="on"?1:0);
+	m_pMain->m_sql.UpdatePreferencesVar("AllowWidgetOrdering",iEnableAllowWidgetOrdering);
+	m_pMain->m_sql.m_bAllowWidgetOrdering=(iEnableAllowWidgetOrdering==1);
+
 	int rnOldvalue=0;
 	m_pMain->m_sql.GetPreferencesVar("RemoteSharedPort", rnOldvalue);
 
@@ -1039,6 +1044,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 	nValue=1;
 	m_pMain->m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
 	root["5MinuteHistoryDays"]=nValue;
+
+	root["AllowWidgetOrdering"]=m_pMain->m_sql.m_bAllowWidgetOrdering;
 
 	char szData[100];
 	char szTmp[300];
@@ -10938,6 +10945,7 @@ std::string CWebServer::GetJSonPage()
 	{
 		root["status"]="OK";
 		root["title"]="Scenes";
+		root["AllowWidgetOrdering"]=m_pMain->m_sql.m_bAllowWidgetOrdering;
 
 		szQuery.clear();
 		szQuery.str("");
@@ -11420,6 +11428,11 @@ std::string CWebServer::GetJSonPage()
 				{
 					root["SecOnDelay"]=nValue;
 				}
+				else if (Key=="AllowWidgetOrdering")
+				{
+					root["AllowWidgetOrdering"]=nValue;
+				}
+				
 			}
 		}
 	} //(rtype=="settings")
