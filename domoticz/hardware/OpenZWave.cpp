@@ -1337,7 +1337,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 					nintvalue=0;
 				else
 					nintvalue=255;
-				if (nintvalue==byteValue)
+				if (pDevice->intvalue==nintvalue)
 				{
 					return; //dont send same value
 				}
