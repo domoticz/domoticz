@@ -44,6 +44,8 @@ Version 1.0.xxxx (February xxth 2014)
 - Implemented: Option to Enable/Disable Widget Re-Ordering (settings page)
 - Fixed: OpenZWave fixed possible problem with Alarm Level/Flood/Smoke/Heat value changes
 - Implemented: Razberry COMMAND_CLASS_THERMOSTAT_MODE (0/1)
+- Implemented: Razberry COMMAND_CLASS_SCENE_ACTIVATION (push on button)
+
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)

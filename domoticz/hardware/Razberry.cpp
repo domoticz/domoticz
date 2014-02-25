@@ -497,7 +497,7 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 	}
 	else if (path.find("instances.0.commandClasses.64.data.")!=std::string::npos)
 	{
-		//Possible fix for door sensors reporting on another instance number
+		//Thermostat mode
 		std::vector<std::string> results;
 		StringSplit(path,".",results);
 		//Find device by data id
@@ -509,6 +509,48 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 				int devID=atoi(results[1].c_str());
 				int instanceID=atoi(results[3].c_str());
 				pDevice=FindDevice(devID,instanceID, cmdID, ZDTYPE_SWITCHNORMAL);
+			}
+		}
+	}
+	else if (path.find("commandClasses.43.data.currentScene")!=std::string::npos)
+	{
+		//Scene activation
+		std::vector<std::string> results;
+		StringSplit(path,".",results);
+		//Find device by data id
+		if (results.size()==8)
+		{
+			int cmdID=atoi(results[5].c_str());
+			if (cmdID==43)
+			{
+				int iScene=obj["value"].asInt();
+				int devID=(iScene<<8)+atoi(results[1].c_str());
+				int instanceID=atoi(results[3].c_str());
+				pDevice=FindDevice(devID,instanceID, cmdID, ZDTYPE_SWITCHNORMAL);
+				if (pDevice==NULL)
+				{
+					//Add new switch device
+					_tZWaveDevice _device;
+					_device.nodeID=devID;
+					_device.instanceID=instanceID;
+
+					_device.basicType =		1;
+					_device.genericType =	1;
+					_device.specificType =	1;
+					_device.isListening =	false;
+					_device.sensor250=		false;
+					_device.sensor1000=		false;
+					_device.isFLiRS =		!_device.isListening && (_device.sensor250 || _device.sensor1000);
+					_device.hasWakeup =		false;
+					_device.hasBattery =	false;
+					_device.scaleID=-1;
+
+					_device.commandClassID=cmdID;
+					_device.devType= ZDTYPE_SWITCHNORMAL;
+					_device.intvalue=255;
+					InsertDevice(_device);
+					pDevice=FindDevice(devID,instanceID, cmdID, ZDTYPE_SWITCHNORMAL);
+				}
 			}
 		}
 	}
@@ -631,13 +673,17 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 	case ZDTYPE_SWITCHDIMMER:
 		{
 			//switch
-			if (pDevice->commandClassID==64)
+			if (pDevice->commandClassID==64) //Thermostat Mode
 			{
 				int iValue=obj["value"].asInt();
 				if (iValue==0)
 					pDevice->intvalue=0;
 				else
 					pDevice->intvalue=255;
+			}
+			else if (pDevice->commandClassID==43) //Switch Scene
+			{
+				pDevice->intvalue=255;
 			}
 			else
 			{
