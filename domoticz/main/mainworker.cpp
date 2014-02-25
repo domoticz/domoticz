@@ -605,54 +605,6 @@ bool MainWorker::StartThread()
 	m_openhardwaremonitor.StartOpenHardwareMonitor(this);
 #endif
 	m_eventsystem.StartEventSystem(this);
-	//m_sql.DeleteHardware("999");
-
-#ifdef PARSE_RFXCOM_DEVICE_LOG
-	std::vector<std::string> _lines;
-	std::ifstream myfile ("C:\\RFXtrxLog.txt");
-	if (myfile.is_open())
-	{
-		while ( myfile.good() )
-		{
-			std::string _line;
-			getline (myfile,_line);
-			_lines.push_back(_line);
-		}
-		myfile.close();
-	}
-	DomoticzTCP tempHardware(999,"0.0.0.0",1234,"","");
-
-	std::vector<std::string>::iterator itt;
-	unsigned char rxbuffer[100];
-	static const char* const lut = "0123456789ABCDEF";
-	for (itt=_lines.begin(); itt!=_lines.end(); ++itt)
-	{
-		std::string hexstring=*itt;
-		if (hexstring.size()%2!=0)
-			continue;//illegal
-		int totbytes=hexstring.size()/2;
-		int ii=0;
-		for (ii=0; ii<totbytes; ii++)
-		{
-			std::string hbyte=hexstring.substr((ii*2),2);
-
-			char a = hbyte[0];
-			const char* p = std::lower_bound(lut, lut + 16, a);
-			if (*p != a) throw std::invalid_argument("not a hex digit");
-
-			char b = hbyte[1];
-			const char* q = std::lower_bound(lut, lut + 16, b);
-			if (*q != b) throw std::invalid_argument("not a hex digit");
-
-			unsigned char uchar=((p - lut) << 4) | (q - lut);
-			rxbuffer[ii]=uchar;
-		}
-		if (ii==0)
-			continue;
-		DecodeRXMessage(&tempHardware, (const unsigned char *)&rxbuffer);
-	}
-	return false;
-#endif
 
 	int rnvalue=0;
 	m_sql.GetPreferencesVar("RemoteSharedPort", rnvalue);
@@ -864,6 +816,72 @@ void MainWorker::HandleAutomaticBackups()
 	}	
 }
 
+void MainWorker::ParseRFXLogFile()
+{
+#ifdef PARSE_RFXCOM_DEVICE_LOG
+	std::vector<std::string> _lines;
+	std::ifstream myfile ("C:\\RFXtrxLog.txt");
+	if (myfile.is_open())
+	{
+		while ( myfile.good() )
+		{
+			std::string _line;
+			getline (myfile,_line);
+			size_t tpos=_line.find("=");
+			if (tpos!=std::string::npos)
+			{
+				_line = _line.substr(tpos + 1);
+				tpos = _line.find(" ");
+				if (tpos == 0)
+				{
+					_line=_line.substr(1);
+				}
+			}
+			_lines.push_back(_line);
+		}
+		myfile.close();
+	}
+	int HWID=1;
+	//m_sql.DeleteHardware("999");
+
+	CDomoticzHardwareBase *pHardware=GetHardware(HWID);
+	if (pHardware==NULL)
+		pHardware=new CDummy(HWID);
+
+	std::vector<std::string>::iterator itt;
+	unsigned char rxbuffer[100];
+	static const char* const lut = "0123456789ABCDEF";
+	for (itt=_lines.begin(); itt!=_lines.end(); ++itt)
+	{
+		std::string hexstring=*itt;
+		if (hexstring.size()%2!=0)
+			continue;//illegal
+		int totbytes=hexstring.size()/2;
+		int ii=0;
+		for (ii=0; ii<totbytes; ii++)
+		{
+			std::string hbyte=hexstring.substr((ii*2),2);
+
+			char a = hbyte[0];
+			const char* p = std::lower_bound(lut, lut + 16, a);
+			if (*p != a) throw std::invalid_argument("not a hex digit");
+
+			char b = hbyte[1];
+			const char* q = std::lower_bound(lut, lut + 16, b);
+			if (*q != b) throw std::invalid_argument("not a hex digit");
+
+			unsigned char uchar=((p - lut) << 4) | (q - lut);
+			rxbuffer[ii]=uchar;
+		}
+		if (ii==0)
+			continue;
+		pHardware->WriteToHardware((const char *)&rxbuffer,totbytes);
+		DecodeRXMessage(pHardware, (const unsigned char *)&rxbuffer);
+		sleep_milliseconds(300);
+	}
+#endif
+}
+
 void MainWorker::Do_Work()
 {
 	int second_counter=0;
@@ -910,6 +928,7 @@ void MainWorker::Do_Work()
 			{
 				m_bStartHardware=false;
 				StartDomoticzHardware();
+				ParseRFXLogFile();
 			}
 		}
 

@@ -136,6 +136,7 @@ private:
 
 	bool StartThread();
 	void Do_Work();
+	void ParseRFXLogFile();
 	void SendResetCommand(CDomoticzHardwareBase *pHardware);
 	void SendCommand(const int HwdID, unsigned char Cmd, const char *szMessage=NULL);
 	void WriteToHardware(const int HwdID, const char *pdata, const unsigned char length);

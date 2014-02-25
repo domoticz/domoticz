@@ -391,6 +391,18 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 					InsertDevice(_device);
 				}
 			}
+			//Thermostat mode
+			if (instance["commandClasses"]["64"].empty()==false)
+			{
+				int iValue=instance["commandClasses"]["64"]["data"]["mode"]["value"].asInt();
+				if (iValue==0)
+					_device.intvalue=0;
+				else
+					_device.intvalue=255;
+				_device.commandClassID=64;
+				_device.devType = ZDTYPE_SWITCHNORMAL;
+				InsertDevice(_device);
+			}
 
 			// Thermostat Set Point
 			if (instance["commandClasses"]["67"].empty()==false)
@@ -480,6 +492,23 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 				int devID=atoi(results[1].c_str());
 				int instanceID=atoi(results[7].c_str());
 				pDevice=FindDeviceInstance(devID,instanceID);
+			}
+		}
+	}
+	else if (path.find("instances.0.commandClasses.64.data.")!=std::string::npos)
+	{
+		//Possible fix for door sensors reporting on another instance number
+		std::vector<std::string> results;
+		StringSplit(path,".",results);
+		//Find device by data id
+		if (results.size()==8)
+		{
+			int cmdID=atoi(results[5].c_str());
+			if (cmdID==64)
+			{
+				int devID=atoi(results[1].c_str());
+				int instanceID=atoi(results[3].c_str());
+				pDevice=FindDevice(devID,instanceID, cmdID, ZDTYPE_SWITCHNORMAL);
 			}
 		}
 	}
@@ -602,21 +631,32 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 	case ZDTYPE_SWITCHDIMMER:
 		{
 			//switch
-			std::string vstring="";
-			if (obj["value"].empty()==false)
-				vstring=obj["value"].asString();
-			else if (obj["level"].empty()==false)
+			if (pDevice->commandClassID==64)
 			{
-				if (obj["level"]["value"].empty()==false)
-					vstring=obj["level"]["value"].asString();
+				int iValue=obj["value"].asInt();
+				if (iValue==0)
+					pDevice->intvalue=0;
+				else
+					pDevice->intvalue=255;
 			}
-
-			if (vstring=="true")
-				pDevice->intvalue=255;
-			else if (vstring=="false")
-				pDevice->intvalue=0;
 			else
-				pDevice->intvalue=atoi(vstring.c_str());
+			{
+				std::string vstring="";
+				if (obj["value"].empty()==false)
+					vstring=obj["value"].asString();
+				else if (obj["level"].empty()==false)
+				{
+					if (obj["level"]["value"].empty()==false)
+						vstring=obj["level"]["value"].asString();
+				}
+
+				if (vstring=="true")
+					pDevice->intvalue=255;
+				else if (vstring=="false")
+					pDevice->intvalue=0;
+				else
+					pDevice->intvalue=atoi(vstring.c_str());
+			}
 		}
 		break;
 	case ZDTYPE_SENSOR_POWER:
@@ -662,7 +702,10 @@ void CRazberry::SwitchLight(const int nodeID, const int instanceID, const int co
 {
 	//Send command
 	std::stringstream sstr;
-	sstr << "devices[" << nodeID << "].instances[" << instanceID << "].commandClasses[" << commandClass << "].Set(" << value << ")";
+	int iValue=value;
+	if ((commandClass==64)&&(iValue!=0))
+		iValue=1;
+	sstr << "devices[" << nodeID << "].instances[" << instanceID << "].commandClasses[" << commandClass << "].Set(" << iValue << ")";
 	RunCMD(sstr.str());
 }
 

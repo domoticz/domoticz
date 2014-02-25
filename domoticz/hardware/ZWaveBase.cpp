@@ -542,6 +542,22 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(int nodeID, int instanceID, _eZW
 	return NULL;
 }
 
+ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(int nodeID, int instanceID, int CommandClassID,  _eZWaveDeviceType devType)
+{
+	std::map<std::string,_tZWaveDevice>::iterator itt;
+	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
+	{
+		if (
+			(itt->second.nodeID==nodeID)&&
+			((itt->second.instanceID==instanceID)||(instanceID==-1))&&
+			(itt->second.commandClassID==CommandClassID)&&
+			(itt->second.devType==devType)
+			)
+			return &itt->second;
+	}
+	return NULL;
+}
+
 ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(int nodeID, int scaleID)
 {
 	std::map<std::string,_tZWaveDevice>::iterator itt;

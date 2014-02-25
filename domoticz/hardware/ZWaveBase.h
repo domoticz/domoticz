@@ -82,6 +82,7 @@ private:
 	void SendDevice2Domoticz(const _tZWaveDevice *pDevice);
 	void SendSwitchIfNotExists(const _tZWaveDevice *pDevice);
 	_tZWaveDevice* FindDevice(int nodeID, int instanceID, _eZWaveDeviceType devType);
+	_tZWaveDevice* FindDevice(int nodeID, int instanceID, int CommandClassID, _eZWaveDeviceType devType);
 	_tZWaveDevice* FindDevice(int nodeID, int scaleID);
 	_tZWaveDevice* FindDeviceInstance(int nodeID, int instanceID);
 	std::string GenerateDeviceStringID(const _tZWaveDevice *pDevice);
