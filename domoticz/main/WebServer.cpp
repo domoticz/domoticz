@@ -9485,6 +9485,57 @@ std::string CWebServer::GetJSonPage()
 				root["title"]="ZWaveHealNetwork";
 			}
 		}
+		else if (cparam=="zwavenetworkinfo")
+		{			
+			root["title"]="ZWaveNetworkInfo";
+	
+			std::string idx=m_pWebEm->FindValue("idx");
+			if (idx=="")
+				goto exitjson;
+			int hwID = atoi(idx.c_str());
+			CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hwID);
+			if (pHardware!=NULL)
+			{
+				COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+				std::vector< std::vector< int > > nodevectors;
+				
+				if (pOZWHardware->NetworkInfo(hwID, nodevectors)) {
+
+					std::vector<std::vector<int> >::iterator row_iterator;
+					std::vector<int>::iterator col_iterator;
+					int nodeID;
+
+					 std::vector<int> rest;
+					int rowCount=0;
+					std::stringstream list;
+					for(row_iterator = nodevectors.begin();row_iterator!=nodevectors.end();++row_iterator) {
+						int colCount=0;
+						for(col_iterator = (*row_iterator).begin();col_iterator!=(*row_iterator).end();++col_iterator) {
+							_log.Log(LOG_NORM,"OpenZ:%d ",*col_iterator);
+							if (colCount == 0) {
+								nodeID=*col_iterator;
+							}
+							else {
+								rest.push_back(*col_iterator);
+							}
+							colCount++;
+						}
+						
+						std::copy(rest.begin(), rest.end(), std::ostream_iterator<int>(list, ","));
+						root["result"]["mesh"][rowCount]["nodeID"]=nodeID;
+						root["result"]["mesh"][rowCount]["seesNodes"]=list.str();
+						rowCount++;
+						rest.clear();
+						list.clear();
+					}
+					root["status"]="OK";
+					
+		
+				}
+
+
+			}
+		}
 		else if (cparam=="zwavecancel")
 		{
 			std::string idx=m_pWebEm->FindValue("idx");

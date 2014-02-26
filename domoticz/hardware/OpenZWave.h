@@ -72,6 +72,7 @@ public:
 	bool SoftResetDevice();
 	bool HardResetDevice();
 	bool HealNetwork();
+	bool NetworkInfo(const int hwID,std::vector< std::vector< int > > &NodeArray);
 private:
 	void NodesQueried();
 	void AddNode(const int homeID, const int nodeID,const NodeInfo *pNode);

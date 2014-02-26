@@ -1496,6 +1496,47 @@ bool COpenZWave::HealNetwork()
 	return true;
 }
 
+bool COpenZWave::NetworkInfo(const int hwID,std::vector< std::vector< int > > &NodeArray)
+{
+	;
+	if (m_pManager==NULL) {
+		return false;
+	}
+
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT NodeID FROM ZWaveNodes WHERE (HardwareID = '" << hwID <<"')";
+	result=m_pMainWorker->m_sql.query(szQuery.str());
+	if (result.size()<1) {
+		return false;
+	}
+	_log.Log(LOG_NORM,"query start");
+	int rowCnt = 0;
+	std::vector<std::vector<std::string> >::const_iterator itt;
+	for (itt=result.begin(); itt!=result.end(); ++itt)
+	{
+		std::vector<std::string> sd=*itt;
+		int NodeID=atoi(sd[0].c_str());
+		std::vector<int> row;
+		NodeArray.push_back(row);
+		NodeArray[rowCnt].push_back(NodeID);
+		uint8* arr;
+		int retval = m_pManager->GetNodeNeighbors(m_controllerID, NodeID, &arr);
+		if (retval > 0) {
+			
+			for (int i=0; i<retval; i++) {
+				_log.Log(LOG_NORM,"OpenZWave:%d %d",NodeID, arr[i]);
+				NodeArray[rowCnt].push_back(arr[i]);
+			}
+			
+			delete arr;
+		}
+		rowCnt++;
+	}
+	
+	return true;
+
+}
 bool COpenZWave::RemoveFailedDevice(const int nodeID)
 {
 	if (m_pManager==NULL)
