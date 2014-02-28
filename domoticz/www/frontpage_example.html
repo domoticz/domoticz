@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MyWeatherView</title> 
+<link href='http://fonts.googleapis.com/css?family=Orbitron:700' rel='stylesheet' type='text/css'>
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+<style>
+div#cnt {
+	width: 990px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+a, a:visited { text-decoration: none; color: #336699; }
+a:hover { text-decoration: none; color: #003366; }
+
+#frame {
+	float: left;
+	margin: 0px;
+	padding: 0px 2px 0px 2px;
+}
+
+#label_lg {
+	font-family: arial;
+	font-weight: normal;
+	color: #999;
+	font-size: 17px;
+	margin-top: -20px;
+	height: 25px;
+	line-height: 10px;
+}
+
+#itemp {
+	font-family: Orbitron, serif;
+	font-weight: bold;
+	width: 570px;
+	padding: 5px;
+	border: 1px solid #666;
+	height: 217px;	
+	line-height: 210px; 
+	font-size: 180px;	
+	color: darkorange;
+	margin: 0px ;
+}
+
+#ihi, #ilow, #ohi, #ihum, #astat, #astatw, #otemp, #crte,
+#ohi, #rain, #ohum, #ocld, #otxt, #ctime, #cycb, #ctemp, #cyce, 
+#tmpb, #tmpe, #tmpc, #crte, #ctme, #wind, #state, 
+#ctmep, #sgas, #mode, #estate {
+	font-family: Orbitron, serif;
+	font-weight: bold;
+	width: 162px;
+	padding: 10px;
+	border: 1px solid #666;
+	height: 90px;
+	line-height: 75px; 		
+	font-size: 90px;
+	color: #999;
+}
+
+#ctime, #cycb, #cyce, #tmpb, #tmpe, #tmpc, #crte, #ctme, #ohi, 
+#rain, #ohum, #ocld, #otxt, #otemp, #wind, #astat, #awatt, 
+#astatw, #state, #estate, #ctmep, #sgas, #mode {
+	height: 65px;
+	line-height: 55px;
+	color: #999;
+}
+
+#state, #estate, #crte, #wind { 
+	width: 184px; 
+}
+
+#otxt { 
+	width: 560px; 
+	font-size: 40px;
+	line-height: 55px;
+	color: darkorange;
+}
+
+#al { 
+	margin-left: -35px; 
+	margin-top: 55px; 
+	width: 1050px;height: 570px;	
+}
+
+</style>
+</head>
+<div id="images"></div>
+<body bgcolor="#000">
+<div id="cnt">
+<div style="margin-bottom:5px;">
+<div>
+<div>
+<div id="frame">
+	<div id="ihum" style="color:lightblue;font-size:50px;">--</div>
+	<div id="label_lg">Humidity (%)</div>
+	<div id="ilow" style="font-size:35px;">--</div>
+	<div id="label_lg">Lamp State</div>
+</div>
+<div id="frame">
+	<div id="itemp">--</div>
+	<div id="label_lg" style="font-size:25px;margin-top:-30px;">Livingroom Temp (º<span class="degsign">C</span>)</div>
+</div>
+<div id="frame">
+	<div id="ihi" style="color:teal;font-size:50px;">--</div>
+	<div id="label_lg">Temp Set (º<span class="degsign">C</span>)</div>
+	<div id="ctemp" style="color:#6666FF;font-size:50px;">--</div>
+	<div id="label_lg">Temp Cellar (º<span class="degsign">C</span>)</div>
+</div>
+</div>
+
+<div>
+<div id="frame">
+	<div id="cycb" style="font-size:40px;">--</div>
+	<div id="label_lg">Temp Floorheat In</div>
+</div>
+<div id="frame">
+	<div id="cyce" style="font-size:40px;">--</div>
+	<div id="label_lg">Temp Floorheat Out</div>
+</div>
+<div id="frame">
+	<div id="state" style="font-size:40px;">--</div>
+	<div id="label_lg">Hvac State</div>
+</div>
+<div id="frame">
+	<div id="tmpb" style="font-size:40px;">--</div>
+	<div id="label_lg">Temp Hot Water</div>
+</div>
+<div id="frame">
+	<div id="tmpe" style="font-size:40px;">--</div>
+	<div id="label_lg">Pump Floorheating</div>
+</div>
+</div>
+
+<div>
+<div id="frame">
+	<div id="mode" style="font-size:40px;;color:#3333cc;">--</div>
+	<div id="label_lg">Water Today (ltr)</div>
+</div>
+<div id="frame">
+	<div id="sgas" style="font-size:40px;color:#009933;">--</div>
+	<div id="label_lg">Gas Today (m³)</div>
+</div>
+<div id="frame">
+	<div id="estate" style="font-size:40px;color:#ff3333;">--</div>
+	<div id="label_lg">Energy Today (kW)</div>
+</div>
+<div id="frame">
+	<div id="ctmep" style="font-size:40px;color:#ff3333;">--</div>
+	<div id="label_lg">Current Energy (watt)</div>
+</div>
+<div id="frame">
+	<div id="ctme" style="font-size:40px;color:#ff3333;">--</div>
+	<div id="label_lg">Highest Consumer</div>
+</div>
+</div>
+
+<div>
+<div id="frame">
+	<div id="rain" style="font-size:40px;">--</div>
+	<div id="label_lg">Daily Rain (MM)</div>
+</div>
+<div id="frame">
+	<div id="ohi" style="font-size:40px;color:#C34A2C;">--</div>
+	<div id="label_lg">UV Sensor</div>
+</div>
+<div id="frame">
+	<div id="wind" style="font-size:40px;">--</div>
+	<div id="label_lg">Wind Velocity (<span class="windsign">km/h</span>)</div>
+</div>
+<div id="frame">
+	<div id="otemp" style="font-size:40px;color:darkorange;">--</div>
+	<div id="label_lg">Outdoor Temp (º<span class="degsign">C</span>)</div>
+</div>
+<div id="frame">
+	<div id="ohum" style="font-size:40px;color:teal;">--</div>
+	<div id="label_lg">Outdoor Humidity (%)</div>
+</div>
+</div>
+
+<div>
+<div id="frame">
+	<div id="astat" style="font-size:40px;">--</div>
+	<div id="label_lg">Hvac Watt</div>
+</div>
+<div id="frame">
+	<div id="otxt">--</div>
+	<div id="label_lg">Weather Forecast at Hilversum Netherlands</div>
+</div>
+<div id="frame">
+	<div id="astatw" style="font-size:40px;">--</div>
+	<div id="label_lg">Baro</div>
+</div>
+</div>
+
+</div>
+<div id="all"></div><br>
+</div>
+</div>
+
+<script type="text/javascript" charset="utf-8">
+function RefreshData()
+{
+	clearInterval($.refreshTimer);
+	var jurl=$.domoticzurl+"/json.htm?type=devices&plan="+$.roomplan+"&jsoncallback=?";
+	$.getJSON(jurl,
+	{
+		format: "json"
+	},
+	function(data) {
+		if (typeof data.result != 'undefined') {
+			if (typeof data.WindSign != 'undefined') {
+				$('.windsign').html(data.WindSign);
+			}
+			if (typeof data.TempSign != 'undefined') {
+				$('.degsign').html(data.TempSign);
+			}
+			$.each(data.result, function(i,item){
+				for( var ii = 0, len = $.PageArray.length; ii < len; ii++ ) {
+					if( $.PageArray[ii][0] === item.idx ) {
+						var vtype=$.PageArray[ii][1];
+						var vlabel=$.PageArray[ii][2];
+						var vdata=item[vtype];
+						if (typeof vdata == 'undefined') {
+							vdata="??";
+						}
+						else {
+							vdata=new String(vdata).split(" ",1)[0];
+						}
+						$('#'+vlabel).html(vdata);
+					}
+				}
+			});
+		}
+	});
+	$.refreshTimer = setInterval(RefreshFavorites, 10000);
+}
+
+$(document).ready(function() {
+	$.roomplan=1;
+	$.domoticzurl="http://127.0.0.1:8080";
+	//format: idx, value, label, comment
+	$.PageArray = [
+		['630','Temp','itemp','woonkamer'],
+		['630','Humidity','ihum','woonkamer'],
+		['630','Barometer','astatw','woonkamer'],
+		['630','ForecastStr','otxt','woonkamer'],
+		['503','Temp','otemp','buiten'],
+		['503','Humidity','ohum','buiten'],
+		['614','Temp','ihi','control setpoint'],
+		['584','Usage','ctmep','elektra'],
+		['584','CounterToday','estate','elektra'],
+		['3','Rain','rain','rain'],
+		['585','CounterToday','sgas','gas'],
+		['411','UVI','ohi','uv'],
+		['613','Speed','wind','wind'],
+		['401','Status','ilow','lamp'],
+	];
+
+    RefreshData();
+});  
+</script>
+
+</body>
+</html>

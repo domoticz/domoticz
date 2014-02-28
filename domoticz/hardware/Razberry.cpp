@@ -526,30 +526,34 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 				int iScene=obj["value"].asInt();
 				int devID=(iScene<<8)+atoi(results[1].c_str());
 				int instanceID=atoi(results[3].c_str());
-				pDevice=FindDevice(devID,instanceID, cmdID, ZDTYPE_SWITCHNORMAL);
-				if (pDevice==NULL)
+				if (instanceID==0)
 				{
-					//Add new switch device
-					_tZWaveDevice _device;
-					_device.nodeID=devID;
-					_device.instanceID=instanceID;
-
-					_device.basicType =		1;
-					_device.genericType =	1;
-					_device.specificType =	1;
-					_device.isListening =	false;
-					_device.sensor250=		false;
-					_device.sensor1000=		false;
-					_device.isFLiRS =		!_device.isListening && (_device.sensor250 || _device.sensor1000);
-					_device.hasWakeup =		false;
-					_device.hasBattery =	false;
-					_device.scaleID=-1;
-
-					_device.commandClassID=cmdID;
-					_device.devType= ZDTYPE_SWITCHNORMAL;
-					_device.intvalue=255;
-					InsertDevice(_device);
+					//only allow instance 0 for now
 					pDevice=FindDevice(devID,instanceID, cmdID, ZDTYPE_SWITCHNORMAL);
+					if (pDevice==NULL)
+					{
+						//Add new switch device
+						_tZWaveDevice _device;
+						_device.nodeID=devID;
+						_device.instanceID=instanceID;
+
+						_device.basicType =		1;
+						_device.genericType =	1;
+						_device.specificType =	1;
+						_device.isListening =	false;
+						_device.sensor250=		false;
+						_device.sensor1000=		false;
+						_device.isFLiRS =		!_device.isListening && (_device.sensor250 || _device.sensor1000);
+						_device.hasWakeup =		false;
+						_device.hasBattery =	false;
+						_device.scaleID=-1;
+
+						_device.commandClassID=cmdID;
+						_device.devType= ZDTYPE_SWITCHNORMAL;
+						_device.intvalue=255;
+						InsertDevice(_device);
+						pDevice=FindDevice(devID,instanceID, cmdID, ZDTYPE_SWITCHNORMAL);
+					}
 				}
 			}
 		}

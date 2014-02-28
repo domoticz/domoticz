@@ -11488,7 +11488,13 @@ std::string CWebServer::GetJSonPage()
 		}
 	} //(rtype=="settings")
 exitjson:
-	m_retstr=root.toStyledString();
+	std::string jcallback=m_pWebEm->FindValue("jsoncallback");
+	if (jcallback.size()==0)
+		m_retstr=root.toStyledString();
+	else
+	{
+		m_retstr="var data="+root.toStyledString()+"\n"+jcallback+"(data);";
+	}
 	return m_retstr;
 }
 
