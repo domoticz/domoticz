@@ -22,11 +22,14 @@ class CWebServer
 		std::string Title;
 		std::string Description;
 	};
+	typedef boost::function< void(Json::Value &root) > webserver_response_function;
 public:
 	CWebServer(void);
 	~CWebServer(void);
 	bool StartServer(MainWorker *pMain, const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword);
 	void StopServer();
+	void RegisterCommandCode(const char* idname, webserver_response_function ResponseFunction);
+	std::string& GetWebValue( const char* name );
 
 	char * DisplayVersion();
 	char * DisplayHardwareCombo();
@@ -64,9 +67,16 @@ public:
 
 	//JSon
 	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID);
+	//Commands
+	void CmdLoginCheck(Json::Value &root);
+	void CmdAddHardware(Json::Value &root);
+	void CmdUpdateHardware(Json::Value &root);
+	void DeleteHardware(Json::Value &root);
 private:
+	void HandleCommand(const std::string &cparam, Json::Value &root);
 	MainWorker *m_pMain;
 	boost::shared_ptr<boost::thread> m_thread;
+	std::map < std::string, webserver_response_function > m_webcommands;
 	void Do_Work();
 	std::string m_retstr;
 	std::wstring m_wretstr;

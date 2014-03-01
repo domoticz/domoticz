@@ -254,6 +254,11 @@ bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress
 	m_pWebEm->RegisterActionCode( "setp1usbtype",boost::bind(&CWebServer::SetP1USBType,this));
 	m_pWebEm->RegisterActionCode( "restoredatabase",boost::bind(&CWebServer::RestoreDatabase,this));
 	
+	RegisterCommandCode("logincheck",boost::bind(&CWebServer::CmdLoginCheck,this, _1));
+	RegisterCommandCode("addhardware",boost::bind(&CWebServer::CmdAddHardware,this, _1));
+	RegisterCommandCode("updatehardware",boost::bind(&CWebServer::CmdUpdateHardware,this, _1));
+	RegisterCommandCode("deletehardware",boost::bind(&CWebServer::DeleteHardware,this, _1));
+	
 
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWebServer::Do_Work, this)));
@@ -268,6 +273,3929 @@ void CWebServer::StopServer()
 	m_pWebEm->Stop();
 }
 
+void CWebServer::RegisterCommandCode(const char* idname, webserver_response_function ResponseFunction)
+{
+	m_webcommands.insert( std::pair<std::string, webserver_response_function >( std::string(idname), ResponseFunction  ) );
+}
+std::string& CWebServer::GetWebValue( const char* name )
+{
+	static std::string ret;
+	ret = "";
+	if (m_pWebEm)
+		ret=m_pWebEm->FindValue(name);
+	return ret;
+}
+
+void CWebServer::CmdLoginCheck(Json::Value &root)
+{
+	std::string tmpusrname=m_pWebEm->FindValue("username");
+	std::string tmpusrpass=m_pWebEm->FindValue("password");
+	if (
+		(tmpusrname=="")||
+		(tmpusrpass=="")
+		)
+		return;
+
+	std::string usrname;
+	std::string usrpass;
+	if (request_handler::url_decode(tmpusrname,usrname))
+	{
+		if (request_handler::url_decode(tmpusrpass,usrpass))
+		{
+			usrname=base64_decode(usrname);
+			usrpass=base64_decode(usrpass);
+			int iUser=-1;
+			iUser=FindUser(usrname.c_str());
+			if (iUser==-1)
+				return;
+			if (m_users[iUser].Password!=usrpass)
+				return;
+			root["status"]="OK";
+			root["title"]="logincheck";
+		}
+	}
+}
+
+void CWebServer::CmdAddHardware(Json::Value &root)
+{
+	std::string name=m_pWebEm->FindValue("name");
+	std::string senabled=m_pWebEm->FindValue("enabled");
+	std::string shtype=m_pWebEm->FindValue("htype");
+	std::string address=m_pWebEm->FindValue("address");
+	std::string sport=m_pWebEm->FindValue("port");
+	std::string username=m_pWebEm->FindValue("username");
+	std::string password=m_pWebEm->FindValue("password");
+	if (
+		(name=="")||
+		(senabled=="")||
+		(shtype=="")||
+		(sport=="")
+		)
+		return;
+	_eHardwareTypes htype=(_eHardwareTypes)atoi(shtype.c_str());
+	int mode1=0;
+	int mode2=0;
+	int mode3=0;
+	int mode4=0;
+	int mode5=0;
+	int port=atoi(sport.c_str());
+	if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX)||(htype==HTYPE_DavisVantage)||(htype==HTYPE_S0SmartMeter)||(htype==HTYPE_OpenThermGateway)||(htype==HTYPE_TeleinfoMeter)||(htype==HTYPE_OpenZWave)||(htype==HTYPE_EnOcean))
+	{
+		//USB
+		if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433))
+		{
+		}
+	}
+	else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)||(htype == HTYPE_RazberryZWave)||(htype == HTYPE_OpenThermGatewayTCP)||(htype == HTYPE_LimitlessLights)||(htype == HTYPE_SolarEdgeTCP)) {
+		//Lan
+		if (address=="")
+			return;
+	}
+	else if (htype == HTYPE_Domoticz) {
+		//Remote Domoticz
+		if (address=="")
+			return;
+	}
+	else if (htype == HTYPE_TE923) {
+		//all fine here!
+	}
+	else if (htype == HTYPE_VOLCRAFTCO20) {
+		//all fine here!
+	}
+	else if (htype == HTYPE_1WIRE) {
+		//all fine here!
+	}
+	else if (htype == HTYPE_RaspberryBMP085) {
+		//all fine here!
+	}
+	else if (htype == HTYPE_Dummy) {
+		//all fine here!
+	}
+	else if (htype == HTYPE_PiFace) {
+		//all fine here!
+	}
+	else if ((htype == HTYPE_Wunderground)||(htype == HTYPE_ForecastIO)) {
+		if (
+			(username=="")||
+			(password=="")
+			)
+			return;
+	}
+	else if (htype == HTYPE_SMASpot) {
+		if (username=="")
+			return;
+	}
+	else
+		return;
+
+	root["status"]="OK";
+	root["title"]="AddHardware";
+
+	std::vector<std::vector<std::string> > result;
+	char szTmp[300];
+
+	sprintf(szTmp,
+		"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5) VALUES ('%s',%d, %d,'%s',%d,'%s','%s',%d,%d,%d,%d,%d)",
+		name.c_str(),
+		(senabled=="true")?1:0,
+		htype,
+		address.c_str(),
+		port,
+		username.c_str(),
+		password.c_str(),
+		mode1,mode2,mode3,mode4,mode5
+		);
+	result=m_pMain->m_sql.query(szTmp);
+
+	//add the device for real in our system
+	strcpy(szTmp,"SELECT MAX(ID) FROM Hardware");
+	result=m_pMain->m_sql.query(szTmp); //-V519
+	if (result.size()>0)
+	{
+		std::vector<std::string> sd=result[0];
+		int ID=atoi(sd[0].c_str());
+
+		m_pMain->AddHardwareFromParams(ID,name,(senabled=="true")?true:false,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
+	}
+}
+
+void CWebServer::CmdUpdateHardware(Json::Value &root)
+{
+	std::string idx=m_pWebEm->FindValue("idx");
+	if (idx=="")
+		return;
+	std::string name=m_pWebEm->FindValue("name");
+	std::string senabled=m_pWebEm->FindValue("enabled");
+	std::string shtype=m_pWebEm->FindValue("htype");
+	std::string address=m_pWebEm->FindValue("address");
+	std::string sport=m_pWebEm->FindValue("port");
+	std::string username=m_pWebEm->FindValue("username");
+	std::string password=m_pWebEm->FindValue("password");
+	if (
+		(name=="")||
+		(senabled=="")||
+		(shtype=="")||
+		(sport=="")
+		)
+		return;
+
+	_eHardwareTypes htype=(_eHardwareTypes)atoi(shtype.c_str());
+
+	int port=atoi(sport.c_str());
+
+	if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX)||(htype==HTYPE_DavisVantage)||(htype==HTYPE_S0SmartMeter)||(htype==HTYPE_OpenThermGateway)||(htype==HTYPE_TeleinfoMeter)||(htype==HTYPE_OpenZWave)||(htype==HTYPE_EnOcean))
+	{
+		//USB
+	}
+	else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)||(htype == HTYPE_RazberryZWave)||(htype == HTYPE_OpenThermGatewayTCP)||(htype == HTYPE_LimitlessLights)||(htype == HTYPE_SolarEdgeTCP)) {
+		//Lan
+		if (address=="")
+			return;
+	}
+	else if (htype == HTYPE_Domoticz) {
+		//Remote Domoticz
+		if (address=="")
+			return;
+	}
+	else if (htype == HTYPE_TE923) {
+		//All fine here
+	}
+	else if (htype == HTYPE_VOLCRAFTCO20) {
+		//All fine here
+	}
+	else if (htype == HTYPE_1WIRE) {
+		//All fine here
+	}
+	else if (htype == HTYPE_RaspberryBMP085) {
+		//All fine here
+	}
+	else if (htype == HTYPE_Dummy) {
+		//All fine here
+	}
+	else if (htype == HTYPE_PiFace) {
+		//All fine here
+	}
+	else if ((htype == HTYPE_Wunderground)||(htype == HTYPE_ForecastIO)) {
+		if (
+			(username=="")||
+			(password=="")
+			)
+			return;
+	}
+	else if (htype == HTYPE_SMASpot) {
+		if (username=="")
+			return;
+	}
+	else
+		return;
+
+	int mode1=atoi(m_pWebEm->FindValue("Mode1").c_str());
+	int mode2=atoi(m_pWebEm->FindValue("Mode2").c_str());
+	int mode3=atoi(m_pWebEm->FindValue("Mode3").c_str());
+	int mode4=atoi(m_pWebEm->FindValue("Mode4").c_str());
+	int mode5=atoi(m_pWebEm->FindValue("Mode5").c_str());
+	root["status"]="OK";
+	root["title"]="UpdateHardware";
+
+	std::vector<std::vector<std::string> > result;
+	char szTmp[300];
+
+	sprintf(szTmp,
+		"UPDATE Hardware SET Name='%s', Enabled=%d, Type=%d, Address='%s', Port=%d, Username='%s', Password='%s', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d WHERE (ID == %s)",
+		name.c_str(),
+		(senabled=="true")?1:0,
+		htype,
+		address.c_str(),
+		port,
+		username.c_str(),
+		password.c_str(),
+		mode1,mode2,mode3,mode4,mode5,
+		idx.c_str()
+		);
+	result=m_pMain->m_sql.query(szTmp);
+
+	//re-add the device in our system
+	int ID=atoi(idx.c_str());
+	m_pMain->AddHardwareFromParams(ID,name,(senabled=="true")?true:false,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
+}
+
+void CWebServer::DeleteHardware(Json::Value &root)
+{
+	std::string idx=m_pWebEm->FindValue("idx");
+	if (idx=="")
+		return;
+	root["status"]="OK";
+	root["title"]="DeleteHardware";
+
+	m_pMain->m_sql.DeleteHardware(idx);
+	m_pMain->RemoveDomoticzHardware(atoi(idx.c_str()));
+}
+
+void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
+{
+	std::map < std::string, webserver_response_function >::iterator pf = m_webcommands.find( cparam );
+	if (pf!=m_webcommands.end())
+	{
+		pf->second(root);
+		return;
+	}
+
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	std::vector<std::vector<std::string> > result2;
+	char szData[100];
+	char szTmp[300];
+
+	bool bHaveUser=(m_pWebEm->m_actualuser!="");
+	int iUser=-1;
+	if (bHaveUser)
+	{
+		iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+	}
+
+	if (cparam=="getversion")
+	{
+		char *szVersion=DisplayVersion();
+		root["status"]="OK";
+		root["title"]="GetVersion";
+		root["version"]=szVersion;
+	}
+	else if (cparam=="getlog")
+	{
+		root["status"]="OK";
+		root["title"]="GetLog";
+
+		time_t lastlogtime=0;
+		std::string slastlogtime=m_pWebEm->FindValue("lastlogtime");
+		if (slastlogtime!="")
+		{
+			std::stringstream s_str( slastlogtime );
+			s_str >> lastlogtime;
+		}
+
+		std::list<CLogger::_tLogLineStruct> logmessages=_log.GetLog();
+		std::list<CLogger::_tLogLineStruct>::const_iterator itt;
+		int ii=0;
+		for (itt=logmessages.begin(); itt!=logmessages.end(); ++itt)
+		{
+			if (itt->logtime>lastlogtime) 
+			{
+				std::stringstream szLogTime;
+				szLogTime << itt->logtime;
+				root["LastLogTime"]=szLogTime.str();
+				root["result"][ii]["level"]=(int)itt->level;
+				root["result"][ii]["message"]=itt->logmessage;
+				ii++;
+			}
+		}
+	}
+	else if (cparam=="addplan")
+	{
+		std::string name=m_pWebEm->FindValue("name");
+		root["status"]="OK";
+		root["title"]="AddPlan";
+		sprintf(szTmp,
+			"INSERT INTO Plans (Name) VALUES ('%s')",
+			name.c_str()
+			);
+		result=m_pMain->m_sql.query(szTmp);
+	}
+	else if (cparam=="updateplan")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		std::string name=m_pWebEm->FindValue("name");
+		if (
+			(name=="")
+			)
+			return;
+
+		root["status"]="OK";
+		root["title"]="UpdatePlan";
+
+		sprintf(szTmp,
+			"UPDATE Plans SET Name='%s' WHERE (ID == %s)",
+			name.c_str(),
+			idx.c_str()
+			);
+		result=m_pMain->m_sql.query(szTmp);
+	}
+	else if (cparam=="deleteplan")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		root["status"]="OK";
+		root["title"]="DeletePlan";
+		sprintf(szTmp,
+			"DELETE FROM DeviceToPlansMap WHERE (PlanID == %s)",
+			idx.c_str()
+			);
+		result=m_pMain->m_sql.query(szTmp);
+		sprintf(szTmp,
+			"DELETE FROM Plans WHERE (ID == %s)",
+			idx.c_str()
+			);
+		result=m_pMain->m_sql.query(szTmp);
+	}
+	else if (cparam=="getunusedplandevices")
+	{
+		root["status"]="OK";
+		root["title"]="GetUnusedPlanDevices";
+		std::string sunique=m_pWebEm->FindValue("unique");
+		if (sunique=="")
+			return;
+		int iUnique=(sunique=="true")?1:0;
+		int ii=0;
+
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT ID, Name FROM DeviceStatus WHERE (Used==1) ORDER BY Name";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+
+				bool bDoAdd=true;
+				if (iUnique)
+				{
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << sd[0] << ") AND (DevSceneType==0)";
+					result2=m_pMain->m_sql.query(szQuery.str());
+					bDoAdd=(result2.size()==0);
+				}
+				if (bDoAdd)
+				{
+					root["result"][ii]["type"]=0;
+					root["result"][ii]["idx"]=sd[0];
+					root["result"][ii]["Name"]=sd[1];
+					ii++;
+				}
+			}
+		}
+		//Add Scenes
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT ID, Name FROM Scenes ORDER BY Name";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+
+				bool bDoAdd=true;
+				if (iUnique)
+				{
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << sd[0] << ") AND (DevSceneType==1)";
+					result2=m_pMain->m_sql.query(szQuery.str());
+					bDoAdd=(result2.size()==0);
+				}
+				if (bDoAdd)
+				{
+					root["result"][ii]["type"]=1;
+					root["result"][ii]["idx"]=sd[0];
+					root["result"][ii]["Name"]="[Scene] " + sd[1];
+					ii++;
+				}
+			}
+		}//end light/switches
+
+	}
+	else if (cparam=="addplanactivedevice")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string sactivetype=m_pWebEm->FindValue("activetype");
+		std::string activeidx=m_pWebEm->FindValue("activeidx");
+		if (
+			(idx=="")||
+			(sactivetype=="")||
+			(activeidx=="")
+			)
+			return;
+		root["status"]="OK";
+		root["title"]="AddPlanActiveDevice";
+
+		int activetype=atoi(sactivetype.c_str());
+
+		//check if it is not already there
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << activeidx << ") AND (DevSceneType=="<< activetype << ") AND (PlanID==" << idx << ")";
+		result2=m_pMain->m_sql.query(szQuery.str());
+		if (result2.size()==0)
+		{
+			sprintf(szTmp,
+				"INSERT INTO DeviceToPlansMap (DevSceneType,DeviceRowID, PlanID) VALUES (%d,%s,%s)",
+				activetype,
+				activeidx.c_str(),
+				idx.c_str()
+				);
+			result=m_pMain->m_sql.query(szTmp);
+		}
+	}
+	else if (cparam=="getplandevices")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		root["status"]="OK";
+		root["title"]="GetPlanDevices";
+		std::vector<std::vector<std::string> > result;
+		std::stringstream szQuery;
+
+		szQuery << "SELECT ID, DevSceneType, DeviceRowID, [Order] FROM DeviceToPlansMap WHERE (PlanID=='" << idx << "') ORDER BY [Order]";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			int ii=0;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+
+				std::string ID=sd[0];
+				int DevSceneType=atoi(sd[1].c_str());
+				std::string DevSceneRowID=sd[2];
+
+				std::string Name="";
+				if (DevSceneType==0)
+				{
+					std::vector<std::vector<std::string> > result2;
+					std::stringstream szQuery2;
+					szQuery2 << "SELECT Name FROM DeviceStatus WHERE (ID=='" << DevSceneRowID << "')";
+					result2=m_pMain->m_sql.query(szQuery2.str());
+					if (result2.size()>0)
+					{
+						Name=result2[0][0];
+					}
+				}
+				else
+				{
+					std::vector<std::vector<std::string> > result2;
+					std::stringstream szQuery2;
+					szQuery2 << "SELECT Name FROM Scenes WHERE (ID=='" << DevSceneRowID << "')";
+					result2=m_pMain->m_sql.query(szQuery2.str());
+					if (result2.size()>0)
+					{
+						Name="[Scene] " + result2[0][0];
+					}
+				}
+				if (Name!="")
+				{
+					root["result"][ii]["idx"]=ID;
+					root["result"][ii]["type"]=DevSceneType;
+					root["result"][ii]["DevSceneRowID"]=DevSceneRowID;
+					root["result"][ii]["order"]=sd[3];
+					root["result"][ii]["Name"]=Name;
+					ii++;
+				}
+			}
+		}
+	}
+	else if (cparam=="deleteplandevice")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		root["status"]="OK";
+		root["title"]="DeletePlanDevice";
+		sprintf(szTmp,"DELETE FROM DeviceToPlansMap WHERE (ID == '%s')",idx.c_str());
+		result=m_pMain->m_sql.query(szTmp);
+	}
+	else if (cparam=="deleteallplandevices")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		root["status"]="OK";
+		root["title"]="DeleteAllPlanDevices";
+		sprintf(szTmp,"DELETE FROM DeviceToPlansMap WHERE (PlanID == '%s')",idx.c_str());
+		result=m_pMain->m_sql.query(szTmp);
+	}
+	else if (cparam=="changeplanorder")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		std::string sway=m_pWebEm->FindValue("way");
+		if (sway=="")
+			return;
+		bool bGoUp=(sway=="0");
+
+		std::string aOrder,oID,oOrder;
+
+		std::vector<std::vector<std::string> > result;
+		std::stringstream szQuery;
+		szQuery << "SELECT [Order] FROM Plans WHERE (ID=='" << idx << "')";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()<1)
+			return;
+		aOrder=result[0][0];
+
+		szQuery.clear();
+		szQuery.str("");
+
+		if (!bGoUp)
+		{
+			//Get next device order
+			szQuery << "SELECT ID, [Order] FROM Plans WHERE ([Order]>'" << aOrder << "') ORDER BY [Order] ASC";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()<1)
+				return;
+			oID=result[0][0];
+			oOrder=result[0][1];
+		}
+		else
+		{
+			//Get previous device order
+			szQuery << "SELECT ID, [Order] FROM Plans WHERE ([Order]<'" << aOrder << "') ORDER BY [Order] DESC";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()<1)
+				return;
+			oID=result[0][0];
+			oOrder=result[0][1];
+		}
+		//Swap them
+		root["status"]="OK";
+		root["title"]="ChangePlanOrder";
+
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE Plans SET [Order] = '" << oOrder << "' WHERE (ID='" << idx << "')";
+		result=m_pMain->m_sql.query(szQuery.str());
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE Plans SET [Order] = '" << aOrder << "' WHERE (ID='" << oID << "')";
+		result=m_pMain->m_sql.query(szQuery.str());
+	}
+	else if (cparam=="changeplandeviceorder")
+	{
+		std::string planid=m_pWebEm->FindValue("planid");
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string sway=m_pWebEm->FindValue("way");
+		if (
+			(planid=="")||
+			(idx=="")||
+			(sway=="")
+			)
+			return;
+		bool bGoUp=(sway=="0");
+
+		std::string aOrder,oID,oOrder;
+
+		std::vector<std::vector<std::string> > result;
+		std::stringstream szQuery;
+		szQuery << "SELECT [Order] FROM DeviceToPlansMap WHERE ((ID=='" << idx << "') AND (PlanID=='" << planid << "'))";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()<1)
+			return;
+		aOrder=result[0][0];
+
+		szQuery.clear();
+		szQuery.str("");
+
+		if (!bGoUp)
+		{
+			//Get next device order
+			szQuery << "SELECT ID, [Order] FROM DeviceToPlansMap WHERE (([Order]>'" << aOrder << "') AND (PlanID=='" << planid << "')) ORDER BY [Order] ASC";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()<1)
+				return;
+			oID=result[0][0];
+			oOrder=result[0][1];
+		}
+		else
+		{
+			//Get previous device order
+			szQuery << "SELECT ID, [Order] FROM DeviceToPlansMap WHERE (([Order]<'" << aOrder << "') AND (PlanID=='" << planid << "')) ORDER BY [Order] DESC";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()<1)
+				return;
+			oID=result[0][0];
+			oOrder=result[0][1];
+		}
+		//Swap them
+		root["status"]="OK";
+		root["title"]="ChangePlanOrder";
+
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceToPlansMap SET [Order] = '" << oOrder << "' WHERE (ID='" << idx << "')";
+		result=m_pMain->m_sql.query(szQuery.str());
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceToPlansMap SET [Order] = '" << aOrder << "' WHERE (ID='" << oID << "')";
+		result=m_pMain->m_sql.query(szQuery.str());
+	}
+	else if (cparam=="getactualhistory")
+	{
+		root["status"]="OK";
+		root["title"]="GetActualHistory";
+
+		std::string historyfile = szStartupFolder + "History.txt";
+
+		std::ifstream infile;
+		int ii=0;
+		infile.open(historyfile.c_str());
+		std::string sLine;
+		if (infile.is_open())
+		{
+			while (!infile.eof())
+			{
+				getline(infile, sLine);
+				root["LastLogTime"]="";
+				if (sLine.find("Version ")==0)
+					root["result"][ii]["level"]=1;
+				else
+					root["result"][ii]["level"]=0;
+				root["result"][ii]["message"]=sLine;
+				ii++;
+			}
+		}
+	}
+	else if (cparam=="getnewhistory")
+	{
+		root["status"]="OK";
+		root["title"]="GetNewHistory";
+
+		std::string historyfile;
+		int nValue;
+		m_pMain->m_sql.GetPreferencesVar("ReleaseChannel", nValue);
+		bool bIsBetaChannel=(nValue!=0);
+
+		std::string szHistoryURL="http://domoticz.sourceforge.net/History.txt";
+		if (bIsBetaChannel)
+			szHistoryURL="http://domoticz.sourceforge.net/beta/History.txt";
+		if (!HTTPClient::GET(szHistoryURL,historyfile))
+		{
+			historyfile="Unable to get Online History document !!";
+		}
+
+		std::istringstream stream(historyfile);
+		std::string sLine;
+		int ii=0;
+		while (std::getline(stream, sLine)) 
+		{
+			root["LastLogTime"]="";
+			if (sLine.find("Version ")==0)
+				root["result"][ii]["level"]=1;
+			else
+				root["result"][ii]["level"]=0;
+			root["result"][ii]["message"]=sLine;
+			ii++;
+		}
+	}
+	else if (cparam=="getactivetabs")
+	{
+		root["status"]="OK";
+		root["title"]="GetActiveTabs";
+
+		bool bHaveUser=(m_pWebEm->m_actualuser!="");
+		int urights=3;
+		unsigned long UserID=0;
+		if (bHaveUser)
+		{
+			int iUser=-1;
+			iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+			if (iUser!=-1)
+			{
+				urights=(int)m_users[iUser].userrights;
+				UserID=m_users[iUser].ID;
+			}
+
+		}
+		root["statuscode"]=urights;
+
+		int nValue;
+		std::string sValue;
+
+		if (m_pMain->m_sql.GetPreferencesVar("Language", sValue))
+		{
+			root["language"]=sValue;
+		}
+		if (m_pMain->m_sql.GetPreferencesVar("MobileType", nValue))
+		{
+			root["MobileType"]=nValue;
+		}
+
+		root["WindScale"]=m_pMain->m_sql.m_windscale*10.0f;
+		root["WindSign"]=m_pMain->m_sql.m_windsign;
+		root["TempScale"]=m_pMain->m_sql.m_tempscale;
+		root["TempSign"]=m_pMain->m_sql.m_tempsign;
+
+		int bEnableTabLight=1;
+		int bEnableTabScenes=1;
+		int bEnableTabTemp=1;
+		int bEnableTabWeather=1;
+		int bEnableTabUtility=1;
+
+		if ((UserID!=0)&&(UserID!=10000)) {
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT TabsEnabled FROM Users WHERE (ID==" << UserID << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()>0)
+			{
+				int TabsEnabled=atoi(result[0][0].c_str());
+				bEnableTabLight=(TabsEnabled&(1<<0));
+				bEnableTabScenes=(TabsEnabled&(1<<1));
+				bEnableTabTemp=(TabsEnabled&(1<<2));
+				bEnableTabWeather=(TabsEnabled&(1<<3));
+				bEnableTabUtility=(TabsEnabled&(1<<4));
+			}
+		}
+		else
+		{
+			m_pMain->m_sql.GetPreferencesVar("EnableTabLights", bEnableTabLight);
+			m_pMain->m_sql.GetPreferencesVar("EnableTabScenes", bEnableTabScenes);
+			m_pMain->m_sql.GetPreferencesVar("EnableTabTemp", bEnableTabTemp);
+			m_pMain->m_sql.GetPreferencesVar("EnableTabWeather", bEnableTabWeather);
+			m_pMain->m_sql.GetPreferencesVar("EnableTabUtility", bEnableTabUtility);
+		}
+
+		root["result"]["EnableTabLights"]=bEnableTabLight;
+		root["result"]["EnableTabScenes"]=bEnableTabScenes;
+		root["result"]["EnableTabTemp"]=bEnableTabTemp;
+		root["result"]["EnableTabWeather"]=bEnableTabWeather;
+		root["result"]["EnableTabUtility"]=bEnableTabUtility;
+	}
+	else if (cparam=="sendnotification")
+	{
+		std::string subject=m_pWebEm->FindValue("subject");
+		std::string body=m_pWebEm->FindValue("body");
+		if (
+			(subject=="")||
+			(body=="")
+			)
+			return;
+		//Add to queue
+		m_pMain->m_sql.SendNotificationEx(subject,body,0,"");
+		root["status"]="OK";
+		root["title"]="SendNotification";
+	}
+	else if (cparam=="emailcamerasnapshot")
+	{
+		std::string camidx=m_pWebEm->FindValue("camidx");
+		std::string subject=m_pWebEm->FindValue("subject");
+		if (
+			(camidx=="")||
+			(subject=="")
+			)
+			return;
+		//Add to queue
+		m_pMain->m_sql.AddTaskItem(_tTaskItem::EmailCameraSnapshot(1,camidx,subject));
+		root["status"]="OK";
+		root["title"]="Email Camera Snapshot";
+	}
+	else if (cparam=="udevice")
+	{
+		std::string nvalue=m_pWebEm->FindValue("nvalue");
+		std::string svalue=m_pWebEm->FindValue("svalue");
+
+		std::string idx=m_pWebEm->FindValue("idx");
+
+		std::string hid=m_pWebEm->FindValue("hid");
+		std::string did=m_pWebEm->FindValue("did");
+		std::string dunit=m_pWebEm->FindValue("dunit");
+		std::string dtype=m_pWebEm->FindValue("dtype");
+		std::string dsubtype=m_pWebEm->FindValue("dsubtype");
+
+		if (idx!="")
+		{
+			//Get device parameters
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << idx << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()>0)
+			{
+				hid=result[0][0];
+				did=result[0][1];
+				dunit=result[0][2];
+				dtype=result[0][3];
+				dsubtype=result[0][4];
+			}
+		}
+
+		if (
+			(hid=="")||
+			(did=="")||
+			(dunit=="")||
+			(dtype=="")||
+			(dsubtype=="")
+			)
+			return;
+		if ((nvalue=="")&&(svalue==""))
+			return;
+
+		root["status"]="OK";
+		root["title"]="Update Device";
+
+		std::string devname="Unknown";
+		m_pMain->m_sql.UpdateValue(
+			atoi(hid.c_str()),
+			did.c_str(),
+			(const unsigned char)atoi(dunit.c_str()),
+			(const unsigned char)atoi(dtype.c_str()),
+			(const unsigned char)atoi(dsubtype.c_str()),
+			12,//signal level,
+			255,//battery level
+			(const int)atoi(nvalue.c_str()),
+			svalue.c_str(),
+			devname,
+			false
+			);
+	}
+	else if (cparam=="system_shutdown")
+	{
+#ifdef WIN32
+		system("shutdown -s -f -t 1 -d up:125:1");
+#else
+		system("sudo shutdown -h now");
+#endif
+		root["status"]="OK";
+		root["title"]="SystemShutdown";
+	}
+	else if (cparam=="system_reboot")
+	{
+#ifdef WIN32
+		system("shutdown -r -f -t 1 -d up:125:1");
+#else
+		system("sudo shutdown -r now");
+#endif
+		root["status"]="OK";
+		root["title"]="SystemReboot";
+	}
+	else if (cparam=="execute_script")
+	{
+		std::string scriptname=m_pWebEm->FindValue("scriptname");
+		if (scriptname=="")
+			return;
+		if (scriptname.find("..")!=std::string::npos)
+			return;
+#ifdef WIN32
+		scriptname = szStartupFolder + "scripts\\" + scriptname;
+#else
+		scriptname = szStartupFolder + "scripts/" + scriptname;
+#endif
+		if (!file_exist(scriptname.c_str()))
+			return;
+		std::string script_params=m_pWebEm->FindValue("scriptparams");
+		std::string strparm=szStartupFolder;
+		if (script_params!="")
+		{
+			if (strparm.size()>0)
+				strparm+=" " + script_params;
+			else
+				strparm=script_params;
+		}
+		std::string sdirect=m_pWebEm->FindValue("direct");
+		if (sdirect=="true")
+		{
+#ifdef WIN32
+			ShellExecute(NULL,"open",scriptname.c_str(),strparm.c_str(),NULL,SW_SHOWNORMAL);
+#else
+			std::string lscript=scriptname + " " + strparm;
+			system(lscript.c_str());
+#endif
+		}
+		else
+		{
+			//add script to background worker
+			m_pMain->m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1,scriptname,strparm));
+		}
+		root["status"]="OK";
+		root["title"]="ExecuteScript";
+	}
+	else if (cparam=="getelectragascosts")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT Type, SubType, nValue, sValue FROM DeviceStatus WHERE (ID==" << idx << ")";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::string> sd=result[0];
+
+			int nValue=0;
+			root["status"]="OK";
+			root["title"]="GetElectraCosts";
+			m_pMain->m_sql.GetPreferencesVar("CostEnergy",nValue);
+			root["CostEnergy"]=nValue;
+			m_pMain->m_sql.GetPreferencesVar("CostEnergyT2",nValue);
+			root["CostEnergyT2"]=nValue;
+			m_pMain->m_sql.GetPreferencesVar("CostGas",nValue);
+			root["CostGas"]=nValue;
+
+			unsigned char dType=atoi(sd[0].c_str());
+			unsigned char subType=atoi(sd[1].c_str());
+			nValue=(unsigned char)atoi(sd[2].c_str());
+			std::string sValue=sd[3];
+
+			if (dType == pTypeP1Power)
+			{
+				//also provide the counter values
+
+				std::vector<std::string> splitresults;
+				StringSplit(sValue, ";", splitresults);
+				if (splitresults.size()!=6)
+					return;
+
+				float EnergyDivider=1000.0f;
+				int tValue;
+				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+				{
+					EnergyDivider=float(tValue);
+				}
+
+				unsigned long long powerusage1;
+				unsigned long long powerusage2;
+				unsigned long long powerdeliv1;
+				unsigned long long powerdeliv2;
+				unsigned long long usagecurrent;
+				unsigned long long delivcurrent;
+
+				std::stringstream s_powerusage1(splitresults[0]);
+				std::stringstream s_powerusage2(splitresults[1]);
+				std::stringstream s_powerdeliv1(splitresults[2]);
+				std::stringstream s_powerdeliv2(splitresults[3]);
+				std::stringstream s_usagecurrent(splitresults[4]);
+				std::stringstream s_delivcurrent(splitresults[5]);
+
+				s_powerusage1 >> powerusage1;
+				s_powerusage2 >> powerusage2;
+				s_powerdeliv1 >> powerdeliv1;
+				s_powerdeliv2 >> powerdeliv2;
+				s_usagecurrent >> usagecurrent;
+				s_delivcurrent >> delivcurrent;
+
+				sprintf(szTmp,"%.03f",float(powerusage1)/EnergyDivider);
+				root["CounterT1"]=szTmp;
+				sprintf(szTmp,"%.03f",float(powerusage2)/EnergyDivider);
+				root["CounterT2"]=szTmp;
+				sprintf(szTmp,"%.03f",float(powerdeliv1)/EnergyDivider);
+				root["CounterR1"]=szTmp;
+				sprintf(szTmp,"%.03f",float(powerdeliv2)/EnergyDivider);
+				root["CounterR2"]=szTmp;
+			}
+
+		}
+	}
+	else if (cparam=="checkforupdate")
+	{
+		bool bHaveUser=(m_pWebEm->m_actualuser!="");
+		int urights=3;
+		if (bHaveUser)
+		{
+			int iUser=-1;
+			iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+			if (iUser!=-1)
+				urights=(int)m_users[iUser].userrights;
+		}
+		root["statuscode"]=urights;
+		int nValue=1;
+		m_pMain->m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
+		root["5MinuteHistoryDays"]=nValue;
+
+		utsname my_uname;
+		if (uname(&my_uname)<0)
+			return;
+
+		std::string forced=m_pWebEm->FindValue("forced");
+		bool bIsForced=(forced=="true");
+		std::string systemname=my_uname.sysname;
+		std::string machine=my_uname.machine;
+		std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
+		if ((systemname=="windows")||((machine!="armv6l")&&(machine!="armv7l")))
+		{
+			//Only Raspberry Pi (Wheezy) for now!
+			root["status"]="OK";
+			root["title"]="CheckForUpdate";
+			root["HaveUpdate"]=false;
+			root["IsSupported"]=false;
+		}
+		else
+		{
+			int nValue=0;
+			m_pMain->m_sql.GetPreferencesVar("UseAutoUpdate",nValue);
+			if (nValue==1)
+			{
+				m_pMain->m_sql.GetPreferencesVar("ReleaseChannel", nValue);
+				bool bIsBetaChannel=(nValue!=0);
+				std::string szURL="http://domoticz.sourceforge.net/version_" + systemname + "_" + machine + ".h";
+				std::string szHistoryURL="http://domoticz.sourceforge.net/History.txt";
+				//std::string szURL="http://domoticz.sourceforge.net/svnversion.h";
+				if (bIsBetaChannel)
+				{
+					//szURL="http://domoticz.sourceforge.net/beta/svnversion.h";
+					szURL="http://domoticz.sourceforge.net/beta/version_" + systemname + "_" + machine + ".h";
+					szHistoryURL="http://domoticz.sourceforge.net/beta/History.txt";
+				}
+				std::string revfile;
+
+				if (!HTTPClient::GET(szURL,revfile))
+					return;
+				std::vector<std::string> strarray;
+				StringSplit(revfile, " ", strarray);
+				if (strarray.size()!=3)
+					return;
+				root["status"]="OK";
+				root["title"]="CheckForUpdate";
+				root["IsSupported"]=true;
+
+				int version=atoi(szAppVersion.substr(szAppVersion.find(".")+1).c_str());
+				bool bHaveUpdate=(version<atoi(strarray[2].c_str()));
+				if ((bHaveUpdate)&&(!bIsForced))
+				{
+					time_t atime=mytime(NULL);
+					if (atime-m_LastUpdateCheck<12*3600)
+					{
+						bHaveUpdate=false;
+					}
+					else
+						m_LastUpdateCheck=atime;
+				}
+				root["HaveUpdate"]=bHaveUpdate;
+				root["Revision"]=atoi(strarray[2].c_str());
+				root["HistoryURL"]=szHistoryURL;
+				root["ActVersion"]=version;
+			}
+			else
+			{
+				root["status"]="OK";
+				root["title"]="CheckForUpdate";
+				root["IsSupported"]=false;
+				root["HaveUpdate"]=false;
+			}
+		}
+	}
+	else if (cparam=="downloadupdate")
+	{
+		int nValue;
+		m_pMain->m_sql.GetPreferencesVar("ReleaseChannel", nValue);
+		bool bIsBetaChannel=(nValue!=0);
+		std::string szURL;
+		std::string revfile;
+
+		utsname my_uname;
+		if (uname(&my_uname)<0)
+			return;
+
+		std::string forced=m_pWebEm->FindValue("forced");
+		bool bIsForced=(forced=="true");
+		std::string systemname=my_uname.sysname;
+		std::string machine=my_uname.machine;
+		std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
+
+		if (!bIsBetaChannel)
+		{
+			//szURL="http://domoticz.sourceforge.net/svnversion.h";
+			szURL="http://domoticz.sourceforge.net/version_" + systemname + "_" + machine + ".h";
+			//HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=DownloadNewVersion&amp;idgoal=2",revfile);
+		}
+		else
+		{
+			//szURL="http://domoticz.sourceforge.net/beta/svnversion.h";
+			szURL="http://domoticz.sourceforge.net/beta/version_" + systemname + "_" + machine + ".h";
+			//HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=DownloadNewVersion&amp;idgoal=1",revfile);
+		}
+		if (!HTTPClient::GET(szURL,revfile))
+			return;
+		std::vector<std::string> strarray;
+		StringSplit(revfile, " ", strarray);
+		if (strarray.size()!=3)
+			return;
+		int version=atoi(szAppVersion.substr(szAppVersion.find(".")+1).c_str());
+		if (version>=atoi(strarray[2].c_str()))
+			return;
+		if (((machine!="armv6l")&&(machine!="armv7l"))||(strstr(my_uname.release,"ARCH+")!=NULL))
+			return;	//only Raspberry Pi for now
+		root["status"]="OK";
+		root["title"]="DownloadUpdate";
+		std::string downloadURL="http://domoticz.sourceforge.net/domoticz_" + systemname + "_" + machine + ".tgz";
+		if (bIsBetaChannel)
+			downloadURL="http://domoticz.sourceforge.net/beta/domoticz_" + systemname + "_" + machine + ".tgz";
+		m_pMain->GetDomoticzUpdate(downloadURL);
+	}
+	else if (cparam=="downloadready")
+	{
+		if (!m_pMain->m_bHaveDownloadedDomoticzUpdate)
+			return;
+		root["status"]="OK";
+		root["title"]="DownloadReady";
+		root["downloadok"]=(m_pMain->m_bHaveDownloadedDomoticzUpdateSuccessFull)?true:false;
+	}
+	else if (cparam=="deletedatapoint")
+	{
+		const std::string idx=m_pWebEm->FindValue("idx");
+		const std::string Date=m_pWebEm->FindValue("date");
+		if (
+			(idx=="")||
+			(Date=="")
+			)
+			return;
+		root["status"]="OK";
+		root["title"]="deletedatapoint";
+		m_pMain->m_sql.DeleteDataPoint(idx.c_str(),Date);
+	}
+	else if (cparam=="deleteallsubdevices")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		root["status"]="OK";
+		root["title"]="DeleteAllSubDevices";
+		sprintf(szTmp,"DELETE FROM LightSubDevices WHERE (ParentID == %s)",idx.c_str());
+		result=m_pMain->m_sql.query(szTmp);
+	}
+	else if (cparam=="deletesubdevice")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		root["status"]="OK";
+		root["title"]="DeleteSubDevice";
+		sprintf(szTmp,"DELETE FROM LightSubDevices WHERE (ID == %s)",idx.c_str());
+		result=m_pMain->m_sql.query(szTmp);
+	}
+	else if (cparam=="addsubdevice")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string subidx=m_pWebEm->FindValue("subidx");
+		if ((idx=="")||(subidx==""))
+			return;
+		if (idx==subidx)
+			return;
+
+		//first check if it is not already a sub device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << subidx << "') AND (ParentID =='" << idx << "')";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()==0)
+		{
+			root["status"]="OK";
+			root["title"]="AddSubDevice";
+			//no it is not, add it
+			sprintf(szTmp,
+				"INSERT INTO LightSubDevices (DeviceRowID, ParentID) VALUES ('%s','%s')",
+				subidx.c_str(),
+				idx.c_str()
+				);
+			result=m_pMain->m_sql.query(szTmp);
+		}
+	}
+	else if (cparam=="addscenedevice")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string devidx=m_pWebEm->FindValue("devidx");
+		std::string isscene=m_pWebEm->FindValue("isscene");
+		int command=atoi(m_pWebEm->FindValue("command").c_str());
+
+		if (
+			(idx=="")||
+			(devidx=="")||
+			(isscene=="")
+			)
+			return;
+		int level=atoi(m_pWebEm->FindValue("level").c_str());
+		int hue=atoi(m_pWebEm->FindValue("hue").c_str());
+		//first check if this device is not the scene code!
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << devidx << ")";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM Scenes WHERE (ID==" << idx << ")";
+			result2=m_pMain->m_sql.query(szQuery.str());
+			if (result2.size()>0)
+			{
+				if (
+					(result[0][0]==result2[0][0])&&
+					(result[0][1]==result2[0][1])&&
+					(result[0][2]==result2[0][2])&&
+					(result[0][3]==result2[0][3])&&
+					(result[0][4]==result2[0][4])
+					)
+				{
+					//This is not allowed!
+					return;
+				}
+			}
+		}
+		//first check if it is not already a sub device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT ID FROM SceneDevices WHERE (DeviceRowID=='" << devidx << "') AND (SceneRowID =='" << idx << "')";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()==0)
+		{
+			root["status"]="OK";
+			root["title"]="AddSceneDevice";
+			//no it is not, add it
+			if (isscene=="true")
+			{
+				sprintf(szTmp,
+					"INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Cmd, Level, Hue) VALUES ('%s','%s',%d,%d,%d)",
+					devidx.c_str(),
+					idx.c_str(),
+					command,
+					level,
+					hue
+					);
+			}
+			else
+			{
+				sprintf(szTmp,
+					"INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Level,Hue) VALUES ('%s','%s',%d,%d)",
+					devidx.c_str(),
+					idx.c_str(),
+					level,
+					hue
+					);
+			}
+			result=m_pMain->m_sql.query(szTmp);
+		}
+	}
+	else if (cparam=="updatescenedevice")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string devidx=m_pWebEm->FindValue("devidx");
+		std::string isscene=m_pWebEm->FindValue("isscene");
+		int command=atoi(m_pWebEm->FindValue("command").c_str());
+
+		if (
+			(idx=="")||
+			(devidx=="")||
+			(isscene!="true")
+			)
+			return;
+		int level=atoi(m_pWebEm->FindValue("level").c_str());
+		int hue=atoi(m_pWebEm->FindValue("hue").c_str());
+		root["status"]="OK";
+		root["title"]="UpdateSceneDevice";
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE SceneDevices SET Cmd=" << command << ", Level=" << level << ", Hue=" << hue << " WHERE (ID == " << idx << ")";
+		result=m_pMain->m_sql.query(szQuery.str());
+	}
+	else if (cparam=="deletescenedevice")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		root["status"]="OK";
+		root["title"]="DeleteSceneDevice";
+		sprintf(szTmp,"DELETE FROM SceneDevices WHERE (ID == %s)",idx.c_str());
+		result=m_pMain->m_sql.query(szTmp);
+		sprintf(szTmp,"DELETE FROM CamerasActiveDevices WHERE (DevSceneType==1) AND (DevSceneRowID == %s)",idx.c_str());
+		result=m_pMain->m_sql.query(szTmp);
+
+	}
+	else if (cparam=="getsubdevices")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+
+		root["status"]="OK";
+		root["title"]="GetSubDevices";
+		std::vector<std::vector<std::string> > result;
+		std::stringstream szQuery;
+		szQuery << "SELECT a.ID, b.Name FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='" << idx << "') AND (b.ID == a.DeviceRowID)";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			int ii=0;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+
+				root["result"][ii]["ID"]=sd[0];
+				root["result"][ii]["Name"]=sd[1];
+				ii++;
+			}
+		}
+	}
+	else if (cparam=="gettimerlist")
+	{
+		root["status"]="OK";
+		root["title"]="GetTimerList";
+		std::vector<std::vector<std::string> > result;
+		std::stringstream szQuery;
+		szQuery << "SELECT t.ID, t.Active, d.[Name], t.DeviceRowID, t.Time, t.Type, t.Cmd, t.Level, t.Days FROM Timers as t, DeviceStatus as d WHERE (d.ID == t.DeviceRowID) ORDER BY d.[Name], t.Time";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			int ii=0;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+
+				root["result"][ii]["ID"]			=sd[0];
+				root["result"][ii]["Active"]		=sd[1];
+				root["result"][ii]["Name"]			=sd[2];
+				root["result"][ii]["DeviceRowID"]	=sd[3];
+				root["result"][ii]["Time"]			=sd[4];
+				root["result"][ii]["Type"]			=sd[5];
+				root["result"][ii]["Cmd"]			=sd[6];
+				root["result"][ii]["Level"]			=sd[7];
+				root["result"][ii]["Days"]			=sd[8];
+				ii++;
+			}
+		}
+	}
+	else if (cparam=="getscenedevices")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string isscene=m_pWebEm->FindValue("isscene");
+
+		if (
+			(idx=="")||
+			(isscene=="")
+			)
+			return;
+
+		root["status"]="OK";
+		root["title"]="GetSceneDevices";
+
+		std::vector<std::vector<std::string> > result;
+		std::stringstream szQuery;
+		szQuery << "SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Cmd, a.Level, b.ID, a.[Order], a.Hue FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='" << idx << "') AND (b.ID == a.DeviceRowID) ORDER BY a.[Order]";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			int ii=0;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+
+				root["result"][ii]["ID"]=sd[0];
+				root["result"][ii]["Name"]=sd[1];
+				root["result"][ii]["DevID"]=sd[2];
+				root["result"][ii]["DevRealIdx"]=sd[9];
+				root["result"][ii]["Order"]=atoi(sd[10].c_str());
+
+				unsigned char devType=atoi(sd[3].c_str());
+				unsigned char subType=atoi(sd[4].c_str());
+				unsigned char nValue=(unsigned char)atoi(sd[5].c_str());
+				std::string sValue=sd[6];
+				int command=atoi(sd[7].c_str());
+				int level=atoi(sd[8].c_str());
+
+				std::string lstatus="";
+				int llevel=0;
+				bool bHaveDimmer=false;
+				bool bHaveGroupCmd=false;
+				int maxDimLevel=0;
+				if (isscene=="true")
+					GetLightStatus(devType,subType,command,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+				else
+					GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+				root["result"][ii]["IsOn"]=IsLightSwitchOn(lstatus);
+				root["result"][ii]["Level"]=level;
+				root["result"][ii]["Hue"]=atoi(sd[11].c_str());
+				root["result"][ii]["Type"]=RFX_Type_Desc(devType,1);
+				root["result"][ii]["SubType"]=RFX_Type_SubType_Desc(devType,subType);
+				ii++;
+			}
+		}
+	}
+	else if (cparam=="changescenedeviceorder")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		std::string sway=m_pWebEm->FindValue("way");
+		if (sway=="")
+			return;
+		bool bGoUp=(sway=="0");
+
+		std::string aScene,aOrder,oID,oOrder;
+
+		//Get actual device order
+		std::vector<std::vector<std::string> > result;
+		std::stringstream szQuery;
+		szQuery << "SELECT SceneRowID, [Order] FROM SceneDevices WHERE (ID=='" << idx << "')";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()<1)
+			return;
+		aScene=result[0][0];
+		aOrder=result[0][1];
+
+		szQuery.clear();
+		szQuery.str("");
+
+		if (!bGoUp)
+		{
+			//Get next device order
+			szQuery << "SELECT ID, [Order] FROM SceneDevices WHERE (SceneRowID=='" << aScene << "' AND [Order]>'" << aOrder << "') ORDER BY [Order] ASC";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()<1)
+				return;
+			oID=result[0][0];
+			oOrder=result[0][1];
+		}
+		else
+		{
+			//Get previous device order
+			szQuery << "SELECT ID, [Order] FROM SceneDevices WHERE (SceneRowID=='" << aScene << "' AND [Order]<'" << aOrder << "') ORDER BY [Order] DESC";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()<1)
+				return;
+			oID=result[0][0];
+			oOrder=result[0][1];
+		}
+		//Swap them
+		root["status"]="OK";
+		root["title"]="ChangeSceneDeviceOrder";
+
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE SceneDevices SET [Order] = '" << oOrder << "' WHERE (ID='" << idx << "')";
+		result=m_pMain->m_sql.query(szQuery.str());
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE SceneDevices SET [Order] = '" << aOrder << "' WHERE (ID='" << oID << "')";
+		result=m_pMain->m_sql.query(szQuery.str());
+	}
+	else if (cparam=="deleteallscenedevices")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		root["status"]="OK";
+		root["title"]="DeleteAllSceneDevices";
+		sprintf(szTmp,"DELETE FROM SceneDevices WHERE (SceneRowID == %s)",idx.c_str());
+		result=m_pMain->m_sql.query(szTmp);
+	}
+	else if (cparam=="getmanualhardware")
+	{
+		//used by Add Manual Light/Switch dialog
+		root["status"]="OK";
+		root["title"]="GetHardware";
+		sprintf(szTmp,"SELECT ID, Name, Type FROM Hardware ORDER BY ID ASC");
+		result=m_pMain->m_sql.query(szTmp);
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			int ii=0;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+
+				int ID=atoi(sd[0].c_str());
+				std::string Name=sd[1];
+				_eHardwareTypes Type=(_eHardwareTypes)atoi(sd[2].c_str());
+				switch (Type)
+				{
+				case HTYPE_RFXLAN:
+				case HTYPE_RFXtrx315:
+				case HTYPE_RFXtrx433:
+				case HTYPE_EnOcean:
+				case HTYPE_Dummy:
+					root["result"][ii]["idx"]=ID;
+					root["result"][ii]["Name"]=Name;
+					ii++;
+					break;
+				}
+			}
+		}
+	}
+	else if (cparam=="getlightswitches")
+	{
+		root["status"]="OK";
+		root["title"]="GetLightSwitches";
+		std::vector<std::vector<std::string> > result;
+		std::stringstream szQuery;
+		szQuery << "SELECT ID, Name, Type, SubType, Used, SwitchType FROM DeviceStatus ORDER BY Name";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			int ii=0;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+
+				std::string ID=sd[0];
+				std::string Name=sd[1];
+				int Type=atoi(sd[2].c_str());
+				int SubType=atoi(sd[3].c_str());
+				int used=atoi(sd[4].c_str());
+				_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
+				bool bdoAdd;
+				switch (Type)
+				{
+				case pTypeLighting1:
+				case pTypeLighting2:
+				case pTypeLighting3:
+				case pTypeLighting4:
+				case pTypeLighting5:
+				case pTypeLighting6:
+				case pTypeLimitlessLights:
+				case pTypeSecurity1:
+				case pTypeBlinds:
+				case pTypeChime:
+				case pTypeThermostat3:
+				case pTypeRemote:
+					bdoAdd=true;
+					if (!used)
+					{
+						bdoAdd=false;
+						bool bIsSubDevice=false;
+						std::vector<std::vector<std::string> > resultSD;
+						std::stringstream szQuerySD;
+
+						szQuerySD.clear();
+						szQuerySD.str("");
+						szQuerySD << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << sd[0] << "')";
+						resultSD=m_pMain->m_sql.query(szQuerySD.str());
+						if (resultSD.size()>0)
+							bdoAdd=true;
+					}
+					if (bdoAdd)
+					{
+						root["result"][ii]["idx"]=ID;
+						root["result"][ii]["Name"]=Name;
+						root["result"][ii]["Type"]=Hardware_Type_Desc(Type);
+						root["result"][ii]["SubType"]=RFX_Type_SubType_Desc(Type,SubType);
+						bool bIsDimmer=(switchtype==STYPE_Dimmer);
+						root["result"][ii]["IsDimmer"]=bIsDimmer;
+						ii++;
+					}
+					break;
+				}
+			}
+		}
+	}
+	else if (cparam=="getlightswitchesscenes")
+	{
+		root["status"]="OK";
+		root["title"]="GetLightSwitchesScenes";
+		std::vector<std::vector<std::string> > result;
+		std::stringstream szQuery;
+		int ii=0;
+
+		//First List/Switch Devices
+		szQuery << "SELECT ID, Name, Type, Used FROM DeviceStatus ORDER BY Name";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+
+				std::string ID=sd[0];
+				std::string Name=sd[1];
+				int Type=atoi(sd[2].c_str());
+				int used=atoi(sd[3].c_str());
+				if (used)
+				{
+					switch (Type)
+					{
+					case pTypeLighting1:
+					case pTypeLighting2:
+					case pTypeLighting3:
+					case pTypeLighting4:
+					case pTypeLighting5:
+					case pTypeLighting6:
+					case pTypeLimitlessLights:
+					case pTypeSecurity1:
+					case pTypeBlinds:
+					case pTypeChime:
+					case pTypeThermostat3:
+					case pTypeRemote:
+						{
+							root["result"][ii]["type"]=0;
+							root["result"][ii]["idx"]=ID;
+							root["result"][ii]["Name"]="[Light/Switch] " + Name;
+							ii++;
+						}
+						break;
+					}
+				}
+			}
+		}//end light/switches
+
+		//Add Scenes
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT ID, Name FROM Scenes ORDER BY Name";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+
+				std::string ID=sd[0];
+				std::string Name=sd[1];
+
+				root["result"][ii]["type"]=1;
+				root["result"][ii]["idx"]=ID;
+				root["result"][ii]["Name"]="[Scene] " + Name;
+				ii++;
+			}
+		}//end light/switches
+	}
+	else if (cparam=="getcamactivedevices")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		root["status"]="OK";
+		root["title"]="GetCameraActiveDevices";
+		std::vector<std::vector<std::string> > result;
+		std::stringstream szQuery;
+		//First List/Switch Devices
+		szQuery << "SELECT ID, DevSceneType, DevSceneRowID, DevSceneWhen, DevSceneDelay FROM CamerasActiveDevices WHERE (CameraRowID=='" << idx << "') ORDER BY ID";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			int ii=0;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+
+				std::string ID=sd[0];
+				int DevSceneType=atoi(sd[1].c_str());
+				std::string DevSceneRowID=sd[2];
+				int DevSceneWhen=atoi(sd[3].c_str());
+				int DevSceneDelay=atoi(sd[4].c_str());
+
+				std::string Name="";
+				if (DevSceneType==0)
+				{
+					std::vector<std::vector<std::string> > result2;
+					std::stringstream szQuery2;
+					szQuery2 << "SELECT Name FROM DeviceStatus WHERE (ID=='" << DevSceneRowID << "')";
+					result2=m_pMain->m_sql.query(szQuery2.str());
+					if (result2.size()>0)
+					{
+						Name="[Light/Switches] " + result2[0][0];
+					}
+				}
+				else
+				{
+					std::vector<std::vector<std::string> > result2;
+					std::stringstream szQuery2;
+					szQuery2 << "SELECT Name FROM Scenes WHERE (ID=='" << DevSceneRowID << "')";
+					result2=m_pMain->m_sql.query(szQuery2.str());
+					if (result2.size()>0)
+					{
+						Name="[Scene] " + result2[0][0];
+					}
+				}
+				if (Name!="")
+				{
+					root["result"][ii]["idx"]=ID;
+					root["result"][ii]["type"]=DevSceneType;
+					root["result"][ii]["DevSceneRowID"]=DevSceneRowID;
+					root["result"][ii]["when"]=DevSceneWhen;
+					root["result"][ii]["delay"]=DevSceneDelay;
+					root["result"][ii]["Name"]=Name;
+					ii++;
+				}
+			}
+		}
+	}
+	else if (cparam=="addcamactivedevice")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string activeidx=m_pWebEm->FindValue("activeidx");
+		std::string sactivetype=m_pWebEm->FindValue("activetype");
+		std::string sactivewhen=m_pWebEm->FindValue("activewhen");
+		std::string sactivedelay=m_pWebEm->FindValue("activedelay");
+
+		if (
+			(idx=="")||
+			(activeidx=="")||
+			(sactivetype=="")||
+			(sactivewhen=="")||
+			(sactivedelay=="")
+			)
+		{
+			return;
+		}
+
+		int activetype=atoi(sactivetype.c_str());
+		int activewhen=atoi(sactivewhen.c_str());
+		int activedelay=atoi(sactivedelay.c_str());
+
+		//first check if it is not already a Active Device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT ID FROM CamerasActiveDevices WHERE (CameraRowID=='" 
+			<< idx << "') AND (DevSceneType==" 
+			<< activetype << ") AND (DevSceneRowID=='" << activeidx << "')  AND (DevSceneWhen==" << sactivewhen << ")";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()==0)
+		{
+			root["status"]="OK";
+			root["title"]="AddCameraActiveDevice";
+			//no it is not, add it
+			sprintf(szTmp,
+				"INSERT INTO CamerasActiveDevices (CameraRowID, DevSceneType, DevSceneRowID, DevSceneWhen, DevSceneDelay) VALUES ('%s',%d,'%s',%d,%d)",
+				idx.c_str(),
+				activetype,
+				activeidx.c_str(),
+				activewhen,
+				activedelay
+				);
+			result=m_pMain->m_sql.query(szTmp);
+			m_pMain->m_cameras.ReloadCameraActiveDevices(idx);
+		}
+	}
+	else if (cparam=="deleteamactivedevice")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		root["status"]="OK";
+		root["title"]="DeleteCameraActiveDevice";
+		sprintf(szTmp,"DELETE FROM CamerasActiveDevices WHERE (ID == '%s')",idx.c_str());
+		result=m_pMain->m_sql.query(szTmp);
+	}
+	else if (cparam=="deleteallactivecamdevices")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		root["status"]="OK";
+		root["title"]="DeleteAllCameraActiveDevices";
+		sprintf(szTmp,"DELETE FROM CamerasActiveDevices WHERE (CameraRowID == '%s')",idx.c_str());
+		result=m_pMain->m_sql.query(szTmp);
+	}
+	else if (cparam=="testpushover")
+	{
+		std::string poapi=m_pWebEm->FindValue("poapi");
+		std::string pouser=m_pWebEm->FindValue("pouser");
+		if ((poapi=="")||(pouser==""))
+			return;
+
+		root["title"]="Test Pushover";
+		char sPostData[300];
+		std::string sResult;
+		std::string poTitle = "Domoticz test";
+		std::string poMessage = "Domoticz test message!";
+		sprintf(sPostData,"token=%s&user=%s&priority=0&title=%s&message=%s",poapi.c_str(),pouser.c_str(),poTitle.c_str(),poMessage.c_str());
+		if (!HTTPClient::POST("https://api.pushover.net/1/messages.json",sPostData,sResult))
+		{
+			_log.Log(LOG_ERROR,"Error sending Pushover Notification!");
+		}
+		else
+		{
+			_log.Log(LOG_NORM,"Notification sent (Pushover)");
+			root["status"]="OK";
+		}
+	}
+	else if (cparam=="testemail")
+	{
+		std::string EmailFrom=m_pWebEm->FindValue("EmailFrom");
+		std::string EmailTo=m_pWebEm->FindValue("EmailTo");
+		std::string EmailServer=m_pWebEm->FindValue("EmailServer");
+		std::string EmailUsername=m_pWebEm->FindValue("EmailUsername");
+		std::string EmailPassword=m_pWebEm->FindValue("EmailPassword");
+		std::string sEmailPort=m_pWebEm->FindValue("EmailPort");
+
+		if (
+			(EmailFrom=="")||
+			(EmailTo=="")||
+			(EmailServer=="")||
+			(sEmailPort=="")
+			)
+			return;
+		int EmailPort=atoi(sEmailPort.c_str());
+		std::string szBody;
+		szBody=
+			"<html>\n"
+			"<body>\n"
+			"<b>If you received this, then your email settings worked!</b>\n"
+			"</body>\n"
+			"</html>\n";
+
+		SMTPClient sclient;
+		sclient.SetFrom(CURLEncode::URLDecode(EmailFrom.c_str()));
+		sclient.SetTo(CURLEncode::URLDecode(EmailTo.c_str()));
+		sclient.SetCredentials(CURLEncode::URLDecode(EmailUsername),CURLEncode::URLDecode(EmailPassword));
+		sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()),EmailPort);
+		sclient.SetSubject(CURLEncode::URLDecode("Test email message from Domoticz!"));
+		sclient.SetHTMLBody(szBody);
+		bool bRet=sclient.SendEmail();
+		if (bRet==true) {
+			root["status"]="OK";
+			root["title"]="TestEmail";
+		}
+	}
+	else if (cparam=="testswitch")
+	{
+		std::string hwdid=m_pWebEm->FindValue("hwdid");
+		std::string sswitchtype=m_pWebEm->FindValue("switchtype");
+		std::string slighttype=m_pWebEm->FindValue("lighttype");
+		if (
+			(hwdid=="")||
+			(sswitchtype=="")||
+			(slighttype=="")
+			)
+			return;
+		_eSwitchType switchtype=(_eSwitchType)atoi(sswitchtype.c_str());
+		int lighttype=atoi(slighttype.c_str());
+		int dtype;
+		int subtype=0;
+		std::string sunitcode;
+		std::string devid;
+
+		if (lighttype==66)
+		{
+			//Blyss
+			dtype=pTypeLighting6;
+			subtype=sTypeBlyss;
+			std::string sgroupcode=m_pWebEm->FindValue("groupcode");
+			sunitcode=m_pWebEm->FindValue("unitcode");
+			std::string id=m_pWebEm->FindValue("id");
+			if (
+				(sgroupcode=="")||
+				(sunitcode=="")||
+				(id=="")
+				)
+				return;
+			devid=id+sgroupcode;
+		}
+		else if (lighttype==67)
+		{
+			//EnOcean (Lighting2 with Base_ID offset)
+			dtype=pTypeLighting2;
+			subtype=sTypeAC;
+			std::string sgroupcode=m_pWebEm->FindValue("groupcode");
+			sunitcode=m_pWebEm->FindValue("unitcode");
+			int iUnitTest=atoi(sunitcode.c_str());	//only First Rocker_ID at the moment, gives us 128 devices we can control, should be enough!
+			if (
+				(sunitcode=="")||
+				(sgroupcode=="")||
+				((iUnitTest<1)||(iUnitTest>128))
+				)
+				return;
+			sunitcode=sgroupcode;//Button A or B
+			CEnOcean *pEnoceanHardware=(CEnOcean *)m_pMain->GetHardware(atoi(hwdid.c_str()));
+			if (pEnoceanHardware==NULL)
+				return;
+			if (pEnoceanHardware->HwdType!=HTYPE_EnOcean)
+				return;
+			if (pEnoceanHardware->m_id_base==0)
+				return;
+			unsigned long rID=pEnoceanHardware->m_id_base+iUnitTest;
+			//convert to hex, and we have our ID
+			std::stringstream s_strid;
+			s_strid << std::hex << std::uppercase << rID;
+			devid=s_strid.str();
+		}
+		else if (lighttype<10)
+		{
+			dtype=pTypeLighting1;
+			subtype=lighttype;
+			std::string shousecode=m_pWebEm->FindValue("housecode");
+			sunitcode=m_pWebEm->FindValue("unitcode");
+			if (
+				(shousecode=="")||
+				(sunitcode=="")
+				)
+				return;
+			devid=shousecode;
+		}
+		else if (lighttype<13)
+		{
+			dtype=pTypeLighting2;
+			subtype=lighttype-10;
+			std::string id=m_pWebEm->FindValue("id");
+			sunitcode=m_pWebEm->FindValue("unitcode");
+			if (
+				(id=="")||
+				(sunitcode=="")
+				)
+				return;
+			devid=id;
+		}
+		else if (lighttype<100)
+		{
+			dtype=pTypeLighting5;
+			subtype=lighttype-13;
+			std::string id=m_pWebEm->FindValue("id");
+			sunitcode=m_pWebEm->FindValue("unitcode");
+			if (
+				(id=="")||
+				(sunitcode=="")
+				)
+				return;
+			devid=id;
+		}
+		else
+		{
+			if (lighttype==100)
+			{
+				//Chime/ByronSX
+				dtype=pTypeChime;
+				subtype=sTypeByronSX;
+				std::string id=m_pWebEm->FindValue("id");
+				sunitcode=m_pWebEm->FindValue("unitcode");
+				if (
+					(id=="")||
+					(sunitcode=="")
+					)
+					return;
+				int iUnitCode=atoi(sunitcode.c_str())-1;
+				switch (iUnitCode)
+				{
+				case 0:
+					iUnitCode=chime_sound0;
+					break;
+				case 1:
+					iUnitCode=chime_sound1;
+					break;
+				case 2:
+					iUnitCode=chime_sound2;
+					break;
+				case 3:
+					iUnitCode=chime_sound3;
+					break;
+				case 4:
+					iUnitCode=chime_sound4;
+					break;
+				case 5:
+					iUnitCode=chime_sound5;
+					break;
+				case 6:
+					iUnitCode=chime_sound6;
+					break;
+				case 7:
+					iUnitCode=chime_sound7;
+					break;
+				}
+				sprintf(szTmp,"%d",iUnitCode);
+				sunitcode=szTmp;
+				devid=id;
+			}
+		}
+		root["status"]="OK";
+		root["title"]="TestSwitch";
+		std::vector<std::string> sd;
+
+		sd.push_back(hwdid);
+		sd.push_back(devid);
+		sd.push_back(sunitcode);
+		sprintf(szTmp,"%d",dtype);
+		sd.push_back(szTmp);
+		sprintf(szTmp,"%d",subtype);
+		sd.push_back(szTmp);
+		sprintf(szTmp,"%d",switchtype);
+		sd.push_back(szTmp);
+		sd.push_back(""); //StrParam1
+		sd.push_back(""); //StrParam2
+
+		std::string switchcmd="On";
+		int level=0;
+		if (lighttype==67)
+		{
+			//Special EnOcean case, if it is a dimmer, set a dim value
+			if (switchtype == STYPE_Dimmer)
+				level=5;
+		}
+		m_pMain->SwitchLightInt(sd,switchcmd,level,-1,true);
+	}
+	else if (cparam=="addswitch")
+	{
+		std::string hwdid=m_pWebEm->FindValue("hwdid");
+		std::string name=m_pWebEm->FindValue("name");
+		std::string sswitchtype=m_pWebEm->FindValue("switchtype");
+		std::string slighttype=m_pWebEm->FindValue("lighttype");
+		std::string maindeviceidx=m_pWebEm->FindValue("maindeviceidx");
+
+		if (
+			(hwdid=="")||
+			(sswitchtype=="")||
+			(slighttype=="")||
+			(name=="")
+			)
+			return;
+		_eSwitchType switchtype=(_eSwitchType)atoi(sswitchtype.c_str());
+		int lighttype=atoi(slighttype.c_str());
+		int dtype=0;
+		int subtype=0;
+		std::string sunitcode;
+		std::string devid;
+
+		if (lighttype==66)
+		{
+			//Blyss
+			dtype=pTypeLighting6;
+			subtype=sTypeBlyss;
+			std::string sgroupcode=m_pWebEm->FindValue("groupcode");
+			sunitcode=m_pWebEm->FindValue("unitcode");
+			std::string id=m_pWebEm->FindValue("id");
+			if (
+				(sgroupcode=="")||
+				(sunitcode=="")||
+				(id=="")
+				)
+				return;
+			devid=id+sgroupcode;
+		}
+		else if (lighttype==67)
+		{
+			//EnOcean (Lighting2 with Base_ID offset)
+			dtype=pTypeLighting2;
+			subtype=sTypeAC;
+			sunitcode=m_pWebEm->FindValue("unitcode");
+			std::string sgroupcode=m_pWebEm->FindValue("groupcode");
+			int iUnitTest=atoi(sunitcode.c_str());	//gives us 128 devices we can control, should be enough!
+			if (
+				(sunitcode=="")||
+				(sgroupcode=="")||
+				((iUnitTest<1)||(iUnitTest>128))
+				)
+				return;
+			sunitcode=sgroupcode;//Button A/B
+			CEnOcean *pEnoceanHardware=(CEnOcean *)m_pMain->GetHardware(atoi(hwdid.c_str()));
+			if (pEnoceanHardware==NULL)
+				return;
+			if (pEnoceanHardware->HwdType!=HTYPE_EnOcean)
+				return;
+			if (pEnoceanHardware->m_id_base==0)
+			{
+				root["message"]="BaseID not found, is the hardware running?";
+				return;
+			}
+			unsigned long rID=pEnoceanHardware->m_id_base+iUnitTest;
+			//convert to hex, and we have our ID
+			std::stringstream s_strid;
+			s_strid << std::hex << std::uppercase << rID;
+			devid=s_strid.str();
+		}
+		else if (lighttype<10)
+		{
+			dtype=pTypeLighting1;
+			subtype=lighttype;
+			std::string shousecode=m_pWebEm->FindValue("housecode");
+			sunitcode=m_pWebEm->FindValue("unitcode");
+			if (
+				(shousecode=="")||
+				(sunitcode=="")
+				)
+				return;
+			devid=shousecode;
+		}
+		else if (lighttype<13)
+		{
+			dtype=pTypeLighting2;
+			subtype=lighttype-10;
+			std::string id=m_pWebEm->FindValue("id");
+			sunitcode=m_pWebEm->FindValue("unitcode");
+			if (
+				(id=="")||
+				(sunitcode=="")
+				)
+				return;
+			devid=id;
+		}
+		else if (lighttype<100)
+		{
+			dtype=pTypeLighting5;
+			subtype=lighttype-13;
+			std::string id=m_pWebEm->FindValue("id");
+			sunitcode=m_pWebEm->FindValue("unitcode");
+			if (
+				(id=="")||
+				(sunitcode=="")
+				)
+				return;
+			devid=id;
+		}
+		else
+		{
+			if (lighttype==100)
+			{
+				//Chime/ByronSX
+				dtype=pTypeChime;
+				subtype=sTypeByronSX;
+				std::string id=m_pWebEm->FindValue("id");
+				sunitcode=m_pWebEm->FindValue("unitcode");
+				if (
+					(id=="")||
+					(sunitcode=="")
+					)
+					return;
+				int iUnitCode=atoi(sunitcode.c_str())-1;
+				switch (iUnitCode)
+				{
+				case 0:
+					iUnitCode=chime_sound0;
+					break;
+				case 1:
+					iUnitCode=chime_sound1;
+					break;
+				case 2:
+					iUnitCode=chime_sound2;
+					break;
+				case 3:
+					iUnitCode=chime_sound3;
+					break;
+				case 4:
+					iUnitCode=chime_sound4;
+					break;
+				case 5:
+					iUnitCode=chime_sound5;
+					break;
+				case 6:
+					iUnitCode=chime_sound6;
+					break;
+				case 7:
+					iUnitCode=chime_sound7;
+					break;
+				}
+				sprintf(szTmp,"%d",iUnitCode);
+				sunitcode=szTmp;
+				devid=id;
+			}
+		}
+
+		//check if switch is unique
+		std::vector<std::vector<std::string> > result;
+		std::stringstream szQuery;
+		szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << hwdid << " AND DeviceID=='" << devid << "' AND Unit==" << sunitcode << " AND Type==" << dtype << " AND SubType==" << subtype << ")";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			root["message"]="Switch already exists!";
+			return;
+		}
+		std::string devname;
+		m_pMain->m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(),atoi(sunitcode.c_str()),dtype,subtype,0,-1,0,devname);
+		//set name and switchtype
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << hwdid << " AND DeviceID=='" << devid << "' AND Unit==" << sunitcode << " AND Type==" << dtype << " AND SubType==" << subtype << ")";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()<1)
+		{
+			root["message"]="Error finding switch in Database!?!?";
+			return;
+		}
+		std::string ID=result[0][0];
+
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Used=1, Name='" << name << "', SwitchType=" << switchtype << " WHERE (ID == " << ID << ")";
+		result=m_pMain->m_sql.query(szQuery.str());
+
+		if (maindeviceidx!="")
+		{
+			if (maindeviceidx!=ID)
+			{
+				//this is a sub device for another light/switch
+				//first check if it is not already a sub device
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << ID << "') AND (ParentID =='" << maindeviceidx << "')";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()==0)
+				{
+					//no it is not, add it
+					sprintf(szTmp,
+						"INSERT INTO LightSubDevices (DeviceRowID, ParentID) VALUES ('%s','%s')",
+						ID.c_str(),
+						maindeviceidx.c_str()
+						);
+					result=m_pMain->m_sql.query(szTmp);
+				}
+			}
+		}
+
+		root["status"]="OK";
+		root["title"]="AddSwitch";
+	}
+	else if (cparam=="getnotificationtypes")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		//First get Device Type/SubType
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT Type, SubType, SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()<1)
+			return;
+
+		root["status"]="OK";
+		root["title"]="GetNotificationTypes";
+		unsigned char dType=atoi(result[0][0].c_str());
+		unsigned char dSubType=atoi(result[0][1].c_str());
+		unsigned char switchtype=atoi(result[0][2].c_str());
+
+		int ii=0;
+		if (
+			(dType==pTypeLighting1)||
+			(dType==pTypeLighting2)||
+			(dType==pTypeLighting3)||
+			(dType==pTypeLighting4)||
+			(dType==pTypeLighting5)||
+			(dType==pTypeLighting6)||
+			(dType==pTypeLimitlessLights)||
+			(dType==pTypeSecurity1)||
+			(dType==pTypeBlinds)||
+			(dType==pTypeChime)||
+			(dType==pTypeThermostat3)||
+			(dType==pTypeRemote)
+			)
+		{
+			if (switchtype!=STYPE_PushOff)
+			{
+				root["result"][ii]["val"]=NTYPE_SWITCH_ON;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_SWITCH_ON,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_SWITCH_ON,1);
+				ii++;
+			}
+			if (switchtype!=STYPE_PushOn)
+			{
+				root["result"][ii]["val"]=NTYPE_SWITCH_OFF;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_SWITCH_OFF,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_SWITCH_OFF,1);
+				ii++;
+			}
+		}
+		if (
+			(
+			(dType==pTypeTEMP)||
+			(dType==pTypeTEMP_HUM)||
+			(dType==pTypeTEMP_HUM_BARO)||
+			(dType==pTypeTEMP_BARO)||
+			(dType==pTypeThermostat1)||
+			(dType==pTypeRego6XXTemp)||
+			((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))
+			)||
+			((dType==pTypeUV)&&(dSubType==sTypeUV3))||
+			((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
+			((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))||
+			((dType==pTypeGeneral)&&(dSubType==sTypeSystemTemp))
+			)
+		{
+			root["result"][ii]["val"]=NTYPE_TEMPERATURE;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TEMPERATURE,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TEMPERATURE,1);
+			ii++;
+		}
+		if (
+			(dType==pTypeHUM)||
+			(dType==pTypeTEMP_HUM)||
+			(dType==pTypeTEMP_HUM_BARO)
+			)
+		{
+			root["result"][ii]["val"]=NTYPE_HUMIDITY;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_HUMIDITY,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_HUMIDITY,1);
+			ii++;
+		}
+		if (
+			(dType==pTypeTEMP_HUM)||
+			(dType==pTypeTEMP_HUM_BARO)
+			)
+		{
+			root["result"][ii]["val"]=NTYPE_DEWPOINT;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_DEWPOINT,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_DEWPOINT,1);
+			ii++;
+		}
+		if (dType==pTypeRAIN)
+		{
+			root["result"][ii]["val"]=NTYPE_RAIN;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_RAIN,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_RAIN,1);
+			ii++;
+		}
+		if (dType==pTypeWIND)
+		{
+			root["result"][ii]["val"]=NTYPE_WIND;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_WIND,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_WIND,1);
+			ii++;
+		}
+		if (dType==pTypeUV)
+		{
+			root["result"][ii]["val"]=NTYPE_UV;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_UV,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_UV,1);
+			ii++;
+		}
+		if (
+			(dType==pTypeTEMP_HUM_BARO)||
+			(dType==pTypeBARO)||
+			(dType==pTypeTEMP_BARO)
+			)
+		{
+			root["result"][ii]["val"]=NTYPE_BARO;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_BARO,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_BARO,1);
+			ii++;
+		}
+		if (
+			((dType==pTypeRFXMeter)&&(dSubType==sTypeRFXMeterCount))||
+			(dType==pTypeYouLess)||
+			((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXCounter))
+			)
+		{
+			if (switchtype==MTYPE_ENERGY)
+			{
+				root["result"][ii]["val"]=NTYPE_TODAYENERGY;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TODAYENERGY,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TODAYENERGY,1);
+			}
+			else if (switchtype==MTYPE_GAS)
+			{
+				root["result"][ii]["val"]=NTYPE_TODAYGAS;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TODAYGAS,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TODAYGAS,1);
+			}
+			else if (switchtype==MTYPE_COUNTER)
+			{
+				root["result"][ii]["val"]=NTYPE_TODAYCOUNTER;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TODAYCOUNTER,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TODAYCOUNTER,1);
+			}
+			else
+			{
+				//water (same as gas)
+				root["result"][ii]["val"]=NTYPE_TODAYGAS;
+				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TODAYGAS,0);
+				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TODAYGAS,1);
+			}
+			ii++;
+		}
+		if (dType==pTypeYouLess)
+		{
+			root["result"][ii]["val"]=NTYPE_USAGE;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+			ii++;
+		}
+		if (dType==pTypeAirQuality)
+		{
+			root["result"][ii]["val"]=NTYPE_USAGE;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+			ii++;
+		}
+		else if ((dType==pTypeGeneral)&&((dSubType==sTypeSoilMoisture)||(dSubType==sTypeLeafWetness)))
+		{
+			root["result"][ii]["val"]=NTYPE_USAGE;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+			ii++;
+		}
+		if ((dType==pTypeGeneral)&&(dSubType==sTypeVisibility))
+		{
+			root["result"][ii]["val"]=NTYPE_USAGE;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+			ii++;
+		}
+		if ((dType==pTypeGeneral)&&(dSubType==sTypeSolarRadiation))
+		{
+			root["result"][ii]["val"]=NTYPE_USAGE;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+			ii++;
+		}
+		if ((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
+		{
+			root["result"][ii]["val"]=NTYPE_USAGE;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+			ii++;
+		}
+		if (dType==pTypeLux)
+		{
+			root["result"][ii]["val"]=NTYPE_USAGE;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+			ii++;
+		}
+		if (dType==pTypeWEIGHT)
+		{
+			root["result"][ii]["val"]=NTYPE_USAGE;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+			ii++;
+		}
+		if (dType==pTypeUsage)
+		{
+			root["result"][ii]["val"]=NTYPE_USAGE;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+			ii++;
+		}
+		if (dType==pTypeENERGY)
+		{
+			root["result"][ii]["val"]=NTYPE_USAGE;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+			ii++;
+		}
+		if (dType==pTypePOWER)
+		{
+			root["result"][ii]["val"]=NTYPE_USAGE;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+			ii++;
+		}
+		if ((dType==pTypeCURRENT)&&(dSubType==sTypeELEC1))
+		{
+			root["result"][ii]["val"]=NTYPE_AMPERE1;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_AMPERE1,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_AMPERE1,1);
+			ii++;
+			root["result"][ii]["val"]=NTYPE_AMPERE2;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_AMPERE2,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_AMPERE2,1);
+			ii++;
+			root["result"][ii]["val"]=NTYPE_AMPERE3;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_AMPERE3,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_AMPERE3,1);
+			ii++;
+		}
+		if ((dType==pTypeCURRENTENERGY)&&(dSubType==sTypeELEC4))
+		{
+			root["result"][ii]["val"]=NTYPE_AMPERE1;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_AMPERE1,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_AMPERE1,1);
+			ii++;
+			root["result"][ii]["val"]=NTYPE_AMPERE2;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_AMPERE2,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_AMPERE2,1);
+			ii++;
+			root["result"][ii]["val"]=NTYPE_AMPERE3;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_AMPERE3,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_AMPERE3,1);
+			ii++;
+		}
+		if (dType==pTypeP1Power)
+		{
+			root["result"][ii]["val"]=NTYPE_USAGE;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+			ii++;
+			root["result"][ii]["val"]=NTYPE_TODAYENERGY;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TODAYENERGY,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TODAYENERGY,1);
+			ii++;
+		}
+		if (dType==pTypeP1Gas)
+		{
+			root["result"][ii]["val"]=NTYPE_TODAYGAS;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TODAYGAS,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TODAYGAS,1);
+			ii++;
+		}
+		if ((dType==pTypeThermostat)&&(dSubType==sTypeThermSetpoint))
+		{
+			root["result"][ii]["val"]=NTYPE_TEMPERATURE;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TEMPERATURE,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TEMPERATURE,1);
+			ii++;
+		}
+		if ((dType==pTypeRFXSensor)&&((dSubType==sTypeRFXSensorAD)||(dSubType==sTypeRFXSensorVolt)))
+		{
+			root["result"][ii]["val"]=NTYPE_USAGE;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+			ii++;
+		}
+		if ((dType==pTypeGeneral)&&(dSubType==sTypeSystemLoad))
+		{
+			root["result"][ii]["val"]=NTYPE_PERCENTAGE;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_PERCENTAGE,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_PERCENTAGE,1);
+			ii++;
+		}
+		if ((dType==pTypeGeneral)&&(dSubType==sTypeSystemFan))
+		{
+			root["result"][ii]["val"]=NTYPE_RPM;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_RPM,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_RPM,1);
+			ii++;
+		}
+		if ((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXStatus))
+		{
+			root["result"][ii]["val"]=NTYPE_SWITCH_ON;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_SWITCH_ON,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_SWITCH_ON,1);
+			ii++;
+			root["result"][ii]["val"]=NTYPE_SWITCH_OFF;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_SWITCH_OFF,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_SWITCH_OFF,1);
+			ii++;
+		}
+	}
+	else if (cparam=="addnotification")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+
+		std::string stype=m_pWebEm->FindValue("ttype");
+		std::string swhen=m_pWebEm->FindValue("twhen");
+		std::string svalue=m_pWebEm->FindValue("tvalue");
+		std::string spriority=m_pWebEm->FindValue("tpriority");
+		if ((stype=="")||(swhen=="")||(svalue=="")||(spriority==""))
+			return;
+
+		_eNotificationTypes ntype=(_eNotificationTypes)atoi(stype.c_str());
+		std::string ttype=Notification_Type_Desc(ntype,1);
+		if (
+			(ntype==NTYPE_SWITCH_ON)||
+			(ntype==NTYPE_SWITCH_OFF)||
+			(ntype==NTYPE_DEWPOINT)
+			)
+		{
+			strcpy(szTmp,ttype.c_str());
+		}
+		else
+		{
+			unsigned char twhen=(swhen=="0")?'>':'<';
+			sprintf(szTmp,"%s;%c;%s",ttype.c_str(),twhen,svalue.c_str());
+		}
+		int priority=atoi(spriority.c_str());
+		bool bOK=m_pMain->m_sql.AddNotification(idx,szTmp,priority);
+		if (bOK) {
+			root["status"]="OK";
+			root["title"]="AddNotification";
+		}
+	}
+	else if (cparam=="updatenotification")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string devidx=m_pWebEm->FindValue("devidx");
+		if ((idx=="")||(devidx==""))
+			return;
+
+		std::string stype=m_pWebEm->FindValue("ttype");
+		std::string swhen=m_pWebEm->FindValue("twhen");
+		std::string svalue=m_pWebEm->FindValue("tvalue");
+		std::string spriority=m_pWebEm->FindValue("tpriority");
+		if ((stype=="")||(swhen=="")||(svalue=="")||(spriority==""))
+			return;
+		root["status"]="OK";
+		root["title"]="UpdateNotification";
+
+		//delete old record
+		m_pMain->m_sql.RemoveNotification(idx);
+
+		_eNotificationTypes ntype=(_eNotificationTypes)atoi(stype.c_str());
+		std::string ttype=Notification_Type_Desc(ntype,1);
+		if (
+			(ntype==NTYPE_SWITCH_ON)||
+			(ntype==NTYPE_SWITCH_OFF)||
+			(ntype==NTYPE_DEWPOINT)
+			)
+		{
+			strcpy(szTmp,ttype.c_str());
+		}
+		else
+		{
+			unsigned char twhen=(swhen=="0")?'>':'<';
+			sprintf(szTmp,"%s;%c;%s",ttype.c_str(),twhen,svalue.c_str());
+		}
+		int priority=atoi(spriority.c_str());
+		m_pMain->m_sql.AddNotification(devidx,szTmp,priority);
+	}
+	else if (cparam=="deletenotification")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+
+		root["status"]="OK";
+		root["title"]="DeleteNotification";
+
+		m_pMain->m_sql.RemoveNotification(idx);
+	}
+	else if (cparam=="switchdeviceorder")
+	{
+		std::string idx1=m_pWebEm->FindValue("idx1");
+		std::string idx2=m_pWebEm->FindValue("idx2");
+		if ((idx1=="")||(idx2==""))
+			return;
+		std::string sroomid=m_pWebEm->FindValue("roomid");
+		int roomid=atoi(sroomid.c_str());
+
+		std::string Order1,Order2;
+		if (roomid==0)
+		{
+			//get device order 1
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT [Order] FROM DeviceStatus WHERE (ID == " << idx1 << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()<1)
+				return;
+			Order1=result[0][0];
+
+			//get device order 2
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT [Order] FROM DeviceStatus WHERE (ID == " << idx2 << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()<1)
+				return;
+			Order2=result[0][0];
+
+			root["status"]="OK";
+			root["title"]="SwitchDeviceOrder";
+
+			szQuery.clear();
+			szQuery.str("");
+			if(atoi(Order1.c_str()) < atoi(Order2.c_str()))
+			{
+				szQuery << "UPDATE DeviceStatus SET [Order] = [Order]+1 WHERE ([Order] >= " << Order1 << " AND [Order] < " << Order2 << ")";
+			}
+			else
+			{
+				szQuery << "UPDATE DeviceStatus SET [Order] = [Order]-1 WHERE ([Order] > " << Order2 << " AND [Order] <= " << Order1 << ")";
+			}
+			m_pMain->m_sql.query(szQuery.str());
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE DeviceStatus SET [Order] = " << Order1 << " WHERE (ID == " << idx2 << ")";
+			m_pMain->m_sql.query(szQuery.str());
+		}
+		else
+		{
+			//change order in a room
+			//get device order 1
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT [Order] FROM DeviceToPlansMap WHERE (DeviceRowID == " << idx1 << ") AND (PlanID=="<<roomid << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()<1)
+				return;
+			Order1=result[0][0];
+
+			//get device order 2
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT [Order] FROM DeviceToPlansMap WHERE (DeviceRowID == " << idx2 << ") AND (PlanID=="<<roomid << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()<1)
+				return;
+			Order2=result[0][0];
+
+			root["status"]="OK";
+			root["title"]="SwitchDeviceOrder";
+
+			szQuery.clear();
+			szQuery.str("");
+			if(atoi(Order1.c_str()) < atoi(Order2.c_str()))
+			{
+				szQuery << "UPDATE DeviceToPlansMap SET [Order] = [Order]+1 WHERE ([Order] >= " << Order1 << " AND [Order] < " << Order2 << ") AND (PlanID=="<<roomid << ")";
+			}
+			else
+			{
+				szQuery << "UPDATE DeviceToPlansMap SET [Order] = [Order]-1 WHERE ([Order] > " << Order2 << " AND [Order] <= " << Order1 << ") AND (PlanID=="<<roomid << ")";
+			}
+			m_pMain->m_sql.query(szQuery.str());
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE DeviceToPlansMap SET [Order] = " << Order1 << " WHERE (DeviceRowID == " << idx2 << ") AND (PlanID=="<<roomid << ")";
+			m_pMain->m_sql.query(szQuery.str());
+		}
+	}
+	else if (cparam=="switchsceneorder")
+	{
+		std::string idx1=m_pWebEm->FindValue("idx1");
+		std::string idx2=m_pWebEm->FindValue("idx2");
+		if ((idx1=="")||(idx2==""))
+			return;
+
+		std::string Order1,Order2;
+		//get device order 1
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT [Order] FROM Scenes WHERE (ID == " << idx1 << ")";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()<1)
+			return;
+		Order1=result[0][0];
+
+		//get device order 2
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT [Order] FROM Scenes WHERE (ID == " << idx2 << ")";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()<1)
+			return;
+		Order2=result[0][0];
+
+		root["status"]="OK";
+		root["title"]="SwitchSceneOrder";
+
+		szQuery.clear();
+		szQuery.str("");
+		if(atoi(Order1.c_str()) < atoi(Order2.c_str()))
+		{
+			szQuery << "UPDATE Scenes SET [Order] = [Order]+1 WHERE ([Order] >= " << Order1 << " AND [Order] < " << Order2 << ")";
+		}
+		else
+		{
+			szQuery << "UPDATE Scenes SET [Order] = [Order]-1 WHERE ([Order] > " << Order2 << " AND [Order] <= " << Order1 << ")";
+		}
+		m_pMain->m_sql.query(szQuery.str());
+
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE Scenes SET [Order] = " << Order1 << " WHERE (ID == " << idx2 << ")";
+		m_pMain->m_sql.query(szQuery.str());
+	}
+	else if (cparam=="clearnotifications")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+
+		root["status"]="OK";
+		root["title"]="ClearNotification";
+
+		m_pMain->m_sql.RemoveDeviceNotifications(idx);
+	}
+#ifdef WITH_OPENZWAVE
+	else if (cparam=="updatezwavenode")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		std::string name=m_pWebEm->FindValue("name");
+		std::string senablepolling=m_pWebEm->FindValue("EnablePolling");
+		if (
+			(name=="")||
+			(senablepolling=="")
+			)
+			return;
+		root["status"]="OK";
+		root["title"]="UpdateZWaveNode";
+
+		sprintf(szTmp,
+			"UPDATE ZWaveNodes SET Name='%s', PollTime=%d WHERE (ID==%s)",
+			name.c_str(),
+			(senablepolling=="true")?1:0,
+			idx.c_str()
+			);
+		result=m_pMain->m_sql.query(szTmp);
+		sprintf(szTmp,"SELECT HardwareID from ZWaveNodes WHERE (ID==%s)",idx.c_str());
+		result=m_pMain->m_sql.query(szTmp);
+		if (result.size()>0)
+		{
+			int hwid=atoi(result[0][0].c_str());
+			CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hwid);
+			if (pHardware!=NULL)
+			{
+				COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+				pOZWHardware->EnableDisableNodePolling();
+			}
+		}
+	}
+	else if (cparam=="deletezwavenode")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		sprintf(szTmp,"SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)",idx.c_str());
+		result=m_pMain->m_sql.query(szTmp);
+		if (result.size()>0)
+		{
+			int hwid=atoi(result[0][0].c_str());
+			int homeID=atoi(result[0][1].c_str());
+			int nodeID=atoi(result[0][2].c_str());
+			CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hwid);
+			if (pHardware!=NULL)
+			{
+				COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+				pOZWHardware->RemoveFailedDevice(nodeID);
+				root["status"]="OK";
+				root["title"]="DeleteZWaveNode";
+				sprintf(szTmp,"DELETE FROM ZWaveNodes WHERE (ID==%s)",idx.c_str());
+				result=m_pMain->m_sql.query(szTmp);
+			}
+		}
+	}
+	else if (cparam=="zwaveinclude")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+		if (pHardware!=NULL)
+		{
+			COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+			pOZWHardware->IncludeDevice();
+			root["status"]="OK";
+			root["title"]="ZWaveInclude";
+		}
+	}
+	else if (cparam=="zwaveexclude")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+		if (pHardware!=NULL)
+		{
+			COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+			pOZWHardware->ExcludeDevice(1);
+			root["status"]="OK";
+			root["title"]="ZWaveExclude";
+		}
+	}
+	else if (cparam=="zwavesoftreset")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+		if (pHardware!=NULL)
+		{
+			COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+			pOZWHardware->SoftResetDevice();
+			root["status"]="OK";
+			root["title"]="ZWaveSoftReset";
+		}
+	}
+	else if (cparam=="zwavehardreset")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+		if (pHardware!=NULL)
+		{
+			COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+			pOZWHardware->HardResetDevice();
+			root["status"]="OK";
+			root["title"]="ZWaveHardReset";
+		}
+	}
+	else if (cparam=="zwavenetworkheal")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+		if (pHardware!=NULL)
+		{
+			COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+			pOZWHardware->HealNetwork();
+			root["status"]="OK";
+			root["title"]="ZWaveHealNetwork";
+		}
+	}
+	else if (cparam=="zwavenetworkinfo")
+	{			
+		root["title"]="ZWaveNetworkInfo";
+
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		int hwID = atoi(idx.c_str());
+		CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hwID);
+		if (pHardware!=NULL)
+		{
+			COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+			std::vector< std::vector< int > > nodevectors;
+
+			if (pOZWHardware->NetworkInfo(hwID, nodevectors)) {
+
+				std::vector<std::vector<int> >::iterator row_iterator;
+				std::vector<int>::iterator col_iterator;
+				int nodeID;
+
+				std::vector<int> rest;
+				int rowCount=0;
+				std::stringstream list;
+				for(row_iterator = nodevectors.begin();row_iterator!=nodevectors.end();++row_iterator) {
+					int colCount=0;
+					for(col_iterator = (*row_iterator).begin();col_iterator!=(*row_iterator).end();++col_iterator) {
+						_log.Log(LOG_NORM,"OpenZ:%d ",*col_iterator);
+						if (colCount == 0) {
+							nodeID=*col_iterator;
+						}
+						else {
+							rest.push_back(*col_iterator);
+						}
+						colCount++;
+					}
+
+					std::copy(rest.begin(), rest.end(), std::ostream_iterator<int>(list, ","));
+					root["result"]["mesh"][rowCount]["nodeID"]=nodeID;
+					root["result"]["mesh"][rowCount]["seesNodes"]=list.str();
+					rowCount++;
+					rest.clear();
+					list.clear();
+				}
+				root["status"]="OK";
+
+
+			}
+
+
+		}
+	}
+	else if (cparam=="zwavecancel")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+		if (pHardware!=NULL)
+		{
+			COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+			pOZWHardware->CancelControllerCommand();
+			root["status"]="OK";
+			root["title"]="ZWaveCancel";
+		}
+	}
+	else if (cparam=="applyzwavenodeconfig")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string svaluelist=m_pWebEm->FindValue("valuelist");
+		if (
+			(idx=="")||
+			(svaluelist=="")
+			)
+			return;
+		sprintf(szTmp,"SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)",idx.c_str());
+		result=m_pMain->m_sql.query(szTmp);
+		if (result.size()>0)
+		{
+			int hwid=atoi(result[0][0].c_str());
+			int homeID=atoi(result[0][1].c_str());
+			int nodeID=atoi(result[0][2].c_str());
+			CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hwid);
+			if (pHardware!=NULL)
+			{
+				COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+				if (!pOZWHardware->ApplyNodeConfig(homeID,nodeID,svaluelist))
+					return;
+				root["status"]="OK";
+				root["title"]="ApplyZWaveNodeConfig";
+			}
+		}
+	}
+	else if (cparam=="requestzwavenodeconfig")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		sprintf(szTmp,"SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)",idx.c_str());
+		result=m_pMain->m_sql.query(szTmp);
+		if (result.size()>0)
+		{
+			int hwid=atoi(result[0][0].c_str());
+			int homeID=atoi(result[0][1].c_str());
+			int nodeID=atoi(result[0][2].c_str());
+			CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hwid);
+			if (pHardware!=NULL)
+			{
+				COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+				pOZWHardware->RequestNodeConfig(homeID,nodeID);
+				root["status"]="OK";
+				root["title"]="RequestZWaveNodeConfig";
+			}
+		}
+	}
+#endif
+	else if (cparam=="addcamera")
+	{
+		std::string name=m_pWebEm->FindValue("name");
+		std::string senabled=m_pWebEm->FindValue("enabled");
+		std::string address=m_pWebEm->FindValue("address");
+		std::string sport=m_pWebEm->FindValue("port");
+		std::string username=m_pWebEm->FindValue("username");
+		std::string password=m_pWebEm->FindValue("password");
+		std::string tvideourl=m_pWebEm->FindValue("videourl");
+		std::string timageurl=m_pWebEm->FindValue("imageurl");
+		if (
+			(name=="")||
+			(address=="")||
+			(tvideourl=="")||
+			(timageurl=="")
+			)
+			return;
+
+		std::string videourl;
+		std::string imageurl;
+		if (request_handler::url_decode(tvideourl,videourl))
+		{
+			if (request_handler::url_decode(timageurl,imageurl))
+			{
+				videourl=base64_decode(videourl);
+				imageurl=base64_decode(imageurl);
+
+				int port=atoi(sport.c_str());
+				root["status"]="OK";
+				root["title"]="AddCamera";
+				sprintf(szTmp,
+					"INSERT INTO Cameras (Name, Enabled, Address, Port, Username, Password, VideoURL, ImageURL) VALUES ('%s',%d,'%s',%d,'%s','%s','%s','%s')",
+					name.c_str(),
+					(senabled=="true")?1:0,
+					address.c_str(),
+					port,
+					base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
+					base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
+					videourl.c_str(),
+					imageurl.c_str()
+					);
+				result=m_pMain->m_sql.query(szTmp);
+				m_pMain->m_cameras.ReloadCameras();
+			}
+		}
+	}
+	else if (cparam=="updatecamera")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		std::string name=m_pWebEm->FindValue("name");
+		std::string senabled=m_pWebEm->FindValue("enabled");
+		std::string address=m_pWebEm->FindValue("address");
+		std::string sport=m_pWebEm->FindValue("port");
+		std::string username=m_pWebEm->FindValue("username");
+		std::string password=m_pWebEm->FindValue("password");
+		std::string tvideourl=m_pWebEm->FindValue("videourl");
+		std::string timageurl=m_pWebEm->FindValue("imageurl");
+		if (
+			(name=="")||
+			(senabled=="")||
+			(address=="")||
+			(tvideourl=="")||
+			(timageurl=="")
+			)
+			return;
+
+		std::string videourl;
+		std::string imageurl;
+		if (request_handler::url_decode(tvideourl,videourl))
+		{
+			if (request_handler::url_decode(timageurl,imageurl))
+			{
+				videourl=base64_decode(videourl);
+				imageurl=base64_decode(imageurl);
+
+				int port=atoi(sport.c_str());
+
+				root["status"]="OK";
+				root["title"]="UpdateCamera";
+
+				sprintf(szTmp,
+					"UPDATE Cameras SET Name='%s', Enabled=%d, Address='%s', Port=%d, Username='%s', Password='%s', VideoURL='%s', ImageURL='%s' WHERE (ID == %s)",
+					name.c_str(),
+					(senabled=="true")?1:0,
+					address.c_str(),
+					port,
+					base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
+					base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
+					videourl.c_str(),
+					imageurl.c_str(),
+					idx.c_str()
+					);
+				result=m_pMain->m_sql.query(szTmp);
+				m_pMain->m_cameras.ReloadCameras();
+			}
+		}
+	}
+	else if (cparam=="deletecamera")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		root["status"]="OK";
+		root["title"]="DeleteCamera";
+
+		m_pMain->m_sql.DeleteCamera(idx);
+		m_pMain->m_cameras.ReloadCameras();
+	}
+	else if (cparam=="adduser")
+	{
+		bool bHaveUser=(m_pWebEm->m_actualuser!="");
+		int urights=3;
+		if (bHaveUser)
+		{
+			int iUser=-1;
+			iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+			if (iUser!=-1)
+				urights=(int)m_users[iUser].userrights;
+		}
+		if (urights<2)
+			return;
+
+		std::string senabled=m_pWebEm->FindValue("enabled");
+		std::string username=m_pWebEm->FindValue("username");
+		std::string password=m_pWebEm->FindValue("password");
+		std::string srights=m_pWebEm->FindValue("rights");
+		std::string sRemoteSharing=m_pWebEm->FindValue("RemoteSharing");
+		std::string sTabsEnabled=m_pWebEm->FindValue("TabsEnabled");
+		if (
+			(senabled=="")||
+			(username=="")||
+			(password=="")||
+			(srights=="")||
+			(sRemoteSharing=="")||
+			(sTabsEnabled=="")
+			)
+			return;
+		int rights=atoi(srights.c_str());
+		if (rights!=2)
+		{
+			if (!FindAdminUser())
+			{
+				root["message"]="Add a Admin user first! (Or enable Settings/Website Protection)";
+				return;
+			}
+		}
+		root["status"]="OK";
+		root["title"]="AddUser";
+		sprintf(szTmp,
+			"INSERT INTO Users (Active, Username, Password, Rights, RemoteSharing, TabsEnabled) VALUES (%d,'%s','%s','%d','%d','%d')",
+			(senabled=="true")?1:0,
+			base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
+			base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
+			rights,
+			(sRemoteSharing=="true")?1:0,
+			atoi(sTabsEnabled.c_str())
+			);
+		result=m_pMain->m_sql.query(szTmp);
+		LoadUsers();
+	}
+	else if (cparam=="updateuser")
+	{
+		bool bHaveUser=(m_pWebEm->m_actualuser!="");
+		int urights=3;
+		if (bHaveUser)
+		{
+			int iUser=-1;
+			iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+			if (iUser!=-1)
+				urights=(int)m_users[iUser].userrights;
+		}
+		if (urights<2)
+			return;
+
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		std::string senabled=m_pWebEm->FindValue("enabled");
+		std::string username=m_pWebEm->FindValue("username");
+		std::string password=m_pWebEm->FindValue("password");
+		std::string srights=m_pWebEm->FindValue("rights");
+		std::string sRemoteSharing=m_pWebEm->FindValue("RemoteSharing");
+		std::string sTabsEnabled=m_pWebEm->FindValue("TabsEnabled");
+		if (
+			(senabled=="")||
+			(username=="")||
+			(password=="")||
+			(srights=="")||
+			(sRemoteSharing=="")||
+			(sTabsEnabled=="")
+			)
+			return;
+		int rights=atoi(srights.c_str());
+		if (rights!=2)
+		{
+			if (!FindAdminUser())
+			{
+				root["message"]="Add a Admin user first! (Or enable Settings/Website Protection)";
+				return;
+			}
+		}
+
+		root["status"]="OK";
+		root["title"]="UpdateUser";
+
+		sprintf(szTmp,
+			"UPDATE Users SET Active=%d, Username='%s', Password='%s', Rights=%d, RemoteSharing=%d, TabsEnabled=%d WHERE (ID == %s)",
+			(senabled=="true")?1:0,
+			base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
+			base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
+			rights,
+			(sRemoteSharing=="true")?1:0,
+			atoi(sTabsEnabled.c_str()),
+			idx.c_str()
+			);
+		result=m_pMain->m_sql.query(szTmp);
+		LoadUsers();
+	}
+	else if (cparam=="deleteuser")
+	{
+		bool bHaveUser=(m_pWebEm->m_actualuser!="");
+		int urights=3;
+		if (bHaveUser)
+		{
+			int iUser=-1;
+			iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+			if (iUser!=-1)
+				urights=(int)m_users[iUser].userrights;
+		}
+		if (urights<2)
+			return;
+
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+
+		root["status"]="OK";
+		root["title"]="DeleteUser";
+		sprintf(szTmp,"DELETE FROM Users WHERE (ID == %s)",idx.c_str());
+		result=m_pMain->m_sql.query(szTmp);
+
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "DELETE FROM SharedDevices WHERE (SharedUserID == " << idx << ")";
+		result=m_pMain->m_sql.query(szQuery.str()); //-V519
+
+		LoadUsers();
+	}
+	else if (cparam=="addtimer")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string active=m_pWebEm->FindValue("active");
+		std::string stimertype=m_pWebEm->FindValue("timertype");
+		std::string shour=m_pWebEm->FindValue("hour");
+		std::string smin=m_pWebEm->FindValue("min");
+		std::string randomness=m_pWebEm->FindValue("randomness");
+		std::string scmd=m_pWebEm->FindValue("command");
+		std::string sdays=m_pWebEm->FindValue("days");
+		std::string slevel=m_pWebEm->FindValue("level");	//in percentage
+		std::string shue=m_pWebEm->FindValue("hue");
+		if (
+			(idx=="")||
+			(active=="")||
+			(stimertype=="")||
+			(shour=="")||
+			(smin=="")||
+			(randomness=="")||
+			(scmd=="")||
+			(sdays=="")
+			)
+			return;
+		unsigned char hour = atoi(shour.c_str());
+		unsigned char min = atoi(smin.c_str());
+		unsigned char icmd = atoi(scmd.c_str());
+		unsigned char iTimerType=atoi(stimertype.c_str());
+		int days=atoi(sdays.c_str());
+		unsigned char level=atoi(slevel.c_str());
+		int hue=atoi(shue.c_str());
+		sprintf(szData,"%02d:%02d",hour,min);
+		root["status"]="OK";
+		root["title"]="AddTimer";
+		sprintf(szTmp,
+			"INSERT INTO Timers (Active, DeviceRowID, Time, Type, UseRandomness, Cmd, Level, Hue, Days) VALUES (%d,%s,'%s',%d,%d,%d,%d,%d,%d)",
+			(active=="true")?1:0,
+			idx.c_str(),
+			szData,
+			iTimerType,
+			(randomness=="true")?1:0,
+			icmd,
+			level,
+			hue,
+			days
+			);
+		result=m_pMain->m_sql.query(szTmp);
+		m_pMain->m_scheduler.ReloadSchedules();
+	}
+	else if (cparam=="addscenetimer")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string active=m_pWebEm->FindValue("active");
+		std::string stimertype=m_pWebEm->FindValue("timertype");
+		std::string shour=m_pWebEm->FindValue("hour");
+		std::string smin=m_pWebEm->FindValue("min");
+		std::string randomness=m_pWebEm->FindValue("randomness");
+		std::string scmd=m_pWebEm->FindValue("command");
+		std::string sdays=m_pWebEm->FindValue("days");
+		std::string slevel=m_pWebEm->FindValue("level");	//in percentage
+		if (
+			(idx=="")||
+			(active=="")||
+			(stimertype=="")||
+			(shour=="")||
+			(smin=="")||
+			(randomness=="")||
+			(scmd=="")||
+			(sdays=="")
+			)
+			return;
+		unsigned char hour = atoi(shour.c_str());
+		unsigned char min = atoi(smin.c_str());
+		unsigned char icmd = atoi(scmd.c_str());
+		unsigned char iTimerType=atoi(stimertype.c_str());
+		int days=atoi(sdays.c_str());
+		unsigned char level=atoi(slevel.c_str());
+		sprintf(szData,"%02d:%02d",hour,min);
+		root["status"]="OK";
+		root["title"]="AddSceneTimer";
+		sprintf(szTmp,
+			"INSERT INTO SceneTimers (Active, SceneRowID, Time, Type, UseRandomness, Cmd, Level, Days) VALUES (%d,%s,'%s',%d,%d,%d,%d,%d)",
+			(active=="true")?1:0,
+			idx.c_str(),
+			szData,
+			iTimerType,
+			(randomness=="true")?1:0,
+			icmd,
+			level,
+			days
+			);
+		result=m_pMain->m_sql.query(szTmp);
+		m_pMain->m_scheduler.ReloadSchedules();
+	}
+	else if (cparam=="updatetimer")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string active=m_pWebEm->FindValue("active");
+		std::string stimertype=m_pWebEm->FindValue("timertype");
+		std::string shour=m_pWebEm->FindValue("hour");
+		std::string smin=m_pWebEm->FindValue("min");
+		std::string randomness=m_pWebEm->FindValue("randomness");
+		std::string scmd=m_pWebEm->FindValue("command");
+		std::string sdays=m_pWebEm->FindValue("days");
+		std::string slevel=m_pWebEm->FindValue("level");	//in percentage
+		std::string shue=m_pWebEm->FindValue("hue");
+		if (
+			(idx=="")||
+			(active=="")||
+			(stimertype=="")||
+			(shour=="")||
+			(smin=="")||
+			(randomness=="")||
+			(scmd=="")||
+			(sdays=="")
+			)
+			return;
+		unsigned char hour = atoi(shour.c_str());
+		unsigned char min = atoi(smin.c_str());
+		unsigned char icmd = atoi(scmd.c_str());
+		unsigned char iTimerType=atoi(stimertype.c_str());
+		int days=atoi(sdays.c_str());
+		unsigned char level=atoi(slevel.c_str());
+		int hue=atoi(shue.c_str());
+		sprintf(szData,"%02d:%02d",hour,min);
+		root["status"]="OK";
+		root["title"]="UpdateTimer";
+		sprintf(szTmp,
+			"UPDATE Timers SET Active=%d, Time='%s', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Hue=%d, Days=%d WHERE (ID == %s)",
+			(active=="true")?1:0,
+			szData,
+			iTimerType,
+			(randomness=="true")?1:0,
+			icmd,
+			level,
+			hue,
+			days,
+			idx.c_str()
+			);
+		result=m_pMain->m_sql.query(szTmp);
+		m_pMain->m_scheduler.ReloadSchedules();
+	}
+	else if (cparam=="updatescenetimer")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string active=m_pWebEm->FindValue("active");
+		std::string stimertype=m_pWebEm->FindValue("timertype");
+		std::string shour=m_pWebEm->FindValue("hour");
+		std::string smin=m_pWebEm->FindValue("min");
+		std::string randomness=m_pWebEm->FindValue("randomness");
+		std::string scmd=m_pWebEm->FindValue("command");
+		std::string sdays=m_pWebEm->FindValue("days");
+		std::string slevel=m_pWebEm->FindValue("level");	//in percentage
+		if (
+			(idx=="")||
+			(active=="")||
+			(stimertype=="")||
+			(shour=="")||
+			(smin=="")||
+			(randomness=="")||
+			(scmd=="")||
+			(sdays=="")
+			)
+			return;
+		unsigned char hour = atoi(shour.c_str());
+		unsigned char min = atoi(smin.c_str());
+		unsigned char icmd = atoi(scmd.c_str());
+		unsigned char iTimerType=atoi(stimertype.c_str());
+		int days=atoi(sdays.c_str());
+		unsigned char level=atoi(slevel.c_str());
+		sprintf(szData,"%02d:%02d",hour,min);
+		root["status"]="OK";
+		root["title"]="UpdateSceneTimer";
+		sprintf(szTmp,
+			"UPDATE SceneTimers SET Active=%d, Time='%s', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Days=%d WHERE (ID == %s)",
+			(active=="true")?1:0,
+			szData,
+			iTimerType,
+			(randomness=="true")?1:0,
+			icmd,
+			level,
+			days,
+			idx.c_str()
+			);
+		result=m_pMain->m_sql.query(szTmp);
+		m_pMain->m_scheduler.ReloadSchedules();
+	}
+	else if (cparam=="deletetimer")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		root["status"]="OK";
+		root["title"]="DeleteTimer";
+		sprintf(szTmp,
+			"DELETE FROM Timers WHERE (ID == %s)",
+			idx.c_str()
+			);
+		result=m_pMain->m_sql.query(szTmp);
+		m_pMain->m_scheduler.ReloadSchedules();
+	}
+	else if (cparam=="deletescenetimer")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		root["status"]="OK";
+		root["title"]="DeleteSceneTimer";
+		sprintf(szTmp,
+			"DELETE FROM SceneTimers WHERE (ID == %s)",
+			idx.c_str()
+			);
+		result=m_pMain->m_sql.query(szTmp);
+		m_pMain->m_scheduler.ReloadSchedules();
+	}
+	else if (cparam=="clearlightlog")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		//First get Device Type/SubType
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT Type, SubType FROM DeviceStatus WHERE (ID == " << idx << ")";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()<1)
+			return;
+
+		unsigned char dType=atoi(result[0][0].c_str());
+		unsigned char dSubType=atoi(result[0][1].c_str());
+
+		if (
+			(dType!=pTypeLighting1)&&
+			(dType!=pTypeLighting2)&&
+			(dType!=pTypeLighting3)&&
+			(dType!=pTypeLighting4)&&
+			(dType!=pTypeLighting5)&&
+			(dType!=pTypeLighting6)&&
+			(dType!=pTypeLimitlessLights)&&
+			(dType!=pTypeSecurity1)&&
+			(dType!=pTypeBlinds)&&
+			(dType!=pTypeChime)&&
+			(dType!=pTypeThermostat3)&&
+			(dType!=pTypeRemote)
+			)
+			return; //no light device! we should not be here!
+
+		root["status"]="OK";
+		root["title"]="ClearLightLog";
+
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "DELETE FROM LightingLog WHERE (DeviceRowID==" << idx << ")";
+		result=m_pMain->m_sql.query(szQuery.str());
+	}
+	else if (cparam=="cleartimers")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		root["status"]="OK";
+		root["title"]="ClearTimer";
+		sprintf(szTmp,
+			"DELETE FROM Timers WHERE (DeviceRowID == %s)",
+			idx.c_str()
+			);
+		result=m_pMain->m_sql.query(szTmp);
+		m_pMain->m_scheduler.ReloadSchedules();
+	}
+	else if (cparam=="clearscenetimers")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		root["status"]="OK";
+		root["title"]="ClearSceneTimer";
+		sprintf(szTmp,
+			"DELETE FROM SceneTimers WHERE (SceneRowID == %s)",
+			idx.c_str()
+			);
+		result=m_pMain->m_sql.query(szTmp);
+		m_pMain->m_scheduler.ReloadSchedules();
+	}
+	else if (cparam=="setscenecode")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string cmnd=m_pWebEm->FindValue("cmnd");
+		if (
+			(idx=="")||
+			(cmnd=="")
+			)
+			return;
+		std::string devid=m_pWebEm->FindValue("devid");
+		if (devid=="")
+			return;
+		root["status"]="OK";
+		root["title"]="SetSceneCode";
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << devid << ")";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			sprintf(szTmp,
+				"UPDATE Scenes SET HardwareID=%d, DeviceID='%s', Unit=%d, Type=%d, SubType=%d, ListenCmd=%d WHERE (ID == %s)",
+				atoi(result[0][0].c_str()),
+				result[0][1].c_str(),
+				atoi(result[0][2].c_str()),
+				atoi(result[0][3].c_str()),
+				atoi(result[0][4].c_str()),
+				atoi(cmnd.c_str()),
+				idx.c_str()
+				);
+			result=m_pMain->m_sql.query(szTmp);
+			//Sanity Check, remove all SceneDevice that has this code
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "DELETE FROM SceneDevices WHERE (SceneRowID==" << idx << " AND DeviceRowID==" << devid << ")";
+			result=m_pMain->m_sql.query(szQuery.str()); //-V519
+		}
+	}
+	else if (cparam=="removescenecode")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		root["status"]="OK";
+		root["title"]="RemoveSceneCode";
+		sprintf(szTmp,
+			"UPDATE Scenes SET HardwareID=%d, DeviceID='%s', Unit=%d, Type=%d, SubType=%d WHERE (ID == %s)",
+			0,
+			"",
+			0,
+			0,
+			0,
+			idx.c_str()
+			);
+		result=m_pMain->m_sql.query(szTmp);
+	}
+	else if (cparam=="learnsw")
+	{
+		m_pMain->m_sql.m_LastSwitchID="";
+		bool bReceivedSwitch=false;
+		unsigned char cntr=0;
+		while ((!bReceivedSwitch)&&(cntr<50))	//wait for max. 5 seconds
+		{
+			if (m_pMain->m_sql.m_LastSwitchID!="")
+			{
+				bReceivedSwitch=true;
+				break;
+			}
+			else
+			{
+				//sleep 100ms
+				sleep_milliseconds(100);
+				cntr++;
+			}
+		}
+		if (bReceivedSwitch)
+		{
+			//check if used
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT Name, Used, nValue FROM DeviceStatus WHERE (ID==" << m_pMain->m_sql.m_LastSwitchRowID << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()>0)
+			{
+				root["status"]="OK";
+				root["title"]="LearnSW";
+				root["ID"]=m_pMain->m_sql.m_LastSwitchID;
+				root["idx"]=m_pMain->m_sql.m_LastSwitchRowID;
+				root["Name"]=result[0][0];
+				root["Used"]=atoi(result[0][1].c_str());
+				root["Cmd"]=atoi(result[0][2].c_str());
+			}
+		}
+	} //learnsw
+	else if (cparam == "makefavorite")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string sisfavorite=m_pWebEm->FindValue("isfavorite");
+		if ((idx=="")||(sisfavorite==""))
+			return;
+		int isfavorite=atoi(sisfavorite.c_str());
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Favorite=" << isfavorite << " WHERE (ID == " << idx << ")";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			root["status"]="OK";
+			root["title"]="MakeFavorite";
+		}
+	} //makefavorite
+	else if (cparam == "makescenefavorite")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string sisfavorite=m_pWebEm->FindValue("isfavorite");
+		if ((idx=="")||(sisfavorite==""))
+			return;
+		int isfavorite=atoi(sisfavorite.c_str());
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE Scenes SET Favorite=" << isfavorite << " WHERE (ID == " << idx << ")";
+		result=m_pMain->m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			root["status"]="OK";
+			root["title"]="MakeSceneFavorite";
+		}
+	} //makescenefavorite
+	else if (cparam=="resetsecuritystatus")
+	{
+		int urights=3;
+		if (bHaveUser)
+		{
+			int iUser=-1;
+			iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+			if (iUser!=-1)
+				urights=(int)m_users[iUser].userrights;
+		}
+		if (urights<1)
+			return;
+
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string switchcmd=m_pWebEm->FindValue("switchcmd");
+
+		if ((idx=="")||(switchcmd==""))
+			return;
+
+		root["status"]="OK";
+		root["title"]="ResetSecurityStatus";
+
+		int nValue=-1;
+
+		// Change to generic *Security_Status_Desc lookup...
+
+		if (switchcmd == "Panic End") {
+			nValue = 7;
+		}
+		else if (switchcmd == "Normal") {
+			nValue = 0;
+		}
+
+		if (nValue>=0)
+		{
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE DeviceStatus SET nValue=" << nValue << " WHERE (ID == " << idx << ")";
+			result=m_pMain->m_sql.query(szQuery.str());
+			if (result.size()>0) {
+				root["status"]="OK";
+				root["title"]="SwitchLight";
+			}
+			else {
+				return;
+			}
+		}
+		else 
+		{
+			return;
+		}
+	}
+	else if (cparam=="switchlight")
+	{
+		int urights=3;
+		if (bHaveUser)
+		{
+			int iUser=-1;
+			iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+			if (iUser!=-1)
+				urights=(int)m_users[iUser].userrights;
+		}
+		if (urights<1)
+			return;
+
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string switchcmd=m_pWebEm->FindValue("switchcmd");
+		std::string level=m_pWebEm->FindValue("level");
+		if ((idx=="")||(switchcmd==""))
+			return;
+
+		if (m_pMain->SwitchLight(idx,switchcmd,level,"-1")==true)
+		{
+			root["status"]="OK";
+			root["title"]="SwitchLight";
+		}
+	} //(rtype=="switchlight")
+	else if (cparam=="switchscene")
+	{
+		int urights=3;
+		if (bHaveUser)
+		{
+			int iUser=-1;
+			iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+			if (iUser!=-1)
+				urights=(int)m_users[iUser].userrights;
+		}
+		if (urights<1)
+			return;
+
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string switchcmd=m_pWebEm->FindValue("switchcmd");
+		if ((idx=="")||(switchcmd==""))
+			return;
+
+		if (m_pMain->SwitchScene(idx,switchcmd)==true)
+		{
+			root["status"]="OK";
+			root["title"]="SwitchScene";
+		}
+	} //(rtype=="switchscene")
+	else if (cparam =="getSunRiseSet") {
+		int nValue=0;
+		std::string sValue;
+		if (m_pMain->m_sql.GetTempVar("SunRiseSet",nValue,sValue))
+		{
+			std::vector<std::string> strarray;
+			StringSplit(sValue, ";", strarray);
+			if (strarray.size()==2)
+			{
+				struct tm loctime;
+				time_t now = mytime(NULL);
+
+				localtime_r (&now, &loctime );
+				strftime (szTmp,80,"%b %d %Y %X",&loctime);
+
+				root["status"]="OK";
+				root["title"]="getSunRiseSet";
+				root["ServerTime"]=szTmp;
+				root["Sunrise"]=strarray[0];
+				root["Sunset"]=strarray[1];
+			}
+		}
+	}
+	else if (cparam =="getServerTime") {
+
+		struct tm loctime;
+		time_t now = mytime(NULL);
+
+		localtime_r (&now, &loctime );
+		strftime (szTmp,80,"%b %d %Y %X",&loctime);
+
+		root["status"]="OK";
+		root["title"]="getServerTime";
+		root["ServerTime"]=szTmp;
+	}
+	else if (cparam=="getsecstatus")
+	{
+		root["status"]="OK";
+		root["title"]="GetSecStatus";
+		int secstatus=0;
+		m_pMain->m_sql.GetPreferencesVar("SecStatus", secstatus);
+		root["secstatus"]=secstatus;
+	}
+	else if (cparam=="setsecstatus")
+	{
+		std::string ssecstatus=m_pWebEm->FindValue("secstatus");
+		std::string seccode=m_pWebEm->FindValue("seccode");
+		if ((ssecstatus=="")||(seccode==""))
+		{
+			root["message"]="WRONG CODE";
+			return;
+		}
+		root["title"]="SetSecStatus";
+		seccode=base64_encode((const unsigned char*)seccode.c_str(),seccode.size());
+		std::string rpassword;
+		int nValue=1;
+		m_pMain->m_sql.GetPreferencesVar("SecPassword",nValue,rpassword);
+		if (seccode!=rpassword)
+		{
+			root["status"]="ERROR";
+			root["message"]="WRONG CODE";
+			return;
+		}
+		root["status"]="OK";
+		int iSecStatus=atoi(ssecstatus.c_str());
+		m_pMain->UpdateDomoticzSecurityStatus(iSecStatus);
+	}
+	else if (cparam=="setcolbrightnessvalue")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string hue=m_pWebEm->FindValue("hue");
+		std::string brightness=m_pWebEm->FindValue("brightness");
+		std::string iswhite=m_pWebEm->FindValue("iswhite");
+
+		if ((idx=="")||(hue=="")||(brightness=="")||(iswhite==""))
+		{
+			return;
+		}
+
+		unsigned long long ID;
+		std::stringstream s_strid;
+		s_strid << idx;
+		s_strid >> ID;
+
+		if (iswhite!="true")
+		{
+			//convert hue from 360 steps to 255
+			double dval;
+			dval=(255.0/360.0)*atof(hue.c_str());
+			int ival;
+			ival=round(dval);
+			m_pMain->SwitchLight(ID,"Set Color",ival,-1);
+		}
+		else
+		{
+			m_pMain->SwitchLight(ID,"Set White",0,-1);
+		}
+		sleep_milliseconds(100);
+		m_pMain->SwitchLight(ID,"Set Brightness",(unsigned char)atoi(brightness.c_str()),-1);
+	}
+}
 void CWebServer::SetAuthenticationMethod(int amethod)
 {
 	if (m_pWebEm==NULL)
@@ -6712,3890 +10640,15 @@ std::string CWebServer::GetJSonPage()
 		std::string cparam=m_pWebEm->FindValue("param");
 		if (cparam=="")
 			goto exitjson;
-		if (cparam=="getversion")
-		{
-			char *szVersion=DisplayVersion();
-			root["status"]="OK";
-			root["title"]="GetVersion";
-			root["version"]=szVersion;
-		}
-		else if (cparam=="getlog")
-		{
-			root["status"]="OK";
-			root["title"]="GetLog";
-
-			time_t lastlogtime=0;
-			std::string slastlogtime=m_pWebEm->FindValue("lastlogtime");
-			if (slastlogtime!="")
-			{
-				std::stringstream s_str( slastlogtime );
-				s_str >> lastlogtime;
-			}
-
-			std::list<CLogger::_tLogLineStruct> logmessages=_log.GetLog();
-			std::list<CLogger::_tLogLineStruct>::const_iterator itt;
-			int ii=0;
-			for (itt=logmessages.begin(); itt!=logmessages.end(); ++itt)
-			{
-				if (itt->logtime>lastlogtime) 
-				{
-					std::stringstream szLogTime;
-					szLogTime << itt->logtime;
-					root["LastLogTime"]=szLogTime.str();
-					root["result"][ii]["level"]=(int)itt->level;
-					root["result"][ii]["message"]=itt->logmessage;
-					ii++;
-				}
-			}
-		}
-		else if (cparam=="addplan")
-		{
-			std::string name=m_pWebEm->FindValue("name");
-			root["status"]="OK";
-			root["title"]="AddPlan";
-			sprintf(szTmp,
-				"INSERT INTO Plans (Name) VALUES ('%s')",
-				name.c_str()
-				);
-			result=m_pMain->m_sql.query(szTmp);
-		}
-		else if (cparam=="updateplan")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			std::string name=m_pWebEm->FindValue("name");
-			if (
-				(name=="")
-				)
-				goto exitjson;
-
-			root["status"]="OK";
-			root["title"]="UpdatePlan";
-
-			sprintf(szTmp,
-				"UPDATE Plans SET Name='%s' WHERE (ID == %s)",
-				name.c_str(),
-				idx.c_str()
-				);
-			result=m_pMain->m_sql.query(szTmp);
-		}
-		else if (cparam=="deleteplan")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="DeletePlan";
-			sprintf(szTmp,
-				"DELETE FROM DeviceToPlansMap WHERE (PlanID == %s)",
-				idx.c_str()
-				);
-			result=m_pMain->m_sql.query(szTmp);
-			sprintf(szTmp,
-				"DELETE FROM Plans WHERE (ID == %s)",
-				idx.c_str()
-				);
-			result=m_pMain->m_sql.query(szTmp);
-		}
-		else if (cparam=="getunusedplandevices")
-		{
-			root["status"]="OK";
-			root["title"]="GetUnusedPlanDevices";
-			std::string sunique=m_pWebEm->FindValue("unique");
-			if (sunique=="")
-				goto exitjson;
-			int iUnique=(sunique=="true")?1:0;
-			int ii=0;
-
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT ID, Name FROM DeviceStatus WHERE (Used==1) ORDER BY Name";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()>0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt=result.begin(); itt!=result.end(); ++itt)
-				{
-					std::vector<std::string> sd=*itt;
-
-					bool bDoAdd=true;
-					if (iUnique)
-					{
-						szQuery.clear();
-						szQuery.str("");
-						szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << sd[0] << ") AND (DevSceneType==0)";
-						result2=m_pMain->m_sql.query(szQuery.str());
-						bDoAdd=(result2.size()==0);
-					}
-					if (bDoAdd)
-					{
-						root["result"][ii]["type"]=0;
-						root["result"][ii]["idx"]=sd[0];
-						root["result"][ii]["Name"]=sd[1];
-						ii++;
-					}
-				}
-			}
-			//Add Scenes
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT ID, Name FROM Scenes ORDER BY Name";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()>0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt=result.begin(); itt!=result.end(); ++itt)
-				{
-					std::vector<std::string> sd=*itt;
-
-					bool bDoAdd=true;
-					if (iUnique)
-					{
-						szQuery.clear();
-						szQuery.str("");
-						szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << sd[0] << ") AND (DevSceneType==1)";
-						result2=m_pMain->m_sql.query(szQuery.str());
-						bDoAdd=(result2.size()==0);
-					}
-					if (bDoAdd)
-					{
-						root["result"][ii]["type"]=1;
-						root["result"][ii]["idx"]=sd[0];
-						root["result"][ii]["Name"]="[Scene] " + sd[1];
-						ii++;
-					}
-				}
-			}//end light/switches
-
-		}
-		else if (cparam=="addplanactivedevice")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			std::string sactivetype=m_pWebEm->FindValue("activetype");
-			std::string activeidx=m_pWebEm->FindValue("activeidx");
-			if (
-				(idx=="")||
-				(sactivetype=="")||
-				(activeidx=="")
-				)
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="AddPlanActiveDevice";
-
-			int activetype=atoi(sactivetype.c_str());
-
-			//check if it is not already there
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << activeidx << ") AND (DevSceneType=="<< activetype << ") AND (PlanID==" << idx << ")";
-			result2=m_pMain->m_sql.query(szQuery.str());
-			if (result2.size()==0)
-			{
-				sprintf(szTmp,
-					"INSERT INTO DeviceToPlansMap (DevSceneType,DeviceRowID, PlanID) VALUES (%d,%s,%s)",
-					activetype,
-					activeidx.c_str(),
-					idx.c_str()
-					);
-				result=m_pMain->m_sql.query(szTmp);
-			}
-		}
-		else if (cparam=="getplandevices")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="GetPlanDevices";
-			std::vector<std::vector<std::string> > result;
-			std::stringstream szQuery;
-			
-			szQuery << "SELECT ID, DevSceneType, DeviceRowID, [Order] FROM DeviceToPlansMap WHERE (PlanID=='" << idx << "') ORDER BY [Order]";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()>0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				int ii=0;
-				for (itt=result.begin(); itt!=result.end(); ++itt)
-				{
-					std::vector<std::string> sd=*itt;
-
-					std::string ID=sd[0];
-					int DevSceneType=atoi(sd[1].c_str());
-					std::string DevSceneRowID=sd[2];
-
-					std::string Name="";
-					if (DevSceneType==0)
-					{
-						std::vector<std::vector<std::string> > result2;
-						std::stringstream szQuery2;
-						szQuery2 << "SELECT Name FROM DeviceStatus WHERE (ID=='" << DevSceneRowID << "')";
-						result2=m_pMain->m_sql.query(szQuery2.str());
-						if (result2.size()>0)
-						{
-							Name=result2[0][0];
-						}
-					}
-					else
-					{
-						std::vector<std::vector<std::string> > result2;
-						std::stringstream szQuery2;
-						szQuery2 << "SELECT Name FROM Scenes WHERE (ID=='" << DevSceneRowID << "')";
-						result2=m_pMain->m_sql.query(szQuery2.str());
-						if (result2.size()>0)
-						{
-							Name="[Scene] " + result2[0][0];
-						}
-					}
-					if (Name!="")
-					{
-						root["result"][ii]["idx"]=ID;
-						root["result"][ii]["type"]=DevSceneType;
-						root["result"][ii]["DevSceneRowID"]=DevSceneRowID;
-						root["result"][ii]["order"]=sd[3];
-						root["result"][ii]["Name"]=Name;
-						ii++;
-					}
-				}
-			}
-		}
-		else if (cparam=="deleteplandevice")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="DeletePlanDevice";
-			sprintf(szTmp,"DELETE FROM DeviceToPlansMap WHERE (ID == '%s')",idx.c_str());
-			result=m_pMain->m_sql.query(szTmp);
-		}
-		else if (cparam=="deleteallplandevices")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="DeleteAllPlanDevices";
-			sprintf(szTmp,"DELETE FROM DeviceToPlansMap WHERE (PlanID == '%s')",idx.c_str());
-			result=m_pMain->m_sql.query(szTmp);
-		}
-		else if (cparam=="changeplanorder")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			std::string sway=m_pWebEm->FindValue("way");
-			if (sway=="")
-				goto exitjson;
-			bool bGoUp=(sway=="0");
-
-			std::string aOrder,oID,oOrder;
-
-			std::vector<std::vector<std::string> > result;
-			std::stringstream szQuery;
-			szQuery << "SELECT [Order] FROM Plans WHERE (ID=='" << idx << "')";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()<1)
-				goto exitjson;
-			aOrder=result[0][0];
-
-			szQuery.clear();
-			szQuery.str("");
-
-			if (!bGoUp)
-			{
-				//Get next device order
-				szQuery << "SELECT ID, [Order] FROM Plans WHERE ([Order]>'" << aOrder << "') ORDER BY [Order] ASC";
-				result=m_pMain->m_sql.query(szQuery.str());
-				if (result.size()<1)
-					goto exitjson;
-				oID=result[0][0];
-				oOrder=result[0][1];
-			}
-			else
-			{
-				//Get previous device order
-				szQuery << "SELECT ID, [Order] FROM Plans WHERE ([Order]<'" << aOrder << "') ORDER BY [Order] DESC";
-				result=m_pMain->m_sql.query(szQuery.str());
-				if (result.size()<1)
-					goto exitjson;
-				oID=result[0][0];
-				oOrder=result[0][1];
-			}
-			//Swap them
-			root["status"]="OK";
-			root["title"]="ChangePlanOrder";
-
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "UPDATE Plans SET [Order] = '" << oOrder << "' WHERE (ID='" << idx << "')";
-			result=m_pMain->m_sql.query(szQuery.str());
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "UPDATE Plans SET [Order] = '" << aOrder << "' WHERE (ID='" << oID << "')";
-			result=m_pMain->m_sql.query(szQuery.str());
-		}
-		else if (cparam=="changeplandeviceorder")
-		{
-			std::string planid=m_pWebEm->FindValue("planid");
-			std::string idx=m_pWebEm->FindValue("idx");
-			std::string sway=m_pWebEm->FindValue("way");
-			if (
-				(planid=="")||
-				(idx=="")||
-				(sway=="")
-				)
-				goto exitjson;
-			bool bGoUp=(sway=="0");
-
-			std::string aOrder,oID,oOrder;
-
-			std::vector<std::vector<std::string> > result;
-			std::stringstream szQuery;
-			szQuery << "SELECT [Order] FROM DeviceToPlansMap WHERE ((ID=='" << idx << "') AND (PlanID=='" << planid << "'))";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()<1)
-				goto exitjson;
-			aOrder=result[0][0];
-
-			szQuery.clear();
-			szQuery.str("");
-
-			if (!bGoUp)
-			{
-				//Get next device order
-				szQuery << "SELECT ID, [Order] FROM DeviceToPlansMap WHERE (([Order]>'" << aOrder << "') AND (PlanID=='" << planid << "')) ORDER BY [Order] ASC";
-				result=m_pMain->m_sql.query(szQuery.str());
-				if (result.size()<1)
-					goto exitjson;
-				oID=result[0][0];
-				oOrder=result[0][1];
-			}
-			else
-			{
-				//Get previous device order
-				szQuery << "SELECT ID, [Order] FROM DeviceToPlansMap WHERE (([Order]<'" << aOrder << "') AND (PlanID=='" << planid << "')) ORDER BY [Order] DESC";
-				result=m_pMain->m_sql.query(szQuery.str());
-				if (result.size()<1)
-					goto exitjson;
-				oID=result[0][0];
-				oOrder=result[0][1];
-			}
-			//Swap them
-			root["status"]="OK";
-			root["title"]="ChangePlanOrder";
-
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "UPDATE DeviceToPlansMap SET [Order] = '" << oOrder << "' WHERE (ID='" << idx << "')";
-			result=m_pMain->m_sql.query(szQuery.str());
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "UPDATE DeviceToPlansMap SET [Order] = '" << aOrder << "' WHERE (ID='" << oID << "')";
-			result=m_pMain->m_sql.query(szQuery.str());
-		}
-		else if (cparam=="getactualhistory")
-		{
-			root["status"]="OK";
-			root["title"]="GetActualHistory";
-
-			std::string historyfile = szStartupFolder + "History.txt";
-
-			std::ifstream infile;
-			int ii=0;
-			infile.open(historyfile.c_str());
-			std::string sLine;
-			if (infile.is_open())
-			{
-				while (!infile.eof())
-				{
-					getline(infile, sLine);
-					root["LastLogTime"]="";
-					if (sLine.find("Version ")==0)
-						root["result"][ii]["level"]=1;
-					else
-						root["result"][ii]["level"]=0;
-					root["result"][ii]["message"]=sLine;
-					ii++;
-				}
-			}
-		}
-		else if (cparam=="logincheck")
-		{
-			std::string tmpusrname=m_pWebEm->FindValue("username");
-			std::string tmpusrpass=m_pWebEm->FindValue("password");
-			if (
-				(tmpusrname=="")||
-				(tmpusrpass=="")
-				)
-				goto exitjson;
-
-			std::string usrname;
-			std::string usrpass;
-			if (request_handler::url_decode(tmpusrname,usrname))
-			{
-				if (request_handler::url_decode(tmpusrpass,usrpass))
-				{
-					usrname=base64_decode(usrname);
-					usrpass=base64_decode(usrpass);
-					int iUser=-1;
-					iUser=FindUser(usrname.c_str());
-					if (iUser==-1)
-						goto exitjson;
-					if (m_users[iUser].Password!=usrpass)
-						goto exitjson;
-					root["status"]="OK";
-					root["title"]="logincheck";
-				}
-			}
-		}
-		else if (cparam=="getnewhistory")
-		{
-			root["status"]="OK";
-			root["title"]="GetNewHistory";
-
-			std::string historyfile;
-			int nValue;
-			m_pMain->m_sql.GetPreferencesVar("ReleaseChannel", nValue);
-			bool bIsBetaChannel=(nValue!=0);
-
-			std::string szHistoryURL="http://domoticz.sourceforge.net/History.txt";
-			if (bIsBetaChannel)
-				szHistoryURL="http://domoticz.sourceforge.net/beta/History.txt";
-			if (!HTTPClient::GET(szHistoryURL,historyfile))
-			{
-				historyfile="Unable to get Online History document !!";
-			}
-
-			std::istringstream stream(historyfile);
-			std::string sLine;
-			int ii=0;
-			while (std::getline(stream, sLine)) 
-			{
-				root["LastLogTime"]="";
-				if (sLine.find("Version ")==0)
-					root["result"][ii]["level"]=1;
-				else
-					root["result"][ii]["level"]=0;
-				root["result"][ii]["message"]=sLine;
-				ii++;
-			}
-		}
-		else if (cparam=="getactivetabs")
-		{
-			root["status"]="OK";
-			root["title"]="GetActiveTabs";
-
-			bool bHaveUser=(m_pWebEm->m_actualuser!="");
-			int urights=3;
-			unsigned long UserID=0;
-			if (bHaveUser)
-			{
-				int iUser=-1;
-				iUser=FindUser(m_pWebEm->m_actualuser.c_str());
-				if (iUser!=-1)
-				{
-					urights=(int)m_users[iUser].userrights;
-					UserID=m_users[iUser].ID;
-				}
-				
-			}
-			root["statuscode"]=urights;
-
-			int nValue;
-			std::string sValue;
-
-			if (m_pMain->m_sql.GetPreferencesVar("Language", sValue))
-			{
-				root["language"]=sValue;
-			}
-			if (m_pMain->m_sql.GetPreferencesVar("MobileType", nValue))
-			{
-				root["MobileType"]=nValue;
-			}
-
-			root["WindScale"]=m_pMain->m_sql.m_windscale*10.0f;
-			root["WindSign"]=m_pMain->m_sql.m_windsign;
-			root["TempScale"]=m_pMain->m_sql.m_tempscale;
-			root["TempSign"]=m_pMain->m_sql.m_tempsign;
-
-			int bEnableTabLight=1;
-			int bEnableTabScenes=1;
-			int bEnableTabTemp=1;
-			int bEnableTabWeather=1;
-			int bEnableTabUtility=1;
-
-			if ((UserID!=0)&&(UserID!=10000)) {
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "SELECT TabsEnabled FROM Users WHERE (ID==" << UserID << ")";
-				result=m_pMain->m_sql.query(szQuery.str());
-				if (result.size()>0)
-				{
-					int TabsEnabled=atoi(result[0][0].c_str());
-					bEnableTabLight=(TabsEnabled&(1<<0));
-					bEnableTabScenes=(TabsEnabled&(1<<1));
-					bEnableTabTemp=(TabsEnabled&(1<<2));
-					bEnableTabWeather=(TabsEnabled&(1<<3));
-					bEnableTabUtility=(TabsEnabled&(1<<4));
-				}
-			}
-			else
-			{
-				m_pMain->m_sql.GetPreferencesVar("EnableTabLights", bEnableTabLight);
-				m_pMain->m_sql.GetPreferencesVar("EnableTabScenes", bEnableTabScenes);
-				m_pMain->m_sql.GetPreferencesVar("EnableTabTemp", bEnableTabTemp);
-				m_pMain->m_sql.GetPreferencesVar("EnableTabWeather", bEnableTabWeather);
-				m_pMain->m_sql.GetPreferencesVar("EnableTabUtility", bEnableTabUtility);
-			}
-
-			root["result"]["EnableTabLights"]=bEnableTabLight;
-			root["result"]["EnableTabScenes"]=bEnableTabScenes;
-			root["result"]["EnableTabTemp"]=bEnableTabTemp;
-			root["result"]["EnableTabWeather"]=bEnableTabWeather;
-			root["result"]["EnableTabUtility"]=bEnableTabUtility;
-		}
-		else if (cparam=="sendnotification")
-		{
-			std::string subject=m_pWebEm->FindValue("subject");
-			std::string body=m_pWebEm->FindValue("body");
-			if (
-				(subject=="")||
-				(body=="")
-				)
-				goto exitjson;
-			//Add to queue
-			m_pMain->m_sql.SendNotificationEx(subject,body,0,"");
-			root["status"]="OK";
-			root["title"]="SendNotification";
-		}
-		else if (cparam=="emailcamerasnapshot")
-		{
-			std::string camidx=m_pWebEm->FindValue("camidx");
-			std::string subject=m_pWebEm->FindValue("subject");
-			if (
-				(camidx=="")||
-				(subject=="")
-				)
-				goto exitjson;
-			//Add to queue
-			m_pMain->m_sql.AddTaskItem(_tTaskItem::EmailCameraSnapshot(1,camidx,subject));
-			root["status"]="OK";
-			root["title"]="Email Camera Snapshot";
-		}
-		else if (cparam=="udevice")
-		{
-			std::string nvalue=m_pWebEm->FindValue("nvalue");
-			std::string svalue=m_pWebEm->FindValue("svalue");
-
-			std::string idx=m_pWebEm->FindValue("idx");
-
-			std::string hid=m_pWebEm->FindValue("hid");
-			std::string did=m_pWebEm->FindValue("did");
-			std::string dunit=m_pWebEm->FindValue("dunit");
-			std::string dtype=m_pWebEm->FindValue("dtype");
-			std::string dsubtype=m_pWebEm->FindValue("dsubtype");
-
-			if (idx!="")
-			{
-				//Get device parameters
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << idx << ")";
-				result=m_pMain->m_sql.query(szQuery.str());
-				if (result.size()>0)
-				{
-					hid=result[0][0];
-					did=result[0][1];
-					dunit=result[0][2];
-					dtype=result[0][3];
-					dsubtype=result[0][4];
-				}
-			}
-
-			if (
-				(hid=="")||
-				(did=="")||
-				(dunit=="")||
-				(dtype=="")||
-				(dsubtype=="")
-				)
-				goto exitjson;
-			if ((nvalue=="")&&(svalue==""))
-				goto exitjson;
-
-			root["status"]="OK";
-			root["title"]="Update Device";
-
-			std::string devname="Unknown";
-			m_pMain->m_sql.UpdateValue(
-				atoi(hid.c_str()),
-				did.c_str(),
-				(const unsigned char)atoi(dunit.c_str()),
-				(const unsigned char)atoi(dtype.c_str()),
-				(const unsigned char)atoi(dsubtype.c_str()),
-				12,//signal level,
-				255,//battery level
-				(const int)atoi(nvalue.c_str()),
-				svalue.c_str(),
-				devname,
-				false
-				);
-		}
-		else if (cparam=="system_shutdown")
-		{
-#ifdef WIN32
-			system("shutdown -s -f -t 1 -d up:125:1");
-#else
-			system("sudo shutdown -h now");
-#endif
-			root["status"]="OK";
-			root["title"]="SystemShutdown";
-		}
-		else if (cparam=="system_reboot")
-		{
-#ifdef WIN32
-			system("shutdown -r -f -t 1 -d up:125:1");
-#else
-			system("sudo shutdown -r now");
-#endif
-			root["status"]="OK";
-			root["title"]="SystemReboot";
-		}
-		else if (cparam=="execute_script")
-		{
-			std::string scriptname=m_pWebEm->FindValue("scriptname");
-			if (scriptname=="")
-				goto exitjson;
-			if (scriptname.find("..")!=std::string::npos)
-				goto exitjson;
-#ifdef WIN32
-			scriptname = szStartupFolder + "scripts\\" + scriptname;
-#else
-			scriptname = szStartupFolder + "scripts/" + scriptname;
-#endif
-			if (!file_exist(scriptname.c_str()))
-				goto exitjson;
-			std::string script_params=m_pWebEm->FindValue("scriptparams");
-			std::string strparm=szStartupFolder;
-			if (script_params!="")
-			{
-				if (strparm.size()>0)
-					strparm+=" " + script_params;
-				else
-					strparm=script_params;
-			}
-			std::string sdirect=m_pWebEm->FindValue("direct");
-			if (sdirect=="true")
-			{
-#ifdef WIN32
-				ShellExecute(NULL,"open",scriptname.c_str(),strparm.c_str(),NULL,SW_SHOWNORMAL);
-#else
-				std::string lscript=scriptname + " " + strparm;
-				system(lscript.c_str());
-#endif
-			}
-			else
-			{
-				//add script to background worker
-				m_pMain->m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1,scriptname,strparm));
-			}
-			root["status"]="OK";
-			root["title"]="ExecuteScript";
-		}
-		else if (cparam=="getelectragascosts")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT Type, SubType, nValue, sValue FROM DeviceStatus WHERE (ID==" << idx << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()>0)
-			{
-				std::vector<std::string> sd=result[0];
-
-				int nValue=0;
-				root["status"]="OK";
-				root["title"]="GetElectraCosts";
-				m_pMain->m_sql.GetPreferencesVar("CostEnergy",nValue);
-				root["CostEnergy"]=nValue;
-				m_pMain->m_sql.GetPreferencesVar("CostEnergyT2",nValue);
-				root["CostEnergyT2"]=nValue;
-				m_pMain->m_sql.GetPreferencesVar("CostGas",nValue);
-				root["CostGas"]=nValue;
-
-				unsigned char dType=atoi(sd[0].c_str());
-				unsigned char subType=atoi(sd[1].c_str());
-				nValue=(unsigned char)atoi(sd[2].c_str());
-				std::string sValue=sd[3];
-
-				if (dType == pTypeP1Power)
-				{
-					//also provide the counter values
-
-					std::vector<std::string> splitresults;
-					StringSplit(sValue, ";", splitresults);
-					if (splitresults.size()!=6)
-						goto exitjson;
-
-					float EnergyDivider=1000.0f;
-					int tValue;
-					if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-					{
-						EnergyDivider=float(tValue);
-					}
-
-					unsigned long long powerusage1;
-					unsigned long long powerusage2;
-					unsigned long long powerdeliv1;
-					unsigned long long powerdeliv2;
-					unsigned long long usagecurrent;
-					unsigned long long delivcurrent;
-
-					std::stringstream s_powerusage1(splitresults[0]);
-					std::stringstream s_powerusage2(splitresults[1]);
-					std::stringstream s_powerdeliv1(splitresults[2]);
-					std::stringstream s_powerdeliv2(splitresults[3]);
-					std::stringstream s_usagecurrent(splitresults[4]);
-					std::stringstream s_delivcurrent(splitresults[5]);
-
-					s_powerusage1 >> powerusage1;
-					s_powerusage2 >> powerusage2;
-					s_powerdeliv1 >> powerdeliv1;
-					s_powerdeliv2 >> powerdeliv2;
-					s_usagecurrent >> usagecurrent;
-					s_delivcurrent >> delivcurrent;
-
-					sprintf(szTmp,"%.03f",float(powerusage1)/EnergyDivider);
-					root["CounterT1"]=szTmp;
-					sprintf(szTmp,"%.03f",float(powerusage2)/EnergyDivider);
-					root["CounterT2"]=szTmp;
-					sprintf(szTmp,"%.03f",float(powerdeliv1)/EnergyDivider);
-					root["CounterR1"]=szTmp;
-					sprintf(szTmp,"%.03f",float(powerdeliv2)/EnergyDivider);
-					root["CounterR2"]=szTmp;
-				}
-
-			}
-		}
-		else if (cparam=="checkforupdate")
-		{
-			bool bHaveUser=(m_pWebEm->m_actualuser!="");
-			int urights=3;
-			if (bHaveUser)
-			{
-				int iUser=-1;
-				iUser=FindUser(m_pWebEm->m_actualuser.c_str());
-				if (iUser!=-1)
-					urights=(int)m_users[iUser].userrights;
-			}
-			root["statuscode"]=urights;
-			int nValue=1;
-			m_pMain->m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
-			root["5MinuteHistoryDays"]=nValue;
-
-			utsname my_uname;
-			if (uname(&my_uname)<0)
-				goto exitjson;
-
-			std::string forced=m_pWebEm->FindValue("forced");
-			bool bIsForced=(forced=="true");
-			std::string systemname=my_uname.sysname;
-			std::string machine=my_uname.machine;
-			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
-			if ((systemname=="windows")||((machine!="armv6l")&&(machine!="armv7l")))
-			{
-				//Only Raspberry Pi (Wheezy) for now!
-				root["status"]="OK";
-				root["title"]="CheckForUpdate";
-				root["HaveUpdate"]=false;
-				root["IsSupported"]=false;
-			}
-			else
-			{
-				int nValue=0;
-				m_pMain->m_sql.GetPreferencesVar("UseAutoUpdate",nValue);
-				if (nValue==1)
-				{
-					m_pMain->m_sql.GetPreferencesVar("ReleaseChannel", nValue);
-					bool bIsBetaChannel=(nValue!=0);
-					std::string szURL="http://domoticz.sourceforge.net/version_" + systemname + "_" + machine + ".h";
-					std::string szHistoryURL="http://domoticz.sourceforge.net/History.txt";
-					//std::string szURL="http://domoticz.sourceforge.net/svnversion.h";
-					if (bIsBetaChannel)
-					{
-						//szURL="http://domoticz.sourceforge.net/beta/svnversion.h";
-						szURL="http://domoticz.sourceforge.net/beta/version_" + systemname + "_" + machine + ".h";
-						szHistoryURL="http://domoticz.sourceforge.net/beta/History.txt";
-					}
-					std::string revfile;
-
-					if (!HTTPClient::GET(szURL,revfile))
-						goto exitjson;
-					std::vector<std::string> strarray;
-					StringSplit(revfile, " ", strarray);
-					if (strarray.size()!=3)
-						goto exitjson;
-					root["status"]="OK";
-					root["title"]="CheckForUpdate";
-					root["IsSupported"]=true;
-
-					int version=atoi(szAppVersion.substr(szAppVersion.find(".")+1).c_str());
-					bool bHaveUpdate=(version<atoi(strarray[2].c_str()));
-					if ((bHaveUpdate)&&(!bIsForced))
-					{
-						time_t atime=mytime(NULL);
-						if (atime-m_LastUpdateCheck<12*3600)
-						{
-							bHaveUpdate=false;
-						}
-						else
-							m_LastUpdateCheck=atime;
-					}
-					root["HaveUpdate"]=bHaveUpdate;
-					root["Revision"]=atoi(strarray[2].c_str());
-					root["HistoryURL"]=szHistoryURL;
-					root["ActVersion"]=version;
-				}
-				else
-				{
-					root["status"]="OK";
-					root["title"]="CheckForUpdate";
-					root["IsSupported"]=false;
-					root["HaveUpdate"]=false;
-				}
-			}
-		}
-		else if (cparam=="downloadupdate")
-		{
-			int nValue;
-			m_pMain->m_sql.GetPreferencesVar("ReleaseChannel", nValue);
-			bool bIsBetaChannel=(nValue!=0);
-			std::string szURL;
-			std::string revfile;
-
-			utsname my_uname;
-			if (uname(&my_uname)<0)
-				goto exitjson;
-
-			std::string forced=m_pWebEm->FindValue("forced");
-			bool bIsForced=(forced=="true");
-			std::string systemname=my_uname.sysname;
-			std::string machine=my_uname.machine;
-			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
-
-			if (!bIsBetaChannel)
-			{
-				//szURL="http://domoticz.sourceforge.net/svnversion.h";
-				szURL="http://domoticz.sourceforge.net/version_" + systemname + "_" + machine + ".h";
-				//HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=DownloadNewVersion&amp;idgoal=2",revfile);
-			}
-			else
-			{
-				//szURL="http://domoticz.sourceforge.net/beta/svnversion.h";
-				szURL="http://domoticz.sourceforge.net/beta/version_" + systemname + "_" + machine + ".h";
-				//HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=DownloadNewVersion&amp;idgoal=1",revfile);
-			}
-			if (!HTTPClient::GET(szURL,revfile))
-				goto exitjson;
-			std::vector<std::string> strarray;
-			StringSplit(revfile, " ", strarray);
-			if (strarray.size()!=3)
-				goto exitjson;
-			int version=atoi(szAppVersion.substr(szAppVersion.find(".")+1).c_str());
-			if (version>=atoi(strarray[2].c_str()))
-				goto exitjson;
-			if (((machine!="armv6l")&&(machine!="armv7l"))||(strstr(my_uname.release,"ARCH+")!=NULL))
-				goto exitjson;	//only Raspberry Pi for now
-			root["status"]="OK";
-			root["title"]="DownloadUpdate";
-			std::string downloadURL="http://domoticz.sourceforge.net/domoticz_" + systemname + "_" + machine + ".tgz";
-			if (bIsBetaChannel)
-				downloadURL="http://domoticz.sourceforge.net/beta/domoticz_" + systemname + "_" + machine + ".tgz";
-			m_pMain->GetDomoticzUpdate(downloadURL);
-		}
-		else if (cparam=="downloadready")
-		{
-			if (!m_pMain->m_bHaveDownloadedDomoticzUpdate)
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="DownloadReady";
-			root["downloadok"]=(m_pMain->m_bHaveDownloadedDomoticzUpdateSuccessFull)?true:false;
-		}
-		else if (cparam=="deletedatapoint")
-		{
-			const std::string idx=m_pWebEm->FindValue("idx");
-			const std::string Date=m_pWebEm->FindValue("date");
-			if (
-				(idx=="")||
-				(Date=="")
-				)
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="deletedatapoint";
-			m_pMain->m_sql.DeleteDataPoint(idx.c_str(),Date);
-		}
-		else if (cparam=="deleteallsubdevices")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="DeleteAllSubDevices";
-			sprintf(szTmp,"DELETE FROM LightSubDevices WHERE (ParentID == %s)",idx.c_str());
-			result=m_pMain->m_sql.query(szTmp);
-		}
-		else if (cparam=="deletesubdevice")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="DeleteSubDevice";
-			sprintf(szTmp,"DELETE FROM LightSubDevices WHERE (ID == %s)",idx.c_str());
-			result=m_pMain->m_sql.query(szTmp);
-		}
-		else if (cparam=="addsubdevice")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			std::string subidx=m_pWebEm->FindValue("subidx");
-			if ((idx=="")||(subidx==""))
-				goto exitjson;
-			if (idx==subidx)
-				goto exitjson;
-
-			//first check if it is not already a sub device
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << subidx << "') AND (ParentID =='" << idx << "')";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()==0)
-			{
-				root["status"]="OK";
-				root["title"]="AddSubDevice";
-				//no it is not, add it
-				sprintf(szTmp,
-					"INSERT INTO LightSubDevices (DeviceRowID, ParentID) VALUES ('%s','%s')",
-					subidx.c_str(),
-					idx.c_str()
-					);
-				result=m_pMain->m_sql.query(szTmp);
-			}
-		}
-		else if (cparam=="addscenedevice")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			std::string devidx=m_pWebEm->FindValue("devidx");
-			std::string isscene=m_pWebEm->FindValue("isscene");
-			int command=atoi(m_pWebEm->FindValue("command").c_str());
-			
-			if (
-				(idx=="")||
-				(devidx=="")||
-				(isscene=="")
-				)
-				goto exitjson;
-			int level=atoi(m_pWebEm->FindValue("level").c_str());
-			int hue=atoi(m_pWebEm->FindValue("hue").c_str());
-			//first check if this device is not the scene code!
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << devidx << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()>0)
-			{
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM Scenes WHERE (ID==" << idx << ")";
-				result2=m_pMain->m_sql.query(szQuery.str());
-				if (result2.size()>0)
-				{
-					if (
-						(result[0][0]==result2[0][0])&&
-						(result[0][1]==result2[0][1])&&
-						(result[0][2]==result2[0][2])&&
-						(result[0][3]==result2[0][3])&&
-						(result[0][4]==result2[0][4])
-						)
-					{
-						//This is not allowed!
-						goto exitjson;
-					}
-				}
-			}
-			//first check if it is not already a sub device
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT ID FROM SceneDevices WHERE (DeviceRowID=='" << devidx << "') AND (SceneRowID =='" << idx << "')";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()==0)
-			{
-				root["status"]="OK";
-				root["title"]="AddSceneDevice";
-				//no it is not, add it
-				if (isscene=="true")
-				{
-					sprintf(szTmp,
-						"INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Cmd, Level, Hue) VALUES ('%s','%s',%d,%d,%d)",
-						devidx.c_str(),
-						idx.c_str(),
-						command,
-						level,
-						hue
-						);
-				}
-				else
-				{
-					sprintf(szTmp,
-						"INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Level,Hue) VALUES ('%s','%s',%d,%d)",
-						devidx.c_str(),
-						idx.c_str(),
-						level,
-						hue
-						);
-				}
-				result=m_pMain->m_sql.query(szTmp);
-			}
-		}
-		else if (cparam=="updatescenedevice")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			std::string devidx=m_pWebEm->FindValue("devidx");
-			std::string isscene=m_pWebEm->FindValue("isscene");
-			int command=atoi(m_pWebEm->FindValue("command").c_str());
-
-			if (
-				(idx=="")||
-				(devidx=="")||
-				(isscene!="true")
-				)
-				goto exitjson;
-			int level=atoi(m_pWebEm->FindValue("level").c_str());
-			int hue=atoi(m_pWebEm->FindValue("hue").c_str());
-			root["status"]="OK";
-			root["title"]="UpdateSceneDevice";
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "UPDATE SceneDevices SET Cmd=" << command << ", Level=" << level << ", Hue=" << hue << " WHERE (ID == " << idx << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
-		}
-		else if (cparam=="deletescenedevice")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="DeleteSceneDevice";
-			sprintf(szTmp,"DELETE FROM SceneDevices WHERE (ID == %s)",idx.c_str());
-			result=m_pMain->m_sql.query(szTmp);
-			sprintf(szTmp,"DELETE FROM CamerasActiveDevices WHERE (DevSceneType==1) AND (DevSceneRowID == %s)",idx.c_str());
-			result=m_pMain->m_sql.query(szTmp);
-
-		}
-		else if (cparam=="getsubdevices")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-
-			root["status"]="OK";
-			root["title"]="GetSubDevices";
-			std::vector<std::vector<std::string> > result;
-			std::stringstream szQuery;
-			szQuery << "SELECT a.ID, b.Name FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='" << idx << "') AND (b.ID == a.DeviceRowID)";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()>0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				int ii=0;
-				for (itt=result.begin(); itt!=result.end(); ++itt)
-				{
-					std::vector<std::string> sd=*itt;
-
-					root["result"][ii]["ID"]=sd[0];
-					root["result"][ii]["Name"]=sd[1];
-					ii++;
-				}
-			}
-		}
-		else if (cparam=="gettimerlist")
-		{
-			root["status"]="OK";
-			root["title"]="GetTimerList";
-			std::vector<std::vector<std::string> > result;
-			std::stringstream szQuery;
-			szQuery << "SELECT t.ID, t.Active, d.[Name], t.DeviceRowID, t.Time, t.Type, t.Cmd, t.Level, t.Days FROM Timers as t, DeviceStatus as d WHERE (d.ID == t.DeviceRowID) ORDER BY d.[Name], t.Time";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()>0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				int ii=0;
-				for (itt=result.begin(); itt!=result.end(); ++itt)
-				{
-					std::vector<std::string> sd=*itt;
-
-					root["result"][ii]["ID"]			=sd[0];
-					root["result"][ii]["Active"]		=sd[1];
-					root["result"][ii]["Name"]			=sd[2];
-					root["result"][ii]["DeviceRowID"]	=sd[3];
-					root["result"][ii]["Time"]			=sd[4];
-					root["result"][ii]["Type"]			=sd[5];
-					root["result"][ii]["Cmd"]			=sd[6];
-					root["result"][ii]["Level"]			=sd[7];
-					root["result"][ii]["Days"]			=sd[8];
-					ii++;
-				}
-			}
-		}
-		else if (cparam=="getscenedevices")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			std::string isscene=m_pWebEm->FindValue("isscene");
-			
-			if (
-				(idx=="")||
-				(isscene=="")
-				)
-				goto exitjson;
-
-			root["status"]="OK";
-			root["title"]="GetSceneDevices";
-
-			std::vector<std::vector<std::string> > result;
-			std::stringstream szQuery;
-			szQuery << "SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Cmd, a.Level, b.ID, a.[Order], a.Hue FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='" << idx << "') AND (b.ID == a.DeviceRowID) ORDER BY a.[Order]";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()>0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				int ii=0;
-				for (itt=result.begin(); itt!=result.end(); ++itt)
-				{
-					std::vector<std::string> sd=*itt;
-
-					root["result"][ii]["ID"]=sd[0];
-					root["result"][ii]["Name"]=sd[1];
-					root["result"][ii]["DevID"]=sd[2];
-					root["result"][ii]["DevRealIdx"]=sd[9];
-					root["result"][ii]["Order"]=atoi(sd[10].c_str());
-
-					unsigned char devType=atoi(sd[3].c_str());
-					unsigned char subType=atoi(sd[4].c_str());
-					unsigned char nValue=(unsigned char)atoi(sd[5].c_str());
-					std::string sValue=sd[6];
-					int command=atoi(sd[7].c_str());
-					int level=atoi(sd[8].c_str());
-
-					std::string lstatus="";
-					int llevel=0;
-					bool bHaveDimmer=false;
-					bool bHaveGroupCmd=false;
-					int maxDimLevel=0;
-					if (isscene=="true")
-						GetLightStatus(devType,subType,command,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
-					else
-						GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
-					root["result"][ii]["IsOn"]=IsLightSwitchOn(lstatus);
-					root["result"][ii]["Level"]=level;
-					root["result"][ii]["Hue"]=atoi(sd[11].c_str());
-					root["result"][ii]["Type"]=RFX_Type_Desc(devType,1);
-					root["result"][ii]["SubType"]=RFX_Type_SubType_Desc(devType,subType);
-					ii++;
-				}
-			}
-		}
-		else if (cparam=="changescenedeviceorder")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			std::string sway=m_pWebEm->FindValue("way");
-			if (sway=="")
-				goto exitjson;
-			bool bGoUp=(sway=="0");
-
-			std::string aScene,aOrder,oID,oOrder;
-
-			//Get actual device order
-			std::vector<std::vector<std::string> > result;
-			std::stringstream szQuery;
-			szQuery << "SELECT SceneRowID, [Order] FROM SceneDevices WHERE (ID=='" << idx << "')";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()<1)
-				goto exitjson;
-			aScene=result[0][0];
-			aOrder=result[0][1];
-
-			szQuery.clear();
-			szQuery.str("");
-
-			if (!bGoUp)
-			{
-				//Get next device order
-				szQuery << "SELECT ID, [Order] FROM SceneDevices WHERE (SceneRowID=='" << aScene << "' AND [Order]>'" << aOrder << "') ORDER BY [Order] ASC";
-				result=m_pMain->m_sql.query(szQuery.str());
-				if (result.size()<1)
-					goto exitjson;
-				oID=result[0][0];
-				oOrder=result[0][1];
-			}
-			else
-			{
-				//Get previous device order
-				szQuery << "SELECT ID, [Order] FROM SceneDevices WHERE (SceneRowID=='" << aScene << "' AND [Order]<'" << aOrder << "') ORDER BY [Order] DESC";
-				result=m_pMain->m_sql.query(szQuery.str());
-				if (result.size()<1)
-					goto exitjson;
-				oID=result[0][0];
-				oOrder=result[0][1];
-			}
-			//Swap them
-			root["status"]="OK";
-			root["title"]="ChangeSceneDeviceOrder";
-
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "UPDATE SceneDevices SET [Order] = '" << oOrder << "' WHERE (ID='" << idx << "')";
-			result=m_pMain->m_sql.query(szQuery.str());
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "UPDATE SceneDevices SET [Order] = '" << aOrder << "' WHERE (ID='" << oID << "')";
-			result=m_pMain->m_sql.query(szQuery.str());
-		}
-		else if (cparam=="deleteallscenedevices")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="DeleteAllSceneDevices";
-			sprintf(szTmp,"DELETE FROM SceneDevices WHERE (SceneRowID == %s)",idx.c_str());
-			result=m_pMain->m_sql.query(szTmp);
-		}
-		else if (cparam=="getmanualhardware")
-		{
-			//used by Add Manual Light/Switch dialog
-			root["status"]="OK";
-			root["title"]="GetHardware";
-			sprintf(szTmp,"SELECT ID, Name, Type FROM Hardware ORDER BY ID ASC");
-			result=m_pMain->m_sql.query(szTmp);
-			if (result.size()>0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				int ii=0;
-				for (itt=result.begin(); itt!=result.end(); ++itt)
-				{
-					std::vector<std::string> sd=*itt;
-
-					int ID=atoi(sd[0].c_str());
-					std::string Name=sd[1];
-					_eHardwareTypes Type=(_eHardwareTypes)atoi(sd[2].c_str());
-					switch (Type)
-					{
-					case HTYPE_RFXLAN:
-					case HTYPE_RFXtrx315:
-					case HTYPE_RFXtrx433:
-					case HTYPE_EnOcean:
-					case HTYPE_Dummy:
-						root["result"][ii]["idx"]=ID;
-						root["result"][ii]["Name"]=Name;
-						ii++;
-						break;
-					}
-				}
-			}
-		}
-		else if (cparam=="getlightswitches")
-		{
-			root["status"]="OK";
-			root["title"]="GetLightSwitches";
-			std::vector<std::vector<std::string> > result;
-			std::stringstream szQuery;
-			szQuery << "SELECT ID, Name, Type, SubType, Used, SwitchType FROM DeviceStatus ORDER BY Name";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()>0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				int ii=0;
-				for (itt=result.begin(); itt!=result.end(); ++itt)
-				{
-					std::vector<std::string> sd=*itt;
-
-					std::string ID=sd[0];
-					std::string Name=sd[1];
-					int Type=atoi(sd[2].c_str());
-					int SubType=atoi(sd[3].c_str());
-					int used=atoi(sd[4].c_str());
-					_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
-					bool bdoAdd;
-					switch (Type)
-					{
-					case pTypeLighting1:
-					case pTypeLighting2:
-					case pTypeLighting3:
-					case pTypeLighting4:
-					case pTypeLighting5:
-					case pTypeLighting6:
-					case pTypeLimitlessLights:
-					case pTypeSecurity1:
-					case pTypeBlinds:
-					case pTypeChime:
-					case pTypeThermostat3:
-					case pTypeRemote:
-						bdoAdd=true;
-						if (!used)
-						{
-							bdoAdd=false;
-							bool bIsSubDevice=false;
-							std::vector<std::vector<std::string> > resultSD;
-							std::stringstream szQuerySD;
-
-							szQuerySD.clear();
-							szQuerySD.str("");
-							szQuerySD << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << sd[0] << "')";
-							resultSD=m_pMain->m_sql.query(szQuerySD.str());
-							if (resultSD.size()>0)
-								bdoAdd=true;
-						}
-						if (bdoAdd)
-						{
-							root["result"][ii]["idx"]=ID;
-							root["result"][ii]["Name"]=Name;
-							root["result"][ii]["Type"]=Hardware_Type_Desc(Type);
-							root["result"][ii]["SubType"]=RFX_Type_SubType_Desc(Type,SubType);
-							bool bIsDimmer=(switchtype==STYPE_Dimmer);
-							root["result"][ii]["IsDimmer"]=bIsDimmer;
-							ii++;
-						}
-						break;
-					}
-				}
-			}
-		}
-		else if (cparam=="getlightswitchesscenes")
-		{
-			root["status"]="OK";
-			root["title"]="GetLightSwitchesScenes";
-			std::vector<std::vector<std::string> > result;
-			std::stringstream szQuery;
-			int ii=0;
-
-			//First List/Switch Devices
-			szQuery << "SELECT ID, Name, Type, Used FROM DeviceStatus ORDER BY Name";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()>0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt=result.begin(); itt!=result.end(); ++itt)
-				{
-					std::vector<std::string> sd=*itt;
-
-					std::string ID=sd[0];
-					std::string Name=sd[1];
-					int Type=atoi(sd[2].c_str());
-					int used=atoi(sd[3].c_str());
-					if (used)
-					{
-						switch (Type)
-						{
-						case pTypeLighting1:
-						case pTypeLighting2:
-						case pTypeLighting3:
-						case pTypeLighting4:
-						case pTypeLighting5:
-						case pTypeLighting6:
-						case pTypeLimitlessLights:
-						case pTypeSecurity1:
-						case pTypeBlinds:
-						case pTypeChime:
-						case pTypeThermostat3:
-						case pTypeRemote:
-							{
-								root["result"][ii]["type"]=0;
-								root["result"][ii]["idx"]=ID;
-								root["result"][ii]["Name"]="[Light/Switch] " + Name;
-								ii++;
-							}
-							break;
-						}
-					}
-				}
-			}//end light/switches
-			
-			//Add Scenes
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT ID, Name FROM Scenes ORDER BY Name";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()>0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt=result.begin(); itt!=result.end(); ++itt)
-				{
-					std::vector<std::string> sd=*itt;
-
-					std::string ID=sd[0];
-					std::string Name=sd[1];
-
-					root["result"][ii]["type"]=1;
-					root["result"][ii]["idx"]=ID;
-					root["result"][ii]["Name"]="[Scene] " + Name;
-					ii++;
-				}
-			}//end light/switches
-		}
-		else if (cparam=="getcamactivedevices")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="GetCameraActiveDevices";
-			std::vector<std::vector<std::string> > result;
-			std::stringstream szQuery;
-			//First List/Switch Devices
-			szQuery << "SELECT ID, DevSceneType, DevSceneRowID, DevSceneWhen, DevSceneDelay FROM CamerasActiveDevices WHERE (CameraRowID=='" << idx << "') ORDER BY ID";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()>0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				int ii=0;
-				for (itt=result.begin(); itt!=result.end(); ++itt)
-				{
-					std::vector<std::string> sd=*itt;
-
-					std::string ID=sd[0];
-					int DevSceneType=atoi(sd[1].c_str());
-					std::string DevSceneRowID=sd[2];
-					int DevSceneWhen=atoi(sd[3].c_str());
-					int DevSceneDelay=atoi(sd[4].c_str());
-
-					std::string Name="";
-					if (DevSceneType==0)
-					{
-						std::vector<std::vector<std::string> > result2;
-						std::stringstream szQuery2;
-						szQuery2 << "SELECT Name FROM DeviceStatus WHERE (ID=='" << DevSceneRowID << "')";
-						result2=m_pMain->m_sql.query(szQuery2.str());
-						if (result2.size()>0)
-						{
-							Name="[Light/Switches] " + result2[0][0];
-						}
-					}
-					else
-					{
-						std::vector<std::vector<std::string> > result2;
-						std::stringstream szQuery2;
-						szQuery2 << "SELECT Name FROM Scenes WHERE (ID=='" << DevSceneRowID << "')";
-						result2=m_pMain->m_sql.query(szQuery2.str());
-						if (result2.size()>0)
-						{
-							Name="[Scene] " + result2[0][0];
-						}
-					}
-					if (Name!="")
-					{
-						root["result"][ii]["idx"]=ID;
-						root["result"][ii]["type"]=DevSceneType;
-						root["result"][ii]["DevSceneRowID"]=DevSceneRowID;
-						root["result"][ii]["when"]=DevSceneWhen;
-						root["result"][ii]["delay"]=DevSceneDelay;
-						root["result"][ii]["Name"]=Name;
-						ii++;
-					}
-				}
-			}
-		}
-		else if (cparam=="addcamactivedevice")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			std::string activeidx=m_pWebEm->FindValue("activeidx");
-			std::string sactivetype=m_pWebEm->FindValue("activetype");
-			std::string sactivewhen=m_pWebEm->FindValue("activewhen");
-			std::string sactivedelay=m_pWebEm->FindValue("activedelay");
-
-			if (
-				(idx=="")||
-				(activeidx=="")||
-				(sactivetype=="")||
-				(sactivewhen=="")||
-				(sactivedelay=="")
-				)
-			{
-				goto exitjson;
-			}
-
-			int activetype=atoi(sactivetype.c_str());
-			int activewhen=atoi(sactivewhen.c_str());
-			int activedelay=atoi(sactivedelay.c_str());
-
-			//first check if it is not already a Active Device
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT ID FROM CamerasActiveDevices WHERE (CameraRowID=='" 
-					<< idx << "') AND (DevSceneType==" 
-					<< activetype << ") AND (DevSceneRowID=='" << activeidx << "')  AND (DevSceneWhen==" << sactivewhen << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()==0)
-			{
-				root["status"]="OK";
-				root["title"]="AddCameraActiveDevice";
-				//no it is not, add it
-				sprintf(szTmp,
-					"INSERT INTO CamerasActiveDevices (CameraRowID, DevSceneType, DevSceneRowID, DevSceneWhen, DevSceneDelay) VALUES ('%s',%d,'%s',%d,%d)",
-					idx.c_str(),
-					activetype,
-					activeidx.c_str(),
-					activewhen,
-					activedelay
-					);
-				result=m_pMain->m_sql.query(szTmp);
-				m_pMain->m_cameras.ReloadCameraActiveDevices(idx);
-			}
-		}
-		else if (cparam=="deleteamactivedevice")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="DeleteCameraActiveDevice";
-			sprintf(szTmp,"DELETE FROM CamerasActiveDevices WHERE (ID == '%s')",idx.c_str());
-			result=m_pMain->m_sql.query(szTmp);
-		}
-		else if (cparam=="deleteallactivecamdevices")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="DeleteAllCameraActiveDevices";
-			sprintf(szTmp,"DELETE FROM CamerasActiveDevices WHERE (CameraRowID == '%s')",idx.c_str());
-			result=m_pMain->m_sql.query(szTmp);
-		}
-		else if (cparam=="testpushover")
-		{
-			std::string poapi=m_pWebEm->FindValue("poapi");
-			std::string pouser=m_pWebEm->FindValue("pouser");
-			if ((poapi=="")||(pouser==""))
-				goto exitjson;
-
-			root["title"]="Test Pushover";
-			char sPostData[300];
-			std::string sResult;
-			std::string poTitle = "Domoticz test";
-			std::string poMessage = "Domoticz test message!";
-			sprintf(sPostData,"token=%s&user=%s&priority=0&title=%s&message=%s",poapi.c_str(),pouser.c_str(),poTitle.c_str(),poMessage.c_str());
-			if (!HTTPClient::POST("https://api.pushover.net/1/messages.json",sPostData,sResult))
-			{
-				_log.Log(LOG_ERROR,"Error sending Pushover Notification!");
-			}
-			else
-			{
-			_log.Log(LOG_NORM,"Notification sent (Pushover)");
-			root["status"]="OK";
-			}
-		}
-		else if (cparam=="testemail")
-		{
-			std::string EmailFrom=m_pWebEm->FindValue("EmailFrom");
-			std::string EmailTo=m_pWebEm->FindValue("EmailTo");
-			std::string EmailServer=m_pWebEm->FindValue("EmailServer");
-			std::string EmailUsername=m_pWebEm->FindValue("EmailUsername");
-			std::string EmailPassword=m_pWebEm->FindValue("EmailPassword");
-			std::string sEmailPort=m_pWebEm->FindValue("EmailPort");
-
-			if (
-				(EmailFrom=="")||
-				(EmailTo=="")||
-				(EmailServer=="")||
-				(sEmailPort=="")
-				)
-				goto exitjson;
-			int EmailPort=atoi(sEmailPort.c_str());
-			std::string szBody;
-			szBody=
-				"<html>\n"
-				"<body>\n"
-				"<b>If you received this, then your email settings worked!</b>\n"
-				"</body>\n"
-				"</html>\n";
-
-			SMTPClient sclient;
-			sclient.SetFrom(CURLEncode::URLDecode(EmailFrom.c_str()));
-			sclient.SetTo(CURLEncode::URLDecode(EmailTo.c_str()));
-			sclient.SetCredentials(CURLEncode::URLDecode(EmailUsername),CURLEncode::URLDecode(EmailPassword));
-			sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()),EmailPort);
-			sclient.SetSubject(CURLEncode::URLDecode("Test email message from Domoticz!"));
-			sclient.SetHTMLBody(szBody);
-			bool bRet=sclient.SendEmail();
-			if (bRet==true) {
-				root["status"]="OK";
-				root["title"]="TestEmail";
-			}
-		}
-		else if (cparam=="testswitch")
-		{
-			std::string hwdid=m_pWebEm->FindValue("hwdid");
-			std::string sswitchtype=m_pWebEm->FindValue("switchtype");
-			std::string slighttype=m_pWebEm->FindValue("lighttype");
-			if (
-				(hwdid=="")||
-				(sswitchtype=="")||
-				(slighttype=="")
-				)
-				goto exitjson;
-			_eSwitchType switchtype=(_eSwitchType)atoi(sswitchtype.c_str());
-			int lighttype=atoi(slighttype.c_str());
-			int dtype;
-			int subtype=0;
-			std::string sunitcode;
-			std::string devid;
-
-			if (lighttype==66)
-			{
-				//Blyss
-				dtype=pTypeLighting6;
-				subtype=sTypeBlyss;
-				std::string sgroupcode=m_pWebEm->FindValue("groupcode");
-				sunitcode=m_pWebEm->FindValue("unitcode");
-				std::string id=m_pWebEm->FindValue("id");
-				if (
-					(sgroupcode=="")||
-					(sunitcode=="")||
-					(id=="")
-					)
-					goto exitjson;
-				devid=id+sgroupcode;
-			}
-			else if (lighttype==67)
-			{
-				//EnOcean (Lighting2 with Base_ID offset)
-				dtype=pTypeLighting2;
-				subtype=sTypeAC;
-				std::string sgroupcode=m_pWebEm->FindValue("groupcode");
-				sunitcode=m_pWebEm->FindValue("unitcode");
-				int iUnitTest=atoi(sunitcode.c_str());	//only First Rocker_ID at the moment, gives us 128 devices we can control, should be enough!
-				if (
-					(sunitcode=="")||
-					(sgroupcode=="")||
-					((iUnitTest<1)||(iUnitTest>128))
-					)
-					goto exitjson;
-				sunitcode=sgroupcode;//Button A or B
-				CEnOcean *pEnoceanHardware=(CEnOcean *)m_pMain->GetHardware(atoi(hwdid.c_str()));
-				if (pEnoceanHardware==NULL)
-					goto exitjson;
-				if (pEnoceanHardware->HwdType!=HTYPE_EnOcean)
-					goto exitjson;
-				if (pEnoceanHardware->m_id_base==0)
-					goto exitjson;
-				unsigned long rID=pEnoceanHardware->m_id_base+iUnitTest;
-				//convert to hex, and we have our ID
-				std::stringstream s_strid;
-				s_strid << std::hex << std::uppercase << rID;
-				devid=s_strid.str();
-			}
-			else if (lighttype<10)
-			{
-				dtype=pTypeLighting1;
-				subtype=lighttype;
-				std::string shousecode=m_pWebEm->FindValue("housecode");
-				sunitcode=m_pWebEm->FindValue("unitcode");
-				if (
-					(shousecode=="")||
-					(sunitcode=="")
-					)
-					goto exitjson;
-				devid=shousecode;
-			}
-			else if (lighttype<13)
-			{
-				dtype=pTypeLighting2;
-				subtype=lighttype-10;
-				std::string id=m_pWebEm->FindValue("id");
-				sunitcode=m_pWebEm->FindValue("unitcode");
-				if (
-					(id=="")||
-					(sunitcode=="")
-					)
-					goto exitjson;
-				devid=id;
-			}
-			else if (lighttype<100)
-			{
-				dtype=pTypeLighting5;
-				subtype=lighttype-13;
-				std::string id=m_pWebEm->FindValue("id");
-				sunitcode=m_pWebEm->FindValue("unitcode");
-				if (
-					(id=="")||
-					(sunitcode=="")
-					)
-					goto exitjson;
-				devid=id;
-			}
-			else
-			{
-				if (lighttype==100)
-				{
-					//Chime/ByronSX
-					dtype=pTypeChime;
-					subtype=sTypeByronSX;
-					std::string id=m_pWebEm->FindValue("id");
-					sunitcode=m_pWebEm->FindValue("unitcode");
-					if (
-						(id=="")||
-						(sunitcode=="")
-						)
-						goto exitjson;
-					int iUnitCode=atoi(sunitcode.c_str())-1;
-					switch (iUnitCode)
-					{
-					case 0:
-						iUnitCode=chime_sound0;
-						break;
-					case 1:
-						iUnitCode=chime_sound1;
-						break;
-					case 2:
-						iUnitCode=chime_sound2;
-						break;
-					case 3:
-						iUnitCode=chime_sound3;
-						break;
-					case 4:
-						iUnitCode=chime_sound4;
-						break;
-					case 5:
-						iUnitCode=chime_sound5;
-						break;
-					case 6:
-						iUnitCode=chime_sound6;
-						break;
-					case 7:
-						iUnitCode=chime_sound7;
-						break;
-					}
-					sprintf(szTmp,"%d",iUnitCode);
-					sunitcode=szTmp;
-					devid=id;
-				}
-			}
-			root["status"]="OK";
-			root["title"]="TestSwitch";
-			std::vector<std::string> sd;
-
-			sd.push_back(hwdid);
-			sd.push_back(devid);
-			sd.push_back(sunitcode);
-			sprintf(szTmp,"%d",dtype);
-			sd.push_back(szTmp);
-			sprintf(szTmp,"%d",subtype);
-			sd.push_back(szTmp);
-			sprintf(szTmp,"%d",switchtype);
-			sd.push_back(szTmp);
-			sd.push_back(""); //StrParam1
-			sd.push_back(""); //StrParam2
-
-			std::string switchcmd="On";
-			int level=0;
-			if (lighttype==67)
-			{
-				//Special EnOcean case, if it is a dimmer, set a dim value
-				if (switchtype == STYPE_Dimmer)
-					level=5;
-			}
-			m_pMain->SwitchLightInt(sd,switchcmd,level,-1,true);
-		}
-		else if (cparam=="addswitch")
-		{
-			std::string hwdid=m_pWebEm->FindValue("hwdid");
-			std::string name=m_pWebEm->FindValue("name");
-			std::string sswitchtype=m_pWebEm->FindValue("switchtype");
-			std::string slighttype=m_pWebEm->FindValue("lighttype");
-			std::string maindeviceidx=m_pWebEm->FindValue("maindeviceidx");
-
-			if (
-				(hwdid=="")||
-				(sswitchtype=="")||
-				(slighttype=="")||
-				(name=="")
-				)
-				goto exitjson;
-			_eSwitchType switchtype=(_eSwitchType)atoi(sswitchtype.c_str());
-			int lighttype=atoi(slighttype.c_str());
-			int dtype=0;
-			int subtype=0;
-			std::string sunitcode;
-			std::string devid;
-
-			if (lighttype==66)
-			{
-				//Blyss
-				dtype=pTypeLighting6;
-				subtype=sTypeBlyss;
-				std::string sgroupcode=m_pWebEm->FindValue("groupcode");
-				sunitcode=m_pWebEm->FindValue("unitcode");
-				std::string id=m_pWebEm->FindValue("id");
-				if (
-					(sgroupcode=="")||
-					(sunitcode=="")||
-					(id=="")
-					)
-					goto exitjson;
-				devid=id+sgroupcode;
-			}
-			else if (lighttype==67)
-			{
-				//EnOcean (Lighting2 with Base_ID offset)
-				dtype=pTypeLighting2;
-				subtype=sTypeAC;
-				sunitcode=m_pWebEm->FindValue("unitcode");
-				std::string sgroupcode=m_pWebEm->FindValue("groupcode");
-				int iUnitTest=atoi(sunitcode.c_str());	//gives us 128 devices we can control, should be enough!
-				if (
-					(sunitcode=="")||
-					(sgroupcode=="")||
-					((iUnitTest<1)||(iUnitTest>128))
-					)
-					goto exitjson;
-				sunitcode=sgroupcode;//Button A/B
-				CEnOcean *pEnoceanHardware=(CEnOcean *)m_pMain->GetHardware(atoi(hwdid.c_str()));
-				if (pEnoceanHardware==NULL)
-					goto exitjson;
-				if (pEnoceanHardware->HwdType!=HTYPE_EnOcean)
-					goto exitjson;
-				if (pEnoceanHardware->m_id_base==0)
-				{
-					root["message"]="BaseID not found, is the hardware running?";
-					goto exitjson;
-				}
-				unsigned long rID=pEnoceanHardware->m_id_base+iUnitTest;
-				//convert to hex, and we have our ID
-				std::stringstream s_strid;
-				s_strid << std::hex << std::uppercase << rID;
-				devid=s_strid.str();
-			}
-			else if (lighttype<10)
-			{
-				dtype=pTypeLighting1;
-				subtype=lighttype;
-				std::string shousecode=m_pWebEm->FindValue("housecode");
-				sunitcode=m_pWebEm->FindValue("unitcode");
-				if (
-					(shousecode=="")||
-					(sunitcode=="")
-					)
-					goto exitjson;
-				devid=shousecode;
-			}
-			else if (lighttype<13)
-			{
-				dtype=pTypeLighting2;
-				subtype=lighttype-10;
-				std::string id=m_pWebEm->FindValue("id");
-				sunitcode=m_pWebEm->FindValue("unitcode");
-				if (
-					(id=="")||
-					(sunitcode=="")
-					)
-					goto exitjson;
-				devid=id;
-			}
-			else if (lighttype<100)
-			{
-				dtype=pTypeLighting5;
-				subtype=lighttype-13;
-				std::string id=m_pWebEm->FindValue("id");
-				sunitcode=m_pWebEm->FindValue("unitcode");
-				if (
-					(id=="")||
-					(sunitcode=="")
-					)
-					goto exitjson;
-				devid=id;
-			}
-			else
-			{
-				if (lighttype==100)
-				{
-					//Chime/ByronSX
-					dtype=pTypeChime;
-					subtype=sTypeByronSX;
-					std::string id=m_pWebEm->FindValue("id");
-					sunitcode=m_pWebEm->FindValue("unitcode");
-					if (
-						(id=="")||
-						(sunitcode=="")
-						)
-						goto exitjson;
-					int iUnitCode=atoi(sunitcode.c_str())-1;
-					switch (iUnitCode)
-					{
-					case 0:
-						iUnitCode=chime_sound0;
-						break;
-					case 1:
-						iUnitCode=chime_sound1;
-						break;
-					case 2:
-						iUnitCode=chime_sound2;
-						break;
-					case 3:
-						iUnitCode=chime_sound3;
-						break;
-					case 4:
-						iUnitCode=chime_sound4;
-						break;
-					case 5:
-						iUnitCode=chime_sound5;
-						break;
-					case 6:
-						iUnitCode=chime_sound6;
-						break;
-					case 7:
-						iUnitCode=chime_sound7;
-						break;
-					}
-					sprintf(szTmp,"%d",iUnitCode);
-					sunitcode=szTmp;
-					devid=id;
-				}
-			}
-
-			//check if switch is unique
-			std::vector<std::vector<std::string> > result;
-			std::stringstream szQuery;
-			szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << hwdid << " AND DeviceID=='" << devid << "' AND Unit==" << sunitcode << " AND Type==" << dtype << " AND SubType==" << subtype << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()>0)
-			{
-				root["message"]="Switch already exists!";
-				goto exitjson;
-			}
-			std::string devname;
-			m_pMain->m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(),atoi(sunitcode.c_str()),dtype,subtype,0,-1,0,devname);
-			//set name and switchtype
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << hwdid << " AND DeviceID=='" << devid << "' AND Unit==" << sunitcode << " AND Type==" << dtype << " AND SubType==" << subtype << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()<1)
-			{
-				root["message"]="Error finding switch in Database!?!?";
-				goto exitjson;
-			}
-			std::string ID=result[0][0];
-
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "UPDATE DeviceStatus SET Used=1, Name='" << name << "', SwitchType=" << switchtype << " WHERE (ID == " << ID << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
-
-			if (maindeviceidx!="")
-			{
-				if (maindeviceidx!=ID)
-				{
-					//this is a sub device for another light/switch
-					//first check if it is not already a sub device
-					szQuery.clear();
-					szQuery.str("");
-					szQuery << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << ID << "') AND (ParentID =='" << maindeviceidx << "')";
-					result=m_pMain->m_sql.query(szQuery.str());
-					if (result.size()==0)
-					{
-						//no it is not, add it
-						sprintf(szTmp,
-							"INSERT INTO LightSubDevices (DeviceRowID, ParentID) VALUES ('%s','%s')",
-							ID.c_str(),
-							maindeviceidx.c_str()
-							);
-						result=m_pMain->m_sql.query(szTmp);
-					}
-				}
-			}
-
-			root["status"]="OK";
-			root["title"]="AddSwitch";
-		}
-		else if (cparam=="getnotificationtypes")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			//First get Device Type/SubType
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT Type, SubType, SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()<1)
-				goto exitjson;
-
-			root["status"]="OK";
-			root["title"]="GetNotificationTypes";
-			unsigned char dType=atoi(result[0][0].c_str());
-			unsigned char dSubType=atoi(result[0][1].c_str());
-			unsigned char switchtype=atoi(result[0][2].c_str());
-
-			int ii=0;
-			if (
-				(dType==pTypeLighting1)||
-				(dType==pTypeLighting2)||
-				(dType==pTypeLighting3)||
-				(dType==pTypeLighting4)||
-				(dType==pTypeLighting5)||
-				(dType==pTypeLighting6)||
-				(dType==pTypeLimitlessLights)||
-				(dType==pTypeSecurity1)||
-				(dType==pTypeBlinds)||
-				(dType==pTypeChime)||
-				(dType==pTypeThermostat3)||
-				(dType==pTypeRemote)
-				)
-			{
-				if (switchtype!=STYPE_PushOff)
-				{
-					root["result"][ii]["val"]=NTYPE_SWITCH_ON;
-					root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_SWITCH_ON,0);
-					root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_SWITCH_ON,1);
-					ii++;
-				}
-				if (switchtype!=STYPE_PushOn)
-				{
-					root["result"][ii]["val"]=NTYPE_SWITCH_OFF;
-					root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_SWITCH_OFF,0);
-					root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_SWITCH_OFF,1);
-					ii++;
-				}
-			}
-			if (
-				(
-				(dType==pTypeTEMP)||
-				(dType==pTypeTEMP_HUM)||
-				(dType==pTypeTEMP_HUM_BARO)||
-				(dType==pTypeTEMP_BARO)||
-				(dType==pTypeThermostat1)||
-				(dType==pTypeRego6XXTemp)||
-				((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorTemp))
-				)||
-				((dType==pTypeUV)&&(dSubType==sTypeUV3))||
-				((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
-				((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))||
-				((dType==pTypeGeneral)&&(dSubType==sTypeSystemTemp))
-				)
-			{
-				root["result"][ii]["val"]=NTYPE_TEMPERATURE;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TEMPERATURE,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TEMPERATURE,1);
-				ii++;
-			}
-			if (
-				(dType==pTypeHUM)||
-				(dType==pTypeTEMP_HUM)||
-				(dType==pTypeTEMP_HUM_BARO)
-				)
-			{
-				root["result"][ii]["val"]=NTYPE_HUMIDITY;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_HUMIDITY,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_HUMIDITY,1);
-				ii++;
-			}
-			if (
-				(dType==pTypeTEMP_HUM)||
-				(dType==pTypeTEMP_HUM_BARO)
-				)
-			{
-				root["result"][ii]["val"]=NTYPE_DEWPOINT;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_DEWPOINT,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_DEWPOINT,1);
-				ii++;
-			}
-			if (dType==pTypeRAIN)
-			{
-				root["result"][ii]["val"]=NTYPE_RAIN;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_RAIN,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_RAIN,1);
-				ii++;
-			}
-			if (dType==pTypeWIND)
-			{
-				root["result"][ii]["val"]=NTYPE_WIND;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_WIND,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_WIND,1);
-				ii++;
-			}
-			if (dType==pTypeUV)
-			{
-				root["result"][ii]["val"]=NTYPE_UV;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_UV,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_UV,1);
-				ii++;
-			}
-			if (
-				(dType==pTypeTEMP_HUM_BARO)||
-				(dType==pTypeBARO)||
-				(dType==pTypeTEMP_BARO)
-				)
-			{
-				root["result"][ii]["val"]=NTYPE_BARO;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_BARO,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_BARO,1);
-				ii++;
-			}
-			if (
-				((dType==pTypeRFXMeter)&&(dSubType==sTypeRFXMeterCount))||
-				(dType==pTypeYouLess)||
-                ((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXCounter))
-				)
-			{
-				if (switchtype==MTYPE_ENERGY)
-				{
-					root["result"][ii]["val"]=NTYPE_TODAYENERGY;
-					root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TODAYENERGY,0);
-					root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TODAYENERGY,1);
-				}
-				else if (switchtype==MTYPE_GAS)
-				{
-					root["result"][ii]["val"]=NTYPE_TODAYGAS;
-					root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TODAYGAS,0);
-					root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TODAYGAS,1);
-				}
-				else if (switchtype==MTYPE_COUNTER)
-				{
-					root["result"][ii]["val"]=NTYPE_TODAYCOUNTER;
-					root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TODAYCOUNTER,0);
-					root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TODAYCOUNTER,1);
-				}
-				else
-				{
-					//water (same as gas)
-					root["result"][ii]["val"]=NTYPE_TODAYGAS;
-					root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TODAYGAS,0);
-					root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TODAYGAS,1);
-				}
-				ii++;
-			}
-			if (dType==pTypeYouLess)
-			{
-				root["result"][ii]["val"]=NTYPE_USAGE;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
-				ii++;
-			}
-			if (dType==pTypeAirQuality)
-			{
-				root["result"][ii]["val"]=NTYPE_USAGE;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
-				ii++;
-			}
-			else if ((dType==pTypeGeneral)&&((dSubType==sTypeSoilMoisture)||(dSubType==sTypeLeafWetness)))
-			{
-				root["result"][ii]["val"]=NTYPE_USAGE;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
-				ii++;
-			}
-			if ((dType==pTypeGeneral)&&(dSubType==sTypeVisibility))
-			{
-				root["result"][ii]["val"]=NTYPE_USAGE;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
-				ii++;
-			}
-			if ((dType==pTypeGeneral)&&(dSubType==sTypeSolarRadiation))
-			{
-				root["result"][ii]["val"]=NTYPE_USAGE;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
-				ii++;
-			}
-			if ((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
-			{
-				root["result"][ii]["val"]=NTYPE_USAGE;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
-				ii++;
-			}
-			if (dType==pTypeLux)
-			{
-				root["result"][ii]["val"]=NTYPE_USAGE;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
-				ii++;
-			}
-			if (dType==pTypeWEIGHT)
-			{
-				root["result"][ii]["val"]=NTYPE_USAGE;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
-				ii++;
-			}
-			if (dType==pTypeUsage)
-			{
-				root["result"][ii]["val"]=NTYPE_USAGE;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
-				ii++;
-			}
-			if (dType==pTypeENERGY)
-			{
-				root["result"][ii]["val"]=NTYPE_USAGE;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
-				ii++;
-			}
-			if (dType==pTypePOWER)
-			{
-				root["result"][ii]["val"]=NTYPE_USAGE;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
-				ii++;
-			}
-			if ((dType==pTypeCURRENT)&&(dSubType==sTypeELEC1))
-			{
-				root["result"][ii]["val"]=NTYPE_AMPERE1;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_AMPERE1,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_AMPERE1,1);
-				ii++;
-				root["result"][ii]["val"]=NTYPE_AMPERE2;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_AMPERE2,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_AMPERE2,1);
-				ii++;
-				root["result"][ii]["val"]=NTYPE_AMPERE3;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_AMPERE3,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_AMPERE3,1);
-				ii++;
-			}
-			if ((dType==pTypeCURRENTENERGY)&&(dSubType==sTypeELEC4))
-			{
-				root["result"][ii]["val"]=NTYPE_AMPERE1;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_AMPERE1,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_AMPERE1,1);
-				ii++;
-				root["result"][ii]["val"]=NTYPE_AMPERE2;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_AMPERE2,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_AMPERE2,1);
-				ii++;
-				root["result"][ii]["val"]=NTYPE_AMPERE3;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_AMPERE3,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_AMPERE3,1);
-				ii++;
-			}
-			if (dType==pTypeP1Power)
-			{
-				root["result"][ii]["val"]=NTYPE_USAGE;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
-				ii++;
-				root["result"][ii]["val"]=NTYPE_TODAYENERGY;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TODAYENERGY,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TODAYENERGY,1);
-				ii++;
-			}
-			if (dType==pTypeP1Gas)
-			{
-				root["result"][ii]["val"]=NTYPE_TODAYGAS;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TODAYGAS,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TODAYGAS,1);
-				ii++;
-			}
-			if ((dType==pTypeThermostat)&&(dSubType==sTypeThermSetpoint))
-			{
-				root["result"][ii]["val"]=NTYPE_TEMPERATURE;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_TEMPERATURE,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_TEMPERATURE,1);
-				ii++;
-			}
-			if ((dType==pTypeRFXSensor)&&((dSubType==sTypeRFXSensorAD)||(dSubType==sTypeRFXSensorVolt)))
-			{
-				root["result"][ii]["val"]=NTYPE_USAGE;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
-				ii++;
-			}
-			if ((dType==pTypeGeneral)&&(dSubType==sTypeSystemLoad))
-			{
-				root["result"][ii]["val"]=NTYPE_PERCENTAGE;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_PERCENTAGE,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_PERCENTAGE,1);
-				ii++;
-			}
-			if ((dType==pTypeGeneral)&&(dSubType==sTypeSystemFan))
-			{
-				root["result"][ii]["val"]=NTYPE_RPM;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_RPM,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_RPM,1);
-				ii++;
-			}
-			if ((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXStatus))
-			{
-				root["result"][ii]["val"]=NTYPE_SWITCH_ON;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_SWITCH_ON,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_SWITCH_ON,1);
-				ii++;
-				root["result"][ii]["val"]=NTYPE_SWITCH_OFF;
-				root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_SWITCH_OFF,0);
-				root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_SWITCH_OFF,1);
-				ii++;
-			}
-		}
-		else if (cparam=="addnotification")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-		
-			std::string stype=m_pWebEm->FindValue("ttype");
-			std::string swhen=m_pWebEm->FindValue("twhen");
-			std::string svalue=m_pWebEm->FindValue("tvalue");
-			std::string spriority=m_pWebEm->FindValue("tpriority");
-			if ((stype=="")||(swhen=="")||(svalue=="")||(spriority==""))
-				goto exitjson;
-
-			_eNotificationTypes ntype=(_eNotificationTypes)atoi(stype.c_str());
-			std::string ttype=Notification_Type_Desc(ntype,1);
-			if (
-				(ntype==NTYPE_SWITCH_ON)||
-				(ntype==NTYPE_SWITCH_OFF)||
-				(ntype==NTYPE_DEWPOINT)
-				)
-			{
-				strcpy(szTmp,ttype.c_str());
-			}
-			else
-			{
-				unsigned char twhen=(swhen=="0")?'>':'<';
-				sprintf(szTmp,"%s;%c;%s",ttype.c_str(),twhen,svalue.c_str());
-			}
-			int priority=atoi(spriority.c_str());
-			bool bOK=m_pMain->m_sql.AddNotification(idx,szTmp,priority);
-			if (bOK) {
-				root["status"]="OK";
-				root["title"]="AddNotification";
-			}
-		}
-		else if (cparam=="updatenotification")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			std::string devidx=m_pWebEm->FindValue("devidx");
-			if ((idx=="")||(devidx==""))
-				goto exitjson;
-
-			std::string stype=m_pWebEm->FindValue("ttype");
-			std::string swhen=m_pWebEm->FindValue("twhen");
-			std::string svalue=m_pWebEm->FindValue("tvalue");
-			std::string spriority=m_pWebEm->FindValue("tpriority");
-			if ((stype=="")||(swhen=="")||(svalue=="")||(spriority==""))
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="UpdateNotification";
-
-			//delete old record
-			m_pMain->m_sql.RemoveNotification(idx);
-
-			_eNotificationTypes ntype=(_eNotificationTypes)atoi(stype.c_str());
-			std::string ttype=Notification_Type_Desc(ntype,1);
-			if (
-				(ntype==NTYPE_SWITCH_ON)||
-				(ntype==NTYPE_SWITCH_OFF)||
-				(ntype==NTYPE_DEWPOINT)
-				)
-			{
-				strcpy(szTmp,ttype.c_str());
-			}
-			else
-			{
-				unsigned char twhen=(swhen=="0")?'>':'<';
-				sprintf(szTmp,"%s;%c;%s",ttype.c_str(),twhen,svalue.c_str());
-			}
-			int priority=atoi(spriority.c_str());
-			m_pMain->m_sql.AddNotification(devidx,szTmp,priority);
-		}
-		else if (cparam=="deletenotification")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-
-			root["status"]="OK";
-			root["title"]="DeleteNotification";
-
-			m_pMain->m_sql.RemoveNotification(idx);
-		}
-		else if (cparam=="switchdeviceorder")
-		{
-			std::string idx1=m_pWebEm->FindValue("idx1");
-			std::string idx2=m_pWebEm->FindValue("idx2");
-			if ((idx1=="")||(idx2==""))
-				goto exitjson;
-			std::string sroomid=m_pWebEm->FindValue("roomid");
-			int roomid=atoi(sroomid.c_str());
-
-			std::string Order1,Order2;
-			if (roomid==0)
-			{
-				//get device order 1
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "SELECT [Order] FROM DeviceStatus WHERE (ID == " << idx1 << ")";
-				result=m_pMain->m_sql.query(szQuery.str());
-				if (result.size()<1)
-					goto exitjson;
-				Order1=result[0][0];
-
-				//get device order 2
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "SELECT [Order] FROM DeviceStatus WHERE (ID == " << idx2 << ")";
-				result=m_pMain->m_sql.query(szQuery.str());
-				if (result.size()<1)
-					goto exitjson;
-				Order2=result[0][0];
-
-				root["status"]="OK";
-				root["title"]="SwitchDeviceOrder";
-
-				szQuery.clear();
-				szQuery.str("");
-				if(atoi(Order1.c_str()) < atoi(Order2.c_str()))
-				{
-					szQuery << "UPDATE DeviceStatus SET [Order] = [Order]+1 WHERE ([Order] >= " << Order1 << " AND [Order] < " << Order2 << ")";
-				}
-				else
-				{
-					szQuery << "UPDATE DeviceStatus SET [Order] = [Order]-1 WHERE ([Order] > " << Order2 << " AND [Order] <= " << Order1 << ")";
-				}
-				m_pMain->m_sql.query(szQuery.str());
-
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "UPDATE DeviceStatus SET [Order] = " << Order1 << " WHERE (ID == " << idx2 << ")";
-				m_pMain->m_sql.query(szQuery.str());
-			}
-			else
-			{
-				//change order in a room
-				//get device order 1
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "SELECT [Order] FROM DeviceToPlansMap WHERE (DeviceRowID == " << idx1 << ") AND (PlanID=="<<roomid << ")";
-				result=m_pMain->m_sql.query(szQuery.str());
-				if (result.size()<1)
-					goto exitjson;
-				Order1=result[0][0];
-
-				//get device order 2
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "SELECT [Order] FROM DeviceToPlansMap WHERE (DeviceRowID == " << idx2 << ") AND (PlanID=="<<roomid << ")";
-				result=m_pMain->m_sql.query(szQuery.str());
-				if (result.size()<1)
-					goto exitjson;
-				Order2=result[0][0];
-
-				root["status"]="OK";
-				root["title"]="SwitchDeviceOrder";
-
-				szQuery.clear();
-				szQuery.str("");
-				if(atoi(Order1.c_str()) < atoi(Order2.c_str()))
-				{
-					szQuery << "UPDATE DeviceToPlansMap SET [Order] = [Order]+1 WHERE ([Order] >= " << Order1 << " AND [Order] < " << Order2 << ") AND (PlanID=="<<roomid << ")";
-				}
-				else
-				{
-					szQuery << "UPDATE DeviceToPlansMap SET [Order] = [Order]-1 WHERE ([Order] > " << Order2 << " AND [Order] <= " << Order1 << ") AND (PlanID=="<<roomid << ")";
-				}
-				m_pMain->m_sql.query(szQuery.str());
-
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "UPDATE DeviceToPlansMap SET [Order] = " << Order1 << " WHERE (DeviceRowID == " << idx2 << ") AND (PlanID=="<<roomid << ")";
-				m_pMain->m_sql.query(szQuery.str());
-			}
-		}
-		else if (cparam=="switchsceneorder")
-		{
-			std::string idx1=m_pWebEm->FindValue("idx1");
-			std::string idx2=m_pWebEm->FindValue("idx2");
-			if ((idx1=="")||(idx2==""))
-				goto exitjson;
-
-			std::string Order1,Order2;
-			//get device order 1
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT [Order] FROM Scenes WHERE (ID == " << idx1 << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()<1)
-				goto exitjson;
-			Order1=result[0][0];
-
-			//get device order 2
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT [Order] FROM Scenes WHERE (ID == " << idx2 << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()<1)
-				goto exitjson;
-			Order2=result[0][0];
-
-			root["status"]="OK";
-			root["title"]="SwitchSceneOrder";
-
-			szQuery.clear();
-			szQuery.str("");
-			if(atoi(Order1.c_str()) < atoi(Order2.c_str()))
-			{
-				szQuery << "UPDATE Scenes SET [Order] = [Order]+1 WHERE ([Order] >= " << Order1 << " AND [Order] < " << Order2 << ")";
-			}
-			else
-			{
-				szQuery << "UPDATE Scenes SET [Order] = [Order]-1 WHERE ([Order] > " << Order2 << " AND [Order] <= " << Order1 << ")";
-			}
-			m_pMain->m_sql.query(szQuery.str());
-
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "UPDATE Scenes SET [Order] = " << Order1 << " WHERE (ID == " << idx2 << ")";
-			m_pMain->m_sql.query(szQuery.str());
-		}
-		else if (cparam=="clearnotifications")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-
-			root["status"]="OK";
-			root["title"]="ClearNotification";
-
-			m_pMain->m_sql.RemoveDeviceNotifications(idx);
-		}
-		else if (cparam=="addhardware")
-		{
-			std::string name=m_pWebEm->FindValue("name");
-			std::string senabled=m_pWebEm->FindValue("enabled");
-			std::string shtype=m_pWebEm->FindValue("htype");
-			std::string address=m_pWebEm->FindValue("address");
-			std::string sport=m_pWebEm->FindValue("port");
-			std::string username=m_pWebEm->FindValue("username");
-			std::string password=m_pWebEm->FindValue("password");
-			if (
-				(name=="")||
-				(senabled=="")||
-				(shtype=="")||
-				(sport=="")
-				)
-				goto exitjson;
-			_eHardwareTypes htype=(_eHardwareTypes)atoi(shtype.c_str());
-			int mode1=0;
-			int mode2=0;
-			int mode3=0;
-			int mode4=0;
-			int mode5=0;
-			int port=atoi(sport.c_str());
-			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX)||(htype==HTYPE_DavisVantage)||(htype==HTYPE_S0SmartMeter)||(htype==HTYPE_OpenThermGateway)||(htype==HTYPE_TeleinfoMeter)||(htype==HTYPE_OpenZWave)||(htype==HTYPE_EnOcean))
-			{
-				//USB
-				if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433))
-				{
-				}
-			}
-			else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)||(htype == HTYPE_RazberryZWave)||(htype == HTYPE_OpenThermGatewayTCP)||(htype == HTYPE_LimitlessLights)||(htype == HTYPE_SolarEdgeTCP)) {
-				//Lan
-				if (address=="")
-					goto exitjson;
-			}
-			else if (htype == HTYPE_Domoticz) {
-				//Remote Domoticz
-				if (address=="")
-					goto exitjson;
-			}
-			else if (htype == HTYPE_TE923) {
-				//all fine here!
-			}
-			else if (htype == HTYPE_VOLCRAFTCO20) {
-				//all fine here!
-			}
-			else if (htype == HTYPE_1WIRE) {
-				//all fine here!
-			}
-			else if (htype == HTYPE_RaspberryBMP085) {
-				//all fine here!
-			}
-			else if (htype == HTYPE_Dummy) {
-				//all fine here!
-			}
-			else if (htype == HTYPE_PiFace) {
-				//all fine here!
-			}
-			else if ((htype == HTYPE_Wunderground)||(htype == HTYPE_ForecastIO)) {
-				if (
-					(username=="")||
-					(password=="")
-					)
-					goto exitjson;
-			}
-			else if (htype == HTYPE_SMASpot) {
-				if (username=="")
-					goto exitjson;
-			}
-			else
-				goto exitjson;
-
-			root["status"]="OK";
-			root["title"]="AddHardware";
-			sprintf(szTmp,
-				"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5) VALUES ('%s',%d, %d,'%s',%d,'%s','%s',%d,%d,%d,%d,%d)",
-				name.c_str(),
-				(senabled=="true")?1:0,
-				htype,
-				address.c_str(),
-				port,
-				username.c_str(),
-				password.c_str(),
-				mode1,mode2,mode3,mode4,mode5
-				);
-			result=m_pMain->m_sql.query(szTmp);
-
-			//add the device for real in our system
-			strcpy(szTmp,"SELECT MAX(ID) FROM Hardware");
-			result=m_pMain->m_sql.query(szTmp); //-V519
-			if (result.size()>0)
-			{
-				std::vector<std::string> sd=result[0];
-				int ID=atoi(sd[0].c_str());
-
-				m_pMain->AddHardwareFromParams(ID,name,(senabled=="true")?true:false,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
-			}
-		}
-#ifdef WITH_OPENZWAVE
-		else if (cparam=="updatezwavenode")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			std::string name=m_pWebEm->FindValue("name");
-			std::string senablepolling=m_pWebEm->FindValue("EnablePolling");
-			if (
-				(name=="")||
-				(senablepolling=="")
-				)
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="UpdateZWaveNode";
-
-			sprintf(szTmp,
-				"UPDATE ZWaveNodes SET Name='%s', PollTime=%d WHERE (ID==%s)",
-				name.c_str(),
-				(senablepolling=="true")?1:0,
-				idx.c_str()
-				);
-			result=m_pMain->m_sql.query(szTmp);
-			sprintf(szTmp,"SELECT HardwareID from ZWaveNodes WHERE (ID==%s)",idx.c_str());
-			result=m_pMain->m_sql.query(szTmp);
-			if (result.size()>0)
-			{
-				int hwid=atoi(result[0][0].c_str());
-				CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hwid);
-				if (pHardware!=NULL)
-				{
-					COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
-					pOZWHardware->EnableDisableNodePolling();
-				}
-			}
-		}
-		else if (cparam=="deletezwavenode")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			sprintf(szTmp,"SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)",idx.c_str());
-			result=m_pMain->m_sql.query(szTmp);
-			if (result.size()>0)
-			{
-				int hwid=atoi(result[0][0].c_str());
-				int homeID=atoi(result[0][1].c_str());
-				int nodeID=atoi(result[0][2].c_str());
-				CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hwid);
-				if (pHardware!=NULL)
-				{
-					COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
-					pOZWHardware->RemoveFailedDevice(nodeID);
-					root["status"]="OK";
-					root["title"]="DeleteZWaveNode";
-					sprintf(szTmp,"DELETE FROM ZWaveNodes WHERE (ID==%s)",idx.c_str());
-					result=m_pMain->m_sql.query(szTmp);
-				}
-			}
-		}
-		else if (cparam=="zwaveinclude")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
-			if (pHardware!=NULL)
-			{
-				COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
-				pOZWHardware->IncludeDevice();
-				root["status"]="OK";
-				root["title"]="ZWaveInclude";
-			}
-		}
-		else if (cparam=="zwaveexclude")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
-			if (pHardware!=NULL)
-			{
-				COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
-				pOZWHardware->ExcludeDevice(1);
-				root["status"]="OK";
-				root["title"]="ZWaveExclude";
-			}
-		}
-		else if (cparam=="zwavesoftreset")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
-			if (pHardware!=NULL)
-			{
-				COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
-				pOZWHardware->SoftResetDevice();
-				root["status"]="OK";
-				root["title"]="ZWaveSoftReset";
-			}
-		}
-		else if (cparam=="zwavehardreset")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
-			if (pHardware!=NULL)
-			{
-				COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
-				pOZWHardware->HardResetDevice();
-				root["status"]="OK";
-				root["title"]="ZWaveHardReset";
-			}
-		}
-		else if (cparam=="zwavenetworkheal")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
-			if (pHardware!=NULL)
-			{
-				COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
-				pOZWHardware->HealNetwork();
-				root["status"]="OK";
-				root["title"]="ZWaveHealNetwork";
-			}
-		}
-		else if (cparam=="zwavenetworkinfo")
-		{			
-			root["title"]="ZWaveNetworkInfo";
-	
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			int hwID = atoi(idx.c_str());
-			CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hwID);
-			if (pHardware!=NULL)
-			{
-				COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
-				std::vector< std::vector< int > > nodevectors;
-				
-				if (pOZWHardware->NetworkInfo(hwID, nodevectors)) {
-
-					std::vector<std::vector<int> >::iterator row_iterator;
-					std::vector<int>::iterator col_iterator;
-					int nodeID;
-
-					 std::vector<int> rest;
-					int rowCount=0;
-					std::stringstream list;
-					for(row_iterator = nodevectors.begin();row_iterator!=nodevectors.end();++row_iterator) {
-						int colCount=0;
-						for(col_iterator = (*row_iterator).begin();col_iterator!=(*row_iterator).end();++col_iterator) {
-							_log.Log(LOG_NORM,"OpenZ:%d ",*col_iterator);
-							if (colCount == 0) {
-								nodeID=*col_iterator;
-							}
-							else {
-								rest.push_back(*col_iterator);
-							}
-							colCount++;
-						}
-						
-						std::copy(rest.begin(), rest.end(), std::ostream_iterator<int>(list, ","));
-						root["result"]["mesh"][rowCount]["nodeID"]=nodeID;
-						root["result"]["mesh"][rowCount]["seesNodes"]=list.str();
-						rowCount++;
-						rest.clear();
-						list.clear();
-					}
-					root["status"]="OK";
-					
-		
-				}
-
-
-			}
-		}
-		else if (cparam=="zwavecancel")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
-			if (pHardware!=NULL)
-			{
-				COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
-				pOZWHardware->CancelControllerCommand();
-				root["status"]="OK";
-				root["title"]="ZWaveCancel";
-			}
-		}
-		else if (cparam=="applyzwavenodeconfig")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			std::string svaluelist=m_pWebEm->FindValue("valuelist");
-			if (
-				(idx=="")||
-				(svaluelist=="")
-				)
-				goto exitjson;
-			sprintf(szTmp,"SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)",idx.c_str());
-			result=m_pMain->m_sql.query(szTmp);
-			if (result.size()>0)
-			{
-				int hwid=atoi(result[0][0].c_str());
-				int homeID=atoi(result[0][1].c_str());
-				int nodeID=atoi(result[0][2].c_str());
-				CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hwid);
-				if (pHardware!=NULL)
-				{
-					COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
-					if (!pOZWHardware->ApplyNodeConfig(homeID,nodeID,svaluelist))
-						goto exitjson;
-					root["status"]="OK";
-					root["title"]="ApplyZWaveNodeConfig";
-				}
-			}
-		}
-		else if (cparam=="requestzwavenodeconfig")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			sprintf(szTmp,"SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)",idx.c_str());
-			result=m_pMain->m_sql.query(szTmp);
-			if (result.size()>0)
-			{
-				int hwid=atoi(result[0][0].c_str());
-				int homeID=atoi(result[0][1].c_str());
-				int nodeID=atoi(result[0][2].c_str());
-				CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hwid);
-				if (pHardware!=NULL)
-				{
-					COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
-					pOZWHardware->RequestNodeConfig(homeID,nodeID);
-					root["status"]="OK";
-					root["title"]="RequestZWaveNodeConfig";
-				}
-			}
-		}
-#endif
-		else if (cparam=="updatehardware")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			std::string name=m_pWebEm->FindValue("name");
-			std::string senabled=m_pWebEm->FindValue("enabled");
-			std::string shtype=m_pWebEm->FindValue("htype");
-			std::string address=m_pWebEm->FindValue("address");
-			std::string sport=m_pWebEm->FindValue("port");
-			std::string username=m_pWebEm->FindValue("username");
-			std::string password=m_pWebEm->FindValue("password");
-			if (
-				(name=="")||
-				(senabled=="")||
-				(shtype=="")||
-				(sport=="")
-				)
-				goto exitjson;
-
-			_eHardwareTypes htype=(_eHardwareTypes)atoi(shtype.c_str());
-
-			int port=atoi(sport.c_str());
-
-			if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX)||(htype==HTYPE_DavisVantage)||(htype==HTYPE_S0SmartMeter)||(htype==HTYPE_OpenThermGateway)||(htype==HTYPE_TeleinfoMeter)||(htype==HTYPE_OpenZWave)||(htype==HTYPE_EnOcean))
-			{
-				//USB
-			}
-			else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)||(htype == HTYPE_RazberryZWave)||(htype == HTYPE_OpenThermGatewayTCP)||(htype == HTYPE_LimitlessLights)||(htype == HTYPE_SolarEdgeTCP)) {
-				//Lan
-				if (address=="")
-					goto exitjson;
-			}
-			else if (htype == HTYPE_Domoticz) {
-				//Remote Domoticz
-				if (address=="")
-					goto exitjson;
-			}
-			else if (htype == HTYPE_TE923) {
-				//All fine here
-			}
-			else if (htype == HTYPE_VOLCRAFTCO20) {
-				//All fine here
-			}
-			else if (htype == HTYPE_1WIRE) {
-				//All fine here
-			}
-			else if (htype == HTYPE_RaspberryBMP085) {
-				//All fine here
-			}
-			else if (htype == HTYPE_Dummy) {
-				//All fine here
-			}
-			else if (htype == HTYPE_PiFace) {
-				//All fine here
-			}
-			else if ((htype == HTYPE_Wunderground)||(htype == HTYPE_ForecastIO)) {
-				if (
-					(username=="")||
-					(password=="")
-					)
-					goto exitjson;
-			}
-			else if (htype == HTYPE_SMASpot) {
-				if (username=="")
-					goto exitjson;
-			}
-			else
-				goto exitjson;
-
-			int mode1=atoi(m_pWebEm->FindValue("Mode1").c_str());
-			int mode2=atoi(m_pWebEm->FindValue("Mode2").c_str());
-			int mode3=atoi(m_pWebEm->FindValue("Mode3").c_str());
-			int mode4=atoi(m_pWebEm->FindValue("Mode4").c_str());
-			int mode5=atoi(m_pWebEm->FindValue("Mode5").c_str());
-			root["status"]="OK";
-			root["title"]="UpdateHardware";
-
-			sprintf(szTmp,
-				"UPDATE Hardware SET Name='%s', Enabled=%d, Type=%d, Address='%s', Port=%d, Username='%s', Password='%s', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d WHERE (ID == %s)",
-				name.c_str(),
-				(senabled=="true")?1:0,
-				htype,
-				address.c_str(),
-				port,
-				username.c_str(),
-				password.c_str(),
-				mode1,mode2,mode3,mode4,mode5,
-				idx.c_str()
-				);
-			result=m_pMain->m_sql.query(szTmp);
-
-			//re-add the device in our system
-			int ID=atoi(idx.c_str());
-			m_pMain->AddHardwareFromParams(ID,name,(senabled=="true")?true:false,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
-		}
-		else if (cparam=="addcamera")
-		{
-			std::string name=m_pWebEm->FindValue("name");
-			std::string senabled=m_pWebEm->FindValue("enabled");
-			std::string address=m_pWebEm->FindValue("address");
-			std::string sport=m_pWebEm->FindValue("port");
-			std::string username=m_pWebEm->FindValue("username");
-			std::string password=m_pWebEm->FindValue("password");
-			std::string tvideourl=m_pWebEm->FindValue("videourl");
-			std::string timageurl=m_pWebEm->FindValue("imageurl");
-			if (
-				(name=="")||
-				(address=="")||
-				(tvideourl=="")||
-				(timageurl=="")
-				)
-				goto exitjson;
-
-			std::string videourl;
-			std::string imageurl;
-			if (request_handler::url_decode(tvideourl,videourl))
-			{
-				if (request_handler::url_decode(timageurl,imageurl))
-				{
-					videourl=base64_decode(videourl);
-					imageurl=base64_decode(imageurl);
-
-					int port=atoi(sport.c_str());
-					root["status"]="OK";
-					root["title"]="AddCamera";
-					sprintf(szTmp,
-							"INSERT INTO Cameras (Name, Enabled, Address, Port, Username, Password, VideoURL, ImageURL) VALUES ('%s',%d,'%s',%d,'%s','%s','%s','%s')",
-							name.c_str(),
-							(senabled=="true")?1:0,
-							address.c_str(),
-							port,
-							base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
-							base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
-							videourl.c_str(),
-							imageurl.c_str()
-							);
-					result=m_pMain->m_sql.query(szTmp);
-					m_pMain->m_cameras.ReloadCameras();
-				}
-			}
-		}
-		else if (cparam=="updatecamera")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			std::string name=m_pWebEm->FindValue("name");
-			std::string senabled=m_pWebEm->FindValue("enabled");
-			std::string address=m_pWebEm->FindValue("address");
-			std::string sport=m_pWebEm->FindValue("port");
-    		std::string username=m_pWebEm->FindValue("username");
-			std::string password=m_pWebEm->FindValue("password");
-			std::string tvideourl=m_pWebEm->FindValue("videourl");
-			std::string timageurl=m_pWebEm->FindValue("imageurl");
-			if (
-				(name=="")||
-				(senabled=="")||
-				(address=="")||
-				(tvideourl=="")||
-				(timageurl=="")
-                )
-				goto exitjson;
-
-			std::string videourl;
-			std::string imageurl;
-			if (request_handler::url_decode(tvideourl,videourl))
-			{
-				if (request_handler::url_decode(timageurl,imageurl))
-				{
-					videourl=base64_decode(videourl);
-					imageurl=base64_decode(imageurl);
-
-					int port=atoi(sport.c_str());
-		
-					root["status"]="OK";
-					root["title"]="UpdateCamera";
-            
-					sprintf(szTmp,
-							"UPDATE Cameras SET Name='%s', Enabled=%d, Address='%s', Port=%d, Username='%s', Password='%s', VideoURL='%s', ImageURL='%s' WHERE (ID == %s)",
-							name.c_str(),
-							(senabled=="true")?1:0,
-							address.c_str(),
-							port,
-							base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
-							base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
-							videourl.c_str(),
-							imageurl.c_str(),
-							idx.c_str()
-							);
-					result=m_pMain->m_sql.query(szTmp);
-					m_pMain->m_cameras.ReloadCameras();
-				}
-			}
-        }
-		else if (cparam=="deletecamera")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="DeleteCamera";
-            
-			m_pMain->m_sql.DeleteCamera(idx);
-            m_pMain->m_cameras.ReloadCameras();
-		}
-		else if (cparam=="adduser")
-		{
-			bool bHaveUser=(m_pWebEm->m_actualuser!="");
-			int urights=3;
-			if (bHaveUser)
-			{
-				int iUser=-1;
-				iUser=FindUser(m_pWebEm->m_actualuser.c_str());
-				if (iUser!=-1)
-					urights=(int)m_users[iUser].userrights;
-			}
-			if (urights<2)
-				goto exitjson;
-
-			std::string senabled=m_pWebEm->FindValue("enabled");
-			std::string username=m_pWebEm->FindValue("username");
-			std::string password=m_pWebEm->FindValue("password");
-			std::string srights=m_pWebEm->FindValue("rights");
-			std::string sRemoteSharing=m_pWebEm->FindValue("RemoteSharing");
-			std::string sTabsEnabled=m_pWebEm->FindValue("TabsEnabled");
-			if (
-				(senabled=="")||
-				(username=="")||
-				(password=="")||
-				(srights=="")||
-				(sRemoteSharing=="")||
-				(sTabsEnabled=="")
-				)
-				goto exitjson;
-			int rights=atoi(srights.c_str());
-			if (rights!=2)
-			{
-				if (!FindAdminUser())
-				{
-					root["message"]="Add a Admin user first! (Or enable Settings/Website Protection)";
-					goto exitjson;
-				}
-			}
-			root["status"]="OK";
-			root["title"]="AddUser";
-			sprintf(szTmp,
-				"INSERT INTO Users (Active, Username, Password, Rights, RemoteSharing, TabsEnabled) VALUES (%d,'%s','%s','%d','%d','%d')",
-				(senabled=="true")?1:0,
-				base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
-				base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
-				rights,
-				(sRemoteSharing=="true")?1:0,
-				atoi(sTabsEnabled.c_str())
-				);
-			result=m_pMain->m_sql.query(szTmp);
-			LoadUsers();
-		}
-		else if (cparam=="updateuser")
-		{
-			bool bHaveUser=(m_pWebEm->m_actualuser!="");
-			int urights=3;
-			if (bHaveUser)
-			{
-				int iUser=-1;
-				iUser=FindUser(m_pWebEm->m_actualuser.c_str());
-				if (iUser!=-1)
-					urights=(int)m_users[iUser].userrights;
-			}
-			if (urights<2)
-				goto exitjson;
-
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			std::string senabled=m_pWebEm->FindValue("enabled");
-			std::string username=m_pWebEm->FindValue("username");
-			std::string password=m_pWebEm->FindValue("password");
-			std::string srights=m_pWebEm->FindValue("rights");
-			std::string sRemoteSharing=m_pWebEm->FindValue("RemoteSharing");
-			std::string sTabsEnabled=m_pWebEm->FindValue("TabsEnabled");
-			if (
-				(senabled=="")||
-				(username=="")||
-				(password=="")||
-				(srights=="")||
-				(sRemoteSharing=="")||
-				(sTabsEnabled=="")
-				)
-				goto exitjson;
-			int rights=atoi(srights.c_str());
-			if (rights!=2)
-			{
-				if (!FindAdminUser())
-				{
-					root["message"]="Add a Admin user first! (Or enable Settings/Website Protection)";
-					goto exitjson;
-				}
-			}
-
-			root["status"]="OK";
-			root["title"]="UpdateUser";
-
-			sprintf(szTmp,
-				"UPDATE Users SET Active=%d, Username='%s', Password='%s', Rights=%d, RemoteSharing=%d, TabsEnabled=%d WHERE (ID == %s)",
-				(senabled=="true")?1:0,
-				base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
-				base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
-				rights,
-				(sRemoteSharing=="true")?1:0,
-				atoi(sTabsEnabled.c_str()),
-				idx.c_str()
-				);
-			result=m_pMain->m_sql.query(szTmp);
-			LoadUsers();
-		}
-		else if (cparam=="deleteuser")
-		{
-			bool bHaveUser=(m_pWebEm->m_actualuser!="");
-			int urights=3;
-			if (bHaveUser)
-			{
-				int iUser=-1;
-				iUser=FindUser(m_pWebEm->m_actualuser.c_str());
-				if (iUser!=-1)
-					urights=(int)m_users[iUser].userrights;
-			}
-			if (urights<2)
-				goto exitjson;
-
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-
-			root["status"]="OK";
-			root["title"]="DeleteUser";
-			sprintf(szTmp,"DELETE FROM Users WHERE (ID == %s)",idx.c_str());
-			result=m_pMain->m_sql.query(szTmp);
-
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "DELETE FROM SharedDevices WHERE (SharedUserID == " << idx << ")";
-			result=m_pMain->m_sql.query(szQuery.str()); //-V519
-
-			LoadUsers();
-		}
-		else if (cparam=="deletehardware")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="DeleteHardware";
-
-			m_pMain->m_sql.DeleteHardware(idx);
-			m_pMain->RemoveDomoticzHardware(atoi(idx.c_str()));
-		}
-		else if (cparam=="addtimer")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			std::string active=m_pWebEm->FindValue("active");
-			std::string stimertype=m_pWebEm->FindValue("timertype");
-			std::string shour=m_pWebEm->FindValue("hour");
-			std::string smin=m_pWebEm->FindValue("min");
-			std::string randomness=m_pWebEm->FindValue("randomness");
-			std::string scmd=m_pWebEm->FindValue("command");
-			std::string sdays=m_pWebEm->FindValue("days");
-			std::string slevel=m_pWebEm->FindValue("level");	//in percentage
-			std::string shue=m_pWebEm->FindValue("hue");
-			if (
-				(idx=="")||
-				(active=="")||
-				(stimertype=="")||
-				(shour=="")||
-				(smin=="")||
-				(randomness=="")||
-				(scmd=="")||
-				(sdays=="")
-				)
-				goto exitjson;
-			unsigned char hour = atoi(shour.c_str());
-			unsigned char min = atoi(smin.c_str());
-			unsigned char icmd = atoi(scmd.c_str());
-			unsigned char iTimerType=atoi(stimertype.c_str());
-			int days=atoi(sdays.c_str());
-			unsigned char level=atoi(slevel.c_str());
-			int hue=atoi(shue.c_str());
-			sprintf(szData,"%02d:%02d",hour,min);
-			root["status"]="OK";
-			root["title"]="AddTimer";
-			sprintf(szTmp,
-				"INSERT INTO Timers (Active, DeviceRowID, Time, Type, UseRandomness, Cmd, Level, Hue, Days) VALUES (%d,%s,'%s',%d,%d,%d,%d,%d,%d)",
-				(active=="true")?1:0,
-				idx.c_str(),
-				szData,
-				iTimerType,
-				(randomness=="true")?1:0,
-				icmd,
-				level,
-				hue,
-				days
-				);
-			result=m_pMain->m_sql.query(szTmp);
-			m_pMain->m_scheduler.ReloadSchedules();
-		}
-		else if (cparam=="addscenetimer")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			std::string active=m_pWebEm->FindValue("active");
-			std::string stimertype=m_pWebEm->FindValue("timertype");
-			std::string shour=m_pWebEm->FindValue("hour");
-			std::string smin=m_pWebEm->FindValue("min");
-			std::string randomness=m_pWebEm->FindValue("randomness");
-			std::string scmd=m_pWebEm->FindValue("command");
-			std::string sdays=m_pWebEm->FindValue("days");
-			std::string slevel=m_pWebEm->FindValue("level");	//in percentage
-			if (
-				(idx=="")||
-				(active=="")||
-				(stimertype=="")||
-				(shour=="")||
-				(smin=="")||
-				(randomness=="")||
-				(scmd=="")||
-				(sdays=="")
-				)
-				goto exitjson;
-			unsigned char hour = atoi(shour.c_str());
-			unsigned char min = atoi(smin.c_str());
-			unsigned char icmd = atoi(scmd.c_str());
-			unsigned char iTimerType=atoi(stimertype.c_str());
-			int days=atoi(sdays.c_str());
-			unsigned char level=atoi(slevel.c_str());
-			sprintf(szData,"%02d:%02d",hour,min);
-			root["status"]="OK";
-			root["title"]="AddSceneTimer";
-			sprintf(szTmp,
-				"INSERT INTO SceneTimers (Active, SceneRowID, Time, Type, UseRandomness, Cmd, Level, Days) VALUES (%d,%s,'%s',%d,%d,%d,%d,%d)",
-				(active=="true")?1:0,
-				idx.c_str(),
-				szData,
-				iTimerType,
-				(randomness=="true")?1:0,
-				icmd,
-				level,
-				days
-				);
-			result=m_pMain->m_sql.query(szTmp);
-			m_pMain->m_scheduler.ReloadSchedules();
-		}
-		else if (cparam=="updatetimer")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			std::string active=m_pWebEm->FindValue("active");
-			std::string stimertype=m_pWebEm->FindValue("timertype");
-			std::string shour=m_pWebEm->FindValue("hour");
-			std::string smin=m_pWebEm->FindValue("min");
-			std::string randomness=m_pWebEm->FindValue("randomness");
-			std::string scmd=m_pWebEm->FindValue("command");
-			std::string sdays=m_pWebEm->FindValue("days");
-			std::string slevel=m_pWebEm->FindValue("level");	//in percentage
-			std::string shue=m_pWebEm->FindValue("hue");
-			if (
-				(idx=="")||
-				(active=="")||
-				(stimertype=="")||
-				(shour=="")||
-				(smin=="")||
-				(randomness=="")||
-				(scmd=="")||
-				(sdays=="")
-				)
-				goto exitjson;
-			unsigned char hour = atoi(shour.c_str());
-			unsigned char min = atoi(smin.c_str());
-			unsigned char icmd = atoi(scmd.c_str());
-			unsigned char iTimerType=atoi(stimertype.c_str());
-			int days=atoi(sdays.c_str());
-			unsigned char level=atoi(slevel.c_str());
-			int hue=atoi(shue.c_str());
-			sprintf(szData,"%02d:%02d",hour,min);
-			root["status"]="OK";
-			root["title"]="UpdateTimer";
-			sprintf(szTmp,
-				"UPDATE Timers SET Active=%d, Time='%s', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Hue=%d, Days=%d WHERE (ID == %s)",
-				(active=="true")?1:0,
-				szData,
-				iTimerType,
-				(randomness=="true")?1:0,
-				icmd,
-				level,
-				hue,
-				days,
-				idx.c_str()
-				);
-			result=m_pMain->m_sql.query(szTmp);
-			m_pMain->m_scheduler.ReloadSchedules();
-		}
-		else if (cparam=="updatescenetimer")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			std::string active=m_pWebEm->FindValue("active");
-			std::string stimertype=m_pWebEm->FindValue("timertype");
-			std::string shour=m_pWebEm->FindValue("hour");
-			std::string smin=m_pWebEm->FindValue("min");
-			std::string randomness=m_pWebEm->FindValue("randomness");
-			std::string scmd=m_pWebEm->FindValue("command");
-			std::string sdays=m_pWebEm->FindValue("days");
-			std::string slevel=m_pWebEm->FindValue("level");	//in percentage
-			if (
-				(idx=="")||
-				(active=="")||
-				(stimertype=="")||
-				(shour=="")||
-				(smin=="")||
-				(randomness=="")||
-				(scmd=="")||
-				(sdays=="")
-				)
-				goto exitjson;
-			unsigned char hour = atoi(shour.c_str());
-			unsigned char min = atoi(smin.c_str());
-			unsigned char icmd = atoi(scmd.c_str());
-			unsigned char iTimerType=atoi(stimertype.c_str());
-			int days=atoi(sdays.c_str());
-			unsigned char level=atoi(slevel.c_str());
-			sprintf(szData,"%02d:%02d",hour,min);
-			root["status"]="OK";
-			root["title"]="UpdateSceneTimer";
-			sprintf(szTmp,
-				"UPDATE SceneTimers SET Active=%d, Time='%s', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Days=%d WHERE (ID == %s)",
-				(active=="true")?1:0,
-				szData,
-				iTimerType,
-				(randomness=="true")?1:0,
-				icmd,
-				level,
-				days,
-				idx.c_str()
-				);
-			result=m_pMain->m_sql.query(szTmp);
-			m_pMain->m_scheduler.ReloadSchedules();
-		}
-		else if (cparam=="deletetimer")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="DeleteTimer";
-			sprintf(szTmp,
-				"DELETE FROM Timers WHERE (ID == %s)",
-				idx.c_str()
-				);
-			result=m_pMain->m_sql.query(szTmp);
-			m_pMain->m_scheduler.ReloadSchedules();
-		}
-		else if (cparam=="deletescenetimer")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="DeleteSceneTimer";
-			sprintf(szTmp,
-				"DELETE FROM SceneTimers WHERE (ID == %s)",
-				idx.c_str()
-				);
-			result=m_pMain->m_sql.query(szTmp);
-			m_pMain->m_scheduler.ReloadSchedules();
-		}
-		else if (cparam=="clearlightlog")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			//First get Device Type/SubType
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT Type, SubType FROM DeviceStatus WHERE (ID == " << idx << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()<1)
-				goto exitjson;
-
-			unsigned char dType=atoi(result[0][0].c_str());
-			unsigned char dSubType=atoi(result[0][1].c_str());
-
-			if (
-				(dType!=pTypeLighting1)&&
-				(dType!=pTypeLighting2)&&
-				(dType!=pTypeLighting3)&&
-				(dType!=pTypeLighting4)&&
-				(dType!=pTypeLighting5)&&
-				(dType!=pTypeLighting6)&&
-				(dType!=pTypeLimitlessLights)&&
-				(dType!=pTypeSecurity1)&&
-				(dType!=pTypeBlinds)&&
-				(dType!=pTypeChime)&&
-				(dType!=pTypeThermostat3)&&
-				(dType!=pTypeRemote)
-				)
-				goto exitjson; //no light device! we should not be here!
-
-			root["status"]="OK";
-			root["title"]="ClearLightLog";
-
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "DELETE FROM LightingLog WHERE (DeviceRowID==" << idx << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
-		}
-		else if (cparam=="cleartimers")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="ClearTimer";
-			sprintf(szTmp,
-				"DELETE FROM Timers WHERE (DeviceRowID == %s)",
-				idx.c_str()
-				);
-			result=m_pMain->m_sql.query(szTmp);
-			m_pMain->m_scheduler.ReloadSchedules();
-		}
-		else if (cparam=="clearscenetimers")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="ClearSceneTimer";
-			sprintf(szTmp,
-				"DELETE FROM SceneTimers WHERE (SceneRowID == %s)",
-				idx.c_str()
-				);
-			result=m_pMain->m_sql.query(szTmp);
-			m_pMain->m_scheduler.ReloadSchedules();
-		}
-		else if (cparam=="setscenecode")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			std::string cmnd=m_pWebEm->FindValue("cmnd");
-			if (
-				(idx=="")||
-				(cmnd=="")
-				)
-				goto exitjson;
-			std::string devid=m_pWebEm->FindValue("devid");
-			if (devid=="")
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="SetSceneCode";
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << devid << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()>0)
-			{
-				sprintf(szTmp,
-					"UPDATE Scenes SET HardwareID=%d, DeviceID='%s', Unit=%d, Type=%d, SubType=%d, ListenCmd=%d WHERE (ID == %s)",
-					atoi(result[0][0].c_str()),
-					result[0][1].c_str(),
-					atoi(result[0][2].c_str()),
-					atoi(result[0][3].c_str()),
-					atoi(result[0][4].c_str()),
-					atoi(cmnd.c_str()),
-					idx.c_str()
-					);
-				result=m_pMain->m_sql.query(szTmp);
-				//Sanity Check, remove all SceneDevice that has this code
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "DELETE FROM SceneDevices WHERE (SceneRowID==" << idx << " AND DeviceRowID==" << devid << ")";
-				result=m_pMain->m_sql.query(szQuery.str()); //-V519
-			}
-		}
-		else if (cparam=="removescenecode")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			if (idx=="")
-				goto exitjson;
-			root["status"]="OK";
-			root["title"]="RemoveSceneCode";
-			sprintf(szTmp,
-				"UPDATE Scenes SET HardwareID=%d, DeviceID='%s', Unit=%d, Type=%d, SubType=%d WHERE (ID == %s)",
-				0,
-				"",
-				0,
-				0,
-				0,
-				idx.c_str()
-				);
-			result=m_pMain->m_sql.query(szTmp);
-		}
-		else if (cparam=="learnsw")
-		{
-			m_pMain->m_sql.m_LastSwitchID="";
-			bool bReceivedSwitch=false;
-			unsigned char cntr=0;
-			while ((!bReceivedSwitch)&&(cntr<50))	//wait for max. 5 seconds
-			{
-				if (m_pMain->m_sql.m_LastSwitchID!="")
-				{
-					bReceivedSwitch=true;
-					break;
-				}
-				else
-				{
-					//sleep 100ms
-					sleep_milliseconds(100);
-					cntr++;
-				}
-			}
-			if (bReceivedSwitch)
-			{
-				//check if used
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "SELECT Name, Used, nValue FROM DeviceStatus WHERE (ID==" << m_pMain->m_sql.m_LastSwitchRowID << ")";
-				result=m_pMain->m_sql.query(szQuery.str());
-				if (result.size()>0)
-				{
-					root["status"]="OK";
-					root["title"]="LearnSW";
-					root["ID"]=m_pMain->m_sql.m_LastSwitchID;
-					root["idx"]=m_pMain->m_sql.m_LastSwitchRowID;
-					root["Name"]=result[0][0];
-					root["Used"]=atoi(result[0][1].c_str());
-					root["Cmd"]=atoi(result[0][2].c_str());
-				}
-			}
-		} //learnsw
-		else if (cparam == "makefavorite")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			std::string sisfavorite=m_pWebEm->FindValue("isfavorite");
-			if ((idx=="")||(sisfavorite==""))
-				goto exitjson;
-			int isfavorite=atoi(sisfavorite.c_str());
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "UPDATE DeviceStatus SET Favorite=" << isfavorite << " WHERE (ID == " << idx << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()>0)
-			{
-				root["status"]="OK";
-				root["title"]="MakeFavorite";
-			}
-		} //makefavorite
-		else if (cparam == "makescenefavorite")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			std::string sisfavorite=m_pWebEm->FindValue("isfavorite");
-			if ((idx=="")||(sisfavorite==""))
-				goto exitjson;
-			int isfavorite=atoi(sisfavorite.c_str());
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "UPDATE Scenes SET Favorite=" << isfavorite << " WHERE (ID == " << idx << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
-			if (result.size()>0)
-			{
-				root["status"]="OK";
-				root["title"]="MakeSceneFavorite";
-			}
-		} //makescenefavorite
-        else if (cparam=="resetsecuritystatus")
-		{
-			int urights=3;
-			if (bHaveUser)
-			{
-				int iUser=-1;
-				iUser=FindUser(m_pWebEm->m_actualuser.c_str());
-				if (iUser!=-1)
-					urights=(int)m_users[iUser].userrights;
-			}
-			if (urights<1)
-				goto exitjson;
-
-            std::string idx=m_pWebEm->FindValue("idx");
-			std::string switchcmd=m_pWebEm->FindValue("switchcmd");
-
-			if ((idx=="")||(switchcmd==""))
-				goto exitjson;
-
-			root["status"]="OK";
-			root["title"]="ResetSecurityStatus";
-
-            int nValue=-1;
-            
-            // Change to generic *Security_Status_Desc lookup...
-            
-            if (switchcmd == "Panic End") {
-                nValue = 7;
-            }
-			else if (switchcmd == "Normal") {
-				nValue = 0;
-			}
-            
-            if (nValue>=0)
-			{
-                
-                szQuery.clear();
-                szQuery.str("");
-                szQuery << "UPDATE DeviceStatus SET nValue=" << nValue << " WHERE (ID == " << idx << ")";
-        		result=m_pMain->m_sql.query(szQuery.str());
-                if (result.size()>0) {
-                    root["status"]="OK";
-                    root["title"]="SwitchLight";
-                }
-                else {
-                    goto exitjson;
-                }
-            }
-            else 
-			{
-				goto exitjson;
-            }
-        }
-		else if (cparam=="logout")
+		if (cparam=="logout")
 		{
 			root["status"]="OK";
 			root["title"]="Logout";
 			m_retstr="authorize";
 			return m_retstr;
-			
+
 		}
-        else if (cparam=="switchlight")
-		{
-			int urights=3;
-			if (bHaveUser)
-			{
-				int iUser=-1;
-				iUser=FindUser(m_pWebEm->m_actualuser.c_str());
-				if (iUser!=-1)
-					urights=(int)m_users[iUser].userrights;
-			}
-			if (urights<1)
-				goto exitjson;
-
-			std::string idx=m_pWebEm->FindValue("idx");
-			std::string switchcmd=m_pWebEm->FindValue("switchcmd");
-			std::string level=m_pWebEm->FindValue("level");
-			if ((idx=="")||(switchcmd==""))
-				goto exitjson;
-
-			if (m_pMain->SwitchLight(idx,switchcmd,level,"-1")==true)
-			{
-				root["status"]="OK";
-				root["title"]="SwitchLight";
-			}
-		} //(rtype=="switchlight")
-		else if (cparam=="switchscene")
-		{
-			int urights=3;
-			if (bHaveUser)
-			{
-				int iUser=-1;
-				iUser=FindUser(m_pWebEm->m_actualuser.c_str());
-				if (iUser!=-1)
-					urights=(int)m_users[iUser].userrights;
-			}
-			if (urights<1)
-				goto exitjson;
-
-			std::string idx=m_pWebEm->FindValue("idx");
-			std::string switchcmd=m_pWebEm->FindValue("switchcmd");
-			if ((idx=="")||(switchcmd==""))
-				goto exitjson;
-
-			if (m_pMain->SwitchScene(idx,switchcmd)==true)
-			{
-				root["status"]="OK";
-				root["title"]="SwitchScene";
-			}
-		} //(rtype=="switchscene")
-		else if (cparam =="getSunRiseSet") {
-			int nValue=0;
-			std::string sValue;
-			if (m_pMain->m_sql.GetTempVar("SunRiseSet",nValue,sValue))
-			{
-				std::vector<std::string> strarray;
-				StringSplit(sValue, ";", strarray);
-				if (strarray.size()==2)
-				{
-					struct tm loctime;
-					time_t now = mytime(NULL);
-
-					localtime_r (&now, &loctime );
-					strftime (szTmp,80,"%b %d %Y %X",&loctime);
-
-					root["status"]="OK";
-					root["title"]="getSunRiseSet";
-					root["ServerTime"]=szTmp;
-					root["Sunrise"]=strarray[0];
-					root["Sunset"]=strarray[1];
-				}
-			}
-		}
-        else if (cparam =="getServerTime") {
-
-            struct tm loctime;
-			time_t now = mytime(NULL);
-
-            localtime_r (&now, &loctime );
-			strftime (szTmp,80,"%b %d %Y %X",&loctime);
-            
-            root["status"]="OK";
-			root["title"]="getServerTime";
-			root["ServerTime"]=szTmp;
-		}
-		else if (cparam=="getsecstatus")
-		{
-			root["status"]="OK";
-			root["title"]="GetSecStatus";
-			int secstatus=0;
-			m_pMain->m_sql.GetPreferencesVar("SecStatus", secstatus);
-			root["secstatus"]=secstatus;
-		}
-		else if (cparam=="setsecstatus")
-		{
-			std::string ssecstatus=m_pWebEm->FindValue("secstatus");
-			std::string seccode=m_pWebEm->FindValue("seccode");
-			if ((ssecstatus=="")||(seccode==""))
-			{
-				root["message"]="WRONG CODE";
-				goto exitjson;
-			}
-			root["title"]="SetSecStatus";
-			seccode=base64_encode((const unsigned char*)seccode.c_str(),seccode.size());
-			std::string rpassword;
-			int nValue=1;
-			m_pMain->m_sql.GetPreferencesVar("SecPassword",nValue,rpassword);
-			if (seccode!=rpassword)
-			{
-				root["status"]="ERROR";
-				root["message"]="WRONG CODE";
-				goto exitjson;
-			}
-			root["status"]="OK";
-			int iSecStatus=atoi(ssecstatus.c_str());
-			m_pMain->UpdateDomoticzSecurityStatus(iSecStatus);
-		}
-		else if (cparam=="setcolbrightnessvalue")
-		{
-			std::string idx=m_pWebEm->FindValue("idx");
-			std::string hue=m_pWebEm->FindValue("hue");
-			std::string brightness=m_pWebEm->FindValue("brightness");
-			std::string iswhite=m_pWebEm->FindValue("iswhite");
-			
-			if ((idx=="")||(hue=="")||(brightness=="")||(iswhite==""))
-			{
-				goto exitjson;
-			}
-
-			unsigned long long ID;
-			std::stringstream s_strid;
-			s_strid << idx;
-			s_strid >> ID;
-
-			if (iswhite!="true")
-			{
-				//convert hue from 360 steps to 255
-				double dval;
-				dval=(255.0/360.0)*atof(hue.c_str());
-				int ival;
-				ival=round(dval);
-				m_pMain->SwitchLight(ID,"Set Color",ival,-1);
-			}
-			else
-			{
-				m_pMain->SwitchLight(ID,"Set White",0,-1);
-			}
-			sleep_milliseconds(100);
-			m_pMain->SwitchLight(ID,"Set Brightness",(unsigned char)atoi(brightness.c_str()),-1);
-		}
+		HandleCommand(cparam,root);
 	} //(rtype=="command")
 	else if (rtype=="getshareduserdevices")
 	{
