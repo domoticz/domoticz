@@ -1552,7 +1552,10 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					if (lstatus=="On") {
 						lstatus="Closed";
 					} else {
-						if (LastLevel==100)
+						if (lstatus=="Off") {
+							lstatus="Open";
+						}
+						else if (LastLevel==100)
 						{
 							lstatus="Open";
 						}
