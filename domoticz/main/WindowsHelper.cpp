@@ -54,6 +54,7 @@ void console::OpenHideConsole()
 
 	// create a console window
 	AllocConsole();
+//	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 12); //display in red ;)
 
 	EnableMenuItem(GetSystemMenu(GetConsoleWindow(), FALSE), SC_CLOSE , MF_GRAYED);
 
@@ -77,7 +78,7 @@ void console::OpenHideConsole()
 	m_old_cin = std::cin.rdbuf();
 	m_in.open("CONIN$");
 	std::cin.rdbuf(m_in.rdbuf());
-
+	
 	SetConsoleTitle("Domoticz Home Automation System");
 }
 

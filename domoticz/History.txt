@@ -47,6 +47,7 @@ Version 1.0.xxxx (February xxth 2014)
 - Implemented: Razberry COMMAND_CLASS_SCENE_ACTIVATION (push on button) on Instance_0
 - Implemented: jsonp support
 - Implemented: Web Frontpage Example
+- Implemented: Blinds Percentage switch type (Fibaro rollershutter)
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)

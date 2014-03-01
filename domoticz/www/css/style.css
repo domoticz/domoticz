@@ -1202,6 +1202,7 @@ body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td:b
 /* Eighth column (bottom text)*/
 body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td + td{
 	font-size: 90%;
+	margin-top: 16px;
 	clear: both;
 	padding: 0 5% 0 5%;
 	line-height: 130%;

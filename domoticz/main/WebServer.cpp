@@ -1543,6 +1543,22 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					}
 					root["result"][ii]["Status"]=lstatus;
 				}
+				else if (switchtype==STYPE_BlindsPercentage)
+				{
+					root["result"][ii]["TypeImg"]="blinds";
+					root["result"][ii]["Level"]=LastLevel;
+					int iLevel=round((float(maxDimLevel)/100.0f)*LastLevel);
+					root["result"][ii]["LevelInt"]=iLevel;
+					if (lstatus=="On") {
+						lstatus="Closed";
+					} else {
+						if (LastLevel==100)
+						{
+							lstatus="Open";
+						}
+					}
+					root["result"][ii]["Status"]=lstatus;
+				}
 				else if (switchtype==STYPE_Dimmer)
 				{
 					root["result"][ii]["TypeImg"]="dimmer";
