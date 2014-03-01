@@ -7624,13 +7624,16 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				level=15;
 			}
 			else if (switchtype==STYPE_BlindsPercentage) {
-				if (level==15)
+				if (lcmd.LIGHTING2.cmnd==light2_sSetLevel)
 				{
-					lcmd.LIGHTING2.cmnd=light2_sOn;
-				}
-				else if (level==0)
-				{
-					lcmd.LIGHTING2.cmnd=light2_sOff;
+					if (level==15)
+					{
+						lcmd.LIGHTING2.cmnd=light2_sOn;
+					}
+					else if (level==0)
+					{
+						lcmd.LIGHTING2.cmnd=light2_sOff;
+					}
 				}
 			}
 			if (level>15)
