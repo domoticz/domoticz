@@ -1,0 +1,9 @@
+[main]
+host = https://www.transifex.com
+
+[domoticz.domoticz-enjson]
+file_filter = www/i18n/domoticz-<lang>.json.
+host = https://www.transifex.net
+source_lang = en
+type = KEYVALUEJSON
+

@@ -343,7 +343,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 					int sensorType=(*itt2)["sensorType"]["value"].asInt();
 					_device.floatValue=(*itt2)["val"]["value"].asFloat();
 					std::string scaleString = (*itt2)["scaleString"]["value"].asString();
-					if ((_device.scaleID == 0 || _device.scaleID == 2 || _device.scaleID == 4 || _device.scaleID == 6) && (sensorType == 1))
+					if ((_device.scaleID == 0 || _device.scaleID == 2 || _device.scaleID == 4 || _device.scaleID == 5 || _device.scaleID == 6) && (sensorType == 1))
 					{
 						_device.commandClassID=50;
 						_device.scaleMultiply=1;
@@ -352,9 +352,22 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 							_device.scaleMultiply=1000;
 							_device.devType = ZDTYPE_SENSOR_POWERENERGYMETER;
 						}
-						else
+						else if (scaleString=="W")
 						{
 							_device.devType = ZDTYPE_SENSOR_POWER;
+						}
+						else if (scaleString=="V")
+						{
+							_device.devType = ZDTYPE_SENSOR_VOLTAGE;
+						}
+						else if (scaleString=="A")
+						{
+							_device.devType = ZDTYPE_SENSOR_AMPERE;
+						}
+						else
+						{
+							_log.Log(LOG_ERROR,"Razberry: Device Scale not handled at the moment, please report (nodeID:%d, instanceID:%d, Scale:%s)",_device.nodeID,_device.instanceID,scaleString.c_str());
+							continue;
 						}
 
 						InsertDevice(_device);
@@ -375,8 +388,8 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 					int sensorType=(*itt2)["sensorType"]["value"].asInt();
 					_device.floatValue=(*itt2)["val"]["value"].asFloat();
 					std::string scaleString = (*itt2)["scaleString"]["value"].asString();
-					if ((_device.scaleID == 0 || _device.scaleID == 2 || _device.scaleID == 4 || _device.scaleID == 6) && (sensorType == 1))
-						continue; // we don't want to have measurable here (W, V, PowerFactor)
+					if ((_device.scaleID == 0 || _device.scaleID == 2 || _device.scaleID == 4 || _device.scaleID == 5 || _device.scaleID == 6) && (sensorType == 1))
+						continue; // we don't want to have measurable here (W, V, A, PowerFactor)
 					_device.commandClassID=50;
 					_device.scaleMultiply=1;
 					if (scaleString=="kWh")
@@ -384,9 +397,22 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 						_device.scaleMultiply=1000;
 						_device.devType = ZDTYPE_SENSOR_POWERENERGYMETER;
 					}
-					else
+					else if (scaleString=="W")
 					{
 						_device.devType = ZDTYPE_SENSOR_POWER;
+					}
+					else if (scaleString=="V")
+					{
+						_device.devType = ZDTYPE_SENSOR_VOLTAGE;
+					}
+					else if (scaleString=="A")
+					{
+						_device.devType = ZDTYPE_SENSOR_AMPERE;
+					}
+					else
+					{
+						_log.Log(LOG_ERROR,"Razberry: Device Scale not handled at the moment, please report (nodeID:%d, instanceID:%d, Scale:%s)",_device.nodeID,_device.instanceID,scaleString.c_str());
+						continue;
 					}
 					InsertDevice(_device);
 				}
@@ -711,6 +737,14 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 		break;
 	case ZDTYPE_SENSOR_POWER:
 		//meters
+		pDevice->floatValue=obj["val"]["value"].asFloat()*pDevice->scaleMultiply;
+		break;
+	case ZDTYPE_SENSOR_VOLTAGE:
+		//Voltage
+		pDevice->floatValue=obj["val"]["value"].asFloat()*pDevice->scaleMultiply;
+		break;
+	case ZDTYPE_SENSOR_AMPERE:
+		//Ampere
 		pDevice->floatValue=obj["val"]["value"].asFloat()*pDevice->scaleMultiply;
 		break;
 	case ZDTYPE_SENSOR_POWERENERGYMETER:

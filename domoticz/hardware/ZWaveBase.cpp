@@ -328,6 +328,35 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		umeter.fusage=pDevice->floatValue;
 		sDecodeRXMessage(this, (const unsigned char *)&umeter);//decode message
 	}
+	else if (pDevice->devType==ZDTYPE_SENSOR_VOLTAGE)
+	{
+		_tGeneralDevice gDevice;
+		gDevice.subtype=sTypeVoltage;
+		gDevice.id=ID4;
+		gDevice.floatval1=pDevice->floatValue;
+		gDevice.intval1=(int)(ID1<<24)|(ID2<<16)|(ID3<<8)|ID4;
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+	}
+	else if (pDevice->devType==ZDTYPE_SENSOR_AMPERE)
+	{
+		RBUF tsen;
+		memset(&tsen,0,sizeof(RBUF));
+		tsen.CURRENT.packettype=pTypeCURRENT;
+		tsen.CURRENT.subtype=sTypeELEC1;
+		tsen.CURRENT.id1=ID3;
+		tsen.CURRENT.id2=ID4;
+		int amps=round(pDevice->floatValue*10.0f);
+		tsen.CURRENT.ch1h=amps/256;
+		amps-=(tsen.CURRENT.ch1h*256);
+		tsen.CURRENT.ch1l=(BYTE)amps;
+		tsen.CURRENT.battery_level=9;
+		tsen.CURRENT.rssi=12;
+		if (pDevice->hasBattery)
+		{
+			tsen.ENERGY.battery_level=Convert_Battery_To_PercInt(pDevice->batValue);
+		}
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.CURRENT);
+	}
 	else if (pDevice->devType==ZDTYPE_SENSOR_POWERENERGYMETER)
 	{
 		RBUF tsen;
@@ -378,14 +407,42 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		}
 		else
 		{
-			_tUsageMeter umeter;
-			umeter.id1=ID1;
-			umeter.id2=ID2;
-			umeter.id3=ID3;
-			umeter.id4=ID4;
-			umeter.dunit=pDevice->scaleID;
-			umeter.fusage=pDevice->floatValue;
-			sDecodeRXMessage(this, (const unsigned char *)&umeter);//decode message
+			tsen.ENERGY.packettype=pTypeENERGY;
+			tsen.ENERGY.subtype=sTypeELEC2;
+			tsen.ENERGY.id1=ID3;
+			tsen.ENERGY.id2=ID4;
+			tsen.ENERGY.count=1;
+			tsen.ENERGY.rssi=12;
+
+			tsen.ENERGY.battery_level=9;
+			if (pDevice->hasBattery)
+			{
+				tsen.ENERGY.battery_level=Convert_Battery_To_PercInt(pDevice->batValue);
+			}
+
+			unsigned long long instant=0;
+			tsen.ENERGY.instant1=(unsigned char)(instant/0x1000000);
+			instant-=tsen.ENERGY.instant1*0x1000000;
+			tsen.ENERGY.instant2=(unsigned char)(instant/0x10000);
+			instant-=tsen.ENERGY.instant2*0x10000;
+			tsen.ENERGY.instant3=(unsigned char)(instant/0x100);
+			instant-=tsen.ENERGY.instant3*0x100;
+			tsen.ENERGY.instant4=(unsigned char)(instant);
+
+			double total=pDevice->floatValue*223.666;
+			tsen.ENERGY.total1=(unsigned char)(total/0x10000000000ULL);
+			total-=tsen.ENERGY.total1*0x10000000000ULL;
+			tsen.ENERGY.total2=(unsigned char)(total/0x100000000ULL);
+			total-=tsen.ENERGY.total2*0x100000000ULL;
+			tsen.ENERGY.total3=(unsigned char)(total/0x1000000);
+			total-=tsen.ENERGY.total3*0x1000000;
+			tsen.ENERGY.total4=(unsigned char)(total/0x10000);
+			total-=tsen.ENERGY.total4*0x10000;
+			tsen.ENERGY.total5=(unsigned char)(total/0x100);
+			total-=tsen.ENERGY.total5*0x100;
+			tsen.ENERGY.total6=(unsigned char)(total);
+
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY);//decode message
 		}
 	}
 	else if (pDevice->devType==ZDTYPE_SENSOR_TEMPERATURE)

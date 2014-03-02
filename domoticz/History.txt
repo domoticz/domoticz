@@ -48,6 +48,9 @@ Version 1.0.xxxx (February xxth 2014)
 - Implemented: jsonp support
 - Implemented: Web Frontpage Example
 - Implemented: Blinds Percentage switch type (Fibaro rollershutter)
+- Implemented: Bulgarian translation (Thanks to Tommit!)
+- Implemented: Razberry Voltage/Ampere
+- Changed: ZWave, Power sensors that does not transmit usage, now used as power instead of usage 
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)
