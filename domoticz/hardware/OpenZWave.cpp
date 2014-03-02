@@ -1510,7 +1510,6 @@ bool COpenZWave::NetworkInfo(const int hwID,std::vector< std::vector< int > > &N
 	if (result.size()<1) {
 		return false;
 	}
-	_log.Log(LOG_NORM,"query start");
 	int rowCnt = 0;
 	std::vector<std::vector<std::string> >::const_iterator itt;
 	for (itt=result.begin(); itt!=result.end(); ++itt)
@@ -1525,7 +1524,6 @@ bool COpenZWave::NetworkInfo(const int hwID,std::vector< std::vector< int > > &N
 		if (retval > 0) {
 			
 			for (int i=0; i<retval; i++) {
-				_log.Log(LOG_NORM,"OpenZWave:%d %d",NodeID, arr[i]);
 				NodeArray[rowCnt].push_back(arr[i]);
 			}
 			
@@ -1538,27 +1536,30 @@ bool COpenZWave::NetworkInfo(const int hwID,std::vector< std::vector< int > > &N
 
 }
 
-bool COpenZWave::ListAssociatedNodesinGroup(const int nodeID,const int groupID)
+int COpenZWave::ListGroupsForNode(const int nodeID)
+{
+	if (m_pManager==NULL)
+		return 0;
+	
+	return m_pManager->GetNumGroups (m_controllerID, nodeID);
+}	
+
+
+int COpenZWave::ListAssociatedNodesinGroup(const int nodeID,const int groupID, std::vector<int> &nodesingroup)
 {
 
 	if (m_pManager==NULL)
-	return false;
+	return 0;
+
 	uint8* arr;
-	
 	int retval = m_pManager->GetAssociations (m_controllerID, nodeID, groupID, &arr);
 	if (retval > 0) {
-			
 		for (int i=0; i<retval; i++) {
-			_log.Log(LOG_NORM,"OpenZWave: in group: %d of node %d is %d",groupID,nodeID, arr[i]);
-			//NodeArray[rowCnt].push_back(arr[i]);
+			nodesingroup.push_back(arr[i]);
 		}
-			
 		delete arr;
 	}
-	else {
-		_log.Log(LOG_NORM,"OpenZWave: no nodes in group: %d of node %d ",groupID,nodeID);
-	}
-	return true;
+	return retval;
 }
 
 bool COpenZWave::AddNodeToGroup(const int nodeID,const int groupID, const int addID)

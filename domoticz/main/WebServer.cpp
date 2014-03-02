@@ -19,6 +19,8 @@
 #include "../json/config.h"
 #include "../json/json.h"
 #include "Logger.h"
+
+
 #ifndef WIN32
 	#include <sys/utsname.h>
 #else
@@ -734,6 +736,7 @@ void CWebServer::ZWaveNetworkInfo(Json::Value &root)
 			}
 			root["status"]="OK";
 		}
+
 	}
 }
 
@@ -790,21 +793,57 @@ void CWebServer::ZWaveGroupInfo(Json::Value &root)
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
-	std::string node=m_pWebEm->FindValue("node");
-	if (node=="")
-		return;
-	std::string group=m_pWebEm->FindValue("group");
-	if (group=="")
-		return;
+	int iHardwareID=atoi(idx.c_str());
+	
 	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
 	if (pHardware!=NULL)
 	{
 		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
-		pOZWHardware->ListAssociatedNodesinGroup(atoi(node.c_str()),atoi(group.c_str()));
-		root["status"]="OK";
-		root["title"]="ZWaveGroupInfo";
-	}
 
+		std::stringstream szQuery;
+		std::vector<std::vector<std::string> > result;
+		szQuery << "SELECT ID,HomeID,NodeID,Name FROM ZWaveNodes WHERE (HardwareID==" << iHardwareID << ")";
+		result=m_pMain->m_sql.query(szQuery.str());
+		
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			int ii=0;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+				int nodeID=atoi(sd[2].c_str());
+				int numGroups = pOZWHardware->ListGroupsForNode(nodeID);
+				_log.Log(LOG_NORM,"OpenZ: %d %d ",nodeID,numGroups);
+				if (numGroups > 0) {
+					root["result"]["nodes"][ii]["nodeID"]=nodeID;
+					root["result"]["nodes"][ii]["groupCount"]=numGroups;
+					
+					std::vector< int > nodesingroup;
+					int gi=0;
+					for (int x = 1; x <= numGroups; x++)
+					{
+						int numNodesInGroup = pOZWHardware->ListAssociatedNodesinGroup(nodeID,x,nodesingroup);
+						if (numNodesInGroup > 0) {
+							std::stringstream list;
+							std::copy(nodesingroup.begin(), nodesingroup.end(), std::ostream_iterator<int>(list, ","));
+							root["result"]["nodes"][ii]["groups"][gi]["id"]=x;
+							root["result"]["nodes"][ii]["groups"][gi]["nodes"]=list.str();
+						}
+						else {
+							root["result"]["nodes"][ii]["groups"][gi]["id"]=x;
+							root["result"]["nodes"][ii]["groups"][gi]["nodes"]="";
+						}
+						gi++;
+					}
+					ii++;
+				}
+				
+			}
+		}
+	}
+	root["status"]="OK";
+	root["title"]="ZWaveGroupInfo";
 }
 
 void CWebServer::ZWaveCancel(Json::Value &root)
