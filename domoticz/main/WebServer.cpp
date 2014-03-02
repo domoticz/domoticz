@@ -6631,7 +6631,6 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["TypeImg"]="current";
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 					root["result"][ii]["Voltage"]="Fan";
-					break;
 				}
 			}
 			else if (dType == pTypeLux)
