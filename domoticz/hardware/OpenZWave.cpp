@@ -1537,6 +1537,50 @@ bool COpenZWave::NetworkInfo(const int hwID,std::vector< std::vector< int > > &N
 	return true;
 
 }
+
+bool COpenZWave::ListAssociatedNodesinGroup(const int nodeID,const int groupID)
+{
+
+	if (m_pManager==NULL)
+	return false;
+	uint8* arr;
+	
+	int retval = m_pManager->GetAssociations (m_controllerID, nodeID, groupID, &arr);
+	if (retval > 0) {
+			
+		for (int i=0; i<retval; i++) {
+			_log.Log(LOG_NORM,"OpenZWave: in group: %d of node %d is %d",groupID,nodeID, arr[i]);
+			//NodeArray[rowCnt].push_back(arr[i]);
+		}
+			
+		delete arr;
+	}
+	else {
+		_log.Log(LOG_NORM,"OpenZWave: no nodes in group: %d of node %d ",groupID,nodeID);
+	}
+	return true;
+}
+
+bool COpenZWave::AddNodeToGroup(const int nodeID,const int groupID, const int addID)
+{
+
+	if (m_pManager==NULL)
+	return false;
+	m_pManager->AddAssociation (m_controllerID, nodeID, groupID, addID);
+	_log.Log(LOG_NORM,"OpenZWave: added %d in group: %d of node %d",addID,groupID,nodeID);
+	return true;
+}
+
+bool COpenZWave::RemoveNodeFromGroup(const int nodeID,const int groupID, const int removeID)
+{
+
+	if (m_pManager==NULL)
+	return false;
+	m_pManager->RemoveAssociation (m_controllerID, nodeID, groupID, removeID);
+	_log.Log(LOG_NORM,"OpenZWave: removed %d from group: %d of node %d",removeID,groupID,nodeID);
+	return true;
+}
+
 bool COpenZWave::RemoveFailedDevice(const int nodeID)
 {
 	if (m_pManager==NULL)

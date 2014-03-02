@@ -73,6 +73,9 @@ public:
 	bool HardResetDevice();
 	bool HealNetwork();
 	bool NetworkInfo(const int hwID,std::vector< std::vector< int > > &NodeArray);
+	bool ListAssociatedNodesinGroup(const int nodeID,const int groupID);
+	bool AddNodeToGroup(const int nodeID,const int groupID, const int addID);
+	bool RemoveNodeFromGroup(const int nodeID,const int groupID, const int removeID);
 private:
 	void NodesQueried();
 	void AddNode(const int homeID, const int nodeID,const NodeInfo *pNode);

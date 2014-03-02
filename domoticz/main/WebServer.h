@@ -72,6 +72,22 @@ public:
 	void CmdAddHardware(Json::Value &root);
 	void CmdUpdateHardware(Json::Value &root);
 	void DeleteHardware(Json::Value &root);
+	//ZWave
+	void UpdateZWaveNode(Json::Value &root);
+	void DeleteZWaveNode(Json::Value &root);
+	void ZWaveInclude(Json::Value &root);
+	void ZWaveExclude(Json::Value &root);
+	void ZWaveSoftReset(Json::Value &root);
+	void ZWaveHardReset(Json::Value &root);
+	void ZWaveNetworkHeal(Json::Value &root);
+	void ZWaveNetworkInfo(Json::Value &root);
+	void ZWaveRemoveGroupNode(Json::Value &root);
+	void ZWaveAddGroupNode(Json::Value &root);
+	void ZWaveGroupInfo(Json::Value &root);
+	void ZWaveCancel(Json::Value &root);
+	void ApplyZWaveNodeConfig(Json::Value &root);
+	void RequestZWaveNodeConfig(Json::Value &root);
+	
 private:
 	void HandleCommand(const std::string &cparam, Json::Value &root);
 	MainWorker *m_pMain;
