@@ -6628,6 +6628,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				else if (dSubType==sTypeVoltage)
 				{
 					sprintf(szData,"%.1f V",atof(sValue.c_str()));
+					root["result"][ii]["Data"]=szData;
 					root["result"][ii]["TypeImg"]="current";
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 					root["result"][ii]["Voltage"]="Fan";
