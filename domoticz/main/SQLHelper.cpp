@@ -3870,7 +3870,7 @@ void CSQLHelper::UpdateLoadLog()
 
 	std::vector<std::vector<std::string> > result;
 	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d AND SubType=%d)",
-		pTypeGeneral,sTypeSystemLoad
+		pTypeGeneral,sTypePercentage
 		);
 	result=query(szTmp);
 	if (result.size()>0)

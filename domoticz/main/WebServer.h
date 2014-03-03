@@ -67,11 +67,15 @@ public:
 
 	//JSon
 	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID);
+private:
+	void HandleCommand(const std::string &cparam, Json::Value &root);
+
 	//Commands
 	void CmdLoginCheck(Json::Value &root);
 	void CmdAddHardware(Json::Value &root);
 	void CmdUpdateHardware(Json::Value &root);
 	void DeleteHardware(Json::Value &root);
+#ifdef WITH_OPENZWAVE
 	//ZWave
 	void UpdateZWaveNode(Json::Value &root);
 	void DeleteZWaveNode(Json::Value &root);
@@ -87,9 +91,8 @@ public:
 	void ZWaveCancel(Json::Value &root);
 	void ApplyZWaveNodeConfig(Json::Value &root);
 	void RequestZWaveNodeConfig(Json::Value &root);
-	
-private:
-	void HandleCommand(const std::string &cparam, Json::Value &root);
+#endif	
+
 	MainWorker *m_pMain;
 	boost::shared_ptr<boost::thread> m_thread;
 	std::map < std::string, webserver_response_function > m_webcommands;

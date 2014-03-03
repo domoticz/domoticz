@@ -31,7 +31,7 @@
 #define sTypeSoilMoisture	0x03
 #define sTypeLeafWetness	0x04
 #define sTypeSystemTemp		0x05
-#define sTypeSystemLoad		0x06
+#define sTypePercentage		0x06
 #define sTypeSystemFan		0x07
 #define sTypeVoltage		0x08
 

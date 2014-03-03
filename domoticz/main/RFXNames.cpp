@@ -523,7 +523,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeSoilMoisture, "Soil Moisture" },
 		{ pTypeGeneral, sTypeLeafWetness, "Leaf Wetness" },
 		{ pTypeGeneral, sTypeSystemTemp, "System temperature" },
-		{ pTypeGeneral, sTypeSystemLoad, "System load" },
+		{ pTypeGeneral, sTypePercentage, "Percentage" },
 		{ pTypeGeneral, sTypeSystemFan, "System fan" },
 		{ pTypeGeneral, sTypeVoltage, "Voltage" },
 		

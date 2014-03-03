@@ -154,6 +154,7 @@ void COpenHardwareMonitor::FetchData()
 		RunWMIQuery("Sensor","Temperature");
 		RunWMIQuery("Sensor","Load");
 		RunWMIQuery("Sensor","Fan");
+		RunWMIQuery("Sensor","Voltage");
 	}
 }
 
@@ -251,22 +252,19 @@ void COpenHardwareMonitor::UpdateSystemSensor(const std::string& qType, const st
 	{
 		szQuery.clear();
 		szQuery.str("");
-		if (qType=="Temperature") {
+		int dsubtype=0;
+		if (qType=="Temperature")
+			dsubtype=sTypeSystemTemp;
+		else if (qType=="Load")
+			dsubtype=sTypePercentage;
+		else if (qType=="Fan")
+			dsubtype=sTypeSystemFan;
+		else if (qType=="Voltage")
+			dsubtype=sTypeVoltage;
+		if (dsubtype!=0) {
 			szQuery << 
 				"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-				"VALUES (" << hwId << ",'" << wmiId << "',"<< 0 << "," << pTypeGeneral << "," <<sTypeSystemTemp << ",12,255,'" << devName << "'," << devValue << ",'" << devValue << "')";
-			m_pMain->m_sql.query(szQuery.str());
-		}
-		else if (qType=="Load") {
-			szQuery << 
-				"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-				"VALUES (" << hwId << ",'" << wmiId << "',"<< 0 << "," << pTypeGeneral << "," <<sTypeSystemLoad << ",12,255,'" << devName << "'," << devValue << ",'" << devValue << "')";
-			m_pMain->m_sql.query(szQuery.str());
-		}
-		else if (qType=="Fan") {
-			szQuery << 
-				"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-				"VALUES (" << hwId << ",'" << wmiId << "',"<< 0 << "," << pTypeGeneral << "," <<sTypeSystemFan << ",12,255,'" << devName << "'," << devValue << ",'" << devValue << "')";
+				"VALUES (" << hwId << ",'" << wmiId << "',"<< 0 << "," << pTypeGeneral << "," <<dsubtype << ",12,255,'" << devName << "'," << devValue << ",'" << devValue << "')";
 			m_pMain->m_sql.query(szQuery.str());
 		}
 	}
@@ -282,16 +280,11 @@ void COpenHardwareMonitor::UpdateSystemSensor(const std::string& qType, const st
 		char szLastUpdate[40];
 		sprintf(szLastUpdate,"%04d-%02d-%02d %02d:%02d:%02d",ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 
-
 		szQuery << "UPDATE DeviceStatus SET HardwareID = " << hwId << ", nValue=" << devValue << ", sValue ='" << devValue << "', LastUpdate='" << szLastUpdate << "' WHERE (DeviceID == '" << wmiId << "')";
-
-		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
-		
-		
 		m_pMain->m_sql.query(szQuery.str());
 
 		if (qType == "Load") {
-			m_pMain->m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeGeneral, sTypeSystemLoad, NTYPE_PERCENTAGE, (const float)atof(devValue.c_str()));
+			m_pMain->m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeGeneral, sTypePercentage, NTYPE_PERCENTAGE, (const float)atof(devValue.c_str()));
 		}
 		else if (qType == "Temperature") {
 			m_pMain->m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeGeneral, sTypeSystemTemp, NTYPE_TEMPERATURE, (const float)atof(devValue.c_str()));
@@ -299,7 +292,9 @@ void COpenHardwareMonitor::UpdateSystemSensor(const std::string& qType, const st
 		else if (qType == "Fan") {
 			m_pMain->m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeGeneral, sTypeSystemFan, NTYPE_RPM, (const float)atof(devValue.c_str()));
 		}
-
+		else if (qType=="Voltage") {
+			m_pMain->m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeGeneral, sTypeSystemFan, NTYPE_USAGE, (const float)atof(devValue.c_str()));
+		}
 	}
 	return;
 }

@@ -875,7 +875,7 @@ function RefreshFavorites()
 					(item.Type == "Lux") || 
 					(item.Type == "Weight") || 
 					(item.Type == "Usage")||
-					(item.Type=="Load")||
+					(item.SubType=="Percentage")||
 					(item.Type=="Fan")||
 					((item.Type == "Thermostat")&&(item.SubType=="SetPoint"))||
 					(item.SubType=="Soil Moisture")||
@@ -911,7 +911,7 @@ function RefreshFavorites()
 									(item.Type == "Lux")||
 									(item.Type == "Weight")||
 									(item.Type == "Usage")||
-									(item.Type == "Load")||
+									(item.SubType == "Percentage")||
 									(item.Type == "Fan")||
 									(item.SubType=="Soil Moisture")||
 									(item.SubType=="Leaf Wetness")||
@@ -970,7 +970,7 @@ function RefreshFavorites()
 							status=item.Data + " (" + item.Quality + ")";
 							bigtext=item.Data;
 						}
-						else if (item.Type == "Load") {
+						else if (item.SubType == "Percentage") {
 							status=item.Data;
 							bigtext=item.Data;
 						}
@@ -2294,7 +2294,7 @@ function ShowFavorites()
 					(item.Type == "Lux") || 
 					(item.Type == "Weight") || 
 					(item.Type == "Usage")||
-					(item.Type == "Load")||	
+					(item.SubType == "Percentage")||	
 					(item.Type == "Fan")||						
 					((item.Type == "Thermostat")&&(item.SubType=="SetPoint"))||
 					(item.SubType=="Soil Moisture")||
@@ -2358,7 +2358,7 @@ function ShowFavorites()
 							(item.Type == "Lux")||
 							(item.Type == "Weight")||
 							(item.Type == "Usage")||
-							(item.Type == "Load")||
+							(item.SubType == "Percentage")||
 							(item.Type == "Fan")||
 							(item.SubType=="Soil Moisture")||
 							(item.SubType=="Leaf Wetness")||
@@ -2437,7 +2437,7 @@ function ShowFavorites()
 						(item.Type == "Lux")||
 						(item.Type == "Weight")||
 						(item.Type == "Usage")||
-						(item.Type == "Load")||
+						(item.SubType == "Percentage")||
 						(item.Type == "Fan")||
 						(item.SubType=="Soil Moisture")||
 						(item.SubType=="Leaf Wetness")||
@@ -2478,8 +2478,8 @@ function ShowFavorites()
 					xhtm+='air48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowAirQualityLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40"></td>\n';
 					status=item.Data + " (" + item.Quality + ")";
 				}
-				else if (item.Type == "Load") {
-					xhtm+='Computer48_On.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowPercentageLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\',\'load\');" height="40"></td>\n';
+				else if (item.SubType == "Percentage") {
+					xhtm+='Percentage48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowPercentageLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\',\'Percentage\');" height="40"></td>\n';
 					status=item.Data;
 				}
 				else if (item.Type == "Fan") {

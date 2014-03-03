@@ -10,7 +10,9 @@
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
 #include "../hardware/1Wire.h"
-#include "../hardware/OpenZWave.h"
+#ifdef WITH_OPENZWAVE
+	#include "../hardware/OpenZWave.h"
+#endif
 #include "../hardware/EnOcean.h"
 #include "../hardware/Wunderground.h"
 #include "../hardware/ForecastIO.h"
@@ -261,6 +263,7 @@ bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress
 	RegisterCommandCode("addhardware",boost::bind(&CWebServer::CmdAddHardware,this, _1));
 	RegisterCommandCode("updatehardware",boost::bind(&CWebServer::CmdUpdateHardware,this, _1));
 	RegisterCommandCode("deletehardware",boost::bind(&CWebServer::DeleteHardware,this, _1));
+#ifdef WITH_OPENZWAVE
 	//ZWave
 	RegisterCommandCode("updatezwavenode",boost::bind(&CWebServer::UpdateZWaveNode,this, _1));
 	RegisterCommandCode("deletezwavenode",boost::bind(&CWebServer::DeleteZWaveNode,this, _1));
@@ -276,8 +279,7 @@ bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress
 	RegisterCommandCode("zwavecancel",boost::bind(&CWebServer::ZWaveCancel,this, _1));
 	RegisterCommandCode("applyzwavenodeconfig",boost::bind(&CWebServer::ApplyZWaveNodeConfig,this, _1));
 	RegisterCommandCode("requestzwavenodeconfig",boost::bind(&CWebServer::RequestZWaveNodeConfig,this, _1));
-	
-	
+#endif	
 
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWebServer::Do_Work, this)));
@@ -549,7 +551,7 @@ void CWebServer::DeleteHardware(Json::Value &root)
 	m_pMain->m_sql.DeleteHardware(idx);
 	m_pMain->RemoveDomoticzHardware(atoi(idx.c_str()));
 }
-
+#ifdef WITH_OPENZWAVE
 void CWebServer::UpdateZWaveNode(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
@@ -916,6 +918,7 @@ void CWebServer::RequestZWaveNodeConfig(Json::Value &root)
 		}
 	}
 }
+#endif	//#ifdef WITH_OPENZWAVE
 
 void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 {
@@ -3216,7 +3219,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
 			ii++;
 		}
-		if ((dType==pTypeGeneral)&&(dSubType==sTypeSystemLoad))
+		if ((dType==pTypeGeneral)&&(dSubType==sTypePercentage))
 		{
 			root["result"][ii]["val"]=NTYPE_PERCENTAGE;
 			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_PERCENTAGE,0);
@@ -5348,7 +5351,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						(dType!=pTypeAirQuality)&&
 						(!((dType==pTypeGeneral)&&(dSubType==sTypeSoilMoisture)))&&
 						(!((dType==pTypeGeneral)&&(dSubType==sTypeLeafWetness)))&&
-						(!((dType==pTypeGeneral)&&(dSubType==sTypeSystemLoad)))&&
+						(!((dType==pTypeGeneral)&&(dSubType==sTypePercentage)))&&
 						(!((dType==pTypeGeneral)&&(dSubType==sTypeSystemFan)))&&
 						(dType!=pTypeLux)&&
 						(dType!=pTypeUsage)&&
@@ -6607,14 +6610,13 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["TypeImg"]="temperature";
 					root["result"][ii]["Type"]="temperature";
 				}
-				else if (dSubType==sTypeSystemLoad)
+				else if (dSubType==sTypePercentage)
 				{
 					sprintf(szData,"%.1f%%",atof(sValue.c_str()));
 					root["result"][ii]["Data"]=szData;
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 					root["result"][ii]["Image"]="Computer";
 					root["result"][ii]["TypeImg"]="hardware";
-					root["result"][ii]["Type"]="Load";
 				}
 				else if (dSubType==sTypeSystemFan)
 				{
@@ -6627,11 +6629,11 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				}
 				else if (dSubType==sTypeVoltage)
 				{
-					sprintf(szData,"%.1f V",atof(sValue.c_str()));
+					sprintf(szData,"%.3f V",atof(sValue.c_str()));
 					root["result"][ii]["Data"]=szData;
 					root["result"][ii]["TypeImg"]="current";
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
-					root["result"][ii]["Voltage"]="Fan";
+					root["result"][ii]["Voltage"]=atof(sValue.c_str());
 				}
 			}
 			else if (dType == pTypeLux)
@@ -7478,7 +7480,7 @@ std::string CWebServer::GetJSonPage()
 				dbasetable="Temperature";
 			else if (sensor=="rain")
 				dbasetable="Rain";
-			else if (sensor=="load")
+			else if (sensor=="Percentage")
 				dbasetable="Load";
 			else if (sensor=="fan")
 				dbasetable="Fan";
@@ -7503,7 +7505,7 @@ std::string CWebServer::GetJSonPage()
 				dbasetable="Temperature_Calendar";
 			else if (sensor=="rain")
 				dbasetable="Rain_Calendar";
-			else if (sensor=="load")
+			else if (sensor=="Percentage")
 				dbasetable="Load_Calendar";
 			else if (sensor=="fan")
 				dbasetable="Fan_Calendar";
@@ -7613,7 +7615,7 @@ std::string CWebServer::GetJSonPage()
 					}
 				}
 			}
-			else if (sensor=="load") {
+			else if (sensor=="Percentage") {
 				root["status"]="OK";
 				root["title"]="Graph " + sensor + " " + srange;
 
@@ -9231,7 +9233,7 @@ std::string CWebServer::GetJSonPage()
 					}
 				}
 			}
-			else if (sensor=="load") {
+			else if (sensor=="Percentage") {
 				root["status"]="OK";
 				root["title"]="Graph " + sensor + " " + srange;
 
@@ -11292,7 +11294,7 @@ std::string CWebServer::GetJSonPage()
             }
             root["status"]="OK";
         }
-        else if (cparam=="load")
+        else if (cparam=="Percentage")
 		{
 			root["title"]="LoadEvent";
             
