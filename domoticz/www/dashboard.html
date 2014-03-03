@@ -1,4 +1,4 @@
-<div id="dashcontent">
+﻿<div id="dashcontent">
 </div>
 
 <script type="text/javascript" charset="utf-8">
@@ -2507,8 +2507,8 @@ function ShowFavorites()
 					status=item.Data;
 				}
 				else if ((item.SubType=="Voltage")||(item.SubType=="A/D")) {
-					xhtm+='current48.png" height="40"></td>\n';
-					status=item.Data;
+					xhtm+='current48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="40"></td>\n';
+						status=item.Data;
 				}
 				else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 					xhtm+='override.png" height="40"></td>\n';

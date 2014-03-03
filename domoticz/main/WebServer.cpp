@@ -7481,7 +7481,7 @@ std::string CWebServer::GetJSonPage()
 			else if (sensor=="rain")
 				dbasetable="Rain";
 			else if (sensor=="Percentage")
-				dbasetable="Load";
+				dbasetable="Percentage";
 			else if (sensor=="fan")
 				dbasetable="Fan";
 			else if (sensor=="counter") 
@@ -7506,7 +7506,7 @@ std::string CWebServer::GetJSonPage()
 			else if (sensor=="rain")
 				dbasetable="Rain_Calendar";
 			else if (sensor=="Percentage")
-				dbasetable="Load_Calendar";
+				dbasetable="Percentage_Calendar";
 			else if (sensor=="fan")
 				dbasetable="Fan_Calendar";
 			else if (sensor=="counter")
@@ -7621,7 +7621,7 @@ std::string CWebServer::GetJSonPage()
 
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "SELECT Load, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
+				szQuery << "SELECT Percentage, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 				result=m_pMain->m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
@@ -9239,7 +9239,7 @@ std::string CWebServer::GetJSonPage()
 
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "SELECT Load_Min, Load_Max, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+				szQuery << "SELECT Percentage_Min, Percentage_Max, Percentage_Avg, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 				result=m_pMain->m_sql.query(szQuery.str());
 				int ii=0;
 				if (result.size()>0)
@@ -9249,23 +9249,25 @@ std::string CWebServer::GetJSonPage()
 					{
 						std::vector<std::string> sd=*itt;
 
-						root["result"][ii]["d"]=sd[2].substr(0,16);
-						root["result"][ii]["v_max"]=sd[1];
+						root["result"][ii]["d"]=sd[3].substr(0,16);
 						root["result"][ii]["v_min"]=sd[0];
+						root["result"][ii]["v_max"]=sd[1];
+						root["result"][ii]["v_avg"]=sd[2];
 						ii++;
 					}
 				}
 				//add today (have to calculate it)
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "SELECT MIN(Load), MAX(Load) FROM Load WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
+				szQuery << "SELECT MIN(Percentage), MAX(Percentage), AVG(Percentage) FROM Percentage WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 				result=m_pMain->m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::string> sd=result[0];
 					root["result"][ii]["d"]=szDateEnd;
-					root["result"][ii]["v_max"]=sd[1];
 					root["result"][ii]["v_min"]=sd[0];
+					root["result"][ii]["v_max"]=sd[1];
+					root["result"][ii]["v_avg"]=sd[2];
 					ii++;
 				}
 

@@ -21,7 +21,7 @@
 	#include <pwd.h>
 #endif
 
-#define DB_VERSION 36
+#define DB_VERSION 37
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -380,18 +380,18 @@ const char *sqlCreateZWaveNodes =
 	"[ProductDescription] VARCHAR(100) DEFAULT Unknown, "
 	"[PollTime] INTEGER DEFAULT 0);";
 
-const char *sqlCreateLoad =
-"CREATE TABLE IF NOT EXISTS [Load] ("
+const char *sqlCreatePercentage =
+"CREATE TABLE IF NOT EXISTS [Percentage] ("
 "[DeviceRowID] BIGINT(10) NOT NULL, "
-"[Load] FLOAT NOT NULL, "
+"[Percentage] FLOAT NOT NULL, "
 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
-const char *sqlCreateLoad_Calendar =
-"CREATE TABLE IF NOT EXISTS [Load_Calendar] ("
+const char *sqlCreatePercentage_Calendar =
+"CREATE TABLE IF NOT EXISTS [Percentage_Calendar] ("
 "[DeviceRowID] BIGINT(10) NOT NULL, "
-"[Load_Min] FLOAT NOT NULL, "
-"[Load_Max] FLOAT NOT NULL, "
-"[Load_Avg] FLOAT DEFAULT 0, "
+"[Percentage_Min] FLOAT NOT NULL, "
+"[Percentage_Max] FLOAT NOT NULL, "
+"[Percentage_Avg] FLOAT DEFAULT 0, "
 "[Date] DATE NOT NULL);";
 
 const char *sqlCreateFan =
@@ -489,6 +489,12 @@ bool CSQLHelper::OpenDatabase()
 	bool bNewInstall=false;
 	std::vector<std::vector<std::string> > result=query("SELECT name FROM sqlite_master WHERE type='table' AND name='DeviceStatus'");
 	bNewInstall=(result.size()==0);
+	int dbversion=0;
+	if (!bNewInstall)
+	{
+		GetPreferencesVar("DB_Version", dbversion);
+		//Pre-SQL Patches
+	}
 
 	//create database (if not exists)
 	query(sqlCreateDeviceStatus);
@@ -530,18 +536,16 @@ bool CSQLHelper::OpenDatabase()
     query(sqlCreateEventMaster);
     query(sqlCreateEventRules);
 	query(sqlCreateZWaveNodes);
-	query(sqlCreateLoad);
-	query(sqlCreateLoad_Calendar);
+	query(sqlCreatePercentage);
+	query(sqlCreatePercentage_Calendar);
 	query(sqlCreateFan);
 	query(sqlCreateFan_Calendar);
 	query(sqlCreateBackupLog);
 	query(sqlCreateEnoceanSensors);
 
-	int dbversion=0;
-	GetPreferencesVar("DB_Version", dbversion);
 	if ((!bNewInstall)&&(dbversion<DB_VERSION))
 	{
-		//upgrade
+		//Post-SQL Patches
 		if (dbversion<2)
 		{
 			query("ALTER TABLE DeviceStatus ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
@@ -788,8 +792,8 @@ bool CSQLHelper::OpenDatabase()
 			query("DROP TABLE IF EXISTS [Load_Calendar]");
 			query("DROP TABLE IF EXISTS [Fan]");
 			query("DROP TABLE IF EXISTS [Fan_Calendar]");
-			query(sqlCreateLoad);
-			query(sqlCreateLoad_Calendar);
+			query(sqlCreatePercentage);
+			query(sqlCreatePercentage_Calendar);
 			query(sqlCreateFan);
 			query(sqlCreateFan_Calendar);
 
@@ -824,6 +828,18 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion<36)
 		{
 			query("ALTER TABLE Meter ADD COLUMN [Usage] INTEGER default 0");
+		}
+		if (dbversion<37)
+		{
+			//move all load data from tables into the new percentage one
+			query(
+				"INSERT INTO Percentage([DeviceRowID],[Percentage],[Date])"
+				"SELECT [DeviceRowID],[Load],[Date] FROM Load");
+			query(
+				"INSERT INTO Percentage_Calendar([DeviceRowID],[Percentage_Min],[Percentage_Max],[Percentage_Avg],[Date])"
+				"SELECT [DeviceRowID],[Load_Min],[Load_Max],[Load_Avg],[Date] FROM Load_Calendar");
+			query("DROP TABLE IF EXISTS [Load]");
+			query("DROP TABLE IF EXISTS [Load_Calendar]");
 		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
@@ -3125,7 +3141,7 @@ void CSQLHelper::Schedule5Minute()
 	UpdateUVLog();
 	UpdateMeter();
 	UpdateMultiMeter();
-	UpdateLoadLog();
+	UpdatePercentageLog();
 	UpdateFanLog();
 	//Removing the line below could cause a very large database,
 	//and slow(large) data transfer (specially when working remote!!)
@@ -3143,7 +3159,7 @@ void CSQLHelper::ScheduleDay()
 	AddCalendarUpdateWind();
 	AddCalendarUpdateMeter();
 	AddCalendarUpdateMultiMeter();
-	AddCalendarUpdateLoad();
+	AddCalendarUpdatePercentage();
 	AddCalendarUpdateFan();
 	CleanupLightLog();
 }
@@ -3853,7 +3869,7 @@ void CSQLHelper::UpdateMultiMeter()
 	}
 }
 
-void CSQLHelper::UpdateLoadLog()
+void CSQLHelper::UpdatePercentageLog()
 {
 	char szTmp[600];
 
@@ -3908,14 +3924,14 @@ void CSQLHelper::UpdateLoadLog()
 			if (splitresults.size()<1)
 				continue; //impossible
 
-			float load= (float)atof(sValue.c_str());
+			float percentage= (float)atof(sValue.c_str());
 
 			//insert record
 			sprintf(szTmp,
-				"INSERT INTO Load (DeviceRowID, Load) "
+				"INSERT INTO Percentage (DeviceRowID, Percentage) "
 				"VALUES ('%llu', '%.2f')",
 				ID,
-				load
+				percentage
 				);
 			std::vector<std::vector<std::string> > result2;
 			result2=query(szTmp);
@@ -4704,13 +4720,13 @@ void CSQLHelper::AddCalendarUpdateUV()
 	}
 }
 
-void CSQLHelper::AddCalendarUpdateLoad()
+void CSQLHelper::AddCalendarUpdatePercentage()
 {
 	char szTmp[600];
 
-	//Get All load devices in the Load Table
+	//Get All Percentage devices in the Percentage Table
 	std::vector<std::vector<std::string> > resultdevices;
-	strcpy(szTmp,"SELECT DISTINCT(DeviceRowID) FROM Load ORDER BY DeviceRowID");
+	strcpy(szTmp,"SELECT DISTINCT(DeviceRowID) FROM Percentage ORDER BY DeviceRowID");
 	resultdevices=query(szTmp);
 	if (resultdevices.size()<1)
 		return; //nothing to do
@@ -4751,7 +4767,7 @@ void CSQLHelper::AddCalendarUpdateLoad()
 		std::stringstream s_str( sddev[0] );
 		s_str >> ID;
 
-		sprintf(szTmp,"SELECT MIN(Load), MAX(Load), AVG(Load) FROM Load WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s')",
+		sprintf(szTmp,"SELECT MIN(Percentage), MAX(Percentage), AVG(Percentage) FROM Percentage WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s')",
 			ID,
 			szDateStart,
 			szDateEnd
@@ -4761,17 +4777,17 @@ void CSQLHelper::AddCalendarUpdateLoad()
 		{
 			std::vector<std::string> sd=result[0];
 
-			float load_min=(float)atof(sd[0].c_str());
-			float load_max=(float)atof(sd[1].c_str());
-			float load_avg=(float)atof(sd[2].c_str());
+			float percentage_min=(float)atof(sd[0].c_str());
+			float percentage_max=(float)atof(sd[1].c_str());
+			float percentage_avg=(float)atof(sd[2].c_str());
 			//insert into calendar table
 			sprintf(szTmp,
-				"INSERT INTO Load_Calendar (DeviceRowID, Load_Min, Load_Max, Load_Avg, Date) "
+				"INSERT INTO Percentage_Calendar (DeviceRowID, Percentage_Min, Percentage_Max, Percentage_Avg, Date) "
 				"VALUES ('%llu', '%.2f', '%.2f', '%.2f','%s')",
 				ID,
-				load_min,
-				load_max,
-				load_avg,
+				percentage_min,
+				percentage_max,
+				percentage_avg,
 				szDateStart
 				);
 			result=query(szTmp);
@@ -4785,7 +4801,7 @@ void CSQLHelper::AddCalendarUpdateFan()
 {
 	char szTmp[600];
 
-	//Get All load devices in the Load Table
+	//Get All FAN devices in the Fan Table
 	std::vector<std::vector<std::string> > resultdevices;
 	strcpy(szTmp,"SELECT DISTINCT(DeviceRowID) FROM Fan ORDER BY DeviceRowID");
 	resultdevices=query(szTmp);

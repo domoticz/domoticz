@@ -998,7 +998,7 @@ function ShowUtilities()
 			}
 		  }
 		  else if ((item.SubType == "Soil Moisture")||(item.SubType == "Leaf Wetness")) {
-			xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
+			xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
 			if (window.my_config.userrights==2) {
 				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 			}
@@ -1010,7 +1010,7 @@ function ShowUtilities()
 			}
 		  }
 		  else if (item.Type == "Weight") {
-			xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(' + item.idx + ',\'' + item.Name+ '\',\'' + item.Type +'\', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
+			xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name+ '\',\'' + item.Type +'\', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
 			if (window.my_config.userrights==2) {
 				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 			}
@@ -1040,7 +1040,7 @@ function ShowUtilities()
 				}
           }
 		  else if ((item.SubType == "Voltage")||(item.SubType == "A/D")) {
-			xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
+			xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
 			if (window.my_config.userrights==2) {
 				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 			}

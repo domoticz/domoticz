@@ -456,10 +456,10 @@ function ShowWeathers()
             xhtm+='<a class="btnsmall" onclick="ShowWindLog(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
           }
           else if (typeof item.Visibility != 'undefined') {
-            xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'Visibility\');" data-i18n="Log">Log</a> ';
+            xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'Visibility\');" data-i18n="Log">Log</a> ';
           }
           else if (typeof item.Radiation != 'undefined') {
-            xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'Radiation\');" data-i18n="Log">Log</a> ';
+            xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'Radiation\');" data-i18n="Log">Log</a> ';
           }
           if (window.my_config.userrights==2) {
 			  if (bHaveRain) {

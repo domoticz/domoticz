@@ -370,7 +370,7 @@ private:
 	void UpdateUVLog();
 	void UpdateMeter();
 	void UpdateMultiMeter();
-	void UpdateLoadLog();
+	void UpdatePercentageLog();
 	void UpdateFanLog();
 	void AddCalendarTemperature();
 	void AddCalendarUpdateRain();
@@ -378,7 +378,7 @@ private:
 	void AddCalendarUpdateUV();
 	void AddCalendarUpdateMeter();
 	void AddCalendarUpdateMultiMeter();
-	void AddCalendarUpdateLoad();
+	void AddCalendarUpdatePercentage();
 	void AddCalendarUpdateFan();
 	void CleanupShortLog();
 };
