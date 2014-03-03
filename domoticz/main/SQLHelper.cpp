@@ -3696,7 +3696,7 @@ void CSQLHelper::UpdateMeter()
 			}
 			else if ((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
 			{
-				double fValue=atof(sValue.c_str())*10.0f;
+				double fValue=atof(sValue.c_str())*1000.0f;
 				sprintf(szTmp,"%d",int(fValue));
 				sValue=szTmp;
 				bSkipSameValue=false;

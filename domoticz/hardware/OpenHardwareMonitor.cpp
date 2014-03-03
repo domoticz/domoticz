@@ -39,7 +39,7 @@ void COpenHardwareMonitor::StartOpenHardwareMonitor(MainWorker *pMainWorker)
 {
 
 #ifdef _DEBUG
-        _log.Log(LOG_NORM,"OpenHardwareMonitor started");
+        _log.Log(LOG_NORM,"OHwM: Started");
 #endif
 	m_pMain=pMainWorker;
 	Init();
@@ -86,7 +86,7 @@ void COpenHardwareMonitor::Init()
 		hwId=atoi(sd[0].c_str());
 	}
 #ifdef _DEBUG
-    _log.Log(LOG_NORM,"OHWM Id set to: %d",hwId);
+    _log.Log(LOG_NORM,"OHwM: Id set to: %d",hwId);
 #endif	
 }
 
@@ -143,7 +143,7 @@ void COpenHardwareMonitor::Do_Work()
 		}
 
 	}
-	_log.Log(LOG_NORM,"OpenHardWareMonitor stopped...");			
+	_log.Log(LOG_NORM,"OHwM: Stopped...");			
 
 }
 
@@ -151,6 +151,7 @@ void COpenHardwareMonitor::Do_Work()
 void COpenHardwareMonitor::FetchData()
 {
 	if (IsOHMRunning()) {
+		_log.Log(LOG_NORM,"OHwM: Fetching Data");
 		RunWMIQuery("Sensor","Temperature");
 		RunWMIQuery("Sensor","Load");
 		RunWMIQuery("Sensor","Fan");
@@ -222,7 +223,7 @@ void COpenHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 				hr = pclsObj->Get(L"Identifier", 0, &vtProp, 0, 0); // instance id seems to drift
 				std::string itemId = _bstr_t (vtProp.bstrVal);
 				//itemId = "WMI"+itemId;
-				//_log.Log(LOG_NORM, "%s, %s, %s",itemId.c_str(), itemName.c_str(),itemValue.str().c_str());
+				//_log.Log(LOG_NORM, "OHwM: %s, %s, %s",itemId.c_str(), itemName.c_str(),itemValue.str().c_str());
 				UpdateSystemSensor(qType, itemId, itemName, itemValue.str());
 				VariantClear(&vtProp);
 				uReturn = 0;
@@ -232,7 +233,7 @@ void COpenHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 		}
 	}
 	else {
-		//_log.Log(LOG_NORM, "pservices null");
+		//_log.Log(LOG_NORM, "OHwM: pservices null");
 	}
 }
 
@@ -240,7 +241,7 @@ void COpenHardwareMonitor::UpdateSystemSensor(const std::string& qType, const st
 {
 	if (!hwId) {
 #ifdef _DEBUG
-		_log.Log(LOG_NORM,"OHWM Id not found!");
+		_log.Log(LOG_NORM,"OHwM: Id not found!");
 #endif		
 		return;
 	}

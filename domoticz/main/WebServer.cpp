@@ -7834,6 +7834,9 @@ std::string CWebServer::GetJSonPage()
 				{//day
 					root["status"]="OK";
 					root["title"]="Graph " + sensor + " " + srange;
+					float vdiv=10.0f;
+					if ((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
+						vdiv=1000.0f;
 
 					szQuery.clear();
 					szQuery.str("");
@@ -7848,10 +7851,13 @@ std::string CWebServer::GetJSonPage()
 							std::vector<std::string> sd=*itt;
 
 							root["result"][ii]["d"]=sd[1].substr(0,16);
-							float fValue=float(atof(sd[0].c_str()))/10.0f;
+							float fValue=float(atof(sd[0].c_str()))/vdiv;
 							if (metertype==1)
 								fValue*=0.6214f;
-							sprintf(szTmp,"%.1f",fValue);
+							if ((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
+								sprintf(szTmp,"%.3f",fValue);
+							else
+								sprintf(szTmp,"%.1f",fValue);
 							root["result"][ii]["v"]=szTmp;
 							ii++;
 						}
@@ -9627,6 +9633,10 @@ std::string CWebServer::GetJSonPage()
 					root["status"]="OK";
 					root["title"]="Graph " + sensor + " " + srange;
 
+					float vdiv=10.0f;
+					if ((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
+						vdiv=1000.0f;
+
 					szQuery << "SELECT Value1,Value2, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 					result=m_pMain->m_sql.query(szQuery.str());
 					if (result.size()>0)
@@ -9638,16 +9648,22 @@ std::string CWebServer::GetJSonPage()
 
 							root["result"][ii]["d"]=sd[2].substr(0,16);
 
-							float fValue1=float(atof(sd[0].c_str()))/10.0f;
-							float fValue2=float(atof(sd[1].c_str()))/10.0f;
+							float fValue1=float(atof(sd[0].c_str()))/vdiv;
+							float fValue2=float(atof(sd[1].c_str()))/vdiv;
 							if (metertype==1)
 							{
 								fValue1*=0.6214f;
 								fValue2*=0.6214f;
 							}
-							sprintf(szTmp,"%.1f",fValue1);
+							if ((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
+								sprintf(szTmp,"%.3f",fValue1);
+							else
+								sprintf(szTmp,"%.1f",fValue1);
 							root["result"][ii]["v_min"]=szTmp;
-							sprintf(szTmp,"%.1f",fValue2);
+							if ((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
+								sprintf(szTmp,"%.3f",fValue2);
+							else
+								sprintf(szTmp,"%.1f",fValue2);
 							root["result"][ii]["v_max"]=szTmp;
 							ii++;
 						}
@@ -10061,22 +10077,32 @@ std::string CWebServer::GetJSonPage()
 					((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
 					)
 				{
+					float vdiv=10.0f;
+					if ((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
+						vdiv=1000.0f;
+
 					szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 					result=m_pMain->m_sql.query(szQuery.str());
 					if (result.size()>0)
 					{
 						root["result"][ii]["d"]=szDateEnd;
-						float fValue1=float(atof(result[0][0].c_str()))/10.0f;
-						float fValue2=float(atof(result[0][1].c_str()))/10.0f;
+						float fValue1=float(atof(result[0][0].c_str()))/vdiv;
+						float fValue2=float(atof(result[0][1].c_str()))/vdiv;
 						if (metertype==1)
 						{
 							fValue1*=0.6214f;
 							fValue2*=0.6214f;
 						}
 
-						sprintf(szTmp,"%.1f",fValue1);
+						if ((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
+							sprintf(szTmp,"%.3f",fValue1);
+						else
+							sprintf(szTmp,"%.1f",fValue1);
 						root["result"][ii]["v_min"]=szTmp;
-						sprintf(szTmp,"%.1f",fValue2);
+						if ((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
+							sprintf(szTmp,"%.3f",fValue2);
+						else
+							sprintf(szTmp,"%.1f",fValue2);
 						root["result"][ii]["v_max"]=szTmp;
 						ii++;
 					}
