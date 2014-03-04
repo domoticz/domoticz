@@ -63,19 +63,18 @@ bool OTGWTCP::StopHardware()
 	{
 		try {
 			disconnect();
+			if (m_thread!=NULL)
+			{
+				assert(m_thread);
+				m_thread->join();
+			}
 		} catch(...)
 		{
 			//Don't throw from a Stop command
+			_asm nop;
 		}
 	}
-/*
-	if (m_thread!=NULL)
-	{
-		assert(m_thread);
-		m_stoprequested = true;
-		m_thread->join();
-	}
-*/
+
 	m_bIsStarted=false;
 	return true;
 }
