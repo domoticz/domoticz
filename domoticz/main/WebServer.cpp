@@ -265,8 +265,8 @@ bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress
 	RegisterCommandCode("deletehardware",boost::bind(&CWebServer::DeleteHardware,this, _1));
 #ifdef WITH_OPENZWAVE
 	//ZWave
-	RegisterCommandCode("updatezwavenode",boost::bind(&CWebServer::UpdateZWaveNode,this, _1));
-	RegisterCommandCode("deletezwavenode",boost::bind(&CWebServer::DeleteZWaveNode,this, _1));
+	RegisterCommandCode("updatezwavenode",boost::bind(&CWebServer::ZWaveUpdateNode,this, _1));
+	RegisterCommandCode("deletezwavenode",boost::bind(&CWebServer::ZWaveDeleteNode,this, _1));
 	RegisterCommandCode("zwaveinclude",boost::bind(&CWebServer::ZWaveInclude,this, _1));
 	RegisterCommandCode("zwaveexclude",boost::bind(&CWebServer::ZWaveExclude,this, _1));
 	RegisterCommandCode("zwavesoftreset",boost::bind(&CWebServer::ZWaveSoftReset,this, _1));
@@ -278,7 +278,11 @@ bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress
 	RegisterCommandCode("zwavegroupinfo",boost::bind(&CWebServer::ZWaveGroupInfo,this, _1));
 	RegisterCommandCode("zwavecancel",boost::bind(&CWebServer::ZWaveCancel,this, _1));
 	RegisterCommandCode("applyzwavenodeconfig",boost::bind(&CWebServer::ApplyZWaveNodeConfig,this, _1));
-	RegisterCommandCode("requestzwavenodeconfig",boost::bind(&CWebServer::RequestZWaveNodeConfig,this, _1));
+	RegisterCommandCode("requestzwavenodeconfig",boost::bind(&CWebServer::ZWaveRequestNodeConfig,this, _1));
+
+	RegisterCommandCode("zwavereceiveconfigurationfromothercontroller",boost::bind(&CWebServer::ZWaveReceiveConfigurationFromOtherController,this, _1));
+	RegisterCommandCode("zwavesendconfigurationtosecondcontroller",boost::bind(&CWebServer::ZWaveSendConfigurationToSecondaryController,this, _1));
+	RegisterCommandCode("zwavetransferprimaryrole",boost::bind(&CWebServer::ZWaveTransferPrimaryRole,this, _1));
 #endif	
 
 	//Start worker thread
@@ -552,7 +556,7 @@ void CWebServer::DeleteHardware(Json::Value &root)
 	m_pMain->RemoveDomoticzHardware(atoi(idx.c_str()));
 }
 #ifdef WITH_OPENZWAVE
-void CWebServer::UpdateZWaveNode(Json::Value &root)
+void CWebServer::ZWaveUpdateNode(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
@@ -591,7 +595,7 @@ void CWebServer::UpdateZWaveNode(Json::Value &root)
 	}
 }
 
-void CWebServer::DeleteZWaveNode(Json::Value &root)
+void CWebServer::ZWaveDeleteNode(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
@@ -894,7 +898,7 @@ void CWebServer::ApplyZWaveNodeConfig(Json::Value &root)
 	}
 }
 
-void CWebServer::RequestZWaveNodeConfig(Json::Value &root)
+void CWebServer::ZWaveRequestNodeConfig(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
@@ -916,6 +920,51 @@ void CWebServer::RequestZWaveNodeConfig(Json::Value &root)
 			root["status"]="OK";
 			root["title"]="RequestZWaveNodeConfig";
 		}
+	}
+}
+
+void CWebServer::ZWaveReceiveConfigurationFromOtherController(Json::Value &root)
+{
+	std::string idx=m_pWebEm->FindValue("idx");
+	if (idx=="")
+		return;
+	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+	if (pHardware!=NULL)
+	{
+		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+		pOZWHardware->ReceiveConfigurationFromOtherController();
+		root["status"]="OK";
+		root["title"]="ZWaveReceiveConfigurationFromOtherController";
+	}
+}
+
+void CWebServer::ZWaveSendConfigurationToSecondaryController(Json::Value &root)
+{
+	std::string idx=m_pWebEm->FindValue("idx");
+	if (idx=="")
+		return;
+	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+	if (pHardware!=NULL)
+	{
+		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+		pOZWHardware->SendConfigurationToSecondaryController();
+		root["status"]="OK";
+		root["title"]="ZWaveSendConfigToSecond";
+	}
+}
+
+void CWebServer::ZWaveTransferPrimaryRole(Json::Value &root)
+{
+	std::string idx=m_pWebEm->FindValue("idx");
+	if (idx=="")
+		return;
+	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+	if (pHardware!=NULL)
+	{
+		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+		pOZWHardware->TransferPrimaryRole();
+		root["status"]="OK";
+		root["title"]="ZWaveTransferPrimaryRole";
 	}
 }
 #endif	//#ifdef WITH_OPENZWAVE

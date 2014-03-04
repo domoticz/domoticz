@@ -77,8 +77,8 @@ private:
 	void DeleteHardware(Json::Value &root);
 #ifdef WITH_OPENZWAVE
 	//ZWave
-	void UpdateZWaveNode(Json::Value &root);
-	void DeleteZWaveNode(Json::Value &root);
+	void ZWaveUpdateNode(Json::Value &root);
+	void ZWaveDeleteNode(Json::Value &root);
 	void ZWaveInclude(Json::Value &root);
 	void ZWaveExclude(Json::Value &root);
 	void ZWaveSoftReset(Json::Value &root);
@@ -90,7 +90,10 @@ private:
 	void ZWaveGroupInfo(Json::Value &root);
 	void ZWaveCancel(Json::Value &root);
 	void ApplyZWaveNodeConfig(Json::Value &root);
-	void RequestZWaveNodeConfig(Json::Value &root);
+	void ZWaveRequestNodeConfig(Json::Value &root);
+	void ZWaveReceiveConfigurationFromOtherController(Json::Value &root);
+	void ZWaveSendConfigurationToSecondaryController(Json::Value &root);
+	void ZWaveTransferPrimaryRole(Json::Value &root);
 #endif	
 
 	MainWorker *m_pMain;
