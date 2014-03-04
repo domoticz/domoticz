@@ -874,6 +874,7 @@ void CWebServer::ZWaveGroupInfo(Json::Value &root)
 							root["result"]["nodes"][ii]["groups"][gi]["nodes"]="";
 						}
 						gi++;
+						nodesingroup.clear();
 					}
 					
 				}
