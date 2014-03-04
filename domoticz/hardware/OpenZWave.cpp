@@ -1656,6 +1656,42 @@ bool COpenZWave::RemoveFailedDevice(const int nodeID)
 	return true;
 }
 
+bool COpenZWave::ReceiveConfigurationFromOtherController()
+{
+	if (m_pManager==NULL)
+		return false;
+
+	m_ControllerCommandStartTime=mytime(NULL)-10;//30 second timeout
+	m_bControllerCommandInProgress=true;
+	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_ReceiveConfiguration, OnDeviceStatusUpdate, this);
+
+	return true;
+}
+
+bool COpenZWave::SendConfigurationToSecondaryController()
+{
+	if (m_pManager==NULL)
+		return false;
+
+	m_ControllerCommandStartTime=mytime(NULL)-10;//30 second timeout
+	m_bControllerCommandInProgress=true;
+	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_ReplicationSend, OnDeviceStatusUpdate, this);
+
+	return true;
+}
+
+bool COpenZWave::TransferPrimaryRole()
+{
+	if (m_pManager==NULL)
+		return false;
+
+	m_ControllerCommandStartTime=mytime(NULL)-10;//30 second timeout
+	m_bControllerCommandInProgress=true;
+	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_TransferPrimaryRole, OnDeviceStatusUpdate, this);
+
+	return true;
+}
+
 bool COpenZWave::CancelControllerCommand()
 {
 	if (m_bControllerCommandInProgress==false)

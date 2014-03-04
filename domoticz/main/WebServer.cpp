@@ -11322,7 +11322,7 @@ std::string CWebServer::GetJSonPage()
             }
             root["status"]="OK";
         }
-        else if (cparam=="Percentage")
+        else if (cparam=="load")
 		{
 			root["title"]="LoadEvent";
             

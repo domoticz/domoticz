@@ -66,6 +66,9 @@ public:
 	//Controller Commands
 	bool RequestNodeConfig(const int homeID, const int nodeID);
 	bool RemoveFailedDevice(const int nodeID);
+	bool ReceiveConfigurationFromOtherController();
+	bool SendConfigurationToSecondaryController();
+	bool TransferPrimaryRole();
 	bool CancelControllerCommand();
 	bool IncludeDevice();
 	bool ExcludeDevice(const int homeID);
