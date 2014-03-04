@@ -1264,12 +1264,14 @@ function RefreshOpenZWaveNodeTable()
 					var data = oTable.fnGetData( anSelected[0] );
 					var idx= data["DT_RowId"];
 					$.myglobals.SelectedTimerIdx=idx;
+					var iNode=parseInt(data["0"]);
 					$("#updelclr #nodeupdate").attr("href", "javascript:UpdateNode(" + idx + ")");
-					$('#updelclr #nodedelete').attr("class", "btnstyle3");
-					$("#updelclr #nodedelete").attr("href", "javascript:DeleteNode(" + idx + ")");
+					if (iNode>1) {
+						$('#updelclr #nodedelete').attr("class", "btnstyle3");
+						$("#updelclr #nodedelete").attr("href", "javascript:DeleteNode(" + idx + ")");
+					}
 					$("#hardwarecontent #nodeparamstable #nodename").val(data["1"]);
 					$('#hardwarecontent #nodeparamstable #EnablePolling').prop('checked',(data["PollEnabled"]=="true"));
-					var iNode=parseInt(data["0"]);
 					if (iNode<2) {
 						$("#hardwarecontent #nodeparamstable #trEnablePolling").hide();
 					}
