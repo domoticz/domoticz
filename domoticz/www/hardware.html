@@ -1265,10 +1265,8 @@ function RefreshOpenZWaveNodeTable()
 					var idx= data["DT_RowId"];
 					$.myglobals.SelectedTimerIdx=idx;
 					$("#updelclr #nodeupdate").attr("href", "javascript:UpdateNode(" + idx + ")");
-					if (data["IsDead"]==true) {
-						$('#updelclr #nodedelete').attr("class", "btnstyle3");
-						$("#updelclr #nodedelete").attr("href", "javascript:DeleteNode(" + idx + ")");
-					}
+					$('#updelclr #nodedelete').attr("class", "btnstyle3");
+					$("#updelclr #nodedelete").attr("href", "javascript:DeleteNode(" + idx + ")");
 					$("#hardwarecontent #nodeparamstable #nodename").val(data["1"]);
 					$('#hardwarecontent #nodeparamstable #EnablePolling').prop('checked',(data["PollEnabled"]=="true"));
 					var iNode=parseInt(data["0"]);
