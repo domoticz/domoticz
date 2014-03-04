@@ -7752,12 +7752,15 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			}
 			else if (dSubType==sTypeTRC02)
 			{
-				if ((hue!=-1)&&(hue!=1000))
+				if (switchcmd!="Off")
 				{
-					double dval;
-					dval=(255.0/360.0)*float(hue);
-					oldlevel=round(dval);
-					switchcmd="Set Color";
+					if ((hue!=-1)&&(hue!=1000))
+					{
+						double dval;
+						dval=(255.0/360.0)*float(hue);
+						oldlevel=round(dval);
+						switchcmd="Set Color";
+					}
 				}
 				if (((switchcmd=="Off")||(switchcmd=="On"))&&(switchcmd!="Set Color"))
 				{
