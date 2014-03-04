@@ -278,7 +278,7 @@ bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress
 	RegisterCommandCode("zwavegroupinfo",boost::bind(&CWebServer::ZWaveGroupInfo,this, _1));
 	RegisterCommandCode("zwavecancel",boost::bind(&CWebServer::ZWaveCancel,this, _1));
 	RegisterCommandCode("applyzwavenodeconfig",boost::bind(&CWebServer::ApplyZWaveNodeConfig,this, _1));
-	RegisterCommandCode("requestzwavenodeconfig",boost::bind(&CWebServer::RequestZWaveNodeConfig,this, _1));
+	RegisterCommandCode("requestzwavenodeconfig",boost::bind(&CWebServer::ZWaveRequestNodeConfig,this, _1));
 	RegisterCommandCode("zwavestatecheck",boost::bind(&CWebServer::ZWaveStateCheck,this, _1));
 	RegisterCommandCode("zwavereceiveconfigurationfromothercontroller",boost::bind(&CWebServer::ZWaveReceiveConfigurationFromOtherController,this, _1));
 	RegisterCommandCode("zwavesendconfigurationtosecondcontroller",boost::bind(&CWebServer::ZWaveSendConfigurationToSecondaryController,this, _1));
