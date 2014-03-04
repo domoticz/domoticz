@@ -498,6 +498,21 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 			AddValue(vID);
 		}
 		break;
+	case OpenZWave::Notification::Type_SceneEvent:
+		if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
+		{
+			// Add the new value to our list
+			OpenZWave::ValueID tValueID(_notification->GetHomeId(), _notification->GetNodeId(), OpenZWave::ValueID::ValueGenre_User, COMMAND_CLASS_SCENE_ACTIVATION, 1, 1, OpenZWave::ValueID::ValueType_Byte);
+			int sceneid=_notification->GetSceneId();
+			m_pManager->SetValueLabel(tValueID,"Switch");
+			m_pManager->SetValue(tValueID,(uint8)sceneid);
+
+			nodeInfo->Instances[instance][commandClass].Values.push_back( tValueID );
+			nodeInfo->m_LastSeen=act_time;
+			nodeInfo->Instances[instance][commandClass].m_LastSeen=act_time;
+			UpdateValue(tValueID);
+		}
+		break;
 	case OpenZWave::Notification::Type_ValueRemoved:
 		if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
 		{
@@ -1321,7 +1336,44 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 	}
 	if (pDevice==NULL)
 	{
-		return;
+		if (commandclass==COMMAND_CLASS_SCENE_ACTIVATION)
+		{
+			//special case here
+			int iScene=byteValue;
+			int devID=(iScene<<8)+NodeID;
+			int instanceID=0;
+			pDevice=FindDevice(devID,instanceID, commandclass, ZDTYPE_SWITCHNORMAL);
+			if (pDevice==NULL)
+			{
+				//Add new switch device
+				_tZWaveDevice _device;
+				_device.nodeID=devID;
+				_device.instanceID=instanceID;
+
+				_device.basicType =		1;
+				_device.genericType =	1;
+				_device.specificType =	1;
+				_device.isListening =	false;
+				_device.sensor250=		false;
+				_device.sensor1000=		false;
+				_device.isFLiRS =		!_device.isListening && (_device.sensor250 || _device.sensor1000);
+				_device.hasWakeup =		false;
+				_device.hasBattery =	false;
+				_device.scaleID=-1;
+
+				_device.commandClassID=commandclass;
+				_device.devType= ZDTYPE_SWITCHNORMAL;
+				_device.intvalue=255;
+				InsertDevice(_device);
+				pDevice=FindDevice(devID,instanceID, commandclass, ZDTYPE_SWITCHNORMAL);
+				if (pDevice==NULL)
+					return;
+			}
+			byteValue=255;
+			pDevice->intvalue=0; //to make sure it always gets send
+		}
+		else
+			return;
 	}
 
 	pDevice->bValidValue=true;
@@ -1355,13 +1407,23 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 			{
 				if ((vLabel!="Switch")&&(vLabel!="Sensor"))
 					return;
-				if (vType!=OpenZWave::ValueID::ValueType_Bool)
-					return;
 				int intValue=0;
-				if (bValue==true)
-					intValue=255;
+				if (vType==OpenZWave::ValueID::ValueType_Bool)
+				{
+					if (bValue==true)
+						intValue=255;
+					else
+						intValue=0;
+				}
+				else if (vType==OpenZWave::ValueID::ValueType_Byte)
+				{
+					if (byteValue==0)
+						intValue=0;
+					else
+						intValue=255;
+				}
 				else
-					intValue=0;
+					return;
 				if (pDevice->intvalue==intValue)
 				{
 					return; //dont send same value

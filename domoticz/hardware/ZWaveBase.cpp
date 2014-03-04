@@ -263,7 +263,6 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	if ((pDevice->devType==ZDTYPE_SWITCHNORMAL)||(pDevice->devType==ZDTYPE_SWITCHDIMMER))
 	{
 		//Send as Lighting 2
-
 		tRBUF lcmd;
 		memset(&lcmd,0,sizeof(RBUF));
 		lcmd.LIGHTING2.packetlength=sizeof(lcmd.LIGHTING2)-1;

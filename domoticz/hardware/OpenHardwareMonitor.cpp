@@ -39,7 +39,7 @@ void COpenHardwareMonitor::StartOpenHardwareMonitor(MainWorker *pMainWorker)
 {
 
 #ifdef _DEBUG
-        _log.Log(LOG_NORM,"OHwM: Started");
+        _log.Log(LOG_NORM,"System: Started");
 #endif
 	m_pMain=pMainWorker;
 	Init();
@@ -49,7 +49,7 @@ void COpenHardwareMonitor::StartOpenHardwareMonitor(MainWorker *pMainWorker)
 
 void COpenHardwareMonitor::Init()
 {
-	// Check if there is already hardware running for ohwm, if no start it.
+	// Check if there is already hardware running for System, if no start it.
 	
 	hwId = 0;
 	std::stringstream szQuery;
@@ -86,7 +86,7 @@ void COpenHardwareMonitor::Init()
 		hwId=atoi(sd[0].c_str());
 	}
 #ifdef _DEBUG
-    _log.Log(LOG_NORM,"OHwM: Id set to: %d",hwId);
+    _log.Log(LOG_NORM,"System: Id set to: %d",hwId);
 #endif	
 }
 
@@ -143,7 +143,7 @@ void COpenHardwareMonitor::Do_Work()
 		}
 
 	}
-	_log.Log(LOG_NORM,"OHwM: Stopped...");			
+	_log.Log(LOG_NORM,"System: Stopped...");			
 
 }
 
@@ -151,7 +151,7 @@ void COpenHardwareMonitor::Do_Work()
 void COpenHardwareMonitor::FetchData()
 {
 	if (IsOHMRunning()) {
-		_log.Log(LOG_NORM,"OHwM: Fetching Data");
+		_log.Log(LOG_NORM,"System: Fetching Data");
 		RunWMIQuery("Sensor","Temperature");
 		RunWMIQuery("Sensor","Load");
 		RunWMIQuery("Sensor","Fan");
@@ -223,7 +223,7 @@ void COpenHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 				hr = pclsObj->Get(L"Identifier", 0, &vtProp, 0, 0); // instance id seems to drift
 				std::string itemId = _bstr_t (vtProp.bstrVal);
 				//itemId = "WMI"+itemId;
-				//_log.Log(LOG_NORM, "OHwM: %s, %s, %s",itemId.c_str(), itemName.c_str(),itemValue.str().c_str());
+				//_log.Log(LOG_NORM, "System: %s, %s, %s",itemId.c_str(), itemName.c_str(),itemValue.str().c_str());
 				UpdateSystemSensor(qType, itemId, itemName, itemValue.str());
 				VariantClear(&vtProp);
 				uReturn = 0;
@@ -233,7 +233,7 @@ void COpenHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 		}
 	}
 	else {
-		//_log.Log(LOG_NORM, "OHwM: pservices null");
+		//_log.Log(LOG_NORM, "System: pservices null");
 	}
 }
 
@@ -241,7 +241,7 @@ void COpenHardwareMonitor::UpdateSystemSensor(const std::string& qType, const st
 {
 	if (!hwId) {
 #ifdef _DEBUG
-		_log.Log(LOG_NORM,"OHwM: Id not found!");
+		_log.Log(LOG_NORM,"System: Id not found!");
 #endif		
 		return;
 	}

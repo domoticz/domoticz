@@ -20,7 +20,7 @@ class ZWaveBase : public CDomoticzHardwareBase
 		ZDTYPE_SENSOR_SETPOINT,
 		ZDTYPE_SENSOR_POWERENERGYMETER,
 		ZDTYPE_SENSOR_VOLTAGE,
-		ZDTYPE_SENSOR_AMPERE,
+		ZDTYPE_SENSOR_AMPERE
 	};
 	struct _tZWaveDevice
 	{
@@ -56,6 +56,7 @@ class ZWaveBase : public CDomoticzHardwareBase
 
 		_tZWaveDevice()
 		{
+			sequence_number=1;
 			nodeID=-1;
 			scaleID=1;
 			scaleMultiply=1;
