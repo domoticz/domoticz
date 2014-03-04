@@ -844,7 +844,11 @@ void CWebServer::ZWaveGroupInfo(Json::Value &root)
 			for (itt=result.begin(); itt!=result.end(); ++itt)
 			{
 				std::vector<std::string> sd=*itt;
+				int homeID=atoi(sd[1].c_str());
 				int nodeID=atoi(sd[2].c_str());
+				COpenZWave::NodeInfo *pNode=pOZWHardware->GetNodeInfo(homeID, nodeID);
+				if (pNode==NULL)
+					continue;
 				std::string nodeName=sd[3].c_str();
 				int numGroups = pOZWHardware->ListGroupsForNode(nodeID);
 				root["result"]["nodes"][ii]["nodeID"]=nodeID;
