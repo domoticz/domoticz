@@ -49,11 +49,11 @@
 		}
 		
 		function removeNodeFromGroup(node,group,removenode) {
-			
+			var hwid=getParameter("hwid");
 			bootbox.confirm($.i18n("Are you sure you want to remove this node from the group?"), function(result) {
 				if (result==true) {
 					$.ajax({
-						 url: "json.htm?type=command&param=zwaveremovegroupnode&idx=" + $.devIdx + "&node="+node+"&group="+group+"&removenode="+removenode,
+						 url: "json.htm?type=command&param=zwaveremovegroupnode&idx=" + hwid + "&node="+node+"&group="+group+"&removenode="+removenode,
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
@@ -66,6 +66,7 @@
 			});
 		}
 		function addNodeToGroup(node,group) {
+			var hwid=getParameter("hwid");
 			bootbox.dialog({
 			  message: $.i18n("Please enter the node to add to this group:")+"<input type='text' id='add_node'></input>",
 			  title: "Add node",
@@ -76,7 +77,7 @@
 				  callback: function() {
 					var addnode = $("#add_node").val();
 					$.ajax({
-						url: "json.htm?type=command&param=zwaveaddgroupnode&idx=" + $.devIdx + "&node="+node+"&group="+group+"&addnode="+addnode,
+						url: "json.htm?type=command&param=zwaveaddgroupnode&idx=" + hwid + "&node="+node+"&group="+group+"&addnode="+addnode,
 						async: false, 
 						dataType: 'json',
 						success: redrawGroupTable() 
@@ -94,7 +95,7 @@
 		}
 		
 		function redrawGroupTable()  {
-			bootbox.alert($.i18n('Groups updated!'));
+			bootbox.alert($.i18n('Groups updated. It can take a while before changes are visible.'));
 			$("#grouptable").empty();
 			drawGroupTable();
 		}
@@ -136,7 +137,7 @@
 											td = $('<td></td>');
 											$.each(group.nodes.split(','), function(){
 												if (this!="") {
-													button=$('<span class="label label-info" onclick="removeNodeFromGroup('+item.nodeID+','+this+','+group.id+');" onmouseover="cursorhand()" onmouseout="cursordefault()">'+this+'</span>');
+													button=$('<span class="label label-info" onclick="removeNodeFromGroup('+item.nodeID+','+group.id+','+this+');" onmouseover="cursorhand()" onmouseout="cursordefault()">'+this+'</span>');
 													button.appendTo(td);
 												}
 											});
@@ -150,11 +151,8 @@
 									if (groupsDone<maxgroups) {
 										var missing = maxgroups-noGroups;
 										for (var i = 0; i < missing; i++) {
-											td = $('<td></td>');
+											$('<td></td>').text(' ').appendTo(noderow);
 											groupsDone++;
-											button=$('<span class="label label-info" onclick="addNodeToGroup('+item.nodeID+','+groupsDone+');" onmouseover="cursorhand()" onmouseout="cursordefault()">+</span>');
-											button.appendTo(td);
-											td.appendTo(noderow); 
 										}
 									}
 									noderow.appendTo(tbody);

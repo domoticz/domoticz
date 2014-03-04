@@ -1619,7 +1619,7 @@ int COpenZWave::ListAssociatedNodesinGroup(const int nodeID,const int groupID, s
 	return 0;
 
 	uint8* arr;
-	int retval = m_pManager->GetAssociations (m_controllerID, nodeID, groupID, &arr);
+	int retval = m_pManager->GetAssociations(m_controllerID, nodeID, groupID, &arr);
 	if (retval > 0) {
 		for (int i=0; i<retval; i++) {
 			nodesingroup.push_back(arr[i]);
@@ -1633,19 +1633,19 @@ bool COpenZWave::AddNodeToGroup(const int nodeID,const int groupID, const int ad
 {
 
 	if (m_pManager==NULL)
-	return false;
+		return false;
 	m_pManager->AddAssociation (m_controllerID, nodeID, groupID, addID);
-	_log.Log(LOG_NORM,"OpenZWave: added %d in group: %d of node %d",addID,groupID,nodeID);
+	_log.Log(LOG_NORM,"OpenZWave: added node: %d in group: %d of node: %d",addID,groupID,nodeID);
 	return true;
 }
 
 bool COpenZWave::RemoveNodeFromGroup(const int nodeID,const int groupID, const int removeID)
 {
-
 	if (m_pManager==NULL)
-	return false;
-	m_pManager->RemoveAssociation (m_controllerID, nodeID, groupID, removeID);
-	_log.Log(LOG_NORM,"OpenZWave: removed %d from group: %d of node %d",removeID,groupID,nodeID);
+		return false;
+	m_pManager->RemoveAssociation(m_controllerID, nodeID, groupID, removeID);
+	_log.Log(LOG_NORM,"OpenZWave: removed node: %d from group: %d of node: %d",removeID,groupID,nodeID);
+	
 	return true;
 }
 
