@@ -92,9 +92,6 @@ private:
 	void ApplyZWaveNodeConfig(Json::Value &root);
 	void RequestZWaveNodeConfig(Json::Value &root);
 	void ZWaveStateCheck(Json::Value &root);
-	
-private:
-	void HandleCommand(const std::string &cparam, Json::Value &root);
 	void ZWaveRequestNodeConfig(Json::Value &root);
 	void ZWaveReceiveConfigurationFromOtherController(Json::Value &root);
 	void ZWaveSendConfigurationToSecondaryController(Json::Value &root);
