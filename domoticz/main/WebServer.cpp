@@ -278,8 +278,8 @@ bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress
 	RegisterCommandCode("zwavegroupinfo",boost::bind(&CWebServer::ZWaveGroupInfo,this, _1));
 	RegisterCommandCode("zwavecancel",boost::bind(&CWebServer::ZWaveCancel,this, _1));
 	RegisterCommandCode("applyzwavenodeconfig",boost::bind(&CWebServer::ApplyZWaveNodeConfig,this, _1));
-	RegisterCommandCode("requestzwavenodeconfig",boost::bind(&CWebServer::ZWaveRequestNodeConfig,this, _1));
-
+	RegisterCommandCode("requestzwavenodeconfig",boost::bind(&CWebServer::RequestZWaveNodeConfig,this, _1));
+	RegisterCommandCode("zwavestatecheck",boost::bind(&CWebServer::ZWaveStateCheck,this, _1));
 	RegisterCommandCode("zwavereceiveconfigurationfromothercontroller",boost::bind(&CWebServer::ZWaveReceiveConfigurationFromOtherController,this, _1));
 	RegisterCommandCode("zwavesendconfigurationtosecondcontroller",boost::bind(&CWebServer::ZWaveSendConfigurationToSecondaryController,this, _1));
 	RegisterCommandCode("zwavetransferprimaryrole",boost::bind(&CWebServer::ZWaveTransferPrimaryRole,this, _1));
@@ -683,6 +683,23 @@ void CWebServer::ZWaveHardReset(Json::Value &root)
 	}
 }
 
+void CWebServer::ZWaveStateCheck(Json::Value &root)
+{
+	root["title"]="ZWaveStateCheck";
+	std::string idx=m_pWebEm->FindValue("idx");
+	if (idx=="")
+		return;
+	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+	if (pHardware!=NULL)
+	{
+		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+		if (!pOZWHardware-> GetFailedState()) {
+			root["status"]="OK";
+		}
+	}
+	return;
+}
+
 void CWebServer::ZWaveNetworkHeal(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
@@ -719,12 +736,14 @@ void CWebServer::ZWaveNetworkInfo(Json::Value &root)
 			int nodeID;
 
 			std::vector<int> rest;
+			std::vector<int> allnodes;
 			int rowCount=0;
 			std::stringstream list;
+			std::stringstream allnodeslist;
 			for(row_iterator = nodevectors.begin();row_iterator!=nodevectors.end();++row_iterator) {
 				int colCount=0;
+	
 				for(col_iterator = (*row_iterator).begin();col_iterator!=(*row_iterator).end();++col_iterator) {
-					_log.Log(LOG_NORM,"OpenZ:%d ",*col_iterator);
 					if (colCount == 0) {
 						nodeID=*col_iterator;
 					}
@@ -733,14 +752,19 @@ void CWebServer::ZWaveNetworkInfo(Json::Value &root)
 					}
 					colCount++;
 				}
-
+				
+			
 				std::copy(rest.begin(), rest.end(), std::ostream_iterator<int>(list, ","));
 				root["result"]["mesh"][rowCount]["nodeID"]=nodeID;
+				allnodes.push_back(nodeID);
 				root["result"]["mesh"][rowCount]["seesNodes"]=list.str();
-				rowCount++;
 				rest.clear();
-				list.clear();
+				list.str("");
+				rowCount++;
+
 			}
+			std::copy(allnodes.begin(), allnodes.end(), std::ostream_iterator<int>(allnodeslist, ","));
+			root["result"]["nodes"]=allnodeslist.str();
 			root["status"]="OK";
 		}
 
@@ -814,18 +838,22 @@ void CWebServer::ZWaveGroupInfo(Json::Value &root)
 		
 		if (result.size()>0)
 		{
+			int MaxNoOfGroups = 0;
 			std::vector<std::vector<std::string> >::const_iterator itt;
 			int ii=0;
 			for (itt=result.begin(); itt!=result.end(); ++itt)
 			{
 				std::vector<std::string> sd=*itt;
 				int nodeID=atoi(sd[2].c_str());
+				std::string nodeName=sd[3].c_str();
 				int numGroups = pOZWHardware->ListGroupsForNode(nodeID);
-				_log.Log(LOG_NORM,"OpenZ: %d %d ",nodeID,numGroups);
+				root["result"]["nodes"][ii]["nodeID"]=nodeID;
+				root["result"]["nodes"][ii]["nodeName"]=nodeName;
+				root["result"]["nodes"][ii]["groupCount"]=numGroups;
 				if (numGroups > 0) {
-					root["result"]["nodes"][ii]["nodeID"]=nodeID;
-					root["result"]["nodes"][ii]["groupCount"]=numGroups;
-					
+					if (numGroups > MaxNoOfGroups)
+						MaxNoOfGroups = numGroups;
+				
 					std::vector< int > nodesingroup;
 					int gi=0;
 					for (int x = 1; x <= numGroups; x++)
@@ -843,10 +871,12 @@ void CWebServer::ZWaveGroupInfo(Json::Value &root)
 						}
 						gi++;
 					}
-					ii++;
+					
 				}
-				
+				ii++;
 			}
+			root["result"]["MaxNoOfGroups"]=MaxNoOfGroups;
+
 		}
 	}
 	root["status"]="OK";

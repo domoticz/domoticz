@@ -22,11 +22,22 @@
 					<h1 data-i18n="Nodes">Nodes</h1>
 				</td>
 				<td align="right">
-					<a class="btnstyle3" id="healnetwork" data-i18n="Heal network" onclick="ZWaveHealNetwork();">Heal network</a>&nbsp;&nbsp;&nbsp;
-					<a class="btnstyle3" id="softresetdevice" data-i18n="Soft reset" onclick="ZWaveSoftResetNode();">Soft reset controller</a>&nbsp;&nbsp;&nbsp;
-					<a class="btnstyle3" id="hardresetdevice" data-i18n="Hard reset" onclick="ZWaveHardResetNode();">Hard reset controller</a>&nbsp;&nbsp;&nbsp;
-					<a class="btnstyle3" id="includedevice" data-i18n="Include Node" onclick="ZWaveIncludeNode();">Include Node</a>&nbsp;&nbsp;&nbsp;
-					<a class="btnstyle3" id="excludedevice" data-i18n="Exclude Node" onclick="ZWaveExcludeNode();">Exclude Node</a>
+					<div class="dropdown">
+					  <button class="btn dropdown-toggle sr-only" type="button" id="dropdownMenu1" data-toggle="dropdown">
+						<span data-i18n="Node management">Node management</span>
+						<span class="caret"></span>
+					  </button>
+					  <ul class="dropdown-menu pull-right" role="menu" aria-labelledby="dropdownMenu1">
+						<li ><a href="javascript:ZWaveIncludeNode();" ><span data-i18n="Include Node" class="btnstyle3">Include Node</span></a></li>
+						<li><a href="javascript:ZWaveExcludeNode();" ><span data-i18n="Exclude Node" class="btnstyle3">Exclude Node</span></a></li>
+						<li><a href="javascript:ZWaveHealNetwork();" ><span data-i18n="Heal network" class="btnstyle3">Heal network</span></a></li>
+						<li role="presentation" class="divider"></li>
+						<li><a href="javascript:ZWaveSoftResetNode();" ><span data-i18n="Soft reset controller" class="btnstyle3">Soft reset controller</span></a></li>
+						<li><a href="javascript:ZWaveHardResetNode();" ><span data-i18n="Hard reset controller" class="btnstyle3">Hard reset controller</span></a></li>
+						<li role="presentation" class="divider"></li>
+						<li><a href="javascript:ZWaveTopology();" ><span data-i18n="Groups & Network" class="btnstyle3">Groups & Network</span></a></li>
+					  </ul>
+					</div>
 				</td>
 			</tr>
 		</table>
@@ -1162,40 +1173,31 @@ function ZWaveHealNetwork()
 }
 
 
-function showNetworkInfo()
+function ZWaveTopology()
 {
 	$.ajax({
-		url: "json.htm?type=command&param=zwavenetworkinfo&idx=" + $.devIdx,
-		async: false, 
-		dataType: 'json',
-		success: function(data) {
-			if (typeof data != 'undefined') {
-				if (data.status=="OK") {
-					var devicestates = "<div style='overflow:scroll; overflow-x: hidden; height: 500px;'><table><thead><tr><th align='left' style='padding-right: 80px;'>ID</th><th align='left' style='padding-right: 80px;'>Name</th><th align='left' style='padding-right: 80px;'>Current state</th><th align='left' style='padding-right: 80px;'>Last updated</th><th align='left' style='padding-right: 10px;'>sValues</th></tr></thead><tbody>";
-					if (typeof data.result != 'undefined') {
-						
-						$.each(data.result, function(i,item){
-							if (item.name != "Unknown") {
-								var oneitem = '<tr><td> '+item.val+' </td><td></td><td></td><td></td><td></td></tr>'; 
-								devicestates += oneitem;
-							}
-						});
-					}
-					devicestates += "</tbody></table></div>";
-					noty({
-						text: devicestates,
-						type: 'information',
-						modal: true,
-						buttons: [
-						{addClass: 'btn btn-primary', text: 'Ok', onClick: function($noty) 
+		 url: "json.htm?type=command&param=zwavestatecheck&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			if (data.status == 'OK') {
+				var topologywindow = "<center>ZWave Network Information</center><p><p><iframe src='zwavetopology.html?hwid="+$.devIdx+"' name='topoframe' frameBorder='0' height='"+window.innerHeight*0.7+"' width='100%'/>";
+				noty({
+					text: topologywindow,
+					type: 'alert',
+					modal: true,
+					buttons: [
+						{addClass: 'btn btn-primary', text: 'Close', onClick: function($noty) 
 							{$noty.close();
-								
+											
 							}
 						}]
-					});
-				}
+				});
 			}
-		}
+			else {
+				ShowNotify($.i18n('Error communicating with zwave controller!'), 2500, true);
+			}
+		 }
 	});
 }
 

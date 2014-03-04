@@ -75,6 +75,7 @@ public:
 	bool SoftResetDevice();
 	bool HardResetDevice();
 	bool HealNetwork();
+	bool GetFailedState();
 	bool NetworkInfo(const int hwID,std::vector< std::vector< int > > &NodeArray);
 	int ListGroupsForNode(const int nodeID);
 	int ListAssociatedNodesinGroup(const int nodeID,const int groupID,std::vector< int > &nodesingroup);

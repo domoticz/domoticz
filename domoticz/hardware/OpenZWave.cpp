@@ -796,6 +796,11 @@ bool COpenZWave::GetInitialDevices()
 	return true;
 }
 
+bool COpenZWave::GetFailedState()
+{
+	return m_initFailed;
+}
+
 bool COpenZWave::GetUpdates()
 {
 	if (m_pManager==NULL)
@@ -1560,7 +1565,7 @@ bool COpenZWave::HealNetwork()
 
 bool COpenZWave::NetworkInfo(const int hwID,std::vector< std::vector< int > > &NodeArray)
 {
-	;
+
 	if (m_pManager==NULL) {
 		return false;
 	}
