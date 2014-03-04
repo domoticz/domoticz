@@ -71,7 +71,6 @@ bool OTGWTCP::StopHardware()
 		} catch(...)
 		{
 			//Don't throw from a Stop command
-			_asm nop;
 		}
 	}
 
