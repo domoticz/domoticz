@@ -609,6 +609,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 				if( ( it->m_homeId == _homeID ) && ( it->m_nodeId == _nodeID ) )
 				{
 					m_nodes.erase( it );
+					DeleteNode(_homeID, _nodeID);
 					break;
 				}
 			}
@@ -1707,6 +1708,23 @@ bool COpenZWave::CancelControllerCommand()
 	return m_pManager->CancelControllerCommand(m_controllerID);
 }
 
+std::string COpenZWave::GetConfigFile(std::string &szConfigFile)
+{
+	std::string retstring="";
+	if (m_pManager==NULL)
+		return retstring;
+	std::stringstream sConfigFileName;
+	sConfigFileName << szStartupFolder << "Config/zwcfg_0x" << std::hex << m_controllerID << ".xml";
+	szConfigFile=sConfigFileName.str();
+	std::ifstream testFile(szConfigFile.c_str(), std::ios::binary);
+	std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
+		std::istreambuf_iterator<char>());
+	if (fileContents.size()>0)
+	{
+		retstring.insert( retstring.begin(), fileContents.begin(), fileContents.end() );
+	}
+	return retstring;
+}
 
 void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
 {
@@ -1892,6 +1910,13 @@ void COpenZWave::DisableNodePoll(const int homeID, const int nodeID)
 			}
 		}
 	}
+}
+
+void COpenZWave::DeleteNode(const int homeID, const int nodeID)
+{
+	std::stringstream szQuery;
+	szQuery << "DELETE FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
+	m_pMainWorker->m_sql.query(szQuery.str());
 }
 
 void COpenZWave::AddNode(const int homeID, const int nodeID,const NodeInfo *pNode)

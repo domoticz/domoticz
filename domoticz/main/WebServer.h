@@ -96,6 +96,7 @@ private:
 	void ZWaveReceiveConfigurationFromOtherController(Json::Value &root);
 	void ZWaveSendConfigurationToSecondaryController(Json::Value &root);
 	void ZWaveTransferPrimaryRole(Json::Value &root);
+	std::string ZWaveGetConfigFile();
 #endif	
 
 	MainWorker *m_pMain;

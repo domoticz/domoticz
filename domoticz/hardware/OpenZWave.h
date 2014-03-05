@@ -81,8 +81,10 @@ public:
 	int ListAssociatedNodesinGroup(const int nodeID,const int groupID,std::vector< int > &nodesingroup);
 	bool AddNodeToGroup(const int nodeID,const int groupID, const int addID);
 	bool RemoveNodeFromGroup(const int nodeID,const int groupID, const int removeID);
+	std::string GetConfigFile(std::string &szConfigFile);
 private:
 	void NodesQueried();
+	void DeleteNode(const int homeID, const int nodeID);
 	void AddNode(const int homeID, const int nodeID,const NodeInfo *pNode);
 	void EnableNodePoll(const int homeID, const int nodeID, const int pollTime);
 	void DisableNodePoll(const int homeID, const int nodeID);

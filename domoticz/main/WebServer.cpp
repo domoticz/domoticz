@@ -1002,6 +1002,25 @@ void CWebServer::ZWaveTransferPrimaryRole(Json::Value &root)
 		root["title"]="ZWaveTransferPrimaryRole";
 	}
 }
+std::string CWebServer::ZWaveGetConfigFile()
+{
+	std::string idx=m_pWebEm->FindValue("idx");
+	if (idx=="")
+		return "";
+	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+	if (pHardware!=NULL)
+	{
+		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+		std::string szConfigFile="";
+		m_retstr=pOZWHardware->GetConfigFile(szConfigFile);
+		if (m_retstr!="")
+		{
+			m_pWebEm->m_outputfilename=szConfigFile;
+		}
+	}
+	return m_retstr;
+}
+
 #endif	//#ifdef WITH_OPENZWAVE
 
 void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
