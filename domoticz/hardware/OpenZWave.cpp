@@ -1594,7 +1594,7 @@ bool COpenZWave::NetworkInfo(const int hwID,std::vector< std::vector< int > > &N
 				NodeArray[rowCnt].push_back(arr[i]);
 			}
 			
-			delete arr;
+			delete [] arr;
 		}
 		rowCnt++;
 	}
@@ -1624,7 +1624,7 @@ int COpenZWave::ListAssociatedNodesinGroup(const int nodeID,const int groupID, s
 		for (int i=0; i<retval; i++) {
 			nodesingroup.push_back(arr[i]);
 		}
-		delete arr;
+		delete [] arr;
 	}
 	return retval;
 }
