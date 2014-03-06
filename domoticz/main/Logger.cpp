@@ -60,24 +60,22 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	szDate[strlen(szDate)-1]=0;
 
 	std::stringstream sstr;
+	sstr << szDate << " " << cbuffer;
+	strcpy(cbuffer,sstr.str().c_str());
+	m_lastlog.push_back(_tLogLineStruct(level,cbuffer));
+
 	if (level==LOG_NORM)
 	{
-		sstr << szDate << " " << cbuffer;
-		strcpy(cbuffer,sstr.str().c_str());
-		m_lastlog.push_back(_tLogLineStruct(level,cbuffer));
 		std::cout << sstr << std::endl;
 	}
 	else {
-		sstr << szDate << "Error: " << cbuffer;
-		strcpy(cbuffer,sstr.str().c_str());
-		m_lastlog.push_back(_tLogLineStruct(level,cbuffer));
 		std::cerr << cbuffer << std::endl;
 	}
 
-	if (m_outputfile.is_open())
+	if (m_outputfile.is_open()) {
 		m_outputfile << sstr << std::endl;
-	if (m_outputfile.is_open())
 		m_outputfile.flush();
+	}
 }
 
 bool strhasEnding(std::string const &fullString, std::string const &ending)
