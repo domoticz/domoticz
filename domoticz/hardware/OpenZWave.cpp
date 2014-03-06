@@ -1573,7 +1573,7 @@ bool COpenZWave::NetworkInfo(const int hwID,std::vector< std::vector< int > > &N
 
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT NodeID FROM ZWaveNodes WHERE (HardwareID = '" << hwID <<"')";
+	szQuery << "SELECT HomeID,NodeID FROM ZWaveNodes WHERE (HardwareID = '" << hwID <<"')";
 	result=m_pMainWorker->m_sql.query(szQuery.str());
 	if (result.size()<1) {
 		return false;
@@ -1583,12 +1583,17 @@ bool COpenZWave::NetworkInfo(const int hwID,std::vector< std::vector< int > > &N
 	for (itt=result.begin(); itt!=result.end(); ++itt)
 	{
 		std::vector<std::string> sd=*itt;
-		int NodeID=atoi(sd[0].c_str());
+		int nodeID=atoi(sd[1].c_str());
+		int homeID=atoi(sd[0].c_str());
+		NodeInfo *pNode=GetNodeInfo(homeID, nodeID);
+		if (pNode==NULL)
+			continue;
+
 		std::vector<int> row;
 		NodeArray.push_back(row);
-		NodeArray[rowCnt].push_back(NodeID);
+		NodeArray[rowCnt].push_back(nodeID);
 		uint8* arr;
-		int retval = m_pManager->GetNodeNeighbors(m_controllerID, NodeID, &arr);
+		int retval = m_pManager->GetNodeNeighbors(m_controllerID, nodeID, &arr);
 		if (retval > 0) {
 			
 			for (int i=0; i<retval; i++) {
