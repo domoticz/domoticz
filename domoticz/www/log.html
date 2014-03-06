@@ -38,7 +38,8 @@ function RefreshLog()
 						htmlcontent+='<span>';
 					}
 					else {
-						htmlcontent+='<span class="logerror"> Error: ';
+						//htmlcontent+='<span class="logerror"> Error: ';
+						htmlcontent+='<span class="logerror">';
 					}
 					var message=item.message.replace(/\n/gi,"<br>");
 					htmlcontent+=message;
