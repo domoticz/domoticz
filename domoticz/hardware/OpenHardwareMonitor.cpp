@@ -151,7 +151,7 @@ void COpenHardwareMonitor::Do_Work()
 void COpenHardwareMonitor::FetchData()
 {
 	if (IsOHMRunning()) {
-		_log.Log(LOG_NORM,"System: Fetching Data");
+		_log.Log(LOG_NORM,"System: Fetching data (System sensors)");
 		RunWMIQuery("Sensor","Temperature");
 		RunWMIQuery("Sensor","Load");
 		RunWMIQuery("Sensor","Fan");
