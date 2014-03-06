@@ -4460,10 +4460,20 @@ char * CWebServer::DisplaySwitchTypesCombo()
 {
 	m_retstr="";
 	char szTmp[200];
+
+	std::map<std::string,int> _switchtypes;
+
 	for (int ii=0; ii<STYPE_END; ii++)
 	{
-		sprintf(szTmp,"<option value=\"%d\">%s</option>\n",ii,Switch_Type_Desc((_eSwitchType)ii));
+		_switchtypes[Switch_Type_Desc((_eSwitchType)ii)]=ii;
+	}
+	//return a sorted list
+	std::map<std::string,int>::const_iterator itt;
+	for (itt=_switchtypes.begin(); itt!=_switchtypes.end(); ++itt)
+	{
+		sprintf(szTmp,"<option value=\"%d\">%s</option>\n",itt->second,itt->first.c_str());
 		m_retstr+=szTmp;
+
 	}
 	return (char*)m_retstr.c_str();
 }

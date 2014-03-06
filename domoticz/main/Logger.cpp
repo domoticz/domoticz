@@ -61,15 +61,14 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 
 	std::stringstream sstr;
 	sstr << szDate << " " << cbuffer;
-	strcpy(cbuffer,sstr.str().c_str());
-	m_lastlog.push_back(_tLogLineStruct(level,cbuffer));
+	m_lastlog.push_back(_tLogLineStruct(level,sstr.str()));
 
 	if (level==LOG_NORM)
 	{
-		std::cout << sstr << std::endl;
+		std::cout << sstr.str() << std::endl;
 	}
 	else {
-		std::cerr << cbuffer << std::endl;
+		std::cerr << sstr.str() << std::endl;
 	}
 
 	if (m_outputfile.is_open()) {

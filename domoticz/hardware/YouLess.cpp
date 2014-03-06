@@ -72,7 +72,7 @@ void CYouLess::Do_Work()
 			m_PollCounter=0;
 		}
 	}
-	_log.Log(LOG_NORM,"YouLess Worker stopped...");
+	_log.Log(LOG_NORM,"YouLess: Worker stopped...");
 }
 
 void CYouLess::WriteToHardware(const char *pdata, const unsigned char length)
@@ -97,7 +97,7 @@ void CYouLess::GetMeterDetails()
 
 	if (!HTTPClient::GET(szURL,sResult))
 	{
-		_log.Log(LOG_NORM,"YouLess error connecting to: %s", m_szIPAddress.c_str());
+		_log.Log(LOG_ERROR,"YouLess: Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
 
@@ -105,7 +105,7 @@ void CYouLess::GetMeterDetails()
 	StringSplit(sResult, "\n", results);
 	if (results.size()<2)
 	{
-		_log.Log(LOG_ERROR,"YouLess error connecting to: %s", m_szIPAddress.c_str());
+		_log.Log(LOG_ERROR,"YouLess: Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
 	int fpos;
