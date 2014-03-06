@@ -1761,6 +1761,7 @@ void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
 		szLog="The controller is communicating with the other device to carry out the command";
 		break;
 	case OpenZWave::Driver::ControllerState_Completed:
+		m_bControllerCommandInProgress=false;
 		szLog="The command has completed successfully";
 		break;
 	case OpenZWave::Driver::ControllerState_Failed:
