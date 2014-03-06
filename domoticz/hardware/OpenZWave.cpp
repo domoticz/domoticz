@@ -734,6 +734,7 @@ bool COpenZWave::OpenSerialConnector()
 	OpenZWave::Options::Get()->AddOptionInt( "PollInterval", 60000 ); //enable polling each 60 seconds
 	OpenZWave::Options::Get()->AddOptionBool( "IntervalBetweenPolls", true );
 	OpenZWave::Options::Get()->AddOptionBool("ValidateValueChanges", true);
+	OpenZWave::Options::Get()->AddOptionBool("Associate", true);
 	OpenZWave::Options::Get()->Lock();
 
 	OpenZWave::Manager::Create();
