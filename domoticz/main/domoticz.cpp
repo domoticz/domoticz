@@ -156,6 +156,20 @@ int main(int argc, char**argv)
 	szStartupFolder=szStartupPath;
 	if (szStartupFolder.find_last_of('/')!=std::string::npos)
 		szStartupFolder=szStartupFolder.substr(0,szStartupFolder.find_last_of('/')+1);
+#else
+	#ifndef _DEBUG
+		char szStartupPath[255];
+		char * p;
+		GetModuleFileName(NULL, szStartupPath, sizeof(szStartupPath));
+		p = szStartupPath + strlen(szStartupPath);
+
+		while(p >= szStartupPath && *p != '\\')
+			p--;
+
+		if(++p >= szStartupPath)
+			*p = 0;
+		szStartupFolder=szStartupPath;
+	#endif
 #endif
 	GetAppVersion();
 	_log.Log(LOG_NORM,"Domoticz V%s (c)2012-2014 GizMoCuz",szAppVersion.c_str());
