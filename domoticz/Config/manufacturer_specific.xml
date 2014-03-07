@@ -332,6 +332,7 @@
 	<Manufacturer id="0041" name="OpenPeak Inc.">
 	</Manufacturer>
 	<Manufacturer id="013c" name="Philio Technology Corporation">
+		<Product type="0001" id="0003" name="2x1.5KW Relay with Power Measurement (PAN04-1)" config="philio/pan04.xml"/>
 		<Product type="0001" id="0004" name="In Wall Dual Relay (1 Way) Switch Module (PAN06-1)" />
 		<Product type="0002" id="0002" name="Slim Multi-Sensor PSP01-1" config="philio/psp01.xml"/>
 	</Manufacturer>

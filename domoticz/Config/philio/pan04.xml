@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="short" instance="1" index="1" genre="config" label="1. W meter report period" min="1" max="32000" value="720">
+      <Help>
+          If the setting is configured for 1hour (set value =720), the device will report its instant power consumption every 1 hour to Z-Wave Controller. Unit: 5 seconds
+	  </Help>
+    </Value>
+
+    <Value type="short" instance="1" index="2" genre="config" label="2. KWH meter report period" min="1" max="32000" value="6">
+      <Help>
+          If the setting is configured for 1hour (set value =720), the device will report its power consumption in KWh every 1 hour to Z-Wave Controller. Unit: 5 seconds.
+	  </Help>
+    </Value>
+
+    <Value type="byte" instance="1" index="3" genre="config" label="3. Selected end point" min="0" max="4" value="1">
+       <Help>
+			1 	  ->   	Relay 1 and Relay 2
+			2 - 3 ->   	Relay 1
+			3 - 4 ->   	Relay 2
+       </Help>
+    </Value>
+	
+    <Value type="byte" instance="1" index="4" genre="config" label="4. Edge or Pulse mode or Edge-Togle mode" min="0" max="3" value="1">
+      <Help>
+			1 	  ->   	Edge Mode
+			2 	  ->   	Toggle Mode
+			3 	  ->   	Edge/Toggle Mode
+       </Help>
+    </Value>
+	
+    <Value type="short" instance="1" index="5" genre="config" label="5. Threshold of Watt for Load Caution" min="0" max="65000" value="1500">
+       <Help>
+			Threshold of Watt for Load Caution
+       </Help>
+    </Value>
+
+    <Value type="short" instance="1" index="6" genre="config" label="6. Threshold of KWH for Load Caution" min="0" max="65000" value="10000">
+       <Help>
+			Threshold of KWH for Load Caution
+	  </Help>
+    </Value>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+	  <Group index="1" max_associations="5" label="Relay 1 and 2 together" auto="true" />
+      <Group index="2" max_associations="5" label="Relay 1" auto="true" />
+      <Group index="3" max_associations="5" label="Relay 2" auto="true" />
+    </Associations>
+  </CommandClass>
+
+</Product>
