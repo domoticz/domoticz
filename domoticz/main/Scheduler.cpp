@@ -359,7 +359,7 @@ void CScheduler::CheckSchedules()
 
 							GetLightStatus(dType,dSubType,0,"",lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
 							int ilevel=maxDimLevel;
-							if ((switchtype == STYPE_Dimmer)&&(maxDimLevel!=0))
+							if (((switchtype == STYPE_Dimmer)||(switchtype == STYPE_BlindsPercentage))&&(maxDimLevel!=0))
 							{
 								if (itt->timerCmd == TCMD_ON)
 								{
