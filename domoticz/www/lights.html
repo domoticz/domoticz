@@ -1315,6 +1315,7 @@ function AddManualLightDevice()
 		option.attr('value', item.idx).text(item.name);
 		$("#dialog-addmanuallightdevice #combosubdevice").append(option);
 	});
+	$( "#dialog-addmanuallightdevice #comboswitchtype" ).val(0);
 	$( "#dialog-addmanuallightdevice" ).dialog( "open" );
 }
 

@@ -769,12 +769,19 @@ void COpenZWave::CloseSerialConnector()
 	{
 //		boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 		_log.Log(LOG_NORM,"OpenZWave: Closed");
-		OpenZWave::Manager::Get()->RemoveDriver(m_szSerialPort.c_str());
-		OpenZWave::Manager::Get()->RemoveWatcher( OnNotification, this );
 
-		OpenZWave::Manager::Destroy();
-		OpenZWave::Options::Destroy();
-		sleep_seconds(1);
+		try
+		{
+			OpenZWave::Manager::Get()->RemoveWatcher( OnNotification, this );
+			sleep_seconds(1);
+			//OpenZWave::Manager::Get()->RemoveDriver(m_szSerialPort.c_str()); //not needed according the documentation, destroy will take card of this
+			OpenZWave::Manager::Destroy();
+			OpenZWave::Options::Destroy();
+		}
+		catch (...)
+		{
+			
+		}
 		m_pManager=NULL;
 	}
 }

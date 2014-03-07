@@ -5577,10 +5577,16 @@ bool CSQLHelper::HandleSwitchAction(const bool bIsOn, const std::string &OnActio
 		{
 			//Execute possible script
 			std::string scriptname=OnAction.substr(9);
+			std::string scriptparams="";
+			//Add parameters
+			int pindex=scriptname.find(' ');
+			if (pindex!=std::string::npos)
+			{
+				scriptparams=scriptname.substr(pindex+1);
+				scriptname=scriptname.substr(0,pindex);
+			}
 			if (file_exist(scriptname.c_str()))
 			{
-				//Add parameters
-				std::string scriptparams="";
 				AddTaskItem(_tTaskItem::ExecuteScript(1,scriptname,scriptparams));
 			}
 		}
@@ -5599,10 +5605,15 @@ bool CSQLHelper::HandleSwitchAction(const bool bIsOn, const std::string &OnActio
 		{
 			//Execute possible script
 			std::string scriptname=OffAction.substr(9);
+			std::string scriptparams="";
+			int pindex=scriptname.find(' ');
+			if (pindex!=std::string::npos)
+			{
+				scriptparams=scriptname.substr(pindex+1);
+				scriptname=scriptname.substr(0,pindex);
+			}
 			if (file_exist(scriptname.c_str()))
 			{
-				//Add parameters
-				std::string scriptparams="";
 				AddTaskItem(_tTaskItem::ExecuteScript(1,scriptname,scriptparams));
 			}
 		}
