@@ -604,6 +604,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 				{
 					m_nodes.erase( it );
 					DeleteNode(_homeID, _nodeID);
+					OpenZWave::Manager::Get()->WriteConfig( m_controllerID );
 					break;
 				}
 			}
@@ -900,6 +901,18 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 				m_pManager->SetValue(vID,true);
 			}
 		}
+		else if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SENSOR_BINARY,vID)==true)
+		{
+			_log.Log(LOG_NORM,"OpenZWave: Domoticz has send a Switch command!");
+			if (svalue==0) {
+				//Off
+				m_pManager->SetValue(vID,false);
+			}
+			else {
+				//On
+				m_pManager->SetValue(vID,true);
+			}
+		}
 	}
 	else
 	{
@@ -960,7 +973,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 
 	unsigned char NodeID = vID.GetNodeId();
 
-	unsigned char instance;
+	int instance;
 	if (
 		(commandclass==COMMAND_CLASS_MULTI_INSTANCE)||
 		(commandclass==COMMAND_CLASS_SENSOR_MULTILEVEL)
@@ -990,7 +1003,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 		return;
 
 	std::string vUnits=m_pManager->GetValueUnits(vID);
-	_log.Log(LOG_NORM, "Value_Added: Node: %d, CommandClass: %s, Label: %s",(int)NodeID, cclassStr(commandclass),vLabel.c_str());
+	_log.Log(LOG_NORM, "Value_Added: Node: %d, CommandClass: %s, Label: %s, Instance: %d",(int)NodeID, cclassStr(commandclass),vLabel.c_str(),instance);
 
 	_tZWaveDevice _device;
 	_device.nodeID=NodeID;
@@ -1127,6 +1140,36 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				}
 			}
 		}
+		else if (vLabel=="Voltage")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
+				{
+					_device.floatValue=fValue;
+					_device.scaleID=3; //voltage
+					_device.scaleMultiply=1;
+					_device.devType = ZDTYPE_SENSOR_VOLTAGE;
+					InsertDevice(_device);
+				}
+			}
+			
+		}
+		else if (vLabel=="Current")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
+				{
+					_device.floatValue=fValue;
+					_device.scaleID=4; //Current
+					_device.scaleMultiply=1;
+					_device.devType = ZDTYPE_SENSOR_AMPERE;
+					InsertDevice(_device);
+				}
+			}
+
+		}
 	}
 	else if (commandclass==COMMAND_CLASS_SENSOR_MULTILEVEL)
 	{
@@ -1193,6 +1236,34 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				}
 			}
 		}
+		else if (vLabel=="Voltage")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
+				{
+					_device.floatValue=fValue;
+					_device.scaleMultiply=1;
+					_device.scaleID=3; //voltage
+					_device.devType = ZDTYPE_SENSOR_VOLTAGE;
+					InsertDevice(_device);
+				}
+			}
+		}
+		else if (vLabel=="Current")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
+				{
+					_device.floatValue=fValue;
+					_device.scaleMultiply=1;
+					_device.scaleID=4; //Current
+					_device.devType = ZDTYPE_SENSOR_AMPERE;
+					InsertDevice(_device);
+				}
+			}
+		}
 	}
 	else if (commandclass==COMMAND_CLASS_BATTERY)
 	{
@@ -1225,8 +1296,8 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID vID, int EventID)
 	if (m_controllerID==0)
 		return;
 
-	if (m_nodesQueried==false)
-		return; //only allow updates when node Query is done
+	//if (m_nodesQueried==false)
+		//return; //only allow updates when node Query is done
 
 	unsigned char HomeID = vID.GetHomeId();
 	unsigned char NodeID = vID.GetNodeId();
@@ -1271,8 +1342,8 @@ void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID vID, int SceneID)
 	if (m_controllerID==0)
 		return;
 
-	if (m_nodesQueried==false)
-		return; //only allow updates when node Query is done
+	//if (m_nodesQueried==false)
+		//return; //only allow updates when node Query is done
 
 	//unsigned char HomeID = vID.GetHomeId();
 	unsigned char NodeID = vID.GetNodeId();
@@ -1324,8 +1395,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 	if (m_controllerID==0)
 		return;
 
-	if (m_nodesQueried==false)
-		return; //only allow updates when node Query is done
+//	if (m_nodesQueried==false)
+	//	return; //only allow updates when node Query is done
 	unsigned char commandclass=vID.GetCommandClassId();
 	unsigned char HomeID = vID.GetHomeId();
 	unsigned char NodeID = vID.GetNodeId();
@@ -1382,14 +1453,20 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 
 	if (
 		(vLabel=="Energy")||
-		(vLabel=="Power")
+		(vLabel=="Power")||
+		(vLabel=="Voltage")||
+		(vLabel=="Current")
 		)
 	{
 		int scaleID=0;
 		if (vLabel=="Energy")
 			scaleID=1;
-		else
+		else if (vLabel=="Power")
 			scaleID=2;
+		else if (vLabel=="Voltage")
+			scaleID=3;
+		else if (vLabel=="Current")
+			scaleID=4;
 
 		sstr << "." << scaleID;
 	}
@@ -1562,6 +1639,20 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 		if (vType!=OpenZWave::ValueID::ValueType_Decimal)
 			return;
 		if (vLabel!="Luminance")
+			return;
+		pDevice->floatValue=fValue;
+		break;
+	case ZDTYPE_SENSOR_VOLTAGE:
+		if (vType!=OpenZWave::ValueID::ValueType_Decimal)
+			return;
+		if (vLabel!="Voltage")
+			return;
+		pDevice->floatValue=fValue;
+		break;
+	case ZDTYPE_SENSOR_AMPERE:
+		if (vType!=OpenZWave::ValueID::ValueType_Decimal)
+			return;
+		if (vLabel!="Current")
 			return;
 		pDevice->floatValue=fValue;
 		break;
@@ -2012,6 +2103,11 @@ void COpenZWave::AddNode(const int homeID, const int nodeID,const NodeInfo *pNod
 	}
 	else
 	{
+		if (
+			(pNode->Manufacturer_name.size()==0)||
+			(pNode->Product_name.size()==0)
+			)
+			return;
 		//Update ProductDescription
 		szQuery << "UPDATE ZWaveNodes SET ProductDescription='" <<  sProductDescription << "' WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
 	}

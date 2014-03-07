@@ -54,6 +54,7 @@ Version 1.0.xxxx (February xxth 2014)
 - Fixed: Problem in requesting devices when a Voltage device was queried (after this device no more where retrieved)
 - Implemented: New General Voltage devices with 3 decimals
 - Implemented: Script parameters for Light On/Off actions
+- Implemented: openzwave Voltage/Ampere
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)
