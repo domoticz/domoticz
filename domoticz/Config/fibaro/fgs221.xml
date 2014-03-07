@@ -19,11 +19,11 @@
       <Item label="Auto OFF active for both relays" value="3" />
     </Value>
     
-    <Value type="byte" genre="config" instance="1" index="4" label="4. Relay 1: OFF-delay time (10ms)" value="20" size="1">
+    <Value type="byte" genre="config" instance="1" index="4" label="4. Relay 1: OFF-delay time (10ms)" value="20" size="2">
       <Help>Automatic turning off relay 1 after set time, in 10ms increments (default: 200ms)</Help>
     </Value>
     
-    <Value type="byte" genre="config" instance="1" index="5" label="5. Relay 2: OFF-delay time (10ms)" value="20" size="1">
+    <Value type="byte" genre="config" instance="1" index="5" label="5. Relay 2: OFF-delay time (10ms)" value="20" size="2">
       <Help>Automatic turning off relay 2 after set time, in 10ms increments (default: 200ms)</Help>
     </Value>
     

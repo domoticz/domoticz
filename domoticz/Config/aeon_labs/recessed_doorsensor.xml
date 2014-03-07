@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Aeon Labs Recessed Door Sensor -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- Configuration -->
+    <CommandClass id="112">
+        <Value type="byte" genre="config" instance="1" index="1" label="Toggle the sensor binary report value when the Magnet switch is opened/closed." min="0" max="1" value="0">
+            <Help>0, Open: FF, Close: 00; 1, Open: 00, Close: FF;
+              Default setting: 0
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="3" label="Toggle the basic set value when Magnet switch is opened/closed." min="0" max="1" value="0">
+            <Help>0, Open: FF, Close: 00; 1, Open: 00, Close: FF;
+              Default setting: 0
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="101" label="If battery power is below the warning value, low battery checking function will be triggered and Low Battery Warning Report will be sent." min="0" max="1" value="0">
+            <Help>0, Disable, 1, Enable;
+              Default setting: 0
+            </Help>
+        </Value>
+        <Value type="int" genre="config" instance="1" index="111" label="The low battery check Interval time,0-4294967295 seconds." min="0" max="1" value="86640">
+            <Help>This parameter is available when the low battery checking
+                  function is activated or the device was waked up by other
+                  actions (i.e. the z-wave button trigger, magnet switch
+                  trigger and the Wake Up Interval Set timeout trigger).
+                  The Recessed Door Sensor will check the battery power
+                  when it was wake up as other ways. For example: the
+                  z-wave button trigger, magnet switch trigger and the
+                  Wake Up Interval Set timeout trigger.
+              Default setting: 86640
+            </Help>
+        </Value>
+        <Value type="int" genre="config" instance="1" index="121" label="Flag values for which reports to send when the Magnet of Recessed Door Sensor is triggered." min="0" max="1" value="256">
+            <Help>Bitsets:
+                0 -> Battery report
+                4 -> Sensor Binary
+                8 -> Basic Set
+              Default setting: 0x00000100 (Basic Set)
+            </Help>
+        </Value>
+        <Value type="short" index="254" genre="config" label="Device Tag" units="" min="0" max="255" value="0">
+			<Help>Device Tag</Help>
+		</Value>
+		<Value type="button" index="255" genre="config" label="Reset configuration settings to factory defaults" write_only="true" value="0" >
+			<Help>Reset to factory defaults.</Help>
+		</Value>
+    </CommandClass>
+    <!-- Basic set as report -->
+	<CommandClass id="32" setasreport="true"/>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+      <Associations num_groups="2">
+        <Group index="1" max_associations="5" label="Group 1: Will receive Basic Set/ Sensor Binary Report (configurable) when the status of Recessed Door Sensor’s magnet switch open or close." auto="false"/>
+        <Group index="2" max_associations="5" label="Group 2: If the battery power is below the warning value, the Node IDs in Group 2 will receive the Low Battery Warning Report, and when the Recessed Door Sensor wake up at the first time it will receive the Battery Report." auto="false"/>
+      </Associations>
+    </CommandClass>    
+</Product>

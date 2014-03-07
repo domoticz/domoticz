@@ -27,6 +27,10 @@
       <Item label="Mode 1: Normal operating mode." value="1"/>
       <Item label="Mode 3: Z-Wave chip is always on to request e.g. version or manufacturer id." value="3"/>
     </Value>
+
+    <Value type="int" genre="config" instance="1" index="6" label="Temperature offset" value="0">
+      <Help>A signed integer to determine the offset of the temperature. </Help>
+    </Value>
   </CommandClass>
   
   <!-- Association Groups -->

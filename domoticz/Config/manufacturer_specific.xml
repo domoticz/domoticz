@@ -36,6 +36,7 @@
 		<Product type="0001" id="0003" name="Minimote" config="aeon_labs/minimote.xml"/>
 		<Product type="0002" id="0004" name="Door/Window Sensor" config="aeon_labs/doorwindow.xml"/>
 		<Product type="0002" id="0005" name="Multi Sensor" config="aeon_labs/alms.xml"/>
+		<Product type="0002" id="0036" name="Recessed Door Sensor" config="aeon_labs/recessed_doorsensor.xml"/>
 		<Product type="0003" id="0006" name="Smart Energy Switch" config="aeon_labs/ses.xml"/>
 		<Product type="0001" id="0007" name="Z-Stick S2 Lite"/>
 		<Product type="0003" id="0008" name="Smart Energy Illuminator"/>
@@ -46,6 +47,7 @@
 		<Product type="0003" id="000d" name="Micro Smart Energy Illuminator"/>
 		<Product type="0003" id="000e" name="Micro Motor Controller"/>
 		<Product type="0001" id="0016" name="Key Fob" config="aeon_labs/keyfob.xml"/>
+		<Product type="0003" id="0011" name="Micro Double Switch" />
 	</Manufacturer>
 	<Manufacturer id="0094" name="Alarm.com">
 	</Manufacturer>
@@ -59,11 +61,18 @@
 	<Manufacturer id="0018" name="Balboa Inst.">
 	</Manufacturer>
 	<Manufacturer id="008a" name="BeNext">
+		<Product type="0003" id="0100" name="DHS-ZW-SNMT-01 Multi Sensor" config="BeNext/Molite.xml"/>
+		<Product type="0003" id="0101" name="DHS-ZW-SNMT-01 Multi Sensor" config="BeNext/Molite.xml"/>
 		<Product type="0004" id="0100" name="Door Sensor" config="BeNext/DoorSensor.xml"/>
+		<Product type="0004" id="0101" name="Door Sensor" config="BeNext/DoorSensor.xml"/>
 		<Product type="0005" id="0101" name="Alarm Sound" config="BeNext/AlarmSound.xml"/>
 		<Product type="0006" id="0101" name="Energy Switch" config="BeNext/EnergySwitch.xml"/>
 		<Product type="0007" id="0101" name="Tag Reader" config="BeNext/TagReader.xml"/>
 		<Product type="0008" id="0101" name="Power Switch"/>
+		<Product type="000d" id="0100" name="Built-in Dimmer" config="BeNext/BuiltinDimmer.xml"/>
+		<Product type="0018" id="0100" name="Plug-in Dimmer" config="Benext/PluginDimmer.xml"/>
+		<Product type="001e" id="0001" name="1Pole Switch" config="BeNext/1poleswitch.xml"/>
+		<Product type="001f" id="0001" name="2Pole Switch" config="BeNext/2poleswitch.xml"/>
 	</Manufacturer>
 	<Manufacturer id="002c" name="BeSafer">
 	</Manufacturer>
@@ -153,6 +162,7 @@
 	</Manufacturer>
 	<Manufacturer id="010f" name="FIBARO System">
 		<Product type="0501" id="0102" name="FGBS001 Universal Binary Sensor" config="fibaro/fgbs001.xml" />
+		<Product type="0501" id="1002" name="FGBS001 Universal Binary Sensor" config="fibaro/fgbs001.xml" />
 		<Product type="0100" id="0104" name="FGD211 Universal Dimmer 500W" />
 		<Product type="0100" id="0107" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
 		<Product type="0100" id="0109" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
@@ -404,15 +414,15 @@
 	<Manufacturer id="0007" name="Vimar CRS">
 	</Manufacturer>
 	<Manufacturer id="010a" name="Vitrum">
-		<Product type="1100" id="4900" name="Vitrum I EU Wireless Dimmer"/> 
-		<Product type="1100" id="4a00" name="Vitrum II EU Wireless Dimmer"/> 
-		<Product type="1200" id="5100" name="Vitrum I EU Wireless On-off"/> 
-		<Product type="1200" id="5200" name="Vitrum II EU Wireless On-off"/> 
-		<Product type="1300" id="5A00" name="Vitrum II EU Roller Blind Control"/> 
-		<Product type="2100" id="8a00" name="Vitrum II BS Wireless Dimmer"/>
-		<Product type="2200" id="9100" name="Vitrum I BS Wireless On-off"/>
-		<Product type="2200" id="9200" name="Vitrum II BS Wireless On-off"/>
-		<Product type="2200" id="9400" name="Vitrum IV BS Wireless On-off"/>
+		<Product type="1100" id="4900" name="Vitrum I EU Wireless Dimmer" config="vitrum/vitrumBS.xml"/> 
+		<Product type="1100" id="4a00" name="Vitrum II EU Wireless Dimmer" config="vitrum/vitrumBS.xml"/> 
+		<Product type="1200" id="5100" name="Vitrum I EU Wireless On-off" config="vitrum/vitrumBS.xml"/> 
+		<Product type="1200" id="5200" name="Vitrum II EU Wireless On-off" config="vitrum/vitrumBS.xml"/> 
+		<Product type="1300" id="5A00" name="Vitrum II EU Roller Blind Control" config="vitrum/vitrumBS.xml"/> 
+		<Product type="2100" id="8a00" name="Vitrum II BS Wireless Dimmer" config="vitrum/vitrumBS.xml"/>
+		<Product type="2200" id="9100" name="Vitrum I BS Wireless On-off" config="vitrum/vitrumBS.xml"/>
+		<Product type="2200" id="9200" name="Vitrum II BS Wireless On-off" config="vitrum/vitrumBS.xml"/>
+		<Product type="2200" id="9400" name="Vitrum IV BS Wireless On-off" config="vitrum/vitrumBS.xml"/>
 	</Manufacturer>
 	<Manufacturer id="004a" name="Visualize">
 	</Manufacturer>
