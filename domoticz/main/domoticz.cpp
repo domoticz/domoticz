@@ -170,7 +170,7 @@ int main(int argc, char**argv)
 			*p = 0;
 		szStartupFolder=szStartupPath;
 		size_t start_pos = szStartupFolder.find("\\Release\\");
-		if(start_pos != -1) {
+		if(start_pos != std::string::npos) {
 			szStartupFolder.replace(start_pos, 9, "\\domoticz\\");
 			_log.Log(LOG_NORM,"%s",szStartupFolder.c_str());
 		}

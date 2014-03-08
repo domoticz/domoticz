@@ -309,7 +309,7 @@ void SolarEdgeBase::SendMeter(const unsigned char ID1,const unsigned char ID2, c
 	}
 }
 
-void SolarEdgeBase::UpdateTempVolt(const unsigned long Idx, const float Volt, const std::string &defaultname)
+void SolarEdgeBase::SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname)
 {
 	_tGeneralDevice gDevice;
 	gDevice.subtype=sTypeVoltage;
@@ -319,7 +319,7 @@ void SolarEdgeBase::UpdateTempVolt(const unsigned long Idx, const float Volt, co
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
 }
 
-void SolarEdgeBase::UpdateTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
+void SolarEdgeBase::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
 	if (m_pMainWorker==NULL)
 		return;
@@ -652,7 +652,7 @@ int SolarEdgeBase::ParsePacket0x0500(const unsigned char *pData, int dlen)
 			float counter=GetFloat(b2);
 			b2+=4;
 			SendMeter(0,1, Pac/100.0f, counter/1000.0f, "SolarMain");
-			UpdateTempSensor(1,temp,"SolarMain");
+			SendTempSensor(1,temp,"SolarMain");
 		}
 		b+=restbytes;
 		dlen-=restbytes;

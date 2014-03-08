@@ -32,7 +32,6 @@
         </Value>
         <Value type="int" genre="config" instance="1" index="121" label="Flag values for which reports to send when the Magnet of Recessed Door Sensor is triggered." min="0" max="1" value="256">
             <Help>Bitsets:
-                0 -> Battery report
                 4 -> Sensor Binary
                 8 -> Basic Set
               Default setting: 0x00000100 (Basic Set)

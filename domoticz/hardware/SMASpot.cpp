@@ -15,7 +15,6 @@
 CSMASpot::CSMASpot(const int ID, const std::string SMAConfigFile)
 {
 	m_HwdID=ID;
-	m_LastMinute=26;
 	m_SMAConfigFile=SMAConfigFile;
 	m_SMADataPath="";
 	m_stoprequested=false;
@@ -46,6 +45,7 @@ void CSMASpot::Init()
 	while (!infile.eof())
 	{
 		getline(infile, sLine);
+		sLine.erase(std::remove(sLine.begin(), sLine.end(), '\r'), sLine.end());
 		if (sLine.size()!=0)
 		{
 			if (sLine.find("OutputPath=")==0)
@@ -111,6 +111,8 @@ bool CSMASpot::StopHardware()
 
 void CSMASpot::Do_Work()
 {
+	int LastMinute=-1;
+
 	_log.Log(LOG_NORM,"SMASpot Worker started...");
 	while (!m_stoprequested)
 	{
@@ -118,9 +120,9 @@ void CSMASpot::Do_Work()
 		time_t atime=mytime(NULL);
 		struct tm ltime;
 		localtime_r(&atime,&ltime);
-		if (((ltime.tm_min/SMA_POLL_INTERVAL!=m_LastMinute))&&(ltime.tm_sec>20))
+		if (((ltime.tm_min/SMA_POLL_INTERVAL!=LastMinute))&&(ltime.tm_sec>20))
 		{
-			m_LastMinute=ltime.tm_min/SMA_POLL_INTERVAL;
+			LastMinute=ltime.tm_min/SMA_POLL_INTERVAL;
 			GetMeterDetails();
 		}
 	}
@@ -202,6 +204,78 @@ void CSMASpot::SendMeter(const unsigned char ID1,const unsigned char ID2, const 
 	}
 }
 
+void CSMASpot::SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname)
+{
+	if (m_pMainWorker==NULL)
+		return;
+	bool bDeviceExits=true;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+
+	char szTmp[30];
+	sprintf(szTmp,"%08X", Idx);
+
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeVoltage) << ")";
+	result=m_pMainWorker->m_sql.query(szQuery.str());
+	if (result.size()<1)
+	{
+		bDeviceExits=false;
+	}
+
+	_tGeneralDevice gDevice;
+	gDevice.subtype=sTypeVoltage;
+	gDevice.id=1;
+	gDevice.floatval1=Volt;
+	gDevice.intval1=(int)Idx;
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeVoltage) << ")";
+		result=m_pMainWorker->m_sql.query(szQuery.str());
+
+	}
+}
+
+void CSMASpot::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
+{
+	if (m_pMainWorker==NULL)
+		return;
+	bool bDeviceExits=true;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+
+	char szTmp[30];
+	sprintf(szTmp,"%08X", Idx);
+
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
+	result=m_pMainWorker->m_sql.query(szQuery.str());
+	if (result.size()<1)
+	{
+		bDeviceExits=false;
+	}
+
+	_tGeneralDevice gDevice;
+	gDevice.subtype=sTypePercentage;
+	gDevice.id=1;
+	gDevice.floatval1=Percentage;
+	gDevice.intval1=(int)Idx;
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
+		result=m_pMainWorker->m_sql.query(szQuery.str());
+
+	}
+}
+
 bool CSMASpot::GetMeter(const unsigned char ID1,const unsigned char ID2, double &musage, double &mtotal)
 {
 	if (m_pMainWorker==NULL)
@@ -253,6 +327,7 @@ void CSMASpot::GetMeterDetails()
 	while (!infile.eof())
 	{
 		getline(infile, sLine);
+		sLine.erase(std::remove(sLine.begin(), sLine.end(), '\r'), sLine.end());
 		if (sLine.size()!=0)
 		{
 			if (sLine.find("sep=")==0)
@@ -312,5 +387,38 @@ void CSMASpot::GetMeterDetails()
 		}
 		SendMeter(0,1, Pac/1000.0, kWhCounter, "SolarMain");
 	}
+
+	float voltage;
+	tmpString=results[16];
+	tmpString=stdreplace(tmpString,",",".");
+	voltage=(float)atof(tmpString.c_str());
+	SendVoltage(1,voltage,"Volt uac1");
+	tmpString=results[17];
+	tmpString=stdreplace(tmpString,",",".");
+	voltage=(float)atof(tmpString.c_str());
+	if (voltage!=0) {
+		SendVoltage(2,voltage,"Volt uac2");
+	}
+	tmpString=results[18];
+	tmpString=stdreplace(tmpString,",",".");
+	voltage=(float)atof(tmpString.c_str());
+	if (voltage!=0) {
+		SendVoltage(3,voltage,"Volt uac3");
+	}
+
+	float percentage;
+	tmpString=results[21];
+	tmpString=stdreplace(tmpString,",",".");
+	percentage=(float)atof(tmpString.c_str());
+	SendPercentage(1,voltage,"Efficiency");
+	tmpString=results[24];
+	tmpString=stdreplace(tmpString,",",".");
+	percentage=(float)atof(tmpString.c_str());
+	SendPercentage(2,voltage,"Hz");
+	tmpString=results[27];
+	tmpString=stdreplace(tmpString,",",".");
+	percentage=(float)atof(tmpString.c_str());
+	SendPercentage(3,voltage,"BT_Signal");
+
 }
 
