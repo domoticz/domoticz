@@ -410,15 +410,15 @@ void CSMASpot::GetMeterDetails()
 	tmpString=results[21];
 	tmpString=stdreplace(tmpString,",",".");
 	percentage=(float)atof(tmpString.c_str());
-	SendPercentage(1,voltage,"Efficiency");
+	SendPercentage(1,percentage,"Efficiency");
 	tmpString=results[24];
 	tmpString=stdreplace(tmpString,",",".");
 	percentage=(float)atof(tmpString.c_str());
-	SendPercentage(2,voltage,"Hz");
+	SendPercentage(2,percentage,"Hz");
 	tmpString=results[27];
 	tmpString=stdreplace(tmpString,",",".");
 	percentage=(float)atof(tmpString.c_str());
-	SendPercentage(3,voltage,"BT_Signal");
+	SendPercentage(3,percentage,"BT_Signal");
 
 }
 
