@@ -2479,11 +2479,11 @@ function ShowFavorites()
 					status=item.Data + " (" + item.Quality + ")";
 				}
 				else if (item.SubType == "Percentage") {
-					xhtm+='Percentage48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowPercentageLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\',\'Percentage\');" height="40"></td>\n';
+					xhtm+='Percentage48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowPercentageLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40"></td>\n';
 					status=item.Data;
 				}
 				else if (item.Type == "Fan") {
-					xhtm+='Fan48_On.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowFanLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\',\'fan\');" height="40"></td>\n';
+					xhtm+='Fan48_On.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowFanLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40"></td>\n';
 					status=item.Data;
 				}				
 				else if (item.Type == "Lux") {

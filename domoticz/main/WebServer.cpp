@@ -6725,7 +6725,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				}
 				else if (dSubType==sTypePercentage)
 				{
-					sprintf(szData,"%.1f%%",atof(sValue.c_str()));
+					sprintf(szData,"%.2f%%",atof(sValue.c_str()));
 					root["result"][ii]["Data"]=szData;
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 					root["result"][ii]["Image"]="Computer";
