@@ -1230,14 +1230,19 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 		nightTimeBool = true;
 	}
 
-	lua_createtable(lua_state, 2, 0);
+	lua_createtable(lua_state, 4, 0);
     lua_pushstring( lua_state, "Daytime");
     lua_pushboolean( lua_state, dayTimeBool);
     lua_rawset( lua_state, -3 );
     lua_pushstring( lua_state, "Nighttime");
     lua_pushboolean( lua_state, nightTimeBool);
     lua_rawset( lua_state, -3 );
-
+    lua_pushstring( lua_state, "SunriseInMinutes");
+    lua_pushnumber( lua_state, intRise);
+    lua_rawset( lua_state, -3 );
+    lua_pushstring( lua_state, "SunsetInMinutes");
+    lua_pushnumber( lua_state, intSet);
+    lua_rawset( lua_state, -3 );
     lua_setglobal(lua_state, "timeofday");
 
     GetCurrentMeasurementStates();
