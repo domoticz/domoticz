@@ -204,6 +204,49 @@ void CSMASpot::SendMeter(const unsigned char ID1,const unsigned char ID2, const 
 	}
 }
 
+void CSMASpot::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
+{
+	if (m_pMainWorker==NULL)
+		return;
+	bool bDeviceExits=true;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP10) << ")";
+	result=m_pMainWorker->m_sql.query(szQuery.str());
+	if (result.size()<1)
+	{
+		bDeviceExits=false;
+	}
+
+	RBUF tsen;
+	memset(&tsen,0,sizeof(RBUF));
+
+	tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
+	tsen.TEMP.packettype=pTypeTEMP;
+	tsen.TEMP.subtype=sTypeTEMP10;
+	tsen.TEMP.battery_level=9;
+	tsen.TEMP.rssi=12;
+	tsen.TEMP.id1=0;
+	tsen.TEMP.id2=Idx;
+
+	tsen.TEMP.tempsign=(Temp>=0)?0:1;
+	int at10=round(abs(Temp*10.0f));
+	tsen.TEMP.temperatureh=(BYTE)(at10/256);
+	at10-=(tsen.TEMP.temperatureh*256);
+	tsen.TEMP.temperaturel=(BYTE)(at10);
+
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP10) << ")";
+		result=m_pMainWorker->m_sql.query(szQuery.str());
+	}
+}
+
 void CSMASpot::SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname)
 {
 	if (m_pMainWorker==NULL)
@@ -345,7 +388,7 @@ void CSMASpot::GetMeterDetails()
 			else if (bHaveVersion)
 			{
 				StringSplit(sLine,szSeperator,results);
-				if (results.size()==30)
+				if (results.size()>=30)
 				{
 					szLastLine=sLine;
 				}
@@ -420,5 +463,12 @@ void CSMASpot::GetMeterDetails()
 	percentage=(float)atof(tmpString.c_str());
 	SendPercentage(3,percentage,"BT_Signal");
 
+	if (results.size()>=31)
+	{
+		tmpString=results[30];
+		tmpString=stdreplace(tmpString,",",".");
+		float temperature=(float)atof(tmpString.c_str());
+		SendTempSensor(1,temperature,"Temperature");
+	}
 }
 

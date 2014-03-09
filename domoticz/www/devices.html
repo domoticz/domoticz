@@ -75,7 +75,7 @@ function AddDevice(idx,itemname)
     $( "#dialog-adddevice" ).dialog( "open" );
 }
 
-function AddLightDevice(idx)
+function AddLightDevice(idx, name)
 {
     $.devIdx = idx;
     
@@ -87,6 +87,9 @@ function AddLightDevice(idx)
 			$("#dialog-addlightdevice #combosubdevice").append(option);
 		});
     
+    if (name!='Unknown') {
+		$( "#dialog-addlightdevice #devicename" ).val(name);
+    }
     $( "#dialog-addlightdevice" ).dialog( "open" );
 }
 
@@ -290,7 +293,7 @@ function ShowDevices(filter)
 								(item.Type.indexOf("Security")==0)
 							 )
 						{
-							itemSubIcons+='<img src="images/add.png" title="' + $.i18n('Add Light/Switch Device') + '" onclick="AddLightDevice(' + item.idx +')">';
+							itemSubIcons+='<img src="images/add.png" title="' + $.i18n('Add Light/Switch Device') + '" onclick="AddLightDevice(' + item.idx +',\'' + item.Name + '\')">';
 						}
 						else {
 							itemSubIcons+='<img src="images/add.png" title="' + $.i18n('Add Device') +'" onclick="AddDevice(' + item.idx +',\'' + item.Name + '\')">';

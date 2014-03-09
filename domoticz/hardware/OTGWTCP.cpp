@@ -9,6 +9,7 @@
 OTGWTCP::OTGWTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5)
 {
 	m_HwdID=ID;
+	m_bDoRestart=false;
 #if defined WIN32
 	int ret;
 	//Init winsock
@@ -46,6 +47,7 @@ OTGWTCP::~OTGWTCP(void)
 bool OTGWTCP::StartHardware()
 {
 	m_stoprequested=false;
+	m_bDoRestart=false;
 
 	//force connect the next first time
 	m_retrycntr=RETRY_DELAY;
@@ -81,7 +83,7 @@ bool OTGWTCP::StopHardware()
 void OTGWTCP::OnConnect()
 {
 	_log.Log(LOG_NORM,"OTGW connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
-
+	m_bDoRestart=false;
 	m_bIsStarted=true;
 	m_bufferpos=0;
 
@@ -108,6 +110,11 @@ void OTGWTCP::Do_Work()
 		}
 		else
 		{
+			time_t atime=time(NULL);
+			if ((m_bDoRestart)&&(atime%30==0))
+			{
+				connect(m_szIPAddress,m_usIPPort);
+			}
 			update();
 			if (mIsConnected)
 			{
@@ -177,16 +184,26 @@ void OTGWTCP::OnData(const unsigned char *pData, size_t length)
 void OTGWTCP::OnError(const std::exception e)
 {
 	_log.Log(LOG_ERROR,"OTGW Error: %s",e.what());
+	if (m_bIsStarted) {
+		disconnect();
+		m_bDoRestart=true;
+	}
 }
 
 void OTGWTCP::OnError(const boost::system::error_code& error)
 {
 	_log.Log(LOG_ERROR,"OTGW Error: %s",error.message().c_str());
+	if (m_bIsStarted) {
+		disconnect();
+		m_bDoRestart=true;
+	}
 }
 
 void OTGWTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if (!mIsConnected)
+	{
 		return;
+	}
 //	write(pdata,length,0);
 }

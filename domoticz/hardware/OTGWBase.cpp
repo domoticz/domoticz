@@ -58,6 +58,69 @@ void OTGWBase::ParseData(const unsigned char *pData, int Len)
 	}
 }
 
+void OTGWBase::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname)
+{
+	if (m_pMainWorker==NULL)
+		return;
+	bool bDeviceExits=true;
+	char szIdx[10];
+	sprintf(szIdx,"%X%02X%02X%02X",0,0,0,Idx);
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
+	result=m_pMainWorker->m_sql.query(szQuery.str()); //-V519
+	if (result.size()<1)
+	{
+		bDeviceExits=false;
+	}
+	else
+	{
+		//check if we have a change, if not do not update it
+		int nvalue=atoi(result[0][1].c_str());
+		if ((!bOn)&&(nvalue==0))
+			return;
+		if ((bOn&&(nvalue!=0)))
+			return;
+	}
+
+	//Send as Lighting 2
+	tRBUF lcmd;
+	memset(&lcmd,0,sizeof(RBUF));
+	lcmd.LIGHTING2.packetlength=sizeof(lcmd.LIGHTING2)-1;
+	lcmd.LIGHTING2.packettype=pTypeLighting2;
+	lcmd.LIGHTING2.subtype=sTypeAC;
+	lcmd.LIGHTING2.id1=0;
+	lcmd.LIGHTING2.id2=0;
+	lcmd.LIGHTING2.id3=0;
+	lcmd.LIGHTING2.id4=Idx;
+	lcmd.LIGHTING2.unitcode=1;
+	int level=15;
+	if (!bOn)
+	{
+		level=0;
+		lcmd.LIGHTING2.cmnd=light2_sOff;
+	}
+	else
+	{
+		level=15;
+		lcmd.LIGHTING2.cmnd=light2_sOn;
+	}
+	lcmd.LIGHTING2.level=level;
+	lcmd.LIGHTING2.filler=0;
+	lcmd.LIGHTING2.rssi=12;
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);//decode message
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
+		result=m_pMainWorker->m_sql.query(szQuery.str());
+	}
+
+}
+
 void OTGWBase::UpdateTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
 	if (m_pMainWorker==NULL)
@@ -181,6 +244,23 @@ void OTGWBase::ParseLine()
 		int idx=0;
 
 		_status.MsgID=results[idx++];
+		if (_status.MsgID.size()==17)
+		{
+			bool bCH_enabled=(_status.MsgID[7]=='1');										UpdateSwitch(101,bCH_enabled,"CH_enabled");
+			bool bDHW_enabled=(_status.MsgID[6]=='1');										UpdateSwitch(102,bDHW_enabled,"DHW_enabled");
+			bool bCooling_enable=(_status.MsgID[5]=='1');									UpdateSwitch(103,bCooling_enable,"Cooling_enable");
+			bool bOTC_active=(_status.MsgID[4]=='1');										UpdateSwitch(104,bOTC_active,"OTC_active");
+			bool bCH2_enabled=(_status.MsgID[3]=='1');										UpdateSwitch(105,bCH2_enabled,"CH2_enabled");
+
+			bool bFault_indication=(_status.MsgID[9+7]=='1');								UpdateSwitch(110,bFault_indication,"Fault_indication");
+			bool bCH_active=(_status.MsgID[9+6]=='1');										UpdateSwitch(111,bCH_active,"CH_active");
+			bool bDHW_active=(_status.MsgID[9+5]=='1');										UpdateSwitch(112,bDHW_active,"DHW_active");
+			bool bFlameOn=(_status.MsgID[9+4]=='1');										UpdateSwitch(113,bFlameOn,"FlameOn");
+			bool bCooling_Mode_Active=(_status.MsgID[9+3]=='1');							UpdateSwitch(114,bCooling_Mode_Active,"Cooling_Mode_Active");
+			bool bCH2_Active=(_status.MsgID[9+2]=='1');										UpdateSwitch(115,bCH2_Active,"CH2_Active");
+			bool bDiagnosticEvent=(_status.MsgID[9+1]=='1');								UpdateSwitch(116,bDiagnosticEvent,"DiagnosticEvent");
+		}
+		
 		_status.Control_setpoint=(float)atof(results[idx++].c_str());						UpdateTempSensor(idx-1,_status.Control_setpoint,"Control Setpoint");
 		_status.Remote_parameter_flags=results[idx++];
 		_status.Maximum_relative_modulation_level=(float)atof(results[idx++].c_str());

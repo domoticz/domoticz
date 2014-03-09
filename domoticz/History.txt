@@ -57,6 +57,8 @@ Version 1.0.xxxx (February xxth 2014)
 - Implemented: openzwave Voltage/Ampere
 - Implemented: SMASpot, voltages, efficiency, Hz and Bluetooth signal strength
 - Implemented: SMASpot, accepting windows edited configuration lines!?!!...
+- Implemented: SMASpot, Temperature
+- Implemented: OTGW, status switches
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)
