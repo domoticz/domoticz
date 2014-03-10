@@ -1582,11 +1582,11 @@ function RefreshHardwareTable()
 			{
 				SerialName="I2C";
 			}
-			else if ((item.Type == 14)||(item.Type == 25))
+			else if ((item.Type == 14)||(item.Type == 25)||(item.Type == 28))
 			{
 				SerialName="WWW";
 			}
-			else if (item.Type == 15)
+			else if ((item.Type == 15)||(item.Type == 23)||(item.Type == 26)||(item.Type == 27))
 			{
 				SerialName="";
 			}
@@ -1727,7 +1727,7 @@ function RefreshHardwareTable()
 					{
 						$("#hardwarecontent #hardwareparamslocation #location").val(data["Username"]);
 					}
-					if (data["Type"].indexOf("Domoticz") >= 0) {
+					if ((data["Type"].indexOf("Domoticz") >= 0)||(data["Type"].indexOf("ICY") >= 0)) {
 						$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
 						$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
 					}
