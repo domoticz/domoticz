@@ -167,6 +167,7 @@ hardware/DomoticzTCP.cpp
 hardware/Dummy.cpp
 hardware/EnOcean.cpp
 hardware/ForecastIO.cpp
+hardware/ICYThermostat.cpp
 hardware/Limitless.cpp
 hardware/OpenZWave.cpp
 hardware/OTGWBase.cpp
