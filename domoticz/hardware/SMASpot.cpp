@@ -256,7 +256,7 @@ void CSMASpot::SendVoltage(const unsigned long Idx, const float Volt, const std:
 	std::vector<std::vector<std::string> > result;
 
 	char szTmp[30];
-	sprintf(szTmp,"%08X", Idx);
+	sprintf(szTmp,"%08X", (unsigned int)Idx);
 
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeVoltage) << ")";
 	result=m_pMainWorker->m_sql.query(szQuery.str());
@@ -292,7 +292,7 @@ void CSMASpot::SendPercentage(const unsigned long Idx, const float Percentage, c
 	std::vector<std::vector<std::string> > result;
 
 	char szTmp[30];
-	sprintf(szTmp,"%08X", Idx);
+	sprintf(szTmp,"%08X", (unsigned int)Idx);
 
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
 	result=m_pMainWorker->m_sql.query(szQuery.str());

@@ -7038,7 +7038,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 
 	if ((subType==sTypeVoltage)||(subType==sTypePercentage))
 	{
-		sprintf(szTmp,"%08X", pMeter->intval1);
+		sprintf(szTmp,"%08X", (unsigned int)pMeter->intval1);
 	}
 	else
 	{
