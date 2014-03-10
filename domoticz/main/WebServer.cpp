@@ -2594,7 +2594,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		std::string poTitle = "Domoticz test";
 		std::string poMessage = "Domoticz test message!";
 		sprintf(sPostData,"token=%s&user=%s&priority=0&title=%s&message=%s",poapi.c_str(),pouser.c_str(),poTitle.c_str(),poMessage.c_str());
-		if (!HTTPClient::POST("https://api.pushover.net/1/messages.json",sPostData,sResult))
+		std::vector<std::string> ExtraHeaders;
+		if (!HTTPClient::POST("https://api.pushover.net/1/messages.json",sPostData,ExtraHeaders,sResult))
 		{
 			_log.Log(LOG_ERROR,"Error sending Pushover Notification!");
 		}

@@ -343,8 +343,9 @@ bool CCamScheduler::TakeSnapshot(const unsigned long long CamID, std::vector<uns
 		return TakeRaspberrySnapshot(camimage);
 	else if (pCamera->ImageURL=="uvccapture.cgi")
 		return TakeUVCSnapshot(camimage);
-	
-	return HTTPClient::GETBinary(szURL,camimage);
+
+	std::vector<std::string> ExtraHeaders;
+	return HTTPClient::GETBinary(szURL,ExtraHeaders,camimage);
 }
 
 bool CCamScheduler::EmailCameraSnapshot(const std::string &CamIdx, const std::string &subject)

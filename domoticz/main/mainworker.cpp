@@ -8069,7 +8069,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		return false;
 	if (
 		(pHardware->HwdType==HTYPE_OpenThermGateway)||
-		(pHardware->HwdType==HTYPE_OpenThermGatewayTCP)
+		(pHardware->HwdType==HTYPE_OpenThermGatewayTCP)||
+		(pHardware->HwdType==HTYPE_ICYTHERMOSTAT)
 		)
 	{
 		if (pHardware->HwdType==HTYPE_OpenThermGateway)
@@ -8077,9 +8078,14 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			OTGWSerial *pGateway=(OTGWSerial*)pHardware;
 			pGateway->SetSetpoint(ID4,TempValue);
 		}
-		else
+		else if (pHardware->HwdType==HTYPE_OpenThermGatewayTCP)
 		{
 			OTGWTCP *pGateway=(OTGWTCP*)pHardware;
+			pGateway->SetSetpoint(ID4,TempValue);
+		}
+		else if (pHardware->HwdType==HTYPE_ICYTHERMOSTAT)
+		{
+			CICYThermostat *pGateway=(CICYThermostat*)pHardware;
 			pGateway->SetSetpoint(ID4,TempValue);
 		}
 	}

@@ -28,6 +28,8 @@ CICYThermostat::~CICYThermostat(void)
 
 void CICYThermostat::Init()
 {
+	m_SerialNumber="";
+	m_Token="";
 }
 
 bool CICYThermostat::StartHardware()
@@ -58,86 +60,25 @@ void CICYThermostat::Do_Work()
 {
 	int LastMinute=-1;
 
-	_log.Log(LOG_NORM,"ICYThermostat Worker started...");
+	_log.Log(LOG_NORM,"ICYThermostat: Worker started...");
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
 		time_t atime=mytime(NULL);
 		struct tm ltime;
 		localtime_r(&atime,&ltime);
-		if (((ltime.tm_min/ICY_POLL_INTERVAL!=LastMinute))&&(ltime.tm_sec>20))
+		if (ltime.tm_min/ICY_POLL_INTERVAL!=LastMinute)
 		{
 			LastMinute=ltime.tm_min/ICY_POLL_INTERVAL;
 			GetMeterDetails();
 		}
 	}
-	_log.Log(LOG_NORM,"ICYThermostat Worker stopped...");
+	_log.Log(LOG_NORM,"ICYThermostat: Worker stopped...");
 }
 
 void CICYThermostat::WriteToHardware(const char *pdata, const unsigned char length)
 {
 
-}
-
-void CICYThermostat::SendMeter(const unsigned char ID1,const unsigned char ID2, const double musage, const double mtotal, const std::string &defaultname)
-{
-	if (m_pMainWorker==NULL)
-		return;
-	int Idx=(ID1 * 256) + ID2;
-	bool bDeviceExits=true;
-	std::stringstream szQuery;
-	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
-	if (result.size()<1)
-	{
-		bDeviceExits=false;
-	}
-
-	RBUF tsen;
-	memset(&tsen,0,sizeof(RBUF));
-
-	tsen.ENERGY.packettype=pTypeENERGY;
-	tsen.ENERGY.subtype=sTypeELEC2;
-	tsen.ENERGY.id1=ID1;
-	tsen.ENERGY.id2=ID2;
-	tsen.ENERGY.count=1;
-	tsen.ENERGY.rssi=12;
-
-	tsen.ENERGY.battery_level=9;
-
-	unsigned long long instant=(unsigned long long)(musage*1000.0);
-	tsen.ENERGY.instant1=(unsigned char)(instant/0x1000000);
-	instant-=tsen.ENERGY.instant1*0x1000000;
-	tsen.ENERGY.instant2=(unsigned char)(instant/0x10000);
-	instant-=tsen.ENERGY.instant2*0x10000;
-	tsen.ENERGY.instant3=(unsigned char)(instant/0x100);
-	instant-=tsen.ENERGY.instant3*0x100;
-	tsen.ENERGY.instant4=(unsigned char)(instant);
-
-	double total=(mtotal*1000.0)*223.666;
-	tsen.ENERGY.total1=(unsigned char)(total/0x10000000000ULL);
-	total-=tsen.ENERGY.total1*0x10000000000ULL;
-	tsen.ENERGY.total2=(unsigned char)(total/0x100000000ULL);
-	total-=tsen.ENERGY.total2*0x100000000ULL;
-	tsen.ENERGY.total3=(unsigned char)(total/0x1000000);
-	total-=tsen.ENERGY.total3*0x1000000;
-	tsen.ENERGY.total4=(unsigned char)(total/0x10000);
-	total-=tsen.ENERGY.total4*0x10000;
-	tsen.ENERGY.total5=(unsigned char)(total/0x100);
-	total-=tsen.ENERGY.total5*0x100;
-	tsen.ENERGY.total6=(unsigned char)(total);
-
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY);//decode message
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
-		result=m_pMainWorker->m_sql.query(szQuery.str());
-	}
 }
 
 void CICYThermostat::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
@@ -183,98 +124,81 @@ void CICYThermostat::SendTempSensor(const unsigned char Idx, const float Temp, c
 	}
 }
 
-void CICYThermostat::SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname)
+void CICYThermostat::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
 	if (m_pMainWorker==NULL)
 		return;
 	bool bDeviceExits=true;
 	std::stringstream szQuery;
+
+	char szID[10];
+	sprintf(szID,"%X%02X%02X%02X", 0, 0, 0, Idx);
+
 	std::vector<std::vector<std::string> > result;
-
-	char szTmp[30];
-	sprintf(szTmp,"%08X", (unsigned int)Idx);
-
-	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeVoltage) << ")";
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
 	result=m_pMainWorker->m_sql.query(szQuery.str());
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
 	}
 
-	_tGeneralDevice gDevice;
-	gDevice.subtype=sTypeVoltage;
-	gDevice.id=1;
-	gDevice.floatval1=Volt;
-	gDevice.intval1=(int)Idx;
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+	_tThermostat thermos;
+	thermos.subtype=sTypeThermSetpoint;
+	thermos.id1=0;
+	thermos.id2=0;
+	thermos.id3=0;
+	thermos.id4=Idx;
+	thermos.dunit=0;
+
+	thermos.temp=Temp;
+
+	sDecodeRXMessage(this, (const unsigned char *)&thermos);
 
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeVoltage) << ")";
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
 		result=m_pMainWorker->m_sql.query(szQuery.str());
-
 	}
 }
 
-void CICYThermostat::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
+bool CICYThermostat::GetSerialAndToken()
 {
-	if (m_pMainWorker==NULL)
-		return;
-	bool bDeviceExits=true;
-	std::stringstream szQuery;
-	std::vector<std::vector<std::string> > result;
+	std::stringstream sstr;
+	sstr << "username=" << m_UserName << "&password=" << m_Password;
+	std::string szPostdata=sstr.str();
+	std::vector<std::string> ExtraHeaders;
+	std::string sResult;
 
-	char szTmp[30];
-	sprintf(szTmp,"%08X", (unsigned int)Idx);
-
-	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
-	if (result.size()<1)
+	if (!HTTPClient::POST("https://portal.icy.nl/login",szPostdata,ExtraHeaders,sResult))
 	{
-		bDeviceExits=false;
-	}
-
-	_tGeneralDevice gDevice;
-	gDevice.subtype=sTypePercentage;
-	gDevice.id=1;
-	gDevice.floatval1=Percentage;
-	gDevice.intval1=(int)Idx;
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
-		result=m_pMainWorker->m_sql.query(szQuery.str());
-
-	}
-}
-
-bool CICYThermostat::GetMeter(const unsigned char ID1,const unsigned char ID2, double &musage, double &mtotal)
-{
-	if (m_pMainWorker==NULL)
-		return false;
-	int Idx=(ID1 * 256) + ID2;
-	bool bDeviceExits=true;
-	std::stringstream szQuery;
-	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name, sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
-	if (result.size()<1)
-	{
+		_log.Log(LOG_ERROR,"ICYThermostat: Error login!");
 		return false;
 	}
 	std::vector<std::string> splitresult;
-	StringSplit(result[0][1],";",splitresult);
-	if (splitresult.size()!=2)
+	StringSplit(sResult,",",splitresult);
+	if (splitresult.size()!=13)
 		return false;
-	musage=atof(splitresult[0].c_str());
-	mtotal=atof(splitresult[1].c_str())/1000.0;
+
+	//Serial (9)
+	std::vector<std::string> splitresult2;
+	StringSplit(splitresult[9],":",splitresult2);
+	if (splitresult2.size()!=2)
+		return false;
+	std::string szSerial=splitresult2[1].substr(1,splitresult2[1].size()-2);
+
+	//Token (10)
+	StringSplit(splitresult[10],":",splitresult2);
+	if (splitresult2.size()!=2)
+		return false;
+	std::string szToken=splitresult2[1].substr(1,splitresult2[1].size()-2);
+
+	if ((szSerial.size()==0)||(szToken.size()==0))
+		return false;
+	m_SerialNumber=szSerial;
+	m_Token=szToken;
 	return true;
 }
 
@@ -284,6 +208,84 @@ void CICYThermostat::GetMeterDetails()
 		return;
 	if (m_Password.size()==0)
 		return;
+	if (!GetSerialAndToken())
+		return;
+	//Get Data
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Session-token:"+m_Token);
+	std::string sResult;
 
+	if (!HTTPClient::GET("https://portal.icy.nl/data",ExtraHeaders,sResult))
+	{
+		_log.Log(LOG_ERROR,"ICYThermostat: Error login!");
+		return;
+	}
+	std::vector<std::string> splitresult;
+	StringSplit(sResult,",",splitresult);
+	if (splitresult.size()<5)
+		return;
+
+	std::string tmpString;
+	std::string tmpLabel;
+	float floatval;
+
+	//Set Point (4)
+	std::vector<std::string> splitresult2;
+	StringSplit(splitresult[4],":",splitresult2);
+	if (splitresult2.size()!=2)
+		return;
+	tmpLabel=splitresult2[0].substr(1,splitresult2[0].size()-2);
+	if (tmpLabel=="temperature1")
+	{
+		if (splitresult2[1].find('"')!=std::string::npos)
+			tmpString=splitresult2[1].substr(1,splitresult2[1].size()-2);
+		else
+			tmpString=splitresult2[1];
+		tmpString=stdreplace(tmpString,",",".");
+		floatval=(float)atof(tmpString.c_str());
+		SendSetPointSensor(1,floatval,"Room Setpoint");
+	}
+
+	//Room Temperature (5)
+	StringSplit(splitresult[5],":",splitresult2);
+	if (splitresult2.size()!=2)
+		return;
+	tmpLabel=splitresult2[0].substr(1,splitresult2[0].size()-2);
+	if (tmpLabel=="temperature2")
+	{
+		if (splitresult2[1].find('"')!=std::string::npos)
+			tmpString=splitresult2[1].substr(1,splitresult2[1].size()-2);
+		else
+			tmpString=splitresult2[1];
+		tmpString=stdreplace(tmpString,",",".");
+		floatval=(float)atof(tmpString.c_str());
+		SendTempSensor(1,floatval,"Room Temperature");
+	}
 }
 
+void CICYThermostat::SetSetpoint(const int idx, const float temp)
+{
+	if (idx==1)
+	{
+		//Room Set Point
+		if (!GetSerialAndToken())
+			return;
+
+		char szTemp[20];
+		sprintf(szTemp,"%.1f",temp);
+		std::stringstream sstr;
+		sstr << "uid=" << m_SerialNumber << "&temperature1=" << szTemp;
+		std::string szPostdata=sstr.str();
+
+		std::vector<std::string> ExtraHeaders;
+		ExtraHeaders.push_back("Session-token:"+m_Token);
+		std::string sResult;
+
+		if (!HTTPClient::POST("https://portal.icy.nl/data",szPostdata,ExtraHeaders,sResult)) {
+			_log.Log(LOG_ERROR,"ICYThermostat: Error setting SetPoint temperature!");
+		}
+		else {
+			_log.Log(LOG_NORM,"OTGW: Setting Room SetPoint to: %.1f",temp);
+		}
+	}
+}

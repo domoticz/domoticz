@@ -1974,7 +1974,8 @@ bool CSQLHelper::SendNotification(const std::string &EventID, const std::string 
 					};
 					std::string poSound ="pushover";
 					sprintf(sPostData,"token=%s&user=%s&priority=%d&title=%s&message=%s&sound=%s",poApiKey.c_str(),sValue.c_str(),poPriority,Message.c_str(),Message.c_str(),poSound.c_str());
-					if (!HTTPClient::POST("https://api.pushover.net/1/messages.json",sPostData,sResult))
+					std::vector<std::string> ExtraHeaders;
+					if (!HTTPClient::POST("https://api.pushover.net/1/messages.json",sPostData,ExtraHeaders,sResult))
 					{
 						_log.Log(LOG_ERROR,"Error sending Pushover Notification!");
 					}
@@ -2085,7 +2086,8 @@ bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::strin
 						poSound="pushover";
 					};
 					sprintf(sPostData,"token=%s&user=%s&priority=%d&title=%s&message=%s&sound=%s",poApiKey.c_str(),sValue.c_str(),poPriority,uencode.URLEncode(Subject).c_str(),uencode.URLEncode(notimessage).c_str(),poSound.c_str());
-					if (!HTTPClient::POST("https://api.pushover.net/1/messages.json",sPostData,sResult))
+					std::vector<std::string> ExtraHeaders;
+					if (!HTTPClient::POST("https://api.pushover.net/1/messages.json",sPostData,ExtraHeaders,sResult))
 					{
 						_log.Log(LOG_ERROR,"Error sending Pushover Notification!");
 					}
