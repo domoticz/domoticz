@@ -660,7 +660,7 @@ function RefreshUtilities()
 				var bigtext="";
 							
 				if (typeof item.Counter != 'undefined') {
-					if (item.SubType == "Gas") {
+					if ((item.SubType == "Gas")||(item.SubType == "RFXMeter counter")) {
 						status=item.Counter;
 						bigtext=item.CounterToday;
 					}
@@ -842,7 +842,7 @@ function ShowUtilities()
 						xhtm+='-' + item.UsageDeliv;
 					}
 				}
-				else if (item.SubType == "Gas") {
+				else if ((item.SubType == "Gas")||(item.SubType == "RFXMeter counter")) {
 				  xhtm+=item.CounterToday;
 				}
 				else if (item.Type == "Air Quality") {
@@ -880,7 +880,7 @@ function ShowUtilities()
             var status="";
             if (typeof item.Counter != 'undefined') {
               xhtm+='counter.png" height="48"></td>\n';
-              if (item.SubType == "Gas") {
+              if ((item.SubType == "Gas")||(item.SubType == "RFXMeter counter")) {
 				status=item.Counter;
               }
               else {

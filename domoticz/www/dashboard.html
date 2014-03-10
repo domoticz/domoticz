@@ -952,7 +952,7 @@ function RefreshFavorites()
 						var bigtext="";
 						
 						if (typeof item.Counter != 'undefined') {
-							if (item.SubType=="Gas") {
+							if ((item.SubType=="Gas")||(item.SubType == "RFXMeter counter")) {
 								status="&nbsp;";
 								bigtext=item.CounterToday;
 							}
@@ -2429,7 +2429,7 @@ function ShowFavorites()
 						xhtm+='-' + item.UsageDeliv;
 					}
 				}
-				else if (item.SubType == "Gas") {
+				else if ((item.SubType == "Gas")||(item.SubType == "RFXMeter counter")) {
 				  xhtm+=item.CounterToday;
 				}
 				else if (
@@ -2459,7 +2459,7 @@ function ShowFavorites()
 					else {
 						xhtm+='counter.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');" height="40"></td>\n';
 					}
-					if (item.SubType!="Gas") {
+					if ((item.SubType!="Gas")&&(item.SubType != "RFXMeter counter")) {
 						status='' + $.i18n("Usage") + ': ' + item.CounterToday;
 					}
 					else {

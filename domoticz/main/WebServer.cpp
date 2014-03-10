@@ -1709,7 +1709,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["status"]="OK";
 		root["title"]="ExecuteScript";
 	}
-	else if (cparam=="getelectragascosts")
+	else if (cparam=="getcosts")
 	{
 		std::string idx=m_pWebEm->FindValue("idx");
 		if (idx=="")
@@ -1731,6 +1731,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			root["CostEnergyT2"]=nValue;
 			m_pMain->m_sql.GetPreferencesVar("CostGas",nValue);
 			root["CostGas"]=nValue;
+			m_pMain->m_sql.GetPreferencesVar("CostWater",nValue);
+			root["CostWater"]=nValue;
 
 			unsigned char dType=atoi(sd[0].c_str());
 			unsigned char subType=atoi(sd[1].c_str());
