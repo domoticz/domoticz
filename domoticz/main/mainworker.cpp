@@ -44,6 +44,8 @@
 #endif
 #include "../hardware/SolarEdgeTCP.h"
 #include "../hardware/SMASpot.h"
+#include "../hardware/ICYThermostat.h"
+
 
 #ifdef WIN32
     #include "dirent_windows.h"
@@ -495,6 +497,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_SMASpot:
 		pHardware = new CSMASpot(ID,Username);
+		break;
+	case HTYPE_ICYTHERMOSTAT:
+		pHardware = new CICYThermostat(ID,Username,Password);
 		break;
 	case HTYPE_Dummy:
 		pHardware = new CDummy(ID);

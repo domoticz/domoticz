@@ -132,6 +132,9 @@
     <Filter Include="Devices\SMASpot">
       <UniqueIdentifier>{3d145f2e-6a05-4375-917e-4ac4557915fd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\ICY Thermostat">
+      <UniqueIdentifier>{76dbad7a-fef9-4b45-94f2-82670e7ff061}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -406,6 +409,9 @@
     <ClInclude Include="hardware\SMASpot.h">
       <Filter>Devices\SMASpot</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\ICYThermostat.h">
+      <Filter>Devices\ICY Thermostat</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -641,6 +647,9 @@
     </ClCompile>
     <ClCompile Include="hardware\SMASpot.cpp">
       <Filter>Devices\SMASpot</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\ICYThermostat.cpp">
+      <Filter>Devices\ICY Thermostat</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

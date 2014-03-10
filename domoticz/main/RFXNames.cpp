@@ -161,7 +161,8 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_System,				"Motherboard sensors" },
 		{ HTYPE_EnOcean,			"EnOcean USB (ESP2)" },
 		{ HTYPE_SolarEdgeTCP,		"SolarEdge via LAN interface (Working, NOT READY!)" },
-		{ HTYPE_SMASpot,			"SMASpot (NOT READY!)" },
+		{ HTYPE_SMASpot,			"SMASpot" },
+		{ HTYPE_ICYTHERMOSTAT,		"ICY Thermostat (NOT READY!)" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
