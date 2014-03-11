@@ -1,4 +1,4 @@
-Version 1.0.xxxx (February xxth 2014)
+Version 1.0.xxxx (March xxth 2014)
 - Implemented: Initial Support for Forecast.io
 - Implemented: Temperature/Weaher widgets forecast button if hardware is WU/Forecast.io
 - Implemented: Widgets now turn yellow (if no timeout) if the battery level is <= 10 percent
@@ -61,6 +61,7 @@ Version 1.0.xxxx (February xxth 2014)
 - Implemented: OTGW, status switches
 - Implemented: Portuguese translation (Thanks to maluko!)
 - Implemented: Report for RFXMeter Water
+- Updated: Highcharts 3.0.10
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)
