@@ -417,7 +417,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 					InsertDevice(_device);
 				}
 			}
-			//Thermostat mode
+			//Thermostat mode (COMMAND_CLASS_THERMOSTAT_MODE)
 			if (instance["commandClasses"]["64"].empty()==false)
 			{
 				int iValue=instance["commandClasses"]["64"]["data"]["mode"]["value"].asInt();
@@ -430,7 +430,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 				InsertDevice(_device);
 			}
 
-			// Thermostat Set Point
+			// Thermostat Set Point (COMMAND_CLASS_THERMOSTAT_SETPOINT)
 			if (instance["commandClasses"]["67"].empty()==false)
 			{
 				const Json::Value inVal=instance["commandClasses"]["67"]["data"];

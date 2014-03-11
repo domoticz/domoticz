@@ -62,6 +62,7 @@ Version 1.0.xxxx (March xxth 2014)
 - Implemented: Portuguese translation (Thanks to maluko!)
 - Implemented: Report for RFXMeter Water
 - Updated: Highcharts 3.0.10
+- Implemented: Thermostat 3 (Mertik) now visible on dashboard
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)
