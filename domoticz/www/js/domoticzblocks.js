@@ -754,6 +754,8 @@ Blockly.Language.logic_states.STATES =
      ["Panic End", 'Panic End'],
      ["Normal", 'Normal'],
      ["Alarm", 'Alarm'],
+     ["Motion", 'Motion'],
+	 ["No Motion", 'No Motion'],
      ["Chime", 'Chime']]; 
 
 Blockly.Language.logic_weekday.OPERATORS =
