@@ -6193,7 +6193,25 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				root["result"][ii]["CounterToday"]=szTmp;
 				root["result"][ii]["SwitchTypeVal"]=metertype;
 				root["result"][ii]["HaveTimeout"]=bHaveTimeout;
-				//root["result"][ii]["Data"]=sValue;
+				float fvalue=(float)atof(sValue.c_str());
+				switch (metertype)
+				{
+				case MTYPE_ENERGY:
+					sprintf(szTmp,"%.03f kWh",fvalue/EnergyDivider);
+					root["result"][ii]["Data"]=szTmp;
+					root["result"][ii]["Counter"]=szTmp;
+					break;
+				case MTYPE_GAS:
+					sprintf(szTmp,"%.02f m3",fvalue/GasDivider);
+					root["result"][ii]["Data"]=szTmp;
+					root["result"][ii]["Counter"]=szTmp;
+					break;
+				case MTYPE_WATER:
+					sprintf(szTmp,"%.02f m3",fvalue/WaterDivider);
+					root["result"][ii]["Data"]=szTmp;
+					root["result"][ii]["Counter"]=szTmp;
+					break;
+				}
 			}
 			else if (dType == pTypeYouLess)
 			{
