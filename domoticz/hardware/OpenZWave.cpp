@@ -883,7 +883,6 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 
 	OpenZWave::ValueID vID(0,0,OpenZWave::ValueID::ValueGenre_Basic,0,0,0,OpenZWave::ValueID::ValueType_Bool);
-
 	unsigned char svalue=(unsigned char)value;
 
 	bool bIsDimmer=(GetValueByCommandClassLabel(nodeID, instanceID, COMMAND_CLASS_SWITCH_MULTILEVEL,"Level",vID)==true);
@@ -891,26 +890,56 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	{
 		if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SWITCH_BINARY,vID)==true)
 		{
+			OpenZWave::ValueID::ValueType vType=vID.GetType();
 			_log.Log(LOG_NORM,"OpenZWave: Domoticz has send a Switch command!");
-			if (svalue==0) {
-				//Off
-				m_pManager->SetValue(vID,false);
+			if (vType == OpenZWave::ValueID::ValueType_Bool)
+			{
+				if (svalue==0) {
+					//Off
+					m_pManager->SetValue(vID,false);
+				}
+				else {
+					//On
+					m_pManager->SetValue(vID,true);
+				}
 			}
-			else {
-				//On
-				m_pManager->SetValue(vID,true);
+			else
+			{
+				if (svalue==0) {
+					//Off
+					m_pManager->SetValue(vID,0);
+				}
+				else {
+					//On
+					m_pManager->SetValue(vID,255);
+				}
 			}
 		}
 		else if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SENSOR_BINARY,vID)==true)
 		{
+			OpenZWave::ValueID::ValueType vType=vID.GetType();
 			_log.Log(LOG_NORM,"OpenZWave: Domoticz has send a Switch command!");
-			if (svalue==0) {
-				//Off
-				m_pManager->SetValue(vID,false);
+			if (vType == OpenZWave::ValueID::ValueType_Bool)
+			{
+				if (svalue==0) {
+					//Off
+					m_pManager->SetValue(vID,false);
+				}
+				else {
+					//On
+					m_pManager->SetValue(vID,true);
+				}
 			}
-			else {
-				//On
-				m_pManager->SetValue(vID,true);
+			else
+			{
+				if (svalue==0) {
+					//Off
+					m_pManager->SetValue(vID,0);
+				}
+				else {
+					//On
+					m_pManager->SetValue(vID,255);
+				}
 			}
 		}
 	}
