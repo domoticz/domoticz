@@ -149,6 +149,7 @@ void ASyncTCP::write_end(const boost::system::error_code& error)
 			// let listeners know
 			OnError(error);
 
+			mIsConnected = false;
 			// schedule a timer to reconnect after 30 seconds
 			mReconnectTimer.expires_from_now(boost::posix_time::seconds(RECONNECT_TIME));
 			mReconnectTimer.async_wait(boost::bind(&ASyncTCP::do_reconnect, this, boost::asio::placeholders::error));
