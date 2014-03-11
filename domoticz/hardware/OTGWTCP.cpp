@@ -184,19 +184,11 @@ void OTGWTCP::OnData(const unsigned char *pData, size_t length)
 void OTGWTCP::OnError(const std::exception e)
 {
 	_log.Log(LOG_ERROR,"OTGW Error: %s",e.what());
-	if (m_bIsStarted) {
-		disconnect();
-		m_bDoRestart=true;
-	}
 }
 
 void OTGWTCP::OnError(const boost::system::error_code& error)
 {
 	_log.Log(LOG_ERROR,"OTGW Error: %s",error.message().c_str());
-	if (m_bIsStarted) {
-		disconnect();
-		m_bDoRestart=true;
-	}
 }
 
 void OTGWTCP::WriteToHardware(const char *pdata, const unsigned char length)

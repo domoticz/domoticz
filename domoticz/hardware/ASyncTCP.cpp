@@ -124,7 +124,8 @@ void ASyncTCP::handle_read(const boost::system::error_code& error, size_t bytes_
 	else
 	{
 		// try to reconnect if external host disconnects
-		if(error.value() != 0) {
+		if (!mIsClosing)
+		{
 			mIsConnected = false;
 
 			// let listeners know
@@ -141,6 +142,18 @@ void ASyncTCP::handle_read(const boost::system::error_code& error, size_t bytes_
 
 void ASyncTCP::write_end(const boost::system::error_code& error)
 {
+	if (!mIsClosing)
+	{
+		if (error)
+		{
+			// let listeners know
+			OnError(error);
+
+			// schedule a timer to reconnect after 30 seconds
+			mReconnectTimer.expires_from_now(boost::posix_time::seconds(RECONNECT_TIME));
+			mReconnectTimer.async_wait(boost::bind(&ASyncTCP::do_reconnect, this, boost::asio::placeholders::error));
+		}
+	}
 }
 
 void ASyncTCP::write(const unsigned char *pData, size_t length)
