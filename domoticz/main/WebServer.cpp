@@ -10026,6 +10026,24 @@ std::string CWebServer::GetJSonPage()
 							root["counter"]=szTmp;
 						}
 					}
+					else if (dType==pTypeRFXMeter)
+					{
+						//Add last counter value
+						float fvalue=(float)atof(sValue.c_str());
+						switch (metertype)
+						{
+						case MTYPE_ENERGY:
+							sprintf(szTmp,"%.3f",fvalue/EnergyDivider);
+							break;
+						case MTYPE_GAS:
+							sprintf(szTmp,"%.2f",fvalue/GasDivider);
+							break;
+						case MTYPE_WATER:
+							sprintf(szTmp,"%.2f",fvalue/WaterDivider);
+							break;
+						}
+						root["counter"]=szTmp;
+					}
 					//Actual Year
 					szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 					result=m_pMain->m_sql.query(szQuery.str());
