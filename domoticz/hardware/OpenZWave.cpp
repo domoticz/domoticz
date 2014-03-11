@@ -465,7 +465,8 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 
 	if (
 		(commandClass==COMMAND_CLASS_MULTI_INSTANCE)||
-		(commandClass==COMMAND_CLASS_SENSOR_MULTILEVEL)
+		(commandClass==COMMAND_CLASS_SENSOR_MULTILEVEL)||
+		(commandClass==COMMAND_CLASS_THERMOSTAT_SETPOINT)
 		)
 	{
 		instance=vID.GetIndex();//(See note on top of this file) GetInstance();
@@ -1005,7 +1006,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	int instance;
 	if (
 		(commandclass==COMMAND_CLASS_MULTI_INSTANCE)||
-		(commandclass==COMMAND_CLASS_SENSOR_MULTILEVEL)
+		(commandclass==COMMAND_CLASS_SENSOR_MULTILEVEL)||
+		(commandclass==COMMAND_CLASS_THERMOSTAT_SETPOINT)
 		)
 	{
 		instance=vID.GetIndex();//(See note on top of this file) GetInstance();
@@ -1197,7 +1199,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 					InsertDevice(_device);
 				}
 			}
-
 		}
 	}
 	else if (commandclass==COMMAND_CLASS_SENSOR_MULTILEVEL)
@@ -1302,6 +1303,21 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 			{
 				UpdateDeviceBatteryStatus(NodeID,byteValue);
 			}
+		}
+	}
+	else if (commandclass==COMMAND_CLASS_THERMOSTAT_SETPOINT)
+	{
+		if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
+		{
+			if (vUnits=="F")
+			{
+				//Convert to celcius
+				fValue=float((fValue-32)*(5.0/9.0));
+			}
+			_device.floatValue=fValue;
+			_device.commandClassID=COMMAND_CLASS_THERMOSTAT_SETPOINT;
+			_device.devType = ZDTYPE_SENSOR_SETPOINT;
+			InsertDevice(_device);
 		}
 	}
 	else
@@ -1433,7 +1449,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 	unsigned char instance;
 	if (
 		(commandclass==COMMAND_CLASS_MULTI_INSTANCE)||
-		(commandclass==COMMAND_CLASS_SENSOR_MULTILEVEL)
+		(commandclass==COMMAND_CLASS_SENSOR_MULTILEVEL)||
+		(commandclass==COMMAND_CLASS_THERMOSTAT_SETPOINT)
 		)
 	{
 		instance=vID.GetIndex();//(See note on top of this file) GetInstance();
@@ -1683,6 +1700,17 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 			return;
 		if (vLabel!="Current")
 			return;
+		pDevice->floatValue=fValue;
+		break;
+	case ZDTYPE_SENSOR_SETPOINT:
+		if (vType!=OpenZWave::ValueID::ValueType_Decimal)
+			return;
+		if (vUnits=="F")
+		{
+			//Convert to celcius
+			fValue=float((fValue-32)*(5.0/9.0));
+		}
+		pDevice->bValidValue=(abs(pDevice->floatValue-fValue)<10);
 		pDevice->floatValue=fValue;
 		break;
 	}
