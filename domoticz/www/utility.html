@@ -715,12 +715,6 @@ function RefreshUtilities()
 					bigtext=item.Data + '\u00B0 C';
 				}
 				if (typeof item.Usage != 'undefined') {
-					if (item.Type!="P1 Smart Meter") {
-						//status+=", Actual: " + item.Usage;
-						if (typeof item.CounterToday != 'undefined') {
-							status+=", " + $.i18n("Today") + ": " + item.CounterToday;
-						}
-					}
 					bigtext=item.Usage;
 				}
 				if (typeof item.CounterDeliv != 'undefined') {
@@ -934,14 +928,6 @@ function ShowUtilities()
             else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
               xhtm+='override.png" height="48"></td>\n';
               status=item.Data + '\u00B0 C';
-            }
-            if (typeof item.Usage != 'undefined') {
-				if (item.Type != "P1 Smart Meter") {
-					//status+=", Actual: " + item.Usage;
-					if (typeof item.CounterToday != 'undefined') {
-						status+=", " + $.i18n("Today") + ": " + item.CounterToday;
-					}
-				}
             }
             if (typeof item.CounterDeliv != 'undefined') {
 				if (item.CounterDeliv!=0) {

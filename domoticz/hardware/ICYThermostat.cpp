@@ -180,7 +180,10 @@ bool CICYThermostat::GetSerialAndToken()
 	std::vector<std::string> splitresult;
 	StringSplit(sResult,",",splitresult);
 	if (splitresult.size()!=13)
+	{
+		_log.Log(LOG_ERROR,"ICYThermostat: Error login!");
 		return false;
+	}
 
 	//Serial (9)
 	std::vector<std::string> splitresult2;
@@ -217,13 +220,16 @@ void CICYThermostat::GetMeterDetails()
 
 	if (!HTTPClient::GET("https://portal.icy.nl/data",ExtraHeaders,sResult))
 	{
-		_log.Log(LOG_ERROR,"ICYThermostat: Error login!");
+		_log.Log(LOG_ERROR,"ICYThermostat: Error getting data!");
 		return;
 	}
 	std::vector<std::string> splitresult;
 	StringSplit(sResult,",",splitresult);
 	if (splitresult.size()<5)
+	{
+		_log.Log(LOG_ERROR,"ICYThermostat: Error getting data!");
 		return;
+	}
 
 	std::string tmpString;
 	std::string tmpLabel;
@@ -233,7 +239,10 @@ void CICYThermostat::GetMeterDetails()
 	std::vector<std::string> splitresult2;
 	StringSplit(splitresult[4],":",splitresult2);
 	if (splitresult2.size()!=2)
+	{
+		_log.Log(LOG_ERROR,"ICYThermostat: Error getting data!");
 		return;
+	}
 	tmpLabel=splitresult2[0].substr(1,splitresult2[0].size()-2);
 	if (tmpLabel=="temperature1")
 	{
@@ -285,7 +294,7 @@ void CICYThermostat::SetSetpoint(const int idx, const float temp)
 			_log.Log(LOG_ERROR,"ICYThermostat: Error setting SetPoint temperature!");
 		}
 		else {
-			_log.Log(LOG_NORM,"OTGW: Setting Room SetPoint to: %.1f",temp);
+			_log.Log(LOG_NORM,"ICYThermostat: Setting Room SetPoint to: %.1f",temp);
 		}
 	}
 }

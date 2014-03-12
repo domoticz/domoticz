@@ -4910,7 +4910,13 @@ void CSQLHelper::CleanupShortLog()
 
 	    sprintf(szTmp,"DELETE FROM MultiMeter WHERE (Date<%s)",szDateStr);
 	    query(szTmp);
-    }
+
+		sprintf(szTmp,"DELETE FROM Percentage WHERE (Date<%s)",szDateStr);
+		query(szTmp);
+	
+		sprintf(szTmp,"DELETE FROM Fan WHERE (Date<%s)",szDateStr);
+		query(szTmp);
+	}
 }
 
 void CSQLHelper::DeleteHardware(const std::string &idx)
@@ -5381,6 +5387,9 @@ void CSQLHelper::DeleteDataPoint(const char *ID, const std::string &Date)
 		result=query(szTmp);
 		sprintf(szTmp,"DELETE FROM Percentage WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<=%s)",ID,Date.c_str(),szDateEnd);
 		result=query(szTmp);
+
+		sprintf(szTmp,"DELETE FROM Fan WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<=%s)",ID,Date.c_str(),szDateEnd);
+		result=query(szTmp);
 	}
 	else
 	{
@@ -5397,6 +5406,8 @@ void CSQLHelper::DeleteDataPoint(const char *ID, const std::string &Date)
 		sprintf(szTmp,"DELETE FROM MultiMeter_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date.c_str());
 		result=query(szTmp);
 		sprintf(szTmp,"DELETE FROM Percentage_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date.c_str());
+		result=query(szTmp);
+		sprintf(szTmp,"DELETE FROM Fan_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date.c_str());
 		result=query(szTmp);
 	}
 }
