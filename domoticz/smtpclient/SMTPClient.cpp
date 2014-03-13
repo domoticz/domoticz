@@ -206,7 +206,10 @@ const std::string SMTPClient::MakeMessage()
 	for (itt=m_Recipients.begin(); itt!=m_Recipients.end(); ++itt)
 	{
 		if (ii==0)
+		{
 			ret += "To: " + *itt;
+			ret+="\n";
+		}
 		else {
 			ret += "Cc: " + *itt;
 			if (itt+1<m_Recipients.end())

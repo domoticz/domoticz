@@ -406,11 +406,11 @@
     <ClInclude Include="hardware\TCPProxy\tcpproxy_server.h">
       <Filter>TCPProxy</Filter>
     </ClInclude>
-    <ClInclude Include="hardware\SMASpot.h">
-      <Filter>Devices\SMASpot</Filter>
-    </ClInclude>
     <ClInclude Include="hardware\ICYThermostat.h">
       <Filter>Devices\ICY Thermostat</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\SMASpot.h">
+      <Filter>Devices\SolarEdge</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
