@@ -723,7 +723,7 @@ int SolarEdgeBase::ParsePacket0x0500(const unsigned char *pData, int dlen)
 			SendTempSensor(1,temp,"SolarMain");
 			SendPercentage(SE_FREQ,freq,"Hz");
 			SendVoltage(SE_VOLT_AC,voltageAC,"AC");
-			SendVoltage(SE_VOLT_DC,voltageAC,"DC");
+			SendVoltage(SE_VOLT_DC,voltageDC,"DC");
 		}
 		b+=restbytes;
 		dlen-=restbytes;
