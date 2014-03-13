@@ -14,6 +14,11 @@
 
 #define round(a) ( int ) ( a + .5 )
 
+#define SE_VOLT_AC 1
+#define SE_VOLT_DC 2
+
+#define SE_FREQ 1
+
 SolarEdgeBase::SolarEdgeBase(void)
 {
 	m_state=E_WAITING_SYNC;
@@ -311,12 +316,37 @@ void SolarEdgeBase::SendMeter(const unsigned char ID1,const unsigned char ID2, c
 
 void SolarEdgeBase::SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname)
 {
+	if (m_pMainWorker==NULL)
+		return;
+	bool bDeviceExits=true;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+
+	char szTmp[30];
+	sprintf(szTmp,"%08X", (unsigned int)Idx);
+
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeVoltage) << ")";
+	result=m_pMainWorker->m_sql.query(szQuery.str());
+	if (result.size()<1)
+	{
+		bDeviceExits=false;
+	}
+
 	_tGeneralDevice gDevice;
 	gDevice.subtype=sTypeVoltage;
 	gDevice.id=1;
 	gDevice.floatval1=Volt;
 	gDevice.intval1=(int)Idx;
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeVoltage) << ")";
+		result=m_pMainWorker->m_sql.query(szQuery.str());
+	}
 }
 
 void SolarEdgeBase::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
@@ -362,6 +392,42 @@ void SolarEdgeBase::SendTempSensor(const unsigned char Idx, const float Temp, co
 	}
 }
 
+void SolarEdgeBase::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
+{
+	if (m_pMainWorker==NULL)
+		return;
+	bool bDeviceExits=true;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+
+	char szTmp[30];
+	sprintf(szTmp,"%08X", (unsigned int)Idx);
+
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
+	result=m_pMainWorker->m_sql.query(szQuery.str());
+	if (result.size()<1)
+	{
+		bDeviceExits=false;
+	}
+
+	_tGeneralDevice gDevice;
+	gDevice.subtype=sTypePercentage;
+	gDevice.id=1;
+	gDevice.floatval1=Percentage;
+	gDevice.intval1=(int)Idx;
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
+		result=m_pMainWorker->m_sql.query(szQuery.str());
+
+	}
+}
+
 float SolarEdgeBase::GetFloat(const unsigned char *pData)
 {
 	unsigned long ul=(pData[2]<<24)|(pData[3]<<16)|(pData[0]<<8)|pData[1];
@@ -399,6 +465,7 @@ int SolarEdgeBase::ParsePacket0x0280(const unsigned char *pData, int dlen)
 	dlen-=4;
 	//Frequency
 	float freq=GetFloat(b);
+	SendPercentage(SE_FREQ,freq,"Hz");
 	b+=4;
 	dlen-=4;
 	//Ampere
@@ -447,7 +514,7 @@ int SolarEdgeBase::ParsePacket0x0281(const unsigned char *pData, int dlen)
 		return 0;
 
 	//AC Voltage
-	float voltageAC1=GetFloat(b);
+	float voltageAC2=GetFloat(b);
 	b+=4;
 	//Watt P-Out
 	float Watt=GetFloat(b);
@@ -475,7 +542,7 @@ int SolarEdgeBase::ParsePacket0x0282(const unsigned char *pData, int dlen)
 	//DC1 Voltage
 	float voltageDC1=GetFloat(b);
 	b+=4;
-	//AC1 Voltage
+	//AC2 Voltage
 	float voltageAC1=GetFloat(b);
 	b+=4;
 	//DC2 Voltage
@@ -492,6 +559,7 @@ int SolarEdgeBase::ParsePacket0x0282(const unsigned char *pData, int dlen)
 	b+=4;
 	//Frequency
 	float freq=GetFloat(b);
+	SendPercentage(SE_FREQ,freq,"Hz");
 	b+=4;
 	//skip the rest
 	return dlen-2;
@@ -653,6 +721,9 @@ int SolarEdgeBase::ParsePacket0x0500(const unsigned char *pData, int dlen)
 			b2+=4;
 			SendMeter(0,1, Pac/100.0f, counter/1000.0f, "SolarMain");
 			SendTempSensor(1,temp,"SolarMain");
+			SendPercentage(SE_FREQ,freq,"Hz");
+			SendVoltage(SE_VOLT_AC,voltageAC,"AC");
+			SendVoltage(SE_VOLT_DC,voltageAC,"DC");
 		}
 		b+=restbytes;
 		dlen-=restbytes;
