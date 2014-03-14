@@ -5338,23 +5338,23 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 	{
 		//All
 		if (rowid!="")
-			szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel, CustomImage, StrParam1, StrParam2 FROM DeviceStatus WHERE (ID==" << rowid << ")";
+			szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel, CustomImage, StrParam1, StrParam2, Protected FROM DeviceStatus WHERE (ID==" << rowid << ")";
 		else if ((planID!="")&&(planID!="0"))
-			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2 "
+			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2, A.Protected "
 			"FROM DeviceStatus as A, DeviceToPlansMap as B WHERE (B.PlanID==" << planID << ") AND (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) ORDER BY B.[Order]";
 		else
-			szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel, CustomImage, StrParam1, StrParam2 FROM DeviceStatus ORDER BY " << szOrderBy;
+			szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel, CustomImage, StrParam1, StrParam2, Protected FROM DeviceStatus ORDER BY " << szOrderBy;
 	}
 	else
 	{
 		//Specific devices
 		if (rowid!="")
-			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2 FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << m_users[iUser].ID << ") AND (A.ID==" << rowid << ")";
+			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2, A.Protected FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << m_users[iUser].ID << ") AND (A.ID==" << rowid << ")";
 		else if ((planID!="")&&(planID!="0"))
-			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2 "
+			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2, A.Protected "
 			"FROM DeviceStatus as A, SharedDevices as B, DeviceToPlansMap as C  WHERE (C.PlanID==" << planID << ") AND (C.DeviceRowID==a.ID) AND (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << m_users[iUser].ID << ") ORDER BY C.[Order]";
 		else
-			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2 FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << m_users[iUser].ID << ") ORDER BY " << szOrderBy;
+			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2, A.Protected FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << m_users[iUser].ID << ") ORDER BY " << szOrderBy;
 	}
 
 	result=m_pMain->m_sql.query(szQuery.str());
@@ -5385,6 +5385,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			int CustomImage=atoi(sd[20].c_str());
 			std::string strParam1=base64_encode((const unsigned char*)sd[21].c_str(),sd[21].size());
 			std::string strParam2=base64_encode((const unsigned char*)sd[22].c_str(),sd[22].size());
+			int iProtected=atoi(sd[23].c_str());
 
 			struct tm ntime;
 			ntime.tm_isdst=tm1.tm_isdst;
@@ -5613,6 +5614,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				root["result"][ii]["Status"]=lstatus;
 				root["result"][ii]["StrParam1"]=strParam1;
 				root["result"][ii]["StrParam2"]=strParam2;
+				root["result"][ii]["Protected"]=(iProtected!=0);
 
 				if (CustomImage<(int)m_custom_light_icons.size())
 					root["result"][ii]["Image"]=m_custom_light_icons[CustomImage].RootFile;
@@ -5799,6 +5801,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				root["result"][ii]["TypeImg"]="security";
 				root["result"][ii]["StrParam1"]=strParam1;
 				root["result"][ii]["StrParam2"]=strParam2;
+				root["result"][ii]["Protected"]=(iProtected!=0);
 
 				if ((dSubType==sTypeKD101) || (dSubType==sTypeSA30) || (switchtype == STYPE_SMOKEDETECTOR)) 
 				{
@@ -6846,6 +6849,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
          			    root["result"][ii]["HaveTimeout"]=bHaveTimeout;
         				root["result"][ii]["StrParam1"]=strParam1;
 		        		root["result"][ii]["StrParam2"]=strParam2;
+						root["result"][ii]["Protected"]=(iProtected!=0);
 
                         if (CustomImage<(int)m_custom_light_icons.size())
 					        root["result"][ii]["Image"]=m_custom_light_icons[CustomImage].RootFile;
@@ -11051,6 +11055,8 @@ std::string CWebServer::GetJSonPage()
 
 		std::string strParam1=base64_decode(m_pWebEm->FindValue("strparam1"));
 		std::string strParam2=base64_decode(m_pWebEm->FindValue("strparam2"));
+		std::string tmpstr=m_pWebEm->FindValue("protected");
+		int iProtected=(tmpstr=="true")?1:0;
 
 		int switchtype=-1;
 		if (sswitchtype!="")
@@ -11097,7 +11103,7 @@ std::string CWebServer::GetJSonPage()
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET StrParam1='" << strParam1 << "', StrParam2='" << strParam2 << "' WHERE (ID == " << idx << ")";
+		szQuery << "UPDATE DeviceStatus SET StrParam1='" << strParam1 << "', StrParam2='" << strParam2 << "', Protected=" << iProtected << " WHERE (ID == " << idx << ")";
 		result=m_pMain->m_sql.query(szQuery.str());
 
 		if (setPoint!="")

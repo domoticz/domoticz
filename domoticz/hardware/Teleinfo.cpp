@@ -117,7 +117,7 @@ bool Teleinfo::StartHardware()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_NORM,"Teleinfo Using serial port: %s", m_szSerialPort.c_str());
+		_log.Log(LOG_NORM,"Teleinfo: Using serial port: %s", m_szSerialPort.c_str());
 		open(
 			m_szSerialPort,
 			m_iBaudRate,
@@ -127,7 +127,7 @@ bool Teleinfo::StartHardware()
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR,"Error opening serial port!");
+		_log.Log(LOG_ERROR,"Teleinfo: Error opening serial port!");
 #ifdef _DEBUG
 		_log.Log(LOG_ERROR,"-----------------\n%s\n-----------------",boost::diagnostic_information(e).c_str());
 #endif
@@ -135,7 +135,7 @@ bool Teleinfo::StartHardware()
 	}
 	catch ( ... )
 	{
-		_log.Log(LOG_ERROR,"Error opening serial port!!!");
+		_log.Log(LOG_ERROR,"Teleinfo: Error opening serial port!!!");
 		return false;
 	}
 	setReadCallback(boost::bind(&Teleinfo::readCallback, this, _1, _2));

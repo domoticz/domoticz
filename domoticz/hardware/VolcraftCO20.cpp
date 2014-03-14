@@ -75,7 +75,7 @@ void CVolcraftCO20::Do_Work()
 			m_LastPollTime=mytime(NULL);
 		}
 	}
-	_log.Log(LOG_NORM,"Voltcraft CO-20 CO-20: Worker stopped...");
+	_log.Log(LOG_NORM,"Voltcraft CO-20: Worker stopped...");
 }
 
 void CVolcraftCO20::WriteToHardware(const char *pdata, const unsigned char length)

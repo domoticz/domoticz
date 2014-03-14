@@ -24,7 +24,7 @@ RFXComTCP::RFXComTCP(const int ID, const std::string IPAddress, const unsigned s
 
 		if (ret == WSANOTINITIALISED) 
 		{  
-			_log.Log(LOG_ERROR,"Winsock could not be initialized!");
+			_log.Log(LOG_ERROR,"RFXCOM: Winsock could not be initialized!");
 		}
 	}
 #endif
@@ -103,7 +103,7 @@ bool RFXComTCP::ConnectInternal()
 	m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (m_socket == INVALID_SOCKET)
 	{
-		_log.Log(LOG_ERROR,"RFXCOM could not create a TCP/IP socket!");
+		_log.Log(LOG_ERROR,"RFXCOM: could not create a TCP/IP socket!");
 		return false;
 	}
 
@@ -114,11 +114,11 @@ bool RFXComTCP::ConnectInternal()
 	{
 		closesocket(m_socket);
 		m_socket=INVALID_SOCKET;
-		_log.Log(LOG_ERROR,"RFXCOM could not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_ERROR,"RFXCOM: could not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
 		return false;
 	}
 
-	_log.Log(LOG_NORM,"RFXCOM connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_NORM,"RFXCOM: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
 	sOnConnected(this);
 	return true;
 }
@@ -148,7 +148,7 @@ void RFXComTCP::Do_Work()
 				m_retrycntr=0;
 				if (!ConnectInternal())
 				{
-					_log.Log(LOG_NORM,"retrying in %d seconds...", RETRY_DELAY);
+					_log.Log(LOG_NORM,"RFXCOM: retrying in %d seconds...", RETRY_DELAY);
 					continue;
 				}
 			}
@@ -160,12 +160,12 @@ void RFXComTCP::Do_Work()
 			if (m_stoprequested)
 				break;
 			if ((bread==0)||(bread<0)) {
-				_log.Log(LOG_ERROR,"TCP/IP connection closed!");
+				_log.Log(LOG_ERROR,"RFXCOM: TCP/IP connection closed!");
 				closesocket(m_socket);
 				m_socket=INVALID_SOCKET;
 				if (!m_stoprequested)
 				{
-					_log.Log(LOG_NORM,"retrying in %d seconds...", RETRY_DELAY);
+					_log.Log(LOG_NORM,"RFXCOM: retrying in %d seconds...", RETRY_DELAY);
 					m_retrycntr=0;
 					continue;
 				}
@@ -178,7 +178,7 @@ void RFXComTCP::Do_Work()
 		}
 		
 	}
-	_log.Log(LOG_NORM,"TCP/IP Worker stopped...");
+	_log.Log(LOG_NORM,"RFXCOM: TCP/IP Worker stopped...");
 } 
 
 void RFXComTCP::write(const char *data, size_t size)

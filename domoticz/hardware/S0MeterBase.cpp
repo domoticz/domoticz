@@ -176,12 +176,12 @@ void S0MeterBase::ParseLine()
 
 		std::string MeterID=results[0].substr(1);
 		std::string SoftwareVersion=results[1];
-		_log.Log(LOG_NORM,"S0 Meter ID: %s, Version: %s",MeterID.c_str(),SoftwareVersion.c_str());
+		_log.Log(LOG_NORM,"S0 Meter: ID: %s, Version: %s",MeterID.c_str(),SoftwareVersion.c_str());
 		return;
 	}
 	if (results.size()<4)
 	{
-		_log.Log(LOG_NORM,"S0 Meter Invalid Data received!");
+		_log.Log(LOG_NORM,"S0 Meter: Invalid Data received!");
 		return;
 	}
 	int totmeters=(results.size()-4)/3;
@@ -205,7 +205,7 @@ void S0MeterBase::ParseLine()
 		m_meters[ii].m_last_values[3]=s0_act_watt;
 
 		m_meters[ii].m_volume_total+=s0_volume;
-		//_log.Log(LOG_NORM,"S0 Meter M1-Int=%0.3f, M1-Tot=%0.3f",s0_m1_watt_hour,m_s0_m1_volume_total);
+		//_log.Log(LOG_NORM,"S0 Meter: M1-Int=%0.3f, M1-Tot=%0.3f",s0_m1_watt_hour,m_s0_m1_volume_total);
 
 		if (m_meters[ii].m_volume_total!=0) {
 			SendMeter(ii+1,s0_watt_hour,m_meters[ii].m_volume_total);

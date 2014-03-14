@@ -182,8 +182,8 @@ int CPiFace::LoadConfig(void)
    {
      //try to create one for the default board 0
 	 ConfigFile.close();
-	 _log.Log(LOG_ERROR,"Error PiFace config file: %s not found ", configfile.c_str() );
-	 _log.Log(LOG_ERROR,"Auto creating for board 0 ");
+	 _log.Log(LOG_ERROR,"PiFace: Error config file: %s not found ", configfile.c_str() );
+	 _log.Log(LOG_ERROR,"PiFace: Auto creating for board 0 ");
 	 LoadDefaultConfig();
          AutoCreate_piface_config();
 	 fstream ConfigFile(configfile.c_str(), ios::in);
@@ -272,7 +272,7 @@ int CPiFace::LoadConfig(void)
 
             if ((Address >=0) &&  (Address <= 3) && (PinNumber >=0) && (PinNumber <= 7) && ((PortType=='I') || (PortType=='O')) && (Parametername.length() >0 ) && (Parametervalue.length() >0 ))
             {
-                _log.Log(LOG_NORM,"PiFace config file: Valid address: %d , Pin: %d and Port %c Parameter: %s , Value %s",Address,PinNumber,PortType,Parametername.c_str(),Parametervalue.c_str());
+                _log.Log(LOG_NORM,"PiFace: config file: Valid address: %d , Pin: %d and Port %c Parameter: %s , Value %s",Address,PinNumber,PortType,Parametername.c_str(),Parametervalue.c_str());
                 NameFound=LocateValueInParameterArray(Parametername,ParameterNames,CONFIG_NR_OF_PARAMETER_TYPES);
 
                 if (PortType=='I')
@@ -290,7 +290,7 @@ int CPiFace::LoadConfig(void)
                 switch (NameFound)
                 {
                     default:
-                            _log.Log(LOG_ERROR,"Error PiFace config file: unknown parameter %s found ", Parametername.c_str() );
+                            _log.Log(LOG_ERROR,"PiFace: Error config file: unknown parameter %s found ", Parametername.c_str() );
                         break;
                     case 0:
                     case 1:
@@ -307,7 +307,7 @@ int CPiFace::LoadConfig(void)
                                      }
                             result++;
                            }
-                           else _log.Log(LOG_ERROR,"Error PiFace config file: unknown value %s found ", Parametervalue.c_str() );
+                           else _log.Log(LOG_ERROR,"PiFace: Error config file: unknown value %s found ", Parametervalue.c_str() );
                         break;
 
                     case 2:
@@ -316,7 +316,7 @@ int CPiFace::LoadConfig(void)
                           switch (ValueFound )
                            {
                               default:
-                                        _log.Log(LOG_ERROR,"Error PiFace config file: unknown value %s found =>setting default level %d", Parametervalue.c_str(),ValueFound );
+                                        _log.Log(LOG_ERROR,"PiFace: Error config file: unknown value %s found =>setting default level %d", Parametervalue.c_str(),ValueFound );
                                         IOport->Pin[PinNumber].Type=LEVEL;
                                     break;
 
@@ -352,7 +352,7 @@ int CPiFace::LoadConfig(void)
                                      }
                             result++;
                            }
-                           else _log.Log(LOG_ERROR,"Error PiFace config file: unknown value %s found", Parametervalue.c_str() );
+                           else _log.Log(LOG_ERROR,"PiFace: Error config file: unknown value %s found", Parametervalue.c_str() );
                         break;
 
                     case 5:
@@ -389,7 +389,7 @@ int CPiFace::LoadConfig(void)
 #endif
                 }
             }
-            else _log.Log(LOG_ERROR,"Error PiFace config file: misformed config line %s found ", Line.c_str() );
+            else _log.Log(LOG_ERROR,"PiFace: Error config file: misformed config line %s found ", Line.c_str() );
         }
     }
 	ConfigFile.close();
@@ -397,14 +397,14 @@ int CPiFace::LoadConfig(void)
 	if (Regenerate_Config)
 	  {
 	      Regenerate_Config=false;
-	     _log.Log(LOG_ERROR,"We got an initial value setting, so we are now recreating the logfile to avoid looping", configfile.c_str() );
+	     _log.Log(LOG_ERROR,"PiFace: We got an initial value setting, so we are now recreating the logfile to avoid looping", configfile.c_str() );
 	     AutoCreate_piface_config();
 	  }
 #endif
   }
   else {
-        _log.Log(LOG_ERROR,"Error PiFace config file: %s not found ", configfile.c_str() );
-        _log.Log(LOG_ERROR,"loading defaults for PiFace(s)");
+        _log.Log(LOG_ERROR,"PiFace: Error PiFace config file: %s not found ", configfile.c_str() );
+        _log.Log(LOG_ERROR,"PiFace: loading defaults for PiFace(s)");
         LoadDefaultConfig();
         AutoCreate_piface_config();
        }
@@ -598,7 +598,7 @@ void CPiFace::GetLastKnownValues(void)
                         }
                     m_Inputs[BoardNr].Pin[PinNr].Count.SetCurrent(nValue);
                     m_Inputs[BoardNr].Pin[PinNr].Count.SetTotal(nValue);
-                    _log.Log(LOG_NORM,"PiFace retrieved value for Input counter: BoardNr %d , Pin: %d, Value %d",BoardNr,PinNr,nValue);
+                    _log.Log(LOG_NORM,"PiFace: retrieved value for Input counter: BoardNr %d , Pin: %d, Value %d",BoardNr,PinNr,nValue);
                }
               // else _log.Log(LOG_ERROR,"PiFace no value retrieved for input: BoardNr %d , Pin: %d; DeviceID %s not found",BoardNr,PinNr,DeviceID);
         }
@@ -622,9 +622,9 @@ void CPiFace::GetLastKnownValues(void)
                         }
                     m_Outputs[BoardNr].Pin[PinNr].Count.SetCurrent(nValue);
                     m_Outputs[BoardNr].Pin[PinNr].Count.SetTotal(nValue);
-                    _log.Log(LOG_NORM,"PiFace retrieved value for Output counter: BoardNr %d , Pin: %d, Value %d",BoardNr,PinNr,nValue);
+                    _log.Log(LOG_NORM,"PiFace: retrieved value for Output counter: BoardNr %d , Pin: %d, Value %d",BoardNr,PinNr,nValue);
                }
-              // else _log.Log(LOG_ERROR,"PiFace no value retrieved for input: BoardNr %d , Pin: %d; DeviceID %s not found",BoardNr,PinNr,DeviceID);
+              // else _log.Log(LOG_ERROR,"PiFace: no value retrieved for input: BoardNr %d , Pin: %d; DeviceID %s not found",BoardNr,PinNr,DeviceID);
         }
     }
 }
@@ -653,7 +653,7 @@ void CPiFace::CallBackSetPinInterruptMode(unsigned char devId,unsigned char pinI
 
     Write_MCP23S17_Register (devId, MCP23x17_GPINTENB, Cur_Int_Enable_State);
 
-    //_log.Log(LOG_NORM,"PiFace SetPin Interrupt mode: devid: %d, Pinnr: %d, Enable %d-- Prev 0x%02X Cur 0x%02X",devId,pinID,Interrupt_Enable,Prev_Int_Enable_State,Cur_Int_Enable_State);
+    //_log.Log(LOG_NORM,"PiFace: SetPin Interrupt mode: devid: %d, Pinnr: %d, Enable %d-- Prev 0x%02X Cur 0x%02X",devId,pinID,Interrupt_Enable,Prev_Int_Enable_State,Cur_Int_Enable_State);
 }
 
 
@@ -734,9 +734,9 @@ void CPiFace::WriteToHardware(const char *pdata, const unsigned char length)
       pinnr =(SendData->LIGHTING1.unitcode %10)&0x07;
       if (PortType=='O')
        {
-          //_log.Log(LOG_NORM,"Piface WriteToHardware housecode %c, packetlength %d", SendData->LIGHTING1.housecode,SendData->LIGHTING1.packetlength );
+          //_log.Log(LOG_NORM,"Piface: WriteToHardware housecode %c, packetlength %d", SendData->LIGHTING1.housecode,SendData->LIGHTING1.packetlength );
           CurrentLatchState = Read_MCP23S17_Register (devId, MCP23x17_OLATA) ;
-          //_log.Log(LOG_NORM,"PiFace Read input state 0x%02X", m_OutputState[devId].Current);
+          //_log.Log(LOG_NORM,"PiFace: Read input state 0x%02X", m_OutputState[devId].Current);
 
           OutputData = CurrentLatchState;
           mask <<= pinnr;
@@ -748,11 +748,11 @@ void CPiFace::WriteToHardware(const char *pdata, const unsigned char length)
              else OutputData |= mask;
 
           Write_MCP23S17_Register (devId, MCP23x17_GPIOA,OutputData) ;
-        //  _log.Log(LOG_NORM,"Piface WriteToHardware housecode %c, devid %d, output %d, PrevOut 0x%02X, Set 0x%02X",PortType, devId, pinnr, CurrentLatchState,OutputData );
+        //  _log.Log(LOG_NORM,"Piface: WriteToHardware housecode %c, devid %d, output %d, PrevOut 0x%02X, Set 0x%02X",PortType, devId, pinnr, CurrentLatchState,OutputData );
         }
-          else _log.Log(LOG_NORM,"Piface wrong housecode %c",PortType);
+          else _log.Log(LOG_NORM,"Piface: wrong housecode %c",PortType);
    }
-   else _log.Log(LOG_NORM,"PiFace WriteToHardware packet type %d or subtype %d unknown\n", SendData->LIGHTING1.packettype,SendData->LIGHTING1.subtype);
+   else _log.Log(LOG_NORM,"PiFace: WriteToHardware packet type %d or subtype %d unknown\n", SendData->LIGHTING1.packettype,SendData->LIGHTING1.subtype);
 }
 
 void CPiFace::Do_Work()
@@ -802,7 +802,7 @@ int CPiFace::Init_SPI_Device(int Init)
     unsigned char spiBPW   = 8 ;
     int           speed       = 4000000 ;
 
-     _log.Log(LOG_NORM,"Starting PiFace_SPI_Start()");
+     _log.Log(LOG_NORM,"PiFace: Starting PiFace_SPI_Start()");
 #ifdef __arm__
     // Open port for reading and writing
     if ((m_fd = open("/dev/spidev0.0", O_RDWR)) >= 0)
@@ -820,17 +820,17 @@ int CPiFace::Init_SPI_Device(int Init)
 
                        }
                        else
-                        _log.Log(LOG_NORM,"SPI Speed Change failure: %s\n", strerror (errno)) ;
+                        _log.Log(LOG_NORM,"PiFace: SPI Speed Change failure: %s\n", strerror (errno)) ;
                  }
                 else
-                   _log.Log(LOG_NORM,"SPI BPW Change failure: %s\n", strerror (errno)) ;
+                   _log.Log(LOG_NORM,"PiFace: SPI BPW Change failure: %s\n", strerror (errno)) ;
 
             }
             else
-                _log.Log(LOG_NORM,"SPI Mode Change failure: %s\n", strerror (errno)) ;
+                _log.Log(LOG_NORM,"PiFace: SPI Mode Change failure: %s\n", strerror (errno)) ;
       }
     else
-      _log.Log(LOG_NORM,"Unable to open SPI device: %s\n", strerror (errno));
+      _log.Log(LOG_NORM,"PiFace: Unable to open SPI device: %s\n", strerror (errno));
 
 #endif
 
@@ -875,14 +875,14 @@ int CPiFace::Detect_PiFace_Hardware(void)
 
     if (NrOfFoundBoards)
      {
-        _log.Log(LOG_NORM,"Found the following PiFaces:\n");
+        _log.Log(LOG_NORM,"PiFace: Found the following PiFaces:\n");
         for (devId=0; devId<4; devId++)
         {
            if (m_DetectedHardware[devId]==true)
             _log.Log(LOG_NORM,"PiFace: %d\n",devId);
         }
      }
-     else _log.Log(LOG_ERROR,"Sorry, no PiFaces were found\n");
+     else _log.Log(LOG_ERROR,"PiFace: Sorry, no PiFaces were found\n");
     return NrOfFoundBoards;
 }
 

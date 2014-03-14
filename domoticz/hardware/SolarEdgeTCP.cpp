@@ -24,7 +24,7 @@ SolarEdgeTCP::SolarEdgeTCP(const int ID, const unsigned short usListenPort, cons
 
 		if (ret == WSANOTINITIALISED) 
 		{  
-			_log.Log(LOG_ERROR,"Winsock could not be initialized!");
+			_log.Log(LOG_ERROR,"SolarEdge: Winsock could not be initialized!");
 		}
 	}
 #endif

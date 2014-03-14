@@ -92,7 +92,7 @@ bool CRazberry::GetInitialDevices()
 	bret=HTTPClient::GET(szURL,sResult);
 	if (!bret)
 	{
-		_log.Log(LOG_ERROR,"Error getting Razberry data!");
+		_log.Log(LOG_ERROR,"Razberry: Error getting data!");
 		return 0;
 	}
 #else

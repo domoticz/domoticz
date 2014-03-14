@@ -21,7 +21,7 @@
 	#include <pwd.h>
 #endif
 
-#define DB_VERSION 37
+#define DB_VERSION 38
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -48,6 +48,7 @@ const char *sqlCreateDeviceStatus =
 "[StrParam1] VARCHAR(200) DEFAULT '', "
 "[StrParam2] VARCHAR(200) DEFAULT '', "
 "[LastLevel] INTEGER DEFAULT 0, "
+"[Protected] INTEGER DEFAULT 0, "
 "[CustomImage] INTEGER DEFAULT 0);";
 
 const char *sqlCreateDeviceStatusTrigger =
@@ -840,6 +841,10 @@ bool CSQLHelper::OpenDatabase()
 				"SELECT [DeviceRowID],[Load_Min],[Load_Max],[Load_Avg],[Date] FROM Load_Calendar");
 			query("DROP TABLE IF EXISTS [Load]");
 			query("DROP TABLE IF EXISTS [Load_Calendar]");
+		}
+		if (dbversion<38)
+		{
+			query("ALTER TABLE DeviceStatus ADD COLUMN [Protected] INTEGER default 0");
 		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);

@@ -50,7 +50,7 @@ bool S0MeterSerial::StartHardware()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_NORM,"S0 Meter Using serial port: %s", m_szSerialPort.c_str());
+		_log.Log(LOG_NORM,"S0 Meter: Using serial port: %s", m_szSerialPort.c_str());
 #ifndef WIN32
 		openOnlyBaud(
 			m_szSerialPort,
@@ -69,7 +69,7 @@ bool S0MeterSerial::StartHardware()
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR,"Error opening serial port!");
+		_log.Log(LOG_ERROR,"S0 Meter: Error opening serial port!");
 #ifdef _DEBUG
 		_log.Log(LOG_ERROR,"-----------------\n%s\n-----------------",boost::diagnostic_information(e).c_str());
 #endif
@@ -77,7 +77,7 @@ bool S0MeterSerial::StartHardware()
 	}
 	catch ( ... )
 	{
-		_log.Log(LOG_ERROR,"Error opening serial port!!!");
+		_log.Log(LOG_ERROR,"S0 Meter: Error opening serial port!!!");
 		return false;
 	}
 	m_bIsStarted=true;

@@ -24,7 +24,7 @@ OTGWTCP::OTGWTCP(const int ID, const std::string IPAddress, const unsigned short
 
 		if (ret == WSANOTINITIALISED) 
 		{  
-			_log.Log(LOG_ERROR,"Winsock could not be initialized!");
+			_log.Log(LOG_ERROR,"OTGW: Winsock could not be initialized!");
 		}
 	}
 #endif
@@ -82,7 +82,7 @@ bool OTGWTCP::StopHardware()
 
 void OTGWTCP::OnConnect()
 {
-	_log.Log(LOG_NORM,"OTGW connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_NORM,"OTGW: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
 	m_bDoRestart=false;
 	m_bIsStarted=true;
 	m_bufferpos=0;
@@ -93,7 +93,7 @@ void OTGWTCP::OnConnect()
 
 void OTGWTCP::OnDisconnect()
 {
-	_log.Log(LOG_NORM,"OTGW disconnected");
+	_log.Log(LOG_NORM,"OTGW: disconnected");
 }
 
 void OTGWTCP::Do_Work()
@@ -128,7 +128,7 @@ void OTGWTCP::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_NORM,"OTGW TCP/IP Worker stopped...");
+	_log.Log(LOG_NORM,"OTGW: TCP/IP Worker stopped...");
 } 
 
 void OTGWTCP::GetGatewayDetails()
@@ -183,12 +183,12 @@ void OTGWTCP::OnData(const unsigned char *pData, size_t length)
 
 void OTGWTCP::OnError(const std::exception e)
 {
-	_log.Log(LOG_ERROR,"OTGW Error: %s",e.what());
+	_log.Log(LOG_ERROR,"OTGW: Error: %s",e.what());
 }
 
 void OTGWTCP::OnError(const boost::system::error_code& error)
 {
-	_log.Log(LOG_ERROR,"OTGW Error: %s",error.message().c_str());
+	_log.Log(LOG_ERROR,"OTGW: Error: %s",error.message().c_str());
 }
 
 void OTGWTCP::WriteToHardware(const char *pdata, const unsigned char length)

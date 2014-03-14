@@ -23,7 +23,7 @@ P1MeterTCP::P1MeterTCP(const int ID, const std::string IPAddress, const unsigned
 
 		if (ret == WSANOTINITIALISED) 
 		{  
-			_log.Log(LOG_ERROR,"Winsock could not be initialized!");
+			_log.Log(LOG_ERROR,"P1 Smart Meter: Winsock could not be initialized!");
 		}
 	}
 #endif
@@ -102,7 +102,7 @@ bool P1MeterTCP::ConnectInternal()
 	m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (m_socket == INVALID_SOCKET)
 	{
-		_log.Log(LOG_ERROR,"could not create a TCP/IP socket!");
+		_log.Log(LOG_ERROR,"P1 Smart Meter: could not create a TCP/IP socket!");
 		return false;
 	}
 
@@ -113,11 +113,11 @@ bool P1MeterTCP::ConnectInternal()
 	{
 		closesocket(m_socket);
 		m_socket=INVALID_SOCKET;
-		_log.Log(LOG_ERROR,"P1 Smart Meter could not connect to: %s:%ld",m_szIPAddress.c_str(),m_usIPPort);
+		_log.Log(LOG_ERROR,"P1 Smart Meter: could not connect to: %s:%ld",m_szIPAddress.c_str(),m_usIPPort);
 		return false;
 	}
 
-	_log.Log(LOG_NORM,"P1 Smart Meter connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_NORM,"P1 Smart Meter: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
 
 	Init();
 
@@ -151,7 +151,7 @@ void P1MeterTCP::Do_Work()
 				m_retrycntr=0;
 				if (!ConnectInternal())
 				{
-					_log.Log(LOG_NORM,"retrying in %d seconds...", RETRY_DELAY);
+					_log.Log(LOG_NORM,"P1 Smart Meter: retrying in %d seconds...", RETRY_DELAY);
 					continue;
 				}
 			}
@@ -163,12 +163,12 @@ void P1MeterTCP::Do_Work()
 			if (m_stoprequested)
 				break;
 			if ((bread==0)||(bread<0)) {
-				_log.Log(LOG_ERROR,"P1 TCP/IP connection closed!");
+				_log.Log(LOG_ERROR,"P1 Smart Meter: TCP/IP connection closed!");
 				closesocket(m_socket);
 				m_socket=INVALID_SOCKET;
 				if (!m_stoprequested)
 				{
-					_log.Log(LOG_NORM,"retrying in %d seconds...", RETRY_DELAY);
+					_log.Log(LOG_NORM,"P1 Smart Meter: retrying in %d seconds...", RETRY_DELAY);
 					m_retrycntr=0;
 					continue;
 				}
@@ -180,7 +180,7 @@ void P1MeterTCP::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_NORM,"P1 TCP/IP Worker stopped...");
+	_log.Log(LOG_NORM,"P1 Smart Meter: TCP/IP Worker stopped...");
 } 
 
 void P1MeterTCP::write(const char *data, size_t size)

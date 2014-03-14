@@ -74,7 +74,7 @@ void CCamScheduler::ReloadCameras()
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
-			_log.Log(LOG_NORM,"Camera settings (re)loaded");
+			_log.Log(LOG_NORM,"Camera: settings (re)loaded");
 			for (itt=result.begin(); itt!=result.end(); ++itt)
 			{
 				std::vector<std::string> sd=*itt;
@@ -177,7 +177,7 @@ void CCamScheduler::Do_Work()
 			CheckCameras();
 		}
 	}
-	_log.Log(LOG_NORM,"Camera fetch stopped...");
+	_log.Log(LOG_NORM,"Camera: fetch stopped...");
 }
 
 void CCamScheduler::CheckCameras()
@@ -187,7 +187,7 @@ void CCamScheduler::CheckCameras()
 	time_t atime=mytime(NULL);
 	struct tm ltime;
 	localtime_r(&atime,&ltime);
-    //_log.Log(LOG_NORM,"Camera tick");
+    //_log.Log(LOG_NORM,"Camera: tick");
 
 }
 */

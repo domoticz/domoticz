@@ -210,10 +210,10 @@ void C1WireByKernel::ThreadBuildDevicesList()
 			case _8_channel_addressable_switch:
 			case programmable_resolution_digital_thermometer:
             m_Devices[device.devid]=new DeviceState(device);
-			_log.Log(LOG_NORM,"Added Device: %s",sLine.c_str());
+			_log.Log(LOG_NORM,"1Wire: Added Device: %s",sLine.c_str());
             break;
          default: // Device not supported in kernel mode (maybe later...), use OWFS solution.
-			_log.Log(LOG_NORM,"Device not yet supported in Kernel mode (Please report!) ID:%s, family: %02X",sLine.c_str(),device.family);
+			_log.Log(LOG_NORM,"1Wire: Device not yet supported in Kernel mode (Please report!) ID:%s, family: %02X",sLine.c_str(),device.family);
             break;
          }
       }

@@ -208,7 +208,7 @@ bool CLimitLess::StartHardware()
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CLimitLess::Do_Work, this)));
 
-	_log.Log(LOG_NORM,"AppLamp Worker Started...");
+	_log.Log(LOG_NORM,"AppLamp: Worker Started...");
 
 	//WriteToHardware((const char*)&RGBWOn,sizeof(RGBWOn));
 	//Sleep(100);
@@ -250,7 +250,7 @@ void CLimitLess::Do_Work()
 	{
 		sleep_seconds(1);
 	}
-	_log.Log(LOG_NORM,"AppLamp Worker stopped...");
+	_log.Log(LOG_NORM,"AppLamp: Worker stopped...");
 }
 
 void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)

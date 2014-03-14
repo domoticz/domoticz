@@ -92,7 +92,7 @@ bool OTGWSerial::OpenSerialDevice()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_NORM,"OTGW Using serial port: %s", m_szSerialPort.c_str());
+		_log.Log(LOG_NORM,"OTGW: Using serial port: %s", m_szSerialPort.c_str());
 		open(
 			m_szSerialPort,
 			m_iBaudRate,
@@ -102,7 +102,7 @@ bool OTGWSerial::OpenSerialDevice()
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR,"Error opening serial port!");
+		_log.Log(LOG_ERROR,"OTGW:Error opening serial port!");
 #ifdef _DEBUG
 		_log.Log(LOG_ERROR,"-----------------\n%s\n-----------------",boost::diagnostic_information(e).c_str());
 #endif
@@ -110,7 +110,7 @@ bool OTGWSerial::OpenSerialDevice()
 	}
 	catch ( ... )
 	{
-		_log.Log(LOG_ERROR,"Error opening serial port!!!");
+		_log.Log(LOG_ERROR,"OTGW:Error opening serial port!!!");
 		return false;
 	}
 	m_bIsStarted=true;
@@ -152,7 +152,7 @@ void OTGWSerial::Do_PollWork()
 			}
 		}
 	}
-	_log.Log(LOG_NORM,"OTGW Worker stopped...");
+	_log.Log(LOG_NORM,"OTGW: Worker stopped...");
 }
 
 void OTGWSerial::GetGatewayDetails()

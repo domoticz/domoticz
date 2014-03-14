@@ -1034,7 +1034,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 		return;
 
 	std::string vUnits=m_pManager->GetValueUnits(vID);
-	_log.Log(LOG_NORM, "Value_Added: Node: %d, CommandClass: %s, Label: %s, Instance: %d",(int)NodeID, cclassStr(commandclass),vLabel.c_str(),instance);
+	_log.Log(LOG_NORM, "OpenZWave: Value_Added: Node: %d, CommandClass: %s, Label: %s, Instance: %d",(int)NodeID, cclassStr(commandclass),vLabel.c_str(),instance);
 
 	_tZWaveDevice _device;
 	_device.nodeID=NodeID;
@@ -1523,7 +1523,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 
 	std::string path=sstr.str();
 #ifdef _DEBUG
-	_log.Log(LOG_NORM, "Value_Changed: Node: %d, CommandClass: %s, Label: %s, Instance: %d, Index: %d",NodeID, cclassStr(commandclass),vLabel.c_str(),vID.GetInstance(),vID.GetIndex());
+	_log.Log(LOG_NORM, "OpenZWave: Value_Changed: Node: %d, CommandClass: %s, Label: %s, Instance: %d, Index: %d",NodeID, cclassStr(commandclass),vLabel.c_str(),vID.GetInstance(),vID.GetIndex());
 #endif
 	float fValue=0;
 	int iValue=0;
