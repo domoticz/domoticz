@@ -65,6 +65,8 @@ Version 1.0.xxxx (March xxth 2014)
 - Implemented: Thermostat 3 (Mertik) now visible on dashboard
 - Fixed: Shortlog cleanup for Percentage/Fan
 - Removed: Unused Save/Delete buttons in edit Scene/Group
+- Implemented: Norwegian translation (Thanks to Sungrazer!)
+- Changed: Translation Language Loading
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)

@@ -57,6 +57,7 @@ static const _tGuiLanguage guiLanguage[]=
 	{ "ru", "Russian" },
 	{ "sk", "Slovak" },
 	{ "sv", "Swedish" },
+	{ "no", "Norwegian" },
 	
 	{ NULL, NULL}
 };
@@ -4497,14 +4498,23 @@ char * CWebServer::DisplayMeterTypesCombo()
 char * CWebServer::DisplayLanguageCombo()
 {
 	m_retstr="";
+	//return a sorted list
+	std::map<std::string,std::string> _ltypes;
+	std::map<std::string,std::string>::const_iterator itt;
 	char szTmp[200];
 	int ii=0;
 	while (guiLanguage[ii].szShort!=NULL)
 	{
-		sprintf(szTmp,"<option value=\"%s\">%s</option>\n",guiLanguage[ii].szShort,guiLanguage[ii].szLong);
-		m_retstr+=szTmp;
+		_ltypes[guiLanguage[ii].szShort]=guiLanguage[ii].szLong;
 		ii++;
 	}
+	for (itt=_ltypes.begin(); itt!=_ltypes.end(); ++itt)
+	{
+		sprintf(szTmp,"<option value=\"%s\">%s</option>\n",itt->first.c_str(),itt->second.c_str());
+		m_retstr+=szTmp;
+
+	}
+
 	return (char*)m_retstr.c_str();
 }
 

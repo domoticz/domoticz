@@ -658,7 +658,6 @@ function RefreshUtilities()
 				}
 				var status="";
 				var bigtext="";
-							
 				if (typeof item.Counter != 'undefined') {
 					if ((item.SubType == "Gas")||(item.SubType == "RFXMeter counter")) {
 						status=item.Counter;
@@ -829,7 +828,7 @@ function ShowUtilities()
 					xhtm+=item.Usage;
 				}
 				else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
-					if (item.Usage.charAt(0) != 0) {
+					if ((item.UsageDeliv.charAt(0) == 0)||(item.Usage!=0)) {
 						xhtm+=item.Usage;
 					}
 					if (item.UsageDeliv.charAt(0) != 0) {
