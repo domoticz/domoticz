@@ -10,13 +10,14 @@
         <tr>
           <td align="right" style="width:60px"><label for="name">Name: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
+        </tr>
         <tr>
           <td align="right"><label for="metertype">Type: </label></td>
           <td><select id="combometertype" style="width:150px" class="combobox ui-corner-all">
             <!--#embed metertypes -->
           </select></td>
-		    </tr>
-		    </table>
+		</tr>
+		</table>
     </form>
 </div>
 <div id="dialog-editsetpointdevice" title="Edit Meter Device">
@@ -25,6 +26,11 @@
         <tr>
           <td align="right" style="width:60px"><label for="name">Name: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
+        </tr>
+		<tr>
+			<td align="right"><label for="protected"><span data-i18n="Protected">Protected</span>:</label></td>
+			<td><input type="checkbox" id="protected"></td>
+		</tr>
         <tr>
           <td align="right"><label>Value: </label></td>
           <td><input type="text" id="setpoint" style="width: 50px; padding: .4em;" class="text ui-widget-content ui-corner-all" /> &deg; C</td>
@@ -107,13 +113,48 @@ function EditMeterDevice(idx,name,switchtype)
   $("#dialog-editmeterdevice" ).dialog( "open" );
 }
 
-function EditSetPoint(idx,name,setpoint)
+function EditSetPointInt(idx,name,setpoint,isprotected)
 {
-	clearInterval($.myglobals.refreshTimer);
 	$.devIdx=idx;
 	$("#dialog-editsetpointdevice #devicename").val(name);
+	$('#dialog-editsetpointdevice #protected').prop('checked',(isprotected==true));
 	$("#dialog-editsetpointdevice #setpoint").val(setpoint);
 	$("#dialog-editsetpointdevice" ).dialog( "open" );
+}
+
+function EditSetPoint(idx,name,setpoint,isprotected)
+{
+	clearInterval($.myglobals.refreshTimer);
+	if (typeof isprotected != 'undefined') {
+		if (isprotected==true) {
+			bootbox.prompt($.i18n("Please enter Password")+":", function(result) {
+				if (result === null) {
+					return;
+				} else {
+					if (result=="") {
+						return;
+					}
+					//verify password
+					$.ajax({
+						 url: "json.htm?type=command&param=verifypasscode" + 
+								"&passcode=" + result,
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+							if (data.status=="OK") {
+								EditSetPointInt(idx,name,setpoint,isprotected);
+							}
+						 },
+						 error: function(){
+						 }
+					});
+				}
+			});
+		}
+	}
+	else {
+		EditSetPointInt(idx,name,setpoint,isprotected);
+	}
 }
 
 function AddUtilityDevice()
@@ -726,6 +767,9 @@ function RefreshUtilities()
 				}
 				
 				var nbackcolor="#D4E1EE";
+				if (item.Protected==true) {
+					nbackcolor="#A4B1EE";
+				}
 				if (item.HaveTimeout==true) {
 					nbackcolor="#DF2D3A";
 				}
@@ -811,6 +855,9 @@ function ShowUtilities()
                 '\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
                 '\t    <tr>\n';
 				var nbackcolor="#D4E1EE";
+				if (item.Protected==true) {
+					nbackcolor="#A4B1EE";
+				}
 				if (item.HaveTimeout==true) {
 					nbackcolor="#DF2D3A";
 				}
@@ -1021,7 +1068,7 @@ function ShowUtilities()
           else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 				if (window.my_config.userrights==2) {
 					xhtm+='<a class="btnsmall" onclick="ShowTempLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
-					xhtm+='<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + item.Name + '\', ' + item.SetPoint + ');" data-i18n="Edit">Edit</a> ';
+					xhtm+='<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + item.Name + '\', ' + item.SetPoint + ',' + item.Protected +');" data-i18n="Edit">Edit</a> ';
 				}
           }
           else if ((item.Type == "General")&&(item.SubType == "Voltage")) {
@@ -1206,8 +1253,8 @@ $(document).ready(function() {
 
     $( "#dialog-editsetpointdevice" ).dialog({
           autoOpen: false,
-          width: 370,
-          height: 230,
+          width: 390,
+          height: 250,
           modal: true,
           resizable: false,
           buttons: {
@@ -1217,7 +1264,11 @@ $(document).ready(function() {
                   if ( bValid ) {
                       $( this ).dialog( "close" );
                       $.ajax({
-                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editsetpointdevice #devicename").val()) + '&setpoint=' + $("#dialog-editsetpointdevice #setpoint").val() + '&used=true',
+                         url: "json.htm?type=setused&idx=" + $.devIdx +
+                         '&name=' + encodeURIComponent($("#dialog-editsetpointdevice #devicename").val()) +
+                         '&setpoint=' + $("#dialog-editsetpointdevice #setpoint").val() + 
+                         '&protected=' + $('#dialog-editsetpointdevice #protected').is(":checked") +
+                         '&used=true',
                          async: false, 
                          dataType: 'json',
                          success: function(data) {

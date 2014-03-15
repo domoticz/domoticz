@@ -4298,6 +4298,23 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			return;
 		}
 	}
+	else if (cparam=="verifypasscode")
+	{
+		std::string passcode=m_pWebEm->FindValue("passcode");
+		if (passcode=="")
+			return;
+		//Check if passcode is correct
+		passcode=base64_encode((const unsigned char*)passcode.c_str(),passcode.size());
+		std::string rpassword;
+		int nValue=1;
+		m_pMain->m_sql.GetPreferencesVar("ProtectionPassword",nValue,rpassword);
+		if (passcode==rpassword)
+		{
+			root["title"]="VerifyPasscode";
+			root["status"]="OK";
+			return;
+		}
+	}
 	else if (cparam=="switchlight")
 	{
 		int urights=3;
@@ -4316,6 +4333,23 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		std::string level=m_pWebEm->FindValue("level");
 		if ((idx=="")||(switchcmd==""))
 			return;
+
+		std::string passcode=m_pWebEm->FindValue("passcode");
+		if (passcode.size()>0) 
+		{
+			//Check if passcode is correct
+			passcode=base64_encode((const unsigned char*)passcode.c_str(),passcode.size());
+			std::string rpassword;
+			int nValue=1;
+			m_pMain->m_sql.GetPreferencesVar("ProtectionPassword",nValue,rpassword);
+			if (passcode!=rpassword)
+			{
+				root["title"]="SwitchLight";
+				root["status"]="ERROR";
+				root["message"]="WRONG CODE";
+				return;
+			}
+		}
 
 		if (m_pMain->SwitchLight(idx,switchcmd,level,"-1")==true)
 		{
@@ -4340,6 +4374,23 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		std::string switchcmd=m_pWebEm->FindValue("switchcmd");
 		if ((idx=="")||(switchcmd==""))
 			return;
+
+		std::string passcode=m_pWebEm->FindValue("passcode");
+		if (passcode.size()>0) 
+		{
+			//Check if passcode is correct
+			passcode=base64_encode((const unsigned char*)passcode.c_str(),passcode.size());
+			std::string rpassword;
+			int nValue=1;
+			m_pMain->m_sql.GetPreferencesVar("ProtectionPassword",nValue,rpassword);
+			if (passcode!=rpassword)
+			{
+				root["title"]="SwitchScene";
+				root["status"]="ERROR";
+				root["message"]="WRONG CODE";
+				return;
+			}
+		}
 
 		if (m_pMain->SwitchScene(idx,switchcmd)==true)
 		{
@@ -4857,6 +4908,11 @@ char * CWebServer::PostSettings()
 	SecPassword=base64_encode((const unsigned char*)SecPassword.c_str(),SecPassword.size());
 	m_pMain->m_sql.UpdatePreferencesVar("SecPassword",SecPassword.c_str());
 
+	std::string ProtectionPassword=m_pWebEm->FindValue("ProtectionPassword");
+	ProtectionPassword=CURLEncode::URLDecode(ProtectionPassword);
+	ProtectionPassword=base64_encode((const unsigned char*)ProtectionPassword.c_str(),ProtectionPassword.size());
+	m_pMain->m_sql.UpdatePreferencesVar("ProtectionPassword",ProtectionPassword.c_str());
+
 	int EnergyDivider=atoi(m_pWebEm->FindValue("EnergyDivider").c_str());
 	int GasDivider=atoi(m_pWebEm->FindValue("GasDivider").c_str());
 	int WaterDivider=atoi(m_pWebEm->FindValue("WaterDivider").c_str());
@@ -5286,11 +5342,11 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 		szQuery.clear();
 		szQuery.str("");
 		if (rowid!="")
-			szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType FROM Scenes WHERE (ID==" << rowid << ")";
+			szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType, Protected FROM Scenes WHERE (ID==" << rowid << ")";
 		else if ((planID!="")&&(planID!="0"))
-			szQuery << "SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType FROM Scenes as A, DeviceToPlansMap as B WHERE (B.PlanID==" << planID << ") AND (B.DeviceRowID==a.ID) AND (B.DevSceneType==1) ORDER BY B.[Order]";
+			szQuery << "SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType, A.Protected FROM Scenes as A, DeviceToPlansMap as B WHERE (B.PlanID==" << planID << ") AND (B.DeviceRowID==a.ID) AND (B.DevSceneType==1) ORDER BY B.[Order]";
 		else
-			szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType FROM Scenes ORDER BY " << szOrderBy;
+			szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType, Protected FROM Scenes ORDER BY " << szOrderBy;
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -5303,6 +5359,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				std::string sLastUpdate=sd[3];
 				unsigned char favorite = atoi(sd[4].c_str());
 				unsigned char scenetype = atoi(sd[5].c_str());
+				int iProtected=atoi(sd[6].c_str());
+
 				if (scenetype==0)
 				{
 					root["result"][ii]["Type"]="Scene";
@@ -5314,6 +5372,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				root["result"][ii]["idx"]=sd[0];
 				root["result"][ii]["Name"]=sd[1];
 				root["result"][ii]["Favorite"]=favorite;
+				root["result"][ii]["Protected"]=(iProtected!=0);
 				root["result"][ii]["LastUpdate"]=sLastUpdate;
 				root["result"][ii]["TypeImg"]="lightbulb";
 				if (nValue==0)
@@ -5533,6 +5592,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["HardwareName"]=_hardwareNames[hardwareID];
 			}
 			root["result"][ii]["idx"]=sd[0];
+			root["result"][ii]["Protected"]=(iProtected!=0);
 
 			CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hardwareID);
 			if (pHardware!=NULL)
@@ -5614,7 +5674,6 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				root["result"][ii]["Status"]=lstatus;
 				root["result"][ii]["StrParam1"]=strParam1;
 				root["result"][ii]["StrParam2"]=strParam2;
-				root["result"][ii]["Protected"]=(iProtected!=0);
 
 				if (CustomImage<(int)m_custom_light_icons.size())
 					root["result"][ii]["Image"]=m_custom_light_icons[CustomImage].RootFile;
@@ -11269,12 +11328,15 @@ std::string CWebServer::GetJSonPage()
 			root["message"]="No Scene Type specified!";
 			goto exitjson;
 		}
+		std::string tmpstr=m_pWebEm->FindValue("protected");
+		int iProtected=(tmpstr=="true")?1:0;
 
 		root["status"]="OK";
 		root["title"]="UpdateScene";
-		sprintf(szTmp,"UPDATE Scenes SET Name='%s', SceneType=%d WHERE (ID == %s)",
+		sprintf(szTmp,"UPDATE Scenes SET Name='%s', SceneType=%d, Protected=%d WHERE (ID == %s)",
 				name.c_str(),
 				atoi(stype.c_str()),
+				iProtected,
 				idx.c_str()
 				);
 		m_pMain->m_sql.query(szTmp);
@@ -11412,7 +11474,7 @@ std::string CWebServer::GetJSonPage()
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT ID, Name, HardwareID, Favorite, nValue, SceneType, LastUpdate FROM Scenes ORDER BY [Order]";
+		szQuery << "SELECT ID, Name, HardwareID, Favorite, nValue, SceneType, LastUpdate, Protected FROM Scenes ORDER BY [Order]";
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -11424,10 +11486,13 @@ std::string CWebServer::GetJSonPage()
 
 				unsigned char nValue=atoi(sd[4].c_str());
 				unsigned char scenetype=atoi(sd[5].c_str());
+				int iProtected=atoi(sd[7].c_str());
+
 				root["result"][ii]["idx"]=sd[0];
 				root["result"][ii]["Name"]=sd[1];
 				root["result"][ii]["HardwareID"]=atoi(sd[2].c_str());
 				root["result"][ii]["Favorite"]=atoi(sd[3].c_str());
+				root["result"][ii]["Protected"]=(iProtected!=0);
 
 				if (scenetype==0)
 				{
@@ -11726,6 +11791,10 @@ std::string CWebServer::GetJSonPage()
 				else if (Key=="SecPassword")
 				{
 					root["SecPassword"]=base64_decode(sValue);
+				}
+				else if (Key=="ProtectionPassword")
+				{
+					root["ProtectionPassword"]=base64_decode(sValue);
 				}
 				else if (Key=="WebLocalNetworks")
 				{

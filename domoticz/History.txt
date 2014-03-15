@@ -67,6 +67,7 @@ Version 1.0.xxxx (March xxth 2014)
 - Removed: Unused Save/Delete buttons in edit Scene/Group
 - Implemented: Norwegian translation (Thanks to Sungrazer!)
 - Changed: Translation Language Loading
+- Implemented: protection option for light/switches/scenes/setpoints
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)

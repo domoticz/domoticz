@@ -144,6 +144,14 @@
 			</tr>
 			</table>
 			<br>
+			<h2><span data-i18n="Light/Switch Protection">Light/Switch Protection</span>:</h2>
+			<table class="display" id="protectiontable" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="right" style="width:60px"><label><span data-i18n="Password"></span>: </label></td>
+				<td><input type="password" id="ProtectionPassword" name="ProtectionPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			</table>
+			<br>
 			<span data-i18n="LocalNetworks(no_username/password)"></span>:<br><br>
 			<table class="display" id="weblocaltable" border="0" cellpadding="0" cellspacing="0">
 			<tr>
@@ -736,6 +744,9 @@ function ShowSettings()
       if (typeof data.SecPassword != 'undefined') {
         $("#sectable #SecPassword").val(data.SecPassword);
       }
+      if (typeof data.ProtectionPassword != 'undefined') {
+        $("#protectiontable #ProtectionPassword").val(data.ProtectionPassword);
+      }
       if (typeof data.WebLocalNetworks != 'undefined') {
         $("#weblocaltable #WebLocalNetworks").val(data.WebLocalNetworks);
       }
@@ -880,6 +891,8 @@ function StoreSettings(formname)
 		return;
 	}
   }
+
+  var switchprotection=$("#protectiontable #ProtectionPassword").val();
   
   //Check email settings
   var EmailServer=$("#emailtable #EmailServer").val();

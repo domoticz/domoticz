@@ -34,6 +34,10 @@
 					</select>
 				</td>
 			</tr>
+			<tr id="ProtectionDiv">
+				<td align="right"><label for="protected"><span data-i18n="Protected">Protected</span>:</label></td>
+				<td><input type="checkbox" id="protected"></td>
+			</tr>
 			<tr>
 				<td></td>
 				<td>
@@ -367,8 +371,12 @@ function SaveScene()
 		bValid = bValid && checkLength( $("#scenecontent #devicename"), 2, 100 );
 		if ( bValid ) {
 				var SceneType=$("#scenecontent #combotype").val();
+				var bIsProtected=$('#scenecontent #protected').is(":checked");
 				$.ajax({
-					 url: "json.htm?type=updatescene&idx=" + $.devIdx + "&scenetype=" + SceneType + "&name=" + encodeURIComponent($("#scenecontent #devicename").val()),
+					 url: "json.htm?type=updatescene&idx=" + $.devIdx + 
+							"&scenetype=" + SceneType + 
+							"&name=" + encodeURIComponent($("#scenecontent #devicename").val()) +
+						    "&protected=" + bIsProtected,
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -744,7 +752,7 @@ function OnSelChangeDevice()
 	}
 }
 
-function EditSceneDevice(idx,name,havecode,type)
+function EditSceneDevice(idx,name,havecode,type,bIsProtected)
 {
   clearInterval($.myglobals.refreshTimer);
   $.devIdx=idx;
@@ -760,6 +768,7 @@ function EditSceneDevice(idx,name,havecode,type)
   $('#scenecontent').i18n();
   $("#scenecontent #LevelDiv").hide();
   $("#scenecontent #LedColor").hide();
+  $('#scenecontent #protected').prop('checked',(bIsProtected==true));
   
   if (bIsScene==true) {
 	$("#scenecontent #combotype").val(0);
@@ -1312,7 +1321,7 @@ function RefreshScenes()
 				var img2="";
 
 				if (item.Type=="Scene") {
-					img1='<img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+					img1='<img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
 				}
 				else {
 					var onclass="";
@@ -1326,8 +1335,8 @@ function RefreshScenes()
 						offclass="transimg";
 					}
 
-					img1='<img class="' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
-					img2='<img class="' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+					img1='<img class="' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+					img2='<img class="' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
 					if ($(id + " #img2").html()!=img2) {
 						$(id + " #img2").html(img2);
 					}
@@ -1405,9 +1414,13 @@ function ShowScenes()
               else {
 				xhtm+='\t    <table id="itemtabledoubleicon" border="0" cellpadding="0" cellspacing="0">\n';
               }
+				var nbackcolor="#D4E1EE";
+				if (item.Protected==true) {
+					nbackcolor="#A4B1EE";
+				}
               xhtm+=
                 '\t    <tr>\n' +
-                '\t      <td id="name">' + item.Name + '</td>\n' +
+                '\t      <td id="name" style="background-color: ' + nbackcolor + ';">' + item.Name + '</td>\n' +
                 '\t      <td id="bigtext">';
 			  if (item.UsedByCamera==true) {
 				var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="16">';
@@ -1417,7 +1430,7 @@ function ShowScenes()
 			  xhtm+='</td>\n';
 
 			if (item.Type=="Scene") {
-				xhtm+='<td id="img1"><img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+				xhtm+='<td id="img1"><img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
 				xhtm+='\t      <td id="status">&nbsp;</td>\n';
 			}
 			else {
@@ -1432,8 +1445,8 @@ function ShowScenes()
 					offclass="transimg";
 				}
 
-				xhtm+='<td id="img1"><img class="' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
-				xhtm+='<td id="img2"><img class="' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes);" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+				xhtm+='<td id="img1"><img class="' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+				xhtm+='<td id="img2"><img class="' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
 				xhtm+='\t      <td id="status">' + TranslateStatus(item.Status) + '</td>\n';
 			}
 			xhtm+=
@@ -1449,7 +1462,7 @@ function ShowScenes()
                   '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
           if (window.my_config.userrights==2) {
-				xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + item.Name + '\',' + item.HardwareID + ',\'' + item.Type + '\');" data-i18n="Edit">Edit</a> ';
+				xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + item.Name + '\',' + item.HardwareID + ',\'' + item.Type + '\', ' + item.Protected + ');" data-i18n="Edit">Edit</a> ';
 				if (bAddTimer == true) {
 					if (item.Timers == "true") {
 						xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',\'' + item.Type + '\');" data-i18n="Timers">Timers</a> ';

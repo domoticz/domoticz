@@ -21,7 +21,7 @@
 	#include <pwd.h>
 #endif
 
-#define DB_VERSION 38
+#define DB_VERSION 39
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -312,6 +312,7 @@ const char *sqlCreateScenes =
 "[nValue] INTEGER DEFAULT 0, \n"
 "[SceneType] INTEGER DEFAULT 0, \n"
 "[ListenCmd] INTEGER DEFAULT 1, \n"
+"[Protected] INTEGER DEFAULT 0, \n"
 "[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')));\n";
 
 const char *sqlCreateScenesTrigger =
@@ -845,6 +846,10 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion<38)
 		{
 			query("ALTER TABLE DeviceStatus ADD COLUMN [Protected] INTEGER default 0");
+		}
+		if (dbversion<39)
+		{
+			query("ALTER TABLE Scenes ADD COLUMN [Protected] INTEGER default 0");
 		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);

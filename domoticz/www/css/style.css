@@ -55,6 +55,10 @@ body {
 	color: #000;
 }
 
+.modal-title {
+	color: #000;
+}
+
 a, a:hover, a:focus { 
 	outline: 0 none; 
 }
