@@ -12,6 +12,7 @@
 #else
 	#include <sys/sysinfo.h>
 	#include <sys/time.h>
+	#include <unistd.h>
 #endif
 
 #define POLL_INTERVAL 30
@@ -342,7 +343,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 		int ret=sysinfo(&mySysInfo);
 		if (ret!=0)
 			return;
-		char szTmp[80];
+		char szTmp[300];
 		//Memory
 		unsigned long usedram=mySysInfo.totalram-mySysInfo.freeram;
 		float memusedpercentage=(100.0f/float(mySysInfo.totalram))*usedram;
@@ -350,35 +351,56 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 		UpdateSystemSensor("Load", "Memory Usage", "Memory Usage", szTmp);
 
 		//CPU
+		char cname[50];
 		if (m_lastquerytime==0)
 		{
 			//first time
 			m_lastquerytime = time_so_far();
-			FILE *f1 = fopen("/proc/stat", "r");
 			int actload1,actload2,actload3;
-			fscanf(f1, "%s\t%d\t%d\t%d\n", c, &actload1, &actload2, &actload3);
-			fclose(f1);
-			m_lastloadcpu=actload1+actload2+actload3;
+			int totcpu=-1;
+			FILE *fIn = fopen("/proc/stat", "r");
+			if (fIn!=NULL)
+			{
+				bool bFirstLine=true;
+				while( fgets(szTmp, sizeof(szTmp), f1) != NULL ) 
+				{
+					int ret=sscanf(szTmp, "%s\t%d\t%d\t%d\n", cname, &actload1, &actload2, &actload3);
+					if ((bFirstLine)&&(ret==4)) {
+						bFirstLine=false;
+						m_lastloadcpu=actload1+actload2+actload3;
+					}
+					char *cPos=strstr(c,"cpu");
+					if (cPos==NULL)
+						break;
+					totcpu++;
+				}
+			}
+			if (totcpu<1)
+				m_lastquerytime=0;
+			else
+				m_totcpu=totcpu;
 		}
 		else
 		{
 			double acttime = time_so_far();
-			FILE *f1 = fopen("/proc/stat", "r");
 			int actload1,actload2,actload3;
-			fscanf(f1, "%s\t%d\t%d\t%d\n", c, &actload1, &actload2, &actload3);
-			fclose(f1);
-
-			long long t = (actload1+actload2+actload3)-m_lastloadcpu;
-			double cpuper=(t / ((acttime-m_lastquerytime) * 100)) * 100;
-			if (cpuper>0)
+			FILE *fIn = fopen("/proc/stat", "r");
+			if (fIn!=NULL)
 			{
-				sprintf(szTmp,"%.2f", cpuper);
-				UpdateSystemSensor("Load", "CPU_Usage", "CPU_Usage", szTmp);
+				int ret=fscanf(fIn, "%s\t%d\t%d\t%d\n", cname, &actload1, &actload2, &actload3);
+				fclose(fIn);
+				if (ret==4)
+				{
+					long long t = (actload1+actload2+actload3)-m_lastloadcpu;
+					double cpuper=((t / ((acttime-m_lastquerytime) * 100)) * 100)/double(m_totcpu);
+					if (cpuper>0)
+					{
+						sprintf(szTmp,"%.2f", cpuper);
+						UpdateSystemSensor("Load", "CPU_Usage", "CPU_Usage", szTmp);
+					}
+					m_lastloadcpu=actload1+actload2+actload3;
+				}
 			}
-
-			m_load1=actload1;
-			m_load2=actload2;
-			m_load3=actload3;
 			m_lastquerytime=acttime;
 		}
 	}

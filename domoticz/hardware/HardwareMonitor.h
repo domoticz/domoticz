@@ -37,6 +37,7 @@ private:
 #else
 	void FetchUnixData();
 	long long m_lastloadcpu;
+	int m_totcpu;
 #endif
 };
 
