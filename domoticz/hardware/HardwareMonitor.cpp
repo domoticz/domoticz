@@ -362,7 +362,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 			if (fIn!=NULL)
 			{
 				bool bFirstLine=true;
-				while( fgets(szTmp, sizeof(szTmp), f1) != NULL ) 
+				while( fgets(szTmp, sizeof(szTmp), fIn) != NULL ) 
 				{
 					int ret=sscanf(szTmp, "%s\t%d\t%d\t%d\n", cname, &actload1, &actload2, &actload3);
 					if ((bFirstLine)&&(ret==4)) {
