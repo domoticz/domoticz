@@ -6,9 +6,7 @@
 #include "../hardware/DomoticzHardware.h"
 #include "Scheduler.h"
 #include "EventSystem.h"
-#ifdef WIN32
-#include "../hardware/OpenHardwareMonitor.h"
-#endif
+#include "../hardware/HardwareMonitor.h"
 #include "Camera.h"
 #include <map>
 #include <deque>
@@ -83,9 +81,7 @@ public:
 	CSQLHelper m_sql;
 	CScheduler m_scheduler;
 	CEventSystem m_eventsystem;
-#ifdef WIN32
-	COpenHardwareMonitor m_openhardwaremonitor;
-#endif
+	CHardwareMonitor m_hardwaremonitor;
 	CCamScheduler m_cameras;
 	bool m_bIgnoreUsernamePassword;
 

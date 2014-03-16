@@ -39,9 +39,6 @@
 #include "../hardware/Teleinfo.h"
 #include "../hardware/Limitless.h"
 #include "../hardware/EnOcean.h"
-#ifdef WIN32
-#include "../hardware/OpenHardwareMonitor.h"
-#endif
 #include "../hardware/SolarEdgeTCP.h"
 #include "../hardware/SMASpot.h"
 #include "../hardware/ICYThermostat.h"
@@ -572,9 +569,7 @@ bool MainWorker::Stop()
 	m_webserver.StopServer();
 	m_scheduler.StopScheduler();
 	m_eventsystem.StopEventSystem();
-#ifdef WIN32
-	m_openhardwaremonitor.StopOpenHardwareMonitor();
-#endif
+	m_hardwaremonitor.StopHardwareMonitor();
 //    m_cameras.StopCameraGrabber();
 	StopDomoticzHardware();
 
@@ -606,9 +601,7 @@ bool MainWorker::StartThread()
 
 	//Start Scheduler
 	m_scheduler.StartScheduler(this);
-#ifdef WIN32
-	m_openhardwaremonitor.StartOpenHardwareMonitor(this);
-#endif
+	m_hardwaremonitor.StartHardwareMonitor(this);
 	m_eventsystem.StartEventSystem(this);
 
 	int rnvalue=0;
