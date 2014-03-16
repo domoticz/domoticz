@@ -632,36 +632,6 @@ void MainWorker::GetDomoticzUpdate(const std::string &UpdateURL)
 	m_bDoDownloadDomoticzUpdate=true;
 }
 
-std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand)
-{
-	std::vector<std::string> ret;
-
-	FILE *fp;
-	char path[1035];
-
-	/* Open the command for reading. */
-#ifdef WIN32
-	fp = _popen(szCommand.c_str(), "r");
-#else
-	fp = popen(szCommand.c_str(), "r");
-#endif
-	if (fp != NULL) 
-	{
-		/* Read the output a line at a time - output it. */
-		while (fgets(path, sizeof(path)-1, fp) != NULL)
-		{
-			ret.push_back(path);
-		}
-		/* close */
-#ifdef WIN32
-		_pclose(fp);
-#else
-		pclose(fp);
-#endif
-	}
-	return ret;
-}
-
 void MainWorker::GetRaspberryPiTemperature()
 {
 	std::vector<std::string> ret=ExecuteCommandAndReturn("/opt/vc/bin/vcgencmd measure_temp");

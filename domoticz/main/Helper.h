@@ -24,3 +24,6 @@ int mkdir_deep(const char *szDirName, int secattr);
 double ConvertToCelsius(const double Fahrenheit);
 double ConvertToFahrenheit(const double Celsius);
 double ConvertTemperature(const double tValue, const unsigned char tSign);
+
+std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand);
+

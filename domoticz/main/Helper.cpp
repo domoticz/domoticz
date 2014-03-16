@@ -270,3 +270,33 @@ double ConvertTemperature(const double tValue, const unsigned char tSign)
 		return tValue;
 	return RoundDouble(ConvertToFahrenheit(tValue),1);
 }
+
+std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand)
+{
+	std::vector<std::string> ret;
+
+	FILE *fp;
+	char path[1035];
+
+	/* Open the command for reading. */
+#ifdef WIN32
+	fp = _popen(szCommand.c_str(), "r");
+#else
+	fp = popen(szCommand.c_str(), "r");
+#endif
+	if (fp != NULL) 
+	{
+		/* Read the output a line at a time - output it. */
+		while (fgets(path, sizeof(path)-1, fp) != NULL)
+		{
+			ret.push_back(path);
+		}
+		/* close */
+#ifdef WIN32
+		_pclose(fp);
+#else
+		pclose(fp);
+#endif
+	}
+	return ret;
+}

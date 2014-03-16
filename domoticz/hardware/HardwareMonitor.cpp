@@ -13,6 +13,17 @@
 	#include <sys/sysinfo.h>
 	#include <sys/time.h>
 	#include <unistd.h>
+	#include <vector>
+	#include <map>
+
+	struct _tDUsageStruct
+	{
+		std::string MountPoint;
+		long long TotalBlocks;
+		long long UsedBlocks;
+		long long AvailBlocks;
+	};
+
 #endif
 
 #define POLL_INTERVAL 30
@@ -39,7 +50,7 @@ CHardwareMonitor::~CHardwareMonitor(void)
 void CHardwareMonitor::StartHardwareMonitor(MainWorker *pMainWorker)
 {
 #ifdef _DEBUG
-        _log.Log(LOG_NORM,"System: Started");
+        _log.Log(LOG_NORM,"Hardware Monitor: Started");
 #endif
 	m_pMain=pMainWorker;
 	Init();
@@ -108,7 +119,7 @@ void CHardwareMonitor::Init()
 		m_bEnabled=atoi(sd[1].c_str())!=0;
 	}
 #ifdef _DEBUG
-    _log.Log(LOG_NORM,"System: Id set to: %d",hwId);
+    _log.Log(LOG_NORM,"Hardware Monitor: Id set to: %d",hwId);
 #endif	
 }
 
@@ -130,7 +141,7 @@ void CHardwareMonitor::Do_Work()
 		}
 
 	}
-	_log.Log(LOG_NORM,"System: Stopped...");			
+	_log.Log(LOG_NORM,"Hardware Monitor: Stopped...");			
 
 }
 
@@ -139,13 +150,14 @@ void CHardwareMonitor::FetchData()
 {
 #ifdef WIN32
 	if (IsOHMRunning()) {
-		_log.Log(LOG_NORM,"System: Fetching data (System sensors)");
+		_log.Log(LOG_NORM,"Hardware Monitor: Fetching data (System sensors)");
 		RunWMIQuery("Sensor","Temperature");
 		RunWMIQuery("Sensor","Load");
 		RunWMIQuery("Sensor","Fan");
 		RunWMIQuery("Sensor","Voltage");
 	}
 #else
+	_log.Log(LOG_NORM,"Hardware Monitor: Fetching data (System sensors)");
 	FetchUnixData();
 #endif
 }
@@ -154,7 +166,7 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const std::s
 {
 	if (!hwId) {
 #ifdef _DEBUG
-		_log.Log(LOG_NORM,"System: Id not found!");
+		_log.Log(LOG_NORM,"Hardware Monitor: Id not found!");
 #endif		
 		return;
 	}
@@ -314,7 +326,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 				hr = pclsObj->Get(L"Identifier", 0, &vtProp, 0, 0); // instance id seems to drift
 				std::string itemId = _bstr_t (vtProp.bstrVal);
 				//itemId = "WMI"+itemId;
-				//_log.Log(LOG_NORM, "System: %s, %s, %s",itemId.c_str(), itemName.c_str(),itemValue.str().c_str());
+				//_log.Log(LOG_NORM, "Hardware Monitor: %s, %s, %s",itemId.c_str(), itemName.c_str(),itemValue.str().c_str());
 				UpdateSystemSensor(qType, itemId, itemName, itemValue.str());
 				VariantClear(&vtProp);
 				uReturn = 0;
@@ -324,7 +336,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 		}
 	}
 	else {
-		//_log.Log(LOG_NORM, "System: pservices null");
+		//_log.Log(LOG_NORM, "Hardware Monitor: pservices null");
 	}
 }
 #else
@@ -402,6 +414,45 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 				}
 			}
 			m_lastquerytime=acttime;
+		}
+
+		//Disk Usage
+		std::map<std::string, _tDUsageStruct> _disks;
+		std::vector<std::string> _rlines=ExecuteCommandAndReturn("df");
+		std::vector<std::string>::const_iterator ittDF;
+		for (ittDF=_rlines.begin(); ittDF!=_rlines.end(); ++ittDF)
+		{
+			char dname[200];
+			char suse[30];
+			char smountpoint[300];
+			long numblock, usedblocks, availblocks;
+			int ret=sscanf((*ittDF).c_str(), "%s\t%ld\t%ld\t%ld\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
+			if (ret==6)
+			{
+				if (strstr(dname,"/dev")!=NULL)
+				{
+					_tDUsageStruct dusage;
+					dusage.TotalBlocks=numblock;
+					dusage.UsedBlocks=usedblocks;
+					dusage.AvailBlocks=availblocks;
+					dusage.MountPoint=smountpoint;
+					_disks[dname]=dusage;
+				}
+			}
+		}
+		std::map<std::string, _tDUsageStruct>::const_iterator ittDisks;
+		char szTmp[40];
+		for (ittDisks=_disks.begin(); ittDisks!=_disks.end(); ++ittDisks)
+		{
+			_tDUsageStruct dusage=(*ittDisks).second;
+			if (dusage.TotalBlocks>0)
+			{
+				double UsagedPercentage=(100 / double(dusage.TotalBlocks))*double(dusage.UsedBlocks);
+				//std::cout << "Disk: " << (*ittDisks).first << ", Mount: " << dusage.MountPoint << ", Used: " << UsagedPercentage << std::endl;
+				sprintf(szTmp,"%.2f", UsagedPercentage);
+				UpdateSystemSensor("Load", (*ittDisks).first, dusage.MountPoint, szTmp);
+
+			}
 		}
 	}
 #endif //WIN32
