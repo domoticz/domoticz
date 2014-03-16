@@ -441,7 +441,6 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 			}
 		}
 		std::map<std::string, _tDUsageStruct>::const_iterator ittDisks;
-		char szTmp[40];
 		for (ittDisks=_disks.begin(); ittDisks!=_disks.end(); ++ittDisks)
 		{
 			_tDUsageStruct dusage=(*ittDisks).second;
