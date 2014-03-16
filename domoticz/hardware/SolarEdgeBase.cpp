@@ -273,6 +273,7 @@ void SolarEdgeBase::SendMeter(const unsigned char ID1,const unsigned char ID2, c
 
 	tsen.ENERGY.packettype=pTypeENERGY;
 	tsen.ENERGY.subtype=sTypeELEC2;
+	tsen.ENERGY.packetlength=sizeof(tsen.ENERGY)-1;
 	tsen.ENERGY.id1=ID1;
 	tsen.ENERGY.id2=ID2;
 	tsen.ENERGY.count=1;

@@ -160,9 +160,9 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_LimitlessLights,	"Limitless/AppLamp with LAN interface" },
 		{ HTYPE_System,				"Motherboard sensors" },
 		{ HTYPE_EnOcean,			"EnOcean USB (ESP2)" },
-		{ HTYPE_SolarEdgeTCP,		"SolarEdge via LAN interface (Working, NOT READY!)" },
+		{ HTYPE_SolarEdgeTCP,		"SolarEdge via LAN interface" },
 		{ HTYPE_SMASpot,			"SMASpot" },
-		{ HTYPE_ICYTHERMOSTAT,		"ICY Thermostat (NOT READY!)" },
+		{ HTYPE_ICYTHERMOSTAT,		"ICY Thermostat" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

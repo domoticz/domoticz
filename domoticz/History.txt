@@ -1,5 +1,5 @@
 Version 1.0.xxxx (March xxth 2014)
-- Implemented: Initial Support for Forecast.io
+- Implemented: Support for Forecast.io
 - Implemented: Temperature/Weaher widgets forecast button if hardware is WU/Forecast.io
 - Implemented: Widgets now turn yellow (if no timeout) if the battery level is <= 10 percent
 - Implemented: Temperature Month/Year graphs now display min/max as a range
@@ -39,8 +39,8 @@ Version 1.0.xxxx (March xxth 2014)
 - Fixed: OTGW, dunit was not set
 - Implemented: Support for Remote Control buttons (On action Only!)
 - Changed: Lots of work on charts plotting
-- Implemented: Initial Support for SolarEdge Inverters (SE5000 and similar with TCP/IP interface)
-- Implemented: Initial Support for SMASpot compatible solar Inverters
+- Implemented: Support for SolarEdge Inverters (SE5000 and similar with TCP/IP interface)
+- Implemented: Support for SMASpot compatible solar Inverters
 - Implemented: Option to Enable/Disable Widget Re-Ordering (settings page)
 - Fixed: OpenZWave fixed possible problem with Alarm Level/Flood/Smoke/Heat value changes
 - Implemented: Razberry COMMAND_CLASS_THERMOSTAT_MODE (0/1)
@@ -69,7 +69,8 @@ Version 1.0.xxxx (March xxth 2014)
 - Changed: Translation Language Loading
 - Implemented: protection option for light/switches/scenes/setpoints
 - Implemented: unix hardware monitor for Memory/CPU and Disk usage
-- Fixed: OpenZWave remote domoticz clients did not receive Power reports
+- Fixed: OpenZWave/SMASpot/Solaredge remote domoticz clients did not receive Power reports
+- Implemented: Support for ICY (Essent) Thermostats
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)

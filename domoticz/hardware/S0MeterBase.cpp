@@ -92,6 +92,7 @@ void S0MeterBase::SendMeter(unsigned char ID, double musage, double mtotal)
 	{
 		tsen.ENERGY.packettype=pTypeENERGY;
 		tsen.ENERGY.subtype=sTypeELEC2;
+		tsen.ENERGY.packetlength=sizeof(tsen.ENERGY)-1;
 		tsen.ENERGY.id1=0;
 		tsen.ENERGY.id2=ID;
 		tsen.ENERGY.count=1;
