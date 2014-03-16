@@ -11,6 +11,7 @@
 	#include <comdef.h>
 #else
 	#include <sys/sysinfo.h>
+	#include <sys/time.h>
 #endif
 
 #define POLL_INTERVAL 30
@@ -69,7 +70,7 @@ void CHardwareMonitor::StopHardwareMonitor()
 void CHardwareMonitor::Init()
 {
 	// Check if there is already hardware running for System, if no start it.
-	
+	m_lastquerytime=0;
 	hwId = 0;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
@@ -326,6 +327,15 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 	}
 }
 #else
+	double time_so_far()
+	{
+		struct timeval tp;
+		if (gettimeofday(&tp, (struct timezone *) NULL) == -1)
+			return 0;
+		return ((double) (tp.tv_sec)) +
+			(((double) tp.tv_usec) * 0.000001 );
+	}
+
 	void CHardwareMonitor::FetchUnixData()
 	{
 		struct sysinfo mySysInfo;
@@ -333,14 +343,44 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 		if (ret!=0)
 			return;
 		char szTmp[80];
+		//Memory
 		unsigned long usedram=mySysInfo.totalram-mySysInfo.freeram;
 		float memusedpercentage=(100.0f/float(mySysInfo.totalram))*usedram;
 		sprintf(szTmp,"%.2f",memusedpercentage);
 		UpdateSystemSensor("Load", "Memory Usage", "Memory Usage", szTmp);
-		float load1=(float)(mySysInfo.loads[0]);
-		float rload1=load1/(float)(1 << SI_LOAD_SHIFT);
-		sprintf(szTmp,"%.2f",rload1);
-		//UpdateSystemSensor("Load", "SystemLoad", "SystemLoad", szTmp);
+
+		//CPU
+		if (m_lastquerytime==0)
+		{
+			//first time
+			m_lastquerytime = time_so_far();
+			FILE *f1 = fopen("/proc/stat", "r");
+			int actload1,actload2,actload3;
+			fscanf(f1, "%s\t%d\t%d\t%d\n", c, &actload1, &actload2, &actload3);
+			fclose(f1);
+			m_lastloadcpu=actload1+actload2+actload3;
+		}
+		else
+		{
+			double acttime = time_so_far();
+			FILE *f1 = fopen("/proc/stat", "r");
+			int actload1,actload2,actload3;
+			fscanf(f1, "%s\t%d\t%d\t%d\n", c, &actload1, &actload2, &actload3);
+			fclose(f1);
+
+			long long t = (actload1+actload2+actload3)-m_lastloadcpu;
+			double cpuper=(t / ((acttime-m_lastquerytime) * 100)) * 100;
+			if (cpuper>0)
+			{
+				sprintf(szTmp,"%.2f", cpuper);
+				UpdateSystemSensor("Load", "CPU_Usage", "CPU_Usage", szTmp);
+			}
+
+			m_load1=actload1;
+			m_load2=actload2;
+			m_load3=actload3;
+			m_lastquerytime=acttime;
+		}
 	}
 #endif //WIN32
 

@@ -19,6 +19,7 @@ private:
 	bool m_bEnabled;
 	MainWorker *m_pMain;
 	int hwId;
+	double m_lastquerytime;
 	void Do_Work();	
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
@@ -35,6 +36,7 @@ private:
 	IWbemServices *pServicesSystem;
 #else
 	void FetchUnixData();
+	long long m_lastloadcpu;
 #endif
 };
 
