@@ -342,6 +342,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		memset(&tsen,0,sizeof(RBUF));
 		tsen.CURRENT.packettype=pTypeCURRENT;
 		tsen.CURRENT.subtype=sTypeELEC1;
+		tsen.CURRENT.packetlength=sizeof(tsen.CURRENT)-1;
 		tsen.CURRENT.id1=ID3;
 		tsen.CURRENT.id2=ID4;
 		int amps=round(pDevice->floatValue*10.0f);
@@ -369,6 +370,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		{
 			tsen.ENERGY.packettype=pTypeENERGY;
 			tsen.ENERGY.subtype=sTypeELEC2;
+			tsen.ENERGY.packetlength=sizeof(tsen.ENERGY)-1;
 			tsen.ENERGY.id1=ID3;
 			tsen.ENERGY.id2=ID4;
 			tsen.ENERGY.count=1;
@@ -408,6 +410,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		{
 			tsen.ENERGY.packettype=pTypeENERGY;
 			tsen.ENERGY.subtype=sTypeELEC2;
+			tsen.ENERGY.packetlength=sizeof(tsen.ENERGY)-1;
 			tsen.ENERGY.id1=ID3;
 			tsen.ENERGY.id2=ID4;
 			tsen.ENERGY.count=1;
