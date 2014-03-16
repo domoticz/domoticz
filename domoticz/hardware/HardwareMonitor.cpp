@@ -336,11 +336,11 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 		unsigned long usedram=mySysInfo.totalram-mySysInfo.freeram;
 		float memusedpercentage=(100.0f/float(mySysInfo.totalram))*usedram;
 		sprintf(szTmp,"%.2f",memusedpercentage);
-		UpdateSystemSensor("Load", 1, "Memory Usage", szTmp);
+		UpdateSystemSensor("Load", "Memory Usage", "Memory Usage", szTmp);
 		float load1=(float)(mySysInfo.loads[0]);
 		float rload1=load1/(float)(1 << SI_LOAD_SHIFT);
 		sprintf(szTmp,"%.2f",rload1);
-		UpdateSystemSensor("Load", 2, "SystemLoad", szTmp);
+		//UpdateSystemSensor("Load", "SystemLoad", "SystemLoad", szTmp);
 	}
 #endif //WIN32
 
