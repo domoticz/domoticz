@@ -369,7 +369,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 						bFirstLine=false;
 						m_lastloadcpu=actload1+actload2+actload3;
 					}
-					char *cPos=strstr(c,"cpu");
+					char *cPos=strstr(cname,"cpu");
 					if (cPos==NULL)
 						break;
 					totcpu++;
