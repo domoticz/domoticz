@@ -9,7 +9,7 @@
 
 #ifdef WIN32
 	#include <comdef.h>
-#else
+#elif defined __linux__
 	#include <sys/sysinfo.h>
 	#include <sys/time.h>
 	#include <unistd.h>
@@ -81,6 +81,11 @@ void CHardwareMonitor::StopHardwareMonitor()
 
 void CHardwareMonitor::Init()
 {
+#ifdef __APPLE__
+	//sorry apple not supported for now
+	m_bEnabled=false;
+	return;
+#endif
 	// Check if there is already hardware running for System, if no start it.
 	m_lastquerytime=0;
 	hwId = 0;
@@ -118,9 +123,6 @@ void CHardwareMonitor::Init()
 		hwId=atoi(sd[0].c_str());
 		m_bEnabled=atoi(sd[1].c_str())!=0;
 	}
-#ifdef _DEBUG
-    _log.Log(LOG_NORM,"Hardware Monitor: Id set to: %d",hwId);
-#endif	
 }
 
 void CHardwareMonitor::Do_Work()
@@ -156,7 +158,7 @@ void CHardwareMonitor::FetchData()
 		RunWMIQuery("Sensor","Fan");
 		RunWMIQuery("Sensor","Voltage");
 	}
-#else
+#elif defined __linux__
 	_log.Log(LOG_NORM,"Hardware Monitor: Fetching data (System sensors)");
 	FetchUnixData();
 #endif
@@ -339,7 +341,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 		//_log.Log(LOG_NORM, "Hardware Monitor: pservices null");
 	}
 }
-#else
+#elif defined __linux__
 	double time_so_far()
 	{
 		struct timeval tp;
@@ -454,5 +456,5 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 			}
 		}
 	}
-#endif //WIN32
+#endif //WIN32/#elif defined __linux__
 
