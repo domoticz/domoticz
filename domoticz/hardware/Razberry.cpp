@@ -364,6 +364,10 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 						{
 							_device.devType = ZDTYPE_SENSOR_AMPERE;
 						}
+						else if (scaleString=="Power Factor")
+						{
+							_device.devType = ZDTYPE_SENSOR_PERCENTAGE;
+						}
 						else
 						{
 							_log.Log(LOG_ERROR,"Razberry: Device Scale not handled at the moment, please report (nodeID:%d, instanceID:%d, Scale:%s)",_device.nodeID,_device.instanceID,scaleString.c_str());
@@ -408,6 +412,10 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 					else if (scaleString=="A")
 					{
 						_device.devType = ZDTYPE_SENSOR_AMPERE;
+					}
+					else if (scaleString=="Power Factor")
+					{
+						_device.devType = ZDTYPE_SENSOR_PERCENTAGE;
 					}
 					else
 					{
@@ -744,6 +752,10 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 		pDevice->floatValue=obj["val"]["value"].asFloat()*pDevice->scaleMultiply;
 		break;
 	case ZDTYPE_SENSOR_AMPERE:
+		//Ampere
+		pDevice->floatValue=obj["val"]["value"].asFloat()*pDevice->scaleMultiply;
+		break;
+	case ZDTYPE_SENSOR_PERCENTAGE:
 		//Ampere
 		pDevice->floatValue=obj["val"]["value"].asFloat()*pDevice->scaleMultiply;
 		break;

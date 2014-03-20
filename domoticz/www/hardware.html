@@ -45,7 +45,7 @@
     <table class="display" id="nodestable" border="0" cellpadding="0" cellspacing="0" width="100%">
         <thead>
             <tr>
-                <th width="30" align="center" data-i18n="NodeID">NodeID</th>
+                <th width="70" align="center" data-i18n="NodeID">NodeID</th>
                 <th width="150" align="left" data-i18n="Name">Name</th>
                 <th align="left" data-i18n="Description">Description</th>
                 <th width="50" align="left" data-i18n="EnablePolling">EnablePolling</th>
@@ -1276,6 +1276,7 @@ function RefreshOpenZWaveNodeTable()
 			//if (item.NodeID==1) {
 			//	item.Description +='&nbsp;&nbsp;<span class="label label-info" onclick="showNetworkInfo();" onmouseover="cursorhand()" onmouseout="cursordefault()">Info</span>';
 			//}
+			var nodeStr = addLeadingZeros(item.NodeID,3) + " (0x" + addLeadingZeros(item.NodeID.toString(16),2) + ")";
 			var addId = oTable.fnAddData( {
 				"DT_RowId": item.idx,
 				"Name": item.Name,
@@ -1283,7 +1284,8 @@ function RefreshOpenZWaveNodeTable()
 				"Config": item.config,
 				"IsAwake": item.IsAwake,
 				"IsDead": item.IsDead,
-                "0": item.NodeID,
+				"NodeID": item.NodeID,
+                "0": nodeStr,
                 "1": item.Name,
 				"2": item.Description,
 				"3": item.PollEnabled,
@@ -1308,7 +1310,7 @@ function RefreshOpenZWaveNodeTable()
 					var data = oTable.fnGetData( anSelected[0] );
 					var idx= data["DT_RowId"];
 					$.myglobals.SelectedTimerIdx=idx;
-					var iNode=parseInt(data["0"]);
+					var iNode=parseInt(data["NodeID"]);
 					$("#updelclr #nodeupdate").attr("href", "javascript:UpdateNode(" + idx + ")");
 					if (iNode>1) {
 						$('#updelclr #nodedelete').attr("class", "btnstyle3");

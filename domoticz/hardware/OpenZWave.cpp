@@ -33,6 +33,16 @@
 //Note!, Some devices uses the same instance for multiple values,
 //to solve this we are going to use the Index value!, Except for COMMAND_CLASS_MULTI_INSTANCE
 
+//Scale ID's
+enum _eSensorScaleID
+{
+	SCALEID_UNUSED=0,
+	SCALEID_ENERGY,
+	SCALEID_POWER,
+	SCALEID_VOLTAGE,
+	SCALEID_CURRENT,
+	SCALEID_POWERFACTOR
+};
 
 #pragma warning(disable: 4996)
 
@@ -1153,9 +1163,9 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
 				{
 					if (vLabel=="Energy")
-						_device.scaleID=1;
+						_device.scaleID=SCALEID_ENERGY;
 					else
-						_device.scaleID=2;
+						_device.scaleID=SCALEID_POWER;
 					_device.floatValue=fValue;
 					_device.scaleMultiply=1;
 					if (vUnits=="kWh")
@@ -1178,7 +1188,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
 				{
 					_device.floatValue=fValue;
-					_device.scaleID=3; //voltage
+					_device.scaleID=SCALEID_VOLTAGE;
 					_device.scaleMultiply=1;
 					_device.devType = ZDTYPE_SENSOR_VOLTAGE;
 					InsertDevice(_device);
@@ -1193,9 +1203,23 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
 				{
 					_device.floatValue=fValue;
-					_device.scaleID=4; //Current
+					_device.scaleID=SCALEID_CURRENT;
 					_device.scaleMultiply=1;
 					_device.devType = ZDTYPE_SENSOR_AMPERE;
+					InsertDevice(_device);
+				}
+			}
+		}
+		else if (vLabel=="Power Factor")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
+				{
+					_device.floatValue=fValue;
+					_device.scaleID=SCALEID_POWERFACTOR;
+					_device.scaleMultiply=1;
+					_device.devType = ZDTYPE_SENSOR_PERCENTAGE;
 					InsertDevice(_device);
 				}
 			}
@@ -1248,9 +1272,9 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
 				{
 					if (vLabel=="Energy")
-						_device.scaleID=1;
+						_device.scaleID=SCALEID_ENERGY;
 					else
-						_device.scaleID=2;
+						_device.scaleID=SCALEID_POWER;
 					_device.floatValue=fValue;
 					_device.scaleMultiply=1;
 					if (vUnits=="kWh")
@@ -1274,7 +1298,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				{
 					_device.floatValue=fValue;
 					_device.scaleMultiply=1;
-					_device.scaleID=3; //voltage
+					_device.scaleID=SCALEID_VOLTAGE;
 					_device.devType = ZDTYPE_SENSOR_VOLTAGE;
 					InsertDevice(_device);
 				}
@@ -1288,8 +1312,22 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				{
 					_device.floatValue=fValue;
 					_device.scaleMultiply=1;
-					_device.scaleID=4; //Current
+					_device.scaleID=SCALEID_CURRENT;
 					_device.devType = ZDTYPE_SENSOR_AMPERE;
+					InsertDevice(_device);
+				}
+			}
+		}
+		else if (vLabel=="Power Factor")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
+				{
+					_device.floatValue=fValue;
+					_device.scaleMultiply=1;
+					_device.scaleID=SCALEID_POWERFACTOR;
+					_device.devType = ZDTYPE_SENSOR_PERCENTAGE;
 					InsertDevice(_device);
 				}
 			}
@@ -1501,18 +1539,21 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 		(vLabel=="Energy")||
 		(vLabel=="Power")||
 		(vLabel=="Voltage")||
-		(vLabel=="Current")
+		(vLabel=="Current")||
+		(vLabel=="Power Factor")
 		)
 	{
 		int scaleID=0;
 		if (vLabel=="Energy")
-			scaleID=1;
+			scaleID=SCALEID_ENERGY;
 		else if (vLabel=="Power")
-			scaleID=2;
+			scaleID=SCALEID_POWER;
 		else if (vLabel=="Voltage")
-			scaleID=3;
+			scaleID=SCALEID_VOLTAGE;
 		else if (vLabel=="Current")
-			scaleID=4;
+			scaleID=SCALEID_CURRENT;
+		else if (vLabel=="Power Factor")
+			scaleID=SCALEID_POWERFACTOR;
 
 		sstr << "." << scaleID;
 	}
@@ -1711,6 +1752,13 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 			fValue=float((fValue-32)*(5.0/9.0));
 		}
 		pDevice->bValidValue=(abs(pDevice->floatValue-fValue)<10);
+		pDevice->floatValue=fValue;
+		break;
+	case ZDTYPE_SENSOR_PERCENTAGE:
+		if (vType!=OpenZWave::ValueID::ValueType_Decimal)
+			return;
+		if (vLabel!="Power Factor")
+			return;
 		pDevice->floatValue=fValue;
 		break;
 	}

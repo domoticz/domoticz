@@ -866,9 +866,9 @@ void MainWorker::Do_Work()
 			m_bHaveDownloadedDomoticzUpdate=true;
 		}
 
+		boost::lock_guard<boost::mutex> l(m_startscene_mutex);
 		if (m_scenes_to_start.size()>0)
 		{
-			boost::lock_guard<boost::mutex> l(m_startscene_mutex);
 			std::vector<_tStartScene>::iterator itt=m_scenes_to_start.begin();
 
 			//Only one scene each 500ms for now

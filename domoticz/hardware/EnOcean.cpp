@@ -227,7 +227,7 @@ const _t4BSLookup T4BSTable[]=
 	{ 0xA5, 0x20, 0x02, "Basic Actuator (BI-DIR)",																				"HVAC.02" },
 	{ 0xA5, 0x20, 0x03, "Line powered Actuator (BI-DIR)",																		"HVAC.03" },
 	{ 0xA5, 0x20, 0x10, "Generic HVAC Interface (BI-DIR)",																		"HVAC.10" },
-	{ 0xA5, 0x20, 0x11, "Generic HVAC Interface – Error Control (BI-DIR)",														"HVAC.11" },
+	{ 0xA5, 0x20, 0x11, "Generic HVAC Interface - Error Control (BI-DIR)",														"HVAC.11" },
 	{ 0xA5, 0x20, 0x12, "Temperature Controller Input",																			"HVAC.12" },
 
 	//A5-30: Digital Input
