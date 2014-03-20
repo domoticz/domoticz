@@ -336,6 +336,15 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		gDevice.intval1=(int)(ID1<<24)|(ID2<<16)|(ID3<<8)|ID4;
 		sDecodeRXMessage(this, (const unsigned char *)&gDevice);
 	}
+	else if (pDevice->devType==ZDTYPE_SENSOR_PERCENTAGE)
+	{
+		_tGeneralDevice gDevice;
+		gDevice.subtype=sTypePercentage;
+		gDevice.id=ID4;
+		gDevice.floatval1=pDevice->floatValue;
+		gDevice.intval1=(int)(ID1<<24)|(ID2<<16)|(ID3<<8)|ID4;
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+	}
 	else if (pDevice->devType==ZDTYPE_SENSOR_AMPERE)
 	{
 		RBUF tsen;
