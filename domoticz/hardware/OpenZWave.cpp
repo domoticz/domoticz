@@ -2029,6 +2029,7 @@ void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
 	case OpenZWave::Driver::ControllerState_Completed:
 		m_bControllerCommandInProgress=false;
 		szLog="The command has completed successfully";
+		OpenZWave::Manager::Get()->WriteConfig( m_controllerID );
 		break;
 	case OpenZWave::Driver::ControllerState_Failed:
 		szLog="The command has failed";
