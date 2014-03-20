@@ -357,6 +357,7 @@
 	</Manufacturer>
 	<Manufacturer id="5254" name="Remotec">
 		<Product type="0000" id="531f" name="Z-URC" config="remotec/zurc.xml"/>
+		<Product type="0001" id="8380" name="ZRC-100" />
 		<Product type="0101" id="8377" name="ZXT-120" config="remotec/zxt-120.xml" />
 	</Manufacturer>
 	<Manufacturer id="0010" name="RCS">
