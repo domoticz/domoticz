@@ -877,7 +877,7 @@ function ShowUtilities()
 					xhtm+=item.Usage;
 				}
 				else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
-					if ((item.UsageDeliv.charAt(0) == 0)||(item.Usage!=0)) {
+					if ((item.UsageDeliv.charAt(0) == 0)||(parseInt(item.Usage)!=0)) {
 						xhtm+=item.Usage;
 					}
 					if (item.UsageDeliv.charAt(0) != 0) {
