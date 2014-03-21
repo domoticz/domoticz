@@ -2103,6 +2103,10 @@ void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int po
 				{
 					if (vLabel=="Level")
 					{
+						if ( (*ittValue).GetIndex() != 0 )
+						{
+							continue;
+						}
 						m_pManager->EnablePoll(*ittValue,1);
 					}
 				}
@@ -2128,27 +2132,11 @@ void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int po
 				}
 				else if (commandclass==COMMAND_CLASS_SENSOR_MULTILEVEL)
 				{
-					if (vLabel=="Temperature")
+					if ( (*ittValue).GetIndex() != 0 )
 					{
-						m_pManager->EnablePoll(*ittValue,2);
+						continue;
 					}
-					else if (vLabel=="Luminance")
-					{
-						m_pManager->EnablePoll(*ittValue,2);
-					}
-					else if (vLabel=="Relative Humidity")
-					{
-						m_pManager->EnablePoll(*ittValue,2);
-					}
-					else if (
-						(vLabel=="Energy")||
-						(vLabel=="Power")
-						)
-					{
-						if (bSingleIndexPoll&&(ittValue->GetIndex()!=0))
-							continue;
-						m_pManager->EnablePoll(*ittValue,1);
-					}
+					m_pManager->EnablePoll(*ittValue,2);
 				}
 				else if (commandclass==COMMAND_CLASS_BATTERY)
 				{
