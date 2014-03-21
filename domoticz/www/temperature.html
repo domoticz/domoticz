@@ -509,7 +509,7 @@ function RefreshTemps()
 						else {
 							img+=GetTemp48Item(item.Chill);
 						}
-            img+='" height="48">';
+            img+='" height="48" width="48">';
             
             if ($(id + " #img").html()!=img) {
 							$(id + " #img").html(img);
@@ -707,7 +707,7 @@ function ShowTemps()
 					else {
 						xhtm+=GetTemp48Item(item.Chill);
 					}
-					xhtm+='" height="48"></td>\n' +
+					xhtm+='" height="48" width="48"></td>\n' +
 							'\t      <td id="status">';
 					var bHaveTemperature=false;
 					var bHaveBefore=false;

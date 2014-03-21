@@ -151,7 +151,7 @@ function RefreshWeathers()
 						var img="";
 						var bigtext="";
 						if (typeof item.Barometer != 'undefined') {
-							img='<img src="images/baro48.png" height="48">';
+							img='<img src="images/baro48.png" height="48" width="48">';
 							bigtext=item.Barometer + ' hPa';
 							if (typeof item.ForecastStr != 'undefined') {
 								status=item.Barometer + ' hPa, ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
@@ -165,7 +165,7 @@ function RefreshWeathers()
 							}
 						}
 						if (typeof item.Rain != 'undefined') {
-							img='<img src="images/rain48.png" height="48">';
+							img='<img src="images/rain48.png" height="48" width="48">';
 							status=item.Rain + ' mm';
 							bigtext=item.Rain + ' mm';
 							if (typeof item.RainRate != 'undefined') {
@@ -175,12 +175,12 @@ function RefreshWeathers()
 							}
 						}
 						if (typeof item.Visibility != 'undefined') {
-							img='<img src="images/visibility48.png" height="48">';
+							img='<img src="images/visibility48.png" height="48" width="48">';
 							status=item.Data;
 							bigtext=item.Data;
 						}
 						else if (typeof item.UVI != 'undefined') {
-							img='<img src="images/uv48.png" height="48">';
+							img='<img src="images/uv48.png" height="48" width="48">';
 							status=item.UVI + ' UVI';
 							bigtext=item.UVI + ' UVI';
 							if (typeof item.Temp!= 'undefined') {
@@ -188,12 +188,12 @@ function RefreshWeathers()
 							}
 						}
 						if (typeof item.Radiation != 'undefined') {
-							img='<img src="images/radiation48.png" height="48">';
+							img='<img src="images/radiation48.png" height="48" width="48">';
 							status=item.Data;
 							bigtext=item.Data;
 						}
 						else if (typeof item.Direction != 'undefined') {
-							img='<img src="images/Wind' + item.DirectionStr + '.png" height="48">';
+							img='<img src="images/Wind' + item.DirectionStr + '.png" height="48" width="48">';
 							status=item.Direction + ' ' + item.DirectionStr;
 							if (typeof item.Speed != 'undefined') {
 								status+=', ' + $.i18n('Speed') +': ' + item.Speed + ' ' + $.myglobals.windsign;
@@ -372,7 +372,7 @@ function ShowWeathers()
 					xhtm+='\t      <td id="img"><img src="images/';
 					if (typeof item.Barometer != 'undefined') {
 						bHaveBaro=true;
-						xhtm+='baro48.png" height="48"></td>\n' +
+						xhtm+='baro48.png" height="48" width="48"></td>\n' +
 							  '\t      <td id="status">' + item.Barometer + ' hPa';
 						if (typeof item.ForecastStr != 'undefined') {
 							xhtm+=', ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
@@ -383,7 +383,7 @@ function ShowWeathers()
 					}
 					else if (typeof item.Rain != 'undefined') {
 						bHaveRain=true;
-						xhtm+='rain48.png" height="48"></td>\n' +
+						xhtm+='rain48.png" height="48" width="48"></td>\n' +
 						'\t      <td  id="status">' + item.Rain + ' mm';
 						if (typeof item.RainRate != 'undefined') {
 							if (item.RainRate!=0) {
@@ -393,12 +393,12 @@ function ShowWeathers()
 					}
 					else if (typeof item.Visibility != 'undefined') {
 						bHaveVisibility=true;
-						xhtm+='visibility48.png" height="48"></td>\n' +
+						xhtm+='visibility48.png" height="48" width="48"></td>\n' +
 						'\t      <td  id="status">' + item.Data;
 					}
 					else if (typeof item.UVI != 'undefined') {
 						bHaveUV=true;
-						xhtm+='uv48.png" height="48"></td>\n' +
+						xhtm+='uv48.png" height="48" width="48"></td>\n' +
 						'\t      <td id="status">' + item.UVI + ' UVI';
 						if (typeof item.Temp!= 'undefined') {
 							xhtm+=', ' + $.i18n('Temp') +': ' + item.Temp + '\u00B0 ' + $.myglobals.tempsign;
@@ -406,12 +406,12 @@ function ShowWeathers()
 					}
 					else if (typeof item.Radiation != 'undefined') {
 						bHaveRadiation=true;
-						xhtm+='radiation48.png" height="48"></td>\n' +
+						xhtm+='radiation48.png" height="48" width="48"></td>\n' +
 						'\t      <td  id="status">' + item.Data;
 					}
 					else if (typeof item.Direction != 'undefined') {
 						bHaveWind=true;
-						xhtm+='Wind' + item.DirectionStr + '.png" height="48"></td>\n' +
+						xhtm+='Wind' + item.DirectionStr + '.png" height="48" width="48"></td>\n' +
 						'\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr;
 						if (typeof item.Speed != 'undefined') {
 							xhtm+=', ' + $.i18n('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;

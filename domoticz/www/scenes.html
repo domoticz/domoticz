@@ -1321,7 +1321,7 @@ function RefreshScenes()
 				var img2="";
 
 				if (item.Type=="Scene") {
-					img1='<img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+					img1='<img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48" width="48">';
 				}
 				else {
 					var onclass="";
@@ -1335,8 +1335,8 @@ function RefreshScenes()
 						offclass="transimg";
 					}
 
-					img1='<img class="' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
-					img2='<img class="' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48">';
+					img1='<img class="' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48" width="48">';
+					img2='<img class="' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48" width="48">';
 					if ($(id + " #img2").html()!=img2) {
 						$(id + " #img2").html(img2);
 					}
@@ -1423,14 +1423,14 @@ function ShowScenes()
                 '\t      <td id="name" style="background-color: ' + nbackcolor + ';">' + item.Name + '</td>\n' +
                 '\t      <td id="bigtext">';
 			  if (item.UsedByCamera==true) {
-				var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="16">';
+				var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="16" width="16">';
 				streamurl="<a href=\"javascript:ShowCameraLiveStream('" + item.Name + "','" + item.CameraFeed + "')\">" + streamimg + "</a>";
 				xhtm+=streamurl;
 			  }
 			  xhtm+='</td>\n';
 
 			if (item.Type=="Scene") {
-				xhtm+='<td id="img1"><img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+				xhtm+='<td id="img1"><img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48" width="48"></td>\n';
 				xhtm+='\t      <td id="status">&nbsp;</td>\n';
 			}
 			else {
@@ -1445,8 +1445,8 @@ function ShowScenes()
 					offclass="transimg";
 				}
 
-				xhtm+='<td id="img1"><img class="' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
-				xhtm+='<td id="img2"><img class="' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48"></td>\n';
+				xhtm+='<td id="img1"><img class="' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48" width="48"></td>\n';
+				xhtm+='<td id="img2"><img class="' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48" width="48"></td>\n';
 				xhtm+='\t      <td id="status">' + TranslateStatus(item.Status) + '</td>\n';
 			}
 			xhtm+=

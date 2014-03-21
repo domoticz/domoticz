@@ -921,7 +921,7 @@ function ShowUtilities()
           xhtm+='\t      <td id="img"><img src="images/';
             var status="";
             if (typeof item.Counter != 'undefined') {
-              xhtm+='counter.png" height="48"></td>\n';
+              xhtm+='counter.png" height="48" width="48"></td>\n';
               if ((item.SubType == "Gas")||(item.SubType == "RFXMeter counter")) {
 				status=item.Counter;
               }
@@ -930,51 +930,51 @@ function ShowUtilities()
               }
             }
             else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
-              xhtm+='current48.png" height="48"></td>\n';
+              xhtm+='current48.png" height="48" width="48"></td>\n';
               status=item.Data;
             }
             else if (item.Type == "Energy") {
-              xhtm+='current48.png" height="48"></td>\n';
+              xhtm+='current48.png" height="48" width="48"></td>\n';
               status=item.Data;
             }
             else if (item.Type == "Air Quality") {
-              xhtm+='air48.png" height="48"></td>\n';
+              xhtm+='air48.png" height="48" width="48"></td>\n';
               status=item.Data + " (" + item.Quality + ")";
             }
             else if (item.SubType == "Soil Moisture") {
-              xhtm+='moisture48.png" height="48"></td>\n';
+              xhtm+='moisture48.png" height="48" width="48"></td>\n';
               status=item.Data + " (" + item.Desc + ")";
             }
             else if (item.SubType == "Percentage") {
-              xhtm+='Percentage48.png" height="48"></td>\n';
+              xhtm+='Percentage48.png" height="48" width="48"></td>\n';
               status=item.Data;
             }
             else if (item.SubType == "System fan") {
-              xhtm+='Fan48_On.png" height="48"></td>\n';
+              xhtm+='Fan48_On.png" height="48" width="48"></td>\n';
               status=item.Data;
             }
 			else if (item.SubType == "Leaf Wetness") {
-              xhtm+='leaf48.png" height="48"></td>\n';
+              xhtm+='leaf48.png" height="48" width="48"></td>\n';
               status=item.Data;
             }
             else if ((item.SubType == "Voltage")||(item.SubType == "A/D")) {
-              xhtm+='current48.png" height="48"></td>\n';
+              xhtm+='current48.png" height="48" width="48"></td>\n';
               status=item.Data;
             }
             else if (item.Type == "Lux") {
-              xhtm+='lux48.png" height="48"></td>\n';
+              xhtm+='lux48.png" height="48" width="48"></td>\n';
               status=item.Data;
             }
             else if (item.Type == "Weight") {
-              xhtm+='scale48.png" height="48"></td>\n';
+              xhtm+='scale48.png" height="48" width="48"></td>\n';
               status=item.Data;
             }
             else if (item.Type == "Usage") {
-              xhtm+='current48.png" height="48"></td>\n';
+              xhtm+='current48.png" height="48" width="48"></td>\n';
               status=item.Data;
             }
             else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-              xhtm+='override.png" height="48"></td>\n';
+              xhtm+='override.png" height="48" width="48"></td>\n';
               status=item.Data + '\u00B0 C';
             }
             if (typeof item.CounterDeliv != 'undefined') {
