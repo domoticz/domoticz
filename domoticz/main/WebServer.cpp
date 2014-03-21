@@ -8225,12 +8225,21 @@ std::string CWebServer::GetJSonPage()
 							}
 							ii++;
 						}
-						if (bHaveL1)
-							root["haveL1"]=true;
-						if (bHaveL2)
-							root["haveL2"]=true;
-						if (bHaveL3)
-							root["haveL3"]=true;
+						if (
+							(!bHaveL1)&&
+							(!bHaveL2)&&
+							(!bHaveL3)
+							) {
+								root["haveL1"]=true; //show at least something
+						}
+						else {
+							if (bHaveL1)
+								root["haveL1"]=true;
+							if (bHaveL2)
+								root["haveL2"]=true;
+							if (bHaveL3)
+								root["haveL3"]=true;
+						}
 					}
 				}
 				else if (dType==pTypeCURRENTENERGY)
@@ -8294,12 +8303,21 @@ std::string CWebServer::GetJSonPage()
 							}
 							ii++;
 						}
-						if (bHaveL1)
-							root["haveL1"]=true;
-						if (bHaveL2)
-							root["haveL2"]=true;
-						if (bHaveL3)
-							root["haveL3"]=true;
+						if (
+							(!bHaveL1)&&
+							(!bHaveL2)&&
+							(!bHaveL3)
+							) {
+								root["haveL1"]=true; //show at least something
+						}
+						else {
+							if (bHaveL1)
+								root["haveL1"]=true;
+							if (bHaveL2)
+								root["haveL2"]=true;
+							if (bHaveL3)
+								root["haveL3"]=true;
+						}
 					}
 				}
 				else if ((dType==pTypeENERGY)||(dType==pTypePOWER))
@@ -10013,12 +10031,21 @@ std::string CWebServer::GetJSonPage()
 
 							ii++;
 						}
-						if (bHaveL1)
-							root["haveL1"]=true;
-						if (bHaveL2)
-							root["haveL2"]=true;
-						if (bHaveL3)
-							root["haveL3"]=true;
+						if (
+							(!bHaveL1)&&
+							(!bHaveL2)&&
+							(!bHaveL3)
+							) {
+								root["haveL1"]=true; //show at least something
+						}
+						else {
+							if (bHaveL1)
+								root["haveL1"]=true;
+							if (bHaveL2)
+								root["haveL2"]=true;
+							if (bHaveL3)
+								root["haveL3"]=true;
+						}
 					}
 				}
 				else if (dType==pTypeCURRENTENERGY)
@@ -10092,12 +10119,21 @@ std::string CWebServer::GetJSonPage()
 
 							ii++;
 						}
-						if (bHaveL1)
-							root["haveL1"]=true;
-						if (bHaveL2)
-							root["haveL2"]=true;
-						if (bHaveL3)
-							root["haveL3"]=true;
+						if (
+							(!bHaveL1)&&
+							(!bHaveL2)&&
+							(!bHaveL3)
+							) {
+								root["haveL1"]=true; //show at least something
+						}
+						else {
+							if (bHaveL1)
+								root["haveL1"]=true;
+							if (bHaveL2)
+								root["haveL2"]=true;
+							if (bHaveL3)
+								root["haveL3"]=true;
+						}
 					}
 				}
 				else

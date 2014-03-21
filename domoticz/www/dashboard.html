@@ -2484,7 +2484,7 @@ function ShowFavorites()
 					}
 				}
 				else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
-					xhtm+='current48.png" height="40" width="40"></td>\n';
+					xhtm+='current48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowCurrentLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\', ' + item.displaytype + ');" height="40" width="40"></td>\n';
 					status=item.Data;
 				}
 				else if (item.Type == "Energy") {
@@ -2525,7 +2525,7 @@ function ShowFavorites()
 				}
 				else if ((item.SubType=="Voltage")||(item.SubType=="A/D")) {
 					xhtm+='current48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="40" width="40"></td>\n';
-						status=item.Data;
+					status=item.Data;
 				}
 				else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 					xhtm+='override.png" height="40" width="40"></td>\n';

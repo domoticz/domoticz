@@ -72,6 +72,7 @@ Version 1.0.xxxx (March xxth 2014)
 - Fixed: OpenZWave/SMASpot/Solaredge remote domoticz clients did not receive Power reports
 - Implemented: Support for ICY (Essent) Thermostats
 - Implemented: OpenZWave/Razberry, PowerFactor sensor
+- Implemented: Device Tab, option to display chart for sensors with Current/Percentage/Volt/Humidity
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)

@@ -306,9 +306,18 @@ function ShowDevices(filter)
           {
             itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#devicescontent\', \'ShowDevices\');">';
           }
-          else if (item.Type.indexOf("Temp")==0) {
+          else if ((item.Type.indexOf("Temp")==0)||(item.Type.indexOf("Humidity")==0)) {
             itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowTempLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
           }
+          else if (item.SubType=="Voltage") {
+            itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\',' + item.SwitchTypeVal +', \'VoltageGeneral\');">';
+          }
+		  else if (item.SubType == "Percentage") {
+            itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowPercentageLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
+		  }
+		  else if (item.Type == "Current") {
+            itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowCurrentLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.displaytype + ');">';
+		  }
           else if (typeof item.Counter != 'undefined') {
 			  if ((item.Type == "P1 Smart Meter")&&(item.SubType=="Energy")) {
 				itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowSmartLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">';
