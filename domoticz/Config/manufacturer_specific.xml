@@ -437,6 +437,7 @@
 		<Product type="0001" id="0001" name="TZ88 Smart Energy Plug-in Switch" config="wenzhou/tz88.xml"/>
 		<Product type="0101" id="0103" name="TZ68 On/Off Switch Socket" config="wenzhou/tz68.xml"/>
 		<Product type="0102" id="1020" name="TZ66D Dual Wall Switch" config="wenzhou/tz66d.xml"/>
+		<Product type="0808" id="0808" name="TZ66S Wall Switch" config="wenzhou/tz66s.xml"/>
 	</Manufacturer>
 	<Manufacturer id="004c" name="Woodward Labs">
 	</Manufacturer>
@@ -451,6 +452,7 @@
 	</Manufacturer>
 	<Manufacturer id="0109" name="Vision">
 		<Product type="1001" id="0101" name="Z-Wave USB Stick"/>
+		<Product type="2002" id="0203" name="Wireless PIR Motion Sensor" config="vision/zp3102eu.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0115" name="Z-Wave.Me">
 		<Product type="1000" id="0002" name="ZME_06433 Wall Flush-Mountable Dimmer" config="zwave.me/ZME_06433.xml"/>

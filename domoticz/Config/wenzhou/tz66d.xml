@@ -31,4 +31,12 @@
 		  <Help>If value is 0, the TZ66D will not poll Group 2. If value is 1, the TZ66D will poll Group 2 at the interval set in Configuration Parameter 20.</Help>
 		</Value>
 	</CommandClass>
+	<CommandClass id="133">
+		<Associations num_groups="4">
+			<Group index="1" max_associations="5" label="Group 1" auto="true" />
+			<Group index="2" max_associations="5" label="Group 2" auto="true" />
+			<Group index="3" max_associations="5" label="Group 3" auto="true" />
+			<Group index="4" max_associations="5" label="Group 4" auto="true" />
+		</Associations>
+	</CommandClass>	
 </Product>
