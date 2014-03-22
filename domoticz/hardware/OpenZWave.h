@@ -105,6 +105,9 @@ private:
 	bool OpenSerialConnector();
 	void CloseSerialConnector();
 
+	void WriteControllerConfig();
+	time_t m_LastControllerConfigWrite;
+
 	OpenZWave::Manager *m_pManager;
 
 	std::list<NodeInfo> m_nodes;

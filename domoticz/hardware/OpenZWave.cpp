@@ -440,6 +440,15 @@ COpenZWave::NodeInfo* COpenZWave::GetNodeInfo( const int homeID, const int nodeI
 	return NULL;
 }
 
+void COpenZWave::WriteControllerConfig()
+{
+	if (m_controllerID==0)
+		return;
+
+	OpenZWave::Manager::Get()->WriteConfig( m_controllerID );
+	m_LastControllerConfigWrite=mytime(NULL);
+}
+
 void OnDeviceStatusUpdate(OpenZWave::Driver::ControllerState cs, OpenZWave::Driver::ControllerError err, void *_context)
 {
 	COpenZWave *pClass=(COpenZWave*)_context;
@@ -615,7 +624,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 				{
 					m_nodes.erase( it );
 					DeleteNode(_homeID, _nodeID);
-					OpenZWave::Manager::Get()->WriteConfig( m_controllerID );
+					WriteControllerConfig();
 					break;
 				}
 			}
@@ -658,7 +667,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 			m_nodesQueried = true;
 			_log.Log(LOG_NORM,"OpenZWave: All Nodes queried");
 			NodesQueried();
-			OpenZWave::Manager::Get()->WriteConfig( m_controllerID );
+			WriteControllerConfig();
 			//IncludeDevice();
 		}
 		break;
@@ -687,6 +696,12 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 		}
 		break;
 */
+	}
+
+	//Force configuration flush every hour
+	if (m_updateTime-m_LastControllerConfigWrite>3600)
+	{
+		WriteControllerConfig();
 	}
 }
 
@@ -769,6 +784,7 @@ bool COpenZWave::OpenSerialConnector()
 #else
 	OpenZWave::Manager::Get()->AddDriver( m_szSerialPort.c_str() );
 #endif
+	m_LastControllerConfigWrite=mytime(NULL);
 	//Manager::Get()->AddDriver( "HID Controller", Driver::ControllerInterface_Hid );
 	return true;
 }
@@ -2029,7 +2045,7 @@ void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
 	case OpenZWave::Driver::ControllerState_Completed:
 		m_bControllerCommandInProgress=false;
 		szLog="The command has completed successfully";
-		OpenZWave::Manager::Get()->WriteConfig( m_controllerID );
+		WriteControllerConfig();
 		break;
 	case OpenZWave::Driver::ControllerState_Failed:
 		szLog="The command has failed";
