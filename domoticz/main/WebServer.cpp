@@ -6365,6 +6365,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 
 				std::vector<std::string> splitresults;
 				StringSplit(sValue, ";", splitresults);
+				if (splitresults.size()<2)
+					continue;
 
 				unsigned long long total_actual;
 				std::stringstream s_stra( splitresults[0]);

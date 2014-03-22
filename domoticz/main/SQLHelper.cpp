@@ -3262,33 +3262,48 @@ void CSQLHelper::UpdateTemperatureLog()
 				humidity=nValue;
 				break;
 			case pTypeTEMP_HUM:
-				temp=(float)atof(splitresults[0].c_str());
-				humidity=atoi(splitresults[1].c_str());
-				dewpoint=(float)CalculateDewPoint(temp,humidity);
+				if (splitresults.size()>=2)
+				{
+					temp=(float)atof(splitresults[0].c_str());
+					humidity=atoi(splitresults[1].c_str());
+					dewpoint=(float)CalculateDewPoint(temp,humidity);
+				}
 				break;
 			case pTypeTEMP_HUM_BARO:
-				temp=(float)atof(splitresults[0].c_str());
-				humidity=atoi(splitresults[1].c_str());
-				if (dSubType==sTypeTHBFloat)
-					barometer=int(atof(splitresults[3].c_str())*10.0f);
-				else
-					barometer=atoi(splitresults[3].c_str());
-				dewpoint=(float)CalculateDewPoint(temp,humidity);
+				if (splitresults.size()==5)
+				{
+					temp=(float)atof(splitresults[0].c_str());
+					humidity=atoi(splitresults[1].c_str());
+					if (dSubType==sTypeTHBFloat)
+						barometer=int(atof(splitresults[3].c_str())*10.0f);
+					else
+						barometer=atoi(splitresults[3].c_str());
+					dewpoint=(float)CalculateDewPoint(temp,humidity);
+				}
 				break;
 			case pTypeTEMP_BARO:
-				temp=(float)atof(splitresults[0].c_str());
-				barometer=int(atof(splitresults[1].c_str())*10.0f);
+				if (splitresults.size()>=2)
+				{
+					temp=(float)atof(splitresults[0].c_str());
+					barometer=int(atof(splitresults[1].c_str())*10.0f);
+				}
 				break;
 			case pTypeUV:
 				if (dSubType!=sTypeUV3)
 					continue;
-				temp=(float)atof(splitresults[1].c_str());
+				if (splitresults.size()>=2)
+				{
+					temp=(float)atof(splitresults[1].c_str());
+				}
 				break;
 			case pTypeWIND:
 				if ((dSubType!=sTypeWIND4)&&(dSubType!=sTypeWINDNoTemp))
 					continue;
-				temp=(float)atof(splitresults[4].c_str());
-				chill=(float)atof(splitresults[5].c_str());
+				if (splitresults.size()>=6)
+				{
+					temp=(float)atof(splitresults[4].c_str());
+					chill=(float)atof(splitresults[5].c_str());
+				}
 				break;
 			case pTypeRFXSensor:
 				if (dSubType!=sTypeRFXSensorTemp)
@@ -3367,7 +3382,7 @@ void CSQLHelper::UpdateRainLog()
 
 			std::vector<std::string> splitresults;
 			StringSplit(sValue, ";", splitresults);
-			if (splitresults.size()<1)
+			if (splitresults.size()<2)
 				continue; //impossible
 
 			float total=0;
@@ -3438,7 +3453,7 @@ void CSQLHelper::UpdateWindLog()
 
 			std::vector<std::string> splitresults;
 			StringSplit(sValue, ";", splitresults);
-			if (splitresults.size()<1)
+			if (splitresults.size()<4)
 				continue; //impossible
 
 			float direction=(float)atof(splitresults[0].c_str());
