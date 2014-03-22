@@ -2078,7 +2078,7 @@ function ShowFavorites()
 								}
 							}
 							else if (typeof item.Visibility != 'undefined') {
-								xhtm+='visibility48.png" height="40" width="40"></td>\n' +
+								xhtm+='visibility48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'Visibility\');" height="40" width="40"></td>\n' +
 								'\t      <td id="status">' + item.Data;
 							}
 							else if (typeof item.UVI != 'undefined') {
@@ -2089,7 +2089,7 @@ function ShowFavorites()
 								}
 							}
 							else if (typeof item.Radiation != 'undefined') {
-								xhtm+='radiation48.png" height="40" width="40"></td>\n' +
+								xhtm+='radiation48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'Radiation\');" height="40" width="40"></td>\n' +
 								'\t      <td id="status">' + item.Data;
 							}
 							else if (typeof item.Direction != 'undefined') {
