@@ -1245,14 +1245,16 @@ function ZWaveSendConfiguration()
 function ZWaveTransferPrimaryRole()
 {
 	bootbox.confirm($.i18n("Are you sure you want to transfer the primary role?"), function(result) {
-		$.ajax({
-			 url: "json.htm?type=command&param=zwavetransferprimaryrole&idx=" + $.devIdx,
-			 async: false, 
-			 dataType: 'json',
-			 success: function(data) {
-				bootbox.alert($.i18n('Initiating Transfer Primary Role...!'));
-			 }
-		});
+		if (result==true) {
+			$.ajax({
+				 url: "json.htm?type=command&param=zwavetransferprimaryrole&idx=" + $.devIdx,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					bootbox.alert($.i18n('Initiating Transfer Primary Role...!'));
+				 }
+			});
+		}
 	});
 }
 
