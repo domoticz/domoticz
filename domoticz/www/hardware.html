@@ -1218,6 +1218,19 @@ function ZWaveHealNetwork()
 	});
 }
 
+function ZWaveHealNode(node)
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=zwavenodeheal&idx=" + $.devIdx + "&node=" + node,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			bootbox.alert($.i18n('Initiating node heal...!'));
+		 }
+	});
+} 
+
+
 function ZWaveReceiveConfiguration()
 {
 	$.ajax({
@@ -1313,6 +1326,7 @@ function RefreshOpenZWaveNodeTable()
 				status="sleep";
 			}
 			var statusImg='<img src="images/' + status +'.png"/>';
+			var healButton='<img src="images/heal.png" onclick="ZWaveHealNode('+item.NodeID+')" onmouseover="cursorhand()" onmouseout="cursordefault()" title="'+$.i18n("Heal node")+'">';
 			
 			//if (item.NodeID==1) {
 			//	item.Description +='&nbsp;&nbsp;<span class="label label-info" onclick="showNetworkInfo();" onmouseover="cursorhand()" onmouseout="cursordefault()">Info</span>';
@@ -1330,7 +1344,7 @@ function RefreshOpenZWaveNodeTable()
                 "1": item.Name,
 				"2": item.Description,
 				"3": item.PollEnabled,
-				"4": statusImg,
+				"4": statusImg+'&nbsp;&nbsp;'+healButton,
 			} );
         });
 		/* Add a click handler to the rows - this could be used as a callback */

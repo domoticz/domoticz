@@ -274,6 +274,7 @@ bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress
 	RegisterCommandCode("zwavesoftreset",boost::bind(&CWebServer::ZWaveSoftReset,this, _1));
 	RegisterCommandCode("zwavehardreset",boost::bind(&CWebServer::ZWaveHardReset,this, _1));
 	RegisterCommandCode("zwavenetworkheal",boost::bind(&CWebServer::ZWaveNetworkHeal,this, _1));
+	RegisterCommandCode("zwavenodeheal",boost::bind(&CWebServer::ZWaveNodeHeal,this, _1));
 	RegisterCommandCode("zwavenetworkinfo",boost::bind(&CWebServer::ZWaveNetworkInfo,this, _1));
 	RegisterCommandCode("zwaveremovegroupnode",boost::bind(&CWebServer::ZWaveRemoveGroupNode,this, _1));
 	RegisterCommandCode("zwaveaddgroupnode",boost::bind(&CWebServer::ZWaveAddGroupNode,this, _1));
@@ -714,6 +715,24 @@ void CWebServer::ZWaveNetworkHeal(Json::Value &root)
 		pOZWHardware->HealNetwork();
 		root["status"]="OK";
 		root["title"]="ZWaveHealNetwork";
+	}
+}
+
+void CWebServer::ZWaveNodeHeal(Json::Value &root)
+{
+	std::string idx=m_pWebEm->FindValue("idx");
+	if (idx=="")
+		return;
+	std::string node=m_pWebEm->FindValue("node");
+	if (node=="")
+		return;
+	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+	if (pHardware!=NULL)
+	{
+		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+		pOZWHardware->HealNode(atoi(node.c_str()));
+		root["status"]="OK";
+		root["title"]="ZWaveHealNode";
 	}
 }
 

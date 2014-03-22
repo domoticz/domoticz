@@ -84,6 +84,7 @@ private:
 	void ZWaveSoftReset(Json::Value &root);
 	void ZWaveHardReset(Json::Value &root);
 	void ZWaveNetworkHeal(Json::Value &root);
+	void ZWaveNodeHeal(Json::Value &root);
 	void ZWaveNetworkInfo(Json::Value &root);
 	void ZWaveRemoveGroupNode(Json::Value &root);
 	void ZWaveAddGroupNode(Json::Value &root);

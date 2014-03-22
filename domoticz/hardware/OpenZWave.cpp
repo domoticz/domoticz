@@ -1841,6 +1841,18 @@ bool COpenZWave::HealNetwork()
 	return true;
 }
 
+bool COpenZWave::HealNode(const int nodeID)
+{
+	if (m_pManager==NULL)
+		return false;
+	
+	m_pManager->HealNetworkNode(m_controllerID,nodeID,true);
+	_log.Log(LOG_NORM,"OpenZWave: initiated node heal for node: %d",nodeID);
+
+	return true;
+}
+
+
 bool COpenZWave::NetworkInfo(const int hwID,std::vector< std::vector< int > > &NodeArray)
 {
 
