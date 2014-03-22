@@ -6418,10 +6418,10 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					sprintf(szTmp,"%s Watt",splitresults[1].c_str());
 					break;
 				case MTYPE_GAS:
-					sprintf(szTmp,"%s m",splitresults[1].c_str());
+					sprintf(szTmp,"%s m3",splitresults[1].c_str());
 					break;
 				case MTYPE_WATER:
-					sprintf(szTmp,"%s m",splitresults[1].c_str());
+					sprintf(szTmp,"%s m3",splitresults[1].c_str());
 					break;
 				case MTYPE_COUNTER:
 					sprintf(szTmp,"%s",splitresults[1].c_str());
