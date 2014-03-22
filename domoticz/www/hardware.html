@@ -28,14 +28,17 @@
 						<span class="caret"></span>
 					  </button>
 					  <ul class="dropdown-menu pull-right" role="menu" aria-labelledby="dropdownMenu1">
-						<li ><a href="javascript:ZWaveIncludeNode();" ><span data-i18n="Include Node" class="btnstyle3">Include Node</span></a></li>
-						<li><a href="javascript:ZWaveExcludeNode();" ><span data-i18n="Exclude Node" class="btnstyle3">Exclude Node</span></a></li>
-						<li><a href="javascript:ZWaveHealNetwork();" ><span data-i18n="Heal network" class="btnstyle3">Heal network</span></a></li>
+						<li ><a href="javascript:ZWaveIncludeNode();" ><span data-i18n="Include Node" class="btn btn-primary">Include Node</span></a></li>
+						<li><a href="javascript:ZWaveExcludeNode();" ><span data-i18n="Exclude Node" class="btn btn-primary">Exclude Node</span></a></li>
+						<li><a href="javascript:ZWaveHealNetwork();" ><span data-i18n="Heal network" class="btn btn-warning">Heal network</span></a></li>
 						<li role="presentation" class="divider"></li>
-						<li><a href="javascript:ZWaveSoftResetNode();" ><span data-i18n="Soft reset controller" class="btnstyle3">Soft reset controller</span></a></li>
-						<li><a href="javascript:ZWaveHardResetNode();" ><span data-i18n="Hard reset controller" class="btnstyle3">Hard reset controller</span></a></li>
+						<li><a href="javascript:ZWaveTopology();" ><span data-i18n="Groups & Network" class="btn btn-success">Groups & Network</span></a></li>
 						<li role="presentation" class="divider"></li>
-						<li><a href="javascript:ZWaveTopology();" ><span data-i18n="Groups & Network" class="btnstyle3">Groups & Network</span></a></li>
+						<li><a href="javascript:ZWaveSoftResetNode();" ><span data-i18n="Soft reset controller" class="btn btn-danger">Soft reset controller</span></a></li>
+						<li><a href="javascript:ZWaveHardResetNode();" ><span data-i18n="Hard reset controller" class="btn btn-danger">Hard reset controller</span></a></li>
+						<li><a href="javascript:ZWaveReceiveConfiguration();" ><span data-i18n="Receive configuration from other controller" class="btn btn-primary">Receive configuration from other controller</span></a></li>
+						<li><a href="javascript:ZWaveSendConfiguration();" ><span data-i18n="Send configuration to other controller" class="btn btn-primary">Send configuration to other controller</span></a></li>
+						<li><a href="javascript:ZWaveTransferPrimaryRole();" ><span data-i18n="Transfer primary role" class="btn btn-danger">Transfer primary role</span></a></li>
 					  </ul>
 					</div>
 				</td>
@@ -1187,7 +1190,6 @@ function ZWaveSoftResetNode()
 }
 function ZWaveHardResetNode()
 {
-
 	bootbox.confirm($.i18n("Are you sure you want to hard reset the controller?\n(All associated nodes will be removed)"), function(result) {
 		if (result==true) {
 			$.ajax({
@@ -1216,6 +1218,43 @@ function ZWaveHealNetwork()
 	});
 }
 
+function ZWaveReceiveConfiguration()
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=zwavereceiveconfigurationfromothercontroller&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			bootbox.alert($.i18n('Initiating Receive Configuration...!'));
+		 }
+	});
+}
+
+function ZWaveSendConfiguration()
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=zwavesendconfigurationtosecondcontroller&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			bootbox.alert($.i18n('Initiating Send Configuration...!'));
+		 }
+	});
+}
+
+function ZWaveTransferPrimaryRole()
+{
+	bootbox.confirm($.i18n("Are you sure you want to transfer the primary role?"), function(result) {
+		$.ajax({
+			 url: "json.htm?type=command&param=zwavetransferprimaryrole&idx=" + $.devIdx,
+			 async: false, 
+			 dataType: 'json',
+			 success: function(data) {
+				bootbox.alert($.i18n('Initiating Transfer Primary Role...!'));
+			 }
+		});
+	}
+}
 
 function ZWaveTopology()
 {

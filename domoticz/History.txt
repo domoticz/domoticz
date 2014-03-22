@@ -74,6 +74,7 @@ Version 1.0.xxxx (March xxth 2014)
 - Implemented: OpenZWave/Razberry, PowerFactor sensor
 - Implemented: Device Tab, option to display chart for sensors with Current/Percentage/Volt/Humidity
 - Implemented: OpenZWave, configuration is now written to disk every hour
+- Implemented: OpenZWave, Receive/Send Configuration, Transfer Primary Role
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)
