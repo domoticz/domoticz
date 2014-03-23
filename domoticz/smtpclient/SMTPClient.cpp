@@ -135,54 +135,62 @@ bool SMTPClient::SendEmail()
 	sstr << "smtp://" << m_Server << ":" << m_Port << "/domoticz";
 	std::string szURL=sstr.str();//"smtp://"+MailServer+"/domoticz";
 
-	curl = curl_easy_init();
-
-	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10);
-
-	curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)177);
-	curl_easy_setopt(curl, CURLOPT_URL, szURL.c_str());
-	curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
-	if (m_Username!="")
+	try
 	{
-		//std::string szUserPassword=MailUsername+":"+MailPassword;
-		//curl_easy_setopt(curl, CURLOPT_USERPWD, szUserPassword.c_str());
-		curl_easy_setopt(curl, CURLOPT_USERNAME, m_Username.c_str());
-		curl_easy_setopt(curl, CURLOPT_PASSWORD, m_Password.c_str());
-	}
-	curl_easy_setopt(curl, CURLOPT_USERAGENT, "domoticz/7.26.0");
-	curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 50L);
-	curl_easy_setopt(curl, CURLOPT_USE_SSL, (long)CURLUSESSL_TRY);//CURLUSESSL_ALL);
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-	curl_easy_setopt(curl, CURLOPT_SSLVERSION, 0L);
-	curl_easy_setopt(curl, CURLOPT_SSL_SESSIONID_CACHE, 0L);
+		curl = curl_easy_init();
 
-	//curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
-	curl_easy_setopt(curl, CURLOPT_MAIL_FROM, m_From.c_str());
-	curl_easy_setopt(curl, CURLOPT_MAIL_RCPT, slist1);
+		curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10);
 
-	smtp_ctx.pDataBytes=new char[rmessage.size()];
-	if (smtp_ctx.pDataBytes==NULL)
-	{
-		_log.Log(LOG_ERROR,"SMTP Mailer: Out of Memory!");
+		curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)177);
+		curl_easy_setopt(curl, CURLOPT_URL, szURL.c_str());
+		curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+		if (m_Username!="")
+		{
+			//std::string szUserPassword=MailUsername+":"+MailPassword;
+			//curl_easy_setopt(curl, CURLOPT_USERPWD, szUserPassword.c_str());
+			curl_easy_setopt(curl, CURLOPT_USERNAME, m_Username.c_str());
+			curl_easy_setopt(curl, CURLOPT_PASSWORD, m_Password.c_str());
+		}
+		curl_easy_setopt(curl, CURLOPT_USERAGENT, "domoticz/7.26.0");
+		curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 50L);
+		curl_easy_setopt(curl, CURLOPT_USE_SSL, (long)CURLUSESSL_TRY);//CURLUSESSL_ALL);
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+		curl_easy_setopt(curl, CURLOPT_SSLVERSION, 0L);
+		curl_easy_setopt(curl, CURLOPT_SSL_SESSIONID_CACHE, 0L);
+
+		//curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
+		curl_easy_setopt(curl, CURLOPT_MAIL_FROM, m_From.c_str());
+		curl_easy_setopt(curl, CURLOPT_MAIL_RCPT, slist1);
+
+		smtp_ctx.pDataBytes=new char[rmessage.size()];
+		if (smtp_ctx.pDataBytes==NULL)
+		{
+			_log.Log(LOG_ERROR,"SMTP Mailer: Out of Memory!");
+
+			curl_easy_cleanup(curl);
+			curl_slist_free_all(slist1);
+			return false;
+		}
+		smtp_ctx.sDataLength=rmessage.size();
+		memcpy(smtp_ctx.pDataBytes,rmessage.c_str(),smtp_ctx.sDataLength);
+
+		curl_easy_setopt(curl, CURLOPT_READFUNCTION, smtp_payload_reader);
+		curl_easy_setopt(curl, CURLOPT_READDATA, &smtp_ctx);
+
+		ret = curl_easy_perform(curl);
 
 		curl_easy_cleanup(curl);
 		curl_slist_free_all(slist1);
-		return false;
+		delete [] smtp_ctx.pDataBytes;
+
+		if (ret!=CURLE_OK)
+		{
+			_log.Log(LOG_ERROR,"SMTP Mailer: Error sending Email to: %s !",m_Recipients[0].c_str());
+			return false;
+		}
 	}
-	smtp_ctx.sDataLength=rmessage.size();
-	memcpy(smtp_ctx.pDataBytes,rmessage.c_str(),smtp_ctx.sDataLength);
-
-	curl_easy_setopt(curl, CURLOPT_READFUNCTION, smtp_payload_reader);
-	curl_easy_setopt(curl, CURLOPT_READDATA, &smtp_ctx);
-
-	ret = curl_easy_perform(curl);
-
-	curl_easy_cleanup(curl);
-	curl_slist_free_all(slist1);
-	delete [] smtp_ctx.pDataBytes;
-
-	if (ret!=CURLE_OK)
+	catch (...)
 	{
 		_log.Log(LOG_ERROR,"SMTP Mailer: Error sending Email to: %s !",m_Recipients[0].c_str());
 		return false;

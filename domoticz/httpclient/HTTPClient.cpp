@@ -83,104 +83,125 @@ void HTTPClient::SetUserAgent(const std::string useragent)
 
 bool HTTPClient::GETBinary(const std::string url, const std::vector<std::string> ExtraHeaders, std::vector<unsigned char> &response)
 {
-	if (!CheckIfGlobalInitDone())
-		return false;
-	CURL *curl=curl_easy_init();
-	if (!curl)
-		return false;
+	try
+	{
+		if (!CheckIfGlobalInitDone())
+			return false;
+		CURL *curl=curl_easy_init();
+		if (!curl)
+			return false;
 
-	CURLcode res;
-	SetGlobalOptions(curl);
+		CURLcode res;
+		SetGlobalOptions(curl);
 
-	struct curl_slist *headers=NULL;
-	if (ExtraHeaders.size()>0) {
-		std::vector<std::string>::const_iterator itt;
-		for (itt=ExtraHeaders.begin(); itt!=ExtraHeaders.end(); ++itt)
-		{
-			headers = curl_slist_append(headers, (*itt).c_str());
+		struct curl_slist *headers=NULL;
+		if (ExtraHeaders.size()>0) {
+			std::vector<std::string>::const_iterator itt;
+			for (itt=ExtraHeaders.begin(); itt!=ExtraHeaders.end(); ++itt)
+			{
+				headers = curl_slist_append(headers, (*itt).c_str());
+			}
 		}
+
+		if (headers!=NULL) {
+			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers); 
+		}
+
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
+		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+		res = curl_easy_perform(curl);
+		curl_easy_cleanup(curl);
+
+		if (headers!=NULL) {
+			curl_slist_free_all(headers); /* free the header list */
+		}
+
+		return (res==CURLE_OK);
 	}
-
-	if (headers!=NULL) {
-		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers); 
+	catch (...)
+	{
+		return false;		
 	}
-
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
-	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-	res = curl_easy_perform(curl);
-	curl_easy_cleanup(curl);
-
-	if (headers!=NULL) {
-		curl_slist_free_all(headers); /* free the header list */
-	}
-
-	return (res==CURLE_OK);
 }
 
 bool HTTPClient::GETBinaryToFile(const std::string url, const std::string outputfile)
 {
-	if (!CheckIfGlobalInitDone())
-		return false;
+	try
+	{
+		if (!CheckIfGlobalInitDone())
+			return false;
 
-	//open the output file for writing
-	std::ofstream outfile;
-	outfile.open(outputfile.c_str(),std::ios::out|std::ios::binary|std::ios::trunc);
-	if (!outfile.is_open())
-		return false;
+		//open the output file for writing
+		std::ofstream outfile;
+		outfile.open(outputfile.c_str(),std::ios::out|std::ios::binary|std::ios::trunc);
+		if (!outfile.is_open())
+			return false;
 
-	CURL *curl=curl_easy_init();
-	if (!curl)
-		return false;
+		CURL *curl=curl_easy_init();
+		if (!curl)
+			return false;
 
-	CURLcode res;
-	SetGlobalOptions(curl);
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_curl_data_file);
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&outfile);
-	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-	res = curl_easy_perform(curl);
-	curl_easy_cleanup(curl);
+		CURLcode res;
+		SetGlobalOptions(curl);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_curl_data_file);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&outfile);
+		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+		res = curl_easy_perform(curl);
+		curl_easy_cleanup(curl);
 
-	outfile.close();
+		outfile.close();
 
-	return (res==CURLE_OK);
+		return (res==CURLE_OK);
+	}
+	catch (...)
+	{
+		return false;		
+	}
 }
 
 bool HTTPClient::POSTBinary(const std::string url, const std::string postdata, const std::vector<std::string> ExtraHeaders, std::vector<unsigned char> &response)
 {
-	if (!CheckIfGlobalInitDone())
-		return false;
-	CURL *curl=curl_easy_init();
-	if (!curl)
-		return false;
+	try
+	{
+		if (!CheckIfGlobalInitDone())
+			return false;
+		CURL *curl=curl_easy_init();
+		if (!curl)
+			return false;
 
-	CURLcode res;
-	SetGlobalOptions(curl);
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
-	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-	curl_easy_setopt(curl, CURLOPT_POST, 1);
+		CURLcode res;
+		SetGlobalOptions(curl);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
+		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+		curl_easy_setopt(curl, CURLOPT_POST, 1);
 
-	struct curl_slist *headers=NULL;
-	if (ExtraHeaders.size()>0) {
-		std::vector<std::string>::const_iterator itt;
-		for (itt=ExtraHeaders.begin(); itt!=ExtraHeaders.end(); ++itt)
-		{
-			headers = curl_slist_append(headers, (*itt).c_str());
+		struct curl_slist *headers=NULL;
+		if (ExtraHeaders.size()>0) {
+			std::vector<std::string>::const_iterator itt;
+			for (itt=ExtraHeaders.begin(); itt!=ExtraHeaders.end(); ++itt)
+			{
+				headers = curl_slist_append(headers, (*itt).c_str());
+			}
 		}
+
+		if (headers!=NULL) {
+			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers); 
+		}
+
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postdata.c_str());
+		res = curl_easy_perform(curl);
+		curl_easy_cleanup(curl);
+
+		if (headers!=NULL) {
+			curl_slist_free_all(headers); /* free the header list */
+		}
+
+		return (res==CURLE_OK);
 	}
-
-	if (headers!=NULL) {
-		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers); 
+	catch (...)
+	{
+		return false;
 	}
-
-	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postdata.c_str());
-	res = curl_easy_perform(curl);
-	curl_easy_cleanup(curl);
-
-	if (headers!=NULL) {
-		curl_slist_free_all(headers); /* free the header list */
-	}
-
-	return (res==CURLE_OK);
 }
 
 bool HTTPClient::GET(const std::string url, std::string &response)
