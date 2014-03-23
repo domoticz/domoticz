@@ -5956,7 +5956,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["AddjValue2"]=AddjValue2;
 					root["result"][ii]["AddjMulti2"]=AddjMulti2;
 
-					double temp=ConvertTemperature(atof(strarray[0].c_str()),tempsign);
+					double tempCelcius=atof(strarray[0].c_str());
+					double temp=ConvertTemperature(tempCelcius,tempsign);
 					int humidity=atoi(strarray[1].c_str());
 
 					root["result"][ii]["Temp"]=temp;
@@ -5968,7 +5969,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 
 					//Calculate dew point
 
-					sprintf(szTmp,"%.2f",ConvertTemperature(CalculateDewPoint(temp,humidity),tempsign));
+					sprintf(szTmp,"%.2f",ConvertTemperature(CalculateDewPoint(tempCelcius,humidity),tempsign));
 					root["result"][ii]["DewPoint"]=szTmp;
 				}
 			}
@@ -5983,7 +5984,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["AddjValue2"]=AddjValue2;
 					root["result"][ii]["AddjMulti2"]=AddjMulti2;
 
-					double temp=ConvertTemperature(atof(strarray[0].c_str()),tempsign);
+					double tempCelcius=atof(strarray[0].c_str());
+					double temp=ConvertTemperature(tempCelcius,tempsign);
 					int humidity=atoi(strarray[1].c_str());
 
 					root["result"][ii]["Temp"]=temp;
@@ -5991,7 +5993,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["HumidityStatus"]=RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
 					root["result"][ii]["Forecast"]=atoi(strarray[4].c_str());
 
-					sprintf(szTmp,"%.2f",ConvertTemperature(CalculateDewPoint(temp,humidity),tempsign));
+					sprintf(szTmp,"%.2f",ConvertTemperature(CalculateDewPoint(tempCelcius,humidity),tempsign));
 					root["result"][ii]["DewPoint"]=szTmp;
 
 					if (dSubType==sTypeTHBFloat)

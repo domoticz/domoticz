@@ -76,6 +76,7 @@ Version 1.0.xxxx (March xxth 2014)
 - Implemented: OpenZWave, configuration is now written to disk every hour
 - Implemented: OpenZWave, Receive/Send Configuration, Transfer Primary Role
 - Implemented: Dashboard, clicking on a Visibility/Radiation sensor icon will display the log
+- Fixed: WebUI dewpoint calculation for Fahrenheit
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)
