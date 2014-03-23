@@ -6,4 +6,5 @@
   <Option name="NotifyTransactions" value="false" />
   <Option name="DriverMaxAttempts" value="5" />
   <Option name="SaveConfiguration" value="true" />
+  <!-- <Option name="RetryTimeout" value="40000" /> -->
 </Options>

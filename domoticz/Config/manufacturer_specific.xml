@@ -36,7 +36,6 @@
 		<Product type="0001" id="0003" name="Minimote" config="aeon_labs/minimote.xml"/>
 		<Product type="0002" id="0004" name="Door/Window Sensor" config="aeon_labs/doorwindow.xml"/>
 		<Product type="0002" id="0005" name="Multi Sensor" config="aeon_labs/alms.xml"/>
-		<Product type="0002" id="0036" name="Recessed Door Sensor" config="aeon_labs/recessed_doorsensor.xml"/>
 		<Product type="0003" id="0006" name="Smart Energy Switch" config="aeon_labs/ses.xml"/>
 		<Product type="0001" id="0007" name="Z-Stick S2 Lite"/>
 		<Product type="0003" id="0008" name="Smart Energy Illuminator"/>
@@ -46,9 +45,14 @@
 		<Product type="0003" id="000c" name="Micro Smart Energy Switch"/>
 		<Product type="0003" id="000d" name="Micro Smart Energy Illuminator"/>
 		<Product type="0003" id="000e" name="Micro Motor Controller"/>
+		<Product type="0003" id="0012" name="Micro Smart Energy Switch G2" config="aeon_labs/ses.xml" />
 		<Product type="0001" id="0016" name="Key Fob" config="aeon_labs/keyfob.xml"/>
 		<Product type="0003" id="0011" name="Micro Double Switch" />
+		<Product type="0002" id="0036" name="Recessed Door Sensor" config="aeon_labs/recessed_doorsensor.xml"/>
 	</Manufacturer>
+        <Manufacturer id="0111" name="Airline Mechanical">
+                <Product type="8200" id="0200" name="ZDS-100"/>
+        </Manufacturer>
 	<Manufacturer id="0094" name="Alarm.com">
 	</Manufacturer>
 	<Manufacturer id="0029" name="Asia Heading">
@@ -106,13 +110,11 @@
 		<Product type="0005" id="0003" name="Z Thermostat" config="danfoss/z.xml"/>
 		<Product type="0064" id="0001" name="RA Plus-W Radiator Thermostat"/>
 		<Product type="8005" id="0001" name="Living Connect Radiator Thermostat" config="danfoss/living.xml"/>
+		<Product type="0005" id="0004" name="Living Connect Radiator Thermostat" config="danfoss/living.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0031" name="Destiny Networks">
 	</Manufacturer>
 	<Manufacturer id="0050" name="Digital 5">
-	</Manufacturer>
-	<Manufacturer id="008a" name="Digital Home Systems">
-		<Product type="0003" id="0100" name="DHS-ZW-SNMT-01 Multi Sensor"/>
 	</Manufacturer>
 	<Manufacturer id="0012" name="E Housekeeper">
 		<Product type="0001" id="0001" name="Switchkeeper Plug-in Appliance Module"/>
@@ -151,6 +153,8 @@
 		<Product type="0002" id="0001" name="HSM02 Mini Door/Window Detector" config="everspringct/hsm02.xml" />
 	</Manufacturer>
 	<Manufacturer id="0113" name="Evolve Guest Controls">
+                <Product type="5257" id="3533" name="LSM-15"/>
+                <Product type="5246" id="3133" name="LFM-20"/>
 	</Manufacturer>
 	<Manufacturer id="0036" name="Exceptional Innv">
 	</Manufacturer>
@@ -205,6 +209,7 @@
 	</Manufacturer>
 	<Manufacturer id="0084" name="FortrezZ">
 		<Product type="0311" id="010b" name="SSA1 / SSA2 - Siren/Strobe Light Alarm"/>
+		<Product type="0313" id="010b" name="SSA2USR - Siren/Strobe Light Alarm"/>
 	</Manufacturer>
 	<Manufacturer id="0017" name="HiTech Automation">
 	</Manufacturer>
@@ -293,6 +298,9 @@
 		<Product type="1001" id="0209" name="VRF01-1LZ Multilevel Scene Switch - 1.5A Fan" config="leviton/vrf01.xml"/>
 		<Product type="1102" id="0243" name="VRCS2-MRZ 2-Button Scene Controller with Switches"/>
 	</Manufacturer>
+	<Manufacturer id="014F" name="Linear">
+                <Product type="5257" id="3533" name="WS15Z-1"/>
+        </Manufacturer>
 	<Manufacturer id="007f" name="Logitech">
 	</Manufacturer>
 	<Manufacturer id="0025" name="Loudwater Tech">
@@ -334,7 +342,7 @@
 	<Manufacturer id="013c" name="Philio Technology Corporation">
 		<Product type="0001" id="0003" name="2x1.5KW Relay with Power Measurement (PAN04-1)" config="philio/pan04.xml"/>
 		<Product type="0001" id="0004" name="In Wall Dual Relay (1 Way) Switch Module (PAN06-1)" />
-		<Product type="0002" id="0002" name="Slim Multi-Sensor PSP01-1" config="philio/psp01.xml"/>
+		<Product type="0002" id="0002" name="Slim Multi-Sensor PSM02" config="philio/psm02.xml" />
 	</Manufacturer>
 	<Manufacturer id="0064" name="Popp / Duwi">
 		<Product type="0001" id="0000" name="ZW EDAN 300 Flush Mounted Dimmer" />
@@ -460,6 +468,7 @@
 		<Product type="1000" id="0004" name="ZME_064435 Wall Controller"/>
 		<Product type="0100" id="0001" name="ZME_KFOB 4 Button Key Fob" config="zwave.me/kfob.xml"/>
 		<Product type="1000" id="0001" name="ZME_054313Z Flush-Mountable Switch" />
+		<Product type="0100" id="0004" name="ZME_WCD2 Double Paddle Wall Controller" config="zwave.me/ZME_WCD2.xml"/>
 	</Manufacturer>
 	<Manufacturer id="004f" name="Z-Wave Technologia">
 	</Manufacturer>

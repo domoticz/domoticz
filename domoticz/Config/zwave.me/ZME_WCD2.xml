@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Taken from http://en.z-wave.me/docs/ZME_0643x_UserManual.pdf-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<!--IMPORTANT: Controllers may only allow to configure signed values. 
+	    In order to set values in the range  128?255 for parameters 4,  5 and 6 the
+	    value sent in the application shall be the desired value minus 256. 
+	    For example: to set parameter 4 in Window Blind to 200? sit may be  needed
+	    to set a value of 200?256=?56.
+	    Similar rule applies to parameter 2: to set values in range 32768?65535
+	    use value equal to desired value minus 65536. For example, to set auto
+	    switch off period to 10 hours =36000s it may be needed to set a value
+	    36000?65536=?29536.-->
+
+	<CommandClass id="112">
+		<Value type="list" index="1" genre="config" label="Button 1 and 3 Pair Mode" units="" min="0" max="2" value="1" size="1">
+			<Help>Button 1 and 3 pair mode (Parameter Number 1,
+			Parameter Size 1) In separate mode button 1 works
+			with group 1, button 3 with groups 3. Click is On, Hold
+			is dimming Up, Double click is Off, Click-Hold is
+			dimming Down. In pair button 1/3 are Up/Down
+			correspondingly. Click is On/Off, Hold is dimming
+			Up/Down. Single	clicks works with group 1, double click with group
+			3.</Help>
+			<Item label="Separately" value="0" />
+			<Item label="In Pair without Double Click (default)" value="1" />
+			<Item label="In Pair with Double Click" value="2" />
+		</Value>
+		<Value type="list" index="2" genre="config" label="Button 2 and 4 Pair Mode" units="" min="0" max="2" value="1" size="1">
+			<Help>Button 2 and 4 pair mode (Parameter Number 2,
+			Parameter Size 1) In separate mode button 2 works
+			with group 2, button 4 with groups 4. Click is On, Hold
+			is dimming Up, Double click is Off, Click-Hold is
+			dimming	Down. In pair button 2/4 are Up/Down
+			correspondingly. Click is On/Off, Hold is dimming
+			Up/Down. Single clicks works with group 2, double click with group 4.
+			</Help>
+			<Item label="Separately" value="0" />
+			<Item label="In Pair without Double Click (default)" value="1" />
+			<Item label="In Pair with Double Click" value="2" />
+		</Value>
+		<Value type="list" index="11" genre="config" label="Action on Group 1" value="1" min="0" max="5" size="1">
+			<Help>Action on group 1 (Parameter Number 11,
+			Parameter Size 1) In Switch On/Off only mode On
+			command is sent on Dim Up, Off on Dim Down. In Scenes mode the
+			scene ID sent is (10 * group + ActionID), where
+			ActionID is: 1 = On, 2 = Off, 3 = Dim Up Start, 4 =
+			Dim Down Start, 5 = Dim Up Stop, 6 = Dim Down Stop
+			</Help>
+			<Item label="Disabled" value="0" />
+			<Item label="Switch On/Off and Dimm (send Basic Set and Switch Multilevel) (Default)" value="1" />
+			<Item label="Switch On/Off only (send Basic Set)" value="2" />
+			<Item label="Switch All" value="3" />
+			<Item label="Send Scenes" value="4" />
+			<Item label="Send Preconfigured Scenes" value="5" />
+		</Value>
+		<Value type="list" index="12" genre="config" label="Action on Group 2" value="1" min="0" max="5" size="1">
+			<Help>Action on group 2 (Parameter Number 12,
+			Parameter Size 1) In Switch On/Off only mode On
+			command is sent on Dim Up, Off on Dim Down. In Scenes mode the
+			scene ID sent is (10 * group + ActionID), where
+			ActionID is: 1 = On, 2 = Off, 3 = Dim Up Start, 4 =
+			Dim Down Start, 5 = Dim Up Stop, 6 = Dim Down Stop
+			</Help>
+			<Item label="Disabled" value="0" />
+			<Item label="Switch On/Off and Dimm (send Basic Set and Switch Multilevel) (Default)" value="1" />
+			<Item label="Switch On/Off only (send Basic Set)" value="2" />
+			<Item label="Switch All" value="3" />
+			<Item label="Send Scenes" value="4" />
+			<Item label="Send Preconfigured Scenes" value="5" />
+		</Value>
+		<Value type="list" index="13" genre="config" label="Action on Group 3" value="1" min="0" max="5" size="1">
+			<Help>Action on group 3 (Parameter Number 13,
+			Parameter Size 1) In Switch On/Off only mode On
+			command is sent on Dim Up, Off on Dim Down. In Scenes mode the
+			scene ID sent is (10 * group + ActionID), where
+			ActionID is: 1 = On, 2 = Off, 3 = Dim Up Start, 4 =
+			Dim Down Start, 5 = Dim Up Stop, 6 = Dim Down Stop
+			</Help>
+			<Item label="Disabled" value="0" />
+			<Item label="Switch On/Off and Dimm (send Basic Set and Switch Multilevel) (Default)" value="1" />
+			<Item label="Switch On/Off only (send Basic Set)" value="2" />
+			<Item label="Switch All" value="3" />
+			<Item label="Send Scenes" value="4" />
+			<Item label="Send Preconfigured Scenes" value="5" />
+		</Value>
+		<Value type="list" index="14" genre="config" label="Action on Group 4" value="1" min="0" max="5" size="1">
+			<Help>Action on group 4 (Parameter Number 14,
+			Parameter Size 1) In Switch On/Off only mode On
+			command is sent on Dim Up, Off on Dim Down. In Scenes mode the
+			scene ID sent is (10 * group + ActionID), where
+			ActionID is: 1 = On, 2 = Off, 3 = Dim Up Start, 4 =
+			Dim Down Start, 5 = Dim Up Stop, 6 = Dim Down Stop
+			</Help>
+			<Item label="Disabled" value="0" />
+			<Item label="Switch On/Off and Dimm (send Basic Set and Switch Multilevel) (Default)" value="1" />
+			<Item label="Switch On/Off only (send Basic Set)" value="2" />
+			<Item label="Switch All" value="3" />
+			<Item label="Send Scenes" value="4" />
+			<Item label="Send Preconfigured Scenes" value="5" />
+		</Value>
+		<Value type="byte" index="20" genre="config" label="Typical Click Timeout" units="x 10 milliseconds" min="0" max="100" value="50">
+			<Help>Typical time used to differenciate click, hold and double clicks</Help>
+		</Value>
+		<Value type="list" index="21" genre="config" label="Switch All Command" value="1" min="1" max="255" size="1">		
+			<Item label="Switch Off Only (Default)"	value="1"/>
+			<Item label="Switch On Only" value="2" />
+			<Item label="Switch all on and off" value="255" />
+		</Value>
+		<Value type="list" index="22" genre="config" label="Invert Buttons" min="0" max="1" size="1" value="0">
+			<Item label="No (Default)" value="0" />
+			<Item label="Yes" value="1" />
+		</Value>
+		<Value type="list" index="24" genre="config" label="Led Confirmation Mode" min="0" max="2" size="1" value="2">
+			<Help>This allows to save battery</Help>
+			<Item label="No Confirmations" value="0" />
+			<Item label="Confirm Button Press" value="1" />
+			<Item label="Confirm Button Press and delivery (Default)" value="2" />
+		</Value>
+		<Value type="list" index="30" genre="config" label="Send Unsolicited Battery Report on Wakeup" min="0" max="2" size="1" value="0">
+			<Item label="No (default)" value="0" />
+			<Item label="To same node as wake up notification" value="1" />
+			<Item label="Broadcast to neighbours" value="2" />
+		</Value>	
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="4">
+			<Group index="1" max_associations="8" label="Group 1" auto="true" />
+			<Group index="2" max_associations="8" label="Group 2" auto="true" />
+			<Group index="3" max_associations="8" label="Group 3" auto="true" />
+			<Group index="4" max_associations="8" label="Group 4" auto="true" />
+		</Associations>
+	</CommandClass>
+</Product>

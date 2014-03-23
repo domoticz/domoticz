@@ -101,6 +101,7 @@ If the value is set to 0, then information about the temperature will be sent ev
   </CommandClass>
 
   <CommandClass id="96" mapping="endpoints" />
+  <CommandClass id="32" setasreport="true" />
 
   <!-- Association Groups -->
   <CommandClass id="133">

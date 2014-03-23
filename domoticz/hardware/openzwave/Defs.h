@@ -163,6 +163,14 @@ namespace OpenZWave
 // Replace "safe" versions of sprintf
 #define sprintf_s snprintf
 
+// seems some MINGW versions don't have a errno_t 
+#ifndef errno_t
+#define errno_t int
+#endif
+
+#define fopen_s fopen
+
+
 #endif
 
 #define MAX_TRIES		3	// Retry sends up to 3 times

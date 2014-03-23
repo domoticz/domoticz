@@ -51,6 +51,7 @@
     <xs:element ref='Product:Associations' minOccurs='0' maxOccurs='unbounded'/>
     <xs:element ref='Product:Value' minOccurs='0' maxOccurs='unbounded'/>
     <xs:element ref='Product:SupportedModes' minOccurs='0' maxOccurs='unbounded'/>
+    <xs:element ref='Product:SensorMap' minOccurs='0' maxOccurs='unbounded'/>
    </xs:sequence>
    <xs:attribute name='id' type='xs:string' use='required'/>
    <xs:attribute name='action' type='xs:string' use='optional'/>
@@ -101,6 +102,7 @@
    <xs:attribute name='request_flags' type='xs:string' use='optional'/>
    <xs:attribute name='endpoints' type='xs:string' use='optional'/>
    <xs:attribute name='mapping' type='xs:string' use='optional'/>
+   <xs:attribute name='ignoreUnsolicitedMultiChnCapReport' type='xs:string' use='optional'/>
    <xs:attribute name='codes' type='xs:string' use='optional'/>
   </xs:complexType>
  </xs:element>
@@ -226,6 +228,14 @@
    </xs:sequence>
   </xs:complexType>
  </xs:element>
+
+ <xs:element name='SensorMap'>
+  <xs:complexType>
+   <xs:attribute name='index' type='xs:string' use='required'/>
+   <xs:attribute name='type' type='xs:string' use='required'/>
+  </xs:complexType>
+ </xs:element>
+
 
  <xs:element name='Mode'>
   <xs:complexType>

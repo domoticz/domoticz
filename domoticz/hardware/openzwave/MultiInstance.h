@@ -92,7 +92,7 @@ namespace OpenZWave
 		bool		m_numEndPointsCanChange;
 		bool		m_endPointsAreSameClass;
 		uint8		m_numEndPoints;
-		
+
 		// Finding endpoints
 		uint8		m_endPointFindIndex;
 		uint8		m_numEndPointsFound;
@@ -102,6 +102,7 @@ namespace OpenZWave
 		uint8		m_numEndPointsHint;		// for nodes that do not report correct number of end points
 		MultiInstanceMapping m_endPointMap;		// Determine how to map end points to value id instances
 		bool		m_endPointFindSupported;	// for nodes that (someday may) support endpointfind
+		bool 		m_ignoreUnsolicitedMultiChannelCapabilityReport;
 	};
 
 } // namespace OpenZWave

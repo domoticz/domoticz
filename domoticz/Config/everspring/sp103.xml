@@ -26,6 +26,7 @@
 			</Help>
 		</Value>
 	</CommandClass>
+	<CommandClass id="32" setasreport="true" />
 	<!-- COMMAND_CLASS_ALARM.  This class is supported but is missing from the list reported by the SP103 -->
 	<CommandClass id="113" action="add" />
 	<!-- Association Groups -->
