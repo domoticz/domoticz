@@ -79,6 +79,7 @@ Version 1.0.xxxx (March xxth 2014)
 - Fixed: WebUI dewpoint calculation for Fahrenheit
 - Fixed: OpenZWave humidity updates
 - Fixed: Set SetPoint device
+- Fixed: Temperature icons for Fahrenheit
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)
