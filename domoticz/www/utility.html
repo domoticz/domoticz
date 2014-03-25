@@ -104,6 +104,7 @@ function EditMeterDevice(idx,name,switchtype)
 
 function EditSetPointInt(idx,name,setpoint,isprotected)
 {
+	$.devIdx=idx;
 	$("#dialog-editsetpointdevice #devicename").val(name);
 	$('#dialog-editsetpointdevice #protected').prop('checked',(isprotected==true));
 	$("#dialog-editsetpointdevice #setpoint").val(setpoint);
