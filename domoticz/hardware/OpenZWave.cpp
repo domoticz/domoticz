@@ -1272,7 +1272,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 		{
 			if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
 			{
-				_device.intvalue=int(fValue);
+				_device.intvalue=round(fValue);
 				_device.commandClassID=49;
 				_device.devType = ZDTYPE_SENSOR_HUMIDITY;
 				InsertDevice(_device);
@@ -1736,7 +1736,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 			return;
 		if (vLabel!="Relative Humidity")
 			return;
-		pDevice->floatValue=fValue;
+		pDevice->intvalue=round(fValue);
 		break;
 	case ZDTYPE_SENSOR_LIGHT:
 		if (vType!=OpenZWave::ValueID::ValueType_Decimal)
