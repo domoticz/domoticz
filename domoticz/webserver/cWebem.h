@@ -98,14 +98,14 @@ namespace http {
 			  {}
 
 			  /// Handle a request and produce a reply.
-			  virtual void handle_request( const request& req, reply& rep);
+			  virtual void handle_request( const std::string &sHost, const request& req, reply& rep);
 		private:
 			bool CompressWebOutput(const request& req, reply& rep);
-			void check_cookie(const request& req, reply& rep);
+			void check_cookie(const std::string &sHost, const request& req, reply& rep);
 			void send_authorization_request(reply& rep);
 			void send_authorization_page(reply& rep);
-			int check_authorization(const request& req);
-			bool AreWeInLocalNetwork(const request& req);
+			int check_authorization(const std::string &sHost, const request& req);
+			bool AreWeInLocalNetwork(const std::string &sHost);
 			int authorize(const request& req);
 			int parse_auth_header(const request& req, char *buf,	size_t buf_size, struct ah *ah) ;
 			std::string m_doc_root;

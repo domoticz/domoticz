@@ -1208,42 +1208,39 @@ bool IsIPInRange(const std::string ip, const _tIPNetwork ipnetwork)
 }
 
 //Returns true is the connected host is in the local network
-bool cWebemRequestHandler::AreWeInLocalNetwork(const request& req)
+bool cWebemRequestHandler::AreWeInLocalNetwork(const std::string &sHost)
 {
 	//check if in local network(s)
 
 	if (myWebem->m_localnetworks.size()==0)
 		return false;
+	if (sHost.size()<3)
+		return false;
+	std::string host=sHost;
+	int pos=host.find_first_of(":");
+	if (pos!=std::string::npos)
+		host=host.substr(0,pos);
 
-	const char *host_header;
-	if ((host_header = request::get_req_header(&req, "Host")) != NULL)
+	std::vector<_tIPNetwork>::const_iterator itt;
+	for (itt=myWebem->m_localnetworks.begin(); itt!=myWebem->m_localnetworks.end(); ++itt)
 	{
-		std::string host=host_header;
-		int pos=host.find_first_of(":");
-		if (pos!=std::string::npos)
-			host=host.substr(0,pos);
-
-		std::vector<_tIPNetwork>::const_iterator itt;
-		for (itt=myWebem->m_localnetworks.begin(); itt!=myWebem->m_localnetworks.end(); ++itt)
+		if (IsIPInRange(host,*itt))
 		{
-			if (IsIPInRange(host,*itt))
-			{
-				return true;
-			}
+			return true;
 		}
 	}
 	return false;
 }
 
 // Return 1 if request is authorized, 0 otherwise.
-int cWebemRequestHandler::check_authorization(const request& req)
+int cWebemRequestHandler::check_authorization(const std::string &sHost, const request& req)
 {
 	myWebem->m_actualuser="";
 	myWebem->m_actsessionid=0;
 	if (myWebem->m_userpasswords.size()==0)
 		return 1;//no username/password
 
-	if (AreWeInLocalNetwork(req))
+	if (AreWeInLocalNetwork(sHost))
 		return 1;//we are in the local network, no authentication needed
 
 	const char* cookie_header = request::get_req_header(&req, "Cookie");
@@ -1342,9 +1339,9 @@ void cWebemRequestHandler::send_authorization_page(reply& rep)
 	rep.headers[3].value= "Sat, 26 Jul 1997 05:00:00 GMT";
 }
 
-void cWebemRequestHandler::check_cookie(const request& req, reply& rep)
+void cWebemRequestHandler::check_cookie(const std::string &sHost, const request& req, reply& rep)
 {
-	if (AreWeInLocalNetwork(req))
+	if (AreWeInLocalNetwork(sHost))
 		return;
 	if (myWebem->m_actualuser.size()==0)
 		return;
@@ -1453,10 +1450,10 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 	return false;
 }
 
-void cWebemRequestHandler::handle_request( const request& req, reply& rep)
+void cWebemRequestHandler::handle_request( const std::string &sHost, const request& req, reply& rep)
 {
 	rep.bIsGZIP=false;
-	if ((!check_authorization(req))||(myWebem->m_bForceRelogin))
+	if ((!check_authorization(sHost, req))||(myWebem->m_bForceRelogin))
 	{
 		myWebem->m_bForceRelogin=false;
 		if (m_failcounter==4)
@@ -1491,7 +1488,7 @@ void cWebemRequestHandler::handle_request( const request& req, reply& rep)
 	if (!myWebem->CheckForPageOverride(req, rep))
 	{
 		// do normal handling
-		request_handler::handle_request( req_modified, rep);
+		request_handler::handle_request( sHost, req_modified, rep);
 
 		if (rep.headers[1].value == "text/html" 
 			|| rep.headers[1].value == "text/plain" 
@@ -1522,7 +1519,7 @@ void cWebemRequestHandler::handle_request( const request& req, reply& rep)
 			CompressWebOutput(req,rep);
 	}
 
-	check_cookie(req,rep);
+	check_cookie(sHost, req,rep);
 
 	if (myWebem->m_actsessionid!=0)
 	{

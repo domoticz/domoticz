@@ -58,6 +58,8 @@ private:
 
   /// Socket for the connection.
   boost::asio::ip::tcp::socket socket_;
+  //Host EndPoint
+  std::string host_endpoint_;
 
   /// The manager for this connection.
   connection_manager& connection_manager_;

@@ -34,8 +34,10 @@ boost::asio::ip::tcp::socket& connection::socket()
 
 void connection::start()
 {
-  socket_.async_read_some(boost::asio::buffer(buffer_),
-      boost::bind(&connection::handle_read, shared_from_this(),
+	host_endpoint_ = socket_.remote_endpoint().address().to_string();
+
+	socket_.async_read_some(boost::asio::buffer(buffer_),
+		boost::bind(&connection::handle_read, shared_from_this(),
         boost::asio::placeholders::error,
         boost::asio::placeholders::bytes_transferred));
 }
@@ -63,7 +65,7 @@ void connection::handle_read(const boost::system::error_code& e,
 
     if (result)
     {
-      request_handler_.handle_request(request_, reply_);
+      request_handler_.handle_request(host_endpoint_, request_, reply_);
       boost::asio::async_write(socket_, reply_.to_buffers(),
           boost::bind(&connection::handle_write, shared_from_this(),
             boost::asio::placeholders::error));
