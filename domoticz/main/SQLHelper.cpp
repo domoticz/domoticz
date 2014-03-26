@@ -1933,12 +1933,14 @@ bool CSQLHelper::SendNotification(const std::string &EventID, const std::string 
 	//check if prowl enabled
 	if (GetPreferencesVar("ProwlAPI",nValue,sValue))
 	{
+		sValue=stdstring_trim(sValue);
 		if (sValue!="")
 		{
 			//send message to Prowl
-			std::stringstream sUrl;
-			sUrl << "http://api.prowlapp.com/publicapi/add?apikey=" << sValue << "&application=Domoticz&event=" << Message << "&description=" << Message << "&priority=" << Priority;
-			if (!HTTPClient::GET(sUrl.str(),sResult))
+			std::stringstream sPostData;
+			sPostData << "apikey=" << sValue << "&application=Domoticz&event=" << Message << "&description=" << Message << "&priority=" << Priority;
+			std::vector<std::string> ExtraHeaders;
+			if (!HTTPClient::POST("https://api.prowlapp.com/publicapi/add",sPostData.str(),ExtraHeaders,sResult))
 			{
 				_log.Log(LOG_ERROR,"Error sending Prowl Notification!");
 			}
@@ -1951,12 +1953,14 @@ bool CSQLHelper::SendNotification(const std::string &EventID, const std::string 
 	//check if NMA enabled
 	if (GetPreferencesVar("NMAAPI",nValue,sValue))
 	{
+		sValue=stdstring_trim(sValue);
 		if (sValue!="")
 		{
-			//send message to Prowl
-			std::stringstream sUrl;
-			sUrl << "http://www.notifymyandroid.com/publicapi/notify?apikey=" << sValue << "&application=Domoticz&event=" << Message << "&priority=" << Priority << "&description=" << Message;
-			if (!HTTPClient::GET(sUrl.str(),sResult))
+			//send message to NMA
+			std::stringstream sPostData;
+			sPostData << "apikey=" << sValue << "&application=Domoticz&event=" << Message << "&description=" << Message << "&priority=" << Priority;
+			std::vector<std::string> ExtraHeaders;
+			if (!HTTPClient::POST("https://www.notifymyandroid.com/publicapi/notify",sPostData.str(),ExtraHeaders,sResult))
 			{
 				_log.Log(LOG_ERROR,"Error sending NMA Notification!");
 			}
@@ -2027,7 +2031,6 @@ bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::strin
 {
 	int nValue;
 	std::string sValue;
-	char szURL[300];
 	std::string sResult;
 
 #if defined WIN32
@@ -2042,13 +2045,14 @@ bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::strin
 	//check if prowl enabled
 	if (GetPreferencesVar("ProwlAPI",nValue,sValue))
 	{
+		sValue=stdstring_trim(sValue);
 		if (sValue!="")
 		{
 			//send message to Prowl
-			sValue=stdstring_trim(sValue);
-			sprintf(szURL,"http://api.prowlapp.com/publicapi/add?apikey=%s&application=Domoticz&event=%s&description=%s&priority=%d",
-				sValue.c_str(),uencode.URLEncode(Subject).c_str(),uencode.URLEncode(notimessage).c_str(),Priority);
-			if (!HTTPClient::GET(szURL,sResult))
+			std::stringstream sPostData;
+			sPostData << "apikey=" << sValue << "&application=Domoticz&event=" << uencode.URLEncode(Subject) << "&description=" << uencode.URLEncode(notimessage) << "&priority=" << Priority;
+			std::vector<std::string> ExtraHeaders;
+			if (!HTTPClient::POST("https://api.prowlapp.com/publicapi/add",sPostData.str(),ExtraHeaders,sResult))
 			{
 				_log.Log(LOG_ERROR,"Error sending Prowl Notification!");
 			}
@@ -2061,13 +2065,14 @@ bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::strin
 	//check if NMA enabled
 	if (GetPreferencesVar("NMAAPI",nValue,sValue))
 	{
+		sValue=stdstring_trim(sValue);
 		if (sValue!="")
 		{
-			//send message to Prowl
-			sValue=stdstring_trim(sValue);
-			sprintf(szURL,"http://www.notifymyandroid.com/publicapi/notify?apikey=%s&application=Domoticz&event=%s&priority=%d&description=%s",
-				sValue.c_str(),uencode.URLEncode(Subject).c_str(),Priority,uencode.URLEncode(notimessage).c_str());
-			if (!HTTPClient::GET(szURL,sResult))
+			//send message to NMA
+			std::stringstream sPostData;
+			sPostData << "apikey=" << sValue << "&application=Domoticz&event=" << uencode.URLEncode(Subject) << "&description=" << uencode.URLEncode(notimessage) << "&priority=" << Priority;
+			std::vector<std::string> ExtraHeaders;
+			if (!HTTPClient::POST("https://www.notifymyandroid.com/publicapi/notify",sPostData.str(),ExtraHeaders,sResult))
 			{
 				_log.Log(LOG_ERROR,"Error sending NMA Notification!");
 			}
