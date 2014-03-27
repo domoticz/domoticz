@@ -92,6 +92,7 @@
     </Reference>
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
     <Reference Include="vjslib" />
   </ItemGroup>
   <ItemGroup>

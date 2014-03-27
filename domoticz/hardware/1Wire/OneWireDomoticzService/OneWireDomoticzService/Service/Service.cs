@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.ServiceProcess;
 using System.Text;
 using System.Threading;
+using System.Xml;
 using Newtonsoft.Json;
 using com.dalsemi.onewire;
 using com.dalsemi.onewire.adapter;
@@ -61,6 +64,8 @@ namespace OneWireDomoticzService.Service
       {
          // Version log
          Logger.Logger.Log("***** " + Program.Name + " " + Program.Version + " *****");
+
+         LogSupportedAdapters();
 
          // Start socket server
          Logger.Logger.Log("StartServer");
@@ -134,10 +139,19 @@ namespace OneWireDomoticzService.Service
 
          // Needed if the stop is not explicitly called (by OnStop)
          var sc = new ServiceController { ServiceName = ServiceName, MachineName = Environment.MachineName };
-         if (sc.Status != ServiceControllerStatus.StopPending)
+         if (sc.Status == ServiceControllerStatus.StopPending)
+            return;
+         Logger.Logger.Log("Service stop");
+         Environment.Exit(1);
+      }
+
+      private static void LogSupportedAdapters()
+      {
+         Logger.Logger.Log("Supported adapters are : ");
+         var adapters = OneWireAccessProvider.enumerateAllAdapters();
+         while (adapters.hasMoreElements())
          {
-            Logger.Logger.Log("Service stop");
-            Environment.Exit(1);
+            Logger.Logger.Log(adapters.nextElement().ToString());
          }
       }
 
@@ -151,7 +165,8 @@ namespace OneWireDomoticzService.Service
 
             try
             {
-               _oneWireAdapter = OneWireAccessProvider.getDefaultAdapter();
+               _oneWireAdapter = FindAdapter();
+               Logger.Logger.Log("1-wire adapter found : " + _oneWireAdapter.getAdapterName() + " (" + _oneWireAdapter.getPortName() + ")");
             }
             catch (OneWireIOException exception)
             {
@@ -162,6 +177,36 @@ namespace OneWireDomoticzService.Service
                Logger.Logger.Log("No 1-wire adapter found : " + exception);
             }
             return _oneWireAdapter;
+         }
+      }
+
+      private static DSPortAdapter FindAdapter()
+      {
+         var configFile = new XmlDocument();
+         try
+         {
+            var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            if (dir == null)
+               throw new Exception();
+            configFile.Load(Path.Combine(dir, "OneWireDomoticzServiceConfig.xml"));
+            if (configFile.DocumentElement == null)
+               throw new Exception();
+            var adapterNode = configFile.DocumentElement.SelectSingleNode("adapter");
+            if (adapterNode == null)
+               throw new Exception();
+            if (adapterNode.Attributes == null)
+               throw new Exception();
+            var adapterNameAttribute = adapterNode.Attributes["name"];
+            if (adapterNameAttribute == null)
+               throw new Exception();
+            var portAttribute = adapterNode.Attributes["port"];
+            return OneWireAccessProvider.getAdapter("{" + adapterNameAttribute.Value + "}", (portAttribute == null) ? null : portAttribute.Value);
+         }
+         catch (Exception exception)
+         {
+            // Configuration not found, or adapter configured not found, try to autodetect adapter
+            Logger.Logger.Log("Fail to find the OneWire adapter : {0}", exception.Message);
+            return OneWireAccessProvider.getDefaultAdapter();
          }
       }
 
