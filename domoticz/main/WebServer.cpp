@@ -11468,6 +11468,10 @@ std::string CWebServer::GetJSonPage()
 			m_pMain->m_sql.UpdateValue(HwdID, ID,1,pTypeRFXMeter,sTypeRFXMeterCount,10,255,0,"0",devname);
 			bCreated=true;
 			break;
+		case pTypeAirQuality:
+			m_pMain->m_sql.UpdateValue(HwdID, ID,1,pTypeAirQuality,sTypeVoltcraft,10,255,0,devname);
+			bCreated=true;
+			break;
 		}
 		if (bCreated)
 		{

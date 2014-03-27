@@ -5,6 +5,9 @@
   <!-- COMMAND_CLASS_ALARM AlarmCmd_Get not supported -->
   <CommandClass id="113" getsupported="false" />
 
+  <!-- COMMAND_CLASS_SENSOR_ALARM not supported -->
+  <CommandClass id="156" getsupported="false" />
+  
   <!-- COMMAND_CLASS_SWITCH_ALL SwitchAllCmd_Get not supported -->
   <CommandClass id="39" getsupported="false" />
   <!-- Configuration -->
@@ -45,8 +48,7 @@
 		</Value>
     
     <Value type="list" genre="config" instance="1" index="35" label="35. Wall Plug's response to alarm frames" value="255" size="1">
-			<Help>Parameter defines how the Wall Plug will respond to alarms (device's 
-								status change) Default setting: 0
+			<Help>Parameter defines how the Wall Plug will respond to alarms (device's status change) Default setting: 0
 									0 - no reaction,
 									1 - turn on connected device. LED ring signals an alarm through 
 									defined time period (parameter 39) or untill the alarm is cancelled.
@@ -98,10 +100,10 @@
                 Default seting: 30 (s)
 		</Help>
     </Value>        
-    <Value type="byte" genre="config" instance="1" index="45" label="45. Reporting changes in energy consumed by controlled devices" value="30"  size="1">
+    <Value type="byte" genre="config" instance="1" index="45" label="45. Reporting changes in energy consumed by controlled devices" value="10"  size="1">
      <Help>New, reported energy value is calculated based on last reported value. Default setting: 10 (0,1 kWh). 
      						Available settings: 1 - 254 (0,01kWh - 2,54kWh).
-     						Value of 25 - changes in consumed energy will not be reported. 
+     						Value of 255 - changes in consumed energy will not be reported. 
 								Reports will be sent only in case of polling.
 		</Help>
     </Value>  
@@ -117,8 +119,8 @@
     
      <Value type="list" genre="config" instance="1" index="49" label="49. Metering energy consumed by the Wall Plug itself" value="0" size="1">
       <Help>This parameter determines whether energy metering should include the amount of energy consumed by the Wall Plug itself. Results are being added to energy consumed by controlled device. Default setting: 0</Help>
-      <Item label="function activated" value="0" />
-      <Item label="function inactive" value="1" />
+      <Item label="function inactive" value="0" />
+      <Item label="function activated" value="1" />
      </Value>
     
     <Value type="short" genre="config" instance="1" index="50" label="50. DOWN value" value="300"  size="2">
@@ -180,7 +182,7 @@
 
 			</Help>
 			<Item label="Depending on power consumption changes" value="0" />
-			<Item label=" using full spectrum of available colorus" value="1" />
+			<Item label="Using full spectrum of available colorus" value="1" />
 			<Item label="White illumination" value="2" />
 			<Item label="Red illumination" value="3" />
 			<Item label="Green illumination" value="4" />
