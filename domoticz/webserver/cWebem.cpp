@@ -1208,20 +1208,28 @@ bool IsIPInRange(const std::string ip, const _tIPNetwork ipnetwork)
 }
 
 //Returns true is the connected host is in the local network
-bool cWebemRequestHandler::AreWeInLocalNetwork(const std::string &sHost)
+bool cWebemRequestHandler::AreWeInLocalNetwork(const std::string &sHost, const request& req)
 {
 	//check if in local network(s)
-
 	if (myWebem->m_localnetworks.size()==0)
 		return false;
 	if (sHost.size()<3)
 		return false;
-	std::string host=sHost;
-	int pos=host.find_first_of(":");
+
+	std::string host;
+	int pos;
+	std::vector<_tIPNetwork>::const_iterator itt;
+
+	//Check if we have the "X-Forwarded-For" (connection via proxy)
+	const char *host_header=request::get_req_header(&req, "X-Forwarded-For");
+	if (host_header!=NULL)
+		host=host_header;
+	else
+		host=sHost;
+	pos=host.find_first_of(":");
 	if (pos!=std::string::npos)
 		host=host.substr(0,pos);
 
-	std::vector<_tIPNetwork>::const_iterator itt;
 	for (itt=myWebem->m_localnetworks.begin(); itt!=myWebem->m_localnetworks.end(); ++itt)
 	{
 		if (IsIPInRange(host,*itt))
@@ -1240,7 +1248,7 @@ int cWebemRequestHandler::check_authorization(const std::string &sHost, const re
 	if (myWebem->m_userpasswords.size()==0)
 		return 1;//no username/password
 
-	if (AreWeInLocalNetwork(sHost))
+	if (AreWeInLocalNetwork(sHost,req))
 		return 1;//we are in the local network, no authentication needed
 
 	const char* cookie_header = request::get_req_header(&req, "Cookie");
@@ -1341,7 +1349,7 @@ void cWebemRequestHandler::send_authorization_page(reply& rep)
 
 void cWebemRequestHandler::check_cookie(const std::string &sHost, const request& req, reply& rep)
 {
-	if (AreWeInLocalNetwork(sHost))
+	if (AreWeInLocalNetwork(sHost,req))
 		return;
 	if (myWebem->m_actualuser.size()==0)
 		return;

@@ -105,7 +105,7 @@ namespace http {
 			void send_authorization_request(reply& rep);
 			void send_authorization_page(reply& rep);
 			int check_authorization(const std::string &sHost, const request& req);
-			bool AreWeInLocalNetwork(const std::string &sHost);
+			bool AreWeInLocalNetwork(const std::string &sHost, const request& req);
 			int authorize(const request& req);
 			int parse_auth_header(const request& req, char *buf,	size_t buf_size, struct ah *ah) ;
 			std::string m_doc_root;
