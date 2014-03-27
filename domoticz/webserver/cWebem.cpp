@@ -17,6 +17,7 @@
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/GZipHelper.h"
+#include "../main/Logger.h"
 
 #ifndef WIN32
 	#include <unistd.h> //gethostbyname
@@ -1216,16 +1217,32 @@ bool cWebemRequestHandler::AreWeInLocalNetwork(const std::string &sHost, const r
 	if (sHost.size()<3)
 		return false;
 
-	std::string host;
+	std::string host=sHost;
 	int pos;
 	std::vector<_tIPNetwork>::const_iterator itt;
 
-	//Check if we have the "X-Forwarded-For" (connection via proxy)
-	const char *host_header=request::get_req_header(&req, "X-Forwarded-For");
-	if (host_header!=NULL)
-		host=host_header;
-	else
-		host=sHost;
+	if (host=="127.0.0.1")
+	{
+		//We could be using a proxy server
+		//Check if we have the "X-Forwarded-For" (connection via proxy)
+		const char *host_header=request::get_req_header(&req, "X-Forwarded-For");
+		if (host_header!=NULL)
+		{
+			host=host_header;
+			if (strstr(host_header,",")!=NULL)
+			{
+				//Multiple proxies are used... this is not very common
+				host_header=request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
+				if (!host_header)
+				{
+					_log.Log(LOG_ERROR,"Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote addresses: %s)",host.c_str());
+					return false;
+				}
+				host=host_header;
+			}
+		}
+	}
+
 	pos=host.find_first_of(":");
 	if (pos!=std::string::npos)
 		host=host.substr(0,pos);
