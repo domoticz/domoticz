@@ -270,6 +270,8 @@ Version 1.0.1087 (Oktober 16th 2013)
 - Changed: Now letting SQLite calculating the date/time for clearing up the short-log
 - Fixed: EventSystem, Calling internal URL from within blocky resulted in a unresponsive system (deadlock)
 - Implemented: Started with custom icons for On/Off switches
+- Implemented: OpenZWave, support for Sensor_Binary Motion/Tamper/Door sensor (for example the Philio 3In1)
+- Changed: OpenZWave, Sensor_Binary now also uses the Index value (you might get new sensors, and old one can be removed)
 
 Version 1.0.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)

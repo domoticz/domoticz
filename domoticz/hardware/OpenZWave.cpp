@@ -485,7 +485,8 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 	if (
 		(commandClass==COMMAND_CLASS_MULTI_INSTANCE)||
 		(commandClass==COMMAND_CLASS_SENSOR_MULTILEVEL)||
-		(commandClass==COMMAND_CLASS_THERMOSTAT_SETPOINT)
+		(commandClass==COMMAND_CLASS_THERMOSTAT_SETPOINT)||
+		(commandClass==COMMAND_CLASS_SENSOR_BINARY)
 		)
 	{
 		instance=vID.GetIndex();//(See note on top of this file) GetInstance();
@@ -795,6 +796,7 @@ void COpenZWave::CloseSerialConnector()
 	OpenZWave::Manager* pManager=OpenZWave::Manager::Get();
 	if (pManager)
 	{
+		WriteControllerConfig();
 //		boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 		_log.Log(LOG_NORM,"OpenZWave: Closed");
 
@@ -1033,7 +1035,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	if (
 		(commandclass==COMMAND_CLASS_MULTI_INSTANCE)||
 		(commandclass==COMMAND_CLASS_SENSOR_MULTILEVEL)||
-		(commandclass==COMMAND_CLASS_THERMOSTAT_SETPOINT)
+		(commandclass==COMMAND_CLASS_THERMOSTAT_SETPOINT)||
+		(commandclass==COMMAND_CLASS_SENSOR_BINARY)
 		)
 	{
 		instance=vID.GetIndex();//(See note on top of this file) GetInstance();
@@ -1083,7 +1086,14 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	// We choose SwitchMultilevel first, if not available, SwhichBinary is chosen
 	if (commandclass==COMMAND_CLASS_SWITCH_BINARY)
 	{
-		if ((vLabel=="Switch")||(vLabel=="Sensor"))
+		if (
+			(vLabel=="Switch")||
+			(vLabel=="Sensor")||
+			(vLabel=="Motion Sensor")||
+			(vLabel=="Door/Window Sensor")||
+			(vLabel=="Tamper Sensor")||
+			(vLabel=="Magnet open")
+			)
 		{
 			if (m_pManager->GetValueAsBool(vID,&bValue)==true)
 			{
@@ -1118,7 +1128,14 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	}
 	else if (commandclass==COMMAND_CLASS_SENSOR_BINARY)
 	{
-		if ((vLabel=="Switch")||(vLabel=="Sensor"))
+		if (
+			(vLabel=="Switch")||
+			(vLabel=="Sensor")||
+			(vLabel=="Motion Sensor")||
+			(vLabel=="Door/Window Sensor")||
+			(vLabel=="Tamper Sensor")||
+			(vLabel=="Magnet open")
+			)
 		{
 			if (m_pManager->GetValueAsBool(vID,&bValue)==true)
 			{
@@ -1404,6 +1421,8 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID vID, int EventID)
 	if (instance==0)
 		return;
 
+	instance=vID.GetIndex();
+
 	_tZWaveDevice *pDevice=FindDevice(NodeID,instance, COMMAND_CLASS_SENSOR_BINARY, ZDTYPE_SWITCHNORMAL);
 	if (pDevice==NULL)
 	{
@@ -1504,7 +1523,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 	if (
 		(commandclass==COMMAND_CLASS_MULTI_INSTANCE)||
 		(commandclass==COMMAND_CLASS_SENSOR_MULTILEVEL)||
-		(commandclass==COMMAND_CLASS_THERMOSTAT_SETPOINT)
+		(commandclass==COMMAND_CLASS_THERMOSTAT_SETPOINT)||
+		(commandclass==COMMAND_CLASS_SENSOR_BINARY)
 		)
 	{
 		instance=vID.GetIndex();//(See note on top of this file) GetInstance();
@@ -1656,30 +1676,46 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 			}
 			else
 			{
-				if ((vLabel!="Switch")&&(vLabel!="Sensor"))
-					return;
-				int intValue=0;
-				if (vType==OpenZWave::ValueID::ValueType_Bool)
+				if (
+					(vLabel=="Switch")||
+					(vLabel=="Sensor")||
+					(vLabel=="Motion Sensor")||
+					(vLabel=="Door/Window Sensor")||
+					(vLabel=="Tamper Sensor")||
+					(vLabel=="Magnet open")
+					)
 				{
-					if (bValue==true)
-						intValue=255;
+					int intValue=0;
+					if (vType==OpenZWave::ValueID::ValueType_Bool)
+					{
+						if (bValue==true)
+							intValue=255;
+						else
+							intValue=0;
+					}
+					else if (vType==OpenZWave::ValueID::ValueType_Byte)
+					{
+						if (byteValue==0)
+							intValue=0;
+						else
+							intValue=255;
+					}
 					else
-						intValue=0;
-				}
-				else if (vType==OpenZWave::ValueID::ValueType_Byte)
-				{
-					if (byteValue==0)
-						intValue=0;
-					else
-						intValue=255;
+						return;
+					if (
+						(vLabel!="Motion Sensor")&&
+						(vLabel!="Tamper Sensor")
+						)
+					{
+						if (pDevice->intvalue==intValue)
+						{
+							return; //dont send same value
+						}
+					}
+					pDevice->intvalue=intValue;
 				}
 				else
 					return;
-				if (pDevice->intvalue==intValue)
-				{
-					return; //dont send same value
-				}
-				pDevice->intvalue=intValue;
 			}
 		}
 		break;
@@ -2122,7 +2158,14 @@ void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int po
 
 				if (commandclass==COMMAND_CLASS_SWITCH_BINARY)
 				{
-					if ((vLabel=="Switch")||(vLabel=="Sensor"))
+					if (
+						(vLabel=="Switch")||
+						(vLabel=="Sensor")||
+						(vLabel=="Motion Sensor")||
+						(vLabel=="Door/Window Sensor")||
+						(vLabel=="Tamper Sensor")||
+						(vLabel=="Magnet open")
+						)
 					{
 						m_pManager->EnablePoll(*ittValue,1);
 					}
@@ -2140,7 +2183,14 @@ void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int po
 				}
 				else if (commandclass==COMMAND_CLASS_SENSOR_BINARY)
 				{
-					if ((vLabel=="Switch")||(vLabel=="Sensor"))
+					if (
+						(vLabel=="Switch")||
+						(vLabel=="Sensor")||
+						(vLabel=="Motion Sensor")||
+						(vLabel=="Door/Window Sensor")||
+						(vLabel=="Tamper Sensor")||
+						(vLabel=="Magnet open")
+						)
 					{
 						m_pManager->EnablePoll(*ittValue,1);
 					}

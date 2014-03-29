@@ -1408,6 +1408,29 @@ function RefreshOpenZWaveNodeTable()
 									szConfig+=' (' + item.units + ')';
 								}
 							}
+							if (item.type=="bool") {
+								szConfig+="<b>"+item.index+". "+item.label+":</b><br>";
+								szConfig+='<select style="width:100%" class="combobox ui-corner-all" id="'+item.index+'">';
+								
+								var szComboOption='<option value="False"';
+								if (item.value=="False") {
+									szComboOption+=' selected="selected"';
+								}
+								szComboOption+='>False</option>';
+								szConfig+=szComboOption;
+
+								szComboOption='<option value="True"';
+								if (item.value=="True") {
+									szComboOption+=' selected="selected"';
+								}
+								szComboOption+='>True</option>';
+								szConfig+=szComboOption;
+
+								szConfig+='</select>'
+								if (item.units!="") {
+									szConfig+=' (' + item.units + ')';
+								}
+							}
 							else {
 								szConfig+="<b>"+item.index+". "+item.label+":</b> ";
 								szConfig+='<input type="text" id="'+item.index+'" value="' + item.value + '" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />';
