@@ -914,6 +914,8 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	OpenZWave::ValueID vID(0,0,OpenZWave::ValueID::ValueGenre_Basic,0,0,0,OpenZWave::ValueID::ValueType_Bool);
 	unsigned char svalue=(unsigned char)value;
 
+	bool bHaveSendSwitch=false;
+
 	bool bIsDimmer=(GetValueByCommandClassLabel(nodeID, instanceID, COMMAND_CLASS_SWITCH_MULTILEVEL,"Level",vID)==true);
 	if (bIsDimmer==false)
 	{
@@ -921,6 +923,7 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		{
 			OpenZWave::ValueID::ValueType vType=vID.GetType();
 			_log.Log(LOG_NORM,"OpenZWave: Domoticz has send a Switch command!");
+			bHaveSendSwitch=true;
 			if (vType == OpenZWave::ValueID::ValueType_Bool)
 			{
 				if (svalue==0) {
@@ -948,6 +951,7 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		{
 			OpenZWave::ValueID::ValueType vType=vID.GetType();
 			_log.Log(LOG_NORM,"OpenZWave: Domoticz has send a Switch command!");
+			bHaveSendSwitch=true;
 			if (vType == OpenZWave::ValueID::ValueType_Bool)
 			{
 				if (svalue==0) {
@@ -990,10 +994,52 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		if (svalue>99)
 			svalue=99;
 		_log.Log(LOG_NORM,"OpenZWave: Domoticz has send a Switch command!, Level: %d",svalue);
+		bHaveSendSwitch=true;
 		if (!m_pManager->SetValue(vID,svalue))
 		{
 			_log.Log(LOG_ERROR,"OpenZWave: Error setting Switch Value!");
 		}
+	}
+	if (bHaveSendSwitch)
+	{
+		unsigned char commandclass=vID.GetCommandClassId();
+		unsigned char NodeID = vID.GetNodeId();
+
+		unsigned char instance;
+		if (
+			(commandclass==COMMAND_CLASS_MULTI_INSTANCE)||
+			(commandclass==COMMAND_CLASS_SENSOR_MULTILEVEL)||
+			(commandclass==COMMAND_CLASS_THERMOSTAT_SETPOINT)||
+			(commandclass==COMMAND_CLASS_SENSOR_BINARY)
+			)
+		{
+			instance=vID.GetIndex();//(See note on top of this file) GetInstance();
+		}
+		else
+		{
+			instance=vID.GetInstance();//(See note on top of this file) GetInstance();
+		}
+
+		std::stringstream sstr;
+		sstr << int(NodeID) << ".instances." << int(instance) << ".commandClasses." << int(commandclass) << ".data";
+		std::string path=sstr.str();
+
+		_tZWaveDevice *pDevice=NULL;
+		std::map<std::string,_tZWaveDevice>::iterator itt;
+		for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
+		{
+			std::string::size_type loc = path.find(itt->second.string_id,0);
+			if (loc!=std::string::npos)
+			{
+				pDevice=&itt->second;
+				break;
+			}
+		}
+		if (pDevice!=NULL)
+		{
+			pDevice->intvalue=value;
+		}
+
 	}
 	m_updateTime=mytime(NULL);
 }
@@ -1702,15 +1748,9 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 					}
 					else
 						return;
-					if (
-						(vLabel!="Motion Sensor")&&
-						(vLabel!="Tamper Sensor")
-						)
+					if (pDevice->intvalue==intValue)
 					{
-						if (pDevice->intvalue==intValue)
-						{
-							return; //dont send same value
-						}
+						return; //dont send same value
 					}
 					pDevice->intvalue=intValue;
 				}
