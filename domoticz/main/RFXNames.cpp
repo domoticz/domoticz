@@ -163,7 +163,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_SolarEdgeTCP,		"SolarEdge via LAN interface" },
 		{ HTYPE_SMASpot,			"SMASpot" },
 		{ HTYPE_ICYTHERMOSTAT,		"ICY Thermostat" },
-		{ HTYPE_WOL,				"Wake-on-LAN (Not Ready!)" },
+		{ HTYPE_WOL,				"Wake-on-LAN" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
