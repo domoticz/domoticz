@@ -42,7 +42,7 @@
 #include "../hardware/SolarEdgeTCP.h"
 #include "../hardware/SMASpot.h"
 #include "../hardware/ICYThermostat.h"
-
+#include "../hardware/WOL.h"
 
 #ifdef WIN32
     #include "dirent_windows.h"
@@ -445,6 +445,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_P1SmartMeterLAN:
 		//LAN
 		pHardware = new P1MeterTCP(ID, Address, Port);
+		break;
+	case HTYPE_WOL:
+		//LAN
+		pHardware = new CWOL(ID, Address, Port);
 		break;
 	case HTYPE_OpenThermGatewayTCP:
 		//LAN

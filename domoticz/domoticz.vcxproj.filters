@@ -135,6 +135,9 @@
     <Filter Include="Devices\HardwareMonitor">
       <UniqueIdentifier>{51868f28-9b4c-49aa-b7b1-f1c4a479b741}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\WOL">
+      <UniqueIdentifier>{4d9a219d-95b5-4e44-bcf1-b47e7df829d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -412,6 +415,9 @@
     <ClInclude Include="hardware\HardwareMonitor.h">
       <Filter>Devices\HardwareMonitor</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\WOL.h">
+      <Filter>Devices\WOL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -650,6 +656,9 @@
     </ClCompile>
     <ClCompile Include="hardware\HardwareMonitor.cpp">
       <Filter>Devices\HardwareMonitor</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\WOL.cpp">
+      <Filter>Devices\WOL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

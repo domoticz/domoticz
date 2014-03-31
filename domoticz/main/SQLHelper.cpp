@@ -382,6 +382,13 @@ const char *sqlCreateZWaveNodes =
 	"[ProductDescription] VARCHAR(100) DEFAULT Unknown, "
 	"[PollTime] INTEGER DEFAULT 0);";
 
+const char *sqlCreateWOLNodes =
+	"CREATE TABLE IF NOT EXISTS [WOLNodes] ("
+	"[ID] INTEGER PRIMARY KEY, "
+	"[HardwareID] INTEGER NOT NULL, "
+	"[Name] VARCHAR(100) DEFAULT Unknown, "
+	"[MacAddress] VARCHAR(50) DEFAULT Unknown);";
+
 const char *sqlCreatePercentage =
 "CREATE TABLE IF NOT EXISTS [Percentage] ("
 "[DeviceRowID] BIGINT(10) NOT NULL, "
@@ -538,6 +545,7 @@ bool CSQLHelper::OpenDatabase()
     query(sqlCreateEventMaster);
     query(sqlCreateEventRules);
 	query(sqlCreateZWaveNodes);
+	query(sqlCreateWOLNodes);
 	query(sqlCreatePercentage);
 	query(sqlCreatePercentage_Calendar);
 	query(sqlCreateFan);

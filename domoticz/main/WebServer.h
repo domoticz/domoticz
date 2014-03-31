@@ -75,6 +75,11 @@ private:
 	void CmdAddHardware(Json::Value &root);
 	void CmdUpdateHardware(Json::Value &root);
 	void DeleteHardware(Json::Value &root);
+	void WOLGetNodes(Json::Value &root);
+	void WOLAddNode(Json::Value &root);
+	void WOLUpdateNode(Json::Value &root);
+	void WOLRemoveNode(Json::Value &root);
+	void WOLClearNodes(Json::Value &root);
 #ifdef WITH_OPENZWAVE
 	//ZWave
 	void ZWaveUpdateNode(Json::Value &root);

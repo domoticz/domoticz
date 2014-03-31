@@ -79,6 +79,7 @@ enum _eHardwareTypes {
 	HTYPE_SolarEdgeTCP,			//26
 	HTYPE_SMASpot,				//27
 	HTYPE_ICYTHERMOSTAT,		//28
+	HTYPE_WOL,					//29
 	HTYPE_END
 };
 

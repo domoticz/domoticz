@@ -16,6 +16,7 @@
 #include "../hardware/EnOcean.h"
 #include "../hardware/Wunderground.h"
 #include "../hardware/ForecastIO.h"
+#include "../hardware/WOL.h"
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
 #include "../json/config.h"
@@ -265,6 +266,13 @@ bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress
 	RegisterCommandCode("addhardware",boost::bind(&CWebServer::CmdAddHardware,this, _1));
 	RegisterCommandCode("updatehardware",boost::bind(&CWebServer::CmdUpdateHardware,this, _1));
 	RegisterCommandCode("deletehardware",boost::bind(&CWebServer::DeleteHardware,this, _1));
+
+	RegisterCommandCode("wolgetnodes",boost::bind(&CWebServer::WOLGetNodes,this, _1));
+	RegisterCommandCode("woladdnode",boost::bind(&CWebServer::WOLAddNode,this, _1));
+	RegisterCommandCode("wolupdatenode",boost::bind(&CWebServer::WOLUpdateNode,this, _1));
+	RegisterCommandCode("wolremovenode",boost::bind(&CWebServer::WOLRemoveNode,this, _1));
+	RegisterCommandCode("wolclearnodes",boost::bind(&CWebServer::WOLClearNodes,this, _1));
+
 #ifdef WITH_OPENZWAVE
 	//ZWave
 	RegisterCommandCode("updatezwavenode",boost::bind(&CWebServer::ZWaveUpdateNode,this, _1));
@@ -374,7 +382,7 @@ void CWebServer::CmdAddHardware(Json::Value &root)
 		{
 		}
 	}
-	else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)||(htype == HTYPE_RazberryZWave)||(htype == HTYPE_OpenThermGatewayTCP)||(htype == HTYPE_LimitlessLights)||(htype == HTYPE_SolarEdgeTCP)) {
+	else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)||(htype == HTYPE_RazberryZWave)||(htype == HTYPE_OpenThermGatewayTCP)||(htype == HTYPE_LimitlessLights)||(htype == HTYPE_SolarEdgeTCP)||(htype == HTYPE_WOL)) {
 		//Lan
 		if (address=="")
 			return;
@@ -475,7 +483,7 @@ void CWebServer::CmdUpdateHardware(Json::Value &root)
 	{
 		//USB
 	}
-	else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)||(htype == HTYPE_RazberryZWave)||(htype == HTYPE_OpenThermGatewayTCP)||(htype == HTYPE_LimitlessLights)||(htype == HTYPE_SolarEdgeTCP)) {
+	else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)||(htype == HTYPE_RazberryZWave)||(htype == HTYPE_OpenThermGatewayTCP)||(htype == HTYPE_LimitlessLights)||(htype == HTYPE_SolarEdgeTCP)||(htype == HTYPE_WOL)) {
 		//Lan
 		if (address=="")
 			return;
@@ -545,6 +553,133 @@ void CWebServer::CmdUpdateHardware(Json::Value &root)
 	//re-add the device in our system
 	int ID=atoi(idx.c_str());
 	m_pMain->AddHardwareFromParams(ID,name,(senabled=="true")?true:false,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
+}
+
+void CWebServer::WOLGetNodes(Json::Value &root)
+{
+	std::string hwid=m_pWebEm->FindValue("idx");
+	if (hwid=="")
+		return;
+	int iHardwareID=atoi(hwid.c_str());
+	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(iHardwareID);
+	if (pHardware==NULL)
+		return;
+	if (pHardware->HwdType!=HTYPE_WOL)
+		return;
+
+	root["status"]="OK";
+	root["title"]="WOLGetNodes";
+
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT ID,Name,MacAddress FROM WOLNodes WHERE (HardwareID==" << iHardwareID << ")";
+	result=m_pMain->m_sql.query(szQuery.str());
+	if (result.size()>0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		int ii=0;
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::vector<std::string> sd=*itt;
+
+			root["result"][ii]["idx"]=sd[0];
+			root["result"][ii]["Name"]=sd[1];
+			root["result"][ii]["Mac"]=sd[2];
+			ii++;
+		}
+	}
+}
+
+void CWebServer::WOLAddNode(Json::Value &root)
+{
+	std::string hwid=m_pWebEm->FindValue("idx");
+	std::string name=m_pWebEm->FindValue("name");
+	std::string mac=m_pWebEm->FindValue("mac");
+	if (
+		(hwid=="")||
+		(name=="")||
+		(mac=="")
+		)
+		return;
+	int iHardwareID=atoi(hwid.c_str());
+	CDomoticzHardwareBase *pBaseHardware=m_pMain->GetHardware(iHardwareID);
+	if (pBaseHardware==NULL)
+		return;
+	if (pBaseHardware->HwdType!=HTYPE_WOL)
+		return;
+	CWOL *pHardware=(CWOL*)pBaseHardware;
+
+	root["status"]="OK";
+	root["title"]="WOLAddNode";
+	pHardware->AddNode(name,mac);
+}
+
+void CWebServer::WOLUpdateNode(Json::Value &root)
+{
+	std::string hwid=m_pWebEm->FindValue("idx");
+	std::string nodeid=m_pWebEm->FindValue("nodeid");
+	std::string name=m_pWebEm->FindValue("name");
+	std::string mac=m_pWebEm->FindValue("mac");
+	if (
+		(hwid=="")||
+		(nodeid=="")||
+		(name=="")||
+		(mac=="")
+		)
+		return;
+	int iHardwareID=atoi(hwid.c_str());
+	CDomoticzHardwareBase *pBaseHardware=m_pMain->GetHardware(iHardwareID);
+	if (pBaseHardware==NULL)
+		return;
+	if (pBaseHardware->HwdType!=HTYPE_WOL)
+		return;
+	CWOL *pHardware=(CWOL*)pBaseHardware;
+
+	int NodeID=atoi(nodeid.c_str());
+	root["status"]="OK";
+	root["title"]="WOLUpdateNode";
+	pHardware->UpdateNode(NodeID,name,mac);
+}
+
+void CWebServer::WOLRemoveNode(Json::Value &root)
+{
+	std::string hwid=m_pWebEm->FindValue("idx");
+	std::string nodeid=m_pWebEm->FindValue("nodeid");
+	if (
+		(hwid=="")||
+		(nodeid=="")
+		)
+		return;
+	int iHardwareID=atoi(hwid.c_str());
+	CDomoticzHardwareBase *pBaseHardware=m_pMain->GetHardware(iHardwareID);
+	if (pBaseHardware==NULL)
+		return;
+	if (pBaseHardware->HwdType!=HTYPE_WOL)
+		return;
+	CWOL *pHardware=(CWOL*)pBaseHardware;
+
+	int NodeID=atoi(nodeid.c_str());
+	root["status"]="OK";
+	root["title"]="WOLRemoveNode";
+	pHardware->RemoveNode(NodeID);
+}
+
+void CWebServer::WOLClearNodes(Json::Value &root)
+{
+	std::string hwid=m_pWebEm->FindValue("idx");
+	if (hwid=="")
+		return;
+	int iHardwareID=atoi(hwid.c_str());
+	CDomoticzHardwareBase *pBaseHardware=m_pMain->GetHardware(iHardwareID);
+	if (pBaseHardware==NULL)
+		return;
+	if (pBaseHardware->HwdType!=HTYPE_WOL)
+		return;
+	CWOL *pHardware=(CWOL*)pBaseHardware;
+
+	root["status"]="OK";
+	root["title"]="WOLClearNodes";
+	pHardware->RemoveAllNodes();
 }
 
 void CWebServer::DeleteHardware(Json::Value &root)
@@ -7153,7 +7288,7 @@ std::string CWebServer::GetJSonPage()
 		CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(iHardwareID);
 		if (pHardware==NULL)
 			goto exitjson;
-		if (pHardware->HwdType!=HTYPE_OpenZWave) //later we also do the Razberry
+		if (pHardware->HwdType!=HTYPE_OpenZWave)
 			goto exitjson;
 		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
 

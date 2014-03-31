@@ -194,6 +194,7 @@ hardware/TE923Tool.cpp
 hardware/Teleinfo.cpp
 hardware/VolcraftCO20.cpp
 hardware/VolcraftCO20Tool.cpp
+hardware/WOL.cpp
 hardware/Wunderground.cpp
 hardware/YouLess.cpp
 hardware/ZWaveBase.cpp

@@ -37,6 +37,7 @@ class CDomoticzHardwareBase
 	friend class CEnOcean;
 	friend class SolarEdgeTCP;
 	friend class CSMASpot;
+	friend class CWOL;
 	friend class CICYThermostat;
 public: 
 	CDomoticzHardwareBase();
