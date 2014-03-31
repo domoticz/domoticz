@@ -362,7 +362,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		tsen.CURRENT.rssi=12;
 		if (pDevice->hasBattery)
 		{
-			tsen.ENERGY.battery_level=Convert_Battery_To_PercInt(pDevice->batValue);
+			tsen.CURRENT.battery_level=Convert_Battery_To_PercInt(pDevice->batValue);
 		}
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.CURRENT);
 	}
@@ -575,6 +575,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		lmeter.id4=ID4;
 		lmeter.dunit=pDevice->scaleID;
 		lmeter.fLux=pDevice->floatValue;
+		lmeter.battery_level=9;
 		if (pDevice->hasBattery)
 			lmeter.battery_level=pDevice->batValue;
 		sDecodeRXMessage(this, (const unsigned char *)&lmeter);
@@ -588,6 +589,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		tmeter.id3=ID3;
 		tmeter.id4=ID4;
 		tmeter.dunit=1;
+		tmeter.battery_level=9;
 		if (pDevice->hasBattery)
 			tmeter.battery_level=pDevice->batValue;
 		tmeter.temp=pDevice->floatValue;
