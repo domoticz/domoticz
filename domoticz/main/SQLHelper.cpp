@@ -21,7 +21,7 @@
 	#include <pwd.h>
 #endif
 
-#define DB_VERSION 39
+#define DB_VERSION 40
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -859,6 +859,10 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("ALTER TABLE Scenes ADD COLUMN [Protected] INTEGER default 0");
 		}
+		if (dbversion<40)
+		{
+			FixDaylightSaving();
+		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
 
@@ -1091,6 +1095,7 @@ bool CSQLHelper::OpenDatabase()
 		nValue=1;
 	}
 	m_bAllowWidgetOrdering=(nValue==1);
+
 	//Start background thread
 	if (!StartThread())
 		return false;
@@ -5753,4 +5758,302 @@ void CSQLHelper::CheckDeviceTimeout()
 			m_timeoutlastsend[ulID]=stoday.tm_mday;
 		}
 	}
+}
+
+void CSQLHelper::FixDaylightSavingTableSimple(const std::string &TableName)
+{
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+
+	szQuery << "SELECT t.RowID, u.RowID, t.Date from " << TableName << " as t, " << TableName << " as u WHERE (t.[Date] == u.[Date]) AND (t.[DeviceRowID] == u.[DeviceRowID]) AND (t.[RowID] != u.[RowID]) ORDER BY t.[RowID]";
+	result=m_pMain->m_sql.query(szQuery.str());
+	if (result.size()>0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		std::stringstream sstr;
+		unsigned long ID1;
+		unsigned long ID2;
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::vector<std::string> sd=*itt;
+			sstr.clear();
+			sstr.str("");
+			sstr << sd[0];
+			sstr >> ID1;
+			sstr.clear();
+			sstr.str("");
+			sstr << sd[1];
+			sstr >> ID2;
+			if (ID2>ID1)
+			{
+				std::string szDate=sd[2];
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT date('" << szDate << "','+1 day')";
+				std::vector<std::vector<std::string> > result2;
+				result2=m_pMain->m_sql.query(szQuery.str());
+
+				std::string szDateNew=result2[0][0];
+
+				//Check if Date+1 exists, if yes, remove current double value
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT RowID FROM " << TableName << " WHERE (Date='" << szDateNew << "') AND (RowID==" << sd[1] << ")";
+				result2=m_pMain->m_sql.query(szQuery.str());
+				szQuery.clear();
+				szQuery.str("");
+				if (result2.size()>0)
+				{
+					//Delete row
+					szQuery << "DELETE FROM " << TableName << " WHERE (RowID==" << sd[1] << ")";
+					m_pMain->m_sql.query(szQuery.str());
+				}
+				else
+				{
+					//Update date
+					szQuery << "UPDATE " << TableName << " SET Date='" << szDateNew << "' WHERE (RowID==" << sd[1] << ")";
+					m_pMain->m_sql.query(szQuery.str());
+				}
+			}
+		}
+	}
+}
+
+void CSQLHelper::FixDaylightSaving()
+{
+	//First the easy tables
+	FixDaylightSavingTableSimple("Fan_Calendar");
+	FixDaylightSavingTableSimple("Percentage_Calendar");
+	FixDaylightSavingTableSimple("Rain_Calendar");
+	FixDaylightSavingTableSimple("Temperature_Calendar");
+	FixDaylightSavingTableSimple("UV_Calendar");
+	FixDaylightSavingTableSimple("Wind_Calendar");
+
+	//Meter_Calendar
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+
+	szQuery << "SELECT t.RowID, u.RowID, t.Value, u.Value, t.Date from Meter_Calendar as t, Meter_Calendar as u WHERE (t.[Date] == u.[Date]) AND (t.[DeviceRowID] == u.[DeviceRowID]) AND (t.[RowID] != u.[RowID]) ORDER BY t.[RowID]";
+	result=m_pMain->m_sql.query(szQuery.str());
+	if (result.size()>0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		std::stringstream sstr;
+		unsigned long ID1;
+		unsigned long ID2;
+		unsigned long long Value1;
+		unsigned long long Value2;
+		unsigned long long ValueDest;
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::vector<std::string> sd1=*itt;
+
+			sstr.clear();
+			sstr.str("");
+			sstr << sd1[0];
+			sstr >> ID1;
+			sstr.clear();
+			sstr.str("");
+			sstr << sd1[1];
+			sstr >> ID2;
+			sstr.clear();
+			sstr.str("");
+			sstr << sd1[2];
+			sstr >> Value1;
+			sstr.clear();
+			sstr.str("");
+			sstr << sd1[3];
+			sstr >> Value2;
+			if (ID2>ID1)
+			{
+				if (Value2>Value1)
+					ValueDest=Value2-Value1;
+				else
+					ValueDest=Value2;
+
+				std::string szDate=sd1[4];
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT date('" << szDate << "','+1 day')";
+				std::vector<std::vector<std::string> > result2;
+				result2=m_pMain->m_sql.query(szQuery.str());
+
+				std::string szDateNew=result2[0][0];
+
+				//Check if Date+1 exists, if yes, remove current double value
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT RowID FROM Meter_Calendar WHERE (Date='" << szDateNew << "') AND (RowID==" << sd1[1] << ")";
+				result2=m_pMain->m_sql.query(szQuery.str());
+				szQuery.clear();
+				szQuery.str("");
+				if (result2.size()>0)
+				{
+					//Delete Row
+					szQuery << "DELETE FROM Meter_Calendar WHERE (RowID==" << sd1[1] << ")";
+					m_pMain->m_sql.query(szQuery.str());
+				}
+				else
+				{
+					//Update row with new Date
+					szQuery << "UPDATE Meter_Calendar SET Date='" << szDateNew << "', Value=" << ValueDest << " WHERE (RowID==" << sd1[1] << ")";
+					m_pMain->m_sql.query(szQuery.str());
+				}
+			}
+		}
+	}
+
+	//Last (but not least) MultiMeter_Calendar
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "SELECT t.RowID, u.RowID, t.Value1, t.Value2, t.Value3, t.Value4, t.Value5, t.Value6, u.Value1, u.Value2, u.Value3, u.Value4, u.Value5, u.Value6, t.Date from MultiMeter_Calendar as t, MultiMeter_Calendar as u WHERE (t.[Date] == u.[Date]) AND (t.[DeviceRowID] == u.[DeviceRowID]) AND (t.[RowID] != u.[RowID]) ORDER BY t.[RowID]";
+	result=m_pMain->m_sql.query(szQuery.str());
+	if (result.size()>0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		std::stringstream sstr;
+		unsigned long ID1;
+		unsigned long ID2;
+		unsigned long long tValue1;
+		unsigned long long tValue2;
+		unsigned long long tValue3;
+		unsigned long long tValue4;
+		unsigned long long tValue5;
+		unsigned long long tValue6;
+
+		unsigned long long uValue1;
+		unsigned long long uValue2;
+		unsigned long long uValue3;
+		unsigned long long uValue4;
+		unsigned long long uValue5;
+		unsigned long long uValue6;
+
+		unsigned long long ValueDest1;
+		unsigned long long ValueDest2;
+		unsigned long long ValueDest3;
+		unsigned long long ValueDest4;
+		unsigned long long ValueDest5;
+		unsigned long long ValueDest6;
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::vector<std::string> sd1=*itt;
+
+			sstr.clear();
+			sstr.str("");
+			sstr << sd1[0];
+			sstr >> ID1;
+			sstr.clear();
+			sstr.str("");
+			sstr << sd1[1];
+			sstr >> ID2;
+
+			sstr.clear();
+			sstr.str("");
+			sstr << sd1[2];
+			sstr >> tValue1;
+			sstr.clear();
+			sstr.str("");
+			sstr << sd1[3];
+			sstr >> tValue2;
+			sstr.clear();
+			sstr.str("");
+			sstr << sd1[4];
+			sstr >> tValue3;
+			sstr.clear();
+			sstr.str("");
+			sstr << sd1[5];
+			sstr >> tValue4;
+			sstr.clear();
+			sstr.str("");
+			sstr << sd1[6];
+			sstr >> tValue5;
+			sstr.clear();
+			sstr.str("");
+			sstr << sd1[7];
+			sstr >> tValue6;
+
+			sstr.clear();
+			sstr.str("");
+			sstr << sd1[8];
+			sstr >> uValue1;
+			sstr.clear();
+			sstr.str("");
+			sstr << sd1[9];
+			sstr >> uValue2;
+			sstr.clear();
+			sstr.str("");
+			sstr << sd1[10];
+			sstr >> uValue3;
+			sstr.clear();
+			sstr.str("");
+			sstr << sd1[11];
+			sstr >> uValue4;
+			sstr.clear();
+			sstr.str("");
+			sstr << sd1[12];
+			sstr >> uValue5;
+			sstr.clear();
+			sstr.str("");
+			sstr << sd1[13];
+			sstr >> uValue6;
+
+			if (ID2>ID1)
+			{
+				if (uValue1>tValue1)
+					ValueDest1=uValue1-tValue1;
+				else
+					ValueDest1=uValue1;
+				if (uValue2>tValue2)
+					ValueDest2=uValue2-tValue2;
+				else
+					ValueDest2=uValue2;
+				if (uValue3>tValue3)
+					ValueDest3=uValue3-tValue3;
+				else
+					ValueDest3=uValue3;
+				if (uValue4>tValue4)
+					ValueDest4=uValue4-tValue4;
+				else
+					ValueDest4=uValue4;
+				if (uValue5>tValue5)
+					ValueDest5=uValue5-tValue5;
+				else
+					ValueDest5=uValue5;
+				if (uValue6>tValue6)
+					ValueDest6=uValue6-tValue6;
+				else
+					ValueDest6=uValue6;
+
+				std::string szDate=sd1[14];
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT date('" << szDate << "','+1 day')";
+				std::vector<std::vector<std::string> > result2;
+				result2=m_pMain->m_sql.query(szQuery.str());
+
+				std::string szDateNew=result2[0][0];
+
+				//Check if Date+1 exists, if yes, remove current double value
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT RowID FROM MultiMeter_Calendar WHERE (Date='" << szDateNew << "') AND (RowID==" << sd1[1] << ")";
+				result2=m_pMain->m_sql.query(szQuery.str());
+				szQuery.clear();
+				szQuery.str("");
+				if (result2.size()>0)
+				{
+					//Delete Row
+					szQuery << "DELETE FROM MultiMeter_Calendar WHERE (RowID==" << sd1[1] << ")";
+					m_pMain->m_sql.query(szQuery.str());
+				}
+				else
+				{
+					//Update row with new Date
+					szQuery << "UPDATE MultiMeter_Calendar SET Date='" << szDateNew << "', Value1=" << ValueDest1 << ", Value2=" << ValueDest2 << ", Value3=" << ValueDest3 << ", Value4=" << ValueDest4 << ", Value5=" << ValueDest5 << ", Value6=" << ValueDest6 << " WHERE (RowID==" << sd1[1] << ")";
+					m_pMain->m_sql.query(szQuery.str());
+				}
+			}
+		}
+	}
+
 }
