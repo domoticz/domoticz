@@ -11626,6 +11626,7 @@ std::string CWebServer::GetJSonPage()
 			root["result"][ii]["description"]=itt->Description;
 			ii++;
 		}
+		root["status"]="OK";
 	}
 	else if (rtype=="plans")
 	{

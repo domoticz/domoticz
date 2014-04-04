@@ -83,6 +83,7 @@ Version 1.0.xxxx (March xxth 2014)
 - Fixed: Fibaro Wall Plug (fgwpe) config
 - Implemented: Option for Dummy device to create Air Quality Sensor
 - Fixed: Daylight Saving values for 29-march-2014
+- Fixed: custom_light_icons json request (now reporting status OK)
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)
