@@ -1063,6 +1063,12 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 		ID = "1";
 		Unit=pLed->dunit;
 	}
+	else if (devType==pTypeCurtain)
+	{
+		sprintf(szTmp,"%d", pResponse->CURTAIN1.housecode);
+		ID = szTmp;
+		Unit=pResponse->CURTAIN1.unitcode;
+	}
 	else if (devType==pTypeBlinds)
 	{
 		sprintf(szTmp,"%02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2,pResponse->BLINDS1.id3);
@@ -1166,6 +1172,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		case pTypeLighting5:
 		case pTypeLighting6:
 		case pTypeLimitlessLights:
+		case pTypeCurtain:
 		case pTypeBlinds:
 		case pTypeSecurity1:
 		case pTypeChime:
@@ -1222,7 +1229,8 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			DeviceRowIdx=decode_Lighting6(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeCurtain:
-			WriteMessage("Curtain");	//only transmit
+			WriteMessage("Curtain",false);	//only transmit
+			DeviceRowIdx=decode_Curtain(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeBlinds:
 			WriteMessage("Blinds",false);
@@ -4060,7 +4068,66 @@ unsigned long long MainWorker::decode_RecXmitMessage(const CDomoticzHardwareBase
 	return -1;
 }
 
-//not in dbase yet
+unsigned long long MainWorker::decode_Curtain(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[100];
+	std::string devname;
+
+	unsigned char devType=pTypeCurtain;
+	unsigned char subType=pResponse->CURTAIN1.subtype;
+	sprintf(szTmp,"%d", pResponse->CURTAIN1.housecode);
+	std::string ID = szTmp;
+	unsigned char Unit=pResponse->CURTAIN1.unitcode;
+	unsigned char cmnd=pResponse->CURTAIN1.cmnd;
+	unsigned char SignalLevel=9;
+
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,devname);
+	PrintDeviceName(devname);
+
+	if (m_verboselevel == EVBL_ALL)
+	{
+		char szTmp[100];
+
+		switch (pResponse->CURTAIN1.subtype)
+		{
+		case sTypeHarrison:
+			WriteMessage("subtype       = Harrison");
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->CURTAIN1.packettype, pResponse->CURTAIN1.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+		sprintf(szTmp,"Sequence nbr  = %d", pResponse->CURTAIN1.seqnbr);
+		WriteMessage(szTmp);
+
+		sprintf(szTmp,"Housecode         = %d", pResponse->CURTAIN1.housecode);
+		WriteMessage(szTmp);
+
+		sprintf(szTmp,"Unit          = %d", pResponse->CURTAIN1.unitcode);
+		WriteMessage(szTmp);
+
+		WriteMessage("Command       = ", false);
+
+		switch (pResponse->CURTAIN1.cmnd)
+		{
+		case curtain_sOpen:
+			WriteMessage("Open");
+			break;
+		case curtain_sStop:
+			WriteMessage("Stop");
+			break;
+		case curtain_sClose:
+			WriteMessage("Close");
+			break;
+		default:
+			WriteMessage("UNKNOWN");
+			break;
+		}
+	}
+	return DevRowIdx;
+}
+
 unsigned long long MainWorker::decode_BLINDS1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
@@ -7891,6 +7958,27 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 					}
 				}
 				break;
+			}
+			return true;
+		}
+		break;
+	case pTypeCurtain:
+		{
+			tRBUF lcmd;
+			lcmd.CURTAIN1.packetlength=sizeof(lcmd.CURTAIN1)-1;
+			lcmd.CURTAIN1.packettype=dType;
+			lcmd.CURTAIN1.subtype=dSubType;
+			lcmd.CURTAIN1.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
+			lcmd.CURTAIN1.housecode=atoi(sd[1].c_str());
+			lcmd.CURTAIN1.unitcode=Unit;
+			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.CURTAIN1.cmnd))
+				return false;
+			lcmd.CURTAIN1.filler=0;
+
+			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.CURTAIN1));
+			if (!IsTesting) {
+				//send to internal for now (later we use the ACK)
+				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
 			}
 			return true;
 		}

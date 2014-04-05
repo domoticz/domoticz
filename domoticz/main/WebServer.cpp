@@ -2503,6 +2503,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				case pTypeLighting6:
 				case pTypeLimitlessLights:
 				case pTypeSecurity1:
+				case pTypeCurtain:
 				case pTypeBlinds:
 				case pTypeChime:
 				case pTypeThermostat3:
@@ -2571,6 +2572,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 					case pTypeLighting6:
 					case pTypeLimitlessLights:
 					case pTypeSecurity1:
+					case pTypeCurtain:
 					case pTypeBlinds:
 					case pTypeChime:
 					case pTypeThermostat3:
@@ -2947,6 +2949,20 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				sunitcode=szTmp;
 				devid=id;
 			}
+			else if (lighttype==101)
+			{
+				//Curtain Harrison
+				dtype=pTypeCurtain;
+				subtype=sTypeHarrison;
+				std::string shousecode=m_pWebEm->FindValue("housecode");
+				sunitcode=m_pWebEm->FindValue("unitcode");
+				if (
+					(shousecode=="")||
+					(sunitcode=="")
+					)
+					return;
+				devid=shousecode;
+			}
 		}
 		root["status"]="OK";
 		root["title"]="TestSwitch";
@@ -3082,6 +3098,20 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				return;
 			devid=id;
 		}
+		else if (lighttype==101)
+		{
+			//Curtain Harrison
+			dtype=pTypeCurtain;
+			subtype=sTypeHarrison;
+			std::string shousecode=m_pWebEm->FindValue("housecode");
+			sunitcode=m_pWebEm->FindValue("unitcode");
+			if (
+				(shousecode=="")||
+				(sunitcode=="")
+				)
+				return;
+			devid=shousecode;
+		}
 		else
 		{
 			if (lighttype==100)
@@ -3214,6 +3244,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			(dType==pTypeLighting6)||
 			(dType==pTypeLimitlessLights)||
 			(dType==pTypeSecurity1)||
+			(dType==pTypeCurtain)||
 			(dType==pTypeBlinds)||
 			(dType==pTypeChime)||
 			(dType==pTypeThermostat3)||
@@ -4228,6 +4259,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			(dType!=pTypeLighting6)&&
 			(dType!=pTypeLimitlessLights)&&
 			(dType!=pTypeSecurity1)&&
+			(dType!=pTypeCurtain)&&
 			(dType!=pTypeBlinds)&&
 			(dType!=pTypeChime)&&
 			(dType!=pTypeThermostat3)&&
@@ -5636,6 +5668,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						(dType!=pTypeLighting6)&&
 						(dType!=pTypeLimitlessLights)&&
 						(dType!=pTypeSecurity1)&&
+						(dType!=pTypeCurtain)&&
 						(dType!=pTypeBlinds)&&
 						(dType!=pTypeChime)&&
 						(dType!=pTypeThermostat3)&&
@@ -5810,6 +5843,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				(dType==pTypeLighting5)||
 				(dType==pTypeLighting6)||
 				(dType==pTypeLimitlessLights)||
+				(dType==pTypeCurtain)||
 				(dType==pTypeBlinds)||
 				(dType==pTypeChime)||
 				(dType==pTypeThermostat3)||
@@ -7573,6 +7607,7 @@ std::string CWebServer::GetJSonPage()
 			(dType!=pTypeLighting6)&&
 			(dType!=pTypeLimitlessLights)&&
 			(dType!=pTypeSecurity1)&&
+			(dType!=pTypeCurtain)&&
 			(dType!=pTypeBlinds)&&
 			(dType!=pTypeRego6XXValue)&&
 			(dType!=pTypeChime)&&

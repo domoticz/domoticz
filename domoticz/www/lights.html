@@ -175,6 +175,7 @@
 						<option value="66">Blyss</option>
 						<option value="67">EnOcean</option>
 						<option value="100">ByronSX</option>
+						<option value="101">Harrison Curtain</option>
 			</select>
 			</td>
 		  </tr>
@@ -2161,7 +2162,7 @@ function UpdateAddManualDialog()
 	
 	var tothousecodes=1;
 	var totunits=1;
-	if ((lighttype==0)||(lighttype==1)||(lighttype==3)) {
+	if ((lighttype==0)||(lighttype==1)||(lighttype==3)||(lighttype==101)) {
 		bIsARCType=1;
 		tothousecodes=16;
 		totunits=16;
@@ -2317,7 +2318,7 @@ function GetManualLightSettings(isTest)
 		ID="EnOcean";
 		mParams+="&id="+ID;
 	}
-	else if (lighttype<10) {
+	else if ((lighttype<10)||(lighttype==101)) {
 		mParams+="&housecode="+$("#dialog-addmanuallightdevice #lightparams1 #combohousecode option:selected").val();
 		mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightparams1 #combounitcode option:selected").val();
 	}

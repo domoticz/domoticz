@@ -955,6 +955,20 @@ void GetLightStatus(
 			break;
 		}
 		break;
+	case pTypeCurtain:
+		switch (nValue)
+		{
+		case curtain_sOpen:
+			lstatus="Off";
+			break;
+		case curtain_sClose:
+			lstatus="On";
+			break;
+		case curtain_sStop:
+			lstatus="Stop";
+			break;
+		}
+		break;
 	case pTypeBlinds:
 		switch (nValue)
 		{
@@ -1369,6 +1383,23 @@ bool GetLightCommand(
 				cmd=sStatusAlarmDelayed;
 				return true;
 			}
+		}
+		break;
+	case pTypeCurtain:
+		{
+			if (switchcmd=="On")
+			{
+				cmd=curtain_sClose;
+			}
+			else if (switchcmd=="Off")
+			{
+				cmd=curtain_sOpen;
+			}
+			else
+			{
+				cmd=curtain_sStop;
+			}
+			return true;
 		}
 		break;
 	case pTypeBlinds:
