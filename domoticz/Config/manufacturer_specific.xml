@@ -40,6 +40,7 @@
 		<Product type="0001" id="0007" name="Z-Stick S2 Lite"/>
 		<Product type="0003" id="0008" name="Smart Energy Illuminator"/>
 		<Product type="0002" id="0009" name="Home Energy Meter" config="aeon_labs/hem.xml"/>
+		<Product type="0002" id="001c" name="Home Energy Meter G2" config="aeon_labs/hemg2.xml"/>
 		<Product type="0003" id="000a" name="Smart Energy 220V Utility Switch"/>
 		<Product type="0003" id="000b" name="Smart Energy Strip"/>
 		<Product type="0003" id="000c" name="Micro Smart Energy Switch"/>
