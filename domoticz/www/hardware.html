@@ -1655,7 +1655,7 @@ function RefreshOpenZWaveNodeTable()
 									szConfig+=' (' + item.units + ')';
 								}
 							}
-							if (item.type=="bool") {
+							else if (item.type=="bool") {
 								szConfig+="<b>"+item.index+". "+item.label+":</b><br>";
 								szConfig+='<select style="width:100%" class="combobox ui-corner-all" id="'+item.index+'">';
 								

@@ -457,6 +457,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeBlinds, sTypeBlindsT4, "RAEX" },
 		{ pTypeBlinds, sTypeBlindsT5, "Media Mount" },
 		{ pTypeBlinds, sTypeBlindsT6, "DC106, YOOHA, Rohrmotor24 RMF" },
+		{ pTypeBlinds, sTypeBlindsT7, "Forest" },
 
 		{ pTypeSecurity1, sTypeSecX10, "X10 security" },
 		{ pTypeSecurity1, sTypeSecX10M, "X10 security motion" },

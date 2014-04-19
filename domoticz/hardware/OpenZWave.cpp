@@ -1303,6 +1303,19 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				}
 			}
 		}
+		else if (vLabel=="General")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
+				{
+					_device.floatValue=fValue;
+					_device.commandClassID=COMMAND_CLASS_SENSOR_BINARY;
+					_device.devType = ZDTYPE_SWITCHNORMAL;
+					InsertDevice(_device);
+				}
+			}
+		}
 	}
 	else if (commandclass==COMMAND_CLASS_SENSOR_MULTILEVEL)
 	{
@@ -1476,7 +1489,11 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID vID, int EventID)
 		pDevice=FindDevice(NodeID,instance, COMMAND_CLASS_SWITCH_BINARY, ZDTYPE_SWITCHNORMAL);
 		if (pDevice==NULL)
 		{
-			return;
+			// absolute last try
+			instance=vID.GetIndex();
+			pDevice=FindDevice(NodeID, -1, COMMAND_CLASS_SENSOR_BINARY, ZDTYPE_SWITCHNORMAL);
+			if (pDevice==NULL)
+				return;
 		}
 	}
 
@@ -1485,6 +1502,7 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID vID, int EventID)
 		nintvalue=255;
 	else
 		nintvalue=0;
+
 	if (pDevice->intvalue==nintvalue)
 	{
 		return; //dont send/update same value

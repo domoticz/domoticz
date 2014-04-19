@@ -237,12 +237,13 @@ void Teleinfo::MatchLine()
 			break;
 			case TELEINFO_TYPE_IINST :
 				//we convert A to W setting RFXMeter/Counter Dividers Energy to 1000 / voltage => 1000/230 = 4.35
-				m_p1power.usagecurrent = ulValue;
+				//m_p1power.usagecurrent = ulValue;
 			break;
 			case TELEINFO_TYPE_IMAX :	
 			break;
 			case TELEINFO_TYPE_PAPP :	
 				//we count to prevent add each block but only one every 10 seconds
+				m_p1power.usagecurrent += ulValue;
 				m_counter++;
 				if (m_counter >= NumberOfFrameToSendOne)
 				{
@@ -250,9 +251,10 @@ void Teleinfo::MatchLine()
 					//_log.Log(LOG_NORM,"powerusage1 = %lu", m_p1power.powerusage1);
 					//_log.Log(LOG_NORM,"powerusage2 = %lu", m_p1power.powerusage2);
 					//_log.Log(LOG_NORM,"usagecurrent = %lu", m_p1power.usagecurrent);
-					
+					 m_p1power.usagecurrent /= m_counter;
 					sDecodeRXMessage(this, (const unsigned char *)&m_p1power);
 					m_counter = 0;
+					m_p1power.usagecurrent = 0;
 				}
 			break;
 		}

@@ -9,6 +9,15 @@
 
 
 /*
+SDK version 6.15
+	BLINDS1 id4 added
+
+SDK version 6.14
+	BlindsT7 - Forest added
+
+SDK version 6.13
+	(skipped, to make version equal to SDK.pdf)
+
 SDK version 6.12
 	Lighting1 - Energenie5 added
 	Lighting1 - COCO GDR2-2000R added
@@ -398,6 +407,7 @@ SDK version 4.9
 #define sTypeBlindsT4 0x4	//RAEX YR1326
 #define sTypeBlindsT5 0x5	//Media Mount
 #define sTypeBlindsT6 0x6	//DC106, YOOHA, Rohrmotor24 RMF
+#define sTypeBlindsT7 0x7	//Forest
 #define blinds_sOpen 0x0
 #define blinds_sClose 0x1
 #define blinds_sStop 0x2
@@ -963,15 +973,21 @@ typedef union tRBUF {
 		BYTE	id1;
 		BYTE	id2;
 		BYTE	id3;
-		BYTE	unitcode;
-		BYTE	cmnd;
+
 #ifdef IS_BIG_ENDIAN
+		BYTE	unitcode : 4;
+		BYTE	id4 : 4;
+		BYTE	cmnd;
 		BYTE	rssi : 4;
 		BYTE	filler : 4;
 #else
+		BYTE	id4 : 4;
+		BYTE	unitcode : 4;
+		BYTE	cmnd;
 		BYTE	filler : 4;
 		BYTE	rssi : 4;
 #endif
+
 	} BLINDS1;
 
 	struct {

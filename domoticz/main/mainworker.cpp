@@ -4180,6 +4180,9 @@ unsigned long long MainWorker::decode_BLINDS1(const CDomoticzHardwareBase *pHard
 		case sTypeBlindsT6:
 			WriteMessage("subtype       = DC106, YOOHA, Rohrmotor24 RMF");
 			break;
+		case sTypeBlindsT7:
+			WriteMessage("subtype       = Forest");
+			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->BLINDS1.packettype, pResponse->BLINDS1.subtype);
 			WriteMessage(szTmp);
