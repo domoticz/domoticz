@@ -167,13 +167,15 @@
 						<option value="5">Impuls</option>
 						<option value="6">RisingSun</option>
 						<option value="8">Energenie</option>
-						<option value="10">AC</option>
-						<option value="11">HE EU</option>
-						<option value="12">ANSLUT</option>
-						<option value="13">LightwaveRF</option>
-						<option value="18">Livolo</option>
-						<option value="66">Blyss</option>
-						<option value="67">EnOcean</option>
+						<option value="9">Energenie 5-gang</option>
+						<option value="10">COCO GDR2</option>
+						<option value="20">AC</option>
+						<option value="21">HE EU</option>
+						<option value="22">ANSLUT</option>
+						<option value="50">LightwaveRF</option>
+						<option value="55">Livolo</option>
+						<option value="60">Blyss</option>
+						<option value="70">EnOcean</option>
 						<option value="100">ByronSX</option>
 						<option value="101">Harrison Curtain</option>
 			</select>
@@ -267,15 +269,14 @@
           <td align="right"><label>As: </label></td>
           <td><input type="radio" name="how" id="how_1" value="New" checked>&nbsp;Main Device&nbsp;&nbsp;<input type="radio" name="how" id="how_2" value="Sub Device">&nbsp;Sub/Slave Device</td>
         <tr>
-				<tr id="subdevice" style="display:none">
-					<td align="right" style="width:60px"><label>Device: </label></td>
-					<td>
-						<select id="combosubdevice" style="width:250px" class="combobox ui-corner-all">
-						</select>
-					</td>
-				</tr>
-				</table>
-				
+		<tr id="subdevice" style="display:none">
+			<td align="right" style="width:60px"><label>Device: </label></td>
+			<td>
+				<select id="combosubdevice" style="width:250px" class="combobox ui-corner-all">
+				</select>
+			</td>
+		</tr>
+		</table>
     </form>
 </div>
 <div id="lightcontent">
@@ -2157,51 +2158,59 @@ function UpdateAddManualDialog()
 {
 	var lighttype=$("#dialog-addmanuallightdevice #lighttable #combolighttype option:selected").val();
 	
-	var bIsARCType=0;
+	var bIsARCType=((lighttype<20)||(lighttype==101));
 	var bIsType5=0;
 	
 	var tothousecodes=1;
 	var totunits=1;
 	if ((lighttype==0)||(lighttype==1)||(lighttype==3)||(lighttype==101)) {
-		bIsARCType=1;
 		tothousecodes=16;
 		totunits=16;
 	}
-	else if ((lighttype==2)||(lighttype==5)||(lighttype==6)) {
-		bIsARCType=1;
+	else if ((lighttype==2)||(lighttype==5)) {
 		tothousecodes=16;
 		totunits=64;
 	}
 	else if (lighttype==4) {
-		bIsARCType=1;
 		tothousecodes=3;
 		totunits=4;
 	}
-	else if (lighttype==66) {
+	else if (lighttype==6) {
 		tothousecodes=4;
-		totunits=5;
-	}
-	else if (lighttype==67) {
-		//EnOcean
-		tothousecodes=128;
-		totunits=2;
+		totunits=4;
 	}
 	else if (lighttype==7) {
-		bIsARCType=1;
 		tothousecodes=16;
 		totunits=8;
 	}
 	else if (lighttype==8) {
-		bIsARCType=1;
 		tothousecodes=16;
 		totunits=4;
 	}
-	else if (lighttype==13) {
+	else if (lighttype==9) {
+		tothousecodes=4;
+		totunits=4;
+	}
+	else if (lighttype==10) {
+		tothousecodes=4;
+		totunits=4;
+	}
+	else if (lighttype==60) {
+		//Blyss
+		tothousecodes=16;
+		totunits=5;
+	}
+	else if (lighttype==70) {
+		//EnOcean
+		tothousecodes=128;
+		totunits=2;
+	}
+	else if (lighttype==50) {
 		//LightwaveRF
 		bIsType5=1;
 		totunits=16;
 	}
-	else if (lighttype==18) {
+	else if (lighttype==55) {
 		//Livolo
 		bIsType5=1;
 	}
@@ -2212,7 +2221,7 @@ function UpdateAddManualDialog()
 	}
 	$("#dialog-addmanuallightdevice #lightingparams_enocean").hide();
 	
-	if (lighttype==66) {
+	if (lighttype==60) {
 		//Blyss
 		$('#dialog-addmanuallightdevice #lightparams3 #combogroupcode >option').remove();
 		$('#dialog-addmanuallightdevice #lightparams3 #combounitcode >option').remove();
@@ -2228,7 +2237,7 @@ function UpdateAddManualDialog()
 		$("#dialog-addmanuallightdevice #lighting2params").hide();
 		$("#dialog-addmanuallightdevice #lighting3params").show();
 	}
-	else if (lighttype==67) {
+	else if (lighttype==70) {
 		//EnOcean
 		$("#dialog-addmanuallightdevice #lightparams_enocean #comboid  >option").remove();
 		$("#dialog-addmanuallightdevice #lightparams_enocean #combounitcode  >option").remove();
@@ -2268,7 +2277,7 @@ function UpdateAddManualDialog()
 		}
 		else {
 			$("#dialog-addmanuallightdevice #lighting2params #combocmd1").hide();
-			if ((lighttype==18)||(lighttype==100)) {
+			if ((lighttype==55)||(lighttype==100)) {
 				$("#dialog-addmanuallightdevice #lighting2params #combocmd2").hide();
 				if (lighttype!=100) {
 					$("#dialog-addmanuallightdevice #lighting2paramsUnitCode").hide();
@@ -2302,7 +2311,7 @@ function GetManualLightSettings(isTest)
 	mParams+="&switchtype="+$("#dialog-addmanuallightdevice #lighttable #comboswitchtype option:selected").val();
 	var lighttype=$("#dialog-addmanuallightdevice #lighttable #combolighttype option:selected").val();
 	mParams+="&lighttype="+lighttype;
-	if (lighttype==66) {
+	if (lighttype==60) {
 		//Blyss
 		mParams+="&groupcode="+$("#dialog-addmanuallightdevice #lightparams3 #combogroupcode option:selected").val();
 		mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightparams3 #combounitcode option:selected").val();
@@ -2311,14 +2320,14 @@ function GetManualLightSettings(isTest)
 			$("#dialog-addmanuallightdevice #lightparams3 #combocmd2 option:selected").text();
 		mParams+="&id="+ID;
 	}
-	else if (lighttype==67) {
+	else if (lighttype==70) {
 		//EnOcean
 		mParams+="&groupcode="+$("#dialog-addmanuallightdevice #lightingparams_enocean #comboid option:selected").val();
 		mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightingparams_enocean #combounitcode option:selected").val();
 		ID="EnOcean";
 		mParams+="&id="+ID;
 	}
-	else if ((lighttype<10)||(lighttype==101)) {
+	else if ((lighttype<20)||(lighttype==101)) {
 		mParams+="&housecode="+$("#dialog-addmanuallightdevice #lightparams1 #combohousecode option:selected").val();
 		mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightparams1 #combounitcode option:selected").val();
 	}
@@ -2326,7 +2335,7 @@ function GetManualLightSettings(isTest)
 		//AC
 		var ID="";
 		var bIsType5=0;
-		if ((lighttype==13)||(lighttype==18)||(lighttype==100))
+		if ((lighttype==50)||(lighttype==55)||(lighttype==100))
 		{
 			bIsType5=1;
 		}
@@ -2338,7 +2347,7 @@ function GetManualLightSettings(isTest)
 				$("#dialog-addmanuallightdevice #lightparams2 #combocmd4 option:selected").text();
 		}
 		else {
-			if ((lighttype!=18)&&(lighttype!=100)) {
+			if ((lighttype!=55)&&(lighttype!=100)) {
 				ID=
 					$("#dialog-addmanuallightdevice #lightparams2 #combocmd2 option:selected").text()+
 					$("#dialog-addmanuallightdevice #lightparams2 #combocmd3 option:selected").text()+

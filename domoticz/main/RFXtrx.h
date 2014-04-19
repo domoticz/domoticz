@@ -7,27 +7,14 @@
 // users with a big_endian system have to remove the comment slashes before the #define.
 //
 
-/*---------------------------------------------------------------------------
-RFXtrx driver
-
-Copyright (C) 2011-2014  RFXCOM Bert Weijenberg
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software Foundation,
-Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
------------------------------------------------------------------------------*/
 
 /*
+SDK version 6.12
+	Lighting1 - Energenie5 added
+	Lighting1 - COCO GDR2-2000R added
+	sTypeBlindsT6 - DC106, YOOHA, Rohrmotor24 RMF added
+	RAW transmit added
+
 SDK version 6.11
 	Lighting5 - RGB driver TRC02 added
 	Lighting6 - Blyss rfu replaced by seqnbr2
@@ -275,6 +262,8 @@ SDK version 4.9
 #define sTypeRisingSun 0x6
 #define sTypePhilips 0x7
 #define sTypeEnergenie 0x8
+#define sTypeEnergenie5 0x9
+#define sTypeGDR2 0x0A
 
 #define light1_sOff 0x0
 #define light1_sOn 0x1
@@ -408,6 +397,7 @@ SDK version 4.9
 #define sTypeBlindsT3 0x3	//A-OK AC114
 #define sTypeBlindsT4 0x4	//RAEX YR1326
 #define sTypeBlindsT5 0x5	//Media Mount
+#define sTypeBlindsT6 0x6	//DC106, YOOHA, Rohrmotor24 RMF
 #define blinds_sOpen 0x0
 #define blinds_sClose 0x1
 #define blinds_sStop 0x2
@@ -1558,6 +1548,18 @@ typedef union tRBUF {
 	BYTE	rssi : 4;
 #endif
     } FS20;
+
+	struct {
+	BYTE	packetlength;
+	BYTE	packettype;
+	BYTE	subtype;
+	BYTE	seqnbr;
+	BYTE	repeat;
+	struct{
+		BYTE	uint_msb;
+		BYTE	uint_lsb;
+	} pulse[125];
+    } RAW;
 } RBUF;
 
 #endif //_RXFCOMLIB_F11DD459_E67E_4B26_8E44_B964E99304BF

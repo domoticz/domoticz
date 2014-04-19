@@ -2820,23 +2820,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		std::string sunitcode;
 		std::string devid;
 
-		if (lighttype==66)
-		{
-			//Blyss
-			dtype=pTypeLighting6;
-			subtype=sTypeBlyss;
-			std::string sgroupcode=m_pWebEm->FindValue("groupcode");
-			sunitcode=m_pWebEm->FindValue("unitcode");
-			std::string id=m_pWebEm->FindValue("id");
-			if (
-				(sgroupcode=="")||
-				(sunitcode=="")||
-				(id=="")
-				)
-				return;
-			devid=id+sgroupcode;
-		}
-		else if (lighttype==67)
+		if (lighttype==70)
 		{
 			//EnOcean (Lighting2 with Base_ID offset)
 			dtype=pTypeLighting2;
@@ -2864,7 +2848,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			s_strid << std::hex << std::uppercase << rID;
 			devid=s_strid.str();
 		}
-		else if (lighttype<10)
+		else if (lighttype<20)
 		{
 			dtype=pTypeLighting1;
 			subtype=lighttype;
@@ -2877,10 +2861,10 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				return;
 			devid=shousecode;
 		}
-		else if (lighttype<13)
+		else if (lighttype<30)
 		{
 			dtype=pTypeLighting2;
-			subtype=lighttype-10;
+			subtype=lighttype-30;
 			std::string id=m_pWebEm->FindValue("id");
 			sunitcode=m_pWebEm->FindValue("unitcode");
 			if (
@@ -2890,10 +2874,10 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				return;
 			devid=id;
 		}
-		else if (lighttype<100)
+		else if (lighttype<60)
 		{
 			dtype=pTypeLighting5;
-			subtype=lighttype-13;
+			subtype=lighttype-50;
 			std::string id=m_pWebEm->FindValue("id");
 			sunitcode=m_pWebEm->FindValue("unitcode");
 			if (
@@ -2902,6 +2886,22 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				)
 				return;
 			devid=id;
+		}
+		else if (lighttype<70)
+		{
+			//Blyss
+			dtype=pTypeLighting6;
+			subtype=lighttype-60;
+			std::string sgroupcode=m_pWebEm->FindValue("groupcode");
+			sunitcode=m_pWebEm->FindValue("unitcode");
+			std::string id=m_pWebEm->FindValue("id");
+			if (
+				(sgroupcode=="")||
+				(sunitcode=="")||
+				(id=="")
+				)
+				return;
+			devid=id+sgroupcode;
 		}
 		else
 		{
@@ -2982,7 +2982,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 
 		std::string switchcmd="On";
 		int level=0;
-		if (lighttype==67)
+		if (lighttype==70)
 		{
 			//Special EnOcean case, if it is a dimmer, set a dim value
 			if (switchtype == STYPE_Dimmer)
@@ -3012,23 +3012,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		std::string sunitcode;
 		std::string devid;
 
-		if (lighttype==66)
-		{
-			//Blyss
-			dtype=pTypeLighting6;
-			subtype=sTypeBlyss;
-			std::string sgroupcode=m_pWebEm->FindValue("groupcode");
-			sunitcode=m_pWebEm->FindValue("unitcode");
-			std::string id=m_pWebEm->FindValue("id");
-			if (
-				(sgroupcode=="")||
-				(sunitcode=="")||
-				(id=="")
-				)
-				return;
-			devid=id+sgroupcode;
-		}
-		else if (lighttype==67)
+		if (lighttype==70)
 		{
 			//EnOcean (Lighting2 with Base_ID offset)
 			dtype=pTypeLighting2;
@@ -3059,7 +3043,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			s_strid << std::hex << std::uppercase << rID;
 			devid=s_strid.str();
 		}
-		else if (lighttype<10)
+		else if (lighttype<20)
 		{
 			dtype=pTypeLighting1;
 			subtype=lighttype;
@@ -3072,10 +3056,10 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				return;
 			devid=shousecode;
 		}
-		else if (lighttype<13)
+		else if (lighttype<30)
 		{
 			dtype=pTypeLighting2;
-			subtype=lighttype-10;
+			subtype=lighttype-20;
 			std::string id=m_pWebEm->FindValue("id");
 			sunitcode=m_pWebEm->FindValue("unitcode");
 			if (
@@ -3085,10 +3069,10 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				return;
 			devid=id;
 		}
-		else if (lighttype<100)
+		else if (lighttype<60)
 		{
 			dtype=pTypeLighting5;
-			subtype=lighttype-13;
+			subtype=lighttype-50;
 			std::string id=m_pWebEm->FindValue("id");
 			sunitcode=m_pWebEm->FindValue("unitcode");
 			if (
@@ -3097,6 +3081,22 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				)
 				return;
 			devid=id;
+		}
+		else if (lighttype<70)
+		{
+			//Blyss
+			dtype=pTypeLighting6;
+			subtype=lighttype-60;
+			std::string sgroupcode=m_pWebEm->FindValue("groupcode");
+			sunitcode=m_pWebEm->FindValue("unitcode");
+			std::string id=m_pWebEm->FindValue("id");
+			if (
+				(sgroupcode=="")||
+				(sunitcode=="")||
+				(id=="")
+				)
+				return;
+			devid=id+sgroupcode;
 		}
 		else if (lighttype==101)
 		{

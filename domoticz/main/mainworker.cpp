@@ -3116,6 +3116,8 @@ unsigned long long MainWorker::decode_Lighting1(const CDomoticzHardwareBase *pHa
 		case sTypeIMPULS:
 		case sTypeRisingSun:
 		case sTypeEnergenie:
+		case sTypeEnergenie5:
+		case sTypeGDR2:
 			//decoding of these types is only implemented for use by simulate and verbose
 			//these types are not received by the RFXtrx433
 			switch (pResponse->LIGHTING1.subtype)
@@ -3136,7 +3138,13 @@ unsigned long long MainWorker::decode_Lighting1(const CDomoticzHardwareBase *pHa
 				WriteMessage("subtype       = RisingSun");
 				break;
 			case sTypeEnergenie:
-				WriteMessage("subtype       = Energenie");
+				WriteMessage("subtype       = Energenie-ENER010");
+				break;
+			case sTypeEnergenie5:
+				WriteMessage("subtype       = Energenie 5-gang");
+				break;
+			case sTypeGDR2:
+				WriteMessage("subtype       = COCO GDR2");
 				break;
 			}
 			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING1.seqnbr);
@@ -4168,6 +4176,9 @@ unsigned long long MainWorker::decode_BLINDS1(const CDomoticzHardwareBase *pHard
 			break;
 		case sTypeBlindsT5:
 			WriteMessage("subtype       = Media Mount");
+			break;
+		case sTypeBlindsT6:
+			WriteMessage("subtype       = DC106, YOOHA, Rohrmotor24 RMF");
 			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->BLINDS1.packettype, pResponse->BLINDS1.subtype);

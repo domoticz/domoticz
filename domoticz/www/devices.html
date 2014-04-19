@@ -212,7 +212,22 @@ function ShowDevices(filter)
 		"aoColumnDefs": [
 			{ "bSortable": false, "aTargets": [ 0,11 ] }
 		],
-		"aaSorting": [[ 12, "desc" ]],
+		"aoColumns": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+			{ "sType": "numeric-battery" },
+            null,
+            null
+        ],
+        "aaSorting": [[ 12, "desc" ]],
 		"bSortClasses": false,
 		"bProcessing": true,
 		"bStateSave": true,
@@ -395,6 +410,30 @@ function EnableDisableSubDevices(bEnabled)
 		trow.hide();
 	}
 }
+
+jQuery.fn.dataTableExt.oSort['numeric-battery-asc']  = function(a,b) {
+    var x = a;
+    var y = b;
+    if (x=="-") x=101;
+    if (x=="Low") x=1;
+    if (y=="-") y=101;
+    if (y=="Low") y=1;
+    x = parseFloat( x );
+    y = parseFloat( y );
+    return ((x < y) ? -1 : ((x > y) ?  1 : 0));
+};
+ 
+jQuery.fn.dataTableExt.oSort['numeric-battery-desc'] = function(a,b) {
+    var x = a;
+    var y = b;
+    if (x=="-") x=101;
+    if (x=="Low") x=1;
+    if (y=="-") y=101;
+    if (y=="Low") y=1;
+    x = parseFloat( x );
+    y = parseFloat( y );
+    return ((x < y) ?  1 : ((x > y) ? -1 : 0));
+};
 
 $(document).ready(function() {
     //global var

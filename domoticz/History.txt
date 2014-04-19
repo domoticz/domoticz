@@ -84,6 +84,9 @@ Version 1.0.xxxx (March xxth 2014)
 - Implemented: Option for Dummy device to create Air Quality Sensor
 - Fixed: Daylight Saving values for 29-march-2014
 - Fixed: custom_light_icons json request (now reporting status OK)
+- Implemented: Latest RFXCOM SDK (#73)
+- Implemented: Energenie5/COCO GDR2-2000R
+- Changed: HTML code for manual light
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)

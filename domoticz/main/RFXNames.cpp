@@ -425,6 +425,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting1, sTypeRisingSun, "RisingSun" },
 		{ pTypeLighting1, sTypePhilips, "Philips" },
 		{ pTypeLighting1, sTypeEnergenie, "Energenie" },
+		{ pTypeLighting1, sTypeEnergenie5, "Energenie 5-gang" },
+		{ pTypeLighting1, sTypeGDR2, "COCO GDR2" },
 		
 
 		{ pTypeLighting2, sTypeAC, "AC" },
@@ -454,6 +456,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeBlinds, sTypeBlindsT3, "A-OK AC114" },
 		{ pTypeBlinds, sTypeBlindsT4, "RAEX" },
 		{ pTypeBlinds, sTypeBlindsT5, "Media Mount" },
+		{ pTypeBlinds, sTypeBlindsT6, "DC106, YOOHA, Rohrmotor24 RMF" },
 
 		{ pTypeSecurity1, sTypeSecX10, "X10 security" },
 		{ pTypeSecurity1, sTypeSecX10M, "X10 security motion" },
@@ -596,6 +599,8 @@ void GetLightStatus(
 		case sTypeARC:
 		case sTypePhilips:
 		case sTypeEnergenie:
+		case sTypeEnergenie5:
+		case sTypeGDR2:
 			bHaveGroupCmd=true;
 			switch (nValue)
 			{
