@@ -11625,6 +11625,11 @@ std::string CWebServer::GetJSonPage()
 			m_pMain->m_sql.UpdateValue(HwdID, ID,1,pTypeGeneral,sTypePressure,12,255,0,"0.0",devname);
 			bCreated=true;
 			break;
+		case 2:
+			//Percentage
+			m_pMain->m_sql.UpdateValue(HwdID, ID,1,pTypeGeneral,sTypePercentage,12,255,0,"0.0",devname);
+			bCreated=true;
+			break;
 		case pTypeTEMP:
 			m_pMain->m_sql.UpdateValue(HwdID, ID,1,pTypeTEMP,sTypeTEMP1,10,255,0,"0.0",devname);
 			bCreated=true;
