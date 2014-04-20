@@ -86,14 +86,9 @@ void catch_intterm(int sig_num)
 		mib[1] = KERN_PROC;
 		mib[2] = KERN_PROC_PATHNAME;
 		mib[3] = -1;
-		char buf[1024];
-		size_t cb = sizeof(buf);
-		sysctl(mib, 4, buf, &cb, NULL, 0);
-		std::string szStartupFolder=buf;
-		if (szStartupFolder.find_last_of('/')!=std::string::npos)
-			szStartupFolder=szStartupFolder.substr(0,szStartupFolder.find_last_of('/')+1);
-		strcpy(pathName,szStartupFolder.c_str());
-		return szStartupFolder.size();
+		size_t cb = pathNameCapacity-1;
+		sysctl(mib, 4, pathName, &cb, NULL, 0);
+		return cb;
 	}
 #elif defined(__APPLE__) /* elif of: #elif defined(__linux__) */
 	#include <mach-o/dyld.h>
