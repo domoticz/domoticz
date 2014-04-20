@@ -75,7 +75,7 @@ void CTE923::Do_Work()
 			m_LastPollTime=mytime(NULL);
 		}
 	}
-	_log.Log(LOG_NORM,"TE923: Worker stopped...");
+	_log.Log(LOG_STATUS,"TE923: Worker stopped...");
 }
 
 void CTE923::WriteToHardware(const char *pdata, const unsigned char length)

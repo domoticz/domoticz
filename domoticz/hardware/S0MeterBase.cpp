@@ -177,12 +177,12 @@ void S0MeterBase::ParseLine()
 
 		std::string MeterID=results[0].substr(1);
 		std::string SoftwareVersion=results[1];
-		_log.Log(LOG_NORM,"S0 Meter: ID: %s, Version: %s",MeterID.c_str(),SoftwareVersion.c_str());
+		_log.Log(LOG_STATUS,"S0 Meter: ID: %s, Version: %s",MeterID.c_str(),SoftwareVersion.c_str());
 		return;
 	}
 	if (results.size()<4)
 	{
-		_log.Log(LOG_NORM,"S0 Meter: Invalid Data received!");
+		_log.Log(LOG_ERROR,"S0 Meter: Invalid Data received!");
 		return;
 	}
 	int totmeters=(results.size()-4)/3;

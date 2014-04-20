@@ -1256,7 +1256,7 @@ void CSQLHelper::Do_Work()
 						bool bRet=sclient.SendEmail();
 
 						if (bRet)
-							_log.Log(LOG_NORM,"Notification send (Email)");
+							_log.Log(LOG_STATUS,"Notification send (Email)");
 						else
 							_log.Log(LOG_ERROR,"Notification failed (Email)");
 
@@ -1967,7 +1967,7 @@ bool CSQLHelper::SendNotification(const std::string &EventID, const std::string 
 			}
 			else
 			{
-				_log.Log(LOG_NORM,"Notification send (Prowl)");
+				_log.Log(LOG_STATUS,"Notification send (Prowl)");
 			}
 		}
 	}
@@ -1987,7 +1987,7 @@ bool CSQLHelper::SendNotification(const std::string &EventID, const std::string 
 			}
 			else
 			{
-				_log.Log(LOG_NORM,"Notification send (NMA)");
+				_log.Log(LOG_STATUS,"Notification send (NMA)");
 			}
 		}
 	}
@@ -2016,7 +2016,7 @@ bool CSQLHelper::SendNotification(const std::string &EventID, const std::string 
 					}
 					else
 					{
-						_log.Log(LOG_NORM,"Notification sent (Pushover)");
+						_log.Log(LOG_STATUS,"Notification sent (Pushover)");
 					}
 				}
 			}
@@ -2079,7 +2079,7 @@ bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::strin
 			}
 			else
 			{
-				_log.Log(LOG_NORM,"Notification send (Prowl)");
+				_log.Log(LOG_STATUS,"Notification send (Prowl)");
 			}
 		}
 	}
@@ -2099,7 +2099,7 @@ bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::strin
 			}
 			else
 			{
-				_log.Log(LOG_NORM,"Notification send (NMA)");
+				_log.Log(LOG_STATUS,"Notification send (NMA)");
 			}
 		}
 	}
@@ -2129,7 +2129,7 @@ bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::strin
 					}
 					else
 					{
-						_log.Log(LOG_NORM,"Notification sent (Pushover)");
+						_log.Log(LOG_STATUS,"Notification sent (Pushover)");
 					}
 				}
 			}

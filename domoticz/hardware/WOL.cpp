@@ -37,7 +37,7 @@ bool CWOL::StartHardware()
 	m_bIsStarted=true;
 	sOnConnected(this);
 
-	_log.Log(LOG_NORM,"WOL: Started");
+	_log.Log(LOG_STATUS,"WOL: Started");
 
 	return true;
 }
@@ -155,7 +155,7 @@ void CWOL::WriteToHardware(const char *pdata, const unsigned char length)
 
 	if (SendWOLPacket(tosend))
 	{
-		_log.Log(LOG_NORM,"WOL: Wake-up send to: %s",mac_address.c_str());
+		_log.Log(LOG_STATUS,"WOL: Wake-up send to: %s",mac_address.c_str());
 	}
 	else
 	{

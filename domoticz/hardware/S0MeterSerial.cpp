@@ -50,7 +50,7 @@ bool S0MeterSerial::StartHardware()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_NORM,"S0 Meter: Using serial port: %s", m_szSerialPort.c_str());
+		_log.Log(LOG_STATUS,"S0 Meter: Using serial port: %s", m_szSerialPort.c_str());
 #ifndef WIN32
 		openOnlyBaud(
 			m_szSerialPort,

@@ -72,7 +72,7 @@ void CYouLess::Do_Work()
 			m_PollCounter=0;
 		}
 	}
-	_log.Log(LOG_NORM,"YouLess: Worker stopped...");
+	_log.Log(LOG_STATUS,"YouLess: Worker stopped...");
 }
 
 void CYouLess::WriteToHardware(const char *pdata, const unsigned char length)

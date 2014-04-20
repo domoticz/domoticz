@@ -86,7 +86,7 @@ void RFXComSerial::Do_Work()
 		{
 			if (m_retrycntr==0)
 			{
-				_log.Log(LOG_NORM,"RFXCOM: retrying in %d seconds...", RETRY_DELAY);
+				_log.Log(LOG_STATUS,"RFXCOM: retrying in %d seconds...", RETRY_DELAY);
 			}
 			m_retrycntr++;
 			if (m_retrycntr>=RETRY_DELAY)
@@ -96,7 +96,7 @@ void RFXComSerial::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_NORM,"RFXCOM: Serial Worker stopped...");
+	_log.Log(LOG_STATUS,"RFXCOM: Serial Worker stopped...");
 } 
 
 
@@ -106,7 +106,7 @@ bool RFXComSerial::OpenSerialDevice()
 	try
 	{
 		open(m_szSerialPort,m_iBaudRate);
-		_log.Log(LOG_NORM,"RFXCOM: Using serial port: %s", m_szSerialPort.c_str());
+		_log.Log(LOG_STATUS,"RFXCOM: Using serial port: %s", m_szSerialPort.c_str());
 	}
 	catch (boost::exception & e)
 	{

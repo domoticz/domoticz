@@ -97,7 +97,7 @@ void CEventSystem::LoadEvents()
 
         }
 #ifdef _DEBUG
-        _log.Log(LOG_NORM,"Events (re)loaded");
+        _log.Log(LOG_STATUS,"Events (re)loaded");
 #endif
 	}
 }
@@ -117,7 +117,7 @@ void CEventSystem::Do_Work()
 			ProcessMinute();
 		}
 	}
-	_log.Log(LOG_NORM,"EventSystem stopped...");
+	_log.Log(LOG_STATUS,"EventSystem stopped...");
 
 }
 /*
@@ -612,7 +612,7 @@ void CEventSystem::RemoveSingleState(int ulDevID)
 {
 	boost::lock_guard<boost::mutex> l(eventMutex);
 
-    //_log.Log(LOG_NORM,"deleted device %d",ulDevID);
+    //_log.Log(LOG_STATUS,"deleted device %d",ulDevID);
     m_devicestates.erase(ulDevID);
 
 }
@@ -724,19 +724,19 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 			std::string filename = ent->d_name;
 			if (ent->d_type==DT_REG) {
                 if ( (filename.length() < 4) || (filename.compare(filename.length()-4,4,".lua") != 0)) {
-                    //_log.Log(LOG_NORM,"ignore file not .lua: %s",filename.c_str());
+                    //_log.Log(LOG_STATUS,"ignore file not .lua: %s",filename.c_str());
                 }
                 else {
                     if ((filename.find("_device_") != -1) && (reason == "device") && (filename.find("_demo.lua") == -1)) {
-                        //_log.Log(LOG_NORM,"found device file: %s",filename.c_str());
+                        //_log.Log(LOG_STATUS,"found device file: %s",filename.c_str());
                         EvaluateLua(reason,lua_Dir+filename, DeviceID, devname, nValue, sValue, nValueWording);
                     }
                     else if (((filename.find("_time_") != -1)) && (reason == "time") && (filename.find("_demo.lua") == -1)) {
-                        //_log.Log(LOG_NORM,"found time file: %s",filename.c_str());
+                        //_log.Log(LOG_STATUS,"found time file: %s",filename.c_str());
                         EvaluateLua(reason,lua_Dir+filename);
                     }
                     else if (((filename.find("_security_") != -1)) && (reason == "security") && (filename.find("_demo.lua") == -1)) {
-                        //_log.Log(LOG_NORM,"found time file: %s",filename.c_str());
+                        //_log.Log(LOG_STATUS,"found time file: %s",filename.c_str());
                         EvaluateLua(reason,lua_Dir+filename);
                     }
                 }
@@ -757,7 +757,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 {
     
 //#ifdef _DEBUG
-//    _log.Log(LOG_NORM,"EventSystem blockly %s trigger",reason.c_str());
+//    _log.Log(LOG_STATUS,"EventSystem blockly %s trigger",reason.c_str());
 //#endif
 
     lua_State *lua_state;
@@ -956,7 +956,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
                 }
 
                 std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + it->Conditions + " then result = 1 end; return result";
-                //_log.Log(LOG_NORM,"ifc: %s",ifCondition.c_str());
+                //_log.Log(LOG_STATUS,"ifc: %s",ifCondition.c_str());
                 if( luaL_dostring(lua_state, ifCondition.c_str()))
                 {
                     _log.Log(LOG_ERROR,"Lua script error: %s",lua_tostring(lua_state, -1));
@@ -1212,7 +1212,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
     lua_setglobal(lua_state, "print");
     
 #ifdef _DEBUG
-    _log.Log(LOG_NORM,"EventSystem script %s trigger",reason.c_str());
+    _log.Log(LOG_STATUS,"EventSystem script %s trigger",reason.c_str());
 #endif
     
 	int intRise = getSunRiseSunSetMinutes("Sunrise");
@@ -1637,7 +1637,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
     
     if (scriptTrue) 
 	{
-        _log.Log(LOG_NORM,"Script event triggered: %s",filename.c_str());
+        _log.Log(LOG_STATUS,"Script event triggered: %s",filename.c_str());
     }
     
     lua_close(lua_state);
@@ -1691,8 +1691,8 @@ void CEventSystem::OpenURL(const std::string &URL)
 {
     std::string ampURL = stdreplace(URL, "~amp~", "&");
     ampURL = stdreplace(ampURL, "~comma~", ",");
-	//_log.Log(LOG_NORM,"Fetching url: %s",ampURL.c_str());
-	_log.Log(LOG_NORM,"Fetching url...");
+	//_log.Log(LOG_STATUS,"Fetching url: %s",ampURL.c_str());
+	_log.Log(LOG_STATUS,"Fetching url...");
 	_tTaskItem tItem;
 	tItem=_tTaskItem::GetHTTPPage(1,ampURL,"OpenURL");
 	m_pMain->m_sql.AddTaskItem(tItem);

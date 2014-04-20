@@ -82,7 +82,7 @@ bool OTGWTCP::StopHardware()
 
 void OTGWTCP::OnConnect()
 {
-	_log.Log(LOG_NORM,"OTGW: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_STATUS,"OTGW: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
 	m_bDoRestart=false;
 	m_bIsStarted=true;
 	m_bufferpos=0;
@@ -93,7 +93,7 @@ void OTGWTCP::OnConnect()
 
 void OTGWTCP::OnDisconnect()
 {
-	_log.Log(LOG_NORM,"OTGW: disconnected");
+	_log.Log(LOG_STATUS,"OTGW: disconnected");
 }
 
 void OTGWTCP::Do_Work()
@@ -128,7 +128,7 @@ void OTGWTCP::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_NORM,"OTGW: TCP/IP Worker stopped...");
+	_log.Log(LOG_STATUS,"OTGW: TCP/IP Worker stopped...");
 } 
 
 void OTGWTCP::GetGatewayDetails()
@@ -155,21 +155,21 @@ void OTGWTCP::SetSetpoint(const int idx, const float temp)
 	{
 		//Room Set Point
 		//Make this a temporarily Set Point, this will be overridden when the thermostat changes/applying it's program
-		_log.Log(LOG_NORM,"OTGW: Setting Room SetPoint to: %.1f",temp);
+		_log.Log(LOG_STATUS,"OTGW: Setting Room SetPoint to: %.1f",temp);
 		sprintf(szCmd,"TT=%.1f\r\n",temp);
 		write((const unsigned char*)&szCmd,strlen(szCmd));
 	}
 	else if (idx==15)
 	{
 		//DHW setpoint (MsgID=56)
-		_log.Log(LOG_NORM,"OTGW: Setting Heating SetPoint to: %.1f",temp);
+		_log.Log(LOG_STATUS,"OTGW: Setting Heating SetPoint to: %.1f",temp);
 		sprintf(szCmd,"SW=%.1f\r\n",temp);
 		write((const unsigned char*)&szCmd,strlen(szCmd));
 	}
 	else if (idx==16)
 	{
 		//Max CH water setpoint (MsgID=57) 
-		_log.Log(LOG_NORM,"OTGW: Setting Max CH water SetPoint to: %.1f",temp);
+		_log.Log(LOG_STATUS,"OTGW: Setting Max CH water SetPoint to: %.1f",temp);
 		sprintf(szCmd,"SH=%.1f\r\n",temp);
 		write((const unsigned char*)&szCmd,strlen(szCmd));
 	}

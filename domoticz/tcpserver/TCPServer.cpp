@@ -74,7 +74,7 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 		boost::lock_guard<boost::mutex> l(connectionMutex);
 		std::string s = new_connection_->socket().remote_endpoint().address().to_string();
 		new_connection_->m_endpoint=s;
-		_log.Log(LOG_NORM,"Incoming connection from: %s", s.c_str());
+		_log.Log(LOG_STATUS,"Incoming connection from: %s", s.c_str());
 
 		connections_.insert(new_connection_);
 		new_connection_->start();
@@ -120,7 +120,7 @@ void CTCPServerInt::stopClient(CTCPClient_ptr c)
 	boost::lock_guard<boost::mutex> l(connectionMutex);
 
 	//std::string s = c->socket().remote_endpoint().address().to_string();
-	//_log.Log(LOG_NORM,"Closing connection from: %s", s.c_str());
+	//_log.Log(LOG_STATUS,"Closing connection from: %s", s.c_str());
 	if (connections_.find(c)!=connections_.end())
 	{
 		connections_.erase(c);
@@ -260,7 +260,7 @@ void CTCPServer::Do_Work()
 {
 	if (m_pTCPServer)
 		m_pTCPServer->start();
-	//_log.Log(LOG_NORM,"TCPServer stopped...");
+	//_log.Log(LOG_STATUS,"TCPServer stopped...");
 }
 
 void CTCPServer::SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const void* pClient2Ignore)

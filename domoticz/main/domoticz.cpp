@@ -37,6 +37,7 @@ const char *szHelp=
 #else
 	"\t-log file_path (for example /var/log/domoticz.log)\n"
 #endif
+	"\t-loglevel (0=All, 1=Status+Error, 2=Error)\n"
 	"";
 
 std::string szStartupFolder;
@@ -49,12 +50,12 @@ CLogger _log;
 
 void DQuitFunction()
 {
-	_log.Log(LOG_NORM,"Closing application!...");
+	_log.Log(LOG_STATUS,"Closing application!...");
 	fflush(stdout);
 #if defined WIN32
 	TrayMessage(NIM_DELETE,NULL);
 #endif
-	_log.Log(LOG_NORM,"stopping worker...");
+	_log.Log(LOG_STATUS,"stopping worker...");
 	_mainworker.Stop();
 }
 
@@ -185,12 +186,12 @@ int main(int argc, char**argv)
 		size_t start_pos = szStartupFolder.find("\\Release\\");
 		if(start_pos != std::string::npos) {
 			szStartupFolder.replace(start_pos, 9, "\\domoticz\\");
-			_log.Log(LOG_NORM,"%s",szStartupFolder.c_str());
+			_log.Log(LOG_STATUS,"%s",szStartupFolder.c_str());
 		}
 	#endif
 #endif
 	GetAppVersion();
-	_log.Log(LOG_NORM,"Domoticz V%s (c)2012-2014 GizMoCuz",szAppVersion.c_str());
+	_log.Log(LOG_STATUS,"Domoticz V%s (c)2012-2014 GizMoCuz",szAppVersion.c_str());
 
 #if !defined WIN32
 	//Check if we are running on a RaspberryPi
@@ -205,14 +206,14 @@ int main(int argc, char**argv)
 			getline(infile, sLine);
 			if (sLine.find("BCM2708")!=std::string::npos)
 			{
-				_log.Log(LOG_NORM,"System: Raspberry Pi");
+				_log.Log(LOG_STATUS,"System: Raspberry Pi");
 				bIsRaspberryPi=true;
 				break;
 			}
 		}
 		infile.close();
 	}
-	_log.Log(LOG_NORM,"Startup Path: %s", szStartupFolder.c_str());
+	_log.Log(LOG_STATUS,"Startup Path: %s", szStartupFolder.c_str());
 #endif
 
 	szWWWFolder=szStartupFolder+"www";
@@ -240,7 +241,7 @@ int main(int argc, char**argv)
 			return 0;
 		}
 		int DelaySeconds=atoi(cmdLine.GetSafeArgument("-startupdelay",0,"").c_str());
-		_log.Log(LOG_NORM,"Startup delay... waiting %d seconds...",DelaySeconds);
+		_log.Log(LOG_STATUS,"Startup delay... waiting %d seconds...",DelaySeconds);
 		sleep_seconds(DelaySeconds);
 	}
 
@@ -333,6 +334,16 @@ int main(int argc, char**argv)
 		}
 		std::string logfile=cmdLine.GetSafeArgument("-log",0,"domoticz.log");
 		_log.SetOutputFile(logfile.c_str());
+	}
+	if (cmdLine.HasSwitch("-loglevel"))
+	{
+		if (cmdLine.GetArgumentCount("-loglevel")!=1)
+		{
+			_log.Log(LOG_ERROR,"Please specify logfile output level (0=All, 1=Status+Error, 2=Error)");
+			return 0;
+		}
+		int Level=atoi(cmdLine.GetSafeArgument("-loglevel",0,"").c_str());
+		_log.SetVerboseLevel((_eLogFileVerboseLevel)Level);
 	}
 
 	if (!_mainworker.Start())

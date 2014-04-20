@@ -173,7 +173,7 @@ void CRego6XXSerial::Do_Work()
 		{
 			if (m_retrycntr==0)
 			{
-				_log.Log(LOG_NORM,"Rego6XX: serial retrying in %d seconds...", Rego6XX_RETRY_DELAY);
+				_log.Log(LOG_STATUS,"Rego6XX: serial retrying in %d seconds...", Rego6XX_RETRY_DELAY);
 			}
 			m_retrycntr++;
 			if (m_retrycntr>=Rego6XX_RETRY_DELAY)
@@ -285,7 +285,7 @@ void CRego6XXSerial::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_NORM,"Rego6XX: Serial Worker stopped...");
+	_log.Log(LOG_STATUS,"Rego6XX: Serial Worker stopped...");
 } 
 
 
@@ -295,7 +295,7 @@ bool CRego6XXSerial::OpenSerialDevice()
 	try
 	{
 		open(m_szSerialPort, 19200);
-		_log.Log(LOG_NORM,"Rego6XX: Using serial port: %s", m_szSerialPort.c_str());
+		_log.Log(LOG_STATUS,"Rego6XX: Using serial port: %s", m_szSerialPort.c_str());
 	}
 	catch (boost::exception & e)
 	{

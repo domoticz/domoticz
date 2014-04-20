@@ -301,7 +301,7 @@ void OTGWBase::ParseLine()
 				)
 			{
 				//Dont report OT/PS feedback
-				_log.Log(LOG_NORM,"OTGW: %s",sLine.c_str());
+				_log.Log(LOG_STATUS,"OTGW: %s",sLine.c_str());
 			}
 		}
 	}

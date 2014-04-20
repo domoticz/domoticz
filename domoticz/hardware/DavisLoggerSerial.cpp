@@ -72,7 +72,7 @@ bool CDavisLoggerSerial::OpenSerialDevice()
 	try
 	{
 		open(m_szSerialPort,m_iBaudRate);
-		_log.Log(LOG_NORM,"Davis: Using serial port: %s", m_szSerialPort.c_str());
+		_log.Log(LOG_STATUS,"Davis: Using serial port: %s", m_szSerialPort.c_str());
 		m_statecounter=0;
 		m_state=DSTATE_WAKEUP;
 	}
@@ -118,7 +118,7 @@ void CDavisLoggerSerial::Do_Work()
 		{
 			if (m_retrycntr==0)
 			{
-				_log.Log(LOG_NORM,"Davis: serial setup retry in %d seconds...", RETRY_DELAY);
+				_log.Log(LOG_STATUS,"Davis: serial setup retry in %d seconds...", RETRY_DELAY);
 			}
 			m_retrycntr++;
 			if (m_retrycntr>=RETRY_DELAY)
@@ -161,7 +161,7 @@ void CDavisLoggerSerial::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_NORM,"Davis: Serial Worker stopped...");
+	_log.Log(LOG_STATUS,"Davis: Serial Worker stopped...");
 } 
 
 void CDavisLoggerSerial::readCallback(const char *data, size_t len)

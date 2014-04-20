@@ -272,7 +272,7 @@ int CPiFace::LoadConfig(void)
 
             if ((Address >=0) &&  (Address <= 3) && (PinNumber >=0) && (PinNumber <= 7) && ((PortType=='I') || (PortType=='O')) && (Parametername.length() >0 ) && (Parametervalue.length() >0 ))
             {
-                _log.Log(LOG_NORM,"PiFace: config file: Valid address: %d , Pin: %d and Port %c Parameter: %s , Value %s",Address,PinNumber,PortType,Parametername.c_str(),Parametervalue.c_str());
+                _log.Log(LOG_STATUS,"PiFace: config file: Valid address: %d , Pin: %d and Port %c Parameter: %s , Value %s",Address,PinNumber,PortType,Parametername.c_str(),Parametervalue.c_str());
                 NameFound=LocateValueInParameterArray(Parametername,ParameterNames,CONFIG_NR_OF_PARAMETER_TYPES);
 
                 if (PortType=='I')
@@ -750,15 +750,16 @@ void CPiFace::WriteToHardware(const char *pdata, const unsigned char length)
           Write_MCP23S17_Register (devId, MCP23x17_GPIOA,OutputData) ;
         //  _log.Log(LOG_NORM,"Piface: WriteToHardware housecode %c, devid %d, output %d, PrevOut 0x%02X, Set 0x%02X",PortType, devId, pinnr, CurrentLatchState,OutputData );
         }
-          else _log.Log(LOG_NORM,"Piface: wrong housecode %c",PortType);
+          else _log.Log(LOG_ERROR,"Piface: wrong housecode %c",PortType);
    }
-   else _log.Log(LOG_NORM,"PiFace: WriteToHardware packet type %d or subtype %d unknown\n", SendData->LIGHTING1.packettype,SendData->LIGHTING1.subtype);
+   else
+	   _log.Log(LOG_ERROR,"PiFace: WriteToHardware packet type %d or subtype %d unknown\n", SendData->LIGHTING1.packettype,SendData->LIGHTING1.subtype);
 }
 
 void CPiFace::Do_Work()
 {
     int devId;
-    _log.Log(LOG_NORM,"PiFace: Worker started...");
+    _log.Log(LOG_STATUS,"PiFace: Worker started...");
 
     while (!m_stoprequested)
     {
@@ -789,7 +790,7 @@ void CPiFace::Do_Work()
             }
         }
     }
-    _log.Log(LOG_NORM,"PiFace: Worker stopped...");
+    _log.Log(LOG_STATUS,"PiFace: Worker stopped...");
 }
 
 // Open a connection to the piface
@@ -802,7 +803,7 @@ int CPiFace::Init_SPI_Device(int Init)
     unsigned char spiBPW   = 8 ;
     int           speed       = 4000000 ;
 
-     _log.Log(LOG_NORM,"PiFace: Starting PiFace_SPI_Start()");
+     _log.Log(LOG_STATUS,"PiFace: Starting PiFace_SPI_Start()");
 #ifdef __arm__
     // Open port for reading and writing
     if ((m_fd = open("/dev/spidev0.0", O_RDWR)) >= 0)
@@ -875,14 +876,14 @@ int CPiFace::Detect_PiFace_Hardware(void)
 
     if (NrOfFoundBoards)
      {
-        _log.Log(LOG_NORM,"PiFace: Found the following PiFaces:\n");
+        _log.Log(LOG_STATUS,"PiFace: Found the following PiFaces:\n");
         for (devId=0; devId<4; devId++)
         {
            if (m_DetectedHardware[devId]==true)
-            _log.Log(LOG_NORM,"PiFace: %d\n",devId);
+            _log.Log(LOG_STATUS,"PiFace: %d\n",devId);
         }
      }
-     else _log.Log(LOG_ERROR,"PiFace: Sorry, no PiFaces were found\n");
+     else _log.Log(LOG_STATUS,"PiFace: Sorry, no PiFaces were found\n");
     return NrOfFoundBoards;
 }
 

@@ -117,7 +117,7 @@ bool P1MeterTCP::ConnectInternal()
 		return false;
 	}
 
-	_log.Log(LOG_NORM,"P1 Smart Meter: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_STATUS,"P1 Smart Meter: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
 
 	Init();
 
@@ -151,7 +151,7 @@ void P1MeterTCP::Do_Work()
 				m_retrycntr=0;
 				if (!ConnectInternal())
 				{
-					_log.Log(LOG_NORM,"P1 Smart Meter: retrying in %d seconds...", RETRY_DELAY);
+					_log.Log(LOG_STATUS,"P1 Smart Meter: retrying in %d seconds...", RETRY_DELAY);
 					continue;
 				}
 			}
@@ -168,7 +168,7 @@ void P1MeterTCP::Do_Work()
 				m_socket=INVALID_SOCKET;
 				if (!m_stoprequested)
 				{
-					_log.Log(LOG_NORM,"P1 Smart Meter: retrying in %d seconds...", RETRY_DELAY);
+					_log.Log(LOG_STATUS,"P1 Smart Meter: retrying in %d seconds...", RETRY_DELAY);
 					m_retrycntr=0;
 					continue;
 				}
@@ -180,7 +180,7 @@ void P1MeterTCP::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_NORM,"P1 Smart Meter: TCP/IP Worker stopped...");
+	_log.Log(LOG_STATUS,"P1 Smart Meter: TCP/IP Worker stopped...");
 } 
 
 void P1MeterTCP::write(const char *data, size_t size)

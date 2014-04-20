@@ -92,7 +92,7 @@ bool OTGWSerial::OpenSerialDevice()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_NORM,"OTGW: Using serial port: %s", m_szSerialPort.c_str());
+		_log.Log(LOG_STATUS,"OTGW: Using serial port: %s", m_szSerialPort.c_str());
 		open(
 			m_szSerialPort,
 			m_iBaudRate,
@@ -131,7 +131,7 @@ void OTGWSerial::Do_PollWork()
 		{
 			if (m_retrycntr==0)
 			{
-				_log.Log(LOG_NORM,"OTGW: serial setup retry in %d seconds...", RETRY_DELAY);
+				_log.Log(LOG_STATUS,"OTGW: serial setup retry in %d seconds...", RETRY_DELAY);
 			}
 			m_retrycntr++;
 			if (m_retrycntr>=RETRY_DELAY)
@@ -152,7 +152,7 @@ void OTGWSerial::Do_PollWork()
 			}
 		}
 	}
-	_log.Log(LOG_NORM,"OTGW: Worker stopped...");
+	_log.Log(LOG_STATUS,"OTGW: Worker stopped...");
 }
 
 void OTGWSerial::GetGatewayDetails()
@@ -178,21 +178,21 @@ void OTGWSerial::SetSetpoint(const int idx, const float temp)
 	{
 		//Room Set Point
 		//Make this a temporarily Set Point, this will be overridden when the thermostat changes/applying it's program
-		_log.Log(LOG_NORM,"OTGW: Setting Room SetPoint to: %.1f",temp);
+		_log.Log(LOG_STATUS,"OTGW: Setting Room SetPoint to: %.1f",temp);
 		sprintf(szCmd,"TT=%.1f\r\n",temp);
 		write((const char*)&szCmd,strlen(szCmd));
 	}
 	else if (idx==15)
 	{
 		//DHW setpoint (MsgID=56)
-		_log.Log(LOG_NORM,"OTGW: Setting Heating SetPoint to: %.1f",temp);
+		_log.Log(LOG_STATUS,"OTGW: Setting Heating SetPoint to: %.1f",temp);
 		sprintf(szCmd,"SW=%.1f\r\n",temp);
 		write((const char*)&szCmd,strlen(szCmd));
 	}
 	else if (idx==16)
 	{
 		//Max CH water setpoint (MsgID=57) 
-		_log.Log(LOG_NORM,"OTGW: Setting Max CH water SetPoint to: %.1f",temp);
+		_log.Log(LOG_STATUS,"OTGW: Setting Max CH water SetPoint to: %.1f",temp);
 		sprintf(szCmd,"SH=%.1f\r\n",temp);
 		write((const char*)&szCmd,strlen(szCmd));
 	}

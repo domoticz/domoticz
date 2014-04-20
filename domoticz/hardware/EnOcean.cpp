@@ -649,7 +649,7 @@ void CEnOcean::Do_Work()
 		{
 			if (m_retrycntr==0)
 			{
-				_log.Log(LOG_NORM,"EnOcean: serial retrying in %d seconds...", ENOCEAN_RETRY_DELAY);
+				_log.Log(LOG_STATUS,"EnOcean: serial retrying in %d seconds...", ENOCEAN_RETRY_DELAY);
 			}
 			m_retrycntr++;
 			if (m_retrycntr/5>=ENOCEAN_RETRY_DELAY)
@@ -672,7 +672,7 @@ void CEnOcean::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_NORM,"EnOcean: Serial Worker stopped...");
+	_log.Log(LOG_STATUS,"EnOcean: Serial Worker stopped...");
 }
 
 void CEnOcean::Add2SendQueue(const char* pData, const size_t length)
@@ -925,7 +925,7 @@ bool CEnOcean::OpenSerialDevice()
 	try
 	{
 		open(m_szSerialPort, 9600); //ECP2 protocol, for ECP3 open with 57600
-		_log.Log(LOG_NORM,"EnOcean: Using serial port: %s", m_szSerialPort.c_str());
+		_log.Log(LOG_STATUS,"EnOcean: Using serial port: %s", m_szSerialPort.c_str());
 	}
 	catch (boost::exception & e)
 	{
@@ -1262,7 +1262,7 @@ bool CEnOcean::ParseData()
 	{
 	case C_ORG_INF_IDBASE:
 		m_id_base = (pFrame->DATA_BYTE3 << 24) + (pFrame->DATA_BYTE2 << 16) + (pFrame->DATA_BYTE1 << 8) + pFrame->DATA_BYTE0;
-		_log.Log(LOG_NORM,"EnOcean: Transceiver ID_Base: 0x%08x",m_id_base);
+		_log.Log(LOG_STATUS,"EnOcean: Transceiver ID_Base: 0x%08x",m_id_base);
 		break;
 	case C_ORG_RPS:
 		if (pFrame->STATUS & S_RPS_NU) {

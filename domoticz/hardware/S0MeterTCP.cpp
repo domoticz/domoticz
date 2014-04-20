@@ -133,7 +133,7 @@ bool S0MeterTCP::ConnectInternal()
 		return false;
 	}
 
-	_log.Log(LOG_NORM,"S0 Meter: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_STATUS,"S0 Meter: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
 
 	m_bIsStarted=true;
 	m_bufferpos=0;
@@ -169,7 +169,7 @@ void S0MeterTCP::Do_Work()
 				m_retrycntr=0;
 				if (!ConnectInternal())
 				{
-					_log.Log(LOG_NORM,"S0 Meter: retrying in %d seconds...", RETRY_DELAY);
+					_log.Log(LOG_STATUS,"S0 Meter: retrying in %d seconds...", RETRY_DELAY);
 					continue;
 				}
 			}
@@ -186,7 +186,7 @@ void S0MeterTCP::Do_Work()
 				m_socket=INVALID_SOCKET;
 				if (!m_stoprequested)
 				{
-					_log.Log(LOG_NORM,"S0 Meter: retrying in %d seconds...", RETRY_DELAY);
+					_log.Log(LOG_STATUS,"S0 Meter: retrying in %d seconds...", RETRY_DELAY);
 					m_retrycntr=0;
 					continue;
 				}
@@ -198,7 +198,7 @@ void S0MeterTCP::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_NORM,"S0 Meter: TCP/IP Worker stopped...");
+	_log.Log(LOG_STATUS,"S0 Meter: TCP/IP Worker stopped...");
 } 
 
 void S0MeterTCP::write(const char *data, size_t size)

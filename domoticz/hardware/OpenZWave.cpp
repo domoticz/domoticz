@@ -503,11 +503,11 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 	case OpenZWave::Notification::Type_DriverReady:
 		{
 			m_controllerID = _notification->GetHomeId();
-			_log.Log(LOG_NORM,"OpenZWave: Driver Ready");
+			_log.Log(LOG_STATUS,"OpenZWave: Driver Ready");
 		}
 		break;
 	case OpenZWave::Notification::Type_NodeNew:
-		_log.Log(LOG_NORM,"OpenZWave: New Node added. HomeID: %d, NodeID: %d",_homeID,_nodeID);
+		_log.Log(LOG_STATUS,"OpenZWave: New Node added. HomeID: %d, NodeID: %d",_homeID,_nodeID);
 		break;
 	case OpenZWave::Notification::Type_ValueAdded:
 		if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
@@ -617,7 +617,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 		break;
 	case OpenZWave::Notification::Type_NodeRemoved:
 		{
-			_log.Log(LOG_NORM,"OpenZWave: Node Removed. HomeID: %d, NodeID: %d",_homeID,_nodeID);
+			_log.Log(LOG_STATUS,"OpenZWave: Node Removed. HomeID: %d, NodeID: %d",_homeID,_nodeID);
 			// Remove the node from our list
 			for( std::list<NodeInfo>::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it )
 			{
@@ -666,7 +666,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 	case OpenZWave::Notification::Type_AllNodesQueriedSomeDead:
 		{
 			m_nodesQueried = true;
-			_log.Log(LOG_NORM,"OpenZWave: All Nodes queried");
+			_log.Log(LOG_STATUS,"OpenZWave: All Nodes queried");
 			NodesQueried();
 			WriteControllerConfig();
 			//IncludeDevice();
@@ -740,7 +740,7 @@ void COpenZWave::EnableDisableDebug()
 
 bool COpenZWave::OpenSerialConnector()
 {
-	_log.Log(LOG_NORM, "OpenZWave: Starting...");
+	_log.Log(LOG_STATUS, "OpenZWave: Starting...");
 
 	m_updateTime=mytime(NULL);
 	CloseSerialConnector();
@@ -749,7 +749,7 @@ bool COpenZWave::OpenSerialConnector()
 	// The first argument is the path to the config files (where the manufacturer_specific.xml file is located
 	// The second argument is the path for saved Z-Wave network state and the log file.  If you leave it NULL 
 	// the log file will appear in the program's working directory.
-	_log.Log(LOG_NORM, "OpenZWave: using config in: %s",ConfigPath.c_str());
+	_log.Log(LOG_STATUS, "OpenZWave: using config in: %s",ConfigPath.c_str());
 	OpenZWave::Options::Create( ConfigPath.c_str(), ConfigPath.c_str(), "--SaveConfiguration=true " );
 	EnableDisableDebug();
 	OpenZWave::Options::Get()->AddOptionInt( "PollInterval", 60000 ); //enable polling each 60 seconds
@@ -798,7 +798,7 @@ void COpenZWave::CloseSerialConnector()
 	{
 		WriteControllerConfig();
 //		boost::lock_guard<boost::mutex> l(m_NotificationMutex);
-		_log.Log(LOG_NORM,"OpenZWave: Closed");
+		_log.Log(LOG_STATUS,"OpenZWave: Closed");
 
 		try
 		{
@@ -1453,7 +1453,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	else
 	{
 		//Unhanded
-		_log.Log(LOG_NORM, "OpenZWave: Unhanded class: 0x%02X",commandclass);
+		_log.Log(LOG_ERROR, "OpenZWave: Unhanded class: 0x%02X",commandclass);
 		if (vType== OpenZWave::ValueID::ValueType_List)
 		{
 			//std::vector<std::string > vStringList;
@@ -1941,7 +1941,7 @@ bool COpenZWave::HealNode(const int nodeID)
 		return false;
 	
 	m_pManager->HealNetworkNode(m_controllerID,nodeID,true);
-	_log.Log(LOG_NORM,"OpenZWave: initiated node heal for node: %d",nodeID);
+	_log.Log(LOG_STATUS,"OpenZWave: initiated node heal for node: %d",nodeID);
 
 	return true;
 }
@@ -2024,7 +2024,7 @@ bool COpenZWave::AddNodeToGroup(const int nodeID,const int groupID, const int ad
 	if (m_pManager==NULL)
 		return false;
 	m_pManager->AddAssociation (m_controllerID, nodeID, groupID, addID);
-	_log.Log(LOG_NORM,"OpenZWave: added node: %d in group: %d of node: %d",addID,groupID,nodeID);
+	_log.Log(LOG_STATUS,"OpenZWave: added node: %d in group: %d of node: %d",addID,groupID,nodeID);
 	return true;
 }
 
@@ -2033,7 +2033,7 @@ bool COpenZWave::RemoveNodeFromGroup(const int nodeID,const int groupID, const i
 	if (m_pManager==NULL)
 		return false;
 	m_pManager->RemoveAssociation(m_controllerID, nodeID, groupID, removeID);
-	_log.Log(LOG_NORM,"OpenZWave: removed node: %d from group: %d of node: %d",removeID,groupID,nodeID);
+	_log.Log(LOG_STATUS,"OpenZWave: removed node: %d from group: %d of node: %d",removeID,groupID,nodeID);
 	
 	return true;
 }
@@ -2168,7 +2168,7 @@ void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
 		m_bControllerCommandInProgress=false;
 		break;
 	}
-	_log.Log(LOG_NORM,"OpenZWave: Device Response: %s",szLog.c_str());
+	_log.Log(LOG_STATUS,"OpenZWave: Device Response: %s",szLog.c_str());
 }
 
 void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int pollTime)

@@ -118,7 +118,7 @@ bool RFXComTCP::ConnectInternal()
 		return false;
 	}
 
-	_log.Log(LOG_NORM,"RFXCOM: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_STATUS,"RFXCOM: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
 	sOnConnected(this);
 	return true;
 }
@@ -148,7 +148,7 @@ void RFXComTCP::Do_Work()
 				m_retrycntr=0;
 				if (!ConnectInternal())
 				{
-					_log.Log(LOG_NORM,"RFXCOM: retrying in %d seconds...", RETRY_DELAY);
+					_log.Log(LOG_STATUS,"RFXCOM: retrying in %d seconds...", RETRY_DELAY);
 					continue;
 				}
 			}
@@ -165,7 +165,7 @@ void RFXComTCP::Do_Work()
 				m_socket=INVALID_SOCKET;
 				if (!m_stoprequested)
 				{
-					_log.Log(LOG_NORM,"RFXCOM: retrying in %d seconds...", RETRY_DELAY);
+					_log.Log(LOG_STATUS,"RFXCOM: retrying in %d seconds...", RETRY_DELAY);
 					m_retrycntr=0;
 					continue;
 				}
@@ -178,7 +178,7 @@ void RFXComTCP::Do_Work()
 		}
 		
 	}
-	_log.Log(LOG_NORM,"RFXCOM: TCP/IP Worker stopped...");
+	_log.Log(LOG_STATUS,"RFXCOM: TCP/IP Worker stopped...");
 } 
 
 void RFXComTCP::write(const char *data, size_t size)

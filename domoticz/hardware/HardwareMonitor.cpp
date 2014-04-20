@@ -50,7 +50,7 @@ CHardwareMonitor::~CHardwareMonitor(void)
 void CHardwareMonitor::StartHardwareMonitor(MainWorker *pMainWorker)
 {
 #ifdef _DEBUG
-        _log.Log(LOG_NORM,"Hardware Monitor: Started");
+        _log.Log(LOG_STATUS,"Hardware Monitor: Started");
 #endif
 	m_pMain=pMainWorker;
 	Init();
@@ -143,7 +143,7 @@ void CHardwareMonitor::Do_Work()
 		}
 
 	}
-	_log.Log(LOG_NORM,"Hardware Monitor: Stopped...");			
+	_log.Log(LOG_STATUS,"Hardware Monitor: Stopped...");			
 
 }
 

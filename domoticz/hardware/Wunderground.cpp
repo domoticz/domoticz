@@ -67,7 +67,7 @@ void CWunderground::Do_Work()
 			m_LastMinute=ltime.tm_min/10;
 		}
 	}
-	_log.Log(LOG_NORM,"Wunderground: Worker stopped...");
+	_log.Log(LOG_STATUS,"Wunderground: Worker stopped...");
 }
 
 void CWunderground::WriteToHardware(const char *pdata, const unsigned char length)

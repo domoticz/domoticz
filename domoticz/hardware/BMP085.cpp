@@ -104,7 +104,7 @@ void CBMP085::Do_Work()
 			ReadSensorDetails();
 		}
 	}
-	_log.Log(LOG_NORM,"I2C: Worker stopped...");
+	_log.Log(LOG_STATUS,"I2C: Worker stopped...");
 }
 
 // Open a connection to the bmp085

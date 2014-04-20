@@ -9,6 +9,14 @@ enum _eLogLevel
 {
 	LOG_NORM=0,
 	LOG_ERROR,
+	LOG_STATUS,
+};
+
+enum _eLogFileVerboseLevel
+{
+	VBL_ALL=0,
+	VBL_STATUS_ERROR,
+	VBL_ERROR,
 };
 
 class CLogger
@@ -26,6 +34,7 @@ public:
 	~CLogger(void);
 
 	void SetOutputFile(const char *OutputFile);
+	void SetVerboseLevel(_eLogFileVerboseLevel vLevel);
 
 	void Log(const _eLogLevel level, const char* logline, ...);
 	void LogNoLF(const _eLogLevel level, const char* logline, ...);
@@ -42,5 +51,6 @@ private:
 	std::deque<_tLogLineStruct> m_lastlog;
 	bool m_bInSequenceMode;
 	std::stringstream m_sequencestring;
+	_eLogFileVerboseLevel m_verbose_level;
 };
 extern CLogger _log;

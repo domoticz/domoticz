@@ -51,7 +51,7 @@ bool P1MeterSerial::StartHardware()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_NORM,"P1 Smart Meter: Using serial port: %s", m_szSerialPort.c_str());
+		_log.Log(LOG_STATUS,"P1 Smart Meter: Using serial port: %s", m_szSerialPort.c_str());
 		if (m_iBaudRate==9600)
 		{
 			open(

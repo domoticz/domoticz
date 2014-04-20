@@ -60,11 +60,11 @@ void C1Wire::DetectSystem()
    // So priority is given to OWFS (more powerfull than kernel)
    if (C1WireByOWFS::IsAvailable()) {
       m_system=new C1WireByOWFS();
-	_log.Log(LOG_NORM,"1-Wire: Using OWFS...");
+	_log.Log(LOG_STATUS,"1-Wire: Using OWFS...");
    }
    else if (C1WireByKernel::IsAvailable()) {
       m_system=new C1WireByKernel();
-	_log.Log(LOG_NORM,"1-Wire: Using Kernel...");
+	_log.Log(LOG_STATUS,"1-Wire: Using Kernel...");
    }
 
 #endif // WIN32
@@ -79,13 +79,13 @@ void C1Wire::LogSystem()
 
 #ifdef WIN32
    if (C1WireForWindows::IsAvailable())
-      { _log.Log(LOG_NORM,"1-Wire support available..."); return; }
+      { _log.Log(LOG_STATUS,"1-Wire support available..."); return; }
 #else // WIN32
 
    if (C1WireByOWFS::IsAvailable())
-      { _log.Log(LOG_NORM,"1-Wire support available (By OWFS)..."); return; }
+      { _log.Log(LOG_STATUS,"1-Wire support available (By OWFS)..."); return; }
    if (C1WireByKernel::IsAvailable())
-      { _log.Log(LOG_NORM,"1-Wire support available (By Kernel)..."); return; }
+      { _log.Log(LOG_STATUS,"1-Wire support available (By Kernel)..."); return; }
 
 #endif // WIN32
 }
@@ -280,7 +280,7 @@ void C1Wire::GetDeviceDetails()
 
       default: // Device is not actually supported
          {
-            _log.Log(LOG_NORM,"1-Wire : Device family (%02x) is not actualy supported", device.family);
+            _log.Log(LOG_ERROR,"1-Wire : Device family (%02x) is not actually supported", device.family);
             break;
          }
       }

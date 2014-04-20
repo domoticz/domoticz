@@ -136,7 +136,7 @@ bool DomoticzTCP::ConnectInternal()
 		return false;
 	}
 
-	_log.Log(LOG_NORM, "Domoticz: TCP connected to: %s:%ld",m_szIPAddress.c_str(),m_usIPPort);
+	_log.Log(LOG_STATUS, "Domoticz: TCP connected to: %s:%ld",m_szIPAddress.c_str(),m_usIPPort);
 
 	if (m_username!="")
 	{
@@ -180,7 +180,7 @@ void DomoticzTCP::Do_Work()
 				m_retrycntr=0;
 				if (!ConnectInternal())
 				{
-					_log.Log(LOG_NORM,"Domoticz: retrying in %d seconds...",RETRY_DELAY);
+					_log.Log(LOG_STATUS,"Domoticz: retrying in %d seconds...",RETRY_DELAY);
 				}
 			}
 		}
@@ -195,7 +195,7 @@ void DomoticzTCP::Do_Work()
 				m_socket=INVALID_SOCKET;
 				if (!m_stoprequested)
 				{
-					_log.Log(LOG_NORM,"Domoticz: retrying in %d seconds...",RETRY_DELAY);
+					_log.Log(LOG_STATUS,"Domoticz: retrying in %d seconds...",RETRY_DELAY);
 					m_retrycntr=0;
 					continue;
 				}
@@ -208,7 +208,7 @@ void DomoticzTCP::Do_Work()
 		}
 		
 	}
-	_log.Log(LOG_NORM,"Domoticz: TCP/IP Worker stopped...");
+	_log.Log(LOG_STATUS,"Domoticz: TCP/IP Worker stopped...");
 } 
 
 void DomoticzTCP::write(const char *data, size_t size)

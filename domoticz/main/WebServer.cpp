@@ -100,10 +100,8 @@ void CWebServer::Do_Work()
 		break;
 	}
 
-	_log.Log(LOG_NORM,"WebServer stopped...");
+	_log.Log(LOG_STATUS,"WebServer stopped...");
 }
-
-
 
 bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword)
 {
@@ -2760,7 +2758,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		}
 		else
 		{
-			_log.Log(LOG_NORM,"Notification sent (Pushover)");
+			_log.Log(LOG_STATUS,"Notification sent (Pushover)");
 			root["status"]="OK";
 		}
 	}

@@ -67,7 +67,7 @@ void CForecastIO::Do_Work()
 			m_LastMinute=ltime.tm_min/10;
 		}
 	}
-	_log.Log(LOG_NORM,"ForecastIO Worker stopped...");
+	_log.Log(LOG_STATUS,"ForecastIO Worker stopped...");
 }
 
 void CForecastIO::WriteToHardware(const char *pdata, const unsigned char length)

@@ -117,7 +117,7 @@ bool Teleinfo::StartHardware()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_NORM,"Teleinfo: Using serial port: %s", m_szSerialPort.c_str());
+		_log.Log(LOG_STATUS,"Teleinfo: Using serial port: %s", m_szSerialPort.c_str());
 		open(
 			m_szSerialPort,
 			m_iBaudRate,

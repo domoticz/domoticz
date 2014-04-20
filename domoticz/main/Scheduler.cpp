@@ -267,7 +267,7 @@ void CScheduler::Do_Work()
 		sleep_seconds(1);
 		CheckSchedules();
 	}
-	_log.Log(LOG_NORM,"Scheduler stopped...");
+	_log.Log(LOG_STATUS,"Scheduler stopped...");
 }
 
 void CScheduler::CheckSchedules()
@@ -323,9 +323,9 @@ void CScheduler::CheckSchedules()
 			if (bOkToFire)
 			{
 				if (itt->bIsScene==false)
-					_log.Log(LOG_NORM,"Schedule item started! Type: %s, DevID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->RowID, asctime(&ltime));
+					_log.Log(LOG_STATUS,"Schedule item started! Type: %s, DevID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->RowID, asctime(&ltime));
 				else
-					_log.Log(LOG_NORM,"Schedule item started! Type: %s, SceneID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->RowID, asctime(&ltime));
+					_log.Log(LOG_STATUS,"Schedule item started! Type: %s, SceneID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->RowID, asctime(&ltime));
 				std::string switchcmd="";
 				if (itt->timerCmd == TCMD_ON)
 					switchcmd="On";

@@ -113,7 +113,7 @@ void CSMASpot::Do_Work()
 {
 	int LastMinute=-1;
 
-	_log.Log(LOG_NORM,"SMASpot: Worker started...");
+	_log.Log(LOG_STATUS,"SMASpot: Worker started...");
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -126,7 +126,7 @@ void CSMASpot::Do_Work()
 			GetMeterDetails();
 		}
 	}
-	_log.Log(LOG_NORM,"SMASpot: Worker stopped...");
+	_log.Log(LOG_STATUS,"SMASpot: Worker stopped...");
 }
 
 void CSMASpot::WriteToHardware(const char *pdata, const unsigned char length)

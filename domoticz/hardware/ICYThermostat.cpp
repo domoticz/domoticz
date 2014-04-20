@@ -60,7 +60,7 @@ void CICYThermostat::Do_Work()
 {
 	int LastMinute=-1;
 
-	_log.Log(LOG_NORM,"ICYThermostat: Worker started...");
+	_log.Log(LOG_STATUS,"ICYThermostat: Worker started...");
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -73,7 +73,7 @@ void CICYThermostat::Do_Work()
 			GetMeterDetails();
 		}
 	}
-	_log.Log(LOG_NORM,"ICYThermostat: Worker stopped...");
+	_log.Log(LOG_STATUS,"ICYThermostat: Worker stopped...");
 }
 
 void CICYThermostat::WriteToHardware(const char *pdata, const unsigned char length)
@@ -294,7 +294,7 @@ void CICYThermostat::SetSetpoint(const int idx, const float temp)
 			_log.Log(LOG_ERROR,"ICYThermostat: Error setting SetPoint temperature!");
 		}
 		else {
-			_log.Log(LOG_NORM,"ICYThermostat: Setting Room SetPoint to: %.1f",temp);
+			_log.Log(LOG_STATUS,"ICYThermostat: Setting Room SetPoint to: %.1f",temp);
 		}
 	}
 }

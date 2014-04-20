@@ -100,7 +100,7 @@ void SolarEdgeTCP::Do_Work()
 			m_pTCPProxy->sOnDownstreamData.connect( boost::bind( &SolarEdgeTCP::OnDownstreamData, this, _1, _2 ) );
 			m_pTCPProxy->sOnUpstreamData.connect( boost::bind( &SolarEdgeTCP::OnUpstreamData, this, _1, _2 ) );
 			m_pTCPProxy->start();
-			_log.Log(LOG_NORM,"SolarEdge: Started");
+			_log.Log(LOG_STATUS,"SolarEdge: Started");
 		}
 		catch(const std::exception &e) 
 		{
@@ -117,7 +117,7 @@ void SolarEdgeTCP::Do_Work()
 			continue;
 		}
 	}
-	_log.Log(LOG_NORM,"SolarEdge: Worker stopped...");
+	_log.Log(LOG_STATUS,"SolarEdge: Worker stopped...");
 }
 
 void SolarEdgeTCP::write(const char *data, size_t size)

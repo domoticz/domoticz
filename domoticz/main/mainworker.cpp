@@ -593,7 +593,7 @@ bool MainWorker::StartThread()
 	{
         return false;
 	}
-	_log.Log(LOG_NORM,"Webserver started on port: %s", m_webserverport.c_str());
+	_log.Log(LOG_STATUS,"Webserver started on port: %s", m_webserverport.c_str());
 	int nValue=0;
 	if (m_sql.GetPreferencesVar("AuthenticationMethod", nValue))
 	{
@@ -953,7 +953,7 @@ void MainWorker::Do_Work()
 			GetRaspberryPiTemperature();
 		}
 	}
-	_log.Log(LOG_NORM, "Mainworker Stopped...");
+	_log.Log(LOG_STATUS, "Mainworker Stopped...");
 }
 
 void MainWorker::SendCommand(const int HwdID, unsigned char Cmd, const char *szMessage)
