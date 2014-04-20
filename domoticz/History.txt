@@ -89,6 +89,8 @@ Version 1.0.xxxx (March xxth 2014)
 - Implemented: BlindsT7 (Forest)
 - Changed: HTML code for manual light
 - Implemented: FreeBSD compatibility
+- Implemented: Pressure Sensor (Bar)
+- Implemented: OTGW, CH Water Pressure (if available)
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)

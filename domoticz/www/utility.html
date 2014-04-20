@@ -209,7 +209,7 @@ function RefreshUtilities()
 					status=item.Data;
 					bigtext=item.Data;
 				}
-				else if ((item.SubType == "Voltage")||(item.SubType == "A/D")) {
+				else if ((item.SubType == "Voltage")||(item.SubType == "A/D")||(item.SubType == "Pressure")) {
 					status=item.Data;
 					bigtext=item.Data;
 				}
@@ -375,7 +375,7 @@ function ShowUtilities()
 				else if (item.SubType == "Leaf Wetness") {
 				  xhtm+=item.Data;
 				}
-				else if ((item.SubType == "Voltage")||(item.SubType == "A/D")) {
+				else if ((item.SubType == "Voltage")||(item.SubType == "A/D")||(item.SubType == "Pressure")) {
 				  xhtm+=item.Data;
 				}
 				else if (item.Type == "Lux") {
@@ -432,6 +432,10 @@ function ShowUtilities()
             }
             else if ((item.SubType == "Voltage")||(item.SubType == "A/D")) {
               xhtm+='current48.png" height="48" width="48"></td>\n';
+              status=item.Data;
+            }
+            else if (item.SubType == "Pressure") {
+              xhtm+='gauge48.png" height="48" width="48"></td>\n';
               status=item.Data;
             }
             else if (item.Type == "Lux") {
@@ -548,6 +552,12 @@ function ShowUtilities()
           }
           else if ((item.Type == "General")&&(item.SubType == "Voltage")) {
 			xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'VoltageGeneral\');" data-i18n="Log">Log</a> ';
+			if (window.my_config.userrights==2) {
+				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
+			}
+          }
+          else if ((item.Type == "General")&&(item.SubType == "Pressure")) {
+			xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'Pressure\');" data-i18n="Log">Log</a> ';
 			if (window.my_config.userrights==2) {
 				xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 			}

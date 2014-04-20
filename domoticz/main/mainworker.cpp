@@ -7089,7 +7089,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
 
-	if ((subType==sTypeVoltage)||(subType==sTypePercentage))
+	if ((subType==sTypeVoltage)||(subType==sTypePercentage)||(subType==sTypePressure))
 	{
 		sprintf(szTmp,"%08X", (unsigned int)pMeter->intval1);
 	}
@@ -7146,6 +7146,13 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		PrintDeviceName(devname);
 		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->floatval1);
 	}
+	else if (subType==sTypePressure)
+	{
+		sprintf(szTmp,"%.1f",pMeter->floatval1);
+		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
+		PrintDeviceName(devname);
+		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->floatval1);
+	}
 	else if (subType==sTypePercentage)
 	{
 		sprintf(szTmp,"%.2f",pMeter->floatval1);
@@ -7181,6 +7188,11 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		case sTypeVoltage:
 			WriteMessage("subtype       = Voltage");
 			sprintf(szTmp,"Voltage = %.3f V", pMeter->floatval1);
+			WriteMessage(szTmp);
+			break;
+		case sTypePressure:
+			WriteMessage("subtype       = Pressure");
+			sprintf(szTmp,"Voltage = %.1f bar", pMeter->floatval1);
 			WriteMessage(szTmp);
 			break;
 		default:

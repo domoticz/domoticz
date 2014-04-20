@@ -204,6 +204,42 @@ void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, c
 	}
 }
 
+void OTGWBase::UpdatePressureSensor(const unsigned long Idx, const float Pressure, const std::string &defaultname)
+{
+	if (m_pMainWorker==NULL)
+		return;
+	bool bDeviceExits=true;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+
+	char szTmp[30];
+	sprintf(szTmp,"%08X", (unsigned int)Idx);
+
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePressure) << ")";
+	result=m_pMainWorker->m_sql.query(szQuery.str());
+	if (result.size()<1)
+	{
+		bDeviceExits=false;
+	}
+
+	_tGeneralDevice gDevice;
+	gDevice.subtype=sTypePressure;
+	gDevice.id=1;
+	gDevice.floatval1=Pressure;
+	gDevice.intval1=(int)Idx;
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePressure) << ")";
+		result=m_pMainWorker->m_sql.query(szQuery.str());
+
+	}
+}
+
 void OTGWBase::ParseLine()
 {
 	if (m_bufferpos<2)
@@ -268,6 +304,11 @@ void OTGWBase::ParseLine()
 		_status.Room_Setpoint=(float)atof(results[idx++].c_str());							UpdateSetPointSensor(idx-1,_status.Room_Setpoint,"Room Setpoint");
 		_status.Relative_modulation_level=(float)atof(results[idx++].c_str());
 		_status.CH_water_pressure=(float)atof(results[idx++].c_str());
+		if (_status.CH_water_pressure!=0)
+		{
+			UpdatePressureSensor(idx-1,_status.CH_water_pressure,"CH Water Pressure");
+		}
+
 		_status.Room_temperature=(float)atof(results[idx++].c_str());						UpdateTempSensor(idx-1,_status.Room_temperature,"Room Temperature");
 		_status.Boiler_water_temperature=(float)atof(results[idx++].c_str());				UpdateTempSensor(idx-1,_status.Boiler_water_temperature,"Boiler Water Temperature");
 		_status.DHW_temperature=(float)atof(results[idx++].c_str());						UpdateTempSensor(idx-1,_status.DHW_temperature,"DHW Temperature");

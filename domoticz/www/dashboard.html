@@ -884,6 +884,7 @@ function RefreshFavorites()
 					(item.SubType=="Soil Moisture")||
 					(item.SubType=="Leaf Wetness")||
 					(item.SubType=="Voltage")||
+					(item.SubType=="Pressure")||
 					(item.SubType=="A/D")
 				) &&
                 (item.Favorite!=0)
@@ -919,6 +920,7 @@ function RefreshFavorites()
 									(item.SubType=="Soil Moisture")||
 									(item.SubType=="Leaf Wetness")||
 									(item.SubType=="Voltage")||
+									(item.SubType=="Pressure")||
 									(item.SubType=="A/D")
 								) {
 							status+=item.Data;
@@ -989,7 +991,7 @@ function RefreshFavorites()
 							status=item.Data;
 							bigtext=item.Data;
 						}
-						else if ((item.SubType=="Voltage")||(item.SubType=="A/D")) {
+						else if ((item.SubType=="Voltage")||(item.SubType=="A/D")||(item.SubType=="Pressure")) {
 							status=item.Data;
 							bigtext=item.Data;
 						}
@@ -2317,6 +2319,7 @@ function ShowFavorites()
 					(item.SubType=="Soil Moisture")||
 					(item.SubType=="Leaf Wetness")||
 					(item.SubType=="Voltage")||
+					(item.SubType=="Pressure")||
 					(item.SubType=="A/D")
 				) &&
                 (item.Favorite!=0)
@@ -2380,6 +2383,7 @@ function ShowFavorites()
 							(item.SubType=="Soil Moisture")||
 							(item.SubType=="Leaf Wetness")||
 							(item.SubType=="Voltage")||
+							(item.SubType=="Pressure")||
 							(item.SubType=="A/D")
 						) {
 					status=item.Data;
@@ -2459,6 +2463,7 @@ function ShowFavorites()
 						(item.SubType=="Soil Moisture")||
 						(item.SubType=="Leaf Wetness")||
 						(item.SubType=="Voltage")||
+						(item.SubType=="Pressure")||
 						(item.SubType=="A/D")
 					) {
 					xhtm+=item.Data;
@@ -2525,6 +2530,10 @@ function ShowFavorites()
 				}
 				else if ((item.SubType=="Voltage")||(item.SubType=="A/D")) {
 					xhtm+='current48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="40" width="40"></td>\n';
+					status=item.Data;
+				}
+				else if (item.SubType=="Pressure") {
+					xhtm+='gauge48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="40" width="40"></td>\n';
 					status=item.Data;
 				}
 				else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {

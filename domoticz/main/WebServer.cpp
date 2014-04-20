@@ -3413,6 +3413,13 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
 			ii++;
 		}
+		if ((dType==pTypeGeneral)&&(dSubType==sTypePressure))
+		{
+			root["result"][ii]["val"]=NTYPE_USAGE;
+			root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_USAGE,0);
+			root["result"][ii]["ptag"]=Notification_Type_Desc(NTYPE_USAGE,1);
+			ii++;
+		}
 		if (dType==pTypeLux)
 		{
 			root["result"][ii]["val"]=NTYPE_USAGE;
@@ -5713,6 +5720,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						(!((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorAD)))&&
 						(!((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorVolt)))&&
 						(!((dType==pTypeGeneral)&&(dSubType==sTypeVoltage)))&&
+						(!((dType==pTypeGeneral)&&(dSubType==sTypePressure)))&&
 						(dType!=pTypeCURRENT)&&
 						(dType!=pTypeCURRENTENERGY)&&
 						(dType!=pTypeENERGY)&&
@@ -7032,6 +7040,14 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 					root["result"][ii]["Voltage"]=atof(sValue.c_str());
 				}
+				else if (dSubType==sTypePressure)
+				{
+					sprintf(szData,"%.1f Bar",atof(sValue.c_str()));
+					root["result"][ii]["Data"]=szData;
+					root["result"][ii]["TypeImg"]="gauge";
+					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
+					root["result"][ii]["Pressure"]=atof(sValue.c_str());
+				}
 			}
 			else if (dType == pTypeLux)
 			{
@@ -7922,6 +7938,7 @@ std::string CWebServer::GetJSonPage()
 					((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorAD))||
 					((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorVolt))||
 					((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))||
+					((dType==pTypeGeneral)&&(dSubType==sTypePressure))||
 					(dType==pTypeLux)||
 					(dType==pTypeWEIGHT)||
 					(dType==pTypeUsage)
@@ -8228,7 +8245,8 @@ std::string CWebServer::GetJSonPage()
 				else if (
 					((dType==pTypeGeneral)&&(dSubType==sTypeVisibility))||
 					((dType==pTypeGeneral)&&(dSubType==sTypeSolarRadiation))||
-					((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
+					((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))||
+					((dType==pTypeGeneral)&&(dSubType==sTypePressure))
 					)
 				{//day
 					root["status"]="OK";
@@ -10044,7 +10062,8 @@ std::string CWebServer::GetJSonPage()
 				else if (
 					((dType==pTypeGeneral)&&(dSubType==sTypeVisibility))||
 					((dType==pTypeGeneral)&&(dSubType==sTypeSolarRadiation))||
-					((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
+					((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))||
+					((dType==pTypeGeneral)&&(dSubType==sTypePressure))
 					)
 				{//month/year
 					root["status"]="OK";
@@ -10527,7 +10546,8 @@ std::string CWebServer::GetJSonPage()
 				else if (
 					((dType==pTypeGeneral)&&(dSubType==sTypeVisibility))||
 					((dType==pTypeGeneral)&&(dSubType==sTypeSolarRadiation))||
-					((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
+					((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))||
+					((dType==pTypeGeneral)&&(dSubType==sTypePressure))
 					)
 				{
 					float vdiv=10.0f;
@@ -11600,6 +11620,11 @@ std::string CWebServer::GetJSonPage()
 
 		switch (iSensorType)
 		{
+		case 1:
+			//Pressure (Bar)
+			m_pMain->m_sql.UpdateValue(HwdID, ID,1,pTypeGeneral,sTypePressure,12,255,0,"0.0",devname);
+			bCreated=true;
+			break;
 		case pTypeTEMP:
 			m_pMain->m_sql.UpdateValue(HwdID, ID,1,pTypeTEMP,sTypeTEMP1,10,255,0,"0.0",devname);
 			bCreated=true;

@@ -3613,7 +3613,8 @@ void CSQLHelper::UpdateMeter()
 		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeLeafWetness
 		"(Type=%d AND SubType=%d) OR " //pTypeRFXSensor,sTypeRFXSensorAD
 		"(Type=%d AND SubType=%d) OR" //pTypeRFXSensor,sTypeRFXSensorVolt
-		"(Type=%d AND SubType=%d)"	  //pTypeGeneral,sTypeVoltage
+		"(Type=%d AND SubType=%d) OR"  //pTypeGeneral,sTypeVoltage
+		"(Type=%d AND SubType=%d)"	  //pTypeGeneral,sTypePressure
 		")",
 		pTypeRFXMeter,
 		pTypeP1Gas,
@@ -3631,7 +3632,8 @@ void CSQLHelper::UpdateMeter()
 		pTypeGeneral,sTypeLeafWetness,
 		pTypeRFXSensor,sTypeRFXSensorAD,
 		pTypeRFXSensor,sTypeRFXSensorVolt,
-		pTypeGeneral,sTypeVoltage
+		pTypeGeneral,sTypeVoltage,
+		pTypeGeneral,sTypePressure
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -3750,6 +3752,13 @@ void CSQLHelper::UpdateMeter()
 			else if ((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
 			{
 				double fValue=atof(sValue.c_str())*1000.0f;
+				sprintf(szTmp,"%d",int(fValue));
+				sValue=szTmp;
+				bSkipSameValue=false;
+			}
+			else if ((dType==pTypeGeneral)&&(dSubType==sTypePressure))
+			{
+				double fValue=atof(sValue.c_str())*10.0f;
 				sprintf(szTmp,"%d",int(fValue));
 				sValue=szTmp;
 				bSkipSameValue=false;
@@ -4376,6 +4385,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				(!((devType==pTypeGeneral)&&(subType==sTypeSoilMoisture)))&&
 				(!((devType==pTypeGeneral)&&(subType==sTypeLeafWetness)))&&
 				(!((devType==pTypeGeneral)&&(subType==sTypeVoltage)))&&
+				(!((devType==pTypeGeneral)&&(subType==sTypePressure)))&&
 				(devType!=pTypeLux)&&
 				(devType!=pTypeWEIGHT)&&
 				(devType!=pTypeUsage)
@@ -4437,6 +4447,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				((devType!=pTypeGeneral)&&(subType!=sTypeVisibility))&&
 				((devType!=pTypeGeneral)&&(subType!=sTypeSolarRadiation))&&
 				((devType!=pTypeGeneral)&&(subType!=sTypeVoltage))&&
+				((devType!=pTypeGeneral)&&(subType!=sTypePressure))&&
 				((devType!=pTypeGeneral)&&(subType!=sTypeSoilMoisture))&&
 				((devType!=pTypeGeneral)&&(subType!=sTypeLeafWetness))&&
 				(devType!=pTypeLux)&&

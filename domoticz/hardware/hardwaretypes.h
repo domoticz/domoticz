@@ -34,6 +34,7 @@
 #define sTypePercentage		0x06
 #define sTypeSystemFan		0x07
 #define sTypeVoltage		0x08
+#define sTypePressure		0x09
 
 #define pTypeLux		0xF6
 #define sTypeLux		0x01
