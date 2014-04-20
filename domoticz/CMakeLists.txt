@@ -291,7 +291,7 @@ else()
 	MESSAGE(STATUS "==== OpenZWave not found, support disabled!")
 ENDIF(OpenZWave)
 
-target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} ${ZLIB_LIBRARIES} pthread curl lua)
+target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua)
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
 

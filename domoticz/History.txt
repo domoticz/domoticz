@@ -88,6 +88,7 @@ Version 1.0.xxxx (March xxth 2014)
 - Implemented: Energenie5/COCO GDR2-2000R
 - Implemented: BlindsT7 (Forest)
 - Changed: HTML code for manual light
+- Implemented: FreeBSD compatibility
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)

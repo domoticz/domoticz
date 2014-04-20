@@ -49,6 +49,10 @@ typedef unsigned char       BYTE;
 
 #endif
 
+#if defined(__FreeBSD__)
+	#include <netinet/in.h>
+#endif
+
 #define WEBSERVER_DONT_USE_ZIP
 
 #include <boost/thread.hpp>

@@ -70,12 +70,30 @@ void catch_intterm(int sig_num)
 		return GetModuleFileNameA(NULL, pathName, (DWORD)pathNameCapacity);
 	}
 #elif defined(__linux__) /* elif of: #if defined(_WIN32) */
-#include <unistd.h>
+	#include <unistd.h>
 	static size_t getExecutablePathName(char* pathName, size_t pathNameCapacity)
 	{
 		size_t pathNameSize = readlink("/proc/self/exe", pathName, pathNameCapacity - 1);
 		pathName[pathNameSize] = '\0';
 		return pathNameSize;
+	}
+#elif defined(__FreeBSD__)
+	#include <sys/sysctl.h>
+	static size_t getExecutablePathName(char* pathName, size_t pathNameCapacity)
+	{
+		int mib[4];
+		mib[0] = CTL_KERN;
+		mib[1] = KERN_PROC;
+		mib[2] = KERN_PROC_PATHNAME;
+		mib[3] = -1;
+		char buf[1024];
+		size_t cb = sizeof(buf);
+		sysctl(mib, 4, buf, &cb, NULL, 0);
+		std::string szStartupFolder=buf;
+		if (szStartupFolder.find_last_of('/')!=std::string::npos)
+			szStartupFolder=szStartupFolder.substr(0,szStartupFolder.find_last_of('/')+1);
+		strcpy(pathName,szStartupFolder.c_str());
+		return szStartupFolder.size();
 	}
 #elif defined(__APPLE__) /* elif of: #elif defined(__linux__) */
 	#include <mach-o/dyld.h>
