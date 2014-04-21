@@ -1,13 +1,13 @@
-Version 1.0.xxxx (March xxth 2014)
+Version 1.0.xxxx (April xxth 2014)
 - Implemented: Support for Forecast.io
-- Implemented: Temperature/Weaher widgets forecast button if hardware is WU/Forecast.io
+- Implemented: Temperature/Weather widgets forecast button if hardware is WU/Forecast.io
 - Implemented: Widgets now turn yellow (if no timeout) if the battery level is <= 10 percent
 - Implemented: Temperature Month/Year graphs now display min/max as a range
 - Implemented: Temperature Month/Year graphs now displays Average Temperature
 - Fixed: Scene/Group editor now displays Level is the first light/switch supports it when entering the page
-- Changed: Raspberry Pi temperature reporting intern. (should save an extra return in the log output)
+- Changed: Raspberry Pi temperature reporting intern. (Should save an extra return in the log output)
 - Changed: Mobile Dashboard now uses buttons to toggle state
-- Implemented: EnOcean ESP2 (TCM-120) support for On/Off/Dimmer,Temperature,Humidity and LightSensors
+- Implemented: EnOcean ESP2 (TCM-120) support for On/Off/Dimmer, Temperature, Humidity and Light Sensors
 - Changed/Fixed: OTGW TCP/IP working now
 - Implemented: OTGW, option to specify outside temperature sensor (hardware setup)
 - Implemented: OpenZWave, option to configure node list settings
@@ -22,7 +22,7 @@ Version 1.0.xxxx (March xxth 2014)
 - Fixed: Razberry, supports now devices with multiple switches (SENSOR_BINARY)
 - Changed: Other method to retrieve raspberry pi temperature
 - Implemented: Option to specify S0 Meter serial baudrate
-- Implemented: Slovak translation (Thanks to marek786 !)
+- Implemented: Slovak translation (Thanks to marek786!)
 - Implemented: Weight Scale now includes a digit in the graphs
 - Implemented: Pushover notification support
 - Implemented: Thermostat3 Support (Mertik)
@@ -31,11 +31,11 @@ Version 1.0.xxxx (March xxth 2014)
 - Fixed: Pushover test option in the settings page
 - Implemented: Dashboard tiles can now be ordered for room-plans
 - Implemented: Allow interactive emulation of X10 sensors
-- Implemented: Switch On/Off actions can now also be used from outside domoticz (for instance using them to an actual remote control)
+- Implemented: Switch On/Off actions can now also be used from outside Domoticz (for instance using them to an actual remote control)
 - Implemented: P1/Counter log, Previous year in charts
 - Changed: Temperatures are now valid till 380 degrees
 - Implemented: P1/Gas/Counter log, report charts
-- Changed: no more hour:minute in month/year graphs
+- Changed: no more hour: minute in month/year graphs
 - Fixed: OTGW, dunit was not set
 - Implemented: Support for Remote Control buttons (On action Only!)
 - Changed: Lots of work on charts plotting
@@ -47,7 +47,7 @@ Version 1.0.xxxx (March xxth 2014)
 - Implemented: Razberry COMMAND_CLASS_SCENE_ACTIVATION (push on button) on Instance_0
 - Implemented: jsonp support
 - Implemented: Web Frontpage Example
-- Implemented: Blinds Percentage switch type (Fibaro rollershutter)
+- Implemented: Blinds Percentage switch type (Fibaro roller shutter)
 - Implemented: Bulgarian translation (Thanks to Tommit!)
 - Implemented: Razberry Voltage/Ampere
 - Changed: ZWave, Power sensors that does not transmit usage, now used as power instead of usage 
@@ -59,7 +59,7 @@ Version 1.0.xxxx (March xxth 2014)
 - Implemented: SMASpot, accepting windows edited configuration lines!?!!...
 - Implemented: SMASpot, Temperature
 - Implemented: OTGW, status switches
-- Implemented: Portuguese translation (Thanks to maluko!)
+- Implemented: Portuguese translation (Thanks to Maluku!)
 - Implemented: Report for RFXMeter Water
 - Updated: Highcharts 3.0.10
 - Implemented: Thermostat 3 (Mertik) now visible on dashboard
@@ -67,16 +67,16 @@ Version 1.0.xxxx (March xxth 2014)
 - Removed: Unused Save/Delete buttons in edit Scene/Group
 - Implemented: Norwegian translation (Thanks to Sungrazer!)
 - Changed: Translation Language Loading
-- Implemented: protection option for light/switches/scenes/setpoints
+- Implemented: protection option for light/switches/scenes/set points
 - Implemented: unix hardware monitor for Memory/CPU and Disk usage
-- Fixed: OpenZWave/SMASpot/Solaredge remote domoticz clients did not receive Power reports
+- Fixed: OpenZWave/SMASpot/Solaredge remote Domoticz clients did not receive Power reports
 - Implemented: Support for ICY (Essent) Thermostats
-- Implemented: OpenZWave/Razberry, PowerFactor sensor
+- Implemented: OpenZWave/Razberry, Power Factor sensor
 - Implemented: Device Tab, option to display chart for sensors with Current/Percentage/Volt/Humidity
 - Implemented: OpenZWave, configuration is now written to disk every hour
 - Implemented: OpenZWave, Receive/Send Configuration, Transfer Primary Role
 - Implemented: Dashboard, clicking on a Visibility/Radiation sensor icon will display the log
-- Fixed: WebUI dewpoint calculation for Fahrenheit
+- Fixed: WebUI dew point calculation for Fahrenheit
 - Fixed: OpenZWave humidity updates
 - Fixed: Set SetPoint device
 - Fixed: Temperature icons for Fahrenheit
@@ -91,6 +91,7 @@ Version 1.0.xxxx (March xxth 2014)
 - Implemented: FreeBSD compatibility
 - Implemented: Pressure Sensor (Bar)
 - Implemented: OTGW, CH Water Pressure (if available)
+- Fixed: Thermostat SetPoint in Fahrenheit
 
 Version 1.0.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)

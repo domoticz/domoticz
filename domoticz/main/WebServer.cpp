@@ -6947,7 +6947,10 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			{
 				if (dSubType==sTypeThermSetpoint)
 				{
-					sprintf(szTmp,"%.1f",atof(sValue.c_str()));
+					double tempCelcius=atof(sValue.c_str());
+					double temp=ConvertTemperature(tempCelcius,tempsign);
+
+					sprintf(szTmp,"%.1f",temp);
 					root["result"][ii]["Data"]=szTmp;
 					root["result"][ii]["SetPoint"]=(float)atof(szTmp);
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
@@ -11388,7 +11391,14 @@ std::string CWebServer::GetJSonPage()
 
 		if (setPoint!="")
 		{
-			szQuery << "UPDATE DeviceStatus SET Used=" << used << ", sValue='" << setPoint << "' WHERE (ID == " << idx << ")";
+			double tempcelcius=atof(setPoint.c_str());
+			if (m_pMain->m_sql.m_tempunit == TEMPUNIT_F)
+			{
+				//Convert back to celcius
+				tempcelcius=(tempcelcius-32)/1.8;
+			}
+			sprintf(szTmp,"%.1f",tempcelcius);
+			szQuery << "UPDATE DeviceStatus SET Used=" << used << ", sValue='" << szTmp << "' WHERE (ID == " << idx << ")";
 		}
 		else
 		{
