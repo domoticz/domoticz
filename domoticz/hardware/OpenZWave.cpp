@@ -947,10 +947,11 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 				}
 			}
 		}
-		else if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SENSOR_BINARY,vID)==true)
+		else if ((GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SENSOR_BINARY,vID)==true) ||
+			 (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SENSOR_MULTILEVEL,vID)==true))
 		{
 			OpenZWave::ValueID::ValueType vType=vID.GetType();
-			_log.Log(LOG_NORM,"OpenZWave: Domoticz has send a Switch command!");
+			_log.Log(LOG_NORM,"OpenZWave: Domoticz has sent a Switch command!");
 			bHaveSendSwitch=true;
 			if (vType == OpenZWave::ValueID::ValueType_Bool)
 			{
@@ -1303,19 +1304,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				}
 			}
 		}
-		else if (vLabel=="General")
-		{
-			if (vType == OpenZWave::ValueID::ValueType_Decimal)
-			{
-				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
-				{
-					_device.floatValue=fValue;
-					_device.commandClassID=COMMAND_CLASS_SENSOR_BINARY;
-					_device.devType = ZDTYPE_SWITCHNORMAL;
-					InsertDevice(_device);
-				}
-			}
-		}
 	}
 	else if (commandclass==COMMAND_CLASS_SENSOR_MULTILEVEL)
 	{
@@ -1424,6 +1412,18 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				}
 			}
 		}
+		else if (vLabel=="General")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
+				{
+					_device.floatValue=fValue;
+					_device.devType = ZDTYPE_SWITCHNORMAL;
+					InsertDevice(_device);
+				}
+			}
+		}
 	}
 	else if (commandclass==COMMAND_CLASS_BATTERY)
 	{
@@ -1491,7 +1491,7 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID vID, int EventID)
 		{
 			// absolute last try
 			instance=vID.GetIndex();
-			pDevice=FindDevice(NodeID, -1, COMMAND_CLASS_SENSOR_BINARY, ZDTYPE_SWITCHNORMAL);
+			pDevice=FindDevice(NodeID, -1, COMMAND_CLASS_SENSOR_MULTILEVEL, ZDTYPE_SWITCHNORMAL);
 			if (pDevice==NULL)
 				return;
 		}
