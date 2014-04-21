@@ -1,4 +1,4 @@
-Version 1.0.xxxx (April xxth 2014)
+Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io
 - Implemented: Temperature/Weather widgets forecast button if hardware is WU/Forecast.io
 - Implemented: Widgets now turn yellow (if no timeout) if the battery level is <= 10 percent
