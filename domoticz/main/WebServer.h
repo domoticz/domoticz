@@ -33,6 +33,7 @@ public:
 
 	char * DisplayVersion();
 	char * DisplayHardwareCombo();
+	char * DisplayDataPushDevicesCombo();
 	char * DisplaySwitchTypesCombo();
 	char * DisplayMeterTypesCombo();
 	char * DisplayTimerTypesCombo();
@@ -80,6 +81,13 @@ private:
 	void WOLUpdateNode(Json::Value &root);
 	void WOLRemoveNode(Json::Value &root);
 	void WOLClearNodes(Json::Value &root);
+	void SaveFibaroLinkConfig(Json::Value &root);
+	void GetFibaroLinkConfig(Json::Value &root);
+	void GetFibaroLinks(Json::Value &root);
+	void SaveFibaroLink(Json::Value &root);
+	void DeleteFibaroLink(Json::Value &root);
+	void GetDevicesForFibaroLink(Json::Value &root);
+
 #ifdef WITH_OPENZWAVE
 	//ZWave
 	void ZWaveUpdateNode(Json::Value &root);

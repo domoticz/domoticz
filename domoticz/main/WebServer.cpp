@@ -193,6 +193,11 @@ bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress
 		boost::bind(
 		&CWebServer::DisplayHardwareTypesCombo,
 		this ) );
+	
+	m_pWebEm->RegisterIncludeCode( "devicesfordatapush",
+		boost::bind(
+		&CWebServer::DisplayDataPushDevicesCombo,
+		this ) );
 
 	m_pWebEm->RegisterIncludeCode( "combohardware",
 		boost::bind(
@@ -270,6 +275,12 @@ bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress
 	RegisterCommandCode("wolupdatenode",boost::bind(&CWebServer::WOLUpdateNode,this, _1));
 	RegisterCommandCode("wolremovenode",boost::bind(&CWebServer::WOLRemoveNode,this, _1));
 	RegisterCommandCode("wolclearnodes",boost::bind(&CWebServer::WOLClearNodes,this, _1));
+
+	RegisterCommandCode("savefibarolinkconfig",boost::bind(&CWebServer::SaveFibaroLinkConfig,this, _1));
+	RegisterCommandCode("getfibarolinkconfig",boost::bind(&CWebServer::GetFibaroLinkConfig,this, _1));
+	RegisterCommandCode("getfibarolinks",boost::bind(&CWebServer::GetFibaroLinks,this, _1));
+	RegisterCommandCode("savefibarolink",boost::bind(&CWebServer::SaveFibaroLink,this, _1));
+	RegisterCommandCode("deletefibarolink",boost::bind(&CWebServer::DeleteFibaroLink,this, _1));
 
 #ifdef WITH_OPENZWAVE
 	//ZWave
@@ -678,6 +689,145 @@ void CWebServer::WOLClearNodes(Json::Value &root)
 	root["status"]="OK";
 	root["title"]="WOLClearNodes";
 	pHardware->RemoveAllNodes();
+}
+
+void CWebServer::SaveFibaroLinkConfig(Json::Value &root)
+{
+	std::string remote=m_pWebEm->FindValue("remote");
+	std::string username=m_pWebEm->FindValue("username");
+	std::string password=m_pWebEm->FindValue("password");
+	std::string linkactive=m_pWebEm->FindValue("linkactive");
+	if (
+		(remote=="")||
+		(username=="")||
+		(password=="")||
+		(linkactive=="")
+		)
+		return;
+	int ilinkactive=atoi(linkactive.c_str());
+	m_pMain->m_sql.UpdatePreferencesVar("FibaroIP",remote.c_str());
+	m_pMain->m_sql.UpdatePreferencesVar("FibaroUsername",username.c_str());
+	m_pMain->m_sql.UpdatePreferencesVar("FibaroPassword",password.c_str());
+	m_pMain->m_sql.UpdatePreferencesVar("FibaroActive",ilinkactive);
+	root["status"]="OK";
+	root["title"]="SaveFibaroLinkConfig";
+}
+
+void CWebServer::GetFibaroLinkConfig(Json::Value &root)
+{
+	std::string sValue;
+	int nValue;
+	if (m_pMain->m_sql.GetPreferencesVar("FibaroActive", nValue)) {
+		root["FibaroActive"]=nValue;
+	}
+	else {
+		root["FibaroActive"]=0;
+	}
+	if (m_pMain->m_sql.GetPreferencesVar("FibaroIP", sValue))
+	{
+		root["FibaroIP"]=sValue;
+	}
+	if (m_pMain->m_sql.GetPreferencesVar("FibaroUsername", sValue))
+	{
+		root["FibaroUsername"]=sValue;
+	}
+	if (m_pMain->m_sql.GetPreferencesVar("FibaroPassword", sValue))
+	{
+		root["FibaroPassword"]=sValue;
+	}
+	root["status"]="OK";
+	root["title"]="GetFibaroLinkConfig";
+}
+
+void CWebServer::GetFibaroLinks(Json::Value &root)
+{
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT A.ID,A.DeviceID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name FROM FibaroLink as A, DeviceStatus as B WHERE (A.DeviceID==B.ID)";
+	result=m_pMain->m_sql.query(szQuery.str());
+	if (result.size()>0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		int ii=0;
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::vector<std::string> sd=*itt;
+			root["result"][ii]["idx"]=sd[0];
+			root["result"][ii]["DeviceID"]=sd[1];
+			root["result"][ii]["Delimitedvalue"]=sd[2];
+			root["result"][ii]["TargetType"]=sd[3];
+			root["result"][ii]["TargetVariable"]=sd[4];
+			root["result"][ii]["TargetDevice"]=sd[5];
+			root["result"][ii]["TargetProperty"]=sd[6];
+			root["result"][ii]["Enabled"]=sd[7];
+			root["result"][ii]["Name"]=sd[8];
+			ii++;
+		}
+	}
+	root["status"]="OK";
+	root["title"]="GetFibaroLinks";
+}
+
+void CWebServer::SaveFibaroLink(Json::Value &root)
+{
+	std::string idx=m_pWebEm->FindValue("idx");
+	std::string deviceid=m_pWebEm->FindValue("deviceid");
+	int deviceidi=atoi(deviceid.c_str());
+	std::string valuetosend=m_pWebEm->FindValue("valuetosend");
+	std::string targettype=m_pWebEm->FindValue("targettype");
+	int targettypei=atoi(targettype.c_str());
+	std::string targetvariable=m_pWebEm->FindValue("targetvariable");
+	std::string targetdeviceid=m_pWebEm->FindValue("targetdeviceid");
+	std::string targetproperty=m_pWebEm->FindValue("targetproperty");
+	std::string linkactive=m_pWebEm->FindValue("linkactive");
+	if ((targettypei==0) && (targetvariable==""))
+		return;
+	if ((targettypei==1) && ((targetdeviceid=="")||(targetproperty=="")))
+		return;
+	std::vector<std::vector<std::string> > result;
+	char szTmp[300];
+	if (idx=="0") {
+		sprintf(szTmp,"INSERT INTO FibaroLink (DeviceID,DelimitedValue,TargetType,TargetVariable,TargetDeviceID,TargetProperty,Enabled) VALUES ('%d','%d','%d','%s','%d','%s','%d')",
+				deviceidi,
+				atoi(valuetosend.c_str()),
+				targettypei,
+				targetvariable.c_str(),
+				atoi(targetdeviceid.c_str()),
+				targetproperty.c_str(),
+				atoi(linkactive.c_str())
+		);
+	}
+	else {
+		sprintf(szTmp,
+			"UPDATE FibaroLink SET DeviceID='%d', DelimitedValue=%d, TargetType=%d, TargetVariable='%s', TargetDeviceID=%d, TargetProperty='%s', Enabled='%d' WHERE (ID == %s)",
+			deviceidi,
+			atoi(valuetosend.c_str()),
+			targettypei,
+			targetvariable.c_str(),
+			atoi(targetdeviceid.c_str()),
+			targetproperty.c_str(),
+			atoi(linkactive.c_str()),
+			idx.c_str()
+			);
+	}
+	result=m_pMain->m_sql.query(szTmp);
+
+	root["status"]="OK";
+	root["title"]="SaveFibaroLink";
+}
+
+void CWebServer::DeleteFibaroLink(Json::Value &root)
+{
+	std::string idx=m_pWebEm->FindValue("idx");
+	if (idx=="")
+		return;
+	std::vector<std::vector<std::string> > result;
+	char szTmp[300];
+	sprintf(szTmp,"DELETE FROM FibaroLink WHERE (ID==%s)",idx.c_str());
+	result=m_pMain->m_sql.query(szTmp);
+
+	root["status"]="OK";
+	root["title"]="DeleteFibaroLink";
 }
 
 void CWebServer::DeleteHardware(Json::Value &root)
@@ -4724,6 +4874,34 @@ char * CWebServer::DisplaySwitchTypesCombo()
 	}
 	return (char*)m_retstr.c_str();
 }
+
+
+char * CWebServer::DisplayDataPushDevicesCombo()
+{
+	
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT ID,Name FROM DeviceStatus WHERE (Used=='1')";
+	result=m_pMain->m_sql.query(szQuery.str());
+	
+	if (result.size()>0)
+	{
+		m_retstr="";
+		char szTmp[200];
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		int ii=0;
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::vector<std::string> sd=*itt;
+			sprintf(szTmp,"<option value=\"%s\">%s</option>\n",sd[0].c_str(),sd[1].c_str());
+			m_retstr+=szTmp;
+			ii++;
+		}
+	}
+	return (char*)m_retstr.c_str();
+}
+
+
 
 char * CWebServer::DisplayMeterTypesCombo()
 {

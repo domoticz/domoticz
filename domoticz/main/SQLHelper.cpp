@@ -431,6 +431,17 @@ const char *sqlCreateEnoceanSensors =
 	"[Profile] INTEGER NOT NULL, "
 	"[Type] INTEGER NOT NULL);";
 
+const char *sqlCreateFibaroLink =
+	"CREATE TABLE IF NOT EXISTS [FibaroLink] ("
+	"[ID] INTEGER PRIMARY KEY, "
+	"[DeviceID]  BIGINT NOT NULL, "
+	"[DelimitedValue] INTEGER DEFAULT 0, "
+	"[TargetType] INTEGER DEFAULT 0, "
+	"[TargetVariable] VARCHAR(100), "
+	"[TargetDeviceID] INTEGER, "
+	"[TargetProperty] VARCHAR(100), "
+	"[Enabled] INTEGER DEFAULT 1); ";
+
 extern std::string szStartupFolder;
 
 CSQLHelper::CSQLHelper(void)
@@ -552,6 +563,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateFan_Calendar);
 	query(sqlCreateBackupLog);
 	query(sqlCreateEnoceanSensors);
+	query(sqlCreateFibaroLink);
 
 	if ((!bNewInstall)&&(dbversion<DB_VERSION))
 	{
@@ -863,6 +875,7 @@ bool CSQLHelper::OpenDatabase()
 		{
 			FixDaylightSaving();
 		}
+
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
 

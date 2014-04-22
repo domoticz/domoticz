@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 473
+# ref 474
 
 CACHE:
 favicon.ico
@@ -381,6 +381,7 @@ utility.html
 users.html
 weather.html
 zwavetopology.html
+dpfibaro.html
 json.htm
 secpanel/index.html
 *

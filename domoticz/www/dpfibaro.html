@@ -1,0 +1,318 @@
+<div id="fibaromain">
+    <table class="display" id="linktable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th width="120" align="left" data-i18n="Device Name">Device name</th>
+			    <th width="60" align="left" data-i18n="Value to send">Value to send</th>
+                <th width="120" align="left" data-i18n="Target type">Target type</th>
+				<th width="120" align="left" data-i18n="Target name">Target variable</th>
+				<th width="60" align="left" data-i18n="Target name">Target device id</th>
+				<th width="120" align="left" data-i18n="Target name">Target property</th>
+             	<th width="60" align="left" data-i18n="Enabled">Enabled</th>
+            </tr>
+        </thead>		
+    </table>
+	<p>
+	<table width="100%">
+	<tr>
+	<td valign="top" >
+	<h2 data-i18n="Edit link">Edit link</h2><br>
+	<table class="display" id="linkparamstable" border="0" cellpadding="0" cellspacing="20">
+
+		<tr>
+			<td align="right" style="width:110px"><label for="devicename"><span data-i18n="Device name"></span>:</label></td>
+			<td><select id="devicename" style="width:210px" class="combobox ui-corner-all">
+				<!--#embed devicesfordatapush -->
+			</select>
+			</td>
+		</tr>
+		<tr>
+			<td align="right" style="width:110px"><label for="name"><span data-i18n="Value to send"></span>:</label></td>
+			<td><input type="text" id="valuetosend" value="0" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (<span data-i18n="0 = nvalue, 1 = svalue field 1, 2 = svalue field 2, etc."></span>)</td>
+		</tr>
+		<tr>
+			<td align="right" style="width:110px"><label for="combotargettype"><span data-i18n="Target type"></span>:</label></td>
+			<td><select id="combotargettype" style="width:110px" onchange="TargetTypeUpdate();" class="combobox ui-corner-all">
+					<option value="0" data-i18n="Global variable">Global variable</option>
+					<option value="1" data-i18n="Virtual device">Virtual device</option>
+				</select>
+			</td>
+		</tr>
+		<tr id="targetvariablerow">
+			<td align="right" style="width:110px"><label for="targetvariable"><span data-i18n="Target variable"></span>:</label></td>
+			<td><input type="text" id="targetvariable" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		<tr id="targetdeviceidrow" style="display:none;">
+			<td align="right" style="width:110px"><label for="targetdeviceid"><span data-i18n="Target device id"></span>:</label></td>
+			<td><input type="text" id="targetdeviceid" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>		
+		<tr id="targetpropertyrow" style="display:none;">
+			<td align="right" style="width:110px"><label for="targetproperty"><span data-i18n="Target property"></span>:</label></td>
+			<td><input type="text" id="targetproperty" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>		
+		<tr>
+			<td align="right" style="width:80px"><label for="linkenabled"><span data-i18n="Link active"></span>:</label></td>
+			<td><input type="checkbox" id="linkenabled" checked></td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<a class="btnstyle3" onclick="AddLink('a');" data-i18n="Add">Add</a>
+				<a class="btnstyle3-dis" id="linkupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+				<a class="btnstyle3-dis" id="linkdelete" data-i18n="Delete">Delete</a>
+			</td>
+		</tr>	
+	</table>
+	</td>
+	<td valign="top" >
+	<h2 data-i18n="General settings">General settings</h2><br>
+		<table class="display" id="fibaroremote" border="0" cellpadding="0" cellspacing="20">
+		<tr>
+			<td align="right" style="width:110px"><label id="lblremoteaddress" for="name"><span data-i18n="Remote Address"></span>:</label></td>
+			<td><input type="text" id="tcpaddress" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:110px"><label id="lblusername" for="name"><span data-i18n="Username"></span>:</label></td>
+			<td><input type="text" id="username" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+		</tr>
+		<tr>
+			<td align="right" style="width:110px"><label id="lblpassword" for="name"><span data-i18n="Password"></span>:</label></td>
+			<td><input type="password" id="password" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+		</tr>
+		<tr>
+			<td align="right" style="width:80px"><label for="fibarolinkenabled"><span data-i18n="FibaroLink active"></span>:</label></td>
+			<td><input type="checkbox" id="fibarolinkenabled" checked></td>
+		</tr>
+	</table>
+	<a class="btnstyle3" onclick="SaveConfiguration();" data-i18n="Save">Save</a>
+	</td>
+	</tr>
+</table>
+</div>
+
+	
+
+<script type="text/javascript" charset="utf-8">
+
+
+function TargetTypeUpdate()
+{
+	var text = $("#linkparamstable #combotargettype option:selected").text();
+
+	if (text.indexOf("Global") >= 0)
+	{
+		$("#linkparamstable #targetvariablerow").show();
+		$("#linkparamstable #targetdeviceidrow").hide();
+		$("#linkparamstable #targetpropertyrow").hide();
+	}
+	else if (text.indexOf("Virtual") >= 0)
+	{
+		$("#linkparamstable #targetvariablerow").hide();
+		$("#linkparamstable #targetdeviceidrow").show();
+		$("#linkparamstable #targetpropertyrow").show();
+	}
+}
+function SaveConfiguration()
+{
+	var remoteurl = $('#fibaroremote #tcpaddress').val();
+	var cleanurl = remoteurl.substr(remoteurl.indexOf('://')+3);
+	var username = $('#fibaroremote #username').val();
+	var password = $('#fibaroremote #password').val();
+	var linkactive = 0;	
+	if ($('#fibaroremote #fibarolinkenabled').is(":checked"))
+	{
+		linkactive = 1;
+	}
+	$.ajax({
+		 url: "json.htm?type=command&param=savefibarolinkconfig" +
+			"&remote=" + cleanurl + "&username=" + username + "&password=" + password + "&linkactive=" + linkactive,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			bootbox.alert($.i18n('Fibaro link settings saved'));
+		 },
+		 error: function(){
+				ShowNotify($.i18n('Problem saving Fibaro link settings!'), 2500, true);
+		 }     
+	});
+}
+
+function DeleteLink(idx)
+{
+	bootbox.confirm($.i18n("Are you sure you want to remove this link?"), function(result) {
+		if (result==true) {
+			$.ajax({
+				url: "json.htm?type=command&param=deletefibarolink&idx=" + idx,
+				async: false, 
+				dataType: 'json',
+				success: function(data) {
+					bootbox.alert($.i18n('Link deleted!'));
+					RefreshLinkTable();
+				}
+			});
+		}
+	});
+}
+	
+
+function AddLink(type)
+{
+	var idx = $.linkIdx;
+	if (type == "a") {idx="0"};
+	var deviceid = $("#linkparamstable #devicename option:selected").val();
+	var valuetosend= $('#linkparamstable #valuetosend').val();
+	var targettype = $("#linkparamstable #combotargettype option:selected").val();
+	var targetvariable = $('#linkparamstable #targetvariable').val();
+	var targetdeviceid = $('#linkparamstable #targetdeviceid').val();
+	var targetproperty = $('#linkparamstable #targetproperty').val();
+	var linkactive = 0;	
+	if ($('#linkparamstable #linkenabled').is(":checked"))
+	{
+		linkactive = 1;
+	}
+	$.ajax({
+		 url: "json.htm?type=command&param=savefibarolink" +
+			"&idx=" + idx + "&deviceid=" + deviceid + "&valuetosend=" + valuetosend + "&targettype=" + targettype + "&targetvariable=" + targetvariable + "&targetdeviceid=" + targetdeviceid + "&targetproperty=" + targetproperty + "&linkactive=" + linkactive,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			bootbox.alert($.i18n('Fibaro link saved'));
+			RefreshLinkTable();
+		 },
+		 error: function(){
+				ShowNotify($.i18n('Problem saving Fibaro link!'), 2500, true);
+		 }     
+	});
+}
+
+function GetConfig() 
+{
+	$.ajax({
+		url: "json.htm?type=command&param=getfibarolinkconfig",
+		async: false, 
+		dataType: 'json',
+		success: function(data) {
+			if (typeof data != 'undefined') {
+				if (data.status=="OK") {
+					$('#fibaroremote #tcpaddress').val(data.FibaroIP);
+					$('#fibaroremote #username').val(data.FibaroUsername);
+					$('#fibaroremote #password').val(data.FibaroPassword);
+					$('#fibaroremote #fibarolinkenabled').prop('checked', false);
+					if (data.FibaroActive) {
+						$('#fibaroremote #fibarolinkenabled').prop('checked', true);
+					}
+				}
+			}
+		},
+		error: function(){
+			ShowNotify($.i18n('Problem retrieving Fibaro link settings!'), 2500, true);
+		}
+	});
+}
+	
+
+function RefreshLinkTable()
+{
+  $('#modal').show();
+
+	$('#linkparamstable #linkupdate').attr("class", "btnstyle3-dis");
+	$('#linkparamstable #linkdelete').attr("class", "btnstyle3-dis");
+
+  var oTable = $('#linktable').dataTable();
+  oTable.fnClearTable();
+  
+  $.ajax({
+     url: "json.htm?type=command&param=getfibarolinks",
+     async: false, 
+     dataType: 'json',
+     success: function(data) {   
+      if (typeof data.result != 'undefined') {
+        $.each(data.result, function(i,item){
+			var enabled = "No";
+			if (item.Enabled == 1)
+				enabled = "Yes";
+			var TargetType = "Global variable";
+			if (item.TargetType==1) 
+				TargetType = "Virtual device";
+			if (item.TargetDevice == 0)
+				item.TargetDevice="";
+			var addId = oTable.fnAddData( {
+				"DT_RowId": item.idx,
+                "TargetType": item.TargetType,
+				"DeviceID": item.DeviceID,
+				"0": item.Name,
+				"1": item.Delimitedvalue,
+				"2": TargetType,
+				"3": item.TargetVariable,
+				"4": item.TargetDevice,
+				"5": item.TargetProperty,
+				"6": enabled
+			} );
+        });
+	  }
+     }
+  });
+  $('#modal').hide();
+}
+
+function ShowLinks()
+{
+	$('#fibaromain').i18n();
+	var oTable = $('#linktable').dataTable( {
+	  "sDom": '<"H"lfrC>t<"F"ip>',
+	  "oTableTools": {
+		"sRowSelect": "single",
+	  },
+	  "fnDrawCallback": function (oSettings) {
+        var nTrs = this.fnGetNodes();
+        $(nTrs).click(
+			function(){
+				$(nTrs).removeClass('row_selected');
+				$(this).addClass('row_selected');
+				$('#linkparamstable #linkupdate').attr("class", "btnstyle3");
+				$('#linkparamstable #linkdelete').attr("class", "btnstyle3");
+				var anSelected = fnGetSelected( oTable );
+				if ( anSelected.length !== 0 ) {
+					var data = oTable.fnGetData( anSelected[0] );
+					var idx= data["DT_RowId"];
+					$.linkIdx=idx;
+					$("#linkparamstable #linkupdate").attr("href", "javascript:AddLink('u')");
+					$("#linkparamstable #linkdelete").attr("href", "javascript:DeleteLink(" + idx + ")");
+					$("#linkparamstable #devicename").val(data["DeviceID"]); 
+					$("#linkparamstable #valuetosend").val(data["1"]);
+					$("#linkparamstable #combotargettype").val(data["TargetType"]);
+					TargetTypeUpdate();
+					$("#linkparamstable #targetvariable").val(data["3"]);
+					$("#linkparamstable #targetdeviceid").val(data["4"]);
+					$("#linkparamstable #targetproperty").val(data["5"]);
+					if (data["6"] == "Yes") {
+						$('#linkparamstable #linkenabled').prop('checked', true);
+					}
+					else {
+						$('#linkparamstable #linkenabled').prop('checked', false);
+					}
+				}
+		});
+	  },    
+	  "aaSorting": [[ 0, "desc" ]],
+	  "bSortClasses": false,
+	  "bProcessing": true,
+	  "bStateSave": true,
+	  "bJQueryUI": true,
+	  "iDisplayLength" : 10,
+	  'bLengthChange': false,
+	  "sPaginationType": "full_numbers"
+	} );
+	$("#fibarocontent #linktable #combotype").change(function() { 
+		UpdateLinks();
+	});
+	
+	RefreshLinkTable();
+}
+
+$(document).ready(function() {
+	//global var
+	$.linkIdx=0;
+	GetConfig();
+	ShowLinks();
+} );  
+</script>

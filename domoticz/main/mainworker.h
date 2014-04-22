@@ -137,6 +137,7 @@ private:
 	void SendCommand(const int HwdID, unsigned char Cmd, const char *szMessage=NULL);
 	void WriteToHardware(const int HwdID, const char *pdata, const unsigned char length);
 	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);
+	void DataPush(const unsigned long long DeviceRowIdx);
 	void OnHardwareConnected(CDomoticzHardwareBase *pHardware);
 
 	void WriteMessageStart();
