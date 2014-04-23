@@ -43,6 +43,7 @@
 #include "../hardware/SMASpot.h"
 #include "../hardware/ICYThermostat.h"
 #include "../hardware/WOL.h"
+#include "../hardware/PVOutput_Input.h"
 
 #ifdef WIN32
     #include "dirent_windows.h"
@@ -501,6 +502,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_ICYTHERMOSTAT:
 		pHardware = new CICYThermostat(ID,Username,Password);
+		break;
+	case HTYPE_PVOUTPUT_INPUT:
+		pHardware = new CPVOutputInput(ID,Username,Password);
 		break;
 	case HTYPE_Dummy:
 		pHardware = new CDummy(ID);

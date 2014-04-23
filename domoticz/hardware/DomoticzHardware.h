@@ -39,6 +39,7 @@ class CDomoticzHardwareBase
 	friend class CSMASpot;
 	friend class CWOL;
 	friend class CICYThermostat;
+	friend class CPVOutputInput;
 public: 
 	CDomoticzHardwareBase();
 	virtual ~CDomoticzHardwareBase();

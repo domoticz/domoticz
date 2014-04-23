@@ -164,6 +164,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_SMASpot,			"SMASpot" },
 		{ HTYPE_ICYTHERMOSTAT,		"ICY Thermostat" },
 		{ HTYPE_WOL,				"Wake-on-LAN" },
+		{ HTYPE_PVOUTPUT_INPUT,		"PVOutput (Input) (Not ready yet!)" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

@@ -138,6 +138,9 @@
     <Filter Include="Devices\WOL">
       <UniqueIdentifier>{4d9a219d-95b5-4e44-bcf1-b47e7df829d9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\PVOutput">
+      <UniqueIdentifier>{18743244-0b44-4bd4-851a-2e2ada37b8ed}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -409,14 +412,17 @@
     <ClInclude Include="hardware\ICYThermostat.h">
       <Filter>Devices\ICY Thermostat</Filter>
     </ClInclude>
-    <ClInclude Include="hardware\SMASpot.h">
-      <Filter>Devices\SolarEdge</Filter>
-    </ClInclude>
     <ClInclude Include="hardware\HardwareMonitor.h">
       <Filter>Devices\HardwareMonitor</Filter>
     </ClInclude>
     <ClInclude Include="hardware\WOL.h">
       <Filter>Devices\WOL</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\PVOutput_Input.h">
+      <Filter>Devices\PVOutput</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\SMASpot.h">
+      <Filter>Devices\SMASpot</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -659,6 +665,9 @@
     </ClCompile>
     <ClCompile Include="hardware\WOL.cpp">
       <Filter>Devices\WOL</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\PVOutput_Input.cpp">
+      <Filter>Devices\PVOutput</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

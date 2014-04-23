@@ -80,6 +80,7 @@ enum _eHardwareTypes {
 	HTYPE_SMASpot,				//27
 	HTYPE_ICYTHERMOSTAT,		//28
 	HTYPE_WOL,					//29
+	HTYPE_PVOUTPUT_INPUT,		//30
 	HTYPE_END
 };
 

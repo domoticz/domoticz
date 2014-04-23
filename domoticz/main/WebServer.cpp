@@ -419,7 +419,7 @@ void CWebServer::CmdAddHardware(Json::Value &root)
 	else if (htype == HTYPE_PiFace) {
 		//all fine here!
 	}
-	else if ((htype == HTYPE_Wunderground)||(htype == HTYPE_ForecastIO)||(htype == HTYPE_ICYTHERMOSTAT)) {
+	else if ((htype == HTYPE_Wunderground)||(htype == HTYPE_ForecastIO)||(htype == HTYPE_ICYTHERMOSTAT)||(htype == HTYPE_PVOUTPUT_INPUT)) {
 		if (
 			(username=="")||
 			(password=="")
@@ -520,7 +520,7 @@ void CWebServer::CmdUpdateHardware(Json::Value &root)
 	else if (htype == HTYPE_PiFace) {
 		//All fine here
 	}
-	else if ((htype == HTYPE_Wunderground)||(htype == HTYPE_ForecastIO)||(htype == HTYPE_ICYTHERMOSTAT)) {
+	else if ((htype == HTYPE_Wunderground)||(htype == HTYPE_ForecastIO)||(htype == HTYPE_ICYTHERMOSTAT)||(htype == HTYPE_PVOUTPUT_INPUT)) {
 		if (
 			(username=="")||
 			(password=="")

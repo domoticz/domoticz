@@ -122,6 +122,7 @@
     <ClInclude Include="hardware\OTGWSerial.h" />
     <ClInclude Include="hardware\OTGWTCP.h" />
     <ClInclude Include="hardware\PiFace.h" />
+    <ClInclude Include="hardware\PVOutput_Input.h" />
     <ClInclude Include="hardware\Razberry.h" />
     <ClInclude Include="hardware\Rego6XXSerial.h" />
     <ClInclude Include="hardware\S0MeterBase.h" />
@@ -214,6 +215,7 @@
     <ClCompile Include="hardware\OTGWSerial.cpp" />
     <ClCompile Include="hardware\OTGWTCP.cpp" />
     <ClCompile Include="hardware\PiFace.cpp" />
+    <ClCompile Include="hardware\PVOutput_Input.cpp" />
     <ClCompile Include="hardware\Razberry.cpp" />
     <ClCompile Include="hardware\S0MeterBase.cpp" />
     <ClCompile Include="hardware\S0MeterSerial.cpp" />
