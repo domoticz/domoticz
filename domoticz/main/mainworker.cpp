@@ -1441,7 +1441,10 @@ void MainWorker::DataPush(const unsigned long long DeviceRowIdx)
 	) {
 		std::vector<std::vector<std::string> > result;
 		char szTmp[300];
-		sprintf(szTmp, " SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty FROM FibaroLink as A, DeviceStatus as B WHERE (A.DeviceID == '%lu' AND A.Enabled = '1' AND A.DeviceID==B.ID)",DeviceRowIdx);
+		sprintf(szTmp, 
+			"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty FROM FibaroLink as A, DeviceStatus as B "
+			"WHERE (A.DeviceID == '%llu' AND A.Enabled = '1' AND A.DeviceID==B.ID)",
+			DeviceRowIdx);
 		result=m_sql.query(szTmp);
 		if (result.size()>0)
 		{
