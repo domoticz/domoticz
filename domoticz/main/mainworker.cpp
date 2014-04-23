@@ -1481,25 +1481,30 @@ void MainWorker::DataPush(const unsigned long long DeviceRowIdx)
 				if (sendValue !="") {
 					std::string sResult;
 					std::stringstream sPostData;
-					std:stringstream postUrl;
+					std::stringstream Url;
+					std::vector<std::string> ExtraHeaders;
 					
 					if (targetType==0) {
-						postUrl << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/globalVariables";
-						sPostData << "name=" << targetVariable << "&value=" << sendValue;
-				
+						Url << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/globalVariables";
+						sPostData << "{\"name\": \"" << targetVariable << "\", \"value\": \"" << sendValue << "\"}";
+						if (!HTTPClient::PUT(Url.str(),sPostData.str(),ExtraHeaders,sResult))
+						{
+							_log.Log(LOG_ERROR,"Error sending data to Fibaro!");
+						
+						}
+						//_log.Log(LOG_NORM,"response: %s",sResult.c_str());
+
 					}	
 					else if (targetType==1) {
-						postUrl << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/callAction";
-						sPostData << "deviceid=" << targetDeviceID << "&name=setProperty&arg1=" << targetProperty << "&arg2=" << sendValue;
+						Url << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/callAction?deviceid=" << targetDeviceID << "&name=setProperty&arg1=" << targetProperty << "&arg2=" << sendValue;
+						if (!HTTPClient::GET(Url.str(),sResult))
+						{
+							_log.Log(LOG_ERROR,"Error sending data to Fibaro!");
+						}
+						//_log.Log(LOG_NORM,"response: %s",sResult.c_str());
 					}
-					std::vector<std::string> ExtraHeaders;
-
-					//_log.Log(LOG_NORM,"posting: %s %s",postUrl.str().c_str(),sPostData.str().c_str());
 					
-					if (!HTTPClient::POST(postUrl.str(),sPostData.str(),ExtraHeaders,sResult))
-					{
-						_log.Log(LOG_ERROR,"Error sending data to Fibaro!");
-					}
+					
 					
 				}
 			}

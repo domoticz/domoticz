@@ -16,6 +16,10 @@ public:
 	static bool POST(const std::string url, const std::string postdata, const std::vector<std::string> ExtraHeaders, std::string &response);
 	static bool POSTBinary(const std::string url, const std::string postdata, const std::vector<std::string> ExtraHeaders, std::vector<unsigned char> &response);
 
+	//PUT functions, postdata looks like: "name=john&age=123&country=this"
+	static bool PUT(const std::string url, const std::string postdata, const std::vector<std::string> ExtraHeaders, std::string &response);
+	static bool PUTBinary(const std::string url, const std::string postdata, const std::vector<std::string> ExtraHeaders, std::vector<unsigned char> &response);
+
 	//Cleanup function, should be called before application closed
 	static void Cleanup();
 

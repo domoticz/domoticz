@@ -114,7 +114,10 @@ function TargetTypeUpdate()
 function SaveConfiguration()
 {
 	var remoteurl = $('#fibaroremote #tcpaddress').val();
-	var cleanurl = remoteurl.substr(remoteurl.indexOf('://')+3);
+	var cleanurl = remoteurl;
+	if (remoteurl.indexOf('://')>0) {
+		cleanurl = remoteurl.substr(remoteurl.indexOf('://')+3);
+	}
 	var username = $('#fibaroremote #username').val();
 	var password = $('#fibaroremote #password').val();
 	var linkactive = 0;	
