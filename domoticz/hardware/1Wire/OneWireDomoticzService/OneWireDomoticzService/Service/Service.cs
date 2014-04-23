@@ -17,7 +17,6 @@ namespace OneWireDomoticzService.Service
 {
    class Service : ServiceBase
    {
-      private const int OneWireServicePort = 1664;
       private Thread _thread;
       private Socket _serverSocket;
       private Socket _clientSocket;
@@ -54,6 +53,10 @@ namespace OneWireDomoticzService.Service
 
          _thread.Join();
 
+         // It seems that 1Wire Maxim API doesn't automatically free the port. So do it here.
+         if (_oneWireAdapter != null)
+            _oneWireAdapter.freePort();
+
          // Indicate a successful exit.
          ExitCode = 0;
 
@@ -65,16 +68,23 @@ namespace OneWireDomoticzService.Service
          // Version log
          Logger.Logger.Log("***** " + Program.Name + " " + Program.Version + " *****");
 
-         LogSupportedAdapters();
-
          // Start socket server
-         Logger.Logger.Log("StartServer");
          StartServer();
          if (_serverSocket == null)
+         {
+            Logger.Logger.Log("Error starting server (_serverSocket is null)");
             return;
-
+         }
+            
          try
          {
+            // List all supported adapter
+            GetSupportedAdapters();
+
+            // Try to connect to adapter
+            if (OneWireAdapter == null)
+               Logger.Logger.Log("OneWire will not be available");
+             
             while (true)
             {
                // Wait for a client...
@@ -123,12 +133,14 @@ namespace OneWireDomoticzService.Service
                      Logger.Logger.Log("Exception received : " + exception);
                   }
                }
-               Logger.Logger.Log("Client disconnected");
+               Logger.Logger.Log("Client disconnected (_clientSocket set to null)");
             }
          }
          catch (SocketException exception)
          {
-            if (exception.SocketErrorCode != SocketError.Interrupted)
+            if (exception.SocketErrorCode == SocketError.Interrupted)
+               Logger.Logger.Log("Client disconnected (exception SocketError.Interrupted)");
+            else
                Logger.Logger.Log("Exception received : " + exception);
          }
          catch (Exception exception)
@@ -145,14 +157,18 @@ namespace OneWireDomoticzService.Service
          Environment.Exit(1);
       }
 
-      private static void LogSupportedAdapters()
+      private static void GetSupportedAdapters()
       {
-         Logger.Logger.Log("Supported adapters are : ");
          var adapters = OneWireAccessProvider.enumerateAllAdapters();
+         if (!adapters.hasMoreElements())
+            throw new Exception("No adapter is supported. Maybe the 1-wire driver is not correctly installed (see http://www.maximintegrated.com/products/ibutton/software/tmex/download_drivers.cfm)");
+
+         var supportedAdapterString = "Supported adapters are : ";
          while (adapters.hasMoreElements())
          {
-            Logger.Logger.Log(adapters.nextElement().ToString());
+            supportedAdapterString += ((DSPortAdapter)adapters.nextElement()).getAdapterName() + " ";
          }
+         Logger.Logger.Log(supportedAdapterString);
       }
 
       private DSPortAdapter _oneWireAdapter;
@@ -180,18 +196,72 @@ namespace OneWireDomoticzService.Service
          }
       }
 
-      private static DSPortAdapter FindAdapter()
+      private static XmlDocument _configFile;
+      private static XmlDocument ConfigFile
       {
-         var configFile = new XmlDocument();
-         try
+         get
          {
+            if (_configFile != null)
+               return _configFile;
+
+            var configFileName = Program.Name + "Config.xml";
+
             var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             if (dir == null)
+               throw new Exception(configFileName + " not found (executable path not found)");
+
+            var configFilePath = Path.Combine(dir, configFileName);
+            if (!File.Exists(configFilePath))
+               throw new Exception(configFileName + " not found");
+
+            _configFile = new XmlDocument();
+            _configFile.Load(configFilePath);
+
+            return _configFile;
+         }
+      }
+
+      private static int _oneWireServicePort;
+      private const int OneWireServiceDefaultPort = 1664;
+      private static int OneWireServicePort
+      {
+         get
+         {
+            if (_oneWireServicePort != 0)
+               return _oneWireServicePort;
+
+            try
+            {
+               if (ConfigFile.DocumentElement == null)
+                  throw new Exception();
+               var domoticzNode = ConfigFile.DocumentElement.SelectSingleNode("domoticz");
+               if (domoticzNode == null)
+                  throw new Exception();
+               if (domoticzNode.Attributes == null)
+                  throw new Exception();
+               var portAttribute = domoticzNode.Attributes["TcpPort"];
+               if (portAttribute == null)
+                  throw new Exception();
+
+               _oneWireServicePort = int.Parse(portAttribute.Value);
+            }
+            catch (Exception exception)
+            {
+               // Configuration not found, or configured port not found, use default
+               Logger.Logger.Log("Configuration not found, or configured port not found ({0}), use default port {1}...", exception.Message, OneWireServiceDefaultPort);
+               _oneWireServicePort = OneWireServiceDefaultPort;
+            }
+            return _oneWireServicePort;
+         }
+      }
+
+      private static DSPortAdapter FindAdapter()
+      {
+         try
+         {
+            if (ConfigFile.DocumentElement == null)
                throw new Exception();
-            configFile.Load(Path.Combine(dir, "OneWireDomoticzServiceConfig.xml"));
-            if (configFile.DocumentElement == null)
-               throw new Exception();
-            var adapterNode = configFile.DocumentElement.SelectSingleNode("adapter");
+            var adapterNode = ConfigFile.DocumentElement.SelectSingleNode("adapter");
             if (adapterNode == null)
                throw new Exception();
             if (adapterNode.Attributes == null)
@@ -200,12 +270,13 @@ namespace OneWireDomoticzService.Service
             if (adapterNameAttribute == null)
                throw new Exception();
             var portAttribute = adapterNode.Attributes["port"];
-            return OneWireAccessProvider.getAdapter("{" + adapterNameAttribute.Value + "}", (portAttribute == null) ? null : portAttribute.Value);
+            
+            return OneWireAccessProvider.getAdapter(adapterNameAttribute.Value, (portAttribute == null) ? null : portAttribute.Value);
          }
          catch (Exception exception)
          {
-            // Configuration not found, or adapter configured not found, try to autodetect adapter
-            Logger.Logger.Log("Fail to find the OneWire adapter : {0}", exception.Message);
+            // Configuration not found, or configured adapter not found, try to autodetect adapter
+            Logger.Logger.Log("Configuration not found, or configured adapter not found ({0}), try to autodetect adapter...", exception.Message);
             return OneWireAccessProvider.getDefaultAdapter();
          }
       }
@@ -550,24 +621,68 @@ namespace OneWireDomoticzService.Service
 
       private void StartServer()
       {
-         // Establish the local endpoint for the socket.
-         // The DNS name of the computer
-         // running the listener is "host.contoso.com".
-         IPEndPoint localEndPoint = new IPEndPoint(IPAddress.IPv6Loopback, OneWireServicePort);
+         Logger.Logger.Log("Start server (local only, port {0})...", OneWireServicePort);
 
-         // Create a TCP/IP socket.
-         _serverSocket = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp);
+         if (Socket.OSSupportsIPv6)
+            _serverSocket = StartServerIPv6();
 
-         // Bind the socket to the local endpoint and listen for incoming connections.
+         if (_serverSocket == null)
+         {
+            Logger.Logger.Log("Unable to start IPv6 server, use IPv4");
+            _serverSocket = StartServerIPv4();
+            if (_serverSocket == null)
+            {
+               Logger.Logger.Log("Unable to start TCP server, {0} can not start", Program.Name);
+               throw new Exception("Unable to start TCP server, " + Program.Name + " can not start");
+            }
+         }
+      }
+
+      private static Socket StartServerIPv4()
+      {
+         Socket serversocket;
          try
          {
-            _serverSocket.Bind(localEndPoint);
-            _serverSocket.Listen(1);
+            serversocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+            var localEndPoint = new IPEndPoint(IPAddress.Loopback, OneWireServicePort);
+            serversocket.Bind(localEndPoint);
+            serversocket.Listen(1);
+
+            Logger.Logger.Log("IPv4 server started");
          }
          catch (Exception e)
          {
-            Logger.Logger.Log(e.ToString());
+            Logger.Logger.Log("Unable to start IPv4 server ({0})", e);
+            serversocket = null;
          }
+
+         return serversocket;
+      }
+
+      private static Socket StartServerIPv6()
+      {
+         Socket serversocket;
+         try
+         {
+            serversocket = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp);
+
+            // Need to set this option to accept both IPv4 and IPv6 clients
+            serversocket.SetSocketOption(SocketOptionLevel.IPv6, (SocketOptionName)27, 0);
+
+            var localEndPoint = new IPEndPoint(IPAddress.IPv6Any, OneWireServicePort);
+            serversocket.Bind(localEndPoint);
+            serversocket.Listen(1);
+
+            Logger.Logger.Log("IPv6 server started");
+         }
+         catch (Exception e)
+         {
+            Logger.Logger.Log("Unable to start IPv6 server ({0})", e);
+            serversocket = null;
+         }
+
+         return serversocket;
       }
 
       public static string TheServiceName

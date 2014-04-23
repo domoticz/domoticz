@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 
 namespace OneWireDomoticzService.Logger
 {
@@ -8,7 +9,11 @@ namespace OneWireDomoticzService.Logger
    {
       static Logger()
       {
-         Trace.Listeners.Add(new RollingTraceListener(Path.Combine(Directory.GetCurrentDirectory(),Program.Name+".log")));
+         var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+         if (dir == null)
+             dir = Directory.GetCurrentDirectory();
+
+         Trace.Listeners.Add(new RollingTraceListener(Path.Combine(dir,Program.Name+".log")));
          Trace.AutoFlush = true;
       }
 

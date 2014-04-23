@@ -1423,16 +1423,18 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 void MainWorker::DataPush(const unsigned long long DeviceRowIdx)
 {
 	int fActive;
+	m_sql.GetPreferencesVar("FibaroActive", fActive);
+
+	if (!fActive)
+		return;
 	std::string fibaroIP = "";
 	std::string fibaroUsername = "";
 	std::string fibaroPassword = "";
-	m_sql.GetPreferencesVar("FibaroActive", fActive);
 	m_sql.GetPreferencesVar("FibaroIP", fibaroIP);
 	m_sql.GetPreferencesVar("FibaroUsername", fibaroUsername);
 	m_sql.GetPreferencesVar("FibaroPassword", fibaroPassword);
 
 	if (
-		(fActive)&&
 		(fibaroIP!="")&&
 		(fibaroUsername!="")&&
 		(fibaroPassword!="")
@@ -1472,7 +1474,7 @@ void MainWorker::DataPush(const unsigned long long DeviceRowIdx)
 					std::vector<std::string> strarray;
 					if (sValue.find(";")!=std::string::npos) {
 						StringSplit(sValue, ";", strarray);
-						if (strarray.size()>=delpos)
+						if (int(strarray.size())>=delpos)
 						{
 							sendValue = strarray[delpos-1].c_str();
 						}
@@ -1503,9 +1505,6 @@ void MainWorker::DataPush(const unsigned long long DeviceRowIdx)
 						}
 						//_log.Log(LOG_NORM,"response: %s",sResult.c_str());
 					}
-					
-					
-					
 				}
 			}
 		}
@@ -3443,7 +3442,6 @@ unsigned long long MainWorker::decode_Lighting3(const CDomoticzHardwareBase *pHa
 	return DevRowIdx;
 }
 
-//not in dbase yet
 unsigned long long MainWorker::decode_Lighting4(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
@@ -4616,7 +4614,6 @@ unsigned long long MainWorker::decode_Camera1(const CDomoticzHardwareBase *pHard
 	return DevRowIdx;
 }
 
-//not in dbase yet
 unsigned long long MainWorker::decode_Remote(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
@@ -5847,7 +5844,6 @@ unsigned long long MainWorker::decode_Thermostat2(const CDomoticzHardwareBase *p
 	return DevRowIdx;
 }
 
-//not in dbase yet
 unsigned long long MainWorker::decode_Thermostat3(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
