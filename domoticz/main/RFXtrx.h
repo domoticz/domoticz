@@ -975,14 +975,14 @@ typedef union tRBUF {
 		BYTE	id3;
 
 #ifdef IS_BIG_ENDIAN
-		BYTE	unitcode : 4;
 		BYTE	id4 : 4;
+		BYTE	unitcode : 4;
 		BYTE	cmnd;
 		BYTE	rssi : 4;
 		BYTE	filler : 4;
 #else
-		BYTE	id4 : 4;
 		BYTE	unitcode : 4;
+		BYTE	id4 : 4;
 		BYTE	cmnd;
 		BYTE	filler : 4;
 		BYTE	rssi : 4;

@@ -565,6 +565,11 @@ bool MainWorker::Start()
 			AddHardwareFromParams(ID,Name,Enabled,Type,Address,Port,Username,Password,mode1,mode2,mode3,mode4,mode5);
 		}
 	}
+
+#ifdef PARSE_RFXCOM_DEVICE_LOG
+	if (m_bStartHardware==false)
+		m_bStartHardware=true;
+#endif
 	if (!StartThread())
 		return false;
 	GetSunSettings();
@@ -4244,7 +4249,10 @@ unsigned long long MainWorker::decode_BLINDS1(const CDomoticzHardwareBase *pHard
 
 	unsigned char devType=pTypeBlinds;
 	unsigned char subType=pResponse->BLINDS1.subtype;
-	sprintf(szTmp,"%02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2,pResponse->BLINDS1.id3);
+	if (subType==sTypeBlindsT7)
+		sprintf(szTmp,"%02X%02X%02X%02X", pResponse->BLINDS1.id4,pResponse->BLINDS1.id1, pResponse->BLINDS1.id2,pResponse->BLINDS1.id3);
+	else
+		sprintf(szTmp,"%02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2,pResponse->BLINDS1.id3);
 	std::string ID = szTmp;
 	unsigned char Unit=pResponse->BLINDS1.unitcode;
 	unsigned char cmnd=pResponse->BLINDS1.cmnd;
@@ -4295,7 +4303,13 @@ unsigned long long MainWorker::decode_BLINDS1(const CDomoticzHardwareBase *pHard
 		sprintf(szTmp,"id1-3         = %02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2, pResponse->BLINDS1.id3);
 		WriteMessage(szTmp);
 
-		if (pResponse->BLINDS1.unitcode == 15)
+		if (subType==sTypeBlindsT7)
+		{
+			sprintf(szTmp,"id4         = %02X", pResponse->BLINDS1.id4);
+			WriteMessage(szTmp);
+		}
+
+		if (pResponse->BLINDS1.unitcode == 0)
 			WriteMessage("Unit          = All");
 		else
 		{
@@ -8117,6 +8131,9 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.BLINDS1.id1=ID2;
 			lcmd.BLINDS1.id2=ID3;
 			lcmd.BLINDS1.id3=ID4;
+			lcmd.BLINDS1.id4=0;
+			if (dSubType==sTypeBlindsT7)
+				lcmd.BLINDS1.id4=ID1;
 			lcmd.BLINDS1.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
 			lcmd.BLINDS1.unitcode=Unit;
 			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.BLINDS1.cmnd))
