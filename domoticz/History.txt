@@ -2,6 +2,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: Fibaro Link data pusher
 - Implemented: Splash screen for iPhone5 retina
 - Implemented: Navigation toolbar for mobile devices
+- Fixed: Dashboard/mobile, double 'open' for contact switch types
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

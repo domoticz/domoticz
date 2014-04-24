@@ -137,7 +137,7 @@ function RefreshFavorites()
 										status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.i18n("Closed") +'</button>';
 									}
 									else {
-										status+='<button class="btn btn-mini btn-info" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.i18n("Open") +'</button>';
+										status='<button class="btn btn-mini btn-info" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.i18n("Open") +'</button>';
 									}
 								}
 								else if (item.SwitchType == "Blinds") {
@@ -1390,7 +1390,7 @@ function ShowFavorites()
 										status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.i18n("Closed") +'</button>';
 									}
 									else {
-										status+='<button class="btn btn-mini btn-info" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.i18n("Open") +'</button>';
+										status='<button class="btn btn-mini btn-info" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.i18n("Open") +'</button>';
 									}
 								}
 							else if (item.SwitchType == "Blinds") {
