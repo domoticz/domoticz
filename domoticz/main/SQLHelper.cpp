@@ -3703,7 +3703,19 @@ void CSQLHelper::UpdateMeter()
 					continue;
 				sValue=splitresults[0];
 			}
-			else if ((dType==pTypeENERGY)||(dType==pTypePOWER))
+			else if (dType==pTypeENERGY)
+			{
+				std::vector<std::string> splitresults;
+				StringSplit(sValue, ";", splitresults);
+				if (splitresults.size()<2)
+					continue;
+				susage=splitresults[0];
+				double fValue=atof(splitresults[1].c_str())*100;
+				sprintf(szTmp,"%.0f",fValue);
+				sValue=szTmp;
+				bSkipSameValue=false;
+			}
+			else if (dType==pTypePOWER)
 			{
 				std::vector<std::string> splitresults;
 				StringSplit(sValue, ";", splitresults);

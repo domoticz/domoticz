@@ -5,6 +5,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Fixed: Dashboard/mobile, double 'open' for contact switch types
 - Implemented: Delete short log value P1 SmartLog (Shift-Left click)
 - Implemented: Switch Scene/Group behaviour with learn codes enabled
+- Changed: Energy Device now logs updates same value in short log
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

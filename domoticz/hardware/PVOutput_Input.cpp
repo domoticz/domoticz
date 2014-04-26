@@ -52,7 +52,7 @@ bool CPVOutputInput::StopHardware()
     return true;
 }
 
-#define PVOUTPUT_POLL_INTERVAL 1
+#define PVOUTPUT_POLL_INTERVAL 5
 
 void CPVOutputInput::Do_Work()
 {
@@ -305,6 +305,14 @@ void CPVOutputInput::GetMeterDetails()
 
 	double Usage=atof(splitresult[3].c_str());
 
+	bool bHaveConsumption=false;
+	double Consumption=0;
+	if (splitresult[5]!="NaN")
+	{
+		Consumption=atof(splitresult[5].c_str());
+		bHaveConsumption=true;
+	}
+
 	if (splitresult[6]!="NaN")
 	{
 		double Efficiency=atof(splitresult[6].c_str());
@@ -337,50 +345,13 @@ void CPVOutputInput::GetMeterDetails()
 		return;
 	}
 
-	double kWhCounter=atof(splitresult[0].c_str());
-	SendMeter(0,1, Usage/1000.0, kWhCounter/1000.0, "SolarMain");
+	double kWhCounterUsage=atof(splitresult[0].c_str());
+	SendMeter(0,1, Usage/1000.0, kWhCounterUsage/1000.0, "SolarMain");
 
-/*
-
-	float voltage;
-	tmpString=results[16];
-	tmpString=stdreplace(tmpString,",",".");
-	voltage=(float)atof(tmpString.c_str());
-	SendVoltage(1,voltage,"Volt uac1");
-	tmpString=results[17];
-	tmpString=stdreplace(tmpString,",",".");
-	voltage=(float)atof(tmpString.c_str());
-	if (voltage!=0) {
-		SendVoltage(2,voltage,"Volt uac2");
-	}
-	tmpString=results[18];
-	tmpString=stdreplace(tmpString,",",".");
-	voltage=(float)atof(tmpString.c_str());
-	if (voltage!=0) {
-		SendVoltage(3,voltage,"Volt uac3");
-	}
-
-	float percentage;
-	tmpString=results[21];
-	tmpString=stdreplace(tmpString,",",".");
-	percentage=(float)atof(tmpString.c_str());
-	SendPercentage(1,percentage,"Efficiency");
-	tmpString=results[24];
-	tmpString=stdreplace(tmpString,",",".");
-	percentage=(float)atof(tmpString.c_str());
-	SendPercentage(2,percentage,"Hz");
-	tmpString=results[27];
-	tmpString=stdreplace(tmpString,",",".");
-	percentage=(float)atof(tmpString.c_str());
-	SendPercentage(3,percentage,"BT_Signal");
-
-	if (results.size()>=31)
+	if (bHaveConsumption)
 	{
-		tmpString=results[30];
-		tmpString=stdreplace(tmpString,",",".");
-		float temperature=(float)atof(tmpString.c_str());
-		SendTempSensor(1,temperature,"Temperature");
+		double kWhCounterConsumed=kWhCounterUsage-atof(splitresult[1].c_str());
+		SendMeter(0,2, Consumption/1000.0, kWhCounterConsumed/1000.0, "SolarConsumed");
 	}
-*/
 }
 
