@@ -12,7 +12,7 @@
 #include <deque>
 #include "WindCalculation.h"
 #include "../tcpserver/TCPServer.h"
-
+#include "DataPush.h"
 
 
 enum eVerboseLevel
@@ -81,6 +81,7 @@ public:
 	CSQLHelper m_sql;
 	CScheduler m_scheduler;
 	CEventSystem m_eventsystem;
+	CDataPush m_datapush;
 	CHardwareMonitor m_hardwaremonitor;
 	CCamScheduler m_cameras;
 	bool m_bIgnoreUsernamePassword;
@@ -134,7 +135,7 @@ private:
 	void SendCommand(const int HwdID, unsigned char Cmd, const char *szMessage=NULL);
 	void WriteToHardware(const int HwdID, const char *pdata, const unsigned char length);
 	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);
-	void DataPush(const unsigned long long DeviceRowIdx);
+	
 	void OnHardwareConnected(CDomoticzHardwareBase *pHardware);
 
 	void WriteMessageStart();

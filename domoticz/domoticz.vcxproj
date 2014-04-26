@@ -150,6 +150,7 @@
     <ClInclude Include="hardware\DomoticzHardware.h" />
     <ClInclude Include="hardware\DomoticzTCP.h" />
     <ClInclude Include="hardware\hardwaretypes.h" />
+    <ClInclude Include="main\DataPush.h" />
     <ClInclude Include="main\dirent_windows.h" />
     <ClInclude Include="main\EventSystem.h" />
     <ClInclude Include="main\GZipHelper.h" />
@@ -239,6 +240,7 @@
     <ClCompile Include="main\CmdLine.cpp" />
     <ClCompile Include="hardware\DomoticzHardware.cpp" />
     <ClCompile Include="hardware\DomoticzTCP.cpp" />
+    <ClCompile Include="main\DataPush.cpp" />
     <ClCompile Include="main\EventSystem.cpp" />
     <ClCompile Include="main\localtime_r.cpp" />
     <ClCompile Include="hardware\P1MeterBase.cpp" />

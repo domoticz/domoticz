@@ -230,9 +230,9 @@ function RefreshLinkTable()
      success: function(data) {   
       if (typeof data.result != 'undefined') {
         $.each(data.result, function(i,item){
-			var enabled = "No";
+			var enabled = $.i18n('No');
 			if (item.Enabled == 1)
-				enabled = "Yes";
+				enabled = $.i18n('Yes')
 			var TargetType = "Global variable";
 			if (item.TargetType==1) 
 				TargetType = "Virtual device";
@@ -242,6 +242,7 @@ function RefreshLinkTable()
 				"DT_RowId": item.idx,
                 "TargetType": item.TargetType,
 				"DeviceID": item.DeviceID,
+				"Enabled": item.Enabled,
 				"0": item.Name,
 				"1": item.Delimitedvalue,
 				"2": TargetType,
@@ -287,7 +288,7 @@ function ShowLinks()
 					$("#linkparamstable #targetvariable").val(data["3"]);
 					$("#linkparamstable #targetdeviceid").val(data["4"]);
 					$("#linkparamstable #targetproperty").val(data["5"]);
-					if (data["6"] == "Yes") {
+					if (data["Enabled"] == 1) {
 						$('#linkparamstable #linkenabled').prop('checked', true);
 					}
 					else {

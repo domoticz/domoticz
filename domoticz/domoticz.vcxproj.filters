@@ -424,6 +424,9 @@
     <ClInclude Include="hardware\SMASpot.h">
       <Filter>Devices\SMASpot</Filter>
     </ClInclude>
+    <ClInclude Include="main\DataPush.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -668,6 +671,9 @@
     </ClCompile>
     <ClCompile Include="hardware\PVOutput_Input.cpp">
       <Filter>Devices\PVOutput</Filter>
+    </ClCompile>
+    <ClCompile Include="main\DataPush.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
