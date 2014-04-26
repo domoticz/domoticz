@@ -311,6 +311,18 @@ function ShowUtilities()
       if (typeof data.result != 'undefined') {
 
 		$.FiveMinuteHistoryDays=data["5MinuteHistoryDays"];
+		if (typeof data.WindScale != 'undefined') {
+			$.myglobals.windscale=parseFloat(data.WindScale);
+		}
+		if (typeof data.WindSign != 'undefined') {
+			$.myglobals.windsign=data.WindSign;
+		}
+		if (typeof data.TempScale != 'undefined') {
+			$.myglobals.tempscale=parseFloat(data.TempScale);
+		}
+		if (typeof data.TempSign != 'undefined') {
+			$.myglobals.tempsign=data.TempSign;
+		}
 		bAllowWidgetReorder=data.AllowWidgetOrdering;
 
         $.each(data.result, function(i,item){

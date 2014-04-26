@@ -125,9 +125,6 @@ private:
 	boost::shared_ptr<boost::thread> m_thread;
 	boost::mutex m_mutex;
 
-	boost::mutex m_startscene_mutex;
-	std::vector<_tStartScene> m_scenes_to_start;
-
 	std::map<unsigned short,_tWindCalculationStruct> m_wind_calculator;
 
 	bool StartThread();

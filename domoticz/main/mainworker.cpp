@@ -879,24 +879,6 @@ void MainWorker::Do_Work()
 			m_bHaveDownloadedDomoticzUpdate=true;
 		}
 
-		boost::lock_guard<boost::mutex> l(m_startscene_mutex);
-		if (m_scenes_to_start.size()>0)
-		{
-			std::vector<_tStartScene>::iterator itt=m_scenes_to_start.begin();
-
-			//Only one scene each 500ms for now
-			SwitchScene(itt->SceneRowID,itt->switchcmd);
-			m_scenes_to_start.erase(itt);
-/*
-			while (itt!=m_scenes_to_start.end())
-			{
-				SwitchScene(itt->SceneRowID,itt->switchcmd);
-				++itt;
-			}
-			m_scenes_to_start.clear();
-*/
-		}
-
 		second_counter++;
 		if (second_counter<2)
 			continue;
@@ -8454,6 +8436,9 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 			}
 			else
 				GetLightStatus(dType,dSubType,rnValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+
+			_log.Log(LOG_NORM,"Activating Scene/Group: %s (%s)",Name.c_str(),intswitchcmd.c_str());
+
 			int ilevel=maxDimLevel-1;
 
 			if ((switchtype == STYPE_Dimmer)&&(maxDimLevel!=0))
@@ -8494,7 +8479,6 @@ void MainWorker::CheckSceneCode(const int HardwareID, const char* ID, const unsi
 	result = m_sql.query(szTmp);
 	if (result.size()>0)
 	{
-		boost::lock_guard<boost::mutex> l(m_startscene_mutex);
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt=result.begin(); itt!=result.end(); ++itt)
 		{
@@ -8522,27 +8506,7 @@ void MainWorker::CheckSceneCode(const int HardwareID, const char* ID, const unsi
 			GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
 			std::string switchcmd=(IsLightSwitchOn(lstatus)==true)?"On":"Off";
 
-			_tStartScene sscene;
-			sscene.SceneRowID=ID;
-			sscene.switchcmd=switchcmd;
-
-			//we have to start it outside this function/loop else we have a deadlock because of the mutex in ::DecodeRXMessage
-			bool bFound=false;
-			//Check if we not already have this scene in our list
-			std::vector<_tStartScene>::const_iterator iScene;
-			for (iScene=m_scenes_to_start.begin(); iScene!=m_scenes_to_start.end(); ++iScene)
-			{
-				if (
-					(iScene->SceneRowID==ID)&&
-					(iScene->switchcmd==switchcmd)
-					)
-				{
-					bFound=true;
-					break;
-				}
-			}
-			if (!bFound)
-				m_scenes_to_start.push_back(sscene);
+			m_sql.AddTaskItem(_tTaskItem::SwitchSceneEvent(1,ID,switchcmd,"SceneTrigger"));
 		}
 	}
 }
