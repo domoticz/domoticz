@@ -87,6 +87,8 @@ private:
 	void SaveFibaroLink(Json::Value &root);
 	void DeleteFibaroLink(Json::Value &root);
 	void GetDevicesForFibaroLink(Json::Value &root);
+	void GetDeviceValueOptions(Json::Value &root);
+	void GetDeviceValueOptionWording(Json::Value &root);
 
 #ifdef WITH_OPENZWAVE
 	//ZWave

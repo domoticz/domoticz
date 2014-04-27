@@ -554,6 +554,200 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 	return findTableID1ID2(Table, dType, sType);
 }
 
+const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned char sType)
+{
+	STR_TABLE_ID1_ID2	Table[] = 
+	{
+		{ pTypeTEMP, sTypeTEMP1, "Temperature" },
+		{ pTypeTEMP, sTypeTEMP2, "Temperature" },
+		{ pTypeTEMP, sTypeTEMP3, "Temperature" },
+		{ pTypeTEMP, sTypeTEMP4, "Temperature" },
+		{ pTypeTEMP, sTypeTEMP5, "Temperature,Humidity,Humidity Status" },
+		{ pTypeTEMP, sTypeTEMP6, "Temperature" },
+		{ pTypeTEMP, sTypeTEMP7, "Temperature" },
+		{ pTypeTEMP, sTypeTEMP8, "Temperature" },
+		{ pTypeTEMP, sTypeTEMP9, "Temperature" },
+		{ pTypeTEMP, sTypeTEMP10, "Temperature" },
+		{ pTypeTEMP, sTypeTEMP_SYSTEM, "Temperature" },
+		
+		{ pTypeHUM, sTypeHUM1, "Temperature,Humidity,Humidity Status" },
+		{ pTypeHUM, sTypeHUM2, "Humidity" },
+
+		{ pTypeTEMP_HUM, sTypeTH1, "Temperature,Humidity,Humidity Status" },
+		{ pTypeTEMP_HUM, sTypeTH2, "Temperature,Humidity,Humidity Status" },
+		{ pTypeTEMP_HUM, sTypeTH3, "Temperature,Humidity,Humidity Status" },
+		{ pTypeTEMP_HUM, sTypeTH4, "Temperature,Humidity,Humidity Status" },
+		{ pTypeTEMP_HUM, sTypeTH5, "Temperature,Humidity,Humidity Status" },
+		{ pTypeTEMP_HUM, sTypeTH6, "Temperature,Humidity,Humidity Status" },
+		{ pTypeTEMP_HUM, sTypeTH7, "Temperature,Humidity,Humidity Status" },
+		{ pTypeTEMP_HUM, sTypeTH8, "Temperature,Humidity,Humidity Status" },
+		{ pTypeTEMP_HUM, sTypeTH9, "Temperature,Humidity,Humidity Status" },
+		{ pTypeTEMP_HUM, sTypeTH10, "Temperature,Humidity,Humidity Status" },
+		{ pTypeTEMP_HUM, sTypeTH11, "Temperature,Humidity,Humidity Status" },
+		{ pTypeTEMP_HUM, sTypeTH_LC_TC, "Temperature,Humidity,Humidity Status" },
+		
+
+		{ pTypeTEMP_HUM_BARO, sTypeTHB1, "Temperature,Humidity,Humidity Status,Barometer,Forecast" },
+		{ pTypeTEMP_HUM_BARO, sTypeTHB2, "Temperature,Humidity,Humidity Status,Barometer,Forecast" },
+		{ pTypeTEMP_HUM_BARO, sTypeTHBFloat, "Temperature,Humidity,Humidity Status,Barometer,Forecast" },
+
+		{ pTypeRAIN, sTypeRAIN1, "Rain rate,Total rain" },
+		{ pTypeRAIN, sTypeRAIN2, "Rain rate,Total rain" },
+		{ pTypeRAIN, sTypeRAIN3, "Rain rate,Total rain" },
+		{ pTypeRAIN, sTypeRAIN4, "Rain rate,Total rain" },
+		{ pTypeRAIN, sTypeRAIN5, "Rain rate,Total rain" },
+		{ pTypeRAIN, sTypeRAIN6, "Rain rate,Total rain" },
+		{ pTypeRAIN, sTypeRAINWU, "Rain rate,Total rain" },
+
+		{ pTypeWIND, sTypeWIND1, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
+		{ pTypeWIND, sTypeWIND2, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
+		{ pTypeWIND, sTypeWIND3, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
+		{ pTypeWIND, sTypeWIND4, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
+		{ pTypeWIND, sTypeWIND5, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
+		{ pTypeWIND, sTypeWIND6, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
+		{ pTypeWIND, sTypeWINDNoTemp, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
+
+		{ pTypeUV, sTypeUV1, "UV,Temperature" },
+		{ pTypeUV, sTypeUV2, "UV,Temperature" },
+		{ pTypeUV, sTypeUV3, "UV,Temperature" },
+
+		{ pTypeLighting1, sTypeX10, "Status" },
+		{ pTypeLighting1, sTypeARC, "Status" },
+		{ pTypeLighting1, sTypeAB400D, "Status" },
+		{ pTypeLighting1, sTypeWaveman, "Status" },
+		{ pTypeLighting1, sTypeEMW200, "Status" },
+		{ pTypeLighting1, sTypeIMPULS, "Status" },
+		{ pTypeLighting1, sTypeRisingSun, "Status" },
+		{ pTypeLighting1, sTypePhilips, "Status" },
+		{ pTypeLighting1, sTypeEnergenie, "Status" },
+		{ pTypeLighting1, sTypeEnergenie5, "Status" },
+		{ pTypeLighting1, sTypeGDR2, "Status" },
+		
+
+		{ pTypeLighting2, sTypeAC, "Status" },
+		{ pTypeLighting2, sTypeHEU, "Status" },
+		{ pTypeLighting2, sTypeANSLUT, "Status" },
+
+		{ pTypeLighting3, sTypeKoppla, "Status" },
+
+		{ pTypeLighting4, sTypePT2262, "Status" },
+
+		{ pTypeLighting5, sTypeLightwaveRF, "Status" },
+		{ pTypeLighting5, sTypeEMW100, "Status" },
+		{ pTypeLighting5, sTypeBBSB, "Status" },
+		{ pTypeLighting5, sTypeMDREMOTE, "Status" },
+		{ pTypeLighting5, sTypeRSL, "Status" },
+		{ pTypeLighting5, sTypeLivolo, "Status" },
+		{ pTypeLighting5, sTypeTRC02, "Status" },
+		
+
+		{ pTypeLighting6, sTypeBlyss, "Status" },
+
+		{ pTypeCurtain, sTypeHarrison, "Status" },
+
+		{ pTypeBlinds, sTypeBlindsT0, "Status" },
+		{ pTypeBlinds, sTypeBlindsT1, "Status" },
+		{ pTypeBlinds, sTypeBlindsT2, "Status" },
+		{ pTypeBlinds, sTypeBlindsT3, "Status" },
+		{ pTypeBlinds, sTypeBlindsT4, "Status" },
+		{ pTypeBlinds, sTypeBlindsT5, "Status" },
+		{ pTypeBlinds, sTypeBlindsT6, "Status" },
+		{ pTypeBlinds, sTypeBlindsT7, "Status" },
+
+		{ pTypeSecurity1, sTypeSecX10, "Status" },
+		{ pTypeSecurity1, sTypeSecX10M, "Status" },
+		{ pTypeSecurity1, sTypeSecX10R, "Status" },
+		{ pTypeSecurity1, sTypeKD101, "Status" },
+		{ pTypeSecurity1, sTypePowercodeSensor, "Status" },
+		{ pTypeSecurity1, sTypePowercodeMotion, "Status" },
+		{ pTypeSecurity1, sTypeCodesecure, "Status" },
+		{ pTypeSecurity1, sTypePowercodeAux, "Status" },
+		{ pTypeSecurity1, sTypeMeiantech, "Status" },
+		{ pTypeSecurity1, sTypeSA30, "Status" },
+		{ pTypeSecurity1, sTypeDomoticzSecurity, "Status" },
+		
+		{ pTypeCamera, sTypeNinja, "Not implemented" },
+
+		{ pTypeRemote, sTypeATI, "Status" },
+		{ pTypeRemote, sTypeATIplus, "Status" },
+		{ pTypeRemote, sTypeMedion, "Status" },
+		{ pTypeRemote, sTypePCremote, "Status" },
+		{ pTypeRemote, sTypeATIrw2, "Status" },
+		
+		{ pTypeThermostat1, sTypeDigimax, "Temperature,Set point,Mode,Status" },
+		{ pTypeThermostat1, sTypeDigimaxShort, "Temperature,Set point,Mode,Status" },
+
+		{ pTypeThermostat2, sTypeHE105, "Not implemented" },
+		{ pTypeThermostat2, sTypeRTS10, "Not implemented" },
+
+		{ pTypeThermostat3, sTypeMertikG6RH4T1, "Status" },
+		{ pTypeThermostat3, sTypeMertikG6RH4TB, "Status" },
+
+		{ pTypeDT, sTypeDT1, "?????" },
+
+		{ pTypeCURRENT, sTypeELEC1, "Current 1,Current 2,Current 3" },
+		
+		{ pTypeENERGY, sTypeELEC2, "Instant,Usage" },
+		{ pTypeENERGY, sTypeELEC3, "Instant,Usage" },
+		{ pTypeENERGY, sTypeZWaveUsage, "Instant,Usage" },
+
+		{ pTypeCURRENTENERGY, sTypeELEC4, "Current 1,Current 2,Current 3,Usage" },
+		
+		{ pTypeWEIGHT, sTypeWEIGHT1, "Weight" },
+		{ pTypeWEIGHT, sTypeWEIGHT2, "Weight" },
+		
+		{ pTypeRFXSensor, sTypeRFXSensorTemp, "Temperature" },
+		{ pTypeRFXSensor, sTypeRFXSensorAD, "Voltage" },
+		{ pTypeRFXSensor, sTypeRFXSensorVolt, "Voltage" },
+
+		{ pTypeRFXMeter, sTypeRFXMeterCount, "Counter" },
+		
+		{ pTypeP1Power, sTypeP1Power, "Usage 1,Usage 2,Delivery 1,Delivery 2,Usage current,Delivery current" },
+		{ pTypeP1Gas, sTypeP1Gas, "Gas usage" },
+
+		{ pTypeYouLess, sTypeYouLess, "Usage,Usage current" },
+
+		{ pTypeRego6XXTemp, sTypeRego6XXTemp, "Temperature" },
+		{ pTypeRego6XXValue, sTypeRego6XXStatus, "Value" },
+		{ pTypeRego6XXValue, sTypeRego6XXCounter, "Counter" },
+
+		{ pTypeAirQuality, sTypeVoltcraft, "Status" },
+
+		{ pTypeUsage, sTypeElectric, "Usage" },
+
+		{ pTypeTEMP_BARO, sTypeBMP085, "Temperature,Barometer,Forecast,Altitude" },
+		
+		{ pTypeLux, sTypeLux, "Lux" },
+
+		{ pTypeGeneral, sTypeVisibility, "Visibility" },
+		{ pTypeGeneral, sTypeSolarRadiation, "Solar Radiation" },
+		{ pTypeGeneral, sTypeSoilMoisture, "Soil Moisture" },
+		{ pTypeGeneral, sTypeLeafWetness, "Leaf Wetness" },
+		{ pTypeGeneral, sTypeSystemTemp, "Temperature" },
+		{ pTypeGeneral, sTypePercentage, "Percentage" },
+		{ pTypeGeneral, sTypeSystemFan, "Fanspeed" },
+		{ pTypeGeneral, sTypeVoltage, "Voltage" },
+		{ pTypeGeneral, sTypePressure, "Pressure" },
+		
+		{ pTypeThermostat, sTypeThermSetpoint, "Temperature" },
+		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
+
+		{ pTypeChime, sTypeByronSX, "Status" },
+		{ pTypeTEMP_RAIN, sTypeTR1, "Temperature,Total rain" },
+
+		{ pTypeBBQ, sTypeBBQ1, "Temperature 1,Temperature 2" },
+
+		{ pTypePOWER, sTypeELEC5, "Instant,Usage" },
+		
+		{ pTypeLimitlessLights, sTypeLimitlessRGBW, "Status" },
+		{ pTypeLimitlessLights, sTypeLimitlessRGB, "Status" },
+		{ pTypeLimitlessLights, sTypeLimitlessWhite, "Status" },
+	
+		{  0,0,NULL }
+	};
+	return findTableID1ID2(Table, dType, sType);
+}
+
 void GetLightStatus(
 		const unsigned char dType, 
 		const unsigned char dSubType, 

@@ -21,14 +21,15 @@
 
 		<tr>
 			<td align="right" style="width:110px"><label for="devicename"><span data-i18n="Device name"></span>:</label></td>
-			<td><select id="devicename" style="width:280px" class="combobox ui-corner-all">
+			<td><select id="devicename" style="width:280px" class="combobox ui-corner-all" onchange="ValueSelectorUpdate();">
 				<!--#embed devicesfordatapush -->
 			</select>
 			</td>
 		</tr>
 		<tr>
 			<td align="right" style="width:110px"><label for="name"><span data-i18n="Value to send"></span>:</label></td>
-			<td><input type="text" id="valuetosend" value="0" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (<span data-i18n="0 = nvalue, 1 = svalue field 1, 2 = svalue field 2, etc."></span>)</td>
+			<!--<td><input type="text" id="valuetosend" value="0" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (<span data-i18n="0 = nvalue, 1 = svalue field 1, 2 = svalue field 2, etc."></span>)</td>-->
+			<td><select id="combosendvalue" style="width:160px" class="combobox ui-corner-all">
 		</tr>
 		<tr>
 			<td align="right" style="width:110px"><label for="combotargettype"><span data-i18n="Target type"></span>:</label></td>
@@ -162,9 +163,10 @@ function AddLink(type)
 	var idx = $.linkIdx;
 	if (type == "a") {idx="0"};
 	var deviceid = $("#linkparamstable #devicename option:selected").val();
-	var valuetosend= $('#linkparamstable #valuetosend').val();
+	var valuetosend = $('#linkparamstable #combosendvalue option:selected').val();
 	var targettype = $("#linkparamstable #combotargettype option:selected").val();
 	var targetvariable = $('#linkparamstable #targetvariable').val();
+	alert(valuetosend);
 	var targetdeviceid = $('#linkparamstable #targetdeviceid').val();
 	var targetproperty = $('#linkparamstable #targetproperty').val();
 	var linkactive = 0;	
@@ -213,6 +215,28 @@ function GetConfig()
 }
 	
 
+function ValueSelectorUpdate()
+{
+	var deviceid = $("#linkparamstable #devicename option:selected").val();	
+	var select = document.getElementById("combosendvalue");
+	select.options.length = 0;
+	$.ajax({
+     url: "json.htm?type=command&param=getdevicevalueoptions&idx="+deviceid,
+     async: false, 
+     dataType: 'json',
+     success: function(data) {   
+      if (typeof data.result != 'undefined') {
+        $.each(data.result, function(i,item){
+			var option = document.createElement("option");
+			option.text = $.i18n(item.Wording);
+			option.value = item.Value;
+			select.appendChild(option);
+        });
+	  }
+     }
+  });
+}
+	
 function RefreshLinkTable()
 {
   $('#modal').show();
@@ -222,7 +246,6 @@ function RefreshLinkTable()
 
   var oTable = $('#linktable').dataTable();
   oTable.fnClearTable();
-  
   $.ajax({
      url: "json.htm?type=command&param=getfibarolinks",
      async: false, 
@@ -232,19 +255,27 @@ function RefreshLinkTable()
         $.each(data.result, function(i,item){
 			var enabled = $.i18n('No');
 			if (item.Enabled == 1)
-				enabled = $.i18n('Yes')
+				enabled = $.i18n('Yes');
 			var TargetType = "Global variable";
 			if (item.TargetType==1) 
 				TargetType = "Virtual device";
 			if (item.TargetDevice == 0)
 				item.TargetDevice="";
+			var DelimitedValue = "";
+			if (item.Delimitedvalue == 0) {
+				DelimitedValue = $.i18n('Status');
+			}
+			else {
+				DelimitedValue = $.i18n(GetDeviceValueOptionWording(item.DeviceID,item.Delimitedvalue));
+			}
 			var addId = oTable.fnAddData( {
 				"DT_RowId": item.idx,
                 "TargetType": item.TargetType,
 				"DeviceID": item.DeviceID,
 				"Enabled": item.Enabled,
+				"Delimitedvalue": item.Delimitedvalue,
 				"0": item.Name,
-				"1": item.Delimitedvalue,
+				"1": DelimitedValue,
 				"2": TargetType,
 				"3": item.TargetVariable,
 				"4": item.TargetDevice,
@@ -256,6 +287,22 @@ function RefreshLinkTable()
      }
   });
   $('#modal').hide();
+}
+
+function GetDeviceValueOptionWording(idx,pos)
+{
+	var wording = "";
+	$.ajax({
+     url: "json.htm?type=command&param=getdevicevalueoptionwording&idx="+idx+"&pos="+pos,
+     async: false, 
+     dataType: 'json',
+     success: function(data) {   
+      if (typeof data.wording != 'undefined') {
+			wording = data.wording;
+      }
+	  }
+   });
+   return wording;
 }
 
 function ShowLinks()

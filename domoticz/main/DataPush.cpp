@@ -3,8 +3,26 @@
 #include "Helper.h"
 #include "../httpclient/HTTPClient.h"
 #include "Logger.h"
+#include "../hardware/hardwaretypes.h"
+#include "RFXtrx.h"
 #include "mainworker.h"
 
+
+typedef struct _STR_TABLE_ID1_ID2 {
+	unsigned long    id1;
+	unsigned long    id2;
+	const char   *str1;
+} STR_TABLE_ID1_ID2;
+
+const char *findVarTableID1ID2 (_STR_TABLE_ID1_ID2 *t, unsigned long id1, unsigned long id2)
+{
+	while (t->str1) {
+		if ( (t->id1 == id1) && (t->id2 == id2) )
+			return t->str1;
+		t++;
+	}
+	return "Not supported";
+}
 
 void CDataPush::SetMainWorker(MainWorker *pMainWorker)
 {
@@ -108,4 +126,54 @@ void CDataPush::DoFibaroPush()
 			}
 		}
 	}
+}
+
+std::vector<std::string> CDataPush::DropdownOptions(const unsigned long long DeviceRowIdxIn)
+{
+	std::vector<std::string> dropdownOptions;
+
+	std::vector<std::vector<std::string> > result;
+	char szTmp[300];
+	sprintf(szTmp, "SELECT Type, SubType FROM DeviceStatus WHERE (ID== %d)", DeviceRowIdxIn);
+	result=m_pMain->m_sql.query(szTmp);
+	if (result.size()>0)
+	{
+		int dType=atoi(result[0][0].c_str());
+		int dSubType=atoi(result[0][1].c_str());
+
+		std::string sOptions = RFX_Type_SubType_Values(dType,dSubType);
+		std::vector<std::string> tmpV; 
+		StringSplit(sOptions, ",", tmpV); 
+		for (int i = 0; i < tmpV.size(); ++i) { 
+			dropdownOptions.push_back(tmpV[i]); 
+		}
+	}
+   	else 
+	{
+		dropdownOptions.push_back("Not implemented");
+	}
+	return dropdownOptions;
+}
+
+std::string CDataPush::DropdownOptionsValue(const unsigned long long DeviceRowIdxIn,int pos)
+{	
+	std::string wording = "???";
+	int getpos = pos-1; // 0 pos is always nvalue/status, 1 and higher goes to svalues
+	std::vector<std::vector<std::string> > result;
+	char szTmp[300];
+	sprintf(szTmp, "SELECT Type, SubType FROM DeviceStatus WHERE (ID== %d)", DeviceRowIdxIn);
+	result=m_pMain->m_sql.query(szTmp);
+	if (result.size()>0)
+	{
+		int dType=atoi(result[0][0].c_str());
+		int dSubType=atoi(result[0][1].c_str());
+
+		std::string sOptions = RFX_Type_SubType_Values(dType,dSubType);
+		std::vector<std::string> tmpV; 
+		StringSplit(sOptions, ",", tmpV); 
+		if (tmpV.size()>=pos) {
+			wording = tmpV[getpos];
+		}
+	}
+	return wording;
 }

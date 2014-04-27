@@ -281,6 +281,8 @@ bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress
 	RegisterCommandCode("getfibarolinks",boost::bind(&CWebServer::GetFibaroLinks,this, _1));
 	RegisterCommandCode("savefibarolink",boost::bind(&CWebServer::SaveFibaroLink,this, _1));
 	RegisterCommandCode("deletefibarolink",boost::bind(&CWebServer::DeleteFibaroLink,this, _1));
+	RegisterCommandCode("getdevicevalueoptions",boost::bind(&CWebServer::GetDeviceValueOptions,this, _1));
+	RegisterCommandCode("getdevicevalueoptionwording",boost::bind(&CWebServer::GetDeviceValueOptionWording,this, _1));
 
 #ifdef WITH_OPENZWAVE
 	//ZWave
@@ -828,6 +830,46 @@ void CWebServer::DeleteFibaroLink(Json::Value &root)
 
 	root["status"]="OK";
 	root["title"]="DeleteFibaroLink";
+}
+
+void CWebServer::GetDeviceValueOptions(Json::Value &root)
+{
+	std::string idx=m_pWebEm->FindValue("idx");
+	if (idx=="")
+		return;
+	std::vector<std::string> result;
+	result=m_pMain->m_datapush.DropdownOptions(atoi(idx.c_str()));
+	if ((result.size()==1)&&result[0]=="Status") {
+		root["result"][0]["Value"]=0;
+		root["result"][0]["Wording"]=result[0];
+	}
+	else {
+		std::vector<std::string>::const_iterator itt;
+		int ii=0;
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::string ddOption = *itt;
+			root["result"][ii]["Value"]=ii+1;
+			root["result"][ii]["Wording"]=ddOption.c_str();
+			ii++;
+		}
+		
+	}
+	root["status"]="OK";
+	root["title"]="GetDeviceValueOptions";
+}
+
+void CWebServer::GetDeviceValueOptionWording(Json::Value &root)
+{
+	std::string idx=m_pWebEm->FindValue("idx");
+	std::string pos=m_pWebEm->FindValue("pos");
+	if ((idx=="")||(pos==""))
+		return;
+	std::string wording;
+	wording=m_pMain->m_datapush.DropdownOptionsValue(atoi(idx.c_str()),atoi(pos.c_str()));
+	root["wording"]=wording;
+	root["status"]="OK";
+	root["title"]="GetDeviceValueOptions";
 }
 
 void CWebServer::DeleteHardware(Json::Value &root)
@@ -4886,7 +4928,7 @@ char * CWebServer::DisplayDataPushDevicesCombo()
 	
 	if (result.size()>0)
 	{
-		m_retstr="";
+		m_retstr="<option value=\"\"></option>\n";
 		char szTmp[200];
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		int ii=0;
