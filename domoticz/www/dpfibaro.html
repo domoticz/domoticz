@@ -166,7 +166,6 @@ function AddLink(type)
 	var valuetosend = $('#linkparamstable #combosendvalue option:selected').val();
 	var targettype = $("#linkparamstable #combotargettype option:selected").val();
 	var targetvariable = $('#linkparamstable #targetvariable').val();
-	alert(valuetosend);
 	var targetdeviceid = $('#linkparamstable #targetdeviceid').val();
 	var targetproperty = $('#linkparamstable #targetproperty').val();
 	var linkactive = 0;	
@@ -325,11 +324,12 @@ function ShowLinks()
 				if ( anSelected.length !== 0 ) {
 					var data = oTable.fnGetData( anSelected[0] );
 					var idx= data["DT_RowId"];
-					$.linkIdx=idx;
+					$.linkIdx=idx;	
 					$("#linkparamstable #linkupdate").attr("href", "javascript:AddLink('u')");
 					$("#linkparamstable #linkdelete").attr("href", "javascript:DeleteLink(" + idx + ")");
 					$("#linkparamstable #devicename").val(data["DeviceID"]); 
-					$("#linkparamstable #valuetosend").val(data["1"]);
+					ValueSelectorUpdate();
+					$("#linkparamstable #combosendvalue").val(data["Delimitedvalue"]);
 					$("#linkparamstable #combotargettype").val(data["TargetType"]);
 					TargetTypeUpdate();
 					$("#linkparamstable #targetvariable").val(data["3"]);
