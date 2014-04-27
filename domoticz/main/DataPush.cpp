@@ -134,7 +134,7 @@ std::vector<std::string> CDataPush::DropdownOptions(const unsigned long long Dev
 
 	std::vector<std::vector<std::string> > result;
 	char szTmp[300];
-	sprintf(szTmp, "SELECT Type, SubType FROM DeviceStatus WHERE (ID== %d)", DeviceRowIdxIn);
+	sprintf(szTmp, "SELECT Type, SubType FROM DeviceStatus WHERE (ID== %llu)", DeviceRowIdxIn);
 	result=m_pMain->m_sql.query(szTmp);
 	if (result.size()>0)
 	{
@@ -161,7 +161,7 @@ std::string CDataPush::DropdownOptionsValue(const unsigned long long DeviceRowId
 	int getpos = pos-1; // 0 pos is always nvalue/status, 1 and higher goes to svalues
 	std::vector<std::vector<std::string> > result;
 	char szTmp[300];
-	sprintf(szTmp, "SELECT Type, SubType FROM DeviceStatus WHERE (ID== %d)", DeviceRowIdxIn);
+	sprintf(szTmp, "SELECT Type, SubType FROM DeviceStatus WHERE (ID== %llu)", DeviceRowIdxIn);
 	result=m_pMain->m_sql.query(szTmp);
 	if (result.size()>0)
 	{

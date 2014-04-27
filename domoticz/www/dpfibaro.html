@@ -173,9 +173,16 @@ function AddLink(type)
 	{
 		linkactive = 1;
 	}
+	var url = "";
+	if (targettype == 0) {
+		url = "json.htm?type=command&param=savefibarolink" + "&idx=" + idx + "&deviceid=" + deviceid + "&valuetosend=" + valuetosend + "&targettype=" + targettype + "&targetvariable=" + targetvariable + "&linkactive=" + linkactive;
+	}
+	else {
+		url = "json.htm?type=command&param=savefibarolink" + "&idx=" + idx + "&deviceid=" + deviceid + "&valuetosend=" + valuetosend + "&targettype=" + targettype + "&targetdeviceid=" + targetdeviceid + "&targetproperty=" + targetproperty + "&linkactive=" + linkactive;	
+	}
+
 	$.ajax({
-		 url: "json.htm?type=command&param=savefibarolink" +
-			"&idx=" + idx + "&deviceid=" + deviceid + "&valuetosend=" + valuetosend + "&targettype=" + targettype + "&targetvariable=" + targetvariable + "&targetdeviceid=" + targetdeviceid + "&targetproperty=" + targetproperty + "&linkactive=" + linkactive,
+		 url: url, 
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {
