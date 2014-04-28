@@ -166,7 +166,8 @@ hardware/DavisLoggerSerial.cpp
 hardware/DomoticzHardware.cpp
 hardware/DomoticzTCP.cpp
 hardware/Dummy.cpp
-hardware/EnOcean.cpp
+hardware/EnOceanESP2.cpp
+hardware/EnOceanESP3.cpp
 hardware/ForecastIO.cpp
 hardware/HardwareMonitor.cpp
 hardware/ICYThermostat.cpp

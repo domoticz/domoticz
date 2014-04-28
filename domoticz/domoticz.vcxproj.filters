@@ -382,9 +382,6 @@
     <ClInclude Include="hardware\1Wire\1WireByOWFS.h">
       <Filter>Devices\1-Wire</Filter>
     </ClInclude>
-    <ClInclude Include="hardware\EnOcean.h">
-      <Filter>Devices\EnOcean</Filter>
-    </ClInclude>
     <ClInclude Include="main\Version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -426,6 +423,12 @@
     </ClInclude>
     <ClInclude Include="main\DataPush.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\EnOceanESP2.h">
+      <Filter>Devices\EnOcean</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\EnOceanESP3.h">
+      <Filter>Devices\EnOcean</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -636,9 +639,6 @@
     <ClCompile Include="hardware\1Wire\1WireByOWFS.cpp">
       <Filter>Devices\1-Wire</Filter>
     </ClCompile>
-    <ClCompile Include="hardware\EnOcean.cpp">
-      <Filter>Devices\EnOcean</Filter>
-    </ClCompile>
     <ClCompile Include="hardware\ForecastIO.cpp">
       <Filter>Devices\Forecast.io</Filter>
     </ClCompile>
@@ -674,6 +674,12 @@
     </ClCompile>
     <ClCompile Include="main\DataPush.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\EnOceanESP2.cpp">
+      <Filter>Devices\EnOcean</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\EnOceanESP3.cpp">
+      <Filter>Devices\EnOcean</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

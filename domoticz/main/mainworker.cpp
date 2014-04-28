@@ -38,7 +38,8 @@
 //#include "../hardware/S0MeterTCP.h"
 #include "../hardware/Teleinfo.h"
 #include "../hardware/Limitless.h"
-#include "../hardware/EnOcean.h"
+#include "../hardware/EnOceanESP2.h"
+#include "../hardware/EnOceanESP3.h"
 #include "../hardware/SolarEdgeTCP.h"
 #include "../hardware/SMASpot.h"
 #include "../hardware/ICYThermostat.h"
@@ -360,7 +361,8 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_OpenThermGateway:
 	case HTYPE_TeleinfoMeter:
 	case HTYPE_OpenZWave:
-	case HTYPE_EnOcean:
+	case HTYPE_EnOceanESP2:
+	case HTYPE_EnOceanESP3:
 		{
 			//USB/Serial
 #if defined WIN32
@@ -425,9 +427,13 @@ bool MainWorker::AddHardwareFromParams(
 				pHardware = new COpenZWave(ID, szSerialPort);
 #endif
 			}
-			else if (Type==HTYPE_EnOcean)
+			else if (Type==HTYPE_EnOceanESP2)
 			{
-				pHardware = new CEnOcean(ID,szSerialPort, Mode1);
+				pHardware = new CEnOceanESP2(ID,szSerialPort, Mode1);
+			}
+			else if (Type==HTYPE_EnOceanESP3)
+			{
+				pHardware = new CEnOceanESP3(ID,szSerialPort, Mode1);
 			}
 		}
 		break;
@@ -2104,7 +2110,7 @@ unsigned long long MainWorker::decode_Temp(const CDomoticzHardwareBase *pHardwar
 		{
 			BatteryLevel=pResponse->TEMP.battery_level*10;
 		}
-		else if (pHardware->HwdType == HTYPE_EnOcean)
+		else if ((pHardware->HwdType == HTYPE_EnOceanESP2)||(pHardware->HwdType == HTYPE_EnOceanESP3))
 		{
 			BatteryLevel=255;
 			SignalLevel=12;
@@ -6334,7 +6340,7 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 
 	if (pHardware!=NULL)
 	{
-		if (pHardware->HwdType == HTYPE_EnOcean)
+		if ((pHardware->HwdType == HTYPE_EnOceanESP2)||(pHardware->HwdType == HTYPE_EnOceanESP3))
 		{
 			BatteryLevel=255;
 			SignalLevel=12;
@@ -7718,9 +7724,14 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.LIGHTING2.filler=0;
 			lcmd.LIGHTING2.rssi=7;
 			//Special Teach-In for EnOcean Dimmers
-			if ((pHardware->HwdType == HTYPE_EnOcean)&&(IsTesting)&&(switchtype==STYPE_Dimmer))
+			if ((pHardware->HwdType == HTYPE_EnOceanESP2)&&(IsTesting)&&(switchtype==STYPE_Dimmer))
 			{
-				CEnOcean *pEnocean=(CEnOcean*)pHardware;
+				CEnOceanESP2 *pEnocean=(CEnOceanESP2*)pHardware;
+				pEnocean->SendDimmerTeachIn((const char*)&lcmd,sizeof(lcmd.LIGHTING1));
+			}
+			else if ((pHardware->HwdType == HTYPE_EnOceanESP3)&&(IsTesting)&&(switchtype==STYPE_Dimmer))
+			{
+				CEnOceanESP3 *pEnocean=(CEnOceanESP3*)pHardware;
 				pEnocean->SendDimmerTeachIn((const char*)&lcmd,sizeof(lcmd.LIGHTING1));
 			}
 			else

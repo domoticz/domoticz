@@ -13,7 +13,8 @@
 #ifdef WITH_OPENZWAVE
 	#include "../hardware/OpenZWave.h"
 #endif
-#include "../hardware/EnOcean.h"
+#include "../hardware/EnOceanESP2.h"
+#include "../hardware/EnOceanESP3.h"
 #include "../hardware/Wunderground.h"
 #include "../hardware/ForecastIO.h"
 #include "../hardware/WOL.h"
@@ -386,7 +387,7 @@ void CWebServer::CmdAddHardware(Json::Value &root)
 	int mode4=0;
 	int mode5=0;
 	int port=atoi(sport.c_str());
-	if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX)||(htype==HTYPE_DavisVantage)||(htype==HTYPE_S0SmartMeter)||(htype==HTYPE_OpenThermGateway)||(htype==HTYPE_TeleinfoMeter)||(htype==HTYPE_OpenZWave)||(htype==HTYPE_EnOcean))
+	if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX)||(htype==HTYPE_DavisVantage)||(htype==HTYPE_S0SmartMeter)||(htype==HTYPE_OpenThermGateway)||(htype==HTYPE_TeleinfoMeter)||(htype==HTYPE_OpenZWave)||(htype==HTYPE_EnOceanESP2)||(htype==HTYPE_EnOceanESP3))
 	{
 		//USB
 		if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433))
@@ -490,7 +491,7 @@ void CWebServer::CmdUpdateHardware(Json::Value &root)
 
 	int port=atoi(sport.c_str());
 
-	if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX)||(htype==HTYPE_DavisVantage)||(htype==HTYPE_S0SmartMeter)||(htype==HTYPE_OpenThermGateway)||(htype==HTYPE_TeleinfoMeter)||(htype==HTYPE_OpenZWave)||(htype==HTYPE_EnOcean))
+	if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX)||(htype==HTYPE_DavisVantage)||(htype==HTYPE_S0SmartMeter)||(htype==HTYPE_OpenThermGateway)||(htype==HTYPE_TeleinfoMeter)||(htype==HTYPE_OpenZWave)||(htype==HTYPE_EnOceanESP2)||(htype==HTYPE_EnOceanESP3))
 	{
 		//USB
 	}
@@ -2650,7 +2651,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				case HTYPE_RFXLAN:
 				case HTYPE_RFXtrx315:
 				case HTYPE_RFXtrx433:
-				case HTYPE_EnOcean:
+				case HTYPE_EnOceanESP2:
+				case HTYPE_EnOceanESP3:
 				case HTYPE_Dummy:
 					root["result"][ii]["idx"]=ID;
 					root["result"][ii]["Name"]=Name;
@@ -3025,14 +3027,22 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				)
 				return;
 			sunitcode=sgroupcode;//Button A or B
-			CEnOcean *pEnoceanHardware=(CEnOcean *)m_pMain->GetHardware(atoi(hwdid.c_str()));
-			if (pEnoceanHardware==NULL)
+			CDomoticzHardwareBase *pBaseHardware=(CDomoticzHardwareBase*)m_pMain->GetHardware(atoi(hwdid.c_str()));
+			if (pBaseHardware==NULL)
 				return;
-			if (pEnoceanHardware->HwdType!=HTYPE_EnOcean)
+			if (!((pBaseHardware->HwdType==HTYPE_EnOceanESP2)||(pBaseHardware->HwdType!=HTYPE_EnOceanESP3)))
 				return;
-			if (pEnoceanHardware->m_id_base==0)
-				return;
-			unsigned long rID=pEnoceanHardware->m_id_base+iUnitTest;
+			unsigned long rID=0;
+			if (pBaseHardware->HwdType==HTYPE_EnOceanESP2)
+			{
+				CEnOceanESP2 *pEnoceanHardware=(CEnOceanESP2 *)pBaseHardware;
+				rID=pEnoceanHardware->m_id_base+iUnitTest;
+			}
+			else
+			{
+				CEnOceanESP3 *pEnoceanHardware=(CEnOceanESP3 *)pBaseHardware;
+				rID=pEnoceanHardware->m_id_base+iUnitTest;
+			}
 			//convert to hex, and we have our ID
 			std::stringstream s_strid;
 			s_strid << std::hex << std::uppercase << rID;
@@ -3217,17 +3227,32 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				)
 				return;
 			sunitcode=sgroupcode;//Button A/B
-			CEnOcean *pEnoceanHardware=(CEnOcean *)m_pMain->GetHardware(atoi(hwdid.c_str()));
-			if (pEnoceanHardware==NULL)
+			CDomoticzHardwareBase *pBaseHardware=(CDomoticzHardwareBase*)m_pMain->GetHardware(atoi(hwdid.c_str()));
+			if (pBaseHardware==NULL)
 				return;
-			if (pEnoceanHardware->HwdType!=HTYPE_EnOcean)
+			if (!((pBaseHardware->HwdType==HTYPE_EnOceanESP2)||(pBaseHardware->HwdType==HTYPE_EnOceanESP3)))
 				return;
-			if (pEnoceanHardware->m_id_base==0)
+			unsigned long rID=0;
+			if (pBaseHardware->HwdType==HTYPE_EnOceanESP2)
 			{
-				root["message"]="BaseID not found, is the hardware running?";
-				return;
+				CEnOceanESP2 *pEnoceanHardware=(CEnOceanESP2*)pBaseHardware;
+				if (pEnoceanHardware->m_id_base==0)
+				{
+					root["message"]="BaseID not found, is the hardware running?";
+					return;
+				}
+				rID=pEnoceanHardware->m_id_base+iUnitTest;
 			}
-			unsigned long rID=pEnoceanHardware->m_id_base+iUnitTest;
+			else
+			{
+				CEnOceanESP3 *pEnoceanHardware=(CEnOceanESP3*)pBaseHardware;
+				if (pEnoceanHardware->m_id_base==0)
+				{
+					root["message"]="BaseID not found, is the hardware running?";
+					return;
+				}
+				rID=pEnoceanHardware->m_id_base+iUnitTest;
+			}
 			//convert to hex, and we have our ID
 			std::stringstream s_strid;
 			s_strid << std::hex << std::uppercase << rID;
@@ -5004,7 +5029,8 @@ char * CWebServer::DisplayHardwareCombo()
 			case HTYPE_RFXLAN:
 			case HTYPE_RFXtrx315:
 			case HTYPE_RFXtrx433:
-			case HTYPE_EnOcean:
+			case HTYPE_EnOceanESP2:
+			case HTYPE_EnOceanESP3:
 			case HTYPE_Dummy:
 				sprintf(szTmp,"<option value=\"%d\">%s</option>\n",ID,Name.c_str());
 				m_retstr+=szTmp;

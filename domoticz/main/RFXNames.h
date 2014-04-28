@@ -74,13 +74,14 @@ enum _eHardwareTypes {
 	HTYPE_OpenZWave,			//21
 	HTYPE_LimitlessLights,		//22
 	HTYPE_System,				//23
-	HTYPE_EnOcean,				//24
+	HTYPE_EnOceanESP2,			//24
 	HTYPE_ForecastIO,			//25
 	HTYPE_SolarEdgeTCP,			//26
 	HTYPE_SMASpot,				//27
 	HTYPE_ICYTHERMOSTAT,		//28
 	HTYPE_WOL,					//29
 	HTYPE_PVOUTPUT_INPUT,		//30
+	HTYPE_EnOceanESP3,			//31
 	HTYPE_END
 };
 

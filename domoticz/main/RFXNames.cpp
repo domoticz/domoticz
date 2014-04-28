@@ -159,12 +159,13 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_OpenZWave,			"OpenZWave USB" },
 		{ HTYPE_LimitlessLights,	"Limitless/AppLamp with LAN interface" },
 		{ HTYPE_System,				"Motherboard sensors" },
-		{ HTYPE_EnOcean,			"EnOcean USB (ESP2)" },
+		{ HTYPE_EnOceanESP2,		"EnOcean USB (ESP2)" },
 		{ HTYPE_SolarEdgeTCP,		"SolarEdge via LAN interface" },
 		{ HTYPE_SMASpot,			"SMASpot" },
 		{ HTYPE_ICYTHERMOSTAT,		"ICY Thermostat" },
 		{ HTYPE_WOL,				"Wake-on-LAN" },
 		{ HTYPE_PVOUTPUT_INPUT,		"PVOutput (Input) (Not ready yet!)" },
+		{ HTYPE_EnOceanESP3,		"EnOcean USB (ESP3) (Not ready yet!)" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

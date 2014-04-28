@@ -34,7 +34,8 @@ class CDomoticzHardwareBase
 	friend class CForecastIO;
 	friend class CTE923;
 	friend class CVolcraftCO20;
-	friend class CEnOcean;
+	friend class CEnOceanESP2;
+	friend class CEnOceanESP3;
 	friend class SolarEdgeTCP;
 	friend class CSMASpot;
 	friend class CWOL;

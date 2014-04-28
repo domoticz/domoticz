@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "EnOcean.h"
+#include "EnOceanESP2.h"
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
@@ -588,7 +588,7 @@ typedef struct enocean_data_structure_MDA {
  * @}
  */
 
-CEnOcean::CEnOcean(const int ID, const std::string& devname, const int type)
+CEnOceanESP2::CEnOceanESP2(const int ID, const std::string& devname, const int type)
 {
 	m_HwdID=ID;
 	m_szSerialPort=devname;
@@ -600,22 +600,22 @@ CEnOcean::CEnOcean(const int ID, const std::string& devname, const int type)
 	m_stoprequested=false;
 }
 
-CEnOcean::~CEnOcean()
+CEnOceanESP2::~CEnOceanESP2()
 {
 	clearReadCallback();
 }
 
-bool CEnOcean::StartHardware()
+bool CEnOceanESP2::StartHardware()
 {
 	m_retrycntr=ENOCEAN_RETRY_DELAY*5; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEnOcean::Do_Work, this)));
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEnOceanESP2::Do_Work, this)));
 
 	return (m_thread!=NULL);
 }
 
-bool CEnOcean::StopHardware()
+bool CEnOceanESP2::StopHardware()
 {
 	m_stoprequested=true;
 	m_thread->join();
@@ -638,7 +638,7 @@ bool CEnOcean::StopHardware()
 }
 
 
-void CEnOcean::Do_Work()
+void CEnOceanESP2::Do_Work()
 {
 	while (!m_stoprequested)
 	{
@@ -675,7 +675,7 @@ void CEnOcean::Do_Work()
 	_log.Log(LOG_STATUS,"EnOcean: Serial Worker stopped...");
 }
 
-void CEnOcean::Add2SendQueue(const char* pData, const size_t length)
+void CEnOceanESP2::Add2SendQueue(const char* pData, const size_t length)
 {
 	std::string sBytes;
 	sBytes.insert(0,pData,length);
@@ -919,12 +919,12 @@ enocean_data_structure tcm120_create_inf_packet() {
 	return returnvalue;
 }
 
-bool CEnOcean::OpenSerialDevice()
+bool CEnOceanESP2::OpenSerialDevice()
 {
 	//Try to open the Serial Port
 	try
 	{
-		open(m_szSerialPort, 9600); //ECP2 protocol, for ECP3 open with 57600
+		open(m_szSerialPort, 9600); //ECP2 open with 9600
 		_log.Log(LOG_STATUS,"EnOcean: Using serial port: %s", m_szSerialPort.c_str());
 	}
 	catch (boost::exception & e)
@@ -942,7 +942,7 @@ bool CEnOcean::OpenSerialDevice()
 	}
 	m_bIsStarted=true;
 	m_receivestate=ERS_SYNC1;
-	setReadCallback(boost::bind(&CEnOcean::readCallback, this, _1, _2));
+	setReadCallback(boost::bind(&CEnOceanESP2::readCallback, this, _1, _2));
 	sOnConnected(this);
 
 	enocean_data_structure iframe;
@@ -959,7 +959,7 @@ bool CEnOcean::OpenSerialDevice()
 	return true;
 }
 
-void CEnOcean::readCallback(const char *data, size_t len)
+void CEnOceanESP2::readCallback(const char *data, size_t len)
 {
 	boost::lock_guard<boost::mutex> l(readQueueMutex);
 	size_t ii=0;
@@ -1014,7 +1014,7 @@ void CEnOcean::readCallback(const char *data, size_t len)
 	}
 }
 
-void CEnOcean::WriteToHardware(const char *pdata, const unsigned char length)
+void CEnOceanESP2::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if (m_id_base==0)
 		return;
@@ -1135,7 +1135,7 @@ void CEnOcean::WriteToHardware(const char *pdata, const unsigned char length)
 	}
 }
 
-void CEnOcean::SendDimmerTeachIn(const char *pdata, const unsigned char length)
+void CEnOceanESP2::SendDimmerTeachIn(const char *pdata, const unsigned char length)
 {
 	if (m_id_base==0)
 		return;
@@ -1181,7 +1181,7 @@ void CEnOcean::SendDimmerTeachIn(const char *pdata, const unsigned char length)
 	}
 }
 
-float CEnOcean::GetValueRange(const float InValue, const float ScaleMax, const float ScaleMin, const float RangeMax, const float RangeMin)
+float CEnOceanESP2::GetValueRange(const float InValue, const float ScaleMax, const float ScaleMin, const float RangeMax, const float RangeMin)
 {
 	float vscale=ScaleMax-ScaleMin;
 	if (vscale==0)
@@ -1193,7 +1193,7 @@ float CEnOcean::GetValueRange(const float InValue, const float ScaleMax, const f
 	return multiplyer*(InValue-RangeMin)+ScaleMin;
 }
 
-bool CEnOcean::ParseData()
+bool CEnOceanESP2::ParseData()
 {
 	enocean_data_structure *pFrame=(enocean_data_structure*)&m_buffer;
 	unsigned char Checksum=enocean_calc_checksum(pFrame);

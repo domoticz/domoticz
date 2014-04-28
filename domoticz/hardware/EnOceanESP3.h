@@ -4,15 +4,14 @@
 #include "ASyncSerial.h"
 #include "DomoticzHardware.h"
 
-#define ENOCEAN_READ_BUFFER_SIZE 40
+#define ENOCEAN3_READ_BUFFER_SIZE 65*1024
 
-class CEnOcean: public AsyncSerial, public CDomoticzHardwareBase
+class CEnOceanESP3: public AsyncSerial, public CDomoticzHardwareBase
 {
 	enum _eEnOcean_Receive_State
 	{
-		ERS_SYNC1=0,
-		ERS_SYNC2,
-		ERS_LENGTH,
+		ERS_SYNCBYTE=0,
+		ERS_HEADER,
 		ERS_DATA,
 		ERS_CHECKSUM
 	};
@@ -28,9 +27,9 @@ public:
     * \throws boost::system::system_error if cannot open the
     * serial device
     */
-	CEnOcean(const int ID, const std::string& devname, const int type);
+	CEnOceanESP3(const int ID, const std::string& devname, const int type);
 
-    ~CEnOcean();
+    ~CEnOceanESP3();
 	void WriteToHardware(const char *pdata, const unsigned char length);
 	void SendDimmerTeachIn(const char *pdata, const unsigned char length);
 	unsigned long m_id_base;
@@ -44,6 +43,8 @@ private:
 	void Add2SendQueue(const char* pData, const size_t length);
 	float GetValueRange(const float InValue, const float ScaleMax, const float ScaleMin=0, const float RangeMax=255, const float RangeMin=0);
 
+	bool sendFrame(unsigned char frametype, unsigned char *databuf, unsigned short datalen, unsigned char *optdata, unsigned char optdatalen);
+
 	_eEnOcean_Receive_State m_receivestate;
 	int m_wantedlength;
 
@@ -52,8 +53,11 @@ private:
     int m_Type;
 	std::string m_szSerialPort;
 
+	bool m_bBaseIDRequested;
+
 	// Create a circular buffer.
-    unsigned char m_buffer[ENOCEAN_READ_BUFFER_SIZE];
+	unsigned char m_ReceivedPacketType;
+    unsigned char m_buffer[ENOCEAN3_READ_BUFFER_SIZE];
 	int m_bufferpos;
 	int m_retrycntr;
 
