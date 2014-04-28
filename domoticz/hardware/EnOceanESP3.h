@@ -45,6 +45,8 @@ private:
 
 	bool sendFrame(unsigned char frametype, unsigned char *databuf, unsigned short datalen, unsigned char *optdata, unsigned char optdatalen);
 
+	void ParseRadioDatagram();
+
 	_eEnOcean_Receive_State m_receivestate;
 	int m_wantedlength;
 
@@ -57,6 +59,8 @@ private:
 
 	// Create a circular buffer.
 	unsigned char m_ReceivedPacketType;
+	int				m_DataSize;
+	int				m_OptionalDataSize;
     unsigned char m_buffer[ENOCEAN3_READ_BUFFER_SIZE];
 	int m_bufferpos;
 	int m_retrycntr;

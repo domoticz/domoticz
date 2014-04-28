@@ -132,6 +132,19 @@ typedef enum
 	CO_WR_SECURITY		= 22,	//! Write security informations (level, keys)
 } COMMON_COMMAND_TYPE; 
 
+typedef enum {
+	RORG_RPS = 0xF6,
+	RORG_1BS = 0xD5,
+	RORG_4BS = 0xA5,
+	RORG_VLD = 0xD2,
+	RORG_MSC = 0xD1,
+	RORG_ADT = 0xA6,
+	RORG_SM_LRN_REQ = 0xC6,
+	RORG_SM_LRN_ANS = 0xC7, 
+	RORG_SM_REC = 0xA7,
+	RORG_SYS_EX = 0xC5
+} ESP3_RORG;
+
 //! Function return codes
 typedef enum
 {
@@ -185,6 +198,92 @@ typedef enum
 	NEW_TX_TEL
 } RETURN_TYPE;
 // end of lines from EO300I API header file
+
+/**
+ * @defgroup bitmasks Bitmasks for various fields.
+ * There are two definitions for every bit mask. First, the bit mask itself
+ * and also the number of necessary shifts.
+ * @{
+ */
+/**
+ * @defgroup status_rps Status of telegram (for RPS telegrams)
+ * Bitmasks for the status-field, if ORG = RPS.
+ * @{
+ */
+#define S_RPS_T21 0x20
+#define S_RPS_T21_SHIFT 5
+#define S_RPS_NU  0x10
+#define S_RPS_NU_SHIFT 4
+#define S_RPS_RPC 0x0F
+#define S_RPS_RPC_SHIFT 0
+/*@}*/
+/**
+ * @defgroup status_rpc Status of telegram (for 1BS, 4BS, HRC or 6DT telegrams)
+ * Bitmasks for the status-field, if ORG = 1BS, 4BS, HRC or 6DT.
+ * @{
+ */
+#define S_RPC 0x0F
+#define S_RPC_SHIFT 0
+/*@}*/
+
+/**
+ * @defgroup data3 Meaning of data_byte 3 (for RPS telegrams, NU = 1)
+ * Bitmasks for the data_byte3-field, if ORG = RPS and NU = 1.
+ * @{
+ */
+#define DB3_RPS_NU_RID 0xC0
+#define DB3_RPS_NU_RID_SHIFT 6
+#define DB3_RPS_NU_UD  0x20
+#define DB3_RPS_NU_UD_SHIFT 5
+#define DB3_RPS_NU_PR  0x10
+#define DB3_RPS_NU_PR_SHIFT 4
+#define DB3_RPS_NU_SRID 0x0C
+#define DB3_RPS_NU_SRID_SHIFT 2
+#define DB3_RPS_NU_SUD 0x02
+#define DB3_RPS_NU_SUD_SHIFT 1
+#define DB3_RPS_NU_SA 0x01
+#define DB3_RPS_NU_SA_SHIFT 0
+/*@}*/
+
+/**
+ * @defgroup data3_1 Meaning of data_byte 3 (for RPS telegrams, NU = 0)
+ * Bitmasks for the data_byte3-field, if ORG = RPS and NU = 0.
+ * @{
+ */
+#define DB3_RPS_BUTTONS 0xE0
+#define DB3_RPS_BUTTONS_SHIFT 4
+#define DB3_RPS_PR 0x10
+#define DB3_RPS_PR_SHIFT 3
+/*@}*/
+
+/**
+ * @defgroup data0 Meaning of data_byte 0 (for 4BS telegrams)
+ * Bitmasks for the data_byte0-field, if ORG = 4BS.
+ * @{
+ */
+#define DB0_4BS_DI_3 0x08
+#define DB0_4BS_DI_3_SHIFT 3
+#define DB0_4BS_DI_2 0x04
+#define DB0_4BS_DI_2_SHIFT 2
+#define DB0_4BS_DI_1 0x02
+#define DB0_4BS_DI_1_SHIFT 1
+#define DB0_4BS_DI_0 0x01
+#define DB0_4BS_DI_0_SHIFT 0
+/*@}*/
+
+/**
+ * @defgroup data3_hrc Meaning of data_byte 3 (for HRC telegrams)
+ * Bitmasks for the data_byte3-field, if ORG = HRC.
+ * @{
+ */
+#define DB3_HRC_RID 0xC0
+#define DB3_HRC_RID_SHIFT 6
+#define DB3_HRC_UD  0x20
+#define DB3_HRC_UD_SHIFT 5
+#define DB3_HRC_PR  0x10
+#define DB3_HRC_PR_SHIFT 4
+#define DB3_HRC_SR  0x08
+#define DB3_HRC_SR_SHIFT 3
 
 bool CEnOceanESP3::sendFrame(unsigned char frametype, unsigned char *databuf, unsigned short datalen, unsigned char *optdata, unsigned char optdatalen)
 {
@@ -369,8 +468,8 @@ void CEnOceanESP3::readCallback(const char *data, size_t len)
 			m_buffer[m_bufferpos++]=c;
 			if (m_bufferpos==5)
 			{
-				unsigned char DataLength=(m_buffer[0]<<8)|m_buffer[1];
-				unsigned char OptionalLength=m_buffer[2];
+				m_DataSize=(m_buffer[0]<<8)|m_buffer[1];
+				m_OptionalDataSize=m_buffer[2];
 				m_ReceivedPacketType=m_buffer[3];
 				unsigned char CRCH=m_buffer[4];
 
@@ -383,7 +482,7 @@ void CEnOceanESP3::readCallback(const char *data, size_t len)
 				if (CRCH==crc)
 				{
 					m_bufferpos=0;
-					m_wantedlength=DataLength+OptionalLength;
+					m_wantedlength=m_DataSize+m_OptionalDataSize;
 					m_receivestate = ERS_DATA;
 				}
 				else
@@ -634,7 +733,10 @@ bool CEnOceanESP3::ParseData()
 			unsigned char changes_left=m_buffer[5];
 			_log.Log(LOG_STATUS,"EnOcean: Transceiver ID_Base: 0x%08x",m_id_base);
 		}
+		return true;
 	}
+	else if (m_ReceivedPacketType==PACKET_RADIO)
+		ParseRadioDatagram();
 /*
 	enocean_data_structure *pFrame=(enocean_data_structure*)&m_buffer;
 	unsigned char Checksum=enocean_calc_checksum(pFrame);
@@ -1079,4 +1181,116 @@ bool CEnOceanESP3::ParseData()
 	}
 */
     return true;
+}
+
+void CEnOceanESP3::ParseRadioDatagram()
+{
+	_asm nop;
+	char szTmp[100];
+	if (m_OptionalDataSize == 7) 
+	{
+		sprintf(szTmp,"destination: 0x%02x%02x%02x%02x\nRSSI: %i",
+			m_buffer[m_DataSize+1],m_buffer[m_DataSize+2],m_buffer[m_DataSize+3],m_buffer[m_DataSize+4],
+			(100-m_buffer[m_DataSize+5])
+			);
+	}
+	else {
+		sprintf(szTmp, "Optional data size: %i",m_OptionalDataSize);
+	}
+	_log.Log(LOG_NORM, "EnOcean: %s", szTmp);
+	switch (m_buffer[0])
+	{
+		case RORG_4BS: // 4 byte communication
+			sprintf(szTmp,"4BS data: Sender id: 0x%02x%02x%02x%02x Status: %02x Data: %02x",
+				m_buffer[5],m_buffer[6],m_buffer[7],m_buffer[8],
+				m_buffer[9],
+				m_buffer[3]
+				);
+			_log.Log(LOG_NORM, "EnOcean: %s", szTmp);
+			break;
+		case RORG_RPS: // repeated switch communication
+			{
+/*
+				sprintf(szTmp, "RPS data: Sender id: 0x%02x%02x%02x%02x Status: %02x Data: %02x",
+					m_buffer[2],m_buffer[3],m_buffer[4],m_buffer[5],
+					m_buffer[6],
+					m_buffer[1]
+				);
+				_log.Log(LOG_NORM, "EnOcean: %s", szTmp);
+				if (m_buffer[6] & (1 << 2))
+				{
+					_log.Log(LOG_NORM, "EnOcean: T21");
+				}
+*/
+				unsigned char STATUS=m_buffer[6];
+
+				unsigned char ID_BYTE3=m_buffer[2];
+				unsigned char ID_BYTE2=m_buffer[3];
+				unsigned char ID_BYTE1=m_buffer[4];
+				unsigned char ID_BYTE0=m_buffer[5];
+				long id = (ID_BYTE3 << 24) + (ID_BYTE2 << 16) + (ID_BYTE1 << 8) + ID_BYTE0;
+				char szDeviceID[20];
+				sprintf(szDeviceID,"%08X",(unsigned int)id);
+
+				if (STATUS & S_RPS_NU)
+				{
+					//Rocker
+
+					unsigned char DATA_BYTE3=m_buffer[1];
+
+					// NU == 1, N-Message
+					unsigned char RockerID=(DATA_BYTE3 & DB3_RPS_NU_RID) >> DB3_RPS_NU_RID_SHIFT;
+					unsigned char UpDown=(DATA_BYTE3 & DB3_RPS_NU_UD) >> DB3_RPS_NU_UD_SHIFT;
+					unsigned char Pressed=(DATA_BYTE3 & DB3_RPS_NU_PR)>>DB3_RPS_NU_PR_SHIFT;
+					unsigned char SecondRockerID=(DATA_BYTE3 & DB3_RPS_NU_SRID)>>DB3_RPS_NU_SRID_SHIFT;
+					unsigned char SecondUpDown=(DATA_BYTE3 & DB3_RPS_NU_SUD)>>DB3_RPS_NU_SUD_SHIFT;
+					unsigned char SecondAction=(DATA_BYTE3 & DB3_RPS_NU_SA)>>DB3_RPS_NU_SA_SHIFT;
+#ifdef _DEBUG
+					_log.Log(LOG_NORM,"Received RPS N-Message Node 0x%08x Rocker ID: %i UD: %i Pressed: %i Second Rocker ID: %i SUD: %i Second Action: %i",
+						id,
+						RockerID, 
+						UpDown, 
+						Pressed,
+						SecondRockerID, 
+						SecondUpDown,
+						SecondAction);
+#endif
+					//We distinguish 3 types of buttons from a switch: Left/Right/Left+Right
+					if (Pressed==1)
+					{
+						RBUF tsen;
+						memset(&tsen,0,sizeof(RBUF));
+						tsen.LIGHTING2.packetlength=sizeof(tsen.LIGHTING2)-1;
+						tsen.LIGHTING2.packettype=pTypeLighting2;
+						tsen.LIGHTING2.subtype=sTypeAC;
+						tsen.LIGHTING2.seqnbr=0;
+
+						tsen.LIGHTING2.id1=(BYTE)ID_BYTE3;
+						tsen.LIGHTING2.id2=(BYTE)ID_BYTE2;
+						tsen.LIGHTING2.id3=(BYTE)ID_BYTE1;
+						tsen.LIGHTING2.id4=(BYTE)ID_BYTE0;
+						tsen.LIGHTING2.level=0;
+						tsen.LIGHTING2.rssi=12;
+
+						if (SecondAction==0)
+						{
+							//Left/Right Up/Down
+							tsen.LIGHTING2.unitcode=RockerID+1;
+							tsen.LIGHTING2.cmnd=(UpDown==1)?light2_sOn:light2_sOff;
+						}
+						else
+						{
+							//Left+Right Up/Down
+							tsen.LIGHTING2.unitcode=SecondRockerID+10;
+							tsen.LIGHTING2.cmnd=(SecondUpDown==1)?light2_sOn:light2_sOff;
+						}
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);
+					}
+				}
+			}
+			break;
+		default:
+			_log.Log(LOG_NORM, "EnOcean: Unhanded RORG (%02x)", m_buffer[0]);
+			break;
+	}
 }
