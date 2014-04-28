@@ -56,7 +56,7 @@ void CDataPush::DoFibaroPush()
 		std::vector<std::vector<std::string> > result;
 		char szTmp[300];
 		sprintf(szTmp, 
-			"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty FROM FibaroLink as A, DeviceStatus as B "
+			"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType FROM FibaroLink as A, DeviceStatus as B "
 			"WHERE (A.DeviceID == '%llu' AND A.Enabled = '1' AND A.DeviceID==B.ID)",
 			DeviceRowIdx);
 		result=m_pMain->m_sql.query(szTmp);
@@ -77,6 +77,8 @@ void CDataPush::DoFibaroPush()
 				std::string targetVariable = sd[8].c_str();
 				int targetDeviceID = atoi(sd[9].c_str());
 				std::string targetProperty = sd[10].c_str();
+				int includeUnit = atoi(sd[11].c_str());
+				int metertype = atoi(sd[12].c_str());
 
 				if (delpos == 0) {
 					std::string lstatus="";
@@ -93,7 +95,8 @@ void CDataPush::DoFibaroPush()
 						StringSplit(sValue, ";", strarray);
 						if (int(strarray.size())>=delpos)
 						{
-							sendValue = strarray[delpos-1].c_str();
+							std::string rawsendValue = strarray[delpos-1].c_str();
+							sendValue = ProcessSValue(rawsendValue,delpos,includeUnit,metertype);
 						}
 					}
 				}
@@ -161,6 +164,7 @@ std::string CDataPush::DropdownOptionsValue(const unsigned long long DeviceRowId
 	int getpos = pos-1; // 0 pos is always nvalue/status, 1 and higher goes to svalues
 	std::vector<std::vector<std::string> > result;
 	char szTmp[300];
+	
 	sprintf(szTmp, "SELECT Type, SubType FROM DeviceStatus WHERE (ID== %llu)", DeviceRowIdxIn);
 	result=m_pMain->m_sql.query(szTmp);
 	if (result.size()>0)
@@ -177,3 +181,290 @@ std::string CDataPush::DropdownOptionsValue(const unsigned long long DeviceRowId
 	}
 	return wording;
 }
+
+std::string CDataPush::ProcessSValue(std::string rawsendValue, int delpos, int includeUnit, int metertypein)
+{
+	
+	std::string vType = DropdownOptionsValue(DeviceRowIdx,delpos);
+	unsigned char tempsign=m_pMain->m_sql.m_tempsign[0];
+	_eMeterType metertype = (_eMeterType) metertypein;
+	char szData[100]= "";
+
+	if ((vType=="Temperature") || (vType=="Temperature 1") || (vType=="Temperature 2")|| (vType == "Set point"))
+	{
+		double tvalue=ConvertTemperature(atof(rawsendValue.c_str()),tempsign);
+		if (includeUnit) {
+			sprintf(szData,"%.1f %c", tvalue,tempsign);
+		}
+		else {
+			sprintf(szData,"%.1f", tvalue);
+		}
+	
+	}
+	else if (vType == "Humidity")
+	{
+		if (includeUnit) {
+			sprintf(szData,"%d %%", rawsendValue);
+		}
+		else {
+			sprintf(szData,"%d", rawsendValue);
+		}
+
+	}
+	else if (vType == "Humidity Status")
+	{
+			sprintf(szData,"%s", RFX_Humidity_Status_Desc(atoi(rawsendValue.c_str())));	
+	}
+	else if (vType == "Barometer")
+	{
+		if (includeUnit) {
+			sprintf(szData,"%.1f hPa", rawsendValue);
+		}
+		else {
+			sprintf(szData,"%.1f", rawsendValue);
+		}
+
+	}
+	else if (vType == "Forecast")
+	{
+		int forecast=atoi(rawsendValue.c_str());
+		if (forecast!=baroForecastNoInfo)
+		{
+			sprintf(szData,"%s", RFX_Forecast_Desc(forecast));
+		}
+		else {
+			sprintf(szData,"%d", forecast);
+		}
+	}
+	else if (vType == "Altitude")
+	{
+		sprintf(szData,"Not supported yet");
+	}
+
+	else if (vType == "UV")
+	{
+		float UVI=(float)atof(rawsendValue.c_str());
+		if (includeUnit) {
+			sprintf(szData,"%.1f UVI",UVI);
+		}
+		else {
+			sprintf(szData,"%.1f",UVI);
+		}
+	}
+	else if (vType == "Direction")
+	{
+		float Direction = atof(rawsendValue.c_str());
+		if (includeUnit) {
+			sprintf(szData,"%.1f Degrees",Direction); 
+		}
+		else {
+			sprintf(szData,"%.1f",Direction); 
+		}
+	}
+	else if (vType == "Direction string")
+	{
+		sprintf(szData,"%s",rawsendValue.c_str());
+	}
+	else if (vType == "Speed")
+	{
+		int intSpeed=atoi(rawsendValue.c_str());
+		if (includeUnit) {
+			sprintf(szData,"%.1f",float(intSpeed) * m_pMain->m_sql.m_windscale); //todo: unit?
+		}
+		else {
+			sprintf(szData,"%.1f",float(intSpeed) * m_pMain->m_sql.m_windscale);
+		}
+	}
+	else if (vType == "Gust")
+	{
+		int intGust=atoi(rawsendValue.c_str());
+		if (includeUnit) {
+			sprintf(szData,"%.1f",float(intGust) *m_pMain->m_sql.m_windscale); //todo: unit?
+		}
+		else {
+			sprintf(szData,"%.1f",float(intGust) *m_pMain->m_sql.m_windscale);
+		}
+	}
+	else if (vType == "Chill")
+	{
+		double tvalue=ConvertTemperature(atof(rawsendValue.c_str()),tempsign);
+		if (includeUnit) {
+			sprintf(szData,"%.1f %c", tvalue,tempsign);
+		}
+		else {
+			sprintf(szData,"%.1f", tvalue);
+		}
+	}
+	else if (vType == "Rain rate")
+	{
+		sprintf(szData,"Not supported yet");
+	}
+	else if (vType == "Total rain")
+	{
+		sprintf(szData,"Not supported yet");
+	}	
+	else if (vType == "Counter")
+	{
+		sprintf(szData,"Not supported yet");
+	}	
+	else if (vType == "Mode")
+	{
+		sprintf(szData,"Not supported yet");
+	}
+	else if (vType == "Status")
+	{
+		sprintf(szData,"Not supported yet");
+	}	
+	else if ((vType == "Current 1") || (vType == "Current 2") || (vType == "Current 3"))
+	{
+		sprintf(szData,"Not supported yet");
+	}	
+	else if (vType == "Instant")
+	{
+		sprintf(szData,"Not supported yet");
+	}	
+	else if ((vType == "Usage") || (vType == "Usage 1") || (vType == "Usage 2") )
+	{
+		sprintf(szData,"Not supported yet");
+	}	
+	else if ((vType == "Delivery") || (vType == "Delivery 1") || (vType == "Delivery 2") )
+	{
+		sprintf(szData,"Not supported yet");
+	}
+
+	else if (vType == "Usage current")
+	{
+		if (includeUnit) {
+			sprintf(szData,"%.1f Watt",atof(rawsendValue.c_str()));
+		}
+		else {
+			sprintf(szData,"%.1f",atof(rawsendValue.c_str()));
+		}
+	}
+	else if (vType == "Delivery current")
+	{
+		if (includeUnit) {
+			sprintf(szData,"%.1f Watt",atof(rawsendValue.c_str()));
+		}
+		else {
+			sprintf(szData,"%.1f",atof(rawsendValue.c_str()));
+		}
+	}
+	else if (vType == "Gas usage")
+	{
+		sprintf(szData,"Not supported yet");
+	}
+	else if (vType == "Weight")
+	{
+		if (includeUnit) {
+			sprintf(szData,"%.1f kg",atof(rawsendValue.c_str()));
+		}
+		else {
+			sprintf(szData,"%.1f",atof(rawsendValue.c_str()));
+		}
+	}	
+	else if (vType == "Voltage")
+	{
+		if (includeUnit) {
+			sprintf(szData,"%.3f V",atof(rawsendValue.c_str()));
+		}
+		else {
+			sprintf(szData,"%.3f",atof(rawsendValue.c_str()));
+		}
+	}
+	else if (vType == "Value")
+	{
+		sprintf(szData,"%d", rawsendValue); //??
+	}
+	else if (vType == "Visibility")
+	{
+		float vis=(float)atof(rawsendValue.c_str());
+		if (includeUnit) {
+			if (metertype==0)
+			{
+				//km
+				sprintf(szData,"%.1f km",vis);
+			}
+			else
+			{
+				//miles
+				sprintf(szData,"%.1f mi",vis*0.6214f);
+			}
+		}
+		else {
+			if (metertype==0)
+			{
+				//km
+				sprintf(szData,"%.1f",vis);
+			}
+			else
+			{
+				//miles
+				sprintf(szData,"%.1f",vis*0.6214f);
+			}
+		}
+	}
+	else if (vType == "Solar Radiation")
+	{
+		float radiation=(float)atof(rawsendValue.c_str());
+		if (includeUnit) {
+			sprintf(szData,"%.1f Watt/m2",radiation);
+		}
+		else {
+			sprintf(szData,"%.1f",radiation);
+		}
+	}
+	else if (vType == "Soil Moisture")
+	{
+		sprintf(szData,"Not supported yet");//todo; nvalue
+	}
+	else if (vType == "Leaf Wetness")
+	{
+		sprintf(szData,"Not supported yet");//todo; nvalue
+	}
+	else if (vType == "Percentage")
+	{
+		if (includeUnit) {
+			sprintf(szData,"%.2f%%",atof(rawsendValue.c_str()));
+		}
+		else {
+			sprintf(szData,"%.2f",atof(rawsendValue.c_str()));
+		}
+	}
+	else if (vType == "Fanspeed")
+	{
+		if (includeUnit) {
+			sprintf(szData,"%d RPM",atoi(rawsendValue.c_str()));
+		}
+		else {
+			sprintf(szData,"%d",atoi(rawsendValue.c_str()));
+		}
+	}
+	else if (vType == "Pressure")
+	{
+		if (includeUnit) {
+			sprintf(szData,"%.1f Bar",atof(rawsendValue.c_str()));
+		}
+		else {
+			sprintf(szData,"%.1f",atof(rawsendValue.c_str()));
+		}
+	}
+	else if (vType == "Lux")
+	{
+		if (includeUnit) {
+			sprintf(szData,"%.0f Lux",atof(rawsendValue.c_str()));
+		}
+		else {
+			sprintf(szData,"%.0f",atof(rawsendValue.c_str()));
+		}
+	}
+	if (szData[0] != '\0') { 
+		std::string sendValue(szData);
+		return sendValue;
+	}
+	else {
+		_log.Log(LOG_ERROR,"Could not determine data push value");
+		return "";
+	}
+}
+

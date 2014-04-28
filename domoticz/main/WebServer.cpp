@@ -746,7 +746,7 @@ void CWebServer::GetFibaroLinks(Json::Value &root)
 {
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT A.ID,A.DeviceID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name FROM FibaroLink as A, DeviceStatus as B WHERE (A.DeviceID==B.ID)";
+	szQuery << "SELECT A.ID,A.DeviceID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM FibaroLink as A, DeviceStatus as B WHERE (A.DeviceID==B.ID)";
 	result=m_pMain->m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -764,6 +764,7 @@ void CWebServer::GetFibaroLinks(Json::Value &root)
 			root["result"][ii]["TargetProperty"]=sd[6];
 			root["result"][ii]["Enabled"]=sd[7];
 			root["result"][ii]["Name"]=sd[8];
+			root["result"][ii]["IncludeUnit"]=sd[9];
 			ii++;
 		}
 	}
@@ -783,6 +784,7 @@ void CWebServer::SaveFibaroLink(Json::Value &root)
 	std::string targetdeviceid=m_pWebEm->FindValue("targetdeviceid");
 	std::string targetproperty=m_pWebEm->FindValue("targetproperty");
 	std::string linkactive=m_pWebEm->FindValue("linkactive");
+	std::string includeunit=m_pWebEm->FindValue("linkactive");
 	if ((targettypei==0) && (targetvariable==""))
 		return;
 	if ((targettypei==1) && ((targetdeviceid=="")||(targetproperty=="")))
@@ -790,25 +792,27 @@ void CWebServer::SaveFibaroLink(Json::Value &root)
 	std::vector<std::vector<std::string> > result;
 	char szTmp[300];
 	if (idx=="0") {
-		sprintf(szTmp,"INSERT INTO FibaroLink (DeviceID,DelimitedValue,TargetType,TargetVariable,TargetDeviceID,TargetProperty,Enabled) VALUES ('%d','%d','%d','%s','%d','%s','%d')",
+		sprintf(szTmp,"INSERT INTO FibaroLink (DeviceID,DelimitedValue,TargetType,TargetVariable,TargetDeviceID,TargetProperty,IncludeUnit,Enabled) VALUES ('%d','%d','%d','%s','%d','%s','%d','%d')",
 				deviceidi,
 				atoi(valuetosend.c_str()),
 				targettypei,
 				targetvariable.c_str(),
 				atoi(targetdeviceid.c_str()),
 				targetproperty.c_str(),
-				atoi(linkactive.c_str())
+				atoi(linkactive.c_str()),
+				atoi(includeunit.c_str())
 		);
 	}
 	else {
 		sprintf(szTmp,
-			"UPDATE FibaroLink SET DeviceID='%d', DelimitedValue=%d, TargetType=%d, TargetVariable='%s', TargetDeviceID=%d, TargetProperty='%s', Enabled='%d' WHERE (ID == %s)",
+			"UPDATE FibaroLink SET DeviceID='%d', DelimitedValue=%d, TargetType=%d, TargetVariable='%s', TargetDeviceID=%d, TargetProperty='%s', IncludeUnit='%d', Enabled='%d' WHERE (ID == %s)",
 			deviceidi,
 			atoi(valuetosend.c_str()),
 			targettypei,
 			targetvariable.c_str(),
 			atoi(targetdeviceid.c_str()),
 			targetproperty.c_str(),
+			atoi(includeunit.c_str()),
 			atoi(linkactive.c_str()),
 			idx.c_str()
 			);

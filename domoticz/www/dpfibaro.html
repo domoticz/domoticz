@@ -8,6 +8,7 @@
 				<th width="120" align="left" data-i18n="Target name">Target variable</th>
 				<th width="60" align="left" data-i18n="Target name">Target device id</th>
 				<th width="120" align="left" data-i18n="Target name">Target property</th>
+				<th width="60" align="left" data-i18n="Target name">Include unit</th>
              	<th width="60" align="left" data-i18n="Enabled">Enabled</th>
             </tr>
         </thead>		
@@ -50,6 +51,10 @@
 		<tr id="targetpropertyrow" style="display:none;">
 			<td align="right" style="width:110px"><label for="targetproperty"><span data-i18n="Target property"></span>:</label></td>
 			<td><input type="text" id="targetproperty" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:80px"><label for="includeunit"><span data-i18n="Include unit"></span>:</label></td>
+			<td><input type="checkbox" id="includeunit" checked></td>
 		</tr>		
 		<tr>
 			<td align="right" style="width:80px"><label for="linkenabled"><span data-i18n="Link active"></span>:</label></td>
@@ -173,12 +178,18 @@ function AddLink(type)
 	{
 		linkactive = 1;
 	}
+	var includeunit = 0;
+	if ($('#linkparamstable #includeunit').is(":checked"))
+	{
+		includeunit = 1;
+	}
+	
 	var url = "";
 	if (targettype == 0) {
-		url = "json.htm?type=command&param=savefibarolink" + "&idx=" + idx + "&deviceid=" + deviceid + "&valuetosend=" + valuetosend + "&targettype=" + targettype + "&targetvariable=" + targetvariable + "&linkactive=" + linkactive;
+		url = "json.htm?type=command&param=savefibarolink" + "&idx=" + idx + "&deviceid=" + deviceid + "&valuetosend=" + valuetosend + "&targettype=" + targettype + "&targetvariable=" + targetvariable + "&includeunit=" + includeunit + "&linkactive=" + linkactive;
 	}
 	else {
-		url = "json.htm?type=command&param=savefibarolink" + "&idx=" + idx + "&deviceid=" + deviceid + "&valuetosend=" + valuetosend + "&targettype=" + targettype + "&targetdeviceid=" + targetdeviceid + "&targetproperty=" + targetproperty + "&linkactive=" + linkactive;	
+		url = "json.htm?type=command&param=savefibarolink" + "&idx=" + idx + "&deviceid=" + deviceid + "&valuetosend=" + valuetosend + "&targettype=" + targettype + "&targetdeviceid=" + targetdeviceid + "&targetproperty=" + targetproperty + "&includeunit=" + includeunit + "&linkactive=" + linkactive;	
 	}
 
 	$.ajax({
@@ -260,8 +271,11 @@ function RefreshLinkTable()
       if (typeof data.result != 'undefined') {
         $.each(data.result, function(i,item){
 			var enabled = $.i18n('No');
+			var includeUnit = $.i18n('No');
 			if (item.Enabled == 1)
 				enabled = $.i18n('Yes');
+			if (item.IncludeUnit == 1)
+				includeUnit = $.i18n('Yes');
 			var TargetType = "Global variable";
 			if (item.TargetType==1) 
 				TargetType = "Virtual device";
@@ -279,6 +293,7 @@ function RefreshLinkTable()
                 "TargetType": item.TargetType,
 				"DeviceID": item.DeviceID,
 				"Enabled": item.Enabled,
+				"IncludeUnit": item.IncludeUnit,
 				"Delimitedvalue": item.Delimitedvalue,
 				"0": item.Name,
 				"1": DelimitedValue,
@@ -286,7 +301,8 @@ function RefreshLinkTable()
 				"3": item.TargetVariable,
 				"4": item.TargetDevice,
 				"5": item.TargetProperty,
-				"6": enabled
+				"6": includeUnit,
+				"7": enabled
 			} );
         });
 	  }
@@ -347,6 +363,12 @@ function ShowLinks()
 					}
 					else {
 						$('#linkparamstable #linkenabled').prop('checked', false);
+					}
+					if (data["IncludeUnit"] == 1) {
+						$('#linkparamstable #includeunit').prop('checked', true);
+					}
+					else {
+						$('#linkparamstable #includeunit').prop('checked', false);
 					}
 				}
 		});

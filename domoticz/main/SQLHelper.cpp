@@ -21,7 +21,7 @@
 	#include <pwd.h>
 #endif
 
-#define DB_VERSION 40
+#define DB_VERSION 41
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -874,6 +874,10 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion<40)
 		{
 			FixDaylightSaving();
+		}
+		if (dbversion<41)
+		{
+			query("ALTER TABLE FibaroLink ADD COLUMN [IncludeUnit] INTEGER default 0");
 		}
 
 	}
