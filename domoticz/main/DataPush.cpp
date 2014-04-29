@@ -207,7 +207,7 @@ std::string CDataPush::ProcessSValue(std::string rawsendValue, int delpos, int i
 			sprintf(szData,"%d %%", atoi(rawsendValue.c_str()));
 		}
 		else {
-			sprintf(szData,"%d", atoi(rawsendValue.c_str());
+			sprintf(szData,"%d", atoi(rawsendValue.c_str()));
 		}
 
 	}
@@ -221,7 +221,7 @@ std::string CDataPush::ProcessSValue(std::string rawsendValue, int delpos, int i
 			sprintf(szData,"%.1f hPa", atof(rawsendValue.c_str()));
 		}
 		else {
-			sprintf(szData,"%.1f", atof(rawsendValue.c_str());
+			sprintf(szData,"%.1f", atof(rawsendValue.c_str()));
 		}
 
 	}
