@@ -315,7 +315,9 @@ void CPVOutputInput::GetMeterDetails()
 
 	if (splitresult[6]!="NaN")
 	{
-		double Efficiency=atof(splitresult[6].c_str());
+		double Efficiency=atof(splitresult[6].c_str())*100.0;
+		if (Efficiency>100.0)
+			Efficiency=100.0;
 		SendPercentage(1,float(Efficiency),"Efficiency");
 	}
 	if (splitresult[7]!="NaN")
