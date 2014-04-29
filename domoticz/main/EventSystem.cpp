@@ -1560,72 +1560,8 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
     lua_getglobal(lua_state, "commandArray");
     if( lua_istable( lua_state, -1 ) )
 	{
-        
-        int tIndex=lua_gettop(lua_state);
-        lua_pushnil(lua_state); // first key
-        while (lua_next(lua_state, tIndex) != 0)
-		{
-            if ((std::string(luaL_typename(lua_state, -2))=="string") && (std::string(luaL_typename(lua_state, -1)))=="string") 
-			{
-                
-                if (std::string(lua_tostring(lua_state, -2))== "SendNotification") 
-				{
-                    std::string luaString = lua_tostring(lua_state, -1);
-					std::string subject(""),body(""),priority("0"),sound("");
-					std::vector<std::string> aParam;
-					StringSplit(luaString, "#", aParam);
-					subject=aParam[0];
-					body=aParam[1];
-					if (aParam.size()==3)
-					{
-						priority=aParam[2];
-					}
-					if (aParam.size()==4)
-					{
-						priority=aParam[2];
-						sound=aParam[3];
-					}
-					SendEventNotification(subject, body,atoi(priority.c_str()),sound);
-                    scriptTrue = true;
-                }
-				else if (std::string(lua_tostring(lua_state, -2)) == "SendEmail") {
-					std::string luaString = lua_tostring(lua_state, -1);
-					std::string subject(""),body(""),to("");
-					std::vector<std::string> aParam;
-					StringSplit(luaString, "#", aParam);
-					subject=aParam[0];
-					body=aParam[1];
-					body = stdreplace(body, "\\n", "<br>");
-					to=aParam[2];
-					m_pMain->m_sql.AddTaskItem(_tTaskItem::SendEmailTo(1,subject,body,to));
-					scriptTrue = true;
-				}
-                else if (std::string(lua_tostring(lua_state, -2))== "OpenURL")
-				{
-                    std::string luaString = lua_tostring(lua_state, -1);
-                    OpenURL(luaString);
-                    scriptTrue = true;
-                }
-				else if (std::string(lua_tostring(lua_state, -2))== "UpdateDevice")
-				{
-					std::string luaString = lua_tostring(lua_state, -1);
-					UpdateDevice(luaString);
-					scriptTrue = true;
-				}
-                else
-				{
-                    if (ScheduleEvent(lua_tostring(lua_state, -2),lua_tostring(lua_state, -1),filename)) {
-                        scriptTrue = true;
-                    }
-                }
-            }
-            else 
-			{
-                _log.Log(LOG_ERROR,"commandArray should only return ['string']='Actionstring'");
-            }
-            // removes 'value'; keeps 'key' for next iteration
-            lua_pop(lua_state, 1);
-        }
+		int tIndex=lua_gettop(lua_state);
+        scriptTrue = iterateLuaTable(lua_state,tIndex,filename);
     }
     else
 	{
@@ -1643,6 +1579,92 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
     lua_close(lua_state);
 
 }
+
+bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const std::string &filename)
+{
+	bool scriptTrue = false;
+	
+    lua_pushnil(lua_state); // first key
+    while (lua_next(lua_state, tIndex) != 0)
+	{
+		if ((std::string(luaL_typename(lua_state, -2))=="string") && (std::string(luaL_typename(lua_state, -1)))=="string") 
+		{
+            scriptTrue = processLuaCommand(lua_state,filename);
+        }
+		else if ((std::string(luaL_typename(lua_state, -2))=="number") && lua_istable( lua_state, -1 ))
+		{
+			scriptTrue = iterateLuaTable(lua_state,tIndex+2,filename);	
+		}
+        else 
+		{
+			_log.Log(LOG_ERROR,"commandArray should only return ['string']='actionstring' or [integer]={['string']='actionstring'}");
+        }
+        // removes 'value'; keeps 'key' for next iteration
+        lua_pop(lua_state, 1);
+    }
+
+	return scriptTrue;
+
+}
+
+bool CEventSystem::processLuaCommand(lua_State *lua_state,const std::string &filename)
+{
+	bool scriptTrue = false;
+	if (std::string(lua_tostring(lua_state, -2))== "SendNotification") 
+	{
+        std::string luaString = lua_tostring(lua_state, -1);
+		std::string subject(""),body(""),priority("0"),sound("");
+		std::vector<std::string> aParam;
+		StringSplit(luaString, "#", aParam);
+		subject=aParam[0];
+		body=aParam[1];
+		if (aParam.size()==3)
+		{
+			priority=aParam[2];
+		}
+		if (aParam.size()==4)
+		{
+			priority=aParam[2];
+			sound=aParam[3];
+		}
+		SendEventNotification(subject, body,atoi(priority.c_str()),sound);
+	    scriptTrue = true;
+    }
+	else if (std::string(lua_tostring(lua_state, -2)) == "SendEmail") {
+		std::string luaString = lua_tostring(lua_state, -1);
+		std::string subject(""),body(""),to("");
+		std::vector<std::string> aParam;
+		StringSplit(luaString, "#", aParam);
+		subject=aParam[0];
+		body=aParam[1];
+		body = stdreplace(body, "\\n", "<br>");
+		to=aParam[2];
+		m_pMain->m_sql.AddTaskItem(_tTaskItem::SendEmailTo(1,subject,body,to));
+		scriptTrue = true;
+	}
+    else if (std::string(lua_tostring(lua_state, -2))== "OpenURL")
+	{
+        std::string luaString = lua_tostring(lua_state, -1);
+        OpenURL(luaString);
+	    scriptTrue = true;
+    }
+	else if (std::string(lua_tostring(lua_state, -2))== "UpdateDevice")
+	{
+		std::string luaString = lua_tostring(lua_state, -1);
+		UpdateDevice(luaString);
+		scriptTrue = true;
+	}
+    else
+	{
+        if (ScheduleEvent(lua_tostring(lua_state, -2),lua_tostring(lua_state, -1),filename)) {
+            scriptTrue = true;
+	    }
+    }
+
+	return scriptTrue;
+
+}
+
 
 void CEventSystem::report_errors(lua_State *L, int status)
 {
