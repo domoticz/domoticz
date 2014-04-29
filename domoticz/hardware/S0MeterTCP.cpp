@@ -40,9 +40,15 @@ S0MeterTCP::S0MeterTCP(const int ID, const std::string IPAddress, const unsigned
 	m_meters[4].m_pulse_per_unit=1000.0;
 
 	if (M1PPH!=0)
+	{
 		m_meters[0].m_pulse_per_unit=float(M1PPH);
-	if (M2PPH!=0)
 		m_meters[1].m_pulse_per_unit=float(M1PPH);
+		m_meters[2].m_pulse_per_unit=float(M1PPH);
+		m_meters[3].m_pulse_per_unit=float(M1PPH);
+		m_meters[4].m_pulse_per_unit=float(M1PPH);
+	}
+	if (M2PPH!=0)
+		m_meters[1].m_pulse_per_unit=float(M2PPH);
 	m_socket=INVALID_SOCKET;
 	m_stoprequested=false;
 	m_szIPAddress=IPAddress;

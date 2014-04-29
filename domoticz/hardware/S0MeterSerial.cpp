@@ -35,9 +35,15 @@ S0MeterSerial::S0MeterSerial(const int ID, const std::string& devname, const uns
 	m_meters[4].m_pulse_per_unit=1000.0;
 
 	if (M1PPH!=0)
+	{
 		m_meters[0].m_pulse_per_unit=float(M1PPH);
-	if (M2PPH!=0)
 		m_meters[1].m_pulse_per_unit=float(M1PPH);
+		m_meters[2].m_pulse_per_unit=float(M1PPH);
+		m_meters[3].m_pulse_per_unit=float(M1PPH);
+		m_meters[4].m_pulse_per_unit=float(M1PPH);
+	}
+	if (M2PPH!=0)
+		m_meters[1].m_pulse_per_unit=float(M2PPH);
 }
 
 S0MeterSerial::~S0MeterSerial()
