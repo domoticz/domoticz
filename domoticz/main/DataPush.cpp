@@ -204,10 +204,10 @@ std::string CDataPush::ProcessSValue(std::string rawsendValue, int delpos, int i
 	else if (vType == "Humidity")
 	{
 		if (includeUnit) {
-			sprintf(szData,"%d %%", rawsendValue);
+			sprintf(szData,"%d %%", atoi(rawsendValue.c_str()));
 		}
 		else {
-			sprintf(szData,"%d", rawsendValue);
+			sprintf(szData,"%d", atoi(rawsendValue.c_str());
 		}
 
 	}
@@ -218,10 +218,10 @@ std::string CDataPush::ProcessSValue(std::string rawsendValue, int delpos, int i
 	else if (vType == "Barometer")
 	{
 		if (includeUnit) {
-			sprintf(szData,"%.1f hPa", rawsendValue);
+			sprintf(szData,"%.1f hPa", atof(rawsendValue.c_str()));
 		}
 		else {
-			sprintf(szData,"%.1f", rawsendValue);
+			sprintf(szData,"%.1f", atof(rawsendValue.c_str());
 		}
 
 	}
@@ -374,7 +374,7 @@ std::string CDataPush::ProcessSValue(std::string rawsendValue, int delpos, int i
 	}
 	else if (vType == "Value")
 	{
-		sprintf(szData,"%d", rawsendValue); //??
+		sprintf(szData,"%d", atoi(rawsendValue.c_str())); //??
 	}
 	else if (vType == "Visibility")
 	{
