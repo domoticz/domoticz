@@ -1185,7 +1185,6 @@ bool CEnOceanESP3::ParseData()
 
 void CEnOceanESP3::ParseRadioDatagram()
 {
-	_asm nop;
 	char szTmp[100];
 	if (m_OptionalDataSize == 7) 
 	{
