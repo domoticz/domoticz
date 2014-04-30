@@ -3034,7 +3034,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			CDomoticzHardwareBase *pBaseHardware=(CDomoticzHardwareBase*)m_pMain->GetHardware(atoi(hwdid.c_str()));
 			if (pBaseHardware==NULL)
 				return;
-			if (!((pBaseHardware->HwdType==HTYPE_EnOceanESP2)||(pBaseHardware->HwdType!=HTYPE_EnOceanESP3)))
+			if ((pBaseHardware->HwdType!=HTYPE_EnOceanESP2)&&(pBaseHardware->HwdType!=HTYPE_EnOceanESP3))
 				return;
 			unsigned long rID=0;
 			if (pBaseHardware->HwdType==HTYPE_EnOceanESP2)
@@ -3234,7 +3234,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			CDomoticzHardwareBase *pBaseHardware=(CDomoticzHardwareBase*)m_pMain->GetHardware(atoi(hwdid.c_str()));
 			if (pBaseHardware==NULL)
 				return;
-			if (!((pBaseHardware->HwdType==HTYPE_EnOceanESP2)||(pBaseHardware->HwdType==HTYPE_EnOceanESP3)))
+			if ((pBaseHardware->HwdType!=HTYPE_EnOceanESP2)&&(pBaseHardware->HwdType!=HTYPE_EnOceanESP3))
 				return;
 			unsigned long rID=0;
 			if (pBaseHardware->HwdType==HTYPE_EnOceanESP2)

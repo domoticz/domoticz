@@ -46,6 +46,7 @@
 		<Product type="0003" id="000c" name="Micro Smart Energy Switch"/>
 		<Product type="0003" id="000d" name="Micro Smart Energy Illuminator"/>
 		<Product type="0003" id="000e" name="Micro Motor Controller"/>
+		<Product type="0003" id="001a" name="Micro Switch (2nd Edition)"/>
 		<Product type="0003" id="0012" name="Micro Smart Energy Switch G2" config="aeon_labs/ses.xml" />
 		<Product type="0001" id="0016" name="Key Fob" config="aeon_labs/keyfob.xml"/>
 		<Product type="0003" id="0011" name="Micro Double Switch" />
@@ -144,6 +145,7 @@
 		<Product type="0202" id="0001" name="SM103 Door/Window Sensor" config="everspring/sm103.xml"/>
 		<Product type="0002" id="0001" name="SM103 Door/Window Sensor" config="everspring/sm103.xml"/>
 		<Product type="0101" id="0001" name="SP103 PIR Motion Sensor" config="everspring/sp103.xml"/>
+		<Product type="0001" id="0001" name="HSP02 Motion Detector"/>
 		<Product type="0001" id="0002" name="SP814 Motion Detector" config="everspring/sp814.xml"/>
 		<Product type="0006" id="0001" name="ST814 Temperature and Humidity Sensor" config="everspring/st814.xml"/>
 		<Product type="0007" id="0001" name="ST815 Illumination Sensor" config="everspring/st815.xml"/>
@@ -173,6 +175,7 @@
 		<Product type="0100" id="0109" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
 		<Product type="0100" id="100a" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
 		<Product type="0700" id="1000" name="FGK101 Door Opening Sensor" config="fibaro/fgk001.xml" />
+		<Product type="0300" id="0104" name="FGR221 Roller Shutter Controller" config="fibaro/fgr221.xml"/>
 		<Product type="0300" id="100a" name="FGR221 Roller Shutter Controller" config="fibaro/fgr221.xml"/>
 		<Product type="0300" id="0106" name="FGR221 Roller Shutter Controller" config="fibaro/fgr221.xml"/>
 		<Product type="0300" id="0107" name="FGR221 Roller Shutter Controller" config="fibaro/fgr221.xml"/>
@@ -191,10 +194,14 @@
 		<Product type="0200" id="0109" name="FGS221 Double Relay Switch 2x1.5kW" config="fibaro/fgs221.xml" />
 		<Product type="0200" id="100a" name="FGS221 Double Relay Switch 2x1.5kW" config="fibaro/fgs221.xml" />
 		<Product type="0600" id="1000" name="FGWPE Wall Plug" config="fibaro/fgwpe.xml" />
+		<Product type="0b00" id="3001" name="FGFS101 Flood Sensor" config ="fibaro/fgfs101.xml" />
 		<Product type="0b00" id="1001" name="FGFS101 Flood Sensor" config ="fibaro/fgfs101.xml" />
     		<Product type="0900" id="1000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
     		<Product type="0c00" id="1000" name="FGSS101 Smoke Sensor" config="fibaro/fgss101.xml" />
   	</Manufacturer>
+	<Manufacturer id="0138" name="First Alert">
+    		<Product type="0001" id="0002" name=" ZCombo Smoke and Carbon Monoxide Detector" />
+	</Manufacturer>
 	<Manufacturer id="0037" name="Foard Sys">
 	</Manufacturer>
 	<Manufacturer id="0110" name="Frostdale">
@@ -209,6 +216,7 @@
 		<Product type="0003" id="0004" name="PowerNode 6 port" config="greenwave/powernode6.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0084" name="FortrezZ">
+		<Product type="0311" id="0109" name="SSA1 / SSA2 - Siren/Strobe Light Alarm"/>
 		<Product type="0311" id="010b" name="SSA1 / SSA2 - Siren/Strobe Light Alarm"/>
 		<Product type="0313" id="010b" name="SSA2USR - Siren/Strobe Light Alarm"/>
 	</Manufacturer>
@@ -444,7 +452,7 @@
 	</Manufacturer>
 	<Manufacturer id="0118" name="Wenzhou TKB Control System">
 		<Product type="0001" id="0001" name="TZ88 Smart Energy Plug-in Switch" config="wenzhou/tz88.xml"/>
-		<Product type="0101" id="0103" name="TZ68 On/Off Switch Socket" config="wenzhou/tz68.xml"/>
+		<Product type="0101" id="0103" name="TZ68E On/Off Switch Socket" config="wenzhou/tz68.xml"/>
 		<Product type="0102" id="1020" name="TZ66D Dual Wall Switch" config="wenzhou/tz66d.xml"/>
 		<Product type="0808" id="0808" name="TZ66S Wall Switch" config="wenzhou/tz66s.xml"/>
 	</Manufacturer>
@@ -470,6 +478,7 @@
 		<Product type="0100" id="0001" name="ZME_KFOB 4 Button Key Fob" config="zwave.me/kfob.xml"/>
 		<Product type="1000" id="0001" name="ZME_054313Z Flush-Mountable Switch" />
 		<Product type="0100" id="0004" name="ZME_WCD2 Double Paddle Wall Controller" config="zwave.me/ZME_WCD2.xml"/>
+		<Product type="0201" id="0001" name="iTemp"/>
 	</Manufacturer>
 	<Manufacturer id="004f" name="Z-Wave Technologia">
 	</Manufacturer>

@@ -618,9 +618,12 @@ bool CEnOceanESP2::StartHardware()
 bool CEnOceanESP2::StopHardware()
 {
 	m_stoprequested=true;
-	m_thread->join();
-    // Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
-    sleep_milliseconds(10);
+	if (m_thread)
+	{
+		m_thread->join();
+		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
+		sleep_milliseconds(10);
+	}
 	if (isOpen())
 	{
 		try {
@@ -1322,7 +1325,7 @@ bool CEnOceanESP2::ParseData()
 			{
 				if (pFrame->DATA_BYTE0 & 0x80)
 				{
-					//Tech in datagram
+					//Teach in datagram
 
 					//DB3		DB3/2	DB2/1			DB0
 					//Profile	Type	Manufacturer-ID	LRN Type	RE2		RE1
