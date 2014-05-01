@@ -14,6 +14,8 @@
 
 #include <ctime>
 
+#define ENABLE_LOGGING
+
 #define ENOCEAN_RETRY_DELAY 30
 
 //Write/Read has to be done in sync with ESP3
@@ -736,6 +738,22 @@ float CEnOceanESP3::GetValueRange(const float InValue, const float ScaleMax, con
 
 bool CEnOceanESP3::ParseData()
 {
+#ifdef ENABLE_LOGGING
+	std::stringstream sstr;
+
+	sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (unsigned int)m_ReceivedPacketType << " (";
+	sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (unsigned int)m_DataSize << "/";
+	sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (unsigned int)m_OptionalDataSize << ") ";
+
+	for (int idx=0;idx<m_bufferpos;idx++)
+	{
+		sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (unsigned int)m_buffer[idx];
+		if (idx!=m_bufferpos-1)
+			sstr << " ";
+	}
+	_log.Log(LOG_STATUS,"EnOcean: %s",sstr.str().c_str());	
+#endif
+
 	if (m_ReceivedPacketType==PACKET_RESPONSE)
 	{
 		//Response
@@ -758,7 +776,7 @@ bool CEnOceanESP3::ParseData()
 				szError="RET_OPERATION_DENIED";
 				break;
 			}
-			_log.Log(LOG_ERROR,"EnOcean: Response Error (Code: %d, %s)",ResponseCode,szError.c_str());	
+			_log.Log(LOG_ERROR,"EnOcean: Response Error (Code: %d, %s)",ResponseCode,szError.c_str());
 			return false;
 		}
 		if ((m_bBaseIDRequested)&&(m_bufferpos==6))
@@ -944,6 +962,28 @@ void CEnOceanESP3::ParseRadioDatagram()
 	_log.Log(LOG_NORM, "EnOcean: %s", szTmp);
 	switch (m_buffer[0])
 	{
+/*
+		case RORG_1BS: // 1 byte communication (Contacts/Switches)
+			{
+				RBUF tsen;
+				memset(&tsen,0,sizeof(RBUF));
+				tsen.LIGHTING2.packetlength=sizeof(tsen.LIGHTING2)-1;
+				tsen.LIGHTING2.packettype=pTypeLighting2;
+				tsen.LIGHTING2.subtype=sTypeAC;
+				tsen.LIGHTING2.seqnbr=0;
+
+				tsen.LIGHTING2.id1=(BYTE)ID_BYTE3;
+				tsen.LIGHTING2.id2=(BYTE)ID_BYTE2;
+				tsen.LIGHTING2.id3=(BYTE)ID_BYTE1;
+				tsen.LIGHTING2.id4=(BYTE)ID_BYTE0;
+				tsen.LIGHTING2.level=0;
+				tsen.LIGHTING2.rssi=12;
+				tsen.LIGHTING2.unitcode=1;
+				tsen.LIGHTING2.cmnd=(UpDown==1)?light2_sOn:light2_sOff;
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);
+			}
+			break;
+*/
 		case RORG_4BS: // 4 byte communication
 			{
 				sprintf(szTmp,"4BS data: Sender id: 0x%02x%02x%02x%02x Status: %02x Data: %02x",

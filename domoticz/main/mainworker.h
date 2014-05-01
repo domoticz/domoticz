@@ -84,6 +84,7 @@ public:
 	CDataPush m_datapush;
 	CHardwareMonitor m_hardwaremonitor;
 	CCamScheduler m_cameras;
+
 	bool m_bIgnoreUsernamePassword;
 
 	void GetDomoticzUpdate(const std::string &UpdateURL);
