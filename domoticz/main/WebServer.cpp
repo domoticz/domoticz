@@ -6346,6 +6346,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				{
 					double tvalue=ConvertTemperature(atof(strarray[0].c_str()),tempsign);
 					root["result"][ii]["Temp"]=tvalue;
+					sprintf(szData,"%.1f %c", tvalue,tempsign);
+					root["result"][ii]["Data"]=szData;
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 				}
 			}
@@ -11649,21 +11651,19 @@ std::string CWebServer::GetJSonPage()
 			}
 			sprintf(szTmp,"%.1f",tempcelcius);
 			szQuery << "UPDATE DeviceStatus SET Used=" << used << ", sValue='" << szTmp << "' WHERE (ID == " << idx << ")";
+			szQuery.clear();
+			szQuery.str("");
+		}
+		if (name=="")
+		{
+			szQuery << "UPDATE DeviceStatus SET Used=" << used << " WHERE (ID == " << idx << ")";
 		}
 		else
 		{
-
-			if (name=="")
-			{
-				szQuery << "UPDATE DeviceStatus SET Used=" << used << " WHERE (ID == " << idx << ")";
-			}
+			if (switchtype==-1)
+				szQuery << "UPDATE DeviceStatus SET Used=" << used << ", Name='" << name << "' WHERE (ID == " << idx << ")";
 			else
-			{
-				if (switchtype==-1)
-					szQuery << "UPDATE DeviceStatus SET Used=" << used << ", Name='" << name << "' WHERE (ID == " << idx << ")";
-				else
-					szQuery << "UPDATE DeviceStatus SET Used=" << used << ", Name='" << name << "', SwitchType=" << switchtype << ", CustomImage=" << CustomImage << " WHERE (ID == " << idx << ")";
-			}
+				szQuery << "UPDATE DeviceStatus SET Used=" << used << ", Name='" << name << "', SwitchType=" << switchtype << ", CustomImage=" << CustomImage << " WHERE (ID == " << idx << ")";
 		}
 		result=m_pMain->m_sql.query(szQuery.str());
 
