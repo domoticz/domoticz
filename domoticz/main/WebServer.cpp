@@ -11895,7 +11895,7 @@ std::string CWebServer::GetJSonPage()
 			bCreated=true;
 			break;
 		case pTypeHUM:
-			m_pMain->m_sql.UpdateValue(HwdID, ID,1,pTypeHUM,sTypeTEMP1,10,255,0,"50",devname);
+			m_pMain->m_sql.UpdateValue(HwdID, ID,1,pTypeHUM,sTypeTEMP1,10,255,50,"1",devname);
 			bCreated=true;
 			break;
 		case pTypeTEMP_HUM:

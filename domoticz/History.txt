@@ -9,6 +9,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Fixed: S0 Meter second pulse counter
 - Fixed: Editing Utility Setpoint Name
 - Implemented: EventSystem can now use the utility values for Percentage/Voltage/Lux
+- Fixed: Editing Humidity Device will (Not displaying temperature adjustment)
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

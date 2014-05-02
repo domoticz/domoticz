@@ -12,6 +12,16 @@
 		</table>
     </form>
 </div>
+<div id="dialog-edittempdevicesmall">
+    <form>
+        <table class="display" id="edittable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="width:60px"><label for="devicename">Name: </label></td>
+          <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        <tr>
+		</table>
+    </form>
+</div>
 <div id="customlog" style="display:none;">
 	<table width="100%">
 		<tr>
@@ -88,7 +98,15 @@ function EditTempDevice(idx,name,addjvalue)
 	$("#dialog-edittempdevice #devicename").val(name);
 	$("#dialog-edittempdevice #adjustment").val(addjvalue);
 	$("#dialog-edittempdevice #tempcf").html($.myglobals.tempsign);
-	$( "#dialog-edittempdevice" ).dialog( "open" );
+	$("#dialog-edittempdevice" ).dialog( "open" );
+}
+
+function EditTempDeviceSmall(idx,name,addjvalue)
+{
+	clearInterval($.myglobals.refreshTimer);
+	$.devIdx=idx;
+	$("#dialog-edittempdevicesmall #devicename").val(name);
+	$("#dialog-edittempdevicesmall" ).dialog( "open" );
 }
 
 function AddTempDevice()
@@ -764,8 +782,12 @@ function ShowTemps()
           xhtm+=
                 '<a class="btnsmall" onclick="ShowTempLog(\'#tempcontent\',\'ShowTemps\',' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
 		if (window.my_config.userrights==2) {
-          xhtm+=
-                '<a class="btnsmall" onclick="EditTempDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjValue + ');" data-i18n="Edit">Edit</a> ';
+		  if (item.Type=="Humidity") {
+			  xhtm+='<a class="btnsmall" onclick="EditTempDeviceSmall(' + item.idx + ',\'' + item.Name + '\',' + item.AddjValue + ');" data-i18n="Edit">Edit</a> ';
+		  }
+		  else {
+			  xhtm+='<a class="btnsmall" onclick="EditTempDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjValue + ');" data-i18n="Edit">Edit</a> ';
+		  }
           if (item.Notifications == "true")
             xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#tempcontent\', \'ShowTemps\');" data-i18n="Notifications">Notifications</a>';
           else
@@ -886,10 +908,66 @@ $(document).ready(function() {
             $( this ).dialog( "close" );
           }
     });
+    $( "#dialog-edittempdevicesmall" ).dialog({
+          autoOpen: false,
+          width: 450,
+          height: 160,
+          modal: true,
+          resizable: false,
+          buttons: {
+              "Update": function() {
+                  var bValid = true;
+                  bValid = bValid && checkLength( $("#dialog-edittempdevicesmall #edittable #devicename"), 2, 100 );
+                  if ( bValid ) {
+                      $( this ).dialog( "close" );
+                      $.ajax({
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) + '&used=true',
+                         async: false,
+                         dataType: 'json',
+                         success: function(data) {
+                            ShowTemps();
+                         }
+                      });
+
+                  }
+              },
+              "Remove Device": function() {
+                $( this ).dialog( "close" );
+				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
+                      $.ajax({
+                         url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) + '&used=false',
+                         async: false,
+                         dataType: 'json',
+                         success: function(data) {
+                            ShowTemps();
+                         }
+                      });
+					}
+				});
+              },
+              "Transfer": function() {
+                  $( this ).dialog( "close" );
+                  TransferDevice($.devIdx,ShowTemps);
+              },
+              Cancel: function() {
+                  $( this ).dialog( "close" );
+              }
+          },
+          close: function() {
+            $( this ).dialog( "close" );
+          }
+    });
 
   ShowTemps();
 	
 	$( "#dialog-edittempdevice" ).keydown(function (event) {
+        if (event.keyCode == 13) {
+			$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').trigger("click");
+            return false;
+        }
+    });
+	$( "#dialog-edittempdevicesmall" ).keydown(function (event) {
         if (event.keyCode == 13) {
 			$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').trigger("click");
             return false;
