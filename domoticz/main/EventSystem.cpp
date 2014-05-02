@@ -358,6 +358,10 @@ void CEventSystem::GetCurrentMeasurementStates()
 				utilityval=(float)atof(splitresults[4].c_str());
 				isUtility = true;
 				break;
+			case pTypeLux:
+				utilityval=(float)atof(splitresults[0].c_str());
+				isUtility = true;
+				break;
 			case pTypeGeneral:
 				{
 					if (sitem.subType==sTypeVisibility)
@@ -366,6 +370,16 @@ void CEventSystem::GetCurrentMeasurementStates()
 						isUtility = true;
 					}
 					else if (sitem.subType==sTypeSolarRadiation)
+					{
+						utilityval=(float)atof(splitresults[0].c_str());
+						isUtility = true;
+					}
+					else if (sitem.subType==sTypePercentage)
+					{
+						utilityval=(float)atof(splitresults[0].c_str());
+						isUtility = true;
+					}
+					else if (sitem.subType==sTypeVoltage)
 					{
 						utilityval=(float)atof(splitresults[0].c_str());
 						isUtility = true;

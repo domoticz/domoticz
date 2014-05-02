@@ -962,9 +962,24 @@ void CEnOceanESP3::ParseRadioDatagram()
 	_log.Log(LOG_NORM, "EnOcean: %s", szTmp);
 	switch (m_buffer[0])
 	{
-/*
 		case RORG_1BS: // 1 byte communication (Contacts/Switches)
 			{
+				sprintf(szTmp,"1BS data: Sender id: 0x%02x%02x%02x%02x Data: %02x",
+					m_buffer[2],m_buffer[3],m_buffer[4],m_buffer[5],
+					m_buffer[0]
+				);
+
+				_log.Log(LOG_NORM, "EnOcean: %s", szTmp);
+
+				unsigned char DATA_BYTE0 = m_buffer[1];
+
+				unsigned char ID_BYTE3  = m_buffer[2];
+				unsigned char ID_BYTE2  = m_buffer[3];
+				unsigned char ID_BYTE1  = m_buffer[4];
+				unsigned char ID_BYTE0  = m_buffer[5];
+
+				int UpDown=(DATA_BYTE0&1)==0;
+
 				RBUF tsen;
 				memset(&tsen,0,sizeof(RBUF));
 				tsen.LIGHTING2.packetlength=sizeof(tsen.LIGHTING2)-1;
@@ -983,7 +998,6 @@ void CEnOceanESP3::ParseRadioDatagram()
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);
 			}
 			break;
-*/
 		case RORG_4BS: // 4 byte communication
 			{
 				sprintf(szTmp,"4BS data: Sender id: 0x%02x%02x%02x%02x Status: %02x Data: %02x",

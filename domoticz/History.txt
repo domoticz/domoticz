@@ -8,6 +8,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Changed: Energy Device now logs updates same value in short log
 - Fixed: S0 Meter second pulse counter
 - Fixed: Editing Utility Setpoint Name
+- Implemented: EventSystem can now use the utility values for Percentage/Voltage/Lux
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io
