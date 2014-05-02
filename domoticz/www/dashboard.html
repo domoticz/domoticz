@@ -526,7 +526,12 @@ function RefreshFavorites()
 									img+=GetTemp48Item(item.Temp);
 								}
 								else {
-									img+=GetTemp48Item(item.Chill);
+									if (item.Type=="Humidity") {
+										img+="gauge48.png";
+									}
+									else {
+										img+=GetTemp48Item(item.Chill);
+									}
 								}
 								img+='" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40" width="40">';
 								if ($(id + " #img").html()!=img) {
@@ -1886,7 +1891,12 @@ function ShowFavorites()
 								xhtm+=GetTemp48Item(item.Temp);
 							}
 							else {
-								xhtm+=GetTemp48Item(item.Chill);
+								if (item.Type=="Humidity") {
+									xhtm+="gauge48.png";
+								}
+								else {
+									xhtm+=GetTemp48Item(item.Chill);
+								}
 							}
 							xhtm+='" onmouseover="cursorhand()" onmouseout="cursordefault()" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40" width="40"></td>\n' +
 									'\t      <td id="status">';
