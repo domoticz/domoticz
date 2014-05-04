@@ -11658,7 +11658,13 @@ std::string CWebServer::GetJSonPage()
 	{
 		std::string cparam=m_pWebEm->FindValue("param");
 		if (cparam=="")
-			goto exitjson;
+		{
+			cparam=m_pWebEm->FindValue("dparam");
+			if (cparam=="")
+			{
+				goto exitjson;
+			}
+		}
 		if (cparam=="logout")
 		{
 			root["status"]="OK";
@@ -12169,6 +12175,14 @@ std::string CWebServer::GetJSonPage()
 		root["title"]="Events";
         
         std::string cparam=m_pWebEm->FindValue("param");
+		if (cparam=="")
+		{
+			cparam=m_pWebEm->FindValue("dparam");
+			if (cparam=="")
+			{
+				goto exitjson;
+			}
+		}
 
         if (cparam=="list")
 		{
