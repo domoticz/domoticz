@@ -2758,7 +2758,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 					{
 						root["result"][ii]["idx"]=ID;
 						root["result"][ii]["Name"]=Name;
-						root["result"][ii]["Type"]=Hardware_Type_Desc(Type);
+						root["result"][ii]["Type"]=RFX_Type_Desc(Type,1);
 						root["result"][ii]["SubType"]=RFX_Type_SubType_Desc(Type,SubType);
 						bool bIsDimmer=(switchtype==STYPE_Dimmer);
 						root["result"][ii]["IsDimmer"]=bIsDimmer;
