@@ -398,7 +398,8 @@ COpenZWave::COpenZWave(const int ID, const std::string& devname)
 	m_szSerialPort=devname;
 	m_controllerID=0;
 	m_initFailed = false;
-	m_nodesQueried = false;
+	m_allNodesQueried = false;
+	m_awakeNodesQueried = false;
 	m_pManager=NULL;
 }
 
@@ -662,10 +663,13 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 		}
 		break;
 	case OpenZWave::Notification::Type_AwakeNodesQueried:
+		_log.Log(LOG_STATUS,"OpenZWave: Awake Nodes queried");
+		m_awakeNodesQueried = true;
+		break;
 	case OpenZWave::Notification::Type_AllNodesQueried:
 	case OpenZWave::Notification::Type_AllNodesQueriedSomeDead:
 		{
-			m_nodesQueried = true;
+			m_allNodesQueried = true;
 			_log.Log(LOG_STATUS,"OpenZWave: All Nodes queried");
 			NodesQueried();
 			WriteControllerConfig();
@@ -820,7 +824,8 @@ bool COpenZWave::GetInitialDevices()
 {
 	m_controllerID=0;
 	m_initFailed = false;
-	m_nodesQueried = false;
+	m_awakeNodesQueried = false;
+	m_allNodesQueried = false;
 
 	//Connect and request initial devices
 	OpenSerialConnector();
@@ -911,6 +916,12 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		return;
 	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 
+	if (!m_awakeNodesQueried)
+	{
+		_log.Log(LOG_ERROR,"OpenZWave: Switch command not send because not all Awake Nodes have been Queried!");
+		return;
+	}
+
 	OpenZWave::ValueID vID(0,0,OpenZWave::ValueID::ValueGenre_Basic,0,0,0,OpenZWave::ValueID::ValueType_Bool);
 	unsigned char svalue=(unsigned char)value;
 
@@ -921,6 +932,14 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	{
 		if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SWITCH_BINARY,vID)==true)
 		{
+			unsigned long _homeID=vID.GetHomeId();
+			unsigned long _nodeID=vID.GetNodeId();
+			if (m_pManager->IsNodeFailed(_homeID,_nodeID))
+			{
+				_log.Log(LOG_ERROR,"OpenZWave: Node has an failed (or is not alive), Switch command not send!");
+				return;
+			}
+
 			OpenZWave::ValueID::ValueType vType=vID.GetType();
 			_log.Log(LOG_NORM,"OpenZWave: Domoticz has send a Switch command!");
 			bHaveSendSwitch=true;
@@ -950,6 +969,14 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		else if ((GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SENSOR_BINARY,vID)==true) ||
 			 (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SENSOR_MULTILEVEL,vID)==true))
 		{
+			unsigned long _homeID=vID.GetHomeId();
+			unsigned long _nodeID=vID.GetNodeId();
+			if (m_pManager->IsNodeFailed(_homeID,_nodeID))
+			{
+				_log.Log(LOG_ERROR,"OpenZWave: Node has an failed (or is not alive), Switch command not send!");
+				return;
+			}
+
 			OpenZWave::ValueID::ValueType vType=vID.GetType();
 			_log.Log(LOG_NORM,"OpenZWave: Domoticz has sent a Switch command!");
 			bHaveSendSwitch=true;
@@ -979,6 +1006,14 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	}
 	else
 	{
+		unsigned long _homeID=vID.GetHomeId();
+		unsigned long _nodeID=vID.GetNodeId();
+		if (m_pManager->IsNodeFailed(_homeID,_nodeID))
+		{
+			_log.Log(LOG_ERROR,"OpenZWave: Node has an failed (or is not alive), Switch command not send!");
+			return;
+		}
+
 /*
 		if (vType == OpenZWave::ValueID::ValueType_Decimal)
 		{
@@ -2201,6 +2236,14 @@ void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int po
 				unsigned char commandclass=ittValue->GetCommandClassId();
 				OpenZWave::ValueID::ValueGenre vGenre=ittValue->GetGenre();
 
+				unsigned long _homeID=ittValue->GetHomeId();
+				unsigned long _nodeID=ittValue->GetNodeId();
+				if (m_pManager->IsNodeFailed(_homeID,_nodeID))
+				{
+					//do not enable/disable polling on nodes that are failed
+					continue;
+				}
+
 				//Ignore non-user types
 				if (vGenre!=OpenZWave::ValueID::ValueGenre_User)
 					continue;
@@ -2212,7 +2255,7 @@ void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int po
 					(vLabel=="Interval")||
 					(vLabel=="Previous Reading")
 					)
-					continue;;
+					continue;
 
 				if (commandclass==COMMAND_CLASS_SWITCH_BINARY)
 				{

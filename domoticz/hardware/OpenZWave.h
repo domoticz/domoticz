@@ -118,7 +118,8 @@ private:
 	int m_controllerID;
 
 	bool m_initFailed;
-	bool m_nodesQueried;
+	bool m_awakeNodesQueried;
+	bool m_allNodesQueried;
 };
 
 #endif //WITH_OPENZWAVE

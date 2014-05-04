@@ -420,7 +420,7 @@ bool CGpio::InitPins()
 			if (fields.size()==7) {
 				// trim each field
 				for (int i = 0; i < fields.size(); i++) {
-					boost::algorithm::trim(fields[i]);
+					fields[i]=stdstring_trim(fields[i]);
 //					std::cout << "fields[" << i << "] = " << fields[i] << std::endl;
 				}
 				// check if not on header line
