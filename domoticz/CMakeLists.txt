@@ -169,6 +169,8 @@ hardware/Dummy.cpp
 hardware/EnOceanESP2.cpp
 hardware/EnOceanESP3.cpp
 hardware/ForecastIO.cpp
+hardware/Gpio.cpp
+hardware/GpioPin.cpp
 hardware/HardwareMonitor.cpp
 hardware/ICYThermostat.cpp
 hardware/Limitless.cpp
@@ -293,6 +295,31 @@ IF(OpenZWave)
 else()
 	MESSAGE(STATUS "==== OpenZWave not found, support disabled!")
 ENDIF(OpenZWave)
+
+# try to detect Raspberry Pi hardware and WiringPi library. If found, include GPIO support
+find_path(RaspberryPi NAMES bcm_host.h PATHS "/opt/vc/include")
+IF(RaspberryPi)
+	message(STATUS "Building on Raspberry Pi... (bcm_host.h found in ${RaspberryPi})")
+	find_path(WiringPi wiringPi.h)
+	IF(WiringPi)
+		message(STATUS "WiringPi include was found in ${WiringPi}...")
+		find_library(WIRINGPI_LIBRARY wiringPi)
+		IF(WIRINGPI_LIBRARY)
+			message(STATUS "WiringPi library was found in ${WIRINGPI_LIBRARY}...")
+			add_definitions(-DWITH_GPIO)
+			target_link_libraries(domoticz ${WIRINGPI_LIBRARY})		
+		else()
+			message(STATUS "==== WiringPi library not found. GPIO support disabled.")
+		message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
+		ENDIF()
+	else()
+		message(STATUS "==== WiringPi include file (wiringPi.h) not found. GPIO support disabled.")
+		message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
+	ENDIF(WiringPi)
+else()
+	message(STATUS "Not building on Raspberry Pi. GPIO support disabled.")
+	add_definitions(-DWITH_GPIO)
+ENDIF(RaspberryPi)
 
 target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua)
 

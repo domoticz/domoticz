@@ -11,6 +11,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: EventSystem can now use the utility values for Percentage/Voltage/Lux
 - Fixed: Editing Humidity Device will (Not displaying temperature adjustment)
 - Implemented: Option to delete data point from sensor by Shift-Left click on short log for counter graphs
+- Implemented: Rasberry Pi GPIO (WiringPi) support, thanks to Vicne!
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

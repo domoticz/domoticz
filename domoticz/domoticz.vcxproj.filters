@@ -141,6 +141,9 @@
     <Filter Include="Devices\PVOutput">
       <UniqueIdentifier>{18743244-0b44-4bd4-851a-2e2ada37b8ed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\GPIO%28wiringPi%29">
+      <UniqueIdentifier>{b87abdbf-bee2-4192-86ae-1ab1c4bca502}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -430,6 +433,12 @@
     <ClInclude Include="hardware\EnOceanESP3.h">
       <Filter>Devices\EnOcean</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\Gpio.h">
+      <Filter>Devices\GPIO%28wiringPi%29</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\GpioPin.h">
+      <Filter>Devices\GPIO%28wiringPi%29</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -680,6 +689,12 @@
     </ClCompile>
     <ClCompile Include="hardware\EnOceanESP3.cpp">
       <Filter>Devices\EnOcean</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\Gpio.cpp">
+      <Filter>Devices\GPIO%28wiringPi%29</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\GpioPin.cpp">
+      <Filter>Devices\GPIO%28wiringPi%29</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

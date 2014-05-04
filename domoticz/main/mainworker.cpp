@@ -45,6 +45,10 @@
 #include "../hardware/ICYThermostat.h"
 #include "../hardware/WOL.h"
 #include "../hardware/PVOutput_Input.h"
+#ifdef WITH_GPIO
+	#include "../hardware/Gpio.h"
+	#include "../hardware/GpioPin.h"
+#endif
 
 #ifdef WIN32
     #include "dirent_windows.h"
@@ -517,7 +521,15 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_PiFace:
 		pHardware = new CPiFace(ID);
 		break;
+	case HTYPE_RaspberryGPIO:
+		//Raspberry Pi GPIO port access
+#ifdef WITH_GPIO
+		pHardware = new CGpio(ID);
+#endif
+		break;
 	}
+
+
 	if (pHardware)
 	{
 		pHardware->HwdType=Type;

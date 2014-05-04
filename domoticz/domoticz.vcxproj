@@ -114,6 +114,8 @@
     <ClInclude Include="hardware\EnOceanESP2.h" />
     <ClInclude Include="hardware\EnOceanESP3.h" />
     <ClInclude Include="hardware\ForecastIO.h" />
+    <ClInclude Include="hardware\Gpio.h" />
+    <ClInclude Include="hardware\GpioPin.h" />
     <ClInclude Include="hardware\hidapi.h" />
     <ClInclude Include="hardware\ICYThermostat.h" />
     <ClInclude Include="hardware\Limitless.h" />
@@ -209,6 +211,8 @@
     <ClCompile Include="hardware\EnOceanESP2.cpp" />
     <ClCompile Include="hardware\EnOceanESP3.cpp" />
     <ClCompile Include="hardware\ForecastIO.cpp" />
+    <ClCompile Include="hardware\Gpio.cpp" />
+    <ClCompile Include="hardware\GpioPin.cpp" />
     <ClCompile Include="hardware\ICYThermostat.cpp" />
     <ClCompile Include="hardware\libusbwinusbbridge.cpp" />
     <ClCompile Include="hardware\Limitless.cpp" />

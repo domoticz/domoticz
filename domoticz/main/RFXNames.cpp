@@ -166,6 +166,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_WOL,				"Wake-on-LAN" },
 		{ HTYPE_PVOUTPUT_INPUT,		"PVOutput (Input) (Not ready yet!)" },
 		{ HTYPE_EnOceanESP3,		"EnOcean USB (ESP3) (Not ready yet!)" },
+		{ HTYPE_RaspberryGPIO,		"Raspberry's GPIO port" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

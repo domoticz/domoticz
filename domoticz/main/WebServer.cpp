@@ -17,6 +17,10 @@
 #include "../hardware/EnOceanESP3.h"
 #include "../hardware/Wunderground.h"
 #include "../hardware/ForecastIO.h"
+#ifdef WITH_GPIO
+	#include "../hardware/Gpio.h"
+	#include "../hardware/GpioPin.h"
+#endif // WITH_GPIO
 #include "../hardware/WOL.h"
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
@@ -432,6 +436,9 @@ void CWebServer::CmdAddHardware(Json::Value &root)
 	else if (htype == HTYPE_SMASpot) {
 		if (username=="")
 			return;
+	}
+	else if (htype == HTYPE_RaspberryGPIO) {
+		//all fine here!
 	}
 	else
 		return;
@@ -2658,6 +2665,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				case HTYPE_EnOceanESP2:
 				case HTYPE_EnOceanESP3:
 				case HTYPE_Dummy:
+				case HTYPE_RaspberryGPIO:
 					root["result"][ii]["idx"]=ID;
 					root["result"][ii]["Name"]=Name;
 					ii++;
@@ -2665,6 +2673,33 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				}
 			}
 		}
+	}
+	else if (cparam=="getgpio")
+	{
+		//used by Add Manual Light/Switch dialog
+		root["title"]="GetGpio";
+#ifdef WITH_GPIO
+		std::vector<CGpioPin> pins = CGpio::GetPinList();
+		if (pins.size() == 0) {
+			root["status"]="ERROR";
+			root["result"][0]["idx"]=0;
+			root["result"][0]["Name"]="GPIO INIT ERROR";
+		}
+		else {
+			int ii = 0;
+			for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it) {
+				CGpioPin pin=*it;
+				root["status"]="OK";
+				root["result"][ii]["idx"] = pin.GetId();
+				root["result"][ii]["Name"] = pin.ToString();
+				ii++;
+			}
+		}
+#else
+		root["status"]="OK";
+		root["result"][0]["idx"]=0;
+		root["result"][0]["Name"]="N/A";
+#endif
 	}
 	else if (cparam=="getlightswitches")
 	{
@@ -3052,6 +3087,52 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			s_strid << std::hex << std::uppercase << rID;
 			devid=s_strid.str();
 		}
+		else if (lighttype==68)
+		{
+#ifdef WITH_GPIO
+			dtype=pTypeLighting1;
+			subtype=sTypeIMPULS;
+			devid="0";
+			sunitcode=m_pWebEm->FindValue("unitcode"); //Unit code = GPIO number
+
+			if (sunitcode=="") {
+				root["status"]="ERROR";
+				root["message"]="No GPIO number given";
+				return;
+			}
+			CGpio *pGpio=(CGpio *)m_pMain->GetHardware(atoi(hwdid.c_str()));
+			if (pGpio==NULL) {
+				root["status"]="ERROR";
+				root["message"]="Could not retrieve GPIO hardware pointer";
+				return;
+			}
+			if (pGpio->HwdType!=HTYPE_RaspberryGPIO) {
+				root["status"]="ERROR";
+				root["message"]="Given hardware is not GPIO";
+				return;
+			}			
+			CGpioPin *pPin = CGpio::GetPPinById(atoi(sunitcode.c_str()));
+			if (pPin == NULL) {
+				root["status"]="ERROR";
+				root["message"]="Given pin does not exist on this GPIO hardware";
+				return;
+			}
+			if (!pPin->GetIsExported()) {
+				root["status"]="ERROR";
+				root["message"]="Given pin is not exported";
+				return;
+			}
+			if (!pPin->GetIsOutput()) {
+				root["status"]="ERROR";
+				root["message"]="Given pin is not configured for output";
+				return;
+			}
+#else
+			root["status"]="ERROR";
+			root["message"]="GPIO support is disabled";
+			return;
+#endif
+		}
 		else if (lighttype<20)
 		{
 			dtype=pTypeLighting1;
@@ -3169,6 +3250,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			}
 		}
 		root["status"]="OK";
+		root["message"]="OK";
 		root["title"]="TestSwitch";
 		std::vector<std::string> sd;
 
@@ -3261,6 +3343,35 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			std::stringstream s_strid;
 			s_strid << std::hex << std::uppercase << rID;
 			devid=s_strid.str();
+		}
+		else if (lighttype==68)
+		{
+#ifdef WITH_GPIO
+			dtype=pTypeLighting1;
+			subtype=sTypeIMPULS;
+			devid="0";
+			sunitcode=m_pWebEm->FindValue("unitcode"); //Unit code = GPIO number
+
+			if (sunitcode=="") {
+				return;
+			}
+			CGpio *pGpio=(CGpio *)m_pMain->GetHardware(atoi(hwdid.c_str()));
+			if (pGpio==NULL) {
+				return;
+			}
+			if (pGpio->HwdType!=HTYPE_RaspberryGPIO) {
+				return;
+			}
+			CGpioPin *pPin = CGpio::GetPPinById(atoi(sunitcode.c_str()));
+			if (pPin == NULL) {
+				return;
+			}
+			if (!pPin->GetIsExported()) {
+				return;
+			}
+#else
+			return;
+#endif
 		}
 		else if (lighttype<20)
 		{
@@ -5036,6 +5147,7 @@ char * CWebServer::DisplayHardwareCombo()
 			case HTYPE_EnOceanESP2:
 			case HTYPE_EnOceanESP3:
 			case HTYPE_Dummy:
+			case HTYPE_RaspberryGPIO:
 				sprintf(szTmp,"<option value=\"%d\">%s</option>\n",ID,Name.c_str());
 				m_retstr+=szTmp;
 				break;
@@ -5079,6 +5191,14 @@ char * CWebServer::DisplayHardwareTypesCombo()
 #ifndef WITH_OPENZWAVE
 		if (ii == HTYPE_OpenZWave)
 			bDoAdd=false;
+#endif
+#ifndef WITH_GPIO
+			if (
+				(ii == HTYPE_RaspberryGPIO)
+				)
+			{
+				bDoAdd=false;
+			}
 #endif
 		if ((ii == HTYPE_1WIRE)&&(!C1Wire::Have1WireSystem()))
 			bDoAdd=false;

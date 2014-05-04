@@ -82,6 +82,7 @@ enum _eHardwareTypes {
 	HTYPE_WOL,					//29
 	HTYPE_PVOUTPUT_INPUT,		//30
 	HTYPE_EnOceanESP3,			//31
+	HTYPE_RaspberryGPIO,		//32
 	HTYPE_END
 };
 
