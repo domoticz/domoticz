@@ -318,7 +318,6 @@ IF(RaspberryPi)
 	ENDIF(WiringPi)
 else()
 	message(STATUS "Not building on Raspberry Pi. GPIO support disabled.")
-	add_definitions(-DWITH_GPIO)
 ENDIF(RaspberryPi)
 
 target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua)
