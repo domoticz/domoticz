@@ -1386,8 +1386,14 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			DeviceRowIdx=decode_Lux(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeGeneral:
-			WriteMessage("General",false);
-			DeviceRowIdx=decode_General(pHardware, HwdID, (tRBUF *)pRXCommand);
+			{
+				const _tGeneralDevice *pMeter=(const _tGeneralDevice*)pRXCommand;
+				unsigned char devType=pMeter->type;
+				unsigned char subType=pMeter->subtype;
+				WriteMessage("General/",false);
+				WriteMessage(RFX_Type_SubType_Desc(devType,subType),false);
+				DeviceRowIdx=decode_General(pHardware, HwdID, (tRBUF *)pRXCommand);
+			}
 			break;
 		case pTypeChime:
 			WriteMessage("Chime",false);

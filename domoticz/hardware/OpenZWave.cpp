@@ -665,16 +665,15 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 	case OpenZWave::Notification::Type_AwakeNodesQueried:
 		_log.Log(LOG_STATUS,"OpenZWave: Awake Nodes queried");
 		m_awakeNodesQueried = true;
+		NodesQueried();
+		WriteControllerConfig();
 		break;
 	case OpenZWave::Notification::Type_AllNodesQueried:
 	case OpenZWave::Notification::Type_AllNodesQueriedSomeDead:
-		{
-			m_allNodesQueried = true;
-			_log.Log(LOG_STATUS,"OpenZWave: All Nodes queried");
-			NodesQueried();
-			WriteControllerConfig();
-			//IncludeDevice();
-		}
+		m_allNodesQueried = true;
+		_log.Log(LOG_STATUS,"OpenZWave: All Nodes queried");
+		NodesQueried();
+		WriteControllerConfig();
 		break;
 	case OpenZWave::Notification::Type_NodeNaming:
 		if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )

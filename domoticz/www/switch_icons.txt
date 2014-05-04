@@ -9,3 +9,4 @@ Fan;Fan;Airflow Producer
 Speaker;Speaker;Audio Speaker
 Generic;Generic;Generic On/Off switch
 Fireplace;Fireplace;Fireplace
+Water;Water;Water
