@@ -13,6 +13,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: Option to delete data point from sensor by Shift-Left click on short log for counter graphs
 - Implemented: Rasberry Pi GPIO (WiringPi) support, thanks to Vicne!
 - Implemented: additional dparam replacement for the json command option (can be used where &param is translated to ParaCharacterEntity (PHP for example)
+- Implemented: today value for Energy devices in Utility tab
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

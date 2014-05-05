@@ -189,6 +189,9 @@ function RefreshUtilities()
 				}
 				else if (item.Type == "Energy") {
 					status=item.Data;
+					if (typeof item.CounterToday != 'undefined') {
+						status+=', ' + $.i18n("Today") + ': ' + item.CounterToday;
+					}
 				}
 				else if (item.SubType == "Percentage") {
 					status=item.Data;
@@ -422,7 +425,10 @@ function ShowUtilities()
             else if (item.Type == "Energy") {
               xhtm+='current48.png" height="48" width="48"></td>\n';
               status=item.Data;
-            }
+			  if (typeof item.CounterToday != 'undefined') {
+				status+=', ' + $.i18n("Today") + ': ' + item.CounterToday;
+			  }
+			}
             else if (item.Type == "Air Quality") {
               xhtm+='air48.png" height="48" width="48"></td>\n';
               status=item.Data + " (" + item.Quality + ")";
