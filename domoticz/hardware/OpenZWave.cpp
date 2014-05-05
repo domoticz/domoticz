@@ -670,6 +670,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 		break;
 	case OpenZWave::Notification::Type_AllNodesQueried:
 	case OpenZWave::Notification::Type_AllNodesQueriedSomeDead:
+		m_awakeNodesQueried = true;
 		m_allNodesQueried = true;
 		_log.Log(LOG_STATUS,"OpenZWave: All Nodes queried");
 		NodesQueried();
