@@ -110,9 +110,9 @@ bool CTCPServerInt::HandleAuthentication(CTCPClient_ptr c, const std::string use
 	return ((pUser->Username==username)&&(pUser->Password==password));
 }
 
-void CTCPServerInt::DoDecodeMessage(const unsigned char *pRXCommand)
+void CTCPServerInt::DoDecodeMessage(const CTCPClient *pClient, const unsigned char *pRXCommand)
 {
-	m_pRoot->DoDecodeMessage(pRXCommand);
+	m_pRoot->DoDecodeMessage(pClient,pRXCommand);
 }
 
 void CTCPServerInt::stopClient(CTCPClient_ptr c)
@@ -157,7 +157,7 @@ unsigned int CTCPServerInt::GetUserDevicesCount(const std::string username)
 	return (unsigned int) pUser->Devices.size();
 }
 
-void CTCPServerInt::SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const void* pClient2Ignore)
+void CTCPServerInt::SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClient* pClient2Ignore)
 {
 	boost::lock_guard<boost::mutex> l(connectionMutex);
 
@@ -172,14 +172,8 @@ void CTCPServerInt::SendToAll(const unsigned long long DeviceRowID, const char *
 	for (itt=connections_.begin(); itt!=connections_.end(); ++itt)
 	{
 		CTCPClient *pClient=itt->get();
-
-		if ((pClient2Ignore!=NULL)&&(pClient!=NULL))
-		{
-			//prevent endless loop			
-			DomoticzTCP *pTestClient=(DomoticzTCP *)pClient2Ignore;
-			if (pClient->m_endpoint==pTestClient->m_endpoint)
-				continue;
-		}
+		if (pClient==pClient2Ignore)
+			continue;
 
 		if (pClient)
 		{
@@ -263,7 +257,7 @@ void CTCPServer::Do_Work()
 	//_log.Log(LOG_STATUS,"TCPServer stopped...");
 }
 
-void CTCPServer::SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const void* pClient2Ignore)
+void CTCPServer::SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClient* pClient2Ignore)
 {
 	if (m_pTCPServer)
 		m_pTCPServer->SendToAll(DeviceRowID,pData,Length,pClient2Ignore);
@@ -288,12 +282,13 @@ void CTCPServer::stopAllClients()
 		m_pTCPServer->stopAllClients();
 }
 
-void CTCPServer::DoDecodeMessage(const unsigned char *pRXCommand)
+void CTCPServer::DoDecodeMessage(const CTCPClient *pClient, const unsigned char *pRXCommand)
 {
 	HwdType = HTYPE_Domoticz;
 	m_HwdID=8765;
 	Name="Domoticz Shared";
 	m_SeqNr=1;
+	m_pUserData=(void*)pClient;
 	sDecodeRXMessage(this, pRXCommand);//decode message
 }
 

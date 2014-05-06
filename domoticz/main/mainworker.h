@@ -98,7 +98,7 @@ private:
 	void PrintDeviceName(const std::string &devname);
 	void GetRaspberryPiTemperature();
 	void HandleAutomaticBackups();
-	unsigned long long PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand);
+	unsigned long long PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);
 	struct _tStartScene
 	{
 		unsigned long long SceneRowID;

@@ -73,6 +73,7 @@
 extern std::string szStartupFolder;
 extern std::string szWWWFolder;
 extern bool bIsRaspberryPi;
+class tcp::server::CTCPClient;
 
 MainWorker::MainWorker()
 {
@@ -1029,8 +1030,9 @@ void MainWorker::OnHardwareConnected(CDomoticzHardwareBase *pHardware)
 	SendResetCommand(pHardware);
 }
 
-unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand)
+unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand, CDomoticzHardwareBase **pOriginalHardware)
 {
+	*pOriginalHardware=NULL;
 	unsigned char devType=pRXCommand[1];
 	unsigned char subType=pRXCommand[2];
 	std::string ID="";
@@ -1121,6 +1123,7 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 			{
 				if (pHardware->HwdType != HTYPE_Domoticz)
 				{
+					*pOriginalHardware=pHardware;
 					pHardware->WriteToHardware((const char*)pRXCommand,pRXCommand[0]+1);
 					std::stringstream s_strid;
 					s_strid << std::dec << sd[1];
@@ -1169,9 +1172,11 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 #endif
 
 	unsigned long long DeviceRowIdx=-1;
+	tcp::server::CTCPClient *pClient2Ignore=NULL;
 
 	if (pHardware->HwdType == HTYPE_Domoticz)
 	{
+		CDomoticzHardwareBase *pOrgHardware=NULL;
 		switch (pRXCommand[1])
 		{
 		case pTypeLighting1:
@@ -1188,10 +1193,17 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		case pTypeThermostat3:
 			//we received a control message from a domoticz client,
 			//and should actually perform this command ourself switch
-			DeviceRowIdx=PerformRealActionFromDomoticzClient(pRXCommand);
+			DeviceRowIdx=PerformRealActionFromDomoticzClient(pRXCommand,&pOrgHardware);
 			if (DeviceRowIdx!=-1)
 			{
-				WriteMessage("Control Command");
+				if (pOrgHardware!=NULL)
+				{
+					DeviceRowIdx=-1;
+					pClient2Ignore=(tcp::server::CTCPClient*)pHardware->m_pUserData;
+					pHardware=pOrgHardware;
+					HwdID=pOrgHardware->m_HwdID;
+				}
+				WriteMessage("Control Command, ",(pOrgHardware==NULL));
 			}
 			break;
 		}
@@ -1420,14 +1432,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	if (DeviceRowIdx!=-1)
 	{
 		//Send to connected Sharing Users
-		void *pClient2Ignore=NULL;
-		if (pHardware->HwdType==HTYPE_Domoticz)
-		{
-			if (pHardware->m_HwdID!=8765)
-			{
-				pClient2Ignore=(void*)pHardware;
-			}
-		}
+		//Rob
 		m_sharedserver.SendToAll(DeviceRowIdx,(const char*)pRXCommand,pRXCommand[0]+1,pClient2Ignore);
 
 		//send via data push

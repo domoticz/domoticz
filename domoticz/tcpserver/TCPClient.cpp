@@ -61,7 +61,7 @@ void CTCPClient::handleRead(const boost::system::error_code& e,
 			}
 			else
 			{
-				pConnectionManager->DoDecodeMessage((const unsigned char *)buffer_.data());
+				pConnectionManager->DoDecodeMessage(this,(const unsigned char *)buffer_.data());
 			}
 		}
 

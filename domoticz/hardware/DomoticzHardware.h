@@ -61,6 +61,7 @@ public:
 	MainWorker *m_pMainWorker;
 	boost::signals2::signal<void(CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand)> sDecodeRXMessage;
 	boost::signals2::signal<void(CDomoticzHardwareBase *pDevice)> sOnConnected;
+	void *m_pUserData;
 private:
 	boost::mutex readQueueMutex;
 	virtual bool StartHardware()=0;

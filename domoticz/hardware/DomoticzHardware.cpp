@@ -9,6 +9,7 @@ CDomoticzHardwareBase::CDomoticzHardwareBase()
 	m_bEnableReceive=false;
 	m_rxbufferpos=0;
 	m_SeqNr=0;
+	m_pUserData=NULL;
 	m_bIsStarted=false;
 };
 
