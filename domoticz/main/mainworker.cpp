@@ -73,7 +73,12 @@
 extern std::string szStartupFolder;
 extern std::string szWWWFolder;
 extern bool bIsRaspberryPi;
-class tcp::server::CTCPClient;
+
+namespace tcp {
+namespace server {
+	class CTCPClient;
+} //namespace server
+} //namespace tcp
 
 MainWorker::MainWorker()
 {

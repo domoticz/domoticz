@@ -147,7 +147,7 @@ std::vector<std::string> CDataPush::DropdownOptions(const unsigned long long Dev
 		std::string sOptions = RFX_Type_SubType_Values(dType,dSubType);
 		std::vector<std::string> tmpV; 
 		StringSplit(sOptions, ",", tmpV); 
-		for (int i = 0; i < tmpV.size(); ++i) { 
+		for (int i = 0; i < (int) tmpV.size(); ++i) { 
 			dropdownOptions.push_back(tmpV[i]); 
 		}
 	}
@@ -175,7 +175,7 @@ std::string CDataPush::DropdownOptionsValue(const unsigned long long DeviceRowId
 		std::string sOptions = RFX_Type_SubType_Values(dType,dSubType);
 		std::vector<std::string> tmpV; 
 		StringSplit(sOptions, ",", tmpV); 
-		if (tmpV.size()>=pos) {
+		if ( (int) tmpV.size() >= pos) {
 			wording = tmpV[getpos];
 		}
 	}
@@ -253,7 +253,7 @@ std::string CDataPush::ProcessSValue(std::string rawsendValue, int delpos, int i
 	}
 	else if (vType == "Direction")
 	{
-		float Direction = atof(rawsendValue.c_str());
+		float Direction = (float)atof(rawsendValue.c_str());
 		if (includeUnit) {
 			sprintf(szData,"%.1f Degrees",Direction); 
 		}
