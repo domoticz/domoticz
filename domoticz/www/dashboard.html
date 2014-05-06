@@ -88,7 +88,7 @@ function RefreshFavorites()
 
         $.each(data.result, function(i,item){
 					//Lights
-					if (((item.Type.indexOf('Light') == 0)||(item.Type.indexOf('Blind') == 0)||(item.Type.indexOf('Curtain') == 0)||(item.Type.indexOf('Thermostat 3') == 0))&&(item.Favorite!=0))
+					if (((item.Type.indexOf('Light') == 0)||(item.Type.indexOf('Blind') == 0)||(item.Type.indexOf('Curtain') == 0)||(item.Type.indexOf('Thermostat 3') == 0)||(item.Type.indexOf('Chime') == 0))&&(item.Favorite!=0))
 					{
 						id="#dashcontent #light_" + item.idx;
 						var obj=$(id);
@@ -1307,7 +1307,7 @@ function ShowFavorites()
         $.each(data.result, function(i,item){
           if (
                 (item.Favorite!=0)&&
-                ((item.Type.indexOf('Light') == 0)||(item.Type.indexOf('Blind') == 0)||(item.Type.indexOf('Curtain') == 0)||(item.Type.indexOf('Thermostat 3') == 0)||((item.Type.indexOf('Value') == 0) && (typeof item.SwitchType != 'undefined')))
+                ((item.Type.indexOf('Light') == 0)||(item.Type.indexOf('Blind') == 0)||(item.Type.indexOf('Curtain') == 0)||(item.Type.indexOf('Thermostat 3') == 0)||(item.Type.indexOf('Chime') == 0)||((item.Type.indexOf('Value') == 0) && (typeof item.SwitchType != 'undefined')))
               )
           {
             totdevices+=1;
