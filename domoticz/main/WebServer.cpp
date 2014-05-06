@@ -6048,6 +6048,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						(dType!=pTypeChime)&&
 						(dType!=pTypeThermostat3)&&
 						(dType!=pTypeRemote)&&
+						(dType!=pTypeChime)&&
 						(!((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXStatus)))
 						)
 						continue;
