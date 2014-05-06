@@ -15,6 +15,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: additional dparam replacement for the json command option (can be used where &param is translated to ParaCharacterEntity (PHP for example)
 - Implemented: today value for Energy devices in Utility tab
 - Implemented: Device Name now displayed for the Scene/Group learn code
+- Changed: startup script path to include /usr/local/bin, users of wiringPi should replace the startup script
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

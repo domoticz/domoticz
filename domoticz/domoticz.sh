@@ -28,7 +28,7 @@ fi
 LANG=C
 export LANG
 
-PATH=/sbin:/bin:/usr/sbin:/usr/bin
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
 DAEMON=/home/pi/domoticz/domoticz
 NAME=domoticz
 DESC="Domoticz Home Automation System"
