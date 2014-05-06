@@ -12122,7 +12122,7 @@ std::string CWebServer::GetJSonPage()
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT ID, Name, HardwareID, Favorite, nValue, SceneType, LastUpdate, Protected FROM Scenes ORDER BY [Order]";
+		szQuery << "SELECT ID, Name, HardwareID, Favorite, nValue, SceneType, LastUpdate, Protected, DeviceID, Unit FROM Scenes ORDER BY [Order]";
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -12135,10 +12135,38 @@ std::string CWebServer::GetJSonPage()
 				unsigned char nValue=atoi(sd[4].c_str());
 				unsigned char scenetype=atoi(sd[5].c_str());
 				int iProtected=atoi(sd[7].c_str());
+				int HardwareID=atoi(sd[2].c_str());
+				std::string CodeDeviceName="";
+
+				if (HardwareID!=0)
+				{
+					CodeDeviceName="? not found!";
+				}
+
+				if (sd.size()==10)
+				{
+					std::string DeviceID=sd[8];
+					int Unit=atoi(sd[9].c_str());
+
+					if (HardwareID!=0)
+					{
+						//Get learn code device name
+						szQuery.clear();
+						szQuery.str("");
+						szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << HardwareID << ") AND (DeviceID=='" << DeviceID << "') AND (Unit==" << Unit << ")";
+						result2=m_pMain->m_sql.query(szQuery.str());
+						if (result2.size()>0)
+						{
+							CodeDeviceName=result2[0][0];
+						}
+					}
+				}
+
 
 				root["result"][ii]["idx"]=sd[0];
 				root["result"][ii]["Name"]=sd[1];
-				root["result"][ii]["HardwareID"]=atoi(sd[2].c_str());
+				root["result"][ii]["HardwareID"]=HardwareID;
+				root["result"][ii]["CodeDeviceName"]=CodeDeviceName;
 				root["result"][ii]["Favorite"]=atoi(sd[3].c_str());
 				root["result"][ii]["Protected"]=(iProtected!=0);
 

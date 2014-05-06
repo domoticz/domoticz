@@ -51,6 +51,7 @@
 		<br>
 			<button id="removecode" class="btn btn-small" type="button" onclick="RemoveCode();" data-i18n="Remove Code">Remove Code</button>
 			<button id="learncode" class="btn btn-small" type="button" onclick="LearnCode();" data-i18n="Learn Code">Learn Code</button>
+			<span id="learndevicename"></span>
 		<br>
 		<br>
 		<h2>Devices:</h2>
@@ -278,6 +279,8 @@ function RemoveCode()
 	$("#scenecontent #learncode").addClass("btn-success");
 	$("#scenecontent #learncode").html($.i18n("Learn Code"));
 
+	$("#scenecontent #learndevicename").html("");
+
 	$.ajax({
 		 url: "json.htm?type=command&param=removescenecode&idx="+$.devIdx,
 		 async: false, 
@@ -328,6 +331,8 @@ function LearnCode()
 				$("#scenecontent #removecode").addClass("btn-danger");
 				$("#scenecontent #learncode").addClass("btn-warning");
 				$("#scenecontent #learncode").html($.i18n("Change Code"));
+				
+				$("#scenecontent #learndevicename").html("( " + Name + " )");
 				
 				$.ajax({
 					 url: "json.htm?type=command&param=setscenecode&idx="+$.devIdx+"&devid="+deviceidx+"&cmnd="+Cmd, 
@@ -752,7 +757,7 @@ function OnSelChangeDevice()
 	}
 }
 
-function EditSceneDevice(idx,name,havecode,type,bIsProtected)
+function EditSceneDevice(idx,name,havecode,type,bIsProtected,learndevicename)
 {
   clearInterval($.myglobals.refreshTimer);
   $.devIdx=idx;
@@ -842,11 +847,13 @@ function EditSceneDevice(idx,name,havecode,type,bIsProtected)
 			$("#scenecontent #removecode").addClass("disabled");
 			$("#scenecontent #learncode").addClass("btn-success");
 			$("#scenecontent #learncode").html($.i18n("Learn Code"));
+			$("#scenecontent #learndevicename").html("");
 	}
 	else {
 			$("#scenecontent #removecode").addClass("btn-danger");
 			$("#scenecontent #learncode").addClass("btn-warning");
 			$("#scenecontent #learncode").html($.i18n("Change Code"));
+			$("#scenecontent #learndevicename").html("( " + learndevicename + " )");
 	}
 
   RefreshDeviceTable(idx);
@@ -1462,7 +1469,7 @@ function ShowScenes()
                   '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
           if (window.my_config.userrights==2) {
-				xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + item.Name + '\',' + item.HardwareID + ',\'' + item.Type + '\', ' + item.Protected + ');" data-i18n="Edit">Edit</a> ';
+				xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + item.Name + '\',' + item.HardwareID + ',\'' + item.Type + '\', ' + item.Protected + ',\'' + item.CodeDeviceName + '\');" data-i18n="Edit">Edit</a> ';
 				if (bAddTimer == true) {
 					if (item.Timers == "true") {
 						xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',\'' + item.Type + '\');" data-i18n="Timers">Timers</a> ';
