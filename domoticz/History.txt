@@ -17,6 +17,8 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: Device Name now displayed for the Scene/Group learn code
 - Changed: startup script path to include /usr/local/bin, users of wiringPi should replace the startup script
 - Fixed: Chime devices now visible on dashboard
+- Implemented: Added Fibaro Motion Sensor (0800/1001) to the openzwave manufacturer file
+- Changed: startup script now compatible with new ubuntu pidofproc
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

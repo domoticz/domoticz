@@ -55,7 +55,7 @@ log()
 }
 
 start () {
-  if ! pidofproc -p "$PIDFILE" >/dev/null; then
+  if ! pidofproc -p "$PIDFILE" "$DAEMON" >/dev/null; then
       log_daemon_msg "Starting $DESC"
       # since we dont have a proper daemon, lets pretend...
       $DAEMON $OPTIONS &> $LOGFILE &
@@ -81,7 +81,7 @@ stop () {
   SIG="${1:--TERM}"
   killproc -p "$PIDFILE" "$DAEMON" "$SIG"
   # this is a workaround for killproc -TERM not zapping the pidfile
-  if ! pidofproc -p "$PIDFILE" >/dev/null; then
+  if ! pidofproc -p "$PIDFILE" "$DAEMON">/dev/null; then
     rm -f $PIDFILE
   fi
 }
