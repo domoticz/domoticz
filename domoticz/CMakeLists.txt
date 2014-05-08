@@ -271,7 +271,7 @@ ENDIF(LIBUSB_FOUND)
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	SET(OperatingSystem "Linux")
 	add_definitions(-DLUA_USE_LINUX)
-	target_link_libraries(domoticz -ldl)
+	target_link_libraries(domoticz -lrt -ldl)
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 # try to find open-zwave, if found, include support
