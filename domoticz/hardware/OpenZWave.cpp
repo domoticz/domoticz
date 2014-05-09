@@ -1264,6 +1264,10 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				InsertDevice(_device);
 			}
 		}
+		else
+		{
+			_log.Log(LOG_STATUS, "OpenZWave: Value_Added: Unhandled Label: %s, Unit: %s",vLabel.c_str(),vUnits.c_str());
+		}
 	}
 	else if (commandclass==COMMAND_CLASS_METER)
 	{
@@ -1458,6 +1462,10 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 					InsertDevice(_device);
 				}
 			}
+		}
+		else
+		{
+			_log.Log(LOG_STATUS, "OpenZWave: Value_Added: Unhandled Label: %s, Unit: %s",vLabel.c_str(),vUnits.c_str());
 		}
 	}
 	else if (commandclass==COMMAND_CLASS_BATTERY)
@@ -1698,7 +1706,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 
 
 	std::string path=sstr.str();
-#ifdef _DEBUG
+#ifdef DEBUG_ZWAVE_INT
 	_log.Log(LOG_NORM, "OpenZWave: Value_Changed: Node: %d, CommandClass: %s, Label: %s, Instance: %d, Index: %d",NodeID, cclassStr(commandclass),vLabel.c_str(),vID.GetInstance(),vID.GetIndex());
 #endif
 	float fValue=0;
