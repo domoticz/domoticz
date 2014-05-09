@@ -48,7 +48,7 @@
   
   <!-- COMMAND_CLASS_BASIC does not respond to requests -->
   <CommandClass id="32" action="remove" />
-  <!-- COMMAND_CLASS_ALARM. This class is in the list reported by the GreenWave PowerNode 1, but it does not respond to requests -->
+  <!-- COMMAND_CLASS_ALARM does not respond to requests -->
   <CommandClass id="113" action="remove" />
       
   <!-- Association Groups -->
