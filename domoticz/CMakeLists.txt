@@ -272,11 +272,11 @@ else()
   MESSAGE(STATUS "==== LibUSB not found, support for TE923/Voltcraft disabled!")
 ENDIF(LIBUSB_FOUND)
 
-# support lua popen on Linux platforms
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	SET(OperatingSystem "Linux")
-	add_definitions(-DLUA_USE_LINUX)
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+## support lua popen on Linux platforms
+#IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+#	SET(OperatingSystem "Linux")
+#	add_definitions(-DLUA_USE_LINUX)
+#ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 # try to find open-zwave, if found, include support
 find_library(OpenZWave NAMES libopenzwave.a HINTS "../open-zwave-read-only" "../open-zwave-read-only/cpp/build")

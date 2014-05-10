@@ -751,20 +751,26 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
      	while ((ent = readdir (lDir)) != NULL)
 		{
 			std::string filename = ent->d_name;
-			if (ent->d_type==DT_REG) {
-                if ( (filename.length() < 4) || (filename.compare(filename.length()-4,4,".lua") != 0)) {
+			if (ent->d_type==DT_REG) 
+			{
+                if ( (filename.length() < 4) || (filename.compare(filename.length()-4,4,".lua") != 0)) 
+				{
                     //_log.Log(LOG_STATUS,"ignore file not .lua: %s",filename.c_str());
                 }
-                else {
-                    if ((filename.find("_device_") != -1) && (reason == "device") && (filename.find("_demo.lua") == -1)) {
+                else if (filename.find("_demo.lua") == std::string::npos) //skip demo lua files
+				{
+                    if ( (reason == "device")&&(filename.find("_device_") != std::string::npos)) 
+					{
                         //_log.Log(LOG_STATUS,"found device file: %s",filename.c_str());
                         EvaluateLua(reason,lua_Dir+filename, DeviceID, devname, nValue, sValue, nValueWording);
                     }
-                    else if (((filename.find("_time_") != -1)) && (reason == "time") && (filename.find("_demo.lua") == -1)) {
+                    else if ((reason == "time")&&(filename.find("_time_") != std::string::npos)) 
+					{
                         //_log.Log(LOG_STATUS,"found time file: %s",filename.c_str());
                         EvaluateLua(reason,lua_Dir+filename);
                     }
-                    else if (((filename.find("_security_") != -1)) && (reason == "security") && (filename.find("_demo.lua") == -1)) {
+                    else if ((reason == "security")&&(filename.find("_security_") != std::string::npos)) 
+					{
                         //_log.Log(LOG_STATUS,"found time file: %s",filename.c_str());
                         EvaluateLua(reason,lua_Dir+filename);
                     }
