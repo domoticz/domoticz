@@ -92,11 +92,18 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 			{
 				ret.push_back("/dev/" + fname);
 			}
-			if (fname.find("tty.usbserial")!=std::string::npos)
+			else if (fname.find("tty.usbserial")!=std::string::npos)
 			{
 				bUseDirectPath=true;
 				ret.push_back("/dev/" + fname);
 			}
+#ifdef __APPLE__
+			else if (fname.find("cu.")!=std::string::npos)
+			{
+				bUseDirectPath=true;
+				ret.push_back("/dev/" + fname);
+			}
+#endif
 			if (bHaveTtyAMAfree)
 			{
 				if (fname.find("ttyAMA0")!=std::string::npos)

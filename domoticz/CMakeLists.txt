@@ -226,13 +226,18 @@ add_dependencies(domoticz revisiontag)
 
 
 ## Link libraries
-#set(BOOST_USE_STATIC_LIBS ON)
-set(BOOST_LIBS thread date_time system)
-find_package(Boost COMPONENTS ${BOOST_LIBS} REQUIRED)
-IF (Boost_FOUND)
-    INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
-    ADD_DEFINITIONS( "-DHAS_BOOST" )
-ENDIF()
+
+option(USE_STATIC_BOOST "Build with static BOOST libraries" YES)
+set(Boost_USE_STATIC_LIBS ${USE_STATIC_BOOST})
+set(Boost_USE_MULTITHREADED ON)
+unset(Boost_INCLUDE_DIR CACHE)
+unset(Boost_LIBRARY_DIRS CACHE)
+find_package(Boost REQUIRED COMPONENTS thread date_time system)
+if(USE_STATIC_BOOST)
+   message(STATUS "Linking against boost static libraries")
+else(USE_STATIC_BOOST)
+   message(STATUS "Linking against boost dynamic libraries")
+endif(USE_STATIC_BOOST)
 
 FIND_PACKAGE(ZLIB)
 IF(ZLIB_FOUND)

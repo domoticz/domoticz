@@ -94,7 +94,7 @@ svn checkout svn://svn.code.sf.net/p/domoticz/code/domoticz
 
 cd domoticz
 
-cmake CMakeLists.txt
+cmake -DCMAKE_BUILD_TYPE=Release CMakeLists.txt
 make
 
 now you should have the binary application, you can start it with
