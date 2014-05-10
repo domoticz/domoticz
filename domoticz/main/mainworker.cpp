@@ -1117,7 +1117,7 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 		// find our original hardware
 		// if it is not a domoticz type, perform the actual command
 
-		sprintf(szTmp,"SELECT HardwareID,ID,Name FROM DeviceStatus WHERE (DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",ID.c_str(), Unit, devType, subType);
+		sprintf(szTmp,"SELECT HardwareID,ID,Name,StrParam1,StrParam2,nValue,sValue FROM DeviceStatus WHERE (DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",ID.c_str(), Unit, devType, subType);
 		result=m_sql.query(szTmp);
 		if (result.size()==1)
 		{

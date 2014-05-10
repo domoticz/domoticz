@@ -30,6 +30,7 @@ CEventSystem::CEventSystem(void)
 {
 	m_pMain=NULL;
 	m_stoprequested=false;
+	m_bEnabled=true;
 }
 
 
@@ -48,6 +49,11 @@ CEventSystem::~CEventSystem(void)
 void CEventSystem::StartEventSystem(MainWorker *pMainWorker)
 {
 	m_pMain=pMainWorker;
+
+	StopEventSystem();
+	if (!m_bEnabled)
+		return;
+
     m_pMain->m_sql.GetPreferencesVar("SecStatus", m_SecStatus);
 
 	LoadEvents();
@@ -624,6 +630,9 @@ void CEventSystem::GetCurrentMeasurementStates()
 
 void CEventSystem::RemoveSingleState(int ulDevID)
 {
+	if (!m_bEnabled)
+		return;
+
 	boost::lock_guard<boost::mutex> l(eventMutex);
 
     //_log.Log(LOG_STATUS,"deleted device %d",ulDevID);
@@ -633,6 +642,9 @@ void CEventSystem::RemoveSingleState(int ulDevID)
 
 void CEventSystem::WWWUpdateSingleState(const unsigned long long ulDevID, const std::string &devname)
 {
+	if (!m_bEnabled)
+		return;
+
 	boost::lock_guard<boost::mutex> l(eventMutex);
     std::map<unsigned long long,_tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
     if (itt != m_devicestates.end()) {
@@ -645,6 +657,9 @@ void CEventSystem::WWWUpdateSingleState(const unsigned long long ulDevID, const 
 
 void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 {
+	if (!m_bEnabled)
+		return;
+
     m_pMain->m_sql.GetPreferencesVar("SecStatus", m_SecStatus);
     EvaluateEvent("security");
 }
@@ -682,8 +697,10 @@ std::string CEventSystem::UpdateSingleState(const unsigned long long ulDevID, co
 }
 
 
-bool CEventSystem::ProcessDevice(const int HardwareID, const unsigned long long ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname)
+void CEventSystem::ProcessDevice(const int HardwareID, const unsigned long long ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname)
 {
+	if (!m_bEnabled)
+		return;
 	boost::lock_guard<boost::mutex> l(eventMutex);
 
     // query to get switchtype & LastUpdate, can't seem to get it from SQLHelper?
@@ -701,8 +718,6 @@ bool CEventSystem::ProcessDevice(const int HardwareID, const unsigned long long 
     else {
         _log.Log(LOG_ERROR,"Could not determine switch type for event device %s",devname.c_str());
     }
-    
-	return true;
 }
 
 void CEventSystem::ProcessMinute()
@@ -1981,6 +1996,9 @@ void CEventSystem::reportMissingDevice (const int deviceID, const std::string &e
 
 void CEventSystem::WWWGetItemStates(std::vector<_tDeviceStatus> &iStates)
 {
+	if (!m_bEnabled)
+		return;
+
 	boost::lock_guard<boost::mutex> l(eventMutex);
 
 	iStates.clear();

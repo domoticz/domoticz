@@ -498,9 +498,13 @@ void CWebServer::CmdUpdateHardware(Json::Value &root)
 
 	int port=atoi(sport.c_str());
 
-	if ((htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX)||(htype==HTYPE_DavisVantage)||(htype==HTYPE_S0SmartMeter)||(htype==HTYPE_OpenThermGateway)||(htype==HTYPE_TeleinfoMeter)||(htype==HTYPE_OpenZWave)||(htype==HTYPE_EnOceanESP2)||(htype==HTYPE_EnOceanESP3))
+	if (
+		(htype==HTYPE_RFXtrx315)||(htype==HTYPE_RFXtrx433)||
+		(htype==HTYPE_P1SmartMeter)||(htype==HTYPE_Rego6XX)||(htype==HTYPE_DavisVantage)||(htype==HTYPE_S0SmartMeter)||(htype==HTYPE_OpenThermGateway)||
+		(htype==HTYPE_TeleinfoMeter)||(htype==HTYPE_OpenZWave)||(htype==HTYPE_EnOceanESP2)||(htype==HTYPE_EnOceanESP3)||(htype==HTYPE_System)
+		)
 	{
-		//USB
+		//USB/System
 	}
 	else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)||(htype == HTYPE_RazberryZWave)||(htype == HTYPE_OpenThermGatewayTCP)||(htype == HTYPE_LimitlessLights)||(htype == HTYPE_SolarEdgeTCP)||(htype == HTYPE_WOL)) {
 		//Lan
@@ -569,9 +573,21 @@ void CWebServer::CmdUpdateHardware(Json::Value &root)
 		);
 	result=m_pMain->m_sql.query(szTmp);
 
-	//re-add the device in our system
-	int ID=atoi(idx.c_str());
-	m_pMain->AddHardwareFromParams(ID,name,(senabled=="true")?true:false,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
+	//Special case for internal system monitoring
+	if (htype == HTYPE_System )
+	{
+		m_pMain->m_hardwaremonitor.StopHardwareMonitor();
+		if (senabled=="true")
+		{
+			m_pMain->m_hardwaremonitor.StartHardwareMonitor(m_pMain);
+		}
+	}
+	else
+	{
+		//re-add the device in our system
+		int ID=atoi(idx.c_str());
+		m_pMain->AddHardwareFromParams(ID,name,(senabled=="true")?true:false,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
+	}
 }
 
 void CWebServer::WOLGetNodes(Json::Value &root)

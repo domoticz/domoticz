@@ -35,6 +35,7 @@ public:
 		unsigned char switchtype;
 	};
     std::map<unsigned long long,_tDeviceStatus> m_devicestates;
+	bool m_bEnabled;
     
 	CEventSystem(void);
 	~CEventSystem(void);
@@ -43,7 +44,7 @@ public:
 	void StopEventSystem();
 
 	void LoadEvents();
-	bool ProcessDevice(const int HardwareID, const unsigned long long ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname);
+	void ProcessDevice(const int HardwareID, const unsigned long long ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname);
     void RemoveSingleState(int ulDevID);
     void WWWUpdateSingleState(const unsigned long long ulDevID, const std::string &devname);
     void WWWUpdateSecurityState(int securityStatus);

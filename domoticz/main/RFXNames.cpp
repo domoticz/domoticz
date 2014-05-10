@@ -764,6 +764,7 @@ void GetLightStatus(
 	bHaveDimmer=false;
 	maxDimLevel=0;
 	bHaveGroupCmd=false;
+	lstatus="";
 
 	char szTmp[80];
 	switch (dType)
