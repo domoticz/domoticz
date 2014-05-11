@@ -242,7 +242,7 @@ function ShowDevices(filter)
   oTable.fnClearTable();
   
   $.ajax({
-     url: "json.htm?type=devices&used=" + ifilter, 
+     url: "json.htm?type=devices&displayhidden=1&used=" + ifilter, 
      async: false, 
      dataType: 'json',
      success: function(data) {
@@ -299,7 +299,7 @@ function ShowDevices(filter)
 									itemImage='<img src="images/smokeoff.png">';
 							}
           }
-          if (item.Used!=0) {
+          if ((item.Used!=0)&&(item.Name.charAt(0)!="$")) {
             itemSubIcons+='<img src="images/remove.png" title="' + $.i18n('Remove Device') +'" onclick="RemoveDevice(' + item.idx +')">';
           }
           else {

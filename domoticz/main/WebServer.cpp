@@ -1517,7 +1517,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT ID, Name FROM DeviceStatus WHERE (Used==1) ORDER BY Name";
+		szQuery << "SELECT ID, Name, Type, SubType FROM DeviceStatus WHERE (Used==1) ORDER BY Name";
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -1537,9 +1537,11 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				}
 				if (bDoAdd)
 				{
+					int _dtype=atoi(sd[2].c_str());
+					std::string Name=sd[1] + " (" + RFX_Type_Desc(_dtype,1) + "/" + RFX_Type_SubType_Desc(_dtype,atoi(sd[3].c_str())) + ")";
 					root["result"][ii]["type"]=0;
 					root["result"][ii]["idx"]=sd[0];
-					root["result"][ii]["Name"]=sd[1];
+					root["result"][ii]["Name"]=Name;
 					ii++;
 				}
 			}
@@ -5837,7 +5839,7 @@ char * CWebServer::SetLimitlessType()
 	return (char*)m_retstr.c_str();
 }
 
-void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID)
+void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const bool bDisplayHidden)
 {
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
@@ -5912,18 +5914,23 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 		}
 	}
 
+	std::set<std::string> _HiddenDevices;
+	bool bAllowDeviceToBeHidden=false;
+
 	int ii=0;
 	if (rfilter=="all")
 	{
 		//also add scenes
 		szQuery.clear();
 		szQuery.str("");
+
 		if (rowid!="")
 			szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType, Protected FROM Scenes WHERE (ID==" << rowid << ")";
 		else if ((planID!="")&&(planID!="0"))
 			szQuery << "SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType, A.Protected FROM Scenes as A, DeviceToPlansMap as B WHERE (B.PlanID==" << planID << ") AND (B.DeviceRowID==a.ID) AND (B.DevSceneType==1) ORDER BY B.[Order]";
 		else
 			szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType, Protected FROM Scenes ORDER BY " << szOrderBy;
+
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -5978,8 +5985,34 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 		else if ((planID!="")&&(planID!="0"))
 			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2, A.Protected "
 			"FROM DeviceStatus as A, DeviceToPlansMap as B WHERE (B.PlanID==" << planID << ") AND (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) ORDER BY B.[Order]";
-		else
+		else {
+			if (!bDisplayHidden)
+			{
+				//Build a list of Hidden Devices
+				szQuery << "SELECT ID FROM Plans WHERE (Name=='$Hidden Devices')";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					std::string pID=result[0][0];
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT DeviceRowID FROM DeviceToPlansMap WHERE (PlanID=='" << pID << "')";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator ittP;
+						for (ittP=result.begin(); ittP!=result.end(); ++ittP)
+						{
+							_HiddenDevices.insert(ittP[0][0]);
+						}
+					}
+				}
+				bAllowDeviceToBeHidden=true;
+				szQuery.clear();
+				szQuery.str("");
+			}
 			szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel, CustomImage, StrParam1, StrParam2, Protected FROM DeviceStatus ORDER BY " << szOrderBy;
+		}
 	}
 	else
 	{
@@ -5989,8 +6022,34 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 		else if ((planID!="")&&(planID!="0"))
 			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2, A.Protected "
 			"FROM DeviceStatus as A, SharedDevices as B, DeviceToPlansMap as C  WHERE (C.PlanID==" << planID << ") AND (C.DeviceRowID==a.ID) AND (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << m_users[iUser].ID << ") ORDER BY C.[Order]";
-		else
+		else {
+			if (!bDisplayHidden)
+			{
+				//Build a list of Hidden Devices
+				szQuery << "SELECT ID FROM Plans WHERE (Name=='$Hidden Devices')";
+				result=m_pMain->m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					std::string pID=result[0][0];
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT DeviceRowID FROM DeviceToPlansMap WHERE (PlanID=='" << pID << "')";
+					result=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator ittP;
+						for (ittP=result.begin(); ittP!=result.end(); ++ittP)
+						{
+							_HiddenDevices.insert(ittP[0][0]);
+						}
+					}
+				}
+				bAllowDeviceToBeHidden=true;
+			}
+			szQuery.clear();
+			szQuery.str("");
 			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2, A.Protected FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << m_users[iUser].ID << ") ORDER BY " << szOrderBy;
+		}
 	}
 
 	result=m_pMain->m_sql.query(szQuery.str());
@@ -6000,7 +6059,20 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 		for (itt=result.begin(); itt!=result.end(); ++itt)
 		{
 			std::vector<std::string> sd=*itt;
+			std::string sDeviceName=sd[3];
 
+			if (!bDisplayHidden)
+			{
+				if (_HiddenDevices.find(sd[0])!=_HiddenDevices.end())
+					continue;
+				if (sDeviceName[0]=='$')
+				{
+					if (bAllowDeviceToBeHidden)
+						continue;
+					if (planID.size()>0)
+						sDeviceName=sDeviceName.substr(1);
+				}
+			}
 			unsigned char dType=atoi(sd[5].c_str());
 			unsigned char dSubType=atoi(sd[6].c_str());
 			unsigned char used = atoi(sd[4].c_str());
@@ -6214,7 +6286,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			root["result"][ii]["Type"]=RFX_Type_Desc(dType,1);
 			root["result"][ii]["SubType"]=RFX_Type_SubType_Desc(dType,dSubType);
 			root["result"][ii]["TypeImg"]=RFX_Type_Desc(dType,2);
-			root["result"][ii]["Name"]=sd[3];
+			root["result"][ii]["Name"]=sDeviceName;
 			root["result"][ii]["Used"]=used;
 			root["result"][ii]["Favorite"]=favorite;
 			root["result"][ii]["SignalLevel"]=atoi(sd[7].c_str());
@@ -7787,11 +7859,13 @@ std::string CWebServer::GetJSonPage()
 		std::string rused=m_pWebEm->FindValue("used");
 		std::string rid=m_pWebEm->FindValue("rid");
 		std::string planid=m_pWebEm->FindValue("plan");
+		std::string sDisplayHidden=m_pWebEm->FindValue("displayhidden");
+		bool bDisplayHidden=(sDisplayHidden=="1");
 
 		root["status"]="OK";
 		root["title"]="Devices";
 
-		GetJSonDevices(root, rused, rfilter,order,rid,planid);
+		GetJSonDevices(root, rused, rfilter,order,rid,planid,bDisplayHidden);
 
 		root["WindScale"]=m_pMain->m_sql.m_windscale*10.0f;
 		root["WindSign"]=m_pMain->m_sql.m_windsign;
@@ -7876,121 +7950,6 @@ std::string CWebServer::GetJSonPage()
 			}
 		}
 	} //if (rtype=="users")
-	else if (rtype=="status-temp")
-	{
-		root["status"]="OK";
-		root["title"]="StatusTemp";
-
-		Json::Value tempjson;
-
-		GetJSonDevices(tempjson, "", "temp","ID","","");
-
-		Json::Value::const_iterator itt;
-		int ii=0;
-		Json::ArrayIndex rsize=tempjson["result"].size();
-		for ( Json::ArrayIndex itt = 0; itt<rsize; itt++)
-		{
-			root["result"][ii]["idx"]=ii;
-			root["result"][ii]["Name"]=tempjson["result"][itt]["Name"];
-			root["result"][ii]["Temp"]=tempjson["result"][itt]["Temp"];
-			root["result"][ii]["LastUpdate"]=tempjson["result"][itt]["LastUpdate"];
-			if (!tempjson["result"][itt]["Humidity"].empty())
-				root["result"][ii]["Humidity"]=tempjson["result"][itt]["Humidity"];
-			else
-				root["result"][ii]["Humidity"]=0;
-			if (!tempjson["result"][itt]["Chill"].empty())
-				root["result"][ii]["Chill"]=tempjson["result"][itt]["Chill"];
-			else
-				root["result"][ii]["Chill"]=0;
-
-			ii++;
-		}
-	} //if (rtype=="status-temp")
-	else if (rtype=="status-wind")
-	{
-		root["status"]="OK";
-		root["title"]="StatusWind";
-
-		Json::Value tempjson;
-
-		GetJSonDevices(tempjson, "", "wind","ID","","");
-
-		Json::Value::const_iterator itt;
-		int ii=0;
-		Json::ArrayIndex rsize=tempjson["result"].size();
-		for ( Json::ArrayIndex itt = 0; itt<rsize; itt++)
-		{
-			root["result"][ii]["idx"]=ii;
-			root["result"][ii]["Name"]=tempjson["result"][itt]["Name"];
-			root["result"][ii]["Direction"]=tempjson["result"][itt]["Direction"];
-			root["result"][ii]["DirectionStr"]=tempjson["result"][itt]["DirectionStr"];
-			root["result"][ii]["Gust"]=tempjson["result"][itt]["Gust"];
-			root["result"][ii]["Speed"]=tempjson["result"][itt]["Speed"];
-			root["result"][ii]["LastUpdate"]=tempjson["result"][itt]["LastUpdate"];
-
-			ii++;
-		}
-	} //if (rtype=="status-wind")
-	else if (rtype=="status-rain")
-	{
-		root["status"]="OK";
-		root["title"]="StatusRain";
-
-		Json::Value tempjson;
-
-		GetJSonDevices(tempjson, "", "rain","ID","","");
-
-		Json::Value::const_iterator itt;
-		int ii=0;
-		Json::ArrayIndex rsize=tempjson["result"].size();
-		for ( Json::ArrayIndex itt = 0; itt<rsize; itt++)
-		{
-			root["result"][ii]["idx"]=ii;
-			root["result"][ii]["Name"]=tempjson["result"][itt]["Name"];
-			root["result"][ii]["Rain"]=tempjson["result"][itt]["Rain"];
-			ii++;
-		}
-	} //if (rtype=="status-rain")
-	else if (rtype=="status-uv")
-	{
-		root["status"]="OK";
-		root["title"]="StatusUV";
-
-		Json::Value tempjson;
-
-		GetJSonDevices(tempjson, "", "uv","ID","","");
-
-		Json::Value::const_iterator itt;
-		int ii=0;
-		Json::ArrayIndex rsize=tempjson["result"].size();
-		for ( Json::ArrayIndex itt = 0; itt<rsize; itt++)
-		{
-			root["result"][ii]["idx"]=ii;
-			root["result"][ii]["Name"]=tempjson["result"][itt]["Name"];
-			root["result"][ii]["UVI"]=tempjson["result"][itt]["UVI"];
-			ii++;
-		}
-	} //if (rtype=="status-uv")
-	else if (rtype=="status-baro")
-	{
-		root["status"]="OK";
-		root["title"]="StatusBaro";
-
-		Json::Value tempjson;
-
-		GetJSonDevices(tempjson, "", "baro","ID","","");
-
-		Json::Value::const_iterator itt;
-		int ii=0;
-		Json::ArrayIndex rsize=tempjson["result"].size();
-		for ( Json::ArrayIndex itt = 0; itt<rsize; itt++)
-		{
-			root["result"][ii]["idx"]=ii;
-			root["result"][ii]["Name"]=tempjson["result"][itt]["Name"];
-			root["result"][ii]["Barometer"]=tempjson["result"][itt]["Barometer"];
-			ii++;
-		}
-	} //if (rtype=="status-baro")
 	else if ((rtype=="lightlog")&&(idx!=0))
 	{
 		//First get Device Type/SubType
@@ -12099,6 +12058,9 @@ std::string CWebServer::GetJSonPage()
 		root["status"]="OK";
 		root["title"]="Plans";
 
+		std::string sDisplayHidden=m_pWebEm->FindValue("displayhidden");
+		bool bDisplayHidden=(sDisplayHidden=="1");
+
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT ID, Name, [Order] FROM Plans ORDER BY [Order]";
@@ -12111,23 +12073,29 @@ std::string CWebServer::GetJSonPage()
 			{
 				std::vector<std::string> sd=*itt;
 
-				root["result"][ii]["idx"]=sd[0];
-				root["result"][ii]["Name"]=sd[1];
-				root["result"][ii]["Order"]=sd[2];
+				std::string Name=sd[1];
+				bool bIsHidden=(Name[0]=='$');
 
-				unsigned int totDevices=0;
-
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "SELECT COUNT(*) FROM DeviceToPlansMap WHERE (PlanID=='" << sd[0] << "')";
-				result2=m_pMain->m_sql.query(szQuery.str());
-				if (result.size()>0)
+				if ((bDisplayHidden)||(!bIsHidden))
 				{
-					totDevices=(unsigned int)atoi(result2[0][0].c_str());
-				}
-				root["result"][ii]["Devices"]=totDevices;
+					root["result"][ii]["idx"]=sd[0];
+					root["result"][ii]["Name"]=Name;
+					root["result"][ii]["Order"]=sd[2];
 
-				ii++;
+					unsigned int totDevices=0;
+
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT COUNT(*) FROM DeviceToPlansMap WHERE (PlanID=='" << sd[0] << "')";
+					result2=m_pMain->m_sql.query(szQuery.str());
+					if (result.size()>0)
+					{
+						totDevices=(unsigned int)atoi(result2[0][0].c_str());
+					}
+					root["result"][ii]["Devices"]=totDevices;
+
+					ii++;
+				}
 			}
 		}
 	} //plans

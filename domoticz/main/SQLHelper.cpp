@@ -21,7 +21,7 @@
 	#include <pwd.h>
 #endif
 
-#define DB_VERSION 41
+#define DB_VERSION 42
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -878,6 +878,10 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion<41)
 		{
 			query("ALTER TABLE FibaroLink ADD COLUMN [IncludeUnit] INTEGER default 0");
+		}
+		if (dbversion<42)
+		{
+			query("INSERT INTO Plans (Name) VALUES ('$Hidden Devices')");
 		}
 
 	}

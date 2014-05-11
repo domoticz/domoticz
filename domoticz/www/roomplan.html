@@ -1,5 +1,6 @@
 <div id="plancontent">
 </div>
+
 <div id="dialog-add-edit-plan" style="display:none;">
 	<table border="0" cellpadding="0" cellspacing="20" width="100%">
 		<tr>
@@ -58,7 +59,7 @@
 		<tr>
 			<td>
 				<label><span data-i18n="Device"></span>: </label>
-				<select id="comboactivedevice" style="width:300px" class="combobox ui-corner-all">
+				<select id="comboactivedevice" style="width:500px" class="combobox ui-corner-all">
 				</select>
 				<a class="btnstyle3" onclick="AddActiveDevice();" data-i18n="Add">Add</a>
 			</td>
@@ -241,7 +242,7 @@ function RefreshPlanTable()
 	var oTable = $('#plantable').dataTable();
 	oTable.fnClearTable();
 	$.ajax({
-	 url: "json.htm?type=plans", 
+	 url: "json.htm?type=plans&displayhidden=1",
 	 async: false, 
 	 dataType: 'json',
 	 success: function(data) {
@@ -267,11 +268,15 @@ function RefreshPlanTable()
 				}
 				updownImg+='<img src="images/up.png" onclick="ChangePlanOrder(0,' + item.idx + ');" onmouseover="cursorhand()" onmouseout="cursordefault()" width="16" height="16"></img>';
 			}
+			var displayName=item.Name;
+			if (item.Name=="$Hidden Devices") {
+				displayName='<span style="color:#008080"><b>'+item.Name+'</b></span>';
+			}
 			var addId = oTable.fnAddData( {
 				"DT_RowId": item.idx,
 				"Name": item.Name,
 				"Order": item.Order,
-				"0": item.Name,
+				"0": displayName,
 				"1": updownImg
 			} );
 		});
@@ -290,17 +295,23 @@ function RefreshPlanTable()
 			else {
 				oTable.$('tr.row_selected').removeClass('row_selected');
 				$(this).addClass('row_selected');
-				$('#updelclr #planedit').attr("class", "btnstyle3");
-				$('#updelclr #plandelete').attr("class", "btnstyle3");
 				$('#plancontent #delclractive #activedeviceclear').attr("class", "btnstyle3");
+				$('#updelclr #planedit').attr("class", "btnstyle3-dis");
+				$('#updelclr #plandelete').attr("class", "btnstyle3-dis");
+				
 				var anSelected = fnGetSelected( oTable );
 				if ( anSelected.length !== 0 ) {
 					var data = oTable.fnGetData( anSelected[0] );
 					var idx= data["DT_RowId"];
 					$.devIdx=idx;
-					$("#updelclr #planedit").attr("href", "javascript:EditPlan(" + idx + ")");
-					$("#updelclr #plandelete").attr("href", "javascript:DeletePlan(" + idx + ")");
-					$("#dialog-add-edit-plan #planname").val(data["Name"]);
+					var name=data["Name"];
+					if (name!="$Hidden Devices") {
+						$('#updelclr #planedit').attr("class", "btnstyle3");
+						$('#updelclr #plandelete').attr("class", "btnstyle3");
+						$("#updelclr #planedit").attr("href", "javascript:EditPlan(" + idx + ")");
+						$("#updelclr #plandelete").attr("href", "javascript:DeletePlan(" + idx + ")");
+						$("#dialog-add-edit-plan #planname").val(data["Name"]);
+					}
 					RefreshActiveDevicesTable(idx);
 				}
 			}

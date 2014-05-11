@@ -1575,8 +1575,8 @@ function RefreshOpenZWaveNodeTable()
 			else if (item.IsAwake==false) {
 				status="sleep";
 			}
-			var statusImg='<img src="images/' + status +'.png"/>';
-			var healButton='<img src="images/heal.png" onclick="ZWaveHealNode('+item.NodeID+')" onmouseover="cursorhand()" onmouseout="cursordefault()" title="'+$.i18n("Heal node")+'">';
+			var statusImg='<img src="images/' + status + '.png" />';
+			var healButton='<img src="images/heal.png" onclick="ZWaveHealNode('+item.NodeID+')" onmouseover="cursorhand()" onmouseout="cursordefault()" title="'+$.i18n("Heal node")+'" />';
 			
 			//if (item.NodeID==1) {
 			//	item.Description +='&nbsp;&nbsp;<span class="label label-info" onclick="showNetworkInfo();" onmouseover="cursorhand()" onmouseout="cursordefault()">Info</span>';
