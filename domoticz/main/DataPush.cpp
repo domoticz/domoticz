@@ -105,6 +105,8 @@ void CDataPush::DoFibaroPush()
 					std::stringstream sPostData;
 					std::stringstream Url;
 					std::vector<std::string> ExtraHeaders;
+					CURLEncode m_urlencoder;
+					sendValue=m_urlencoder.URLEncode(sendValue);
 					
 					if (targetType==0) {
 						Url << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/globalVariables";

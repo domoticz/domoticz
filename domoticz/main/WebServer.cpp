@@ -807,7 +807,7 @@ void CWebServer::SaveFibaroLink(Json::Value &root)
 	std::string targetdeviceid=m_pWebEm->FindValue("targetdeviceid");
 	std::string targetproperty=m_pWebEm->FindValue("targetproperty");
 	std::string linkactive=m_pWebEm->FindValue("linkactive");
-	std::string includeunit=m_pWebEm->FindValue("linkactive");
+	std::string includeunit=m_pWebEm->FindValue("includeunit");
 	if ((targettypei==0) && (targetvariable==""))
 		return;
 	if ((targettypei==1) && ((targetdeviceid=="")||(targetproperty=="")))
