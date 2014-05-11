@@ -96,7 +96,7 @@ void CDataPush::DoFibaroPush()
 						if (int(strarray.size())>=delpos)
 						{
 							std::string rawsendValue = strarray[delpos-1].c_str();
-							sendValue = ProcessSValue(rawsendValue,delpos,includeUnit,metertype);
+							sendValue = ProcessSendValue(rawsendValue,delpos,nValue,includeUnit,metertype);
 						}
 					}
 				}
@@ -109,6 +109,7 @@ void CDataPush::DoFibaroPush()
 					if (targetType==0) {
 						Url << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/globalVariables";
 						sPostData << "{\"name\": \"" << targetVariable << "\", \"value\": \"" << sendValue << "\"}";
+						//_log.Log(LOG_NORM,"sending global variable %s with value: %s",targetVariable.c_str(),sendValue.c_str());
 						if (!HTTPClient::PUT(Url.str(),sPostData.str(),ExtraHeaders,sResult))
 						{
 							_log.Log(LOG_ERROR,"Error sending data to Fibaro!");
@@ -119,6 +120,7 @@ void CDataPush::DoFibaroPush()
 					}	
 					else if (targetType==1) {
 						Url << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/callAction?deviceid=" << targetDeviceID << "&name=setProperty&arg1=" << targetProperty << "&arg2=" << sendValue;
+						//_log.Log(LOG_NORM,"sending value %s to property %s of virtual device id %d",sendValue.c_str(),targetProperty.c_str(),targetDeviceID);
 						if (!HTTPClient::GET(Url.str(),sResult))
 						{
 							_log.Log(LOG_ERROR,"Error sending data to Fibaro!");
@@ -182,7 +184,7 @@ std::string CDataPush::DropdownOptionsValue(const unsigned long long DeviceRowId
 	return wording;
 }
 
-std::string CDataPush::ProcessSValue(std::string rawsendValue, int delpos, int includeUnit, int metertypein)
+std::string CDataPush::ProcessSendValue(std::string rawsendValue, int delpos, int nValue, int includeUnit, int metertypein)
 {
 	
 	std::string vType = DropdownOptionsValue(DeviceRowIdx,delpos);
@@ -325,11 +327,21 @@ std::string CDataPush::ProcessSValue(std::string rawsendValue, int delpos, int i
 	}	
 	else if ((vType == "Usage") || (vType == "Usage 1") || (vType == "Usage 2") )
 	{
-		sprintf(szData,"Not supported yet");
+		if (includeUnit) {
+			sprintf(szData,"%.1f Watt",atof(rawsendValue.c_str()));
+		}
+		else {
+			sprintf(szData,"%.1f",atof(rawsendValue.c_str()));
+		}
 	}	
 	else if ((vType == "Delivery") || (vType == "Delivery 1") || (vType == "Delivery 2") )
 	{
-		sprintf(szData,"Not supported yet");
+		if (includeUnit) {
+			sprintf(szData,"%.1f Watt",atof(rawsendValue.c_str()));
+		}
+		else {
+			sprintf(szData,"%.1f",atof(rawsendValue.c_str()));
+		}
 	}
 
 	else if (vType == "Usage current")
@@ -416,11 +428,16 @@ std::string CDataPush::ProcessSValue(std::string rawsendValue, int delpos, int i
 	}
 	else if (vType == "Soil Moisture")
 	{
-		sprintf(szData,"Not supported yet");//todo; nvalue
+		if (includeUnit) {
+			sprintf(szData,"%d cb",nValue);
+		}
+		else {
+			sprintf(szData,"%d",nValue);
+		}
 	}
 	else if (vType == "Leaf Wetness")
 	{
-		sprintf(szData,"Not supported yet");//todo; nvalue
+		sprintf(szData,"%d",nValue);
 	}
 	else if (vType == "Percentage")
 	{
