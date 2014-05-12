@@ -224,9 +224,17 @@ float C1WireByOWFS::GetHumidity(const _t1WireDevice& device) const
    return (float)atof(readValue.c_str());
 }
 
+float C1WireByOWFS::GetPressure(const _t1WireDevice& device) const
+{
+   std::string readValue=readRawData(std::string(device.filename+"/B1-R1-A/pressure"));
+   if (readValue.empty())
+      return 0.0;
+   return (float)atof(readValue.c_str());
+}
+
 bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,int unit) const
 {
-   std::string fileName=std::string(device.filename);
+   std::string fileName(device.filename);
 
    switch(device.family)
    {
@@ -315,10 +323,40 @@ unsigned long C1WireByOWFS::GetCounter(const _t1WireDevice& device,int unit) con
 
 int C1WireByOWFS::GetVoltage(const _t1WireDevice& device,int unit) const
 {
-   std::string readValue=readRawData(std::string(device.filename+"/volt.").append(1,'A'+unit));
+   std::string fileName(device.filename);
+
+   switch(device.family)
+   {
+   case smart_battery_monitor:
+      {
+         static const std::string unitNames[] = { "VAD", "VDD", "vis" };
+         if (unit >= (sizeof(unitNames)/sizeof(unitNames[0])))
+            return 0;
+         fileName.append("/").append(unitNames[unit]);
+         break;
+      }
+   default:
+      {
+         fileName.append("/volt.").append(1,'A'+unit);
+         break;
+      }
+   }
+
+   std::string readValue=readRawData(fileName);
    if (readValue.empty())
       return 0;
    return (int)(atof(readValue.c_str())*1000.0);
+}
+
+float C1WireByOWFS::GetIlluminescence(const _t1WireDevice& device) const
+{
+   // Both terms "illumination" and "illuminance" are in the OWFS documentation, so try both
+   std::string readValue=readRawData(std::string(device.filename+"/S3-R1-A/illuminance"));
+   if (readValue.empty())
+      readValue=readRawData(std::string(device.filename+"/S3-R1-A/illumination"));
+   if (readValue.empty())
+      return 0;
+   return (float)(atof(readValue.c_str())*1000.0);
 }
 
 bool C1WireByOWFS::IsValidDir(const struct dirent*const de)

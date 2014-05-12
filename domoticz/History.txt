@@ -21,6 +21,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Changed: startup script now compatible with new ubuntu pidofproc
 - Fixed: Hardware Setup, motherboard sensors can now be enabled/disabled
 - Implemented: Option to hide devices (placing a $ in front of the name, or the new special roomplan)
+- Implemented: 1wire : add support of DS2438 (family 26h) on OWFS and Windows
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

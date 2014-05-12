@@ -439,6 +439,9 @@
     <ClInclude Include="hardware\GpioPin.h">
       <Filter>Devices\GPIO%28wiringPi%29</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\1Wire\1WireSystem.h">
+      <Filter>Devices\1-Wire</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">

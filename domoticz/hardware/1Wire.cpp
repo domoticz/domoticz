@@ -1,6 +1,7 @@
 
 #include "stdafx.h"
 #include "1Wire.h"
+#include "hardwaretypes.h"
 #include "1Wire/1WireByOWFS.h"
 #include "1Wire/1WireByKernel.h"
 #ifdef WIN32
@@ -278,6 +279,19 @@ void C1Wire::GetDeviceDetails()
             break;
          }
 
+      case smart_battery_monitor:
+         {
+            ReportTemperature(device.devid,m_system->GetTemperature(device));
+            ReportHumidity(device.devid,m_system->GetHumidity(device));
+            ReportVoltage(0,m_system->GetVoltage(device,0));   // VAD
+            ReportVoltage(1,m_system->GetVoltage(device,1));   // VDD
+            ReportVoltage(2,m_system->GetVoltage(device,2));   // vis
+            ReportPressure(device.devid,m_system->GetPressure(device));
+            // Commonly used as illuminescence sensor, see http://www.hobby-boards.com/store/products/Solar-Radiation-Detector.html
+            ReportIlluminescence(m_system->GetIlluminescence(device));
+            break;
+         }
+
       default: // Device is not actually supported
          {
             _log.Log(LOG_ERROR,"1-Wire : Device family (%02x) is not actually supported", device.family);
@@ -330,6 +344,14 @@ void C1Wire::ReportHumidity(const std::string& deviceId,float humidity)
    tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
 
    sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM);//decode message
+}
+
+void C1Wire::ReportPressure(const std::string& deviceId,float pressure)
+{
+   _tGeneralDevice gdevice;
+   gdevice.subtype=sTypePressure;
+   gdevice.floatval1=pressure;
+   sDecodeRXMessage(this, (const unsigned char *)&gdevice);
 }
 
 void C1Wire::ReportTemperatureHumidity(const std::string& deviceId,float temperature,float humidity)
@@ -414,4 +436,12 @@ void C1Wire::ReportVoltage(int unit,int voltage)
    tsen.RFXSENSOR.msg1 = (BYTE)(voltage/256);
    tsen.RFXSENSOR.msg2 = (BYTE)(voltage-(tsen.RFXSENSOR.msg1*256));
    sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR);//decode message
+}
+
+void C1Wire::ReportIlluminescence(float illuminescence)
+{
+   _tGeneralDevice gdevice;
+   gdevice.subtype=sTypeSolarRadiation;
+   gdevice.floatval1=illuminescence;
+   sDecodeRXMessage(this, (const unsigned char *)&gdevice);
 }

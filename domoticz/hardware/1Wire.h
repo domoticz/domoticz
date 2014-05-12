@@ -30,6 +30,8 @@ private:
    void ReportTemperature(const std::string& deviceId,float temperature);
    void ReportTemperatureHumidity(const std::string& deviceId,float temperature,float humidity);
    void ReportHumidity(const std::string& deviceId,float humidity);
+   void ReportPressure(const std::string& deviceId,float pressure);
    void ReportCounter(const std::string& deviceId,int unit,unsigned long counter);
    void ReportVoltage(int unit,int voltage);
+   void ReportIlluminescence(float illuminescence);
 };

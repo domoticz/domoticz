@@ -107,6 +107,7 @@
     <ClInclude Include="hardware\1Wire\1WireByOWFS.h" />
     <ClInclude Include="hardware\1Wire\1WireCommon.h" />
     <ClInclude Include="hardware\1Wire\1WireForWindows.h" />
+    <ClInclude Include="hardware\1Wire\1WireSystem.h" />
     <ClInclude Include="hardware\ASyncTCP.h" />
     <ClInclude Include="hardware\BMP085.h" />
     <ClInclude Include="hardware\DavisLoggerSerial.h" />

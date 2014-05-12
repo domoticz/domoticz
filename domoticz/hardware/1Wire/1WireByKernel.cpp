@@ -264,6 +264,11 @@ float C1WireByKernel::GetHumidity(const _t1WireDevice& device) const
    return 0.0f;// Device not supported in kernel mode (maybe later...), use OWFS solution.
 }
 
+float C1WireByKernel::GetPressure(const _t1WireDevice& device) const
+{
+   return 0.0f;// Device not supported in kernel mode (maybe later...), use OWFS solution.
+}
+
 bool C1WireByKernel::GetLightState(const _t1WireDevice& device,int unit) const
 {
    switch (device.family)
@@ -300,6 +305,12 @@ int C1WireByKernel::GetVoltage(const _t1WireDevice& device,int unit) const
 {
    return 0;// Device not supported in kernel mode (maybe later...), use OWFS solution.
 }
+
+float C1WireByKernel::GetIlluminescence(const _t1WireDevice& device) const
+{
+   return 0;// Device not supported in kernel mode (maybe later...), use OWFS solution.
+}
+
 
 float C1WireByKernel::ThreadReadRawDataHighPrecisionDigitalThermometer(const std::string& deviceFileName) const
 {

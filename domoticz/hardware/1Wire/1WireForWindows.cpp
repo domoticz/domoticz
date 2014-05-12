@@ -329,6 +329,20 @@ float C1WireForWindows::GetHumidity(const _t1WireDevice& device) const
    return ansRoot.get("Humidity",0.0f).asFloat();
 }
 
+float C1WireForWindows::GetPressure(const _t1WireDevice& device) const
+{
+   Json::Value ansRoot;
+   try
+   {
+      ansRoot=readData(device);
+   }
+   catch (C1WireForWindowsReadException&)
+   {
+      return 0.0;
+   }
+   return ansRoot.get("Pressure",0.0f).asFloat();
+}
+
 bool C1WireForWindows::GetLightState(const _t1WireDevice& device,int unit) const
 {
    Json::Value ansRoot;
@@ -384,6 +398,20 @@ int C1WireForWindows::GetVoltage(const _t1WireDevice& device,int unit) const
    }
 
    return ansRoot.get("Voltage",0).asInt();
+}
+
+float C1WireForWindows::GetIlluminescence(const _t1WireDevice& device) const
+{
+   Json::Value ansRoot;
+   try
+   {
+      ansRoot=readData(device);
+   }
+   catch (C1WireForWindowsReadException&)
+   {
+      return 0.0;
+   }
+   return ansRoot.get("Illuminescence",0.0f).asFloat();
 }
 
 void C1WireForWindows::SetLightState(const std::string& sId,int unit,bool value)
