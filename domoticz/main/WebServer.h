@@ -34,6 +34,7 @@ public:
 	char * DisplayVersion();
 	char * DisplayHardwareCombo();
 	char * DisplayDataPushDevicesCombo();
+	char * DisplayDataPushOnOffDevicesCombo();
 	char * DisplaySwitchTypesCombo();
 	char * DisplayMeterTypesCombo();
 	char * DisplayTimerTypesCombo();

@@ -204,6 +204,11 @@ bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress
 		&CWebServer::DisplayDataPushDevicesCombo,
 		this ) );
 
+	m_pWebEm->RegisterIncludeCode( "onoffdevicesfordatapush",
+		boost::bind(
+		&CWebServer::DisplayDataPushOnOffDevicesCombo,
+		this ) );
+
 	m_pWebEm->RegisterIncludeCode( "combohardware",
 		boost::bind(
 		&CWebServer::DisplayHardwareCombo,
@@ -812,6 +817,8 @@ void CWebServer::SaveFibaroLink(Json::Value &root)
 		return;
 	if ((targettypei==1) && ((targetdeviceid=="")||(targetproperty=="")))
 		return;
+	if ((targettypei==2) && (targetdeviceid==""))
+		return;
 	std::vector<std::vector<std::string> > result;
 	char szTmp[300];
 	if (idx=="0") {
@@ -822,8 +829,8 @@ void CWebServer::SaveFibaroLink(Json::Value &root)
 				targetvariable.c_str(),
 				atoi(targetdeviceid.c_str()),
 				targetproperty.c_str(),
-				atoi(linkactive.c_str()),
-				atoi(includeunit.c_str())
+				atoi(includeunit.c_str()),
+				atoi(linkactive.c_str())
 		);
 	}
 	else {
@@ -5100,6 +5107,37 @@ char * CWebServer::DisplayDataPushDevicesCombo()
 	}
 	return (char*)m_retstr.c_str();
 }
+
+char * CWebServer::DisplayDataPushOnOffDevicesCombo()
+{
+	
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT ID,Name,Type,SubType FROM DeviceStatus WHERE (Used=='1')";
+	result=m_pMain->m_sql.query(szQuery.str());
+	
+	if (result.size()>0)
+	{
+		m_retstr="<option value=\"\"></option>\n";
+		char szTmp[200];
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		int ii=0;
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::vector<std::string> sd=*itt;
+			int dType=atoi(sd[2].c_str());
+			int dSubType=atoi(sd[3].c_str());
+			std::string sOptions = RFX_Type_SubType_Values(dType,dSubType);
+			if (sOptions == "Status") {
+				sprintf(szTmp,"<option value=\"%s\">%s</option>\n",sd[0].c_str(),sd[1].c_str());
+				m_retstr+=szTmp;
+			}
+			ii++;
+		}
+	}
+	return (char*)m_retstr.c_str();
+}
+
 
 
 

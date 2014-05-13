@@ -79,9 +79,9 @@ void CDataPush::DoFibaroPush()
 				std::string targetProperty = sd[10].c_str();
 				int includeUnit = atoi(sd[11].c_str());
 				int metertype = atoi(sd[12].c_str());
+				std::string lstatus="";
 
 				if (delpos == 0) {
-					std::string lstatus="";
 					int llevel=0;
 					bool bHaveDimmer=false;
 					bool bHaveGroupCmd=false;
@@ -123,6 +123,15 @@ void CDataPush::DoFibaroPush()
 					else if (targetType==1) {
 						Url << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/callAction?deviceid=" << targetDeviceID << "&name=setProperty&arg1=" << targetProperty << "&arg2=" << sendValue;
 						//_log.Log(LOG_NORM,"sending value %s to property %s of virtual device id %d",sendValue.c_str(),targetProperty.c_str(),targetDeviceID);
+						if (!HTTPClient::GET(Url.str(),sResult))
+						{
+							_log.Log(LOG_ERROR,"Error sending data to Fibaro!");
+						}
+						//_log.Log(LOG_NORM,"response: %s",sResult.c_str());
+					}
+					else if ((targetType==2)&&(lstatus=="On")) {
+						Url << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/sceneControl?id=" << targetDeviceID << "&action=start";
+						//_log.Log(LOG_NORM,"activating scene %d",targetDeviceID);
 						if (!HTTPClient::GET(Url.str(),sResult))
 						{
 							_log.Log(LOG_ERROR,"Error sending data to Fibaro!");
