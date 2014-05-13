@@ -85,10 +85,10 @@ private:
 	void Do_Work();
 	void SendDevice2Domoticz(const _tZWaveDevice *pDevice);
 	void SendSwitchIfNotExists(const _tZWaveDevice *pDevice);
-	_tZWaveDevice* FindDevice(int nodeID, int instanceID, _eZWaveDeviceType devType);
-	_tZWaveDevice* FindDevice(int nodeID, int instanceID, int CommandClassID, _eZWaveDeviceType devType);
-	_tZWaveDevice* FindDevice(int nodeID, int scaleID);
-	_tZWaveDevice* FindDeviceInstance(int nodeID, int instanceID);
+	_tZWaveDevice* FindDevice(const int nodeID, const int instanceID, const _eZWaveDeviceType devType);
+	_tZWaveDevice* FindDevice(const int nodeID, const int instanceID, const int CommandClassID, const _eZWaveDeviceType devType);
+	_tZWaveDevice* FindDevice(const int nodeID, const int scaleID);
+	_tZWaveDevice* FindDeviceInstance(const int nodeID, const int instanceID);
 	std::string GenerateDeviceStringID(const _tZWaveDevice *pDevice);
 	void InsertDevice(_tZWaveDevice device);
 	void UpdateDeviceBatteryStatus(const int nodeID, const int value);

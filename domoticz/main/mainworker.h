@@ -108,8 +108,8 @@ private:
 	int m_SecCountdown;
 	int m_SecStatus;
 
-	unsigned char m_ScheduleLastMinute;
-	unsigned char m_ScheduleLastHour;
+	int m_ScheduleLastMinute;
+	int m_ScheduleLastHour;
 
 	boost::mutex m_devicemutex;
 	boost::mutex decodeRXMessageMutex;

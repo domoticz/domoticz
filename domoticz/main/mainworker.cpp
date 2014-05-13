@@ -326,7 +326,7 @@ bool MainWorker::RestartHardware(const std::string &idx)
 	std::string senabled=(sd[1]=="1")?"true":"false";
 	_eHardwareTypes htype=(_eHardwareTypes)atoi(sd[2].c_str());
 	std::string address=sd[3];
-	int port=atoi(sd[4].c_str());
+	unsigned short port=(unsigned short)atoi(sd[4].c_str());
 	std::string username=sd[5];
 	std::string password=sd[6];
 	int Mode1=atoi(sd[7].c_str());
@@ -577,7 +577,7 @@ bool MainWorker::Start()
 			bool Enabled=(sEnabled=="1")?true:false;
 			_eHardwareTypes Type=(_eHardwareTypes)atoi(sd[3].c_str());
 			std::string Address=sd[4];
-			unsigned short Port=atoi(sd[5].c_str());
+			unsigned short Port=(unsigned short)atoi(sd[5].c_str());
 			std::string Username=sd[6];
 			std::string Password=sd[7];
 			int mode1=atoi(sd[8].c_str());

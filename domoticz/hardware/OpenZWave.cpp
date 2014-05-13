@@ -933,7 +933,7 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SWITCH_BINARY,vID)==true)
 		{
 			unsigned long _homeID=vID.GetHomeId();
-			unsigned long _nodeID=vID.GetNodeId();
+			unsigned char _nodeID=vID.GetNodeId();
 			if (m_pManager->IsNodeFailed(_homeID,_nodeID))
 			{
 				_log.Log(LOG_ERROR,"OpenZWave: Node has an failed (or is not alive), Switch command not send!");
@@ -970,7 +970,7 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 			 (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SENSOR_MULTILEVEL,vID)==true))
 		{
 			unsigned long _homeID=vID.GetHomeId();
-			unsigned long _nodeID=vID.GetNodeId();
+			unsigned char _nodeID=vID.GetNodeId();
 			if (m_pManager->IsNodeFailed(_homeID,_nodeID))
 			{
 				_log.Log(LOG_ERROR,"OpenZWave: Node has an failed (or is not alive), Switch command not send!");
@@ -1007,7 +1007,7 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	else
 	{
 		unsigned long _homeID=vID.GetHomeId();
-		unsigned long _nodeID=vID.GetNodeId();
+		unsigned char _nodeID=vID.GetNodeId();
 		if (m_pManager->IsNodeFailed(_homeID,_nodeID))
 		{
 			_log.Log(LOG_ERROR,"OpenZWave: Node has an failed (or is not alive), Switch command not send!");
@@ -2245,7 +2245,7 @@ void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int po
 				OpenZWave::ValueID::ValueGenre vGenre=ittValue->GetGenre();
 
 				unsigned long _homeID=ittValue->GetHomeId();
-				unsigned long _nodeID=ittValue->GetNodeId();
+				unsigned char _nodeID=ittValue->GetNodeId();
 				if (m_pManager->IsNodeFailed(_homeID,_nodeID))
 				{
 					//do not enable/disable polling on nodes that are failed

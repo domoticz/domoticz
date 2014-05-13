@@ -3167,7 +3167,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		else if (lighttype<30)
 		{
 			dtype=pTypeLighting2;
-			subtype=lighttype-30;
+			subtype=lighttype-20;
 			std::string id=m_pWebEm->FindValue("id");
 			sunitcode=m_pWebEm->FindValue("unitcode");
 			if (
@@ -7950,6 +7950,124 @@ std::string CWebServer::GetJSonPage()
 			}
 		}
 	} //if (rtype=="users")
+/* 
+	//Rob: who made these, and why is this necessary as we have other json calls to perform this job?
+	else if (rtype=="status-temp")
+	{
+		root["status"]="OK";
+		root["title"]="StatusTemp";
+
+		Json::Value tempjson;
+
+		GetJSonDevices(tempjson, "", "temp","ID","","");
+
+		Json::Value::const_iterator itt;
+		int ii=0;
+		Json::ArrayIndex rsize=tempjson["result"].size();
+		for ( Json::ArrayIndex itt = 0; itt<rsize; itt++)
+		{
+			root["result"][ii]["idx"]=ii;
+			root["result"][ii]["Name"]=tempjson["result"][itt]["Name"];
+			root["result"][ii]["Temp"]=tempjson["result"][itt]["Temp"];
+			root["result"][ii]["LastUpdate"]=tempjson["result"][itt]["LastUpdate"];
+			if (!tempjson["result"][itt]["Humidity"].empty())
+				root["result"][ii]["Humidity"]=tempjson["result"][itt]["Humidity"];
+			else
+				root["result"][ii]["Humidity"]=0;
+			if (!tempjson["result"][itt]["Chill"].empty())
+				root["result"][ii]["Chill"]=tempjson["result"][itt]["Chill"];
+			else
+				root["result"][ii]["Chill"]=0;
+
+			ii++;
+		}
+	} //if (rtype=="status-temp")
+	else if (rtype=="status-wind")
+	{
+		root["status"]="OK";
+		root["title"]="StatusWind";
+
+		Json::Value tempjson;
+
+		GetJSonDevices(tempjson, "", "wind","ID","","");
+
+		Json::Value::const_iterator itt;
+		int ii=0;
+		Json::ArrayIndex rsize=tempjson["result"].size();
+		for ( Json::ArrayIndex itt = 0; itt<rsize; itt++)
+		{
+			root["result"][ii]["idx"]=ii;
+			root["result"][ii]["Name"]=tempjson["result"][itt]["Name"];
+			root["result"][ii]["Direction"]=tempjson["result"][itt]["Direction"];
+			root["result"][ii]["DirectionStr"]=tempjson["result"][itt]["DirectionStr"];
+			root["result"][ii]["Gust"]=tempjson["result"][itt]["Gust"];
+			root["result"][ii]["Speed"]=tempjson["result"][itt]["Speed"];
+			root["result"][ii]["LastUpdate"]=tempjson["result"][itt]["LastUpdate"];
+
+			ii++;
+		}
+	} //if (rtype=="status-wind")
+	else if (rtype=="status-rain")
+	{
+		root["status"]="OK";
+		root["title"]="StatusRain";
+
+		Json::Value tempjson;
+
+		GetJSonDevices(tempjson, "", "rain","ID","","");
+
+		Json::Value::const_iterator itt;
+		int ii=0;
+		Json::ArrayIndex rsize=tempjson["result"].size();
+		for ( Json::ArrayIndex itt = 0; itt<rsize; itt++)
+		{
+			root["result"][ii]["idx"]=ii;
+			root["result"][ii]["Name"]=tempjson["result"][itt]["Name"];
+			root["result"][ii]["Rain"]=tempjson["result"][itt]["Rain"];
+			ii++;
+		}
+	} //if (rtype=="status-rain")
+	else if (rtype=="status-uv")
+	{
+		root["status"]="OK";
+		root["title"]="StatusUV";
+
+		Json::Value tempjson;
+
+		GetJSonDevices(tempjson, "", "uv","ID","","");
+
+		Json::Value::const_iterator itt;
+		int ii=0;
+		Json::ArrayIndex rsize=tempjson["result"].size();
+		for ( Json::ArrayIndex itt = 0; itt<rsize; itt++)
+		{
+			root["result"][ii]["idx"]=ii;
+			root["result"][ii]["Name"]=tempjson["result"][itt]["Name"];
+			root["result"][ii]["UVI"]=tempjson["result"][itt]["UVI"];
+			ii++;
+		}
+	} //if (rtype=="status-uv")
+	else if (rtype=="status-baro")
+	{
+		root["status"]="OK";
+		root["title"]="StatusBaro";
+
+		Json::Value tempjson;
+
+		GetJSonDevices(tempjson, "", "baro","ID","","");
+
+		Json::Value::const_iterator itt;
+		int ii=0;
+		Json::ArrayIndex rsize=tempjson["result"].size();
+		for ( Json::ArrayIndex itt = 0; itt<rsize; itt++)
+		{
+			root["result"][ii]["idx"]=ii;
+			root["result"][ii]["Name"]=tempjson["result"][itt]["Name"];
+			root["result"][ii]["Barometer"]=tempjson["result"][itt]["Barometer"];
+			ii++;
+		}
+	} //if (rtype=="status-baro")
+*/
 	else if ((rtype=="lightlog")&&(idx!=0))
 	{
 		//First get Device Type/SubType

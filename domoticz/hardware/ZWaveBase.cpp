@@ -597,7 +597,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	}
 }
 
-ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(int nodeID, int instanceID, _eZWaveDeviceType devType)
+ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int instanceID, const _eZWaveDeviceType devType)
 {
 	std::map<std::string,_tZWaveDevice>::iterator itt;
 	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
@@ -612,7 +612,7 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(int nodeID, int instanceID, _eZW
 	return NULL;
 }
 
-ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(int nodeID, int instanceID, int CommandClassID,  _eZWaveDeviceType devType)
+ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int instanceID, const int CommandClassID,  const _eZWaveDeviceType devType)
 {
 	std::map<std::string,_tZWaveDevice>::iterator itt;
 	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
@@ -628,7 +628,7 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(int nodeID, int instanceID, int 
 	return NULL;
 }
 
-ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(int nodeID, int scaleID)
+ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int scaleID)
 {
 	std::map<std::string,_tZWaveDevice>::iterator itt;
 	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
@@ -642,7 +642,7 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(int nodeID, int scaleID)
 	return NULL;
 }
 
-ZWaveBase::_tZWaveDevice* ZWaveBase::FindDeviceInstance(int nodeID, int instanceID)
+ZWaveBase::_tZWaveDevice* ZWaveBase::FindDeviceInstance(const int nodeID, const int instanceID)
 {
 	std::map<std::string,_tZWaveDevice>::iterator itt;
 	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
