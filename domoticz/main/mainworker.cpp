@@ -3258,7 +3258,10 @@ unsigned long long MainWorker::decode_Lighting2(const CDomoticzHardwareBase *pHa
 	sprintf(szTmp,"%d",level);
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp,devname);
 	PrintDeviceName(devname);
-	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
+	unsigned char check_cmnd=cmnd;
+	if ((cmnd==light2_sGroupOff)||(cmnd==light2_sGroupOn))
+		check_cmnd=(cmnd==light2_sGroupOff)?light2_sOff:light2_sOn;
+	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,check_cmnd,szTmp);
 
 	if ((cmnd==light2_sGroupOff)||(cmnd==light2_sGroupOn))
 	{
