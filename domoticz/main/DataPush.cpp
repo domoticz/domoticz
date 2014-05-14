@@ -81,24 +81,34 @@ void CDataPush::DoFibaroPush()
 				int metertype = atoi(sd[12].c_str());
 				std::string lstatus="";
 
-				if (delpos == 0) {
+				if (targetType!=2) {
+					if (delpos == 0) {
+						int llevel=0;
+						bool bHaveDimmer=false;
+						bool bHaveGroupCmd=false;
+						int maxDimLevel=0;
+    					GetLightStatus(dType,dSubType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+						sendValue = lstatus;
+					}
+					else if (delpos>0) {
+						std::vector<std::string> strarray;
+						if (sValue.find(";")!=std::string::npos) {
+							StringSplit(sValue, ";", strarray);
+							if (int(strarray.size())>=delpos)
+							{
+								std::string rawsendValue = strarray[delpos-1].c_str();
+								sendValue = ProcessSendValue(rawsendValue,delpos,nValue,includeUnit,metertype);
+							}
+						}
+					}
+				}
+				else { // scenes, only on/off
 					int llevel=0;
 					bool bHaveDimmer=false;
 					bool bHaveGroupCmd=false;
 					int maxDimLevel=0;
     				GetLightStatus(dType,dSubType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
 					sendValue = lstatus;
-				}
-				else if (delpos>0) {
-					std::vector<std::string> strarray;
-					if (sValue.find(";")!=std::string::npos) {
-						StringSplit(sValue, ";", strarray);
-						if (int(strarray.size())>=delpos)
-						{
-							std::string rawsendValue = strarray[delpos-1].c_str();
-							sendValue = ProcessSendValue(rawsendValue,delpos,nValue,includeUnit,metertype);
-						}
-					}
 				}
 				if (sendValue !="") {
 					std::string sResult;
@@ -129,14 +139,16 @@ void CDataPush::DoFibaroPush()
 						}
 						//_log.Log(LOG_NORM,"response: %s",sResult.c_str());
 					}
-					else if ((targetType==2)&&(lstatus=="On")) {
-						Url << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/sceneControl?id=" << targetDeviceID << "&action=start";
-						//_log.Log(LOG_NORM,"activating scene %d",targetDeviceID);
-						if (!HTTPClient::GET(Url.str(),sResult))
-						{
-							_log.Log(LOG_ERROR,"Error sending data to Fibaro!");
+					else if (targetType==2) {
+						if (((delpos==0)&&(lstatus=="Off"))||((delpos==1)&&(lstatus=="On"))) {
+							Url << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/sceneControl?id=" << targetDeviceID << "&action=start";
+							//_log.Log(LOG_NORM,"activating scene %d",targetDeviceID);
+							if (!HTTPClient::GET(Url.str(),sResult))
+							{
+								_log.Log(LOG_ERROR,"Error sending data to Fibaro!");
+							}
+							//_log.Log(LOG_NORM,"response: %s",sResult.c_str());
 						}
-						//_log.Log(LOG_NORM,"response: %s",sResult.c_str());
 					}
 				}
 			}
