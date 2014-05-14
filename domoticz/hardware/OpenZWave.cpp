@@ -1248,9 +1248,12 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	else if ((commandclass==COMMAND_CLASS_ALARM)||(commandclass==COMMAND_CLASS_SENSOR_ALARM))
 	{
 		if (
+			(vLabel=="General")||
 			(vLabel=="Alarm Level")||
 			(vLabel=="Flood")||
 			(vLabel=="Smoke")||
+			(vLabel=="Carbon Monoxide")||
+			(vLabel=="Carbon Dioxide")||
 			(vLabel=="Heat")
 			)
 		{
@@ -1760,8 +1763,9 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 	{
 	case ZDTYPE_SWITCHNORMAL:
 		{
-			if ((vLabel=="Alarm Level")||(vLabel=="Flood")||(vLabel=="Smoke")||(vLabel=="Heat"))
+			if ((commandclass==COMMAND_CLASS_ALARM)||(commandclass==COMMAND_CLASS_SENSOR_ALARM))
 			{
+				//Alarm sensors
 				int nintvalue=0;
 				if (byteValue==0)
 					nintvalue=0;
