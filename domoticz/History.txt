@@ -24,6 +24,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: 1wire : add support of DS2438 (family 26h) on OWFS and Windows
 - Implemented: Lighting2 scene activation support for GroupOn/Off devices
 - Fixed: Manual add Lighting 2 switch (type HE)
+- Implemented: OpenZWave configuration of 'Wake-up Interval' (COMMAND_CLASS_WAKE_UP)
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

@@ -904,6 +904,14 @@ bool COpenZWave::GetNodeConfigValueByIndex(const NodeInfo *pNode, const int inde
 					nValue=*ittValue;
 					return true;
 				}
+				else if( 
+					(commandclass == COMMAND_CLASS_WAKE_UP)&&
+					(vindex==index-2000) //spacial case
+					)
+				{
+					nValue=*ittValue;
+					return true;
+				}
 			}
 		}
 	}
@@ -2440,6 +2448,15 @@ void COpenZWave::NodesQueried()
 	EnableDisableNodePolling();
 }
 
+bool COpenZWave::RequestNodeConfig(const int homeID, const int nodeID)
+{
+	NodeInfo *pNode=GetNodeInfo( homeID, nodeID);
+	if (pNode==NULL)
+		return false;
+	m_pManager->RequestAllConfigParams(homeID,nodeID);
+	return true;
+}
+
 void COpenZWave::GetNodeValuesJson(const int homeID, const int nodeID, Json::Value &root, const int index)
 {
 	NodeInfo *pNode=GetNodeInfo(homeID, nodeID);
@@ -2447,6 +2464,7 @@ void COpenZWave::GetNodeValuesJson(const int homeID, const int nodeID, Json::Val
 		return;
 
 	int ivalue=0;
+	std::string szValue;
 
 	if (nodeID==1)
 	{
@@ -2501,8 +2519,6 @@ void COpenZWave::GetNodeValuesJson(const int homeID, const int nodeID, Json::Val
 				{
 					if (m_pManager->IsValueReadOnly(*ittValue)==true)
 						continue;
-
-					std::string szValue;
 
 					OpenZWave::ValueID::ValueType vType=ittValue->GetType();
 
@@ -2568,19 +2584,35 @@ void COpenZWave::GetNodeValuesJson(const int homeID, const int nodeID, Json::Val
 					root["result"][index]["config"][ivalue]["LastUpdate"]=szDate;
 					ivalue++;
 				}
+				else if (commandclass==COMMAND_CLASS_WAKE_UP)
+				{
+					//Only add the Wake_Up_Interval value here
+					if ((ittValue->GetGenre()==OpenZWave::ValueID::ValueGenre_System)&&(ittValue->GetInstance()==1))
+					{
+						if ((m_pManager->GetValueLabel(*ittValue)=="Wake-up Interval")&&( ittValue->GetType()==OpenZWave::ValueID::ValueType_Int))
+						{
+							if (m_pManager->GetValueAsString(*ittValue,&szValue)==false)
+								continue;
+							root["result"][index]["config"][ivalue]["type"]="int";
+							root["result"][index]["config"][ivalue]["value"]=szValue;
+							int i_index=2000+ittValue->GetIndex(); //special case
+							std::string i_label=m_pManager->GetValueLabel(*ittValue);
+							std::string i_units=m_pManager->GetValueUnits(*ittValue);
+							std::string i_help=m_pManager->GetValueHelp(*ittValue);
+							char *szDate = asctime(localtime(&ittCmds->second.m_LastSeen));
+							root["result"][index]["config"][ivalue]["index"]=i_index;
+							root["result"][index]["config"][ivalue]["label"]=i_label;
+							root["result"][index]["config"][ivalue]["units"]=i_units;
+							root["result"][index]["config"][ivalue]["help"]=i_help;
+							root["result"][index]["config"][ivalue]["LastUpdate"]=szDate;
+							ivalue++;
+						}
+					}
+				}
 			}
 		}
 	}
 
-}
-
-bool COpenZWave::RequestNodeConfig(const int homeID, const int nodeID)
-{
-	NodeInfo *pNode=GetNodeInfo( homeID, nodeID);
-	if (pNode==NULL)
-		return false;
-	m_pManager->RequestAllConfigParams(homeID,nodeID);
-	return true;
 }
 
 bool COpenZWave::ApplyNodeConfig(const int homeID, const int nodeID, const std::string &svaluelist)
