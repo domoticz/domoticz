@@ -1,4 +1,4 @@
-/* 
+ï»¿/* 
 	Domoticz Software : http://domoticz.com/
 	File : Teleinfo.cpp
 	Author : Nicolas HILAIRE
@@ -109,7 +109,9 @@ void Teleinfo::Init()
 
 	m_p1power.len=sizeof(P1Power)-1;
 	m_p1power.type=pTypeP1Power;			
-	m_p1power.subtype=sTypeP1Power; 		
+	m_p1power.subtype=sTypeP1Power;
+
+	m_counter = 0;
 }
 
 bool Teleinfo::StartHardware()
@@ -211,36 +213,38 @@ void Teleinfo::MatchLine()
 		switch (t.type)
 		{
 			case TELEINFO_TYPE_ADCO :
+/*
 				//structure initialization
 				memset(&m_p1power,0,sizeof(m_p1power));
 				m_p1power.len=sizeof(P1Power)-1;
 				m_p1power.type=pTypeP1Power;			
 				m_p1power.subtype=sTypeP1Power; 
-			break;
+*/
+				break;
 			case TELEINFO_TYPE_OPTARIF :	
-			break;
+				break;
 			case TELEINFO_TYPE_ISOUSC :		
-			break;
+				break;
 			case TELEINFO_TYPE_BASE :
 				if (ulValue!=0)
 					m_p1power.powerusage1 = ulValue;
-			break;
+				break;
 			case TELEINFO_TYPE_HCHC :	
 				if (ulValue!=0)
 					m_p1power.powerusage2 = ulValue;
-			break;
+				break;
 			case TELEINFO_TYPE_HCHP :
 				if (ulValue!=0)
 					m_p1power.powerusage1 = ulValue;
-			break;
+				break;
 			case TELEINFO_TYPE_PTEC :
-			break;
+				break;
 			case TELEINFO_TYPE_IINST :
 				//we convert A to W setting RFXMeter/Counter Dividers Energy to 1000 / voltage => 1000/230 = 4.35
 				//m_p1power.usagecurrent = ulValue;
-			break;
+				break;
 			case TELEINFO_TYPE_IMAX :	
-			break;
+				break;
 			case TELEINFO_TYPE_PAPP :	
 				//we count to prevent add each block but only one every 10 seconds
 				m_p1power.usagecurrent += ulValue;
@@ -256,9 +260,8 @@ void Teleinfo::MatchLine()
 					m_counter = 0;
 					m_p1power.usagecurrent = 0;
 				}
-			break;
+				break;
 		}
-
 		return;
 	}
 }
@@ -298,14 +301,21 @@ void Teleinfo::ParseData(const unsigned char *pData, int Len)
 }
 
 
-//Explanation of the checksum computation isued from the offical EDF specification (that's why it is in french !!!!)
-/* Calcul du checksum :
-La "checksum" est calculée sur l'ensemble des caractères allant du début du champ étiquette à la fin du champ 
-donnée, caractère SP inclus. On fait tout d'abord la somme des codes ASCII de tous ces caractères. Pour éviter 
-d'introduire des fonctions ASCII (00 à 1F en hexadécimal), on ne conserve que les six bits de poids faible du 
-résultat obtenu (cette opération se traduit par un ET logique entre la somme précédemment calculée et 03Fh). 
-Enfin, on ajoute 20 en hexadécimal. Le résultat sera donc toujours un caractère ASCII imprimable (signe, chiffre, 
-lettre majuscule) allant de 20 à 5F en hexadécimal.
+/* Explanation of the checksum computation issued from the official EDF specification
+
+a "checksum" is calculated on the set of characters from the beginning of the label field to the end of the field given character SP included.
+We first make â€‹â€‹the sum of all ASCII codes of all characters.
+to avoid introduce ASCII (00 to 1F hex) functions, it retains only the six least significant bits of 
+result (this translates into a logical AND between the amount previously calculated and 03Fh). 
+Finally, we added 20 hexadecimal. The result will always be a printable ASCII character (sign, digit, 
+capital letter) of from 0x20 to hexadecimal 0x5F
+
+La "checksum" est calculÃ©e sur l'ensemble des caractÃ¨res allant du dÃ©but du champ Ã©tiquette Ã  la fin du champ 
+donnÃ©e, caractÃ¨re SP inclus. On fait tout d'abord la somme des codes ASCII de tous ces caractÃ¨res. Pour Ã©viter 
+d'introduire des fonctions ASCII (00 Ã  1F en hexadÃ©cimal), on ne conserve que les six bits de poids faible du 
+rÃ©sultat obtenu (cette opÃ©ration se traduit par un ET logique entre la somme prÃ©cÃ©demment calculÃ©e et 03Fh). 
+Enfin, on ajoute 20 en hexadÃ©cimal. Le rÃ©sultat sera donc toujours un caractÃ¨re ASCII imprimable (signe, chiffre, 
+lettre majuscule) allant de 20 Ã  5F en hexadÃ©cimal.
 */
 
 bool Teleinfo::isCheckSumOk()
@@ -313,11 +323,11 @@ bool Teleinfo::isCheckSumOk()
 	unsigned char checksum = 0x00;
 	int i;
 
-	for (i = 0; i < int(strlen((char*)m_buffer)) - 1; i++)
+	for (i = 0; i < int(strlen((char*)m_buffer)) - 2; i++)
 	{
 		checksum += m_buffer[i];
 	}
-	checksum = checksum & 0x3F;
+	checksum = (checksum & 0x3F) + 0x20;
 	return (checksum == m_buffer[strlen((char*)m_buffer) - 1]);
 }
 

@@ -804,7 +804,7 @@ bool CEnOceanESP3::ParseData()
 	else
 	{
 		char szTmp[100];
-		sprintf(szTmp,"Unhanded Packet Type (0x%02x)",m_ReceivedPacketType);
+		sprintf(szTmp,"Unhandled Packet Type (0x%02x)",m_ReceivedPacketType);
 		_log.Log(LOG_STATUS,szTmp);
 	}
 /*
@@ -1405,7 +1405,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 			}
 			break;
 		default:
-			_log.Log(LOG_NORM, "EnOcean: Unhanded RORG (%02x)", m_buffer[0]);
+			_log.Log(LOG_NORM, "EnOcean: Unhandled RORG (%02x)", m_buffer[0]);
 			break;
 	}
 }

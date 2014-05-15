@@ -895,6 +895,7 @@ bool COpenZWave::GetNodeConfigValueByIndex(const NodeInfo *pNode, const int inde
 			for( std::list<OpenZWave::ValueID>::const_iterator ittValue = ittCmds->second.Values.begin(); ittValue!= ittCmds->second.Values.end(); ++ittValue)
 			{
 				int vindex=ittValue->GetIndex();
+				int vinstance=ittValue->GetInstance();
 				unsigned char commandclass=ittValue->GetCommandClassId();
 				if( 
 					(commandclass == COMMAND_CLASS_CONFIGURATION)&&
@@ -1506,8 +1507,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	}
 	else
 	{
-		//Unhanded
-		_log.Log(LOG_ERROR, "OpenZWave: Unhanded class: 0x%02X",commandclass);
+		//Unhandled
+		_log.Log(LOG_ERROR, "OpenZWave: Unhandled class: 0x%02X (%s)",commandclass,cclassStr(commandclass));
 		if (vType== OpenZWave::ValueID::ValueType_List)
 		{
 			//std::vector<std::string > vStringList;
