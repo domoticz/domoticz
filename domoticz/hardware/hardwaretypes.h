@@ -35,6 +35,8 @@
 #define sTypeSystemFan		0x07
 #define sTypeVoltage		0x08
 #define sTypePressure		0x09
+#define sTypeSetPoint		0x10
+#define sTypeTemperature	0x11
 
 #define pTypeLux		0xF6
 #define sTypeLux		0x01

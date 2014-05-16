@@ -221,6 +221,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 
 			const std::string sID=ittInstance.key().asString();
 			_device.instanceID=atoi(sID.c_str());
+			_device.indexID=0;
 			if ((_device.instanceID==0)&&(haveMultipleInstance))
 				continue;// We skip instance 0 if there are more, since it should be mapped to other instances or their superposition
 
@@ -235,6 +236,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 			// We choose SwitchMultilevel first, if not available, SwhichBinary is chosen
 			if (instance["commandClasses"]["38"].empty()==false)
 			{
+				//COMMAND_CLASS_SWITCH_MULTILEVEL
 				_device.commandClassID=38;
 				_device.devType= ZDTYPE_SWITCHDIMMER;
 				_device.intvalue=instance["commandClasses"]["38"]["data"]["level"]["value"].asInt();
@@ -242,6 +244,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 			}
 			else if (instance["commandClasses"]["37"].empty()==false)
 			{
+				//COMMAND_CLASS_SWITCH_BINARY
 				_device.commandClassID=37;
 				_device.devType= ZDTYPE_SWITCHNORMAL;
 				_device.intvalue=instance["commandClasses"]["37"]["data"]["level"]["value"].asInt();
@@ -251,6 +254,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 			// Add Sensor Binary
 			if (instance["commandClasses"]["48"].empty()==false)
 			{
+				//COMMAND_CLASS_SENSOR_BINARY
 				_device.commandClassID=48; //(binary switch, for example motion detector(PIR)
 				_device.devType= ZDTYPE_SWITCHNORMAL;
 				if (instance["commandClasses"]["48"]["data"]["level"].empty()==false)
@@ -269,6 +273,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 						if ((*itt2)["level"].empty()==false)
 						{
 							_device.instanceID=atoi(sKey.c_str());
+							_device.indexID=0;
 							std::string vstring=(*itt2)["level"]["value"].asString();
 							if (vstring=="true")
 								_device.intvalue=255;
@@ -285,6 +290,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 			// Add Sensor Multilevel
 			if (instance["commandClasses"]["49"].empty()==false)
 			{
+				//COMMAND_CLASS_SENSOR_MULTILEVEL
 				_device.commandClassID=49;
 				_device.scaleMultiply=1;
 				const Json::Value inVal=instance["commandClasses"]["49"]["data"];
@@ -333,6 +339,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 			// Meters which are supposed to be sensors (measurable)
 			if (instance["commandClasses"]["50"].empty()==false)
 			{
+				//COMMAND_CLASS_METER
 				const Json::Value inVal=instance["commandClasses"]["50"]["data"];
 				for (Json::Value::iterator itt2=inVal.begin(); itt2!=inVal.end(); ++itt2)
 				{
@@ -382,6 +389,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 			// Meters (true meter values)
 			if (instance["commandClasses"]["50"].empty()==false)
 			{
+				//COMMAND_CLASS_METER
 				const Json::Value inVal=instance["commandClasses"]["50"]["data"];
 				for (Json::Value::iterator itt2=inVal.begin(); itt2!=inVal.end(); ++itt2)
 				{
@@ -425,9 +433,9 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 					InsertDevice(_device);
 				}
 			}
-			//Thermostat mode (COMMAND_CLASS_THERMOSTAT_MODE)
 			if (instance["commandClasses"]["64"].empty()==false)
 			{
+				//COMMAND_CLASS_THERMOSTAT_MODE
 				int iValue=instance["commandClasses"]["64"]["data"]["mode"]["value"].asInt();
 				if (iValue==0)
 					_device.intvalue=0;
@@ -438,9 +446,9 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 				InsertDevice(_device);
 			}
 
-			// Thermostat Set Point (COMMAND_CLASS_THERMOSTAT_SETPOINT)
 			if (instance["commandClasses"]["67"].empty()==false)
 			{
+				//COMMAND_CLASS_THERMOSTAT_SETPOINT
 				const Json::Value inVal=instance["commandClasses"]["67"]["data"];
 				for (Json::Value::iterator itt2=inVal.begin(); itt2!=inVal.end(); ++itt2)
 				{
@@ -456,6 +464,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 			}
 			else if (instance["commandClasses"]["156"].empty()==false)
 			{
+				//COMMAND_CLASS_SENSOR_ALARM
 				const Json::Value inVal=instance["commandClasses"]["156"]["data"];
 				for (Json::Value::iterator itt2=inVal.begin(); itt2!=inVal.end(); ++itt2)
 				{
@@ -486,6 +495,7 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 
 	if (path.find("instances.0.commandClasses.128.data.last")!=std::string::npos)
 	{
+		//COMMAND_CLASS_BATTERY
 		if (obj["value"].empty()==false)
 		{
 			int batValue=obj["value"].asInt();
@@ -497,6 +507,7 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 	}
 	else if (path.find("instances.0.commandClasses.49.data.")!=std::string::npos)
 	{
+		//COMMAND_CLASS_SENSOR_MULTILEVEL
 		//Possible fix for Everspring ST814. maybe others, my multi sensor is coming soon to find out!
 		std::vector<std::string> results;
 		StringSplit(path,".",results);
@@ -508,12 +519,13 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 			{
 				int devID=atoi(results[1].c_str());
 				int scaleID=atoi(results[7].c_str());
-				pDevice=FindDevice(devID,scaleID);
+				pDevice=FindDeviceByScale(devID,scaleID);
 			}
 		}
 	}
 	else if (path.find("instances.0.commandClasses.48.data.")!=std::string::npos)
 	{
+		//COMMAND_CLASS_SENSOR_BINARY
 		//Possible fix for door sensors reporting on another instance number
 		std::vector<std::string> results;
 		StringSplit(path,".",results);
@@ -531,7 +543,7 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 	}
 	else if (path.find("instances.0.commandClasses.64.data.")!=std::string::npos)
 	{
-		//Thermostat mode
+		//COMMAND_CLASS_THERMOSTAT_MODE
 		std::vector<std::string> results;
 		StringSplit(path,".",results);
 		//Find device by data id
@@ -542,13 +554,14 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 			{
 				int devID=atoi(results[1].c_str());
 				int instanceID=atoi(results[3].c_str());
-				pDevice=FindDevice(devID,instanceID, cmdID, ZDTYPE_SWITCHNORMAL);
+				int indexID=0;
+				pDevice=FindDevice(devID,instanceID,indexID, cmdID, ZDTYPE_SWITCHNORMAL);
 			}
 		}
 	}
 	else if (path.find("commandClasses.43.data.currentScene")!=std::string::npos)
 	{
-		//Scene activation
+		//COMMAND_CLASS_SCENE_ACTIVATION
 		std::vector<std::string> results;
 		StringSplit(path,".",results);
 		//Find device by data id
@@ -560,16 +573,18 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 				int iScene=obj["value"].asInt();
 				int devID=(iScene<<8)+atoi(results[1].c_str());
 				int instanceID=atoi(results[3].c_str());
+				int indexID=0;
 				if (instanceID==0)
 				{
 					//only allow instance 0 for now
-					pDevice=FindDevice(devID,instanceID, cmdID, ZDTYPE_SWITCHNORMAL);
+					pDevice=FindDevice(devID,instanceID, indexID, cmdID, ZDTYPE_SWITCHNORMAL);
 					if (pDevice==NULL)
 					{
 						//Add new switch device
 						_tZWaveDevice _device;
 						_device.nodeID=devID;
 						_device.instanceID=instanceID;
+						_device.indexID=indexID;
 
 						_device.basicType =		1;
 						_device.genericType =	1;
@@ -586,7 +601,7 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 						_device.devType= ZDTYPE_SWITCHNORMAL;
 						_device.intvalue=255;
 						InsertDevice(_device);
-						pDevice=FindDevice(devID,instanceID, cmdID, ZDTYPE_SWITCHNORMAL);
+						pDevice=FindDevice(devID,instanceID,indexID, cmdID, ZDTYPE_SWITCHNORMAL);
 					}
 				}
 			}
@@ -639,6 +654,7 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 			return;
 		std::string sInstanceID=tmpStr.substr(0,pPos);
 		_device.instanceID=atoi(sInstanceID.c_str());
+		_device.indexID=0;
 		pPos=path.find("commandClasses.");
 		if (pPos==std::string::npos)
 			return;
@@ -792,6 +808,34 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 	if (pDevice->sequence_number==0)
 		pDevice->sequence_number=1;
 	SendDevice2Domoticz(pDevice);
+}
+
+ZWaveBase::_tZWaveDevice* CRazberry::FindDeviceByScale(const int nodeID, const int scaleID)
+{
+	std::map<std::string,_tZWaveDevice>::iterator itt;
+	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
+	{
+		if (
+			(itt->second.nodeID==nodeID)&&
+			(itt->second.scaleID==scaleID)
+			)
+			return &itt->second;
+	}
+	return NULL;
+}
+
+ZWaveBase::_tZWaveDevice* CRazberry::FindDeviceInstance(const int nodeID, const int instanceID)
+{
+	std::map<std::string,_tZWaveDevice>::iterator itt;
+	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
+	{
+		if (
+			(itt->second.nodeID==nodeID)&&
+			(itt->second.instanceID==instanceID)
+			)
+			return &itt->second;
+	}
+	return NULL;
 }
 
 void CRazberry::SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)

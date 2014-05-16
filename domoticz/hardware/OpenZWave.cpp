@@ -1161,6 +1161,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	_device.commandClassID=commandclass;
 	_device.scaleID=-1;
 	_device.instanceID=instance;
+	_device.indexID=0;
 	_device.hasWakeup=m_pManager->IsNodeAwake(m_controllerID,NodeID);
 	_device.isListening=m_pManager->IsNodeListeningDevice(m_controllerID,NodeID);
 
@@ -1532,21 +1533,22 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID vID, int EventID)
 	unsigned char HomeID = vID.GetHomeId();
 	unsigned char NodeID = vID.GetNodeId();
 	unsigned char instance=vID.GetInstance();
+	unsigned char index=vID.GetIndex();
 	if (instance==0)
 		return;
 
 	instance=vID.GetIndex();
 
-	_tZWaveDevice *pDevice=FindDevice(NodeID,instance, COMMAND_CLASS_SENSOR_BINARY, ZDTYPE_SWITCHNORMAL);
+	_tZWaveDevice *pDevice=FindDevice(NodeID,instance, index, COMMAND_CLASS_SENSOR_BINARY, ZDTYPE_SWITCHNORMAL);
 	if (pDevice==NULL)
 	{
 		//one more try
-		pDevice=FindDevice(NodeID,instance, COMMAND_CLASS_SWITCH_BINARY, ZDTYPE_SWITCHNORMAL);
+		pDevice=FindDevice(NodeID,instance,index, COMMAND_CLASS_SWITCH_BINARY, ZDTYPE_SWITCHNORMAL);
 		if (pDevice==NULL)
 		{
 			// absolute last try
 			instance=vID.GetIndex();
-			pDevice=FindDevice(NodeID, -1, COMMAND_CLASS_SENSOR_MULTILEVEL, ZDTYPE_SWITCHNORMAL);
+			pDevice=FindDevice(NodeID, -1, -1, COMMAND_CLASS_SENSOR_MULTILEVEL, ZDTYPE_SWITCHNORMAL);
 			if (pDevice==NULL)
 				return;
 		}
@@ -1587,14 +1589,16 @@ void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID vID, int SceneID)
 
 	int devID=(SceneID<<8)+NodeID;
 	int instanceID=0;
+	int indexID=0;
 	int commandclass=COMMAND_CLASS_SCENE_ACTIVATION;
-	_tZWaveDevice *pDevice=FindDevice(devID,instanceID, commandclass, ZDTYPE_SWITCHNORMAL);
+	_tZWaveDevice *pDevice=FindDevice(devID,instanceID,indexID, commandclass, ZDTYPE_SWITCHNORMAL);
 	if (pDevice==NULL)
 	{
 		//Add new switch device
 		_tZWaveDevice _device;
 		_device.nodeID=devID;
 		_device.instanceID=instanceID;
+		_device.indexID=indexID;
 
 		_device.basicType =		1;
 		_device.genericType =	1;
@@ -1611,7 +1615,7 @@ void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID vID, int SceneID)
 		_device.devType= ZDTYPE_SWITCHNORMAL;
 		_device.intvalue=255;
 		InsertDevice(_device);
-		pDevice=FindDevice(devID,instanceID, commandclass, ZDTYPE_SWITCHNORMAL);
+		pDevice=FindDevice(devID,instanceID, indexID, commandclass, ZDTYPE_SWITCHNORMAL);
 		if (pDevice==NULL)
 			return;
 	}

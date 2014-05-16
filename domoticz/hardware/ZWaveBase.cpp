@@ -372,9 +372,9 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		memset(&tsen,0,sizeof(RBUF));
 
 		const _tZWaveDevice *pPowerDevice=NULL;
-		pPowerDevice=FindDevice(pDevice->nodeID,pDevice->instanceID,ZDTYPE_SENSOR_POWER);
+		pPowerDevice=FindDevice(pDevice->nodeID,pDevice->instanceID,pDevice->indexID,ZDTYPE_SENSOR_POWER);
 		if (pPowerDevice==NULL)
-			pPowerDevice=FindDevice(pDevice->nodeID,-1,ZDTYPE_SENSOR_POWER);
+			pPowerDevice=FindDevice(pDevice->nodeID,-1,-1,ZDTYPE_SENSOR_POWER);
 		if (pPowerDevice)
 		{
 			tsen.ENERGY.packettype=pTypeENERGY;
@@ -463,7 +463,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		RBUF tsen;
 		memset(&tsen,0,sizeof(RBUF));
 
-		const _tZWaveDevice *pHumDevice=FindDevice(pDevice->nodeID,-1,ZDTYPE_SENSOR_HUMIDITY);
+		const _tZWaveDevice *pHumDevice=FindDevice(pDevice->nodeID,-1,-1,ZDTYPE_SENSOR_HUMIDITY);
 		if (pHumDevice)
 		{
 			if (!pHumDevice->bValidValue)
@@ -519,7 +519,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		RBUF tsen;
 		memset(&tsen,0,sizeof(RBUF));
 
-		const _tZWaveDevice *pTempDevice=FindDevice(pDevice->nodeID,-1,ZDTYPE_SENSOR_TEMPERATURE);
+		const _tZWaveDevice *pTempDevice=FindDevice(pDevice->nodeID,-1,-1,ZDTYPE_SENSOR_TEMPERATURE);
 		if (pTempDevice)
 		{
 			if (!pTempDevice->bValidValue)
@@ -597,7 +597,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	}
 }
 
-ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int instanceID, const _eZWaveDeviceType devType)
+ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int instanceID, const int indexID, const _eZWaveDeviceType devType)
 {
 	std::map<std::string,_tZWaveDevice>::iterator itt;
 	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
@@ -612,7 +612,7 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int inst
 	return NULL;
 }
 
-ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int instanceID, const int CommandClassID,  const _eZWaveDeviceType devType)
+ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int instanceID, const int indexID, const int CommandClassID,  const _eZWaveDeviceType devType)
 {
 	std::map<std::string,_tZWaveDevice>::iterator itt;
 	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
@@ -622,34 +622,6 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int inst
 			((itt->second.instanceID==instanceID)||(instanceID==-1))&&
 			(itt->second.commandClassID==CommandClassID)&&
 			(itt->second.devType==devType)
-			)
-			return &itt->second;
-	}
-	return NULL;
-}
-
-ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int scaleID)
-{
-	std::map<std::string,_tZWaveDevice>::iterator itt;
-	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
-	{
-		if (
-			(itt->second.nodeID==nodeID)&&
-			(itt->second.scaleID==scaleID)
-			)
-			return &itt->second;
-	}
-	return NULL;
-}
-
-ZWaveBase::_tZWaveDevice* ZWaveBase::FindDeviceInstance(const int nodeID, const int instanceID)
-{
-	std::map<std::string,_tZWaveDevice>::iterator itt;
-	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
-	{
-		if (
-			(itt->second.nodeID==nodeID)&&
-			(itt->second.instanceID==instanceID)
 			)
 			return &itt->second;
 	}
@@ -678,11 +650,12 @@ void ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 
 		int nodeID=(pSen->LIGHTING2.id2<<8)|pSen->LIGHTING2.id3;
 		int instanceID=pSen->LIGHTING2.id4;
+		int indexID=pSen->LIGHTING2.id1;
 
 		int svalue=0;
 
 		//First find dimmer
-		pDevice=pDevice=FindDevice(nodeID,instanceID,ZDTYPE_SWITCHDIMMER);
+		pDevice=pDevice=FindDevice(nodeID,instanceID,indexID,ZDTYPE_SWITCHDIMMER);
 		if (pDevice)
 		{
 			if ((pSen->LIGHTING2.cmnd==light2_sOff)||(pSen->LIGHTING2.cmnd==light2_sGroupOff))
@@ -701,7 +674,7 @@ void ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 		else
 		{
 			//find normal
-			pDevice=FindDevice(nodeID,instanceID,ZDTYPE_SWITCHNORMAL);
+			pDevice=FindDevice(nodeID,instanceID,indexID,ZDTYPE_SWITCHNORMAL);
 			if (pDevice)
 			{
 				if ((pSen->LIGHTING2.cmnd==light2_sOff)||(pSen->LIGHTING2.cmnd==light2_sGroupOff))
@@ -719,9 +692,10 @@ void ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 
 		int nodeID=(pMeter->id2<<8)|pMeter->id3;
 		int instanceID=pMeter->id4;
+		int indexID=pMeter->id1;
 
 		//find normal
-		pDevice=FindDevice(nodeID,instanceID,ZDTYPE_SENSOR_SETPOINT);
+		pDevice=FindDevice(nodeID,instanceID,indexID,ZDTYPE_SENSOR_SETPOINT);
 		if (pDevice)
 		{
 			SetThermostatSetPoint(nodeID,instanceID,pDevice->commandClassID,pMeter->temp);

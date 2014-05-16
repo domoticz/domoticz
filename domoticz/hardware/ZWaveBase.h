@@ -26,8 +26,9 @@ class ZWaveBase : public CDomoticzHardwareBase
 	struct _tZWaveDevice
 	{
 		int nodeID;
-		int instanceID;
 		int commandClassID;
+		int instanceID;
+		int indexID;
 		_eZWaveDeviceType devType;
 		int scaleID;
 		int scaleMultiply;
@@ -85,10 +86,10 @@ private:
 	void Do_Work();
 	void SendDevice2Domoticz(const _tZWaveDevice *pDevice);
 	void SendSwitchIfNotExists(const _tZWaveDevice *pDevice);
-	_tZWaveDevice* FindDevice(const int nodeID, const int instanceID, const _eZWaveDeviceType devType);
-	_tZWaveDevice* FindDevice(const int nodeID, const int instanceID, const int CommandClassID, const _eZWaveDeviceType devType);
-	_tZWaveDevice* FindDevice(const int nodeID, const int scaleID);
-	_tZWaveDevice* FindDeviceInstance(const int nodeID, const int instanceID);
+	
+	_tZWaveDevice* FindDevice(const int nodeID, const int instanceID, const int indexID, const _eZWaveDeviceType devType);
+	_tZWaveDevice* FindDevice(const int nodeID, const int instanceID, const int indexID, const int CommandClassID, const _eZWaveDeviceType devType);
+
 	std::string GenerateDeviceStringID(const _tZWaveDevice *pDevice);
 	void InsertDevice(_tZWaveDevice device);
 	void UpdateDeviceBatteryStatus(const int nodeID, const int value);

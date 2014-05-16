@@ -2016,7 +2016,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["title"]="Update Device";
 
 		std::string devname="Unknown";
-		m_pMain->m_sql.UpdateValue(
+		unsigned long long idxreal;
+		idxreal=m_pMain->m_sql.UpdateValue(
 			atoi(hid.c_str()),
 			did.c_str(),
 			(const unsigned char)atoi(dunit.c_str()),
@@ -2029,6 +2030,21 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			devname,
 			false
 			);
+
+		CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(hid.c_str()));
+		if (pHardware!=NULL)
+		{
+			if (
+				(pHardware->HwdType==HTYPE_OpenThermGateway)||
+				(pHardware->HwdType==HTYPE_OpenThermGatewayTCP)||
+				(pHardware->HwdType==HTYPE_ICYTHERMOSTAT)
+				)
+			{
+				_log.Log(LOG_NORM,"Sending SetPoint to device....");
+				m_pMain->SetSetPoint(idx,(float)atof(svalue.c_str()));
+			}
+
+		}
 	}
 	else if (cparam=="system_shutdown")
 	{
