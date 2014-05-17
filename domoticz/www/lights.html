@@ -1463,11 +1463,16 @@ function RefreshLights()
   var id="";
   
   $.ajax({
-     url: "json.htm?type=devices&filter=light&used=true&order=Name", 
+     url: "json.htm?type=devices&filter=light&used=true&order=Name&lastupdate="+$.LastUpdateTime,
      async: false, 
      dataType: 'json',
      success: function(data) {
       if (typeof data.result != 'undefined') {
+
+		if (typeof data.ActTime != 'undefined') {
+			$.LastUpdateTime=parseInt(data.ActTime);
+		}
+      
         $.each(data.result, function(i,item){
 					id="#lightcontent #" + item.idx;
 					var obj=$(id);
@@ -1749,6 +1754,10 @@ function ShowLights()
      success: function(data) {
       if (typeof data.result != 'undefined') {
 		bAllowWidgetReorder=data.AllowWidgetOrdering;
+
+		if (typeof data.ActTime != 'undefined') {
+			$.LastUpdateTime=parseInt(data.ActTime);
+		}
 
         $.each(data.result, function(i,item){
           if (j % 3 == 0)
@@ -2471,21 +2480,23 @@ function EnableDisableSubDevices(ElementID, bEnabled)
 $(document).ready(function() {
     //global var
     $.devIdx=0;
-		$.myglobals = {
-			TimerTypesStr : [],
-			CommandStr : [],
-			SelectedTimerIdx: 0
-		};
-		$.LightsAndSwitches = [];
+	$.LastUpdateTime=parseInt(0);
+    
+	$.myglobals = {
+		TimerTypesStr : [],
+		CommandStr : [],
+		SelectedTimerIdx: 0
+	};
+	$.LightsAndSwitches = [];
 
-		$('#timerparamstable #combotype > option').each(function() {
-					 $.myglobals.TimerTypesStr.push($(this).text());
-		});
-		$('#timerparamstable #combocommand > option').each(function() {
-					 $.myglobals.CommandStr.push($(this).text());
-		});
+	$('#timerparamstable #combotype > option').each(function() {
+				 $.myglobals.TimerTypesStr.push($(this).text());
+	});
+	$('#timerparamstable #combocommand > option').each(function() {
+				 $.myglobals.CommandStr.push($(this).text());
+	});
 
-		$(window).resize(function() { ResizeDimSliders(); });
+	$(window).resize(function() { ResizeDimSliders(); });
 
     $( "#dialog-addlightdevice" ).dialog({
           autoOpen: false,

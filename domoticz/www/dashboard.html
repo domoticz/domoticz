@@ -11,7 +11,7 @@ function RefreshFavorites()
 	RefreshTimeAndSun();
   
   $.ajax({
-     url: "json.htm?type=devices&filter=all&used=true&order=Name&plan="+window.myglobals.LastPlanSelected,
+     url: "json.htm?type=devices&filter=all&used=true&order=Name&plan="+window.myglobals.LastPlanSelected+"&lastupdate="+$.LastUpdateTime,
      async: false,
      dataType: 'json',
      success: function(data) {
@@ -27,6 +27,9 @@ function RefreshFavorites()
 		}
 		if (typeof data.TempSign != 'undefined') {
 			$.myglobals.tempsign=data.TempSign;
+		}
+		if (typeof data.ActTime != 'undefined') {
+			$.LastUpdateTime=parseInt(data.ActTime);
 		}
 
         $.each(data.result, function(i,item){
@@ -1142,15 +1145,19 @@ function ShowFavorites()
      async: false,
      dataType: 'json',
      success: function(data) {
-			bAllowWidgetReorder=data.AllowWidgetOrdering;
-			var rowItems=3;
-			if (data.DashboardType==1) {
-				rowItems=4;
-			}
-			if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
-				rowItems=1000;
-			}
-			$.myglobals.DashboardType=data.DashboardType;
+		if (typeof data.ActTime != 'undefined') {
+			$.LastUpdateTime=parseInt(data.ActTime);
+		}
+     
+		bAllowWidgetReorder=data.AllowWidgetOrdering;
+		var rowItems=3;
+		if (data.DashboardType==1) {
+			rowItems=4;
+		}
+		if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+			rowItems=1000;
+		}
+		$.myglobals.DashboardType=data.DashboardType;
 
 		if (typeof data.WindScale != 'undefined') {
 			$.myglobals.windscale=parseFloat(data.WindScale);
@@ -2810,7 +2817,7 @@ function ResizeDimSliders()
 
 $(document).ready(function() {
 	$(window).resize(function() { ResizeDimSliders(); });
-	
-  ShowFavorites();
+	$.LastUpdateTime=parseInt(0);
+	ShowFavorites();
 } );
 </script>

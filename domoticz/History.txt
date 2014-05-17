@@ -26,6 +26,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Fixed: Manual add Lighting 2 switch (type HE)
 - Implemented: OpenZWave configuration of 'Wake-up Interval' (COMMAND_CLASS_WAKE_UP)
 - Implemented: JSon parameter=udevice now will set the SetPoint if it applies
+- Implemented: web traffic reduced when refreshing widgets
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

@@ -1312,11 +1312,16 @@ function RefreshScenes()
   var id="";
   
   $.ajax({
-     url: "json.htm?type=scenes", 
+     url: "json.htm?type=scenes&lastupdate="+$.LastUpdateTime, 
      async: false, 
      dataType: 'json',
      success: function(data) {
       if (typeof data.result != 'undefined') {
+      
+		if (typeof data.ActTime != 'undefined') {
+			$.LastUpdateTime=parseInt(data.ActTime);
+		}
+      
         $.each(data.result, function(i,item){
 			id="#scenecontent #" + item.idx;
 			var obj=$(id);
@@ -1400,6 +1405,10 @@ function ShowScenes()
      success: function(data) {
       if (typeof data.result != 'undefined') {
 		bAllowWidgetReorder=data.AllowWidgetOrdering;
+		if (typeof data.ActTime != 'undefined') {
+			$.LastUpdateTime=parseInt(data.ActTime);
+		}
+		
         $.each(data.result, function(i,item){
           if (j % 3 == 0)
           {

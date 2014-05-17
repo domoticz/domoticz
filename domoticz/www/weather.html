@@ -121,13 +121,17 @@ function RefreshWeathers()
   var id="";
 
   $.ajax({
-     url: "json.htm?type=devices&filter=weather&used=true&order=Name", 
+     url: "json.htm?type=devices&filter=weather&used=true&order=Name&lastupdate="+$.LastUpdateTime,
      async: false, 
      dataType: 'json',
      success: function(data) {
       if (typeof data.result != 'undefined') {
+      
+		if (typeof data.ActTime != 'undefined') {
+			$.LastUpdateTime=parseInt(data.ActTime);
+		}
+      
         $.each(data.result, function(i,item){
-
 				if (typeof data.WindScale != 'undefined') {
 					$.myglobals.windscale=parseFloat(data.WindScale);
 				}
@@ -302,6 +306,9 @@ function ShowWeathers()
 		}
 		if (typeof data.TempSign != 'undefined') {
 			$.myglobals.tempsign=data.TempSign;
+		}
+		if (typeof data.ActTime != 'undefined') {
+			$.LastUpdateTime=parseInt(data.ActTime);
 		}
 
 		$.FiveMinuteHistoryDays=data["5MinuteHistoryDays"];
@@ -545,6 +552,7 @@ function ShowWeathers()
 $(document).ready(function() {
     //global var
     $.devIdx=0;
+	$.LastUpdateTime=parseInt(0);
     
     $( "#dialog-editweatherdevice" ).dialog({
           autoOpen: false,

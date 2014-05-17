@@ -494,11 +494,15 @@ function RefreshTemps()
   var id="";
 
   $.ajax({
-     url: "json.htm?type=devices&filter=temp&used=true&order=Name",
+     url: "json.htm?type=devices&filter=temp&used=true&order=Name&lastupdate="+$.LastUpdateTime,
      async: false,
      dataType: 'json',
      success: function(data) {
       if (typeof data.result != 'undefined') {
+      
+		if (typeof data.ActTime != 'undefined') {
+			$.LastUpdateTime=parseInt(data.ActTime);
+		}
       
 		if (typeof data.WindScale != 'undefined') {
 			$.myglobals.windscale=parseFloat(data.WindScale);
@@ -660,6 +664,10 @@ function ShowTemps()
      dataType: 'json',
      success: function(data) {
       if (typeof data.result != 'undefined') {
+
+		if (typeof data.ActTime != 'undefined') {
+			$.LastUpdateTime=parseInt(data.ActTime);
+		}
       
 		$.FiveMinuteHistoryDays=data["5MinuteHistoryDays"];
 		if (typeof data.WindScale != 'undefined') {
@@ -866,7 +874,8 @@ function ShowTemps()
 $(document).ready(function() {
     //global var
     $.devIdx=0;
-
+	$.LastUpdateTime=parseInt(0);
+	
     $( "#dialog-edittempdevice" ).dialog({
           autoOpen: false,
           width: 450,

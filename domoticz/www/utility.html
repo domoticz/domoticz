@@ -161,11 +161,16 @@ function RefreshUtilities()
   var id="";
 
   $.ajax({
-     url: "json.htm?type=devices&filter=utility&used=true&order=Name", 
+     url: "json.htm?type=devices&filter=utility&used=true&order=Name&lastupdate="+$.LastUpdateTime,
      async: false, 
      dataType: 'json',
      success: function(data) {
       if (typeof data.result != 'undefined') {
+      
+		if (typeof data.ActTime != 'undefined') {
+			$.LastUpdateTime=parseInt(data.ActTime);
+		}
+      
         $.each(data.result, function(i,item){
 			id="#utilitycontent #" + item.idx;
 			var obj=$(id);
@@ -326,6 +331,10 @@ function ShowUtilities()
 		if (typeof data.TempSign != 'undefined') {
 			$.myglobals.tempsign=data.TempSign;
 		}
+		if (typeof data.ActTime != 'undefined') {
+			$.LastUpdateTime=parseInt(data.ActTime);
+		}
+		
 		bAllowWidgetReorder=data.AllowWidgetOrdering;
 
         $.each(data.result, function(i,item){
@@ -657,6 +666,7 @@ function ShowUtilities()
 $(document).ready(function() {
     //global var
     $.devIdx=0;
+	$.LastUpdateTime=parseInt(0);
     
     $( "#dialog-editutilitydevice" ).dialog({
           autoOpen: false,

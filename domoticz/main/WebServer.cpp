@@ -2016,8 +2016,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["title"]="Update Device";
 
 		std::string devname="Unknown";
-		unsigned long long idxreal;
-		idxreal=m_pMain->m_sql.UpdateValue(
+		m_pMain->m_sql.UpdateValue(
 			atoi(hid.c_str()),
 			did.c_str(),
 			(const unsigned char)atoi(dunit.c_str()),
@@ -2030,7 +2029,6 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			devname,
 			false
 			);
-
 		CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(hid.c_str()));
 		if (pHardware!=NULL)
 		{
@@ -5893,7 +5891,7 @@ char * CWebServer::SetLimitlessType()
 	return (char*)m_retstr.c_str();
 }
 
-void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const bool bDisplayHidden)
+void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const bool bDisplayHidden, time_t LastUpdate)
 {
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
@@ -5901,6 +5899,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 	time_t now = mytime(NULL);
 	struct tm tm1;
 	localtime_r(&now,&tm1);
+	struct tm tLastUpdate;
+	localtime_r(&now,&tLastUpdate);
+
 	int SensorTimeOut=60;
 	m_pMain->m_sql.GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
@@ -5922,6 +5923,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			_hardwareNames[ID]=Name;
 		}
 	}
+
+	root["ActTime"]=now;
 
 	int nValue=0;
 	m_pMain->m_sql.GetPreferencesVar("DashboardType",nValue);
@@ -5992,9 +5995,23 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			for (itt=result.begin(); itt!=result.end(); ++itt)
 			{
 				std::vector<std::string> sd=*itt;
+				std::string sLastUpdate=sd[3];
+
+				if (LastUpdate!=0)
+				{
+					tLastUpdate.tm_isdst=tm1.tm_isdst;
+					tLastUpdate.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
+					tLastUpdate.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
+					tLastUpdate.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
+					tLastUpdate.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
+					tLastUpdate.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
+					tLastUpdate.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
+					time_t cLastUpdate=mktime(&tLastUpdate);
+					if (cLastUpdate<=LastUpdate)
+						continue;
+				}
 
 				int nValue= atoi(sd[2].c_str());
-				std::string sLastUpdate=sd[3];
 				unsigned char favorite = atoi(sd[4].c_str());
 				unsigned char scenetype = atoi(sd[5].c_str());
 				int iProtected=atoi(sd[6].c_str());
@@ -6133,6 +6150,21 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			int nValue = atoi(sd[9].c_str());
 			std::string sValue=sd[10];
 			std::string sLastUpdate=sd[11];
+
+			if (LastUpdate!=0)
+			{
+				tLastUpdate.tm_isdst=tm1.tm_isdst;
+				tLastUpdate.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
+				tLastUpdate.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
+				tLastUpdate.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
+				tLastUpdate.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
+				tLastUpdate.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
+				tLastUpdate.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
+				time_t cLastUpdate=mktime(&tLastUpdate);
+				if (cLastUpdate<=LastUpdate)
+					continue;
+			}
+
 			unsigned char favorite = atoi(sd[12].c_str());
 			if ((planID!="")&&(planID!="0"))
 				favorite=1;
@@ -7915,11 +7947,20 @@ std::string CWebServer::GetJSonPage()
 		std::string planid=m_pWebEm->FindValue("plan");
 		std::string sDisplayHidden=m_pWebEm->FindValue("displayhidden");
 		bool bDisplayHidden=(sDisplayHidden=="1");
+		std::string sLastUpdate=m_pWebEm->FindValue("lastupdate");
+		
+		time_t LastUpdate=0;
+		if (sLastUpdate!="")
+		{
+			std::stringstream sstr;
+			sstr << sLastUpdate;
+			sstr >> LastUpdate;
+		}
 
 		root["status"]="OK";
 		root["title"]="Devices";
 
-		GetJSonDevices(root, rused, rfilter,order,rid,planid,bDisplayHidden);
+		GetJSonDevices(root, rused, rfilter,order,rid,planid,bDisplayHidden,LastUpdate);
 
 		root["WindScale"]=m_pMain->m_sql.m_windscale*10.0f;
 		root["WindSign"]=m_pMain->m_sql.m_windsign;
@@ -12277,6 +12318,24 @@ std::string CWebServer::GetJSonPage()
 		root["title"]="Scenes";
 		root["AllowWidgetOrdering"]=m_pMain->m_sql.m_bAllowWidgetOrdering;
 
+		std::string sLastUpdate=m_pWebEm->FindValue("lastupdate");
+
+		time_t LastUpdate=0;
+		if (sLastUpdate!="")
+		{
+			std::stringstream sstr;
+			sstr << sLastUpdate;
+			sstr >> LastUpdate;
+		}
+
+		time_t now = mytime(NULL);
+		struct tm tm1;
+		localtime_r(&now,&tm1);
+		struct tm tLastUpdate;
+		localtime_r(&now,&tLastUpdate);
+
+		root["ActTime"]=now;
+
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT ID, Name, HardwareID, Favorite, nValue, SceneType, LastUpdate, Protected, DeviceID, Unit FROM Scenes ORDER BY [Order]";
@@ -12288,6 +12347,22 @@ std::string CWebServer::GetJSonPage()
 			for (itt=result.begin(); itt!=result.end(); ++itt)
 			{
 				std::vector<std::string> sd=*itt;
+
+				std::string sLastUpdate = sd[6].c_str();
+
+				if (LastUpdate!=0)
+				{
+					tLastUpdate.tm_isdst=tm1.tm_isdst;
+					tLastUpdate.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
+					tLastUpdate.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
+					tLastUpdate.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
+					tLastUpdate.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
+					tLastUpdate.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
+					tLastUpdate.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
+					time_t cLastUpdate=mktime(&tLastUpdate);
+					if (cLastUpdate<=LastUpdate)
+						continue;
+				}
 
 				unsigned char nValue=atoi(sd[4].c_str());
 				unsigned char scenetype=atoi(sd[5].c_str());
@@ -12336,7 +12411,7 @@ std::string CWebServer::GetJSonPage()
 					root["result"][ii]["Type"]="Group";
 				}
 
-				root["result"][ii]["LastUpdate"]=sd[6].c_str();
+				root["result"][ii]["LastUpdate"]=sLastUpdate;
 
 				if (nValue==0)
 					root["result"][ii]["Status"]="Off";
