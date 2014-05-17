@@ -5924,7 +5924,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 		}
 	}
 
-	root["ActTime"]=now;
+	root["ActTime"]=(long)now;
 
 	int nValue=0;
 	m_pMain->m_sql.GetPreferencesVar("DashboardType",nValue);
@@ -12334,7 +12334,7 @@ std::string CWebServer::GetJSonPage()
 		struct tm tLastUpdate;
 		localtime_r(&now,&tLastUpdate);
 
-		root["ActTime"]=now;
+		root["ActTime"]=(long)now;
 
 		szQuery.clear();
 		szQuery.str("");
