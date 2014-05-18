@@ -21,7 +21,7 @@
 	#include <pwd.h>
 #endif
 
-#define DB_VERSION 42
+#define DB_VERSION 43
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -313,6 +313,8 @@ const char *sqlCreateScenes =
 "[SceneType] INTEGER DEFAULT 0, \n"
 "[ListenCmd] INTEGER DEFAULT 1, \n"
 "[Protected] INTEGER DEFAULT 0, \n"
+"[OnAction] VARCHAR(200) DEFAULT '', "
+"[OffAction] VARCHAR(200) DEFAULT '', "
 "[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')));\n";
 
 const char *sqlCreateScenesTrigger =
@@ -883,7 +885,11 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("INSERT INTO Plans (Name) VALUES ('$Hidden Devices')");
 		}
-
+		if (dbversion<43)
+		{
+			query("ALTER TABLE Scenes ADD COLUMN [OnAction] VARCHAR(200) DEFAULT ''");
+			query("ALTER TABLE Scenes ADD COLUMN [OffAction] VARCHAR(200) DEFAULT ''");
+		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
 
@@ -1334,9 +1340,12 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string &szQu
 				for(int col = 0; col < cols; col++)
 				{
 					char* value = (char*)sqlite3_column_text(statement, col);
-					if (value == 0)
+					if ((value == 0)&&(col==0))
 						break;
-					values.push_back(value);
+					else if (value == 0)
+						values.push_back(std::string("")); //insert empty string
+					else
+						values.push_back(value);
 				}
 				if (values.size()>0)
 					results.push_back(values);
@@ -1683,7 +1692,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 				std::string OnAction=sd[3];
 				std::string OffAction=sd[4];
 
-				HandleSwitchAction(bIsLightSwitchOn,OnAction,OffAction);
+				HandleOnOffAction(bIsLightSwitchOn,OnAction,OffAction);
 			}
 
 			//Check if we need to email a snapshot of a Camera
@@ -5673,7 +5682,7 @@ void CSQLHelper::SetUnitsAndScale()
 	}
 }
 
-bool CSQLHelper::HandleSwitchAction(const bool bIsOn, const std::string &OnAction, const std::string &OffAction)
+bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction, const std::string &OffAction)
 {
 	if (bIsOn)
 	{

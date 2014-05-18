@@ -8282,9 +8282,11 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 	char szTmp[300];
 	std::string Name="Unknown?";
 	int scenetype=0;
+	std::string onaction="";
+	std::string offaction="";
 
 	//Get Scene Name
-	sprintf(szTmp, "SELECT Name, SceneType FROM Scenes WHERE (ID == %llu)",
+	sprintf(szTmp, "SELECT Name, SceneType, OnAction, OffAction FROM Scenes WHERE (ID == %llu)",
 		idx);
 	result=m_sql.query(szTmp);
 	if (result.size()>0)
@@ -8292,6 +8294,10 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 		std::vector<std::string> sds=result[0];
 		Name=sds[0];
 		scenetype=atoi(sds[1].c_str());
+		onaction=sds[2];
+		offaction=sds[3];
+
+		m_sql.HandleOnOffAction((nValue==1),onaction,offaction);
 	}
 
 	sprintf(szTmp, "UPDATE Scenes SET nValue=%d, LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == %llu)",

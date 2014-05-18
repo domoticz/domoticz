@@ -22,11 +22,11 @@
 <div id="editscene" style="display:none;">
 		<table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
 			<tr>
-				<td align="right" style="width:60px"><label for="name"><span data-i18n="Name"></span>: </label></td>
+				<td align="right" style="width:120px"><label for="name"><span data-i18n="Name"></span>: </label></td>
 				<td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 			</tr>
 			<tr>
-				<td align="right" style="width:60px"><label><span data-i18n="Type"></span>: </label></td>
+				<td align="right"><label><span data-i18n="Type"></span>: </label></td>
 				<td>
 					<select id="combotype" style="width:120px" class="combobox ui-corner-all">
 						<option value="0" data-i18n="Scene">Scene</option>
@@ -37,6 +37,14 @@
 			<tr id="ProtectionDiv">
 				<td align="right"><label for="protected"><span data-i18n="Protected">Protected</span>:</label></td>
 				<td><input type="checkbox" id="protected"></td>
+			</tr>
+			<tr id="OnActionDiv">
+				<td align="right"><label for="onaction"><span data-i18n="On Action">On Action</span>:</label></td>
+				<td><input type="text" id="onaction" style="width: 340px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Should start with http:// or script://)">(Should start with http:// or script://)</span></td>
+			</tr>
+			<tr id="OffActionDiv">
+				<td align="right"><label for="offaction"><span data-i18n="Off Action">Off Action</span>:</label></td>
+				<td><input type="text" id="offaction" style="width: 340px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Should start with http:// or script://)">(Should start with http:// or script://)</span></td>
 			</tr>
 			<tr>
 				<td></td>
@@ -374,6 +382,35 @@ function SaveScene()
 {
 		var bValid = true;
 		bValid = bValid && checkLength( $("#scenecontent #devicename"), 2, 100 );
+		
+		var onaction=$("#scenecontent #onaction").val();
+		var offaction=$("#scenecontent #offaction").val();
+		
+		if (onaction!="") {
+			if ( (onaction.indexOf("http://") !=0) && (onaction.indexOf("script://") !=0) ) {
+				bootbox.alert($.i18n("Invalid ON Action!"));
+				return;
+			}
+			else {
+				if (checkLength( $("#scenecontent #onaction"), 10, 500 )==false) {
+					bootbox.alert($.i18n("Invalid ON Action!"));
+					return;
+				}
+			}
+		}
+		if (offaction!="") {
+			if ( (offaction.indexOf("http://") !=0) && (offaction.indexOf("script://") !=0) ) {
+				bootbox.alert($.i18n("Invalid Off Action!"));
+				return;
+			}
+			else {
+				if (checkLength( $("#scenecontent #offaction"), 10, 500 )==false) {
+					bootbox.alert($.i18n("Invalid Off Action!"));
+					return;
+				}
+			}
+		}
+		
 		if ( bValid ) {
 				var SceneType=$("#scenecontent #combotype").val();
 				var bIsProtected=$('#scenecontent #protected').is(":checked");
@@ -381,6 +418,8 @@ function SaveScene()
 					 url: "json.htm?type=updatescene&idx=" + $.devIdx + 
 							"&scenetype=" + SceneType + 
 							"&name=" + encodeURIComponent($("#scenecontent #devicename").val()) +
+							'&onaction=' + btoa(onaction) +
+							'&offaction=' + btoa(offaction) +
 						    "&protected=" + bIsProtected,
 					 async: false, 
 					 dataType: 'json',
@@ -757,7 +796,7 @@ function OnSelChangeDevice()
 	}
 }
 
-function EditSceneDevice(idx,name,havecode,type,bIsProtected,learndevicename)
+function EditSceneDevice(idx,name,havecode,type,bIsProtected,learndevicename,onaction,offaction)
 {
   clearInterval($.myglobals.refreshTimer);
   $.devIdx=idx;
@@ -773,6 +812,10 @@ function EditSceneDevice(idx,name,havecode,type,bIsProtected,learndevicename)
   $('#scenecontent').i18n();
   $("#scenecontent #LevelDiv").hide();
   $("#scenecontent #LedColor").hide();
+  
+  $("#scenecontent #onaction").val(onaction);
+  $("#scenecontent #offaction").val(offaction);
+  
   $('#scenecontent #protected').prop('checked',(bIsProtected==true));
   
   if (bIsScene==true) {
@@ -1478,7 +1521,7 @@ function ShowScenes()
                   '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
           if (window.my_config.userrights==2) {
-				xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + item.Name + '\',' + item.HardwareID + ',\'' + item.Type + '\', ' + item.Protected + ',\'' + item.CodeDeviceName + '\');" data-i18n="Edit">Edit</a> ';
+				xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + item.Name + '\',' + item.HardwareID + ',\'' + item.Type + '\', ' + item.Protected + ',\'' + item.CodeDeviceName + '\', \'' + atob(item.OnAction) + '\', \'' + atob(item.OffAction) + '\');" data-i18n="Edit">Edit</a> ';
 				if (bAddTimer == true) {
 					if (item.Timers == "true") {
 						xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',\'' + item.Type + '\');" data-i18n="Timers">Timers</a> ';

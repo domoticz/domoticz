@@ -12163,12 +12163,17 @@ std::string CWebServer::GetJSonPage()
 		std::string tmpstr=m_pWebEm->FindValue("protected");
 		int iProtected=(tmpstr=="true")?1:0;
 
+		std::string onaction=base64_decode(m_pWebEm->FindValue("onaction"));
+		std::string offaction=base64_decode(m_pWebEm->FindValue("offaction"));
+
 		root["status"]="OK";
 		root["title"]="UpdateScene";
-		sprintf(szTmp,"UPDATE Scenes SET Name='%s', SceneType=%d, Protected=%d WHERE (ID == %s)",
+		sprintf(szTmp,"UPDATE Scenes SET Name='%s', SceneType=%d, Protected=%d, OnAction='%s', OffAction='%s' WHERE (ID == %s)",
 				name.c_str(),
 				atoi(stype.c_str()),
 				iProtected,
+				onaction.c_str(),
+				offaction.c_str(),
 				idx.c_str()
 				);
 		m_pMain->m_sql.query(szTmp);
@@ -12348,7 +12353,7 @@ std::string CWebServer::GetJSonPage()
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT ID, Name, HardwareID, Favorite, nValue, SceneType, LastUpdate, Protected, DeviceID, Unit FROM Scenes ORDER BY [Order]";
+		szQuery << "SELECT ID, Name, HardwareID, Favorite, nValue, SceneType, LastUpdate, Protected, DeviceID, Unit, OnAction, OffAction FROM Scenes ORDER BY [Order]";
 		result=m_pMain->m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -12385,22 +12390,24 @@ std::string CWebServer::GetJSonPage()
 					CodeDeviceName="? not found!";
 				}
 
-				if (sd.size()==10)
-				{
-					std::string DeviceID=sd[8];
-					int Unit=atoi(sd[9].c_str());
+				std::string onaction="";
+				std::string offaction="";
 
-					if (HardwareID!=0)
+				std::string DeviceID=sd[8];
+				int Unit=atoi(sd[9].c_str());
+				onaction=base64_encode((const unsigned char*)sd[10].c_str(),sd[10].size());
+				offaction=base64_encode((const unsigned char*)sd[11].c_str(),sd[11].size());
+
+				if (HardwareID!=0)
+				{
+					//Get learn code device name
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << HardwareID << ") AND (DeviceID=='" << DeviceID << "') AND (Unit==" << Unit << ")";
+					result2=m_pMain->m_sql.query(szQuery.str());
+					if (result2.size()>0)
 					{
-						//Get learn code device name
-						szQuery.clear();
-						szQuery.str("");
-						szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << HardwareID << ") AND (DeviceID=='" << DeviceID << "') AND (Unit==" << Unit << ")";
-						result2=m_pMain->m_sql.query(szQuery.str());
-						if (result2.size()>0)
-						{
-							CodeDeviceName=result2[0][0];
-						}
+						CodeDeviceName=result2[0][0];
 					}
 				}
 
@@ -12411,6 +12418,8 @@ std::string CWebServer::GetJSonPage()
 				root["result"][ii]["CodeDeviceName"]=CodeDeviceName;
 				root["result"][ii]["Favorite"]=atoi(sd[3].c_str());
 				root["result"][ii]["Protected"]=(iProtected!=0);
+				root["result"][ii]["OnAction"]=onaction;
+				root["result"][ii]["OffAction"]=offaction;
 
 				if (scenetype==0)
 				{
