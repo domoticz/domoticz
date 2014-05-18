@@ -7003,11 +7003,11 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						break;
 					case MTYPE_GAS:
 						musage=float(total_real)/GasDivider;
-						sprintf(szTmp,"%.02f m3",musage);
+						sprintf(szTmp,"%.03f m3",musage);
 						break;
 					case MTYPE_WATER:
 						musage=float(total_real)/WaterDivider;
-						sprintf(szTmp,"%.02f m3",musage);
+						sprintf(szTmp,"%.03f m3",musage);
 						break;
 					case MTYPE_COUNTER:
 						sprintf(szTmp,"%llu",total_real);
