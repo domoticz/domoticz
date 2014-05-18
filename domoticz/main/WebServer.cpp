@@ -728,18 +728,22 @@ void CWebServer::SaveFibaroLinkConfig(Json::Value &root)
 	std::string username=m_pWebEm->FindValue("username");
 	std::string password=m_pWebEm->FindValue("password");
 	std::string linkactive=m_pWebEm->FindValue("linkactive");
+	std::string debugenabled=m_pWebEm->FindValue("debugenabled");
 	if (
 		(remote=="")||
 		(username=="")||
 		(password=="")||
-		(linkactive=="")
+		(linkactive=="")||
+		(debugenabled=="")
 		)
 		return;
 	int ilinkactive=atoi(linkactive.c_str());
+	int idebugenabled=atoi(debugenabled.c_str());
 	m_pMain->m_sql.UpdatePreferencesVar("FibaroIP",remote.c_str());
 	m_pMain->m_sql.UpdatePreferencesVar("FibaroUsername",username.c_str());
 	m_pMain->m_sql.UpdatePreferencesVar("FibaroPassword",password.c_str());
 	m_pMain->m_sql.UpdatePreferencesVar("FibaroActive",ilinkactive);
+	m_pMain->m_sql.UpdatePreferencesVar("FibaroDebug",idebugenabled);
 	root["status"]="OK";
 	root["title"]="SaveFibaroLinkConfig";
 }
@@ -753,6 +757,12 @@ void CWebServer::GetFibaroLinkConfig(Json::Value &root)
 	}
 	else {
 		root["FibaroActive"]=0;
+	}
+	if (m_pMain->m_sql.GetPreferencesVar("FibaroDebug", nValue)) {
+		root["FibaroDebug"]=nValue;
+	}
+	else {
+		root["FibaroDebug"]=0;
 	}
 	if (m_pMain->m_sql.GetPreferencesVar("FibaroIP", sValue))
 	{

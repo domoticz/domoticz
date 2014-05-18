@@ -34,7 +34,7 @@ void CDataPush::DoWork(const unsigned long long DeviceRowIdxIn)
 	DeviceRowIdx = DeviceRowIdxIn;
 	int fActive;
 	m_pMain->m_sql.GetPreferencesVar("FibaroActive", fActive);
-	if (fActive) {
+	if (fActive==1) {
 		DoFibaroPush();
 	}
 }
@@ -47,6 +47,12 @@ void CDataPush::DoFibaroPush()
 	m_pMain->m_sql.GetPreferencesVar("FibaroIP", fibaroIP);
 	m_pMain->m_sql.GetPreferencesVar("FibaroUsername", fibaroUsername);
 	m_pMain->m_sql.GetPreferencesVar("FibaroPassword", fibaroPassword);
+	int fibaroDebugActiveInt;
+	bool fibaroDebugActive = false;
+	m_pMain->m_sql.GetPreferencesVar("FibaroDebug", fibaroDebugActiveInt);
+	if (fibaroDebugActiveInt == 1) {
+		fibaroDebugActive = true;
+	}
 
 	if (
 		(fibaroIP!="")&&
@@ -121,33 +127,35 @@ void CDataPush::DoFibaroPush()
 					if (targetType==0) {
 						Url << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/globalVariables";
 						sPostData << "{\"name\": \"" << targetVariable << "\", \"value\": \"" << sendValue << "\"}";
-						//_log.Log(LOG_NORM,"sending global variable %s with value: %s",targetVariable.c_str(),sendValue.c_str());
+						if (fibaroDebugActive) {
+							_log.Log(LOG_NORM,"FibaroLink: sending global variable %s with value: %s",targetVariable.c_str(),sendValue.c_str());
+						}
 						if (!HTTPClient::PUT(Url.str(),sPostData.str(),ExtraHeaders,sResult))
 						{
 							_log.Log(LOG_ERROR,"Error sending data to Fibaro!");
 						
 						}
-						//_log.Log(LOG_NORM,"response: %s",sResult.c_str());
-
 					}	
 					else if (targetType==1) {
 						Url << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/callAction?deviceid=" << targetDeviceID << "&name=setProperty&arg1=" << targetProperty << "&arg2=" << sendValue;
-						//_log.Log(LOG_NORM,"sending value %s to property %s of virtual device id %d",sendValue.c_str(),targetProperty.c_str(),targetDeviceID);
+						if (fibaroDebugActive) {
+							_log.Log(LOG_NORM,"FibaroLink: sending value %s to property %s of virtual device id %d",sendValue.c_str(),targetProperty.c_str(),targetDeviceID);
+						}
 						if (!HTTPClient::GET(Url.str(),sResult))
 						{
 							_log.Log(LOG_ERROR,"Error sending data to Fibaro!");
 						}
-						//_log.Log(LOG_NORM,"response: %s",sResult.c_str());
 					}
 					else if (targetType==2) {
 						if (((delpos==0)&&(lstatus=="Off"))||((delpos==1)&&(lstatus=="On"))) {
 							Url << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/sceneControl?id=" << targetDeviceID << "&action=start";
-							//_log.Log(LOG_NORM,"activating scene %d",targetDeviceID);
+							if (fibaroDebugActive) {
+								_log.Log(LOG_NORM,"FibaroLink: activating scene %d",targetDeviceID);
+							}
 							if (!HTTPClient::GET(Url.str(),sResult))
 							{
 								_log.Log(LOG_ERROR,"Error sending data to Fibaro!");
 							}
-							//_log.Log(LOG_NORM,"response: %s",sResult.c_str());
 						}
 					}
 				}

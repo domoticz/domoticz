@@ -103,6 +103,10 @@
 			<td align="right" style="width:80px"><label for="fibarolinkenabled"><span data-i18n="FibaroLink active"></span>:</label></td>
 			<td><input type="checkbox" id="fibarolinkenabled" checked></td>
 		</tr>
+		<tr>
+			<td align="right" style="width:80px"><label for="debugenabled"><span data-i18n="Debug to logfile"></span>:</label></td>
+			<td><input type="checkbox" id="debugenabled" checked></td>
+		</tr>
 	</table>
 	<a class="btnstyle3" onclick="SaveConfiguration();" data-i18n="Save">Save</a>
 	</td>
@@ -169,9 +173,14 @@ function SaveConfiguration()
 	{
 		linkactive = 1;
 	}
+	var debugenabled = 0;
+	if ($('#fibaroremote #debugenabled').is(":checked"))
+	{
+		debugenabled = 1;
+	}
 	$.ajax({
 		 url: "json.htm?type=command&param=savefibarolinkconfig" +
-			"&remote=" + cleanurl + "&username=" + username + "&password=" + password + "&linkactive=" + linkactive,
+			"&remote=" + cleanurl + "&username=" + username + "&password=" + password + "&linkactive=" + linkactive + "&debugenabled=" + debugenabled,
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {
@@ -264,6 +273,10 @@ function GetConfig()
 					$('#fibaroremote #fibarolinkenabled').prop('checked', false);
 					if (data.FibaroActive) {
 						$('#fibaroremote #fibarolinkenabled').prop('checked', true);
+					}
+					$('#fibaroremote #debugenabled').prop('checked', false);
+					if (data.FibaroDebug) {
+						$('#fibaroremote #debugenabled').prop('checked', true);
 					}
 				}
 			}
