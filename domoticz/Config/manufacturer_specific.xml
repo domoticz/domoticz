@@ -471,6 +471,7 @@
 	<Manufacturer id="0109" name="Vision">
 		<Product type="1001" id="0101" name="Z-Wave USB Stick"/>
 		<Product type="2002" id="0203" name="Wireless PIR Motion Sensor" config="vision/zp3102eu.xml"/>
+		<Product type="2005" id="0503" name="Batterie Operated Siren (ZM1601EU)" config="vision/zm1601eu.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0115" name="Z-Wave.Me">
 		<Product type="1000" id="0002" name="ZME_06433 Wall Flush-Mountable Dimmer" config="zwave.me/ZME_06433.xml"/>
