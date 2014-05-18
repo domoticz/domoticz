@@ -1036,7 +1036,7 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 			}
 		}
 */
-		if (svalue>99)
+		if ((svalue>99)&&(svalue!=255))
 			svalue=99;
 		_log.Log(LOG_NORM,"OpenZWave: Domoticz has send a Switch command!, Level: %d",svalue);
 		bHaveSendSwitch=true;

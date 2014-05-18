@@ -28,6 +28,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: JSon parameter=udevice now will set the SetPoint if it applies
 - Implemented: web traffic reduced when refreshing widgets
 - Changed: RFXMeter values for Water/Gas now displays with 3 digits
+- Fixed: openzwave dimable lights did not restore to last brightness level when turned on
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

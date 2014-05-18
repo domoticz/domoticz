@@ -655,7 +655,7 @@ void ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 		int svalue=0;
 
 		//First find dimmer
-		pDevice=pDevice=FindDevice(nodeID,instanceID,indexID,ZDTYPE_SWITCHDIMMER);
+		pDevice=FindDevice(nodeID,instanceID,indexID,ZDTYPE_SWITCHDIMMER);
 		if (pDevice)
 		{
 			if ((pSen->LIGHTING2.cmnd==light2_sOff)||(pSen->LIGHTING2.cmnd==light2_sGroupOff))
