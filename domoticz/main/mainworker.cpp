@@ -1181,36 +1181,39 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 
 	if (pHardware->HwdType == HTYPE_Domoticz)
 	{
-		CDomoticzHardwareBase *pOrgHardware=NULL;
-		switch (pRXCommand[1])
+		if (pHardware->m_HwdID==8765) //did we receive it from our master?
 		{
-		case pTypeLighting1:
-		case pTypeLighting2:
-		case pTypeLighting3:
-		case pTypeLighting4:
-		case pTypeLighting5:
-		case pTypeLighting6:
-		case pTypeLimitlessLights:
-		case pTypeCurtain:
-		case pTypeBlinds:
-		case pTypeSecurity1:
-		case pTypeChime:
-		case pTypeThermostat3:
-			//we received a control message from a domoticz client,
-			//and should actually perform this command ourself switch
-			DeviceRowIdx=PerformRealActionFromDomoticzClient(pRXCommand,&pOrgHardware);
-			if (DeviceRowIdx!=-1)
+			CDomoticzHardwareBase *pOrgHardware=NULL;
+			switch (pRXCommand[1])
 			{
-				if (pOrgHardware!=NULL)
+			case pTypeLighting1:
+			case pTypeLighting2:
+			case pTypeLighting3:
+			case pTypeLighting4:
+			case pTypeLighting5:
+			case pTypeLighting6:
+			case pTypeLimitlessLights:
+			case pTypeCurtain:
+			case pTypeBlinds:
+			case pTypeSecurity1:
+			case pTypeChime:
+			case pTypeThermostat3:
+				//we received a control message from a domoticz client,
+				//and should actually perform this command ourself switch
+				DeviceRowIdx=PerformRealActionFromDomoticzClient(pRXCommand,&pOrgHardware);
+				if (DeviceRowIdx!=-1)
 				{
-					DeviceRowIdx=-1;
-					pClient2Ignore=(tcp::server::CTCPClient*)pHardware->m_pUserData;
-					pHardware=pOrgHardware;
-					HwdID=pOrgHardware->m_HwdID;
+					if (pOrgHardware!=NULL)
+					{
+						DeviceRowIdx=-1;
+						pClient2Ignore=(tcp::server::CTCPClient*)pHardware->m_pUserData;
+						pHardware=pOrgHardware;
+						HwdID=pOrgHardware->m_HwdID;
+					}
+					WriteMessage("Control Command, ",(pOrgHardware==NULL));
 				}
-				WriteMessage("Control Command, ",(pOrgHardware==NULL));
+				break;
 			}
-			break;
 		}
 	}
 

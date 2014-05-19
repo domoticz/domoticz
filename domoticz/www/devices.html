@@ -486,11 +486,11 @@ $(document).ready(function() {
                       var MainDeviceIdx="";
                       if (bIsSubDevice)
                       {
-												var MainDeviceIdx=$("#dialog-addlightdevice #combosubdevice option:selected").val();
-												if (typeof MainDeviceIdx == 'undefined') {
-													bootbox.alert($.i18n('No Main Device Selected!'));
-													return;
-												}
+							var MainDeviceIdx=$("#dialog-addlightdevice #combosubdevice option:selected").val();
+							if (typeof MainDeviceIdx == 'undefined') {
+								bootbox.alert($.i18n('No Main Device Selected!'));
+								return;
+							}
                       }
                       if ( bValid ) {
                           $( this ).dialog( "close" );

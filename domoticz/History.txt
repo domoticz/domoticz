@@ -31,6 +31,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Fixed: openzwave dimable lights did not restore to last brightness level when turned on
 - Implemented: openzwave added support for Vision Battery Operated Siren (ZM1601EU)
 - Implemented: Scene On/Off actions
+- Fixed: Remote sharing of devices with same ID
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

@@ -286,7 +286,7 @@ void CTCPServer::DoDecodeMessage(const CTCPClient *pClient, const unsigned char 
 {
 	HwdType = HTYPE_Domoticz;
 	m_HwdID=8765;
-	Name="Domoticz Shared";
+	Name="DomoticzFromMaster";
 	m_SeqNr=1;
 	m_pUserData=(void*)pClient;
 	sDecodeRXMessage(this, pRXCommand);//decode message
