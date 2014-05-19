@@ -25,6 +25,7 @@
 					<option value="0" data-i18n="Global variable">Global variable</option>
 					<option value="1" data-i18n="Virtual device">Virtual device</option>
 					<option value="2" data-i18n="Scene">Scene</option>
+					<option value="3" data-i18n="Reboot">Reboot</option>
 				</select>
 			</td>
 		</tr>
@@ -50,6 +51,14 @@
 		<tr id="scenevariabletosend" style="display:none;">
 			<td align="right" style="width:110px"><label for="sendvaluescene"><span data-i18n="Start scene on"></span>:</label></td>
 			<td><select id="sendvaluescene" style="width:160px" class="combobox ui-corner-all">
+					<option value="0" data-i18n="Off">Off</option>
+					<option value="1" data-i18n="On">On</option>
+				</select>
+			</td>
+		</tr>	
+		<tr id="rebootvariabletosend" style="display:none;">
+			<td align="right" style="width:110px"><label for="sendvaluereboot"><span data-i18n="Start on"></span>:</label></td>
+			<td><select id="sendvaluereboot" style="width:160px" class="combobox ui-corner-all">
 					<option value="0" data-i18n="Off">Off</option>
 					<option value="1" data-i18n="On">On</option>
 				</select>
@@ -129,6 +138,7 @@ function TargetTypeUpdate()
 		$("#linkparamstable #targetonoffdevicename").hide();
 		$("#linkparamstable #variabletosend").show();
 		$("#linkparamstable #scenevariabletosend").hide();
+		$("#linkparamstable #rebootvariabletosend").hide();
 		$("#linkparamstable #targetvariablerow").show();
 		$("#linkparamstable #targetdeviceidrow").hide();
 		$("#linkparamstable #targetpropertyrow").hide();
@@ -140,6 +150,7 @@ function TargetTypeUpdate()
 		$("#linkparamstable #targetonoffdevicename").hide();
 		$("#linkparamstable #variabletosend").show();
 		$("#linkparamstable #scenevariabletosend").hide();
+		$("#linkparamstable #rebootvariabletosend").hide();
 		$("#linkparamstable #targetvariablerow").hide();
 		$("#linkparamstable #targetdeviceidrow").show();
 		$("#linkparamstable #targetpropertyrow").show();
@@ -153,11 +164,27 @@ function TargetTypeUpdate()
 		$("#linkparamstable #targetonoffdevicename").show();
 		$("#linkparamstable #variabletosend").hide();
 		$("#linkparamstable #scenevariabletosend").show();
+		$("#linkparamstable #rebootvariabletosend").hide();
 		$("#linkparamstable #targetvariablerow").hide();
 		$("#linkparamstable #targetdeviceidrow").show();
 		$("#linkparamstable #targetpropertyrow").hide();
 		$("#linkparamstable #targetincludeunit").hide();
 	}	
+		else if (text.indexOf("Reboot") >= 0)
+	{
+		
+		$("#linkparamstable #targetdevicename").hide();
+		$("#linkparamstable #targetonoffdevicename").show();
+		$("#linkparamstable #variabletosend").hide();
+		$("#linkparamstable #scenevariabletosend").hide();
+		$("#linkparamstable #rebootvariabletosend").show();
+		$("#linkparamstable #targetvariablerow").hide();
+		$("#linkparamstable #targetdeviceidrow").hide();
+		$("#linkparamstable #targetpropertyrow").hide();
+		$("#linkparamstable #targetincludeunit").hide();
+	}
+	
+	
 }
 function SaveConfiguration()
 {
@@ -218,6 +245,7 @@ function AddLink(type)
 	var onoffdeviceid = $("#linkparamstable #onoffdevicename option:selected").val();
 	var valuetosend = $('#linkparamstable #combosendvalue option:selected').val();
 	var scenevaluetosend = $('#linkparamstable #sendvaluescene option:selected').val();
+	var rebootvaluetosend = $('#linkparamstable #sendvaluereboot option:selected').val();
 	var targettype = $("#linkparamstable #combotargettype option:selected").val();
 	var targetvariable = $('#linkparamstable #targetvariable').val();
 	var targetdeviceid = $('#linkparamstable #targetdeviceid').val();
@@ -242,6 +270,9 @@ function AddLink(type)
 	}
 	else if (targettype == 2) {
 		url = "json.htm?type=command&param=savefibarolink" + "&idx=" + idx + "&deviceid=" + onoffdeviceid + "&valuetosend=" + scenevaluetosend + "&targettype=" + targettype + "&targetdeviceid=" + targetdeviceid + "&linkactive=" + linkactive;	
+	}
+	else if (targettype == 3) {
+		url = "json.htm?type=command&param=savefibarolink" + "&idx=" + idx + "&deviceid=" + onoffdeviceid + "&valuetosend=" + rebootvaluetosend + "&targettype=" + targettype + "&targetdeviceid=0&linkactive=" + linkactive;	
 	}
 	
 	$.ajax({
@@ -332,11 +363,15 @@ function RefreshLinkTable()
 				enabled = $.i18n('Yes');
 			if (item.IncludeUnit == 1)
 				includeUnit = $.i18n('Yes');
-			var TargetType = "Global variable";
+			var TargetType = $.i18n('Global variable');
 			if (item.TargetType==1) 
-				TargetType = "Virtual device";
+				TargetType = $.i18n('Virtual device');
 			if (item.TargetType==2) {
-				TargetType = "Scene";	
+				TargetType = $.i18n('Scene');	
+				includeUnit = "-";
+			}
+			if (item.TargetType==3) {
+				TargetType = $.i18n('Reboot');	
 				includeUnit = "-";
 			}
 			if (item.TargetDevice == 0)
@@ -344,6 +379,14 @@ function RefreshLinkTable()
 			var DelimitedValue = "";
 			
 			if (item.TargetType==2) {
+				if (item.Delimitedvalue == 0) {
+					DelimitedValue = $.i18n('Off');
+				}
+				else if (item.Delimitedvalue == 1) {
+					DelimitedValue = $.i18n('On');
+				}
+			}
+			else if (item.TargetType==3) {
 				if (item.Delimitedvalue == 0) {
 					DelimitedValue = $.i18n('Off');
 				}
@@ -425,6 +468,10 @@ function ShowLinks()
 					TargetTypeUpdate();
 					if (data["TargetType"]==2) {
 						$("#linkparamstable #sendvaluescene").val(data["Delimitedvalue"]);
+						$("#linkparamstable #onoffdevicename").val(data["DeviceID"]); 
+					}
+					if (data["TargetType"]==3) {
+						$("#linkparamstable #sendvaluereboot").val(data["Delimitedvalue"]);
 						$("#linkparamstable #onoffdevicename").val(data["DeviceID"]); 
 					}
 					else {

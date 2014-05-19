@@ -87,7 +87,7 @@ void CDataPush::DoFibaroPush()
 				int metertype = atoi(sd[12].c_str());
 				std::string lstatus="";
 
-				if (targetType!=2) {
+				if ((targetType==0)||(targetType==1)) {
 					if (delpos == 0) {
 						int llevel=0;
 						bool bHaveDimmer=false;
@@ -108,7 +108,7 @@ void CDataPush::DoFibaroPush()
 						}
 					}
 				}
-				else { // scenes, only on/off
+				else { // scenes/reboot, only on/off
 					int llevel=0;
 					bool bHaveDimmer=false;
 					bool bHaveGroupCmd=false;
@@ -153,6 +153,18 @@ void CDataPush::DoFibaroPush()
 								_log.Log(LOG_NORM,"FibaroLink: activating scene %d",targetDeviceID);
 							}
 							if (!HTTPClient::GET(Url.str(),sResult))
+							{
+								_log.Log(LOG_ERROR,"Error sending data to Fibaro!");
+							}
+						}
+					}
+					else if (targetType==3) {
+						if (((delpos==0)&&(lstatus=="Off"))||((delpos==1)&&(lstatus=="On"))) {
+							Url << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/settings/reboot";
+							if (fibaroDebugActive) {
+								_log.Log(LOG_NORM,"FibaroLink: reboot");
+							}
+							if (!HTTPClient::POST(Url.str(),sPostData.str(),ExtraHeaders,sResult))
 							{
 								_log.Log(LOG_ERROR,"Error sending data to Fibaro!");
 							}
