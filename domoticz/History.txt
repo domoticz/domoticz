@@ -32,6 +32,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: openzwave added support for Vision Battery Operated Siren (ZM1601EU)
 - Implemented: Scene On/Off actions
 - Fixed: Remote sharing of devices with same ID
+- Fixed: setting setpoint from udevice json call
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

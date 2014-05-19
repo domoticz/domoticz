@@ -2039,19 +2039,14 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			devname,
 			false
 			);
-		CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(hid.c_str()));
-		if (pHardware!=NULL)
-		{
-			if (
-				(pHardware->HwdType==HTYPE_OpenThermGateway)||
-				(pHardware->HwdType==HTYPE_OpenThermGatewayTCP)||
-				(pHardware->HwdType==HTYPE_ICYTHERMOSTAT)
-				)
-			{
-				_log.Log(LOG_NORM,"Sending SetPoint to device....");
-				m_pMain->SetSetPoint(idx,(float)atof(svalue.c_str()));
-			}
 
+		int idtype=atoi(dunit.c_str());
+		int idsubtype=atoi(dsubtype.c_str());
+
+		if ((idtype==pTypeThermostat)&&(idsubtype==sTypeThermSetpoint))
+		{
+			_log.Log(LOG_NORM,"Sending SetPoint to device....");
+			m_pMain->SetSetPoint(idx,(float)atof(svalue.c_str()));
 		}
 	}
 	else if (cparam=="system_shutdown")
