@@ -1950,7 +1950,7 @@ bool COpenZWave::IncludeDevice()
 	m_ControllerCommandStartTime=mytime(NULL);
 	m_bControllerCommandInProgress=true;
 	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_AddDevice, OnDeviceStatusUpdate, this, true);
-
+	_log.Log(LOG_STATUS,"OpenZWave: Node Include command initiated...");
 	return true;
 }
 
@@ -1962,6 +1962,7 @@ bool COpenZWave::ExcludeDevice(const int homeID)
 	m_ControllerCommandStartTime=mytime(NULL);
 	m_bControllerCommandInProgress=true;
 	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_RemoveDevice, OnDeviceStatusUpdate, this, true);
+	_log.Log(LOG_STATUS,"OpenZWave: Node Exclude command initiated...");
 
 	return true;
 }
@@ -1972,6 +1973,7 @@ bool COpenZWave::SoftResetDevice()
 		return false;
 
 	m_pManager->SoftReset(m_controllerID);
+	_log.Log(LOG_STATUS,"OpenZWave: Soft Reset device executed...");
 	return true;
 }
 
@@ -1981,6 +1983,7 @@ bool COpenZWave::HardResetDevice()
 		return false;
 
 	m_pManager->ResetController(m_controllerID);
+	_log.Log(LOG_STATUS,"OpenZWave: Hard Reset device executed...");
 
 	return true;
 }
@@ -1991,7 +1994,7 @@ bool COpenZWave::HealNetwork()
 		return false;
 	
 	m_pManager->HealNetwork(m_controllerID,true);
-
+	_log.Log(LOG_STATUS,"OpenZWave: Heal Network command initiated...");
 	return true;
 }
 
@@ -2001,8 +2004,7 @@ bool COpenZWave::HealNode(const int nodeID)
 		return false;
 	
 	m_pManager->HealNetworkNode(m_controllerID,nodeID,true);
-	_log.Log(LOG_STATUS,"OpenZWave: initiated node heal for node: %d",nodeID);
-
+	_log.Log(LOG_STATUS,"OpenZWave: Heal Node command initiated for node: %d...",nodeID);
 	return true;
 }
 
@@ -2106,7 +2108,7 @@ bool COpenZWave::RemoveFailedDevice(const int nodeID)
 	m_ControllerCommandStartTime=mytime(NULL);
 	m_bControllerCommandInProgress=true;
 	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_RemoveFailedNode, OnDeviceStatusUpdate, this,true,(unsigned char)nodeID);
-
+	_log.Log(LOG_STATUS,"OpenZWave: Remove Failed Device initiated...");
 	return true;
 }
 
@@ -2115,10 +2117,10 @@ bool COpenZWave::ReceiveConfigurationFromOtherController()
 	if (m_pManager==NULL)
 		return false;
 
-	m_ControllerCommandStartTime=mytime(NULL)-10;//30 second timeout
+	m_ControllerCommandStartTime=mytime(NULL)+10;//30 second timeout
 	m_bControllerCommandInProgress=true;
 	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_ReceiveConfiguration, OnDeviceStatusUpdate, this);
-
+	_log.Log(LOG_STATUS,"OpenZWave: Receive Configuration initiated...");
 	return true;
 }
 
@@ -2127,10 +2129,10 @@ bool COpenZWave::SendConfigurationToSecondaryController()
 	if (m_pManager==NULL)
 		return false;
 
-	m_ControllerCommandStartTime=mytime(NULL)-10;//30 second timeout
+	m_ControllerCommandStartTime=mytime(NULL)+10;//30 second timeout
 	m_bControllerCommandInProgress=true;
 	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_ReplicationSend, OnDeviceStatusUpdate, this);
-
+	_log.Log(LOG_STATUS,"OpenZWave: Replication to Secondary Controller initiated...");
 	return true;
 }
 
@@ -2139,10 +2141,10 @@ bool COpenZWave::TransferPrimaryRole()
 	if (m_pManager==NULL)
 		return false;
 
-	m_ControllerCommandStartTime=mytime(NULL)-10;//30 second timeout
+	m_ControllerCommandStartTime=mytime(NULL)+10;//30 second timeout
 	m_bControllerCommandInProgress=true;
 	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_TransferPrimaryRole, OnDeviceStatusUpdate, this);
-
+	_log.Log(LOG_STATUS,"OpenZWave: Transfer Primary Role initiated...");
 	return true;
 }
 

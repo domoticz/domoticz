@@ -33,6 +33,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: Scene On/Off actions
 - Fixed: Remote sharing of devices with same ID
 - Fixed: setting setpoint from udevice json call
+- Changed: openzwave, larger timeout for messages to and from secondary controllers
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io
