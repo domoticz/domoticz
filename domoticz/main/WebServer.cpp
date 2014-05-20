@@ -2040,7 +2040,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			false
 			);
 
-		int idtype=atoi(dunit.c_str());
+		int idtype=atoi(dtype.c_str());
 		int idsubtype=atoi(dsubtype.c_str());
 
 		if ((idtype==pTypeThermostat)&&(idsubtype==sTypeThermSetpoint))
