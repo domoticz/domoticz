@@ -179,6 +179,7 @@
 						<option value="68">GPIO</option>
 						<option value="100">ByronSX</option>
 						<option value="101">Harrison Curtain</option>
+						<option value="102">RFY</option>
 			</select>
 			</td>
 		  </tr>
@@ -2262,6 +2263,11 @@ function UpdateAddManualDialog()
 		bIsType5=1;
 		totunits=4;
 	}
+	else if (lighttype==102) {
+		//RFY
+		bIsType5=1;
+		totunits=16;
+	}
 	$("#dialog-addmanuallightdevice #lightingparams_enocean").hide();
 	$("#dialog-addmanuallightdevice #lightingparams_gpio").hide();
 	
@@ -2392,7 +2398,7 @@ function GetManualLightSettings(isTest)
 		//AC
 		var ID="";
 		var bIsType5=0;
-		if ((lighttype==50)||(lighttype==55)||(lighttype==100))
+		if ((lighttype==50)||(lighttype==55)||(lighttype==100)||(lighttype==102))
 		{
 			bIsType5=1;
 		}

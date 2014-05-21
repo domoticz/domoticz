@@ -3294,6 +3294,20 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 					return;
 				devid=shousecode;
 			}
+			else if (lighttype==102)
+			{
+				//RFY
+				dtype=pTypeRFY;
+				subtype=sTypeRFY;
+				std::string id=m_pWebEm->FindValue("id");
+				sunitcode=m_pWebEm->FindValue("unitcode");
+				if (
+					(id=="")||
+					(sunitcode=="")
+					)
+					return;
+				devid=id;
+			}
 		}
 		root["status"]="OK";
 		root["message"]="OK";
@@ -3487,6 +3501,20 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				)
 				return;
 			devid=shousecode;
+		}
+		else if (lighttype==102)
+		{
+			//RFY
+			dtype=pTypeRFY;
+			subtype=sTypeRFY;
+			std::string id=m_pWebEm->FindValue("id");
+			sunitcode=m_pWebEm->FindValue("unitcode");
+			if (
+				(id=="")||
+				(sunitcode=="")
+				)
+				return;
+			devid=id;
 		}
 		else
 		{
