@@ -1393,6 +1393,7 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 	case pTypeSecurity1:
 	case pTypeCurtain:
 	case pTypeBlinds:
+	case pTypeRFY:
 	case pTypeThermostat3:
 	case pTypeRemote:
 		bIsLightSwitch=true;
@@ -1483,6 +1484,9 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 					case pTypeBlinds:
 						newnValue=blinds_sOpen;
 						break;
+					case pTypeRFY:
+						newnValue=rfy_sUp;
+						break;
 					case pTypeThermostat3:
 						newnValue=thermostat3_sOff;
 						break;
@@ -1547,6 +1551,9 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 				break;
 			case pTypeBlinds:
 				newnValue=blinds_sOpen;
+				break;
+			case pTypeRFY:
+				newnValue=rfy_sUp;
 				break;
 			case pTypeThermostat3:
 				newnValue=thermostat3_sOff;
@@ -1642,6 +1649,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 	case pTypeSecurity1:
 	case pTypeCurtain:
 	case pTypeBlinds:
+	case pTypeRFY:
 	case pTypeChime:
 	case pTypeThermostat3:
 	case pTypeRemote:
@@ -5777,7 +5785,7 @@ void CSQLHelper::CheckDeviceTimeout()
 	std::vector<std::vector<std::string> > result;
 	char szTmp[300];
 	sprintf(szTmp,
-		"SELECT ID,Name,LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) ORDER BY Name",
+		"SELECT ID,Name,LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) ORDER BY Name",
 		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 		pTypeLighting1,
 		pTypeLighting2,
@@ -5789,6 +5797,7 @@ void CSQLHelper::CheckDeviceTimeout()
 		pTypeSecurity1,
 		pTypeCurtain,
 		pTypeBlinds,
+		pTypeRFY,
 		pTypeChime,
 		pTypeThermostat3,
 		pTypeRemote

@@ -2780,6 +2780,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				case pTypeSecurity1:
 				case pTypeCurtain:
 				case pTypeBlinds:
+				case pTypeRFY:
 				case pTypeChime:
 				case pTypeThermostat3:
 				case pTypeRemote:
@@ -2849,6 +2850,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 					case pTypeSecurity1:
 					case pTypeCurtain:
 					case pTypeBlinds:
+					case pTypeRFY:
 					case pTypeChime:
 					case pTypeThermostat3:
 					case pTypeRemote:
@@ -3620,6 +3622,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			(dType==pTypeSecurity1)||
 			(dType==pTypeCurtain)||
 			(dType==pTypeBlinds)||
+			(dType==pTypeRFY)||
 			(dType==pTypeChime)||
 			(dType==pTypeThermostat3)||
 			(dType==pTypeRemote)
@@ -4642,6 +4645,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			(dType!=pTypeSecurity1)&&
 			(dType!=pTypeCurtain)&&
 			(dType!=pTypeBlinds)&&
+			(dType!=pTypeRFY)&&
 			(dType!=pTypeChime)&&
 			(dType!=pTypeThermostat3)&&
 			(dType!=pTypeRemote)
@@ -6224,6 +6228,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						(dType!=pTypeSecurity1)&&
 						(dType!=pTypeCurtain)&&
 						(dType!=pTypeBlinds)&&
+						(dType!=pTypeRFY)&&
 						(dType!=pTypeChime)&&
 						(dType!=pTypeThermostat3)&&
 						(dType!=pTypeRemote)&&
@@ -6401,6 +6406,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				(dType==pTypeLimitlessLights)||
 				(dType==pTypeCurtain)||
 				(dType==pTypeBlinds)||
+				(dType==pTypeRFY)||
 				(dType==pTypeChime)||
 				(dType==pTypeThermostat3)||
 				(dType==pTypeRemote)
@@ -7504,7 +7510,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 
 					sprintf(szTmp,"%.1f",temp);
 					root["result"][ii]["Data"]=szTmp;
-					root["result"][ii]["SetPoint"]=(float)atof(szTmp);
+					root["result"][ii]["SetPoint"]=szTmp;
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 					root["result"][ii]["TypeImg"]="override_mini";
 				}
@@ -8192,6 +8198,7 @@ std::string CWebServer::GetJSonPage()
 			(dType!=pTypeSecurity1)&&
 			(dType!=pTypeCurtain)&&
 			(dType!=pTypeBlinds)&&
+			(dType!=pTypeRFY)&&
 			(dType!=pTypeRego6XXValue)&&
 			(dType!=pTypeChime)&&
 			(dType!=pTypeThermostat3)&&
@@ -11969,8 +11976,9 @@ std::string CWebServer::GetJSonPage()
 				//Convert back to celcius
 				tempcelcius=(tempcelcius-32)/1.8;
 			}
-			sprintf(szTmp,"%.1f",tempcelcius);
+			sprintf(szTmp,"%.2f",tempcelcius);
 			szQuery << "UPDATE DeviceStatus SET Used=" << used << ", sValue='" << szTmp << "' WHERE (ID == " << idx << ")";
+			m_pMain->m_sql.query(szQuery.str());
 			szQuery.clear();
 			szQuery.str("");
 		}

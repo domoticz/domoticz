@@ -60,7 +60,7 @@
 
 #ifdef _DEBUG
 	//#define DEBUG_RECEIVE
-	//#define PARSE_RFXCOM_DEVICE_LOG
+	#define PARSE_RFXCOM_DEVICE_LOG
 #endif
 
 #ifdef PARSE_RFXCOM_DEVICE_LOG
@@ -1091,6 +1091,12 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 		ID = szTmp;
 		Unit=pResponse->BLINDS1.unitcode;
 	}
+	else if (devType==pTypeRFY)
+	{
+		sprintf(szTmp,"%02X%02X%02X", pResponse->RFY.id1, pResponse->RFY.id2,pResponse->RFY.id3);
+		ID = szTmp;
+		Unit=pResponse->RFY.unitcode;
+	}
 	else if (devType==pTypeSecurity1)
 	{
 		sprintf(szTmp, "%02X%02X%02X", pResponse->SECURITY1.id1, pResponse->SECURITY1.id2, pResponse->SECURITY1.id3);
@@ -1195,6 +1201,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			case pTypeLimitlessLights:
 			case pTypeCurtain:
 			case pTypeBlinds:
+			case pTypeRFY:
 			case pTypeSecurity1:
 			case pTypeChime:
 			case pTypeThermostat3:
@@ -1264,6 +1271,10 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		case pTypeBlinds:
 			WriteMessage("Blinds",false);
 			DeviceRowIdx=decode_BLINDS1(pHardware, HwdID, (tRBUF *)pRXCommand);
+			break;
+		case pTypeRFY:
+			WriteMessage("RFY",false);
+			DeviceRowIdx=decode_RFY(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeSecurity1:
 			WriteMessage("Security 1",false);
@@ -2556,7 +2567,8 @@ unsigned long long MainWorker::decode_TempHum(const CDomoticzHardwareBase *pHard
 		sprintf(szTmp,"ID            = %s", ID.c_str());
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Temperature   = %.1f C", temp);
+		double tvalue=ConvertTemperature(temp,m_sql.m_tempsign[0]);
+		sprintf(szTmp,"Temperature   = %.1f C", tvalue);
 		WriteMessage(szTmp);
 		sprintf(szTmp,"Humidity      = %d %%" ,Humidity);
 		WriteMessage(szTmp);
@@ -2714,7 +2726,8 @@ unsigned long long MainWorker::decode_TempHumBaro(const CDomoticzHardwareBase *p
 		sprintf(szTmp, "ID            = %d", (pResponse->TEMP_HUM_BARO.id1 * 256) + pResponse->TEMP_HUM_BARO.id2);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Temperature   = %.1f C", temp);
+		double tvalue=ConvertTemperature(temp,m_sql.m_tempsign[0]);
+		sprintf(szTmp,"Temperature   = %.1f C", tvalue);
 		WriteMessage(szTmp);
 
 		sprintf(szTmp,"Humidity      = %d %%" ,pResponse->TEMP_HUM_BARO.humidity);
@@ -4290,6 +4303,118 @@ unsigned long long MainWorker::decode_BLINDS1(const CDomoticzHardwareBase *pHard
 			break;
 		}
 		sprintf(szTmp,"Signal level  = %d", pResponse->BLINDS1.rssi);
+		WriteMessage(szTmp);
+	}
+	return DevRowIdx;
+}
+
+unsigned long long MainWorker::decode_RFY(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[100];
+	std::string devname;
+
+	unsigned char devType=pTypeRFY;
+	unsigned char subType=pResponse->RFY.subtype;
+	sprintf(szTmp,"%02X%02X%02X", pResponse->RFY.id1, pResponse->RFY.id2,pResponse->RFY.id3);
+	std::string ID = szTmp;
+	unsigned char Unit=pResponse->RFY.unitcode;
+	unsigned char cmnd=pResponse->RFY.cmnd;
+	unsigned char SignalLevel=pResponse->RFY.rssi;
+
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,devname);
+	PrintDeviceName(devname);
+	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
+
+	if (m_verboselevel == EVBL_ALL)
+	{
+		char szTmp[100];
+
+		switch (pResponse->RFY.subtype)
+		{
+		case sTypeRFY:
+			WriteMessage("subtype       = RFY");
+			break;
+		case sTypeRFYext:
+			WriteMessage("subtype       = RFY-Ext");
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->RFY.packettype, pResponse->RFY.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+		sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFY.seqnbr);
+		WriteMessage(szTmp);
+
+		sprintf(szTmp,"id1-3         = %02X%02X%02X", pResponse->RFY.id1, pResponse->RFY.id2, pResponse->RFY.id3);
+		WriteMessage(szTmp);
+
+		if (pResponse->RFY.unitcode == 0)
+			WriteMessage("Unit          = All");
+		else
+		{
+			sprintf(szTmp,"Unit          = %d", pResponse->RFY.unitcode);
+			WriteMessage(szTmp);
+		}
+
+		sprintf(szTmp,"rfu1         = %02X",pResponse->RFY.rfu1);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"rfu2         = %02X",pResponse->RFY.rfu2);
+		WriteMessage(szTmp);
+		sprintf(szTmp,"rfu3         = %02X",pResponse->RFY.rfu3);
+		WriteMessage(szTmp);
+
+		WriteMessage("Command       = ", false);
+
+		switch (pResponse->RFY.cmnd)
+		{
+		case rfy_sStop:
+			WriteMessage("Stop");
+			break;
+		case rfy_sUp:
+			WriteMessage("Up");
+			break;
+		case rfy_sUpStop:
+			WriteMessage("Up + Stop");
+			break;
+		case rfy_sDown:
+			WriteMessage("Down");
+			break;
+		case rfy_sDownStop:
+			WriteMessage("Down + Stop");
+			break;
+		case rfy_sUpDown:
+			WriteMessage("Up + Down");
+			break;
+
+		case rfy_sProgram:
+			WriteMessage("Program");
+			break;
+		case rfy_s2SecProgram:
+			WriteMessage("2 seconds: Program");
+			break;
+		case rfy_s7SecProgram:
+			WriteMessage("2 seconds: Program");
+			break;
+		case rfy_s2SecStop:
+			WriteMessage("2 seconds: Stop");
+			break;
+		case rfy_s5SecStop:
+			WriteMessage("5 seconds: Stop");
+			break;
+		case rfy_s5SecUpDown:
+			WriteMessage("5 seconds: Up + Down");
+			break;
+		case rfy_sEraseThis:
+			WriteMessage("Erase this remote");
+			break;
+		case rfy_sEraseAll:
+			WriteMessage("Erase all remotes");
+			break;
+		default:
+			WriteMessage("UNKNOWN");
+			break;
+		}
+		sprintf(szTmp,"Signal level  = %d", pResponse->RFY.rssi);
 		WriteMessage(szTmp);
 	}
 	return DevRowIdx;
@@ -7086,7 +7211,7 @@ unsigned long long MainWorker::decode_Thermostat(const CDomoticzHardwareBase *pH
 	switch (pMeter->subtype)
 	{
 	case sTypeThermSetpoint:
-		sprintf(szTmp,"%.1f",pMeter->temp);
+		sprintf(szTmp,"%.2f",pMeter->temp);
 		break;
 	default:
 		sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
@@ -7106,12 +7231,12 @@ unsigned long long MainWorker::decode_Thermostat(const CDomoticzHardwareBase *pH
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		double tvalue=ConvertTemperature(pMeter->temp,m_sql.m_tempsign[0]);
 		switch (pMeter->subtype)
 		{
 		case sTypeThermSetpoint:
 			WriteMessage("subtype       = SetPoint");
-
-			sprintf(szTmp,"Temp = %.1f", pMeter->temp);
+			sprintf(szTmp,"Temp = %.2f", tvalue);
 			WriteMessage(szTmp);
 			break;
 		default:
@@ -8077,6 +8202,30 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.BLINDS1.filler=0;
 			lcmd.BLINDS1.rssi=7;
 			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.BLINDS1));
+			if (!IsTesting) {
+				//send to internal for now (later we use the ACK)
+				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+			}
+			return true;
+		}
+		break;
+	case pTypeRFY:
+		{
+			tRBUF lcmd;
+			lcmd.BLINDS1.packetlength=sizeof(lcmd.RFY)-1;
+			lcmd.BLINDS1.packettype=dType;
+			lcmd.BLINDS1.subtype=dSubType;
+			lcmd.RFY.id1=ID2;
+			lcmd.RFY.id2=ID3;
+			lcmd.RFY.id3=ID4;
+			lcmd.RFY.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
+			lcmd.RFY.unitcode=Unit;
+			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.RFY.cmnd))
+				return false;
+			level=15;
+			lcmd.RFY.filler=0;
+			lcmd.RFY.rssi=7;
+			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.RFY));
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);

@@ -9,6 +9,22 @@
 
 
 /*
+SDK version 6.19
+	msg3_RFY reversed back to msg3_RFU
+
+SDK version 6.18
+	RFY structure added
+	BlindsT8 moved to RFY
+	msg3_RFY added (not used)
+	undecoded sTypeUrfy added
+	Interface response "sTypeUnknownRFYremote" and "sTypeExtError" added
+
+SDK version 6.17
+	Blinds1 unitcode and id4 corrected
+
+SDK version 6.16
+	BlindsT8 RFY added with commands 0 to 9
+
 SDK version 6.15
 	BLINDS1 id4 added
 
@@ -193,6 +209,8 @@ SDK version 4.9
 
 #define pTypeInterfaceMessage 0x01
 #define sTypeInterfaceResponse 0x00
+#define sTypeUnknownRFYremote 0x01
+#define sTypeExtError 0x02
 #define sTypeInterfaceWrongCommand 0xFF
 #define recType310 0x50
 #define recType315 0x51
@@ -212,7 +230,7 @@ SDK version 4.9
 #define msg3_LIGHTING4 0x08
 #define msg3_RSL 0x10
 #define msg3_SX 0x20
-#define msg3_RFU6 0x40
+#define msg3_RFY 0x40
 #define msg3_undec 0x80
 
 #define msg4_MERTIK 0x01
@@ -259,6 +277,7 @@ SDK version 4.9
 #define sTypeUae 0x11
 #define sTypeUfineoffset 0x12
 #define sTypeUrgb 0x13
+#define sTypeUrfy 0x14
 
 //types for Lighting
 #define pTypeLighting1 0x10
@@ -418,6 +437,26 @@ SDK version 4.9
 #define blinds_sChangeDirection 0x7
 #define blinds_sLeft 0x8
 #define blinds_sRight 0x9
+
+//types for RFY
+#define pTypeRFY 0x1A
+#define sTypeRFY 0x0	//RFY
+#define sTypeRFYext 0x1	//RFY extended
+#define rfy_sStop 0x0
+#define rfy_sUp 0x1
+#define rfy_sUpStop 0x2
+#define rfy_sDown 0x3
+#define rfy_sDownStop 0x4
+#define rfy_sUpDown 0x5
+
+#define rfy_sProgram 0x7
+#define rfy_s2SecProgram 0x8
+#define rfy_s7SecProgram 0x9
+#define rfy_s2SecStop 0xA
+#define rfy_s5SecStop 0xB
+#define rfy_s5SecUpDown 0xC
+#define rfy_sEraseThis 0xD
+#define rfy_sEraseAll 0xE
 
 //types for Security1
 #define pTypeSecurity1 0x20
@@ -973,7 +1012,6 @@ typedef union tRBUF {
 		BYTE	id1;
 		BYTE	id2;
 		BYTE	id3;
-
 #ifdef IS_BIG_ENDIAN
 		BYTE	id4 : 4;
 		BYTE	unitcode : 4;
@@ -987,8 +1025,29 @@ typedef union tRBUF {
 		BYTE	filler : 4;
 		BYTE	rssi : 4;
 #endif
-
 	} BLINDS1;
+
+	struct {
+		BYTE	packetlength;
+		BYTE	packettype;
+		BYTE	subtype;
+		BYTE	seqnbr;
+		BYTE	id1;
+		BYTE	id2;
+		BYTE	id3;
+		BYTE	unitcode;
+		BYTE	cmnd;
+		BYTE	rfu1;
+		BYTE	rfu2;
+		BYTE	rfu3;
+#ifdef IS_BIG_ENDIAN
+		BYTE	rssi : 4;
+		BYTE	filler : 4;
+#else
+		BYTE	filler : 4;
+		BYTE	rssi : 4;
+#endif
+	} RFY;
 
 	struct {
 		BYTE	packetlength;

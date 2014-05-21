@@ -354,6 +354,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeChime, "Chime" , "doorbell" },
 		{ pTypeBBQ, "BBQ Meter", "bbq" },
 		{ pTypePOWER, "Current/Energy" , "current" },
+		{ pTypeRFY, "RFY" , "blinds" },
 		{  0,NULL,NULL }
 	};
 	if (snum==1)
@@ -551,6 +552,9 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLimitlessLights, sTypeLimitlessRGB, "RGB" },
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "White" },
 	
+		{ pTypeRFY, sTypeRFY, "RFY" },
+		{ pTypeRFY, sTypeRFYext, "RFY-Ext" },
+
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -744,7 +748,10 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLimitlessLights, sTypeLimitlessRGBW, "Status" },
 		{ pTypeLimitlessLights, sTypeLimitlessRGB, "Status" },
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "Status" },
-	
+
+		{ pTypeRFY, sTypeRFY, "Status" },
+		{ pTypeRFY, sTypeRFYext, "Status" },
+
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -1209,6 +1216,20 @@ void GetLightStatus(
 			break;
 		}
 		break;
+	case pTypeRFY:
+		switch (nValue)
+		{
+		case rfy_sUp:
+			lstatus="Off";
+			break;
+		case rfy_sDown:
+			lstatus="On";
+			break;
+		case rfy_sStop:
+			lstatus="Stop";
+			break;
+		}
+		break;
 	case pTypeChime:
 		lstatus="On";
 		break;
@@ -1620,6 +1641,23 @@ bool GetLightCommand(
 			else
 			{
 				cmd=blinds_sStop;
+			}
+			return true;
+		}
+		break;
+	case pTypeRFY:
+		{
+			if (switchcmd=="On")
+			{
+				cmd=rfy_sDown;
+			}
+			else if (switchcmd=="Off")
+			{
+				cmd=rfy_sUp;
+			}
+			else
+			{
+				cmd=rfy_sStop;
 			}
 			return true;
 		}

@@ -167,6 +167,7 @@ private:
 	unsigned long long decode_Lighting6(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_Curtain(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_BLINDS1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_RFY(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_Security1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_Camera1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_Remote(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
