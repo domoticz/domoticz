@@ -927,7 +927,7 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 
 	if (!m_awakeNodesQueried)
 	{
-		_log.Log(LOG_ERROR,"OpenZWave: Switch command not send because not all Awake Nodes have been Queried!");
+		_log.Log(LOG_ERROR,"OpenZWave: Switch command not sent because not all Awake Nodes have been Queried!");
 		return;
 	}
 

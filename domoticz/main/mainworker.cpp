@@ -1704,6 +1704,16 @@ unsigned long long MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBa
 			break;
 		}
 		break;
+	case sTypeUnknownRFYremote:
+		WriteMessage("subtype           = Unknown RFY remote! Use the Program command to create a remote in the RFXtrx433Ext");
+		sprintf(szTmp,"Sequence nbr      = %d", pResponse->IRESPONSE.seqnbr);
+		WriteMessage(szTmp);
+		break;
+	case sTypeExtError:
+		WriteMessage("subtype           = No Ext hardware detected");
+		sprintf(szTmp,"Sequence nbr      = %d", pResponse->IRESPONSE.seqnbr);
+		WriteMessage(szTmp);
+		break;
 	case sTypeInterfaceWrongCommand:
 		WriteMessage("subtype           = Wrong command received from application");
 		sprintf(szTmp,"Sequence nbr      = %d", pResponse->IRESPONSE.seqnbr);
@@ -4063,6 +4073,12 @@ unsigned long long MainWorker::decode_UNDECODED(const CDomoticzHardwareBase *pHa
 		break;
 	case sTypeUfineoffset:
 		WriteMessage("FineOffset:", false);
+		break;
+	case sTypeUrgb:
+		WriteMessage("RGB:", false);
+		break;
+	case sTypeUrfy:
+		WriteMessage("RFY:", false);
 		break;
 	default:
 		sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->UNDECODED.packettype, pResponse->UNDECODED.subtype);
