@@ -945,7 +945,7 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 			unsigned char _nodeID=vID.GetNodeId();
 			if (m_pManager->IsNodeFailed(_homeID,_nodeID))
 			{
-				_log.Log(LOG_ERROR,"OpenZWave: Node has an failed (or is not alive), Switch command not send!");
+				_log.Log(LOG_ERROR,"OpenZWave: Node has an failed (or is not alive), Switch command not sent!");
 				return;
 			}
 
@@ -982,7 +982,7 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 			unsigned char _nodeID=vID.GetNodeId();
 			if (m_pManager->IsNodeFailed(_homeID,_nodeID))
 			{
-				_log.Log(LOG_ERROR,"OpenZWave: Node has an failed (or is not alive), Switch command not send!");
+				_log.Log(LOG_ERROR,"OpenZWave: Node has an failed (or is not alive), Switch command not sent!");
 				return;
 			}
 
@@ -1019,7 +1019,7 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		unsigned char _nodeID=vID.GetNodeId();
 		if (m_pManager->IsNodeFailed(_homeID,_nodeID))
 		{
-			_log.Log(LOG_ERROR,"OpenZWave: Node has an failed (or is not alive), Switch command not send!");
+			_log.Log(LOG_ERROR,"OpenZWave: Node has an failed (or is not alive), Switch command not sent!");
 			return;
 		}
 

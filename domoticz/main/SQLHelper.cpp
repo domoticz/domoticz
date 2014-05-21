@@ -2387,7 +2387,7 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(
 
 	time_t atime=mytime(NULL);
 
-	//check if not send 12 hours ago, and if applicable
+	//check if not sent 12 hours ago, and if applicable
 
 	int nNotificationInterval=12*3600;
 	GetPreferencesVar("NotificationSensorInterval", nNotificationInterval);
@@ -2503,7 +2503,7 @@ bool CSQLHelper::CheckAndHandleDewPointNotification(
 
 	time_t atime=mytime(NULL);
 
-	//check if not send 12 hours ago, and if applicable
+	//check if not sent 12 hours ago, and if applicable
 
 	int nNotificationInterval=12*3600;
 	GetPreferencesVar("NotificationSensorInterval", nNotificationInterval);
@@ -2578,7 +2578,7 @@ bool CSQLHelper::CheckAndHandleAmpere123Notification(
 
 	time_t atime=mytime(NULL);
 
-	//check if not send 12 hours ago, and if applicable
+	//check if not sent 12 hours ago, and if applicable
 
 	int nNotificationInterval=12*3600;
 	GetPreferencesVar("NotificationSensorInterval", nNotificationInterval);
@@ -2719,7 +2719,7 @@ bool CSQLHelper::CheckAndHandleNotification(
 
 	time_t atime=mytime(NULL);
 
-	//check if not send 12 hours ago, and if applicable
+	//check if not sent 12 hours ago, and if applicable
 
 	int nNotificationInterval=12*3600;
 	GetPreferencesVar("NotificationSensorInterval", nNotificationInterval);
@@ -5809,7 +5809,7 @@ void CSQLHelper::CheckDeviceTimeout()
 	unsigned long long ulID;
 	std::vector<std::vector<std::string> >::const_iterator itt;
 
-	//check if last timeout_notification is not send today and if true, send notification
+	//check if last timeout_notification is not sent today and if true, send notification
 	for (itt=result.begin(); itt!=result.end(); ++itt)
 	{
 		std::vector<std::string> sd=*itt;
