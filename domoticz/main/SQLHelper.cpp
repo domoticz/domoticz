@@ -442,7 +442,8 @@ const char *sqlCreateFibaroLink =
 	"[TargetVariable] VARCHAR(100), "
 	"[TargetDeviceID] INTEGER, "
 	"[TargetProperty] VARCHAR(100), "
-	"[Enabled] INTEGER DEFAULT 1); ";
+	"[Enabled] INTEGER DEFAULT 1, "
+	"[IncludeUnit] INTEGER default 0); ";
 
 extern std::string szStartupFolder;
 

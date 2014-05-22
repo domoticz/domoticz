@@ -130,10 +130,9 @@
 
 function TargetTypeUpdate()
 {
-	var text = $("#linkparamstable #combotargettype option:selected").text();
-
-	if (text.indexOf("Global") >= 0)
-	{
+	var targetType = $("#linkparamstable #combotargettype option:selected").val();
+	switch(targetType) {
+	case "0":
 		$("#linkparamstable #targetdevicename").show();
 		$("#linkparamstable #targetonoffdevicename").hide();
 		$("#linkparamstable #variabletosend").show();
@@ -143,9 +142,8 @@ function TargetTypeUpdate()
 		$("#linkparamstable #targetdeviceidrow").hide();
 		$("#linkparamstable #targetpropertyrow").hide();
 		$("#linkparamstable #targetincludeunit").show();
-	}
-	else if (text.indexOf("Virtual") >= 0)
-	{
+		break;
+	case "1":
 		$("#linkparamstable #targetdevicename").show();
 		$("#linkparamstable #targetonoffdevicename").hide();
 		$("#linkparamstable #variabletosend").show();
@@ -155,11 +153,8 @@ function TargetTypeUpdate()
 		$("#linkparamstable #targetdeviceidrow").show();
 		$("#linkparamstable #targetpropertyrow").show();
 		$("#linkparamstable #targetincludeunit").show();
-	}
-
-	else if (text.indexOf("Scene") >= 0)
-	{
-		
+		break;
+	case "2":
 		$("#linkparamstable #targetdevicename").hide();
 		$("#linkparamstable #targetonoffdevicename").show();
 		$("#linkparamstable #variabletosend").hide();
@@ -169,10 +164,8 @@ function TargetTypeUpdate()
 		$("#linkparamstable #targetdeviceidrow").show();
 		$("#linkparamstable #targetpropertyrow").hide();
 		$("#linkparamstable #targetincludeunit").hide();
-	}	
-		else if (text.indexOf("Reboot") >= 0)
-	{
-		
+		break;
+	case "3":
 		$("#linkparamstable #targetdevicename").hide();
 		$("#linkparamstable #targetonoffdevicename").show();
 		$("#linkparamstable #variabletosend").hide();
@@ -182,8 +175,10 @@ function TargetTypeUpdate()
 		$("#linkparamstable #targetdeviceidrow").hide();
 		$("#linkparamstable #targetpropertyrow").hide();
 		$("#linkparamstable #targetincludeunit").hide();
+		break;
+	default:
+		break;
 	}
-	
 	
 }
 function SaveConfiguration()
