@@ -198,6 +198,8 @@ Version 1.0.1396 (January 18th 2014)
 - Updated: Highcharts 3.0.9, JQuery and JQueryUI
 - Fixed: Transfer dialog did not show correct title in front of destination device
 - Implemented: P1 Smart meter, counter values in report
+- Changed: devices tab, ID of Energy devices now displayed in Hexadecimal
+- Implemented: OpenZWave, option to download configuration file via Node dropdown menu
 
 Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart

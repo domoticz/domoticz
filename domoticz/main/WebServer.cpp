@@ -315,6 +315,12 @@ bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress
 	RegisterCommandCode("zwavereceiveconfigurationfromothercontroller",boost::bind(&CWebServer::ZWaveReceiveConfigurationFromOtherController,this, _1));
 	RegisterCommandCode("zwavesendconfigurationtosecondcontroller",boost::bind(&CWebServer::ZWaveSendConfigurationToSecondaryController,this, _1));
 	RegisterCommandCode("zwavetransferprimaryrole",boost::bind(&CWebServer::ZWaveTransferPrimaryRole,this, _1));
+	RegisterCommandCode("zwavetransferprimaryrole",boost::bind(&CWebServer::ZWaveTransferPrimaryRole,this, _1));
+	m_pWebEm->RegisterPageCode( "/zwavegetconfig.php",
+		boost::bind( 
+		&CWebServer::ZWaveGetConfigFile,
+		this ) );
+
 #endif	
 
 	//Start worker thread
@@ -1398,15 +1404,19 @@ std::string CWebServer::ZWaveGetConfigFile()
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return "";
+	m_retstr="";
 	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
 	if (pHardware!=NULL)
 	{
-		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
-		std::string szConfigFile="";
-		m_retstr=pOZWHardware->GetConfigFile(szConfigFile);
-		if (m_retstr!="")
+		if (pHardware->HwdType == HTYPE_OpenZWave)
 		{
-			m_pWebEm->m_outputfilename=szConfigFile;
+			COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
+			std::string szConfigFile="";
+			m_retstr=pOZWHardware->GetConfigFile(szConfigFile);
+			if (m_retstr!="")
+			{
+				m_pWebEm->m_outputfilename=szConfigFile;
+			}
 		}
 	}
 	return m_retstr;
@@ -6399,7 +6409,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				(dType==pTypeTEMP_HUM)||
 				(dType==pTypeTEMP_HUM_BARO)||
 				(dType==pTypeBARO)||
-				(dType==pTypeHUM)
+				(dType==pTypeHUM)||
+				(dType==pTypeENERGY)
 				)
 			{
 				root["result"][ii]["ID"]=szData;

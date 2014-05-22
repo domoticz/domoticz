@@ -39,6 +39,8 @@
 						<li><a href="javascript:ZWaveReceiveConfiguration();" ><span data-i18n="Receive configuration from other controller" class="btn btn-primary">Receive configuration from other controller</span></a></li>
 						<li><a href="javascript:ZWaveSendConfiguration();" ><span data-i18n="Send configuration to other controller" class="btn btn-primary">Send configuration to other controller</span></a></li>
 						<li><a href="javascript:ZWaveTransferPrimaryRole();" ><span data-i18n="Transfer primary role" class="btn btn-danger">Transfer primary role</span></a></li>
+						<li role="presentation" class="divider"></li>
+						<li><a id="zwave_configdownload" href="#" ><span data-i18n="Download Configuration File" class="btn btn-primary">Download Configuration File</span></a></li>
 					  </ul>
 					</div>
 				</td>
@@ -1718,6 +1720,7 @@ function EditOpenZWave(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 	htmlcontent='<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
 	htmlcontent+=$('#openzwave').html();
 	$('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
+	$('#hardwarecontent #zwave_configdownload').attr("href", "zwavegetconfig.php?idx="+idx);
 	$('#hardwarecontent').i18n();
 
 	var oTable = $('#nodestable').dataTable( {

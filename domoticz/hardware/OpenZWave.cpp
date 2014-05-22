@@ -2163,9 +2163,10 @@ std::string COpenZWave::GetConfigFile(std::string &szConfigFile)
 	std::string retstring="";
 	if (m_pManager==NULL)
 		return retstring;
-	std::stringstream sConfigFileName;
-	sConfigFileName << szStartupFolder << "Config/zwcfg_0x" << std::hex << m_controllerID << ".xml";
-	szConfigFile=sConfigFileName.str();
+
+	char szFileName[255];
+	sprintf(szFileName,"%sConfig/zwcfg_0x%08x.xml",szStartupFolder.c_str(),m_controllerID);
+	szConfigFile=szFileName;
 	std::ifstream testFile(szConfigFile.c_str(), std::ios::binary);
 	std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
 		std::istreambuf_iterator<char>());
