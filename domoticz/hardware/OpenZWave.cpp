@@ -1784,10 +1784,10 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 					nintvalue=0;
 				else
 					nintvalue=255;
-				if (pDevice->intvalue==nintvalue)
-				{
-					return; //dont send same value
-				}
+				//if (pDevice->intvalue==nintvalue)
+				//{
+				//	return; //dont send same value
+				//}
 				pDevice->intvalue=nintvalue;
 			}
 			else if (vLabel=="Open")

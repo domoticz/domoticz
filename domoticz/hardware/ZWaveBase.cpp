@@ -525,6 +525,12 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			if (!pTempDevice->bValidValue)
 				return;
 
+			//report it with the ID of the temperature sensor, else we get two sensors with the same value
+			ID1 = 0;
+			ID2 = (unsigned char)((pTempDevice->nodeID & 0xFF00) >> 8);
+			ID3 = (unsigned char)pTempDevice->nodeID & 0xFF;
+			ID4 = pTempDevice->instanceID;
+
 			tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
 			tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
 			tsen.TEMP_HUM.subtype=sTypeTH5;
