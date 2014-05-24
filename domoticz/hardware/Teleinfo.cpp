@@ -320,7 +320,7 @@ lettre majuscule) allant de 20 à 5F en hexadécimal.
 
 bool Teleinfo::isCheckSumOk()
 {
-	unsigned char checksum = 0x00;
+	unsigned int checksum = 0x00;
 	int i;
 
 	for (i = 0; i < int(strlen((char*)m_buffer)) - 2; i++)
