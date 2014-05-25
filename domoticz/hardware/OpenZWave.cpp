@@ -1045,6 +1045,9 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 			_log.Log(LOG_ERROR,"OpenZWave: Error setting Switch Value!");
 		}
 	}
+
+	//bHaveSendSwitch = false; //solves the state problem?
+
 	if (bHaveSendSwitch)
 	{
 		unsigned char commandclass=vID.GetCommandClassId();

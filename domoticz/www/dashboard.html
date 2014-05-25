@@ -1097,23 +1097,6 @@ function ShowFavorites()
   
 	var htmlcontent = "";
 
-  var sunRise="";
-  var sunSet="";
-  var ServerTime="";
-
-  $.ajax({
-     url: "json.htm?type=command&param=getSunRiseSet",
-     async: false, 
-     dataType: 'json',
-     success: function(data) {
-        if (typeof data.Sunrise != 'undefined') {
-          sunRise=data.Sunrise;
-          sunSet=data.Sunset;
-          ServerTime=data.ServerTime;
-        }
-     }
-  });
-
 	var bShowRoomplan=false;
 	$.RoomPlans = [];
   $.ajax({
