@@ -676,7 +676,7 @@ void Meteostick::ParseLine()
 			float temp = (float)atof(results[2].c_str());
 			int hum = (int)atoi(results[3].c_str());
 
-			SendTempHumSensor(0, temp, hum, "Outside Temp+Hum");
+			SendTempHumSensor(ID, temp, hum, "Outside Temp+Hum");
 			m_LastOutsideTemp = temp;
 		}
 		break;
