@@ -83,6 +83,7 @@ enum _eHardwareTypes {
 	HTYPE_PVOUTPUT_INPUT,		//30
 	HTYPE_EnOceanESP3,			//31
 	HTYPE_RaspberryGPIO,		//32
+	HTYPE_Meteostick,			//33
 	HTYPE_END
 };
 

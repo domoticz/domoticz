@@ -121,6 +121,7 @@
     <ClInclude Include="hardware\ICYThermostat.h" />
     <ClInclude Include="hardware\Limitless.h" />
     <ClInclude Include="hardware\HardwareMonitor.h" />
+    <ClInclude Include="hardware\Meteostick.h" />
     <ClInclude Include="hardware\OpenZWave.h" />
     <ClInclude Include="hardware\OTGWBase.h" />
     <ClInclude Include="hardware\OTGWSerial.h" />
@@ -218,6 +219,7 @@
     <ClCompile Include="hardware\libusbwinusbbridge.cpp" />
     <ClCompile Include="hardware\Limitless.cpp" />
     <ClCompile Include="hardware\HardwareMonitor.cpp" />
+    <ClCompile Include="hardware\Meteostick.cpp" />
     <ClCompile Include="hardware\OpenZWave.cpp" />
     <ClCompile Include="hardware\OTGWBase.cpp" />
     <ClCompile Include="hardware\OTGWSerial.cpp" />

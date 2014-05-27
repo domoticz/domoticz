@@ -36,6 +36,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Changed: openzwave, larger timeout for messages to and from secondary controllers
 - Implemented: RFXtrx RFY protocol implemented
 - Fixed: TeleInfo checksum calculation
+- Implemented: Meteostick USB (rain not correct yet)
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

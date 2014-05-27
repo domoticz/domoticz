@@ -144,6 +144,9 @@
     <Filter Include="Devices\GPIO%28wiringPi%29">
       <UniqueIdentifier>{b87abdbf-bee2-4192-86ae-1ab1c4bca502}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Meteostick">
+      <UniqueIdentifier>{fa6be0ed-32cb-4b89-b3b8-3c89113de8a0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -442,6 +445,9 @@
     <ClInclude Include="hardware\1Wire\1WireSystem.h">
       <Filter>Devices\1-Wire</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\Meteostick.h">
+      <Filter>Devices\Meteostick</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -698,6 +704,9 @@
     </ClCompile>
     <ClCompile Include="hardware\GpioPin.cpp">
       <Filter>Devices\GPIO%28wiringPi%29</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\Meteostick.cpp">
+      <Filter>Devices\Meteostick</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -111,6 +111,12 @@ public:
      */
     void write(const std::vector<char>& data);
 
+	/**
+	* Write data asynchronously. Returns immediately.
+	* \param string to be sent through the serial device
+	*/
+	void write(const std::string &data);
+
     /**
     * Write a string asynchronously. Returns immediately.
     * Can be used to send ASCII data to the serial device.

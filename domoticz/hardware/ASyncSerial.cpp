@@ -180,6 +180,15 @@ void AsyncSerial::write(const char *data, size_t size)
     pimpl->io.post(boost::bind(&AsyncSerial::doWrite, this));
 }
 
+void AsyncSerial::write(const std::string &data)
+{
+	{
+		boost::lock_guard<boost::mutex> l(pimpl->writeQueueMutex);
+		pimpl->writeQueue.insert(pimpl->writeQueue.end(), data.c_str(), data.c_str()+data.size());
+	}
+	pimpl->io.post(boost::bind(&AsyncSerial::doWrite, this));
+}
+
 void AsyncSerial::write(const std::vector<char>& data)
 {
     {

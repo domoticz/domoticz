@@ -44,6 +44,7 @@
 #include "../hardware/SMASpot.h"
 #include "../hardware/ICYThermostat.h"
 #include "../hardware/WOL.h"
+#include "../hardware/Meteostick.h"
 #include "../hardware/PVOutput_Input.h"
 #ifdef WITH_GPIO
 	#include "../hardware/Gpio.h"
@@ -372,7 +373,8 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_OpenZWave:
 	case HTYPE_EnOceanESP2:
 	case HTYPE_EnOceanESP3:
-		{
+	case HTYPE_Meteostick:
+	{
 			//USB/Serial
 #if defined WIN32
 			sprintf(szSerialPort,"COM%d",Port);
@@ -422,7 +424,11 @@ bool MainWorker::AddHardwareFromParams(
 					baudrate=115200;
 				pHardware = new S0MeterSerial(ID,szSerialPort, baudrate, Mode1, Mode2, Mode3, Mode4);
 			}
-			else if (Type==HTYPE_OpenThermGateway)
+			else if (Type == HTYPE_Meteostick)
+			{
+				pHardware = new Meteostick(ID, szSerialPort, 115200);
+			}
+			else if (Type == HTYPE_OpenThermGateway)
 			{
 				pHardware = new OTGWSerial(ID,szSerialPort, 9600, Mode1, Mode2, Mode3, Mode4, Mode5);
 			}

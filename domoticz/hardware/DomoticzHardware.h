@@ -42,6 +42,7 @@ class CDomoticzHardwareBase
 	friend class CICYThermostat;
 	friend class CPVOutputInput;
 	friend class CGpio;
+	friend class Meteostick;
 public: 
 	CDomoticzHardwareBase();
 	virtual ~CDomoticzHardwareBase();
