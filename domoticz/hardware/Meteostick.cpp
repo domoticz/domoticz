@@ -403,7 +403,7 @@ void Meteostick::SendUVSensor(const unsigned char Idx, const float UV, const std
 	tsen.UV.battery_level = 9;
 	tsen.UV.rssi = 12;
 	tsen.UV.id1 = 0;
-	tsen.UV.id2 = 1;
+	tsen.UV.id2 = Idx;
 
 	tsen.UV.uv = (BYTE)round(UV * 10);
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.UV);
@@ -562,6 +562,36 @@ void Meteostick::SendSoilMoistureSensor(const unsigned char Idx, const unsigned 
 	}
 }
 
+void Meteostick::SendSolarRadiationSensor(const unsigned char Idx, const float Radiation, const std::string &defaultname)
+{
+	if (m_pMainWorker == NULL)
+		return;
+	bool bDeviceExits = true;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeSolarRadiation) << ")";
+	result = m_pMainWorker->m_sql.query(szQuery.str());
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+
+	_tGeneralDevice gdevice;
+	gdevice.subtype = sTypeSolarRadiation;
+	gdevice.id = (int)Idx;
+	gdevice.floatval1 = Radiation;
+	sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeSolarRadiation) << ")";
+		result = m_pMainWorker->m_sql.query(szQuery.str());
+	}
+}
+
 void Meteostick::ParseLine()
 {
 	if (m_bufferpos < 1)
@@ -658,6 +688,15 @@ void Meteostick::ParseLine()
 			unsigned char ID = (unsigned char)atoi(results[1].c_str());
 			float Rainmm = (float)atof(results[2].c_str())*0.2f; //convert to mm
 			SendRainSensor(ID, Rainmm, "Rain");
+		}
+		break;
+	case 'S':
+		//solar radiation, solar radiation in W / qm
+		if (results.size() >= 4)
+		{
+			unsigned char ID = (unsigned char)atoi(results[1].c_str());
+			float Radiation = (float)atof(results[2].c_str());
+			SendSolarRadiationSensor(ID, Radiation, "Solar Radiation");
 		}
 		break;
 	case 'U':

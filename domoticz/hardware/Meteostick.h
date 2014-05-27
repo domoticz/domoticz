@@ -43,6 +43,7 @@ private:
 	void SendRainSensor(const unsigned char Idx, const float Rainmm, const std::string &defaultname);
 	void SendLeafWetnessRainSensor(const unsigned char Idx, const unsigned char Channel, const int Wetness, const std::string &defaultname);
 	void SendSoilMoistureSensor(const unsigned char Idx, const unsigned char Channel, const int Moisture, const std::string &defaultname);
+	void SendSolarRadiationSensor(const unsigned char Idx, const float Radiation, const std::string &defaultname);
 
 	float m_LastOutsideTemp;
 
