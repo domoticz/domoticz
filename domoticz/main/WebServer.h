@@ -29,7 +29,7 @@ public:
 	bool StartServer(MainWorker *pMain, const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword);
 	void StopServer();
 	void RegisterCommandCode(const char* idname, webserver_response_function ResponseFunction);
-	std::string& GetWebValue( const char* name );
+	void RegisterRType(const char* idname, webserver_response_function ResponseFunction);
 
 	char * DisplayVersion();
 	char * DisplayHardwareCombo();
@@ -71,6 +71,7 @@ public:
 	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const bool bDisplayHidden, time_t LastUpdate);
 private:
 	void HandleCommand(const std::string &cparam, Json::Value &root);
+	void HandleRType(const std::string &rtype, Json::Value &root);
 
 	//Commands
 	void CmdLoginCheck(Json::Value &root);
@@ -90,6 +91,9 @@ private:
 	void GetDevicesForFibaroLink(Json::Value &root);
 	void GetDeviceValueOptions(Json::Value &root);
 	void GetDeviceValueOptionWording(Json::Value &root);
+
+	//RTypes
+	void RType_HandleGraph(Json::Value &root);
 
 #ifdef WITH_OPENZWAVE
 	//ZWave
@@ -119,6 +123,7 @@ private:
 	MainWorker *m_pMain;
 	boost::shared_ptr<boost::thread> m_thread;
 	std::map < std::string, webserver_response_function > m_webcommands;
+	std::map < std::string, webserver_response_function > m_webrtypes;
 	void Do_Work();
 	std::string m_retstr;
 	std::wstring m_wretstr;

@@ -269,13 +269,11 @@ bool CHardwareMonitor::IsOHMRunning()
 	hr = pServicesSystem->ExecQuery(L"WQL", L"Select * from win32_Process WHERE Name='OpenHardwareMonitor.exe'" , WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);  
 	if (SUCCEEDED(hr))  
 	{
-		IWbemClassObject *pclsObj;  
+		IWbemClassObject *pclsObj=NULL;  
 		ULONG uReturn = 0;  
 		hr = pEnumerator->Next(WBEM_INFINITE, 1,  &pclsObj, &uReturn);  
-		if(0 == uReturn)  
-		{  
-			return false;  
-		}  
+		if ( (FAILED(hr)) || (0 == uReturn) )
+			return false;
 		VARIANT vtProp;  
 		VariantInit(&vtProp);  
 		hr = pclsObj->Get(L"ProcessId", 0, &vtProp, 0, 0);  
@@ -301,11 +299,11 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 		{
 			// Get the data from the query
 			IWbemClassObject *pclsObj = NULL;
-			ULONG uReturn = 0;
 			while (pEnumerator)
 			{
-				HRESULT hr = pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);			
-				if(0 == uReturn || FAILED(hr))
+				ULONG uReturn = 0;
+				HRESULT hr = pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
+				if (FAILED(hr) || (0 == uReturn))
 				{
 					break;
 				}
@@ -313,25 +311,35 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 				VARIANT vtProp;
 
 				hr = pclsObj->Get(L"Name", 0, &vtProp, 0, 0);
-				std::string itemName = _bstr_t (vtProp.bstrVal);
-				itemName = stdreplace(itemName, "#", "");
-				VariantClear(&vtProp);
-				hr = pclsObj->Get(L"Value", 0, &vtProp, 0, 0);
-				float fItemValue = float (vtProp.fltVal);
-				std::ostringstream itemValue;
-				if ((qType =="Load")||(qType=="Temperature")) {
-					itemValue.precision(3);
+				if (SUCCEEDED(hr))
+				{
+					std::string itemName = _bstr_t(vtProp.bstrVal);
+					itemName = stdreplace(itemName, "#", "");
+					VariantClear(&vtProp);
+
+					hr = pclsObj->Get(L"Value", 0, &vtProp, 0, 0);
+					if (SUCCEEDED(hr))
+					{
+						float fItemValue = float(vtProp.fltVal);
+						std::ostringstream itemValue;
+						if ((qType == "Load") || (qType == "Temperature")) {
+							itemValue.precision(3);
+						}
+						itemValue << fItemValue;
+						VariantClear(&vtProp);
+
+						//hr = pclsObj->Get(L"InstanceId", 0, &vtProp, 0, 0);
+						hr = pclsObj->Get(L"Identifier", 0, &vtProp, 0, 0); // instance id seems to drift
+						if (SUCCEEDED(hr))
+						{
+							std::string itemId = _bstr_t(vtProp.bstrVal);
+							//itemId = "WMI"+itemId;
+							//_log.Log(LOG_NORM, "Hardware Monitor: %s, %s, %s",itemId.c_str(), itemName.c_str(),itemValue.str().c_str());
+							UpdateSystemSensor(qType, itemId, itemName, itemValue.str());
+							VariantClear(&vtProp);
+						}
+					}
 				}
-				itemValue << fItemValue;
-				VariantClear(&vtProp);
-				//hr = pclsObj->Get(L"InstanceId", 0, &vtProp, 0, 0);
-				hr = pclsObj->Get(L"Identifier", 0, &vtProp, 0, 0); // instance id seems to drift
-				std::string itemId = _bstr_t (vtProp.bstrVal);
-				//itemId = "WMI"+itemId;
-				//_log.Log(LOG_NORM, "Hardware Monitor: %s, %s, %s",itemId.c_str(), itemName.c_str(),itemValue.str().c_str());
-				UpdateSystemSensor(qType, itemId, itemName, itemValue.str());
-				VariantClear(&vtProp);
-				uReturn = 0;
 				pclsObj->Release();
 			}
 			pEnumerator->Release();

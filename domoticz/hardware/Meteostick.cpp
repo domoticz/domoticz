@@ -17,6 +17,9 @@
 
 #define round(a) ( int ) ( a + .5 )
 
+#define USE_868_Mhz
+#define RAIN_IN_MM
+
 //
 //Class Meteostick
 //
@@ -623,8 +626,13 @@ void Meteostick::ParseLine()
 		m_state = MSTATE_VALUES;
 		return;
 	case MSTATE_VALUES:
-		//Set listen frequency to 868 (need to be user configurable for 915Mhz)
+#ifdef USE_868_Mhz
+		//Set listen frequency to 868Mhz
 		write("m1\n");
+#else
+		//Set listen frequency to 915Mhz
+		write("m0\n");
+#endif
 		m_state = MSTATE_DATA;
 		return;
 	}
@@ -686,7 +694,17 @@ void Meteostick::ParseLine()
 		if (results.size() >= 4)
 		{
 			unsigned char ID = (unsigned char)atoi(results[1].c_str());
-			float Rainmm = (float)atof(results[2].c_str())*0.2f; //convert to mm
+			float Rainmm = (float)atof(results[2].c_str());
+#ifdef RAIN_IN_MM
+			//one tick is one mm
+			Rainmm*=0.2f; //convert to mm;
+#else
+			//one tick is 0.01 inch, we need to convert this also to mm
+			//Rainmm *= 0.01f; //convert to inch
+			//Rainmm *= 25.4f; //convert to mm
+			//or directly
+			Rainmm *= 0.254;
+#endif
 			SendRainSensor(ID, Rainmm, "Rain");
 		}
 		break;
