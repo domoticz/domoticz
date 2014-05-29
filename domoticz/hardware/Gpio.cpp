@@ -82,7 +82,7 @@ CGpio::CGpio(const int ID)
 	IOPinStatusPacket.LIGHTING1.rssi = 12;
 	IOPinStatusPacket.LIGHTING1.seqnbr = 0;
 
-	if (!m_bIsGPIOInit)
+	if (!m_bIsInitGPIOPins)
 	{
 		InitPins();
 		m_bIsInitGPIOPins=true;
