@@ -3,6 +3,8 @@
 #include "ASyncSerial.h"
 #include "DomoticzHardware.h"
 
+#define MAX_IDS 16
+
 class Meteostick : public AsyncSerial, public CDomoticzHardwareBase
 {
 	enum _eMState {
@@ -44,8 +46,12 @@ private:
 	void SendLeafWetnessRainSensor(const unsigned char Idx, const unsigned char Channel, const int Wetness, const std::string &defaultname);
 	void SendSoilMoistureSensor(const unsigned char Idx, const unsigned char Channel, const int Moisture, const std::string &defaultname);
 	void SendSolarRadiationSensor(const unsigned char Idx, const float Radiation, const std::string &defaultname);
+	float GetRainSensorCounter(const unsigned char Idx);
 
-	float m_LastOutsideTemp;
+	float m_LastOutsideTemp[MAX_IDS];
+	int m_LastOutsideHum[MAX_IDS];
+	float m_ActRainCounter[MAX_IDS];
+	int m_LastRainValue[MAX_IDS];
 
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;

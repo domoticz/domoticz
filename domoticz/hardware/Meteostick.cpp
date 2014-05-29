@@ -107,7 +107,17 @@ bool Meteostick::OpenSerialDevice()
 	m_state = MSTATE_INIT;
 	m_bIsStarted = true;
 	m_bufferpos = 0;
-	m_LastOutsideTemp = 12345;
+
+	int ii;
+
+	for (ii = 0; ii < MAX_IDS; ii++)
+	{
+		m_LastOutsideTemp[ii]	= 12345;
+		m_LastOutsideHum[ii]	= 0;
+		m_ActRainCounter[ii]	= -1;
+		m_LastRainValue[ii]		= -1;
+
+	}
 	setReadCallback(boost::bind(&Meteostick::readCallback, this, _1, _2));
 	sOnConnected(this);
 	return true;
@@ -456,7 +466,27 @@ void Meteostick::SendPercentage(const unsigned long Idx, const float Percentage,
 	}
 }
 
-//We need a total rain counter here, and only receive daily rain... not going to work yet!
+float Meteostick::GetRainSensorCounter(const unsigned char Idx)
+{
+	float counter = 0;
+
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeRAIN) << ") AND (Subtype==" << int(sTypeRAIN3) << ")";
+	result = m_pMainWorker->m_sql.query(szQuery.str());
+	if (result.size() >0)
+	{
+		std::vector<std::string> strarray;
+		StringSplit(result[0][0], ";", strarray);
+		if (strarray.size() == 2)
+		{
+			counter = (float)atof(strarray[1].c_str());
+		}
+	}
+
+	return counter;
+}
+
 void Meteostick::SendRainSensor(const unsigned char Idx, const float Rainmm, const std::string &defaultname)
 {
 	if (m_pMainWorker == NULL)
@@ -665,14 +695,14 @@ void Meteostick::ParseLine()
 		break;
 	case 'W':
 		//current wind speed in m / s, wind direction in degrees
-		if (m_LastOutsideTemp != 12345)
+		if (results.size() >= 5)
 		{
-			if (results.size() >= 5)
+			unsigned char ID = (unsigned char)atoi(results[1].c_str());
+			if (m_LastOutsideTemp[ID%MAX_IDS] != 12345)
 			{
-				unsigned char ID = (unsigned char)atoi(results[1].c_str());
 				float speed = (float)atof(results[2].c_str());
 				int direction = (int)atoi(results[3].c_str());
-				SendWindSensor(ID, m_LastOutsideTemp, speed, direction, "Wind");
+				SendWindSensor(ID, m_LastOutsideTemp[ID%MAX_IDS], speed, direction, "Wind");
 			}
 		}
 		break;
@@ -685,27 +715,45 @@ void Meteostick::ParseLine()
 			int hum = (int)atoi(results[3].c_str());
 
 			SendTempHumSensor(ID, temp, hum, "Outside Temp+Hum");
-			m_LastOutsideTemp = temp;
+			m_LastOutsideTemp[ID%MAX_IDS] = temp;
+			m_LastOutsideHum[ID%MAX_IDS] = hum;
 		}
 		break;
 	case 'R':
 		//Rain
 		//counter value (value 0 - 255), ticks, 1 tick = 0.2mm or 0.01in
+		//it only has a small counter, so we should make the total counter ourselfses
 		if (results.size() >= 4)
 		{
 			unsigned char ID = (unsigned char)atoi(results[1].c_str());
-			float Rainmm = (float)atof(results[2].c_str());
+			int raincntr = atoi(results[2].c_str());
+			float Rainmm = 0;
+			if (m_LastRainValue[ID%MAX_IDS] != -1)
+			{
+				int cntr_diff = (raincntr - m_LastRainValue[ID%MAX_IDS])&255;
+				Rainmm = float(cntr_diff);
 #ifdef RAIN_IN_MM
-			//one tick is one mm
-			Rainmm*=0.2f; //convert to mm;
+				//one tick is one mm
+				Rainmm*=0.2f; //convert to mm;
 #else
-			//one tick is 0.01 inch, we need to convert this also to mm
-			//Rainmm *= 0.01f; //convert to inch
-			//Rainmm *= 25.4f; //convert to mm
-			//or directly
-			Rainmm *= 0.254;
+				//one tick is 0.01 inch, we need to convert this also to mm
+				//Rainmm *= 0.01f; //convert to inch
+				//Rainmm *= 25.4f; //convert to mm
+				//or directly
+				Rainmm *= 0.254;
 #endif
-			SendRainSensor(ID, Rainmm, "Rain");
+			}
+			m_LastRainValue[ID%MAX_IDS] = raincntr;
+
+			if (m_ActRainCounter[ID%MAX_IDS] == -1)
+			{
+				//Get Last stored Rain counter
+				float rcounter=GetRainSensorCounter(ID);
+				m_ActRainCounter[ID%MAX_IDS] = rcounter;
+			}
+			m_ActRainCounter[ID%MAX_IDS] += Rainmm;
+
+			SendRainSensor(ID, m_ActRainCounter[ID%MAX_IDS], "Rain");
 		}
 		break;
 	case 'S':
