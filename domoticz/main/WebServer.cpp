@@ -5937,7 +5937,7 @@ char * CWebServer::SetLimitlessType()
 	return (char*)m_retstr.c_str();
 }
 
-void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const bool bDisplayHidden, time_t LastUpdate)
+void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const bool bDisplayHidden, const time_t LastUpdate)
 {
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
@@ -5947,6 +5947,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 	localtime_r(&now,&tm1);
 	struct tm tLastUpdate;
 	localtime_r(&now,&tLastUpdate);
+
+	const time_t iLastUpdate = LastUpdate-1;
 
 	int SensorTimeOut=60;
 	m_pMain->m_sql.GetPreferencesVar("SensorTimeout", SensorTimeOut);
@@ -6043,7 +6045,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				std::vector<std::string> sd=*itt;
 				std::string sLastUpdate=sd[3];
 
-				if (LastUpdate!=0)
+				if (iLastUpdate != 0)
 				{
 					tLastUpdate.tm_isdst=tm1.tm_isdst;
 					tLastUpdate.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
@@ -6053,7 +6055,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					tLastUpdate.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
 					tLastUpdate.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
 					time_t cLastUpdate=mktime(&tLastUpdate);
-					if (cLastUpdate<=LastUpdate)
+					if (cLastUpdate <= iLastUpdate)
 						continue;
 				}
 
@@ -6197,7 +6199,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			std::string sValue=sd[10];
 			std::string sLastUpdate=sd[11];
 
-			if (LastUpdate!=0)
+			if (iLastUpdate != 0)
 			{
 				tLastUpdate.tm_isdst=tm1.tm_isdst;
 				tLastUpdate.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
@@ -6207,7 +6209,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				tLastUpdate.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
 				tLastUpdate.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
 				time_t cLastUpdate=mktime(&tLastUpdate);
-				if (cLastUpdate<=LastUpdate)
+				if (cLastUpdate <= iLastUpdate)
 					continue;
 			}
 

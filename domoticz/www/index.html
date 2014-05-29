@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html> 
+<html manifest="html5.appcache"> 
 <head>
 		<meta charset="utf-8">
 		<title>Domoticz</title>
@@ -93,7 +93,6 @@
 <script type="text/javascript" charset="utf-8" id="init-code">
 
 function logEvent(event) {
-  //console.log(event.type);
 }
 
 function NotifyCacheRefresh()
@@ -230,6 +229,16 @@ function ShowLatestHistory()
 	SwitchLayout('History');
 }
 
+if (window.applicationCache) {
+	window.applicationCache.addEventListener('checking',logEvent,false);
+	window.applicationCache.addEventListener('noupdate',logEvent,false);
+	window.applicationCache.addEventListener('progress',logEvent,false);
+	window.applicationCache.addEventListener('cached',logEvent,false);
+	window.applicationCache.addEventListener('updateready',logEvent,false);
+	window.applicationCache.addEventListener('obsolete',logEvent,false);
+	window.applicationCache.addEventListener('error',logEvent,false);
+}
+
 $(document).ready(function() {
 	if ("-ms-user-select" in document.documentElement.style &&
 		(navigator.userAgent.match(/IEMobile/) ||
@@ -269,6 +278,24 @@ $(document).ready(function() {
 		if (bVersion < 10.0) {
 			bootbox.alert($.i18n('This Application is is designed for Internet Explorer version 10+!\nPlease upgrade your browser!'));
 		}
+	}
+
+	if (window.applicationCache) {
+		window.applicationCache.addEventListener('downloading', function(e)
+		{
+			NotifyCacheRefresh();
+		}, false);
+		window.applicationCache.addEventListener('updateready', function(e) 
+		{
+				if (window.applicationCache.status == window.applicationCache.UPDATEREADY) 
+				{
+						// Browser downloaded a new app cache.
+						// Swap it in and reload the page to get the new hotness.
+						window.applicationCache.swapCache();
+						window.parent.RefreshMain();
+						window.location.reload();
+				}
+		}, false);
 	}
 
 	$("#appversion").click( function( e ) {

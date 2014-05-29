@@ -68,7 +68,7 @@ public:
 	std::vector<_tWebUserPassword> m_users;
 
 	//JSon
-	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const bool bDisplayHidden, time_t LastUpdate);
+	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const bool bDisplayHidden, const time_t LastUpdate);
 private:
 	void HandleCommand(const std::string &cparam, Json::Value &root);
 	void HandleRType(const std::string &rtype, Json::Value &root);
