@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include <iostream>
 #include "Camera.h"
-#include "mainworker.h"
 #include "localtime_r.h"
 #include "Logger.h"
 #include "../httpclient/HTTPClient.h"
 #include "../smtpclient/SMTPClient.h"
 #include "../webserver/Base64.h"
+#include "SQLHelper.h"
 
 #define CAMERA_POLL_INTERVAL 30
 
@@ -14,19 +14,12 @@ extern std::string szStartupFolder;
 
 CCamScheduler::CCamScheduler(void)
 {
-	m_pMain=NULL;
 	m_stoprequested=false;
 	m_seconds_counter=0;
 }
 
 CCamScheduler::~CCamScheduler(void)
 {
-}
-
-void CCamScheduler::SetMainWorker(MainWorker *pMainWorker)
-{
-	m_pMain=pMainWorker;
-	ReloadCameras();
 }
 
 /*
@@ -62,36 +55,33 @@ std::vector<cameraDevice> CCamScheduler::GetCameraDevices()
 void CCamScheduler::ReloadCameras()
 {
 	std::vector<std::string> _AddedCameras;
-	if (m_pMain!=NULL)
+	boost::lock_guard<boost::mutex> l(m_mutex);
+	m_cameradevices.clear();
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	std::vector<std::vector<std::string> >::const_iterator itt;
+
+	szQuery << "SELECT ID, Name, Address, Port, Username, Password, VideoURL, ImageURL FROM Cameras WHERE (Enabled == 1) ORDER BY ID";
+	result=m_sql.query(szQuery.str());
+	if (result.size()>0)
 	{
-		boost::lock_guard<boost::mutex> l(m_mutex);
-		m_cameradevices.clear();
-		std::stringstream szQuery;
-		std::vector<std::vector<std::string> > result;
-		std::vector<std::vector<std::string> >::const_iterator itt;
-
-		szQuery << "SELECT ID, Name, Address, Port, Username, Password, VideoURL, ImageURL FROM Cameras WHERE (Enabled == 1) ORDER BY ID";
-		result=m_pMain->m_sql.query(szQuery.str());
-		if (result.size()>0)
+		_log.Log(LOG_STATUS,"Camera: settings (re)loaded");
+		for (itt=result.begin(); itt!=result.end(); ++itt)
 		{
-			_log.Log(LOG_STATUS,"Camera: settings (re)loaded");
-			for (itt=result.begin(); itt!=result.end(); ++itt)
-			{
-				std::vector<std::string> sd=*itt;
+			std::vector<std::string> sd=*itt;
 
-				cameraDevice citem;
-				std::stringstream s_str( sd[0] );
-				s_str >> citem.ID;
-				citem.Name		= sd[1];
-				citem.Address	= sd[2];
-				citem.Port		= atoi(sd[3].c_str());
-				citem.Username	= base64_decode(sd[4]);
-				citem.Password	= base64_decode(sd[5]);
-				citem.VideoURL	= sd[6];
-				citem.ImageURL	= sd[7];
-				m_cameradevices.push_back(citem);
-				_AddedCameras.push_back(sd[0]);
-			}
+			cameraDevice citem;
+			std::stringstream s_str( sd[0] );
+			s_str >> citem.ID;
+			citem.Name		= sd[1];
+			citem.Address	= sd[2];
+			citem.Port		= atoi(sd[3].c_str());
+			citem.Username	= base64_decode(sd[4]);
+			citem.Password	= base64_decode(sd[5]);
+			citem.VideoURL	= sd[6];
+			citem.ImageURL	= sd[7];
+			m_cameradevices.push_back(citem);
+			_AddedCameras.push_back(sd[0]);
 		}
 	}
 	std::vector<std::string>::const_iterator ittCam;
@@ -115,7 +105,7 @@ void CCamScheduler::ReloadCameraActiveDevices(const std::string &CamID)
 	szQuery.clear();
 	szQuery.str("");
 	szQuery << "SELECT ID, DevSceneType, DevSceneRowID FROM CamerasActiveDevices WHERE (CameraRowID=='" << CamID << "') ORDER BY ID";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
 		for (itt=result.begin(); itt!=result.end(); ++itt)
@@ -268,7 +258,7 @@ bool CCamScheduler::TakeSnapshot(const std::string &CamID, std::vector<unsigned 
 bool CCamScheduler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
 {
 	std::string raspparams="-w 800 -h 600 -t 0";
-	m_pMain->m_sql.GetPreferencesVar("RaspCamParams", raspparams);
+	m_sql.GetPreferencesVar("RaspCamParams", raspparams);
 
 #ifdef WIN32
 	//get our test image
@@ -350,12 +340,9 @@ bool CCamScheduler::TakeSnapshot(const unsigned long long CamID, std::vector<uns
 
 bool CCamScheduler::EmailCameraSnapshot(const std::string &CamIdx, const std::string &subject)
 {
-	if (m_pMain==NULL)
-		return false;
-
 	int nValue;
 	std::string sValue;
-	if (!m_pMain->m_sql.GetPreferencesVar("EmailServer",nValue,sValue))
+	if (!m_sql.GetPreferencesVar("EmailServer",nValue,sValue))
 	{
 		return false;//no email setup
 	}
@@ -377,12 +364,12 @@ bool CCamScheduler::EmailCameraSnapshot(const std::string &CamIdx, const std::st
 	std::string EmailUsername;
 	std::string EmailPassword;
 	int EmailAsAttachment=0;
-	m_pMain->m_sql.GetPreferencesVar("EmailFrom",nValue,EmailFrom);
-	m_pMain->m_sql.GetPreferencesVar("EmailTo",nValue,EmailTo);
-	m_pMain->m_sql.GetPreferencesVar("EmailUsername",nValue,EmailUsername);
-	m_pMain->m_sql.GetPreferencesVar("EmailPassword",nValue,EmailPassword);
-	m_pMain->m_sql.GetPreferencesVar("EmailPort", EmailPort);
-	m_pMain->m_sql.GetPreferencesVar("EmailAsAttachment", EmailAsAttachment);
+	m_sql.GetPreferencesVar("EmailFrom",nValue,EmailFrom);
+	m_sql.GetPreferencesVar("EmailTo",nValue,EmailTo);
+	m_sql.GetPreferencesVar("EmailUsername",nValue,EmailUsername);
+	m_sql.GetPreferencesVar("EmailPassword",nValue,EmailPassword);
+	m_sql.GetPreferencesVar("EmailPort", EmailPort);
+	m_sql.GetPreferencesVar("EmailAsAttachment", EmailAsAttachment);
 
 	std::vector<char> filedata;
 	filedata.insert(filedata.begin(),camimage.begin(),camimage.end());

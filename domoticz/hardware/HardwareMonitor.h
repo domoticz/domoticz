@@ -6,18 +6,15 @@
 	#pragma comment(lib, "wbemuuid.lib")
 #endif
 
-class MainWorker;
-
 class CHardwareMonitor
 {
 public:
 	CHardwareMonitor(void);
 	~CHardwareMonitor(void);
-	void StartHardwareMonitor(MainWorker *pMainWorker);
+	void StartHardwareMonitor();
 	void StopHardwareMonitor();
 private:
 	bool m_bEnabled;
-	MainWorker *m_pMain;
 	int hwId;
 	double m_lastquerytime;
 	void Do_Work();	

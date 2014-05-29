@@ -2,7 +2,7 @@
 #include "Limitless.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
-#include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
 #include "hardwaretypes.h"
 
 #define round(a) ( int ) ( a + .5 )
@@ -137,12 +137,10 @@ void CLimitLess::Init()
 
 bool CLimitLess::AddSwitchIfNotExits(const unsigned char Unit, const std::string& devname)
 {
-	if (m_pMainWorker==NULL)
-		return false;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Unit==" << int(Unit) << ") AND (Type==" << pTypeLimitlessLights << ") AND (SubType==" << int(m_LEDType) << ")";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 	{
 		szQuery.clear();
@@ -151,7 +149,7 @@ bool CLimitLess::AddSwitchIfNotExits(const unsigned char Unit, const std::string
 		szQuery << 
 			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
 			"VALUES (" << m_HwdID << ",'" << int(1) << "'," << int(Unit) << "," << pTypeLimitlessLights << "," <<int(m_LEDType) << ",12,255,'" << devname << "',0,' ')";
-		m_pMainWorker->m_sql.query(szQuery.str());
+		m_sql.query(szQuery.str());
 		return false;
 	}
 	return true;

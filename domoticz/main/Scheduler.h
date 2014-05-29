@@ -4,8 +4,6 @@
 #include <string>
 #include <vector>
 
-class MainWorker;
-
 struct tScheduleItem
 {
 	bool bIsScene;
@@ -29,7 +27,7 @@ public:
 	CScheduler(void);
 	~CScheduler(void);
 
-	void StartScheduler(MainWorker *pMainWorker);
+	void StartScheduler();
 	void StopScheduler();
 
 	void ReloadSchedules();
@@ -41,7 +39,6 @@ public:
 private:
 	time_t m_tSunRise;
 	time_t m_tSunSet;
-	MainWorker *m_pMain;
 	boost::mutex m_mutex;
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;

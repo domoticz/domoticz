@@ -3,7 +3,7 @@
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
-#include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
 #include "hardwaretypes.h"
 #include <string>
 
@@ -232,14 +232,12 @@ int SolarEdgeBase::ParsePacket(const unsigned char *pData, int len)
 
 bool SolarEdgeBase::GetMeter(const unsigned char ID1,const unsigned char ID2, double &musage, double &mtotal)
 {
-	if (m_pMainWorker==NULL)
-		return false;
 	int Idx=(ID1 * 256) + ID2;
 	bool bDeviceExits=true;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT Name, sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 	{
 		return false;
@@ -255,14 +253,12 @@ bool SolarEdgeBase::GetMeter(const unsigned char ID1,const unsigned char ID2, do
 
 void SolarEdgeBase::SendMeter(const unsigned char ID1,const unsigned char ID2, const double musage, const double mtotal, const std::string &defaultname)
 {
-	if (m_pMainWorker==NULL)
-		return;
 	int Idx=(ID1 * 256) + ID2;
 	bool bDeviceExits=true;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -311,14 +307,12 @@ void SolarEdgeBase::SendMeter(const unsigned char ID1,const unsigned char ID2, c
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
-		result=m_pMainWorker->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 	}
 }
 
 void SolarEdgeBase::SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname)
 {
-	if (m_pMainWorker==NULL)
-		return;
 	bool bDeviceExits=true;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
@@ -327,7 +321,7 @@ void SolarEdgeBase::SendVoltage(const unsigned long Idx, const float Volt, const
 	sprintf(szTmp,"%08X", (unsigned int)Idx);
 
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeVoltage) << ")";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -346,19 +340,17 @@ void SolarEdgeBase::SendVoltage(const unsigned long Idx, const float Volt, const
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeVoltage) << ")";
-		result=m_pMainWorker->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 	}
 }
 
 void SolarEdgeBase::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
-	if (m_pMainWorker==NULL)
-		return;
 	bool bDeviceExits=true;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP10) << ")";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -389,14 +381,12 @@ void SolarEdgeBase::SendTempSensor(const unsigned char Idx, const float Temp, co
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP10) << ")";
-		result=m_pMainWorker->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 	}
 }
 
 void SolarEdgeBase::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
 {
-	if (m_pMainWorker==NULL)
-		return;
 	bool bDeviceExits=true;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
@@ -405,7 +395,7 @@ void SolarEdgeBase::SendPercentage(const unsigned long Idx, const float Percenta
 	sprintf(szTmp,"%08X", (unsigned int)Idx);
 
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -424,7 +414,7 @@ void SolarEdgeBase::SendPercentage(const unsigned long Idx, const float Percenta
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
-		result=m_pMainWorker->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 
 	}
 }

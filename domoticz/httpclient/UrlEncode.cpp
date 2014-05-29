@@ -24,7 +24,7 @@ std::string CURLEncode::convert(char val)
 // THIS IS A HELPER FUNCTION.
 // PURPOSE OF THIS FUNCTION IS TO GENERATE A HEX REPRESENTATION OF GIVEN CHARACTER
 std::string CURLEncode::decToHex(char num, int radix)
-{	
+{
 	int temp=0;	
 	std::string csTmp;
 	int num_char;
@@ -42,9 +42,7 @@ std::string CURLEncode::decToHex(char num, int radix)
 		num_char = (int)floor((float)num_char / radix);
 		csTmp = hexVals[temp];
 	}
-	if (num_char>16)
-		num_char = 0; //should not be nececery
-	csTmp += hexVals[num_char];
+	csTmp += hexVals[num_char%16];
 
 	if(csTmp.size() < 2)
 	{

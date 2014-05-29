@@ -1,16 +1,16 @@
 #include "stdafx.h"
 #include <iostream>
 #include "Scheduler.h"
-#include "mainworker.h"
 #include "localtime_r.h"
 #include "Logger.h"
 #include "Helper.h"
+#include "SQLHelper.h"
+#include "mainworker.h"
 
 CScheduler::CScheduler(void)
 {
 	m_tSunRise=0;
 	m_tSunSet=0;
-	m_pMain=NULL;
 	m_stoprequested=false;
 	srand((int)mytime(NULL));
 }
@@ -19,9 +19,8 @@ CScheduler::~CScheduler(void)
 {
 }
 
-void CScheduler::StartScheduler(MainWorker *pMainWorker)
+void CScheduler::StartScheduler()
 {
-	m_pMain=pMainWorker;
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CScheduler::Do_Work, this)));
 }
 
@@ -57,7 +56,7 @@ void CScheduler::ReloadSchedules()
 
 	//Add Device Timers
 	szQuery << "SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T2.Used, T1.UseRandomness, T1.Hue FROM Timers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -99,7 +98,7 @@ void CScheduler::ReloadSchedules()
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "DELETE FROM Timers WHERE (DeviceRowID == " << sd[0] << ")";
-				m_pMain->m_sql.query(szQuery.str());
+				m_sql.query(szQuery.str());
 			}
 		}
 	}
@@ -108,7 +107,7 @@ void CScheduler::ReloadSchedules()
 	szQuery.clear();
 	szQuery.str("");
 	szQuery << "SELECT T1.SceneRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T1.UseRandomness FROM SceneTimers as T1, Scenes as T2 WHERE ((T1.Active == 1) AND (T2.ID == T1.SceneRowID)) ORDER BY T1.ID";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -200,7 +199,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	unsigned long HourMinuteOffset=(pItem->startHour*3600)+(pItem->startMin*60);
 
 	int nRandomTimerFrame=15;
-	m_pMain->m_sql.GetPreferencesVar("RandomTimerFrame", nRandomTimerFrame);
+	m_sql.GetPreferencesVar("RandomTimerFrame", nRandomTimerFrame);
 	int roffset=0;
 	if (pItem->bUseRandmoness)
 	{
@@ -343,7 +342,7 @@ void CScheduler::CheckSchedules()
 						std::vector<std::vector<std::string> > result;
 						std::stringstream szQuery;
 						szQuery << "SELECT Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << itt->RowID << ")";
-						result=m_pMain->m_sql.query(szQuery.str());
+						result=m_sql.query(szQuery.str());
 						if (result.size()>0)
 						{
 							std::vector<std::string> sd=result[0];
@@ -370,7 +369,7 @@ void CScheduler::CheckSchedules()
 									ilevel=int(fLevel);
 								}
 							}
-							if (!m_pMain->SwitchLight(itt->RowID,switchcmd,ilevel, itt->Hue))
+							if (!m_mainworker.SwitchLight(itt->RowID,switchcmd,ilevel, itt->Hue))
 							{
 								_log.Log(LOG_ERROR,"Error sending switch command, DevID: %llu, Time: %s", itt->RowID, asctime(&ltime));
 							}
@@ -378,7 +377,7 @@ void CScheduler::CheckSchedules()
 					}
 					else
 					{
-						if (!m_pMain->SwitchScene(itt->RowID,switchcmd))
+						if (!m_mainworker.SwitchScene(itt->RowID,switchcmd))
 						{
 							_log.Log(LOG_ERROR,"Error switching Scene command, SceneID: %llu, Time: %s", itt->RowID, asctime(&ltime));
 						}

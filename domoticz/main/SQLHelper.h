@@ -8,8 +8,6 @@
 
 struct sqlite3;
 
-class MainWorker;
-
 struct _tNotification
 {
 	unsigned long long ID;
@@ -167,7 +165,6 @@ public:
 	CSQLHelper(void);
 	~CSQLHelper(void);
 
-	void SetMainWorker(MainWorker *pWorker);
 	bool OpenDatabase();
 	void SetDatabaseName(const std::string &DBName);
 
@@ -344,7 +341,6 @@ private:
 	CURLEncode m_urlencoder;
 	sqlite3 *m_dbase;
 	sqlite3 *m_demo_dbase;
-	MainWorker *m_pMain;
 	std::string m_dbase_name;
 	unsigned char m_sensortimeoutcounter;
 	std::map<unsigned long long,int> m_timeoutlastsend;
@@ -386,3 +382,4 @@ private:
 	void CleanupShortLog();
 };
 
+extern CSQLHelper m_sql;

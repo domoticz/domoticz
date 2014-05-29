@@ -10,7 +10,7 @@
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/Logger.h"
-#include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
 #include "hardwaretypes.h"
 
 #include "../json/json.h"
@@ -721,7 +721,7 @@ void COpenZWave::EnableDisableDebug()
 #ifdef _DEBUG
 	debugenabled=1;
 #else
-	m_pMainWorker->m_sql.GetPreferencesVar("ZWaveEnableDebug", debugenabled);
+	m_sql.GetPreferencesVar("ZWaveEnableDebug", debugenabled);
 #endif
 
 	if (debugenabled)
@@ -2022,7 +2022,7 @@ bool COpenZWave::NetworkInfo(const int hwID,std::vector< std::vector< int > > &N
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT HomeID,NodeID FROM ZWaveNodes WHERE (HardwareID = '" << hwID <<"')";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1) {
 		return false;
 	}
@@ -2248,7 +2248,7 @@ void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int po
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT ProductDescription FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
 		std::string ProductDescription=result[0][0];
@@ -2382,7 +2382,7 @@ void COpenZWave::DeleteNode(const int homeID, const int nodeID)
 {
 	std::stringstream szQuery;
 	szQuery << "DELETE FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
-	m_pMainWorker->m_sql.query(szQuery.str());
+	m_sql.query(szQuery.str());
 }
 
 void COpenZWave::AddNode(const int homeID, const int nodeID,const NodeInfo *pNode)
@@ -2391,7 +2391,7 @@ void COpenZWave::AddNode(const int homeID, const int nodeID,const NodeInfo *pNod
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT ID FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	szQuery.clear();
 	szQuery.str("");
 
@@ -2415,20 +2415,20 @@ void COpenZWave::AddNode(const int homeID, const int nodeID,const NodeInfo *pNod
 		//Update ProductDescription
 		szQuery << "UPDATE ZWaveNodes SET ProductDescription='" <<  sProductDescription << "' WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
 	}
-	m_pMainWorker->m_sql.query(szQuery.str());
+	m_sql.query(szQuery.str());
 }
 
 void COpenZWave::EnableDisableNodePolling()
 {
 	int intervalseconds=60;
-	m_pMainWorker->m_sql.GetPreferencesVar("ZWavePollInterval", intervalseconds);
+	m_sql.GetPreferencesVar("ZWavePollInterval", intervalseconds);
 
 	m_pManager->SetPollInterval(intervalseconds*1000,false);
 
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT HomeID,NodeID,PollTime FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ")";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return;
 
@@ -2485,7 +2485,7 @@ void COpenZWave::GetNodeValuesJson(const int homeID, const int nodeID, Json::Val
 		root["result"][index]["config"][ivalue]["type"]="short";
 
 		int intervalseconds=60;
-		m_pMainWorker->m_sql.GetPreferencesVar("ZWavePollInterval", intervalseconds);
+		m_sql.GetPreferencesVar("ZWavePollInterval", intervalseconds);
 		root["result"][index]["config"][ivalue]["value"]=intervalseconds;
 
 		root["result"][index]["config"][ivalue]["index"]=1;
@@ -2500,7 +2500,7 @@ void COpenZWave::GetNodeValuesJson(const int homeID, const int nodeID, Json::Val
 		root["result"][index]["config"][ivalue]["type"]="short";
 
 		int debugenabled=0;
-		m_pMainWorker->m_sql.GetPreferencesVar("ZWaveEnableDebug", debugenabled);
+		m_sql.GetPreferencesVar("ZWaveEnableDebug", debugenabled);
 		root["result"][index]["config"][ivalue]["value"]=debugenabled;
 
 		root["result"][index]["config"][ivalue]["index"]=2;
@@ -2648,17 +2648,17 @@ bool COpenZWave::ApplyNodeConfig(const int homeID, const int nodeID, const std::
 			{
 				//PollInterval
 				int intervalseconds=atoi(results[vindex+1].c_str());
-				m_pMainWorker->m_sql.UpdatePreferencesVar("ZWavePollInterval", intervalseconds);
+				m_sql.UpdatePreferencesVar("ZWavePollInterval", intervalseconds);
 				EnableDisableNodePolling();
 			}
 			else if (rvIndex==2)
 			{
 				int debugenabled=atoi(results[vindex+1].c_str());
 				int old_debugenabled=0;
-				m_pMainWorker->m_sql.GetPreferencesVar("ZWaveEnableDebug", old_debugenabled);
+				m_sql.GetPreferencesVar("ZWaveEnableDebug", old_debugenabled);
 				if (old_debugenabled!=debugenabled)
 				{
-					m_pMainWorker->m_sql.UpdatePreferencesVar("ZWaveEnableDebug", debugenabled);
+					m_sql.UpdatePreferencesVar("ZWaveEnableDebug", debugenabled);
 					//Restart
 					OpenSerialConnector();
 				}

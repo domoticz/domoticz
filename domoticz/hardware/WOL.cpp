@@ -2,7 +2,8 @@
 #include "WOL.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
-#include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
+#include "../main/RFXtrx.h"
 
 CWOL::CWOL(const int ID, const std::string &BoradcastAddress, const unsigned short Port)
 {
@@ -141,7 +142,7 @@ void CWOL::WriteToHardware(const char *pdata, const unsigned char length)
 
 	//Find our Node
 	szQuery << "SELECT MacAddress FROM WOLNodes WHERE (ID==" << nodeID << ")";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return; //Not Found
 
@@ -170,19 +171,19 @@ void CWOL::AddNode(const std::string &Name, const std::string MacAddress)
 
 	//Check if exists
 	szQuery << "SELECT ID FROM WOLNodes WHERE (HardwareID==" << m_HwdID << ") AND (Name=='" << Name << "') AND (MacAddress=='" << MacAddress << "')";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 		return; //Already exists
 	szQuery.clear();
 	szQuery.str("");
 
 	szQuery << "INSERT INTO WOLNodes (HardwareID, Name, MacAddress) VALUES (" << m_HwdID << ",'" << Name << "','" << MacAddress << "')";
-	m_pMainWorker->m_sql.query(szQuery.str());
+	m_sql.query(szQuery.str());
 
 	szQuery.clear();
 	szQuery.str("");
 	szQuery << "SELECT ID FROM WOLNodes WHERE (HardwareID==" << m_HwdID << ") AND (Name=='" << Name << "') AND (MacAddress=='" << MacAddress << "')";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return;
 
@@ -197,7 +198,7 @@ void CWOL::AddNode(const std::string &Name, const std::string MacAddress)
 	szQuery << 
 		"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
 		"VALUES (" << m_HwdID << ",'" << szID << "'," << int(1) << "," << pTypeLighting2 << "," <<sTypeAC << "," << int(STYPE_PushOn) << ",1, 12,255,'" << Name << "',1,' ')";
-	m_pMainWorker->m_sql.query(szQuery.str());
+	m_sql.query(szQuery.str());
 }
 
 bool CWOL::UpdateNode(const int ID, const std::string &Name, const std::string MacAddress)
@@ -207,7 +208,7 @@ bool CWOL::UpdateNode(const int ID, const std::string &Name, const std::string M
 
 	//Check if exists
 	szQuery << "SELECT ID FROM WOLNodes WHERE (HardwareID==" << m_HwdID << ") AND (ID==" << ID << ")";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return false; //Not Found!?
 
@@ -215,7 +216,7 @@ bool CWOL::UpdateNode(const int ID, const std::string &Name, const std::string M
 	szQuery.str("");
 
 	szQuery << "UPDATE WOLNodes SET Name='" << Name << "', MacAddress='" << MacAddress << "' WHERE (HardwareID==" << m_HwdID << ") AND (ID==" << ID << ")";
-	m_pMainWorker->m_sql.query(szQuery.str());
+	m_sql.query(szQuery.str());
 
 	char szID[40];
 	sprintf(szID,"%X%02X%02X%02X", 0, 0, (ID&0xFF00)>>8, ID&0xFF);
@@ -225,7 +226,7 @@ bool CWOL::UpdateNode(const int ID, const std::string &Name, const std::string M
 	szQuery.str("");
 	szQuery << 
 		"UPDATE DeviceStatus SET Name='" << Name << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
-	m_pMainWorker->m_sql.query(szQuery.str());
+	m_sql.query(szQuery.str());
 
 	return true;
 }
@@ -236,7 +237,7 @@ void CWOL::RemoveNode(const int ID)
 	std::vector<std::vector<std::string> > result;
 
 	szQuery << "DELETE FROM WOLNodes WHERE (HardwareID==" << m_HwdID << ") AND (ID==" << ID << ")";
-	m_pMainWorker->m_sql.query(szQuery.str());
+	m_sql.query(szQuery.str());
 
 	//Also delete the switch
 	szQuery.clear();
@@ -246,7 +247,7 @@ void CWOL::RemoveNode(const int ID)
 	sprintf(szID,"%X%02X%02X%02X", 0, 0, (ID&0xFF00)>>8, ID&0xFF);
 
 	szQuery << "DELETE FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
-	m_pMainWorker->m_sql.query(szQuery.str());
+	m_sql.query(szQuery.str());
 }
 
 void CWOL::RemoveAllNodes()
@@ -255,13 +256,13 @@ void CWOL::RemoveAllNodes()
 	std::vector<std::vector<std::string> > result;
 
 	szQuery << "DELETE FROM WOLNodes WHERE (HardwareID==" << m_HwdID << ")";
-	m_pMainWorker->m_sql.query(szQuery.str());
+	m_sql.query(szQuery.str());
 
 	//Also delete the all switches
 	szQuery.clear();
 	szQuery.str("");
 
 	szQuery << "DELETE FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ")";
-	m_pMainWorker->m_sql.query(szQuery.str());
+	m_sql.query(szQuery.str());
 }
 

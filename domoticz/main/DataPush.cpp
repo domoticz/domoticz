@@ -5,8 +5,7 @@
 #include "Logger.h"
 #include "../hardware/hardwaretypes.h"
 #include "RFXtrx.h"
-#include "mainworker.h"
-
+#include "SQLHelper.h"
 
 typedef struct _STR_TABLE_ID1_ID2 {
 	unsigned long    id1;
@@ -24,16 +23,11 @@ const char *findVarTableID1ID2 (_STR_TABLE_ID1_ID2 *t, unsigned long id1, unsign
 	return "Not supported";
 }
 
-void CDataPush::SetMainWorker(MainWorker *pMainWorker)
-{
-	m_pMain=pMainWorker;
-}
-
 void CDataPush::DoWork(const unsigned long long DeviceRowIdxIn)
 {
 	DeviceRowIdx = DeviceRowIdxIn;
 	int fActive;
-	m_pMain->m_sql.GetPreferencesVar("FibaroActive", fActive);
+	m_sql.GetPreferencesVar("FibaroActive", fActive);
 	if (fActive==1) {
 		DoFibaroPush();
 	}
@@ -44,12 +38,12 @@ void CDataPush::DoFibaroPush()
 	std::string fibaroIP = "";
 	std::string fibaroUsername = "";
 	std::string fibaroPassword = "";
-	m_pMain->m_sql.GetPreferencesVar("FibaroIP", fibaroIP);
-	m_pMain->m_sql.GetPreferencesVar("FibaroUsername", fibaroUsername);
-	m_pMain->m_sql.GetPreferencesVar("FibaroPassword", fibaroPassword);
+	m_sql.GetPreferencesVar("FibaroIP", fibaroIP);
+	m_sql.GetPreferencesVar("FibaroUsername", fibaroUsername);
+	m_sql.GetPreferencesVar("FibaroPassword", fibaroPassword);
 	int fibaroDebugActiveInt;
 	bool fibaroDebugActive = false;
-	m_pMain->m_sql.GetPreferencesVar("FibaroDebug", fibaroDebugActiveInt);
+	m_sql.GetPreferencesVar("FibaroDebug", fibaroDebugActiveInt);
 	if (fibaroDebugActiveInt == 1) {
 		fibaroDebugActive = true;
 	}
@@ -65,7 +59,7 @@ void CDataPush::DoFibaroPush()
 			"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType FROM FibaroLink as A, DeviceStatus as B "
 			"WHERE (A.DeviceID == '%llu' AND A.Enabled = '1' AND A.DeviceID==B.ID)",
 			DeviceRowIdx);
-		result=m_pMain->m_sql.query(szTmp);
+		result=m_sql.query(szTmp);
 		if (result.size()>0)
 		{
 			std::string sendValue;
@@ -183,7 +177,7 @@ std::vector<std::string> CDataPush::DropdownOptions(const unsigned long long Dev
 	std::vector<std::vector<std::string> > result;
 	char szTmp[300];
 	sprintf(szTmp, "SELECT Type, SubType FROM DeviceStatus WHERE (ID== %llu)", DeviceRowIdxIn);
-	result=m_pMain->m_sql.query(szTmp);
+	result=m_sql.query(szTmp);
 	if (result.size()>0)
 	{
 		int dType=atoi(result[0][0].c_str());
@@ -211,7 +205,7 @@ std::string CDataPush::DropdownOptionsValue(const unsigned long long DeviceRowId
 	char szTmp[300];
 	
 	sprintf(szTmp, "SELECT Type, SubType FROM DeviceStatus WHERE (ID== %llu)", DeviceRowIdxIn);
-	result=m_pMain->m_sql.query(szTmp);
+	result=m_sql.query(szTmp);
 	if (result.size()>0)
 	{
 		int dType=atoi(result[0][0].c_str());
@@ -231,7 +225,7 @@ std::string CDataPush::ProcessSendValue(std::string rawsendValue, int delpos, in
 {
 	
 	std::string vType = DropdownOptionsValue(DeviceRowIdx,delpos);
-	unsigned char tempsign=m_pMain->m_sql.m_tempsign[0];
+	unsigned char tempsign=m_sql.m_tempsign[0];
 	_eMeterType metertype = (_eMeterType) metertypein;
 	char szData[100]= "";
 
@@ -314,20 +308,20 @@ std::string CDataPush::ProcessSendValue(std::string rawsendValue, int delpos, in
 	{
 		int intSpeed=atoi(rawsendValue.c_str());
 		if (includeUnit) {
-			sprintf(szData,"%.1f",float(intSpeed) * m_pMain->m_sql.m_windscale); //todo: unit?
+			sprintf(szData,"%.1f",float(intSpeed) * m_sql.m_windscale); //todo: unit?
 		}
 		else {
-			sprintf(szData,"%.1f",float(intSpeed) * m_pMain->m_sql.m_windscale);
+			sprintf(szData,"%.1f",float(intSpeed) * m_sql.m_windscale);
 		}
 	}
 	else if (vType == "Gust")
 	{
 		int intGust=atoi(rawsendValue.c_str());
 		if (includeUnit) {
-			sprintf(szData,"%.1f",float(intGust) *m_pMain->m_sql.m_windscale); //todo: unit?
+			sprintf(szData,"%.1f",float(intGust) *m_sql.m_windscale); //todo: unit?
 		}
 		else {
-			sprintf(szData,"%.1f",float(intGust) *m_pMain->m_sql.m_windscale);
+			sprintf(szData,"%.1f",float(intGust) *m_sql.m_windscale);
 		}
 	}
 	else if (vType == "Chill")

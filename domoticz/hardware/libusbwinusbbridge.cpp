@@ -306,6 +306,8 @@ usb_dev_handle *usb_open(struct usb_device *dev)
    // Device opened successfully. Allocate storage for handles.
    struct usb_dev_handle *usb = 
       (struct usb_dev_handle *)malloc(sizeof(struct usb_dev_handle));
+   if (!usb)
+	   return NULL;
    usb->hnd = hnd;
    usb->fd = fd;
    return usb;

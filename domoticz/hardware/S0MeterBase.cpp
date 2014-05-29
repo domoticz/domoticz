@@ -3,7 +3,7 @@
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
-#include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
 #include "P1MeterBase.h"
 #include "hardwaretypes.h"
 #include <string>
@@ -40,7 +40,7 @@ void S0MeterBase::ReloadLastTotals()
 		std::vector<std::string> results;
 
 		sprintf(szTmp,"SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%d' AND Unit=0 AND Type=%d AND SubType=%d)",m_HwdID, ii+1, pTypeENERGY, sTypeELEC2);
-		result=m_pMainWorker->m_sql.query(szTmp);
+		result=m_sql.query(szTmp);
 		if (result.size()==1)
 		{
 			StringSplit(result[0][0],";",results);

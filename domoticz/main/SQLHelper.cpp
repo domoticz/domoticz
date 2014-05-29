@@ -449,7 +449,6 @@ extern std::string szStartupFolder;
 
 CSQLHelper::CSQLHelper(void)
 {
-	m_pMain=NULL;
 	m_LastSwitchID="";
 	m_LastSwitchRowID=0;
 	m_dbase=NULL;
@@ -484,11 +483,6 @@ CSQLHelper::~CSQLHelper(void)
 		sqlite3_close(m_demo_dbase);
 		m_demo_dbase=NULL;
 	}
-}
-
-void CSQLHelper::SetMainWorker(MainWorker *pWorker)
-{
-	m_pMain=pWorker;
 }
 
 bool CSQLHelper::OpenDatabase()
@@ -650,7 +644,7 @@ bool CSQLHelper::OpenDatabase()
 			std::vector<std::vector<std::string> > result;
 
 			szQuery << "SELECT ID, Username, Password FROM Cameras ORDER BY ID";
-			result=m_pMain->m_sql.query(szQuery.str());
+			result=query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -661,14 +655,14 @@ bool CSQLHelper::OpenDatabase()
 					std::string campwd=base64_encode((const unsigned char*)sd[2].c_str(),sd[2].size());
 					std::stringstream szQuery2;
 					szQuery2 << "UPDATE Cameras SET Username='" << camuser << "', Password='" << campwd << "' WHERE (ID=='" << sd[0] << "')";
-					m_pMain->m_sql.query(szQuery2.str());
+					query(szQuery2.str());
 				}
 			}
 		}
 		if (dbversion<12)
 		{
 			std::vector<std::vector<std::string> > result;
-			result=m_pMain->m_sql.query("SELECT t.RowID, u.RowID from MultiMeter_Calendar as t, MultiMeter_Calendar as u WHERE (t.[Date] == u.[Date]) AND (t.[DeviceRowID] == u.[DeviceRowID]) AND (t.[RowID] != u.[RowID])");
+			result=query("SELECT t.RowID, u.RowID from MultiMeter_Calendar as t, MultiMeter_Calendar as u WHERE (t.[Date] == u.[Date]) AND (t.[DeviceRowID] == u.[DeviceRowID]) AND (t.[RowID] != u.[RowID])");
 			if (result.size()>0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -678,7 +672,7 @@ bool CSQLHelper::OpenDatabase()
 					std::vector<std::string> sd=*itt;
 					std::stringstream szQuery2;
 					szQuery2 << "DELETE FROM MultiMeter_Calendar WHERE (RowID=='" << sd[0] << "')";
-					m_pMain->m_sql.query(szQuery2.str());
+					query(szQuery2.str());
 				}
 			}
 			
@@ -965,7 +959,7 @@ bool CSQLHelper::OpenDatabase()
         	szQuery.clear();
         	szQuery.str("");
         	szQuery << "SELECT ID,Mode1 FROM Hardware WHERE (Type=" << HTYPE_Rego6XX << ")";
-        	result=m_pMain->m_sql.query(szQuery.str());
+        	result=query(szQuery.str());
         	if (result.size()>0)
             {
                 if(atoi(result[0][1].c_str()) != nValue)
@@ -1183,15 +1177,13 @@ void CSQLHelper::Do_Work()
 					case pTypeLighting5:
 					case pTypeLighting6:
 					case pTypeLimitlessLights:
-						if (m_pMain)
-							m_pMain->SwitchLight(itt->_idx,"Off",0,-1);
+						m_mainworker.SwitchLight(itt->_idx,"Off",0,-1);
 						break;
 					case pTypeSecurity1:
 						switch (itt->_subType)
 						{
 						case sTypeSecX10M:
-							if (m_pMain)
-								m_pMain->SwitchLight(itt->_idx,"No Motion",0,-1);
+							m_mainworker.SwitchLight(itt->_idx, "No Motion", 0, -1);
 							break;
 						default:
 							//just update internally
@@ -1211,17 +1203,14 @@ void CSQLHelper::Do_Work()
 				}
 				else
 				{
-					if (m_pMain)
+					if (itt->_devType==pTypeLighting4)
 					{
-						if (itt->_devType==pTypeLighting4)
-						{
-							//only update internally
-							std::string devname="";
-							UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname,true);
-						}
-						else
-							m_pMain->SwitchLight(itt->_idx,"Off",0,-1);
+						//only update internally
+						std::string devname="";
+						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname,true);
 					}
+					else
+						m_mainworker.SwitchLight(itt->_idx, "Off", 0, -1);
 				}
 			}
 			else if (itt->_ItemType == TITEM_EXECUTE_SCRIPT)
@@ -1236,7 +1225,7 @@ void CSQLHelper::Do_Work()
 			}
 			else if (itt->_ItemType == TITEM_EMAIL_CAMERA_SNAPSHOT)
 			{
-				m_pMain->m_cameras.EmailCameraSnapshot(itt->_ID,itt->_sValue);
+				m_mainworker.m_cameras.EmailCameraSnapshot(itt->_ID,itt->_sValue);
 			}
 			else if (itt->_ItemType == TITEM_GETURL)
 			{
@@ -1293,14 +1282,12 @@ void CSQLHelper::Do_Work()
 			}
             else if (itt->_ItemType == TITEM_SWITCHCMD_EVENT)
             {
-                if (m_pMain)
-                    m_pMain->SwitchLight(itt->_idx,itt->_command.c_str(),itt->_level, itt->_Hue);
+				m_mainworker.SwitchLight(itt->_idx, itt->_command.c_str(), itt->_level, itt->_Hue);
             }
 
             else if (itt->_ItemType == TITEM_SWITCHCMD_SCENE)
             {
-                if (m_pMain)
-                    m_pMain->SwitchScene(itt->_idx,itt->_command.c_str());
+				m_mainworker.SwitchScene(itt->_idx, itt->_command.c_str());
             }
             
 			++itt;
@@ -1846,7 +1833,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		CheckSceneStatusWithDevice(ulID);
 		break;
 	}
-	m_pMain->m_eventsystem.ProcessDevice(HardwareID,ulID,unit,devType,subType,signallevel,batterylevel,nValue,sValue,devname);
+	m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname);
 	return ulID;
 }
 
@@ -1868,7 +1855,7 @@ bool CSQLHelper::NeedToUpdateHardwareDevice(const int HardwareID, const char* ID
 	if (devType!=pTypeLighting2)
 		return true;
 
-	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(HardwareID);
+	CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HardwareID);
 	if (!pHardware)
 		return true;
 	if (pHardware->HwdType!=HTYPE_RazberryZWave)
@@ -5139,7 +5126,7 @@ void CSQLHelper::DeleteDevice(const std::string &idx)
 	//and now delete all records in the DeviceStatus table itself
 	sprintf(szTmp,"DELETE FROM DeviceStatus WHERE (ID == %s)",idx.c_str());
     //notify eventsystem device is no longer present
-    m_pMain->m_eventsystem.RemoveSingleState(atoi(idx.c_str()));
+	m_mainworker.m_eventsystem.RemoveSingleState(atoi(idx.c_str()));
     
 	query(szTmp);
 }
@@ -5838,7 +5825,7 @@ void CSQLHelper::FixDaylightSavingTableSimple(const std::string &TableName)
 	std::stringstream szQuery;
 
 	szQuery << "SELECT t.RowID, u.RowID, t.Date from " << TableName << " as t, " << TableName << " as u WHERE (t.[Date] == u.[Date]) AND (t.[DeviceRowID] == u.[DeviceRowID]) AND (t.[RowID] != u.[RowID]) ORDER BY t.[RowID]";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=query(szQuery.str());
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -5863,7 +5850,7 @@ void CSQLHelper::FixDaylightSavingTableSimple(const std::string &TableName)
 				szQuery.str("");
 				szQuery << "SELECT date('" << szDate << "','+1 day')";
 				std::vector<std::vector<std::string> > result2;
-				result2=m_pMain->m_sql.query(szQuery.str());
+				result2=query(szQuery.str());
 
 				std::string szDateNew=result2[0][0];
 
@@ -5871,20 +5858,20 @@ void CSQLHelper::FixDaylightSavingTableSimple(const std::string &TableName)
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT RowID FROM " << TableName << " WHERE (Date='" << szDateNew << "') AND (RowID==" << sd[1] << ")";
-				result2=m_pMain->m_sql.query(szQuery.str());
+				result2=query(szQuery.str());
 				szQuery.clear();
 				szQuery.str("");
 				if (result2.size()>0)
 				{
 					//Delete row
 					szQuery << "DELETE FROM " << TableName << " WHERE (RowID==" << sd[1] << ")";
-					m_pMain->m_sql.query(szQuery.str());
+					query(szQuery.str());
 				}
 				else
 				{
 					//Update date
 					szQuery << "UPDATE " << TableName << " SET Date='" << szDateNew << "' WHERE (RowID==" << sd[1] << ")";
-					m_pMain->m_sql.query(szQuery.str());
+					query(szQuery.str());
 				}
 			}
 		}
@@ -5906,7 +5893,7 @@ void CSQLHelper::FixDaylightSaving()
 	std::stringstream szQuery;
 
 	szQuery << "SELECT t.RowID, u.RowID, t.Value, u.Value, t.Date from Meter_Calendar as t, Meter_Calendar as u WHERE (t.[Date] == u.[Date]) AND (t.[DeviceRowID] == u.[DeviceRowID]) AND (t.[RowID] != u.[RowID]) ORDER BY t.[RowID]";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=query(szQuery.str());
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -5948,7 +5935,7 @@ void CSQLHelper::FixDaylightSaving()
 				szQuery.str("");
 				szQuery << "SELECT date('" << szDate << "','+1 day')";
 				std::vector<std::vector<std::string> > result2;
-				result2=m_pMain->m_sql.query(szQuery.str());
+				result2=query(szQuery.str());
 
 				std::string szDateNew=result2[0][0];
 
@@ -5956,20 +5943,20 @@ void CSQLHelper::FixDaylightSaving()
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT RowID FROM Meter_Calendar WHERE (Date='" << szDateNew << "') AND (RowID==" << sd1[1] << ")";
-				result2=m_pMain->m_sql.query(szQuery.str());
+				result2=query(szQuery.str());
 				szQuery.clear();
 				szQuery.str("");
 				if (result2.size()>0)
 				{
 					//Delete Row
 					szQuery << "DELETE FROM Meter_Calendar WHERE (RowID==" << sd1[1] << ")";
-					m_pMain->m_sql.query(szQuery.str());
+					query(szQuery.str());
 				}
 				else
 				{
 					//Update row with new Date
 					szQuery << "UPDATE Meter_Calendar SET Date='" << szDateNew << "', Value=" << ValueDest << " WHERE (RowID==" << sd1[1] << ")";
-					m_pMain->m_sql.query(szQuery.str());
+					query(szQuery.str());
 				}
 			}
 		}
@@ -5979,7 +5966,7 @@ void CSQLHelper::FixDaylightSaving()
 	szQuery.clear();
 	szQuery.str("");
 	szQuery << "SELECT t.RowID, u.RowID, t.Value1, t.Value2, t.Value3, t.Value4, t.Value5, t.Value6, u.Value1, u.Value2, u.Value3, u.Value4, u.Value5, u.Value6, t.Date from MultiMeter_Calendar as t, MultiMeter_Calendar as u WHERE (t.[Date] == u.[Date]) AND (t.[DeviceRowID] == u.[DeviceRowID]) AND (t.[RowID] != u.[RowID]) ORDER BY t.[RowID]";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=query(szQuery.str());
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -6101,7 +6088,7 @@ void CSQLHelper::FixDaylightSaving()
 				szQuery.str("");
 				szQuery << "SELECT date('" << szDate << "','+1 day')";
 				std::vector<std::vector<std::string> > result2;
-				result2=m_pMain->m_sql.query(szQuery.str());
+				result2=query(szQuery.str());
 
 				std::string szDateNew=result2[0][0];
 
@@ -6109,20 +6096,20 @@ void CSQLHelper::FixDaylightSaving()
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT RowID FROM MultiMeter_Calendar WHERE (Date='" << szDateNew << "') AND (RowID==" << sd1[1] << ")";
-				result2=m_pMain->m_sql.query(szQuery.str());
+				result2=query(szQuery.str());
 				szQuery.clear();
 				szQuery.str("");
 				if (result2.size()>0)
 				{
 					//Delete Row
 					szQuery << "DELETE FROM MultiMeter_Calendar WHERE (RowID==" << sd1[1] << ")";
-					m_pMain->m_sql.query(szQuery.str());
+					query(szQuery.str());
 				}
 				else
 				{
 					//Update row with new Date
 					szQuery << "UPDATE MultiMeter_Calendar SET Date='" << szDateNew << "', Value1=" << ValueDest1 << ", Value2=" << ValueDest2 << ", Value3=" << ValueDest3 << ", Value4=" << ValueDest4 << ", Value5=" << ValueDest5 << ", Value6=" << ValueDest6 << " WHERE (RowID==" << sd1[1] << ")";
-					m_pMain->m_sql.query(szQuery.str());
+					query(szQuery.str());
 				}
 			}
 		}

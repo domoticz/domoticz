@@ -13,7 +13,7 @@
 #include "../json/json.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
-#include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
 
 #define CONTROLLER_COMMAND_TIMEOUT 20
 
@@ -152,8 +152,6 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		(pDevice->devType!=ZDTYPE_SWITCHDIMMER)
 		)
 		return; //only for switches
-	if (m_pMainWorker==NULL)
-		return;
 
 	unsigned char ID1=0;
 	unsigned char ID2=0;
@@ -227,7 +225,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Unit==" << int(lcmd.LIGHTING2.unitcode) << ") AND (Type==" << pTypeLighting2 << ") AND (SubType==" << sTypeAC << ") AND (DeviceID=='" << ID << "')";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 	{
 		//Not Found

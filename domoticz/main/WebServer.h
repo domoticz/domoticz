@@ -3,8 +3,6 @@
 #include <string>
 #include <vector>
 
-class MainWorker;
-
 namespace Json
 {
 	class Value;
@@ -26,7 +24,7 @@ class CWebServer
 public:
 	CWebServer(void);
 	~CWebServer(void);
-	bool StartServer(MainWorker *pMain, const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword);
+	bool StartServer(const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword);
 	void StopServer();
 	void RegisterCommandCode(const char* idname, webserver_response_function ResponseFunction);
 	void RegisterRType(const char* idname, webserver_response_function ResponseFunction);
@@ -119,8 +117,6 @@ private:
 	void ZWaveTransferPrimaryRole(Json::Value &root);
 	std::string ZWaveGetConfigFile();
 #endif	
-
-	MainWorker *m_pMain;
 	boost::shared_ptr<boost::thread> m_thread;
 	std::map < std::string, webserver_response_function > m_webcommands;
 	std::map < std::string, webserver_response_function > m_webrtypes;
@@ -129,7 +125,6 @@ private:
 	std::wstring m_wretstr;
 	time_t m_LastUpdateCheck;
 	std::vector<_tCustomIcon> m_custom_light_icons;
-
 };
 
 } //server

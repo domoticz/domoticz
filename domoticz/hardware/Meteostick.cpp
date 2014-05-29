@@ -3,7 +3,7 @@
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
-#include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
 #include "P1MeterBase.h"
 #include "hardwaretypes.h"
 #include <string>
@@ -196,13 +196,11 @@ void Meteostick::ParseData(const unsigned char *pData, int Len)
 
 void Meteostick::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
-	if (m_pMainWorker == NULL)
-		return;
 	bool bDeviceExits = true;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP10) << ")";
-	result = m_pMainWorker->m_sql.query(szQuery.str());
+	result = m_sql.query(szQuery.str());
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -233,19 +231,17 @@ void Meteostick::SendTempSensor(const unsigned char Idx, const float Temp, const
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP10) << ")";
-		result = m_pMainWorker->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 	}
 }
 
 void Meteostick::SendTempHumSensor(const unsigned char Idx, const float Temp, const int Hum, const std::string &defaultname)
 {
-	if (m_pMainWorker == NULL)
-		return;
 	bool bDeviceExits = true;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP_HUM) << ") AND (Subtype==" << int(sTypeTH5) << ")";
-	result = m_pMainWorker->m_sql.query(szQuery.str());
+	result = m_sql.query(szQuery.str());
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -277,19 +273,17 @@ void Meteostick::SendTempHumSensor(const unsigned char Idx, const float Temp, co
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP_HUM) << ") AND (Subtype==" << int(sTypeTH5) << ")";
-		result = m_pMainWorker->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 	}
 }
 
 void Meteostick::SendTempBaroSensor(const unsigned char Idx, const float Temp, const float Baro, const std::string &defaultname)
 {
-	if (m_pMainWorker == NULL)
-		return;
 	bool bDeviceExits = true;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP_BARO) << ") AND (Subtype==" << int(sTypeBMP085) << ")";
-	result = m_pMainWorker->m_sql.query(szQuery.str());
+	result = m_sql.query(szQuery.str());
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -323,19 +317,17 @@ void Meteostick::SendTempBaroSensor(const unsigned char Idx, const float Temp, c
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP_BARO) << ") AND (Subtype==" << int(sTypeBMP085) << ")";
-		result = m_pMainWorker->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 	}
 }
 
 void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const float Speed, const int Direction, const std::string &defaultname)
 {
-	if (m_pMainWorker == NULL)
-		return;
 	bool bDeviceExits = true;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeWIND) << ") AND (Subtype==" << int(sTypeWINDNoTemp) << ")";
-	result = m_pMainWorker->m_sql.query(szQuery.str());
+	result = m_sql.query(szQuery.str());
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -389,20 +381,18 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeWIND) << ") AND (Subtype==" << int(sTypeWINDNoTemp) << ")";
-		result = m_pMainWorker->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 	}
 
 }
 
 void Meteostick::SendUVSensor(const unsigned char Idx, const float UV, const std::string &defaultname)
 {
-	if (m_pMainWorker == NULL)
-		return;
 	bool bDeviceExits = true;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeUV) << ") AND (Subtype==" << int(sTypeUV1) << ")";
-	result = m_pMainWorker->m_sql.query(szQuery.str());
+	result = m_sql.query(szQuery.str());
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -427,14 +417,12 @@ void Meteostick::SendUVSensor(const unsigned char Idx, const float UV, const std
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeUV) << ") AND (Subtype==" << int(sTypeUV1) << ")";
-		result = m_pMainWorker->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 	}
 }
 
 void Meteostick::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
 {
-	if (m_pMainWorker == NULL)
-		return;
 	bool bDeviceExits = true;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
@@ -443,7 +431,7 @@ void Meteostick::SendPercentage(const unsigned long Idx, const float Percentage,
 	sprintf(szTmp, "%08X", (unsigned int)Idx);
 
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
-	result = m_pMainWorker->m_sql.query(szQuery.str());
+	result = m_sql.query(szQuery.str());
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -462,7 +450,7 @@ void Meteostick::SendPercentage(const unsigned long Idx, const float Percentage,
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
-		result = m_pMainWorker->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 	}
 }
 
@@ -473,7 +461,7 @@ float Meteostick::GetRainSensorCounter(const unsigned char Idx)
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeRAIN) << ") AND (Subtype==" << int(sTypeRAIN3) << ")";
-	result = m_pMainWorker->m_sql.query(szQuery.str());
+	result = m_sql.query(szQuery.str());
 	if (result.size() >0)
 	{
 		std::vector<std::string> strarray;
@@ -489,13 +477,11 @@ float Meteostick::GetRainSensorCounter(const unsigned char Idx)
 
 void Meteostick::SendRainSensor(const unsigned char Idx, const float Rainmm, const std::string &defaultname)
 {
-	if (m_pMainWorker == NULL)
-		return;
 	bool bDeviceExits = true;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeRAIN) << ") AND (Subtype==" << int(sTypeRAIN3) << ")";
-	result = m_pMainWorker->m_sql.query(szQuery.str());
+	result = m_sql.query(szQuery.str());
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -529,20 +515,18 @@ void Meteostick::SendRainSensor(const unsigned char Idx, const float Rainmm, con
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeRAIN) << ") AND (Subtype==" << int(sTypeRAIN3) << ")";
-		result = m_pMainWorker->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 	}
 }
 
 void Meteostick::SendLeafWetnessRainSensor(const unsigned char Idx, const unsigned char Channel, const int Wetness, const std::string &defaultname)
 {
-	if (m_pMainWorker == NULL)
-		return;
 	bool bDeviceExits = true;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	int finalID = (Idx * 10) + Channel;
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << finalID << ") AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeLeafWetness) << ")";
-	result = m_pMainWorker->m_sql.query(szQuery.str());
+	result = m_sql.query(szQuery.str());
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -560,20 +544,18 @@ void Meteostick::SendLeafWetnessRainSensor(const unsigned char Idx, const unsign
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << finalID << ") AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeLeafWetness) << ")";
-		result = m_pMainWorker->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 	}
 }
 
 void Meteostick::SendSoilMoistureSensor(const unsigned char Idx, const unsigned char Channel, const int Moisture, const std::string &defaultname)
 {
-	if (m_pMainWorker == NULL)
-		return;
 	bool bDeviceExits = true;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	int finalID = (Idx * 10) + Channel;
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << finalID << ") AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeSoilMoisture) << ")";
-	result = m_pMainWorker->m_sql.query(szQuery.str());
+	result = m_sql.query(szQuery.str());
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -591,19 +573,17 @@ void Meteostick::SendSoilMoistureSensor(const unsigned char Idx, const unsigned 
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << finalID << ") AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeSoilMoisture) << ")";
-		result = m_pMainWorker->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 	}
 }
 
 void Meteostick::SendSolarRadiationSensor(const unsigned char Idx, const float Radiation, const std::string &defaultname)
 {
-	if (m_pMainWorker == NULL)
-		return;
 	bool bDeviceExits = true;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeSolarRadiation) << ")";
-	result = m_pMainWorker->m_sql.query(szQuery.str());
+	result = m_sql.query(szQuery.str());
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -621,7 +601,7 @@ void Meteostick::SendSolarRadiationSensor(const unsigned char Idx, const float R
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeSolarRadiation) << ")";
-		result = m_pMainWorker->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 	}
 }
 

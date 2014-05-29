@@ -1,7 +1,5 @@
 #pragma once
 
-#include "SQLHelper.h"
-#include "WebServer.h"
 #include "RFXtrx.h"
 #include "../hardware/DomoticzHardware.h"
 #include "Scheduler.h"
@@ -78,7 +76,6 @@ public:
 	void UpdateDomoticzSecurityStatus(const int iSecStatus);
 	void SetInternalSecStatus();
 
-	CSQLHelper m_sql;
 	CScheduler m_scheduler;
 	CEventSystem m_eventsystem;
 	CDataPush m_datapush;
@@ -92,7 +89,6 @@ public:
 	bool m_bHaveDownloadedDomoticzUpdateSuccessFull;
 
 	tcp::server::CTCPServer m_sharedserver;
-	http::server::CWebServer m_webserver;
 private:
 
 	void PrintDeviceName(const std::string &devname);
@@ -202,3 +198,5 @@ private:
 	unsigned long long decode_Power(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_LimitlessLights(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
 };
+
+extern MainWorker m_mainworker;

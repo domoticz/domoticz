@@ -10,6 +10,8 @@
 #include "CmdLine.h"
 #include "Logger.h"
 #include "Helper.h"
+#include "WebServer.h"
+#include "SQLHelper.h"
 
 #if defined WIN32
 	#include "WindowsHelper.h"
@@ -45,8 +47,10 @@ std::string szWWWFolder;
 bool bIsRaspberryPi=false;
 std::string szAppVersion="???";
 
-MainWorker _mainworker;
+MainWorker m_mainworker;
 CLogger _log;
+http::server::CWebServer m_webserver;
+CSQLHelper m_sql;
 
 void DQuitFunction()
 {
@@ -55,8 +59,8 @@ void DQuitFunction()
 #if defined WIN32
 	TrayMessage(NIM_DELETE,NULL);
 #endif
-	_log.Log(LOG_STATUS,"stopping worker...");
-	_mainworker.Stop();
+	_log.Log(LOG_STATUS,"Stopping worker...");
+	m_mainworker.Stop();
 }
 
 void catch_intterm(int sig_num)
@@ -255,11 +259,11 @@ int main(int argc, char**argv)
 			return 0;
 		}
 		std::string wwwport=cmdLine.GetSafeArgument("-www",0,"8080");
-		_mainworker.SetWebserverPort(wwwport);
+		m_mainworker.SetWebserverPort(wwwport);
 	}
 	if (cmdLine.HasSwitch("-nowwwpwd"))
 	{
-		_mainworker.m_bIgnoreUsernamePassword=true;
+		m_mainworker.m_bIgnoreUsernamePassword=true;
 	}
 
 	std::string dbasefile=szStartupFolder + "domoticz.db";
@@ -297,7 +301,7 @@ int main(int argc, char**argv)
 		}
 		dbasefile=cmdLine.GetSafeArgument("-dbase",0,"domoticz.db");
 	}
-	_mainworker.m_sql.SetDatabaseName(dbasefile);
+	m_sql.SetDatabaseName(dbasefile);
 
 	if (cmdLine.HasSwitch("-wwwroot"))
 	{
@@ -319,7 +323,7 @@ int main(int argc, char**argv)
 			return 0;
 		}
 		int Level=atoi(cmdLine.GetSafeArgument("-verbose",0,"").c_str());
-		_mainworker.SetVerboseLevel((eVerboseLevel)Level);
+		m_mainworker.SetVerboseLevel((eVerboseLevel)Level);
 	}
 #if defined WIN32
 	if (cmdLine.HasSwitch("-nobrowser"))
@@ -348,7 +352,7 @@ int main(int argc, char**argv)
 		_log.SetVerboseLevel((_eLogFileVerboseLevel)Level);
 	}
 
-	if (!_mainworker.Start())
+	if (!m_mainworker.Start())
 	{
 		return 0;
 	}
@@ -362,7 +366,7 @@ int main(int argc, char**argv)
 #ifndef _DEBUG
 	RedirectIOToConsole();	//hide console
 #endif
-	InitWindowsHelper(hInstance,hPrevInstance,nShowCmd,DQuitFunction,atoi(_mainworker.GetWebserverPort().c_str()),bStartWebBrowser);
+	InitWindowsHelper(hInstance,hPrevInstance,nShowCmd,DQuitFunction,atoi(m_mainworker.GetWebserverPort().c_str()),bStartWebBrowser);
 	MSG Msg;
 	while(GetMessage(&Msg, NULL, 0, 0) > 0)
 	{

@@ -6,7 +6,7 @@
 #include "../main/localtime_r.h"
 #include "../json/json.h"
 #include "../main/RFXtrx.h"
-#include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -145,14 +145,12 @@ char *strftime_t (const char *format, const time_t rawtime)
 
 void CSMASpot::SendMeter(const unsigned char ID1,const unsigned char ID2, const double musage, const double mtotal, const std::string &defaultname)
 {
-	if (m_pMainWorker==NULL)
-		return;
 	int Idx=(ID1 * 256) + ID2;
 	bool bDeviceExits=true;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -201,19 +199,17 @@ void CSMASpot::SendMeter(const unsigned char ID1,const unsigned char ID2, const 
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
-		result=m_pMainWorker->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 	}
 }
 
 void CSMASpot::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
-	if (m_pMainWorker==NULL)
-		return;
 	bool bDeviceExits=true;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP10) << ")";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -244,14 +240,12 @@ void CSMASpot::SendTempSensor(const unsigned char Idx, const float Temp, const s
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP10) << ")";
-		result=m_pMainWorker->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 	}
 }
 
 void CSMASpot::SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname)
 {
-	if (m_pMainWorker==NULL)
-		return;
 	bool bDeviceExits=true;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
@@ -260,7 +254,7 @@ void CSMASpot::SendVoltage(const unsigned long Idx, const float Volt, const std:
 	sprintf(szTmp,"%08X", (unsigned int)Idx);
 
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeVoltage) << ")";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -279,15 +273,13 @@ void CSMASpot::SendVoltage(const unsigned long Idx, const float Volt, const std:
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeVoltage) << ")";
-		result=m_pMainWorker->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 
 	}
 }
 
 void CSMASpot::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
 {
-	if (m_pMainWorker==NULL)
-		return;
 	bool bDeviceExits=true;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
@@ -296,7 +288,7 @@ void CSMASpot::SendPercentage(const unsigned long Idx, const float Percentage, c
 	sprintf(szTmp,"%08X", (unsigned int)Idx);
 
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -315,21 +307,19 @@ void CSMASpot::SendPercentage(const unsigned long Idx, const float Percentage, c
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
-		result=m_pMainWorker->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 
 	}
 }
 
 bool CSMASpot::GetMeter(const unsigned char ID1,const unsigned char ID2, double &musage, double &mtotal)
 {
-	if (m_pMainWorker==NULL)
-		return false;
 	int Idx=(ID1 * 256) + ID2;
 	bool bDeviceExits=true;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT Name, sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
-	result=m_pMainWorker->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 	{
 		return false;

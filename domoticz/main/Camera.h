@@ -3,8 +3,6 @@
 #include <string>
 #include <vector>
 
-class MainWorker;
-
 struct cameraActiveDevice
 {
 	unsigned long long ID;
@@ -31,9 +29,8 @@ public:
 	CCamScheduler(void);
 	~CCamScheduler(void);
 
-	void SetMainWorker(MainWorker *pMainWorker);
 /*
-	void StartCameraGrabber(MainWorker *pMainWorker);
+	void StartCameraGrabber();
 	void StopCameraGrabber();
 */
     void ReloadCameras();
@@ -56,7 +53,6 @@ public:
 	std::string GetCameraFeedURL(const std::string &CamID);
 	std::string GetCameraFeedURL(const unsigned long long CamID);
 private:
-	MainWorker *m_pMain;
 	boost::mutex m_mutex;
 	unsigned char m_seconds_counter;
 	volatile bool m_stoprequested;

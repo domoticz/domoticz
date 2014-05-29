@@ -41,7 +41,7 @@ The WiringPi project
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
-#include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
 #include "MCP23x17.h"
 #include <fstream>
 #include <algorithm>
@@ -590,7 +590,7 @@ void CPiFace::GetLastKnownValues(void)
             subType=sTypeRFXMeterCount;
 
 
-            if (m_pMainWorker->m_sql.GetLastValue(m_HwdID,DeviceID, unit, devType, subType, nValue, sValue,LastUpdateTime))
+            if (m_sql.GetLastValue(m_HwdID,DeviceID, unit, devType, subType, nValue, sValue,LastUpdateTime))
                {
                     if ((nValue == 0) && (sValue.size()!=0))
                         {
@@ -614,7 +614,7 @@ void CPiFace::GetLastKnownValues(void)
             devType=pTypeRFXMeter;
             subType=sTypeRFXMeterCount;
 
-            if (m_pMainWorker->m_sql.GetLastValue(m_HwdID,DeviceID, unit, devType, subType, nValue, sValue,LastUpdateTime))
+            if (m_sql.GetLastValue(m_HwdID,DeviceID, unit, devType, subType, nValue, sValue,LastUpdateTime))
                {
                     if ((nValue == 0) && (sValue.size()!=0))
                         {

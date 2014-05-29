@@ -5,6 +5,7 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
 #include <wchar.h>
 
 #ifdef WIN32
@@ -31,7 +32,6 @@
 
 CHardwareMonitor::CHardwareMonitor()
 {
-	m_pMain=NULL;
 	m_stoprequested=false;
 	m_bEnabled=true;
 #ifdef WIN32
@@ -47,12 +47,11 @@ CHardwareMonitor::~CHardwareMonitor(void)
 #endif
 	StopHardwareMonitor();
 }
-void CHardwareMonitor::StartHardwareMonitor(MainWorker *pMainWorker)
+void CHardwareMonitor::StartHardwareMonitor()
 {
 #ifdef _DEBUG
         _log.Log(LOG_STATUS,"Hardware Monitor: Started");
 #endif
-	m_pMain=pMainWorker;
 	Init();
 
 	if (m_bEnabled)
@@ -92,29 +91,29 @@ void CHardwareMonitor::Init()
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT ID,Enabled FROM Hardware WHERE (Type=='" <<HTYPE_System << "') AND (Name=='Motherboard') LIMIT 1";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 	{
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5) VALUES ('Motherboard',1, '" << HTYPE_System << "','',1,'','',0,0,0,0,0)";
-		m_pMain->m_sql.query(szQuery.str());
+		m_sql.query(szQuery.str());
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT MAX(ID) FROM Hardware";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::string> sd=result[0];
 			hwId=atoi(sd[0].c_str());
-			m_pMain->AddHardwareFromParams(hwId,"Motherboard",1,HTYPE_System,"",1,"","",0,0,0,0,0);
+			m_mainworker.AddHardwareFromParams(hwId, "Motherboard", 1, HTYPE_System, "", 1, "", "", 0, 0, 0, 0, 0);
 		}
 
-		m_pMain->m_sql.query(szQuery.str());
+		m_sql.query(szQuery.str());
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT ID,Enabled FROM Hardware WHERE (Type==" <<HTYPE_System << ") AND (Name=='Motherboard') LIMIT 1";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 	}
 	
 	if (result.size()>0)
@@ -175,7 +174,7 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const std::s
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT ID FROM DeviceStatus WHERE (DeviceID=='" << wmiId << "')";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 	{
 		szQuery.clear();
@@ -193,7 +192,7 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const std::s
 			szQuery << 
 				"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
 				"VALUES (" << hwId << ",'" << wmiId << "',"<< 0 << "," << pTypeGeneral << "," <<dsubtype << ",12,255,'" << devName << "'," << devValue << ",'" << devValue << "')";
-			m_pMain->m_sql.query(szQuery.str());
+			m_sql.query(szQuery.str());
 		}
 	}
 	else 
@@ -209,19 +208,19 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const std::s
 		sprintf(szLastUpdate,"%04d-%02d-%02d %02d:%02d:%02d",ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 
 		szQuery << "UPDATE DeviceStatus SET HardwareID = " << hwId << ", nValue=" << devValue << ", sValue ='" << devValue << "', LastUpdate='" << szLastUpdate << "' WHERE (DeviceID == '" << wmiId << "')";
-		m_pMain->m_sql.query(szQuery.str());
+		m_sql.query(szQuery.str());
 
 		if (qType == "Load") {
-			m_pMain->m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeGeneral, sTypePercentage, NTYPE_PERCENTAGE, (const float)atof(devValue.c_str()));
+			m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeGeneral, sTypePercentage, NTYPE_PERCENTAGE, (const float)atof(devValue.c_str()));
 		}
 		else if (qType == "Temperature") {
-			m_pMain->m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeGeneral, sTypeSystemTemp, NTYPE_TEMPERATURE, (const float)atof(devValue.c_str()));
+			m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeGeneral, sTypeSystemTemp, NTYPE_TEMPERATURE, (const float)atof(devValue.c_str()));
 		}
 		else if (qType == "Fan") {
-			m_pMain->m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeGeneral, sTypeSystemFan, NTYPE_RPM, (const float)atof(devValue.c_str()));
+			m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeGeneral, sTypeSystemFan, NTYPE_RPM, (const float)atof(devValue.c_str()));
 		}
 		else if (qType=="Voltage") {
-			m_pMain->m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeGeneral, sTypeSystemFan, NTYPE_USAGE, (const float)atof(devValue.c_str()));
+			m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeGeneral, sTypeSystemFan, NTYPE_USAGE, (const float)atof(devValue.c_str()));
 		}
 	}
 	return;

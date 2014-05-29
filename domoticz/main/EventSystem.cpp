@@ -9,6 +9,7 @@
 #include <iostream>
 #include "../httpclient/HTTPClient.h"
 #include "localtime_r.h"
+#include "SQLHelper.h"
 //#include <codecvt>
 //#include <locale>
 
@@ -28,7 +29,6 @@ extern std::string szStartupFolder;
 
 CEventSystem::CEventSystem(void)
 {
-	m_pMain=NULL;
 	m_stoprequested=false;
 	m_bEnabled=true;
 }
@@ -46,15 +46,13 @@ CEventSystem::~CEventSystem(void)
     */
 }
 
-void CEventSystem::StartEventSystem(MainWorker *pMainWorker)
+void CEventSystem::StartEventSystem()
 {
-	m_pMain=pMainWorker;
-
 	StopEventSystem();
 	if (!m_bEnabled)
 		return;
 
-    m_pMain->m_sql.GetPreferencesVar("SecStatus", m_SecStatus);
+    m_sql.GetPreferencesVar("SecStatus", m_SecStatus);
 
 	LoadEvents();
     GetCurrentStates();
@@ -82,7 +80,7 @@ void CEventSystem::LoadEvents()
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT EventRules.ID,EventMaster.Name,EventRules.Conditions,EventRules.Actions,EventMaster.Status, EventRules.SequenceNo FROM EventRules INNER JOIN EventMaster ON EventRules.EMID=EventMaster.ID ORDER BY EventRules.ID";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
 		
@@ -146,7 +144,7 @@ void CEventSystem::GetCurrentStates()
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT ID,Name,nValue,sValue, Type, SubType, SwitchType, LastUpdate, LastLevel FROM DeviceStatus WHERE (Used = '1')";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -205,15 +203,15 @@ void CEventSystem::GetCurrentMeasurementStates()
 	float GasDivider=100.0f;
 	float WaterDivider=100.0f;
 	int tValue;
-	if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+	if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 	{
 		EnergyDivider=float(tValue);
 	}
-	if (m_pMain->m_sql.GetPreferencesVar("MeterDividerGas", tValue))
+	if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
 	{
 		GasDivider=float(tValue);
 	}
-	if (m_pMain->m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+	if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
 	{
 		WaterDivider=float(tValue);
 	}
@@ -424,7 +422,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 					{
 						szQuery << "SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=" << sitem.ID << " AND Date>='" << szDate << "') ORDER BY ROWID DESC LIMIT 1";
 					}
-					result2=m_pMain->m_sql.query(szQuery.str());
+					result2=m_sql.query(szQuery.str());
 					if (result2.size()>0)
 					{
 						double total_real=0;
@@ -460,7 +458,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 							szQuery << "SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=" << sitem.ID << " AND Date>=" << szDate << ") ORDER BY ROWID DESC LIMIT 1";
 						}
 						rainmmlasthour=0;
-						result2=m_pMain->m_sql.query(szQuery.str());
+						result2=m_sql.query(szQuery.str());
 						if (result2.size()>0)
 						{
 							std::vector<std::string> sd2=result2[0];
@@ -495,7 +493,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 					szQuery.clear();
 					szQuery.str("");
 					szQuery << "SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=" << sitem.ID << " AND Date>='" << szDate << "')";
-					result2=m_pMain->m_sql.query(szQuery.str());
+					result2=m_sql.query(szQuery.str());
 					if (result2.size()>0)
 					{
 						std::vector<std::string> sd2=result2[0];
@@ -538,7 +536,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 					szQuery.clear();
 					szQuery.str("");
 					szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << sitem.ID << " AND Date>='" << szDate << "')";
-					result2=m_pMain->m_sql.query(szQuery.str());
+					result2=m_sql.query(szQuery.str());
 					if (result2.size()>0)
 					{
 						std::vector<std::string> sd2=result2[0];
@@ -660,7 +658,7 @@ void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 	if (!m_bEnabled)
 		return;
 
-    m_pMain->m_sql.GetPreferencesVar("SecStatus", m_SecStatus);
+    m_sql.GetPreferencesVar("SecStatus", m_SecStatus);
     EvaluateEvent("security");
 }
 
@@ -707,7 +705,7 @@ void CEventSystem::ProcessDevice(const int HardwareID, const unsigned long long 
     std::vector<std::vector<std::string> > result;
     std::stringstream szQuery;
     szQuery << "SELECT ID, SwitchType, LastUpdate, LastLevel FROM DeviceStatus WHERE (Name == '" << devname << "')";
-    result=m_pMain->m_sql.query(szQuery.str());
+    result=m_sql.query(szQuery.str());
     if (result.size()>0) {
         std::vector<std::string> sd=result[0];
         _eSwitchType switchType=(_eSwitchType)atoi(sd[1].c_str());
@@ -1191,7 +1189,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 					body=aParam[1];
 					body = stdreplace(body, "\\n", "<br>");
 					to=aParam[2];
-					m_pMain->m_sql.AddTaskItem(_tTaskItem::SendEmailTo(1,subject,body,to));
+					m_sql.AddTaskItem(_tTaskItem::SendEmailTo(1,subject,body,to));
 					actionsDone = true;
 				}
                 else if (devNameNoQuotes == "OpenURL") {
@@ -1565,7 +1563,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
     
     int secstatus=0;
     std::string secstatusw = "";
-    m_pMain->m_sql.GetPreferencesVar("SecStatus", secstatus);
+    m_sql.GetPreferencesVar("SecStatus", secstatus);
     if (secstatus == 1) {
         secstatusw = "Armed Home";
     }
@@ -1674,7 +1672,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state,const std::string &fil
 		body=aParam[1];
 		body = stdreplace(body, "\\n", "<br>");
 		to=aParam[2];
-		m_pMain->m_sql.AddTaskItem(_tTaskItem::SendEmailTo(1,subject,body,to));
+		m_sql.AddTaskItem(_tTaskItem::SendEmailTo(1,subject,body,to));
 		scriptTrue = true;
 	}
     else if (std::string(lua_tostring(lua_state, -2))== "OpenURL")
@@ -1722,7 +1720,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
 	szQuery << "SELECT HardwareID FROM DeviceStatus WHERE (ID==" << idx << ")";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
 		time_t now = time(0);
@@ -1735,13 +1733,13 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET nValue=" << nvalue << ", sValue='" << svalue << "', LastUpdate='" << szLastUpdate << "' WHERE (ID = " << idx << ")";
-		result = m_pMain->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 	}
 }
 
 void CEventSystem::SendEventNotification(const std::string &Subject, const std::string &Body, const int Priority,const std::string &Sound)
 {
-    m_pMain->m_sql.SendNotificationEx(Subject,Body,Priority,Sound);
+    m_sql.SendNotificationEx(Subject,Body,Priority,Sound);
 }
 
 void CEventSystem::OpenURL(const std::string &URL)
@@ -1752,7 +1750,7 @@ void CEventSystem::OpenURL(const std::string &URL)
 	_log.Log(LOG_STATUS,"Fetching url...");
 	_tTaskItem tItem;
 	tItem=_tTaskItem::GetHTTPPage(1,ampURL,"OpenURL");
-	m_pMain->m_sql.AddTaskItem(tItem);
+	m_sql.AddTaskItem(tItem);
     // maybe do something with sResult in the future.
 }
 
@@ -1779,7 +1777,7 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
     else {
         szQuery << "SELECT ID FROM DeviceStatus WHERE (Name == '" << deviceName << "')";
     }
-    result=m_pMain->m_sql.query(szQuery.str());
+    result=m_sql.query(szQuery.str());
     if (result.size()>0)
 	{
         std::vector<std::string> sd=result[0];
@@ -1849,21 +1847,21 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
             char szTmp[200];
             std::vector<std::vector<std::string> > result;
             sprintf(szTmp, "UPDATE SceneTimers SET Active=1 WHERE (SceneRowID == %d)",deviceID);
-			result=m_pMain->m_sql.query(szTmp);
-			m_pMain->m_scheduler.ReloadSchedules();
+			result=m_sql.query(szTmp);
+			m_mainworker.m_scheduler.ReloadSchedules();
         }
         else if (Action == "Inactive") {
             char szTmp[200];
             std::vector<std::vector<std::string> > result;
             sprintf(szTmp, "UPDATE SceneTimers SET Active=0 WHERE (SceneRowID == %d)",deviceID);
-			result=m_pMain->m_sql.query(szTmp);
-			m_pMain->m_scheduler.ReloadSchedules();
+			result=m_sql.query(szTmp);
+			m_mainworker.m_scheduler.ReloadSchedules();
         }
     }
     else {
         tItem=_tTaskItem::SwitchLightEvent(DelayTime,deviceID,Action,_level,-1,eventName);
     }
-    m_pMain->m_sql.AddTaskItem(tItem);
+    m_sql.AddTaskItem(tItem);
     
     if (suspendTimer > 0)
     {
@@ -1880,7 +1878,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
         else {
             delayedtItem = _tTaskItem::SwitchLightEvent(DelayTime,deviceID,previousState,previousLevel,-1,eventName);
         }
-        m_pMain->m_sql.AddTaskItem(delayedtItem);
+        m_sql.AddTaskItem(delayedtItem);
     }
     
     return true;
@@ -1984,7 +1982,7 @@ void CEventSystem::reportMissingDevice (const int deviceID, const std::string &e
     std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT EventMaster.ID FROM EventMaster INNER JOIN EventRules ON EventRules.EMID=EventMaster.ID WHERE (EventRules.ID == '" << eventID << "')";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
 		
@@ -1995,7 +1993,7 @@ void CEventSystem::reportMissingDevice (const int deviceID, const std::string &e
             std::stringstream szRemQuery;
             int eventStatus = 2;
             szRemQuery << "UPDATE EventMaster SET Status ='" << eventStatus << "' WHERE (ID == '" << sd[0] << "')";
-            m_pMain->m_sql.query(szQuery.str());
+            m_sql.query(szQuery.str());
         }
     }
 }
@@ -2023,7 +2021,7 @@ int CEventSystem::getSunRiseSunSetMinutes(const std::string &what)
     
     int nValue=0;
     std::string sValue;
-    if (m_pMain->m_sql.GetTempVar("SunRiseSet",nValue,sValue))
+    if (m_sql.GetTempVar("SunRiseSet",nValue,sValue))
     {
         StringSplit(sValue, ";", strarray);
         StringSplit(strarray[0], ":", sunRisearray);
@@ -2048,7 +2046,7 @@ bool CEventSystem::isEventscheduled(const std::string &eventName)
 {
     bool foundIt = false;
     std::vector<_tTaskItem> currentTasks;
-    m_pMain->m_sql.EventsGetTaskItems(currentTasks);
+    m_sql.EventsGetTaskItems(currentTasks);
     if (currentTasks.size()==0) {
         return foundIt;
     }
@@ -2070,7 +2068,7 @@ unsigned char CEventSystem::calculateDimLevel(int deviceID , int percentageLevel
     std::vector<std::vector<std::string> > result;
     std::stringstream szQuery;
     szQuery << "SELECT Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << deviceID << ")";
-    result=m_pMain->m_sql.query(szQuery.str());
+    result=m_sql.query(szQuery.str());
     unsigned char ilevel = 0;
     if (result.size()>0)
     {

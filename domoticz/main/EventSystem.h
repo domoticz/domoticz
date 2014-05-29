@@ -3,8 +3,6 @@
 #include <string>
 #include <vector>
 
-class MainWorker;
-
 class CEventSystem
 {
 	typedef struct lua_State lua_State;
@@ -40,7 +38,7 @@ public:
 	CEventSystem(void);
 	~CEventSystem(void);
 
-	void StartEventSystem(MainWorker *pMainWorker);
+	void StartEventSystem();
 	void StopEventSystem();
 
 	void LoadEvents();
@@ -51,7 +49,6 @@ public:
 	void WWWGetItemStates(std::vector<_tDeviceStatus> &iStates);
 private:
 	//lua_State	*m_pLUA;
-	MainWorker *m_pMain;
 	boost::mutex eventMutex;
 	boost::mutex luaMutex;
 	volatile bool m_stoprequested;

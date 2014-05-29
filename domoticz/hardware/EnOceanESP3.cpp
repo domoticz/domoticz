@@ -3,7 +3,7 @@
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
-#include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
 
 #include <string>
 #include <algorithm>
@@ -612,7 +612,7 @@ void CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		char szDeviceID[20];
 		sprintf(szDeviceID,"%08X",(unsigned int)sID);
 		szQuery << "SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szDeviceID << "') AND (Unit==" << int(tsen->LIGHTING2.unitcode) << ")";
-		result=m_pMainWorker->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			_eSwitchType switchtype=(_eSwitchType)atoi(result[0][0].c_str());
@@ -1042,14 +1042,14 @@ void CEnOceanESP3::ParseRadioDatagram()
 						std::stringstream szQuery;
 						std::vector<std::vector<std::string> > result;
 						szQuery << "SELECT ID FROM EnoceanSensors WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szDeviceID << "')";
-						result=m_pMainWorker->m_sql.query(szQuery.str());
+						result=m_sql.query(szQuery.str());
 						if (result.size()<1)
 						{
 							//Add it to the database
 							szQuery.clear();
 							szQuery.str("");
 							szQuery << "INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (" << m_HwdID << ",'" << szDeviceID << "'," << manufacturer << "," << profile << "," << ttype << ")";
-							result=m_pMainWorker->m_sql.query(szQuery.str());
+							result=m_sql.query(szQuery.str());
 						}
 
 					}
@@ -1060,7 +1060,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 					std::stringstream szQuery;
 					std::vector<std::vector<std::string> > result;
 					szQuery << "SELECT ID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szDeviceID << "')";
-					result=m_pMainWorker->m_sql.query(szQuery.str());
+					result=m_sql.query(szQuery.str());
 					if (result.size()<1)
 					{
 						_log.Log(LOG_NORM, "EnOcean: Need Teach-In for %s", szDeviceID);

@@ -27,6 +27,7 @@
 #include "../json/config.h"
 #include "../json/json.h"
 #include "Logger.h"
+#include "SQLHelper.h"
 
 
 #ifndef WIN32
@@ -42,7 +43,6 @@
 extern std::string szStartupFolder;
 extern bool bIsRaspberryPi;
 extern std::string szAppVersion;
-
 
 struct _tGuiLanguage {
 	const char* szShort;
@@ -108,9 +108,8 @@ void CWebServer::Do_Work()
 	_log.Log(LOG_STATUS,"WebServer stopped...");
 }
 
-bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword)
+bool CWebServer::StartServer(const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword)
 {
-	m_pMain=pMain;
 	StopServer();
 
 	m_custom_light_icons.clear();
@@ -163,7 +162,7 @@ bool CWebServer::StartServer(MainWorker *pMain, const std::string &listenaddress
 		LoadUsers();
 		std::string WebLocalNetworks;
 		int nValue;
-		if (m_pMain->m_sql.GetPreferencesVar("WebLocalNetworks",nValue,WebLocalNetworks))
+		if (m_sql.GetPreferencesVar("WebLocalNetworks",nValue,WebLocalNetworks))
 		{
 			std::vector<std::string> strarray;
 			StringSplit(WebLocalNetworks, ";", strarray);
@@ -470,17 +469,17 @@ void CWebServer::CmdAddHardware(Json::Value &root)
 		password.c_str(),
 		mode1,mode2,mode3,mode4,mode5
 		);
-	result=m_pMain->m_sql.query(szTmp);
+	result=m_sql.query(szTmp);
 
 	//add the device for real in our system
 	strcpy(szTmp,"SELECT MAX(ID) FROM Hardware");
-	result=m_pMain->m_sql.query(szTmp); //-V519
+	result=m_sql.query(szTmp); //-V519
 	if (result.size()>0)
 	{
 		std::vector<std::string> sd=result[0];
 		int ID=atoi(sd[0].c_str());
 
-		m_pMain->AddHardwareFromParams(ID,name,(senabled=="true")?true:false,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
+		m_mainworker.AddHardwareFromParams(ID,name,(senabled=="true")?true:false,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
 	}
 }
 
@@ -581,22 +580,22 @@ void CWebServer::CmdUpdateHardware(Json::Value &root)
 		mode1,mode2,mode3,mode4,mode5,
 		idx.c_str()
 		);
-	result=m_pMain->m_sql.query(szTmp);
+	result=m_sql.query(szTmp);
 
 	//Special case for internal system monitoring
 	if (htype == HTYPE_System )
 	{
-		m_pMain->m_hardwaremonitor.StopHardwareMonitor();
+		m_mainworker.m_hardwaremonitor.StopHardwareMonitor();
 		if (senabled=="true")
 		{
-			m_pMain->m_hardwaremonitor.StartHardwareMonitor(m_pMain);
+			m_mainworker.m_hardwaremonitor.StartHardwareMonitor();
 		}
 	}
 	else
 	{
 		//re-add the device in our system
 		int ID=atoi(idx.c_str());
-		m_pMain->AddHardwareFromParams(ID,name,(senabled=="true")?true:false,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
+		m_mainworker.AddHardwareFromParams(ID,name,(senabled=="true")?true:false,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
 	}
 }
 
@@ -606,7 +605,7 @@ void CWebServer::WOLGetNodes(Json::Value &root)
 	if (hwid=="")
 		return;
 	int iHardwareID=atoi(hwid.c_str());
-	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(iHardwareID);
+	CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(iHardwareID);
 	if (pHardware==NULL)
 		return;
 	if (pHardware->HwdType!=HTYPE_WOL)
@@ -618,7 +617,7 @@ void CWebServer::WOLGetNodes(Json::Value &root)
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT ID,Name,MacAddress FROM WOLNodes WHERE (HardwareID==" << iHardwareID << ")";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -647,7 +646,7 @@ void CWebServer::WOLAddNode(Json::Value &root)
 		)
 		return;
 	int iHardwareID=atoi(hwid.c_str());
-	CDomoticzHardwareBase *pBaseHardware=m_pMain->GetHardware(iHardwareID);
+	CDomoticzHardwareBase *pBaseHardware=m_mainworker.GetHardware(iHardwareID);
 	if (pBaseHardware==NULL)
 		return;
 	if (pBaseHardware->HwdType!=HTYPE_WOL)
@@ -673,7 +672,7 @@ void CWebServer::WOLUpdateNode(Json::Value &root)
 		)
 		return;
 	int iHardwareID=atoi(hwid.c_str());
-	CDomoticzHardwareBase *pBaseHardware=m_pMain->GetHardware(iHardwareID);
+	CDomoticzHardwareBase *pBaseHardware=m_mainworker.GetHardware(iHardwareID);
 	if (pBaseHardware==NULL)
 		return;
 	if (pBaseHardware->HwdType!=HTYPE_WOL)
@@ -696,7 +695,7 @@ void CWebServer::WOLRemoveNode(Json::Value &root)
 		)
 		return;
 	int iHardwareID=atoi(hwid.c_str());
-	CDomoticzHardwareBase *pBaseHardware=m_pMain->GetHardware(iHardwareID);
+	CDomoticzHardwareBase *pBaseHardware=m_mainworker.GetHardware(iHardwareID);
 	if (pBaseHardware==NULL)
 		return;
 	if (pBaseHardware->HwdType!=HTYPE_WOL)
@@ -715,7 +714,7 @@ void CWebServer::WOLClearNodes(Json::Value &root)
 	if (hwid=="")
 		return;
 	int iHardwareID=atoi(hwid.c_str());
-	CDomoticzHardwareBase *pBaseHardware=m_pMain->GetHardware(iHardwareID);
+	CDomoticzHardwareBase *pBaseHardware=m_mainworker.GetHardware(iHardwareID);
 	if (pBaseHardware==NULL)
 		return;
 	if (pBaseHardware->HwdType!=HTYPE_WOL)
@@ -744,11 +743,11 @@ void CWebServer::SaveFibaroLinkConfig(Json::Value &root)
 		return;
 	int ilinkactive=atoi(linkactive.c_str());
 	int idebugenabled=atoi(debugenabled.c_str());
-	m_pMain->m_sql.UpdatePreferencesVar("FibaroIP",remote.c_str());
-	m_pMain->m_sql.UpdatePreferencesVar("FibaroUsername",username.c_str());
-	m_pMain->m_sql.UpdatePreferencesVar("FibaroPassword",password.c_str());
-	m_pMain->m_sql.UpdatePreferencesVar("FibaroActive",ilinkactive);
-	m_pMain->m_sql.UpdatePreferencesVar("FibaroDebug",idebugenabled);
+	m_sql.UpdatePreferencesVar("FibaroIP",remote.c_str());
+	m_sql.UpdatePreferencesVar("FibaroUsername",username.c_str());
+	m_sql.UpdatePreferencesVar("FibaroPassword",password.c_str());
+	m_sql.UpdatePreferencesVar("FibaroActive",ilinkactive);
+	m_sql.UpdatePreferencesVar("FibaroDebug",idebugenabled);
 	root["status"]="OK";
 	root["title"]="SaveFibaroLinkConfig";
 }
@@ -757,27 +756,27 @@ void CWebServer::GetFibaroLinkConfig(Json::Value &root)
 {
 	std::string sValue;
 	int nValue;
-	if (m_pMain->m_sql.GetPreferencesVar("FibaroActive", nValue)) {
+	if (m_sql.GetPreferencesVar("FibaroActive", nValue)) {
 		root["FibaroActive"]=nValue;
 	}
 	else {
 		root["FibaroActive"]=0;
 	}
-	if (m_pMain->m_sql.GetPreferencesVar("FibaroDebug", nValue)) {
+	if (m_sql.GetPreferencesVar("FibaroDebug", nValue)) {
 		root["FibaroDebug"]=nValue;
 	}
 	else {
 		root["FibaroDebug"]=0;
 	}
-	if (m_pMain->m_sql.GetPreferencesVar("FibaroIP", sValue))
+	if (m_sql.GetPreferencesVar("FibaroIP", sValue))
 	{
 		root["FibaroIP"]=sValue;
 	}
-	if (m_pMain->m_sql.GetPreferencesVar("FibaroUsername", sValue))
+	if (m_sql.GetPreferencesVar("FibaroUsername", sValue))
 	{
 		root["FibaroUsername"]=sValue;
 	}
-	if (m_pMain->m_sql.GetPreferencesVar("FibaroPassword", sValue))
+	if (m_sql.GetPreferencesVar("FibaroPassword", sValue))
 	{
 		root["FibaroPassword"]=sValue;
 	}
@@ -790,7 +789,7 @@ void CWebServer::GetFibaroLinks(Json::Value &root)
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT A.ID,A.DeviceID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM FibaroLink as A, DeviceStatus as B WHERE (A.DeviceID==B.ID)";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -862,7 +861,7 @@ void CWebServer::SaveFibaroLink(Json::Value &root)
 			idx.c_str()
 			);
 	}
-	result=m_pMain->m_sql.query(szTmp);
+	result=m_sql.query(szTmp);
 
 	root["status"]="OK";
 	root["title"]="SaveFibaroLink";
@@ -876,7 +875,7 @@ void CWebServer::DeleteFibaroLink(Json::Value &root)
 	std::vector<std::vector<std::string> > result;
 	char szTmp[300];
 	sprintf(szTmp,"DELETE FROM FibaroLink WHERE (ID==%s)",idx.c_str());
-	result=m_pMain->m_sql.query(szTmp);
+	result=m_sql.query(szTmp);
 
 	root["status"]="OK";
 	root["title"]="DeleteFibaroLink";
@@ -888,7 +887,7 @@ void CWebServer::GetDeviceValueOptions(Json::Value &root)
 	if (idx=="")
 		return;
 	std::vector<std::string> result;
-	result=m_pMain->m_datapush.DropdownOptions(atoi(idx.c_str()));
+	result=m_mainworker.m_datapush.DropdownOptions(atoi(idx.c_str()));
 	if ((result.size()==1)&&result[0]=="Status") {
 		root["result"][0]["Value"]=0;
 		root["result"][0]["Wording"]=result[0];
@@ -916,7 +915,7 @@ void CWebServer::GetDeviceValueOptionWording(Json::Value &root)
 	if ((idx=="")||(pos==""))
 		return;
 	std::string wording;
-	wording=m_pMain->m_datapush.DropdownOptionsValue(atoi(idx.c_str()),atoi(pos.c_str()));
+	wording=m_mainworker.m_datapush.DropdownOptionsValue(atoi(idx.c_str()),atoi(pos.c_str()));
 	root["wording"]=wording;
 	root["status"]="OK";
 	root["title"]="GetDeviceValueOptions";
@@ -930,8 +929,8 @@ void CWebServer::DeleteHardware(Json::Value &root)
 	root["status"]="OK";
 	root["title"]="DeleteHardware";
 
-	m_pMain->m_sql.DeleteHardware(idx);
-	m_pMain->RemoveDomoticzHardware(atoi(idx.c_str()));
+	m_sql.DeleteHardware(idx);
+	m_mainworker.RemoveDomoticzHardware(atoi(idx.c_str()));
 }
 #ifdef WITH_OPENZWAVE
 void CWebServer::ZWaveUpdateNode(Json::Value &root)
@@ -958,13 +957,13 @@ void CWebServer::ZWaveUpdateNode(Json::Value &root)
 		(senablepolling=="true")?1:0,
 		idx.c_str()
 		);
-	result=m_pMain->m_sql.query(szTmp);
+	result=m_sql.query(szTmp);
 	sprintf(szTmp,"SELECT HardwareID from ZWaveNodes WHERE (ID==%s)",idx.c_str());
-	result=m_pMain->m_sql.query(szTmp);
+	result=m_sql.query(szTmp);
 	if (result.size()>0)
 	{
 		int hwid=atoi(result[0][0].c_str());
-		CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hwid);
+		CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(hwid);
 		if (pHardware!=NULL)
 		{
 			COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
@@ -981,13 +980,13 @@ void CWebServer::ZWaveDeleteNode(Json::Value &root)
 	std::vector<std::vector<std::string> > result;
 	char szTmp[300];
 	sprintf(szTmp,"SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)",idx.c_str());
-	result=m_pMain->m_sql.query(szTmp);
+	result=m_sql.query(szTmp);
 	if (result.size()>0)
 	{
 		int hwid=atoi(result[0][0].c_str());
 		int homeID=atoi(result[0][1].c_str());
 		int nodeID=atoi(result[0][2].c_str());
-		CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hwid);
+		CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(hwid);
 		if (pHardware!=NULL)
 		{
 			COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
@@ -995,7 +994,7 @@ void CWebServer::ZWaveDeleteNode(Json::Value &root)
 			root["status"]="OK";
 			root["title"]="DeleteZWaveNode";
 			sprintf(szTmp,"DELETE FROM ZWaveNodes WHERE (ID==%s)",idx.c_str());
-			result=m_pMain->m_sql.query(szTmp);
+			result=m_sql.query(szTmp);
 		}
 	}
 
@@ -1006,7 +1005,7 @@ void CWebServer::ZWaveInclude(Json::Value &root)
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
-	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+	CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(atoi(idx.c_str()));
 	if (pHardware!=NULL)
 	{
 		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
@@ -1021,7 +1020,7 @@ void CWebServer::ZWaveExclude(Json::Value &root)
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
-	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+	CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(atoi(idx.c_str()));
 	if (pHardware!=NULL)
 	{
 		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
@@ -1036,7 +1035,7 @@ void CWebServer::ZWaveSoftReset(Json::Value &root)
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
-	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+	CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(atoi(idx.c_str()));
 	if (pHardware!=NULL)
 	{
 		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
@@ -1051,7 +1050,7 @@ void CWebServer::ZWaveHardReset(Json::Value &root)
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
-	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+	CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(atoi(idx.c_str()));
 	if (pHardware!=NULL)
 	{
 		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
@@ -1067,7 +1066,7 @@ void CWebServer::ZWaveStateCheck(Json::Value &root)
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
-	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+	CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(atoi(idx.c_str()));
 	if (pHardware!=NULL)
 	{
 		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
@@ -1083,7 +1082,7 @@ void CWebServer::ZWaveNetworkHeal(Json::Value &root)
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
-	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+	CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(atoi(idx.c_str()));
 	if (pHardware!=NULL)
 	{
 		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
@@ -1101,7 +1100,7 @@ void CWebServer::ZWaveNodeHeal(Json::Value &root)
 	std::string node=m_pWebEm->FindValue("node");
 	if (node=="")
 		return;
-	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+	CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(atoi(idx.c_str()));
 	if (pHardware!=NULL)
 	{
 		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
@@ -1119,7 +1118,7 @@ void CWebServer::ZWaveNetworkInfo(Json::Value &root)
 	if (idx=="")
 		return;
 	int hwID = atoi(idx.c_str());
-	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hwID);
+	CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(hwID);
 	if (pHardware!=NULL)
 	{
 		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
@@ -1180,7 +1179,7 @@ void CWebServer::ZWaveRemoveGroupNode(Json::Value &root)
 	std::string removenode=m_pWebEm->FindValue("removenode");
 	if (removenode=="")
 		return;
-	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+	CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(atoi(idx.c_str()));
 	if (pHardware!=NULL)
 	{
 		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
@@ -1204,7 +1203,7 @@ void CWebServer::ZWaveAddGroupNode(Json::Value &root)
 	std::string addnode=m_pWebEm->FindValue("addnode");
 	if (addnode=="")
 		return;
-	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+	CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(atoi(idx.c_str()));
 	if (pHardware!=NULL)
 	{
 		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
@@ -1221,7 +1220,7 @@ void CWebServer::ZWaveGroupInfo(Json::Value &root)
 		return;
 	int iHardwareID=atoi(idx.c_str());
 	
-	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+	CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(atoi(idx.c_str()));
 	if (pHardware!=NULL)
 	{
 		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
@@ -1229,7 +1228,7 @@ void CWebServer::ZWaveGroupInfo(Json::Value &root)
 		std::stringstream szQuery;
 		std::vector<std::vector<std::string> > result;
 		szQuery << "SELECT ID,HomeID,NodeID,Name FROM ZWaveNodes WHERE (HardwareID==" << iHardwareID << ")";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		
 		if (result.size()>0)
 		{
@@ -1288,7 +1287,7 @@ void CWebServer::ZWaveCancel(Json::Value &root)
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
-	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+	CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(atoi(idx.c_str()));
 	if (pHardware!=NULL)
 	{
 		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
@@ -1310,13 +1309,13 @@ void CWebServer::ApplyZWaveNodeConfig(Json::Value &root)
 	std::vector<std::vector<std::string> > result;
 	char szTmp[300];
 	sprintf(szTmp,"SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)",idx.c_str());
-	result=m_pMain->m_sql.query(szTmp);
+	result=m_sql.query(szTmp);
 	if (result.size()>0)
 	{
 		int hwid=atoi(result[0][0].c_str());
 		int homeID=atoi(result[0][1].c_str());
 		int nodeID=atoi(result[0][2].c_str());
-		CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hwid);
+		CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(hwid);
 		if (pHardware!=NULL)
 		{
 			COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
@@ -1336,13 +1335,13 @@ void CWebServer::ZWaveRequestNodeConfig(Json::Value &root)
 	std::vector<std::vector<std::string> > result;
 	char szTmp[300];
 	sprintf(szTmp,"SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)",idx.c_str());
-	result=m_pMain->m_sql.query(szTmp);
+	result=m_sql.query(szTmp);
 	if (result.size()>0)
 	{
 		int hwid=atoi(result[0][0].c_str());
 		int homeID=atoi(result[0][1].c_str());
 		int nodeID=atoi(result[0][2].c_str());
-		CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hwid);
+		CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(hwid);
 		if (pHardware!=NULL)
 		{
 			COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
@@ -1358,7 +1357,7 @@ void CWebServer::ZWaveReceiveConfigurationFromOtherController(Json::Value &root)
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
-	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+	CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(atoi(idx.c_str()));
 	if (pHardware!=NULL)
 	{
 		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
@@ -1373,7 +1372,7 @@ void CWebServer::ZWaveSendConfigurationToSecondaryController(Json::Value &root)
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
-	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+	CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(atoi(idx.c_str()));
 	if (pHardware!=NULL)
 	{
 		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
@@ -1388,7 +1387,7 @@ void CWebServer::ZWaveTransferPrimaryRole(Json::Value &root)
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
-	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+	CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(atoi(idx.c_str()));
 	if (pHardware!=NULL)
 	{
 		COpenZWave *pOZWHardware=(COpenZWave*)pHardware;
@@ -1403,7 +1402,7 @@ std::string CWebServer::ZWaveGetConfigFile()
 	if (idx=="")
 		return "";
 	m_retstr="";
-	CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(atoi(idx.c_str()));
+	CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(atoi(idx.c_str()));
 	if (pHardware!=NULL)
 	{
 		if (pHardware->HwdType == HTYPE_OpenZWave)
@@ -1489,7 +1488,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			"INSERT INTO Plans (Name) VALUES ('%s')",
 			name.c_str()
 			);
-		result=m_pMain->m_sql.query(szTmp);
+		result=m_sql.query(szTmp);
 	}
 	else if (cparam=="updateplan")
 	{
@@ -1510,7 +1509,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			name.c_str(),
 			idx.c_str()
 			);
-		result=m_pMain->m_sql.query(szTmp);
+		result=m_sql.query(szTmp);
 	}
 	else if (cparam=="deleteplan")
 	{
@@ -1523,12 +1522,12 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			"DELETE FROM DeviceToPlansMap WHERE (PlanID == %s)",
 			idx.c_str()
 			);
-		result=m_pMain->m_sql.query(szTmp);
+		result=m_sql.query(szTmp);
 		sprintf(szTmp,
 			"DELETE FROM Plans WHERE (ID == %s)",
 			idx.c_str()
 			);
-		result=m_pMain->m_sql.query(szTmp);
+		result=m_sql.query(szTmp);
 	}
 	else if (cparam=="getunusedplandevices")
 	{
@@ -1543,7 +1542,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT ID, Name, Type, SubType FROM DeviceStatus WHERE (Used==1) ORDER BY Name";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -1557,7 +1556,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 					szQuery.clear();
 					szQuery.str("");
 					szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << sd[0] << ") AND (DevSceneType==0)";
-					result2=m_pMain->m_sql.query(szQuery.str());
+					result2=m_sql.query(szQuery.str());
 					bDoAdd=(result2.size()==0);
 				}
 				if (bDoAdd)
@@ -1575,7 +1574,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT ID, Name FROM Scenes ORDER BY Name";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -1589,7 +1588,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 					szQuery.clear();
 					szQuery.str("");
 					szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << sd[0] << ") AND (DevSceneType==1)";
-					result2=m_pMain->m_sql.query(szQuery.str());
+					result2=m_sql.query(szQuery.str());
 					bDoAdd=(result2.size()==0);
 				}
 				if (bDoAdd)
@@ -1623,7 +1622,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << activeidx << ") AND (DevSceneType=="<< activetype << ") AND (PlanID==" << idx << ")";
-		result2=m_pMain->m_sql.query(szQuery.str());
+		result2=m_sql.query(szQuery.str());
 		if (result2.size()==0)
 		{
 			sprintf(szTmp,
@@ -1632,7 +1631,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				activeidx.c_str(),
 				idx.c_str()
 				);
-			result=m_pMain->m_sql.query(szTmp);
+			result=m_sql.query(szTmp);
 		}
 	}
 	else if (cparam=="getplandevices")
@@ -1646,7 +1645,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		std::stringstream szQuery;
 
 		szQuery << "SELECT ID, DevSceneType, DeviceRowID, [Order] FROM DeviceToPlansMap WHERE (PlanID=='" << idx << "') ORDER BY [Order]";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -1665,7 +1664,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 					std::vector<std::vector<std::string> > result2;
 					std::stringstream szQuery2;
 					szQuery2 << "SELECT Name FROM DeviceStatus WHERE (ID=='" << DevSceneRowID << "')";
-					result2=m_pMain->m_sql.query(szQuery2.str());
+					result2=m_sql.query(szQuery2.str());
 					if (result2.size()>0)
 					{
 						Name=result2[0][0];
@@ -1676,7 +1675,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 					std::vector<std::vector<std::string> > result2;
 					std::stringstream szQuery2;
 					szQuery2 << "SELECT Name FROM Scenes WHERE (ID=='" << DevSceneRowID << "')";
-					result2=m_pMain->m_sql.query(szQuery2.str());
+					result2=m_sql.query(szQuery2.str());
 					if (result2.size()>0)
 					{
 						Name="[Scene] " + result2[0][0];
@@ -1702,7 +1701,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["status"]="OK";
 		root["title"]="DeletePlanDevice";
 		sprintf(szTmp,"DELETE FROM DeviceToPlansMap WHERE (ID == '%s')",idx.c_str());
-		result=m_pMain->m_sql.query(szTmp);
+		result=m_sql.query(szTmp);
 	}
 	else if (cparam=="deleteallplandevices")
 	{
@@ -1712,7 +1711,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["status"]="OK";
 		root["title"]="DeleteAllPlanDevices";
 		sprintf(szTmp,"DELETE FROM DeviceToPlansMap WHERE (PlanID == '%s')",idx.c_str());
-		result=m_pMain->m_sql.query(szTmp);
+		result=m_sql.query(szTmp);
 	}
 	else if (cparam=="changeplanorder")
 	{
@@ -1729,7 +1728,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		std::vector<std::vector<std::string> > result;
 		std::stringstream szQuery;
 		szQuery << "SELECT [Order] FROM Plans WHERE (ID=='" << idx << "')";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()<1)
 			return;
 		aOrder=result[0][0];
@@ -1741,7 +1740,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		{
 			//Get next device order
 			szQuery << "SELECT ID, [Order] FROM Plans WHERE ([Order]>'" << aOrder << "') ORDER BY [Order] ASC";
-			result=m_pMain->m_sql.query(szQuery.str());
+			result=m_sql.query(szQuery.str());
 			if (result.size()<1)
 				return;
 			oID=result[0][0];
@@ -1751,7 +1750,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		{
 			//Get previous device order
 			szQuery << "SELECT ID, [Order] FROM Plans WHERE ([Order]<'" << aOrder << "') ORDER BY [Order] DESC";
-			result=m_pMain->m_sql.query(szQuery.str());
+			result=m_sql.query(szQuery.str());
 			if (result.size()<1)
 				return;
 			oID=result[0][0];
@@ -1764,11 +1763,11 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE Plans SET [Order] = '" << oOrder << "' WHERE (ID='" << idx << "')";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE Plans SET [Order] = '" << aOrder << "' WHERE (ID='" << oID << "')";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 	}
 	else if (cparam=="changeplandeviceorder")
 	{
@@ -1788,7 +1787,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		std::vector<std::vector<std::string> > result;
 		std::stringstream szQuery;
 		szQuery << "SELECT [Order] FROM DeviceToPlansMap WHERE ((ID=='" << idx << "') AND (PlanID=='" << planid << "'))";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()<1)
 			return;
 		aOrder=result[0][0];
@@ -1800,7 +1799,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		{
 			//Get next device order
 			szQuery << "SELECT ID, [Order] FROM DeviceToPlansMap WHERE (([Order]>'" << aOrder << "') AND (PlanID=='" << planid << "')) ORDER BY [Order] ASC";
-			result=m_pMain->m_sql.query(szQuery.str());
+			result=m_sql.query(szQuery.str());
 			if (result.size()<1)
 				return;
 			oID=result[0][0];
@@ -1810,7 +1809,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		{
 			//Get previous device order
 			szQuery << "SELECT ID, [Order] FROM DeviceToPlansMap WHERE (([Order]<'" << aOrder << "') AND (PlanID=='" << planid << "')) ORDER BY [Order] DESC";
-			result=m_pMain->m_sql.query(szQuery.str());
+			result=m_sql.query(szQuery.str());
 			if (result.size()<1)
 				return;
 			oID=result[0][0];
@@ -1823,11 +1822,11 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceToPlansMap SET [Order] = '" << oOrder << "' WHERE (ID='" << idx << "')";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceToPlansMap SET [Order] = '" << aOrder << "' WHERE (ID='" << oID << "')";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 	}
 	else if (cparam=="getactualhistory")
 	{
@@ -1862,7 +1861,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 
 		std::string historyfile;
 		int nValue;
-		m_pMain->m_sql.GetPreferencesVar("ReleaseChannel", nValue);
+		m_sql.GetPreferencesVar("ReleaseChannel", nValue);
 		bool bIsBetaChannel=(nValue!=0);
 
 		std::string szHistoryURL="http://domoticz.sourceforge.net/History.txt";
@@ -1911,19 +1910,19 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		int nValue;
 		std::string sValue;
 
-		if (m_pMain->m_sql.GetPreferencesVar("Language", sValue))
+		if (m_sql.GetPreferencesVar("Language", sValue))
 		{
 			root["language"]=sValue;
 		}
-		if (m_pMain->m_sql.GetPreferencesVar("MobileType", nValue))
+		if (m_sql.GetPreferencesVar("MobileType", nValue))
 		{
 			root["MobileType"]=nValue;
 		}
 
-		root["WindScale"]=m_pMain->m_sql.m_windscale*10.0f;
-		root["WindSign"]=m_pMain->m_sql.m_windsign;
-		root["TempScale"]=m_pMain->m_sql.m_tempscale;
-		root["TempSign"]=m_pMain->m_sql.m_tempsign;
+		root["WindScale"]=m_sql.m_windscale*10.0f;
+		root["WindSign"]=m_sql.m_windsign;
+		root["TempScale"]=m_sql.m_tempscale;
+		root["TempSign"]=m_sql.m_tempsign;
 
 		int bEnableTabLight=1;
 		int bEnableTabScenes=1;
@@ -1935,7 +1934,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT TabsEnabled FROM Users WHERE (ID==" << UserID << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
+			result=m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				int TabsEnabled=atoi(result[0][0].c_str());
@@ -1948,11 +1947,11 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		}
 		else
 		{
-			m_pMain->m_sql.GetPreferencesVar("EnableTabLights", bEnableTabLight);
-			m_pMain->m_sql.GetPreferencesVar("EnableTabScenes", bEnableTabScenes);
-			m_pMain->m_sql.GetPreferencesVar("EnableTabTemp", bEnableTabTemp);
-			m_pMain->m_sql.GetPreferencesVar("EnableTabWeather", bEnableTabWeather);
-			m_pMain->m_sql.GetPreferencesVar("EnableTabUtility", bEnableTabUtility);
+			m_sql.GetPreferencesVar("EnableTabLights", bEnableTabLight);
+			m_sql.GetPreferencesVar("EnableTabScenes", bEnableTabScenes);
+			m_sql.GetPreferencesVar("EnableTabTemp", bEnableTabTemp);
+			m_sql.GetPreferencesVar("EnableTabWeather", bEnableTabWeather);
+			m_sql.GetPreferencesVar("EnableTabUtility", bEnableTabUtility);
 		}
 
 		root["result"]["EnableTabLights"]=bEnableTabLight;
@@ -1971,7 +1970,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			)
 			return;
 		//Add to queue
-		m_pMain->m_sql.SendNotificationEx(subject,body,0,"");
+		m_sql.SendNotificationEx(subject,body,0,"");
 		root["status"]="OK";
 		root["title"]="SendNotification";
 	}
@@ -1985,7 +1984,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			)
 			return;
 		//Add to queue
-		m_pMain->m_sql.AddTaskItem(_tTaskItem::EmailCameraSnapshot(1,camidx,subject));
+		m_sql.AddTaskItem(_tTaskItem::EmailCameraSnapshot(1,camidx,subject));
 		root["status"]="OK";
 		root["title"]="Email Camera Snapshot";
 	}
@@ -2008,7 +2007,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << idx << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
+			result=m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				hid=result[0][0];
@@ -2034,7 +2033,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["title"]="Update Device";
 
 		std::string devname="Unknown";
-		m_pMain->m_sql.UpdateValue(
+		m_sql.UpdateValue(
 			atoi(hid.c_str()),
 			did.c_str(),
 			(const unsigned char)atoi(dunit.c_str()),
@@ -2054,7 +2053,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		if ((idtype==pTypeThermostat)&&(idsubtype==sTypeThermSetpoint))
 		{
 			_log.Log(LOG_NORM,"Sending SetPoint to device....");
-			m_pMain->SetSetPoint(idx,(float)atof(svalue.c_str()));
+			m_mainworker.SetSetPoint(idx,(float)atof(svalue.c_str()));
 		}
 	}
 	else if (cparam=="system_shutdown")
@@ -2113,7 +2112,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		else
 		{
 			//add script to background worker
-			m_pMain->m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1,scriptname,strparm));
+			m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1,scriptname,strparm));
 		}
 		root["status"]="OK";
 		root["title"]="ExecuteScript";
@@ -2126,7 +2125,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT Type, SubType, nValue, sValue FROM DeviceStatus WHERE (ID==" << idx << ")";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::string> sd=result[0];
@@ -2134,13 +2133,13 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			int nValue=0;
 			root["status"]="OK";
 			root["title"]="GetElectraCosts";
-			m_pMain->m_sql.GetPreferencesVar("CostEnergy",nValue);
+			m_sql.GetPreferencesVar("CostEnergy",nValue);
 			root["CostEnergy"]=nValue;
-			m_pMain->m_sql.GetPreferencesVar("CostEnergyT2",nValue);
+			m_sql.GetPreferencesVar("CostEnergyT2",nValue);
 			root["CostEnergyT2"]=nValue;
-			m_pMain->m_sql.GetPreferencesVar("CostGas",nValue);
+			m_sql.GetPreferencesVar("CostGas",nValue);
 			root["CostGas"]=nValue;
-			m_pMain->m_sql.GetPreferencesVar("CostWater",nValue);
+			m_sql.GetPreferencesVar("CostWater",nValue);
 			root["CostWater"]=nValue;
 
 			unsigned char dType=atoi(sd[0].c_str());
@@ -2159,7 +2158,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 
 				float EnergyDivider=1000.0f;
 				int tValue;
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+				if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 				{
 					EnergyDivider=float(tValue);
 				}
@@ -2210,7 +2209,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		}
 		root["statuscode"]=urights;
 		int nValue=1;
-		m_pMain->m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
+		m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
 		root["5MinuteHistoryDays"]=nValue;
 
 		utsname my_uname;
@@ -2233,10 +2232,10 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		else
 		{
 			int nValue=0;
-			m_pMain->m_sql.GetPreferencesVar("UseAutoUpdate",nValue);
+			m_sql.GetPreferencesVar("UseAutoUpdate",nValue);
 			if (nValue==1)
 			{
-				m_pMain->m_sql.GetPreferencesVar("ReleaseChannel", nValue);
+				m_sql.GetPreferencesVar("ReleaseChannel", nValue);
 				bool bIsBetaChannel=(nValue!=0);
 				std::string szURL="http://domoticz.sourceforge.net/version_" + systemname + "_" + machine + ".h";
 				std::string szHistoryURL="http://domoticz.sourceforge.net/History.txt";
@@ -2288,7 +2287,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 	else if (cparam=="downloadupdate")
 	{
 		int nValue;
-		m_pMain->m_sql.GetPreferencesVar("ReleaseChannel", nValue);
+		m_sql.GetPreferencesVar("ReleaseChannel", nValue);
 		bool bIsBetaChannel=(nValue!=0);
 		std::string szURL;
 		std::string revfile;
@@ -2331,15 +2330,15 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		std::string downloadURL="http://domoticz.sourceforge.net/domoticz_" + systemname + "_" + machine + ".tgz";
 		if (bIsBetaChannel)
 			downloadURL="http://domoticz.sourceforge.net/beta/domoticz_" + systemname + "_" + machine + ".tgz";
-		m_pMain->GetDomoticzUpdate(downloadURL);
+		m_mainworker.GetDomoticzUpdate(downloadURL);
 	}
 	else if (cparam=="downloadready")
 	{
-		if (!m_pMain->m_bHaveDownloadedDomoticzUpdate)
+		if (!m_mainworker.m_bHaveDownloadedDomoticzUpdate)
 			return;
 		root["status"]="OK";
 		root["title"]="DownloadReady";
-		root["downloadok"]=(m_pMain->m_bHaveDownloadedDomoticzUpdateSuccessFull)?true:false;
+		root["downloadok"]=(m_mainworker.m_bHaveDownloadedDomoticzUpdateSuccessFull)?true:false;
 	}
 	else if (cparam=="deletedatapoint")
 	{
@@ -2352,7 +2351,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			return;
 		root["status"]="OK";
 		root["title"]="deletedatapoint";
-		m_pMain->m_sql.DeleteDataPoint(idx.c_str(),Date);
+		m_sql.DeleteDataPoint(idx.c_str(),Date);
 	}
 	else if (cparam=="deleteallsubdevices")
 	{
@@ -2362,7 +2361,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["status"]="OK";
 		root["title"]="DeleteAllSubDevices";
 		sprintf(szTmp,"DELETE FROM LightSubDevices WHERE (ParentID == %s)",idx.c_str());
-		result=m_pMain->m_sql.query(szTmp);
+		result=m_sql.query(szTmp);
 	}
 	else if (cparam=="deletesubdevice")
 	{
@@ -2372,7 +2371,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["status"]="OK";
 		root["title"]="DeleteSubDevice";
 		sprintf(szTmp,"DELETE FROM LightSubDevices WHERE (ID == %s)",idx.c_str());
-		result=m_pMain->m_sql.query(szTmp);
+		result=m_sql.query(szTmp);
 	}
 	else if (cparam=="addsubdevice")
 	{
@@ -2387,7 +2386,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << subidx << "') AND (ParentID =='" << idx << "')";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()==0)
 		{
 			root["status"]="OK";
@@ -2398,7 +2397,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				subidx.c_str(),
 				idx.c_str()
 				);
-			result=m_pMain->m_sql.query(szTmp);
+			result=m_sql.query(szTmp);
 		}
 	}
 	else if (cparam=="addscenedevice")
@@ -2420,13 +2419,13 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << devidx << ")";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM Scenes WHERE (ID==" << idx << ")";
-			result2=m_pMain->m_sql.query(szQuery.str());
+			result2=m_sql.query(szQuery.str());
 			if (result2.size()>0)
 			{
 				if (
@@ -2446,7 +2445,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT ID FROM SceneDevices WHERE (DeviceRowID=='" << devidx << "') AND (SceneRowID =='" << idx << "')";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()==0)
 		{
 			root["status"]="OK";
@@ -2473,7 +2472,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 					hue
 					);
 			}
-			result=m_pMain->m_sql.query(szTmp);
+			result=m_sql.query(szTmp);
 		}
 	}
 	else if (cparam=="updatescenedevice")
@@ -2496,7 +2495,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE SceneDevices SET Cmd=" << command << ", Level=" << level << ", Hue=" << hue << " WHERE (ID == " << idx << ")";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 	}
 	else if (cparam=="deletescenedevice")
 	{
@@ -2506,9 +2505,9 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["status"]="OK";
 		root["title"]="DeleteSceneDevice";
 		sprintf(szTmp,"DELETE FROM SceneDevices WHERE (ID == %s)",idx.c_str());
-		result=m_pMain->m_sql.query(szTmp);
+		result=m_sql.query(szTmp);
 		sprintf(szTmp,"DELETE FROM CamerasActiveDevices WHERE (DevSceneType==1) AND (DevSceneRowID == %s)",idx.c_str());
-		result=m_pMain->m_sql.query(szTmp);
+		result=m_sql.query(szTmp);
 
 	}
 	else if (cparam=="getsubdevices")
@@ -2522,7 +2521,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		std::vector<std::vector<std::string> > result;
 		std::stringstream szQuery;
 		szQuery << "SELECT a.ID, b.Name FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='" << idx << "') AND (b.ID == a.DeviceRowID)";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -2544,7 +2543,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		std::vector<std::vector<std::string> > result;
 		std::stringstream szQuery;
 		szQuery << "SELECT t.ID, t.Active, d.[Name], t.DeviceRowID, t.Time, t.Type, t.Cmd, t.Level, t.Days FROM Timers as t, DeviceStatus as d WHERE (d.ID == t.DeviceRowID) ORDER BY d.[Name], t.Time";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -2583,7 +2582,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		std::vector<std::vector<std::string> > result;
 		std::stringstream szQuery;
 		szQuery << "SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Cmd, a.Level, b.ID, a.[Order], a.Hue FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='" << idx << "') AND (b.ID == a.DeviceRowID) ORDER BY a.[Order]";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -2639,7 +2638,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		std::vector<std::vector<std::string> > result;
 		std::stringstream szQuery;
 		szQuery << "SELECT SceneRowID, [Order] FROM SceneDevices WHERE (ID=='" << idx << "')";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()<1)
 			return;
 		aScene=result[0][0];
@@ -2652,7 +2651,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		{
 			//Get next device order
 			szQuery << "SELECT ID, [Order] FROM SceneDevices WHERE (SceneRowID=='" << aScene << "' AND [Order]>'" << aOrder << "') ORDER BY [Order] ASC";
-			result=m_pMain->m_sql.query(szQuery.str());
+			result=m_sql.query(szQuery.str());
 			if (result.size()<1)
 				return;
 			oID=result[0][0];
@@ -2662,7 +2661,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		{
 			//Get previous device order
 			szQuery << "SELECT ID, [Order] FROM SceneDevices WHERE (SceneRowID=='" << aScene << "' AND [Order]<'" << aOrder << "') ORDER BY [Order] DESC";
-			result=m_pMain->m_sql.query(szQuery.str());
+			result=m_sql.query(szQuery.str());
 			if (result.size()<1)
 				return;
 			oID=result[0][0];
@@ -2675,11 +2674,11 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE SceneDevices SET [Order] = '" << oOrder << "' WHERE (ID='" << idx << "')";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE SceneDevices SET [Order] = '" << aOrder << "' WHERE (ID='" << oID << "')";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 	}
 	else if (cparam=="deleteallscenedevices")
 	{
@@ -2689,7 +2688,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["status"]="OK";
 		root["title"]="DeleteAllSceneDevices";
 		sprintf(szTmp,"DELETE FROM SceneDevices WHERE (SceneRowID == %s)",idx.c_str());
-		result=m_pMain->m_sql.query(szTmp);
+		result=m_sql.query(szTmp);
 	}
 	else if (cparam=="getmanualhardware")
 	{
@@ -2697,7 +2696,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["status"]="OK";
 		root["title"]="GetHardware";
 		sprintf(szTmp,"SELECT ID, Name, Type FROM Hardware ORDER BY ID ASC");
-		result=m_pMain->m_sql.query(szTmp);
+		result=m_sql.query(szTmp);
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -2760,7 +2759,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		std::vector<std::vector<std::string> > result;
 		std::stringstream szQuery;
 		szQuery << "SELECT ID, Name, Type, SubType, Used, SwitchType FROM DeviceStatus ORDER BY Name";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -2803,7 +2802,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 						szQuerySD.clear();
 						szQuerySD.str("");
 						szQuerySD << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << sd[0] << "')";
-						resultSD=m_pMain->m_sql.query(szQuerySD.str());
+						resultSD=m_sql.query(szQuerySD.str());
 						if (resultSD.size()>0)
 							bdoAdd=true;
 					}
@@ -2832,7 +2831,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 
 		//First List/Switch Devices
 		szQuery << "SELECT ID, Name, Type, Used FROM DeviceStatus ORDER BY Name";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -2878,7 +2877,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT ID, Name FROM Scenes ORDER BY Name";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -2907,7 +2906,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		std::stringstream szQuery;
 		//First List/Switch Devices
 		szQuery << "SELECT ID, DevSceneType, DevSceneRowID, DevSceneWhen, DevSceneDelay FROM CamerasActiveDevices WHERE (CameraRowID=='" << idx << "') ORDER BY ID";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -2928,7 +2927,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 					std::vector<std::vector<std::string> > result2;
 					std::stringstream szQuery2;
 					szQuery2 << "SELECT Name FROM DeviceStatus WHERE (ID=='" << DevSceneRowID << "')";
-					result2=m_pMain->m_sql.query(szQuery2.str());
+					result2=m_sql.query(szQuery2.str());
 					if (result2.size()>0)
 					{
 						Name="[Light/Switches] " + result2[0][0];
@@ -2939,7 +2938,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 					std::vector<std::vector<std::string> > result2;
 					std::stringstream szQuery2;
 					szQuery2 << "SELECT Name FROM Scenes WHERE (ID=='" << DevSceneRowID << "')";
-					result2=m_pMain->m_sql.query(szQuery2.str());
+					result2=m_sql.query(szQuery2.str());
 					if (result2.size()>0)
 					{
 						Name="[Scene] " + result2[0][0];
@@ -2987,7 +2986,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery << "SELECT ID FROM CamerasActiveDevices WHERE (CameraRowID=='" 
 			<< idx << "') AND (DevSceneType==" 
 			<< activetype << ") AND (DevSceneRowID=='" << activeidx << "')  AND (DevSceneWhen==" << sactivewhen << ")";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()==0)
 		{
 			root["status"]="OK";
@@ -3001,8 +3000,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				activewhen,
 				activedelay
 				);
-			result=m_pMain->m_sql.query(szTmp);
-			m_pMain->m_cameras.ReloadCameraActiveDevices(idx);
+			result=m_sql.query(szTmp);
+			m_mainworker.m_cameras.ReloadCameraActiveDevices(idx);
 		}
 	}
 	else if (cparam=="deleteamactivedevice")
@@ -3013,7 +3012,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["status"]="OK";
 		root["title"]="DeleteCameraActiveDevice";
 		sprintf(szTmp,"DELETE FROM CamerasActiveDevices WHERE (ID == '%s')",idx.c_str());
-		result=m_pMain->m_sql.query(szTmp);
+		result=m_sql.query(szTmp);
 	}
 	else if (cparam=="deleteallactivecamdevices")
 	{
@@ -3023,7 +3022,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["status"]="OK";
 		root["title"]="DeleteAllCameraActiveDevices";
 		sprintf(szTmp,"DELETE FROM CamerasActiveDevices WHERE (CameraRowID == '%s')",idx.c_str());
-		result=m_pMain->m_sql.query(szTmp);
+		result=m_sql.query(szTmp);
 	}
 	else if (cparam=="testpushover")
 	{
@@ -3120,7 +3119,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				)
 				return;
 			sunitcode=sgroupcode;//Button A or B
-			CDomoticzHardwareBase *pBaseHardware=(CDomoticzHardwareBase*)m_pMain->GetHardware(atoi(hwdid.c_str()));
+			CDomoticzHardwareBase *pBaseHardware=(CDomoticzHardwareBase*)m_mainworker.GetHardware(atoi(hwdid.c_str()));
 			if (pBaseHardware==NULL)
 				return;
 			if ((pBaseHardware->HwdType!=HTYPE_EnOceanESP2)&&(pBaseHardware->HwdType!=HTYPE_EnOceanESP3))
@@ -3154,7 +3153,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				root["message"]="No GPIO number given";
 				return;
 			}
-			CGpio *pGpio=(CGpio *)m_pMain->GetHardware(atoi(hwdid.c_str()));
+			CGpio *pGpio=(CGpio *)m_mainworker.GetHardware(atoi(hwdid.c_str()));
 			if (pGpio==NULL) {
 				root["status"]="ERROR";
 				root["message"]="Could not retrieve GPIO hardware pointer";
@@ -3342,7 +3341,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			if (switchtype == STYPE_Dimmer)
 				level=5;
 		}
-		m_pMain->SwitchLightInt(sd,switchcmd,level,-1,true);
+		m_mainworker.SwitchLightInt(sd,switchcmd,level,-1,true);
 	}
 	else if (cparam=="addswitch")
 	{
@@ -3381,7 +3380,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				)
 				return;
 			sunitcode=sgroupcode;//Button A/B
-			CDomoticzHardwareBase *pBaseHardware=(CDomoticzHardwareBase*)m_pMain->GetHardware(atoi(hwdid.c_str()));
+			CDomoticzHardwareBase *pBaseHardware=(CDomoticzHardwareBase*)m_mainworker.GetHardware(atoi(hwdid.c_str()));
 			if (pBaseHardware==NULL)
 				return;
 			if ((pBaseHardware->HwdType!=HTYPE_EnOceanESP2)&&(pBaseHardware->HwdType!=HTYPE_EnOceanESP3))
@@ -3423,7 +3422,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			if (sunitcode=="") {
 				return;
 			}
-			CGpio *pGpio=(CGpio *)m_pMain->GetHardware(atoi(hwdid.c_str()));
+			CGpio *pGpio=(CGpio *)m_mainworker.GetHardware(atoi(hwdid.c_str()));
 			if (pGpio==NULL) {
 				return;
 			}
@@ -3576,19 +3575,19 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		std::vector<std::vector<std::string> > result;
 		std::stringstream szQuery;
 		szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << hwdid << " AND DeviceID=='" << devid << "' AND Unit==" << sunitcode << " AND Type==" << dtype << " AND SubType==" << subtype << ")";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			root["message"]="Switch already exists!";
 			return;
 		}
 		std::string devname;
-		m_pMain->m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(),atoi(sunitcode.c_str()),dtype,subtype,0,-1,0,devname);
+		m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(),atoi(sunitcode.c_str()),dtype,subtype,0,-1,0,devname);
 		//set name and switchtype
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << hwdid << " AND DeviceID=='" << devid << "' AND Unit==" << sunitcode << " AND Type==" << dtype << " AND SubType==" << subtype << ")";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()<1)
 		{
 			root["message"]="Error finding switch in Database!?!?";
@@ -3599,7 +3598,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Used=1, Name='" << name << "', SwitchType=" << switchtype << " WHERE (ID == " << ID << ")";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 
 		if (maindeviceidx!="")
 		{
@@ -3610,7 +3609,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << ID << "') AND (ParentID =='" << maindeviceidx << "')";
-				result=m_pMain->m_sql.query(szQuery.str());
+				result=m_sql.query(szQuery.str());
 				if (result.size()==0)
 				{
 					//no it is not, add it
@@ -3619,7 +3618,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 						ID.c_str(),
 						maindeviceidx.c_str()
 						);
-					result=m_pMain->m_sql.query(szTmp);
+					result=m_sql.query(szTmp);
 				}
 			}
 		}
@@ -3636,7 +3635,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT Type, SubType, SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()<1)
 			return;
 
@@ -3987,7 +3986,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			sprintf(szTmp,"%s;%c;%s",ttype.c_str(),twhen,svalue.c_str());
 		}
 		int priority=atoi(spriority.c_str());
-		bool bOK=m_pMain->m_sql.AddNotification(idx,szTmp,priority);
+		bool bOK=m_sql.AddNotification(idx,szTmp,priority);
 		if (bOK) {
 			root["status"]="OK";
 			root["title"]="AddNotification";
@@ -4010,7 +4009,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["title"]="UpdateNotification";
 
 		//delete old record
-		m_pMain->m_sql.RemoveNotification(idx);
+		m_sql.RemoveNotification(idx);
 
 		_eNotificationTypes ntype=(_eNotificationTypes)atoi(stype.c_str());
 		std::string ttype=Notification_Type_Desc(ntype,1);
@@ -4028,7 +4027,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			sprintf(szTmp,"%s;%c;%s",ttype.c_str(),twhen,svalue.c_str());
 		}
 		int priority=atoi(spriority.c_str());
-		m_pMain->m_sql.AddNotification(devidx,szTmp,priority);
+		m_sql.AddNotification(devidx,szTmp,priority);
 	}
 	else if (cparam=="deletenotification")
 	{
@@ -4039,7 +4038,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["status"]="OK";
 		root["title"]="DeleteNotification";
 
-		m_pMain->m_sql.RemoveNotification(idx);
+		m_sql.RemoveNotification(idx);
 	}
 	else if (cparam=="switchdeviceorder")
 	{
@@ -4057,7 +4056,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT [Order] FROM DeviceStatus WHERE (ID == " << idx1 << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
+			result=m_sql.query(szQuery.str());
 			if (result.size()<1)
 				return;
 			Order1=result[0][0];
@@ -4066,7 +4065,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT [Order] FROM DeviceStatus WHERE (ID == " << idx2 << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
+			result=m_sql.query(szQuery.str());
 			if (result.size()<1)
 				return;
 			Order2=result[0][0];
@@ -4084,12 +4083,12 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			{
 				szQuery << "UPDATE DeviceStatus SET [Order] = [Order]-1 WHERE ([Order] > " << Order2 << " AND [Order] <= " << Order1 << ")";
 			}
-			m_pMain->m_sql.query(szQuery.str());
+			m_sql.query(szQuery.str());
 
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "UPDATE DeviceStatus SET [Order] = " << Order1 << " WHERE (ID == " << idx2 << ")";
-			m_pMain->m_sql.query(szQuery.str());
+			m_sql.query(szQuery.str());
 		}
 		else
 		{
@@ -4098,7 +4097,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT [Order] FROM DeviceToPlansMap WHERE (DeviceRowID == " << idx1 << ") AND (PlanID=="<<roomid << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
+			result=m_sql.query(szQuery.str());
 			if (result.size()<1)
 				return;
 			Order1=result[0][0];
@@ -4107,7 +4106,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT [Order] FROM DeviceToPlansMap WHERE (DeviceRowID == " << idx2 << ") AND (PlanID=="<<roomid << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
+			result=m_sql.query(szQuery.str());
 			if (result.size()<1)
 				return;
 			Order2=result[0][0];
@@ -4125,12 +4124,12 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			{
 				szQuery << "UPDATE DeviceToPlansMap SET [Order] = [Order]-1 WHERE ([Order] > " << Order2 << " AND [Order] <= " << Order1 << ") AND (PlanID=="<<roomid << ")";
 			}
-			m_pMain->m_sql.query(szQuery.str());
+			m_sql.query(szQuery.str());
 
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "UPDATE DeviceToPlansMap SET [Order] = " << Order1 << " WHERE (DeviceRowID == " << idx2 << ") AND (PlanID=="<<roomid << ")";
-			m_pMain->m_sql.query(szQuery.str());
+			m_sql.query(szQuery.str());
 		}
 	}
 	else if (cparam=="switchsceneorder")
@@ -4145,7 +4144,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT [Order] FROM Scenes WHERE (ID == " << idx1 << ")";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()<1)
 			return;
 		Order1=result[0][0];
@@ -4154,7 +4153,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT [Order] FROM Scenes WHERE (ID == " << idx2 << ")";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()<1)
 			return;
 		Order2=result[0][0];
@@ -4172,12 +4171,12 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		{
 			szQuery << "UPDATE Scenes SET [Order] = [Order]-1 WHERE ([Order] > " << Order2 << " AND [Order] <= " << Order1 << ")";
 		}
-		m_pMain->m_sql.query(szQuery.str());
+		m_sql.query(szQuery.str());
 
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE Scenes SET [Order] = " << Order1 << " WHERE (ID == " << idx2 << ")";
-		m_pMain->m_sql.query(szQuery.str());
+		m_sql.query(szQuery.str());
 	}
 	else if (cparam=="clearnotifications")
 	{
@@ -4188,7 +4187,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["status"]="OK";
 		root["title"]="ClearNotification";
 
-		m_pMain->m_sql.RemoveDeviceNotifications(idx);
+		m_sql.RemoveDeviceNotifications(idx);
 	}
 	else if (cparam=="addcamera")
 	{
@@ -4231,8 +4230,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 					videourl.c_str(),
 					imageurl.c_str()
 					);
-				result=m_pMain->m_sql.query(szTmp);
-				m_pMain->m_cameras.ReloadCameras();
+				result=m_sql.query(szTmp);
+				m_mainworker.m_cameras.ReloadCameras();
 			}
 		}
 	}
@@ -4284,8 +4283,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 					imageurl.c_str(),
 					idx.c_str()
 					);
-				result=m_pMain->m_sql.query(szTmp);
-				m_pMain->m_cameras.ReloadCameras();
+				result=m_sql.query(szTmp);
+				m_mainworker.m_cameras.ReloadCameras();
 			}
 		}
 	}
@@ -4297,8 +4296,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["status"]="OK";
 		root["title"]="DeleteCamera";
 
-		m_pMain->m_sql.DeleteCamera(idx);
-		m_pMain->m_cameras.ReloadCameras();
+		m_sql.DeleteCamera(idx);
+		m_mainworker.m_cameras.ReloadCameras();
 	}
 	else if (cparam=="adduser")
 	{
@@ -4349,7 +4348,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			(sRemoteSharing=="true")?1:0,
 			atoi(sTabsEnabled.c_str())
 			);
-		result=m_pMain->m_sql.query(szTmp);
+		result=m_sql.query(szTmp);
 		LoadUsers();
 	}
 	else if (cparam=="updateuser")
@@ -4407,7 +4406,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			atoi(sTabsEnabled.c_str()),
 			idx.c_str()
 			);
-		result=m_pMain->m_sql.query(szTmp);
+		result=m_sql.query(szTmp);
 		LoadUsers();
 	}
 	else if (cparam=="deleteuser")
@@ -4431,12 +4430,12 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["status"]="OK";
 		root["title"]="DeleteUser";
 		sprintf(szTmp,"DELETE FROM Users WHERE (ID == %s)",idx.c_str());
-		result=m_pMain->m_sql.query(szTmp);
+		result=m_sql.query(szTmp);
 
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "DELETE FROM SharedDevices WHERE (SharedUserID == " << idx << ")";
-		result=m_pMain->m_sql.query(szQuery.str()); //-V519
+		result=m_sql.query(szQuery.str()); //-V519
 
 		LoadUsers();
 	}
@@ -4485,8 +4484,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			hue,
 			days
 			);
-		result=m_pMain->m_sql.query(szTmp);
-		m_pMain->m_scheduler.ReloadSchedules();
+		result=m_sql.query(szTmp);
+		m_mainworker.m_scheduler.ReloadSchedules();
 	}
 	else if (cparam=="addscenetimer")
 	{
@@ -4530,8 +4529,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			level,
 			days
 			);
-		result=m_pMain->m_sql.query(szTmp);
-		m_pMain->m_scheduler.ReloadSchedules();
+		result=m_sql.query(szTmp);
+		m_mainworker.m_scheduler.ReloadSchedules();
 	}
 	else if (cparam=="updatetimer")
 	{
@@ -4578,8 +4577,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			days,
 			idx.c_str()
 			);
-		result=m_pMain->m_sql.query(szTmp);
-		m_pMain->m_scheduler.ReloadSchedules();
+		result=m_sql.query(szTmp);
+		m_mainworker.m_scheduler.ReloadSchedules();
 	}
 	else if (cparam=="updatescenetimer")
 	{
@@ -4623,8 +4622,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			days,
 			idx.c_str()
 			);
-		result=m_pMain->m_sql.query(szTmp);
-		m_pMain->m_scheduler.ReloadSchedules();
+		result=m_sql.query(szTmp);
+		m_mainworker.m_scheduler.ReloadSchedules();
 	}
 	else if (cparam=="deletetimer")
 	{
@@ -4637,8 +4636,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			"DELETE FROM Timers WHERE (ID == %s)",
 			idx.c_str()
 			);
-		result=m_pMain->m_sql.query(szTmp);
-		m_pMain->m_scheduler.ReloadSchedules();
+		result=m_sql.query(szTmp);
+		m_mainworker.m_scheduler.ReloadSchedules();
 	}
 	else if (cparam=="deletescenetimer")
 	{
@@ -4651,8 +4650,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			"DELETE FROM SceneTimers WHERE (ID == %s)",
 			idx.c_str()
 			);
-		result=m_pMain->m_sql.query(szTmp);
-		m_pMain->m_scheduler.ReloadSchedules();
+		result=m_sql.query(szTmp);
+		m_mainworker.m_scheduler.ReloadSchedules();
 	}
 	else if (cparam=="clearlightlog")
 	{
@@ -4663,7 +4662,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT Type, SubType FROM DeviceStatus WHERE (ID == " << idx << ")";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()<1)
 			return;
 
@@ -4694,7 +4693,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "DELETE FROM LightingLog WHERE (DeviceRowID==" << idx << ")";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 	}
 	else if (cparam=="cleartimers")
 	{
@@ -4707,8 +4706,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			"DELETE FROM Timers WHERE (DeviceRowID == %s)",
 			idx.c_str()
 			);
-		result=m_pMain->m_sql.query(szTmp);
-		m_pMain->m_scheduler.ReloadSchedules();
+		result=m_sql.query(szTmp);
+		m_mainworker.m_scheduler.ReloadSchedules();
 	}
 	else if (cparam=="clearscenetimers")
 	{
@@ -4721,8 +4720,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			"DELETE FROM SceneTimers WHERE (SceneRowID == %s)",
 			idx.c_str()
 			);
-		result=m_pMain->m_sql.query(szTmp);
-		m_pMain->m_scheduler.ReloadSchedules();
+		result=m_sql.query(szTmp);
+		m_mainworker.m_scheduler.ReloadSchedules();
 	}
 	else if (cparam=="setscenecode")
 	{
@@ -4741,7 +4740,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << devid << ")";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			sprintf(szTmp,
@@ -4754,12 +4753,12 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				atoi(cmnd.c_str()),
 				idx.c_str()
 				);
-			result=m_pMain->m_sql.query(szTmp);
+			result=m_sql.query(szTmp);
 			//Sanity Check, remove all SceneDevice that has this code
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "DELETE FROM SceneDevices WHERE (SceneRowID==" << idx << " AND DeviceRowID==" << devid << ")";
-			result=m_pMain->m_sql.query(szQuery.str()); //-V519
+			result=m_sql.query(szQuery.str()); //-V519
 		}
 	}
 	else if (cparam=="removescenecode")
@@ -4778,16 +4777,16 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			0,
 			idx.c_str()
 			);
-		result=m_pMain->m_sql.query(szTmp);
+		result=m_sql.query(szTmp);
 	}
 	else if (cparam=="learnsw")
 	{
-		m_pMain->m_sql.m_LastSwitchID="";
+		m_sql.m_LastSwitchID="";
 		bool bReceivedSwitch=false;
 		unsigned char cntr=0;
 		while ((!bReceivedSwitch)&&(cntr<50))	//wait for max. 5 seconds
 		{
-			if (m_pMain->m_sql.m_LastSwitchID!="")
+			if (m_sql.m_LastSwitchID!="")
 			{
 				bReceivedSwitch=true;
 				break;
@@ -4804,14 +4803,14 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			//check if used
 			szQuery.clear();
 			szQuery.str("");
-			szQuery << "SELECT Name, Used, nValue FROM DeviceStatus WHERE (ID==" << m_pMain->m_sql.m_LastSwitchRowID << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
+			szQuery << "SELECT Name, Used, nValue FROM DeviceStatus WHERE (ID==" << m_sql.m_LastSwitchRowID << ")";
+			result=m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				root["status"]="OK";
 				root["title"]="LearnSW";
-				root["ID"]=m_pMain->m_sql.m_LastSwitchID;
-				root["idx"]=m_pMain->m_sql.m_LastSwitchRowID;
+				root["ID"]=m_sql.m_LastSwitchID;
+				root["idx"]=m_sql.m_LastSwitchRowID;
 				root["Name"]=result[0][0];
 				root["Used"]=atoi(result[0][1].c_str());
 				root["Cmd"]=atoi(result[0][2].c_str());
@@ -4828,7 +4827,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Favorite=" << isfavorite << " WHERE (ID == " << idx << ")";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			root["status"]="OK";
@@ -4845,7 +4844,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE Scenes SET Favorite=" << isfavorite << " WHERE (ID == " << idx << ")";
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			root["status"]="OK";
@@ -4891,7 +4890,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "UPDATE DeviceStatus SET nValue=" << nValue << " WHERE (ID == " << idx << ")";
-			result=m_pMain->m_sql.query(szQuery.str());
+			result=m_sql.query(szQuery.str());
 			if (result.size()>0) {
 				root["status"]="OK";
 				root["title"]="SwitchLight";
@@ -4914,7 +4913,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		passcode=base64_encode((const unsigned char*)passcode.c_str(),passcode.size());
 		std::string rpassword;
 		int nValue=1;
-		m_pMain->m_sql.GetPreferencesVar("ProtectionPassword",nValue,rpassword);
+		m_sql.GetPreferencesVar("ProtectionPassword",nValue,rpassword);
 		if (passcode==rpassword)
 		{
 			root["title"]="VerifyPasscode";
@@ -4948,7 +4947,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			passcode=base64_encode((const unsigned char*)passcode.c_str(),passcode.size());
 			std::string rpassword;
 			int nValue=1;
-			m_pMain->m_sql.GetPreferencesVar("ProtectionPassword",nValue,rpassword);
+			m_sql.GetPreferencesVar("ProtectionPassword",nValue,rpassword);
 			if (passcode!=rpassword)
 			{
 				root["title"]="SwitchLight";
@@ -4958,7 +4957,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			}
 		}
 
-		if (m_pMain->SwitchLight(idx,switchcmd,level,"-1")==true)
+		if (m_mainworker.SwitchLight(idx,switchcmd,level,"-1")==true)
 		{
 			root["status"]="OK";
 			root["title"]="SwitchLight";
@@ -4989,7 +4988,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			passcode=base64_encode((const unsigned char*)passcode.c_str(),passcode.size());
 			std::string rpassword;
 			int nValue=1;
-			m_pMain->m_sql.GetPreferencesVar("ProtectionPassword",nValue,rpassword);
+			m_sql.GetPreferencesVar("ProtectionPassword",nValue,rpassword);
 			if (passcode!=rpassword)
 			{
 				root["title"]="SwitchScene";
@@ -4999,7 +4998,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			}
 		}
 
-		if (m_pMain->SwitchScene(idx,switchcmd)==true)
+		if (m_mainworker.SwitchScene(idx,switchcmd)==true)
 		{
 			root["status"]="OK";
 			root["title"]="SwitchScene";
@@ -5008,7 +5007,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 	else if (cparam =="getSunRiseSet") {
 		int nValue=0;
 		std::string sValue;
-		if (m_pMain->m_sql.GetTempVar("SunRiseSet",nValue,sValue))
+		if (m_sql.GetTempVar("SunRiseSet",nValue,sValue))
 		{
 			std::vector<std::string> strarray;
 			StringSplit(sValue, ";", strarray);
@@ -5045,7 +5044,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["status"]="OK";
 		root["title"]="GetSecStatus";
 		int secstatus=0;
-		m_pMain->m_sql.GetPreferencesVar("SecStatus", secstatus);
+		m_sql.GetPreferencesVar("SecStatus", secstatus);
 		root["secstatus"]=secstatus;
 	}
 	else if (cparam=="setsecstatus")
@@ -5061,7 +5060,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		seccode=base64_encode((const unsigned char*)seccode.c_str(),seccode.size());
 		std::string rpassword;
 		int nValue=1;
-		m_pMain->m_sql.GetPreferencesVar("SecPassword",nValue,rpassword);
+		m_sql.GetPreferencesVar("SecPassword",nValue,rpassword);
 		if (seccode!=rpassword)
 		{
 			root["status"]="ERROR";
@@ -5070,7 +5069,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		}
 		root["status"]="OK";
 		int iSecStatus=atoi(ssecstatus.c_str());
-		m_pMain->UpdateDomoticzSecurityStatus(iSecStatus);
+		m_mainworker.UpdateDomoticzSecurityStatus(iSecStatus);
 	}
 	else if (cparam=="setcolbrightnessvalue")
 	{
@@ -5096,14 +5095,14 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			dval=(255.0/360.0)*atof(hue.c_str());
 			int ival;
 			ival=round(dval);
-			m_pMain->SwitchLight(ID,"Set Color",ival,-1);
+			m_mainworker.SwitchLight(ID,"Set Color",ival,-1);
 		}
 		else
 		{
-			m_pMain->SwitchLight(ID,"Set White",0,-1);
+			m_mainworker.SwitchLight(ID,"Set White",0,-1);
 		}
 		sleep_milliseconds(100);
-		m_pMain->SwitchLight(ID,"Set Brightness",(unsigned char)atoi(brightness.c_str()),-1);
+		m_mainworker.SwitchLight(ID,"Set Brightness",(unsigned char)atoi(brightness.c_str()),-1);
 	}
 }
 
@@ -5149,7 +5148,7 @@ char * CWebServer::DisplayDataPushDevicesCombo()
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT ID,Name FROM DeviceStatus WHERE (Used=='1')";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	
 	if (result.size()>0)
 	{
@@ -5174,7 +5173,7 @@ char * CWebServer::DisplayDataPushOnOffDevicesCombo()
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT ID,Name,Type,SubType FROM DeviceStatus WHERE (Used=='1')";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	
 	if (result.size()>0)
 	{
@@ -5244,7 +5243,7 @@ char * CWebServer::DisplayHardwareCombo()
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
 	szQuery << "SELECT ID, Name, Type FROM Hardware ORDER BY ID ASC";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -5385,7 +5384,7 @@ char * CWebServer::DisplayDevicesList()
 	char szTmp[300];
 
 	std::vector<std::vector<std::string> > result;
-	result=m_pMain->m_sql.query("SELECT ID, Name FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
+	result=m_sql.query("SELECT ID, Name FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -5405,9 +5404,9 @@ void CWebServer::LoadUsers()
 	ClearUserPasswords();
 	std::string WebUserName,WebPassword;
 	int nValue=0;
-	if (m_pMain->m_sql.GetPreferencesVar("WebUserName",nValue,WebUserName))
+	if (m_sql.GetPreferencesVar("WebUserName",nValue,WebUserName))
 	{
-		if (m_pMain->m_sql.GetPreferencesVar("WebPassword",nValue,WebPassword))
+		if (m_sql.GetPreferencesVar("WebPassword",nValue,WebPassword))
 		{
 			if ((WebUserName!="")&&(WebPassword!="")) 
 			{
@@ -5416,7 +5415,7 @@ void CWebServer::LoadUsers()
 				AddUser(10000,WebUserName, WebPassword, URIGHTS_ADMIN);
 
 				std::vector<std::vector<std::string> > result;
-				result=m_pMain->m_sql.query("SELECT ID, Active, Username, Password, Rights FROM Users");
+				result=m_sql.query("SELECT ID, Active, Username, Password, Rights FROM Users");
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -5445,7 +5444,7 @@ void CWebServer::LoadUsers()
 			}
 		}
 	}
-	m_pMain->LoadSharedUsers();
+	m_mainworker.LoadSharedUsers();
 }
 
 void CWebServer::AddUser(const unsigned long ID, const std::string &username, const std::string &password, const int userrights)
@@ -5503,51 +5502,51 @@ char * CWebServer::PostSettings()
 	if ( (Latitude!="")&&(Longitude!="") )
 	{
 		std::string LatLong=Latitude+";"+Longitude;
-		m_pMain->m_sql.UpdatePreferencesVar("Location",LatLong.c_str());
-		m_pMain->GetSunSettings();
+		m_sql.UpdatePreferencesVar("Location",LatLong.c_str());
+		m_mainworker.GetSunSettings();
 	}
 	std::string ProwlAPI=m_pWebEm->FindValue("ProwlAPIKey");
-	m_pMain->m_sql.UpdatePreferencesVar("ProwlAPI",ProwlAPI.c_str());
+	m_sql.UpdatePreferencesVar("ProwlAPI",ProwlAPI.c_str());
 	std::string NMAAPI=m_pWebEm->FindValue("NMAAPIKey");
-	m_pMain->m_sql.UpdatePreferencesVar("NMAAPI",NMAAPI.c_str());
+	m_sql.UpdatePreferencesVar("NMAAPI",NMAAPI.c_str());
 	std::string PushoverAPI=m_pWebEm->FindValue("PushoverAPIKey");
-	m_pMain->m_sql.UpdatePreferencesVar("PushoverAPI",PushoverAPI.c_str());
+	m_sql.UpdatePreferencesVar("PushoverAPI",PushoverAPI.c_str());
 	std::string PushoverUser=m_pWebEm->FindValue("PushoverUserID");
-	m_pMain->m_sql.UpdatePreferencesVar("PushoverUser",PushoverUser.c_str());
+	m_sql.UpdatePreferencesVar("PushoverUser",PushoverUser.c_str());
 	std::string DashboardType=m_pWebEm->FindValue("DashboardType");
-	m_pMain->m_sql.UpdatePreferencesVar("DashboardType",atoi(DashboardType.c_str()));
+	m_sql.UpdatePreferencesVar("DashboardType",atoi(DashboardType.c_str()));
 	std::string MobileType=m_pWebEm->FindValue("MobileType");
-	m_pMain->m_sql.UpdatePreferencesVar("MobileType",atoi(MobileType.c_str()));
+	m_sql.UpdatePreferencesVar("MobileType",atoi(MobileType.c_str()));
 
 	int nUnit=atoi(m_pWebEm->FindValue("WindUnit").c_str());
-	m_pMain->m_sql.UpdatePreferencesVar("WindUnit",nUnit);
-	m_pMain->m_sql.m_windunit=(_eWindUnit)nUnit;
+	m_sql.UpdatePreferencesVar("WindUnit",nUnit);
+	m_sql.m_windunit=(_eWindUnit)nUnit;
 
 	nUnit=atoi(m_pWebEm->FindValue("TempUnit").c_str());
-	m_pMain->m_sql.UpdatePreferencesVar("TempUnit",nUnit);
-	m_pMain->m_sql.m_tempunit=(_eTempUnit)nUnit;
+	m_sql.UpdatePreferencesVar("TempUnit",nUnit);
+	m_sql.m_tempunit=(_eTempUnit)nUnit;
 
-	m_pMain->m_sql.SetUnitsAndScale();
+	m_sql.SetUnitsAndScale();
 
 	std::string AuthenticationMethod=m_pWebEm->FindValue("AuthenticationMethod");
 	_eAuthenticationMethod amethod=(_eAuthenticationMethod)atoi(AuthenticationMethod.c_str());
-	m_pMain->m_sql.UpdatePreferencesVar("AuthenticationMethod",(int)amethod);
+	m_sql.UpdatePreferencesVar("AuthenticationMethod",(int)amethod);
 	m_pWebEm->SetAuthenticationMethod(amethod);
 	
 	std::string ReleaseChannel=m_pWebEm->FindValue("ReleaseChannel");
-	m_pMain->m_sql.UpdatePreferencesVar("ReleaseChannel",atoi(ReleaseChannel.c_str()));
+	m_sql.UpdatePreferencesVar("ReleaseChannel",atoi(ReleaseChannel.c_str()));
 
 	std::string LightHistoryDays=m_pWebEm->FindValue("LightHistoryDays");
-	m_pMain->m_sql.UpdatePreferencesVar("LightHistoryDays",atoi(LightHistoryDays.c_str()));
+	m_sql.UpdatePreferencesVar("LightHistoryDays",atoi(LightHistoryDays.c_str()));
 
 	std::string s5MinuteHistoryDays=m_pWebEm->FindValue("ShortLogDays");
-	m_pMain->m_sql.UpdatePreferencesVar("5MinuteHistoryDays",atoi(s5MinuteHistoryDays.c_str()));
+	m_sql.UpdatePreferencesVar("5MinuteHistoryDays",atoi(s5MinuteHistoryDays.c_str()));
 
 	std::string sElectricVoltage=m_pWebEm->FindValue("ElectricVoltage");
-	m_pMain->m_sql.UpdatePreferencesVar("ElectricVoltage",atoi(sElectricVoltage.c_str()));
+	m_sql.UpdatePreferencesVar("ElectricVoltage",atoi(sElectricVoltage.c_str()));
 
 	std::string sCM113DisplayType=m_pWebEm->FindValue("CM113DisplayType");
-	m_pMain->m_sql.UpdatePreferencesVar("CM113DisplayType",atoi(sCM113DisplayType.c_str()));
+	m_sql.UpdatePreferencesVar("CM113DisplayType",atoi(sCM113DisplayType.c_str()));
 	
 	std::string WebUserName=m_pWebEm->FindValue("WebUserName");
 	std::string WebPassword=m_pWebEm->FindValue("WebPassword");
@@ -5563,9 +5562,9 @@ char * CWebServer::PostSettings()
 	}
 	WebUserName=base64_encode((const unsigned char*)WebUserName.c_str(),WebUserName.size());
 	WebPassword=base64_encode((const unsigned char*)WebPassword.c_str(),WebPassword.size());
-	m_pMain->m_sql.UpdatePreferencesVar("WebUserName",WebUserName.c_str());
-	m_pMain->m_sql.UpdatePreferencesVar("WebPassword",WebPassword.c_str());
-	m_pMain->m_sql.UpdatePreferencesVar("WebLocalNetworks",WebLocalNetworks.c_str());
+	m_sql.UpdatePreferencesVar("WebUserName",WebUserName.c_str());
+	m_sql.UpdatePreferencesVar("WebPassword",WebPassword.c_str());
+	m_sql.UpdatePreferencesVar("WebLocalNetworks",WebLocalNetworks.c_str());
 
 	LoadUsers();
 	m_pWebEm->ClearLocalNetworks();
@@ -5583,12 +5582,12 @@ char * CWebServer::PostSettings()
 	std::string SecPassword=m_pWebEm->FindValue("SecPassword");
 	SecPassword=CURLEncode::URLDecode(SecPassword);
 	SecPassword=base64_encode((const unsigned char*)SecPassword.c_str(),SecPassword.size());
-	m_pMain->m_sql.UpdatePreferencesVar("SecPassword",SecPassword.c_str());
+	m_sql.UpdatePreferencesVar("SecPassword",SecPassword.c_str());
 
 	std::string ProtectionPassword=m_pWebEm->FindValue("ProtectionPassword");
 	ProtectionPassword=CURLEncode::URLDecode(ProtectionPassword);
 	ProtectionPassword=base64_encode((const unsigned char*)ProtectionPassword.c_str(),ProtectionPassword.size());
-	m_pMain->m_sql.UpdatePreferencesVar("ProtectionPassword",ProtectionPassword.c_str());
+	m_sql.UpdatePreferencesVar("ProtectionPassword",ProtectionPassword.c_str());
 
 	int EnergyDivider=atoi(m_pWebEm->FindValue("EnergyDivider").c_str());
 	int GasDivider=atoi(m_pWebEm->FindValue("GasDivider").c_str());
@@ -5599,80 +5598,80 @@ char * CWebServer::PostSettings()
 		GasDivider=100;
 	if (WaterDivider<1)
 		WaterDivider=100;
-	m_pMain->m_sql.UpdatePreferencesVar("MeterDividerEnergy",EnergyDivider);
-	m_pMain->m_sql.UpdatePreferencesVar("MeterDividerGas",GasDivider);
-	m_pMain->m_sql.UpdatePreferencesVar("MeterDividerWater",WaterDivider);
+	m_sql.UpdatePreferencesVar("MeterDividerEnergy",EnergyDivider);
+	m_sql.UpdatePreferencesVar("MeterDividerGas",GasDivider);
+	m_sql.UpdatePreferencesVar("MeterDividerWater",WaterDivider);
 
 	std::string scheckforupdates=m_pWebEm->FindValue("checkforupdates");
-	m_pMain->m_sql.UpdatePreferencesVar("UseAutoUpdate",(scheckforupdates=="on"?1:0));
+	m_sql.UpdatePreferencesVar("UseAutoUpdate",(scheckforupdates=="on"?1:0));
 
 	std::string senableautobackup=m_pWebEm->FindValue("enableautobackup");
-	m_pMain->m_sql.UpdatePreferencesVar("UseAutoBackup",(senableautobackup=="on"?1:0));
+	m_sql.UpdatePreferencesVar("UseAutoBackup",(senableautobackup=="on"?1:0));
 
 	float CostEnergy=(float)atof(m_pWebEm->FindValue("CostEnergy").c_str());
 	float CostEnergyT2=(float)atof(m_pWebEm->FindValue("CostEnergyT2").c_str());
 	float CostGas=(float)atof(m_pWebEm->FindValue("CostGas").c_str());
 	float CostWater=(float)atof(m_pWebEm->FindValue("CostWater").c_str());
-	m_pMain->m_sql.UpdatePreferencesVar("CostEnergy",int(CostEnergy*10000.0f));
-	m_pMain->m_sql.UpdatePreferencesVar("CostEnergyT2",int(CostEnergyT2*10000.0f));
-	m_pMain->m_sql.UpdatePreferencesVar("CostGas",int(CostGas*10000.0f));
-	m_pMain->m_sql.UpdatePreferencesVar("CostWater",int(CostWater*10000.0f));
+	m_sql.UpdatePreferencesVar("CostEnergy",int(CostEnergy*10000.0f));
+	m_sql.UpdatePreferencesVar("CostEnergyT2",int(CostEnergyT2*10000.0f));
+	m_sql.UpdatePreferencesVar("CostGas",int(CostGas*10000.0f));
+	m_sql.UpdatePreferencesVar("CostWater",int(CostWater*10000.0f));
 
-	m_pMain->m_sql.UpdatePreferencesVar("EmailFrom",CURLEncode::URLDecode(m_pWebEm->FindValue("EmailFrom")).c_str());
-	m_pMain->m_sql.UpdatePreferencesVar("EmailTo",CURLEncode::URLDecode(m_pWebEm->FindValue("EmailTo")).c_str());
-	m_pMain->m_sql.UpdatePreferencesVar("EmailServer",m_pWebEm->FindValue("EmailServer").c_str());
-	m_pMain->m_sql.UpdatePreferencesVar("EmailPort",atoi(m_pWebEm->FindValue("EmailPort").c_str()));
+	m_sql.UpdatePreferencesVar("EmailFrom",CURLEncode::URLDecode(m_pWebEm->FindValue("EmailFrom")).c_str());
+	m_sql.UpdatePreferencesVar("EmailTo",CURLEncode::URLDecode(m_pWebEm->FindValue("EmailTo")).c_str());
+	m_sql.UpdatePreferencesVar("EmailServer",m_pWebEm->FindValue("EmailServer").c_str());
+	m_sql.UpdatePreferencesVar("EmailPort",atoi(m_pWebEm->FindValue("EmailPort").c_str()));
 	std::string suseemailinnotificationsalerts=m_pWebEm->FindValue("useemailinnotificationsalerts");
-	m_pMain->m_sql.UpdatePreferencesVar("UseEmailInNotifications",(suseemailinnotificationsalerts=="on"?1:0));
+	m_sql.UpdatePreferencesVar("UseEmailInNotifications",(suseemailinnotificationsalerts=="on"?1:0));
 	std::string sEmailAsAttachment=m_pWebEm->FindValue("EmailAsAttachment");
-	m_pMain->m_sql.UpdatePreferencesVar("EmailAsAttachment",(sEmailAsAttachment=="on"?1:0));
+	m_sql.UpdatePreferencesVar("EmailAsAttachment",(sEmailAsAttachment=="on"?1:0));
 
-	m_pMain->m_sql.UpdatePreferencesVar("DoorbellCommand",atoi(m_pWebEm->FindValue("DoorbellCommand").c_str()));
-	m_pMain->m_sql.UpdatePreferencesVar("SmartMeterType",atoi(m_pWebEm->FindValue("SmartMeterType").c_str()));
+	m_sql.UpdatePreferencesVar("DoorbellCommand",atoi(m_pWebEm->FindValue("DoorbellCommand").c_str()));
+	m_sql.UpdatePreferencesVar("SmartMeterType",atoi(m_pWebEm->FindValue("SmartMeterType").c_str()));
 
 	std::string EmailUsername=CURLEncode::URLDecode(m_pWebEm->FindValue("EmailUsername"));
 	std::string EmailPassword=CURLEncode::URLDecode(m_pWebEm->FindValue("EmailPassword"));
 	EmailUsername=base64_encode((const unsigned char*)EmailUsername.c_str(),EmailUsername.size());
 	EmailPassword=base64_encode((const unsigned char*)EmailPassword.c_str(),EmailPassword.size());
 
-	m_pMain->m_sql.UpdatePreferencesVar("EmailUsername",EmailUsername.c_str());
-	m_pMain->m_sql.UpdatePreferencesVar("EmailPassword",EmailPassword.c_str());
+	m_sql.UpdatePreferencesVar("EmailUsername",EmailUsername.c_str());
+	m_sql.UpdatePreferencesVar("EmailPassword",EmailPassword.c_str());
 
 	std::string EnableTabLights=m_pWebEm->FindValue("EnableTabLights");
-	m_pMain->m_sql.UpdatePreferencesVar("EnableTabLights",(EnableTabLights=="on"?1:0));
+	m_sql.UpdatePreferencesVar("EnableTabLights",(EnableTabLights=="on"?1:0));
 	std::string EnableTabTemp=m_pWebEm->FindValue("EnableTabTemp");
-	m_pMain->m_sql.UpdatePreferencesVar("EnableTabTemp",(EnableTabTemp=="on"?1:0));
+	m_sql.UpdatePreferencesVar("EnableTabTemp",(EnableTabTemp=="on"?1:0));
 	std::string EnableTabWeather=m_pWebEm->FindValue("EnableTabWeather");
-	m_pMain->m_sql.UpdatePreferencesVar("EnableTabWeather",(EnableTabWeather=="on"?1:0));
+	m_sql.UpdatePreferencesVar("EnableTabWeather",(EnableTabWeather=="on"?1:0));
 	std::string EnableTabUtility=m_pWebEm->FindValue("EnableTabUtility");
-	m_pMain->m_sql.UpdatePreferencesVar("EnableTabUtility",(EnableTabUtility=="on"?1:0));
+	m_sql.UpdatePreferencesVar("EnableTabUtility",(EnableTabUtility=="on"?1:0));
 	std::string EnableTabScenes=m_pWebEm->FindValue("EnableTabScenes");
-	m_pMain->m_sql.UpdatePreferencesVar("EnableTabScenes",(EnableTabScenes=="on"?1:0));
+	m_sql.UpdatePreferencesVar("EnableTabScenes",(EnableTabScenes=="on"?1:0));
 
-	m_pMain->m_sql.UpdatePreferencesVar("NotificationSensorInterval",atoi(m_pWebEm->FindValue("NotificationSensorInterval").c_str()));
-	m_pMain->m_sql.UpdatePreferencesVar("NotificationSwitchInterval",atoi(m_pWebEm->FindValue("NotificationSwitchInterval").c_str()));
+	m_sql.UpdatePreferencesVar("NotificationSensorInterval",atoi(m_pWebEm->FindValue("NotificationSensorInterval").c_str()));
+	m_sql.UpdatePreferencesVar("NotificationSwitchInterval",atoi(m_pWebEm->FindValue("NotificationSwitchInterval").c_str()));
 
 	std::string RaspCamParams=m_pWebEm->FindValue("RaspCamParams");
 	if (RaspCamParams!="")
-		m_pMain->m_sql.UpdatePreferencesVar("RaspCamParams",RaspCamParams.c_str());
+		m_sql.UpdatePreferencesVar("RaspCamParams",RaspCamParams.c_str());
 
 	std::string EnableNewHardware=m_pWebEm->FindValue("AcceptNewHardware");
 	int iEnableNewHardware=(EnableNewHardware=="on"?1:0);
-	m_pMain->m_sql.UpdatePreferencesVar("AcceptNewHardware",iEnableNewHardware);
-	m_pMain->m_sql.m_bAcceptNewHardware=(iEnableNewHardware==1);
+	m_sql.UpdatePreferencesVar("AcceptNewHardware",iEnableNewHardware);
+	m_sql.m_bAcceptNewHardware=(iEnableNewHardware==1);
 
 	std::string EnableWidgetOrdering=m_pWebEm->FindValue("AllowWidgetOrdering");
 	int iEnableAllowWidgetOrdering=(EnableWidgetOrdering=="on"?1:0);
-	m_pMain->m_sql.UpdatePreferencesVar("AllowWidgetOrdering",iEnableAllowWidgetOrdering);
-	m_pMain->m_sql.m_bAllowWidgetOrdering=(iEnableAllowWidgetOrdering==1);
+	m_sql.UpdatePreferencesVar("AllowWidgetOrdering",iEnableAllowWidgetOrdering);
+	m_sql.m_bAllowWidgetOrdering=(iEnableAllowWidgetOrdering==1);
 
 	int rnOldvalue=0;
-	m_pMain->m_sql.GetPreferencesVar("RemoteSharedPort", rnOldvalue);
+	m_sql.GetPreferencesVar("RemoteSharedPort", rnOldvalue);
 
-	m_pMain->m_sql.UpdatePreferencesVar("RemoteSharedPort",atoi(m_pWebEm->FindValue("RemoteSharedPort").c_str()));
+	m_sql.UpdatePreferencesVar("RemoteSharedPort",atoi(m_pWebEm->FindValue("RemoteSharedPort").c_str()));
 
 	int rnvalue=0;
-	m_pMain->m_sql.GetPreferencesVar("RemoteSharedPort", rnvalue);
+	m_sql.GetPreferencesVar("RemoteSharedPort", rnvalue);
 
 	if (rnvalue!=rnOldvalue)
 	{
@@ -5680,23 +5679,23 @@ char * CWebServer::PostSettings()
 		{
 			char szPort[100];
 			sprintf(szPort,"%d",rnvalue);
-			m_pMain->m_sharedserver.StopServer();
-			m_pMain->m_sharedserver.StartServer("0.0.0.0",szPort);
-			m_pMain->LoadSharedUsers();
+			m_mainworker.m_sharedserver.StopServer();
+			m_mainworker.m_sharedserver.StartServer("0.0.0.0",szPort);
+			m_mainworker.LoadSharedUsers();
 		}
 	}
 
-	m_pMain->m_sql.UpdatePreferencesVar("Language",m_pWebEm->FindValue("Language").c_str());
+	m_sql.UpdatePreferencesVar("Language",m_pWebEm->FindValue("Language").c_str());
 
-	m_pMain->m_sql.GetPreferencesVar("RandomTimerFrame", rnOldvalue);
+	m_sql.GetPreferencesVar("RandomTimerFrame", rnOldvalue);
 	rnvalue=atoi(m_pWebEm->FindValue("RandomSpread").c_str());
 	if (rnOldvalue!=rnvalue)
 	{
-		m_pMain->m_sql.UpdatePreferencesVar("RandomTimerFrame",rnvalue);
-		m_pMain->m_scheduler.ReloadSchedules();
+		m_sql.UpdatePreferencesVar("RandomTimerFrame",rnvalue);
+		m_mainworker.m_scheduler.ReloadSchedules();
 	}
 
-	m_pMain->m_sql.UpdatePreferencesVar("SecOnDelay",atoi(m_pWebEm->FindValue("SecOnDelay").c_str()));
+	m_sql.UpdatePreferencesVar("SecOnDelay",atoi(m_pWebEm->FindValue("SecOnDelay").c_str()));
 
 	return (char*)m_retstr.c_str();
 }
@@ -5714,7 +5713,7 @@ char * CWebServer::SetOpenThermSettings()
 	szQuery.clear();
 	szQuery.str("");
 	szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return (char*)m_retstr.c_str();
 
@@ -5727,8 +5726,8 @@ char * CWebServer::SetOpenThermSettings()
 
 	if(currentMode1 != newMode1)
 	{
-		m_pMain->m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), newMode1, 0, 0, 0, 0);
-		m_pMain->RestartHardware(idx);
+		m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), newMode1, 0, 0, 0, 0);
+		m_mainworker.RestartHardware(idx);
 	}
 
 	return (char*)m_retstr.c_str();
@@ -5747,7 +5746,7 @@ char * CWebServer::SetRFXCOMMode()
 	szQuery.clear();
 	szQuery.str("");
 	szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return (char*)m_retstr.c_str();
 
@@ -5791,7 +5790,7 @@ char * CWebServer::SetRFXCOMMode()
 	Response.IRESPONSE.SXenabled=(m_pWebEm->FindValue("ByronSX")=="on")?1:0;
 	Response.IRESPONSE.RFU6enabled=(m_pWebEm->FindValue("rfu6")=="on")?1:0;
 
-	m_pMain->SetRFXCOMHardwaremodes(atoi(idx.c_str()),Response.ICMND.msg1,Response.ICMND.msg2,Response.ICMND.msg3,Response.ICMND.msg4,Response.ICMND.msg5);
+	m_mainworker.SetRFXCOMHardwaremodes(atoi(idx.c_str()),Response.ICMND.msg1,Response.ICMND.msg2,Response.ICMND.msg3,Response.ICMND.msg4,Response.ICMND.msg5);
 
 	return (char*)m_retstr.c_str();
 }
@@ -5810,7 +5809,7 @@ char * CWebServer::SetRego6XXType()
 	szQuery.clear();
 	szQuery.str("");
 	szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return (char*)m_retstr.c_str();
 
@@ -5823,7 +5822,7 @@ char * CWebServer::SetRego6XXType()
 	
     if(currentMode1 != newMode1)
     {
-        m_pMain->m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), newMode1, 0, 0, 0, 0);
+        m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), newMode1, 0, 0, 0, 0);
     }
 	
 	return (char*)m_retstr.c_str();
@@ -5836,7 +5835,7 @@ char * CWebServer::RestoreDatabase()
 	if (dbasefile=="") {
 		return (char*)m_retstr.c_str();
 	}
-	if (!m_pMain->m_sql.RestoreDatabase(dbasefile))
+	if (!m_sql.RestoreDatabase(dbasefile))
 		return (char*)m_retstr.c_str();
 	m_retstr="/index.html";
 	return (char*)m_retstr.c_str();
@@ -5856,7 +5855,7 @@ char * CWebServer::SetP1USBType()
 	szQuery.clear();
 	szQuery.str("");
 	szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return (char*)m_retstr.c_str();
 
@@ -5867,9 +5866,9 @@ char * CWebServer::SetP1USBType()
 	int Mode3=0;
 	int Mode4=0;
 	int Mode5=0;
-	m_pMain->m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, Mode5);
+	m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, Mode5);
 
-	m_pMain->RestartHardware(idx);
+	m_mainworker.RestartHardware(idx);
 
 	return (char*)m_retstr.c_str();
 }
@@ -5888,7 +5887,7 @@ char * CWebServer::SetS0MeterType()
 	szQuery.clear();
 	szQuery.str("");
 	szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return (char*)m_retstr.c_str();
 
@@ -5899,9 +5898,9 @@ char * CWebServer::SetS0MeterType()
 	int Mode3=atoi(m_pWebEm->FindValue("S0M2Type").c_str());
 	int Mode4=atoi(m_pWebEm->FindValue("M2PulsesPerHour").c_str());
 	int Mode5=atoi(m_pWebEm->FindValue("S0Baudrate").c_str());
-	m_pMain->m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, Mode5);
+	m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, Mode5);
 
-	m_pMain->RestartHardware(idx);
+	m_mainworker.RestartHardware(idx);
 
 	return (char*)m_retstr.c_str();
 }
@@ -5920,7 +5919,7 @@ char * CWebServer::SetLimitlessType()
 	szQuery.clear();
 	szQuery.str("");
 	szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return (char*)m_retstr.c_str();
 
@@ -5930,9 +5929,9 @@ char * CWebServer::SetLimitlessType()
 	int Mode2=atoi(result[0][1].c_str());
 	int Mode3=atoi(result[0][2].c_str());
 	int Mode4=atoi(result[0][3].c_str());
-	m_pMain->m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, 0);
+	m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, 0);
 
-	m_pMain->RestartHardware(idx);
+	m_mainworker.RestartHardware(idx);
 
 	return (char*)m_retstr.c_str();
 }
@@ -5951,14 +5950,14 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 	const time_t iLastUpdate = LastUpdate-1;
 
 	int SensorTimeOut=60;
-	m_pMain->m_sql.GetPreferencesVar("SensorTimeout", SensorTimeOut);
+	m_sql.GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
 	//Get All Hardware ID's/Names, need them later
 	std::map<int,std::string> _hardwareNames;
 	szQuery.clear();
 	szQuery.str("");
 	szQuery << "SELECT ID, Name FROM Hardware";
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -5975,16 +5974,16 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 	root["ActTime"]=(int)now;
 
 	int nValue=0;
-	m_pMain->m_sql.GetPreferencesVar("DashboardType",nValue);
+	m_sql.GetPreferencesVar("DashboardType",nValue);
 	root["DashboardType"]=nValue;
-	m_pMain->m_sql.GetPreferencesVar("MobileType",nValue);
+	m_sql.GetPreferencesVar("MobileType",nValue);
 	root["MobileType"]=nValue;
 
 	nValue=1;
-	m_pMain->m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
+	m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
 	root["5MinuteHistoryDays"]=nValue;
 
-	root["AllowWidgetOrdering"]=m_pMain->m_sql.m_bAllowWidgetOrdering;
+	root["AllowWidgetOrdering"]=m_sql.m_bAllowWidgetOrdering;
 
 	char szData[100];
 	char szTmp[300];
@@ -5997,7 +5996,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 		sprintf(szOrderBy,"[Order],%s ASC",order.c_str());
 	}
 
-	unsigned char tempsign=m_pMain->m_sql.m_tempsign[0];
+	unsigned char tempsign=m_sql.m_tempsign[0];
 
 	bool bHaveUser=(m_pWebEm->m_actualuser!="");
 	int iUser=-1;
@@ -6013,7 +6012,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == " << m_users[iUser].ID << ")";
-				result=m_pMain->m_sql.query(szQuery.str());
+				result=m_sql.query(szQuery.str());
 				totUserDevices=(unsigned int)result.size();
 			}
 		}
@@ -6036,7 +6035,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 		else
 			szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType, Protected FROM Scenes ORDER BY " << szOrderBy;
 
-		result=m_pMain->m_sql.query(szQuery.str());
+		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -6084,10 +6083,10 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["Status"]="On";
 				else
 					root["result"][ii]["Status"]="Mixed";
-				unsigned long long camIDX=m_pMain->m_cameras.IsDevSceneInCamera(1,sd[0]);
+				unsigned long long camIDX=m_mainworker.m_cameras.IsDevSceneInCamera(1,sd[0]);
 				root["result"][ii]["UsedByCamera"]=(camIDX!=0)?true:false;
 				if (camIDX!=0) {
-					root["result"][ii]["CameraFeed"]=m_pMain->m_cameras.GetCameraFeedURL(camIDX);
+					root["result"][ii]["CameraFeed"]=m_mainworker.m_cameras.GetCameraFeedURL(camIDX);
 				}
 				ii++;
 			}
@@ -6109,14 +6108,14 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			{
 				//Build a list of Hidden Devices
 				szQuery << "SELECT ID FROM Plans WHERE (Name=='$Hidden Devices')";
-				result=m_pMain->m_sql.query(szQuery.str());
+				result=m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::string pID=result[0][0];
 					szQuery.clear();
 					szQuery.str("");
 					szQuery << "SELECT DeviceRowID FROM DeviceToPlansMap WHERE (PlanID=='" << pID << "')";
-					result=m_pMain->m_sql.query(szQuery.str());
+					result=m_sql.query(szQuery.str());
 					if (result.size()>0)
 					{
 						std::vector<std::vector<std::string> >::const_iterator ittP;
@@ -6146,14 +6145,14 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			{
 				//Build a list of Hidden Devices
 				szQuery << "SELECT ID FROM Plans WHERE (Name=='$Hidden Devices')";
-				result=m_pMain->m_sql.query(szQuery.str());
+				result=m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::string pID=result[0][0];
 					szQuery.clear();
 					szQuery.str("");
 					szQuery << "SELECT DeviceRowID FROM DeviceToPlansMap WHERE (PlanID=='" << pID << "')";
-					result=m_pMain->m_sql.query(szQuery.str());
+					result=m_sql.query(szQuery.str());
 					if (result.size()>0)
 					{
 						std::vector<std::vector<std::string> >::const_iterator ittP;
@@ -6171,7 +6170,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 		}
 	}
 
-	result=m_pMain->m_sql.query(szQuery.str());
+	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -6381,7 +6380,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			root["result"][ii]["idx"]=sd[0];
 			root["result"][ii]["Protected"]=(iProtected!=0);
 
-			CDomoticzHardwareBase *pHardware=m_pMain->GetHardware(hardwareID);
+			CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(hardwareID);
 			if (pHardware!=NULL)
 			{
 				if (pHardware->HwdType==HTYPE_Wunderground)
@@ -6433,8 +6432,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			sprintf(szData,"%d, %s", nValue,sValue.c_str());
 			root["result"][ii]["Data"]=szData;
 
-			root["result"][ii]["Notifications"]=(m_pMain->m_sql.HasNotifications(sd[0])==true)?"true":"false";
-			root["result"][ii]["Timers"]=(m_pMain->m_sql.HasTimers(sd[0])==true)?"true":"false";
+			root["result"][ii]["Notifications"]=(m_sql.HasNotifications(sd[0])==true)?"true":"false";
+			root["result"][ii]["Timers"]=(m_sql.HasTimers(sd[0])==true)?"true":"false";
 
 			if (
 				(dType==pTypeLighting1)||
@@ -6487,10 +6486,10 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				root["result"][ii]["HaveGroupCmd"]=bHaveGroupCmd;
 				root["result"][ii]["SwitchType"]=Switch_Type_Desc(switchtype);
 				root["result"][ii]["SwitchTypeVal"]=switchtype;
-				unsigned long long camIDX=m_pMain->m_cameras.IsDevSceneInCamera(0,sd[0]);
+				unsigned long long camIDX=m_mainworker.m_cameras.IsDevSceneInCamera(0,sd[0]);
 				root["result"][ii]["UsedByCamera"]=(camIDX!=0)?true:false;
 				if (camIDX!=0) {
-					root["result"][ii]["CameraFeed"]=m_pMain->m_cameras.GetCameraFeedURL(camIDX);
+					root["result"][ii]["CameraFeed"]=m_mainworker.m_cameras.GetCameraFeedURL(camIDX);
 				}
 
 				bool bIsSubDevice=false;
@@ -6500,7 +6499,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				szQuerySD.clear();
 				szQuerySD.str("");
 				szQuerySD << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << sd[0] << "')";
-				resultSD=m_pMain->m_sql.query(szQuerySD.str());
+				resultSD=m_sql.query(szQuerySD.str());
 				bIsSubDevice=(resultSD.size()>0);
 
 				root["result"][ii]["IsSubDevice"]=bIsSubDevice;
@@ -6871,14 +6870,14 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					if (dSubType!=sTypeWIND5)
 					{
 						int intSpeed=atoi(strarray[2].c_str());
-						sprintf(szTmp,"%.1f",float(intSpeed) * m_pMain->m_sql.m_windscale);
+						sprintf(szTmp,"%.1f",float(intSpeed) * m_sql.m_windscale);
 						root["result"][ii]["Speed"]=szTmp;
 					}
 
 					//if (dSubType!=sTypeWIND6) //problem in RFXCOM firmware? gust=speed?
 					{
 						int intGust=atoi(strarray[3].c_str());
-						sprintf(szTmp,"%.1f",float(intGust) *m_pMain->m_sql.m_windscale);
+						sprintf(szTmp,"%.1f",float(intGust) *m_sql.m_windscale);
 						root["result"][ii]["Gust"]=szTmp;
 					}
 					if ((dSubType==sTypeWIND4)||(dSubType==sTypeWINDNoTemp))
@@ -6934,7 +6933,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					{
 						szQuery << "SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "') ORDER BY ROWID DESC LIMIT 1";
 					}
-					result2=m_pMain->m_sql.query(szQuery.str());
+					result2=m_sql.query(szQuery.str());
 					if (result2.size()>0)
 					{
 						root["result"][ii]["AddjValue"]=AddjValue;
@@ -6986,15 +6985,15 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				float GasDivider=100.0f;
 				float WaterDivider=100.0f;
 				int tValue;
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+				if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 				{
 					EnergyDivider=float(tValue);
 				}
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerGas", tValue))
+				if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
 				{
 					GasDivider=float(tValue);
 				}
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+				if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
 				{
 					WaterDivider=float(tValue);
 				}
@@ -7021,7 +7020,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
-				result2=m_pMain->m_sql.query(szQuery.str());
+				result2=m_sql.query(szQuery.str());
 				if (result2.size()>0)
 				{
 					std::vector<std::string> sd2=result2[0];
@@ -7086,15 +7085,15 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				float WaterDivider=100.0f;
 				float musage=0;
 				int tValue;
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+				if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 				{
 					EnergyDivider=float(tValue);
 				}
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerGas", tValue))
+				if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
 				{
 					GasDivider=float(tValue);
 				}
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+				if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
 				{
 					WaterDivider=float(tValue);
 				}
@@ -7121,7 +7120,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
-				result2=m_pMain->m_sql.query(szQuery.str());
+				result2=m_sql.query(szQuery.str());
 				if (result2.size()>0)
 				{
 					std::vector<std::string> sd2=result2[0];
@@ -7236,7 +7235,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 
 				float EnergyDivider=1000.0f;
 				int tValue;
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+				if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 				{
 					EnergyDivider=float(tValue);
 				}
@@ -7309,7 +7308,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT MIN(Value1), MIN(Value2), MIN(Value5), MIN(Value6) FROM MultiMeter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
-				result2=m_pMain->m_sql.query(szQuery.str());
+				result2=m_sql.query(szQuery.str());
 				if (result2.size()>0)
 				{
 					std::vector<std::string> sd2=result2[0];
@@ -7368,7 +7367,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
-				result2=m_pMain->m_sql.query(szQuery.str());
+				result2=m_sql.query(szQuery.str());
 				if (result2.size()>0)
 				{
 					std::vector<std::string> sd2=result2[0];
@@ -7416,8 +7415,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					//CM113
 					int displaytype=0;
 					int voltage=230;
-					m_pMain->m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
-					m_pMain->m_sql.GetPreferencesVar("ElectricVoltage", voltage);
+					m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
+					m_sql.GetPreferencesVar("ElectricVoltage", voltage);
 
 					if (displaytype==0)
 						sprintf(szData,"%.1f A, %.1f A, %.1f A",atof(strarray[0].c_str()),atof(strarray[1].c_str()),atof(strarray[2].c_str()));
@@ -7437,8 +7436,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					//CM180i
 					int displaytype=0;
 					int voltage=230;
-					m_pMain->m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
-					m_pMain->m_sql.GetPreferencesVar("ElectricVoltage", voltage);
+					m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
+					m_sql.GetPreferencesVar("ElectricVoltage", voltage);
 
 					double total=atof(strarray[3].c_str());
 					if (displaytype==0)
@@ -7488,12 +7487,12 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					szQuery.clear();
 					szQuery.str("");
 					szQuery << "SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
-					result2=m_pMain->m_sql.query(szQuery.str());
+					result2=m_sql.query(szQuery.str());
 					if (result2.size()>0)
 					{
 						float EnergyDivider=1000.0f;
 						int tValue;
-						if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 						{
 							EnergyDivider=float(tValue);
 						}
@@ -7722,10 +7721,10 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				        else
 					        root["result"][ii]["Image"]="Light";
 				
-				        unsigned long long camIDX=m_pMain->m_cameras.IsDevSceneInCamera(0,sd[0]);
+				        unsigned long long camIDX=m_mainworker.m_cameras.IsDevSceneInCamera(0,sd[0]);
 				        root["result"][ii]["UsedByCamera"]=(camIDX!=0)?true:false;
 				        if (camIDX!=0) {
-					        root["result"][ii]["CameraFeed"]=m_pMain->m_cameras.GetCameraFeedURL(camIDX);
+					        root["result"][ii]["CameraFeed"]=m_mainworker.m_cameras.GetCameraFeedURL(camIDX);
 				        }
 
     					root["result"][ii]["Level"]=0;
@@ -7760,7 +7759,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				        szQuery.clear();
 				        szQuery.str("");
 				        szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
-				        result2=m_pMain->m_sql.query(szQuery.str());
+				        result2=m_sql.query(szQuery.str());
 				        if (result2.size()>0)
 				        {
 					        std::vector<std::string> sd2=result2[0];
@@ -7795,12 +7794,12 @@ std::string CWebServer::GetInternalCameraSnapshot()
 	std::vector<unsigned char> camimage;
 	if (m_pWebEm->m_lastRequestPath.find("raspberry")!=std::string::npos)
 	{
-		if (!m_pMain->m_cameras.TakeRaspberrySnapshot(camimage))
+		if (!m_mainworker.m_cameras.TakeRaspberrySnapshot(camimage))
 			goto exitproc;
 	}
 	else
 	{
-		if (!m_pMain->m_cameras.TakeUVCSnapshot(camimage))
+		if (!m_mainworker.m_cameras.TakeUVCSnapshot(camimage))
 			goto exitproc;
 	}
 	m_retstr.insert( m_retstr.begin(), camimage.begin(), camimage.end() );
@@ -7817,7 +7816,7 @@ std::string CWebServer::GetCameraSnapshot()
 	if (idx=="")
 		goto exitproc;
 
-	if (!m_pMain->m_cameras.TakeSnapshot(idx, camimage))
+	if (!m_mainworker.m_cameras.TakeSnapshot(idx, camimage))
 		goto exitproc;
 	m_retstr.insert( m_retstr.begin(), camimage.begin(), camimage.end() );
 	m_pWebEm->m_outputfilename="snapshot.jpg";
@@ -7829,7 +7828,7 @@ std::string CWebServer::GetDatabaseBackup()
 {
 	m_retstr="";
 	std::string OutputFileName=szStartupFolder + "backup.db";
-	if (m_pMain->m_sql.BackupDatabase(OutputFileName))
+	if (m_sql.BackupDatabase(OutputFileName))
 	{
 		std::ifstream testFile(OutputFileName.c_str(), std::ios::binary);
 		std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
@@ -7848,7 +7847,7 @@ std::string CWebServer::GetLanguage()
 	Json::Value root;
 	root["status"]="ERR";
 	std::string sValue;
-	if (m_pMain->m_sql.GetPreferencesVar("Language", sValue))
+	if (m_sql.GetPreferencesVar("Language", sValue))
 	{
 		root["status"]="OK";
 		root["title"]="GetLanguage";
@@ -7942,7 +7941,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT ID, Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware ORDER BY ID ASC";
-		result = m_pMain->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -7975,7 +7974,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		if (hwid == "")
 			return;
 		int iHardwareID = atoi(hwid.c_str());
-		CDomoticzHardwareBase *pHardware = m_pMain->GetHardware(iHardwareID);
+		CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
 		if (pHardware == NULL)
 			return;
 		if (pHardware->HwdType != HTYPE_OpenZWave)
@@ -7988,7 +7987,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		std::stringstream szQuery;
 		std::vector<std::vector<std::string> > result;
 		szQuery << "SELECT ID,HomeID,NodeID,Name,ProductDescription,PollTime FROM ZWaveNodes WHERE (HardwareID==" << iHardwareID << ")";
-		result = m_pMain->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -8054,10 +8053,10 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 
 		GetJSonDevices(root, rused, rfilter, order, rid, planid, bDisplayHidden, LastUpdate);
 
-		root["WindScale"] = m_pMain->m_sql.m_windscale*10.0f;
-		root["WindSign"] = m_pMain->m_sql.m_windsign;
-		root["TempScale"] = m_pMain->m_sql.m_tempscale;
-		root["TempSign"] = m_pMain->m_sql.m_tempsign;
+		root["WindScale"] = m_sql.m_windscale*10.0f;
+		root["WindSign"] = m_sql.m_windsign;
+		root["TempScale"] = m_sql.m_tempscale;
+		root["TempSign"] = m_sql.m_tempsign;
 
 	} //if (rtype=="devices")
 	else if (rtype == "cameras")
@@ -8075,7 +8074,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		else {
 			szQuery << "SELECT ID, Name, Enabled, Address, Port, Username, Password, VideoURL, ImageURL FROM Cameras ORDER BY ID ASC";
 		}
-		result = m_pMain->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -8117,7 +8116,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT ID, Active, Username, Password, Rights, RemoteSharing, TabsEnabled FROM USERS ORDER BY ID ASC";
-		result = m_pMain->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -8261,7 +8260,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT Type, SubType FROM DeviceStatus WHERE (ID == " << idx << ")";
-		result = m_pMain->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 		if (result.size()<1)
 			return;
 
@@ -8293,7 +8292,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT ROWID, nValue, sValue, Date FROM LightingLog WHERE (DeviceRowID==" << idx << ") ORDER BY Date DESC";
-		result = m_pMain->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -8345,7 +8344,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT ID, Active, Time, Type, Cmd, Level, Hue, Days, UseRandomness FROM Timers WHERE (DeviceRowID==" << idx << ") ORDER BY ID";
-		result = m_pMain->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -8379,7 +8378,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT ID, Active, Time, Type, Cmd, Level, Hue, Days, UseRandomness FROM SceneTimers WHERE (SceneRowID==" << idx << ") ORDER BY ID";
-		result = m_pMain->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -8413,7 +8412,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT Type, SubType FROM DeviceStatus WHERE (ID==" << idx << ")";
-		result = m_pMain->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			szQuery.clear();
@@ -8431,7 +8430,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 			{
 				szQuery << "SELECT ID, Name FROM DeviceStatus WHERE (Type==" << result[0][0] << ") AND (SubType==" << result[0][1] << ") AND (ID!=" << idx << ")";
 			}
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 
 			std::vector<std::vector<std::string> >::const_iterator itt;
 			int ii = 0;
@@ -8459,18 +8458,18 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		root["title"] = "TransferDevice";
 
 		//transfer device logs
-		m_pMain->m_sql.TransferDevice(sidx, newidx);
+		m_sql.TransferDevice(sidx, newidx);
 
 		//now delete the old device
-		m_pMain->m_sql.DeleteDevice(sidx);
-		m_pMain->m_scheduler.ReloadSchedules();
+		m_sql.DeleteDevice(sidx);
+		m_mainworker.m_scheduler.ReloadSchedules();
 	} //(rtype=="transferdevice")
 	else if ((rtype == "notifications") && (idx != 0))
 	{
 		root["status"] = "OK";
 		root["title"] = "Notifications";
 
-		std::vector<_tNotification> notifications = m_pMain->m_sql.GetNotifications(idx);
+		std::vector<_tNotification> notifications = m_sql.GetNotifications(idx);
 		if (notifications.size()>0)
 		{
 			std::vector<_tNotification>::const_iterator itt;
@@ -8493,7 +8492,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		root["status"] = "OK";
 		root["title"] = "Schedules";
 
-		std::vector<tScheduleItem> schedules = m_pMain->m_scheduler.GetScheduleItems();
+		std::vector<tScheduleItem> schedules = m_mainworker.m_scheduler.GetScheduleItems();
 		int ii = 0;
 		std::vector<tScheduleItem>::iterator itt;
 		for (itt = schedules.begin(); itt != schedules.end(); ++itt)
@@ -8524,7 +8523,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == " << idx << ")";
-		result = m_pMain->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -8552,7 +8551,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "DELETE FROM SharedDevices WHERE (SharedUserID == " << idx << ")";
-		result = m_pMain->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 
 		int nDevices = (int)strarray.size();
 		for (int ii = 0; ii<nDevices; ii++)
@@ -8560,9 +8559,9 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "INSERT INTO SharedDevices (SharedUserID,DeviceRowID) VALUES ('" << idx << "','" << strarray[ii] << "')";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 		}
-		m_pMain->LoadSharedUsers();
+		m_mainworker.LoadSharedUsers();
 	}
 	else if (rtype == "setused")
 	{
@@ -8600,7 +8599,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		std::stringstream sstridx(idx);
 		unsigned long long ullidx;
 		sstridx >> ullidx;
-		m_pMain->m_eventsystem.WWWUpdateSingleState(ullidx, name);
+		m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, name);
 
 		szQuery.clear();
 		szQuery.str("");
@@ -8608,14 +8607,14 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		if (setPoint != "")
 		{
 			double tempcelcius = atof(setPoint.c_str());
-			if (m_pMain->m_sql.m_tempunit == TEMPUNIT_F)
+			if (m_sql.m_tempunit == TEMPUNIT_F)
 			{
 				//Convert back to celcius
 				tempcelcius = (tempcelcius - 32) / 1.8;
 			}
 			sprintf(szTmp, "%.2f", tempcelcius);
 			szQuery << "UPDATE DeviceStatus SET Used=" << used << ", sValue='" << szTmp << "' WHERE (ID == " << idx << ")";
-			m_pMain->m_sql.query(szQuery.str());
+			m_sql.query(szQuery.str());
 			szQuery.clear();
 			szQuery.str("");
 		}
@@ -8630,16 +8629,16 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 			else
 				szQuery << "UPDATE DeviceStatus SET Used=" << used << ", Name='" << name << "', SwitchType=" << switchtype << ", CustomImage=" << CustomImage << " WHERE (ID == " << idx << ")";
 		}
-		result = m_pMain->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET StrParam1='" << strParam1 << "', StrParam2='" << strParam2 << "', Protected=" << iProtected << " WHERE (ID == " << idx << ")";
-		result = m_pMain->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 
 		if (setPoint != "")
 		{
-			m_pMain->SetSetPoint(idx, (float)atof(setPoint.c_str()));
+			m_mainworker.SetSetPoint(idx, (float)atof(setPoint.c_str()));
 		}
 
 		if (addjvalue != "")
@@ -8648,7 +8647,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "UPDATE DeviceStatus SET AddjValue=" << faddjvalue << " WHERE (ID == " << idx << ")";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 		}
 		if (addjmulti != "")
 		{
@@ -8658,7 +8657,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "UPDATE DeviceStatus SET AddjMulti=" << faddjmulti << " WHERE (ID == " << idx << ")";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 		}
 		if (addjvalue2 != "")
 		{
@@ -8666,7 +8665,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "UPDATE DeviceStatus SET AddjValue2=" << faddjvalue2 << " WHERE (ID == " << idx << ")";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 		}
 		if (addjmulti2 != "")
 		{
@@ -8676,7 +8675,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "UPDATE DeviceStatus SET AddjMulti2=" << faddjmulti2 << " WHERE (ID == " << idx << ")";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 		}
 
 		if (used == 0)
@@ -8687,13 +8686,13 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 			{
 				//if this device was a slave device, remove it
 				sprintf(szTmp, "DELETE FROM LightSubDevices WHERE (DeviceRowID == %s)", idx.c_str());
-				m_pMain->m_sql.query(szTmp);
+				m_sql.query(szTmp);
 			}
 			sprintf(szTmp, "DELETE FROM LightSubDevices WHERE (ParentID == %s)", idx.c_str());
-			m_pMain->m_sql.query(szTmp);
+			m_sql.query(szTmp);
 
 			sprintf(szTmp, "DELETE FROM Timers WHERE (DeviceRowID == %s)", idx.c_str());
-			m_pMain->m_sql.query(szTmp);
+			m_sql.query(szTmp);
 		}
 
 		if (maindeviceidx != "")
@@ -8705,7 +8704,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << idx << "') AND (ParentID =='" << maindeviceidx << "')";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size() == 0)
 				{
 					//no it is not, add it
@@ -8714,14 +8713,14 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 						idx.c_str(),
 						maindeviceidx.c_str()
 						);
-					result = m_pMain->m_sql.query(szTmp);
+					result = m_sql.query(szTmp);
 				}
 			}
 		}
 		if ((used == 0) && (maindeviceidx == ""))
 		{
 			//really remove it, including log etc
-			m_pMain->m_sql.DeleteDevice(idx);
+			m_sql.DeleteDevice(idx);
 		}
 		if (result.size()>0)
 		{
@@ -8738,8 +8737,8 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 
 		root["status"] = "OK";
 		root["title"] = "DeleteDevice";
-		m_pMain->m_sql.DeleteDevice(idx);
-		m_pMain->m_scheduler.ReloadSchedules();
+		m_sql.DeleteDevice(idx);
+		m_mainworker.m_scheduler.ReloadSchedules();
 	} //(rtype=="deletedevice")
 	else if (rtype == "addscene")
 	{
@@ -8757,7 +8756,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 			root["message"] = "No Scene Type specified!";
 			return;
 		}
-		if (m_pMain->m_sql.DoesSceneByNameExits(name) == true)
+		if (m_sql.DoesSceneByNameExits(name) == true)
 		{
 			root["status"] = "ERR";
 			root["message"] = "A Scene with this Name already Exits!";
@@ -8770,7 +8769,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 			name.c_str(),
 			atoi(stype.c_str())
 			);
-		result = m_pMain->m_sql.query(szTmp);
+		result = m_sql.query(szTmp);
 
 	} //(rtype=="addscene")
 	else if (rtype == "deletescene")
@@ -8781,11 +8780,11 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		root["status"] = "OK";
 		root["title"] = "DeleteScene";
 		sprintf(szTmp, "DELETE FROM Scenes WHERE (ID == %s)", idx.c_str());
-		m_pMain->m_sql.query(szTmp);
+		m_sql.query(szTmp);
 		sprintf(szTmp, "DELETE FROM SceneDevices WHERE (SceneRowID == %s)", idx.c_str());
-		m_pMain->m_sql.query(szTmp);
+		m_sql.query(szTmp);
 		sprintf(szTmp, "DELETE FROM SceneTimers WHERE (SceneRowID == %s)", idx.c_str());
-		m_pMain->m_sql.query(szTmp);
+		m_sql.query(szTmp);
 	} //(rtype=="deletescene")
 	else if (rtype == "updatescene")
 	{
@@ -8816,7 +8815,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 			offaction.c_str(),
 			idx.c_str()
 			);
-		m_pMain->m_sql.query(szTmp);
+		m_sql.query(szTmp);
 	} //(rtype=="updatescene")
 	else if (rtype == "createvirtualsensor")
 	{
@@ -8834,7 +8833,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT MAX(ID) FROM DeviceStatus";
-		result = m_pMain->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 
 		unsigned long nid = 1; //could be the first device ever
 
@@ -8852,52 +8851,52 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		{
 		case 1:
 			//Pressure (Bar)
-			m_pMain->m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypePressure, 12, 255, 0, "0.0", devname);
+			m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypePressure, 12, 255, 0, "0.0", devname);
 			bCreated = true;
 			break;
 		case 2:
 			//Percentage
-			m_pMain->m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypePercentage, 12, 255, 0, "0.0", devname);
+			m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypePercentage, 12, 255, 0, "0.0", devname);
 			bCreated = true;
 			break;
 		case pTypeTEMP:
-			m_pMain->m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP, sTypeTEMP1, 10, 255, 0, "0.0", devname);
+			m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP, sTypeTEMP1, 10, 255, 0, "0.0", devname);
 			bCreated = true;
 			break;
 		case pTypeHUM:
-			m_pMain->m_sql.UpdateValue(HwdID, ID, 1, pTypeHUM, sTypeTEMP1, 10, 255, 50, "1", devname);
+			m_sql.UpdateValue(HwdID, ID, 1, pTypeHUM, sTypeTEMP1, 10, 255, 50, "1", devname);
 			bCreated = true;
 			break;
 		case pTypeTEMP_HUM:
-			m_pMain->m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP_HUM, sTypeTH1, 10, 255, 0, "0.0;50;1", devname);
+			m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP_HUM, sTypeTH1, 10, 255, 0, "0.0;50;1", devname);
 			bCreated = true;
 			break;
 		case pTypeTEMP_HUM_BARO:
-			m_pMain->m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP_HUM_BARO, sTypeTHB1, 10, 255, 0, "0.0;50;1;1010;1", devname);
+			m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP_HUM_BARO, sTypeTHB1, 10, 255, 0, "0.0;50;1;1010;1", devname);
 			bCreated = true;
 			break;
 		case pTypeWIND:
-			m_pMain->m_sql.UpdateValue(HwdID, ID, 1, pTypeWIND, sTypeWIND1, 10, 255, 0, "0;N;0;0;0;0", devname);
+			m_sql.UpdateValue(HwdID, ID, 1, pTypeWIND, sTypeWIND1, 10, 255, 0, "0;N;0;0;0;0", devname);
 			bCreated = true;
 			break;
 		case pTypeRAIN:
-			m_pMain->m_sql.UpdateValue(HwdID, ID, 1, pTypeRAIN, sTypeRAIN3, 10, 255, 0, "0;0", devname);
+			m_sql.UpdateValue(HwdID, ID, 1, pTypeRAIN, sTypeRAIN3, 10, 255, 0, "0;0", devname);
 			bCreated = true;
 			break;
 		case pTypeUV:
-			m_pMain->m_sql.UpdateValue(HwdID, ID, 1, pTypeUV, sTypeUV1, 10, 255, 0, "0;0", devname);
+			m_sql.UpdateValue(HwdID, ID, 1, pTypeUV, sTypeUV1, 10, 255, 0, "0;0", devname);
 			bCreated = true;
 			break;
 		case pTypeENERGY:
-			m_pMain->m_sql.UpdateValue(HwdID, ID, 1, pTypeENERGY, sTypeELEC2, 10, 255, 0, "0;0.0", devname);
+			m_sql.UpdateValue(HwdID, ID, 1, pTypeENERGY, sTypeELEC2, 10, 255, 0, "0;0.0", devname);
 			bCreated = true;
 			break;
 		case pTypeRFXMeter:
-			m_pMain->m_sql.UpdateValue(HwdID, ID, 1, pTypeRFXMeter, sTypeRFXMeterCount, 10, 255, 0, "0", devname);
+			m_sql.UpdateValue(HwdID, ID, 1, pTypeRFXMeter, sTypeRFXMeterCount, 10, 255, 0, "0", devname);
 			bCreated = true;
 			break;
 		case pTypeAirQuality:
-			m_pMain->m_sql.UpdateValue(HwdID, ID, 1, pTypeAirQuality, sTypeVoltcraft, 10, 255, 0, devname);
+			m_sql.UpdateValue(HwdID, ID, 1, pTypeAirQuality, sTypeVoltcraft, 10, 255, 0, devname);
 			bCreated = true;
 			break;
 		}
@@ -8932,7 +8931,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT ID, Name, [Order] FROM Plans ORDER BY [Order]";
-		result = m_pMain->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -8955,7 +8954,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 					szQuery.clear();
 					szQuery.str("");
 					szQuery << "SELECT COUNT(*) FROM DeviceToPlansMap WHERE (PlanID=='" << sd[0] << "')";
-					result2 = m_pMain->m_sql.query(szQuery.str());
+					result2 = m_sql.query(szQuery.str());
 					if (result.size()>0)
 					{
 						totDevices = (unsigned int)atoi(result2[0][0].c_str());
@@ -8971,7 +8970,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 	{
 		root["status"] = "OK";
 		root["title"] = "Scenes";
-		root["AllowWidgetOrdering"] = m_pMain->m_sql.m_bAllowWidgetOrdering;
+		root["AllowWidgetOrdering"] = m_sql.m_bAllowWidgetOrdering;
 
 		std::string sLastUpdate = m_pWebEm->FindValue("lastupdate");
 
@@ -8994,7 +8993,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT ID, Name, HardwareID, Favorite, nValue, SceneType, LastUpdate, Protected, DeviceID, Unit, OnAction, OffAction FROM Scenes ORDER BY [Order]";
-		result = m_pMain->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -9044,7 +9043,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 					szQuery.clear();
 					szQuery.str("");
 					szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << HardwareID << ") AND (DeviceID=='" << DeviceID << "') AND (Unit==" << Unit << ")";
-					result2 = m_pMain->m_sql.query(szQuery.str());
+					result2 = m_sql.query(szQuery.str());
 					if (result2.size()>0)
 					{
 						CodeDeviceName = result2[0][0];
@@ -9078,11 +9077,11 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 					root["result"][ii]["Status"] = "On";
 				else
 					root["result"][ii]["Status"] = "Mixed";
-				root["result"][ii]["Timers"] = (m_pMain->m_sql.HasSceneTimers(sd[0]) == true) ? "true" : "false";
-				unsigned long long camIDX = m_pMain->m_cameras.IsDevSceneInCamera(1, sd[0]);
+				root["result"][ii]["Timers"] = (m_sql.HasSceneTimers(sd[0]) == true) ? "true" : "false";
+				unsigned long long camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(1, sd[0]);
 				root["result"][ii]["UsedByCamera"] = (camIDX != 0) ? true : false;
 				if (camIDX != 0) {
-					root["result"][ii]["CameraFeed"] = m_pMain->m_cameras.GetCameraFeedURL(camIDX);
+					root["result"][ii]["CameraFeed"] = m_mainworker.m_cameras.GetCameraFeedURL(camIDX);
 				}
 				ii++;
 			}
@@ -9112,7 +9111,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT ID, Name, XMLStatement, Status FROM EventMaster ORDER BY ID ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -9144,7 +9143,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT ID, Name, XMLStatement, Status FROM EventMaster WHERE (ID==" << idx << ")";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -9212,11 +9211,11 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 
 				if (eventid == "") {
 					szQuery << "INSERT INTO EventMaster (Name, XMLStatement, Status) VALUES ('" << eventname << "','" << eventxml << "','" << eventStatus << "')";
-					m_pMain->m_sql.query(szQuery.str());
+					m_sql.query(szQuery.str());
 					szQuery.clear();
 					szQuery.str("");
 					szQuery << "SELECT ID FROM EventMaster WHERE (Name == '" << eventname << "')";
-					result = m_pMain->m_sql.query(szQuery.str());
+					result = m_sql.query(szQuery.str());
 					if (result.size()>0)
 					{
 						std::vector<std::string> sd = result[0];
@@ -9225,11 +9224,11 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 				}
 				else {
 					szQuery << "UPDATE EventMaster SET Name='" << eventname << "', XMLStatement ='" << eventxml << "', Status ='" << eventStatus << "' WHERE (ID == '" << eventid << "')";
-					m_pMain->m_sql.query(szQuery.str());
+					m_sql.query(szQuery.str());
 					szQuery.clear();
 					szQuery.str("");
 					szQuery << "DELETE FROM EventRules WHERE (EMID == '" << eventid << "')";
-					m_pMain->m_sql.query(szQuery.str());
+					m_sql.query(szQuery.str());
 				}
 
 				if (eventid == "")
@@ -9252,10 +9251,10 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 						szQuery.clear();
 						szQuery.str("");
 						szQuery << "INSERT INTO EventRules (EMID, Conditions, Actions, SequenceNo) VALUES ('" << eventid << "','" << conditions << "','" << actions << "','" << sequenceNo << "')";
-						m_pMain->m_sql.query(szQuery.str());
+						m_sql.query(szQuery.str());
 					}
 
-					m_pMain->m_eventsystem.LoadEvents();
+					m_mainworker.m_eventsystem.LoadEvents();
 					root["status"] = "OK";
 				}
 			}
@@ -9266,14 +9265,14 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 			std::string idx = m_pWebEm->FindValue("event");
 			if (idx == "")
 				return;
-			m_pMain->m_sql.DeleteEvent(idx);
-			m_pMain->m_eventsystem.LoadEvents();
+			m_sql.DeleteEvent(idx);
+			m_mainworker.m_eventsystem.LoadEvents();
 			root["status"] = "OK";
 		}
 		else if (cparam == "currentstates")
 		{
 			std::vector<CEventSystem::_tDeviceStatus> devStates;
-			m_pMain->m_eventsystem.WWWGetItemStates(devStates);
+			m_mainworker.m_eventsystem.WWWGetItemStates(devStates);
 			if (devStates.size() == 0)
 				return;
 
@@ -9301,7 +9300,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "SELECT Key, nValue, sValue FROM Preferences";
-		result = m_pMain->m_sql.query(szQuery.str());
+		result = m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -9572,7 +9571,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 	szQuery.clear();
 	szQuery.str("");
 	szQuery << "SELECT Type, SubType, SwitchType, AddjValue, AddjMulti FROM DeviceStatus WHERE (ID == " << idx << ")";
-	result = m_pMain->m_sql.query(szQuery.str());
+	result = m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return;
 
@@ -9654,7 +9653,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 		else
 			return;
 	}
-	unsigned char tempsign = m_pMain->m_sql.m_tempsign[0];
+	unsigned char tempsign = m_sql.m_tempsign[0];
 
 	if (srange == "day")
 	{
@@ -9665,7 +9664,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT Temperature, Chill, Humidity, Barometer, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -9738,7 +9737,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT Percentage, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -9760,7 +9759,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT Speed, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -9786,7 +9785,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT Value1, Value2, Value3, Value4, Value5, Value6, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -9797,7 +9796,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 					time_t lastTime = 0;
 
 					int nMeterType = 0;
-					m_pMain->m_sql.GetPreferencesVar("SmartMeterType", nMeterType);
+					m_sql.GetPreferencesVar("SmartMeterType", nMeterType);
 
 					for (itt = result.begin(); itt != result.end(); ++itt)
 					{
@@ -9904,7 +9903,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -9927,7 +9926,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -9958,7 +9957,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -9988,7 +9987,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -10011,7 +10010,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -10034,7 +10033,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -10058,7 +10057,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -10081,15 +10080,15 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				//CM113
 				int displaytype = 0;
 				int voltage = 230;
-				m_pMain->m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
-				m_pMain->m_sql.GetPreferencesVar("ElectricVoltage", voltage);
+				m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
+				m_sql.GetPreferencesVar("ElectricVoltage", voltage);
 
 				root["displaytype"] = displaytype;
 
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT Value1, Value2, Value3, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -10159,15 +10158,15 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				//CM113
 				int displaytype = 0;
 				int voltage = 230;
-				m_pMain->m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
-				m_pMain->m_sql.GetPreferencesVar("ElectricVoltage", voltage);
+				m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
+				m_sql.GetPreferencesVar("ElectricVoltage", voltage);
 
 				root["displaytype"] = displaytype;
 
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT Value1, Value2, Value3, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -10238,15 +10237,15 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				float GasDivider = 100.0f;
 				float WaterDivider = 100.0f;
 				int tValue;
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+				if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 				{
 					EnergyDivider = float(tValue);
 				}
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerGas", tValue))
+				if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
 				{
 					GasDivider = float(tValue);
 				}
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+				if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
 				{
 					WaterDivider = float(tValue);
 				}
@@ -10259,7 +10258,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				szQuery.str("");
 				int ii = 0;
 				szQuery << "SELECT Value,[Usage], Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 
 				int method = 0;
 				std::string sMethod = m_pWebEm->FindValue("method");
@@ -10386,15 +10385,15 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				float GasDivider = 100.0f;
 				float WaterDivider = 100.0f;
 				int tValue;
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+				if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 				{
 					EnergyDivider = float(tValue);
 				}
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerGas", tValue))
+				if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
 				{
 					GasDivider = float(tValue);
 				}
-				if (m_pMain->m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+				if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
 				{
 					WaterDivider = float(tValue);
 				}
@@ -10407,7 +10406,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				szQuery.str("");
 				int ii = 0;
 				szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 
 				int method = 0;
 				std::string sMethod = m_pWebEm->FindValue("method");
@@ -10599,7 +10598,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT Level, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -10624,7 +10623,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT Total, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -10658,7 +10657,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT Direction, Speed, Gust, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -10671,10 +10670,10 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 					root["result"][ii]["di"] = sd[0];
 
 					int intSpeed = atoi(sd[1].c_str());
-					sprintf(szTmp, "%.1f", float(intSpeed) * m_pMain->m_sql.m_windscale);
+					sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
 					root["result"][ii]["sp"] = szTmp;
 					int intGust = atoi(sd[2].c_str());
-					sprintf(szTmp, "%.1f", float(intGust) * m_pMain->m_sql.m_windscale);
+					sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
 					root["result"][ii]["gu"] = szTmp;
 					ii++;
 				}
@@ -10687,7 +10686,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT Direction, Speed FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -10797,7 +10796,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT Total, Rate, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			int ii = 0;
 			if (result.size()>0)
 			{
@@ -10825,7 +10824,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			{
 				szQuery << "SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "') ORDER BY ROWID DESC LIMIT 1";
 			}
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::string> sd = result[0];
@@ -10859,15 +10858,15 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			float GasDivider = 100.0f;
 			float WaterDivider = 100.0f;
 			int tValue;
-			if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+			if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 			{
 				EnergyDivider = float(tValue);
 			}
-			if (m_pMain->m_sql.GetPreferencesVar("MeterDividerGas", tValue))
+			if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
 			{
 				GasDivider = float(tValue);
 			}
-			if (m_pMain->m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+			if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
 			{
 				WaterDivider = float(tValue);
 			}
@@ -10906,7 +10905,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			if (dType == pTypeP1Power)
 			{
 				szQuery << "SELECT Value1,Value2,Value5,Value6,Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					bool bHaveDeliverd = false;
@@ -10946,7 +10945,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			else
 			{
 				szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -10982,7 +10981,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			if (dType == pTypeP1Power)
 			{
 				szQuery << "SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2),MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM MultiMeter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::string> sd = result[0];
@@ -11048,7 +11047,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			else
 			{
 				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::string> sd = result[0];
@@ -11160,7 +11159,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT Temp_Min, Temp_Max, Chill_Min, Chill_Max, Humidity, Barometer, Temp_Avg, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			int ii = 0;
 			if (result.size()>0)
 			{
@@ -11236,7 +11235,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT MIN(Temperature), MAX(Temperature), MIN(Chill), MAX(Chill), MAX(Humidity), MAX(Barometer), AVG(Temperature) FROM Temperature WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::string> sd = result[0];
@@ -11298,7 +11297,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT Temp_Min, Temp_Max, Chill_Min, Chill_Max, Humidity, Barometer, Temp_Avg, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStartPrev << "' AND Date<='" << szDateEndPrev << "') ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				int iPrev = 0;
@@ -11381,7 +11380,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT Percentage_Min, Percentage_Max, Percentage_Avg, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			int ii = 0;
 			if (result.size()>0)
 			{
@@ -11401,7 +11400,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT MIN(Percentage), MAX(Percentage), AVG(Percentage) FROM Percentage WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::string> sd = result[0];
@@ -11420,7 +11419,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT Speed_Min, Speed_Max, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			int ii = 0;
 			if (result.size()>0)
 			{
@@ -11439,7 +11438,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT MIN(Speed), MAX(Speed) FROM Fan WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::string> sd = result[0];
@@ -11457,7 +11456,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT Level, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			int ii = 0;
 			if (result.size()>0)
 			{
@@ -11475,7 +11474,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT MAX(Level) FROM UV WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::string> sd = result[0];
@@ -11488,7 +11487,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT Level, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStartPrev << "' AND Date<='" << szDateEndPrev << "') ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				int iPrev = 0;
@@ -11510,7 +11509,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT Total, Rate, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			int ii = 0;
 			if (result.size()>0)
 			{
@@ -11538,7 +11537,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			{
 				szQuery << "SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "') ORDER BY ROWID DESC LIMIT 1";
 			}
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::string> sd = result[0];
@@ -11566,7 +11565,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT Total, Rate, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStartPrev << "' AND Date<='" << szDateEndPrev << "') ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				int iPrev = 0;
@@ -11594,7 +11593,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT nValue, sValue FROM DeviceStatus WHERE (ID==" << idx << ")";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::string> sd = result[0];
@@ -11606,15 +11605,15 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			float GasDivider = 100.0f;
 			float WaterDivider = 100.0f;
 			int tValue;
-			if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+			if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 			{
 				EnergyDivider = float(tValue);
 			}
-			if (m_pMain->m_sql.GetPreferencesVar("MeterDividerGas", tValue))
+			if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
 			{
 				GasDivider = float(tValue);
 			}
-			if (m_pMain->m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+			if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
 			{
 				WaterDivider = float(tValue);
 			}
@@ -11633,7 +11632,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			{
 				//Actual Year
 				szQuery << "SELECT Value1,Value2,Value5,Value6, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					bool bHaveDeliverd = false;
@@ -11675,7 +11674,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT Value1,Value2,Value5,Value6, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStartPrev << "' AND Date<='" << szDateEndPrev << "') ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					bool bHaveDeliverd = false;
@@ -11720,7 +11719,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				root["title"] = "Graph " + sensor + " " + srange;
 
 				szQuery << "SELECT Value1,Value2, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -11744,7 +11743,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				root["title"] = "Graph " + sensor + " " + srange;
 
 				szQuery << "SELECT Value1,Value2, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -11774,7 +11773,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 					vdiv = 1000.0f;
 
 				szQuery << "SELECT Value1,Value2, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -11811,7 +11810,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				root["title"] = "Graph " + sensor + " " + srange;
 
 				szQuery << "SELECT Value1,Value2, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -11832,7 +11831,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				root["title"] = "Graph " + sensor + " " + srange;
 
 				szQuery << "SELECT Value1,Value2, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -11855,7 +11854,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				root["title"] = "Graph " + sensor + " " + srange;
 
 				szQuery << "SELECT Value1,Value2, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -11873,14 +11872,14 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			else if (dType == pTypeCURRENT)
 			{
 				szQuery << "SELECT Value1,Value2,Value3,Value4,Value5,Value6, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					//CM113
 					int displaytype = 0;
 					int voltage = 230;
-					m_pMain->m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
-					m_pMain->m_sql.GetPreferencesVar("ElectricVoltage", voltage);
+					m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
+					m_sql.GetPreferencesVar("ElectricVoltage", voltage);
 
 					root["displaytype"] = displaytype;
 
@@ -11961,14 +11960,14 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			else if (dType == pTypeCURRENTENERGY)
 			{
 				szQuery << "SELECT Value1,Value2,Value3,Value4,Value5,Value6, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					//CM180i
 					int displaytype = 0;
 					int voltage = 230;
-					m_pMain->m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
-					m_pMain->m_sql.GetPreferencesVar("ElectricVoltage", voltage);
+					m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
+					m_sql.GetPreferencesVar("ElectricVoltage", voltage);
 
 					root["displaytype"] = displaytype;
 
@@ -12083,7 +12082,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				}
 				//Actual Year
 				szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -12116,7 +12115,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStartPrev << "' AND Date<='" << szDateEndPrev << "') ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -12153,7 +12152,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			{
 				szQuery << "SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2), MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM MultiMeter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 				bool bHaveDeliverd = false;
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::string> sd = result[0];
@@ -12219,7 +12218,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			else if (dType == pTypeAirQuality)
 			{
 				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					root["result"][ii]["d"] = szDateEnd;
@@ -12234,7 +12233,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				)
 			{
 				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					root["result"][ii]["d"] = szDateEnd;
@@ -12255,7 +12254,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 					vdiv = 1000.0f;
 
 				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					root["result"][ii]["d"] = szDateEnd;
@@ -12283,7 +12282,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			else if (dType == pTypeLux)
 			{
 				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					root["result"][ii]["d"] = szDateEnd;
@@ -12295,7 +12294,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			else if (dType == pTypeWEIGHT)
 			{
 				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					root["result"][ii]["d"] = szDateEnd;
@@ -12309,7 +12308,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			else if (dType == pTypeUsage)
 			{
 				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					root["result"][ii]["d"] = szDateEnd;
@@ -12321,7 +12320,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			else
 			{
 				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::string> sd = result[0];
@@ -12366,7 +12365,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT Direction, Speed_Min, Speed_Max, Gust_Min, Gust_Max, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -12378,10 +12377,10 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 					root["result"][ii]["di"] = sd[0];
 
 					int intSpeed = atoi(sd[2].c_str());
-					sprintf(szTmp, "%.1f", float(intSpeed) * m_pMain->m_sql.m_windscale);
+					sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
 					root["result"][ii]["sp"] = szTmp;
 					int intGust = atoi(sd[4].c_str());
-					sprintf(szTmp, "%.1f", float(intGust) * m_pMain->m_sql.m_windscale);
+					sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
 					root["result"][ii]["gu"] = szTmp;
 					ii++;
 				}
@@ -12390,7 +12389,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT AVG(Direction), MIN(Speed), MAX(Speed), MIN(Gust), MAX(Gust) FROM Wind WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateEnd << "') ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::string> sd = result[0];
@@ -12399,10 +12398,10 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				root["result"][ii]["di"] = sd[0];
 
 				int intSpeed = atoi(sd[2].c_str());
-				sprintf(szTmp, "%.1f", float(intSpeed) * m_pMain->m_sql.m_windscale);
+				sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
 				root["result"][ii]["sp"] = szTmp;
 				int intGust = atoi(sd[4].c_str());
-				sprintf(szTmp, "%.1f", float(intGust) * m_pMain->m_sql.m_windscale);
+				sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
 				root["result"][ii]["gu"] = szTmp;
 				ii++;
 			}
@@ -12469,7 +12468,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			{
 				// Need to get all values of the end date so 23:59:59 is appended to the date string
 				szQuery << "SELECT Temperature, Chill, Humidity, Barometer, Date, DewPoint FROM Temperature WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << " 23:59:59') ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				int ii = 0;
 				if (result.size()>0)
 				{
@@ -12527,7 +12526,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			else
 			{
 				szQuery << "SELECT Temp_Min, Temp_Max, Chill_Min, Chill_Max, Humidity, Barometer, Date, DewPoint, Temp_Avg FROM Temperature_Calendar WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				int ii = 0;
 				if (result.size()>0)
 				{
@@ -12590,7 +12589,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				szQuery.clear();
 				szQuery.str("");
 				szQuery << "SELECT MIN(Temperature), MAX(Temperature), MIN(Chill), MAX(Chill), MAX(Humidity), MAX(Barometer), MIN(DewPoint), AVG(Temperature) FROM Temperature WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::string> sd = result[0];
@@ -12651,7 +12650,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT Level, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			int ii = 0;
 			if (result.size()>0)
 			{
@@ -12669,7 +12668,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT MAX(Level) FROM UV WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::string> sd = result[0];
@@ -12686,7 +12685,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT Total, Rate, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			int ii = 0;
 			if (result.size()>0)
 			{
@@ -12711,7 +12710,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			{
 				szQuery << "SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "') ORDER BY ROWID DESC LIMIT 1";
 			}
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::string> sd = result[0];
@@ -12743,15 +12742,15 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			float GasDivider = 100.0f;
 			float WaterDivider = 100.0f;
 			int tValue;
-			if (m_pMain->m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+			if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 			{
 				EnergyDivider = float(tValue);
 			}
-			if (m_pMain->m_sql.GetPreferencesVar("MeterDividerGas", tValue))
+			if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
 			{
 				GasDivider = float(tValue);
 			}
-			if (m_pMain->m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+			if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
 			{
 				WaterDivider = float(tValue);
 			}
@@ -12766,7 +12765,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			if (dType == pTypeP1Power)
 			{
 				szQuery << "SELECT Value1,Value2,Value5,Value6, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					bool bHaveDeliverd = false;
@@ -12802,7 +12801,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			else
 			{
 				szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -12839,7 +12838,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			{
 				szQuery << "SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2),MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM MultiMeter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 				bool bHaveDeliverd = false;
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::string> sd = result[0];
@@ -12891,7 +12890,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			else
 			{
 				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
-				result = m_pMain->m_sql.query(szQuery.str());
+				result = m_sql.query(szQuery.str());
 				if (result.size()>0)
 				{
 					std::vector<std::string> sd = result[0];
@@ -12936,7 +12935,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT Direction, Speed_Min, Speed_Max, Gust_Min, Gust_Max, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -12948,10 +12947,10 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 					root["result"][ii]["di"] = sd[0];
 
 					int intSpeed = atoi(sd[2].c_str());
-					sprintf(szTmp, "%.1f", float(intSpeed) * m_pMain->m_sql.m_windscale);
+					sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
 					root["result"][ii]["sp"] = szTmp;
 					int intGust = atoi(sd[4].c_str());
-					sprintf(szTmp, "%.1f", float(intGust) * m_pMain->m_sql.m_windscale);
+					sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
 					root["result"][ii]["gu"] = szTmp;
 					ii++;
 				}
@@ -12960,7 +12959,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT AVG(Direction), MIN(Speed), MAX(Speed), MIN(Gust), MAX(Gust) FROM Wind WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateEnd << "') ORDER BY Date ASC";
-			result = m_pMain->m_sql.query(szQuery.str());
+			result = m_sql.query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::string> sd = result[0];
@@ -12969,10 +12968,10 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				root["result"][ii]["di"] = sd[0];
 
 				int intSpeed = atoi(sd[2].c_str());
-				sprintf(szTmp, "%.1f", float(intSpeed) * m_pMain->m_sql.m_windscale);
+				sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
 				root["result"][ii]["sp"] = szTmp;
 				int intGust = atoi(sd[4].c_str());
-				sprintf(szTmp, "%.1f", float(intGust) * m_pMain->m_sql.m_windscale);
+				sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
 				root["result"][ii]["gu"] = szTmp;
 				ii++;
 			}

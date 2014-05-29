@@ -4,6 +4,9 @@
 #include "SunRiseSet.h"
 #include "localtime_r.h"
 #include "Logger.h"
+#include "WebServer.h"
+#include "SQLHelper.h"
+
 #include "../httpclient/HTTPClient.h"
 #include "../webserver/Base64.h"
 
@@ -75,6 +78,8 @@ extern std::string szStartupFolder;
 extern std::string szWWWFolder;
 extern bool bIsRaspberryPi;
 
+extern http::server::CWebServer m_webserver;
+
 namespace tcp {
 namespace server {
 	class CTCPClient;
@@ -99,7 +104,6 @@ MainWorker::MainWorker()
 	m_bHaveDownloadedDomoticzUpdate=false;
 	m_bHaveDownloadedDomoticzUpdateSuccessFull=false;
 	m_bDoDownloadDomoticzUpdate=false;
-	m_sql.SetMainWorker(this);
 }
 
 MainWorker::~MainWorker()
@@ -546,7 +550,6 @@ bool MainWorker::AddHardwareFromParams(
 	{
 		pHardware->HwdType=Type;
 		pHardware->Name=Name;
-		pHardware->m_pMainWorker=this;
 		AddDomoticzHardware(pHardware);
 		m_hardwareStartCounter=0;
 		m_bStartHardware=true;
@@ -608,12 +611,13 @@ bool MainWorker::Start()
 
 bool MainWorker::Stop()
 {
+	_log.Log(LOG_STATUS, "Stopping all hardware...");
+	StopDomoticzHardware();
 	m_webserver.StopServer();
 	m_scheduler.StopScheduler();
 	m_eventsystem.StopEventSystem();
 	m_hardwaremonitor.StopHardwareMonitor();
 //    m_cameras.StopCameraGrabber();
-	StopDomoticzHardware();
 
 	if (m_thread!=NULL)
 	{
@@ -627,7 +631,7 @@ bool MainWorker::Stop()
 bool MainWorker::StartThread()
 {
 	//Start WebServer
-	if (!m_webserver.StartServer(this, "0.0.0.0",m_webserverport,szWWWFolder,m_bIgnoreUsernamePassword))
+	if (!m_webserver.StartServer("0.0.0.0",m_webserverport,szWWWFolder,m_bIgnoreUsernamePassword))
 	{
         return false;
 	}
@@ -639,13 +643,10 @@ bool MainWorker::StartThread()
 	}
 
 
-	m_cameras.SetMainWorker(this);
-
 	//Start Scheduler
-	m_scheduler.StartScheduler(this);
-	m_hardwaremonitor.StartHardwareMonitor(this);
-	m_eventsystem.StartEventSystem(this);
-	m_datapush.SetMainWorker(this);
+	m_scheduler.StartScheduler();
+	m_hardwaremonitor.StartHardwareMonitor();
+	m_eventsystem.StartEventSystem();
 
 	int rnvalue=0;
 	m_sql.GetPreferencesVar("RemoteSharedPort", rnvalue);
@@ -711,7 +712,6 @@ void MainWorker::GetRaspberryPiTemperature()
 
 		CDummy hBase(1000);
 		hBase.HwdType = HTYPE_System;
-		hBase.m_pMainWorker=this;
 		hBase.Name="System";
 
 		DecodeRXMessage(&hBase,(const unsigned char*)&tsen);

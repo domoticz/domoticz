@@ -6,8 +6,6 @@
 //Base class with functions all notification systems should have
 #define RX_BUFFER_SIZE 40
 
-class MainWorker;
-
 class CDomoticzHardwareBase
 {
 	friend class C1Wire;
@@ -59,7 +57,6 @@ public:
 	unsigned char m_SeqNr;
 	unsigned char m_rxbufferpos;
 	bool m_bEnableReceive;
-	MainWorker *m_pMainWorker;
 	boost::signals2::signal<void(CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand)> sDecodeRXMessage;
 	boost::signals2::signal<void(CDomoticzHardwareBase *pDevice)> sOnConnected;
 	void *m_pUserData;
