@@ -54,6 +54,7 @@ Connection information:
 
 #define NO_INTERRUPT   -1
 
+bool m_bIsInitGPIOPins=false;
 
 // List of GPIO pin numbers, ordered as listed
 std::vector<CGpioPin> CGpio::pins;
@@ -80,6 +81,12 @@ CGpio::CGpio(const int ID)
 	IOPinStatusPacket.LIGHTING1.subtype = sTypeIMPULS;
 	IOPinStatusPacket.LIGHTING1.rssi = 12;
 	IOPinStatusPacket.LIGHTING1.seqnbr = 0;
+
+	if (!m_bIsGPIOInit)
+	{
+		InitPins();
+		m_bIsInitGPIOPins=true;
+	}
 }
 
 CGpio::~CGpio(void)
@@ -469,10 +476,5 @@ CGpioPin* CGpio::GetPPinById(int id)
 	}
 	return NULL;
 }
-
-
-
-// Make sure init is done once at startup
-bool dummy = CGpio::InitPins();
 
 #endif // WITH_GPIO
