@@ -167,6 +167,15 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 	char szID[10];
 	sprintf(szID,"%X%02X%02X%02X", ID1, ID2, ID3, ID4);
 	std::string ID = szID;
+	unsigned char unitcode = 1;
+
+	//Check if we already exist
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Unit==" << int(unitcode) << ") AND (Type==" << pTypeLighting2 << ") AND (SubType==" << sTypeAC << ") AND (DeviceID=='" << ID << "')";
+	result = m_sql.query(szQuery.str());
+	if (result.size() > 0)
+		return; //Already in the system
 
 	//Send as Lighting 2
 
@@ -180,7 +189,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 	lcmd.LIGHTING2.id2=ID2;
 	lcmd.LIGHTING2.id3=ID3;
 	lcmd.LIGHTING2.id4=ID4;
-	lcmd.LIGHTING2.unitcode=1;
+	lcmd.LIGHTING2.unitcode=unitcode;
 	int level=15;
 	if (pDevice->devType==ZDTYPE_SWITCHNORMAL)
 	{
@@ -221,16 +230,13 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 	lcmd.LIGHTING2.filler=0;
 	lcmd.LIGHTING2.rssi=12;
 
-	//Check if we already exist
-	std::stringstream szQuery;
-	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Unit==" << int(lcmd.LIGHTING2.unitcode) << ") AND (Type==" << pTypeLighting2 << ") AND (SubType==" << sTypeAC << ") AND (DeviceID=='" << ID << "')";
-	result=m_sql.query(szQuery.str());
-	if (result.size()<1)
-	{
-		//Not Found
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
+
+	//Set Name
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "UPDATE DeviceStatus SET Name='" << pDevice->label << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
+	result = m_sql.query(szQuery.str());
 }
 
 unsigned char ZWaveBase::Convert_Battery_To_PercInt(const unsigned char level)

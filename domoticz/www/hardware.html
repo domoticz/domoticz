@@ -1939,10 +1939,7 @@ function RefreshHardwareTable()
 			if (item.Enabled=="true") {
 				enabledstr="Yes";
 			}
-			if (
-				(HwTypeStr.indexOf("RFXtrx433 USB") >= 0)||
-				(HwTypeStr.indexOf("RFXtrx315 USB") >= 0)
-			   )
+			if (HwTypeStr.indexOf("RFXCOM") >= 0)
 			{
 				HwTypeStr+='<br>Firmware version: ' + item.Mode2;
 				HwTypeStr+=' <span class="label label-info" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Set Mode</span>';

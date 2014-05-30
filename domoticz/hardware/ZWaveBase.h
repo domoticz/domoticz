@@ -53,6 +53,9 @@ class ZWaveBase : public CDomoticzHardwareBase
 		//main_id
 		std::string string_id;
 
+		//label
+		std::string label;
+
 		time_t lastreceived;
 		unsigned char sequence_number;
 
@@ -71,6 +74,7 @@ class ZWaveBase : public CDomoticzHardwareBase
 			floatValue=0;
 			intvalue=0;
 			bValidValue=true;
+			label = "Unknown";
 		}
 	};
 public:

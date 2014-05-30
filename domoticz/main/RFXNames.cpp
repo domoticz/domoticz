@@ -136,7 +136,7 @@ const char *Hardware_Type_Desc(int hType)
 	{
 		{ HTYPE_RFXtrx315, "RFXCOM - RFXtrx315 USB 315MHz Transceiver" },
 		{ HTYPE_RFXtrx433, "RFXCOM - RFXtrx433 USB 433.92MHz Transceiver" },
-		{ HTYPE_RFXLAN, "RFXCOM - RFXLAN Transceiver 433.92 MHz with LAN interface" },
+		{ HTYPE_RFXLAN, "RFXCOM - RFXtrx shared over LAN interface" },
 		{ HTYPE_Domoticz, "Domoticz - Remote Server" },
 		{ HTYPE_P1SmartMeter, "P1 Smart Meter USB" },
 		{ HTYPE_P1SmartMeterLAN, "P1 Smart Meter with LAN interface" },
