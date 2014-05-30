@@ -38,6 +38,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Fixed: TeleInfo checksum calculation
 - Implemented: Meteostick USB (rain not correct yet)
 - Changed: appcache file
+- Implemented: setting signal/battery level from udevice json call
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

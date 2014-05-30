@@ -2001,6 +2001,20 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		std::string dtype=m_pWebEm->FindValue("dtype");
 		std::string dsubtype=m_pWebEm->FindValue("dsubtype");
 
+		int signallevel = 12;
+		int batterylevel = 255;
+
+		std::string sSignalLevel = m_pWebEm->FindValue("rssi");
+		if (sSignalLevel != "")
+		{
+			signallevel = atoi(sSignalLevel.c_str());
+		}
+		std::string sBatteryLevel = m_pWebEm->FindValue("battery");
+		if (sBatteryLevel != "")
+		{
+			batterylevel = atoi(sBatteryLevel.c_str());
+		}
+
 		if (idx!="")
 		{
 			//Get device parameters
@@ -2039,8 +2053,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			(const unsigned char)atoi(dunit.c_str()),
 			(const unsigned char)atoi(dtype.c_str()),
 			(const unsigned char)atoi(dsubtype.c_str()),
-			12,//signal level,
-			255,//battery level
+			signallevel,//signal level,
+			batterylevel,//battery level
 			(const int)atoi(nvalue.c_str()),
 			svalue.c_str(),
 			devname,
