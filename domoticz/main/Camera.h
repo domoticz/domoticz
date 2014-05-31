@@ -34,7 +34,6 @@ public:
 	void StopCameraGrabber();
 */
     void ReloadCameras();
-	std::vector<cameraDevice> GetCameraDevices();
 
 	bool TakeSnapshot(const unsigned long long CamID, std::vector<unsigned char> &camimage);
 	bool TakeSnapshot(const std::string &CamID, std::vector<unsigned char> &camimage);
@@ -46,13 +45,14 @@ public:
 	unsigned long long IsDevSceneInCamera(const unsigned char DevSceneType, const std::string &DevSceneID);
 
 	bool EmailCameraSnapshot(const std::string &CamIdx, const std::string &subject);
-	void ReloadCameraActiveDevices(const std::string &CamID);
 	std::string GetCameraURL(cameraDevice *pCamera);
 	std::string GetCameraURL(const std::string &CamID);
 	std::string GetCameraURL(const unsigned long long CamID);
 	std::string GetCameraFeedURL(const std::string &CamID);
 	std::string GetCameraFeedURL(const unsigned long long CamID);
 private:
+	void ReloadCameraActiveDevices(const std::string &CamID);
+
 	boost::mutex m_mutex;
 	unsigned char m_seconds_counter;
 	volatile bool m_stoprequested;

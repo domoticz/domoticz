@@ -647,6 +647,7 @@ bool MainWorker::StartThread()
 	m_scheduler.StartScheduler();
 	m_hardwaremonitor.StartHardwareMonitor();
 	m_eventsystem.StartEventSystem();
+	m_cameras.ReloadCameras();
 
 	int rnvalue=0;
 	m_sql.GetPreferencesVar("RemoteSharedPort", rnvalue);

@@ -3015,7 +3015,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				activedelay
 				);
 			result=m_sql.query(szTmp);
-			m_mainworker.m_cameras.ReloadCameraActiveDevices(idx);
+			m_mainworker.m_cameras.ReloadCameras();
 		}
 	}
 	else if (cparam=="deleteamactivedevice")
@@ -3027,6 +3027,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["title"]="DeleteCameraActiveDevice";
 		sprintf(szTmp,"DELETE FROM CamerasActiveDevices WHERE (ID == '%s')",idx.c_str());
 		result=m_sql.query(szTmp);
+		m_mainworker.m_cameras.ReloadCameras();
 	}
 	else if (cparam=="deleteallactivecamdevices")
 	{
@@ -3037,6 +3038,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["title"]="DeleteAllCameraActiveDevices";
 		sprintf(szTmp,"DELETE FROM CamerasActiveDevices WHERE (CameraRowID == '%s')",idx.c_str());
 		result=m_sql.query(szTmp);
+		m_mainworker.m_cameras.ReloadCameras();
 	}
 	else if (cparam=="testpushover")
 	{

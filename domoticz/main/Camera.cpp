@@ -39,19 +39,6 @@ void CCamScheduler::StopCameraGrabber()
 }
 */
 
-std::vector<cameraDevice> CCamScheduler::GetCameraDevices()
-{
-	boost::lock_guard<boost::mutex> l(m_mutex);
-	std::vector<cameraDevice> ret;
-
-	std::vector<cameraDevice>::iterator itt;
-	for (itt=m_cameradevices.begin(); itt!=m_cameradevices.end(); ++itt)
-	{
-		ret.push_back(*itt);
-	}
-	return ret;
-}
-
 void CCamScheduler::ReloadCameras()
 {
 	std::vector<std::string> _AddedCameras;
@@ -84,6 +71,7 @@ void CCamScheduler::ReloadCameras()
 			_AddedCameras.push_back(sd[0]);
 		}
 	}
+
 	std::vector<std::string>::const_iterator ittCam;
 	for (ittCam=_AddedCameras.begin(); ittCam!=_AddedCameras.end(); ++ittCam)
 	{
@@ -237,7 +225,6 @@ cameraDevice* CCamScheduler::GetCamera(const std::string &CamID)
 
 cameraDevice* CCamScheduler::GetCamera(const unsigned long long CamID)
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
 	std::vector<cameraDevice>::iterator itt;
 	for (itt=m_cameradevices.begin(); itt!=m_cameradevices.end(); ++itt)
 	{
@@ -322,6 +309,8 @@ bool CCamScheduler::TakeUVCSnapshot(std::vector<unsigned char> &camimage)
 
 bool CCamScheduler::TakeSnapshot(const unsigned long long CamID, std::vector<unsigned char> &camimage)
 {
+	boost::lock_guard<boost::mutex> l(m_mutex);
+
 	cameraDevice *pCamera=GetCamera(CamID);
 	if (pCamera==NULL)
 		return false;
