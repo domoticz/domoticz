@@ -18,21 +18,16 @@ struct cameraDevice
 	std::string Username;
 	std::string Password;
 	int Port;
-	std::string VideoURL;
 	std::string ImageURL;
 	std::vector<cameraActiveDevice> mActiveDevices;
 };
 
-class CCamScheduler
+class CCameraHandler
 {
 public:
-	CCamScheduler(void);
-	~CCamScheduler(void);
+	CCameraHandler(void);
+	~CCameraHandler(void);
 
-/*
-	void StartCameraGrabber();
-	void StopCameraGrabber();
-*/
     void ReloadCameras();
 
 	bool TakeSnapshot(const unsigned long long CamID, std::vector<unsigned char> &camimage);
@@ -48,20 +43,11 @@ public:
 	std::string GetCameraURL(cameraDevice *pCamera);
 	std::string GetCameraURL(const std::string &CamID);
 	std::string GetCameraURL(const unsigned long long CamID);
-	std::string GetCameraFeedURL(const std::string &CamID);
-	std::string GetCameraFeedURL(const unsigned long long CamID);
 private:
 	void ReloadCameraActiveDevices(const std::string &CamID);
 
 	boost::mutex m_mutex;
 	unsigned char m_seconds_counter;
-	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
 	std::vector<cameraDevice> m_cameradevices;
-/*
-	//our thread
-	void Do_Work();
-	void CheckCameras();
-*/
 };
 

@@ -4213,42 +4213,34 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		std::string sport=m_pWebEm->FindValue("port");
 		std::string username=m_pWebEm->FindValue("username");
 		std::string password=m_pWebEm->FindValue("password");
-		std::string tvideourl=m_pWebEm->FindValue("videourl");
 		std::string timageurl=m_pWebEm->FindValue("imageurl");
 		if (
 			(name=="")||
 			(address=="")||
-			(tvideourl=="")||
 			(timageurl=="")
 			)
 			return;
 
-		std::string videourl;
 		std::string imageurl;
-		if (request_handler::url_decode(tvideourl,videourl))
+		if (request_handler::url_decode(timageurl,imageurl))
 		{
-			if (request_handler::url_decode(timageurl,imageurl))
-			{
-				videourl=base64_decode(videourl);
-				imageurl=base64_decode(imageurl);
+			imageurl=base64_decode(imageurl);
 
-				int port=atoi(sport.c_str());
-				root["status"]="OK";
-				root["title"]="AddCamera";
-				sprintf(szTmp,
-					"INSERT INTO Cameras (Name, Enabled, Address, Port, Username, Password, VideoURL, ImageURL) VALUES ('%s',%d,'%s',%d,'%s','%s','%s','%s')",
-					name.c_str(),
-					(senabled=="true")?1:0,
-					address.c_str(),
-					port,
-					base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
-					base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
-					videourl.c_str(),
-					imageurl.c_str()
-					);
-				result=m_sql.query(szTmp);
-				m_mainworker.m_cameras.ReloadCameras();
-			}
+			int port=atoi(sport.c_str());
+			root["status"]="OK";
+			root["title"]="AddCamera";
+			sprintf(szTmp,
+				"INSERT INTO Cameras (Name, Enabled, Address, Port, Username, Password, ImageURL) VALUES ('%s',%d,'%s',%d,'%s','%s','%s')",
+				name.c_str(),
+				(senabled=="true")?1:0,
+				address.c_str(),
+				port,
+				base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
+				base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
+				imageurl.c_str()
+				);
+			result=m_sql.query(szTmp);
+			m_mainworker.m_cameras.ReloadCameras();
 		}
 	}
 	else if (cparam=="updatecamera")
@@ -4262,46 +4254,38 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		std::string sport=m_pWebEm->FindValue("port");
 		std::string username=m_pWebEm->FindValue("username");
 		std::string password=m_pWebEm->FindValue("password");
-		std::string tvideourl=m_pWebEm->FindValue("videourl");
 		std::string timageurl=m_pWebEm->FindValue("imageurl");
 		if (
 			(name=="")||
 			(senabled=="")||
 			(address=="")||
-			(tvideourl=="")||
 			(timageurl=="")
 			)
 			return;
 
-		std::string videourl;
 		std::string imageurl;
-		if (request_handler::url_decode(tvideourl,videourl))
+		if (request_handler::url_decode(timageurl,imageurl))
 		{
-			if (request_handler::url_decode(timageurl,imageurl))
-			{
-				videourl=base64_decode(videourl);
-				imageurl=base64_decode(imageurl);
+			imageurl=base64_decode(imageurl);
 
-				int port=atoi(sport.c_str());
+			int port=atoi(sport.c_str());
 
-				root["status"]="OK";
-				root["title"]="UpdateCamera";
+			root["status"]="OK";
+			root["title"]="UpdateCamera";
 
-				sprintf(szTmp,
-					"UPDATE Cameras SET Name='%s', Enabled=%d, Address='%s', Port=%d, Username='%s', Password='%s', VideoURL='%s', ImageURL='%s' WHERE (ID == %s)",
-					name.c_str(),
-					(senabled=="true")?1:0,
-					address.c_str(),
-					port,
-					base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
-					base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
-					videourl.c_str(),
-					imageurl.c_str(),
-					idx.c_str()
-					);
-				result=m_sql.query(szTmp);
-				m_mainworker.m_cameras.ReloadCameras();
-			}
+			sprintf(szTmp,
+				"UPDATE Cameras SET Name='%s', Enabled=%d, Address='%s', Port=%d, Username='%s', Password='%s', ImageURL='%s' WHERE (ID == %s)",
+				name.c_str(),
+				(senabled=="true")?1:0,
+				address.c_str(),
+				port,
+				base64_encode((const unsigned char*)username.c_str(),username.size()).c_str(),
+				base64_encode((const unsigned char*)password.c_str(),password.size()).c_str(),
+				imageurl.c_str(),
+				idx.c_str()
+				);
+			result=m_sql.query(szTmp);
+			m_mainworker.m_cameras.ReloadCameras();
 		}
 	}
 	else if (cparam=="deletecamera")
@@ -6102,7 +6086,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				unsigned long long camIDX=m_mainworker.m_cameras.IsDevSceneInCamera(1,sd[0]);
 				root["result"][ii]["UsedByCamera"]=(camIDX!=0)?true:false;
 				if (camIDX!=0) {
-					root["result"][ii]["CameraFeed"]=m_mainworker.m_cameras.GetCameraFeedURL(camIDX);
+					std::stringstream scidx;
+					scidx << camIDX;
+					root["result"][ii]["CameraIdx"] = scidx.str();
 				}
 				ii++;
 			}
@@ -6505,7 +6491,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				unsigned long long camIDX=m_mainworker.m_cameras.IsDevSceneInCamera(0,sd[0]);
 				root["result"][ii]["UsedByCamera"]=(camIDX!=0)?true:false;
 				if (camIDX!=0) {
-					root["result"][ii]["CameraFeed"]=m_mainworker.m_cameras.GetCameraFeedURL(camIDX);
+					std::stringstream scidx;
+					scidx << camIDX;
+					root["result"][ii]["CameraIdx"] = scidx.str();;
 				}
 
 				bool bIsSubDevice=false;
@@ -7740,7 +7728,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				        unsigned long long camIDX=m_mainworker.m_cameras.IsDevSceneInCamera(0,sd[0]);
 				        root["result"][ii]["UsedByCamera"]=(camIDX!=0)?true:false;
 				        if (camIDX!=0) {
-					        root["result"][ii]["CameraFeed"]=m_mainworker.m_cameras.GetCameraFeedURL(camIDX);
+							std::stringstream scidx;
+							scidx << camIDX;
+							root["result"][ii]["CameraIdx"] = scidx.str();
 				        }
 
     					root["result"][ii]["Level"]=0;
@@ -8085,10 +8075,10 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		szQuery.clear();
 		szQuery.str("");
 		if (rused == "true") {
-			szQuery << "SELECT ID, Name, Enabled, Address, Port, Username, Password, VideoURL, ImageURL FROM Cameras WHERE (Enabled=='1') ORDER BY ID ASC";
+			szQuery << "SELECT ID, Name, Enabled, Address, Port, Username, Password, ImageURL FROM Cameras WHERE (Enabled=='1') ORDER BY ID ASC";
 		}
 		else {
-			szQuery << "SELECT ID, Name, Enabled, Address, Port, Username, Password, VideoURL, ImageURL FROM Cameras ORDER BY ID ASC";
+			szQuery << "SELECT ID, Name, Enabled, Address, Port, Username, Password, ImageURL FROM Cameras ORDER BY ID ASC";
 		}
 		result = m_sql.query(szQuery.str());
 		if (result.size()>0)
@@ -8106,8 +8096,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 				root["result"][ii]["Port"] = atoi(sd[4].c_str());
 				root["result"][ii]["Username"] = base64_decode(sd[5]);
 				root["result"][ii]["Password"] = base64_decode(sd[6]);
-				root["result"][ii]["VideoURL"] = sd[7];
-				root["result"][ii]["ImageURL"] = sd[8];
+				root["result"][ii]["ImageURL"] = sd[7];
 				ii++;
 			}
 		}
@@ -9097,7 +9086,9 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 				unsigned long long camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(1, sd[0]);
 				root["result"][ii]["UsedByCamera"] = (camIDX != 0) ? true : false;
 				if (camIDX != 0) {
-					root["result"][ii]["CameraFeed"] = m_mainworker.m_cameras.GetCameraFeedURL(camIDX);
+					std::stringstream scidx;
+					scidx << camIDX;
+					root["result"][ii]["CameraIdx"] = scidx.str();
 				}
 				ii++;
 			}

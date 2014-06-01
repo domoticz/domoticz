@@ -8,7 +8,7 @@ public:
 	//GET functions
 	static bool GET(const std::string url, std::string &response);
 	static bool GET(const std::string url, const std::vector<std::string> ExtraHeaders, std::string &response);
-	static bool GETBinary(const std::string url, const std::vector<std::string> ExtraHeaders, std::vector<unsigned char> &response);
+	static bool GETBinary(const std::string url, const std::vector<std::string> ExtraHeaders, std::vector<unsigned char> &response, const int TimeOut = -1);
 
 	static bool GETBinaryToFile(const std::string url, const std::string outputfile);
 

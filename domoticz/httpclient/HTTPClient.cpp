@@ -81,7 +81,7 @@ void HTTPClient::SetUserAgent(const std::string useragent)
 	m_sUserAgent=useragent;
 }
 
-bool HTTPClient::GETBinary(const std::string url, const std::vector<std::string> ExtraHeaders, std::vector<unsigned char> &response)
+bool HTTPClient::GETBinary(const std::string url, const std::vector<std::string> ExtraHeaders, std::vector<unsigned char> &response, const int TimeOut)
 {
 	try
 	{
@@ -93,6 +93,10 @@ bool HTTPClient::GETBinary(const std::string url, const std::vector<std::string>
 
 		CURLcode res;
 		SetGlobalOptions(curl);
+		if (TimeOut != -1)
+		{
+			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
+		}
 
 		struct curl_slist *headers=NULL;
 		if (ExtraHeaders.size()>0) {

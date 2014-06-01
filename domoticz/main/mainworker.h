@@ -80,7 +80,7 @@ public:
 	CEventSystem m_eventsystem;
 	CDataPush m_datapush;
 	CHardwareMonitor m_hardwaremonitor;
-	CCamScheduler m_cameras;
+	CCameraHandler m_cameras;
 
 	bool m_bIgnoreUsernamePassword;
 

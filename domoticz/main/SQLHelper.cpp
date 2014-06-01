@@ -21,7 +21,7 @@
 	#include <pwd.h>
 #endif
 
-#define DB_VERSION 43
+#define DB_VERSION 44
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -260,7 +260,6 @@ const char *sqlCreateCameras =
 "[Port] INTEGER, "
 "[Username] VARCHAR(100) DEFAULT (''), "
 "[Password] VARCHAR(100) DEFAULT (''), "
-"[VideoURL] VARCHAR(200) DEFAULT (''), "
 "[ImageURL] VARCHAR(200) DEFAULT (''));";
 
 const char *sqlCreateCamerasActiveDevices =
@@ -587,7 +586,6 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion<6)
 		{
-			query("ALTER TABLE Cameras ADD COLUMN [VideoURL] VARCHAR(100)");
 			query("ALTER TABLE Cameras ADD COLUMN [ImageURL] VARCHAR(100)");
 		}
 		if (dbversion<7)
@@ -726,8 +724,8 @@ bool CSQLHelper::OpenDatabase()
 			query(sqlCreateCameras);
 			//Copy values from tmp_Cameras back into our new table
 			query(
-				"INSERT INTO Cameras([ID],[Name],[Enabled],[Address],[Port],[Username],[Password],[VideoURL],[ImageURL])"
-				"SELECT [ID],[Name],[Enabled],[Address],[Port],[Username],[Password],[VideoURL],[ImageURL]"
+				"INSERT INTO Cameras([ID],[Name],[Enabled],[Address],[Port],[Username],[Password],[ImageURL])"
+				"SELECT [ID],[Name],[Enabled],[Address],[Port],[Username],[Password],[ImageURL]"
 				"FROM tmp_Cameras");
 			//Drop the tmp_Cameras table
 			query("DROP TABLE tmp_Cameras");
@@ -884,6 +882,21 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("ALTER TABLE Scenes ADD COLUMN [OnAction] VARCHAR(200) DEFAULT ''");
 			query("ALTER TABLE Scenes ADD COLUMN [OffAction] VARCHAR(200) DEFAULT ''");
+		}
+		if (dbversion < 44)
+		{
+			//Drop VideoURL
+			//create a backup
+			query("ALTER TABLE Cameras RENAME TO tmp_Cameras");
+			//Create the new table
+			query(sqlCreateCameras);
+			//Copy values from tmp_Cameras back into our new table
+			query(
+				"INSERT INTO Cameras([ID],[Name],[Enabled],[Address],[Port],[Username],[Password],[ImageURL])"
+				"SELECT [ID],[Name],[Enabled],[Address],[Port],[Username],[Password],[ImageURL]"
+				"FROM tmp_Cameras");
+			//Drop the tmp_Cameras table
+			query("DROP TABLE tmp_Cameras");
 		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);

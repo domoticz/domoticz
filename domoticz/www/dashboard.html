@@ -1249,7 +1249,7 @@ function ShowFavorites()
 									'\t      <td id="bigtext">';
 							  if (item.UsedByCamera==true) {
 								var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="16" width="16">';
-								streamurl="<a href=\"javascript:ShowCameraLiveStream('" + item.Name + "','" + item.CameraFeed + "')\">" + streamimg + "</a>";
+								streamurl="<a href=\"javascript:ShowCameraLiveStream('" + item.Name + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 								xhtm+=streamurl;
 							  }
 							  xhtm+='</td>\n';
@@ -1567,7 +1567,7 @@ function ShowFavorites()
 									'\t      <td id="bigtext">';
 						  if (item.UsedByCamera==true) {
 							var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="16" width="16">';
-							streamurl="<a href=\"javascript:ShowCameraLiveStream('" + item.Name + "','" + item.CameraFeed + "')\">" + streamimg + "</a>";
+							streamurl="<a href=\"javascript:ShowCameraLiveStream('" + item.Name + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 							xhtm+=streamurl;
 						  }
 						  xhtm+='</td>\n';

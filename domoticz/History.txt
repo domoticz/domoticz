@@ -40,6 +40,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Changed: appcache file
 - Implemented: setting signal/battery level from udevice json call
 - Implemented: RFXCom over LAN setup button
+- Changed: Camera setup, dropped videoURL, Screenshots are now taking from within Domoticz, now possible to watch live camera over internet connection (snapshot refresh every 100ms)
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

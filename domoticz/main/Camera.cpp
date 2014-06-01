@@ -3,6 +3,7 @@
 #include "Camera.h"
 #include "localtime_r.h"
 #include "Logger.h"
+#include "../main/Helper.h"
 #include "../httpclient/HTTPClient.h"
 #include "../smtpclient/SMTPClient.h"
 #include "../webserver/Base64.h"
@@ -12,34 +13,16 @@
 
 extern std::string szStartupFolder;
 
-CCamScheduler::CCamScheduler(void)
+CCameraHandler::CCameraHandler(void)
 {
-	m_stoprequested=false;
 	m_seconds_counter=0;
 }
 
-CCamScheduler::~CCamScheduler(void)
+CCameraHandler::~CCameraHandler(void)
 {
 }
 
-/*
-void CCamScheduler::StartCameraGrabber(MainWorker *pMainWorker)
-{
-	m_seconds_counter=CAMERA_POLL_INTERVAL;
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CCamScheduler::Do_Work, this)));
-}
-
-void CCamScheduler::StopCameraGrabber()
-{
-	if (m_thread!=NULL)
-	{
-		m_stoprequested = true;
-		m_thread->join();
-	}
-}
-*/
-
-void CCamScheduler::ReloadCameras()
+void CCameraHandler::ReloadCameras()
 {
 	std::vector<std::string> _AddedCameras;
 	boost::lock_guard<boost::mutex> l(m_mutex);
@@ -48,7 +31,7 @@ void CCamScheduler::ReloadCameras()
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> >::const_iterator itt;
 
-	szQuery << "SELECT ID, Name, Address, Port, Username, Password, VideoURL, ImageURL FROM Cameras WHERE (Enabled == 1) ORDER BY ID";
+	szQuery << "SELECT ID, Name, Address, Port, Username, Password, ImageURL FROM Cameras WHERE (Enabled == 1) ORDER BY ID";
 	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -65,8 +48,7 @@ void CCamScheduler::ReloadCameras()
 			citem.Port		= atoi(sd[3].c_str());
 			citem.Username	= base64_decode(sd[4]);
 			citem.Password	= base64_decode(sd[5]);
-			citem.VideoURL	= sd[6];
-			citem.ImageURL	= sd[7];
+			citem.ImageURL	= sd[6];
 			m_cameradevices.push_back(citem);
 			_AddedCameras.push_back(sd[0]);
 		}
@@ -80,7 +62,7 @@ void CCamScheduler::ReloadCameras()
 	}
 }
 
-void CCamScheduler::ReloadCameraActiveDevices(const std::string &CamID)
+void CCameraHandler::ReloadCameraActiveDevices(const std::string &CamID)
 {
 	cameraDevice *pCamera=GetCamera(CamID);
 	if (pCamera==NULL)
@@ -111,7 +93,7 @@ void CCamScheduler::ReloadCameraActiveDevices(const std::string &CamID)
 }
 
 //Return 0 if NO, otherwise Cam IDX
-unsigned long long CCamScheduler::IsDevSceneInCamera(const unsigned char DevSceneType, const std::string &DevSceneID)
+unsigned long long CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const std::string &DevSceneID)
 {
 	unsigned long long ulID;
 	std::stringstream s_str( DevSceneID );
@@ -119,7 +101,7 @@ unsigned long long CCamScheduler::IsDevSceneInCamera(const unsigned char DevScen
 	return IsDevSceneInCamera(DevSceneType,ulID);
 }
 
-unsigned long long CCamScheduler::IsDevSceneInCamera(const unsigned char DevSceneType, const unsigned long long DevSceneID)
+unsigned long long CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const unsigned long long DevSceneID)
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 	std::vector<cameraDevice>::iterator itt;
@@ -139,57 +121,7 @@ unsigned long long CCamScheduler::IsDevSceneInCamera(const unsigned char DevScen
 	return 0;
 }
 
-/*
-void CCamScheduler::Do_Work()
-{
-	while (!m_stoprequested)
-	{
-		//sleep 1 second
-		sleep_seconds1);
-		if (m_stoprequested)
-			break;
-		m_seconds_counter++;
-		if (m_seconds_counter>=CAMERA_POLL_INTERVAL)
-		{
-			m_seconds_counter=0;
-			CheckCameras();
-		}
-	}
-	_log.Log(LOG_STATUS,"Camera: fetch stopped...");
-}
-
-void CCamScheduler::CheckCameras()
-{
-	boost::lock_guard<boost::mutex> l(m_mutex);
-
-	time_t atime=mytime(NULL);
-	struct tm ltime;
-	localtime_r(&atime,&ltime);
-    //_log.Log(LOG_NORM,"Camera: tick");
-
-}
-*/
-
-std::string CCamScheduler::GetCameraFeedURL(const std::string &CamID)
-{
-	cameraDevice* pCamera=GetCamera(CamID);
-	if (pCamera==NULL)
-		return "";
-	std::string szURL=GetCameraURL(pCamera);
-	return szURL+="/" + pCamera->VideoURL;
-}
-
-std::string CCamScheduler::GetCameraFeedURL(const unsigned long long CamID)
-{
-	cameraDevice* pCamera=GetCamera(CamID);
-	if (pCamera==NULL)
-		return "";
-	std::string szURL=GetCameraURL(pCamera);
-	return szURL+="/" + pCamera->VideoURL;
-}
-
-
-std::string CCamScheduler::GetCameraURL(const std::string &CamID)
+std::string CCameraHandler::GetCameraURL(const std::string &CamID)
 {
 	cameraDevice* pCamera=GetCamera(CamID);
 	if (pCamera==NULL)
@@ -197,7 +129,7 @@ std::string CCamScheduler::GetCameraURL(const std::string &CamID)
 	return GetCameraURL(pCamera);
 }
 
-std::string CCamScheduler::GetCameraURL(const unsigned long long CamID)
+std::string CCameraHandler::GetCameraURL(const unsigned long long CamID)
 {
 	cameraDevice* pCamera=GetCamera(CamID);
 	if (pCamera==NULL)
@@ -205,17 +137,20 @@ std::string CCamScheduler::GetCameraURL(const unsigned long long CamID)
 	return GetCameraURL(pCamera);
 }
 
-std::string CCamScheduler::GetCameraURL(cameraDevice *pCamera)
+std::string CCameraHandler::GetCameraURL(cameraDevice *pCamera)
 {
 	std::stringstream s_str;
-	if ((pCamera->Username!="")||(pCamera->Password!=""))
+
+	bool bHaveUPinURL = (pCamera->ImageURL.find("#USERNAME") != std::string::npos) || (pCamera->ImageURL.find("#PASSWORD") != std::string::npos);
+
+	if ((!bHaveUPinURL)&&((pCamera->Username != "") || (pCamera->Password != "")))
 		s_str << "http://" << pCamera->Username << ":" << pCamera->Password << "@" << pCamera->Address << ":" << pCamera->Port;
 	else
 		s_str << "http://" << pCamera->Address << ":" << pCamera->Port;
 	return s_str.str();
 }
 
-cameraDevice* CCamScheduler::GetCamera(const std::string &CamID)
+cameraDevice* CCameraHandler::GetCamera(const std::string &CamID)
 {
 	unsigned long long ulID;
 	std::stringstream s_str( CamID );
@@ -223,7 +158,7 @@ cameraDevice* CCamScheduler::GetCamera(const std::string &CamID)
 	return GetCamera(ulID);
 }
 
-cameraDevice* CCamScheduler::GetCamera(const unsigned long long CamID)
+cameraDevice* CCameraHandler::GetCamera(const unsigned long long CamID)
 {
 	std::vector<cameraDevice>::iterator itt;
 	for (itt=m_cameradevices.begin(); itt!=m_cameradevices.end(); ++itt)
@@ -234,7 +169,7 @@ cameraDevice* CCamScheduler::GetCamera(const unsigned long long CamID)
 	return NULL;
 }
 
-bool CCamScheduler::TakeSnapshot(const std::string &CamID, std::vector<unsigned char> &camimage)
+bool CCameraHandler::TakeSnapshot(const std::string &CamID, std::vector<unsigned char> &camimage)
 {
 	unsigned long long ulID;
 	std::stringstream s_str( CamID );
@@ -242,23 +177,11 @@ bool CCamScheduler::TakeSnapshot(const std::string &CamID, std::vector<unsigned 
 	return TakeSnapshot(ulID,camimage);
 }
 
-bool CCamScheduler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
+bool CCameraHandler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
 {
 	std::string raspparams="-w 800 -h 600 -t 0";
 	m_sql.GetPreferencesVar("RaspCamParams", raspparams);
 
-#ifdef WIN32
-	//get our test image
-	std::ifstream is("E:\\test.jpg", std::ios::in | std::ios::binary);
-	if (is)
-	{
-		char buf[512];
-		while (is.read(buf, sizeof(buf)).gcount() > 0)
-			camimage.insert(camimage.end(),buf, buf+(unsigned int)is.gcount());
-		is.close();
-		return true;
-	}
-#else
 	std::string OutputFileName=szStartupFolder + "tempcam.jpg";
 
 	std::string raspistillcmd="raspistill " + raspparams + " -o " + OutputFileName;
@@ -267,47 +190,63 @@ bool CCamScheduler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
 	//Get our image
 	system(raspistillcmd.c_str());
 	//If all went correct, we should have our file
-	std::ifstream is(OutputFileName.c_str(), std::ios::in | std::ios::binary);
-	if (is)
+	try
 	{
-		char buf[512];
-		while (is.read(buf, sizeof(buf)).gcount() > 0)
-			camimage.insert(camimage.end(),buf, buf+(unsigned int)is.gcount());
-		is.close();
-		std::remove(OutputFileName.c_str());
-		return true;
+		std::ifstream is(OutputFileName.c_str(), std::ios::in | std::ios::binary);
+		if (is)
+		{
+			if (is.is_open())
+			{
+				char buf[512];
+				while (is.read(buf, sizeof(buf)).gcount() > 0)
+					camimage.insert(camimage.end(), buf, buf + (unsigned int)is.gcount());
+				is.close();
+				std::remove(OutputFileName.c_str());
+				return true;
+			}
+		}
 	}
-#endif
+	catch (...)
+	{
+		
+	}
 
 	return false;
 }
 
-bool CCamScheduler::TakeUVCSnapshot(std::vector<unsigned char> &camimage)
+bool CCameraHandler::TakeUVCSnapshot(std::vector<unsigned char> &camimage)
 {
-#ifdef WIN32
-	return false;
-#endif
 	std::string OutputFileName=szStartupFolder + "tempcam.jpg";
 	std::string nvcmd="uvccapture -S80 -B128 -C128 -G80 -x800 -y600 -q100 -o" + OutputFileName;
 	std::remove(OutputFileName.c_str());
 
-	//Get our image
-	system(nvcmd.c_str());
-	//If all went correct, we should have our file
-	std::ifstream is(OutputFileName.c_str(), std::ios::in | std::ios::binary);
-	if (is)
+	try
 	{
-		char buf[512];
-		while (is.read(buf, sizeof(buf)).gcount() > 0)
-			camimage.insert(camimage.end(),buf, buf+(unsigned int)is.gcount());
-		is.close();
-		std::remove(OutputFileName.c_str());
-		return true;
+		//Get our image
+		system(nvcmd.c_str());
+		//If all went correct, we should have our file
+		std::ifstream is(OutputFileName.c_str(), std::ios::in | std::ios::binary);
+		if (is)
+		{
+			if (is.is_open())
+			{
+				char buf[512];
+				while (is.read(buf, sizeof(buf)).gcount() > 0)
+					camimage.insert(camimage.end(), buf, buf + (unsigned int)is.gcount());
+				is.close();
+				std::remove(OutputFileName.c_str());
+				return true;
+			}
+		}
+	}
+	catch (...)
+	{
+		
 	}
 	return false;
 }
 
-bool CCamScheduler::TakeSnapshot(const unsigned long long CamID, std::vector<unsigned char> &camimage)
+bool CCameraHandler::TakeSnapshot(const unsigned long long CamID, std::vector<unsigned char> &camimage)
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 
@@ -317,6 +256,8 @@ bool CCamScheduler::TakeSnapshot(const unsigned long long CamID, std::vector<uns
 
 	std::string szURL=GetCameraURL(pCamera);
 	szURL+="/" + pCamera->ImageURL;
+	szURL=stdreplace(szURL, "#USERNAME", pCamera->Username);
+	szURL=stdreplace(szURL, "#PASSWORD", pCamera->Password);
 
 	if (pCamera->ImageURL=="raspberry.cgi")
 		return TakeRaspberrySnapshot(camimage);
@@ -324,10 +265,10 @@ bool CCamScheduler::TakeSnapshot(const unsigned long long CamID, std::vector<uns
 		return TakeUVCSnapshot(camimage);
 
 	std::vector<std::string> ExtraHeaders;
-	return HTTPClient::GETBinary(szURL,ExtraHeaders,camimage);
+	return HTTPClient::GETBinary(szURL,ExtraHeaders,camimage,5);
 }
 
-bool CCamScheduler::EmailCameraSnapshot(const std::string &CamIdx, const std::string &subject)
+bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::string &subject)
 {
 	int nValue;
 	std::string sValue;
