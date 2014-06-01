@@ -40,7 +40,7 @@
 				</table>
 			</td>
 			<td>
-				<img id="camfeed" src="images/camera_default.png" width="280" height="210" style="max-height: 220px; border: 1px solid #1E2832;">
+				<img id="camfeed" id="camfeed" onload="load_testcam_video()" src="images/camera_default.png" width="280" height="210" style="max-height: 220px; border: 1px solid #1E2832;">
 				<br>
 				When everything is filled in correctly, the feed should display above.
 			</td>
@@ -122,10 +122,27 @@
 
 <script type="text/javascript" charset="utf-8">
 
+function load_testcam_video()
+{
+	if ((typeof $.testcamfeed == 'undefined')||($.testcamfeed==""))
+		return;
+	setTimeout("reload_testcam_image()",100);
+}
+
+function reload_testcam_image()
+{
+	var xx = new Image();
+	xx.src = $.testcamfeed+"&count="+$.count;
+	$.count++;
+	$('#dialog-add-edit-camera #camfeed').attr("src", xx.src);
+}
+
+
 function AddCameraDevice()
 {
 	$('#dialog-add-edit-camera #camfeed').attr("src", "images/camera_default.png");
-
+	$.count=0;
+	$.testcamfeed="";
 	$( "#dialog-add-edit-camera" ).dialog({
 		resizable: false,
 		width: 690,
@@ -147,6 +164,7 @@ function AddCameraDevice()
 		},
 		close: function() {
 			$('#dialog-add-edit-camera #camfeed').attr("src", "images/camera_default.png");
+			$.testcamfeed="";
             $( this ).dialog( "close" );
 		}
 	});
@@ -154,6 +172,8 @@ function AddCameraDevice()
 
 function EditCamera(idx)
 {
+	$.testcamfeed="";
+	$.count=0;
 	$('#dialog-add-edit-camera #camfeed').attr("src", "images/camera_default.png");
 
 	$( "#dialog-add-edit-camera" ).dialog({
@@ -176,6 +196,7 @@ function EditCamera(idx)
 			}
 		},
 		close: function() {
+			$.testcamfeed="";
 			$('#dialog-add-edit-camera #camfeed').attr("src", "images/camera_default.png");
             $( this ).dialog( "close" );
 		}
@@ -253,6 +274,8 @@ function TestCamFeed()
 		return;
 	}
 	var feedsrc=GenerateCamImageURL(csettings.address,csettings.port,csettings.username,csettings.password,csettings.imageurl);
+	$.testcamfeed=feedsrc;
+	$.count=0;
 	$('#dialog-add-edit-camera #camfeed').attr("src", feedsrc);
 }
 
