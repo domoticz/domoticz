@@ -9,6 +9,12 @@
 
 
 /*
+SDK version 6.21
+	Temp/Humidity - TH12 soil sensor added
+
+SDK version 6.20
+	Lighting2 - Kambrook added
+
 SDK version 6.19
 	msg3_RFY reversed back to msg3_RFU
 
@@ -305,6 +311,8 @@ SDK version 4.9
 #define sTypeAC 0x0
 #define sTypeHEU 0x1
 #define sTypeANSLUT 0x2
+#define sTypeKambrook 0x03
+
 #define light2_sOff 0x0
 #define light2_sOn 0x1
 #define light2_sSetLevel 0x2
@@ -340,6 +348,7 @@ SDK version 4.9
 #define sTypeRSL 0x04
 #define sTypeLivolo 0x05
 #define sTypeTRC02 0x06
+
 #define light5_sOff 0x0
 #define light5_sOn 0x1
 #define light5_sGroupOff 0x2
@@ -603,6 +612,7 @@ SDK version 4.9
 #define sTypeTH9 0x9  //Viking 02035,02038 (02035 has no humidity)
 #define sTypeTH10 0xA   //Rubicson
 #define sTypeTH11 0xB   //EW109
+#define sTypeTH12 0xC   //Imagintronix
 
 //types for barometric
 #define pTypeBARO 0x53

@@ -179,7 +179,7 @@ bool CCameraHandler::TakeSnapshot(const std::string &CamID, std::vector<unsigned
 
 bool CCameraHandler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
 {
-	std::string raspparams="-w 800 -h 600 -t 0";
+	std::string raspparams="-w 800 -h 600 -t 1";
 	m_sql.GetPreferencesVar("RaspCamParams", raspparams);
 
 	std::string OutputFileName=szStartupFolder + "tempcam.jpg";

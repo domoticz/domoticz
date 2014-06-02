@@ -2440,6 +2440,7 @@ unsigned long long MainWorker::decode_TempHum(const CDomoticzHardwareBase *pHard
 	case sTypeTH8:
 	case sTypeTH10:
 	case sTypeTH11:
+	case sTypeTH12:
 		Unit = pResponse->TEMP_HUM.id2;
 		break;
 	case sTypeTH5:
@@ -2571,6 +2572,11 @@ unsigned long long MainWorker::decode_TempHum(const CDomoticzHardwareBase *pHard
 		case sTypeTH11:
 			WriteMessage("subtype       = TH11 - Oregon EW109");
 			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);
+			WriteMessage(szTmp);
+			break;
+		case sTypeTH12:
+			WriteMessage("subtype       = TH12 - Imagintronix/Opus TX300");
+			sprintf(szTmp, "                channel %d", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
 			break;
 		default:

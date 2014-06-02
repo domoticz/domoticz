@@ -36,11 +36,12 @@ Version 1.0.xxxx (April xxth 2014)
 - Changed: openzwave, larger timeout for messages to and from secondary controllers
 - Implemented: RFXtrx RFY protocol implemented
 - Fixed: TeleInfo checksum calculation
-- Implemented: Meteostick USB (rain not correct yet)
+- Implemented: Meteostick USB
 - Changed: appcache file
 - Implemented: setting signal/battery level from udevice json call
 - Implemented: RFXCom over LAN setup button
 - Changed: Camera setup, dropped videoURL, Screenshots are now taking from within Domoticz, now possible to watch live camera over internet connection (snapshot refresh every 100ms)
+- Implemented: RFXtrx TH12 soil sensor (Imagintronix)
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

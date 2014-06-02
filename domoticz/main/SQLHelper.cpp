@@ -1104,7 +1104,7 @@ bool CSQLHelper::OpenDatabase()
 	}
 	if (!GetPreferencesVar("RaspCamParams", sValue))
 	{
-		UpdatePreferencesVar("RaspCamParams", "-w 800 -h 600 -t 0"); //width/height/time2wait
+		UpdatePreferencesVar("RaspCamParams", "-w 800 -h 600 -t 1"); //width/height/time2wait
 	}
 	if (!GetPreferencesVar("AcceptNewHardware", nValue))
 	{
