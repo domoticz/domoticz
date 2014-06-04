@@ -149,6 +149,7 @@ if (window.applicationCache) {
 						{
 								// Browser downloaded a new app cache.
 								// Swap it in and reload the page to get the new hotness.
+								window.parent.ClearNotifyCacheRefresh();
 								window.applicationCache.swapCache();
 								window.parent.RefreshMain();
 								window.location.reload();

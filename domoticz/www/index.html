@@ -98,7 +98,14 @@ function logEvent(event) {
 
 function NotifyCacheRefresh()
 {
-	generate_noty('information', '<b>' + $.i18n('Browser Cache is being refreshed') + '...</b><br>' + $.i18n('Please standby') + '...', 5000);
+	$.cachenoty=generate_noty('information', '<b>' + $.i18n('Browser Cache is being refreshed') + '...</b><br>' + $.i18n('Please standby') + '...', false);
+}
+
+function ClearNotifyCacheRefresh()
+{
+	if (typeof $.cachenoty != 'undefined') {
+		$.cachenoty.close();
+	}
 }
 
 function RefreshMain()

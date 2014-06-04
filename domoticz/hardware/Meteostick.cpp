@@ -657,9 +657,9 @@ void Meteostick::ParseLine()
 	if (rCode == '#')
 		return;
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	_log.Log(LOG_NORM, sLine.c_str());
-#endif
+//#endif
 
 	switch (rCode)
 	{
