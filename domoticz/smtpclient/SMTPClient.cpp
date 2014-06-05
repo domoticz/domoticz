@@ -158,6 +158,7 @@ bool SMTPClient::SendEmail()
 		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 		curl_easy_setopt(curl, CURLOPT_SSLVERSION, 0L);
 		curl_easy_setopt(curl, CURLOPT_SSL_SESSIONID_CACHE, 0L);
+		curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
 
 		//curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
 		curl_easy_setopt(curl, CURLOPT_MAIL_FROM, m_From.c_str());

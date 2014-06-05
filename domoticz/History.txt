@@ -42,6 +42,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: RFXCom over LAN setup button
 - Changed: Camera setup, dropped videoURL, Screenshots are now taking from within Domoticz, now possible to watch live camera over internet connection (snapshot refresh every 100ms)
 - Implemented: RFXtrx TH12 soil sensor (Imagintronix)
+- Fixed: (to be verified) possible crash when sending emails when no internet connection was available
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io
