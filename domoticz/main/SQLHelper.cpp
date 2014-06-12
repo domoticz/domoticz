@@ -21,7 +21,7 @@
 	#include <pwd.h>
 #endif
 
-#define DB_VERSION 44
+#define DB_VERSION 45
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -143,6 +143,7 @@ const char *sqlCreateTimers =
 "[Level] INTEGER DEFAULT 15, "
 "[Hue] INTEGER DEFAULT 0, "
 "[UseRandomness] INTEGER DEFAULT 0, "
+"[TimerPlan] INTEGER DEFAULT 0, "
 "[Days] INTEGER NOT NULL);";
 
 const char *sqlCreateUV =
@@ -349,6 +350,7 @@ const char *sqlCreateSceneTimers =
 "[Level] INTEGER DEFAULT 15, "
 "[Hue] INTEGER DEFAULT 0, "
 "[UseRandomness] INTEGER DEFAULT 0, "
+"[TimerPlan] INTEGER DEFAULT 0, "
 "[Days] INTEGER NOT NULL);";
 
 const char *sqlCreateSharedDevices =
@@ -456,6 +458,7 @@ CSQLHelper::CSQLHelper(void)
 	m_sensortimeoutcounter=0;
 	m_bAcceptNewHardware=true;
 	m_bAllowWidgetOrdering=true;
+	m_ActiveTimerPlan=0;
 
 	m_windunit=WINDUNIT_MS;
 	m_tempunit=TEMPUNIT_C;
@@ -898,6 +901,11 @@ bool CSQLHelper::OpenDatabase()
 			//Drop the tmp_Cameras table
 			query("DROP TABLE tmp_Cameras");
 		}
+		if (dbversion<45)
+		{
+			query("ALTER TABLE Timers ADD COLUMN [TimerPlan] INTEGER default 0");
+			query("ALTER TABLE SceneTimers ADD COLUMN [TimerPlan] INTEGER default 0");
+		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
 
@@ -1130,6 +1138,12 @@ bool CSQLHelper::OpenDatabase()
 		nValue=1;
 	}
 	m_bAllowWidgetOrdering=(nValue==1);
+	if (!GetPreferencesVar("ActiveTimerPlan", nValue))
+	{
+		UpdatePreferencesVar("ActiveTimerPlan", 0); //default
+		nValue=0;
+	}
+	m_ActiveTimerPlan=nValue;
 
 	//Start background thread
 	if (!StartThread())
@@ -3115,7 +3129,7 @@ bool CSQLHelper::HasTimers(const unsigned long long Idx)
 	std::stringstream szQuery;
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT COUNT(*) FROM Timers WHERE (DeviceRowID==" << Idx << ")";
+	szQuery << "SELECT COUNT(*) FROM Timers WHERE (DeviceRowID==" << Idx << ") AND (TimerPlan==" << m_ActiveTimerPlan << ")";
 	result=query(szQuery.str());
 	if (result.size()==0)
 		return false;
@@ -3142,7 +3156,7 @@ bool CSQLHelper::HasSceneTimers(const unsigned long long Idx)
 	std::stringstream szQuery;
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT COUNT(*) FROM SceneTimers WHERE (SceneRowID==" << Idx << ")";
+	szQuery << "SELECT COUNT(*) FROM SceneTimers WHERE (SceneRowID==" << Idx << ") AND (TimerPlan==" << m_ActiveTimerPlan << ")";
 	result=query(szQuery.str());
 	if (result.size()==0)
 		return false;

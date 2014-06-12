@@ -2556,7 +2556,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["title"]="GetTimerList";
 		std::vector<std::vector<std::string> > result;
 		std::stringstream szQuery;
-		szQuery << "SELECT t.ID, t.Active, d.[Name], t.DeviceRowID, t.Time, t.Type, t.Cmd, t.Level, t.Days FROM Timers as t, DeviceStatus as d WHERE (d.ID == t.DeviceRowID) ORDER BY d.[Name], t.Time";
+		szQuery << "SELECT t.ID, t.Active, d.[Name], t.DeviceRowID, t.Time, t.Type, t.Cmd, t.Level, t.Days FROM Timers as t, DeviceStatus as d WHERE (d.ID == t.DeviceRowID) AND (t.TimerPlan==" << m_sql.m_ActiveTimerPlan << ") ORDER BY d.[Name], t.Time";
 		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -4473,7 +4473,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["status"]="OK";
 		root["title"]="AddTimer";
 		sprintf(szTmp,
-			"INSERT INTO Timers (Active, DeviceRowID, Time, Type, UseRandomness, Cmd, Level, Hue, Days) VALUES (%d,%s,'%s',%d,%d,%d,%d,%d,%d)",
+			"INSERT INTO Timers (Active, DeviceRowID, Time, Type, UseRandomness, Cmd, Level, Hue, Days, TimerPlan) VALUES (%d,%s,'%s',%d,%d,%d,%d,%d,%d,%d)",
 			(active=="true")?1:0,
 			idx.c_str(),
 			szData,
@@ -4482,7 +4482,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			icmd,
 			level,
 			hue,
-			days
+			days,
+			m_sql.m_ActiveTimerPlan
 			);
 		result=m_sql.query(szTmp);
 		m_mainworker.m_scheduler.ReloadSchedules();
@@ -4519,7 +4520,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["status"]="OK";
 		root["title"]="AddSceneTimer";
 		sprintf(szTmp,
-			"INSERT INTO SceneTimers (Active, SceneRowID, Time, Type, UseRandomness, Cmd, Level, Days) VALUES (%d,%s,'%s',%d,%d,%d,%d,%d)",
+			"INSERT INTO SceneTimers (Active, SceneRowID, Time, Type, UseRandomness, Cmd, Level, Days, TimerPlan) VALUES (%d,%s,'%s',%d,%d,%d,%d,%d,%d)",
 			(active=="true")?1:0,
 			idx.c_str(),
 			szData,
@@ -4527,7 +4528,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			(randomness=="true")?1:0,
 			icmd,
 			level,
-			days
+			days,
+			m_sql.m_ActiveTimerPlan
 			);
 		result=m_sql.query(szTmp);
 		m_mainworker.m_scheduler.ReloadSchedules();
@@ -5626,6 +5628,17 @@ char * CWebServer::PostSettings()
 	std::string sEmailAsAttachment=m_pWebEm->FindValue("EmailAsAttachment");
 	m_sql.UpdatePreferencesVar("EmailAsAttachment",(sEmailAsAttachment=="on"?1:0));
 
+	int rnOldvalue=0;
+	int rnvalue=0;
+
+	m_sql.GetPreferencesVar("ActiveTimerPlan", rnOldvalue);
+	rnvalue=atoi(m_pWebEm->FindValue("ActiveTimerPlan").c_str());
+	if (rnOldvalue!=rnvalue)
+	{
+		m_sql.UpdatePreferencesVar("ActiveTimerPlan",rnvalue);
+		m_sql.m_ActiveTimerPlan=rnvalue;
+		m_mainworker.m_scheduler.ReloadSchedules();
+	}
 	m_sql.UpdatePreferencesVar("DoorbellCommand",atoi(m_pWebEm->FindValue("DoorbellCommand").c_str()));
 	m_sql.UpdatePreferencesVar("SmartMeterType",atoi(m_pWebEm->FindValue("SmartMeterType").c_str()));
 
@@ -5665,12 +5678,12 @@ char * CWebServer::PostSettings()
 	m_sql.UpdatePreferencesVar("AllowWidgetOrdering",iEnableAllowWidgetOrdering);
 	m_sql.m_bAllowWidgetOrdering=(iEnableAllowWidgetOrdering==1);
 
-	int rnOldvalue=0;
+	rnOldvalue=0;
 	m_sql.GetPreferencesVar("RemoteSharedPort", rnOldvalue);
 
 	m_sql.UpdatePreferencesVar("RemoteSharedPort",atoi(m_pWebEm->FindValue("RemoteSharedPort").c_str()));
 
-	int rnvalue=0;
+	rnvalue=0;
 	m_sql.GetPreferencesVar("RemoteSharedPort", rnvalue);
 
 	if (rnvalue!=rnOldvalue)
@@ -8348,7 +8361,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT ID, Active, Time, Type, Cmd, Level, Hue, Days, UseRandomness FROM Timers WHERE (DeviceRowID==" << idx << ") ORDER BY ID";
+		szQuery << "SELECT ID, Active, Time, Type, Cmd, Level, Hue, Days, UseRandomness FROM Timers WHERE (DeviceRowID==" << idx << ") AND (TimerPlan==" << m_sql.m_ActiveTimerPlan << ") ORDER BY ID";
 		result = m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -8382,7 +8395,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT ID, Active, Time, Type, Cmd, Level, Hue, Days, UseRandomness FROM SceneTimers WHERE (SceneRowID==" << idx << ") ORDER BY ID";
+		szQuery << "SELECT ID, Active, Time, Type, Cmd, Level, Hue, Days, UseRandomness FROM SceneTimers WHERE (SceneRowID==" << idx << ") AND (TimerPlan==" << m_sql.m_ActiveTimerPlan << ") ORDER BY ID";
 		result = m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -9468,6 +9481,10 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 				else if (Key == "EmailAsAttachment")
 				{
 					root["EmailAsAttachment"] = nValue;
+				}
+				else if (Key == "ActiveTimerPlan")
+				{
+					root["ActiveTimerPlan"] = nValue;
 				}
 				else if (Key == "DoorbellCommand")
 				{

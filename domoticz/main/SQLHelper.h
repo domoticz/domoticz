@@ -336,6 +336,7 @@ public:
 	float		m_tempscale;
 	bool		m_bAcceptNewHardware;
 	bool		m_bAllowWidgetOrdering;
+	int			m_ActiveTimerPlan;
 private:
 	boost::mutex m_sqlQueryMutex;
 	CURLEncode m_urlencoder;
