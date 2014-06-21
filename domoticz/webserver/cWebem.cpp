@@ -1480,7 +1480,7 @@ char *cWebemRequestHandler::strftime_t(const char *format, const time_t rawtime)
 {
 	static char buffer[1024];
 	struct tm ltime;
-	localtime_s(&ltime, &rawtime);
+	localtime_r(&rawtime,&ltime);
 	strftime(buffer, sizeof(buffer), format, &ltime);
 	return buffer;
 }
