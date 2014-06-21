@@ -1491,7 +1491,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 		{
 			if (myWebem->m_authmethod==AUTH_LOGIN)
 			{
-				if ((req.uri.find(".htm")!=std::string::npos)||(req.uri.find("#")!=std::string::npos)||(req.uri.find(".")==std::string::npos))
+				if ((req.uri.find(".htm") != std::string::npos) || (req.uri.find(".php") != std::string::npos) || (req.uri.find("#") != std::string::npos) || (req.uri.find(".") == std::string::npos))
 				{
 					send_authorization_page(rep);
 					return;
