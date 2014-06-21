@@ -7,6 +7,7 @@
 #include "cWebem.h"
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
+
 #include "reply.hpp"
 #include "request.hpp"
 #include "mime_types.hpp"
@@ -1475,6 +1476,15 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 	return false;
 }
 
+char *cWebemRequestHandler::strftime_t(const char *format, const time_t rawtime)
+{
+	static char buffer[1024];
+	struct tm ltime;
+	localtime_s(&ltime, &rawtime);
+	strftime(buffer, sizeof(buffer), format, &ltime);
+	return buffer;
+}
+
 void cWebemRequestHandler::handle_request( const std::string &sHost, const request& req, reply& rep)
 {
 	rep.bIsGZIP=false;
@@ -1536,6 +1546,17 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 			//check gzip support if yes, send it back in gzip format
 			if (!rep.bIsGZIP)
 				CompressWebOutput(req,rep);
+		}
+		else if (rep.headers[1].value == "image/png")
+		{
+			int theaders = rep.headers.size();
+			rep.headers.resize(theaders + 2);
+
+			rep.headers[theaders].name = "Date";
+			rep.headers[theaders].value = strftime_t("%a, %d %b %Y %H:%M:%S GMT",mytime(NULL));
+
+			rep.headers[theaders + 1].name = "Expires";
+			rep.headers[theaders + 1].value = "Sat, 26 Dec 2099 11:40:31 GMT";
 		}
 	}
 	else

@@ -26,6 +26,7 @@ public:
 protected:
 	void read();
 	void close();
+	//bool set_tcp_keepalive();
 
 	// callbacks
 	void handle_connect(const boost::system::error_code& error);

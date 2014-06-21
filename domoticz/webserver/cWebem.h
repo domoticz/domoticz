@@ -100,6 +100,7 @@ namespace http {
 			  /// Handle a request and produce a reply.
 			  virtual void handle_request( const std::string &sHost, const request& req, reply& rep);
 		private:
+			char *strftime_t(const char *format, const time_t rawtime);
 			bool CompressWebOutput(const request& req, reply& rep);
 			void check_cookie(const std::string &sHost, const request& req, reply& rep);
 			void send_authorization_request(reply& rep);

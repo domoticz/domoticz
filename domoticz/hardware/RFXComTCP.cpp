@@ -10,25 +10,6 @@
 RFXComTCP::RFXComTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort)
 {
 	m_HwdID=ID;
-#if defined WIN32
-	int ret;
-	//Init winsock
-	WSADATA data;
-	WORD version; 
-
-	version = (MAKEWORD(2, 2)); 
-	ret = WSAStartup(version, &data); 
-	if (ret != 0) 
-	{  
-		ret = WSAGetLastError(); 
-
-		if (ret == WSANOTINITIALISED) 
-		{  
-			_log.Log(LOG_ERROR,"RFXCOM: Winsock could not be initialized!");
-		}
-	}
-#endif
-	m_socket=INVALID_SOCKET;
 	m_stoprequested=false;
 	m_szIPAddress=IPAddress;
 	m_usIPPort=usIPPort;
@@ -36,46 +17,13 @@ RFXComTCP::RFXComTCP(const int ID, const std::string IPAddress, const unsigned s
 
 RFXComTCP::~RFXComTCP(void)
 {
-#if defined WIN32
-	//
-	// Release WinSock
-	//
-	WSACleanup();
-#endif
 }
 
 bool RFXComTCP::StartHardware()
 {
 	m_stoprequested=false;
 
-	memset(&m_addr,0,sizeof(sockaddr_in));
-	m_addr.sin_family = AF_INET;
-	m_addr.sin_port = htons(m_usIPPort);
-
-	unsigned long ip;
-	ip=inet_addr(m_szIPAddress.c_str());
-
-	// if we have a error in the ip, it means we have entered a string
-	if(ip!=INADDR_NONE)
-	{
-		m_addr.sin_addr.s_addr=ip;
-	}
-	else
-	{
-		// change Hostname in serveraddr
-		hostent *he=gethostbyname(m_szIPAddress.c_str());
-		if(he==NULL)
-		{
-			return false;
-		}
-		else
-		{
-			memcpy(&(m_addr.sin_addr),he->h_addr_list[0],4);
-		}
-	}
-
 	//force connect the next first time
-	m_retrycntr=RETRY_DELAY;
 	m_bIsStarted=true;
 	m_rxbufferpos=0;
 	//Start worker thread
@@ -85,111 +33,83 @@ bool RFXComTCP::StartHardware()
 
 bool RFXComTCP::StopHardware()
 {
+	m_stoprequested = true;
 	if (isConnected())
 	{
 		try {
 			disconnect();
-		} catch(...)
+			if (m_thread != NULL)
+			{
+				assert(m_thread);
+				m_thread->join();
+			}
+		}
+		catch (...)
 		{
 			//Don't throw from a Stop command
 		}
 	}
-	m_bIsStarted=false;
+
+	m_bIsStarted = false;
 	return true;
 }
 
-bool RFXComTCP::ConnectInternal()
+void RFXComTCP::OnConnect()
 {
-	m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (m_socket == INVALID_SOCKET)
-	{
-		_log.Log(LOG_ERROR,"RFXCOM: could not create a TCP/IP socket!");
-		return false;
-	}
+	_log.Log(LOG_STATUS, "RFXCOM: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	m_bIsStarted = true;
 
-	// connect to the server
-	int nRet;
-	nRet = connect(m_socket,(const sockaddr*)&m_addr, sizeof(m_addr));
-	if (nRet == SOCKET_ERROR)
-	{
-		closesocket(m_socket);
-		m_socket=INVALID_SOCKET;
-		_log.Log(LOG_ERROR,"RFXCOM: could not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
-		return false;
-	}
-
-	_log.Log(LOG_STATUS,"RFXCOM: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
 	sOnConnected(this);
-	return true;
 }
 
-void RFXComTCP::disconnect()
+void RFXComTCP::OnDisconnect()
 {
-	m_stoprequested=true;
-	if (m_socket==INVALID_SOCKET)
-		return;
-	closesocket(m_socket);	//will terminate the thread
-	m_socket=INVALID_SOCKET;
+	_log.Log(LOG_STATUS, "RFXCOM: disconnected");
 }
 
 void RFXComTCP::Do_Work()
 {
+	bool bFirstTime = true;
+
 	while (!m_stoprequested)
 	{
-		if (
-			(m_socket == INVALID_SOCKET)&&
-			(!m_stoprequested)
-			)
+		if (bFirstTime)
 		{
-			sleep_seconds(1);
-			m_retrycntr++;
-			if (m_retrycntr>=RETRY_DELAY)
+			bFirstTime = false;
+			if (!mIsConnected)
 			{
-				m_retrycntr=0;
-				if (!ConnectInternal())
-				{
-					_log.Log(LOG_STATUS,"RFXCOM: retrying in %d seconds...", RETRY_DELAY);
-					continue;
-				}
+				m_rxbufferpos = 0;
+				connect(m_szIPAddress, m_usIPPort);
 			}
 		}
 		else
 		{
-			char buf;
-			int bread=recv(m_socket,&buf,1,0);
-			if (m_stoprequested)
-				break;
-			if ((bread==0)||(bread<0)) {
-				_log.Log(LOG_ERROR,"RFXCOM: TCP/IP connection closed!");
-				closesocket(m_socket);
-				m_socket=INVALID_SOCKET;
-				if (!m_stoprequested)
-				{
-					_log.Log(LOG_STATUS,"RFXCOM: retrying in %d seconds...", RETRY_DELAY);
-					m_retrycntr=0;
-					continue;
-				}
-			}
-			else
-			{
-				boost::lock_guard<boost::mutex> l(readQueueMutex);
-				onRFXMessage((const unsigned char *)&buf,1);
-			}
+			sleep_milliseconds(40);
+			update();
 		}
-		
 	}
 	_log.Log(LOG_STATUS,"RFXCOM: TCP/IP Worker stopped...");
 } 
 
-void RFXComTCP::write(const char *data, size_t size)
+void RFXComTCP::OnData(const unsigned char *pData, size_t length)
 {
-	if (m_socket==INVALID_SOCKET)
-		return; //not connected!
-	send(m_socket,data,size,0);
+	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	onRFXMessage(pData, length);
+}
+
+void RFXComTCP::OnError(const std::exception e)
+{
+	_log.Log(LOG_ERROR, "RFXCOM: Error: %s", e.what());
+}
+
+void RFXComTCP::OnError(const boost::system::error_code& error)
+{
+	_log.Log(LOG_ERROR, "RFXCOM: Error: %s", error.message().c_str());
 }
 
 void RFXComTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if (isConnected())
-		write(pdata,length);
+	if (!mIsConnected)
+		return;
+	write((const unsigned char*)pdata, length);
 }
