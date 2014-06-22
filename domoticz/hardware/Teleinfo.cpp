@@ -1,4 +1,4 @@
-ï»¿/* 
+/* 
 	Domoticz Software : http://domoticz.com/
 	File : Teleinfo.cpp
 	Author : Nicolas HILAIRE
@@ -304,18 +304,18 @@ void Teleinfo::ParseData(const unsigned char *pData, int Len)
 /* Explanation of the checksum computation issued from the official EDF specification
 
 a "checksum" is calculated on the set of characters from the beginning of the label field to the end of the field given character SP included.
-We first make â€‹â€‹the sum of all ASCII codes of all characters.
+We first make ??the sum of all ASCII codes of all characters.
 to avoid introduce ASCII (00 to 1F hex) functions, it retains only the six least significant bits of 
 result (this translates into a logical AND between the amount previously calculated and 03Fh). 
 Finally, we added 20 hexadecimal. The result will always be a printable ASCII character (sign, digit, 
 capital letter) of from 0x20 to hexadecimal 0x5F
 
-La "checksum" est calculÃ©e sur l'ensemble des caractÃ¨res allant du dÃ©but du champ Ã©tiquette Ã  la fin du champ 
-donnÃ©e, caractÃ¨re SP inclus. On fait tout d'abord la somme des codes ASCII de tous ces caractÃ¨res. Pour Ã©viter 
-d'introduire des fonctions ASCII (00 Ã  1F en hexadÃ©cimal), on ne conserve que les six bits de poids faible du 
-rÃ©sultat obtenu (cette opÃ©ration se traduit par un ET logique entre la somme prÃ©cÃ©demment calculÃ©e et 03Fh). 
-Enfin, on ajoute 20 en hexadÃ©cimal. Le rÃ©sultat sera donc toujours un caractÃ¨re ASCII imprimable (signe, chiffre, 
-lettre majuscule) allant de 20 Ã  5F en hexadÃ©cimal.
+La "checksum" est calculée sur l'ensemble des caractères allant du début du champ étiquette à la fin du champ 
+donnée, caractère SP inclus. On fait tout d'abord la somme des codes ASCII de tous ces caractères. Pour éviter 
+d'introduire des fonctions ASCII (00 à 1F en hexadécimal), on ne conserve que les six bits de poids faible du 
+résultat obtenu (cette opération se traduit par un ET logique entre la somme précédemment calculée et 03Fh). 
+Enfin, on ajoute 20 en hexadécimal. Le résultat sera donc toujours un caractère ASCII imprimable (signe, chiffre, 
+lettre majuscule) allant de 20 à 5F en hexadécimal.
 */
 
 bool Teleinfo::isCheckSumOk()
