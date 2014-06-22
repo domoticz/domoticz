@@ -1029,8 +1029,8 @@ function SaveLightSwitch()
 			$.ajax({
 				 url: "json.htm?type=setused&idx=" + $.devIdx +
 				  '&name=' + encodeURIComponent($("#lightcontent #devicename").val()) +
-				  '&strparam1=' + encodeURIComponent(strParam1) +
-				  '&strparam2=' + encodeURIComponent(strParam2) +
+				  '&strparam1=' + btoa(strParam1) +
+				  '&strparam2=' + btoa(strParam2) +
 				  '&protected=' + bIsProtected +
 				  '&used=true',
 				 async: false, 
@@ -1264,6 +1264,8 @@ function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage
 		$("#lightcontent #OffDelayDiv").hide();
 		$("#lightcontent #MotionDiv").hide();
 		$("#lightcontent #SwitchIconDiv").hide();
+		$("#lightcontent #onaction").val(strParam1);
+		$("#lightcontent #offaction").val(strParam2);
 	}
 	else {
 		$("#lightcontent #SwitchType").show();

@@ -47,6 +47,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: Dashboard, clicking on the 'contact' switch icon now displays the switch log
 - Implemented: Room Plan editor, hardware name infront of sensors to add
 - Fixed: Scene timers after including timerplan option
+- Fixed: On/Off actions for security devices
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io
