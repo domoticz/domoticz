@@ -1541,7 +1541,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT ID, Name, Type, SubType FROM DeviceStatus WHERE (Used==1) ORDER BY Name";
+		szQuery << "SELECT T1.[ID], T1.[Name], T1.[Type], T1.[SubType], T2.[Name] AS HardwareName FROM DeviceStatus as T1, Hardware as T2 WHERE (T1.[Used]==1) AND (T2.[ID]==T1.[HardwareID]) ORDER BY T2.[Name], T1.[Name]";
 		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -1562,7 +1562,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				if (bDoAdd)
 				{
 					int _dtype=atoi(sd[2].c_str());
-					std::string Name=sd[1] + " (" + RFX_Type_Desc(_dtype,1) + "/" + RFX_Type_SubType_Desc(_dtype,atoi(sd[3].c_str())) + ")";
+					std::string Name="["+sd[4] + "] " + sd[1] + " (" + RFX_Type_Desc(_dtype,1) + "/" + RFX_Type_SubType_Desc(_dtype,atoi(sd[3].c_str())) + ")";
 					root["result"][ii]["type"]=0;
 					root["result"][ii]["idx"]=sd[0];
 					root["result"][ii]["Name"]=Name;

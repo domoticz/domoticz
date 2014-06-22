@@ -489,7 +489,7 @@ function AddActiveDevice()
 		success: function(data) {
 			if (data.status == 'OK') {
 				RefreshActiveDevicesTable($.devIdx);
-				RefreshUnusedDevicesComboArray();
+				//RefreshUnusedDevicesComboArray();
 			}
 			else {
 				ShowNotify('Problem adding Device!', 2500, true);
@@ -513,7 +513,7 @@ function DeleteActiveDevice(idx)
 				 dataType: 'json',
 				 success: function(data) {
 					RefreshActiveDevicesTable($.devIdx);
-					RefreshUnusedDevicesComboArray();
+					//RefreshUnusedDevicesComboArray();
 				 }
 			});
 		}
@@ -530,7 +530,7 @@ function ClearActiveDevices()
 					dataType: 'json',
 					success: function(data) {
 					RefreshActiveDevicesTable($.devIdx);
-					RefreshUnusedDevicesComboArray();
+					//RefreshUnusedDevicesComboArray();
 				}
 			});
 		}
