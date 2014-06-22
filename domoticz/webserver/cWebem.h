@@ -44,6 +44,14 @@ namespace http {
 			std::string user;
 			std::string response;
 			char *uri, *cnonce, *qop, *nc, *nonce;
+			ah()
+			{
+				uri = NULL;
+				cnonce = NULL;
+				qop = NULL;
+				nc = NULL;
+				nonce = NULL;
+			}
 		};
 
 		/**

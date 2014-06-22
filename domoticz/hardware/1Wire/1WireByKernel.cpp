@@ -9,7 +9,7 @@
 #include "1WireByKernel.h"
 
 #include <fstream>
-#include "../main/Logger.h"
+#include "../../main/Logger.h"
 
 #ifdef _DEBUG
    #ifdef WIN32

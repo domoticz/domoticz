@@ -1013,7 +1013,6 @@ int cWebemRequestHandler::parse_auth_header(const request& req, struct ah *ah)
 {
 	const char *auth_header;
 
-	(void) memset(ah, 0, sizeof(*ah));
 	if ((auth_header = req.get_req_header(&req, "Authorization")) == NULL)
 	{
 		return 0;
