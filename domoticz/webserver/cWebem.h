@@ -41,7 +41,9 @@ namespace http {
 
 		// Parsed Authorization header
 		struct ah {
-			char *user, *uri, *cnonce, *response, *qop, *nc, *nonce;
+			std::string user;
+			std::string response;
+			char *uri, *cnonce, *qop, *nc, *nonce;
 		};
 
 		/**
@@ -108,7 +110,7 @@ namespace http {
 			int check_authorization(const std::string &sHost, const request& req);
 			bool AreWeInLocalNetwork(const std::string &sHost, const request& req);
 			int authorize(const request& req);
-			int parse_auth_header(const request& req, char *buf,	size_t buf_size, struct ah *ah) ;
+			int parse_auth_header(const request& req, struct ah *ah) ;
 			std::string m_doc_root;
 			// Webem link to application code
 			cWebem* myWebem;

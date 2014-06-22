@@ -1009,9 +1009,8 @@ static int check_password(
 }
 
 // Return 1 on success. Always initializes the ah structure.
-int cWebemRequestHandler::parse_auth_header(const request& req, char *buf,	size_t buf_size, struct ah *ah) 
+int cWebemRequestHandler::parse_auth_header(const request& req, struct ah *ah) 
 {
-	char *name, *value, *s;
 	const char *auth_header;
 
 	(void) memset(ah, 0, sizeof(*ah));
@@ -1020,83 +1019,18 @@ int cWebemRequestHandler::parse_auth_header(const request& req, char *buf,	size_
 		return 0;
 	}
 
-	if (mg_strncasecmp(auth_header, "Basic ", 6) == 0) {
-		//Basic authentication
-		strcpy(buf, auth_header + 6);
-		s = buf;
-
-		std::string decoded = base64_decode(s);
-		int npos=decoded.find(':');
-		if (npos==std::string::npos)
-			return 0;
-		strcpy(buf,decoded.c_str());
-		buf[npos]=0;
-		ah->user=buf;
-		myWebem->m_actualuser=buf;
-		ah->response=buf+npos+1;
-
-		return 1;
-	}
-
-	if (mg_strncasecmp(auth_header, "Digest ", 7) != 0) {
-			return 0;
-	}
-
-	// Make modifiable copy of the auth header
-	strcpy(buf, auth_header + 7);
-	s = buf;
-
-	// Parse authorization header
-	for (;;) 
-	{
-		// Gobble initial spaces
-		while (isspace(* (unsigned char *) s)) 
-		{
-			s++;
-		}
-		name = skip_quoted(&s, "=", " ", 0);
-		// Value is either quote-delimited, or ends at first comma or space.
-		if (s[0] == '\"') {
-			s++;
-			value = skip_quoted(&s, "\"", " ", '\\');
-			if (s[0] == ',') {
-				s++;
-			}
-		} else {
-			value = skip_quoted(&s, ", ", " ", 0);  // IE uses commas, FF uses spaces
-		}
-		if (*name == '\0') {
-			break;
-		}
-
-		if (!strcmp(name, "username")) {
-			ah->user = value;
-			myWebem->m_actualuser=value;
-		} else if (!strcmp(name, "cnonce")) {
-			ah->cnonce = value;
-		} else if (!strcmp(name, "response")) {
-			ah->response = value;
-		} else if (!strcmp(name, "uri")) {
-			ah->uri = value;
-		} else if (!strcmp(name, "qop")) {
-			ah->qop = value;
-		} else if (!strcmp(name, "nc")) {
-			ah->nc = value;
-		} else if (!strcmp(name, "nonce")) {
-			ah->nonce = value;
-		}
-	}
-
-	// CGI needs it as REMOTE_USER
-	if (ah->user != NULL) 
-	{
-		//conn->request_info.remote_user = mg_strdup(ah->user);
-	} 
-	else 
-	{
+	//Only accept Basic Auth header
+	if (mg_strncasecmp(auth_header, "Basic ", 6) != 0)
 		return 0;
-	}
 
+	std::string decoded = base64_decode(auth_header + 6);
+	int npos=decoded.find(':');
+	if (npos==std::string::npos)
+		return 0;
+
+	ah->user = decoded.substr(0, npos);
+	myWebem->m_actualuser = ah->user;
+	ah->response = decoded.substr(npos + 1);
 	return 1;
 }
 
@@ -1104,13 +1038,12 @@ int cWebemRequestHandler::parse_auth_header(const request& req, char *buf,	size_
 // Authorize against the opened passwords file. Return 1 if authorized.
 int cWebemRequestHandler::authorize(const request& req)
 {
-	char buf[8191];
 	struct ah _ah;
 
 	std::string uname="";
 	std::string upass="";
 
-	if (!parse_auth_header(req, buf, sizeof(buf), &_ah))
+	if (!parse_auth_header(req, &_ah))
 	{
 		int uPos=req.uri.find("username=");
 		int pPos=req.uri.find("password=");
@@ -1175,7 +1108,7 @@ int cWebemRequestHandler::authorize(const request& req)
 			int bOK=check_password
 				(
 				req.method.c_str(),
-				itt->Password.c_str(), _ah.uri, _ah.nonce, _ah.nc, _ah.cnonce, _ah.qop,_ah.response
+				itt->Password.c_str(), _ah.uri, _ah.nonce, _ah.nc, _ah.cnonce, _ah.qop,_ah.response.c_str()
 				);
 			if (!bOK)
 			{
