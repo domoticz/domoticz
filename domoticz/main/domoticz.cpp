@@ -170,23 +170,47 @@ int main(int argc, char**argv)
 
 	szStartupFolder="";
 	szWWWFolder="";
-#if !defined WIN32
-	char szStartupPath[255];
-	getExecutablePathName((char*)&szStartupPath,255);
-	szStartupFolder=szStartupPath;
-	if (szStartupFolder.find_last_of('/')!=std::string::npos)
-		szStartupFolder=szStartupFolder.substr(0,szStartupFolder.find_last_of('/')+1);
+
+	CCmdLine cmdLine;
+
+	// parse argc,argv 
+#if defined WIN32
+	cmdLine.SplitLine(__argc, __argv);
 #else
-	#ifndef _DEBUG
+	cmdLine.SplitLine(argc, argv);
+#endif
+
+	if (cmdLine.HasSwitch("-approot"))
+	{
+		if (cmdLine.GetArgumentCount("-approot")!=1)
+		{
+			_log.Log(LOG_ERROR,"Please specify a APP root path");
+			return 0;
+		}
+		std::string szroot = cmdLine.GetSafeArgument("-approot", 0, "");
+		if (szroot.size() != 0)
+			szStartupFolder = szroot;
+	}
+
+	if (szStartupFolder == "")
+	{
+#if !defined WIN32
+		char szStartupPath[255];
+		getExecutablePathName((char*)&szStartupPath,255);
+		szStartupFolder=szStartupPath;
+		if (szStartupFolder.find_last_of('/')!=std::string::npos)
+			szStartupFolder=szStartupFolder.substr(0,szStartupFolder.find_last_of('/')+1);
+#else
+#ifndef _DEBUG
 		char szStartupPath[255];
 		char * p;
 		GetModuleFileName(NULL, szStartupPath, sizeof(szStartupPath));
 		p = szStartupPath + strlen(szStartupPath);
 
-		while(p >= szStartupPath && *p != '\\')
+		while (p >= szStartupPath && *p != '\\')
 			p--;
 
-		if(++p >= szStartupPath)
+		if (++p >= szStartupPath)
 			*p = 0;
 		szStartupFolder=szStartupPath;
 		size_t start_pos = szStartupFolder.find("\\Release\\");
@@ -194,8 +218,9 @@ int main(int argc, char**argv)
 			szStartupFolder.replace(start_pos, 9, "\\domoticz\\");
 			_log.Log(LOG_STATUS,"%s",szStartupFolder.c_str());
 		}
-	#endif
 #endif
+#endif
+	}
 	GetAppVersion();
 	_log.Log(LOG_STATUS,"Domoticz V%s (c)2012-2014 GizMoCuz",szAppVersion.c_str());
 
@@ -223,15 +248,6 @@ int main(int argc, char**argv)
 #endif
 
 	szWWWFolder=szStartupFolder+"www";
-
-	CCmdLine cmdLine;
-
-	// parse argc,argv 
-#if defined WIN32
-	cmdLine.SplitLine(__argc, __argv);
-#else
-	cmdLine.SplitLine(argc, argv);
-#endif
 
 	if ((cmdLine.HasSwitch("-h"))||(cmdLine.HasSwitch("--help"))||(cmdLine.HasSwitch("/?")))
 	{
