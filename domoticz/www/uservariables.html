@@ -1,0 +1,218 @@
+<div id="fibaromain">
+    <table class="display" id="uservariablestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th width="120" align="left" data-i18n="Variable name">Variable name</th>
+			    <th width="60" align="left" data-i18n="Variable type">Variable type</th>
+                <th width="120" align="left" data-i18n="Current value">Current value</th>
+				<th width="120" align="left" data-i18n="Last update">Last update</th>
+            </tr>
+        </thead>		
+    </table>
+	<p>
+	<h2 data-i18n="Edit variable">Edit variable</h2><br>
+	<table class="display" id="uservariablesedittable" border="0" cellpadding="0" cellspacing="20">
+		<tr id="uservariablenamerow">
+			<td align="right" style="width:110px"><label for="uservariablename"><span data-i18n="Variable name"></span>:</label></td>
+			<td><input type="text" id="uservariablename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:110px"><label for="uservariabletype"><span data-i18n="Variable type"></span>:</label></td>
+			<td><select id="uservariabletype" style="width:160px" class="combobox ui-corner-all">
+					<option value="0" data-i18n="Integer">Integer</option>
+					<option value="1" data-i18n="Float">Float</option>
+					<option value="2" data-i18n="String">String</option>
+					<option value="3" data-i18n="Date">Date</option>
+					<option value="4" data-i18n="Time">Time</option>
+				</select>
+			</td>
+		</tr>
+		<tr id="uservariablevaluerow">
+			<td align="right" style="width:110px"><label for="uservariablevalue"><span data-i18n="Variable value"></span>:</label></td>
+			<td><input type="text" id="uservariablevalue" onchange="VariableTypeCheck();" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+
+		<tr>
+			<td colspan="2">
+				<a class="btnstyle3" onclick="AddLink('a');" data-i18n="Add">Add</a>
+				<a class="btnstyle3-dis" id="uservariableupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+				<a class="btnstyle3-dis" id="uservariabledelete" data-i18n="Delete">Delete</a>
+			</td>
+		</tr>	
+	</table>
+</div>
+
+	
+
+<script type="text/javascript" charset="utf-8">
+
+
+function VariableTypeCheck()
+{
+}
+
+function DeleteVariable(idx)
+{
+	bootbox.confirm($.i18n("Are you sure you want to remove this variable?"), function(result) {
+		if (result==true) {
+			$.ajax({
+				url: "json.htm?type=command&param=deleteuservariable&idx=" + idx,
+				async: false, 
+				dataType: 'json',
+				success: function(data) {
+					RefreshUserVariablesTable();
+				}
+			});
+		}
+	});
+}
+	
+
+function AddLink(type)
+{
+	var idx = $.userVariableIdx;
+	var uservariablename = $("#uservariablesedittable #uservariablename").val();
+	var uservariabletype = $("#uservariablesedittable #uservariabletype option:selected").val();
+	var uservariablevalue = $('#uservariablesedittable #uservariablevalue').val();
+	
+	if((type=="a") && (jQuery.inArray(uservariablename,$.varNames) != -1)){
+		ShowNotify($.i18n('Variable name already exists!'), 2500, true);
+	}
+	else {
+		if (type == "a") {
+			var url = "json.htm?type=command&param=saveuservariable&vname=" + uservariablename + "&vtype=" + uservariabletype + "&vvalue=" + uservariablevalue;
+		}
+		else if (type == "u") {
+			var url = "json.htm?type=command&param=updateuservariable&idx=" + idx + "&vname=" + uservariablename + "&vtype=" + uservariabletype + "&vvalue=" + uservariablevalue;
+		}
+		
+		$.ajax({
+			 url: url, 
+			 async: false, 
+			 dataType: 'json',
+			 success: function(data) {
+				if (typeof data != 'undefined') {
+					if (data.status=="OK") {
+						bootbox.alert($.i18n('User variable saved'));
+						RefreshUserVariablesTable();
+					}
+					else {
+						ShowNotify($.i18n(data.status), 2500, true);
+					}
+				}
+			 },
+			 error: function(){
+					ShowNotify($.i18n('Problem saving user variable!'), 2500, true);
+			 }     
+		});
+	}
+		
+}
+	
+	
+function RefreshUserVariablesTable()
+{
+  $('#modal').show();
+
+	$('#uservariablesedittable #uservariableupdate').attr("class", "btnstyle3-dis");
+	$('#uservariablesedittable #uservariabledelete').attr("class", "btnstyle3-dis");
+
+  $.varNames = [];	
+  var oTable = $('#uservariablestable').dataTable();
+  oTable.fnClearTable();
+  $.ajax({
+     url: "json.htm?type=command&param=getuservariables",
+     async: false, 
+     dataType: 'json',
+     success: function(data) {   
+      if (typeof data.result != 'undefined') {
+        $.each(data.result, function(i,item){
+			$.varNames.push(item.Name);
+			var typeWording;
+			switch( item.Type ) {
+				case "0" :
+					typeWording = $.i18n('Integer');
+					break;
+				case "1" :
+					typeWording = $.i18n('Float');
+					break;
+				case "2" :
+					typeWording = $.i18n('String');
+					break;					
+				case "3" :
+					typeWording = $.i18n('Date');
+					break;				
+				case "4" :
+					typeWording = $.i18n('Time');
+					break;
+				case "5" :
+					typeWording = $.i18n('DateTime');
+					break;
+				default:
+					typeWording = "undefined";
+			}
+			var addId = oTable.fnAddData( {
+				"DT_RowId": item.idx,
+				"DT_ItemType": item.Type,
+				"0": item.Name,
+				"1": typeWording,
+				"2": item.Value,
+				"3": item.LastUpdate
+			} );
+        });
+	  }
+     }
+  });
+  $('#modal').hide();
+}
+
+
+function ShowUserVariables()
+{
+	$('#fibaromain').i18n();
+	var oTable = $('#uservariablestable').dataTable( {
+	  "sDom": '<"H"lfrC>t<"F"ip>',
+	  "oTableTools": {
+		"sRowSelect": "single",
+	  },
+	  "fnDrawCallback": function (oSettings) {
+        var nTrs = this.fnGetNodes();
+        $(nTrs).click(
+			function(){
+				$(nTrs).removeClass('row_selected');
+				$(this).addClass('row_selected');
+				$('#uservariablesedittable #uservariableupdate').attr("class", "btnstyle3");
+				$('#uservariablesedittable #uservariabledelete').attr("class", "btnstyle3");
+				var anSelected = fnGetSelected( oTable );
+				if ( anSelected.length !== 0 ) {
+					var data = oTable.fnGetData( anSelected[0] );
+					var idx= data["DT_RowId"];
+					$.userVariableIdx=idx;	
+					$("#uservariablesedittable #uservariableupdate").attr("href", "javascript:AddLink('u')");
+					$("#uservariablesedittable #uservariabledelete").attr("href", "javascript:DeleteVariable(" + idx + ")");
+					$("#uservariablesedittable #uservariablename").val(data["0"]);
+					$("#uservariablesedittable #uservariabletype").val(data["DT_ItemType"]);
+					$("#uservariablesedittable #uservariablevalue").val(data["2"]);
+				}
+		});
+	  },    
+	  "aaSorting": [[ 0, "desc" ]],
+	  "bSortClasses": false,
+	  "bProcessing": true,
+	  "bStateSave": true,
+	  "bJQueryUI": true,
+	  "iDisplayLength" : 10,
+	  'bLengthChange': false,
+	  "sPaginationType": "full_numbers"
+	} );
+	
+	RefreshUserVariablesTable()
+}
+
+$(document).ready(function() {
+	//global var
+	$.userVariableIdx=0;
+	$.varNames = [];
+	ShowUserVariables();
+} );  
+</script>

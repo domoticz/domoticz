@@ -89,6 +89,10 @@ private:
 	void GetDevicesForFibaroLink(Json::Value &root);
 	void GetDeviceValueOptions(Json::Value &root);
 	void GetDeviceValueOptionWording(Json::Value &root);
+	void DeleteUserVariable(Json::Value &root);
+	void SaveUserVariable(Json::Value &root);
+	void UpdateUserVariable(Json::Value &root);
+	void GetUserVariables(Json::Value &root);
 
 	//RTypes
 	void RType_HandleGraph(Json::Value &root);

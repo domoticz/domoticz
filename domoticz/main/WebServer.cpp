@@ -293,6 +293,11 @@ bool CWebServer::StartServer(const std::string &listenaddress, const std::string
 	RegisterCommandCode("getdevicevalueoptions",boost::bind(&CWebServer::GetDeviceValueOptions,this, _1));
 	RegisterCommandCode("getdevicevalueoptionwording",boost::bind(&CWebServer::GetDeviceValueOptionWording,this, _1));
 
+	RegisterCommandCode("deleteuservariable", boost::bind(&CWebServer::DeleteUserVariable, this, _1));
+	RegisterCommandCode("saveuservariable", boost::bind(&CWebServer::SaveUserVariable, this, _1));
+	RegisterCommandCode("updateuservariable", boost::bind(&CWebServer::UpdateUserVariable, this, _1));
+	RegisterCommandCode("getuservariables", boost::bind(&CWebServer::GetUserVariables, this, _1));
+
 	RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1));
 
 #ifdef WITH_OPENZWAVE
@@ -919,6 +924,68 @@ void CWebServer::GetDeviceValueOptionWording(Json::Value &root)
 	root["wording"]=wording;
 	root["status"]="OK";
 	root["title"]="GetDeviceValueOptions";
+}
+
+
+void CWebServer::DeleteUserVariable(Json::Value &root)
+{
+	std::string idx = m_pWebEm->FindValue("idx");
+	if (idx == "")
+		return;
+
+	root["status"] = m_sql.DeleteUserVariable(idx);
+	root["title"] = "DeleteUserVariable";
+}
+
+void CWebServer::SaveUserVariable(Json::Value &root)
+{
+	std::string variablename = m_pWebEm->FindValue("vname");
+	std::string variablevalue = m_pWebEm->FindValue("vvalue");
+	std::string variabletype = m_pWebEm->FindValue("vtype");
+	if ((variablename == "") || (variablevalue == "") || (variabletype == ""))
+		return;
+	
+	root["status"] = m_sql.SaveUserVariable(variablename, variabletype, variablevalue);
+	root["title"] = "SaveUserVariable";
+}
+
+void CWebServer::UpdateUserVariable(Json::Value &root)
+{
+	std::string idx = m_pWebEm->FindValue("idx");
+	std::string variablename = m_pWebEm->FindValue("vname");
+	std::string variablevalue = m_pWebEm->FindValue("vvalue");
+	std::string variabletype = m_pWebEm->FindValue("vtype");
+	if ((idx == "") || (variablename == "") || (variablevalue == "") || (variabletype == ""))
+		return;
+	
+	root["status"] = m_sql.UpdateUserVariable(idx, variablename, variabletype, variablevalue);
+	root["title"] = "UpdateUserVariable";
+}
+
+
+void CWebServer::GetUserVariables(Json::Value &root)
+{
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT ID,Name,ValueType,Value,LastUpdate FROM UserVariables";
+	result = m_sql.GetUserVariables();
+	if (result.size() > 0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		int ii = 0;
+		for (itt = result.begin(); itt != result.end(); ++itt)
+		{
+			std::vector<std::string> sd = *itt;
+			root["result"][ii]["idx"] = sd[0];
+			root["result"][ii]["Name"] = sd[1];
+			root["result"][ii]["Type"] = sd[2];
+			root["result"][ii]["Value"] = sd[3];
+			root["result"][ii]["LastUpdate"] = sd[4];
+			ii++;
+		}
+	}
+	root["status"] = "OK";
+	root["title"] = "GetUserVariables";
 }
 
 void CWebServer::DeleteHardware(Json::Value &root)

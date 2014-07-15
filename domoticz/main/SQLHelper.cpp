@@ -14,6 +14,7 @@
 #include "../smtpclient/SMTPClient.h"
 #include "../webserver/Base64.h"
 #include "mainstructs.h"
+#include <regex>
 #ifndef WIN32
 	#include <sys/stat.h>
 	#include <unistd.h>
@@ -446,6 +447,14 @@ const char *sqlCreateFibaroLink =
 	"[Enabled] INTEGER DEFAULT 1, "
 	"[IncludeUnit] INTEGER default 0); ";
 
+const char *sqlCreateUserVariables =
+	"CREATE TABLE IF NOT EXISTS [UserVariables] ("
+	"[ID] INTEGER PRIMARY KEY, "
+	"[Name] VARCHAR(200), "
+	"[ValueType] INT NOT NULL, "
+	"[Value] VARCHAR(200), "
+	"[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime')));";
+
 extern std::string szStartupFolder;
 
 CSQLHelper::CSQLHelper(void)
@@ -563,6 +572,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateBackupLog);
 	query(sqlCreateEnoceanSensors);
 	query(sqlCreateFibaroLink);
+	query(sqlCreateUserVariables);
 
 	if ((!bNewInstall)&&(dbversion<DB_VERSION))
 	{
@@ -6141,5 +6151,97 @@ void CSQLHelper::FixDaylightSaving()
 			}
 		}
 	}
+
+}
+
+std::string CSQLHelper::DeleteUserVariable(std::string idx)
+{
+	std::vector<std::vector<std::string> > result;
+	char szTmp[300];
+	sprintf(szTmp, "DELETE FROM UserVariables WHERE (ID==%s)", idx.c_str());
+	result = query(szTmp);
+
+	return "OK";
+
+}
+std::string CSQLHelper::SaveUserVariable(std::string varname, std::string vartype, std::string varvalue)
+{
+	int typei = atoi(vartype.c_str());
+	std::string formatError = CheckUserVariable(typei, varvalue);
+	if (formatError != "OK")
+		return formatError;
+
+	std::vector<std::vector<std::string> > result;
+	char szTmp[300];
+	sprintf(szTmp, "INSERT INTO UserVariables (Name,ValueType,Value) VALUES ('%s','%d','%s')",
+		varname.c_str(),
+		typei,
+		varvalue.c_str()
+		);
+	result = m_sql.query(szTmp);
+	return "OK";
+
+}
+std::string CSQLHelper::UpdateUserVariable(std::string idx, std::string varname, std::string vartype, std::string varvalue)
+{
+	int typei = atoi(vartype.c_str());
+	std::string formatError = CheckUserVariable(typei, varvalue);
+	if (formatError != "OK")
+		return formatError;
+
+	std::vector<std::vector<std::string> > result;
+	char szTmp[300];
+
+	time_t now = time(0);
+	struct tm ltime;
+	localtime_r(&now, &ltime);
+
+	sprintf(szTmp,
+		"UPDATE UserVariables SET Name='%s', ValueType='%d', Value='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == %s)",
+		varname.c_str(),
+		typei,
+		varvalue.c_str(),
+		ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+		idx.c_str()
+		);
+	result = m_sql.query(szTmp);
+	return "OK";
+
+}
+
+std::string CSQLHelper::CheckUserVariable(int vartype, std::string varvalue)
+{
+	if (varvalue.size() > 200) {
+		return "String exceeds maximum size";
+	}
+	if (vartype == 0) {
+		//integer
+		if (!std::regex_match(varvalue, std::regex("^(\\+|-)?\\d+$")))
+			return "Not a valid integer";
+	}
+	if (vartype == 1) {
+		//float 
+		if (!std::regex_match(varvalue, std::regex("^[-+]?[0-9]+[.]?[0-9]*([eE][-+]?[0-9]+)?$")))
+			return "Not a valid float";
+	}
+	if (vartype == 3) {
+		//date  
+		if (!std::regex_match(varvalue, std::regex("^(0?\\d|1[012])\\/([012]?\\d|3[01])\\/(\\d{2}|\\d{4})$")))
+			return "Not a valid US date notation (MM/DD/YYYY)";
+	}
+	if (vartype == 4) {
+		//time
+		if (!std::regex_match(varvalue, std::regex("^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$")))
+			return "Not a valid time notation (HH:MM)";
+	}
+	return "OK";
+}
+
+
+std::vector<std::vector<std::string> > CSQLHelper::GetUserVariables()
+{
+	std::stringstream szQuery;
+	szQuery << "SELECT ID,Name,ValueType,Value,LastUpdate FROM UserVariables";
+	return query(szQuery.str());
 
 }

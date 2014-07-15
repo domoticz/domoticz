@@ -325,6 +325,11 @@ public:
 	bool HandleOnOffAction(const bool bIsOn, const std::string &OnAction, const std::string &OffAction);
 
 	std::vector<std::vector<std::string> > query(const std::string &szQuery);
+	std::string DeleteUserVariable(std::string idx);
+	std::string SaveUserVariable(std::string varname, std::string vartype, std::string varvalue);
+	std::string UpdateUserVariable(std::string idx, std::string varname, std::string vartype, std::string varvalue);
+	std::vector<std::vector<std::string> > GetUserVariables();
+
 public:
 	std::string m_LastSwitchID;	//for learning command
 	unsigned long long m_LastSwitchRowID;
@@ -381,6 +386,9 @@ private:
 	void AddCalendarUpdatePercentage();
 	void AddCalendarUpdateFan();
 	void CleanupShortLog();
+	std::string CheckUserVariable(int vartype, std::string varvalue);
+
+
 };
 
 extern CSQLHelper m_sql;
