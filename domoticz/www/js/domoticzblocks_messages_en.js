@@ -48,6 +48,7 @@ Blockly.LANG_LOGIC_NEGATE_TOOLTIP = 'Returns true if the input is false.\n' +
     'Returns false if the input is true.';
 Blockly.LANG_LOGIC_BOOLEAN_TOOLTIP = 'Returns either true or false.';
 Blockly.DOMOTICZSWITCHES_TOOLTIP = 'A list of switchable devices. Can be used in an IF statement to check current state, or in a "Set" block in a DO statement to change the state.';
+Blockly.DOMOTICZUSERVARIABLES_TOOLTIP = 'A list of user defined variables. Can be used in an IF statement to check current value, or in a "Set" block in a DO statement to change the value.';
 Blockly.DOMOTICZVARIABLES_TEMPERATURE_TOOLTIP = 'This is a temperature measurement device. Use it in an IF statement to check valid temperature values,\ni.e. "if Bathroom temperature > 20". Cannot be used in Set blocks.';
 Blockly.DOMOTICZVARIABLES_HUMIDITY_TOOLTIP = 'This is a humidity measurement device. Use it in an IF statement to check valid humidity values, i.e. "if Bathroom humidity > 50". The percentage sign is omitted. Cannot be used in Set blocks.';
 Blockly.DOMOTICZVARIABLES_BAROMETER_TOOLTIP = 'This is a barometer measurement device. Use it in an IF statement to check valid barometer values,\ni.e. "if Outside barometer > 1020". Cannot be used in Set blocks.';

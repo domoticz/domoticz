@@ -129,6 +129,23 @@
 				}
 				return compareString;
 			}
+			if (variableType.indexOf("uservariables") >= 0) {
+				var compareString = "";
+				var titleA = $(valueA).find("title")[0];
+				var valueB = $(thisBlock).children("value[name='B']")[0];
+				var titleB = $(valueB).find("title")[0];
+				if ($(titleB).attr("name") == "TEXT") {
+					compareString = "variable["+$(titleA).text()+"]";
+					compareString += locOperand;
+					compareString += '"'+$(titleB).text()+'"'; 
+				}
+				else if ($(titleB).attr("name") == "NUM") {
+					compareString = "variable["+$(titleA).text()+"]";
+					compareString += locOperand;
+					compareString += $(titleB).text(); 
+				}
+				return compareString;
+			}
 			else if (variableType == "temperaturevariables") {
 				var titleA = $(valueA).find("title")[0];
 				var valueB = $(thisBlock).children("value[name='B']")[0];
@@ -285,18 +302,29 @@
 		   		var valueA = $(this).find("value[name='A']")[0];
 	        	var titleA = $(valueA).find("title")[0];
 	        	var blockA = $(valueA).children("block:first");
-	        	var setString = "commandArray["+$(titleA).text()+"]";
-	        	var valueB = $(this).find("value[name='B']")[0];
-	        	var titleB = $(valueB).find("title")[0];
-	        	var blockB = $(valueB).children("block:first");
-	        	if ((blockB.attr("type")=="logic_states") && ($(titleB).attr("name") == "State")) {
-	        		setString += '="'+$(titleB).text()+'"'; 
-	        		setArray.push(setString);
-	        	}
-	        	else if ((blockB.attr("type")=="logic_setlevel") && ($(titleB).attr("name") == "NUM")) {
-	        		setString += '="Set Level '+$(titleB).text()+'"'; 
-	        		setArray.push(setString);
-	        	}
+				if (blockA.attr("type").indexOf("uservariables") >= 0) { 
+					var setString = "commandArray[Variable:"+$(titleA).text()+"]";
+					var valueB = $(this).find("value[name='B']")[0];
+					var titleB = $(valueB).find("title")[0];
+					var blockB = $(valueB).children("block:first");
+					setString += '="'+$(titleB).text()+'"'; 
+					setArray.push(setString);
+								
+				}
+				else {
+					var setString = "commandArray["+$(titleA).text()+"]";
+					var valueB = $(this).find("value[name='B']")[0];
+					var titleB = $(valueB).find("title")[0];
+					var blockB = $(valueB).children("block:first");
+					if ((blockB.attr("type")=="logic_states") && ($(titleB).attr("name") == "State")) {
+						setString += '="'+$(titleB).text()+'"'; 
+						setArray.push(setString);
+					}
+					else if ((blockB.attr("type")=="logic_setlevel") && ($(titleB).attr("name") == "NUM")) {
+						setString += '="Set Level '+$(titleB).text()+'"'; 
+						setArray.push(setString);
+					}
+				}
 		    }
 	      	else if ($(this).attr('type') == 'logic_setdelayed') {
 		   		var valueA = $(this).find("value[name='A']")[0];
@@ -657,6 +685,14 @@
    		<category name="Security">
    			<block type="security_status"></block>
    		</category>
+		<category name="User variables">
+			<block type="uservariablesAF"></block>
+			<block type="uservariablesGL"></block>
+			<block type="uservariablesMR"></block>
+			<block type="uservariablesSZ"></block>
+			<block type="math_number"></block>
+			<block type="text"></block>
+		</category>	
    		<category name="Devices">   		
 		   	<category name="Switches">
 			   	<block type="switchvariablesAF"></block>
@@ -683,7 +719,7 @@
 			   	<block type="scenevariables"></block>
 			   	<block type="groupvariables"></block>
 		   	</category>
-		</category>	
+		</category>
     </xml>
     <div id="maindiv" class="container-fluid">
 		<div class="row-fluid">

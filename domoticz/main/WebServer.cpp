@@ -958,7 +958,7 @@ void CWebServer::UpdateUserVariable(Json::Value &root)
 	if ((idx == "") || (variablename == "") || (variablevalue == "") || (variabletype == ""))
 		return;
 	
-	root["status"] = m_sql.UpdateUserVariable(idx, variablename, variabletype, variablevalue);
+	root["status"] = m_sql.UpdateUserVariable(idx, variablename, variabletype, variablevalue, true);
 	root["title"] = "UpdateUserVariable";
 }
 

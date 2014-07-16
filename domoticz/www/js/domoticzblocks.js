@@ -17,6 +17,11 @@ var utilities = [];
 var scenes = [];
 var groups = [];
 
+var variablesAF = [];
+var variablesGL = [];
+var variablesMR = [];
+var variablesSZ = [];
+
 $.ajax({
 	url: "json.htm?type=devices&filter=light&used=true&order=Name", 
 	async: false, 
@@ -124,6 +129,38 @@ if (utilities.length === 0) {utilities.push(["No utilities found",0]);}
 if (groups.length === 0) {groups.push(["No groups found",0]);}
 if (scenes.length === 0) {scenes.push(["No scenes found",0]);}
 
+$.ajax({
+	url: "json.htm?type=command&param=getuservariables", 
+	async: false, 
+	dataType: 'json',
+	success: function(data) {
+		if (typeof data.result != 'undefined') {
+			$.each(data.result, function(i,item){
+				if ("ghijkl".indexOf(item.Name.charAt(0).toLowerCase()) > -1) {
+					variablesGL.push([item.Name,item.idx])
+				}
+				else if ("mnopqr".indexOf(item.Name.charAt(0).toLowerCase()) > -1) {
+					variablesMR.push([item.Name,item.idx])
+				}
+				else if ("stuvwxyz".indexOf(item.Name.charAt(0).toLowerCase()) > -1) {
+					variablesSZ.push([item.Name,item.idx])
+				}
+				// numbers etc with the a list
+				else {
+					variablesAF.push([item.Name,item.idx])
+				}
+
+			})
+		}
+	}
+});
+
+if (variablesAF.length === 0) {variablesAF.push(["No devices found",0]);}
+if (variablesGL.length === 0) {variablesGL.push(["No devices found",0]);}
+if (variablesMR.length === 0) {variablesMR.push(["No devices found",0]);}
+if (variablesSZ.length === 0) {variablesSZ.push(["No devices found",0]);}
+
+
 switchesAF.sort();
 switchesGL.sort();
 switchesMR.sort();
@@ -136,6 +173,11 @@ weather.sort();
 utilities.sort();
 groups.sort();
 scenes.sort();
+
+variablesAF.sort();
+variablesGL.sort();
+variablesMR.sort();
+variablesSZ.sort();
 
 Blockly.Language.switchvariablesAF = {
   // Variable getter.
@@ -189,6 +231,59 @@ Blockly.Language.switchvariablesGL = {
   }
  };
 
+ 
+ Blockly.Language.uservariablesAF = {
+  // Variable getter.
+  category: null,  // Variables are handled specially.
+  init: function() {
+    this.setColour(80);
+    this.appendDummyInput()
+	    .appendTitle('Var A-F ')    
+        .appendTitle(new Blockly.FieldDropdown(variablesAF), 'Variable');
+    this.setOutput(true, null);
+    this.setTooltip(Blockly.DOMOTICZUSERVARIABLES_TOOLTIP);
+  }
+ };
+
+Blockly.Language.uservariablesGL = {
+  // Variable getter.
+  category: null,  // Variables are handled specially.
+  init: function() {
+    this.setColour(80);
+    this.appendDummyInput()
+	    .appendTitle('Var G-L ')
+        .appendTitle(new Blockly.FieldDropdown(variablesGL), 'Variable');
+    this.setOutput(true, null);
+    this.setTooltip(Blockly.DOMOTICZUSERVARIABLES_TOOLTIP);
+  }
+ };
+ 
+ Blockly.Language.uservariablesMR = {
+  // Variable getter.
+  category: null,  // Variables are handled specially.
+  init: function() {
+    this.setColour(80);
+    this.appendDummyInput()
+	    .appendTitle('Var M-R ')
+        .appendTitle(new Blockly.FieldDropdown(variablesMR), 'Variable');
+    this.setOutput(true, null);
+    this.setTooltip(Blockly.DOMOTICZUSERVARIABLES_TOOLTIP);
+  }
+ };
+
+ Blockly.Language.uservariablesSZ = {
+  // Variable getter.
+  category: null,  // Variables are handled specially.
+  init: function() {
+    this.setColour(80);
+    this.appendDummyInput()
+	    .appendTitle('Var S-Z ')
+        .appendTitle(new Blockly.FieldDropdown(variablesSZ), 'Variable');
+    this.setOutput(true, null);
+    this.setTooltip(Blockly.DOMOTICZUSERVARIABLES_TOOLTIP);
+  }
+ };
+ 
 Blockly.Language.domoticzcontrols_if = {
   category: null,  // Variables are handled specially.
   init: function() {

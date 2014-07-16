@@ -1870,7 +1870,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		CheckSceneStatusWithDevice(ulID);
 		break;
 	}
-	m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname);
+	m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, 0);
 	return ulID;
 }
 
@@ -6167,6 +6167,10 @@ std::string CSQLHelper::DeleteUserVariable(std::string idx)
 std::string CSQLHelper::SaveUserVariable(std::string varname, std::string vartype, std::string varvalue)
 {
 	int typei = atoi(vartype.c_str());
+	std::string dupeName = CheckUserVariableName(varname);
+	if (dupeName != "OK")
+		return dupeName;
+
 	std::string formatError = CheckUserVariable(typei, varvalue);
 	if (formatError != "OK")
 		return formatError;
@@ -6178,11 +6182,26 @@ std::string CSQLHelper::SaveUserVariable(std::string varname, std::string vartyp
 		typei,
 		varvalue.c_str()
 		);
-	result = m_sql.query(szTmp);
+	result = query(szTmp);
+
+	sprintf(szTmp, "SELECT ID FROM UserVariables WHERE (Name == '%s')",
+		varname.c_str()
+	);
+	result = query(szTmp);
+	if (result.size()>0)
+	{
+		std::vector<std::string> sd = result[0];
+		std::stringstream vId_str(sd[0]);
+		unsigned long long vId;
+		vId_str >> vId;
+		m_mainworker.m_eventsystem.ProcessUserVariable(vId);
+	}
+
+	
 	return "OK";
 
 }
-std::string CSQLHelper::UpdateUserVariable(std::string idx, std::string varname, std::string vartype, std::string varvalue)
+std::string CSQLHelper::UpdateUserVariable(std::string idx, std::string varname, std::string vartype, std::string varvalue, bool eventtrigger)
 {
 	int typei = atoi(vartype.c_str());
 	std::string formatError = CheckUserVariable(typei, varvalue);
@@ -6192,6 +6211,17 @@ std::string CSQLHelper::UpdateUserVariable(std::string idx, std::string varname,
 	std::vector<std::vector<std::string> > result;
 	char szTmp[300];
 
+	sprintf(szTmp, "SELECT Value FROM UserVariables WHERE (Name == '%s')",
+		varname.c_str()
+		);
+	result = query(szTmp);
+	if (result.size()>0)
+	{
+		std::vector<std::string> sd = result[0];
+		if (varvalue == sd[0])
+			return "New value same as current, not updating";
+	}
+	
 	time_t now = time(0);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
@@ -6204,13 +6234,34 @@ std::string CSQLHelper::UpdateUserVariable(std::string idx, std::string varname,
 		ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 		idx.c_str()
 		);
-	result = m_sql.query(szTmp);
+	result = query(szTmp);
+	if (eventtrigger) {
+		std::stringstream vId_str(idx);
+		unsigned long long vId;
+		vId_str >> vId;
+		m_mainworker.m_eventsystem.ProcessUserVariable(vId);
+	}
 	return "OK";
 
 }
 
+std::string CSQLHelper::CheckUserVariableName(std::string varname)
+{
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT Name FROM UserVariables WHERE (Name=='" << varname << "')";
+	result = query(szQuery.str());
+	if (result.size() > 0)
+	{
+		return "Variable name already exists!";
+	}
+	return "OK";
+}
+
+
 std::string CSQLHelper::CheckUserVariable(int vartype, std::string varvalue)
 {
+
 	if (varvalue.size() > 200) {
 		return "String exceeds maximum size";
 	}

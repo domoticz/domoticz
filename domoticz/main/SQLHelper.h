@@ -327,7 +327,7 @@ public:
 	std::vector<std::vector<std::string> > query(const std::string &szQuery);
 	std::string DeleteUserVariable(std::string idx);
 	std::string SaveUserVariable(std::string varname, std::string vartype, std::string varvalue);
-	std::string UpdateUserVariable(std::string idx, std::string varname, std::string vartype, std::string varvalue);
+	std::string UpdateUserVariable(std::string idx, std::string varname, std::string vartype, std::string varvalue, bool eventtrigger);
 	std::vector<std::vector<std::string> > GetUserVariables();
 
 public:
@@ -387,6 +387,7 @@ private:
 	void AddCalendarUpdateFan();
 	void CleanupShortLog();
 	std::string CheckUserVariable(int vartype, std::string varvalue);
+	std::string CheckUserVariableName(std::string varname);
 
 
 };
