@@ -82,6 +82,8 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
 
     GET_DIRECTORY_PROPERTY(_directory_flags DEFINITIONS)
     LIST(APPEND _compiler_FLAGS ${_directory_flags})
+	
+	ADD_DEFINITIONS("-std=c++11")
 
     SEPARATE_ARGUMENTS(_compiler_FLAGS)
     MESSAGE("${CMAKE_CXX_COMPILER} -DPCHCOMPILE ${_compiler_FLAGS} -x c++-header -o {_output} ${_source}")
