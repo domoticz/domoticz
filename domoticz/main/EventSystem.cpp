@@ -114,12 +114,24 @@ void CEventSystem::Do_Work()
 	{
 		//sleep 500 milliseconds
 		sleep_milliseconds(500);
+
+		/*
+		time_t atime = mytime(NULL);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+
+		if (ltime.tm_sec % 1 == 0)
+		{
+			CheckLuaState();
+		}
+		*/
 		m_secondcounter++;
 		if (m_secondcounter==60*2)
 		{
 			m_secondcounter=0;
 			ProcessMinute();
 		}
+
 	}
 	_log.Log(LOG_STATUS,"EventSystem stopped...");
 
@@ -136,6 +148,7 @@ std::string utf8_to_string(const char *utf8str, const std::locale& loc)
 	return std::string(buf.data(), buf.size());
 }
 */
+
 
 void CEventSystem::GetCurrentStates()
 {
@@ -1760,6 +1773,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
     
     if(status == 0)
     {
+		lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
         status = lua_pcall(lua_state, 0, LUA_MULTRET, 0);
     }
     report_errors(lua_state, status);
@@ -1787,6 +1801,18 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
     lua_close(lua_state);
 
 }
+
+void CEventSystem::luaStop(lua_State *L, lua_Debug *ar)
+{
+	if (ar->event == LUA_HOOKCOUNT)
+	{
+		(void)ar;  /* unused arg. */
+		lua_sethook(L, NULL, 0, 0);
+		luaL_error(L, "Lua script execution exceeds maximum number of lines");
+		lua_close(L);
+	}
+}
+
 
 bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const std::string &filename)
 {

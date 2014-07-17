@@ -3,6 +3,12 @@
 #include <string>
 #include <vector>
 
+extern "C" {
+#include "../lua/src/lua.h"    
+#include "../lua/src/lualib.h"
+#include "../lua/src/lauxlib.h"
+}
+
 class CEventSystem
 {
 	typedef struct lua_State lua_State;
@@ -51,6 +57,7 @@ public:
 
 	void StartEventSystem();
 	void StopEventSystem();
+	
 
 	void LoadEvents();
 	void ProcessUserVariable(const unsigned long long varId);
@@ -60,20 +67,19 @@ public:
     void WWWUpdateSecurityState(int securityStatus);
 	void WWWGetItemStates(std::vector<_tDeviceStatus> &iStates);
 private:
-	//lua_State	*m_pLUA;
+	
 	boost::mutex eventMutex;
 	boost::mutex luaMutex;
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 	unsigned char m_secondcounter;
 	int m_SecStatus;
-   
-    
+	   
     //our thread
 	void Do_Work();
 	void ProcessMinute();
-    void GetCurrentStates();
-    void GetCurrentMeasurementStates();
+	void GetCurrentStates();
+	void GetCurrentMeasurementStates();
 	void GetCurrentUserVariables();
     std::string UpdateSingleState(const unsigned long long ulDevID, const std::string &devname, const int nValue, const char* sValue,const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel);
     void EvaluateEvent(const std::string &reason);
@@ -84,7 +90,9 @@ private:
 	void EvaluateLua(const std::string &reason, const std::string &filename, const unsigned long long varId);
 	void EvaluateLua(const std::string &reason, const std::string &filename);
 	void EvaluateLua(const std::string &reason, const std::string &filename, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId);
-    std::string nValueToWording (const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue,const std::string &sValue);
+	void runLuaFile(lua_State *lua_state);
+	static void luaStop(lua_State *L, lua_Debug *ar);
+	std::string nValueToWording (const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue,const std::string &sValue);
     static int l_domoticz_print(lua_State* lua_state);
     void SendEventNotification(const std::string &Subject, const std::string &Body, const int Priority,const std::string &Sound);
     void OpenURL(const std::string &URL);
@@ -127,4 +135,6 @@ private:
     unsigned char calculateDimLevel(int deviceID , int percentageLevel);
     
 };
+
+
 
