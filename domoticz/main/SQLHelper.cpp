@@ -14,7 +14,8 @@
 #include "../smtpclient/SMTPClient.h"
 #include "../webserver/Base64.h"
 #include "mainstructs.h"
-#include <regex>
+#include <boost/lexical_cast.hpp>
+
 #ifndef WIN32
 	#include <sys/stat.h>
 	#include <unistd.h>
@@ -6267,22 +6268,35 @@ std::string CSQLHelper::CheckUserVariable(int vartype, std::string varvalue)
 	}
 	if (vartype == 0) {
 		//integer
-		if (!std::regex_match(varvalue, std::regex("^(\\+|-)?\\d+$")))
+		std::istringstream iss(varvalue);
+		int i;
+		iss >> std::noskipws >> i;
+		if (!(iss.eof() && !iss.fail()))
+		{
 			return "Not a valid integer";
+		}
 	}
 	if (vartype == 1) {
 		//float 
-		if (!std::regex_match(varvalue, std::regex("^[-+]?[0-9]+[.]?[0-9]*([eE][-+]?[0-9]+)?$")))
+		std::istringstream iss(varvalue);
+		float f;
+		iss >> std::noskipws >> f; 
+		if (!(iss.eof() && !iss.fail()))
+		{
 			return "Not a valid float";
+		}
 	}
 	if (vartype == 3) {
 		//date  
-		if (!std::regex_match(varvalue, std::regex("^(0?\\d|1[012])\\/([012]?\\d|3[01])\\/(\\d{2}|\\d{4})$")))
-			return "Not a valid US date notation (MM/DD/YYYY)";
+		int d, m, y;
+		if (!CheckDate(varvalue, d, m, y))
+		{
+			return "Not a valid date notation (DD/MM/YYYY)";
+		}
 	}
 	if (vartype == 4) {
 		//time
-		if (!std::regex_match(varvalue, std::regex("^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$")))
+		if (!CheckTime(varvalue))
 			return "Not a valid time notation (HH:MM)";
 	}
 	return "OK";
@@ -6295,4 +6309,34 @@ std::vector<std::vector<std::string> > CSQLHelper::GetUserVariables()
 	szQuery << "SELECT ID,Name,ValueType,Value,LastUpdate FROM UserVariables";
 	return query(szQuery.str());
 
+}
+
+bool CSQLHelper::CheckDate(const std::string& s, int& d, int& m, int& y){
+	std::istringstream is(s);
+	char delimiter;
+	if (is >> d >> delimiter >> m >> delimiter >> y) {
+		struct tm t = { 0 };
+		t.tm_mday = d;
+		t.tm_mon = m - 1;
+		t.tm_year = y - 1900;
+		t.tm_isdst = -1;
+
+		time_t when = mktime(&t);
+		const struct tm *norm = localtime(&when);
+
+		return (norm->tm_mday == d    &&
+			norm->tm_mon == m - 1 &&
+			norm->tm_year == y - 1900);
+	}
+	return false;
+}
+
+bool CSQLHelper::CheckTime(const std::string sTime){
+	
+	int iSemiColon = sTime.find(':');
+	if ((iSemiColon == std::string::npos) || (iSemiColon < 1) || (iSemiColon > 2) || (iSemiColon == sTime.length()-1)) return false;
+	if ((sTime.length() < 3) || (sTime.length() > 5)) return false;
+	if (atoi(sTime.substr(0, iSemiColon).c_str()) >= 24) return false;
+	if (atoi(sTime.substr(iSemiColon + 1).c_str()) >= 60) return false;
+	return true;
 }

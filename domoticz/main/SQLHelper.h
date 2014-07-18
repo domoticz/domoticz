@@ -388,6 +388,8 @@ private:
 	void CleanupShortLog();
 	std::string CheckUserVariable(int vartype, std::string varvalue);
 	std::string CheckUserVariableName(std::string varname);
+	bool CheckDate(const std::string& s, int& d, int& m, int& y);
+	bool CheckTime(const std::string sTime);
 
 
 };

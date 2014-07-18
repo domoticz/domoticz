@@ -29,7 +29,7 @@
 		</tr>
 		<tr id="uservariablevaluerow">
 			<td align="right" style="width:110px"><label for="uservariablevalue"><span data-i18n="Variable value"></span>:</label></td>
-			<td><input type="text" id="uservariablevalue" onchange="VariableTypeCheck();" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			<td><input type="text" id="uservariablevalue" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 		</tr>
 
 		<tr>
@@ -46,10 +46,6 @@
 
 <script type="text/javascript" charset="utf-8">
 
-
-function VariableTypeCheck()
-{
-}
 
 function DeleteVariable(idx)
 {
@@ -71,8 +67,8 @@ function DeleteVariable(idx)
 function AddLink(type)
 {
 	var idx = $.userVariableIdx;
-	var uservariablename = $("#uservariablesedittable #uservariablename").val();
-	var uservariabletype = $("#uservariablesedittable #uservariabletype option:selected").val();
+	var uservariablename = $('#uservariablesedittable #uservariablename').val();
+	var uservariabletype = $('#uservariablesedittable #uservariabletype option:selected').val();
 	var uservariablevalue = $('#uservariablesedittable #uservariablevalue').val();
 	
 	if((type=="a") && (jQuery.inArray(uservariablename,$.varNames) != -1)){
@@ -95,6 +91,9 @@ function AddLink(type)
 					if (data.status=="OK") {
 						bootbox.alert($.i18n('User variable saved'));
 						RefreshUserVariablesTable();
+						$('#uservariablesedittable #uservariablename').val("");
+						$('#uservariablesedittable #uservariablevalue').val("");
+						$('#uservariablesedittable #uservariabletype').val("0");
 					}
 					else {
 						ShowNotify($.i18n(data.status), 2500, true);
