@@ -23,7 +23,7 @@
 	#include <pwd.h>
 #endif
 
-#define DB_VERSION 45
+#define DB_VERSION 46
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -456,6 +456,19 @@ const char *sqlCreateUserVariables =
 	"[Value] VARCHAR(200), "
 	"[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime')));";
 
+const char *sqlCreateFloorplans =
+	"CREATE TABLE IF NOT EXISTS [Floorplans] ("
+	"[ID] INTEGER PRIMARY KEY, "
+	"[Name] VARCHAR(200) NOT NULL, "
+	"[ImageFile] VARCHAR(100) NOT NULL, "
+	"[Order] INTEGER BIGINT(10) default 0);";
+
+const char *sqlCreateFloorplanOrderTrigger =
+	"CREATE TRIGGER IF NOT EXISTS floorplanordertrigger AFTER INSERT ON Floorplans\n"
+	"BEGIN\n"
+	"	UPDATE Floorplans SET [Order] = (SELECT MAX([Order]) FROM Floorplans)+1 WHERE Floorplans.ID = NEW.ID;\n"
+	"END;\n";
+
 extern std::string szStartupFolder;
 
 CSQLHelper::CSQLHelper(void)
@@ -574,6 +587,8 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateEnoceanSensors);
 	query(sqlCreateFibaroLink);
 	query(sqlCreateUserVariables);
+	query(sqlCreateFloorplans);
+	query(sqlCreateFloorplanOrderTrigger);
 
 	if ((!bNewInstall)&&(dbversion<DB_VERSION))
 	{
@@ -916,6 +931,14 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("ALTER TABLE Timers ADD COLUMN [TimerPlan] INTEGER default 0");
 			query("ALTER TABLE SceneTimers ADD COLUMN [TimerPlan] INTEGER default 0");
+		}
+		if (dbversion<46)
+		{
+			query("ALTER TABLE Plans ADD COLUMN [FloorplanID] INTEGER default 0");
+			query("ALTER TABLE Plans ADD COLUMN [Area] VARCHAR(200) DEFAULT ''");
+			query("ALTER TABLE DeviceToPlansMap ADD COLUMN [XOffset] INTEGER default 0");
+			query("ALTER TABLE DeviceToPlansMap ADD COLUMN [YOffset] INTEGER default 0");
+
 		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
