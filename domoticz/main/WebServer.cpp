@@ -1803,6 +1803,18 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		sprintf(szTmp,"DELETE FROM DeviceToPlansMap WHERE (ID == '%s')",idx.c_str());
 		result=m_sql.query(szTmp);
 	}
+	else if (cparam=="setplandevicecoords")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		std::string xoffset=m_pWebEm->FindValue("xoffset");
+		std::string yoffset=m_pWebEm->FindValue("yoffset");
+		if ((idx=="") || (xoffset=="") || (yoffset==""))
+			return;
+		root["status"]="OK";
+		root["title"]="SetPlanDeviceCoords";
+		szQuery << "UPDATE DeviceToPlansMap SET [XOffset] = " << xoffset << ", [YOffset] = " << yoffset << " WHERE (DeviceRowID='" << idx << "')";
+		result=m_sql.query(szQuery.str());
+	}
 	else if (cparam=="deleteallplandevices")
 	{
 		std::string idx=m_pWebEm->FindValue("idx");
@@ -5206,6 +5218,224 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		sleep_milliseconds(100);
 		m_mainworker.SwitchLight(ID,"Set Brightness",(unsigned char)atoi(brightness.c_str()),-1);
 	}
+	else if (cparam=="addfloorplan")
+	{
+		std::string name=m_pWebEm->FindValue("name");
+		std::string imagefile=m_pWebEm->FindValue("image");
+		if (
+			(name=="") ||
+			(imagefile=="")
+			)
+			return;
+
+		root["status"]="OK";
+		root["title"]="AddFloorplan";
+		sprintf(szTmp,
+			"INSERT INTO Floorplans (Name,ImageFile) VALUES ('%s','%s')",
+			name.c_str(),
+			imagefile.c_str()
+			);
+		result=m_sql.query(szTmp);
+	}
+	else if (cparam=="updatefloorplan")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		std::string name=m_pWebEm->FindValue("name");
+		std::string imagefile=m_pWebEm->FindValue("image");
+		if (
+			(name=="") ||
+			(imagefile=="")
+			)
+			return;
+
+		root["status"] = "OK";
+		root["title"] = "UpdateFloorplan";
+
+		sprintf(szTmp,
+			"UPDATE Floorplans SET Name='%s',ImageFile='%s' WHERE (ID == %s)",
+			name.c_str(),
+			imagefile.c_str(),
+			idx.c_str()
+			);
+		result = m_sql.query(szTmp);
+	}
+	else if (cparam=="deletefloorplan")
+	{
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		root["status"] = "OK";
+		root["title"] = "DeleteFloorplan";
+		sprintf(szTmp,
+			"UPDATE Plans SET FloorplanID=0 WHERE (FloorplanID == %s)",
+			idx.c_str()
+			);
+		result = m_sql.query(szTmp);
+		sprintf(szTmp,
+			"DELETE FROM Floorplans WHERE (ID == %s)",
+			idx.c_str()
+			);
+		result = m_sql.query(szTmp);
+	}
+	else if (cparam=="changefloorplanorder")
+	{
+		std::string idx = m_pWebEm->FindValue("idx");
+		if (idx=="")
+			return;
+		std::string sway = m_pWebEm->FindValue("way");
+		if (sway == "")
+			return;
+		bool bGoUp = (sway == "0");
+
+		std::string aOrder,oID,oOrder;
+
+		std::vector<std::vector<std::string> > result;
+		std::stringstream szQuery;
+		szQuery << "SELECT [Order] FROM Floorplans WHERE (ID=='" << idx << "')";
+		result = m_sql.query(szQuery.str());
+		if (result.size()<1)
+			return;
+		aOrder = result[0][0];
+
+		szQuery.clear();
+		szQuery.str("");
+
+		if (!bGoUp)
+		{
+			//Get next device order
+			szQuery << "SELECT ID, [Order] FROM Floorplans WHERE ([Order]>'" << aOrder << "') ORDER BY [Order] ASC";
+			result = m_sql.query(szQuery.str());
+			if (result.size()<1)
+				return;
+			oID = result[0][0];
+			oOrder = result[0][1];
+		}
+		else
+		{
+			//Get previous device order
+			szQuery << "SELECT ID, [Order] FROM Floorplans WHERE ([Order]<'" << aOrder << "') ORDER BY [Order] DESC";
+			result = m_sql.query(szQuery.str());
+			if (result.size()<1)
+				return;
+			oID = result[0][0];
+			oOrder = result[0][1];
+		}
+		//Swap them
+		root["status"] = "OK";
+		root["title"] = "ChangeFloorPlanOrder";
+
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE Floorplans SET [Order] = '" << oOrder << "' WHERE (ID='" << idx << "')";
+		result = m_sql.query(szQuery.str());
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE Floorplans SET [Order] = '" << aOrder << "' WHERE (ID='" << oID << "')";
+		result = m_sql.query(szQuery.str());
+	}
+	else if (cparam=="getunusedfloorplanplans")
+	{
+		root["status"] = "OK";
+		root["title"] = "GetUnusedFloorplanPlans";
+		int ii = 0;
+
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT ID, Name FROM Plans WHERE (FloorplanID==0) ORDER BY Name";
+		result = m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd = *itt;
+
+				root["result"][ii]["type"] = 0;
+				root["result"][ii]["idx"] = sd[0];
+				root["result"][ii]["Name"] = sd[1];
+				ii++;
+			}
+		}
+	}
+	else if (cparam=="getfloorplanplans")
+	{
+		std::string idx = m_pWebEm->FindValue("idx");
+		if (idx == "")
+			return;
+		root["status"] = "OK";
+		root["title"] = "GetFloorplanPlans";
+		std::vector<std::vector<std::string> > result;
+		std::stringstream szQuery;
+		int ii = 0;
+
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT ID, Name, Area FROM Plans WHERE (FloorplanID==" << idx << ") ORDER BY Name";
+		result = m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			for (itt=result.begin(); itt != result.end(); ++itt)
+			{
+				std::vector<std::string> sd = *itt;
+
+				root["result"][ii]["idx"] = sd[0];
+				root["result"][ii]["Name"] = sd[1];
+				root["result"][ii]["Area"] = sd[2];
+				ii++;
+			}
+		}
+	}
+	else if (cparam=="addfloorplanplan")
+	{
+		std::string idx = m_pWebEm->FindValue("idx");
+		std::string planidx = m_pWebEm->FindValue("planidx");
+		if (
+			(idx == "")||
+			(planidx == "")
+			)
+			return;
+		root["status"] = "OK";
+		root["title"] = "AddFloorplanPlan";
+
+		sprintf(szTmp,
+			"UPDATE Plans SET FloorplanID='%s' WHERE (ID == %s)",
+			idx.c_str(),
+			planidx.c_str()
+			);
+		result = m_sql.query(szTmp);
+	}
+	else if (cparam=="updatefloorplanplan")
+	{
+		std::string planidx = m_pWebEm->FindValue("planidx");
+		std::string planarea = m_pWebEm->FindValue("area");
+		if (planidx == "")
+			return;
+		root["status"] = "OK";
+		root["title"] = "UpdateFloorplanPlan";
+
+		sprintf(szTmp,
+			"UPDATE Plans SET Area='%s' WHERE (ID == %s)",
+			planarea.c_str(),
+			planidx.c_str()
+			);
+		result = m_sql.query(szTmp);
+	}
+	else if (cparam=="deletefloorplanplan")
+	{
+		std::string idx = m_pWebEm->FindValue("idx");
+		if (idx == "")
+			return;
+		root["status"] = "OK";
+		root["title"] = "DeleteFloorplanPlan";
+		sprintf(szTmp,
+			"UPDATE Plans SET FloorplanID=0 WHERE (ID == %s)",
+			idx.c_str()
+			);
+		result = m_sql.query(szTmp);
+	}
 }
 
 void CWebServer::SetAuthenticationMethod(int amethod)
@@ -6214,9 +6444,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 	{
 		//All
 		if (rowid!="")
-			szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel, CustomImage, StrParam1, StrParam2, Protected FROM DeviceStatus WHERE (ID==" << rowid << ")";
+			szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel, CustomImage, StrParam1, StrParam2, Protected, 0 as XOffset, 0 as YOffset FROM DeviceStatus WHERE (ID==" << rowid << ")";
 		else if ((planID!="")&&(planID!="0"))
-			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2, A.Protected "
+			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2, A.Protected, B.XOffset, B.YOffset "
 			"FROM DeviceStatus as A, DeviceToPlansMap as B WHERE (B.PlanID==" << planID << ") AND (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) ORDER BY B.[Order]";
 		else {
 			if (!bDisplayHidden)
@@ -6244,16 +6474,16 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				szQuery.clear();
 				szQuery.str("");
 			}
-			szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel, CustomImage, StrParam1, StrParam2, Protected FROM DeviceStatus ORDER BY " << szOrderBy;
+			szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel, CustomImage, StrParam1, StrParam2, Protected, 0 as XOffset, 0 as YOffset FROM DeviceStatus ORDER BY " << szOrderBy;
 		}
 	}
 	else
 	{
 		//Specific devices
 		if (rowid!="")
-			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2, A.Protected FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << m_users[iUser].ID << ") AND (A.ID==" << rowid << ")";
+			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2, A.Protected, 0 as XOffset, 0 as YOffset FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << m_users[iUser].ID << ") AND (A.ID==" << rowid << ")";
 		else if ((planID!="")&&(planID!="0"))
-			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2, A.Protected "
+			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2, A.Protected, B.XOffset, B.YOffset "
 			"FROM DeviceStatus as A, SharedDevices as B, DeviceToPlansMap as C  WHERE (C.PlanID==" << planID << ") AND (C.DeviceRowID==a.ID) AND (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << m_users[iUser].ID << ") ORDER BY C.[Order]";
 		else {
 			if (!bDisplayHidden)
@@ -6281,7 +6511,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			}
 			szQuery.clear();
 			szQuery.str("");
-			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2, A.Protected FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << m_users[iUser].ID << ") ORDER BY " << szOrderBy;
+			szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2, A.Protected, 0 as XOffset, 0 as YOffset FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << m_users[iUser].ID << ") ORDER BY " << szOrderBy;
 		}
 	}
 
@@ -6543,7 +6773,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			root["result"][ii]["BatteryLevel"]=atoi(sd[8].c_str());
 			root["result"][ii]["LastUpdate"]=sLastUpdate;
 			root["result"][ii]["CustomImage"]=CustomImage;
-
+			root["result"][ii]["XOffset"]=sd[24].c_str();
+			root["result"][ii]["YOffset"]=sd[25].c_str();
 			sprintf(szData,"%d, %s", nValue,sValue.c_str());
 			root["result"][ii]["Data"]=szData;
 
@@ -9084,6 +9315,44 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 			}
 		}
 	} //plans
+	else if (rtype=="floorplans")
+	{
+		root["status"]="OK";
+		root["title"]="Floorplans";
+
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT ID, Name, ImageFile, [Order] FROM Floorplans ORDER BY [Order]";
+		result = m_sql.query(szQuery.str());
+		if (result.size()>0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			int ii=0;
+			for (itt=result.begin(); itt!=result.end(); ++itt)
+			{
+				std::vector<std::string> sd=*itt;
+
+				root["result"][ii]["idx"] = sd[0];
+				root["result"][ii]["Name"] = sd[1];
+				root["result"][ii]["Image"] = sd[2];
+				root["result"][ii]["Order"] = sd[3];
+
+				unsigned int totPlans=0;
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT COUNT(*) FROM Plans WHERE (FloorplanID=='" << sd[0] << "')";
+				result2 = m_sql.query(szQuery.str());
+				if (result.size()>0)
+				{
+					totPlans=(unsigned int)atoi(result2[0][0].c_str());
+				}
+				root["result"][ii]["Plans"] = totPlans;
+
+				ii++;
+			}
+		}
+	} //floorplans
 	else if (rtype == "scenes")
 	{
 		root["status"] = "OK";
