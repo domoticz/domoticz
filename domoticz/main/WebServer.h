@@ -93,6 +93,7 @@ private:
 	void SaveUserVariable(Json::Value &root);
 	void UpdateUserVariable(Json::Value &root);
 	void GetUserVariables(Json::Value &root);
+	void GetUserVariable(Json::Value &root);
 
 	//RTypes
 	void RType_HandleGraph(Json::Value &root);

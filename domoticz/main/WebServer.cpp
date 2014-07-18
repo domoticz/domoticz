@@ -297,6 +297,7 @@ bool CWebServer::StartServer(const std::string &listenaddress, const std::string
 	RegisterCommandCode("saveuservariable", boost::bind(&CWebServer::SaveUserVariable, this, _1));
 	RegisterCommandCode("updateuservariable", boost::bind(&CWebServer::UpdateUserVariable, this, _1));
 	RegisterCommandCode("getuservariables", boost::bind(&CWebServer::GetUserVariables, this, _1));
+	RegisterCommandCode("getuservariable", boost::bind(&CWebServer::GetUserVariable, this, _1));
 
 	RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1));
 
@@ -987,6 +988,38 @@ void CWebServer::GetUserVariables(Json::Value &root)
 	root["status"] = "OK";
 	root["title"] = "GetUserVariables";
 }
+
+void CWebServer::GetUserVariable(Json::Value &root)
+{
+	std::string idx = m_pWebEm->FindValue("idx");
+	if (idx == "")
+		return;
+
+	int iVarID = atoi(idx.c_str());
+
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT ID,Name,ValueType,Value,LastUpdate FROM UserVariables WHERE (ID==" << iVarID << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size()>0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		int ii = 0;
+		for (itt = result.begin(); itt != result.end(); ++itt)
+		{
+			std::vector<std::string> sd = *itt;
+			root["result"][ii]["idx"] = sd[0];
+			root["result"][ii]["Name"] = sd[1];
+			root["result"][ii]["Type"] = sd[2];
+			root["result"][ii]["Value"] = sd[3];
+			root["result"][ii]["LastUpdate"] = sd[4];
+			ii++;
+		}
+	}
+	root["status"] = "OK";
+	root["title"] = "GetUserVariable";
+}
+
 
 void CWebServer::DeleteHardware(Json::Value &root)
 {
