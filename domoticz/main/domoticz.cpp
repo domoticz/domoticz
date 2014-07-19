@@ -178,6 +178,8 @@ int main(int argc, char**argv)
 	cmdLine.SplitLine(__argc, __argv);
 #else
 	cmdLine.SplitLine(argc, argv);
+	//ignore pipe errors
+	signal(SIGPIPE, SIG_IGN);
 #endif
 
 	if (cmdLine.HasSwitch("-approot"))

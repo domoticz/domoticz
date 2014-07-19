@@ -9208,6 +9208,11 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 			m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypePercentage, 12, 255, 0, "0.0", devname);
 			bCreated = true;
 			break;
+		case 3:
+			//Gas
+			m_sql.UpdateValue(HwdID, ID, 1, pTypeP1Gas, sTypeP1Gas, 12, 255, 0, "0", devname);
+			bCreated = true;
+			break;
 		case pTypeTEMP:
 			m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP, sTypeTEMP1, 10, 255, 0, "0.0", devname);
 			bCreated = true;
