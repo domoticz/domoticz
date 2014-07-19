@@ -8945,6 +8945,9 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		if (sCustomImage != "")
 			CustomImage = atoi(sCustomImage.c_str());
 
+		//Strip trailing spaces in 'name'
+		name = stdstring_trim(name);
+
 		std::stringstream sstridx(idx);
 		unsigned long long ullidx;
 		sstridx >> ullidx;
