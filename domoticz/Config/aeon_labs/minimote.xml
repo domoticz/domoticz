@@ -1,21 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Product xmlns='http://code.google.com/p/open-zwave/'>
+
+  <!-- Minimote requires at least firmware 1.17, 1.19 is highly recommend -->
+  <!-- Minimote will normally not respond to Get commands, but Set is possible when woken up -->
+
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value type="bool" index="241" genre="config" label="Button #1 Programmable" units="" min="0" max="1" />
-    <Value type="bool" index="242" genre="config" label="Button #2 Programmable" units="" min="0" max="1" />
-    <Value type="bool" index="243" genre="config" label="Button #3 Programmable" units="" min="0" max="1" />
-    <Value type="bool" index="244" genre="config" label="Button #4 Programmable" units="" min="0" max="1" />
+
+    <Value type="list" instance="1" index="241" genre="config" label="Button #1 Programmable" value="0" min="0" max="5" size="1" write_only="true">
+      <Help>Default Mode – The button on the Minimote uses the factory default functions for operation instead of any special functionality related to the below modes. Scene Mode – The button on the Minimote executes a scene from data received for Parameters Numbers 0-239 related to the button being pressed. Add Mode – The button on the Minimote is able to include/add devices into the Z-Wave network. Remove Mode – The button on the Minimote is able to remove devices from the Z-Wave network. Association Mode – The button on the Minimote is able to associate one device to another. Learn Mode – The button on the Minimote is able to allow the Minimote to be included into other Z-Wave networks and to learn Z-Wave network information.</Help>
+      <Item label="Default Mode" value="0" />
+      <Item label="Scene Mode" value="1" />
+      <Item label="Add Mode" value="2" />
+      <Item label="Remove Mode" value="3" />
+      <Item label="Association Mode" value="4" />
+      <Item label="Learn Mode" value="5" />
+    </Value>
+
+    <Value type="list" instance="1" index="242" genre="config" label="Button #2 Programmable" value="0" min="0" max="5" size="1" write_only="true">
+      <Item label="Default Mode" value="0" />
+      <Item label="Scene Mode" value="1" />
+      <Item label="Add Mode" value="2" />
+      <Item label="Remove Mode" value="3" />
+      <Item label="Association Mode" value="4" />
+      <Item label="Learn Mode" value="5" />
+    </Value>
+
+    <Value type="list" instance="1" index="243" genre="config" label="Button #3 Programmable" value="0" min="0" max="5" size="1" write_only="true">
+      <Item label="Default Mode" value="0" />
+      <Item label="Scene Mode" value="1" />
+      <Item label="Add Mode" value="2" />
+      <Item label="Remove Mode" value="3" />
+      <Item label="Association Mode" value="4" />
+      <Item label="Learn Mode" value="5" />
+    </Value>
+
+    <Value type="list" instance="1" index="244" genre="config" label="Button #4 Programmable" value="0" min="0" max="5" size="1" write_only="true">
+      <Item label="Default Mode" value="0" />
+      <Item label="Scene Mode" value="1" />
+      <Item label="Add Mode" value="2" />
+      <Item label="Remove Mode" value="3" />
+      <Item label="Association Mode" value="4" />
+      <Item label="Learn Mode" value="5" />
+    </Value>
+
+    <Value type="bool" genre="config" instance="1" index="250" label="All Buttons Scenes" value="false" size="1" write_only="true">
+      <Help>When this option is set to true, the buttons 1-4 will send out a Scene Event. Button 1 (tap)=1, Button 1 (hold)=2, Button 2 (tap)=3, Button 2 (hold)=4, Button 3 (tap)=5, Button 3 (hold)=6, Button 4 (tap)=7, Button 4 (hold)=8. NOTE: Minimote firmware 1.17 or higher is required, firmware 1.19 is highly recommended.</Help>
+    </Value>
+
   </CommandClass>
 
-  <!-- COMMAND_CLASS_VERSION.  This class is in the list reported by the Minimote, but it does not respond to requests -->
-  <CommandClass id="134" action="remove" />
+  <!-- COMMAND_CLASS_SWITCH_MULTILEVEL. This class isn't supported by the Minimote -->
+  <CommandClass id="38" action="remove" />
 
-  <!-- COMMAND_CLASS_WAKE_UP.  This class is in the list reported by the Minimote, but it does not
+  <!-- COMMAND_CLASS_WAKE_UP. This class is in the list reported by the Minimote, but it does not
   respond to requests.  It still needs to be supported so that wake up notifications are handled. -->
   <CommandClass id="132" create_vars="false" />
 
-  <!-- COMMAND_CLASS_ASSOCIATION.  This class is in the list reported by the Minimote, but it does not respond to requests -->
+  <!-- COMMAND_CLASS_ASSOCIATION. This class is in the list reported by the Minimote, but it does not respond to requests -->
   <CommandClass id="133">
     <Associations num_groups="4">
       <Group index="1" max_associations="5" label="Button #1" auto="false" write_only="true" />
@@ -25,8 +67,8 @@
     </Associations>
   </CommandClass>
 
-  <!-- COMMAND_CLASS_ASSOCIATION_COMMAND_CONFIGURATION.  This class is supported but is missing from the list reported by the Minimote -->
-  <CommandClass id="155" action="add" />
+  <!-- COMMAND_CLASS_ASSOCIATION_COMMAND_CONFIGURATION. This class is supported but is missing from the list reported by the Minimote -->
+  <CommandClass id="155" action="add" create_vars="false" />
 
 </Product>
 

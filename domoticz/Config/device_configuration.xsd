@@ -50,6 +50,7 @@
     <xs:element ref='Product:Instance' minOccurs='0' maxOccurs='unbounded'/>
     <xs:element ref='Product:Associations' minOccurs='0' maxOccurs='unbounded'/>
     <xs:element ref='Product:Value' minOccurs='0' maxOccurs='unbounded'/>
+    <xs:element ref='Product:TriggerRefreshValue' minOccurs='0' maxOccurs='unbounded'/>
     <xs:element ref='Product:SupportedModes' minOccurs='0' maxOccurs='unbounded'/>
     <xs:element ref='Product:SensorMap' minOccurs='0' maxOccurs='unbounded'/>
    </xs:sequence>
@@ -149,6 +150,46 @@
   </xs:complexType>
  </xs:element>
 
+ <xs:element name='RefreshClassValue'>
+  <xs:complexType>
+   <xs:attribute name='CommandClass' type='xs:string' use='required' />
+   <xs:attribute name='RequestFlags' use='required'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='0'/>
+      <xs:enumeration value='1'/>
+      <xs:enumeration value='2'/>
+      <xs:enumeration value='4'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='Instance' type='xs:string' use='required'/>
+   <xs:attribute name='Index' type='xs:string' use='required'/>
+  </xs:complexType>
+ </xs:element> 
+ 
+  <xs:element name='TriggerRefreshValue'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='Product:RefreshClassValue' minOccurs='1' maxOccurs='unbounded'/>
+   </xs:sequence>
+   <xs:attribute name='Genre' use='required'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='user'/>
+      <xs:enumeration value='config'/>
+      <xs:enumeration value='system'/>
+      <xs:enumeration value='basic'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='Instance' type='xs:string' use='required'/>
+   <xs:attribute name='Index' type='xs:string' use='required'/>
+  </xs:complexType>
+ </xs:element>  
+
+
+    
  <xs:element name='Value'>
   <xs:complexType>
    <xs:sequence>

@@ -23,10 +23,10 @@
 #include "openzwave/Node.h"
 #include "openzwave/Group.h"
 #include "openzwave/Notification.h"
-#include "openzwave/ValueStore.h"
-#include "openzwave/Value.h"
-#include "openzwave/ValueBool.h"
-#include "openzwave/Log.h"
+#include "openzwave/value_classes/ValueStore.h"
+#include "openzwave/value_classes/Value.h"
+#include "openzwave/value_classes/ValueBool.h"
+#include "openzwave/platform/Log.h"
 
 #include "ZWaveCommands.h"
 

@@ -6,7 +6,7 @@
         <Value type="byte" genre="config" index="0" label="Siren Strobe Mode" min="0" max="255" value="0">
             <Help>Defines the reaction of the siren: [0] Strobe and Siren, [1] Siren, [2] Strobe (Default setting: 0)</Help>
         </Value>
-        <Value type="byte" genre="config" index="1" label="Alarm auto stop" min="0" max=255" value="0">
+        <Value type="byte" genre="config" index="1" label="Alarm auto stop" min="0" max="255" value="0">
             <Help>Defines the auto time out of the alarm indication: [0] 30 seconds, [1] 60 seconds, [2] 120 seconds, [3] Continuous (Default setting: 0)</Help>
         </Value>
     </CommandClass>

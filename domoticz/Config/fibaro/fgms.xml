@@ -333,7 +333,7 @@
 		Default setting: 28 (28C)
 	</Help>
     </Value>
-    <Value type="list" genre="config" instance="1" index="88" label="LED indicating tamper alarm" min="0" max="1" value="1" size="1">
+    <Value type="list" genre="config" instance="1" index="89" label="LED indicating tamper alarm" min="0" max="1" value="1" size="1">
 	<Help>
 		Indicating mode resembles a police car (white, red and blue).
 		Default setting: 1 (on)

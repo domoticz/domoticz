@@ -44,7 +44,6 @@
 			<Help>Reset to factory defaults.</Help>
 		</Value>
     </CommandClass>
-		
     <!-- Association Groups -->
     <CommandClass id="133">
       <Associations num_groups="2">

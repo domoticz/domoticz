@@ -1,109 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Aeon Labs Multi Sensor -->
 <Product xmlns='http://code.google.com/p/open-zwave/'>
-        <!-- Configuration Parameters -->
-        <CommandClass id="112">
-                <Value type="byte" index="2" genre="config" label="Wake up 10 minutes when batteries are inserted" units="minutes" min="0" max="1" value="0">
-                        <Help>
-                                Stay awake for 10 minutes after batteries are inserted
-                                0 	  ->   	No
-                                1 	  ->   	Yes
-                        </Help>
+
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="2" genre="config" label="Wake up 10 minutes when batteries are inserted" min="0" max="1" value="0" size="1">
+			<Help>Stay awake for 10 minutes after batteries are inserted</Help>
 			<Item label="No" value="0" />
 			<Item label="Yes" value="1" />
-               </Value>
-                <Value type="short" index="3" genre="config" label="On time" units="seconds" min="1" max="15300" value="240">
-                        <Help>
-				How long should the device associated to multi sensor keep
-				state On before sending it Off command (if the value is bigger
-				than 255, the value would be rounded to next integer in minutes)
-                        </Help>
-                </Value>
-                <Value type="byte" index="4" genre="config" label="Enable Motion Sensor" units="" min="0" max="1" value="1">
-                        <Help>
-                                Enable Motion Sensor
-				0 	  ->   	Disabled
-				1 	  ->   	Enabled
-                       </Help>
- 			<Item label="Disabled" value="0" />
-			<Item label="Enabled" value="1" />
-               </Value>
-		<Value type="byte" index="5" genre="config" label="Command Options" units="" min="1" max="2" value="1">
-			<Help>
-				Which commands to send when PIR motion sensor triggered
-				1 (default)	->	Basic Set
-				2		->	Binary Sensor Report
-			</Help>
 		</Value>
-                <Value type="int" index="100" genre="config" label="Reset #101-103" units="" value="0" write_only="true" affects="101,102,103">
-                        <Help>
-				Reset to default parameters number 101-103. Any value other then 0 will initiate this reset.
-			</Help>
+		<Value type="short" index="3" genre="config" label="On time" units="seconds" min="1" max="15300" value="240">
+			<Help>How long should the device associated to multi sensor keep state On before sending it Off command (if the value is bigger than 255, the value would be rounded to next integer in minutes)</Help>
 		</Value>
-                <Value type="int" index="101" genre="config" label="Group 1 Reports" units="" value="0">
-                        <Help>
-                                Which reports need to send automatically in timing intervals for group 1
-				Bitsets:
-                                0 	  ->   	Battery report
-                                5 	  ->   	Temperature
-                                6 	  ->   	Humidity
-                                7 	  ->   	Luminosity
-                        </Help>
-                </Value>
-                <Value type="int" index="102" genre="config" label="Group 2 Reports" units="" value="0">
-                        <Help>
-                                Which reports need to send automatically in timing intervals for group 2
-				Bitsets:
-                                0 	  ->   	Battery report
-                                5 	  ->   	Temperature
-                                6 	  ->   	Humidity
-                                7 	  ->   	Luminosity
-                        </Help>
-                </Value>
-                <Value type="int" index="103" genre="config" label="Group 3 Reports" units="" value="0">
-                        <Help>
-                                Which reports need to send automatically in timing intervals for group 3
-				Bitsets:
-                                0 	  ->   	Battery report
-                                5 	  ->   	Temperature
-                                6 	  ->   	Humidity
-                                7 	  ->   	Luminosity
-                        </Help>
-                </Value>
-                <Value type="int" index="110" genre="config" label="Reset #111-113" units="" value="0" write_only="true" affects="111,112,113">
-                        <Help>
-				Reset to default parameters number 111-113. Any value other then 0 will initiate this reset.
-			</Help>
+		<Value type="list" index="4" genre="config" label="Enable Motion Sensor" min="0" max="1" value="1" size="1">
+			<Help>Enable Motion Sensor</Help>
+			<Item label="Disabled" value="0" />
+			<Item label="Enabled" value="1" /> 			
+		</Value>
+		<Value type="list" index="5" genre="config" label="Command Options" min="1" max="2" value="1" size="1">
+			<Help>Which commands to send when PIR motion sensor triggered</Help>
+			<Item label="Basic Set (default) " value="1" />
+			<Item label="Binary Sensor Report" value="2" />  
+		</Value>
+		<Value type="int" index="100" genre="config" label="Reset #101-103" value="0" write_only="true" affects="101,102,103">
+			<Help>Reset to default parameters number 101-103. Any value other then 0 will initiate this reset.</Help>
+		</Value>
+		<Value type="int" index="101" genre="config" label="Group 1 Reports" units="" value="0">
+			<Help>Which reports need to send automatically in timing intervals for group 1. Bitsets: 0 -> Battery report, 5 -> Temperature, 6 -> Humidity, 7 -> Luminosity</Help>
+		</Value>
+		<Value type="int" index="102" genre="config" label="Group 2 Reports" value="0">
+			<Help>Which reports need to send automatically in timing intervals for group 2. Bitsets: 0 -> Battery report, 5 -> Temperature, 6 -> Humidity, 7 -> Luminosity</Help>
+		</Value>
+		<Value type="int" index="103" genre="config" label="Group 3 Reports" value="0">
+		<Help>Which reports need to send automatically in timing intervals for group 3. Bitsets: 0 -> Battery report, 5 -> Temperature, 6 -> Humidity, 7 -> Luminosity</Help>
+		</Value>
+		<Value type="int" index="110" genre="config" label="Reset #111-113" value="0" write_only="true" affects="111,112,113">
+			<Help>Reset to default parameters number 111-113. Any value other then 0 will initiate this reset.</Help>
 		</Value>
 		<Value type="int" index="111" genre="config" label="Group 1 Interval" units="seconds" min="1" max="2678400" value="720">
-			<Help>
-				The interval of sending report group 1.
-				1 seconds - 2678400 seconds
-			</Help>
+			<Help>The interval of sending report group 1. 1 to 2678400 seconds</Help>
 		</Value>
 		<Value type="int" index="112" genre="config" label="Group 2 Interval" units="seconds" min="1" max="2678400" value="720">
-			<Help>
-				The interval of sending report group 2.
-				1 seconds - 2678400 seconds
-			</Help>
+			<Help>The interval of sending report group 2. 1 to 2678400 seconds</Help>
 		</Value>
 		<Value type="int" index="113" genre="config" label="Group 3 Interval" units="seconds" min="1" max="2678400" value="720">
-			<Help>
-				The interval of sending report group 3.
-				1 seconds - 2678400 seconds
-			</Help>
+			<Help>The interval of sending report group 3. 1 to 2678400 seconds</Help>
 		</Value>
 		<Value type="button" index="255" genre="config" label="Reset to default" write_only="true" value="0" >
-			<Help>
-				Reset to factory defaults.
-			</Help>
+			<Help>Reset to factory defaults.</Help>
 		</Value>
-        </CommandClass>
+	</CommandClass>
+
 	<!-- Basic set as report -->
 	<CommandClass id="32" setasreport="true"/>
-        <!-- Association Groups -->
-        <CommandClass id="133">
-                <Associations num_groups="1">
-                        <Group index="1" max_associations="4" label="Reports" auto="true"/>
-                </Associations>
-        </CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="4" label="Reports" auto="true"/>
+		</Associations>
+	</CommandClass>
+
 </Product>

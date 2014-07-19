@@ -20,7 +20,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v100</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -51,7 +51,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;WITH_OPENZWAVE;OPENZWAVE_USEDLL;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../Windows Libraries/Boost/boost_1_55_0;./libusb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Windows Libraries/Boost/boost_1_55_0;./libusb;hardware\openzwave;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -75,7 +75,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;WITH_OPENZWAVE;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../Windows Libraries/Boost/boost_1_55_0;./libusb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Windows Libraries/Boost/boost_1_55_0;./libusb;hardware\openzwave;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -200,7 +200,9 @@
     <ClInclude Include="hardware\YouLess.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="hardware\1Wire.cpp" />
+    <ClCompile Include="hardware\1Wire.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="hardware\1Wire\1WireByKernel.cpp" />
     <ClCompile Include="hardware\1Wire\1WireByOWFS.cpp" />
     <ClCompile Include="hardware\1Wire\1WireCommon.cpp" />

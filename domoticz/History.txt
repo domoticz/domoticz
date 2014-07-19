@@ -50,6 +50,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Fixed: On/Off actions for security devices
 - Changed: LaCrosse WS2300 Wind sensor does not report speed, now setting speed=gust
 - Implemented: Option for Dummy device to create Gas Sensor
+- Updated: OpenZWave library
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io
