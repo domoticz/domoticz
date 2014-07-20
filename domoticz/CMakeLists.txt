@@ -284,6 +284,7 @@ find_library(OpenZWave NAMES libopenzwave.a HINTS "../open-zwave-read-only" "../
 IF(OpenZWave)
   message(STATUS ${OpenZWave})
   target_link_libraries(domoticz ${OpenZWave})
+  include_directories(${CMAKE_SOURCE_DIR}/hardware/openzwave) 
   add_definitions(-DWITH_OPENZWAVE)
   # open-zwave needs libudev
   IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
