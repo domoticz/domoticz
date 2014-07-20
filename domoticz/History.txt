@@ -52,6 +52,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: Option for Dummy device to create Gas Sensor
 - Updated: OpenZWave library
 - Implemented: Option for SMASpot device to import old month data
+- Implemented: Sensor type CM119/160 can now display previous year data
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io
