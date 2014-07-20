@@ -53,6 +53,7 @@ public:
 	char * SetOpenThermSettings();
 	char * SetP1USBType();
 	char * RestoreDatabase();
+	char * SMASpotImportOldData();
 
 	cWebem *m_pWebEm;
 

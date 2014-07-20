@@ -17,6 +17,7 @@
 #include "../hardware/EnOceanESP3.h"
 #include "../hardware/Wunderground.h"
 #include "../hardware/ForecastIO.h"
+#include "../hardware/SMASpot.h"
 #ifdef WITH_GPIO
 	#include "../hardware/Gpio.h"
 	#include "../hardware/GpioPin.h"
@@ -273,7 +274,8 @@ bool CWebServer::StartServer(const std::string &listenaddress, const std::string
 	m_pWebEm->RegisterActionCode( "setopenthermsettings",boost::bind(&CWebServer::SetOpenThermSettings,this));
 	m_pWebEm->RegisterActionCode( "setp1usbtype",boost::bind(&CWebServer::SetP1USBType,this));
 	m_pWebEm->RegisterActionCode( "restoredatabase",boost::bind(&CWebServer::RestoreDatabase,this));
-	
+	m_pWebEm->RegisterActionCode("smaspotimportolddata", boost::bind(&CWebServer::SMASpotImportOldData, this));
+
 	RegisterCommandCode("logincheck",boost::bind(&CWebServer::CmdLoginCheck,this, _1));
 	RegisterCommandCode("addhardware",boost::bind(&CWebServer::CmdAddHardware,this, _1));
 	RegisterCommandCode("updatehardware",boost::bind(&CWebServer::CmdUpdateHardware,this, _1));
@@ -6040,6 +6042,27 @@ char * CWebServer::PostSettings()
 
 	m_sql.UpdatePreferencesVar("SecOnDelay",atoi(m_pWebEm->FindValue("SecOnDelay").c_str()));
 
+	return (char*)m_retstr.c_str();
+}
+
+char * CWebServer::SMASpotImportOldData()
+{
+	m_retstr = "";
+	std::string idx = m_pWebEm->FindValue("idx");
+	if (idx == "") {
+		return (char*)m_retstr.c_str();
+	}
+	int hardwareID = atoi(idx.c_str());
+	CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hardwareID);
+	if (pHardware != NULL)
+	{
+		if (pHardware->HwdType == HTYPE_SMASpot)
+		{
+			CSMASpot *pSMASpot = (CSMASpot *)pHardware;
+			pSMASpot->ImportOldMonthData();
+		}
+	}
+	m_retstr = "/index.html";
 	return (char*)m_retstr.c_str();
 }
 

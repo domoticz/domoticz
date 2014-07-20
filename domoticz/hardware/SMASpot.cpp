@@ -333,6 +333,142 @@ bool CSMASpot::GetMeter(const unsigned char ID1,const unsigned char ID2, double 
 	return true;
 }
 
+void CSMASpot::ImportOldMonthData()
+{
+	//check if this device exists in the database, if not exit
+	bool bDeviceExits = true;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(1) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() < 1)
+	{
+		return;
+	}
+	unsigned long long ulID;
+	std::stringstream s_str(result[0][0]);
+	s_str >> ulID;
+
+	//Try actual year, and previous year
+	time_t atime = time(NULL);
+	struct tm ltime;
+	localtime_r(&atime, &ltime);
+
+	int startYear = ltime.tm_year + 1900 - 1;
+	for (int iYear = startYear; iYear != startYear + 2; iYear++)
+	{
+		for (int iMonth = 1; iMonth != 12+1; iMonth++)
+		{
+			ImportOldMonthData(ulID,iYear, iMonth);
+		}
+	}
+}
+
+void CSMASpot::ImportOldMonthData(const unsigned long long DevID, const int Year, const int Month)
+{
+	if (m_SMADataPath.size() == 0)
+		return;
+	if (m_SMAPlantName.size() == 0)
+		return;
+
+	char szLogFile[256];
+	std::string tmpPath = m_SMADataPath;
+	std::stringstream sstr;
+	sstr << Year;
+	tmpPath=stdreplace(tmpPath, "%Y", sstr.str());
+	sprintf(szLogFile, "%s%s-%04d%02d.csv", tmpPath.c_str(), m_SMAPlantName.c_str(),Year, Month);
+
+	std::ifstream infile;
+	infile.open(szLogFile);
+	if (!infile.is_open())
+	{
+		return;
+	}
+
+	std::string tmpString;
+	std::string szSeperator = "";
+	std::vector<std::string> results;
+	std::string sLine;
+	bool bHaveVersion = false;
+	bool bHaveDefinition = false;
+	size_t dayPos = std::string::npos;
+	size_t monthPos = std::string::npos;
+	size_t yearPos = std::string::npos;
+	while (!infile.eof())
+	{
+		getline(infile, sLine);
+		sLine.erase(std::remove(sLine.begin(), sLine.end(), '\r'), sLine.end());
+		if (sLine.size() != 0)
+		{
+			if (sLine.find("sep=") == 0)
+			{
+				tmpString = sLine.substr(strlen("sep="));
+				if (tmpString != "")
+				{
+					szSeperator = tmpString;
+				}
+			}
+			else if (sLine.find("Version CSV1") == 0)
+			{
+				bHaveVersion = true;
+			}
+			else if (bHaveVersion)
+			{
+				StringSplit(sLine, szSeperator, results);
+				if (results.size() == 3)
+				{
+					if (!bHaveDefinition)
+					{
+						if (results[1] == "kWh")
+						{
+							dayPos = results[0].find("dd");
+							if (dayPos == std::string::npos)
+							{
+								infile.close();
+								return;
+							}
+							monthPos = results[0].find("MM");
+							yearPos = results[0].find("yyyy");
+							bHaveDefinition = true;
+						}
+					}
+					else
+					{
+						int day = atoi(results[0].substr(dayPos, 2).c_str());
+						int month = atoi(results[0].substr(monthPos, 2).c_str());
+						int year = atoi(results[0].substr(yearPos, 4).c_str());
+
+						std::string szKwhCounter = results[2];
+						szKwhCounter = stdreplace(szKwhCounter, ",", ".");
+						double kWhCounter = atof(szKwhCounter.c_str()) * 100000;
+						unsigned long long ulCounter = (unsigned long long)kWhCounter;
+
+						//check if this day record does not exists in the database, and insert it
+						std::stringstream szQuery;
+						std::vector<std::vector<std::string> > result;
+
+						char szDate[40];
+						sprintf(szDate, "%04d-%02d-%02d", year, month, day);
+
+						szQuery << "SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==" << DevID << ") AND (Date=='" << szDate << "')";
+						result = m_sql.query(szQuery.str());
+						if (result.size() == 0)
+						{
+							//Insert value into our database
+							szQuery.clear();
+							szQuery.str("");
+
+							szQuery << "INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('" << DevID << "', '" << ulCounter << "', '" << szDate << "')";
+							result = m_sql.query(szQuery.str());
+						}
+					}
+				}
+			}
+		}
+	}
+	infile.close();
+}
+
 void CSMASpot::GetMeterDetails()
 {
 	if (m_SMADataPath.size()==0)

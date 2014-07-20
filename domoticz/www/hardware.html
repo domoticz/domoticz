@@ -14,6 +14,24 @@
 	</form>
 	</center>
 </div>
+<div id="smaspot" style="display:none;">
+	<center>
+	<form id="smaspot">
+		<br>
+		<center>
+			<button class="btn btn-warning" id="btnimportolddata">Import old Month Data</button>
+			<br><br>
+			<p>
+			You can retreive old month records by running SMASpot with commandline parameter -v -amXX,<br>
+			where XX is the amount of months you would like to retreive, for example:<br>
+			<b>./SMASpot -v -am12</b> , this will retreive up to 12 months from now.<br><br>
+			This process can take a while, when pressing the above button, please wait until the dashboard is shown again!.
+			</p>
+			<input type="hidden" id="idx" name="idx" value="-1">
+		</center>
+	</form>
+	</center>
+</div>
 <div id="openzwave" style="display:none;">
 	<div class="page-header-small">
 		<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -1225,6 +1243,25 @@ function EditWOL(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 	RefreshWOLNodeTable();
 }
 
+function EditSMASpot(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
+{
+	$.devIdx=idx;
+	cursordefault();
+	var htmlcontent = '';
+	htmlcontent='<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
+	htmlcontent+=$('#smaspot').html();
+	$('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
+	$('#hardwarecontent').i18n();
+	$('#hardwarecontent #idx').val(idx);
+	$('#hardwarecontent #btnimportolddata').click(function (e) {
+		e.preventDefault();
+		bootbox.alert($.i18n('Importing old data, this could take a while!<br>You should automaticly return on the Dashboard'));
+		$.post("smaspotimportolddata.webem", $("#hardwarecontent #smaspot").serialize(), function(data) {
+			SwitchLayout('Dashboard');
+		});
+	});
+}
+
 function EditP1USB(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 {
 	$.devIdx=idx;
@@ -1953,6 +1990,9 @@ function RefreshHardwareTable()
 			}
 			else if (HwTypeStr.indexOf("OpenZWave") >= 0) {
 				HwTypeStr+=' <span class="label label-info" onclick="EditOpenZWave(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Setup</span>';
+			}
+			else if (HwTypeStr.indexOf("SMASpot") >= 0) {
+				HwTypeStr+=' <span class="label label-info" onclick="EditSMASpot(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Setup</span>';
 			}
 			else if (HwTypeStr.indexOf("OpenTherm") >= 0) {
 				HwTypeStr+=' <span class="label label-info" onclick="EditOpenTherm(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Setup</span>';
