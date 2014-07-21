@@ -90,6 +90,7 @@ private:
 	void EvaluateLua(const std::string &reason, const std::string &filename, const unsigned long long varId);
 	void EvaluateLua(const std::string &reason, const std::string &filename);
 	void EvaluateLua(const std::string &reason, const std::string &filename, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId);
+	void luaThread(lua_State *lua_state, const std::string &filename);
 	static void luaStop(lua_State *L, lua_Debug *ar);
 	std::string nValueToWording(const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue, const std::string &sValue);
 	static int l_domoticz_print(lua_State* lua_state);
@@ -100,6 +101,7 @@ private:
 	void UpdateDevice(const std::string &DevParams);
 	//std::string reciprocalAction (std::string Action);
 	std::vector<_tEventItem> m_events;
+	
 
 	std::map<std::string, float> m_tempValuesByName;
 	std::map<std::string, float> m_dewValuesByName;

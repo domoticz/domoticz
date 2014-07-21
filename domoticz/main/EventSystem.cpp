@@ -1761,8 +1761,67 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	if (status == 0)
 	{
 		lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
+		//luaThread = boost::thread(&CEventSystem::luaThread, lua_state, filename);
+		//boost::shared_ptr<boost::thread> luaThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::luaThread, this, lua_state, filename)));
+		boost::thread luaThread(boost::bind(&CEventSystem::luaThread, this, lua_state, filename));
+		//m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
+		if (!luaThread.timed_join(boost::posix_time::seconds(10)))
+		{
+			_log.Log(LOG_ERROR, "Warning: lua script %s has been running for more than 10 seconds", filename.c_str());
+		}
+		else
+		{
+			//_log.Log(LOG_ERROR, "lua script completed");
+		}
+		
+		
+	}
+	else
+	{
+		report_errors(lua_state, status);
+		lua_close(lua_state);
+	}
+
+	/*
+	if (status == 0)
+	{
+		lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
 		status = lua_pcall(lua_state, 0, LUA_MULTRET, 0);
 	}
+
+
+	report_errors(lua_state, status);
+
+	bool scriptTrue = false;
+	lua_getglobal(lua_state, "commandArray");
+	if (lua_istable(lua_state, -1))
+	{
+		int tIndex = lua_gettop(lua_state);
+		scriptTrue = iterateLuaTable(lua_state, tIndex, filename);
+	}
+	else
+	{
+		if (status == 0)
+		{
+			_log.Log(LOG_ERROR, "Lua script did not return a commandArray");
+		}
+	}
+
+	if (scriptTrue)
+	{
+		_log.Log(LOG_STATUS, "Script event triggered: %s", filename.c_str());
+	}
+
+	lua_close(lua_state);
+	*/
+
+}
+
+void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename)
+{
+	int status;
+	
+	status = lua_pcall(lua_state, 0, LUA_MULTRET, 0);
 	report_errors(lua_state, status);
 
 	bool scriptTrue = false;
@@ -1788,6 +1847,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	lua_close(lua_state);
 
 }
+
 
 void CEventSystem::luaStop(lua_State *L, lua_Debug *ar)
 {
