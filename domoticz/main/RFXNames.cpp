@@ -164,8 +164,8 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_SMASpot, "SMASpot" },
 		{ HTYPE_ICYTHERMOSTAT, "ICY Thermostat" },
 		{ HTYPE_WOL, "Wake-on-LAN" },
-		{ HTYPE_PVOUTPUT_INPUT, "PVOutput (Input) (Not ready yet!)" },
-		{ HTYPE_EnOceanESP3, "EnOcean USB (ESP3) (Not ready yet!)" },
+		{ HTYPE_PVOUTPUT_INPUT, "PVOutput (Input)" },
+		{ HTYPE_EnOceanESP3, "EnOcean USB (ESP3)" },
 		{ HTYPE_RaspberryGPIO, "Raspberry's GPIO port" },
 		{ HTYPE_Meteostick, "Meteostick USB" },
 		{  0,NULL,NULL }

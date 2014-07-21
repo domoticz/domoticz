@@ -343,7 +343,16 @@ void CSMASpot::ImportOldMonthData()
 	result = m_sql.query(szQuery.str());
 	if (result.size() < 1)
 	{
-		return;
+		//Lets create the sensor, and try again
+		SendMeter(0, 1, 0, 0, "SolarMain");
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(1) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
+		result = m_sql.query(szQuery.str());
+		if (result.size() < 1)
+		{
+			return;
+		}
 	}
 	unsigned long long ulID;
 	std::stringstream s_str(result[0][0]);
@@ -354,8 +363,10 @@ void CSMASpot::ImportOldMonthData()
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 
-	int startYear = ltime.tm_year + 1900 - 1;
-	for (int iYear = startYear; iYear != startYear + 2; iYear++)
+	int totyearsback = 2;
+
+	int startYear = ltime.tm_year + 1900 - totyearsback;
+	for (int iYear = startYear; iYear != startYear + 1 + totyearsback; iYear++)
 	{
 		for (int iMonth = 1; iMonth != 12+1; iMonth++)
 		{
@@ -394,13 +405,62 @@ void CSMASpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 	size_t dayPos = std::string::npos;
 	size_t monthPos = std::string::npos;
 	size_t yearPos = std::string::npos;
+
+	bool bIsSMAWebExport = false;
+
 	while (!infile.eof())
 	{
 		getline(infile, sLine);
 		sLine.erase(std::remove(sLine.begin(), sLine.end(), '\r'), sLine.end());
 		if (sLine.size() != 0)
 		{
-			if (sLine.find("sep=") == 0)
+			if (bIsSMAWebExport)
+			{
+				int day = atoi(sLine.substr(dayPos, 2).c_str());
+				int month = atoi(sLine.substr(monthPos, 2).c_str());
+				int year = atoi(sLine.substr(yearPos, 4).c_str());
+
+				std::string szKwhCounter = sLine.substr(18);
+				size_t pPos = szKwhCounter.find('.');
+				if (pPos==std::string::npos)
+					continue;
+				szKwhCounter = szKwhCounter.substr(0, pPos);
+				pPos = szKwhCounter.find(',');
+				if (pPos == std::string::npos)
+					szKwhCounter = "0," + szKwhCounter;
+				szKwhCounter = stdreplace(szKwhCounter, ",", ".");
+				double kWhCounter = atof(szKwhCounter.c_str()) * 100000;
+				unsigned long long ulCounter = (unsigned long long)kWhCounter;
+
+				//check if this day record does not exists in the database, and insert it
+				std::stringstream szQuery;
+				std::vector<std::vector<std::string> > result;
+
+				char szDate[40];
+				sprintf(szDate, "%04d-%02d-%02d", year, month, day);
+
+				szQuery << "SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==" << DevID << ") AND (Date=='" << szDate << "')";
+				result = m_sql.query(szQuery.str());
+				if (result.size() == 0)
+				{
+					//Insert value into our database
+					szQuery.clear();
+					szQuery.str("");
+
+					szQuery << "INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('" << DevID << "', '" << ulCounter << "', '" << szDate << "')";
+					result = m_sql.query(szQuery.str());
+				}
+
+			}
+			else if (sLine.find("Time,Energy (Wh)") == 0)
+			{
+				dayPos = 0;
+				monthPos = 3;
+				yearPos = 6;
+				bIsSMAWebExport = true;
+				continue;
+			}
+			else if (sLine.find("sep=") == 0)
 			{
 				tmpString = sLine.substr(strlen("sep="));
 				if (tmpString != "")
