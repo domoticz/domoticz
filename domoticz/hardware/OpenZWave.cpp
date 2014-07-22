@@ -1132,6 +1132,17 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 		)
 	{
 		instance=vID.GetIndex();//(See note on top of this file) GetInstance();
+		//special case for sensor_multilevel
+		if (commandclass == COMMAND_CLASS_SENSOR_MULTILEVEL)
+		{
+			unsigned char rIndex = instance;
+			unsigned char rInstance = vID.GetInstance();
+			if (rIndex != rInstance)
+			{
+				if (rIndex == 1)
+					instance = rInstance;
+			}
+		}
 	}
 	else
 	{
@@ -1657,6 +1668,16 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 		)
 	{
 		instance=vID.GetIndex();//(See note on top of this file) GetInstance();
+		if (commandclass == COMMAND_CLASS_SENSOR_MULTILEVEL)
+		{
+			unsigned char rIndex = instance;
+			unsigned char rInstance = vID.GetInstance();
+			if (rIndex != rInstance)
+			{
+				if (rIndex == 1)
+					instance = rInstance;
+			}
+		}
 	}
 	else
 	{
