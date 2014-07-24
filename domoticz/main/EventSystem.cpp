@@ -109,16 +109,23 @@ void CEventSystem::LoadEvents()
 void CEventSystem::Do_Work()
 {
 	m_stoprequested = false;
-
+	
 	while (!m_stoprequested)
 	{
 		//sleep 500 milliseconds
 		sleep_milliseconds(500);
+		time_t atime = mytime(NULL);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+
 		m_secondcounter++;
 		if (m_secondcounter == 60 * 2)
 		{
 			m_secondcounter = 0;
 			ProcessMinute();
+		}
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate("EventSystem");
 		}
 	}
 	_log.Log(LOG_STATUS, "EventSystem stopped...");
