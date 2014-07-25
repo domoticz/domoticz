@@ -14,6 +14,7 @@
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
+#include "../main/mainworker.h"
 
 #define CONTROLLER_COMMAND_TIMEOUT 20
 
@@ -69,6 +70,16 @@ void ZWaveBase::Do_Work()
 	while (!m_stoprequested)
 	{
 		sleep_milliseconds(500);
+
+		time_t atime = mytime(NULL);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+
+
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate(m_HwdID);
+		}
+
 		if (m_stoprequested)
 			return;
 		if (m_bInitState)

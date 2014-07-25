@@ -974,7 +974,7 @@ void MainWorker::Do_Work()
 		{
 			GetRaspberryPiTemperature();
 		}
-		if (ltime.tm_sec % 20 == 0)
+		if (ltime.tm_sec % 30 == 0)
 		{
 			HeartbeatCheck();
 			

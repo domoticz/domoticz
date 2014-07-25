@@ -9,6 +9,7 @@
 #include "../main/RFXtrx.h"
 #include "TE923Tool.h"
 #include "../main/localtime_r.h"
+#include "../main/mainworker.h"
 
 #define TE923_POLL_INTERVAL 30
 
@@ -68,7 +69,16 @@ void CTE923::Do_Work()
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
-		atime=mytime(NULL);
+
+		atime = mytime(NULL);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+
+
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate(m_HwdID);
+		}
+
 		if (atime-m_LastPollTime>=TE923_POLL_INTERVAL)
 		{
 			GetSensorDetails();

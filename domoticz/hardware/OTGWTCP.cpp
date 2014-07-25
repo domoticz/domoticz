@@ -3,6 +3,8 @@
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include <iostream>
+#include "../main/localtime_r.h"
+#include "../main/mainworker.h"
 
 #define RETRY_DELAY 30
 
@@ -103,6 +105,16 @@ void OTGWTCP::Do_Work()
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
+
+		time_t atime = mytime(NULL);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+
+
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate(m_HwdID);
+		}
+
 		if (bFirstTime)
 		{
 			bFirstTime=false;

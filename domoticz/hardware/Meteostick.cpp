@@ -10,6 +10,8 @@
 #include <algorithm>
 #include <iostream>
 #include <boost/bind.hpp>
+#include "../main/localtime_r.h"
+#include "../main/mainworker.h"
 
 #include <ctime>
 
@@ -130,6 +132,15 @@ void Meteostick::Do_PollWork()
 	while (!m_stoprequestedpoller)
 	{
 		sleep_seconds(1);
+
+		time_t atime = mytime(NULL);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+
+
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate(m_HwdID);
+		}
 
 		if (!isOpen())
 		{

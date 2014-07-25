@@ -7,6 +7,7 @@
 #include "../json/json.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
+#include "../main/mainworker.h"
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -124,6 +125,9 @@ void CSMASpot::Do_Work()
 		{
 			LastMinute=ltime.tm_min/SMA_POLL_INTERVAL;
 			GetMeterDetails();
+		}
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate(m_HwdID);
 		}
 	}
 	_log.Log(LOG_STATUS,"SMASpot: Worker stopped...");

@@ -8,6 +8,7 @@
 #include "../httpclient/HTTPClient.h"
 #include "../json/json.h"
 #include "../main/RFXtrx.h"
+#include "../main/mainworker.h"
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -65,6 +66,9 @@ void CForecastIO::Do_Work()
 		{
 			GetMeterDetails();
 			m_LastMinute=ltime.tm_min/10;
+		}
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate(m_HwdID);
 		}
 	}
 	_log.Log(LOG_STATUS,"ForecastIO Worker stopped...");

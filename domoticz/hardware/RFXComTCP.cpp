@@ -4,6 +4,8 @@
 //#include <boost/bind.hpp>
 //#include <boost/asio.hpp>
 #include "../main/Helper.h"
+#include "../main/localtime_r.h"
+#include "../main/mainworker.h"
 
 #define RETRY_DELAY 30
 
@@ -73,6 +75,15 @@ void RFXComTCP::Do_Work()
 
 	while (!m_stoprequested)
 	{
+
+		time_t atime = mytime(NULL);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+
+
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate(m_HwdID);
+		}
 		if (bFirstTime)
 		{
 			bFirstTime = false;

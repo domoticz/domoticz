@@ -4,6 +4,8 @@
 #include "../main/Helper.h"
 //#include <boost/bind.hpp>
 //#include <boost/asio.hpp>
+#include "../main/localtime_r.h"
+#include "../main/mainworker.h"
 
 #define RETRY_DELAY 30
 
@@ -172,6 +174,16 @@ void DomoticzTCP::Do_Work()
 			)
 		{
 			sleep_seconds(1);
+
+
+			time_t atime = mytime(NULL);
+			struct tm ltime;
+			localtime_r(&atime, &ltime);
+
+			if (ltime.tm_sec % 12 == 0) {
+				m_mainworker.HeartbeatUpdate(m_HwdID);
+			}
+
 			if (m_stoprequested)
 				break;
 			m_retrycntr++;

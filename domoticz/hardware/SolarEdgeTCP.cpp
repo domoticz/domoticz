@@ -5,6 +5,9 @@
 #include <iostream>
 #include "TCPProxy/tcpproxy_server.h"
 
+#include "../main/localtime_r.h"
+#include "../main/mainworker.h"
+
 #define RETRY_DELAY 30
 
 SolarEdgeTCP::SolarEdgeTCP(const int ID, const unsigned short usListenPort, const std::string &DestHost, const unsigned short usDestPort)
@@ -85,6 +88,15 @@ void SolarEdgeTCP::Do_Work()
 {
 	while (!m_stoprequested)
 	{
+
+		time_t atime = mytime(NULL);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+
+
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate(m_HwdID);
+		}
 		try
 		{
 			if (m_pTCPProxy!=NULL)

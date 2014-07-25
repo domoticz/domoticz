@@ -9,6 +9,7 @@
 #include "../main/RFXtrx.h"
 #include "VolcraftCO20Tool.h"
 #include "../main/localtime_r.h"
+#include "../main/mainworker.h"
 
 #define VolcraftCO20_POLL_INTERVAL 30
 
@@ -69,6 +70,15 @@ void CVolcraftCO20::Do_Work()
 	{
 		sleep_seconds(1);
 		atime=mytime(NULL);
+
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+
+
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate(m_HwdID);
+		}
+
 		if (atime-m_LastPollTime>=VolcraftCO20_POLL_INTERVAL)
 		{
 			GetSensorDetails();

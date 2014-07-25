@@ -8,6 +8,7 @@
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
+#include "../main/mainworker.h"
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -69,6 +70,9 @@ void CPVOutputInput::Do_Work()
 		{
 			LastMinute=ltime.tm_min/PVOUTPUT_POLL_INTERVAL;
 			GetMeterDetails();
+		}
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate(m_HwdID);
 		}
 	}
 	_log.Log(LOG_STATUS,"PVOutput (Input): Worker stopped...");

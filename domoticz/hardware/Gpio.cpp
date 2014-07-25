@@ -51,6 +51,8 @@ Connection information:
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
+#include "../main/localtime_r.h"
+#include "../main/mainworker.h"
 
 #define NO_INTERRUPT   -1
 
@@ -318,18 +320,25 @@ void CGpio::Do_Work()
 {
 	_log.Log(LOG_NORM,"GPIO: Worker started...");
 	while (!m_stoprequested) {
-    	int interruptNumber = waitAndGetGpioNumberToProcess();
+    		int interruptNumber = waitAndGetGpioNumberToProcess();
 		if (m_stoprequested) 
 			break;
-    	if (interruptNumber != NO_INTERRUPT) {
-			// process
-    		CGpio::ProcessInterrupt(interruptNumber);
-        }
-    	else {
-    		// Does this really occur ?
-    		_log.Log(LOG_NORM, "GPIO: Got an interrupt processing request but no GPIO number...");
-    		boost::this_thread::sleep(boost::posix_time::millisec(500));
-    	}
+    		if (interruptNumber != NO_INTERRUPT) {
+				// process
+    			CGpio::ProcessInterrupt(interruptNumber);
+			}
+    		else {
+    			// Does this really occur ?
+    			_log.Log(LOG_NORM, "GPIO: Got an interrupt processing request but no GPIO number...");
+    			boost::this_thread::sleep(boost::posix_time::millisec(500));
+    		}
+
+		time_t atime = mytime(NULL);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate(m_HwdID);
+		}
     }
 	_log.Log(LOG_NORM,"GPIO: Worker stopped...");
 }

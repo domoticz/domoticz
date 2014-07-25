@@ -4,6 +4,8 @@
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
 #include "hardwaretypes.h"
+#include "../main/localtime_r.h"
+#include "../main/mainworker.h"
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -247,6 +249,16 @@ void CLimitLess::Do_Work()
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
+
+		time_t atime = mytime(NULL);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+
+
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate(m_HwdID);
+		}
+
 	}
 	_log.Log(LOG_STATUS,"AppLamp: Worker stopped...");
 }

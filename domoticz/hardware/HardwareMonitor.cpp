@@ -140,6 +140,9 @@ void CHardwareMonitor::Do_Work()
 		{
 			FetchData();
 		}
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate(hwId);
+		}
 
 	}
 	_log.Log(LOG_STATUS,"Hardware Monitor: Stopped...");			

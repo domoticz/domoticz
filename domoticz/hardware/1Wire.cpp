@@ -11,6 +11,7 @@
 #include "../main/RFXtrx.h"
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
+#include "../main/mainworker.h"
 
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -124,10 +125,18 @@ void C1Wire::Do_Work()
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
+
+		time_t atime = mytime(NULL);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+
 		if (mytime(NULL)-lastPollTime>=Wire1_POLL_INTERVAL)
 		{
          GetDeviceDetails();
 			lastPollTime=mytime(NULL);
+		}
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate(m_HwdID);
 		}
 	}
 }

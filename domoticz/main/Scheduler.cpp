@@ -264,6 +264,16 @@ void CScheduler::Do_Work()
 	{
 		//sleep 1 second
 		sleep_seconds(1);
+
+		time_t atime = mytime(NULL);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+
+
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate("Scheduler");
+		}
+
 		CheckSchedules();
 	}
 	_log.Log(LOG_STATUS,"Scheduler stopped...");

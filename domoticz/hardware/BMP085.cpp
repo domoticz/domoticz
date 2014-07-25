@@ -42,6 +42,8 @@ Circuit detail:
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
+#include "../main/localtime_r.h"
+#include "../main/mainworker.h"
 
 #define I2C_SLAVE       0x0703  /* Use this slave address */
 #define I2C_SLAVE_FORCE 0x0706  /* Use this slave address, even if it is in use */
@@ -102,6 +104,14 @@ void CBMP085::Do_Work()
 		{
 			m_waitcntr=0;
 			ReadSensorDetails();
+		}
+
+		time_t atime = mytime(NULL);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate(m_HwdID);
 		}
 	}
 	_log.Log(LOG_STATUS,"I2C: Worker stopped...");

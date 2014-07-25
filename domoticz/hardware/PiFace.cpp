@@ -48,6 +48,8 @@ The WiringPi project
 #include <functional>
 #include <cctype>
 #include <locale>
+#include "../main/localtime_r.h"
+#include "../main/mainworker.h"
 
 #define PIFACE_INPUT_PROCESS_INTERVAL 5                //100 msec
 #define PIFACE_COUNTER_COUNTER_INTERVAL 1
@@ -763,6 +765,15 @@ void CPiFace::Do_Work()
 
     while (!m_stoprequested)
     {
+
+		time_t atime = mytime(NULL);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+
+
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate(m_HwdID);
+		}
         boost::this_thread::sleep(boost::posix_time::millisec(PIFACE_WORKER_THREAD_SLEEP_INTERVAL_MS));
         if (m_stoprequested)
             break;

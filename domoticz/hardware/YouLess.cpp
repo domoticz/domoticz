@@ -4,6 +4,8 @@
 #include "../main/Logger.h"
 #include "../httpclient/HTTPClient.h"
 #include "hardwaretypes.h"
+#include "../main/localtime_r.h"
+#include "../main/mainworker.h"
 
 #define YOULESS_POLL_INTERVAL 10
 
@@ -65,6 +67,16 @@ void CYouLess::Do_Work()
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
+
+		time_t atime = mytime(NULL);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+
+
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate(m_HwdID);
+		}
+
 		m_PollCounter++;
 		if (m_PollCounter>=YOULESS_POLL_INTERVAL)
 		{

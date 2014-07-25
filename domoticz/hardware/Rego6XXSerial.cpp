@@ -2,6 +2,7 @@
 #include "Rego6XXSerial.h"
 #include "../main/Logger.h"
 #include "../main/Helper.h"
+#include "../main/mainworker.h"
 
 // This code is inspired by the Rago600 project:
 // http://rago600.sourceforge.net/
@@ -167,6 +168,16 @@ void CRego6XXSerial::Do_Work()
 	while (!m_stoprequested)
 	{
 		sleep_seconds(Rego6XX_THREAD_SLEEP_TIME);
+
+		time_t atime = mytime(NULL);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+
+
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate(m_HwdID);
+		}
+
 		if (m_stoprequested)
 			break;
 		if (!isOpen())

@@ -90,8 +90,15 @@ CWebServer::~CWebServer(void)
 
 void CWebServer::Do_Work()
 {
+	time_t atime = mytime(NULL);
+	struct tm ltime;
 	while (1==1)
 	{
+		localtime_r(&atime, &ltime);
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate("Webserver");
+		}
+
 		try
 		{
 			if (m_pWebEm)
