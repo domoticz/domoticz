@@ -1,0 +1,825 @@
+<meta http-equiv="Content-Type" content="application/xhtml+xml">
+<script type="text/javascript" src="js/domoticzdevices.js" />
+<div id="floorplancontent">
+</div>
+<div id="dialog-add-edit-floorplan" style="display:none;">
+	<table border="0" cellpadding="0" cellspacing="20" width="100%">
+		<tr>
+			<td align="right" style="width:60px"><label for="floorplanname">Name:</label></td>
+			<td><input type="text" id="floorplanname" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:60px"><label for="imagename">Image file:</label></td>
+			<td><input type="text" id="imagename" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+	</table>
+</div>
+<div id="floorplanmain" style="display:none;">
+	<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+	<tr>
+		<td align="left"></td>
+		<td align="right"><a class="btnstyle" onclick="AddNewFloorplan();" data-i18n="Add Floorplan">Add Floorplan</a></td>
+	</tr>
+	</table>
+	<br>
+	<table class="display" id="floorplantable" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<thead>
+			<tr valign="middle">
+				<th align="left" data-i18n="Name">Name</th>
+				<th align="left" width="60%" data-i18n="Image">Image</th>
+				<th width="60" align="center" data-i18n="Order">Order</th>
+			</tr>
+		</thead>
+	</table>
+	<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td>
+				<a class="btnstyle3-dis" id="floorplanedit" data-i18n="Edit">Edit</a>&nbsp;&nbsp;&nbsp;
+				<a class="btnstyle3-dis" id="floorplandelete" data-i18n="Delete">Delete</a>
+			</td>
+		</tr>
+	</table>
+	<br>
+	<h2 data-i18n="Rooms">Room Plans</h2><span data-i18n="(Select Floorplan first to Edit...)">(Select Floorplan first to Edit...)</span><br>
+	<br>
+	<table class="display" id="plantable" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<thead>
+				<tr valign="middle">
+					<th align="left" data-i18n="Name">Name</th>
+					<th width="60" align="left" data-i18n="Area">Area</th>
+				</tr>
+		</thead>
+	</table>
+    <table id="delclractive" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td>
+				<a class="btnstyle3-dis" id="activeplandelete" data-i18n="Delete">Delete</a>
+			</td>
+			<td align="center">
+				<label><span data-i18n="Plan"></span>Plan</label>
+				<select id="comboactiveplan" style="width:300px" class="combobox ui-corner-all">
+				</select>
+				<a class="btnstyle3" id="activeplanadd" onclick="AddUnusedPlan();" data-i18n="Add">Add</a>
+			</td>
+			<td align="center">
+				<a class="btnstyle3-dis" id="activeplanupdate" data-i18n="Update">Update</a>
+			</td>
+			<td align="right">
+				<a class="btnstyle3-dis" id="activeplanclear" data-i18n="Clear">Clear</a>
+			</td>
+		</tr>
+	</table>
+	<div id="floorplaneditor" width="100%" height="100%">
+		<span id="helptext" data-i18n="Click on the image below to define room area, drag and drop devices">Click on the image below to define room area, drag and drop devices</span>
+		<img id="floorplanimagesize" width="100%" height="100%" src="" style="display:none" onload="ImageLoaded()">
+		<style type="text/css">
+			polygon.hoverable
+			{
+				cursor: pointer;
+				fill: blue;
+				fill-opacity: 0.25;
+				stroke: blue;
+				stroke-width: 4;
+				stroke-linejoin: round;
+				stroke-opacity: 0.5;
+			}
+
+			polygon.hoverable:hover
+			{
+				stroke: black;   
+			}
+			
+			image.moveable
+			{
+				cursor: move;
+			}
+
+			rect.popup{
+				fill: #F1F5FA;
+				font-family: Arial, Helvetica, sans-serif;
+				stroke: gray;
+				stroke-width: 0.5;
+				stroke-opacity: 0.5;
+			}
+			rect.header{
+				fill: #D4E1EE;
+				stroke: black;
+				stroke-width: 1;
+				font-family: Arial, Helvetica, sans-serif;
+			}
+		</style>
+		<svg id="svgcontainer" width="100%" height="100%" version="1.1"  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+			onresize="SVGResize();"  preserveAspectRatio="xMinYMin meet" style="display:none">
+			<g id="floorplangroup" zoomed="false" >
+				<image id="floorplanimage"  width="100%" height="100%" xlink:href="" onclick="FloorplanClick(event);"/>
+				<polygon id="roompolyarea" class="hoverable" onclick="PolyClick(event)">
+					<title data-i18n="Click room to test">Click room to test</title>
+				</polygon>
+				<script>
+					function DragStart(evt) {
+						if (!evt) var evt = window.event;
+						evt.target.setAttribute("onmousemove","Drag(evt)");
+					}
+					function Drag(evt) {
+						if (!evt) var evt = window.event;
+						var parent = evt.target.parentNode;
+						var xScale = $("#floorplanimagesize")[0].naturalWidth / $("#svgcontainer").width();
+						var yScale = $("#floorplanimagesize")[0].naturalHeight / $("#svgcontainer").height();
+						var offset = $("#floorplanimage").offset();
+						var xoffset = Math.round((evt.pageX - offset.left - 10) * xScale);
+						var yoffset = Math.round((evt.pageY - offset.top - 10) * yScale);
+						parent.setAttribute("transform", 'translate(' + xoffset + ',' + yoffset + ')');
+						parent.setAttribute("xoffset", xoffset);
+						parent.setAttribute("yoffset", yoffset);
+						$('#floorplancontent #delclractive #activeplanupdate').attr("class", "btnstyle3");
+					}
+					function DragEnd(evt) {
+						if (!evt) var evt = window.event;
+						evt.target.setAttribute("onmousemove","");
+						var objData = $('#DeviceDetails #'+evt.target.parentNode.id)[0];
+						if (objData != undefined) {
+							objData.setAttribute("xoffset", evt.target.parentNode.getAttribute('xoffset'));
+							objData.setAttribute("yoffset", evt.target.parentNode.getAttribute('yoffset'));
+							objData.setAttribute("transform", evt.target.parentNode.getAttribute('transform'));
+						}
+						else alert('Bugger! ' + evt.target.parentNode.id);
+					}
+				</script>
+				<g id="roomplandevices"/>
+			</g>
+		</svg>
+	</div>
+	<br>
+</div>
+
+<script type="text/javascript" charset="utf-8">
+function ImageLoaded() {
+	if ($("#floorplanimagesize") != 'undefined') {
+		$('#helptext').attr("title", 'Image width is: ' + $("#floorplanimagesize")[0].naturalWidth + ", Height is: " + $("#floorplanimagesize")[0].naturalHeight);
+		$("#svgcontainer")[0].setAttribute("viewBox","0 0 " + $("#floorplanimagesize")[0].naturalWidth + " " + $("#floorplanimagesize")[0].naturalHeight);
+		$("#svgcontainer")[0].setAttribute("style","display:inline");
+		SVGResize();
+	}
+}
+
+function SVGResize() {
+	if ($("#floorplanimagesize") != 'undefined') {
+		if ($("#floorplanimagesize")[0].naturalWidth != 'undefined') {
+			var ratio = $("#floorplanimagesize")[0].naturalWidth / $("#floorplanimagesize")[0].naturalHeight;
+			var svgHeight = $("#svgcontainer").width() / ratio;
+			$("#floorplaneditor").height(svgHeight);
+		}	
+	}
+}
+
+function PolyClick(click) {
+	if ($("#floorplangroup")[0].getAttribute("zoomed") == "true")
+	{
+		$("#floorplangroup")[0].setAttribute("transform", "translate(0,0) scale(1)");
+		Device.scale("translate(0,0) scale(1)");
+		$("#floorplangroup")[0].setAttribute("zoomed", "false");
+	}
+	else
+	{
+		var borderRect = click.target.getBBox(); // polygon bounding box
+		var margin = 0.1;  // 10% margin around polygon
+		var marginX = borderRect.width * margin;
+		var marginY = borderRect.height * margin;
+		var scaleX= $("#floorplanimagesize")[0].naturalWidth / (borderRect.width + (marginX * 2));
+		var scaleY= $("#floorplanimagesize")[0].naturalHeight / (borderRect.height + (marginY * 2));
+		var scale = ((scaleX > scaleY) ? scaleY : scaleX);
+		var attr = 'scale('  + scale + ')' + ' translate(' + (borderRect.x - marginX)*-1 + ',' + (borderRect.y - marginY)*-1 + ')';
+
+		// this actually needs to centre in the direction its not scaling but close enough for v1.0
+		$("#floorplangroup")[0].setAttribute("transform", attr);
+		Device.scale(attr);
+		$("#floorplangroup")[0].setAttribute("zoomed", "true");
+	}
+	window.myglobals.LastUpdate = 0;
+	RefreshDevices();
+}
+
+function FloorplanClick(click) {
+	// make sure we aren't zoomed in.
+	if ($("#floorplangroup")[0].getAttribute("zoomed") != "true")
+	{
+		if ($("#roompolyarea").attr("title") != "")
+		{
+			var xScale = $("#floorplanimagesize")[0].naturalWidth / $("#svgcontainer").width();
+			var yScale = $("#floorplanimagesize")[0].naturalHeight / $("#svgcontainer").height();
+			var offset = $("#floorplanimage").offset();
+			var points = $("#roompolyarea").attr("points");
+			if (points != "") points = points + ",";
+			points = points + Math.round((click.pageX - offset.left) * xScale) + "," + Math.round((click.pageY - offset.top) * yScale);
+			$("#roompolyarea").attr("points",  points );
+			$('#floorplancontent #delclractive #activeplanupdate').attr("class", "btnstyle3");
+		}
+		else ShowNotify('Select a Floorplan and Room first.', 2500, true);
+	}
+	else
+	{
+		PolyClick(click);
+	}
+}
+
+function ChangeFloorplanOrder(order, floorplanid) {
+
+	if (window.my_config.userrights!=2) {
+		HideNotify();
+		ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
+		return;
+	}
+  $.ajax({
+	 url: "json.htm?type=command&param=changefloorplanorder&idx=" + floorplanid + "&way=" + order, 
+	 async: false, 
+	 dataType: 'json',
+	 success: function(data) {
+		RefreshFloorPlanTable();
+	 }
+  });
+}
+
+function AddNewFloorplan() {
+	$( "#dialog-add-edit-floorplan" ).dialog({
+		resizable: false,
+		width: 450,
+		height:260,
+		modal: true,
+		title: 'Add New Floorplan',
+		buttons: {
+			"Cancel": function() {
+				$( this ).dialog( "close" );
+			},
+			"Add": function() {
+				var csettings=GetFloorplanSettings();
+				if (typeof csettings == 'undefined') {
+					return;
+				}
+				$( this ).dialog( "close" );
+				AddFloorplan();
+			}
+		},
+		close: function() {
+            $( this ).dialog( "close" );
+		}
+	});
+}
+
+function EditFloorplan(idx) {
+	$( "#dialog-add-edit-floorplan" ).dialog({
+		resizable: false,
+		width: 450,
+		height:260,
+		modal: true,
+		title: 'Edit Floorplan',
+		buttons: {
+			"Cancel": function() {
+				$( this ).dialog( "close" );
+			},
+			"Update": function() {
+				var csettings=GetFloorplanSettings();
+				if (typeof csettings == 'undefined') {
+					return;
+				}
+				$( this ).dialog( "close" );
+				UpdateFloorplan(idx);
+			}
+		},
+		close: function() {
+            $( this ).dialog( "close" );
+		}
+	});
+}
+
+function DeleteFloorplan(idx) {
+	bootbox.confirm($.i18n("Are you sure you want to delete this Floorplan?"), function(result) {
+		if (result==true) {
+			$.ajax({
+				 url: "json.htm?type=command&param=deletefloorplan&idx=" + idx,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					RefreshFloorPlanTable();
+					RefreshPlanTable($.devIdx);
+				 },
+				 error: function(){
+						HideNotify();
+						ShowNotify('Problem deleting Plan!', 2500, true);
+				 }     
+			});
+		}
+	});
+}
+
+function GetFloorplanSettings() {
+	var csettings = {};
+
+	csettings.name=$("#dialog-add-edit-floorplan #floorplanname").val();
+	if (csettings.name=="")
+	{
+		ShowNotify('Please enter a Name!', 2500, true);
+		return;
+	}
+	csettings.image=$("#dialog-add-edit-floorplan #imagename").val();
+	if (csettings.image=="")
+	{
+		ShowNotify('Please enter an image filename!', 2500, true);
+		return;
+	}
+	return csettings;
+}
+
+function UpdateFloorplan(idx) {
+	var csettings=GetFloorplanSettings();
+	if (typeof csettings == 'undefined') {
+		return;
+	}
+
+	$.ajax({
+		 url: "json.htm?type=command&param=updatefloorplan&idx=" + idx +"&name=" + csettings.name + "&image=" + csettings.image,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			RefreshFloorPlanTable();
+		 },
+		 error: function(){
+			ShowNotify('Problem updating Plan settings!', 2500, true);
+		 }     
+	});
+}
+
+function AddFloorplan() {
+	var csettings=GetFloorplanSettings();
+	if (typeof csettings == 'undefined') {
+		return;
+	}
+
+	$.ajax({
+		 url: "json.htm?type=command&param=addfloorplan&name=" + csettings.name + "&image=" + csettings.image,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			RefreshFloorPlanTable();
+		 },
+		 error: function(){
+			ShowNotify('Problem adding Plan!', 2500, true);
+		 }
+	});
+}
+
+function RefreshFloorPlanTable() {
+	$('#modal').show();
+
+	$.devIdx=-1;
+
+	$('#updelclr #floorplanedit').attr("class", "btnstyle3-dis");
+	$('#updelclr #floorplandelete').attr("class", "btnstyle3-dis");
+	$('#floorplancontent #delclractive #activedeviceclear').attr("class", "btnstyle3-dis");
+	clearInterval($.myglobals.refreshTimer);
+	Device.initialise();
+
+	var oTable = $('#floorplancontent #plantable').dataTable();
+	oTable.fnClearTable();
+	oTable = $('#floorplantable').dataTable();
+	oTable.fnClearTable();
+	
+	$.ajax({
+	 url: "json.htm?type=floorplans", 
+	 async: false, 
+	 dataType: 'json',
+	 success: function(data) {
+		
+	  if (typeof data.result != 'undefined') {
+		var totalItems=data.result.length;
+		$.each(data.result, function(i,item){
+			var updownImg="";
+			if (i!=totalItems-1) {
+				//Add Down Image
+				if (updownImg!="") {
+					updownImg+="&nbsp;";
+				}
+				updownImg+='<img src="images/down.png" onclick="ChangeFloorplanOrder(1,' + item.idx + ');" onmouseover="cursorhand()" onmouseout="cursordefault()" width="16" height="16"></img>';
+			}
+			else {
+				updownImg+='<img src="images/empty16.png" width="16" height="16"></img>';
+			}
+			if (i!=0) {
+				//Add Up image
+				if (updownImg!="") {
+					updownImg+="&nbsp;";
+				}
+				updownImg+='<img src="images/up.png" onclick="ChangeFloorplanOrder(0,' + item.idx + ');" onmouseover="cursorhand()" onmouseout="cursordefault()" width="16" height="16"></img>';
+			}
+
+			var addId = oTable.fnAddData( {
+				"DT_RowId": item.idx,
+				"Name": item.Name,
+				"Image": item.Image,
+				"Order": item.Order,
+				"0": item.Name,
+				"1": item.Image,
+				"2": updownImg
+			} );
+		});
+		/* Add a click handler to the rows - this could be used as a callback */
+		$("#floorplantable tbody tr").click( function( e ) {
+			$.devIdx=-1;
+
+			if ( $(this).hasClass('row_selected') ) {
+				$(this).removeClass('row_selected');
+				$('#updelclr #floorplanedit').attr("class", "btnstyle3-dis");
+				$('#updelclr #floorplandelete').attr("class", "btnstyle3-dis");
+				$('#floorplancontent #delclractive #activedeviceclear').attr("class", "btnstyle3-dis");
+				$("#dialog-add-edit-floorplan #floorplanname").val("");
+				$("#dialog-add-edit-floorplan #imagename").val("");
+				RefreshPlanTable(-1);
+				$("#floorplanimage").attr("xlink:href", "");
+				$("#floorplanimagesize").attr("src", "");
+			}
+			else {
+				oTable.$('tr.row_selected').removeClass('row_selected');
+				$(this).addClass('row_selected');
+				$('#updelclr #floorplanedit').attr("class", "btnstyle3");
+				$('#updelclr #floorplandelete').attr("class", "btnstyle3");
+				$('#floorplancontent #delclractive #activedeviceclear').attr("class", "btnstyle3");
+				var anSelected = fnGetSelected( oTable );
+				if ( anSelected.length !== 0 ) {
+					var data = oTable.fnGetData( anSelected[0] );
+					var idx= data["DT_RowId"];
+					$.devIdx=idx;
+					$("#updelclr #floorplanedit").attr("href", "javascript:EditFloorplan(" + idx + ")");
+					$("#updelclr #floorplandelete").attr("href", "javascript:DeleteFloorplan(" + idx + ")");
+					$("#dialog-add-edit-floorplan #floorplanname").val(data["Name"]);
+					$("#dialog-add-edit-floorplan #imagename").val(data["Image"]);
+					RefreshPlanTable(idx);
+					$("#floorplanimage").attr("xlink:href", data["Image"]);
+					$("#floorplanimagesize").attr("src", data["Image"]);
+					SVGResize();
+				}
+			}
+		}); 
+	  }
+	 }
+	});
+  
+  $('#modal').hide();
+}
+
+function RefreshUnusedDevicesComboArray() {
+	$('#floorplancontent #delclractive #activeplanadd').attr("class", "btnstyle3-dis");
+	$.UnusedDevices = [];
+	$("#floorplancontent #comboactiveplan").empty();
+	$.ajax({
+		url: "json.htm?type=command&param=getunusedfloorplanplans&unique=false", 
+		async: false, 
+		dataType: 'json',
+		success: function(data) {
+			if (typeof data.result != 'undefined') {
+				$.each(data.result, function(i,item) {
+					$.UnusedDevices.push({
+						idx: item.idx,
+						name: item.Name
+					});
+				});
+				$.each($.UnusedDevices, function(i,item){
+					var option = $('<option />');
+					option.attr('value', item.idx).text(item.name);
+					$("#floorplancontent #comboactiveplan").append(option);
+				});
+				$('#floorplancontent #delclractive #activeplanadd').attr("class", "btnstyle3");
+			}
+		}
+	});
+}
+
+function ShowFloorplans() {
+	var oTable;
+	
+	$('#modal').show();
+	
+	Device.useSVGtags = true;
+	Device.backFunction = 'ShowFloorplans';
+	Device.contentTag = 'floorplancontent';
+	
+	var htmlcontent = "";
+	htmlcontent+=$('#floorplanmain').html();
+	$('#floorplancontent').html(htmlcontent);
+	$('#floorplancontent').i18n();
+	
+	oTable = $('#floorplantable').dataTable( {
+		"sDom": '<"H"lfrC>t<"F"ip>',
+		"oTableTools": {
+			"sRowSelect": "single",
+		},
+	    "bSort": false,
+		"bProcessing": true,
+		"bStateSave": true,
+		"bJQueryUI": true,
+	    "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+	    "iDisplayLength" : 25,
+		"sPaginationType": "full_numbers"
+		} );
+
+	oTable = $('#plantable').dataTable( {
+		"sDom": '<"H"lfrC>t<"F"ip>',
+		"oTableTools": {
+			"sRowSelect": "single",
+		},
+	    "bSort": false,
+		"bProcessing": true,
+		"bStateSave": false,
+		"bJQueryUI": true,
+	    "iDisplayLength" : -1,
+	});
+
+	RefreshUnusedDevicesComboArray();
+	
+	$('#modal').hide();
+	RefreshFloorPlanTable();
+}
+
+function RefreshPlanTable(idx) {
+	$.LastPlan=idx;
+	$('#modal').show();
+
+	// if we are zoomed in, zoom out before changing rooms by faking a click in the polygon
+	if ($("#floorplangroup")[0].getAttribute("zoomed") == "true") {
+		PolyClick();
+	}
+	$('#floorplancontent #delclractive #activeplandelete').attr("class", "btnstyle3-dis");
+	$('#floorplancontent #delclractive #activeplanupdate').attr("class", "btnstyle3-dis");
+	$('#floorplancontent #delclractive #activeplanclear').attr("class", "btnstyle3-dis");
+	while ($("#roomplandevices")[0].childNodes.length != 0)
+		$("#roomplandevices")[0].removeChild($("#roomplandevices")[0].childNodes[0]);
+	$("#roompolyarea").attr("title", "");
+	$("#roompolyarea").attr("points", "");
+
+	clearInterval($.myglobals.refreshTimer);
+	var oTable = $('#floorplancontent #plantable').dataTable();
+	oTable.fnClearTable();
+	Device.initialise();
+  
+	$.ajax({
+		url: "json.htm?type=command&param=getfloorplanplans&idx=" + idx, 
+		async: false, 
+		dataType: 'json',
+		success: function(data) {
+			if (typeof data.result != 'undefined') {
+				var totalItems=data.result.length;
+				$.each(data.result, function(i,item){
+					var addId = oTable.fnAddData( {
+						"DT_RowId": item.idx,
+						"0": item.Name,
+						"1": ((item.Area.length == 0) ? '' : '<img src="images/ok.png"/>'),
+						"2": item.Area
+					} );
+				});
+				/* Add a click handler to the rows - this could be used as a callback */
+				$("#floorplancontent #plantable tbody tr").click( function( e ) {
+					// if we are zoomed in, zoom out before changing rooms by faking a click in the polygon
+					if ($("#floorplangroup")[0].getAttribute("zoomed") == "true") {
+						PolyClick();
+					}
+					if ( $(this).hasClass('row_selected') ) {
+						$(this).removeClass('row_selected');
+						$('#floorplancontent #delclractive #activeplandelete').attr("class", "btnstyle3-dis");
+						$('#floorplancontent #delclractive #activeplanupdate').attr("class", "btnstyle3-dis");
+						$('#floorplancontent #delclractive #activeplanclear').attr("class", "btnstyle3-dis");
+						Device.initialise();
+						$("#roompolyarea").attr("title", "");
+						$("#roompolyarea").attr("points", "");
+						$("#floorplangroup").attr("planidx", "");
+					}
+					else {
+						oTable.$('tr.row_selected').removeClass('row_selected');
+						$(this).addClass('row_selected');
+						$('#floorplancontent #delclractive #activeplandelete').attr("class", "btnstyle3");
+						Device.initialise();
+						var anSelected = fnGetSelected( oTable );
+						if ( anSelected.length !== 0 ) {
+							var data = oTable.fnGetData( anSelected[0] );
+							var idx= data["DT_RowId"];
+							$("#floorplancontent #delclractive #activeplandelete").attr("href", "javascript:DeleteFloorplanPlan(" + idx + ")");
+							$("#floorplancontent #delclractive #activeplanupdate").attr("href", "javascript:UpdateFloorplanPlan(" + idx + ",false)");
+							$("#floorplancontent #delclractive #activeplanclear").attr("href", "javascript:UpdateFloorplanPlan(" + idx + ",true)");
+							$("#roompolyarea").attr("title", data["0"]);
+							$("#roompolyarea").attr("points", data["2"]);
+							$("#floorplangroup").attr("planidx", idx);
+							if (data["2"].length == 0 ) {
+								$('#floorplancontent #delclractive #activeplanclear').attr("class", "btnstyle3-dis");
+							}
+							else {
+								$('#floorplancontent #delclractive #activeplanclear').attr("class", "btnstyle3");
+							}
+							ShowDevices(idx);
+						}
+					}
+				}); 
+			}
+		}
+	});
+  $('#modal').hide();
+}
+
+function AddUnusedPlan() {
+	if ($.devIdx==-1) {
+		return;
+	}
+
+	var PlanIdx=$("#floorplancontent #comboactiveplan option:selected").val();
+	if (typeof PlanIdx == 'undefined') {
+		return ;
+	}
+	$.ajax({
+		url: "json.htm?type=command&param=addfloorplanplan&idx=" + $.devIdx + 
+			"&planidx=" + PlanIdx,
+		async: false, 
+		dataType: 'json',
+		success: function(data) {
+			if (data.status == 'OK') {
+				RefreshPlanTable($.devIdx);
+				RefreshUnusedDevicesComboArray();
+			}
+			else {
+				ShowNotify('Problem adding Plan!', 2500, true);
+			}
+		},
+		error: function(){
+			HideNotify();
+			ShowNotify('Problem adding Plan!', 2500, true);
+		}     
+	});
+	
+}
+
+function UpdateFloorplanPlan(planidx,clear) {
+	var PlanArea='';
+	if (clear != true) {
+		PlanArea = $("#roompolyarea").attr("points");
+	}
+	$.ajax({
+		url: "json.htm?type=command&param=updatefloorplanplan&planidx=" + planidx + 
+			"&area=" + PlanArea,
+		async: false, 
+		dataType: 'json',
+		success: function(data) {
+			if (data.status == 'OK') {
+//				RefreshPlanTable($.devIdx);
+			}
+			else {
+				ShowNotify('Problem updating Plan!', 2500, true);
+			}
+		},
+		error: function(){
+			HideNotify();
+			ShowNotify('Problem updating Plan!', 2500, true);
+		}     
+	});	
+	var deviceParent = $("#DeviceIcons")[0];
+	for (var i=0; i<deviceParent.childNodes.length; i++) {
+		$.ajax({
+				url: "json.htm?type=command&param=setplandevicecoords" + 
+								"&idx=" + deviceParent.childNodes[i].getAttribute('idx') + 
+								"&xoffset=" + deviceParent.childNodes[i].getAttribute('xoffset') +
+								"&yoffset=" + deviceParent.childNodes[i].getAttribute('yoffset'),
+				async: false, 
+				dataType: 'json',
+				success: function(data) {
+					if (data.status == 'OK') {
+//						RefreshPlanTable($.devIdx);
+					}
+					else {
+						ShowNotify('Problem udating Device Coordinates!', 2500, true);
+					}
+				},
+				error: function(){
+					HideNotify();
+					ShowNotify('Problem updating Device Coordinates!', 2500, true);
+				}     
+			});	
+	}
+
+	RefreshPlanTable($.devIdx);
+}
+
+function DeleteFloorplanPlan(idx) {
+	bootbox.confirm($.i18n("Are you sure to delete this Plan from the Floorplan?"), function(result) {
+
+	if (result==true) {
+		var deviceParent = $("#DeviceIcons")[0];
+		for (var i=0; i<deviceParent.childNodes.length; i++) {
+			$.ajax({
+					url: "json.htm?type=command&param=setplandevicecoords" + "&idx=" + deviceParent.childNodes[i].getAttribute('idx') + "&xoffset=0&yoffset=0",
+					async: false, 
+					dataType: 'json',
+					success: function(data) {
+						if (data.status == 'OK') {
+	//						RefreshPlanTable($.devIdx);
+						}
+						else {
+							ShowNotify('Problem updating Device Coordinates!', 2500, true);
+						}
+					},
+					error: function(){
+						HideNotify();
+						ShowNotify('Problem updating Device Coordinates!', 2500, true);
+					}     
+				});	
+		}
+	}
+
+	if (result==true) {
+		$.ajax({
+			url: "json.htm?type=command&param=updatefloorplanplan&planidx=" + idx + "&area=",
+			async: false, 
+			dataType: 'json',
+			success: function(data) {
+				if (data.status == 'OK') {
+	//				RefreshPlanTable($.devIdx);
+				}
+				else {
+					ShowNotify('Problem updating Plan!', 2500, true);
+				}
+			},
+			error: function(){
+				HideNotify();
+				ShowNotify('Problem updating Plan!', 2500, true);
+			}     
+		});	
+	}
+
+	if (result==true) {
+			$.ajax({
+				 url: "json.htm?type=command&param=deletefloorplanplan&idx=" + idx,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					RefreshPlanTable($.devIdx);
+					RefreshUnusedDevicesComboArray();
+				 }
+			});
+		}
+	});
+}
+
+function RefreshDevices() {
+
+	if ($("#floorplangroup") != 'undefined') {
+	
+		clearInterval($.myglobals.refreshTimer);
+
+		if ($("#floorplangroup")[0].getAttribute("planidx") != "") {
+			Device.useSVGtags = true;
+			$.ajax({
+					 url: "json.htm?type=devices&filter=all&used=true&order=Name&plan="+$("#floorplangroup")[0].getAttribute("planidx")+"&lastupdate=" + window.myglobals.LastUpdate,
+					 async: false,
+					 dataType: 'json',
+					 success: function(data) {
+						if (typeof data.ActTime != 'undefined') {
+							window.myglobals.LastUpdate = data.ActTime;
+						}
+
+						if (typeof data.WindScale != 'undefined') {
+							$.myglobals.windscale=parseFloat(data.WindScale);
+						}
+						if (typeof data.WindSign != 'undefined') {
+							$.myglobals.windsign=data.WindSign;
+						}
+						if (typeof data.TempScale != 'undefined') {
+							$.myglobals.tempscale=parseFloat(data.TempScale);
+						}
+						if (typeof data.TempSign != 'undefined') {
+							$.myglobals.tempsign=data.TempSign;
+						}
+
+						// insert devices into the document
+						if (typeof data.result != 'undefined') {
+							$.each(data.result, function(i,item) {
+								var dev = Device.create(item);
+								dev.setDraggable($("#floorplangroup")[0].getAttribute("zoomed") == "false");
+								dev.htmlMinimum($("#roomplandevices")[0]);
+							});
+						}
+					}
+				});
+
+			$.myglobals.refreshTimer = setInterval(RefreshDevices, 10000);
+		}
+	}
+}
+
+function ShowDevices(idx) {
+	if ($("#floorplangroup") != 'undefined') {
+		Device.useSVGtags = true;
+		Device.initialise();
+		$("#roomplandevices").empty();
+		$("#floorplangroup")[0].setAttribute("planidx", idx);
+		window.myglobals.LastUpdate = 0;
+		RefreshDevices();
+	}
+}
+
+$(document).ready(function() {
+  ShowFloorplans();
+} );  
+</script>

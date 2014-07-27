@@ -1,0 +1,277 @@
+<meta http-equiv="Content-Type" content="application/xhtml+xml">
+<script type="text/javascript" src="js/domoticzdevices.js" />
+<div id="floorplancontent">
+</div>
+<div id="dialog-add-edit-floorplan" style="display:none;">
+	<table border="0" cellpadding="0" cellspacing="20" width="100%">
+		<tr>
+			<td align="right" style="width:60px"><label for="floorplanname">Name:</label></td>
+			<td><input type="text" id="floorplanname" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:60px"><label for="imagename">Image file:</label></td>
+			<td><input type="text" id="imagename" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+	</table>
+</div>
+<div id="floorplanmain" style="display:none;">
+	<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+	<tr>
+		<td align="left"><a class="btnstylerev" onclick="RefreshFloorPlan(window.myglobals.FloorplanIndex-1);" data-i18n="Previous">Previous</a></td>
+		<td align="center"><H2 id="NoFloorplansText" data-i18n="'No Floorplans defined yet...'" style="display:none;">No Floorplans defined yet...</H2></td>
+		<td align="right"><a class="btnstyle" onclick="RefreshFloorPlan(window.myglobals.FloorplanIndex+1);" data-i18n="Next">Next</a></td>
+	</tr>
+	</table>
+	<br>
+	<div id="floorplancontainer" width="100%" height="100%">
+		<img id="floorplanimagesize" width="100%" height="100%" src="" style="display:none" onload="ImageLoaded()">
+		<style type="text/css">
+			polygon.hoverable
+			{
+				cursor: pointer;
+				fill: blue;
+				fill-opacity: 0.05;
+				stroke: grey;
+				stroke-width: 0;
+				stroke-linejoin: round;
+				stroke-opacity: 0.5;
+			}
+
+			polygon.hoverable:hover
+			{
+				stroke: black;   
+				stroke-width: 0;
+				fill-opacity: 0.25;
+			}
+			
+			image.moveable
+			{
+				cursor: move;
+			}
+
+			rect.popup{
+				fill: #F1F5FA;
+				font-family: Arial, Helvetica, sans-serif;
+			}
+			rect.header{
+				fill: #D4E1EE;
+				stroke: black;
+				stroke-width: 1;
+				font-family: Arial, Helvetica, sans-serif;
+			}
+		</style>
+		<svg id="svgcontainer" width="100%" height="100%" version="1.1"  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+			onresize="SVGResize();"  preserveAspectRatio="xMinYMin meet" style="display:none">
+			<g id="floorplangroup" zoomed="false" >
+				<image id="floorplanimage"  width="100%" height="100%" xlink:href=""/>
+				<g id="roomplangroup"/>
+			</g>
+		</svg>
+	</div>
+	<br>
+</div>
+
+<script type="text/javascript" charset="utf-8">
+function ImageLoaded() {
+	if ($("#floorplanimagesize") != 'undefined') {
+		$('#helptext').attr("title", 'Image width is: ' + $("#floorplanimagesize")[0].naturalWidth + ", Height is: " + $("#floorplanimagesize")[0].naturalHeight);
+		$("#svgcontainer")[0].setAttribute("viewBox","0 0 " + $("#floorplanimagesize")[0].naturalWidth + " " + $("#floorplanimagesize")[0].naturalHeight);
+		$("#svgcontainer")[0].setAttribute("style","display:inline");
+		SVGResize();
+	}
+}
+
+function SVGResize() {
+	if ($("#floorplanimagesize") != 'undefined') {
+		if ($("#floorplanimagesize")[0].naturalWidth != 'undefined') {
+			var ratio = $("#floorplanimagesize")[0].naturalWidth / $("#floorplanimagesize")[0].naturalHeight;
+			var svgHeight = $("#svgcontainer").width() / ratio;
+			$("#floorplancontainer").height(svgHeight);
+		}
+	}
+}
+
+function RoomClick(click) {
+	if ($("#floorplangroup")[0].getAttribute("zoomed") == "true")
+	{
+		$("#floorplangroup")[0].setAttribute("transform", "translate(0,0) scale(1)");
+		Device.scale("translate(0,0) scale(1)");
+		$("#floorplangroup")[0].setAttribute("zoomed", "false");
+	}
+	else
+	{
+		var borderRect = click.target.getBBox(); // polygon bounding box
+		var margin = 0.1;  // 10% margin around polygon
+		var marginX = borderRect.width * margin;
+		var marginY = borderRect.height * margin;
+		var scaleX= $("#floorplanimagesize")[0].naturalWidth / (borderRect.width + (marginX * 2));
+		var scaleY= $("#floorplanimagesize")[0].naturalHeight / (borderRect.height + (marginY * 2));
+		var scale = ((scaleX > scaleY) ? scaleY : scaleX);
+		var attr = 'scale('  + scale + ')' + ' translate(' + (borderRect.x - marginX)*-1 + ',' + (borderRect.y - marginY)*-1 + ')';
+
+		// this actually needs to centre in the direction its not scaling but close enough for v1.0
+		$("#floorplangroup")[0].setAttribute("transform", attr);
+		Device.scale(attr);
+		$("#floorplangroup")[0].setAttribute("zoomed", "true");
+	}
+}
+
+function RefreshDevices() {
+
+	if ($("#floorplangroup") != 'undefined') {
+	
+		clearInterval($.myglobals.refreshTimer);
+
+		if ($("#floorplangroup")[0].getAttribute("planidx") != "") {
+			$.ajax({
+					 url: "json.htm?type=devices&filter=all&used=true&order=Name&plan=0&lastupdate=" + window.myglobals.LastUpdate,
+					 async: false,
+					 dataType: 'json',
+					 success: function(data) {
+						if (typeof data.ActTime != 'undefined') {
+							window.myglobals.LastUpdate = data.ActTime;
+						}
+						
+						if (typeof data.WindScale != 'undefined') {
+							$.myglobals.windscale=parseFloat(data.WindScale);
+						}
+						if (typeof data.WindSign != 'undefined') {
+							$.myglobals.windsign=data.WindSign;
+						}
+						if (typeof data.TempScale != 'undefined') {
+							$.myglobals.tempscale=parseFloat(data.TempScale);
+						}
+						if (typeof data.TempSign != 'undefined') {
+							$.myglobals.tempsign=data.TempSign;
+						}
+
+						// update devices that already exist in the DOM
+						if (typeof data.result != 'undefined') {
+							$.each(data.result, function(i,item) {
+								var dev = Device.create(item);
+								var existing = document.getElementById(dev.uniquename);
+								if (existing != undefined) {
+									dev.htmlMinimum($("#roomplangroup")[0]);
+								}
+							});
+						}
+					}
+				});
+
+			$.myglobals.refreshTimer = setInterval(RefreshDevices, 10000);
+		}
+	}
+}
+
+function ShowDevices(idx, parent) {
+	if ($("#floorplangroup") != 'undefined') {
+
+		$.ajax({
+			 url: "json.htm?type=devices&filter=all&used=true&order=Name&plan="+idx,
+			 async: false,
+			 dataType: 'json',
+			 success: function(data) {
+				if (typeof data.ActTime != 'undefined') {
+					window.myglobals.LastUpdate = data.ActTime;
+				}
+
+				if (typeof data.WindScale != 'undefined') {
+					$.myglobals.windscale=parseFloat(data.WindScale);
+				}
+				if (typeof data.WindSign != 'undefined') {
+					$.myglobals.windsign=data.WindSign;
+				}
+				if (typeof data.TempScale != 'undefined') {
+					$.myglobals.tempscale=parseFloat(data.TempScale);
+				}
+				if (typeof data.TempSign != 'undefined') {
+					$.myglobals.tempsign=data.TempSign;
+				}
+
+				// insert devices into the document
+				if (typeof data.result != 'undefined') {
+					$.each(data.result, function(i,item) {
+						var dev = Device.create(item);
+						dev.htmlMinimum(parent);
+					});
+				}
+			}
+		});
+
+		$.myglobals.refreshTimer = setInterval(RefreshDevices, 10000);
+	}
+}
+
+function RefreshFloorPlan(floorIdx) {
+	$("#roomplangroup").empty();
+	$.ajax({
+		url: "json.htm?type=floorplans", 
+		async: false, 
+		dataType: 'json',
+		success: function(data) {
+		if (typeof data.result != 'undefined') 
+			window.myglobals.FloorplanCount = data.result.length;
+			if (floorIdx < 1) floorIdx = window.myglobals.FloorplanCount;
+			if (floorIdx > window.myglobals.FloorplanCount) floorIdx = 1;
+			window.myglobals.FloorplanIndex = floorIdx;
+			$.each(data.result, function(i,item){
+				if (floorIdx == item.Order) {
+					$("#floorplanimage").attr("xlink:href", item.Image);
+					$("#floorplanimagesize").attr("src", item.Image);
+					Device.initialise();
+					$.ajax({
+						url: "json.htm?type=command&param=getfloorplanplans&idx=" + item.idx, 
+						async: false, 
+						dataType: 'json',
+						success: function(data) {
+							if (typeof data.result != 'undefined') {
+								var planGroup = $("#roomplangroup")[0];
+								$.each(data.result, function(i,item){
+									var el = makeSVGnode('polygon', { id: item.Name + "_Room", 'class': 'hoverable', points: item.Area, onclick:"RoomClick(event);" }, '');
+									el.appendChild(makeSVGnode('title', null, item.Name));
+									planGroup.appendChild(el);
+									ShowDevices(item.idx, el);
+								});
+							}
+						}
+					});
+				}
+			});
+		}
+	});
+	// no next/previous buttons for a single image or less
+	if (window.myglobals.FloorplanCount < 2) {
+		$('.btnstyle').css('display','none');
+		$('.btnstylerev').css('display','none');
+	}
+	// better tell people why they got a blank page
+	if (window.myglobals.FloorplanCount < 1) {
+		$('#NoFloorplansText').css('display','inline');
+	}
+}
+
+function ShowFloorplan() {
+	var htmlcontent = "";
+	htmlcontent+=$('#floorplanmain').html();
+	$('#floorplancontent').html(htmlcontent);
+	$('#floorplancontent').i18n();
+
+	Device.useSVGtags = true;
+	Device.backFunction = 'ShowFloorplan';
+	Device.contentTag = 'floorplancontent';
+
+	if (typeof window.myglobals.FloorplanIndex != 'undefined') {
+		RefreshFloorPlan(window.myglobals.FloorplanIndex);
+	} else {
+		RefreshFloorPlan(1);
+	}
+}
+
+$(document).ready(function() {
+	$('#modal').show();	
+
+	ShowFloorplan();
+
+	$('#modal').hide();
+} );  
+</script>
