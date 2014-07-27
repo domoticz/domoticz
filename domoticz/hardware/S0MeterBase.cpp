@@ -4,6 +4,7 @@
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
+#include "../main/localtime_r.h"
 #include "P1MeterBase.h"
 #include "hardwaretypes.h"
 #include <string>
@@ -214,3 +215,4 @@ void S0MeterBase::ParseLine()
 		roffset+=3;
 	}
 }
+

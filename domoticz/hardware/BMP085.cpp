@@ -111,7 +111,7 @@ void CBMP085::Do_Work()
 		localtime_r(&atime, &ltime);
 
 		if (ltime.tm_sec % 12 == 0) {
-			m_mainworker.HeartbeatUpdate(m_HwdID);
+			mytime(&m_LastHeartbeat);
 		}
 	}
 	_log.Log(LOG_STATUS,"I2C: Worker stopped...");

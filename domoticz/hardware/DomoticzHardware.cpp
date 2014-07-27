@@ -2,6 +2,8 @@
 #include <iostream>
 #include "DomoticzHardware.h"
 #include "../main/Logger.h"
+#include "../main/localtime_r.h"
+#include "../main/Helper.h"
 
 CDomoticzHardwareBase::CDomoticzHardwareBase()
 {
@@ -11,11 +13,12 @@ CDomoticzHardwareBase::CDomoticzHardwareBase()
 	m_SeqNr=0;
 	m_pUserData=NULL;
 	m_bIsStarted=false;
+	m_stopHeartbeatrequested = false;
+	mytime(&m_LastHeartbeat);
 };
 
 CDomoticzHardwareBase::~CDomoticzHardwareBase()
 {
-
 }
 
 bool CDomoticzHardwareBase::Start()
@@ -61,4 +64,41 @@ bool CDomoticzHardwareBase::onRFXMessage(const unsigned char *pBuffer, const siz
 		ii++;
 	}
 	return true;
+}
+
+void CDomoticzHardwareBase::StartHeartbeatThread()
+{
+	m_stopHeartbeatrequested = false;
+	m_Heartbeatthread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDomoticzHardwareBase::Do_Heartbeat_Work, this)));
+}
+
+void CDomoticzHardwareBase::StopHeartbeatThread()
+{
+	m_stopHeartbeatrequested = true;
+	if (m_Heartbeatthread)
+	{
+		m_Heartbeatthread->join();
+		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
+		sleep_milliseconds(10);
+	}
+}
+
+void CDomoticzHardwareBase::Do_Heartbeat_Work()
+{
+	int secCounter = 0;
+	while (!m_stopHeartbeatrequested)
+	{
+		sleep_milliseconds(200);
+		if (m_stopHeartbeatrequested)
+			break;
+		secCounter++;
+		if (secCounter == 5)
+		{
+			secCounter = 0;
+			time_t atime = mytime(NULL);
+			if (atime % 12 == 0) {
+				mytime(&m_LastHeartbeat);
+			}
+		}
+	}
 }

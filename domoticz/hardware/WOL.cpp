@@ -38,6 +38,7 @@ bool CWOL::StartHardware()
 	m_bIsStarted=true;
 	sOnConnected(this);
 
+	StartHeartbeatThread();
 	_log.Log(LOG_STATUS,"WOL: Started");
 
 	return true;
@@ -45,6 +46,7 @@ bool CWOL::StartHardware()
 
 bool CWOL::StopHardware()
 {
+	StopHeartbeatThread();
 	m_bIsStarted=false;
     return true;
 }

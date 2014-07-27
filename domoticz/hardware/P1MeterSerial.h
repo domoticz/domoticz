@@ -41,6 +41,11 @@ public:
 private:
 	bool StartHardware();
 	bool StopHardware();
+
+	void Do_Work();
+	boost::shared_ptr<boost::thread> m_thread;
+	volatile bool m_stoprequested;
+
     /**
      * Read callback, stores data in the buffer
      */

@@ -85,6 +85,9 @@ void RFXComSerial::Do_Work()
 		time_t atime = mytime(NULL);
 		struct tm ltime;
 		localtime_r(&atime, &ltime);
+		if (ltime.tm_sec % 12 == 0) {
+			mytime(&m_LastHeartbeat);
+		}
 
 		if (m_stoprequested)
 			break;
@@ -101,12 +104,8 @@ void RFXComSerial::Do_Work()
 				OpenSerialDevice();
 			}
 		}
-		if (ltime.tm_sec % 12 == 0) {
-			m_mainworker.HeartbeatUpdate(m_HwdID);
-		}
 
 	}
-	m_mainworker.HeartbeatUnregister(m_HwdID);
 	_log.Log(LOG_STATUS,"RFXCOM: Serial Worker stopped...");
 } 
 

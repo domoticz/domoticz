@@ -68,7 +68,7 @@ void CForecastIO::Do_Work()
 			m_LastMinute=ltime.tm_min/10;
 		}
 		if (ltime.tm_sec % 12 == 0) {
-			m_mainworker.HeartbeatUpdate(m_HwdID);
+			mytime(&m_LastHeartbeat);
 		}
 	}
 	_log.Log(LOG_STATUS,"ForecastIO Worker stopped...");

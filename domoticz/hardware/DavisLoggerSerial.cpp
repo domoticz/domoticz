@@ -112,7 +112,7 @@ void CDavisLoggerSerial::Do_Work()
 		struct tm ltime;
 		localtime_r(&atime, &ltime);
 		if (ltime.tm_sec % 12 == 0) {
-			m_mainworker.HeartbeatUpdate(m_HwdID);
+			mytime(&m_LastHeartbeat);
 		}
 		if (m_stoprequested)
 			break;

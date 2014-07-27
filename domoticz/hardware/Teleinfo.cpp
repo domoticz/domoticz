@@ -116,6 +116,7 @@ void Teleinfo::Init()
 
 bool Teleinfo::StartHardware()
 {
+	StartHeartbeatThread();
 	//Try to open the Serial Port
 	try
 	{
@@ -159,6 +160,7 @@ bool Teleinfo::StopHardware()
 			//Don't throw from a Stop command
 		}
 	}
+	StopHeartbeatThread();
 	m_bIsStarted=false;
 	return true;
 }

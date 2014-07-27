@@ -2,6 +2,7 @@
 #include "P1MeterTCP.h"
 #include "../main/Logger.h"
 #include "../main/Helper.h"
+#include "../main/localtime_r.h"
 #include <iostream>
 
 #define RETRY_DELAY 30
@@ -145,6 +146,15 @@ void P1MeterTCP::Do_Work()
 			)
 		{
 			sleep_seconds(1);
+			time_t atime = mytime(NULL);
+			struct tm ltime;
+			localtime_r(&atime, &ltime);
+
+
+			if (ltime.tm_sec % 12 == 0) {
+				mytime(&m_LastHeartbeat);
+			}
+
 			m_retrycntr++;
 			if (m_retrycntr>=RETRY_DELAY)
 			{
@@ -162,6 +172,7 @@ void P1MeterTCP::Do_Work()
 			int bread=recv(m_socket,(char*)&data,sizeof(data),0);
 			if (m_stoprequested)
 				break;
+			mytime(&m_LastHeartbeat);
 			if ((bread==0)||(bread<0)) {
 				_log.Log(LOG_ERROR,"P1 Smart Meter: TCP/IP connection closed!");
 				closesocket(m_socket);

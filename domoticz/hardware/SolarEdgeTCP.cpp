@@ -67,6 +67,8 @@ bool SolarEdgeTCP::StartHardware()
 	m_bufferpos=0;
 	m_wantedlength=0;
 
+	StartHeartbeatThread();
+
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&SolarEdgeTCP::Do_Work, this)));
 	return (m_thread!=NULL);
@@ -81,6 +83,7 @@ bool SolarEdgeTCP::StopHardware()
 	m_pTCPProxy->stop();
 	delete m_pTCPProxy;
 	m_pTCPProxy=NULL;
+	StopHeartbeatThread();
 	return true;
 }
 
@@ -88,15 +91,6 @@ void SolarEdgeTCP::Do_Work()
 {
 	while (!m_stoprequested)
 	{
-
-		time_t atime = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
-
-
-		if (ltime.tm_sec % 12 == 0) {
-			m_mainworker.HeartbeatUpdate(m_HwdID);
-		}
 		try
 		{
 			if (m_pTCPProxy!=NULL)

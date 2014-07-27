@@ -38,8 +38,6 @@ public:
 	CDomoticzHardwareBase* GetHardware(int HwdId);
 	
 	void HeartbeatUpdate(const std::string component);
-	void HeartbeatUpdate(const int HwId);
-	void HeartbeatUnregister(const int HwId);
 	void HeartbeatCheck();
 
 	void SetVerboseLevel(eVerboseLevel Level);
@@ -106,7 +104,6 @@ private:
 		std::string switchcmd;
 	};
 
-	std::map<int, time_t > m_hardwareheartbeats;
 	std::map<std::string, time_t > m_componentheartbeats;
 	boost::mutex m_heartbeatmutex;
 

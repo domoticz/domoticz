@@ -99,6 +99,9 @@ bool S0MeterTCP::StartHardware()
 	m_retrycntr=RETRY_DELAY;
 	m_bIsStarted=true;
 
+	//Start Heartbeat thread
+	StartHeartbeatThread();
+
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&S0MeterTCP::Do_Work, this)));
 	return (m_thread!=NULL);
@@ -115,6 +118,7 @@ bool S0MeterTCP::StopHardware()
 			//Don't throw from a Stop command
 		}
 	}
+	StopHeartbeatThread();
 	m_bIsStarted=false;
 	return true;
 }
@@ -214,3 +218,4 @@ void S0MeterTCP::write(const char *data, size_t size)
 void S0MeterTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
 }
+

@@ -50,7 +50,7 @@ public:
 	virtual void WriteToHardware(const char *pdata, const unsigned char length)=0;
 
 	bool IsStarted() { return m_bIsStarted; }
-
+	time_t m_LastHeartbeat;
 	int m_HwdID;
 	std::string Name;
 	_eHardwareTypes HwdType;
@@ -67,5 +67,12 @@ private:
 	bool onRFXMessage(const unsigned char *pBuffer, const size_t Len);
 	unsigned char m_rxbuffer[RX_BUFFER_SIZE];
 	bool m_bIsStarted;
+	//Heartbeat thread for classes that can not provide this themselves
+	void StartHeartbeatThread();
+	void StopHeartbeatThread();
+	void Do_Heartbeat_Work();
+	boost::shared_ptr<boost::thread> m_Heartbeatthread;
+	volatile bool m_stopHeartbeatrequested;
+
 };
 

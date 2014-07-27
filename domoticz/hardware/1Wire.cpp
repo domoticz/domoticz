@@ -132,11 +132,11 @@ void C1Wire::Do_Work()
 
 		if (mytime(NULL)-lastPollTime>=Wire1_POLL_INTERVAL)
 		{
-         GetDeviceDetails();
+			GetDeviceDetails();
 			lastPollTime=mytime(NULL);
 		}
 		if (ltime.tm_sec % 12 == 0) {
-			m_mainworker.HeartbeatUpdate(m_HwdID);
+			mytime(&m_LastHeartbeat);
 		}
 	}
 }

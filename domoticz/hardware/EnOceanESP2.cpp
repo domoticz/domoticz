@@ -674,11 +674,25 @@ bool CEnOceanESP2::StopHardware()
 
 void CEnOceanESP2::Do_Work()
 {
+	static int secCounter = 0;
 	while (!m_stoprequested)
 	{
 		sleep_milliseconds(200);
 		if (m_stoprequested)
 			break;
+
+		secCounter++;
+		if (secCounter == 5)
+		{
+			secCounter = 0;
+			time_t atime = mytime(NULL);
+			struct tm ltime;
+			localtime_r(&atime, &ltime);
+			if (ltime.tm_sec % 12 == 0) {
+				mytime(&m_LastHeartbeat);
+			}
+		}
+
 		if (!isOpen())
 		{
 			if (m_retrycntr==0)

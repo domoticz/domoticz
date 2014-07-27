@@ -141,7 +141,7 @@ void CHardwareMonitor::Do_Work()
 			FetchData();
 		}
 		if (ltime.tm_sec % 12 == 0) {
-			m_mainworker.HeartbeatUpdate(hwId);
+			mytime(&m_LastHeartbeat);
 		}
 
 	}

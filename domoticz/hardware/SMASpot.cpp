@@ -127,7 +127,7 @@ void CSMASpot::Do_Work()
 			GetMeterDetails();
 		}
 		if (ltime.tm_sec % 12 == 0) {
-			m_mainworker.HeartbeatUpdate(m_HwdID);
+			mytime(&m_LastHeartbeat);
 		}
 	}
 	_log.Log(LOG_STATUS,"SMASpot: Worker stopped...");

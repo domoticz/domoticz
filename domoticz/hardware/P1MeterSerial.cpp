@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "P1MeterSerial.h"
 #include "../main/Logger.h"
+#include "../main/localtime_r.h"
+#include "../main/Helper.h"
 
 //NOTE!!!, this code is partly based on the great work of RHekkers:
 //https://github.com/rhekkers
@@ -20,6 +22,7 @@ P1MeterSerial::P1MeterSerial(const int ID, const std::string& devname, unsigned 
 	m_HwdID=ID;
 	m_szSerialPort=devname;
 	m_iBaudRate=baud_rate;
+	m_stoprequested = false;
 }
 
 P1MeterSerial::P1MeterSerial(const std::string& devname,
@@ -30,6 +33,7 @@ P1MeterSerial::P1MeterSerial(const std::string& devname,
         boost::asio::serial_port_base::stop_bits opt_stop)
         :AsyncSerial(devname,baud_rate,opt_parity,opt_csize,opt_flow,opt_stop)
 {
+	m_stoprequested = false;
 }
 
 P1MeterSerial::~P1MeterSerial()
@@ -48,6 +52,9 @@ bool P1MeterSerial::StartHardware()
 	fclose(fIn);
 	ParseData((const BYTE*)&buffer,ret);
 #endif
+	m_stoprequested = false;
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&P1MeterSerial::Do_Work, this)));
+
 	//Try to open the Serial Port
 	try
 	{
@@ -109,7 +116,14 @@ bool P1MeterSerial::StopHardware()
 			//Don't throw from a Stop command
 		}
 	}
-	m_bIsStarted=false;
+	m_stoprequested = true;
+	if (m_thread)
+	{
+		m_thread->join();
+		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
+		sleep_milliseconds(10);
+	}
+	m_bIsStarted = false;
 	return true;
 }
 
@@ -126,4 +140,26 @@ void P1MeterSerial::readCallback(const char *data, size_t len)
 
 void P1MeterSerial::WriteToHardware(const char *pdata, const unsigned char length)
 {
+}
+
+void P1MeterSerial::Do_Work()
+{
+	int secCounter = 0;
+	while (!m_stoprequested)
+	{
+		sleep_milliseconds(200);
+		if (m_stoprequested)
+			break;
+		secCounter++;
+		if (secCounter == 5)
+		{
+			secCounter = 0;
+			time_t atime = mytime(NULL);
+			struct tm ltime;
+			localtime_r(&atime, &ltime);
+			if (ltime.tm_sec % 12 == 0) {
+				mytime(&m_LastHeartbeat);
+			}
+		}
+	}
 }

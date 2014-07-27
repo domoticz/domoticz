@@ -772,7 +772,7 @@ void CPiFace::Do_Work()
 
 
 		if (ltime.tm_sec % 12 == 0) {
-			m_mainworker.HeartbeatUpdate(m_HwdID);
+			mytime(&m_LastHeartbeat);
 		}
         boost::this_thread::sleep(boost::posix_time::millisec(PIFACE_WORKER_THREAD_SLEEP_INTERVAL_MS));
         if (m_stoprequested)

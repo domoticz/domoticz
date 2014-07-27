@@ -112,7 +112,7 @@ void OTGWTCP::Do_Work()
 
 
 		if (ltime.tm_sec % 12 == 0) {
-			m_mainworker.HeartbeatUpdate(m_HwdID);
+			mytime(&m_LastHeartbeat);
 		}
 
 		if (bFirstTime)

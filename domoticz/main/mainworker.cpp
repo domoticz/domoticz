@@ -8803,39 +8803,16 @@ void MainWorker::HeartbeatUpdate(const std::string component)
 	}
 }
 
-
-void MainWorker::HeartbeatUpdate(const int HwId)
-{
-	boost::lock_guard<boost::mutex> l(m_heartbeatmutex);
-	time_t now = mytime(0);
-	std::map<int, time_t>::iterator itt = m_hardwareheartbeats.find(HwId);
-	if (itt != m_hardwareheartbeats.end()) {
-		itt->second = now;
-	}
-	else {
-		m_hardwareheartbeats[HwId] = now;
-	}
-}
-
-void MainWorker::HeartbeatUnregister(const int HwId)
-{
-	boost::lock_guard<boost::mutex> l(m_heartbeatmutex);
-	std::map<int, time_t>::iterator itt = m_hardwareheartbeats.find(HwId);
-	if (itt != m_hardwareheartbeats.end()) {
-		m_hardwareheartbeats.erase(HwId);
-	}
-	else {
-		_log.Log(LOG_ERROR, "Error unregistering heartbeat for hardware id %d ", HwId);
-	}
-}
-
 void MainWorker::HeartbeatCheck()
 {
 	boost::lock_guard<boost::mutex> l(m_heartbeatmutex);
+	boost::lock_guard<boost::mutex> l2(m_devicemutex);
+
 	time_t now;
+	mytime(&now);
+
 	typedef std::map<std::string, time_t>::iterator hb_components;
 	for (hb_components iterator = m_componentheartbeats.begin(); iterator != m_componentheartbeats.end(); iterator++) {
-		time(&now);
 		double dif = difftime(now, iterator->second);
 		//_log.Log(LOG_STATUS, "%s last checkin  %.2lf seconds ago", iterator->first.c_str(), dif);
 		if (dif > 20)
@@ -8843,21 +8820,28 @@ void MainWorker::HeartbeatCheck()
 			_log.Log(LOG_ERROR, "% thread seems to have ended unexpectedly", iterator->first.c_str());
 		}
 	}
-	typedef std::map<int, time_t>::iterator hb_hardware;
-	for (hb_hardware iterator = m_hardwareheartbeats.begin(); iterator != m_hardwareheartbeats.end(); iterator++) {
-		time(&now);
-		double dif = difftime(now, iterator->second);
-		//_log.Log(LOG_STATUS, "%d last checkin  %.2lf seconds ago", iterator->first, dif);
-		if (dif > 20)
+
+	//Check hardware heartbeats
+	std::vector<CDomoticzHardwareBase*>::iterator itt;
+	for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
+	{
+		//Skip Dummy Hardware
+		bool bDoCheck= ((*itt)->HwdType != HTYPE_Dummy);
+		if (bDoCheck)
 		{
-			char szTmp[100];
-			std::vector<std::vector<std::string> > result;
-			sprintf(szTmp, "SELECT Name FROM Hardware WHERE (ID='%d')", iterator->first);
-			result = m_sql.query(szTmp);
-			if (result.size() == 1)
+			double dif = difftime(now, (*itt)->m_LastHeartbeat);
+			//_log.Log(LOG_STATUS, "%d last checkin  %.2lf seconds ago", iterator->first, dif);
+			if (dif > 20)
 			{
-				std::vector<std::string> sd = result[0];
-				_log.Log(LOG_ERROR, "%s hardware (%d) thread seems to have ended unexpectedly", sd[0].c_str(), iterator->first);
+				char szTmp[100];
+				std::vector<std::vector<std::string> > result;
+				sprintf(szTmp, "SELECT Name FROM Hardware WHERE (ID='%d')", (*itt)->m_HwdID);
+				result = m_sql.query(szTmp);
+				if (result.size() == 1)
+				{
+					std::vector<std::string> sd = result[0];
+					_log.Log(LOG_ERROR, "%s hardware (%d) thread seems to have ended unexpectedly", sd[0].c_str(), (*itt)->m_HwdID);
+				}
 			}
 		}
 	}

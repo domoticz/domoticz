@@ -52,6 +52,7 @@ S0MeterSerial::~S0MeterSerial()
 
 bool S0MeterSerial::StartHardware()
 {
+	StartHeartbeatThread();
 	//Try to open the Serial Port
 	try
 	{
@@ -108,6 +109,7 @@ bool S0MeterSerial::StopHardware()
 			//Don't throw from a Stop command
 		}
 	}
+	StopHeartbeatThread();
 	return true;
 }
 
