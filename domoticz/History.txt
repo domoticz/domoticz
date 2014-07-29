@@ -55,6 +55,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: Sensor type CM119/160 can now display previous year data
 - Implemented: Option for SMASpot device to import old month data (SMASpot website export)
 - Changed: OpenZWave COMMAND_CLASS_SENSOR_MULTILEVEL support for multiple index/instance
+- Fixed: AppLamp Group4 operation
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io
