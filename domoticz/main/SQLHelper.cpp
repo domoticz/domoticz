@@ -6235,6 +6235,7 @@ std::string CSQLHelper::UpdateUserVariable(std::string idx, std::string varname,
 	std::vector<std::vector<std::string> > result;
 	char szTmp[300];
 
+	/*
 	sprintf(szTmp, "SELECT Value FROM UserVariables WHERE (Name == '%s')",
 		varname.c_str()
 		);
@@ -6245,6 +6246,7 @@ std::string CSQLHelper::UpdateUserVariable(std::string idx, std::string varname,
 		if (varvalue == sd[0])
 			return "New value same as current, not updating";
 	}
+	*/
 	
 	time_t now = time(0);
 	struct tm ltime;
