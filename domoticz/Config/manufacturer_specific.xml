@@ -81,7 +81,7 @@
 		<Product type="0007" id="0101" name="Tag Reader" config="BeNext/TagReader.xml"/>
 		<Product type="0008" id="0101" name="Power Switch"/>
 		<Product type="000d" id="0100" name="Built-in Dimmer" config="BeNext/BuiltinDimmer.xml"/>
-		<Product type="0018" id="0100" name="Plug-in Dimmer" config="Benext/PluginDimmer.xml"/>
+		<Product type="0018" id="0100" name="Plug-in Dimmer" config="BeNext/PluginDimmer.xml"/>
 		<Product type="001e" id="0001" name="1Pole Switch" config="BeNext/1poleswitch.xml"/>
 		<Product type="001f" id="0001" name="2Pole Switch" config="BeNext/2poleswitch.xml"/>
 	</Manufacturer>
@@ -357,8 +357,8 @@
 	<Manufacturer id="0041" name="OpenPeak Inc.">
 	</Manufacturer>
 	<Manufacturer id="013c" name="Philio Technology Corporation">
-		<Product type="0001" id="0003" name="2x1.5KW Relay with Power Measurement (PAN04-1)" config="philio/pan04.xml"/>
 		<Product type="0001" id="0004" name="In Wall Dual Relay (1 Way) Switch Module (PAN06-1)" />
+		<Product type="0001" id="0003" name="PAN04-1 Double Relay Switch 2x1.5kW with Power Measurement" config="philio/pan04.xml" />
 		<Product type="0002" id="0002" name="Slim Multi-Sensor PSM02" config="philio/psm02.xml" />
 	</Manufacturer>
 	<Manufacturer id="0064" name="Popp / Duwi">
@@ -377,6 +377,12 @@
 	<Manufacturer id="0095" name="Qees">
 		<Product type="3101" id="0001" name="RETO Dimmer Plus 2013"/>
 		<Product type="3103" id="0001" name="RETO Plug-in Switch Plus" config="qees/reto-plugin-switch.xml" />
+	</Manufacturer>
+	<Manufacturer id="0345" name="Qubino">
+		<Product type="0001" id="0001" name="ZMNHDA2 Flush Dimmer" config="qubino/ZMNHDA2.xml"/>
+		<Product type="0002" id="0001" name="ZMNHBA2 Flush 2 Relays" config="qubino/ZMNHBA2.xml"/>
+		<Product type="0002" id="0002" name="ZMNHAA2 Flush 1 Relay" config="qubino/ZMNHAA2.xml"/>
+		<Product type="0003" id="0002" name="ZMNHCA2 Flush Shutter" config="qubino/ZMNHCA2.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0100" name="Reitz-Group.de">
 	</Manufacturer>
@@ -485,7 +491,7 @@
 		<Product type="2002" id="0204" name="ZP3102 PIR Motion Sensor"/>
 		<Product type="2003" id="0302" name="ZS5101 Shock and Vibration Sensor"/>
 		<Product type="2004" id="0403" name="ZS6101 Smoke Detector"/>
-		<Product type="2005" id="0503" name="ZM1601 Battery Operated Siren" config="vision/zm160eu.xml"/>
+		<Product type="2005" id="0503" name="ZM1601 Battery Operated Siren" config="vision/zm1601eu.xml"/>
 		<Product type="2005" id="0505" name="ZM1601 Battery Operated Siren"/>
 		<Product type="2006" id="0610" name="ZM1701 Electronic Deadbolt Door Lock without Handle"/>
 		<Product type="2006" id="0620" name="ZM1702 Electronic Deadbolt Door Lock with Handle"/>

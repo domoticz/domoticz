@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+<!-- Qubino: ZMNHCA2 Flush shutter -->
+
+	<!-- Configuration  -->
+	<CommandClass id="112">
+	<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="1" min="0" max="255" value="255">
+		<Help>Flush 1 relay module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system.</Help>
+		<Item label="ALL ON active, ALL OFF active" value="255" />
+		<Item label="ALL ON is not active ALL OFF is not active" value="0" />
+		<Item label="ALL ON is not active ALL OFF active" value="1" />
+		<Item label="ALL ON active ALL OFF is not active" value="2" />
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="40" label="Power reporting in Watts on power change for Q1 or Q2" size="1" min="0" max="100" value="1">
+			<Help>Set value from 0 - 100 (0% - 100%). 0 - Reporting Disabled. 1 – 100 = 1% – 100% Reporting enabled. Power report is send (push) only when actual power (in Watts) in real time changes for more than set percentage comparing to previous actual power in Watts, step is 1%. Default value 1</Help>
+		</Value>
+	
+		<Value type="short" genre="config" instance="1" index="42" label="Power reporting in Watts by time interval for Q1 or Q2" min="0" max="65535" value="300">
+			<Help>Set value means time interval (0 - 65535) in seconds, when power report is send. 0 - Reporting Disabled. 1 - 65535 = 1second - 65535 seconds. Reporting enabled. Power report is send with time interval set by entered value. Default value 300 (power report in Watts is send each 300s)</Help>
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="45" label="Self-measurement" size="1" min="0" max="1" value="0">
+			<Help>Module may include power and energy used by module itself in reports sent to the main controller</Help>
+			<Item label="Self-measurement disabled" value="0" />
+			<Item label="Self-measurement enable" value="1" />
+		</Value>
+
+		<Value type="short" genre="config" instance="1" index="74" label="Motor moving up/down time" min="0" max="65535" value="0">
+			<Help>This parameter defines shutter motor moving time of complete opening or complete closing. 0 – moving time disabled (working with limit switches). 1 – 65535 = 0,1seconds – 6553,5seconds After that time motor is stopped (relay goes to off state). Default value 0</Help>
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="76" label="Motor operation detection" min="0" max="255" value="0">
+			<Help>Power threshold to be interpreted when motor reach the limit switch. Available settings: 0 – 255 (1-255 W). The value 0 means reaching a limit switch will not be detected. Default value: 10 (10W).</Help>
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="78" label="Forced Shutter calibration" size="1" min="0" max="1" value="0">
+			<Help>By modifying the parameters setting from 0 to 1 a Shutter enters the calibration mode</Help>
+			<Item label="Default" value="0" />
+			<Item label="Start calibration process" value="1" />
+		</Value>
+
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="2">
+			<Group index="1" max_associations="5" label="Multilevel" auto="true"/>
+			<Group index="2" max_associations="1" label="Default reporting" auto="true"/>
+		</Associations>
+	</CommandClass>
+
+	<!-- Remove COMMAND_CLASS_BASIC -->
+	<CommandClass id="32" action="remove" />
+
+</Product>
