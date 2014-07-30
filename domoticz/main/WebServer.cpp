@@ -5307,6 +5307,22 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 
 		m_mainworker.SwitchLight(ID, "Speed Up", 0, -1);
 	}
+	else if (cparam == "speeduplong")
+	{
+		std::string idx = m_pWebEm->FindValue("idx");
+
+		if (idx == "")
+		{
+			return;
+		}
+
+		unsigned long long ID;
+		std::stringstream s_strid;
+		s_strid << idx;
+		s_strid >> ID;
+
+		m_mainworker.SwitchLight(ID, "Speed Up Long", 0, -1);
+	}
 	else if (cparam == "speeddown")
 	{
 		std::string idx = m_pWebEm->FindValue("idx");
@@ -5354,6 +5370,38 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		s_strid >> ID;
 
 		m_mainworker.SwitchLight(ID, "Cooler", 0, -1);
+	}
+	else if (cparam == "fulllight")
+	{
+		std::string idx = m_pWebEm->FindValue("idx");
+
+		if (idx == "")
+		{
+			return;
+		}
+
+		unsigned long long ID;
+		std::stringstream s_strid;
+		s_strid << idx;
+		s_strid >> ID;
+
+		m_mainworker.SwitchLight(ID, "Set Full", 0, -1);
+	}
+	else if (cparam == "nightlight")
+	{
+		std::string idx = m_pWebEm->FindValue("idx");
+
+		if (idx == "")
+		{
+			return;
+		}
+
+		unsigned long long ID;
+		std::stringstream s_strid;
+		s_strid << idx;
+		s_strid >> ID;
+
+		m_mainworker.SwitchLight(ID, "Set Night", 0, -1);
 	}
 	else if (cparam == "addfloorplan")
 	{

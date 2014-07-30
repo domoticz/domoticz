@@ -51,16 +51,15 @@ const unsigned char RGBOff[3] = { 0x21, 0x0, 0x55 };
 const unsigned char RGBBrightnessUp[3] = { 0x23, 0x0, 0x55 };
 const unsigned char RGBBrightnessDown[3] = { 0x24, 0x0, 0x55 };
 
-const unsigned char RGBSpeedUp[3] = { 0x25, 0x0, 0x55 };
-const unsigned char RGBSpeedDown[3] = { 0x26, 0x0, 0x55 };
-
 const unsigned char RGBDiscoSpeedSlower[3] = { 0x26, 0x0, 0x55 };
 const unsigned char RGBDiscoSpeedFaster[3] = { 0x25, 0x0, 0x55 };
+const unsigned char RGBDiscoSpeedFasterLong[3] = { 0xA5, 0x0, 0x55 };
 
 const unsigned char RGBDiscoNext[3] = { 0x27, 0x0, 0x55 };
 const unsigned char RGBDiscoPrevious[3] = { 0x28, 0x0, 0x55 };
 
 unsigned char RGBSetColour[3] = { 0x20, 0x0, 0x55 };
+
 
 //RGBW LEDs
 const unsigned char RGBWOn[3] = { 0x42, 0x0, 0x55 };
@@ -445,6 +444,9 @@ void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 		case Limitless_DiscoSpeedFaster:
 			pCMD=(unsigned char*)&RGBDiscoSpeedFaster;
 			break;
+		case Limitless_DiscoSpeedFasterLong:
+			pCMD = (unsigned char*)&RGBDiscoSpeedFasterLong;
+			break;
 		case Limitless_RGBDiscoNext:
 			pCMD=(unsigned char*)&RGBDiscoNext;
 			break;
@@ -495,7 +497,7 @@ void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			break;
 		case Limitless_SetColorToWhite:
 			if (pLed->dunit==0) {
-				pCMD=(unsigned char*)&AllOn;
+				pCMD = (unsigned char*)&AllFull;
 			}
 			else if (pLed->dunit==1) {
 				pCMD=(unsigned char*)&Group1Full;
@@ -508,6 +510,23 @@ void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			}
 			else if (pLed->dunit==4) {
 				pCMD=(unsigned char*)&Group4Full;
+			}
+			break;
+		case Limitless_NightMode:
+			if (pLed->dunit == 0) {
+				pCMD = (unsigned char*)&AllNight;
+			}
+			else if (pLed->dunit == 1) {
+				pCMD = (unsigned char*)&Group1Night;
+			}
+			else if (pLed->dunit == 2) {
+				pCMD = (unsigned char*)&Group2Night;
+			}
+			else if (pLed->dunit == 3) {
+				pCMD = (unsigned char*)&Group3Night;
+			}
+			else if (pLed->dunit == 4) {
+				pCMD = (unsigned char*)&Group4Night;
 			}
 			break;
 		}

@@ -40,6 +40,15 @@
 				<td align="right"><label for="protected"><span data-i18n="Protected">Protected</span>:</label></td>
 				<td><input type="checkbox" id="protected"></td>
 			</tr>
+			<tr id="optionsWhite">
+				<td align="right"><label><span data-i18n="Color">Color</span>:</label></td>
+				<td>
+					<button id="brightUp" onclick="appLampBrightnessUp()">Brightness Up</button><button id="brightDown" onclick="appLampBrightnessDown()">Brightness Down</button><br />
+					<button id="discoUp" onclick="appLampWarmer()">Warm White</button><button id="discoDown" onclick="appLampCooler()">Cool White</button><br />
+					<button id="speedUp" onclick="appLampFull()">Full Light</button><button id="speedDown" onclick="appLampNight()">Night Light</button><br />
+				</td>
+			</tr>
+			</div>
 			<tr id="LedColor">
 				<td align="right"><label><span data-i18n="Color">Color</span>:</label></td>
 				<td>
@@ -65,6 +74,7 @@
 								<button id="brightUp" onclick="appLampBrightnessUp()">Brightness Up</button><button id="brightDown" onclick="appLampBrightnessDown()">Brightness Down</button><br />
 								<button id="discoUp" onclick="appLampDiscoUp()">Disco Mode Up</button><button id="discoDown" onclick="appLampDiscoDown()">Disco Mode Down</button><br />
 								<button id="speedUp" onclick="appLampSpeedUp()">Speed Up</button><button id="speedDown" onclick="appLampSpeedDown()">Speed Down</button><br />
+								<button id="speedUpLong" onclick="appLampSpeedUpLong()">Exclude Lamp</button><br />
 							</div>
 						</td>
 					</tr>
@@ -1248,6 +1258,16 @@ function appLampSpeedUp()
 		 dataType: 'json'
 	});
 }
+function appLampSpeedUpLong()
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=speeduplong&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json'
+	});
+}
+
+
 
 function appLampSpeedDown()
 {
@@ -1262,6 +1282,24 @@ function appLampWarmer()
 {
 	$.ajax({
 		 url: "json.htm?type=command&param=warmer&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json'
+	});
+}
+
+function appLampFull()
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=fulllight&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json'
+	});
+}
+
+function appLampNight()
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=nightlight&idx=" + $.devIdx,
 		 async: false, 
 		 dataType: 'json'
 	});
@@ -1315,6 +1353,7 @@ function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage
 	$.bIsLED=(devsubtype.indexOf("RGB") >= 0);
 	$.bIsRGB=(devsubtype=="RGB");
 	$.bIsRGBW=(devsubtype=="RGBW");
+	$.bIsWhite=(devsubtype=="White");
 
 	if ($.bIsLED==true) {
 		$("#lightcontent #LedColor").show();
@@ -1333,6 +1372,12 @@ function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage
 	}
 	else {
 		$("#lightcontent #optionsRGBW").hide();
+	}
+	if ($.bIsWhite) {
+		$("#lightcontent #optionsWhite").show();
+	}
+	else {
+		$("#lightcontent #optionsWhite").hide();
 	}
 	$('#lightcontent #picker').colpick({
 		flat:true,

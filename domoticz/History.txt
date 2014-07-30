@@ -57,6 +57,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Changed: OpenZWave COMMAND_CLASS_SENSOR_MULTILEVEL support for multiple index/instance
 - Fixed: AppLamp Group4 operation
 - Changed: AppLamp more support for RGB lamps (not sold anymore)
+- Changed: AppLamp more support for White lamps
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

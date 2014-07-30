@@ -1534,9 +1534,14 @@ bool GetLightCommand(
 			cmd=Limitless_SetBrightnessLevel;
 			return true;
 		}
-		else if (switchcmd=="Set White")
+		else if (switchcmd=="Set Full")
 		{
 			cmd=Limitless_SetColorToWhite;
+			return true;
+		}
+		else if (switchcmd == "Set Night")
+		{
+			cmd = Limitless_NightMode;
 			return true;
 		}
 		else if (switchcmd == "Bright Up")
@@ -1562,6 +1567,11 @@ bool GetLightCommand(
 		else if (switchcmd == "Speed Up")
 		{
 			cmd = Limitless_DiscoSpeedFaster;
+			return true;
+		}
+		else if (switchcmd == "Speed Up Long")
+		{
+			cmd = Limitless_DiscoSpeedFasterLong;
 			return true;
 		}
 		else if (switchcmd == "Speed Down")

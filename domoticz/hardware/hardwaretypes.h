@@ -240,3 +240,4 @@ typedef struct _tLimitlessLights {
 #define Limitless_CoolWhiteIncrease 19
 #define Limitless_NightMode 20
 #define Limitless_FullBrightness 21
+#define Limitless_DiscoSpeedFasterLong 22 //exclude RGB
