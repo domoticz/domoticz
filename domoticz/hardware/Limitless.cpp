@@ -58,7 +58,7 @@ const unsigned char RGBDiscoSpeedSlower[3] = { 0x26, 0x0, 0x55 };
 const unsigned char RGBDiscoSpeedFaster[3] = { 0x25, 0x0, 0x55 };
 
 const unsigned char RGBDiscoNext[3] = { 0x27, 0x0, 0x55 };
-const unsigned char RGBDiscoLast[3] = { 0x28, 0x0, 0x55 };
+const unsigned char RGBDiscoPrevious[3] = { 0x28, 0x0, 0x55 };
 
 unsigned char RGBSetColour[3] = { 0x20, 0x0, 0x55 };
 
@@ -96,6 +96,13 @@ unsigned char RGBWSetColor[3]={0x40,0,0x55};
 //Byte1: 0×40 (decimal: 64)
 //Byte2: 0×00 to 0xFF (255 colors) Color Matrix Chart [COMING SOON]
 //Byte3: Always 0×55 (decimal: 85)
+
+//White LEDs
+const unsigned char WhiteBrightnessUp[3] = { 0x3C, 0x0, 0x55 };
+const unsigned char WhiteBrightnessDown[3] = { 0x34, 0x0, 0x55 };
+const unsigned char WhiteWarmer[3] = { 0x3E, 0x0, 0x55 };
+const unsigned char WhiteCooler[3] = { 0x3F, 0x0, 0x55 };
+
 
 CLimitLess::CLimitLess(const int ID, const int LedType, const std::string IPAddress, const unsigned short usIPPort)
 {
@@ -190,18 +197,24 @@ bool CLimitLess::StartHardware()
 	memset(m_stRemoteDestAddr.sin_zero, '\0', sizeof m_stRemoteDestAddr.sin_zero);
 
 	//Add the Default switches
-	if (!AddSwitchIfNotExits(0,"AppLamp All"))
-	{
-		if (!AddSwitchIfNotExits(1,"AppLamp Group1"))
+	if (m_LEDType != sTypeLimitlessRGB) {
+		if (!AddSwitchIfNotExits(0, "AppLamp All"))
 		{
-			if (!AddSwitchIfNotExits(2,"AppLamp Group2"))
+			if (!AddSwitchIfNotExits(1, "AppLamp Group1"))
 			{
-				if (!AddSwitchIfNotExits(3,"AppLamp Group3"))
+				if (!AddSwitchIfNotExits(2, "AppLamp Group2"))
 				{
-					AddSwitchIfNotExits(4,"AppLamp Group4");
+					if (!AddSwitchIfNotExits(3, "AppLamp Group3"))
+					{
+						AddSwitchIfNotExits(4, "AppLamp Group4");
+					}
 				}
 			}
 		}
+	}
+	else {
+		//RGB controller is a single controlled device
+		AddSwitchIfNotExits(0, "AppLamp RGB");
 	}
 	m_bIsStarted=true;
 	sOnConnected(this);
@@ -404,57 +417,27 @@ void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 		switch (pLed->command)
 		{
 		case Limitless_LedOn:
-			if (pLed->dunit==0)
-				pCMD=(unsigned char*)&RGBOn;
-			else if (pLed->dunit==1)
-				pCMD=(unsigned char*)&Group1On;
-			else if (pLed->dunit==2)
-				pCMD=(unsigned char*)&Group2On;
-			else if (pLed->dunit==3)
-				pCMD=(unsigned char*)&Group3On;
-			else if (pLed->dunit==4)
-				pCMD=(unsigned char*)&Group4On;
+			pCMD = (unsigned char*)&RGBOn;
 			break;
 		case Limitless_LedOff:
-			if (pLed->dunit==0)
-				pCMD=(unsigned char*)&RGBOff;
-			else if (pLed->dunit==1)
-				pCMD=(unsigned char*)&Group1Off;
-			else if (pLed->dunit==2)
-				pCMD=(unsigned char*)&Group2Off;
-			else if (pLed->dunit==3)
-				pCMD=(unsigned char*)&Group3Off;
-			else if (pLed->dunit==4)
-				pCMD=(unsigned char*)&Group4Off;
+			pCMD=(unsigned char*)&RGBOff;
 			break;
 		case Limitless_SetRGBColour:
 			{
 				//First send ON , sleep 100ms, then the command
-				if (pLed->dunit==0) {
-					sendto(m_RemoteSocket,(const char*)&RGBOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-					sleep_milliseconds(100);
-				}
-				else if (pLed->dunit==1) {
-					sendto(m_RemoteSocket,(const char*)&Group1On,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-					sleep_milliseconds(100);
-				}
-				else if (pLed->dunit==2) {
-					sendto(m_RemoteSocket,(const char*)&Group2On,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-					sleep_milliseconds(100);
-				}
-				else if (pLed->dunit==3) {
-					sendto(m_RemoteSocket,(const char*)&Group3On,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-					sleep_milliseconds(100);
-				}
-				else if (pLed->dunit==4) {
-					sendto(m_RemoteSocket,(const char*)&Group4On,4,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-					sleep_milliseconds(100);
-				}
+				sendto(m_RemoteSocket,(const char*)&RGBOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sleep_milliseconds(100);
 				//The Hue is inverted/swifted 90 degrees
 				int iHue=((255-pLed->value)+192)&0xFF;
-				RGBWSetColor[1]=(unsigned char)iHue;
+				RGBSetColour[1] = (unsigned char)iHue;
 				pCMD=(unsigned char*)&RGBSetColour;
 			}
+			break;
+		case Limitless_SetBrightUp:
+			pCMD = (unsigned char*)&RGBBrightnessUp;
+			break;
+		case Limitless_SetBrightDown:
+			pCMD = (unsigned char*)&RGBBrightnessDown;
 			break;
 		case Limitless_DiscoSpeedSlower:
 			pCMD=(unsigned char*)&RGBDiscoSpeedSlower;
@@ -465,26 +448,8 @@ void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 		case Limitless_RGBDiscoNext:
 			pCMD=(unsigned char*)&RGBDiscoNext;
 			break;
-		case Limitless_RGBDiscoLast:
-			pCMD=(unsigned char*)&RGBDiscoLast;
-			break;
-		case Limitless_SetColorToWhite:
-			if (pLed->dunit==0) {
-				pCMD=(unsigned char*)&AllOn;
-			}
-			else if (pLed->dunit==1) {
-				pCMD=(unsigned char*)&Group1Full;
-			}
-			else if (pLed->dunit==2) {
-				pCMD=(unsigned char*)&Group2Full;
-			}
-			else if (pLed->dunit==3) {
-				pCMD=(unsigned char*)&Group3Full;
-			}
-			else if (pLed->dunit==4) {
-				pCMD=(unsigned char*)&Group4Full;
-			}
-			//pCMD=(unsigned char*)&RGBWSetColorToWhiteAll;
+		case Limitless_RGBDiscoPrevious:
+			pCMD=(unsigned char*)&RGBDiscoPrevious;
 			break;
 		}
 	}
@@ -516,6 +481,18 @@ void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			else if (pLed->dunit==4)
 				pCMD=(unsigned char*)&Group4Off;
 			break;
+		case Limitless_SetBrightUp:
+			pCMD = (unsigned char*)&WhiteBrightnessUp;
+			break;
+		case Limitless_SetBrightDown:
+			pCMD = (unsigned char*)&WhiteBrightnessDown;
+			break;
+		case Limitless_WarmWhiteIncrease:
+			pCMD = (unsigned char*)&WhiteWarmer;
+			break;
+		case Limitless_CoolWhiteIncrease:
+			pCMD = (unsigned char*)&WhiteCooler;
+			break;
 		case Limitless_SetColorToWhite:
 			if (pLed->dunit==0) {
 				pCMD=(unsigned char*)&AllOn;
@@ -532,7 +509,6 @@ void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			else if (pLed->dunit==4) {
 				pCMD=(unsigned char*)&Group4Full;
 			}
-			//pCMD=(unsigned char*)&RGBWSetColorToWhiteAll;
 			break;
 		}
 	}

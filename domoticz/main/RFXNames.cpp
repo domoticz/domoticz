@@ -1539,6 +1539,46 @@ bool GetLightCommand(
 			cmd=Limitless_SetColorToWhite;
 			return true;
 		}
+		else if (switchcmd == "Bright Up")
+		{
+			cmd = Limitless_SetBrightUp;
+			return true;
+		}
+		else if (switchcmd == "Bright Down")
+		{
+			cmd = Limitless_SetBrightDown;
+			return true;
+		}
+		else if (switchcmd == "Disco Up")
+		{
+			cmd = Limitless_RGBDiscoNext;
+			return true;
+		}
+		else if (switchcmd == "Disco Down")
+		{
+			cmd = Limitless_RGBDiscoPrevious;
+			return true;
+		}
+		else if (switchcmd == "Speed Up")
+		{
+			cmd = Limitless_DiscoSpeedFaster;
+			return true;
+		}
+		else if (switchcmd == "Speed Down")
+		{
+			cmd = Limitless_DiscoSpeedSlower;
+			return true;
+		}
+		else if (switchcmd == "Warmer")
+		{
+			cmd = Limitless_WarmWhiteIncrease;
+			return true;
+		}
+		else if (switchcmd == "Cooler")
+		{
+			cmd = Limitless_CoolWhiteIncrease;
+			return true;
+		}
 		else
 			return false;
 		break;

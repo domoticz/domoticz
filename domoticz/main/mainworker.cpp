@@ -8817,7 +8817,7 @@ void MainWorker::HeartbeatCheck()
 		//_log.Log(LOG_STATUS, "%s last checkin  %.2lf seconds ago", iterator->first.c_str(), dif);
 		if (dif > 20)
 		{
-			_log.Log(LOG_ERROR, "% thread seems to have ended unexpectedly", iterator->first.c_str());
+			_log.Log(LOG_ERROR, "%s thread seems to have ended unexpectedly", iterator->first.c_str());
 		}
 	}
 

@@ -198,6 +198,13 @@ void DomoticzTCP::Do_Work()
 		}
 		else
 		{
+			//this could take a long time... maybe there will be no data received at all,
+			//so it's no good to-do the heartbeat timing here
+			time_t atime = mytime(NULL);
+			if (atime % 12 == 0) {
+				mytime(&m_LastHeartbeat);
+			}
+
 			int bread=recv(m_socket,(char*)&buf,sizeof(buf),0);
 			if (m_stoprequested)
 				break;

@@ -227,11 +227,16 @@ typedef struct _tLimitlessLights {
 #define Limitless_ColorTempUp 6
 #define Limitless_ColorTempDown 7
 #define Limitless_RGBDiscoNext 8
-#define Limitless_RGBDiscoLast 9
+#define Limitless_RGBDiscoPrevious 9
 #define Limitless_SetRGBColour 10
 #define Limitless_DiscoSpeedSlower 11
 #define Limitless_DiscoSpeedFaster 12
 #define Limitless_DiscoMode 13
 #define Limitless_SetColorToWhite 14
 #define Limitless_SetBrightnessLevel 15
-
+#define Limitless_SetBrightUp 16
+#define Limitless_SetBrightDown 17
+#define Limitless_WarmWhiteIncrease 18
+#define Limitless_CoolWhiteIncrease 19
+#define Limitless_NightMode 20
+#define Limitless_FullBrightness 21

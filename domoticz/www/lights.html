@@ -51,15 +51,20 @@
 						<td align="left" style="vertical-align: top;">
 							<input type="text" id="Hue" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Hue"></span><br>
 							<input type="text" id="Brightness" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Brightness"></span><br>
-							<div class="radio">
+							<div class="radio" id="optionsRGBW" style="display:none;">
 								<label>
-									<input type="radio" name="optionsType" id="optionsRGB" value="false" checked>
+									<input type="radio" name="optionsType" id="optionRGB" value="false" checked>
 										RGB
 								</label>
 								<label>
-									<input type="radio" name="optionsType" id="optionsWhite" value="true">
+									<input type="radio" name="optionsType" id="optionWhite" value="true">
 										White
 								</label>
+							</div>
+							<div id="optionsRGB" style="display:none;">
+								<button id="brightUp" onclick="appLampBrightnessUp()">Brightness Up</button><button id="brightDown" onclick="appLampBrightnessDown()">Brightness Down</button><br />
+								<button id="discoUp" onclick="appLampDiscoUp()">Disco Mode Up</button><button id="discoDown" onclick="appLampDiscoDown()">Disco Mode Down</button><br />
+								<button id="speedUp" onclick="appLampSpeedUp()">Speed Up</button><button id="speedDown" onclick="appLampSpeedDown()">Speed Down</button><br />
 							</div>
 						</td>
 					</tr>
@@ -389,13 +394,13 @@
 						<td align="left" style="vertical-align: top;">
 							<input type="text" id="Hue" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Hue"></span><br>
 							<input type="text" id="Brightness" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Brightness"></span><br>
-							<div class="radio">
+							<div class="radio" id="optionsRGBW" style="display:none;">
 								<label>
-									<input type="radio" name="optionsType" id="optionsRGB" value="false" checked>
+									<input type="radio" name="optionsType" id="optionRGB" value="false" checked>
 										RGB
 								</label>
 								<label>
-									<input type="radio" name="optionsType" id="optionsWhite" value="true">
+									<input type="radio" name="optionsType" id="optionWhite" value="true">
 										White
 								</label>
 							</div>
@@ -751,8 +756,8 @@ function RefreshTimerTable(idx)
 						cHSB.s=sat;
 						cHSB.b=level;
 						
-						$("#lightcontent #optionsRGB").prop('checked',(sat==100));
-						$("#lightcontent #optionsWhite").prop('checked',!(sat==100));
+						$("#lightcontent #optionRGB").prop('checked',(sat==100));
+						$("#lightcontent #optionWhite").prop('checked',!(sat==100));
 
 						$('#lightcontent #picker').colpickSetColor(cHSB);
 					}
@@ -794,6 +799,8 @@ function ShowTimers(id,name, isdimmer, stype,devsubtype)
 	clearInterval($.myglobals.refreshTimer);
 	$.devIdx=id;
 	$.isDimmer=isdimmer;
+	
+	$.bIsRGBW=(devsubtype.indexOf("RGBW") >= 0);
 	$.bIsLED=(devsubtype.indexOf("RGB") >= 0);
   
 	var oTable;
@@ -839,6 +846,12 @@ function ShowTimers(id,name, isdimmer, stype,devsubtype)
 	else {
 		$("#lightcontent #LedColor").hide();
 	}
+	if ($.bIsRGBW==true) {
+		$("#lightcontent #optionsRGBW").show();
+	}
+	else {
+		$("#lightcontent #optionsRGBW").hide();
+	}
 	$('#lightcontent #picker').colpick({
 		flat:true,
 		layout:'hex',
@@ -848,14 +861,14 @@ function ShowTimers(id,name, isdimmer, stype,devsubtype)
 				$('#lightcontent #Hue').val(hsb.h);
 				$('#lightcontent #Brightness').val(hsb.b);
 				var bIsWhite=(hsb.s<20);
-				$("#lightcontent #optionsRGB").prop('checked',!bIsWhite);
-				$("#lightcontent #optionsWhite").prop('checked',bIsWhite);
+				$("#lightcontent #optionRGB").prop('checked',!bIsWhite);
+				$("#lightcontent #optionWhite").prop('checked',bIsWhite);
 			}
 		}
 	});
 
-	$("#lightcontent #optionsRGB").prop('checked',(sat==180));
-	$("#lightcontent #optionsWhite").prop('checked',!(sat==180));
+	$("#lightcontent #optionRGB").prop('checked',(sat==180));
+	$("#lightcontent #optionWhite").prop('checked',!(sat==180));
 
 	$('#lightcontent #picker').colpickSetColor(cHSB);
 
@@ -1193,6 +1206,76 @@ function SetColValue(idx,hue,brightness)
 	});
 }
 
+function appLampBrightnessUp()
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=brightnessup&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json'
+	});
+}
+
+function appLampBrightnessDown()
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=brightnessdown&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json'
+	});
+}
+function appLampDiscoUp()
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=discoup&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json'
+	});
+}
+
+function appLampDiscoDown()
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=discodown&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json'
+	});
+}
+function appLampSpeedUp()
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=speedup&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json'
+	});
+}
+
+function appLampSpeedDown()
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=speeddown&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json'
+	});
+}
+
+function appLampWarmer()
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=warmer&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json'
+	});
+}
+
+function appLampCooler()
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=cooler&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json'
+	});
+}
+
 function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage,devsubtype,strParam1,strParam2,bIsProtected)
 {
 	clearInterval($.myglobals.refreshTimer);
@@ -1230,11 +1313,26 @@ function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage
 	$('#lightcontent #Hue').val(128);
 	
 	$.bIsLED=(devsubtype.indexOf("RGB") >= 0);
+	$.bIsRGB=(devsubtype=="RGB");
+	$.bIsRGBW=(devsubtype=="RGBW");
+
 	if ($.bIsLED==true) {
 		$("#lightcontent #LedColor").show();
 	}
 	else {
 		$("#lightcontent #LedColor").hide();
+	}
+	if ($.bIsRGB==true) {
+		$("#lightcontent #optionsRGB").show();
+	}
+	else {
+		$("#lightcontent #optionsRGB").hide();
+	}
+	if ($.bIsRGBW==true) {
+		$("#lightcontent #optionsRGBW").show();
+	}
+	else {
+		$("#lightcontent #optionsRGBW").hide();
 	}
 	$('#lightcontent #picker').colpick({
 		flat:true,
@@ -1245,15 +1343,15 @@ function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage
 				$('#lightcontent #Hue').val(hsb.h);
 				$('#lightcontent #Brightness').val(hsb.b);
 				var bIsWhite=(hsb.s<20);
-				$("#lightcontent #optionsRGB").prop('checked',!bIsWhite);
-				$("#lightcontent #optionsWhite").prop('checked',bIsWhite);
+				$("#lightcontent #optionRGB").prop('checked',!bIsWhite);
+				$("#lightcontent #optionWhite").prop('checked',bIsWhite);
 				clearInterval($.setColValue);
 				$.setColValue = setInterval(function() { SetColValue($.devIdx,hsb.h,hsb.b); }, 200);
 			}
 		}
 	});
-	$("#lightcontent #optionsRGB").prop('checked',(sat==100));
-	$("#lightcontent #optionsWhite").prop('checked',!(sat==100));
+	$("#lightcontent #optionRGB").prop('checked',(sat==100));
+	$("#lightcontent #optionWhite").prop('checked',!(sat==100));
 
 	$('#lightcontent #picker').colpickSetColor(cHSB);
 
