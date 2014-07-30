@@ -8826,7 +8826,7 @@ void MainWorker::HeartbeatCheck()
 	for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
 	{
 		//Skip Dummy Hardware
-		bool bDoCheck= ((*itt)->HwdType != HTYPE_Dummy);
+		bool bDoCheck = ((*itt)->HwdType != HTYPE_Dummy) && ((*itt)->HwdType != HTYPE_Domoticz);
 		if (bDoCheck)
 		{
 			double dif = difftime(now, (*itt)->m_LastHeartbeat);
