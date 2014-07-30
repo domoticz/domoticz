@@ -73,7 +73,7 @@
 
 <script type="text/javascript" charset="utf-8">
 function ImageLoaded() {
-	if ($("#floorplanimagesize") != 'undefined') {
+	if (typeof $("#floorplanimagesize") != 'undefined') {
 		$('#helptext').attr("title", 'Image width is: ' + $("#floorplanimagesize")[0].naturalWidth + ", Height is: " + $("#floorplanimagesize")[0].naturalHeight);
 		$("#svgcontainer")[0].setAttribute("viewBox","0 0 " + $("#floorplanimagesize")[0].naturalWidth + " " + $("#floorplanimagesize")[0].naturalHeight);
 		$("#svgcontainer")[0].setAttribute("style","display:inline");
@@ -82,12 +82,21 @@ function ImageLoaded() {
 }
 
 function SVGResize() {
-	if ($("#floorplanimagesize") != 'undefined') {
-		if ($("#floorplanimagesize")[0].naturalWidth != 'undefined') {
-			var ratio = $("#floorplanimagesize")[0].naturalWidth / $("#floorplanimagesize")[0].naturalHeight;
-			var svgHeight = $("#svgcontainer").width() / ratio;
-			$("#floorplancontainer").height(svgHeight);
-		}
+    var svgHeight;
+	if ((typeof $("#floorplancontainer") != 'undefined') && (typeof $("#floorplanimagesize") != 'undefined') && (typeof $("#floorplanimagesize")[0] != 'undefined') && ($("#floorplanimagesize")[0].naturalWidth != 'undefined')){
+		$("#floorplancontainer")[0].setAttribute('naturalWidth', $("#floorplanimagesize")[0].naturalWidth);
+		$("#floorplancontainer")[0].setAttribute('naturalHeight', $("#floorplanimagesize")[0].naturalHeight);
+		$("#floorplancontainer")[0].setAttribute('svgwidth', $("#svgcontainer").width());
+		Device.xImageSize = $("#floorplanimagesize")[0].naturalWidth;
+		Device.yImageSize = $("#floorplanimagesize")[0].naturalHeight;
+		var ratio = $("#floorplanimagesize")[0].naturalWidth / $("#floorplanimagesize")[0].naturalHeight;
+		$("#floorplancontainer")[0].setAttribute('ratio', ratio);
+		svgHeight = $("#svgcontainer").width() / ratio;
+		$("#floorplancontainer").height(svgHeight);
+	}
+	
+	if (svgHeight < 500) {
+		$("#floorplancontainer").height(500);
 	}
 }
 
@@ -118,7 +127,8 @@ function RoomClick(click) {
 
 function RefreshDevices() {
 
-	if ($("#floorplangroup") != 'undefined') {
+	if ((typeof $("#floorplangroup") != 'undefined') &&
+		(typeof $("#floorplangroup")[0] != 'undefined')) {
 	
 		clearInterval($.myglobals.refreshTimer);
 
@@ -164,7 +174,7 @@ function RefreshDevices() {
 }
 
 function ShowDevices(idx, parent) {
-	if ($("#floorplangroup") != 'undefined') {
+	if (typeof $("#floorplangroup") != 'undefined') {
 
 		$.ajax({
 			 url: "json.htm?type=devices&filter=all&used=true&order=Name&plan="+idx,
@@ -187,12 +197,28 @@ function ShowDevices(idx, parent) {
 				if (typeof data.TempSign != 'undefined') {
 					$.myglobals.tempsign=data.TempSign;
 				}
-
+				
 				// insert devices into the document
+				var dev;
 				if (typeof data.result != 'undefined') {
 					$.each(data.result, function(i,item) {
-						var dev = Device.create(item);
-						dev.htmlMinimum(parent);
+						if (item.Type.indexOf('+') >= 0) {
+							var aDev = item.Type.split('+');
+							var i;
+							for (i=0; i < aDev.length; i++) {
+								var sDev = aDev[i].trim();
+								item.Name = ((i == 0) ? item.Name : sDev);
+								item.Type = sDev;
+								item.CustomImage = 1;
+								item.Image = sDev.toLowerCase();
+								item.XOffset = Math.abs(item.XOffset) + ((i == 0) ? 0 : 50);
+								dev = Device.create(item);
+								dev.htmlMinimum(parent);
+							}
+						} else {
+							dev = Device.create(item);
+							dev.htmlMinimum(parent);
+						}
 					});
 				}
 			}

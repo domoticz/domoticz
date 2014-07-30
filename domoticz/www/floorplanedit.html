@@ -163,12 +163,21 @@ function ImageLoaded() {
 }
 
 function SVGResize() {
-	if ($("#floorplanimagesize") != 'undefined') {
-		if ($("#floorplanimagesize")[0].naturalWidth != 'undefined') {
-			var ratio = $("#floorplanimagesize")[0].naturalWidth / $("#floorplanimagesize")[0].naturalHeight;
-			var svgHeight = $("#svgcontainer").width() / ratio;
-			$("#floorplaneditor").height(svgHeight);
-		}	
+    var svgHeight;
+	if ((typeof $("#floorplaneditor") != 'undefined') && (typeof $("#floorplanimagesize") != 'undefined') && (typeof $("#floorplanimagesize")[0] != 'undefined') && ($("#floorplanimagesize")[0].naturalWidth != 'undefined')){
+		$("#floorplaneditor")[0].setAttribute('naturalWidth', $("#floorplanimagesize")[0].naturalWidth);
+		$("#floorplaneditor")[0].setAttribute('naturalHeight', $("#floorplanimagesize")[0].naturalHeight);
+		$("#floorplaneditor")[0].setAttribute('svgwidth', $("#svgcontainer").width());
+		Device.xImageSize = $("#floorplanimagesize")[0].naturalWidth;
+		Device.yImageSize = $("#floorplanimagesize")[0].naturalHeight;
+		var ratio = $("#floorplanimagesize")[0].naturalWidth / $("#floorplanimagesize")[0].naturalHeight;
+		$("#floorplaneditor")[0].setAttribute('ratio', ratio);
+		svgHeight = $("#svgcontainer").width() / ratio;
+		$("#floorplaneditor").height(svgHeight);
+	}
+	
+	if (svgHeight < 500) {
+		$("#floorplaneditor").height(500);
 	}
 }
 
@@ -764,7 +773,8 @@ function DeleteFloorplanPlan(idx) {
 
 function RefreshDevices() {
 
-	if ($("#floorplangroup") != 'undefined') {
+	if ((typeof $("#floorplangroup") != 'undefined') &&
+		(typeof $("#floorplangroup")[0] != 'undefined')) {
 	
 		clearInterval($.myglobals.refreshTimer);
 
@@ -809,7 +819,7 @@ function RefreshDevices() {
 }
 
 function ShowDevices(idx) {
-	if ($("#floorplangroup") != 'undefined') {
+	if (typeof $("#floorplangroup") != 'undefined') {
 		Device.useSVGtags = true;
 		Device.initialise();
 		$("#roomplandevices").empty();
