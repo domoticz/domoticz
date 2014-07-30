@@ -8851,7 +8851,7 @@ void MainWorker::HeartbeatCheck()
 		if (bDoCheck)
 		{
 			//Check Receive Timeout
-			diff = difftime(now, (*itt)->m_LastHeartbeatReceive);
+			double diff = difftime(now, (*itt)->m_LastHeartbeatReceive);
 			if (diff > 3600) //1 hour
 			{
 				char szTmp[100];
