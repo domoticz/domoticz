@@ -4,12 +4,12 @@
 CDummy::CDummy(const int ID)
 {
 	m_HwdID=ID;
+	m_bSkipReceiveCheck = true;
 }
 
 CDummy::~CDummy(void)
 {
 	m_bIsStarted=false;
-	m_bSkipReceiveCheck = true;
 }
 
 void CDummy::Init()
