@@ -15,6 +15,7 @@ CDomoticzHardwareBase::CDomoticzHardwareBase()
 	m_bIsStarted=false;
 	m_stopHeartbeatrequested = false;
 	mytime(&m_LastHeartbeat);
+	mytime(&m_LastHeartbeatReceive);
 };
 
 CDomoticzHardwareBase::~CDomoticzHardwareBase()
@@ -101,4 +102,9 @@ void CDomoticzHardwareBase::Do_Heartbeat_Work()
 			}
 		}
 	}
+}
+
+void CDomoticzHardwareBase::SetHeartbeatReceived()
+{
+	mytime(&m_LastHeartbeatReceive);
 }

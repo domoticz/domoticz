@@ -49,8 +49,11 @@ public:
 	bool Stop();
 	virtual void WriteToHardware(const char *pdata, const unsigned char length)=0;
 
+	void SetHeartbeatReceived();
+
 	bool IsStarted() { return m_bIsStarted; }
 	time_t m_LastHeartbeat;
+	time_t m_LastHeartbeatReceive;
 	int m_HwdID;
 	std::string Name;
 	_eHardwareTypes HwdType;

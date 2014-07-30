@@ -1173,6 +1173,8 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	char *szDate = asctime(localtime(&now));
 
 	int HwdID = pHardware->m_HwdID;
+	((CDomoticzHardwareBase *)pHardware)->SetHeartbeatReceived();
+
 #ifdef DEBUG_RECEIVE
 	std::stringstream sstream;
 	sstream << szDate << "HwdID: " << HwdID << " (" << pHardware->Name << ")" << " RX: Len: " << std::dec << Len << " ";
@@ -8822,16 +8824,17 @@ void MainWorker::HeartbeatCheck()
 	}
 
 	//Check hardware heartbeats
-	std::vector<CDomoticzHardwareBase*>::iterator itt;
+	std::vector<CDomoticzHardwareBase*>::const_iterator itt;
 	for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
 	{
 		//Skip Dummy Hardware
 		bool bDoCheck = ((*itt)->HwdType != HTYPE_Dummy) && ((*itt)->HwdType != HTYPE_Domoticz);
 		if (bDoCheck)
 		{
-			double dif = difftime(now, (*itt)->m_LastHeartbeat);
+			//Check Thread Timeout
+			double diff = difftime(now, (*itt)->m_LastHeartbeat);
 			//_log.Log(LOG_STATUS, "%d last checkin  %.2lf seconds ago", iterator->first, dif);
-			if (dif > 20)
+			if (diff > 20)
 			{
 				char szTmp[100];
 				std::vector<std::vector<std::string> > result;
@@ -8841,6 +8844,24 @@ void MainWorker::HeartbeatCheck()
 				{
 					std::vector<std::string> sd = result[0];
 					_log.Log(LOG_ERROR, "%s hardware (%d) thread seems to have ended unexpectedly", sd[0].c_str(), (*itt)->m_HwdID);
+				}
+			}
+		}
+		bDoCheck = ((*itt)->HwdType != HTYPE_Dummy);
+		if (bDoCheck)
+		{
+			//Check Receive Timeout
+			diff = difftime(now, (*itt)->m_LastHeartbeatReceive);
+			if (diff > 3600) //1 hour
+			{
+				char szTmp[100];
+				std::vector<std::vector<std::string> > result;
+				sprintf(szTmp, "SELECT Name FROM Hardware WHERE (ID='%d')", (*itt)->m_HwdID);
+				result = m_sql.query(szTmp);
+				if (result.size() == 1)
+				{
+					std::vector<std::string> sd = result[0];
+					_log.Log(LOG_ERROR, "%s hardware (%d) nothing received for more then 1 hour!....", sd[0].c_str(), (*itt)->m_HwdID);
 				}
 			}
 		}
