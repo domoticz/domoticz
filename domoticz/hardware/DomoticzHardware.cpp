@@ -16,6 +16,7 @@ CDomoticzHardwareBase::CDomoticzHardwareBase()
 	m_stopHeartbeatrequested = false;
 	mytime(&m_LastHeartbeat);
 	mytime(&m_LastHeartbeatReceive);
+	m_bSkipReceiveCheck = false;
 };
 
 CDomoticzHardwareBase::~CDomoticzHardwareBase()

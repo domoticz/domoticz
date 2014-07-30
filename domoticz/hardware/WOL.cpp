@@ -8,6 +8,7 @@
 CWOL::CWOL(const int ID, const std::string &BoradcastAddress, const unsigned short Port)
 {
 	m_HwdID=ID;
+	m_bSkipReceiveCheck = true;
 #ifdef WIN32
 	// Initialize Winsock
 	WSADATA wsaData;

@@ -138,14 +138,14 @@
     <Filter Include="Devices\WOL">
       <UniqueIdentifier>{4d9a219d-95b5-4e44-bcf1-b47e7df829d9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\PVOutput">
-      <UniqueIdentifier>{18743244-0b44-4bd4-851a-2e2ada37b8ed}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\GPIO%28wiringPi%29">
       <UniqueIdentifier>{b87abdbf-bee2-4192-86ae-1ab1c4bca502}</UniqueIdentifier>
     </Filter>
     <Filter Include="Devices\Meteostick">
       <UniqueIdentifier>{fa6be0ed-32cb-4b89-b3b8-3c89113de8a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\PVOutput%28Input%29">
+      <UniqueIdentifier>{18743244-0b44-4bd4-851a-2e2ada37b8ed}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -422,7 +422,7 @@
       <Filter>Devices\WOL</Filter>
     </ClInclude>
     <ClInclude Include="hardware\PVOutput_Input.h">
-      <Filter>Devices\PVOutput</Filter>
+      <Filter>Devices\PVOutput%28Input%29</Filter>
     </ClInclude>
     <ClInclude Include="hardware\SMASpot.h">
       <Filter>Devices\SMASpot</Filter>
@@ -688,7 +688,7 @@
       <Filter>Devices\WOL</Filter>
     </ClCompile>
     <ClCompile Include="hardware\PVOutput_Input.cpp">
-      <Filter>Devices\PVOutput</Filter>
+      <Filter>Devices\PVOutput%28Input%29</Filter>
     </ClCompile>
     <ClCompile Include="main\DataPush.cpp">
       <Filter>Source Files</Filter>

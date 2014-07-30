@@ -54,6 +54,7 @@ public:
 	bool IsStarted() { return m_bIsStarted; }
 	time_t m_LastHeartbeat;
 	time_t m_LastHeartbeatReceive;
+	bool m_bSkipReceiveCheck;
 	int m_HwdID;
 	std::string Name;
 	_eHardwareTypes HwdType;

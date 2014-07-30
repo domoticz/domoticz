@@ -8847,8 +8847,7 @@ void MainWorker::HeartbeatCheck()
 				}
 			}
 		}
-		bDoCheck = ((*itt)->HwdType != HTYPE_Dummy);
-		if (bDoCheck)
+		if (!(*itt)->m_bSkipReceiveCheck)
 		{
 			//Check Receive Timeout
 			double diff = difftime(now, (*itt)->m_LastHeartbeatReceive);

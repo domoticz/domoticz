@@ -20,6 +20,7 @@ CICYThermostat::CICYThermostat(const int ID, const std::string Username, const s
 	m_UserName=Username;
 	m_Password=Password;
 	m_stoprequested=false;
+	m_bSkipReceiveCheck = true;
 	Init();
 }
 

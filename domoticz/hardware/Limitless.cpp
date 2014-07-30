@@ -110,6 +110,7 @@ CLimitLess::CLimitLess(const int ID, const int LedType, const std::string IPAddr
 	m_usIPPort=usIPPort;
 	m_stoprequested=false;
 	m_RemoteSocket=INVALID_SOCKET;
+	m_bSkipReceiveCheck = true;
 	m_LEDType=LedType;
 	m_bIsStarted=false;
 #if defined WIN32
