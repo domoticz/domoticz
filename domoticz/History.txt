@@ -61,6 +61,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: Latest RFXCOM SDK (6.24)
 - Implemented: Lighting5, Aoke
 - Implemented: RFY, Venetian Blinds support (EU/US)
+- Implemented: A-OK Blinds now displays a stop button
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io
