@@ -1728,7 +1728,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 			std::string Name=sd[0];
 			_eSwitchType switchtype=(_eSwitchType)atoi(sd[1].c_str());
 			int AddjValue=(int)atof(sd[2].c_str());
-			GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+			GetLightStatus(devType, subType, switchtype,nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 
 			bool bIsLightSwitchOn=IsLightSwitchOn(lstatus);
 
@@ -5475,7 +5475,7 @@ void CSQLHelper::CheckSceneStatus(const unsigned long long Idx)
 		bool bHaveGroupCmd=false;
 		int maxDimLevel=0;
 
-		GetLightStatus(dType,dSubType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+		GetLightStatus(dType, dSubType, switchtype,nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 		_DeviceStatusResults.push_back(IsLightSwitchOn(lstatus));
 	}
 

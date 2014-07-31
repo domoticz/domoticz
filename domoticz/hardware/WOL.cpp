@@ -5,7 +5,7 @@
 #include "../main/SQLHelper.h"
 #include "../main/RFXtrx.h"
 
-CWOL::CWOL(const int ID, const std::string &BoradcastAddress, const unsigned short Port)
+CWOL::CWOL(const int ID, const std::string &BroadcastAddress, const unsigned short Port)
 {
 	m_HwdID=ID;
 	m_bSkipReceiveCheck = true;
@@ -17,7 +17,7 @@ CWOL::CWOL(const int ID, const std::string &BoradcastAddress, const unsigned sho
 		_log.Log(LOG_ERROR,"WOL: Error initializing Winsock!");
 	}
 #endif
-	m_broadcast_address=BoradcastAddress;//"255.255.255.255";
+	m_broadcast_address=BroadcastAddress;//"255.255.255.255";
 	m_wol_port=Port;//9;
 }
 

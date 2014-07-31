@@ -366,7 +366,7 @@ void CScheduler::CheckSchedules()
 							bool bHaveGroupCmd=false;
 							int maxDimLevel=0;
 
-							GetLightStatus(dType,dSubType,0,"",lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+							GetLightStatus(dType, dSubType, switchtype,0, "", lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 							int ilevel=maxDimLevel;
 							if (((switchtype == STYPE_Dimmer)||(switchtype == STYPE_BlindsPercentage))&&(maxDimLevel!=0))
 							{

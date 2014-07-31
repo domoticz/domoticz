@@ -191,7 +191,9 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_DoorLock, "Door Lock" },
         { STYPE_Dusk, "Dusk Sensor" },
 		{ STYPE_BlindsPercentage, "Blinds Percentage" },
-		{  0,NULL,NULL }
+		{ STYPE_VenetianBlindsUS, "Venetian Blinds US" },
+		{ STYPE_VenetianBlindsEU, "Venetian Blinds EU" },
+		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, sType);
 }
@@ -450,7 +452,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeRSL, "Conrad RSL" },
 		{ pTypeLighting5, sTypeLivolo, "Livolo" },
 		{ pTypeLighting5, sTypeTRC02, "TRC02 (RGB)" },
-		
+		{ pTypeLighting5, sTypeAoke, "Aoke" },
+
 
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
 
@@ -648,7 +651,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting5, sTypeRSL, "Status" },
 		{ pTypeLighting5, sTypeLivolo, "Status" },
 		{ pTypeLighting5, sTypeTRC02, "Status" },
-		
+		{ pTypeLighting5, sTypeAoke, "Status" },
 
 		{ pTypeLighting6, sTypeBlyss, "Status" },
 
@@ -763,6 +766,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 void GetLightStatus(
 		const unsigned char dType, 
 		const unsigned char dSubType, 
+		const _eSwitchType switchtype,
 		const unsigned char nValue, 
 		const std::string &sValue, 
 		std::string &lstatus, 
@@ -1032,6 +1036,17 @@ void GetLightStatus(
 				break;
 			}
 			break;
+		case sTypeAoke:
+			switch (nValue)
+			{
+			case light5_sOff:
+				lstatus = "Off";
+				break;
+			case light5_sOn:
+				lstatus = "On";
+				break;
+			}
+			break;
 		}
 		break;
 	case pTypeLighting6:
@@ -1230,6 +1245,30 @@ void GetLightStatus(
 			break;
 		case rfy_sStop:
 			lstatus="Stop";
+			break;
+		case rfy_s05SecUp:
+			if (switchtype == STYPE_VenetianBlindsUS)
+			{
+				lstatus = "Off";
+			}
+			break;
+		case rfy_s2SecUp:
+			if (switchtype == STYPE_VenetianBlindsEU)
+			{
+				lstatus = "Off";
+			}
+			break;
+		case rfy_s05SecDown:
+			if (switchtype == STYPE_VenetianBlindsUS)
+			{
+				lstatus = "On";
+			}
+			break;
+		case rfy_s2SecDown:
+			if (switchtype == STYPE_VenetianBlindsEU)
+			{
+				lstatus = "On";
+			}
 			break;
 		}
 		break;
@@ -1700,13 +1739,120 @@ bool GetLightCommand(
 		break;
 	case pTypeRFY:
 		{
-			if (switchcmd=="On")
+		/*
+		Venetian Blind in US mode:
+		-up / down(transmit < 0.5 seconds) : open or close
+		-up / down(transmit > 2seconds) : change angle
+
+		Venetian Blind in Europe mode :
+		-up / down(transmit < 0.5 seconds) : change angle
+		-up / down(transmit > 2seconds) : open or close
+		*/
+			if (switchcmd == "On")
 			{
-				cmd=rfy_sDown;
+				if (switchtype == STYPE_VenetianBlindsUS)
+				{
+					cmd = rfy_s05SecDown;
+				}
+				else if (switchtype == STYPE_VenetianBlindsEU)
+				{
+					cmd = rfy_s2SecDown;
+				}
+				else
+				{
+					cmd = rfy_sDown;
+				}
 			}
 			else if (switchcmd=="Off")
 			{
-				cmd=rfy_sUp;
+				if (switchtype == STYPE_VenetianBlindsUS)
+				{
+					cmd = rfy_s05SecUp;
+				}
+				else if (switchtype == STYPE_VenetianBlindsEU)
+				{
+					cmd = rfy_s2SecUp;
+				}
+				else
+				{
+					cmd = rfy_sUp;
+				}
+			}
+			else if (switchcmd == "Stop")
+			{
+				cmd = rfy_sStop;
+			}
+			else if (switchcmd == "Up")
+			{
+				cmd = rfy_sUp;
+			}
+			else if (switchcmd == "UpStop")
+			{
+				cmd = rfy_sUpStop;
+			}
+			else if (switchcmd == "Down")
+			{
+				cmd = rfy_sDown;
+			}
+			else if (switchcmd == "DownStop")
+			{
+				cmd = rfy_sDownStop;
+			}
+			else if (switchcmd == "UpDown")
+			{
+				cmd = rfy_sUpDown;
+			}
+			else if (switchcmd == "ListRemotes")
+			{
+				cmd = rfy_sListRemotes;
+			}
+			else if (switchcmd == "Program")
+			{
+				cmd = rfy_sProgram;
+			}
+			else if (switchcmd == "Program2Seconds")
+			{
+				cmd = rfy_s2SecProgram;
+			}
+			else if (switchcmd == "Program7Seconds")
+			{
+				cmd = rfy_s7SecProgram;
+			}
+			else if (switchcmd == "Stop2Seconds")
+			{
+				cmd = rfy_s2SecStop;
+			}
+			else if (switchcmd == "Stop5Seconds")
+			{
+				cmd = rfy_s5SecStop;
+			}
+			else if (switchcmd == "UpDown5Seconds")
+			{
+				cmd = rfy_s5SecUpDown;
+			}
+			else if (switchcmd == "EraseThis") //from the RFXtrx
+			{
+				cmd = rfy_sEraseThis;
+			}
+			else if (switchcmd == "EraseAll") //from the RFXtrx
+			{
+				cmd = rfy_sEraseAll;
+			}
+			else if (switchcmd == "Up05Seconds")
+			{
+				cmd = rfy_s05SecUp;
+			}
+			else if (switchcmd == "Down05Seconds")
+			{
+				cmd = rfy_s05SecDown;
+			}
+			else if (switchcmd == "Up2Seconds")
+			{
+				cmd = rfy_s2SecUp;
+			}
+			else if (switchcmd == "Down2Seconds")
+			{
+				cmd = rfy_s2SecDown;
 			}
 			else
 			{

@@ -2171,7 +2171,7 @@ std::string CEventSystem::nValueToWording(const unsigned char dType, const unsig
 	bool bHaveGroupCmd = false;
 	int maxDimLevel = 0;
 
-	GetLightStatus(dType, dSubType, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+	GetLightStatus(dType, dSubType, switchtype,nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 
 	if (lstatus.find("Set Level") == 0)
 	{
@@ -2359,7 +2359,7 @@ unsigned char CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 		bool bHaveGroupCmd = false;
 		int maxDimLevel = 0;
 
-		GetLightStatus(dType, dSubType, 0, "", lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+		GetLightStatus(dType, dSubType, switchtype,0, "", lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 		ilevel = maxDimLevel;
 
 		if ((switchtype == STYPE_Dimmer) && (maxDimLevel != 0))

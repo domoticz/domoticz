@@ -21,6 +21,8 @@ enum _eSwitchType
 	STYPE_DoorLock,			//11
     STYPE_Dusk,             //12
 	STYPE_BlindsPercentage, //13
+	STYPE_VenetianBlindsUS,	//14
+	STYPE_VenetianBlindsEU,	//15
 	STYPE_END
 };
 
@@ -144,7 +146,8 @@ const char *Get_Moisture_Desc(const int moisture);
 
 void GetLightStatus(
 	const unsigned char dType, 
-	const unsigned char dSubType, 
+	const unsigned char dSubType,
+	const _eSwitchType switchtype,
 	const unsigned char nValue, 
 	const std::string &sValue, 
 	std::string &lstatus, 

@@ -90,15 +90,8 @@ CWebServer::~CWebServer(void)
 
 void CWebServer::Do_Work()
 {
-	time_t atime = mytime(NULL);
-	struct tm ltime;
 	while (1==1)
 	{
-		localtime_r(&atime, &ltime);
-		if (ltime.tm_sec % 12 == 0) {
-			m_mainworker.HeartbeatUpdate("Webserver");
-		}
-
 		try
 		{
 			if (m_pWebEm)
@@ -2745,9 +2738,9 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				bool bHaveGroupCmd=false;
 				int maxDimLevel=0;
 				if (isscene=="true")
-					GetLightStatus(devType,subType,command,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+					GetLightStatus(devType, subType, STYPE_OnOff, command, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 				else
-					GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+					GetLightStatus(devType, subType, STYPE_OnOff, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 				root["result"][ii]["IsOn"]=IsLightSwitchOn(lstatus);
 				root["result"][ii]["Level"]=level;
 				root["result"][ii]["Hue"]=atoi(sd[11].c_str());
@@ -7010,7 +7003,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				bool bHaveGroupCmd=false;
 				int maxDimLevel=0;
 
-				GetLightStatus(dType,dSubType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+				GetLightStatus(dType,dSubType,switchtype, nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
 
 				root["result"][ii]["Status"]=lstatus;
 				root["result"][ii]["StrParam1"]=strParam1;
@@ -7126,7 +7119,11 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["AddjValue2"]=AddjValue2;
 					root["result"][ii]["AddjMulti2"]=AddjMulti2;
 				}
-				else if (switchtype==STYPE_Blinds)
+				else if (
+					(switchtype==STYPE_Blinds)||
+					(switchtype == STYPE_VenetianBlindsUS) ||
+					(switchtype == STYPE_VenetianBlindsEU)
+					)
 				{
 					root["result"][ii]["TypeImg"]="blinds";
 					if (lstatus=="On") {
@@ -7192,7 +7189,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				bool bHaveGroupCmd=false;
 				int maxDimLevel=0;
 
-				GetLightStatus(dType,dSubType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+				GetLightStatus(dType, dSubType, switchtype,nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 
 				root["result"][ii]["Status"]=lstatus;
 				root["result"][ii]["HaveDimmer"]=bHaveDimmer;
@@ -8814,13 +8811,14 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		//First get Device Type/SubType
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT Type, SubType FROM DeviceStatus WHERE (ID == " << idx << ")";
+		szQuery << "SELECT Type, SubType, SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
 		result = m_sql.query(szQuery.str());
 		if (result.size()<1)
 			return;
 
 		unsigned char dType = atoi(result[0][0].c_str());
 		unsigned char dSubType = atoi(result[0][1].c_str());
+		_eSwitchType switchtype = (_eSwitchType)atoi(result[0][2].c_str());
 
 		if (
 			(dType != pTypeLighting1) &&
@@ -8868,7 +8866,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 				bool bHaveGroupCmd = false;
 				int maxDimLevel = 0;
 
-				GetLightStatus(dType, dSubType, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+				GetLightStatus(dType, dSubType, switchtype,nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 
 				if (ii == 0)
 				{

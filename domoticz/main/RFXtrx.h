@@ -9,6 +9,15 @@
 
 
 /*
+SDK version 6.24
+	Lighting5 - Aoke realy added
+
+SDK version 6.23
+	RFY List remotes added
+
+SDK version 6.22
+	RFY venetian commands added < 0.5 and > 2 sec up/down)
+
 SDK version 6.21
 	Temp/Humidity - TH12 soil sensor added
 
@@ -217,6 +226,7 @@ SDK version 4.9
 #define sTypeInterfaceResponse 0x00
 #define sTypeUnknownRFYremote 0x01
 #define sTypeExtError 0x02
+#define sTypeRFYremoteList 0x03
 #define sTypeInterfaceWrongCommand 0xFF
 #define recType310 0x50
 #define recType315 0x51
@@ -348,6 +358,7 @@ SDK version 4.9
 #define sTypeRSL 0x04
 #define sTypeLivolo 0x05
 #define sTypeTRC02 0x06
+#define sTypeAoke 0x07
 
 #define light5_sOff 0x0
 #define light5_sOn 0x1
@@ -457,7 +468,7 @@ SDK version 4.9
 #define rfy_sDown 0x3
 #define rfy_sDownStop 0x4
 #define rfy_sUpDown 0x5
-
+#define rfy_sListRemotes 0x6
 #define rfy_sProgram 0x7
 #define rfy_s2SecProgram 0x8
 #define rfy_s7SecProgram 0x9
@@ -466,6 +477,10 @@ SDK version 4.9
 #define rfy_s5SecUpDown 0xC
 #define rfy_sEraseThis 0xD
 #define rfy_sEraseAll 0xE
+#define rfy_s05SecUp 0xF
+#define rfy_s05SecDown 0x10
+#define rfy_s2SecUp 0x11
+#define rfy_s2SecDown 0x12
 
 //types for Security1
 #define pTypeSecurity1 0x20

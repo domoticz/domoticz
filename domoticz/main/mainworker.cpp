@@ -1724,9 +1724,26 @@ unsigned long long MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBa
 		WriteMessage(szTmp);
 		break;
 	case sTypeExtError:
-		WriteMessage("subtype           = No Ext hardware detected");
+		WriteMessage("subtype           = No RFXtrx433E hardware detected");
 		sprintf(szTmp,"Sequence nbr      = %d", pResponse->IRESPONSE.seqnbr);
 		WriteMessage(szTmp);
+		break;
+	case sTypeRFYremoteList:
+		if ((pResponse->ICMND.msg2 == 0) && (pResponse->ICMND.msg3 == 0) && (pResponse->ICMND.msg4 == 0) && (pResponse->ICMND.msg5 == 0))
+		{
+			sprintf(szTmp, "subtype           = RFY remote: %d is empty", pResponse->ICMND.msg1);
+			WriteMessage(szTmp);
+		}
+		else
+		{
+			sprintf(szTmp, "subtype           = RFY remote: %s, ID: %02d%02d%02d, unitnbr: %s",
+				pResponse->ICMND.msg1,
+				pResponse->ICMND.msg2,
+				pResponse->ICMND.msg3,
+				pResponse->ICMND.msg4,
+				pResponse->ICMND.msg5);
+			WriteMessage(szTmp);
+		}
 		break;
 	case sTypeInterfaceWrongCommand:
 		WriteMessage("subtype           = Wrong command received from application");
@@ -3627,7 +3644,7 @@ unsigned long long MainWorker::decode_Lighting5(const CDomoticzHardwareBase *pHa
 	unsigned char SignalLevel=pResponse->LIGHTING5.rssi;
 
 	bool bDoUpdate=true;
-	if (subType==sTypeTRC02)
+	if ((subType == sTypeTRC02) || (subType == sTypeAoke))
 	{
 		if (
 			(pResponse->LIGHTING5.cmnd!=light5_sOff)&&
@@ -3871,6 +3888,28 @@ unsigned long long MainWorker::decode_Lighting5(const CDomoticzHardwareBase *pHa
 			default:
 				sprintf(szTmp,"Color = %d",pResponse->LIGHTING5.cmnd);
 				WriteMessage(szTmp);
+				break;
+			}
+			break;
+		case sTypeAoke:
+			WriteMessage("subtype       = Aoke");
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "ID            = %02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "Unit          = %d", pResponse->LIGHTING5.unitcode);
+			WriteMessage(szTmp);
+			WriteMessage("Command       = ", false);
+			switch (pResponse->LIGHTING5.cmnd)
+			{
+			case light5_sOff:
+				WriteMessage("Off");
+				break;
+			case light5_sOn:
+				WriteMessage("On");
+				break;
+			default:
+				WriteMessage("UNKNOWN");
 				break;
 			}
 			break;
@@ -4428,7 +4467,8 @@ unsigned long long MainWorker::decode_RFY(const CDomoticzHardwareBase *pHardware
 		case rfy_sUpDown:
 			WriteMessage("Up + Down");
 			break;
-
+		case rfy_sListRemotes:
+			WriteMessage("List remotes");
 		case rfy_sProgram:
 			WriteMessage("Program");
 			break;
@@ -4436,7 +4476,7 @@ unsigned long long MainWorker::decode_RFY(const CDomoticzHardwareBase *pHardware
 			WriteMessage("2 seconds: Program");
 			break;
 		case rfy_s7SecProgram:
-			WriteMessage("2 seconds: Program");
+			WriteMessage("7 seconds: Program");
 			break;
 		case rfy_s2SecStop:
 			WriteMessage("2 seconds: Stop");
@@ -4453,6 +4493,20 @@ unsigned long long MainWorker::decode_RFY(const CDomoticzHardwareBase *pHardware
 		case rfy_sEraseAll:
 			WriteMessage("Erase all remotes");
 			break;
+
+		case rfy_s05SecUp:
+			WriteMessage("< 0.5 seconds: up");
+			break;
+		case rfy_s05SecDown:
+			WriteMessage("< 0.5 seconds: down");
+			break;
+		case rfy_s2SecUp:
+			WriteMessage("> 2 seconds: up");
+			break;
+		case rfy_s2SecDown:
+			WriteMessage("> 2 seconds: down");
+			break;
+
 		default:
 			WriteMessage("UNKNOWN");
 			break;
@@ -8589,14 +8643,14 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 			int maxDimLevel=0;
 			if (scenetype==0)
 			{
-				GetLightStatus(dType,dSubType,cmd,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+				GetLightStatus(dType, dSubType, switchtype,cmd, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 				if (cmd==0)
 					intswitchcmd="Off";
 				else
 					intswitchcmd="On";
 			}
 			else
-				GetLightStatus(dType,dSubType,rnValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+				GetLightStatus(dType, dSubType, switchtype,rnValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 
 			_log.Log(LOG_NORM,"Activating Scene/Group: %s (%s)",Name.c_str(),intswitchcmd.c_str());
 
@@ -8664,7 +8718,7 @@ void MainWorker::CheckSceneCode(const int HardwareID, const char* ID, const unsi
 			bool bHaveGroupCmd=false;
 			int maxDimLevel=0;
 
-			GetLightStatus(devType,subType,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
+			GetLightStatus(devType,subType, STYPE_OnOff ,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
 			std::string switchcmd=(IsLightSwitchOn(lstatus)==true)?"On":"Off";
 
 			m_sql.AddTaskItem(_tTaskItem::SwitchSceneEvent(1,ID,switchcmd,"SceneTrigger"));
