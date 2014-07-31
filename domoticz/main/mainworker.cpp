@@ -1736,7 +1736,7 @@ unsigned long long MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBa
 		}
 		else
 		{
-			sprintf(szTmp, "subtype           = RFY remote: %s, ID: %02d%02d%02d, unitnbr: %s",
+			sprintf(szTmp, "subtype           = RFY remote: %d, ID: %02d%02d%02d, unitnbr: %d",
 				pResponse->ICMND.msg1,
 				pResponse->ICMND.msg2,
 				pResponse->ICMND.msg3,
