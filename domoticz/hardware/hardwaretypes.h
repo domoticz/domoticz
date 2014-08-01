@@ -203,6 +203,25 @@ typedef struct _tGeneralDevice {
 	}
 } GeneralDevice;
 
+typedef struct _tP1Power {
+	unsigned char len;
+	unsigned char type;
+	unsigned char subtype;
+	unsigned long powerusage1;
+	unsigned long powerusage2;
+	unsigned long powerdeliv1;
+	unsigned long powerdeliv2;
+	unsigned long usagecurrent;
+	unsigned long delivcurrent;
+} P1Power;
+
+typedef struct _tP1Gas {
+	unsigned char len;
+	unsigned char type;
+	unsigned char subtype;
+	unsigned long gasusage;
+} P1Gas;
+
 typedef struct _tLimitlessLights {
 	unsigned char len;
 	unsigned char type;

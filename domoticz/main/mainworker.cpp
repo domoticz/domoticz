@@ -49,6 +49,7 @@
 #include "../hardware/WOL.h"
 #include "../hardware/Meteostick.h"
 #include "../hardware/PVOutput_Input.h"
+#include "../hardware/ToonThermostat.h"
 #ifdef WITH_GPIO
 	#include "../hardware/Gpio.h"
 	#include "../hardware/GpioPin.h"
@@ -527,6 +528,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_ICYTHERMOSTAT:
 		pHardware = new CICYThermostat(ID,Username,Password);
+		break;
+	case HTYPE_TOONTHERMOSTAT:
+		pHardware = new CToonThermostat(ID, Username, Password);
 		break;
 	case HTYPE_PVOUTPUT_INPUT:
 		pHardware = new CPVOutputInput(ID,Username,Password);
@@ -8458,7 +8462,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 	if (
 		(pHardware->HwdType==HTYPE_OpenThermGateway)||
 		(pHardware->HwdType==HTYPE_OpenThermGatewayTCP)||
-		(pHardware->HwdType==HTYPE_ICYTHERMOSTAT)
+		(pHardware->HwdType == HTYPE_ICYTHERMOSTAT)||
+		(pHardware->HwdType == HTYPE_TOONTHERMOSTAT)
 		)
 	{
 		if (pHardware->HwdType==HTYPE_OpenThermGateway)
@@ -8475,6 +8480,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		{
 			CICYThermostat *pGateway=(CICYThermostat*)pHardware;
 			pGateway->SetSetpoint(ID4,TempValue);
+		}
+		else if (pHardware->HwdType == HTYPE_TOONTHERMOSTAT)
+		{
+			CToonThermostat *pGateway = (CToonThermostat*)pHardware;
+			pGateway->SetSetpoint(ID4, TempValue);
 		}
 	}
 	else

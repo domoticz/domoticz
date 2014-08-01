@@ -63,6 +63,8 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: RFY, Venetian Blinds support (EU/US)
 - Implemented: A-OK Blinds now displays a stop button
 - Implemented: Option for Dummy device to create Lux Sensor
+- Implemented: Support ENI provider in ICY hardware
+- Implemented: 'Toon' hardware support
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

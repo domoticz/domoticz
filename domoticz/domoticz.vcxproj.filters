@@ -147,6 +147,9 @@
     <Filter Include="Devices\PVOutput%28Input%29">
       <UniqueIdentifier>{18743244-0b44-4bd4-851a-2e2ada37b8ed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Toon Thermostat">
+      <UniqueIdentifier>{61053137-fc80-420f-aee4-7a6a9cdc8923}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -448,6 +451,9 @@
     <ClInclude Include="hardware\Meteostick.h">
       <Filter>Devices\Meteostick</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\ToonThermostat.h">
+      <Filter>Devices\Toon Thermostat</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -707,6 +713,9 @@
     </ClCompile>
     <ClCompile Include="hardware\Meteostick.cpp">
       <Filter>Devices\Meteostick</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\ToonThermostat.cpp">
+      <Filter>Devices\Toon Thermostat</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

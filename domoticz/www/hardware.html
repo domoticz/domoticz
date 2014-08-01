@@ -700,7 +700,7 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 			 }     
 		});
 	}
-	else if ((text.indexOf("ICY") >= 0)||(text.indexOf("PVOutput") >= 0))
+	else if ((text.indexOf("ICY") >= 0)||(text.indexOf("Toon") >= 0)||(text.indexOf("PVOutput") >= 0))
 	{
 		var username=$("#hardwarecontent #divlogin #username").val();
 		var password=$("#hardwarecontent #divlogin #password").val();
@@ -928,7 +928,7 @@ function AddHardware()
 			 }     
 		});
 	}
-	else if ((text.indexOf("ICY") >= 0)||(text.indexOf("PVOutput") >= 0))
+	else if ((text.indexOf("ICY") >= 0)||(text.indexOf("Toon") >= 0)||(text.indexOf("PVOutput") >= 0))
 	{
 		var username=$("#hardwarecontent #divlogin #username").val();
 		var password=$("#hardwarecontent #divlogin #password").val();
@@ -2102,7 +2102,7 @@ function RefreshHardwareTable()
 					{
 						$("#hardwarecontent #hardwareparamslocation #location").val(data["Username"]);
 					}
-					if ((data["Type"].indexOf("Domoticz") >= 0)||(data["Type"].indexOf("ICY") >= 0)||(data["Type"].indexOf("PVOutput") >= 0)) {
+					if ((data["Type"].indexOf("Domoticz") >= 0)||(data["Type"].indexOf("ICY") >= 0)||(data["Type"].indexOf("Toon") >= 0)||(data["Type"].indexOf("PVOutput") >= 0)) {
 						$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
 						$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
 					}
@@ -2172,7 +2172,7 @@ function UpdateHardwareParamControls()
 		$("#hardwarecontent #username").hide();
 		$("#hardwarecontent #lblusername").hide();
 	}
-	else if ((text.indexOf("ICY") >= 0)||(text.indexOf("PVOutput") >= 0))
+	else if ((text.indexOf("ICY") >= 0)||(text.indexOf("Toon") >= 0)||(text.indexOf("PVOutput") >= 0))
 	{
 		$("#hardwarecontent #divserial").hide();
 		$("#hardwarecontent #divremote").hide();

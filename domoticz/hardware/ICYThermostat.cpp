@@ -9,10 +9,18 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 #include "../main/mainworker.h"
+#include "../json/json.h"
 
 #define round(a) ( int ) ( a + .5 )
 
 //#define DEBUG_ICYThermostat
+
+#define ICY_LOGIN_URL "https://portal.icy.nl/login"
+#define ICY_DATA_URL "https://portal.icy.nl/data"
+
+#define ENI_LOGIN_URL "https://eniportal.icy.nl/api/login" //https://eniportal.icy.nl/#/user/login"
+#define ENI_DATA_URL "https://eniportal.icy.nl/api/data" //https://eniportal.icy.nl/#/user/data" // /api/data
+
 
 CICYThermostat::CICYThermostat(const int ID, const std::string Username, const std::string Password)
 {
@@ -20,6 +28,7 @@ CICYThermostat::CICYThermostat(const int ID, const std::string Username, const s
 	m_UserName=Username;
 	m_Password=Password;
 	m_stoprequested=false;
+	m_companymode = CMODE_UNKNOWN;
 	Init();
 }
 
@@ -172,37 +181,74 @@ bool CICYThermostat::GetSerialAndToken()
 	std::string szPostdata=sstr.str();
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
+	std::string sURL = "";
 
-	if (!HTTPClient::POST("https://portal.icy.nl/login",szPostdata,ExtraHeaders,sResult))
+	if ((m_companymode == CMODE_UNKNOWN) || (m_companymode == CMODE_PORTAL))
+		sURL = ICY_LOGIN_URL;
+	else
+		sURL = ENI_LOGIN_URL;
+
+	if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult))
 	{
 		_log.Log(LOG_ERROR,"ICYThermostat: Error login!");
 		return false;
 	}
-	std::vector<std::string> splitresult;
-	StringSplit(sResult,",",splitresult);
-	if (splitresult.size()!=13)
+	if (sResult.find("BadLogin") != std::string::npos)
 	{
-		_log.Log(LOG_ERROR,"ICYThermostat: Error login!");
-		return false;
+		if (m_companymode == CMODE_UNKNOWN)
+		{
+			//Try ENI mode
+			sURL = ENI_LOGIN_URL;
+			sResult = "";
+			if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult))
+			{
+				_log.Log(LOG_ERROR, "ICYThermostat: Error login!");
+				return false;
+			}
+			if (sResult.find("BadLogin") != std::string::npos)
+			{
+				_log.Log(LOG_ERROR, "ICYThermostat: Error login! (Check username/password)");
+				return false;
+			}
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "ICYThermostat: Error login! (Check username/password)");
+			return false;
+		}
 	}
 
-	//Serial (9)
-	std::vector<std::string> splitresult2;
-	StringSplit(splitresult[9],":",splitresult2);
-	if (splitresult2.size()!=2)
-		return false;
-	std::string szSerial=splitresult2[1].substr(1,splitresult2[1].size()-2);
+	Json::Value root;
 
-	//Token (10)
-	StringSplit(splitresult[10],":",splitresult2);
-	if (splitresult2.size()!=2)
+	Json::Reader jReader;
+	bool ret = jReader.parse(sResult, root);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "ICYThermostat: Invalid data received, or invalid username/password!");
 		return false;
-	std::string szToken=splitresult2[1].substr(1,splitresult2[1].size()-2);
+	}
+	if (root["serialthermostat1"].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "ICYThermostat: Invalid data received, or invalid username/password!");
+		return false;
+	}
+	m_SerialNumber = root["serialthermostat1"].asString();
+	if (root["token"].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "ICYThermostat: Invalid data received, or invalid username/password!");
+		return false;
+	}
+	m_Token = root["token"].asString();
 
-	if ((szSerial.size()==0)||(szToken.size()==0))
-		return false;
-	m_SerialNumber=szSerial;
-	m_Token=szToken;
+	if (m_companymode == CMODE_UNKNOWN)
+	{
+		if (sURL == ICY_LOGIN_URL)
+			m_companymode = CMODE_PORTAL;
+		else
+			m_companymode = CMODE_ENI;
+	}
+
+
 	return true;
 }
 
@@ -214,63 +260,47 @@ void CICYThermostat::GetMeterDetails()
 		return;
 	if (!GetSerialAndToken())
 		return;
+
+	std::string sResult;
+
 	//Get Data
 	std::vector<std::string> ExtraHeaders;
 	ExtraHeaders.push_back("Session-token:"+m_Token);
-	std::string sResult;
 
-	if (!HTTPClient::GET("https://portal.icy.nl/data",ExtraHeaders,sResult))
+	std::string sURL = "";
+
+	if (m_companymode == CMODE_PORTAL)
+		sURL = ICY_DATA_URL;
+	else
+		sURL = ENI_DATA_URL;
+
+	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 	{
 		_log.Log(LOG_ERROR,"ICYThermostat: Error getting data!");
 		return;
 	}
-	std::vector<std::string> splitresult;
-	StringSplit(sResult,",",splitresult);
-	if (splitresult.size()<5)
+
+	Json::Value root;
+
+	Json::Reader jReader;
+	bool ret = jReader.parse(sResult, root);
+	if (!ret)
 	{
-		_log.Log(LOG_ERROR,"ICYThermostat: Error getting data!");
+		_log.Log(LOG_ERROR, "ICYThermostat: Invalid data received!");
 		return;
 	}
-
-	std::string tmpString;
-	std::string tmpLabel;
-	float floatval;
-
-	//Set Point (4)
-	std::vector<std::string> splitresult2;
-	StringSplit(splitresult[4],":",splitresult2);
-	if (splitresult2.size()!=2)
+	if (root["temperature1"].empty() == true)
 	{
-		_log.Log(LOG_ERROR,"ICYThermostat: Error getting data!");
+		_log.Log(LOG_ERROR, "ICYThermostat: Invalid data received!");
 		return;
 	}
-	tmpLabel=splitresult2[0].substr(1,splitresult2[0].size()-2);
-	if (tmpLabel=="temperature1")
+	SendSetPointSensor(1, root["temperature1"].asFloat(), "Room Setpoint");
+	if (root["temperature2"].empty() == true)
 	{
-		if (splitresult2[1].find('"')!=std::string::npos)
-			tmpString=splitresult2[1].substr(1,splitresult2[1].size()-2);
-		else
-			tmpString=splitresult2[1];
-		tmpString=stdreplace(tmpString,",",".");
-		floatval=(float)atof(tmpString.c_str());
-		SendSetPointSensor(1,floatval,"Room Setpoint");
-	}
-
-	//Room Temperature (5)
-	StringSplit(splitresult[5],":",splitresult2);
-	if (splitresult2.size()!=2)
+		_log.Log(LOG_ERROR, "ICYThermostat: Invalid data received!");
 		return;
-	tmpLabel=splitresult2[0].substr(1,splitresult2[0].size()-2);
-	if (tmpLabel=="temperature2")
-	{
-		if (splitresult2[1].find('"')!=std::string::npos)
-			tmpString=splitresult2[1].substr(1,splitresult2[1].size()-2);
-		else
-			tmpString=splitresult2[1];
-		tmpString=stdreplace(tmpString,",",".");
-		floatval=(float)atof(tmpString.c_str());
-		SendTempSensor(1,floatval,"Room Temperature");
 	}
+	SendTempSensor(1, root["temperature2"].asFloat(), "Room Temperature");
 }
 
 void CICYThermostat::SetSetpoint(const int idx, const float temp)
@@ -291,7 +321,13 @@ void CICYThermostat::SetSetpoint(const int idx, const float temp)
 		ExtraHeaders.push_back("Session-token:"+m_Token);
 		std::string sResult;
 
-		if (!HTTPClient::POST("https://portal.icy.nl/data",szPostdata,ExtraHeaders,sResult)) {
+		std::string sURL = "";
+		if (m_companymode == CMODE_PORTAL)
+			sURL = ICY_DATA_URL;
+		else
+			sURL = ENI_DATA_URL;
+
+		if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult)) {
 			_log.Log(LOG_ERROR,"ICYThermostat: Error setting SetPoint temperature!");
 		}
 		else {

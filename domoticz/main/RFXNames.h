@@ -86,6 +86,7 @@ enum _eHardwareTypes {
 	HTYPE_EnOceanESP3,			//31
 	HTYPE_RaspberryGPIO,		//32
 	HTYPE_Meteostick,			//33
+	HTYPE_TOONTHERMOSTAT,		//34
 	HTYPE_END
 };
 

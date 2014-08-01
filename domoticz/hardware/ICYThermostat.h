@@ -5,6 +5,11 @@
 
 class CICYThermostat : public CDomoticzHardwareBase
 {
+	enum _eICYCompanyMode {
+		CMODE_UNKNOWN=0,
+		CMODE_PORTAL,
+		CMODE_ENI
+	};
 public:
 	CICYThermostat(const int ID, const std::string Username, const std::string Password);
 	~CICYThermostat(void);
@@ -22,6 +27,8 @@ private:
 	std::string m_Token;
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
+
+	_eICYCompanyMode m_companymode;
 
 	void Init();
 	bool StartHardware();

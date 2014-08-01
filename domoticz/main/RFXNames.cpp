@@ -168,7 +168,8 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_EnOceanESP3, "EnOcean USB (ESP3)" },
 		{ HTYPE_RaspberryGPIO, "Raspberry's GPIO port" },
 		{ HTYPE_Meteostick, "Meteostick USB" },
-		{  0,NULL,NULL }
+		{ HTYPE_TOONTHERMOSTAT, "Toon Thermostat" },
+		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
 }

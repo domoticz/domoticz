@@ -141,6 +141,7 @@
     <ClInclude Include="hardware\TE923.h" />
     <ClInclude Include="hardware\TE923Tool.h" />
     <ClInclude Include="hardware\Teleinfo.h" />
+    <ClInclude Include="hardware\ToonThermostat.h" />
     <ClInclude Include="hardware\VolcraftCO20.h" />
     <ClInclude Include="hardware\VolcraftCO20Tool.h" />
     <ClInclude Include="hardware\WOL.h" />
@@ -240,6 +241,7 @@
     <ClCompile Include="hardware\TE923.cpp" />
     <ClCompile Include="hardware\TE923Tool.cpp" />
     <ClCompile Include="hardware\Teleinfo.cpp" />
+    <ClCompile Include="hardware\ToonThermostat.cpp" />
     <ClCompile Include="hardware\VolcraftCO20.cpp" />
     <ClCompile Include="hardware\VolcraftCO20Tool.cpp" />
     <ClCompile Include="hardware\WOL.cpp" />
