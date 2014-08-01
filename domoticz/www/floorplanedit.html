@@ -142,7 +142,6 @@
 							objData.setAttribute("yoffset", evt.target.parentNode.getAttribute('yoffset'));
 							objData.setAttribute("transform", evt.target.parentNode.getAttribute('transform'));
 						}
-						else alert('Bugger! ' + evt.target.parentNode.id);
 					}
 				</script>
 				<g id="roomplandevices"/>
@@ -690,7 +689,8 @@ function UpdateFloorplanPlan(planidx,clear) {
 				url: "json.htm?type=command&param=setplandevicecoords" + 
 								"&idx=" + deviceParent.childNodes[i].getAttribute('idx') + 
 								"&xoffset=" + deviceParent.childNodes[i].getAttribute('xoffset') +
-								"&yoffset=" + deviceParent.childNodes[i].getAttribute('yoffset'),
+								"&yoffset=" + deviceParent.childNodes[i].getAttribute('yoffset') +
+								"&DevSceneType=" + deviceParent.childNodes[i].getAttribute('devscenetype'),
 				async: false, 
 				dataType: 'json',
 				success: function(data) {
