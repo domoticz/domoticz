@@ -9460,6 +9460,10 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 			m_sql.UpdateValue(HwdID, ID, 1, pTypeAirQuality, sTypeVoltcraft, 10, 255, 0, devname);
 			bCreated = true;
 			break;
+		case pTypeLux:
+			m_sql.UpdateValue(HwdID, ID, 1, pTypeLux, sTypeLux, 10, 255, 0, "0", devname);
+			bCreated = true;
+			break;
 		}
 		if (bCreated)
 		{
