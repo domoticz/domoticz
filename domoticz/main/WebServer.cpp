@@ -2049,6 +2049,23 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["TempScale"]=m_sql.m_tempscale;
 		root["TempSign"]=m_sql.m_tempsign;
 
+		if (m_sql.GetPreferencesVar("Location", nValue, sValue))
+		{
+			std::vector<std::string> strarray;
+			StringSplit(sValue, ";", strarray);
+
+			if (strarray.size() == 2)
+			{
+				std::string Latitude = strarray[0];
+				std::string Longitude = strarray[1];
+				if (Latitude != "")
+				{
+					root["Latitude"] = Latitude;
+					root["Longitude"] = Longitude;
+				}
+			}
+		}
+
 		int bEnableTabLight=1;
 		int bEnableTabScenes=1;
 		int bEnableTabTemp=1;
@@ -8624,6 +8641,24 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		root["WindSign"] = m_sql.m_windsign;
 		root["TempScale"] = m_sql.m_tempscale;
 		root["TempSign"] = m_sql.m_tempsign;
+		int nValue;
+		std::string sValue;
+		if (m_sql.GetPreferencesVar("Location", nValue, sValue))
+		{
+			std::vector<std::string> strarray;
+			StringSplit(sValue, ";", strarray);
+
+			if (strarray.size() == 2)
+			{
+				std::string Latitude = strarray[0];
+				std::string Longitude = strarray[1];
+				if (Latitude != "")
+				{
+					root["Latitude"] = Latitude;
+					root["Longitude"] = Longitude;
+				}
+			}
+		}
 
 	} //if (rtype=="devices")
 	else if (rtype == "cameras")
