@@ -16,7 +16,7 @@ private:
 	void SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
 	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
 
-	bool GetSerialAndToken();
+	bool Login();
 	void Logout();
 	std::string GetRandom();
 
@@ -27,6 +27,7 @@ private:
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 
+	bool m_bDoLogin;
 	P1Power	m_p1power;
 	P1Gas	m_p1gas;
 	time_t m_lastSharedSendElectra;

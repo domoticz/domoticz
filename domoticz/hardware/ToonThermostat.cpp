@@ -13,7 +13,9 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-//#define DEBUG_ToonThermostat
+#ifndef _DEBUG
+	//#define DEBUG_ToonThermostat
+#endif
 
 #ifdef DEBUG_ToonThermostat
 void SaveString2Disk(std::string str, std::string filename)
@@ -26,6 +28,39 @@ void SaveString2Disk(std::string str, std::string filename)
 	}
 }
 #endif
+
+const std::string TOON_HOST = "https://toonopafstand.eneco.nl";
+//const std::string TOON_HOST = "https://toonopafstand-acc.quby.nl"; //needs URL encoding
+const std::string TOON_LOGIN_PATH = "/toonMobileBackendWeb/client/login";
+const std::string TOON_LOGOUT_PATH = "/toonMobileBackendWeb/client/auth/logout";
+const std::string TOON_LOGINCHECK_PATH = "/toonMobileBackendWeb/client/checkIfLoggedIn";
+const std::string TOON_AGREEMENT_PATH = "/toonMobileBackendWeb/client/auth/start";
+const std::string TOON_UPDATE_PATH = "/toonMobileBackendWeb/client/auth/retrieveToonState";
+const std::string TOON_CHANGE_SCHEME = "/toonMobileBackendWeb/client/auth/schemeState";
+const std::string TOON_TEMPSET_PATH = "/toonMobileBackendWeb/client/auth/setPoint";
+const std::string TOON_CHANGE_SCREEN_PATH = "/toonMobileBackendWeb/client/auth/kpi/changedScreen";
+const std::string TOON_TAB_PRESSED_PATH = "/toonMobileBackendWeb/client/auth/kpi/tabPressed";
+
+
+enum _eProgramStates {
+	PROG_MANUAL = 0,
+	PROG_BASE,			//1
+	PROG_TEMPOVERRIDE,	//2
+	PROG_PROGOVERRIDE,	//3
+	PROG_HOLIDAY,		//4
+	PROG_MANUALHOLIDAY,	//5
+	PROG_AWAYNOW,		//6
+	PROG_DAYOFF,		//7
+	PROG_LOCKEDBASE		//8
+};
+
+enum _eActiveStates {
+	STATE_RELAX = 0,
+	STATE_ACTIVE,	//1
+	STATE_SLEEP,	//2
+	STATE_AWAY,		//3
+	STATE_HOLIDAY	//4
+};
 
 CToonThermostat::CToonThermostat(const int ID, const std::string &Username, const std::string &Password)
 {
@@ -54,12 +89,14 @@ CToonThermostat::~CToonThermostat(void)
 
 void CToonThermostat::Init()
 {
+	m_ClientID = "";
 	m_ClientIDChecksum = "";
 	m_stoprequested = false;
 	m_lastSharedSendElectra = 0;
 	m_lastSharedSendGas = 0;
 	m_lastgasusage = 0;
 	m_lastelectrausage = 0;
+	m_bDoLogin = true;
 }
 
 bool CToonThermostat::StartHardware()
@@ -81,10 +118,12 @@ bool CToonThermostat::StopHardware()
 		m_thread->join();
 	}
     m_bIsStarted=false;
+	if (!m_bDoLogin)
+		Logout();
     return true;
 }
 
-#define TOON_POLL_INTERVAL 1
+#define TOON_POLL_INTERVAL 2
 
 void CToonThermostat::Do_Work()
 {
@@ -197,16 +236,32 @@ void CToonThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 
 std::string CToonThermostat::GetRandom()
 {
-	std::stringstream sstr;
-	int rndval = rand();
-	sstr << rndval;
+	//5BA37E41-B5C8-4C19-AA81-9EA82430D7EA
+	char szTmp[100];
+	sprintf(szTmp,"%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
+		// 32 bits for "time_low"
+		rand() % 0xFFFF, rand() % 0xFFFF,
 
-	std::string ret;
-	sstr >> ret;
+		// 16 bits for "time_mid"
+		rand() % 0xFFFF,
+
+		// 16 bits for "time_hi_and_version",
+		// four most significant bits holds version number 4
+		rand() % 0xFFFF | 0x4000,
+
+		// 16 bits, 8 bits for "clk_seq_hi_res",
+		// 8 bits for "clk_seq_low",
+		// two most significant bits holds zero and one for variant DCE1.1
+		rand() % 0xFFFF | 0x8000,
+
+		// 48 bits for "node"
+		rand() % 0xFFFF, rand() % 0xFFFF, rand() % 0xFFFF
+		);
+	std::string ret=szTmp;
 	return ret;
 }
 
-bool CToonThermostat::GetSerialAndToken()
+bool CToonThermostat::Login()
 {
 	std::stringstream sstr;
 	sstr << "username=" << m_UserName << "&password=" << m_Password;
@@ -214,33 +269,20 @@ bool CToonThermostat::GetSerialAndToken()
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
 
-	if (!HTTPClient::POST("https://toonopafstand.eneco.nl/toonMobileBackendWeb/client/login", szPostdata, ExtraHeaders, sResult))
+	std::string sURL = TOON_HOST + TOON_LOGIN_PATH;
+	if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult))
 	{
 		_log.Log(LOG_ERROR,"ToonThermostat: Error login!");
 		return false;
 	}
 
-#ifdef DEBUG_ToonThermostat
-	SaveString2Disk(sResult, "E:\\toon-login.txt");
-#endif
-
-	if (sResult.find("BadLogin") != std::string::npos)
-	{
-		_log.Log(LOG_ERROR, "ToonThermostat: Error login! (Check username/password)");
-		return false;
-	}
-
 	Json::Value root;
-
 	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
-	if (!ret)
+	if (!jReader.parse(sResult, root))
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received, or invalid username/password!");
 		return false;
 	}
-
-
 
 	if (root["clientId"].empty() == true)
 	{
@@ -263,6 +305,11 @@ bool CToonThermostat::GetSerialAndToken()
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received, or invalid username/password!");
 		return false;
 	}
+	if (root["agreements"].size() < 1)
+	{
+		_log.Log(LOG_ERROR, "ToonThermostat: No agreements found, did you setup your toon correctly?");
+		return false;
+	}
 	agreementId = root["agreements"][0]["agreementId"].asString();
 	agreementIdChecksum = root["agreements"][0]["agreementIdChecksum"].asString();
 
@@ -274,20 +321,37 @@ bool CToonThermostat::GetSerialAndToken()
 		 << "&random=" << GetRandom();
 	szPostdata = sstr2.str();
 	sResult = "";
-	if (!HTTPClient::POST("https://toonopafstand.eneco.nl/toonMobileBackendWeb/client/auth/start", szPostdata, ExtraHeaders, sResult))
+
+	sURL = TOON_HOST + TOON_AGREEMENT_PATH;
+	if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult))
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Error login!");
 		return false;
 	}
-#ifdef DEBUG_ToonThermostat
-	SaveString2Disk(sResult, "E:\\toon-start.txt");
-#endif
+	root.clear();
+	if (!jReader.parse(sResult, root))
+	{
+		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
+		return false;
+	}
+	if (root["success"].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
+		return false;
+	}
+	if (root["success"] == true)
+	{
+		m_bDoLogin = false;
+		return true;
+	}
 
-	return true;
+	return false;
 }
 
 void CToonThermostat::Logout()
 {
+	if (m_bDoLogin)
+		return; //we are not logged in
 	std::string sResult;
 	std::vector<std::string> ExtraHeaders;
 
@@ -297,14 +361,14 @@ void CToonThermostat::Logout()
 		<< "&random=" << GetRandom();
 	std::string szPostdata = sstr2.str();
 
-	if (!HTTPClient::POST("https://toonopafstand.eneco.nl/toonMobileBackendWeb/client/auth/logout", szPostdata, ExtraHeaders, sResult))
+	std::string sURL = TOON_HOST + TOON_LOGOUT_PATH;
+	if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_ERROR, "ToonThermostat: Error login!");
+		_log.Log(LOG_ERROR, "ToonThermostat: Error Logout!");
 	}
-#ifdef DEBUG_ToonThermostat
-	SaveString2Disk(sResult, "E:\\toon-logout.txt");
-#endif
-
+	m_ClientID = "";
+	m_ClientIDChecksum = "";
+	m_bDoLogin = true;
 }
 
 void CToonThermostat::GetMeterDetails()
@@ -313,39 +377,49 @@ void CToonThermostat::GetMeterDetails()
 		return;
 	if (m_Password.size()==0)
 		return;
-	if (!GetSerialAndToken())
-		return;
+	if (m_bDoLogin)
+	{
+		if (!Login())
+			return;
+	}
 
 	std::string sResult;
 	std::vector<std::string> ExtraHeaders;
 
 	std::stringstream sstr2;
-	sstr2 << "clientId=" << m_ClientID
+	sstr2 << "?clientId=" << m_ClientID
 		<< "&clientIdChecksum=" << m_ClientIDChecksum
 		<< "&random=" << GetRandom();
 	std::string szPostdata = sstr2.str();
 	//Get Data
-	std::string sURL = "https://toonopafstand.eneco.nl/toonMobileBackendWeb/client/auth/retrieveToonState?" + szPostdata;
+	std::string sURL = TOON_HOST + TOON_UPDATE_PATH + szPostdata;
 	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Error getting current state!");
+		m_bDoLogin = true;
 		return;
 	}
-#ifdef DEBUG_ToonThermostat
-	SaveString2Disk(sResult, "E:\\toon-retreivetoonstate.txt");
-#endif
-
-	Logout();
 
 	time_t atime = mytime(NULL);
 
 	Json::Value root;
-
 	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
-	if (!ret)
+	if (!jReader.parse(sResult, root))
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
+		m_bDoLogin = true;
+		return;
+	}
+	if (root["success"].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "ToonThermostat: ToonState request not successful, restarting..!");
+		m_bDoLogin = true;
+		return;
+	}
+	if (root["success"] == false)
+	{
+		_log.Log(LOG_ERROR, "ToonThermostat: ToonState request not successful, restarting..!");
+		m_bDoLogin = true;
 		return;
 	}
 
@@ -356,22 +430,14 @@ void CToonThermostat::GetMeterDetails()
 		float currentSetpoint = root["thermostatInfo"]["currentSetpoint"].asFloat() / 100.0f;
 		SendSetPointSensor(1, currentSetpoint, "Room Setpoint");
 		SendTempSensor(1, currentTemp, "Room Temperature");
+
+		int programState = root["thermostatInfo"]["programState"].asInt();
+		int activeState = root["thermostatInfo"]["activeState"].asInt();
 	}
 
 	if (root["gasUsage"].empty() == false)
 	{
 		m_p1gas.gasusage = (unsigned long)(root["gasUsage"]["meterReading"].asFloat());
-
-		if (
-			(m_p1gas.gasusage != m_lastgasusage) ||
-			(atime - m_lastSharedSendGas >= 300)
-			)
-		{
-			//only update gas when there is a new value, or 5 minutes are passed
-			m_lastSharedSendGas = atime;
-			m_lastgasusage = m_p1gas.gasusage;
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas);//decode message
-		}
 	}
 
 	if (root["powerUsage"].empty() == false)
@@ -379,7 +445,30 @@ void CToonThermostat::GetMeterDetails()
 		m_p1power.powerusage1 = (unsigned long)(root["powerUsage"]["meterReading"].asFloat());
 		m_p1power.powerusage2 = (unsigned long)(root["powerUsage"]["meterReadingLow"].asFloat());
 		m_p1power.usagecurrent = (unsigned long)(root["powerUsage"]["value"].asFloat());	//Watt
-		sDecodeRXMessage(this, (const unsigned char *)&m_p1power);//decode message
+	}
+
+	//Send Electra if value changed, or at least every 5 minutes
+	if (
+		(m_p1power.usagecurrent != m_lastelectrausage) ||
+		(atime - m_lastSharedSendElectra >= 300)
+		)
+	{
+		//only update gas when there is a new value, or 5 minutes are passed
+		m_lastSharedSendElectra = atime;
+		m_lastelectrausage = m_p1power.usagecurrent;
+		sDecodeRXMessage(this, (const unsigned char *)&m_p1power);
+	}
+	
+	//Send GAS if the value changed, or at least every 5 minutes
+	if (
+		(m_p1gas.gasusage != m_lastgasusage) ||
+		(atime - m_lastSharedSendGas >= 300)
+		)
+	{
+		//only update gas when there is a new value, or 5 minutes are passed
+		m_lastSharedSendGas = atime;
+		m_lastgasusage = m_p1gas.gasusage;
+		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas);
 	}
 }
 
@@ -390,38 +479,58 @@ void CToonThermostat::SetSetpoint(const int idx, const float temp)
 	if (m_Password.size() == 0)
 		return;
 
+	if (m_bDoLogin == true)
+	{
+		if (!Login())
+			return;
+	}
+
 	std::string sResult;
 	std::vector<std::string> ExtraHeaders;
 
 	if (idx==1)
 	{
 		//Room Set Point
-		if (!GetSerialAndToken())
-			return;
 
 		char szTemp[20];
 		sprintf(szTemp,"%d",int(temp*100.0f));
 		std::string sTemp = szTemp;
 
 		std::stringstream sstr2;
-		sstr2 << "clientId=" << m_ClientID
+		sstr2 << "?clientId=" << m_ClientID
 			<< "&clientIdChecksum=" << m_ClientIDChecksum
 			<< "&value=" << sTemp
 			<< "&random=" << GetRandom();
 		std::string szPostdata = sstr2.str();
 
-		std::string sURL = "https://toonopafstand.eneco.nl/toonMobileBackendWeb/client/auth/setPoint?" + szPostdata;
-
+		std::string sURL = TOON_HOST + TOON_TEMPSET_PATH + szPostdata;
 		if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 		{
 			_log.Log(LOG_ERROR, "ToonThermostat: Error setting setpoint!");
+			m_bDoLogin = true;
 			return;
 		}
-		Logout();
-#ifdef DEBUG_ToonThermostat
-		SaveString2Disk(sResult, "E:\\toon-SetSetpoint.txt");
-#endif
 
+		Json::Value root;
+		Json::Reader jReader;
+		if (!jReader.parse(sResult, root))
+		{
+			_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
+			m_bDoLogin = true;
+			return;
+		}
+		if (root["success"].empty() == true)
+		{
+			_log.Log(LOG_ERROR, "ToonThermostat: setPoint request not successful, restarting..!");
+			m_bDoLogin = true;
+			return;
+		}
+		if (root["success"] == false)
+		{
+			_log.Log(LOG_ERROR, "ToonThermostat: setPoint request not successful, restarting..!");
+			m_bDoLogin = true;
+			return;
+		}
 	}
 }
 
@@ -435,24 +544,45 @@ void CToonThermostat::SetProgramState(const std::string &targetState)
 	std::string sResult;
 	std::vector<std::string> ExtraHeaders;
 
-	if (!GetSerialAndToken())
-		return;
+	if (m_bDoLogin)
+	{
+		if (!Login())
+			return;
+	}
 
 	std::stringstream sstr2;
-	sstr2 << "clientId=" << m_ClientID
+	sstr2 << "?clientId=" << m_ClientID
 		<< "&clientIdChecksum=" << m_ClientIDChecksum
 		<< "&state=2"
 		<< "&temperatureState=" << targetState
 		<< "&random=" << GetRandom();
 	std::string szPostdata = sstr2.str();
 
-	if (!HTTPClient::POST("https://toonopafstand.eneco.nl/toonMobileBackendWeb/client/auth/schemeState", szPostdata,ExtraHeaders, sResult))
+	std::string sURL = TOON_HOST + TOON_CHANGE_SCHEME + szPostdata;
+	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_ERROR, "ToonThermostat: Error setting setpoint!");
+		_log.Log(LOG_ERROR, "ToonThermostat: Error setting Program State!");
 		return;
 	}
-	Logout();
-#ifdef DEBUG_ToonThermostat
-	SaveString2Disk(sResult, "E:\\toon-schemestate.txt");
-#endif
+
+	Json::Value root;
+	Json::Reader jReader;
+	if (!jReader.parse(sResult, root))
+	{
+		_log.Log(LOG_ERROR, "ToonThermostat: setProgramState request not successful, restarting..!");
+		m_bDoLogin = true;
+		return;
+	}
+	if (root["success"].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "ToonThermostat: setProgramState request not successful, restarting..!");
+		m_bDoLogin = true;
+		return;
+	}
+	if (root["success"] == false)
+	{
+		_log.Log(LOG_ERROR, "ToonThermostat: setProgramState request not successful, restarting..!");
+		m_bDoLogin = true;
+		return;
+	}
 }
