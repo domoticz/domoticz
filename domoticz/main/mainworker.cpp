@@ -323,7 +323,7 @@ bool MainWorker::RestartHardware(const std::string &idx)
 	std::stringstream szQuery;
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID==" << idx << ")";
+	szQuery << "SELECT Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, DataTimeout FROM Hardware WHERE (ID==" << idx << ")";
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return false;
@@ -339,9 +339,10 @@ bool MainWorker::RestartHardware(const std::string &idx)
 	int Mode2=atoi(sd[8].c_str());
 	int Mode3=atoi(sd[9].c_str());
 	int Mode4=atoi(sd[10].c_str());
-	int Mode5=atoi(sd[11].c_str());
+	int Mode5 = atoi(sd[11].c_str());
+	int DataTimeout= atoi(sd[12].c_str());
 
-	return AddHardwareFromParams(atoi(idx.c_str()),Name,(senabled=="true")?true:false,htype,address,port,username,password,Mode1,Mode2,Mode3,Mode4,Mode5);
+	return AddHardwareFromParams(atoi(idx.c_str()),Name,(senabled=="true")?true:false,htype,address,port,username,password,Mode1,Mode2,Mode3,Mode4,Mode5,DataTimeout);
 }
 
 bool MainWorker::AddHardwareFromParams(
@@ -355,7 +356,9 @@ bool MainWorker::AddHardwareFromParams(
 	int Mode2, 
 	int Mode3,
 	int Mode4,
-	int Mode5)
+	int Mode5,
+	int DataTimeout
+	)
 {
 	RemoveDomoticzHardware(ID);
 
@@ -549,11 +552,11 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	}
 
-
 	if (pHardware)
 	{
 		pHardware->HwdType=Type;
 		pHardware->Name=Name;
+		pHardware->m_DataTimeout = DataTimeout;
 		AddDomoticzHardware(pHardware);
 		m_hardwareStartCounter=0;
 		m_bStartHardware=true;
@@ -573,7 +576,7 @@ bool MainWorker::Start()
 	//Add Hardware devices
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
-	szQuery << "SELECT ID, Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware ORDER BY ID ASC";
+	szQuery << "SELECT ID, Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, DataTimeout FROM Hardware ORDER BY ID ASC";
 	result=m_sql.query(szQuery.str());
 	//std::string revfile;
 	//HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=Started&amp;idgoal=3",revfile);
@@ -597,8 +600,9 @@ bool MainWorker::Start()
 			int mode2=atoi(sd[9].c_str());
 			int mode3=atoi(sd[10].c_str());
 			int mode4=atoi(sd[11].c_str());
-			int mode5=atoi(sd[12].c_str());
-			AddHardwareFromParams(ID,Name,Enabled,Type,Address,Port,Username,Password,mode1,mode2,mode3,mode4,mode5);
+			int mode5 = atoi(sd[12].c_str());
+			int DataTimeout = atoi(sd[13].c_str());
+			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, Username, Password, mode1, mode2, mode3, mode4, mode5, DataTimeout);
 		}
 	}
 
@@ -928,6 +932,30 @@ void MainWorker::Do_Work()
 				StartDomoticzHardware();
 				ParseRFXLogFile();
 			}
+		}
+		if (m_devicestorestart.size() > 0) 
+		{
+			std::vector<int>::const_iterator itt;
+			for (itt = m_devicestorestart.begin(); itt != m_devicestorestart.end(); ++itt)
+			{
+				int hwid = (*itt);
+				std::stringstream sstr;
+				sstr << hwid;
+				std::string idx = sstr.str();
+
+				std::vector<std::vector<std::string> > result;
+				std::stringstream szQuery;
+				szQuery << "SELECT Name FROM Hardware WHERE (ID==" << idx << ")";
+				result = m_sql.query(szQuery.str());
+				if (result.size() > 0)
+				{
+					std::vector<std::string> sd = result[0];
+					std::string Name = sd[0];
+					_log.Log(LOG_ERROR, "Restarting: %s", Name.c_str());
+					RestartHardware(idx);
+				}
+			}
+			m_devicestorestart.clear();
 		}
 
 		if (m_SecCountdown>0)
@@ -8874,6 +8902,8 @@ void MainWorker::HeartbeatCheck()
 	boost::lock_guard<boost::mutex> l(m_heartbeatmutex);
 	boost::lock_guard<boost::mutex> l2(m_devicemutex);
 
+	m_devicestorestart.clear();
+
 	time_t now;
 	mytime(&now);
 
@@ -8891,40 +8921,77 @@ void MainWorker::HeartbeatCheck()
 	std::vector<CDomoticzHardwareBase*>::const_iterator itt;
 	for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
 	{
+		CDomoticzHardwareBase *pHardware = (CDomoticzHardwareBase *)(*itt);
 		//Skip Dummy Hardware
-		bool bDoCheck = ((*itt)->HwdType != HTYPE_Dummy) && ((*itt)->HwdType != HTYPE_Domoticz);
+		bool bDoCheck = (pHardware->HwdType != HTYPE_Dummy) && (pHardware->HwdType != HTYPE_Domoticz);
 		if (bDoCheck)
 		{
 			//Check Thread Timeout
-			double diff = difftime(now, (*itt)->m_LastHeartbeat);
+			double diff = difftime(now, pHardware->m_LastHeartbeat);
 			//_log.Log(LOG_STATUS, "%d last checkin  %.2lf seconds ago", iterator->first, dif);
 			if (diff > 20)
 			{
 				char szTmp[100];
 				std::vector<std::vector<std::string> > result;
-				sprintf(szTmp, "SELECT Name FROM Hardware WHERE (ID='%d')", (*itt)->m_HwdID);
+				sprintf(szTmp, "SELECT Name FROM Hardware WHERE (ID='%d')", pHardware->m_HwdID);
 				result = m_sql.query(szTmp);
 				if (result.size() == 1)
 				{
 					std::vector<std::string> sd = result[0];
-					_log.Log(LOG_ERROR, "%s hardware (%d) thread seems to have ended unexpectedly", sd[0].c_str(), (*itt)->m_HwdID);
+					_log.Log(LOG_ERROR, "%s hardware (%d) thread seems to have ended unexpectedly", sd[0].c_str(), pHardware->m_HwdID);
 				}
 			}
 		}
-		if (!(*itt)->m_bSkipReceiveCheck)
+		if ((!pHardware->m_bSkipReceiveCheck) && (pHardware->m_DataTimeout>0))
 		{
 			//Check Receive Timeout
-			double diff = difftime(now, (*itt)->m_LastHeartbeatReceive);
-			if (diff > 3600) //1 hour
+			double diff = difftime(now, pHardware->m_LastHeartbeatReceive);
+			if (diff > pHardware->m_DataTimeout)
 			{
 				char szTmp[100];
 				std::vector<std::vector<std::string> > result;
-				sprintf(szTmp, "SELECT Name FROM Hardware WHERE (ID='%d')", (*itt)->m_HwdID);
+				sprintf(szTmp, "SELECT Name FROM Hardware WHERE (ID='%d')", pHardware->m_HwdID);
 				result = m_sql.query(szTmp);
 				if (result.size() == 1)
 				{
 					std::vector<std::string> sd = result[0];
-					_log.Log(LOG_ERROR, "%s hardware (%d) nothing received for more then 1 hour!....", sd[0].c_str(), (*itt)->m_HwdID);
+
+					std::string sDataTimeout = "";
+					int totNum = 0;
+					if (pHardware->m_DataTimeout < 60) {
+						totNum = pHardware->m_DataTimeout;
+						sDataTimeout =  "Seconds";
+					}
+					else if (pHardware->m_DataTimeout < 3600) {
+						totNum  = pHardware->m_DataTimeout / 60;
+						if (totNum == 1) {
+							sDataTimeout = "Minute";
+						}
+						else {
+							sDataTimeout = "Minutes";
+						}
+					}
+					else if (pHardware->m_DataTimeout < 86400) {
+						totNum  = pHardware->m_DataTimeout / 3600;
+						if (totNum == 1) {
+							sDataTimeout = "Hour";
+						}
+						else {
+							sDataTimeout = "Hours";
+						}
+					}
+					else {
+						totNum = pHardware->m_DataTimeout / 60;
+						if (totNum == 1) {
+							sDataTimeout = "Day";
+						}
+						else {
+							sDataTimeout = "Days";
+						}
+					}
+
+					_log.Log(LOG_ERROR, "%s hardware (%d) nothing received for more then %d %s!....", sd[0].c_str(), pHardware->m_HwdID,totNum,sDataTimeout.c_str());
+					m_devicestorestart.push_back(pHardware->m_HwdID);
 				}
 			}
 		}

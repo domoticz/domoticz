@@ -74,7 +74,9 @@ public:
 				int Mode2, 
 				int Mode3,
 				int Mode4,
-				int Mode5);
+				int Mode5,
+				int DataTimeout
+				);
 
 	void UpdateDomoticzSecurityStatus(const int iSecStatus);
 	void SetInternalSecStatus();
@@ -106,6 +108,8 @@ private:
 
 	std::map<std::string, time_t > m_componentheartbeats;
 	boost::mutex m_heartbeatmutex;
+
+	std::vector<int> m_devicestorestart;
 
 	int m_SecCountdown;
 	int m_SecStatus;

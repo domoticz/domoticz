@@ -327,6 +327,7 @@
                 <th width="240" align="left" data-i18n="Type">Type</th>
                 <th width="200" align="left" data-i18n="Address">Address</th>
                 <th width="80" align="center" data-i18n="Port">Port</th>
+                <th width="120" align="center" data-i18n="Data Timeout">Data Timeout</th>
             </tr>
         </thead>
     </table>
@@ -345,14 +346,54 @@
 				<td><input type="checkbox" id="enabled" checked></td>
 			</tr>
 			<tr>
-				<td align="right" style="width:110px"><label for="name"><span data-i18n="Name"></span>:</label></td>
+				<td align="right" style="width:110px"><label for="hardwarename"><span data-i18n="Name"></span>:</label></td>
 				<td><input type="text" id="hardwarename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 			</tr>
 			<tr>
-				<td align="right" style="width:110px"><label for="name"><span data-i18n="Type"></span>:</label></td>
+				<td align="right" style="width:110px"><label for="combotype"><span data-i18n="Type"></span>:</label></td>
 				<td><select id="combotype" style="width:410px" class="combobox ui-corner-all">
 						<!--#embed hardwaretypes -->
 						</select>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td align="right" style="width:110px"><label for="combodatatimeout"><span data-i18n="Data Timeout">Data Timeout</span>:</label></td>
+				<td><select id="combodatatimeout" style="width:200px" class="combobox ui-corner-all">
+					<option data-i18n="Disabled" value="0">Disabled</option>
+					<option data-i18n="1 Minute" value="60">1 Minute</option>
+					<option data-i18n="5 Minutes" value="300">5 Minutes</option>
+					<option data-i18n="10 Minutes" value="600">10 Minutes</option>
+					<option data-i18n="15 Minutes" value="900">15 Minutes</option>
+					<option data-i18n="30 Minutes" value="1800">30 Minutes</option>
+					<option data-i18n="1 Hour" value="3600">1 Hour</option>
+					<option data-i18n="2 Hours" value="7200">2 Hours</option>
+					<option data-i18n="3 Hours" value="10800">3 Hours</option>
+					<option data-i18n="4 Hours" value="14400">4 Hours</option>
+					<option data-i18n="5 Hours" value="18000">5 Hours</option>
+					<option data-i18n="6 Hours" value="21600">6 Hours</option>
+					<option data-i18n="7 Hours" value="25200">7 Hours</option>
+					<option data-i18n="8 Hours" value="28800">8 Hours</option>
+					<option data-i18n="9 Hours" value="32400">9 Hours</option>
+					<option data-i18n="10 Hours" value="36000">10 Hours</option>
+					<option data-i18n="11 Hours" value="39600">11 Hours</option>
+					<option data-i18n="12 Hours" value="43200">12 Hours</option>
+					<option data-i18n="13 Hours" value="46800">13 Hours</option>
+					<option data-i18n="14 Hours" value="50400">14 Hours</option>
+					<option data-i18n="15 Hours" value="54000">15 Hours</option>
+					<option data-i18n="16 Hours" value="57600">16 Hours</option>
+					<option data-i18n="17 Hours" value="61200">17 Hours</option>
+					<option data-i18n="18 Hours" value="64800">18 Hours</option>
+					<option data-i18n="19 Hours" value="68400">19 Hours</option>
+					<option data-i18n="20 Hours" value="72000">20 Hours</option>
+					<option data-i18n="21 Hours" value="75600">21 Hours</option>
+					<option data-i18n="22 Hours" value="79200">22 Hours</option>
+					<option data-i18n="23 Hours" value="82800">23 Hours</option>
+					<option data-i18n="24 Hours" value="86400">24 Hours</option>
+					</select>
+					<br />
+					<span data-i18n="Specifying a Data Timeout will restart the hardware device if no data is received for the specified time."></span>
+					<br />
+					<strong><font color="red"><span data-i18n="Do not enable this option for devices that do not receive data!"></span></font></strong>
 				</td>
 			</tr>
 		</table>
@@ -480,6 +521,8 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 	
 	var bEnabled=$('#hardwarecontent #hardwareparamstable #enabled').is(":checked");
 	
+	var datatimeout=$('#hardwarecontent #hardwareparamstable #combodatatimeout').val();
+	
 	var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
 	if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("1-Wire") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("PiFace") >= 0)||(text.indexOf("Motherboard") >= 0))
 	{
@@ -488,6 +531,7 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 				"&port=1&name=" + name + 
 				"&enabled=" + bEnabled + 
 				"&idx=" + idx +
+				"&datatimeout=" + datatimeout +
 				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
 			 async: false, 
 			 dataType: 'json',
@@ -513,6 +557,7 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 				"&name=" + name + 
 				"&enabled=" + bEnabled + 
 				"&idx=" + idx +
+				"&datatimeout=" + datatimeout +
 				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
 			 async: false, 
 			 dataType: 'json',
@@ -550,6 +595,7 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 				"&name=" + name + 
 				"&enabled=" + bEnabled + 
 				"&idx=" + idx + 
+				"&datatimeout=" + datatimeout +
 				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
 			 async: false, 
 			 dataType: 'json',
@@ -589,6 +635,7 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 				"&password=" + password +
 				"&enabled=" + bEnabled + 
 				"&idx=" + idx + 
+				"&datatimeout=" + datatimeout +
 				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
 			 async: false, 
 			 dataType: 'json',
@@ -630,6 +677,7 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 				"&name=" + name + 
 				"&enabled=" + bEnabled + 
 				"&idx=" + idx + 
+				"&datatimeout=" + datatimeout +
 				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
 			 async: false, 
 			 dataType: 'json',
@@ -663,6 +711,7 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 				"&name=" + name + 
 				"&enabled=" + bEnabled + 
 				"&idx=" + idx +
+				"&datatimeout=" + datatimeout +
 				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
 			 async: false, 
 			 dataType: 'json',
@@ -689,6 +738,7 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 				"&name=" + name + 
 				"&enabled=" + bEnabled + 
 				"&idx=" + idx +
+				"&datatimeout=" + datatimeout +
 				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
 			 async: false, 
 			 dataType: 'json',
@@ -712,6 +762,7 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 				"&name=" + name + 
 				"&enabled=" + bEnabled + 
 				"&idx=" + idx + 
+				"&datatimeout=" + datatimeout +
 				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
 			 async: false, 
 			 dataType: 'json',
@@ -741,17 +792,18 @@ function AddHardware()
 	}
 	
 	var bEnabled=$('#hardwarecontent #hardwareparamstable #enabled').is(":checked");
+	var datatimeout=$('#hardwarecontent #hardwareparamstable #combodatatimeout').val();
 	
 	var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
 	if (text.indexOf("Motherboard") >= 0) {
 		ShowNotify($.i18n('This device is maintained by the system. Please do not add it manually.'), 3000, true);
 		return;
 	}
-	
+
 	if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("1-Wire") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("PiFace") >= 0)||(text.indexOf("GPIO") >= 0))
 	{
 		$.ajax({
-			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=1&name=" + name + "&enabled=" + bEnabled,
+			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=1&name=" + name + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -771,7 +823,7 @@ function AddHardware()
 			return;
 		}
 		$.ajax({
-			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + serialport + "&name=" + name + "&enabled=" + bEnabled,
+			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + serialport + "&name=" + name + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -802,7 +854,7 @@ function AddHardware()
 			return;
 		}		
 		$.ajax({
-			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + name + "&enabled=" + bEnabled,
+			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + name + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -834,7 +886,7 @@ function AddHardware()
 		}
 		var password=$("#hardwarecontent #divlogin #password").val();
 		$.ajax({
-			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + name + "&password=" + password + "&enabled=" + bEnabled,
+			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + name + "&password=" + password + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -867,7 +919,7 @@ function AddHardware()
 		var username=$("#hardwarecontent #divlogin #username").val();
 		var password=$("#hardwarecontent #divlogin #password").val();
 		$.ajax({
-			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + username + "&password=" + password + "&name=" + name + "&enabled=" + bEnabled,
+			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + username + "&password=" + password + "&name=" + name + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -893,7 +945,7 @@ function AddHardware()
 			return;
 		}
 		$.ajax({
-			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=1" + "&username=" + apikey + "&password=" + location + "&name=" + name + "&enabled=" + bEnabled,
+			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=1" + "&username=" + apikey + "&password=" + location + "&name=" + name + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -917,7 +969,8 @@ function AddHardware()
 				"&port=1" + 
 				"&username=" + encodeURIComponent(configlocation) + 
 				"&name=" + name + 
-				"&enabled=" + bEnabled,
+				"&enabled=" + bEnabled +
+				"&datatimeout=" + datatimeout,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -938,7 +991,8 @@ function AddHardware()
 			 "&username=" + username + 
 			 "&password=" + password + 
 			 "&name=" + name + 
-			 "&enabled=" + bEnabled,
+			 "&enabled=" + bEnabled +
+			 "&datatimeout=" + datatimeout,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -2024,6 +2078,41 @@ function RefreshHardwareTable()
 				}
 				HwTypeStr+=' <span class="label label-info" onclick="EditRego6XXType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Change Type</span>';
 			}
+			
+			var sDataTimeout="";
+			if (item.DataTimeout==0) {
+				sDataTimeout=$.i18n("Disabled");
+			}
+			else if (item.DataTimeout<60) {
+				sDataTimeout=item.DataTimeout + " " + $.i18n("Seconds");
+			}
+			else if (item.DataTimeout<3600) {
+				var minutes=item.DataTimeout/60;
+				if (minutes==1) {
+					sDataTimeout=minutes + " " + $.i18n("Minute");
+				}
+				else {
+					sDataTimeout=minutes + " " + $.i18n("Minutes");
+				}
+			}
+			else if (item.DataTimeout<86400) {
+				var hours=item.DataTimeout/3600;
+				if (hours==1) {
+					sDataTimeout=hours + " " + $.i18n("Hour");
+				}
+				else {
+					sDataTimeout=hours + " " + $.i18n("Hours");
+				}
+			}
+			else {
+				var days=item.DataTimeout/60;
+				if (days==1) {
+					sDataTimeout=days + " " + $.i18n("Day");
+				}
+				else {
+					sDataTimeout=days + " " + $.i18n("Days");
+				}
+			}
 					
 			var addId = oTable.fnAddData( {
 				"DT_RowId": item.idx,
@@ -2037,11 +2126,13 @@ function RefreshHardwareTable()
 				"Mode5": item.Mode5,
 				"Type" : HwTypeStrOrg,
 				"IntPort": item.Port,
+				"DataTimeout": item.DataTimeout,
                 "0": item.Name,
                 "1": enabledstr,
 				"2": HwTypeStr,
 				"3": item.Address,
-				"4": SerialName
+				"4": SerialName,
+				"5": sDataTimeout
 			} );
         });
 		/* Add a click handler to the rows - this could be used as a callback */
@@ -2067,6 +2158,7 @@ function RefreshHardwareTable()
 					$("#hardwarecontent #hardwareparamstable #combotype").val(jQuery.inArray(data["Type"], $.myglobals.HardwareTypesStr));
 
 					$('#hardwarecontent #hardwareparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
+					$('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
 
 					UpdateHardwareParamControls();
 					if ((data["Type"].indexOf("TE923") >= 0)||(data["Type"].indexOf("Volcraft") >= 0)||(data["Type"].indexOf("1-Wire") >= 0)||(data["Type"].indexOf("BMP085") >= 0)||(data["Type"].indexOf("Dummy") >= 0) ||(data["Type"].indexOf("PiFace") >= 0))

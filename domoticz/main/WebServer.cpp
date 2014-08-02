@@ -394,6 +394,8 @@ void CWebServer::CmdAddHardware(Json::Value &root)
 	std::string sport=m_pWebEm->FindValue("port");
 	std::string username=m_pWebEm->FindValue("username");
 	std::string password=m_pWebEm->FindValue("password");
+	std::string sdatatimeout = m_pWebEm->FindValue("datatimeout");
+	
 	if (
 		(name=="")||
 		(senabled=="")||
@@ -402,6 +404,8 @@ void CWebServer::CmdAddHardware(Json::Value &root)
 		)
 		return;
 	_eHardwareTypes htype=(_eHardwareTypes)atoi(shtype.c_str());
+
+	int iDataTimeout = atoi(sdatatimeout.c_str());
 	int mode1=0;
 	int mode2=0;
 	int mode3=0;
@@ -467,7 +471,7 @@ void CWebServer::CmdAddHardware(Json::Value &root)
 	char szTmp[300];
 
 	sprintf(szTmp,
-		"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5) VALUES ('%s',%d, %d,'%s',%d,'%s','%s',%d,%d,%d,%d,%d)",
+		"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, DataTimeout) VALUES ('%s',%d, %d,'%s',%d,'%s','%s',%d,%d,%d,%d,%d,%d)",
 		name.c_str(),
 		(senabled=="true")?1:0,
 		htype,
@@ -475,7 +479,8 @@ void CWebServer::CmdAddHardware(Json::Value &root)
 		port,
 		username.c_str(),
 		password.c_str(),
-		mode1,mode2,mode3,mode4,mode5
+		mode1,mode2,mode3,mode4,mode5,
+		iDataTimeout
 		);
 	result=m_sql.query(szTmp);
 
@@ -487,7 +492,7 @@ void CWebServer::CmdAddHardware(Json::Value &root)
 		std::vector<std::string> sd=result[0];
 		int ID=atoi(sd[0].c_str());
 
-		m_mainworker.AddHardwareFromParams(ID,name,(senabled=="true")?true:false,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
+		m_mainworker.AddHardwareFromParams(ID, name, (senabled == "true") ? true : false, htype, address, port, username, password, mode1, mode2, mode3, mode4, mode5, iDataTimeout);
 	}
 }
 
@@ -503,6 +508,8 @@ void CWebServer::CmdUpdateHardware(Json::Value &root)
 	std::string sport=m_pWebEm->FindValue("port");
 	std::string username=m_pWebEm->FindValue("username");
 	std::string password=m_pWebEm->FindValue("password");
+	std::string sdatatimeout = m_pWebEm->FindValue("datatimeout");
+
 	if (
 		(name=="")||
 		(senabled=="")||
@@ -512,6 +519,7 @@ void CWebServer::CmdUpdateHardware(Json::Value &root)
 		return;
 
 	_eHardwareTypes htype=(_eHardwareTypes)atoi(shtype.c_str());
+	int iDataTimeout = atoi(sdatatimeout.c_str());
 
 	int port=atoi(sport.c_str());
 
@@ -577,7 +585,7 @@ void CWebServer::CmdUpdateHardware(Json::Value &root)
 	char szTmp[300];
 
 	sprintf(szTmp,
-		"UPDATE Hardware SET Name='%s', Enabled=%d, Type=%d, Address='%s', Port=%d, Username='%s', Password='%s', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d WHERE (ID == %s)",
+		"UPDATE Hardware SET Name='%s', Enabled=%d, Type=%d, Address='%s', Port=%d, Username='%s', Password='%s', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, DataTimeout=%d WHERE (ID == %s)",
 		name.c_str(),
 		(senabled=="true")?1:0,
 		htype,
@@ -586,6 +594,7 @@ void CWebServer::CmdUpdateHardware(Json::Value &root)
 		username.c_str(),
 		password.c_str(),
 		mode1,mode2,mode3,mode4,mode5,
+		iDataTimeout,
 		idx.c_str()
 		);
 	result=m_sql.query(szTmp);
@@ -603,7 +612,7 @@ void CWebServer::CmdUpdateHardware(Json::Value &root)
 	{
 		//re-add the device in our system
 		int ID=atoi(idx.c_str());
-		m_mainworker.AddHardwareFromParams(ID,name,(senabled=="true")?true:false,htype,address,port,username,password,mode1,mode2,mode3,mode4,mode5);
+		m_mainworker.AddHardwareFromParams(ID, name, (senabled == "true") ? true : false, htype, address, port, username, password, mode1, mode2, mode3, mode4, mode5, iDataTimeout);
 	}
 }
 
@@ -8497,7 +8506,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "SELECT ID, Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware ORDER BY ID ASC";
+		szQuery << "SELECT ID, Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, DataTimeout FROM Hardware ORDER BY ID ASC";
 		result = m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -8520,6 +8529,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 				root["result"][ii]["Mode3"] = atoi(sd[10].c_str());
 				root["result"][ii]["Mode4"] = atoi(sd[11].c_str());
 				root["result"][ii]["Mode5"] = atoi(sd[12].c_str());
+				root["result"][ii]["DataTimeout"] = atoi(sd[13].c_str());
 				ii++;
 			}
 		}

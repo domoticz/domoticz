@@ -23,7 +23,7 @@
 	#include <pwd.h>
 #endif
 
-#define DB_VERSION 46
+#define DB_VERSION 47
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -223,7 +223,8 @@ const char *sqlCreateHardware =
 "[Mode2] CHAR DEFAULT 0, "
 "[Mode3] CHAR DEFAULT 0, "
 "[Mode4] CHAR DEFAULT 0, "
-"[Mode5] CHAR DEFAULT 0);";
+"[Mode5] CHAR DEFAULT 0, "
+"[DataTimeout] INTEGER DEFAULT 0);";
 
 const char *sqlCreateUsers =
 "CREATE TABLE IF NOT EXISTS [Users] ("
@@ -590,77 +591,77 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateFloorplans);
 	query(sqlCreateFloorplanOrderTrigger);
 
-	if ((!bNewInstall)&&(dbversion<DB_VERSION))
+	if ((!bNewInstall) && (dbversion < DB_VERSION))
 	{
 		//Post-SQL Patches
-		if (dbversion<2)
+		if (dbversion < 2)
 		{
 			query("ALTER TABLE DeviceStatus ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
 			query(sqlCreateDeviceStatusTrigger);
 			CheckAndUpdateDeviceOrder();
 		}
-		if (dbversion<3)
+		if (dbversion < 3)
 		{
 			query("ALTER TABLE Hardware ADD COLUMN [Enabled] INTEGER default 1");
 		}
-		if (dbversion<4)
+		if (dbversion < 4)
 		{
 			query("ALTER TABLE DeviceStatus ADD COLUMN [AddjValue] FLOAT default 0");
 			query("ALTER TABLE DeviceStatus ADD COLUMN [AddjMulti] FLOAT default 1");
 		}
-		if (dbversion<5)
+		if (dbversion < 5)
 		{
 			query("ALTER TABLE SceneDevices ADD COLUMN [Cmd] INTEGER default 1");
 			query("ALTER TABLE SceneDevices ADD COLUMN [Level] INTEGER default 100");
 		}
-		if (dbversion<6)
+		if (dbversion < 6)
 		{
 			query("ALTER TABLE Cameras ADD COLUMN [ImageURL] VARCHAR(100)");
 		}
-		if (dbversion<7)
+		if (dbversion < 7)
 		{
 			query("ALTER TABLE DeviceStatus ADD COLUMN [AddjValue2] FLOAT default 0");
 			query("ALTER TABLE DeviceStatus ADD COLUMN [AddjMulti2] FLOAT default 1");
 		}
-		if (dbversion<8)
+		if (dbversion < 8)
 		{
 			query("DROP TABLE IF EXISTS [Cameras]");
 			query(sqlCreateCameras);
 		}
-		if (dbversion<9) {
+		if (dbversion < 9) {
 			query("UPDATE Notifications SET Params = 'S' WHERE Params = ''");
 		}
-		if (dbversion<10)
+		if (dbversion < 10)
 		{
 			//P1 Smart meter power change, need to delete all short logs from today
 			char szDateStart[40];
 			time_t now = mytime(NULL);
 			struct tm tm1;
-			localtime_r(&now,&tm1);
+			localtime_r(&now, &tm1);
 			struct tm ltime;
-			ltime.tm_isdst=tm1.tm_isdst;
-			ltime.tm_hour=0;
-			ltime.tm_min=0;
-			ltime.tm_sec=0;
-			ltime.tm_year=tm1.tm_year;
-			ltime.tm_mon=tm1.tm_mon;
-			ltime.tm_mday=tm1.tm_mday;
+			ltime.tm_isdst = tm1.tm_isdst;
+			ltime.tm_hour = 0;
+			ltime.tm_min = 0;
+			ltime.tm_sec = 0;
+			ltime.tm_year = tm1.tm_year;
+			ltime.tm_mon = tm1.tm_mon;
+			ltime.tm_mday = tm1.tm_mday;
 
-			sprintf(szDateStart,"%04d-%02d-%02d %02d:%02d:%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,ltime.tm_hour,ltime.tm_min,ltime.tm_sec);
+			sprintf(szDateStart, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 
 			char szTmp[200];
 
 			std::vector<std::vector<std::string> > result;
-			sprintf(szTmp,"SELECT ID FROM DeviceStatus WHERE (Type=%d)",pTypeP1Power);
-			result=query(szTmp);
-			if (result.size()>0)
+			sprintf(szTmp, "SELECT ID FROM DeviceStatus WHERE (Type=%d)", pTypeP1Power);
+			result = query(szTmp);
+			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt=result.begin(); itt!=result.end(); ++itt)
+				for (itt = result.begin(); itt != result.end(); ++itt)
 				{
-					std::vector<std::string> sd=*itt;
-					std::string idx=sd[0];
-					sprintf(szTmp,"DELETE FROM MultiMeter WHERE (DeviceRowID='%s') AND (Date>='%s')",idx.c_str(),szDateStart);
+					std::vector<std::string> sd = *itt;
+					std::string idx = sd[0];
+					sprintf(szTmp, "DELETE FROM MultiMeter WHERE (DeviceRowID='%s') AND (Date>='%s')", idx.c_str(), szDateStart);
 					query(szTmp);
 				}
 			}
@@ -671,15 +672,15 @@ bool CSQLHelper::OpenDatabase()
 			std::vector<std::vector<std::string> > result;
 
 			szQuery << "SELECT ID, Username, Password FROM Cameras ORDER BY ID";
-			result=query(szQuery.str());
+			result = query(szQuery.str());
 			if (result.size()>0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt=result.begin(); itt!=result.end(); ++itt)
+				for (itt = result.begin(); itt != result.end(); ++itt)
 				{
-					std::vector<std::string> sd=*itt;
-					std::string camuser=base64_encode((const unsigned char*)sd[1].c_str(),sd[1].size());
-					std::string campwd=base64_encode((const unsigned char*)sd[2].c_str(),sd[2].size());
+					std::vector<std::string> sd = *itt;
+					std::string camuser = base64_encode((const unsigned char*)sd[1].c_str(), sd[1].size());
+					std::string campwd = base64_encode((const unsigned char*)sd[2].c_str(), sd[2].size());
 					std::stringstream szQuery2;
 					szQuery2 << "UPDATE Cameras SET Username='" << camuser << "', Password='" << campwd << "' WHERE (ID=='" << sd[0] << "')";
 					query(szQuery2.str());
@@ -689,62 +690,62 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion<12)
 		{
 			std::vector<std::vector<std::string> > result;
-			result=query("SELECT t.RowID, u.RowID from MultiMeter_Calendar as t, MultiMeter_Calendar as u WHERE (t.[Date] == u.[Date]) AND (t.[DeviceRowID] == u.[DeviceRowID]) AND (t.[RowID] != u.[RowID])");
+			result = query("SELECT t.RowID, u.RowID from MultiMeter_Calendar as t, MultiMeter_Calendar as u WHERE (t.[Date] == u.[Date]) AND (t.[DeviceRowID] == u.[DeviceRowID]) AND (t.[RowID] != u.[RowID])");
 			if (result.size()>0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt=result.begin(); itt!=result.end(); ++itt)
+				for (itt = result.begin(); itt != result.end(); ++itt)
 				{
 					++itt;
-					std::vector<std::string> sd=*itt;
+					std::vector<std::string> sd = *itt;
 					std::stringstream szQuery2;
 					szQuery2 << "DELETE FROM MultiMeter_Calendar WHERE (RowID=='" << sd[0] << "')";
 					query(szQuery2.str());
 				}
 			}
-			
+
 		}
-		if (dbversion<13)
+		if (dbversion < 13)
 		{
 			DeleteHardware("1001");
 		}
-		if (dbversion<14)
+		if (dbversion < 14)
 		{
 			query("ALTER TABLE Users ADD COLUMN [RemoteSharing] INTEGER default 0");
 		}
-		if (dbversion<15)
+		if (dbversion < 15)
 		{
 			query("DROP TABLE IF EXISTS [HardwareSharing]");
 			query("ALTER TABLE DeviceStatus ADD COLUMN [LastLevel] INTEGER default 0");
 		}
-		if (dbversion<16)
+		if (dbversion < 16)
 		{
-            query("ALTER TABLE Events RENAME TO tmp_Events;");
-            query("CREATE TABLE Events ([ID] INTEGER PRIMARY KEY, [Name] VARCHAR(200) NOT NULL, [XMLStatement] TEXT NOT NULL,[Conditions] TEXT, [Actions] TEXT);");
-            query("INSERT INTO Events(Name, XMLStatement) SELECT Name, XMLStatement FROM tmp_Events;");
-            query("DROP TABLE tmp_Events;");
-     	}
-		if (dbversion<17)
+			query("ALTER TABLE Events RENAME TO tmp_Events;");
+			query("CREATE TABLE Events ([ID] INTEGER PRIMARY KEY, [Name] VARCHAR(200) NOT NULL, [XMLStatement] TEXT NOT NULL,[Conditions] TEXT, [Actions] TEXT);");
+			query("INSERT INTO Events(Name, XMLStatement) SELECT Name, XMLStatement FROM tmp_Events;");
+			query("DROP TABLE tmp_Events;");
+		}
+		if (dbversion < 17)
 		{
-            query("ALTER TABLE Events ADD COLUMN [Status] INTEGER default 0");
-     	}
-		if (dbversion<18)
+			query("ALTER TABLE Events ADD COLUMN [Status] INTEGER default 0");
+		}
+		if (dbversion < 18)
 		{
 			query("ALTER TABLE Temperature ADD COLUMN [DewPoint] FLOAT default 0");
 			query("ALTER TABLE Temperature_Calendar ADD COLUMN [DewPoint] FLOAT default 0");
 		}
-		if (dbversion<19)
+		if (dbversion < 19)
 		{
 			query("ALTER TABLE Scenes ADD COLUMN [SceneType] INTEGER default 0");
 		}
-        
-		if (dbversion<20)
+
+		if (dbversion < 20)
 		{
 			query("INSERT INTO EventMaster(Name, XMLStatement, Status) SELECT Name, XMLStatement, Status FROM Events;");
 			query("INSERT INTO EventRules(EMID, Conditions, Actions, SequenceNo) SELECT EventMaster.ID, Events.Conditions, Events.Actions, 1 FROM Events INNER JOIN EventMaster ON EventMaster.Name = Events.Name;");
-            query("DROP TABLE Events;");
+			query("DROP TABLE Events;");
 		}
-		if (dbversion<21)
+		if (dbversion < 21)
 		{
 			//increase Video/Image URL for camera's
 			//create a backup
@@ -759,7 +760,7 @@ bool CSQLHelper::OpenDatabase()
 			//Drop the tmp_Cameras table
 			query("DROP TABLE tmp_Cameras");
 		}
-		if (dbversion<22)
+		if (dbversion < 22)
 		{
 			query("ALTER TABLE DeviceToPlansMap ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
 			query(sqlCreateDevicesToPlanStatusTrigger);
@@ -769,44 +770,44 @@ bool CSQLHelper::OpenDatabase()
 			query("ALTER TABLE Temperature_Calendar ADD COLUMN [Temp_Avg] FLOAT default 0");
 
 			std::vector<std::vector<std::string> > result;
-			result=query("SELECT RowID, (Temp_Max+Temp_Min)/2 FROM Temperature_Calendar");
+			result = query("SELECT RowID, (Temp_Max+Temp_Min)/2 FROM Temperature_Calendar");
 			if (result.size()>0)
 			{
 				char szTmp[100];
 				sqlite3_exec(m_dbase, "BEGIN TRANSACTION;", NULL, NULL, NULL);
 				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt=result.begin(); itt!=result.end(); ++itt)
+				for (itt = result.begin(); itt != result.end(); ++itt)
 				{
-					std::vector<std::string> sd=*itt;
-					sprintf(szTmp,"UPDATE Temperature_Calendar SET Temp_Avg=%.1f WHERE RowID='%s'",atof(sd[1].c_str()),sd[0].c_str());
+					std::vector<std::string> sd = *itt;
+					sprintf(szTmp, "UPDATE Temperature_Calendar SET Temp_Avg=%.1f WHERE RowID='%s'", atof(sd[1].c_str()), sd[0].c_str());
 					query(szTmp);
 				}
 				sqlite3_exec(m_dbase, "END TRANSACTION;", NULL, NULL, NULL);
 			}
 		}
-		if (dbversion<24)
+		if (dbversion < 24)
 		{
 			query("ALTER TABLE SceneDevices ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
 			query(sqlCreateSceneDeviceTrigger);
 			CheckAndUpdateSceneDeviceOrder();
 		}
-		if (dbversion<25)
+		if (dbversion < 25)
 		{
 			query("DROP TABLE IF EXISTS [Plans]");
 			query(sqlCreatePlans);
 			query(sqlCreatePlanOrderTrigger);
 		}
-		if (dbversion<26)
+		if (dbversion < 26)
 		{
 			query("DROP TABLE IF EXISTS [DeviceToPlansMap]");
 			query(sqlCreatePlanMappings);
 			query(sqlCreateDevicesToPlanStatusTrigger);
 		}
-		if (dbversion<27)
+		if (dbversion < 27)
 		{
 			query("ALTER TABLE DeviceStatus ADD COLUMN [CustomImage] INTEGER default 0");
 		}
-		if (dbversion<28)
+		if (dbversion < 28)
 		{
 			query("ALTER TABLE Timers ADD COLUMN [UseRandomness] INTEGER default 0");
 			query("ALTER TABLE SceneTimers ADD COLUMN [UseRandomness] INTEGER default 0");
@@ -814,25 +815,25 @@ bool CSQLHelper::OpenDatabase()
 			query("UPDATE SceneTimers SET [Type]=2, [UseRandomness]=1 WHERE ([Type]=5)");
 			//"[] INTEGER DEFAULT 0, "
 		}
-		if (dbversion<29)
+		if (dbversion < 29)
 		{
 			query("ALTER TABLE Scenes ADD COLUMN [ListenCmd] INTEGER default 1");
 		}
-		if (dbversion<30)
+		if (dbversion < 30)
 		{
 			query("ALTER TABLE DeviceToPlansMap ADD COLUMN [DevSceneType] INTEGER default 0");
 		}
-		if (dbversion<31)
+		if (dbversion < 31)
 		{
 			query("ALTER TABLE Users ADD COLUMN [TabsEnabled] INTEGER default 255");
 		}
-		if (dbversion<32)
+		if (dbversion < 32)
 		{
 			query("ALTER TABLE SceneDevices ADD COLUMN [Hue] INTEGER default 0");
 			query("ALTER TABLE SceneTimers ADD COLUMN [Hue] INTEGER default 0");
 			query("ALTER TABLE Timers ADD COLUMN [Hue] INTEGER default 0");
 		}
-		if (dbversion<33)
+		if (dbversion < 33)
 		{
 			query("DROP TABLE IF EXISTS [Load]");
 			query("DROP TABLE IF EXISTS [Load_Calendar]");
@@ -846,36 +847,36 @@ bool CSQLHelper::OpenDatabase()
 			char szTmp[200];
 
 			std::vector<std::vector<std::string> > result;
-			result=query("SELECT ID FROM DeviceStatus WHERE (DeviceID LIKE 'WMI%')");
-			if (result.size()>0)
+			result = query("SELECT ID FROM DeviceStatus WHERE (DeviceID LIKE 'WMI%')");
+			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt=result.begin(); itt!=result.end(); ++itt)
+				for (itt = result.begin(); itt != result.end(); ++itt)
 				{
-					std::vector<std::string> sd=*itt;
-					std::string idx=sd[0];
-					sprintf(szTmp,"DELETE FROM Temperature WHERE (DeviceRowID='%s')",idx.c_str());
+					std::vector<std::string> sd = *itt;
+					std::string idx = sd[0];
+					sprintf(szTmp, "DELETE FROM Temperature WHERE (DeviceRowID='%s')", idx.c_str());
 					query(szTmp);
-					sprintf(szTmp,"DELETE FROM Temperature_Calendar WHERE (DeviceRowID='%s')",idx.c_str());
+					sprintf(szTmp, "DELETE FROM Temperature_Calendar WHERE (DeviceRowID='%s')", idx.c_str());
 					query(szTmp);
 				}
 			}
 			query("DELETE FROM DeviceStatus WHERE (DeviceID LIKE 'WMI%')");
 		}
-		if (dbversion<34)
+		if (dbversion < 34)
 		{
 			query("ALTER TABLE DeviceStatus ADD COLUMN [StrParam1] VARCHAR(200) DEFAULT ''");
 			query("ALTER TABLE DeviceStatus ADD COLUMN [StrParam2] VARCHAR(200) DEFAULT ''");
 		}
-		if (dbversion<35)
+		if (dbversion < 35)
 		{
 			query("ALTER TABLE Notifications ADD COLUMN [Priority] INTEGER default 0");
 		}
-		if (dbversion<36)
+		if (dbversion < 36)
 		{
 			query("ALTER TABLE Meter ADD COLUMN [Usage] INTEGER default 0");
 		}
-		if (dbversion<37)
+		if (dbversion < 37)
 		{
 			//move all load data from tables into the new percentage one
 			query(
@@ -887,27 +888,27 @@ bool CSQLHelper::OpenDatabase()
 			query("DROP TABLE IF EXISTS [Load]");
 			query("DROP TABLE IF EXISTS [Load_Calendar]");
 		}
-		if (dbversion<38)
+		if (dbversion < 38)
 		{
 			query("ALTER TABLE DeviceStatus ADD COLUMN [Protected] INTEGER default 0");
 		}
-		if (dbversion<39)
+		if (dbversion < 39)
 		{
 			query("ALTER TABLE Scenes ADD COLUMN [Protected] INTEGER default 0");
 		}
-		if (dbversion<40)
+		if (dbversion < 40)
 		{
 			FixDaylightSaving();
 		}
-		if (dbversion<41)
+		if (dbversion < 41)
 		{
 			query("ALTER TABLE FibaroLink ADD COLUMN [IncludeUnit] INTEGER default 0");
 		}
-		if (dbversion<42)
+		if (dbversion < 42)
 		{
 			query("INSERT INTO Plans (Name) VALUES ('$Hidden Devices')");
 		}
-		if (dbversion<43)
+		if (dbversion < 43)
 		{
 			query("ALTER TABLE Scenes ADD COLUMN [OnAction] VARCHAR(200) DEFAULT ''");
 			query("ALTER TABLE Scenes ADD COLUMN [OffAction] VARCHAR(200) DEFAULT ''");
@@ -927,18 +928,21 @@ bool CSQLHelper::OpenDatabase()
 			//Drop the tmp_Cameras table
 			query("DROP TABLE tmp_Cameras");
 		}
-		if (dbversion<45)
+		if (dbversion < 45)
 		{
 			query("ALTER TABLE Timers ADD COLUMN [TimerPlan] INTEGER default 0");
 			query("ALTER TABLE SceneTimers ADD COLUMN [TimerPlan] INTEGER default 0");
 		}
-		if (dbversion<46)
+		if (dbversion < 46)
 		{
 			query("ALTER TABLE Plans ADD COLUMN [FloorplanID] INTEGER default 0");
 			query("ALTER TABLE Plans ADD COLUMN [Area] VARCHAR(200) DEFAULT ''");
 			query("ALTER TABLE DeviceToPlansMap ADD COLUMN [XOffset] INTEGER default 0");
 			query("ALTER TABLE DeviceToPlansMap ADD COLUMN [YOffset] INTEGER default 0");
-
+		}
+		if (dbversion < 47)
+		{
+			query("ALTER TABLE Hardware ADD COLUMN [DataTimeout] INTEGER default 0");
 		}
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);

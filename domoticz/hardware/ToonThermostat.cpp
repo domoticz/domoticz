@@ -40,6 +40,8 @@ const std::string TOON_CHANGE_SCHEME = "/toonMobileBackendWeb/client/auth/scheme
 const std::string TOON_TEMPSET_PATH = "/toonMobileBackendWeb/client/auth/setPoint";
 const std::string TOON_CHANGE_SCREEN_PATH = "/toonMobileBackendWeb/client/auth/kpi/changedScreen";
 const std::string TOON_TAB_PRESSED_PATH = "/toonMobileBackendWeb/client/auth/kpi/tabPressed";
+const std::string TOON_GET_ELECTRIC_GRAPH = "/toonMobileBackendWeb/client/auth/getElecGraphData";
+const std::string TOON_GET_GAS_GRAPH = "/toonMobileBackendWeb/client/auth/getGasGraphData"; //?smartMeter=false
 
 
 enum _eProgramStates {
@@ -444,6 +446,13 @@ void CToonThermostat::GetMeterDetails()
 	{
 		m_p1power.powerusage1 = (unsigned long)(root["powerUsage"]["meterReading"].asFloat());
 		m_p1power.powerusage2 = (unsigned long)(root["powerUsage"]["meterReadingLow"].asFloat());
+
+		if (root["powerUsage"]["meterReadingProdu"].empty() == false)
+		{
+			m_p1power.powerdeliv1 = (unsigned long)(root["powerUsage"]["meterReadingProdu"].asFloat());
+			m_p1power.powerdeliv2 = (unsigned long)(root["powerUsage"]["meterReadingLowProdu"].asFloat());
+		}
+
 		m_p1power.usagecurrent = (unsigned long)(root["powerUsage"]["value"].asFloat());	//Watt
 	}
 
@@ -453,10 +462,12 @@ void CToonThermostat::GetMeterDetails()
 		(atime - m_lastSharedSendElectra >= 300)
 		)
 	{
-		//only update gas when there is a new value, or 5 minutes are passed
-		m_lastSharedSendElectra = atime;
-		m_lastelectrausage = m_p1power.usagecurrent;
-		sDecodeRXMessage(this, (const unsigned char *)&m_p1power);
+		if ((m_p1power.powerusage1 != 0) || (m_p1power.powerusage2 != 0) || (m_p1power.powerdeliv1 != 0) || (m_p1power.powerdeliv2 != 0))
+		{
+			m_lastSharedSendElectra = atime;
+			m_lastelectrausage = m_p1power.usagecurrent;
+			sDecodeRXMessage(this, (const unsigned char *)&m_p1power);
+		}
 	}
 	
 	//Send GAS if the value changed, or at least every 5 minutes
@@ -465,10 +476,12 @@ void CToonThermostat::GetMeterDetails()
 		(atime - m_lastSharedSendGas >= 300)
 		)
 	{
-		//only update gas when there is a new value, or 5 minutes are passed
-		m_lastSharedSendGas = atime;
-		m_lastgasusage = m_p1gas.gasusage;
-		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas);
+		if (m_p1gas.gasusage != 0)
+		{
+			m_lastSharedSendGas = atime;
+			m_lastgasusage = m_p1gas.gasusage;
+			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas);
+		}
 	}
 }
 

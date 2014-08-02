@@ -106,7 +106,7 @@ void CHardwareMonitor::Init()
 		{
 			std::vector<std::string> sd=result[0];
 			hwId=atoi(sd[0].c_str());
-			m_mainworker.AddHardwareFromParams(hwId, "Motherboard", 1, HTYPE_System, "", 1, "", "", 0, 0, 0, 0, 0);
+			m_mainworker.AddHardwareFromParams(hwId, "Motherboard", 1, HTYPE_System, "", 1, "", "", 0, 0, 0, 0, 0, 0);
 		}
 
 		m_sql.query(szQuery.str());

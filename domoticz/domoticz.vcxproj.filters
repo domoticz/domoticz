@@ -18,9 +18,6 @@
     <Filter Include="json">
       <UniqueIdentifier>{caed8300-c22a-4d76-9380-2b55120edaaa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="HTTPClient">
-      <UniqueIdentifier>{43e678ba-2229-48dc-8d72-a10a52186b82}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices">
       <UniqueIdentifier>{f1967572-afca-4c81-a06e-1eb4d560bb60}</UniqueIdentifier>
     </Filter>
@@ -150,6 +147,9 @@
     <Filter Include="Devices\Toon Thermostat">
       <UniqueIdentifier>{61053137-fc80-420f-aee4-7a6a9cdc8923}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\HTTPClient">
+      <UniqueIdentifier>{43e678ba-2229-48dc-8d72-a10a52186b82}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -227,7 +227,7 @@
       <Filter>Devices</Filter>
     </ClInclude>
     <ClInclude Include="httpclient\UrlEncode.h">
-      <Filter>HTTPClient</Filter>
+      <Filter>Header Files\HTTPClient</Filter>
     </ClInclude>
     <ClInclude Include="webserver\header.hpp">
       <Filter>Webserver</Filter>
@@ -287,7 +287,7 @@
       <Filter>Camera</Filter>
     </ClInclude>
     <ClInclude Include="httpclient\HTTPClient.h">
-      <Filter>HTTPClient</Filter>
+      <Filter>Header Files\HTTPClient</Filter>
     </ClInclude>
     <ClInclude Include="hardware\TE923Tool.h">
       <Filter>Devices\TE923</Filter>
@@ -523,7 +523,7 @@
       <Filter>Devices</Filter>
     </ClCompile>
     <ClCompile Include="httpclient\UrlEncode.cpp">
-      <Filter>HTTPClient</Filter>
+      <Filter>Header Files\HTTPClient</Filter>
     </ClCompile>
     <ClCompile Include="main\CmdLine.cpp">
       <Filter>Source Files</Filter>
@@ -568,7 +568,7 @@
       <Filter>Camera</Filter>
     </ClCompile>
     <ClCompile Include="httpclient\HTTPClient.cpp">
-      <Filter>HTTPClient</Filter>
+      <Filter>Header Files\HTTPClient</Filter>
     </ClCompile>
     <ClCompile Include="hardware\TE923Tool.cpp">
       <Filter>Devices\TE923</Filter>
