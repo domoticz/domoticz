@@ -265,6 +265,11 @@ std::string CToonThermostat::GetRandom()
 
 bool CToonThermostat::Login()
 {
+	if (m_ClientID != "")
+	{
+		Logout();
+	}
+	m_ClientID = "";
 	std::stringstream sstr;
 	sstr << "username=" << m_UserName << "&password=" << m_Password;
 	std::string szPostdata=sstr.str();
