@@ -1810,11 +1810,13 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		std::string idx=m_pWebEm->FindValue("idx");
 		std::string xoffset=m_pWebEm->FindValue("xoffset");
 		std::string yoffset=m_pWebEm->FindValue("yoffset");
+		std::string type=m_pWebEm->FindValue("DevSceneType");
 		if ((idx=="") || (xoffset=="") || (yoffset==""))
 			return;
+		if (type!="1") type = "0";  // 0 = Device, 1 = Scene/Group
 		root["status"]="OK";
 		root["title"]="SetPlanDeviceCoords";
-		szQuery << "UPDATE DeviceToPlansMap SET [XOffset] = " << xoffset << ", [YOffset] = " << yoffset << " WHERE (DeviceRowID='" << idx << "')";
+		szQuery << "UPDATE DeviceToPlansMap SET [XOffset] = " << xoffset << ", [YOffset] = " << yoffset << " WHERE (DeviceRowID='" << idx << "') and (DevSceneType='" << type << "')";
 		result=m_sql.query(szQuery.str());
 	}
 	else if (cparam=="deleteallplandevices")
@@ -6571,11 +6573,11 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 		szQuery.str("");
 
 		if (rowid!="")
-			szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType, Protected FROM Scenes WHERE (ID==" << rowid << ")";
+			szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType, Protected, 0 as XOffset, 0 as YOffset FROM Scenes WHERE (ID==" << rowid << ")";
 		else if ((planID!="")&&(planID!="0"))
-			szQuery << "SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType, A.Protected FROM Scenes as A, DeviceToPlansMap as B WHERE (B.PlanID==" << planID << ") AND (B.DeviceRowID==a.ID) AND (B.DevSceneType==1) ORDER BY B.[Order]";
+			szQuery << "SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType, A.Protected, B.XOffset, B.YOffset FROM Scenes as A, DeviceToPlansMap as B WHERE (B.PlanID==" << planID << ") AND (B.DeviceRowID==a.ID) AND (B.DevSceneType==1) ORDER BY B.[Order]";
 		else
-			szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType, Protected FROM Scenes ORDER BY " << szOrderBy;
+			szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType, Protected, 0 as XOffset, 0 as YOffset FROM Scenes ORDER BY " << szOrderBy;
 
 		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
@@ -6632,6 +6634,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					scidx << camIDX;
 					root["result"][ii]["CameraIdx"] = scidx.str();
 				}
+				root["result"][ii]["XOffset"]=atoi(sd[7].c_str());
+				root["result"][ii]["YOffset"]=atoi(sd[8].c_str());
 				ii++;
 			}
 		}

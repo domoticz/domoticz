@@ -718,7 +718,9 @@ function DeleteFloorplanPlan(idx) {
 		var deviceParent = $("#DeviceIcons")[0];
 		for (var i=0; i<deviceParent.childNodes.length; i++) {
 			$.ajax({
-					url: "json.htm?type=command&param=setplandevicecoords" + "&idx=" + deviceParent.childNodes[i].getAttribute('idx') + "&xoffset=0&yoffset=0",
+					url: "json.htm?type=command&param=setplandevicecoords" + "&idx=" + deviceParent.childNodes[i].getAttribute('idx') + 
+								"&xoffset=0&yoffset=0" +
+								"&DevSceneType=" + deviceParent.childNodes[i].getAttribute('devscenetype'),
 					async: false, 
 					dataType: 'json',
 					success: function(data) {
