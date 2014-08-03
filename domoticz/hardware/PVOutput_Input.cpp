@@ -328,7 +328,7 @@ void CPVOutputInput::GetMeterDetails()
 	sstr.clear();
 	sstr.str("");
 
-	sstr << "http://pvoutput.org/service/r2/getstatistic.jsp?sid=" << m_SID << "&key=" << m_KEY;
+	sstr << "http://pvoutput.org/service/r2/getstatistic.jsp?sid=" << m_SID << "&key=" << m_KEY << "&c=1";
 	if (!HTTPClient::GET(sstr.str(),sResult))
 	{
 		_log.Log(LOG_ERROR,"PVOutput (Input): Error login!");
@@ -342,11 +342,21 @@ void CPVOutputInput::GetMeterDetails()
 	}
 
 	double kWhCounterUsage=atof(splitresult[0].c_str());
+	double kWhCounterUsageBackup = kWhCounterUsage;
+	if (splitresult.size() > 11)
+	{
+		double tmpCounter = atof(splitresult[11].c_str());
+		if (tmpCounter != 0)
+		{
+			kWhCounterUsage = tmpCounter;
+		}
+		
+	}
 	SendMeter(0,1, Usage/1000.0, kWhCounterUsage/1000.0, "SolarMain");
 
 	if (bHaveConsumption)
 	{
-		double kWhCounterConsumed=kWhCounterUsage-atof(splitresult[1].c_str());
+		double kWhCounterConsumed = kWhCounterUsageBackup - atof(splitresult[1].c_str());
 		SendMeter(0,2, Consumption/1000.0, kWhCounterConsumed/1000.0, "SolarConsumed");
 	}
 }

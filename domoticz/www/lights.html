@@ -1408,8 +1408,8 @@ function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage
 		$("#lightcontent #OffDelayDiv").hide();
 		$("#lightcontent #MotionDiv").hide();
 		$("#lightcontent #SwitchIconDiv").hide();
-		$("#lightcontent #onaction").val(strParam1);
-		$("#lightcontent #offaction").val(strParam2);
+		$("#lightcontent #onaction").val(atob(strParam1));
+		$("#lightcontent #offaction").val(atob(strParam2));
 	}
 	else {
 		$("#lightcontent #SwitchType").show();
@@ -1449,8 +1449,8 @@ function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage
 		}
 		$("#lightcontent #combosubdevice").html("");
 		
-		$("#lightcontent #onaction").val(strParam1);
-		$("#lightcontent #offaction").val(strParam2);
+		$("#lightcontent #onaction").val(atob(strParam1));
+		$("#lightcontent #offaction").val(atob(strParam2));
 		
 		$('#lightcontent #protected').prop('checked',(bIsProtected==true));
 		
@@ -2191,7 +2191,7 @@ function ShowLights()
                 '<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Log">Log</a> ';
           if (window.my_config.userrights==2) {
 			  xhtm+=
-					'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + '\'' + item.Type + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.IsSubDevice + ', ' + item.CustomImage + ', \'' + item.SubType + '\', \'' + atob(item.StrParam1) + '\', \'' + atob(item.StrParam2) + '\', ' + item.Protected +');" data-i18n="Edit">Edit</a> ';
+					'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + '\'' + item.Type + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.IsSubDevice + ', ' + item.CustomImage + ', \'' + item.SubType + '\', \'' + item.StrParam1 + '\', \'' + item.StrParam2 + '\', ' + item.Protected +');" data-i18n="Edit">Edit</a> ';
 						if (bAddTimer == true) {
 									if (item.Timers == "true") {
 										xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',' + bIsDimmer + ',\'' + item.Type + '\'' + ', \'' + item.SubType + '\');" data-i18n="Timers">Timers</a> ';

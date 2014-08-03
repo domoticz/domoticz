@@ -67,6 +67,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: 'Toon' hardware support
 - Implemented: Hardware device auto restart option
 - Implemented: Forecast button in temperature/weather tab
+- Fixed: Lights/Scenes On/Off actions with spaces and special characters
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

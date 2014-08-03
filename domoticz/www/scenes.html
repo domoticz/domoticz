@@ -813,8 +813,8 @@ function EditSceneDevice(idx,name,havecode,type,bIsProtected,learndevicename,ona
   $("#scenecontent #LevelDiv").hide();
   $("#scenecontent #LedColor").hide();
   
-  $("#scenecontent #onaction").val(onaction);
-  $("#scenecontent #offaction").val(offaction);
+  $("#scenecontent #onaction").val(atob(onaction));
+  $("#scenecontent #offaction").val(atob(offaction));
   
   $('#scenecontent #protected').prop('checked',(bIsProtected==true));
   
@@ -1521,7 +1521,7 @@ function ShowScenes()
                   '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
           }
           if (window.my_config.userrights==2) {
-				xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + item.Name + '\',' + item.HardwareID + ',\'' + item.Type + '\', ' + item.Protected + ',\'' + item.CodeDeviceName + '\', \'' + atob(item.OnAction) + '\', \'' + atob(item.OffAction) + '\');" data-i18n="Edit">Edit</a> ';
+				xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + item.Name + '\',' + item.HardwareID + ',\'' + item.Type + '\', ' + item.Protected + ',\'' + item.CodeDeviceName + '\', \'' + item.OnAction + '\', \'' + item.OffAction + '\');" data-i18n="Edit">Edit</a> ';
 				if (bAddTimer == true) {
 					if (item.Timers == "true") {
 						xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',\'' + item.Type + '\');" data-i18n="Timers">Timers</a> ';
