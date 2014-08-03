@@ -11,7 +11,7 @@ public:
 	~CToonThermostat(void);
 	void WriteToHardware(const char *pdata, const unsigned char length);
 	void SetSetpoint(const int idx, const float temp);
-	void SetProgramState(const std::string &targetState);
+	void SetProgramState(const int newState);
 private:
 	void SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
 	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);

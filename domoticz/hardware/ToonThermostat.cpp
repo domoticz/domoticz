@@ -552,7 +552,7 @@ void CToonThermostat::SetSetpoint(const int idx, const float temp)
 	}
 }
 
-void CToonThermostat::SetProgramState(const std::string &targetState)
+void CToonThermostat::SetProgramState(const int newState)
 {
 	if (m_UserName.size() == 0)
 		return;
@@ -572,7 +572,7 @@ void CToonThermostat::SetProgramState(const std::string &targetState)
 	sstr2 << "?clientId=" << m_ClientID
 		<< "&clientIdChecksum=" << m_ClientIDChecksum
 		<< "&state=2"
-		<< "&temperatureState=" << targetState
+		<< "&temperatureState=" << newState
 		<< "&random=" << GetRandom();
 	std::string szPostdata = sstr2.str();
 

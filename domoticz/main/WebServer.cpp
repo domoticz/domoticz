@@ -2212,7 +2212,22 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			m_mainworker.SetSetPoint(idx,(float)atof(svalue.c_str()));
 		}
 	}
-	else if (cparam=="system_shutdown")
+	else if (cparam == "thermostatstate")
+	{
+		std::string sstate = m_pWebEm->FindValue("state");
+		std::string idx=m_pWebEm->FindValue("idx");
+		if (
+			(idx == "") ||
+			(sstate == "")
+			)
+			return;
+		int iState = atoi(sstate.c_str());
+		root["status"] = "OK";
+		root["title"] = "Set Thermostat State";
+		_log.Log(LOG_NORM, "Setting Thermostat State....");
+		m_mainworker.SetThermostatState(idx, iState);
+	}
+	else if (cparam == "system_shutdown")
 	{
 #ifdef WIN32
 		system("shutdown -s -f -t 1 -d up:125:1");
@@ -9467,6 +9482,11 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		case 3:
 			//Gas
 			m_sql.UpdateValue(HwdID, ID, 1, pTypeP1Gas, sTypeP1Gas, 12, 255, 0, "0", devname);
+			bCreated = true;
+			break;
+		case 4:
+			//Voltage
+			m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeVoltage, 12, 255, 0, "0.000", devname);
 			bCreated = true;
 			break;
 		case pTypeTEMP:

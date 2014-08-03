@@ -8544,6 +8544,33 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue)
 	return SetSetPointInt(sd,TempValue);
 }
 
+bool MainWorker::SetThermostatState(const std::string &idx, const int newState)
+{
+	//Get Device details
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() < 1)
+		return false;
+	int HardwareID = atoi(result[0][0].c_str());
+	int hindex = FindDomoticzHardware(HardwareID);
+	if (hindex == -1)
+		return false;
+
+	CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
+	if (pHardware == NULL)
+		return false;
+	if (pHardware->HwdType == HTYPE_TOONTHERMOSTAT) 
+	{
+		CToonThermostat *pGateway = (CToonThermostat*)pHardware;
+		pGateway->SetProgramState(newState);
+		return true;
+	}
+	return false;
+}
+
+
 bool MainWorker::SwitchScene(const std::string &idx, const std::string &switchcmd)
 {
 	unsigned long long ID;
