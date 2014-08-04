@@ -69,6 +69,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: Forecast button in temperature/weather tab
 - Fixed: Lights/Scenes On/Off actions with spaces and special characters
 - Implemented: AppLamp now remembers last dim level in the widgets
+- Changed: OpenZWave Lux sensors that reports in percentage is now converted to Lux (with a max of 1000 Lux)
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

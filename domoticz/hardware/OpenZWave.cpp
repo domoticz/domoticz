@@ -1391,6 +1391,12 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 		{
 			if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
 			{
+				if (vUnits != "lux")
+				{
+					//convert from % to Lux (where max is 1000 Lux)
+					fValue = (1000.0f / 100.0f)*fValue;
+				}
+
 				_device.floatValue=fValue;
 				_device.commandClassID=49;
 				_device.devType = ZDTYPE_SENSOR_LIGHT;
@@ -1924,6 +1930,11 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 			return;
 		if (vLabel!="Luminance")
 			return;
+		if (vUnits != "lux")
+		{
+			//convert from % to Lux (where max is 1000 Lux)
+			fValue = (1000.0f / 100.0f)*fValue;
+		}
 		pDevice->floatValue=fValue;
 		break;
 	case ZDTYPE_SENSOR_VOLTAGE:
