@@ -1817,15 +1817,16 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 	else if (cparam=="setplandevicecoords")
 	{
 		std::string idx=m_pWebEm->FindValue("idx");
+		std::string planidx=m_pWebEm->FindValue("planidx");
 		std::string xoffset=m_pWebEm->FindValue("xoffset");
 		std::string yoffset=m_pWebEm->FindValue("yoffset");
 		std::string type=m_pWebEm->FindValue("DevSceneType");
-		if ((idx=="") || (xoffset=="") || (yoffset==""))
+		if ((idx=="") || (planidx=="") || (xoffset=="") || (yoffset==""))
 			return;
 		if (type!="1") type = "0";  // 0 = Device, 1 = Scene/Group
 		root["status"]="OK";
 		root["title"]="SetPlanDeviceCoords";
-		szQuery << "UPDATE DeviceToPlansMap SET [XOffset] = " << xoffset << ", [YOffset] = " << yoffset << " WHERE (DeviceRowID='" << idx << "') and (DevSceneType='" << type << "')";
+		szQuery << "UPDATE DeviceToPlansMap SET [XOffset] = " << xoffset << ", [YOffset] = " << yoffset << " WHERE (DeviceRowID='" << idx << "') and (PlanID='" << planidx << "') and (DevSceneType='" << type << "')";
 		result=m_sql.query(szQuery.str());
 	}
 	else if (cparam=="deleteallplandevices")

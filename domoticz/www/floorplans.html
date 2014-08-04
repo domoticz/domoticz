@@ -17,9 +17,9 @@
 <div id="floorplanmain" style="display:none;">
 	<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
 	<tr>
-		<td align="left"><a class="btnstylerev" onclick="RefreshFloorPlan(window.myglobals.FloorplanIndex-1);" data-i18n="Previous">Previous</a></td>
+		<td align="left"><a class="btnstylerev" onclick="PrevFloorplan();" data-i18n="Previous">Previous</a></td>
 		<td align="center"><H2 id="NoFloorplansText" data-i18n="'No Floorplans defined yet...'" style="display:none;">No Floorplans defined yet...</H2></td>
-		<td align="right"><a class="btnstyle" onclick="RefreshFloorPlan(window.myglobals.FloorplanIndex+1);" data-i18n="Next">Next</a></td>
+		<td align="right"><a class="btnstyle" onclick="NextFloorplan();" data-i18n="Next">Next</a></td>
 	</tr>
 	</table>
 	<br>
@@ -72,10 +72,32 @@
 </div>
 
 <script type="text/javascript" charset="utf-8">
+function NextFloorplan() {
+	if ($("#floorplangroup")[0].getAttribute("zoomed") == "true")
+	{
+		$("#floorplangroup")[0].setAttribute("transform", "translate(0,0) scale(1)");
+		$("#DeviceContainer")[0].setAttribute("transform", "translate(0,0) scale(1)");
+		$("#floorplangroup")[0].setAttribute("zoomed", "false");
+	}
+	RefreshFloorPlan(window.myglobals.FloorplanIndex+1);
+}
+
+function PrevFloorplan() {
+	if ($("#floorplangroup")[0].getAttribute("zoomed") == "true")
+	{
+		$("#floorplangroup")[0].setAttribute("transform", "translate(0,0) scale(1)");
+		$("#DeviceContainer")[0].setAttribute("transform", "translate(0,0) scale(1)");
+		$("#floorplangroup")[0].setAttribute("zoomed", "false");
+	}
+	RefreshFloorPlan(window.myglobals.FloorplanIndex-1);
+}
+
 function ImageLoaded() {
 	if (typeof $("#floorplanimagesize") != 'undefined') {
 		$('#helptext').attr("title", 'Image width is: ' + $("#floorplanimagesize")[0].naturalWidth + ", Height is: " + $("#floorplanimagesize")[0].naturalHeight);
-		$("#svgcontainer")[0].setAttribute("viewBox","0 0 " + $("#floorplanimagesize")[0].naturalWidth + " " + $("#floorplanimagesize")[0].naturalHeight);
+		$("#svgcontainer")[0].setAttribute("viewBox","0 0 1280 720");
+		Device.xImageSize = 1280;
+		Device.yImageSize = 720;
 		$("#svgcontainer")[0].setAttribute("style","display:inline");
 		SVGResize();
 	}
@@ -87,8 +109,6 @@ function SVGResize() {
 		$("#floorplancontainer")[0].setAttribute('naturalWidth', $("#floorplanimagesize")[0].naturalWidth);
 		$("#floorplancontainer")[0].setAttribute('naturalHeight', $("#floorplanimagesize")[0].naturalHeight);
 		$("#floorplancontainer")[0].setAttribute('svgwidth', $("#svgcontainer").width());
-		Device.xImageSize = $("#floorplanimagesize")[0].naturalWidth;
-		Device.yImageSize = $("#floorplanimagesize")[0].naturalHeight;
 		var ratio = $("#floorplanimagesize")[0].naturalWidth / $("#floorplanimagesize")[0].naturalHeight;
 		$("#floorplancontainer")[0].setAttribute('ratio', ratio);
 		svgHeight = $("#svgcontainer").width() / ratio;
@@ -104,7 +124,7 @@ function RoomClick(click) {
 	if ($("#floorplangroup")[0].getAttribute("zoomed") == "true")
 	{
 		$("#floorplangroup")[0].setAttribute("transform", "translate(0,0) scale(1)");
-		Device.scale("translate(0,0) scale(1)");
+		$("#DeviceContainer")[0].setAttribute("transform", "translate(0,0) scale(1)");
 		$("#floorplangroup")[0].setAttribute("zoomed", "false");
 	}
 	else
@@ -113,14 +133,14 @@ function RoomClick(click) {
 		var margin = 0.1;  // 10% margin around polygon
 		var marginX = borderRect.width * margin;
 		var marginY = borderRect.height * margin;
-		var scaleX= $("#floorplanimagesize")[0].naturalWidth / (borderRect.width + (marginX * 2));
-		var scaleY= $("#floorplanimagesize")[0].naturalHeight / (borderRect.height + (marginY * 2));
+		var scaleX= 1280 / (borderRect.width + (marginX * 2));
+		var scaleY= 720 / (borderRect.height + (marginY * 2));
 		var scale = ((scaleX > scaleY) ? scaleY : scaleX);
 		var attr = 'scale('  + scale + ')' + ' translate(' + (borderRect.x - marginX)*-1 + ',' + (borderRect.y - marginY)*-1 + ')';
 
 		// this actually needs to centre in the direction its not scaling but close enough for v1.0
 		$("#floorplangroup")[0].setAttribute("transform", attr);
-		Device.scale(attr);
+		$("#DeviceContainer")[0].setAttribute("transform", attr);
 		$("#floorplangroup")[0].setAttribute("zoomed", "true");
 	}
 }

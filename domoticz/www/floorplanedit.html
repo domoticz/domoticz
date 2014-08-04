@@ -73,7 +73,7 @@
 		<span id="helptext" data-i18n="Click on the image below to define room area, drag and drop devices">Click on the image below to define room area, drag and drop devices</span>
 		<img id="floorplanimagesize" width="100%" height="100%" src="" style="display:none" onload="ImageLoaded()">
 		<style type="text/css">
-			polygon.hoverable
+			.hoverable
 			{
 				cursor: pointer;
 				fill: blue;
@@ -123,11 +123,10 @@
 					function Drag(evt) {
 						if (!evt) var evt = window.event;
 						var parent = evt.target.parentNode;
-						var xScale = $("#floorplanimagesize")[0].naturalWidth / $("#svgcontainer").width();
-						var yScale = $("#floorplanimagesize")[0].naturalHeight / $("#svgcontainer").height();
+						var Scale = 1280 / $("#svgcontainer").width();
 						var offset = $("#floorplanimage").offset();
-						var xoffset = Math.round((evt.pageX - offset.left - 10) * xScale);
-						var yoffset = Math.round((evt.pageY - offset.top - 10) * yScale);
+						var xoffset = Math.round((evt.pageX - offset.left - (Device.iconSize/3)) * Scale);
+						var yoffset = Math.round((evt.pageY - offset.top - (Device.iconSize/3)) * Scale);
 						parent.setAttribute("transform", 'translate(' + xoffset + ',' + yoffset + ')');
 						parent.setAttribute("xoffset", xoffset);
 						parent.setAttribute("yoffset", yoffset);
@@ -153,9 +152,11 @@
 
 <script type="text/javascript" charset="utf-8">
 function ImageLoaded() {
-	if ($("#floorplanimagesize") != 'undefined') {
+	if (typeof $("#floorplanimagesize") != 'undefined') {
 		$('#helptext').attr("title", 'Image width is: ' + $("#floorplanimagesize")[0].naturalWidth + ", Height is: " + $("#floorplanimagesize")[0].naturalHeight);
-		$("#svgcontainer")[0].setAttribute("viewBox","0 0 " + $("#floorplanimagesize")[0].naturalWidth + " " + $("#floorplanimagesize")[0].naturalHeight);
+		$("#svgcontainer")[0].setAttribute("viewBox","0 0 1280 720");
+		Device.xImageSize = 1280;
+		Device.yImageSize = 720;
 		$("#svgcontainer")[0].setAttribute("style","display:inline");
 		SVGResize();
 	}
@@ -167,8 +168,6 @@ function SVGResize() {
 		$("#floorplaneditor")[0].setAttribute('naturalWidth', $("#floorplanimagesize")[0].naturalWidth);
 		$("#floorplaneditor")[0].setAttribute('naturalHeight', $("#floorplanimagesize")[0].naturalHeight);
 		$("#floorplaneditor")[0].setAttribute('svgwidth', $("#svgcontainer").width());
-		Device.xImageSize = $("#floorplanimagesize")[0].naturalWidth;
-		Device.yImageSize = $("#floorplanimagesize")[0].naturalHeight;
 		var ratio = $("#floorplanimagesize")[0].naturalWidth / $("#floorplanimagesize")[0].naturalHeight;
 		$("#floorplaneditor")[0].setAttribute('ratio', ratio);
 		svgHeight = $("#svgcontainer").width() / ratio;
@@ -184,7 +183,7 @@ function PolyClick(click) {
 	if ($("#floorplangroup")[0].getAttribute("zoomed") == "true")
 	{
 		$("#floorplangroup")[0].setAttribute("transform", "translate(0,0) scale(1)");
-		Device.scale("translate(0,0) scale(1)");
+		$("#DeviceContainer")[0].setAttribute("transform", "translate(0,0) scale(1)");
 		$("#floorplangroup")[0].setAttribute("zoomed", "false");
 	}
 	else
@@ -193,18 +192,18 @@ function PolyClick(click) {
 		var margin = 0.1;  // 10% margin around polygon
 		var marginX = borderRect.width * margin;
 		var marginY = borderRect.height * margin;
-		var scaleX= $("#floorplanimagesize")[0].naturalWidth / (borderRect.width + (marginX * 2));
-		var scaleY= $("#floorplanimagesize")[0].naturalHeight / (borderRect.height + (marginY * 2));
+		var scaleX = 1280 / (borderRect.width + (marginX * 2));
+		var scaleY = 720 / (borderRect.height + (marginY * 2));
 		var scale = ((scaleX > scaleY) ? scaleY : scaleX);
 		var attr = 'scale('  + scale + ')' + ' translate(' + (borderRect.x - marginX)*-1 + ',' + (borderRect.y - marginY)*-1 + ')';
 
 		// this actually needs to centre in the direction its not scaling but close enough for v1.0
 		$("#floorplangroup")[0].setAttribute("transform", attr);
-		Device.scale(attr);
+		$("#DeviceContainer")[0].setAttribute("transform", attr);
 		$("#floorplangroup")[0].setAttribute("zoomed", "true");
 	}
 	window.myglobals.LastUpdate = 0;
-	RefreshDevices();
+	RefreshDevices(); // force redraw to change 'moveability' of icons
 }
 
 function FloorplanClick(click) {
@@ -213,12 +212,17 @@ function FloorplanClick(click) {
 	{
 		if ($("#roompolyarea").attr("title") != "")
 		{
-			var xScale = $("#floorplanimagesize")[0].naturalWidth / $("#svgcontainer").width();
-			var yScale = $("#floorplanimagesize")[0].naturalHeight / $("#svgcontainer").height();
+			var Scale = 1280 / $("#svgcontainer").width();
 			var offset = $("#floorplanimage").offset();
 			var points = $("#roompolyarea").attr("points");
-			if (points != "") points = points + ",";
-			points = points + Math.round((click.pageX - offset.left) * xScale) + "," + Math.round((click.pageY - offset.top) * yScale);
+			var xPoint = Math.round((click.pageX - offset.left) * Scale);
+			var yPoint = Math.round((click.pageY - offset.top) * Scale);
+			if (points != "") {
+				points = points + ",";
+			} else {
+				$("#floorplangroup")[0].appendChild(makeSVGnode('circle', { id: "firstclick", cx:xPoint, cy:yPoint, r:2, class:'hoverable' }, ''));
+			}
+			points = points + xPoint + "," + yPoint;
 			$("#roompolyarea").attr("points",  points );
 			$('#floorplancontent #delclractive #activeplanupdate').attr("class", "btnstyle3");
 		}
@@ -557,10 +561,10 @@ function RefreshPlanTable(idx) {
 	$('#floorplancontent #delclractive #activeplandelete').attr("class", "btnstyle3-dis");
 	$('#floorplancontent #delclractive #activeplanupdate').attr("class", "btnstyle3-dis");
 	$('#floorplancontent #delclractive #activeplanclear').attr("class", "btnstyle3-dis");
-	while ($("#roomplandevices")[0].childNodes.length != 0)
-		$("#roomplandevices")[0].removeChild($("#roomplandevices")[0].childNodes[0]);
+	$("#roomplandevices").empty();
 	$("#roompolyarea").attr("title", "");
 	$("#roompolyarea").attr("points", "");
+	$("#firstclick").remove();
 
 	clearInterval($.myglobals.refreshTimer);
 	var oTable = $('#floorplancontent #plantable').dataTable();
@@ -596,6 +600,7 @@ function RefreshPlanTable(idx) {
 						Device.initialise();
 						$("#roompolyarea").attr("title", "");
 						$("#roompolyarea").attr("points", "");
+						$("#firstclick").remove();
 						$("#floorplangroup").attr("planidx", "");
 					}
 					else {
@@ -688,6 +693,7 @@ function UpdateFloorplanPlan(planidx,clear) {
 		$.ajax({
 				url: "json.htm?type=command&param=setplandevicecoords" + 
 								"&idx=" + deviceParent.childNodes[i].getAttribute('idx') + 
+								"&planidx=" + planidx + 
 								"&xoffset=" + deviceParent.childNodes[i].getAttribute('xoffset') +
 								"&yoffset=" + deviceParent.childNodes[i].getAttribute('yoffset') +
 								"&DevSceneType=" + deviceParent.childNodes[i].getAttribute('devscenetype'),
