@@ -567,8 +567,6 @@ bool MainWorker::AddHardwareFromParams(
 
 bool MainWorker::Start()
 {
-	Stop();
-
 	if (!m_sql.OpenDatabase())
 	{
 		return false;

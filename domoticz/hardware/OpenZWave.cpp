@@ -63,12 +63,12 @@ static const _tAlarmNameToIndexMapping AlarmToIndexMapping[] = {
 
 unsigned char GetIndexFromAlarm(const std::string &sLabel)
 {
-	_tAlarmNameToIndexMapping *pTable = (_tAlarmNameToIndexMapping*)&AlarmToIndexMapping;
 	int ii = 0;
-	while (pTable[ii].iIndex != 0)
+	while (AlarmToIndexMapping[ii].iIndex != 0)
 	{
-		if (pTable[ii].sLabel == sLabel)
-			return pTable[ii].iIndex;
+		if (AlarmToIndexMapping[ii].sLabel == sLabel)
+			return AlarmToIndexMapping[ii].iIndex;
+		ii++;
 	}
 	return 0;
 }
