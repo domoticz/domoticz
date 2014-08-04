@@ -717,7 +717,7 @@ function UpdateFloorplanPlan(planidx,clear) {
 	RefreshPlanTable($.devIdx);
 }
 
-function DeleteFloorplanPlan(idx) {
+function DeleteFloorplanPlan(planidx) {
 	bootbox.confirm($.i18n("Are you sure to delete this Plan from the Floorplan?"), function(result) {
 
 	if (result==true) {
@@ -725,6 +725,7 @@ function DeleteFloorplanPlan(idx) {
 		for (var i=0; i<deviceParent.childNodes.length; i++) {
 			$.ajax({
 					url: "json.htm?type=command&param=setplandevicecoords" + "&idx=" + deviceParent.childNodes[i].getAttribute('idx') + 
+								"&planidx=" + planidx + 
 								"&xoffset=0&yoffset=0" +
 								"&DevSceneType=" + deviceParent.childNodes[i].getAttribute('devscenetype'),
 					async: false, 
@@ -747,7 +748,7 @@ function DeleteFloorplanPlan(idx) {
 
 	if (result==true) {
 		$.ajax({
-			url: "json.htm?type=command&param=updatefloorplanplan&planidx=" + idx + "&area=",
+			url: "json.htm?type=command&param=updatefloorplanplan&planidx=" + planidx + "&area=",
 			async: false, 
 			dataType: 'json',
 			success: function(data) {
@@ -767,7 +768,7 @@ function DeleteFloorplanPlan(idx) {
 
 	if (result==true) {
 			$.ajax({
-				 url: "json.htm?type=command&param=deletefloorplanplan&idx=" + idx,
+				 url: "json.htm?type=command&param=deletefloorplanplan&idx=" + planidx,
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
