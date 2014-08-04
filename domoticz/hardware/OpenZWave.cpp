@@ -44,6 +44,35 @@ enum _eSensorScaleID
 	SCALEID_POWERFACTOR
 };
 
+struct _tAlarmNameToIndexMapping
+{
+	std::string sLabel;
+	unsigned char iIndex;
+};
+
+static const _tAlarmNameToIndexMapping AlarmToIndexMapping[] = {
+	{ "General", 40 },
+	{ "Smoke", 41 },
+	{ "Carbon Monoxide", 42 },
+	{ "Carbon Dioxide", 43 },
+	{ "Heat", 44 },
+	{ "Flood", 45 },
+	{ "Alarm Level", 50 },
+	{ "",0}
+};
+
+unsigned char GetIndexFromAlarm(const std::string &sLabel)
+{
+	_tAlarmNameToIndexMapping *pTable = (_tAlarmNameToIndexMapping*)&AlarmToIndexMapping;
+	int ii = 0;
+	while (pTable[ii].iIndex != 0)
+	{
+		if (pTable[ii].sLabel == sLabel)
+			return pTable[ii].iIndex;
+	}
+	return 0;
+}
+
 #pragma warning(disable: 4996)
 
 extern std::string szStartupFolder;
@@ -1270,16 +1299,10 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	}
 	else if ((commandclass==COMMAND_CLASS_ALARM)||(commandclass==COMMAND_CLASS_SENSOR_ALARM))
 	{
-		if (
-			(vLabel=="General")||
-			(vLabel=="Alarm Level")||
-			(vLabel=="Flood")||
-			(vLabel=="Smoke")||
-			(vLabel=="Carbon Monoxide")||
-			(vLabel=="Carbon Dioxide")||
-			(vLabel=="Heat")
-			)
+		int newInstance = GetIndexFromAlarm(vLabel);
+		if (newInstance!=0)
 		{
+			_device.instanceID = newInstance;
 			if (m_pManager->GetValueAsByte(vID,&byteValue)==true)
 			{
 				_device.devType= ZDTYPE_SWITCHNORMAL;
@@ -1557,6 +1580,15 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID vID, int EventID)
 		return;
 
 	instance=vID.GetIndex();
+	unsigned char commandclass=vID.GetCommandClassId();
+	std::string vLabel=m_pManager->GetValueLabel(vID);
+
+	if ((commandclass==COMMAND_CLASS_ALARM)||(commandclass==COMMAND_CLASS_SENSOR_ALARM))
+	{
+		instance = GetIndexFromAlarm(vLabel);
+		if (instance==0)
+			return;
+	}
 
 	_tZWaveDevice *pDevice=FindDevice(NodeID,instance, index, COMMAND_CLASS_SENSOR_BINARY, ZDTYPE_SWITCHNORMAL);
 	if (pDevice==NULL)
@@ -1723,6 +1755,13 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 		)
 		return;
 
+	if ((commandclass==COMMAND_CLASS_ALARM)||(commandclass==COMMAND_CLASS_SENSOR_ALARM))
+	{
+		instance = GetIndexFromAlarm(vLabel);
+		if (instance==0)
+			return;
+	}
+
 	time_t atime=mytime(NULL);
 	std::stringstream sstr;
 	sstr << int(NodeID) << ".instances." << int(instance) << ".commandClasses." << int(commandclass) << ".data";
@@ -1749,12 +1788,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 
 		sstr << "." << scaleID;
 	}
-
-	std::string stringvalue;
-	m_pManager->GetValueAsString(vID,&stringvalue);
-
-
 	std::string path=sstr.str();
+
 #ifdef DEBUG_ZWAVE_INT
 	_log.Log(LOG_NORM, "OpenZWave: Value_Changed: Node: %d, CommandClass: %s, Label: %s, Instance: %d, Index: %d",NodeID, cclassStr(commandclass),vLabel.c_str(),vID.GetInstance(),vID.GetIndex());
 #endif
