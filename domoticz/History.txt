@@ -68,6 +68,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: Hardware device auto restart option
 - Implemented: Forecast button in temperature/weather tab
 - Fixed: Lights/Scenes On/Off actions with spaces and special characters
+- Implemented: AppLamp now remembers last dim level in the widgets
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

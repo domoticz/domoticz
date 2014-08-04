@@ -7065,6 +7065,15 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["Level"]=LastLevel;
 					int iLevel=round((float(maxDimLevel)/100.0f)*LastLevel);
 					root["result"][ii]["LevelInt"]=iLevel;
+					if (dType == pTypeLimitlessLights)
+					{
+						llevel = LastLevel;
+						if (lstatus == "Set Level")
+						{
+							sprintf(szTmp, "Set Level: %d %%", LastLevel);
+							root["result"][ii]["Status"] = szTmp;
+						}
+					}
 				}
 				else
 				{

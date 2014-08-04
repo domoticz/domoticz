@@ -4026,7 +4026,7 @@ unsigned long long MainWorker::decode_Lighting6(const CDomoticzHardwareBase *pHa
 
 unsigned long long MainWorker::decode_LimitlessLights(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
-	char szTmp[100];
+	char szTmp[300];
 	std::string devname;
 
 	_tLimitlessLights *pLed=(_tLimitlessLights*)pResponse;
@@ -4042,6 +4042,28 @@ unsigned long long MainWorker::decode_LimitlessLights(const CDomoticzHardwareBas
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,12,-1,cmnd,devname);
 	PrintDeviceName(devname);
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
+
+	if (cmnd == Limitless_SetBrightnessLevel)
+	{
+		std::vector<std::vector<std::string> > result;
+		sprintf(szTmp, "SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)", pHardware->m_HwdID, ID.c_str(), Unit, devType, subType);
+		result = m_sql.query(szTmp);
+		if (result.size() != 0)
+		{
+			unsigned long long ulID;
+			std::stringstream s_str(result[0][0]);
+			s_str >> ulID;
+
+			//store light level
+			sprintf(szTmp,
+				"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %llu)",
+				value,
+				ulID);
+			m_sql.query(szTmp);
+		}
+
+	}
+
 	return DevRowIdx;
 }
 
