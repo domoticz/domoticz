@@ -100,6 +100,8 @@ function ImageLoaded() {
 		Device.yImageSize = 720;
 		$("#svgcontainer")[0].setAttribute("style","display:inline");
 		SVGResize();
+		$("#floorplanimage").on("click", function ( event ) {FloorplanClick(event);});
+		$("#roompolyarea").on("click", function ( event ) {PolyClick(event);});
 	}
 }
 
@@ -111,7 +113,11 @@ function SVGResize() {
 		$("#floorplancontainer")[0].setAttribute('svgwidth', $("#svgcontainer").width());
 		var ratio = $("#floorplanimagesize")[0].naturalWidth / $("#floorplanimagesize")[0].naturalHeight;
 		$("#floorplancontainer")[0].setAttribute('ratio', ratio);
-		svgHeight = $("#svgcontainer").width() / ratio;
+		if ($("#svgcontainer").width() == 100) {
+			svgHeight = $("#floorplancontainer").width() / ratio;  // FireFox specific
+		} else {
+			svgHeight = $("#svgcontainer").width() / ratio;
+		}
 		$("#floorplancontainer").height(svgHeight);
 	}
 	
@@ -273,7 +279,7 @@ function RefreshFloorPlan(floorIdx) {
 							if (typeof data.result != 'undefined') {
 								var planGroup = $("#roomplangroup")[0];
 								$.each(data.result, function(i,item){
-									var el = makeSVGnode('polygon', { id: item.Name + "_Room", 'class': 'hoverable', points: item.Area, onclick:"RoomClick(event);" }, '');
+									var el = makeSVGnode('polygon', { id: item.Name + "_Room", 'class': 'hoverable', points: item.Area }, '');
 									el.appendChild(makeSVGnode('title', null, item.Name));
 									planGroup.appendChild(el);
 									ShowDevices(item.idx, el);
@@ -317,6 +323,7 @@ $(document).ready(function() {
 	$('#modal').show();	
 
 	ShowFloorplan();
+	$("#roomplangroup").on("click", function ( event ) { RoomClick( event ); });
 
 	$('#modal').hide();
 } );  

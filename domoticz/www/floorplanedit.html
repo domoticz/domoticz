@@ -111,8 +111,8 @@
 		<svg id="svgcontainer" width="100%" height="100%" version="1.1"  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
 			onresize="SVGResize();"  preserveAspectRatio="xMinYMin meet" style="display:none">
 			<g id="floorplangroup" zoomed="false" >
-				<image id="floorplanimage"  width="100%" height="100%" xlink:href="" onclick="FloorplanClick(event);"/>
-				<polygon id="roompolyarea" class="hoverable" onclick="PolyClick(event)">
+				<image id="floorplanimage"  width="100%" height="100%" xlink:href="" />
+				<polygon id="roompolyarea" class="hoverable">
 					<title data-i18n="Click room to test">Click room to test</title>
 				</polygon>
 				<script>
@@ -170,7 +170,11 @@ function SVGResize() {
 		$("#floorplaneditor")[0].setAttribute('svgwidth', $("#svgcontainer").width());
 		var ratio = $("#floorplanimagesize")[0].naturalWidth / $("#floorplanimagesize")[0].naturalHeight;
 		$("#floorplaneditor")[0].setAttribute('ratio', ratio);
-		svgHeight = $("#svgcontainer").width() / ratio;
+		if ($("#svgcontainer").width() == 100) {
+			svgHeight = $("#floorplaneditor").width() / ratio;  // FireFox specific
+		} else {
+			svgHeight = $("#svgcontainer").width() / ratio;
+		}
 		$("#floorplaneditor").height(svgHeight);
 	}
 	
@@ -180,6 +184,7 @@ function SVGResize() {
 }
 
 function PolyClick(click) {
+	if (!click) var click = window.event;
 	if ($("#floorplangroup")[0].getAttribute("zoomed") == "true")
 	{
 		$("#floorplangroup")[0].setAttribute("transform", "translate(0,0) scale(1)");
@@ -207,12 +212,18 @@ function PolyClick(click) {
 }
 
 function FloorplanClick(click) {
+	if (!click) var click = window.event;
 	// make sure we aren't zoomed in.
 	if ($("#floorplangroup")[0].getAttribute("zoomed") != "true")
 	{
 		if ($("#roompolyarea").attr("title") != "")
 		{
-			var Scale = 1280 / $("#svgcontainer").width();
+			if ($("#svgcontainer").width() == 100) {
+				var Scale = 1280 / $("#floorplaneditor").width();  // FireFox specific
+			} else {
+				var Scale = 1280 / $("#svgcontainer").width();
+			}
+			
 			var offset = $("#floorplanimage").offset();
 			var points = $("#roompolyarea").attr("points");
 			var xPoint = Math.round((click.pageX - offset.left) * Scale);
@@ -839,6 +850,9 @@ function ShowDevices(idx) {
 }
 
 $(document).ready(function() {
-  ShowFloorplans();
+	ShowFloorplans();
+	$("#floorplanimage").on("click", function ( event ) {FloorplanClick(event);});
+	$("#roompolyarea").on("click", function ( event ) {PolyClick(event);});
+
 } );  
 </script>
