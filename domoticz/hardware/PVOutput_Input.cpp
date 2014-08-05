@@ -342,22 +342,18 @@ void CPVOutputInput::GetMeterDetails()
 	}
 
 	double kWhCounterUsage=atof(splitresult[0].c_str());
-	double kWhCounterUsageBackup = kWhCounterUsage;
-	if (splitresult.size() > 11)
-	{
-		double tmpCounter = atof(splitresult[11].c_str());
-		if (tmpCounter != 0)
-		{
-			kWhCounterUsage = tmpCounter;
-		}
-		
-	}
-	SendMeter(0,1, Usage/1000.0, kWhCounterUsage/1000.0, "SolarMain");
+	SendMeter(0, 1, Usage / 1000.0, kWhCounterUsage / 1000.0, "SolarMain");
 
 	if (bHaveConsumption)
 	{
-		double kWhCounterConsumed = kWhCounterUsageBackup - atof(splitresult[1].c_str());
-		SendMeter(0,2, Consumption/1000.0, kWhCounterConsumed/1000.0, "SolarConsumed");
+		if (splitresult.size() > 11)
+		{
+			double kWhCounterConsumed = atof(splitresult[11].c_str());
+			if (kWhCounterConsumed != 0)
+			{
+				SendMeter(0, 2, Consumption / 1000.0, kWhCounterConsumed / 1000.0, "SolarConsumed");
+			}
+		}
 	}
 }
 
