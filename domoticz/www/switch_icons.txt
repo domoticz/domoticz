@@ -11,3 +11,4 @@ Generic;Generic;Generic On/Off switch
 Fireplace;Fireplace;Fireplace
 Water;Water;Water
 Media;Media Player;Multi Media player
+Alarm;Alarm;Alarm

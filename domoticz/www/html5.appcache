@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 524
+# ref 525
 
 CACHE:
 # CSS
@@ -77,8 +77,9 @@ images/adjust48.png
 images/air.png
 images/air_signal.png
 images/air48.png
-images/alarm48.png
-images/alarm48off.png
+images/Alarm.png
+images/Alarm48_On.png
+images/alarm48_Off.png
 images/Amplifier.png
 images/Amplifier48_Off.png
 images/Amplifier48_On.png

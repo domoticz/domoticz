@@ -71,6 +71,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: AppLamp now remembers last dim level in the widgets
 - Changed: OpenZWave Lux sensors that reports in percentage is now converted to Lux (with a max of 1000 Lux)
 - Changed: pTypeUsage log now with a resolution of .1 Watt
+- Implemented: Switch icon Alarm
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

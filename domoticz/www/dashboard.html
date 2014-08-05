@@ -823,7 +823,7 @@ function RefreshFavorites()
 										img+='<img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'' + ((item.Status == "Normal Delayed")?"Alarm Delayed":"Alarm") + '\',RefreshFavorites,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40" width="40">';
 									}
 									else {
-										img+='<img src="images/alarm48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'' + ((item.Status == "Alarm Delayed")?"Normal Delayed":"Normal") + '\',RefreshFavorites,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40" width="40">';
+										img+='<img src="images/Alarm48_On.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'' + ((item.Status == "Alarm Delayed")?"Normal Delayed":"Normal") + '\',RefreshFavorites,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40" width="40">';
 									}
 								}
 								else if (item.SubType == "X10 security motion") {
@@ -831,11 +831,11 @@ function RefreshFavorites()
 										img+='<img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'Motion\',RefreshFavorites,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40" width="40">';
 									}
 									else {
-										img+='<img src="images/alarm48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'No Motion\',RefreshFavorites,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40" width="40">';
+										img+='<img src="images/Alarm48_On.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'No Motion\',RefreshFavorites,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40" width="40">';
 									}
 								}
 								else if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
-									img='<img src="images/alarm48.png" height="40" width="40">';
+									img='<img src="images/Alarm48_On.png" height="40" width="40">';
 								}
 								else {
 									if (item.SubType.indexOf('Meiantech') >= 0) {
@@ -2254,7 +2254,7 @@ function ShowFavorites()
 									xhtm+='\t      <td id="img"><img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'' + ((item.Status == "Normal Delayed")?"Alarm Delayed":"Alarm") + '\',RefreshFavorites,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40" width="40"></td>\n';
 								}
 								else {
-									xhtm+='\t      <td id="img"><img src="images/alarm48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'' + ((item.Status == "Alarm Delayed")?"Normal Delayed":"Normal") + '\',RefreshFavorites,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40" width="40"></td>\n';
+									xhtm+='\t      <td id="img"><img src="images/Alarm48_On.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'' + ((item.Status == "Alarm Delayed")?"Normal Delayed":"Normal") + '\',RefreshFavorites,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40" width="40"></td>\n';
 								}
 							}
 							else if (item.SubType == "X10 security motion") {
@@ -2262,11 +2262,11 @@ function ShowFavorites()
 									xhtm+='\t      <td id="img"><img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'Motion\',RefreshFavorites,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40" width="40"></td>\n';
 								}
 								else {
-									xhtm+='\t      <td id="img"><img src="images/alarm48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'No Motion\',RefreshFavorites,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40" width="40"></td>\n';
+									xhtm+='\t      <td id="img"><img src="images/Alarm48_On.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'No Motion\',RefreshFavorites,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40" width="40"></td>\n';
 								}
 							}
 							else if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
-								xhtm+='\t      <td id="img"><img src="images/alarm48.png" height="40" width="40"></td>\n';
+								xhtm+='\t      <td id="img"><img src="images/Alarm48_On.png" height="40" width="40"></td>\n';
 							}
 							else if (item.SubType.indexOf('Meiantech') >= 0) {
 								if ((item.Status.indexOf('Arm') >= 0)||(item.Status.indexOf('Panic') >= 0)) {
