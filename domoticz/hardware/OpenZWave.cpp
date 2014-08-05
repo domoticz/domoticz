@@ -1282,6 +1282,14 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 			}
 		}
 	}
+	else if (commandclass==COMMAND_CLASS_USER_CODE)
+	{
+		if (vLabel.find("Code ")==0)
+		{
+			//std::string tmpstr=vLabel.substr(5);//skip first 5 characters
+			//_log.Log(LOG_NORM, "OpenZWave: USER_CODES not handled yet, Value_Added: Node: %d, CommandClass: %s, Label: %s, Instance: %d",(int)NodeID, cclassStr(commandclass),vLabel.c_str(),instance);
+		}
+	}
 	else if (commandclass==COMMAND_CLASS_BASIC_WINDOW_COVERING)
 	{
 		if (vLabel=="Open")

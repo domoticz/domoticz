@@ -23,7 +23,7 @@
 	#include <pwd.h>
 #endif
 
-#define DB_VERSION 47
+#define DB_VERSION 48
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -942,6 +942,29 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 47)
 		{
+			query("ALTER TABLE Hardware ADD COLUMN [DataTimeout] INTEGER default 0");
+		}
+		if (dbversion < 48)
+		{
+			char szTmp[200];
+			sprintf(szTmp, "SELECT ID FROM DeviceStatus WHERE (Type=%d)", pTypeUsage);
+			result = query(szTmp);
+			if (result.size() > 0)
+			{ 
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					std::string idx = sd[0];
+					sprintf(szTmp, "UPDATE Meter SET Value = Value * 10 WHERE (DeviceRowID='%s')", idx.c_str());
+					query(szTmp);
+					sprintf(szTmp, "UPDATE Meter_Calendar SET Value = Value * 10 WHERE (DeviceRowID='%s')", idx.c_str());
+					query(szTmp);
+					sprintf(szTmp, "UPDATE MultiMeter_Calendar SET Value1 = Value1 * 10, Value2 = Value2 * 10 WHERE (DeviceRowID='%s')", idx.c_str());
+					query(szTmp);
+				}
+			}
+			
 			query("ALTER TABLE Hardware ADD COLUMN [DataTimeout] INTEGER default 0");
 		}
 	}
@@ -3865,6 +3888,12 @@ void CSQLHelper::UpdateMeter()
 				sprintf(szTmp,"%d",int(fValue));
 				sValue=szTmp;
 				bSkipSameValue=false;
+			}
+			else if (dType==pTypeUsage)
+			{
+				double fValue=atof(sValue.c_str())*10.0f;
+				sprintf(szTmp,"%d",int(fValue));
+				sValue=szTmp;
 			}
 
 			unsigned long long MeterValue;

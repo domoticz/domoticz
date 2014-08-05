@@ -10781,7 +10781,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 						std::vector<std::string> sd = *itt;
 
 						root["result"][ii]["d"] = sd[1].substr(0, 16);
-						root["result"][ii]["u"] = sd[0];
+						root["result"][ii]["u"] = atof(sd[0].c_str())/10.0f;
 						ii++;
 					}
 				}
@@ -12577,8 +12577,8 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 						std::vector<std::string> sd = *itt;
 
 						root["result"][ii]["d"] = sd[2].substr(0, 16);
-						root["result"][ii]["u_min"] = sd[0];
-						root["result"][ii]["u_max"] = sd[1];
+						root["result"][ii]["u_min"] = atof(sd[0].c_str())/10.0f;
+						root["result"][ii]["u_max"] = atof(sd[1].c_str())/10.0f;
 						ii++;
 					}
 				}
@@ -13026,8 +13026,8 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				if (result.size()>0)
 				{
 					root["result"][ii]["d"] = szDateEnd;
-					root["result"][ii]["u_min"] = result[0][0];
-					root["result"][ii]["u_max"] = result[0][1];
+					root["result"][ii]["u_min"] = atof(result[0][0].c_str())/10.0f;
+					root["result"][ii]["u_max"] = atof(result[0][1].c_str())/10.0f;
 					ii++;
 				}
 			}
