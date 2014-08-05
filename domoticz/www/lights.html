@@ -173,7 +173,7 @@
 	    <tr>
           <td align="right"><label>Type: </label></td>
           <td>
-			<select id="combolighttype" style="width:150px" class="combobox ui-corner-all">
+			<select id="combolighttype" style="width:170px" class="combobox ui-corner-all">
 						<option value="0">X10</option>
 						<option value="1">ARC</option>
 						<option value="2">AB400D</option>
@@ -196,6 +196,7 @@
 						<option value="100">ByronSX</option>
 						<option value="101">Harrison Curtain</option>
 						<option value="102">RFY</option>
+						<option value="103">Meiantech Security</option>
 			</select>
 			</td>
 		  </tr>
@@ -2414,6 +2415,11 @@ function UpdateAddManualDialog()
 		bIsType5=1;
 		totunits=16;
 	}
+	else if (lighttype==103) {
+		//Meiantech
+		bIsType5=1;
+		totunits=0;
+	}
 	$("#dialog-addmanuallightdevice #lightingparams_enocean").hide();
 	$("#dialog-addmanuallightdevice #lightingparams_gpio").hide();
 	
@@ -2475,7 +2481,12 @@ function UpdateAddManualDialog()
 		$("#dialog-addmanuallightdevice #lighting3params").hide();
 	}
 	else {
-		$("#dialog-addmanuallightdevice #lighting2paramsUnitCode").show();
+		if (lighttype==103) {
+			$("#dialog-addmanuallightdevice #lighting2paramsUnitCode").hide();
+		}
+		else {
+			$("#dialog-addmanuallightdevice #lighting2paramsUnitCode").show();
+		}
 		$("#dialog-addmanuallightdevice #lighting2params #combocmd2").show();
 		if (bIsType5==0) {
 			$("#dialog-addmanuallightdevice #lighting2params #combocmd1").show();
@@ -2544,7 +2555,7 @@ function GetManualLightSettings(isTest)
 		//AC
 		var ID="";
 		var bIsType5=0;
-		if ((lighttype==50)||(lighttype==55)||(lighttype==57)||(lighttype==100)||(lighttype==102))
+		if ((lighttype==50)||(lighttype==55)||(lighttype==57)||(lighttype==100)||(lighttype==102)||(lighttype==103))
 		{
 			bIsType5=1;
 		}

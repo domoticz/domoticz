@@ -236,6 +236,7 @@ Version 1.0.1396 (January 18th 2014)
 - Changed: devices tab, ID of Energy devices now displayed in Hexadecimal
 - Implemented: OpenZWave, option to download configuration file via Node dropdown menu
 - Changed: OpenZWave, better handling of COMMAND_CLASS_ALARM and COMMAND_CLASS_SENSOR_ALARM (you might get new devices!)
+- Implemented: Add Manual Light/Switch for Meiantech
 
 Version 1.0.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart

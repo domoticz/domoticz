@@ -3489,6 +3489,19 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 					return;
 				devid=id;
 			}
+			else if (lighttype==103)
+			{
+				//Meiantech
+				dtype=pTypeSecurity1;
+				subtype=sTypeMeiantech;
+				std::string id=m_pWebEm->FindValue("id");
+				if (
+					(id=="")
+					)
+					return;
+				devid=id;
+				sunitcode="0";
+			}
 		}
 		root["status"]="OK";
 		root["message"]="OK";
@@ -3696,6 +3709,19 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				)
 				return;
 			devid=id;
+		}
+		else if (lighttype==103)
+		{
+			//Meiantech
+			dtype=pTypeSecurity1;
+			subtype=sTypeMeiantech;
+			std::string id=m_pWebEm->FindValue("id");
+			if (
+				(id=="")
+				)
+				return;
+			devid=id;
+			sunitcode="0";
 		}
 		else
 		{
