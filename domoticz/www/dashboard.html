@@ -843,7 +843,7 @@ function RefreshFavorites()
 											img='<img src="images/security48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40" width="40">';
 										}
 										else {
-											img='<img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="ArmSystem(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40" width="40">';
+											img='<img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="ArmSystemMeiantech(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40" width="40">';
 										}
 									}
 									else {
@@ -2273,7 +2273,7 @@ function ShowFavorites()
 									xhtm+='\t      <td id="img"><img src="images/security48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40" width="40"></td>\n';
 								}
 								else {
-									xhtm+='\t      <td id="img"><img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="ArmSystem(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40" width="40"></td>\n';
+									xhtm+='\t      <td id="img"><img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="ArmSystemMeiantech(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="40" width="40"></td>\n';
 								}
 							}
 							else {

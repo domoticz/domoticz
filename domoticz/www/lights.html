@@ -1780,7 +1780,7 @@ function RefreshLights()
 										img='<img src="images/security48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48" width="48">';
 									}
 									else {
-										img='<img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="ArmSystem(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48" width="48">';
+										img='<img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="ArmSystemMeiantech(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48" width="48">';
 									}
 								}
 								else {
@@ -2107,7 +2107,7 @@ function ShowLights()
 									xhtm+='\t      <td id="img"><img src="images/security48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48" width="48"></td>\n';
 								}
 								else {
-									xhtm+='\t      <td id="img"><img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="ArmSystem(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48" width="48"></td>\n';
+									xhtm+='\t      <td id="img"><img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="ArmSystemMeiantech(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48" width="48"></td>\n';
 								}
 							}
 							else {

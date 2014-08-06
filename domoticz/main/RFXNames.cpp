@@ -1679,6 +1679,16 @@ bool GetLightCommand(
 				cmd=sStatusArmAway;
 				return true;
 			}
+			else if (switchcmd == "Panic")
+			{
+				cmd = sStatusPanic;
+				return true;
+			}
+			else if (switchcmd == "Disarm")
+			{
+				cmd = sStatusDisarm;
+				return true;
+			}
 		}
 		else if (dSubType==sTypeSecX10)
 		{
