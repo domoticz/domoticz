@@ -11332,7 +11332,10 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			root["title"] = "Graph " + sensor + " " + srange;
 
 			int LastHour = -1;
-			float LastTotal = -1;
+			float LastTotalPreviousHour = -1;
+
+			float LastValue = -1;
+			std::string LastDate = "";
 
 			szQuery.clear();
 			szQuery.str("");
@@ -11345,22 +11348,38 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				for (itt = result.begin(); itt != result.end(); ++itt)
 				{
 					std::vector<std::string> sd = *itt;
-
-					int Hour = atoi(sd[1].substr(12, 2).c_str());
+					float ActTotal = (float)atof(sd[0].c_str());
+					int Hour = atoi(sd[1].substr(11, 2).c_str());
 					if (Hour != LastHour)
 					{
 						if (LastHour != -1)
 						{
-							root["result"][ii]["d"] = sd[1].substr(0, 16);
-							double mmval = (float)atof(sd[0].c_str()) - LastTotal;
-							mmval *= AddjMulti;
-							sprintf(szTmp, "%.1f", mmval);
-							root["result"][ii]["mm"] = szTmp;
-							ii++;
+							int NextCalculatedHour = (LastHour + 1) % 24;
+							if (Hour != NextCalculatedHour)
+							{
+								//Looks like we have a GAP somewhere, finish the last hour
+								root["result"][ii]["d"] = LastDate;
+								double mmval = ActTotal - LastValue;
+								mmval *= AddjMulti;
+								sprintf(szTmp, "%.1f", mmval);
+								root["result"][ii]["mm"] = szTmp;
+								ii++;
+							}
+							else
+							{
+								root["result"][ii]["d"] = sd[1].substr(0, 16);
+								double mmval = ActTotal - LastTotalPreviousHour;
+								mmval *= AddjMulti;
+								sprintf(szTmp, "%.1f", mmval);
+								root["result"][ii]["mm"] = szTmp;
+								ii++;
+							}
 						}
 						LastHour = Hour;
-						LastTotal = (float)atof(sd[0].c_str());
+						LastTotalPreviousHour = ActTotal;
 					}
+					LastValue = ActTotal;
+					LastDate = sd[1];
 				}
 			}
 		}
