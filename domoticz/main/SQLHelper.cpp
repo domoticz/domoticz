@@ -1925,7 +1925,8 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 							if (
 								(itt->_ItemType==TITEM_SWITCHCMD)&&
 								(itt->_idx==ulID)&&
-								(itt->_HardwareID==HardwareID)
+								(itt->_HardwareID == HardwareID)&&
+								(itt->_nValue == cmd)
 								)
 							{
 								itt=m_background_task_queue.erase(itt);
