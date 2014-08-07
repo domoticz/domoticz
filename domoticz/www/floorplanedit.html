@@ -52,14 +52,18 @@
 	</table>
     <table id="delclractive" border="0" cellpadding="0" cellspacing="0" width="100%">
 		<tr>
-			<td>
-				<a class="btnstyle3-dis" id="activeplandelete" data-i18n="Delete">Delete</a>
+			<td align="left" width="100">
+				<label id="mouseX" align="center" style="width: 30px; padding: .2em;" class="ui-widget-content ui-corner-all">0</label>
+				/
+				<label id="mouseY" align="center" style="width: 30px; padding: .2em;" class="ui-widget-content ui-corner-all">0</label>
 			</td>
 			<td align="center">
-				<label><span data-i18n="Plan"></span>Plan</label>
-				<select id="comboactiveplan" style="width:300px" class="combobox ui-corner-all">
-				</select>
+				<label><span data-i18n="Plan"></span></label>
+				<select id="comboactiveplan" style="width:300px" class="combobox ui-corner-all"></select>
 				<a class="btnstyle3" id="activeplanadd" onclick="AddUnusedPlan();" data-i18n="Add">Add</a>
+			</td>
+			<td>
+				<a class="btnstyle3-dis" id="activeplandelete" data-i18n="Delete">Delete</a>
 			</td>
 			<td align="center">
 				<a class="btnstyle3-dis" id="activeplanupdate" data-i18n="Update">Update</a>
@@ -89,6 +93,16 @@
 				stroke: black;   
 			}
 			
+			polygon.nothoverable
+			{
+				fill: blue;
+				fill-opacity: 0.1;
+				stroke: blue;
+				stroke-width: 1;
+				stroke-linejoin: round;
+				stroke-opacity: 0.5;
+			}
+
 			image.moveable
 			{
 				cursor: move;
@@ -112,6 +126,7 @@
 			onresize="SVGResize();"  preserveAspectRatio="xMinYMin meet" style="display:none">
 			<g id="floorplangroup" zoomed="false" >
 				<image id="floorplanimage"  width="100%" height="100%" xlink:href="" />
+				<g id="roomplangroup"/>
 				<polygon id="roompolyarea" class="hoverable">
 					<title data-i18n="Click room to test">Click room to test</title>
 				</polygon>
@@ -123,7 +138,7 @@
 					function Drag(evt) {
 						if (!evt) var evt = window.event;
 						var parent = evt.target.parentNode;
-						var Scale = 1280 / $("#svgcontainer").width();
+						var Scale = 1280 / $("#floorplaneditor").width();
 						var offset = $("#floorplanimage").offset();
 						var xoffset = Math.round((evt.pageX - offset.left - (Device.iconSize/3)) * Scale);
 						var yoffset = Math.round((evt.pageY - offset.top - (Device.iconSize/3)) * Scale);
@@ -142,8 +157,17 @@
 							objData.setAttribute("transform", evt.target.parentNode.getAttribute('transform'));
 						}
 					}
+					function MouseXY(evt) {
+						if (!evt) var evt = window.event;
+						var parent = evt.target.parentNode;
+						var Scale = 1280 / $("#floorplaneditor").width();
+						var offset = $("#floorplanimage").offset();
+						var xoffset = Math.round((evt.pageX - offset.left) * Scale);
+						var yoffset = Math.round((evt.pageY - offset.top) * Scale);
+						$('#mouseX').text(xoffset);
+						$('#mouseY').text(yoffset);
+					}
 				</script>
-				<g id="roomplandevices"/>
 			</g>
 		</svg>
 	</div>
@@ -170,21 +194,12 @@ function SVGResize() {
 		$("#floorplaneditor")[0].setAttribute('svgwidth', $("#svgcontainer").width());
 		var ratio = $("#floorplanimagesize")[0].naturalWidth / $("#floorplanimagesize")[0].naturalHeight;
 		$("#floorplaneditor")[0].setAttribute('ratio', ratio);
-		if ($("#svgcontainer").width() == 100) {
-			svgHeight = $("#floorplaneditor").width() / ratio;  // FireFox specific
-		} else {
-			svgHeight = $("#svgcontainer").width() / ratio;
-		}
+		svgHeight = $("#floorplaneditor").width() / ratio;
 		$("#floorplaneditor").height(svgHeight);
-	}
-	
-	if (svgHeight < 500) {
-		$("#floorplaneditor").height(500);
 	}
 }
 
 function PolyClick(click) {
-	if (!click) var click = window.event;
 	if ($("#floorplangroup")[0].getAttribute("zoomed") == "true")
 	{
 		$("#floorplangroup")[0].setAttribute("transform", "translate(0,0) scale(1)");
@@ -212,18 +227,12 @@ function PolyClick(click) {
 }
 
 function FloorplanClick(click) {
-	if (!click) var click = window.event;
 	// make sure we aren't zoomed in.
 	if ($("#floorplangroup")[0].getAttribute("zoomed") != "true")
 	{
 		if ($("#roompolyarea").attr("title") != "")
 		{
-			if ($("#svgcontainer").width() == 100) {
-				var Scale = 1280 / $("#floorplaneditor").width();  // FireFox specific
-			} else {
-				var Scale = 1280 / $("#svgcontainer").width();
-			}
-			
+			var Scale = 1280 / $("#floorplaneditor").width();
 			var offset = $("#floorplanimage").offset();
 			var points = $("#roompolyarea").attr("points");
 			var xPoint = Math.round((click.pageX - offset.left) * Scale);
@@ -572,7 +581,7 @@ function RefreshPlanTable(idx) {
 	$('#floorplancontent #delclractive #activeplandelete').attr("class", "btnstyle3-dis");
 	$('#floorplancontent #delclractive #activeplanupdate').attr("class", "btnstyle3-dis");
 	$('#floorplancontent #delclractive #activeplanclear').attr("class", "btnstyle3-dis");
-	$("#roomplandevices").empty();
+	$("#roomplangroup").empty();
 	$("#roompolyarea").attr("title", "");
 	$("#roompolyarea").attr("points", "");
 	$("#firstclick").remove();
@@ -589,6 +598,7 @@ function RefreshPlanTable(idx) {
 		success: function(data) {
 			if (typeof data.result != 'undefined') {
 				var totalItems=data.result.length;
+				var planGroup = $("#roomplangroup")[0];
 				$.each(data.result, function(i,item){
 					var addId = oTable.fnAddData( {
 						"DT_RowId": item.idx,
@@ -596,6 +606,9 @@ function RefreshPlanTable(idx) {
 						"1": ((item.Area.length == 0) ? '' : '<img src="images/ok.png"/>'),
 						"2": item.Area
 					} );
+					var el = makeSVGnode('polygon', { id: item.Name + "_Room", 'class':"nothoverable", points: item.Area }, '');
+					el.appendChild(makeSVGnode('title', null, item.Name));
+					planGroup.appendChild(el);
 				});
 				/* Add a click handler to the rows - this could be used as a callback */
 				$("#floorplancontent #plantable tbody tr").click( function( e ) {
@@ -850,9 +863,13 @@ function ShowDevices(idx) {
 }
 
 $(document).ready(function() {
+	Device.initialise();
 	ShowFloorplans();
 	$("#floorplanimage").on("click", function ( event ) {FloorplanClick(event);});
 	$("#roompolyarea").on("click", function ( event ) {PolyClick(event);});
-
+	$("#DeviceIcons").on("mousedown", function ( event ) {DragStart(event);});
+	$("#DeviceIcons").on("mouseup", function ( event ) {DragEnd(event);});
+	$("#svgcontainer").on("mousemove", function ( event ) {MouseXY(event);});
+	
 } );  
 </script>

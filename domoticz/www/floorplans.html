@@ -18,7 +18,7 @@
 	<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
 	<tr>
 		<td align="left"><a class="btnstylerev" onclick="PrevFloorplan();" data-i18n="Previous">Previous</a></td>
-		<td align="center"><H2 id="NoFloorplansText" data-i18n="'No Floorplans defined yet...'" style="display:none;">No Floorplans defined yet...</H2></td>
+		<td align="center"><a id="NoFloorplansYet" class="btnstyle" onclick="javascript:SwitchLayout('Floorplanedit')" data-i18n="Add Floorplan">Add Floorplan</a></td>
 		<td align="right"><a class="btnstyle" onclick="NextFloorplan();" data-i18n="Next">Next</a></td>
 	</tr>
 	</table>
@@ -297,8 +297,10 @@ function RefreshFloorPlan(floorIdx) {
 		$('.btnstylerev').css('display','none');
 	}
 	// better tell people why they got a blank page
-	if (window.myglobals.FloorplanCount < 1) {
-		$('#NoFloorplansText').css('display','inline');
+	if (window.myglobals.FloorplanCount != 0) {
+		$('#NoFloorplansYet').css('display','none');
+	} else {
+		$('#NoFloorplansYet').css('display','inline block');
 	}
 }
 
