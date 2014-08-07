@@ -74,6 +74,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: Switch icon Alarm
 - Implemented: On/Off switches, On Delay option
 - Implemented: OpenZWave Tag Reader support
+- Implemented: RFY Off Delay
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

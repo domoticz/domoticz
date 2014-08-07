@@ -765,7 +765,7 @@ bool CSQLHelper::OpenDatabase()
 			query("ALTER TABLE DeviceToPlansMap ADD COLUMN [Order] INTEGER BIGINT(10) default 0");
 			query(sqlCreateDevicesToPlanStatusTrigger);
 		}
-		if (dbversion<23)
+		if (dbversion < 23)
 		{
 			query("ALTER TABLE Temperature_Calendar ADD COLUMN [Temp_Avg] FLOAT default 0");
 
@@ -1900,6 +1900,10 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 						case pTypeLimitlessLights:
 							cmd=Limitless_LedOff;
 							bAdd2DelayQueue=true;
+							break;
+						case pTypeRFY:
+							cmd = rfy_sUp;
+							bAdd2DelayQueue = true;
 							break;
 						}
 					}
