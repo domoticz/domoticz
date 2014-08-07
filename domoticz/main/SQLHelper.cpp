@@ -1219,6 +1219,29 @@ bool CSQLHelper::StartThread()
 	return (m_background_task_thread!=NULL);
 }
 
+bool CSQLHelper::SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &hue)
+{
+	unsigned long long ID;
+	std::stringstream s_str(idx);
+	s_str >> ID;
+
+	return SwitchLightFromTasker(ID, switchcmd, atoi(level.c_str()), atoi(hue.c_str()));
+}
+
+bool CSQLHelper::SwitchLightFromTasker(unsigned long long idx, const std::string &switchcmd, int level, int hue)
+{
+	//Get Device details
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,AddjValue2 FROM DeviceStatus WHERE (ID == " << idx << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size()<1)
+		return false;
+
+	std::vector<std::string> sd = result[0];
+	return m_mainworker.SwitchLightInt(sd, switchcmd, level, hue, false);
+}
+
 void CSQLHelper::Do_Work()
 {
 	std::vector<_tTaskItem> _items2do;
@@ -1265,13 +1288,13 @@ void CSQLHelper::Do_Work()
 					case pTypeLighting5:
 					case pTypeLighting6:
 					case pTypeLimitlessLights:
-						m_mainworker.SwitchLight(itt->_idx,"Off",0,-1);
+						SwitchLightFromTasker(itt->_idx, "Off", 0, -1);
 						break;
 					case pTypeSecurity1:
 						switch (itt->_subType)
 						{
 						case sTypeSecX10M:
-							m_mainworker.SwitchLight(itt->_idx, "No Motion", 0, -1);
+							SwitchLightFromTasker(itt->_idx, "No Motion", 0, -1);
 							break;
 						default:
 							//just update internally
@@ -1298,7 +1321,7 @@ void CSQLHelper::Do_Work()
 						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname,true);
 					}
 					else
-						m_mainworker.SwitchLight(itt->_idx, "Off", 0, -1);
+						SwitchLightFromTasker(itt->_idx, "Off", 0, -1);
 				}
 			}
 			else if (itt->_ItemType == TITEM_EXECUTE_SCRIPT)
@@ -1370,7 +1393,7 @@ void CSQLHelper::Do_Work()
 			}
             else if (itt->_ItemType == TITEM_SWITCHCMD_EVENT)
             {
-				m_mainworker.SwitchLight(itt->_idx, itt->_command.c_str(), itt->_level, itt->_Hue);
+				SwitchLightFromTasker(itt->_idx, itt->_command.c_str(), itt->_level, itt->_Hue);
             }
 
             else if (itt->_ItemType == TITEM_SWITCHCMD_SCENE)
@@ -1834,7 +1857,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 				CheckAndHandleSwitchNotification(HardwareID,ID,unit,devType,subType,NTYPE_SWITCH_OFF);
 			if (bIsLightSwitchOn)
 			{
-				if (AddjValue!=0)
+				if (AddjValue!=0) //Off Delay
 				{
 					bool bAdd2DelayQueue=false;
 					int cmd=0;

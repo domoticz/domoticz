@@ -7951,8 +7951,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			switchcmd="Off";
 	}
 
-	bool bIsLightSwitchOn=IsLightSwitchOn(switchcmd);
-
 	switch (dType)
 	{
 	case pTypeLighting1:
@@ -8460,27 +8458,39 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	return false;
 }
 
+bool MainWorker::SwitchLight(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &hue)
+{
+	unsigned long long ID;
+	std::stringstream s_str(idx);
+	s_str >> ID;
+
+	return SwitchLight(ID, switchcmd, atoi(level.c_str()), atoi(hue.c_str()));
+}
+
 bool MainWorker::SwitchLight(unsigned long long idx, const std::string &switchcmd, int level, int hue)
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
+	szQuery << "SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue2 FROM DeviceStatus WHERE (ID == " << idx << ")";
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return false;
 
 	std::vector<std::string> sd=result[0];
-	return SwitchLightInt(sd,switchcmd,level,hue,false);
-}
 
-bool MainWorker::SwitchLight(const std::string &idx, const std::string &switchcmd,const std::string &level,const std::string &hue)
-{
-	unsigned long long ID;
-	std::stringstream s_str( idx );
-	s_str >> ID;
+	int iOnDelay = atoi(sd[6].c_str());
 
-	return SwitchLight(ID,switchcmd,atoi(level.c_str()),atoi(hue.c_str()));
+	bool bIsOn = IsLightSwitchOn(switchcmd);
+
+	//Check if we have an On-Delay, if yes, add it to the tasker
+	if ((bIsOn)&&(iOnDelay != 0))
+	{
+		m_sql.AddTaskItem(_tTaskItem::SwitchLightEvent(iOnDelay, idx, switchcmd, level, hue, "Switch with On-Delay"));
+		return true;
+	}
+	else
+		return SwitchLightInt(sd,switchcmd,level,hue,false);
 }
 
 bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float TempValue)

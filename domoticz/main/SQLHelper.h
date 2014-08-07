@@ -358,6 +358,9 @@ private:
 	bool StartThread();
 	void Do_Work();
 
+	bool SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &hue);
+	bool SwitchLightFromTasker(unsigned long long idx, const std::string &switchcmd, int level, int hue);
+
 	void FixDaylightSavingTableSimple(const std::string &TableName);
 	void FixDaylightSaving();
 

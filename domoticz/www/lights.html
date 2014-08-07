@@ -24,6 +24,10 @@
 				<td align="right"<label for="motionoffdelay"><span data-i18n="Off Delay"></span>:</label></td>
 				<td><input type="text" id="motionoffdelay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Seconds) 0 = Use sensor time">(Seconds) 0 = Use sensor time</span></td>
 			</tr>
+			<tr id="OnDelayDiv">
+				<td align="right"><label for="ondelay"><span data-i18n="On Delay">On Delay</span>:</label></td>
+				<td><input type="text" id="ondelay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Seconds) 0 = Disabled">(Seconds) 0 = Disabled</span></td>
+			</tr>
 			<tr id="OffDelayDiv">
 				<td align="right"><label for="offdelay"><span data-i18n="Off Delay"></span>:</label></td>
 				<td><input type="text" id="offdelay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Seconds) 0 = Disabled">(Seconds) 0 = Disabled</span></td>
@@ -1073,6 +1077,7 @@ function SaveLightSwitch()
 			}
 			else if ((switchtype==0)||(switchtype==9)||(switchtype==11)) {
 				addjvalstr="&addjvalue=" + $("#lightcontent #offdelay").val();
+				addjvalstr+="&addjvalue2=" + $("#lightcontent #ondelay").val();
 			}
 			var CustomImage=0;
 			if (switchtype==0) {
@@ -1316,7 +1321,7 @@ function appLampCooler()
 	});
 }
 
-function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage,devsubtype,strParam1,strParam2,bIsProtected)
+function EditLightDevice(idx,name,stype,switchtype,addjvalue,addjvalue2,isslave,customimage,devsubtype,strParam1,strParam2,bIsProtected)
 {
 	clearInterval($.myglobals.refreshTimer);
 	$.devIdx=idx;
@@ -1406,6 +1411,7 @@ function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage
 	
 	if ($.stype=="Security") {
 		$("#lightcontent #SwitchType").hide();
+		$("#lightcontent #OnDelayDiv").hide();
 		$("#lightcontent #OffDelayDiv").hide();
 		$("#lightcontent #MotionDiv").hide();
 		$("#lightcontent #SwitchIconDiv").hide();
@@ -1416,6 +1422,7 @@ function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage
 		$("#lightcontent #SwitchType").show();
 		$("#lightcontent #comboswitchtype").change(function() {
 			var switchtype=$("#lightcontent #comboswitchtype").val();
+			$("#lightcontent #OnDelayDiv").hide();
 			$("#lightcontent #OffDelayDiv").hide();
 			$("#lightcontent #MotionDiv").hide();
 			$("#lightcontent #SwitchIconDiv").hide();
@@ -1424,8 +1431,10 @@ function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage
 				$("#lightcontent #motionoffdelay").val(addjvalue);
 			}
 			else if ((switchtype==0)||(switchtype==9)||(switchtype==11)) {
+				$("#lightcontent #OnDelayDiv").show();
 				$("#lightcontent #OffDelayDiv").show();
 				$("#lightcontent #offdelay").val(addjvalue);
+				$("#lightcontent #ondelay").val(addjvalue2);
 			}
 			if (switchtype==0) {
 				$("#lightcontent #SwitchIconDiv").show();
@@ -1434,6 +1443,7 @@ function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage
 		
 		$("#lightcontent #comboswitchtype").val(switchtype);
 
+		$("#lightcontent #OnDelayDiv").hide();
 		$("#lightcontent #OffDelayDiv").hide();
 		$("#lightcontent #MotionDiv").hide();
 		$("#lightcontent #SwitchIconDiv").hide();
@@ -1442,8 +1452,10 @@ function EditLightDevice(idx,name,stype,switchtype,addjvalue,isslave,customimage
 			$("#lightcontent #motionoffdelay").val(addjvalue);
 		}
 		else if ((switchtype==0)||(switchtype==9)||(switchtype==11)) {
+			$("#lightcontent #OnDelayDiv").show();
 			$("#lightcontent #OffDelayDiv").show();
 			$("#lightcontent #offdelay").val(addjvalue);
+			$("#lightcontent #ondelay").val(addjvalue2);
 		}
 		if (switchtype==0) {
 			$("#lightcontent #SwitchIconDiv").show();
@@ -2192,7 +2204,7 @@ function ShowLights()
                 '<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Log">Log</a> ';
           if (window.my_config.userrights==2) {
 			  xhtm+=
-					'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + '\'' + item.Type + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.IsSubDevice + ', ' + item.CustomImage + ', \'' + item.SubType + '\', \'' + item.StrParam1 + '\', \'' + item.StrParam2 + '\', ' + item.Protected +');" data-i18n="Edit">Edit</a> ';
+					'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + '\'' + item.Type + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.AddjValue2 + ', ' + item.IsSubDevice + ', ' + item.CustomImage + ', \'' + item.SubType + '\', \'' + item.StrParam1 + '\', \'' + item.StrParam2 + '\', ' + item.Protected +');" data-i18n="Edit">Edit</a> ';
 						if (bAddTimer == true) {
 									if (item.Timers == "true") {
 										xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',' + bIsDimmer + ',\'' + item.Type + '\'' + ', \'' + item.SubType + '\');" data-i18n="Timers">Timers</a> ';

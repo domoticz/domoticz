@@ -325,6 +325,11 @@ bool CWebServer::StartServer(const std::string &listenaddress, const std::string
 	RegisterCommandCode("zwavesendconfigurationtosecondcontroller",boost::bind(&CWebServer::ZWaveSendConfigurationToSecondaryController,this, _1));
 	RegisterCommandCode("zwavetransferprimaryrole",boost::bind(&CWebServer::ZWaveTransferPrimaryRole,this, _1));
 	RegisterCommandCode("zwavetransferprimaryrole",boost::bind(&CWebServer::ZWaveTransferPrimaryRole,this, _1));
+	RegisterCommandCode("zwavestartusercodeenrollmentmode", boost::bind(&CWebServer::ZWaveSetUserCodeEnrollmentMode, this, _1));
+	RegisterCommandCode("zwavegetusercodes", boost::bind(&CWebServer::ZWaveGetNodeUserCodes, this, _1));
+	RegisterCommandCode("zwaveremoveusercode", boost::bind(&CWebServer::ZWaveRemoveUserCode, this, _1));
+
+
 	m_pWebEm->RegisterPageCode( "/zwavegetconfig.php",
 		boost::bind( 
 		&CWebServer::ZWaveGetConfigFile,
@@ -1528,6 +1533,80 @@ std::string CWebServer::ZWaveGetConfigFile()
 		}
 	}
 	return m_retstr;
+}
+
+void CWebServer::ZWaveSetUserCodeEnrollmentMode(Json::Value &root)
+{
+	std::string idx = m_pWebEm->FindValue("idx");
+	if (idx == "")
+		return;
+	CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+	if (pHardware != NULL)
+	{
+		COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+		root["status"] = "OK";
+		root["title"] = "SetUserCodeEnrollmentMode";
+		pOZWHardware->SetUserCodeEnrollmentMode();
+	}
+}
+
+void CWebServer::ZWaveRemoveUserCode(Json::Value &root)
+{
+	std::string idx = m_pWebEm->FindValue("idx");
+	std::string scodeindex = m_pWebEm->FindValue("codeindex");
+	if (
+		(idx == "") ||
+		(scodeindex == "")
+		)
+		return;
+	int iCodeIndex = atoi(scodeindex.c_str());
+
+	std::vector<std::vector<std::string> > result;
+	char szTmp[300];
+	sprintf(szTmp, "SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)", idx.c_str());
+	result = m_sql.query(szTmp);
+	if (result.size()>0)
+	{
+		int hwid = atoi(result[0][0].c_str());
+		int homeID = atoi(result[0][1].c_str());
+		int nodeID = atoi(result[0][2].c_str());
+		CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
+		if (pHardware != NULL)
+		{
+			COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+			if (!pOZWHardware->RemoveUserCode(homeID, nodeID, iCodeIndex))
+				return;
+			root["status"] = "OK";
+			root["title"] = "RemoveUserCode";
+		}
+	}
+}
+
+void CWebServer::ZWaveGetNodeUserCodes(Json::Value &root)
+{
+	std::string idx = m_pWebEm->FindValue("idx");
+	if (idx == "")
+		return;
+
+	std::vector<std::vector<std::string> > result;
+	char szTmp[300];
+	sprintf(szTmp, "SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)", idx.c_str());
+	result = m_sql.query(szTmp);
+	if (result.size()>0)
+	{
+		int hwid = atoi(result[0][0].c_str());
+		int homeID = atoi(result[0][1].c_str());
+		int nodeID = atoi(result[0][2].c_str());
+		CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
+		if (pHardware != NULL)
+		{
+			COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+			if (!pOZWHardware->GetNodeUserCodes(homeID, nodeID, root))
+				return;
+			root["status"] = "OK";
+			root["title"] = "GetUserCodes";
+		}
+	}
 }
 
 #endif	//#ifdef WITH_OPENZWAVE
@@ -8633,9 +8712,8 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 
 				int homeID = atoi(sd[1].c_str());
 				int nodeID = atoi(sd[2].c_str());
-				//if (nodeID>1)
+				//if (nodeID>1) //Don't include the controller
 				{
-					//Don't include the controller
 					COpenZWave::NodeInfo *pNode = pOZWHardware->GetNodeInfo(homeID, nodeID);
 					if (pNode == NULL)
 						continue;
@@ -8653,6 +8731,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 					root["result"][ii]["Product_name"] = pNode->Product_name;
 					root["result"][ii]["IsAwake"] = pNode->IsAwake;
 					root["result"][ii]["IsDead"] = pNode->IsDead;
+					root["result"][ii]["HaveUserCodes"] = pNode->HaveUserCodes;
 					char *szDate = asctime(localtime(&pNode->m_LastSeen));
 					root["result"][ii]["LastUpdate"] = szDate;
 

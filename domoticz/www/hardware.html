@@ -57,6 +57,9 @@
 						<li><a href="javascript:ZWaveReceiveConfiguration();" ><span data-i18n="Receive configuration from other controller" class="btn btn-primary">Receive configuration from other controller</span></a></li>
 						<li><a href="javascript:ZWaveSendConfiguration();" ><span data-i18n="Send configuration to other controller" class="btn btn-primary">Send configuration to other controller</span></a></li>
 						<li><a href="javascript:ZWaveTransferPrimaryRole();" ><span data-i18n="Transfer primary role" class="btn btn-danger">Transfer primary role</span></a></li>
+						<li id="usercodegrp" role="presentation" class="divider"></li>
+						<li id="usercodegrp"><a href="javascript:ZWaveStartUserCodeEnrollment();" ><span data-i18n="Start User Code Enrollment" class="btn btn-primary">Start User Code Enrollment</span></a></li>
+						<li id="usercodegrp"><a id="zwavecodemanagement" href="javascript:ZWaveUserCodeManagement();" ><span data-i18n="User Code Management" class="btn btn-primary">User Code Management</span></a></li>
 						<li role="presentation" class="divider"></li>
 						<li><a id="zwave_configdownload" href="#" ><span data-i18n="Download Configuration File" class="btn btn-primary">Download Configuration File</span></a></li>
 					  </ul>
@@ -103,6 +106,32 @@
 	<h2 data-i18n="Configuration">Configuration</h2>
 	<br>
 	<div id="configuration"></div>
+</div>
+<div id="openzwaveusercodes" style="display:none;">
+	<div class="page-header-small">
+		<h1 data-i18n="User Codes">User Codes</h1>
+	</div>
+    <table class="display" id="codestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th width="70" align="center" data-i18n="Code">Code</th>
+                <th align="left" data-i18n="Value">Value</th>
+                <th width="70" align="left" data-i18n="Action">Action</th>
+            </tr>
+        </thead>
+    </table>
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td align="right">
+				<a class="btnstyle3" id="nodelistrefresh" data-i18n="Refresh" onclick="RefreshOpenZWaveUserCodesTable();">Refresh</a>
+			</td>
+		</tr>
+	</table>
+	<br />
+	Please note, removing a code can take a while on battery operated devices.<br />
+	To quickly force the hardware to remove the code (after pressing the remove button)<br />
+	Use the tamper switch on the back to wake up the device.
+	<input type="hidden" id="idx" name="nodeidx" value="-1">
 </div>
 
 <div id="wakeonlan" style="display:none;">
@@ -1686,6 +1715,7 @@ function RefreshOpenZWaveNodeTable()
 				"IsAwake": item.IsAwake,
 				"IsDead": item.IsDead,
 				"NodeID": item.NodeID,
+				"HaveUserCodes": item.HaveUserCodes,
                 "0": nodeStr,
                 "1": item.Name,
 				"2": item.Description,
@@ -1701,6 +1731,7 @@ function RefreshOpenZWaveNodeTable()
 				$('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
 				$("#hardwarecontent #configuration").html("");
 				$("#hardwarecontent #nodeparamstable #nodename").val("");
+				$('#hardwarecontent #usercodegrp').hide();
 			}
 			else {
 				oTable.$('tr.row_selected').removeClass('row_selected');
@@ -1713,6 +1744,7 @@ function RefreshOpenZWaveNodeTable()
 					$.myglobals.SelectedTimerIdx=idx;
 					var iNode=parseInt(data["NodeID"]);
 					$("#updelclr #nodeupdate").attr("href", "javascript:UpdateNode(" + idx + ")");
+					$("#hardwarecontent #zwavecodemanagement").attr("href", "javascript:ZWaveUserCodeManagement(" + idx + ")");
 					if (iNode>1) {
 						$('#updelclr #nodedelete').attr("class", "btnstyle3");
 						$("#updelclr #nodedelete").attr("href", "javascript:DeleteNode(" + idx + ")");
@@ -1726,6 +1758,13 @@ function RefreshOpenZWaveNodeTable()
 						$("#hardwarecontent #nodeparamstable #trEnablePolling").show();
 					}
 					
+					if (data["HaveUserCodes"] == true) {
+						$('#hardwarecontent #usercodegrp').show();
+					}
+					else {
+						$('#hardwarecontent #usercodegrp').hide();
+					}
+
 					var szConfig="";
 					if (typeof data["Config"] != 'undefined') {
 						//Create configuration setup
@@ -1806,9 +1845,113 @@ function RefreshOpenZWaveNodeTable()
   $('#modal').hide();
 }
 
+function ZWaveStartUserCodeEnrollment()
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=zwavestartusercodeenrollmentmode&idx=" + $.devIdx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			bootbox.alert($.i18n('User Code Enrollment started. You have 30 seconds to include the new key...!'));
+		 }
+	});
+}
+
+function RemoveUserCode(index)
+{
+	bootbox.confirm($.i18n("Are you sure to delete this User Code?"), function(result) {
+		if (result==true) {
+			$.ajax({
+				 url: "json.htm?type=command&param=zwaveremoveusercode&idx=" + $.nodeIdx +"&codeindex=" + index,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					RefreshHardwareTable();
+				 },
+				 error: function(){
+						HideNotify();
+						ShowNotify($.i18n('Problem deleting User Code!'), 2500, true);
+				 }     
+			});
+		}
+	});
+}
+
+function RefreshOpenZWaveUserCodesTable()
+{
+  $('#modal').show();
+
+  var oTable = $('#codestable').dataTable();
+  oTable.fnClearTable();
+  $.ajax({
+     url: "json.htm?type=command&param=zwavegetusercodes&idx="+$.nodeIdx,
+	 dataType: 'json',
+     async: false, 
+     success: function(data) {
+		if (typeof data.result != 'undefined') {
+			$.each(data.result, function(i,item){
+				var removeButton='<span class="label label-info" onclick="RemoveUserCode(' + item.index + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Remove</span>';
+				var addId = oTable.fnAddData( {
+					"DT_RowId": item.index,
+					"Code": item.index,
+					"Value": item.code,
+					"0": item.index,
+					"1": item.code,
+					"2": removeButton
+				} );
+			});
+			/* Add a click handler to the rows - this could be used as a callback */
+			$("#codestable tbody tr").click( function( e ) {
+				if ( $(this).hasClass('row_selected') ) {
+					$(this).removeClass('row_selected');
+				}
+				else {
+					oTable.$('tr.row_selected').removeClass('row_selected');
+					$(this).addClass('row_selected');
+					var anSelected = fnGetSelected( oTable );
+					if ( anSelected.length !== 0 ) {
+						var data = oTable.fnGetData( anSelected[0] );
+						//var idx= data["DT_RowId"];
+					}
+				}
+			}); 
+		}
+     }
+  });
+  $('#modal').hide();
+}
+
+function ZWaveUserCodeManagement(idx)
+{
+	$.nodeIdx=idx;
+	cursordefault();
+	var htmlcontent = '';
+	htmlcontent+=$('#openzwaveusercodes').html();
+	var bString="EditOpenZWave("+$.devIdx+",'"+$.devName + "',0,0,0,0,0)";
+	$('#hardwarecontent').html(GetBackbuttonHTMLTable(bString)+htmlcontent);
+	$('#hardwarecontent').i18n();
+	$('#hardwarecontent #nodeidx').val(idx);
+	var oTable = $('#codestable').dataTable( {
+	  "sDom": '<"H"lfrC>t<"F"ip>',
+	  "oTableTools": {
+		"sRowSelect": "single",
+	  },
+	  "aaSorting": [[ 0, "desc" ]],
+	  "bSortClasses": false,
+	  "bProcessing": true,
+	  "bStateSave": true,
+	  "bJQueryUI": true,
+	  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+	  "iDisplayLength" : 25,
+	  "sPaginationType": "full_numbers"
+	} );
+	RefreshOpenZWaveUserCodesTable();
+}
+
 function EditOpenZWave(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 {
 	$.devIdx=idx;
+	$.devName=name;
 	cursordefault();
 	var htmlcontent = '';
 	htmlcontent='<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
@@ -1816,6 +1959,8 @@ function EditOpenZWave(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 	$('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
 	$('#hardwarecontent #zwave_configdownload').attr("href", "zwavegetconfig.php?idx="+idx);
 	$('#hardwarecontent').i18n();
+
+	$('#hardwarecontent #usercodegrp').hide();
 
 	var oTable = $('#nodestable').dataTable( {
 	  "sDom": '<"H"lfrC>t<"F"ip>',

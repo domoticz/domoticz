@@ -429,7 +429,8 @@ COpenZWave::COpenZWave(const int ID, const std::string& devname)
 	m_initFailed = false;
 	m_allNodesQueried = false;
 	m_awakeNodesQueried = false;
-	m_pManager=NULL;
+	m_bInUserCodeEnrollmentMode = false;
+	m_pManager = NULL;
 }
 
 
@@ -544,6 +545,10 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 			nodeInfo->Instances[instance][commandClass].Values.push_back( vID );
 			nodeInfo->m_LastSeen = m_updateTime;
 			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
+			if (commandClass == COMMAND_CLASS_USER_CODE)
+			{
+				nodeInfo->HaveUserCodes = true;
+			}
 			AddValue(vID);
 		}
 		break;
@@ -627,6 +632,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 			nodeInfo.m_homeId = _homeID;
 			nodeInfo.m_nodeId = _nodeID;
 			nodeInfo.m_polled = false;
+			nodeInfo.HaveUserCodes = false;
 			nodeInfo.szType = pManager->GetNodeType(_homeID, _nodeID);
 			nodeInfo.iVersion = pManager->GetNodeVersion(_homeID, _nodeID);
 			nodeInfo.Manufacturer_id = pManager->GetNodeManufacturerId(_homeID, _nodeID);
@@ -853,6 +859,7 @@ bool COpenZWave::GetInitialDevices()
 	m_initFailed = false;
 	m_awakeNodesQueried = false;
 	m_allNodesQueried = false;
+	m_bInUserCodeEnrollmentMode = false;
 
 	//Connect and request initial devices
 	OpenSerialConnector();
@@ -1284,11 +1291,20 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	}
 	else if (commandclass==COMMAND_CLASS_USER_CODE)
 	{
+		/*
+		//We already stored our codes in the nodeinfo
 		if (vLabel.find("Code ")==0)
 		{
-			//std::string tmpstr=vLabel.substr(5);//skip first 5 characters
-			//_log.Log(LOG_NORM, "OpenZWave: USER_CODES not handled yet, Value_Added: Node: %d, CommandClass: %s, Label: %s, Instance: %d",(int)NodeID, cclassStr(commandclass),vLabel.c_str(),instance);
+			if ((vType == OpenZWave::ValueID::ValueType_Raw) || (vType == OpenZWave::ValueID::ValueType_String))
+			{
+				std::string strValue;
+				if (m_pManager->GetValueAsString(vID, &strValue) == true)
+				{
+					_asm nop;
+				}
+			}
 		}
+		*/
 	}
 	else if (commandclass==COMMAND_CLASS_BASIC_WINDOW_COVERING)
 	{
@@ -1735,6 +1751,34 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 	std::string vLabel=m_pManager->GetValueLabel(vID);
 	std::string vUnits=m_pManager->GetValueUnits(vID);
 
+	float fValue = 0;
+	int iValue = 0;
+	bool bValue = false;
+	unsigned char byteValue = 0;
+	std::string strValue = "";
+
+	if (vType == OpenZWave::ValueID::ValueType_Decimal)
+	{
+		if (m_pManager->GetValueAsFloat(vID, &fValue) == false)
+			return;
+	}
+	if (vType == OpenZWave::ValueID::ValueType_Bool)
+	{
+		if (m_pManager->GetValueAsBool(vID, &bValue) == false)
+			return;
+	}
+	if (vType == OpenZWave::ValueID::ValueType_Byte)
+	{
+		if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
+			return;
+	}
+	if ((vType == OpenZWave::ValueID::ValueType_Raw) || (vType == OpenZWave::ValueID::ValueType_String))
+	{
+		if (m_pManager->GetValueAsString(vID, &strValue) == false)
+			return;
+	}
+
+
 	if (vGenre!=OpenZWave::ValueID::ValueGenre_User)
 	{
 		NodeInfo *pNode=GetNodeInfo(m_controllerID,NodeID);
@@ -1801,25 +1845,67 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 #ifdef DEBUG_ZWAVE_INT
 	_log.Log(LOG_NORM, "OpenZWave: Value_Changed: Node: %d, CommandClass: %s, Label: %s, Instance: %d, Index: %d",NodeID, cclassStr(commandclass),vLabel.c_str(),vID.GetInstance(),vID.GetIndex());
 #endif
-	float fValue=0;
-	int iValue=0;
-	bool bValue=false;
-	unsigned char byteValue=0;
 
-	if (vType== OpenZWave::ValueID::ValueType_Decimal)
+	if (commandclass == COMMAND_CLASS_USER_CODE)
 	{
-		if (m_pManager->GetValueAsFloat(vID,&fValue)==false)
+		if ((instance == 1) && (vGenre == OpenZWave::ValueID::ValueGenre_User) && (vID.GetIndex() == 0) && (vType == OpenZWave::ValueID::ValueType_Raw))
+		{
+			//Enrollment Code
+			COpenZWave::NodeInfo *pNode = GetNodeInfo(m_controllerID, NodeID);
+			if (!pNode)
+				return;
+			if (pNode->Instances.find(1) == pNode->Instances.end())
+				return; //no codes added yet, wake your tag reader
+
+			//Check if we are in Enrollment Mode, if not dont continue
+
+			if (!m_bInUserCodeEnrollmentMode)
+			{
+				_log.Log(LOG_ERROR, "OpenZWave: Received new User Code/Tag, but we are not in Enrollment mode!");
+				return;
+			}
+			m_bControllerCommandInProgress = false;
+
+			bool bIncludedCode = false;
+
+			for (std::list<OpenZWave::ValueID>::iterator itt = pNode->Instances[1][COMMAND_CLASS_USER_CODE].Values.begin(); itt != pNode->Instances[1][COMMAND_CLASS_USER_CODE].Values.end(); ++itt)
+			{
+				OpenZWave::ValueID vNode = *itt;
+				if ((vNode.GetGenre() == OpenZWave::ValueID::ValueGenre_User) && (vNode.GetInstance() == 1) && (vNode.GetType() == OpenZWave::ValueID::ValueType_Raw))
+				{
+					int vNodeIndex = vNode.GetIndex();
+					if (vNodeIndex >= 1)
+					{
+						std::string sValue;
+						if (m_pManager->GetValueAsString(vNode, &sValue))
+						{
+							//Find Empty slot
+							if (sValue.find("0x00 ") == 0)
+							{
+								_log.Log(LOG_ERROR, "OpenZWave: Enrolling User Code/Tag to code index: %d",  vNodeIndex);
+								m_pManager->SetValue(vNode, strValue);
+								bIncludedCode = true;
+								break;
+							}
+						}
+					}
+				}
+			}
+			if (!bIncludedCode)
+			{
+				_log.Log(LOG_ERROR, "OpenZWave: Received new User Code/Tag, but there is no available room for new codes!!");
+			}
+			m_bInUserCodeEnrollmentMode = false;
 			return;
-	}
-	if (vType== OpenZWave::ValueID::ValueType_Bool)
-	{
-		if (m_pManager->GetValueAsBool(vID,&bValue)==false)
-			return;
-	}
-	if (vType== OpenZWave::ValueID::ValueType_Byte)
-	{
-		if (m_pManager->GetValueAsByte(vID,&byteValue)==false)
-			return;
+		}
+		else
+		{
+			int cIndex = vID.GetIndex();
+			//if ((instance == 1) && (vGenre == OpenZWave::ValueID::ValueGenre_User) && (vID.GetIndex() != 0) && (vType == OpenZWave::ValueID::ValueType_Raw))
+			//{
+			//	_log.Log(LOG_NORM, "OpenZWave: Received User Code/Tag index: %d (%s)", cIndex, strValue.c_str());
+			//}
+		}
 	}
 
 	if (commandclass==COMMAND_CLASS_BATTERY)
@@ -2772,6 +2858,92 @@ bool COpenZWave::ApplyNodeConfig(const int homeID, const int nodeID, const std::
 	}
 	return true;
 
+}
+
+//User Code routines
+bool COpenZWave::SetUserCodeEnrollmentMode()
+{
+	m_ControllerCommandStartTime = mytime(NULL) + 10;//30 second timeout
+	m_bControllerCommandInProgress = true;
+	m_bInUserCodeEnrollmentMode = true;
+	_log.Log(LOG_STATUS, "OpenZWave: User Code Enrollment mode initiated...");
+	return false;
+}
+
+bool COpenZWave::GetNodeUserCodes(const int homeID, const int nodeID, Json::Value &root)
+{
+	int ii = 0;
+	COpenZWave::NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
+	if (!pNode)
+		return false;
+	if (pNode->Instances.find(1) == pNode->Instances.end())
+		return false; //no codes added yet, wake your tag reader
+
+	for (std::list<OpenZWave::ValueID>::iterator itt = pNode->Instances[1][COMMAND_CLASS_USER_CODE].Values.begin(); itt != pNode->Instances[1][COMMAND_CLASS_USER_CODE].Values.end(); ++itt)
+	{
+		OpenZWave::ValueID vNode = *itt;
+		if ((vNode.GetGenre() == OpenZWave::ValueID::ValueGenre_User) && (vNode.GetInstance() == 1) && (vNode.GetType() == OpenZWave::ValueID::ValueType_Raw))
+		{
+			int vNodeIndex = vNode.GetIndex();
+			if (vNodeIndex >= 1)
+			{
+				std::string sValue;
+				if (m_pManager->GetValueAsString(vNode, &sValue))
+				{
+					if (sValue.find("0x00 ") != 0)
+					{
+						root["result"][ii]["index"] = vNodeIndex;
+						root["result"][ii]["code"] = sValue;
+						ii++;
+					}
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+bool COpenZWave::RemoveUserCode(const int homeID, const int nodeID, const int codeIndex)
+{
+	COpenZWave::NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
+	if (!pNode)
+		return false;
+	if (pNode->Instances.find(1) == pNode->Instances.end())
+		return false; //no codes added yet, wake your tag reader
+
+	for (std::list<OpenZWave::ValueID>::iterator itt = pNode->Instances[1][COMMAND_CLASS_USER_CODE].Values.begin(); itt != pNode->Instances[1][COMMAND_CLASS_USER_CODE].Values.end(); ++itt)
+	{
+		OpenZWave::ValueID vNode = *itt;
+		if ((vNode.GetGenre() == OpenZWave::ValueID::ValueGenre_User) && (vNode.GetInstance() == 1) && (vNode.GetType() == OpenZWave::ValueID::ValueType_Raw))
+		{
+			int vNodeIndex = vNode.GetIndex();
+			if (vNodeIndex == codeIndex)
+			{
+				std::string sValue;
+				if (m_pManager->GetValueAsString(vNode, &sValue))
+				{
+					//Set our code to zero
+					//First find code length in bytes
+					int cLength = (sValue.size() + 1) / 5;
+					//Make an string with zero's
+					sValue = "";
+					for (int ii = 0; ii < cLength; ii++)
+					{
+						if (ii != cLength - 1)
+							sValue += "0x00 ";
+						else
+							sValue += "0x00"; //last one
+					}
+					//Set the new (empty) code
+					m_pManager->SetValue(vNode, sValue);
+					break;
+				}
+			}
+		}
+	}
+
+	return true;
 }
 
 #endif //WITH_OPENZWAVE

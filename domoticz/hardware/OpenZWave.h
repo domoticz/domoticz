@@ -49,6 +49,8 @@ public:
 		bool							IsAwake;
 		bool							IsDead;
 
+		bool							HaveUserCodes;
+
 		time_t							m_LastSeen;
 	}NodeInfo;
 
@@ -63,6 +65,11 @@ public:
 	void GetNodeValuesJson(const int homeID, const int nodeID, Json::Value &root, const int index);
 	NodeInfo* GetNodeInfo( const int homeID, const int nodeID );
 	bool ApplyNodeConfig(const int homeID, const int nodeID, const std::string &svaluelist);
+
+	bool SetUserCodeEnrollmentMode();
+	bool GetNodeUserCodes(const int homeID, const int nodeID, Json::Value &root);
+	bool RemoveUserCode(const int homeID, const int nodeID, const int codeIndex);
+
 	//Controller Commands
 	bool RequestNodeConfig(const int homeID, const int nodeID);
 	bool RemoveFailedDevice(const int nodeID);
@@ -120,6 +127,7 @@ private:
 	bool m_initFailed;
 	bool m_awakeNodesQueried;
 	bool m_allNodesQueried;
+	bool m_bInUserCodeEnrollmentMode;
 };
 
 #endif //WITH_OPENZWAVE
