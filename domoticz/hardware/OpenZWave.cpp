@@ -511,6 +511,9 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 	unsigned long _homeID = _notification->GetHomeId();
 	unsigned char _nodeID = _notification->GetNodeId();
 
+	unsigned char vInstance = vID.GetInstance();//(See note on top of this file) GetInstance();
+	unsigned char vIndex = vID.GetIndex();
+
 	unsigned char instance;
 
 	if (
@@ -520,11 +523,11 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 		(commandClass==COMMAND_CLASS_SENSOR_BINARY)
 		)
 	{
-		instance=vID.GetIndex();//(See note on top of this file) GetInstance();
+		instance = vIndex;
 	}
 	else
 	{
-		instance=vID.GetInstance();//(See note on top of this file) GetInstance();
+		instance = vInstance;
 	}
 
 	switch( _notification->GetType() )
@@ -1247,7 +1250,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 			}
 			else if (m_pManager->GetValueAsByte(vID,&byteValue)==true)
 			{
-				if (byteValue==0)
+				_device.devType = ZDTYPE_SWITCHNORMAL;
+				if (byteValue == 0)
 					_device.intvalue=0;
 				else
 					_device.intvalue=255;
@@ -1285,6 +1289,15 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 					_device.intvalue=255;
 				else
 					_device.intvalue=0;
+				InsertDevice(_device);
+			}
+			else if (m_pManager->GetValueAsByte(vID, &byteValue) == true)
+			{
+				_device.devType = ZDTYPE_SWITCHNORMAL;
+				if (byteValue == 0)
+					_device.intvalue = 0;
+				else
+					_device.intvalue = 255;
 				InsertDevice(_device);
 			}
 		}

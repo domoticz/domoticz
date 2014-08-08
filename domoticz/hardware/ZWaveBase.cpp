@@ -175,6 +175,13 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 	ID3=(unsigned char)pDevice->nodeID&0xFF;
 	ID4=pDevice->instanceID;
 
+	//To fix all problems it should be
+	//ID1 = (unsigned char)((pDevice->nodeID & 0xFF00) >> 8);
+	//ID2 = (unsigned char)pDevice->nodeID & 0xFF;
+	//ID3 = pDevice->instanceID;
+	//ID4 = pDevice->indexID;
+	//but current users gets new devices in this case
+
 	char szID[10];
 	sprintf(szID,"%X%02X%02X%02X", ID1, ID2, ID3, ID4);
 	std::string ID = szID;
