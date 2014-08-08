@@ -5,6 +5,58 @@
 	<title>Domoticz Security Panel</title>
 
 	<link href="css/style.less" rel="stylesheet/less" />
+</head>
+<body>
+	<div id="geral">
+		<div class="borda-calculadora">
+			<div id="calculadora">
+				<div class="topo-calculadora">
+					<div class="titulo">
+						<h1>Domoticz</h1>
+						<p class="descricao">Security Panel</p>
+					</div>
+
+					<div id="quad" class="quaddisarmed">
+						<ul>
+							<li>D</li>
+							<li>I</li>
+							<li>S</li>
+							<li>A</li>
+							<li>R</li>
+							<li>M</li>
+							<li>E</li>
+							<li>D</li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="clear"></div>
+				<form name="Calc">
+					<input type="text" id="txtCalculadora" value="19283" name="txtCalculadora" maxlength="8" disabled="disabled"/>
+					<div class="clear"></div>
+					<ul id="botoes-opcoes">
+						<li onClick="javascript:AddDigit('1')">1</li>
+						<li onClick="javascript:AddDigit('2')">2</li>
+						<li onClick="javascript:AddDigit('3')">3</li>
+						<li class="disarm" onClick="javascript:SetSecStatus(0)">Disarm</li>
+						<li onClick="javascript:AddDigit('4')">4</li>
+						<li onClick="javascript:AddDigit('5')">5</li>
+						<li onClick="javascript:AddDigit('6')">6</li>
+						<li class="arm" onClick="javascript:SetSecStatus(1)">Arm Home</li>
+						<li onClick="javascript:AddDigit('7')">7</li>
+						<li onClick="javascript:AddDigit('8')">8</li>
+						<li onClick="javascript:AddDigit('9')">9</li>
+						<li class="arm" onClick="javascript:SetSecStatus(2)">Arm Away</li>
+						<li onClick="javascript:AddDigit('*')">*</li>
+						<li onClick="javascript:AddDigit('0')">0</li>
+						<li onClick="javascript:AddDigit('#')">#</li>
+						<li class="btnclear" onClick="Calc.txtCalculadora.value = ''">Clear</li>
+					</ul>
+				</form>
+				<p class="numero-serie">SEC05 - 20H1</p>
+			</div>
+		</div>
+	</div>
 	<script src="js/less.js"></script>
 	<script src="../js/jquery-1.10.2.min.js"></script>
 	<script src="../js/jquery.i18n.js"></script>
@@ -13,6 +65,7 @@
 	<script src="../js/jquery.i18n.parser.js"></script>
 	<script src="../js/jquery.i18n.emitter.js"></script>
 	<script src="../js/jquery.i18n.language.js"></script>
+	<script src="js/ion.sound.js"></script>
 	<script src="../js/domoticz.js"></script>
 	<script type="text/javascript">
 		function SetStatus()
@@ -78,9 +131,16 @@
 				success: function(data) {
 					if (data.status != "OK") {
 						$('#txtCalculadora').val($.i18n(data.message));
+						ion.sound.play("wrong");
 						return;
 					}
 					else {
+						if (status==0) {
+							ion.sound.play("disarmed");
+						}
+						else {
+							ion.sound.play("armed");
+						}
 						SetStatus();
 					}
 				},
@@ -101,10 +161,20 @@
 				) {
 					orgtext="";
 				}
-				
+			ion.sound.play("bleep");
 			var newtext=orgtext+digit;
 			$('#txtCalculadora').val(newtext);
 		}
+    ion.sound({
+        sounds: [
+            {name: "armed"},
+            {name: "bleep"},
+            {name: "disarmed"},
+            {name: "wrong"}
+        ],
+        path: "sounds/",
+        preload: true
+    });
 		
 		$(document).ready(function() {
 			$.ajax({
@@ -125,58 +195,5 @@
 			SetStatus();
 		});
 	</script>
-
-</head>
-<body>
-	<div id="geral">
-		<div class="borda-calculadora">
-			<div id="calculadora">
-				<div class="topo-calculadora">
-					<div class="titulo">
-						<h1>Domoticz</h1>
-						<p class="descricao">Security Panel</p>
-					</div>
-
-					<div id="quad" class="quaddisarmed">
-						<ul>
-							<li>D</li>
-							<li>I</li>
-							<li>S</li>
-							<li>A</li>
-							<li>R</li>
-							<li>M</li>
-							<li>E</li>
-							<li>D</li>
-						</ul>
-					</div>
-				</div>
-
-				<div class="clear"></div>
-				<form name="Calc">
-					<input type="text" id="txtCalculadora" value="19283" name="txtCalculadora" maxlength="8" disabled="disabled"/>
-					<div class="clear"></div>
-					<ul id="botoes-opcoes">
-						<li onClick="javascript:AddDigit('1')">1</li>
-						<li onClick="javascript:AddDigit('2')">2</li>
-						<li onClick="javascript:AddDigit('3')">3</li>
-						<li class="disarm" onClick="javascript:SetSecStatus(0)">Disarm</li>
-						<li onClick="javascript:AddDigit('4')">4</li>
-						<li onClick="javascript:AddDigit('5')">5</li>
-						<li onClick="javascript:AddDigit('6')">6</li>
-						<li class="arm" onClick="javascript:SetSecStatus(1)">Arm Home</li>
-						<li onClick="javascript:AddDigit('7')">7</li>
-						<li onClick="javascript:AddDigit('8')">8</li>
-						<li onClick="javascript:AddDigit('9')">9</li>
-						<li class="arm" onClick="javascript:SetSecStatus(2)">Arm Away</li>
-						<li onClick="javascript:AddDigit('*')">*</li>
-						<li onClick="javascript:AddDigit('0')">0</li>
-						<li onClick="javascript:AddDigit('#')">#</li>
-						<li class="btnclear" onClick="Calc.txtCalculadora.value = ''">Clear</li>
-					</ul>
-				</form>
-				<p class="numero-serie">SEC05 - 20H1</p>
-			</div>
-		</div>
-	</div>
 </body>
 </html>

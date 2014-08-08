@@ -54,7 +54,8 @@ Connection information:
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
-#define NO_INTERRUPT   -1
+#define NO_INTERRUPT	-1
+#define MAX_GPIO	31
 
 bool m_bIsInitGPIOPins=false;
 
@@ -104,15 +105,16 @@ CGpio::~CGpio(void)
 	boost::mutex::scoped_lock lock(interruptQueueMutex);
 
 	if(std::find(gpioInterruptQueue.begin(), gpioInterruptQueue.end(), gpioId) != gpioInterruptQueue.end()) {
-	    _log.Log(LOG_NORM, "GPIO: Interrupt for GPIO %d already queued. Ignoring...", gpioId);
+		_log.Log(LOG_NORM, "GPIO: Interrupt for GPIO %d already queued. Ignoring...", gpioId);
+		interruptCondition.notify_one();
 	}
 	else {
-	    // Queue interrupt. Note that as we make sure it contains only unique numbers, it can never "overflow".
-	    _log.Log(LOG_NORM, "GPIO: Queuing interrupt for GPIO %d.", gpioId);
+		// Queue interrupt. Note that as we make sure it contains only unique numbers, it can never "overflow".
+		_log.Log(LOG_NORM, "GPIO: Queuing interrupt for GPIO %d.", gpioId);
 		gpioInterruptQueue.push_back(gpioId);
 		interruptCondition.notify_one();
 	}
-    _log.Log(LOG_NORM, "GPIO: %d interrupts in queue.", gpioInterruptQueue.size());
+	_log.Log(LOG_NORM, "GPIO: %d interrupts in queue.", gpioInterruptQueue.size());
 }
 
 
@@ -164,7 +166,6 @@ bool CGpio::StartHardware()
 	m_bIsStarted=true;
 
 	//Hook up interrupt call-backs for each input GPIO
-
 	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it) {
 		if (it->GetIsExported() && it->GetIsInput()) {
 			_log.Log(LOG_NORM, "GPIO: Hooking interrupt handler for GPIO %d.", it->GetId());
@@ -214,28 +215,14 @@ bool CGpio::StartHardware()
 
 bool CGpio::StopHardware()
 {
-
-	m_stoprequested=true;
-	_log.Log(LOG_NORM, "'m_stoprequested=true;' Done");
-/* XTH
-	interruptCondition.notify_one();
-	_log.Log(LOG_NORM, "'interruptCondition.notify_one();' Done");
-
-    sleep_milliseconds(100);
-	_log.Log(LOG_NORM, "'sleep_milliseconds(100);' Done");
-*/
-
 	if (m_thread != NULL) {
-		m_thread->interrupt();
+		m_stoprequested=true;
+		interruptCondition.notify_one();
 		m_thread->join();
 	}
 
-	boost::this_thread::sleep(boost::posix_time::millisec(500));
-	_log.Log(LOG_NORM, "'sleep(500);' Done");
-
 	m_bIsStarted=false;
-	_log.Log(LOG_NORM, "'m_bIsStarted=false;' Done");
-	
+
 	return true;
 }
 
@@ -291,81 +278,54 @@ void CGpio::ProcessInterrupt(int gpioId) {
 	_log.Log(LOG_NORM, "GPIO: Done processing interrupt for GPIO %d.", gpioId);
 }
 
-
-int waitAndGetGpioNumberToProcess()
-{
-    int interruptNumber = NO_INTERRUPT;
-
-	boost::mutex::scoped_lock lock(interruptQueueMutex);
-
-    if (gpioInterruptQueue.size() == 0) {
-		_log.Log(LOG_NORM, "GPIO: Queue empty. Waiting...");
-        interruptCondition.wait(lock);
-		_log.Log(LOG_NORM, "GPIO: Waking up.");
-    }
-    else {
-    	// acknowledge interrupt
-    	interruptNumber = gpioInterruptQueue.front();
-		_log.Log(LOG_NORM, "GPIO: Acknowledging interrupt for GPIO %d.", interruptNumber);
-    	gpioInterruptQueue.erase(gpioInterruptQueue.begin());
-    }
-    _log.Log(LOG_NORM, "GPIO: (%d interrupts in queue)", gpioInterruptQueue.size());
-
-	lock.unlock();
-    return interruptNumber;
-}
-
-
 void CGpio::Do_Work()
 {
-	_log.Log(LOG_NORM,"GPIO: Worker started...");
-	while (!m_stoprequested) {
-    		int interruptNumber = waitAndGetGpioNumberToProcess();
-		if (m_stoprequested) 
-			break;
-    		if (interruptNumber != NO_INTERRUPT) {
-				// process
-    			CGpio::ProcessInterrupt(interruptNumber);
-			}
-    		else {
-    			// Does this really occur ?
-    			_log.Log(LOG_NORM, "GPIO: Got an interrupt processing request but no GPIO number...");
-    			boost::this_thread::sleep(boost::posix_time::millisec(500));
-    		}
+	int interruptNumber = NO_INTERRUPT;
+	boost::posix_time::milliseconds duration(12000);
 
-		time_t atime = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
-		if (ltime.tm_sec % 12 == 0) {
+	_log.Log(LOG_NORM,"GPIO: Worker started...");
+
+	while (!m_stoprequested) {
+		boost::mutex::scoped_lock lock(interruptQueueMutex);
+		if (!interruptCondition.timed_wait(lock, duration)) {
+			//_log.Log(LOG_NORM, "GPIO: Updating heartbeat");
 			mytime(&m_LastHeartbeat);
+		} else {
+			if (!gpioInterruptQueue.empty()) {
+				interruptNumber = gpioInterruptQueue.front();
+				gpioInterruptQueue.erase(gpioInterruptQueue.begin());
+				_log.Log(LOG_NORM, "GPIO: Acknowledging interrupt for GPIO %d.", interruptNumber);
+			}
 		}
-    }
+		lock.unlock();
+
+		if (m_stoprequested) {
+			break;
+		}
+
+    		if (interruptNumber != NO_INTERRUPT) {
+    			CGpio::ProcessInterrupt(interruptNumber);
+    			interruptNumber = NO_INTERRUPT;
+		}
+	}
 	_log.Log(LOG_NORM,"GPIO: Worker stopped...");
 }
-
 
 /*
  * static
  * One-shot method to initialize pins
  *
  */
-
 bool CGpio::InitPins()
 {
 	char buf[256];
-	bool exports[30];	
+	bool exports[MAX_GPIO+1] = { false };
 	int gpioNumber;
-	int i;
-
-	// 1. List exports
-	for (i = 0; i < sizeof(exports); i++) {
-		exports[i] = false;
-	}
+	FILE *cmd = NULL;
 	
-	FILE *cmd = popen("gpio exports", "r");
-	
-	// And parse the result
-	while (fgets(buf, sizeof(buf), cmd) != 0) {		
+	// 1. List exports and parse the result
+	cmd = popen("gpio exports", "r");
+	while (fgets(buf, sizeof(buf), cmd) != 0) {
 		// Decode GPIO pin number from the output formatted as follows:
 		//
 		// GPIO Pins exported:
@@ -375,97 +335,120 @@ bool CGpio::InitPins()
 		// 00000000001111111111
 		// 01234567890123456789
 
-//		std::string exportLine(buf);
-//		std::cout << "Processing line: " << exportLine;
+		std::string exportLine(buf);
+		//std::cout << "Processing line: " << exportLine;
 		
 		// check if not on header line
 		if (buf[4] == ':') {
 			buf[4] = '\0';
 			gpioNumber = atoi(buf);
-			if (gpioNumber >= 0) {
+			if ((gpioNumber >= 0) && (gpioNumber <= MAX_GPIO)) {
 				exports[gpioNumber] = true;
+			} else {
+				_log.Log(LOG_NORM, "GPIO: Ignoring unsupported pin '%s'", buf);
 			}
 		}
 	}
+
 	if (pclose(cmd) != 0) {
-	    _log.Log(LOG_ERROR, "GPIO: Error calling 'gpio exports'!");
+		_log.Log(LOG_ERROR, "GPIO: Error calling 'gpio exports'!");
 		return false;
 	}
-	else {	
-		// 2. List the full pin set
+
+	// 2. List the full pin set and parse the result
+	cmd = popen("gpio readall", "r");
+	while (fgets(buf, sizeof(buf), cmd) != 0) {
+		// Decode IN and OUT lines from the output formatted as follows:
+		//
+		// Old style (wiringPi<=2.16):
+		// +----------+-Rev1-+------+--------+------+-------+
+		// | wiringPi | GPIO | Phys | Name   | Mode | Value |
+		// +----------+------+------+--------+------+-------+
+		// |      0   |  17  |  11  | GPIO 0 | IN   | Low   |
+		// |      1   |  18  |  12  | GPIO 1 | IN   | Low   |
+		// |      2   |  21  |  13  | GPIO 2 | IN   | Low   |
+		// |      3   |  22  |  15  | GPIO 3 | IN   | Low   |
+		// ...
+		//
+		// New style:
+		//  +-----+-----+---------+------+---+--B Plus--+---+------+---------+-----+-----+
+		//  | BCM | wPi |   Name  | Mode | V | Physical | V | Mode | Name    | wPi | BCM |
+		//  +-----+-----+---------+------+---+----++----+---+------+---------+-----+-----+
+		//  |     |     |    3.3v |      |   |  1 || 2  |   |      | 5v      |     |     |
+		//  |   2 |   8 |   SDA.1 |   IN | 1 |  3 || 4  |   |      | 5V      |     |     |
+		//  |   3 |   9 |   SCL.1 |   IN | 1 |  5 || 6  |   |      | 0v      |     |     |
+		//  |   4 |   7 | GPIO. 7 |   IN | 1 |  7 || 8  | 1 | ALT0 | TxD     | 15  | 14  |
+		// ...
+		//
+		// 0000000000111111111122222222223333333333444444444455555555556666666666777777777
+		// 0123456789012345678901234567890123456789012345678901234567890123456789012345678
+
+		std::string line(buf);
+		std::vector<std::string> fields;
 		
-		// Execute the command "gpio readall"
-		FILE *cmd = popen("gpio readall", "r");
+		//std::cout << "Processing line: " << line;
+		StringSplit(line, "|", fields);
+		//std::cout << "# fields: " << fields.size() << std::endl;
 		
-		// And parse the result
-		while (fgets(buf, sizeof(buf), cmd) != 0) {
-			// Decode IN and OUT lines from the output formatted as follows:
-			// 
-			// +----------+-Rev1-+------+--------+------+-------+
-			// | wiringPi | GPIO | Phys | Name   | Mode | Value |
-			// +----------+------+------+--------+------+-------+
-			// |      0   |  17  |  11  | GPIO 0 | OUT  | Low   |
-			// |      1   |  18  |  12  | GPIO 1 | IN   | High  |
-			// |      2   |  21  |  13  | GPIO 2 | IN   | Low   |
-			// |      3   |  22  |  15  | GPIO 3 | IN   | Low   |
-			// |      4   |  23  |  16  | GPIO 4 | IN   | Low   |
-			// |      5   |  24  |  18  | GPIO 5 | IN   | Low   |
-			// |      6   |  25  |  22  | GPIO 6 | IN   | High  |
-			// |      7   |   4  |   7  | GPIO 7 | IN   | Low   |
-			// |      8   |   0  |   3  | SDA    | IN   | High  |
-			// |      9   |   1  |   5  | SCL    | IN   | High  |
-			// |     10   |   8  |  24  | CE0    | IN   | High  |
-			// |     11   |   7  |  26  | CE1    | IN   | High  |
-			// |     12   |  10  |  19  | MOSI   | IN   | Low   |
-			// |     13   |   9  |  21  | MISO   | IN   | Low   |
-			// |     14   |  11  |  23  | SCLK   | IN   | High  |
-			// |     15   |  14  |   8  | TxD    | ALT0 | High  |
-			// |     16   |  15  |  10  | RxD    | ALT0 | High  |
-			// +----------+------+------+--------+------+-------+
-			//
-			// 00000000001111111111222222222233333333334444444444
-			// 01234567890123456789012345678901234567890123456789
-			
-			std::string line(buf);
-//			std::cout << "Processing line: " << line;	
-			
-			std::vector<std::string> fields;
-			StringSplit(line, "|", fields);
-			// Check if we're on a separator line (starting with '+')
-//			std::cout << "# fields: " << fields.size() << std::endl;
-			if (fields.size()==7) {
-				// trim each field
-				for (int i = 0; i < fields.size(); i++) {
-					fields[i]=stdstring_trim(fields[i]);
-//					std::cout << "fields[" << i << "] = " << fields[i] << std::endl;
+		// trim each field
+		for (int i = 0; i < fields.size(); i++) {
+			fields[i]=stdstring_trim(fields[i]);
+			//std::cout << "fields[" << i << "] = '" << fields[i] << "'" << std::endl;
+		}
+
+		if (fields.size() == 7) {
+			// Old style
+			if (fields[0] != "wiringPi") {
+				gpioNumber = atoi(fields[1].c_str());
+				if ((gpioNumber >= 0) && (gpioNumber <= MAX_GPIO)) {
+					pins.push_back(CGpioPin(gpioNumber, "gpio" + fields[1] + " (" + fields[3] + ") on pin " + fields[2],
+							fields[4] == "IN", fields[4] == "OUT", exports[gpioNumber]));
+				} else {
+					_log.Log(LOG_NORM, "GPIO: Ignoring unsupported pin '%s'", fields[1].c_str());
 				}
-				// check if not on header line
-				if (fields[0] != "wiringPi") {
-					std::string connector("P1");
-					if (   (fields[0] == "17")
-						|| (fields[0] == "18")
-						|| (fields[0] == "19")
-						|| (fields[0] == "20")
-					   ) {
-						connector = "P2";
-					}
-					gpioNumber = atoi(fields[1].c_str());
-					if (gpioNumber >= 0) {
-						pins.push_back(CGpioPin(gpioNumber, fields[3] + " on pin " + connector + "." + fields[2], fields[4] == "IN", fields[4] == "OUT", exports[gpioNumber]));
-					}
+			}
+		} else if (fields.size() == 14) {
+			// New style
+			if (fields[1].length() > 0) {
+				gpioNumber = atoi(fields[1].c_str());
+				if ((gpioNumber >= 0) && (gpioNumber <= MAX_GPIO)) {
+					pins.push_back(CGpioPin(gpioNumber, "gpio" + fields[1] + " (" + fields[3] + ") on pin " + fields[6],
+							fields[4] == "IN", fields[4] == "OUT", exports[gpioNumber]));
+				} else {
+					_log.Log(LOG_NORM, "GPIO: Ignoring unsupported pin '%s'", fields[1].c_str());
+				}
+			}
+
+			if (fields[12].length() > 0) {
+				gpioNumber = atoi(fields[12].c_str());
+				if ((gpioNumber >= 0) && (gpioNumber <= MAX_GPIO)) {
+					pins.push_back(CGpioPin(gpioNumber, "gpio" + fields[12] + " (" + fields[10] + ") on pin " + fields[7],
+							fields[9] == "IN", fields[9] == "OUT", exports[gpioNumber]));
+				} else {
+					_log.Log(LOG_NORM, "GPIO: Ignoring unsupported pin '%s'", fields[12].c_str());
 				}
 			}
 		}
-// debug
-//		for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it) {
-//			CGpioPin pin=*it;
-//			std::cout << "Pin " << pin.GetId() << " : " << pin.GetLabel() << ", " << pin.GetIsInput() << ", " << pin.GetIsOutput() << ", " << pin.GetIsExported() << std::endl;
-//		}
-		if (pclose(cmd) != 0) {
-		    _log.Log(LOG_ERROR, "GPIO: Error calling 'gpio readall'!");
-			return false;
-		}
 	}
+
+	if (pclose(cmd) != 0) {
+		_log.Log(LOG_ERROR, "GPIO: Error calling 'gpio readall'!");
+		pins.clear();
+		return false;
+	}
+
+	if (pins.size() > 0) {
+		std::sort(pins.begin(), pins.end());
+		// debug
+		//for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it) {
+		//	CGpioPin pin=*it;
+		//	std::cout << "Pin " << pin.GetId() << " : " << pin.GetLabel() << ", " << pin.GetIsInput() << ", " << pin.GetIsOutput() << ", " << pin.GetIsExported() << std::endl;
+		//}
+	} else {
+		_log.Log(LOG_ERROR, "GPIO: Failed to detect any pins!");
+		return false;
+	}
+
 	return true;
 }
 

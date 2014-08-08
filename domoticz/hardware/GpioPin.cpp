@@ -69,16 +69,21 @@ bool CGpioPin::GetIsExported()
 	return m_isExported;
 }
 
-
-std::string CGpioPin::ToString() 
+std::string CGpioPin::ToString()
 {
-	if (!m_isExported) {
-		return "! NOT EXPORTED - " + m_label;
+	if (m_isExported) {
+		if (m_isInput) {
+			return m_label + " (INPUT)";
+		} else if (m_isOutput) {
+			return m_label + " (OUTPUT)";
+		}
+	} else {
+		if (!m_isInput && !m_isOutput) {
+			return m_label + " (NOT CONFIGURED AS GPIO)";
+		} else {
+			return m_label + " (NOT EXPORTED)";
+		}
 	}
-	if (!m_isInput && !m_isOutput) {
-		return "! NOT CONFIGURED AS GPIO - " + m_label;
-	}
-	return m_label + " (" + (m_isInput?"INPUT":"") + (m_isOutput?"OUTPUT":"") + ")";
 }
 
 #endif // WITH_GPIO

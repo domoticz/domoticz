@@ -329,6 +329,14 @@ secpanel/bg.jpg
 # Audio
 media/click.wav
 media/delete.wav
+secpanel/armed.mp3
+secpanel/armed.ogg
+secpanel/bleep.mp3
+secpanel/bleep.ogg
+secpanel/disarmed.mp3
+secpanel/disarmed.ogg
+secpanel/wrong.mp3
+secpanel/wrong.ogg
 
 # Languages
 i18n/domoticz-ar.json
@@ -399,6 +407,7 @@ js/themes/gray.js
 js/themes/grid.js
 js/themes/skies.js
 secpanel/js/less.js
+secpanel/js/ion.sound.js
 
 # Resources that require the user to be online.
 NETWORK:

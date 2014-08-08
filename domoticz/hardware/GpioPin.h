@@ -41,6 +41,7 @@ public:
 	bool GetIsExported();
 
 	std::string ToString();
+	bool operator<(const CGpioPin& pin) const { return m_id < pin.m_id; };
 
 private:
 	int m_id;

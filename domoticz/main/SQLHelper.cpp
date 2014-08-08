@@ -1902,7 +1902,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 							bAdd2DelayQueue=true;
 							break;
 						case pTypeRFY:
-							cmd = rfy_sUp;
+							cmd = rfy_sStop;
 							bAdd2DelayQueue = true;
 							break;
 						}
