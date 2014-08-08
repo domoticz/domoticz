@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 527
+# ref 528
 
 CACHE:
 # CSS
@@ -329,14 +329,14 @@ secpanel/bg.jpg
 # Audio
 media/click.wav
 media/delete.wav
-secpanel/armed.mp3
-secpanel/armed.ogg
-secpanel/bleep.mp3
-secpanel/bleep.ogg
-secpanel/disarmed.mp3
-secpanel/disarmed.ogg
-secpanel/wrong.mp3
-secpanel/wrong.ogg
+secpanel/sounds/armed.mp3
+secpanel/sounds/armed.ogg
+secpanel/sounds/bleep.mp3
+secpanel/sounds/bleep.ogg
+secpanel/sounds/disarmed.mp3
+secpanel/sounds/disarmed.ogg
+secpanel/sounds/wrong.mp3
+secpanel/sounds/wrong.ogg
 
 # Languages
 i18n/domoticz-ar.json
