@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 533
+# ref 534
 
 CACHE:
 # CSS
@@ -424,7 +424,6 @@ lights.html
 log.html
 notification.html
 offline.html
-report.html
 restoredatabase.html
 roomplan.html
 scenes.html
