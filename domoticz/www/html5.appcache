@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 530
+# ref 533
 
 CACHE:
 # CSS
@@ -277,6 +277,7 @@ images/uv.png
 images/uv48.png
 images/uvdark.png
 images/uvsunny.png
+images/variables.png
 images/visibility.png
 images/visibility48.png
 images/WallSocket.png
@@ -409,9 +410,6 @@ js/themes/skies.js
 secpanel/js/less.js
 secpanel/js/ion.sound.js
 
-# Resources that require the user to be online.
-NETWORK:
-
 # HTML pages
 cam.html
 dashboard.html
@@ -422,10 +420,8 @@ eventsframe.html
 frontpage_example.html
 hardware.html
 history.html
-index.html
 lights.html
 log.html
-login.html
 notification.html
 offline.html
 report.html
@@ -440,6 +436,10 @@ utility.html
 weather.html
 zwavetopology.html
 secpanel/index.html
+
+# Resources that require the user to be online.
+NETWORK:
+login.html
 
 # Fallback content
 FALLBACK:

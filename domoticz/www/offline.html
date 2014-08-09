@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html manifest="html5.appcache"> 
+<html> 
 <head>
 	<meta charset="UTF-8">
 	<title>Domoticz Offline</title>
@@ -97,7 +97,11 @@ h3:before
     left: 0;
 }
 </style>
-
+</head>
+<body>
+<div id="offline">
+    <h3 data-i18n="Domoticz Offline">Domoticz Offline</h3>
+</div>
 	<script src="js/jquery-1.10.2.min.js"></script>
 	<script src="js/jquery.i18n.js"></script>
 	<script src="js/jquery.i18n.messages.js"></script>
@@ -108,19 +112,6 @@ h3:before
 	<script src="js/domoticz.js"></script>
 	<script type="text/javascript">
 
-function logEvent(event) {
-}
-
-if (window.applicationCache) {
-	window.applicationCache.addEventListener('checking',logEvent,false);
-	window.applicationCache.addEventListener('noupdate',logEvent,false);
-	window.applicationCache.addEventListener('progress',logEvent,false);
-	window.applicationCache.addEventListener('cached',logEvent,false);
-	window.applicationCache.addEventListener('updateready',logEvent,false);
-	window.applicationCache.addEventListener('obsolete',logEvent,false);
-	window.applicationCache.addEventListener('error',logEvent,false);
-}
-	
 		$(document).ready(function() {
 			$.ajax({
 				 url: "getlanguage.js",
@@ -137,33 +128,8 @@ if (window.applicationCache) {
 				 error: function(){
 				 }     
 			});
-			
-			if (window.applicationCache) {
-				window.applicationCache.addEventListener('downloading', function(e)
-				{
-					window.parent.NotifyCacheRefresh();
-				}, false);
-				window.applicationCache.addEventListener('updateready', function(e) 
-				{
-						if (window.applicationCache.status == window.applicationCache.UPDATEREADY) 
-						{
-								// Browser downloaded a new app cache.
-								// Swap it in and reload the page to get the new hotness.
-								window.parent.ClearNotifyCacheRefresh();
-								window.applicationCache.swapCache();
-								window.parent.RefreshMain();
-								window.location.reload();
-						}
-				}, false);
-			}
-			
 			$('#offline').i18n();
 		});
 	</script>
-</head>
-<body>
-<div id="offline">
-    <h3 data-i18n="Domoticz Offline">Domoticz Offline</h3>
-</div>
 </body>
 </html>

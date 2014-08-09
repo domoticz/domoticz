@@ -46,6 +46,7 @@ extern std::string szStartupFolder;
 extern std::string szWWWFolder;
 extern bool bIsRaspberryPi;
 extern std::string szAppVersion;
+extern bool m_bDontCacheHTMLPages;
 
 struct _tGuiLanguage {
 	const char* szShort;
@@ -2130,7 +2131,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["WindScale"]=m_sql.m_windscale*10.0f;
 		root["WindSign"]=m_sql.m_windsign;
 		root["TempScale"]=m_sql.m_tempscale;
-		root["TempSign"]=m_sql.m_tempsign;
+		root["TempSign"] = m_sql.m_tempsign;
+		root["dontcachehtml"] = m_bDontCacheHTMLPages;
 
 		if (m_sql.GetPreferencesVar("Location", nValue, sValue))
 		{
@@ -8795,6 +8797,7 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 		root["WindSign"] = m_sql.m_windsign;
 		root["TempScale"] = m_sql.m_tempscale;
 		root["TempSign"] = m_sql.m_tempsign;
+		root["dontcachehtml"] = m_bDontCacheHTMLPages;
 		int nValue;
 		std::string sValue;
 		if (m_sql.GetPreferencesVar("Location", nValue, sValue))

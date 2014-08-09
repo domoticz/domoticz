@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html> 
+<html manifest="html5.appcache"> 
 <head>
 		<meta charset="utf-8">
 		<title>Domoticz</title>
@@ -601,6 +601,19 @@ function ShowLatestHistory()
 	SwitchLayout('History');
 }
 
+function logEvent(event) {
+}
+
+if (window.applicationCache) {
+	window.applicationCache.addEventListener('checking',logEvent,false);
+	window.applicationCache.addEventListener('noupdate',logEvent,false);
+	window.applicationCache.addEventListener('progress',logEvent,false);
+	window.applicationCache.addEventListener('cached',logEvent,false);
+	window.applicationCache.addEventListener('updateready',logEvent,false);
+	window.applicationCache.addEventListener('obsolete',logEvent,false);
+	window.applicationCache.addEventListener('error',logEvent,false);
+}
+
 $(document).ready(function() {
 	if ("-ms-user-select" in document.documentElement.style &&
 		(navigator.userAgent.match(/IEMobile/) ||
@@ -622,7 +635,8 @@ $(document).ready(function() {
 		historytype : 1,
 		LastPlanSelected: 0,
 		Latitude: "",
-		Longitude: ""
+		Longitude: "",
+		dontcache: true
 	};
 	
 	if( /Android|webOS|iPhone|iPad|iPod|ZuneWP7|BlackBerry/i.test(navigator.userAgent) ) {
@@ -643,6 +657,26 @@ $(document).ready(function() {
 			bootbox.alert($.i18n('This Application is is designed for Internet Explorer version 10+!\nPlease upgrade your browser!'));
 		}
 	}
+	
+	if (window.applicationCache) {
+		window.applicationCache.addEventListener('downloading', function(e)
+		{
+			NotifyCacheRefresh();
+		}, false);
+		window.applicationCache.addEventListener('updateready', function(e) 
+		{
+				if (window.applicationCache.status == window.applicationCache.UPDATEREADY) 
+				{
+						// Browser downloaded a new app cache.
+						// Swap it in and reload the page to get the new hotness.
+						ClearNotifyCacheRefresh();
+						window.applicationCache.swapCache();
+						RefreshMain();
+						window.location.reload();
+				}
+		}, false);
+	}
+	
 	$("#appversion").click( function( e ) {
 		e.preventDefault();
 		$.myglobals.historytype=1;

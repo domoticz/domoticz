@@ -40,6 +40,7 @@ const char *szHelp=
 	"\t-log file_path (for example /var/log/domoticz.log)\n"
 #endif
 	"\t-loglevel (0=All, 1=Status+Error, 2=Error)\n"
+	"\t-nocache (do not cache HTML pages (for editing)\n"
 	"";
 
 std::string szStartupFolder;
@@ -51,6 +52,7 @@ MainWorker m_mainworker;
 CLogger _log;
 http::server::CWebServer m_webserver;
 CSQLHelper m_sql;
+bool m_bDontCacheHTMLPages = true;
 
 void DQuitFunction()
 {
@@ -368,6 +370,10 @@ int main(int argc, char**argv)
 		}
 		int Level=atoi(cmdLine.GetSafeArgument("-loglevel",0,"").c_str());
 		_log.SetVerboseLevel((_eLogFileVerboseLevel)Level);
+	}
+	if (cmdLine.HasSwitch("-nocache"))
+	{
+		m_bDontCacheHTMLPages = false;
 	}
 
 	if (!m_mainworker.Start())
