@@ -30,11 +30,12 @@
 #include "Logger.h"
 #include "SQLHelper.h"
 
-
 #ifndef WIN32
 	#include <sys/utsname.h>
+#include <dirent.h>
 #else
 	#include "WindowsHelper.h"
+#include "dirent_windows.h"
 #endif
 
 #include "mainstructs.h"
@@ -42,6 +43,7 @@
 #define round(a) ( int ) ( a + .5 )
 
 extern std::string szStartupFolder;
+extern std::string szWWWFolder;
 extern bool bIsRaspberryPi;
 extern std::string szAppVersion;
 
@@ -1873,7 +1875,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				}
 				if (Name!="")
 				{
-					root["result"][ii]["idx"]=ID;
+					root["result"][ii]["idx"] = ID;
+					root["result"][ii]["devidx"] = DevSceneRowID;
 					root["result"][ii]["type"]=DevSceneType;
 					root["result"][ii]["DevSceneRowID"]=DevSceneRowID;
 					root["result"][ii]["order"]=sd[3];
@@ -2181,6 +2184,27 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["result"]["EnableTabTemp"]=bEnableTabTemp;
 		root["result"]["EnableTabWeather"]=bEnableTabWeather;
 		root["result"]["EnableTabUtility"]=bEnableTabUtility;
+
+		//Add custom templates
+		DIR *lDir;
+		struct dirent *ent;
+		std::string templatesFolder = szWWWFolder + "/templates";
+		int iFile = 0;
+		if ((lDir = opendir(templatesFolder.c_str())) != NULL)
+		{
+			while ((ent = readdir(lDir)) != NULL)
+			{
+				std::string filename = ent->d_name;
+				size_t pos = filename.find(".htm");
+				if (pos != std::string::npos)
+				{
+					std::string shortfile = filename.substr(0, pos);
+					root["result"]["templates"][iFile++] = shortfile;
+				}
+			}
+			closedir(lDir);
+		}
+
 	}
 	else if (cparam=="sendnotification")
 	{

@@ -61,298 +61,6 @@
 		<link type="text/css" rel="stylesheet" href="css/jquery.uix.multiselect.css" />
         <link type="text/css" rel="stylesheet" href="css/style.css" />
         <link type="text/css" rel="stylesheet" href="css/colpick.css" />
-
-        <script src="js/jquery-1.10.2.min.js"></script>
-		<script src="js/jquery.i18n.js"></script>
-		<script src="js/jquery.i18n.messages.js"></script>
-		<script src="js/jquery.i18n.fallbacks.js"></script>
-		<script src="js/jquery.i18n.parser.js"></script>
-		<script src="js/jquery.i18n.emitter.js"></script>
-		<script src="js/jquery.i18n.language.js"></script>
-        <script src="js/bootstrap.min.js"></script>
-		<script src="js/bootbox.min.js"></script>
-        <script src="js/jquery-ui-1.10.3.custom.min.js"></script>
-		<script src="js/jquery.ui.touch-punch.min.js"></script>
-		<script src="js/jquery.uix.multiselect.min.js"></script>
-		<script src="js/jquery.ddslick.min.js"></script>
-		<script src="js/colpick.js"></script>
-		<script type="text/javascript" src="js/noty/jquery.noty.js"></script>
-        <script type="text/javascript" src="js/noty/layouts/top.js"></script>
-        <script type="text/javascript" src="js/noty/layouts/topRight.js"></script>
-        <script type="text/javascript" src="js/noty/themes/default.js"></script>
-		<script type="text/javascript" charset="utf-8" src="js/jquery.dataTables.min.js"></script>
-		<script type="text/javascript" charset="utf-8" src="js/ZeroClipboard.js"></script>
-		<script type="text/javascript" charset="utf-8" src="js/TableTools.min.js"></script>
-		<script type="text/javascript" charset="utf-8" src="js/date.format.js"></script>
-		<script type="text/javascript" charset="utf-8" src="js/highcharts.js"></script>
-		<script type="text/javascript" charset="utf-8" src="js/highcharts-more.js"></script>
-		<script src="js/modules/exporting.js"></script>
-		<script src="js/export-csv.js"></script>
-		<script type="text/javascript" charset="utf-8" src="js/themes/dark-blue.js"></script>
-		<script type="text/javascript" charset="utf-8" src="js/domoticz.js"></script>
-<script type="text/javascript" charset="utf-8" id="init-code">
-
-function logEvent(event) {
-  //console.log(event.type);
-}
-
-function NotifyCacheRefresh()
-{
-	$.cachenoty=generate_noty('information', '<b>' + $.i18n('Browser Cache is being refreshed') + '...</b><br>' + $.i18n('Please standby') + '...', false);
-}
-
-function ClearNotifyCacheRefresh()
-{
-	if (typeof $.cachenoty != 'undefined') {
-		$.cachenoty.close();
-	}
-}
-
-function RefreshMain()
-{
-	window.location.reload();
-}
-
-function CheckForUpdate(showdialog) {
-	$.ajax({
-		 url: "json.htm?type=command&param=checkforupdate&forced=" + showdialog,
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
-			var urights=data.statuscode;
-			var bDisplayLogout=false;
-			$.FiveMinuteHistoryDays=data["5MinuteHistoryDays"];
-			$.AllowWidgetOrdering=data["AllowWidgetOrdering"];
-			if (urights!=3) {
-				bDisplayLogout=true;
-			}
-			else {
-				bDisplayLogout=false;
-				urights=2;
-			}
-			window.my_config =
-			{
-				userrights : urights
-			};
-			
-			if (bDisplayLogout) {
-				if (window.my_config.userrights!=2) {
-					//no setup menu
-					$("#dLogout").show();
-					$("#mLogout").show();
-					$("#dLogoutSetup").hide();
-					$("#mLogoutSetup").hide();
-				}
-				else {
-					$("#dLogout").hide();
-					$("#mLogout").hide();
-					$("#dLogoutSetup").show();
-					$("#mLogoutSetup").show();
-				}
-			}
-			else {
-				$("#dLogout").hide();
-				$("#mLogout").hide();
-				$("#dLogoutSetup").hide();
-				$("#mLogoutSetup").hide();
-			}
-			
-			if (window.my_config.userrights!=2) {
-				$("#setupmenu").hide();
-			}
-			
-			//data.HaveUpdate=true;
-			if (data.HaveUpdate == true) {
-				$("#mUpdate").show();
-				$("#mCheckUpdate").hide();
-				if (showdialog) {
-					var bValid = false;
-					bValid=(confirm($.i18n("Update Available !... Update Now?"))==true);
-					if (bValid) {
-						SwitchLayout('Update');
-					}
-				}
-				else {
-					var msgtxt=$.i18n('A new version of Domoticz is Available!...<br>Use the Setup tab to update.');
-					msgtxt+='<br>' + $.i18n('Version') + ': <b>' + data.Revision + '</b>, ' + $.i18n('Latest Changes') + ': <b><a onclick="ShowLatestHistory();">' + $.i18n('Click Here') + '</a></b>';
-					generate_noty('success', msgtxt, false);
-				}
-			}
-			else
-			{
-				if (data.IsSupported==false) {
-					$("#dUpdate").hide();
-					$("#mUpdate").hide();
-					$("#mCheckUpdate").hide();
-				}
-				else {
-					$("#mUpdate").hide();
-					$("#mCheckUpdate").show();
-				}
-				if (showdialog) {
-					bootbox.alert($.i18n("No Update Available !..."));
-				}
-			}
-		 },
-		 error: function(){
-				$("#mUpdate").hide();
-				$("#mCheckUpdate").show();
-				if (showdialog) {
-					bootbox.alert($.i18n("Error communicating to server!"));
-				}
-		 }     
-	});
-}
-
-function TransferDevice(idx,backfunction)
-{
-	$.ajax({
-		 url: "json.htm?type=gettransfers&idx=" + idx,
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
-				if (typeof data.result == 'undefined') 
-				{
-					bootbox.alert($.i18n('No devices to Transfer too!'));
-					return;
-				}
-				$("#dialog-transferdevice #newdevice").html("");
-				
-				$.each(data.result, function(i,item){
-					var option = $('<option />');
-					option.attr('value', item.idx).text(item.Name);
-					$("#dialog-transferdevice #newdevice").append(option);
-				});
-				$.devIdx = idx;
-				$.backfunction=backfunction;
-				$( "#dialog-transferdevice" ).i18n();
-				$( "#dialog-transferdevice" ).dialog( "open" );
-		 }
-	});
-}
-
-function ShowLatestHistory()
-{
-	$.myglobals.historytype=2;
-	SwitchLayout('History');
-}
-
-$(document).ready(function() {
-	if ("-ms-user-select" in document.documentElement.style &&
-		(navigator.userAgent.match(/IEMobile/) ||
-		navigator.userAgent.match(/ZuneWP7/) ||
-		navigator.userAgent.match(/WPDesktop/))) {
-		var msViewportStyle = document.createElement("style");
-		msViewportStyle.appendChild(document.createTextNode("@-ms-viewport{width:auto!important}"));
-		document.getElementsByTagName("head")[0].appendChild(msViewportStyle);
-	 }
-	$.myglobals = {
-		actlayout : "",
-		prevlayout : "",
-		ismobile: false,
-		ismobileint: false,
-		windscale: 1.0,
-		windsign: "m/s",
-		tempscale: 1.0,
-		tempsign: "C",
-		historytype : 1,
-		LastPlanSelected: 0,
-		Latitude: "",
-		Longitude: ""
-	};
-	
-	if( /Android|webOS|iPhone|iPad|iPod|ZuneWP7|BlackBerry/i.test(navigator.userAgent) ) {
-		$.myglobals.ismobile=true;
-		$.myglobals.ismobileint=true;
-	}
-
-	var matched = matchua( navigator.userAgent );
-	var browser = {};
-	if ( matched.browser ) {
-		browser[ matched.browser ] = true;
-		browser.version = matched.version;
-	}
-	
-	if ( browser.msie ) {
-		var bVersion=parseFloat(browser.version);
-		if (bVersion < 10.0) {
-			bootbox.alert($.i18n('This Application is is designed for Internet Explorer version 10+!\nPlease upgrade your browser!'));
-		}
-	}
-
-	$("#appversion").click( function( e ) {
-		e.preventDefault();
-		$.myglobals.historytype=1;
-		SwitchLayout('History');
-	});
-	
-	//Highcharts.getOptions().exporting.buttons.contextButton.menuItems.push({
-	//	text: 'Download CSV',
-	//	onclick: function () {
-	//		ExportChart2CSV(this);
-	//	}
-	//});
-
-	EnableDisableTabs();
-	
-	window.myglobals=$.myglobals;
-
-    $( "#dialog-transferdevice" ).dialog({
-          autoOpen: false,
-          width: 380,
-          height: 160,
-          modal: true,
-          resizable: false,
-          buttons: {
-              "OK": function() {
-                  var bValid = true;
-                  $( this ).dialog( "close" );
-                  
-									var NewDeviceIdx=$("#dialog-transferdevice #newdevice option:selected").val();
-									if (typeof NewDeviceIdx == 'undefined') {
-										bootbox.alert($.i18n('No New Device Selected!'));
-										return ;
-									}
-									$.ajax({
-										 url: "json.htm?type=transferdevice&idx=" + $.devIdx + "&newidx=" + NewDeviceIdx,
-										 async: false, 
-										 dataType: 'json',
-										 success: function(data) {
-											if (data.status == 'OK') {
-												$.backfunction();
-											}
-											else {
-												ShowNotify($.i18n('Problem Transfering Device!'), 2500, true);
-											}
-										 },
-										 error: function(){
-												HideNotify();
-												ShowNotify($.i18n('Problem Transfering Device!'), 2500, true);
-										 }     
-									});
-              },
-              Cancel: function() {
-                  $( this ).dialog( "close" );
-              }
-          },
-          close: function() {
-            $( this ).dialog( "close" );
-          }
-    });
-    
-    CheckForUpdate(false);
-
-	SwitchLayout(GetLayoutFromURL());
-
-	window.onhashchange = function(){
-		if($.myglobals.layoutFull != GetLayoutFromURL()) {
-			SwitchLayout(GetLayoutFromURL());
-		}
-	}; 
-} );
-
-</script>
-
 </head class="homepage">
 <body>
 	<div id="globaldaylog" style="display:none;">
@@ -646,21 +354,26 @@ $(document).ready(function() {
              <div class="navbar-inner">
                 <div class="container">
 					<a class="brand hidden-phone" href="javascript:SwitchLayout('Dashboard')"><h1>Domoticz</h1> <h2 id="appversion">*</h2></a>
-                        <ul class="nav">
-                            <li id="mDashboard"><a id="cDashboard" href="javascript:SwitchLayout('Dashboard')"><img src="images/desktop.png"> <span class="hidden-phone hidden-tablet" data-i18n="Dashboard">Dashboard</span></img></a></li>
-                            <li class="divider-vertical"></li>
-								<li id="mLightSwitches"><a id="cLightSwitches" href="javascript:SwitchLayout('LightSwitches')"><img src="images/lightbulb.png"> <span class="hidden-phone hidden-tablet" data-i18n="Switches">Switches</span></a></li>
-                            <li class="divider-vertical"></li>
-								<li id="mScenes"><a id="cScenes" href="javascript:SwitchLayout('Scenes')"><img src="images/scenes.png"> <span class="hidden-phone hidden-tablet" data-i18n="Scenes">Scenes</span></a></li>
-                            <li class="divider-vertical"></li>
-								<li id="mTemperature"><a id="cTemperature" href="javascript:SwitchLayout('Temperature')"><img src="images/temperature.png"> <span class="hidden-phone hidden-tablet" data-i18n="Temperature">Temperature</span></a></li>
-                            <li class="divider-vertical"></li>
-								<li id="mWeather"><a id="cWeather" href="javascript:SwitchLayout('Weather')"><img src="images/rain.png"> <span class="hidden-phone hidden-tablet" data-i18n="Weather">Weather</span></a></li>
-                            <li class="divider-vertical"></li>
-								<li id="mUtility"><a id="cUtility" href="javascript:SwitchLayout('Utility')"><img src="images/utility.png"> <span class="hidden-phone hidden-tablet" data-i18n="Utility">Utility</span></a></li>
-                            <li class="divider-vertical"></li>
-                            <li class="dropdown">
-                                <a id="setupmenu" class="dropdown-toggle" data-toggle="dropdown" onmouseover="cursorhand()" onmouseout="cursordefault()"><img src="images/setup.png"> <span class="hidden-phone hidden-tablet" data-i18n="Setup">Setup</span> <b class="caret hidden-phone hidden-tablet"></b></a>
+                        <ul class="nav" id="appnavbar" style="display:none;">
+                            <li class="clDashboard"><a id="cDashboard" href="javascript:SwitchLayout('Dashboard')"><img src="images/desktop.png"> <span class="hidden-phone hidden-tablet" data-i18n="Dashboard">Dashboard</span></img></a></li>
+                            <li class="divider-vertical clLightSwitches"></li>
+								<li class="clLightSwitches"><a id="cLightSwitches" href="javascript:SwitchLayout('LightSwitches')"><img src="images/lightbulb.png"> <span class="hidden-phone hidden-tablet" data-i18n="Switches">Switches</span></a></li>
+                            <li class="divider-vertical clScenes"></li>
+								<li class="clScenes"><a id="cScenes" href="javascript:SwitchLayout('Scenes')"><img src="images/scenes.png"> <span class="hidden-phone hidden-tablet" data-i18n="Scenes">Scenes</span></a></li>
+                            <li class="divider-vertical clTemperature"></li>
+								<li class="clTemperature"><a id="cTemperature" href="javascript:SwitchLayout('Temperature')"><img src="images/temperature.png"> <span class="hidden-phone hidden-tablet" data-i18n="Temperature">Temperature</span></a></li>
+                            <li class="divider-vertical clWeather"></li>
+								<li class="clWeather"><a id="cWeather" href="javascript:SwitchLayout('Weather')"><img src="images/rain.png"> <span class="hidden-phone hidden-tablet" data-i18n="Weather">Weather</span></a></li>
+                            <li class="divider-vertical clUtility"></li>
+								<li class="clUtility"><a id="cUtility" href="javascript:SwitchLayout('Utility')"><img src="images/utility.png"> <span class="hidden-phone hidden-tablet" data-i18n="Utility">Utility</span></a></li>
+                            <li class="divider-vertical clcustommenu" style="display:none;"></li>
+                            <li class="dropdown clcustommenu" style="display:none;">
+                                <a class="dropdown-toggle" data-toggle="dropdown" onmouseover="cursorhand()" onmouseout="cursordefault()"><img src="images/devices.png"> <span class="hidden-phone hidden-tablet" data-i18n="Custom">Custom</span> <b class="caret hidden-phone hidden-tablet"></b></a>
+                                <ul class="dropdown-menu pull-right" id="custommenu"></ul>
+							</li>
+                            <li class="divider-vertical clsetupmenu"></li>
+                            <li class="dropdown clsetupmenu">
+                                <a class="dropdown-toggle" data-toggle="dropdown" onmouseover="cursorhand()" onmouseout="cursordefault()"><img src="images/setup.png"> <span class="hidden-phone hidden-tablet" data-i18n="Setup">Setup</span> <b class="caret hidden-phone hidden-tablet"></b></a>
                                 <ul class="dropdown-menu pull-right">
 									<li id="mHardware"><a id="cHardware" href="javascript:SwitchLayout('Hardware')"><img src="images/hardware.png"> <span data-i18n="Hardware">Hardware</span></a></li>
 									<li id="mDevices"><a id="cDevices" href="javascript:SwitchLayout('Devices')"><img src="images/devices.png"> <span data-i18n="Devices">Devices</span></a></li>
@@ -712,5 +425,296 @@ $(document).ready(function() {
 					</div> <!-- /container -->
 		</div>
 		<iframe src="/offline.html" style="display: none;"></iframe>
+
+        <script src="js/jquery-1.10.2.min.js"></script>
+		<script src="js/jquery.i18n.js"></script>
+		<script src="js/jquery.i18n.messages.js"></script>
+		<script src="js/jquery.i18n.fallbacks.js"></script>
+		<script src="js/jquery.i18n.parser.js"></script>
+		<script src="js/jquery.i18n.emitter.js"></script>
+		<script src="js/jquery.i18n.language.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+		<script src="js/bootbox.min.js"></script>
+        <script src="js/jquery-ui-1.10.3.custom.min.js"></script>
+		<script src="js/jquery.ui.touch-punch.min.js"></script>
+		<script src="js/jquery.uix.multiselect.min.js"></script>
+		<script src="js/jquery.ddslick.min.js"></script>
+		<script src="js/colpick.js"></script>
+		<script type="text/javascript" src="js/noty/jquery.noty.js"></script>
+        <script type="text/javascript" src="js/noty/layouts/top.js"></script>
+        <script type="text/javascript" src="js/noty/layouts/topRight.js"></script>
+        <script type="text/javascript" src="js/noty/themes/default.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/jquery.dataTables.min.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/ZeroClipboard.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/TableTools.min.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/date.format.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/highcharts.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/highcharts-more.js"></script>
+		<script src="js/modules/exporting.js"></script>
+		<script src="js/export-csv.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/themes/dark-blue.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/domoticz.js"></script>
+<script type="text/javascript" charset="utf-8" id="init-code">
+
+function logEvent(event) {
+  //console.log(event.type);
+}
+
+function NotifyCacheRefresh()
+{
+	$.cachenoty=generate_noty('information', '<b>' + $.i18n('Browser Cache is being refreshed') + '...</b><br>' + $.i18n('Please standby') + '...', false);
+}
+
+function ClearNotifyCacheRefresh()
+{
+	if (typeof $.cachenoty != 'undefined') {
+		$.cachenoty.close();
+	}
+}
+
+function RefreshMain()
+{
+	window.location.reload();
+}
+
+function CheckForUpdate(showdialog) {
+	$.ajax({
+		 url: "json.htm?type=command&param=checkforupdate&forced=" + showdialog,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			var urights=data.statuscode;
+			var bDisplayLogout=false;
+			$.FiveMinuteHistoryDays=data["5MinuteHistoryDays"];
+			$.AllowWidgetOrdering=data["AllowWidgetOrdering"];
+			if (urights!=3) {
+				bDisplayLogout=true;
+			}
+			else {
+				bDisplayLogout=false;
+				urights=2;
+			}
+			window.my_config =
+			{
+				userrights : urights
+			};
+			
+			if (bDisplayLogout) {
+				if (window.my_config.userrights!=2) {
+					//no setup menu
+					$("#dLogout").show();
+					$("#mLogout").show();
+					$("#dLogoutSetup").hide();
+					$("#mLogoutSetup").hide();
+				}
+				else {
+					$("#dLogout").hide();
+					$("#mLogout").hide();
+					$("#dLogoutSetup").show();
+					$("#mLogoutSetup").show();
+				}
+			}
+			else {
+				$("#dLogout").hide();
+				$("#mLogout").hide();
+				$("#dLogoutSetup").hide();
+				$("#mLogoutSetup").hide();
+			}
+			
+			if (window.my_config.userrights!=2) {
+				$(".clsetupmenu").hide();
+			}
+			
+			//data.HaveUpdate=true;
+			if (data.HaveUpdate == true) {
+				$("#mUpdate").show();
+				$("#mCheckUpdate").hide();
+				if (showdialog) {
+					var bValid = false;
+					bValid=(confirm($.i18n("Update Available !... Update Now?"))==true);
+					if (bValid) {
+						SwitchLayout('Update');
+					}
+				}
+				else {
+					var msgtxt=$.i18n('A new version of Domoticz is Available!...<br>Use the Setup tab to update.');
+					msgtxt+='<br>' + $.i18n('Version') + ': <b>' + data.Revision + '</b>, ' + $.i18n('Latest Changes') + ': <b><a onclick="ShowLatestHistory();">' + $.i18n('Click Here') + '</a></b>';
+					generate_noty('success', msgtxt, false);
+				}
+			}
+			else
+			{
+				if (data.IsSupported==false) {
+					$("#dUpdate").hide();
+					$("#mUpdate").hide();
+					$("#mCheckUpdate").hide();
+				}
+				else {
+					$("#mUpdate").hide();
+					$("#mCheckUpdate").show();
+				}
+				if (showdialog) {
+					bootbox.alert($.i18n("No Update Available !..."));
+				}
+			}
+		 },
+		 error: function(){
+				$("#mUpdate").hide();
+				$("#mCheckUpdate").show();
+				if (showdialog) {
+					bootbox.alert($.i18n("Error communicating to server!"));
+				}
+		 }     
+	});
+}
+
+function TransferDevice(idx,backfunction)
+{
+	$.ajax({
+		 url: "json.htm?type=gettransfers&idx=" + idx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+				if (typeof data.result == 'undefined') 
+				{
+					bootbox.alert($.i18n('No devices to Transfer too!'));
+					return;
+				}
+				$("#dialog-transferdevice #newdevice").html("");
+				
+				$.each(data.result, function(i,item){
+					var option = $('<option />');
+					option.attr('value', item.idx).text(item.Name);
+					$("#dialog-transferdevice #newdevice").append(option);
+				});
+				$.devIdx = idx;
+				$.backfunction=backfunction;
+				$( "#dialog-transferdevice" ).i18n();
+				$( "#dialog-transferdevice" ).dialog( "open" );
+		 }
+	});
+}
+
+function ShowLatestHistory()
+{
+	$.myglobals.historytype=2;
+	SwitchLayout('History');
+}
+
+$(document).ready(function() {
+	if ("-ms-user-select" in document.documentElement.style &&
+		(navigator.userAgent.match(/IEMobile/) ||
+		navigator.userAgent.match(/ZuneWP7/) ||
+		navigator.userAgent.match(/WPDesktop/))) {
+		var msViewportStyle = document.createElement("style");
+		msViewportStyle.appendChild(document.createTextNode("@-ms-viewport{width:auto!important}"));
+		document.getElementsByTagName("head")[0].appendChild(msViewportStyle);
+	 }
+	$.myglobals = {
+		actlayout : "",
+		prevlayout : "",
+		ismobile: false,
+		ismobileint: false,
+		windscale: 1.0,
+		windsign: "m/s",
+		tempscale: 1.0,
+		tempsign: "C",
+		historytype : 1,
+		LastPlanSelected: 0,
+		Latitude: "",
+		Longitude: ""
+	};
+	
+	if( /Android|webOS|iPhone|iPad|iPod|ZuneWP7|BlackBerry/i.test(navigator.userAgent) ) {
+		$.myglobals.ismobile=true;
+		$.myglobals.ismobileint=true;
+	}
+
+	var matched = matchua( navigator.userAgent );
+	var browser = {};
+	if ( matched.browser ) {
+		browser[ matched.browser ] = true;
+		browser.version = matched.version;
+	}
+	
+	if ( browser.msie ) {
+		var bVersion=parseFloat(browser.version);
+		if (bVersion < 10.0) {
+			bootbox.alert($.i18n('This Application is is designed for Internet Explorer version 10+!\nPlease upgrade your browser!'));
+		}
+	}
+	$("#appversion").click( function( e ) {
+		e.preventDefault();
+		$.myglobals.historytype=1;
+		SwitchLayout('History');
+	});
+
+	//Highcharts.getOptions().exporting.buttons.contextButton.menuItems.push({
+	//	text: 'Download CSV',
+	//	onclick: function () {
+	//		ExportChart2CSV(this);
+	//	}
+	//});
+
+	EnableDisableTabs();
+	
+	window.myglobals=$.myglobals;
+
+    $( "#dialog-transferdevice" ).dialog({
+          autoOpen: false,
+          width: 380,
+          height: 160,
+          modal: true,
+          resizable: false,
+          buttons: {
+              "OK": function() {
+                  var bValid = true;
+                  $( this ).dialog( "close" );
+                  
+									var NewDeviceIdx=$("#dialog-transferdevice #newdevice option:selected").val();
+									if (typeof NewDeviceIdx == 'undefined') {
+										bootbox.alert($.i18n('No New Device Selected!'));
+										return ;
+									}
+									$.ajax({
+										 url: "json.htm?type=transferdevice&idx=" + $.devIdx + "&newidx=" + NewDeviceIdx,
+										 async: false, 
+										 dataType: 'json',
+										 success: function(data) {
+											if (data.status == 'OK') {
+												$.backfunction();
+											}
+											else {
+												ShowNotify($.i18n('Problem Transfering Device!'), 2500, true);
+											}
+										 },
+										 error: function(){
+												HideNotify();
+												ShowNotify($.i18n('Problem Transfering Device!'), 2500, true);
+										 }     
+									});
+              },
+              Cancel: function() {
+                  $( this ).dialog( "close" );
+              }
+          },
+          close: function() {
+            $( this ).dialog( "close" );
+          }
+    });
+    
+    CheckForUpdate(false);
+
+	SwitchLayout(GetLayoutFromURL());
+
+	window.onhashchange = function(){
+		if($.myglobals.layoutFull != GetLayoutFromURL()) {
+			SwitchLayout(GetLayoutFromURL());
+		}
+	};
+} );
+
+</script>
+
     </body>
 </html>

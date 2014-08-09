@@ -76,6 +76,7 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: OpenZWave Tag Reader support
 - Implemented: RFY Off Delay (Stop)
 - Changed: GPIO applied new patch for new WiringPi support
+- Implemented: Option for custom pages, see www/templates folder
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io
