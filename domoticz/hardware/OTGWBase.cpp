@@ -351,7 +351,7 @@ bool OTGWBase::GetOutsideTemperatureFromDomoticz(float &tvalue)
 	Json::Value tempjson;
 	std::stringstream sstr;
 	sstr << m_OutsideTemperatureIdx;
-	m_webserver.GetJSonDevices(tempjson, "", "temp","ID",sstr.str(),"",true,0);
+	m_webserver.GetJSonDevices(tempjson, "", "temp","ID",sstr.str(),"","",true,0);
 
 	size_t tsize=tempjson.size();
 	if (tsize<1)
