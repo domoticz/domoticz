@@ -238,7 +238,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 			{
 				//COMMAND_CLASS_SWITCH_MULTILEVEL
 				_device.commandClassID=38;
-				_device.devType= ZDTYPE_SWITCHDIMMER;
+				_device.devType= ZDTYPE_SWITCH_DIMMER;
 				_device.intvalue=instance["commandClasses"]["38"]["data"]["level"]["value"].asInt();
 				InsertDevice(_device);
 			}
@@ -246,7 +246,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 			{
 				//COMMAND_CLASS_SWITCH_BINARY
 				_device.commandClassID=37;
-				_device.devType= ZDTYPE_SWITCHNORMAL;
+				_device.devType= ZDTYPE_SWITCH_NORMAL;
 				_device.intvalue=instance["commandClasses"]["37"]["data"]["level"]["value"].asInt();
 				InsertDevice(_device);
 			}
@@ -256,7 +256,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 			{
 				//COMMAND_CLASS_SENSOR_BINARY
 				_device.commandClassID=48; //(binary switch, for example motion detector(PIR)
-				_device.devType= ZDTYPE_SWITCHNORMAL;
+				_device.devType= ZDTYPE_SWITCH_NORMAL;
 				if (instance["commandClasses"]["48"]["data"]["level"].empty()==false)
 				{
 					_device.intvalue=instance["commandClasses"]["48"]["data"]["level"]["value"].asInt();
@@ -442,7 +442,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 				else
 					_device.intvalue=255;
 				_device.commandClassID=64;
-				_device.devType = ZDTYPE_SWITCHNORMAL;
+				_device.devType = ZDTYPE_SWITCH_NORMAL;
 				InsertDevice(_device);
 			}
 
@@ -473,7 +473,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 						continue; //not a scale
 					_device.intvalue=(*itt2)["sensorSate"]["value"].asInt();
 					_device.commandClassID=156;
-					_device.devType = ZDTYPE_SWITCHNORMAL;
+					_device.devType = ZDTYPE_SWITCH_NORMAL;
 					InsertDevice(_device);
 				}
 			}
@@ -555,7 +555,7 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 				int devID=atoi(results[1].c_str());
 				int instanceID=atoi(results[3].c_str());
 				int indexID=0;
-				pDevice=FindDevice(devID,instanceID,indexID, cmdID, ZDTYPE_SWITCHNORMAL);
+				pDevice=FindDevice(devID,instanceID,indexID, cmdID, ZDTYPE_SWITCH_NORMAL);
 			}
 		}
 	}
@@ -577,7 +577,7 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 				if (instanceID==0)
 				{
 					//only allow instance 0 for now
-					pDevice=FindDevice(devID,instanceID, indexID, cmdID, ZDTYPE_SWITCHNORMAL);
+					pDevice=FindDevice(devID,instanceID, indexID, cmdID, ZDTYPE_SWITCH_NORMAL);
 					if (pDevice==NULL)
 					{
 						//Add new switch device
@@ -598,10 +598,10 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 						_device.scaleID=-1;
 
 						_device.commandClassID=cmdID;
-						_device.devType= ZDTYPE_SWITCHNORMAL;
+						_device.devType= ZDTYPE_SWITCH_NORMAL;
 						_device.intvalue=255;
 						InsertDevice(_device);
-						pDevice=FindDevice(devID,instanceID,indexID, cmdID, ZDTYPE_SWITCHNORMAL);
+						pDevice=FindDevice(devID,instanceID,indexID, cmdID, ZDTYPE_SWITCH_NORMAL);
 					}
 				}
 			}
@@ -678,7 +678,7 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 		_device.scaleID=-1;
 
 		_device.commandClassID=atoi(sClassID.c_str());
-		_device.devType= ZDTYPE_SWITCHNORMAL;
+		_device.devType= ZDTYPE_SWITCH_NORMAL;
 		std::string vstring=obj["value"].asString();
 		if (vstring=="true")
 			_device.intvalue=255;
@@ -723,8 +723,8 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 
 	switch (pDevice->devType)
 	{
-	case ZDTYPE_SWITCHNORMAL:
-	case ZDTYPE_SWITCHDIMMER:
+	case ZDTYPE_SWITCH_NORMAL:
+	case ZDTYPE_SWITCH_DIMMER:
 		{
 			//switch
 			if (pDevice->commandClassID==64) //Thermostat Mode

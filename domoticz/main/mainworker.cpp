@@ -4031,7 +4031,10 @@ unsigned long long MainWorker::decode_LimitlessLights(const CDomoticzHardwareBas
 
 	unsigned char devType=pTypeLimitlessLights;
 	unsigned char subType=pLed->subtype;
-	sprintf(szTmp,"%d", 1);
+	if (pLed->id==1)
+		sprintf(szTmp,"%d", 1);
+	else
+		sprintf(szTmp, "%08x", pLed->id);
 	std::string ID = szTmp;
 	unsigned char Unit=pLed->dunit;
 	unsigned char cmnd=pLed->command;
@@ -8223,31 +8226,33 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.len=sizeof(_tLimitlessLights)-1;
 			lcmd.type=dType;
 			lcmd.subtype=dSubType;
-			lcmd.dunit=Unit;
+			lcmd.id = ID;
+			lcmd.dunit = Unit;
 
 			if ((switchcmd=="On")||(switchcmd=="Set Level"))
 			{
 				if (hue!=-1)
 				{
-					_tLimitlessLights lcmd;
-					lcmd.len=sizeof(_tLimitlessLights)-1;
-					lcmd.type=dType;
-					lcmd.subtype=dSubType;
-					lcmd.dunit=Unit;
+					_tLimitlessLights lcmd2;
+					lcmd2.len=sizeof(_tLimitlessLights)-1;
+					lcmd2.type=dType;
+					lcmd2.subtype=dSubType;
+					lcmd.id = ID;
+					lcmd2.dunit = Unit;
 					if (hue!=1000)
 					{
 						double dval;
 						dval=(255.0/360.0)*float(hue);
 						int ival;
 						ival=round(dval);
-						lcmd.value=ival;
-						lcmd.command=Limitless_SetRGBColour;
+						lcmd2.value=ival;
+						lcmd2.command=Limitless_SetRGBColour;
 					}
 					else
 					{
-						lcmd.command=Limitless_SetColorToWhite;
+						lcmd2.command=Limitless_SetColorToWhite;
 					}
-					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(_tLimitlessLights));
+					WriteToHardware(HardwareID,(const char*)&lcmd2,sizeof(_tLimitlessLights));
 					sleep_milliseconds(100);
 				}
 			}

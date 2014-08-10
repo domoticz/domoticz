@@ -1574,7 +1574,12 @@ bool GetLightCommand(
 			cmd=Limitless_SetBrightnessLevel;
 			return true;
 		}
-		else if (switchcmd=="Set Full")
+		else if (switchcmd == "Set White")
+		{
+			cmd = Limitless_SetColorToWhite;
+			return true;
+		}
+		else if (switchcmd == "Set Full")
 		{
 			cmd=Limitless_SetColorToWhite;
 			return true;

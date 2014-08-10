@@ -159,102 +159,154 @@ void ZWaveBase::UpdateDeviceBatteryStatus(const int nodeID, const int value)
 void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 {
 	if (
-		(pDevice->devType!=ZDTYPE_SWITCHNORMAL)&&
-		(pDevice->devType!=ZDTYPE_SWITCHDIMMER)
+		(pDevice->devType!=ZDTYPE_SWITCH_NORMAL)&&
+		(pDevice->devType != ZDTYPE_SWITCH_DIMMER) &&
+		(pDevice->devType != ZDTYPE_SWITCH_FGRGBWM441)
 		)
 		return; //only for switches
 
-	unsigned char ID1=0;
-	unsigned char ID2=0;
-	unsigned char ID3=0;
-	unsigned char ID4=0;
-
-	//make device ID
-	ID1=0;
-	ID2=(unsigned char)((pDevice->nodeID&0xFF00)>>8);
-	ID3=(unsigned char)pDevice->nodeID&0xFF;
-	ID4=pDevice->instanceID;
-
-	//To fix all problems it should be
-	//ID1 = (unsigned char)((pDevice->nodeID & 0xFF00) >> 8);
-	//ID2 = (unsigned char)pDevice->nodeID & 0xFF;
-	//ID3 = pDevice->instanceID;
-	//ID4 = pDevice->indexID;
-	//but current users gets new devices in this case
-
-	char szID[10];
-	sprintf(szID,"%X%02X%02X%02X", ID1, ID2, ID3, ID4);
-	std::string ID = szID;
-	unsigned char unitcode = 1;
-
-	//Check if we already exist
-	std::stringstream szQuery;
-	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Unit==" << int(unitcode) << ") AND (Type==" << pTypeLighting2 << ") AND (SubType==" << sTypeAC << ") AND (DeviceID=='" << ID << "')";
-	result = m_sql.query(szQuery.str());
-	if (result.size() > 0)
-		return; //Already in the system
-
-	//Send as Lighting 2
-
-	tRBUF lcmd;
-	memset(&lcmd,0,sizeof(RBUF));
-	lcmd.LIGHTING2.packetlength=sizeof(lcmd.LIGHTING2)-1;
-	lcmd.LIGHTING2.packettype=pTypeLighting2;
-	lcmd.LIGHTING2.subtype=sTypeAC;
-	lcmd.LIGHTING2.seqnbr=pDevice->sequence_number;
-	lcmd.LIGHTING2.id1=ID1;
-	lcmd.LIGHTING2.id2=ID2;
-	lcmd.LIGHTING2.id3=ID3;
-	lcmd.LIGHTING2.id4=ID4;
-	lcmd.LIGHTING2.unitcode=unitcode;
-	int level=15;
-	if (pDevice->devType==ZDTYPE_SWITCHNORMAL)
+	if (pDevice->devType == ZDTYPE_SWITCH_FGRGBWM441)
 	{
-		//simple on/off device
-		if (pDevice->intvalue==0)
-		{
-			level=0;
-			lcmd.LIGHTING2.cmnd=light2_sOff;
-		}
-		else
-		{
-			level=15;
-			lcmd.LIGHTING2.cmnd=light2_sOn;
-		}
+		unsigned char ID1 = 0;
+		unsigned char ID2 = 0;
+		unsigned char ID3 = 0;
+		unsigned char ID4 = 0;
+
+		//make device ID
+		ID1 = 0;
+		ID2 = (unsigned char)((pDevice->nodeID & 0xFF00) >> 8);
+		ID3 = (unsigned char)pDevice->nodeID & 0xFF;
+		ID4 = pDevice->instanceID;
+
+		//To fix all problems it should be
+		//ID1 = (unsigned char)((pDevice->nodeID & 0xFF00) >> 8);
+		//ID2 = (unsigned char)pDevice->nodeID & 0xFF;
+		//ID3 = pDevice->instanceID;
+		//ID4 = pDevice->indexID;
+		//but current users gets new devices in this case
+
+		unsigned long lID = (ID1 << 24) + (ID2 << 16) + (ID3 << 8) + ID4;
+
+		char szID[10];
+		sprintf(szID, "%08x", lID);
+		std::string ID = szID;
+		unsigned char unitcode = 1;
+
+		//Check if we already exist
+		std::stringstream szQuery;
+		std::vector<std::vector<std::string> > result;
+		szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Unit==" << int(unitcode) << ") AND (Type==" << pTypeLimitlessLights << ") AND (SubType==" << sTypeLimitlessRGBW << ") AND (DeviceID=='" << ID << "')";
+		result = m_sql.query(szQuery.str());
+		if (result.size() > 0)
+			return; //Already in the system
+
+		//Send as LimitlessLight
+		_tLimitlessLights lcmd;
+		lcmd.id = lID;
+		lcmd.command = Limitless_LedOff;
+		lcmd.value = 0;
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd);
+
+		//Set Name
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << pDevice->label << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
+		result = m_sql.query(szQuery.str());
 	}
 	else
 	{
-		//dimmer able device
-		if (pDevice->intvalue==0)
-			level=0;
-		if (pDevice->intvalue==255)
-			level=15;
+		unsigned char ID1 = 0;
+		unsigned char ID2 = 0;
+		unsigned char ID3 = 0;
+		unsigned char ID4 = 0;
+
+		//make device ID
+		ID1 = 0;
+		ID2 = (unsigned char)((pDevice->nodeID & 0xFF00) >> 8);
+		ID3 = (unsigned char)pDevice->nodeID & 0xFF;
+		ID4 = pDevice->instanceID;
+
+		//To fix all problems it should be
+		//ID1 = (unsigned char)((pDevice->nodeID & 0xFF00) >> 8);
+		//ID2 = (unsigned char)pDevice->nodeID & 0xFF;
+		//ID3 = pDevice->instanceID;
+		//ID4 = pDevice->indexID;
+		//but current users gets new devices in this case
+
+		char szID[10];
+		sprintf(szID, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+		std::string ID = szID;
+		unsigned char unitcode = 1;
+
+		//Check if we already exist
+		std::stringstream szQuery;
+		std::vector<std::vector<std::string> > result;
+		szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Unit==" << int(unitcode) << ") AND (Type==" << pTypeLighting2 << ") AND (SubType==" << sTypeAC << ") AND (DeviceID=='" << ID << "')";
+		result = m_sql.query(szQuery.str());
+		if (result.size() > 0)
+			return; //Already in the system
+
+		//Send as Lighting 2
+
+		tRBUF lcmd;
+		memset(&lcmd, 0, sizeof(RBUF));
+		lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
+		lcmd.LIGHTING2.packettype = pTypeLighting2;
+		lcmd.LIGHTING2.subtype = sTypeAC;
+		lcmd.LIGHTING2.seqnbr = pDevice->sequence_number;
+		lcmd.LIGHTING2.id1 = ID1;
+		lcmd.LIGHTING2.id2 = ID2;
+		lcmd.LIGHTING2.id3 = ID3;
+		lcmd.LIGHTING2.id4 = ID4;
+		lcmd.LIGHTING2.unitcode = unitcode;
+		int level = 15;
+		if (pDevice->devType == ZDTYPE_SWITCH_NORMAL)
+		{
+			//simple on/off device
+			if (pDevice->intvalue == 0)
+			{
+				level = 0;
+				lcmd.LIGHTING2.cmnd = light2_sOff;
+			}
+			else
+			{
+				level = 15;
+				lcmd.LIGHTING2.cmnd = light2_sOn;
+			}
+		}
 		else
 		{
-			float flevel=(15.0f/100.0f)*float(pDevice->intvalue);
-			level=round(flevel);
-			if (level>15)
-				level=15;
+			//dimmer able device
+			if (pDevice->intvalue == 0)
+				level = 0;
+			if (pDevice->intvalue == 255)
+				level = 15;
+			else
+			{
+				float flevel = (15.0f / 100.0f)*float(pDevice->intvalue);
+				level = round(flevel);
+				if (level > 15)
+					level = 15;
+			}
+			if (level == 0)
+				lcmd.LIGHTING2.cmnd = light2_sOff;
+			else if (level == 15)
+				lcmd.LIGHTING2.cmnd = light2_sOn;
+			else
+				lcmd.LIGHTING2.cmnd = light2_sSetLevel;
 		}
-		if (level==0)
-			lcmd.LIGHTING2.cmnd=light2_sOff;
-		else if (level==15)
-			lcmd.LIGHTING2.cmnd=light2_sOn;
-		else
-			lcmd.LIGHTING2.cmnd=light2_sSetLevel;
+		lcmd.LIGHTING2.level = level;
+		lcmd.LIGHTING2.filler = 0;
+		lcmd.LIGHTING2.rssi = 12;
+
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
+
+		//Set Name
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << pDevice->label << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
+		result = m_sql.query(szQuery.str());
 	}
-	lcmd.LIGHTING2.level=level;
-	lcmd.LIGHTING2.filler=0;
-	lcmd.LIGHTING2.rssi=12;
-
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
-
-	//Set Name
-	szQuery.clear();
-	szQuery.str("");
-	szQuery << "UPDATE DeviceStatus SET Name='" << pDevice->label << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
-	result = m_sql.query(szQuery.str());
 }
 
 unsigned char ZWaveBase::Convert_Battery_To_PercInt(const unsigned char level)
@@ -282,7 +334,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	sprintf(szID,"%X%02X%02X%02X", ID1, ID2, ID3, ID4);
 
 
-	if ((pDevice->devType==ZDTYPE_SWITCHNORMAL)||(pDevice->devType==ZDTYPE_SWITCHDIMMER))
+	if ((pDevice->devType==ZDTYPE_SWITCH_NORMAL)||(pDevice->devType==ZDTYPE_SWITCH_DIMMER))
 	{
 		//Send as Lighting 2
 		tRBUF lcmd;
@@ -297,7 +349,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		lcmd.LIGHTING2.id4=ID4;
 		lcmd.LIGHTING2.unitcode=1;
 		int level=15;
-		if (pDevice->devType==ZDTYPE_SWITCHNORMAL)
+		if (pDevice->devType==ZDTYPE_SWITCH_NORMAL)
 		{
 			//simple on/off device
 			if (pDevice->intvalue==0)
@@ -656,13 +708,59 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int inst
 	return NULL;
 }
 
+void hue2rgb(const float hue, int &outR, int &outG, int &outB)
+{
+	double      hh, p, q, t, ff;
+	long        i;
+	hh = hue;
+	if (hh >= 360.0) hh = 0.0;
+	hh /= 60.0;
+	i = (long)hh;
+	ff = hh - i;
+	double saturation = 1.0;
+	double vlue = 1.0;
+	p = vlue * (1.0 - saturation);
+	q = vlue * (1.0 - (saturation * ff));
+	t = vlue * (1.0 - (saturation * (1.0 - ff)));
+
+	switch (i) {
+	case 0:
+		outR = int(vlue*100.0);
+		outG = int(t*100.0);
+		outB = int(p*100.0);
+		break;
+	case 1:
+		outR = int(q*100.0);
+		outG = int(vlue*100.0);
+		outB = int(p*100.0);
+		break;
+	case 2:
+		outR = int(p*100.0);
+		outG = int(vlue*100.0);
+		outB = int(t*100.0);
+		break;
+
+	case 3:
+		outR = int(p*100.0);
+		outG = int(q*100.0);
+		outB = int(vlue*100.0);
+		break;
+	case 4:
+		outR = int(t*100.0);
+		outG = int(p*100.0);
+		outB = int(vlue*100.0);
+		break;
+	case 5:
+	default:
+		outR = int(vlue*100.0);
+		outG = int(p*100.0);
+		outB = int(q*100.0);
+		break;
+	}
+}
+
 void ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	unsigned char ID1=0;
-	unsigned char ID2=0;
-	unsigned char ID3=0;
-	unsigned char ID4=0;
-
 	const _tZWaveDevice* pDevice=NULL;
 
 	tRBUF *pSen=(tRBUF*)pdata;
@@ -683,7 +781,7 @@ void ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 		int svalue=0;
 
 		//First find dimmer
-		pDevice=FindDevice(nodeID,instanceID,indexID,ZDTYPE_SWITCHDIMMER);
+		pDevice=FindDevice(nodeID,instanceID,indexID,ZDTYPE_SWITCH_DIMMER);
 		if (pDevice)
 		{
 			if ((pSen->LIGHTING2.cmnd==light2_sOff)||(pSen->LIGHTING2.cmnd==light2_sGroupOff))
@@ -702,7 +800,7 @@ void ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 		else
 		{
 			//find normal
-			pDevice=FindDevice(nodeID,instanceID,indexID,ZDTYPE_SWITCHNORMAL);
+			pDevice=FindDevice(nodeID,instanceID,indexID,ZDTYPE_SWITCH_NORMAL);
 			if (pDevice)
 			{
 				if ((pSen->LIGHTING2.cmnd==light2_sOff)||(pSen->LIGHTING2.cmnd==light2_sGroupOff))
@@ -727,6 +825,73 @@ void ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 		if (pDevice)
 		{
 			SetThermostatSetPoint(nodeID,instanceID,pDevice->commandClassID,pMeter->temp);
+		}
+	}
+	else if (packettype == pTypeLimitlessLights)
+	{
+		_tLimitlessLights *pLed = (_tLimitlessLights*)pSen;
+		unsigned char ID1 = (unsigned char)((pLed->id & 0xFF000000) >> 24);
+		unsigned char ID2 = (unsigned char)((pLed->id & 0x00FF0000) >> 16);
+		unsigned char ID3 = (unsigned char)((pLed->id & 0x0000FF00) >> 8);
+		unsigned char ID4 = (unsigned char)pLed->id & 0x000000FF;
+		int nodeID = (ID2 << 8) | ID3;
+		int instanceID = ID4;
+		int indexID = ID1;
+		pDevice = FindDevice(nodeID, instanceID, indexID, ZDTYPE_SWITCH_FGRGBWM441);
+		if (pDevice)
+		{
+			int svalue = 0;
+			if (pLed->command == Limitless_LedOff)
+			{
+				instanceID = 2;
+				svalue = 0;
+				SwitchLight(nodeID, instanceID, pDevice->commandClassID, svalue);
+			}
+			else if (pLed->command == Limitless_LedOn)
+			{
+				instanceID = 2;
+				svalue = 255;
+				SwitchLight(nodeID, instanceID, pDevice->commandClassID, svalue);
+			}
+			else if (pLed->command == Limitless_SetBrightnessLevel)
+			{
+				instanceID = 2;
+				float fvalue = pLed->value;
+				if (fvalue > 99.0f)
+					fvalue = 99.0f; //99 is fully on
+				svalue = round(fvalue);
+				SwitchLight(nodeID, instanceID, pDevice->commandClassID, svalue);
+			}
+			else if (pLed->command == Limitless_SetColorToWhite)
+			{
+				instanceID = 3;//red
+				SwitchLight(nodeID, instanceID, pDevice->commandClassID, 0);
+				instanceID = 4;//green
+				SwitchLight(nodeID, instanceID, pDevice->commandClassID, 0);
+				instanceID = 5;//blue
+				SwitchLight(nodeID, instanceID, pDevice->commandClassID, 0);
+				instanceID = 6;//white
+				SwitchLight(nodeID, instanceID, pDevice->commandClassID, 100);
+				return;
+			}
+			else if (pLed->command == Limitless_SetRGBColour)
+			{
+				int red, green, blue;
+				float cHue = (360.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255
+				hue2rgb(cHue, red, green, blue);
+
+				instanceID = 6;//white
+				SwitchLight(nodeID, instanceID, pDevice->commandClassID, 0);
+
+				instanceID = 3;//red
+				SwitchLight(nodeID, instanceID, pDevice->commandClassID, red);
+				instanceID = 4;//green
+				SwitchLight(nodeID, instanceID, pDevice->commandClassID, green);
+				instanceID = 5;//blue
+				SwitchLight(nodeID, instanceID, pDevice->commandClassID, blue);
+				_log.Log( LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d", red, green, blue);
+				return;
+			}
 		}
 	}
 }

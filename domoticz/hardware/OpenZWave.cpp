@@ -1160,6 +1160,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 		)
 		return;
 
+	unsigned char HomeID = vID.GetHomeId();
 	unsigned char NodeID = vID.GetNodeId();
 
 	int instance;
@@ -1241,7 +1242,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 		{
 			if (m_pManager->GetValueAsBool(vID,&bValue)==true)
 			{
-				_device.devType= ZDTYPE_SWITCHNORMAL;
+				_device.devType= ZDTYPE_SWITCH_NORMAL;
 				if (bValue==true)
 					_device.intvalue=255;
 				else
@@ -1250,7 +1251,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 			}
 			else if (m_pManager->GetValueAsByte(vID,&byteValue)==true)
 			{
-				_device.devType = ZDTYPE_SWITCHNORMAL;
+				_device.devType = ZDTYPE_SWITCH_NORMAL;
 				if (byteValue == 0)
 					_device.intvalue=0;
 				else
@@ -1265,9 +1266,19 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 		{
 			if (m_pManager->GetValueAsByte(vID,&byteValue)==true)
 			{
-				_device.devType= ZDTYPE_SWITCHDIMMER;
+				_device.devType = ZDTYPE_SWITCH_DIMMER;
 				_device.intvalue=byteValue;
 				InsertDevice(_device);
+				if (instance == 1)
+				{
+					if (IsNodeRGBW(m_controllerID, NodeID))
+					{
+						_device.label = "Fibaro RGBW";
+						_device.devType = ZDTYPE_SWITCH_FGRGBWM441;
+						_device.instanceID = 100;
+						InsertDevice(_device);
+					}
+				}
 			}
 		}
 	}
@@ -1284,7 +1295,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 		{
 			if (m_pManager->GetValueAsBool(vID,&bValue)==true)
 			{
-				_device.devType= ZDTYPE_SWITCHNORMAL;
+				_device.devType= ZDTYPE_SWITCH_NORMAL;
 				if (bValue==true)
 					_device.intvalue=255;
 				else
@@ -1293,7 +1304,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 			}
 			else if (m_pManager->GetValueAsByte(vID, &byteValue) == true)
 			{
-				_device.devType = ZDTYPE_SWITCHNORMAL;
+				_device.devType = ZDTYPE_SWITCH_NORMAL;
 				if (byteValue == 0)
 					_device.intvalue = 0;
 				else
@@ -1323,13 +1334,13 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	{
 		if (vLabel=="Open")
 		{
-			_device.devType= ZDTYPE_SWITCHNORMAL;
+			_device.devType= ZDTYPE_SWITCH_NORMAL;
 			_device.intvalue=255;
 			InsertDevice(_device);
 		}
 		else if (vLabel=="Close")
 		{
-			_device.devType= ZDTYPE_SWITCHNORMAL;
+			_device.devType= ZDTYPE_SWITCH_NORMAL;
 			_device.intvalue=0;
 			InsertDevice(_device);
 		}
@@ -1342,7 +1353,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 			_device.instanceID = newInstance;
 			if (m_pManager->GetValueAsByte(vID,&byteValue)==true)
 			{
-				_device.devType= ZDTYPE_SWITCHNORMAL;
+				_device.devType= ZDTYPE_SWITCH_NORMAL;
 				if (byteValue==0)
 					_device.intvalue=0;
 				else
@@ -1550,7 +1561,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
 				{
 					_device.floatValue=fValue;
-					_device.devType = ZDTYPE_SWITCHNORMAL;
+					_device.devType = ZDTYPE_SWITCH_NORMAL;
 					InsertDevice(_device);
 				}
 			}
@@ -1627,16 +1638,16 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID vID, int EventID)
 			return;
 	}
 
-	_tZWaveDevice *pDevice=FindDevice(NodeID,instance, index, COMMAND_CLASS_SENSOR_BINARY, ZDTYPE_SWITCHNORMAL);
+	_tZWaveDevice *pDevice=FindDevice(NodeID,instance, index, COMMAND_CLASS_SENSOR_BINARY, ZDTYPE_SWITCH_NORMAL);
 	if (pDevice==NULL)
 	{
 		//one more try
-		pDevice=FindDevice(NodeID,instance,index, COMMAND_CLASS_SWITCH_BINARY, ZDTYPE_SWITCHNORMAL);
+		pDevice=FindDevice(NodeID,instance,index, COMMAND_CLASS_SWITCH_BINARY, ZDTYPE_SWITCH_NORMAL);
 		if (pDevice==NULL)
 		{
 			// absolute last try
 			instance=vID.GetIndex();
-			pDevice=FindDevice(NodeID, -1, -1, COMMAND_CLASS_SENSOR_MULTILEVEL, ZDTYPE_SWITCHNORMAL);
+			pDevice=FindDevice(NodeID, -1, -1, COMMAND_CLASS_SENSOR_MULTILEVEL, ZDTYPE_SWITCH_NORMAL);
 			if (pDevice==NULL)
 				return;
 		}
@@ -1679,7 +1690,7 @@ void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID vID, int SceneID)
 	int instanceID=0;
 	int indexID=0;
 	int commandclass=COMMAND_CLASS_SCENE_ACTIVATION;
-	_tZWaveDevice *pDevice=FindDevice(devID,instanceID,indexID, commandclass, ZDTYPE_SWITCHNORMAL);
+	_tZWaveDevice *pDevice=FindDevice(devID,instanceID,indexID, commandclass, ZDTYPE_SWITCH_NORMAL);
 	if (pDevice==NULL)
 	{
 		//Add new switch device
@@ -1704,10 +1715,10 @@ void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID vID, int SceneID)
 		_device.scaleID=-1;
 
 		_device.commandClassID=commandclass;
-		_device.devType= ZDTYPE_SWITCHNORMAL;
+		_device.devType= ZDTYPE_SWITCH_NORMAL;
 		_device.intvalue=255;
 		InsertDevice(_device);
-		pDevice=FindDevice(devID,instanceID, indexID, commandclass, ZDTYPE_SWITCHNORMAL);
+		pDevice=FindDevice(devID,instanceID, indexID, commandclass, ZDTYPE_SWITCH_NORMAL);
 		if (pDevice==NULL)
 			return;
 	}
@@ -1949,7 +1960,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 
 	switch (pDevice->devType)
 	{
-	case ZDTYPE_SWITCHNORMAL:
+	case ZDTYPE_SWITCH_NORMAL:
 		{
 			if ((commandclass==COMMAND_CLASS_ALARM)||(commandclass==COMMAND_CLASS_SENSOR_ALARM))
 			{
@@ -2012,7 +2023,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 			}
 		}
 		break;
-	case ZDTYPE_SWITCHDIMMER:
+	case ZDTYPE_SWITCH_DIMMER:
 		{
 			if (vLabel!="Level")
 				return;
@@ -2412,6 +2423,18 @@ void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
 		break;
 	}
 	_log.Log(LOG_STATUS,"OpenZWave: Device Response: %s",szLog.c_str());
+}
+
+bool COpenZWave::IsNodeRGBW(const int homeID, const int nodeID)
+{
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT ProductDescription FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() < 1)
+		return false;
+	std::string ProductDescription = result[0][0];
+	return (ProductDescription.find("FGRGBWM441") != std::string::npos);
 }
 
 void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int pollTime)

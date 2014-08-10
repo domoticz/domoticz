@@ -6673,7 +6673,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 	std::map<int,std::string> _hardwareNames;
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT ID, Name FROM Hardware";
+	szQuery << "SELECT ID, Name FROM Hardware WHERE (Enabled==1)";
 	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -6920,6 +6920,11 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						sDeviceName=sDeviceName.substr(1);
 				}
 			}
+			int hardwareID = atoi(sd[14].c_str());
+			//ignore sensors where the hardware is disabled
+			if (_hardwareNames.find(hardwareID) == _hardwareNames.end())
+				continue;
+
 			unsigned char dType=atoi(sd[5].c_str());
 			unsigned char dSubType=atoi(sd[6].c_str());
 			unsigned char used = atoi(sd[4].c_str());
@@ -6946,7 +6951,6 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				favorite=1;
 			_eSwitchType switchtype=(_eSwitchType) atoi(sd[13].c_str());
 			_eMeterType metertype=(_eMeterType)switchtype;
-			int hardwareID= atoi(sd[14].c_str());
 			double AddjValue=atof(sd[15].c_str());
 			double AddjMulti=atof(sd[16].c_str());
 			double AddjValue2=atof(sd[17].c_str());

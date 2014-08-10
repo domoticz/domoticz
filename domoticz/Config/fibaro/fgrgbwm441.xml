@@ -103,5 +103,7 @@
 
   <!-- Remove COMMAND_CLASS_BASIC -->
   <CommandClass id="32" action="remove" />
+  <!-- Remove COMMAND_CLASS_POWERLEVEL -->
+  <CommandClass id="115" action="remove" />
 
 </Product>

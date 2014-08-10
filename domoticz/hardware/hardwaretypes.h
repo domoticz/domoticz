@@ -226,11 +226,14 @@ typedef struct _tLimitlessLights {
 	unsigned char len;
 	unsigned char type;
 	unsigned char subtype;
+	unsigned long id;
 	unsigned char dunit; //0=All, 1=Group1,2=Group2,3=Group3,4=Group4
 	unsigned char command;
 	unsigned char value;
 	_tLimitlessLights()
 	{
+		id = 1;
+		dunit = 1;
 		len=sizeof(_tLimitlessLights)-1;
 		type=pTypeLimitlessLights;
 		subtype=sTypeLimitlessRGBW;

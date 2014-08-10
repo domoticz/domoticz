@@ -106,6 +106,8 @@ private:
 	NodeInfo* GetNodeInfo( OpenZWave::Notification const* _notification );
 	void SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value);
 	void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value);
+	bool IsNodeRGBW(const int homeID, const int nodeID);
+
 	void StopHardwareIntern();
 
 	void EnableDisableDebug();

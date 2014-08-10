@@ -289,7 +289,7 @@
 				<tr>
 					<td align="right" style="width:110px"><label>GPIO:</label></td>
 					<td>
-						<select id="combogpio" style="width:200px" class="combobox ui-corner-all"><option value="-1">?</option></select>
+						<select id="combogpio" style="width:220px" class="combobox ui-corner-all"><option value="-1">?</option></select>
 					</td>
 				</tr>
 			</table>
@@ -537,7 +537,7 @@ function GetTimerSettings()
 		if ($.bIsLED) {
 			tsettings.level=$("#lightcontent #Brightness").val();
 			tsettings.hue=$("#lightcontent #Hue").val();
-			var bIsWhite=$('#lightcontent #ledtable #optionsWhite').is(":checked")
+			var bIsWhite=$('#lightcontent #ledtable #optionWhite').is(":checked")
 			if (bIsWhite==true) {
 				tsettings.hue=1000;
 			}
@@ -1209,13 +1209,12 @@ function AddSubDevice()
 function SetColValue(idx,hue,brightness)
 {
 	clearInterval($.setColValue);
-
 	if (window.my_config.userrights==0) {
         HideNotify();
 		ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
 		return;
 	}
-	var bIsWhite=$('#lightcontent #ledtable #optionsWhite').is(":checked");
+	var bIsWhite=$('#lightcontent #ledtable #optionWhite').is(":checked");
 	$.ajax({
 		 url: "json.htm?type=command&param=setcolbrightnessvalue&idx=" + idx + "&hue=" + hue + "&brightness=" + brightness + "&iswhite=" + bIsWhite,
 		 async: false, 

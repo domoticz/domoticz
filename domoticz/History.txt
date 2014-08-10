@@ -77,7 +77,8 @@ Version 1.0.xxxx (April xxth 2014)
 - Implemented: RFY Off Delay (Stop)
 - Changed: GPIO applied new patch for new WiringPi support
 - Implemented: Option for custom pages, see www/templates folder
-- Changed: AppCache functionality (all should load much faster now)
+- Implemented: OpenZWave, Fibaro RGBW color wheel/timer support
+- Implemented: Sensor's from whom it's hardware is disabled will not be displayed anymore
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io
