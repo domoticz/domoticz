@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html> 
+<html manifest="html5.appcache">
 <head>
 	<meta charset="UTF-8">
 	<title>Domoticz Offline</title>
@@ -111,6 +111,18 @@ h3:before
 	<script src="js/jquery.i18n.language.js"></script>
 	<script src="js/domoticz.js"></script>
 	<script type="text/javascript">
+function logEvent(event) {
+}
+
+if (window.applicationCache) {
+	window.applicationCache.addEventListener('checking',logEvent,false);
+	window.applicationCache.addEventListener('noupdate',logEvent,false);
+	window.applicationCache.addEventListener('progress',logEvent,false);
+	window.applicationCache.addEventListener('cached',logEvent,false);
+	window.applicationCache.addEventListener('updateready',logEvent,false);
+	window.applicationCache.addEventListener('obsolete',logEvent,false);
+	window.applicationCache.addEventListener('error',logEvent,false);
+}
 
 		$(document).ready(function() {
 			$.ajax({
@@ -128,6 +140,25 @@ h3:before
 				 error: function(){
 				 }     
 			});
+			if (window.applicationCache) {
+					window.applicationCache.addEventListener('downloading', function(e)
+					{
+						window.parent.NotifyCacheRefresh();
+					}, false);
+					
+					window.applicationCache.addEventListener('updateready', function(e) 
+					{
+							if (window.applicationCache.status == window.applicationCache.UPDATEREADY) 
+							{
+									// Browser downloaded a new app cache.
+									// Swap it in and reload the page to get the new hotness.
+									window.parent.ClearNotifyCacheRefresh();
+									window.applicationCache.swapCache();
+									window.parent.RefreshMain();
+									window.location.reload();
+							}
+					}, false);
+			}
 			$('#offline').i18n();
 		});
 	</script>

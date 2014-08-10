@@ -1419,6 +1419,7 @@ char *cWebemRequestHandler::strftime_t(const char *format, const time_t rawtime)
 
 void cWebemRequestHandler::handle_request( const std::string &sHost, const request& req, reply& rep)
 {
+	//_log.Log(LOG_NORM, "www-request: %s", req.uri.c_str());
 	rep.bIsGZIP=false;
 	if ((!check_authorization(sHost, req))||(myWebem->m_bForceRelogin))
 	{
