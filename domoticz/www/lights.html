@@ -879,6 +879,8 @@ function ShowTimers(id,name, isdimmer, stype,devsubtype)
 				var bIsWhite=(hsb.s<20);
 				$("#lightcontent #optionRGB").prop('checked',!bIsWhite);
 				$("#lightcontent #optionWhite").prop('checked',bIsWhite);
+				clearInterval($.setColValue);
+				$.setColValue = setInterval(function() { SetColValue($.devIdx,hsb.h,hsb.b); }, 400);
 			}
 		}
 	});
@@ -1397,7 +1399,7 @@ function EditLightDevice(idx,name,stype,switchtype,addjvalue,addjvalue2,isslave,
 				$("#lightcontent #optionRGB").prop('checked',!bIsWhite);
 				$("#lightcontent #optionWhite").prop('checked',bIsWhite);
 				clearInterval($.setColValue);
-				$.setColValue = setInterval(function() { SetColValue($.devIdx,hsb.h,hsb.b); }, 200);
+				$.setColValue = setInterval(function() { SetColValue($.devIdx,hsb.h,hsb.b); }, 400);
 			}
 		}
 	});
