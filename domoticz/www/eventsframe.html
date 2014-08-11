@@ -411,6 +411,31 @@
 		    	var setString = 'commandArray["OpenURL"]="'+urlNoAmpersands+'"';
 	        	setArray.push(setString);		      	
 		    }
+			else if ($(this).attr('type') == 'writetolog') {
+		    	var logBlock = $(this).find("value[name='writeToLog']")[0];
+				var blockInfo = $(logBlock).children("block:first");
+				var setString = "";
+				if (blockInfo.attr("type")=="text") {
+					var logText = $(blockInfo).find("title[name='TEXT']")[0];
+					setString = 'commandArray["WriteToLogText"]="'+$(logText).text()+'"';
+					setArray.push(setString);
+				}
+				else if (blockInfo.attr("type").indexOf("uservariables") >= 0) {
+					var userVar = $(blockInfo).find("title[name='Variable']")[0];
+					setString = 'commandArray["WriteToLogUserVariable"]="'+$(userVar).text()+'"';
+					setArray.push(setString);
+				}
+				else if (blockInfo.attr("type").indexOf("switchvariables") >= 0) {
+					var switchVar = $(blockInfo).find("title")[0];
+					setString = 'commandArray["WriteToLogSwitch"]="'+$(switchVar).text()+'"';
+					setArray.push(setString);
+				}
+				else if (blockInfo.attr("type").indexOf("variables") >= 0) {
+					var deviceVar = $(blockInfo).find("title")[0];
+					setString = 'commandArray["WriteToLogDeviceVariable"]="'+$(deviceVar).text()+'"';
+					setArray.push(setString);
+				}		
+			}
 		    else if ($(this).attr('type') == 'groupvariables') {
 			   	var titleA = $(this).find("title[name='Group']")[0];
 			   	var titleB = $(this).find("title[name='Status']")[0];
@@ -692,7 +717,11 @@
 			<block type="uservariablesSZ"></block>
 			<block type="math_number"></block>
 			<block type="text"></block>
-		</category>	
+		</category>
+		<category name="Debug/log">
+		   	<block type="writetolog"></block>
+			<block type="text"></block>
+	   	</category>
    		<category name="Devices">   		
 		   	<category name="Switches">
 			   	<block type="switchvariablesAF"></block>

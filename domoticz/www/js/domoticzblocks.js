@@ -767,6 +767,19 @@ Blockly.Language.url_text.URLValidator = function(text) {
  
 };
 
+Blockly.Language.writetolog = {
+  // Comparison operator.
+  init: function() {
+    this.setColour(90);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.appendValueInput('writeToLog')
+    	.appendTitle("Write to log:");
+    this.setInputsInline(true);
+    this.setTooltip(Blockly.DOMOTICZ_LOGIC_WRITETOLOG_TOOLTIP);
+
+  }
+};
 
 Blockly.Language.security_status = {
   // Variable getter.

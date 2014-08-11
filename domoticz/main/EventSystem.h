@@ -96,6 +96,7 @@ private:
 	static int l_domoticz_print(lua_State* lua_state);
 	void SendEventNotification(const std::string &Subject, const std::string &Body, const int Priority, const std::string &Sound);
 	void OpenURL(const std::string &URL);
+	void WriteToLog(const std::string &devNameNoQuotes, const std::string &doWhat);
 	bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName, int sceneType);
 	bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 	void UpdateDevice(const std::string &DevParams);

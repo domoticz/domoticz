@@ -69,6 +69,7 @@ Blockly.DOMOTICZ_LOGIC_NOTIFICATION_PRIORITY_TOOLTIP = 'Use this block in a DO s
 Blockly.DOMOTICZ_SECURITY_STATUS_TOOLTIP = 'The current state of the Domoticz security system. Can only be checked, not set through an event.';
 Blockly.DOMOTICZ_LOGIC_OPENURL_TOOLTIP = 'Enter a url to open. This does not actually retrieve anything from the url, use it to trigger an external api.';
 Blockly.DOMOTICZ_LOGIC_URL_TEXT_TOOLTIP = 'Enter a valid url without the "http://" prefix.';
+Blockly.DOMOTICZ_LOGIC_WRITETOLOG_TOOLTIP = 'Use this block with a text, uservariable or device block to write a text or value into the Domoticz log.';
 Blockly.DOMOTICZCONTROLS_MSG_IF = 'If';
 Blockly.DOMOTICZCONTROLS_MSG_ELSEIF = 'Else if';
 Blockly.DOMOTICZCONTROLS_MSG_DO = 'Do';

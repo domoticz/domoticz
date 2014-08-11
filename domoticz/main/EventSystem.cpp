@@ -1265,6 +1265,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 				variableNo = deviceName.substr(9);
 				deviceName = "0";
 			}
+
 			int deviceNo = atoi(deviceName.c_str());
 			if (deviceNo && !isScene && !isVariable) {
 				if (m_devicestates.count(deviceNo)) {
@@ -1333,6 +1334,10 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 				}
 				else if (devNameNoQuotes == "OpenURL") {
 					OpenURL(doWhat);
+					actionsDone = true;
+				}
+				else if (devNameNoQuotes.find("WriteToLog") == 0) {
+					WriteToLog(devNameNoQuotes,doWhat);
 					actionsDone = true;
 				}
 			}
@@ -2028,6 +2033,27 @@ void CEventSystem::OpenURL(const std::string &URL)
 	tItem = _tTaskItem::GetHTTPPage(1, ampURL, "OpenURL");
 	m_sql.AddTaskItem(tItem);
 	// maybe do something with sResult in the future.
+}
+
+void CEventSystem::WriteToLog(const std::string &devNameNoQuotes, const std::string &doWhat)
+{
+	
+	if (devNameNoQuotes == "WriteToLogText")
+	{
+		_log.Log(LOG_STATUS, "%s", doWhat.c_str());
+	}
+	else if (devNameNoQuotes == "WriteToLogUserVariable")
+	{
+		_log.Log(LOG_STATUS, "%s", m_uservariables[atoi(doWhat.c_str())].variableValue.c_str());
+	}
+	else if (devNameNoQuotes == "WriteToLogDeviceVariable")
+	{
+		_log.Log(LOG_STATUS, "%s", m_devicestates[atoi(doWhat.c_str())].sValue.c_str());
+	}
+	else if (devNameNoQuotes == "WriteToLogSwitch")
+	{
+		_log.Log(LOG_STATUS, "%s", m_devicestates[atoi(doWhat.c_str())].nValueWording.c_str());
+	}
 }
 
 bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Action, const std::string &eventName)
