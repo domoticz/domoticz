@@ -271,6 +271,9 @@ bool MainWorker::GetSunSettings()
 	std::string Latitude=strarray[0];
 	std::string Longitude=strarray[1];
 
+	std::string LastSunriseSet;
+	m_sql.GetTempVar("SunRiseSet", nValue, LastSunriseSet);
+
 	unsigned char *pData=NULL;
 	unsigned long ulLength=0;
 	time_t atime=mytime(NULL);
@@ -296,9 +299,12 @@ bool MainWorker::GetSunSettings()
 	sprintf(szRiseSet,"%02d:%02d:00",sresult.SunSetHour,sresult.SunSetMin);
 	sunset=szRiseSet;
 	std::string riseset=sunrise+";"+sunset;
-	m_sql.UpdateTempVar("SunRiseSet",riseset.c_str());
-	m_scheduler.SetSunRiseSetTimers(sunrise,sunset);
-	_log.Log(LOG_NORM,"Sunrise: %s SunSet:%s", sunrise.c_str(), sunset.c_str());
+	if (LastSunriseSet != riseset)
+	{
+		m_sql.UpdateTempVar("SunRiseSet", riseset.c_str());
+		_log.Log(LOG_NORM, "Sunrise: %s SunSet:%s", sunrise.c_str(), sunset.c_str());
+	}
+	m_scheduler.SetSunRiseSetTimers(sunrise, sunset);
 	return true;
 }
 

@@ -316,12 +316,13 @@ function ShowDevices(filter)
           }
           if (
 				(item.Type.indexOf("Light")==0)||
+				(item.Type.indexOf("Chime")==0)||
 				(item.Type.indexOf("Security")==0)
 			 )
           {
             itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#devicescontent\', \'ShowDevices\');">';
           }
-          else if ((item.Type.indexOf("Temp")==0)||(item.Type.indexOf("Humidity")==0)) {
+          else if ((item.Type.indexOf("Temp")==0)||(item.Type.indexOf("Thermostat")==0)||(item.Type.indexOf("Humidity")==0)) {
             itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowTempLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
           }
           else if (item.SubType=="Voltage") {

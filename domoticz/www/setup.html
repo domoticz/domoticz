@@ -152,7 +152,7 @@
 			</tr>
 			</table>
 			<br>
-			<span data-i18n="LocalNetworks(no_username/password)"></span>:<br><br>
+			<h2><span data-i18n="LocalNetworks(no_username/password)"></span>:</h2>
 			<table class="display" id="weblocaltable" border="0" cellpadding="0" cellspacing="0">
 			<tr>
 				<td align="right" style="width:60px"><label><span data-i18n="Networks"></span>: </label></td>
@@ -163,7 +163,7 @@
 			</tr>
 			</table>
 			<br>
-			<span data-i18n="RemoteSharedPortForDomoticzClients"></span>:<br><br>
+			<h2><span data-i18n="RemoteSharedPortForDomoticzClients"></span>:</h2>
 			<table class="display" id="remotesharedtable" border="0" cellpadding="0" cellspacing="0">
 			<tr>
 				<td align="right" style="width:60px"><label><span data-i18n="Port"></span>: </label></td>
@@ -201,6 +201,9 @@
 				<table class="display" id="acceptnewhardwaretable" border="0" cellpadding="0" cellspacing="0">
 					<tr>
 						<td colspan="2"><input type="checkbox" id="AcceptNewHardware" name="AcceptNewHardware"/> <span data-i18n="AcceptNewHardwareDevices">Accept new Hardware Devices</span></td>
+					</tr>
+					<tr>
+						<td colspan="2"><input type="checkbox" id="HideDisabledHardwareSensors" name="HideDisabledHardwareSensors"/> <span data-i18n="HideDisabledHardwareSensors">Hide Disabled Hardware Sensors</span></td>
 					</tr>
 				</table>
 			</div>
@@ -875,6 +878,10 @@ function ShowSettings()
 	  if (typeof data.AcceptNewHardware != 'undefined') {
         $("#acceptnewhardwaretable #AcceptNewHardware").prop('checked',data.AcceptNewHardware==1);
       }
+	  if (typeof data.HideDisabledHardwareSensors!= 'undefined') {
+        $("#acceptnewhardwaretable #HideDisabledHardwareSensors").prop('checked',data.HideDisabledHardwareSensors==1);
+      }
+      
 	  if (typeof data.AllowWidgetOrdering != 'undefined') {
         $("#dashmodetable #AllowWidgetOrdering").prop('checked',data.AllowWidgetOrdering==1);
       }

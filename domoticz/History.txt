@@ -78,8 +78,9 @@ Version 1.0.xxxx (August xxth 2014)
 - Changed: GPIO applied new patch for new WiringPi support
 - Implemented: Option for custom pages, see www/templates folder
 - Implemented: OpenZWave, Fibaro RGBW color wheel/timer support
-- Implemented: Sensor's from whom it's hardware is disabled will not be displayed anymore
 - Implemented: RGB light timer now shows actual color on device when selected
+- Implemented: Option to hide Sensor's from whom it's hardware is disabled
+- Implemented: Devices Over, added log icon for Chime and Thermostat
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

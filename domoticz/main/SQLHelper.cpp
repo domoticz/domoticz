@@ -1205,6 +1205,10 @@ bool CSQLHelper::OpenDatabase()
 		nValue=0;
 	}
 	m_ActiveTimerPlan=nValue;
+	if (!GetPreferencesVar("HideDisabledHardwareSensors", nValue))
+	{
+		UpdatePreferencesVar("HideDisabledHardwareSensors", 1);
+	}
 
 	//Start background thread
 	if (!StartThread())

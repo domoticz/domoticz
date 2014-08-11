@@ -6356,6 +6356,11 @@ char * CWebServer::PostSettings()
 	m_sql.UpdatePreferencesVar("AcceptNewHardware",iEnableNewHardware);
 	m_sql.m_bAcceptNewHardware=(iEnableNewHardware==1);
 
+	std::string HideDisabledHardwareSensors = m_pWebEm->FindValue("HideDisabledHardwareSensors");
+	int iHideDisabledHardwareSensors = (HideDisabledHardwareSensors == "on" ? 1 : 0);
+	m_sql.UpdatePreferencesVar("HideDisabledHardwareSensors", iHideDisabledHardwareSensors);
+	
+
 	std::string EnableWidgetOrdering=m_pWebEm->FindValue("AllowWidgetOrdering");
 	int iEnableAllowWidgetOrdering=(EnableWidgetOrdering=="on"?1:0);
 	m_sql.UpdatePreferencesVar("AllowWidgetOrdering",iEnableAllowWidgetOrdering);
@@ -6668,12 +6673,18 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 
 	int SensorTimeOut=60;
 	m_sql.GetPreferencesVar("SensorTimeout", SensorTimeOut);
+	int HideDisabledHardwareSensors = 1;
+	m_sql.GetPreferencesVar("HideDisabledHardwareSensors", HideDisabledHardwareSensors);
 
 	//Get All Hardware ID's/Names, need them later
-	std::map<int,std::string> _hardwareNames;
+	struct _tHardwareList{
+		std::string Name;
+		bool Enabled;
+	};
+	std::map<int, _tHardwareList> _hardwareNames;
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT ID, Name FROM Hardware WHERE (Enabled==1)";
+	szQuery << "SELECT ID, Name, Enabled FROM Hardware";
 	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -6682,9 +6693,11 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 		for (itt=result.begin(); itt!=result.end(); ++itt)
 		{
 			std::vector<std::string> sd=*itt;
+			_tHardwareList tlist;
 			int ID=atoi(sd[0].c_str());
-			std::string Name=sd[1];
-			_hardwareNames[ID]=Name;
+			tlist.Name = sd[1];
+			tlist.Enabled = (atoi(sd[2].c_str()) != 0);
+			_hardwareNames[ID] = tlist;
 		}
 	}
 
@@ -6921,9 +6934,16 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				}
 			}
 			int hardwareID = atoi(sd[14].c_str());
-			//ignore sensors where the hardware is disabled
-			if (_hardwareNames.find(hardwareID) == _hardwareNames.end())
-				continue;
+			std::map<int, _tHardwareList>::const_iterator hItt = _hardwareNames.find(hardwareID);
+			if (hItt != _hardwareNames.end())
+			{
+				//ignore sensors where the hardware is disabled
+				if (HideDisabledHardwareSensors)
+				{
+					if (!(*hItt).second.Enabled)
+						continue;
+				}
+			}
 
 			unsigned char dType=atoi(sd[5].c_str());
 			unsigned char dSubType=atoi(sd[6].c_str());
@@ -7108,7 +7128,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				if (_hardwareNames.find(hardwareID)==_hardwareNames.end())
 					root["result"][ii]["HardwareName"]="Unknown?";
 				else
-					root["result"][ii]["HardwareName"]=_hardwareNames[hardwareID];
+					root["result"][ii]["HardwareName"]=_hardwareNames[hardwareID].Name;
 			}
 			root["result"][ii]["idx"]=sd[0];
 			root["result"][ii]["Protected"]=(iProtected!=0);
@@ -10363,6 +10383,10 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 				else if (Key == "AcceptNewHardware")
 				{
 					root["AcceptNewHardware"] = nValue;
+				}
+				else if (Key == "HideDisabledHardwareSensors")
+				{
+					root["HideDisabledHardwareSensors"] = nValue;
 				}
 				else if (Key == "SecOnDelay")
 				{
