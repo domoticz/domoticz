@@ -6658,6 +6658,11 @@ char * CWebServer::SetLimitlessType()
 	return (char*)m_retstr.c_str();
 }
 
+struct _tHardwareListInt{
+	std::string Name;
+	bool Enabled;
+} tHardwareList;
+
 void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const std::string &floorID, const bool bDisplayHidden, const time_t LastUpdate)
 {
 	std::vector<std::vector<std::string> > result;
@@ -6677,11 +6682,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 	m_sql.GetPreferencesVar("HideDisabledHardwareSensors", HideDisabledHardwareSensors);
 
 	//Get All Hardware ID's/Names, need them later
-	struct _tHardwareList{
-		std::string Name;
-		bool Enabled;
-	};
-	std::map<int, _tHardwareList> _hardwareNames;
+	std::map<int, _tHardwareListInt> _hardwareNames;
 	szQuery.clear();
 	szQuery.str("");
 	szQuery << "SELECT ID, Name, Enabled FROM Hardware";
@@ -6693,7 +6694,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 		for (itt=result.begin(); itt!=result.end(); ++itt)
 		{
 			std::vector<std::string> sd=*itt;
-			_tHardwareList tlist;
+			_tHardwareListInt tlist;
 			int ID=atoi(sd[0].c_str());
 			tlist.Name = sd[1];
 			tlist.Enabled = (atoi(sd[2].c_str()) != 0);
@@ -6937,7 +6938,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 
 			if (hardwareID != 1000) //allways allow motherboard sensors
 			{
-				std::map<int, _tHardwareList>::const_iterator hItt = _hardwareNames.find(hardwareID);
+				std::map<int, _tHardwareListInt>::iterator hItt = _hardwareNames.find(hardwareID);
 				if (hItt != _hardwareNames.end())
 				{
 					//ignore sensors where the hardware is disabled

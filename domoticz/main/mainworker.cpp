@@ -4040,7 +4040,7 @@ unsigned long long MainWorker::decode_LimitlessLights(const CDomoticzHardwareBas
 	if (pLed->id==1)
 		sprintf(szTmp,"%d", 1);
 	else
-		sprintf(szTmp, "%08x", pLed->id);
+		sprintf(szTmp, "%08x", (unsigned int)pLed->id);
 	std::string ID = szTmp;
 	unsigned char Unit=pLed->dunit;
 	unsigned char cmnd=pLed->command;
