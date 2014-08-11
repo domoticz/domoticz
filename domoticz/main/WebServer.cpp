@@ -6934,14 +6934,18 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				}
 			}
 			int hardwareID = atoi(sd[14].c_str());
-			std::map<int, _tHardwareList>::const_iterator hItt = _hardwareNames.find(hardwareID);
-			if (hItt != _hardwareNames.end())
+
+			if (hardwareID != 1000) //allways allow motherboard sensors
 			{
-				//ignore sensors where the hardware is disabled
-				if (HideDisabledHardwareSensors)
+				std::map<int, _tHardwareList>::const_iterator hItt = _hardwareNames.find(hardwareID);
+				if (hItt != _hardwareNames.end())
 				{
-					if (!(*hItt).second.Enabled)
-						continue;
+					//ignore sensors where the hardware is disabled
+					if (HideDisabledHardwareSensors)
+					{
+						if (!(*hItt).second.Enabled)
+							continue;
+					}
 				}
 			}
 
