@@ -5104,7 +5104,7 @@ void CSQLHelper::AddCalendarUpdateFan()
 
 void CSQLHelper::CleanupShortLog()
 {
-	time_t atime = mytime();
+	time_t atime = mytime(NULL);
 	if (atime < m_LastCleanupShortlog)
 		return;
 	int n5MinuteHistoryDays=1;
