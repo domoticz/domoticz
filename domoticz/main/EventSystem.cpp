@@ -1728,17 +1728,17 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); iterator++) {
 		_tUserVariable uvitem = iterator->second;
 		if (uvitem.variableType == 0)  {
-			lua_pushnumber(lua_state, (lua_Number)uvitem.ID);
+			lua_pushstring(lua_state, uvitem.variableName.c_str());
 			lua_pushnumber(lua_state, atoi(uvitem.variableValue.c_str()));
 			lua_rawset(lua_state, -3);
 		}
 		else if (uvitem.variableType == 1)  {
-			lua_pushnumber(lua_state, (lua_Number)uvitem.ID);
+			lua_pushstring(lua_state, uvitem.variableName.c_str());
 			lua_pushnumber(lua_state, atof(uvitem.variableValue.c_str()));
 			lua_rawset(lua_state, -3);
 		}
 		else {
-			lua_pushnumber(lua_state, (lua_Number)uvitem.ID);
+			lua_pushstring(lua_state, uvitem.variableName.c_str());
 			lua_pushstring(lua_state, uvitem.variableValue.c_str());
 			lua_rawset(lua_state, -3);
 		}
