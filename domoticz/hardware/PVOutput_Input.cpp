@@ -298,12 +298,16 @@ void CPVOutputInput::GetMeterDetails()
 	}
 
 	double Usage=atof(splitresult[3].c_str());
+	if (Usage < 0)
+		Usage = 0;
 
 	bool bHaveConsumption=false;
 	double Consumption=0;
 	if (splitresult[5]!="NaN")
 	{
 		Consumption=atof(splitresult[5].c_str());
+		if (Consumption < 0)
+			Consumption = 0;
 		bHaveConsumption=true;
 	}
 
@@ -322,7 +326,8 @@ void CPVOutputInput::GetMeterDetails()
 	if (splitresult[8]!="NaN")
 	{
 		double Voltage=atof(splitresult[8].c_str());
-		SendVoltage(1,float(Voltage),"Voltage");
+		if (Voltage>=0)
+			SendVoltage(1,float(Voltage),"Voltage");
 	}
 
 	sstr.clear();
