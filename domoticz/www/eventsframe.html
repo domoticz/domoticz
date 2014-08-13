@@ -326,6 +326,30 @@
 					}
 				}
 		    }
+	      	else if ($(this).attr('type') == 'logic_setafter') {
+		   		var valueA = $(this).find("value[name='A']")[0];
+	        	var titleA = $(valueA).find("title")[0];
+	        	var valueC = $(this).find("value[name='C']")[0];
+	        	var titleC = $(valueC).find("title")[0];
+	        	var blockA = $(valueA).children("block:first");
+	        	/*if ((blockA.attr("type")=="scenevariables")) {
+	        		var setString = "commandArray[Scene:"+$(titleA).text()+"]";
+	        	}
+	        	else { */
+		        var setString = "commandArray["+$(titleA).text()+"]";
+	        	//}
+	        	var valueB = $(this).find("value[name='B']")[0];
+	        	var titleB = $(valueB).find("title")[0];
+	        	var blockB = $(valueB).children("block:first");
+		        if ((blockB.attr("type")=="logic_states") && ($(titleB).attr("name") == "State")) {
+	        		setString += '="'+$(titleB).text()+' AFTER '+ $(titleC).text()+'"'; 
+	        		setArray.push(setString);
+	        	}        	
+	        	else if ((blockB.attr("type")=="logic_setlevel") && ($(titleB).attr("name") == "NUM")) {
+	        		setString += '="Set Level '+$(titleB).text()+' AFTER '+ $(titleC).text()+'"'; 
+	        		setArray.push(setString);
+	        	}
+		    }
 	      	else if ($(this).attr('type') == 'logic_setdelayed') {
 		   		var valueA = $(this).find("value[name='A']")[0];
 	        	var titleA = $(valueA).find("title")[0];
@@ -689,6 +713,7 @@
 	   		<block type="logic_states"></block>
 	   		<block type="logic_set"></block>
 	   		<block type="logic_setlevel"></block>
+	   		<block type="logic_setafter"></block>
 	   		<block type="logic_setdelayed"></block>
 	   		<block type="logic_setrandom"></block>
 	   		<block type="math_number"></block>

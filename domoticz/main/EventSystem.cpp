@@ -2122,8 +2122,9 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 
 	int suspendTimer = 0;
 	int randomTimer = 0;
+	int afterTimerSeconds = 0;
+
 	size_t aFind = Action.find(" FOR ");
-	size_t rFind = Action.find(" RANDOM ");
 	if ((aFind > 0) && (aFind != std::string::npos)) {
 		std::string delayString = Action.substr(aFind + 5);
 		std::string newAction = Action.substr(0, aFind);
@@ -2133,6 +2134,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 			Action = newAction;
 		}
 	}
+	size_t rFind = Action.find(" RANDOM ");
 	if ((rFind > 0) && (rFind != std::string::npos))
 	{
 		std::string delayString = Action.substr(rFind + 8);
@@ -2142,6 +2144,13 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 		{
 			Action = newAction;
 		}
+	}
+	aFind = Action.find(" AFTER ");
+	if ((aFind > 0) && (aFind != std::string::npos)) {
+		std::string delayString = Action.substr(aFind + 7);
+		std::string newAction = Action.substr(0, aFind);
+		afterTimerSeconds = atoi(delayString.c_str());
+		Action = newAction;
 	}
 
 	unsigned char _level = 0;
@@ -2160,12 +2169,16 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 		rTime = rand() % randomTimer + 1;
 		DelayTime = (rTime * 60) + 5; //prevent it from running again immediately the next minute if blockly script doesn't handle that
 		//alreadyScheduled = isEventscheduled(deviceID, randomTimer, isScene);
-
+	}
+	if (afterTimerSeconds > 0)
+	{
+		DelayTime += afterTimerSeconds;
 	}
 
 	_tTaskItem tItem;
 
 	if (isScene) {
+		//Scenes
 		if ((Action == "On") || (Action == "Off")) {
 			tItem = _tTaskItem::SwitchSceneEvent(DelayTime, deviceID, Action, eventName);
 		}
@@ -2185,6 +2198,24 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 		}
 	}
 	else {
+		//Lights/Switches
+		bool bIsOn = IsLightSwitchOn(Action);
+		if (bIsOn)
+		{
+			//Get Device details, check for switch global OnDelay (stored in AddjValue2)
+			std::vector<std::vector<std::string> > result;
+			std::stringstream szQuery;
+			szQuery << "SELECT AddjValue2 FROM DeviceStatus WHERE (ID == " << deviceID << ")";
+			result = m_sql.query(szQuery.str());
+			if (result.size() < 1)
+				return false;
+
+			std::vector<std::string> sd = result[0];
+
+			int iOnDelay = atoi(sd[0].c_str());
+			DelayTime += iOnDelay;
+		}
+
 		tItem = _tTaskItem::SwitchLightEvent(DelayTime, deviceID, Action, _level, -1, eventName);
 	}
 	m_sql.AddTaskItem(tItem);

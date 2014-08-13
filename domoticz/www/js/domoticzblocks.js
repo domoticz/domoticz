@@ -547,6 +547,25 @@ Blockly.Language.logic_set = {
   }
 };
 
+Blockly.Language.logic_setafter = {
+  // Comparison operator.
+  init: function() {
+    this.setColour(120);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.appendValueInput('A')
+    	.appendTitle(Blockly.DOMOTICZCONTROLS_MSG_SET);
+    this.appendValueInput('B')
+        .appendTitle("=");
+    this.appendValueInput('C')
+        .appendTitle(Blockly.DOMOTICZCONTROLS_MSG_AFTER);
+    this.appendDummyInput()
+	    .appendTitle(Blockly.DOMOTICZCONTROLS_MSG_SECONDS);
+    this.setInputsInline(true);
+    this.setTooltip(Blockly.DOMOTICZ_LOGIC_SETAFTER_TOOLTIP);
+  }
+};
+
 Blockly.Language.logic_setdelayed = {
   // Comparison operator.
   init: function() {
