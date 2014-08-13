@@ -81,6 +81,7 @@ Version 1.0.xxxx (August xxth 2014)
 - Implemented: RGB light timer now shows actual color on device when selected
 - Implemented: Option to hide Sensor's from whom it's hardware is disabled
 - Implemented: Devices Over, added log icon for Chime and Thermostat
+- Fixed: Correct colour will now be send to AppLamp/Fibaro RGBW from timers
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

@@ -8243,7 +8243,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 					lcmd2.len=sizeof(_tLimitlessLights)-1;
 					lcmd2.type=dType;
 					lcmd2.subtype=dSubType;
-					lcmd.id = ID;
+					lcmd2.id = ID;
 					lcmd2.dunit = Unit;
 					if (hue!=1000)
 					{
