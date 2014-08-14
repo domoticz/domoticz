@@ -11282,6 +11282,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				unsigned long long ulFirstRealValue = 0;
 				unsigned long long ulFirstValue = 0;
 				unsigned long long ulLastValue = 0;
+
 				std::string LastDateTime = "";
 				time_t lastTime = 0;
 
@@ -11295,6 +11296,11 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 						if (method == 0)
 						{
 							//bars / hour
+
+							std::stringstream s_str1(sd[0]);
+							unsigned long long actValue;
+							s_str1 >> actValue;
+
 							std::string actDateTimeHour = sd[1].substr(0, 13);
 							if (actDateTimeHour != LastDateTime)
 							{
@@ -11302,13 +11308,7 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 								{
 									root["result"][ii]["d"] = LastDateTime + ":00";
 
-									unsigned long long ulTotalValue = ulLastValue - ulFirstValue;
-									if (ulTotalValue == 0)
-									{
-										//Could be the P1 Gas Meter, only transmits one every 1 a 2 hours
-										ulTotalValue = ulLastValue - ulFirstRealValue;
-									}
-									ulFirstRealValue = ulLastValue;
+									unsigned long long ulTotalValue = actValue - ulFirstValue;
 									float TotalValue = float(ulTotalValue);
 									if (TotalValue != 0)
 									{
@@ -11331,26 +11331,16 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 										ii++;
 									}
 								}
+								ulFirstValue = actValue;
 								LastDateTime = actDateTimeHour;
-								bHaveFirstValue = false;
 							}
-							std::stringstream s_str1(sd[0]);
-							unsigned long long actValue;
-							s_str1 >> actValue;
-
-							if (actValue >= ulLastValue)
-								ulLastValue = actValue;
 
 							if (!bHaveFirstValue)
 							{
-								ulFirstValue = ulLastValue;
+								ulFirstValue = actValue;
 								bHaveFirstValue = true;
 							}
-							if (!bHaveFirstRealValue)
-							{
-								bHaveFirstRealValue = true;
-								ulFirstRealValue = ulLastValue;
-							}
+							ulLastValue = actValue;
 						}
 						else
 						{
@@ -11419,15 +11409,6 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 					root["result"][ii]["d"] = LastDateTime + ":00";
 
 					unsigned long long ulTotalValue = ulLastValue - ulFirstValue;
-					if (ulTotalValue == 0)
-					{
-						if (bHaveFirstRealValue)
-						{
-							//Could be the P1 Gas Meter, only transmits one every 1 a 2 hours
-							ulTotalValue = ulLastValue - ulFirstRealValue;
-							ulFirstRealValue = ulLastValue;
-						}
-					}
 
 					float TotalValue = float(ulTotalValue);
 
