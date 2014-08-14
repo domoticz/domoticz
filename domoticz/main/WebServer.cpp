@@ -11318,10 +11318,10 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 											sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
 											break;
 										case MTYPE_GAS:
-											sprintf(szTmp, "%.2f", TotalValue / GasDivider);
+											sprintf(szTmp, "%.3f", TotalValue / GasDivider);
 											break;
 										case MTYPE_WATER:
-											sprintf(szTmp, "%.2f", TotalValue / WaterDivider);
+											sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 											break;
 										case MTYPE_COUNTER:
 											sprintf(szTmp, "%.1f", TotalValue);
@@ -11420,10 +11420,10 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 							sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp, "%.2f", TotalValue / GasDivider);
+							sprintf(szTmp, "%.3f", TotalValue / GasDivider);
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%.2f", TotalValue / WaterDivider);
+							sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 							break;
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%.1f", TotalValue);

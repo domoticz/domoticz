@@ -83,6 +83,7 @@ Version 1.0.xxxx (August xxth 2014)
 - Implemented: Devices Over, added log icon for Chime and Thermostat
 - Fixed: Correct colour will now be send to AppLamp/Fibaro RGBW from timers
 - Implemented: Blockly, switch light on/off after xxx seconds
+- Changed: Increased Shortlog resolution for Gas/Water sensors
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io
