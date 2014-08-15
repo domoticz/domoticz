@@ -13010,15 +13010,27 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 			}
 			//add today (have to calculate it)
 
-			if ((sactmonth != "") && (sactyear != ""))
+			if ((sactmonth != "") || (sactyear != ""))
 			{
 				struct tm loctime;
 				time_t now = mytime(NULL);
 				localtime_r(&now, &loctime);
-				bool bIsThisMonth = (atoi(sactyear.c_str()) == loctime.tm_year + 1900) && (atoi(sactmonth.c_str()) == loctime.tm_mon + 1);
-				if (bIsThisMonth)
+				if ((sactmonth != "") && (sactyear != ""))
 				{
-					sprintf(szDateEnd, "%04d-%02d-%02d", loctime.tm_year + 1900, loctime.tm_mon + 1, loctime.tm_mday);
+					bool bIsThisMonth = (atoi(sactyear.c_str()) == loctime.tm_year + 1900) && (atoi(sactmonth.c_str()) == loctime.tm_mon + 1);
+					if (bIsThisMonth)
+					{
+						sprintf(szDateEnd, "%04d-%02d-%02d", loctime.tm_year + 1900, loctime.tm_mon + 1, loctime.tm_mday);
+					}
+				}
+				else if (sactyear != "")
+				{
+					bool bIsThisYear = (atoi(sactyear.c_str()) == loctime.tm_year + 1900);
+					if (bIsThisYear)
+					{
+						sprintf(szDateEnd, "%04d-%02d-%02d", loctime.tm_year + 1900, loctime.tm_mon + 1, loctime.tm_mday);
+					}
+
 				}
 			}
 
