@@ -112,6 +112,7 @@
     <ClInclude Include="hardware\BMP085.h" />
     <ClInclude Include="hardware\DavisLoggerSerial.h" />
     <ClInclude Include="hardware\Dummy.h" />
+    <ClInclude Include="hardware\EcoDevices.h" />
     <ClInclude Include="hardware\EnOceanESP2.h" />
     <ClInclude Include="hardware\EnOceanESP3.h" />
     <ClInclude Include="hardware\ForecastIO.h" />
@@ -213,6 +214,7 @@
     <ClCompile Include="hardware\BMP085.cpp" />
     <ClCompile Include="hardware\DavisLoggerSerial.cpp" />
     <ClCompile Include="hardware\Dummy.cpp" />
+    <ClCompile Include="hardware\EcoDevices.cpp" />
     <ClCompile Include="hardware\EnOceanESP2.cpp" />
     <ClCompile Include="hardware\EnOceanESP3.cpp" />
     <ClCompile Include="hardware\ForecastIO.cpp" />

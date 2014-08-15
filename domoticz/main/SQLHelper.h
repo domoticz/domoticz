@@ -351,8 +351,6 @@ private:
 	unsigned char m_sensortimeoutcounter;
 	std::map<unsigned long long,int> m_timeoutlastsend;
 
-	time_t m_LastCleanupShortlog;
-
 	std::vector<_tTaskItem> m_background_task_queue;
 	boost::shared_ptr<boost::thread> m_background_task_thread;
 	boost::mutex m_background_task_mutex;

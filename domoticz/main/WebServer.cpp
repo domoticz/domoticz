@@ -427,7 +427,7 @@ void CWebServer::CmdAddHardware(Json::Value &root)
 		{
 		}
 	}
-	else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)||(htype == HTYPE_RazberryZWave)||(htype == HTYPE_OpenThermGatewayTCP)||(htype == HTYPE_LimitlessLights)||(htype == HTYPE_SolarEdgeTCP)||(htype == HTYPE_WOL)) {
+	else if ((htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) || (htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES)) {
 		//Lan
 		if (address=="")
 			return;
@@ -539,7 +539,7 @@ void CWebServer::CmdUpdateHardware(Json::Value &root)
 	{
 		//USB/System
 	}
-	else if ((htype == HTYPE_RFXLAN)||(htype == HTYPE_P1SmartMeterLAN)||(htype == HTYPE_YouLess)||(htype == HTYPE_RazberryZWave)||(htype == HTYPE_OpenThermGatewayTCP)||(htype == HTYPE_LimitlessLights)||(htype == HTYPE_SolarEdgeTCP)||(htype == HTYPE_WOL)) {
+	else if ((htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) || (htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES)) {
 		//Lan
 		if (address=="")
 			return;
@@ -13009,6 +13009,19 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 				}
 			}
 			//add today (have to calculate it)
+
+			if ((sactmonth != "") && (sactyear != ""))
+			{
+				struct tm loctime;
+				time_t now = mytime(NULL);
+				localtime_r(&now, &loctime);
+				bool bIsThisMonth = (atoi(sactyear.c_str()) == loctime.tm_year + 1900) && (atoi(sactmonth.c_str()) == loctime.tm_mon + 1);
+				if (bIsThisMonth)
+				{
+					sprintf(szDateEnd, "%04d-%02d-%02d", loctime.tm_year + 1900, loctime.tm_mon + 1, loctime.tm_mday);
+				}
+			}
+
 			szQuery.clear();
 			szQuery.str("");
 			if (dType == pTypeP1Power)

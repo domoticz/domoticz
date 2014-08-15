@@ -50,6 +50,7 @@
 #include "../hardware/Meteostick.h"
 #include "../hardware/PVOutput_Input.h"
 #include "../hardware/ToonThermostat.h"
+#include "../hardware/EcoDevices.h"
 #ifdef WITH_GPIO
 	#include "../hardware/Gpio.h"
 	#include "../hardware/GpioPin.h"
@@ -504,6 +505,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_YouLess:
 		//LAN
 		pHardware = new CYouLess(ID, Address, Port, Password);
+		break;
+	case HTYPE_ECODEVICES:
+		//LAN
+		pHardware = new CEcoDevices(ID, Address, Port);
 		break;
 	case HTYPE_1WIRE:
 		//1-Wire file system

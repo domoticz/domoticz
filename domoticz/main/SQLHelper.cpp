@@ -483,7 +483,6 @@ CSQLHelper::CSQLHelper(void)
 	m_bAcceptNewHardware=true;
 	m_bAllowWidgetOrdering=true;
 	m_ActiveTimerPlan=0;
-	m_LastCleanupShortlog = 0;
 	m_windunit=WINDUNIT_MS;
 	m_tempunit=TEMPUNIT_C;
 	SetUnitsAndScale();
@@ -3835,6 +3834,7 @@ void CSQLHelper::UpdateMeter()
 				if (splitresults.size()<2)
 					continue;
 				sValue=splitresults[0];
+				susage = splitresults[1];
 			}
 			else if (dType==pTypeENERGY)
 			{
@@ -5104,9 +5104,6 @@ void CSQLHelper::AddCalendarUpdateFan()
 
 void CSQLHelper::CleanupShortLog()
 {
-	time_t atime = mytime(NULL);
-	if (atime < m_LastCleanupShortlog)
-		return;
 	int n5MinuteHistoryDays=1;
 	if(GetPreferencesVar("5MinuteHistoryDays", n5MinuteHistoryDays))
     {
@@ -5122,31 +5119,30 @@ void CSQLHelper::CleanupShortLog()
 
 	    sprintf(szDateStr,"datetime('now','-%d day', 'localtime')",n5MinuteHistoryDays);
 
-	    sprintf(szTmp,"DELETE FROM Temperature WHERE (datetime([Date], 'localtime')<%s)",szDateStr);
+	    sprintf(szTmp,"DELETE FROM Temperature WHERE (Date<%s)",szDateStr);
 	    query(szTmp);
 
-	    sprintf(szTmp,"DELETE FROM Rain WHERE (datetime([Date], 'localtime')<%s)",szDateStr);
+	    sprintf(szTmp,"DELETE FROM Rain WHERE (Date<%s)",szDateStr);
 	    query(szTmp);
 
-	    sprintf(szTmp,"DELETE FROM Wind WHERE (datetime([Date], 'localtime')<%s)",szDateStr);
+	    sprintf(szTmp,"DELETE FROM Wind WHERE (Date<%s)",szDateStr);
 	    query(szTmp);
 
-	    sprintf(szTmp,"DELETE FROM UV WHERE (datetime([Date], 'localtime')<%s)",szDateStr);
+	    sprintf(szTmp,"DELETE FROM UV WHERE (Date<%s)",szDateStr);
 	    query(szTmp);
 
-	    sprintf(szTmp,"DELETE FROM Meter WHERE (datetime([Date], 'localtime')<%s)",szDateStr);
+	    sprintf(szTmp,"DELETE FROM Meter WHERE (Date<%s)",szDateStr);
 	    query(szTmp);
 
-	    sprintf(szTmp,"DELETE FROM MultiMeter WHERE (datetime([Date], 'localtime')<%s)",szDateStr);
+	    sprintf(szTmp,"DELETE FROM MultiMeter WHERE (Date<%s)",szDateStr);
 	    query(szTmp);
 
-		sprintf(szTmp,"DELETE FROM Percentage WHERE (datetime([Date], 'localtime')<%s)",szDateStr);
+		sprintf(szTmp,"DELETE FROM Percentage WHERE (Date<%s)",szDateStr);
 		query(szTmp);
 	
-		sprintf(szTmp,"DELETE FROM Fan WHERE (datetime([Date], 'localtime')<%s)",szDateStr);
+		sprintf(szTmp,"DELETE FROM Fan WHERE (Date<%s)",szDateStr);
 		query(szTmp);
 	}
-	m_LastCleanupShortlog = atime;
 }
 
 void CSQLHelper::DeleteHardware(const std::string &idx)

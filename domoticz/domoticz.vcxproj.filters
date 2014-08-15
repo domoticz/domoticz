@@ -150,6 +150,9 @@
     <Filter Include="Header Files\HTTPClient">
       <UniqueIdentifier>{43e678ba-2229-48dc-8d72-a10a52186b82}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\EcoDevices">
+      <UniqueIdentifier>{45784bef-128b-4ccf-8425-dd83aca6d9c9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -454,6 +457,9 @@
     <ClInclude Include="hardware\ToonThermostat.h">
       <Filter>Devices\Toon Thermostat</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\EcoDevices.h">
+      <Filter>Devices\EcoDevices</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -716,6 +722,9 @@
     </ClCompile>
     <ClCompile Include="hardware\ToonThermostat.cpp">
       <Filter>Devices\Toon Thermostat</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\EcoDevices.cpp">
+      <Filter>Devices\EcoDevices</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
