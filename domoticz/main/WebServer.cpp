@@ -2355,6 +2355,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 	}
 	else if (cparam=="execute_script")
 	{
+		if (m_sql.m_bDisableEventSystem)
+			return;
 		std::string scriptname=m_pWebEm->FindValue("scriptname");
 		if (scriptname=="")
 			return;
@@ -6359,7 +6361,18 @@ char * CWebServer::PostSettings()
 	std::string HideDisabledHardwareSensors = m_pWebEm->FindValue("HideDisabledHardwareSensors");
 	int iHideDisabledHardwareSensors = (HideDisabledHardwareSensors == "on" ? 1 : 0);
 	m_sql.UpdatePreferencesVar("HideDisabledHardwareSensors", iHideDisabledHardwareSensors);
-	
+
+	rnOldvalue = 0;
+	m_sql.GetPreferencesVar("DisableEventScriptSystem", rnOldvalue);
+	std::string DisableEventScriptSystem = m_pWebEm->FindValue("DisableEventScriptSystem");
+	int iDisableEventScriptSystem = (DisableEventScriptSystem == "on" ? 1 : 0);
+	m_sql.UpdatePreferencesVar("DisableEventScriptSystem", iDisableEventScriptSystem);
+	m_sql.m_bDisableEventSystem = (iDisableEventScriptSystem == 1);
+	if (iDisableEventScriptSystem != rnOldvalue)
+	{
+		m_mainworker.m_eventsystem.SetEnabled(!m_sql.m_bDisableEventSystem);
+		m_mainworker.m_eventsystem.StartEventSystem();
+	}
 
 	std::string EnableWidgetOrdering=m_pWebEm->FindValue("AllowWidgetOrdering");
 	int iEnableAllowWidgetOrdering=(EnableWidgetOrdering=="on"?1:0);
@@ -10392,6 +10405,10 @@ void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
 				else if (Key == "HideDisabledHardwareSensors")
 				{
 					root["HideDisabledHardwareSensors"] = nValue;
+				}
+				else if (Key == "DisableEventScriptSystem")
+				{
+					root["DisableEventScriptSystem"] = nValue;
 				}
 				else if (Key == "SecOnDelay")
 				{

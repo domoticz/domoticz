@@ -342,6 +342,7 @@ public:
 	bool		m_bAcceptNewHardware;
 	bool		m_bAllowWidgetOrdering;
 	int			m_ActiveTimerPlan;
+	bool		m_bDisableEventSystem;
 private:
 	boost::mutex m_sqlQueryMutex;
 	CURLEncode m_urlencoder;

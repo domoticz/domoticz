@@ -543,6 +543,16 @@
 				</td>
 			</tr>
 			</table>
+			<br>
+			<h2><span data-i18n="EventSystem (Lua/Blockly/Scripts)"></span>:</h2>
+			<table class="display" id="eventsystemtable" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="right" style="width:60px"><label><span data-i18n="Disabled"></span>: </label></td>
+				<td>
+					<input type="checkbox" id="DisableEventScriptSystem" name="DisableEventScriptSystem"/>
+				</td>
+			</tr>
+			</table>
 		</section>
 		<br>
 		
@@ -880,6 +890,9 @@ function ShowSettings()
       }
 	  if (typeof data.HideDisabledHardwareSensors!= 'undefined') {
         $("#acceptnewhardwaretable #HideDisabledHardwareSensors").prop('checked',data.HideDisabledHardwareSensors==1);
+      }
+	  if (typeof data.DisableEventScriptSystem!= 'undefined') {
+        $("#eventsystemtable #DisableEventScriptSystem").prop('checked',data.DisableEventScriptSystem==1);
       }
       
 	  if (typeof data.AllowWidgetOrdering != 'undefined') {

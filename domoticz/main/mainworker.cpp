@@ -663,6 +663,7 @@ bool MainWorker::StartThread()
 	//Start Scheduler
 	m_scheduler.StartScheduler();
 	m_hardwaremonitor.StartHardwareMonitor();
+	m_eventsystem.SetEnabled(m_sql.m_bDisableEventSystem == false);
 	m_eventsystem.StartEventSystem();
 	m_cameras.ReloadCameras();
 

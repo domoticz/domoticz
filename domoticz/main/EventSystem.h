@@ -50,8 +50,6 @@ public:
 	};
 	std::map<unsigned long long, _tUserVariable> m_uservariables;
 
-	bool m_bEnabled;
-
 	CEventSystem(void);
 	~CEventSystem(void);
 
@@ -65,8 +63,10 @@ public:
 	void WWWUpdateSingleState(const unsigned long long ulDevID, const std::string &devname);
 	void WWWUpdateSecurityState(int securityStatus);
 	void WWWGetItemStates(std::vector<_tDeviceStatus> &iStates);
+	void SetEnabled(const bool bEnabled) { m_bEnabled = bEnabled; };
 private:
 	//lua_State	*m_pLUA;
+	bool m_bEnabled;
 	boost::mutex eventMutex;
 	boost::mutex luaMutex;
 	volatile bool m_stoprequested;

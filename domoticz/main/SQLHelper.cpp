@@ -1223,6 +1223,12 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("HideDisabledHardwareSensors", 1);
 	}
+	if (!GetPreferencesVar("DisableEventScriptSystem", nValue))
+	{
+		UpdatePreferencesVar("DisableEventScriptSystem", 0);
+		nValue = 0;
+	}
+	m_bDisableEventSystem = (nValue==1);
 
 	//Start background thread
 	if (!StartThread())
@@ -1848,24 +1854,27 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 				}
 			}
 
-			//Execute possible script
-			std::string scriptname;
-#ifdef WIN32
-			scriptname = szStartupFolder + "scripts\\domoticz_main.bat";
-#else
-			scriptname = szStartupFolder + "scripts/domoticz_main";
-#endif
-			if (file_exist(scriptname.c_str()))
+			if (!m_bDisableEventSystem)
 			{
-				//Add parameters
-				std::stringstream s_scriptparams;
-				std::string nszStartupFolder=szStartupFolder;
-				if (nszStartupFolder=="")
-					nszStartupFolder=".";
-				s_scriptparams << nszStartupFolder << " " << HardwareID << " " << ulID << " " << (bIsLightSwitchOn?"On":"Off") << " \"" << lstatus << "\"" << " \"" << devname << "\"";
-				//add script to background worker				
-				boost::lock_guard<boost::mutex> l(m_background_task_mutex);
-				m_background_task_queue.push_back(_tTaskItem::ExecuteScript(1,scriptname,s_scriptparams.str()));
+				//Execute possible script
+				std::string scriptname;
+#ifdef WIN32
+				scriptname = szStartupFolder + "scripts\\domoticz_main.bat";
+#else
+				scriptname = szStartupFolder + "scripts/domoticz_main";
+#endif
+				if (file_exist(scriptname.c_str()))
+				{
+					//Add parameters
+					std::stringstream s_scriptparams;
+					std::string nszStartupFolder = szStartupFolder;
+					if (nszStartupFolder == "")
+						nszStartupFolder = ".";
+					s_scriptparams << nszStartupFolder << " " << HardwareID << " " << ulID << " " << (bIsLightSwitchOn ? "On" : "Off") << " \"" << lstatus << "\"" << " \"" << devname << "\"";
+					//add script to background worker				
+					boost::lock_guard<boost::mutex> l(m_background_task_mutex);
+					m_background_task_queue.push_back(_tTaskItem::ExecuteScript(1, scriptname, s_scriptparams.str()));
+				}
 			}
 
 			//Check for notifications
