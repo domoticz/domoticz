@@ -85,6 +85,7 @@ Version 1.0.xxxx (August xxth 2014)
 - Implemented: Blockly, switch light on/off after xxx seconds
 - Changed: Increased Shortlog resolution for Gas/Water sensors
 - Changed: Counter reports will now include 'today'
+- Fixed: Floorplan editor missing database table fields
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

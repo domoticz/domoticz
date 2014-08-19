@@ -23,7 +23,7 @@
 	#include <pwd.h>
 #endif
 
-#define DB_VERSION 48
+#define DB_VERSION 49
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -281,7 +281,9 @@ const char *sqlCreatePlanMappings =
 "[DeviceRowID] BIGINT NOT NULL, "
 "[DevSceneType] INTEGER DEFAULT 0, "
 "[PlanID] BIGINT NOT NULL, "
-"[Order] INTEGER BIGINT(10) DEFAULT 0);";
+"[Order] INTEGER BIGINT(10) DEFAULT 0, "
+"[XOffset] INTEGER default 0, "
+"[YOffset] INTEGER default 0);";
 
 const char *sqlCreateDevicesToPlanStatusTrigger =
 	"CREATE TRIGGER IF NOT EXISTS deviceplantatusupdate AFTER INSERT ON DeviceToPlansMap\n"
@@ -293,7 +295,9 @@ const char *sqlCreatePlans =
 "CREATE TABLE IF NOT EXISTS [Plans] ("
 "[ID] INTEGER PRIMARY KEY, "
 "[Order] INTEGER BIGINT(10) default 0, "
-"[Name] VARCHAR(200) NOT NULL);";
+"[Name] VARCHAR(200) NOT NULL, "
+"[FloorplanID] INTEGER default 0, "
+"[Area] VARCHAR(200) DEFAULT '');";
 
 const char *sqlCreatePlanOrderTrigger =
 	"CREATE TRIGGER IF NOT EXISTS planordertrigger AFTER INSERT ON Plans\n"
@@ -963,9 +967,20 @@ bool CSQLHelper::OpenDatabase()
 					query(szTmp);
 				}
 			}
-			
 			query("ALTER TABLE Hardware ADD COLUMN [DataTimeout] INTEGER default 0");
 		}
+		if (dbversion < 49)
+		{
+			query("ALTER TABLE Plans ADD COLUMN [FloorplanID] INTEGER default 0");
+			query("ALTER TABLE Plans ADD COLUMN [Area] VARCHAR(200) DEFAULT ''");
+			query("ALTER TABLE DeviceToPlansMap ADD COLUMN [XOffset] INTEGER default 0");
+			query("ALTER TABLE DeviceToPlansMap ADD COLUMN [YOffset] INTEGER default 0");
+		}
+	}
+	else if (bNewInstall)
+	{
+		//place here actions that needs to be performed on new databases
+		query("INSERT INTO Plans (Name) VALUES ('$Hidden Devices')");
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
 
