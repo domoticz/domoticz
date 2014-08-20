@@ -44,11 +44,6 @@
 				fill-opacity: 0.25;
 			}
 			
-			image.moveable
-			{
-				cursor: move;
-			}
-
 			rect.popup{
 				fill: #F1F5FA;
 				font-family: Arial, Helvetica, sans-serif;
@@ -121,6 +116,8 @@ function SVGResize() {
 }
 
 function RoomClick(click) {
+
+	$('.DeviceDetails').css('display','none');   // hide all popups 
 	if ($("#floorplangroup")[0].getAttribute("zoomed") == "true")
 	{
 		$("#floorplangroup")[0].setAttribute("transform", "translate(0,0) scale(1)");
@@ -312,7 +309,8 @@ function ShowFloorplan() {
 	$('#floorplancontent').i18n();
 
 	Device.useSVGtags = true;
-	Device.backFunction = 'RefreshDevices';
+	Device.backFunction = 'ShowFloorplan';
+	Device.switchFunction = 'RefreshDevices';
 	Device.contentTag = 'floorplancontent';
 
 	if (typeof window.myglobals.FloorplanIndex != 'undefined') {

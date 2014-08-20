@@ -530,7 +530,8 @@ function ShowFloorplans() {
 	$('#modal').show();
 	
 	Device.useSVGtags = true;
-	Device.backFunction = 'RefreshDevices';
+	Device.backFunction = 'ShowFloorplans';
+	Device.switchFunction = 'RefreshDevices';
 	Device.contentTag = 'floorplancontent';
 	
 	var htmlcontent = "";
