@@ -104,7 +104,6 @@ namespace OpenZWave
 		uint8		m_userCodeCount;
 		uint8		m_userCodesStatus[256];
 		bool		m_refreshUserCodes;
-		bool 		m_indexStartsAtZero;
 	};
 
 } // namespace OpenZWave

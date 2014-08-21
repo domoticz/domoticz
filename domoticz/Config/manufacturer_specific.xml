@@ -176,11 +176,13 @@
 	<Manufacturer id="010f" name="FIBARO System">
 		<Product type="0501" id="0102" name="FGBS001 Universal Binary Sensor" config="fibaro/fgbs001.xml" />
 		<Product type="0501" id="1002" name="FGBS001 Universal Binary Sensor" config="fibaro/fgbs001.xml" />
+		<Product type="0501" id="4002" name="FGBS001 Universal Binary Sensor" config="fibaro/fgbs001.xml" />
 		<Product type="0100" id="0104" name="FGD211 Universal Dimmer 500W" />
 		<Product type="0100" id="0107" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
 		<Product type="0100" id="0109" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
 		<Product type="0100" id="100a" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
 		<Product type="0700" id="1000" name="FGK101 Door Opening Sensor" config="fibaro/fgk001.xml" />
+		<Product type="0700" id="4000" name="FGK101 Door Opening Sensor" config="fibaro/fgk001.xml" />
 		<Product type="0300" id="0104" name="FGR221 Roller Shutter Controller" config="fibaro/fgr221.xml"/>
 		<Product type="0300" id="100a" name="FGR221 Roller Shutter Controller" config="fibaro/fgr221.xml"/>
 		<Product type="0300" id="0106" name="FGR221 Roller Shutter Controller" config="fibaro/fgr221.xml"/>
@@ -498,7 +500,8 @@
 		<Product type="2006" id="0621" name="ZM1701 Electronic Deadbolt Door Lock without Handle"/>
 		<Product type="2008" id="0803" name="ZL7101 Plug-in Dimmer Module"/>
 		<Product type="200a" id="0a02" name="ZG8101 Garage Door Detector"/>
-		<Product type="200f" id="0f02" name="ZG6301 CO Detector"/>
+		<Product type="200f" id="0f02" name="ZS6301 CO Detector"/>
+		<Product type="200f" id="0f03" name="ZS6301 CO Detector"/>
 		<Product type="2012" id="1203" name="ZR1202 Repeater"/>
 		<Product type="2014" id="1401" name="ZL7101 Plug-in Dimmer Module"/>
 		<Product type="2017" id="1717" name="ZL7432 In-Wall Switch, Dual Relay"/>
