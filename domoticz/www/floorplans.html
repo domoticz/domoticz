@@ -302,8 +302,8 @@ function RefreshFloorPlan(floorIdx) {
 	}
 }
 
-function ShowFloorplan() {
-	var htmlcontent = "";
+function ShowFloorplan(floorIdx) {
+	var htmlcontent = '';
 	htmlcontent+=$('#floorplanmain').html();
 	$('#floorplancontent').html(htmlcontent);
 	$('#floorplancontent').i18n();
@@ -313,10 +313,14 @@ function ShowFloorplan() {
 	Device.switchFunction = 'RefreshDevices';
 	Device.contentTag = 'floorplancontent';
 
-	if (typeof window.myglobals.FloorplanIndex != 'undefined') {
-		RefreshFloorPlan(window.myglobals.FloorplanIndex);
+	if (arguments.length != 0) {
+			RefreshFloorPlan(floorIdx);
 	} else {
-		RefreshFloorPlan(1);
+		if (typeof window.myglobals.FloorplanIndex != 'undefined') {
+			RefreshFloorPlan(window.myglobals.FloorplanIndex);
+		} else {
+			RefreshFloorPlan(1);
+		}
 	}
 }
 
@@ -324,7 +328,7 @@ $(document).ready(function() {
 	$('#modal').show();	
 
 	ShowFloorplan();
-	$("#roomplangroup").on("click", function ( event ) { RoomClick( event ); });
+	$('#roomplangroup').on('click', function ( event ) { RoomClick( event ); });
 
 	$('#modal').hide();
 } );  
