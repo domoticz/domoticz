@@ -27,6 +27,22 @@ void SaveString2Disk(std::string str, std::string filename)
 		fclose(fOut);
 	}
 }
+std::string ReadFile(std::string filename)
+{
+	std::ifstream file;
+	std::string sResult = "";
+	file.open(filename.c_str());
+	if (!file.is_open())
+		return "";
+	std::string sLine;
+	while (!file.eof())
+	{
+		getline(file, sLine);
+		sResult += sLine;
+	}
+	file.close();
+	return sResult;
+}
 #endif
 
 const std::string TOON_HOST = "https://toonopafstand.eneco.nl";
@@ -235,6 +251,66 @@ void CToonThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 	}
 }
 
+void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname)
+{
+	bool bDeviceExits = true;
+	char szIdx[10];
+	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
+	result = m_sql.query(szQuery.str()); //-V519
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+	else
+	{
+		//check if we have a change, if not do not update it
+		int nvalue = atoi(result[0][1].c_str());
+		if ((!bOn) && (nvalue == 0))
+			return;
+		if ((bOn && (nvalue != 0)))
+			return;
+	}
+
+	//Send as Lighting 2
+	tRBUF lcmd;
+	memset(&lcmd, 0, sizeof(RBUF));
+	lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
+	lcmd.LIGHTING2.packettype = pTypeLighting2;
+	lcmd.LIGHTING2.subtype = sTypeAC;
+	lcmd.LIGHTING2.id1 = 0;
+	lcmd.LIGHTING2.id2 = 0;
+	lcmd.LIGHTING2.id3 = 0;
+	lcmd.LIGHTING2.id4 = Idx;
+	lcmd.LIGHTING2.unitcode = 1;
+	int level = 15;
+	if (!bOn)
+	{
+		level = 0;
+		lcmd.LIGHTING2.cmnd = light2_sOff;
+	}
+	else
+	{
+		level = 15;
+		lcmd.LIGHTING2.cmnd = light2_sOn;
+	}
+	lcmd.LIGHTING2.level = level;
+	lcmd.LIGHTING2.filler = 0;
+	lcmd.LIGHTING2.rssi = 12;
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);//decode message
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
+		result = m_sql.query(szQuery.str());
+	}
+}
+
 
 std::string CToonThermostat::GetRandom()
 {
@@ -387,9 +463,8 @@ void CToonThermostat::GetMeterDetails()
 	if (m_bDoLogin)
 	{
 		if (!Login())
-			return;
+		return;
 	}
-
 	std::string sResult;
 	std::vector<std::string> ExtraHeaders;
 
@@ -440,6 +515,19 @@ void CToonThermostat::GetMeterDetails()
 
 		int programState = root["thermostatInfo"]["programState"].asInt();
 		int activeState = root["thermostatInfo"]["activeState"].asInt();
+
+		if (root["thermostatInfo"]["burnerInfo"].empty() == false)
+		{
+			std::string sBurnerInfo = root["thermostatInfo"]["burnerInfo"].asString();
+			int burnerInfo = atoi(sBurnerInfo.c_str());
+			//burnerinfo
+			//0=off
+			//1=heating
+			//2=hot water
+			//3=pre-heating
+			UpdateSwitch(113, burnerInfo != 0, "FlameOn");
+
+		}
 	}
 
 	if (root["gasUsage"].empty() == false)

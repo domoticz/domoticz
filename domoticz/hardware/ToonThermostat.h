@@ -15,6 +15,7 @@ public:
 private:
 	void SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
 	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
+	void UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname);
 
 	bool Login();
 	void Logout();

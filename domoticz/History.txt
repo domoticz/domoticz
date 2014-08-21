@@ -87,6 +87,7 @@ Version 1.0.xxxx (August xxth 2014)
 - Changed: Counter reports will now include 'today'
 - Fixed: Floorplan editor missing database table fields
 - Implemented: Option to enable/disable eventsystem (lua/blockly/scripts)
+- Implemented: Toon Flame State
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io
