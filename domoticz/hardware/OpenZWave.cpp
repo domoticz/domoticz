@@ -962,9 +962,16 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		return;
 	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 
-	if (!m_awakeNodesQueried)
+	NodeInfo *pNode = GetNodeInfo(m_controllerID, nodeID);
+	if (!pNode)
 	{
-		_log.Log(LOG_ERROR,"OpenZWave: Switch command not sent because not all Awake Nodes have been Queried!");
+		if (!m_awakeNodesQueried)
+		{
+			_log.Log(LOG_ERROR, "OpenZWave: Switch command not sent because not all Awake Nodes have been Queried!");
+		}
+		else {
+			_log.Log(LOG_ERROR, "OpenZWave: Node not found! (%d, %02x)", nodeID, nodeID);
+		}
 		return;
 	}
 
@@ -1048,6 +1055,9 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 					m_pManager->SetValue(vID,255);
 				}
 			}
+		}
+		else {
+
 		}
 	}
 	else
