@@ -131,36 +131,10 @@
 					<title data-i18n="Click room to test">Click room to test</title>
 				</polygon>
 				<script>
-					function DragStart(evt) {
-						if (!evt) var evt = window.event;
-						evt.target.setAttribute("onmousemove","Drag(evt)");
-					}
-					function Drag(evt) {
-						if (!evt) var evt = window.event;
-						var parent = evt.target.parentNode;
-						var Scale = 1280 / $("#floorplaneditor").width();
-						var offset = $("#floorplanimage").offset();
-						var xoffset = Math.round((evt.pageX - offset.left - (Device.iconSize/3)) * Scale);
-						var yoffset = Math.round((evt.pageY - offset.top - (Device.iconSize/3)) * Scale);
-						parent.setAttribute("transform", 'translate(' + xoffset + ',' + yoffset + ')');
-						parent.setAttribute("xoffset", xoffset);
-						parent.setAttribute("yoffset", yoffset);
-						$('#floorplancontent #delclractive #activeplanupdate').attr("class", "btnstyle3");
-					}
-					function DragEnd(evt) {
-						if (!evt) var evt = window.event;
-						evt.target.setAttribute("onmousemove","");
-						var objData = $('#DeviceDetails #'+evt.target.parentNode.id)[0];
-						if (objData != undefined) {
-							objData.setAttribute("xoffset", evt.target.parentNode.getAttribute('xoffset'));
-							objData.setAttribute("yoffset", evt.target.parentNode.getAttribute('yoffset'));
-							objData.setAttribute("transform", evt.target.parentNode.getAttribute('transform'));
-						}
-					}
 					function MouseXY(evt) {
 						if (!evt) var evt = window.event;
 						var parent = evt.target.parentNode;
-						var Scale = 1280 / $("#floorplaneditor").width();
+						var Scale = Device.xImageSize / $("#floorplaneditor").width();
 						var offset = $("#floorplanimage").offset();
 						var xoffset = Math.round((evt.pageX - offset.left) * Scale);
 						var yoffset = Math.round((evt.pageY - offset.top) * Scale);
@@ -212,8 +186,8 @@ function PolyClick(click) {
 		var margin = 0.1;  // 10% margin around polygon
 		var marginX = borderRect.width * margin;
 		var marginY = borderRect.height * margin;
-		var scaleX = 1280 / (borderRect.width + (marginX * 2));
-		var scaleY = 720 / (borderRect.height + (marginY * 2));
+		var scaleX = Device.xImageSize / (borderRect.width + (marginX * 2));
+		var scaleY = Device.yImageSize / (borderRect.height + (marginY * 2));
 		var scale = ((scaleX > scaleY) ? scaleY : scaleX);
 		var attr = 'scale('  + scale + ')' + ' translate(' + (borderRect.x - marginX)*-1 + ',' + (borderRect.y - marginY)*-1 + ')';
 
@@ -232,7 +206,7 @@ function FloorplanClick(click) {
 	{
 		if ($("#roompolyarea").attr("title") != "")
 		{
-			var Scale = 1280 / $("#floorplaneditor").width();
+			var Scale = Device.xImageSize / $("#floorplaneditor").width();
 			var offset = $("#floorplanimage").offset();
 			var points = $("#roompolyarea").attr("points");
 			var xPoint = Math.round((click.pageX - offset.left) * Scale);
@@ -847,7 +821,37 @@ function RefreshDevices() {
 					}
 				});
 
-			$.myglobals.refreshTimer = setInterval(RefreshDevices, 10000);
+			// Add Drag and Drop handler
+			$('.DeviceIcon')
+				.draggable()
+				.bind('mousedown', function(event, ui){
+						// bring target to front
+						$(event.target.parentNode).append( event.target );
+					})
+				.bind('drag', function(event, ui){
+						// update coordinates manually, since top/left style props don't work on SVG
+						var parent = event.target.parentNode;
+						var Scale = Device.xImageSize / $("#floorplaneditor").width();
+						var offset = $("#floorplanimage").offset();
+						var xoffset = Math.round((event.pageX - offset.left - (Device.iconSize/3)) * Scale);
+						var yoffset = Math.round((event.pageY - offset.top - (Device.iconSize/3)) * Scale);
+						if (xoffset < 0) xoffset = 0;
+						if (yoffset < 0) yoffset = 0;
+						if (xoffset > (Device.xImageSize-Device.iconSize)) xoffset = Device.xImageSize-Device.iconSize;
+						if (yoffset > (Device.yImageSize-Device.iconSize)) yoffset = Device.yImageSize-Device.iconSize;
+						parent.setAttribute("xoffset", xoffset);
+						parent.setAttribute("yoffset", yoffset);
+						parent.setAttribute("transform", 'translate(' + xoffset + ',' + yoffset + ')');
+						var objData = $('#DeviceDetails #'+event.target.parentNode.id)[0];
+						if (objData != undefined) {
+							objData.setAttribute("xoffset", xoffset);
+							objData.setAttribute("yoffset", yoffset);
+							objData.setAttribute("transform", 'translate(' + xoffset + ',' + yoffset + ')');
+						}
+						$('#floorplancontent #delclractive #activeplanupdate').attr("class", "btnstyle3");
+					});
+
+				$.myglobals.refreshTimer = setInterval(RefreshDevices, 10000);
 		}
 	}
 }
@@ -868,9 +872,7 @@ $(document).ready(function() {
 	ShowFloorplans();
 	$("#floorplanimage").on("click", function ( event ) {FloorplanClick(event);});
 	$("#roompolyarea").on("click", function ( event ) {PolyClick(event);});
-	$("#DeviceIcons").on("mousedown", function ( event ) {DragStart(event);});
-	$("#DeviceIcons").on("mouseup", function ( event ) {DragEnd(event);});
 	$("#svgcontainer").on("mousemove", function ( event ) {MouseXY(event);});
-	
+ 	
 } );  
 </script>
