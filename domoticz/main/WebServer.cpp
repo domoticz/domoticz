@@ -2075,7 +2075,22 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 
 		std::string szHistoryURL="http://domoticz.sourceforge.net/History.txt";
 		if (bIsBetaChannel)
-			szHistoryURL="http://domoticz.sourceforge.net/beta/History.txt";
+		{
+			utsname my_uname;
+			if (uname(&my_uname) < 0)
+				return;
+
+			std::string forced = m_pWebEm->FindValue("forced");
+			bool bIsForced = (forced == "true");
+			std::string systemname = my_uname.sysname;
+			std::string machine = my_uname.machine;
+			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
+
+			if (((machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")) || (strstr(my_uname.release, "ARCH+") != NULL))
+				szHistoryURL = "http://domoticz.sourceforge.net/beta/History.txt";
+			else
+				szHistoryURL = "http://domoticz.sourceforge.net/history_" + systemname + "_" + machine + ".txt";
+		}
 		if (!HTTPClient::GET(szHistoryURL,historyfile))
 		{
 			historyfile="Unable to get Online History document !!";
@@ -2500,9 +2515,9 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		std::string systemname=my_uname.sysname;
 		std::string machine=my_uname.machine;
 		std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
-		if ((systemname=="windows")||((machine!="armv6l")&&(machine!="armv7l")))
+		if ((systemname == "windows") || ((machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")))
 		{
-			//Only Raspberry Pi (Wheezy) for now!
+			//Only Raspberry Pi (Wheezy)/Ubuntu for now!
 			root["status"]="OK";
 			root["title"]="CheckForUpdate";
 			root["HaveUpdate"]=false;
@@ -2517,13 +2532,11 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				m_sql.GetPreferencesVar("ReleaseChannel", nValue);
 				bool bIsBetaChannel=(nValue!=0);
 				std::string szURL="http://domoticz.sourceforge.net/version_" + systemname + "_" + machine + ".h";
-				std::string szHistoryURL="http://domoticz.sourceforge.net/History.txt";
-				//std::string szURL="http://domoticz.sourceforge.net/svnversion.h";
+				std::string szHistoryURL = "http://domoticz.sourceforge.net/history_" + systemname + "_" + machine + ".txt";
 				if (bIsBetaChannel)
 				{
-					//szURL="http://domoticz.sourceforge.net/beta/svnversion.h";
 					szURL="http://domoticz.sourceforge.net/beta/version_" + systemname + "_" + machine + ".h";
-					szHistoryURL="http://domoticz.sourceforge.net/beta/History.txt";
+					szHistoryURL = "http://domoticz.sourceforge.net/beta/history_" + systemname + "_" + machine + ".txt";
 				}
 				std::string revfile;
 
@@ -2602,8 +2615,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		int version=atoi(szAppVersion.substr(szAppVersion.find(".")+1).c_str());
 		if (version>=atoi(strarray[2].c_str()))
 			return;
-		if (((machine!="armv6l")&&(machine!="armv7l"))||(strstr(my_uname.release,"ARCH+")!=NULL))
-			return;	//only Raspberry Pi for now
+		if (((machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")) || (strstr(my_uname.release, "ARCH+") != NULL))
+			return;	//only Raspberry Pi/Ubuntu for now
 		root["status"]="OK";
 		root["title"]="DownloadUpdate";
 		std::string downloadURL="http://domoticz.sourceforge.net/domoticz_" + systemname + "_" + machine + ".tgz";
