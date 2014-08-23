@@ -2358,11 +2358,13 @@ void CWebServer::Cmd_GetActiveTabs(Json::Value &root)
 	int bEnableTabTemp = 1;
 	int bEnableTabWeather = 1;
 	int bEnableTabUtility = 1;
+	int bEnableTabCustom = 1;
 
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 
-	if ((UserID != 0) && (UserID != 10000)) {
+	if ((UserID != 0) && (UserID != 10000))
+	{
 		szQuery << "SELECT TabsEnabled FROM Users WHERE (ID==" << UserID << ")";
 		result = m_sql.query(szQuery.str());
 		if (result.size() > 0)
@@ -2373,6 +2375,7 @@ void CWebServer::Cmd_GetActiveTabs(Json::Value &root)
 			bEnableTabTemp = (TabsEnabled&(1 << 2));
 			bEnableTabWeather = (TabsEnabled&(1 << 3));
 			bEnableTabUtility = (TabsEnabled&(1 << 4));
+			bEnableTabCustom = (TabsEnabled&(1 << 5));
 		}
 	}
 	else
@@ -2382,6 +2385,7 @@ void CWebServer::Cmd_GetActiveTabs(Json::Value &root)
 		m_sql.GetPreferencesVar("EnableTabTemp", bEnableTabTemp);
 		m_sql.GetPreferencesVar("EnableTabWeather", bEnableTabWeather);
 		m_sql.GetPreferencesVar("EnableTabUtility", bEnableTabUtility);
+		m_sql.GetPreferencesVar("EnableTabCustom", bEnableTabCustom);
 	}
 
 	root["result"]["EnableTabLights"] = bEnableTabLight;
@@ -2389,25 +2393,29 @@ void CWebServer::Cmd_GetActiveTabs(Json::Value &root)
 	root["result"]["EnableTabTemp"] = bEnableTabTemp;
 	root["result"]["EnableTabWeather"] = bEnableTabWeather;
 	root["result"]["EnableTabUtility"] = bEnableTabUtility;
+	root["result"]["EnableTabCustom"] = bEnableTabCustom;
 
-	//Add custom templates
-	DIR *lDir;
-	struct dirent *ent;
-	std::string templatesFolder = szWWWFolder + "/templates";
-	int iFile = 0;
-	if ((lDir = opendir(templatesFolder.c_str())) != NULL)
+	if (bEnableTabCustom)
 	{
-		while ((ent = readdir(lDir)) != NULL)
+		//Add custom templates
+		DIR *lDir;
+		struct dirent *ent;
+		std::string templatesFolder = szWWWFolder + "/templates";
+		int iFile = 0;
+		if ((lDir = opendir(templatesFolder.c_str())) != NULL)
 		{
-			std::string filename = ent->d_name;
-			size_t pos = filename.find(".htm");
-			if (pos != std::string::npos)
+			while ((ent = readdir(lDir)) != NULL)
 			{
-				std::string shortfile = filename.substr(0, pos);
-				root["result"]["templates"][iFile++] = shortfile;
+				std::string filename = ent->d_name;
+				size_t pos = filename.find(".htm");
+				if (pos != std::string::npos)
+				{
+					std::string shortfile = filename.substr(0, pos);
+					root["result"]["templates"][iFile++] = shortfile;
+				}
 			}
+			closedir(lDir);
 		}
-		closedir(lDir);
 	}
 }
 
@@ -6412,10 +6420,7 @@ void CWebServer::LoadUsers()
 					{
 						std::vector<std::string> sd=*itt;
 
-						unsigned long ID;
-						std::stringstream s_strid;
-						s_strid << std::hex << sd[0];
-						s_strid >> ID;
+						unsigned long ID = (unsigned long)atol(sd[0].c_str());
 
 						std::string username=base64_decode(sd[2]);
 						std::string password=base64_decode(sd[3]);

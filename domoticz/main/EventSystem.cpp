@@ -1069,7 +1069,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 				//_log.Log(LOG_STATUS,"ifc: %s",ifCondition.c_str());
 				if (luaL_dostring(lua_state, ifCondition.c_str()))
 				{
-					_log.Log(LOG_ERROR, "Lua script error: %s", lua_tostring(lua_state, -1));
+					_log.Log(LOG_ERROR, "Lua script error (Blockly), Name: %s => %s", it->Name.c_str(), lua_tostring(lua_state, -1));
 				}
 				else {
 					lua_Number ruleTrue = lua_tonumber(lua_state, -1);
@@ -1118,7 +1118,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 				//_log.Log(LOG_NORM,"ifc: %s",ifCondition.c_str());
 				if (luaL_dostring(lua_state, ifCondition.c_str()))
 				{
-					_log.Log(LOG_ERROR, "Lua script error: %s", lua_tostring(lua_state, -1));
+					_log.Log(LOG_ERROR, "Lua script error (Blockly), Name: %s => %s", it->Name.c_str(), lua_tostring(lua_state, -1));
 				}
 				else {
 					lua_Number ruleTrue = lua_tonumber(lua_state, -1);
@@ -1165,7 +1165,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 					//_log.Log(LOG_NORM,"ifc: %s",ifCondition.c_str());
 					if (luaL_dostring(lua_state, ifCondition.c_str()))
 					{
-						_log.Log(LOG_ERROR, "Lua script error: %s", lua_tostring(lua_state, -1));
+						_log.Log(LOG_ERROR, "Lua script error (Blockly), Name: %s => %s", it->Name.c_str(), lua_tostring(lua_state, -1));
 					}
 					else {
 						lua_Number ruleTrue = lua_tonumber(lua_state, -1);
@@ -1215,7 +1215,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 				//_log.Log(LOG_STATUS,"ifc: %s",ifCondition.c_str());
 				if (luaL_dostring(lua_state, ifCondition.c_str()))
 				{
-					_log.Log(LOG_ERROR, "Lua script error: %s", lua_tostring(lua_state, -1));
+					_log.Log(LOG_ERROR, "Lua script error (Blockly), Name: %s => %s", it->Name.c_str(), lua_tostring(lua_state, -1));
 				}
 				else {
 					lua_Number ruleTrue = lua_tonumber(lua_state, -1);

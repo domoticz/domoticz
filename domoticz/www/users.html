@@ -71,6 +71,7 @@
 				<input type="checkbox" id="EnableTabTemp" name="EnableTabTemp"/> <label for="EnableTabTemp"><span data-i18n="Temperature"></span></label></br>
 				<input type="checkbox" id="EnableTabWeather" name="EnableTabWeather"/> <label for="EnableTabWeather"><span data-i18n="Weather"></span></label></br>
 				<input type="checkbox" id="EnableTabUtility" name="EnableTabUtility"/> <label for="EnableTabUtility"><span data-i18n="Utility"></span></label></br>
+				<input type="checkbox" id="EnableTabCustom" name="EnableTabCustom"/> <label for="EnableTabCustom"><span data-i18n="Custom"></span></label></br>
 			</td>
 		</tr>
 		<tr>
@@ -139,6 +140,9 @@ function GetUserSettings()
 	}
 	if ($('#usercontent #userparamstable #EnableTabUtility').is(":checked")) {
 		csettings.TabsEnabled|=(1<<4);
+	}
+	if ($('#usercontent #userparamstable #EnableTabCustom').is(":checked")) {
+		csettings.TabsEnabled|=(1<<5);
 	}
 	return csettings;
 }
@@ -336,6 +340,7 @@ function RefreshUserTable()
 					$('#usercontent #userparamstable #EnableTabTemp').prop('checked',(EnabledTabs & 4));
 					$('#usercontent #userparamstable #EnableTabWeather').prop('checked',(EnabledTabs & 8));
 					$('#usercontent #userparamstable #EnableTabUtility').prop('checked',(EnabledTabs & 16));
+					$('#usercontent #userparamstable #EnableTabCustom').prop('checked',(EnabledTabs & 32));
 				}
 			}
 		}); 

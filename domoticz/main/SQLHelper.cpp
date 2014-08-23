@@ -1122,6 +1122,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("EnableTabUtility", 1);
 	}
+	if (!GetPreferencesVar("EnableTabCustom", nValue))
+	{
+		UpdatePreferencesVar("EnableTabCustom", 1);
+	}
 	if (!GetPreferencesVar("EnableTabScenes", nValue))
 	{
 		UpdatePreferencesVar("EnableTabScenes", 1);
