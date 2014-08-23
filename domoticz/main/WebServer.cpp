@@ -2643,7 +2643,7 @@ void CWebServer::Cmd_ExcecuteScript(Json::Value &root)
 		ShellExecute(NULL, "open", scriptname.c_str(), strparm.c_str(), NULL, SW_SHOWNORMAL);
 #else
 		std::string lscript = scriptname + " " + strparm;
-		int system(lscript.c_str());
+		int ret=system(lscript.c_str());
 		if (ret != 0)
 		{
 			_log.Log(LOG_ERROR, "Error executing script command (%s). returned: %d", lscript.c_str(), ret);

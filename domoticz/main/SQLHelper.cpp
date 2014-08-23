@@ -5718,7 +5718,11 @@ bool CSQLHelper::RestoreDatabase(const std::string &dbase)
 	if (stat(m_dbase_name.c_str(), &info)==0)
 	{
 		struct passwd *pw = getpwuid(info.st_uid);
-		chown(m_dbase_name.c_str(),pw->pw_uid,pw->pw_gid);
+		int ret=chown(m_dbase_name.c_str(),pw->pw_uid,pw->pw_gid);
+		if (ret!=0)
+		{
+			_log.Log(LOG_ERROR, "Error setting database ownership (chown returned an error!)");
+		}
 	}
 #endif
 	return OpenDatabase();
