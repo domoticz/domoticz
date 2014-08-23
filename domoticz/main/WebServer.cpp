@@ -5586,6 +5586,38 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 
 		m_mainworker.SwitchLight(ID, "Set Night", 0, -1);
 	}
+	else if (cparam=="getfloorplanimages")
+	{
+		root["status"]="OK";
+		root["title"]="GetFloorplanImages";
+
+		DIR *lDir;
+		struct dirent *ent;
+		std::string imagesFolder = szWWWFolder + "/images/floorplans";
+		int iFile = 0;
+		if ((lDir = opendir(imagesFolder.c_str())) != NULL)
+		{
+			while ((ent = readdir(lDir)) != NULL)
+			{
+				std::string filename = ent->d_name;
+				size_t pos = filename.find(".jpg");
+				if (pos == std::string::npos)
+				{
+					pos = filename.find(".png");
+				}
+				if (pos == std::string::npos)
+				{
+					pos = filename.find(".bmp");
+				}
+				if (pos != std::string::npos)
+				{
+					root["result"]["images"][iFile++] = filename;
+				}
+			}
+			closedir(lDir);
+		}
+
+	}
 	else if (cparam == "addfloorplan")
 	{
 		std::string name=m_pWebEm->FindValue("name");
