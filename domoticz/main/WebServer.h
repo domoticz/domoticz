@@ -154,30 +154,30 @@ private:
 	void RType_Scenes(Json::Value &root);
 #ifdef WITH_OPENZWAVE
 	//ZWave
-	void ZWaveUpdateNode(Json::Value &root);
-	void ZWaveDeleteNode(Json::Value &root);
-	void ZWaveInclude(Json::Value &root);
-	void ZWaveExclude(Json::Value &root);
-	void ZWaveSoftReset(Json::Value &root);
-	void ZWaveHardReset(Json::Value &root);
-	void ZWaveNetworkHeal(Json::Value &root);
-	void ZWaveNodeHeal(Json::Value &root);
-	void ZWaveNetworkInfo(Json::Value &root);
-	void ZWaveRemoveGroupNode(Json::Value &root);
-	void ZWaveAddGroupNode(Json::Value &root);
-	void ZWaveGroupInfo(Json::Value &root);
-	void ZWaveCancel(Json::Value &root);
-	void ApplyZWaveNodeConfig(Json::Value &root);
-	void RequestZWaveNodeConfig(Json::Value &root);
-	void ZWaveStateCheck(Json::Value &root);
-	void ZWaveRequestNodeConfig(Json::Value &root);
-	void ZWaveReceiveConfigurationFromOtherController(Json::Value &root);
-	void ZWaveSendConfigurationToSecondaryController(Json::Value &root);
-	void ZWaveTransferPrimaryRole(Json::Value &root);
+	void Cmd_ZWaveUpdateNode(Json::Value &root);
+	void Cmd_ZWaveDeleteNode(Json::Value &root);
+	void Cmd_ZWaveInclude(Json::Value &root);
+	void Cmd_ZWaveExclude(Json::Value &root);
+	void Cmd_ZWaveSoftReset(Json::Value &root);
+	void Cmd_ZWaveHardReset(Json::Value &root);
+	void Cmd_ZWaveNetworkHeal(Json::Value &root);
+	void Cmd_ZWaveNodeHeal(Json::Value &root);
+	void Cmd_ZWaveNetworkInfo(Json::Value &root);
+	void Cmd_ZWaveRemoveGroupNode(Json::Value &root);
+	void Cmd_ZWaveAddGroupNode(Json::Value &root);
+	void Cmd_ZWaveGroupInfo(Json::Value &root);
+	void Cmd_ZWaveCancel(Json::Value &root);
+	void Cmd_ApplyZWaveNodeConfig(Json::Value &root);
+	void Cmd_RequestZWaveNodeConfig(Json::Value &root);
+	void Cmd_ZWaveStateCheck(Json::Value &root);
+	void Cmd_ZWaveRequestNodeConfig(Json::Value &root);
+	void Cmd_ZWaveReceiveConfigurationFromOtherController(Json::Value &root);
+	void Cmd_ZWaveSendConfigurationToSecondaryController(Json::Value &root);
+	void Cmd_ZWaveTransferPrimaryRole(Json::Value &root);
 	std::string ZWaveGetConfigFile();
-	void ZWaveSetUserCodeEnrollmentMode(Json::Value &root);
-	void ZWaveGetNodeUserCodes(Json::Value &root);
-	void ZWaveRemoveUserCode(Json::Value &root);
+	void Cmd_ZWaveSetUserCodeEnrollmentMode(Json::Value &root);
+	void Cmd_ZWaveGetNodeUserCodes(Json::Value &root);
+	void Cmd_ZWaveRemoveUserCode(Json::Value &root);
 	//RTypes
 	void RType_OpenZWaveNodes(Json::Value &root);
 #endif	

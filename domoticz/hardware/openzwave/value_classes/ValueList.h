@@ -54,7 +54,7 @@ namespace OpenZWave
 		};
 
 		ValueList( uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint8 const _index, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, vector<Item> const& _items, int32 const _valueIdx, uint8 const _pollIntensity, uint8 const _size = 4 );
-		ValueList(){}
+		ValueList();
 		virtual ~ValueList(){}
 
 		bool SetByLabel( string const& _label );

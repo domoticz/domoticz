@@ -45,7 +45,7 @@ namespace OpenZWave
 	{
 	public:
 		ValueSchedule( uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint8 const _index, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, uint8 const _pollIntensity );
-		ValueSchedule(){}
+		ValueSchedule();
 		virtual ~ValueSchedule(){}
 
 		bool SetSwitchPoint( uint8 const _hours, uint8 const _minutes, int8 const _setback );

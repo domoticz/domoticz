@@ -364,29 +364,29 @@ bool CWebServer::StartServer(const std::string &listenaddress, const std::string
 	RegisterRType("floorplans", boost::bind(&CWebServer::RType_FloorPlans, this, _1));
 #ifdef WITH_OPENZWAVE
 	//ZWave
-	RegisterCommandCode("updatezwavenode",boost::bind(&CWebServer::ZWaveUpdateNode,this, _1));
-	RegisterCommandCode("deletezwavenode",boost::bind(&CWebServer::ZWaveDeleteNode,this, _1));
-	RegisterCommandCode("zwaveinclude",boost::bind(&CWebServer::ZWaveInclude,this, _1));
-	RegisterCommandCode("zwaveexclude",boost::bind(&CWebServer::ZWaveExclude,this, _1));
-	RegisterCommandCode("zwavesoftreset",boost::bind(&CWebServer::ZWaveSoftReset,this, _1));
-	RegisterCommandCode("zwavehardreset",boost::bind(&CWebServer::ZWaveHardReset,this, _1));
-	RegisterCommandCode("zwavenetworkheal",boost::bind(&CWebServer::ZWaveNetworkHeal,this, _1));
-	RegisterCommandCode("zwavenodeheal",boost::bind(&CWebServer::ZWaveNodeHeal,this, _1));
-	RegisterCommandCode("zwavenetworkinfo",boost::bind(&CWebServer::ZWaveNetworkInfo,this, _1));
-	RegisterCommandCode("zwaveremovegroupnode",boost::bind(&CWebServer::ZWaveRemoveGroupNode,this, _1));
-	RegisterCommandCode("zwaveaddgroupnode",boost::bind(&CWebServer::ZWaveAddGroupNode,this, _1));
-	RegisterCommandCode("zwavegroupinfo",boost::bind(&CWebServer::ZWaveGroupInfo,this, _1));
-	RegisterCommandCode("zwavecancel",boost::bind(&CWebServer::ZWaveCancel,this, _1));
-	RegisterCommandCode("applyzwavenodeconfig",boost::bind(&CWebServer::ApplyZWaveNodeConfig,this, _1));
-	RegisterCommandCode("requestzwavenodeconfig",boost::bind(&CWebServer::ZWaveRequestNodeConfig,this, _1));
-	RegisterCommandCode("zwavestatecheck",boost::bind(&CWebServer::ZWaveStateCheck,this, _1));
-	RegisterCommandCode("zwavereceiveconfigurationfromothercontroller",boost::bind(&CWebServer::ZWaveReceiveConfigurationFromOtherController,this, _1));
-	RegisterCommandCode("zwavesendconfigurationtosecondcontroller",boost::bind(&CWebServer::ZWaveSendConfigurationToSecondaryController,this, _1));
-	RegisterCommandCode("zwavetransferprimaryrole",boost::bind(&CWebServer::ZWaveTransferPrimaryRole,this, _1));
-	RegisterCommandCode("zwavetransferprimaryrole",boost::bind(&CWebServer::ZWaveTransferPrimaryRole,this, _1));
-	RegisterCommandCode("zwavestartusercodeenrollmentmode", boost::bind(&CWebServer::ZWaveSetUserCodeEnrollmentMode, this, _1));
-	RegisterCommandCode("zwavegetusercodes", boost::bind(&CWebServer::ZWaveGetNodeUserCodes, this, _1));
-	RegisterCommandCode("zwaveremoveusercode", boost::bind(&CWebServer::ZWaveRemoveUserCode, this, _1));
+	RegisterCommandCode("updatezwavenode",boost::bind(&CWebServer::Cmd_ZWaveUpdateNode,this, _1));
+	RegisterCommandCode("deletezwavenode",boost::bind(&CWebServer::Cmd_ZWaveDeleteNode,this, _1));
+	RegisterCommandCode("zwaveinclude",boost::bind(&CWebServer::Cmd_ZWaveInclude,this, _1));
+	RegisterCommandCode("zwaveexclude",boost::bind(&CWebServer::Cmd_ZWaveExclude,this, _1));
+	RegisterCommandCode("zwavesoftreset",boost::bind(&CWebServer::Cmd_ZWaveSoftReset,this, _1));
+	RegisterCommandCode("zwavehardreset",boost::bind(&CWebServer::Cmd_ZWaveHardReset,this, _1));
+	RegisterCommandCode("zwavenetworkheal",boost::bind(&CWebServer::Cmd_ZWaveNetworkHeal,this, _1));
+	RegisterCommandCode("zwavenodeheal",boost::bind(&CWebServer::Cmd_ZWaveNodeHeal,this, _1));
+	RegisterCommandCode("zwavenetworkinfo",boost::bind(&CWebServer::Cmd_ZWaveNetworkInfo,this, _1));
+	RegisterCommandCode("zwaveremovegroupnode",boost::bind(&CWebServer::Cmd_ZWaveRemoveGroupNode,this, _1));
+	RegisterCommandCode("zwaveaddgroupnode",boost::bind(&CWebServer::Cmd_ZWaveAddGroupNode,this, _1));
+	RegisterCommandCode("zwavegroupinfo",boost::bind(&CWebServer::Cmd_ZWaveGroupInfo,this, _1));
+	RegisterCommandCode("zwavecancel",boost::bind(&CWebServer::Cmd_ZWaveCancel,this, _1));
+	RegisterCommandCode("applyzwavenodeconfig",boost::bind(&CWebServer::Cmd_ApplyZWaveNodeConfig,this, _1));
+	RegisterCommandCode("requestzwavenodeconfig",boost::bind(&CWebServer::Cmd_ZWaveRequestNodeConfig,this, _1));
+	RegisterCommandCode("zwavestatecheck",boost::bind(&CWebServer::Cmd_ZWaveStateCheck,this, _1));
+	RegisterCommandCode("zwavereceiveconfigurationfromothercontroller",boost::bind(&CWebServer::Cmd_ZWaveReceiveConfigurationFromOtherController,this, _1));
+	RegisterCommandCode("zwavesendconfigurationtosecondcontroller",boost::bind(&CWebServer::Cmd_ZWaveSendConfigurationToSecondaryController,this, _1));
+	RegisterCommandCode("zwavetransferprimaryrole",boost::bind(&CWebServer::Cmd_ZWaveTransferPrimaryRole,this, _1));
+	RegisterCommandCode("zwavetransferprimaryrole",boost::bind(&CWebServer::Cmd_ZWaveTransferPrimaryRole,this, _1));
+	RegisterCommandCode("zwavestartusercodeenrollmentmode", boost::bind(&CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode, this, _1));
+	RegisterCommandCode("zwavegetusercodes", boost::bind(&CWebServer::Cmd_ZWaveGetNodeUserCodes, this, _1));
+	RegisterCommandCode("zwaveremoveusercode", boost::bind(&CWebServer::Cmd_ZWaveRemoveUserCode, this, _1));
 
 	m_pWebEm->RegisterPageCode( "/zwavegetconfig.php",
 		boost::bind( 
@@ -1238,7 +1238,7 @@ void CWebServer::RType_OpenZWaveNodes(Json::Value &root)
 	}
 }
 
-void CWebServer::ZWaveUpdateNode(Json::Value &root)
+void CWebServer::Cmd_ZWaveUpdateNode(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
@@ -1277,7 +1277,7 @@ void CWebServer::ZWaveUpdateNode(Json::Value &root)
 	}
 }
 
-void CWebServer::ZWaveDeleteNode(Json::Value &root)
+void CWebServer::Cmd_ZWaveDeleteNode(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
@@ -1305,7 +1305,7 @@ void CWebServer::ZWaveDeleteNode(Json::Value &root)
 
 }
 
-void CWebServer::ZWaveInclude(Json::Value &root)
+void CWebServer::Cmd_ZWaveInclude(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
@@ -1320,7 +1320,7 @@ void CWebServer::ZWaveInclude(Json::Value &root)
 	}
 }
 
-void CWebServer::ZWaveExclude(Json::Value &root)
+void CWebServer::Cmd_ZWaveExclude(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
@@ -1335,7 +1335,7 @@ void CWebServer::ZWaveExclude(Json::Value &root)
 	}
 }
 
-void CWebServer::ZWaveSoftReset(Json::Value &root)
+void CWebServer::Cmd_ZWaveSoftReset(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
@@ -1350,7 +1350,7 @@ void CWebServer::ZWaveSoftReset(Json::Value &root)
 	}
 }
 
-void CWebServer::ZWaveHardReset(Json::Value &root)
+void CWebServer::Cmd_ZWaveHardReset(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
@@ -1365,7 +1365,7 @@ void CWebServer::ZWaveHardReset(Json::Value &root)
 	}
 }
 
-void CWebServer::ZWaveStateCheck(Json::Value &root)
+void CWebServer::Cmd_ZWaveStateCheck(Json::Value &root)
 {
 	root["title"]="ZWaveStateCheck";
 	std::string idx=m_pWebEm->FindValue("idx");
@@ -1382,7 +1382,7 @@ void CWebServer::ZWaveStateCheck(Json::Value &root)
 	return;
 }
 
-void CWebServer::ZWaveNetworkHeal(Json::Value &root)
+void CWebServer::Cmd_ZWaveNetworkHeal(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
@@ -1397,7 +1397,7 @@ void CWebServer::ZWaveNetworkHeal(Json::Value &root)
 	}
 }
 
-void CWebServer::ZWaveNodeHeal(Json::Value &root)
+void CWebServer::Cmd_ZWaveNodeHeal(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
@@ -1415,7 +1415,7 @@ void CWebServer::ZWaveNodeHeal(Json::Value &root)
 	}
 }
 
-void CWebServer::ZWaveNetworkInfo(Json::Value &root)
+void CWebServer::Cmd_ZWaveNetworkInfo(Json::Value &root)
 {
 	root["title"]="ZWaveNetworkInfo";
 
@@ -1470,7 +1470,7 @@ void CWebServer::ZWaveNetworkInfo(Json::Value &root)
 	}
 }
 
-void CWebServer::ZWaveRemoveGroupNode(Json::Value &root)
+void CWebServer::Cmd_ZWaveRemoveGroupNode(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
@@ -1494,7 +1494,7 @@ void CWebServer::ZWaveRemoveGroupNode(Json::Value &root)
 	}
 }
 
-void CWebServer::ZWaveAddGroupNode(Json::Value &root)
+void CWebServer::Cmd_ZWaveAddGroupNode(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
@@ -1518,7 +1518,7 @@ void CWebServer::ZWaveAddGroupNode(Json::Value &root)
 	}
 }
 
-void CWebServer::ZWaveGroupInfo(Json::Value &root)
+void CWebServer::Cmd_ZWaveGroupInfo(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
@@ -1587,7 +1587,7 @@ void CWebServer::ZWaveGroupInfo(Json::Value &root)
 	root["title"]="ZWaveGroupInfo";
 }
 
-void CWebServer::ZWaveCancel(Json::Value &root)
+void CWebServer::Cmd_ZWaveCancel(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
@@ -1602,7 +1602,7 @@ void CWebServer::ZWaveCancel(Json::Value &root)
 	}
 }
 
-void CWebServer::ApplyZWaveNodeConfig(Json::Value &root)
+void CWebServer::Cmd_ApplyZWaveNodeConfig(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
 	std::string svaluelist=m_pWebEm->FindValue("valuelist");
@@ -1632,7 +1632,7 @@ void CWebServer::ApplyZWaveNodeConfig(Json::Value &root)
 	}
 }
 
-void CWebServer::ZWaveRequestNodeConfig(Json::Value &root)
+void CWebServer::Cmd_ZWaveRequestNodeConfig(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
@@ -1657,7 +1657,7 @@ void CWebServer::ZWaveRequestNodeConfig(Json::Value &root)
 	}
 }
 
-void CWebServer::ZWaveReceiveConfigurationFromOtherController(Json::Value &root)
+void CWebServer::Cmd_ZWaveReceiveConfigurationFromOtherController(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
@@ -1672,7 +1672,7 @@ void CWebServer::ZWaveReceiveConfigurationFromOtherController(Json::Value &root)
 	}
 }
 
-void CWebServer::ZWaveSendConfigurationToSecondaryController(Json::Value &root)
+void CWebServer::Cmd_ZWaveSendConfigurationToSecondaryController(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
@@ -1687,7 +1687,7 @@ void CWebServer::ZWaveSendConfigurationToSecondaryController(Json::Value &root)
 	}
 }
 
-void CWebServer::ZWaveTransferPrimaryRole(Json::Value &root)
+void CWebServer::Cmd_ZWaveTransferPrimaryRole(Json::Value &root)
 {
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
@@ -1724,7 +1724,7 @@ std::string CWebServer::ZWaveGetConfigFile()
 	return m_retstr;
 }
 
-void CWebServer::ZWaveSetUserCodeEnrollmentMode(Json::Value &root)
+void CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode(Json::Value &root)
 {
 	std::string idx = m_pWebEm->FindValue("idx");
 	if (idx == "")
@@ -1739,7 +1739,7 @@ void CWebServer::ZWaveSetUserCodeEnrollmentMode(Json::Value &root)
 	}
 }
 
-void CWebServer::ZWaveRemoveUserCode(Json::Value &root)
+void CWebServer::Cmd_ZWaveRemoveUserCode(Json::Value &root)
 {
 	std::string idx = m_pWebEm->FindValue("idx");
 	std::string scodeindex = m_pWebEm->FindValue("codeindex");
@@ -1771,7 +1771,7 @@ void CWebServer::ZWaveRemoveUserCode(Json::Value &root)
 	}
 }
 
-void CWebServer::ZWaveGetNodeUserCodes(Json::Value &root)
+void CWebServer::Cmd_ZWaveGetNodeUserCodes(Json::Value &root)
 {
 	std::string idx = m_pWebEm->FindValue("idx");
 	if (idx == "")
