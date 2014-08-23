@@ -1373,7 +1373,11 @@ void CSQLHelper::Do_Work()
 				ShellExecute(NULL,"open",itt->_ID.c_str(),itt->_sValue.c_str(),NULL,SW_SHOWNORMAL);
 #else
 				std::string lscript=itt->_ID + " " + itt->_sValue;
-				system(lscript.c_str());
+				int ret=system(lscript.c_str());
+				if (ret != 0)
+				{
+					_log.Log(LOG_ERROR, "Error executing script command (%s). returned: %d",itt->_ID.c_str(), ret);
+				}
 #endif
 			}
 			else if (itt->_ItemType == TITEM_EMAIL_CAMERA_SNAPSHOT)

@@ -188,7 +188,12 @@ bool CCameraHandler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
 	std::remove(OutputFileName.c_str());
 	
 	//Get our image
-	system(raspistillcmd.c_str());
+	int ret=system(raspistillcmd.c_str());
+	if (ret != 0)
+	{
+		_log.Log(LOG_ERROR, "Error executing raspistill command. returned: %d",ret);
+		return false;
+	}
 	//If all went correct, we should have our file
 	try
 	{
@@ -223,7 +228,12 @@ bool CCameraHandler::TakeUVCSnapshot(std::vector<unsigned char> &camimage)
 	try
 	{
 		//Get our image
-		system(nvcmd.c_str());
+		int ret=system(nvcmd.c_str());
+		if (ret != 0)
+		{
+			_log.Log(LOG_ERROR, "Error executing uvcapture command. returned: %d", ret);
+			return false;
+		}
 		//If all went correct, we should have our file
 		std::ifstream is(OutputFileName.c_str(), std::ios::in | std::ios::binary);
 		if (is)

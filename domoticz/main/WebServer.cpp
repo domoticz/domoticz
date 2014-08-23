@@ -2582,23 +2582,33 @@ void CWebServer::Cmd_SetThermostatState(Json::Value &root)
 void CWebServer::Cmd_SystemShutdown(Json::Value &root)
 {
 #ifdef WIN32
-	system("shutdown -s -f -t 1 -d up:125:1");
+	int ret=system("shutdown -s -f -t 1 -d up:125:1");
 #else
-	system("sudo shutdown -h now");
+	int ret=system("sudo shutdown -h now");
 #endif
-	root["status"] = "OK";
+	if (ret != 0)
+	{
+		_log.Log(LOG_ERROR, "Error executing shutdown command. returned: %d", ret);
+		return;
+	}
 	root["title"] = "SystemShutdown";
+	root["status"] = "OK";
 }
 
 void CWebServer::Cmd_SystemReboot(Json::Value &root)
 {
 #ifdef WIN32
-	system("shutdown -r -f -t 1 -d up:125:1");
+	int ret=system("shutdown -r -f -t 1 -d up:125:1");
 #else
-	system("sudo shutdown -r now");
+	int ret=system("sudo shutdown -r now");
 #endif
-	root["status"] = "OK";
+	if (ret != 0)
+	{
+		_log.Log(LOG_ERROR, "Error executing reboot command. returned: %d", ret);
+		return;
+	}
 	root["title"] = "SystemReboot";
+	root["status"] = "OK";
 }
 
 void CWebServer::Cmd_ExcecuteScript(Json::Value &root)
@@ -2633,7 +2643,12 @@ void CWebServer::Cmd_ExcecuteScript(Json::Value &root)
 		ShellExecute(NULL, "open", scriptname.c_str(), strparm.c_str(), NULL, SW_SHOWNORMAL);
 #else
 		std::string lscript = scriptname + " " + strparm;
-		system(lscript.c_str());
+		int system(lscript.c_str());
+		if (ret != 0)
+		{
+			_log.Log(LOG_ERROR, "Error executing script command (%s). returned: %d", lscript.c_str(), ret);
+			return;
+		}
 #endif
 	}
 	else
@@ -2641,8 +2656,8 @@ void CWebServer::Cmd_ExcecuteScript(Json::Value &root)
 		//add script to background worker
 		m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1, scriptname, strparm));
 	}
-	root["status"] = "OK";
 	root["title"] = "ExecuteScript";
+	root["status"] = "OK";
 }
 
 void CWebServer::Cmd_GetCosts(Json::Value &root)
