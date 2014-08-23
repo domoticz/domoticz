@@ -73,32 +73,85 @@ private:
 	void HandleRType(const std::string &rtype, Json::Value &root);
 
 	//Commands
-	void CmdLoginCheck(Json::Value &root);
-	void CmdAddHardware(Json::Value &root);
-	void CmdUpdateHardware(Json::Value &root);
-	void DeleteHardware(Json::Value &root);
-	void WOLGetNodes(Json::Value &root);
-	void WOLAddNode(Json::Value &root);
-	void WOLUpdateNode(Json::Value &root);
-	void WOLRemoveNode(Json::Value &root);
-	void WOLClearNodes(Json::Value &root);
-	void SaveFibaroLinkConfig(Json::Value &root);
-	void GetFibaroLinkConfig(Json::Value &root);
-	void GetFibaroLinks(Json::Value &root);
-	void SaveFibaroLink(Json::Value &root);
-	void DeleteFibaroLink(Json::Value &root);
-	void GetDevicesForFibaroLink(Json::Value &root);
-	void GetDeviceValueOptions(Json::Value &root);
-	void GetDeviceValueOptionWording(Json::Value &root);
-	void DeleteUserVariable(Json::Value &root);
-	void SaveUserVariable(Json::Value &root);
-	void UpdateUserVariable(Json::Value &root);
-	void GetUserVariables(Json::Value &root);
-	void GetUserVariable(Json::Value &root);
+	void Cmd_LoginCheck(Json::Value &root);
+	void Cmd_AddHardware(Json::Value &root);
+	void Cmd_UpdateHardware(Json::Value &root);
+	void Cmd_DeleteHardware(Json::Value &root);
+	void Cmd_WOLGetNodes(Json::Value &root);
+	void Cmd_WOLAddNode(Json::Value &root);
+	void Cmd_WOLUpdateNode(Json::Value &root);
+	void Cmd_WOLRemoveNode(Json::Value &root);
+	void Cmd_WOLClearNodes(Json::Value &root);
+	void Cmd_SaveFibaroLinkConfig(Json::Value &root);
+	void Cmd_GetFibaroLinkConfig(Json::Value &root);
+	void Cmd_GetFibaroLinks(Json::Value &root);
+	void Cmd_SaveFibaroLink(Json::Value &root);
+	void Cmd_DeleteFibaroLink(Json::Value &root);
+	void Cmd_GetDevicesForFibaroLink(Json::Value &root);
+	void Cmd_GetDeviceValueOptions(Json::Value &root);
+	void Cmd_GetDeviceValueOptionWording(Json::Value &root);
+	void Cmd_DeleteUserVariable(Json::Value &root);
+	void Cmd_SaveUserVariable(Json::Value &root);
+	void Cmd_UpdateUserVariable(Json::Value &root);
+	void Cmd_GetUserVariables(Json::Value &root);
+	void Cmd_GetUserVariable(Json::Value &root);
+	void Cmd_AllowNewHardware(Json::Value &root);
+	void Cmd_GetLog(Json::Value &root);
+	void Cmd_AddPlan(Json::Value &root);
+	void Cmd_UpdatePlan(Json::Value &root);
+	void Cmd_DeletePlan(Json::Value &root);
+	void Cmd_GetUnusedPlanDevices(Json::Value &root);
+	void Cmd_AddPlanActiveDevice(Json::Value &root);
+	void Cmd_GetPlanDevices(Json::Value &root);
+	void Cmd_DeletePlanDevice(Json::Value &root);
+	void Cmd_SetPlanDeviceCoords(Json::Value &root);
+	void Cmd_DeleteAllPlanDevices(Json::Value &root);
+	void Cmd_ChangePlanOrder(Json::Value &root);
+	void Cmd_ChangePlanDeviceOrder(Json::Value &root);
+	void Cmd_GetVersion(Json::Value &root);
+	void Cmd_GetActualHistory(Json::Value &root);
+	void Cmd_GetNewHistory(Json::Value &root);
+	void Cmd_GetActiveTabs(Json::Value &root);
+	void Cmd_SendNotification(Json::Value &root);
+	void Cmd_EmailCameraSnapshot(Json::Value &root);
+	void Cmd_UpdateDevice(Json::Value &root);
+	void Cmd_SetThermostatState(Json::Value &root);
+	void Cmd_SystemShutdown(Json::Value &root);
+	void Cmd_SystemReboot(Json::Value &root);
+	void Cmd_ExcecuteScript(Json::Value &root);
+	void Cmd_GetCosts(Json::Value &root);
+	void Cmd_CheckForUpdate(Json::Value &root);
+	void Cmd_DownloadUpdate(Json::Value &root);
+	void Cmd_DownloadReady(Json::Value &root);
+	void Cmd_DeleteDatePoint(Json::Value &root);
 
 	//RTypes
 	void RType_HandleGraph(Json::Value &root);
-
+	void RType_LightLog(Json::Value &root);
+	void RType_Settings(Json::Value &root);
+	void RType_Events(Json::Value &root);
+	void RType_Hardware(Json::Value &root);
+	void RType_Devices(Json::Value &root);
+	void RType_Cameras(Json::Value &root);
+	void RType_Users(Json::Value &root);
+	void RType_Timers(Json::Value &root);
+	void RType_SceneTimers(Json::Value &root);
+	void RType_GetTransfers(Json::Value &root);
+	void RType_TransferDevice(Json::Value &root);
+	void RType_Notifications(Json::Value &root);
+	void RType_Schedules(Json::Value &root);
+	void RType_GetSharedUserDevices(Json::Value &root);
+	void RType_SetSharedUserDevices(Json::Value &root);
+	void RType_SetUsed(Json::Value &root);
+	void RType_DeleteDevice(Json::Value &root);
+	void RType_AddScene(Json::Value &root);
+	void RType_DeleteScene(Json::Value &root);
+	void RType_UpdateScene(Json::Value &root);
+	void RType_CreateVirtualSensor(Json::Value &root);
+	void RType_CustomLightIcons(Json::Value &root);
+	void RType_Plans(Json::Value &root);
+	void RType_FloorPlans(Json::Value &root);
+	void RType_Scenes(Json::Value &root);
 #ifdef WITH_OPENZWAVE
 	//ZWave
 	void ZWaveUpdateNode(Json::Value &root);
@@ -125,6 +178,8 @@ private:
 	void ZWaveSetUserCodeEnrollmentMode(Json::Value &root);
 	void ZWaveGetNodeUserCodes(Json::Value &root);
 	void ZWaveRemoveUserCode(Json::Value &root);
+	//RTypes
+	void RType_OpenZWaveNodes(Json::Value &root);
 #endif	
 	boost::shared_ptr<boost::thread> m_thread;
 	std::map < std::string, webserver_response_function > m_webcommands;

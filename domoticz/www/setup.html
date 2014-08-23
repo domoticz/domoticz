@@ -200,7 +200,9 @@
 				<h2><span data-i18n="AcceptNewHardware">Hardware/Devices</span>:</h2>
 				<table class="display" id="acceptnewhardwaretable" border="0" cellpadding="0" cellspacing="0">
 					<tr>
-						<td colspan="2"><input type="checkbox" id="AcceptNewHardware" name="AcceptNewHardware"/> <span data-i18n="AcceptNewHardwareDevices">Accept new Hardware Devices</span></td>
+						<td colspan="2">
+							<input type="checkbox" id="AcceptNewHardware" name="AcceptNewHardware"/> <span data-i18n="AcceptNewHardwareDevices">Accept new Hardware Devices</span> <a data-i18n="Allow for 5 Minutes" class="btn btn-danger" href="javascript:AllowNewHardware(5)">Allow for 5 Minutes</a>
+						</td>
 					</tr>
 					<tr>
 						<td colspan="2"><input type="checkbox" id="HideDisabledHardwareSensors" name="HideDisabledHardwareSensors"/> <span data-i18n="HideDisabledHardwareSensors">Hide Disabled Hardware Sensors</span></td>
@@ -587,6 +589,20 @@ function GetGeoLocation() {
         url: "https://maps.googleapis.com/maps/api/js?v=3&callback=googleMapsCallback&sensor=false",
         dataType: "script"
   });
+}
+
+function AllowNewHardware(minutes)
+{
+	$.ajax({
+		 url: "json.htm?type=command&param=allownewhardware&timeout=" + minutes,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			SwitchLayout('Log');
+			var msg=$.i18n('Allowing new sensors for ') + minutes + ' ' + $.i18n('Minutes');
+			ShowNotify(msg, 3000);
+		 }
+	});
 }
 
 function TestProwlNotification()

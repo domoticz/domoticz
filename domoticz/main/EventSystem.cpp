@@ -763,6 +763,8 @@ void CEventSystem::ProcessMinute()
 
 void CEventSystem::ProcessUserVariable(const unsigned long long varId)
 {
+	if (!m_bEnabled)
+		return;
 	boost::lock_guard<boost::mutex> l(eventMutex);
 	GetCurrentUserVariables();
 	EvaluateEvent("uservariable", varId);
@@ -780,6 +782,8 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 
 void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId)
 {
+	if (!m_bEnabled)
+		return;
 	std::stringstream lua_DirT;
 
 #ifdef WIN32

@@ -434,10 +434,10 @@ $(document).ready(function() {
 	</div>
 	<div id="toptextmonthgas" style="display:none;">
 		<a class="btnstylerev" onclick="ShowP1YearReportGas(0)" data-i18n="Back">Back</a>&nbsp;
-		<h1 id="theader">Usage this Month</h1>
+		<h1 id="theader" data-i18n="Usage this Month">Usage this Month</h1>
 		<br>
-		<span>Total Usage:</span> <span id="tu">-</span> <span id="munit">m3</span><br>
-		<span>Monthly Cost:</span> <span id="mc">-</span><br>
+		<span data-i18n="Total Usage">Total Usage</span>: <span id="tu">-</span> <span id="munit">m3</span><br>
+		<span data-i18n="Monthly Cost">Monthly Cost</span>: <span id="mc">-</span><br>
 		<br>
 	</div>
 	<div id="toptextyeargas" style="display:none;">
@@ -445,7 +445,7 @@ $(document).ready(function() {
 		<tr>
 		  <td align="left">
 			<a id="backbutton" class="btnstylerev" onclick="ShowUtilities()" data-i18n="Back">Back</a>&nbsp;
-			<h1 id="theader">Usage this Year</h1>
+			<h1 id="theader" data-i18n="Usage this Year">Usage this Year</h1>
 		  </td>
 		  <td align="right">
 				<span data-i18n="Year">Year</span>:
@@ -462,9 +462,9 @@ $(document).ready(function() {
 		</tr>
 		</table>
 		<br>
-		<span>Total Usage:</span> <span id="tu">-</span> <span id="munit">m3</span><br>
-		<span>Counter:</span> <span id="cntr">-</span><br>
-		<span>Year Cost:</span> <span id="mc">-</span><br>
+		<span data-i18n="Total Usage">Total Usage</span>: <span id="tu">-</span> <span id="munit">m3</span><br>
+		<span data-i18n="Counter">Counter</span>: <span id="cntr">-</span><br>
+		<span data-i18n="Year Cost">Year Cost</span>: <span id="mc">-</span><br>
 		<br>
 	</div>
 	<div id="monthreportviewgas" style="display:none;">
@@ -497,11 +497,11 @@ $(document).ready(function() {
 	</div>
 	<div id="toptextmonth" style="display:none;">
 		<a class="btnstylerev" onclick="ShowP1YearReport(0)" data-i18n="Back">Back</a>&nbsp;
-		<h1 id="theader">Usage this Month</h1>
+		<h1 id="theader" data-i18n="Usage this Month">Usage this Month</h1>
 		<br>
-		<span>Total Usage:</span> <span>T1:</span> <span id="tut1">-</span> kWh, <span>T2:</span> <span id="tut2">-</span> kWh, <span>Total:</span> <span id="tu">-</span> kWh<br>
-		<div id="dreturn" style="display:none;"><span>Total Return:</span> <span>T1:</span> <span id="trt1">-</span> kWh, <span>T2:</span> <span id="trt2">-</span> kWh, <span>Total:</span> <span id="tr">-</span> kWh<br></div>
-		<span>Monthly Cost:</span> <span id="mc">-</span><br>
+		<span data-i18n="Total Usage">Total Usage</span>: <span data-i18n="T1">T1</span>: <span id="tut1">-</span> kWh, <span data-i18n="T2">T2</span>: <span id="tut2">-</span> kWh, <span data-i18n="Total">Total</span>: <span id="tu">-</span> kWh<br>
+		<div id="dreturn" style="display:none;"><span data-i18n="Total Return">Total Return</span>: <span data-i18n="T1">T1</span>: <span id="trt1">-</span> kWh, <span data-i18n="T2">T2</span>: <span id="trt2">-</span> kWh, <span data-i18n="Total">Total</span>: <span id="tr">-</span> kWh<br></div>
+		<span data-i18n="Monthly Cost">Monthly Cost</span>: <span id="mc">-</span><br>
 		<br>
 	</div>
 	<div id="toptextyear" style="display:none;">
@@ -509,7 +509,7 @@ $(document).ready(function() {
 		<tr>
 		  <td align="left">
 			<a id="backbutton" class="btnstylerev" onclick="ShowUtilities()" data-i18n="Back">Back</a>&nbsp;
-			<h1 id="theader">Usage this Year</h1>
+			<h1 id="theader" data-i18n="Usage this Year">Usage this Year</h1>
 		  </td>
 		  <td align="right">
 				<span data-i18n="Year">Year</span>:
@@ -526,13 +526,13 @@ $(document).ready(function() {
 		</tr>
 		</table>
 		<br>
-		<span>Total Usage:</span> <span>T1:</span> <span id="tut1">-</span> kWh, <span>T2:</span> <span id="tut2">-</span> kWh, <span>Total:</span> <span id="tu">-</span> kWh<br>
-		<span>Counter:</span> <span>T1:</span> <span id="cntrt1">-</span>, <span>T2:</span> <span id="cntrt2">-</span><br>
+		<span data-i18n="Total Usage">Total Usage</span>: <span data-i18n="T1">T1</span>: <span id="tut1">-</span> kWh, <span data-i18n="T2">T2</span>: <span id="tut2">-</span> kWh, <span data-i18n="Total">Total</span>: <span id="tu">-</span> kWh<br>
+		<span data-i18n="Counter">Counter</span>: <span data-i18n="T1">T1</span>: <span id="cntrt1">-</span>, <span data-i18n="T2">T2</span>: <span id="cntrt2">-</span><br>
 		<div id="dreturn" style="display:none;">
-			<span>Total Return:</span> <span>R1:</span> <span id="trt1">-</span> kWh, <span>R2:</span> <span id="trt2">-</span> kWh, <span>Total:</span> <span id="tr">-</span> kWh<br>
-			<span>Counter Return:</span> <span>R1:</span> <span id="cntrr1">-</span>, <span>R2:</span> <span id="cntrr2">-</span><br>
+			<span data-i18n="Total Return">Total Return</span>: <span data-i18n="R1">R1</span>: <span id="trt1">-</span> kWh, <span data-i18n="R2">R2</span>: <span id="trt2">-</span> kWh, <span data-i18n="Total">Total</span>: <span id="tr">-</span> kWh<br>
+			<span data-i18n="Counter Return">Counter Return</span>: <span data-i18n="R1">R1</span>: <span id="cntrr1">-</span>, <span data-i18n="R2">R2</span>: <span id="cntrr2">-</span><br>
 		</div>
-		<span>Year Cost:</span> <span id="mc">-</span><br>
+		<span data-i18n="Year Cost">Year Cost</span>: <span id="mc">-</span><br>
 		<br>
 	</div>
 	<div id="monthreportview" style="display:none;">
@@ -540,15 +540,15 @@ $(document).ready(function() {
 			<thead>
 				<tr valign="middle">
 					<th width="30" align="right" data-i18n="Day">Day</th>
-					<th width="60" align="right">Usage T1</th>
-					<th width="60" align="right">Costs</th>
-					<th width="60" align="right">Usage T2</th>
-					<th width="60" align="right">Costs</th>
-					<th width="60" align="right">Return T1</th>
-					<th width="60" align="right">Costs</th>
-					<th width="60" align="right">Return T2</th>
-					<th width="60" align="right">Costs</th>
-					<th width="60" align="right">Total</th>
+					<th width="60" align="right" data-i18n="Usage T1">Usage T1</th>
+					<th width="60" align="right" data-i18n="Costs">Costs</th>
+					<th width="60" align="right" data-i18n="Usage T2">Usage T2</th>
+					<th width="60" align="right" data-i18n="Costs">Costs</th>
+					<th width="60" align="right" data-i18n="Return T1">Return T1</th>
+					<th width="60" align="right" data-i18n="Costs">Costs</th>
+					<th width="60" align="right" data-i18n="Return T2">Return T2</th>
+					<th width="60" align="right" data-i18n="Costs">Costs</th>
+					<th width="60" align="right" data-i18n="Total">Total</th>
 					<th width="40" align="right"><></th>
 				</tr>
 			</thead>
@@ -560,16 +560,16 @@ $(document).ready(function() {
 		<table class="display myrighttable" id="yearreport" border="0" cellpadding="0" cellspacing="0" width="100%">
 			<thead>
 				<tr valign="middle">
-					<th width="70" align="right">Month</th>
-					<th width="60" align="right">Usage T1</th>
-					<th width="50" align="right">Costs</th>
-					<th width="60" align="right">Usage T2</th>
-					<th width="50" align="right">Costs</th>
-					<th width="60" align="right">Return T1</th>
-					<th width="50" align="right">Costs</th>
-					<th width="60" align="right">Return T2</th>
-					<th width="50" align="right">Costs</th>
-					<th width="60" align="right">Total</th>
+					<th width="70" align="right" data-i18n="Month">Month</th>
+					<th width="60" align="right" data-i18n="Usage T1">Usage T1</th>
+					<th width="50" align="right" data-i18n="Costs">Costs</th>
+					<th width="60" align="right" data-i18n="Usage T2">Usage T2</th>
+					<th width="50" align="right" data-i18n="Costs">Costs</th>
+					<th width="60" align="right" data-i18n="Return T1">Return T1</th>
+					<th width="50" align="right" data-i18n="Costs">Costs</th>
+					<th width="60" align="right" data-i18n="Return T2">Return T2</th>
+					<th width="50" align="right" data-i18n="Costs">Costs</th>
+					<th width="60" align="right" data-i18n="Total">Total</th>
 					<th width="40" align="right"><></th>
 				</tr>
 			</thead>
@@ -641,7 +641,7 @@ $(document).ready(function() {
              <div class="navbar-inner">
                 <div class="container">
 					<a class="brand hidden-phone" href="javascript:SwitchLayout('Dashboard')"><h1>Domoticz</h1> <h2 id="appversion">*</h2></a>
-                        <ul class="nav" id="appnavbar" style="display:none;">
+                        <ul class="nav" id="appnavbar">
                             <li class="clDashboard"><a id="cDashboard" href="javascript:SwitchLayout('Dashboard')"><img src="images/desktop.png"> <span class="hidden-phone hidden-tablet" data-i18n="Dashboard">Dashboard</span></img></a></li>
                             <li class="divider-vertical clLightSwitches"></li>
 								<li class="clLightSwitches"><a id="cLightSwitches" href="javascript:SwitchLayout('LightSwitches')"><img src="images/lightbulb.png"> <span class="hidden-phone hidden-tablet" data-i18n="Switches">Switches</span></a></li>

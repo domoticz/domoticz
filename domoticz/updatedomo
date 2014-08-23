@@ -1,9 +1,40 @@
-#! /bin/bash
-svn update
-make
-# stop domoticz
-sudo service domoticz.sh stop
-echo "please standby... (waiting 8 seconds)"
-sleep 8
-sudo service domoticz.sh start
+#!/bin/sh
 
+SVN_SERVER="svn://svn.code.sf.net/p/domoticz/code/domoticz"
+
+echo "Checking the server revision..."
+SERVER_REVISION=`svn info $SVN_SERVER | grep Revision: | sed 's .\{10\}  '`
+echo "Server revision at $SERVER_REVISION"
+echo "Checking the working copy revision..."
+LOCAL_REVISION=`svn info | grep Revision: | sed 's .\{10\}  '`
+echo "Working copy revision at $LOCAL_REVISION"
+
+if [ "$SERVER_REVISION" -eq "$LOCAL_REVISION" ]
+then
+    echo "Domoticz is up to date. Nothing to do."
+    exit 1
+else
+        svn update
+        if [ $? -ne 0 ]
+        then
+                echo "svnupdate failed!";
+                exit 1
+        fi
+        cmake -DCMAKE_BUILD_TYPE=Release .
+        if [ $? -ne 0 ]
+        then
+                echo "CMake failed!";
+                exit 1
+        fi
+        make
+        if [ $? -ne 0 ]
+        then
+                echo "Compile failed!";
+                exit 1
+        fi
+		# stop domoticz
+		sudo service domoticz.sh stop
+		echo "Restarting Domoticz... (please standby, waiting 12 seconds)"
+		sleep 12
+		sudo service domoticz.sh start
+fi

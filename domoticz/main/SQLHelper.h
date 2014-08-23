@@ -182,8 +182,6 @@ public:
 	
 	void Lighting2GroupCmd(const std::string &ID, const unsigned char subType, const unsigned char GroupCmd);
 
-	bool NeedToUpdateHardwareDevice(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname);
-
 	void GetAddjustment(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, float &AddjValue, float &AddjMulti);
 	void GetAddjustment2(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, float &AddjValue, float &AddjMulti);
 
@@ -325,11 +323,12 @@ public:
 	bool HandleOnOffAction(const bool bIsOn, const std::string &OnAction, const std::string &OffAction);
 
 	std::vector<std::vector<std::string> > query(const std::string &szQuery);
-	std::string DeleteUserVariable(std::string idx);
-	std::string SaveUserVariable(std::string varname, std::string vartype, std::string varvalue);
-	std::string UpdateUserVariable(std::string idx, std::string varname, std::string vartype, std::string varvalue, bool eventtrigger);
+	std::string DeleteUserVariable(const std::string &idx);
+	std::string SaveUserVariable(const std::string &varname, const std::string &vartype, const std::string &varvalue);
+	std::string UpdateUserVariable(const std::string &idx, const std::string &varname, const std::string &vartype, const std::string &varvalue, const bool eventtrigger);
 	std::vector<std::vector<std::string> > GetUserVariables();
 
+	void AllowNewHardwareTimer(const int iTotMinutes);
 public:
 	std::string m_LastSwitchID;	//for learning command
 	unsigned long long m_LastSwitchRowID;
@@ -344,13 +343,15 @@ public:
 	int			m_ActiveTimerPlan;
 	bool		m_bDisableEventSystem;
 private:
-	boost::mutex m_sqlQueryMutex;
-	CURLEncode m_urlencoder;
-	sqlite3 *m_dbase;
-	sqlite3 *m_demo_dbase;
-	std::string m_dbase_name;
-	unsigned char m_sensortimeoutcounter;
+	boost::mutex	m_sqlQueryMutex;
+	CURLEncode		m_urlencoder;
+	sqlite3			*m_dbase;
+	sqlite3			*m_demo_dbase;
+	std::string		m_dbase_name;
+	unsigned char	m_sensortimeoutcounter;
 	std::map<unsigned long long,int> m_timeoutlastsend;
+	bool			m_bAcceptHardwareTimerActive;
+	int				m_iAcceptHardwareTimerCounter;
 
 	std::vector<_tTaskItem> m_background_task_queue;
 	boost::shared_ptr<boost::thread> m_background_task_thread;
@@ -390,10 +391,10 @@ private:
 	void AddCalendarUpdatePercentage();
 	void AddCalendarUpdateFan();
 	void CleanupShortLog();
-	std::string CheckUserVariable(int vartype, std::string varvalue);
-	std::string CheckUserVariableName(std::string varname);
-	bool CheckDate(const std::string& s, int& d, int& m, int& y);
-	bool CheckTime(const std::string sTime);
+	std::string CheckUserVariable(const int vartype, const std::string &varvalue);
+	std::string CheckUserVariableName(const std::string &varname);
+	bool CheckDate(const std::string &sDate, int &d, int &m, int &y);
+	bool CheckTime(const std::string &sTime);
 
 
 };

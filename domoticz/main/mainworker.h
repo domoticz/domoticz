@@ -96,8 +96,6 @@ public:
 
 	tcp::server::CTCPServer m_sharedserver;
 private:
-
-	void PrintDeviceName(const std::string &devname);
 	void GetRaspberryPiTemperature();
 	void HandleAutomaticBackups();
 	unsigned long long PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);
@@ -106,6 +104,7 @@ private:
 		unsigned long long SceneRowID;
 		std::string switchcmd;
 	};
+	std::string m_LastDeviceName;
 
 	std::map<std::string, time_t > m_componentheartbeats;
 	boost::mutex m_heartbeatmutex;

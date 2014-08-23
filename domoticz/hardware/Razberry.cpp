@@ -727,17 +727,18 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 	case ZDTYPE_SWITCH_DIMMER:
 		{
 			//switch
+			int intValue = 0;
 			if (pDevice->commandClassID==64) //Thermostat Mode
 			{
 				int iValue=obj["value"].asInt();
 				if (iValue==0)
-					pDevice->intvalue=0;
+					intValue = 0;
 				else
-					pDevice->intvalue=255;
+					intValue = 255;
 			}
 			else if (pDevice->commandClassID==43) //Switch Scene
 			{
-				pDevice->intvalue=255;
+				intValue = 255;
 			}
 			else
 			{
@@ -751,12 +752,22 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 				}
 
 				if (vstring=="true")
-					pDevice->intvalue=255;
+					intValue = 255;
 				else if (vstring=="false")
-					pDevice->intvalue=0;
+					intValue = 0;
 				else
-					pDevice->intvalue=atoi(vstring.c_str());
+					intValue = atoi(vstring.c_str());
 			}
+			if (pDevice->intvalue == intValue)
+			{
+				//Don't send same value twice
+				pDevice->lastreceived = atime;
+				pDevice->sequence_number += 1;
+				if (pDevice->sequence_number == 0)
+					pDevice->sequence_number = 1;
+				return;
+			}
+			pDevice->intvalue = intValue;
 		}
 		break;
 	case ZDTYPE_SENSOR_POWER:

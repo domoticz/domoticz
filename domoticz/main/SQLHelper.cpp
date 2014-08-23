@@ -490,6 +490,8 @@ CSQLHelper::CSQLHelper(void)
 	m_windunit=WINDUNIT_MS;
 	m_tempunit=TEMPUNIT_C;
 	SetUnitsAndScale();
+	m_bAcceptHardwareTimerActive=false;
+	m_iAcceptHardwareTimerCounter=0;
 
 	SetDatabaseName("domoticz.db");
 }
@@ -1275,6 +1277,18 @@ void CSQLHelper::Do_Work()
 		//sleep 1 second
 		sleep_seconds(1);
 
+		if (m_bAcceptHardwareTimerActive)
+		{
+			m_iAcceptHardwareTimerCounter--;
+			if (m_iAcceptHardwareTimerCounter <= 0)
+			{
+				m_bAcceptHardwareTimerActive = false;
+				m_bAcceptNewHardware = false;
+				UpdatePreferencesVar("AcceptNewHardware", 0);
+				_log.Log(LOG_STATUS, "Receiving of new sensors disabled!...");
+			}
+		}
+
 		if (m_background_task_queue.size()>0)
 		{
 			_items2do.clear();
@@ -1499,9 +1513,9 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 
 unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction)
 {
-	if (!NeedToUpdateHardwareDevice(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue,devname))
-		return -1;
 	unsigned long long devRowID=UpdateValueInt(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue,devname,bUseOnOffAction);
+	if (devRowID == -1)
+		return -1;
 
 	bool bIsLightSwitch=false;
 	switch (devType)
@@ -1712,6 +1726,13 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 	if (result.size()==0)
 	{
 		//Insert
+
+		if (!m_bAcceptNewHardware)
+		{
+			devname = "Ignored";
+			return -1; //We do not allow new devices
+		}
+
 		devname="Unknown";
 		sprintf(szTmp,
 			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue) "
@@ -1979,55 +2000,6 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 	m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, 0);
 	return ulID;
 }
-
-//Special case for Z-Wave, as we receive the same update as we send it
-//also check if we want new devices, if not return false
-bool CSQLHelper::NeedToUpdateHardwareDevice(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname)
-{
-	//Check if nValue and sValue are the same, if true, then just update the date
-	std::vector<std::vector<std::string> > result;
-	char szTmp[400];
-	sprintf(szTmp,"SELECT ID, nValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
-	result=query(szTmp);
-	if (result.size()<1)
-	{
-		//new device
-		return (m_bAcceptNewHardware==true);
-	}
-
-	if (devType!=pTypeLighting2)
-		return true;
-
-	CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HardwareID);
-	if (!pHardware)
-		return true;
-	if (pHardware->HwdType!=HTYPE_RazberryZWave)
-		return true;
-
-	std::string idx=result[0][0];
-	int oldnValue=atoi(result[0][1].c_str());
-	bool bIsSame=(oldnValue==nValue);
-	if (!bIsSame)
-		return true;
-
-	time_t now = time(0);
-	struct tm ltime;
-	localtime_r(&now,&ltime);
-
-	unsigned long long ulID;
-	std::stringstream s_str( idx );
-	s_str >> ulID;
-
-	sprintf(szTmp,
-		"UPDATE DeviceStatus SET sValue='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID = %llu)",
-		sValue,
-		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
-		ulID);
-	result = query(szTmp);
-
-	return false; 
-}
-
 
 bool CSQLHelper::GetLastValue(const int HardwareID, const char* DeviceID, const unsigned char unit, const unsigned char devType, const unsigned char subType, int &nValue, std::string &sValue, struct tm &LastUpdateTime)
 {
@@ -6267,7 +6239,7 @@ void CSQLHelper::FixDaylightSaving()
 
 }
 
-std::string CSQLHelper::DeleteUserVariable(std::string idx)
+std::string CSQLHelper::DeleteUserVariable(const std::string &idx)
 {
 	std::vector<std::vector<std::string> > result;
 	char szTmp[300];
@@ -6277,7 +6249,7 @@ std::string CSQLHelper::DeleteUserVariable(std::string idx)
 	return "OK";
 
 }
-std::string CSQLHelper::SaveUserVariable(std::string varname, std::string vartype, std::string varvalue)
+std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::string &vartype, const std::string &varvalue)
 {
 	int typei = atoi(vartype.c_str());
 	std::string dupeName = CheckUserVariableName(varname);
@@ -6314,7 +6286,7 @@ std::string CSQLHelper::SaveUserVariable(std::string varname, std::string vartyp
 	return "OK";
 
 }
-std::string CSQLHelper::UpdateUserVariable(std::string idx, std::string varname, std::string vartype, std::string varvalue, bool eventtrigger)
+std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::string &varname, const std::string &vartype, const std::string &varvalue, const bool eventtrigger)
 {
 	int typei = atoi(vartype.c_str());
 	std::string formatError = CheckUserVariable(typei, varvalue);
@@ -6360,7 +6332,7 @@ std::string CSQLHelper::UpdateUserVariable(std::string idx, std::string varname,
 
 }
 
-std::string CSQLHelper::CheckUserVariableName(std::string varname)
+std::string CSQLHelper::CheckUserVariableName(const std::string &varname)
 {
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
@@ -6374,7 +6346,7 @@ std::string CSQLHelper::CheckUserVariableName(std::string varname)
 }
 
 
-std::string CSQLHelper::CheckUserVariable(int vartype, std::string varvalue)
+std::string CSQLHelper::CheckUserVariable(const int vartype, const std::string &varvalue)
 {
 
 	if (varvalue.size() > 200) {
@@ -6425,8 +6397,9 @@ std::vector<std::vector<std::string> > CSQLHelper::GetUserVariables()
 
 }
 
-bool CSQLHelper::CheckDate(const std::string& s, int& d, int& m, int& y){
-	std::istringstream is(s);
+bool CSQLHelper::CheckDate(const std::string &sDate, int& d, int& m, int& y)
+{
+	std::istringstream is(sDate);
 	char delimiter;
 	if (is >> d >> delimiter >> m >> delimiter >> y) {
 		struct tm t = { 0 };
@@ -6445,7 +6418,8 @@ bool CSQLHelper::CheckDate(const std::string& s, int& d, int& m, int& y){
 	return false;
 }
 
-bool CSQLHelper::CheckTime(const std::string sTime){
+bool CSQLHelper::CheckTime(const std::string &sTime)
+{
 	
 	int iSemiColon = sTime.find(':');
 	if ((iSemiColon == std::string::npos) || (iSemiColon < 1) || (iSemiColon > 2) || (iSemiColon == sTime.length()-1)) return false;
@@ -6454,3 +6428,12 @@ bool CSQLHelper::CheckTime(const std::string sTime){
 	if (atoi(sTime.substr(iSemiColon + 1).c_str()) >= 60) return false;
 	return true;
 }
+
+void CSQLHelper::AllowNewHardwareTimer(const int iTotMinutes)
+{
+	m_iAcceptHardwareTimerCounter = iTotMinutes * 60;
+	m_bAcceptNewHardware = true;
+	m_bAcceptHardwareTimerActive = true;
+	_log.Log(LOG_STATUS, "New sensors allowed for %d minutes...", iTotMinutes);
+}
+

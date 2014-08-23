@@ -90,6 +90,10 @@ Version 1.0.xxxx (August xxth 2014)
 - Implemented: Toon Flame State
 - Implemented: Web Update now also supported for linux_x86_64 systems (Ubuntu)
 - Changed: Security Panel (thanks to The Duke!)
+- Implemented: Application Settings, option to allow receiving of new sensors for 5 minutes (button)
+- Changed: Not logging sensors that are ignored
+- Changed: When receiving of new sensors is disabled, it's now possible to add a manual light/switch
+- Implemented: It is now logged which user issued a switch/security reset/setpoint/thermostat state change command
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

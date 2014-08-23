@@ -1211,15 +1211,12 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 
 	size_t Len=pRXCommand[0]+1;
 
-	// convert now to string form
-	char *szDate = asctime(localtime(&now));
-
 	int HwdID = pHardware->m_HwdID;
 	((CDomoticzHardwareBase *)pHardware)->SetHeartbeatReceived();
 
 #ifdef DEBUG_RECEIVE
 	std::stringstream sstream;
-	sstream << szDate << "HwdID: " << HwdID << " (" << pHardware->Name << ")" << " RX: Len: " << std::dec << Len << " ";
+	sstream << "HwdID: " << HwdID << " (" << pHardware->Name << ")" << " RX: Len: " << std::dec << Len << " ";
 
 	for (size_t ii=0; ii<Len; ii++)
 	{
@@ -1228,15 +1225,10 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		sstream << HEX((unsigned char)pRXCommand[ii]);
 	}
 	_log.Log(LOG_NORM,"%s",sstream.str().c_str());
-#else
-	szDate[strlen(szDate)-1]=0;
-
-	WriteMessageStart();
-
-	std::stringstream sTmp;
-	sTmp << szDate << " (" << pHardware->Name << ") ";
-	WriteMessage(sTmp.str().c_str(),false);
 #endif
+	// convert now to string form
+	char *szDate = asctime(localtime(&now));
+	szDate[strlen(szDate) - 1] = 0;
 
 	unsigned long long DeviceRowIdx=-1;
 	tcp::server::CTCPClient *pClient2Ignore=NULL;
@@ -1285,191 +1277,144 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		switch (pRXCommand[1])
 		{
 		case pTypeInterfaceMessage:
-			WriteMessage("Interface Message");
 			DeviceRowIdx=decode_InterfaceMessage(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRecXmitMessage:
-			WriteMessage("Receiver/Transmitter Message");
 			DeviceRowIdx=decode_RecXmitMessage(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeUndecoded:
-			WriteMessage("Undecoded RF Message");
 			DeviceRowIdx=decode_UNDECODED(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting1:
-			WriteMessage("Lighting 1",false);
 			DeviceRowIdx=decode_Lighting1(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting2:
-			WriteMessage("Lighting 2",false);
 			DeviceRowIdx=decode_Lighting2(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting3:
-			WriteMessage("Lighting 3",false);
 			DeviceRowIdx=decode_Lighting3(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting4:
-			WriteMessage("Lighting 4",false);
 			DeviceRowIdx=decode_Lighting4(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting5:
-			WriteMessage("Lighting 5",false);
 			DeviceRowIdx=decode_Lighting5(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting6:
-			WriteMessage("Lighting 6",false);
 			DeviceRowIdx=decode_Lighting6(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeCurtain:
-			WriteMessage("Curtain",false);	//only transmit
 			DeviceRowIdx=decode_Curtain(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeBlinds:
-			WriteMessage("Blinds",false);
 			DeviceRowIdx=decode_BLINDS1(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRFY:
-			WriteMessage("RFY",false);
 			DeviceRowIdx=decode_RFY(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeSecurity1:
-			WriteMessage("Security 1",false);
 			DeviceRowIdx=decode_Security1(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeCamera:
-			WriteMessage("Camera",false);
 			DeviceRowIdx=decode_Camera1(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRemote:
-			WriteMessage("Remote control & IR",false);
 			DeviceRowIdx=decode_Remote(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeThermostat: //own type
-			WriteMessage("Thermostat",false);
 			DeviceRowIdx=decode_Thermostat(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeThermostat1:
-			WriteMessage("Thermostat 1",false);
 			DeviceRowIdx=decode_Thermostat1(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeThermostat2:
-			WriteMessage("Thermostat 2",false);
 			DeviceRowIdx=decode_Thermostat2(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeThermostat3:
-			WriteMessage("Thermostat 3",false);
 			DeviceRowIdx=decode_Thermostat3(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeTEMP:
-			WriteMessage("Temperature",false);
 			DeviceRowIdx=decode_Temp(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeHUM:
-			WriteMessage("Humidity",false);
 			DeviceRowIdx=decode_Hum(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeTEMP_HUM:
-			WriteMessage("Temperature + Humidity",false);
 			DeviceRowIdx=decode_TempHum(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeTEMP_RAIN:
-			WriteMessage("Temperature + Rain",false);
 			DeviceRowIdx=decode_TempRain(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeBARO:
-			WriteMessage("Barometric",false);
 			DeviceRowIdx=decode_Baro(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeTEMP_HUM_BARO:
-			WriteMessage("Temperature + Humidity + Barometric",false);
 			DeviceRowIdx=decode_TempHumBaro(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeTEMP_BARO:
-			WriteMessage("Temperature + Barometric",false);
 			DeviceRowIdx=decode_TempBaro(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRAIN:
-			WriteMessage("Rain Meter",false);
 			DeviceRowIdx=decode_Rain(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeWIND:
-			WriteMessage("Wind Meter",false);
 			DeviceRowIdx=decode_Wind(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeUV:
-			WriteMessage("UV Meter",false);
 			DeviceRowIdx=decode_UV(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeDT:
-			WriteMessage("Date & Time",false);
 			DeviceRowIdx=decode_DateTime(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeCURRENT:
-			WriteMessage("Current Meter",false);
 			DeviceRowIdx=decode_Current(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeENERGY:
-			WriteMessage("Energy Meter",false);
 			DeviceRowIdx=decode_Energy(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeCURRENTENERGY:
-			WriteMessage("Current/Energy Meter",false);
 			DeviceRowIdx=decode_Current_Energy(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeGAS:
-			WriteMessage("Gas Meter",false);
 			DeviceRowIdx=decode_Gas(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeWATER:
-			WriteMessage("Water Meter",false);
 			DeviceRowIdx=decode_Water(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeWEIGHT:
-			WriteMessage("Weight Scales",false);
 			DeviceRowIdx=decode_Weight(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRFXSensor:
-			WriteMessage("RFXSensor",false);
 			DeviceRowIdx=decode_RFXSensor(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRFXMeter:
-			WriteMessage("RFXMeter",false);
 			DeviceRowIdx=decode_RFXMeter(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeP1Power:
-			WriteMessage("P1 Smart Meter Power",false);
 			DeviceRowIdx=decode_P1MeterPower(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeP1Gas:
-			WriteMessage("P1 Smart Meter Gas",false);
 			DeviceRowIdx=decode_P1MeterGas(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeUsage:
-			WriteMessage("Usage Meter",false);
 			DeviceRowIdx=decode_Usage(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeYouLess:
-			WriteMessage("YouLess Meter",false);
 			DeviceRowIdx=decode_YouLessMeter(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeAirQuality:
-			WriteMessage("AirQuality Meter",false);
 			DeviceRowIdx=decode_AirQuality(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRego6XXTemp:
-			WriteMessage("Rego6XX temp",false);
 			DeviceRowIdx=decode_Rego6XXTemp(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRego6XXValue:
-			WriteMessage("Rego6XX value",false);
 			DeviceRowIdx=decode_Rego6XXValue(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeFS20:
-			WriteMessage("FS20");
 			DeviceRowIdx=decode_FS20(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLux:
-			WriteMessage("Lux Meter",false);
 			DeviceRowIdx=decode_Lux(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeGeneral:
@@ -1477,46 +1422,47 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 				const _tGeneralDevice *pMeter=(const _tGeneralDevice*)pRXCommand;
 				unsigned char devType=pMeter->type;
 				unsigned char subType=pMeter->subtype;
-				WriteMessage("General/",false);
-				WriteMessage(RFX_Type_SubType_Desc(devType,subType),false);
 				DeviceRowIdx=decode_General(pHardware, HwdID, (tRBUF *)pRXCommand);
 			}
 			break;
 		case pTypeChime:
-			WriteMessage("Chime",false);
 			DeviceRowIdx=decode_Chime(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeBBQ:
-			WriteMessage("BBQ",false);
 			DeviceRowIdx=decode_BBQ(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypePOWER:
-			WriteMessage("Power Current/Energy Meter",false);
 			DeviceRowIdx=decode_Power(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLimitlessLights:
-			WriteMessage("Limitless Lights",false);
 			DeviceRowIdx=decode_LimitlessLights(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		default:
 			_log.Log(LOG_ERROR,"UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
-			break;
+			return;
 		}
 	}
-	WriteMessageEnd();
-	if (DeviceRowIdx!=-1)
+	if (DeviceRowIdx == -1)
+		return;
+
+	std::stringstream sTmp;
+	std::string sdevicetype = RFX_Type_Desc(pRXCommand[1], 1);
+	if (pRXCommand[1] == pTypeGeneral)
 	{
-		//Send to connected Sharing Users
-		//Rob
-		m_sharedserver.SendToAll(DeviceRowIdx,(const char*)pRXCommand,pRXCommand[0]+1,pClient2Ignore);
-
-		//send via data push
-		m_datapush.DoWork(DeviceRowIdx);
+		const _tGeneralDevice *pMeter = (const _tGeneralDevice*)pRXCommand;
+		sdevicetype += "/" + std::string(RFX_Type_SubType_Desc(pMeter->type, pMeter->subtype));
 	}
+	sTmp << szDate << " (" << pHardware->Name << ") " << sdevicetype << " (" << m_LastDeviceName << ")";
+	WriteMessageStart();
+	WriteMessage(sTmp.str().c_str());
+	WriteMessageEnd();
+
+	//Send to connected Sharing Users
+	m_sharedserver.SendToAll(DeviceRowIdx,(const char*)pRXCommand,pRXCommand[0]+1,pClient2Ignore);
+
+	//send via data push
+	m_datapush.DoWork(DeviceRowIdx);
 }
-
-
-
 
 unsigned long long MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
@@ -1913,8 +1859,6 @@ unsigned char MainWorker::get_BateryLevel(const CDomoticzHardwareBase *pHardware
 unsigned long long MainWorker::decode_Rain(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeRAIN;
 	unsigned char subType=pResponse->RAIN.subtype;
 	std::string ID;
@@ -1927,13 +1871,15 @@ unsigned long long MainWorker::decode_Rain(const CDomoticzHardwareBase *pHardwar
 	int Rainrate=(pResponse->RAIN.rainrateh * 256) + pResponse->RAIN.rainratel;
 	float TotalRain=float((pResponse->RAIN.raintotal1 * 65535) + (pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3) / 10.0f;
 	sprintf(szTmp,"%d;%.1f",Rainrate,TotalRain);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	m_sql.CheckAndHandleRainNotification(HwdID, ID, Unit, devType, subType, NTYPE_RAIN, TotalRain);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (subType)
 		{
 		case sTypeRAIN1:
@@ -1986,6 +1932,7 @@ unsigned long long MainWorker::decode_Rain(const CDomoticzHardwareBase *pHardwar
 		WriteMessage(szTmp);
 
 		decode_BateryLevel(pResponse->RAIN.subtype==sTypeRAIN1, pResponse->RAIN.battery_level & 0x0F);
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -1995,8 +1942,6 @@ unsigned long long MainWorker::decode_Rain(const CDomoticzHardwareBase *pHardwar
 unsigned long long MainWorker::decode_Wind(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[300];
-	std::string devname;
-
 	unsigned char devType=pTypeWIND;
 	unsigned char subType=pResponse->WIND.subtype;
 	unsigned short windID=(pResponse->WIND.id1*256) + pResponse->WIND.id2;
@@ -2132,8 +2077,9 @@ unsigned long long MainWorker::decode_Wind(const CDomoticzHardwareBase *pHardwar
 	}
 
 	sprintf(szTmp,"%.2f;%s;%d;%d;%.1f;%.1f",dDirection,strDirection.c_str(),intSpeed,intGust,temp,chill);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	float wspeedms=float(intSpeed)/10.0f;
 	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_WIND, wspeedms);
@@ -2143,6 +2089,7 @@ unsigned long long MainWorker::decode_Wind(const CDomoticzHardwareBase *pHardwar
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->WIND.subtype)
 		{
 		case sTypeWIND1:
@@ -2208,6 +2155,7 @@ unsigned long long MainWorker::decode_Wind(const CDomoticzHardwareBase *pHardwar
 		WriteMessage(szTmp);
 
 		decode_BateryLevel(pResponse->WIND.subtype==sTypeWIND3, pResponse->WIND.battery_level & 0x0F);
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -2215,8 +2163,6 @@ unsigned long long MainWorker::decode_Wind(const CDomoticzHardwareBase *pHardwar
 unsigned long long MainWorker::decode_Temp(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeTEMP;
 	unsigned char subType=pResponse->TEMP.subtype;
 	sprintf(szTmp,"%d",(pResponse->TEMP.id1 * 256) + pResponse->TEMP.id2);
@@ -2270,7 +2216,9 @@ unsigned long long MainWorker::decode_Temp(const CDomoticzHardwareBase *pHardwar
 	temp+=AddjValue;
 
 	sprintf(szTmp,"%.1f",temp);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	unsigned char humidity=0;
 	if (pResponse->TEMP.subtype==sTypeTEMP5)
@@ -2288,18 +2236,18 @@ unsigned long long MainWorker::decode_Temp(const CDomoticzHardwareBase *pHardwar
 			humidity=atoi(result[0][0].c_str());
 			unsigned char humidity_status=atoi(result[0][1].c_str());
 			sprintf(szTmp,"%.1f;%d;%d",temp,humidity,humidity_status);
-			DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,SignalLevel,BatteryLevel,0,szTmp,devname);
+			DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,SignalLevel,BatteryLevel,0,szTmp,m_LastDeviceName);
 			m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, 2, pTypeTEMP_HUM, sTypeTH_LC_TC, temp, humidity, true, true);
 			float dewpoint=(float)CalculateDewPoint(temp,humidity);
 			m_sql.CheckAndHandleDewPointNotification(HwdID, ID, 2, pTypeTEMP_HUM, sTypeTH_LC_TC,temp,dewpoint);
 		}
 	}
-	PrintDeviceName(devname);
 
 	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, humidity, true, false);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->TEMP.subtype)
 		{
 		case sTypeTEMP1:
@@ -2365,6 +2313,7 @@ unsigned long long MainWorker::decode_Temp(const CDomoticzHardwareBase *pHardwar
 			WriteMessage("Battery       = Low");
 		else
 			WriteMessage("Battery       = OK");
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -2372,8 +2321,6 @@ unsigned long long MainWorker::decode_Temp(const CDomoticzHardwareBase *pHardwar
 unsigned long long MainWorker::decode_Hum(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeHUM;
 	unsigned char subType=pResponse->HUM.subtype;
 	sprintf(szTmp,"%d",(pResponse->HUM.id1 * 256) + pResponse->HUM.id2);
@@ -2406,7 +2353,9 @@ unsigned long long MainWorker::decode_Hum(const CDomoticzHardwareBase *pHardware
 	}
 
 	sprintf(szTmp,"%d",pResponse->HUM.humidity_status);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,humidity,szTmp,devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,humidity,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	float temp=0;
 	if (pResponse->HUM.subtype==sTypeHUM1)
@@ -2425,18 +2374,18 @@ unsigned long long MainWorker::decode_Hum(const CDomoticzHardwareBase *pHardware
 			m_sql.GetAddjustment(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,AddjValue,AddjMulti);
 			temp+=AddjValue;
 			sprintf(szTmp,"%.1f;%d;%d",temp,humidity,pResponse->HUM.humidity_status);
-			DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,SignalLevel,BatteryLevel,0,szTmp,devname);
+			DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,SignalLevel,BatteryLevel,0,szTmp,m_LastDeviceName);
 			m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, 2, pTypeTEMP_HUM, sTypeTH_LC_TC, temp, humidity, true, true);
 			float dewpoint=(float)CalculateDewPoint(temp,humidity);
 			m_sql.CheckAndHandleDewPointNotification(HwdID, ID, 2, pTypeTEMP_HUM, sTypeTH_LC_TC,temp,dewpoint);
 		}
 	}
-	PrintDeviceName(devname);
 
 	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, humidity, false, true);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->HUM.subtype)
 		{
 		case sTypeHUM1:
@@ -2482,6 +2431,7 @@ unsigned long long MainWorker::decode_Hum(const CDomoticzHardwareBase *pHardware
 			WriteMessage("Battery       = Low");
 		else
 			WriteMessage("Battery       = OK");
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -2489,8 +2439,6 @@ unsigned long long MainWorker::decode_Hum(const CDomoticzHardwareBase *pHardware
 unsigned long long MainWorker::decode_TempHum(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeTEMP_HUM;
 	unsigned char subType=pResponse->TEMP_HUM.subtype;
 	std::string ID;
@@ -2574,8 +2522,9 @@ unsigned long long MainWorker::decode_TempHum(const CDomoticzHardwareBase *pHard
 		Humidity=0;
 */
 	sprintf(szTmp,"%.1f;%d;%d",temp,Humidity,HumidityStatus);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, Humidity, true, true);
 
@@ -2584,6 +2533,7 @@ unsigned long long MainWorker::decode_TempHum(const CDomoticzHardwareBase *pHard
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->TEMP_HUM.subtype)
 		{
 		case sTypeTH1:
@@ -2689,6 +2639,7 @@ unsigned long long MainWorker::decode_TempHum(const CDomoticzHardwareBase *pHard
 		WriteMessage(szTmp);
 
 		decode_BateryLevel(pResponse->TEMP_HUM.subtype == sTypeTH8,pResponse->TEMP_HUM.battery_level);
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -2696,8 +2647,6 @@ unsigned long long MainWorker::decode_TempHum(const CDomoticzHardwareBase *pHard
 unsigned long long MainWorker::decode_TempHumBaro(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeTEMP_HUM_BARO;
 	unsigned char subType=pResponse->TEMP_HUM_BARO.subtype;
 	sprintf(szTmp,"%d",(pResponse->TEMP_HUM_BARO.id1 * 256) + pResponse->TEMP_HUM_BARO.id2);
@@ -2779,8 +2728,9 @@ unsigned long long MainWorker::decode_TempHumBaro(const CDomoticzHardwareBase *p
 		}
 		sprintf(szTmp,"%.1f;%d;%d;%d;%d",temp,Humidity,HumidityStatus, barometer,forcast);
 	}
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	//calculate Altitude
 	//float seaLevelPressure=101325.0f;
@@ -2795,6 +2745,7 @@ unsigned long long MainWorker::decode_TempHumBaro(const CDomoticzHardwareBase *p
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->TEMP_HUM_BARO.subtype)
 		{
 		case sTypeTHB1:
@@ -2877,6 +2828,7 @@ unsigned long long MainWorker::decode_TempHumBaro(const CDomoticzHardwareBase *p
 			WriteMessage("Battery       = Low");
 		else
 			WriteMessage("Battery       = OK");
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -2884,8 +2836,6 @@ unsigned long long MainWorker::decode_TempHumBaro(const CDomoticzHardwareBase *p
 unsigned long long MainWorker::decode_TempBaro(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeTEMP_BARO;
 	unsigned char subType=sTypeBMP085;
 	_tTempBaro *pTempBaro=(_tTempBaro*)pResponse;
@@ -2916,14 +2866,16 @@ unsigned long long MainWorker::decode_TempBaro(const CDomoticzHardwareBase *pHar
 	fbarometer+=AddjValue;
 
 	sprintf(szTmp,"%.1f;%.1f;%d;%.2f",temp,fbarometer,forcast,pTempBaro->altitude);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, 0, true, false);
 	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_BARO, fbarometer);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->TEMP_HUM_BARO.subtype)
 		{
 		case sTypeBMP085:
@@ -2967,6 +2919,7 @@ unsigned long long MainWorker::decode_TempBaro(const CDomoticzHardwareBase *pHar
 			sprintf(szTmp,"Altitude   = %.2f meter", pTempBaro->altitude);
 			WriteMessage(szTmp);
 		}
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -2974,8 +2927,6 @@ unsigned long long MainWorker::decode_TempBaro(const CDomoticzHardwareBase *pHar
 unsigned long long MainWorker::decode_TempRain(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 
 	//We are (also) going to split this device into two separate sensors (temp + rain)
 
@@ -3017,19 +2968,21 @@ unsigned long long MainWorker::decode_TempRain(const CDomoticzHardwareBase *pHar
 	float TotalRain=float((pResponse->TEMP_RAIN.raintotal1 * 256) + pResponse->TEMP_RAIN.raintotal2) / 10.0f;
 
 	sprintf(szTmp,"%.1f;%.1f",temp,TotalRain);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	sprintf(szTmp,"%.1f",temp);
-	unsigned long long DevRowIdxTemp=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,pTypeTEMP,sTypeTEMP3,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
+	unsigned long long DevRowIdxTemp=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,pTypeTEMP,sTypeTEMP3,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
 	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, pTypeTEMP, sTypeTEMP3, temp, 0, true, false);
 
 	sprintf(szTmp,"%d;%.1f",0,TotalRain);
-	unsigned long long DevRowIdxRain=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,pTypeRAIN,sTypeRAIN3,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
+	unsigned long long DevRowIdxRain=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,pTypeRAIN,sTypeRAIN3,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
 	m_sql.CheckAndHandleRainNotification(HwdID, ID, Unit, pTypeRAIN, sTypeRAIN3, NTYPE_RAIN, TotalRain);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->TEMP_RAIN.subtype)
 		{
 		case sTypeTR1:
@@ -3053,6 +3006,7 @@ unsigned long long MainWorker::decode_TempRain(const CDomoticzHardwareBase *pHar
 			WriteMessage("Battery       = Low");
 		else
 			WriteMessage("Battery       = OK");
+		WriteMessageEnd();
 	}
 
 	return DevRowIdx;
@@ -3061,7 +3015,6 @@ unsigned long long MainWorker::decode_TempRain(const CDomoticzHardwareBase *pHar
 unsigned long long MainWorker::decode_UV(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
 	unsigned char devType=pTypeUV;
 	unsigned char subType=pResponse->UV.subtype;
 	std::string ID;
@@ -3105,8 +3058,9 @@ unsigned long long MainWorker::decode_UV(const CDomoticzHardwareBase *pHardware,
 	}
 
 	sprintf(szTmp,"%.1f;%.1f",Level,temp);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, 0, true, false);
 
@@ -3114,6 +3068,7 @@ unsigned long long MainWorker::decode_UV(const CDomoticzHardwareBase *pHardware,
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->UV.subtype)
 		{
 		case sTypeUV1:
@@ -3163,6 +3118,7 @@ unsigned long long MainWorker::decode_UV(const CDomoticzHardwareBase *pHardware,
 			WriteMessage("Battery       = Low");
 		else
 			WriteMessage("Battery       = OK");
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -3170,8 +3126,6 @@ unsigned long long MainWorker::decode_UV(const CDomoticzHardwareBase *pHardware,
 unsigned long long MainWorker::decode_Lighting1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeLighting1;
 	unsigned char subType=pResponse->LIGHTING1.subtype;
 	sprintf(szTmp,"%d", pResponse->LIGHTING1.housecode);
@@ -3181,11 +3135,13 @@ unsigned long long MainWorker::decode_Lighting1(const CDomoticzHardwareBase *pHa
 	unsigned char SignalLevel=pResponse->LIGHTING1.rssi;
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
 
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->LIGHTING1.subtype)
 		{
 		case sTypeX10:
@@ -3349,6 +3305,7 @@ unsigned long long MainWorker::decode_Lighting1(const CDomoticzHardwareBase *pHa
 		}
 		printf(szTmp,"Signal level  = %d", pResponse->LIGHTING1.rssi);
 		WriteMessage(szTmp);
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -3356,8 +3313,6 @@ unsigned long long MainWorker::decode_Lighting1(const CDomoticzHardwareBase *pHa
 unsigned long long MainWorker::decode_Lighting2(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeLighting2;
 	unsigned char subType=pResponse->LIGHTING2.subtype;
 	sprintf(szTmp,"%X%02X%02X%02X", pResponse->LIGHTING2.id1, pResponse->LIGHTING2.id2, pResponse->LIGHTING2.id3, pResponse->LIGHTING2.id4);
@@ -3368,8 +3323,9 @@ unsigned long long MainWorker::decode_Lighting2(const CDomoticzHardwareBase *pHa
 	unsigned char SignalLevel=pResponse->LIGHTING2.rssi;
 
 	sprintf(szTmp,"%d",level);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 	unsigned char check_cmnd=cmnd;
 	if ((cmnd==light2_sGroupOff)||(cmnd==light2_sGroupOn))
 		check_cmnd=(cmnd==light2_sGroupOff)?light2_sOff:light2_sOn;
@@ -3383,6 +3339,7 @@ unsigned long long MainWorker::decode_Lighting2(const CDomoticzHardwareBase *pHa
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->LIGHTING2.subtype)
 		{
 		case sTypeAC:
@@ -3439,6 +3396,7 @@ unsigned long long MainWorker::decode_Lighting2(const CDomoticzHardwareBase *pHa
 			WriteMessage(szTmp);
 			break;
 		}
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -3496,8 +3454,6 @@ unsigned long long MainWorker::decode_Lighting3(const CDomoticzHardwareBase *pHa
 unsigned long long MainWorker::decode_Lighting4(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeLighting4;
 	unsigned char subType=pResponse->LIGHTING4.subtype;
 	sprintf(szTmp,"%02X%02X%02X", pResponse->LIGHTING4.cmd1, pResponse->LIGHTING4.cmd2, pResponse->LIGHTING4.cmd3);
@@ -3506,160 +3462,160 @@ unsigned long long MainWorker::decode_Lighting4(const CDomoticzHardwareBase *pHa
 	unsigned char cmnd=1; //only an on supported
 	unsigned char SignalLevel=pResponse->LIGHTING4.rssi;
 	sprintf(szTmp,"%d",(pResponse->LIGHTING4.pulseHigh*256)+pResponse->LIGHTING4.pulseLow);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
-		if (m_verboselevel == EVBL_ALL)
+		WriteMessageStart();
+		switch (pResponse->LIGHTING4.subtype)
 		{
-			switch (pResponse->LIGHTING4.subtype)
-			{
-			case sTypePT2262:
-				WriteMessage("subtype       = PT2262");
-				sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING4.seqnbr);
-				WriteMessage(szTmp);
-				sprintf(szTmp,"Code          = %02X%02X%02X", pResponse->LIGHTING4.cmd1,pResponse->LIGHTING4.cmd2,pResponse->LIGHTING4.cmd3);
-				WriteMessage(szTmp);
-
-				WriteMessage("S1- S24  = ", false);
-				if ((pResponse->LIGHTING4.cmd1 & 0x80)==0)
-					WriteMessage("0", false);
-				else
-					WriteMessage("1", false);
-			
-				if ((pResponse->LIGHTING4.cmd1 & 0x40)==0)
-					WriteMessage("0", false);
-				else
-					WriteMessage("1", false);
-			
-				if ((pResponse->LIGHTING4.cmd1 & 0x20)==0)
-					WriteMessage("0", false);
-				else
-					WriteMessage("1", false);
-			
-				if ((pResponse->LIGHTING4.cmd1 & 0x10)==0)
-					WriteMessage("0 ", false);
-				else
-					WriteMessage("1 ", false);
-			
-
-				if ((pResponse->LIGHTING4.cmd1 & 0x08)==0)
-					WriteMessage("0", false);
-				else
-					WriteMessage("1", false);
-			
-				if ((pResponse->LIGHTING4.cmd1 & 0x04)==0)
-					WriteMessage("0", false);
-				else
-					WriteMessage("1", false);
-			
-				if ((pResponse->LIGHTING4.cmd1 & 0x02)==0)
-					WriteMessage("0", false);
-				else
-					WriteMessage("1", false);
-			
-				if ((pResponse->LIGHTING4.cmd1 & 0x01)==0)
-					WriteMessage("0 ", false);
-				else
-					WriteMessage("1 ", false);
-			
-
-				if ((pResponse->LIGHTING4.cmd2 & 0x80)==0)
-					WriteMessage("0", false);
-				else
-					WriteMessage("1", false);
-			
-				if ((pResponse->LIGHTING4.cmd2 & 0x40)==0)
-					WriteMessage("0", false);
-				else
-					WriteMessage("1", false);
-			
-				if ((pResponse->LIGHTING4.cmd2 & 0x20)==0)
-					WriteMessage("0", false);
-				else
-					WriteMessage("1", false);
-			
-				if ((pResponse->LIGHTING4.cmd2 & 0x10)==0)
-					WriteMessage("0 ", false);
-				else
-					WriteMessage("1 ", false);
-			
-
-				if ((pResponse->LIGHTING4.cmd2 & 0x08)==0)
-					WriteMessage("0", false);
-				else
-					WriteMessage("1", false);
-			
-				if ((pResponse->LIGHTING4.cmd2 & 0x04)==0)
-					WriteMessage("0", false);
-				else
-					WriteMessage("1", false);
-			
-				if ((pResponse->LIGHTING4.cmd2 & 0x02)==0)
-					WriteMessage("0", false);
-				else
-					WriteMessage("1", false);
-			
-				if ((pResponse->LIGHTING4.cmd2 & 0x01)==0)
-					WriteMessage("0 ", false);
-				else
-					WriteMessage("1 ", false);
-			
-
-				if ((pResponse->LIGHTING4.cmd3 & 0x80)==0)
-					WriteMessage("0", false);
-				else
-					WriteMessage("1", false);
-			
-				if ((pResponse->LIGHTING4.cmd3 & 0x40)==0)
-					WriteMessage("0", false);
-				else
-					WriteMessage("1", false);
-			
-				if ((pResponse->LIGHTING4.cmd3 & 0x20)==0)
-					WriteMessage("0", false);
-				else
-					WriteMessage("1", false);
-			
-				if ((pResponse->LIGHTING4.cmd3 & 0x10)==0)
-					WriteMessage("0 ", false);
-				else
-					WriteMessage("1 ", false);
-			
-
-				if ((pResponse->LIGHTING4.cmd3 & 0x08)==0)
-					WriteMessage("0", false);
-				else
-					WriteMessage("1", false);
-			
-				if ((pResponse->LIGHTING4.cmd3 & 0x04)==0)
-					WriteMessage("0", false);
-				else
-					WriteMessage("1", false);
-			
-				if ((pResponse->LIGHTING4.cmd3 & 0x02)==0)
-					WriteMessage("0", false);
-				else
-					WriteMessage("1", false);
-			
-				if ((pResponse->LIGHTING4.cmd3 & 0x01)==0)
-					WriteMessage("0");
-				else
-					WriteMessage("1");
-				
-				sprintf(szTmp,"Pulse         = %d usec", (pResponse->LIGHTING4.pulseHigh * 256) + pResponse->LIGHTING4.pulseLow);
-				WriteMessage(szTmp);
-				break;
-			default:
-				sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING4.packettype, pResponse->LIGHTING4.subtype);
-				WriteMessage(szTmp);
-				break;
-			}
-			sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING4.rssi);
+		case sTypePT2262:
+			WriteMessage("subtype       = PT2262");
+			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING4.seqnbr);
 			WriteMessage(szTmp);
+			sprintf(szTmp,"Code          = %02X%02X%02X", pResponse->LIGHTING4.cmd1,pResponse->LIGHTING4.cmd2,pResponse->LIGHTING4.cmd3);
+			WriteMessage(szTmp);
+
+			WriteMessage("S1- S24  = ", false);
+			if ((pResponse->LIGHTING4.cmd1 & 0x80)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd1 & 0x40)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd1 & 0x20)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd1 & 0x10)==0)
+				WriteMessage("0 ", false);
+			else
+				WriteMessage("1 ", false);
+			
+
+			if ((pResponse->LIGHTING4.cmd1 & 0x08)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd1 & 0x04)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd1 & 0x02)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd1 & 0x01)==0)
+				WriteMessage("0 ", false);
+			else
+				WriteMessage("1 ", false);
+			
+
+			if ((pResponse->LIGHTING4.cmd2 & 0x80)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd2 & 0x40)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd2 & 0x20)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd2 & 0x10)==0)
+				WriteMessage("0 ", false);
+			else
+				WriteMessage("1 ", false);
+			
+
+			if ((pResponse->LIGHTING4.cmd2 & 0x08)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd2 & 0x04)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd2 & 0x02)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd2 & 0x01)==0)
+				WriteMessage("0 ", false);
+			else
+				WriteMessage("1 ", false);
+			
+
+			if ((pResponse->LIGHTING4.cmd3 & 0x80)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd3 & 0x40)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd3 & 0x20)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd3 & 0x10)==0)
+				WriteMessage("0 ", false);
+			else
+				WriteMessage("1 ", false);
+			
+
+			if ((pResponse->LIGHTING4.cmd3 & 0x08)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd3 & 0x04)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd3 & 0x02)==0)
+				WriteMessage("0", false);
+			else
+				WriteMessage("1", false);
+			
+			if ((pResponse->LIGHTING4.cmd3 & 0x01)==0)
+				WriteMessage("0");
+			else
+				WriteMessage("1");
+				
+			sprintf(szTmp,"Pulse         = %d usec", (pResponse->LIGHTING4.pulseHigh * 256) + pResponse->LIGHTING4.pulseLow);
+			WriteMessage(szTmp);
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING4.packettype, pResponse->LIGHTING4.subtype);
+			WriteMessage(szTmp);
+			break;
 		}
+		sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING4.rssi);
+		WriteMessage(szTmp);
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -3667,8 +3623,6 @@ unsigned long long MainWorker::decode_Lighting4(const CDomoticzHardwareBase *pHa
 unsigned long long MainWorker::decode_Lighting5(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeLighting5;
 	unsigned char subType=pResponse->LIGHTING5.subtype;
 	if ((subType != sTypeEMW100)&&(subType != sTypeLivolo))
@@ -3700,13 +3654,15 @@ unsigned long long MainWorker::decode_Lighting5(const CDomoticzHardwareBase *pHa
 	if (bDoUpdate)
 	{
 		sprintf(szTmp,"%d",pResponse->LIGHTING5.level);
-		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp,devname);
-		PrintDeviceName(devname);
+		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp,m_LastDeviceName);
+		if (DevRowIdx == -1)
+			return -1;
 		CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 	}
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->LIGHTING5.subtype)
 		{
 		case sTypeLightwaveRF:
@@ -3962,6 +3918,7 @@ unsigned long long MainWorker::decode_Lighting5(const CDomoticzHardwareBase *pHa
 		}
 		sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING5.rssi);
 		WriteMessage(szTmp);
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -3969,8 +3926,6 @@ unsigned long long MainWorker::decode_Lighting5(const CDomoticzHardwareBase *pHa
 unsigned long long MainWorker::decode_Lighting6(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeLighting6;
 	unsigned char subType=pResponse->LIGHTING6.subtype;
 	sprintf(szTmp,"%02X%02X%02X", pResponse->LIGHTING6.id1, pResponse->LIGHTING6.id2,pResponse->LIGHTING6.groupcode);
@@ -3981,12 +3936,14 @@ unsigned long long MainWorker::decode_Lighting6(const CDomoticzHardwareBase *pHa
 	unsigned char SignalLevel=pResponse->LIGHTING6.rssi;
 
 	sprintf(szTmp,"%d",rfu);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->LIGHTING6.subtype)
 		{
 		case sTypeBlyss:
@@ -4030,6 +3987,7 @@ unsigned long long MainWorker::decode_Lighting6(const CDomoticzHardwareBase *pHa
 		}
 		sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING6.rssi);
 		WriteMessage(szTmp);
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -4037,8 +3995,6 @@ unsigned long long MainWorker::decode_Lighting6(const CDomoticzHardwareBase *pHa
 unsigned long long MainWorker::decode_LimitlessLights(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[300];
-	std::string devname;
-
 	_tLimitlessLights *pLed=(_tLimitlessLights*)pResponse;
 
 	unsigned char devType=pTypeLimitlessLights;
@@ -4052,8 +4008,9 @@ unsigned long long MainWorker::decode_LimitlessLights(const CDomoticzHardwareBas
 	unsigned char cmnd=pLed->command;
 	unsigned char value=pLed->value;
 
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,12,-1,cmnd,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,12,-1,cmnd,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
 	if (cmnd == Limitless_SetBrightnessLevel)
@@ -4083,8 +4040,6 @@ unsigned long long MainWorker::decode_LimitlessLights(const CDomoticzHardwareBas
 unsigned long long MainWorker::decode_Chime(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeChime;
 	unsigned char subType=pResponse->CHIME.subtype;
 	sprintf(szTmp,"%02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
@@ -4093,12 +4048,14 @@ unsigned long long MainWorker::decode_Chime(const CDomoticzHardwareBase *pHardwa
 	unsigned char cmnd=pResponse->CHIME.sound;
 	unsigned char SignalLevel=pResponse->CHIME.rssi;
 
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->CHIME.subtype)
 		{
 		case sTypeByronSX:
@@ -4138,6 +4095,7 @@ unsigned long long MainWorker::decode_Chime(const CDomoticzHardwareBase *pHardwa
 		}
 		sprintf(szTmp,"Signal level  = %d", pResponse->CHIME.rssi);
 		WriteMessage(szTmp);
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -4277,8 +4235,6 @@ unsigned long long MainWorker::decode_RecXmitMessage(const CDomoticzHardwareBase
 unsigned long long MainWorker::decode_Curtain(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeCurtain;
 	unsigned char subType=pResponse->CURTAIN1.subtype;
 	sprintf(szTmp,"%d", pResponse->CURTAIN1.housecode);
@@ -4287,11 +4243,13 @@ unsigned long long MainWorker::decode_Curtain(const CDomoticzHardwareBase *pHard
 	unsigned char cmnd=pResponse->CURTAIN1.cmnd;
 	unsigned char SignalLevel=9;
 
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		char szTmp[100];
 
 		switch (pResponse->CURTAIN1.subtype)
@@ -4330,6 +4288,7 @@ unsigned long long MainWorker::decode_Curtain(const CDomoticzHardwareBase *pHard
 			WriteMessage("UNKNOWN");
 			break;
 		}
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -4337,8 +4296,6 @@ unsigned long long MainWorker::decode_Curtain(const CDomoticzHardwareBase *pHard
 unsigned long long MainWorker::decode_BLINDS1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeBlinds;
 	unsigned char subType=pResponse->BLINDS1.subtype;
 	if (subType==sTypeBlindsT7)
@@ -4350,12 +4307,14 @@ unsigned long long MainWorker::decode_BLINDS1(const CDomoticzHardwareBase *pHard
 	unsigned char cmnd=pResponse->BLINDS1.cmnd;
 	unsigned char SignalLevel=pResponse->BLINDS1.rssi;
 
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		char szTmp[100];
 
 		switch (pResponse->BLINDS1.subtype)
@@ -4453,6 +4412,7 @@ unsigned long long MainWorker::decode_BLINDS1(const CDomoticzHardwareBase *pHard
 		}
 		sprintf(szTmp,"Signal level  = %d", pResponse->BLINDS1.rssi);
 		WriteMessage(szTmp);
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -4460,8 +4420,6 @@ unsigned long long MainWorker::decode_BLINDS1(const CDomoticzHardwareBase *pHard
 unsigned long long MainWorker::decode_RFY(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeRFY;
 	unsigned char subType=pResponse->RFY.subtype;
 	sprintf(szTmp,"%02X%02X%02X", pResponse->RFY.id1, pResponse->RFY.id2,pResponse->RFY.id3);
@@ -4470,12 +4428,14 @@ unsigned long long MainWorker::decode_RFY(const CDomoticzHardwareBase *pHardware
 	unsigned char cmnd=pResponse->RFY.cmnd;
 	unsigned char SignalLevel=pResponse->RFY.rssi;
 
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		char szTmp[100];
 
 		switch (pResponse->RFY.subtype)
@@ -4580,6 +4540,7 @@ unsigned long long MainWorker::decode_RFY(const CDomoticzHardwareBase *pHardware
 		}
 		sprintf(szTmp,"Signal level  = %d", pResponse->RFY.rssi);
 		WriteMessage(szTmp);
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -4587,8 +4548,6 @@ unsigned long long MainWorker::decode_RFY(const CDomoticzHardwareBase *pHardware
 unsigned long long MainWorker::decode_Security1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeSecurity1;
 	unsigned char subType=pResponse->SECURITY1.subtype;
 	std::string ID;
@@ -4607,12 +4566,14 @@ unsigned long long MainWorker::decode_Security1(const CDomoticzHardwareBase *pHa
 		BatteryLevel=255;
 	}
 
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->SECURITY1.subtype)
 		{
 		case sTypeSecX10:
@@ -4764,6 +4725,7 @@ unsigned long long MainWorker::decode_Security1(const CDomoticzHardwareBase *pHa
 		}
 		sprintf(szTmp,"Signal level  = %d", pResponse->SECURITY1.rssi);
 		WriteMessage(szTmp);
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -4857,8 +4819,6 @@ unsigned long long MainWorker::decode_Camera1(const CDomoticzHardwareBase *pHard
 unsigned long long MainWorker::decode_Remote(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeRemote;
 	unsigned char subType=pResponse->REMOTE.subtype;
 	sprintf(szTmp,"%d", pResponse->REMOTE.id);
@@ -4867,12 +4827,14 @@ unsigned long long MainWorker::decode_Remote(const CDomoticzHardwareBase *pHardw
 	unsigned char cmnd=light2_sOn;
 	unsigned char SignalLevel=pResponse->REMOTE.rssi;
 
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->REMOTE.subtype)
 		{
 			case sTypeATI:
@@ -5933,6 +5895,7 @@ unsigned long long MainWorker::decode_Remote(const CDomoticzHardwareBase *pHardw
 		}
 		sprintf(szTmp, "Signal level  = %d", pResponse->REMOTE.rssi);
 		WriteMessage(szTmp);
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -5940,8 +5903,6 @@ unsigned long long MainWorker::decode_Remote(const CDomoticzHardwareBase *pHardw
 unsigned long long MainWorker::decode_Thermostat1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeThermostat1;
 	unsigned char subType=pResponse->THERMOSTAT1.subtype;
 	std::string ID;
@@ -5958,11 +5919,13 @@ unsigned long long MainWorker::decode_Thermostat1(const CDomoticzHardwareBase *p
 	unsigned char status=(pResponse->THERMOSTAT1.status & 0x03);
 
 	sprintf(szTmp,"%d;%d;%d;%d",temp,set_point,mode,status);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->THERMOSTAT1.subtype)
 		{
 		case sTypeDigimax:
@@ -6013,6 +5976,7 @@ unsigned long long MainWorker::decode_Thermostat1(const CDomoticzHardwareBase *p
 
 		sprintf(szTmp,"Signal level  = %d", pResponse->THERMOSTAT1.rssi);
 		WriteMessage(szTmp);
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -6087,8 +6051,6 @@ unsigned long long MainWorker::decode_Thermostat2(const CDomoticzHardwareBase *p
 unsigned long long MainWorker::decode_Thermostat3(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeThermostat3;
 	unsigned char subType=pResponse->THERMOSTAT3.subtype;
 	std::string ID;
@@ -6100,11 +6062,13 @@ unsigned long long MainWorker::decode_Thermostat3(const CDomoticzHardwareBase *p
 	unsigned char BatteryLevel = 255;
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
 
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->THERMOSTAT3.subtype)
 		{
 		case sTypeMertikG6RH4T1:
@@ -6163,6 +6127,7 @@ unsigned long long MainWorker::decode_Thermostat3(const CDomoticzHardwareBase *p
 
 		sprintf(szTmp,"Signal level  = %d", pResponse->THERMOSTAT3.rssi);
 		WriteMessage(szTmp);
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -6246,8 +6211,6 @@ unsigned long long MainWorker::decode_DateTime(const CDomoticzHardwareBase *pHar
 unsigned long long MainWorker::decode_Current(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeCURRENT;
 	unsigned char subType=pResponse->CURRENT.subtype;
 	std::string ID;
@@ -6262,13 +6225,15 @@ unsigned long long MainWorker::decode_Current(const CDomoticzHardwareBase *pHard
 	float CurrentChannel2= float((pResponse->CURRENT.ch2h * 256) + pResponse->CURRENT.ch2l) / 10.0f;
 	float CurrentChannel3= float((pResponse->CURRENT.ch3h * 256) + pResponse->CURRENT.ch3l) / 10.0f;
 	sprintf(szTmp,"%.1f;%.1f;%.1f",CurrentChannel1,CurrentChannel2,CurrentChannel3);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	m_sql.CheckAndHandleAmpere123Notification(HwdID, ID, Unit, devType, subType, CurrentChannel1, CurrentChannel2, CurrentChannel3);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->CURRENT.subtype)
 		{
 		case sTypeELEC1:
@@ -6300,6 +6265,7 @@ unsigned long long MainWorker::decode_Current(const CDomoticzHardwareBase *pHard
 			WriteMessage("Battery       = Low");
 		else
 			WriteMessage("Battery       = OK");
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -6307,8 +6273,6 @@ unsigned long long MainWorker::decode_Current(const CDomoticzHardwareBase *pHard
 unsigned long long MainWorker::decode_Energy(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeENERGY;
 	unsigned char subType=pResponse->ENERGY.subtype;
 	std::string ID;
@@ -6334,13 +6298,15 @@ unsigned long long MainWorker::decode_Energy(const CDomoticzHardwareBase *pHardw
 			) / 223.666;
 
 	sprintf(szTmp,"%ld;%.2f",instant,usage);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (const float)instant);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->ENERGY.subtype)
 		{
 		case sTypeELEC2:
@@ -6373,6 +6339,7 @@ unsigned long long MainWorker::decode_Energy(const CDomoticzHardwareBase *pHardw
 			WriteMessage("Battery       = Low");
 		else
 			WriteMessage("Battery       = OK");
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -6380,8 +6347,6 @@ unsigned long long MainWorker::decode_Energy(const CDomoticzHardwareBase *pHardw
 unsigned long long MainWorker::decode_Power(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypePOWER;
 	unsigned char subType=pResponse->POWER.subtype;
 	std::string ID;
@@ -6400,13 +6365,15 @@ unsigned long long MainWorker::decode_Power(const CDomoticzHardwareBase *pHardwa
 	int frequency = pResponse->POWER.freq; //Hz
 
 	sprintf(szTmp,"%ld;%.2f",long(round(instant)),usage*1000.0);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (const float)instant);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->POWER.subtype)
 		{
 		case sTypeELEC5:
@@ -6436,6 +6403,7 @@ unsigned long long MainWorker::decode_Power(const CDomoticzHardwareBase *pHardwa
 
 		sprintf(szTmp,"Signal level  = %d", pResponse->POWER.rssi);
 		WriteMessage(szTmp);
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -6443,8 +6411,6 @@ unsigned long long MainWorker::decode_Power(const CDomoticzHardwareBase *pHardwa
 unsigned long long MainWorker::decode_Current_Energy(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeCURRENTENERGY;
 	unsigned char subType=pResponse->CURRENT_ENERGY.subtype;
 	std::string ID;
@@ -6512,16 +6478,18 @@ unsigned long long MainWorker::decode_Current_Energy(const CDomoticzHardwareBase
 		m_sql.GetPreferencesVar("ElectricVoltage", voltage);
 
 		sprintf(szTmp,"%ld;%.2f",(long)round((CurrentChannel1+CurrentChannel2+CurrentChannel3)*voltage),usage);
-		m_sql.UpdateValue(HwdID, ID.c_str(),Unit,pTypeENERGY,sTypeELEC3,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
+		m_sql.UpdateValue(HwdID, ID.c_str(),Unit,pTypeENERGY,sTypeELEC3,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
 	}
 	sprintf(szTmp,"%.1f;%.1f;%.1f;%.3f",CurrentChannel1,CurrentChannel2,CurrentChannel3,usage);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	m_sql.CheckAndHandleAmpere123Notification(HwdID, ID, Unit, devType, subType, CurrentChannel1, CurrentChannel2, CurrentChannel3);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->CURRENT_ENERGY.subtype)
 		{
 		case sTypeELEC4:
@@ -6563,6 +6531,7 @@ unsigned long long MainWorker::decode_Current_Energy(const CDomoticzHardwareBase
 			WriteMessage("Battery       = Low");
 		else
 			WriteMessage("Battery       = OK");
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -6594,8 +6563,6 @@ unsigned long long MainWorker::decode_Water(const CDomoticzHardwareBase *pHardwa
 unsigned long long MainWorker::decode_Weight(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeWEIGHT;
 	unsigned char subType=pResponse->WEIGHT.subtype;
 	unsigned short weightID=(pResponse->WEIGHT.id1*256) + pResponse->WEIGHT.id2;
@@ -6614,11 +6581,13 @@ unsigned long long MainWorker::decode_Weight(const CDomoticzHardwareBase *pHardw
 	weight+=AddjValue;
 
 	sprintf(szTmp,"%.1f",weight);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->WEIGHT.subtype)
 		{
 		case sTypeWEIGHT1:
@@ -6641,6 +6610,7 @@ unsigned long long MainWorker::decode_Weight(const CDomoticzHardwareBase *pHardw
 		WriteMessage(szTmp);
 		sprintf(szTmp, "Signal level  = %d", pResponse->WEIGHT.rssi);
 		WriteMessage(szTmp);
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -6648,8 +6618,6 @@ unsigned long long MainWorker::decode_Weight(const CDomoticzHardwareBase *pHardw
 unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeRFXSensor;
 	unsigned char subType=pResponse->RFXSENSOR.subtype;
 	std::string ID;
@@ -6697,11 +6665,13 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 		}
 		break;
 	}
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->RFXSENSOR.subtype)
 		{
 		case sTypeRFXSensorTemp:
@@ -6783,6 +6753,7 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 		}
 		sprintf(szTmp,"Signal level  = %d", pResponse->RFXSENSOR.rssi);
 		WriteMessage(szTmp);
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -6791,8 +6762,6 @@ unsigned long long MainWorker::decode_RFXMeter(const CDomoticzHardwareBase *pHar
 {
 	unsigned long long DevRowIdx=-1;
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeRFXMeter;
 	unsigned char subType=pResponse->RFXMETER.subtype;
 	if (subType==sTypeRFXMeterCount)
@@ -6809,12 +6778,14 @@ unsigned long long MainWorker::decode_RFXMeter(const CDomoticzHardwareBase *pHar
 		//float RFXPwr = float(counter) / 1000.0f;
 
 		sprintf(szTmp,"%lu",counter);
-		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-		PrintDeviceName(devname);
+		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+		if (DevRowIdx == -1)
+			return -1;
 	}
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		unsigned long counter;
 
 		switch (pResponse->RFXMETER.subtype)
@@ -7012,6 +6983,7 @@ unsigned long long MainWorker::decode_RFXMeter(const CDomoticzHardwareBase *pHar
 		}
 		sprintf(szTmp,"Signal level  = %d", pResponse->RFXMETER.rssi);
 		WriteMessage(szTmp);
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -7019,8 +6991,6 @@ unsigned long long MainWorker::decode_RFXMeter(const CDomoticzHardwareBase *pHar
 unsigned long long MainWorker::decode_P1MeterPower(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[200];
-	std::string devname;
-
 	const _tP1Power *p1Power=(const _tP1Power*)pResponse;
 	unsigned char devType=p1Power->type;
 	unsigned char subType=p1Power->subtype;
@@ -7038,13 +7008,15 @@ unsigned long long MainWorker::decode_P1MeterPower(const CDomoticzHardwareBase *
 		p1Power->usagecurrent,
 		p1Power->delivcurrent
 		);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (const float)p1Power->usagecurrent);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (p1Power->subtype)
 		{
 		case sTypeP1Power:
@@ -7070,6 +7042,7 @@ unsigned long long MainWorker::decode_P1MeterPower(const CDomoticzHardwareBase *
 			WriteMessage(szTmp);
 			break;
 		}
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -7077,8 +7050,6 @@ unsigned long long MainWorker::decode_P1MeterPower(const CDomoticzHardwareBase *
 unsigned long long MainWorker::decode_P1MeterGas(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[200];
-	std::string devname;
-
 	const _tP1Gas *p1Gas=(const _tP1Gas*)pResponse;
 	unsigned char devType=p1Gas->type;
 	unsigned char subType=p1Gas->subtype;
@@ -7089,11 +7060,13 @@ unsigned long long MainWorker::decode_P1MeterGas(const CDomoticzHardwareBase *pH
 	unsigned char BatteryLevel = 255;
 
 	sprintf(szTmp,"%lu",p1Gas->gasusage);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (p1Gas->subtype)
 		{
 		case sTypeP1Gas:
@@ -7107,6 +7080,7 @@ unsigned long long MainWorker::decode_P1MeterGas(const CDomoticzHardwareBase *pH
 			WriteMessage(szTmp);
 			break;
 		}
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -7114,8 +7088,6 @@ unsigned long long MainWorker::decode_P1MeterGas(const CDomoticzHardwareBase *pH
 unsigned long long MainWorker::decode_YouLessMeter(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[200];
-	std::string devname;
-
 	const _tYouLessMeter *pMeter=(const _tYouLessMeter*)pResponse;
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
@@ -7130,13 +7102,15 @@ unsigned long long MainWorker::decode_YouLessMeter(const CDomoticzHardwareBase *
 		pMeter->powerusage,
 		pMeter->usagecurrent
 		);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (const float)pMeter->usagecurrent);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pMeter->subtype)
 		{
 		case sTypeYouLess:
@@ -7152,6 +7126,7 @@ unsigned long long MainWorker::decode_YouLessMeter(const CDomoticzHardwareBase *
 			WriteMessage(szTmp);
 			break;
 		}
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -7159,7 +7134,6 @@ unsigned long long MainWorker::decode_YouLessMeter(const CDomoticzHardwareBase *
 unsigned long long MainWorker::decode_Rego6XXTemp(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[200];
-	std::string devname;
 	const _tRego6XXTemp *pRego=(const _tRego6XXTemp*)pResponse;
 	unsigned char devType=pRego->type;
 	unsigned char subType=pRego->subtype;
@@ -7172,16 +7146,19 @@ unsigned long long MainWorker::decode_Rego6XXTemp(const CDomoticzHardwareBase *p
     sprintf(szTmp,"%.1f",
 		pRego->temperature
 	);
-    unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
     m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_TEMPERATURE, pRego->temperature);
  
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		WriteMessage("subtype       = Rego6XX Temp");
 
 		sprintf(szTmp,"Temp = %.1f", pRego->temperature);
 		WriteMessage(szTmp);
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -7189,7 +7166,6 @@ unsigned long long MainWorker::decode_Rego6XXTemp(const CDomoticzHardwareBase *p
 unsigned long long MainWorker::decode_Rego6XXValue(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[200];
-	std::string devname;
 	const _tRego6XXStatus *pRego=(const _tRego6XXStatus*)pResponse;
 	unsigned char devType=pRego->type;
 	unsigned char subType=pRego->subtype;
@@ -7203,11 +7179,13 @@ unsigned long long MainWorker::decode_Rego6XXValue(const CDomoticzHardwareBase *
 		pRego->value
 	);
 
-    unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,numValue,szTmp, devname);
-	PrintDeviceName(devname);
+    unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,numValue,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pRego->subtype)
 		{
 		case sTypeRego6XXStatus:
@@ -7221,6 +7199,7 @@ unsigned long long MainWorker::decode_Rego6XXValue(const CDomoticzHardwareBase *
 		    WriteMessage(szTmp);
             break;
         }
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -7228,8 +7207,6 @@ unsigned long long MainWorker::decode_Rego6XXValue(const CDomoticzHardwareBase *
 unsigned long long MainWorker::decode_AirQuality(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[200];
-	std::string devname;
-
 	const _tAirQualityMeter *pMeter=(const _tAirQualityMeter*)pResponse;
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
@@ -7240,13 +7217,15 @@ unsigned long long MainWorker::decode_AirQuality(const CDomoticzHardwareBase *pH
 	unsigned char SignalLevel=12;
 	unsigned char BatteryLevel = 255;
 
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,pMeter->airquality,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,pMeter->airquality,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (const float)pMeter->airquality);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pMeter->subtype)
 		{
 		case sTypeVoltcraft:
@@ -7271,6 +7250,7 @@ unsigned long long MainWorker::decode_AirQuality(const CDomoticzHardwareBase *pH
 			WriteMessage(szTmp);
 			break;
 		}
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -7278,8 +7258,6 @@ unsigned long long MainWorker::decode_AirQuality(const CDomoticzHardwareBase *pH
 unsigned long long MainWorker::decode_Usage(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[200];
-	std::string devname;
-
 	const _tUsageMeter *pMeter=(const _tUsageMeter*)pResponse;
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
@@ -7292,13 +7270,15 @@ unsigned long long MainWorker::decode_Usage(const CDomoticzHardwareBase *pHardwa
 
 	sprintf(szTmp,"%.1f",pMeter->fusage);
 
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->fusage);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pMeter->subtype)
 		{
 		case sTypeElectric:
@@ -7312,6 +7292,7 @@ unsigned long long MainWorker::decode_Usage(const CDomoticzHardwareBase *pHardwa
 			WriteMessage(szTmp);
 			break;
 		}
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -7319,8 +7300,6 @@ unsigned long long MainWorker::decode_Usage(const CDomoticzHardwareBase *pHardwa
 unsigned long long MainWorker::decode_Lux(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[200];
-	std::string devname;
-
 	const _tLightMeter *pMeter=(const _tLightMeter*)pResponse;
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
@@ -7333,13 +7312,15 @@ unsigned long long MainWorker::decode_Lux(const CDomoticzHardwareBase *pHardware
 
 	sprintf(szTmp,"%.0f",pMeter->fLux);
 
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->fLux);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pMeter->subtype)
 		{
 		case sTypeLux:
@@ -7353,6 +7334,7 @@ unsigned long long MainWorker::decode_Lux(const CDomoticzHardwareBase *pHardware
 			WriteMessage(szTmp);
 			break;
 		}
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -7360,8 +7342,6 @@ unsigned long long MainWorker::decode_Lux(const CDomoticzHardwareBase *pHardware
 unsigned long long MainWorker::decode_Thermostat(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[200];
-	std::string devname;
-
 	const _tThermostat *pMeter=(const _tThermostat*)pResponse;
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
@@ -7383,8 +7363,9 @@ unsigned long long MainWorker::decode_Thermostat(const CDomoticzHardwareBase *pH
 		return -1;
 	}
 
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
 	if (pMeter->subtype==sTypeThermSetpoint)
 	{
@@ -7395,7 +7376,8 @@ unsigned long long MainWorker::decode_Thermostat(const CDomoticzHardwareBase *pH
 
 	if (m_verboselevel == EVBL_ALL)
 	{
-		double tvalue=ConvertTemperature(pMeter->temp,m_sql.m_tempsign[0]);
+		WriteMessageStart();
+		double tvalue = ConvertTemperature(pMeter->temp, m_sql.m_tempsign[0]);
 		switch (pMeter->subtype)
 		{
 		case sTypeThermSetpoint:
@@ -7408,6 +7390,7 @@ unsigned long long MainWorker::decode_Thermostat(const CDomoticzHardwareBase *pH
 			WriteMessage(szTmp);
 			break;
 		}
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -7415,8 +7398,6 @@ unsigned long long MainWorker::decode_Thermostat(const CDomoticzHardwareBase *pH
 unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[200];
-	std::string devname;
-
 	const _tGeneralDevice *pMeter=(const _tGeneralDevice*)pResponse;
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
@@ -7440,8 +7421,9 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 	if (subType==sTypeVisibility)
 	{
 		sprintf(szTmp,"%.1f",pMeter->floatval1);
-		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-		PrintDeviceName(devname);
+		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+		if (DevRowIdx == -1)
+			return -1;
 		int meterType=0;
 		m_sql.GetMeterType(HwdID, ID.c_str(),Unit,devType,subType,meterType);
 		float fValue=pMeter->floatval1;
@@ -7455,46 +7437,53 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 	else if (subType==sTypeSolarRadiation)
 	{
 		sprintf(szTmp,"%.1f",pMeter->floatval1);
-		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-		PrintDeviceName(devname);
+		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+		if (DevRowIdx == -1)
+			return -1;
 		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->floatval1);
 	}
 	else if (subType==sTypeSoilMoisture)
 	{
-		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,pMeter->intval1,devname);
-		PrintDeviceName(devname);
+		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,pMeter->intval1,m_LastDeviceName);
+		if (DevRowIdx == -1)
+			return -1;
 		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (float)pMeter->intval1);
 	}
 	else if (subType==sTypeLeafWetness)
 	{
-		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,pMeter->intval1,devname);
-		PrintDeviceName(devname);
+		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,pMeter->intval1,m_LastDeviceName);
+		if (DevRowIdx == -1)
+			return -1;
 		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (float)pMeter->intval1);
 	}
 	else if (subType==sTypeVoltage)
 	{
 		sprintf(szTmp,"%.3f",pMeter->floatval1);
-		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-		PrintDeviceName(devname);
+		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+		if (DevRowIdx == -1)
+			return -1;
 		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->floatval1);
 	}
 	else if (subType==sTypePressure)
 	{
 		sprintf(szTmp,"%.1f",pMeter->floatval1);
-		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-		PrintDeviceName(devname);
+		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+		if (DevRowIdx == -1)
+			return -1;
 		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->floatval1);
 	}
 	else if (subType==sTypePercentage)
 	{
 		sprintf(szTmp,"%.2f",pMeter->floatval1);
-		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-		PrintDeviceName(devname);
+		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+		if (DevRowIdx == -1)
+			return -1;
 		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_PERCENTAGE, pMeter->floatval1);
 	}
 
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pMeter->subtype)
 		{
 		case sTypeVisibility:
@@ -7532,6 +7521,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 			WriteMessage(szTmp);
 			break;
 		}
+		WriteMessageEnd();
 	}
 	return DevRowIdx;
 }
@@ -7540,8 +7530,6 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 unsigned long long MainWorker::decode_BBQ(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[100];
-	std::string devname;
-
 	unsigned char devType=pTypeBBQ;
 	unsigned char subType=pResponse->BBQ.subtype;
 
@@ -7565,10 +7553,12 @@ unsigned long long MainWorker::decode_BBQ(const CDomoticzHardwareBase *pHardware
 	temp2=float((pResponse->BBQ.sensor2h * 256) + pResponse->BBQ.sensor2l);// / 10.0f;
 
 	sprintf(szTmp,"%.0f;%.0f",temp1,temp2);
-	DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,devname);
-	PrintDeviceName(devname);
+	DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 	if (m_verboselevel == EVBL_ALL)
 	{
+		WriteMessageStart();
 		switch (pResponse->BBQ.subtype)
 		{
 		case sTypeBBQ1:
@@ -7597,6 +7587,7 @@ unsigned long long MainWorker::decode_BBQ(const CDomoticzHardwareBase *pHardware
 			WriteMessage("Battery       = Low");
 		else
 			WriteMessage("Battery       = OK");
+		WriteMessageEnd();
 	}
 
 	//Send the two sensors
@@ -8836,18 +8827,6 @@ void MainWorker::CheckSceneCode(const int HardwareID, const char* ID, const unsi
 			m_sql.AddTaskItem(_tTaskItem::SwitchSceneEvent(1,ID,switchcmd,"SceneTrigger"));
 		}
 	}
-}
-
-void MainWorker::PrintDeviceName(const std::string &devname)
-{
-	if (devname!="Unknown")
-	{
-		std::stringstream s_str;
-		s_str << " (" << devname << ")";
-		WriteMessage(s_str.str().c_str());
-		return;
-	}
-	WriteMessage("");
 }
 
 void MainWorker::LoadSharedUsers()
