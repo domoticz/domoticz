@@ -23,7 +23,7 @@
 	#include <pwd.h>
 #endif
 
-#define DB_VERSION 49
+#define DB_VERSION 50
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -139,6 +139,7 @@ const char *sqlCreateTimers =
 "[ID] INTEGER PRIMARY KEY, "
 "[Active] BOOLEAN DEFAULT true, "
 "[DeviceRowID] BIGINT(10) NOT NULL, "
+"[Date] DATE DEFAULT 0, "
 "[Time] TIME NOT NULL, "
 "[Type] INTEGER NOT NULL, "
 "[Cmd] INTEGER NOT NULL, "
@@ -351,6 +352,7 @@ const char *sqlCreateSceneTimers =
 "[ID] INTEGER PRIMARY KEY, "
 "[Active] BOOLEAN DEFAULT true, "
 "[SceneRowID] BIGINT(10) NOT NULL, "
+"[Date] DATE DEFAULT 0, "
 "[Time] TIME NOT NULL, "
 "[Type] INTEGER NOT NULL, "
 "[Cmd] INTEGER NOT NULL, "
@@ -977,6 +979,11 @@ bool CSQLHelper::OpenDatabase()
 			query("ALTER TABLE Plans ADD COLUMN [Area] VARCHAR(200) DEFAULT ''");
 			query("ALTER TABLE DeviceToPlansMap ADD COLUMN [XOffset] INTEGER default 0");
 			query("ALTER TABLE DeviceToPlansMap ADD COLUMN [YOffset] INTEGER default 0");
+		}
+		if (dbversion < 50)
+		{
+			query("ALTER TABLE Timers ADD COLUMN [Date] DATE default 0");
+			query("ALTER TABLE SceneTimers ADD COLUMN [Date] DATE default 0");
 		}
 	}
 	else if (bNewInstall)

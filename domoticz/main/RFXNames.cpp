@@ -114,6 +114,7 @@ const char *Timer_Type_Desc(int tType)
 		{ TTYPE_ONTIME, "On Time" },
 		{ TTYPE_BEFORESUNSET, "Before Sunset" },
 		{ TTYPE_AFTERSUNSET, "After Sunset" },
+		{ TTYPE_FIXEDDATETIME, "Fixed Date/Time" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, tType);

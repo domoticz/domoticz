@@ -124,6 +124,16 @@ private:
 	void Cmd_DownloadUpdate(Json::Value &root);
 	void Cmd_DownloadReady(Json::Value &root);
 	void Cmd_DeleteDatePoint(Json::Value &root);
+	void Cmd_AddTimer(Json::Value &root);
+	void Cmd_UpdateTimer(Json::Value &root);
+	void Cmd_DeleteTimer(Json::Value &root);
+	void Cmd_ClearTimers(Json::Value &root);
+	void Cmd_AddSceneTimer(Json::Value &root);
+	void Cmd_UpdateSceneTimer(Json::Value &root);
+	void Cmd_DeleteSceneTimer(Json::Value &root);
+	void Cmd_ClearSceneTimers(Json::Value &root);
+	void Cmd_SetSceneCode(Json::Value &root);
+	void Cmd_RemoveSceneCode(Json::Value &root);
 
 	//RTypes
 	void RType_HandleGraph(Json::Value &root);

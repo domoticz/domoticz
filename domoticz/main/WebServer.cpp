@@ -336,6 +336,18 @@ bool CWebServer::StartServer(const std::string &listenaddress, const std::string
 	RegisterCommandCode("downloadready", boost::bind(&CWebServer::Cmd_DownloadReady, this, _1));
 	RegisterCommandCode("deletedatapoint", boost::bind(&CWebServer::Cmd_DeleteDatePoint, this, _1));
 
+	RegisterCommandCode("addtimer", boost::bind(&CWebServer::Cmd_AddTimer, this, _1));
+	RegisterCommandCode("updatetimer", boost::bind(&CWebServer::Cmd_UpdateTimer, this, _1));
+	RegisterCommandCode("deletetimer", boost::bind(&CWebServer::Cmd_DeleteTimer, this, _1));
+	RegisterCommandCode("cleartimers", boost::bind(&CWebServer::Cmd_ClearTimers, this, _1));
+
+	RegisterCommandCode("addscenetimer", boost::bind(&CWebServer::Cmd_AddSceneTimer, this, _1));
+	RegisterCommandCode("updatescenetimer", boost::bind(&CWebServer::Cmd_UpdateSceneTimer, this, _1));
+	RegisterCommandCode("deletescenetimer", boost::bind(&CWebServer::Cmd_DeleteSceneTimer, this, _1));
+	RegisterCommandCode("clearscenetimers", boost::bind(&CWebServer::Cmd_ClearSceneTimers, this, _1));
+	RegisterCommandCode("setscenecode", boost::bind(&CWebServer::Cmd_SetSceneCode, this, _1));
+	RegisterCommandCode("removescenecode", boost::bind(&CWebServer::Cmd_RemoveSceneCode, this, _1));
+
 	RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1));
 	RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1));
 	RegisterRType("settings", boost::bind(&CWebServer::RType_Settings, this, _1));
@@ -2912,7 +2924,6 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
-	char szData[100];
 	char szTmp[300];
 
 	bool bHaveUser=(m_pWebEm->m_actualuser!="");
@@ -3111,7 +3122,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["title"]="GetTimerList";
 		std::vector<std::vector<std::string> > result;
 		std::stringstream szQuery;
-		szQuery << "SELECT t.ID, t.Active, d.[Name], t.DeviceRowID, t.Time, t.Type, t.Cmd, t.Level, t.Days FROM Timers as t, DeviceStatus as d WHERE (d.ID == t.DeviceRowID) AND (t.TimerPlan==" << m_sql.m_ActiveTimerPlan << ") ORDER BY d.[Name], t.Time";
+		szQuery << "SELECT t.ID, t.Active, d.[Name], t.DeviceRowID, t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Days FROM Timers as t, DeviceStatus as d WHERE (d.ID == t.DeviceRowID) AND (t.TimerPlan==" << m_sql.m_ActiveTimerPlan << ") ORDER BY d.[Name], t.Time";
 		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
 		{
@@ -3125,11 +3136,12 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				root["result"][ii]["Active"]		=sd[1];
 				root["result"][ii]["Name"]			=sd[2];
 				root["result"][ii]["DeviceRowID"]	=sd[3];
-				root["result"][ii]["Time"]			=sd[4];
-				root["result"][ii]["Type"]			=sd[5];
-				root["result"][ii]["Cmd"]			=sd[6];
-				root["result"][ii]["Level"]			=sd[7];
-				root["result"][ii]["Days"]			=sd[8];
+				root["result"][ii]["Date"]			=sd[4];
+				root["result"][ii]["Time"]			=sd[5];
+				root["result"][ii]["Type"]			=sd[6];
+				root["result"][ii]["Cmd"]			=sd[7];
+				root["result"][ii]["Level"]			=sd[8];
+				root["result"][ii]["Days"]			=sd[9];
 				ii++;
 			}
 		}
@@ -5025,222 +5037,6 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 
 		LoadUsers();
 	}
-	else if (cparam=="addtimer")
-	{
-		std::string idx=m_pWebEm->FindValue("idx");
-		std::string active=m_pWebEm->FindValue("active");
-		std::string stimertype=m_pWebEm->FindValue("timertype");
-		std::string shour=m_pWebEm->FindValue("hour");
-		std::string smin=m_pWebEm->FindValue("min");
-		std::string randomness=m_pWebEm->FindValue("randomness");
-		std::string scmd=m_pWebEm->FindValue("command");
-		std::string sdays=m_pWebEm->FindValue("days");
-		std::string slevel=m_pWebEm->FindValue("level");	//in percentage
-		std::string shue=m_pWebEm->FindValue("hue");
-		if (
-			(idx=="")||
-			(active=="")||
-			(stimertype=="")||
-			(shour=="")||
-			(smin=="")||
-			(randomness=="")||
-			(scmd=="")||
-			(sdays=="")
-			)
-			return;
-		unsigned char hour = atoi(shour.c_str());
-		unsigned char min = atoi(smin.c_str());
-		unsigned char icmd = atoi(scmd.c_str());
-		unsigned char iTimerType=atoi(stimertype.c_str());
-		int days=atoi(sdays.c_str());
-		unsigned char level=atoi(slevel.c_str());
-		int hue=atoi(shue.c_str());
-		sprintf(szData,"%02d:%02d",hour,min);
-		root["status"]="OK";
-		root["title"]="AddTimer";
-		sprintf(szTmp,
-			"INSERT INTO Timers (Active, DeviceRowID, Time, Type, UseRandomness, Cmd, Level, Hue, Days, TimerPlan) VALUES (%d,%s,'%s',%d,%d,%d,%d,%d,%d,%d)",
-			(active=="true")?1:0,
-			idx.c_str(),
-			szData,
-			iTimerType,
-			(randomness=="true")?1:0,
-			icmd,
-			level,
-			hue,
-			days,
-			m_sql.m_ActiveTimerPlan
-			);
-		result=m_sql.query(szTmp);
-		m_mainworker.m_scheduler.ReloadSchedules();
-	}
-	else if (cparam=="addscenetimer")
-	{
-		std::string idx=m_pWebEm->FindValue("idx");
-		std::string active=m_pWebEm->FindValue("active");
-		std::string stimertype=m_pWebEm->FindValue("timertype");
-		std::string shour=m_pWebEm->FindValue("hour");
-		std::string smin=m_pWebEm->FindValue("min");
-		std::string randomness=m_pWebEm->FindValue("randomness");
-		std::string scmd=m_pWebEm->FindValue("command");
-		std::string sdays=m_pWebEm->FindValue("days");
-		std::string slevel=m_pWebEm->FindValue("level");	//in percentage
-		if (
-			(idx=="")||
-			(active=="")||
-			(stimertype=="")||
-			(shour=="")||
-			(smin=="")||
-			(randomness=="")||
-			(scmd=="")||
-			(sdays=="")
-			)
-			return;
-		unsigned char hour = atoi(shour.c_str());
-		unsigned char min = atoi(smin.c_str());
-		unsigned char icmd = atoi(scmd.c_str());
-		unsigned char iTimerType=atoi(stimertype.c_str());
-		int days=atoi(sdays.c_str());
-		unsigned char level=atoi(slevel.c_str());
-		sprintf(szData,"%02d:%02d",hour,min);
-		root["status"]="OK";
-		root["title"]="AddSceneTimer";
-		sprintf(szTmp,
-			"INSERT INTO SceneTimers (Active, SceneRowID, Time, Type, UseRandomness, Cmd, Level, Days, TimerPlan) VALUES (%d,%s,'%s',%d,%d,%d,%d,%d,%d)",
-			(active=="true")?1:0,
-			idx.c_str(),
-			szData,
-			iTimerType,
-			(randomness=="true")?1:0,
-			icmd,
-			level,
-			days,
-			m_sql.m_ActiveTimerPlan
-			);
-		result=m_sql.query(szTmp);
-		m_mainworker.m_scheduler.ReloadSchedules();
-	}
-	else if (cparam=="updatetimer")
-	{
-		std::string idx=m_pWebEm->FindValue("idx");
-		std::string active=m_pWebEm->FindValue("active");
-		std::string stimertype=m_pWebEm->FindValue("timertype");
-		std::string shour=m_pWebEm->FindValue("hour");
-		std::string smin=m_pWebEm->FindValue("min");
-		std::string randomness=m_pWebEm->FindValue("randomness");
-		std::string scmd=m_pWebEm->FindValue("command");
-		std::string sdays=m_pWebEm->FindValue("days");
-		std::string slevel=m_pWebEm->FindValue("level");	//in percentage
-		std::string shue=m_pWebEm->FindValue("hue");
-		if (
-			(idx=="")||
-			(active=="")||
-			(stimertype=="")||
-			(shour=="")||
-			(smin=="")||
-			(randomness=="")||
-			(scmd=="")||
-			(sdays=="")
-			)
-			return;
-		unsigned char hour = atoi(shour.c_str());
-		unsigned char min = atoi(smin.c_str());
-		unsigned char icmd = atoi(scmd.c_str());
-		unsigned char iTimerType=atoi(stimertype.c_str());
-		int days=atoi(sdays.c_str());
-		unsigned char level=atoi(slevel.c_str());
-		int hue=atoi(shue.c_str());
-		sprintf(szData,"%02d:%02d",hour,min);
-		root["status"]="OK";
-		root["title"]="UpdateTimer";
-		sprintf(szTmp,
-			"UPDATE Timers SET Active=%d, Time='%s', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Hue=%d, Days=%d WHERE (ID == %s)",
-			(active=="true")?1:0,
-			szData,
-			iTimerType,
-			(randomness=="true")?1:0,
-			icmd,
-			level,
-			hue,
-			days,
-			idx.c_str()
-			);
-		result=m_sql.query(szTmp);
-		m_mainworker.m_scheduler.ReloadSchedules();
-	}
-	else if (cparam=="updatescenetimer")
-	{
-		std::string idx=m_pWebEm->FindValue("idx");
-		std::string active=m_pWebEm->FindValue("active");
-		std::string stimertype=m_pWebEm->FindValue("timertype");
-		std::string shour=m_pWebEm->FindValue("hour");
-		std::string smin=m_pWebEm->FindValue("min");
-		std::string randomness=m_pWebEm->FindValue("randomness");
-		std::string scmd=m_pWebEm->FindValue("command");
-		std::string sdays=m_pWebEm->FindValue("days");
-		std::string slevel=m_pWebEm->FindValue("level");	//in percentage
-		if (
-			(idx=="")||
-			(active=="")||
-			(stimertype=="")||
-			(shour=="")||
-			(smin=="")||
-			(randomness=="")||
-			(scmd=="")||
-			(sdays=="")
-			)
-			return;
-		unsigned char hour = atoi(shour.c_str());
-		unsigned char min = atoi(smin.c_str());
-		unsigned char icmd = atoi(scmd.c_str());
-		unsigned char iTimerType=atoi(stimertype.c_str());
-		int days=atoi(sdays.c_str());
-		unsigned char level=atoi(slevel.c_str());
-		sprintf(szData,"%02d:%02d",hour,min);
-		root["status"]="OK";
-		root["title"]="UpdateSceneTimer";
-		sprintf(szTmp,
-			"UPDATE SceneTimers SET Active=%d, Time='%s', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Days=%d WHERE (ID == %s)",
-			(active=="true")?1:0,
-			szData,
-			iTimerType,
-			(randomness=="true")?1:0,
-			icmd,
-			level,
-			days,
-			idx.c_str()
-			);
-		result=m_sql.query(szTmp);
-		m_mainworker.m_scheduler.ReloadSchedules();
-	}
-	else if (cparam=="deletetimer")
-	{
-		std::string idx=m_pWebEm->FindValue("idx");
-		if (idx=="")
-			return;
-		root["status"]="OK";
-		root["title"]="DeleteTimer";
-		sprintf(szTmp,
-			"DELETE FROM Timers WHERE (ID == %s)",
-			idx.c_str()
-			);
-		result=m_sql.query(szTmp);
-		m_mainworker.m_scheduler.ReloadSchedules();
-	}
-	else if (cparam=="deletescenetimer")
-	{
-		std::string idx=m_pWebEm->FindValue("idx");
-		if (idx=="")
-			return;
-		root["status"]="OK";
-		root["title"]="DeleteSceneTimer";
-		sprintf(szTmp,
-			"DELETE FROM SceneTimers WHERE (ID == %s)",
-			idx.c_str()
-			);
-		result=m_sql.query(szTmp);
-		m_mainworker.m_scheduler.ReloadSchedules();
-	}
 	else if (cparam=="clearlightlog")
 	{
 		std::string idx=m_pWebEm->FindValue("idx");
@@ -5282,90 +5078,6 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		szQuery.str("");
 		szQuery << "DELETE FROM LightingLog WHERE (DeviceRowID==" << idx << ")";
 		result=m_sql.query(szQuery.str());
-	}
-	else if (cparam=="cleartimers")
-	{
-		std::string idx=m_pWebEm->FindValue("idx");
-		if (idx=="")
-			return;
-		root["status"]="OK";
-		root["title"]="ClearTimer";
-		sprintf(szTmp,
-			"DELETE FROM Timers WHERE (DeviceRowID == %s)",
-			idx.c_str()
-			);
-		result=m_sql.query(szTmp);
-		m_mainworker.m_scheduler.ReloadSchedules();
-	}
-	else if (cparam=="clearscenetimers")
-	{
-		std::string idx=m_pWebEm->FindValue("idx");
-		if (idx=="")
-			return;
-		root["status"]="OK";
-		root["title"]="ClearSceneTimer";
-		sprintf(szTmp,
-			"DELETE FROM SceneTimers WHERE (SceneRowID == %s)",
-			idx.c_str()
-			);
-		result=m_sql.query(szTmp);
-		m_mainworker.m_scheduler.ReloadSchedules();
-	}
-	else if (cparam=="setscenecode")
-	{
-		std::string idx=m_pWebEm->FindValue("idx");
-		std::string cmnd=m_pWebEm->FindValue("cmnd");
-		if (
-			(idx=="")||
-			(cmnd=="")
-			)
-			return;
-		std::string devid=m_pWebEm->FindValue("devid");
-		if (devid=="")
-			return;
-		root["status"]="OK";
-		root["title"]="SetSceneCode";
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << devid << ")";
-		result=m_sql.query(szQuery.str());
-		if (result.size()>0)
-		{
-			sprintf(szTmp,
-				"UPDATE Scenes SET HardwareID=%d, DeviceID='%s', Unit=%d, Type=%d, SubType=%d, ListenCmd=%d WHERE (ID == %s)",
-				atoi(result[0][0].c_str()),
-				result[0][1].c_str(),
-				atoi(result[0][2].c_str()),
-				atoi(result[0][3].c_str()),
-				atoi(result[0][4].c_str()),
-				atoi(cmnd.c_str()),
-				idx.c_str()
-				);
-			result=m_sql.query(szTmp);
-			//Sanity Check, remove all SceneDevice that has this code
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "DELETE FROM SceneDevices WHERE (SceneRowID==" << idx << " AND DeviceRowID==" << devid << ")";
-			result=m_sql.query(szQuery.str()); //-V519
-		}
-	}
-	else if (cparam=="removescenecode")
-	{
-		std::string idx=m_pWebEm->FindValue("idx");
-		if (idx=="")
-			return;
-		root["status"]="OK";
-		root["title"]="RemoveSceneCode";
-		sprintf(szTmp,
-			"UPDATE Scenes SET HardwareID=%d, DeviceID='%s', Unit=%d, Type=%d, SubType=%d WHERE (ID == %s)",
-			0,
-			"",
-			0,
-			0,
-			0,
-			idx.c_str()
-			);
-		result=m_sql.query(szTmp);
 	}
 	else if (cparam=="learnsw")
 	{
@@ -6403,7 +6115,7 @@ char * CWebServer::DisplayTimerTypesCombo()
 	char szTmp[200];
 	for (int ii=0; ii<TTYPE_END; ii++)
 	{
-		sprintf(szTmp,"<option value=\"%d\">%s</option>\n",ii,Timer_Type_Desc(ii));
+		sprintf(szTmp, "<option data-i18n=\"%s\" value=\"%d\">%s</option>\n", Timer_Type_Desc(ii),ii,Timer_Type_Desc(ii));
 		m_retstr+=szTmp;
 	}
 	return (char*)m_retstr.c_str();
@@ -9587,10 +9299,11 @@ void CWebServer::RType_Timers(Json::Value &root)
 		return;
 	root["status"] = "OK";
 	root["title"] = "Timers";
+	char szTmp[50];
 
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ID, Active, Time, Type, Cmd, Level, Hue, Days, UseRandomness FROM Timers WHERE (DeviceRowID==" << idx << ") AND (TimerPlan==" << m_sql.m_ActiveTimerPlan << ") ORDER BY ID";
+	szQuery << "SELECT ID, Active, [Date], Time, Type, Cmd, Level, Hue, Days, UseRandomness FROM Timers WHERE (DeviceRowID==" << idx << ") AND (TimerPlan==" << m_sql.m_ActiveTimerPlan << ") ORDER BY ID";
 	result = m_sql.query(szQuery.str());
 	if (result.size() > 0)
 	{
@@ -9600,22 +9313,207 @@ void CWebServer::RType_Timers(Json::Value &root)
 		{
 			std::vector<std::string> sd = *itt;
 
-			unsigned char iLevel = atoi(sd[5].c_str());
+			unsigned char iLevel = atoi(sd[6].c_str());
 			if (iLevel == 0)
 				iLevel = 100;
 
+			int iTimerType = atoi(sd[4].c_str());
+			std::string sdate = sd[2];
+			if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
+			{
+				int Year = atoi(sdate.substr(0, 4).c_str());
+				int Month = atoi(sdate.substr(5, 2).c_str());
+				int Day = atoi(sdate.substr(8, 2).c_str());
+				sprintf(szTmp, "%02d-%02d-%04d", Month, Day, Year);
+				sdate = szTmp;
+			}
+			else
+				sdate = "";
+
 			root["result"][ii]["idx"] = sd[0];
 			root["result"][ii]["Active"] = (atoi(sd[1].c_str()) == 0) ? "false" : "true";
-			root["result"][ii]["Time"] = sd[2].substr(0, 5);
-			root["result"][ii]["Type"] = atoi(sd[3].c_str());
-			root["result"][ii]["Cmd"] = atoi(sd[4].c_str());
+			root["result"][ii]["Date"] = sdate;
+			root["result"][ii]["Time"] = sd[3].substr(0, 5);
+			root["result"][ii]["Type"] = iTimerType;
+			root["result"][ii]["Cmd"] = atoi(sd[5].c_str());
 			root["result"][ii]["Level"] = iLevel;
-			root["result"][ii]["Hue"] = atoi(sd[6].c_str());
-			root["result"][ii]["Days"] = atoi(sd[7].c_str());
-			root["result"][ii]["Randomness"] = (atoi(sd[8].c_str()) != 0);
+			root["result"][ii]["Hue"] = atoi(sd[7].c_str());
+			root["result"][ii]["Days"] = atoi(sd[8].c_str());
+			root["result"][ii]["Randomness"] = (atoi(sd[9].c_str()) != 0);
 			ii++;
 		}
 	}
+}
+
+void CWebServer::Cmd_AddTimer(Json::Value &root)
+{
+	std::string idx = m_pWebEm->FindValue("idx");
+	std::string active = m_pWebEm->FindValue("active");
+	std::string stimertype = m_pWebEm->FindValue("timertype");
+	std::string sdate = m_pWebEm->FindValue("date");
+	std::string shour = m_pWebEm->FindValue("hour");
+	std::string smin = m_pWebEm->FindValue("min");
+	std::string randomness = m_pWebEm->FindValue("randomness");
+	std::string scmd = m_pWebEm->FindValue("command");
+	std::string sdays = m_pWebEm->FindValue("days");
+	std::string slevel = m_pWebEm->FindValue("level");	//in percentage
+	std::string shue = m_pWebEm->FindValue("hue");
+	if (
+		(idx == "") ||
+		(active == "") ||
+		(stimertype == "") ||
+		(shour == "") ||
+		(smin == "") ||
+		(randomness == "") ||
+		(scmd == "") ||
+		(sdays == "")
+		)
+		return;
+	unsigned char iTimerType = atoi(stimertype.c_str());
+
+	char szTmp[200];
+	time_t now = mytime(NULL);
+	struct tm tm1;
+	localtime_r(&now, &tm1);
+	int Year = tm1.tm_year + 1900;
+	int Month = tm1.tm_mon + 1;
+	int Day = tm1.tm_mday;
+
+	if (iTimerType == TTYPE_FIXEDDATETIME)
+	{
+		if (sdate.size() == 10)
+		{
+			Month = atoi(sdate.substr(0, 2).c_str());
+			Day = atoi(sdate.substr(3, 2).c_str());
+			Year = atoi(sdate.substr(6, 4).c_str());
+		}
+	}
+
+	unsigned char hour = atoi(shour.c_str());
+	unsigned char min = atoi(smin.c_str());
+	unsigned char icmd = atoi(scmd.c_str());
+	int days = atoi(sdays.c_str());
+	unsigned char level = atoi(slevel.c_str());
+	int hue = atoi(shue.c_str());
+	root["status"] = "OK";
+	root["title"] = "AddTimer";
+	sprintf(szTmp,
+		"INSERT INTO Timers (Active, DeviceRowID, [Date], Time, Type, UseRandomness, Cmd, Level, Hue, Days, TimerPlan) VALUES (%d,%s,'%04d-%02d-%02d','%02d:%02d',%d,%d,%d,%d,%d,%d,%d)",
+		(active == "true") ? 1 : 0,
+		idx.c_str(),
+		Year,Month,Day,
+		hour, min,
+		iTimerType,
+		(randomness == "true") ? 1 : 0,
+		icmd,
+		level,
+		hue,
+		days,
+		m_sql.m_ActiveTimerPlan
+		);
+	m_sql.query(szTmp);
+	m_mainworker.m_scheduler.ReloadSchedules();
+}
+
+void CWebServer::Cmd_UpdateTimer(Json::Value &root)
+{
+	std::string idx = m_pWebEm->FindValue("idx");
+	std::string active = m_pWebEm->FindValue("active");
+	std::string stimertype = m_pWebEm->FindValue("timertype");
+	std::string sdate = m_pWebEm->FindValue("date");
+	std::string shour = m_pWebEm->FindValue("hour");
+	std::string smin = m_pWebEm->FindValue("min");
+	std::string randomness = m_pWebEm->FindValue("randomness");
+	std::string scmd = m_pWebEm->FindValue("command");
+	std::string sdays = m_pWebEm->FindValue("days");
+	std::string slevel = m_pWebEm->FindValue("level");	//in percentage
+	std::string shue = m_pWebEm->FindValue("hue");
+	if (
+		(idx == "") ||
+		(active == "") ||
+		(stimertype == "") ||
+		(shour == "") ||
+		(smin == "") ||
+		(randomness == "") ||
+		(scmd == "") ||
+		(sdays == "")
+		)
+		return;
+
+	char szTmp[200];
+	unsigned char iTimerType = atoi(stimertype.c_str());
+	time_t now = mytime(NULL);
+	struct tm tm1;
+	localtime_r(&now, &tm1);
+	int Year = tm1.tm_year + 1900;
+	int Month = tm1.tm_mon + 1;
+	int Day = tm1.tm_mday;
+
+	if (iTimerType == TTYPE_FIXEDDATETIME)
+	{
+		if (sdate.size() == 10)
+		{
+			Month = atoi(sdate.substr(0, 2).c_str());
+			Day = atoi(sdate.substr(3, 2).c_str());
+			Year = atoi(sdate.substr(6, 4).c_str());
+		}
+	}
+
+	unsigned char hour = atoi(shour.c_str());
+	unsigned char min = atoi(smin.c_str());
+	unsigned char icmd = atoi(scmd.c_str());
+	int days = atoi(sdays.c_str());
+	unsigned char level = atoi(slevel.c_str());
+	int hue = atoi(shue.c_str());
+	root["status"] = "OK";
+	root["title"] = "UpdateTimer";
+	sprintf(szTmp,
+		"UPDATE Timers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Hue=%d, Days=%d WHERE (ID == %s)",
+		(active == "true") ? 1 : 0,
+		Year, Month, Day,
+		hour, min,
+		iTimerType,
+		(randomness == "true") ? 1 : 0,
+		icmd,
+		level,
+		hue,
+		days,
+		idx.c_str()
+		);
+	m_sql.query(szTmp);
+	m_mainworker.m_scheduler.ReloadSchedules();
+}
+
+void CWebServer::Cmd_DeleteTimer(Json::Value &root)
+{
+	std::string idx = m_pWebEm->FindValue("idx");
+	if (idx == "")
+		return;
+	root["status"] = "OK";
+	root["title"] = "DeleteTimer";
+	char szTmp[100];
+	sprintf(szTmp,
+		"DELETE FROM Timers WHERE (ID == %s)",
+		idx.c_str()
+		);
+	m_sql.query(szTmp);
+	m_mainworker.m_scheduler.ReloadSchedules();
+}
+
+void CWebServer::Cmd_ClearTimers(Json::Value &root)
+{
+	std::string idx = m_pWebEm->FindValue("idx");
+	if (idx == "")
+		return;
+	root["status"] = "OK";
+	root["title"] = "ClearTimer";
+	char szTmp[100];
+	sprintf(szTmp,
+		"DELETE FROM Timers WHERE (DeviceRowID == %s)",
+		idx.c_str()
+		);
+	m_sql.query(szTmp);
+	m_mainworker.m_scheduler.ReloadSchedules();
 }
 
 void CWebServer::RType_SceneTimers(Json::Value &root)
@@ -9631,9 +9529,11 @@ void CWebServer::RType_SceneTimers(Json::Value &root)
 	root["status"] = "OK";
 	root["title"] = "SceneTimers";
 
+	char szTmp[40];
+
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ID, Active, Time, Type, Cmd, Level, Hue, Days, UseRandomness FROM SceneTimers WHERE (SceneRowID==" << idx << ") AND (TimerPlan==" << m_sql.m_ActiveTimerPlan << ") ORDER BY ID";
+	szQuery << "SELECT ID, Active, [Date], Time, Type, Cmd, Level, Hue, Days, UseRandomness FROM SceneTimers WHERE (SceneRowID==" << idx << ") AND (TimerPlan==" << m_sql.m_ActiveTimerPlan << ") ORDER BY ID";
 	result = m_sql.query(szQuery.str());
 	if (result.size() > 0)
 	{
@@ -9643,22 +9543,264 @@ void CWebServer::RType_SceneTimers(Json::Value &root)
 		{
 			std::vector<std::string> sd = *itt;
 
-			unsigned char iLevel = atoi(sd[5].c_str());
+			unsigned char iLevel = atoi(sd[6].c_str());
 			if (iLevel == 0)
 				iLevel = 100;
 
+			int iTimerType = atoi(sd[4].c_str());
+			std::string sdate = sd[2];
+			if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
+			{
+				int Year = atoi(sdate.substr(0, 4).c_str());
+				int Month = atoi(sdate.substr(5, 2).c_str());
+				int Day = atoi(sdate.substr(8, 2).c_str());
+				sprintf(szTmp, "%02d-%02d-%04d", Month, Day, Year);
+				sdate = szTmp;
+			}
+			else
+				sdate = "";
+
 			root["result"][ii]["idx"] = sd[0];
 			root["result"][ii]["Active"] = (atoi(sd[1].c_str()) == 0) ? "false" : "true";
-			root["result"][ii]["Time"] = sd[2].substr(0, 5);
-			root["result"][ii]["Type"] = atoi(sd[3].c_str());
-			root["result"][ii]["Cmd"] = atoi(sd[4].c_str());
+			root["result"][ii]["Date"] = sdate;
+			root["result"][ii]["Time"] = sd[3].substr(0, 5);
+			root["result"][ii]["Type"] = atoi(sd[4].c_str());
+			root["result"][ii]["Cmd"] = atoi(sd[5].c_str());
 			root["result"][ii]["Level"] = iLevel;
-			root["result"][ii]["Hue"] = atoi(sd[6].c_str());
-			root["result"][ii]["Days"] = atoi(sd[7].c_str());
-			root["result"][ii]["Randomness"] = (atoi(sd[8].c_str()) != 0);
+			root["result"][ii]["Hue"] = atoi(sd[7].c_str());
+			root["result"][ii]["Days"] = atoi(sd[8].c_str());
+			root["result"][ii]["Randomness"] = (atoi(sd[9].c_str()) != 0);
 			ii++;
 		}
 	}
+}
+
+void CWebServer::Cmd_AddSceneTimer(Json::Value &root)
+{
+	std::string idx = m_pWebEm->FindValue("idx");
+	std::string active = m_pWebEm->FindValue("active");
+	std::string stimertype = m_pWebEm->FindValue("timertype");
+	std::string sdate = m_pWebEm->FindValue("date");
+	std::string shour = m_pWebEm->FindValue("hour");
+	std::string smin = m_pWebEm->FindValue("min");
+	std::string randomness = m_pWebEm->FindValue("randomness");
+	std::string scmd = m_pWebEm->FindValue("command");
+	std::string sdays = m_pWebEm->FindValue("days");
+	std::string slevel = m_pWebEm->FindValue("level");	//in percentage
+	if (
+		(idx == "") ||
+		(active == "") ||
+		(stimertype == "") ||
+		(shour == "") ||
+		(smin == "") ||
+		(randomness == "") ||
+		(scmd == "") ||
+		(sdays == "")
+		)
+		return;
+	unsigned char iTimerType = atoi(stimertype.c_str());
+
+	char szTmp[200];
+	time_t now = mytime(NULL);
+	struct tm tm1;
+	localtime_r(&now, &tm1);
+	int Year = tm1.tm_year + 1900;
+	int Month = tm1.tm_mon + 1;
+	int Day = tm1.tm_mday;
+
+	if (iTimerType == TTYPE_FIXEDDATETIME)
+	{
+		if (sdate.size() == 10)
+		{
+			Month = atoi(sdate.substr(0, 2).c_str());
+			Day = atoi(sdate.substr(3, 2).c_str());
+			Year = atoi(sdate.substr(6, 4).c_str());
+		}
+	}
+
+	unsigned char hour = atoi(shour.c_str());
+	unsigned char min = atoi(smin.c_str());
+	unsigned char icmd = atoi(scmd.c_str());
+	int days = atoi(sdays.c_str());
+	unsigned char level = atoi(slevel.c_str());
+	root["status"] = "OK";
+	root["title"] = "AddSceneTimer";
+	sprintf(szTmp,
+		"INSERT INTO SceneTimers (Active, SceneRowID, [Date], Time, Type, UseRandomness, Cmd, Level, Days, TimerPlan) VALUES (%d,%s,'%04d-%02d-%02d','%02d:%02d',%d,%d,%d,%d,%d,%d)",
+		(active == "true") ? 1 : 0,
+		idx.c_str(),
+		Year, Month, Day,
+		hour, min,
+		iTimerType,
+		(randomness == "true") ? 1 : 0,
+		icmd,
+		level,
+		days,
+		m_sql.m_ActiveTimerPlan
+		);
+	m_sql.query(szTmp);
+	m_mainworker.m_scheduler.ReloadSchedules();
+}
+
+void CWebServer::Cmd_UpdateSceneTimer(Json::Value &root)
+{
+	std::string idx = m_pWebEm->FindValue("idx");
+	std::string active = m_pWebEm->FindValue("active");
+	std::string stimertype = m_pWebEm->FindValue("timertype");
+	std::string sdate = m_pWebEm->FindValue("date");
+	std::string shour = m_pWebEm->FindValue("hour");
+	std::string smin = m_pWebEm->FindValue("min");
+	std::string randomness = m_pWebEm->FindValue("randomness");
+	std::string scmd = m_pWebEm->FindValue("command");
+	std::string sdays = m_pWebEm->FindValue("days");
+	std::string slevel = m_pWebEm->FindValue("level");	//in percentage
+	if (
+		(idx == "") ||
+		(active == "") ||
+		(stimertype == "") ||
+		(shour == "") ||
+		(smin == "") ||
+		(randomness == "") ||
+		(scmd == "") ||
+		(sdays == "")
+		)
+		return;
+
+	unsigned char iTimerType = atoi(stimertype.c_str());
+
+	char szTmp[200];
+	time_t now = mytime(NULL);
+	struct tm tm1;
+	localtime_r(&now, &tm1);
+	int Year = tm1.tm_year + 1900;
+	int Month = tm1.tm_mon + 1;
+	int Day = tm1.tm_mday;
+
+	if (iTimerType == TTYPE_FIXEDDATETIME)
+	{
+		if (sdate.size() == 10)
+		{
+			Month = atoi(sdate.substr(0, 2).c_str());
+			Day = atoi(sdate.substr(3, 2).c_str());
+			Year = atoi(sdate.substr(6, 4).c_str());
+		}
+	}
+
+	unsigned char hour = atoi(shour.c_str());
+	unsigned char min = atoi(smin.c_str());
+	unsigned char icmd = atoi(scmd.c_str());
+	int days = atoi(sdays.c_str());
+	unsigned char level = atoi(slevel.c_str());
+	root["status"] = "OK";
+	root["title"] = "UpdateSceneTimer";
+	sprintf(szTmp,
+		"UPDATE SceneTimers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Days=%d WHERE (ID == %s)",
+		(active == "true") ? 1 : 0,
+		Year, Month, Day,
+		hour, min,
+		iTimerType,
+		(randomness == "true") ? 1 : 0,
+		icmd,
+		level,
+		days,
+		idx.c_str()
+		);
+	m_sql.query(szTmp);
+	m_mainworker.m_scheduler.ReloadSchedules();
+}
+
+void CWebServer::Cmd_DeleteSceneTimer(Json::Value &root)
+{
+	std::string idx = m_pWebEm->FindValue("idx");
+	if (idx == "")
+		return;
+	root["status"] = "OK";
+	root["title"] = "DeleteSceneTimer";
+	char szTmp[100];
+	sprintf(szTmp,
+		"DELETE FROM SceneTimers WHERE (ID == %s)",
+		idx.c_str()
+		);
+	m_sql.query(szTmp);
+	m_mainworker.m_scheduler.ReloadSchedules();
+}
+
+void CWebServer::Cmd_ClearSceneTimers(Json::Value &root)
+{
+	std::string idx = m_pWebEm->FindValue("idx");
+	if (idx == "")
+		return;
+	root["status"] = "OK";
+	root["title"] = "ClearSceneTimer";
+	char szTmp[100];
+	sprintf(szTmp,
+		"DELETE FROM SceneTimers WHERE (SceneRowID == %s)",
+		idx.c_str()
+		);
+	m_sql.query(szTmp);
+	m_mainworker.m_scheduler.ReloadSchedules();
+}
+
+void CWebServer::Cmd_SetSceneCode(Json::Value &root)
+{
+	std::string idx = m_pWebEm->FindValue("idx");
+	std::string cmnd = m_pWebEm->FindValue("cmnd");
+	if (
+		(idx == "") ||
+		(cmnd == "")
+		)
+		return;
+	std::string devid = m_pWebEm->FindValue("devid");
+	if (devid == "")
+		return;
+	root["status"] = "OK";
+	root["title"] = "SetSceneCode";
+
+	char szTmp[200];
+
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << devid << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() > 0)
+	{
+		sprintf(szTmp,
+			"UPDATE Scenes SET HardwareID=%d, DeviceID='%s', Unit=%d, Type=%d, SubType=%d, ListenCmd=%d WHERE (ID == %s)",
+			atoi(result[0][0].c_str()),
+			result[0][1].c_str(),
+			atoi(result[0][2].c_str()),
+			atoi(result[0][3].c_str()),
+			atoi(result[0][4].c_str()),
+			atoi(cmnd.c_str()),
+			idx.c_str()
+			);
+		m_sql.query(szTmp);
+		//Sanity Check, remove all SceneDevice that has this code
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "DELETE FROM SceneDevices WHERE (SceneRowID==" << idx << " AND DeviceRowID==" << devid << ")";
+		m_sql.query(szQuery.str()); //-V519
+	}
+}
+
+void CWebServer::Cmd_RemoveSceneCode(Json::Value &root)
+{
+	std::string idx = m_pWebEm->FindValue("idx");
+	if (idx == "")
+		return;
+	root["status"] = "OK";
+	root["title"] = "RemoveSceneCode";
+	char szTmp[100];
+	sprintf(szTmp,
+		"UPDATE Scenes SET HardwareID=%d, DeviceID='%s', Unit=%d, Type=%d, SubType=%d WHERE (ID == %s)",
+		0,
+		"",
+		0,
+		0,
+		0,
+		idx.c_str()
+		);
+	m_sql.query(szTmp);
 }
 
 void CWebServer::RType_GetTransfers(Json::Value &root)

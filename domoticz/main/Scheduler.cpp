@@ -55,7 +55,7 @@ void CScheduler::ReloadSchedules()
 	std::vector<std::vector<std::string> > result;
 
 	//Add Device Timers
-	szQuery << "SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T2.Used, T1.UseRandomness, T1.Hue FROM Timers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == " << m_sql.m_ActiveTimerPlan << ") AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID";
+	szQuery << "SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T2.Used, T1.UseRandomness, T1.Hue, T1.[Date] FROM Timers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == " << m_sql.m_ActiveTimerPlan << ") AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID";
 	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -70,7 +70,10 @@ void CScheduler::ReloadSchedules()
 			{
 				tScheduleItem titem;
 
+				titem.bEnabled = true;
 				titem.bIsScene=false;
+
+				_eTimerType timerType = (_eTimerType)atoi(sd[2].c_str());
 
 				std::stringstream s_str( sd[0] );
 				s_str >> titem.RowID;
@@ -78,11 +81,22 @@ void CScheduler::ReloadSchedules()
 				titem.startHour=(unsigned char)atoi(sd[1].substr(0,2).c_str());
 				titem.startMin=(unsigned char)atoi(sd[1].substr(3,2).c_str());
 				titem.startTime=0;
-				titem.timerType=(_eTimerType)atoi(sd[2].c_str());
+				titem.timerType = timerType;
 				titem.timerCmd=(_eTimerCommand)atoi(sd[3].c_str());
 				titem.Level=(unsigned char)atoi(sd[4].c_str());
 				titem.bUseRandmoness=(atoi(sd[8].c_str())!=0);
 				titem.Hue=atoi(sd[9].c_str());
+
+				if (timerType == TTYPE_FIXEDDATETIME)
+				{
+					std::string sdate = sd[10];
+					if (sdate.size()!=10)
+						continue; //invalid
+					titem.startYear = (unsigned short)atoi(sdate.substr(0, 4).c_str());
+					titem.startMonth = (unsigned char)atoi(sdate.substr(5, 2).c_str());
+					titem.startDay = (unsigned char)atoi(sdate.substr(8, 2).c_str());
+				}
+
 				if ((titem.timerCmd==TCMD_ON)&&(titem.Level==0))
 				{
 					titem.Level=100;
@@ -106,7 +120,7 @@ void CScheduler::ReloadSchedules()
 	//Add Scene Timers
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT T1.SceneRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T1.UseRandomness FROM SceneTimers as T1, Scenes as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == " << m_sql.m_ActiveTimerPlan << ") AND (T2.ID == T1.SceneRowID)) ORDER BY T1.ID";
+	szQuery << "SELECT T1.SceneRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T1.UseRandomness, T1.[Date] FROM SceneTimers as T1, Scenes as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == " << m_sql.m_ActiveTimerPlan << ") AND (T2.ID == T1.SceneRowID)) ORDER BY T1.ID";
 	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -117,15 +131,28 @@ void CScheduler::ReloadSchedules()
 
 			tScheduleItem titem;
 
-			titem.bIsScene=true;
+			titem.bEnabled = true;
+			titem.bIsScene = true;
 
 			std::stringstream s_str( sd[0] );
 			s_str >> titem.RowID;
 
+			_eTimerType timerType = (_eTimerType)atoi(sd[2].c_str());
+
+			if (timerType == TTYPE_FIXEDDATETIME)
+			{
+				std::string sdate = sd[8];
+				if (sdate.size() != 10)
+					continue; //invalid
+				titem.startYear = (unsigned short)atoi(sdate.substr(0, 4).c_str());
+				titem.startMonth = (unsigned char)atoi(sdate.substr(5, 2).c_str());
+				titem.startDay = (unsigned char)atoi(sdate.substr(8, 2).c_str());
+			}
+
 			titem.startHour=(unsigned char)atoi(sd[1].substr(0,2).c_str());
 			titem.startMin=(unsigned char)atoi(sd[1].substr(3,2).c_str());
 			titem.startTime=0;
-			titem.timerType=(_eTimerType)atoi(sd[2].c_str());
+			titem.timerType = timerType;
 			titem.timerCmd=(_eTimerCommand)atoi(sd[3].c_str());
 			titem.Level=(unsigned char)atoi(sd[4].c_str());
 			titem.bUseRandmoness=(atoi(sd[7].c_str())!=0);
@@ -203,7 +230,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	int roffset=0;
 	if (pItem->bUseRandmoness)
 	{
-		if (pItem->timerType == TTYPE_ONTIME)
+		if ((pItem->timerType == TTYPE_ONTIME) || (pItem->timerType == TTYPE_FIXEDDATETIME))
 			roffset=rand() % (nRandomTimerFrame*2)-nRandomTimerFrame;
 		else
 			roffset=rand() % (nRandomTimerFrame);
@@ -214,6 +241,19 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		ltime.tm_hour=pItem->startHour;
 		ltime.tm_min=pItem->startMin;
 		rtime=mktime(&ltime)+(roffset*60);
+	}
+	else if (pItem->timerType == TTYPE_FIXEDDATETIME)
+	{
+		ltime.tm_year = pItem->startYear - 1900;
+		ltime.tm_mon = pItem->startMonth - 1;
+		ltime.tm_mday = pItem->startDay;
+		ltime.tm_hour = pItem->startHour;
+		ltime.tm_min = pItem->startMin;
+		rtime = mktime(&ltime) + (roffset * 60);
+		if (rtime < atime)
+			return false; //past date/time
+		pItem->startTime = rtime;
+		return true;
 	}
 	else if (pItem->timerType == TTYPE_BEFORESUNSET)
 	{
@@ -290,44 +330,51 @@ void CScheduler::CheckSchedules()
 	std::vector<tScheduleItem>::iterator itt;
 	for (itt=m_scheduleitems.begin(); itt!=m_scheduleitems.end(); ++itt)
 	{
-		if (atime>itt->startTime)
+		if ((itt->bEnabled)&&(atime>itt->startTime))
 		{
 			//check if we are on a valid day
-			bool bOkToFire=false;
-			if (itt->Days & 0x80)
+			bool bOkToFire = false;
+			if (itt->timerType == TTYPE_FIXEDDATETIME)
 			{
-				//everyday
-				bOkToFire=true; 
-			}
-			else if (itt->Days & 0x100)
-			{
-				//weekdays
-				if ((ltime.tm_wday>0)&&(ltime.tm_wday<6))
-					bOkToFire=true;
-			}
-			else if (itt->Days & 0x200)
-			{
-				//weekends
-				if ((ltime.tm_wday==0)||(ltime.tm_wday==6))
-					bOkToFire=true;
+				bOkToFire = true;
 			}
 			else
 			{
-				//custom days
-				if ((itt->Days & 0x01)&&(ltime.tm_wday==1))
-					bOkToFire=true;//Monday
-				if ((itt->Days & 0x02)&&(ltime.tm_wday==2))
-					bOkToFire=true;//Tuesday
-				if ((itt->Days & 0x04)&&(ltime.tm_wday==3))
-					bOkToFire=true;//Wednesday
-				if ((itt->Days & 0x08)&&(ltime.tm_wday==4))
-					bOkToFire=true;//Thursday
-				if ((itt->Days & 0x10)&&(ltime.tm_wday==5))
-					bOkToFire=true;//Friday
-				if ((itt->Days & 0x20)&&(ltime.tm_wday==6))
-					bOkToFire=true;//Saturday
-				if ((itt->Days & 0x40)&&(ltime.tm_wday==0))
-					bOkToFire=true;//Sunday
+				if (itt->Days & 0x80)
+				{
+					//everyday
+					bOkToFire = true;
+				}
+				else if (itt->Days & 0x100)
+				{
+					//weekdays
+					if ((ltime.tm_wday > 0) && (ltime.tm_wday < 6))
+						bOkToFire = true;
+				}
+				else if (itt->Days & 0x200)
+				{
+					//weekends
+					if ((ltime.tm_wday == 0) || (ltime.tm_wday == 6))
+						bOkToFire = true;
+				}
+				else
+				{
+					//custom days
+					if ((itt->Days & 0x01) && (ltime.tm_wday == 1))
+						bOkToFire = true;//Monday
+					if ((itt->Days & 0x02) && (ltime.tm_wday == 2))
+						bOkToFire = true;//Tuesday
+					if ((itt->Days & 0x04) && (ltime.tm_wday == 3))
+						bOkToFire = true;//Wednesday
+					if ((itt->Days & 0x08) && (ltime.tm_wday == 4))
+						bOkToFire = true;//Thursday
+					if ((itt->Days & 0x10) && (ltime.tm_wday == 5))
+						bOkToFire = true;//Friday
+					if ((itt->Days & 0x20) && (ltime.tm_wday == 6))
+						bOkToFire = true;//Saturday
+					if ((itt->Days & 0x40) && (ltime.tm_wday == 0))
+						bOkToFire = true;//Sunday
+				}
 			}
 			if (bOkToFire)
 			{
@@ -397,7 +444,14 @@ void CScheduler::CheckSchedules()
 			if (!AdjustScheduleItem(&*itt,true))
 			{
 				//something is wrong, probably no sunset/rise
-				itt->startTime+=atime+(24*3600);
+				if (itt->timerType != TTYPE_FIXEDDATETIME)
+				{
+					itt->startTime += atime + (24 * 3600);
+				}
+				else {
+					//Disable timer
+					itt->bEnabled = false;
+				}
 			}
 		}
 	}

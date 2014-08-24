@@ -6,9 +6,13 @@
 
 struct tScheduleItem
 {
+	bool bEnabled;
 	bool bIsScene;
 	std::string DeviceName;
 	unsigned long long RowID;
+	unsigned char startDay;
+	unsigned char startMonth;
+	unsigned short startYear;
 	unsigned char startHour;
 	unsigned char startMin;
 	_eTimerType	timerType; 
