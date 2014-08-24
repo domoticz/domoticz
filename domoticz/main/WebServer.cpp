@@ -2083,6 +2083,7 @@ void CWebServer::Cmd_SetPlanDeviceCoords(Json::Value &root)
 	std::stringstream szQuery;
 	szQuery << "UPDATE DeviceToPlansMap SET [XOffset] = " << xoffset << ", [YOffset] = " << yoffset << " WHERE (DeviceRowID='" << idx << "') and (PlanID='" << planidx << "') and (DevSceneType='" << type << "')";
 	m_sql.query(szQuery.str());
+	_log.Log(LOG_STATUS, "(Floorplan) Device '%s' coordinates set to '%s,%s' in plan '%s'.", idx.c_str(),xoffset.c_str(),yoffset.c_str(),planidx.c_str() );
 }
 
 void CWebServer::Cmd_DeleteAllPlanDevices(Json::Value &root)
@@ -5922,6 +5923,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			imagefile.c_str()
 			);
 		result=m_sql.query(szTmp);
+		_log.Log(LOG_STATUS, "(Floorplan) '%s' created with image file '%s'.", name.c_str(),imagefile.c_str() );
 	}
 	else if (cparam=="updatefloorplan")
 	{
@@ -5946,6 +5948,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			idx.c_str()
 			);
 		result = m_sql.query(szTmp);
+		_log.Log(LOG_STATUS, "(Floorplan) '%s' updated with image file '%s'.", name.c_str(),imagefile.c_str() );
 	}
 	else if (cparam=="deletefloorplan")
 	{
@@ -5955,15 +5958,23 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["status"] = "OK";
 		root["title"] = "DeleteFloorplan";
 		sprintf(szTmp,
-			"UPDATE Plans SET FloorplanID=0 WHERE (FloorplanID == %s)",
+			"UPDATE DeviceToPlansMap SET XOffset=0,YOffset=0 WHERE (PlanID IN (SELECT ID from Plans WHERE (FloorplanID == %s)))",
 			idx.c_str()
 			);
 		result = m_sql.query(szTmp);
+		_log.Log(LOG_STATUS, "(Floorplan) Device coordinates reset for all plans on floorplan '%s'.", idx.c_str() );
+		sprintf(szTmp,
+			"UPDATE Plans SET FloorplanID=0,Area='' WHERE (FloorplanID == %s)",
+			idx.c_str()
+			);
+		result = m_sql.query(szTmp);
+		_log.Log(LOG_STATUS, "(Floorplan) Plans for floorplan '%s' reset.", idx.c_str() );
 		sprintf(szTmp,
 			"DELETE FROM Floorplans WHERE (ID == %s)",
 			idx.c_str()
 			);
 		result = m_sql.query(szTmp);
+		_log.Log(LOG_STATUS, "(Floorplan) Floorplan '%s' deleted.", idx.c_str() );
 	}
 	else if (cparam=="changefloorplanorder")
 	{
@@ -6092,6 +6103,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			planidx.c_str()
 			);
 		result = m_sql.query(szTmp);
+		_log.Log(LOG_STATUS, "(Floorplan) Plan '%s' added to floorplan '%s'.", planidx.c_str(),idx.c_str() );
 	}
 	else if (cparam=="updatefloorplanplan")
 	{
@@ -6108,6 +6120,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			planidx.c_str()
 			);
 		result = m_sql.query(szTmp);
+		_log.Log(LOG_STATUS, "(Floorplan) Plan '%s' floor area updated to '%s'.", planidx.c_str(),planarea.c_str() );
 	}
 	else if (cparam=="deletefloorplanplan")
 	{
@@ -6117,10 +6130,17 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 		root["status"] = "OK";
 		root["title"] = "DeleteFloorplanPlan";
 		sprintf(szTmp,
-			"UPDATE Plans SET FloorplanID=0 WHERE (ID == %s)",
+			"UPDATE DeviceToPlansMap SET XOffset=0,YOffset=0 WHERE (PlanID == %s)",
 			idx.c_str()
 			);
 		result = m_sql.query(szTmp);
+		_log.Log(LOG_STATUS, "(Floorplan) Device coordinates reset for plan '%s'.", idx.c_str() );
+		sprintf(szTmp,
+			"UPDATE Plans SET FloorplanID=0,Area='' WHERE (ID == %s)",
+			idx.c_str()
+			);
+		result = m_sql.query(szTmp);
+		_log.Log(LOG_STATUS, "(Floorplan) Plan '%s' floorplan data reset.", idx.c_str() );
 	}
 }
 
