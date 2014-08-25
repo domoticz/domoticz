@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "Razberry.h"
 
-#include <iostream>     // std::cout
 #include <sstream>      // std::stringstream
 #include <vector>
 #include <ctype.h>
@@ -717,8 +716,7 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 //	if (atime-pDevice->lastreceived<2)
 	//	return; //to soon
 #ifdef _DEBUG
-	std::cout << asctime(localtime(&atime));
-	std::cout << "Razberry: Update device: " << pDevice->string_id << std::endl;
+	_log.Log(LOG_NORM, "Razberry: Update device: %s", pDevice->string_id.c_str());
 #endif
 
 	switch (pDevice->devType)

@@ -11636,10 +11636,10 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 							{
 								if (bHaveFirstValue)
 								{
-									root["result"][ii]["d"] = LastDateTime + ":00";
+									root["result"][ii]["d"] = actDateTimeHour + ":00";
 
-									unsigned long long ulTotalValue = actValue - ulFirstValue;
-									float TotalValue = float(ulTotalValue);
+									float TotalValue = float(actValue - ulFirstValue);
+
 									if (TotalValue != 0)
 									{
 										switch (metertype)

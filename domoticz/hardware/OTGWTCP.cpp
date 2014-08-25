@@ -119,6 +119,10 @@ void OTGWTCP::Do_Work()
 		{
 			bFirstTime=false;
 			connect(m_szIPAddress,m_usIPPort);
+			if (mIsConnected)
+			{
+				GetGatewayDetails();
+			}
 		}
 		else
 		{

@@ -3303,7 +3303,7 @@ unsigned long long MainWorker::decode_Lighting1(const CDomoticzHardwareBase *pHa
 			WriteMessage(szTmp);
 			break;
 		}
-		printf(szTmp,"Signal level  = %d", pResponse->LIGHTING1.rssi);
+		sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING1.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}

@@ -827,7 +827,6 @@ char* enocean_hexToHuman(const enocean_data_structure *pFrame)
 		tempstring += sizeof(HR_IDBASE)-1;
 		sprintf(tempstring,"0x%02x%02x%02x%02x",pFrame->DATA_BYTE3,pFrame->DATA_BYTE2,pFrame->DATA_BYTE1,pFrame->DATA_BYTE0);
 		tempstring += 10;
-		//printf("TCM120 Module initialized");
 		break;
 	case C_ORG_INF_SW_VER:
 		sprintf(tempstring,HR_SOFTWAREVERSION);

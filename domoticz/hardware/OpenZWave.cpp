@@ -2,7 +2,6 @@
 #ifdef WITH_OPENZWAVE
 #include "OpenZWave.h"
 
-#include <iostream>     // std::cout
 #include <sstream>      // std::stringstream
 #include <vector>
 #include <ctype.h>

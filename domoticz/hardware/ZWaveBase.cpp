@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "ZWaveBase.h"
 
-#include <iostream>     // std::cout
 #include <sstream>      // std::stringstream
 #include <vector>
 #include <ctype.h>
@@ -129,11 +128,11 @@ void ZWaveBase::InsertDevice(_tZWaveDevice device)
 #ifdef _DEBUG
 	if (bNewDevice)
 	{
-		std::cout << "New device: " << device.string_id << std::endl;
+		_log.Log(LOG_NORM, "New device: %s", device.string_id.c_str());
 	}
 	else
 	{
-		std::cout << "Update device: " << device.string_id << std::endl;
+		_log.Log(LOG_NORM, "Update device: %s", device.string_id.c_str());
 	}
 #endif
 	//insert or update device in internal record
