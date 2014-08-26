@@ -95,6 +95,7 @@ Version 1.0.xxxx (August xxth 2014)
 - Changed: When receiving of new sensors is disabled, it's now possible to add a manual light/switch
 - Implemented: It is now logged which user issued a switch/security reset/setpoint/thermostat state change command
 - Implemented: Light/Scene/Group timer with fixed Date/Time
+- Fixed: Pushover notification (thanks to Gerlo)
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

@@ -2160,11 +2160,10 @@ bool CSQLHelper::SendNotification(const std::string &EventID, const std::string 
 				{
 					char sPostData[300];
 					int poPriority = Priority;
-					if (poPriority < -1) {
-						poPriority = -1;
-					};
-					std::string poSound ="pushover";
-					sprintf(sPostData,"token=%s&user=%s&priority=%d&title=%s&message=%s&sound=%s",poApiKey.c_str(),sValue.c_str(),poPriority,Message.c_str(),Message.c_str(),poSound.c_str());
+					sprintf(sPostData,"token=%s&user=%s&priority=%d&title=%s&message=%s",poApiKey.c_str(),sValue.c_str(),poPriority,Message.c_str(),Message.c_str());
+					if (poPriority == 2) {
+						sprintf(sPostData,"%s&retry=300&expire=3600",sPostData); // retry every 5 minutes, one hour long
+					}
 					std::vector<std::string> ExtraHeaders;
 					if (!HTTPClient::POST("https://api.pushover.net/1/messages.json",sPostData,ExtraHeaders,sResult))
 					{
@@ -2270,14 +2269,14 @@ bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::strin
 				{
 					char sPostData[300];
 					int poPriority = Priority;
-					if (poPriority < -1) {
-						poPriority = -1;
-					};
+					sprintf(sPostData,"token=%s&user=%s&priority=%d&title=%s&message=%s",poApiKey.c_str(),sValue.c_str(),poPriority,uencode.URLEncode(Subject).c_str(),uencode.URLEncode(notimessage).c_str());
 					std::string poSound = Sound;
-					if (poSound=="") {
-						poSound="pushover";
-					};
-					sprintf(sPostData,"token=%s&user=%s&priority=%d&title=%s&message=%s&sound=%s",poApiKey.c_str(),sValue.c_str(),poPriority,uencode.URLEncode(Subject).c_str(),uencode.URLEncode(notimessage).c_str(),poSound.c_str());
+					if (poSound!="") {
+						sprintf(sPostData,"%s&sound=%s",sPostData,poSound.c_str() ) ;
+					}
+					if (poPriority == 2) {
+						sprintf(sPostData,"%s&retry=300&expire=3600",sPostData); // retry every 5 minutes, one hour long
+					}
 					std::vector<std::string> ExtraHeaders;
 					if (!HTTPClient::POST("https://api.pushover.net/1/messages.json",sPostData,ExtraHeaders,sResult))
 					{
