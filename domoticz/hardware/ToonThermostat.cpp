@@ -513,20 +513,27 @@ void CToonThermostat::GetMeterDetails()
 		SendSetPointSensor(1, currentSetpoint, "Room Setpoint");
 		SendTempSensor(1, currentTemp, "Room Temperature");
 
-		int programState = root["thermostatInfo"]["programState"].asInt();
-		int activeState = root["thermostatInfo"]["activeState"].asInt();
+		//int programState = root["thermostatInfo"]["programState"].asInt();
+		//int activeState = root["thermostatInfo"]["activeState"].asInt();
 
 		if (root["thermostatInfo"]["burnerInfo"].empty() == false)
 		{
-			std::string sBurnerInfo = root["thermostatInfo"]["burnerInfo"].asString();
-			int burnerInfo = atoi(sBurnerInfo.c_str());
 			//burnerinfo
 			//0=off
 			//1=heating
 			//2=hot water
 			//3=pre-heating
-			UpdateSwitch(113, burnerInfo != 0, "FlameOn");
-
+			if (root["thermostatInfo"]["burnerInfo"].isString())
+			{
+				std::string sBurnerInfo = root["thermostatInfo"]["burnerInfo"].asString();
+				int burnerInfo = atoi(sBurnerInfo.c_str());
+				UpdateSwitch(113, burnerInfo != 0, "FlameOn");
+			}
+			else if (root["thermostatInfo"]["burnerInfo"].isInt())
+			{
+				int burnerInfo = root["thermostatInfo"]["burnerInfo"].asInt();
+				UpdateSwitch(113, burnerInfo != 0, "FlameOn");
+			}
 		}
 	}
 
