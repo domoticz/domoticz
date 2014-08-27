@@ -2467,18 +2467,6 @@ bool COpenZWave::IsNodeRGBW(const int homeID, const int nodeID)
 	return (ProductDescription.find("FGRGBWM441") != std::string::npos);
 }
 
-bool COpenZWave::IsNodeFGBS001(const int homeID, const int nodeID)
-{
-	std::stringstream szQuery;
-	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ProductDescription FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
-	result = m_sql.query(szQuery.str());
-	if (result.size() < 1)
-		return false;
-	std::string ProductDescription = result[0][0];
-	return (ProductDescription.find("FGBS001") != std::string::npos);
-}
-
 void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int pollTime)
 {
 	NodeInfo *pNode=GetNodeInfo(homeID, nodeID);
