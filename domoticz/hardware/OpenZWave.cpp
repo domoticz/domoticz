@@ -523,6 +523,8 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 		)
 	{
 		instance = vIndex;
+		if ((instance == 0) && (vInstance > 1))
+			instance = vInstance;
 	}
 	else
 	{
@@ -1099,6 +1101,9 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		unsigned char commandclass=vID.GetCommandClassId();
 		unsigned char NodeID = vID.GetNodeId();
 
+		unsigned char vInstance = vID.GetInstance();//(See note on top of this file) GetInstance();
+		unsigned char vIndex = vID.GetIndex();
+
 		unsigned char instance;
 		if (
 			(commandclass==COMMAND_CLASS_MULTI_INSTANCE)||
@@ -1107,7 +1112,9 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 			(commandclass==COMMAND_CLASS_SENSOR_BINARY)
 			)
 		{
-			instance=vID.GetIndex();//(See note on top of this file) GetInstance();
+			instance = vIndex;//(See note on top of this file) GetInstance();
+			if ((instance == 0) && (vInstance > 1))
+				instance = vInstance;
 		}
 		else
 		{
@@ -1172,6 +1179,9 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	unsigned char HomeID = vID.GetHomeId();
 	unsigned char NodeID = vID.GetNodeId();
 
+	unsigned char vInstance = vID.GetInstance();//(See note on top of this file) GetInstance();
+	unsigned char vIndex = vID.GetIndex();
+
 	int instance;
 	if (
 		(commandclass==COMMAND_CLASS_MULTI_INSTANCE)||
@@ -1180,17 +1190,20 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 		(commandclass==COMMAND_CLASS_SENSOR_BINARY)
 		)
 	{
-		instance=vID.GetIndex();//(See note on top of this file) GetInstance();
+		instance = vIndex;//(See note on top of this file) GetInstance();
 		//special case for sensor_multilevel
 		if (commandclass == COMMAND_CLASS_SENSOR_MULTILEVEL)
 		{
 			unsigned char rIndex = instance;
-			unsigned char rInstance = vID.GetInstance();
-			if (rIndex != rInstance)
+			if (rIndex != vInstance)
 			{
 				if (rIndex == 1)
-					instance = rInstance;
+					instance = vInstance;
 			}
+		}
+		else {
+			if ((instance == 0) && (vInstance > 1))
+				instance = vInstance;
 		}
 	}
 	else
@@ -1754,6 +1767,9 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 	unsigned char HomeID = vID.GetHomeId();
 	unsigned char NodeID = vID.GetNodeId();
 
+	unsigned char vInstance = vID.GetInstance();//(See note on top of this file) GetInstance();
+	unsigned char vIndex = vID.GetIndex();
+
 	unsigned char instance;
 	if (
 		(commandclass==COMMAND_CLASS_MULTI_INSTANCE)||
@@ -1762,21 +1778,26 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 		(commandclass==COMMAND_CLASS_SENSOR_BINARY)
 		)
 	{
-		instance=vID.GetIndex();//(See note on top of this file) GetInstance();
+		instance = vIndex;//(See note on top of this file) GetInstance();
 		if (commandclass == COMMAND_CLASS_SENSOR_MULTILEVEL)
 		{
 			unsigned char rIndex = instance;
-			unsigned char rInstance = vID.GetInstance();
+			unsigned char rInstance = vInstance;
 			if (rIndex != rInstance)
 			{
 				if (rIndex == 1)
 					instance = rInstance;
 			}
 		}
+		else
+		{
+			if ((instance == 0) && (vInstance > 1))
+				instance = vInstance;
+		}
 	}
 	else
 	{
-		instance=vID.GetInstance();//(See note on top of this file) GetInstance();
+		instance = vInstance;//(See note on top of this file) GetInstance();
 	}
 
 	OpenZWave::ValueID::ValueType vType=vID.GetType();
@@ -2444,6 +2465,18 @@ bool COpenZWave::IsNodeRGBW(const int homeID, const int nodeID)
 		return false;
 	std::string ProductDescription = result[0][0];
 	return (ProductDescription.find("FGRGBWM441") != std::string::npos);
+}
+
+bool COpenZWave::IsNodeFGBS001(const int homeID, const int nodeID)
+{
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT ProductDescription FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() < 1)
+		return false;
+	std::string ProductDescription = result[0][0];
+	return (ProductDescription.find("FGBS001") != std::string::npos);
 }
 
 void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int pollTime)

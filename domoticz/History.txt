@@ -96,6 +96,7 @@ Version 1.0.xxxx (August xxth 2014)
 - Implemented: It is now logged which user issued a switch/security reset/setpoint/thermostat state change command
 - Implemented: Light/Scene/Group timer with fixed Date/Time
 - Fixed: Pushover notification (thanks to Gerlo)
+- Fixed: OpenZWave support for multi binary sensor (for instance FGBS001)
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io
