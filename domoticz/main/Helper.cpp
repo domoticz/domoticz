@@ -33,11 +33,11 @@ std::string stdreplace(
 	const std::string& replaceWhat, 
 	const std::string& replaceWithWhat)
 {
-	while(1)
+	int pos = 0;
+	while (std::string::npos != (pos = result.find(replaceWhat, pos)))
 	{
-		const int pos = result.find(replaceWhat);
-		if (pos==-1) break;
-		result.replace(pos,replaceWhat.size(),replaceWithWhat);
+		result.replace(pos, replaceWhat.size(), replaceWithWhat);
+		pos += replaceWithWhat.size();
 	}
 	return result;
 }
