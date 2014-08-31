@@ -5619,6 +5619,18 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 	}
 	else if (cparam == "addfloorplan")
 	{
+		bool bHaveUser=(m_pWebEm->m_actualuser!="");
+		int urights=3;
+		if (bHaveUser)
+		{
+			int iUser=-1;
+			iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+			if (iUser!=-1)
+				urights=(int)m_users[iUser].userrights;
+		}
+		if (urights<2)
+			return;
+
 		std::string name=m_pWebEm->FindValue("name");
 		std::string imagefile=m_pWebEm->FindValue("image");
 		if (
@@ -5639,7 +5651,19 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 	}
 	else if (cparam=="updatefloorplan")
 	{
-		std::string idx=m_pWebEm->FindValue("idx");
+		bool bHaveUser=(m_pWebEm->m_actualuser!="");
+		int urights=3;
+		if (bHaveUser)
+		{
+			int iUser=-1;
+			iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+			if (iUser!=-1)
+				urights=(int)m_users[iUser].userrights;
+		}
+		if (urights<2)
+			return;
+
+			std::string idx=m_pWebEm->FindValue("idx");
 		if (idx=="")
 			return;
 		std::string name=m_pWebEm->FindValue("name");
@@ -5664,6 +5688,18 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 	}
 	else if (cparam=="deletefloorplan")
 	{
+		bool bHaveUser=(m_pWebEm->m_actualuser!="");
+		int urights=3;
+		if (bHaveUser)
+		{
+			int iUser=-1;
+			iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+			if (iUser!=-1)
+				urights=(int)m_users[iUser].userrights;
+		}
+		if (urights<2)
+			return;
+
 		std::string idx=m_pWebEm->FindValue("idx");
 		if (idx=="")
 			return;
@@ -5799,6 +5835,18 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 	}
 	else if (cparam=="addfloorplanplan")
 	{
+		bool bHaveUser=(m_pWebEm->m_actualuser!="");
+		int urights=3;
+		if (bHaveUser)
+		{
+			int iUser=-1;
+			iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+			if (iUser!=-1)
+				urights=(int)m_users[iUser].userrights;
+		}
+		if (urights<2)
+			return;
+
 		std::string idx = m_pWebEm->FindValue("idx");
 		std::string planidx = m_pWebEm->FindValue("planidx");
 		if (
@@ -5819,6 +5867,18 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 	}
 	else if (cparam=="updatefloorplanplan")
 	{
+		bool bHaveUser=(m_pWebEm->m_actualuser!="");
+		int urights=3;
+		if (bHaveUser)
+		{
+			int iUser=-1;
+			iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+			if (iUser!=-1)
+				urights=(int)m_users[iUser].userrights;
+		}
+		if (urights<2)
+			return;
+
 		std::string planidx = m_pWebEm->FindValue("planidx");
 		std::string planarea = m_pWebEm->FindValue("area");
 		if (planidx == "")
@@ -5836,6 +5896,18 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 	}
 	else if (cparam=="deletefloorplanplan")
 	{
+		bool bHaveUser=(m_pWebEm->m_actualuser!="");
+		int urights=3;
+		if (bHaveUser)
+		{
+			int iUser=-1;
+			iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+			if (iUser!=-1)
+				urights=(int)m_users[iUser].userrights;
+		}
+		if (urights<2)
+			return;
+
 		std::string idx = m_pWebEm->FindValue("idx");
 		if (idx == "")
 			return;
