@@ -321,13 +321,16 @@ function ShowFloorplan(floorIdx) {
 			RefreshFloorPlan(1);
 		}
 	}
+
+	$('#roomplangroup')
+		.off()
+		.on('click', function ( event ) { RoomClick( event ); });
 }
 
 $(document).ready(function() {
 	$('#modal').show();	
 
 	ShowFloorplan();
-	$('#roomplangroup').on('click', function ( event ) { RoomClick( event ); });
 
 	$('#modal').hide();
 } );  
