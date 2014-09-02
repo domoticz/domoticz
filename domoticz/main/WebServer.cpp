@@ -2366,6 +2366,7 @@ void CWebServer::Cmd_GetActiveTabs(Json::Value &root)
 		}
 	}
 
+	int bEnableTabFloorplans = 1;
 	int bEnableTabLight = 1;
 	int bEnableTabScenes = 1;
 	int bEnableTabTemp = 1;
@@ -2389,10 +2390,12 @@ void CWebServer::Cmd_GetActiveTabs(Json::Value &root)
 			bEnableTabWeather = (TabsEnabled&(1 << 3));
 			bEnableTabUtility = (TabsEnabled&(1 << 4));
 			bEnableTabCustom = (TabsEnabled&(1 << 5));
+			bEnableTabFloorplans = (TabsEnabled&(1 << 6));
 		}
 	}
 	else
 	{
+		m_sql.GetPreferencesVar("EnableTabFloorplans", bEnableTabFloorplans);
 		m_sql.GetPreferencesVar("EnableTabLights", bEnableTabLight);
 		m_sql.GetPreferencesVar("EnableTabScenes", bEnableTabScenes);
 		m_sql.GetPreferencesVar("EnableTabTemp", bEnableTabTemp);
@@ -2401,6 +2404,7 @@ void CWebServer::Cmd_GetActiveTabs(Json::Value &root)
 		m_sql.GetPreferencesVar("EnableTabCustom", bEnableTabCustom);
 	}
 
+	root["result"]["EnableTabFloorplans"] = bEnableTabFloorplans;
 	root["result"]["EnableTabLights"] = bEnableTabLight;
 	root["result"]["EnableTabScenes"] = bEnableTabScenes;
 	root["result"]["EnableTabTemp"] = bEnableTabTemp;
@@ -6460,6 +6464,8 @@ char * CWebServer::PostSettings()
 	m_sql.UpdatePreferencesVar("EmailUsername",EmailUsername.c_str());
 	m_sql.UpdatePreferencesVar("EmailPassword",EmailPassword.c_str());
 
+	std::string EnableTabFloorplans=m_pWebEm->FindValue("EnableTabFloorplans");
+	m_sql.UpdatePreferencesVar("EnableTabFloorplans",(EnableTabFloorplans=="on"?1:0));
 	std::string EnableTabLights=m_pWebEm->FindValue("EnableTabLights");
 	m_sql.UpdatePreferencesVar("EnableTabLights",(EnableTabLights=="on"?1:0));
 	std::string EnableTabTemp=m_pWebEm->FindValue("EnableTabTemp");
@@ -10636,6 +10642,10 @@ void CWebServer::RType_Settings(Json::Value &root)
 		else if (Key == "SmartMeterType")
 		{
 			root["SmartMeterType"] = nValue;
+		}
+		else if (Key == "EnableTabFloorplans")
+		{
+			root["EnableTabFloorplans"] = nValue;
 		}
 		else if (Key == "EnableTabLights")
 		{

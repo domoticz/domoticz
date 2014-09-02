@@ -1137,6 +1137,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("EnableTabScenes", 1);
 	}
+	if (!GetPreferencesVar("EnableTabFloorplans", nValue))
+	{
+		UpdatePreferencesVar("EnableTabFloorplans", 1);
+	}
 	if (!GetPreferencesVar("NotificationSensorInterval", nValue))
 	{
 		UpdatePreferencesVar("NotificationSensorInterval", 12*60*60);

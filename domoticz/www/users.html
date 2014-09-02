@@ -66,6 +66,7 @@
 		<tr>
 			<td align="right" style="width:80px; vertical-align:top;"><label><span data-i18n="ActiveMenus"></span>:</label></td>
 			<td>
+				<input type="checkbox" id="EnableTabFloorplans" name="EnableTabFloorplans"/> <label for="EnableTabFloorplans"><span data-i18n="Floorplans"></span></label></br>
 				<input type="checkbox" id="EnableTabLights" name="EnableTabLights"/> <label for="EnableTabLights"><span data-i18n="Switches"></span></label></br>
 				<input type="checkbox" id="EnableTabScenes" name="EnableTabScenes"/> <label for="EnableTabScenes"><span data-i18n="Scenes"></span></label></br>
 				<input type="checkbox" id="EnableTabTemp" name="EnableTabTemp"/> <label for="EnableTabTemp"><span data-i18n="Temperature"></span></label></br>
@@ -143,6 +144,9 @@ function GetUserSettings()
 	}
 	if ($('#usercontent #userparamstable #EnableTabCustom').is(":checked")) {
 		csettings.TabsEnabled|=(1<<5);
+	}
+	if ($('#usercontent #userparamstable #EnableTabFloorplans').is(":checked")) {
+		csettings.TabsEnabled|=(1<<6);
 	}
 	return csettings;
 }
@@ -341,6 +345,7 @@ function RefreshUserTable()
 					$('#usercontent #userparamstable #EnableTabWeather').prop('checked',(EnabledTabs & 8));
 					$('#usercontent #userparamstable #EnableTabUtility').prop('checked',(EnabledTabs & 16));
 					$('#usercontent #userparamstable #EnableTabCustom').prop('checked',(EnabledTabs & 32));
+					$('#usercontent #userparamstable #EnableTabFloorplans').prop('checked',(EnabledTabs & 64));
 				}
 			}
 		}); 
