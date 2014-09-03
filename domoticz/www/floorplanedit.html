@@ -512,8 +512,7 @@ function RefreshFloorPlanTable() {
 			} );
 		});
 		/* Add a click handler to the rows - this could be used as a callback */
-		$("#floorplantable tbody tr").click( function( e ) {
-//		$('#floorplantable tbody').on( 'click', 'tr', function () {
+		$('#floorplantable').on( 'click', 'tr', function () {
 			$.devIdx=-1;
 
 			if ( $(this).hasClass('row_selected') ) {
