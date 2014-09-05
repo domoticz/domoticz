@@ -3840,6 +3840,7 @@ void CSQLHelper::UpdateMeter()
 				//P1 Gas meter transmits results every 1 a 2 hours
 				if (now-checktime>=3*3600)
 					continue;
+				bSkipSameValue = false;
 			}
 			if (dType==pTypeYouLess)
 			{

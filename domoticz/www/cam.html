@@ -290,9 +290,9 @@ function Updatecamera(idx)
 
 	$.ajax({
 		 url: "json.htm?type=command&param=updatecamera&address=" + csettings.address + 
-					"&port=" + csettings.port + "&name=" + csettings.name + "&enabled=" + csettings.bEnabled + "&idx=" + idx + 
-					"&username=" + csettings.username + "&password=" + csettings.password +
-					"&imageurl=" + mimageurl,
+					"&port=" + csettings.port + "&name=" + encodeURIComponent(csettings.name) + "&enabled=" + csettings.bEnabled + "&idx=" + idx + 
+					"&username=" + encodeURIComponent(csettings.username) + "&password=" + encodeURIComponent(csettings.password) +
+					"&imageurl=" + encodeURIComponent(mimageurl),
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {
@@ -315,9 +315,9 @@ function Addcamera()
 
 	$.ajax({
 		 url: "json.htm?type=command&param=addcamera&address=" + csettings.address +
-					"&port=" + csettings.port + "&name=" + csettings.name + "&enabled=" + csettings.bEnabled +
-					"&username=" + csettings.username + "&password=" + csettings.password +
-					"&imageurl=" + mimageurl,
+					"&port=" + csettings.port + "&name=" + encodeURIComponent(csettings.name) + "&enabled=" + csettings.bEnabled +
+					"&username=" + encodeURIComponent(csettings.username) + "&password=" + encodeURIComponent(csettings.password) +
+					"&imageurl=" + encodeURIComponent(mimageurl),
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {
