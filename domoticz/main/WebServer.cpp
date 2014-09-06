@@ -11746,7 +11746,21 @@ void CWebServer::RType_HandleGraph(Json::Value &root)
 							{
 								if (bHaveFirstValue)
 								{
-									root["result"][ii]["d"] = actDateTimeHour + ":00";
+									struct tm ntime;
+									time_t atime;
+									ntime.tm_isdst = 0;
+									ntime.tm_year = atoi(actDateTimeHour.substr(0, 4).c_str()) - 1900;
+									ntime.tm_mon = atoi(actDateTimeHour.substr(5, 2).c_str()) - 1;
+									ntime.tm_mday = atoi(actDateTimeHour.substr(8, 2).c_str());
+									ntime.tm_hour = atoi(actDateTimeHour.substr(11, 2).c_str());
+									ntime.tm_min = 0;
+									ntime.tm_sec = 0;
+									atime = mktime(&ntime);
+									atime -= 3600; //subtract one hour
+									localtime_r(&atime, &ntime);
+									char szTime[50];
+									sprintf(szTime, "%04d-%02d-%02d %02d:00", ntime.tm_year + 1900, ntime.tm_mon + 1, ntime.tm_mday, ntime.tm_hour);
+									root["result"][ii]["d"] = szTime;
 
 									float TotalValue = float(actValue - ulFirstValue);
 
