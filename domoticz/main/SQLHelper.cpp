@@ -3844,7 +3844,6 @@ void CSQLHelper::UpdateMeter()
 				//P1 Gas meter transmits results every 1 a 2 hours
 				if (now-checktime>=3*3600)
 					continue;
-				bSkipSameValue = false;
 			}
 			if (dType==pTypeYouLess)
 			{
@@ -3945,6 +3944,10 @@ void CSQLHelper::UpdateMeter()
 				double fValue=atof(sValue.c_str())*10.0f;
 				sprintf(szTmp,"%d",int(fValue));
 				sValue=szTmp;
+			}
+			else if (dType == pTypeP1Gas)
+			{
+				bSkipSameValue = false;
 			}
 
 			unsigned long long MeterValue;
