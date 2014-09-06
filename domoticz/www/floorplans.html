@@ -66,6 +66,8 @@
 </div>
 
 <script type="text/javascript" charset="utf-8">
+var aFloorplans = {};
+
 function NextFloorplan() {
 	if ($("#floorplangroup")[0].getAttribute("zoomed") == "true")
 	{
@@ -150,7 +152,7 @@ function RefreshDevices() {
 
 		if ($("#floorplangroup")[0].getAttribute("planidx") != "") {
 			$.ajax({
-					 url: "json.htm?type=devices&filter=all&used=true&order=Name&floor=" + window.myglobals.FloorplanIndex + "&lastupdate=" + window.myglobals.LastUpdate,
+					 url: "json.htm?type=devices&filter=all&used=true&order=Name&floor=" + aFloorplans[window.myglobals.FloorplanIndex].idx + "&lastupdate=" + window.myglobals.LastUpdate,
 					 async: false,
 					 dataType: 'json',
 					 success: function(data) {
@@ -250,7 +252,8 @@ function RefreshFloorPlan(floorIdx) {
 		$('.btnstyle').hide();
 		$('.btnstylerev').hide();
 	}
-	
+
+	aFloorplans = {};	
 	$.ajax({
 		url: "json.htm?type=floorplans", 
 		async: false, 
@@ -258,35 +261,41 @@ function RefreshFloorPlan(floorIdx) {
 		success: function(data) {
 			if (typeof data.result != 'undefined') {
 				window.myglobals.FloorplanCount = data.result.length;
-				if (floorIdx < 1) floorIdx = window.myglobals.FloorplanCount;
-				if (floorIdx > window.myglobals.FloorplanCount) floorIdx = 1;
-				window.myglobals.FloorplanIndex = floorIdx;
 				$.each(data.result, function(i,item) {
-					if (floorIdx == item.Order) {
-						$("#floorplanimage").attr("xlink:href", item.Image);
-						$("#floorplanimagesize").attr("src", item.Image);
-						Device.initialise();
-						$.ajax({
-							url: "json.htm?type=command&param=getfloorplanplans&idx=" + item.idx, 
-							async: false, 
-							dataType: 'json',
-							success: function(data) {
-								if (typeof data.result != 'undefined') {
-									var planGroup = $("#roomplangroup")[0];
-									$.each(data.result, function(i,item) {
-										var el = makeSVGnode('polygon', { id: item.Name + "_Room", 'class': 'hoverable', points: item.Area }, '');
-										el.appendChild(makeSVGnode('title', null, item.Name));
-										planGroup.appendChild(el);
-									});
-								}
-							}
-						});
-					}
+					aFloorplans[i] = item;
 				});
-				ShowDevices(floorIdx, $("#roomplangroup")[0]);
 			}
 		}
 	});
+	
+	if (floorIdx < 0) floorIdx = window.myglobals.FloorplanCount-1;
+	if (floorIdx >= window.myglobals.FloorplanCount) floorIdx = 0;
+	window.myglobals.FloorplanIndex = floorIdx;
+	
+	if (window.myglobals.FloorplanCount > 0) {
+		$("#floorplanimage").attr("xlink:href", aFloorplans[floorIdx].Image);
+		$("#floorplanimagesize").attr("src", aFloorplans[floorIdx].Image);
+		Device.initialise();
+		$.ajax({
+			url: "json.htm?type=command&param=getfloorplanplans&idx=" + aFloorplans[floorIdx].idx, 
+			async: false, 
+			dataType: 'json',
+			success: function(data) {
+				if (typeof data.result != 'undefined') {
+					var planGroup = $("#roomplangroup")[0];
+					$.each(data.result, function(i,item) {
+						var el = makeSVGnode('polygon', { id: item.Name + "_Room", 'class': 'hoverable', points: item.Area }, '');
+						el.appendChild(makeSVGnode('title', null, item.Name));
+						planGroup.appendChild(el);
+					});
+				}
+			}
+		});
+		ShowDevices(aFloorplans[floorIdx].idx, $("#roomplangroup")[0]);
+	}
+
+				
+
 	// no next/previous buttons for a single image or less
 	if (window.myglobals.FloorplanCount > 1) {
 		$('.btnstyle').show();
@@ -314,7 +323,7 @@ function ShowFloorplan(floorIdx) {
 	Device.switchFunction = 'RefreshDevices';
 	Device.contentTag = 'floorplancontent';
 
-	var fidx=1;
+	var fidx=0;
 	if (arguments.length != 0) {
 		fidx=floorIdx;
 	} else {
