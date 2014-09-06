@@ -184,7 +184,7 @@ void MainWorker::AddDomoticzHardware(CDomoticzHardwareBase *pHardware)
 
 void MainWorker::RemoveDomoticzHardware(CDomoticzHardwareBase *pHardware)
 {
-	boost::lock_guard<boost::mutex> l1(decodeRXMessageMutex);
+//	boost::lock_guard<boost::mutex> l1(decodeRXMessageMutex);
 	boost::lock_guard<boost::mutex> l2(m_devicemutex);
 	std::vector<CDomoticzHardwareBase*>::iterator itt;
 	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
