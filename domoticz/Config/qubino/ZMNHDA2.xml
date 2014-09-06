@@ -69,6 +69,4 @@
 
 	<!-- Remove COMMAND_CLASS_BASIC -->
 	<CommandClass id="32" action="remove" />
-	<!-- Remove SENSOR_BINARY -->
-	<CommandClass id="48" action="remove" />
 </Product>
