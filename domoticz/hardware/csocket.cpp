@@ -22,6 +22,8 @@
 
 static bool s_bSocketsInitialized = false;;
 
+#define SUCCESS     0
+#define FAILURE     1
 
 csocket::csocket() : m_socketState(CLOSED), 
                      m_remotePort(0)

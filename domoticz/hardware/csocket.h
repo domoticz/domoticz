@@ -14,10 +14,6 @@
 #include <stdio.h>
 #include <string>
 
-#define SUCCESS     0
-#define FAILURE     1
-#define INFINITY   -1
-
 class csocket 
 {
 public:
@@ -35,7 +31,7 @@ public:
 
     static int      resolveHost( const std::string& szRemoteHostName, struct hostent** pHostEnt );
     int             connect( const char* remoteHost, unsigned int remotePort );
-    int             canRead( bool* readyToRead, float waitTime = INFINITY );
+	int             canRead(bool* readyToRead, float waitTime = -1); //-1 is Infinity
     virtual int     read( char* pDataBuffer, unsigned int numBytesToRead, bool bReadAll );
     virtual int     write( const char* pDataBuffer, unsigned int numBytesToWrite );
     SocketState     getState( void ) const;
