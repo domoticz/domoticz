@@ -677,7 +677,7 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 			 }     
 		});
 	}
-	else if (text.indexOf("Domoticz") >= 0)
+	else if ((text.indexOf("Domoticz") >= 0)|| (text.indexOf("Harmony") >= 0))
 	{
 		var address=$("#hardwarecontent #divremote #tcpaddress").val();
 		if (address=="")
@@ -780,29 +780,28 @@ function UpdateHardware(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
 			 }     
 		});
 	}
-	else if ((text.indexOf("ICY") >= 0)||(text.indexOf("Toon") >= 0)||(text.indexOf("PVOutput") >= 0))
-	{
-		var username=$("#hardwarecontent #divlogin #username").val();
-		var password=$("#hardwarecontent #divlogin #password").val();
-		$.ajax({
-			 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-				"&port=1" + 
-				"&username=" + username + 
-				"&password=" + password + 
-				"&name=" + name + 
-				"&enabled=" + bEnabled + 
-				"&idx=" + idx + 
-				"&datatimeout=" + datatimeout +
-				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
-			 async: false, 
-			 dataType: 'json',
-			 success: function(data) {
-				RefreshHardwareTable();
-			 },
-			 error: function(){
-					ShowNotify($.i18n('Problem updating hardware!'), 2500, true);
-			 }     
-		});
+	else if ((text.indexOf("ICY") >= 0) || (text.indexOf("Toon") >= 0) || (text.indexOf("PVOutput") >= 0)) {
+	    var username = $("#hardwarecontent #divlogin #username").val();
+	    var password = $("#hardwarecontent #divlogin #password").val();
+	    $.ajax({
+	        url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+               "&port=1" +
+               "&username=" + username +
+               "&password=" + password +
+               "&name=" + name +
+               "&enabled=" + bEnabled +
+               "&idx=" + idx +
+               "&datatimeout=" + datatimeout +
+               "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
+	        async: false,
+	        dataType: 'json',
+	        success: function (data) {
+	            RefreshHardwareTable();
+	        },
+	        error: function () {
+	            ShowNotify($.i18n('Problem updating hardware!'), 2500, true);
+	        }
+	    });
 	}
 }
 
@@ -927,7 +926,7 @@ function AddHardware()
 			 }     
 		});
 	}
-	else if (text.indexOf("Domoticz") >= 0)
+	else if ((text.indexOf("Domoticz") >= 0) || (text.indexOf("Harmony") >= 0))
 	{
 		var address=$("#hardwarecontent #divremote #tcpaddress").val();
 		if (address=="")
@@ -947,7 +946,18 @@ function AddHardware()
 			return;
 		}		
 		var username=$("#hardwarecontent #divlogin #username").val();
-		var password=$("#hardwarecontent #divlogin #password").val();
+		var password = $("#hardwarecontent #divlogin #password").val();
+
+		if ((text.indexOf("Harmony") >= 0) && (username == "")) {
+		    ShowNotify($.i18n('Please enter a username!'), 2500, true);
+		    return;
+		}
+
+		if ((text.indexOf("Harmony") >= 0) && (password == "")) {
+		    ShowNotify($.i18n('Please enter a password!'), 2500, true);
+		    return;
+		}
+		
 		$.ajax({
 			 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + username + "&password=" + password + "&name=" + name + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 			 async: false, 
@@ -2138,7 +2148,7 @@ function RefreshHardwareTable()
 			}
         
 			var SerialName="Unknown!?";
-			if ((HwTypeStr.indexOf("LAN") >= 0)||(HwTypeStr.indexOf("Domoticz") >= 0))
+			if ((HwTypeStr.indexOf("LAN") >= 0)||(HwTypeStr.indexOf("Domoticz") >= 0) ||(HwTypeStr.indexOf("Harmony") >= 0))
 			{
 				SerialName=item.Port;
 			}
@@ -2317,13 +2327,13 @@ function RefreshHardwareTable()
 						$("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
 					}
 					else
-					if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0))
+					    if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0))
 					{
 						$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["3"]);
 						$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["4"]);
 					}
 					else
-					if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) ||(data["Type"].indexOf("Domoticz") >= 0))
+					        if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0))
 					{
 						$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["3"]);
 						$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["4"]);
@@ -2340,7 +2350,7 @@ function RefreshHardwareTable()
 					{
 						$("#hardwarecontent #hardwareparamslocation #location").val(data["Username"]);
 					}
-					if ((data["Type"].indexOf("Domoticz") >= 0)||(data["Type"].indexOf("ICY") >= 0)||(data["Type"].indexOf("Toon") >= 0)||(data["Type"].indexOf("PVOutput") >= 0)) {
+					if ((data["Type"].indexOf("Domoticz") >= 0)||(data["Type"].indexOf("ICY") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)||(data["Type"].indexOf("Toon") >= 0)||(data["Type"].indexOf("PVOutput") >= 0)) {
 						$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
 						$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
 					}
@@ -2393,7 +2403,7 @@ function UpdateHardwareParamControls()
 		$("#hardwarecontent #lblusername").hide();
 		$("#hardwarecontent #divunderground").hide();
 	}
-	else if (text.indexOf("Domoticz") >= 0)
+	else if ((text.indexOf("Domoticz") >= 0) || (text.indexOf("Harmony") >= 0))
 	{
 		$("#hardwarecontent #divserial").hide();
 		$("#hardwarecontent #divremote").show();

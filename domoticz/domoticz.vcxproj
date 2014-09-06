@@ -110,6 +110,7 @@
     <ClInclude Include="hardware\1Wire\1WireSystem.h" />
     <ClInclude Include="hardware\ASyncTCP.h" />
     <ClInclude Include="hardware\BMP085.h" />
+    <ClInclude Include="hardware\csocket.h" />
     <ClInclude Include="hardware\DavisLoggerSerial.h" />
     <ClInclude Include="hardware\Dummy.h" />
     <ClInclude Include="hardware\EcoDevices.h" />
@@ -118,6 +119,7 @@
     <ClInclude Include="hardware\ForecastIO.h" />
     <ClInclude Include="hardware\Gpio.h" />
     <ClInclude Include="hardware\GpioPin.h" />
+    <ClInclude Include="hardware\HarmonyHub.h" />
     <ClInclude Include="hardware\hidapi.h" />
     <ClInclude Include="hardware\ICYThermostat.h" />
     <ClInclude Include="hardware\Limitless.h" />
@@ -212,6 +214,7 @@
     <ClCompile Include="hardware\ASyncSerial.cpp" />
     <ClCompile Include="hardware\ASyncTCP.cpp" />
     <ClCompile Include="hardware\BMP085.cpp" />
+    <ClCompile Include="hardware\csocket.cpp" />
     <ClCompile Include="hardware\DavisLoggerSerial.cpp" />
     <ClCompile Include="hardware\Dummy.cpp" />
     <ClCompile Include="hardware\EcoDevices.cpp" />
@@ -220,6 +223,7 @@
     <ClCompile Include="hardware\ForecastIO.cpp" />
     <ClCompile Include="hardware\Gpio.cpp" />
     <ClCompile Include="hardware\GpioPin.cpp" />
+    <ClCompile Include="hardware\HarmonyHub.cpp" />
     <ClCompile Include="hardware\ICYThermostat.cpp" />
     <ClCompile Include="hardware\libusbwinusbbridge.cpp" />
     <ClCompile Include="hardware\Limitless.cpp" />

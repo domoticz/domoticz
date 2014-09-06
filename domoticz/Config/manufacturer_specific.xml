@@ -202,7 +202,8 @@
 		<Product type="0200" id="0109" name="FGS221 Double Relay Switch 2x1.5kW" config="fibaro/fgs221.xml" />
 		<Product type="0200" id="100a" name="FGS221 Double Relay Switch 2x1.5kW" config="fibaro/fgs221.xml" />
 		<Product type="0600" id="1000" name="FGWPE Wall Plug" config="fibaro/fgwpe.xml" />
-		<Product type="0800" id="1001" name="FGMS-001 Motion Sensor" config="fibaro/fgms.xml" />
+		<Product type="0800" id="1001" name="FGMS001 Motion Sensor" config="fibaro/fgms.xml" />
+		<Product type="0800" id="4001" name="FGMS001 Motion Sensor" config="fibaro/fgms.xml" />
 		<Product type="0b00" id="3001" name="FGFS101 Flood Sensor" config ="fibaro/fgfs101.xml" />
 		<Product type="0b00" id="1001" name="FGFS101 Flood Sensor" config ="fibaro/fgfs101.xml" />
     		<Product type="0900" id="1000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
@@ -380,7 +381,7 @@
 		<Product type="3101" id="0001" name="RETO Dimmer Plus 2013"/>
 		<Product type="3103" id="0001" name="RETO Plug-in Switch Plus" config="qees/reto-plugin-switch.xml" />
 	</Manufacturer>
-	<Manufacturer id="0345" name="Qubino">
+	<Manufacturer id="0159" name="Qubino">
 		<Product type="0001" id="0001" name="ZMNHDA2 Flush Dimmer" config="qubino/ZMNHDA2.xml"/>
 		<Product type="0002" id="0001" name="ZMNHBA2 Flush 2 Relays" config="qubino/ZMNHBA2.xml"/>
 		<Product type="0002" id="0002" name="ZMNHAA2 Flush 1 Relay" config="qubino/ZMNHAA2.xml"/>

@@ -43,6 +43,7 @@ class CDomoticzHardwareBase
 	friend class Meteostick;
 	friend class CToonThermostat;
 	friend class CEcoDevices;
+	friend class CHarmonyHub;
 public:
 	CDomoticzHardwareBase();
 	virtual ~CDomoticzHardwareBase();

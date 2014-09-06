@@ -162,6 +162,7 @@ hardware/1Wire/1WireForWindows.cpp
 hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
 hardware/BMP085.cpp
+hardware/csocket.cpp
 hardware/DavisLoggerSerial.cpp
 hardware/DomoticzHardware.cpp
 hardware/DomoticzTCP.cpp
@@ -173,6 +174,7 @@ hardware/ForecastIO.cpp
 hardware/Gpio.cpp
 hardware/GpioPin.cpp
 hardware/HardwareMonitor.cpp
+hardware/HarmonyHub.cpp
 hardware/ICYThermostat.cpp
 hardware/Limitless.cpp
 hardware/Meteostick.cpp

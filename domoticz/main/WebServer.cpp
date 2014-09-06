@@ -590,6 +590,14 @@ void CWebServer::Cmd_AddHardware(Json::Value &root)
 		if (username=="")
 			return;
 	}
+	else if (htype == HTYPE_HARMONY_HUB) {
+		if (
+			(username=="")||
+			(password=="")||
+			(address=="")			
+			)
+			return;
+	}
 	else if (htype == HTYPE_RaspberryGPIO) {
 		//all fine here!
 	}
@@ -663,7 +671,7 @@ void CWebServer::Cmd_UpdateHardware(Json::Value &root)
 	{
 		//USB/System
 	}
-	else if ((htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) || (htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES)) {
+	else if ((htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) || (htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES)){
 		//Lan
 		if (address=="")
 			return;
@@ -695,6 +703,14 @@ void CWebServer::Cmd_UpdateHardware(Json::Value &root)
 		if (
 			(username=="")||
 			(password=="")
+			)
+			return;
+	}
+	else if (htype == HTYPE_HARMONY_HUB) {
+		if (
+			(username=="")||
+			(password=="")||
+			(address=="")			
 			)
 			return;
 	}
@@ -2338,10 +2354,13 @@ void CWebServer::Cmd_GetActiveTabs(Json::Value &root)
 	{
 		root["language"] = sValue;
 	}
-	if (m_sql.GetPreferencesVar("MobileType", nValue))
-	{
-		root["MobileType"] = nValue;
-	}
+
+	nValue = 0;
+	m_sql.GetPreferencesVar("DashboardType", nValue);
+	root["DashboardType"] = nValue;
+	m_sql.GetPreferencesVar("MobileType", nValue);
+	root["MobileType"] = nValue;
+
 
 	root["WindScale"] = m_sql.m_windscale*10.0f;
 	root["WindSign"] = m_sql.m_windsign;
@@ -2376,6 +2395,15 @@ void CWebServer::Cmd_GetActiveTabs(Json::Value &root)
 
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
+
+	//Get count of floorplans
+	int totFloorplans = 0;
+	result = m_sql.query("SELECT COUNT(*) FROM Floorplans");
+	if (result.size() > 0)
+	{
+		totFloorplans = atoi(result[0][0].c_str());
+	}
+	root["TotFloorplans"] = totFloorplans;
 
 	if ((UserID != 0) && (UserID != 10000))
 	{

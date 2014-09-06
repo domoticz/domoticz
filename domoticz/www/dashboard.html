@@ -16,6 +16,11 @@ function RefreshFavorites()
      dataType: 'json',
      success: function(data) {
       if (typeof data.result != 'undefined') {
+		$.DashboardType=data.DashboardType;
+		if ($.DashboardType==3) {
+			$.DashboardType=1;
+		}
+      
 		if (typeof data.WindScale != 'undefined') {
 			$.myglobals.windscale=parseFloat(data.WindScale);
 		}
@@ -39,7 +44,7 @@ function RefreshFavorites()
 							id="#dashcontent #scene_" + item.idx;
 							var obj=$(id);
 							if (typeof obj != 'undefined') {
-								if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+								if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 									var status="";
 									if (item.Type.indexOf('Group')==0) {
 										if (item.Status == 'Off') {
@@ -96,7 +101,7 @@ function RefreshFavorites()
 						id="#dashcontent #light_" + item.idx;
 						var obj=$(id);
 						if (typeof obj != 'undefined') {
-							if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+							if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								var status=TranslateStatus(item.Status) + " ";
 								if (item.SwitchType == "Doorbell") {
 									status+='<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');">' + $.i18n("Ring") +'</button>';
@@ -490,13 +495,13 @@ function RefreshFavorites()
 						var obj=$(id);
 						if (typeof obj != 'undefined') {
 							var vname=item.Name;
-							if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+							if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								var vname='<img src="images/next.png" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="16" width="16">' + " " + item.Name;
 							}
 							if ($(id + " #name").html()!=vname) {
 								$(id + " #name").html(vname);
 							}
-							if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+							if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								var status="";
 								var bHaveBefore=false;
 								if (typeof item.Temp != 'undefined') {
@@ -616,7 +621,7 @@ function RefreshFavorites()
 							if ($(id + " #name").html()!=item.Name) {
 								$(id + " #name").html(item.Name);
 							}
-							if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+							if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								var status="";
 								if (typeof item.Rain != 'undefined') {
 									status=item.Rain + ' mm';
@@ -776,7 +781,7 @@ function RefreshFavorites()
 							if ($(id + " #name").html()!=item.Name) {
 								$(id + " #name").html(item.Name);
 							}
-							if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+							if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								var tmpStatus=TranslateStatus(item.Status);
 								if (item.SubType=="Security Panel") {
 									tmpStatus+=' <a href="secpanel/"><img src="images/security48.png" onmouseover="cursorhand()" onmouseout="cursordefault()" height="16" width="16"></a>';
@@ -904,10 +909,10 @@ function RefreshFavorites()
 					if ($(id + " #name").html()!=item.Name) {
 						$(id + " #name").html(item.Name);
 					}
-					if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+					if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 						var status="";
 						if (typeof item.Counter != 'undefined') {
-							if (data.DashboardType==0) {
+							if ($.DashboardType==0) {
 								status+='' + $.i18n("Usage") + ': ' + item.CounterToday;
 							}
 							else {
@@ -937,7 +942,7 @@ function RefreshFavorites()
 							status+=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 						}
 						if (typeof item.Usage != 'undefined') {
-							if (data.DashboardType==0) {
+							if ($.DashboardType==0) {
 								status+='<br>' + $.i18n("Actual") + ': ' + item.Usage;
 							}
 							else {
@@ -946,7 +951,7 @@ function RefreshFavorites()
 						}
 						if (typeof item.CounterDeliv != 'undefined') {
 							if (item.CounterDeliv!=0) {
-								if (data.DashboardType==0) {
+								if ($.DashboardType==0) {
 									status+='<br>' + $.i18n("Return") + ': ' + item.CounterDelivToday;
 									status+='<br>' + $.i18n("Actual") + ': ' + item.UsageDeliv;
 								}
@@ -1022,7 +1027,7 @@ function RefreshFavorites()
 						if (typeof item.Usage != 'undefined') {
 							bigtext=item.Usage;
 							if (item.Type != "P1 Smart Meter") {
-								if (data.DashboardType==0) {
+								if ($.DashboardType==0) {
 									//status+='<br>' + $.i18n("Actual") + ': ' + item.Usage;
 									if (typeof item.CounterToday != 'undefined') {
 										status+='<br>' + $.i18n("Today") + ': ' + item.CounterToday;
@@ -1042,7 +1047,7 @@ function RefreshFavorites()
 									bigtext='-' + item.UsageDeliv;
 								}
 								status+='<br>';
-								if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+								if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 									status+='R: ' + item.CounterDelivToday;
 								}
 								else {
@@ -1131,16 +1136,20 @@ function ShowFavorites()
 		if (typeof data.ActTime != 'undefined') {
 			$.LastUpdateTime=parseInt(data.ActTime);
 		}
+		$.DashboardType=data.DashboardType;
+		if ($.DashboardType==3) {
+			$.DashboardType=1;
+		}
      
 		bAllowWidgetReorder=data.AllowWidgetOrdering;
 		var rowItems=3;
-		if (data.DashboardType==1) {
+		if ($.DashboardType==1) {
 			rowItems=4;
 		}
-		if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+		if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 			rowItems=1000;
 		}
-		$.myglobals.DashboardType=data.DashboardType;
+		$.myglobals.DashboardType=$.DashboardType;
 
 		if (typeof data.WindScale != 'undefined') {
 			$.myglobals.windscale=parseFloat(data.WindScale);
@@ -1175,7 +1184,7 @@ function ShowFavorites()
             if (jj == 0)
             {
               //first time
-              if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+              if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								htmlcontent+='\t    <table class="mobileitem">\n';
 								htmlcontent+='\t    <thead>\n';
 								htmlcontent+='\t    <tr>\n';
@@ -1200,7 +1209,7 @@ function ShowFavorites()
             }
             
             var xhtm="";
-						if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+						if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 							xhtm+=
 									'\t    <tr id="scene_' + item.idx +'">\n' +
 									'\t      <td id="name">' + item.Name;
@@ -1225,10 +1234,10 @@ function ShowFavorites()
 										'\t    </tr>\n';
 						}
 						else {
-							if (data.DashboardType==0) {
+							if ($.DashboardType==0) {
 								xhtm='\t<div class="span4 movable" id="scene_' + item.idx +'">\n';
 							}
-							else if (data.DashboardType==1) {
+							else if ($.DashboardType==1) {
 								xhtm='\t<div class="span3 movable" id="scene_' + item.idx +'">\n';
 							}
 							xhtm+='\t  <section>\n';
@@ -1287,7 +1296,7 @@ function ShowFavorites()
           //close previous devider
           htmlcontent+='</div>\n';
         }
-        if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+        if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 					htmlcontent+='\t    </table>\n';
         }
         
@@ -1304,7 +1313,7 @@ function ShowFavorites()
             if (jj == 0)
             {
               //first time
-              if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+              if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								if (htmlcontent!="") {
 									htmlcontent+='<br>';
 								}
@@ -1336,7 +1345,7 @@ function ShowFavorites()
 			}
             
             var xhtm="";
-						if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+						if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 							xhtm+=
 									'\t    <tr id="light_' + item.idx +'">\n' +
 									'\t      <td id="name">' + item.Name;
@@ -1543,10 +1552,10 @@ function ShowFavorites()
 							}
 						}
 						else {
-							if (data.DashboardType==0) {
+							if ($.DashboardType==0) {
 								xhtm='\t<div class="span4 movable" id="light_' + item.idx +'">\n';
 							}
-							else if (data.DashboardType==1) {
+							else if ($.DashboardType==1) {
 								xhtm='\t<div class="span3 movable" id="light_' + item.idx +'">\n';
 							}
 							xhtm+='\t  <section>\n';
@@ -1755,7 +1764,7 @@ function ShowFavorites()
           //close previous devider
           htmlcontent+='</div>\n';
         }
-        if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+        if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 					htmlcontent+='\t    </table>\n';
         }
 
@@ -1772,7 +1781,7 @@ function ShowFavorites()
             if (jj == 0)
             {
               //first time
-              if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+              if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								if (htmlcontent!="") {
 									htmlcontent+='<br>';
 								}
@@ -1799,7 +1808,7 @@ function ShowFavorites()
               bHaveAddedDevider=true;
             }
             var xhtm="";
-						if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+						if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 							var vname='<img src="images/next.png" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="16" width="16">' + " " + item.Name;
 
 							xhtm+=
@@ -1835,10 +1844,10 @@ function ShowFavorites()
 										'\t    </tr>\n';
 						}
 						else {
-							if (data.DashboardType==0) {
+							if ($.DashboardType==0) {
 								xhtm='\t<div class="span4 movable" id="temp_' + item.idx +'">\n';
 							}
-							else if (data.DashboardType==1) {
+							else if ($.DashboardType==1) {
 								xhtm='\t<div class="span3 movable" id="temp_' + item.idx +'">\n';
 							}
 							xhtm+='\t  <section>\n';
@@ -1930,7 +1939,7 @@ function ShowFavorites()
           //close previous devider
           htmlcontent+='</div>\n';
         }
-        if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+        if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 					htmlcontent+='\t    </table>\n';
         }
 
@@ -1947,7 +1956,7 @@ function ShowFavorites()
             if (jj == 0)
             {
               //first time
-              if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+              if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								if (htmlcontent!="") {
 									htmlcontent+='<br>';
 								}
@@ -1974,7 +1983,7 @@ function ShowFavorites()
               bHaveAddedDevider=true;
             }
             var xhtm="";
-						if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+						if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 							xhtm+=
 									'\t    <tr id="weather_' + item.idx +'">\n' +
 									'\t      <td id="name">' + item.Name + '</td>\n';
@@ -2021,10 +2030,10 @@ function ShowFavorites()
 										'\t    </tr>\n';
 						}
 						else {
-							if (data.DashboardType==0) {
+							if ($.DashboardType==0) {
 								xhtm='\t<div class="span4 movable" id="weather_' + item.idx +'">\n';
 							}
-							else if (data.DashboardType==1) {
+							else if ($.DashboardType==1) {
 								xhtm='\t<div class="span3 movable" id="weather_' + item.idx +'">\n';
 							}
 							xhtm+='\t  <section>\n';
@@ -2140,7 +2149,7 @@ function ShowFavorites()
           //close previous devider
           htmlcontent+='</div>\n';
         }
-        if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+        if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 					htmlcontent+='\t    </table>\n';
         }
 
@@ -2154,7 +2163,7 @@ function ShowFavorites()
             if (jj == 0)
             {
               //first time
-              if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+              if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								if (htmlcontent!="") {
 									htmlcontent+='<br>';
 								}
@@ -2181,7 +2190,7 @@ function ShowFavorites()
               bHaveAddedDevider=true;
             }
             var xhtm="";
-						if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+						if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 							xhtm+=
 									'\t    <tr id="security_' + item.idx +'">\n' +
 									'\t      <td id="name">' + item.Name + '</td>\n';
@@ -2204,17 +2213,17 @@ function ShowFavorites()
 							xhtm+='</td>\n\t    </tr>\n';
 						}
 						else {
-							if (data.DashboardType==0) {
+							if ($.DashboardType==0) {
 								xhtm='\t<div class="span4 movable" id="security_' + item.idx +'">\n';
 							}
-							else if (data.DashboardType==1) {
+							else if ($.DashboardType==1) {
 								xhtm='\t<div class="span3 movable" id="security_' + item.idx +'">\n';
 							}
 							xhtm+='\t  <section>\n';
-							if (data.DashboardType==0) {
+							if ($.DashboardType==0) {
 										xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 							}
-							else if (data.DashboardType==1) {
+							else if ($.DashboardType==1) {
 										xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 							}
 							var nbackcolor="#D4E1EE";
@@ -2295,7 +2304,7 @@ function ShowFavorites()
           //close previous devider
           htmlcontent+='</div>\n';
         }
-        if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+        if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 					htmlcontent+='\t    </table>\n';
         }
         
@@ -2329,7 +2338,7 @@ function ShowFavorites()
             if (jj == 0)
             {
               //first time
-              if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+              if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								if (htmlcontent!="") {
 									htmlcontent+='<br>';
 								}
@@ -2356,13 +2365,13 @@ function ShowFavorites()
               bHaveAddedDevider=true;
             }
             var xhtm="";
-			if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+			if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 				xhtm+=
 						'\t    <tr id="utility_' + item.idx +'">\n' +
 						'\t      <td id="name">' + item.Name + '</td>\n';
 				var status="";
 				if (typeof item.Counter != 'undefined') {
-					if (data.DashboardType==0) {
+					if ($.DashboardType==0) {
 						status='' + $.i18n("Usage") + ': ' + item.CounterToday;
 					}
 					else {
@@ -2392,7 +2401,7 @@ function ShowFavorites()
 					status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 				}
 				if (typeof item.Usage != 'undefined') {
-					if (data.DashboardType==0) {
+					if ($.DashboardType==0) {
 						status+='<br>' + $.i18n("Actual") + ': ' + item.Usage;
 					}
 					else {
@@ -2401,7 +2410,7 @@ function ShowFavorites()
 				}
 				if (typeof item.CounterDeliv != 'undefined') {
 					if (item.CounterDeliv!=0) {
-						if (data.DashboardType==0) {
+						if ($.DashboardType==0) {
 							status+='<br>' + $.i18n("Return") + ': ' + item.CounterDelivToday;
 							status+='<br>' + $.i18n("Actual") + ': ' + item.UsageDeliv;
 						}
@@ -2416,10 +2425,10 @@ function ShowFavorites()
 							'\t    </tr>\n';
 			}
 			else {
-				if (data.DashboardType==0) {
+				if ($.DashboardType==0) {
 					xhtm='\t<div class="span4 movable" id="utility_' + item.idx +'">\n';
 				}
-				else if (data.DashboardType==1) {
+				else if ($.DashboardType==1) {
 					xhtm='\t<div class="span3 movable" id="utility_' + item.idx +'">\n';
 				}
 				xhtm+='\t  <span>\n';
@@ -2543,7 +2552,7 @@ function ShowFavorites()
 				
 				if (typeof item.Usage != 'undefined') {
 					if (item.Type!="P1 Smart Meter") {
-						if (data.DashboardType==0) {
+						if ($.DashboardType==0) {
 							//status+='<br>' + $.i18n("Actual") + ': ' + item.Usage;
 							if (typeof item.CounterToday != 'undefined') {
 								status+='<br>' + $.i18n("Today") + ': ' + item.CounterToday;
@@ -2580,7 +2589,7 @@ function ShowFavorites()
           //close previous devider
           htmlcontent+='</div>\n';
         }
-        if ((data.DashboardType==2)||(window.myglobals.ismobile==true)) {
+        if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 					htmlcontent+='\t    </table>\n';
         }
 

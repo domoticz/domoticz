@@ -229,6 +229,9 @@ namespace OpenZWave
 		/**
 		 * \brief Removes the driver for a Z-Wave controller, and closes the controller.
 		 * Drivers do not need to be explicitly removed before calling Destroy - this is handled automatically.
+		 * \warning You should NOT call any Manager methods that require the Driver Reference (eg, in response to
+		 * Notifications recieved about NodeRemoved etc) once you call this, as your application will most likely
+		 * break
 		 * @param _controllerPath The same string as was passed in the original call to AddDriver.
 		 * @returns True if the driver was removed, false if it could not be found.
 		 * @see Destroy, AddDriver

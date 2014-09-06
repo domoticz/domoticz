@@ -126,6 +126,7 @@ private:
 	std::string m_szSerialPort;
 	int m_controllerID;
 
+	bool m_bIsShuttingDown;
 	bool m_initFailed;
 	bool m_awakeNodesQueried;
 	bool m_allNodesQueried;

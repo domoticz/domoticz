@@ -425,6 +425,7 @@ COpenZWave::COpenZWave(const int ID, const std::string& devname)
 	m_HwdID=ID;
 	m_szSerialPort=devname;
 	m_controllerID=0;
+	m_bIsShuttingDown = false;
 	m_initFailed = false;
 	m_allNodesQueried = false;
 	m_awakeNodesQueried = false;
@@ -497,12 +498,15 @@ void OnNotification( OpenZWave::Notification const* _notification,void* _context
 
 void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notification)
 {
+	if (m_bIsShuttingDown)
+		return;
 	// Must do this inside a critical section to avoid conflicts with the main thread
 	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 	OpenZWave::Manager* pManager=OpenZWave::Manager::Get();
 	if (!pManager)
 		return;
-
+	if (m_bIsShuttingDown)
+		return;
 	m_updateTime=mytime(NULL);
 
 	OpenZWave::ValueID vID=_notification->GetValueID();
@@ -694,10 +698,12 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 		}
 		break;
 	case OpenZWave::Notification::Type_DriverFailed:
-		{
-			m_initFailed = true;
-			_log.Log(LOG_ERROR,"OpenZWave: Driver Failed!!");
-		}
+		m_initFailed = true;
+		_log.Log(LOG_ERROR,"OpenZWave: Driver Failed!!");
+		break;
+	case OpenZWave::Notification::Type_DriverRemoved:
+		_log.Log(LOG_ERROR, "OpenZWave: Driver Removed!!");
+		m_bIsShuttingDown = true;
 		break;
 	case OpenZWave::Notification::Type_AwakeNodesQueried:
 		_log.Log(LOG_STATUS,"OpenZWave: Awake Nodes queried");
@@ -804,6 +810,7 @@ bool COpenZWave::OpenSerialConnector()
 	if (m_pManager==NULL)
 		return false;
 
+	m_bIsShuttingDown = false;
 	// Add a callback handler to the manager.  The second argument is a context that
 	// is passed to the OnNotification method.  If the OnNotification is a method of
 	// a class, the context would usually be a pointer to that class object, to
@@ -834,6 +841,7 @@ bool COpenZWave::OpenSerialConnector()
 void COpenZWave::CloseSerialConnector()
 {
 	// program exit (clean up)
+	m_bIsShuttingDown = true;
 	OpenZWave::Manager* pManager=OpenZWave::Manager::Get();
 	if (pManager)
 	{

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-
+<!-- Fibaro: FGK101 Door Opening Sensor -->
 <Product xmlns='http://code.google.com/p/open-zwave/'>
 
 	<!-- Configuration -->
@@ -8,13 +8,10 @@
 			<Help>Input I alarm cancellation delay. Additional delay after an alarm from input IN1 has ceased. The parameter allows you to specify additional time, after which the input no. 1 alarm is cancelled once its violation has ceased.</Help>
 		</Value>
 
-		<Value type="short" genre="config" instance="1" index="2" label="Status change signalled by LED" min="0" max="1" value="1">
-			<Help>Status change signalled by LED
-			  Default setting: 1
-			  Available parameter settings:
-			  0 - LED turned Off,
-			  1 - LED turned Onhas ceased.
-			</Help>
+		<Value type="list" genre="config" instance="1" index="2" label="Status change signalled by LED" min="0" max="1" value="1" size="1">
+			<Help>Status change signalled by LED. Default setting: LED turned On</Help>
+			<Item label="LED turned Off" value="0" />
+			<Item label="LED turned On" value="1" />
 		</Value>
 
 		<Value type="list" genre="config" instance="1" index="3" label="Type of input no. 1" value="1" size="1">
@@ -56,7 +53,7 @@
 			<Help>Interval between forcing to send report concerning the temperature conditions. The forced report is sent immediately after the next reading of temperature from the sensor, irrespective of the settings of parameter no. 12. Value 0 = Deactivates the function. Note: Frequent sending of temperature condition reports is reasonable when the sensor is located somewhere where can occure rapid changes of ambient temperature. In other cases it is recommended to leave the parameter set to the default value.</Help>
 		</Value>
 
-		<Value type="byte" genre="config" instance="1" index="12" label="Insensitiveness to temperature changes." min="0" max="255" value="8">
+		<Value type="byte" genre="config" instance="1" index="12" label="Insensitiveness to temperature changes" min="0" max="255" value="8">
 			<Help>Insensitiveness to temperature changes. This is the maximum acceptable difference between the last reported temperature and the current temperature taken from the sensor. If the temperatures differ by the set value or more, then a report with the current temperature value is sent to the device assigned to association group no. 3. Intervals between taking readings from sensors are specified by parameter no. 10.
 			  Possible parameter settings:0 - 255 [0oC to 16oC] [0 oF - 28.8oF]
 			  In order to set the appropriate value of the parameter, the following formula should be used:
@@ -84,12 +81,13 @@
 
 	<!-- Basic set as report -->
 	<CommandClass id="32" setasreport="true"/>
+
 	<!-- Association Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="3">
 			<Group index="1" max_associations="5" label="Input IN1" auto="true"/>
 			<Group index="2" max_associations="5" label="TMP Button" auto="true" />
-			<Group index="3" max_associations="1" label="Condition" auto="true"/>
+			<Group index="3" max_associations="1" label="Device Status" auto="true"/>
 		</Associations>
 	</CommandClass>
 

@@ -50,6 +50,7 @@
 #include "../hardware/Meteostick.h"
 #include "../hardware/PVOutput_Input.h"
 #include "../hardware/ToonThermostat.h"
+#include "../hardware/HarmonyHub.h"
 #include "../hardware/EcoDevices.h"
 #ifdef WITH_GPIO
 	#include "../hardware/Gpio.h"
@@ -545,6 +546,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_TOONTHERMOSTAT:
 		pHardware = new CToonThermostat(ID, Username, Password);
+		break;
+	case HTYPE_HARMONY_HUB:
+		pHardware = new CHarmonyHub(ID, Address, Port, Username, Password);
 		break;
 	case HTYPE_PVOUTPUT_INPUT:
 		pHardware = new CPVOutputInput(ID,Username,Password);

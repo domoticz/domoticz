@@ -153,6 +153,9 @@
     <Filter Include="Devices\EcoDevices">
       <UniqueIdentifier>{45784bef-128b-4ccf-8425-dd83aca6d9c9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Logitech Harmony Hub">
+      <UniqueIdentifier>{5f254282-0e5e-4373-b545-c049bc9dfb14}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -460,6 +463,12 @@
     <ClInclude Include="hardware\EcoDevices.h">
       <Filter>Devices\EcoDevices</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\HarmonyHub.h">
+      <Filter>Devices\Logitech Harmony Hub</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\csocket.h">
+      <Filter>Devices\Logitech Harmony Hub</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -725,6 +734,12 @@
     </ClCompile>
     <ClCompile Include="hardware\EcoDevices.cpp">
       <Filter>Devices\EcoDevices</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\HarmonyHub.cpp">
+      <Filter>Devices\Logitech Harmony Hub</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\csocket.cpp">
+      <Filter>Devices\Logitech Harmony Hub</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,4 @@
-Version 1.0.xxxx (August xxth 2014)
+Version 1.0.xxxx (September xxth 2014)
 - Implemented: Fibaro Link data pusher
 - Implemented: Splash screen for iPhone5 retina
 - Implemented: Navigation toolbar for mobile devices
@@ -97,6 +97,7 @@ Version 1.0.xxxx (August xxth 2014)
 - Implemented: Light/Scene/Group timer with fixed Date/Time
 - Fixed: Pushover notification (thanks to Gerlo)
 - Fixed: OpenZWave support for multi binary sensor (for instance FGBS001)
+- Implemented: Native Logitech Harmony support (thanks to CodeItAway!)
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

@@ -1139,7 +1139,7 @@ bool CSQLHelper::OpenDatabase()
 	}
 	if (!GetPreferencesVar("EnableTabFloorplans", nValue))
 	{
-		UpdatePreferencesVar("EnableTabFloorplans", 1);
+		UpdatePreferencesVar("EnableTabFloorplans", 0);
 	}
 	if (!GetPreferencesVar("NotificationSensorInterval", nValue))
 	{
@@ -1161,6 +1161,10 @@ bool CSQLHelper::OpenDatabase()
 	if (!GetPreferencesVar("Language", sValue))
 	{
 		UpdatePreferencesVar("Language", "en");
+	}
+	if (!GetPreferencesVar("DashboardType", nValue))
+	{
+		UpdatePreferencesVar("DashboardType", 0);
 	}
 	if (!GetPreferencesVar("MobileType", nValue))
 	{
