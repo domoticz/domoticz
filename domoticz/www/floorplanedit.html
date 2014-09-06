@@ -689,6 +689,7 @@ function RefreshPlanTable(idx) {
 						$("#roompolyarea").attr("points", "");
 						$("#firstclick").remove();
 						$("#floorplangroup").attr("planidx", "");
+						$('#floorplanimage').css('cursor', 'auto');
 					}
 					else {
 						oTable.$('tr.row_selected').removeClass('row_selected');
@@ -704,6 +705,7 @@ function RefreshPlanTable(idx) {
 							$("#roompolyarea").attr("title", data["0"]);
 							$("#roompolyarea").attr("points", data["2"]);
 							$("#floorplangroup").attr("planidx", idx);
+							$('#floorplanimage').css('cursor', 'crosshair');
 							ShowDevices(idx);
 						}
 					}
