@@ -283,45 +283,48 @@ function RefreshPlanTable()
 				"2": updownImg
 			} );
 		});
-		/* Add a click handler to the rows - this could be used as a callback */
-		$("#plantable tbody tr").click( function( e ) {
-			$.devIdx=-1;
-
-			if ( $(this).hasClass('row_selected') ) {
-				$(this).removeClass('row_selected');
-				$('#updelclr #planedit').attr("class", "btnstyle3-dis");
-				$('#updelclr #plandelete').attr("class", "btnstyle3-dis");
-				$('#plancontent #delclractive #activedeviceclear').attr("class", "btnstyle3-dis");
-				$("#dialog-add-edit-plan #planname").val("");
-				RefreshActiveDevicesTable(-1);
-			}
-			else {
-				oTable.$('tr.row_selected').removeClass('row_selected');
-				$(this).addClass('row_selected');
-				$('#plancontent #delclractive #activedeviceclear').attr("class", "btnstyle3");
-				$('#updelclr #planedit').attr("class", "btnstyle3-dis");
-				$('#updelclr #plandelete').attr("class", "btnstyle3-dis");
-				
-				var anSelected = fnGetSelected( oTable );
-				if ( anSelected.length !== 0 ) {
-					var data = oTable.fnGetData( anSelected[0] );
-					var idx= data["DT_RowId"];
-					$.devIdx=idx;
-					var name=data["Name"];
-					if (name!="$Hidden Devices") {
-						$('#updelclr #planedit').attr("class", "btnstyle3");
-						$('#updelclr #plandelete').attr("class", "btnstyle3");
-						$("#updelclr #planedit").attr("href", "javascript:EditPlan(" + idx + ")");
-						$("#updelclr #plandelete").attr("href", "javascript:DeletePlan(" + idx + ")");
-						$("#dialog-add-edit-plan #planname").val(data["Name"]);
-					}
-					RefreshActiveDevicesTable(idx);
-				}
-			}
-		}); 
 	  }
 	 }
 	});
+
+	/* Add a click handler to the rows - this could be used as a callback */
+	$("#plantable tbody").off();
+	$("#plantable tbody").on( 'click', 'tr', function () {
+		$.devIdx=-1;
+
+		if ( $(this).hasClass('row_selected') ) {
+			$(this).removeClass('row_selected');
+			$('#updelclr #planedit').attr("class", "btnstyle3-dis");
+			$('#updelclr #plandelete').attr("class", "btnstyle3-dis");
+			$('#plancontent #delclractive #activedeviceclear').attr("class", "btnstyle3-dis");
+			$("#dialog-add-edit-plan #planname").val("");
+			RefreshActiveDevicesTable(-1);
+		}
+		else {
+			var oTable = $('#plantable').dataTable();
+			oTable.$('tr.row_selected').removeClass('row_selected');
+			$(this).addClass('row_selected');
+			$('#plancontent #delclractive #activedeviceclear').attr("class", "btnstyle3");
+			$('#updelclr #planedit').attr("class", "btnstyle3-dis");
+			$('#updelclr #plandelete').attr("class", "btnstyle3-dis");
+			
+			var anSelected = fnGetSelected( oTable );
+			if ( anSelected.length !== 0 ) {
+				var data = oTable.fnGetData( anSelected[0] );
+				var idx= data["DT_RowId"];
+				$.devIdx=idx;
+				var name=data["Name"];
+				if (name!="$Hidden Devices") {
+					$('#updelclr #planedit').attr("class", "btnstyle3");
+					$('#updelclr #plandelete').attr("class", "btnstyle3");
+					$("#updelclr #planedit").attr("href", "javascript:EditPlan(" + idx + ")");
+					$("#updelclr #plandelete").attr("href", "javascript:DeletePlan(" + idx + ")");
+					$("#dialog-add-edit-plan #planname").val(data["Name"]);
+				}
+				RefreshActiveDevicesTable(idx);
+			}
+		}
+	}); 
   
   $('#modal').hide();
 }
@@ -442,28 +445,32 @@ function RefreshActiveDevicesTable(idx)
 						"2": updownImg
 					} );
 				});
-				/* Add a click handler to the rows - this could be used as a callback */
-				$("#plancontent #activetable tbody tr").click( function( e ) {
-					if ( $(this).hasClass('row_selected') ) {
-						$(this).removeClass('row_selected');
-						$('#plancontent #delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
-					}
-					else {
-						oTable.$('tr.row_selected').removeClass('row_selected');
-						$(this).addClass('row_selected');
-						$('#plancontent #delclractive #activedevicedelete').attr("class", "btnstyle3");
-						
-						var anSelected = fnGetSelected( oTable );
-						if ( anSelected.length !== 0 ) {
-							var data = oTable.fnGetData( anSelected[0] );
-							var idx= data["DT_RowId"];
-							$("#plancontent #delclractive #activedevicedelete").attr("href", "javascript:DeleteActiveDevice(" + idx + ")");
-						}
-					}
-				}); 
 			}
 		}
 	});
+
+	/* Add a click handler to the rows - this could be used as a callback */
+	$("#plancontent #activetable tbody").off();
+	$("#plancontent #activetable tbody").on( 'click', 'tr', function () {
+		if ( $(this).hasClass('row_selected') ) {
+			$(this).removeClass('row_selected');
+			$('#plancontent #delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
+		}
+		else {
+			var oTable = $('#plancontent #activetable').dataTable();
+			oTable.$('tr.row_selected').removeClass('row_selected');
+			$(this).addClass('row_selected');
+			$('#plancontent #delclractive #activedevicedelete').attr("class", "btnstyle3");
+			
+			var anSelected = fnGetSelected( oTable );
+			if ( anSelected.length !== 0 ) {
+				var data = oTable.fnGetData( anSelected[0] );
+				var idx= data["DT_RowId"];
+				$("#plancontent #delclractive #activedevicedelete").attr("href", "javascript:DeleteActiveDevice(" + idx + ")");
+			}
+		}
+	}); 
+
   $('#modal').hide();
 }
 

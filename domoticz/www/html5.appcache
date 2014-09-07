@@ -1,15 +1,15 @@
 CACHE MANIFEST
-# ref 556
+# ref 557
 
 CACHE:
 # CSS
 css/bootstrap.css
 css/bootstrap-responsive.css
 css/colpick.css
+css/dataTables.tableTools.min.css
 css/demo_table_jui.css
 css/jquery.uix.multiselect.css
 css/style.css
-css/TableTools.css
 css/ui-darkness/jquery-ui-1.10.3.custom.min.css
 secpanel/css/font.less
 secpanel/css/reset.less
@@ -357,12 +357,16 @@ i18n/domoticz-sv.json
 i18n/domoticz-vi.json
 
 # Scripts
+js/angular.min.js
+js/angular-route.min.js
+js/angular-animate.min.js
 js/blockly_compressed.js
 js/bootbox.min.js
 js/bootstrap.min.js
 js/colpick.js
 js/d3.min.js
 js/date.format.js
+js/dataTables.tableTools.min.js
 js/domoticz.js
 js/domoticzblocks.js
 js/domoticzblocks_messages_en.js
@@ -370,6 +374,7 @@ js/en_compressed.js
 js/export-csv.js
 js/highcharts.js
 js/highcharts-more.js
+js/highcharts-ng.min.js
 js/jquery.dataTables.min.js
 js/jquery.ddslick.min.js
 js/jquery.i18n.emitter.js
@@ -382,11 +387,12 @@ js/jquery.jeditable.mini.js
 js/jquery.ui.touch-punch.min.js
 js/jquery.uix.multiselect.min.js
 js/jquery-1.10.2.min.js
-js/jquery-migrate-1.2.1.min.js
 js/jquery-ui-1.10.3.custom.min.js
-js/TableTools.min.js
 js/ZeroClipboard.js
 js/modules/exporting.js
+js/ngload.min.js
+js/ng-grid.min.js
+js/ng-grid-flexible-height.js
 js/noty/jquery.noty.js
 js/noty/promise.js
 js/noty/layouts/bottom.js
@@ -402,6 +408,7 @@ js/noty/layouts/topCenter.js
 js/noty/layouts/topLeft.js
 js/noty/layouts/topRight.js
 js/noty/themes/default.js
+js/require.js
 js/themes/dark-blue.js
 js/themes/dark-green.js
 js/themes/gray.js

@@ -388,48 +388,51 @@ function RefreshcameraTable()
 				"7": item.ImageURL
 			} );
 		});
-		/* Add a click handler to the rows - this could be used as a callback */
-		$("#cameratable tbody tr").click( function( e ) {
-			$.devIdx=-1;
-
-			if ( $(this).hasClass('row_selected') ) {
-				$(this).removeClass('row_selected');
-				$('#updelclr #cameraedit').attr("class", "btnstyle3-dis");
-				$('#updelclr #cameradelete').attr("class", "btnstyle3-dis");
-				$("#dialog-add-edit-camera #cameraparamstable #cameraname").val("");
-				$("#dialog-add-edit-camera #cameraparamstable #cameraaddress").val("");
-				$("#dialog-add-edit-camera #cameraparamstable #cameraport").val("");
-				$('#dialog-add-edit-camera #cameraparamstable #enabled').prop('checked',true);
-				$("#dialog-add-edit-camera #cameraparamstable #username").val("");
-				$("#dialog-add-edit-camera #cameraparamstable #password").val("");
-				$("#dialog-add-edit-camera #cameraparamstable #imageurl").val("image.jpg");
-			}
-			else {
-				oTable.$('tr.row_selected').removeClass('row_selected');
-				$(this).addClass('row_selected');
-				$('#updelclr #cameraedit').attr("class", "btnstyle3");
-				$('#updelclr #cameradelete').attr("class", "btnstyle3");
-				var anSelected = fnGetSelected( oTable );
-				if ( anSelected.length !== 0 ) {
-					var data = oTable.fnGetData( anSelected[0] );
-					var idx= data["DT_RowId"];
-					$.devIdx=idx;
-					$("#updelclr #cameraedit").attr("href", "javascript:EditCamera(" + idx + ")");
-					$("#updelclr #cameradelete").attr("href", "javascript:Deletecamera(" + idx + ")");
-					$("#dialog-add-edit-camera #cameraparamstable #cameraname").val(data["Name"]);
-					$("#dialog-add-edit-camera #cameraparamstable #cameraaddress").val(data["Address"]);
-					$("#dialog-add-edit-camera #cameraparamstable #cameraport").val(data["IntPort"]);
-					$('#dialog-add-edit-camera #cameraparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
-					$("#dialog-add-edit-camera #cameraparamstable #username").val(data["Username"]);
-					$("#dialog-add-edit-camera #cameraparamstable #password").val(data["Password"]);
-					$("#dialog-add-edit-camera #cameraparamstable #imageurl").val(data["ImageURL"]);
-					RefreshActiveDevicesTable(idx);
-				}
-			}
-		}); 
 	  }
 	 }
 	});
+
+	/* Add a click handler to the rows - this could be used as a callback */
+	$("#cameratable tbody").off();
+	$("#cameratable tbody").on( 'click', 'tr', function () {
+		$.devIdx=-1;
+
+		if ( $(this).hasClass('row_selected') ) {
+			$(this).removeClass('row_selected');
+			$('#updelclr #cameraedit').attr("class", "btnstyle3-dis");
+			$('#updelclr #cameradelete').attr("class", "btnstyle3-dis");
+			$("#dialog-add-edit-camera #cameraparamstable #cameraname").val("");
+			$("#dialog-add-edit-camera #cameraparamstable #cameraaddress").val("");
+			$("#dialog-add-edit-camera #cameraparamstable #cameraport").val("");
+			$('#dialog-add-edit-camera #cameraparamstable #enabled').prop('checked',true);
+			$("#dialog-add-edit-camera #cameraparamstable #username").val("");
+			$("#dialog-add-edit-camera #cameraparamstable #password").val("");
+			$("#dialog-add-edit-camera #cameraparamstable #imageurl").val("image.jpg");
+		}
+		else {
+			var oTable = $('#cameratable').dataTable();
+			oTable.$('tr.row_selected').removeClass('row_selected');
+			$(this).addClass('row_selected');
+			$('#updelclr #cameraedit').attr("class", "btnstyle3");
+			$('#updelclr #cameradelete').attr("class", "btnstyle3");
+			var anSelected = fnGetSelected( oTable );
+			if ( anSelected.length !== 0 ) {
+				var data = oTable.fnGetData( anSelected[0] );
+				var idx= data["DT_RowId"];
+				$.devIdx=idx;
+				$("#updelclr #cameraedit").attr("href", "javascript:EditCamera(" + idx + ")");
+				$("#updelclr #cameradelete").attr("href", "javascript:Deletecamera(" + idx + ")");
+				$("#dialog-add-edit-camera #cameraparamstable #cameraname").val(data["Name"]);
+				$("#dialog-add-edit-camera #cameraparamstable #cameraaddress").val(data["Address"]);
+				$("#dialog-add-edit-camera #cameraparamstable #cameraport").val(data["IntPort"]);
+				$('#dialog-add-edit-camera #cameraparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
+				$("#dialog-add-edit-camera #cameraparamstable #username").val(data["Username"]);
+				$("#dialog-add-edit-camera #cameraparamstable #password").val(data["Password"]);
+				$("#dialog-add-edit-camera #cameraparamstable #imageurl").val(data["ImageURL"]);
+				RefreshActiveDevicesTable(idx);
+			}
+		}
+	}); 
   
   $('#modal').hide();
 }
@@ -538,28 +541,32 @@ function RefreshActiveDevicesTable(idx)
 						"2": item.delay
 					} );
 				});
-				/* Add a click handler to the rows - this could be used as a callback */
-				$("#cameracontent #activetable tbody tr").click( function( e ) {
-					if ( $(this).hasClass('row_selected') ) {
-						$(this).removeClass('row_selected');
-						$('#cameracontent #delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
-					}
-					else {
-						oTable.$('tr.row_selected').removeClass('row_selected');
-						$(this).addClass('row_selected');
-						$('#cameracontent #delclractive #activedevicedelete').attr("class", "btnstyle3");
-						
-						var anSelected = fnGetSelected( oTable );
-						if ( anSelected.length !== 0 ) {
-							var data = oTable.fnGetData( anSelected[0] );
-							var idx= data["DT_RowId"];
-							$("#cameracontent #delclractive #activedevicedelete").attr("href", "javascript:DeleteActiveDevice(" + idx + ")");
-						}
-					}
-				}); 
 			}
 		}
 	});
+
+	/* Add a click handler to the rows - this could be used as a callback */
+	$("#cameracontent #activetable tbody").off();
+	$("#cameracontent #activetable tbody").on( 'click', 'tr', function () {
+		if ( $(this).hasClass('row_selected') ) {
+			$(this).removeClass('row_selected');
+			$('#cameracontent #delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
+		}
+		else {
+			var oTable = $('#cameracontent #activetable').dataTable();
+			oTable.$('tr.row_selected').removeClass('row_selected');
+			$(this).addClass('row_selected');
+			$('#cameracontent #delclractive #activedevicedelete').attr("class", "btnstyle3");
+			
+			var anSelected = fnGetSelected( oTable );
+			if ( anSelected.length !== 0 ) {
+				var data = oTable.fnGetData( anSelected[0] );
+				var idx= data["DT_RowId"];
+				$("#cameracontent #delclractive #activedevicedelete").attr("href", "javascript:DeleteActiveDevice(" + idx + ")");
+			}
+		}
+	}); 
+
   $('#modal').hide();
 }
 

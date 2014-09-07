@@ -772,90 +772,93 @@ function RefreshTimerTable(idx)
 				"6": DayStr
 			} );
         });
-		/* Add a click handler to the rows - this could be used as a callback */
-		$("#timertable tbody tr").click( function( e ) {
-			if ( $(this).hasClass('row_selected') ) {
-					$(this).removeClass('row_selected');
-					$('#updelclr #timerupdate').attr("class", "btnstyle3-dis");
-					$('#updelclr #timerdelete').attr("class", "btnstyle3-dis");
-			}
-			else {
-				oTable.$('tr.row_selected').removeClass('row_selected');
-				$(this).addClass('row_selected');
-				$('#updelclr #timerupdate').attr("class", "btnstyle3");
-				$('#updelclr #timerdelete').attr("class", "btnstyle3");
-				var anSelected = fnGetSelected( oTable );
-				if ( anSelected.length !== 0 ) {
-					var data = oTable.fnGetData( anSelected[0] );
-					var idx= data["DT_RowId"];
-					$.myglobals.SelectedTimerIdx=idx;
-					$("#updelclr #timerupdate").attr("href", "javascript:UpdateTimer(" + idx + ")");
-					$("#updelclr #timerdelete").attr("href", "javascript:DeleteTimer(" + idx + ")");
-					//update user interface with the paramters of this row
-					$('#lightcontent #timerparamstable #enabled').prop('checked', (data["0"]=="Yes") ? true : false);
-					$("#lightcontent #timerparamstable #combotype").val(jQuery.inArray(data["TTypeString"], $.myglobals.TimerTypesStr));
-					$("#lightcontent #timerparamstable #combotimehour").val(parseInt(data["3"].substring(0,2)));
-					$("#lightcontent #timerparamstable #combotimemin").val(parseInt(data["3"].substring(3,5)));
-					$('#lightcontent #timerparamstable #randomness').prop('checked', (data["4"]=="Yes") ? true : false);
-					$("#lightcontent #timerparamstable #combocommand").val(jQuery.inArray(data["Command"], $.myglobals.CommandStr));
-					var level=data["Level"];
-					if ($.bIsLED) {
-						$('#lightcontent #Brightness').val(level&255);
-						var hue=data["Hue"];
-						var sat=100;
-						if (hue==1000) {
-							hue=0;
-							sat=0;
-						}
-						$('#lightcontent #Hue').val(hue);
-						var cHSB=[];
-						cHSB.h=hue;
-						cHSB.s=sat;
-						cHSB.b=level;
-						
-						$("#lightcontent #optionRGB").prop('checked',(sat==100));
-						$("#lightcontent #optionWhite").prop('checked',!(sat==100));
-
-						$('#lightcontent #picker').colpickSetColor(cHSB);
-					}
-					else if ($.isDimmer) {
-						$("#lightcontent #timerparamstable #combolevel").val(level);
-					}
-					
-					var timerType=data["TType"];
-					if (timerType==5) {
-						$("#lightcontent #timerparamstable #sdate").val(data["2"]);
-						$("#lightcontent #timerparamstable #rdate").show();
-						$("#lightcontent #timerparamstable #rnorm").hide();
-					}
-					else {
-						$("#lightcontent #timerparamstable #rdate").hide();
-						$("#lightcontent #timerparamstable #rnorm").show();
-					}
-					
-					var disableDays=false;
-					if (data["6"]=="Everyday") {
-						$("#lightcontent #timerparamstable #when_1").prop('checked', 'checked');
-						disableDays=true;
-					}
-					else if (data["6"]=="Weekdays") {
-						$("#lightcontent #timerparamstable #when_2").prop('checked', 'checked');
-						disableDays=true;
-					}
-					else if (data["6"]=="Weekends") {
-						$("#lightcontent #timerparamstable #when_3").prop('checked', 'checked');
-						disableDays=true;
-					}
-					else
-						$("#lightcontent #timerparamstable #when_4").prop('checked', 'checked');
-						
-					EnableDisableDays(data["6"],disableDays);
-				}
-			}
-		}); 
       }
      }
   });
+
+	/* Add a click handler to the rows - this could be used as a callback */
+	$("#timertable tbody").off();
+	$("#timertable tbody").on( 'click', 'tr', function () {
+		if ( $(this).hasClass('row_selected') ) {
+				$(this).removeClass('row_selected');
+				$('#updelclr #timerupdate').attr("class", "btnstyle3-dis");
+				$('#updelclr #timerdelete').attr("class", "btnstyle3-dis");
+		}
+		else {
+			var oTable = $('#timertable').dataTable();
+			oTable.$('tr.row_selected').removeClass('row_selected');
+			$(this).addClass('row_selected');
+			$('#updelclr #timerupdate').attr("class", "btnstyle3");
+			$('#updelclr #timerdelete').attr("class", "btnstyle3");
+			var anSelected = fnGetSelected( oTable );
+			if ( anSelected.length !== 0 ) {
+				var data = oTable.fnGetData( anSelected[0] );
+				var idx= data["DT_RowId"];
+				$.myglobals.SelectedTimerIdx=idx;
+				$("#updelclr #timerupdate").attr("href", "javascript:UpdateTimer(" + idx + ")");
+				$("#updelclr #timerdelete").attr("href", "javascript:DeleteTimer(" + idx + ")");
+				//update user interface with the paramters of this row
+				$('#lightcontent #timerparamstable #enabled').prop('checked', (data["0"]=="Yes") ? true : false);
+				$("#lightcontent #timerparamstable #combotype").val(jQuery.inArray(data["TTypeString"], $.myglobals.TimerTypesStr));
+				$("#lightcontent #timerparamstable #combotimehour").val(parseInt(data["3"].substring(0,2)));
+				$("#lightcontent #timerparamstable #combotimemin").val(parseInt(data["3"].substring(3,5)));
+				$('#lightcontent #timerparamstable #randomness').prop('checked', (data["4"]=="Yes") ? true : false);
+				$("#lightcontent #timerparamstable #combocommand").val(jQuery.inArray(data["Command"], $.myglobals.CommandStr));
+				var level=data["Level"];
+				if ($.bIsLED) {
+					$('#lightcontent #Brightness').val(level&255);
+					var hue=data["Hue"];
+					var sat=100;
+					if (hue==1000) {
+						hue=0;
+						sat=0;
+					}
+					$('#lightcontent #Hue').val(hue);
+					var cHSB=[];
+					cHSB.h=hue;
+					cHSB.s=sat;
+					cHSB.b=level;
+					
+					$("#lightcontent #optionRGB").prop('checked',(sat==100));
+					$("#lightcontent #optionWhite").prop('checked',!(sat==100));
+
+					$('#lightcontent #picker').colpickSetColor(cHSB);
+				}
+				else if ($.isDimmer) {
+					$("#lightcontent #timerparamstable #combolevel").val(level);
+				}
+				
+				var timerType=data["TType"];
+				if (timerType==5) {
+					$("#lightcontent #timerparamstable #sdate").val(data["2"]);
+					$("#lightcontent #timerparamstable #rdate").show();
+					$("#lightcontent #timerparamstable #rnorm").hide();
+				}
+				else {
+					$("#lightcontent #timerparamstable #rdate").hide();
+					$("#lightcontent #timerparamstable #rnorm").show();
+				}
+				
+				var disableDays=false;
+				if (data["6"]=="Everyday") {
+					$("#lightcontent #timerparamstable #when_1").prop('checked', 'checked');
+					disableDays=true;
+				}
+				else if (data["6"]=="Weekdays") {
+					$("#lightcontent #timerparamstable #when_2").prop('checked', 'checked');
+					disableDays=true;
+				}
+				else if (data["6"]=="Weekends") {
+					$("#lightcontent #timerparamstable #when_3").prop('checked', 'checked');
+					disableDays=true;
+				}
+				else
+					$("#lightcontent #timerparamstable #when_4").prop('checked', 'checked');
+					
+				EnableDisableDays(data["6"],disableDays);
+			}
+		}
+	}); 
   
   RefreshTimeAndSun();
   
@@ -1233,28 +1236,32 @@ function RefreshSubDeviceTable(idx)
 						"0": item.Name
 									} );
 				});
-				/* Add a click handler to the rows - this could be used as a callback */
-				$("#lightcontent #subdevicestable tbody tr").click( function( e ) {
-					if ( $(this).hasClass('row_selected') ) {
-						$(this).removeClass('row_selected');
-						$('#lightcontent #delclr #subdevicedelete').attr("class", "btnstyle3-dis");
-					}
-					else {
-						oTable.$('tr.row_selected').removeClass('row_selected');
-						$(this).addClass('row_selected');
-						$('#lightcontent #delclr #subdevicedelete').attr("class", "btnstyle3");
-						
-						var anSelected = fnGetSelected( oTable );
-						if ( anSelected.length !== 0 ) {
-							var data = oTable.fnGetData( anSelected[0] );
-							var idx= data["DT_RowId"];
-							$("#lightcontent #delclr #subdevicedelete").attr("href", "javascript:DeleteSubDevice(" + idx + ")");
-						}
-					}
-				}); 
 			}
 		}
 	});
+
+	/* Add a click handler to the rows - this could be used as a callback */
+	$("#lightcontent #subdevicestable tbody").off();
+	$("#lightcontent #subdevicestable tbody").on( 'click', 'tr', function () {
+		if ( $(this).hasClass('row_selected') ) {
+			$(this).removeClass('row_selected');
+			$('#lightcontent #delclr #subdevicedelete').attr("class", "btnstyle3-dis");
+		}
+		else {
+			var oTable = $('#lightcontent #subdevicestable').dataTable();
+			oTable.$('tr.row_selected').removeClass('row_selected');
+			$(this).addClass('row_selected');
+			$('#lightcontent #delclr #subdevicedelete').attr("class", "btnstyle3");
+			
+			var anSelected = fnGetSelected( oTable );
+			if ( anSelected.length !== 0 ) {
+				var data = oTable.fnGetData( anSelected[0] );
+				var idx= data["DT_RowId"];
+				$("#lightcontent #delclr #subdevicedelete").attr("href", "javascript:DeleteSubDevice(" + idx + ")");
+			}
+		}
+	}); 
+
   $('#modal').hide();
 }
 

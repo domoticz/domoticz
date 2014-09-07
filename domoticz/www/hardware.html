@@ -1275,36 +1275,39 @@ function RefreshWOLNodeTable()
 				"2": item.Mac
 			} );
         });
-		/* Add a click handler to the rows - this could be used as a callback */
-		$("#nodestable tbody tr").click( function( e ) {
-			$('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
-			if ( $(this).hasClass('row_selected') ) {
-				$(this).removeClass('row_selected');
-				$('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
-				$("#hardwarecontent #nodeparamstable #nodename").val("");
-				$("#hardwarecontent #nodeparamstable #nodemac").val("");
-			}
-			else {
-				oTable.$('tr.row_selected').removeClass('row_selected');
-				$(this).addClass('row_selected');
-				$('#updelclr #nodeupdate').attr("class", "btnstyle3");
-				var anSelected = fnGetSelected( oTable );
-				if ( anSelected.length !== 0 ) {
-					var data = oTable.fnGetData( anSelected[0] );
-					var idx= data["DT_RowId"];
-					$.myglobals.SelectedTimerIdx=idx;
-					$("#updelclr #nodeupdate").attr("href", "javascript:WOLUpdateNode(" + idx + ")");
-					$('#updelclr #nodedelete').attr("class", "btnstyle3");
-					$("#updelclr #nodedelete").attr("href", "javascript:WOLDeleteNode(" + idx + ")");
-					$("#hardwarecontent #nodeparamstable #nodename").val(data["1"]);
-					$("#hardwarecontent #nodeparamstable #nodemac").val(data["2"]);
-				}
-			}
-		}); 
-				
       }
      }
   });
+
+	/* Add a click handler to the rows - this could be used as a callback */
+	$("#nodestable tbody").off();
+	$("#nodestable tbody").on( 'click', 'tr', function () {
+		$('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
+		if ( $(this).hasClass('row_selected') ) {
+			$(this).removeClass('row_selected');
+			$('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
+			$("#hardwarecontent #nodeparamstable #nodename").val("");
+			$("#hardwarecontent #nodeparamstable #nodemac").val("");
+		}
+		else {
+			var oTable = $('#nodestable').dataTable();
+			oTable.$('tr.row_selected').removeClass('row_selected');
+			$(this).addClass('row_selected');
+			$('#updelclr #nodeupdate').attr("class", "btnstyle3");
+			var anSelected = fnGetSelected( oTable );
+			if ( anSelected.length !== 0 ) {
+				var data = oTable.fnGetData( anSelected[0] );
+				var idx= data["DT_RowId"];
+				$.myglobals.SelectedTimerIdx=idx;
+				$("#updelclr #nodeupdate").attr("href", "javascript:WOLUpdateNode(" + idx + ")");
+				$('#updelclr #nodedelete').attr("class", "btnstyle3");
+				$("#updelclr #nodedelete").attr("href", "javascript:WOLDeleteNode(" + idx + ")");
+				$("#hardwarecontent #nodeparamstable #nodename").val(data["1"]);
+				$("#hardwarecontent #nodeparamstable #nodemac").val(data["2"]);
+			}
+		}
+	}); 
+
   $('#modal').hide();
 }
 
@@ -1733,125 +1736,128 @@ function RefreshOpenZWaveNodeTable()
 				"4": statusImg+'&nbsp;&nbsp;'+healButton,
 			} );
         });
-		/* Add a click handler to the rows - this could be used as a callback */
-		$("#nodestable tbody tr").click( function( e ) {
-			$('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
-			if ( $(this).hasClass('row_selected') ) {
-				$(this).removeClass('row_selected');
-				$('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
-				$("#hardwarecontent #configuration").html("");
-				$("#hardwarecontent #nodeparamstable #nodename").val("");
-				$('#hardwarecontent #usercodegrp').hide();
-			}
-			else {
-				oTable.$('tr.row_selected').removeClass('row_selected');
-				$(this).addClass('row_selected');
-				$('#updelclr #nodeupdate').attr("class", "btnstyle3");
-				var anSelected = fnGetSelected( oTable );
-				if ( anSelected.length !== 0 ) {
-					var data = oTable.fnGetData( anSelected[0] );
-					var idx= data["DT_RowId"];
-					$.myglobals.SelectedTimerIdx=idx;
-					var iNode=parseInt(data["NodeID"]);
-					$("#updelclr #nodeupdate").attr("href", "javascript:UpdateNode(" + idx + ")");
-					$("#hardwarecontent #zwavecodemanagement").attr("href", "javascript:ZWaveUserCodeManagement(" + idx + ")");
-					if (iNode>1) {
-						$('#updelclr #nodedelete').attr("class", "btnstyle3");
-						$("#updelclr #nodedelete").attr("href", "javascript:DeleteNode(" + idx + ")");
-					}
-					$("#hardwarecontent #nodeparamstable #nodename").val(data["1"]);
-					$('#hardwarecontent #nodeparamstable #EnablePolling').prop('checked',(data["PollEnabled"]=="true"));
-					if (iNode<2) {
-						$("#hardwarecontent #nodeparamstable #trEnablePolling").hide();
-					}
-					else {
-						$("#hardwarecontent #nodeparamstable #trEnablePolling").show();
-					}
-					
-					if (data["HaveUserCodes"] == true) {
-						$('#hardwarecontent #usercodegrp').show();
-					}
-					else {
-						$('#hardwarecontent #usercodegrp').hide();
-					}
-
-					var szConfig="";
-					if (typeof data["Config"] != 'undefined') {
-						//Create configuration setup
-						szConfig='<a class="btnstyle3" id="noderequeststoredvalues" data-i18n="RequestConfiguration" onclick="RequestZWaveConfiguration(' + idx + ');">Request current stored values from device</a><br /><br />';
-						var bHaveConfiguration=false;
-						$.each(data["Config"], function(i,item){
-							bHaveConfiguration=true;
-							if (item.type=="list") {
-								szConfig+="<b>"+item.index+". "+item.label+":</b><br>";
-								szConfig+='<select style="width:100%" class="combobox ui-corner-all" id="'+item.index+'">';
-								var iListItem=0;
-								var totListItems=parseInt(item.list_items);
-								for (iListItem=0; iListItem<totListItems; iListItem++)
-								{
-									var szComboOption='<option value="' + iListItem + '"';
-									var szOptionTxt=item.listitem[iListItem];
-									if (szOptionTxt==item.value) {
-										szComboOption+=' selected="selected"';
-									}
-									szComboOption+='>' + szOptionTxt +'</option>';
-									szConfig+=szComboOption;
-								}
-								szConfig+='</select>'
-								if (item.units!="") {
-									szConfig+=' (' + item.units + ')';
-								}
-							}
-							else if (item.type=="bool") {
-								szConfig+="<b>"+item.index+". "+item.label+":</b><br>";
-								szConfig+='<select style="width:100%" class="combobox ui-corner-all" id="'+item.index+'">';
-								
-								var szComboOption='<option value="False"';
-								if (item.value=="False") {
-									szComboOption+=' selected="selected"';
-								}
-								szComboOption+='>False</option>';
-								szConfig+=szComboOption;
-
-								szComboOption='<option value="True"';
-								if (item.value=="True") {
-									szComboOption+=' selected="selected"';
-								}
-								szComboOption+='>True</option>';
-								szConfig+=szComboOption;
-
-								szConfig+='</select>'
-								if (item.units!="") {
-									szConfig+=' (' + item.units + ')';
-								}
-							}
-							else {
-								szConfig+="<b>"+item.index+". "+item.label+":</b> ";
-								szConfig+='<input type="text" id="'+item.index+'" value="' + item.value + '" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />';
-								if (item.units!="") {
-									szConfig+=' (' + item.units + ')';
-								}
-								szConfig+=" (" + $.i18n("actual") + ": " + item.value + ")";
-							}
-							szConfig+="<br />";
-							if (item.help!="") {
-								szConfig+=item.help+"<br>";
-							}
-							szConfig+="Last Update: " + item.LastUpdate;
-							szConfig+="<br /><br />";
-						});
-						if (bHaveConfiguration==true) {
-							szConfig+='<a class="btnstyle3" id="nodeapplyconfiguration" data-i18n="ApplyConfiguration" onclick="ApplyZWaveConfiguration(' + idx + ');" >Apply configuration for this device</a><br />';
-						}
-					}
-					$("#hardwarecontent #configuration").html(szConfig);
-				}
-			}
-		}); 
-				
       }
      }
   });
+
+	/* Add a click handler to the rows - this could be used as a callback */
+	$("#nodestable tbody").off();
+	$("#nodestable tbody").on( 'click', 'tr', function () {
+		$('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
+		if ( $(this).hasClass('row_selected') ) {
+			$(this).removeClass('row_selected');
+			$('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
+			$("#hardwarecontent #configuration").html("");
+			$("#hardwarecontent #nodeparamstable #nodename").val("");
+			$('#hardwarecontent #usercodegrp').hide();
+		}
+		else {
+		  var oTable = $('#nodestable').dataTable();
+			oTable.$('tr.row_selected').removeClass('row_selected');
+			$(this).addClass('row_selected');
+			$('#updelclr #nodeupdate').attr("class", "btnstyle3");
+			var anSelected = fnGetSelected( oTable );
+			if ( anSelected.length !== 0 ) {
+				var data = oTable.fnGetData( anSelected[0] );
+				var idx= data["DT_RowId"];
+				$.myglobals.SelectedTimerIdx=idx;
+				var iNode=parseInt(data["NodeID"]);
+				$("#updelclr #nodeupdate").attr("href", "javascript:UpdateNode(" + idx + ")");
+				$("#hardwarecontent #zwavecodemanagement").attr("href", "javascript:ZWaveUserCodeManagement(" + idx + ")");
+				if (iNode>1) {
+					$('#updelclr #nodedelete').attr("class", "btnstyle3");
+					$("#updelclr #nodedelete").attr("href", "javascript:DeleteNode(" + idx + ")");
+				}
+				$("#hardwarecontent #nodeparamstable #nodename").val(data["1"]);
+				$('#hardwarecontent #nodeparamstable #EnablePolling').prop('checked',(data["PollEnabled"]=="true"));
+				if (iNode<2) {
+					$("#hardwarecontent #nodeparamstable #trEnablePolling").hide();
+				}
+				else {
+					$("#hardwarecontent #nodeparamstable #trEnablePolling").show();
+				}
+				
+				if (data["HaveUserCodes"] == true) {
+					$('#hardwarecontent #usercodegrp').show();
+				}
+				else {
+					$('#hardwarecontent #usercodegrp').hide();
+				}
+
+				var szConfig="";
+				if (typeof data["Config"] != 'undefined') {
+					//Create configuration setup
+					szConfig='<a class="btnstyle3" id="noderequeststoredvalues" data-i18n="RequestConfiguration" onclick="RequestZWaveConfiguration(' + idx + ');">Request current stored values from device</a><br /><br />';
+					var bHaveConfiguration=false;
+					$.each(data["Config"], function(i,item){
+						bHaveConfiguration=true;
+						if (item.type=="list") {
+							szConfig+="<b>"+item.index+". "+item.label+":</b><br>";
+							szConfig+='<select style="width:100%" class="combobox ui-corner-all" id="'+item.index+'">';
+							var iListItem=0;
+							var totListItems=parseInt(item.list_items);
+							for (iListItem=0; iListItem<totListItems; iListItem++)
+							{
+								var szComboOption='<option value="' + iListItem + '"';
+								var szOptionTxt=item.listitem[iListItem];
+								if (szOptionTxt==item.value) {
+									szComboOption+=' selected="selected"';
+								}
+								szComboOption+='>' + szOptionTxt +'</option>';
+								szConfig+=szComboOption;
+							}
+							szConfig+='</select>'
+							if (item.units!="") {
+								szConfig+=' (' + item.units + ')';
+							}
+						}
+						else if (item.type=="bool") {
+							szConfig+="<b>"+item.index+". "+item.label+":</b><br>";
+							szConfig+='<select style="width:100%" class="combobox ui-corner-all" id="'+item.index+'">';
+							
+							var szComboOption='<option value="False"';
+							if (item.value=="False") {
+								szComboOption+=' selected="selected"';
+							}
+							szComboOption+='>False</option>';
+							szConfig+=szComboOption;
+
+							szComboOption='<option value="True"';
+							if (item.value=="True") {
+								szComboOption+=' selected="selected"';
+							}
+							szComboOption+='>True</option>';
+							szConfig+=szComboOption;
+
+							szConfig+='</select>'
+							if (item.units!="") {
+								szConfig+=' (' + item.units + ')';
+							}
+						}
+						else {
+							szConfig+="<b>"+item.index+". "+item.label+":</b> ";
+							szConfig+='<input type="text" id="'+item.index+'" value="' + item.value + '" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />';
+							if (item.units!="") {
+								szConfig+=' (' + item.units + ')';
+							}
+							szConfig+=" (" + $.i18n("actual") + ": " + item.value + ")";
+						}
+						szConfig+="<br />";
+						if (item.help!="") {
+							szConfig+=item.help+"<br>";
+						}
+						szConfig+="Last Update: " + item.LastUpdate;
+						szConfig+="<br /><br />";
+					});
+					if (bHaveConfiguration==true) {
+						szConfig+='<a class="btnstyle3" id="nodeapplyconfiguration" data-i18n="ApplyConfiguration" onclick="ApplyZWaveConfiguration(' + idx + ');" >Apply configuration for this device</a><br />';
+					}
+				}
+				$("#hardwarecontent #configuration").html(szConfig);
+			}
+		}
+	}); 
+
   $('#modal').hide();
 }
 
@@ -1910,24 +1916,26 @@ function RefreshOpenZWaveUserCodesTable()
 					"2": removeButton
 				} );
 			});
-			/* Add a click handler to the rows - this could be used as a callback */
-			$("#codestable tbody tr").click( function( e ) {
-				if ( $(this).hasClass('row_selected') ) {
-					$(this).removeClass('row_selected');
-				}
-				else {
-					oTable.$('tr.row_selected').removeClass('row_selected');
-					$(this).addClass('row_selected');
-					var anSelected = fnGetSelected( oTable );
-					if ( anSelected.length !== 0 ) {
-						var data = oTable.fnGetData( anSelected[0] );
-						//var idx= data["DT_RowId"];
-					}
-				}
-			}); 
 		}
      }
   });
+	/* Add a click handler to the rows - this could be used as a callback */
+	$("#codestable tbody").off();
+	$("#codestable tbody").on( 'click', 'tr', function () {
+		if ( $(this).hasClass('row_selected') ) {
+			$(this).removeClass('row_selected');
+		}
+		else {
+			var oTable = $('#codestable').dataTable();
+			oTable.$('tr.row_selected').removeClass('row_selected');
+			$(this).addClass('row_selected');
+			var anSelected = fnGetSelected( oTable );
+			if ( anSelected.length !== 0 ) {
+				var data = oTable.fnGetData( anSelected[0] );
+				//var idx= data["DT_RowId"];
+			}
+		}
+	}); 
   $('#modal').hide();
 }
 
@@ -2291,76 +2299,79 @@ function RefreshHardwareTable()
 				"5": sDataTimeout
 			} );
         });
-		/* Add a click handler to the rows - this could be used as a callback */
-		$("#hardwaretable tbody tr").click( function( e ) {
-			if ( $(this).hasClass('row_selected') ) {
-				$(this).removeClass('row_selected');
-				$('#updelclr #hardwareupdate').attr("class", "btnstyle3-dis");
-				$('#updelclr #hardwaredelete').attr("class", "btnstyle3-dis");
-			}
-			else {
-				oTable.$('tr.row_selected').removeClass('row_selected');
-				$(this).addClass('row_selected');
-				$('#updelclr #hardwareupdate').attr("class", "btnstyle3");
-				$('#updelclr #hardwaredelete').attr("class", "btnstyle3");
-				var anSelected = fnGetSelected( oTable );
-				if ( anSelected.length !== 0 ) {
-					var data = oTable.fnGetData( anSelected[0] );
-					var idx= data["DT_RowId"];
-					$.myglobals.SelectedTimerIdx=idx;
-					$("#updelclr #hardwareupdate").attr("href", "javascript:UpdateHardware(" + idx + "," + data["Mode1"] + "," + data["Mode2"] + "," + data["Mode3"] + "," + data["Mode4"] + "," + data["Mode5"] + ")");
-					$("#updelclr #hardwaredelete").attr("href", "javascript:DeleteHardware(" + idx + ")");
-					$("#hardwarecontent #hardwareparamstable #hardwarename").val(data["0"]);
-					$("#hardwarecontent #hardwareparamstable #combotype").val(jQuery.inArray(data["Type"], $.myglobals.HardwareTypesStr));
-
-					$('#hardwarecontent #hardwareparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
-					$('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
-
-					UpdateHardwareParamControls();
-					if ((data["Type"].indexOf("TE923") >= 0)||(data["Type"].indexOf("Volcraft") >= 0)||(data["Type"].indexOf("1-Wire") >= 0)||(data["Type"].indexOf("BMP085") >= 0)||(data["Type"].indexOf("Dummy") >= 0) ||(data["Type"].indexOf("PiFace") >= 0))
-					{
-						//nothing to be set
-					}
-					else
-					if (data["Type"].indexOf("USB") >= 0)
-					{
-						$("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
-					}
-					else
-					    if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0))
-					{
-						$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["3"]);
-						$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["4"]);
-					}
-					else
-					        if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0))
-					{
-						$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["3"]);
-						$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["4"]);
-						$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
-					}
-					else
-					if ((data["Type"].indexOf("Underground") >= 0)||(data["Type"].indexOf("Forecast") >= 0))
-					{
-						$("#hardwarecontent #hardwareparamsunderground #apikey").val(data["Username"]);
-						$("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
-					}
-					else
-					if (data["Type"].indexOf("SMASpot") >= 0)
-					{
-						$("#hardwarecontent #hardwareparamslocation #location").val(data["Username"]);
-					}
-					if ((data["Type"].indexOf("Domoticz") >= 0)||(data["Type"].indexOf("ICY") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)||(data["Type"].indexOf("Toon") >= 0)||(data["Type"].indexOf("PVOutput") >= 0)) {
-						$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
-						$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
-					}
-				}
-			}
-		}); 
-				
       }
      }
   });
+
+	/* Add a click handler to the rows - this could be used as a callback */
+	$("#hardwaretable tbody").off();
+	$("#hardwaretable tbody").on( 'click', 'tr', function () {
+		if ( $(this).hasClass('row_selected') ) {
+			$(this).removeClass('row_selected');
+			$('#updelclr #hardwareupdate').attr("class", "btnstyle3-dis");
+			$('#updelclr #hardwaredelete').attr("class", "btnstyle3-dis");
+		}
+		else {
+			var oTable = $('#hardwaretable').dataTable();
+			oTable.$('tr.row_selected').removeClass('row_selected');
+			$(this).addClass('row_selected');
+			$('#updelclr #hardwareupdate').attr("class", "btnstyle3");
+			$('#updelclr #hardwaredelete').attr("class", "btnstyle3");
+			var anSelected = fnGetSelected( oTable );
+			if ( anSelected.length !== 0 ) {
+				var data = oTable.fnGetData( anSelected[0] );
+				var idx= data["DT_RowId"];
+				$.myglobals.SelectedTimerIdx=idx;
+				$("#updelclr #hardwareupdate").attr("href", "javascript:UpdateHardware(" + idx + "," + data["Mode1"] + "," + data["Mode2"] + "," + data["Mode3"] + "," + data["Mode4"] + "," + data["Mode5"] + ")");
+				$("#updelclr #hardwaredelete").attr("href", "javascript:DeleteHardware(" + idx + ")");
+				$("#hardwarecontent #hardwareparamstable #hardwarename").val(data["0"]);
+				$("#hardwarecontent #hardwareparamstable #combotype").val(jQuery.inArray(data["Type"], $.myglobals.HardwareTypesStr));
+
+				$('#hardwarecontent #hardwareparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
+				$('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
+
+				UpdateHardwareParamControls();
+				if ((data["Type"].indexOf("TE923") >= 0)||(data["Type"].indexOf("Volcraft") >= 0)||(data["Type"].indexOf("1-Wire") >= 0)||(data["Type"].indexOf("BMP085") >= 0)||(data["Type"].indexOf("Dummy") >= 0) ||(data["Type"].indexOf("PiFace") >= 0))
+				{
+					//nothing to be set
+				}
+				else
+				if (data["Type"].indexOf("USB") >= 0)
+				{
+					$("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
+				}
+				else
+					if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0))
+				{
+					$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["3"]);
+					$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["4"]);
+				}
+				else
+						if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0))
+				{
+					$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["3"]);
+					$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["4"]);
+					$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
+				}
+				else
+				if ((data["Type"].indexOf("Underground") >= 0)||(data["Type"].indexOf("Forecast") >= 0))
+				{
+					$("#hardwarecontent #hardwareparamsunderground #apikey").val(data["Username"]);
+					$("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
+				}
+				else
+				if (data["Type"].indexOf("SMASpot") >= 0)
+				{
+					$("#hardwarecontent #hardwareparamslocation #location").val(data["Username"]);
+				}
+				if ((data["Type"].indexOf("Domoticz") >= 0)||(data["Type"].indexOf("ICY") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)||(data["Type"].indexOf("Toon") >= 0)||(data["Type"].indexOf("PVOutput") >= 0)) {
+					$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
+					$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
+				}
+			}
+		}
+	}); 
+
   $('#modal').hide();
 }
 
