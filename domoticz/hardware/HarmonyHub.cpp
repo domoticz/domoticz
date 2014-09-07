@@ -93,10 +93,10 @@ void CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 		//result = m_sql.query(szQuery.str());
 		//if (result.size() > 0) //should be there since it is switched on
 		//{
-			if(SubmitCommand(m_commandcsocket, m_szAuthorizationToken, START_ACTIVITY_COMMAND,std::to_string(lookUpId),"") == 1)
-			{
-				_log.Log(LOG_ERROR,"Harmony Hub: Error sending the switch command");
-			}			
+		if (SubmitCommand(m_commandcsocket, m_szAuthorizationToken, START_ACTIVITY_COMMAND, std::to_string((long long)lookUpId), "") == 1)
+		{
+			_log.Log(LOG_ERROR,"Harmony Hub: Error sending the switch command");
+		}			
 		/*}
 		else
 			_log.Log(LOG_ERROR,"Harmony Hub: Device not found" );*/
