@@ -3,7 +3,8 @@
 #include "DomoticzHardware.h"
 #include <iostream>
 #include "hardwaretypes.h"
-#include "csocket.h"
+
+class csocket;
 
 class Action
 {
@@ -75,7 +76,7 @@ public:
 class CHarmonyHub : public CDomoticzHardwareBase
 {
 public:
-	CHarmonyHub(const int ID, const std::string IPAddress, unsigned int port, const std::string userName, const std::string password);
+	CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port, const std::string &userName, const std::string &password);
 	~CHarmonyHub(void);
 	void WriteToHardware(const char *pdata, const unsigned char length);
 
@@ -104,19 +105,19 @@ private:
 	bool SetupCommandSocket();
 	bool UpdateActivities();
 	bool UpdateCurrentActivity();
-	void CheckSetActivity(std::string activityID, bool on);
-	void UpdateSwitch(unsigned char idx, const char * szIdx, const bool bOn, const std::string &defaultname);
+	void CheckSetActivity(const std::string &activityID, const bool on);
+	void UpdateSwitch(const unsigned char idx, const char * szIdx, const bool bOn, const std::string &defaultname);
 	
 	void Init();
 	bool StartHardware();
 	bool StopHardware();
 	void Do_Work();
 
-	int HarmonyWebServiceLogin(std::string strUserEmail, std::string strPassword, std::string& m_szAuthorizationToken );
-	int ConnectToHarmony(std::string strHarmonyIPAddress, int harmonyPortNumber, csocket* harmonyCommunicationcsocket);
-	int StartCommunication(csocket* communicationcsocket, std::string strUserName, std::string strPassword);
+	int HarmonyWebServiceLogin(const std::string strUserEmail, const std::string strPassword, std::string& m_szAuthorizationToken);
+	int ConnectToHarmony(const std::string &strHarmonyIPAddress, const int harmonyPortNumber, csocket* harmonyCommunicationcsocket);
+	int StartCommunication(csocket* communicationcsocket, const std::string &strUserName, const std::string &strPassword);
 	int SwapAuthorizationToken(csocket* authorizationcsocket, std::string& m_szAuthorizationToken);
-	int SubmitCommand(csocket* m_commandcsocket, std::string& m_szAuthorizationToken, std::string strCommand, std::string strCommandParameterPrimary, std::string strCommandParameterSecondary);
+	int SubmitCommand(csocket* m_commandcsocket, const std::string& m_szAuthorizationToken, const std::string strCommand, const std::string strCommandParameterPrimary, const std::string strCommandParameterSecondary);
 	bool CheckIfChanging(const std::string& strData);
 	int ParseAction(const std::string& strAction, std::vector<Action>& vecDeviceActions, const std::string& strDeviceID);
 	int ParseFunction(const std::string& strFunction, std::vector<Function>& vecDeviceFunctions, const std::string& strDeviceID);

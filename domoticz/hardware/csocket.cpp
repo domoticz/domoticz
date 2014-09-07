@@ -98,7 +98,7 @@ int csocket::resolveHost(const std::string& szRemoteHostName, struct hostent** p
 }
 
 
-int csocket::connect( const char* remoteHost, unsigned int remotePort )
+int csocket::connect( const char* remoteHost, const unsigned int remotePort )
 {
     if ( m_socketState != CLOSED ) 
     {

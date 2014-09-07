@@ -35,6 +35,7 @@
 #include "../main/SQLHelper.h"
 #include "../main/mainworker.h"
 #include "../webserver/Base64.h"
+#include "csocket.h"
 
 #define HARMONY_COMMUNICATION_PORT					5222
 #define TEMP_AUTH_TOKEN								"TEMP_AUT_TOKEN"
@@ -52,7 +53,7 @@
 
 #define MAX_MISS_COMMANDS							5	//max commands to miss (when executing a command, the harmnoy commands may fail)
 
-CHarmonyHub::CHarmonyHub(const int ID, const std::string IPAddress, unsigned int port,  const std::string userName, const std::string password)
+CHarmonyHub::CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port, const std::string &userName, const std::string &password)
 {
 	m_userName = userName;
 	m_password = password;
@@ -86,6 +87,9 @@ void CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 		//char szIdx[10];
 		//sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, pCmd->LIGHTING2.id4);
 		int lookUpId = (int)(pCmd->LIGHTING2.id1 << 24) |  (int)(pCmd->LIGHTING2.id2 << 16) | (int)(pCmd->LIGHTING2.id3 << 8) | (int)(pCmd->LIGHTING2.id4) ;
+		std::stringstream sstr;
+		sstr << lookUpId;
+
 		//get the activity id from the db and send to h/w
 		std::stringstream szQuery;
 		std::vector<std::vector<std::string> > result;
@@ -93,7 +97,7 @@ void CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 		//result = m_sql.query(szQuery.str());
 		//if (result.size() > 0) //should be there since it is switched on
 		//{
-		if (SubmitCommand(m_commandcsocket, m_szAuthorizationToken, START_ACTIVITY_COMMAND, std::to_string((long long)lookUpId), "") == 1)
+		if (SubmitCommand(m_commandcsocket, m_szAuthorizationToken, START_ACTIVITY_COMMAND, sstr.str(), "") == 1)
 		{
 			_log.Log(LOG_ERROR,"Harmony Hub: Error sending the switch command");
 		}			
@@ -364,7 +368,7 @@ bool CHarmonyHub::UpdateCurrentActivity()
 	return true;
 }
 
-void CHarmonyHub::CheckSetActivity(std::string activityID, bool on)
+void CHarmonyHub::CheckSetActivity(const std::string &activityID, const bool on)
 {
 	//get the device id from the db (if alread inserted)
 	int actId=atoi(activityID.c_str());
@@ -515,7 +519,7 @@ int CHarmonyHub::HarmonyWebServiceLogin(std::string strUserEmail, std::string st
 	return 0;
 }
 
-int CHarmonyHub::ConnectToHarmony(std::string strHarmonyIPAddress, int harmonyPortNumber, csocket* harmonyCommunicationcsocket)
+int CHarmonyHub::ConnectToHarmony(const std::string &strHarmonyIPAddress, const int harmonyPortNumber, csocket* harmonyCommunicationcsocket)
 {
 	if(strHarmonyIPAddress.length() == 0 || harmonyPortNumber == 0 || harmonyPortNumber > 65535)
 	{
@@ -534,7 +538,7 @@ int CHarmonyHub::ConnectToHarmony(std::string strHarmonyIPAddress, int harmonyPo
 	return 0;
 }
 
-int CHarmonyHub::StartCommunication(csocket* communicationcsocket, std::string strUserName, std::string strPassword)
+int CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::string &strUserName, const std::string &strPassword)
 {
 	if(communicationcsocket == NULL || strUserName.length() == 0 || strPassword.length() == 0)
 	{
@@ -657,7 +661,7 @@ int CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::stri
 }
 
 
-int CHarmonyHub::SubmitCommand(csocket* m_commandcsocket, std::string& m_szAuthorizationToken, std::string strCommand, std::string strCommandParameterPrimary, std::string strCommandParameterSecondary)
+int CHarmonyHub::SubmitCommand(csocket* m_commandcsocket, const std::string& m_szAuthorizationToken, const std::string strCommand, const std::string strCommandParameterPrimary, const std::string strCommandParameterSecondary)
 {
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 
