@@ -1,14 +1,14 @@
 #ifndef CSOCKET_H
 #define CSOCKET_H
 
+#include <string>
+
 #ifdef WIN32
-#include <winsock2.h>
-#include <windows.h>
+	#include <winsock2.h>
+	#include <windows.h>
 #else
-#include <netinet/in.h>
-#include <asm/errno.h>
-#include <unistd.h>
-#include <cstring>
+	#include <netinet/in.h>
+	#include <unistd.h>
 #endif
 
 #include <stdio.h>
