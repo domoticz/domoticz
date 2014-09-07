@@ -83,22 +83,23 @@ void CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 	//activities can be switched on
 	if ((pCmd->LIGHTING2.packettype == pTypeLighting2) && (pCmd->LIGHTING2.cmnd==1))
 	{
-		char szIdx[10];
-		sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, pCmd->LIGHTING2.id4);
+		//char szIdx[10];
+		//sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, pCmd->LIGHTING2.id4);
+		int lookUpId = (int)(pCmd->LIGHTING2.id1 << 24) |  (int)(pCmd->LIGHTING2.id2 << 16) | (int)(pCmd->LIGHTING2.id3 << 8) | (int)(pCmd->LIGHTING2.id4) ;
 		//get the activity id from the db and send to h/w
 		std::stringstream szQuery;
 		std::vector<std::vector<std::string> > result;
-		szQuery << "SELECT StrParam1 FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx  << "')";
-		result = m_sql.query(szQuery.str());
-		if (result.size() > 0) //should be there since it is switched on
-		{
-			if(SubmitCommand(m_commandcsocket, m_szAuthorizationToken, START_ACTIVITY_COMMAND, result[0][0],"") == 1)
+		//szQuery << "SELECT StrParam1 FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx  << "')";
+		//result = m_sql.query(szQuery.str());
+		//if (result.size() > 0) //should be there since it is switched on
+		//{
+			if(SubmitCommand(m_commandcsocket, m_szAuthorizationToken, START_ACTIVITY_COMMAND,std::to_string(lookUpId),"") == 1)
 			{
 				_log.Log(LOG_ERROR,"Harmony Hub: Error sending the switch command");
 			}			
-		}
+		/*}
 		else
-			_log.Log(LOG_ERROR,"Harmony Hub: Device not found" );
+			_log.Log(LOG_ERROR,"Harmony Hub: Device not found" );*/
 	}
 	else if((pCmd->LIGHTING2.packettype == pTypeLighting2) && (pCmd->LIGHTING2.cmnd==0))
 	{
@@ -146,7 +147,7 @@ bool CHarmonyHub::StopHardware()
 
 void CHarmonyHub::Do_Work()
 {
-	_log.Log(LOG_STATUS,"Harmony hub: Worker started...");
+	_log.Log(LOG_STATUS,"Harmony Hub: Worker started...");
 	//start with getting the activities
 	unsigned short checkAct=HARMONY_POLL_FETCH_ACTIVITY_SECONDS /  HARMONY_POLL_INTERVAL_SECONDS;
 	
@@ -200,12 +201,13 @@ void CHarmonyHub::Do_Work()
 
 		if(m_usCommandsMissed>=MAX_MISS_COMMANDS)
 		{
-			_log.Log(LOG_STATUS,"Harmony Hub: Too many commands missed. Restting connection.");
-			m_bDoLogin=true;	//re login
+			Logout();
+			_log.Log(LOG_STATUS,"Harmony Hub: Too many commands missed. Resetting connection.");
+			//m_bDoLogin=true;	//re login
 		}
 			
 	}
-	_log.Log(LOG_STATUS,"Harmony hub: Worker stopped...");
+	_log.Log(LOG_STATUS,"Harmony Hub: Worker stopped...");
 }
 
 bool CHarmonyHub::Login()
@@ -222,7 +224,7 @@ bool CHarmonyHub::Login()
 			csocket authorizationcsocket;
 			if(ConnectToHarmony(m_harmonyAddress, m_usIPPort, &authorizationcsocket) == 1)
 			{
-				_log.Log(LOG_ERROR,"Harmony Hub: Cannot connect to Harmony hub");
+				_log.Log(LOG_ERROR,"Harmony Hub: Cannot connect to Harmony Hub");
 				//printf("ERROR : %s\n", errorString.c_str());
 				return false;
 			}
@@ -246,7 +248,7 @@ bool CHarmonyHub::Login()
 			_log.Log(LOG_ERROR,"Harmony Hub: Logitech web service login failed.");
 			return false;
 		}
-		_log.Log(LOG_STATUS,"Harmony Hub: Logged in to the logitecht web service");
+		_log.Log(LOG_STATUS,"Harmony Hub: Logged in to the Logitech web service");
 
 		//printf("\nLogin Authorization Token is: %s\n\n", m_szAuthorizationToken.c_str());
 
@@ -257,7 +259,7 @@ bool CHarmonyHub::Login()
 		csocket authorizationcsocket;
 		if(ConnectToHarmony(m_harmonyAddress, m_usIPPort, &authorizationcsocket) == 1)
 		{
-			_log.Log(LOG_ERROR,"Cannot connect to Harmony hub");
+			_log.Log(LOG_ERROR,"Cannot connect to Harmony Hub");
 			//printf("ERROR : %s\n", errorString.c_str());
 			return false;
 		}
@@ -279,6 +281,8 @@ void CHarmonyHub::Logout()
 	if(m_commandcsocket)
 		delete m_commandcsocket;
 	m_commandcsocket = NULL;
+	m_bIsChangingActivity=false;
+	m_bDoLogin=true;
 }
 
 bool CHarmonyHub::SetupCommandSocket()
@@ -291,7 +295,7 @@ bool CHarmonyHub::SetupCommandSocket()
 
 	if(ConnectToHarmony(m_harmonyAddress, m_usIPPort,m_commandcsocket) == 1)
 	{
-		_log.Log(LOG_ERROR,"Harmony Hub: Cannot setup command socket to Harmony hub");
+		_log.Log(LOG_ERROR,"Harmony Hub: Cannot setup command socket to Harmony Hub");
 		return false;
 	}
 
@@ -363,9 +367,13 @@ bool CHarmonyHub::UpdateCurrentActivity()
 void CHarmonyHub::CheckSetActivity(std::string activityID, bool on)
 {
 	//get the device id from the db (if alread inserted)
+	int actId=atoi(activityID.c_str());
+	std::stringstream hexId ;
+	hexId << std::setw(7)  << std::hex << std::setfill('0') << std::uppercase << (int)( actId) ;
+	std::string actHex = hexId.str();
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name,DeviceID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (StrParam1=='" << activityID << "')";
+	szQuery << "SELECT Name,DeviceID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << actHex << "')";
 	result = m_sql.query(szQuery.str()); //-V519
 	if (result.size() > 0) //if not yet inserted, it will be inserted active upon the next check of the activities list
 	{
@@ -377,11 +385,13 @@ void CHarmonyHub::CheckSetActivity(std::string activityID, bool on)
 void CHarmonyHub::UpdateSwitch(unsigned char idx,const char * realID, const bool bOn, const std::string &defaultname)
 {
 	bool bDeviceExits = true;
-	char szIdx[10];
-	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, idx);
+	std::stringstream hexId ;
+	hexId << std::setw(7) << std::setfill('0') << std::hex << std::uppercase << (int)( atoi(realID) );
+	//char szIdx[10];
+	//sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, idx);
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (StrParam1=='" << realID << "')";
+	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << hexId.str() << "')";
 	result = m_sql.query(szQuery.str()); //-V519
 	if (result.size() < 1)
 	{
@@ -396,17 +406,21 @@ void CHarmonyHub::UpdateSwitch(unsigned char idx,const char * realID, const bool
 		if ((bOn && (nvalue != 0)))
 			return;
 	}
-
+	int i_Id = atoi( realID);
 	//Send as Lighting 2
 	tRBUF lcmd;
 	memset(&lcmd, 0, sizeof(RBUF));
 	lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
 	lcmd.LIGHTING2.packettype = pTypeLighting2;
 	lcmd.LIGHTING2.subtype = sTypeAC;
-	lcmd.LIGHTING2.id1 = 0;
-	lcmd.LIGHTING2.id2 = 0;
+
+	lcmd.LIGHTING2.id1 = (i_Id>> 24) & 0xFF;
+	lcmd.LIGHTING2.id2 = (i_Id>> 16) & 0xFF;
+	lcmd.LIGHTING2.id3 = (i_Id>> 8) & 0xFF;
+	lcmd.LIGHTING2.id4 = (i_Id) & 0xFF;
+	/*lcmd.LIGHTING2.id2 = 0;
 	lcmd.LIGHTING2.id3 = 0;
-	lcmd.LIGHTING2.id4 = idx;
+	lcmd.LIGHTING2.id4 = idx;*/
 	lcmd.LIGHTING2.unitcode = 1;
 	int level = 15;
 	if (!bOn)
@@ -429,7 +443,7 @@ void CHarmonyHub::UpdateSwitch(unsigned char idx,const char * realID, const bool
 		//Assign default name for device
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "', StrParam1='" << realID << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << hexId.str() << "')";
 		result = m_sql.query(szQuery.str());
 	}
 }

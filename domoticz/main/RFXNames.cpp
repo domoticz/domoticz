@@ -171,7 +171,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_Meteostick, "Meteostick USB" },
 		{ HTYPE_TOONTHERMOSTAT, "Toon Thermostat" },
 		{ HTYPE_ECODEVICES, "Eco Devices via LAN interface" },
-		{ HTYPE_HARMONY_HUB, "Logitech Harmony HUB" },
+		{ HTYPE_HARMONY_HUB, "Logitech Harmony Hub" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

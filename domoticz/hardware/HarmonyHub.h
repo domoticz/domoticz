@@ -3,7 +3,7 @@
 #include "DomoticzHardware.h"
 #include <iostream>
 #include "hardwaretypes.h"
-#include "csocket.h"
+#include "../main/csocket.h"
 
 class Action
 {
