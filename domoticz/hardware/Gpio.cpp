@@ -20,7 +20,7 @@ It must be installed beforehand following instructions at http://wiringpi.com/do
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
     MA 02110-1301 USA.
 
-This is a derivative work based on the samples included with wiringPi and distributed 
+This is a derivative work based on the samples included with wiringPi where distributed 
 under the GNU Lesser General Public License version 3
 Source: http://wiringpi.com
 

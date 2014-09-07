@@ -177,7 +177,7 @@
 		<Product type="0501" id="0102" name="FGBS001 Universal Binary Sensor" config="fibaro/fgbs001.xml" />
 		<Product type="0501" id="1002" name="FGBS001 Universal Binary Sensor" config="fibaro/fgbs001.xml" />
 		<Product type="0501" id="4002" name="FGBS001 Universal Binary Sensor" config="fibaro/fgbs001.xml" />
-		<Product type="0100" id="0104" name="FGD211 Universal Dimmer 500W" />
+		<Product type="0100" id="0104" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
 		<Product type="0100" id="0107" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
 		<Product type="0100" id="0109" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
 		<Product type="0100" id="100a" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
@@ -206,6 +206,7 @@
 		<Product type="0800" id="4001" name="FGMS001 Motion Sensor" config="fibaro/fgms.xml" />
 		<Product type="0b00" id="3001" name="FGFS101 Flood Sensor" config ="fibaro/fgfs101.xml" />
 		<Product type="0b00" id="1001" name="FGFS101 Flood Sensor" config ="fibaro/fgfs101.xml" />
+		<Product type="0b00" id="9e00" name="FGFS101 Flood Sensor" config="fibaro/fgfs101.xml" />
     		<Product type="0900" id="1000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
     		<Product type="0c00" id="1000" name="FGSS101 Smoke Sensor" config="fibaro/fgss101.xml" />
   	</Manufacturer>
@@ -519,6 +520,10 @@
 		<Product type="0200" id="0001" name="iTemp" config="zwave.me/iTemp.xml" />
 	</Manufacturer>
 	<Manufacturer id="004f" name="Z-Wave Technologia">
+	</Manufacturer>
+	<Manufacturer id="0131" name="Zipato">
+		<Product type="0002" id="0002" name="RGBW LED Bulb" config="zipato/RGBBulb.xml" />
+		<Product type="6131" id="4501" name="Zipato Mini Keypad" config="zipato/MiniKeypad.xml" />
 	</Manufacturer>
 	<Manufacturer id="0021" name="Zykronix">
 	</Manufacturer>
