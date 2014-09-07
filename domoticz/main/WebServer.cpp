@@ -2304,7 +2304,7 @@ void CWebServer::Cmd_GetNewHistory(Json::Value &root)
 		if (((machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")) || (strstr(my_uname.release, "ARCH+") != NULL))
 			szHistoryURL = "http://domoticz.sourceforge.net/beta/History.txt";
 		else
-			szHistoryURL = "http://domoticz.sourceforge.net/history_" + systemname + "_" + machine + ".txt";
+			szHistoryURL = "http://domoticz.sourceforge.net/beta/history_" + systemname + "_" + machine + ".txt";
 	}
 	if (!HTTPClient::GET(szHistoryURL, historyfile))
 	{
