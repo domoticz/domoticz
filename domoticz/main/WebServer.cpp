@@ -1197,11 +1197,13 @@ void CWebServer::Cmd_DeleteHardware(Json::Value &root)
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
+	int hwID = atoi(idx.c_str());
+
 	root["status"]="OK";
 	root["title"]="DeleteHardware";
 
+	m_mainworker.RemoveDomoticzHardware(hwID);
 	m_sql.DeleteHardware(idx);
-	m_mainworker.RemoveDomoticzHardware(atoi(idx.c_str()));
 }
 
 #ifdef WITH_OPENZWAVE
