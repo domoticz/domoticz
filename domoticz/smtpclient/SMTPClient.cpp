@@ -207,8 +207,8 @@ const std::string SMTPClient::MakeMessage()
 	std::vector<std::string>::const_iterator itt;
 
 	//From
-	ret =	"From: " + m_From + "\n" +
-			"Reply-To: " + m_From + "\n";
+	ret =	"From: " + m_From + "\r\n" +
+			"Reply-To: " + m_From + "\r\n";
 
 	//To (first one, rest in BCC)
 	ii=0;
@@ -217,13 +217,13 @@ const std::string SMTPClient::MakeMessage()
 		if (ii==0)
 		{
 			ret += "To: " + *itt;
-			ret+="\n";
+			ret+="\r\n";
 		}
 		else {
 			ret += "Cc: " + *itt;
 			if (itt+1<m_Recipients.end())
 				ret+=", ";
-			ret+="\n";
+			ret+="\r\n";
 		}
 		ii++;
 	}
@@ -236,9 +236,9 @@ const std::string SMTPClient::MakeMessage()
 	{	
 		// we have attachments (or HTML mail)
 		// use MIME 1.0
-		ret+="MIME-Version: 1.0\n"
-			"Content-Type: multipart/mixed;\n"
-			"\tboundary=\"" + boundary + "\"\n";
+		ret+="MIME-Version: 1.0\r\n"
+			"Content-Type: multipart/mixed;\r\n"
+			"\tboundary=\"" + boundary + "\"\r\n";
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -252,12 +252,12 @@ const std::string SMTPClient::MakeMessage()
 	char timestring[128] = "";
 	if(strftime(timestring, 127, "Date: %d %b %y %H:%M:%S %Z", localtime(&t))) { // got the date
 		ret += timestring;
-		ret += "\n";
+		ret += "\r\n";
 	}
 
 	///////////////////////////////////////////////////////////////////////////
 	// add the subject
-	ret+= "Subject: " + m_Subject + "\n\n";
+	ret+= "Subject: " + m_Subject + "\r\n\r\n";
 
 	///////////////////////////////////////////////////////////////////////////
 	//
@@ -267,47 +267,47 @@ const std::string SMTPClient::MakeMessage()
 
 	if(MIME) 
 	{
-		ret += "This is a MIME encapsulated message\n\n";
-		ret += "--" + boundary + "\n";
+		ret += "This is a MIME encapsulated message\r\n\r\n";
+		ret += "--" + boundary + "\r\n";
 		if(!m_HTMLBody.size()) {
 			// plain text message first.
-			ret +=	"Content-type: text/plain; charset=iso-8859-1\n"
-					"Content-transfer-encoding: 7BIT\n\n";
+			ret +=	"Content-type: text/plain; charset=iso-8859-1\r\n"
+					"Content-transfer-encoding: 7BIT\r\n\r\n";
 
 			ret += m_PlainBody;
-			ret += "\n\n--" + boundary + "\n";
+			ret += "\r\n\r\n--" + boundary + "\r\n";
 		}
 		else {
 			// make it multipart/alternative as we have html
 			const std::string innerboundary("inner_jfd_0078hj_0_8_part_tp");
-			ret +=	"Content-Type: multipart/alternative;\n"
-					"\tboundary=\"" + innerboundary + "\"\n";
+			ret +=	"Content-Type: multipart/alternative;\r\n"
+					"\tboundary=\"" + innerboundary + "\"\r\n";
 
 			// need the inner boundary starter.
-			ret += "\n\n--" + innerboundary + "\n";
+			ret += "\r\n\r\n--" + innerboundary + "\r\n";
 
 			// plain text message first.
-			ret += "Content-type: text/plain; charset=iso-8859-1\n"
-					 "Content-transfer-encoding: 7BIT\n\n";
+			ret += "Content-type: text/plain; charset=iso-8859-1\r\n"
+					 "Content-transfer-encoding: 7BIT\r\n\r\n";
 			if (m_PlainBody.size())
 			{
 				ret+=m_PlainBody;
 			}
-			ret += "\n\n--" + innerboundary + "\n";
+			ret += "\r\n\r\n--" + innerboundary + "\r\n";
 			///////////////////////////////////
 			// Add html message here!
-			ret +=	"Content-type: text/html; charset=UTF-8\n"
-					"Content-Transfer-Encoding: base64\n\n";
+			ret +=	"Content-type: text/html; charset=UTF-8\r\n"
+					"Content-Transfer-Encoding: base64\r\n\r\n";
 
 			std::string szHTML=base64_encode((const unsigned char*)m_HTMLBody.c_str(),m_HTMLBody.size());
 			ret +=szHTML;
-			ret += "\n\n--" + innerboundary + "--\n";
+			ret += "\r\n\r\n--" + innerboundary + "--\r\n";
 
 			// end the boundaries if there are no attachments
 			if(!m_Attachments.size())
-				ret += "\n--" + boundary + "--\n";
+				ret += "\r\n--" + boundary + "--\r\n";
 			else
-				ret += "\n--" + boundary + "\n";
+				ret += "\r\n--" + boundary + "\r\n";
 			///////////////////////////////////
 		}
 
@@ -319,54 +319,54 @@ const std::string SMTPClient::MakeMessage()
 			{ // long enough for an extension
 				std::string typ(it1->second.substr(it1->second.length()-4, 4));
 				if(typ == ".gif") { // gif format presumably
-					ret+= "Content-Type: image/gif;\n";
+					ret+= "Content-Type: image/gif;\r\n";
 				}
 				else if(typ == ".jpg" || typ == "jpeg") { // j-peg format presumably
-					ret+= "Content-Type: image/jpg;\n";
+					ret+= "Content-Type: image/jpg;\r\n";
 				}
 				else if(typ == ".txt") { // text format presumably
-					ret+= "Content-Type: plain/txt;\n";
+					ret+= "Content-Type: plain/txt;\r\n";
 				}
 				else if(typ == ".bmp") { // windows bitmap format presumably
-					ret+= "Content-Type: image/bmp;\n";
+					ret+= "Content-Type: image/bmp;\r\n";
 				}
 				else if(typ == ".htm" || typ == "html") { // hypertext format presumably
-					ret+= "Content-Type: plain/htm;\n";
+					ret+= "Content-Type: plain/htm;\r\n";
 				}
 				else if(typ == ".png") { // portable network graphic format presumably
-					ret+= "Content-Type: image/png;\n";
+					ret+= "Content-Type: image/png;\r\n";
 				}
 				else if(typ == ".exe") { // application
-					ret+= "Content-Type: application/X-exectype-1;\n";
+					ret+= "Content-Type: application/X-exectype-1;\r\n";
 				}
 				else { // add other types
 					// everything else
-					ret+= "Content-Type: application/X-other-1;\n";
+					ret+= "Content-Type: application/X-other-1;\r\n";
 				}
 			}
 			else {
 				// default to don't know
-				ret+= "Content-Type: application/X-other-1;\n";
+				ret+= "Content-Type: application/X-other-1;\r\n";
 			}
 
-			ret+= "\tname=\"" + it1->second + "\"\n";
-			ret+= "Content-Transfer-Encoding: base64\n";
-			ret+= "Content-Disposition: attachment; filename=\"" + it1->second + "\"\n\n";
+			ret+= "\tname=\"" + it1->second + "\"\r\n";
+			ret+= "Content-Transfer-Encoding: base64\r\n";
+			ret+= "Content-Disposition: attachment; filename=\"" + it1->second + "\"\r\n\r\n";
 
 			ret.insert(ret.end(), it1->first.begin(), it1->first.end());
 
 			// terminate the message with the boundary + "--"
 			if((it1 + 1) == m_Attachments.end())
-				ret += "\n\n--" + boundary + "--\n";
+				ret += "\r\n\r\n--" + boundary + "--\r\n";
 			else
-				ret += "\n\n--" + boundary + "\n";
+				ret += "\r\n\r\n--" + boundary + "\r\n";
 		}
 	}
 	else // just a plain text message only
 		ret+=m_PlainBody;
 
 	// end the data in the message.
-	ret += "\n.\n";
+	ret += "\r\n.\r\n";
 
 	return ret;
 }
