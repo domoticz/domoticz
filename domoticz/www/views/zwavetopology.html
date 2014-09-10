@@ -11,7 +11,7 @@
 		<link type="text/css" rel="stylesheet" href="css/jquery.uix.multiselect.css" />
         <link type="text/css" rel="stylesheet" href="css/style.css" />
         <link type="text/css" rel="stylesheet" href="css/colpick.css" />
-        <script src="js/jquery-1.10.2.min.js"></script>
+        <script src="js/jquery-1.11.1.min.js"></script>
 		<script src="js/jquery.i18n.js"></script>
 		<script src="js/jquery.i18n.messages.js"></script>
 		<script src="js/jquery.i18n.fallbacks.js"></script>
@@ -332,7 +332,7 @@
 		
 		function drawInfo() {
 			$.ajax({
-				 url: "getlanguage.js",
+ 				 url: "json.htm?type=command&param=getlanguage",
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {

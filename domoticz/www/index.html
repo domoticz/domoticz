@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html manifest="html5.appcache">
 <head>
 		<meta charset="utf-8">
 		<title>Domoticz</title>
@@ -57,11 +57,10 @@
         <link href="css/bootstrap-responsive.css" rel="stylesheet" media="screen">
         <link type="text/css" rel="stylesheet" href="css/ui-darkness/jquery-ui-1.10.3.custom.min.css" />
 		<link type="text/css" rel="stylesheet" href="css/demo_table_jui.css" />
-		<link type="text/css" rel="stylesheet" href="css/dataTables.tableTools.min.css" />
 		<link type="text/css" rel="stylesheet" href="css/jquery.uix.multiselect.css" />
         <link type="text/css" rel="stylesheet" href="css/style.css" />
         <link type="text/css" rel="stylesheet" href="css/colpick.css" />
-        <script src="js/jquery-1.10.2.min.js"></script>
+        <script src="js/jquery-1.11.1.min.js"></script>
 		<script src="js/jquery.i18n.js"></script>
 		<script src="js/jquery.i18n.messages.js"></script>
 		<script src="js/jquery.i18n.fallbacks.js"></script>
@@ -89,6 +88,9 @@
 		<script src="js/export-csv.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/themes/dark-blue.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/domoticz.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/domoticzdevices.js"></script>
+
+		<script data-main="app/main" src="js/require.js"></script>
 <script type="text/javascript" charset="utf-8" id="init-code">
 
 function NotifyCacheRefresh()
@@ -103,9 +105,17 @@ function ClearNotifyCacheRefresh()
 	}
 }
 
-function RefreshMain()
-{
-	window.location.reload();
+function logEvent(event) {
+}
+
+if (window.applicationCache) {
+	window.applicationCache.addEventListener('checking',logEvent,false);
+	window.applicationCache.addEventListener('noupdate',logEvent,false);
+	window.applicationCache.addEventListener('progress',logEvent,false);
+	window.applicationCache.addEventListener('cached',logEvent,false);
+	window.applicationCache.addEventListener('updateready',logEvent,false);
+	window.applicationCache.addEventListener('obsolete',logEvent,false);
+	window.applicationCache.addEventListener('error',logEvent,false);
 }
 
 function CheckForUpdate(showdialog) {
@@ -129,32 +139,6 @@ function CheckForUpdate(showdialog) {
 			{
 				userrights : urights
 			};
-			
-			if (bDisplayLogout) {
-				if (window.my_config.userrights!=2) {
-					//no setup menu
-					$("#dLogout").show();
-					$("#mLogout").show();
-					$("#dLogoutSetup").hide();
-					$("#mLogoutSetup").hide();
-				}
-				else {
-					$("#dLogout").hide();
-					$("#mLogout").hide();
-					$("#dLogoutSetup").show();
-					$("#mLogoutSetup").show();
-				}
-			}
-			else {
-				$("#dLogout").hide();
-				$("#mLogout").hide();
-				$("#dLogoutSetup").hide();
-				$("#mLogoutSetup").hide();
-			}
-			
-			if (window.my_config.userrights!=2) {
-				$(".clsetupmenu").hide();
-			}
 			
 			//data.HaveUpdate=true;
 			if (data.HaveUpdate == true) {
@@ -277,6 +261,25 @@ $(document).ready(function() {
 		}
 	}
 	
+	if (window.applicationCache) {
+			window.applicationCache.addEventListener('downloading', function(e)
+			{
+				NotifyCacheRefresh();
+			}, false);
+			
+			window.applicationCache.addEventListener('updateready', function(e) 
+			{
+					if (window.applicationCache.status == window.applicationCache.UPDATEREADY) 
+					{
+							// Browser downloaded a new app cache.
+							// Swap it in and reload the page to get the new hotness.
+							ClearNotifyCacheRefresh();
+							window.applicationCache.swapCache();
+							window.location.reload();
+					}
+			}, false);
+	}
+	
 	$("#appversion").click( function( e ) {
 		e.preventDefault();
 		$.myglobals.historytype=1;
@@ -338,14 +341,6 @@ $(document).ready(function() {
     });
     
     CheckForUpdate(false);
-
-	SwitchLayout(GetLayoutFromURL());
-
-	window.onhashchange = function(){
-		if($.myglobals.layoutFull != GetLayoutFromURL()) {
-			SwitchLayout(GetLayoutFromURL());
-		}
-	};
 } );
 
 </script>
@@ -638,60 +633,60 @@ $(document).ready(function() {
 					</select>
 			</form>
 	</div>
-         <div class="navbar navbar-inverse navbar-fixed-top">
+         <div class="navbar navbar-inverse navbar-fixed-top" ng-controller="NavbarController" style="display: none;" has-User>
              <div class="navbar-inner">
                 <div class="container">
-					<a class="brand hidden-phone" href="javascript:SwitchLayout('Dashboard')"><h1>Domoticz</h1> <h2 id="appversion">*</h2></a>
+					<a class="brand hidden-phone" href="#Dashboard"><h1>Domoticz</h1> <h2 id="appversion">*</h2></a>
                         <ul class="nav" id="appnavbar">
-                            <li class="clDashboard"><a id="cDashboard" href="javascript:SwitchLayout('Dashboard')"><img src="images/desktop.png"> <span class="hidden-phone hidden-tablet" data-i18n="Dashboard">Dashboard</span></img></a></li>
+                            <li ng-class="{'current_page_item':getClass('/Dashboard')}" class="clDashboard"><a id="cDashboard" href="#Dashboard"><img src="images/desktop.png"> <span class="hidden-phone hidden-tablet" data-i18n="Dashboard">Dashboard</span></img></a></li>
                             <li class="divider-vertical clFloorplans"></li>
-								<li class="clFloorplans"><a id="cFloorplans" href="javascript:SwitchLayout('Floorplans')"><img src="images/house.png"> <span class="hidden-phone hidden-tablet" data-i18n="Floorplan">Floorplan</span></a></li>
+								<li ng-class="{'current_page_item':getClass('/Floorplans')}" class="clFloorplans"><a id="cFloorplans" href="#Floorplans"><img src="images/house.png"> <span class="hidden-phone hidden-tablet" data-i18n="Floorplan">Floorplan</span></a></li>
                             <li class="divider-vertical clLightSwitches"></li>
-								<li class="clLightSwitches"><a id="cLightSwitches" href="javascript:SwitchLayout('LightSwitches')"><img src="images/lightbulb.png"> <span class="hidden-phone hidden-tablet" data-i18n="Switches">Switches</span></a></li>
+								<li ng-class="{'current_page_item':getClass('/LightSwitches')}" class="clLightSwitches"><a id="cLightSwitches" href="#LightSwitches"><img src="images/lightbulb.png"> <span class="hidden-phone hidden-tablet" data-i18n="Switches">Switches</span></a></li>
                             <li class="divider-vertical clScenes"></li>
-								<li class="clScenes"><a id="cScenes" href="javascript:SwitchLayout('Scenes')"><img src="images/scenes.png"> <span class="hidden-phone hidden-tablet" data-i18n="Scenes">Scenes</span></a></li>
+								<li ng-class="{'current_page_item':getClass('/Scenes')}" class="clScenes"><a id="cScenes" href="#Scenes"><img src="images/scenes.png"> <span class="hidden-phone hidden-tablet" data-i18n="Scenes">Scenes</span></a></li>
                             <li class="divider-vertical clTemperature"></li>
-								<li class="clTemperature"><a id="cTemperature" href="javascript:SwitchLayout('Temperature')"><img src="images/temperature.png"> <span class="hidden-phone hidden-tablet" data-i18n="Temperature">Temperature</span></a></li>
+								<li ng-class="{'current_page_item':getClass('/Temperature')}" class="clTemperature"><a id="cTemperature" href="#Temperature"><img src="images/temperature.png"> <span class="hidden-phone hidden-tablet" data-i18n="Temperature">Temperature</span></a></li>
                             <li class="divider-vertical clWeather"></li>
-								<li class="clWeather"><a id="cWeather" href="javascript:SwitchLayout('Weather')"><img src="images/rain.png"> <span class="hidden-phone hidden-tablet" data-i18n="Weather">Weather</span></a></li>
+								<li ng-class="{'current_page_item':getClass('/Weather')}" class="clWeather"><a id="cWeather" href="#Weather"><img src="images/rain.png"> <span class="hidden-phone hidden-tablet" data-i18n="Weather">Weather</span></a></li>
                             <li class="divider-vertical clUtility"></li>
-								<li class="clUtility"><a id="cUtility" href="javascript:SwitchLayout('Utility')"><img src="images/utility.png"> <span class="hidden-phone hidden-tablet" data-i18n="Utility">Utility</span></a></li>
+								<li ng-class="{'current_page_item':getClass('/Utility')}" class="clUtility"><a id="cUtility" href="#Utility"><img src="images/utility.png"> <span class="hidden-phone hidden-tablet" data-i18n="Utility">Utility</span></a></li>
                             <li class="divider-vertical clcustommenu" style="display:none;"></li>
                             <li class="dropdown clcustommenu" style="display:none;">
                                 <a class="dropdown-toggle" data-toggle="dropdown" onmouseover="cursorhand()" onmouseout="cursordefault()"><img src="images/devices.png"> <span class="hidden-phone hidden-tablet" data-i18n="Custom">Custom</span> <b class="caret hidden-phone hidden-tablet"></b></a>
                                 <ul class="dropdown-menu pull-right" id="custommenu"></ul>
 							</li>
-                            <li class="divider-vertical clsetupmenu"></li>
-                            <li class="dropdown clsetupmenu">
+                            <li class="divider-vertical" style="display: none;" has-permission="Admin"></li>
+                            <li class="dropdown" style="display: none;" has-permission="Admin">
                                 <a class="dropdown-toggle" data-toggle="dropdown" onmouseover="cursorhand()" onmouseout="cursordefault()"><img src="images/setup.png"> <span class="hidden-phone hidden-tablet" data-i18n="Setup">Setup</span> <b class="caret hidden-phone hidden-tablet"></b></a>
                                 <ul class="dropdown-menu pull-right">
-									<li id="mHardware"><a id="cHardware" href="javascript:SwitchLayout('Hardware')"><img src="images/hardware.png"> <span data-i18n="Hardware">Hardware</span></a></li>
-									<li id="mDevices"><a id="cDevices" href="javascript:SwitchLayout('Devices')"><img src="images/devices.png"> <span data-i18n="Devices">Devices</span></a></li>
-									<li id="mSetup"><a id="cSetup" href="javascript:SwitchLayout('Setup')"><img src="images/setup.png"> <span data-i18n="Application Settings">Application Settings</span></a></li>
+									<li ng-class="{'current_page_item':getClass('/Hardware')}" id="mHardware"><a id="cHardware" href="#Hardware"><img src="images/hardware.png"> <span data-i18n="Hardware">Hardware</span></a></li>
+									<li ng-class="{'current_page_item':getClass('/Devices')}" id="mDevices"><a id="cDevices" href="#Devices"><img src="images/devices.png"> <span data-i18n="Devices">Devices</span></a></li>
+									<li ng-class="{'current_page_item':getClass('/Setup')}" id="mSetup"><a id="cSetup" href="#Setup"><img src="images/setup.png"> <span data-i18n="Application Settings">Application Settings</span></a></li>
                                     <li id="dUpdate" class="divider"></li>
-                                    <li id="mUpdate"><a id="cUpdate" href="javascript:SwitchLayout('Update')"><img src="images/utility.png"> <span data-i18n="Update Domoticz">Update Domoticz</span></a></li>
+                                    <li ng-class="{'current_page_item':getClass('/Update')}" id="mUpdate"><a id="cUpdate" href="#Update"><img src="images/utility.png"> <span data-i18n="Update Domoticz">Update Domoticz</span></a></li>
                                     <li id="mCheckUpdate"><a id="cCheckUpdate" href="javascript:CheckForUpdate(true)"><img src="images/utility.png"> <span data-i18n="Check for Update">Check for Update</span></a></li>
                                     <li class="dropdown-submenu">
 										<a id="cMoreOptions" tabindex="-1" data-i18n="More options">More options</a>
 										<ul class="dropdown-menu pull-left">
-											<li id="mCam"><a id="cCam" href="javascript:SwitchLayout('Cam')"><img src="images/camera-web.png"> <span data-i18n="Cameras">Cameras</span></a></li>
-											<li id="mUsers"><a id="cUsers" href="javascript:SwitchLayout('Users')"><img src="images/users.png"> <span data-i18n="Edit Users">Edit Users</span></a></li>
-											<li id="mEvents"><a id="cEvents" href="javascript:SwitchLayout('Events')"><img src="images/events.png"> <span data-i18n="Events">Events</span></a></li>
+											<li ng-class="{'current_page_item':getClass('/Cam')}" id="mCam"><a id="cCam" href="#Cam"><img src="images/camera-web.png"> <span data-i18n="Cameras">Cameras</span></a></li>
+											<li ng-class="{'current_page_item':getClass('/Users')}" id="mUsers"><a id="cUsers" href="#Users"><img src="images/users.png"> <span data-i18n="Edit Users">Edit Users</span></a></li>
+											<li ng-class="{'current_page_item':getClass('/Events')}" id="mEvents"><a id="cEvents" href="#Events"><img src="images/events.png"> <span data-i18n="Events">Events</span></a></li>
 											<li class="dropdown-submenu">
 												<a id="cPlans" tabindex="-1"><img src="images/house.png"> <span data-i18n="Plans">Plans</span></a>
 												<ul class="dropdown-menu pull-right">
-													<li id="mRoomplan"><a id="cRoomplan" href="javascript:SwitchLayout('Roomplan')"> <span data-i18n="Roomplan">Roomplan</span></a></li>
-													<li id="mFloorplan"><a id="cFloorplan" href="javascript:SwitchLayout('Floorplanedit')"> <span data-i18n="Floorplan">Floorplan</span></a></li>
+													<li ng-class="{'current_page_item':getClass('/Roomplan')}" id="mRoomplan"><a id="cRoomplan" href="#Roomplan"> <span data-i18n="Roomplan">Roomplan</span></a></li>
+													<li ng-class="{'current_page_item':getClass('/Floorplanedit')}" id="mFloorplan"><a id="cFloorplan" href="#Floorplanedit"> <span data-i18n="Floorplan">Floorplan</span></a></li>
 												</ul>
 											</li>
-											<li id="mUserVariables"><a id="cUserVariables" href="javascript:SwitchLayout('UserVariables')"><img src="images/variables.png"> <span data-i18n="User variables">User variables</span></a></li>
+											<li ng-class="{'current_page_item':getClass('/UserVariables')}" id="mUserVariables"><a id="cUserVariables" href="#UserVariables"><img src="images/variables.png"> <span data-i18n="User variables">User variables</span></a></li>
 											<li id="mSecurity"><a id="cSecurity" href="secpanel/index.html"><img src="images/security.png"> <span data-i18n="SecurityPanel">Security Panel</span></a></li>
-											<li id="mNotification"><a id="cNotification" href="javascript:SwitchLayout('Notification')"><img src="images/notification.png"> <span data-i18n="Send Notification">Send Notification</span></a></li>
+											<li ng-class="{'current_page_item':getClass('/Notification')}" id="mNotification"><a id="cNotification" href="#Notification"><img src="images/notification.png"> <span data-i18n="Send Notification">Send Notification</span></a></li>
 											<li class="divider"></li>
 											<li class="dropdown-submenu">
 												<a id="cDataPush" tabindex="-1"><img src="images/contact.png"> <span data-i18n="Data push">Data push</span></a>
 												<ul class="dropdown-menu pull-right">
-													<li id="mDPFibaro"><a id="cDPFibaro" href="javascript:SwitchLayout('DPFibaro')"> <span data-i18n="FibaroLink">FibaroLink</span></a></li>
+													<li ng-class="{'current_page_item':getClass('/DPFibaro')}" id="mDPFibaro"><a id="cDPFibaro" href="#DPFibaro"> <span data-i18n="FibaroLink">FibaroLink</span></a></li>
 												</ul>
 											</li>
 											<li class="divider"></li>
@@ -700,13 +695,13 @@ $(document).ready(function() {
 										</ul>
                                     </li>
                                     <li class="divider"></li>
-                                    <li id="mLog"><a id="cLog" href="javascript:SwitchLayout('Log')"><img src="images/log.png"> <span data-i18n="Log">Log</span></a></li>
-                                    <li id="dLogoutSetup" class="divider" style="display: none;"></li>
-									<li id="mLogoutSetup" style="display: none;"><a id="cLogout" href="javascript:SwitchLayout('Logout')"><img src="images/logout.png"> <span data-i18n="Logout">Logout</span></a></li>
+                                    <li ng-class="{'current_page_item':getClass('/Log')}" id="mLog"><a id="cLog" href="#Log"><img src="images/log.png"> <span data-i18n="Log">Log</span></a></li>
+                                    <li id="dLogoutSetup" class="divider" style="display: none;" has-Login=true></li>
+									<li id="mLogoutSetup" style="display: none;" has-Login=true><a id="cLogout" href="#Logout"><img src="images/logout.png"> <span data-i18n="Logout">Logout</span></a></li>
                                 </ul>
                             </li>
-                            <li id="dLogout" class="divider-vertical" style="display: none;"></li>
-							<li id="mLogout" style="display: none;"><a id="cLogout" href="javascript:SwitchLayout('Logout')"><img src="images/logout.png"> <span data-i18n="Logout">Logout</span></a></li>
+                            <li id="dLogout" class="divider-vertical" style="display: none;" has-Login-No-Admin=true></li>
+							<li id="mLogout" style="display: none;" has-Login-No-Admin=true><a id="cLogout" href="#Logout"><img src="images/logout.png"> <span data-i18n="Logout">Logout</span></a></li>
                         </ul>
                 </div>
             </div>
@@ -714,8 +709,10 @@ $(document).ready(function() {
         <div id="holder">
 					<div class="container">
 							<div id="notification" style="display: none;"></div>
-							<div class="bannercontent"></div>
-							<div id="copyright">
+							<div class="bannercontent">
+								<div ng-view></div>
+							</div>
+							<div id="copyright" style="display: none;" has-User>
 									<p>&copy; 2012-2014 Domoticz | WWW: <a href="http://domoticz.com/">Domoticz.com</a></p>
 							</div>
 					</div> <!-- /container -->

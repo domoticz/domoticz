@@ -1,0 +1,65 @@
+<div id="dialog-editutilitydevice" title="Edit Device">
+    <form>
+        <label for="name">Name: </label>
+        <input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" />
+    </form>
+</div>
+<div id="dialog-editmeterdevice" title="Edit Meter Device">
+    <form>
+        <table class="display" id="metertable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="width:60px"><label for="name">Name: </label></td>
+          <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
+        </tr>
+        <tr>
+          <td align="right"><label for="metertype">Type: </label></td>
+          <td><select id="combometertype" style="width:150px" class="combobox ui-corner-all">
+            <!--#embed metertypes -->
+          </select></td>
+		</tr>
+		</table>
+    </form>
+</div>
+<div id="dialog-editsetpointdevice" title="Edit Meter Device">
+    <form>
+        <table class="display" id="metertable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="width:60px"><label for="name">Name: </label></td>
+          <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
+        </tr>
+		<tr>
+			<td align="right"><label for="protected"><span data-i18n="Protected">Protected</span>:</label></td>
+			<td><input type="checkbox" id="protected"></td>
+		</tr>
+        <tr>
+          <td align="right"><label>Value: </label></td>
+          <td><input type="text" id="setpoint" style="width: 50px; padding: .4em;" class="text ui-widget-content ui-corner-all" /> &deg; <span id="tempunit">C</span></td>
+		</tr>
+		</table>
+    </form>
+</div>
+
+<div id="utilitycontent">
+</div>
+
+<div id="percentagelog" style="display:none;">
+  <h2 data-i18n="Day">Day</h2>
+  <div id="percentagedaygraph" style="height: 300px;"></div>
+  <br>
+  <h2 data-i18n="Month">Month</h2>
+  <div id="percentagemonthgraph" style="height: 300px;"></div>
+  <br>
+  <h2 data-i18n="Year">Year</h2>
+  <div id="percentageyeargraph" style="height: 300px;"></div>
+</div>
+
+<div id="fanlog" style="display:none;">
+  <h2 data-i18n="Day">Day</h2>
+  <div id="fandaygraph" style="height: 300px;"></div>
+  <br>
+  <h2 data-i18n="Month">Month</h2>
+  <div id="fanmonthgraph" style="height: 300px;"></div>
+  <br>
+  <h2 data-i18n="Year">Year</h2>
+  <div id="fanyeargraph" style="height: 300px;"></div>
+</div>

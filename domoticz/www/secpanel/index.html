@@ -6,7 +6,7 @@
 	<title>Domoticz Security Panel</title>
 	<link href="css/style.less" rel="stylesheet/less" />
 	<script src="js/less.js"></script>
-	<script src="../js/jquery-1.10.2.min.js"></script>
+	<script src="../js/jquery-1.11.1.min.js"></script>
 	<script src="../js/jquery.i18n.js"></script>
 	<script src="../js/jquery.i18n.messages.js"></script>
 	<script src="../js/jquery.i18n.fallbacks.js"></script>
@@ -402,10 +402,9 @@
 			}
 
 		}
-
 		$(document).ready(function() {
 			$.ajax({
-				 url: "/getlanguage.js",
+				 url: "json.htm?type=command&param=getlanguage",
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {

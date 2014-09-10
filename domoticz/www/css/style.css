@@ -2164,3 +2164,11 @@ a:link {
  border:none;
 }
 
+
+.dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter {
+	color: #fff;
+}
+
+table.dataTable thead th, table.dataTable thead td {
+	padding: 2px 2px;
+}

@@ -1,44 +1,4 @@
-<!DOCTYPE HTML>
-<html lang="en-US">
-<head>
-	<meta charset="UTF-8">
-	<title>Domoticz Authenticate</title>
-	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=0" /> 
-	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
-	<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
 <style>
-html, body
-{
-    height: 100%;
-}
-
-body
-{
-    font: 12px 'Lucida Sans Unicode', 'Trebuchet MS', Arial, Helvetica;    
-    margin: 0;
-	background: #202020 url(css/images/img01.jpg) repeat;
-}
-
-
-#notification{
-    z-index:1005;
-    background-color:#204060;
-    border-width: 2px 2px 2px 2px;
-    border-color: #5FA0FF;
-    border-style: solid;
-    border-radius: 10px;
-}
-
-#notification p{
-    font-size:18px;
-    color:white;
-    margin: 11px;
-    text-align:center;
-    text-decoration: none;
-    text-transform: none;
-    font-weight:bold;
-}
-
 #login
 {
     background-color: #fff;
@@ -76,7 +36,7 @@ body
     box-shadow: 0 0 0 1px #fff;
 }
 
-h1
+#login h1
 {
     text-transform: uppercase;
     text-align: center;
@@ -87,7 +47,7 @@ h1
     position: relative;
 }
 
-h1:after, h1:before
+#login h1:after, #login h1:before
 {
     background-color: #777;
     content: "";
@@ -97,7 +57,7 @@ h1:after, h1:before
     width: 60px;   
 }
 
-h1:after
+#login h1:after
 { 
     background-image: -webkit-gradient(linear, left top, right top, from(#777), to(#fff));
     background-image: -webkit-linear-gradient(left, #777, #fff);
@@ -108,7 +68,7 @@ h1:after
     right: 0;
 }
 
-h1:before
+#login h1:before
 {
     background-image: -webkit-gradient(linear, right top, left top, from(#777), to(#fff));
     background-image: -webkit-linear-gradient(right, #777, #fff);
@@ -119,7 +79,7 @@ h1:before
     left: 0;
 }
 
-fieldset
+#login fieldset
 {
     border: 0;
     padding: 0;
@@ -241,96 +201,16 @@ fieldset
     color: #999;
 }
 </style>
-
-	<script src="js/jquery-1.10.2.min.js"></script>
-	<script src="js/jquery.i18n.js"></script>
-	<script src="js/jquery.i18n.messages.js"></script>
-	<script src="js/jquery.i18n.fallbacks.js"></script>
-	<script src="js/jquery.i18n.parser.js"></script>
-	<script src="js/jquery.i18n.emitter.js"></script>
-	<script src="js/jquery.i18n.language.js"></script>
-	<script src="js/noty/jquery.noty.js"></script>
-	<script src="js/noty/layouts/top.js"></script>
-	<script src="js/noty/layouts/topRight.js"></script>
-	<script src="js/noty/themes/default.js"></script> 		
-	<script src="js/domoticz.js"></script>
-	<script type="text/javascript">
-		function DoLogin()
-		{
-			var musername=encodeURIComponent(btoa($('#username').val()));
-			var mpassword=encodeURIComponent(btoa($('#password').val()));
-			$.ajax({
-				url: "json.htm?type=command&param=logincheck&username=" + musername + "&password=" + mpassword,
-				async: false, 
-				dataType: 'json',
-				success: function(data) {
-					if (data.status != "OK") {
-						HideNotify();
-						ShowNotify($.i18n('Incorrect Username/Password!'), 2500, true);
-						return;
-					}
-					else {
-					   window.location = '/';
-					}
-				},
-				error: function(){
-					HideNotify();
-					$failcounter+=1;
-					if ($failcounter>3) {
-						alert($.i18n('To many login attempts!'));
-						window.location.href = "http://www.1112.net/lastpage.html";
-						return;
-					}
-					else {
-						ShowNotify($.i18n('Incorrect Username/Password!'), 2500, true);
-					}
-				}
-			});
-		}
-		
-		$(document).ready(function() {
-			$failcounter=0;
-			$.ajax({
-				 url: "getlanguage.js",
-				 async: false, 
-				 dataType: 'json',
-				 success: function(data) {
-					if (typeof data.language != 'undefined') {
-						SetLanguage(data.language);
-					}
-					else {
-						SetLanguage('en');
-					}
-					
-					var $inputs = $('#login :input');
-					$inputs.each(function() {
-						if ($(this).attr("id")!="submit") {
-							$(this).attr("placeholder",$.i18n($(this).attr("placeholder")));
-						}
-						else {
-							$(this).attr("value",$.i18n("Login"));
-						}
-					});
-				 },
-				 error: function(){
-				 }     
-			});
-			
-		});
-	</script>
-</head>
-<body>
-<div id="notification" style="display: none;"></div>
-<form id="login" action="javascript:DoLogin();">
+<div id="login">
+<form ng-submit="DoLogin()">
     <h1>Domoticz</h1>
     <fieldset id="inputs">
         <input id="username" type="text" placeholder="Username" autofocus required />
         <input id="password" type="password" placeholder="Password" required />
     </fieldset>
     <fieldset id="actions">
-        <input type="submit" id="submit" value="Login">
+		<input type="submit" id="submit" value="Login" />
         <a href="http://www.domoticz.com">www.domoticz.com</a>
     </fieldset>
 </form>
-</body>
-</html>
+</div>

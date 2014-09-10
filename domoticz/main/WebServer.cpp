@@ -263,12 +263,6 @@ bool CWebServer::StartServer(const std::string &listenaddress, const std::string
 		//&CWebServer::GetInternalCameraSnapshot,	// member function
 		//this ) );			// instance of class
 	
-	m_pWebEm->RegisterPageCode( "/getlanguage.js",
-		boost::bind(
-		&CWebServer::GetLanguage,	// member function
-		this ) );			// instance of class
-	
-
 	m_pWebEm->RegisterActionCode( "storesettings",boost::bind(&CWebServer::PostSettings,this));
 	m_pWebEm->RegisterActionCode( "setrfxcommode",boost::bind(&CWebServer::SetRFXCOMMode,this));
 	m_pWebEm->RegisterActionCode( "setrego6xxtype",boost::bind(&CWebServer::SetRego6XXType,this));
@@ -279,9 +273,12 @@ bool CWebServer::StartServer(const std::string &listenaddress, const std::string
 	m_pWebEm->RegisterActionCode( "restoredatabase",boost::bind(&CWebServer::RestoreDatabase,this));
 	m_pWebEm->RegisterActionCode("smaspotimportolddata", boost::bind(&CWebServer::SMASpotImportOldData, this));
 
+	RegisterCommandCode("getlanguage", boost::bind(&CWebServer::Cmd_GetLanguage, this, _1));
+	
 	RegisterCommandCode("logincheck", boost::bind(&CWebServer::Cmd_LoginCheck, this, _1));
 	RegisterCommandCode("getversion", boost::bind(&CWebServer::Cmd_GetVersion, this, _1));
 	RegisterCommandCode("getlog", boost::bind(&CWebServer::Cmd_GetLog, this, _1));
+	RegisterCommandCode("getauth", boost::bind(&CWebServer::Cmd_GetAuth, this, _1));
 
 	RegisterCommandCode("addhardware",boost::bind(&CWebServer::Cmd_AddHardware,this, _1));
 	RegisterCommandCode("updatehardware",boost::bind(&CWebServer::Cmd_UpdateHardware,this, _1));
@@ -487,6 +484,17 @@ exitjson:
 	return m_retstr;
 }
 
+void CWebServer::Cmd_GetLanguage(Json::Value &root)
+{
+	std::string sValue;
+	if (m_sql.GetPreferencesVar("Language", sValue))
+	{
+		root["status"] = "OK";
+		root["title"] = "GetLanguage";
+		root["language"] = sValue;
+	}
+}
+
 void CWebServer::Cmd_LoginCheck(Json::Value &root)
 {
 	std::string tmpusrname=m_pWebEm->FindValue("username");
@@ -513,6 +521,11 @@ void CWebServer::Cmd_LoginCheck(Json::Value &root)
 				return;
 			root["status"]="OK";
 			root["title"]="logincheck";
+			m_pWebEm->m_actualuser = m_users[iUser].Username;
+			m_pWebEm->m_actualuser_rights = m_users[iUser].userrights;
+
+			root["user"] = m_pWebEm->m_actualuser;
+			root["rights"] = m_pWebEm->m_actualuser_rights;
 		}
 	}
 }
@@ -2251,6 +2264,14 @@ void CWebServer::Cmd_GetVersion(Json::Value &root)
 	root["status"] = "OK";
 	root["title"] = "GetVersion";
 	root["version"] = szVersion;
+}
+
+void CWebServer::Cmd_GetAuth(Json::Value &root)
+{
+	root["status"] = "OK";
+	root["title"] = "GetAuth";
+	root["user"] = m_pWebEm->m_actualuser;
+	root["rights"] = m_pWebEm->m_actualuser_rights;
 }
 
 void CWebServer::Cmd_GetActualHistory(Json::Value &root)
@@ -7130,6 +7151,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			int nValue = atoi(sd[9].c_str());
 			std::string sValue=sd[10];
 			std::string sLastUpdate=sd[11];
+			if (sLastUpdate.size() > 19)
+				sLastUpdate = sLastUpdate.substr(0, 19);
 
 			if (iLastUpdate != 0)
 			{
@@ -8790,21 +8813,6 @@ std::string CWebServer::GetDatabaseBackup()
 			m_pWebEm->m_outputfilename="domoticz.db";
 		}
 	}
-	return m_retstr;
-}
-
-std::string CWebServer::GetLanguage()
-{
-	Json::Value root;
-	root["status"]="ERR";
-	std::string sValue;
-	if (m_sql.GetPreferencesVar("Language", sValue))
-	{
-		root["status"]="OK";
-		root["title"]="GetLanguage";
-		root["language"]=sValue;
-	}
-	m_retstr=root.toStyledString();
 	return m_retstr;
 }
 

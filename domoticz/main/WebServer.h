@@ -73,6 +73,7 @@ private:
 	void HandleRType(const std::string &rtype, Json::Value &root);
 
 	//Commands
+	void Cmd_GetLanguage(Json::Value &root);
 	void Cmd_LoginCheck(Json::Value &root);
 	void Cmd_AddHardware(Json::Value &root);
 	void Cmd_UpdateHardware(Json::Value &root);
@@ -109,6 +110,7 @@ private:
 	void Cmd_ChangePlanOrder(Json::Value &root);
 	void Cmd_ChangePlanDeviceOrder(Json::Value &root);
 	void Cmd_GetVersion(Json::Value &root);
+	void Cmd_GetAuth(Json::Value &root);
 	void Cmd_GetActualHistory(Json::Value &root);
 	void Cmd_GetNewHistory(Json::Value &root);
 	void Cmd_GetActiveTabs(Json::Value &root);
