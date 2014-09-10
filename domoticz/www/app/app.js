@@ -218,13 +218,11 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 	/*
 	app.config(['$httpProvider',function($httpProvider) {
 		//Http Intercpetor to check auth failures for xhr requests
-		alert("AA");
 		$httpProvider.interceptors.push('securityInterceptor');
 		//$httpProvider.responseInterceptors.push('securityInterceptor');
 	}]);
 
 	app.provider('securityInterceptor', function() {
-		alert("hoi!");
 		this.$get = function($location, $q) {
 			return function(promise) {
 				return promise.then(null, function(response) {
@@ -264,7 +262,6 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 
 	
 	app.run(function($rootScope, $location, $route, permissions) {
-		alert("Run!");
 		$rootScope.$on("$routeChangeStart", function (scope, next, current) {
 			if (
 				(!permissions.isAuthenticated()) &&
