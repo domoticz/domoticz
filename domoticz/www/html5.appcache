@@ -464,9 +464,9 @@ views/update.html
 views/users.html
 views/utility.html
 views/weather.html
-views/zwavetopology.html
 offline.html
 eventsframe.html
+zwavetopology.html
 secpanel/index.html
 views/login.html
 

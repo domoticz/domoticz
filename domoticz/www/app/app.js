@@ -208,7 +208,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				controller: 'WeatherController'
 			  })).
 			  when('/ZWaveTopology', angularAMD.route({
-				templateUrl: 'views/zwavetopology.html',
+				templateUrl: 'zwavetopology.html',
 				controller: 'ZWaveTopologyController'
 			  })).
 			  otherwise({

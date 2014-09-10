@@ -1667,7 +1667,7 @@ function ZWaveTopology()
 		 dataType: 'json',
 		 success: function(data) {
 			if (data.status == 'OK') {
-				var topologywindow = "<center>ZWave Network Information</center><p><p><iframe src='views/zwavetopology.html?hwid="+$.devIdx+"' name='topoframe' frameBorder='0' height='"+window.innerHeight*0.7+"' width='100%'/>";
+				var topologywindow = "<center>ZWave Network Information</center><p><p><iframe src='../zwavetopology.html?hwid="+$.devIdx+"' name='topoframe' frameBorder='0' height='"+window.innerHeight*0.7+"' width='100%'/>";
 				noty({
 					text: topologywindow,
 					type: 'alert',
