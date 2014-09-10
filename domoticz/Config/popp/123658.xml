@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+<!-- Popp: 123658 Plug-in Switch plus Power Meter -->
+
+	<!-- Configuration  -->
+	<CommandClass id="112">
+		<Value type="short" genre="config" instance="1" index="1" label="Watt Meter Report Period" size="2" min="1" max="32767" value="720">
+			<Help>If the setting is configured for 1 hour(set value=720), the device will report its instant power consumption every 1 hour to Z_Wave controller. Unit: 5 secs, Min: 1, Max: 32767, Default: 720</Help>
+		</Value>
+	
+		<Value type="short" genre="config" instance="1" index="2" label="KWH Meter Report Period" size="2" min="1" max="32767" value="6">
+			<Help>If the setting is configured for 1 hour(set value=6), the device will report its Accumulated power consumption (KW/h) every hour to Z_Wave controller. Unit: 10 min, Min: 1, Max: 32767, Default: 6</Help>
+		</Value>
+
+		<Value type="short" genre="config" instance="1" index="3" label="Thereshold of Watt for Load Caution" size="2" min="10" max="3000" value="3000">
+			<Help>This is a warning when the wattage of load over the present threshold value, if the load wattage exceeds the setting value the device will send a warning alarm command to the controller. Min: 10, Max: 3000, Default: 3000</Help>
+		</Value>
+	
+		<Value type="short" genre="config" instance="1" index="5" label="Behaviour on Power Outages" size="1" min="0" max="2" value="1">
+			<Help>0 for Switch Off, 1 for Last Switch State (Default), 2 for Switch On</Help>
+		</Value>
+
+	</CommandClass>
+
+	<!-- Association Groups -->
+	
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="1" label="Group 1" auto="true"/>
+		</Associations>
+	</CommandClass>
+
+</Product>

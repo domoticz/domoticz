@@ -365,6 +365,9 @@
 		<Product type="0001" id="0003" name="PAN04-1 Double Relay Switch 2x1.5kW with Power Measurement" config="philio/pan04.xml" />
 		<Product type="0002" id="0002" name="Slim Multi-Sensor PSM02" config="philio/psm02.xml" />
 	</Manufacturer>
+	<Manufacturer id="0154" name="Popp">
+		<Product type="0001" id="0001" name="123658 Plug-in Switch plus Power Meter" config="popp/123658.xml" />
+	</Manufacturer>
 	<Manufacturer id="0064" name="Popp / Duwi">
 		<Product type="0001" id="0000" name="ZW EDAN 300 Flush Mounted Dimmer" />
 		<Product type="1001" id="0000" name="Plugin Dimmer" />
