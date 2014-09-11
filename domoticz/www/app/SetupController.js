@@ -393,10 +393,9 @@ define(['app'], function (app) {
 		  
 			$.post("storesettings.webem", $("#settings").serialize(), function(data) {
 				$scope.$apply(function() {
-					$location.path('/Dashboard');
+					$window.location = '/#Dashboard';
 					$window.location.reload();
 				});
-				//window.location = '/';
 			});
 		}
 
