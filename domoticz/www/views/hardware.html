@@ -1714,11 +1714,8 @@ function RefreshOpenZWaveNodeTable()
 				status="sleep";
 			}
 			var statusImg='<img src="images/' + status + '.png" />';
-			var healButton='<img src="images/heal.png" onclick="ZWaveHealNode('+item.NodeID+')" onmouseover="cursorhand()" onmouseout="cursordefault()" title="'+$.i18n("Heal node")+'" />';
+			var healButton='<img src="images/heal.png" onclick="ZWaveHealNode('+item.NodeID+')" class="lcursor" title="'+$.i18n("Heal node")+'" />';
 			
-			//if (item.NodeID==1) {
-			//	item.Description +='&nbsp;&nbsp;<span class="label label-info" onclick="showNetworkInfo();" onmouseover="cursorhand()" onmouseout="cursordefault()">Info</span>';
-			//}
 			var nodeStr = addLeadingZeros(item.NodeID,3) + " (0x" + addLeadingZeros(item.NodeID.toString(16),2) + ")";
 			var addId = oTable.fnAddData( {
 				"DT_RowId": item.idx,
@@ -1906,7 +1903,7 @@ function RefreshOpenZWaveUserCodesTable()
      success: function(data) {
 		if (typeof data.result != 'undefined') {
 			$.each(data.result, function(i,item){
-				var removeButton='<span class="label label-info" onclick="RemoveUserCode(' + item.index + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Remove</span>';
+				var removeButton='<span class="label label-info lcursor" onclick="RemoveUserCode(' + item.index + ');">Remove</span>';
 				var addId = oTable.fnAddData( {
 					"DT_RowId": item.index,
 					"Code": item.index,
@@ -2199,31 +2196,31 @@ function RefreshHardwareTable()
 			if (HwTypeStr.indexOf("RFXCOM") >= 0)
 			{
 				HwTypeStr+='<br>Firmware version: ' + item.Mode2;
-				HwTypeStr+=' <span class="label label-info" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Set Mode</span>';
+				HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Set Mode</span>';
 			}
 			else if (HwTypeStr.indexOf("S0 Meter USB") >= 0) {
-				HwTypeStr+=' <span class="label label-info" onclick="EditS0MeterType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Set Mode</span>';
+				HwTypeStr+=' <span class="label label-info lcursor" onclick="EditS0MeterType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Set Mode</span>';
 			}
 			else if (HwTypeStr.indexOf("Limitless") >= 0) {
-				HwTypeStr+=' <span class="label label-info" onclick="EditLimitlessType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Set Mode</span>';
+				HwTypeStr+=' <span class="label label-info lcursor" onclick="EditLimitlessType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Set Mode</span>';
 			}
 			else if (HwTypeStr.indexOf("OpenZWave") >= 0) {
-				HwTypeStr+=' <span class="label label-info" onclick="EditOpenZWave(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Setup</span>';
+				HwTypeStr+=' <span class="label label-info lcursor" onclick="EditOpenZWave(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Setup</span>';
 			}
 			else if (HwTypeStr.indexOf("SMASpot") >= 0) {
-				HwTypeStr+=' <span class="label label-info" onclick="EditSMASpot(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Setup</span>';
+				HwTypeStr+=' <span class="label label-info lcursor" onclick="EditSMASpot(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Setup</span>';
 			}
 			else if (HwTypeStr.indexOf("OpenTherm") >= 0) {
-				HwTypeStr+=' <span class="label label-info" onclick="EditOpenTherm(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Setup</span>';
+				HwTypeStr+=' <span class="label label-info lcursor" onclick="EditOpenTherm(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Setup</span>';
 			}
 			else if (HwTypeStr.indexOf("Wake-on-LAN") >= 0) {
-				HwTypeStr+=' <span class="label label-info" onclick="EditWOL(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Setup</span>';
+				HwTypeStr+=' <span class="label label-info lcursor" onclick="EditWOL(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Setup</span>';
 			}
 			else if (HwTypeStr.indexOf("P1 Smart Meter USB") >= 0) {
-				HwTypeStr+=' <span class="label label-info" onclick="EditP1USB(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Setup</span>';
+				HwTypeStr+=' <span class="label label-info lcursor" onclick="EditP1USB(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Setup</span>';
 			}
 			else if (HwTypeStr.indexOf("Dummy") >= 0) {
-				HwTypeStr+=' <span class="label label-info" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');" onmouseover="cursorhand()" onmouseout="cursordefault()">Create Virtual Sensors</span>';
+				HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');">Create Virtual Sensors</span>';
 			}
 			else if (HwTypeStr.indexOf("Rego 6XX") >= 0)
 			{
@@ -2240,7 +2237,7 @@ function RefreshHardwareTable()
 				{
 					HwTypeStr+='637 multi language';
 				}
-				HwTypeStr+=' <span class="label label-info" onclick="EditRego6XXType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');" onmouseover="cursorhand()" onmouseout="cursordefault()">Change Type</span>';
+				HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRego6XXType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Change Type</span>';
 			}
 			
 			var sDataTimeout="";

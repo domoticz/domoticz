@@ -127,11 +127,11 @@
 											td = $('<td></td>');
 											$.each(group.nodes.split(','), function(){
 												if (this!="") {
-													button=$('<span class="label label-info" onclick="removeNodeFromGroup('+item.nodeID+','+group.id+','+this+');" onmouseover="cursorhand()" onmouseout="cursordefault()">'+this+'</span>');
+													button=$('<span class="label label-info lcursor" onclick="removeNodeFromGroup('+item.nodeID+','+group.id+','+this+');">'+this+'</span>');
 													button.appendTo(td);
 												}
 											});
-											button=$('<span class="label label-info" onclick="addNodeToGroup('+item.nodeID+','+group.id+');" onmouseover="cursorhand()" onmouseout="cursordefault()">+</span>');
+											button=$('<span class="label label-info lcursor" onclick="addNodeToGroup('+item.nodeID+','+group.id+');">+</span>');
 											button.appendTo(td);
 											td.appendTo(noderow);
 											groupsDone++;						

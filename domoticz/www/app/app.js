@@ -263,13 +263,15 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 	
 	app.run(function($rootScope, $location, $route, permissions) {
 		$rootScope.$on("$routeChangeStart", function (scope, next, current) {
-			if (
-				(!permissions.isAuthenticated()) &&
-				(next.templateUrl!="views/login.html")
-				) {
-					$location.path('/Login');
-					return;
+			if ( (!permissions.isAuthenticated()) && (next.templateUrl!="views/login.html") ) {
+				$location.path('/Login');
+				return;
 			}
+			else if ( (permissions.isAuthenticated()) && (next.templateUrl=="views/login.html") ) {
+				$location.path('/Dashboard');
+				return;
+			}
+			
 			if (next && next.$$route && next.$$route.permission) {
 				var permission = next.$$route.permission;
 				if(!permissions.hasPermission(permission)) {

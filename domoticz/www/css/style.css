@@ -1952,6 +1952,7 @@ div.log {
 	font-size: 1.2em;
 	font-weight:bold;
 	color: #000000;
+	cursor: pointer;
 }
 .sb-link a, .sb-link a:link, .sb-link a:active, .sb-link a:visited
 {
@@ -1983,10 +1984,15 @@ a:link {
 	color:#FFF;
 }
 
-.norm-link a:link {
-	color:#FFF;
+.norm-link, .norm-link a, .norm-link a:link, .norm-link a:active, .norm-link a:visited, .norm-link href {
+	color: #43A4D3;
 	font-weight:bold;
 }
+
+.lcursor {
+	cursor: pointer;
+}
+
 
 .multiselect {
 	width: 750px;

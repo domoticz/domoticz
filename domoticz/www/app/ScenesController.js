@@ -312,7 +312,7 @@ define(['app'], function (app) {
 							if (updownImg!="") {
 								updownImg+="&nbsp;";
 							}
-							updownImg+='<img src="images/down.png" onclick="ChangeDeviceOrder(1,' + item.ID + ');" onmouseover="cursorhand()" onmouseout="cursordefault()" width="16" height="16"></img>';
+							updownImg+='<img src="images/down.png" onclick="ChangeDeviceOrder(1,' + item.ID + ');" class="lcursor" width="16" height="16"></img>';
 						}
 						else {
 							updownImg+='<img src="images/empty16.png" width="16" height="16"></img>';
@@ -322,7 +322,7 @@ define(['app'], function (app) {
 							if (updownImg!="") {
 								updownImg+="&nbsp;";
 							}
-							updownImg+='<img src="images/up.png" onclick="ChangeDeviceOrder(0,' + item.ID + ');" onmouseover="cursorhand()" onmouseout="cursordefault()" width="16" height="16"></img>';
+							updownImg+='<img src="images/up.png" onclick="ChangeDeviceOrder(0,' + item.ID + ');" class="lcursor" width="16" height="16"></img>';
 						}
 						var levelstr=item.Level + " %";
 						
@@ -1192,7 +1192,7 @@ define(['app'], function (app) {
 						var img2="";
 
 						if (item.Type=="Scene") {
-							img1='<img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes,' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48" width="48">';
+							img1='<img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes,' + item.Protected +');" class="lcursor" height="48" width="48">';
 						}
 						else {
 							var onclass="";
@@ -1206,8 +1206,8 @@ define(['app'], function (app) {
 								offclass="transimg";
 							}
 
-							img1='<img class="' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48" width="48">';
-							img2='<img class="' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48" width="48">';
+							img1='<img class="lcursor ' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" height="48" width="48">';
+							img2='<img class="lcursor ' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected +');" height="48" width="48">';
 							if ($(id + " #img2").html()!=img2) {
 								$(id + " #img2").html(img2);
 							}
@@ -1310,7 +1310,7 @@ define(['app'], function (app) {
 					  xhtm+='</td>\n';
 
 					if (item.Type=="Scene") {
-						xhtm+='<td id="img1"><img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48" width="48"></td>\n';
+						xhtm+='<td id="img1"><img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
 						xhtm+='\t      <td id="status">&nbsp;</td>\n';
 					}
 					else {
@@ -1325,8 +1325,8 @@ define(['app'], function (app) {
 							offclass="transimg";
 						}
 
-						xhtm+='<td id="img1"><img class="' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48" width="48"></td>\n';
-						xhtm+='<td id="img2"><img class="' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected +');" onmouseover="cursorhand()" onmouseout="cursordefault()" height="48" width="48"></td>\n';
+						xhtm+='<td id="img1"><img class="lcursor ' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" height="48" width="48"></td>\n';
+						xhtm+='<td id="img2"><img class="lcursor ' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected +');" height="48" width="48"></td>\n';
 						xhtm+='\t      <td id="status">' + TranslateStatus(item.Status) + '</td>\n';
 					}
 					xhtm+=
@@ -1335,11 +1335,11 @@ define(['app'], function (app) {
 					xhtm+='\t      <td>';
 				  if (item.Favorite == 0) {
 					xhtm+=      
-						  '<img src="images/nofavorite.png" title="' + $.i18n('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+						  '<img src="images/nofavorite.png" title="' + $.i18n('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 				  else {
 					xhtm+=      
-						  '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+						  '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 				  if (window.my_config.userrights==2) {
 						xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + item.Name + '\',' + item.HardwareID + ',\'' + item.Type + '\', ' + item.Protected + ',\'' + item.CodeDeviceName + '\', \'' + item.OnAction + '\', \'' + item.OffAction + '\');" data-i18n="Edit">Edit</a> ';

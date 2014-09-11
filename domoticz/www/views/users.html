@@ -295,7 +295,7 @@ function RefreshUserTable()
 			if (item.RemoteSharing==true) {
 				sharedstr=$.i18n('Yes');
 			}
-			var devicesstr='<span class="label label-info" onclick="EditSharedDevices(' + item.idx + ',\'' + item.Username + '\');" onmouseover="cursorhand()" onmouseout="cursordefault()">' + $.i18n('Set Devices') +'</span>';
+			var devicesstr='<span class="label label-info lcursor" onclick="EditSharedDevices(' + item.idx + ',\'' + item.Username + '\');">' + $.i18n('Set Devices') +'</span>';
 			var addId = oTable.fnAddData( {
 				"DT_RowId": item.idx,
 				"Enabled": item.Enabled,

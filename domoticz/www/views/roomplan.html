@@ -258,7 +258,7 @@ function RefreshPlanTable()
 				if (updownImg!="") {
 					updownImg+="&nbsp;";
 				}
-				updownImg+='<img src="images/down.png" onclick="ChangePlanOrder(1,' + item.idx + ');" onmouseover="cursorhand()" onmouseout="cursordefault()" width="16" height="16"></img>';
+				updownImg+='<img src="images/down.png" onclick="ChangePlanOrder(1,' + item.idx + ');" class="lcursor" width="16" height="16"></img>';
 			}
 			else {
 				updownImg+='<img src="images/empty16.png" width="16" height="16"></img>';
@@ -268,7 +268,7 @@ function RefreshPlanTable()
 				if (updownImg!="") {
 					updownImg+="&nbsp;";
 				}
-				updownImg+='<img src="images/up.png" onclick="ChangePlanOrder(0,' + item.idx + ');" onmouseover="cursorhand()" onmouseout="cursordefault()" width="16" height="16"></img>';
+				updownImg+='<img src="images/up.png" onclick="ChangePlanOrder(0,' + item.idx + ');" class="lcursor" width="16" height="16"></img>';
 			}
 			var displayName=item.Name;
 			if (item.Name=="$Hidden Devices") {
@@ -425,7 +425,7 @@ function RefreshActiveDevicesTable(idx)
 						if (updownImg!="") {
 							updownImg+="&nbsp;";
 						}
-						updownImg+='<img src="images/down.png" onclick="ChangeDeviceOrder(1,' + item.idx + ');" onmouseover="cursorhand()" onmouseout="cursordefault()" width="16" height="16"></img>';
+						updownImg+='<img src="images/down.png" onclick="ChangeDeviceOrder(1,' + item.idx + ');" class="lcursor" width="16" height="16"></img>';
 					}
 					else {
 						updownImg+='<img src="images/empty16.png" width="16" height="16"></img>';
@@ -435,7 +435,7 @@ function RefreshActiveDevicesTable(idx)
 						if (updownImg!="") {
 							updownImg+="&nbsp;";
 						}
-						updownImg+='<img src="images/up.png" onclick="ChangeDeviceOrder(0,' + item.idx + ');" onmouseover="cursorhand()" onmouseout="cursordefault()" width="16" height="16"></img>';
+						updownImg+='<img src="images/up.png" onclick="ChangeDeviceOrder(0,' + item.idx + ');" class="lcursor" width="16" height="16"></img>';
 					}
 					var addId = oTable.fnAddData( {
 						"DT_RowId": item.idx,

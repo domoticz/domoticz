@@ -259,10 +259,10 @@ function ShowDevices(filter)
 									(item.Status == 'Group On')||
 									(item.Status.indexOf('Set ') == 0)
 								 ) {
-											itemImage='<img src="images/lightbulb.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowDevices);" onmouseover="cursorhand()" onmouseout="cursordefault()">';
+											itemImage='<img src="images/lightbulb.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowDevices);" class="lcursor">';
 							}
 							else {
-											itemImage='<img src="images/lightbulboff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowDevices);" onmouseover="cursorhand()" onmouseout="cursordefault()">';
+											itemImage='<img src="images/lightbulboff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowDevices);" class="lcursor">';
 							}
           }
           else if (TypeImg.indexOf("dimmer")==0) {
@@ -272,10 +272,10 @@ function ShowDevices(filter)
 									(item.Status == 'Group On')||
 									(item.Status.indexOf('Set ') == 0)
 								 ) {
-											itemImage='<img src="images/dimmer.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowDevices);" onmouseover="cursorhand()" onmouseout="cursordefault()">';
+											itemImage='<img src="images/dimmer.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowDevices);" class="lcursor">';
 							}
 							else {
-											itemImage='<img src="images/dimmeroff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowDevices);" onmouseover="cursorhand()" onmouseout="cursordefault()">';
+											itemImage='<img src="images/dimmeroff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowDevices);" class="lcursor">';
 							}
           }
           else if (TypeImg.indexOf("motion")==0) {

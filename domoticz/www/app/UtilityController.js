@@ -444,11 +444,11 @@ define(['app'], function (app) {
 						'\t      <td>';
 				  if (item.Favorite == 0) {
 					xhtm+=      
-						  '<img src="images/nofavorite.png" title="' + $.i18n('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+						  '<img src="images/nofavorite.png" title="' + $.i18n('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 				  else {
 					xhtm+=      
-						  '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" onmouseover="cursorhand()" onmouseout="cursordefault()">&nbsp;&nbsp;&nbsp;&nbsp;';
+						  '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 
 				  if (typeof item.Counter != 'undefined') {
