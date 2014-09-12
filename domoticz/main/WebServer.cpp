@@ -392,7 +392,6 @@ bool CWebServer::StartServer(const std::string &listenaddress, const std::string
 	RegisterCommandCode("zwavereceiveconfigurationfromothercontroller",boost::bind(&CWebServer::Cmd_ZWaveReceiveConfigurationFromOtherController,this, _1));
 	RegisterCommandCode("zwavesendconfigurationtosecondcontroller",boost::bind(&CWebServer::Cmd_ZWaveSendConfigurationToSecondaryController,this, _1));
 	RegisterCommandCode("zwavetransferprimaryrole",boost::bind(&CWebServer::Cmd_ZWaveTransferPrimaryRole,this, _1));
-	RegisterCommandCode("zwavetransferprimaryrole",boost::bind(&CWebServer::Cmd_ZWaveTransferPrimaryRole,this, _1));
 	RegisterCommandCode("zwavestartusercodeenrollmentmode", boost::bind(&CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode, this, _1));
 	RegisterCommandCode("zwavegetusercodes", boost::bind(&CWebServer::Cmd_ZWaveGetNodeUserCodes, this, _1));
 	RegisterCommandCode("zwaveremoveusercode", boost::bind(&CWebServer::Cmd_ZWaveRemoveUserCode, this, _1));
@@ -532,6 +531,12 @@ void CWebServer::Cmd_LoginCheck(Json::Value &root)
 
 void CWebServer::Cmd_AddHardware(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string name=m_pWebEm->FindValue("name");
 	std::string senabled=m_pWebEm->FindValue("enabled");
 	std::string shtype=m_pWebEm->FindValue("htype");
@@ -651,6 +656,12 @@ void CWebServer::Cmd_AddHardware(Json::Value &root)
 
 void CWebServer::Cmd_UpdateHardware(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
@@ -814,6 +825,12 @@ void CWebServer::Cmd_WOLGetNodes(Json::Value &root)
 
 void CWebServer::Cmd_WOLAddNode(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string hwid=m_pWebEm->FindValue("idx");
 	std::string name=m_pWebEm->FindValue("name");
 	std::string mac=m_pWebEm->FindValue("mac");
@@ -838,6 +855,12 @@ void CWebServer::Cmd_WOLAddNode(Json::Value &root)
 
 void CWebServer::Cmd_WOLUpdateNode(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string hwid=m_pWebEm->FindValue("idx");
 	std::string nodeid=m_pWebEm->FindValue("nodeid");
 	std::string name=m_pWebEm->FindValue("name");
@@ -865,6 +888,12 @@ void CWebServer::Cmd_WOLUpdateNode(Json::Value &root)
 
 void CWebServer::Cmd_WOLRemoveNode(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string hwid=m_pWebEm->FindValue("idx");
 	std::string nodeid=m_pWebEm->FindValue("nodeid");
 	if (
@@ -888,6 +917,12 @@ void CWebServer::Cmd_WOLRemoveNode(Json::Value &root)
 
 void CWebServer::Cmd_WOLClearNodes(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string hwid=m_pWebEm->FindValue("idx");
 	if (hwid=="")
 		return;
@@ -906,6 +941,12 @@ void CWebServer::Cmd_WOLClearNodes(Json::Value &root)
 
 void CWebServer::Cmd_SaveFibaroLinkConfig(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string remote=m_pWebEm->FindValue("remote");
 	std::string username=m_pWebEm->FindValue("username");
 	std::string password=m_pWebEm->FindValue("password");
@@ -1047,6 +1088,12 @@ void CWebServer::Cmd_SaveFibaroLink(Json::Value &root)
 
 void CWebServer::Cmd_DeleteFibaroLink(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
@@ -1207,6 +1254,12 @@ void CWebServer::Cmd_AllowNewHardware(Json::Value &root)
 
 void CWebServer::Cmd_DeleteHardware(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
@@ -1283,6 +1336,12 @@ void CWebServer::RType_OpenZWaveNodes(Json::Value &root)
 
 void CWebServer::Cmd_ZWaveUpdateNode(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
@@ -1322,6 +1381,12 @@ void CWebServer::Cmd_ZWaveUpdateNode(Json::Value &root)
 
 void CWebServer::Cmd_ZWaveDeleteNode(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
@@ -1350,6 +1415,12 @@ void CWebServer::Cmd_ZWaveDeleteNode(Json::Value &root)
 
 void CWebServer::Cmd_ZWaveInclude(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
@@ -1365,6 +1436,12 @@ void CWebServer::Cmd_ZWaveInclude(Json::Value &root)
 
 void CWebServer::Cmd_ZWaveExclude(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
@@ -1380,6 +1457,12 @@ void CWebServer::Cmd_ZWaveExclude(Json::Value &root)
 
 void CWebServer::Cmd_ZWaveSoftReset(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
@@ -1395,6 +1478,12 @@ void CWebServer::Cmd_ZWaveSoftReset(Json::Value &root)
 
 void CWebServer::Cmd_ZWaveHardReset(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
@@ -1427,6 +1516,12 @@ void CWebServer::Cmd_ZWaveStateCheck(Json::Value &root)
 
 void CWebServer::Cmd_ZWaveNetworkHeal(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
@@ -1442,6 +1537,12 @@ void CWebServer::Cmd_ZWaveNetworkHeal(Json::Value &root)
 
 void CWebServer::Cmd_ZWaveNodeHeal(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
@@ -1460,6 +1561,12 @@ void CWebServer::Cmd_ZWaveNodeHeal(Json::Value &root)
 
 void CWebServer::Cmd_ZWaveNetworkInfo(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	root["title"]="ZWaveNetworkInfo";
 
 	std::string idx=m_pWebEm->FindValue("idx");
@@ -1515,6 +1622,12 @@ void CWebServer::Cmd_ZWaveNetworkInfo(Json::Value &root)
 
 void CWebServer::Cmd_ZWaveRemoveGroupNode(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
@@ -1539,6 +1652,12 @@ void CWebServer::Cmd_ZWaveRemoveGroupNode(Json::Value &root)
 
 void CWebServer::Cmd_ZWaveAddGroupNode(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
@@ -1647,6 +1766,12 @@ void CWebServer::Cmd_ZWaveCancel(Json::Value &root)
 
 void CWebServer::Cmd_ApplyZWaveNodeConfig(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	std::string svaluelist=m_pWebEm->FindValue("valuelist");
 	if (
@@ -1702,6 +1827,12 @@ void CWebServer::Cmd_ZWaveRequestNodeConfig(Json::Value &root)
 
 void CWebServer::Cmd_ZWaveReceiveConfigurationFromOtherController(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
@@ -1717,6 +1848,12 @@ void CWebServer::Cmd_ZWaveReceiveConfigurationFromOtherController(Json::Value &r
 
 void CWebServer::Cmd_ZWaveSendConfigurationToSecondaryController(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
@@ -1732,6 +1869,12 @@ void CWebServer::Cmd_ZWaveSendConfigurationToSecondaryController(Json::Value &ro
 
 void CWebServer::Cmd_ZWaveTransferPrimaryRole(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="")
 		return;
@@ -1769,6 +1912,12 @@ std::string CWebServer::ZWaveGetConfigFile()
 
 void CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	if (idx == "")
 		return;
@@ -1784,6 +1933,12 @@ void CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode(Json::Value &root)
 
 void CWebServer::Cmd_ZWaveRemoveUserCode(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	std::string scodeindex = m_pWebEm->FindValue("codeindex");
 	if (
@@ -1876,6 +2031,12 @@ void CWebServer::Cmd_GetLog(Json::Value &root)
 //Plan Functions
 void CWebServer::Cmd_AddPlan(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string name = m_pWebEm->FindValue("name");
 	root["status"] = "OK";
 	root["title"] = "AddPlan";
@@ -1889,6 +2050,12 @@ void CWebServer::Cmd_AddPlan(Json::Value &root)
 
 void CWebServer::Cmd_UpdatePlan(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	if (idx == "")
 		return;
@@ -1912,6 +2079,12 @@ void CWebServer::Cmd_UpdatePlan(Json::Value &root)
 
 void CWebServer::Cmd_DeletePlan(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	if (idx == "")
 		return;
@@ -2006,6 +2179,12 @@ void CWebServer::Cmd_GetUnusedPlanDevices(Json::Value &root)
 
 void CWebServer::Cmd_AddPlanActiveDevice(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	std::string sactivetype = m_pWebEm->FindValue("activetype");
 	std::string activeidx = m_pWebEm->FindValue("activeidx");
@@ -2101,6 +2280,12 @@ void CWebServer::Cmd_GetPlanDevices(Json::Value &root)
 
 void CWebServer::Cmd_DeletePlanDevice(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	if (idx == "")
 		return;
@@ -2131,6 +2316,12 @@ void CWebServer::Cmd_SetPlanDeviceCoords(Json::Value &root)
 
 void CWebServer::Cmd_DeleteAllPlanDevices(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	if (idx == "")
 		return;
@@ -6092,12 +6283,12 @@ char * CWebServer::DisplayLanguageCombo()
 	int ii=0;
 	while (guiLanguage[ii].szShort!=NULL)
 	{
-		_ltypes[guiLanguage[ii].szShort]=guiLanguage[ii].szLong;
+		_ltypes[guiLanguage[ii].szLong] = guiLanguage[ii].szShort;
 		ii++;
 	}
 	for (itt=_ltypes.begin(); itt!=_ltypes.end(); ++itt)
 	{
-		sprintf(szTmp,"<option value=\"%s\">%s</option>\n",itt->first.c_str(),itt->second.c_str());
+		sprintf(szTmp, "<option value=\"%s\">%s</option>\n", itt->second.c_str(), itt->first.c_str());
 		m_retstr+=szTmp;
 
 	}
@@ -6364,6 +6555,12 @@ char * CWebServer::PostSettings()
 {
 	m_retstr="/index.html";
 
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return (char*)m_retstr.c_str();
+	}
+
 	std::string Latitude=m_pWebEm->FindValue("Latitude");
 	std::string Longitude=m_pWebEm->FindValue("Longitude");
 	if ( (Latitude!="")&&(Longitude!="") )
@@ -6445,6 +6642,12 @@ char * CWebServer::PostSettings()
 	}
 	//add local hostname
 	m_pWebEm->AddLocalNetworks("");
+
+	if (m_pWebEm->m_actualuser == "")
+	{
+		//Local network could be changed so lets for a check here
+		m_pWebEm->m_actualuser_rights = -1;
+	}
 
 	std::string SecPassword=m_pWebEm->FindValue("SecPassword");
 	SecPassword=CURLEncode::URLDecode(SecPassword);
@@ -6598,7 +6801,13 @@ char * CWebServer::PostSettings()
 
 char * CWebServer::SMASpotImportOldData()
 {
-	m_retstr = "";
+	m_retstr = "/index.html";
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return (char*)m_retstr.c_str();
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	if (idx == "") {
 		return (char*)m_retstr.c_str();
@@ -6613,13 +6822,18 @@ char * CWebServer::SMASpotImportOldData()
 			pSMASpot->ImportOldMonthData();
 		}
 	}
-	m_retstr = "/index.html";
 	return (char*)m_retstr.c_str();
 }
 
 char * CWebServer::SetOpenThermSettings()
 {
-	m_retstr="";
+	m_retstr = "/index.html";
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return (char*)m_retstr.c_str();
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="") {
 		return (char*)m_retstr.c_str();
@@ -6634,7 +6848,6 @@ char * CWebServer::SetOpenThermSettings()
 	if (result.size()<1)
 		return (char*)m_retstr.c_str();
 
-	m_retstr="/index.html";
 
 	int currentMode1=atoi(result[0][0].c_str());
 
@@ -6652,7 +6865,14 @@ char * CWebServer::SetOpenThermSettings()
 
 char * CWebServer::SetRFXCOMMode()
 {
-	m_retstr="";
+	m_retstr = "/index.html";
+
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return (char*)m_retstr.c_str();
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="") {
 		return (char*)m_retstr.c_str();
@@ -6666,8 +6886,6 @@ char * CWebServer::SetRFXCOMMode()
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return (char*)m_retstr.c_str();
-
-	m_retstr="/index.html";
 
 	unsigned char Mode1=atoi(result[0][0].c_str());
 	unsigned char Mode2=atoi(result[0][1].c_str());
@@ -6715,7 +6933,13 @@ char * CWebServer::SetRFXCOMMode()
 
 char * CWebServer::SetRego6XXType()
 {
-	m_retstr="";
+	m_retstr = "/index.html";
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return (char*)m_retstr.c_str();
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="") {
 		return (char*)m_retstr.c_str();
@@ -6729,8 +6953,6 @@ char * CWebServer::SetRego6XXType()
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return (char*)m_retstr.c_str();
-
-	m_retstr="/index.html";
 
     unsigned char currentMode1=atoi(result[0][0].c_str());
 
@@ -6747,20 +6969,31 @@ char * CWebServer::SetRego6XXType()
 
 char * CWebServer::RestoreDatabase()
 {
-	m_retstr="";
+	m_retstr = "/index.html";
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return (char*)m_retstr.c_str();
+	}
+
 	std::string dbasefile=m_pWebEm->FindValue("dbasefile");
 	if (dbasefile=="") {
 		return (char*)m_retstr.c_str();
 	}
 	if (!m_sql.RestoreDatabase(dbasefile))
 		return (char*)m_retstr.c_str();
-	m_retstr="/index.html";
 	return (char*)m_retstr.c_str();
 }
 
 char * CWebServer::SetP1USBType()
 {
-	m_retstr="";
+	m_retstr = "/index.html";
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return (char*)m_retstr.c_str();
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="") {
 		return (char*)m_retstr.c_str();
@@ -6775,8 +7008,6 @@ char * CWebServer::SetP1USBType()
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return (char*)m_retstr.c_str();
-
-	m_retstr="/index.html";
 
 	int Mode1=atoi(m_pWebEm->FindValue("P1Baudrate").c_str());
 	int Mode2=0;
@@ -6792,7 +7023,13 @@ char * CWebServer::SetP1USBType()
 
 char * CWebServer::SetS0MeterType()
 {
-	m_retstr="";
+	m_retstr = "/index.html";
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return (char*)m_retstr.c_str();
+	}
+
 	std::string idx=m_pWebEm->FindValue("idx");
 	if (idx=="") {
 		return (char*)m_retstr.c_str();
@@ -6807,8 +7044,6 @@ char * CWebServer::SetS0MeterType()
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return (char*)m_retstr.c_str();
-
-	m_retstr="/index.html";
 
 	int Mode1=atoi(m_pWebEm->FindValue("S0M1Type").c_str());
 	int Mode2=atoi(m_pWebEm->FindValue("M1PulsesPerHour").c_str());
@@ -6824,8 +7059,13 @@ char * CWebServer::SetS0MeterType()
 
 char * CWebServer::SetLimitlessType()
 {
-	m_retstr="";
-	std::string idx=m_pWebEm->FindValue("idx");
+	m_retstr = "/index.html";
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return (char*)m_retstr.c_str();
+	}
+	std::string idx = m_pWebEm->FindValue("idx");
 	if (idx=="") {
 		return (char*)m_retstr.c_str();
 	}
@@ -6839,8 +7079,6 @@ char * CWebServer::SetLimitlessType()
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return (char*)m_retstr.c_str();
-
-	m_retstr="/index.html";
 
 	int Mode1=atoi(m_pWebEm->FindValue("LimitlessType").c_str());
 	int Mode2=atoi(result[0][1].c_str());
@@ -8818,6 +9056,12 @@ std::string CWebServer::GetDatabaseBackup()
 
 void CWebServer::RType_DeleteDevice(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	if (idx == "")
 		return;
@@ -8830,6 +9074,12 @@ void CWebServer::RType_DeleteDevice(Json::Value &root)
 
 void CWebServer::RType_AddScene(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string name = m_pWebEm->FindValue("name");
 	if (name == "")
 	{
@@ -8863,6 +9113,12 @@ void CWebServer::RType_AddScene(Json::Value &root)
 
 void CWebServer::RType_DeleteScene(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	if (idx == "")
 		return;
@@ -8879,6 +9135,12 @@ void CWebServer::RType_DeleteScene(Json::Value &root)
 
 void CWebServer::RType_UpdateScene(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	std::string name = m_pWebEm->FindValue("name");
 	if ((idx == "") || (name == ""))
@@ -8913,6 +9175,12 @@ void CWebServer::RType_UpdateScene(Json::Value &root)
 
 void CWebServer::RType_CreateVirtualSensor(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	std::string ssensortype = m_pWebEm->FindValue("sensortype");
 	if ((idx == "") || (ssensortype == ""))
@@ -9463,6 +9731,12 @@ void CWebServer::RType_Timers(Json::Value &root)
 
 void CWebServer::Cmd_AddTimer(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	std::string active = m_pWebEm->FindValue("active");
 	std::string stimertype = m_pWebEm->FindValue("timertype");
@@ -9533,6 +9807,12 @@ void CWebServer::Cmd_AddTimer(Json::Value &root)
 
 void CWebServer::Cmd_UpdateTimer(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	std::string active = m_pWebEm->FindValue("active");
 	std::string stimertype = m_pWebEm->FindValue("timertype");
@@ -9602,6 +9882,12 @@ void CWebServer::Cmd_UpdateTimer(Json::Value &root)
 
 void CWebServer::Cmd_DeleteTimer(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	if (idx == "")
 		return;
@@ -9618,6 +9904,12 @@ void CWebServer::Cmd_DeleteTimer(Json::Value &root)
 
 void CWebServer::Cmd_ClearTimers(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	if (idx == "")
 		return;
@@ -9693,6 +9985,12 @@ void CWebServer::RType_SceneTimers(Json::Value &root)
 
 void CWebServer::Cmd_AddSceneTimer(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	std::string active = m_pWebEm->FindValue("active");
 	std::string stimertype = m_pWebEm->FindValue("timertype");
@@ -9760,6 +10058,12 @@ void CWebServer::Cmd_AddSceneTimer(Json::Value &root)
 
 void CWebServer::Cmd_UpdateSceneTimer(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	std::string active = m_pWebEm->FindValue("active");
 	std::string stimertype = m_pWebEm->FindValue("timertype");
@@ -9827,6 +10131,12 @@ void CWebServer::Cmd_UpdateSceneTimer(Json::Value &root)
 
 void CWebServer::Cmd_DeleteSceneTimer(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	if (idx == "")
 		return;
@@ -9843,6 +10153,12 @@ void CWebServer::Cmd_DeleteSceneTimer(Json::Value &root)
 
 void CWebServer::Cmd_ClearSceneTimers(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	if (idx == "")
 		return;
@@ -9859,6 +10175,12 @@ void CWebServer::Cmd_ClearSceneTimers(Json::Value &root)
 
 void CWebServer::Cmd_SetSceneCode(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	std::string cmnd = m_pWebEm->FindValue("cmnd");
 	if (
@@ -9901,6 +10223,12 @@ void CWebServer::Cmd_SetSceneCode(Json::Value &root)
 
 void CWebServer::Cmd_RemoveSceneCode(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	if (idx == "")
 		return;
@@ -10099,6 +10427,12 @@ void CWebServer::RType_SetSharedUserDevices(Json::Value &root)
 
 void CWebServer::RType_SetUsed(Json::Value &root)
 {
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
 	std::string idx = m_pWebEm->FindValue("idx");
 	std::string name = m_pWebEm->FindValue("name");
 	std::string sused = m_pWebEm->FindValue("used");

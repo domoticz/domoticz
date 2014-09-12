@@ -248,6 +248,7 @@ height:100%;
 	color: #FFFFFF;
 	outline: none;
 	cursor: pointer;
+	overflow: hidden;
 }
 
 .btnstyle-sel {
@@ -264,6 +265,7 @@ height:100%;
 	color: #FFFFFF;
 	outline: none;
 	cursor: pointer;
+	overflow: hidden;
 }
 
 .btnstylerev {
@@ -280,6 +282,7 @@ height:100%;
 	color: #FFFFFF;
 	outline: none;
 	cursor: pointer;
+	overflow: hidden;
 }
 
 .btnstyle3 {

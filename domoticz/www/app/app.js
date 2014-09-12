@@ -1,6 +1,8 @@
 define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control','ngDraggable'], function (angularAMD) {
 	var app = angular.module('domoticz', ['ngRoute','ngAnimate','ngGrid','highcharts-ng', 'treeControl','ngDraggable']);
 
+		isOnline=false;
+
 	  app.factory('permissions', function ($rootScope) {
 		var permissionList;
 		return {
@@ -162,6 +164,10 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				templateUrl: 'views/logout.html',
 				controller: 'LogoutController'
 			  })).
+			  when('/Offline', angularAMD.route({
+				templateUrl: 'views/offline.html',
+				controller: 'OfflineController'
+			  })).
 			  when('/Notification', angularAMD.route({
 				templateUrl: 'views/notification.html',
 				controller: 'NotificationController'
@@ -263,35 +269,53 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 	
 	app.run(function($rootScope, $location, $route, permissions) {
 		$rootScope.$on("$routeChangeStart", function (scope, next, current) {
-			if ( (!permissions.isAuthenticated()) && (next.templateUrl!="views/login.html") ) {
-				$location.path('/Login');
-				return;
+			if (!isOnline) {
+				$location.path('/Offline');
 			}
-			else if ( (permissions.isAuthenticated()) && (next.templateUrl=="views/login.html") ) {
-				$location.path('/Dashboard');
-				return;
-			}
-			
-			if (next && next.$$route && next.$$route.permission) {
-				var permission = next.$$route.permission;
-				if(!permissions.hasPermission(permission)) {
+			else {
+				if (next.templateUrl=="views/offline.html") {
+					if (!isOnline) {
+						//thats ok
+					} else {
+						//lets dont go to the offline page when we are online
+						$location.path('/Dashboard');
+					}
+					return;
+				}
+				if ( (!permissions.isAuthenticated()) && (next.templateUrl!="views/login.html") ) {
+					$location.path('/Login');
+					return;
+				}
+				else if ( (permissions.isAuthenticated()) && (next.templateUrl=="views/login.html") ) {
 					$location.path('/Dashboard');
+					return;
+				}
+				
+				if (next && next.$$route && next.$$route.permission) {
+					var permission = next.$$route.permission;
+					if(!permissions.hasPermission(permission)) {
+						$location.path('/Dashboard');
+					}
 				}
 			}
         });
         permissions.setPermissions(permissionList);
 	});
 
+	
+
 	$.ajax({
 	 url: "json.htm?type=command&param=getversion",
 	 async: true, 
 	 dataType: 'json',
 	 success: function(data) {
+		isOnline = true;
 		if (data.status == "OK") {
 			$( "#appversion" ).text("V" + data.version);
 		}
 	 },
 	 error: function(){
+		isOnline=false;
 	 }
 	});
 	permissionList = {
@@ -303,10 +327,14 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 	 async: false, 
 	 dataType: 'json',
 	 success: function(data) {
+		isOnline = true;
 		if (data.status == "OK") {
 			permissionList.isloggedin=(data.user!="");
 			permissionList.rights=parseInt(data.rights);
 		}
+	 },
+	 error: function() {
+		isOnline=false;
 	 }
 	});
 	

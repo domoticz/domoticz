@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 565
+# ref 566
 
 CACHE:
 # CSS
@@ -455,6 +455,7 @@ views/history.html
 views/lights.html
 views/log.html
 views/notification.html
+views/offline.html
 views/restoredatabase.html
 views/roomplan.html
 views/scenes.html
@@ -464,7 +465,6 @@ views/update.html
 views/users.html
 views/utility.html
 views/weather.html
-offline.html
 eventsframe.html
 zwavetopology.html
 secpanel/index.html
@@ -473,8 +473,9 @@ views/login.html
 # Resources that require the user to be online.
 NETWORK:
 index.html
+json.htm
 
 # Fallback content
 FALLBACK:
 /images images/iphone-icon.png
-/ offline.html
+/ views/offline.html
