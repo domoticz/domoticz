@@ -1669,6 +1669,142 @@ bool CEnOceanESP2::ParseData()
 					tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
 					sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);
 				}
+				else if (szST == "OccupancySensor.01")
+				{
+					//(EPP A5-07-01)
+					if (pFrame->DATA_BYTE3 < 251)
+					{
+						RBUF tsen;
+
+						if (pFrame->DATA_BYTE0 & 1)
+						{
+							//Voltage supported
+							float voltage = GetValueRange(pFrame->DATA_BYTE3, 5.0f, 0, 250, 0);
+							memset(&tsen, 0, sizeof(RBUF));
+							tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
+							tsen.RFXSENSOR.packettype = pTypeRFXSensor;
+							tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
+							tsen.RFXSENSOR.id = pFrame->ID_BYTE1;
+							tsen.RFXSENSOR.filler = pFrame->ID_BYTE0 & 0x0F;
+							tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
+							tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
+							tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
+							sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR);
+						}
+
+						bool bPIROn = (pFrame->DATA_BYTE1 > 127);
+						memset(&tsen, 0, sizeof(RBUF));
+						tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
+						tsen.LIGHTING2.packettype = pTypeLighting2;
+						tsen.LIGHTING2.subtype = sTypeAC;
+						tsen.LIGHTING2.seqnbr = 0;
+
+						tsen.LIGHTING2.id1 = (BYTE)pFrame->ID_BYTE3;
+						tsen.LIGHTING2.id2 = (BYTE)pFrame->ID_BYTE2;
+						tsen.LIGHTING2.id3 = (BYTE)pFrame->ID_BYTE1;
+						tsen.LIGHTING2.id4 = (BYTE)pFrame->ID_BYTE0;
+						tsen.LIGHTING2.level = 0;
+						tsen.LIGHTING2.rssi = 12;
+						tsen.LIGHTING2.unitcode = 1;
+						tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);
+					}
+					else {
+						//Error code
+					}
+				}
+				else if (szST == "OccupancySensor.02")
+				{
+					//(EPP A5-07-02)
+					if (pFrame->DATA_BYTE3 < 251)
+					{
+						RBUF tsen;
+
+						float voltage = GetValueRange(pFrame->DATA_BYTE3, 5.0f, 0, 250, 0);
+						memset(&tsen, 0, sizeof(RBUF));
+						tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
+						tsen.RFXSENSOR.packettype = pTypeRFXSensor;
+						tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
+						tsen.RFXSENSOR.id = pFrame->ID_BYTE1;
+						tsen.RFXSENSOR.filler = pFrame->ID_BYTE0 & 0x0F;
+						tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
+						tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
+						tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR);
+
+						bool bPIROn = (pFrame->DATA_BYTE0 & 0x80) != 0;
+						memset(&tsen, 0, sizeof(RBUF));
+						tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
+						tsen.LIGHTING2.packettype = pTypeLighting2;
+						tsen.LIGHTING2.subtype = sTypeAC;
+						tsen.LIGHTING2.seqnbr = 0;
+
+						tsen.LIGHTING2.id1 = (BYTE)pFrame->ID_BYTE3;
+						tsen.LIGHTING2.id2 = (BYTE)pFrame->ID_BYTE2;
+						tsen.LIGHTING2.id3 = (BYTE)pFrame->ID_BYTE1;
+						tsen.LIGHTING2.id4 = (BYTE)pFrame->ID_BYTE0;
+						tsen.LIGHTING2.level = 0;
+						tsen.LIGHTING2.rssi = 12;
+						tsen.LIGHTING2.unitcode = 1;
+						tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);
+					}
+					else {
+						//Error code
+					}
+				}
+				else if (szST == "OccupancySensor.03")
+				{
+					//(EPP A5-07-03)
+					if (pFrame->DATA_BYTE3 < 251)
+					{
+						RBUF tsen;
+
+						float voltage = GetValueRange(pFrame->DATA_BYTE3, 5.0f, 0, 250, 0);
+						memset(&tsen, 0, sizeof(RBUF));
+						tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
+						tsen.RFXSENSOR.packettype = pTypeRFXSensor;
+						tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
+						tsen.RFXSENSOR.id = pFrame->ID_BYTE1;
+						tsen.RFXSENSOR.filler = pFrame->ID_BYTE0 & 0x0F;
+						tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
+						tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
+						tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR);
+
+						int lux = (pFrame->DATA_BYTE2 << 2) | (pFrame->DATA_BYTE1 >> 6);
+						if (lux > 1000)
+							lux = 1000;
+						_tLightMeter lmeter;
+						lmeter.id1 = (BYTE)pFrame->ID_BYTE3;
+						lmeter.id2 = (BYTE)pFrame->ID_BYTE2;
+						lmeter.id3 = (BYTE)pFrame->ID_BYTE1;
+						lmeter.id4 = (BYTE)pFrame->ID_BYTE0;
+						lmeter.dunit = 1;
+						lmeter.fLux = (float)lux;
+						sDecodeRXMessage(this, (const unsigned char *)&lmeter);
+
+						bool bPIROn = (pFrame->DATA_BYTE0 & 0x80) != 0;
+						memset(&tsen, 0, sizeof(RBUF));
+						tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
+						tsen.LIGHTING2.packettype = pTypeLighting2;
+						tsen.LIGHTING2.subtype = sTypeAC;
+						tsen.LIGHTING2.seqnbr = 0;
+
+						tsen.LIGHTING2.id1 = (BYTE)pFrame->ID_BYTE3;
+						tsen.LIGHTING2.id2 = (BYTE)pFrame->ID_BYTE2;
+						tsen.LIGHTING2.id3 = (BYTE)pFrame->ID_BYTE1;
+						tsen.LIGHTING2.id4 = (BYTE)pFrame->ID_BYTE0;
+						tsen.LIGHTING2.level = 0;
+						tsen.LIGHTING2.rssi = 12;
+						tsen.LIGHTING2.unitcode = 1;
+						tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);
+					}
+					else {
+						//Error code
+					}
+				}
 			}
 		}
 		break;
