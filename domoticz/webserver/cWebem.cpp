@@ -1498,7 +1498,14 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 				{
 					myWebem->m_actualuser_rights = 2;
 				}
-
+				else
+				{
+					if ((!check_authorization(sHost, req, rep)) || (myWebem->m_bForceRelogin))
+					{
+						myWebem->m_actualuser = "";
+						myWebem->m_actualuser_rights = -1;
+					}
+				}
 			}
 		}
 	}
