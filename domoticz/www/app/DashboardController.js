@@ -2554,7 +2554,7 @@ define(['app'], function (app) {
 							status=item.Data;
 						}
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-							xhtm+='override.png" height="40" width="40"></td>\n';
+							xhtm+='override.png" class="lcursor" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40" width="40"></td>\n';
 							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 						}
 						

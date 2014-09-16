@@ -191,7 +191,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			  })).
 			  when('/Temperature', angularAMD.route({
 				templateUrl: 'views/temperature.html',
-				controller: 'TemperateController'
+				controller: 'TemperatureController'
 			  })).
 			  when('/Update', angularAMD.route({
 				templateUrl: 'views/update.html',

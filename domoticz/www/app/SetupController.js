@@ -8,7 +8,8 @@ define(['app'], function (app) {
 		$scope.GetGeoLocation = function() {
 		  $.ajax({
 				url: "https://maps.googleapis.com/maps/api/js?v=3&callback=googleMapsCallback&sensor=false",
-				dataType: "script"
+				dataType: "script",
+				cache: true
 		  });
 		}
 

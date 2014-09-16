@@ -1990,6 +1990,7 @@ a:link {
 .norm-link, .norm-link a, .norm-link a:link, .norm-link a:active, .norm-link a:visited, .norm-link href {
 	color: #43A4D3;
 	font-weight:bold;
+	cursor: pointer;
 }
 
 .lcursor {

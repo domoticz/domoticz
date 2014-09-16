@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('TemperateController', [ '$scope', '$location', '$http', '$interval', function($scope,$location,$http,$interval) {
+	app.controller('TemperatureController', [ '$scope', '$location', '$http', '$interval', function($scope,$location,$http,$interval) {
 
 		MakeFavorite = function(id,isfavorite)
 		{

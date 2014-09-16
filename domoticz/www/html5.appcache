@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 566
+# ref 568
 
 CACHE:
 # CSS
@@ -378,7 +378,7 @@ app/RestoreDatabaseController.js
 app/RoomplanController.js
 app/ScenesController.js
 app/SetupController.js
-app/TemperateController.js
+app/TemperatureController.js
 app/UpdateController.js
 app/UsersController.js
 app/UserVariablesController.js
@@ -474,6 +474,7 @@ views/login.html
 NETWORK:
 index.html
 json.htm
+*
 
 # Fallback content
 FALLBACK:
