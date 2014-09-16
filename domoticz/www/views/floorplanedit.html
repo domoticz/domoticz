@@ -47,7 +47,7 @@
 	<br>
 	<h2 data-i18n="Room Plans">Room Plans</h2>(<span data-i18n="Select Floorplan first to Edit...">Select Floorplan first to Edit...</span>)<br>
 	<br>
-	<table class="display" id="plantable" border="0" cellpadding="0" cellspacing="0" width="100%">
+	<table class="display" id="plantable2" border="0" cellpadding="0" cellspacing="0" width="100%">
 		<thead>
 				<tr valign="middle">
 					<th align="left" data-i18n="Name">Name</th>
@@ -252,10 +252,10 @@ function SetButtonStates() {
 			$('#floorplancontent #delclractive #activeplanadd').attr("class", "btnstyle3");
 		}
 		
-		anSelected = fnGetSelected( $('#plantable').dataTable() );
+		anSelected = fnGetSelected( $('#plantable2').dataTable() );
 		if ( anSelected.length !== 0 ) {
 			$('#floorplancontent #delclractive #activeplandelete').attr("class", "btnstyle3");
-			var data = $('#plantable').dataTable().fnGetData( anSelected[0] );
+			var data = $('#plantable2').dataTable().fnGetData( anSelected[0] );
 			if (data["Area"].length != 0 ) {
 				$('#floorplancontent #delclractive #activeplanclear').attr("class", "btnstyle3");
 			}
@@ -467,7 +467,7 @@ function RefreshFloorPlanTable() {
 	clearInterval($.myglobals.refreshTimer);
 	Device.initialise();
 
-	var oTable = $('#floorplancontent #plantable').dataTable();
+	var oTable = $('#floorplancontent #plantable2').dataTable();
 	oTable.fnClearTable();
 	oTable = $('#floorplantable').dataTable();
 	oTable.fnClearTable();
@@ -605,7 +605,7 @@ function ShowFloorplans() {
 		"sPaginationType": "full_numbers"
 		} );
 
-	oTable = $('#plantable').dataTable( {
+	oTable = $('#plantable2').dataTable( {
 		"sDom": '<"H"lfrC>t<"F"ip>',
 		"oTableTools": {
 			"sRowSelect": "single",
@@ -652,7 +652,7 @@ function RefreshPlanTable(idx) {
 	$("#firstclick").remove();
 
 	clearInterval($.myglobals.refreshTimer);
-	var oTable = $('#floorplancontent #plantable').dataTable();
+	var oTable = $('#floorplancontent #plantable2').dataTable();
 	oTable.fnClearTable();
 	Device.initialise();
   
@@ -677,7 +677,7 @@ function RefreshPlanTable(idx) {
 					planGroup.appendChild(el);
 				});
 				/* Add a click handler to the rows - this could be used as a callback */
-				$("#floorplancontent #plantable tbody tr").click( function( e ) {
+				$("#floorplancontent #plantable2 tbody tr").click( function( e ) {
 					// if we are zoomed in, zoom out before changing rooms by faking a click in the polygon
 					if ($("#floorplangroup")[0].getAttribute("zoomed") == "true") {
 						PolyClick();
