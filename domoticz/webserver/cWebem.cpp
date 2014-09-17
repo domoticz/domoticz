@@ -1272,6 +1272,8 @@ int cWebemRequestHandler::check_authorization(const std::string &sHost, const re
 				if (req.uri.find("dologout")!=std::string::npos)
 				{
 					myWebem->m_sessionids.erase(itt);
+					m_failcounter = 0;
+					myWebem->m_actsessionid = 0;
 					myWebem->m_bForceRelogin=true;
 					send_remove_cookie(rep);
 				}
@@ -1288,6 +1290,7 @@ int cWebemRequestHandler::check_authorization(const std::string &sHost, const re
 					else
 					{
 						//timeout, remove session
+						m_failcounter = 0;
 						myWebem->m_sessionids.erase(itt);
 						send_remove_cookie(rep);
 					}
@@ -1482,6 +1485,12 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 			{
 				if ((!check_authorization(sHost, req, rep)) || (myWebem->m_bForceRelogin))
 				{
+					if (m_failcounter > 2)
+					{
+						m_failcounter = 0;
+						rep = reply::stock_reply(reply::service_unavailable);
+						return;
+					}
 					myWebem->m_bForceRelogin = false;
 					send_authorization_request(rep);
 					return;

@@ -221,26 +221,33 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				redirectTo: '/Dashboard'
 			  });
 	});
-	/*
-	app.config(['$httpProvider',function($httpProvider) {
-		//Http Intercpetor to check auth failures for xhr requests
-		$httpProvider.interceptors.push('securityInterceptor');
-		//$httpProvider.responseInterceptors.push('securityInterceptor');
-	}]);
-
-	app.provider('securityInterceptor', function() {
-		this.$get = function($location, $q) {
-			return function(promise) {
-				return promise.then(null, function(response) {
-					if(response.status === 403 || response.status === 401) {
-						$location.path('/Login');
+	
+	app.config(function($httpProvider) {
+		var logsOutUserOn401 = ['$q', '$location', function ($q, $location) {
+			return {
+				request: function (config) {
+					return config || $q.when(config);
+				},
+				requestError: function(request){
+					return $q.reject(request);
+				},
+				response: function (response) {
+					//alert("response: " + response.status);
+					return response || $q.when(response);
+				},
+				responseError: function (response) {
+					//alert("responseError: " + response.status);
+					if (response && response.status === 404) {
+					}
+					if (response && response.status >= 500) {
 					}
 					return $q.reject(response);
-				});
+				}
 			};
-		};
+		}];
+		$httpProvider.interceptors.push(logsOutUserOn401);
 	});
-	*/
+
 	app.controller('NavbarController', function ($scope, $location) {
 		$scope.getClass = function (path) {
 			if ($location.path().substr(0, path.length) == path) {
@@ -268,6 +275,43 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 
 	
 	app.run(function($rootScope, $location, $route, permissions) {
+		var permissionList = {
+				isloggedin: false,
+				rights: -1
+		};
+		EnableDisableTabs();
+		CheckForUpdate(false);
+
+		$.ajax({
+		 url: "json.htm?type=command&param=getversion",
+		 async: true, 
+		 dataType: 'json',
+		 success: function(data) {
+			isOnline = true;
+			if (data.status == "OK") {
+				$( "#appversion" ).text("V" + data.version);
+			}
+		 },
+		 error: function(){
+			isOnline=false;
+		 }
+		});
+		$.ajax({
+		 url: "json.htm?type=command&param=getauth",
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			isOnline = true;
+			if (data.status == "OK") {
+				permissionList.isloggedin=(data.user!="");
+				permissionList.rights=parseInt(data.rights);
+			}
+		 },
+		 error: function() {
+			isOnline=false;
+		 }
+		});
+	
 		$rootScope.$on("$routeChangeStart", function (scope, next, current) {
 			if (!isOnline) {
 				$location.path('/Offline');
@@ -302,43 +346,6 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
         permissions.setPermissions(permissionList);
 	});
 
-	
-
-	$.ajax({
-	 url: "json.htm?type=command&param=getversion",
-	 async: true, 
-	 dataType: 'json',
-	 success: function(data) {
-		isOnline = true;
-		if (data.status == "OK") {
-			$( "#appversion" ).text("V" + data.version);
-		}
-	 },
-	 error: function(){
-		isOnline=false;
-	 }
-	});
-	permissionList = {
-			isloggedin: false,
-			rights: -1
-	};
-	$.ajax({
-	 url: "json.htm?type=command&param=getauth",
-	 async: false, 
-	 dataType: 'json',
-	 success: function(data) {
-		isOnline = true;
-		if (data.status == "OK") {
-			permissionList.isloggedin=(data.user!="");
-			permissionList.rights=parseInt(data.rights);
-		}
-	 },
-	 error: function() {
-		isOnline=false;
-	 }
-	});
-	
-	
     // Bootstrap Angular when DOM is ready
     return angularAMD.bootstrap(app);
 }); 
