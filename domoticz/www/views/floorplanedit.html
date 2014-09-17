@@ -51,7 +51,7 @@
 		<thead>
 				<tr valign="middle">
 					<th align="left" data-i18n="Name">Name</th>
-					<th width="60" align="left" data-i18n="Area">Area</th>
+					<th width="160" align="left" data-i18n="Room Area Defined">Room Area Defined</th>
 				</tr>
 		</thead>
 	</table>
@@ -669,7 +669,7 @@ function RefreshPlanTable(idx) {
 						"DT_RowId": item.idx,
 						"Area": item.Area,
 						"0": item.Name,
-						"1": ((item.Area.length == 0) ? '' : '<img src="images/ok.png"/>'),
+						"1": ((item.Area.length == 0) ? '<img src="images/failed.png"/>' : '<img src="images/ok.png"/>'),
 						"2": item.Area
 					} );
 					var el = makeSVGnode('polygon', { id: item.Name + "_Room", 'class':"nothoverable", points: item.Area }, '');
