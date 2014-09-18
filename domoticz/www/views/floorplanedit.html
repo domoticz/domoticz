@@ -514,34 +514,35 @@ function RefreshFloorPlanTable() {
 		$('#floorplantable tbody').off()
 								  .on( 'click', 'tr', function () {
 			$.devIdx=-1;
-
-			if ( $(this).hasClass('row_selected') ) {
-				$(this).removeClass('row_selected');
-				$("#dialog-add-edit-floorplan #floorplanname").val("");
-				$("#dialog-add-edit-floorplan #imagename").val("");
-				RefreshPlanTable(-1);
-				$("#floorplanimage").attr("xlink:href", "");
-				$("#floorplanimagesize").attr("src", "");
-			}
-			else {
-				oTable.$('tr.row_selected').removeClass('row_selected');
-				$(this).addClass('row_selected');
-				var anSelected = fnGetSelected( oTable );
-				if ( anSelected.length !== 0 ) {
-					var data = oTable.fnGetData( anSelected[0] );
-					var idx= data["DT_RowId"];
-					$.devIdx=idx;
-					$("#updelclr #floorplanedit").attr("href", "javascript:EditFloorplan(" + idx + ")");
-					$("#updelclr #floorplandelete").attr("href", "javascript:DeleteFloorplan(" + idx + ")");
-					$("#dialog-add-edit-floorplan #floorplanname").val(data["Name"]);
-					$("#dialog-add-edit-floorplan #imagename").val(data["Image"]);
-					RefreshPlanTable(idx);
-					$("#floorplanimage").attr("xlink:href", data["Image"]);
-					$("#floorplanimagesize").attr("src", data["Image"]);
-					SVGResize();
+			ConfirmNoUpdate(this, function( param ){
+				if ( $(param).hasClass('row_selected') ) {
+					$(param).removeClass('row_selected');
+					$("#dialog-add-edit-floorplan #floorplanname").val("");
+					$("#dialog-add-edit-floorplan #imagename").val("");
+					RefreshPlanTable(-1);
+					$("#floorplanimage").attr("xlink:href", "");
+					$("#floorplanimagesize").attr("src", "");
 				}
-			}
-			SetButtonStates();
+				else {
+					oTable.$('tr.row_selected').removeClass('row_selected');
+					$(param).addClass('row_selected');
+					var anSelected = fnGetSelected( oTable );
+					if ( anSelected.length !== 0 ) {
+						var data = oTable.fnGetData( anSelected[0] );
+						var idx= data["DT_RowId"];
+						$.devIdx=idx;
+						$("#updelclr #floorplanedit").attr("href", "javascript:EditFloorplan(" + idx + ")");
+						$("#updelclr #floorplandelete").attr("href", "javascript:DeleteFloorplan(" + idx + ")");
+						$("#dialog-add-edit-floorplan #floorplanname").val(data["Name"]);
+						$("#dialog-add-edit-floorplan #imagename").val(data["Image"]);
+						RefreshPlanTable(idx);
+						$("#floorplanimage").attr("xlink:href", data["Image"]);
+						$("#floorplanimagesize").attr("src", data["Image"]);
+						SVGResize();
+					}
+				}
+				SetButtonStates();
+			});
 		}); 
 	  }
 	 }
@@ -678,38 +679,40 @@ function RefreshPlanTable(idx) {
 				});
 				/* Add a click handler to the rows - this could be used as a callback */
 				$("#floorplancontent #plantable2 tbody tr").click( function( e ) {
-					// if we are zoomed in, zoom out before changing rooms by faking a click in the polygon
-					if ($("#floorplangroup")[0].getAttribute("zoomed") == "true") {
-						PolyClick();
-					}
-					if ( $(this).hasClass('row_selected') ) {
-						$(this).removeClass('row_selected');
-						Device.initialise();
-						$("#roompolyarea").attr("title", "");
-						$("#roompolyarea").attr("points", "");
-						$("#firstclick").remove();
-						$("#floorplangroup").attr("planidx", "");
-						$('#floorplanimage').css('cursor', 'auto');
-					}
-					else {
-						oTable.$('tr.row_selected').removeClass('row_selected');
-						$(this).addClass('row_selected');
-						Device.initialise();
-						var anSelected = fnGetSelected( oTable );
-						if ( anSelected.length !== 0 ) {
-							var data = oTable.fnGetData( anSelected[0] );
-							var idx= data["DT_RowId"];
-							$("#floorplancontent #delclractive #activeplandelete").attr("href", "javascript:DeleteFloorplanPlan(" + idx + ")");
-							$("#floorplancontent #delclractive #activeplanupdate").attr("href", "javascript:UpdateFloorplanPlan(" + idx + ",false)");
-							$("#floorplancontent #delclractive #activeplanclear").attr("href", "javascript:UpdateFloorplanPlan(" + idx + ",true)");
-							$("#roompolyarea").attr("title", data["0"]);
-							$("#roompolyarea").attr("points", data["2"]);
-							$("#floorplangroup").attr("planidx", idx);
-							$('#floorplanimage').css('cursor', 'crosshair');
-							ShowDevices(idx);
-						}
-					}
-					SetButtonStates();
+					ConfirmNoUpdate(this, function( param ){
+							// if we are zoomed in, zoom out before changing rooms by faking a click in the polygon
+							if ($("#floorplangroup")[0].getAttribute("zoomed") == "true") {
+								PolyClick();
+							}
+							if ( $(param).hasClass('row_selected') ) {
+								$(param).removeClass('row_selected');
+								Device.initialise();
+								$("#roompolyarea").attr("title", "");
+								$("#roompolyarea").attr("points", "");
+								$("#firstclick").remove();
+								$("#floorplangroup").attr("planidx", "");
+								$('#floorplanimage').css('cursor', 'auto');
+							}
+							else {
+								oTable.$('tr.row_selected').removeClass('row_selected');
+								$(param).addClass('row_selected');
+								Device.initialise();
+								var anSelected = fnGetSelected( oTable );
+								if ( anSelected.length !== 0 ) {
+									var data = oTable.fnGetData( anSelected[0] );
+									var idx= data["DT_RowId"];
+									$("#floorplancontent #delclractive #activeplandelete").attr("href", "javascript:DeleteFloorplanPlan(" + idx + ")");
+									$("#floorplancontent #delclractive #activeplanupdate").attr("href", "javascript:UpdateFloorplanPlan(" + idx + ",false)");
+									$("#floorplancontent #delclractive #activeplanclear").attr("href", "javascript:UpdateFloorplanPlan(" + idx + ",true)");
+									$("#roompolyarea").attr("title", data["0"]);
+									$("#roompolyarea").attr("points", data["2"]);
+									$("#floorplangroup").attr("planidx", idx);
+									$('#floorplanimage').css('cursor', 'crosshair');
+									ShowDevices(idx);
+								}
+							}
+							SetButtonStates();
+						});
 				}); 
 			}
 		}
@@ -801,6 +804,19 @@ function UpdateFloorplanPlan(planidx,clear) {
 	}
 
 	RefreshPlanTable($.devIdx);
+}
+
+function ConfirmNoUpdate(param, yesFunc) {
+	if ($('#floorplancontent #delclractive #activeplanupdate').attr("class") == "btnstyle3") {
+		bootbox.confirm($.i18n("You have unsaved changes, do you want to continue?"), 
+			function(result) {
+				if (result==true) {
+					yesFunc(param);
+				}
+			});
+	} else {
+		yesFunc(param);
+	}
 }
 
 function DeleteFloorplanPlan(planidx) {
