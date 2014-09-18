@@ -88,7 +88,6 @@ CWebServer::~CWebServer(void)
 	if (m_pWebEm!=NULL)
 		delete m_pWebEm;
 	m_pWebEm=NULL;
-	SaveUsers();
 }
 
 void CWebServer::Do_Work()
@@ -6335,10 +6334,6 @@ void CWebServer::AddUser(const unsigned long ID, const std::string &username, co
 	m_users.push_back(wtmp);
 
 	m_pWebEm->AddUserPassword(ID,username,password,(_eUserRights)userrights);
-}
-
-void CWebServer::SaveUsers()
-{
 }
 
 void CWebServer::ClearUserPasswords()

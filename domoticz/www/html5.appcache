@@ -365,6 +365,7 @@ app/DevicesController.js
 app/DPFibaroController.js
 app/EventsController.js
 app/FloorplanController.js
+app/FloorplanEditController.js
 app/ForecastController.js
 app/FrontpageController.js
 app/HardwareController.js
@@ -372,8 +373,10 @@ app/HistoryController.js
 app/LightsController.js
 app/LogController.js
 app/LoginController.js
+app/LogoutController.js
 app/main.js
 app/NotificationController.js
+app/OfflineController.js
 app/RestoreDatabaseController.js
 app/RoomplanController.js
 app/ScenesController.js

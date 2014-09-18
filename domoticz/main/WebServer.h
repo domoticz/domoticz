@@ -52,7 +52,6 @@ public:
 	cWebem *m_pWebEm;
 
 	void LoadUsers();
-	void SaveUsers();
 	void AddUser(const unsigned long ID, const std::string &username, const std::string &password, const int userrights);
 	void ClearUserPasswords();
 	bool FindAdminUser();

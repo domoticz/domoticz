@@ -130,7 +130,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			  })).
 			  when('/Floorplanedit', angularAMD.route({
 				templateUrl: 'views/floorplanedit.html',
-				controller: 'FloorplanController'
+				controller: 'FloorplanEditController'
 			  })).
 			  when('/Forecast', angularAMD.route({
 				templateUrl: 'views/forecast.html',
