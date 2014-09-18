@@ -182,11 +182,6 @@ bool CWebServer::StartServer(const std::string &listenaddress, const std::string
 	}
 
 	//register callbacks
-	m_pWebEm->RegisterIncludeCode( "versionstr",
-		boost::bind(
-		&CWebServer::DisplayVersion,	// member function
-		this ) );			// instance of class
-
 	m_pWebEm->RegisterIncludeCode( "switchtypes",
 		boost::bind(
 		&CWebServer::DisplaySwitchTypesCombo,	// member function
@@ -202,26 +197,6 @@ bool CWebServer::StartServer(const std::string &listenaddress, const std::string
 		&CWebServer::DisplayHardwareTypesCombo,
 		this ) );
 	
-	m_pWebEm->RegisterIncludeCode( "devicesfordatapush",
-		boost::bind(
-		&CWebServer::DisplayDataPushDevicesCombo,
-		this ) );
-
-	m_pWebEm->RegisterIncludeCode( "onoffdevicesfordatapush",
-		boost::bind(
-		&CWebServer::DisplayDataPushOnOffDevicesCombo,
-		this ) );
-
-	m_pWebEm->RegisterIncludeCode( "combohardware",
-		boost::bind(
-		&CWebServer::DisplayHardwareCombo,
-		this ) );
-
-	m_pWebEm->RegisterIncludeCode( "serialdevices",
-		boost::bind(
-		&CWebServer::DisplaySerialDevicesCombo,
-		this ) );
-
 	m_pWebEm->RegisterIncludeCode( "timertypes",
 		boost::bind(
 		&CWebServer::DisplayTimerTypesCombo,	// member function
@@ -230,11 +205,6 @@ bool CWebServer::StartServer(const std::string &listenaddress, const std::string
 	m_pWebEm->RegisterIncludeCode( "combolanguage",
 		boost::bind(
 		&CWebServer::DisplayLanguageCombo,
-		this ) );
-
-	m_pWebEm->RegisterIncludeCode( "deviceslist",
-		boost::bind(
-		&CWebServer::DisplayDevicesList,
 		this ) );
 
 	m_pWebEm->RegisterPageCode( "/json.htm",
@@ -263,22 +233,22 @@ bool CWebServer::StartServer(const std::string &listenaddress, const std::string
 		//&CWebServer::GetInternalCameraSnapshot,	// member function
 		//this ) );			// instance of class
 	
-	m_pWebEm->RegisterActionCode( "storesettings",boost::bind(&CWebServer::PostSettings,this));
-	m_pWebEm->RegisterActionCode( "setrfxcommode",boost::bind(&CWebServer::SetRFXCOMMode,this));
-	m_pWebEm->RegisterActionCode( "setrego6xxtype",boost::bind(&CWebServer::SetRego6XXType,this));
-	m_pWebEm->RegisterActionCode( "sets0metertype",boost::bind(&CWebServer::SetS0MeterType,this));
-	m_pWebEm->RegisterActionCode( "setlimitlesstype",boost::bind(&CWebServer::SetLimitlessType,this));
-	m_pWebEm->RegisterActionCode( "setopenthermsettings",boost::bind(&CWebServer::SetOpenThermSettings,this));
-	m_pWebEm->RegisterActionCode( "setp1usbtype",boost::bind(&CWebServer::SetP1USBType,this));
-	m_pWebEm->RegisterActionCode( "restoredatabase",boost::bind(&CWebServer::RestoreDatabase,this));
+	m_pWebEm->RegisterActionCode("storesettings", boost::bind(&CWebServer::PostSettings, this));
+	m_pWebEm->RegisterActionCode("setrfxcommode", boost::bind(&CWebServer::SetRFXCOMMode, this));
+	m_pWebEm->RegisterActionCode("setrego6xxtype", boost::bind(&CWebServer::SetRego6XXType, this));
+	m_pWebEm->RegisterActionCode("sets0metertype", boost::bind(&CWebServer::SetS0MeterType, this));
+	m_pWebEm->RegisterActionCode("setlimitlesstype", boost::bind(&CWebServer::SetLimitlessType, this));
+	m_pWebEm->RegisterActionCode("setopenthermsettings", boost::bind(&CWebServer::SetOpenThermSettings, this));
+	m_pWebEm->RegisterActionCode("setp1usbtype", boost::bind(&CWebServer::SetP1USBType, this));
+	m_pWebEm->RegisterActionCode("restoredatabase", boost::bind(&CWebServer::RestoreDatabase, this));
 	m_pWebEm->RegisterActionCode("smaspotimportolddata", boost::bind(&CWebServer::SMASpotImportOldData, this));
 
-	RegisterCommandCode("getlanguage", boost::bind(&CWebServer::Cmd_GetLanguage, this, _1));
+	RegisterCommandCode("getlanguage", boost::bind(&CWebServer::Cmd_GetLanguage, this, _1),true);
 	
-	RegisterCommandCode("logincheck", boost::bind(&CWebServer::Cmd_LoginCheck, this, _1));
-	RegisterCommandCode("getversion", boost::bind(&CWebServer::Cmd_GetVersion, this, _1));
+	RegisterCommandCode("logincheck", boost::bind(&CWebServer::Cmd_LoginCheck, this, _1), true);
+	RegisterCommandCode("getversion", boost::bind(&CWebServer::Cmd_GetVersion, this, _1),true);
 	RegisterCommandCode("getlog", boost::bind(&CWebServer::Cmd_GetLog, this, _1));
-	RegisterCommandCode("getauth", boost::bind(&CWebServer::Cmd_GetAuth, this, _1));
+	RegisterCommandCode("getauth", boost::bind(&CWebServer::Cmd_GetAuth, this, _1),true);
 
 	RegisterCommandCode("addhardware",boost::bind(&CWebServer::Cmd_AddHardware,this, _1));
 	RegisterCommandCode("updatehardware",boost::bind(&CWebServer::Cmd_UpdateHardware,this, _1));
@@ -344,6 +314,10 @@ bool CWebServer::StartServer(const std::string &listenaddress, const std::string
 	RegisterCommandCode("clearscenetimers", boost::bind(&CWebServer::Cmd_ClearSceneTimers, this, _1));
 	RegisterCommandCode("setscenecode", boost::bind(&CWebServer::Cmd_SetSceneCode, this, _1));
 	RegisterCommandCode("removescenecode", boost::bind(&CWebServer::Cmd_RemoveSceneCode, this, _1));
+
+	RegisterCommandCode("serial_devices", boost::bind(&CWebServer::Cmd_GetSerialDevices, this, _1));
+	RegisterCommandCode("devices_list", boost::bind(&CWebServer::Cmd_GetDevicesList, this, _1));
+	RegisterCommandCode("devices_list_onoff", boost::bind(&CWebServer::Cmd_GetDevicesListOnOff, this, _1));
 
 	RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1));
 	RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1));
@@ -424,9 +398,13 @@ void CWebServer::SetAuthenticationMethod(int amethod)
 	m_pWebEm->SetAuthenticationMethod((_eAuthenticationMethod)amethod);
 }
 
-void CWebServer::RegisterCommandCode(const char* idname, webserver_response_function ResponseFunction)
+void CWebServer::RegisterCommandCode(const char* idname, webserver_response_function ResponseFunction, bool bypassAuthentication)
 {
 	m_webcommands.insert( std::pair<std::string, webserver_response_function >( std::string(idname), ResponseFunction  ) );
+	if (bypassAuthentication)
+	{
+		m_pWebEm->RegisterWhitelistURLString(idname);
+	}
 }
 
 void CWebServer::RegisterRType(const char* idname, webserver_response_function ResponseFunction)
@@ -2451,10 +2429,9 @@ void CWebServer::Cmd_ChangePlanDeviceOrder(Json::Value &root)
 
 void CWebServer::Cmd_GetVersion(Json::Value &root)
 {
-	char *szVersion = DisplayVersion();
 	root["status"] = "OK";
 	root["title"] = "GetVersion";
-	root["version"] = szVersion;
+	root["version"] = szAppVersion;
 }
 
 void CWebServer::Cmd_GetAuth(Json::Value &root)
@@ -6174,12 +6151,6 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 	}
 }
 
-char * CWebServer::DisplayVersion()
-{
-	m_retstr=szAppVersion;
-	return (char*)m_retstr.c_str();
-}
-
 char * CWebServer::DisplaySwitchTypesCombo()
 {
 	m_retstr="";
@@ -6201,65 +6172,6 @@ char * CWebServer::DisplaySwitchTypesCombo()
 	}
 	return (char*)m_retstr.c_str();
 }
-
-
-char * CWebServer::DisplayDataPushDevicesCombo()
-{
-	
-	std::stringstream szQuery;
-	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ID,Name FROM DeviceStatus WHERE (Used=='1')";
-	result=m_sql.query(szQuery.str());
-	
-	if (result.size()>0)
-	{
-		m_retstr="<option value=\"\"></option>\n";
-		char szTmp[200];
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		int ii=0;
-		for (itt=result.begin(); itt!=result.end(); ++itt)
-		{
-			std::vector<std::string> sd=*itt;
-			sprintf(szTmp,"<option value=\"%s\">%s</option>\n",sd[0].c_str(),sd[1].c_str());
-			m_retstr+=szTmp;
-			ii++;
-		}
-	}
-	return (char*)m_retstr.c_str();
-}
-
-char * CWebServer::DisplayDataPushOnOffDevicesCombo()
-{
-	
-	std::stringstream szQuery;
-	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ID,Name,Type,SubType FROM DeviceStatus WHERE (Used=='1')";
-	result=m_sql.query(szQuery.str());
-	
-	if (result.size()>0)
-	{
-		m_retstr="<option value=\"\"></option>\n";
-		char szTmp[200];
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		int ii=0;
-		for (itt=result.begin(); itt!=result.end(); ++itt)
-		{
-			std::vector<std::string> sd=*itt;
-			int dType=atoi(sd[2].c_str());
-			int dSubType=atoi(sd[3].c_str());
-			std::string sOptions = RFX_Type_SubType_Values(dType,dSubType);
-			if (sOptions == "Status") {
-				sprintf(szTmp,"<option value=\"%s\">%s</option>\n",sd[0].c_str(),sd[1].c_str());
-				m_retstr+=szTmp;
-			}
-			ii++;
-		}
-	}
-	return (char*)m_retstr.c_str();
-}
-
-
-
 
 char * CWebServer::DisplayMeterTypesCombo()
 {
@@ -6293,43 +6205,6 @@ char * CWebServer::DisplayLanguageCombo()
 
 	}
 
-	return (char*)m_retstr.c_str();
-}
-
-char * CWebServer::DisplayHardwareCombo()
-{
-	m_retstr="";
-	char szTmp[200];
-
-	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	szQuery << "SELECT ID, Name, Type FROM Hardware ORDER BY ID ASC";
-	result=m_sql.query(szQuery.str());
-	if (result.size()>0)
-	{
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt=result.begin(); itt!=result.end(); ++itt)
-		{
-			std::vector<std::string> sd=*itt;
-
-			int ID=atoi(sd[0].c_str());
-			std::string Name=sd[1];
-			_eHardwareTypes Type=(_eHardwareTypes)atoi(sd[2].c_str());
-			switch (Type)
-			{
-			case HTYPE_RFXLAN:
-			case HTYPE_RFXtrx315:
-			case HTYPE_RFXtrx433:
-			case HTYPE_EnOceanESP2:
-			case HTYPE_EnOceanESP3:
-			case HTYPE_Dummy:
-			case HTYPE_RaspberryGPIO:
-				sprintf(szTmp,"<option value=\"%d\">%s</option>\n",ID,Name.c_str());
-				m_retstr+=szTmp;
-				break;
-			}
-		}
-	}
 	return (char*)m_retstr.c_str();
 }
 
@@ -6393,40 +6268,6 @@ char * CWebServer::DisplayHardwareTypesCombo()
 	return (char*)m_retstr.c_str();
 }
 
-char * CWebServer::DisplaySerialDevicesCombo()
-{
-	m_retstr="";
-	char szTmp[200];
-	bool bUseDirectPath=false;
-	std::vector<std::string> serialports=GetSerialPorts(bUseDirectPath);
-	std::vector<std::string>::iterator itt;
-	int iDevice=0;
-	for (itt=serialports.begin(); itt!=serialports.end(); ++itt)
-	{
-		std::string serialname=*itt;
-		int snumber=-1;
-		if (!bUseDirectPath)
-		{
-			size_t pos=serialname.find_first_of("01234567890");
-			if (pos!=std::string::npos) {
-				snumber=atoi(serialname.substr(pos).c_str());
-			}
-		}
-		else
-		{
-			snumber=iDevice;
-		}
-		if (iDevice!=-1) 
-		{
-			sprintf(szTmp,"<option value=\"%d\">%s</option>\n",snumber,serialname.c_str());
-			m_retstr+=szTmp;
-		}
-		iDevice++;
-	}
-	return (char*)m_retstr.c_str();
-}
-
-
 char * CWebServer::DisplayTimerTypesCombo()
 {
 	m_retstr="";
@@ -6436,27 +6277,6 @@ char * CWebServer::DisplayTimerTypesCombo()
 		sprintf(szTmp, "<option data-i18n=\"%s\" value=\"%d\">%s</option>\n", Timer_Type_Desc(ii),ii,Timer_Type_Desc(ii));
 		m_retstr+=szTmp;
 	}
-	return (char*)m_retstr.c_str();
-}
-
-char * CWebServer::DisplayDevicesList()
-{
-	m_retstr="";
-	char szTmp[300];
-
-	std::vector<std::vector<std::string> > result;
-	result=m_sql.query("SELECT ID, Name FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
-	if (result.size()>0)
-	{
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt=result.begin(); itt!=result.end(); ++itt)
-		{
-			std::vector<std::string> sd=*itt;
-			sprintf(szTmp,"<option value=\"%s\">%s</option>\n",sd[0].c_str(),sd[1].c_str());
-			m_retstr+=szTmp;
-		}
-	}
-
 	return (char*)m_retstr.c_str();
 }
 
@@ -10245,6 +10065,87 @@ void CWebServer::Cmd_RemoveSceneCode(Json::Value &root)
 		idx.c_str()
 		);
 	m_sql.query(szTmp);
+}
+
+void CWebServer::Cmd_GetSerialDevices(Json::Value &root)
+{
+	root["status"] = "OK";
+	root["title"] = "GetSerialDevices";
+
+	bool bUseDirectPath = false;
+	std::vector<std::string> serialports = GetSerialPorts(bUseDirectPath);
+	std::vector<std::string>::iterator itt;
+	int iDevice = 0;
+	int ii = 0;
+	for (itt = serialports.begin(); itt != serialports.end(); ++itt)
+	{
+		std::string serialname = *itt;
+		int snumber = -1;
+		if (!bUseDirectPath)
+		{
+			size_t pos = serialname.find_first_of("01234567890");
+			if (pos != std::string::npos) {
+				snumber = atoi(serialname.substr(pos).c_str());
+			}
+		}
+		else
+		{
+			snumber = iDevice;
+		}
+		if (iDevice != -1)
+		{
+			root["result"][ii]["name"] = serialname;
+			root["result"][ii]["value"] = snumber;
+			ii++;
+		}
+		iDevice++;
+	}
+}
+
+void CWebServer::Cmd_GetDevicesList(Json::Value &root)
+{
+	root["status"] = "OK";
+	root["title"] = "GetDevicesList";
+	int ii = 0;
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.query("SELECT ID, Name FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
+	if (result.size() > 0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt = result.begin(); itt != result.end(); ++itt)
+		{
+			std::vector<std::string> sd = *itt;
+			root["result"][ii]["name"] = sd[1];
+			root["result"][ii]["value"] = sd[0];
+			ii++;
+		}
+	}
+}
+
+void CWebServer::Cmd_GetDevicesListOnOff(Json::Value &root)
+{
+	root["status"] = "OK";
+	root["title"] = "GetDevicesListOnOff";
+	int ii = 0;
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.query("SELECT ID, Name, Type, SubType FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
+	if (result.size() > 0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt = result.begin(); itt != result.end(); ++itt)
+		{
+			std::vector<std::string> sd = *itt;
+			int dType = atoi(sd[2].c_str());
+			int dSubType = atoi(sd[3].c_str());
+			std::string sOptions = RFX_Type_SubType_Values(dType, dSubType);
+			if (sOptions == "Status")
+			{
+				root["result"][ii]["name"] = sd[1];
+				root["result"][ii]["value"] = sd[0];
+				ii++;
+			}
+		}
+	}
 }
 
 void CWebServer::RType_GetTransfers(Json::Value &root)

@@ -113,6 +113,7 @@ namespace http {
 		private:
 			char *strftime_t(const char *format, const time_t rawtime);
 			bool CompressWebOutput(const request& req, reply& rep);
+			bool CheckAuthentication(const std::string &sHost, const request& req, reply& rep);
 			void check_cookie(const std::string &sHost, const request& req, reply& rep);
 			void send_authorization_request(reply& rep);
 			void send_remove_cookie(reply& rep);
@@ -164,12 +165,13 @@ namespace http {
 				const char* idname,
 				webem_action_function fun );
 
+			void RegisterWhitelistURLString(const char* idname);
 
-			void CheckForAction( request& req );
+			bool CheckForAction( request& req );
 			std::string& FindValue( const char* name );
 			bool HasParams() { return (myNameValues.size()>0); };
 
-			bool CheckForPageOverride( const request& req, reply& rep);
+			bool CheckForPageOverride(const request& req, reply& rep);
 			
 			void SetAuthenticationMethod(const _eAuthenticationMethod amethod);
 
@@ -192,6 +194,8 @@ namespace http {
 			time_t m_actsessionid;
 			_eAuthenticationMethod m_authmethod;
 			bool m_bForceRelogin;
+			//Whitelist url strings that bypass authentication checks (not used by basic-auth authentication)
+			std::vector < std::string > myWhitelistURLs;
 		private:
 			/// store map between include codes and application functions
 			std::map < std::string, webem_include_function > myIncludes;

@@ -8,6 +8,10 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		return {
 		  setPermissions: function(permissions) {
 			permissionList = permissions;
+			if (permissionList.rights>=0) {
+				EnableDisableTabs();
+				CheckForUpdate(false);
+			}
 			$rootScope.$broadcast('permissionsChanged')
 		  },
 		  hasPermission: function (permission) {
@@ -98,7 +102,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 	  };
 	});
 	
-	app.config(function($routeProvider) {
+	app.config(function($routeProvider,$locationProvider) {
 			$routeProvider.
 			  when('/Dashboard', angularAMD.route({
 				templateUrl: 'views/dashboard.html',
@@ -220,6 +224,8 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			  otherwise({
 				redirectTo: '/Dashboard'
 			  });
+			// Use html5 mode.
+			//$locationProvider.html5Mode(true);
 	});
 	
 	app.config(function($httpProvider) {
@@ -279,21 +285,14 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				isloggedin: false,
 				rights: -1
 		};
-		EnableDisableTabs();
-		CheckForUpdate(false);
-
 		$.ajax({
 		 url: "json.htm?type=command&param=getversion",
 		 async: true, 
 		 dataType: 'json',
 		 success: function(data) {
-			isOnline = true;
 			if (data.status == "OK") {
 				$( "#appversion" ).text("V" + data.version);
 			}
-		 },
-		 error: function(){
-			isOnline=false;
 		 }
 		});
 		$.ajax({

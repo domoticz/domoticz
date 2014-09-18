@@ -137,6 +137,12 @@ void cWebem::RegisterActionCode( const char* idname, webem_action_function fun )
 	myActions.insert( std::pair<std::string, webem_action_function >( std::string(idname), fun  ) );
 }
 
+//Used by non basic-auth authentication (for example login forms) to bypass returning false when not authenticated
+void cWebem::RegisterWhitelistURLString(const char* idname)
+{
+	myWhitelistURLs.push_back(idname);
+}
+
 		/**
 
 		Conversion between UTF-8 and UTF-16 strings.
@@ -267,10 +273,12 @@ std::istream & safeGetline( std::istream & is, std::string & line ) {
 /**
 
 Do not call from application code,
-used by server  to handle form submissions.
+used by server to handle form submissions.
+
+returns false is authentication is invalid
 
 */
-void cWebem::CheckForAction( request& req )
+bool cWebem::CheckForAction( request& req )
 {
 	// look for cWebem form action request
 	std::string uri = req.uri;
@@ -278,11 +286,11 @@ void cWebem::CheckForAction( request& req )
 	if( req.method != "POST" ) {
 		q = uri.find(".webem");
 		if( q == -1 )
-			return;
+			return true;
 	} else {
 		q = uri.find(".webem");
 		if( q == -1 )
-			return;
+			return true;
 	}
 
 	// find function matching action code
@@ -290,7 +298,7 @@ void cWebem::CheckForAction( request& req )
 	std::map < std::string, webem_action_function >::iterator
 		pfun = myActions.find(  code );
 	if( pfun == myActions.end() )
-		return;
+		return true;
 
 	// decode the values
 
@@ -320,7 +328,7 @@ void cWebem::CheckForAction( request& req )
 						{
 							//Boundary
 							if (csubstr!=szBoundary)
-								return;
+								return true;
 							ii++;
 						}
 						else if (ii==1)
@@ -329,11 +337,11 @@ void cWebem::CheckForAction( request& req )
 							{
 								size_t npos=csubstr.find("name=\"");
 								if (npos==std::string::npos)
-									return;
+									return true;
 								vName=csubstr.substr(npos+6);
 								npos=vName.find("\"");
 								if (npos==std::string::npos)
-									return;
+									return true;
 								vName=vName.substr(0,npos);
 								ii++;
 							}
@@ -350,11 +358,11 @@ void cWebem::CheckForAction( request& req )
 								myNameValues.insert( std::pair< std::string,std::string > ( vName, szContent) );
 								// call the function
 								req.uri = pfun->second( this );
-								return;
+								return true;
 							}
 						}
 					}
-					return;
+					return true;
 				}
 			}
 		}
@@ -376,7 +384,7 @@ void cWebem::CheckForAction( request& req )
 	while( ! flag_done ) {
 		q = uri.find("=",p);
 		if (q==-1)
-			return;
+			return true;
 		name = uri.substr(p,q-p);
 		p = q + 1;
 		q = uri.find("&",p);
@@ -401,7 +409,7 @@ void cWebem::CheckForAction( request& req )
 	// call the function
 	req.uri = pfun->second( this );
 
-	return;
+	return true;
 }
 
 bool cWebem::CheckForPageOverride(const request& req, reply& rep)
@@ -1012,6 +1020,7 @@ static int check_password(
 	return mg_strcasecmp(response, expected_response) == 0;
 }
 
+
 // Return 1 on success. Always initializes the ah structure.
 int cWebemRequestHandler::parse_auth_header(const request& req, struct ah *ah) 
 {
@@ -1231,6 +1240,8 @@ void cWebemRequestHandler::send_cookie(reply& rep, const time_t SID, const int R
 	rep.headers[ahsize].value = sstr.str();
 }
 
+
+
 // Return 1 if request is authorized, 0 otherwise.
 int cWebemRequestHandler::check_authorization(const std::string &sHost, const request& req, reply& rep)
 {
@@ -1430,6 +1441,66 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 	return false;
 }
 
+bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, const request& req, reply& rep)
+{
+	if (myWebem->m_bForceRelogin)
+	{
+		myWebem->m_actualuser = "";
+		myWebem->m_actualuser_rights = -1;
+		myWebem->m_bForceRelogin = false;
+		if (myWebem->m_authmethod == AUTH_BASIC)
+		{
+			send_authorization_request(rep);
+			return false;
+		}
+	}
+
+	if (myWebem->m_authmethod == AUTH_BASIC)
+	{
+		if (!check_authorization(sHost, req, rep))
+		{
+			if (m_failcounter > 2)
+			{
+				m_failcounter = 0;
+				rep = reply::stock_reply(reply::service_unavailable);
+				return false;
+			}
+			send_authorization_request(rep);
+			return false;
+		}
+	}
+	else
+	{
+		//If we have no users, or we are in local network, we do not need to authenticate
+		if (myWebem->m_userpasswords.size() == 0)
+		{
+			myWebem->m_actualuser_rights = 2;
+		}
+		else if (AreWeInLocalNetwork(sHost, req))
+		{
+			myWebem->m_actualuser_rights = 2;
+		}
+		else
+		{
+			if (!check_authorization(sHost, req, rep))
+			{
+				myWebem->m_actualuser = "";
+				myWebem->m_actualuser_rights = -1;
+				//Check if we need to bypass authentication
+				std::vector < std::string >::const_iterator itt;
+				for (itt = myWebem->myWhitelistURLs.begin(); itt != myWebem->myWhitelistURLs.end(); ++itt)
+				{
+					if (req.uri.find(*itt) != std::string::npos)
+						return true;
+				}
+				rep = reply::stock_reply(reply::unauthorized);
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 char *cWebemRequestHandler::strftime_t(const char *format, const time_t rawtime)
 {
 	static char buffer[1024];
@@ -1481,48 +1552,35 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 		}
 		else
 		{
-			if (myWebem->m_authmethod == AUTH_BASIC)
-			{
-				if ((!check_authorization(sHost, req, rep)) || (myWebem->m_bForceRelogin))
-				{
-					if (m_failcounter > 2)
-					{
-						m_failcounter = 0;
-						rep = reply::stock_reply(reply::service_unavailable);
-						return;
-					}
-					myWebem->m_bForceRelogin = false;
-					send_authorization_request(rep);
-					return;
-				}
-			}
-			else
-			{
-				//If we have no users, or we are in local network, we do not need to authenticate
-				if (myWebem->m_userpasswords.size() == 0)
-				{
-					myWebem->m_actualuser_rights = 2;
-				}
-				else if (AreWeInLocalNetwork(sHost, req))
-				{
-					myWebem->m_actualuser_rights = 2;
-				}
-				else
-				{
-					if ((!check_authorization(sHost, req, rep)) || (myWebem->m_bForceRelogin))
-					{
-						myWebem->m_actualuser = "";
-						myWebem->m_actualuser_rights = -1;
-					}
-				}
-			}
+			if (!CheckAuthentication(sHost, req, rep))
+				return;
 		}
 	}
 
 	// check for webem action request
 	request req_modified = req;
 
-	myWebem->CheckForAction( req_modified );
+	// look for cWebem form action request
+	std::string uri = req.uri;
+	int q = -1;
+	if (req.method != "POST") {
+		q = uri.find(".webem");
+	}
+	else {
+		q = uri.find(".webem");
+	}
+	if (q != -1)
+	{
+		//post actions only allowed when authenticated and user has admin rights
+		if (!CheckAuthentication(sHost, req, rep))
+			return;
+		if (myWebem->m_actualuser_rights != 2)
+		{
+			rep = reply::stock_reply(reply::forbidden);
+			return;
+		}
+		myWebem->CheckForAction(req_modified);
+	}
 
 	if (!myWebem->CheckForPageOverride(req, rep))
 	{

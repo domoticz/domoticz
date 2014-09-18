@@ -56,6 +56,22 @@ define(['app'], function (app) {
 
 		function init()
 		{
+			$.ajax({
+				 url: "json.htm?type=command&param=getlanguage",
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					if (typeof data.language != 'undefined') {
+						SetLanguage(data.language);
+					}
+					else {
+						SetLanguage('en');
+					}
+				 },
+				 error: function(){
+				 }     
+			});
+		
 			var $inputs = $('#login :input');
 			$inputs.each(function() {
 				if ($(this).attr("id")!="submit") {

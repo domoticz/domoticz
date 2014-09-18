@@ -26,20 +26,14 @@ public:
 	~CWebServer(void);
 	bool StartServer(const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword);
 	void StopServer();
-	void RegisterCommandCode(const char* idname, webserver_response_function ResponseFunction);
+	void RegisterCommandCode(const char* idname, webserver_response_function ResponseFunction, bool bypassAuthentication=false);
 	void RegisterRType(const char* idname, webserver_response_function ResponseFunction);
 
-	char * DisplayVersion();
-	char * DisplayHardwareCombo();
-	char * DisplayDataPushDevicesCombo();
-	char * DisplayDataPushOnOffDevicesCombo();
 	char * DisplaySwitchTypesCombo();
 	char * DisplayMeterTypesCombo();
 	char * DisplayTimerTypesCombo();
 	char * DisplayHardwareTypesCombo();
-	char * DisplaySerialDevicesCombo();
 	char * DisplayLanguageCombo();
-	char * DisplayDevicesList();
 	std::string GetJSonPage();
 	std::string GetLanguage();
 	std::string GetCameraSnapshot();
@@ -136,6 +130,9 @@ private:
 	void Cmd_ClearSceneTimers(Json::Value &root);
 	void Cmd_SetSceneCode(Json::Value &root);
 	void Cmd_RemoveSceneCode(Json::Value &root);
+	void Cmd_GetSerialDevices(Json::Value &root);
+	void Cmd_GetDevicesList(Json::Value &root);
+	void Cmd_GetDevicesListOnOff(Json::Value &root);
 
 	//RTypes
 	void RType_HandleGraph(Json::Value &root);
