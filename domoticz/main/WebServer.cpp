@@ -42,6 +42,8 @@
 
 #define round(a) ( int ) ( a + .5 )
 
+//#define DEBUG_DOWNLOAD
+
 extern std::string szStartupFolder;
 extern std::string szWWWFolder;
 extern bool bIsRaspberryPi;
@@ -2848,8 +2850,6 @@ void CWebServer::Cmd_SystemReboot(Json::Value &root)
 
 void CWebServer::Cmd_ExcecuteScript(Json::Value &root)
 {
-	if (m_sql.m_bDisableEventSystem)
-		return;
 	std::string scriptname = m_pWebEm->FindValue("scriptname");
 	if (scriptname == "")
 		return;
@@ -3000,6 +3000,12 @@ void CWebServer::Cmd_CheckForUpdate(Json::Value &root)
 	std::string systemname = my_uname.sysname;
 	std::string machine = my_uname.machine;
 	std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
+
+#ifdef DEBUG_DOWNLOAD
+	systemname = "linux";
+	machine = "armv7l";
+#endif
+
 	if ((systemname == "windows") || ((machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")))
 	{
 		//Only Raspberry Pi (Wheezy)/Ubuntu for now!
@@ -3037,6 +3043,9 @@ void CWebServer::Cmd_CheckForUpdate(Json::Value &root)
 
 			int version = atoi(szAppVersion.substr(szAppVersion.find(".") + 1).c_str());
 			bool bHaveUpdate = (version < atoi(strarray[2].c_str()));
+#ifdef DEBUG_DOWNLOAD
+			bHaveUpdate = true;
+#endif
 			if ((bHaveUpdate) && (!bIsForced))
 			{
 				time_t atime = mytime(NULL);
@@ -3080,6 +3089,11 @@ void CWebServer::Cmd_DownloadUpdate(Json::Value &root)
 	std::string machine = my_uname.machine;
 	std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
 
+#ifdef DEBUG_DOWNLOAD
+	systemname = "linux";
+	machine = "armv7l";
+#endif
+
 	if (!bIsBetaChannel)
 	{
 		//szURL="http://domoticz.sourceforge.net/svnversion.h";
@@ -3100,7 +3114,11 @@ void CWebServer::Cmd_DownloadUpdate(Json::Value &root)
 		return;
 	int version = atoi(szAppVersion.substr(szAppVersion.find(".") + 1).c_str());
 	if (version >= atoi(strarray[2].c_str()))
+	{
+#ifndef DEBUG_DOWNLOAD
 		return;
+#endif
+	}
 	if (((machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")) || (strstr(my_uname.release, "ARCH+") != NULL))
 		return;	//only Raspberry Pi/Ubuntu for now
 	root["status"] = "OK";

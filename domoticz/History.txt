@@ -98,6 +98,8 @@ Version 1.0.xxxx (September xxth 2014)
 - Fixed: Pushover notification (thanks to Gerlo)
 - Fixed: OpenZWave support for multi binary sensor (for instance FGBS001)
 - Implemented: Native Logitech Harmony support (thanks to CodeItAway!)
+- Implemented: New internal website system
+- Fixed: Updater when eventsystem was disabled, and added laguage support
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io
