@@ -3,10 +3,10 @@
 SVN_SERVER="svn://svn.code.sf.net/p/domoticz/code/domoticz"
 
 echo "Checking the server revision..."
-SERVER_REVISION=`svn info $SVN_SERVER | grep Revision: | sed 's .\{10\}  '`
+SERVER_REVISION=`svn log -l1 $SVN_SERVER | sed -n 2p | sed 's/.\([0-9][0-9][0-9][0-9]\).*/\1/'`
 echo "Server revision at $SERVER_REVISION"
 echo "Checking the working copy revision..."
-LOCAL_REVISION=`svn info | grep Revision: | sed 's .\{10\}  '`
+LOCAL_REVISION=`svn log -l1 | sed -n 2p | sed 's/.\([0-9][0-9][0-9][0-9]\).*/\1/'`
 echo "Working copy revision at $LOCAL_REVISION"
 
 if [ "$SERVER_REVISION" -eq "$LOCAL_REVISION" ]
