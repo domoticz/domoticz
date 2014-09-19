@@ -1,8 +1,5 @@
-/*
-This is just a quick cut/past, later we do it the angular way!
-*/
 define(['app'], function (app) {
-	app.controller('LightsController', [ '$scope', '$location', '$http', '$interval', function($scope,$location,$http,$interval) {
+	app.controller('LightsController', [ '$scope', '$location', '$http', '$interval', 'permissions', function($scope,$location,$http,$interval,permissions) {
 
 		DeleteTimer = function(idx)
 		{
@@ -404,7 +401,7 @@ define(['app'], function (app) {
 				}
 			}); 
 		  
-		  RefreshTimeAndSun();
+		  $scope.RefreshTimeAndSun();
 		  
 		  $('#modal').hide();
 		}
@@ -450,7 +447,7 @@ define(['app'], function (app) {
 			$("#lightcontent #timerparamstable #rdate").hide();
 			$("#lightcontent #timerparamstable #rnorm").show();
 
-			RefreshTimeAndSun();
+			$scope.RefreshTimeAndSun();
 
 			var nowTemp = new Date();
 			var now = new Date(nowTemp.getFullYear(), nowTemp.getMonth(), nowTemp.getDate(), 0, 0, 0, 0);
@@ -587,7 +584,7 @@ define(['app'], function (app) {
 
 		MakeFavorite = function (id,isfavorite)
 		{
-			if (window.my_config.userrights!=2) {
+			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
 				ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
 				return;
@@ -844,7 +841,7 @@ define(['app'], function (app) {
 		SetColValue = function (idx,hue,brightness)
 		{
 			clearInterval($.setColValue);
-			if (window.my_config.userrights==0) {
+			if (permissions.hasPermission("Viewer")) {
 				HideNotify();
 				ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
 				return;
@@ -1519,7 +1516,7 @@ define(['app'], function (app) {
 			  }
 			 }
 		  });
-		  RefreshTimeAndSun();
+		  $scope.RefreshTimeAndSun();
 			$scope.mytimer=$interval(function() {
 				RefreshLights();
 			}, 10000);
@@ -1543,7 +1540,7 @@ define(['app'], function (app) {
 
 		  var tophtm=
 						'\t<center>' + suntext + '</center>\n';
-			if (window.my_config.userrights==2) {
+			if (permissions.hasPermission("Admin")) {
 				tophtm+=
 					'\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 					'\t<tr>\n' +
@@ -1851,7 +1848,7 @@ define(['app'], function (app) {
 					  }
 				  xhtm+=
 						'<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Log">Log</a> ';
-				  if (window.my_config.userrights==2) {
+				  if (permissions.hasPermission("Admin")) {
 					  xhtm+=
 							'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + '\'' + item.Type + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.AddjValue2 + ', ' + item.IsSubDevice + ', ' + item.CustomImage + ', \'' + item.SubType + '\', \'' + item.StrParam1 + '\', \'' + item.StrParam2 + '\', ' + item.Protected +');" data-i18n="Edit">Edit</a> ';
 								if (bAddTimer == true) {
@@ -1903,7 +1900,7 @@ define(['app'], function (app) {
 		  $('#lightcontent').i18n();
 
 			if (bAllowWidgetReorder==true) {
-				if (window.my_config.userrights==2) {
+				if (permissions.hasPermission("Admin")) {
 				  if (window.myglobals.ismobileint==false) {
 						$("#lightcontent .span4").draggable({
 								drag: function() {
@@ -1933,7 +1930,7 @@ define(['app'], function (app) {
 					}
 				}
 			}
-			RefreshTimeAndSun();
+			$scope.RefreshTimeAndSun();
 			
 			//Create Dimmer Sliders
 			$('#lightcontent .dimslider').slider({

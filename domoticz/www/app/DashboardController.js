@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('DashboardController', [ '$scope', '$location', '$http', '$interval', function($scope,$location,$http,$interval) {
+	app.controller('DashboardController', [ '$scope', '$location', '$http', '$interval', 'permissions', function($scope,$location,$http,$interval,permissions) {
 
 		$scope.LastUpdateTime = parseInt(0);
 		
@@ -11,7 +11,7 @@ define(['app'], function (app) {
 			}
 		  var id="";
 
-			RefreshTimeAndSun();
+			$scope.RefreshTimeAndSun();
 		  
 		  $.ajax({
 			 url: "json.htm?type=devices&filter=all&used=true&order=Name&plan="+window.myglobals.LastPlanSelected+"&lastupdate="+$scope.LastUpdateTime,
@@ -2679,7 +2679,7 @@ define(['app'], function (app) {
 					}
 				});
 
-			RefreshTimeAndSun();
+			$scope.RefreshTimeAndSun();
 			
 			//Create Dimmer Sliders
 			$('#dashcontent .dimslider').slider({
@@ -2758,7 +2758,7 @@ define(['app'], function (app) {
 
 			var bAllowReorder=bAllowWidgetReorder;
 			if (bAllowReorder==true) {
-				if (window.my_config.userrights==2) {
+				if (permissions.hasPermission("Admin")) {
 					if (window.myglobals.ismobileint==false) {
 						$("#dashcontent .movable").draggable({
 								drag: function() {

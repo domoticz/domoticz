@@ -1,9 +1,9 @@
 define(['app'], function (app) {
-	app.controller('TemperatureController', [ '$scope', '$location', '$http', '$interval', function($scope,$location,$http,$interval) {
+	app.controller('TemperatureController', [ '$scope', '$location', '$http', '$interval', 'permissions', function($scope,$location,$http,$interval,permissions) {
 
 		MakeFavorite = function(id,isfavorite)
 		{
-			if (window.my_config.userrights!=2) {
+			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
 				ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
 				return;
@@ -569,7 +569,7 @@ define(['app'], function (app) {
 			 }
 		  });
 		  
-			RefreshTimeAndSun();
+			$scope.RefreshTimeAndSun();
 
 			$scope.mytimer=$interval(function() {
 				RefreshTemps();
@@ -755,7 +755,7 @@ define(['app'], function (app) {
 				  }
 				  xhtm+=
 						'<a class="btnsmall" onclick="ShowTempLog(\'#tempcontent\',\'ShowTemps\',' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
-				if (window.my_config.userrights==2) {
+				if (permissions.hasPermission("Admin")) {
 				  if (item.Type=="Humidity") {
 					  xhtm+='<a class="btnsmall" onclick="EditTempDeviceSmall(' + item.idx + ',\'' + item.Name + '\',' + item.AddjValue + ');" data-i18n="Edit">Edit</a> ';
 				  }
@@ -793,10 +793,10 @@ define(['app'], function (app) {
 		  $('#tempcontent').html(tophtm+htmlcontent);
 		  $('#tempcontent').i18n();
 
-			RefreshTimeAndSun();
+			$scope.RefreshTimeAndSun();
 			
 			if (bAllowWidgetReorder==true) {
-				if (window.my_config.userrights==2) {
+				if (permissions.hasPermission("Admin")) {
 					if (window.myglobals.ismobileint==false) {
 						$("#tempcontent .span4").draggable({
 								drag: function() {

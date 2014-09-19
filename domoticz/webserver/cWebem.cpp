@@ -1047,7 +1047,7 @@ int cWebemRequestHandler::parse_auth_header(const request& req, struct ah *ah)
 
 
 // Authorize against the opened passwords file. Return 1 if authorized.
-int cWebemRequestHandler::authorize(const request& req)
+int cWebemRequestHandler::authorize(const request& req, reply& rep)
 {
 	struct ah _ah;
 
@@ -1093,6 +1093,7 @@ int cWebemRequestHandler::authorize(const request& req)
 						myWebem->m_actualuser = itt->Username;
 						myWebem->m_actualuser_rights = itt->userrights;
 						m_failcounter=0;
+						myWebem->m_bAddNewSession = true;
 						return 1;
 					}
 				}
@@ -1120,6 +1121,7 @@ int cWebemRequestHandler::authorize(const request& req)
 			myWebem->m_actualuser = itt->Username;
 			myWebem->m_actualuser_rights = itt->userrights;
 			m_failcounter=0;
+			myWebem->m_bAddNewSession = true;
 			return 1;
 		}
 	}
@@ -1240,78 +1242,6 @@ void cWebemRequestHandler::send_cookie(reply& rep, const time_t SID, const int R
 	rep.headers[ahsize].value = sstr.str();
 }
 
-
-
-// Return 1 if request is authorized, 0 otherwise.
-int cWebemRequestHandler::check_authorization(const std::string &sHost, const request& req, reply& rep)
-{
-	myWebem->m_actualuser="";
-	myWebem->m_actualuser_rights = -1;
-	myWebem->m_actsessionid=0;
-	if (myWebem->m_userpasswords.size() == 0)
-	{
-		myWebem->m_actualuser_rights = 2;
-		return 1;//no username/password we are admin
-	}
-
-	if (AreWeInLocalNetwork(sHost, req))
-	{
-		myWebem->m_actualuser_rights = 2;
-		return 1;//we are in the local network, no authentication needed, we are admin
-	}
-
-	const char* cookie_header = request::get_req_header(&req, "Cookie");
-	if (cookie_header!=NULL)
-	{
-		std::string scookie=cookie_header;
-		int fpos=scookie.find("SID=");
-		if (fpos!=std::string::npos)
-		{
-			int dpos=scookie.find("-");
-			if (dpos == std::string::npos)
-				return authorize(req);
-
-			std::stringstream sstr;
-
-			sstr << scookie.substr(fpos + 4, dpos - fpos - 4).c_str();
-
-			time_t SID;
-			sstr >> SID;
-			std::map<time_t,WebEmSession>::iterator itt = myWebem->m_sessionids.find(SID);
-			if (itt != myWebem->m_sessionids.end()) 
-			{
-				if (req.uri.find("dologout")!=std::string::npos)
-				{
-					myWebem->m_sessionids.erase(itt);
-					m_failcounter = 0;
-					myWebem->m_actsessionid = 0;
-					myWebem->m_bForceRelogin=true;
-					send_remove_cookie(rep);
-				}
-				else
-				{
-					time_t acttime=mytime(NULL);
-					if (acttime-myWebem->m_sessionids[SID].lasttouch<SESSION_TIMEOUT)
-					{
-						myWebem->m_actsessionid=SID;
-						myWebem->m_actualuser=myWebem->m_sessionids[SID].username;
-						myWebem->m_actualuser_rights = myWebem->m_sessionids[SID].rights;
-						return 1;
-					}
-					else
-					{
-						//timeout, remove session
-						m_failcounter = 0;
-						myWebem->m_sessionids.erase(itt);
-						send_remove_cookie(rep);
-					}
-				}
-			}
-		}
-	}
-	return authorize(req);
-}
-
 void cWebemRequestHandler::send_authorization_request(reply& rep)
 {
 	rep.status = reply::unauthorized;
@@ -1327,76 +1257,6 @@ void cWebemRequestHandler::send_authorization_request(reply& rep)
 		"realm=\"%s\"",
 		myWebem->m_DigistRealm.c_str());
 	rep.headers[ahsize+1].value = szAuthHeader;
-}
-
-void cWebemRequestHandler::check_cookie(const std::string &sHost, const request& req, reply& rep)
-{
-	//serve cookies only on html pages
-	if (rep.headers[1].value.find("text/html") == std::string::npos)
-		return;
-
-
-	if (AreWeInLocalNetwork(sHost, req))
-	{
-		myWebem->m_actualuser_rights = 2;
-		return;
-	}
-	if (myWebem->m_actualuser.size() == 0)
-		return;
-
-	if (myWebem->m_userpasswords.size()>0)
-	{
-		const char *cookie;
-		cookie = request::get_req_header(&req, "Cookie");
-		bool bHaveSID=false;
-		std::string cSID = "";
-		int fpos=0;
-		if (cookie!=NULL)
-		{
-			std::string scookie = cookie;
-			fpos=scookie.find("SID=");
-			if (fpos != std::string::npos)
-			{
-				int fpos2 = scookie.find("-",4);
-				bHaveSID = fpos2 != std::string::npos;
-				if (bHaveSID)
-				{
-					cSID = scookie.substr(fpos + 4, fpos2 - fpos - 4);
-				}
-					
-			}
-		}
-		if (!bHaveSID)
-		{
-			//Add new session ID
-			_tWebEmSession usession;
-			time_t sessionid = mytime(NULL);
-			usession.username = myWebem->m_actualuser;
-			usession.rights = myWebem->m_actualuser_rights;
-			usession.lasttouch=sessionid;
-			myWebem->m_sessionids[sessionid] = usession;
-
-			send_cookie(rep, sessionid, usession.rights, time(NULL) + SESSION_TIMEOUT);
-		}
-		else
-		{
-			//check if we need to re-use this SID
-			std::stringstream sstr;
-			sstr << cSID;
-			time_t SID;
-			sstr >> SID;
-			std::map<time_t, WebEmSession>::iterator itt = myWebem->m_sessionids.find(SID);
-			if (itt == myWebem->m_sessionids.end())
-			{
-				time_t atime = mytime(NULL);
-				_tWebEmSession usession;
-				usession.username = myWebem->m_actualuser;
-				usession.rights = myWebem->m_actualuser_rights;
-				usession.lasttouch = atime;
-				myWebem->m_sessionids[SID] = usession;
-			}
-		}
-	}
 }
 
 bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
@@ -1443,10 +1303,11 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 
 bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, const request& req, reply& rep)
 {
+	myWebem->m_actsessionid = 0;
+	myWebem->m_actualuser = "";
+	myWebem->m_actualuser_rights = -1;
 	if (myWebem->m_bForceRelogin)
 	{
-		myWebem->m_actualuser = "";
-		myWebem->m_actualuser_rights = -1;
 		myWebem->m_bForceRelogin = false;
 		if (myWebem->m_authmethod == AUTH_BASIC)
 		{
@@ -1455,9 +1316,74 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, const r
 		}
 	}
 
+	if (myWebem->m_userpasswords.size() == 0)
+	{
+		myWebem->m_actualuser_rights = 2;
+		return true;//no username/password we are admin
+	}
+
+	if (AreWeInLocalNetwork(sHost, req))
+	{
+		myWebem->m_actualuser_rights = 2;
+		return true;//we are in the local network, no authentication needed, we are admin
+	}
+
+	//Check cookie if still valid
+	const char* cookie_header = request::get_req_header(&req, "Cookie");
+	if (cookie_header != NULL)
+	{
+		std::string scookie = cookie_header;
+		int fpos = scookie.find("SID=");
+		if (fpos != std::string::npos)
+		{
+			int dpos = scookie.find("-");
+			if (dpos != std::string::npos)
+			{
+				std::stringstream sstr;
+
+				sstr << scookie.substr(fpos + 4, dpos - fpos - 4).c_str();
+
+				time_t SID;
+				sstr >> SID;
+				std::map<time_t, WebEmSession>::iterator itt = myWebem->m_sessionids.find(SID);
+				if (itt != myWebem->m_sessionids.end())
+				{
+					time_t acttime = mytime(NULL);
+					if (acttime - myWebem->m_sessionids[SID].lasttouch < SESSION_TIMEOUT)
+					{
+						myWebem->m_actsessionid = SID;
+						myWebem->m_actualuser = myWebem->m_sessionids[SID].username;
+						myWebem->m_actualuser_rights = myWebem->m_sessionids[SID].rights;
+						return true;
+					}
+					else
+					{
+						//timeout, remove session
+						m_failcounter = 0;
+						myWebem->m_sessionids.erase(itt);
+						if (myWebem->m_authmethod == AUTH_BASIC)
+						{
+							send_remove_cookie(rep);
+							send_authorization_request(rep);
+							return false;
+						}
+						rep = reply::stock_reply(reply::unauthorized);
+						send_remove_cookie(rep);
+						return false;
+					}
+				}
+				else
+				{
+					//Cookie not found, lets remove it
+					myWebem->m_bRemoveCookie = true;
+				}
+			}
+		}
+	}
+
 	if (myWebem->m_authmethod == AUTH_BASIC)
 	{
-		if (!check_authorization(sHost, req, rep))
+		if (!authorize(req, rep))
 		{
 			if (m_failcounter > 2)
 			{
@@ -1468,37 +1394,23 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, const r
 			send_authorization_request(rep);
 			return false;
 		}
+		return true;
 	}
-	else
+
+	//Check if we need to bypass authentication (not when using basic-auth)
+	std::vector < std::string >::const_iterator itt;
+	for (itt = myWebem->myWhitelistURLs.begin(); itt != myWebem->myWhitelistURLs.end(); ++itt)
 	{
-		//If we have no users, or we are in local network, we do not need to authenticate
-		if (myWebem->m_userpasswords.size() == 0)
-		{
-			myWebem->m_actualuser_rights = 2;
-		}
-		else if (AreWeInLocalNetwork(sHost, req))
-		{
-			myWebem->m_actualuser_rights = 2;
-		}
-		else
-		{
-			if (!check_authorization(sHost, req, rep))
-			{
-				myWebem->m_actualuser = "";
-				myWebem->m_actualuser_rights = -1;
-				//Check if we need to bypass authentication
-				std::vector < std::string >::const_iterator itt;
-				for (itt = myWebem->myWhitelistURLs.begin(); itt != myWebem->myWhitelistURLs.end(); ++itt)
-				{
-					if (req.uri.find(*itt) != std::string::npos)
-						return true;
-				}
-				rep = reply::stock_reply(reply::unauthorized);
-				return false;
-			}
-		}
+		if (req.uri.find(*itt) != std::string::npos)
+			return true;
 	}
-	return true;
+
+	rep = reply::stock_reply(reply::unauthorized);
+	if (myWebem->m_bRemoveCookie)
+	{
+		send_remove_cookie(rep);
+	}
+	return false;
 }
 
 char *cWebemRequestHandler::strftime_t(const char *format, const time_t rawtime)
@@ -1514,11 +1426,15 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 {
 	//_log.Log(LOG_NORM, "www-request: %s", req.uri.c_str());
 	rep.bIsGZIP = false;
+	myWebem->m_bAddNewSession=false;
+	myWebem->m_bRemoveCookie=false;
+	myWebem->m_actsessionid = 0;
 
 	if (req.uri.find("json.htm") != std::string::npos)
 	{
 		if (req.uri.find("dologout") != std::string::npos)
 		{
+			//Remove session id based on cookie
 			const char *cookie;
 			cookie = request::get_req_header(&req, "Cookie");
 			if (cookie!=NULL)
@@ -1540,15 +1456,15 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 						if (itt != myWebem->m_sessionids.end())
 						{
 							myWebem->m_sessionids.erase(itt);
-							myWebem->m_actsessionid = 0;
 						}
 					}
 				}
 			}
+			myWebem->m_actsessionid = 0;
 			myWebem->m_actualuser = "";
 			myWebem->m_actualuser_rights = -1;
 			myWebem->m_bForceRelogin = true;
-			send_remove_cookie(rep);
+			myWebem->m_bRemoveCookie = true;
 		}
 		else
 		{
@@ -1627,15 +1543,33 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 			CompressWebOutput(req,rep);
 	}
 
-	check_cookie(sHost, req,rep);
-
-	if (myWebem->m_actsessionid!=0)
+	if (myWebem->m_bAddNewSession == true)
 	{
-		time_t atime = mytime(NULL);
-		if (atime - myWebem->m_sessionids[myWebem->m_actsessionid].lasttouch > 10)
+		//Add new session ID
+		_tWebEmSession usession;
+		time_t sessionid = mytime(NULL);
+		usession.username = myWebem->m_actualuser;
+		usession.rights = myWebem->m_actualuser_rights;
+		usession.lasttouch = sessionid;
+		myWebem->m_sessionids[sessionid] = usession;
+		myWebem->m_actsessionid = sessionid;
+		send_cookie(rep, sessionid, usession.rights, time(NULL) + SESSION_TIMEOUT);
+	}
+	else if (myWebem->m_bRemoveCookie == true)
+	{
+		send_remove_cookie(rep);
+	}
+	else if (myWebem->m_actsessionid != 0)
+	{
+		std::map<time_t, WebEmSession>::iterator itt = myWebem->m_sessionids.find(myWebem->m_actsessionid);
+		if (itt != myWebem->m_sessionids.end())
 		{
-			myWebem->m_sessionids[myWebem->m_actsessionid].lasttouch = atime;
-			send_cookie(rep, myWebem->m_actsessionid, myWebem->m_sessionids[myWebem->m_actsessionid].rights, atime + SESSION_TIMEOUT);
+			time_t atime = mytime(NULL);
+			if (atime - myWebem->m_sessionids[myWebem->m_actsessionid].lasttouch > 10)
+			{
+				myWebem->m_sessionids[myWebem->m_actsessionid].lasttouch = atime;
+				send_cookie(rep, myWebem->m_actsessionid, myWebem->m_sessionids[myWebem->m_actsessionid].rights, atime + SESSION_TIMEOUT);
+			}
 		}
 	}
 	

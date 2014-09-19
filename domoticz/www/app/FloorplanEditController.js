@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('FloorplanEditController', [ '$scope', '$location', '$http', '$interval', function($scope,$location,$http,$interval) {
+	app.controller('FloorplanEditController', [ '$scope', '$location', '$http', '$interval', 'permissions', function($scope,$location,$http,$interval,permissions) {
 
 		ImageLoaded = function() {
 			if (typeof $("#floorplanimagesize") != 'undefined') {
@@ -70,7 +70,7 @@ define(['app'], function (app) {
 					}
 					points = points + xPoint + "," + yPoint;
 					$("#roompolyarea").attr("points",  points );
-					$('#floorplancontent #delclractive #activeplanupdate').attr("class", "btnstyle3");
+					$('#floorplaneditcontent #delclractive #activeplanupdate').attr("class", "btnstyle3");
 				}
 				else ShowNotify('Select a Floorplan and Room first.', 2500, true);
 			}
@@ -85,26 +85,26 @@ define(['app'], function (app) {
 			$('#updelclr #floorplanadd').attr("class", "btnstyle3-dis");
 			$('#updelclr #floorplanedit').attr("class", "btnstyle3-dis");
 			$('#updelclr #floorplandelete').attr("class", "btnstyle3-dis");
-			$('#floorplancontent #delclractive #activeplanadd').attr("class", "btnstyle3-dis");
-			$('#floorplancontent #delclractive #activeplanclear').attr("class", "btnstyle3-dis");
-			$('#floorplancontent #delclractive #activeplandelete').attr("class", "btnstyle3-dis");
-			$('#floorplancontent #delclractive #activeplanupdate').attr("class", "btnstyle3-dis");
+			$('#floorplaneditcontent #delclractive #activeplanadd').attr("class", "btnstyle3-dis");
+			$('#floorplaneditcontent #delclractive #activeplanclear').attr("class", "btnstyle3-dis");
+			$('#floorplaneditcontent #delclractive #activeplandelete').attr("class", "btnstyle3-dis");
+			$('#floorplaneditcontent #delclractive #activeplanupdate').attr("class", "btnstyle3-dis");
 
 			var anSelected = fnGetSelected( $('#floorplantable').dataTable() );
 			if ( anSelected.length !== 0 ) {
 				$('#updelclr #floorplanedit').attr("class", "btnstyle3");
 				$('#updelclr #floorplandelete').attr("class", "btnstyle3");
 
-				if ($("#floorplancontent #comboactiveplan").children().length > 0) {
-					$('#floorplancontent #delclractive #activeplanadd').attr("class", "btnstyle3");
+				if ($("#floorplaneditcontent #comboactiveplan").children().length > 0) {
+					$('#floorplaneditcontent #delclractive #activeplanadd').attr("class", "btnstyle3");
 				}
 				
 				anSelected = fnGetSelected( $('#plantable2').dataTable() );
 				if ( anSelected.length !== 0 ) {
-					$('#floorplancontent #delclractive #activeplandelete').attr("class", "btnstyle3");
+					$('#floorplaneditcontent #delclractive #activeplandelete').attr("class", "btnstyle3");
 					var data = $('#plantable2').dataTable().fnGetData( anSelected[0] );
 					if (data["Area"].length != 0 ) {
-						$('#floorplancontent #delclractive #activeplanclear').attr("class", "btnstyle3");
+						$('#floorplaneditcontent #delclractive #activeplanclear').attr("class", "btnstyle3");
 					}
 				}
 			} else {
@@ -114,7 +114,7 @@ define(['app'], function (app) {
 
 		ChangeFloorplanOrder = function(order, floorplanid) {
 
-			if (window.my_config.userrights!=2) {
+			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
 				ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
 				return;
@@ -311,10 +311,13 @@ define(['app'], function (app) {
 			$("#roomplangroup").empty();
 			$("#floorplanimage").attr("xlink:href", "");
 			$("#floorplanimagesize").attr("src", "");
-			clearInterval($.myglobals.refreshTimer);
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
 			Device.initialise();
 
-			var oTable = $('#floorplancontent #plantable2').dataTable();
+			var oTable = $('#floorplaneditcontent #plantable2').dataTable();
 			oTable.fnClearTable();
 			oTable = $('#floorplantable').dataTable();
 			oTable.fnClearTable();
@@ -401,7 +404,7 @@ define(['app'], function (app) {
 
 		RefreshUnusedDevicesComboArray = function() {
 			$.UnusedDevices = [];
-			$("#floorplancontent #comboactiveplan").empty();
+			$("#floorplaneditcontent #comboactiveplan").empty();
 			$.ajax({
 				url: "json.htm?type=command&param=getunusedfloorplanplans&unique=false", 
 				async: false, 
@@ -417,7 +420,7 @@ define(['app'], function (app) {
 						$.each($.UnusedDevices, function(i,item){
 							var option = $('<option />');
 							option.attr('value', item.idx).text(item.name);
-							$("#floorplancontent #comboactiveplan").append(option);
+							$("#floorplaneditcontent #comboactiveplan").append(option);
 						});
 					}
 				}
@@ -432,12 +435,12 @@ define(['app'], function (app) {
 			Device.useSVGtags = true;
 			Device.backFunction = 'ShowFloorplans';
 			Device.switchFunction = 'RefreshDevices';
-			Device.contentTag = 'floorplancontent';
+			Device.contentTag = 'floorplaneditcontent';
 			
 			var htmlcontent = "";
-			htmlcontent+=$('#floorplanmain').html();
-			$('#floorplancontent').html(htmlcontent);
-			$('#floorplancontent').i18n();
+			htmlcontent+=$('#floorplaneditmain').html();
+			$('#floorplaneditcontent').html(htmlcontent);
+			$('#floorplaneditcontent').i18n();
 			
 			oTable = $('#floorplantable').dataTable( {
 				"sDom": '<"H"lfrC>t<"F"ip>',
@@ -499,8 +502,11 @@ define(['app'], function (app) {
 			$("#roompolyarea").attr("points", "");
 			$("#firstclick").remove();
 
-			clearInterval($.myglobals.refreshTimer);
-			var oTable = $('#floorplancontent #plantable2').dataTable();
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			var oTable = $('#floorplaneditcontent #plantable2').dataTable();
 			oTable.fnClearTable();
 			Device.initialise();
 		  
@@ -525,7 +531,7 @@ define(['app'], function (app) {
 							planGroup.appendChild(el);
 						});
 						/* Add a click handler to the rows - this could be used as a callback */
-						$("#floorplancontent #plantable2 tbody tr").click( function( e ) {
+						$("#floorplaneditcontent #plantable2 tbody tr").click( function( e ) {
 							ConfirmNoUpdate(this, function( param ){
 									// if we are zoomed in, zoom out before changing rooms by faking a click in the polygon
 									if ($("#floorplangroup")[0].getAttribute("zoomed") == "true") {
@@ -548,9 +554,9 @@ define(['app'], function (app) {
 										if ( anSelected.length !== 0 ) {
 											var data = oTable.fnGetData( anSelected[0] );
 											var idx= data["DT_RowId"];
-											$("#floorplancontent #delclractive #activeplandelete").attr("href", "javascript:DeleteFloorplanPlan(" + idx + ")");
-											$("#floorplancontent #delclractive #activeplanupdate").attr("href", "javascript:UpdateFloorplanPlan(" + idx + ",false)");
-											$("#floorplancontent #delclractive #activeplanclear").attr("href", "javascript:UpdateFloorplanPlan(" + idx + ",true)");
+											$("#floorplaneditcontent #delclractive #activeplandelete").attr("href", "javascript:DeleteFloorplanPlan(" + idx + ")");
+											$("#floorplaneditcontent #delclractive #activeplanupdate").attr("href", "javascript:UpdateFloorplanPlan(" + idx + ",false)");
+											$("#floorplaneditcontent #delclractive #activeplanclear").attr("href", "javascript:UpdateFloorplanPlan(" + idx + ",true)");
 											$("#roompolyarea").attr("title", data["0"]);
 											$("#roompolyarea").attr("points", data["2"]);
 											$("#floorplangroup").attr("planidx", idx);
@@ -574,7 +580,7 @@ define(['app'], function (app) {
 				return;
 			}
 
-			var PlanIdx=$("#floorplancontent #comboactiveplan option:selected").val();
+			var PlanIdx=$("#floorplaneditcontent #comboactiveplan option:selected").val();
 			if (typeof PlanIdx == 'undefined') {
 				return ;
 			}
@@ -654,7 +660,7 @@ define(['app'], function (app) {
 		}
 
 		ConfirmNoUpdate = function(param, yesFunc) {
-			if ($('#floorplancontent #delclractive #activeplanupdate').attr("class") == "btnstyle3") {
+			if ($('#floorplaneditcontent #delclractive #activeplanupdate').attr("class") == "btnstyle3") {
 				bootbox.confirm($.i18n("You have unsaved changes, do you want to continue?"), 
 					function(result) {
 						if (result==true) {
@@ -691,80 +697,83 @@ define(['app'], function (app) {
 			if ((typeof $("#floorplangroup") != 'undefined') &&
 				(typeof $("#floorplangroup")[0] != 'undefined')) {
 			
-				clearInterval($.myglobals.refreshTimer);
+				if (typeof $scope.mytimer != 'undefined') {
+					$interval.cancel($scope.mytimer);
+					$scope.mytimer = undefined;
+				}
 
 				if ($("#floorplangroup")[0].getAttribute("planidx") != "") {
 					Device.useSVGtags = true;
-					$.ajax({
-							 url: "json.htm?type=devices&filter=all&used=true&order=Name&plan="+$("#floorplangroup")[0].getAttribute("planidx")+"&lastupdate=" + window.myglobals.LastUpdate,
-							 async: false,
-							 dataType: 'json',
-							 success: function(data) {
-								if (typeof data.ActTime != 'undefined') {
-									window.myglobals.LastUpdate = data.ActTime;
-								}
-
-								if (typeof data.WindScale != 'undefined') {
-									$.myglobals.windscale=parseFloat(data.WindScale);
-								}
-								if (typeof data.WindSign != 'undefined') {
-									$.myglobals.windsign=data.WindSign;
-								}
-								if (typeof data.TempScale != 'undefined') {
-									$.myglobals.tempscale=parseFloat(data.TempScale);
-								}
-								if (typeof data.TempSign != 'undefined') {
-									$.myglobals.tempsign=data.TempSign;
-								}
-
-								// insert devices into the document
-								if (typeof data.result != 'undefined') {
-									$.each(data.result, function(i,item) {
-										var dev = Device.create(item);
-										dev.setDraggable($("#floorplangroup")[0].getAttribute("zoomed") == "false");
-										dev.htmlMinimum($("#roomplandevices")[0]);
-									});
-								}
+					$http({
+							 url: "json.htm?type=devices&filter=all&used=true&order=Name&plan="+$("#floorplangroup")[0].getAttribute("planidx")+"&lastupdate=" + window.myglobals.LastUpdate
+						}).success(function(data) {
+							if (typeof data.ActTime != 'undefined') {
+								window.myglobals.LastUpdate = data.ActTime;
 							}
+
+							if (typeof data.WindScale != 'undefined') {
+								$.myglobals.windscale=parseFloat(data.WindScale);
+							}
+							if (typeof data.WindSign != 'undefined') {
+								$.myglobals.windsign=data.WindSign;
+							}
+							if (typeof data.TempScale != 'undefined') {
+								$.myglobals.tempscale=parseFloat(data.TempScale);
+							}
+							if (typeof data.TempSign != 'undefined') {
+								$.myglobals.tempsign=data.TempSign;
+							}
+
+							// insert devices into the document
+							if (typeof data.result != 'undefined') {
+								$.each(data.result, function(i,item) {
+									var dev = Device.create(item);
+									dev.setDraggable($("#floorplangroup")[0].getAttribute("zoomed") == "false");
+									dev.htmlMinimum($("#roomplandevices")[0]);
+								});
+							}
+							// Add Drag and Drop handler
+							$('.DeviceIcon').draggable()
+								.bind('drag', function(event, ui){
+									// update coordinates manually, since top/left style props don't work on SVG
+									var parent = event.target.parentNode;
+									if (parent) {
+										var Scale = Device.xImageSize / $("#floorplaneditor").width();
+										var offset = $("#floorplanimage").offset();
+										var xoffset = Math.round((event.pageX - offset.left - (Device.iconSize/2)) * Scale);
+										var yoffset = Math.round((event.pageY - offset.top - (Device.iconSize/2)) * Scale);
+										if (xoffset < 0) xoffset = 0;
+										if (yoffset < 0) yoffset = 0;
+										if (xoffset > (Device.xImageSize-Device.iconSize)) xoffset = Device.xImageSize-Device.iconSize;
+										if (yoffset > (Device.yImageSize-Device.iconSize)) yoffset = Device.yImageSize-Device.iconSize;
+										parent.setAttribute("xoffset", xoffset);
+										parent.setAttribute("yoffset", yoffset);
+										parent.setAttribute("transform", 'translate(' + xoffset + ',' + yoffset + ')');
+										var objData = $('#DeviceDetails #'+event.target.parentNode.id)[0];
+										if (objData != undefined) {
+											objData.setAttribute("xoffset", xoffset);
+											objData.setAttribute("yoffset", yoffset);
+											objData.setAttribute("transform", 'translate(' + xoffset + ',' + yoffset + ')');
+										}
+										$('#floorplaneditcontent #delclractive #activeplanupdate').attr("class", "btnstyle3");
+										if ($.browser.mozilla) // nasty hack for FireFox.  FireFox forgets to display the icon once you start dragging so we need to remind it
+										{
+											(event.target.style.display == "inline") ? event.target.style.display = "none" : event.target.style.display = "inline";
+										}
+									}
+								})
+								.bind('dragstop', function(event, ui){
+										event.target.style.display="inline";
+								});
+
+								$scope.mytimer=$interval(function() {
+									RefreshDevices();
+								}, 10000);
+						}).error(function(data) {
+							$scope.mytimer=$interval(function() {
+								RefreshDevices();
+							}, 10000);
 						});
-
-					// Add Drag and Drop handler
-					$('.DeviceIcon')
-						.draggable()
-						.bind('drag', function(event, ui){
-								// update coordinates manually, since top/left style props don't work on SVG
-								var parent = event.target.parentNode;
-								if (parent) {
-									var Scale = Device.xImageSize / $("#floorplaneditor").width();
-									var offset = $("#floorplanimage").offset();
-									var xoffset = Math.round((event.pageX - offset.left - (Device.iconSize/2)) * Scale);
-									var yoffset = Math.round((event.pageY - offset.top - (Device.iconSize/2)) * Scale);
-									if (xoffset < 0) xoffset = 0;
-									if (yoffset < 0) yoffset = 0;
-									if (xoffset > (Device.xImageSize-Device.iconSize)) xoffset = Device.xImageSize-Device.iconSize;
-									if (yoffset > (Device.yImageSize-Device.iconSize)) yoffset = Device.yImageSize-Device.iconSize;
-									parent.setAttribute("xoffset", xoffset);
-									parent.setAttribute("yoffset", yoffset);
-									parent.setAttribute("transform", 'translate(' + xoffset + ',' + yoffset + ')');
-									var objData = $('#DeviceDetails #'+event.target.parentNode.id)[0];
-									if (objData != undefined) {
-										objData.setAttribute("xoffset", xoffset);
-										objData.setAttribute("yoffset", yoffset);
-										objData.setAttribute("transform", 'translate(' + xoffset + ',' + yoffset + ')');
-									}
-									$('#floorplancontent #delclractive #activeplanupdate').attr("class", "btnstyle3");
-									if ($.browser.mozilla) // nasty hack for FireFox.  FireFox forgets to display the icon once you start dragging so we need to remind it
-									{
-										(event.target.style.display == "inline") ? event.target.style.display = "none" : event.target.style.display = "inline";
-									}
-
-								}
-							})
-						.bind('dragstop', function(event, ui){
-								event.target.style.display="inline";
-							})	;
-
-						$.myglobals.refreshTimer = setInterval(RefreshDevices, 10000);
 				}
 			}
 		}
@@ -790,5 +799,11 @@ define(['app'], function (app) {
 			$("#roompolyarea").on("click", function ( event ) {PolyClick(event);});
 			$("#svgcontainer").on("mousemove", function ( event ) {MouseXY(event);});
 		};
+		$scope.$on('$destroy', function(){
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+		}); 
 	} ]);
 });

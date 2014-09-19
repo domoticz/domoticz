@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('ScenesController', [ '$scope', '$location', '$http', '$interval', function($scope,$location,$http,$interval) {
+	app.controller('ScenesController', [ '$scope', '$location', '$http', '$interval', 'permissions', function($scope,$location,$http,$interval,permissions) {
 
 		RemoveCode = function()
 		{
@@ -225,7 +225,7 @@ define(['app'], function (app) {
 
 		MakeFavorite = function(id,isfavorite)
 		{
-			if (window.my_config.userrights!=2) {
+			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
 				ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
 				return;
@@ -247,7 +247,7 @@ define(['app'], function (app) {
 
 		ChangeDeviceOrder = function(order, devid)
 		{
-			if (window.my_config.userrights!=2) {
+			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
 				ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
 				return;
@@ -1170,68 +1170,67 @@ define(['app'], function (app) {
 			
 		  var id="";
 		  
-		  $.ajax({
-			 url: "json.htm?type=scenes&lastupdate="+$.LastUpdateTime, 
-			 async: false, 
-			 dataType: 'json',
-			 success: function(data) {
-			  if (typeof data.result != 'undefined') {
-			  
-				if (typeof data.ActTime != 'undefined') {
-					$.LastUpdateTime=parseInt(data.ActTime);
-				}
-			  
-				$.each(data.result, function(i,item){
-					id="#scenecontent #" + item.idx;
-					var obj=$(id);
-					if (typeof obj != 'undefined') {
-						if ($(id + " #name").html()!=item.Name) {
-							$(id + " #name").html(item.Name);
-						}
-						var img1="";
-						var img2="";
-
-						if (item.Type=="Scene") {
-							img1='<img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes,' + item.Protected +');" class="lcursor" height="48" width="48">';
-						}
-						else {
-							var onclass="";
-							var offclass="";
-							if (item.Status == 'On') {
-								onclass="transimg";
-								offclass="";
-							}
-							else if (item.Status == 'Off') {
-								onclass="";
-								offclass="transimg";
-							}
-
-							img1='<img class="lcursor ' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" height="48" width="48">';
-							img2='<img class="lcursor ' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected +');" height="48" width="48">';
-							if ($(id + " #img2").html()!=img2) {
-								$(id + " #img2").html(img2);
-							}
-							if ($(id + " #status").html()!=TranslateStatus(item.Status)) {
-								$(id + " #status").html(TranslateStatus(item.Status));
-							}
-						}
-								
-						if ($(id + " #img1").html()!=img1) {
-							$(id + " #img1").html(img1);
-						}
-
-						if ($(id + " #lastupdate").html()!=item.LastUpdate) {
-							$(id + " #lastupdate").html(item.LastUpdate);
-						}
+		  $http({
+			 url: "json.htm?type=scenes&lastupdate="+$.LastUpdateTime
+			 }).success(function(data) {
+				if (typeof data.result != 'undefined') {
+					if (typeof data.ActTime != 'undefined') {
+						$.LastUpdateTime=parseInt(data.ActTime);
 					}
-				});
-			  }
-			 }
-		  });
-			
-			$scope.mytimer=$interval(function() {
-				RefreshScenes();
-			}, 10000);
+
+					$.each(data.result, function(i,item){
+						id="#scenecontent #" + item.idx;
+						var obj=$(id);
+						if (typeof obj != 'undefined') {
+							if ($(id + " #name").html()!=item.Name) {
+								$(id + " #name").html(item.Name);
+							}
+							var img1="";
+							var img2="";
+
+							if (item.Type=="Scene") {
+								img1='<img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes,' + item.Protected +');" class="lcursor" height="48" width="48">';
+							}
+							else {
+								var onclass="";
+								var offclass="";
+								if (item.Status == 'On') {
+									onclass="transimg";
+									offclass="";
+								}
+								else if (item.Status == 'Off') {
+									onclass="";
+									offclass="transimg";
+								}
+
+								img1='<img class="lcursor ' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" height="48" width="48">';
+								img2='<img class="lcursor ' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected +');" height="48" width="48">';
+								if ($(id + " #img2").html()!=img2) {
+									$(id + " #img2").html(img2);
+								}
+								if ($(id + " #status").html()!=TranslateStatus(item.Status)) {
+									$(id + " #status").html(TranslateStatus(item.Status));
+								}
+							}
+									
+							if ($(id + " #img1").html()!=img1) {
+								$(id + " #img1").html(img1);
+							}
+
+							if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+								$(id + " #lastupdate").html(item.LastUpdate);
+							}
+						}
+					});
+				}
+				$scope.mytimer=$interval(function() {
+					RefreshScenes();
+				}, 10000);
+			 }).error(function() {
+				$scope.mytimer=$interval(function() {
+					RefreshScenes();
+				}, 10000);
+			 });
 		}
 
 		ShowScenes = function()
@@ -1248,7 +1247,7 @@ define(['app'], function (app) {
 		  var bAllowWidgetReorder=true;
 
 		  var tophtm="";
-		  if (window.my_config.userrights==2) {
+		  if (permissions.hasPermission("Admin")) {
 			tophtm+=
 				'\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 				'\t<tr>\n' +
@@ -1341,7 +1340,7 @@ define(['app'], function (app) {
 					xhtm+=      
 						  '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
-				  if (window.my_config.userrights==2) {
+				  if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + item.Name + '\',' + item.HardwareID + ',\'' + item.Type + '\', ' + item.Protected + ',\'' + item.CodeDeviceName + '\', \'' + item.OnAction + '\', \'' + item.OffAction + '\');" data-i18n="Edit">Edit</a> ';
 						if (bAddTimer == true) {
 							if (item.Timers == "true") {
@@ -1376,7 +1375,7 @@ define(['app'], function (app) {
 		  $('#scenecontent').i18n();
 
 			if (bAllowWidgetReorder==true) {
-				if (window.my_config.userrights==2) {
+				if (permissions.hasPermission("Admin")) {
 					if (window.myglobals.ismobileint==false) {
 						$("#scenecontent .span4").draggable({
 								drag: function() {

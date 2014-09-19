@@ -21,7 +21,10 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			if (permission == "User") {
 				return (permissionList.rights>=0);
 			}
-			alert("Unknown permission: " + permission);
+			if (permission == "Viewer") {
+				return (permissionList.rights==0);
+			}
+			alert("Unknown permission request: " + permission);
 			return false;
 		  },
 		  hasLogin: function (isloggedin) {
@@ -229,7 +232,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 	});
 	
 	app.config(function($httpProvider) {
-		var logsOutUserOn401 = ['$q', '$location', function ($q, $location) {
+		var logsOutUserOn401 = ['$q', '$location', 'permissions', function ($q, $location,permissions) {
 			return {
 				request: function (config) {
 					return config || $q.when(config);
@@ -238,14 +241,17 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					return $q.reject(request);
 				},
 				response: function (response) {
-					//alert("response: " + response.status);
 					return response || $q.when(response);
 				},
 				responseError: function (response) {
-					//alert("responseError: " + response.status);
-					if (response && response.status === 404) {
-					}
-					if (response && response.status >= 500) {
+					if (response && response.status === 401) {
+						var permissionList = {
+								isloggedin: false,
+								rights: -1
+						};
+						permissions.setPermissions(permissionList);					
+						$location.path('/Login');
+						return $q.reject(response);
 					}
 					return $q.reject(response);
 				}
@@ -280,11 +286,13 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 	} ]);
 
 	
-	app.run(function($rootScope, $location, $route, permissions) {
+	app.run(function($rootScope, $location, $route, $http, permissions) {
 		var permissionList = {
 				isloggedin: false,
 				rights: -1
 		};
+		permissions.setPermissions(permissionList);					
+
 		$.ajax({
 		 url: "json.htm?type=command&param=getversion",
 		 async: true, 
@@ -343,6 +351,35 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			}
         });
         permissions.setPermissions(permissionList);
+        
+		$rootScope.RefreshTimeAndSun = function(placeholder) {
+			if (typeof $("#timesun") != 'undefined') {
+				$http({
+				 url: "json.htm?type=command&param=getSunRiseSet",
+				 async: true, 
+				 dataType: 'json'
+				}).success(function(data) {
+					if (typeof data.Sunrise != 'undefined') {
+						var sunRise=data.Sunrise;
+						var sunSet=data.Sunset;
+						var ServerTime=data.ServerTime;
+						var month=ServerTime.split(' ')[0];
+						ServerTime=ServerTime.replace(month,$.i18n(month));
+						
+						var suntext;
+						var bIsMobile=$.myglobals.ismobile;
+						if (bIsMobile == true) {
+							suntext=$.i18n('SunRise') + ': ' + sunRise + ', ' + $.i18n('SunSet') + ': ' + sunSet;
+						}
+						else {
+							suntext=ServerTime + ', ' + $.i18n('SunRise') + ': ' + sunRise + ', ' + $.i18n('SunSet') + ': ' + sunSet;
+						}
+						$("#timesun").html(suntext);
+					}
+				});
+			}
+		};
+        
 	});
 
     // Bootstrap Angular when DOM is ready

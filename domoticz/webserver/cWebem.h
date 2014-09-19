@@ -114,13 +114,11 @@ namespace http {
 			char *strftime_t(const char *format, const time_t rawtime);
 			bool CompressWebOutput(const request& req, reply& rep);
 			bool CheckAuthentication(const std::string &sHost, const request& req, reply& rep);
-			void check_cookie(const std::string &sHost, const request& req, reply& rep);
 			void send_authorization_request(reply& rep);
 			void send_remove_cookie(reply& rep);
 			void send_cookie(reply& rep, const time_t SID, const int Rights, const time_t expires);
-			int check_authorization(const std::string &sHost, const request& req, reply& rep);
 			bool AreWeInLocalNetwork(const std::string &sHost, const request& req);
-			int authorize(const request& req);
+			int authorize(const request& req, reply& rep);
 			void Logout();
 			int parse_auth_header(const request& req, struct ah *ah) ;
 			std::string m_doc_root;
@@ -194,6 +192,8 @@ namespace http {
 			time_t m_actsessionid;
 			_eAuthenticationMethod m_authmethod;
 			bool m_bForceRelogin;
+			bool m_bAddNewSession;
+			bool m_bRemoveCookie;
 			//Whitelist url strings that bypass authentication checks (not used by basic-auth authentication)
 			std::vector < std::string > myWhitelistURLs;
 		private:

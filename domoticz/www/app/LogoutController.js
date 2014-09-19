@@ -9,6 +9,7 @@ define(['app'], function (app) {
 					isloggedin: true,
 					rights: -1
 			};
+			permissions.setPermissions(permissionList);
 			$.ajax({
 			 url: "json.htm?type=command&param=dologout",
 			 async: true, 
@@ -31,7 +32,6 @@ define(['app'], function (app) {
 				window.location = '#/Dashboard';
 			 },
 			 error: function(){
-				permissions.setPermissions(permissionList);
 				window.location = '#/Dashboard';
 			 }     
 			});

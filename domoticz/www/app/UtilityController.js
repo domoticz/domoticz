@@ -1,9 +1,9 @@
 define(['app'], function (app) {
-	app.controller('UtilityController', [ '$scope', '$location', '$http', '$interval', function($scope,$location,$http,$interval) {
+	app.controller('UtilityController', [ '$scope', '$location', '$http', '$interval', 'permissions', function($scope,$location,$http,$interval,permissions) {
 
 		MakeFavorite = function(id,isfavorite)
 		{
-			if (window.my_config.userrights!=2) {
+			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
 				ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
 				return;
@@ -232,7 +232,7 @@ define(['app'], function (app) {
 			  }
 			 }
 		  });
-			RefreshTimeAndSun();
+			$scope.RefreshTimeAndSun();
 			$scope.mytimer=$interval(function() {
 				RefreshUtilities();
 			}, 10000);
@@ -458,7 +458,7 @@ define(['app'], function (app) {
 					else {
 						xhtm+='<a class="btnsmall" onclick="ShowCounterLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
 					}
-					if (window.my_config.userrights==2) {
+					if (permissions.hasPermission("Admin")) {
 						if (item.Type == "P1 Smart Meter") {
 							xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 						}
@@ -469,88 +469,88 @@ define(['app'], function (app) {
 				  }
 				  else if (item.Type == "Air Quality") {
 					xhtm+='<a class="btnsmall" onclick="ShowAirQualityLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
-					if (window.my_config.userrights==2) {
+					if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if (item.SubType == "Percentage") {
 					xhtm+='<a class="btnsmall" onclick="ShowPercentageLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
-					if (window.my_config.userrights==2) {
+					if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if (item.Type == "Fan") {
 					xhtm+='<a class="btnsmall" onclick="ShowFanLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
-					if (window.my_config.userrights==2) {
+					if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if ((item.SubType == "Soil Moisture")||(item.SubType == "Leaf Wetness")) {
 					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
-					if (window.my_config.userrights==2) {
+					if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if (item.Type == "Lux") {
 					xhtm+='<a class="btnsmall" onclick="ShowLuxLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
-					if (window.my_config.userrights==2) {
+					if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if (item.Type == "Weight") {
 					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name+ '\',\'' + item.Type +'\', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
-					if (window.my_config.userrights==2) {
+					if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if (item.Type == "Usage") {
 					xhtm+='<a class="btnsmall" onclick="ShowUsageLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
-					if (window.my_config.userrights==2) {
+					if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
 					xhtm+='<a class="btnsmall" onclick="ShowCurrentLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name + '\', ' + item.displaytype + ');" data-i18n="Log">Log</a> ';
-					if (window.my_config.userrights==2) {
+					if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if (item.Type == "Energy") {
 						xhtm+='<a class="btnsmall" onclick="ShowCounterLogSpline(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
-						if (window.my_config.userrights==2) {
+						if (permissions.hasPermission("Admin")) {
 							xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 						}
 				  }
 				  else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-						if (window.my_config.userrights==2) {
+						if (permissions.hasPermission("Admin")) {
 							xhtm+='<a class="btnsmall" onclick="ShowTempLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
 							xhtm+='<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + item.Name + '\', ' + item.SetPoint + ',' + item.Protected +');" data-i18n="Edit">Edit</a> ';
 						}
 				  }
 				  else if ((item.Type == "General")&&(item.SubType == "Voltage")) {
 					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'VoltageGeneral\');" data-i18n="Log">Log</a> ';
-					if (window.my_config.userrights==2) {
+					if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if ((item.Type == "General")&&(item.SubType == "Pressure")) {
 					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'Pressure\');" data-i18n="Log">Log</a> ';
-					if (window.my_config.userrights==2) {
+					if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if ((item.SubType == "Voltage")||(item.SubType == "A/D")) {
 					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
-					if (window.my_config.userrights==2) {
+					if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else {
-					if (window.my_config.userrights==2) {
+					if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
-				  if (window.my_config.userrights==2) {              
+				  if (permissions.hasPermission("Admin")) {
 					  if (item.Notifications == "true")
 						xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#utilitycontent\', \'ShowUtilities\');" data-i18n="Notifications">Notifications</a>';
 					  else
@@ -580,7 +580,7 @@ define(['app'], function (app) {
 		  $('#utilitycontent').i18n();
 
 			if (bAllowWidgetReorder==true) {
-				if (window.my_config.userrights==2) {
+				if (permissions.hasPermission("Admin")) {
 					if (window.myglobals.ismobileint==false) {
 						$("#utilitycontent .span4").draggable({
 								drag: function() {
@@ -610,7 +610,7 @@ define(['app'], function (app) {
 					}
 				}
 			}
-			RefreshTimeAndSun();
+			$scope.RefreshTimeAndSun();
 			$scope.mytimer=$interval(function() {
 				RefreshUtilities();
 			}, 10000);
