@@ -140,7 +140,7 @@ define(['app'], function (app) {
 					 dataType: 'json',
 					 success: function(data) {
 						if (typeof data.ActTime != 'undefined') {
-							window.myglobals.LastUpdate = data.ActTime;
+							window.myglobals.LastUpdate = 0;
 						}
 
 						if (typeof data.WindScale != 'undefined') {
@@ -182,7 +182,10 @@ define(['app'], function (app) {
 					}
 				});
 
-				RefreshDevices();
+				// Initial refresh needs to be short, this will trigger the status elements to be drawn
+				$scope.mytimer=$interval(function() {
+								RefreshDevices();
+							}, 500);
 			}
 		}
 
@@ -216,10 +219,18 @@ define(['app'], function (app) {
 						}
 					}
 				});
+
+				if ((typeof $.myglobals.RoomColour != 'undefined') && 
+					(typeof $.myglobals.InactiveRoomOpacity != 'undefined')) {
+					$(".hoverable").css({'fill': $.myglobals.RoomColour, 'fill-opacity': $.myglobals.InactiveRoomOpacity/100});
+				}
+				if (typeof $.myglobals.ActiveRoomOpacity != 'undefined') {
+					$(".hoverable").hover(function(){$(this).css({'fill-opacity': $.myglobals.ActiveRoomOpacity/100})},
+										  function(){$(this).css({'fill-opacity': $.myglobals.InactiveRoomOpacity/100})});
+				}
+
 				ShowDevices(aFloorplans[floorIdx].idx, $("#roomplangroup")[0]);
 			}
-
-						
 
 			// no next/previous buttons for a single image or less
 			if (window.myglobals.FloorplanCount > 1) {
@@ -279,6 +290,17 @@ define(['app'], function (app) {
 						$.each(data.result, function(i,item) {
 							aFloorplans[i] = item;
 						});
+						// handle settings
+						if (typeof data.RoomColour != 'undefined') {
+							$.myglobals.RoomColour = data.RoomColour;
+						}
+						if (typeof data.ActiveRoomOpacity != 'undefined') {
+							$.myglobals.ActiveRoomOpacity = data.ActiveRoomOpacity;
+						}
+						if (typeof data.InactiveRoomOpacity != 'undefined') {
+							$.myglobals.InactiveRoomOpacity = data.InactiveRoomOpacity;
+						}
+
 						//Lets start
 						ShowFloorplan();
 					}

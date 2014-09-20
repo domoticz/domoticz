@@ -1250,6 +1250,38 @@ bool CSQLHelper::OpenDatabase()
 		nValue = 0;
 	}
 	m_bDisableEventSystem = (nValue==1);
+	if (!GetPreferencesVar("FloorplanPopupDelay", nValue))
+	{
+		UpdatePreferencesVar("FloorplanPopupDelay", 0);
+	}
+	if (!GetPreferencesVar("FloorplanFullscreenMode", nValue))
+	{
+		UpdatePreferencesVar("FloorplanFullscreenMode", 0);
+	}
+	if (!GetPreferencesVar("FloorplanAnimateZoom", nValue))
+	{
+		UpdatePreferencesVar("FloorplanAnimateZoom", 1);
+	}
+	if (!GetPreferencesVar("FloorplanShowSensorValues", nValue))
+	{
+		UpdatePreferencesVar("FloorplanShowSensorValues", 1);
+	}
+	if (!GetPreferencesVar("FloorplanShowSwitchValues", nValue))
+	{
+		UpdatePreferencesVar("FloorplanShowSwitchValues", 0);
+	}
+	if (!GetPreferencesVar("FloorplanRoomColour", sValue))
+	{
+		UpdatePreferencesVar("FloorplanRoomColour", "Blue");
+	}
+	if (!GetPreferencesVar("FloorplanActiveOpacity", nValue))
+	{
+		UpdatePreferencesVar("FloorplanActiveOpacity", 25);
+	}
+	if (!GetPreferencesVar("FloorplanInactiveOpacity", nValue))
+	{
+		UpdatePreferencesVar("FloorplanInactiveOpacity", 5);
+	}
 
 	//Start background thread
 	if (!StartThread())

@@ -6629,6 +6629,22 @@ char * CWebServer::PostSettings()
 
 	m_sql.UpdatePreferencesVar("SecOnDelay",atoi(m_pWebEm->FindValue("SecOnDelay").c_str()));
 
+	int nValue=0;
+	nValue=atoi(m_pWebEm->FindValue("FloorplanPopupDelay").c_str());
+	m_sql.UpdatePreferencesVar("FloorplanPopupDelay", nValue);
+	std::string FloorplanFullscreenMode=m_pWebEm->FindValue("FloorplanFullscreenMode");
+	m_sql.UpdatePreferencesVar("FloorplanFullscreenMode",(FloorplanFullscreenMode=="on"?1:0));
+	std::string FloorplanAnimateZoom=m_pWebEm->FindValue("FloorplanAnimateZoom");
+	m_sql.UpdatePreferencesVar("FloorplanAnimateZoom",(FloorplanAnimateZoom=="on"?1:0));
+	std::string FloorplanShowSensorValues=m_pWebEm->FindValue("FloorplanShowSensorValues");
+	m_sql.UpdatePreferencesVar("FloorplanShowSensorValues",(FloorplanShowSensorValues=="on"?1:0));
+	std::string FloorplanShowSwitchValues=m_pWebEm->FindValue("FloorplanShowSwitchValues");
+	m_sql.UpdatePreferencesVar("FloorplanShowSwitchValues",(FloorplanShowSwitchValues=="on"?1:0));
+	m_sql.UpdatePreferencesVar("FloorplanRoomColour",m_pWebEm->FindValue("FloorplanRoomColour").c_str());
+	m_sql.UpdatePreferencesVar("FloorplanActiveOpacity",atoi(m_pWebEm->FindValue("FloorplanActiveOpacity").c_str()));
+	m_sql.UpdatePreferencesVar("FloorplanInactiveOpacity",atoi(m_pWebEm->FindValue("FloorplanInactiveOpacity").c_str()));
+	
+	
 	return (char*)m_retstr.c_str();
 }
 
@@ -9183,14 +9199,67 @@ void CWebServer::RType_FloorPlans(Json::Value &root)
 	root["title"] = "Floorplans";
 
 	std::stringstream szQuery;
-	std::vector<std::vector<std::string> > result, result2;
-	szQuery << "SELECT ID, Name, ImageFile, [Order] FROM Floorplans ORDER BY [Order]";
+	std::vector<std::vector<std::string> > result, result2, result3;
+	char szTmp[100];
+
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "SELECT Key, nValue, sValue FROM Preferences WHERE Key LIKE 'Floorplan%'";
 	result = m_sql.query(szQuery.str());
-	if (result.size() > 0)
+	if (result.size() < 0)
+		return;
+
+	std::vector<std::vector<std::string> >::const_iterator itt;
+	for (itt = result.begin(); itt != result.end(); ++itt)
+	{
+		std::vector<std::string> sd = *itt;
+		std::string Key = sd[0];
+		int nValue = atoi(sd[1].c_str());
+		std::string sValue = sd[2];
+
+		if (Key == "FloorplanPopupDelay")
+		{
+			root["PopupDelay"]=nValue;
+		}
+		if (Key == "FloorplanFullscreenMode")
+		{
+			root["FullscreenMode"]=nValue;
+		}
+		if (Key == "FloorplanAnimateZoom")
+		{
+			root["AnimateZoom"]=nValue;
+		}
+		if (Key == "FloorplanShowSensorValues")
+		{
+			root["ShowSensorValues"]=nValue;
+		}
+		if (Key == "FloorplanShowSwitchValues")
+		{
+			root["ShowSwitchValues"]=nValue;
+		}
+		if (Key == "FloorplanRoomColour")
+		{
+			root["RoomColour"]=sValue;
+		}
+		if (Key == "FloorplanActiveOpacity")
+		{
+			root["ActiveRoomOpacity"]=nValue;
+		}
+		if (Key == "FloorplanInactiveOpacity")
+		{
+			root["InactiveRoomOpacity"]=nValue;
+		}
+	}
+	
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "SELECT ID, Name, ImageFile, [Order] FROM Floorplans ORDER BY [Order]";
+	result2 = m_sql.query(szQuery.str());
+	if (result2.size() > 0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		int ii = 0;
-		for (itt = result.begin(); itt != result.end(); ++itt)
+		for (itt = result2.begin(); itt != result2.end(); ++itt)
 		{
 			std::vector<std::string> sd = *itt;
 
@@ -9204,10 +9273,10 @@ void CWebServer::RType_FloorPlans(Json::Value &root)
 			szQuery.clear();
 			szQuery.str("");
 			szQuery << "SELECT COUNT(*) FROM Plans WHERE (FloorplanID=='" << sd[0] << "')";
-			result2 = m_sql.query(szQuery.str());
-			if (result.size() > 0)
+			result3 = m_sql.query(szQuery.str());
+			if (result3.size() > 0)
 			{
-				totPlans = (unsigned int)atoi(result2[0][0].c_str());
+				totPlans = (unsigned int)atoi(result3[0][0].c_str());
 			}
 			root["result"][ii]["Plans"] = totPlans;
 
@@ -11008,6 +11077,38 @@ void CWebServer::RType_Settings(Json::Value &root)
 		else if (Key == "AllowWidgetOrdering")
 		{
 			root["AllowWidgetOrdering"] = nValue;
+		}
+		else if (Key == "FloorplanPopupDelay")
+		{
+			root["FloorplanPopupDelay"] = nValue;
+		}
+		else if (Key == "FloorplanFullscreenMode")
+		{
+			root["FloorplanFullscreenMode"] = nValue;
+		}
+		else if (Key == "FloorplanAnimateZoom")
+		{
+			root["FloorplanAnimateZoom"] = nValue;
+		}
+		else if (Key == "FloorplanShowSensorValues")
+		{
+			root["FloorplanShowSensorValues"] = nValue;
+		}
+		else if (Key == "FloorplanShowSwitchValues")
+		{
+			root["FloorplanShowSwitchValues"] = nValue;
+		}
+		else if (Key == "FloorplanRoomColour")
+		{
+			root["FloorplanRoomColour"] = sValue;
+		}
+		else if (Key == "FloorplanActiveOpacity")
+		{
+			root["FloorplanActiveOpacity"] = nValue;
+		}
+		else if (Key == "FloorplanInactiveOpacity")
+		{
+			root["FloorplanInactiveOpacity"] = nValue;
 		}
 	}
 }

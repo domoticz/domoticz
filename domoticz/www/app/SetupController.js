@@ -335,6 +335,30 @@ define(['app'], function (app) {
 			  if (typeof data.DisableEventScriptSystem!= 'undefined') {
 				$("#eventsystemtable #DisableEventScriptSystem").prop('checked',data.DisableEventScriptSystem==1);
 			  }
+			  if (typeof data.FloorplanPopupDelay!= 'undefined') {
+				$("#floorplanoptionstable #FloorplanPopupDelay").val(data.FloorplanPopupDelay);
+			  }
+			  if (typeof data.FloorplanFullscreenMode!= 'undefined') {
+				$("#floorplanoptionstable #FloorplanFullscreenMode").prop('checked',data.FloorplanFullscreenMode==1);
+			  }
+			  if (typeof data.FloorplanAnimateZoom!= 'undefined') {
+				$("#floorplanoptionstable #FloorplanAnimateZoom").prop('checked',data.FloorplanAnimateZoom==1);
+			  }
+			  if (typeof data.FloorplanShowSensorValues!= 'undefined') {
+				$("#floorplandisplaytable #FloorplanShowSensorValues").prop('checked',data.FloorplanShowSensorValues==1);
+			  }
+			  if (typeof data.FloorplanShowSwitchValues!= 'undefined') {
+				$("#floorplandisplaytable #FloorplanShowSwitchValues").prop('checked',data.FloorplanShowSwitchValues==1);
+			  }
+			  if (typeof data.FloorplanRoomColour!= 'undefined') {
+				$("#floorplancolourtable #FloorplanRoomColour").val(data.FloorplanRoomColour);
+			  }
+			  if (typeof data.FloorplanActiveOpacity != 'undefined') {
+				$("#floorplancolourtable #FloorplanActiveOpacity").val(data.FloorplanActiveOpacity);
+			  }
+			  if (typeof data.FloorplanInactiveOpacity != 'undefined') {
+				$("#floorplancolourtable #FloorplanInactiveOpacity").val(data.FloorplanInactiveOpacity);
+			  }
 			  
 			  if (typeof data.AllowWidgetOrdering != 'undefined') {
 				$("#dashmodetable #AllowWidgetOrdering").prop('checked',data.AllowWidgetOrdering==1);
@@ -392,7 +416,15 @@ define(['app'], function (app) {
 			}
 		  }
 		  
-			$.post("storesettings.webem", $("#settings").serialize(), function(data) {
+		  var popupDelay=$("#floorplanoptionstable #FloorplanPopupDelay").val();
+		  if (popupDelay != "") {
+			if (!$.isNumeric(popupDelay)) {
+				ShowNotify($.i18n('Popup Delay can only contain numbers...'), 2000, true);
+				return;
+			}
+		  }
+
+		  $.post("storesettings.webem", $("#settings").serialize(), function(data) {
 				$scope.$apply(function() {
 					$window.location = '/#Dashboard';
 					$window.location.reload();
@@ -418,6 +450,7 @@ define(['app'], function (app) {
 		  $scope.MakeScrollLink("#idnotifications","#notifications");
 		  $scope.MakeScrollLink("#idemailsetup","#emailsetup");
 		  $scope.MakeScrollLink("#idmetercounters","#metercounters");
+		  $scope.MakeScrollLink("#idfloorplans","#floorplans");
 		  $scope.MakeScrollLink("#idothersettings","#othersettings");
 		  $scope.MakeScrollLink("#idrestoredatabase","#restoredatabase");
 
