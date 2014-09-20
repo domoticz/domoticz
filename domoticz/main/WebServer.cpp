@@ -6640,7 +6640,7 @@ char * CWebServer::PostSettings()
 	m_sql.UpdatePreferencesVar("FloorplanShowSensorValues",(FloorplanShowSensorValues=="on"?1:0));
 	std::string FloorplanShowSwitchValues=m_pWebEm->FindValue("FloorplanShowSwitchValues");
 	m_sql.UpdatePreferencesVar("FloorplanShowSwitchValues",(FloorplanShowSwitchValues=="on"?1:0));
-	m_sql.UpdatePreferencesVar("FloorplanRoomColour",m_pWebEm->FindValue("FloorplanRoomColour").c_str());
+	m_sql.UpdatePreferencesVar("FloorplanRoomColour", CURLEncode::URLDecode(m_pWebEm->FindValue("FloorplanRoomColour").c_str()).c_str());
 	m_sql.UpdatePreferencesVar("FloorplanActiveOpacity",atoi(m_pWebEm->FindValue("FloorplanActiveOpacity").c_str()));
 	m_sql.UpdatePreferencesVar("FloorplanInactiveOpacity",atoi(m_pWebEm->FindValue("FloorplanInactiveOpacity").c_str()));
 	
