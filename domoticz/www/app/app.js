@@ -8,6 +8,10 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		return {
 		  setPermissions: function(permissions) {
 			permissionList = permissions;
+			window.my_config =
+			{
+				userrights : permissionList.rights
+			}; 			
 			if (permissionList.rights>=0) {
 				EnableDisableTabs();
 				CheckForUpdate(false);

@@ -66,6 +66,11 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
 	#ADD_DEFINITIONS( -Wall -O0 -ggdb )
 	#ADD_DEFINITIONS( -Wfatal-errors -Wformat=2 -Werror=format-security )
 
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++")
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static-libgcc -static-libstdc++")
+	SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_C_FLAGS} -static-libgcc -static-libstdc++")
+	SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS} -static-libgcc -static-libstdc++")
+
     GET_FILENAME_COMPONENT(_name ${_input} NAME)
     SET(_source "${CMAKE_CURRENT_SOURCE_DIR}/${_input}")
     SET(_outdir "${CMAKE_CURRENT_BINARY_DIR}/${_name}.gch")
