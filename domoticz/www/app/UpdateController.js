@@ -20,7 +20,7 @@ define(['app'], function (app) {
 			}
 			else {
 				$("#updatecontent #divprogress").hide();
-				$scope.topText = $.i18n("Error while downloading Update,<br>check your internet connection or try again later !...").replace("<br>","\n");
+				$scope.topText = $.i18n("Error while downloading Update,<br>check your internet connection or try again later !...");
 			}
 		}
 
@@ -39,6 +39,16 @@ define(['app'], function (app) {
 				}
 			}
 			else {
+				$.ajax({
+				 url: "json.htm?type=command&param=getversion",
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					if (data.status == "OK") {
+						$( "#appversion" ).text("V" + data.version);
+					}
+				 }
+				});
 				$window.location = '/#Dashboard';
 				$window.location.reload();
 			}
@@ -72,7 +82,7 @@ define(['app'], function (app) {
 			var val = $( "#progressbar" ).progressbar( "value" ) || 0;
 			if (val == 100) {
 				$("#updatecontent #divprogress").hide();
-				$scope.topText = $.i18n("Error while downloading Update,<br>check your internet connection or try again later !...").replace("<br>","\n");
+				$scope.topText = $.i18n("Error while downloading Update,<br>check your internet connection or try again later !...");
 				return;
 			}
 			$.ajax({
@@ -98,7 +108,7 @@ define(['app'], function (app) {
 						else {
 							$.StopProgress=true;
 							$("#updatecontent #divprogress").hide();
-							$scope.topText = $.i18n("Error while downloading Update,<br>check your internet connection or try again later !...").replace("<br>","\n");
+							$scope.topText = $.i18n("Error while downloading Update,<br>check your internet connection or try again later !...");
 						}
 					}
 					else {
@@ -110,7 +120,7 @@ define(['app'], function (app) {
 				 error: function(){
 					$.StopProgress=true;
 					$("#updatecontent #divprogress").hide();
-					$scope.topText = $.i18n("Error while downloading Update,<br>check your internet connection or try again later !...").replace("<br>","\n");
+					$scope.topText = $.i18n("Error while downloading Update,<br>check your internet connection or try again later !...");
 				 }     
 			});
 		}
@@ -144,7 +154,7 @@ define(['app'], function (app) {
 									}, 2000);
 								}
 								else {
-									$scope.topText = $.i18n("Could not start download,<br>check your internet connection or try again later !...").replace("<br>","\n");
+									$scope.topText = $.i18n("Could not start download,<br>check your internet connection or try again later !...");
 								}
 							 },
 							 error: function(){

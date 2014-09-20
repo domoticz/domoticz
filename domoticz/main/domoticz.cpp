@@ -61,7 +61,9 @@ const char *szHelp=
 
 std::string szStartupFolder;
 std::string szWWWFolder;
-bool bIsRaspberryPi=false;
+bool bHasInternalTemperature=false;
+std::string szInternalTemperatureCommand="/opt/vc/bin/vcgencmd measure_temp"
+
 std::string szAppVersion="???";
 
 MainWorker m_mainworker;
@@ -258,7 +260,14 @@ int main(int argc, char**argv)
 			if (sLine.find("BCM2708")!=std::string::npos)
 			{
 				_log.Log(LOG_STATUS,"System: Raspberry Pi");
-				bIsRaspberryPi=true;
+				szInternalTemperatureCommand="/opt/vc/bin/vcgencmd measure_temp"
+				bHasInternalTemperature=true;
+				break;
+			}
+			else if (sLine.find("sun7i")!=std::string::npos)
+			{
+				szInternalTemperatureCommand="cat /sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input | awk '{ printf ("temp=%0.2f\n",$1/1000); }'";
+				bHasInternalTemperature = true;
 				break;
 			}
 		}

@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 577
+# ref 578
 
 CACHE:
 # CSS
@@ -390,6 +390,7 @@ app/WeatherController.js
 app/ZWaveTopologyController.js
 js/angular-animate.min.js
 js/angular-route.min.js
+js/angular-sanitize.min.js
 js/angular-tree-control.js
 js/angular.min.js
 js/angularAMD.min.js

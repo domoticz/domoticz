@@ -79,7 +79,9 @@
 
 extern std::string szStartupFolder;
 extern std::string szWWWFolder;
-extern bool bIsRaspberryPi;
+extern bool bHasInternalTemperature;
+extern std::string szInternalTemperatureCommand;
+
 
 extern http::server::CWebServer m_webserver;
 
@@ -699,9 +701,9 @@ void MainWorker::GetDomoticzUpdate(const std::string &UpdateURL)
 	m_bDoDownloadDomoticzUpdate=true;
 }
 
-void MainWorker::GetRaspberryPiTemperature()
+void MainWorker::GetInternalTemperature()
 {
-	std::vector<std::string> ret=ExecuteCommandAndReturn("/opt/vc/bin/vcgencmd measure_temp");
+	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalTemperatureCommand.c_str());
 	if (ret.size()<1)
 		return;
 	std::string tmpline=ret[0];
@@ -709,11 +711,15 @@ void MainWorker::GetRaspberryPiTemperature()
 		return;
 	tmpline=tmpline.substr(5);
 	int pos=tmpline.find("'");
-	if (pos==std::string::npos)
-		return;
-	tmpline=tmpline.substr(0,pos);
+	if (pos != std::string::npos)
+	{
+		tmpline = tmpline.substr(0, pos);
+	}
 	
 	float temperature=(float)atof(tmpline.c_str());
+	if (temperature == 0)
+		return; //hardly possible for a on board temp sensor, if it is, it is probably not working
+
 	if ((temperature != 85) && (temperature > -273))
 	{
 		//Temp
@@ -1016,9 +1022,9 @@ void MainWorker::Do_Work()
 			}
 			HandleAutomaticBackups();
 		}
-		if ((bIsRaspberryPi)&&(ltime.tm_sec%30==0))
+		if ((bHasInternalTemperature)&&(ltime.tm_sec%30==0))
 		{
-			GetRaspberryPiTemperature();
+			GetInternalTemperature();
 		}
 		if (ltime.tm_sec % 30 == 0)
 		{

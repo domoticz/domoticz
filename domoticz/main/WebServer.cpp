@@ -46,7 +46,7 @@
 
 extern std::string szStartupFolder;
 extern std::string szWWWFolder;
-extern bool bIsRaspberryPi;
+
 extern std::string szAppVersion;
 extern bool m_bDontCacheHTMLPages;
 
