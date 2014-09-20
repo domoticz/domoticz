@@ -62,7 +62,7 @@ const char *szHelp=
 std::string szStartupFolder;
 std::string szWWWFolder;
 bool bHasInternalTemperature=false;
-std::string szInternalTemperatureCommand="/opt/vc/bin/vcgencmd measure_temp"
+std::string szInternalTemperatureCommand = "/opt/vc/bin/vcgencmd measure_temp";
 
 std::string szAppVersion="???";
 
