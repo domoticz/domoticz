@@ -482,7 +482,7 @@ int CHarmonyHub::HarmonyWebServiceLogin(std::string strUserEmail, std::string st
 	}
 
 	char contentLength[32];
-	sprintf( contentLength, "%d", strJSONText.length() );
+	sprintf( contentLength, "%d", (int)strJSONText.length() );
 
 	std::string strHttpRequestText;
 
@@ -609,7 +609,6 @@ int CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::stri
 	sendData.append(":name=foo#iOS6.0.1#iPhone</oa></iq>");
 
 	std::string strIdentityTokenTag = "identity=";
-	int pos = std::string::npos;
 
 	authorizationcsocket->write(sendData.c_str(), sendData.length());
 
@@ -640,7 +639,7 @@ int CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::stri
 	};
 
 	// Parse the session authorization token from the response
-	pos = (int)strData.find(strIdentityTokenTag);
+	int pos = (int)strData.find(strIdentityTokenTag);
 	if(pos == std::string::npos)
 	{
 		//errorString = "SwapAuthorizationToken : Logitech Harmony response does not contain a session authorization token";
