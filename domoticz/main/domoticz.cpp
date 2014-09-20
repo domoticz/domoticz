@@ -260,7 +260,7 @@ int main(int argc, char**argv)
 			if (sLine.find("BCM2708")!=std::string::npos)
 			{
 				_log.Log(LOG_STATUS,"System: Raspberry Pi");
-				szInternalTemperatureCommand="/opt/vc/bin/vcgencmd measure_temp"
+				szInternalTemperatureCommand="/opt/vc/bin/vcgencmd measure_temp";
 				bHasInternalTemperature=true;
 				break;
 			}
