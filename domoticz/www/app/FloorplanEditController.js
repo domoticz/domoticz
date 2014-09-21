@@ -67,6 +67,10 @@ define(['app'], function (app) {
 						points = points + ",";
 					} else {
 						$("#floorplangroup")[0].appendChild(makeSVGnode('circle', { id: "firstclick", cx:xPoint, cy:yPoint, r:2, class:'hoverable' }, ''));
+						$(".hoverable").css({'fill': $.myglobals.RoomColour,
+												'fill-opacity': $.myglobals.ActiveRoomOpacity/100,
+												'stroke': $.myglobals.RoomColour,
+												'stroke-opacity': 90});
 					}
 					points = points + xPoint + "," + yPoint;
 					$("#roompolyarea").attr("points",  points );
@@ -360,6 +364,29 @@ define(['app'], function (app) {
 						"2": updownImg
 					} );
 				});
+				// handle settings
+				if (typeof data.RoomColour != 'undefined') {
+					$.myglobals.RoomColour = data.RoomColour;
+				}
+				if (typeof data.ActiveRoomOpacity != 'undefined') {
+					$.myglobals.ActiveRoomOpacity = data.ActiveRoomOpacity;
+					$(".hoverable").css({'fill': $.myglobals.RoomColour,
+										 'fill-opacity': $.myglobals.ActiveRoomOpacity/100,
+										 'stroke': $.myglobals.RoomColour,
+										 'stroke-opacity': 90});
+				}
+				if (typeof data.InactiveRoomOpacity != 'undefined') {
+					$.myglobals.InactiveRoomOpacity = data.InactiveRoomOpacity;
+				}
+				if (typeof data.PopupDelay != 'undefined') {
+					Device.popupDelay = data.PopupDelay;
+				}
+				if (typeof data.ShowSensorValues != 'undefined') {
+					Device.showSensorValues = (data.ShowSensorValues == 1);
+				}
+				if (typeof data.ShowSwitchValues != 'undefined') {
+					Device.showSwitchValues = (data.ShowSwitchValues == 1);
+				}
 				/* Add a click handler to the rows - this could be used as a callback */
 				$('#floorplantable tbody').off()
 										  .on( 'click', 'tr', function () {
@@ -530,6 +557,13 @@ define(['app'], function (app) {
 							el.appendChild(makeSVGnode('title', null, item.Name));
 							planGroup.appendChild(el);
 						});
+						if ((typeof $.myglobals.RoomColour != 'undefined') && 
+							(typeof $.myglobals.InactiveRoomOpacity != 'undefined')) {
+							$(".nothoverable").css({'fill': $.myglobals.RoomColour,
+													'fill-opacity': $.myglobals.InactiveRoomOpacity/100,
+													'stroke': $.myglobals.RoomColour,
+													'stroke-opacity': 90});
+						}
 						/* Add a click handler to the rows - this could be used as a callback */
 						$("#floorplaneditcontent #plantable2 tbody tr").click( function( e ) {
 							ConfirmNoUpdate(this, function( param ){
