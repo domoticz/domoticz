@@ -2,6 +2,7 @@
 #login
 {
     background-color: #fff;
+    color: #000;
     background-image: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
     background-image: -webkit-linear-gradient(top, #fff, #eee);
     background-image: -moz-linear-gradient(top, #fff, #eee);
@@ -86,7 +87,7 @@
     margin: 0;
 }
 
-#inputs input
+#inputs input[type=text], input[type=password]
 {
     background: #f1f1f1 url(images/login-sprite.png) no-repeat;
     padding: 15px 15px 15px 30px;
@@ -111,7 +112,7 @@
     background-position: 5px -52px !important;
 }
 
-#inputs input:focus
+#inputs input[type=text]:focus, input[type=password]:focus
 {
     background-color: #fff;
     border-color: #e8c291;
@@ -191,15 +192,6 @@
     line-height: 35px;
     margin-left: 10px;
 }
-
-#back
-{
-    display: block;
-    text-align: center;
-    position: relative;
-    top: 60px;
-    color: #999;
-}
 </style>
 <div id="login">
 <form name="login-form" ng-submit="DoLogin()">
@@ -207,6 +199,9 @@
     <fieldset id="inputs">
         <input id="username" type="text" placeholder="Username" autofocus required />
         <input id="password" type="password" placeholder="Password" required />
+        <br />
+        <input type="checkbox" id="rememberme" /> <label for="rememberme" id="remembermelbl"></label><br />
+        <br />
     </fieldset>
     <fieldset id="actions">
 		<input type="submit" id="submit" value="Login" />

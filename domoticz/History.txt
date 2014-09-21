@@ -101,6 +101,7 @@ Version 1.0.xxxx (September xxth 2014)
 - Implemented: New internal website system
 - Fixed: Updater when eventsystem was disabled, and added laguage support
 - Implemented: Latest RFXCOM SDK (6.25)
+- Implemented: Option in Login form to remember username/password (1 year)
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

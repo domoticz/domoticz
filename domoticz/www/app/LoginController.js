@@ -7,8 +7,10 @@ define(['app'], function (app) {
 		{
 			var musername=encodeURIComponent(btoa($('#username').val()));
 			var mpassword=encodeURIComponent(btoa($('#password').val()));
+			var bRememberMe=$('#rememberme').is(":checked");
+
 			$.ajax({
-				url: "json.htm?type=command&param=logincheck&username=" + musername + "&password=" + mpassword,
+				url: "json.htm?type=command&param=logincheck&username=" + musername + "&password=" + mpassword + "&rememberme="+bRememberMe,
 				async: false, 
 				dataType: 'json',
 				success: function(data) {
@@ -81,6 +83,7 @@ define(['app'], function (app) {
 					$(this).attr("value",$.i18n("Login"));
 				}
 			});
+			$("#remembermelbl").text($.i18n("Remember me"));
 		};
 	} ]);
 });

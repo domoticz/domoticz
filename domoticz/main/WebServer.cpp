@@ -483,6 +483,8 @@ void CWebServer::Cmd_LoginCheck(Json::Value &root)
 		)
 		return;
 
+	std::string rememberme = m_pWebEm->FindValue("rememberme");
+
 	std::string usrname;
 	std::string usrpass;
 	if (request_handler::url_decode(tmpusrname,usrname))
@@ -502,6 +504,7 @@ void CWebServer::Cmd_LoginCheck(Json::Value &root)
 			m_pWebEm->m_actualuser = m_users[iUser].Username;
 			m_pWebEm->m_actualuser_rights = m_users[iUser].userrights;
 			m_pWebEm->m_bAddNewSession = true;
+			m_pWebEm->m_bRemembermeUser = (rememberme == "true");
 			root["user"] = m_pWebEm->m_actualuser;
 			root["rights"] = m_pWebEm->m_actualuser_rights;
 		}

@@ -53,7 +53,7 @@ myServer( address, port, myRequestHandler )
 {
 	m_DigistRealm = "Domoticz.com";
 	m_zippassword = "";
-	m_actsessionid=0;
+	m_actsessionid="";
 	m_actualuser = "";
 	m_actualuser_rights = -1;
 	m_authmethod=AUTH_LOGIN;
@@ -902,6 +902,31 @@ void mg_md5(char buf[33], ...) {
 	bin2str(buf, hash, sizeof(hash));
 }
 
+// Stringify binary data. Output buffer must be twice as big as input,
+// because each byte takes 2 bytes in string representation
+static std::string std_bin2str(const unsigned char *p, size_t len) {
+	static const char *hex = "0123456789abcdef";
+	std::string retStr = "";
+	for (; len--; p++) {
+		retStr += hex[p[0] >> 4];
+		retStr += hex[p[0] & 0x0f];
+	}
+	return retStr;
+}
+
+// Return stringified MD5 hash for list of strings. Buffer must be 33 bytes.
+std::string mg_md5_string(const std::string &sString) {
+	unsigned char hash[16];
+	MD5_CTX ctx;
+
+	MD5Init(&ctx);
+
+	MD5Update(&ctx, (const unsigned char *)sString.c_str(), sString.size());
+
+	MD5Final(hash, &ctx);
+	return std_bin2str(hash, sizeof(hash));
+}
+
 static int lowercase(const char *s) {
 	return tolower(* (const unsigned char *) s);
 }
@@ -1093,6 +1118,7 @@ int cWebemRequestHandler::authorize(const request& req, reply& rep)
 						myWebem->m_actualuser = itt->Username;
 						myWebem->m_actualuser_rights = itt->userrights;
 						m_failcounter=0;
+						myWebem->m_bRemembermeUser = false;
 						myWebem->m_bAddNewSession = true;
 						return 1;
 					}
@@ -1121,6 +1147,7 @@ int cWebemRequestHandler::authorize(const request& req, reply& rep)
 			myWebem->m_actualuser = itt->Username;
 			myWebem->m_actualuser_rights = itt->userrights;
 			m_failcounter=0;
+			myWebem->m_bRemembermeUser = false;
 			myWebem->m_bAddNewSession = true;
 			return 1;
 		}
@@ -1227,18 +1254,24 @@ void cWebemRequestHandler::send_remove_cookie(reply& rep)
 	rep.headers[ahsize].name = "Set-Cookie";
 	std::stringstream sstr;
 	sstr << "SID=none";
-	sstr << "; Expires= " << make_web_time(0);
+	sstr << "; path=/; Expires= " << make_web_time(0);
 	rep.headers[ahsize].value = sstr.str();
 }
 
-void cWebemRequestHandler::send_cookie(reply& rep, const time_t SID, const int Rights, const time_t expires)
+std::string cWebemRequestHandler::generateSessionID(const std::string &sHost, const std::string &sUsername, const std::string &sPassword)
+{
+	std::string token = "Username:" + sUsername + ";Password:" + sPassword + ";Host:" + sHost;
+	return mg_md5_string(base64_encode((const unsigned char*)token.c_str(), token.size()));
+}
+
+void cWebemRequestHandler::send_cookie(reply& rep, const std::string &sSID, const time_t expires)
 {
 	int ahsize = rep.headers.size();
 	rep.headers.resize(ahsize + 1);
 	rep.headers[ahsize].name = "Set-Cookie";
 	std::stringstream sstr;
-	sstr << "SID=" << std::dec << SID << "-" << std::dec << Rights;
-	sstr << "; Expires= " << make_web_time(expires);
+	sstr << "SID=" << sSID << "." << expires;
+	sstr << "; path=/; Expires= " << make_web_time(expires);
 	rep.headers[ahsize].value = sstr.str();
 }
 
@@ -1303,7 +1336,7 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 
 bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, const request& req, reply& rep)
 {
-	myWebem->m_actsessionid = 0;
+	myWebem->m_actsessionid = "";
 	myWebem->m_actualuser = "";
 	myWebem->m_actualuser_rights = -1;
 	if (myWebem->m_bForceRelogin)
@@ -1336,47 +1369,75 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, const r
 		int fpos = scookie.find("SID=");
 		if (fpos != std::string::npos)
 		{
-			int dpos = scookie.find("-");
-			if (dpos != std::string::npos)
+			int ppos = scookie.find(".");
+			if (ppos != std::string::npos)
 			{
+				std::string sSID = scookie.substr(fpos + 4, ppos-fpos-4);
+				std::string szTime = scookie.substr(ppos + 1);
+				std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessionids.find(sSID);
+
+				time_t stime;
 				std::stringstream sstr;
+				sstr << szTime;
+				sstr >> stime;
 
-				sstr << scookie.substr(fpos + 4, dpos - fpos - 4).c_str();
-
-				time_t SID;
-				sstr >> SID;
-				std::map<time_t, WebEmSession>::iterator itt = myWebem->m_sessionids.find(SID);
-				if (itt != myWebem->m_sessionids.end())
+				time_t acttime = mytime(NULL);
+				if (stime < acttime)
 				{
-					time_t acttime = mytime(NULL);
-					if (acttime - myWebem->m_sessionids[SID].lasttouch < SESSION_TIMEOUT)
+					//timeout, remove session
+					m_failcounter = 0;
+					if (itt != myWebem->m_sessionids.end())
 					{
-						myWebem->m_actsessionid = SID;
-						myWebem->m_actualuser = myWebem->m_sessionids[SID].username;
-						myWebem->m_actualuser_rights = myWebem->m_sessionids[SID].rights;
+						myWebem->m_sessionids.erase(itt);
+					}
+					if (myWebem->m_authmethod == AUTH_BASIC)
+					{
+						send_remove_cookie(rep);
+						send_authorization_request(rep);
+						return false;
+					}
+					rep = reply::stock_reply(reply::unauthorized);
+					send_remove_cookie(rep);
+					return false;
+				}
+				else
+				{
+					if (itt != myWebem->m_sessionids.end())
+					{
+						myWebem->m_actsessionid = sSID;
+						myWebem->m_actualuser = myWebem->m_sessionids[sSID].username;
+						myWebem->m_actualuser_rights = myWebem->m_sessionids[sSID].rights;
 						return true;
 					}
 					else
 					{
-						//timeout, remove session
-						m_failcounter = 0;
-						myWebem->m_sessionids.erase(itt);
-						if (myWebem->m_authmethod == AUTH_BASIC)
+						//Session ID not found, lets add it if its correct
+						std::vector<_tWebUserPassword>::iterator itt;
+						for (itt = myWebem->m_userpasswords.begin(); itt != myWebem->m_userpasswords.end(); ++itt)
 						{
-							send_remove_cookie(rep);
-							send_authorization_request(rep);
-							return false;
+							std::string tempSID = generateSessionID(sHost, itt->Username, itt->Password);
+							if (tempSID == sSID)
+							{
+								_tWebEmSession usession;
+								myWebem->m_actualuser = itt->Username;
+								myWebem->m_actualuser_rights = itt->userrights;
+								usession.username = myWebem->m_actualuser;
+								usession.rights = myWebem->m_actualuser_rights;
+								usession.lasttouch = stime;
+								myWebem->m_sessionids[sSID] = usession;
+								myWebem->m_actsessionid = sSID;
+								return true;
+							}
 						}
-						rep = reply::stock_reply(reply::unauthorized);
-						send_remove_cookie(rep);
-						return false;
+
+						myWebem->m_bRemoveCookie = true;
 					}
 				}
-				else
-				{
-					//Cookie not found, lets remove it
-					myWebem->m_bRemoveCookie = true;
-				}
+			}
+			else
+			{
+				//invalid cookie
+				myWebem->m_bRemoveCookie = true;
 			}
 		}
 	}
@@ -1428,7 +1489,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 	rep.bIsGZIP = false;
 	myWebem->m_bAddNewSession=false;
 	myWebem->m_bRemoveCookie=false;
-	myWebem->m_actsessionid = 0;
+	myWebem->m_actsessionid = "";
 
 	if (req.uri.find("json.htm") != std::string::npos)
 	{
@@ -1443,24 +1504,15 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 				int fpos = scookie.find("SID=");
 				if (fpos != std::string::npos)
 				{
-					int dpos = scookie.find("-");
-					if (dpos != std::string::npos)
+					std::string sSID = scookie.substr(fpos + 4);
+					std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessionids.find(sSID);
+					if (itt != myWebem->m_sessionids.end())
 					{
-						std::stringstream sstr;
-
-						sstr << scookie.substr(fpos + 4, dpos - fpos - 4).c_str();
-
-						time_t SID;
-						sstr >> SID;
-						std::map<time_t, WebEmSession>::iterator itt = myWebem->m_sessionids.find(SID);
-						if (itt != myWebem->m_sessionids.end())
-						{
-							myWebem->m_sessionids.erase(itt);
-						}
+						myWebem->m_sessionids.erase(itt);
 					}
 				}
 			}
-			myWebem->m_actsessionid = 0;
+			myWebem->m_actsessionid = "";
 			myWebem->m_actualuser = "";
 			myWebem->m_actualuser_rights = -1;
 			myWebem->m_bForceRelogin = true;
@@ -1547,28 +1599,42 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 	{
 		//Add new session ID
 		_tWebEmSession usession;
-		time_t sessionid = mytime(NULL);
 		usession.username = myWebem->m_actualuser;
 		usession.rights = myWebem->m_actualuser_rights;
-		usession.lasttouch = sessionid;
-		myWebem->m_sessionids[sessionid] = usession;
-		myWebem->m_actsessionid = sessionid;
-		send_cookie(rep, sessionid, usession.rights, time(NULL) + SESSION_TIMEOUT);
+		usession.lasttouch = mytime(NULL) + SESSION_TIMEOUT;
+		if (myWebem->m_bRemembermeUser)
+		{
+			//Extend session by a year
+			usession.lasttouch += (86400 * 365);
+		}
+
+		std::vector<_tWebUserPassword>::iterator itt;
+		for (itt = myWebem->m_userpasswords.begin(); itt != myWebem->m_userpasswords.end(); ++itt)
+		{
+			if (itt->Username == usession.username)
+			{
+				std::string sSID = generateSessionID(sHost, myWebem->m_actualuser, itt->Password);
+				myWebem->m_sessionids[sSID] = usession;
+				myWebem->m_actsessionid = sSID;
+				send_cookie(rep, sSID, usession.lasttouch);
+				break;
+			}
+		}
 	}
 	else if (myWebem->m_bRemoveCookie == true)
 	{
 		send_remove_cookie(rep);
 	}
-	else if (myWebem->m_actsessionid != 0)
+	else if (myWebem->m_actsessionid.size()>0)
 	{
-		std::map<time_t, WebEmSession>::iterator itt = myWebem->m_sessionids.find(myWebem->m_actsessionid);
+		std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessionids.find(myWebem->m_actsessionid);
 		if (itt != myWebem->m_sessionids.end())
 		{
 			time_t atime = mytime(NULL);
-			if (atime - myWebem->m_sessionids[myWebem->m_actsessionid].lasttouch > 10)
+			if (myWebem->m_sessionids[myWebem->m_actsessionid].lasttouch - 60 < atime)
 			{
-				myWebem->m_sessionids[myWebem->m_actsessionid].lasttouch = atime;
-				send_cookie(rep, myWebem->m_actsessionid, myWebem->m_sessionids[myWebem->m_actsessionid].rights, atime + SESSION_TIMEOUT);
+				myWebem->m_sessionids[myWebem->m_actsessionid].lasttouch = atime + SESSION_TIMEOUT;
+				send_cookie(rep, myWebem->m_actsessionid, myWebem->m_sessionids[myWebem->m_actsessionid].lasttouch);
 			}
 		}
 	}
