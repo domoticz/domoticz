@@ -300,6 +300,15 @@ define(['app'], function (app) {
 						if (typeof data.InactiveRoomOpacity != 'undefined') {
 							$.myglobals.InactiveRoomOpacity = data.InactiveRoomOpacity;
 						}
+						if (typeof data.PopupDelay != 'undefined') {
+							Device.popupDelay = data.PopupDelay;
+						}
+						if (typeof data.ShowSensorValues != 'undefined') {
+							Device.showSensorValues = (data.ShowSensorValues == 1);
+						}
+						if (typeof data.ShowSwitchValues != 'undefined') {
+							Device.showSwitchValues = (data.ShowSwitchValues == 1);
+						}
 
 						//Lets start
 						ShowFloorplan();
