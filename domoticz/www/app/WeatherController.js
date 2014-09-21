@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('WeatherController', [ '$scope', '$location', '$http', '$interval', 'permissions', function($scope,$location,$http,$interval,permissions) {
+	app.controller('WeatherController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
 
 		MakeFavorite = function(id,isfavorite)
 		{
@@ -221,7 +221,7 @@ define(['app'], function (app) {
 			  }
 			 }
 		  });
-			$scope.RefreshTimeAndSun();
+			$rootScope.RefreshTimeAndSun();
 			$scope.mytimer=$interval(function() {
 				RefreshWeathers();
 			}, 10000);
@@ -488,7 +488,7 @@ define(['app'], function (app) {
 		  $('#weathercontent').html(tophtm+htmlcontent);
 		  $('#weathercontent').i18n();
 		  
-		  $scope.RefreshTimeAndSun();
+			$rootScope.RefreshTimeAndSun();
 
 			if (bAllowWidgetReorder==true) {
 				if (permissions.hasPermission("Admin")) {

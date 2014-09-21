@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('FloorplanEditController', [ '$scope', '$location', '$http', '$interval', 'permissions', function($scope,$location,$http,$interval,permissions) {
+	app.controller('FloorplanEditController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
 
 		ImageLoaded = function() {
 			if (typeof $("#floorplanimagesize") != 'undefined') {

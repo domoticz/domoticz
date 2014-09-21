@@ -2299,6 +2299,9 @@ unsigned long long MainWorker::decode_Temp(const CDomoticzHardwareBase *pHardwar
 		case sTypeTEMP10:
 			WriteMessage("subtype       = TEMP10 - TFA 30.3133");
 			break;
+		case sTypeTEMP11:
+			WriteMessage("subtype       = WT0122 pool sensor");
+			break;
 		case sTypeTEMP_SYSTEM:
 			WriteMessage("subtype       = System");
 			break;
@@ -2759,7 +2762,7 @@ unsigned long long MainWorker::decode_TempHumBaro(const CDomoticzHardwareBase *p
 		switch (pResponse->TEMP_HUM_BARO.subtype)
 		{
 		case sTypeTHB1:
-			WriteMessage("subtype       = THB1 - BTHR918");
+			WriteMessage("subtype       = THB1 - BTHR918, BTHGN129");
 			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM_BARO.id2);
 			WriteMessage(szTmp);
 			break;
@@ -3650,11 +3653,13 @@ unsigned long long MainWorker::decode_Lighting5(const CDomoticzHardwareBase *pHa
 	unsigned char SignalLevel=pResponse->LIGHTING5.rssi;
 
 	bool bDoUpdate=true;
-	if ((subType == sTypeTRC02) || (subType == sTypeAoke))
+	if ((subType == sTypeTRC02) || (subType == sTypeTRC02_2) || (subType == sTypeAoke) || (subType == sTypeEurodomest))
 	{
 		if (
-			(pResponse->LIGHTING5.cmnd!=light5_sOff)&&
-			(pResponse->LIGHTING5.cmnd!=light5_sOn)
+			(pResponse->LIGHTING5.cmnd != light5_sOff)&&
+			(pResponse->LIGHTING5.cmnd != light5_sOn)&&
+			(pResponse->LIGHTING5.cmnd != light5_sGroupOff)&&
+			(pResponse->LIGHTING5.cmnd != light5_sGroupOn)
 			)
 		{
 			bDoUpdate=false;
@@ -3865,8 +3870,12 @@ unsigned long long MainWorker::decode_Lighting5(const CDomoticzHardwareBase *pHa
 			}
 			break;
 		case sTypeTRC02:
-			WriteMessage("subtype       = TRC02 (RGB)");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+		case sTypeTRC02_2:
+			if (pResponse->LIGHTING5.subtype == sTypeTRC02)
+				WriteMessage("subtype       = TRC02 (RGB)");
+			else
+				WriteMessage("subtype       = TRC02_2 (RGB)");
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp,"ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 			WriteMessage(szTmp);
@@ -3915,6 +3924,34 @@ unsigned long long MainWorker::decode_Lighting5(const CDomoticzHardwareBase *pHa
 				break;
 			case light5_sOn:
 				WriteMessage("On");
+				break;
+			default:
+				WriteMessage("UNKNOWN");
+				break;
+			}
+			break;
+		case sTypeEurodomest:
+			WriteMessage("subtype       = Eurodomest");
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "ID            = %02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "Unit          = %d", pResponse->LIGHTING5.unitcode);
+			WriteMessage(szTmp);
+			WriteMessage("Command       = ", false);
+			switch (pResponse->LIGHTING5.cmnd)
+			{
+			case light5_sOff:
+				WriteMessage("Off");
+				break;
+			case light5_sOn:
+				WriteMessage("On");
+				break;
+			case light5_sGroupOff:
+				WriteMessage("Group Off");
+				break;
+			case light5_sGroupOn:
+				WriteMessage("Group On");
 				break;
 			default:
 				WriteMessage("UNKNOWN");
@@ -4098,6 +4135,44 @@ unsigned long long MainWorker::decode_Chime(const CDomoticzHardwareBase *pHardwa
 				break;
 			}
 			break;
+		case sTypeByronMP001:
+			WriteMessage("subtype       = Byron MP001");
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->CHIME.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "ID            = %02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "Sound          = %d", pResponse->CHIME.sound);
+			WriteMessage(szTmp);
+
+			if ((pResponse->CHIME.id1 & 0x40) == 0x40)
+				WriteMessage("Switch 1      = Off");
+			else
+				WriteMessage("Switch 1      = On");
+
+			if ((pResponse->CHIME.id1 & 0x10) == 0x10)
+				WriteMessage("Switch 2      = Off");
+			else
+				WriteMessage("Switch 2      = On");
+
+			if ((pResponse->CHIME.id1 & 0x04) == 0x04)
+				WriteMessage("Switch 3      = Off");
+			else
+				WriteMessage("Switch 3      = On");
+
+			if ((pResponse->CHIME.id1 & 0x01) == 0x01)
+				WriteMessage("Switch 4      = Off");
+			else
+				WriteMessage("Switch 4      = On");
+
+			if ((pResponse->CHIME.id2 & 0x40) == 0x40)
+				WriteMessage("Switch 5      = Off");
+			else
+				WriteMessage("Switch 5      = On");
+
+			if ((pResponse->CHIME.id2 & 0x10) == 0x10)
+				WriteMessage("Switch 6      = Off");
+			else
+				WriteMessage("Switch 6      = On");
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->CHIME.packettype, pResponse->CHIME.subtype);
 			WriteMessage(szTmp);
@@ -8158,7 +8233,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				else
 					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING5));
 			}
-			else if (dSubType==sTypeTRC02)
+			else if ((dSubType == sTypeTRC02) || (dSubType == sTypeTRC02_2))
 			{
 				if (switchcmd!="Off")
 				{

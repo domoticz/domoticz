@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('LightsController', [ '$scope', '$location', '$http', '$interval', 'permissions', function($scope,$location,$http,$interval,permissions) {
+	app.controller('LightsController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
 
 		DeleteTimer = function(idx)
 		{
@@ -401,9 +401,9 @@ define(['app'], function (app) {
 				}
 			}); 
 		  
-		  $scope.RefreshTimeAndSun();
+			$rootScope.RefreshTimeAndSun();
 		  
-		  $('#modal').hide();
+			$('#modal').hide();
 		}
 
 		ShowTimers = function (id,name, isdimmer, stype,devsubtype)
@@ -447,7 +447,7 @@ define(['app'], function (app) {
 			$("#lightcontent #timerparamstable #rdate").hide();
 			$("#lightcontent #timerparamstable #rnorm").show();
 
-			$scope.RefreshTimeAndSun();
+			$rootScope.RefreshTimeAndSun();
 
 			var nowTemp = new Date();
 			var now = new Date(nowTemp.getFullYear(), nowTemp.getMonth(), nowTemp.getDate(), 0, 0, 0, 0);
@@ -1516,7 +1516,7 @@ define(['app'], function (app) {
 			  }
 			 }
 		  });
-		  $scope.RefreshTimeAndSun();
+			$rootScope.RefreshTimeAndSun();
 			$scope.mytimer=$interval(function() {
 				RefreshLights();
 			}, 10000);
@@ -1930,7 +1930,7 @@ define(['app'], function (app) {
 					}
 				}
 			}
-			$scope.RefreshTimeAndSun();
+			$rootScope.RefreshTimeAndSun();
 			
 			//Create Dimmer Sliders
 			$('#lightcontent .dimslider').slider({

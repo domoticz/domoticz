@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('DashboardController', [ '$scope', '$location', '$http', '$interval', 'permissions', function($scope,$location,$http,$interval,permissions) {
+	app.controller('DashboardController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
 
 		$scope.LastUpdateTime = parseInt(0);
 		
@@ -11,7 +11,7 @@ define(['app'], function (app) {
 			}
 		  var id="";
 
-			$scope.RefreshTimeAndSun();
+			$rootScope.RefreshTimeAndSun();
 		  
 		  $.ajax({
 			 url: "json.htm?type=devices&filter=all&used=true&order=Name&plan="+window.myglobals.LastPlanSelected+"&lastupdate="+$scope.LastUpdateTime,
@@ -2679,7 +2679,7 @@ define(['app'], function (app) {
 					}
 				});
 
-			$scope.RefreshTimeAndSun();
+			$rootScope.RefreshTimeAndSun();
 			
 			//Create Dimmer Sliders
 			$('#dashcontent .dimslider').slider({

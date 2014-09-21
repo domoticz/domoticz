@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('RoomplanController', [ '$scope', '$location', '$http', '$interval', 'permissions', function($scope,$location,$http,$interval,permissions) {
+	app.controller('RoomplanController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
 
 		ChangePlanOrder = function(order, planid)
 		{

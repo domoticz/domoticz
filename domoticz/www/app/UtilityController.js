@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('UtilityController', [ '$scope', '$location', '$http', '$interval', 'permissions', function($scope,$location,$http,$interval,permissions) {
+	app.controller('UtilityController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
 
 		MakeFavorite = function(id,isfavorite)
 		{
@@ -232,7 +232,7 @@ define(['app'], function (app) {
 			  }
 			 }
 		  });
-			$scope.RefreshTimeAndSun();
+			$rootScope.RefreshTimeAndSun();
 			$scope.mytimer=$interval(function() {
 				RefreshUtilities();
 			}, 10000);
@@ -610,7 +610,7 @@ define(['app'], function (app) {
 					}
 				}
 			}
-			$scope.RefreshTimeAndSun();
+			$rootScope.RefreshTimeAndSun();
 			$scope.mytimer=$interval(function() {
 				RefreshUtilities();
 			}, 10000);

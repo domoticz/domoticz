@@ -384,6 +384,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeTEMP, sTypeTEMP8, "LaCrosse WS2300" },
 		{ pTypeTEMP, sTypeTEMP9, "RUBiCSON" },
 		{ pTypeTEMP, sTypeTEMP10, "TFA 30.3133" },
+		{ pTypeTEMP, sTypeTEMP11, "WT0122 Pool sensor" },
 		{ pTypeTEMP, sTypeTEMP_SYSTEM, "System" },
 		
 		{ pTypeHUM, sTypeHUM1, "LaCrosse TX3" },
@@ -404,7 +405,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeTEMP_HUM, sTypeTH_LC_TC, "LaCrosse TX3" },
 		
 
-		{ pTypeTEMP_HUM_BARO, sTypeTHB1, "THB1 - BTHR918" },
+		{ pTypeTEMP_HUM_BARO, sTypeTHB1, "THB1 - BTHR918, BTHGN129" },
 		{ pTypeTEMP_HUM_BARO, sTypeTHB2, "THB2 - BTHR918N, BTHR968" },
 		{ pTypeTEMP_HUM_BARO, sTypeTHBFloat, "Weather Station" },
 
@@ -456,7 +457,9 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeRSL, "Conrad RSL" },
 		{ pTypeLighting5, sTypeLivolo, "Livolo" },
 		{ pTypeLighting5, sTypeTRC02, "TRC02 (RGB)" },
+		{ pTypeLighting5, sTypeTRC02_2, "TRC02_2 (RGB)" },
 		{ pTypeLighting5, sTypeAoke, "Aoke" },
+		{ pTypeLighting5, sTypeEurodomest, "Eurodomest" },
 
 
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
@@ -551,6 +554,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
 
 		{ pTypeChime, sTypeByronSX, "ByronSX" },
+		{ pTypeChime, sTypeByronMP001, "Byron MP001" },
+
 		{ pTypeTEMP_RAIN, sTypeTR1, "Alecto WS1200" },
 
 		{ pTypeBBQ, sTypeBBQ1, "Maverick ET-732" },
@@ -563,6 +568,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 	
 		{ pTypeRFY, sTypeRFY, "RFY" },
 		{ pTypeRFY, sTypeRFYext, "RFY-Ext" },
+
 
 		{  0,0,NULL }
 	};
@@ -583,6 +589,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeTEMP, sTypeTEMP8, "Temperature" },
 		{ pTypeTEMP, sTypeTEMP9, "Temperature" },
 		{ pTypeTEMP, sTypeTEMP10, "Temperature" },
+		{ pTypeTEMP, sTypeTEMP11, "Temperature" },
 		{ pTypeTEMP, sTypeTEMP_SYSTEM, "Temperature" },
 		
 		{ pTypeHUM, sTypeHUM1, "Temperature,Humidity,Humidity Status" },
@@ -655,7 +662,9 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting5, sTypeRSL, "Status" },
 		{ pTypeLighting5, sTypeLivolo, "Status" },
 		{ pTypeLighting5, sTypeTRC02, "Status" },
+		{ pTypeLighting5, sTypeTRC02_2, "Status" },
 		{ pTypeLighting5, sTypeAoke, "Status" },
+		{ pTypeLighting5, sTypeEurodomest, "Status" },
 
 		{ pTypeLighting6, sTypeBlyss, "Status" },
 
@@ -749,6 +758,8 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
 
 		{ pTypeChime, sTypeByronSX, "Status" },
+		{ pTypeChime, sTypeByronMP001, "Status" },
+
 		{ pTypeTEMP_RAIN, sTypeTR1, "Temperature,Total rain" },
 
 		{ pTypeBBQ, sTypeBBQ1, "Temperature 1,Temperature 2" },
@@ -1027,7 +1038,8 @@ void GetLightStatus(
 			}
 			break;
 		case sTypeTRC02:
-			bHaveGroupCmd=true;
+		case sTypeTRC02_2:
+			bHaveGroupCmd = true;
 			bHaveDimmer=true;
 			maxDimLevel=7;
 			switch (nValue)
@@ -1048,6 +1060,23 @@ void GetLightStatus(
 				break;
 			case light5_sOn:
 				lstatus = "On";
+				break;
+			}
+			break;
+		case sTypeEurodomest:
+			switch (nValue)
+			{
+			case light5_sOff:
+				lstatus = "Off";
+				break;
+			case light5_sOn:
+				lstatus = "On";
+				break;
+			case light5_sGroupOff:
+				lstatus = "Group Off";
+				break;
+			case light5_sGroupOn:
+				lstatus = "Group On";
 				break;
 			}
 			break;
@@ -1462,7 +1491,7 @@ bool GetLightCommand(
 				return true;
 			}
 		}
-		else if (dSubType==sTypeTRC02)
+		else if ((dSubType == sTypeTRC02) || (dSubType == sTypeTRC02_2))
 		{
 			if (switchcmd=="Set Color")
 			{

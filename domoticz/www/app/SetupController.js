@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('SetupController', [ '$scope', '$window', '$location', '$http', '$interval', function($scope,$window,$location,$http,$interval) {
+	app.controller('SetupController', [ '$scope', '$rootScope', '$window', '$location', '$http', '$interval', function($scope,$rootScope,$window,$location,$http,$interval) {
 
 		googleMapsCallback = function() {
 				$( "#dialog-findlatlong" ).dialog( "open" );

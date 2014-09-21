@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('DPFibaroController', [ '$scope', '$location', '$http', '$interval', function($scope,$location,$http,$interval) {
+	app.controller('DPFibaroController', [ '$scope', '$rootScope', '$location', '$http', '$interval', function($scope,$rootScope,$location,$http,$interval) {
 
 		TargetTypeUpdate = function()
 		{

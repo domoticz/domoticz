@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('FrontpageController', [ '$scope', '$location', '$http', '$interval', function($scope,$location,$http,$interval) {
+	app.controller('FrontpageController', [ '$scope', '$rootScope', '$location', '$http', '$interval', function($scope,$rootScope,$location,$http,$interval) {
 		init();
 
 		function init()

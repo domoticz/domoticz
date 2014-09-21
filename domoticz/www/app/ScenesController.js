@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('ScenesController', [ '$scope', '$location', '$http', '$interval', 'permissions', function($scope,$location,$http,$interval,permissions) {
+	app.controller('ScenesController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
 
 		RemoveCode = function()
 		{

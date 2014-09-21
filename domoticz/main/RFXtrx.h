@@ -9,6 +9,12 @@
 
 
 /*
+SDK version 6.25
+	sTypeByronMP001 added
+	sTypeTEMP11 added
+	sTypeTRC02_2 added
+	THB1 also used for BTHGN129
+
 SDK version 6.24
 	Lighting5 - Aoke realy added
 
@@ -359,6 +365,8 @@ SDK version 4.9
 #define sTypeLivolo 0x05
 #define sTypeTRC02 0x06
 #define sTypeAoke 0x07
+#define sTypeTRC02_2 0x08
+#define sTypeEurodomest 0x09
 
 #define light5_sOff 0x0
 #define light5_sOn 0x1
@@ -411,6 +419,7 @@ SDK version 4.9
 
 #define pTypeChime 0x16
 #define sTypeByronSX 0x0
+#define sTypeByronMP001 0x1
 #define chime_sound0 0x1
 #define chime_sound1 0x3
 #define chime_sound2 0x5
@@ -602,6 +611,7 @@ SDK version 4.9
 #define sTypeTEMP8 0x8  //LaCrosse WS2300
 #define sTypeTEMP9 0x9  //RUBiCSON
 #define sTypeTEMP10 0xA  //TFA 30.3133
+#define sTypeTEMP11 0xB  //WT0122
 
 //types for humidity
 #define pTypeHUM 0x51
@@ -634,7 +644,7 @@ SDK version 4.9
 
 //types for temperature+humidity+baro
 #define pTypeTEMP_HUM_BARO 0x54
-#define sTypeTHB1 0x1   //BTHR918
+#define sTypeTHB1 0x1   //BTHR918,BTHGN129
 #define sTypeTHB2 0x2   //BTHR918N,BTHR968
 #define baroForecastNoInfo 0x00
 #define baroForecastSunny 0x01

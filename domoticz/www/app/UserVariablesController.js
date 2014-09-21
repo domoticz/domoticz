@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('UserVariablesController', [ '$scope', '$location', '$http', '$interval', function($scope,$location,$http,$interval) {
+	app.controller('UserVariablesController', [ '$scope', '$rootScope', '$location', '$http', '$interval', function($scope,$rootScope,$location,$http,$interval) {
 		init();
 
 		function init()

@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('LogoutController', [ 'permissions', '$scope', '$location', '$http', '$interval', function(permissions, $scope,$location,$http,$interval) {
+	app.controller('LogoutController', [ 'permissions', '$scope', '$rootScope', '$location', '$http', '$interval', function(permissions,$scope,$rootScope,$location,$http,$interval) {
 
 		init();
 

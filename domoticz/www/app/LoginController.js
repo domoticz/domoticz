@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('LoginController', [ 'permissions', '$scope', '$location', '$http', '$interval', function(permissions, $scope,$location,$http,$interval) {
+	app.controller('LoginController', [ 'permissions', '$scope', '$rootScope', '$location', '$http', '$interval', function(permissions,$scope,$rootScope,$location,$http,$interval) {
 
 		$scope.failcounter=0;
 

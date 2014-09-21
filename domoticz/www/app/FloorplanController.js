@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('FloorplanController', [ '$scope', '$location', '$http', '$interval', function($scope,$location,$http,$interval) {
+	app.controller('FloorplanController', [ '$scope', '$rootScope', '$location', '$http', '$interval', function($scope,$rootScope,$location,$http,$interval) {
 
 		var aFloorplans = {};
 

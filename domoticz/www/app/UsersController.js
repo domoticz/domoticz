@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('UsersController', [ '$scope', '$location', '$http', '$interval', function($scope,$location,$http,$interval) {
+	app.controller('UsersController', [ '$scope', '$rootScope', '$location', '$http', '$interval', function($scope,$rootScope,$location,$http,$interval) {
 
 		DeleteUser = function(idx)
 		{

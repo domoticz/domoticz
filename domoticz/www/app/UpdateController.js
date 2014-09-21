@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('UpdateController', [ '$scope', '$location', '$http', '$interval', '$window', function($scope,$location,$http,$interval,$window) {
+	app.controller('UpdateController', [ '$scope', '$rootScope', '$location', '$http', '$interval', '$window', function($scope,$rootScope,$location,$http,$interval,$window) {
 
 		$scope.topText = "";
 		$scope.bottomText = "";
