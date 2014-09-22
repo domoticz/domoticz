@@ -183,7 +183,7 @@ function CheckForUpdate(showdialog) {
 	});
 }
 
-function TransferDevice(idx,backfunction)
+function ReplaceDevice(idx,backfunction)
 {
 	$.ajax({
 		 url: "json.htm?type=gettransfers&idx=" + idx,
@@ -195,17 +195,17 @@ function TransferDevice(idx,backfunction)
 					bootbox.alert($.i18n('No devices to Transfer too!'));
 					return;
 				}
-				$("#dialog-transferdevice #newdevice").html("");
+				$("#dialog-replacedevice #newdevice").html("");
 				
 				$.each(data.result, function(i,item){
 					var option = $('<option />');
 					option.attr('value', item.idx).text(item.Name);
-					$("#dialog-transferdevice #newdevice").append(option);
+					$("#dialog-replacedevice #newdevice").append(option);
 				});
 				$.devIdx = idx;
 				$.backfunction=backfunction;
-				$( "#dialog-transferdevice" ).i18n();
-				$( "#dialog-transferdevice" ).dialog( "open" );
+				$( "#dialog-replacedevice" ).i18n();
+				$( "#dialog-replacedevice" ).dialog( "open" );
 		 }
 	});
 }
@@ -295,10 +295,10 @@ $(document).ready(function() {
 
 	window.myglobals=$.myglobals;
 
-    $( "#dialog-transferdevice" ).dialog({
+    $( "#dialog-replacedevice" ).dialog({
           autoOpen: false,
           width: 380,
-          height: 160,
+          height: 180,
           modal: true,
           resizable: false,
           buttons: {
@@ -306,7 +306,7 @@ $(document).ready(function() {
                   var bValid = true;
                   $( this ).dialog( "close" );
                   
-									var NewDeviceIdx=$("#dialog-transferdevice #newdevice option:selected").val();
+									var NewDeviceIdx=$("#dialog-replacedevice #newdevice option:selected").val();
 									if (typeof NewDeviceIdx == 'undefined') {
 										bootbox.alert($.i18n('No New Device Selected!'));
 										return ;
@@ -622,7 +622,7 @@ $(document).ready(function() {
 			<br>
 			<a class="btnstyle3" onclick="AddNotification();" data-i18n="Add">Add</a>
 	</div>
-	<div id="dialog-transferdevice" title="Transfer Device">
+	<div id="dialog-replacedevice" title="Replace Device">
 			<form>
 					<label for="newdevice"><span data-i18n="New Device"></span>: </label>
 					<select id="newdevice" style="width:250px" class="combobox ui-corner-all">

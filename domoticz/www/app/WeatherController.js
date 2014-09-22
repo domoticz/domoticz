@@ -574,9 +574,9 @@ define(['app'], function (app) {
 							}
 						});
 					  },
-					  "Transfer": function() {
+					  "Replace": function() {
 						  $( this ).dialog( "close" );
-						  TransferDevice($.devIdx,ShowWeathers);
+						  ReplaceDevice($.devIdx,ShowWeathers);
 					  },
 					  Cancel: function() {
 						  $( this ).dialog( "close" );
@@ -625,9 +625,9 @@ define(['app'], function (app) {
 							}
 						});
 					  },
-					  "Transfer": function() {
+					  "Replace": function() {
 						  $( this ).dialog( "close" );
-						  TransferDevice($.devIdx,ShowWeathers);
+						  ReplaceDevice($.devIdx,ShowWeathers);
 					  },
 					  Cancel: function() {
 						  $( this ).dialog( "close" );
@@ -677,9 +677,9 @@ define(['app'], function (app) {
 							}
 						});
 					  },
-					  "Transfer": function() {
+					  "Replace": function() {
 						  $( this ).dialog( "close" );
-						  TransferDevice($.devIdx,ShowWeathers);
+						  ReplaceDevice($.devIdx,ShowWeathers);
 					  },
 					  Cancel: function() {
 						  $( this ).dialog( "close" );

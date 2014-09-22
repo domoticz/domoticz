@@ -663,9 +663,9 @@ define(['app'], function (app) {
 							}
 						});
 					  },
-					  "Transfer": function() {
+					  "Replace": function() {
 						  $( this ).dialog( "close" );
-						  TransferDevice($.devIdx,ShowUtilities);
+						  ReplaceDevice($.devIdx,ShowUtilities);
 					  },
 					  Cancel: function() {
 						  $( this ).dialog( "close" );

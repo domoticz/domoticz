@@ -880,9 +880,9 @@ define(['app'], function (app) {
 							}
 						});
 					  },
-					  "Transfer": function() {
+					  "Replace": function() {
 						  $( this ).dialog( "close" );
-						  TransferDevice($.devIdx,ShowTemps);
+						  ReplaceDevice($.devIdx,ShowTemps);
 					  },
 					  Cancel: function() {
 						  $( this ).dialog( "close" );
@@ -930,9 +930,9 @@ define(['app'], function (app) {
 							}
 						});
 					  },
-					  "Transfer": function() {
+					  "Replace": function() {
 						  $( this ).dialog( "close" );
-						  TransferDevice($.devIdx,ShowTemps);
+						  ReplaceDevice($.devIdx,ShowTemps);
 					  },
 					  Cancel: function() {
 						  $( this ).dialog( "close" );

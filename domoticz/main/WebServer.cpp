@@ -10314,6 +10314,9 @@ void CWebServer::RType_GetTransfers(Json::Value &root)
 	}
 }
 
+//Will transfer NEW sensor log to OLD sensor,
+//then set the HardwareID/DeviceID/Unit/Name/Type/Subtype/Unit for the OLD sensor to the NEW sensor ID/Type/Subtype/Unit
+//then delete the NEW sensor
 void CWebServer::RType_TransferDevice(Json::Value &root)
 {
 	std::string sidx = m_pWebEm->FindValue("idx");
@@ -10324,14 +10327,34 @@ void CWebServer::RType_TransferDevice(Json::Value &root)
 	if (newidx == "")
 		return;
 
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT HardwareID, DeviceID, Unit, Name, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue FROM DeviceStatus WHERE (ID == " << newidx << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() < 1)
+		return;
+
 	root["status"] = "OK";
 	root["title"] = "TransferDevice";
 
-	//transfer device logs
-	m_sql.TransferDevice(sidx, newidx);
+	//transfer device logs (new to old)
+	m_sql.TransferDevice(newidx, sidx);
 
-	//now delete the old device
-	m_sql.DeleteDevice(sidx);
+	//now delete the NEW device
+	m_sql.DeleteDevice(newidx);
+
+	szQuery.clear();
+	szQuery.str("");
+
+	std::vector<std::string> sd = result[0];
+
+	szQuery << "UPDATE DeviceStatus SET "
+			"HardwareID=" << sd[0] << ", DeviceID='" << sd[1] << "', Unit=" << sd[2] << 
+			", Name='" << sd[3] << "', Type=" << sd[4] << ", SubType=" << sd[5] << 
+			", SignalLevel=" << sd[6] << ", BatteryLevel=" << sd[7] <<
+			", nValue=" << sd[8] << ", sValue='" << sd[9] << "' WHERE (ID == " << sidx << ")";
+	m_sql.query(szQuery.str());
+
 	m_mainworker.m_scheduler.ReloadSchedules();
 }
 

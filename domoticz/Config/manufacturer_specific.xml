@@ -366,6 +366,8 @@
 		<Product type="0002" id="0002" name="Slim Multi-Sensor PSM02" config="philio/psm02.xml" />
 	</Manufacturer>
 	<Manufacturer id="0154" name="Popp">
+		<Product type="1100" id="0002" name="123580 Plug-in Dimmer" config="popp/123580.xml" />
+		<Product type="1100" id="0001" name="123601 Plug-in Switch" config="popp/123601.xml" />
 		<Product type="0001" id="0001" name="123658 Plug-in Switch plus Power Meter" config="popp/123658.xml" />
 	</Manufacturer>
 	<Manufacturer id="0064" name="Popp / Duwi">
@@ -416,6 +418,7 @@
 	</Manufacturer>
 	<Manufacturer id="0097" name="Schlage Link">
 		<Product type="1182" id="4501" name="iTemp Dual Sensor" config="schlagelink/itemp.xml" />
+		<Product type="1188" id="4501" name="iTemp Dual Sensor" config="schlagelink/itemp.xml" />
 		<Product type="6941" id="5501" name="LE120 Appliance Module"/>
 	</Manufacturer>
 	<Manufacturer id="001f" name="Scientia Tech">

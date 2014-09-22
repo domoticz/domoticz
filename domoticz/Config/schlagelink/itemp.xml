@@ -17,7 +17,7 @@
     </Value>
 
     <Value type="list" genre="config" instance="1" index="5" label="5. Operating Mode" value="0" size="1">
-      <Help>Defines￼if the sensor is in normal –wakeup- mode or always on. This function shall be used only for testing since it draining the battery very fast.</Help>
+      <Help>Defines if the sensor is in normal wakeup-mode or always on. This function shall be used only for testing since it draining the battery very fast.</Help>
       <Item label="Normal Wakeup (default)" value="0" />
       <Item label="Always awake" value="3" />
     </Value>
