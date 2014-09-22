@@ -21,7 +21,8 @@ define(['app'], function (app) {
 			  if (typeof data.result != 'undefined') {
 				$.DashboardType=data.DashboardType;
 				if ($.DashboardType==3) {
-					$.DashboardType=1;
+					window.location.href = '#Floorplans';
+					return;
 				}
 			  
 				if (typeof data.WindScale != 'undefined') {
@@ -1146,7 +1147,8 @@ define(['app'], function (app) {
 				}
 				$.DashboardType=data.DashboardType;
 				if ($.DashboardType==3) {
-					$.DashboardType=1;
+					window.location.href = '#Floorplans';
+					return;
 				}
 			 
 				bAllowWidgetReorder=data.AllowWidgetOrdering;
