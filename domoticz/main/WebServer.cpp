@@ -2444,6 +2444,10 @@ void CWebServer::Cmd_GetAuth(Json::Value &root)
 	root["title"] = "GetAuth";
 	root["user"] = m_pWebEm->m_actualuser;
 	root["rights"] = m_pWebEm->m_actualuser_rights;
+
+	int nValue = 0;
+	m_sql.GetPreferencesVar("DashboardType", nValue);
+	root["DashboardType"] = nValue;
 }
 
 void CWebServer::Cmd_GetActualHistory(Json::Value &root)

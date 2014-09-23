@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('DashboardController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
+	app.controller('DashboardController', [ '$scope', '$rootScope', '$location', '$http', '$interval', '$window', 'permissions', function($scope,$rootScope,$location,$http,$interval,$window,permissions) {
 
 		$scope.LastUpdateTime = parseInt(0);
 		
@@ -20,10 +20,6 @@ define(['app'], function (app) {
 			 success: function(data) {
 			  if (typeof data.result != 'undefined') {
 				$.DashboardType=data.DashboardType;
-				if ($.DashboardType==3) {
-					window.location.href = '#Floorplans';
-					return;
-				}
 			  
 				if (typeof data.WindScale != 'undefined') {
 					$.myglobals.windscale=parseFloat(data.WindScale);
@@ -1147,7 +1143,7 @@ define(['app'], function (app) {
 				}
 				$.DashboardType=data.DashboardType;
 				if ($.DashboardType==3) {
-					window.location.href = '#Floorplans';
+					$window.location = '/#Floorplans';
 					return;
 				}
 			 

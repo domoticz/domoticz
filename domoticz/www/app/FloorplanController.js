@@ -1,64 +1,48 @@
 define(['app'], function (app) {
-	app.controller('FloorplanController', [ '$scope', '$rootScope', '$location', '$http', '$interval', function($scope,$rootScope,$location,$http,$interval) {
+	app.controller('FloorplanController', [ '$scope', '$rootScope', '$location', '$http', '$interval', '$compile', 'permissions', function($scope,$rootScope,$location,$http,$interval,$compile,permissions) {
 
-		var aFloorplans = {};
-
-		NextFloorplan= function() {
-			if ($("#floorplangroup")[0].getAttribute("zoomed") == "true")
+		$scope.floorPlans = [];
+		$scope.selectedFloorplan = [];
+		$scope.FloorplanCount = 0;
+		$scope.actFloorplan=0;
+		
+		$scope.NextFloorplan= function() {
+			if ($("#floorplangroup2")[0].getAttribute("zoomed") == "true")
 			{
-				$("#floorplangroup")[0].setAttribute("transform", "translate(0,0) scale(1)");
+				$("#floorplangroup2")[0].setAttribute("transform", "translate(0,0) scale(1)");
 				$("#DeviceContainer")[0].setAttribute("transform", "translate(0,0) scale(1)");
-				$("#floorplangroup")[0].setAttribute("zoomed", "false");
+				$("#floorplangroup2")[0].setAttribute("zoomed", "false");
 			}
-			RefreshFloorPlan(window.myglobals.FloorplanIndex+1);
+			$scope.RefreshFloorPlan($scope.actFloorplan+1);
 		}
 
-		PrevFloorplan = function() {
-			if ($("#floorplangroup")[0].getAttribute("zoomed") == "true")
+		$scope.PrevFloorplan = function() {
+			if ($("#floorplangroup2")[0].getAttribute("zoomed") == "true")
 			{
-				$("#floorplangroup")[0].setAttribute("transform", "translate(0,0) scale(1)");
+				$("#floorplangroup2")[0].setAttribute("transform", "translate(0,0) scale(1)");
 				$("#DeviceContainer")[0].setAttribute("transform", "translate(0,0) scale(1)");
-				$("#floorplangroup")[0].setAttribute("zoomed", "false");
+				$("#floorplangroup2")[0].setAttribute("zoomed", "false");
 			}
-			RefreshFloorPlan(window.myglobals.FloorplanIndex-1);
+			$scope.RefreshFloorPlan($scope.actFloorplan-1);
 		}
 
-		ImageLoaded = function() {
+		$scope.ImageLoaded = function() {
 			if (typeof $("#floorplanimagesize") != 'undefined') {
 				$('#helptext').attr("title", 'Image width is: ' + $("#floorplanimagesize")[0].naturalWidth + ", Height is: " + $("#floorplanimagesize")[0].naturalHeight);
-				$("#svgcontainer")[0].setAttribute("viewBox","0 0 1280 720");
 				Device.xImageSize = 1280;
 				Device.yImageSize = 720;
-				$("#svgcontainer")[0].setAttribute("style","display:inline");
-				SVGResize();
+				$("#svgcontainer2")[0].setAttribute("style","display:inline");
 			}
 		}
 
-		SVGResize = function() {
-			var svgHeight;
-			if ((typeof $("#floorplancontainer") != 'undefined') && (typeof $("#floorplanimagesize") != 'undefined') && (typeof $("#floorplanimagesize")[0] != 'undefined') && ($("#floorplanimagesize")[0].naturalWidth != 'undefined')){
-				$("#floorplancontainer")[0].setAttribute('naturalWidth', $("#floorplanimagesize")[0].naturalWidth);
-				$("#floorplancontainer")[0].setAttribute('naturalHeight', $("#floorplanimagesize")[0].naturalHeight);
-				$("#floorplancontainer")[0].setAttribute('svgwidth', $("#svgcontainer").width());
-				var ratio = $("#floorplanimagesize")[0].naturalWidth / $("#floorplanimagesize")[0].naturalHeight;
-				$("#floorplancontainer")[0].setAttribute('ratio', ratio);
-				if ($("#svgcontainer").width() == 100) {
-					svgHeight = $("#floorplancontainer").width() / ratio;  // FireFox specific
-				} else {
-					svgHeight = $("#svgcontainer").width() / ratio;
-				}
-				$("#floorplancontainer").height(svgHeight);
-			}
-		}
-
-		RoomClick = function(click) {
+		$scope.RoomClick = function(click) {
 
 			$('.DeviceDetails').css('display','none');   // hide all popups 
-			if ($("#floorplangroup")[0].getAttribute("zoomed") == "true")
+			if ($("#floorplangroup2")[0].getAttribute("zoomed") == "true")
 			{
-				$("#floorplangroup")[0].setAttribute("transform", "translate(0,0) scale(1)");
+				$("#floorplangroup2")[0].setAttribute("transform", "translate(0,0) scale(1)");
 				$("#DeviceContainer")[0].setAttribute("transform", "translate(0,0) scale(1)");
-				$("#floorplangroup")[0].setAttribute("zoomed", "false");
+				$("#floorplangroup2")[0].setAttribute("zoomed", "false");
 			}
 			else
 			{
@@ -72,28 +56,27 @@ define(['app'], function (app) {
 				var attr = 'scale('  + scale + ')' + ' translate(' + (borderRect.x - marginX)*-1 + ',' + (borderRect.y - marginY)*-1 + ')';
 
 				// this actually needs to centre in the direction its not scaling but close enough for v1.0
-				$("#floorplangroup")[0].setAttribute("transform", attr);
+				$("#floorplangroup2")[0].setAttribute("transform", attr);
 				$("#DeviceContainer")[0].setAttribute("transform", attr);
-				$("#floorplangroup")[0].setAttribute("zoomed", "true");
+				$("#floorplangroup2")[0].setAttribute("zoomed", "true");
 			}
 		}
 
 		RefreshDevices = function() {
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
 
-			if ((typeof $("#floorplangroup") != 'undefined') &&
-				(typeof $("#floorplangroup")[0] != 'undefined')) {
+			if ((typeof $("#floorplangroup2") != 'undefined') &&
+				(typeof $("#floorplangroup2")[0] != 'undefined')) {
 			
-				if (typeof $scope.mytimer != 'undefined') {
-					$interval.cancel($scope.mytimer);
-					$scope.mytimer = undefined;
-				}
-
-				if ($("#floorplangroup")[0].getAttribute("planidx") != "") {
+				if ($("#floorplangroup2")[0].getAttribute("planidx") != "") {
 					$http({
-							 url: "json.htm?type=devices&filter=all&used=true&order=Name&floor=" + aFloorplans[window.myglobals.FloorplanIndex].idx + "&lastupdate=" + window.myglobals.LastUpdate
+							 url: "json.htm?type=devices&filter=all&used=true&order=Name&floor=" + $scope.floorPlans[$scope.actFloorplan].idx + "&lastupdate=" + $.LastUpdateTime
 						}).success(function(data) {
 							if (typeof data.ActTime != 'undefined') {
-								window.myglobals.LastUpdate = data.ActTime;
+								$.LastUpdateTime = data.ActTime;
 							}
 							
 							if (typeof data.WindScale != 'undefined') {
@@ -115,7 +98,7 @@ define(['app'], function (app) {
 									var dev = Device.create(item);
 									var existing = document.getElementById(dev.uniquename);
 									if (existing != undefined) {
-										dev.htmlMinimum($("#roomplangroup")[0]);
+										dev.htmlMinimum($("#roomplangroup2")[0]);
 									}
 								});
 							}
@@ -131,8 +114,8 @@ define(['app'], function (app) {
 			}
 		}
 
-		ShowDevices = function(idx, parent) {
-			if (typeof $("#floorplangroup") != 'undefined') {
+		$scope.ShowDevices = function(idx, parent) {
+			if (typeof $("#floorplangroup2") != 'undefined') {
 
 				$.ajax({
 					 url: "json.htm?type=devices&filter=all&used=true&order=Name&floor="+idx,
@@ -140,7 +123,7 @@ define(['app'], function (app) {
 					 dataType: 'json',
 					 success: function(data) {
 						if (typeof data.ActTime != 'undefined') {
-							window.myglobals.LastUpdate = 0;
+							$.LastUpdateTime = 0;
 						}
 
 						if (typeof data.WindScale != 'undefined') {
@@ -189,28 +172,33 @@ define(['app'], function (app) {
 			}
 		}
 
-		RefreshFloorPlan = function(floorIdx) {
-			$("#roomplangroup").empty();
-			if (typeof window.myglobals.FloorplanIndex == 'undefined') {
-				$('.btnstyle').hide();
-				$('.btnstylerev').hide();
+		$scope.RefreshFloorPlan = function(floorIdx) {
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$("#roomplangroup2").empty();
+			
+			if (typeof floorIdx == 'undefined') {
+				floorIdx=$scope.actFloorplan;
 			}
 			
-			if (floorIdx < 0) floorIdx = window.myglobals.FloorplanCount-1;
-			if (floorIdx >= window.myglobals.FloorplanCount) floorIdx = 0;
-			window.myglobals.FloorplanIndex = floorIdx;
+			if (floorIdx < 0) floorIdx = $scope.FloorplanCount-1;
+			if (floorIdx >= $scope.FloorplanCount) floorIdx = 0;
+			$scope.actFloorplan = floorIdx;
 			
-			if (window.myglobals.FloorplanCount > 0) {
-				$("#floorplanimage").attr("xlink:href", aFloorplans[floorIdx].Image);
-				$("#floorplanimagesize").attr("src", aFloorplans[floorIdx].Image);
+			if ($scope.FloorplanCount > 0) {
+				$scope.selectedFloorplan = $scope.floorPlans[floorIdx];
+				$("#floorplanimage").attr("xlink:href", $scope.floorPlans[floorIdx].Image);
+				$("#floorplanimagesize").attr("src", $scope.floorPlans[floorIdx].Image);
 				Device.initialise();
 				$.ajax({
-					url: "json.htm?type=command&param=getfloorplanplans&idx=" + aFloorplans[floorIdx].idx, 
+					url: "json.htm?type=command&param=getfloorplanplans&idx=" + $scope.floorPlans[floorIdx].idx, 
 					async: false, 
 					dataType: 'json',
 					success: function(data) {
 						if (typeof data.result != 'undefined') {
-							var planGroup = $("#roomplangroup")[0];
+							var planGroup = $("#roomplangroup2")[0];
 							$.each(data.result, function(i,item) {
 								var el = makeSVGnode('polygon', { id: item.Name + "_Room", 'class': 'hoverable', points: item.Area }, '');
 								el.appendChild(makeSVGnode('title', null, item.Name));
@@ -229,29 +217,23 @@ define(['app'], function (app) {
 										  function(){$(this).css({'fill-opacity': $.myglobals.InactiveRoomOpacity/100})});
 				}
 
-				ShowDevices(aFloorplans[floorIdx].idx, $("#roomplangroup")[0]);
-			}
-
-			// no next/previous buttons for a single image or less
-			if (window.myglobals.FloorplanCount > 1) {
-				$('.btnstyle').show();
-				$('.btnstylerev').show();
-			}
-			// better tell people why they got a blank page
-			if (typeof window.myglobals.FloorplanCount == 'undefined') {
-				$('#NoFloorplansYet').show();
-			}
-			else if (window.myglobals.FloorplanCount == 0) {
-				$('#NoFloorplansYet').show();
-			} else {
-				$('#NoFloorplansYet').hide();
+				$scope.ShowDevices($scope.floorPlans[floorIdx].idx, $("#roomplangroup2")[0]);
 			}
 		}
 
+		$scope.changeFloorplan = function() {
+			for (var i = 0, len = $scope.floorPlans.length; i < len; i++) {
+			  if ($scope.floorPlans[i].Name == $scope.selectedFloorplan.Name) {
+				$scope.RefreshFloorPlan(i);
+				break;
+			  }
+			}		
+		}
+
 		ShowFloorplan = function(floorIdx) {
-			var htmlcontent = '';
-			htmlcontent+=$('#floorplanmain').html();
-			$('#floorplancontent').html(htmlcontent);
+			var htmlcontent = "";
+			htmlcontent+=$('#fpmaincontent').html();
+			$('#floorplancontent').html($compile(htmlcontent)($scope));
 			$('#floorplancontent').i18n();
 
 			Device.useSVGtags = true;
@@ -259,37 +241,27 @@ define(['app'], function (app) {
 			Device.switchFunction = 'RefreshDevices';
 			Device.contentTag = 'floorplancontent';
 
-			var fidx=0;
-			if (arguments.length != 0) {
-				fidx=floorIdx;
-			} else {
-				if (typeof window.myglobals.FloorplanIndex != 'undefined') {
-					fidx=window.myglobals.FloorplanIndex;
-				}
-			}
-			RefreshFloorPlan(fidx);
+			$scope.RefreshFloorPlan(floorIdx);
 
-			$('#roomplangroup')
+			$('#roomplangroup2')
 				.off()
-				.on('click', function ( event ) { RoomClick( event ); });
+				.on('click', function ( event ) { $scope.RoomClick( event ); });
 		}
 
 		init();
 
 		function init()
 		{
-			$('#modal').show();	
-
 			//Get initial floorplans
-			aFloorplans = {};	
+			$.LastUpdateTime=parseInt(0);
+			$scope.floorPlans = [];
+			$scope.actFloorplan=0;
 			$http({
 				url: "json.htm?type=floorplans"
 				}).success(function(data) {
 					if (typeof data.result != 'undefined') {
-						window.myglobals.FloorplanCount = data.result.length;
-						$.each(data.result, function(i,item) {
-							aFloorplans[i] = item;
-						});
+						$scope.FloorplanCount = data.result.length;
+						$scope.floorPlans=data.result;
 						// handle settings
 						if (typeof data.RoomColour != 'undefined') {
 							$.myglobals.RoomColour = data.RoomColour;
@@ -309,13 +281,10 @@ define(['app'], function (app) {
 						if (typeof data.ShowSwitchValues != 'undefined') {
 							Device.showSwitchValues = (data.ShowSwitchValues == 1);
 						}
-
 						//Lets start
-						ShowFloorplan();
+						ShowFloorplan(0);
 					}
-				});
-
-			$('#modal').hide();
+			});
 		};
 		$scope.$on('$destroy', function(){
 			if (typeof $scope.mytimer != 'undefined') {

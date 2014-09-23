@@ -3,6 +3,8 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 
 		isOnline=false;
 
+		dashboardType=1;
+
 	  app.factory('permissions', function ($rootScope) {
 		var permissionList;
 		return {
@@ -316,6 +318,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			if (data.status == "OK") {
 				permissionList.isloggedin=(data.user!="");
 				permissionList.rights=parseInt(data.rights);
+				dashboardType=data.DashboardType;
 			}
 		 },
 		 error: function() {
@@ -337,6 +340,11 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					}
 					return;
 				}
+				//if ((next.templateUrl=="views/dashboard.html")&&(dashboardType==3)) {
+				//	$location.path('/Floorplans');
+				//	return;
+				//}
+				
 				if ( (!permissions.isAuthenticated()) && (next.templateUrl!="views/login.html") ) {
 					$location.path('/Login');
 					return;
