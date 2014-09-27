@@ -1252,7 +1252,7 @@ bool CSQLHelper::OpenDatabase()
 	m_bDisableEventSystem = (nValue==1);
 	if (!GetPreferencesVar("FloorplanPopupDelay", nValue))
 	{
-		UpdatePreferencesVar("FloorplanPopupDelay", 0);
+		UpdatePreferencesVar("FloorplanPopupDelay", 750);
 	}
 	if (!GetPreferencesVar("FloorplanFullscreenMode", nValue))
 	{
