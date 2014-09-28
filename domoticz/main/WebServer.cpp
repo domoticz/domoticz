@@ -87,9 +87,11 @@ CWebServer::CWebServer(void)
 CWebServer::~CWebServer(void)
 {
 	StopServer();
-	if (m_pWebEm!=NULL)
+	if (m_pWebEm != NULL)
+	{
 		delete m_pWebEm;
-	m_pWebEm=NULL;
+		m_pWebEm = NULL;
+	}
 }
 
 void CWebServer::Do_Work()

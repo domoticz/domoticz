@@ -64,7 +64,7 @@ void CEventSystem::StartEventSystem()
 
 void CEventSystem::StopEventSystem()
 {
-	if (m_thread != NULL)
+	if (m_thread)
 	{
 		m_stoprequested = true;
 		m_thread->join();

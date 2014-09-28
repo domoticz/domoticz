@@ -483,7 +483,6 @@ CSQLHelper::CSQLHelper(void)
 	m_LastSwitchID="";
 	m_LastSwitchRowID=0;
 	m_dbase=NULL;
-	m_demo_dbase=NULL;
 	m_stoprequested=false;
 	m_sensortimeoutcounter=0;
 	m_bAcceptNewHardware=true;
@@ -500,9 +499,8 @@ CSQLHelper::CSQLHelper(void)
 
 CSQLHelper::~CSQLHelper(void)
 {
-	if (m_background_task_thread!=NULL)
+	if (m_background_task_thread)
 	{
-		assert(m_background_task_thread);
 		m_stoprequested = true;
 		m_background_task_thread->join();
 	}
@@ -510,11 +508,6 @@ CSQLHelper::~CSQLHelper(void)
 	{
 		sqlite3_close(m_dbase);
 		m_dbase=NULL;
-	}
-	if (m_demo_dbase!=NULL)
-	{
-		sqlite3_close(m_demo_dbase);
-		m_demo_dbase=NULL;
 	}
 }
 
@@ -3368,6 +3361,9 @@ void CSQLHelper::Schedule5Minute()
 	if (!m_dbase)
 		return;
 
+	//Force WAL flush
+	sqlite3_wal_checkpoint(m_dbase, NULL);
+
 	UpdateTemperatureLog();
 	UpdateRainLog();
 	UpdateWindLog();
@@ -3385,6 +3381,9 @@ void CSQLHelper::ScheduleDay()
 {
 	if (!m_dbase)
 		return;
+
+	//Force WAL flush
+	sqlite3_wal_checkpoint(m_dbase, NULL);
 
 	AddCalendarTemperature();
 	AddCalendarUpdateRain();

@@ -114,7 +114,6 @@ MainWorker::MainWorker()
 MainWorker::~MainWorker()
 {
 	Stop();
-	ClearDomoticzHardware();
 }
 
 void MainWorker::StartDomoticzHardware()
@@ -241,18 +240,6 @@ CDomoticzHardwareBase* MainWorker::GetHardware(int HwdId)
 		}
 	}
 	return NULL;
-}
-
-void MainWorker::ClearDomoticzHardware()
-{
-	boost::lock_guard<boost::mutex> l(m_devicemutex);
-	std::vector<CDomoticzHardwareBase*>::iterator itt;
-	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
-	{
-		CDomoticzHardwareBase* pOrgDevice=(*itt);
-//		delete pOrgDevice;
-	}
-	m_hardwaredevices.clear();
 }
 
 // sunset/sunrise
@@ -634,17 +621,16 @@ bool MainWorker::Start()
 
 bool MainWorker::Stop()
 {
-	_log.Log(LOG_STATUS, "Stopping all hardware...");
-	StopDomoticzHardware();
-	m_webserver.StopServer();
-	m_scheduler.StopScheduler();
-	m_eventsystem.StopEventSystem();
-	m_hardwaremonitor.StopHardwareMonitor();
-//    m_cameras.StopCameraGrabber();
-
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
-		assert(m_thread);
+		m_webserver.StopServer();
+		_log.Log(LOG_STATUS, "Stopping all hardware...");
+		StopDomoticzHardware();
+		m_scheduler.StopScheduler();
+		m_eventsystem.StopEventSystem();
+		m_hardwaremonitor.StopHardwareMonitor();
+		//    m_cameras.StopCameraGrabber();
+
 		m_stoprequested = true;
 		m_thread->join();
 	}

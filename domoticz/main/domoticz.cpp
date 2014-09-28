@@ -32,6 +32,13 @@
 #if defined WIN32
 	#include "WindowsHelper.h"
 	#include <Shlobj.h>
+#else
+	#include <sys/stat.h>
+	#include <unistd.h>
+	#include <syslog.h>
+	#include <errno.h>
+	#include <fcntl.h>
+	#include <string.h> 
 #endif
 
 const char *szHelp=
@@ -57,6 +64,10 @@ const char *szHelp=
 #endif
 	"\t-loglevel (0=All, 1=Status+Error, 2=Error)\n"
 	"\t-nocache (do not cache HTML pages (for editing)\n"
+#ifndef WIN32
+	"\t-daemon (run as background daemon)\n"
+	"\t-syslog (use syslog as log output)\n"
+#endif
 	"";
 
 std::string szStartupFolder;
@@ -70,24 +81,144 @@ MainWorker m_mainworker;
 CLogger _log;
 http::server::CWebServer m_webserver;
 CSQLHelper m_sql;
+std::string logfile = "";
 bool m_bDontCacheHTMLPages = true;
+bool g_bStopApplication = false;
+bool g_bUseSyslog = false;
+bool g_bRunAsDaemon = false;
+int pidFilehandle = 0;
 
-void DQuitFunction()
+#define DAEMON_NAME "domoticz"
+#define PID_FILE "/var/run/domoticz.pid" 
+
+void signal_handler(int sig_num)
 {
-	_log.Log(LOG_STATUS,"Closing application!...");
-	fflush(stdout);
-#if defined WIN32
-	TrayMessage(NIM_DELETE,NULL);
+	switch(sig_num)
+	{
+	case SIGINT:
+	case SIGTERM:
+#ifndef WIN32
+		if ((g_bRunAsDaemon)||(g_bUseSyslog))
+			syslog(LOG_INFO, "Domoticz is exiting...");
 #endif
-	_log.Log(LOG_STATUS,"Stopping worker...");
-	m_mainworker.Stop();
+		g_bStopApplication = true;
+		break;
+	} 
 }
 
-void catch_intterm(int sig_num)
+#ifndef WIN32
+void daemonShutdown()
 {
-	DQuitFunction();
-	exit(EXIT_SUCCESS); 
+	if (pidFilehandle != 0) {
+		close(pidFilehandle);
+		pidFilehandle = 0;
+	}
 }
+
+void daemonize(const char *rundir, const char *pidfile)
+{
+	int pid, sid, i;
+	char str[10];
+	struct sigaction newSigAction;
+	sigset_t newSigSet;
+
+	/* Check if parent process id is set */
+	if (getppid() == 1)
+	{
+		/* PPID exists, therefore we are already a daemon */
+		return;
+	}
+
+	/* Set signal mask - signals we want to block */
+	sigemptyset(&newSigSet);
+	sigaddset(&newSigSet, SIGCHLD);  /* ignore child - i.e. we don't need to wait for it */
+	sigaddset(&newSigSet, SIGTSTP);  /* ignore Tty stop signals */
+	sigaddset(&newSigSet, SIGTTOU);  /* ignore Tty background writes */
+	sigaddset(&newSigSet, SIGTTIN);  /* ignore Tty background reads */
+	sigprocmask(SIG_BLOCK, &newSigSet, NULL);   /* Block the above specified signals */
+
+	/* Set up a signal handler */
+	newSigAction.sa_handler = signal_handler;
+	sigemptyset(&newSigAction.sa_mask);
+	newSigAction.sa_flags = 0;
+
+	/* Signals to handle */
+	sigaction(SIGTERM, &newSigAction, NULL);    /* catch term signal */
+	sigaction(SIGINT, &newSigAction, NULL);     /* catch interrupt signal */
+
+	/* Fork*/
+	pid = fork();
+
+	if (pid < 0)
+	{
+		/* Could not fork */
+		exit(EXIT_FAILURE);
+	}
+
+	if (pid > 0)
+	{
+		/* Child created ok, so exit parent process */
+		exit(EXIT_SUCCESS);
+	}
+
+	/* Ensure only one copy */
+	pidFilehandle = open(pidfile, O_RDWR | O_CREAT, 0600);
+
+	if (pidFilehandle == -1)
+	{
+		/* Couldn't open lock file */
+		syslog(LOG_INFO, "Could not open PID lock file %s, exiting", pidfile);
+		exit(EXIT_FAILURE);
+	}
+
+	/* Try to lock file */
+	if (lockf(pidFilehandle, F_TLOCK, 0) == -1)
+	{
+		/* Couldn't get lock on lock file */
+		syslog(LOG_INFO, "Could not lock PID lock file %s, exiting", pidfile);
+		exit(EXIT_FAILURE);
+	}
+
+	/* Get and format PID */
+	sprintf(str, "%d\n", getpid());
+
+	/* write pid to lockfile */
+	write(pidFilehandle, str, strlen(str));
+
+
+	/* Child continues */
+
+	umask(027); /* Set file permissions 750 */
+
+	_log.SetOutputFile(logfile.c_str());
+
+	/* Get a new process group */
+	sid = setsid();
+
+	if (sid < 0)
+	{
+		exit(EXIT_FAILURE);
+	}
+
+	/* Close out the standard file descriptors */
+	close(STDIN_FILENO);
+	close(STDOUT_FILENO);
+	close(STDERR_FILENO);
+
+	/* Route I/O connections */
+
+	/* Open STDIN */
+	i = open("/dev/null", O_RDWR);
+
+	/* STDOUT */
+	dup(i);
+
+	/* STDERR */
+	dup(i);
+
+	chdir(rundir); /* change running directory */
+} 
+#endif
 
 #if defined(_WIN32)
 	static size_t getExecutablePathName(char* pathName, size_t pathNameCapacity)
@@ -202,12 +333,33 @@ int main(int argc, char**argv)
 	signal(SIGPIPE, SIG_IGN);
 #endif
 
+	if (cmdLine.HasSwitch("-log"))
+	{
+		if (cmdLine.GetArgumentCount("-log") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify an output log file");
+			return 1;
+		}
+		logfile = cmdLine.GetSafeArgument("-log", 0, "domoticz.log");
+		_log.SetOutputFile(logfile.c_str());
+	}
+	if (cmdLine.HasSwitch("-loglevel"))
+	{
+		if (cmdLine.GetArgumentCount("-loglevel") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify logfile output level (0=All, 1=Status+Error, 2=Error)");
+			return 1;
+		}
+		int Level = atoi(cmdLine.GetSafeArgument("-loglevel", 0, "").c_str());
+		_log.SetVerboseLevel((_eLogFileVerboseLevel)Level);
+	}
+
 	if (cmdLine.HasSwitch("-approot"))
 	{
 		if (cmdLine.GetArgumentCount("-approot")!=1)
 		{
 			_log.Log(LOG_ERROR,"Please specify a APP root path");
-			return 0;
+			return 1;
 		}
 		std::string szroot = cmdLine.GetSafeArgument("-approot", 0, "");
 		if (szroot.size() != 0)
@@ -291,7 +443,7 @@ int main(int argc, char**argv)
 		if (cmdLine.GetArgumentCount("-startupdelay")!=1)
 		{
 			_log.Log(LOG_ERROR,"Please specify a startupdelay");
-			return 0;
+			return 1;
 		}
 		int DelaySeconds=atoi(cmdLine.GetSafeArgument("-startupdelay",0,"").c_str());
 		_log.Log(LOG_STATUS,"Startup delay... waiting %d seconds...",DelaySeconds);
@@ -303,7 +455,7 @@ int main(int argc, char**argv)
 		if (cmdLine.GetArgumentCount("-www")!=1)
 		{
 			_log.Log(LOG_ERROR,"Please specify a port");
-			return 0;
+			return 1;
 		}
 		std::string wwwport=cmdLine.GetSafeArgument("-www",0,"8080");
 		m_mainworker.SetWebserverPort(wwwport);
@@ -344,7 +496,7 @@ int main(int argc, char**argv)
 		if (cmdLine.GetArgumentCount("-dbase")!=1)
 		{
 			_log.Log(LOG_ERROR,"Please specify a Database Name");
-			return 0;
+			return 1;
 		}
 		dbasefile=cmdLine.GetSafeArgument("-dbase",0,"domoticz.db");
 	}
@@ -355,7 +507,7 @@ int main(int argc, char**argv)
 		if (cmdLine.GetArgumentCount("-wwwroot")!=1)
 		{
 			_log.Log(LOG_ERROR,"Please specify a WWW root path");
-			return 0;
+			return 1;
 		}
 		std::string szroot=cmdLine.GetSafeArgument("-wwwroot",0,"");
 		if (szroot.size()!=0)
@@ -367,7 +519,7 @@ int main(int argc, char**argv)
 		if (cmdLine.GetArgumentCount("-verbose")!=1)
 		{
 			_log.Log(LOG_ERROR,"Please specify a verbose level");
-			return 0;
+			return 1;
 		}
 		int Level=atoi(cmdLine.GetSafeArgument("-verbose",0,"").c_str());
 		m_mainworker.SetVerboseLevel((eVerboseLevel)Level);
@@ -378,55 +530,91 @@ int main(int argc, char**argv)
 		bStartWebBrowser=false;
 	}
 #endif
-	if (cmdLine.HasSwitch("-log"))
-	{
-		if (cmdLine.GetArgumentCount("-log")!=1)
-		{
-			_log.Log(LOG_ERROR,"Please specify an output log file");
-			return 0;
-		}
-		std::string logfile=cmdLine.GetSafeArgument("-log",0,"domoticz.log");
-		_log.SetOutputFile(logfile.c_str());
-	}
-	if (cmdLine.HasSwitch("-loglevel"))
-	{
-		if (cmdLine.GetArgumentCount("-loglevel")!=1)
-		{
-			_log.Log(LOG_ERROR,"Please specify logfile output level (0=All, 1=Status+Error, 2=Error)");
-			return 0;
-		}
-		int Level=atoi(cmdLine.GetSafeArgument("-loglevel",0,"").c_str());
-		_log.SetVerboseLevel((_eLogFileVerboseLevel)Level);
-	}
 	if (cmdLine.HasSwitch("-nocache"))
 	{
 		m_bDontCacheHTMLPages = false;
 	}
+#ifndef WIN32
+	if (cmdLine.HasSwitch("-daemon"))
+	{
+		g_bRunAsDaemon = true;
+	}
 
+	if ((g_bRunAsDaemon)||(g_bUseSyslog))
+	{
+		setlogmask(LOG_UPTO(LOG_INFO));
+		openlog(DAEMON_NAME, LOG_CONS | LOG_PERROR, LOG_USER);
+
+		syslog(LOG_INFO, "Domoticz is starting up....");
+	}
+
+	if (g_bRunAsDaemon)
+	{
+		/* Deamonize */
+		daemonize(szStartupFolder.c_str(), PID_FILE);
+	}
+	if ((g_bRunAsDaemon) || (g_bUseSyslog))
+	{
+		syslog(LOG_INFO, "Domoticz running...");
+	}
+#endif
+
+	if (!g_bRunAsDaemon)
+	{
+		signal(SIGINT, signal_handler);
+		signal(SIGTERM, signal_handler);
+	}
+	
 	if (!m_mainworker.Start())
 	{
 		return 0;
 	}
-
-	signal(SIGINT, catch_intterm); 
-	signal(SIGTERM,catch_intterm);
-	
 	/* now, lets get into an infinite loop of doing nothing. */
 
 #if defined WIN32
 #ifndef _DEBUG
 	RedirectIOToConsole();	//hide console
 #endif
-	InitWindowsHelper(hInstance,hPrevInstance,nShowCmd,DQuitFunction,atoi(m_mainworker.GetWebserverPort().c_str()),bStartWebBrowser);
+	InitWindowsHelper(hInstance,hPrevInstance,nShowCmd,atoi(m_mainworker.GetWebserverPort().c_str()),bStartWebBrowser);
 	MSG Msg;
-	while(GetMessage(&Msg, NULL, 0, 0) > 0)
+	while (!g_bStopApplication)
 	{
-		TranslateMessage(&Msg);
-		DispatchMessage(&Msg);
+		if (PeekMessage(&Msg, NULL, 0, 0, PM_NOREMOVE))
+		{
+			if (GetMessage(&Msg, NULL, 0, 0) > 0)
+			{
+				TranslateMessage(&Msg);
+				DispatchMessage(&Msg);
+			}
+		}
+		else
+			sleep_milliseconds(100);
 	}
+	TrayMessage(NIM_DELETE, NULL);
 #else
-	for ( ;; )
+	while ( !g_bStopApplication )
 		sleep_seconds(1);
+#endif
+	_log.Log(LOG_STATUS, "Closing application!...");
+	fflush(stdout);
+	_log.Log(LOG_STATUS, "Stopping worker...");
+	try
+	{
+		m_mainworker.Stop();
+	}
+	catch (...)
+	{
+
+	}
+#ifndef WIN32
+	if (g_bRunAsDaemon)
+	{
+		syslog(LOG_INFO, "Domoticz stopped...");
+		daemonShutdown();
+
+		// Delete PID file
+		remove(PID_FILE);
+	}
 #endif
 	return 0;
 }

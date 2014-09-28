@@ -26,7 +26,7 @@ void CScheduler::StartScheduler()
 
 void CScheduler::StopScheduler()
 {
-	if (m_thread!=NULL)
+	if (m_thread)
 	{
 		m_stoprequested = true;
 		m_thread->join();

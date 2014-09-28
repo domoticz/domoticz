@@ -5,7 +5,16 @@
 #include <time.h>
 #include "localtime_r.h"
 
+#ifndef WIN32
+	#include <syslog.h>
+	#include <errno.h>
+#endif
+
+
 #define MAX_LOG_LINE_BUFFER 100
+
+extern bool g_bRunAsDaemon;
+extern bool g_bUseSyslog;
 
 CLogger::_tLogLineStruct::_tLogLineStruct(const _eLogLevel nlevel, const std::string &nlogmessage)
 {
@@ -53,6 +62,17 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 {
 	boost::unique_lock< boost::mutex > lock(m_mutex);
 
+	bool bDoLog = false;
+	if (m_verbose_level == VBL_ALL)
+		bDoLog = true;
+	else if ((m_verbose_level == VBL_STATUS_ERROR) && ((level == LOG_STATUS) || (level == LOG_ERROR)))
+		bDoLog = true;
+	else if ((m_verbose_level == VBL_ERROR) && (level == LOG_ERROR))
+		bDoLog = true;
+
+	if (!bDoLog)
+		return;
+
 	va_list argList;
 	char cbuffer[1024];
 	va_start(argList, logline);
@@ -76,24 +96,27 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	if (m_lastlog.size()>=MAX_LOG_LINE_BUFFER)
 		m_lastlog.erase(m_lastlog.begin());
 	m_lastlog.push_back(_tLogLineStruct(level,sstr.str()));
-	//output to console
-	std::cout << sstr.str() << std::endl;
 
+	if (!g_bRunAsDaemon)
+	{
+		//output to console
+		std::cout << sstr.str() << std::endl;
+	}
+#ifndef WIN32
+	if (g_bUseSyslog)
+	{
+		int sLogLevel = LOG_INFO;
+		if (level == LOG_ERROR)
+			sLogLevel =  LOG_ERR;
+		else if (level == LOG_STATUS)
+			sLogLevel = LOG_NOTICE;
+		syslog(sLogLevel, sstr.str().c_str());
+	}
+#endif
 	if (!m_outputfile.is_open())
 		return;
 
 	//output to file
-
-	bool bDoLog=false;
-	if (m_verbose_level==VBL_ALL)
-		bDoLog=true;
-	else if ((m_verbose_level==VBL_STATUS_ERROR)&&((level== LOG_STATUS)||(level== LOG_ERROR)))
-		bDoLog=true;
-	else if ((m_verbose_level==VBL_ERROR)&&(level== LOG_ERROR))
-		bDoLog=true;
-
-	if (!bDoLog)
-		return;
 
 	m_outputfile << sstr.str() << std::endl;
 	m_outputfile.flush();
@@ -112,6 +135,17 @@ void CLogger::LogNoLF(const _eLogLevel level, const char* logline, ...)
 {
 	boost::unique_lock< boost::mutex > lock(m_mutex);
 
+	bool bDoLog = false;
+	if (m_verbose_level == VBL_ALL)
+		bDoLog = true;
+	else if ((m_verbose_level == VBL_STATUS_ERROR) && ((level == LOG_STATUS) || (level == LOG_ERROR)))
+		bDoLog = true;
+	else if ((m_verbose_level == VBL_ERROR) && (level == LOG_ERROR))
+		bDoLog = true;
+
+	if (!bDoLog)
+		return;
+
 	va_list argList;
 	char cbuffer[1024];
 	va_start(argList, logline);
@@ -127,32 +161,36 @@ void CLogger::LogNoLF(const _eLogLevel level, const char* logline, ...)
 		m_lastlog.erase(m_lastlog.begin());
 	m_lastlog.push_back(_tLogLineStruct(level,message));
 
-	if ((level==LOG_NORM)||(level==LOG_STATUS))
+	if (!g_bRunAsDaemon)
 	{
-		std::cout << cbuffer;
-		std::cout.flush();
+		if ((level == LOG_NORM) || (level == LOG_STATUS))
+		{
+			std::cout << cbuffer;
+			std::cout.flush();
+		}
+		else
+		{
+			std::cerr << cbuffer;
+			std::cerr.flush();
+		}
 	}
-	else
+
+#ifndef WIN32
+	if (g_bUseSyslog)
 	{
-		std::cerr << cbuffer;
-		std::cerr.flush();
+		int sLogLevel = LOG_INFO;
+		if (level == LOG_ERROR)
+			sLogLevel =  LOG_ERR;
+		else if (level == LOG_STATUS)
+			sLogLevel = LOG_NOTICE;
+		syslog(sLogLevel, cbuffer);
 	}
+#endif
 
 	if (!m_outputfile.is_open())
 		return;
 
 	//output to file
-
-	bool bDoLog=false;
-	if (m_verbose_level==VBL_ALL)
-		bDoLog=true;
-	else if ((m_verbose_level==VBL_STATUS_ERROR)&&((level== LOG_STATUS)||(level== LOG_ERROR)))
-		bDoLog=true;
-	else if ((m_verbose_level==VBL_ERROR)&&(level== LOG_ERROR))
-		bDoLog=true;
-
-	if (!bDoLog)
-		return;
 
 	if ((level==LOG_NORM)||(level==LOG_STATUS))
 		m_outputfile << cbuffer;

@@ -65,8 +65,9 @@ define(['app'], function (app) {
 				 timeout: 20000,
 				 dataType: 'json',
 				 success: function(data) {
-					var val = $( "#progressbar" ).progressbar( "value" ) || 0;
-					$( "#progressbar" ).progressbar( "value", 90 );
+					$scope.topText = $.i18n("Restarting System (This could take some time...)");
+					//var val = $( "#progressbar" ).progressbar( "value" ) || 0;
+					//$( "#progressbar" ).progressbar( "value", 90 );
 				 },
 				 error: function(){
 				 }     

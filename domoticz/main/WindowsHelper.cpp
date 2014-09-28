@@ -95,7 +95,6 @@ void RedirectIOToConsole()
 
 const char g_szClassName[] = "DomoticzWindow";
 HINSTANCE g_hInstance=NULL;
-const void *g_pQuitFunction=NULL;
 HANDLE g_hConsoleOut=NULL;
 HWND g_hWnd;
 
@@ -186,8 +185,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_DESTROY:
 		TrayMessage(NIM_DELETE,NULL);
-		if (g_pQuitFunction)
-			((void (*)(void)) g_pQuitFunction)();
 		PostQuitMessage(0);
 		break;
 	default:
@@ -196,9 +193,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCmd, void *pQuitFunction, const int iWebPort, const bool bStartWebBrowser)
+bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCmd, const int iWebPort, const bool bStartWebBrowser)
 {
-	g_pQuitFunction=pQuitFunction;
 	g_hInstance=hInstance;
 	WNDCLASSEX wc;
 

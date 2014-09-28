@@ -346,7 +346,6 @@ private:
 	boost::mutex	m_sqlQueryMutex;
 	CURLEncode		m_urlencoder;
 	sqlite3			*m_dbase;
-	sqlite3			*m_demo_dbase;
 	std::string		m_dbase_name;
 	unsigned char	m_sensortimeoutcounter;
 	std::map<unsigned long long,int> m_timeoutlastsend;
