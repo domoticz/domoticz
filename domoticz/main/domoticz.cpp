@@ -305,7 +305,7 @@ void GetAppVersion()
 			StringSplit(sLine," ",results);
 			if (results.size()==3)
 			{
-				szAppVersion="1." + results[2];
+				szAppVersion="2." + results[2];
 			}
 		}
 		infile.close();
