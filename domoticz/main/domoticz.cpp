@@ -95,6 +95,14 @@ void signal_handler(int sig_num)
 {
 	switch(sig_num)
 	{
+#ifndef WIN32
+	case SIGHUP:
+		if (logfile!="")
+		{
+			_log.SetOutputFile(logfile.c_str());
+		}
+		break;
+#endif
 	case SIGINT:
 	case SIGTERM:
 #ifndef WIN32
@@ -190,7 +198,10 @@ void daemonize(const char *rundir, const char *pidfile)
 
 	umask(027); /* Set file permissions 750 */
 
-	_log.SetOutputFile(logfile.c_str());
+	if (logfile!="")
+	{
+		_log.SetOutputFile(logfile.c_str());
+	}
 
 	/* Get a new process group */
 	sid = setsid();

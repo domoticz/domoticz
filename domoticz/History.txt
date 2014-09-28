@@ -105,6 +105,7 @@ Version 1.0.xxxx (September xxth 2014)
 - Changed: Transfer device rebuild to Replace Device (See manual)
 - Implemented: Option to run as daemon (see new domoticz.sh startup script)
 - Implemented: Option to log to syslog
+- Implemented: catching SIGHUB, it will recreate the log file (could be usefull for logrotate functions)
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io
