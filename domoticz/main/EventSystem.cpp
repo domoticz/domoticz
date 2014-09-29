@@ -259,6 +259,9 @@ void CEventSystem::GetCurrentMeasurementStates()
 		std::vector<std::string> splitresults;
 		StringSplit(sitem.sValue, ";", splitresults);
 
+		if (splitresults.size()==0)
+			continue;
+
 		float temp = 0;
 		float chill = 0;
 		unsigned char humidity = 0;
