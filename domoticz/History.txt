@@ -1,5 +1,6 @@
 Version 2.0.xxxx (September xxth 2014)
 - Fixed: Possible crash in Eventsystem (GetCurrentMeasurementStates) where string value was empty
+- Implemented: Manual add Blinds T6 type (DC106, YOOHA, Rohrmotor24 RMF)
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

@@ -2008,7 +2008,6 @@ define(['app'], function (app) {
 		UpdateAddManualDialog = function()
 		{
 			var lighttype=$("#dialog-addmanuallightdevice #lighttable #combolighttype option:selected").val();
-			
 			var bIsARCType=((lighttype<20)||(lighttype==101));
 			var bIsType5=0;
 			
@@ -2083,6 +2082,11 @@ define(['app'], function (app) {
 				bIsType5=1;
 				totunits=0;
 			}
+			else if ((lighttype>=200)&&(lighttype<300)) {
+				//Blinds
+				
+			}
+			$("#dialog-addmanuallightdevice #blindsparams").hide();
 			$("#dialog-addmanuallightdevice #lightingparams_enocean").hide();
 			$("#dialog-addmanuallightdevice #lightingparams_gpio").hide();
 			
@@ -2127,6 +2131,13 @@ define(['app'], function (app) {
 				$("#dialog-addmanuallightdevice #lighting2params").hide();
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
 				$("#dialog-addmanuallightdevice #lightingparams_gpio").show();
+			}
+			else if ((lighttype>=200)&&(lighttype<300)) {
+				//Blinds
+				$("#dialog-addmanuallightdevice #blindsparams").show();
+				$("#dialog-addmanuallightdevice #lighting1params").hide();
+				$("#dialog-addmanuallightdevice #lighting2params").hide();
+				$("#dialog-addmanuallightdevice #lighting3params").hide();
 			}
 			else if (bIsARCType==1) {
 				$('#dialog-addmanuallightdevice #lightparams1 #combohousecode >option').remove();
@@ -2213,6 +2224,19 @@ define(['app'], function (app) {
 			else if ((lighttype<20)||(lighttype==101)) {
 				mParams+="&housecode="+$("#dialog-addmanuallightdevice #lightparams1 #combohousecode option:selected").val();
 				mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightparams1 #combounitcode option:selected").val();
+			}
+			else if ((lighttype>=200)&&(lighttype<300)) {
+				//Blinds
+				ID=
+					$("#dialog-addmanuallightdevice #blindsparams #combocmd1 option:selected").text()+
+					$("#dialog-addmanuallightdevice #blindsparams #combocmd2 option:selected").text()+
+					$("#dialog-addmanuallightdevice #blindsparams #combocmd3 option:selected").text();
+				var Unit=
+					(parseInt($("#dialog-addmanuallightdevice #blindsparams #combocmd4 option:selected").text(),16)<<4)+
+					parseInt($("#dialog-addmanuallightdevice #blindsparams #combounitcode option:selected").val());
+					
+				mParams+="&id="+ID;
+				mParams+="&unitcode="+Unit;
 			}
 			else {
 				//AC
@@ -2448,6 +2472,15 @@ define(['app'], function (app) {
 										$('#dialog-addmanuallightdevice #lightparams2 #combocmd4').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
 										$('#dialog-addmanuallightdevice #lightparams3 #combocmd1').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
 										$('#dialog-addmanuallightdevice #lightparams3 #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+										$('#dialog-addmanuallightdevice #blindsparams #combocmd1').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+										$('#dialog-addmanuallightdevice #blindsparams #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+										$('#dialog-addmanuallightdevice #blindsparams #combocmd3').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+									}
+									$('#dialog-addmanuallightdevice #blindsparams #combounitcode >option').remove();
+									for (ii=0; ii<16; ii++)
+									{
+										$('#dialog-addmanuallightdevice #blindsparams #combocmd4').append($('<option></option>').val(ii).html(ii.toString(16).toUpperCase()));
+										$('#dialog-addmanuallightdevice #blindsparams #combounitcode').append($('<option></option>').val(ii).html(ii));
 									}
 									$('#dialog-addmanuallightdevice #lightparams2 #combounitcode >option').remove();
 									for (ii=1; ii<16+1; ii++)

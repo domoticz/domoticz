@@ -4177,6 +4177,24 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				sunitcode = szTmp;
 				devid = id;
 			}
+			else if ((lighttype >= 200) && (lighttype < 300))
+			{
+				if (lighttype != 206)
+					return; //only blinds1 T6 for now
+				dtype = pTypeBlinds;
+				subtype = sTypeBlindsT6;
+				std::string id = m_pWebEm->FindValue("id");
+				sunitcode = m_pWebEm->FindValue("unitcode");
+				if (
+					(id == "") ||
+					(sunitcode == "")
+					)
+					return;
+				int iUnitCode = atoi(sunitcode.c_str()) - 1;
+				sprintf(szTmp, "%d", iUnitCode);
+				sunitcode = szTmp;
+				devid = id;
+			}
 		}
 		root["status"]="OK";
 		root["message"]="OK";
@@ -4449,6 +4467,24 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 				//Chime/Byron MP001
 				dtype = pTypeChime;
 				subtype = sTypeByronMP001;
+				std::string id = m_pWebEm->FindValue("id");
+				sunitcode = m_pWebEm->FindValue("unitcode");
+				if (
+					(id == "") ||
+					(sunitcode == "")
+					)
+					return;
+				int iUnitCode = atoi(sunitcode.c_str()) - 1;
+				sprintf(szTmp, "%d", iUnitCode);
+				sunitcode = szTmp;
+				devid = id;
+			}
+			else if ((lighttype >= 200) && (lighttype < 300))
+			{
+				if (lighttype != 206)
+					return; //only blinds1 T6 for now
+				dtype = pTypeBlinds;
+				subtype = sTypeBlindsT6;
 				std::string id = m_pWebEm->FindValue("id");
 				sunitcode = m_pWebEm->FindValue("unitcode");
 				if (
