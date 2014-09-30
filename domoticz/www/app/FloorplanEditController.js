@@ -565,7 +565,8 @@ define(['app'], function (app) {
 													'stroke-opacity': 90});
 						}
 						/* Add a click handler to the rows - this could be used as a callback */
-						$("#floorplaneditcontent #plantable2 tbody tr").click( function( e ) {
+						$("#plantable2 tbody").off()
+											  .on( 'click', 'tr', function () {
 							ConfirmNoUpdate(this, function( param ){
 									// if we are zoomed in, zoom out before changing rooms by faking a click in the polygon
 									if ($("#floorplangroup")[0].getAttribute("zoomed") == "true") {
