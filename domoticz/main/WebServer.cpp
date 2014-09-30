@@ -3858,8 +3858,8 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 	}
 	else if (cparam=="testpushover")
 	{
-		std::string poapi=m_pWebEm->FindValue("poapi");
-		std::string pouser=m_pWebEm->FindValue("pouser");
+		std::string poapi = CURLEncode::URLDecode(m_pWebEm->FindValue("poapi"));
+		std::string pouser = CURLEncode::URLDecode(m_pWebEm->FindValue("pouser"));
 		if ((poapi=="")||(pouser==""))
 			return;
 
@@ -6482,13 +6482,13 @@ char * CWebServer::PostSettings()
 		m_mainworker.GetSunSettings();
 	}
 	std::string ProwlAPI=m_pWebEm->FindValue("ProwlAPIKey");
-	m_sql.UpdatePreferencesVar("ProwlAPI",ProwlAPI.c_str());
+	m_sql.UpdatePreferencesVar("ProwlAPI", CURLEncode::URLDecode(ProwlAPI).c_str());
 	std::string NMAAPI=m_pWebEm->FindValue("NMAAPIKey");
-	m_sql.UpdatePreferencesVar("NMAAPI",NMAAPI.c_str());
+	m_sql.UpdatePreferencesVar("NMAAPI", CURLEncode::URLDecode(NMAAPI).c_str());
 	std::string PushoverAPI=m_pWebEm->FindValue("PushoverAPIKey");
-	m_sql.UpdatePreferencesVar("PushoverAPI",PushoverAPI.c_str());
+	m_sql.UpdatePreferencesVar("PushoverAPI", CURLEncode::URLDecode(PushoverAPI).c_str());
 	std::string PushoverUser=m_pWebEm->FindValue("PushoverUserID");
-	m_sql.UpdatePreferencesVar("PushoverUser",PushoverUser.c_str());
+	m_sql.UpdatePreferencesVar("PushoverUser", CURLEncode::URLDecode(PushoverUser).c_str());
 	std::string DashboardType=m_pWebEm->FindValue("DashboardType");
 	m_sql.UpdatePreferencesVar("DashboardType",atoi(DashboardType.c_str()));
 	std::string MobileType=m_pWebEm->FindValue("MobileType");
