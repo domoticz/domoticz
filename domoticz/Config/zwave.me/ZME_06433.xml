@@ -71,7 +71,7 @@
 			<Item label="Switch On, Off and dim using Basic Set(default)" value="1" />
 			<Item label="Switch All On/Off" value="1" />
 		</Value>
-		<Value type="list" index="13" genre="config" label="Action on button double press or hold" value="0" size="1">
+		<Value type="list" index="14" genre="config" label="Action on button double press or hold" value="0" size="1">
 			<Help>Defines which command should be sent on button double press or press-hold. Basic commands are sent to Association group.   Switch   All commands are sent broadcast. If not disabled, the device will wait for a click timeout to see if the second click would be pressed. This will introduce a small delay for single click commands.</Help>
 			<Item label="Disabled (don't wait for double click,default)" value="0" />
 			<Item label="Switch On, Off and dim using Basic Set" value="1" />
