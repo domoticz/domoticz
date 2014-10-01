@@ -1850,7 +1850,7 @@ html,body{
 	background-image: -o-linear-gradient(top, #7d7e7d, #0e0e0e);
 	background-image: linear-gradient(top, #7d7e7d, #0e0e0e);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#7d7e7d, endColorstr=#0e0e0e);
 }
-		
+
 .navbar .nav li a {
 	text-decoration: none;
 	text-transform: none;
@@ -1864,6 +1864,13 @@ html,body{
 	background-image: -o-linear-gradient(top, #7d7e7d, #0e0e0e);
 	background-image: linear-gradient(top, #7d7e7d, #0e0e0e);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#7d7e7d, endColorstr=#0e0e0e);
 }
+
+@media (min-width: 768px) and (max-width: 1200px) {
+  .navbar .nav li a {
+    padding: 10px 5px 10px 5px !important;
+  }
+}
+
 .navbar .nav li a:hover {
 	 border:1px solid #4a4b4a; background-color: #646464;
 	 background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#646464), color-stop(100%, #282828));
