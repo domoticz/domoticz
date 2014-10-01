@@ -5,6 +5,7 @@
 #include <sstream>      // std::stringstream
 #include <vector>
 #include <ctype.h>
+#include <boost/lexical_cast.hpp>
 
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
@@ -445,7 +446,7 @@ COpenZWave::~COpenZWave(void)
 //-----------------------------------------------------------------------------
 COpenZWave::NodeInfo* COpenZWave::GetNodeInfo( OpenZWave::Notification const* _notification )
 {
-	unsigned long const homeId = _notification->GetHomeId();
+	unsigned int const homeId = _notification->GetHomeId();
 	unsigned char const nodeId = _notification->GetNodeId();
 	for( std::list<NodeInfo>::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it )
 	{
@@ -458,7 +459,7 @@ COpenZWave::NodeInfo* COpenZWave::GetNodeInfo( OpenZWave::Notification const* _n
 	return NULL;
 }
 
-COpenZWave::NodeInfo* COpenZWave::GetNodeInfo( const int homeID, const int nodeID)
+COpenZWave::NodeInfo* COpenZWave::GetNodeInfo( const unsigned int homeID, const int nodeID)
 {
 	for( std::list<NodeInfo>::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it )
 	{
@@ -511,7 +512,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 
 	OpenZWave::ValueID vID=_notification->GetValueID();
 	int commandClass=vID.GetCommandClassId();
-	unsigned long _homeID = _notification->GetHomeId();
+	unsigned int _homeID = _notification->GetHomeId();
 	unsigned char _nodeID = _notification->GetNodeId();
 
 	unsigned char vInstance = vID.GetInstance();//(See note on top of this file) GetInstance();
@@ -544,7 +545,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 		}
 		break;
 	case OpenZWave::Notification::Type_NodeNew:
-		_log.Log(LOG_STATUS,"OpenZWave: New Node added. HomeID: %d, NodeID: %d",_homeID,_nodeID);
+		_log.Log(LOG_STATUS,"OpenZWave: New Node added. HomeID: %u, NodeID: %d",_homeID,_nodeID);
 		break;
 	case OpenZWave::Notification::Type_ValueAdded:
 		if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
@@ -659,7 +660,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 		break;
 	case OpenZWave::Notification::Type_NodeRemoved:
 		{
-			_log.Log(LOG_STATUS,"OpenZWave: Node Removed. HomeID: %d, NodeID: %d",_homeID,_nodeID);
+			_log.Log(LOG_STATUS,"OpenZWave: Node Removed. HomeID: %u, NodeID: %d",_homeID,_nodeID);
 			// Remove the node from our list
 			for( std::list<NodeInfo>::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it )
 			{
@@ -994,7 +995,7 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	{
 		if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SWITCH_BINARY,vID)==true)
 		{
-			unsigned long _homeID=vID.GetHomeId();
+			unsigned int _homeID=vID.GetHomeId();
 			unsigned char _nodeID=vID.GetNodeId();
 			if (m_pManager->IsNodeFailed(_homeID,_nodeID))
 			{
@@ -1031,7 +1032,7 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		else if ((GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SENSOR_BINARY,vID)==true) ||
 			 (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SENSOR_MULTILEVEL,vID)==true))
 		{
-			unsigned long _homeID=vID.GetHomeId();
+			unsigned int _homeID=vID.GetHomeId();
 			unsigned char _nodeID=vID.GetNodeId();
 			if (m_pManager->IsNodeFailed(_homeID,_nodeID))
 			{
@@ -1071,7 +1072,7 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	}
 	else
 	{
-		unsigned long _homeID=vID.GetHomeId();
+		unsigned int _homeID=vID.GetHomeId();
 		unsigned char _nodeID=vID.GetNodeId();
 		if (m_pManager->IsNodeFailed(_homeID,_nodeID))
 		{
@@ -1184,7 +1185,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 		)
 		return;
 
-	unsigned char HomeID = vID.GetHomeId();
+	unsigned int HomeID = vID.GetHomeId();
 	unsigned char NodeID = vID.GetNodeId();
 
 	unsigned char vInstance = vID.GetInstance();//(See note on top of this file) GetInstance();
@@ -1650,7 +1651,7 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID vID, int EventID)
 	//if (m_nodesQueried==false)
 		//return; //only allow updates when node Query is done
 
-	unsigned char HomeID = vID.GetHomeId();
+	unsigned int HomeID = vID.GetHomeId();
 	unsigned char NodeID = vID.GetNodeId();
 	unsigned char instance=vID.GetInstance();
 	unsigned char index=vID.GetIndex();
@@ -1713,7 +1714,7 @@ void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID vID, int SceneID)
 	//if (m_nodesQueried==false)
 		//return; //only allow updates when node Query is done
 
-	//unsigned char HomeID = vID.GetHomeId();
+	//unsigned int HomeID = vID.GetHomeId();
 	unsigned char NodeID = vID.GetNodeId();
 
 	int devID=(SceneID<<8)+NodeID;
@@ -1772,7 +1773,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 //	if (m_nodesQueried==false)
 	//	return; //only allow updates when node Query is done
 	unsigned char commandclass=vID.GetCommandClassId();
-	unsigned char HomeID = vID.GetHomeId();
+	unsigned int HomeID = vID.GetHomeId();
 	unsigned char NodeID = vID.GetNodeId();
 
 	unsigned char vInstance = vID.GetInstance();//(See note on top of this file) GetInstance();
@@ -2183,7 +2184,7 @@ bool COpenZWave::IncludeDevice()
 	return true;
 }
 
-bool COpenZWave::ExcludeDevice(const int homeID)
+bool COpenZWave::ExcludeDevice(const unsigned int homeID)
 {
 	if (m_pManager==NULL)
 		return false;
@@ -2258,7 +2259,7 @@ bool COpenZWave::NetworkInfo(const int hwID,std::vector< std::vector< int > > &N
 	{
 		std::vector<std::string> sd=*itt;
 		int nodeID=atoi(sd[1].c_str());
-		int homeID=atoi(sd[0].c_str());
+		unsigned int homeID = boost::lexical_cast<unsigned int>(sd[0]);
 		NodeInfo *pNode=GetNodeInfo(homeID, nodeID);
 		if (pNode==NULL)
 			continue;
@@ -2463,7 +2464,7 @@ void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
 	_log.Log(LOG_STATUS,"OpenZWave: Device Response: %s",szLog.c_str());
 }
 
-bool COpenZWave::IsNodeRGBW(const int homeID, const int nodeID)
+bool COpenZWave::IsNodeRGBW(const unsigned int homeID, const int nodeID)
 {
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
@@ -2475,7 +2476,7 @@ bool COpenZWave::IsNodeRGBW(const int homeID, const int nodeID)
 	return (ProductDescription.find("FGRGBWM441") != std::string::npos);
 }
 
-void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int pollTime)
+void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, const int pollTime)
 {
 	NodeInfo *pNode=GetNodeInfo(homeID, nodeID);
 	if (pNode==NULL)
@@ -2505,7 +2506,7 @@ void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int po
 				unsigned char commandclass=ittValue->GetCommandClassId();
 				OpenZWave::ValueID::ValueGenre vGenre=ittValue->GetGenre();
 
-				unsigned long _homeID=ittValue->GetHomeId();
+				unsigned int _homeID=ittValue->GetHomeId();
 				unsigned char _nodeID=ittValue->GetNodeId();
 				if (m_pManager->IsNodeFailed(_homeID,_nodeID))
 				{
@@ -2597,7 +2598,7 @@ void COpenZWave::EnableNodePoll(const int homeID, const int nodeID, const int po
 	}
 }
 
-void COpenZWave::DisableNodePoll(const int homeID, const int nodeID)
+void COpenZWave::DisableNodePoll(const unsigned int homeID, const int nodeID)
 {
 	NodeInfo *pNode=GetNodeInfo(homeID, nodeID);
 	if (pNode==NULL)
@@ -2616,14 +2617,14 @@ void COpenZWave::DisableNodePoll(const int homeID, const int nodeID)
 	}
 }
 
-void COpenZWave::DeleteNode(const int homeID, const int nodeID)
+void COpenZWave::DeleteNode(const unsigned int homeID, const int nodeID)
 {
 	std::stringstream szQuery;
 	szQuery << "DELETE FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
 	m_sql.query(szQuery.str());
 }
 
-void COpenZWave::AddNode(const int homeID, const int nodeID,const NodeInfo *pNode)
+void COpenZWave::AddNode(const unsigned int homeID, const int nodeID,const NodeInfo *pNode)
 {
 	//Check if node already exist
 	std::stringstream szQuery;
@@ -2674,7 +2675,7 @@ void COpenZWave::EnableDisableNodePolling()
 	for (itt=result.begin(); itt!=result.end(); ++itt)
 	{
 		std::vector<std::string> sd=*itt;
-		int HomeID=atoi(sd[0].c_str());
+		unsigned int HomeID = boost::lexical_cast<unsigned int>(sd[0]);
 		int NodeID=atoi(sd[1].c_str());
 		int PollTime=atoi(sd[2].c_str());
 
@@ -2697,7 +2698,7 @@ void COpenZWave::NodesQueried()
 	EnableDisableNodePolling();
 }
 
-bool COpenZWave::RequestNodeConfig(const int homeID, const int nodeID)
+bool COpenZWave::RequestNodeConfig(const unsigned int homeID, const int nodeID)
 {
 	NodeInfo *pNode=GetNodeInfo( homeID, nodeID);
 	if (pNode==NULL)
@@ -2706,7 +2707,7 @@ bool COpenZWave::RequestNodeConfig(const int homeID, const int nodeID)
 	return true;
 }
 
-void COpenZWave::GetNodeValuesJson(const int homeID, const int nodeID, Json::Value &root, const int index)
+void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, Json::Value &root, const int index)
 {
 	NodeInfo *pNode=GetNodeInfo(homeID, nodeID);
 	if (pNode==NULL)
@@ -2864,7 +2865,7 @@ void COpenZWave::GetNodeValuesJson(const int homeID, const int nodeID, Json::Val
 
 }
 
-bool COpenZWave::ApplyNodeConfig(const int homeID, const int nodeID, const std::string &svaluelist)
+bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, const std::string &svaluelist)
 {
 	NodeInfo *pNode=GetNodeInfo( homeID, nodeID);
 	if (pNode==NULL)
@@ -2944,7 +2945,7 @@ bool COpenZWave::SetUserCodeEnrollmentMode()
 	return false;
 }
 
-bool COpenZWave::GetNodeUserCodes(const int homeID, const int nodeID, Json::Value &root)
+bool COpenZWave::GetNodeUserCodes(const unsigned int homeID, const int nodeID, Json::Value &root)
 {
 	int ii = 0;
 	COpenZWave::NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
@@ -2978,7 +2979,7 @@ bool COpenZWave::GetNodeUserCodes(const int homeID, const int nodeID, Json::Valu
 	return true;
 }
 
-bool COpenZWave::RemoveUserCode(const int homeID, const int nodeID, const int codeIndex)
+bool COpenZWave::RemoveUserCode(const unsigned int homeID, const int nodeID, const int codeIndex)
 {
 	COpenZWave::NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
 	if (!pNode)

@@ -32,7 +32,7 @@ public:
 
 	typedef struct
 	{
-		unsigned long					m_homeId;
+		unsigned int					m_homeId;
 		unsigned char					m_nodeId;
 		bool							m_polled;
 
@@ -62,23 +62,23 @@ public:
 	void OnZWaveNotification( OpenZWave::Notification const* _notification);
 	void OnZWaveDeviceStatusUpdate(int cs, int err);
 	void EnableDisableNodePolling();
-	void GetNodeValuesJson(const int homeID, const int nodeID, Json::Value &root, const int index);
-	NodeInfo* GetNodeInfo( const int homeID, const int nodeID );
-	bool ApplyNodeConfig(const int homeID, const int nodeID, const std::string &svaluelist);
+	void GetNodeValuesJson(const unsigned int homeID, const int nodeID, Json::Value &root, const int index);
+	NodeInfo* GetNodeInfo( const unsigned int homeID, const int nodeID );
+	bool ApplyNodeConfig(const unsigned int homeID, const int nodeID, const std::string &svaluelist);
 
 	bool SetUserCodeEnrollmentMode();
-	bool GetNodeUserCodes(const int homeID, const int nodeID, Json::Value &root);
-	bool RemoveUserCode(const int homeID, const int nodeID, const int codeIndex);
+	bool GetNodeUserCodes(const unsigned int homeID, const int nodeID, Json::Value &root);
+	bool RemoveUserCode(const unsigned int homeID, const int nodeID, const int codeIndex);
 
 	//Controller Commands
-	bool RequestNodeConfig(const int homeID, const int nodeID);
+	bool RequestNodeConfig(const unsigned int homeID, const int nodeID);
 	bool RemoveFailedDevice(const int nodeID);
 	bool ReceiveConfigurationFromOtherController();
 	bool SendConfigurationToSecondaryController();
 	bool TransferPrimaryRole();
 	bool CancelControllerCommand();
 	bool IncludeDevice();
-	bool ExcludeDevice(const int homeID);
+	bool ExcludeDevice(const unsigned int homeID);
 	bool SoftResetDevice();
 	bool HardResetDevice();
 	bool HealNetwork();
@@ -92,10 +92,10 @@ public:
 	std::string GetConfigFile(std::string &szConfigFile);
 private:
 	void NodesQueried();
-	void DeleteNode(const int homeID, const int nodeID);
-	void AddNode(const int homeID, const int nodeID,const NodeInfo *pNode);
-	void EnableNodePoll(const int homeID, const int nodeID, const int pollTime);
-	void DisableNodePoll(const int homeID, const int nodeID);
+	void DeleteNode(const unsigned int homeID, const int nodeID);
+	void AddNode(const unsigned int homeID, const int nodeID,const NodeInfo *pNode);
+	void EnableNodePoll(const unsigned int homeID, const int nodeID, const int pollTime);
+	void DisableNodePoll(const unsigned int homeID, const int nodeID);
 	bool GetValueByCommandClass(const int nodeID, const int instanceID, const int commandClass, OpenZWave::ValueID &nValue);
 	bool GetValueByCommandClassLabel(const int nodeID, const int instanceID, const int commandClass, const std::string &vLabel, OpenZWave::ValueID &nValue);
 	bool GetNodeConfigValueByIndex(const NodeInfo *pNode, const int index, OpenZWave::ValueID &nValue);
@@ -106,7 +106,7 @@ private:
 	NodeInfo* GetNodeInfo( OpenZWave::Notification const* _notification );
 	void SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value);
 	void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value);
-	bool IsNodeRGBW(const int homeID, const int nodeID);
+	bool IsNodeRGBW(const unsigned int homeID, const int nodeID);
 
 	void StopHardwareIntern();
 
@@ -124,7 +124,7 @@ private:
 	boost::mutex m_NotificationMutex;
 
 	std::string m_szSerialPort;
-	int m_controllerID;
+	unsigned int m_controllerID;
 
 	bool m_bIsShuttingDown;
 	bool m_initFailed;
