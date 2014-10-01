@@ -2184,7 +2184,7 @@ bool COpenZWave::IncludeDevice()
 	return true;
 }
 
-bool COpenZWave::ExcludeDevice(const unsigned int homeID)
+bool COpenZWave::ExcludeDevice(const int nodeID)
 {
 	if (m_pManager==NULL)
 		return false;

@@ -78,7 +78,7 @@ public:
 	bool TransferPrimaryRole();
 	bool CancelControllerCommand();
 	bool IncludeDevice();
-	bool ExcludeDevice(const unsigned int homeID);
+	bool ExcludeDevice(const int nodeID);
 	bool SoftResetDevice();
 	bool HardResetDevice();
 	bool HealNetwork();
