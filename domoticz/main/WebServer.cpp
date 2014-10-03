@@ -4190,7 +4190,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 					(sunitcode == "")
 					)
 					return;
-				int iUnitCode = atoi(sunitcode.c_str()) - 1;
+				int iUnitCode = atoi(sunitcode.c_str());
 				sprintf(szTmp, "%d", iUnitCode);
 				sunitcode = szTmp;
 				devid = id;
@@ -4492,7 +4492,7 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 					(sunitcode == "")
 					)
 					return;
-				int iUnitCode = atoi(sunitcode.c_str()) - 1;
+				int iUnitCode = atoi(sunitcode.c_str());
 				sprintf(szTmp, "%d", iUnitCode);
 				sunitcode = szTmp;
 				devid = id;

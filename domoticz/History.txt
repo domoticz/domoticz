@@ -3,6 +3,7 @@ Version 2.0.xxxx (September xxth 2014)
 - Implemented: Manual add Blinds T6 type (DC106, YOOHA, Rohrmotor24 RMF)
 - Fixed: Pushover notification setup in settings (could contain invalid characters)
 - Fixed: OpenZWave, converted home_id to correct variable
+- Fixed: Blinds1, T6 DC160 should work now
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

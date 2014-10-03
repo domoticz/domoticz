@@ -67,7 +67,7 @@
 
 #ifdef _DEBUG
 	//#define DEBUG_RECEIVE
-	//#define PARSE_RFXCOM_DEVICE_LOG
+	#define PARSE_RFXCOM_DEVICE_LOG
 #endif
 
 #ifdef PARSE_RFXCOM_DEVICE_LOG
@@ -4369,13 +4369,18 @@ unsigned long long MainWorker::decode_BLINDS1(const CDomoticzHardwareBase *pHard
 	char szTmp[100];
 	unsigned char devType=pTypeBlinds;
 	unsigned char subType=pResponse->BLINDS1.subtype;
-	if (subType==sTypeBlindsT7)
-		sprintf(szTmp,"%02X%02X%02X%02X", pResponse->BLINDS1.id4,pResponse->BLINDS1.id1, pResponse->BLINDS1.id2,pResponse->BLINDS1.id3);
+
+	if ((subType == sTypeBlindsT6) || (subType == sTypeBlindsT7))
+	{
+		sprintf(szTmp, "%02X%02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2, pResponse->BLINDS1.id3, pResponse->BLINDS1.id4);
+	}
 	else
-		sprintf(szTmp,"%02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2,pResponse->BLINDS1.id3);
+	{
+		sprintf(szTmp, "%02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2, pResponse->BLINDS1.id3);
+	}
 	std::string ID = szTmp;
-	unsigned char Unit=pResponse->BLINDS1.unitcode;
-	unsigned char cmnd=pResponse->BLINDS1.cmnd;
+	unsigned char Unit = pResponse->BLINDS1.unitcode;
+	unsigned char cmnd = pResponse->BLINDS1.cmnd;
 	unsigned char SignalLevel=pResponse->BLINDS1.rssi;
 
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,m_LastDeviceName);
@@ -8414,12 +8419,21 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.BLINDS1.packetlength=sizeof(lcmd.BLINDS1)-1;
 			lcmd.BLINDS1.packettype=dType;
 			lcmd.BLINDS1.subtype=dSubType;
-			lcmd.BLINDS1.id1=ID2;
-			lcmd.BLINDS1.id2=ID3;
-			lcmd.BLINDS1.id3=ID4;
-			lcmd.BLINDS1.id4=0;
-			if (dSubType==sTypeBlindsT7)
-				lcmd.BLINDS1.id4=ID1;
+
+			if ((dSubType == sTypeBlindsT6) || (dSubType == sTypeBlindsT7))
+			{
+				lcmd.BLINDS1.id1 = ID1;
+				lcmd.BLINDS1.id2 = ID2;
+				lcmd.BLINDS1.id3 = ID3;
+				lcmd.BLINDS1.id4 = ID4;
+			}
+			else
+			{
+				lcmd.BLINDS1.id1 = ID2;
+				lcmd.BLINDS1.id2 = ID3;
+				lcmd.BLINDS1.id3 = ID4;
+				lcmd.BLINDS1.id4 = 0;
+			}
 			lcmd.BLINDS1.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
 			lcmd.BLINDS1.unitcode=Unit;
 			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.BLINDS1.cmnd))

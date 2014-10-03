@@ -1332,7 +1332,7 @@ define(['app'], function (app) {
 									}
 								}
 								else if ((item.SwitchType == "Blinds")||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
-									if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+									if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('T6 DC') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
 										if (item.Status == 'Closed') {
 											img='<img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
 											img3='<img src="images/blinds48sel.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
@@ -1354,7 +1354,7 @@ define(['app'], function (app) {
 									}
 								}
 								else if (item.SwitchType == "Blinds Inverted") {
-									if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)) {
+									if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('T6 DC') == 0)) {
 										if (item.Status == 'Closed') {
 											img='<img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
 											img3='<img src="images/blinds48sel.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
@@ -1585,7 +1585,7 @@ define(['app'], function (app) {
 						xhtm+='\t    <table id="itemtablenostatus" border="0" cellpadding="0" cellspacing="0">\n';
 					}
 					else if ((item.SwitchType == "Blinds")||(item.SwitchType == "Blinds Inverted")||(item.SwitchType == "Blinds Percentage")||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
-						if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+						if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('T6 DC') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
 							xhtm+='\t    <table id="itemtabletrippleicon" border="0" cellpadding="0" cellspacing="0">\n';
 						}
 						else {
@@ -1662,7 +1662,7 @@ define(['app'], function (app) {
 					bAddTimer=false;
 				  }
 				  else if ((item.SwitchType == "Blinds")||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
-					if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+					if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('T6 DC') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
 						if (item.Status == 'Closed') {
 							xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
 							xhtm+='\t      <td id="img2"><img src="images/blindsstop.png" title="Stop Blinds" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="24"></td>\n';
@@ -1686,7 +1686,7 @@ define(['app'], function (app) {
 					}
 				  }
 				  else if (item.SwitchType == "Blinds Inverted") {
-					if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)) {
+					if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('T6 DC') == 0)) {
 						if (item.Status == 'Closed') {
 							xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
 							xhtm+='\t      <td id="img2"><img src="images/blindsstop.png" title="Stop Blinds" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="24"></td>\n';
@@ -2230,13 +2230,10 @@ define(['app'], function (app) {
 				ID=
 					$("#dialog-addmanuallightdevice #blindsparams #combocmd1 option:selected").text()+
 					$("#dialog-addmanuallightdevice #blindsparams #combocmd2 option:selected").text()+
-					$("#dialog-addmanuallightdevice #blindsparams #combocmd3 option:selected").text();
-				var Unit=
-					(parseInt($("#dialog-addmanuallightdevice #blindsparams #combocmd4 option:selected").text(),16)<<4)+
-					parseInt($("#dialog-addmanuallightdevice #blindsparams #combounitcode option:selected").val());
-					
+					$("#dialog-addmanuallightdevice #blindsparams #combocmd3 option:selected").text()+
+					"0"+$("#dialog-addmanuallightdevice #blindsparams #combocmd4 option:selected").text();
 				mParams+="&id="+ID;
-				mParams+="&unitcode="+Unit;
+				mParams+="&unitcode="+$("#dialog-addmanuallightdevice #blindsparams #combounitcode option:selected").val();
 			}
 			else {
 				//AC
