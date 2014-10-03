@@ -95,10 +95,28 @@ define(['app'], function (app) {
 							// update devices that already exist in the DOM
 							if (typeof data.result != 'undefined') {
 								$.each(data.result, function(i,item) {
-									var dev = Device.create(item);
-									var existing = document.getElementById(dev.uniquename);
-									if (existing != undefined) {
-										dev.htmlMinimum($("#roomplangroup2")[0]);
+									if (item.Type.indexOf('+') >= 0) {
+										var aDev = item.Type.split('+');
+										var i;
+										for (i=0; i < aDev.length; i++) {
+											var sDev = aDev[i].trim();
+											item.Name = ((i == 0) ? item.Name : sDev);
+											item.Type = sDev;
+											item.CustomImage = 1;
+											item.Image = sDev.toLowerCase();
+											item.XOffset = Math.abs(item.XOffset) + ((i == 0) ? 0 : 50);
+											var dev = Device.create(item);
+											var existing = document.getElementById(dev.uniquename);
+											if (existing != undefined) {
+												dev.htmlMinimum($("#roomplangroup2")[0]);
+											}
+										}
+									} else {
+										var dev = Device.create(item);
+										var existing = document.getElementById(dev.uniquename);
+										if (existing != undefined) {
+											dev.htmlMinimum($("#roomplangroup2")[0]);
+										}
 									}
 								});
 							}
