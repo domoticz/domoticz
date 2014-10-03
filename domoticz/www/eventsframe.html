@@ -168,6 +168,17 @@
 				}
 				return compareString;						
 			}
+			else if (variableType == "dewpointvariables") {
+				var titleA = $(valueA).find("title")[0];
+				var valueB = $(thisBlock).children("value[name='B']")[0];
+				var titleB = $(valueB).find("title")[0];
+				var compareString = "dewpointdevice["+$(titleA).text()+"]";
+				if ($(titleB).attr("name") == "NUM") {
+					compareString += locOperand;
+					compareString += $(titleB).text(); 
+				}
+				return compareString;						
+			}
 			else if (variableType == "barometervariables") {
 				var titleA = $(valueA).find("title")[0];
 				var valueB = $(thisBlock).children("value[name='B']")[0];
@@ -760,6 +771,9 @@
 		   	<category name="Humidity">
 			   	<block type="humidityvariables"></block>
 		   	</category>	
+		   	<category name="Dewpoint">
+			   	<block type="dewpointvariables"></block>
+		   	</category>	   		   		
 		   	<category name="Barometer">
 			   	<block type="barometervariables"></block>
 		   	</category>	

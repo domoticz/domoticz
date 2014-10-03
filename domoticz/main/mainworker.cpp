@@ -67,7 +67,7 @@
 
 #ifdef _DEBUG
 	//#define DEBUG_RECEIVE
-	#define PARSE_RFXCOM_DEVICE_LOG
+	//#define PARSE_RFXCOM_DEVICE_LOG
 #endif
 
 #ifdef PARSE_RFXCOM_DEVICE_LOG
