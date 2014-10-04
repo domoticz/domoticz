@@ -667,28 +667,30 @@ define(['app'], function (app) {
 			});	
 			var deviceParent = $("#DeviceIcons")[0];
 			for (var i=0; i<deviceParent.childNodes.length; i++) {
-				$.ajax({
-						url: "json.htm?type=command&param=setplandevicecoords" + 
-										"&idx=" + deviceParent.childNodes[i].getAttribute('idx') + 
-										"&planidx=" + planidx + 
-										"&xoffset=" + deviceParent.childNodes[i].getAttribute('xoffset') +
-										"&yoffset=" + deviceParent.childNodes[i].getAttribute('yoffset') +
-										"&DevSceneType=" + deviceParent.childNodes[i].getAttribute('devscenetype'),
-						async: false, 
-						dataType: 'json',
-						success: function(data) {
-							if (data.status == 'OK') {
-		//						RefreshPlanTable($.devIdx);
-							}
-							else {
-								ShowNotify('Problem udating Device Coordinates!', 2500, true);
-							}
-						},
-						error: function(){
-							HideNotify();
-							ShowNotify('Problem updating Device Coordinates!', 2500, true);
-						}     
-					});	
+				if (deviceParent.childNodes[i].getAttribute('onfloorplan') != 'false') {
+					$.ajax({
+							url: "json.htm?type=command&param=setplandevicecoords" + 
+											"&idx=" + deviceParent.childNodes[i].getAttribute('idx') + 
+											"&planidx=" + planidx + 
+											"&xoffset=" + deviceParent.childNodes[i].getAttribute('xoffset') +
+											"&yoffset=" + deviceParent.childNodes[i].getAttribute('yoffset') +
+											"&DevSceneType=" + deviceParent.childNodes[i].getAttribute('devscenetype'),
+							async: false, 
+							dataType: 'json',
+							success: function(data) {
+								if (data.status == 'OK') {
+			//						RefreshPlanTable($.devIdx);
+								}
+								else {
+									ShowNotify('Problem udating Device Coordinates!', 2500, true);
+								}
+							},
+							error: function(){
+								HideNotify();
+								ShowNotify('Problem updating Device Coordinates!', 2500, true);
+							}     
+						});	
+				}
 			}
 
 			RefreshPlanTable($.devIdx);
@@ -773,6 +775,10 @@ define(['app'], function (app) {
 									// update coordinates manually, since top/left style props don't work on SVG
 									var parent = event.target.parentNode;
 									if (parent) {
+										if (parent.getAttribute("onfloorplan") == 'false') {
+											parent.setAttribute("onfloorplan",'true');
+											parent.setAttribute("opacity",'');
+										}
 										var Scale = Device.xImageSize / $("#floorplaneditor").width();
 										var offset = $("#floorplanimage").offset();
 										var xoffset = Math.round((event.pageX - offset.left - (Device.iconSize/2)) * Scale);

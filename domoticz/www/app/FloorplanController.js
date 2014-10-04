@@ -172,11 +172,15 @@ define(['app'], function (app) {
 										item.Image = sDev.toLowerCase();
 										item.XOffset = Math.abs(item.XOffset) + ((i == 0) ? 0 : 50);
 										dev = Device.create(item);
-										dev.htmlMinimum(parent);
+										if (dev.onFloorplan == true) {
+											dev.htmlMinimum(parent);
+										}
 									}
 								} else {
 									dev = Device.create(item);
-									dev.htmlMinimum(parent);
+									if (dev.onFloorplan == true) {
+										dev.htmlMinimum(parent);
+									}
 								}
 							});
 						}
