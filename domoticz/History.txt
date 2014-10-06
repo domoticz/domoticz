@@ -5,6 +5,7 @@ Version 2.0.xxxx (September xxth 2014)
 - Fixed: OpenZWave, converted home_id to correct variable
 - Fixed: Blinds1, T6 DC160 should work now
 - Implemented: Dewpoint devices in Blockly
+- Updated: floorplan interface, german translation
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher
