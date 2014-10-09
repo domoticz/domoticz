@@ -7,6 +7,8 @@ Version 2.0.xxxx (September xxth 2014)
 - Implemented: Dewpoint devices in Blockly
 - Updated: floorplan interface, german translation
 - Fixed: Setting default security network key for openzwave
+- Implemented: Devices tab, CM180 log option
+- Implemented: Logging counter values for P1 meter (not displayed yet)
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

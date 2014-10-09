@@ -23,7 +23,7 @@
 	#include <pwd.h>
 #endif
 
-#define DB_VERSION 50
+#define DB_VERSION 51
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -199,6 +199,10 @@ const char *sqlCreateMultiMeter_Calendar =
 "[Value4] BIGINT NOT NULL, "
 "[Value5] BIGINT NOT NULL, "
 "[Value6] BIGINT NOT NULL, "
+"[Counter1] BIGINT DEFAULT 0, "
+"[Counter2] BIGINT DEFAULT 0, "
+"[Counter3] BIGINT DEFAULT 0, "
+"[Counter4] BIGINT DEFAULT 0, "
 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
 
@@ -248,6 +252,7 @@ const char *sqlCreateMeter_Calendar =
 "CREATE TABLE IF NOT EXISTS [Meter_Calendar] ("
 "[DeviceRowID] BIGINT NOT NULL, "
 "[Value] BIGINT NOT NULL, "
+"[Counter] BIGINT DEFAULT 0, "
 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
 const char *sqlCreateLightSubDevices =
@@ -977,6 +982,14 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("ALTER TABLE Timers ADD COLUMN [Date] DATE default 0");
 			query("ALTER TABLE SceneTimers ADD COLUMN [Date] DATE default 0");
+		}
+		if (dbversion < 51)
+		{
+			query("ALTER TABLE Meter_Calendar ADD COLUMN [Counter] BIGINT default 0");
+			query("ALTER TABLE MultiMeter_Calendar ADD COLUMN [Counter1] BIGINT default 0");
+			query("ALTER TABLE MultiMeter_Calendar ADD COLUMN [Counter2] BIGINT default 0");
+			query("ALTER TABLE MultiMeter_Calendar ADD COLUMN [Counter3] BIGINT default 0");
+			query("ALTER TABLE MultiMeter_Calendar ADD COLUMN [Counter4] BIGINT default 0");
 		}
 	}
 	else if (bNewInstall)
@@ -4613,13 +4626,15 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				)
 			{
 				double total_real=total_max-total_min;
+				double counter = total_max;
 
 				//insert into calendar table
 				sprintf(szTmp,
-					"INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) "
-					"VALUES ('%llu', '%.2f', '%s')",
+					"INSERT INTO Meter_Calendar (DeviceRowID, Value, Counter, Date) "
+					"VALUES ('%llu', '%.2f', '%.2f', '%s')",
 					ID,
 					total_real,
+					counter,
 					szDateStart
 					);
 				result=query(szTmp);
@@ -4793,6 +4808,10 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 			std::vector<std::string> sd=result[0];
 
 			float total_real[6];
+			float counter1 = 0;
+			float counter2 = 0;
+			float counter3 = 0;
+			float counter4 = 0;
 
 			if (devType==pTypeP1Power)
 			{
@@ -4802,6 +4821,10 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 					float total_max=(float)atof(sd[(ii*2)+1].c_str());
 					total_real[ii]=total_max-total_min;
 				}
+				counter1 = (float)atof(sd[1].c_str());
+				counter2 = (float)atof(sd[3].c_str());
+				counter3 = (float)atof(sd[9].c_str());
+				counter4 = (float)atof(sd[11].c_str());
 			}
 			else
 			{
@@ -4814,8 +4837,8 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 
 			//insert into calendar table
 			sprintf(szTmp,
-				"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Date) "
-				"VALUES ('%llu', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%s')",
+				"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Counter1, Counter2, Counter3, Counter4, Date) "
+				"VALUES ('%llu', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%s')",
 				ID,
 				total_real[0],
 				total_real[1],
@@ -4823,6 +4846,10 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 				total_real[3],
 				total_real[4],
 				total_real[5],
+				counter1,
+				counter2,
+				counter3,
+				counter4,
 				szDateStart
 				);
 			result=query(szTmp);
