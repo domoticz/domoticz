@@ -592,7 +592,7 @@ void CSMASpot::GetMeterDetails()
 		return;
 	if (results[1].size()<1)
 		return;
-	if (results[28]!="OK")
+	if ((results[28] != "OK") && (results[28] != "Ok"))
 		return;
 	std::string szDate=results[0];
 	if (szDate==m_LastDateTime)
