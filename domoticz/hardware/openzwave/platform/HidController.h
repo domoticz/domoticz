@@ -31,7 +31,11 @@
 #include <string>
 #include "Defs.h"
 #include "platform/Controller.h"
-#include "hidapi.h"
+
+
+struct hid_device_;
+
+typedef struct hid_device_ hid_device;
 
 namespace OpenZWave
 {

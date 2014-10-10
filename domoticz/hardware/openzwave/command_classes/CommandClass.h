@@ -31,7 +31,6 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "tinyxml.h"
 #include "Defs.h"
 #include "Bitfield.h"
 #include "Driver.h"
