@@ -391,7 +391,6 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				});
 			}
 		};
-        
 	});
 
     // Bootstrap Angular when DOM is ready

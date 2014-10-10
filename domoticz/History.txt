@@ -10,6 +10,7 @@ Version 2.0.xxxx (September xxth 2014)
 - Implemented: Devices tab, CM180 log option
 - Implemented: Logging counter values for P1 meter (not displayed yet)
 - Implemented: SBFSpot compatible now
+- Implemented: Trend Lines in various charts
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher
