@@ -2884,6 +2884,7 @@ void CWebServer::Cmd_ExcecuteScript(Json::Value &root)
 	std::string sdirect = m_pWebEm->FindValue("direct");
 	if (sdirect == "true")
 	{
+		_log.Log(LOG_STATUS, "Executing script: %s", scriptname.c_str());
 #ifdef WIN32
 		ShellExecute(NULL, "open", scriptname.c_str(), strparm.c_str(), NULL, SW_SHOWNORMAL);
 #else
