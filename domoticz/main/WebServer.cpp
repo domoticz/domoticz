@@ -1285,7 +1285,7 @@ void CWebServer::RType_OpenZWaveNodes(Json::Value &root)
 		{
 			std::vector<std::string> sd = *itt;
 
-			int homeID = atoi(sd[1].c_str());
+			unsigned int homeID = (unsigned int) atoi(sd[1].c_str());
 			int nodeID = atoi(sd[2].c_str());
 			//if (nodeID>1) //Don't include the controller
 			{
@@ -1381,7 +1381,7 @@ void CWebServer::Cmd_ZWaveDeleteNode(Json::Value &root)
 	if (result.size()>0)
 	{
 		int hwid=atoi(result[0][0].c_str());
-		int homeID=atoi(result[0][1].c_str());
+		unsigned int homeID=(unsigned int)atoi(result[0][1].c_str());
 		int nodeID=atoi(result[0][2].c_str());
 		CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(hwid);
 		if (pHardware!=NULL)
@@ -1689,7 +1689,7 @@ void CWebServer::Cmd_ZWaveGroupInfo(Json::Value &root)
 			for (itt=result.begin(); itt!=result.end(); ++itt)
 			{
 				std::vector<std::string> sd=*itt;
-				int homeID=atoi(sd[1].c_str());
+				unsigned int homeID=(unsigned int)atoi(sd[1].c_str());
 				int nodeID=atoi(sd[2].c_str());
 				COpenZWave::NodeInfo *pNode=pOZWHardware->GetNodeInfo(homeID, nodeID);
 				if (pNode==NULL)
@@ -1770,7 +1770,7 @@ void CWebServer::Cmd_ApplyZWaveNodeConfig(Json::Value &root)
 	if (result.size()>0)
 	{
 		int hwid=atoi(result[0][0].c_str());
-		int homeID=atoi(result[0][1].c_str());
+		unsigned int homeID=(unsigned int)atoi(result[0][1].c_str());
 		int nodeID=atoi(result[0][2].c_str());
 		CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(hwid);
 		if (pHardware!=NULL)
@@ -1796,7 +1796,7 @@ void CWebServer::Cmd_ZWaveRequestNodeConfig(Json::Value &root)
 	if (result.size()>0)
 	{
 		int hwid=atoi(result[0][0].c_str());
-		int homeID=atoi(result[0][1].c_str());
+		unsigned int homeID=(unsigned int)atoi(result[0][1].c_str());
 		int nodeID=atoi(result[0][2].c_str());
 		CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(hwid);
 		if (pHardware!=NULL)
@@ -1939,7 +1939,7 @@ void CWebServer::Cmd_ZWaveRemoveUserCode(Json::Value &root)
 	if (result.size()>0)
 	{
 		int hwid = atoi(result[0][0].c_str());
-		int homeID = atoi(result[0][1].c_str());
+		unsigned int homeID = (unsigned int) atoi(result[0][1].c_str());
 		int nodeID = atoi(result[0][2].c_str());
 		CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
 		if (pHardware != NULL)
@@ -1966,7 +1966,7 @@ void CWebServer::Cmd_ZWaveGetNodeUserCodes(Json::Value &root)
 	if (result.size()>0)
 	{
 		int hwid = atoi(result[0][0].c_str());
-		int homeID = atoi(result[0][1].c_str());
+		unsigned int homeID = (unsigned int)atoi(result[0][1].c_str());
 		int nodeID = atoi(result[0][2].c_str());
 		CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
 		if (pHardware != NULL)
