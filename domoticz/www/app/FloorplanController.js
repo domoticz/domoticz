@@ -32,6 +32,20 @@ define(['app'], function (app) {
 				Device.xImageSize = 1280;
 				Device.yImageSize = 720;
 				$("#svgcontainer2")[0].setAttribute("style","display:inline");
+				SVGResize();
+			}
+		}
+
+		SVGResize = function() {
+			var svgHeight;
+			if ((typeof $("#floorplancontainer") != 'undefined') && (typeof $("#floorplanimagesize") != 'undefined') && (typeof $("#floorplanimagesize")[0] != 'undefined') && ($("#floorplanimagesize")[0].naturalWidth != 'undefined')){
+				$("#floorplancontainer")[0].setAttribute('naturalWidth', $("#floorplanimagesize")[0].naturalWidth);
+				$("#floorplancontainer")[0].setAttribute('naturalHeight', $("#floorplanimagesize")[0].naturalHeight);
+				$("#floorplancontainer")[0].setAttribute('svgwidth', $("#svgcontainer2").width());
+				var ratio = $("#floorplanimagesize")[0].naturalWidth / $("#floorplanimagesize")[0].naturalHeight;
+				$("#floorplancontainer")[0].setAttribute('ratio', ratio);
+				svgHeight = $("#floorplancontainer").width() / ratio;
+				$("#floorplancontainer").height(svgHeight);
 			}
 		}
 
