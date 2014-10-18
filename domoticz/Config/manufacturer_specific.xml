@@ -126,6 +126,9 @@
 	<Manufacturer id="0012" name="E Housekeeper">
 		<Product type="0001" id="0001" name="Switchkeeper Plug-in Appliance Module"/>
 	</Manufacturer>
+        <Manufacturer id="011f" name="Ecolink">
+                <Product type="0001" id="0003" name="Garage Door Sensor"/>
+        </Manufacturer>
 	<Manufacturer id="0087" name="Eka Systems">
 	</Manufacturer>
 	<Manufacturer id="0033" name="Electronic Solutions Inc">
