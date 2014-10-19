@@ -9527,6 +9527,7 @@ void CWebServer::RType_Hardware(Json::Value &root)
 			root["result"][ii]["Mode5"] = atoi(sd[12].c_str());
 			root["result"][ii]["DataTimeout"] = atoi(sd[13].c_str());
 
+#ifdef WITH_OPENZWAVE
 			//Special case for openzwave (status for nodes queried)
 			CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(atoi(sd[0].c_str()));
 			if (pHardware != NULL)
@@ -9537,7 +9538,7 @@ void CWebServer::RType_Hardware(Json::Value &root)
 					root["result"][ii]["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried) || (pOZWHardware->m_allNodesQueried);
 				}
 			}
-
+#endif
 			ii++;
 		}
 	}
