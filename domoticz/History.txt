@@ -17,6 +17,7 @@ Version 2.0.xxxx (September xxth 2014)
 - Implemented: Native Mochad hardware support (thanks to kasshoek)
 - Fixed: lua/blockly energy device value
 - Fixed: lua/blockly 'UpdateDevice' now reloads current states
+- Implemented: Blockly/Lua Thermostat/Setpoint utility device
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

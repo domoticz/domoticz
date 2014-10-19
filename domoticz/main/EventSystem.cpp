@@ -297,6 +297,10 @@ void CEventSystem::GetCurrentMeasurementStates()
 			temp = (float)atof(splitresults[0].c_str());
 			isTemp = true;
 			break;
+		case pTypeThermostat:
+			temp = (float)atof(splitresults[0].c_str());
+			isTemp = true;
+			break;
 		case pTypeThermostat1:
 			temp = (float)atof(splitresults[0].c_str());
 			isTemp = true;
