@@ -16,6 +16,7 @@ Version 2.0.xxxx (September xxth 2014)
 - Implemented: OpenZWave Node Queried status, last seen in Node table
 - Implemented: Native Mochad hardware support (thanks to kasshoek)
 - Fixed: lua/blockly energy device value
+- Fixed: lua/blockly 'UpdateDevice' now reloads current states
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

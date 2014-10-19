@@ -1987,6 +1987,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	{
 		std::string luaString = lua_tostring(lua_state, -1);
 		UpdateDevice(luaString);
+		GetCurrentStates();
 		scriptTrue = true;
 	}
 	else if (std::string(lua_tostring(lua_state, -2)).find("Variable:") == 0)
