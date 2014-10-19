@@ -2994,16 +2994,14 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 				{
 					if (vstring!=results[vindex+1])
 					{
-						_asm nop;
-						//m_pManager->SetValueListSelection(vID,results[vindex+1]);
+						m_pManager->SetValueListSelection(vID,results[vindex+1]);
 					}
 				}
 				else
 				{
 					if (vstring!=results[vindex+1])
 					{
-						_asm nop;
-						//m_pManager->SetValue(vID,results[vindex+1]);
+						m_pManager->SetValue(vID,results[vindex+1]);
 					}
 				}
 			}
