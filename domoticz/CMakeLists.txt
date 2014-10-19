@@ -183,6 +183,7 @@ hardware/HarmonyHub.cpp
 hardware/ICYThermostat.cpp
 hardware/Limitless.cpp
 hardware/Meteostick.cpp
+hardware/MochadTCP.cpp
 hardware/OpenZWave.cpp
 hardware/OTGWBase.cpp
 hardware/OTGWSerial.cpp

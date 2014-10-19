@@ -90,6 +90,7 @@ enum _eHardwareTypes {
 	HTYPE_TOONTHERMOSTAT,		//34
 	HTYPE_ECODEVICES,			//35
 	HTYPE_HARMONY_HUB,			//36
+	HTYPE_Mochad,				//37
 	HTYPE_END
 };
 

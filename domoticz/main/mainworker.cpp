@@ -52,6 +52,7 @@
 #include "../hardware/ToonThermostat.h"
 #include "../hardware/HarmonyHub.h"
 #include "../hardware/EcoDevices.h"
+#include "../hardware/MochadTCP.h"
 #ifdef WITH_GPIO
 	#include "../hardware/Gpio.h"
 	#include "../hardware/GpioPin.h"
@@ -503,6 +504,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_1WIRE:
 		//1-Wire file system
 		pHardware = new C1Wire(ID);
+		break;
+	case HTYPE_Mochad:
+		//LAN
+		pHardware = new MochadTCP(ID, Address, Port);
 		break;
 #ifndef WIN32
 	case HTYPE_TE923:

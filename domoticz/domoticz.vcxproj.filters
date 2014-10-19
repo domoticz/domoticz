@@ -156,6 +156,9 @@
     <Filter Include="HTTPClient">
       <UniqueIdentifier>{43e678ba-2229-48dc-8d72-a10a52186b82}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Mochad">
+      <UniqueIdentifier>{9886a577-ba19-4433-9b78-48e07217ca20}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -469,6 +472,9 @@
     <ClInclude Include="hardware\csocket.h">
       <Filter>Devices\Logitech Harmony Hub</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\MochadTCP.h">
+      <Filter>Devices\Mochad</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -740,6 +746,9 @@
     </ClCompile>
     <ClCompile Include="hardware\csocket.cpp">
       <Filter>Devices\Logitech Harmony Hub</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\MochadTCP.cpp">
+      <Filter>Devices\Mochad</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
