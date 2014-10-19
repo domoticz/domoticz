@@ -472,6 +472,30 @@ COpenZWave::NodeInfo* COpenZWave::GetNodeInfo( const unsigned int homeID, const 
 	return NULL;
 }
 
+std::string COpenZWave::GetNodeStateString(const unsigned int homeID, const int nodeID)
+{
+	std::string strState = "Unknown";
+	COpenZWave::NodeInfo *pNode = GetNodeInfo(m_controllerID, nodeID);
+	if (!pNode)
+		return strState;
+	switch (pNode->eState)
+	{
+	case NTSATE_UNKNOWN:
+		strState = "Unknown";
+		break;
+	case NSTATE_AWAKE:
+		strState = "Awake";
+		break;
+	case NSTATE_SLEEP:
+		strState = "Sleep";
+		break;
+	case NSTATE_DEAD:
+		strState = "Dead";
+		break;
+	}
+	return strState;
+}
+
 void COpenZWave::WriteControllerConfig()
 {
 	if (m_controllerID==0)
@@ -536,7 +560,8 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 		instance = vInstance;
 	}
 
-	switch( _notification->GetType() )
+	OpenZWave::Notification::NotificationType nType = _notification->GetType();
+	switch (nType)
 	{
 	case OpenZWave::Notification::Type_DriverReady:
 		{
@@ -564,6 +589,8 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 	case OpenZWave::Notification::Type_SceneEvent:
 		if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
 		{
+			nodeInfo->eState = NSTATE_AWAKE;
+
 			// Add the new value to our list
 			UpdateNodeScene(vID, (int)_notification->GetSceneId());
 			nodeInfo->m_LastSeen = m_updateTime;
@@ -590,6 +617,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 		// One of the node values has changed
 		if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
 		{
+			nodeInfo->eState = NSTATE_AWAKE;
 			nodeInfo->m_LastSeen = m_updateTime;
 			UpdateValue(vID);
 			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
@@ -597,8 +625,9 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 		break;
 	case OpenZWave::Notification::Type_ValueRefreshed:
 		// One of the node values has changed
-		if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
+		if (NodeInfo* nodeInfo = GetNodeInfo(_notification))
 		{
+			nodeInfo->eState = NSTATE_AWAKE;
 			//UpdateValue(vID);
 			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
 		}
@@ -607,22 +636,30 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 	
 		switch (_notification->GetNotification()) 
 		{
+		case OpenZWave::Notification::Code_MsgComplete:
+			if (NodeInfo* nodeInfo = GetNodeInfo(_notification))
+			{
+				nodeInfo->eState = NSTATE_AWAKE;
+				nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
+			}
+			break;
 		case OpenZWave::Notification::Code_Awake:
 			if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
 			{
-				nodeInfo->IsAwake=true;
+				nodeInfo->eState = NSTATE_AWAKE;
+				nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
 			}
 			break;
 		case OpenZWave::Notification::Code_Sleep:
 			if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
 			{
-				nodeInfo->IsAwake=false;
+				nodeInfo->eState = NSTATE_SLEEP;
 			}
 			break;
 		case OpenZWave::Notification::Code_Dead:
 			if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
 			{
-				nodeInfo->IsDead=true;
+				nodeInfo->eState = NSTATE_DEAD;
 			}
 			break;
 		}
@@ -650,8 +687,10 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 			nodeInfo.Product_id = pManager->GetNodeProductId(_homeID, _nodeID);
 			nodeInfo.Product_name = pManager->GetNodeProductName(_homeID, _nodeID);
 
-			nodeInfo.IsAwake = pManager->IsNodeAwake(_homeID, _nodeID);
-			nodeInfo.IsDead=false;//m_pManager->IsNodeFailed(_homeID,_nodeID);
+			if ((_homeID == m_controllerID) && (_nodeID < 2))
+				nodeInfo.eState = NSTATE_AWAKE;	//controller is always awake
+			else
+				nodeInfo.eState = NTSATE_UNKNOWN;
 
 			nodeInfo.m_LastSeen = m_updateTime;
 			m_nodes.push_back( nodeInfo );
@@ -679,6 +718,7 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 		// basic_set or hail message.
 		if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
 		{
+			nodeInfo->eState = NSTATE_AWAKE;
 			UpdateNodeEvent(vID,(int)_notification->GetEvent());
 			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
 			nodeInfo->m_LastSeen = m_updateTime;
@@ -716,7 +756,10 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 	case OpenZWave::Notification::Type_AllNodesQueriedSomeDead:
 		m_awakeNodesQueried = true;
 		m_allNodesQueried = true;
-		_log.Log(LOG_STATUS,"OpenZWave: All Nodes queried");
+		if (nType == OpenZWave::Notification::Type_AllNodesQueried)
+			_log.Log(LOG_STATUS,"OpenZWave: All Nodes queried");
+		else
+			_log.Log(LOG_STATUS, "OpenZWave: All Nodes queried (Some Dead)");
 		NodesQueried();
 		WriteControllerConfig();
 		break;
@@ -2760,7 +2803,9 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 		ivalue++;
 
 		//Network Key
-		std::string sValue="0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10";
+		root["result"][index]["config"][ivalue]["type"] = "string";
+
+		std::string sValue = "0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10";
 		m_sql.GetPreferencesVar("ZWaveNetworkKey", sValue);
 		root["result"][index]["config"][ivalue]["value"] = sValue;
 
@@ -2902,7 +2947,7 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 		int rvIndex=atoi(results[vindex].c_str());
 		if (nodeID==1)
 		{
-			//Main ZWave node
+			//Main ZWave node (Controller)
 			if (rvIndex==1)
 			{
 				//PollInterval
@@ -2912,6 +2957,7 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 			}
 			else if (rvIndex==2)
 			{
+				//Debug mode
 				int debugenabled=atoi(results[vindex+1].c_str());
 				int old_debugenabled=0;
 				m_sql.GetPreferencesVar("ZWaveEnableDebug", old_debugenabled);
@@ -2923,6 +2969,7 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 			}
 			else if (rvIndex == 3)
 			{
+				//Security Key
 				std::string networkkey = results[vindex + 1];
 				std::string old_networkkey="";
 				m_sql.GetPreferencesVar("ZWaveNetworkKey", old_networkkey);
@@ -2947,14 +2994,16 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 				{
 					if (vstring!=results[vindex+1])
 					{
-						m_pManager->SetValueListSelection(vID,results[vindex+1]);
+						_asm nop;
+						//m_pManager->SetValueListSelection(vID,results[vindex+1]);
 					}
 				}
 				else
 				{
 					if (vstring!=results[vindex+1])
 					{
-						m_pManager->SetValue(vID,results[vindex+1]);
+						_asm nop;
+						//m_pManager->SetValue(vID,results[vindex+1]);
 					}
 				}
 			}

@@ -1274,6 +1274,8 @@ void CWebServer::RType_OpenZWaveNodes(Json::Value &root)
 	root["status"] = "OK";
 	root["title"] = "OpenZWaveNodes";
 
+	root["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried) || (pOZWHardware->m_allNodesQueried);
+
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT ID,HomeID,NodeID,Name,ProductDescription,PollTime FROM ZWaveNodes WHERE (HardwareID==" << iHardwareID << ")";
@@ -1305,10 +1307,14 @@ void CWebServer::RType_OpenZWaveNodes(Json::Value &root)
 				root["result"][ii]["Product_type"] = pNode->Product_type;
 				root["result"][ii]["Product_id"] = pNode->Product_id;
 				root["result"][ii]["Product_name"] = pNode->Product_name;
-				root["result"][ii]["IsAwake"] = pNode->IsAwake;
-				root["result"][ii]["IsDead"] = pNode->IsDead;
+				root["result"][ii]["State"] = pOZWHardware->GetNodeStateString(homeID, nodeID);
 				root["result"][ii]["HaveUserCodes"] = pNode->HaveUserCodes;
-				char *szDate = asctime(localtime(&pNode->m_LastSeen));
+				char szDate[80];
+				struct tm loctime;
+				localtime_r(&pNode->m_LastSeen, &loctime);
+				strftime(szDate, 80, "%Y-%m-%d %X", &loctime);
+
+				//char *szDate = asctime(localtime(&pNode->m_LastSeen));
 				root["result"][ii]["LastUpdate"] = szDate;
 
 				//Add configuration parameters here
@@ -9520,6 +9526,17 @@ void CWebServer::RType_Hardware(Json::Value &root)
 			root["result"][ii]["Mode4"] = atoi(sd[11].c_str());
 			root["result"][ii]["Mode5"] = atoi(sd[12].c_str());
 			root["result"][ii]["DataTimeout"] = atoi(sd[13].c_str());
+
+			//Special case for openzwave (status for nodes queried)
+			CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(atoi(sd[0].c_str()));
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType != HTYPE_OpenZWave)
+					return;
+				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				root["result"][ii]["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried) || (pOZWHardware->m_allNodesQueried);
+			}
+
 			ii++;
 		}
 	}

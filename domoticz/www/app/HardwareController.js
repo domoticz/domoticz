@@ -1007,7 +1007,7 @@ define(['app'], function (app) {
 				// Now loop through list of controls
 				$list.each( function() {
 					var id = $(this).prop("id");      // get id
-					var value = $(this).find(":selected").text();      // get value
+					var value = encodeURIComponent($(this).find(":selected").text());      // get value
 					valueList+=id+"_"+value+"__";
 				});
 			}
@@ -1192,13 +1192,24 @@ define(['app'], function (app) {
 			 dataType: 'json',
 			 success: function(data) {
 			  if (typeof data.result != 'undefined') {
+
+				if (data.NodesQueried == true) {
+					$("#zwavenodesqueried").hide();
+				}
+				else {
+					$("#zwavenodesqueried").show();
+				}
+			  
 				$.each(data.result, function(i,item){
 					var status="ok";
-					if (item.IsDead==true) {
+					if (item.State == "Dead") {
 						status="failed";
 					}
-					else if (item.IsAwake==false) {
+					else if (item.State == "Sleep") {
 						status="sleep";
+					}
+					else if (item.State == "Unknown") {
+						status="unknown";
 					}
 					var statusImg='<img src="images/' + status + '.png" />';
 					var healButton='<img src="images/heal.png" onclick="ZWaveHealNode('+item.NodeID+')" class="lcursor" title="'+$.i18n("Heal node")+'" />';
@@ -1209,15 +1220,15 @@ define(['app'], function (app) {
 						"Name": item.Name,
 						"PollEnabled": item.PollEnabled,
 						"Config": item.config,
-						"IsAwake": item.IsAwake,
-						"IsDead": item.IsDead,
+						"State": item.State,
 						"NodeID": item.NodeID,
 						"HaveUserCodes": item.HaveUserCodes,
 						"0": nodeStr,
 						"1": item.Name,
 						"2": item.Description,
-						"3": item.PollEnabled,
-						"4": statusImg+'&nbsp;&nbsp;'+healButton,
+						"3": item.LastUpdate,
+						"4": item.PollEnabled,
+						"5": statusImg+'&nbsp;&nbsp;'+healButton,
 					} );
 				});
 			  }
@@ -1318,6 +1329,15 @@ define(['app'], function (app) {
 										szConfig+=' (' + item.units + ')';
 									}
 								}
+								else if (item.type=="string") {
+									szConfig+="<b>"+item.index+". "+item.label+":</b><br>";
+									szConfig+='<input type="text" id="'+item.index+'" value="' + item.value + '" style="width: 600px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>';
+									
+									if (item.units!="") {
+										szConfig+=' (' + item.units + ')';
+									}
+									szConfig+=" (" + $.i18n("actual") + ": " + item.value + ")";
+								}
 								else {
 									szConfig+="<b>"+item.index+". "+item.label+":</b> ";
 									szConfig+='<input type="text" id="'+item.index+'" value="' + item.value + '" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />';
@@ -1326,7 +1346,7 @@ define(['app'], function (app) {
 									}
 									szConfig+=" (" + $.i18n("actual") + ": " + item.value + ")";
 								}
-								szConfig+="<br />";
+								szConfig+="<br /><br />";
 								if (item.help!="") {
 									szConfig+=item.help+"<br>";
 								}
@@ -1692,7 +1712,13 @@ define(['app'], function (app) {
 						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditLimitlessType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Set Mode</span>';
 					}
 					else if (HwTypeStr.indexOf("OpenZWave") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditOpenZWave(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Setup</span>';
+						if (typeof item.NodesQueried != 'undefined') {
+							var lblStatus="label-info";
+							if (item.NodesQueried != true) {
+								lblStatus="label-important";
+							}
+							HwTypeStr+=' <span class="label ' + lblStatus + ' lcursor" onclick="EditOpenZWave(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Setup</span>';
+						}
 					}
 					else if (HwTypeStr.indexOf("SMASpot") >= 0) {
 						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditSMASpot(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Setup</span>';

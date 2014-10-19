@@ -13,6 +13,7 @@ Version 2.0.xxxx (September xxth 2014)
 - Implemented: Trend Lines in various charts
 - Fixed: Openzwave/zwave.me issues with large home_id
 - Implemented: Logging when a script is executed
+- Implemented: OpenZWave Node Queried status, last seen in Node table
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

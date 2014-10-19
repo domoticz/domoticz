@@ -33,6 +33,7 @@
 	</center>
 </div>
 <div id="openzwave" style="display:none;">
+	<div id="zwavenodesqueried" class="alert alert-error" style="display:none;"><b><span data-i18n="Not all Nodes have been Queried yet, OpenZWave not fully initialized yet!"</span></b></div>
 	<div class="page-header-small">
 		<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
 			<tr>
@@ -71,10 +72,11 @@
     <table class="display" id="nodestable" border="0" cellpadding="0" cellspacing="0" width="100%">
         <thead>
             <tr>
-                <th width="70" align="center" data-i18n="NodeID">NodeID</th>
+                <th width="80" align="center" data-i18n="NodeID">NodeID</th>
                 <th width="150" align="left" data-i18n="Name">Name</th>
                 <th align="left" data-i18n="Description">Description</th>
-                <th width="50" align="left" data-i18n="EnablePolling">EnablePolling</th>
+                <th width="150" align="left" data-i18n="Last Seen">Last Seen</th>
+                <th width="50" align="left" data-i18n="EnablePolling">Enable Polling</th>
                 <th width="50" align="left" data-i18n="Status">Status</th>
             </tr>
         </thead>

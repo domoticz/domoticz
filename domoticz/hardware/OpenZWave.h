@@ -29,6 +29,14 @@ public:
 		std::list<OpenZWave::ValueID>	Values;
 		time_t							m_LastSeen;
 	}NodeCommandClass;
+	
+	typedef enum
+	{
+		NTSATE_UNKNOWN=0,
+		NSTATE_AWAKE,
+		NSTATE_SLEEP,
+		NSTATE_DEAD
+	} eNodeState;
 
 	typedef struct
 	{
@@ -46,8 +54,7 @@ public:
 
 		std::map<int, std::map<int, NodeCommandClass> >	Instances;
 
-		bool							IsAwake;
-		bool							IsDead;
+		eNodeState						eState;
 
 		bool							HaveUserCodes;
 
@@ -62,6 +69,7 @@ public:
 	void OnZWaveNotification( OpenZWave::Notification const* _notification);
 	void OnZWaveDeviceStatusUpdate(int cs, int err);
 	void EnableDisableNodePolling();
+	std::string GetNodeStateString(const unsigned int homeID, const int nodeID);
 	void GetNodeValuesJson(const unsigned int homeID, const int nodeID, Json::Value &root, const int index);
 	NodeInfo* GetNodeInfo( const unsigned int homeID, const int nodeID );
 	bool ApplyNodeConfig(const unsigned int homeID, const int nodeID, const std::string &svaluelist);
@@ -90,6 +98,9 @@ public:
 	bool AddNodeToGroup(const int nodeID,const int groupID, const int addID);
 	bool RemoveNodeFromGroup(const int nodeID,const int groupID, const int removeID);
 	std::string GetConfigFile(std::string &szConfigFile);
+
+	bool m_awakeNodesQueried;
+	bool m_allNodesQueried;
 private:
 	void NodesQueried();
 	void DeleteNode(const unsigned int homeID, const int nodeID);
@@ -128,8 +139,6 @@ private:
 
 	bool m_bIsShuttingDown;
 	bool m_initFailed;
-	bool m_awakeNodesQueried;
-	bool m_allNodesQueried;
 	bool m_bInUserCodeEnrollmentMode;
 };
 
