@@ -9531,10 +9531,11 @@ void CWebServer::RType_Hardware(Json::Value &root)
 			CDomoticzHardwareBase *pHardware=m_mainworker.GetHardware(atoi(sd[0].c_str()));
 			if (pHardware != NULL)
 			{
-				if (pHardware->HwdType != HTYPE_OpenZWave)
-					return;
-				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-				root["result"][ii]["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried) || (pOZWHardware->m_allNodesQueried);
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					root["result"][ii]["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried) || (pOZWHardware->m_allNodesQueried);
+				}
 			}
 
 			ii++;
