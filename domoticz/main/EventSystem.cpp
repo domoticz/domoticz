@@ -391,6 +391,12 @@ void CEventSystem::GetCurrentMeasurementStates()
 			isUtility = true;
 			break;
 		case pTypeENERGY:
+			if (splitresults.size()==2)
+				utilityval = (float)atof(splitresults[1].c_str());
+			else
+				utilityval = (float)atof(splitresults[0].c_str());
+			isUtility = true;
+			break;
 		case pTypePOWER:
 			utilityval = (float)atof(splitresults[0].c_str());
 			isUtility = true;
@@ -895,16 +901,19 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 	for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); iterator++) {
 		_tUserVariable uvitem = iterator->second;
 		if (uvitem.variableType == 0)  {
+			//Integer
 			lua_pushnumber(lua_state, (lua_Number)uvitem.ID);
 			lua_pushnumber(lua_state, atoi(uvitem.variableValue.c_str()));
 			lua_rawset(lua_state, -3);
 		}
 		else if (uvitem.variableType == 1)  {
+			//Float
 			lua_pushnumber(lua_state, (lua_Number)uvitem.ID);
 			lua_pushnumber(lua_state, atof(uvitem.variableValue.c_str()));
 			lua_rawset(lua_state, -3);
 		}
 		else {
+			//String,Date,Time
 			lua_pushnumber(lua_state, (lua_Number)uvitem.ID);
 			lua_pushstring(lua_state, uvitem.variableValue.c_str());
 			lua_rawset(lua_state, -3);
@@ -1735,16 +1744,19 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); iterator++) {
 		_tUserVariable uvitem = iterator->second;
 		if (uvitem.variableType == 0)  {
+			//Integer
 			lua_pushstring(lua_state, uvitem.variableName.c_str());
 			lua_pushnumber(lua_state, atoi(uvitem.variableValue.c_str()));
 			lua_rawset(lua_state, -3);
 		}
 		else if (uvitem.variableType == 1)  {
+			//Float
 			lua_pushstring(lua_state, uvitem.variableName.c_str());
 			lua_pushnumber(lua_state, atof(uvitem.variableValue.c_str()));
 			lua_rawset(lua_state, -3);
 		}
 		else {
+			//String,Date,Time
 			lua_pushstring(lua_state, uvitem.variableName.c_str());
 			lua_pushstring(lua_state, uvitem.variableValue.c_str());
 			lua_rawset(lua_state, -3);

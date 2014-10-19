@@ -6503,6 +6503,8 @@ bool CSQLHelper::CheckDate(const std::string &sDate, int& d, int& m, int& y)
 
 		time_t when = mktime(&t);
 		const struct tm *norm = localtime(&when);
+		if (norm == NULL)
+			return false;
 
 		return (norm->tm_mday == d    &&
 			norm->tm_mon == m - 1 &&
