@@ -21,6 +21,7 @@ Version 2.0.xxxx (September xxth 2014)
 - Changed: Scene/Group now takes switch On-Delay into account
 - Fixed: OpenZWave Node configuration parameters with special characters
 - Changed: lua 'UpdateDevice' now updates internal state instead of reloading all states
+- Implemented: Support for device-type Usage/Electric in Blockly/Lua
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

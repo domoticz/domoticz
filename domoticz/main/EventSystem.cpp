@@ -405,6 +405,10 @@ void CEventSystem::GetCurrentMeasurementStates()
 			utilityval = (float)atof(splitresults[0].c_str());
 			isUtility = true;
 			break;
+		case pTypeUsage:
+			utilityval = (float)atof(splitresults[0].c_str());
+			isUtility = true;
+			break;
 		case pTypeP1Power:
 			utilityval = (float)atof(splitresults[4].c_str());
 			isUtility = true;
@@ -624,6 +628,9 @@ void CEventSystem::GetCurrentMeasurementStates()
 				}
 			}
 			break;
+		default:
+			//Unknown device
+			continue;
 		}
 
 		if (isTemp) {
