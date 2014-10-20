@@ -414,28 +414,28 @@ void CEventSystem::GetCurrentMeasurementStates()
 			isUtility = true;
 			break;
 		case pTypeGeneral:
-		{
-			if (sitem.subType == sTypeVisibility)
 			{
-				utilityval = (float)atof(splitresults[0].c_str());
-				isUtility = true;
+				if (sitem.subType == sTypeVisibility)
+				{
+					utilityval = (float)atof(splitresults[0].c_str());
+					isUtility = true;
+				}
+				else if (sitem.subType == sTypeSolarRadiation)
+				{
+					utilityval = (float)atof(splitresults[0].c_str());
+					isUtility = true;
+				}
+				else if (sitem.subType == sTypePercentage)
+				{
+					utilityval = (float)atof(splitresults[0].c_str());
+					isUtility = true;
+				}
+				else if (sitem.subType == sTypeVoltage)
+				{
+					utilityval = (float)atof(splitresults[0].c_str());
+					isUtility = true;
+				}
 			}
-			else if (sitem.subType == sTypeSolarRadiation)
-			{
-				utilityval = (float)atof(splitresults[0].c_str());
-				isUtility = true;
-			}
-			else if (sitem.subType == sTypePercentage)
-			{
-				utilityval = (float)atof(splitresults[0].c_str());
-				isUtility = true;
-			}
-			else if (sitem.subType == sTypeVoltage)
-			{
-				utilityval = (float)atof(splitresults[0].c_str());
-				isUtility = true;
-			}
-		}
 			break;
 		case pTypeRAIN:
 			if (splitresults.size() == 2)
@@ -516,47 +516,47 @@ void CEventSystem::GetCurrentMeasurementStates()
 			}
 			break;
 		case pTypeP1Gas:
-		{
-			//get lowest value of today
-			float GasDivider = 1000.0f;
-			time_t now = mytime(NULL);
-			struct tm tm1;
-			localtime_r(&now, &tm1);
-
-			struct tm ltime;
-			ltime.tm_isdst = tm1.tm_isdst;
-			ltime.tm_hour = 0;
-			ltime.tm_min = 0;
-			ltime.tm_sec = 0;
-			ltime.tm_year = tm1.tm_year;
-			ltime.tm_mon = tm1.tm_mon;
-			ltime.tm_mday = tm1.tm_mday;
-
-			char szDate[40];
-			sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
-
-			std::vector<std::vector<std::string> > result2;
-			std::stringstream szQuery;
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=" << sitem.ID << " AND Date>='" << szDate << "')";
-			result2 = m_sql.query(szQuery.str());
-			if (result2.size()>0)
 			{
-				std::vector<std::string> sd2 = result2[0];
+				//get lowest value of today
+				float GasDivider = 1000.0f;
+				time_t now = mytime(NULL);
+				struct tm tm1;
+				localtime_r(&now, &tm1);
 
-				unsigned long long total_min_gas, total_real_gas;
-				unsigned long long gasactual;
+				struct tm ltime;
+				ltime.tm_isdst = tm1.tm_isdst;
+				ltime.tm_hour = 0;
+				ltime.tm_min = 0;
+				ltime.tm_sec = 0;
+				ltime.tm_year = tm1.tm_year;
+				ltime.tm_mon = tm1.tm_mon;
+				ltime.tm_mday = tm1.tm_mday;
 
-				std::stringstream s_str1(sd2[0]);
-				s_str1 >> total_min_gas;
-				std::stringstream s_str2(sitem.sValue);
-				s_str2 >> gasactual;
-				total_real_gas = gasactual - total_min_gas;
-				utilityval = float(total_real_gas) / GasDivider;
-				isUtility = true;
+				char szDate[40];
+				sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+
+				std::vector<std::vector<std::string> > result2;
+				std::stringstream szQuery;
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=" << sitem.ID << " AND Date>='" << szDate << "')";
+				result2 = m_sql.query(szQuery.str());
+				if (result2.size()>0)
+				{
+					std::vector<std::string> sd2 = result2[0];
+
+					unsigned long long total_min_gas, total_real_gas;
+					unsigned long long gasactual;
+
+					std::stringstream s_str1(sd2[0]);
+					s_str1 >> total_min_gas;
+					std::stringstream s_str2(sitem.sValue);
+					s_str2 >> gasactual;
+					total_real_gas = gasactual - total_min_gas;
+					utilityval = float(total_real_gas) / GasDivider;
+					isUtility = true;
+				}
 			}
-		}
 			break;
 		case pTypeRFXMeter:
 			if (sitem.subType == sTypeRFXMeterCount)
@@ -1991,7 +1991,6 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	{
 		std::string luaString = lua_tostring(lua_state, -1);
 		UpdateDevice(luaString);
-		GetCurrentStates();
 		scriptTrue = true;
 	}
 	else if (std::string(lua_tostring(lua_state, -2)).find("Variable:") == 0)
@@ -2048,7 +2047,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 	//Get device parameters
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << idx << ")";
+	szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType, Name, SwitchType, LastLevel FROM DeviceStatus WHERE (ID==" << idx << ")";
 	result = m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -2057,6 +2056,9 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		std::string dunit = result[0][2];
 		std::string dtype = result[0][3];
 		std::string dsubtype = result[0][4];
+		std::string dname = result[0][5];
+		_eSwitchType dswitchtype = (_eSwitchType)atoi(result[0][6].c_str());
+		int dlastlevel = atoi(result[0][7].c_str());
 
 		time_t now = time(0);
 		struct tm ltime;
@@ -2070,16 +2072,23 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		szQuery << "UPDATE DeviceStatus SET nValue=" << nvalue << ", sValue='" << svalue << "', LastUpdate='" << szLastUpdate << "' WHERE (ID = " << idx << ")";
 		result = m_sql.query(szQuery.str());
 
-		//Check if it's a setpoint device, and if so, set the actual setpoint
+
+		unsigned long long ulIdx = 0;
+		std::stringstream s_str(idx);
+		s_str >> ulIdx;
+
 		int idtype = atoi(dtype.c_str());
 		int idsubtype = atoi(dsubtype.c_str());
+
+		UpdateSingleState(ulIdx, dname, atoi(nvalue.c_str()), svalue.c_str(), idtype, idsubtype, dswitchtype, szLastUpdate, dlastlevel);
+
+		//Check if it's a setpoint device, and if so, set the actual setpoint
 
 		if ((idtype == pTypeThermostat) && (idsubtype == sTypeThermSetpoint))
 		{
 			_log.Log(LOG_NORM, "Sending SetPoint to device....");
 			m_mainworker.SetSetPoint(idx, (float)atof(svalue.c_str()));
 		}
-
 	}
 }
 

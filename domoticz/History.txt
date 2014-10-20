@@ -16,10 +16,11 @@ Version 2.0.xxxx (September xxth 2014)
 - Implemented: OpenZWave Node Queried status, last seen in Node table
 - Implemented: Native Mochad hardware support (thanks to kasshoek)
 - Fixed: lua/blockly energy device value
-- Fixed: lua/blockly 'UpdateDevice' now reloads current states
+- Fixed: lua 'UpdateDevice' now reloads current states
 - Implemented: Blockly/Lua Thermostat/Setpoint utility device
 - Changed: Scene/Group now takes switch On-Delay into account
 - Fixed: OpenZWave Node configuration parameters with special characters
+- Changed: lua 'UpdateDevice' now updates internal state instead of reloading all states
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher
