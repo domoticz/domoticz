@@ -18,6 +18,7 @@ Version 2.0.xxxx (September xxth 2014)
 - Fixed: lua/blockly energy device value
 - Fixed: lua/blockly 'UpdateDevice' now reloads current states
 - Implemented: Blockly/Lua Thermostat/Setpoint utility device
+- Changed: Scene/Group now takes switch On-Delay into account
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

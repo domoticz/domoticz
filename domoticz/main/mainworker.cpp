@@ -8861,13 +8861,16 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 				}
 			}
 
+			int idx = atoi(sd[0].c_str());
 			if (switchtype != STYPE_PushOn)
 			{
-				SwitchLightInt(sd2,intswitchcmd,ilevel,hue,false);
+				SwitchLight(idx, intswitchcmd, ilevel, hue);
+				//SwitchLightInt(sd2,intswitchcmd,ilevel,hue,false);
 			}
 			else
 			{
-				SwitchLightInt(sd2,"On",ilevel,hue,false);
+				SwitchLight(idx, "On", ilevel, hue);
+				//SwitchLightInt(sd2,"On",ilevel,hue,false);
 			}
 			sleep_milliseconds(50);
 

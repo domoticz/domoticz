@@ -2048,10 +2048,16 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 	//Get device parameters
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID FROM DeviceStatus WHERE (ID==" << idx << ")";
+	szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << idx << ")";
 	result = m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
+		std::string hid = result[0][0];
+		std::string did = result[0][1];
+		std::string dunit = result[0][2];
+		std::string dtype = result[0][3];
+		std::string dsubtype = result[0][4];
+
 		time_t now = time(0);
 		struct tm ltime;
 		localtime_r(&now, &ltime);
@@ -2063,6 +2069,17 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET nValue=" << nvalue << ", sValue='" << svalue << "', LastUpdate='" << szLastUpdate << "' WHERE (ID = " << idx << ")";
 		result = m_sql.query(szQuery.str());
+
+		//Check if it's a setpoint device, and if so, set the actual setpoint
+		int idtype = atoi(dtype.c_str());
+		int idsubtype = atoi(dsubtype.c_str());
+
+		if ((idtype == pTypeThermostat) && (idsubtype == sTypeThermSetpoint))
+		{
+			_log.Log(LOG_NORM, "Sending SetPoint to device....");
+			m_mainworker.SetSetPoint(idx, (float)atof(svalue.c_str()));
+		}
+
 	}
 }
 
