@@ -1641,6 +1641,12 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 				sd[0].c_str()
 				);
 			query(szTmp);
+
+			//------
+			//Should call eventsystem for the main switch here
+			//m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, 0);
+			//------
+
 			//Set the status of all slave devices from this device (except the one we just received) to off
 			//Check if this switch was a Sub/Slave device for other devices, if so adjust the state of those other devices
 			sprintf(szTmp,"SELECT a.DeviceRowID, b.Type FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='%s') AND (a.DeviceRowID!='%s') AND (b.ID == a.DeviceRowID) AND (a.DeviceRowID!=a.ParentID)",

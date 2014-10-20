@@ -1,4 +1,4 @@
-Version 2.0.xxxx (September xxth 2014)
+Version 2.0.xxxx (October xxth 2014)
 - Fixed: Possible crash in Eventsystem (GetCurrentMeasurementStates) where string value was empty
 - Implemented: Manual add Blinds T6 type (DC106, YOOHA, Rohrmotor24 RMF)
 - Fixed: Pushover notification setup in settings (could contain invalid characters)
@@ -14,7 +14,7 @@ Version 2.0.xxxx (September xxth 2014)
 - Fixed: Openzwave/zwave.me issues with large home_id
 - Implemented: Logging when a script is executed
 - Implemented: OpenZWave Node Queried status, last seen in Node table
-- Implemented: Native Mochad hardware support (thanks to kasshoek)
+- Implemented: Native Mochad hardware support (thanks to kaashoek)
 - Fixed: lua/blockly energy device value
 - Fixed: lua 'UpdateDevice' now reloads current states
 - Implemented: Blockly/Lua Thermostat/Setpoint utility device
@@ -22,6 +22,7 @@ Version 2.0.xxxx (September xxth 2014)
 - Fixed: OpenZWave Node configuration parameters with special characters
 - Changed: lua 'UpdateDevice' now updates internal state instead of reloading all states
 - Implemented: Support for device-type Usage/Electric in Blockly/Lua
+- Fixed: Timer editor, by default all day check boxes are now checked (to match everyday as default)
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher
