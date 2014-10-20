@@ -11,6 +11,7 @@
 #include "../main/RFXtrx.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
+#include "../webserver/Base64.h"
 #include "hardwaretypes.h"
 
 #include "../json/json.h"
@@ -2945,20 +2946,23 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 	while (vindex<results.size())
 	{
 		int rvIndex=atoi(results[vindex].c_str());
+		std::string ValueVal = results[vindex + 1];
+		ValueVal = base64_decode(ValueVal);
+
 		if (nodeID==1)
 		{
 			//Main ZWave node (Controller)
 			if (rvIndex==1)
 			{
 				//PollInterval
-				int intervalseconds=atoi(results[vindex+1].c_str());
+				int intervalseconds = atoi(ValueVal.c_str());
 				m_sql.UpdatePreferencesVar("ZWavePollInterval", intervalseconds);
 				EnableDisableNodePolling();
 			}
 			else if (rvIndex==2)
 			{
 				//Debug mode
-				int debugenabled=atoi(results[vindex+1].c_str());
+				int debugenabled = atoi(ValueVal.c_str());
 				int old_debugenabled=0;
 				m_sql.GetPreferencesVar("ZWaveEnableDebug", old_debugenabled);
 				if (old_debugenabled!=debugenabled)
@@ -2970,7 +2974,7 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 			else if (rvIndex == 3)
 			{
 				//Security Key
-				std::string networkkey = results[vindex + 1];
+				std::string networkkey = ValueVal;
 				std::string old_networkkey="";
 				m_sql.GetPreferencesVar("ZWaveNetworkKey", old_networkkey);
 				if (old_networkkey != networkkey)
@@ -2990,18 +2994,16 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 				m_pManager->GetValueAsString(vID,&vstring);
 
 				OpenZWave::ValueID::ValueType vType=vID.GetType();
-				if (vType==OpenZWave::ValueID::ValueType_List)
+
+				if (vstring != ValueVal)
 				{
-					if (vstring!=results[vindex+1])
+					if (vType == OpenZWave::ValueID::ValueType_List)
 					{
-						m_pManager->SetValueListSelection(vID,results[vindex+1]);
+						m_pManager->SetValueListSelection(vID, ValueVal);
 					}
-				}
-				else
-				{
-					if (vstring!=results[vindex+1])
+					else
 					{
-						m_pManager->SetValue(vID,results[vindex+1]);
+						m_pManager->SetValue(vID, ValueVal);
 					}
 				}
 			}
