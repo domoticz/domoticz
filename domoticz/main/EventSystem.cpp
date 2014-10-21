@@ -57,8 +57,6 @@ void CEventSystem::StartEventSystem()
 	LoadEvents();
 	GetCurrentStates();
 
-	m_secondcounter = (58 * 2);
-
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
 }
 
@@ -109,23 +107,36 @@ void CEventSystem::LoadEvents()
 void CEventSystem::Do_Work()
 {
 	m_stoprequested = false;
+	time_t lasttime = mytime(NULL);
+	//bool bFirstTime = true;
+	struct tm tmptime;
+	struct tm ltime;
+
+
+	localtime_r(&lasttime, &tmptime);
+	int _LastMinute = tmptime.tm_min;
 	
 	while (!m_stoprequested)
 	{
 		//sleep 500 milliseconds
 		sleep_milliseconds(500);
 		time_t atime = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
 
-		m_secondcounter++;
-		if (m_secondcounter == 60 * 2)
+		if (atime != lasttime)
 		{
-			m_secondcounter = 0;
-			ProcessMinute();
-		}
-		if (ltime.tm_sec % 12 == 0) {
-			m_mainworker.HeartbeatUpdate("EventSystem");
+			lasttime = atime;
+
+			localtime_r(&atime, &ltime);
+
+			if (ltime.tm_sec % 12 == 0) {
+				m_mainworker.HeartbeatUpdate("EventSystem");
+			}
+			if (ltime.tm_min != _LastMinute)//((ltime.tm_min != _LastMinute) || (bFirstTime))
+			{
+				_LastMinute = ltime.tm_min;
+				//bFirstTime = false;
+				ProcessMinute();
+			}
 		}
 	}
 	_log.Log(LOG_STATUS, "EventSystem stopped...");

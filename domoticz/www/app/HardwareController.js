@@ -1769,7 +1769,7 @@ define(['app'], function (app) {
 							sDataTimeout=minutes + " " + $.i18n("Minutes");
 						}
 					}
-					else if (item.DataTimeout<86400) {
+					else if (item.DataTimeout<=86400) {
 						var hours=item.DataTimeout/3600;
 						if (hours==1) {
 							sDataTimeout=hours + " " + $.i18n("Hour");
@@ -1779,7 +1779,7 @@ define(['app'], function (app) {
 						}
 					}
 					else {
-						var days=item.DataTimeout/60;
+						var days=item.DataTimeout/86400;
 						if (days==1) {
 							sDataTimeout=days + " " + $.i18n("Day");
 						}

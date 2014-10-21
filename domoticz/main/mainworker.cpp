@@ -661,7 +661,6 @@ bool MainWorker::StartThread()
 	m_scheduler.StartScheduler();
 	m_hardwaremonitor.StartHardwareMonitor();
 	m_eventsystem.SetEnabled(m_sql.m_bDisableEventSystem == false);
-	m_eventsystem.StartEventSystem();
 	m_cameras.ReloadCameras();
 
 	int rnvalue=0;
@@ -942,6 +941,7 @@ void MainWorker::Do_Work()
 				m_bStartHardware=false;
 				StartDomoticzHardware();
 				ParseRFXLogFile();
+				m_eventsystem.StartEventSystem();
 			}
 		}
 		if (m_devicestorestart.size() > 0) 

@@ -71,7 +71,6 @@ private:
 	boost::mutex luaMutex;
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
-	unsigned char m_secondcounter;
 	int m_SecStatus;
 
 
