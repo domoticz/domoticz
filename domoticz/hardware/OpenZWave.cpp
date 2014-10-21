@@ -1241,6 +1241,9 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	unsigned char vInstance = vID.GetInstance();//(See note on top of this file) GetInstance();
 	unsigned char vIndex = vID.GetIndex();
 
+	unsigned char vOrgInstance = vInstance;
+	unsigned char vOrgIndex = vIndex;
+
 	int instance;
 	if (
 		(commandclass==COMMAND_CLASS_MULTI_INSTANCE)||
@@ -1680,7 +1683,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	else
 	{
 		//Unhandled
-		_log.Log(LOG_ERROR, "OpenZWave: Unhandled class: 0x%02X (%s)",commandclass,cclassStr(commandclass));
+		_log.Log(LOG_ERROR, "OpenZWave: Unhandled class: 0x%02X (%s), NodeID: %d, Index: %d, Instance: %d",commandclass,cclassStr(commandclass),NodeID,vOrgIndex,vOrgInstance);
 		if (vType== OpenZWave::ValueID::ValueType_List)
 		{
 			//std::vector<std::string > vStringList;

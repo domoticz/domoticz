@@ -1010,12 +1010,27 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("MeterDividerEnergy", 1000);
 	}
+	else if (nValue == 0)
+	{
+		//Sanity check!
+		UpdatePreferencesVar("MeterDividerEnergy", 1000);
+	}
 	if (!GetPreferencesVar("MeterDividerGas", nValue))
 	{
 		UpdatePreferencesVar("MeterDividerGas", 100);
 	}
+	else if (nValue == 0)
+	{
+		//Sanity check!
+		UpdatePreferencesVar("MeterDividerGas", 100);
+	}
 	if (!GetPreferencesVar("MeterDividerWater", nValue))
 	{
+		UpdatePreferencesVar("MeterDividerWater", 100);
+	}
+	else if (nValue == 0)
+	{
+		//Sanity check!
 		UpdatePreferencesVar("MeterDividerWater", 100);
 	}
 	if (!GetPreferencesVar("RandomTimerFrame", nValue))
