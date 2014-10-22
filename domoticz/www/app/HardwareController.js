@@ -240,7 +240,7 @@ define(['app'], function (app) {
 					 }     
 				});
 			}
-			else if (text.indexOf("SMASpot") >= 0)
+			else if (text.indexOf("SBFSpot") >= 0)
 			{
 				var configlocation=$("#hardwarecontent #divlocation #location").val();
 				if (configlocation=="")
@@ -483,7 +483,7 @@ define(['app'], function (app) {
 					 }     
 				});
 			}
-			else if (text.indexOf("SMASpot") >= 0)
+			else if (text.indexOf("SBFSpot") >= 0)
 			{
 				var configlocation=$("#hardwarecontent #divlocation #location").val();
 				if (configlocation=="")
@@ -828,20 +828,20 @@ define(['app'], function (app) {
 			RefreshWOLNodeTable();
 		}
 
-		EditSMASpot = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
+		EditSBFSpot = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
 		{
 			$.devIdx=idx;
 			cursordefault();
 			var htmlcontent = '';
 			htmlcontent='<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
-			htmlcontent+=$('#smaspot').html();
+			htmlcontent+=$('#sbfspot').html();
 			$('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
 			$('#hardwarecontent').i18n();
 			$('#hardwarecontent #idx').val(idx);
 			$('#hardwarecontent #btnimportolddata').click(function (e) {
 				e.preventDefault();
 				bootbox.alert($.i18n('Importing old data, this could take a while!<br>You should automaticly return on the Dashboard'));
-				$.post("smaspotimportolddata.webem", $("#hardwarecontent #smaspot").serialize(), function(data) {
+				$.post("sbfspotimportolddata.webem", $("#hardwarecontent #sbfspot").serialize(), function(data) {
 					SwitchLayout('Dashboard');
 				});
 			});
@@ -1720,8 +1720,8 @@ define(['app'], function (app) {
 							HwTypeStr+=' <span class="label ' + lblStatus + ' lcursor" onclick="EditOpenZWave(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Setup</span>';
 						}
 					}
-					else if (HwTypeStr.indexOf("SMASpot") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditSMASpot(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Setup</span>';
+					else if (HwTypeStr.indexOf("SBFSpot") >= 0) {
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditSBFSpot(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Setup</span>';
 					}
 					else if (HwTypeStr.indexOf("OpenTherm") >= 0) {
 						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditOpenTherm(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Setup</span>';
@@ -1870,7 +1870,7 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
 						}
 						else
-						if (data["Type"].indexOf("SMASpot") >= 0)
+						if (data["Type"].indexOf("SBFSpot") >= 0)
 						{
 							$("#hardwarecontent #hardwareparamslocation #location").val(data["Username"]);
 						}
@@ -1931,7 +1931,7 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divlogin").show();
 				$("#hardwarecontent #divunderground").hide();
 			}
-			else if (text.indexOf("SMASpot") >= 0)
+			else if (text.indexOf("SBFSpot") >= 0)
 			{
 				$("#hardwarecontent #divlocation").show();
 				$("#hardwarecontent #divserial").hide();

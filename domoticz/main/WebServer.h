@@ -46,7 +46,7 @@ public:
 	char * SetOpenThermSettings();
 	char * SetP1USBType();
 	char * RestoreDatabase();
-	char * SMASpotImportOldData();
+	char * SBFSpotImportOldData();
 
 	cWebem *m_pWebEm;
 

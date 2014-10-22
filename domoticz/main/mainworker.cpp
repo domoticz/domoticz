@@ -44,7 +44,7 @@
 #include "../hardware/EnOceanESP2.h"
 #include "../hardware/EnOceanESP3.h"
 #include "../hardware/SolarEdgeTCP.h"
-#include "../hardware/SMASpot.h"
+#include "../hardware/SBFSpot.h"
 #include "../hardware/ICYThermostat.h"
 #include "../hardware/WOL.h"
 #include "../hardware/Meteostick.h"
@@ -532,8 +532,8 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_ForecastIO:
 		pHardware = new CForecastIO(ID,Username,Password);
 		break;
-	case HTYPE_SMASpot:
-		pHardware = new CSMASpot(ID,Username);
+	case HTYPE_SBFSpot:
+		pHardware = new CSBFSpot(ID,Username);
 		break;
 	case HTYPE_ICYTHERMOSTAT:
 		pHardware = new CICYThermostat(ID,Username,Password);

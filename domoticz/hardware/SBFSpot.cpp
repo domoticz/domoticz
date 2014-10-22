@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "SMASpot.h"
+#include "SBFSpot.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
@@ -11,36 +11,34 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-//#define DEBUG_SMASpot
-
-CSMASpot::CSMASpot(const int ID, const std::string SMAConfigFile)
+CSBFSpot::CSBFSpot(const int ID, const std::string SMAConfigFile)
 {
 	m_HwdID=ID;
-	m_SMAConfigFile=SMAConfigFile;
-	m_SMADataPath="";
+	m_SBFConfigFile=SMAConfigFile;
+	m_SBFDataPath="";
 	m_stoprequested=false;
 	Init();
 }
 
-CSMASpot::~CSMASpot(void)
+CSBFSpot::~CSBFSpot(void)
 {
 }
 
-void CSMASpot::Init()
+void CSBFSpot::Init()
 {
-	m_SMADataPath="";
-	m_SMAPlantName="";
-	m_SMADateFormat="";
-	m_SMATimeFormat="";
+	m_SBFDataPath="";
+	m_SBFPlantName="";
+	m_SBFDateFormat="";
+	m_SBFTimeFormat="";
 	m_LastDateTime="";
 
 	std::string tmpString;
 	std::ifstream infile;
 	std::string sLine;
-	infile.open(m_SMAConfigFile.c_str());
+	infile.open(m_SBFConfigFile.c_str());
 	if (!infile.is_open())
 	{
-		_log.Log(LOG_ERROR,"SMASpot: Could not open configuration file!");
+		_log.Log(LOG_ERROR,"SBFSpot: Could not open configuration file!");
 		return;
 	}
 	while (!infile.eof())
@@ -62,41 +60,41 @@ void CSMASpot::Init()
 					if (lastchar!='/')
 						tmpString+='/';
 #endif
-					m_SMADataPath=tmpString;
+					m_SBFDataPath=tmpString;
 				}
 			}
 			else if (sLine.find("Plantname=")==0)
 			{
-				m_SMAPlantName=sLine.substr(strlen("Plantname="));
+				m_SBFPlantName=sLine.substr(strlen("Plantname="));
 			}
 			else if (sLine.find("DateFormat=")==0)
 			{
-				m_SMADateFormat=sLine.substr(strlen("DateFormat="));
+				m_SBFDateFormat=sLine.substr(strlen("DateFormat="));
 			}
 			else if (sLine.find("TimeFormat=")==0)
 			{
-				m_SMATimeFormat=sLine.substr(strlen("TimeFormat="));
+				m_SBFTimeFormat=sLine.substr(strlen("TimeFormat="));
 			}
 		}
 	}
 	infile.close();
-	if ((m_SMADataPath.size()==0)||(m_SMADateFormat.size()==0)||(m_SMATimeFormat.size()==0))
+	if ((m_SBFDataPath.size()==0)||(m_SBFDateFormat.size()==0)||(m_SBFTimeFormat.size()==0))
 	{
-		_log.Log(LOG_ERROR,"SMASpot: Could not find OutputPath in configuration file!");
+		_log.Log(LOG_ERROR,"SBFSpot: Could not find OutputPath in configuration file!");
 	}
 }
 
-bool CSMASpot::StartHardware()
+bool CSBFSpot::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CSMASpot::Do_Work, this)));
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CSBFSpot::Do_Work, this)));
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread!=NULL);
 }
 
-bool CSMASpot::StopHardware()
+bool CSBFSpot::StopHardware()
 {
 	if (m_thread!=NULL)
 	{
@@ -110,11 +108,11 @@ bool CSMASpot::StopHardware()
 
 #define SMA_POLL_INTERVAL 1
 
-void CSMASpot::Do_Work()
+void CSBFSpot::Do_Work()
 {
 	int LastMinute=-1;
 
-	_log.Log(LOG_STATUS,"SMASpot: Worker started...");
+	_log.Log(LOG_STATUS,"SBFSpot: Worker started...");
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -130,10 +128,10 @@ void CSMASpot::Do_Work()
 			mytime(&m_LastHeartbeat);
 		}
 	}
-	_log.Log(LOG_STATUS,"SMASpot: Worker stopped...");
+	_log.Log(LOG_STATUS,"SBFSpot: Worker stopped...");
 }
 
-void CSMASpot::WriteToHardware(const char *pdata, const unsigned char length)
+void CSBFSpot::WriteToHardware(const char *pdata, const unsigned char length)
 {
 
 }
@@ -147,7 +145,7 @@ char *strftime_t (const char *format, const time_t rawtime)
 	return buffer;
 }
 
-void CSMASpot::SendMeter(const unsigned char ID1,const unsigned char ID2, const double musage, const double mtotal, const std::string &defaultname)
+void CSBFSpot::SendMeter(const unsigned char ID1,const unsigned char ID2, const double musage, const double mtotal, const std::string &defaultname)
 {
 	int Idx=(ID1 * 256) + ID2;
 	bool bDeviceExits=true;
@@ -207,7 +205,7 @@ void CSMASpot::SendMeter(const unsigned char ID1,const unsigned char ID2, const 
 	}
 }
 
-void CSMASpot::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
+void CSBFSpot::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
 	bool bDeviceExits=true;
 	std::stringstream szQuery;
@@ -248,7 +246,7 @@ void CSMASpot::SendTempSensor(const unsigned char Idx, const float Temp, const s
 	}
 }
 
-void CSMASpot::SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname)
+void CSBFSpot::SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname)
 {
 	bool bDeviceExits=true;
 	std::stringstream szQuery;
@@ -282,7 +280,7 @@ void CSMASpot::SendVoltage(const unsigned long Idx, const float Volt, const std:
 	}
 }
 
-void CSMASpot::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
+void CSBFSpot::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
 {
 	bool bDeviceExits=true;
 	std::stringstream szQuery;
@@ -316,7 +314,7 @@ void CSMASpot::SendPercentage(const unsigned long Idx, const float Percentage, c
 	}
 }
 
-bool CSMASpot::GetMeter(const unsigned char ID1,const unsigned char ID2, double &musage, double &mtotal)
+bool CSBFSpot::GetMeter(const unsigned char ID1,const unsigned char ID2, double &musage, double &mtotal)
 {
 	int Idx=(ID1 * 256) + ID2;
 	bool bDeviceExits=true;
@@ -337,7 +335,7 @@ bool CSMASpot::GetMeter(const unsigned char ID1,const unsigned char ID2, double 
 	return true;
 }
 
-void CSMASpot::ImportOldMonthData()
+void CSBFSpot::ImportOldMonthData()
 {
 	//check if this device exists in the database, if not exit
 	bool bDeviceExits = true;
@@ -379,19 +377,19 @@ void CSMASpot::ImportOldMonthData()
 	}
 }
 
-void CSMASpot::ImportOldMonthData(const unsigned long long DevID, const int Year, const int Month)
+void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year, const int Month)
 {
-	if (m_SMADataPath.size() == 0)
+	if (m_SBFDataPath.size() == 0)
 		return;
-	if (m_SMAPlantName.size() == 0)
+	if (m_SBFPlantName.size() == 0)
 		return;
 
 	char szLogFile[256];
-	std::string tmpPath = m_SMADataPath;
+	std::string tmpPath = m_SBFDataPath;
 	std::stringstream sstr;
 	sstr << Year;
 	tmpPath=stdreplace(tmpPath, "%Y", sstr.str());
-	sprintf(szLogFile, "%s%s-%04d%02d.csv", tmpPath.c_str(), m_SMAPlantName.c_str(),Year, Month);
+	sprintf(szLogFile, "%s%s-%04d%02d.csv", tmpPath.c_str(), m_SBFPlantName.c_str(),Year, Month);
 
 	std::ifstream infile;
 	infile.open(szLogFile);
@@ -533,18 +531,18 @@ void CSMASpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 	infile.close();
 }
 
-void CSMASpot::GetMeterDetails()
+void CSBFSpot::GetMeterDetails()
 {
-	if (m_SMADataPath.size()==0)
+	if (m_SBFDataPath.size()==0)
 		return;
-	if (m_SMAPlantName.size()==0)
+	if (m_SBFPlantName.size()==0)
 		return;
 
 	time_t atime=time(NULL);
 	char szLogFile[256];
 	char szDateStr[50];
 	strcpy(szDateStr,strftime_t("%Y%m%d", atime));
-	sprintf(szLogFile, "%s%s-Spot-%s.csv", strftime_t(m_SMADataPath.c_str(), atime), m_SMAPlantName.c_str(),szDateStr);
+	sprintf(szLogFile, "%s%s-Spot-%s.csv", strftime_t(m_SBFDataPath.c_str(), atime), m_SBFPlantName.c_str(),szDateStr);
 
 	std::string szSeperator=";";
 	bool bHaveVersion=false;

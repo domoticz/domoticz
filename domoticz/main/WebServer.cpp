@@ -18,7 +18,7 @@
 #include "../hardware/EnOceanESP3.h"
 #include "../hardware/Wunderground.h"
 #include "../hardware/ForecastIO.h"
-#include "../hardware/SMASpot.h"
+#include "../hardware/SBFSpot.h"
 #ifdef WITH_GPIO
 	#include "../hardware/Gpio.h"
 	#include "../hardware/GpioPin.h"
@@ -245,7 +245,7 @@ bool CWebServer::StartServer(const std::string &listenaddress, const std::string
 	m_pWebEm->RegisterActionCode("setopenthermsettings", boost::bind(&CWebServer::SetOpenThermSettings, this));
 	m_pWebEm->RegisterActionCode("setp1usbtype", boost::bind(&CWebServer::SetP1USBType, this));
 	m_pWebEm->RegisterActionCode("restoredatabase", boost::bind(&CWebServer::RestoreDatabase, this));
-	m_pWebEm->RegisterActionCode("smaspotimportolddata", boost::bind(&CWebServer::SMASpotImportOldData, this));
+	m_pWebEm->RegisterActionCode("sbfspotimportolddata", boost::bind(&CWebServer::SBFSpotImportOldData, this));
 
 	RegisterCommandCode("getlanguage", boost::bind(&CWebServer::Cmd_GetLanguage, this, _1),true);
 	
@@ -589,7 +589,7 @@ void CWebServer::Cmd_AddHardware(Json::Value &root)
 			)
 			return;
 	}
-	else if (htype == HTYPE_SMASpot) {
+	else if (htype == HTYPE_SBFSpot) {
 		if (username=="")
 			return;
 	}
@@ -723,7 +723,7 @@ void CWebServer::Cmd_UpdateHardware(Json::Value &root)
 			)
 			return;
 	}
-	else if (htype == HTYPE_SMASpot) {
+	else if (htype == HTYPE_SBFSpot) {
 		if (username=="")
 			return;
 	}
@@ -6735,7 +6735,7 @@ char * CWebServer::PostSettings()
 	return (char*)m_retstr.c_str();
 }
 
-char * CWebServer::SMASpotImportOldData()
+char * CWebServer::SBFSpotImportOldData()
 {
 	m_retstr = "/index.html";
 	if (m_pWebEm->m_actualuser_rights != 2)
@@ -6752,10 +6752,10 @@ char * CWebServer::SMASpotImportOldData()
 	CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hardwareID);
 	if (pHardware != NULL)
 	{
-		if (pHardware->HwdType == HTYPE_SMASpot)
+		if (pHardware->HwdType == HTYPE_SBFSpot)
 		{
-			CSMASpot *pSMASpot = (CSMASpot *)pHardware;
-			pSMASpot->ImportOldMonthData();
+			CSBFSpot *pSBFSpot = (CSBFSpot *)pHardware;
+			pSBFSpot->ImportOldMonthData();
 		}
 	}
 	return (char*)m_retstr.c_str();

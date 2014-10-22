@@ -80,7 +80,7 @@ enum _eHardwareTypes {
 	HTYPE_EnOceanESP2,			//24
 	HTYPE_ForecastIO,			//25
 	HTYPE_SolarEdgeTCP,			//26
-	HTYPE_SMASpot,				//27
+	HTYPE_SBFSpot,				//27
 	HTYPE_ICYTHERMOSTAT,		//28
 	HTYPE_WOL,					//29
 	HTYPE_PVOUTPUT_INPUT,		//30

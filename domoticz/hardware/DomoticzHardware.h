@@ -35,7 +35,7 @@ class CDomoticzHardwareBase
 	friend class CEnOceanESP2;
 	friend class CEnOceanESP3;
 	friend class SolarEdgeTCP;
-	friend class CSMASpot;
+	friend class CSBFSpot;
 	friend class CWOL;
 	friend class CICYThermostat;
 	friend class CPVOutputInput;

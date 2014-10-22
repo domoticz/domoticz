@@ -25,6 +25,7 @@ Version 2.0.xxxx (October xxth 2014)
 - Fixed: Timer editor, by default all day check boxes are now checked (to match everyday as default)
 - Changed: EventSystem time trigger now on exact minute change
 - Fixed: Hardware data timeout notation for 24 Hours
+- Changed: Renamed SMASpot to SBFSpot
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

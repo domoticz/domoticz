@@ -3,11 +3,11 @@
 #include "DomoticzHardware.h"
 #include <iostream>
 
-class CSMASpot : public CDomoticzHardwareBase
+class CSBFSpot : public CDomoticzHardwareBase
 {
 public:
-	CSMASpot(const int ID, const std::string SMAConfigFile);
-	~CSMASpot(void);
+	CSBFSpot(const int ID, const std::string SBFConfigFile);
+	~CSBFSpot(void);
 	void WriteToHardware(const char *pdata, const unsigned char length);
 	void ImportOldMonthData();
 private:
@@ -17,11 +17,11 @@ private:
 	void SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname);
 	void SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname);
 
-	std::string m_SMAConfigFile;
-	std::string m_SMADataPath;
-	std::string m_SMAPlantName;
-	std::string m_SMADateFormat;
-	std::string m_SMATimeFormat;
+	std::string m_SBFConfigFile;
+	std::string m_SBFDataPath;
+	std::string m_SBFPlantName;
+	std::string m_SBFDateFormat;
+	std::string m_SBFTimeFormat;
 
 	std::string m_LastDateTime;
 	volatile bool m_stoprequested;

@@ -123,9 +123,6 @@
     <Filter Include="TCPProxy">
       <UniqueIdentifier>{242d77c7-709a-4c87-8d92-a87a489af891}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\SMASpot">
-      <UniqueIdentifier>{3d145f2e-6a05-4375-917e-4ac4557915fd}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\ICY Thermostat">
       <UniqueIdentifier>{76dbad7a-fef9-4b45-94f2-82670e7ff061}</UniqueIdentifier>
     </Filter>
@@ -158,6 +155,9 @@
     </Filter>
     <Filter Include="Devices\Mochad">
       <UniqueIdentifier>{9886a577-ba19-4433-9b78-48e07217ca20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\SBFSpot">
+      <UniqueIdentifier>{3d145f2e-6a05-4375-917e-4ac4557915fd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -436,9 +436,6 @@
     <ClInclude Include="hardware\PVOutput_Input.h">
       <Filter>Devices\PVOutput%28Input%29</Filter>
     </ClInclude>
-    <ClInclude Include="hardware\SMASpot.h">
-      <Filter>Devices\SMASpot</Filter>
-    </ClInclude>
     <ClInclude Include="main\DataPush.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -474,6 +471,9 @@
     </ClInclude>
     <ClInclude Include="hardware\MochadTCP.h">
       <Filter>Devices\Mochad</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\SBFSpot.h">
+      <Filter>Devices\SBFSpot</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -702,9 +702,6 @@
     <ClCompile Include="hardware\TCPProxy\tcpproxy_server.cpp">
       <Filter>TCPProxy</Filter>
     </ClCompile>
-    <ClCompile Include="hardware\SMASpot.cpp">
-      <Filter>Devices\SMASpot</Filter>
-    </ClCompile>
     <ClCompile Include="hardware\ICYThermostat.cpp">
       <Filter>Devices\ICY Thermostat</Filter>
     </ClCompile>
@@ -749,6 +746,9 @@
     </ClCompile>
     <ClCompile Include="hardware\MochadTCP.cpp">
       <Filter>Devices\Mochad</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\SBFSpot.cpp">
+      <Filter>Devices\SBFSpot</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
