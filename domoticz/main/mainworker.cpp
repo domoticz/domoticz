@@ -1011,6 +1011,21 @@ void MainWorker::Do_Work()
 			{
 				m_sql.ScheduleDay();
 			}
+			if (ltime.tm_hour == 4)
+			{
+				//Heal the OpenZWave network
+				boost::lock_guard<boost::mutex> l(m_devicemutex);
+				std::vector<CDomoticzHardwareBase*>::iterator itt;
+				for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
+				{
+					CDomoticzHardwareBase *pHardware = (*itt);
+					if (pHardware->HwdType == HTYPE_OpenZWave)
+					{
+						COpenZWave *pZWave = (COpenZWave *)pHardware;
+						pZWave->HealNetwork();
+					}
+				}
+			}
 			HandleAutomaticBackups();
 		}
 		if ((bHasInternalTemperature)&&(ltime.tm_sec%30==0))
