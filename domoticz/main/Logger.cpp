@@ -110,7 +110,7 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 			sLogLevel =  LOG_ERR;
 		else if (level == LOG_STATUS)
 			sLogLevel = LOG_NOTICE;
-		syslog(sLogLevel, sstr.str().c_str());
+		syslog(sLogLevel, "%s", sstr.str().c_str());
 	}
 #endif
 	if (!m_outputfile.is_open())
@@ -183,7 +183,7 @@ void CLogger::LogNoLF(const _eLogLevel level, const char* logline, ...)
 			sLogLevel =  LOG_ERR;
 		else if (level == LOG_STATUS)
 			sLogLevel = LOG_NOTICE;
-		syslog(sLogLevel, cbuffer);
+		syslog(sLogLevel, "%s", cbuffer);
 	}
 #endif
 
@@ -235,4 +235,3 @@ std::list<CLogger::_tLogLineStruct> CLogger::GetLog()
 	};
 	return mlist;
 }
-
