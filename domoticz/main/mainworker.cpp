@@ -1011,6 +1011,7 @@ void MainWorker::Do_Work()
 			{
 				m_sql.ScheduleDay();
 			}
+#ifdef WITH_OPENZWAVE
 			if (ltime.tm_hour == 4)
 			{
 				//Heal the OpenZWave network
@@ -1026,6 +1027,7 @@ void MainWorker::Do_Work()
 					}
 				}
 			}
+#endif
 			HandleAutomaticBackups();
 		}
 		if ((bHasInternalTemperature)&&(ltime.tm_sec%30==0))
