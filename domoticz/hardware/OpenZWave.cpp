@@ -688,6 +688,10 @@ void COpenZWave::OnZWaveNotification( OpenZWave::Notification const* _notificati
 			nodeInfo.Product_id = pManager->GetNodeProductId(_homeID, _nodeID);
 			nodeInfo.Product_name = pManager->GetNodeProductName(_homeID, _nodeID);
 
+			nodeInfo.tClockDay = -1;
+			nodeInfo.tClockHour = -1;
+			nodeInfo.tClockMinute = -1;
+
 			if ((_homeID == m_controllerID) && (_nodeID < 2))
 				nodeInfo.eState = NSTATE_AWAKE;	//controller is always awake
 			else
@@ -1596,55 +1600,55 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				}
 			}
 		}
-		else if (vLabel=="Voltage")
+		else if (vLabel == "Voltage")
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
-				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
+				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
-					_device.floatValue=fValue;
-					_device.scaleMultiply=1;
-					_device.scaleID=SCALEID_VOLTAGE;
+					_device.floatValue = fValue;
+					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_VOLTAGE;
 					_device.devType = ZDTYPE_SENSOR_VOLTAGE;
 					InsertDevice(_device);
 				}
 			}
 		}
-		else if (vLabel=="Current")
+		else if (vLabel == "Current")
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
-				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
+				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
-					_device.floatValue=fValue;
-					_device.scaleMultiply=1;
-					_device.scaleID=SCALEID_CURRENT;
+					_device.floatValue = fValue;
+					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_CURRENT;
 					_device.devType = ZDTYPE_SENSOR_AMPERE;
 					InsertDevice(_device);
 				}
 			}
 		}
-		else if (vLabel=="Power Factor")
+		else if (vLabel == "Power Factor")
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
-				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
+				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
-					_device.floatValue=fValue;
-					_device.scaleMultiply=1;
-					_device.scaleID=SCALEID_POWERFACTOR;
+					_device.floatValue = fValue;
+					_device.scaleMultiply = 1;
+					_device.scaleID = SCALEID_POWERFACTOR;
 					_device.devType = ZDTYPE_SENSOR_PERCENTAGE;
 					InsertDevice(_device);
 				}
 			}
 		}
-		else if (vLabel=="General")
+		else if (vLabel == "General")
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
 			{
-				if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
+				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 				{
-					_device.floatValue=fValue;
+					_device.floatValue = fValue;
 					_device.devType = ZDTYPE_SWITCH_NORMAL;
 					InsertDevice(_device);
 				}
@@ -1652,33 +1656,87 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 		}
 		else
 		{
-			_log.Log(LOG_STATUS, "OpenZWave: Value_Added: Unhandled Label: %s, Unit: %s",vLabel.c_str(),vUnits.c_str());
+			_log.Log(LOG_STATUS, "OpenZWave: Value_Added: Unhandled Label: %s, Unit: %s", vLabel.c_str(), vUnits.c_str());
 		}
 	}
-	else if (commandclass==COMMAND_CLASS_BATTERY)
+	else if (commandclass == COMMAND_CLASS_BATTERY)
 	{
 		if (_device.isListening)
 		{
-			if (vType== OpenZWave::ValueID::ValueType_Byte)
+			if (vType == OpenZWave::ValueID::ValueType_Byte)
 			{
-				UpdateDeviceBatteryStatus(NodeID,byteValue);
+				UpdateDeviceBatteryStatus(NodeID, byteValue);
 			}
 		}
 	}
-	else if (commandclass==COMMAND_CLASS_THERMOSTAT_SETPOINT)
+	else if (commandclass == COMMAND_CLASS_THERMOSTAT_SETPOINT)
 	{
-		if (m_pManager->GetValueAsFloat(vID,&fValue)==true)
+		if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 		{
-			if (vUnits=="F")
+			if (vUnits == "F")
 			{
 				//Convert to celcius
-				fValue=float((fValue-32)*(5.0/9.0));
+				fValue = float((fValue - 32)*(5.0 / 9.0));
 			}
-			_device.floatValue=fValue;
-			_device.commandClassID=COMMAND_CLASS_THERMOSTAT_SETPOINT;
+			_device.floatValue = fValue;
+			_device.commandClassID = COMMAND_CLASS_THERMOSTAT_SETPOINT;
 			_device.devType = ZDTYPE_SENSOR_SETPOINT;
 			InsertDevice(_device);
+			SendDevice2Domoticz(&_device);
 		}
+	}
+	else if (commandclass == COMMAND_CLASS_CLOCK)
+	{
+		COpenZWave::NodeInfo *pNode = GetNodeInfo(m_controllerID, NodeID);
+		if (!pNode)
+			return;
+
+		if (vType == OpenZWave::ValueID::ValueType_List)
+		{
+			if (vLabel == "Day") {
+				int32 vDay;
+				if (m_pManager->GetValueListSelection(vID, &vDay))
+				{
+					if (vDay > 0)
+					{
+						pNode->tClockDay = vDay - 1;
+					}
+				}
+			}
+		}
+		else if (vType == OpenZWave::ValueID::ValueType_Byte)
+		{
+			if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
+				return;
+			else if (vLabel == "Hour") {
+				pNode->tClockHour = byteValue;
+			}
+			else if (vLabel == "Minute") {
+				pNode->tClockMinute = byteValue;
+				if (
+					(pNode->tClockDay != -1) &&
+					(pNode->tClockHour != -1) &&
+					(pNode->tClockMinute != -1)
+					)
+				{
+					_log.Log(LOG_NORM, "OpenZWave: NodeID: %d, Thermostat Clock: %s %02d:%02d", NodeID, ZWave_Clock_Days(pNode->tClockDay), pNode->tClockHour, pNode->tClockMinute);
+					_device.intvalue = (pNode->tClockDay*(24 * 60)) + (pNode->tClockHour * 60) + pNode->tClockMinute;
+					_device.commandClassID = COMMAND_CLASS_CLOCK;
+					_device.devType = ZDTYPE_SENSOR_THERMOSTAT_CLOCK;
+					InsertDevice(_device);
+					SendDevice2Domoticz(&_device);
+				}
+			}
+		}
+	}
+	else if (commandclass == COMMAND_CLASS_CLIMATE_CONTROL_SCHEDULE)
+	{
+		if (vType == OpenZWave::ValueID::ValueType_Byte)
+		{
+			if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
+				return;
+		}
+		_log.Log(LOG_ERROR, "OpenZWave: Unhandled class: 0x%02X (%s), NodeID: %d, Index: %d, Instance: %d", commandclass, cclassStr(commandclass), NodeID, vOrgIndex, vOrgInstance);
 	}
 	else
 	{
@@ -2023,8 +2081,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 			//}
 		}
 	}
-
-	if (commandclass==COMMAND_CLASS_BATTERY)
+	else if (commandclass==COMMAND_CLASS_BATTERY)
 	{
 		//Battery status update
 		if (vType==OpenZWave::ValueID::ValueType_Byte)
@@ -2032,6 +2089,47 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 			UpdateDeviceBatteryStatus(NodeID,byteValue);
 		}
 		return;
+	}
+	else if (commandclass == COMMAND_CLASS_CLOCK)
+	{
+		COpenZWave::NodeInfo *pNode = GetNodeInfo(m_controllerID, NodeID);
+		if (!pNode)
+			return;
+
+		if (vType == OpenZWave::ValueID::ValueType_List)
+		{
+			if (vLabel == "Day") {
+				int32 vDay;
+				if (m_pManager->GetValueListSelection(vID, &vDay))
+				{
+					if (vDay > 0)
+					{
+						pNode->tClockDay = vDay - 1;
+						return;
+					}
+				}
+			}
+		}
+		else if (vType == OpenZWave::ValueID::ValueType_Byte)
+		{
+			if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
+				return;
+			else if (vLabel == "Hour") {
+				pNode->tClockHour = byteValue;
+				return;
+			}
+			else if (vLabel == "Minute") {
+				pNode->tClockMinute = byteValue;
+				if (
+					(pNode->tClockDay != -1) &&
+					(pNode->tClockHour != -1) &&
+					(pNode->tClockMinute != -1)
+					)
+				{
+					_log.Log(LOG_NORM, "OpenZWave: NodeID: %d, Thermostat Clock: %s %02d:%02d", NodeID, ZWave_Clock_Days(pNode->tClockDay), pNode->tClockHour, pNode->tClockMinute);
+				}
+			}
+		}
 	}
 
 	_tZWaveDevice *pDevice=NULL;
@@ -2213,6 +2311,15 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 		if (vLabel!="Power Factor")
 			return;
 		pDevice->floatValue=fValue;
+		break;
+	case ZDTYPE_SENSOR_THERMOSTAT_CLOCK:
+		if (vLabel == "Minute")
+		{
+			COpenZWave::NodeInfo *pNode = GetNodeInfo(m_controllerID, NodeID);
+			if (!pNode)
+				return;
+			pDevice->intvalue = (pNode->tClockDay*(24 * 60)) + (pNode->tClockHour * 60) + pNode->tClockMinute;
+		}
 		break;
 	}
 
@@ -2743,6 +2850,31 @@ void COpenZWave::EnableDisableNodePolling()
 				DisableNodePoll(HomeID,NodeID);
 		}
 	}
+}
+
+void COpenZWave::SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute)
+{
+	//We have to set 3 values here (Later check if we can use COMMAND_CLASS_MULTI_CMD for this to do it in one)
+
+	NodeInfo *pNode = GetNodeInfo(m_controllerID, nodeID);
+	if (!pNode)
+		return;
+
+	OpenZWave::ValueID vDay(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
+	OpenZWave::ValueID vHour(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
+	OpenZWave::ValueID vMinute(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
+
+
+	if (GetValueByCommandClassLabel(nodeID, 1, COMMAND_CLASS_CLOCK, "Day", vDay) == false)
+		return;
+	if (GetValueByCommandClassLabel(nodeID, 1, COMMAND_CLASS_CLOCK, "Hour", vHour) == false)
+		return;
+	if (GetValueByCommandClassLabel(nodeID, 1, COMMAND_CLASS_CLOCK, "Minute", vMinute) == false)
+		return;
+
+	m_pManager->SetValueListSelection(vDay, ZWave_Clock_Days(day));
+	m_pManager->SetValue(vHour, (const uint8)hour);
+	m_pManager->SetValue(vMinute, (const uint8)minute);
 }
 
 void COpenZWave::NodesQueried()

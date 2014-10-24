@@ -72,6 +72,7 @@ void CScheduler::ReloadSchedules()
 
 				titem.bEnabled = true;
 				titem.bIsScene=false;
+				titem.bIsThermostat = false;
 
 				_eTimerType timerType = (_eTimerType)atoi(sd[2].c_str());
 
@@ -133,6 +134,7 @@ void CScheduler::ReloadSchedules()
 
 			titem.bEnabled = true;
 			titem.bIsScene = true;
+			titem.bIsThermostat = false;
 
 			std::stringstream s_str( sd[0] );
 			s_str >> titem.RowID;
@@ -163,6 +165,54 @@ void CScheduler::ReloadSchedules()
 			titem.Days=atoi(sd[5].c_str());
 			titem.DeviceName=sd[6];
 			if (AdjustScheduleItem(&titem,false)==true)
+				m_scheduleitems.push_back(titem);
+		}
+	}
+
+	//Add Setpoint Timers
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Temperature, T1.Days, T2.Name, T1.[Date] FROM SetpointTimers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == " << m_sql.m_ActiveTimerPlan << ") AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID";
+	result = m_sql.query(szQuery.str());
+	if (result.size() > 0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt = result.begin(); itt != result.end(); ++itt)
+		{
+			std::vector<std::string> sd = *itt;
+
+			tScheduleItem titem;
+
+			titem.bEnabled = true;
+			titem.bIsScene = false;
+			titem.bIsThermostat = true;
+
+			std::stringstream s_str(sd[0]);
+			s_str >> titem.RowID;
+
+			_eTimerType timerType = (_eTimerType)atoi(sd[2].c_str());
+
+			if (timerType == TTYPE_FIXEDDATETIME)
+			{
+				std::string sdate = sd[6];
+				if (sdate.size() != 10)
+					continue; //invalid
+				titem.startYear = (unsigned short)atoi(sdate.substr(0, 4).c_str());
+				titem.startMonth = (unsigned char)atoi(sdate.substr(5, 2).c_str());
+				titem.startDay = (unsigned char)atoi(sdate.substr(8, 2).c_str());
+			}
+
+			titem.startHour = (unsigned char)atoi(sd[1].substr(0, 2).c_str());
+			titem.startMin = (unsigned char)atoi(sd[1].substr(3, 2).c_str());
+			titem.startTime = 0;
+			titem.timerType = timerType;
+			titem.timerCmd = TCMD_ON;
+			titem.Temperature = (float)atof(sd[3].c_str());
+			titem.Level = 100;
+			titem.bUseRandmoness = false;
+			titem.Days = atoi(sd[4].c_str());
+			titem.DeviceName = sd[5];
+			if (AdjustScheduleItem(&titem, false) == true)
 				m_scheduleitems.push_back(titem);
 		}
 	}
@@ -378,10 +428,12 @@ void CScheduler::CheckSchedules()
 			}
 			if (bOkToFire)
 			{
-				if (itt->bIsScene==false)
-					_log.Log(LOG_STATUS,"Schedule item started! Type: %s, DevID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->RowID, asctime(&ltime));
+				if (itt->bIsScene==true)
+					_log.Log(LOG_STATUS, "Schedule item started! Type: %s, SceneID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->RowID, asctime(&ltime));
+				else if (itt->bIsThermostat == true)
+					_log.Log(LOG_STATUS, "Schedule item started! Type: %s, ThermostatID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->RowID, asctime(&ltime));
 				else
-					_log.Log(LOG_STATUS,"Schedule item started! Type: %s, SceneID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->RowID, asctime(&ltime));
+					_log.Log(LOG_STATUS, "Schedule item started! Type: %s, DevID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->RowID, asctime(&ltime));
 				std::string switchcmd="";
 				if (itt->timerCmd == TCMD_ON)
 					switchcmd="On";
@@ -393,7 +445,23 @@ void CScheduler::CheckSchedules()
 				}
 				else
 				{
-					if (itt->bIsScene==false)
+					if (itt->bIsScene == true)
+					{
+						if (!m_mainworker.SwitchScene(itt->RowID, switchcmd))
+						{
+							_log.Log(LOG_ERROR, "Error switching Scene command, SceneID: %llu, Time: %s", itt->RowID, asctime(&ltime));
+						}
+					}
+					if (itt->bIsThermostat == true)
+					{
+						std::stringstream sstr;
+						sstr << itt->RowID;
+						if (!m_mainworker.SetSetPoint(sstr.str(), itt->Temperature))
+						{
+							_log.Log(LOG_ERROR, "Error setting thermostat setpoint, ThermostatID: %llu, Time: %s", itt->RowID, asctime(&ltime));
+						}
+					}
+					else
 					{
 						//Get SwitchType
 						std::vector<std::vector<std::string> > result;
@@ -430,13 +498,6 @@ void CScheduler::CheckSchedules()
 							{
 								_log.Log(LOG_ERROR,"Error sending switch command, DevID: %llu, Time: %s", itt->RowID, asctime(&ltime));
 							}
-						}
-					}
-					else
-					{
-						if (!m_mainworker.SwitchScene(itt->RowID,switchcmd))
-						{
-							_log.Log(LOG_ERROR,"Error switching Scene command, SceneID: %llu, Time: %s", itt->RowID, asctime(&ltime));
 						}
 					}
 				}

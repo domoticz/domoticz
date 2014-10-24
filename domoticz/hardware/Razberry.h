@@ -28,6 +28,7 @@ private:
 
 	void SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value);
 	void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value);
+	void SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute);
 	void RunCMD(const std::string &cmd);
 	void StopHardwareIntern();
 	bool IncludeDevice();

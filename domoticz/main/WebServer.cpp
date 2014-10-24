@@ -319,6 +319,11 @@ bool CWebServer::StartServer(const std::string &listenaddress, const std::string
 	RegisterCommandCode("setscenecode", boost::bind(&CWebServer::Cmd_SetSceneCode, this, _1));
 	RegisterCommandCode("removescenecode", boost::bind(&CWebServer::Cmd_RemoveSceneCode, this, _1));
 
+	RegisterCommandCode("addsetpointtimer", boost::bind(&CWebServer::Cmd_AddSetpointTimer, this, _1));
+	RegisterCommandCode("updatesetpointtimer", boost::bind(&CWebServer::Cmd_UpdateSetpointTimer, this, _1));
+	RegisterCommandCode("deletesetpointtimer", boost::bind(&CWebServer::Cmd_DeleteSetpointTimer, this, _1));
+	RegisterCommandCode("clearsetpointtimers", boost::bind(&CWebServer::Cmd_ClearSetpointTimers, this, _1));
+
 	RegisterCommandCode("serial_devices", boost::bind(&CWebServer::Cmd_GetSerialDevices, this, _1));
 	RegisterCommandCode("devices_list", boost::bind(&CWebServer::Cmd_GetDevicesList, this, _1));
 	RegisterCommandCode("devices_list_onoff", boost::bind(&CWebServer::Cmd_GetDevicesListOnOff, this, _1));
@@ -332,8 +337,11 @@ bool CWebServer::StartServer(const std::string &listenaddress, const std::string
 	RegisterRType("deletedevice", boost::bind(&CWebServer::RType_DeleteDevice, this, _1));
 	RegisterRType("cameras", boost::bind(&CWebServer::RType_Cameras, this, _1));
 	RegisterRType("users", boost::bind(&CWebServer::RType_Users, this, _1));
+
 	RegisterRType("timers", boost::bind(&CWebServer::RType_Timers, this, _1));
 	RegisterRType("scenetimers", boost::bind(&CWebServer::RType_SceneTimers, this, _1));
+	RegisterRType("setpointtimers", boost::bind(&CWebServer::RType_SetpointTimers, this, _1));
+
 	RegisterRType("gettransfers", boost::bind(&CWebServer::RType_GetTransfers, this, _1));
 	RegisterRType("transferdevice", boost::bind(&CWebServer::RType_TransferDevice, this, _1));
 	RegisterRType("notifications", boost::bind(&CWebServer::RType_Notifications, this, _1));
@@ -7454,8 +7462,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						(!((dType==pTypeGeneral)&&(dSubType==sTypeSoilMoisture)))&&
 						(!((dType==pTypeGeneral)&&(dSubType==sTypeLeafWetness)))&&
 						(!((dType==pTypeGeneral)&&(dSubType==sTypePercentage)))&&
-						(!((dType==pTypeGeneral)&&(dSubType==sTypeSystemFan)))&&
-						(dType!=pTypeLux)&&
+						(!((dType == pTypeGeneral) && (dSubType == sTypeSystemFan))) &&
+						(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveClock))) &&
+						(dType != pTypeLux) &&
 						(dType!=pTypeUsage)&&
 						(!((dType==pTypeRego6XXValue)&&(dSubType==sTypeRego6XXCounter)))&&
 						(!((dType==pTypeThermostat)&&(dSubType==sTypeThermSetpoint)))&&
@@ -7564,7 +7573,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			root["result"][ii]["Data"]=szData;
 
 			root["result"][ii]["Notifications"]=(m_sql.HasNotifications(sd[0])==true)?"true":"false";
-			root["result"][ii]["Timers"]=(m_sql.HasTimers(sd[0])==true)?"true":"false";
+
+			bool bHasTimers = false;
 
 			if (
 				(dType==pTypeLighting1)||
@@ -7583,6 +7593,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 				)
 			{
 				//add light details
+				bHasTimers = m_sql.HasTimers(sd[0]);
+
 				std::string lstatus="";
 				int llevel=0;
 				bool bHaveDimmer=false;
@@ -8690,6 +8702,8 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 			{
 				if (dSubType==sTypeThermSetpoint)
 				{
+					bHasTimers = m_sql.HasTimers(sd[0]);
+
 					double tempCelcius=atof(sValue.c_str());
 					double temp=ConvertTemperature(tempCelcius,tempsign);
 
@@ -8793,6 +8807,25 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["TypeImg"]="gauge";
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 					root["result"][ii]["Pressure"]=atof(sValue.c_str());
+				}
+				else if (dSubType == sTypeZWaveClock)
+				{
+					std::vector<std::string> tstrarray;
+					StringSplit(sValue, ";", tstrarray);
+					int day=0;
+					int hour=0;
+					int minute=0;
+					if (tstrarray.size() == 3)
+					{
+						day = atoi(tstrarray[0].c_str());
+						hour = atoi(tstrarray[1].c_str());
+						minute = atoi(tstrarray[2].c_str());
+					}
+					sprintf(szData, "%s %02d:%02d", ZWave_Clock_Days(day), hour, minute);
+					root["result"][ii]["DayTime"] = sValue;
+					root["result"][ii]["Data"] = szData;
+					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+					root["result"][ii]["TypeImg"] = "clock";
 				}
 			}
 			else if (dType == pTypeLux)
@@ -8930,6 +8963,7 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
                     break;
                 }
 			}
+			root["result"][ii]["Timers"] = (bHasTimers == true) ? "true" : "false";
 			ii++;
 		}
 	}
@@ -9925,6 +9959,234 @@ void CWebServer::Cmd_ClearTimers(Json::Value &root)
 	m_mainworker.m_scheduler.ReloadSchedules();
 }
 
+void CWebServer::RType_SetpointTimers(Json::Value &root)
+{
+	unsigned long long idx = 0;
+	if (m_pWebEm->FindValue("idx") != "")
+	{
+		std::stringstream s_str(m_pWebEm->FindValue("idx"));
+		s_str >> idx;
+	}
+	if (idx == 0)
+		return;
+	root["status"] = "OK";
+	root["title"] = "Timers";
+	char szTmp[50];
+
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT ID, Active, [Date], Time, Type, Temperature, Days FROM SetpointTimers WHERE (DeviceRowID==" << idx << ") AND (TimerPlan==" << m_sql.m_ActiveTimerPlan << ") ORDER BY ID";
+	result = m_sql.query(szQuery.str());
+	if (result.size() > 0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		int ii = 0;
+		for (itt = result.begin(); itt != result.end(); ++itt)
+		{
+			std::vector<std::string> sd = *itt;
+
+			int iTimerType = atoi(sd[4].c_str());
+			std::string sdate = sd[2];
+			if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
+			{
+				int Year = atoi(sdate.substr(0, 4).c_str());
+				int Month = atoi(sdate.substr(5, 2).c_str());
+				int Day = atoi(sdate.substr(8, 2).c_str());
+				sprintf(szTmp, "%02d-%02d-%04d", Month, Day, Year);
+				sdate = szTmp;
+			}
+			else
+				sdate = "";
+
+			root["result"][ii]["idx"] = sd[0];
+			root["result"][ii]["Active"] = (atoi(sd[1].c_str()) == 0) ? "false" : "true";
+			root["result"][ii]["Date"] = sdate;
+			root["result"][ii]["Time"] = sd[3].substr(0, 5);
+			root["result"][ii]["Type"] = iTimerType;
+			root["result"][ii]["Temperature"] = atof(sd[5].c_str());
+			root["result"][ii]["Days"] = atoi(sd[6].c_str());
+			ii++;
+		}
+	}
+}
+
+void CWebServer::Cmd_AddSetpointTimer(Json::Value &root)
+{
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
+	std::string idx = m_pWebEm->FindValue("idx");
+	std::string active = m_pWebEm->FindValue("active");
+	std::string stimertype = m_pWebEm->FindValue("timertype");
+	std::string sdate = m_pWebEm->FindValue("date");
+	std::string shour = m_pWebEm->FindValue("hour");
+	std::string smin = m_pWebEm->FindValue("min");
+	std::string stvalue = m_pWebEm->FindValue("tvalue");
+	std::string sdays = m_pWebEm->FindValue("days");
+	if (
+		(idx == "") ||
+		(active == "") ||
+		(stimertype == "") ||
+		(shour == "") ||
+		(smin == "") ||
+		(stvalue == "") ||
+		(sdays == "")
+		)
+		return;
+	unsigned char iTimerType = atoi(stimertype.c_str());
+
+	char szTmp[200];
+	time_t now = mytime(NULL);
+	struct tm tm1;
+	localtime_r(&now, &tm1);
+	int Year = tm1.tm_year + 1900;
+	int Month = tm1.tm_mon + 1;
+	int Day = tm1.tm_mday;
+
+	if (iTimerType == TTYPE_FIXEDDATETIME)
+	{
+		if (sdate.size() == 10)
+		{
+			Month = atoi(sdate.substr(0, 2).c_str());
+			Day = atoi(sdate.substr(3, 2).c_str());
+			Year = atoi(sdate.substr(6, 4).c_str());
+		}
+	}
+
+	unsigned char hour = atoi(shour.c_str());
+	unsigned char min = atoi(smin.c_str());
+	int days = atoi(sdays.c_str());
+	float temperature = (float)atof(stvalue.c_str());
+	root["status"] = "OK";
+	root["title"] = "AddSetpointTimer";
+	sprintf(szTmp,
+		"INSERT INTO SetpointTimers (Active, DeviceRowID, [Date], Time, Type, Temperature, Days, TimerPlan) VALUES (%d,%s,'%04d-%02d-%02d','%02d:%02d',%d,%.1f,%d,%d)",
+		(active == "true") ? 1 : 0,
+		idx.c_str(),
+		Year, Month, Day,
+		hour, min,
+		iTimerType,
+		temperature,
+		days,
+		m_sql.m_ActiveTimerPlan
+		);
+	m_sql.query(szTmp);
+	m_mainworker.m_scheduler.ReloadSchedules();
+}
+
+void CWebServer::Cmd_UpdateSetpointTimer(Json::Value &root)
+{
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
+	std::string idx = m_pWebEm->FindValue("idx");
+	std::string active = m_pWebEm->FindValue("active");
+	std::string stimertype = m_pWebEm->FindValue("timertype");
+	std::string sdate = m_pWebEm->FindValue("date");
+	std::string shour = m_pWebEm->FindValue("hour");
+	std::string smin = m_pWebEm->FindValue("min");
+	std::string stvalue = m_pWebEm->FindValue("tvalue");
+	std::string sdays = m_pWebEm->FindValue("days");
+	if (
+		(idx == "") ||
+		(active == "") ||
+		(stimertype == "") ||
+		(shour == "") ||
+		(smin == "") ||
+		(stvalue == "") ||
+		(sdays == "")
+		)
+		return;
+
+	char szTmp[200];
+	unsigned char iTimerType = atoi(stimertype.c_str());
+	time_t now = mytime(NULL);
+	struct tm tm1;
+	localtime_r(&now, &tm1);
+	int Year = tm1.tm_year + 1900;
+	int Month = tm1.tm_mon + 1;
+	int Day = tm1.tm_mday;
+
+	if (iTimerType == TTYPE_FIXEDDATETIME)
+	{
+		if (sdate.size() == 10)
+		{
+			Month = atoi(sdate.substr(0, 2).c_str());
+			Day = atoi(sdate.substr(3, 2).c_str());
+			Year = atoi(sdate.substr(6, 4).c_str());
+		}
+	}
+
+	unsigned char hour = atoi(shour.c_str());
+	unsigned char min = atoi(smin.c_str());
+	int days = atoi(sdays.c_str());
+	float tempvalue = (float)atof(stvalue.c_str());
+	root["status"] = "OK";
+	root["title"] = "UpdateSetpointTimer";
+	sprintf(szTmp,
+		"UPDATE SetpointTimers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, Temperature=%.1f, Days=%d WHERE (ID == %s)",
+		(active == "true") ? 1 : 0,
+		Year, Month, Day,
+		hour, min,
+		iTimerType,
+		tempvalue,
+		days,
+		idx.c_str()
+		);
+	m_sql.query(szTmp);
+	m_mainworker.m_scheduler.ReloadSchedules();
+}
+
+void CWebServer::Cmd_DeleteSetpointTimer(Json::Value &root)
+{
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
+	std::string idx = m_pWebEm->FindValue("idx");
+	if (idx == "")
+		return;
+	root["status"] = "OK";
+	root["title"] = "DeleteSetpointTimer";
+	char szTmp[100];
+	sprintf(szTmp,
+		"DELETE FROM SetpointTimers WHERE (ID == %s)",
+		idx.c_str()
+		);
+	m_sql.query(szTmp);
+	m_mainworker.m_scheduler.ReloadSchedules();
+}
+
+void CWebServer::Cmd_ClearSetpointTimers(Json::Value &root)
+{
+	if (m_pWebEm->m_actualuser_rights != 2)
+	{
+		//No admin user, and not allowed to be here
+		return;
+	}
+
+	std::string idx = m_pWebEm->FindValue("idx");
+	if (idx == "")
+		return;
+	root["status"] = "OK";
+	root["title"] = "ClearSetpointTimers";
+	char szTmp[100];
+	sprintf(szTmp,
+		"DELETE FROM SetpointTimers WHERE (DeviceRowID == %s)",
+		idx.c_str()
+		);
+	m_sql.query(szTmp);
+	m_mainworker.m_scheduler.ReloadSchedules();
+}
+
 void CWebServer::RType_SceneTimers(Json::Value &root)
 {
 	unsigned long long idx = 0;
@@ -10548,6 +10810,7 @@ void CWebServer::RType_SetUsed(Json::Value &root)
 	std::string addjvalue2 = m_pWebEm->FindValue("addjvalue2");
 	std::string addjmulti2 = m_pWebEm->FindValue("addjmulti2");
 	std::string setPoint = m_pWebEm->FindValue("setpoint");
+	std::string clock = m_pWebEm->FindValue("clock"); 
 	std::string sCustomImage = m_pWebEm->FindValue("customimage");
 
 	std::string strParam1 = base64_decode(m_pWebEm->FindValue("strparam1"));
@@ -10636,6 +10899,23 @@ void CWebServer::RType_SetUsed(Json::Value &root)
 		if (urights < 1)
 			return;
 		m_mainworker.SetSetPoint(idx, (float)atof(setPoint.c_str()));
+	}
+	if (clock != "")
+	{
+		int urights = 3;
+		if (bHaveUser)
+		{
+			int iUser = -1;
+			iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+			if (iUser != -1)
+			{
+				urights = (int)m_users[iUser].userrights;
+				_log.Log(LOG_STATUS, "User: %s initiated a SetClock command", m_users[iUser].Username.c_str());
+			}
+		}
+		if (urights < 1)
+			return;
+		m_mainworker.SetClock(idx, clock);
 	}
 
 	if (addjvalue != "")

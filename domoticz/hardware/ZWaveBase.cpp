@@ -674,6 +674,15 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		tmeter.temp=pDevice->floatValue;
 		sDecodeRXMessage(this, (const unsigned char *)&tmeter);
 	}
+	else if (pDevice->devType == ZDTYPE_SENSOR_THERMOSTAT_CLOCK)
+	{
+		_tGeneralDevice gDevice;
+		gDevice.subtype = sTypeZWaveClock;
+		gDevice.id = ID4;
+		gDevice.intval1 = (int)(ID1 << 24) | (ID2 << 16) | (ID3 << 8) | ID4;
+		gDevice.intval2 = pDevice->intvalue;
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+	}
 }
 
 ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int instanceID, const int indexID, const _eZWaveDeviceType devType)
@@ -824,6 +833,29 @@ void ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 		if (pDevice)
 		{
 			SetThermostatSetPoint(nodeID,instanceID,pDevice->commandClassID,pMeter->temp);
+		}
+	}
+	else if ((packettype == pTypeGeneral) && (subtype == sTypeZWaveClock))
+	{
+		_tGeneralDevice *pMeter = (_tGeneralDevice*)pSen;
+		unsigned char ID1 = (unsigned char)((pMeter->intval1 & 0xFF000000) >> 24);
+		unsigned char ID2 = (unsigned char)((pMeter->intval1 & 0x00FF0000) >> 16);
+		unsigned char ID3 = (unsigned char)((pMeter->intval1 & 0x0000FF00) >> 8);
+		unsigned char ID4 = (unsigned char)((pMeter->intval1 & 0x000000FF));
+
+		int nodeID = (ID2 << 8) | ID3;
+		int instanceID = ID4;
+		int indexID = ID1;
+
+		pDevice = FindDevice(nodeID, instanceID, indexID, ZDTYPE_SENSOR_THERMOSTAT_CLOCK);
+		if (pDevice)
+		{
+			int tintval = pMeter->intval2;
+			int day = tintval / (24 * 60); tintval -= (day * 24 * 60);
+			int hour = tintval / (60); tintval -= (hour * 60);
+			int minute = tintval;
+
+			SetClock(nodeID, instanceID, pDevice->commandClassID, day, hour, minute);
 		}
 	}
 	else if (packettype == pTypeLimitlessLights)

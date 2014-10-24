@@ -55,6 +55,8 @@ public:
 	bool SetSetPoint(const std::string &idx, const float TempValue);
 	bool SetThermostatState(const std::string &idx, const int newState);
 	bool SetSetPointInt(const std::vector<std::string> &sd, const float TempValue);
+	bool SetClock(const std::string &idx, const std::string &clockstr);
+	bool SetClockInt(const std::vector<std::string> &sd, const std::string &clockstr);
 
 	bool SetRFXCOMHardwaremodes(const int HardwareID, const unsigned char Mode1,const unsigned char Mode2,const unsigned char Mode3,const unsigned char Mode4,const unsigned char Mode5);
 

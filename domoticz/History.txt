@@ -27,6 +27,7 @@ Version 2.0.xxxx (October xxth 2014)
 - Fixed: Hardware data timeout notation for 24 Hours
 - Changed: Renamed SMASpot to SBFSpot
 - Implemented: Automatic OpenZWave heal network command at 04:00am
+- Implemented: Thermostat Setpoint timers
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

@@ -865,6 +865,11 @@ void CRazberry::SetThermostatSetPoint(const int nodeID, const int instanceID, co
 	RunCMD(sstr.str());
 }
 
+void CRazberry::SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute)
+{
+
+}
+
 void CRazberry::RunCMD(const std::string &cmd)
 {
 	std::string szURL=GetRunURL(cmd);

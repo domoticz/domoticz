@@ -23,6 +23,7 @@ class ZWaveBase : public CDomoticzHardwareBase
 		ZDTYPE_SENSOR_VOLTAGE,
 		ZDTYPE_SENSOR_AMPERE,
 		ZDTYPE_SENSOR_PERCENTAGE,
+		ZDTYPE_SENSOR_THERMOSTAT_CLOCK,
 	};
 	struct _tZWaveDevice
 	{
@@ -101,6 +102,7 @@ private:
 	unsigned char Convert_Battery_To_PercInt(const unsigned char level);
 	virtual void SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)=0;
 	virtual void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value)=0;
+	virtual void SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute)=0;
 	virtual void StopHardwareIntern()=0;
 	virtual bool IncludeDevice()=0;
 	virtual bool ExcludeDevice(const int nodeID)=0;

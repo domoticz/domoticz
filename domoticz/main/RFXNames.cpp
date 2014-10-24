@@ -552,6 +552,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypePressure, "Pressure" },
 		{ pTypeGeneral, sTypeSetPoint, "Setpoint" },
 		{ pTypeGeneral, sTypeTemperature, "Temperature" },
+		{ pTypeGeneral, sTypeZWaveClock, "Thermostat Clock" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -758,6 +759,8 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneral, sTypePressure, "Pressure" },
 		{ pTypeGeneral, sTypeSetPoint, "Temperature" },
 		{ pTypeGeneral, sTypeTemperature, "Temperature" },
+		{ pTypeGeneral, sTypeZWaveClock, "Thermostat Clock" },
+
 
 		{ pTypeThermostat, sTypeThermSetpoint, "Temperature" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -782,6 +785,23 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 	};
 	return findTableID1ID2(Table, dType, sType);
 }
+
+const char *ZWave_Clock_Days(const unsigned char Day)
+{
+	STR_TABLE_SINGLE	Table[] =
+	{
+		{ 0, "Monday" },
+		{ 1, "Tuesday" },
+		{ 2, "Wednesday" },
+		{ 3, "Thursday" },
+		{ 4, "Friday" },
+		{ 5, "Saturday" },
+		{ 6, "Sunday" },
+		{ 0, NULL, NULL }
+	};
+	return findTableIDSingle1(Table, Day);
+}
+
 
 void GetLightStatus(
 		const unsigned char dType, 

@@ -7500,7 +7500,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
 
-	if ((subType==sTypeVoltage)||(subType==sTypePercentage)||(subType==sTypePressure))
+	if ((subType == sTypeVoltage) || (subType == sTypePercentage) || (subType == sTypePressure) || (subType == sTypeZWaveClock))
 	{
 		sprintf(szTmp,"%08X", (unsigned int)pMeter->intval1);
 	}
@@ -7578,6 +7578,15 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 			return -1;
 		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_PERCENTAGE, pMeter->floatval1);
 	}
+	else if (subType == sTypeZWaveClock)
+	{
+		int tintval = pMeter->intval2;
+		int day = tintval / (24 * 60); tintval -= (day*24 * 60);
+		int hour = tintval / (60); tintval -= (hour*60);
+		int minute = tintval;
+		sprintf(szTmp, "%d;%d;%d", day, hour, minute);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, m_LastDeviceName);
+	}
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -7613,6 +7622,17 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 			WriteMessage("subtype       = Pressure");
 			sprintf(szTmp,"Voltage = %.1f bar", pMeter->floatval1);
 			WriteMessage(szTmp);
+			break;
+		case sTypeZWaveClock:
+			{
+				int tintval = pMeter->intval2;
+				int day = tintval / (24 * 60); tintval -= (day * 24 * 60);
+				int hour = tintval / (60); tintval -= (hour * 60);
+				int minute = tintval;
+				WriteMessage("subtype       = Thermostat Clock");
+				sprintf(szTmp, "Clock = %s %02d:%02d", ZWave_Clock_Days(day),hour, minute);
+				WriteMessage(szTmp);
+			}
 			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
@@ -8687,6 +8707,55 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue)
 
 	std::vector<std::string> sd=result[0];
 	return SetSetPointInt(sd,TempValue);
+}
+
+bool MainWorker::SetClockInt(const std::vector<std::string> &sd, const std::string &clockstr)
+{
+#ifdef WITH_OPENZWAVE
+	int HardwareID = atoi(sd[0].c_str());
+	int hindex = FindDomoticzHardware(HardwareID);
+	if (hindex == -1)
+		return false;
+
+	unsigned long ID;
+	std::stringstream s_strid;
+	s_strid << std::hex << sd[1];
+	s_strid >> ID;
+	CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
+	if (pHardware == NULL)
+		return false;
+	if (pHardware->HwdType == HTYPE_OpenZWave)
+	{
+		std::vector<std::string> splitresults;
+		StringSplit(clockstr, ";", splitresults);
+		if (splitresults.size() != 3)
+			return false;
+		int day = atoi(splitresults[0].c_str());
+		int hour = atoi(splitresults[1].c_str());
+		int minute = atoi(splitresults[2].c_str());
+
+		_tGeneralDevice tmeter;
+		tmeter.subtype = sTypeZWaveClock;
+		tmeter.intval1 = ID;
+		tmeter.intval2 = (day*(24 * 60)) + (hour * 60) + minute;
+		WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tGeneralDevice));
+	}
+#endif
+	return true;
+}
+
+bool MainWorker::SetClock(const std::string &idx, const std::string &clockstr)
+{
+	//Get Device details
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() < 1)
+		return false;
+
+	std::vector<std::string> sd = result[0];
+	return SetClockInt(sd, clockstr);
 }
 
 bool MainWorker::SetThermostatState(const std::string &idx, const int newState)

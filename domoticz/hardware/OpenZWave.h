@@ -59,6 +59,11 @@ public:
 		bool							HaveUserCodes;
 
 		time_t							m_LastSeen;
+
+		//Thermostat settings
+		int								tClockDay;
+		int								tClockHour;
+		int								tClockMinute;
 	}NodeInfo;
 
 	COpenZWave(const int ID, const std::string& devname);
@@ -117,6 +122,8 @@ private:
 	NodeInfo* GetNodeInfo( OpenZWave::Notification const* _notification );
 	void SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value);
 	void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value);
+	void SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute);
+
 	bool IsNodeRGBW(const unsigned int homeID, const int nodeID);
 
 	void StopHardwareIntern();

@@ -367,6 +367,18 @@ const char *sqlCreateSceneTimers =
 "[TimerPlan] INTEGER DEFAULT 0, "
 "[Days] INTEGER NOT NULL);";
 
+const char *sqlCreateSetpointTimers =
+"CREATE TABLE IF NOT EXISTS [SetpointTimers] ("
+"[ID] INTEGER PRIMARY KEY, "
+"[Active] BOOLEAN DEFAULT true, "
+"[DeviceRowID] BIGINT(10) NOT NULL, "
+"[Date] DATE DEFAULT 0, "
+"[Time] TIME NOT NULL, "
+"[Type] INTEGER NOT NULL, "
+"[Temperature] FLOAT DEFAULT 0, "
+"[TimerPlan] INTEGER DEFAULT 0, "
+"[Days] INTEGER NOT NULL);";
+
 const char *sqlCreateSharedDevices =
 "CREATE TABLE IF NOT EXISTS [SharedDevices] ("
 "[ID] INTEGER PRIMARY KEY,  "
@@ -557,6 +569,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateTemperature_Calendar);
 	query(sqlCreateTempVars);
 	query(sqlCreateTimers);
+	query(sqlCreateSetpointTimers);
 	query(sqlCreateUV);
 	query(sqlCreateUV_Calendar);
 	query(sqlCreateWind);
@@ -3305,11 +3318,24 @@ bool CSQLHelper::HasTimers(const unsigned long long Idx)
 	szQuery.str("");
 	szQuery << "SELECT COUNT(*) FROM Timers WHERE (DeviceRowID==" << Idx << ") AND (TimerPlan==" << m_ActiveTimerPlan << ")";
 	result=query(szQuery.str());
-	if (result.size()==0)
-		return false;
-	std::vector<std::string> sd=result[0];
-	int totaltimers=atoi(sd[0].c_str());
-	return (totaltimers>0);
+	if (result.size() != 0)
+	{
+		std::vector<std::string> sd = result[0];
+		int totaltimers = atoi(sd[0].c_str());
+		if (totaltimers > 0)
+			return true;
+	}
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "SELECT COUNT(*) FROM SetpointTimers WHERE (DeviceRowID==" << Idx << ") AND (TimerPlan==" << m_ActiveTimerPlan << ")";
+	result = query(szQuery.str());
+	if (result.size() != 0)
+	{
+		std::vector<std::string> sd = result[0];
+		int totaltimers = atoi(sd[0].c_str());
+		return (totaltimers > 0);
+	}
+	return false;
 }
 
 bool CSQLHelper::HasTimers(const std::string &Idx)

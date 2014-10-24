@@ -128,6 +128,10 @@ private:
 	void Cmd_ClearSceneTimers(Json::Value &root);
 	void Cmd_SetSceneCode(Json::Value &root);
 	void Cmd_RemoveSceneCode(Json::Value &root);
+	void Cmd_AddSetpointTimer(Json::Value &root);
+	void Cmd_UpdateSetpointTimer(Json::Value &root);
+	void Cmd_DeleteSetpointTimer(Json::Value &root);
+	void Cmd_ClearSetpointTimers(Json::Value &root);
 	void Cmd_GetSerialDevices(Json::Value &root);
 	void Cmd_GetDevicesList(Json::Value &root);
 	void Cmd_GetDevicesListOnOff(Json::Value &root);
@@ -143,6 +147,7 @@ private:
 	void RType_Users(Json::Value &root);
 	void RType_Timers(Json::Value &root);
 	void RType_SceneTimers(Json::Value &root);
+	void RType_SetpointTimers(Json::Value &root);
 	void RType_GetTransfers(Json::Value &root);
 	void RType_TransferDevice(Json::Value &root);
 	void RType_Notifications(Json::Value &root);

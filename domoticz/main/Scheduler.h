@@ -8,6 +8,7 @@ struct tScheduleItem
 {
 	bool bEnabled;
 	bool bIsScene;
+	bool bIsThermostat;
 	std::string DeviceName;
 	unsigned long long RowID;
 	unsigned char startDay;
@@ -19,6 +20,7 @@ struct tScheduleItem
 	_eTimerCommand timerCmd;
 	int Level;
 	int Hue;
+	float Temperature;
 	bool bUseRandmoness;
 	int Days;
 	//internal
