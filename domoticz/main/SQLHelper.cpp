@@ -1070,10 +1070,6 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("SensorTimeoutNotification", 0); //default disabled
 	}
-	if (!GetPreferencesVar("SensorBatteryLowtNotification", nValue))
-	{
-		UpdatePreferencesVar("SensorBatteryLowtNotification", 0); //default disabled
-	}
 	
 	if (!GetPreferencesVar("UseAutoUpdate", nValue))
 	{

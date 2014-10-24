@@ -30,6 +30,7 @@
 #include "../json/json.h"
 #include "Logger.h"
 #include "SQLHelper.h"
+#include <algorithm>
 
 #ifndef WIN32
 	#include <sys/utsname.h>
@@ -5935,13 +5936,17 @@ void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
 			while ((ent = readdir(lDir)) != NULL)
 			{
 				std::string filename = ent->d_name;
-				size_t pos = filename.find(".png");
+
+				std::string temp_filename = filename;
+				std::transform(temp_filename.begin(), temp_filename.end(), temp_filename.begin(), ::tolower);
+
+				size_t pos = temp_filename.find(".png");
 				if (pos == std::string::npos)
 				{
-					pos = filename.find(".jpg");
+					pos = temp_filename.find(".jpg");
 					if (pos == std::string::npos)
 					{
-						pos = filename.find(".bmp");
+						pos = temp_filename.find(".bmp");
 					}
 				}
 				if (pos != std::string::npos)
