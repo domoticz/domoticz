@@ -472,7 +472,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 	std::string sURL = sstr2.str();
 	if (!HTTPClient::PUT(sURL, sPostData.str(), ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_ERROR, "Philips Hue: Error getting Light States, (Check IPAddress/Username)");
+		_log.Log(LOG_ERROR, "Philips Hue: Error connecting to Hue bridge, (Check IPAddress/Username)");
 		return false;
 	}
 
@@ -514,8 +514,8 @@ std::string CPhilipsHue::RegisterUser(const std::string &username)
 
 	if (!HTTPClient::POST(sURL, sPostData, ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_ERROR, "Philips Hue: Error getting Light States, (Check IPAddress/Username)");
-		return false;
+		retStr = "Error;Error connecting to Hue bridge";
+		return retStr;
 	}
 
 	Json::Value root;
