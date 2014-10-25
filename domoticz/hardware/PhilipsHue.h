@@ -5,7 +5,7 @@
 
 class CPhilipsHue : public CDomoticzHardwareBase
 {
-	typedef enum _eHueLightType
+	enum _eHueLightType
 	{
 		HLTYPE_NORMAL,
 		HLTYPE_DIM,
