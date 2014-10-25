@@ -53,6 +53,7 @@
 #include "../hardware/HarmonyHub.h"
 #include "../hardware/EcoDevices.h"
 #include "../hardware/MochadTCP.h"
+#include "../hardware/PhilipsHue.h"
 #ifdef WITH_GPIO
 	#include "../hardware/Gpio.h"
 	#include "../hardware/GpioPin.h"
@@ -540,6 +541,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_TOONTHERMOSTAT:
 		pHardware = new CToonThermostat(ID, Username, Password);
+		break;
+	case HTYPE_Philips_Hue:
+		pHardware = new CPhilipsHue(ID, Address, Port, Username);
 		break;
 	case HTYPE_HARMONY_HUB:
 		pHardware = new CHarmonyHub(ID, Address, Port, Username, Password);

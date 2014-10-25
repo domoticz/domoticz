@@ -45,6 +45,7 @@ class CDomoticzHardwareBase
 	friend class CEcoDevices;
 	friend class CHarmonyHub;
 	friend class MochadTCP;
+	friend class CPhilipsHue;
 public:
 	CDomoticzHardwareBase();
 	virtual ~CDomoticzHardwareBase();

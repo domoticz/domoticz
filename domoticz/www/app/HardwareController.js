@@ -206,6 +206,51 @@ define(['app'], function (app) {
 					 }     
 				});
 			}
+			else if (text.indexOf("Philips Hue") >= 0)
+			{
+				var address=$("#hardwarecontent #divremote #tcpaddress").val();
+				if (address=="")
+				{
+					ShowNotify($.i18n('Please enter an Address!'), 2500, true);
+					return;
+				}
+				var port=$("#hardwarecontent #divremote #tcpport").val();
+				if (port=="")
+				{
+					ShowNotify($.i18n('Please enter an Port!'), 2500, true);
+					return;
+				}
+				var intRegex = /^\d+$/;
+				if(!intRegex.test(port)) {
+					ShowNotify($.i18n('Please enter an Valid Port!'), 2500, true);
+					return;
+				}		
+				var username=$("#hardwarecontent #hardwareparamsusername #username").val();
+				if (username == "") {
+					ShowNotify($.i18n('Please enter a username!'), 2500, true);
+					return;
+				}
+				
+				$.ajax({
+					 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+						"&address=" + address + 
+						"&port=" + port + 
+						"&username=" + username + 
+						"&name=" + name + 
+						"&enabled=" + bEnabled + 
+						"&idx=" + idx + 
+						"&datatimeout=" + datatimeout +
+						"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+						RefreshHardwareTable();
+					 },
+					 error: function(){
+							ShowNotify($.i18n('Problem updating hardware!'), 2500, true);
+					 }     
+				});
+			}
 			else if ((text.indexOf("Underground") >= 0)||(text.indexOf("Forecast") >= 0))
 			{
 				var apikey=$("#hardwarecontent #divunderground #apikey").val();
@@ -403,6 +448,43 @@ define(['app'], function (app) {
 				var password=$("#hardwarecontent #divlogin #password").val();
 				$.ajax({
 					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + name + "&password=" + password + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+						RefreshHardwareTable();
+					 },
+					 error: function(){
+							ShowNotify($.i18n('Problem adding hardware!'), 2500, true);
+					 }     
+				});
+			}
+			else if (text.indexOf("Philips Hue") >= 0)
+			{
+				var address=$("#hardwarecontent #divremote #tcpaddress").val();
+				if (address=="")
+				{
+					ShowNotify($.i18n('Please enter an Address!'), 2500, true);
+					return;
+				}
+				var port=$("#hardwarecontent #divremote #tcpport").val();
+				if (port=="")
+				{
+					ShowNotify($.i18n('Please enter an Port!'), 2500, true);
+					return;
+				}
+				var intRegex = /^\d+$/;
+				if(!intRegex.test(port)) {
+					ShowNotify($.i18n('Please enter an Valid Port!'), 2500, true);
+					return;
+				}		
+				var username=$("#hardwarecontent #hardwareparamsusername #username").val();
+
+				if (username == "") {
+					ShowNotify($.i18n('Please enter a username!'), 2500, true);
+					return;
+				}
+				$.ajax({
+					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + username + "&name=" + name + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -1660,7 +1742,7 @@ define(['app'], function (app) {
 					}
 				
 					var SerialName="Unknown!?";
-					if ((HwTypeStr.indexOf("LAN") >= 0)||(HwTypeStr.indexOf("Domoticz") >= 0) ||(HwTypeStr.indexOf("Harmony") >= 0))
+					if ((HwTypeStr.indexOf("LAN") >= 0)||(HwTypeStr.indexOf("Domoticz") >= 0) ||(HwTypeStr.indexOf("Harmony") >= 0)||(HwTypeStr.indexOf("Philips Hue") >= 0))
 					{
 						SerialName=item.Port;
 					}
@@ -1845,34 +1927,29 @@ define(['app'], function (app) {
 						{
 							//nothing to be set
 						}
-						else
-						if (data["Type"].indexOf("USB") >= 0)
-						{
+						else if (data["Type"].indexOf("USB") >= 0) {
 							$("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
 						}
-						else
-							if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0))
-						{
+						else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)) {
 							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["3"]);
 							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["4"]);
 						}
-						else
-								if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0))
-						{
+						else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)) {
 							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["3"]);
 							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["4"]);
 							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
 						}
-						else
-						if ((data["Type"].indexOf("Underground") >= 0)||(data["Type"].indexOf("Forecast") >= 0))
-						{
+						else if ((data["Type"].indexOf("Underground") >= 0)||(data["Type"].indexOf("Forecast") >= 0)) {
 							$("#hardwarecontent #hardwareparamsunderground #apikey").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
 						}
-						else
-						if (data["Type"].indexOf("SBFSpot") >= 0)
-						{
+						else if (data["Type"].indexOf("SBFSpot") >= 0) {
 							$("#hardwarecontent #hardwareparamslocation #location").val(data["Username"]);
+						}
+						else if (data["Type"].indexOf("Philips Hue") >= 0) {
+							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["3"]);
+							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["4"]);
+							$("#hardwarecontent #hardwareparamsusername #username").val(data["Username"]);
 						}
 						if ((data["Type"].indexOf("Domoticz") >= 0)||(data["Type"].indexOf("ICY") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)||(data["Type"].indexOf("Toon") >= 0)||(data["Type"].indexOf("PVOutput") >= 0)) {
 							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
@@ -1893,6 +1970,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #lblusername").show();
 					
 			$("#hardwarecontent #divlocation").hide();
+			$("#hardwarecontent #divusername").hide();
 
 			if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("PiFace") >= 0))
 			{
@@ -1954,6 +2032,15 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divremote").hide();
 				$("#hardwarecontent #divlogin").hide();
 				$("#hardwarecontent #divunderground").show();
+			}
+			else if (text.indexOf("Philips Hue") >= 0)
+			{
+				$("#hardwarecontent #divserial").hide();
+				$("#hardwarecontent #divremote").show();
+				$("#hardwarecontent #divlogin").hide();
+				$("#hardwarecontent #divusername").show();
+				$("#hardwarecontent #divunderground").hide();
+				$("#hardwarecontent #hardwareparamsremote #tcpport").val(80);
 			}
 			else
 			{

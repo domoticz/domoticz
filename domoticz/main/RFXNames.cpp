@@ -173,6 +173,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_ECODEVICES, "Eco Devices via LAN interface" },
 		{ HTYPE_HARMONY_HUB, "Logitech Harmony Hub" },
 		{ HTYPE_Mochad, "Mochad CM15Pro bridge with LAN interface" },
+		{ HTYPE_Philips_Hue, "Philips Hue Bridge" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

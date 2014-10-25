@@ -610,6 +610,15 @@ void CWebServer::Cmd_AddHardware(Json::Value &root)
 			)
 			return;
 	}
+	else if (htype == HTYPE_Philips_Hue) {
+		if (
+			(username == "") ||
+			(address == "")
+			)
+			return;
+		if (port == 0)
+			port = 80;
+	}
 	else if (htype == HTYPE_RaspberryGPIO) {
 		//all fine here!
 	}
@@ -731,6 +740,15 @@ void CWebServer::Cmd_UpdateHardware(Json::Value &root)
 			(address=="")			
 			)
 			return;
+	}
+	else if (htype == HTYPE_Philips_Hue) {
+		if (
+			(username == "") ||
+			(address == "")
+			)
+			return;
+		if (port == 0)
+			port = 80;
 	}
 	else if (htype == HTYPE_SBFSpot) {
 		if (username=="")

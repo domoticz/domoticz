@@ -91,6 +91,7 @@ enum _eHardwareTypes {
 	HTYPE_ECODEVICES,			//35
 	HTYPE_HARMONY_HUB,			//36
 	HTYPE_Mochad,				//37
+	HTYPE_Philips_Hue,			//38
 	HTYPE_END
 };
 

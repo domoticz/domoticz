@@ -130,6 +130,7 @@
     <ClInclude Include="hardware\OTGWBase.h" />
     <ClInclude Include="hardware\OTGWSerial.h" />
     <ClInclude Include="hardware\OTGWTCP.h" />
+    <ClInclude Include="hardware\PhilipsHue.h" />
     <ClInclude Include="hardware\PiFace.h" />
     <ClInclude Include="hardware\PVOutput_Input.h" />
     <ClInclude Include="hardware\Razberry.h" />
@@ -235,6 +236,7 @@
     <ClCompile Include="hardware\OTGWBase.cpp" />
     <ClCompile Include="hardware\OTGWSerial.cpp" />
     <ClCompile Include="hardware\OTGWTCP.cpp" />
+    <ClCompile Include="hardware\PhilipsHue.cpp" />
     <ClCompile Include="hardware\PiFace.cpp" />
     <ClCompile Include="hardware\PVOutput_Input.cpp" />
     <ClCompile Include="hardware\Razberry.cpp" />

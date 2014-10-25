@@ -191,6 +191,7 @@ hardware/OTGWTCP.cpp
 hardware/P1MeterBase.cpp
 hardware/P1MeterSerial.cpp
 hardware/P1MeterTCP.cpp
+hardware/PhilipsHue.cpp
 hardware/PiFace.cpp
 hardware/PVOutput_Input.cpp
 hardware/Razberry.cpp

@@ -159,6 +159,9 @@
     <Filter Include="Devices\SBFSpot">
       <UniqueIdentifier>{3d145f2e-6a05-4375-917e-4ac4557915fd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Philips Hue">
+      <UniqueIdentifier>{0ba73f41-846f-48e1-a9ff-b70888ac5920}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt">
@@ -475,6 +478,9 @@
     <ClInclude Include="hardware\SBFSpot.h">
       <Filter>Devices\SBFSpot</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\PhilipsHue.h">
+      <Filter>Devices\Philips Hue</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="webserver\Base64.cpp">
@@ -749,6 +755,9 @@
     </ClCompile>
     <ClCompile Include="hardware\SBFSpot.cpp">
       <Filter>Devices\SBFSpot</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\PhilipsHue.cpp">
+      <Filter>Devices\Philips Hue</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
