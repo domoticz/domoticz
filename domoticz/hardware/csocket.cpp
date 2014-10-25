@@ -214,9 +214,9 @@ int csocket::canRead( bool* readyToRead, float waitTime )
     }
 
     
-#ifdef WIN32
+//#ifdef WIN32
     nfds = m_socket+1;
-#endif
+//#endif
 
     int n = select(nfds, &fds, NULL, NULL, &timeout);
     if ( n < 0 ) 

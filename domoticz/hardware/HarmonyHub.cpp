@@ -1,26 +1,26 @@
 /******************************************************************************
-  Permission is hereby granted, free of charge, to any person obtaining a copy  
-  of this software and associated documentation files (the "Software"), to deal 
-  in the Software without restriction, including without limitation the rights 
-  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
-  copies of the Software, and to permit persons to whom the Software is 
-  furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy  
+of this software and associated documentation files (the "Software"), to deal 
+in the Software without restriction, including without limitation the rights 
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+copies of the Software, and to permit persons to whom the Software is 
+furnished to do so, subject to the following conditions:
 
-  The above copyright notice and this permission notice shall be included in all 
-  copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all 
+copies or substantial portions of the Software.
 
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
-  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
-  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
-  SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+SOFTWARE.
 
-  ===========
-  Original source code from: http://sourceforge.net/projects/harmonyhubcontrol/
-  Intergration in Domoticz done by: Jan ten Hove
-  
+===========
+Original source code from: http://sourceforge.net/projects/harmonyhubcontrol/
+Intergration in Domoticz done by: Jan ten Hove
+
 */
 
 
@@ -103,7 +103,7 @@ void CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 		}			
 		/*}
 		else
-			_log.Log(LOG_ERROR,"Harmony Hub: Device not found" );*/
+		_log.Log(LOG_ERROR,"Harmony Hub: Device not found" );*/
 	}
 	else if((pCmd->LIGHTING2.packettype == pTypeLighting2) && (pCmd->LIGHTING2.cmnd==0))
 	{
@@ -151,10 +151,10 @@ bool CHarmonyHub::StopHardware()
 
 void CHarmonyHub::Do_Work()
 {
-	_log.Log(LOG_STATUS,"Harmony Hub: Worker started...");
+	_log.Log(LOG_STATUS,"Harmony Hub: Worker thread started..."); 
 	//start with getting the activities
 	unsigned short checkAct=HARMONY_POLL_FETCH_ACTIVITY_SECONDS /  HARMONY_POLL_INTERVAL_SECONDS;
-	
+
 	while (!m_stoprequested)
 	{
 		sleep_seconds(HARMONY_POLL_INTERVAL_SECONDS);
@@ -209,7 +209,7 @@ void CHarmonyHub::Do_Work()
 			_log.Log(LOG_STATUS,"Harmony Hub: Too many commands missed. Resetting connection.");
 			//m_bDoLogin=true;	//re login
 		}
-			
+
 	}
 	_log.Log(LOG_STATUS,"Harmony Hub: Worker stopped...");
 }
@@ -284,9 +284,11 @@ void CHarmonyHub::Logout()
 {
 	if(m_commandcsocket)
 		delete m_commandcsocket;
+	m_usCommandsMissed=0;
 	m_commandcsocket = NULL;
 	m_bIsChangingActivity=false;
 	m_bDoLogin=true;
+
 }
 
 bool CHarmonyHub::SetupCommandSocket()
@@ -295,7 +297,7 @@ bool CHarmonyHub::SetupCommandSocket()
 		Logout();
 
 	m_commandcsocket = new csocket();
-	
+
 
 	if(ConnectToHarmony(m_harmonyAddress, m_usIPPort,m_commandcsocket) == 1)
 	{
@@ -497,8 +499,8 @@ int CHarmonyHub::HarmonyWebServiceLogin(std::string strUserEmail, std::string st
 	authcsocket.write(strHttpRequestText.c_str(), strHttpRequestText.size());
 	authcsocket.write(strJSONText.c_str(), strJSONText.length());
 
-	memset(m_databuffer, 0, 1000000);
-	authcsocket.read(m_databuffer, 1000000, false);
+	memset(m_databuffer, 0, BUFFER_SIZE);
+	authcsocket.read(m_databuffer, BUFFER_SIZE, false);
 	strHttpPayloadText = m_databuffer;/* <- Expect: 0x00def280 "HTTP/1.1 200 OK Server: nginx/1.2.4 Date: Wed, 05 Feb 2014 17:52:13 GMT Content-Type: application/json; charset=utf-8 Content-Length: 127 Connection: keep-alive Cache-Control: private X-AspNet-Version: 4.0.30319 X-Powered-By: ASP.NET  {"GetUserAuthTokenResult":{"AccountId":0,"UserAuthToken":"KsRE6VVA3xrhtbqFbh0jWn8YTiweDeB\/b94Qeqf3ofWGM79zLSr62XQh8geJxw\/V"}}"*/
 
 	// Parse the login authorization token from the response
@@ -549,8 +551,8 @@ int CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::st
 	// Start communication
 	std::string data = "<stream:stream to='connect.logitech.com' xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' xml:lang='en' version='1.0'>";
 	communicationcsocket->write(data.c_str(), data.length());
-	memset(m_databuffer, 0, 1000000);
-	communicationcsocket->read(m_databuffer, 1000000, false);
+	memset(m_databuffer, 0, BUFFER_SIZE);
+	communicationcsocket->read(m_databuffer, BUFFER_SIZE, false);
 
 	std::string strData = m_databuffer;/* <- Expect: <?xml version='1.0' encoding='iso-8859-1'?><stream:stream from='' id='XXXXXXXX' version='1.0' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'><stream:features><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>PLAIN</mechanism></mechanisms></stream:features> */
 
@@ -563,8 +565,8 @@ int CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::st
 	data.append("</auth>");
 	communicationcsocket->write(data.c_str(), data.length());
 
-	memset(m_databuffer, 0, 1000000);
-	communicationcsocket->read(m_databuffer, 1000000, false);
+	memset(m_databuffer, 0, BUFFER_SIZE);
+	communicationcsocket->read(m_databuffer, BUFFER_SIZE, false);
 
 	strData = m_databuffer; /* <- Expect: <success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/> */
 	if(strData != "<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>")
@@ -576,8 +578,8 @@ int CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::st
 	data = "<stream:stream to='connect.logitech.com' xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' xml:lang='en' version='1.0'>";
 	communicationcsocket->write(data.c_str(), data.length());
 
-	memset(m_databuffer, 0, 1000000);
-	communicationcsocket->read(m_databuffer, 1000000, false);
+	memset(m_databuffer, 0, BUFFER_SIZE);
+	communicationcsocket->read(m_databuffer, BUFFER_SIZE, false);
 
 	strData = m_databuffer; /* <- Expect: <?xml version='1.0' encoding='iso-8859-1'?><stream:stream from='' id='057a30bd' version='1.0' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'><stream:features><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>PLAIN</mechanism></mechanisms></stream:features> */
 
@@ -612,8 +614,8 @@ int CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::stri
 
 	authorizationcsocket->write(sendData.c_str(), sendData.length());
 
-	memset(m_databuffer, 0, 1000000);
-	authorizationcsocket->read(m_databuffer, 1000000, false);
+	memset(m_databuffer, 0, BUFFER_SIZE);
+	authorizationcsocket->read(m_databuffer, BUFFER_SIZE, false);
 
 	strData = m_databuffer; /* <- Expect: <iq/> ... <success xmlns= ... identity=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX:status=succeeded ... */
 
@@ -624,7 +626,7 @@ int CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::stri
 	}
 
 	bool bIsDataReadable = false;
-	authorizationcsocket->canRead(&bIsDataReadable, 0.3f);
+	authorizationcsocket->canRead(&bIsDataReadable, 1.0f);
 	if(!bIsDataReadable && strData == "<iq/>")
 	{
 		bIsDataReadable = true;
@@ -632,10 +634,10 @@ int CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::stri
 
 	while(bIsDataReadable)
 	{
-		memset(m_databuffer, 0, 1000000);
-		authorizationcsocket->read(m_databuffer, 1000000, false);
+		memset(m_databuffer, 0, BUFFER_SIZE);
+		authorizationcsocket->read(m_databuffer, BUFFER_SIZE, false);
 		strData.append(m_databuffer);
-		authorizationcsocket->canRead(&bIsDataReadable, 0.3f);
+		authorizationcsocket->canRead(&bIsDataReadable, 1.0f);
 	};
 
 	// Parse the session authorization token from the response
@@ -663,11 +665,12 @@ int CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::stri
 int CHarmonyHub::SubmitCommand(csocket* m_commandcsocket, const std::string& m_szAuthorizationToken, const std::string strCommand, const std::string strCommandParameterPrimary, const std::string strCommandParameterSecondary)
 {
 	boost::lock_guard<boost::mutex> lock(m_mutex);
-
+	int pos;
 	if(m_commandcsocket== NULL || m_szAuthorizationToken.length() == 0)
 	{
 		//errorString = "SubmitCommand : NULL csocket or empty authorization token provided";
 		return 1;
+
 	}
 
 	std::string lstrCommand = strCommand;
@@ -675,7 +678,6 @@ int CHarmonyHub::SubmitCommand(csocket* m_commandcsocket, const std::string& m_s
 	{
 		// No command provided, return query for the current activity
 		lstrCommand = "get_current_activity_id";
-		return 0;
 	}
 
 	std::string strData;
@@ -712,103 +714,97 @@ int CHarmonyHub::SubmitCommand(csocket* m_commandcsocket, const std::string& m_s
 
 	m_commandcsocket->write(sendData.c_str(), sendData.length());
 
-	memset(m_databuffer, 0, 1000000);
-	m_commandcsocket->read(m_databuffer, 1000000, false);
-	strData = m_databuffer; /* <- Expect: strData  == <iq/> */
+	//memset(m_databuffer, 0, BUFFER_SIZE);
+	//m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
+	//strData = m_databuffer; /* <- Expect: strData  == <iq/> */
 
-	std::string iqTag = "<iq/>";
-	int pos = (int)strData.find(iqTag);
-
-	bool bIsDataReadable = false;
-	bool wasChanged =false;
-	while(pos != 0)
+	/*std::string iqTag = "<iq/>";
+	D = (int)strData.find(iqTag);*/
+	//if(pos<=0)
+	//	return 1; //error parsing the result
+	bool bIsDataReadable = true;
+	m_commandcsocket->canRead(&bIsDataReadable,0.4f);
+	while(bIsDataReadable)
 	{
-		wasChanged = CheckIfChanging(strData);
-		m_commandcsocket->canRead(&bIsDataReadable, 0.6f);
-		if(bIsDataReadable)
-		{
-			//activity changing
-			//read again
-			memset(m_databuffer, 0, 1000000);
-			m_commandcsocket->read(m_databuffer, 1000000, false);
-			if(strlen(m_databuffer)==0)
-				return 1;
-			strData.append ( m_databuffer); /* <- Expect: strData  == <iq/> */
-			pos = (int)strData.find(iqTag);
-		}
-		else if(wasChanged)
-			return 0;
-		else
-		{
-			//printf(strData.c_str());
-			//errorString = "SubmitCommand: Invalid Harmony response";
-			return 1;  
-		}
-	}
 
-	CheckIfChanging(strData);
-	
-	m_commandcsocket->canRead(&bIsDataReadable, 0.6f);
-
-	if(bIsDataReadable == false && strData == "<iq/>")
-	{
-		bIsDataReadable = true;
-	}
-
-	if(strCommand != "issue_device_command")
-	{
-		while(bIsDataReadable)
+		if(memset(m_databuffer, 0, BUFFER_SIZE)>0)
 		{
-			memset(m_databuffer, 0, 1000000);
-			m_commandcsocket->read(m_databuffer, 1000000, false);
-			if(strlen(m_databuffer)==0)
-				return 1;
+			m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
 			strData.append(m_databuffer);
-			m_commandcsocket->canRead(&bIsDataReadable, 0.3f);
+			m_commandcsocket->canRead(&bIsDataReadable,0.4f);
 		}
+		else
+			bIsDataReadable=false;
 	}
 
-	m_szResultString = strData;
 
-	//check for the presence of startactivity or activityfinished
-	//strData.find("startActivityFinished")!=0 || 
 	CheckIfChanging(strData);
-	
+	//m_commandcsocket->canRead(&bIsDataReadable,1.0f);
+
+	/*if(bIsDataReadable == false && strData == "<iq/>")
+	{
+	bIsDataReadable = true;
+	}*/
+
+	//if(strCommand != "issue_device_command")
+	//{
+	//	/*while(bIsDataReadable)
+	//	{
+	//		memset(m_databuffer, 0, BUFFER_SIZE);
+	//		m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
+	//		if(strlen(m_databuffer)==0)
+	//			return 1;
+	//		strData.append(m_databuffer);
+	//		m_commandcsocket->canRead(&bIsDataReadable, 1.0f);
+	//	}*/
+	//	//check for the presence of startactivity or activityfinished
+	//	//strData.find("startActivityFinished")!=0 || 
+	//	CheckIfChanging(strData);
+
+	//}
 
 
 	if(strCommand == "get_current_activity_id" || strCommand == "get_current_activity_id_raw")
 	{
-		int resultStartPos = m_szResultString.find("result=");
-		int resultEndPos = m_szResultString.find("]]>",resultStartPos);
+		std::string resultTag= "result=";
+		std::string resultEnd= "]]>";
+		m_szResultString = strData;
+		int resultStartPos = (int)m_szResultString.find(resultTag);
+		int resultEndPos = (int)m_szResultString.find(resultEnd,resultStartPos);
 		if(resultStartPos != std::string::npos && resultEndPos != std::string::npos)
 		{
 			m_szResultString = m_szResultString.substr(resultStartPos + 7, resultEndPos - resultStartPos - 7);
-			if(m_szResultString.find("]]") != std::string::npos)
-				_log.Log(LOG_STATUS,"Error");
-			if(strCommand == "get_current_activity_id")
+			/*if(strCommand == "get_current_activity_id")
 			{
-				m_szResultString.insert(0, "Current Activity ID is : ");
-			}
+			m_szResultString.insert(0, "Current Activity ID is : ");
+			}*/
 		}
 		else
-			m_szResultString="";
+		{
+			if(m_bIsChangingActivity)
+				m_szResultString = m_szCurActivityID; //changing, so no repsonse from HH
+			else
+				return 1;
+		}
+
+
 	}
 	else if(strCommand == "get_config" || strCommand == "get_config_raw")
 	{
-		m_commandcsocket->canRead(&bIsDataReadable, 0.3f);
+		m_commandcsocket->canRead(&bIsDataReadable, 0.2f);
 
-#ifndef WIN32
-		bIsDataReadable = true;
-#endif
-
-		while(bIsDataReadable)
+		//#ifndef WIN32
+		//		bIsDataReadable = true;
+		//#endif
+		//
+		/*	while(bIsDataReadable)
 		{
-			memset(m_databuffer, 0, 1000000);
-			m_commandcsocket->read(m_databuffer, 1000000, false);
+		memset(m_databuffer, 0, BUFFER_SIZE);
+		m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
 
-			strData.append(m_databuffer);
-			m_commandcsocket->canRead(&bIsDataReadable, 0.3f);
-		}
+		strData.append(m_databuffer);
+		m_commandcsocket->canRead(&bIsDataReadable,0.2);
+		}*/
 
 
 		pos = strData.find("![CDATA[{");
@@ -824,25 +820,37 @@ int CHarmonyHub::SubmitCommand(csocket* m_commandcsocket, const std::string& m_s
 	return 0;
 }
 
-bool CHarmonyHub::CheckIfChanging(const std::string& strData)
+bool CHarmonyHub::CheckIfChanging(std::string& strData)
 {
 	//strdata might contain both, so can return when both checks are done
 	bool newVal=m_bIsChangingActivity;
-	int lastDetect=0;
-	while(lastDetect!= std::string::npos)
+	//int lastDetect=0;
+	//bool isFound=true;
+	int isChanging = (int)strData.rfind("connect.stateDigest?notify");
+	int finishedChanging =(int)strData.rfind("startActivityFinished");
+	if(finishedChanging > isChanging)
+		newVal=false;
+	else if(isChanging > finishedChanging)
+		newVal =true;
+	/*while(isFound)
 	{
-		int tempDetect=lastDetect = strData.find("connect.stateDigest?notify",lastDetect);
-		if(tempDetect!=std::string::npos)
-		{
-			lastDetect = tempDetect;
-			newVal=true;
-		}
-
-		lastDetect = strData.find("startActivityFinished",lastDetect);
-		if(lastDetect!=std::string::npos)
-			newVal=false;
-		
+	isFound=false;
+	int tempDetect= strData.find("connect.stateDigest?notify",lastDetect);
+	if(tempDetect!=std::string::npos)
+	{
+	lastDetect = tempDetect;
+	newVal=true;
+	isFound=true;
 	}
+
+	tempDetect = strData.find("startActivityFinished",lastDetect);
+	if(tempDetect!=std::string::npos)
+	{
+	lastDetect = tempDetect;
+	newVal=false;
+	isFound=true;
+	}		
+	}*/
 	if(newVal != m_bIsChangingActivity)
 	{
 		m_bIsChangingActivity=newVal;
@@ -852,14 +860,14 @@ bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 			_log.Log(LOG_STATUS,"Harmony Hub finished changing activity");
 		return true;
 	}
-	
+
 	return false;
-/*
+	/*
 	if((strData.find("startActivityFinished",changeDetect) != std::string::npos)&&m_bIsChangingActivity)
 	{
-		m_bIsChangingActivity=false;
-		_log.Log(LOG_STATUS,"Harmony Hub finished changing activity");
-		retVal = true;
+	m_bIsChangingActivity=false;
+	_log.Log(LOG_STATUS,"Harmony Hub finished changing activity");
+	retVal = true;
 	}
 	return retVal;*/
 }

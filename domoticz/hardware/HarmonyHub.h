@@ -4,6 +4,8 @@
 #include <iostream>
 #include "hardwaretypes.h"
 
+#define BUFFER_SIZE									10000000
+
 class csocket;
 
 class Action
@@ -96,7 +98,7 @@ private:
 	bool m_bDoLogin;
 	bool m_bIsChangingActivity;
 	boost::shared_ptr<boost::thread> m_thread;
-	char m_databuffer[1000000];	
+	char m_databuffer[BUFFER_SIZE];	
 	std::string m_szResultString;
 
 
@@ -118,7 +120,7 @@ private:
 	int StartCommunication(csocket* communicationcsocket, const std::string &strUserName, const std::string &strPassword);
 	int SwapAuthorizationToken(csocket* authorizationcsocket, std::string& m_szAuthorizationToken);
 	int SubmitCommand(csocket* m_commandcsocket, const std::string& m_szAuthorizationToken, const std::string strCommand, const std::string strCommandParameterPrimary, const std::string strCommandParameterSecondary);
-	bool CheckIfChanging(const std::string& strData);
+	bool CheckIfChanging( std::string& strData);
 	int ParseAction(const std::string& strAction, std::vector<Action>& vecDeviceActions, const std::string& strDeviceID);
 	int ParseFunction(const std::string& strFunction, std::vector<Function>& vecDeviceFunctions, const std::string& strDeviceID);
 	int ParseControlGroup(const std::string& strControlGroup, std::vector<Function>& vecDeviceFunctions, const std::string& strDeviceID);
