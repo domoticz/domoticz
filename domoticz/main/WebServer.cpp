@@ -11,6 +11,7 @@
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
 #include "../hardware/1Wire.h"
+#include "../hardware/PhilipsHue.h"
 #ifdef WITH_OPENZWAVE
 	#include "../hardware/OpenZWave.h"
 #endif
@@ -328,6 +329,9 @@ bool CWebServer::StartServer(const std::string &listenaddress, const std::string
 	RegisterCommandCode("serial_devices", boost::bind(&CWebServer::Cmd_GetSerialDevices, this, _1));
 	RegisterCommandCode("devices_list", boost::bind(&CWebServer::Cmd_GetDevicesList, this, _1));
 	RegisterCommandCode("devices_list_onoff", boost::bind(&CWebServer::Cmd_GetDevicesListOnOff, this, _1));
+
+	RegisterCommandCode("registerhue", boost::bind(&CWebServer::Cmd_RegisterWithPhilipsHue, this, _1));
+	
 
 	RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1));
 	RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1));
@@ -10612,6 +10616,37 @@ void CWebServer::Cmd_GetDevicesListOnOff(Json::Value &root)
 			}
 		}
 	}
+}
+
+
+void CWebServer::Cmd_RegisterWithPhilipsHue(Json::Value &root)
+{
+	root["title"] = "RegisterOnHue";
+
+	std::string sidx = m_pWebEm->FindValue("idx");
+	std::string susername = m_pWebEm->FindValue("username");
+	if (sidx == "")
+		return;
+
+	int hwid = atoi(sidx.c_str());
+	CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
+	if (pHardware == NULL)
+		return;
+	if (pHardware->HwdType != HTYPE_Philips_Hue)
+		return;
+	CPhilipsHue *pHue = (CPhilipsHue*)pHardware;
+	std::string sresult = pHue->RegisterUser(susername);
+	std::vector<std::string> strarray;
+	StringSplit(sresult, ";", strarray);
+	if (strarray.size() != 2)
+		return;
+
+	if (strarray[0] == "Error") {
+		root["statustext"] = strarray[1];
+		return;
+	}
+	root["status"] = "OK";
+	root["username"] = strarray[1];
 }
 
 void CWebServer::RType_GetTransfers(Json::Value &root)

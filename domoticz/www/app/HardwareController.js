@@ -225,7 +225,7 @@ define(['app'], function (app) {
 					ShowNotify($.i18n('Please enter an Valid Port!'), 2500, true);
 					return;
 				}		
-				var username=$("#hardwarecontent #hardwareparamsusername #username").val();
+				var username=$("#hardwarecontent #hardwareparamsphilipshue #username").val();
 				if (username == "") {
 					ShowNotify($.i18n('Please enter a username!'), 2500, true);
 					return;
@@ -477,7 +477,7 @@ define(['app'], function (app) {
 					ShowNotify($.i18n('Please enter an Valid Port!'), 2500, true);
 					return;
 				}		
-				var username=$("#hardwarecontent #hardwareparamsusername #username").val();
+				var username=$("#hardwarecontent #hardwareparamsphilipshue #username").val();
 
 				if (username == "") {
 					ShowNotify($.i18n('Please enter a username!'), 2500, true);
@@ -1949,7 +1949,7 @@ define(['app'], function (app) {
 						else if (data["Type"].indexOf("Philips Hue") >= 0) {
 							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["3"]);
 							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["4"]);
-							$("#hardwarecontent #hardwareparamsusername #username").val(data["Username"]);
+							$("#hardwarecontent #hardwareparamsphilipshue #username").val(data["Username"]);
 						}
 						if ((data["Type"].indexOf("Domoticz") >= 0)||(data["Type"].indexOf("ICY") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)||(data["Type"].indexOf("Toon") >= 0)||(data["Type"].indexOf("PVOutput") >= 0)) {
 							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
@@ -1962,6 +1962,30 @@ define(['app'], function (app) {
 		  $('#modal').hide();
 		}
 
+		RegisterPhilipsHue = function()
+		{
+			var username=$("#hardwarecontent #hardwareparamsphilipshue #username").val();
+			$.ajax({
+				url: "json.htm?type=command&param=registerhue" +
+					"&idx=" + $.myglobals.SelectedTimerIdx +
+					"&username=" + username,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					if (data.status=="ERR") {
+						ShowNotify(data.statustext, 2500, true);
+						return;
+					}
+					$("#hardwarecontent #hardwareparamsphilipshue #username").val(data.username)
+					ShowNotify($.i18n('Registrating successful!'),2500);
+				 },
+				 error: function(){
+						HideNotify();
+						ShowNotify($.i18n('Problem registrating with the Philips Hue bridge!'), 2500, true);
+				 }     
+			});
+		}
+
 		UpdateHardwareParamControls = function()
 		{
 			var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
@@ -1970,7 +1994,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #lblusername").show();
 					
 			$("#hardwarecontent #divlocation").hide();
-			$("#hardwarecontent #divusername").hide();
+			$("#hardwarecontent #divphilipshue").hide();
 
 			if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("PiFace") >= 0))
 			{
@@ -2038,7 +2062,7 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divserial").hide();
 				$("#hardwarecontent #divremote").show();
 				$("#hardwarecontent #divlogin").hide();
-				$("#hardwarecontent #divusername").show();
+				$("#hardwarecontent #divphilipshue").show();
 				$("#hardwarecontent #divunderground").hide();
 				$("#hardwarecontent #hardwareparamsremote #tcpport").val(80);
 			}

@@ -135,6 +135,7 @@ private:
 	void Cmd_GetSerialDevices(Json::Value &root);
 	void Cmd_GetDevicesList(Json::Value &root);
 	void Cmd_GetDevicesListOnOff(Json::Value &root);
+	void Cmd_RegisterWithPhilipsHue(Json::Value &root);
 
 	//RTypes
 	void RType_HandleGraph(Json::Value &root);

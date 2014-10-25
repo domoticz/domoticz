@@ -15,6 +15,7 @@ public:
 	CPhilipsHue(const int ID, const std::string &IPAddress, const unsigned short Port, const std::string &Username);
 	~CPhilipsHue(void);
 	void WriteToHardware(const char *pdata, const unsigned char length);
+	std::string RegisterUser(const std::string &username);
 private:
 	std::string m_IPAddress;
 	unsigned short m_Port;
@@ -22,14 +23,12 @@ private:
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 
-	bool m_bGetInitialLights;
-
 	void Init();
 	bool StartHardware();
 	bool StopHardware();
 	void Do_Work();
 	bool GetLightStates();
-	void SendSwitchIfNotExists(const int NodeID, const _eHueLightType LType, const int BrightnessLevel, const std::string &Name);
+	void InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, const bool bIsOn, const int BrightnessLevel, const std::string &Name);
 	bool SwitchLight(const int nodeID, const std::string &LCmd, const int svalue);
 };
 
