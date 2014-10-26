@@ -32,6 +32,7 @@ Version 2.0.xxxx (October xxth 2014)
 - Changed: Dimmer value is now updating on screen
 - Changed: New patch for logitech harmony (thanks again!)
 - Implemented: Text Sensor (update via udevice json call)
+- Implemented: Option for Dummy device to create Switch Sensor
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

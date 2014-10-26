@@ -9240,6 +9240,18 @@ void CWebServer::RType_CreateVirtualSensor(Json::Value &root)
 		m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, "Hello World", devname);
 		bCreated = true;
 		break;
+	case 6:
+		//Switch
+		{
+			unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
+			unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
+			unsigned char ID3 = (unsigned char)((nid & 0x0000FF00) >> 8);
+			unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
+			sprintf(ID, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+			m_sql.UpdateValue(HwdID, ID, 1, pTypeLighting2, sTypeAC, 12, 255, 0, "15", devname);
+			bCreated = true;
+		}
+		break;
 	case pTypeTEMP:
 		m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP, sTypeTEMP1, 10, 255, 0, "0.0", devname);
 		bCreated = true;
