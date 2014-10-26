@@ -96,6 +96,7 @@ define(['app'], function (app) {
 
 				$.each(data.result, function(i,item){
 							//Lights
+							var isdimmer=false;
 							if (((item.Type.indexOf('Light') == 0)||(item.Type.indexOf('Blind') == 0)||(item.Type.indexOf('Curtain') == 0)||(item.Type.indexOf('Thermostat 3') == 0)||(item.Type.indexOf('Chime') == 0)||(item.Type.indexOf('RFY') == 0))&&(item.Favorite!=0))
 							{
 								id="#dashcontent #light_" + item.idx;
@@ -217,6 +218,7 @@ define(['app'], function (app) {
 											}
 										}
 										else if (item.SwitchType == "Dimmer") {
+											isdimmer=true;
 											var img="";
 											if (
 													(item.Status == 'On')||
@@ -236,13 +238,13 @@ define(['app'], function (app) {
 										}
 										else if (item.SwitchType == "Dusk Sensor") {
 											if (item.Status == 'On')
-										{
-													status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.i18n("Dark") +'</button>';
+											{
+												status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.i18n("Dark") +'</button>';
+											}
+											else {
+												status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.i18n("Sunny") +'</button>';
+											}
 										}
-										else {
-													status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.i18n("Sunny") +'</button>';
-										}
-									}
 										else if (item.SwitchType == "Motion Sensor") {
 											if (
 													(item.Status == 'On')||
@@ -257,24 +259,19 @@ define(['app'], function (app) {
 											}
 										}
 										else if (item.SwitchType == "Dusk Sensor") {
-											if (
-													(item.Status == 'On')
-												 ) {
-													status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.i18n("Dark") +'</button>';
-										}
-										else {
-													status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.i18n("Sunny") +'</button>';
-										}
-										}
-										else if (item.SwitchType == "Smoke Detector") {
-												if (
-														(item.Status == "Panic")||
-														(item.Status == "On")
-													 ) {
-														status='<button class="btn btn-mini btn-info" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.i18n("SMOKE") +'</button>';
+											if (item.Status == 'On') {
+												status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.i18n("Dark") +'</button>';
 											}
 											else {
-														status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.i18n("No Smoke") +'</button>';
+												status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.i18n("Sunny") +'</button>';
+											}
+										}
+										else if (item.SwitchType == "Smoke Detector") {
+											if ((item.Status == "Panic")||(item.Status == "On")) {
+												status='<button class="btn btn-mini btn-info" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.i18n("SMOKE") +'</button>';
+											}
+											else {
+												status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.i18n("No Smoke") +'</button>';
 											}
 										}
 										else {
@@ -292,6 +289,12 @@ define(['app'], function (app) {
 														status=
 															'<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');">' + $.i18n("On") +'</button> ' +
 															'<button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');">' + $.i18n("Off") +'</button>';
+											}
+										}
+										if (isdimmer==true) {
+											var dslider=$(id + "_slider");
+											if (typeof dslider != 'undefined') {
+												dslider.slider( "value", item.LevelInt+1 );
 											}
 										}
 										if ($(id + " #status").html()!=status) {
@@ -401,6 +404,7 @@ define(['app'], function (app) {
 											}
 										}
 										else if (item.SwitchType == "Dimmer") {
+											isdimmer=true;
 											if (
 													(item.Status == 'On')||
 													(item.Status == 'Chime')||
@@ -471,6 +475,12 @@ define(['app'], function (app) {
 										if (img3!="") {
 											if ($(id + " #img3").html()!=img3) {
 												$(id + " #img3").html(img3);
+											}
+										}
+										if (isdimmer==true) {
+											var dslider=$(id + " #slider");
+											if (typeof dslider != 'undefined') {
+												dslider.slider( "value", item.LevelInt+1 );
 											}
 										}
 										if ($(id + " #status").html()!=TranslateStatus(item.Status)) {
@@ -1540,12 +1550,12 @@ define(['app'], function (app) {
 											}
 									}
 									xhtm+=
-												'\t      <td id="status">' + status + '</td>\n' +
-												'\t    </tr>\n';
+											'\t      <td id="status">' + status + '</td>\n' +
+											'\t    </tr>\n';
 									if (item.SwitchType == "Dimmer") {
 										xhtm+='<tr>';
 										xhtm+='<td colspan="2" style="border:0px solid red; padding-top:10px; padding-bottom:10px;">';
-										xhtm+='<div style="margin-top: -11px; margin-left: 24px;" class="dimslider dimslidernorm" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
+										xhtm+='<div style="margin-top: -11px; margin-left: 24px;" class="dimslider dimslidernorm" id="light_' + item.idx +'_slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
 										xhtm+='</td>';
 										xhtm+='</tr>';
 									}

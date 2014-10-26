@@ -1977,7 +1977,7 @@ define(['app'], function (app) {
 						return;
 					}
 					$("#hardwarecontent #hardwareparamsphilipshue #username").val(data.username)
-					ShowNotify($.i18n('Registrating successful!'),2500);
+					ShowNotify($.i18n('Registration successful!'),2500);
 				 },
 				 error: function(){
 						HideNotify();

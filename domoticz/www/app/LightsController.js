@@ -1281,6 +1281,7 @@ define(['app'], function (app) {
 								if ($(id + " #name").html()!=item.Name) {
 									$(id + " #name").html(item.Name);
 								}
+								var isdimmer=false;
 								var img="";
 								var img2="";
 								var img3="";
@@ -1442,6 +1443,7 @@ define(['app'], function (app) {
 									}
 								}
 					else if (item.SwitchType == "Dimmer") {
+									isdimmer=true;
 									if (
 											(item.Status == 'On')||
 											(item.Status == 'Chime')||
@@ -1503,6 +1505,12 @@ define(['app'], function (app) {
 								{
 									if ($(id + " #img3").html()!=img3) {
 										$(id + " #img3").html(img3);
+									}
+								}
+								if (isdimmer==true) {
+									var dslider=$(id + " #slider");
+									if (typeof dslider != 'undefined') {
+										dslider.slider( "value", item.LevelInt+1 );
 									}
 								}
 								if ($(id + " #status").html()!=TranslateStatus(item.Status)) {

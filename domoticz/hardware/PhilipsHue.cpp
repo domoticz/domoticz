@@ -107,250 +107,6 @@ void CPhilipsHue::Do_Work()
 	_log.Log(LOG_STATUS,"Philips Hue: Worker stopped...");
 }
 
-void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, const bool bIsOn, const int BrightnessLevel, const std::string &Name)
-{
-	if (LType == HLTYPE_RGBW)
-	{
-		char szID[10];
-		sprintf(szID, "%08x", (unsigned int)NodeID);
-		std::string ID = szID;
-		unsigned char unitcode = 1;
-		int cmd = Limitless_LedOff;
-		int level = 0;
-		if (BrightnessLevel == 0)
-		{
-			level = 0;
-			cmd = Limitless_LedOff;
-		}
-		else
-		{
-			level = 15;
-			if (bIsOn)
-				cmd = Limitless_LedOn;
-		}
-
-		//Check if we already exist
-		std::stringstream szQuery;
-		std::vector<std::vector<std::string> > result;
-		szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Unit==" << int(unitcode) << ") AND (Type==" << pTypeLimitlessLights << ") AND (SubType==" << sTypeLimitlessRGBW << ") AND (DeviceID=='" << ID << "')";
-		result = m_sql.query(szQuery.str());
-		if (result.size() > 0)
-		{
-			//Already in the system
-			//Update state
-
-			time_t now = time(0);
-			struct tm ltime;
-			localtime_r(&now, &ltime);
-
-			char szLastUpdate[40];
-			sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "UPDATE DeviceStatus SET nValue=" << int(cmd) << ", LastLevel = " << BrightnessLevel << ", LastUpdate='" << szLastUpdate << "' WHERE(HardwareID == " << m_HwdID << ") AND(DeviceID == '" << ID << "')";
-			result = m_sql.query(szQuery.str());
-			return;
-		}
-
-		//Send as LimitlessLight
-		_tLimitlessLights lcmd;
-		lcmd.id = NodeID;
-		lcmd.command = Limitless_LedOff;
-		lcmd.value = 0;
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd);
-
-		//Set Name/Parameters
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << Name << "', SwitchType=" << int(STYPE_Dimmer) << ", LastLevel=" << BrightnessLevel << " WHERE(HardwareID == " << m_HwdID << ") AND(DeviceID == '" << ID << "')";
-		result = m_sql.query(szQuery.str());
-	}
-	else
-	{
-		//Send as Lighting 2
-
-		char szID[10];
-		sprintf(szID, "%X%02X%02X%02X", 0, 0, 0, NodeID);
-		std::string ID = szID;
-		unsigned char unitcode = 1;
-		int cmd = light2_sOff;
-		int level = 15;
-		if (LType == HLTYPE_NORMAL)
-		{
-			//simple on/off device
-			if (BrightnessLevel == 0)
-			{
-				level = 0;
-				cmd = light2_sOff;
-			}
-			else
-			{
-				level = 15;
-				if (bIsOn)
-					cmd = light2_sOn;
-			}
-		}
-		else
-		{
-			//dimmer able device
-			if (BrightnessLevel == 0)
-				level = 0;
-			if (BrightnessLevel == 255)
-				level = 15;
-			else
-			{
-				float flevel = (15.0f / 100.0f)*float(BrightnessLevel);
-				level = round(flevel);
-				if (level > 15)
-					level = 15;
-			}
-			if (level == 0)
-				cmd = light2_sOff;
-			else if (level == 15)
-			{
-				if (bIsOn)
-					cmd = light2_sOn;
-			}
-			else
-			{
-				if (bIsOn)
-					cmd = light2_sSetLevel;
-			}
-		}
-		char szLevel[20];
-		sprintf(szLevel, "%d", level);
-
-		//Check if we already exist
-		std::stringstream szQuery;
-		std::vector<std::vector<std::string> > result;
-		szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Unit==" << int(unitcode) << ") AND (Type==" << pTypeLighting2 << ") AND (SubType==" << sTypeAC << ") AND (DeviceID=='" << ID << "')";
-		result = m_sql.query(szQuery.str());
-		if (result.size() > 0)
-		{
-			//Already in the system
-			//Update state
-			time_t now = time(0);
-			struct tm ltime;
-			localtime_r(&now, &ltime);
-
-			char szLastUpdate[40];
-			sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "UPDATE DeviceStatus SET LastLevel=" << BrightnessLevel << ", nValue=" << int(cmd) << ", sValue='" << szLevel << "', LastUpdate='" << szLastUpdate << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
-			result = m_sql.query(szQuery.str());
-			return;
-		}
-
-		tRBUF lcmd;
-		memset(&lcmd, 0, sizeof(RBUF));
-		lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
-		lcmd.LIGHTING2.packettype = pTypeLighting2;
-		lcmd.LIGHTING2.subtype = sTypeAC;
-		lcmd.LIGHTING2.seqnbr = 1;
-		lcmd.LIGHTING2.id1 = 0;
-		lcmd.LIGHTING2.id2 = 0;
-		lcmd.LIGHTING2.id3 = 0;
-		lcmd.LIGHTING2.id4 = NodeID;
-		lcmd.LIGHTING2.unitcode = unitcode;
-		lcmd.LIGHTING2.cmnd = cmd;
-		lcmd.LIGHTING2.level = level;
-		lcmd.LIGHTING2.filler = 0;
-		lcmd.LIGHTING2.rssi = 12;
-
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
-
-		//Set Name/Parameters
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << Name << "', SwitchType=" << int(STYPE_Dimmer) << ", LastLevel=" << BrightnessLevel << ", nValue=" << int(cmd) << ", sValue='" << szLevel << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
-		result = m_sql.query(szQuery.str());
-	}
-}
-
-
-bool CPhilipsHue::GetLightStates()
-{
-	std::vector<std::string> ExtraHeaders;
-	std::string sResult;
-
-	std::stringstream sstr2;
-	sstr2 << "http://" << m_IPAddress
-		<< ":" << m_Port
-		<< "/api/" << m_UserName;
-	//Get Data
-	std::string sURL = sstr2.str();
-	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
-	{
-		_log.Log(LOG_ERROR,"Philips Hue: Error getting Light States, (Check IPAddress/Username)");
-		return false;
-	}
-
-	Json::Value root;
-
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
-	if (!ret)
-	{
-		_log.Log(LOG_ERROR, "Philips Hue: Invalid data received, or invalid IPAddress/Username!");
-		return false;
-	}
-
-	if (sResult.find("error") != std::string::npos)
-	{
-		//We had an error
-		_log.Log(LOG_ERROR, "Philips Hue: Error received: %s", root[0]["error"]["description"].asString().c_str());
-		return false;
-	}
-
-	if (sResult.find("lights")==std::string::npos)
-	{
-		return false;
-	}
-
-	int totLights = root["lights"].size();
-	char szNode[10];
-	for (int ii = 0; ii < totLights; ii++)
-	{
-		sprintf(szNode, "%d", ii + 1);
-		std::string ltype = root["lights"][szNode]["type"].asString();
-		if (
-			(ltype == "Dimmable plug-in unit")||
-			(ltype == "Dimmable light")
-			)
-		{
-			//Normal light (with dim option)
-			int BrightnessLevel = 0;
-			bool bIsOn = root["lights"][szNode]["state"]["on"].asBool();
-			if (bIsOn)
-			{
-				int tbri = root["lights"][szNode]["state"]["bri"].asInt();
-				BrightnessLevel = int((100.0f / 255.0f)*float(tbri));
-			}
-			InsertUpdateSwitch(ii + 1, HLTYPE_DIM, bIsOn, BrightnessLevel, root["lights"][szNode]["name"].asString());
-		}
-		else if (
-			(ltype == "Extended color light")||
-			(ltype == "Color light")
-			)
-		{
-			//RGBW type
-			int BrightnessLevel = 0;
-			bool bIsOn = root["lights"][szNode]["state"]["on"].asBool();
-			if (bIsOn)
-			{
-				int tbri = root["lights"][szNode]["state"]["bri"].asInt();
-				BrightnessLevel = int((100.0f / 255.0f)*float(tbri));
-			}
-			InsertUpdateSwitch(ii + 1, HLTYPE_RGBW, bIsOn, BrightnessLevel, root["lights"][szNode]["name"].asString());
-		}
-	}
-
-	return true;
-}
-
 void CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	tRBUF *pSen = (tRBUF*)pdata;
@@ -407,12 +163,22 @@ void CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 		else if (pLed->command == Limitless_SetBrightnessLevel)
 		{
-			LCmd = "Set Level";
-			float fvalue = (255.0f / 100.0f)*float(pLed->value);
-			if (fvalue > 255.0f)
-				fvalue = 255.0f;
-			svalue = round(fvalue);
-			SwitchLight(nodeID, LCmd, svalue);
+			if (pLed->value == 0)
+			{
+				//Off
+				LCmd = "Off";
+				svalue = 0;
+				SwitchLight(nodeID, LCmd, svalue);
+			}
+			else
+			{
+				LCmd = "Set Level";
+				float fvalue = (255.0f / 100.0f)*float(pLed->value);
+				if (fvalue > 255.0f)
+					fvalue = 255.0f;
+				svalue = round(fvalue);
+				SwitchLight(nodeID, LCmd, svalue);
+			}
 			return;
 		}
 		else if (pLed->command == Limitless_SetColorToWhite)
@@ -538,4 +304,269 @@ std::string CPhilipsHue::RegisterUser(const std::string &username)
 	std::string new_username = root[0]["success"]["username"].asString();
 	retStr = "OK;" + new_username;
 	return retStr;
+}
+
+void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, const bool bIsOn, const int BrightnessLevel, const std::string &Name)
+{
+	if (LType == HLTYPE_RGBW)
+	{
+		char szID[10];
+		sprintf(szID, "%08x", (unsigned int)NodeID);
+		std::string ID = szID;
+		unsigned char unitcode = 1;
+		int cmd = 0;
+		if (bIsOn)
+		{
+			cmd = (BrightnessLevel != 0) ? Limitless_SetBrightnessLevel : Limitless_LedOn;
+		}
+		else
+			cmd = Limitless_LedOff;
+
+		//Check if we already exist
+		std::stringstream szQuery;
+		std::vector<std::vector<std::string> > result;
+		szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Unit==" << int(unitcode) << ") AND (Type==" << pTypeLimitlessLights << ") AND (SubType==" << sTypeLimitlessRGBW << ") AND (DeviceID=='" << ID << "')";
+		result = m_sql.query(szQuery.str());
+		if (result.size() > 0)
+		{
+			//Already in the system
+			//Update state
+
+			time_t now = time(0);
+			struct tm ltime;
+			localtime_r(&now, &ltime);
+
+			char szLastUpdate[40];
+			sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE DeviceStatus SET nValue=" << int(cmd) << ", LastLevel = " << BrightnessLevel << ", LastUpdate='" << szLastUpdate << "' WHERE(HardwareID == " << m_HwdID << ") AND(DeviceID == '" << ID << "')";
+			result = m_sql.query(szQuery.str());
+			return;
+		}
+
+		//Send as LimitlessLight
+		_tLimitlessLights lcmd;
+		lcmd.id = NodeID;
+		lcmd.command = Limitless_LedOff;
+		lcmd.value = 0;
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd);
+
+		//Set Name/Parameters
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << Name << "', SwitchType=" << int(STYPE_Dimmer) << ", LastLevel=" << BrightnessLevel << " WHERE(HardwareID == " << m_HwdID << ") AND(DeviceID == '" << ID << "')";
+		result = m_sql.query(szQuery.str());
+	}
+	else
+	{
+		//Send as Lighting 2
+		char szID[10];
+		sprintf(szID, "%X%02X%02X%02X", 0, 0, 0, NodeID);
+		std::string ID = szID;
+		unsigned char unitcode = 1;
+		int cmd = 0;
+		if (bIsOn)
+		{
+			cmd = (BrightnessLevel!=0) ? light2_sSetLevel : light2_sOn;
+		}
+		else
+			cmd = light2_sOff;
+
+		int level = 15;
+		if (LType == HLTYPE_NORMAL)
+		{
+			//simple on/off device
+			if (BrightnessLevel == 0)
+			{
+				level = 0;
+			}
+			else
+			{
+				level = 15;
+			}
+		}
+		else
+		{
+			//dimmer able device
+			if (BrightnessLevel == 0)
+				level = 0;
+			if (BrightnessLevel == 255)
+				level = 15;
+			else
+			{
+				float flevel = (15.0f / 100.0f)*float(BrightnessLevel);
+				level = round(flevel);
+				if (level > 15)
+					level = 15;
+			}
+		}
+		char szLevel[20];
+		sprintf(szLevel, "%d", level);
+
+		//Check if we already exist
+		std::stringstream szQuery;
+		std::vector<std::vector<std::string> > result;
+		szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Unit==" << int(unitcode) << ") AND (Type==" << pTypeLighting2 << ") AND (SubType==" << sTypeAC << ") AND (DeviceID=='" << ID << "')";
+		result = m_sql.query(szQuery.str());
+		if (result.size() > 0)
+		{
+			//Already in the system
+			//Update state
+			time_t now = time(0);
+			struct tm ltime;
+			localtime_r(&now, &ltime);
+
+			char szLastUpdate[40];
+			sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE DeviceStatus SET LastLevel=" << BrightnessLevel << ", nValue=" << int(cmd) << ", sValue='" << szLevel << "', LastUpdate='" << szLastUpdate << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
+			result = m_sql.query(szQuery.str());
+			return;
+		}
+
+		tRBUF lcmd;
+		memset(&lcmd, 0, sizeof(RBUF));
+		lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
+		lcmd.LIGHTING2.packettype = pTypeLighting2;
+		lcmd.LIGHTING2.subtype = sTypeAC;
+		lcmd.LIGHTING2.seqnbr = 1;
+		lcmd.LIGHTING2.id1 = 0;
+		lcmd.LIGHTING2.id2 = 0;
+		lcmd.LIGHTING2.id3 = 0;
+		lcmd.LIGHTING2.id4 = NodeID;
+		lcmd.LIGHTING2.unitcode = unitcode;
+		lcmd.LIGHTING2.cmnd = cmd;
+		lcmd.LIGHTING2.level = level;
+		lcmd.LIGHTING2.filler = 0;
+		lcmd.LIGHTING2.rssi = 12;
+
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
+
+		//Set Name/Parameters
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << Name << "', SwitchType=" << int(STYPE_Dimmer) << ", LastLevel=" << BrightnessLevel << ", nValue=" << int(cmd) << ", sValue='" << szLevel << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
+		result = m_sql.query(szQuery.str());
+	}
+}
+
+
+bool CPhilipsHue::GetLightStates()
+{
+	std::vector<std::string> ExtraHeaders;
+	std::string sResult;
+
+	std::stringstream sstr2;
+	sstr2 << "http://" << m_IPAddress
+		<< ":" << m_Port
+		<< "/api/" << m_UserName;
+	//Get Data
+	std::string sURL = sstr2.str();
+	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
+	{
+		_log.Log(LOG_ERROR, "Philips Hue: Error getting Light States, (Check IPAddress/Username)");
+		return false;
+	}
+
+	Json::Value root;
+
+	Json::Reader jReader;
+	bool ret = jReader.parse(sResult, root);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "Philips Hue: Invalid data received, or invalid IPAddress/Username!");
+		return false;
+	}
+
+	if (sResult.find("error") != std::string::npos)
+	{
+		//We had an error
+		_log.Log(LOG_ERROR, "Philips Hue: Error received: %s", root[0]["error"]["description"].asString().c_str());
+		return false;
+	}
+
+	if (sResult.find("lights") == std::string::npos)
+	{
+		return false;
+	}
+
+	int totLights = root["lights"].size();
+	char szNode[10];
+	for (int ii = 0; ii < totLights; ii++)
+	{
+		sprintf(szNode, "%d", ii + 1);
+		std::string ltype = root["lights"][szNode]["type"].asString();
+		if (
+			(ltype == "Dimmable plug-in unit") ||
+			(ltype == "Dimmable light")
+			)
+		{
+			//Normal light (with dim option)
+			bool bIsOn = root["lights"][szNode]["state"]["on"].asBool();
+			int tbri = root["lights"][szNode]["state"]["bri"].asInt();
+			int BrightnessLevel = int((100.0f / 255.0f)*float(tbri));
+			_tHueLight tlight;
+			if (bIsOn)
+			{
+				tlight.cmd = (BrightnessLevel != 0) ? light2_sSetLevel: light2_sOn;
+			}
+			else
+				tlight.cmd = light2_sOff;
+			tlight.level = BrightnessLevel;
+			bool bDoSend = true;
+			if (m_lights.find(ii + 1) != m_lights.end())
+			{
+				_tHueLight alight = m_lights[ii + 1];
+				if (
+					(alight.cmd == tlight.cmd) &&
+					(alight.level == tlight.level)
+					)
+				{
+					bDoSend = false;
+				}
+			}
+			m_lights[ii + 1] = tlight;
+			if (bDoSend)
+				InsertUpdateSwitch(ii + 1, HLTYPE_DIM, bIsOn, BrightnessLevel, root["lights"][szNode]["name"].asString());
+		}
+		else if (
+			(ltype == "Extended color light") ||
+			(ltype == "Color light")
+			)
+		{
+			//RGBW type
+			bool bIsOn = root["lights"][szNode]["state"]["on"].asBool();
+			int tbri = root["lights"][szNode]["state"]["bri"].asInt();
+			int BrightnessLevel = int((100.0f / 255.0f)*float(tbri));
+			_tHueLight tlight;
+			if (bIsOn)
+			{
+				tlight.cmd = (BrightnessLevel != 0) ? Limitless_SetBrightnessLevel : Limitless_LedOn;
+			}
+			else
+				tlight.cmd = Limitless_LedOff;
+			tlight.level = BrightnessLevel;
+			bool bDoSend = true;
+			if (m_lights.find(ii + 1) != m_lights.end())
+			{
+				_tHueLight alight = m_lights[ii + 1];
+				if (
+					(alight.cmd == tlight.cmd) &&
+					(alight.level == tlight.level)
+					)
+				{
+					bDoSend = false;
+				}
+			}
+			m_lights[ii + 1] = tlight;
+			if (bDoSend)
+				InsertUpdateSwitch(ii + 1, HLTYPE_RGBW, bIsOn, BrightnessLevel, root["lights"][szNode]["name"].asString());
+		}
+	}
+
+	return true;
 }

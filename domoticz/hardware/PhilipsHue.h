@@ -2,6 +2,7 @@
 
 #include "DomoticzHardware.h"
 #include <iostream>
+#include <map>
 
 class CPhilipsHue : public CDomoticzHardwareBase
 {
@@ -10,6 +11,11 @@ class CPhilipsHue : public CDomoticzHardwareBase
 		HLTYPE_NORMAL,
 		HLTYPE_DIM,
 		HLTYPE_RGBW,
+	};
+	struct _tHueLight
+	{
+		int cmd;
+		int level;
 	};
 public:
 	CPhilipsHue(const int ID, const std::string &IPAddress, const unsigned short Port, const std::string &Username);
@@ -22,6 +28,7 @@ private:
 	std::string m_UserName;
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
+	std::map<int, _tHueLight> m_lights;
 
 	void Init();
 	bool StartHardware();
