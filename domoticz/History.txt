@@ -29,8 +29,8 @@ Version 2.0.xxxx (October xxth 2014)
 - Implemented: Automatic OpenZWave heal network command at 04:00am
 - Implemented: Thermostat Setpoint timers
 - Testing: Philips Hue native support (not ready yet!)
-- Changed: New patch for logitech harmony (thanks!)
 - Changed: Dimmer value is now updating on screen
+- Changed: New patch for logitech harmony (thanks again!)
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

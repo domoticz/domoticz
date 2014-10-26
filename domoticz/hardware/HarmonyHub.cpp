@@ -791,20 +791,20 @@ int CHarmonyHub::SubmitCommand(csocket* m_commandcsocket, const std::string& m_s
 	}
 	else if(strCommand == "get_config" || strCommand == "get_config_raw")
 	{
-		m_commandcsocket->canRead(&bIsDataReadable, 0.2f);
+		m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
 
 		//#ifndef WIN32
 		//		bIsDataReadable = true;
 		//#endif
 		//
-		/*	while(bIsDataReadable)
+		while(bIsDataReadable)
 		{
-		memset(m_databuffer, 0, BUFFER_SIZE);
-		m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
+			memset(m_databuffer, 0, BUFFER_SIZE);
+			m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
 
-		strData.append(m_databuffer);
-		m_commandcsocket->canRead(&bIsDataReadable,0.2);
-		}*/
+			strData.append(m_databuffer);
+			m_commandcsocket->canRead(&bIsDataReadable,0.4f);
+		}
 
 
 		pos = strData.find("![CDATA[{");
@@ -812,6 +812,7 @@ int CHarmonyHub::SubmitCommand(csocket* m_commandcsocket, const std::string& m_s
 		{
 			m_szResultString = "Logitech Harmony Configuration : \n" + strData.substr(pos + 9);
 		}
+
 	}
 	else if (strCommand == "start_activity" || strCommand == "issue_device_command")
 	{
