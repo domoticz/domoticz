@@ -13,7 +13,7 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-#define DEBUG_PhilipsHue
+//#define DEBUG_PhilipsHue
 
 #ifdef DEBUG_PhilipsHue
 void SaveString2Disk(std::string str, std::string filename)
@@ -462,7 +462,7 @@ bool CPhilipsHue::GetLightStates()
 {
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
-	/*
+
 	std::stringstream sstr2;
 	sstr2 << "http://" << m_IPAddress
 		<< ":" << m_Port
@@ -474,8 +474,7 @@ bool CPhilipsHue::GetLightStates()
 		_log.Log(LOG_ERROR, "Philips Hue: Error getting Light States, (Check IPAddress/Username)");
 		return false;
 	}
-	*/
-	sResult = ReadFile("E:\\hue_username2.txt");
+
 	Json::Value root;
 
 	Json::Reader jReader;
