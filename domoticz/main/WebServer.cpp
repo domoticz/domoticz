@@ -7476,8 +7476,9 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 						(dType!=pTypeRFXMeter)&&
 						(!((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorAD)))&&
 						(!((dType==pTypeRFXSensor)&&(dSubType==sTypeRFXSensorVolt)))&&
-						(!((dType==pTypeGeneral)&&(dSubType==sTypeVoltage)))&&
-						(!((dType==pTypeGeneral)&&(dSubType==sTypePressure)))&&
+						(!((dType == pTypeGeneral) && (dSubType == sTypeVoltage))) &&
+						(!((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))) &&
+						(!((dType == pTypeGeneral) && (dSubType == sTypePressure))) &&
 						(dType!=pTypeCURRENT)&&
 						(dType!=pTypeCURRENTENERGY)&&
 						(dType!=pTypeENERGY)&&
@@ -8827,7 +8828,13 @@ void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, con
 					root["result"][ii]["HaveTimeout"]=bHaveTimeout;
 					root["result"][ii]["Voltage"]=atof(sValue.c_str());
 				}
-				else if (dSubType==sTypePressure)
+				else if (dSubType == sTypeTextStatus)
+				{
+					root["result"][ii]["Data"] = sValue;
+					root["result"][ii]["TypeImg"] = "text";
+					root["result"][ii]["HaveTimeout"] = false;
+				}
+				else if (dSubType == sTypePressure)
 				{
 					sprintf(szData,"%.1f Bar",atof(sValue.c_str()));
 					root["result"][ii]["Data"]=szData;
@@ -9226,6 +9233,11 @@ void CWebServer::RType_CreateVirtualSensor(Json::Value &root)
 	case 4:
 		//Voltage
 		m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeVoltage, 12, 255, 0, "0.000", devname);
+		bCreated = true;
+		break;
+	case 5:
+		//Text
+		m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, "Hello World", devname);
 		bCreated = true;
 		break;
 	case pTypeTEMP:

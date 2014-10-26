@@ -676,6 +676,9 @@ define(['app'], function (app) {
 							status=item.Data;
 							bigtext=item.Data;
 						}
+						else if (item.SubType == "Text") {
+							status=item.Data;
+						}
 						else if (item.Type == "Lux") {
 							status=item.Data;
 							bigtext=item.Data;
@@ -917,6 +920,10 @@ define(['app'], function (app) {
 					}
 					else if ((item.SubType == "Voltage")||(item.SubType == "A/D")) {
 					  xhtm+='current48.png" height="48" width="48"></td>\n';
+					  status=item.Data;
+					}
+					else if (item.SubType == "Text") {
+					  xhtm+='text48.png" height="48" width="48"></td>\n';
 					  status=item.Data;
 					}
 					else if (item.SubType == "Pressure") {

@@ -31,6 +31,7 @@ Version 2.0.xxxx (October xxth 2014)
 - Testing: Philips Hue native support (not ready yet!)
 - Changed: Dimmer value is now updating on screen
 - Changed: New patch for logitech harmony (thanks again!)
+- Implemented: Text Sensor (update via udevice json call)
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

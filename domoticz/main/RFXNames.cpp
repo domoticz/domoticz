@@ -554,6 +554,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeSetPoint, "Setpoint" },
 		{ pTypeGeneral, sTypeTemperature, "Temperature" },
 		{ pTypeGeneral, sTypeZWaveClock, "Thermostat Clock" },
+		{ pTypeGeneral, sTypeTextStatus, "Text" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -761,7 +762,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneral, sTypeSetPoint, "Temperature" },
 		{ pTypeGeneral, sTypeTemperature, "Temperature" },
 		{ pTypeGeneral, sTypeZWaveClock, "Thermostat Clock" },
-
+		{ pTypeGeneral, sTypeTextStatus, "Text" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "Temperature" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },

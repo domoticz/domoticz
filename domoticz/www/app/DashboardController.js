@@ -907,6 +907,7 @@ define(['app'], function (app) {
 							(item.SubType=="Soil Moisture")||
 							(item.SubType=="Leaf Wetness")||
 							(item.SubType=="Voltage")||
+							(item.SubType=="Text")||
 							(item.SubType=="Pressure")||
 							(item.SubType=="A/D")
 						) &&
@@ -943,6 +944,7 @@ define(['app'], function (app) {
 											(item.SubType=="Soil Moisture")||
 											(item.SubType=="Leaf Wetness")||
 											(item.SubType=="Voltage")||
+											(item.SubType=="Text")||
 											(item.SubType=="Pressure")||
 											(item.SubType=="A/D")
 										) {
@@ -1017,6 +1019,9 @@ define(['app'], function (app) {
 								else if ((item.SubType=="Voltage")||(item.SubType=="A/D")||(item.SubType=="Pressure")) {
 									status=item.Data;
 									bigtext=item.Data;
+								}
+								else if (item.SubType=="Text") {
+									status=item.Data;
 								}
 								else if (item.Type == "Lux") {
 									status=item.Data;
@@ -2344,6 +2349,7 @@ define(['app'], function (app) {
 							(item.SubType=="Soil Moisture")||
 							(item.SubType=="Leaf Wetness")||
 							(item.SubType=="Voltage")||
+							(item.SubType=="Text")||
 							(item.SubType=="Pressure")||
 							(item.SubType=="A/D")
 						) &&
@@ -2408,6 +2414,7 @@ define(['app'], function (app) {
 									(item.SubType=="Soil Moisture")||
 									(item.SubType=="Leaf Wetness")||
 									(item.SubType=="Voltage")||
+									(item.SubType=="Text")||
 									(item.SubType=="Pressure")||
 									(item.SubType=="A/D")
 								) {
@@ -2555,6 +2562,10 @@ define(['app'], function (app) {
 						}
 						else if ((item.SubType=="Voltage")||(item.SubType=="A/D")) {
 							xhtm+='current48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="40" width="40"></td>\n';
+							status=item.Data;
+						}
+						else if (item.SubType=="Text") {
+							xhtm+='text48.png" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
 						else if (item.SubType=="Pressure") {

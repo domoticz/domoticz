@@ -200,17 +200,20 @@ void S0MeterBase::ParseLine()
 		double s0_volume=( s0_pulse / m_meters[ii].m_pulse_per_unit);
 		//Calculate average here (5 values)
 		double s0_act_watt=s0_volume*(3600.0/s0_pulse_interval);
-		double s0_watt_hour=(s0_act_watt+m_meters[ii].m_last_values[0]+m_meters[ii].m_last_values[1]+m_meters[ii].m_last_values[2]+m_meters[ii].m_last_values[3])*0.2;
-		m_meters[ii].m_last_values[0]=m_meters[ii].m_last_values[1];
-		m_meters[ii].m_last_values[1]=m_meters[ii].m_last_values[2];
-		m_meters[ii].m_last_values[2]=m_meters[ii].m_last_values[3];
-		m_meters[ii].m_last_values[3]=s0_act_watt;
+		if (s0_act_watt < 200)
+		{
+			double s0_watt_hour = (s0_act_watt + m_meters[ii].m_last_values[0] + m_meters[ii].m_last_values[1] + m_meters[ii].m_last_values[2] + m_meters[ii].m_last_values[3])*0.2;
+			m_meters[ii].m_last_values[0] = m_meters[ii].m_last_values[1];
+			m_meters[ii].m_last_values[1] = m_meters[ii].m_last_values[2];
+			m_meters[ii].m_last_values[2] = m_meters[ii].m_last_values[3];
+			m_meters[ii].m_last_values[3] = s0_act_watt;
 
-		m_meters[ii].m_volume_total+=s0_volume;
-		//_log.Log(LOG_NORM,"S0 Meter: M1-Int=%0.3f, M1-Tot=%0.3f",s0_m1_watt_hour,m_s0_m1_volume_total);
+			m_meters[ii].m_volume_total += s0_volume;
+			//_log.Log(LOG_NORM,"S0 Meter: M1-Int=%0.3f, M1-Tot=%0.3f",s0_m1_watt_hour,m_s0_m1_volume_total);
 
-		if (m_meters[ii].m_volume_total!=0) {
-			SendMeter(ii+1,s0_watt_hour,m_meters[ii].m_volume_total);
+			if (m_meters[ii].m_volume_total != 0) {
+				SendMeter(ii + 1, s0_watt_hour, m_meters[ii].m_volume_total);
+			}
 		}
 		roffset+=3;
 	}

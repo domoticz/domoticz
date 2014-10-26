@@ -38,6 +38,7 @@
 #define sTypeSetPoint		0x10
 #define sTypeTemperature	0x11
 #define sTypeZWaveClock		0x12
+#define sTypeTextStatus		0x13
 
 #define pTypeLux		0xF6
 #define sTypeLux		0x01
