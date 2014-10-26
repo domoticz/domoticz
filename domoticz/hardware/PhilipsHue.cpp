@@ -306,16 +306,20 @@ std::string CPhilipsHue::RegisterUser(const std::string &username)
 	return retStr;
 }
 
-void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, const bool bIsOn, const int BrightnessLevel, const std::string &Name)
+void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, const bool bIsOn, const int BrightnessLevel, const int Sat, const int Hue, const std::string &Name)
 {
 	if (LType == HLTYPE_RGBW)
 	{
 		char szID[10];
+		char szSValue[20];
 		if (NodeID==1)
 			sprintf(szID, "%d", NodeID);
 		else
 			sprintf(szID, "%08x", (unsigned int)NodeID);
 		std::string ID = szID;
+
+		sprintf(szSValue, "%d;%d", Sat, Hue);
+
 		unsigned char unitcode = 1;
 		int cmd = 0;
 		if (bIsOn)
@@ -344,7 +348,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 
 			szQuery.clear();
 			szQuery.str("");
-			szQuery << "UPDATE DeviceStatus SET nValue=" << int(cmd) << ", LastLevel = " << BrightnessLevel << ", LastUpdate='" << szLastUpdate << "' WHERE(HardwareID == " << m_HwdID << ") AND(DeviceID == '" << ID << "')";
+			szQuery << "UPDATE DeviceStatus SET nValue=" << int(cmd) << ", sValue='" << szSValue << "', LastLevel = " << BrightnessLevel << ", LastUpdate='" << szLastUpdate << "' WHERE(HardwareID == " << m_HwdID << ") AND(DeviceID == '" << ID << "')";
 			result = m_sql.query(szQuery.str());
 			return;
 		}
@@ -359,7 +363,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		//Set Name/Parameters
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << Name << "', SwitchType=" << int(STYPE_Dimmer) << ", LastLevel=" << BrightnessLevel << " WHERE(HardwareID == " << m_HwdID << ") AND(DeviceID == '" << ID << "')";
+		szQuery << "UPDATE DeviceStatus SET Name='" << Name << "', SwitchType=" << int(STYPE_Dimmer) << ", nValue=" << int(cmd) << ", sValue='" << szSValue << "', LastLevel=" << BrightnessLevel << " WHERE(HardwareID == " << m_HwdID << ") AND(DeviceID == '" << ID << "')";
 		result = m_sql.query(szQuery.str());
 	}
 	else
@@ -520,6 +524,8 @@ bool CPhilipsHue::GetLightStates()
 			else
 				tlight.cmd = light2_sOff;
 			tlight.level = BrightnessLevel;
+			tlight.sat = 0;
+			tlight.hue = 0;
 			bool bDoSend = true;
 			if (m_lights.find(ii + 1) != m_lights.end())
 			{
@@ -534,7 +540,7 @@ bool CPhilipsHue::GetLightStates()
 			}
 			m_lights[ii + 1] = tlight;
 			if (bDoSend)
-				InsertUpdateSwitch(ii + 1, HLTYPE_DIM, bIsOn, BrightnessLevel, root["lights"][szNode]["name"].asString());
+				InsertUpdateSwitch(ii + 1, HLTYPE_DIM, bIsOn, BrightnessLevel, 0, 0, root["lights"][szNode]["name"].asString());
 		}
 		else if (
 			(ltype == "Extended color light") ||
@@ -544,6 +550,8 @@ bool CPhilipsHue::GetLightStates()
 			//RGBW type
 			bool bIsOn = root["lights"][szNode]["state"]["on"].asBool();
 			int tbri = root["lights"][szNode]["state"]["bri"].asInt();
+			int tsat = root["lights"][szNode]["state"]["sat"].asInt();
+			int thue = root["lights"][szNode]["state"]["hue"].asInt();
 			int BrightnessLevel = int((100.0f / 255.0f)*float(tbri));
 			_tHueLight tlight;
 			if (bIsOn)
@@ -553,13 +561,17 @@ bool CPhilipsHue::GetLightStates()
 			else
 				tlight.cmd = Limitless_LedOff;
 			tlight.level = BrightnessLevel;
+			tlight.sat = tsat;
+			tlight.hue = thue;
 			bool bDoSend = true;
 			if (m_lights.find(ii + 1) != m_lights.end())
 			{
 				_tHueLight alight = m_lights[ii + 1];
 				if (
 					(alight.cmd == tlight.cmd) &&
-					(alight.level == tlight.level)
+					(alight.level == tlight.level)&&
+					(alight.sat == tlight.sat)&&
+					(alight.hue == tlight.hue)
 					)
 				{
 					bDoSend = false;
@@ -567,7 +579,7 @@ bool CPhilipsHue::GetLightStates()
 			}
 			m_lights[ii + 1] = tlight;
 			if (bDoSend)
-				InsertUpdateSwitch(ii + 1, HLTYPE_RGBW, bIsOn, BrightnessLevel, root["lights"][szNode]["name"].asString());
+				InsertUpdateSwitch(ii + 1, HLTYPE_RGBW, bIsOn, BrightnessLevel, tsat, thue, root["lights"][szNode]["name"].asString());
 		}
 	}
 

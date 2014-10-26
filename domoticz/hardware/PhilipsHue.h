@@ -16,6 +16,8 @@ class CPhilipsHue : public CDomoticzHardwareBase
 	{
 		int cmd;
 		int level;
+		int sat;
+		int hue;
 	};
 public:
 	CPhilipsHue(const int ID, const std::string &IPAddress, const unsigned short Port, const std::string &Username);
@@ -35,7 +37,7 @@ private:
 	bool StopHardware();
 	void Do_Work();
 	bool GetLightStates();
-	void InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, const bool bIsOn, const int BrightnessLevel, const std::string &Name);
+	void InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, const bool bIsOn, const int BrightnessLevel, const int Sat, const int Hue, const std::string &Name);
 	bool SwitchLight(const int nodeID, const std::string &LCmd, const int svalue);
 };
 
