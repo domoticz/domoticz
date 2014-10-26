@@ -5951,7 +5951,11 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 		else if (OnAction.find("script://")!=std::string::npos)
 		{
 			//Execute possible script
-			std::string scriptname=OnAction.substr(9);
+			std::string scriptname = "";
+			if (OnAction.find("script:///") != std::string::npos)
+				scriptname = OnAction.substr(9);
+			else
+				scriptname = OnAction.substr(8);
 			std::string scriptparams="";
 			//Add parameters
 			int pindex=scriptname.find(' ');
@@ -5979,7 +5983,11 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 		else if (OffAction.find("script://")!=std::string::npos)
 		{
 			//Execute possible script
-			std::string scriptname=OffAction.substr(9);
+			std::string scriptname = "";
+			if (OffAction.find("script:///") != std::string::npos)
+				scriptname=OffAction.substr(9);
+			else
+				scriptname = OffAction.substr(8);
 			std::string scriptparams="";
 			int pindex=scriptname.find(' ');
 			if (pindex!=std::string::npos)
