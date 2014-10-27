@@ -261,7 +261,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 	return true;
 }
 
-std::string CPhilipsHue::RegisterUser(const std::string &username)
+std::string CPhilipsHue::RegisterUser(const std::string &IPAddress, const unsigned short Port, const std::string &username)
 {
 	std::string retStr = "Error;Unknown";
 	std::vector<std::string> ExtraHeaders;
@@ -273,8 +273,8 @@ std::string CPhilipsHue::RegisterUser(const std::string &username)
 		sPostData = "{ \"devicetype\": \"domoticz\", \"username\": \"" + username + "\" }";
 
 	std::stringstream sstr2;
-	sstr2 << "http://" << m_IPAddress
-		<< ":" << m_Port
+	sstr2 << "http://" << IPAddress
+		<< ":" << Port
 		<< "/api";
 	std::string sURL = sstr2.str();
 

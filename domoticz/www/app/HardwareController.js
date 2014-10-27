@@ -1964,10 +1964,23 @@ define(['app'], function (app) {
 
 		RegisterPhilipsHue = function()
 		{
+			var address=$("#hardwarecontent #divremote #tcpaddress").val();
+			if (address=="")
+			{
+				ShowNotify($.i18n('Please enter an Address!'), 2500, true);
+				return;
+			}
+			var port=$("#hardwarecontent #divremote #tcpport").val();
+			if (port=="")
+			{
+				ShowNotify($.i18n('Please enter an Port!'), 2500, true);
+				return;
+			}
 			var username=$("#hardwarecontent #hardwareparamsphilipshue #username").val();
 			$.ajax({
 				url: "json.htm?type=command&param=registerhue" +
-					"&idx=" + $.myglobals.SelectedTimerIdx +
+					"&ipaddress=" +address +
+					"&port=" + port +
 					"&username=" + username,
 				 async: false, 
 				 dataType: 'json',

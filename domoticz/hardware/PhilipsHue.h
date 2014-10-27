@@ -23,7 +23,7 @@ public:
 	CPhilipsHue(const int ID, const std::string &IPAddress, const unsigned short Port, const std::string &Username);
 	~CPhilipsHue(void);
 	void WriteToHardware(const char *pdata, const unsigned char length);
-	std::string RegisterUser(const std::string &username);
+	static std::string RegisterUser(const std::string &IPAddress, const unsigned short Port, const std::string &username);
 private:
 	std::string m_IPAddress;
 	unsigned short m_Port;

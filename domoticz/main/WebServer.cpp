@@ -10647,19 +10647,16 @@ void CWebServer::Cmd_RegisterWithPhilipsHue(Json::Value &root)
 {
 	root["title"] = "RegisterOnHue";
 
-	std::string sidx = m_pWebEm->FindValue("idx");
+	std::string sipaddress = m_pWebEm->FindValue("ipaddress");
+	std::string sport = m_pWebEm->FindValue("port");
 	std::string susername = m_pWebEm->FindValue("username");
-	if (sidx == "")
+	if (
+		(sipaddress == "") ||
+		(sport == "")
+		)
 		return;
 
-	int hwid = atoi(sidx.c_str());
-	CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
-	if (pHardware == NULL)
-		return;
-	if (pHardware->HwdType != HTYPE_Philips_Hue)
-		return;
-	CPhilipsHue *pHue = (CPhilipsHue*)pHardware;
-	std::string sresult = pHue->RegisterUser(susername);
+	std::string sresult = CPhilipsHue::RegisterUser(sipaddress,(unsigned short)atoi(sport.c_str()),susername);
 	std::vector<std::string> strarray;
 	StringSplit(sresult, ";", strarray);
 	if (strarray.size() != 2)
