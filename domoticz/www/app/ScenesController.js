@@ -262,6 +262,22 @@ define(['app'], function (app) {
 		  });
 		}
 
+		SetColValue = function (idx,hue,brightness)
+		{
+			clearInterval($.setColValue);
+			if (permissions.hasPermission("Viewer")) {
+				HideNotify();
+				ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
+				return;
+			}
+			var bIsWhite=$('#lightcontent #ledtable #optionWhite').is(":checked");
+			$.ajax({
+				 url: "json.htm?type=command&param=setcolbrightnessvalue&idx=" + idx + "&hue=" + hue + "&brightness=" + brightness + "&iswhite=" + bIsWhite,
+				 async: false, 
+				 dataType: 'json'
+			});
+		}
+
 		RefreshDeviceTableEx = function()
 		{
 			RefreshDeviceTable($.SceneIdx);
@@ -388,7 +404,7 @@ define(['app'], function (app) {
 							var devidx=data["RealIdx"];
 							$("#scenecontent #delclr #devicedelete").attr("href", "javascript:DeleteDevice(" + idx + ")");
 							$("#scenecontent #delclr #updatedelete").attr("href", "javascript:UpdateDevice(" + idx + "," + devidx + ")");
-							
+							$.lampIdx = devidx;
 							$("#scenecontent #combodevice").val(devidx);
 							if (data["IsOn"]==true) {
 								$("#scenecontent #combocommand").val(1);
@@ -574,6 +590,8 @@ define(['app'], function (app) {
 						var bIsWhite=(hsb.s<20);
 						$("#scenecontent #optionsRGB").prop('checked',!bIsWhite);
 						$("#scenecontent #optionsWhite").prop('checked',bIsWhite);
+						clearInterval($.setColValue);
+						$.setColValue = setInterval(function() { SetColValue($.lampIdx,hsb.h,hsb.b); }, 400);
 					}
 				}
 			});
