@@ -225,35 +225,51 @@ void P1MeterBase::MatchLine()
 				value[t.width] = 0;
 			}
 
+			unsigned long temp_usage = 0;
+
 			switch (t.type)
 			{
 			case P1TYPE_POWERUSAGE1:
-				m_p1power.powerusage1=(unsigned long)(atof(value)*1000.0f);
+				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				m_p1power.powerusage1 = temp_usage;
 				break;
 			case P1TYPE_POWERUSAGE2:
-				m_p1power.powerusage2=(unsigned long)(atof(value)*1000.0f);
+				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				m_p1power.powerusage2=temp_usage;
 				break;
 			case P1TYPE_POWERDELIV1:
-				m_p1power.powerdeliv1=(unsigned long)(atof(value)*1000.0f);
+				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				m_p1power.powerdeliv1=temp_usage;
 				break;
 			case P1TYPE_POWERDELIV2:
-				m_p1power.powerdeliv2=(unsigned long)(atof(value)*1000.0f);
+				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				m_p1power.powerdeliv2=temp_usage;
 				break;
 			case P1TYPE_TARIFF:
 				break;
 			case P1TYPE_USAGECURRENT:
-				m_p1power.usagecurrent=(unsigned long)(atof(value)*1000.0f);	//Watt
+				temp_usage = (unsigned long)(atof(value)*1000.0f);	//Watt
+				if (temp_usage < 17250)
+				{
+					m_p1power.usagecurrent = temp_usage;
+				}
 				break;
 			case P1TYPE_DELIVCURRENT:
-				m_p1power.delivcurrent=(unsigned long)(atof(value)*1000.0f);	//Watt
+				temp_usage = (unsigned long)(atof(value)*1000.0f);	//Watt;
+				if (temp_usage < 17250)
+				{
+					m_p1power.delivcurrent = temp_usage;
+				}
 				break;
 			case P1TYPE_GASTIMESTAMP:
 				break;
 			case P1TYPE_GASUSAGE:
-				m_p1gas.gasusage=(unsigned long)(atof(value)*1000.0f);
+				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				m_p1gas.gasusage = temp_usage;
 				break;
 			case P1TYPE_GASUSAGEDSMRv4:
-				m_p1gas.gasusage=(unsigned long)(atof(value)*1000.0f);
+				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				m_p1gas.gasusage = temp_usage;
 				break;
 			}
 
