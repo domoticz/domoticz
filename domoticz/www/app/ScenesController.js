@@ -270,7 +270,7 @@ define(['app'], function (app) {
 				ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
 				return;
 			}
-			var bIsWhite=$('#lightcontent #ledtable #optionWhite').is(":checked");
+			var bIsWhite=$('#scenecontent #ledtable #optionsWhite').is(":checked");
 			$.ajax({
 				 url: "json.htm?type=command&param=setcolbrightnessvalue&idx=" + idx + "&hue=" + hue + "&brightness=" + brightness + "&iswhite=" + bIsWhite,
 				 async: false, 
