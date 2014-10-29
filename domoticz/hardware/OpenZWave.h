@@ -106,6 +106,8 @@ public:
 
 	bool m_awakeNodesQueried;
 	bool m_allNodesQueried;
+
+	unsigned char m_controllerNodeId;
 private:
 	void NodesQueried();
 	void DeleteNode(const unsigned int homeID, const int nodeID);

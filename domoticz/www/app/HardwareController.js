@@ -1281,6 +1281,8 @@ define(['app'], function (app) {
 				else {
 					$("#zwavenodesqueried").show();
 				}
+
+				$("#ownNodeId").val(String(data.ownNodeId));
 			  
 				$.each(data.result, function(i,item){
 					var status="ok";
@@ -1329,6 +1331,7 @@ define(['app'], function (app) {
 					$('#hardwarecontent #usercodegrp').hide();
 				}
 				else {
+				  var iOwnNodeId = parseInt($("#ownNodeId").val());
 				  var oTable = $('#nodestable').dataTable();
 					oTable.$('tr.row_selected').removeClass('row_selected');
 					$(this).addClass('row_selected');
@@ -1341,13 +1344,13 @@ define(['app'], function (app) {
 						var iNode=parseInt(data["NodeID"]);
 						$("#updelclr #nodeupdate").attr("href", "javascript:UpdateNode(" + idx + ")");
 						$("#hardwarecontent #zwavecodemanagement").attr("href", "javascript:ZWaveUserCodeManagement(" + idx + ")");
-						if (iNode>1) {
+						if (iNode != iOwnNodeId) {
 							$('#updelclr #nodedelete').attr("class", "btnstyle3");
 							$("#updelclr #nodedelete").attr("href", "javascript:DeleteNode(" + idx + ")");
 						}
 						$("#hardwarecontent #nodeparamstable #nodename").val(data["1"]);
 						$('#hardwarecontent #nodeparamstable #EnablePolling').prop('checked',(data["PollEnabled"]=="true"));
-						if (iNode<2) {
+						if (iNode==iOwnNodeId) {
 							$("#hardwarecontent #nodeparamstable #trEnablePolling").hide();
 						}
 						else {
