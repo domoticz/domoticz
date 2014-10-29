@@ -1441,7 +1441,8 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, const r
 			}
 		}
 	}
-	/* possible patch to let basic auto function for curl scripts
+
+	//patch to let always support basic authentication function for script calls
 	if (req.uri.find("json.htm") != std::string::npos)
 	{
 		//Check first if we have a basic auth
@@ -1450,7 +1451,7 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, const r
 			return true;
 		}
 	}
-	*/
+
 	if (myWebem->m_authmethod == AUTH_BASIC)
 	{
 		if (!authorize(req, rep))
