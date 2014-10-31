@@ -17,6 +17,16 @@
 
 S0MeterBase::S0MeterBase(void)
 {
+	m_bufferpos = 0;
+	int ii;
+	for (ii = 0; ii < max_s0_meters; ii++)
+	{
+		m_meters[ii].m_volume_total = 0;
+		m_meters[ii].m_last_values[0] = 0;
+		m_meters[ii].m_last_values[1] = 0;
+		m_meters[ii].m_last_values[2] = 0;
+		m_meters[ii].m_last_values[3] = 0;
+	}
 }
 
 

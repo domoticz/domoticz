@@ -477,7 +477,7 @@ COpenZWave::NodeInfo* COpenZWave::GetNodeInfo(const unsigned int homeID, const i
 std::string COpenZWave::GetNodeStateString(const unsigned int homeID, const int nodeID)
 {
 	std::string strState = "Unknown";
-	COpenZWave::NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
+	COpenZWave::NodeInfo *pNode = GetNodeInfo(m_controllerID, nodeID);
 	if (!pNode)
 		return strState;
 	switch (pNode->eState)
@@ -1300,7 +1300,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	std::string vUnits = m_pManager->GetValueUnits(vID);
 	_log.Log(LOG_NORM, "OpenZWave: Value_Added: Node: %d, CommandClass: %s, Label: %s, Instance: %d", (int)NodeID, cclassStr(commandclass), vLabel.c_str(), instance);
 
-	if (instance == 0)
+	if ((instance == 0) && (NodeID == m_controllerID))
 		return;// We skip instance 0 if there are more, since it should be mapped to other instances or their superposition
 
 	_tZWaveDevice _device;
@@ -1309,8 +1309,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	_device.scaleID = -1;
 	_device.instanceID = instance;
 	_device.indexID = 0;
-	_device.hasWakeup = m_pManager->IsNodeAwake(HomeID, NodeID);
-	_device.isListening = m_pManager->IsNodeListeningDevice(HomeID, NodeID);
+	_device.hasWakeup = m_pManager->IsNodeAwake(m_controllerID, NodeID);
+	_device.isListening = m_pManager->IsNodeListeningDevice(m_controllerID, NodeID);
 
 	if (vLabel != "")
 		_device.label = vLabel;
@@ -1959,7 +1959,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 
 	if (vGenre != OpenZWave::ValueID::ValueGenre_User)
 	{
-		NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
+		NodeInfo *pNode = GetNodeInfo(m_controllerID, NodeID);
 		if (pNode)
 		{
 			/*
@@ -1973,7 +1973,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 		if ((pNode) && (vLabel == "Wake-up Interval"))
 		{
 			if (HomeID != m_controllerID)
-				m_pManager->AddAssociation(HomeID, NodeID, 1, m_controllerNodeId);
+				m_pManager->AddAssociation(m_controllerID, NodeID, 1, m_controllerNodeId);
 		}
 		return;
 	}

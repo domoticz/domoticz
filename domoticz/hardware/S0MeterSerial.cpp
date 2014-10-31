@@ -12,9 +12,19 @@
 
 #include <ctime>
 
-//
-//Class S0MeterSerial
-//
+#ifdef _DEBUG
+	//#define DEBUG_S0
+	#define TOT_DEBUG_LINES 6
+	const char *szDebugDataP2[TOT_DEBUG_LINES] = {
+		"/27243:S0 Pulse Counter V0.1\n",
+		"ID:27243:I:10:M1:264:264:M2:0:0\n",
+		"ID:27243:I:10:M1:983:1247:M2:518:518\n",
+		"ID:27243:I:10:M1:1121:2368:M2:0:518\n",
+		"ID:27243:I:10:M1:0:2368:M2:1126:1644\n",
+		"ID:27243:I:10:M1:921:3289:M2:0:1644\n",
+	};
+#endif
+
 S0MeterSerial::S0MeterSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const int M1Type, const int M1PPH, const int M2Type, const int M2PPH)
 {
 	m_HwdID=ID;
@@ -91,6 +101,16 @@ bool S0MeterSerial::StartHardware()
 	ReloadLastTotals();
 	setReadCallback(boost::bind(&S0MeterSerial::readCallback, this, _1, _2));
 	sOnConnected(this);
+
+#ifdef DEBUG_S0
+	int ii = 0;
+	for (ii = 0; ii < TOT_DEBUG_LINES; ii++)
+	{
+		std::string dline = szDebugDataP2[ii];
+		ParseData((const unsigned char*)dline.c_str(), dline.size());
+	}
+#endif
+
 	return true;
 }
 
