@@ -252,10 +252,10 @@ float C1WireByKernel::GetTemperature(const _t1WireDevice& device) const
       case programmable_resolution_digital_thermometer:
          {
             DeviceCollection::const_iterator devIt=m_Devices.find(device.devid);
-            return (devIt==m_Devices.end())?0.0f:(*devIt).second->m_Temperature;
+            return (devIt==m_Devices.end())?-1000.0f:(*devIt).second->m_Temperature;
          }
       default: // Device not supported in kernel mode (maybe later...), use OWFS solution.
-         return 0.0;
+         return -1000.0;
    }
 }
 

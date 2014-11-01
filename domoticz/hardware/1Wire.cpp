@@ -208,11 +208,10 @@ void C1Wire::GetDeviceDetails()
       case programmable_resolution_digital_thermometer:
          {
             float temperature=m_system->GetTemperature(device);
-
-            // Filter invalid temperature
-            if (IsTemperatureValid(device.family,temperature))
-               ReportTemperature(device.devid,temperature);
-
+			if (IsTemperatureValid(device.family, temperature))
+			{
+				ReportTemperature(device.devid, temperature);
+			}
             break;
          }
 
@@ -246,10 +245,14 @@ void C1Wire::GetDeviceDetails()
 
       case Temperature_IO:
          {
-            ReportTemperature(device.devid,m_system->GetTemperature(device));
-            ReportLightState(device.devid,0,m_system->GetLightState(device,0));
-            ReportLightState(device.devid,1,m_system->GetLightState(device,1));
-            break;
+		  float temperature = m_system->GetTemperature(device);
+		  if (IsTemperatureValid(device.family, temperature))
+		  {
+			  ReportTemperature(device.devid, temperature);
+		  }
+		  ReportLightState(device.devid, 0, m_system->GetLightState(device, 0));
+		  ReportLightState(device.devid, 1, m_system->GetLightState(device, 1));
+		  break;
          }
 
       case dual_channel_addressable_switch:
@@ -262,8 +265,12 @@ void C1Wire::GetDeviceDetails()
 
       case Environmental_Monitors:
          {
-            ReportTemperatureHumidity(device.devid,m_system->GetTemperature(device),m_system->GetHumidity(device));
-            break;
+		  float temperature = m_system->GetTemperature(device);
+		  if (IsTemperatureValid(device.family, temperature))
+		  {
+			  ReportTemperatureHumidity(device.devid, temperature, m_system->GetHumidity(device));
+		  }
+		  break;
          }
 
       case _4k_ram_with_counter:
@@ -290,7 +297,11 @@ void C1Wire::GetDeviceDetails()
 
       case smart_battery_monitor:
          {
-            ReportTemperature(device.devid,m_system->GetTemperature(device));
+		  float temperature = m_system->GetTemperature(device);
+		  if (IsTemperatureValid(device.family, temperature))
+		  {
+			  ReportTemperature(device.devid, temperature);
+		  }
             ReportHumidity(device.devid,m_system->GetHumidity(device));
             ReportVoltage(0,m_system->GetVoltage(device,0));   // VAD
             ReportVoltage(1,m_system->GetVoltage(device,1));   // VDD

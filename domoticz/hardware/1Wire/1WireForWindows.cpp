@@ -310,7 +310,7 @@ float C1WireForWindows::GetTemperature(const _t1WireDevice& device) const
    }
    catch (C1WireForWindowsReadException&)
    {
-      return 0.0;
+      return -1000.0;
    }
    return ansRoot.get("Temperature",0.0f).asFloat();
 }

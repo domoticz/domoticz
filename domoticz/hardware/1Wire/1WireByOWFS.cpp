@@ -212,7 +212,7 @@ float C1WireByOWFS::GetTemperature(const _t1WireDevice& device) const
 {
    std::string readValue=readRawData(std::string(device.filename+"/temperature"));
    if (readValue.empty())
-      return 0.0;
+      return -1000.0;
    return (float)atof(readValue.c_str());
 }
 
