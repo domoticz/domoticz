@@ -1,0 +1,39 @@
+#!/bin/sh
+
+SVN_SERVER="svn://svn.code.sf.net/p/domoticz/code/trunk"
+
+echo "Checking the server revision..."
+SERVER_REVISION=`svn log -l1 $SVN_SERVER | sed -n 2p | sed 's/.\([0-9][0-9][0-9][0-9]\).*/\1/'`
+echo "Server revision at $SERVER_REVISION"
+echo "Checking the working copy revision..."
+LOCAL_REVISION=`svn log -l1 | sed -n 2p | sed 's/.\([0-9][0-9][0-9][0-9]\).*/\1/'`
+echo "Working copy revision at $LOCAL_REVISION"
+
+if [ "$SERVER_REVISION" -eq "$LOCAL_REVISION" ]
+then
+    echo "Domoticz is up to date. Nothing to do."
+    exit 1
+else
+        svn update
+        if [ $? -ne 0 ]
+        then
+                echo "svnupdate failed!";
+                exit 1
+        fi
+        cmake -DCMAKE_BUILD_TYPE=Release .
+        if [ $? -ne 0 ]
+        then
+                echo "CMake failed!";
+                exit 1
+        fi
+        make
+        if [ $? -ne 0 ]
+        then
+                echo "Compile failed!";
+                exit 1
+        fi
+		# stop domoticz
+		echo "Restarting Domoticz... (please standby...)"
+		sudo service domoticz.sh stop
+		sudo service domoticz.sh start
+fi
