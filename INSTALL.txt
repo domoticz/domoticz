@@ -50,7 +50,9 @@ make
 
 
 [Windows]
-- use the msbuild folder, and open the project in visual studio 2010/2013
+- The project file for Visual Studio can be found inside the "msbuild" folder
+- You need to download and unpack the following archive inside the "msbuild" folder:
+  http://www.domoticz.com/WindowsLibraries.zip
 
 ------------------------------------------------------------------------------------------------
 [Ubuntu / Raspberry Pi (wheezy)]
