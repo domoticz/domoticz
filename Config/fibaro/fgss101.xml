@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+  <!-- Configuration -->
+  <CommandClass id="112">
+  
+    <Value type="short" genre="config" instance="1" index="1" label="Smoke alarm cancellation delay" min="0" max="65535" value="0">
+      <Help>The time between when the smoke disappears and the Fibaro Smoke Sensor stops sending the alarm signal.
+		  Available settings: 0 – 17280, 65535 (5s multiplier) [5s-24h]
+          0: no delay, immediate cancellation,
+          65535: alarm cancellation inactive - Smoke Sensor will keep indicating smoke alarm after the smoke will have disappeared. The smoke alarm can be only ceased manually, by entering 2nd menu level (see section XIII).
+          Default setting: 0
+      </Help>
+    </Value>
+
+    <Value type="list" genre="config" instance="1" index="2" label="LED indicator and acoustic alarm turned ON / OFF at any alarm type" min="0" max="3" value="3" size="1">
+      <Help>Allows for deactivating the LED indicator and the acoustic alarm, in case of detecting an alarm of any type.
+	  This doesn’t affect the communication with the Z-Wave network controller, i.e. the sensor will keep sending alarms, reports and all information to the associated devices. 
+	  Modifying this parameter settings helps extending the battery life.
+	  </Help>
+      <Item label="Acoustic and visual alarms inactive" value="0" />
+      <Item label="Acoustic alarm inactive, visual alarm active" value="1" />
+      <Item label="Acoustic alarm active, visual alarm inactive" value="2" />
+      <Item label="Acoustic and visual alarms active" value="3" />
+    </Value>
+
+    <Value type="list" genre="config" instance="1" index="5" label="Type of alarm frame for association group 1" value="255" size="1">
+      <Help>Type of alarm frame for association group 1, activated by smoke sensor. 
+	  The parameter allows to specify the type of alarm frame or to force transmission of control commands (BASIC_SET)
+	  </Help>
+      <Item label="ALARM SMOKE" value="0" />
+      <Item label="BASIC_SET" value="255" />
+    </Value>
+
+    <Value type="byte" genre="config" instance="1" index="7" label="Forced Level of Dimming group 1" min="1" max="255" value="255">
+      <Help>The value of 255 allows for turning on a device. In case of Dimmer, the value of 255 means turning on the device with the last memorized state. E.g. 
+	  Dimmer set to 30% and then turned off, and next turned on using the 255 command, will turn on with the last remembered status, i.e. 30%.
+	  In case of alarm frames, alarm priority is defined.
+	  Available settings: (1 - 99) or 255
+	  Default setting: 255
+	  </Help>
+    </Value>
+
+    <Value type="short" genre="config" instance="1" index="10" label="Temperature report interval" min="0" max="17280" value="0">
+      <Help>Time interval between consecutive temperature reports.
+	  The parameter is relevant for the battery powering mode only. Longer time interval means less frequent communication and thus a longer battery life.
+	  Report is sent when new temperatue value is different from the one previously reported. Temperature reports can be also sent as a result of polling.
+	  Available settings: 1 – 17280, 0 (multiply by 5 seconds) [5s-24h]
+	  0 – reports inactive
+	  Default setting: 0 (Reports inactive)
+	  </Help>
+    </Value>
+
+    <Value type="byte" genre="config" instance="1" index="12" label="Temperature report hysteresis" min="0" max="100" value="20">
+      <Help>The temperature report will only be sent if there is a difference in temperature value from the previous value reported, defined in this parameter (hysteresis).
+	  Temparature reports can be also sent as a result of polling.
+	  Available settings: 0 – 100 (in 0,1C steps)
+	  0 – temperature change reporting inactive
+	  Default setting: 20 (2C)
+	  </Help>
+    </Value>
+
+    <Value type="list" genre="config" instance="1" index="13" label="Alarm broadcast" value="0" size="1">
+      <Help>Transmitting the alarm or control frame in "broadcast" mode (i.e. to all devices within range), information sent in this mode is not repeated by the mesh network. 
+	  NOTE: If the broadcast mode of information transmission is activated for a given channel, then transmission of information in singlecast mode to devices assigned to the association group of this channel is deactivated.
+	  </Help>
+      <Item label="Broadcasts INACTIVE" value="0" />
+      <Item label="Smoke ACTIVE, tamper INACTIVE" value="1" />
+      <Item label="Smoke INACTIVE, tamper ACTIVE" value="2" />
+      <Item label="Smoke ACTIVE, tamper ACTIVE" value="3" />
+    </Value>
+
+    <Value type="short" genre="config" instance="1" index="73" label="Temperature measurement compensation" min="-1000" max="1000" value="0" size="2">
+      <Help>Parameter stores a temperature value to be added to or deducted from the current temperature measured by internal temperature sensor in order to compensate the difference between air temperature and temperature measured at the ceiling level.
+	  Available settings: -1000 -/+ 1000 (in 0,1C steps)
+	  Default setting: 0 (0C)
+	  </Help>
+    </Value>
+
+    <Value type="byte" genre="config" instance="1" index="80" label="Z-Wave range test interval" value="1" min="0" max="144" size="1">
+      <Help>Time period between the consecutive Z-Wave network range tests.
+	  In battery powering mode, Z-Wave network range test is carried out at the wake up interval. The value of 0 turns off the Z-Wave range test, regardless of the powering mode chosen.
+	  Available settings: 0 – 144 (10min multiplier) [10min-24h]
+	  0 – Z-Wave network range test inactive
+	  Default setting: 1 (10min)
+      </Help>
+    </Value>
+
+    <Value type="byte" genre="config" instance="1" index="81" label="Temperature alarm threshold" value="54" min="0" max="100" size="1">
+      <Help>Temperature value, measured by the built-in temperature sensor, above which the temperature alarm is sent.
+	  Available settings: 0,2 - 100
+	  0 – temperature alarm inactive
+	  2 - 100 – (2 - 100C)
+	  Default setting: 54 (54C)
+      </Help>
+    </Value>
+
+    <Value type="list" genre="config" instance="1" index="82" label="Smoke Sensor sensitivity" value="2"  min="1" max="3" size="1">
+      <Help>There are 3 levels of sensitivity to smoke presence. Level 1 means the highest sensitivity.</Help>
+      <Item label="High" value="1" />
+      <Item label="Medium" value="2" />
+      <Item label="Low" value="3" />
+    </Value>
+
+    <Value type="list" genre="config" instance="1" index="83" label="Black Box sensitivity level" value="2"  min="1" max="3" size="1">
+      <Help>This parameter allows for specifying the moment in which the Black Box starts recording data. After the specified smoke and temperature values will be exceeded, the Fibaro Smoke Sensor’s Black Box will record them.</Help>
+      <Item label="High" value="1" />
+      <Item label="Medium" value="2" />
+      <Item label="Low" value="3" />
+    </Value>
+
+    <Value type="byte" genre="config" instance="1" index="84" label="Malfunction alarm" value="10" min="1" max="255" size="1">
+      <Help>Time interval in which malfuntion alarm, if detected, is repeated using visual and acoustic alarms.
+	  Available settings: 1 - 255 (100 ms multiplier) [100ms-25,5s]
+	  Default setting: 10 (1s)
+	  </Help>
+    </Value>
+
+    <Value type="byte" genre="config" instance="1" index="85" label="Temperature alarm"  value="5" min="1" max="255" size="1">
+      <Help>Time interval in which temperature alarm, if detected, is repeated using visual and acoustic alarms.
+	  Available settings: 1 - 255 (100 ms multiplier) [100ms-25,5s]
+	  Default setting: 5 (500ms)
+	  </Help>
+    </Value>
+
+    <Value type="short" genre="config" instance="1" index="86" label="Lack of the Z-Wave range alarm" value="360" min="1" max="17280" size="2">
+      <Help>Time interval in which lack of the Z-Wave network alarm, if detected, is repeated using visual and acoustic alarms.
+	  Available settings: 1 - 17280 (5s multiplier) [5s-24h]
+	  Default setting: 360 (30min)
+	  </Help>
+    </Value>
+
+    <Value type="short" genre="config" instance="1" index="87" label="Low battery alarm" value="360" min="1" max="17280" size="2">
+      <Help>Time interval in which low battery alarm, if detected, is repeated using visual and acoustic alarms.
+	  Available settings: 1 - 17280 (5s multiplier) [5s-24h]
+	  Default setting: 360 (30min)
+	  </Help>
+    </Value>
+
+   <Value type="list" genre="config" instance="1" index="88" label="Consider temperature measurement compensation" value="0" size="1">
+      <Help>This parameter allows for specifying the moment in which the Black Box starts recording data. After the specified smoke and temperature values will be exceeded, the Fibaro Smoke Sensor’s Black Box will record them.</Help>
+      <Item label="Ignore temperature compensation" value="0" />
+      <Item label="Include temperature compensation" value="1" />
+   </Value>
+
+   <Value type="list" genre="config" instance="1" index="89" label="Tamper alarm" value="1" min="0" max="2" size="1">
+      <Help>default setting: tamper alarm active, with cancellation option available</Help>
+      <Item label="tamper alarm inactive" value="0" />
+      <Item label="tamper alarm active, with cancellation option available" value="1" />
+      <Item label="tamper alarm active, without cancellation option" value="2" />
+    </Value>
+   </CommandClass>
+
+   <!-- Basic set as report -->
+   <CommandClass id="32" setasreport="true"/>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" max_associations="5" label="Smoke Alarm" auto="true"/>
+      <Group index="2" max_associations="5" label="Tamper Alarm" auto="true" />
+      <Group index="3" max_associations="1" label="Device Status" auto="true"/>
+    </Associations>
+  </CommandClass>
+
+</Product>

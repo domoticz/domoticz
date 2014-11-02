@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--http://www.ihome.eu/images/pdf/products/Quickstart%20+%20Technical%20Manual%20DoorSensor.pdf-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- Configuration -->
+  <CommandClass id="112">
+
+    <Value type="byte" genre="config" instance="1" index="1" label="Set to Default" value="-1">
+      <Help>Set all configuration values to default values (factory settings).</Help>
+    </Value>
+
+    <Value type="list" genre="config" instance="1" index="2" label="External Contact" value="0" size="1">
+      <Help>Configure what the external contact sends when triggered.</Help>
+      <Item label="Send a alarm report with type 2." value="0"/>
+      <Item label="Send a Basic set frame to all nodes in association group 2." value="1"/>
+    </Value>
+
+    <Value type="byte" genre="config" instance="1" index="3" label="Not used" value="0">
+      <Help>Is not used but can still be set and requested.</Help>
+    </Value>
+
+    <Value type="byte" genre="config" instance="1" index="4" label="Not used" value="0">
+      <Help>Is not used but can still be set and requested.</Help>
+    </Value>
+
+    <Value type="byte" genre="config" instance="1" index="5" label="The Mode" value="1">
+      <Help>To configure the operating mode.</Help>
+      <Item label="Mode 1: Normal operating mode." value="1"/>
+      <Item label="Mode 3: Z-Wave chip is always on to request e.g. version or manufacturer id." value="3"/>
+    </Value>
+
+    <Value type="int" genre="config" instance="1" index="6" label="Temperature offset" value="0">
+      <Help>A signed integer to determine the offset of the temperature. </Help>
+    </Value>
+  </CommandClass>
+  
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" max_associations="5" label="Group 1: if the internal door contact (magnet) is triggered it sends a Z-Wave frame to every node in this group." auto="false"/>
+      <Group index="2" max_associations="5" label="Group 2: if the external door contact is triggered it sends a Z-Wave frame to every node in this group if it is configured (see configuration documentation param 2: external contact)." auto="false"/>
+    </Associations>
+  </CommandClass>
+
+</Product>

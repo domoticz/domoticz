@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EVERSPRING AN158 ON/OFF MODULE -->
+<!-- Information from http://www.pepper1.net/zwavedb/device/54 -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="short" index="1" genre="config" label="True Period" units="100ms" min="0" max="120" value="10">
+      <Help>
+	This is the time the switching status needs to remain
+unchanged after a change to cause the device to send out a status
+message. 0 is Disabled.
+      </Help>
+    </Value>
+    <Value type="byte" index="2" genre="config" label="Send Out Basic Command" units="" min="0" max="1" value="0">
+      <Help>
+	Enable or Disable Send Basic Command to Group 2 when the local
+button press changes the switching state.
+      </Help>
+    </Value>
+    <Value type="short" index="3" genre="config" label="Meter Report Period" units="10s" min="0" max="3240" value="3">
+      <Help>
+	The device will report its meter value within the interval
+set. Set to 0 will disable the autoreporting function.
+      </Help>
+    </Value>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" max_associations="1" label="Reports" auto="true" />
+      <Group index="2" max_associations="4" label="Basic" auto="true" />
+    </Associations>
+  </CommandClass>
+</Product>

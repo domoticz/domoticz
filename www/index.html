@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html manifest="html5.appcache">
+<head>
+		<meta charset="utf-8">
+		<title>Domoticz</title>
+		<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=0" /> 
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta name="description" content="" />
+		<meta name="keywords" content="" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<link rel="shortcut icon" href="/favicon.ico" />
+		<link rel="apple-touch-icon" href="images/iphone-icon.png"/>
+		<link rel="icon" sizes="196x196" href="images/logo.png">
+		<link rel="icon" sizes="192x192" href="images/logo192.png">
+
+		<!-- iPhone -->
+		<link href="images/startup/apple-touch-startup-image-320x460.png" 
+			media="(device-width: 320px)" 
+			rel="apple-touch-startup-image">
+		
+		<!-- iPhone (Retina) -->
+		<link href="images/startup/apple-touch-startup-image-640x920.png" 
+			media="(device-width: 320px) and (-webkit-device-pixel-ratio: 2)" 
+			rel="apple-touch-startup-image">
+
+		<!-- iPhone 5 (Retina) -->
+		<link href="images/startup/apple-touch-startup-image-640x1096.png"
+			media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)"
+			rel="apple-touch-startup-image">
+
+		<!-- iPad (portrait) -->
+		<link href="images/startup/apple-touch-startup-image-768x1004.png" 
+					media="(device-width: 768px) and (orientation: portrait)" 
+					rel="apple-touch-startup-image">
+
+		<!-- iPad (landscape) -->
+		<link href="images/startup/apple-touch-startup-image-1024x748.png" 
+					media="(device-width: 768px) and (orientation: landscape)" 
+					rel="apple-touch-startup-image">      
+
+		<!--iPad (Retina, portrait) -->
+		<link href="images/startup/apple-touch-startup-image-1536x2008.png" 
+					media="(device-width: 768px) 
+					 and (orientation: portrait) and (-webkit-device-pixel-ratio: 2)" 
+					rel="apple-touch-startup-image">
+
+		<!-- iPad (Retina, landscape) -->
+		<link href="images/startup/apple-touch-startup-image-2048x1496.png" 
+					media="(device-width: 768px) 
+					 and (orientation: landscape) and (-webkit-device-pixel-ratio: 2)" 
+					rel="apple-touch-startup-image"> 
+
+        <link rel="stylesheet" href="css/bootstrap.css">
+        <link href="css/bootstrap-responsive.css" rel="stylesheet" media="screen">
+        <link type="text/css" rel="stylesheet" href="css/ui-darkness/jquery-ui-1.10.3.custom.min.css" />
+		<link type="text/css" rel="stylesheet" href="css/demo_table_jui.css" />
+		<link type="text/css" rel="stylesheet" href="css/jquery.uix.multiselect.css" />
+        <link type="text/css" rel="stylesheet" href="css/style.css" />
+        <link type="text/css" rel="stylesheet" href="css/colpick.css" />
+        <script src="js/jquery-1.11.1.min.js"></script>
+		<script src="js/jquery.i18n.js"></script>
+		<script src="js/jquery.i18n.messages.js"></script>
+		<script src="js/jquery.i18n.fallbacks.js"></script>
+		<script src="js/jquery.i18n.parser.js"></script>
+		<script src="js/jquery.i18n.emitter.js"></script>
+		<script src="js/jquery.i18n.language.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+		<script src="js/bootbox.min.js"></script>
+        <script src="js/jquery-ui-1.10.3.custom.min.js"></script>
+		<script src="js/jquery.ui.touch-punch.min.js"></script>
+		<script src="js/jquery.uix.multiselect.min.js"></script>
+		<script src="js/jquery.ddslick.min.js"></script>
+		<script src="js/colpick.js"></script>
+		<script type="text/javascript" src="js/noty/jquery.noty.js"></script>
+        <script type="text/javascript" src="js/noty/layouts/top.js"></script>
+        <script type="text/javascript" src="js/noty/layouts/topRight.js"></script>
+        <script type="text/javascript" src="js/noty/themes/default.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/jquery.dataTables.min.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/ZeroClipboard.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/dataTables.tableTools.min.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/date.format.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/highcharts.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/highcharts-more.js"></script>
+		<script src="js/modules/exporting.js"></script>
+		<script src="js/export-csv.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/themes/dark-blue.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/domoticz.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/domoticzdevices.js"></script>
+
+		<script data-main="app/main" src="js/require.js"></script>
+<script type="text/javascript" charset="utf-8" id="init-code">
+
+function NotifyCacheRefresh()
+{
+	$.cachenoty=generate_noty('information', '<b>' + $.i18n('Browser Cache is being refreshed') + '...</b><br>' + $.i18n('Please standby') + '...', false);
+}
+
+function ClearNotifyCacheRefresh()
+{
+	if (typeof $.cachenoty != 'undefined') {
+		$.cachenoty.close();
+	}
+}
+
+function logEvent(event) {
+}
+
+if (window.applicationCache) {
+	window.applicationCache.addEventListener('checking',logEvent,false);
+	window.applicationCache.addEventListener('noupdate',logEvent,false);
+	window.applicationCache.addEventListener('progress',logEvent,false);
+	window.applicationCache.addEventListener('cached',logEvent,false);
+	window.applicationCache.addEventListener('updateready',logEvent,false);
+	window.applicationCache.addEventListener('obsolete',logEvent,false);
+	window.applicationCache.addEventListener('error',logEvent,false);
+}
+
+function CheckForUpdate(showdialog) {
+	$.ajax({
+		 url: "json.htm?type=command&param=checkforupdate&forced=" + showdialog,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			var urights=data.statuscode;
+			var bDisplayLogout=false;
+			$.FiveMinuteHistoryDays=data["5MinuteHistoryDays"];
+			$.AllowWidgetOrdering=data["AllowWidgetOrdering"];
+			if (urights!=3) {
+				bDisplayLogout=true;
+			}
+			else {
+				bDisplayLogout=false;
+				urights=2;
+			}
+			window.my_config =
+			{
+				userrights : urights
+			};
+			
+			//data.HaveUpdate=true;
+			if (data.HaveUpdate == true) {
+				$("#mUpdate").show();
+				$("#mCheckUpdate").hide();
+				if (showdialog) {
+					var bValid = false;
+					bValid=(confirm($.i18n("Update Available !... Update Now?"))==true);
+					if (bValid) {
+						SwitchLayout('Update');
+					}
+				}
+				else {
+					var msgtxt=$.i18n('A new version of Domoticz is Available!...<br>Use the Setup tab to update.');
+					msgtxt+='<br>' + $.i18n('Version') + ': <b>' + data.Revision + '</b>, ' + $.i18n('Latest Changes') + ': <b><a onclick="ShowLatestHistory();">' + $.i18n('Click Here') + '</a></b>';
+					generate_noty('success', msgtxt, false);
+				}
+			}
+			else
+			{
+				if (data.IsSupported==false) {
+					$("#dUpdate").hide();
+					$("#mUpdate").hide();
+					$("#mCheckUpdate").hide();
+				}
+				else {
+					$("#mUpdate").hide();
+					$("#mCheckUpdate").show();
+				}
+				if (showdialog) {
+					bootbox.alert($.i18n("No Update Available !..."));
+				}
+			}
+		 },
+		 error: function(){
+				$("#mUpdate").hide();
+				$("#mCheckUpdate").show();
+				if (showdialog) {
+					bootbox.alert($.i18n("Error communicating to server!"));
+				}
+		 }     
+	});
+}
+
+function ReplaceDevice(idx,backfunction)
+{
+	$.ajax({
+		 url: "json.htm?type=gettransfers&idx=" + idx,
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+				if (typeof data.result == 'undefined') 
+				{
+					bootbox.alert($.i18n('No devices to Transfer too!'));
+					return;
+				}
+				$("#dialog-replacedevice #newdevice").html("");
+				
+				$.each(data.result, function(i,item){
+					var option = $('<option />');
+					option.attr('value', item.idx).text(item.Name);
+					$("#dialog-replacedevice #newdevice").append(option);
+				});
+				$.devIdx = idx;
+				$.backfunction=backfunction;
+				$( "#dialog-replacedevice" ).i18n();
+				$( "#dialog-replacedevice" ).dialog( "open" );
+		 }
+	});
+}
+
+function ShowLatestHistory()
+{
+	$.myglobals.historytype=2;
+	SwitchLayout('History');
+}
+
+$(document).ready(function() {
+	if ("-ms-user-select" in document.documentElement.style &&
+		(navigator.userAgent.match(/IEMobile/) ||
+		navigator.userAgent.match(/ZuneWP7/) ||
+		navigator.userAgent.match(/WPDesktop/))) {
+		var msViewportStyle = document.createElement("style");
+		msViewportStyle.appendChild(document.createTextNode("@-ms-viewport{width:auto!important}"));
+		document.getElementsByTagName("head")[0].appendChild(msViewportStyle);
+	 }
+	$.myglobals = {
+		actlayout : "",
+		prevlayout : "",
+		ismobile: false,
+		ismobileint: false,
+		windscale: 1.0,
+		windsign: "m/s",
+		tempscale: 1.0,
+		tempsign: "C",
+		historytype : 1,
+		LastPlanSelected: 0,
+		Latitude: "",
+		Longitude: "",
+		DashboardType: 0,
+		dontcache: true
+	};
+	
+	if( /Android|webOS|iPhone|iPad|iPod|ZuneWP7|BlackBerry/i.test(navigator.userAgent) ) {
+		$.myglobals.ismobile=true;
+		$.myglobals.ismobileint=true;
+	}
+
+	var matched = matchua( navigator.userAgent );
+	var browser = {};
+	if ( matched.browser ) {
+		browser[ matched.browser ] = true;
+		browser.version = matched.version;
+	}
+	
+	if ( browser.msie ) {
+		var bVersion=parseFloat(browser.version);
+		if (bVersion < 10.0) {
+			bootbox.alert($.i18n('This Application is is designed for Internet Explorer version 10+!\nPlease upgrade your browser!'));
+		}
+	}
+	
+	if (window.applicationCache) {
+			window.applicationCache.addEventListener('downloading', function(e)
+			{
+				NotifyCacheRefresh();
+			}, false);
+			
+			window.applicationCache.addEventListener('updateready', function(e) 
+			{
+					if (window.applicationCache.status == window.applicationCache.UPDATEREADY) 
+					{
+							// Browser downloaded a new app cache.
+							// Swap it in and reload the page to get the new hotness.
+							ClearNotifyCacheRefresh();
+							window.applicationCache.swapCache();
+							window.location.reload();
+					}
+			}, false);
+	}
+	
+	$("#appversion").click( function( e ) {
+		e.preventDefault();
+		$.myglobals.historytype=1;
+		SwitchLayout('History');
+	});
+
+	//Highcharts.getOptions().exporting.buttons.contextButton.menuItems.push({
+	//	text: 'Download CSV',
+	//	onclick: function () {
+	//		ExportChart2CSV(this);
+	//	}
+	//});
+
+	window.myglobals=$.myglobals;
+
+    $( "#dialog-replacedevice" ).dialog({
+          autoOpen: false,
+          width: 380,
+          height: 180,
+          modal: true,
+          resizable: false,
+          buttons: {
+              "OK": function() {
+                  var bValid = true;
+                  $( this ).dialog( "close" );
+                  
+									var NewDeviceIdx=$("#dialog-replacedevice #newdevice option:selected").val();
+									if (typeof NewDeviceIdx == 'undefined') {
+										bootbox.alert($.i18n('No New Device Selected!'));
+										return ;
+									}
+									$.ajax({
+										 url: "json.htm?type=transferdevice&idx=" + $.devIdx + "&newidx=" + NewDeviceIdx,
+										 async: false, 
+										 dataType: 'json',
+										 success: function(data) {
+											if (data.status == 'OK') {
+												$.backfunction();
+											}
+											else {
+												ShowNotify($.i18n('Problem Transfering Device!'), 2500, true);
+											}
+										 },
+										 error: function(){
+												HideNotify();
+												ShowNotify($.i18n('Problem Transfering Device!'), 2500, true);
+										 }     
+									});
+              },
+              Cancel: function() {
+                  $( this ).dialog( "close" );
+              }
+          },
+          close: function() {
+            $( this ).dialog( "close" );
+          }
+    });
+} );
+
+</script>
+</head>
+<body>
+	<div id="globaldaylog" style="display:none;">
+	  <h2 data-i18n="Day">Day</h2>
+	  <div id="globaldaygraph" style="height: 300px;"></div>
+	  <br>
+	  <h2 data-i18n="Month">Month</h2>
+	  <div id="globalmonthgraph" style="height: 300px;"></div>
+	  <br>
+	  <h2 data-i18n="Year">Year</h2>
+	  <div id="globalyeargraph" style="height: 300px;"></div>
+	</div>
+	<div id="lightlog" style="display:none;">
+		<table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0" width="100%">
+				<thead>
+						<tr>
+								<th width="140" align="left" data-i18n="Date">Date</th>
+								<th data-i18n="Data">Data</th>
+						</tr>
+				</thead>
+		</table>
+		<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td>
+				</td>
+				<td align="right">
+					<a class="btnstyle3" id="clearlog" onclick="ClearLightLog();" data-i18n="Clear">Clear</a>
+				</td>
+			</tr>
+		</table>
+		<br>
+		<div id="lightgraph" style="height: 200px;"></div>
+	</div>
+	<div id="dialog-camera-live" style="display:none;">
+		<img id="camfeed" name="camfeed" onload="load_cam_video()" src="images/camera_default.png" width="600" height="337" style="border: 1px solid #1E2832;">
+	</div>
+	<div id="daymonthyearlog" style="display:none;">
+		<h2 data-i18n="Day">Day</h2>
+		<div id="daygraph" style="height: 300px;"></div>
+		<br>
+		<h2 data-i18n="Month">Month</h2>
+		<div id="monthgraph" style="height: 300px;"></div>
+		<br>
+		<h2  data-i18n="Year">Year</h2>
+		<div id="yeargraph" style="height: 300px;"></div>
+	</div>
+	<div id="dayweekmonthyearlog" style="display:none;">
+		<h2 data-i18n="Day">Day</h2>
+		<div id="daygraph" style="height: 250px;"></div>
+		<br>
+		<h2 data-i18n="Week">Week</h2>
+		<div id="weekgraph" style="height: 300px;"></div>
+		<br>
+		<h2 data-i18n="Month">Month</h2>
+		<div id="monthgraph" style="height: 300px;"></div>
+		<br>
+		<h2  data-i18n="Year">Year</h2>
+		<div id="yeargraph" style="height: 300px;"></div>
+	</div>
+	 <div id="windlog" style="display:none;">
+		<h2 data-i18n="Day">Day</h2>
+		<div id="winddaygraph" style="height: 300px;"></div>
+		<br>
+		<div id="winddirgraph" style="width: 400px; height: 400px;"></div>
+		<br>
+		<h2 data-i18n="Month">Month</h2>
+		<div id="windmonthgraph" style="height: 300px;"></div>
+		<br>
+		<h2 data-i18n="Year">Year</h2>
+		<div id="windyeargraph" style="height: 300px;"></div>
+	</div>
+	<div id="smartlog" style="display:none;">
+	  <h2 data-i18n="Day">Day</h2>
+	  <div id="smartdaygraph" style="height: 300px;"></div>
+	  <br>
+	  <h2 data-i18n="Week">Week</h2>
+	  <div id="smartweekgraph" style="height: 300px;"></div>
+	  <br>
+	  <h2 data-i18n="Month">Month</h2>
+	  <div id="smartmonthgraph" style="height: 300px;"></div>
+	  <br>
+	  <h2 data-i18n="Year">Year</h2>
+	  <div id="smartyeargraph" style="height: 300px;"></div>
+	</div>
+	<div id="toptextmonthgas" style="display:none;">
+		<a class="btnstylerev" onclick="ShowP1YearReportGas(0)" data-i18n="Back">Back</a>&nbsp;
+		<h1 id="theader" data-i18n="Usage this Month">Usage this Month</h1>
+		<br>
+		<span data-i18n="Total Usage">Total Usage</span>: <span id="tu">-</span> <span id="munit">m3</span><br>
+		<span data-i18n="Monthly Cost">Monthly Cost</span>: <span id="mc">-</span><br>
+		<br>
+	</div>
+	<div id="toptextyeargas" style="display:none;">
+		<table class="display" border="0" cellpadding="0" cellspacing="0">
+		<tr>
+		  <td align="left">
+			<a id="backbutton" class="btnstylerev" onclick="ShowUtilities()" data-i18n="Back">Back</a>&nbsp;
+			<h1 id="theader" data-i18n="Usage this Year">Usage this Year</h1>
+		  </td>
+		  <td align="right">
+				<span data-i18n="Year">Year</span>:
+				<select id="comboyear" style="width:60px" class="combobox ui-corner-all">
+					<option value="2012">2012</option>
+					<option value="2013">2013</option>
+					<option value="2014">2014</option>
+					<option value="2015">2015</option>
+					<option value="2016">2016</option>
+					<option value="2017">2017</option>
+					<option value="2018">2018</option>
+				</select>
+		  </td>
+		</tr>
+		</table>
+		<br>
+		<span data-i18n="Total Usage">Total Usage</span>: <span id="tu">-</span> <span id="munit">m3</span><br>
+		<span data-i18n="Counter">Counter</span>: <span id="cntr">-</span><br>
+		<span data-i18n="Year Cost">Year Cost</span>: <span id="mc">-</span><br>
+		<br>
+	</div>
+	<div id="monthreportviewgas" style="display:none;">
+		<table class="display myrighttable" id="monthreport" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<thead>
+				<tr valign="middle">
+					<th width="30" align="right" data-i18n="Day">Day</th>
+					<th width="60" align="right">Usage</th>
+					<th width="60" align="right">Costs</th>
+					<th width="40" align="right"><></th>
+				</tr>
+			</thead>
+		</table>
+		<br>
+		<div id="usagegraph" style="height: 240px;"></div>
+	</div>
+	<div id="yearreportviewgas" style="display:none;">
+		<table class="display myrighttable" id="yearreport" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<thead>
+				<tr valign="middle">
+					<th width="30" align="right">Month</th>
+					<th width="60" align="right">Usage</th>
+					<th width="60" align="right">Costs</th>
+					<th width="40" align="right"><></th>
+				</tr>
+			</thead>
+		</table>
+		<br>
+		<div id="usagegraph" style="height: 240px;"></div>
+	</div>
+	<div id="toptextmonth" style="display:none;">
+		<a class="btnstylerev" onclick="ShowP1YearReport(0)" data-i18n="Back">Back</a>&nbsp;
+		<h1 id="theader" data-i18n="Usage this Month">Usage this Month</h1>
+		<br>
+		<span data-i18n="Total Usage">Total Usage</span>: <span data-i18n="T1">T1</span>: <span id="tut1">-</span> kWh, <span data-i18n="T2">T2</span>: <span id="tut2">-</span> kWh, <span data-i18n="Total">Total</span>: <span id="tu">-</span> kWh<br>
+		<div id="dreturn" style="display:none;"><span data-i18n="Total Return">Total Return</span>: <span data-i18n="T1">T1</span>: <span id="trt1">-</span> kWh, <span data-i18n="T2">T2</span>: <span id="trt2">-</span> kWh, <span data-i18n="Total">Total</span>: <span id="tr">-</span> kWh<br></div>
+		<span data-i18n="Monthly Cost">Monthly Cost</span>: <span id="mc">-</span><br>
+		<br>
+	</div>
+	<div id="toptextyear" style="display:none;">
+		<table class="display" border="0" cellpadding="0" cellspacing="0">
+		<tr>
+		  <td align="left">
+			<a id="backbutton" class="btnstylerev" onclick="ShowUtilities()" data-i18n="Back">Back</a>&nbsp;
+			<h1 id="theader" data-i18n="Usage this Year">Usage this Year</h1>
+		  </td>
+		  <td align="right">
+				<span data-i18n="Year">Year</span>:
+				<select id="comboyear" style="width:74px" class="combobox ui-corner-all">
+					<option value="2012">2012</option>
+					<option value="2013">2013</option>
+					<option value="2014">2014</option>
+					<option value="2015">2015</option>
+					<option value="2016">2016</option>
+					<option value="2017">2017</option>
+					<option value="2018">2018</option>
+				</select>
+		  </td>
+		</tr>
+		</table>
+		<br>
+		<span data-i18n="Total Usage">Total Usage</span>: <span data-i18n="T1">T1</span>: <span id="tut1">-</span> kWh, <span data-i18n="T2">T2</span>: <span id="tut2">-</span> kWh, <span data-i18n="Total">Total</span>: <span id="tu">-</span> kWh<br>
+		<span data-i18n="Counter">Counter</span>: <span data-i18n="T1">T1</span>: <span id="cntrt1">-</span>, <span data-i18n="T2">T2</span>: <span id="cntrt2">-</span><br>
+		<div id="dreturn" style="display:none;">
+			<span data-i18n="Total Return">Total Return</span>: <span data-i18n="R1">R1</span>: <span id="trt1">-</span> kWh, <span data-i18n="R2">R2</span>: <span id="trt2">-</span> kWh, <span data-i18n="Total">Total</span>: <span id="tr">-</span> kWh<br>
+			<span data-i18n="Counter Return">Counter Return</span>: <span data-i18n="R1">R1</span>: <span id="cntrr1">-</span>, <span data-i18n="R2">R2</span>: <span id="cntrr2">-</span><br>
+		</div>
+		<span data-i18n="Year Cost">Year Cost</span>: <span id="mc">-</span><br>
+		<br>
+	</div>
+	<div id="monthreportview" style="display:none;">
+		<table class="display myrighttable" id="monthreport" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<thead>
+				<tr valign="middle">
+					<th width="30" align="right" data-i18n="Day">Day</th>
+					<th width="60" align="right" data-i18n="Usage T1">Usage T1</th>
+					<th width="60" align="right" data-i18n="Costs">Costs</th>
+					<th width="60" align="right" data-i18n="Usage T2">Usage T2</th>
+					<th width="60" align="right" data-i18n="Costs">Costs</th>
+					<th width="60" align="right" data-i18n="Return T1">Return T1</th>
+					<th width="60" align="right" data-i18n="Costs">Costs</th>
+					<th width="60" align="right" data-i18n="Return T2">Return T2</th>
+					<th width="60" align="right" data-i18n="Costs">Costs</th>
+					<th width="60" align="right" data-i18n="Total">Total</th>
+					<th width="40" align="right"><></th>
+				</tr>
+			</thead>
+		</table>
+		<br>
+		<div id="usagegraph" style="height: 240px;"></div>
+	</div>
+	<div id="yearreportview" style="display:none;">
+		<table class="display myrighttable" id="yearreport" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<thead>
+				<tr valign="middle">
+					<th width="70" align="right" data-i18n="Month">Month</th>
+					<th width="60" align="right" data-i18n="Usage T1">Usage T1</th>
+					<th width="50" align="right" data-i18n="Costs">Costs</th>
+					<th width="60" align="right" data-i18n="Usage T2">Usage T2</th>
+					<th width="50" align="right" data-i18n="Costs">Costs</th>
+					<th width="60" align="right" data-i18n="Return T1">Return T1</th>
+					<th width="50" align="right" data-i18n="Costs">Costs</th>
+					<th width="60" align="right" data-i18n="Return T2">Return T2</th>
+					<th width="50" align="right" data-i18n="Costs">Costs</th>
+					<th width="60" align="right" data-i18n="Total">Total</th>
+					<th width="40" align="right"><></th>
+				</tr>
+			</thead>
+		</table>
+		<br>
+		<div id="usagegraph" style="height: 240px;"></div>
+	</div>
+	<div id="editnotifications" style="display:none;">
+			<table class="display" id="notificationtable" border="0" cellpadding="0" cellspacing="0" width="100%">
+					<thead>
+							<tr>
+									<th width="120" align="left" data-i18n="Type">Type</th>
+									<th align="left" data-i18n="When">When</th>
+									<th width="120" align="left" data-i18n="Priority">Priority</th>
+							</tr>
+					</thead>
+			</table>
+			<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+				<tr>
+					<td>
+						<a class="btnstyle3-dis" id="notificationupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+						<a class="btnstyle3-dis" id="notificationdelete" data-i18n="Delete">Delete</a>
+					</td>
+					<td align="right">
+						<a class="btnstyle3" onclick="ClearNotifications();" data-i18n="Clear">Clear</a>
+					</td>
+				</tr>
+			</table>
+			<br>
+			<table class="display" id="notificationparamstable" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:80px"><label for="name"><span data-i18n="Type"></span>:</label></td>
+					<td><select id="combotype" style="width:120px" class="combobox ui-corner-all"></select></td>
+				</tr>
+				<tr id="notiwhen">
+					<td align="right" style="width:80px"><label for="name"><span data-i18n="When"></span>:</label></td>
+					<td><select id="combowhen" style="width:120px" class="combobox ui-corner-all">
+								<option value="0" data-i18n="Greater">Greater</option>
+								<option value="1" data-i18n="Below">Below</option>
+							</select>
+					</td>
+				</tr>
+				<tr id="notival">
+					<td align="right" style="width:80px"><label for="name"><span data-i18n="Value"></span>:</label></td>
+					<td><input type="text" id="value" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><label id="valuetype">&nbsp;&deg; C</label></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:80px"><label for="combopriority"><span data-i18n="Priority">Priority</span>:</label></td>
+					<td><select id="combopriority" style="width:120px" class="combobox ui-corner-all">
+                <option value="-2" data-i18n="Very Low">Very Low</option>
+								<option value="-1" data-i18n="Moderate">Moderate</option>
+                <option value="0" data-i18n="Normal" selected="selected">Normal</option>
+                <option value="1" data-i18n="High">High</option>
+                <option value="2" data-i18n="Emergency">Emergency</option>
+					</select></td>
+				</tr>
+			</table>
+			<br>
+			<a class="btnstyle3" onclick="AddNotification();" data-i18n="Add">Add</a>
+	</div>
+	<div id="dialog-replacedevice" title="Replace Device">
+			<form>
+					<label for="newdevice"><span data-i18n="New Device"></span>: </label>
+					<select id="newdevice" style="width:250px" class="combobox ui-corner-all">
+					</select>
+			</form>
+	</div>
+         <div class="navbar navbar-inverse navbar-fixed-top" ng-controller="NavbarController" style="display: none;" has-User>
+             <div class="navbar-inner">
+                <div class="container">
+					<a class="brand hidden-phone" href="#Dashboard"><h1>Domoticz</h1> <h2 id="appversion">*</h2></a>
+                        <ul class="nav" id="appnavbar">
+                            <li ng-class="{'current_page_item':getClass('/Dashboard')}" class="clDashboard"><a id="cDashboard" href="#Dashboard"><img src="images/desktop.png"> <span class="hidden-phone hidden-tablet" data-i18n="Dashboard">Dashboard</span></img></a></li>
+                            <li class="divider-vertical clFloorplans"></li>
+								<li ng-class="{'current_page_item':getClass('/Floorplans')}" class="clFloorplans"><a id="cFloorplans" href="#Floorplans"><img src="images/house.png"> <span class="hidden-phone hidden-tablet" data-i18n="Floorplan">Floorplan</span></a></li>
+                            <li class="divider-vertical clLightSwitches"></li>
+								<li ng-class="{'current_page_item':getClass('/LightSwitches')}" class="clLightSwitches"><a id="cLightSwitches" href="#LightSwitches"><img src="images/lightbulb.png"> <span class="hidden-phone hidden-tablet" data-i18n="Switches">Switches</span></a></li>
+                            <li class="divider-vertical clScenes"></li>
+								<li ng-class="{'current_page_item':getClass('/Scenes')}" class="clScenes"><a id="cScenes" href="#Scenes"><img src="images/scenes.png"> <span class="hidden-phone hidden-tablet" data-i18n="Scenes">Scenes</span></a></li>
+                            <li class="divider-vertical clTemperature"></li>
+								<li ng-class="{'current_page_item':getClass('/Temperature')}" class="clTemperature"><a id="cTemperature" href="#Temperature"><img src="images/temperature.png"> <span class="hidden-phone hidden-tablet" data-i18n="Temperature">Temperature</span></a></li>
+                            <li class="divider-vertical clWeather"></li>
+								<li ng-class="{'current_page_item':getClass('/Weather')}" class="clWeather"><a id="cWeather" href="#Weather"><img src="images/rain.png"> <span class="hidden-phone hidden-tablet" data-i18n="Weather">Weather</span></a></li>
+                            <li class="divider-vertical clUtility"></li>
+								<li ng-class="{'current_page_item':getClass('/Utility')}" class="clUtility"><a id="cUtility" href="#Utility"><img src="images/utility.png"> <span class="hidden-phone hidden-tablet" data-i18n="Utility">Utility</span></a></li>
+                            <li class="divider-vertical clcustommenu" style="display:none;"></li>
+                            <li class="dropdown clcustommenu" style="display:none;">
+                                <a class="dropdown-toggle lcursor" data-toggle="dropdown"><img src="images/devices.png"> <span class="hidden-phone hidden-tablet" data-i18n="Custom">Custom</span> <b class="caret hidden-phone hidden-tablet"></b></a>
+                                <ul class="dropdown-menu pull-right" id="custommenu"></ul>
+							</li>
+                            <li class="divider-vertical" style="display: none;" has-permission="Admin"></li>
+                            <li class="dropdown" style="display: none;" has-permission="Admin">
+                                <a class="dropdown-toggle lcursor" data-toggle="dropdown"><img src="images/setup.png"> <span class="hidden-phone hidden-tablet" data-i18n="Setup">Setup</span> <b class="caret hidden-phone hidden-tablet"></b></a>
+                                <ul class="dropdown-menu pull-right">
+									<li ng-class="{'current_page_item':getClass('/Hardware')}" id="mHardware"><a id="cHardware" href="#Hardware"><img src="images/hardware.png"> <span data-i18n="Hardware">Hardware</span></a></li>
+									<li ng-class="{'current_page_item':getClass('/Devices')}" id="mDevices"><a id="cDevices" href="#Devices"><img src="images/devices.png"> <span data-i18n="Devices">Devices</span></a></li>
+									<li ng-class="{'current_page_item':getClass('/Setup')}" id="mSetup"><a id="cSetup" href="#Setup"><img src="images/setup.png"> <span data-i18n="Application Settings">Application Settings</span></a></li>
+                                    <li id="dUpdate" class="divider"></li>
+                                    <li ng-class="{'current_page_item':getClass('/Update')}" id="mUpdate"><a id="cUpdate" href="#Update"><img src="images/utility.png"> <span data-i18n="Update Domoticz">Update Domoticz</span></a></li>
+                                    <li id="mCheckUpdate"><a id="cCheckUpdate" href="javascript:CheckForUpdate(true)"><img src="images/utility.png"> <span data-i18n="Check for Update">Check for Update</span></a></li>
+                                    <li class="dropdown-submenu">
+										<a id="cMoreOptions" tabindex="-1" data-i18n="More options">More options</a>
+										<ul class="dropdown-menu pull-left">
+											<li ng-class="{'current_page_item':getClass('/Cam')}" id="mCam"><a id="cCam" href="#Cam"><img src="images/camera-web.png"> <span data-i18n="Cameras">Cameras</span></a></li>
+											<li ng-class="{'current_page_item':getClass('/Users')}" id="mUsers"><a id="cUsers" href="#Users"><img src="images/users.png"> <span data-i18n="Edit Users">Edit Users</span></a></li>
+											<li ng-class="{'current_page_item':getClass('/Events')}" id="mEvents"><a id="cEvents" href="#Events"><img src="images/events.png"> <span data-i18n="Events">Events</span></a></li>
+											<li class="dropdown-submenu">
+												<a id="cPlans" tabindex="-1"><img src="images/house.png"> <span data-i18n="Plans">Plans</span></a>
+												<ul class="dropdown-menu pull-right">
+													<li ng-class="{'current_page_item':getClass('/Roomplan')}" id="mRoomplan"><a id="cRoomplan" href="#Roomplan"> <span data-i18n="Roomplan">Roomplan</span></a></li>
+													<li ng-class="{'current_page_item':getClass('/Floorplanedit')}" id="mFloorplan"><a id="cFloorplan" href="#Floorplanedit"> <span data-i18n="Floorplan">Floorplan</span></a></li>
+												</ul>
+											</li>
+											<li ng-class="{'current_page_item':getClass('/UserVariables')}" id="mUserVariables"><a id="cUserVariables" href="#UserVariables"><img src="images/variables.png"> <span data-i18n="User variables">User variables</span></a></li>
+											<li id="mSecurity"><a id="cSecurity" href="secpanel/index.html"><img src="images/security.png"> <span data-i18n="SecurityPanel">Security Panel</span></a></li>
+											<li ng-class="{'current_page_item':getClass('/Notification')}" id="mNotification"><a id="cNotification" href="#Notification"><img src="images/notification.png"> <span data-i18n="Send Notification">Send Notification</span></a></li>
+											<li class="divider"></li>
+											<li class="dropdown-submenu">
+												<a id="cDataPush" tabindex="-1"><img src="images/contact.png"> <span data-i18n="Data push">Data push</span></a>
+												<ul class="dropdown-menu pull-right">
+													<li ng-class="{'current_page_item':getClass('/DPFibaro')}" id="mDPFibaro"><a id="cDPFibaro" href="#DPFibaro"> <span data-i18n="FibaroLink">FibaroLink</span></a></li>
+												</ul>
+											</li>
+											<li class="divider"></li>
+											<li id="mRestart"><a id="cRestart" href="javascript:SwitchLayout('Restart')"><img src="images/restart.png"> <span data-i18n="Restart System">Restart System</span></a></li>
+											<li id="mShutdown"><a id="cShutdown" href="javascript:SwitchLayout('Shutdown')"><img src="images/shutdown.png"> <span data-i18n="Shutdown System">Shutdown System</span></a></li>
+										</ul>
+                                    </li>
+                                    <li class="divider"></li>
+                                    <li ng-class="{'current_page_item':getClass('/Log')}" id="mLog"><a id="cLog" href="#Log"><img src="images/log.png"> <span data-i18n="Log">Log</span></a></li>
+                                    <li id="dLogoutSetup" class="divider" style="display: none;" has-Login=true></li>
+									<li id="mLogoutSetup" style="display: none;" has-Login=true><a id="cLogout" href="#Logout"><img src="images/logout.png"> <span data-i18n="Logout">Logout</span></a></li>
+                                </ul>
+                            </li>
+                            <li id="dLogout" class="divider-vertical" style="display: none;" has-Login-No-Admin=true></li>
+							<li id="mLogout" style="display: none;" has-Login-No-Admin=true><a id="cLogout" href="#Logout"><img src="images/logout.png"> <span data-i18n="Logout">Logout</span></a></li>
+                        </ul>
+                </div>
+            </div>
+        </div>
+        <div id="holder">
+					<div class="container">
+							<div id="notification" style="display: none;"></div>
+							<div class="bannercontent">
+								<div id="main-view" ng-view></div>
+							</div>
+							<div id="copyright" style="display: none;" has-User>
+									<p>&copy; 2012-2014 Domoticz | WWW: <a href="http://domoticz.com/">Domoticz.com</a></p>
+							</div>
+					</div> <!-- /container -->
+		</div>
+    </body>
+</html>

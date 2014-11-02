@@ -1,0 +1,528 @@
+<div id="hardwarecontent">
+</div>
+<div id="opentherm" style="display:none;">
+	<center>
+	<form id="openthermform">
+		<br>
+		<center>
+			<span data-i18n="Outside Temperature Sensor">Outside Temperature Sensor</span>: <select id="combooutsidesensor" name="combooutsidesensor" style="width:300px" class="combobox ui-corner-all">
+			</select>
+			<br><br>
+			<input type="hidden" id="idx" name="idx" value="-1">
+			<button class="btn btn-danger" id="submitbuttonopentherm">Save</button>
+		</center>
+	</form>
+	</center>
+</div>
+<div id="sbfspot" style="display:none;">
+	<center>
+	<form id="sbfspot">
+		<br>
+		<center>
+			<button class="btn btn-warning" id="btnimportolddata">Import old Month Data</button>
+			<br><br>
+			<p>
+			You can retreive old month records by running SBFSpot/SMASpot with commandline parameter -v -amXX,<br>
+			where XX is the amount of months you would like to retreive, for example:<br>
+			<b>./SBFSpot -v -am12</b> , this will retreive up to 2 years from now.<br><br>
+			This process can take a while, when pressing the above button, please wait until the dashboard is shown again!.
+			</p>
+			<input type="hidden" id="idx" name="idx" value="-1">
+		</center>
+	</form>
+	</center>
+</div>
+<div id="openzwave" style="display:none;">
+	<div id="zwavenodesqueried" class="alert alert-error" style="display:none;"><b><span data-i18n="Not all Nodes have been Queried yet, OpenZWave not fully initialized yet!"</span></b></div>
+	<div class="page-header-small">
+		<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td>
+					<h1 data-i18n="Nodes">Nodes</h1>
+				</td>
+				<td align="right">
+					<div class="dropdown">
+					  <button class="btn dropdown-toggle sr-only" type="button" id="dropdownMenu1" data-toggle="dropdown">
+						<span data-i18n="Node management">Node management</span>
+						<span class="caret"></span>
+					  </button>
+					  <ul class="dropdown-menu pull-right" role="menu" aria-labelledby="dropdownMenu1">
+						<li ><a href="javascript:ZWaveIncludeNode();" ><span data-i18n="Include Node" class="btn btn-primary">Include Node</span></a></li>
+						<li><a href="javascript:ZWaveExcludeNode();" ><span data-i18n="Exclude Node" class="btn btn-primary">Exclude Node</span></a></li>
+						<li><a href="javascript:ZWaveHealNetwork();" ><span data-i18n="Heal network" class="btn btn-warning">Heal network</span></a></li>
+						<li role="presentation" class="divider"></li>
+						<li><a href="javascript:ZWaveTopology();" ><span data-i18n="Groups & Network" class="btn btn-success">Groups & Network</span></a></li>
+						<li role="presentation" class="divider"></li>
+						<li><a href="javascript:ZWaveSoftResetNode();" ><span data-i18n="Soft reset controller" class="btn btn-danger">Soft reset controller</span></a></li>
+						<li><a href="javascript:ZWaveHardResetNode();" ><span data-i18n="Hard reset controller" class="btn btn-danger">Hard reset controller</span></a></li>
+						<li><a href="javascript:ZWaveReceiveConfiguration();" ><span data-i18n="Receive configuration from other controller" class="btn btn-primary">Receive configuration from other controller</span></a></li>
+						<li><a href="javascript:ZWaveSendConfiguration();" ><span data-i18n="Send configuration to other controller" class="btn btn-primary">Send configuration to other controller</span></a></li>
+						<li><a href="javascript:ZWaveTransferPrimaryRole();" ><span data-i18n="Transfer primary role" class="btn btn-danger">Transfer primary role</span></a></li>
+						<li id="usercodegrp" role="presentation" class="divider"></li>
+						<li id="usercodegrp"><a href="javascript:ZWaveStartUserCodeEnrollment();" ><span data-i18n="Start User Code Enrollment" class="btn btn-primary">Start User Code Enrollment</span></a></li>
+						<li id="usercodegrp"><a id="zwavecodemanagement" href="javascript:ZWaveUserCodeManagement();" ><span data-i18n="User Code Management" class="btn btn-primary">User Code Management</span></a></li>
+						<li role="presentation" class="divider"></li>
+						<li><a id="zwave_configdownload" href="#" ><span data-i18n="Download Configuration File" class="btn btn-primary">Download Configuration File</span></a></li>
+					  </ul>
+					</div>
+				</td>
+			</tr>
+		</table>
+	</div>
+    <table class="display" id="nodestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th width="80" align="center" data-i18n="NodeID">NodeID</th>
+                <th width="150" align="left" data-i18n="Name">Name</th>
+                <th align="left" data-i18n="Description">Description</th>
+                <th width="150" align="left" data-i18n="Last Seen">Last Seen</th>
+                <th width="50" align="left" data-i18n="EnablePolling">Enable Polling</th>
+                <th width="50" align="left" data-i18n="Status">Status</th>
+            </tr>
+        </thead>
+    </table>
+	<input type="hidden" id="idx" name="idx" value="-1">
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td>
+				<a class="btnstyle3-dis" id="nodeupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+				<a class="btnstyle3-dis" id="nodedelete" data-i18n="Delete">Delete</a>
+			</td>
+			<td align="right">
+				<a class="btnstyle3" id="nodelistrefresh" data-i18n="Refresh" onclick="RefreshOpenZWaveNodeTable();">Refresh</a>
+			</td>
+		</tr>
+	</table>
+	<br>
+    <input type="hidden" id="ownNodeId" name="ownNodeId" value="-1">
+	<table class="display" id="nodeparamstable" border="0" cellpadding="0" cellspacing="20">
+		<tr>
+			<td align="right" style="width:110px"><label for="name"><span data-i18n="Name"></span>:</label></td>
+			<td><input type="text" id="nodename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		<tr id="trEnablePolling">
+			<td align="right" style="width:80px"><label for="EnablePolling"><span data-i18n="EnablePolling"></span>:</label></td>
+			<td><input type="checkbox" id="EnablePolling" checked></td>
+		</tr>
+	</table>
+	<br>
+	<h2 data-i18n="Configuration">Configuration</h2>
+	<br>
+	<div id="configuration"></div>
+</div>
+<div id="openzwaveusercodes" style="display:none;">
+	<div class="page-header-small">
+		<h1 data-i18n="User Codes">User Codes</h1>
+	</div>
+    <table class="display" id="codestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th width="70" align="center" data-i18n="Code">Code</th>
+                <th align="left" data-i18n="Value">Value</th>
+                <th width="70" align="left" data-i18n="Action">Action</th>
+            </tr>
+        </thead>
+    </table>
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td align="right">
+				<a class="btnstyle3" id="nodelistrefresh" data-i18n="Refresh" onclick="RefreshOpenZWaveUserCodesTable();">Refresh</a>
+			</td>
+		</tr>
+	</table>
+	<br />
+	Please note, removing a code can take a while on battery operated devices.<br />
+	To quickly force the hardware to remove the code (after pressing the remove button)<br />
+	Use the tamper switch on the back to wake up the device.
+	<input type="hidden" id="idx" name="nodeidx" value="-1">
+</div>
+
+<div id="wakeonlan" style="display:none;">
+	<div class="page-header-small">
+		<table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td>
+					<h1 data-i18n="Nodes">Nodes</h1>
+				</td>
+			</tr>
+		</table>
+	</div>
+    <table class="display" id="nodestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th width="70" align="center" data-i18n="ID">ID</th>
+                <th width="150" align="left" data-i18n="Name">Name</th>
+                <th align="left" data-i18n="Mac Address">Mac Address</th>
+            </tr>
+        </thead>
+    </table>
+	<input type="hidden" id="idx" name="idx" value="-1">
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td>
+				<a class="btnstyle3-dis" id="nodeupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+				<a class="btnstyle3-dis" id="nodedelete" data-i18n="Delete">Delete</a>
+			</td>
+			<td align="right">
+				<a class="btnstyle3" id="nodelistrefresh" data-i18n="Clear" onclick="WOLClearNodes();">Clear</a>
+			</td>
+		</tr>
+	</table>
+	<br>
+	<table class="display" id="nodeparamstable" border="0" cellpadding="0" cellspacing="20">
+		<tr>
+			<td align="right" style="width:110px"><label for="nodename"><span data-i18n="Name"></span>:</label></td>
+			<td><input type="text" id="nodename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:110px"><label for="nodemac"><span data-i18n="Mac Address">Mac Address</span>:</label></td>
+			<td><input type="text" id="nodemac" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td><a class="btnstyle3" onclick="AddWOLNode();" data-i18n="Add">Add</a></td>
+		</tr>
+	</table>
+</div>
+
+<div id="rfxhardwaremode" style="display:none;">
+<center>
+<form id="settings">
+	<table>
+		<tr>
+			<td align="left" style="width:150px"><input type="checkbox" id="undecon" name="undecon">&nbsp;<label for="undecon">undec on</label></td>
+			<td align="left" style="width:150px"><input type="checkbox" id="BlindT1T2T3T4" name="BlindT1T2T3T4">&nbsp;<label for="BlindT1T2T3T4">Blind T1/T2/T3/T4</label></td>
+			<td align="left" style="width:150px"><input type="checkbox" id="Visonic" name="Visonic">&nbsp;<label for="Visonic">Visonic</label></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="rfu6" name="rfu6">&nbsp;<label for="rfu6">RFU 6</label></td>
+			<td><input type="checkbox" id="BlindT0" name="BlindT0">&nbsp;<label for="BlindT0">Blind T0</label></td>
+			<td><input type="checkbox" id="ATIremote" name="ATIremote">&nbsp;<label for="ATIremote">ATI remote</label></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="ByronSX" name="ByronSX">&nbsp;<label for="ByronSX">Byron SX</label></td>
+			<td><input type="checkbox" id="ProGuard" name="ProGuard">&nbsp;<label for="ProGuard">ProGuard</label></td>
+			<td><input type="checkbox" id="OregonScientific" name="OregonScientific">&nbsp;<label for="OregonScientific">Oregon Scientific</label></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="RSL" name="RSL">&nbsp;<label for="rfu4">Conrad RSL</label></td>
+			<td><input type="checkbox" id="FS20" name="FS20">&nbsp;<label for="FS20">FS20</label></td>
+			<td><input type="checkbox" id="Meiantech" name="Meiantech">&nbsp;<label for="Meiantech">Meiantech</label></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="Lighting4" name="Lighting4">&nbsp;<label for="Lighting4">Lighting4</label></td>
+			<td><input type="checkbox" id="LaCrosse" name="LaCrosse">&nbsp;<label for="LaCrosse">LaCrosse</label></td>
+			<td><input type="checkbox" id="HomeEasyEU" name="HomeEasyEU">&nbsp;<label for="HomeEasyEU">HomeEasy EU</label></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="FineOffsetViking" name="FineOffsetViking">&nbsp;<label for="FineOffsetViking">FineOffset/Viking</label></td>
+			<td><input type="checkbox" id="HidekiUPM" name="HidekiUPM">&nbsp;<label for="HidekiUPM">Hideki/UPM</label></td>
+			<td><input type="checkbox" id="AC" name="AC">&nbsp;<label for="AC">AC</label></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="Rubicson" name="Rubicson">&nbsp;<label for="Rubicson">Rubicson</label></td>
+			<td><input type="checkbox" id="ADLightwaveRF" name="ADLightwaveRF">&nbsp;<label for="ADLightwaveRF">AD/LightwaveRF</label></td>
+			<td><input type="checkbox" id="ARC" name="ARC">&nbsp;<label for="ARC">ARC</label></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="AEBlyss" name="AEBlyss">&nbsp;<label for="AEBlyss">AE/Blyss</label></td>
+			<td><input type="checkbox" id="Mertik" name="Mertik">&nbsp;<label for="Mertik">Mertik</label></td>
+			<td><input type="checkbox" id="X10" name="X10">&nbsp;<label for="X10">X10</label></td>
+		</tr>
+	</table>
+	<br>
+	<input type="hidden" id="idx" name="idx" value="-1">
+	<button class="btn btn-warning" id="defaultbutton">Default</button>
+	<button class="btn btn-danger" id="submitbutton">Set Mode</button>
+</form>
+</center>
+</div>
+<div id="rego6xxtypeedit" style="display:none;">
+<center>
+<form id="regotype">
+    <table>
+        <tr>
+            <td><label>Rego 6XX type: </label></td>
+            <td><select id="comborego6xxtype" name="Rego6XXType" style="width:200px" class="combobox ui-corner-all">
+                <option value="0">600-635, 637 single language</option>
+                <option value="1">636</option>
+                <option value="2">637 multi language</option>
+            </select></td>
+        </tr>
+        <tr><td colspan="2">Note: Any change will take effect after restarting Domoticz!</td></tr>
+    </table>
+	<br>
+	<input type="hidden" id="idx" name="idx" value="-1">
+	<button class="btn btn-danger" id="submitbuttonrego">Set Mode</button>
+</form>
+</center>
+</div>
+<div id="p1usbeedit" style="display:none;">
+<center>
+<form id="p1usbtype">
+	<br>
+	<h2><span data-i18n="Hardware">Hardware</span>:</h2>
+	<table>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Baudrate">Baudrate</span>: </label></td>
+			<td><select id="P1Baudrate" name="P1Baudrate" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">9600</option>
+				<option value="1">115200</option>
+			</select></td>
+		</tr>
+	</table>
+	<br>
+	<br>
+	<input type="hidden" id="idx" name="idx" value="-1">
+	<button class="btn btn-danger" id="submitbuttonp1usb">Set Mode</button>
+</form>
+</center>
+</div>
+<div id="s0metertypeedit" style="display:none;">
+<center>
+<form id="s0metertype">
+	<br>
+	<h2><span data-i18n="Hardware">Hardware</span>:</h2>
+	<table>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Baudrate">Baudrate</span>: </label></td>
+			<td><select id="S0Baudrate" name="S0Baudrate" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">9600</option>
+				<option value="1">115200</option>
+			</select></td>
+		</tr>
+	</table>
+	<br>
+	<br>
+	<h2>Meter 1:</h2>
+	<table>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Type"></span>: </label></td>
+			<td><select id="combom1type" name="S0M1Type" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">Energy</option>
+				<option value="1">Gas</option>
+				<option value="2">Water</option>
+				<option value="3">Counter</option>
+			</select></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Pulses/Hour"></span>: </label></td>
+			<td><input type="input" id="M1PulsesPerHour" name="M1PulsesPerHour" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+	</table>
+	<br>
+	<h2>Meter 2:</h2>
+	<table>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Type"></span>: </label></td>
+			<td><select id="combom2type" name="S0M2Type" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">Energy</option>
+				<option value="1">Gas</option>
+				<option value="2">Water</option>
+				<option value="3">Counter</option>
+			</select></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Pulses/Hour"></span>: </label></td>
+			<td><input type="input" id="M2PulsesPerHour" name="M2PulsesPerHour" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+	</table>
+	<br>
+	<input type="hidden" id="idx" name="idx" value="-1">
+	<button class="btn btn-danger" id="submitbuttons0meter">Set Mode</button>
+</form>
+</center>
+</div>
+<div id="limitlessmetertype" style="display:none;">
+	<center>
+	<form id="limitform">
+		<br>
+		<center>
+			<label><span data-i18n="Type"></span>: </label><select id="combom1type" name="LimitlessType" style="width:100px" class="combobox ui-corner-all">
+				<option value="1">RGBW</option>
+				<option value="2">RGB</option>
+				<option value="3">White</option>
+			</select>
+			<br><br>
+			<input type="hidden" id="idx" name="idx" value="-1">
+			<button class="btn btn-danger" id="submitbuttonlimitless">Set Mode</button>
+		</center>
+	</form>
+	</center>
+</div>
+<div id="hardwaremain" style="display:none;">
+    <table class="display" id="hardwaretable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th width="120" align="left" data-i18n="Name">Name</th>
+                <th width="60" align="left" data-i18n="Enabled">Enabled</th>
+                <th width="240" align="left" data-i18n="Type">Type</th>
+                <th width="200" align="left" data-i18n="Address">Address</th>
+                <th width="80" align="center" data-i18n="Port">Port</th>
+                <th width="120" align="center" data-i18n="Data Timeout">Data Timeout</th>
+            </tr>
+        </thead>
+    </table>
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td>
+					<a class="btnstyle3-dis" id="hardwareupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+					<a class="btnstyle3-dis" id="hardwaredelete" data-i18n="Delete">Delete</a>
+				</td>
+			</tr>
+		</table>
+		<br>
+		<table class="display" id="hardwareparamstable" border="0" cellpadding="0" cellspacing="20">
+			<tr>
+				<td align="right" style="width:80px"><label for="enabled"><span data-i18n="Enabled"></span>:</label></td>
+				<td><input type="checkbox" id="enabled" checked></td>
+			</tr>
+			<tr>
+				<td align="right" style="width:110px"><label for="hardwarename"><span data-i18n="Name"></span>:</label></td>
+				<td><input type="text" id="hardwarename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			<tr>
+				<td align="right" style="width:110px"><label for="combotype"><span data-i18n="Type"></span>:</label></td>
+				<td><select id="combotype" style="width:410px" class="combobox ui-corner-all">
+						<!--#embed hardwaretypes -->
+						</select>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td align="right" style="width:110px"><label for="combodatatimeout"><span data-i18n="Data Timeout">Data Timeout</span>:</label></td>
+				<td><select id="combodatatimeout" style="width:200px" class="combobox ui-corner-all">
+					<option data-i18n="Disabled" value="0">Disabled</option>
+					<option data-i18n="1 Minute" value="60">1 Minute</option>
+					<option data-i18n="5 Minutes" value="300">5 Minutes</option>
+					<option data-i18n="10 Minutes" value="600">10 Minutes</option>
+					<option data-i18n="15 Minutes" value="900">15 Minutes</option>
+					<option data-i18n="30 Minutes" value="1800">30 Minutes</option>
+					<option data-i18n="1 Hour" value="3600">1 Hour</option>
+					<option data-i18n="2 Hours" value="7200">2 Hours</option>
+					<option data-i18n="3 Hours" value="10800">3 Hours</option>
+					<option data-i18n="4 Hours" value="14400">4 Hours</option>
+					<option data-i18n="5 Hours" value="18000">5 Hours</option>
+					<option data-i18n="6 Hours" value="21600">6 Hours</option>
+					<option data-i18n="7 Hours" value="25200">7 Hours</option>
+					<option data-i18n="8 Hours" value="28800">8 Hours</option>
+					<option data-i18n="9 Hours" value="32400">9 Hours</option>
+					<option data-i18n="10 Hours" value="36000">10 Hours</option>
+					<option data-i18n="11 Hours" value="39600">11 Hours</option>
+					<option data-i18n="12 Hours" value="43200">12 Hours</option>
+					<option data-i18n="13 Hours" value="46800">13 Hours</option>
+					<option data-i18n="14 Hours" value="50400">14 Hours</option>
+					<option data-i18n="15 Hours" value="54000">15 Hours</option>
+					<option data-i18n="16 Hours" value="57600">16 Hours</option>
+					<option data-i18n="17 Hours" value="61200">17 Hours</option>
+					<option data-i18n="18 Hours" value="64800">18 Hours</option>
+					<option data-i18n="19 Hours" value="68400">19 Hours</option>
+					<option data-i18n="20 Hours" value="72000">20 Hours</option>
+					<option data-i18n="21 Hours" value="75600">21 Hours</option>
+					<option data-i18n="22 Hours" value="79200">22 Hours</option>
+					<option data-i18n="23 Hours" value="82800">23 Hours</option>
+					<option data-i18n="24 Hours" value="86400">24 Hours</option>
+					</select>
+					<br />
+					<span data-i18n="Specifying a Data Timeout will restart the hardware device if no data is received for the specified time."></span>
+					<br />
+					<strong><font color="red"><span data-i18n="Do not enable this option for devices that do not receive data!"></span></font></strong>
+				</td>
+			</tr>
+		</table>
+		<div id="divserial">
+			<br>
+			<table class="display" id="hardwareparamsserial" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lblserialport" for="name"><span data-i18n="Serial Port"></span>:</label></td>
+					<td><select id="comboserialport" style="width:210px" class="combobox ui-corner-all"></select></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divremote">
+			<br>
+			<table class="display" id="hardwareparamsremote" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lblremoteaddress" for="name"><span data-i18n="Remote Address"></span>:</label></td>
+					<td><input type="text" id="tcpaddress" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lblremoteport" for="name"><span data-i18n="Port"></span>:</label></td>
+					<td><input type="text" id="tcpport" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divunderground">
+			<br>
+			<table class="display" id="hardwareparamsunderground" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="API Key"></span>:</label></td>
+					<td><input type="text" id="apikey" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Location"></span>:</label></td>
+					<td><input type="text" id="location" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divlocation">
+			<br>
+			<table class="display" id="hardwareparamslocation" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Location"></span>:</label></td>
+					<td><input type="text" id="location" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divlogin">
+			<br>
+			<table class="display" id="hardwareparamslogin" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lblusername" for="name"><span data-i18n="Username"></span>:</label></td>
+					<td><input type="text" id="username" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lblpassword" for="name"><span data-i18n="Password"></span>:</label></td>
+					<td><input type="password" id="password" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+				</tr>
+			</table>
+		</div>
+		<div id="divphilipshue">
+			<br>
+			<table class="display" id="hardwareparamsphilipshue" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lblusername" for="name"><span data-i18n="Username"></span>:</label></td>
+					<td><input type="text" id="username" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+				</tr>
+				<tr>
+					<td></td>
+					<td><span class="label label-important lcursor" onclick="RegisterPhilipsHue();">Register on Bridge</span></td>
+				</tr>
+			</table>
+		</div>
+		<br>
+    <a class="btnstyle3" onclick="AddHardware();" data-i18n="Add">Add</a>
+</div>
+<div id="dialog-createsensor" title="Create Virtual Sensor" style="display:none;">
+		<form>
+				<label for="sensortype"><span data-i18n="Sensor Type"></span>: </label>
+				<select id="sensortype" style="width:250px" class="combobox ui-corner-all">
+					<option value="249" data-i18n="Air Quality">Air Quality</option>
+					<option value="113" data-i18n="Counter">Counter</option>
+					<option value="90" data-i18n="Electric (Instant+Counter)">Electric (Instant+Counter)</option>
+					<option value="3" data-i18n="Gas">Gas</option>
+					<option value="81" data-i18n="Humidity">Humidity</option>
+					<option value="246" data-i18n="Lux">Lux</option>
+					<option value="2" data-i18n="Percentage">Percentage</option>
+					<option value="1" data-i18n="Pressure (Bar)">Pressure (Bar)</option>
+					<option value="85" data-i18n="Rain">Rain</option>
+					<option value="6" data-i18n="Switch">Switch</option>
+					<option value="80" data-i18n="Temperature">Temperature</option>
+					<option value="82" data-i18n="Temp+Hum">Temp+Hum</option>
+					<option value="84" data-i18n="Temp+Hum+Baro">Temp+Hum+Baro</option>
+					<option value="5" data-i18n="Text">Text</option>
+					<option value="87" data-i18n="UV">UV</option>
+					<option value="4" data-i18n="Voltage">Voltage</option>
+					<option value="86" data-i18n="Wind">Wind</option>
+				</select>
+		</form>
+</div>

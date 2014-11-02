@@ -1,0 +1,28 @@
+<?xml version='1.0'?>
+<xs:schema
+  xmlns:xs='http://www.w3.org/2001/XMLSchema'
+  targetNamespace='http://code.google.com/p/open-zwave/'
+  xmlns:Scenes='http://code.google.com/p/open-zwave/'
+  elementFormDefault='qualified'>
+
+ <xs:element name='Scenes'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='Scenes:Value' minOccurs='0' maxOccurs='unbounded'/>
+   </xs:sequence>
+   <xs:attribute name='version' type='xs:string' use='required'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Value'>
+  <xs:complexType>
+   <xs:attribute name='homeId' type='xs:string' use='required'/>
+   <xs:attribute name='nodeId' type='xs:string' use='required'/>
+   <xs:attribute name='genre' type='xs:string' use='required'/>
+   <xs:attribute name='commandClassId' type='xs:string' use='required'/>
+   <xs:attribute name='instance' type='xs:string' use='required'/>
+   <xs:attribute name='index' type='xs:string' use='required'/>
+   <xs:attribute name='type' type='xs:string' use='required'/>
+  </xs:complexType>
+ </xs:element>
+</xs:schema>

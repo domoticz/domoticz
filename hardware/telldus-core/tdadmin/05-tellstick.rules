@@ -1,0 +1,3 @@
+ATTRS{idVendor}=="1781", SUBSYSTEM=="usb", ACTION=="add", MODE="664", GROUP="plugdev", ENV{ID_VENDOR_ID}="$attr{idVendor}", ENV{ID_MODEL_ID}="$attr{idProduct}", ENV{ID_SERIAL_SHORT}="$attr{serial}", RUN+="@CMAKE_INSTALL_PREFIX@/share/telldus-core/helpers/udev.sh"
+ENV{ID_VENDOR_ID}=="1781", SUBSYSTEM=="usb", ACTION=="remove", ENV{ID_VENDOR_ID}="$attr{idVendor}", ENV{ID_MODEL_ID}="$attr{idProduct}", ENV{ID_SERIAL_SHORT}="$attr{serial}", RUN+="@CMAKE_INSTALL_PREFIX@/share/telldus-core/helpers/udev.sh"
+

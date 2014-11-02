@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value type="byte" genre="config" instance="1" index="1" label="Watt meter report period" min="1" max="32767" units="5 sec" value="1">
+      <Help>If the setting is configured for 1 hour (value=720), the TZ88 will report its instant power consumption every 1 hour.</Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="2" label="kWh meter report period" min="1" max="32767" units="10 min" value="6">
+      <Help>If the setting is configured for 1 hour (value=6), the TZ88 will report its accumulated power consumption (kWh) every 1 hour.</Help>
+    </Value>
+  </CommandClass>
+</Product>

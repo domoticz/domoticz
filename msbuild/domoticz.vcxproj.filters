@@ -1,0 +1,767 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="crosscompile">
+      <UniqueIdentifier>{52d21c18-6d21-4d97-9a96-e7a3f33b1dd5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Webserver">
+      <UniqueIdentifier>{0636fc98-3ba6-4dc9-8323-48dc959944c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="json">
+      <UniqueIdentifier>{caed8300-c22a-4d76-9380-2b55120edaaa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices">
+      <UniqueIdentifier>{f1967572-afca-4c81-a06e-1eb4d560bb60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TCPServer">
+      <UniqueIdentifier>{7c74c4ee-c056-4e43-98a8-248084de2d02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\RFXSerial">
+      <UniqueIdentifier>{261207be-5fec-410d-9407-6a50810bd449}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\RFXTCP">
+      <UniqueIdentifier>{041d79b0-1d2f-485b-86fd-edb5607e0f41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Domoticz">
+      <UniqueIdentifier>{222696d2-1c77-4abb-a483-83548f0b75d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Windows">
+      <UniqueIdentifier>{b2fc9567-e487-4cee-b23e-9f6002b503b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\P1Smart Meter">
+      <UniqueIdentifier>{44ff1baf-dce6-4a20-b295-313ef10e0509}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\P1Smart Meter\P1MeterTCP">
+      <UniqueIdentifier>{35d0b876-1f3b-471d-8fee-5f83919994f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\P1Smart Meter\P1MeterSerial">
+      <UniqueIdentifier>{3842a5f4-988f-43df-ab50-6b41679ce600}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SMTP">
+      <UniqueIdentifier>{acc2dd9a-c3ba-4abc-9dd5-a6871fd4d465}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\YouLess">
+      <UniqueIdentifier>{ddea03ec-8176-4bdf-8402-b73040b73584}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\TE923">
+      <UniqueIdentifier>{591cadc8-1b94-461a-b993-3d2e72c4fb0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Rego6XX">
+      <UniqueIdentifier>{f7b93c2a-b061-4a1b-9a68-75151cb727cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Davis">
+      <UniqueIdentifier>{c3024a2d-5f67-4780-8d26-cc53d91624ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\VolcraftCO20">
+      <UniqueIdentifier>{1c7cd6cd-b14b-413a-bc63-1f9c4bd2a8b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\1-Wire">
+      <UniqueIdentifier>{013ea4c4-bb81-4718-bf23-82eb9bdee56e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\I2C">
+      <UniqueIdentifier>{f241a5bf-887e-41fe-a92c-e1cc990598b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EventSystem">
+      <UniqueIdentifier>{2d51924f-03d7-4afb-8b48-329a7d18317c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\wunderground.com">
+      <UniqueIdentifier>{2d9af04c-846a-4309-9bcd-a1d43a077de6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Dummy">
+      <UniqueIdentifier>{94a87e33-1ea0-42dc-895c-54802b773fb7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\S0 Meter">
+      <UniqueIdentifier>{d33c473c-6718-4c9d-9b29-4f9f81e1a2d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\PiFace">
+      <UniqueIdentifier>{9d351bef-effa-483f-bc87-03d85479a74f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\OpenTherm-Gateway">
+      <UniqueIdentifier>{9b834e19-65cb-442c-bfd7-c39e44279cb7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Teleinfo">
+      <UniqueIdentifier>{9b098c6e-b49d-404b-b9a2-5904c1d92edd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\ZWave">
+      <UniqueIdentifier>{8541fa16-1ca3-4b1c-8658-7075b91f73a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\ZWave\Razberry-ZWave">
+      <UniqueIdentifier>{3d63876c-62b2-4fbf-a50c-5132dcfbcb3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\ZWave\OpenZWave">
+      <UniqueIdentifier>{2eca1afb-1a1f-4158-ab8d-0616c1fbd279}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\LimitlessLed">
+      <UniqueIdentifier>{80714ac8-8783-4ef2-8836-3bb5b15adbb0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Camera">
+      <UniqueIdentifier>{adaa661b-4aaf-443c-a368-2c2f384d9c1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\EnOcean">
+      <UniqueIdentifier>{0460800e-868d-4e4d-a378-ce25a7d9025d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="zlib">
+      <UniqueIdentifier>{96351f00-f848-4e75-84be-0bccaecc2a02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Forecast.io">
+      <UniqueIdentifier>{739f5460-5c88-47ba-8cd1-d94035c1819d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\AsyncSerialTCP">
+      <UniqueIdentifier>{1d8ff530-0367-4c8a-844f-4d5936d2ab97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\SolarEdge">
+      <UniqueIdentifier>{e30a6865-acaf-4ce1-a43d-37183b91520f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TCPProxy">
+      <UniqueIdentifier>{242d77c7-709a-4c87-8d92-a87a489af891}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\ICY Thermostat">
+      <UniqueIdentifier>{76dbad7a-fef9-4b45-94f2-82670e7ff061}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\HardwareMonitor">
+      <UniqueIdentifier>{51868f28-9b4c-49aa-b7b1-f1c4a479b741}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\WOL">
+      <UniqueIdentifier>{4d9a219d-95b5-4e44-bcf1-b47e7df829d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\GPIO%28wiringPi%29">
+      <UniqueIdentifier>{b87abdbf-bee2-4192-86ae-1ab1c4bca502}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Meteostick">
+      <UniqueIdentifier>{fa6be0ed-32cb-4b89-b3b8-3c89113de8a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\PVOutput%28Input%29">
+      <UniqueIdentifier>{18743244-0b44-4bd4-851a-2e2ada37b8ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Toon Thermostat">
+      <UniqueIdentifier>{61053137-fc80-420f-aee4-7a6a9cdc8923}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\EcoDevices">
+      <UniqueIdentifier>{45784bef-128b-4ccf-8425-dd83aca6d9c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Logitech Harmony Hub">
+      <UniqueIdentifier>{5f254282-0e5e-4373-b545-c049bc9dfb14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HTTPClient">
+      <UniqueIdentifier>{43e678ba-2229-48dc-8d72-a10a52186b82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Mochad">
+      <UniqueIdentifier>{9886a577-ba19-4433-9b78-48e07217ca20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\SBFSpot">
+      <UniqueIdentifier>{3d145f2e-6a05-4375-917e-4ac4557915fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Philips Hue">
+      <UniqueIdentifier>{0ba73f41-846f-48e1-a9ff-b70888ac5920}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\CMakeLists.txt">
+      <Filter>crosscompile</Filter>
+    </None>
+    <None Include="..\INSTALL.txt" />
+    <None Include="..\History.txt" />
+    <None Include="..\getsvn.cmake">
+      <Filter>crosscompile</Filter>
+    </None>
+    <None Include="domoticz.ico">
+      <Filter>Windows</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\webserver\Base64.h">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\connection.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\connection_manager.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\cWebem.h">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\mime_types.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\reply.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\request.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\request_handler.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\request_parser.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\server.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tcpserver\TCPClient.h">
+      <Filter>TCPServer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tcpserver\TCPServer.h">
+      <Filter>TCPServer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\DomoticzTCP.h">
+      <Filter>Devices\Domoticz</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\P1MeterBase.h">
+      <Filter>Devices\P1Smart Meter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\P1MeterSerial.h">
+      <Filter>Devices\P1Smart Meter\P1MeterSerial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\P1MeterTCP.h">
+      <Filter>Devices\P1Smart Meter\P1MeterTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\RFXComSerial.h">
+      <Filter>Devices\RFXSerial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\RFXComTCP.h">
+      <Filter>Devices\RFXTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\YouLess.h">
+      <Filter>Devices\YouLess</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\DomoticzHardware.h">
+      <Filter>Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\hardwaretypes.h">
+      <Filter>Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="..\httpclient\UrlEncode.h">
+      <Filter>HTTPClient</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\header.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sqlite\sqlite3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\appversion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\CmdLine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\Helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\localtime_r.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\mainworker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\RFXNames.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\RFXtrx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\Scheduler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\SQLHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\SunRiseSet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\WebServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowsHelper.h">
+      <Filter>Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\Logger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\Camera.h">
+      <Filter>Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="..\httpclient\HTTPClient.h">
+      <Filter>HTTPClient</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\TE923Tool.h">
+      <Filter>Devices\TE923</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\TE923.h">
+      <Filter>Devices\TE923</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\WindCalculation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Rego6XXSerial.h">
+      <Filter>Devices\Rego6XX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\smtpclient\SMTPClient.h">
+      <Filter>SMTP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Razberry.h">
+      <Filter>Devices\ZWave\Razberry-ZWave</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\DavisLoggerSerial.h">
+      <Filter>Devices\Davis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\VolcraftCO20.h">
+      <Filter>Devices\VolcraftCO20</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\VolcraftCO20Tool.h">
+      <Filter>Devices\VolcraftCO20</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\1Wire.h">
+      <Filter>Devices\1-Wire</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\dirent_windows.h">
+      <Filter>Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\BMP085.h">
+      <Filter>Devices\I2C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\smbus.h">
+      <Filter>Devices\I2C</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\EventSystem.h">
+      <Filter>EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Wunderground.h">
+      <Filter>Devices\wunderground.com</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\mainstructs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Dummy.h">
+      <Filter>Devices\Dummy</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\S0MeterSerial.h">
+      <Filter>Devices\S0 Meter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\PiFace.h">
+      <Filter>Devices\PiFace</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\S0MeterBase.h">
+      <Filter>Devices\S0 Meter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\S0MeterTCP.h">
+      <Filter>Devices\S0 Meter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\OTGWBase.h">
+      <Filter>Devices\OpenTherm-Gateway</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\OTGWSerial.h">
+      <Filter>Devices\OpenTherm-Gateway</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\OTGWTCP.h">
+      <Filter>Devices\OpenTherm-Gateway</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Teleinfo.h">
+      <Filter>Devices\Teleinfo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ZWaveBase.h">
+      <Filter>Devices\ZWave</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\OpenZWave.h">
+      <Filter>Devices\ZWave\OpenZWave</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ZWaveCommands.h">
+      <Filter>Devices\ZWave</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Limitless.h">
+      <Filter>Devices\LimitlessLed</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\1Wire\1WireForWindows.h">
+      <Filter>Devices\1-Wire</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\1Wire\1WireCommon.h">
+      <Filter>Devices\1-Wire</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\1Wire\1WireByKernel.h">
+      <Filter>Devices\1-Wire</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\1Wire\1WireByOWFS.h">
+      <Filter>Devices\1-Wire</Filter>
+    </ClInclude>
+    <ClInclude Include="Version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\GZipHelper.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ForecastIO.h">
+      <Filter>Devices\Forecast.io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ASyncSerial.h">
+      <Filter>Devices\AsyncSerialTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ASyncTCP.h">
+      <Filter>Devices\AsyncSerialTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\SolarEdgeBase.h">
+      <Filter>Devices\SolarEdge</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\SolarEdgeTCP.h">
+      <Filter>Devices\SolarEdge</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\TCPProxy\tcpproxy_server.h">
+      <Filter>TCPProxy</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ICYThermostat.h">
+      <Filter>Devices\ICY Thermostat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\HardwareMonitor.h">
+      <Filter>Devices\HardwareMonitor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\WOL.h">
+      <Filter>Devices\WOL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\PVOutput_Input.h">
+      <Filter>Devices\PVOutput%28Input%29</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\DataPush.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\EnOceanESP2.h">
+      <Filter>Devices\EnOcean</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\EnOceanESP3.h">
+      <Filter>Devices\EnOcean</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Gpio.h">
+      <Filter>Devices\GPIO%28wiringPi%29</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\GpioPin.h">
+      <Filter>Devices\GPIO%28wiringPi%29</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\1Wire\1WireSystem.h">
+      <Filter>Devices\1-Wire</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Meteostick.h">
+      <Filter>Devices\Meteostick</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ToonThermostat.h">
+      <Filter>Devices\Toon Thermostat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\EcoDevices.h">
+      <Filter>Devices\EcoDevices</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\HarmonyHub.h">
+      <Filter>Devices\Logitech Harmony Hub</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\csocket.h">
+      <Filter>Devices\Logitech Harmony Hub</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\MochadTCP.h">
+      <Filter>Devices\Mochad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\SBFSpot.h">
+      <Filter>Devices\SBFSpot</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\PhilipsHue.h">
+      <Filter>Devices\Philips Hue</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\webserver\Base64.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\connection.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\connection_manager.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\cWebem.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\mime_types.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\reply.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\request_handler.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\request_parser.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\server.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\json\json_value.cpp">
+      <Filter>json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\json\json_writer.cpp">
+      <Filter>json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\json\json_reader.cpp">
+      <Filter>json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tcpserver\TCPClient.cpp">
+      <Filter>TCPServer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tcpserver\TCPServer.cpp">
+      <Filter>TCPServer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\DomoticzTCP.cpp">
+      <Filter>Devices\Domoticz</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\P1MeterBase.cpp">
+      <Filter>Devices\P1Smart Meter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\P1MeterSerial.cpp">
+      <Filter>Devices\P1Smart Meter\P1MeterSerial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\P1MeterTCP.cpp">
+      <Filter>Devices\P1Smart Meter\P1MeterTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\RFXComSerial.cpp">
+      <Filter>Devices\RFXSerial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\RFXComTCP.cpp">
+      <Filter>Devices\RFXTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\YouLess.cpp">
+      <Filter>Devices\YouLess</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\DomoticzHardware.cpp">
+      <Filter>Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\httpclient\UrlEncode.cpp">
+      <Filter>HTTPClient</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\CmdLine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\domoticz.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\Helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\localtime_r.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\mainworker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\RFXNames.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\Scheduler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\SQLHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\SunRiseSet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowsHelper.cpp">
+      <Filter>Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\Logger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\Camera.cpp">
+      <Filter>Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\httpclient\HTTPClient.cpp">
+      <Filter>HTTPClient</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\TE923Tool.cpp">
+      <Filter>Devices\TE923</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\TE923.cpp">
+      <Filter>Devices\TE923</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Rego6XXSerial.cpp">
+      <Filter>Devices\Rego6XX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\smtpclient\SMTPClient.cpp">
+      <Filter>SMTP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Razberry.cpp">
+      <Filter>Devices\ZWave\Razberry-ZWave</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\DavisLoggerSerial.cpp">
+      <Filter>Devices\Davis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\VolcraftCO20.cpp">
+      <Filter>Devices\VolcraftCO20</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\VolcraftCO20Tool.cpp">
+      <Filter>Devices\VolcraftCO20</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\libusbwinusbbridge.cpp">
+      <Filter>Devices\TE923</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\1Wire.cpp">
+      <Filter>Devices\1-Wire</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\BMP085.cpp">
+      <Filter>Devices\I2C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\smbus.cpp">
+      <Filter>Devices\I2C</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\EventSystem.cpp">
+      <Filter>EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Wunderground.cpp">
+      <Filter>Devices\wunderground.com</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Dummy.cpp">
+      <Filter>Devices\Dummy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WindCalculation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\S0MeterSerial.cpp">
+      <Filter>Devices\S0 Meter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\PiFace.cpp">
+      <Filter>Devices\PiFace</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\S0MeterBase.cpp">
+      <Filter>Devices\S0 Meter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\S0MeterTCP.cpp">
+      <Filter>Devices\S0 Meter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OTGWBase.cpp">
+      <Filter>Devices\OpenTherm-Gateway</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OTGWSerial.cpp">
+      <Filter>Devices\OpenTherm-Gateway</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OTGWTCP.cpp">
+      <Filter>Devices\OpenTherm-Gateway</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Teleinfo.cpp">
+      <Filter>Devices\Teleinfo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ZWaveBase.cpp">
+      <Filter>Devices\ZWave</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OpenZWave.cpp">
+      <Filter>Devices\ZWave\OpenZWave</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Limitless.cpp">
+      <Filter>Devices\LimitlessLed</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\1Wire\1WireForWindows.cpp">
+      <Filter>Devices\1-Wire</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\1Wire\1WireCommon.cpp">
+      <Filter>Devices\1-Wire</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\1Wire\1WireByKernel.cpp">
+      <Filter>Devices\1-Wire</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\1Wire\1WireByOWFS.cpp">
+      <Filter>Devices\1-Wire</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ForecastIO.cpp">
+      <Filter>Devices\Forecast.io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ASyncSerial.cpp">
+      <Filter>Devices\AsyncSerialTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ASyncTCP.cpp">
+      <Filter>Devices\AsyncSerialTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\SolarEdgeBase.cpp">
+      <Filter>Devices\SolarEdge</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\SolarEdgeTCP.cpp">
+      <Filter>Devices\SolarEdge</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\TCPProxy\tcpproxy_server.cpp">
+      <Filter>TCPProxy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ICYThermostat.cpp">
+      <Filter>Devices\ICY Thermostat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\HardwareMonitor.cpp">
+      <Filter>Devices\HardwareMonitor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\WOL.cpp">
+      <Filter>Devices\WOL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\PVOutput_Input.cpp">
+      <Filter>Devices\PVOutput%28Input%29</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\DataPush.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EnOceanESP2.cpp">
+      <Filter>Devices\EnOcean</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EnOceanESP3.cpp">
+      <Filter>Devices\EnOcean</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Gpio.cpp">
+      <Filter>Devices\GPIO%28wiringPi%29</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\GpioPin.cpp">
+      <Filter>Devices\GPIO%28wiringPi%29</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Meteostick.cpp">
+      <Filter>Devices\Meteostick</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ToonThermostat.cpp">
+      <Filter>Devices\Toon Thermostat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EcoDevices.cpp">
+      <Filter>Devices\EcoDevices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\HarmonyHub.cpp">
+      <Filter>Devices\Logitech Harmony Hub</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\csocket.cpp">
+      <Filter>Devices\Logitech Harmony Hub</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\MochadTCP.cpp">
+      <Filter>Devices\Mochad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\SBFSpot.cpp">
+      <Filter>Devices\SBFSpot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\PhilipsHue.cpp">
+      <Filter>Devices\Philips Hue</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="domoticz.rc">
+      <Filter>Windows</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

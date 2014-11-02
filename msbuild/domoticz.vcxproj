@@ -1,0 +1,314 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{6AD96441-5B2C-467B-AAB6-A1B8368D503A}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>domoticz</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v100</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v100</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IntDir>$(Configuration)_Build\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IntDir>$(Configuration)_Build\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;WITH_OPENZWAVE;OPENZWAVE_USEDLL;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_55_0;./libusb;..\hardware\openzwave;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>./Windows Libraries/Boost/boost_1_55_0/Debug;../libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>./Windows Libraries/Curl/libcurl_imp.lib;../sqlite/sqlite3.lib;./Windows Libraries/Lua/Debug/LuaMSVS.lib;./Windows Libraries/OpenZwave/Debug/OpenZWaved.lib;./Windows Libraries/ZLib/zlib.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
+    </Link>
+    <PreBuildEvent>
+      <Command>SubWCRev ..\.. ..\svntemplate.txt svnversion.h</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Getting subversion revision</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;WITH_OPENZWAVE;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_55_0;./libusb;..\hardware\openzwave;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>./Windows Libraries/Boost/boost_1_55_0/Release;../libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>./Windows Libraries/Curl/libcurl_imp.lib;../sqlite/sqlite3.lib;./Windows Libraries/Lua/Release/LuaMSVS.lib;./Windows Libraries/OpenZwave/Release/OpenZWave.lib;./Windows Libraries/ZLib/zlib.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
+    </Link>
+    <PreBuildEvent>
+      <Command>SubWCRev ..\.. ..\svntemplate.txt svnversion.h</Command>
+      <Message>Getting subversion revision</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="..\CMakeLists.txt" />
+    <None Include="..\getsvn.cmake" />
+    <None Include="domoticz.ico" />
+    <None Include="..\History.txt" />
+    <None Include="..\INSTALL.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\hardware\1Wire.h" />
+    <ClInclude Include="..\hardware\1Wire\1WireByKernel.h" />
+    <ClInclude Include="..\hardware\1Wire\1WireByOWFS.h" />
+    <ClInclude Include="..\hardware\1Wire\1WireCommon.h" />
+    <ClInclude Include="..\hardware\1Wire\1WireForWindows.h" />
+    <ClInclude Include="..\hardware\1Wire\1WireSystem.h" />
+    <ClInclude Include="..\hardware\ASyncTCP.h" />
+    <ClInclude Include="..\hardware\BMP085.h" />
+    <ClInclude Include="..\hardware\csocket.h" />
+    <ClInclude Include="..\hardware\DavisLoggerSerial.h" />
+    <ClInclude Include="..\hardware\Dummy.h" />
+    <ClInclude Include="..\hardware\EcoDevices.h" />
+    <ClInclude Include="..\hardware\EnOceanESP2.h" />
+    <ClInclude Include="..\hardware\EnOceanESP3.h" />
+    <ClInclude Include="..\hardware\ForecastIO.h" />
+    <ClInclude Include="..\hardware\Gpio.h" />
+    <ClInclude Include="..\hardware\GpioPin.h" />
+    <ClInclude Include="..\hardware\HarmonyHub.h" />
+    <ClInclude Include="..\hardware\ICYThermostat.h" />
+    <ClInclude Include="..\hardware\Limitless.h" />
+    <ClInclude Include="..\hardware\HardwareMonitor.h" />
+    <ClInclude Include="..\hardware\Meteostick.h" />
+    <ClInclude Include="..\hardware\MochadTCP.h" />
+    <ClInclude Include="..\hardware\OpenZWave.h" />
+    <ClInclude Include="..\hardware\OTGWBase.h" />
+    <ClInclude Include="..\hardware\OTGWSerial.h" />
+    <ClInclude Include="..\hardware\OTGWTCP.h" />
+    <ClInclude Include="..\hardware\PhilipsHue.h" />
+    <ClInclude Include="..\hardware\PiFace.h" />
+    <ClInclude Include="..\hardware\PVOutput_Input.h" />
+    <ClInclude Include="..\hardware\Razberry.h" />
+    <ClInclude Include="..\hardware\Rego6XXSerial.h" />
+    <ClInclude Include="..\hardware\S0MeterBase.h" />
+    <ClInclude Include="..\hardware\S0MeterSerial.h" />
+    <ClInclude Include="..\hardware\S0MeterTCP.h" />
+    <ClInclude Include="..\hardware\SBFSpot.h" />
+    <ClInclude Include="..\hardware\smbus.h" />
+    <ClInclude Include="..\hardware\SolarEdgeBase.h" />
+    <ClInclude Include="..\hardware\SolarEdgeTCP.h" />
+    <ClInclude Include="..\hardware\TCPProxy\tcpproxy_server.h" />
+    <ClInclude Include="..\hardware\TE923.h" />
+    <ClInclude Include="..\hardware\TE923Tool.h" />
+    <ClInclude Include="..\hardware\Teleinfo.h" />
+    <ClInclude Include="..\hardware\ToonThermostat.h" />
+    <ClInclude Include="..\hardware\VolcraftCO20.h" />
+    <ClInclude Include="..\hardware\VolcraftCO20Tool.h" />
+    <ClInclude Include="..\hardware\WOL.h" />
+    <ClInclude Include="..\hardware\Wunderground.h" />
+    <ClInclude Include="..\hardware\ZWaveBase.h" />
+    <ClInclude Include="..\hardware\ZWaveCommands.h" />
+    <ClInclude Include="..\httpclient\HTTPClient.h" />
+    <ClInclude Include="..\main\appversion.h" />
+    <ClInclude Include="..\hardware\ASyncSerial.h" />
+    <ClInclude Include="..\main\Camera.h" />
+    <ClInclude Include="..\main\CmdLine.h" />
+    <ClInclude Include="..\hardware\DomoticzHardware.h" />
+    <ClInclude Include="..\hardware\DomoticzTCP.h" />
+    <ClInclude Include="..\hardware\hardwaretypes.h" />
+    <ClInclude Include="..\main\DataPush.h" />
+    <ClInclude Include="..\main\dirent_windows.h" />
+    <ClInclude Include="..\main\EventSystem.h" />
+    <ClInclude Include="..\main\GZipHelper.h" />
+    <ClInclude Include="..\main\localtime_r.h" />
+    <ClInclude Include="..\hardware\P1MeterBase.h" />
+    <ClInclude Include="..\hardware\P1MeterSerial.h" />
+    <ClInclude Include="..\hardware\P1MeterTCP.h" />
+    <ClInclude Include="..\main\Logger.h" />
+    <ClInclude Include="..\main\mainstructs.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="..\main\Scheduler.h" />
+    <ClInclude Include="..\main\SQLHelper.h" />
+    <ClInclude Include="..\main\Helper.h" />
+    <ClInclude Include="..\hardware\RFXComSerial.h" />
+    <ClInclude Include="..\main\mainworker.h" />
+    <ClInclude Include="..\hardware\RFXComTCP.h" />
+    <ClInclude Include="..\main\RFXNames.h" />
+    <ClInclude Include="..\main\RFXtrx.h" />
+    <ClInclude Include="Version.h" />
+    <ClInclude Include="..\main\WindCalculation.h" />
+    <ClInclude Include="..\smtpclient\SMTPClient.h" />
+    <ClInclude Include="..\sqlite\sqlite3.h" />
+    <ClInclude Include="..\main\stdafx.h" />
+    <ClInclude Include="..\main\SunRiseSet.h" />
+    <ClInclude Include="..\main\targetver.h" />
+    <ClInclude Include="..\tcpserver\TCPClient.h" />
+    <ClInclude Include="..\tcpserver\TCPServer.h" />
+    <ClInclude Include="..\httpclient\UrlEncode.h" />
+    <ClInclude Include="..\main\WebServer.h" />
+    <ClInclude Include="..\webserver\Base64.h" />
+    <ClInclude Include="..\webserver\connection.hpp" />
+    <ClInclude Include="..\webserver\connection_manager.hpp" />
+    <ClInclude Include="..\webserver\cWebem.h" />
+    <ClInclude Include="..\webserver\header.hpp" />
+    <ClInclude Include="..\webserver\mime_types.hpp" />
+    <ClInclude Include="..\webserver\reply.hpp" />
+    <ClInclude Include="..\webserver\request.hpp" />
+    <ClInclude Include="..\webserver\request_handler.hpp" />
+    <ClInclude Include="..\webserver\request_parser.hpp" />
+    <ClInclude Include="..\webserver\server.hpp" />
+    <ClInclude Include="WindowsHelper.h" />
+    <ClInclude Include="..\hardware\YouLess.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\hardware\1Wire.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\hardware\1Wire\1WireByKernel.cpp" />
+    <ClCompile Include="..\hardware\1Wire\1WireByOWFS.cpp" />
+    <ClCompile Include="..\hardware\1Wire\1WireCommon.cpp" />
+    <ClCompile Include="..\hardware\1Wire\1WireForWindows.cpp" />
+    <ClCompile Include="..\hardware\ASyncSerial.cpp" />
+    <ClCompile Include="..\hardware\ASyncTCP.cpp" />
+    <ClCompile Include="..\hardware\BMP085.cpp" />
+    <ClCompile Include="..\hardware\csocket.cpp" />
+    <ClCompile Include="..\hardware\DavisLoggerSerial.cpp" />
+    <ClCompile Include="..\hardware\Dummy.cpp" />
+    <ClCompile Include="..\hardware\EcoDevices.cpp" />
+    <ClCompile Include="..\hardware\EnOceanESP2.cpp" />
+    <ClCompile Include="..\hardware\EnOceanESP3.cpp" />
+    <ClCompile Include="..\hardware\ForecastIO.cpp" />
+    <ClCompile Include="..\hardware\Gpio.cpp" />
+    <ClCompile Include="..\hardware\GpioPin.cpp" />
+    <ClCompile Include="..\hardware\HarmonyHub.cpp" />
+    <ClCompile Include="..\hardware\ICYThermostat.cpp" />
+    <ClCompile Include="..\hardware\libusbwinusbbridge.cpp" />
+    <ClCompile Include="..\hardware\Limitless.cpp" />
+    <ClCompile Include="..\hardware\HardwareMonitor.cpp" />
+    <ClCompile Include="..\hardware\Meteostick.cpp" />
+    <ClCompile Include="..\hardware\MochadTCP.cpp" />
+    <ClCompile Include="..\hardware\OpenZWave.cpp" />
+    <ClCompile Include="..\hardware\OTGWBase.cpp" />
+    <ClCompile Include="..\hardware\OTGWSerial.cpp" />
+    <ClCompile Include="..\hardware\OTGWTCP.cpp" />
+    <ClCompile Include="..\hardware\PhilipsHue.cpp" />
+    <ClCompile Include="..\hardware\PiFace.cpp" />
+    <ClCompile Include="..\hardware\PVOutput_Input.cpp" />
+    <ClCompile Include="..\hardware\Razberry.cpp" />
+    <ClCompile Include="..\hardware\S0MeterBase.cpp" />
+    <ClCompile Include="..\hardware\S0MeterSerial.cpp" />
+    <ClCompile Include="..\hardware\S0MeterTCP.cpp" />
+    <ClCompile Include="..\hardware\SBFSpot.cpp" />
+    <ClCompile Include="..\hardware\smbus.cpp" />
+    <ClCompile Include="..\hardware\SolarEdgeBase.cpp" />
+    <ClCompile Include="..\hardware\SolarEdgeTCP.cpp" />
+    <ClCompile Include="..\hardware\TCPProxy\tcpproxy_server.cpp" />
+    <ClCompile Include="..\hardware\TE923.cpp" />
+    <ClCompile Include="..\hardware\TE923Tool.cpp" />
+    <ClCompile Include="..\hardware\Teleinfo.cpp" />
+    <ClCompile Include="..\hardware\ToonThermostat.cpp" />
+    <ClCompile Include="..\hardware\VolcraftCO20.cpp" />
+    <ClCompile Include="..\hardware\VolcraftCO20Tool.cpp" />
+    <ClCompile Include="..\hardware\WOL.cpp" />
+    <ClCompile Include="..\hardware\Wunderground.cpp" />
+    <ClCompile Include="..\hardware\ZWaveBase.cpp" />
+    <ClCompile Include="..\httpclient\HTTPClient.cpp" />
+    <ClCompile Include="..\main\Camera.cpp" />
+    <ClCompile Include="..\hardware\Rego6XXSerial.cpp" />
+    <ClCompile Include="..\main\CmdLine.cpp" />
+    <ClCompile Include="..\hardware\DomoticzHardware.cpp" />
+    <ClCompile Include="..\hardware\DomoticzTCP.cpp" />
+    <ClCompile Include="..\main\DataPush.cpp" />
+    <ClCompile Include="..\main\EventSystem.cpp" />
+    <ClCompile Include="..\main\localtime_r.cpp" />
+    <ClCompile Include="..\hardware\P1MeterBase.cpp" />
+    <ClCompile Include="..\hardware\P1MeterSerial.cpp" />
+    <ClCompile Include="..\hardware\P1MeterTCP.cpp" />
+    <ClCompile Include="..\main\Logger.cpp" />
+    <ClCompile Include="..\main\Scheduler.cpp" />
+    <ClCompile Include="..\main\SQLHelper.cpp" />
+    <ClCompile Include="..\main\Helper.cpp" />
+    <ClCompile Include="..\json\json_reader.cpp" />
+    <ClCompile Include="..\json\json_value.cpp" />
+    <ClCompile Include="..\json\json_writer.cpp" />
+    <ClCompile Include="..\main\mainworker.cpp" />
+    <ClCompile Include="..\hardware\RFXComSerial.cpp" />
+    <ClCompile Include="..\main\domoticz.cpp" />
+    <ClCompile Include="..\hardware\RFXComTCP.cpp" />
+    <ClCompile Include="..\main\RFXNames.cpp" />
+    <ClCompile Include="..\main\stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\main\SunRiseSet.cpp" />
+    <ClCompile Include="..\main\WindCalculation.cpp" />
+    <ClCompile Include="..\smtpclient\SMTPClient.cpp" />
+    <ClCompile Include="..\tcpserver\TCPClient.cpp" />
+    <ClCompile Include="..\tcpserver\TCPServer.cpp" />
+    <ClCompile Include="..\httpclient\UrlEncode.cpp" />
+    <ClCompile Include="..\main\WebServer.cpp" />
+    <ClCompile Include="..\webserver\Base64.cpp" />
+    <ClCompile Include="..\webserver\connection.cpp" />
+    <ClCompile Include="..\webserver\connection_manager.cpp" />
+    <ClCompile Include="..\webserver\cWebem.cpp" />
+    <ClCompile Include="..\webserver\mime_types.cpp" />
+    <ClCompile Include="..\webserver\reply.cpp" />
+    <ClCompile Include="..\webserver\request_handler.cpp" />
+    <ClCompile Include="..\webserver\request_parser.cpp" />
+    <ClCompile Include="..\webserver\server.cpp" />
+    <ClCompile Include="WindowsHelper.cpp" />
+    <ClCompile Include="..\hardware\YouLess.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="domoticz.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

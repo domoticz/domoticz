@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--http://www.pepper1.net/zwavedb/device/265-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration -->
+	<CommandClass id="112">
+		<Value type="byte" genre="config" instance="1" index="1" label="Set to Default" value="-1">
+			<Help>Set all configuration values to default values (factory settings).</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="2" label="Mode timeout" size="2" value="1" units="seconds">
+			<Help> 	The time used in mode 2 to turn the sensor off. This Time will start running as soon as detection is seen.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="3" label="Switch off time" size="2" value="15" units="seconds">
+			<Help> 	The switch off time will start running as soon as mode timeout is done. Motion sensor is turned on and when movement is detected again the mode timeout (cfg param 1) will start running all over again. When switch off time is done a basic off message is sent to the associated node.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="4" label="Sensitivity" size="1" value="100">
+			<Help>Sensitivity value between 0 and 127 (values above 127 will be reported as the set value but will be handled in SW as 127).</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="5" label="The mode" size="1" value="2">
+			<Help>The mode that is entered after detection. If mode is 0 or higher then 3, that value will be reported after a get but will be handled in SW as mode 2.</Help>
+			<Item label="no detection possible. Battery save mode" value="1"/>
+			<Item label="normal operation mode: send on after detection and off after given time no detection" value="2"/>
+			<Item label="Z-Wave chip is always on to request e.g. version or manufacturer id" value="3"/>
+
+		</Value>
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="Group 1" auto="false"/>
+		</Associations>
+	</CommandClass>
+</Product>

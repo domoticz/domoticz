@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+	<!-- Wayne Dalton Thermostat Model WDTC-20 -->
+
+	<!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
+	<CommandClass id="67" base="0" />
+</Product>

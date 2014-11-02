@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="byte" index="1" genre="config" label="RGB Color" units="" min="0" max="100" value="50">
+      <Help>
+	Color Temperature
+      </Help>
+    </Value>
+  </CommandClass>
+
+  <!-- SwitchAll Command Class doesn't seem to respond at least on version 1.05 -->
+  <CommandClass id="39" action="remove" />
+  <!-- Remove COMMAND_CLASS_BASIC -->
+  <CommandClass id="32" action="remove" />
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" max_associations="5" label="Report" auto="true" />
+    </Associations>
+  </CommandClass>
+</Product>
+

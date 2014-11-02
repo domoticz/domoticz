@@ -1,0 +1,2191 @@
+/*
+	Untitled: A responsive HTML5 website template by HTML5Templates.com
+	Released for free under the Creative Commons Attribution 3.0 license (html5templates.com/license)
+	Visit http://html5templates.com for more great templates or follow us on Twitter @HTML5T
+*/
+
+@font-face {
+  font-family: 'Satisfy';
+  font-style: normal;
+  font-weight: 400;
+  src: url('fonts/Satisfy.eot');
+  src: local('Satisfy'), url('fonts/Satisfy.eot') format('truetype');
+}
+@font-face {
+  font-family: 'Abel';
+  font-style: normal;
+  font-weight: 400;
+  src: url('fonts/Abel.eot');
+  src: local('Abel'), local('Abel-Regular'), url('fonts/Abel.eot') format('truetype');
+} 
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  src: url('fonts/Oswald-Light.eot');
+  src: local('Oswald Light'), local('Oswald-Light'), url('fonts/Oswald-Light.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  src: url('fonts/Oswald-Regular.eot');
+  src: local('Oswald Regular'), local('Oswald-Regular'), url('fonts/Oswald-Regular.ttf') format('truetype');
+} 
+/*********************************************************************************/
+/* Global                                                                        */
+/*********************************************************************************/
+* {
+margin:0;
+padding:0; 
+}
+
+body {
+	background: #202020 url(images/img01.jpg) repeat;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 10pt;
+	color: #FFF;
+}
+
+.bootbox-body {
+	color: #000;
+}
+.bootbox-form {
+	color: #000;
+}
+.bootbox-input {
+	color: #000;
+}
+
+.modal-title {
+	color: #000;
+}
+
+a, a:hover, a:focus { 
+	outline: 0 none; 
+}
+a img { 
+	border:none; 
+}
+
+h2 {
+	margin: 0em;
+	padding: 0em;
+	font-family: Arial, Helvetica, sans-serif;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1.5em;
+	font-weight: 200;
+	color: #CCCCCC;
+}
+
+h1, h3 {
+	margin: 0em;
+	padding: 0em;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+p {
+	line-height: 170%;
+}
+
+a {
+	color: #43A4D3;
+}
+
+strong {
+	font-weight: 700;
+	color: #2A2A2A;
+}
+
+#wrap {
+min-height:100%; 
+margin:0 auto;
+}
+#wrap:before { /* Opera and IE8 "redraw" bug fix */
+content:"";
+float:left;
+height:100%;
+margin-top:-999em;
+}
+* html #wrap { /* IE6 workaround */
+height:100%; 
+}
+
+/* Copyright */
+
+#copyright {
+	border-top: 1px solid #303030;
+	text-align: center;
+}
+
+#copyright p {
+	font-family: 'Abel', sans-serif;
+	font-size: 1.125em;
+	color: #6A6A6A;
+}
+
+#copyright a {
+	color: #43A4D3;
+}
+
+#copyright a:hover {
+	text-decoration: none;
+}
+
+#disimg
+{
+  opacity:0.3;
+  filter:alpha(opacity=30); /* For IE8 and earlier */
+}
+
+#notification{
+    z-index:1005;
+    background-color:#204060;
+    border-width: 2px 2px 2px 2px;
+    border-color: #5FA0FF;
+    border-style: solid;
+    border-radius: 10px;
+}
+
+#notification p{
+    font-size:18px;
+    color:white;
+    margin: 11px;
+    text-align:center;
+    text-decoration: none;
+    text-transform: none;
+    font-weight:bold;
+}
+
+/* Button Style */
+
+.button-style a {
+	display: block;
+	width: 11.250em;
+	height: 2.40em;
+	margin-top: 1.875em;
+	background: url(images/img03.jpg) repeat;
+	line-height: 3.125em;
+	text-align: center;
+	text-decoration: none;
+	text-transform: none;
+	font-family: 'Oswald', sans-serif;
+	font-size: 1.125em;
+	font-weight: 200;
+	color: #FFFFFF;
+	outline: none;
+	cursor: pointer;
+}
+
+.button-style-sel a {
+	display: block;
+	width: 11.250em;
+	height: 2.40em;
+	margin-top: 1.875em;
+	background: url(images/img03s.jpg) repeat;
+	line-height: 3.125em;
+	text-align: center;
+	text-decoration: none;
+	text-transform: none;
+	font-family: 'Oswald', sans-serif;
+	font-size: 1.125em;
+	font-weight: 200;
+	color: #FFFFFF;
+	outline: none;
+	cursor: pointer;
+}
+
+#topnav {
+	overflow: hidden;
+	padding: 0em 0em 1em 0em;
+	background: #FFFFFF;
+}
+
+/* Button Style 2 */
+
+.button-style2 a {
+	display: inline-block;
+	height: 2.60em;
+	margin-top: 1.25em;
+	padding: 0em 2.25em 0em 1.25em;
+	background: url(images/img03.jpg) repeat right top;
+	border-radius: 5px;
+	line-height: 2.60em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+	cursor: pointer;
+}
+
+.button-style2-sel a {
+	display: inline-block;
+	height: 2.60em;
+	margin-top: 1.25em;
+	padding: 0em 2.25em 0em 1.25em;
+	background: url(images/img03s.jpg) repeat right top;
+	border-radius: 5px;
+	line-height: 2.60em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+	cursor: pointer;
+}
+
+.btnstyle {
+	display: inline-block;
+	height: 2.60em;
+	margin-top: 1.25em;
+	padding: 0em 2.25em 0em 0.5em;
+	background: url(images/img03.jpg) repeat right top;
+	border-radius: 5px;
+	line-height: 2.60em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+	cursor: pointer;
+	overflow: hidden;
+}
+
+.btnstyle-sel {
+	display: inline-block;
+	height: 2.60em;
+	margin-top: 1.25em;
+	padding: 0em 2.25em 0em 0.5em;
+	background: url(images/img03s.jpg) repeat right top;
+	border-radius: 5px;
+	line-height: 2.60em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+	cursor: pointer;
+	overflow: hidden;
+}
+
+.btnstylerev {
+	display: inline-block;
+	height: 2.60em;
+	margin-top: 1.25em;
+	padding: 0em 0.5em 0em 2.0em;
+	background: url(images/img03r.jpg) repeat left top;
+	border-radius: 5px;
+	line-height: 2.60em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+	cursor: pointer;
+	overflow: hidden;
+}
+
+.btnstyle3 {
+	display: inline-block;
+	height: 2.00em;
+	margin-top: 0.25em;
+	padding: 0em 1.25em 0em 1.25em;
+	background: url(images/img03b.jpg) repeat right top;
+	border-radius: 5px;
+	line-height: 2.00em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+	cursor: pointer;
+}
+
+.btnstyle3-dis {
+	display: inline-block;
+	height: 2.00em;
+	margin-top: 0.25em;
+	padding: 0em 1.25em 0em 1.25em;
+	background: url(images/img03bd.png) repeat right top;
+	border-radius: 5px;
+	line-height: 2.00em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+	cursor: pointer;
+}
+
+.btnstyle3-sel {
+	display: inline-block;
+	height: 2.00em;
+	margin-top: 1.25em;
+	padding: 0em 1.25em 0em 1.25em;
+	background: url(images/img03bs.jpg) repeat right top;
+	border-radius: 5px;
+	line-height: 2.00em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+	cursor: pointer;
+}
+
+.btnsmall {
+	display: inline-block;
+	height: 1.60em;
+	padding: 0.1em 0.6em 0.1em 0.6em;
+	background: url(images/img03b.jpg) repeat right;
+	border-radius: 5px;
+	line-height: 1.60em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+	cursor: pointer;
+}
+
+.btnsmall-sel {
+	display: inline-block;
+	height: 1.60em;
+	padding: 0.1em 0.6em 0.1em 0.6em;
+	background: url(images/img03bs.jpg) repeat right;
+	border-radius: 5px;
+	line-height: 1.60em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+	cursor: pointer;
+}
+
+.btnsmall-dis {
+	display: inline-block;
+	height: 1.60em;
+	padding: 0.1em 0.6em 0.1em 0.6em;
+	background: url(images/img03bd.png) repeat right;
+	border-radius: 5px;
+	line-height: 1.60em;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1em;
+	color: #FFFFFF;
+	outline: none;
+	cursor: pointer;
+}
+
+/* Hover state*/
+.btnsmall:hover{
+	color: #FFFF00;
+}
+
+
+/** LIST STYLE 1 */
+
+ul.style1 {
+	margin: 0em;
+	list-style: none;
+}
+
+ul.style1 li {
+	padding: 0.94em 0em;
+	border-top: 1px solid #E6E6E6;
+}
+
+ul.style1 a {
+	display: block;
+	padding: 0em 0em 0em 1.87em;
+	background: url(images/img10.png) no-repeat left top;
+	text-decoration: none;
+	color: #525252;
+}
+
+ul.style1 a:hover {
+	text-decoration: underline;
+}
+
+ul.style1 .first {
+	border-top: 0;
+}
+
+/** LIST STYLE 2 */
+
+ul.style2 {
+	margin: 0em;
+	padding: 0em;
+	list-style: none;
+}
+
+ul.style2 li {
+	padding: 1.25em 0em 2.5em 0em;
+	border-top: 1px solid #E6E6E6;
+}
+
+ul.style2 a {
+	text-decoration: none;
+	color: #525252;
+}
+
+ul.style2 a:hover {
+	text-decoration: underline;
+}
+
+ul.style2 .date {
+	display: inline-block;
+	margin: 0em 0em 1.56em 0em;
+	padding: 0.35em 0.63em;
+	background: url(images/img06.png) repeat;
+	border-radius: 5px;
+	letter-spacing: 0.06em;
+	line-height: none;
+	text-transform: none;
+	font-family: 'Oswald', sans-serif;
+	font-weight: 200;
+	color: #FFFFFF;
+}
+
+ul.style2 .date a {
+	color: #FFFFFF;
+}
+
+ul.style2 img {
+	float: left;
+	margin-right: 1.5em;
+}
+
+ul.style2 .first {
+	border-top: 0;
+}
+
+/** LIST STYLE 3 */
+
+ul.style3 {
+	margin: 0em;
+	padding: 0em;
+	list-style: none;
+}
+
+ul.style3 li {
+	padding: 1.25em 0em 1.56em 0em;
+}
+
+ul.style3 a {
+	display: block;
+	text-decoration: none;
+	color: #C18062;
+}
+
+ul.style3 a:hover {
+	text-decoration: underline;
+}
+
+ul.style3 .date {
+}
+
+ul.style3 .date b {
+}
+
+ul.style3 .date a {
+	color: #FFFFFF;
+}
+
+ul.style3 .date a:hover {
+	text-decoration: none;
+}
+
+ul.style3 .first {
+	padding-top: 0em;
+	background: none;
+}
+
+/** LIST STYLE 4 */
+
+ul.style4 {
+	margin: 0em;
+	padding: 0em;
+	list-style: none;
+}
+
+ul.style4 li {
+	padding: 0.94em 0em 0.94em 0em;
+	border-top: 1px solid #742F0E;
+}
+
+ul.style4 a {
+	display: block;
+	padding: 0em 0em 0em 1.87em;
+	background: url(images/img10.png) no-repeat left top;
+	text-decoration: none;
+	color: #C18062;
+}
+
+ul.style4 a:hover {
+	text-decoration: underline;
+}
+
+ul.style4 li {
+	border-top: 0;
+}
+
+/** LIST STYLE 5 */
+
+ul.style5 {
+	overflow: hidden;
+	margin: 0em 0em 1em 0em;
+	padding: 0em;
+	list-style: none;
+}
+
+ul.style5 li {
+	float: left;
+	padding: 0.25em 0.25em;
+	line-height: 0;
+}
+
+ul.style5 a {
+}
+
+
+
+/** LIST STYLE 6 */
+
+ul.style6 {
+	margin: 0em;
+	padding: 0em;
+	list-style: none;
+}
+
+
+ul.style6 h3 {
+	margin: 0em;
+	padding: 0em 0em 0.63em 0em;
+	font-family: Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	font-size: 1em;
+	color: #A0A09F;
+}
+
+ul.style6 p {
+	font-style: italic;
+	font-size: 0.87em;
+}
+
+ul.style6 li {
+	padding: 1.25em 0em 1.25em 0em;
+	border-top: 1px solid #303030;
+	line-height: 170%;
+}
+
+ul.style6 a {
+	display: block;
+	padding: 0em;
+	text-decoration: none;
+	color: #737373;
+}
+
+ul.style6 a:hover {
+	text-decoration: underline;
+}
+
+ul.style6 .first {
+	padding-top: 0em;
+	border-top: 0;
+}
+
+
+
+.balloon {
+	padding: 1.87em;
+	background: url(images/img08.jpg) repeat left top;
+	border-radius: 5px;
+	line-height: 180%;
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: 1.2em;
+	font-style: italic;
+}
+
+.ballon-bgbtm {
+	height: 1.87em;
+	background: url(images/img09.png) no-repeat right top;
+}
+
+body table#itemtable,
+body table#itemtable tbody{
+	display: block;
+	width: 100%;
+}
+body table#itemtable tbody tr{
+	display: block;
+
+	width: 96%;
+	padding: 5px 5px 5px 5px;
+	margin: 2px 100% 5px 0;
+	
+	border-style: none;
+  border-radius: 5px;
+
+	color: #0D161F;
+	background-color: #F1F5FA;
+	
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+
+body table#itemtable thead{
+	display: none;
+}
+
+body table#itemtable tr > *{
+	display: block;
+	padding: 0;
+	margin: 0;
+}
+
+/* I am using the :first-child as a way to style each column by itself*/
+/* First column */
+body table#itemtable tr td:first-child{
+	height: 1.2em;
+	padding: 0 .5em 0 .5em;
+	margin-bottom: 5px;
+
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 130%;
+	white-space: nowrap;
+	
+	border-width: 1px 1px 1px 1px;
+	border-color: #2B5074;
+	border-style: solid;
+  border-radius: 5px;
+	
+	color: #0D161F;
+	background-color: #D4E1EE;
+}
+
+/* Second column */
+body table#itemtable tr td:first-child + td{ 
+	float: right;
+	margin: -27px 3px 0px 0px;
+	font-size: 140%;
+	font-weight: bold;
+	white-space: nowrap;
+	color: #000000;
+}
+
+/* Third column */
+body table#itemtable tr td:first-child + td + td{ 
+	border-color: #2B5074;  
+	border-style: none;  
+	border-width: 1px; 
+	
+	float: left;
+	margin: 0 10px 10px 0;
+}
+
+body table#itemtable tr td:first-child + td + td img{
+	display: block;
+}
+
+/* Fourth column */
+body table#itemtable tr td:first-child + td + td + td{
+	font-size: 90%;
+	font-weight: bold;
+}
+
+body table#itemtable tr td:first-child + td + td + td:before{
+	content: " Status: ";
+	font-style: italic;
+	font-size: 90%;
+}
+
+/* Fifth column */
+body table#itemtable tr td:first-child + td + td + td + td{
+	font-size: 80%;
+}
+body table#itemtable tr td:first-child + td + td + td + td:before{
+	content: "Last Seen: ";
+	font-style: italic;
+}
+
+/* Sixth column */
+body table#itemtable tr td:first-child + td + td + td + td + td{
+	font-size: 80%;
+}
+body table#itemtable tr td:first-child + td + td + td + td + td:before{
+	content: "Type: ";
+	font-style: italic;
+}
+
+/* Seventh column (bottom text)*/
+body table#itemtable tr td:first-child + td + td + td + td + td + td{
+	font-size: 90%;
+	clear: both;
+	padding: 0 5% 0 5%;
+	line-height: 130%;
+}
+
+/* Hover state*/
+body table#itemtable tbody tr:hover{
+	border-color: #2B2C74;
+	background-color: #F2F1FA;
+}
+body table#itemtable tr:hover td:first-child{
+	border-color: #2B2C74;
+	color: #0D0D1F;
+	background-color: #D4D5EE;
+}
+
+body table#itemtablenotype,
+body table#itemtablenotype tbody{
+	display: block;
+	width: 100%;
+}
+body table#itemtablenotype tbody tr{
+	display: block;
+
+	width: 96%;
+	padding: 5px 5px 5px 5px;
+	margin: 2px 100% 5px 0;
+	
+	border-style: none;
+  border-radius: 5px;
+
+	color: #0D161F;
+	background-color: #F1F5FA;
+	
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+
+body table#itemtablenotype thead{
+	display: none;
+}
+
+body table#itemtablenotype tr > *{
+	display: block;
+	padding: 0;
+	margin: 0;
+}
+
+/* I am using the :first-child as a way to style each column by itself*/
+/* First column */
+body table#itemtablenotype tr td:first-child{
+	height: 1.2em;
+	padding: 0 .5em 0 .5em;
+	margin-bottom: 5px;
+
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 130%;
+	white-space: nowrap;
+	
+	border-width: 1px 1px 1px 1px;
+	border-color: #2B5074;
+	border-style: solid;
+  border-radius: 5px;
+	
+	color: #0D161F;
+	background-color: #D4E1EE;
+}
+
+/* Second column */
+body table#itemtablenotype tr td:first-child + td{ 
+	float: right;
+	margin: -27px 3px 0px 0px;
+	font-size: 140%;
+	font-weight: bold;
+	white-space: nowrap;
+	color: #000000;
+}
+
+/* Third column */
+body table#itemtablenotype tr td:first-child + td + td{ 
+	border-color: #2B5074;  
+	border-style: none;  
+	border-width: 1px; 
+	
+	float: left;
+	margin: 0 10px 10px 0;
+}
+
+body table#itemtablenotype tr td:first-child + td + td img{
+	display: block;
+}
+
+/* Fourth column */
+body table#itemtablenotype tr td:first-child + td + td + td{
+	font-size: 90%;
+	font-weight: bold;
+}
+
+body table#itemtablenotype tr td:first-child + td + td + td:before{
+	content: " Status: ";
+	font-style: italic;
+	font-size: 90%;
+}
+
+/* Fifth column */
+body table#itemtablenotype tr td:first-child + td + td + td + td{
+	font-size: 80%;
+}
+body table#itemtablenotype tr td:first-child + td + td + td + td:before{
+	content: "Last Seen: ";
+	font-style: italic;
+}
+
+/* Sixth column (bottom text)*/
+body table#itemtablenotype tr td:first-child + td + td + td + td + td {
+	font-size: 90%;
+	clear: both;
+	padding: 0 5% 0 5%;
+	line-height: 130%;
+}
+
+/* Hover state*/
+body table#itemtablenotype tbody tr:hover{
+	border-color: #2B2C74;
+	background-color: #F2F1FA;
+}
+body table#itemtablenotype tr:hover td:first-child{
+	border-color: #2B2C74;
+	color: #0D0D1F;
+	background-color: #D4D5EE;
+}
+
+/* Itemtable no status: line */
+body table#itemtablenostatus,
+body table#itemtablenostatus tbody{
+	display: block;
+	width: 100%;
+}
+body table#itemtablenostatus tbody tr{
+	display: block;
+
+	width: 96%;
+	padding: 5px 5px 5px 5px;
+	margin: 2px 100% 5px 0;
+	
+	border-style: none;
+  border-radius: 5px;
+
+	color: #0D161F;
+	background-color: #F1F5FA;
+	
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+
+body table#itemtablenostatus thead{
+	display: none;
+}
+
+body table#itemtablenostatus tr > *{
+	display: block;
+	padding: 0;
+	margin: 0;
+}
+
+/* I am using the :first-child as a way to style each column by itself*/
+/* First column */
+body table#itemtablenostatus tr td:first-child{
+	height: 1.2em;
+	padding: 0 .5em 0 .5em;
+	margin-bottom: 5px;
+
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 130%;
+	white-space: nowrap;
+	
+	border-width: 1px 1px 1px 1px;
+	border-color: #2B5074;
+	border-style: solid;
+  border-radius: 5px;
+	
+	color: #0D161F;
+	background-color: #D4E1EE;
+}
+
+/* Second column */
+body table#itemtablenostatus tr td:first-child + td{ 
+	float: right;
+	margin: -27px 3px 0px 0px;
+	font-size: 140%;
+	font-weight: bold;
+	white-space: nowrap;
+	color: #000000;
+}
+
+/* Third column */
+body table#itemtablenostatus tr td:first-child + td + td{ 
+	border-color: #2B5074;  
+	border-style: none;  
+	border-width: 1px; 
+	
+	float: left;
+	margin: 0 10px 10px 0;
+}
+
+body table#itemtablenostatus tr td:first-child + td + td img{
+	display: block;
+}
+
+/* Fourth column */
+body table#itemtablenostatus tr td:first-child + td + td + td{
+	font-size: 90%;
+	font-weight: bold;
+}
+
+body table#itemtablenostatus tr td:first-child + td + td + td:before{
+	font-style: italic;
+	font-size: 90%;
+}
+
+/* Fifth column */
+body table#itemtablenostatus tr td:first-child + td + td + td + td{
+	font-size: 80%;
+}
+body table#itemtablenostatus tr td:first-child + td + td + td + td:before{
+	content: "Last Seen: ";
+	font-style: italic;
+}
+
+/* Sixth column */
+body table#itemtablenostatus tr td:first-child + td + td + td + td + td{
+	font-size: 80%;
+}
+body table#itemtablenostatus tr td:first-child + td + td + td + td + td:before{
+	content: "Type: ";
+	font-style: italic;
+}
+
+/* Seventh column (bottom text)*/
+body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td{
+	font-size: 90%;
+	clear: both;
+	padding: 0 5% 0 5%;
+	line-height: 130%;
+}
+
+/* Hover state*/
+body table#itemtablenostatus tbody tr:hover{
+	border-color: #2B2C74;
+	background-color: #F2F1FA;
+}
+body table#itemtablenostatus tr:hover td:first-child{
+	border-color: #2B2C74;
+	color: #0D0D1F;
+	background-color: #D4D5EE;
+}
+
+/* Item Table Small */
+body table#itemtablesmall,
+body table#itemtablesmall tbody{
+	display: block;
+	width: 100%;
+}
+body table#itemtablesmall tbody tr{
+	display: block;
+	
+	width: 96%;
+	height: 66px;
+	padding: 5px 5px 5px 5px;
+	margin: 2px 100% 5px 0;
+	
+	border-style: none;
+  border-radius: 5px;
+
+	color: #0D161F;
+	background-color: #F1F5FA;
+	
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+body table#itemtablesmall thead{
+	display: none;
+}
+
+body table#itemtablesmall tr > *{
+	display: block;
+	padding: 0;
+	margin: 0;
+}
+
+/* I am using the :first-child as a way to style each column by itself*/
+/* First column */
+body table#itemtablesmall tr td:first-child{
+	height: 1.2em;
+	padding: 0 .5em 0 .5em;
+	margin-bottom: 5px;
+	
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 130%;
+	white-space: nowrap;
+	
+	border-width: 1px 1px 1px 1px;
+	border-color: #2B5074;
+	border-style: solid;
+  border-radius: 5px;
+	
+	color: #0D161F;
+	background-color: #D4E1EE;
+}
+
+/* Second column */
+body table#itemtablesmall tr td:first-child + td{ 
+	float: right;
+	margin: -27px 3px 0px 0px;
+	font-size: 140%;
+	font-weight: bold;
+	white-space: nowrap;
+	color: #000000;
+}
+
+/* Third column */
+body table#itemtablesmall tr td:first-child + td + td{ 
+	border-color: #2B5074;
+	border-style: none;  
+	border-width: 1px; 
+	
+	float: left;
+	margin: 0 10px 10px 0;
+}
+
+body table#itemtablesmall tr td:first-child + td + td img{
+	display: block;
+}
+
+/* Fourth column */
+body table#itemtablesmall tr td:first-child + td + td + td{
+	font-size: 90%;
+	font-weight: bold;
+	line-height:86%;
+}
+
+body table#itemtablesmall tr td:first-child + td + td + td:before{
+	content: "";
+	font-style: italic;
+	font-size: 90%;
+}
+
+/* Fifth column */
+body table#itemtablesmall tr td:first-child + td + td + td + td{
+	margin-top: 2px;
+	font-size: 80%;
+	line-height:86%;
+}
+body table#itemtablesmall tr td:first-child + td + td + td + td:before{
+	content: "Last Seen: ";
+	font-style: italic;
+}
+
+/* Hover state*/
+body table#itemtablesmall tbody tr:hover{
+	border-color: #2B2C74;
+	background-color: #F2F1FA;
+}
+body table#itemtablesmall tr:hover td:first-child{
+	border-color: #2B2C74;
+	color: #0D0D1F;
+	background-color: #D4D5EE;
+}
+
+/* Item Table Double Icon */
+body table#itemtabledoubleicon,
+body table#itemtabledoubleicon tbody{
+	display: block;
+	width: 100%;
+}
+body table#itemtabledoubleicon tbody tr{
+	display: block;
+
+	width: 96%;
+	padding: 5px 5px 5px 5px;
+	margin: 2px 100% 5px 0;
+	
+	border-style: none;
+	border-radius: 5px;
+
+	color: #0D161F;
+	background-color: #F1F5FA;
+	
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+
+body table#itemtabledoubleicon thead{
+	display: none;
+}
+
+body table#itemtabledoubleicon tr > *{
+	display: block;
+	padding: 0;
+	margin: 0;
+}
+
+/* I am using the :first-child as a way to style each column by itself*/
+/* First column */
+body table#itemtabledoubleicon tr td:first-child{
+	height: 1.2em;
+	padding: 0 .5em 0 .5em;
+	margin-bottom: 5px;
+
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 130%;
+	white-space: nowrap;
+	
+	border-width: 1px 1px 1px 1px;
+	border-color: #2B5074;
+	border-style: solid;
+	border-radius: 5px;
+	
+	color: #0D161F;
+	background-color: #D4E1EE;
+}
+
+/* Second column */
+body table#itemtabledoubleicon tr td:first-child + td{ 
+	float: right;
+	margin: -27px 3px 0px 0px;
+	font-size: 140%;
+	font-weight: bold;
+	white-space: nowrap;
+	color: #000000;
+}
+
+/* Third column */
+body table#itemtabledoubleicon tr td:first-child + td + td{ 
+	border-style: none;
+	float: left;
+	margin: 0 5px 10px 0;
+}
+
+body table#itemtabledoubleicon tr td:first-child + td + td img{
+	display: block;
+}
+
+/* Fourth column */
+body table#itemtabledoubleicon tr td:first-child + td + td + td{ 
+	border-style: none;  
+	float: left;
+	margin: 0 10px 10px 0;
+}
+
+body table#itemtabledoubleicon tr td:first-child + td + td + td img{
+	display: block;
+}
+
+/* Fifth column */
+body table#itemtabledoubleicon tr td:first-child + td + td + td + td{
+	font-size: 90%;
+	font-weight: bold;
+}
+
+body table#itemtabledoubleicon tr td:first-child + td + td + td + td:before{
+	content: " Status: ";
+	font-style: italic;
+	font-size: 90%;
+}
+
+/* Sixth column */
+body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td{
+	font-size: 80%;
+}
+body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td:before{
+	content: "Last Seen: ";
+	font-style: italic;
+}
+
+/* Seventh column */
+body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td{
+	font-size: 80%;
+}
+body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td:before{
+	content: "Type: ";
+	font-style: italic;
+}
+
+/* Eighth column (bottom text)*/
+body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td + td{
+	font-size: 90%;
+	margin-top: 16px;
+	clear: both;
+	padding: 0 5% 0 5%;
+	line-height: 130%;
+}
+
+/* Hover state*/
+body table#itemtabledoubleicon tbody tr:hover{
+	border-color: #2B2C74;
+	background-color: #F2F1FA;
+}
+body table#itemtabledoubleicon tr:hover td:first-child{
+	border-color: #2B2C74;
+	color: #0D0D1F;
+	background-color: #D4D5EE;
+}
+
+/* Item Table Tripple Icon */
+body table#itemtabletrippleicon,
+body table#itemtabletrippleicon tbody{
+	display: block;
+	width: 100%;
+}
+body table#itemtabletrippleicon tbody tr{
+	display: block;
+
+	width: 96%;
+	padding: 5px 5px 5px 5px;
+	margin: 2px 100% 5px 0;
+	
+	border-style: none;
+	border-radius: 5px;
+
+	color: #0D161F;
+	background-color: #F1F5FA;
+	
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+
+body table#itemtabletrippleicon thead{
+	display: none;
+}
+
+body table#itemtabletrippleicon tr > *{
+	display: block;
+	padding: 0;
+	margin: 0;
+}
+
+/* I am using the :first-child as a way to style each column by itself*/
+/* First column */
+body table#itemtabletrippleicon tr td:first-child{
+	height: 1.2em;
+	padding: 0 .5em 0 .5em;
+	margin-bottom: 5px;
+
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 130%;
+	white-space: nowrap;
+	
+	border-width: 1px 1px 1px 1px;
+	border-color: #2B5074;
+	border-style: solid;
+	border-radius: 5px;
+	
+	color: #0D161F;
+	background-color: #D4E1EE;
+}
+
+/* Second column */
+body table#itemtabletrippleicon tr td:first-child + td{ 
+	float: right;
+	margin: -27px 3px 0px 0px;
+	font-size: 140%;
+	font-weight: bold;
+	white-space: nowrap;
+	color: #000000;
+}
+
+/* Third column */
+body table#itemtabletrippleicon tr td:first-child + td + td{ 
+	border-style: none;
+	float: left;
+	margin: 0 4px 10px 0;
+}
+
+body table#itemtabletrippleicon tr td:first-child + td + td img{
+	display: block;
+}
+
+/* Fourth column */
+body table#itemtabletrippleicon tr td:first-child + td + td + td{ 
+	border-style: none;  
+	float: left;
+	margin: 0 4px 10px 0;
+}
+
+body table#itemtabletrippleicon tr td:first-child + td + td + td img{
+	display: block;
+}
+
+/* Fifth column */
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td{
+	border-style: none;  
+	float: left;
+	margin: 0 5px 10px 0;
+}
+
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td img{
+	display: block;
+}
+
+/* Sixt column */
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td{
+	font-size: 90%;
+	font-weight: bold;
+}
+
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td:before{
+	content: " Status: ";
+	font-style: italic;
+	font-size: 90%;
+}
+
+/* Seventh column */
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td{
+	font-size: 80%;
+}
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td +td:before{
+	content: "Last Seen: ";
+	font-style: italic;
+}
+
+/* Eighth column */
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td + td{
+	font-size: 80%;
+}
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td + td:before{
+	content: "Type: ";
+	font-style: italic;
+}
+
+/* Nineth column (bottom text)*/
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td + td + td{
+	font-size: 90%;
+	clear: both;
+	padding: 0 5% 0 5%;
+	line-height: 130%;
+}
+
+/* Hover state*/
+body table#itemtabletrippleicon tbody tr:hover{
+	border-color: #2B2C74;
+	background-color: #F2F1FA;
+}
+body table#itemtabletrippleicon tr:hover td:first-child{
+	border-color: #2B2C74;
+	color: #0D0D1F;
+	background-color: #D4D5EE;
+}
+
+/* Item Table Small Double Icon */
+body table#itemtablesmalldoubleicon,
+body table#itemtablesmalldoubleicon tbody{
+	display: block;
+	width: 100%;
+}
+body table#itemtablesmalldoubleicon tbody tr{
+	display: block;
+	
+	width: 96%;
+	height: 66px;
+	padding: 5px 5px 5px 5px;
+	margin: 2px 100% 5px 0;
+	
+	border-style: none;
+  border-radius: 5px;
+
+	color: #0D161F;
+	background-color: #F1F5FA;
+	
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+body table#itemtablesmalldoubleicon thead{
+	display: none;
+}
+
+body table#itemtablesmalldoubleicon tr > *{
+	display: block;
+	padding: 0;
+	margin: 0;
+}
+
+/* I am using the :first-child as a way to style each column by itself*/
+/* First column */
+body table#itemtablesmalldoubleicon tr td:first-child{
+	height: 1.2em;
+	padding: 0 .5em 0 .5em;
+	margin-bottom: 5px;
+	
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 130%;
+	white-space: nowrap;
+	
+	border-width: 1px 1px 1px 1px;
+	border-color: #2B5074;
+	border-style: solid;
+  border-radius: 5px;
+	
+	color: #0D161F;
+	background-color: #D4E1EE;
+}
+
+/* Second column */
+body table#itemtablesmalldoubleicon tr td:first-child + td{ 
+	float: right;
+	margin: -27px 3px 0px 0px;
+	font-size: 140%;
+	font-weight: bold;
+	white-space: nowrap;
+	color: #000000;
+}
+
+/* Third column */
+body table#itemtablesmalldoubleicon tr td:first-child + td + td{ 
+	border-style: none;  
+	float: left;
+	margin: 0 5px 10px 0;
+}
+
+body table#itemtablesmalldoubleicon tr td:first-child + td + td img{
+	display: block;
+}
+
+/* Fourth column */
+body table#itemtablesmalldoubleicon tr td:first-child + td + td +td{ 
+	border-style: none;  
+	float: left;
+	margin: 0 10px 10px 0;
+}
+
+body table#itemtablesmalldoubleicon tr td:first-child + td + td +td img{
+	display: block;
+}
+
+/* Fifth column */
+body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td{
+	font-size: 90%;
+	font-weight: bold;
+	line-height:86%;
+}
+
+body table#itemtablesmalldoubleicon tr td:first-child + td + td + td +td:before{
+	content: "";
+	font-style: italic;
+	font-size: 90%;
+}
+
+/* Sixth column */
+body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td +td{
+	margin-top: 2px;
+	font-size: 80%;
+	line-height:86%;
+}
+body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td +td:before{
+	content: "Last Seen: ";
+	font-style: italic;
+}
+
+/* Hover state*/
+body table#itemtablesmalldoubleicon tbody tr:hover{
+	border-color: #2B2C74;
+	background-color: #F2F1FA;
+}
+body table#itemtablesmalldoubleicon tr:hover td:first-child{
+	border-color: #2B2C74;
+	color: #0D0D1F;
+	background-color: #D4D5EE;
+}
+
+/* Item Table Small Tripple Icon */
+body table#itemtablesmalltrippleicon,
+body table#itemtablesmalltrippleicon tbody{
+	display: block;
+	width: 100%;
+}
+body table#itemtablesmalltrippleicon tbody tr{
+	display: block;
+	
+	width: 96%;
+	height: 66px;
+	padding: 5px 5px 5px 5px;
+	margin: 2px 100% 5px 0;
+	
+	border-style: none;
+  border-radius: 5px;
+
+	color: #0D161F;
+	background-color: #F1F5FA;
+	
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+body table#itemtablesmalltrippleicon thead{
+	display: none;
+}
+
+body table#itemtablesmalltrippleicon tr > *{
+	display: block;
+	padding: 0;
+	margin: 0;
+}
+
+/* I am using the :first-child as a way to style each column by itself*/
+/* First column */
+body table#itemtablesmalltrippleicon tr td:first-child{
+	height: 1.2em;
+	padding: 0 .5em 0 .5em;
+	margin-bottom: 5px;
+	
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 130%;
+	white-space: nowrap;
+	
+	border-width: 1px 1px 1px 1px;
+	border-color: #2B5074;
+	border-style: solid;
+  border-radius: 5px;
+	
+	color: #0D161F;
+	background-color: #D4E1EE;
+}
+
+/* Second column */
+body table#itemtablesmalltrippleicon tr td:first-child + td{ 
+	float: right;
+	margin: -27px 3px 0px 0px;
+	font-size: 140%;
+	font-weight: bold;
+	white-space: nowrap;
+	color: #000000;
+}
+
+/* Third column */
+body table#itemtablesmalltrippleicon tr td:first-child + td + td{ 
+	border-style: none;  
+	float: left;
+	margin: 0 5px 10px 0;
+}
+
+body table#itemtablesmalltrippleicon tr td:first-child + td + td img{
+	display: block;
+}
+
+/* Fourth column */
+body table#itemtablesmalltrippleicon tr td:first-child + td + td +td{ 
+	border-style: none;  
+	float: left;
+	margin: 0 5px 5px 0;
+}
+
+body table#itemtablesmalltrippleicon tr td:first-child + td + td +td img{
+	display: block;
+}
+
+/* Fifth column */
+body table#itemtablesmalltrippleicon tr td:first-child + td + td +td + td{ 
+	border-style: none;  
+	float: left;
+	margin: 0 10px 10px 0;
+}
+
+body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td img{
+	display: block;
+}
+
+/* Sixth column */
+body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td + td{
+	font-size: 90%;
+	font-weight: bold;
+	line-height:86%;
+}
+
+body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td + td:before{
+	content: "";
+	font-style: italic;
+	font-size: 90%;
+}
+
+/* Seventh column */
+body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td + td + td{
+	margin-top: 2px;
+	font-size: 80%;
+	line-height:86%;
+}
+body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td + td + td:before{
+	content: "Last Seen: ";
+	font-style: italic;
+}
+
+/* Hover state*/
+body table#itemtablesmalltrippleicon tbody tr:hover{
+	border-color: #2B2C74;
+	background-color: #F2F1FA;
+}
+body table#itemtablesmalltrippleicon tr:hover td:first-child{
+	border-color: #2B2C74;
+	color: #0D0D1F;
+	background-color: #D4D5EE;
+}
+
+/* Mobile Dashboard items */
+table.mobileitem {
+    *border-collapse: collapse; /* IE7 and lower */
+    border-spacing: 0;
+		border-style: none;
+		background-color: #FFFFFF;
+    width: 100%;
+}
+
+.mobileitem {
+    border: solid #ccc 1px;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
+    -webkit-box-shadow: 0 1px 1px #ccc; 
+    -moz-box-shadow: 0 1px 1px #ccc; 
+    box-shadow: 0 1px 1px #ccc;         
+		color: #000;
+}
+
+.mobileitem tr:hover {
+    background: #fbf8e9;
+    -o-transition: all 0.1s ease-in-out;
+    -webkit-transition: all 0.1s ease-in-out;
+    -moz-transition: all 0.1s ease-in-out;
+    -ms-transition: all 0.1s ease-in-out;
+    transition: all 0.1s ease-in-out;     
+}    
+    
+.mobileitem td, .mobileitem th {
+    border-left: 0px solid #ccc;
+    border-top: 1px solid #ccc;
+    padding: 6px;
+    text-align: left;    
+}
+
+.mobileitem th {
+    background-color: #dce9f9;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#ebf3fc), to(#dce9f9));
+    background-image: -webkit-linear-gradient(top, #ebf3fc, #dce9f9);
+    background-image: -moz-linear-gradient(top, #ebf3fc, #dce9f9);
+    background-image: -ms-linear-gradient(top, #ebf3fc, #dce9f9);
+    background-image: -o-linear-gradient(top, #ebf3fc, #dce9f9);
+    background-image: linear-gradient(top, #ebf3fc, #dce9f9);
+    -webkit-box-shadow: 0 1px 0 rgba(255,255,255,.8) inset; 
+    -moz-box-shadow:0 1px 0 rgba(255,255,255,.8) inset;  
+    border-top: none;
+		text-shadow: 0 1px 0 rgba(255,255,255,.5); 
+		font-weight: bold;
+}
+
+.mobileitem td:first-child, .mobileitem th:first-child {
+    border-left: none;
+}
+
+.mobileitem td:last-child {
+  font-weight: bold;
+  text-align: right;
+}
+
+.mobileitem .btn-mini {
+	font-family: Arial,Helvetica,sans-serif;
+	font-size: 10pt;
+  font-weight: bold;
+}
+
+.mobileitem th:first-child {
+    -moz-border-radius: 6px 0 0 0;
+    -webkit-border-radius: 6px 0 0 0;
+    border-radius: 6px 0 0 0;
+}
+
+.mobileitem th:last-child {
+    -moz-border-radius: 0 6px 0 0;
+    -webkit-border-radius: 0 6px 0 0;
+    border-radius: 0 6px 0 0;
+}
+
+.mobileitem th:only-child{
+    -moz-border-radius: 6px 6px 0 0;
+    -webkit-border-radius: 6px 6px 0 0;
+    border-radius: 6px 6px 0 0;
+}
+
+.mobileitem tr:last-child td:first-child {
+    -moz-border-radius: 0 0 0 6px;
+    -webkit-border-radius: 0 0 0 6px;
+    border-radius: 0 0 0 6px;
+}
+
+.mobileitem tr:last-child td:last-child {
+    -moz-border-radius: 0 0 6px 0;
+    -webkit-border-radius: 0 0 6px 0;
+    border-radius: 0 0 6px 0;
+}
+
+.borderbot {
+	padding-bottom: 6px; 
+	padding-top: 6px; 
+	border-bottom: 0.04em solid rgba(255,255,255,.1);
+}
+
+.dimslider {
+	z-index:1;
+	border-width: 1px;
+	border-style: solid;
+	border-color: #333 #333 #777 #333;
+	border-radius: 25px;
+	width: 100%;
+	margin-top: 0px;
+	position: absolute;
+	height: 13px;
+	background-color: #8e8d8d;
+	background: url('images/bg-track.png') repeat top left;
+    box-shadow: inset 0 1px 5px 0px rgba(0, 0, 0, .5), 
+    				  0 1px 0 0px rgba(250, 250, 250, .5);
+}
+
+.dimslider .ui-slider-handle {
+	position: absolute;
+	z-index: 2;
+	width: 25px;
+	height: 25px;
+	cursor: pointer;
+	background: url('images/handle.png') no-repeat 50% 50%;
+	font-weight: bold;
+	color: #1C94C4;
+	border-style: none;
+	outline: none;
+	top: -7px;
+	margin-left: -12px;
+}
+
+.dimslider .ui-slider-range {
+	background: #ffffff; /* Old browsers */
+	background: -moz-linear-gradient(top,  #11AAFD 0%, #0199E0 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#11AAFD), color-stop(100%,#0199E0)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  #11AAFD 0%,#0199E0 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  #11AAFD 0%,#0199E0 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  #11AAFD 0%,#0199E0 100%); /* IE10+ */
+	background: linear-gradient(top,  #11AAFD 0%,#0199E0 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#11AAFD', endColorstr='#0199E0',GradientType=0 ); /* IE6-9 */
+	position: absolute;
+	border: 0;
+	top: 0;
+	height: 100%;
+	border-radius: 25px;
+}
+
+html,body{
+	height: 99%;
+}
+#holder {
+		min-height: 100%;
+		position:relative;
+}
+.bannercontent {
+		padding-top: 60px;
+		padding-bottom: 22px;
+}
+#copyright {
+	position: absolute;
+	bottom: 0;
+	height: 22px;
+	left: 0;
+	right: 0;						
+}
+/* Lastly, apply responsive CSS fixes as necessary */
+@media (max-width: 979px) {
+	.bannercontent {
+		padding-top: 0px;
+	}
+}						
+.brand
+{
+	height: 20px;
+	width: 100px;
+}            
+.brand h1 {
+	float: left;
+	margin-left: -7px;
+	margin-top: -14px;
+	text-decoration: none;
+	text-transform: none;
+	font-family: 'Oswald', sans-serif;
+	font-size: 1.7em;
+	font-weight: 200;
+	color: #1C1C1C;
+}
+.brand h2 {
+	float: left;
+	margin-left: 120px;
+	margin-top: -24px;
+	text-decoration: none;
+	text-transform: none;
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: 0.7em;
+	font-style: italic;
+	color: #545454;
+}
+.dropdown-menu .divider {
+	*width: 100%;
+	height: 1px;
+	margin: 4px 1px;
+	*margin: -5px 0 5px;
+	overflow: hidden;
+	background-color: #353535;
+	border-bottom: 1px solid #666666;
+}             
+.navbar .divider-vertical {
+	height: 40px;
+	margin: 0 2px;
+	border-right: none;
+	border-left: none;
+}
+.navbar .nav {
+	float: right;
+}
+
+.navbar .nav .dropdown-menu {
+	border:1px solid #616261; -webkit-border-radius: 3px; -moz-border-radius: 3px;border-radius: 3px;font-family:arial, helvetica, sans-serif; padding: 4px 4px 4px 4px; background-color: #7d7e7d;
+	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #7d7e7d), color-stop(100%, #0e0e0e));
+	background-image: -webkit-linear-gradient(top, #7d7e7d, #0e0e0e);
+	background-image: -moz-linear-gradient(top, #7d7e7d, #0e0e0e);
+	background-image: -ms-linear-gradient(top, #7d7e7d, #0e0e0e);
+	background-image: -o-linear-gradient(top, #7d7e7d, #0e0e0e);
+	background-image: linear-gradient(top, #7d7e7d, #0e0e0e);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#7d7e7d, endColorstr=#0e0e0e);
+}
+
+.navbar .nav li a {
+	text-decoration: none;
+	text-transform: none;
+	font-family: 'Abel', sans-serif;
+	color: #FC2C2C;
+	border:1px solid #616261; -webkit-border-radius: 3px; -moz-border-radius: 3px;border-radius: 3px;font-family:arial, helvetica, sans-serif; padding: 10px 10px 10px 10px; font-weight:bold; text-align: center; color: #FFFFFF; background-color: #7d7e7d;
+	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #7d7e7d), color-stop(100%, #0e0e0e));
+	background-image: -webkit-linear-gradient(top, #7d7e7d, #0e0e0e);
+	background-image: -moz-linear-gradient(top, #7d7e7d, #0e0e0e);
+	background-image: -ms-linear-gradient(top, #7d7e7d, #0e0e0e);
+	background-image: -o-linear-gradient(top, #7d7e7d, #0e0e0e);
+	background-image: linear-gradient(top, #7d7e7d, #0e0e0e);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#7d7e7d, endColorstr=#0e0e0e);
+}
+
+@media (min-width: 768px) and (max-width: 1200px) {
+  .navbar .nav li a {
+    padding: 10px 5px 10px 5px !important;
+  }
+}
+
+.navbar .nav li a:hover {
+	 border:1px solid #4a4b4a; background-color: #646464;
+	 background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#646464), color-stop(100%, #282828));
+	 background-image: -webkit-linear-gradient(top, #646464, #282828);
+	 background-image: -moz-linear-gradient(top, #646464, #282828);
+	 background-image: -ms-linear-gradient(top, #646464, #282828);
+	 background-image: -o-linear-gradient(top, #646464, #282828);
+	 background-image: linear-gradient(top, #646464, #282828);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#646464, endColorstr=#282828);
+}
+.navbar .nav .current_page_item > a, .navbar .nav .current_page_item > a:hover {
+	color: #FFFFFF;
+}
+
+.navbar .nav .current_page_item > a {
+	border:1px solid #25729a; -webkit-border-radius: 3px; -moz-border-radius: 3px;border-radius: 3px;font-family:arial, helvetica, sans-serif; padding: 10px 10px 10px 10px; font-weight:bold; text-align: center; color: #FFFFFF; background-color: #3093c7;
+	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #3093c7), color-stop(100%, #1c5a85));
+	background-image: -webkit-linear-gradient(top, #3093c7, #1c5a85);
+	background-image: -moz-linear-gradient(top, #3093c7, #1c5a85);
+	background-image: -ms-linear-gradient(top, #3093c7, #1c5a85);
+	background-image: -o-linear-gradient(top, #3093c7, #1c5a85);
+	background-image: linear-gradient(top, #3093c7, #1c5a85);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#3093c7, endColorstr=#1c5a85);
+}
+
+.navbar .nav .current_page_item > a:hover {
+	border:1px solid #1c5675; background-color: #26759e;
+	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#26759e), color-stop(100%, #133d5b));
+	background-image: -webkit-linear-gradient(top, #26759e, #133d5b);
+	background-image: -moz-linear-gradient(top, #26759e, #133d5b);
+	background-image: -ms-linear-gradient(top, #26759e, #133d5b);
+	background-image: -o-linear-gradient(top, #26759e, #133d5b);
+	background-image: linear-gradient(top, #26759e, #133d5b);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#26759e, endColorstr=#133d5b);
+}
+
+.navbar-inverse .navbar-inner {
+	background-color: #EEE; /* background color will be black for all browsers */
+	background-image: none;
+	background-repeat: no-repeat;
+	filter: none;
+}						
+
+div.log {
+	background-color: #FAFAFA;
+	height: 300px;
+	overflow: auto;
+	border: 1px dotted #AAAAAA;
+	padding: 4px;
+	font-family: "Courier New", monospace;
+	color: #666666;
+	font-size: 11px;
+	word-wrap: break-word;
+	text-align: left; 
+}
+
+.logerror {
+	color:#860016;
+}
+
+.obtext {
+	position: absolute;
+	right:14px;
+	top: 11px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 1.8em;
+  font-weight:bold;
+	color: #000000;
+}
+
+.obtext2 {
+	position: absolute;
+	right:14px;
+	top: 11px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 1.6em;
+  font-weight:bold;
+	color: #444444;
+}
+
+ .progress-label {
+	float: left;
+	margin-left: 50%;
+	margin-top: -4px;
+	font-size: 1.3em;
+  font-weight:bold;
+  text-shadow: 1px 1px #000;
+	color: #fff;
+}
+
+.sb-link {
+	font-size: 1.2em;
+	font-weight:bold;
+	color: #000000;
+	cursor: pointer;
+}
+.sb-link a, .sb-link a:link, .sb-link a:active, .sb-link a:visited
+{
+	text-decoration: none;
+	color: #000;
+}
+.sb-link a:hover
+{
+	color: #000FF0;
+}
+
+.sb-fixed {
+	padding: 2px; 
+}
+
+@media (min-width: 768px) { 
+  .sb-fixed{
+    position: fixed;
+  } 
+}
+
+.page-header-small {
+  padding-bottom: 4px;
+  margin: 20px 0 6px;
+  border-bottom: 1px solid #eeeeee;
+} 
+
+a:link {
+	color:#FFF;
+}
+
+.norm-link, .norm-link a, .norm-link a:link, .norm-link a:active, .norm-link a:visited, .norm-link href {
+	color: #43A4D3;
+	font-weight:bold;
+	cursor: pointer;
+}
+
+.lcursor {
+	cursor: pointer;
+}
+
+
+.multiselect {
+	width: 750px;
+	height: 500px;
+}
+
+.marginright
+{
+	padding-right:5px;
+}
+
+.transimg
+{
+	opacity:0.5;
+	filter:alpha(opacity=50); /* For IE8 and earlier */
+}
+.transimg:hover
+{
+	opacity:1.0;
+	filter:alpha(opacity=100); /* For IE8 and earlier */
+}
+
+.myrighttable td {
+    text-align: right;
+}
+
+
+/* Reset */
+
+.accordion,
+.accordion ul,
+.accordion li,
+.accordion a,
+.accordion span {
+	margin: 0;
+	padding: 0;
+	border: none;
+	outline: none;
+}
+
+.accordion li {
+	list-style: none;
+}
+
+/* Layout & Style */
+
+.accordion li > a {
+	display: block;
+	position: relative;
+	min-width: 150px;
+	padding: 0 10px 0 10px;
+	height: 32px;
+
+	color: #eee;
+	font: bold 13px/32px Arial, sans-serif;
+	text-decoration: none;
+	text-shadow: 0px 1px 0px rgba(0,0,0, .35);
+
+	background: #6c6e74;
+	background: -moz-linear-gradient(top,  #6c6e74 0%, #4b4d51 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#6c6e74), color-stop(100%,#4b4d51));
+	background: -webkit-linear-gradient(top,  #6c6e74 0%,#4b4d51 100%);
+	background: -o-linear-gradient(top,  #6c6e74 0%,#4b4d51 100%);
+	background: -ms-linear-gradient(top,  #6c6e74 0%,#4b4d51 100%);
+	background: linear-gradient(top,  #6c6e74 0%,#4b4d51 100%);
+
+	-webkit-box-shadow: inset 0px 1px 0px 0px rgba(255,255,255, .1), 0px 1px 0px 0px rgba(0,0,0, .1);
+	-moz-box-shadow: inset 0px 1px 0px 0px rgba(255,255,255, .1), 0px 1px 0px 0px rgba(0,0,0, .1);
+	box-shadow: inset 0px 1px 0px 0px rgba(255,255,255, .1), 0px 1px 0px 0px rgba(0,0,0, .1);
+}
+
+.accordion > li:hover > a,
+.accordion > li:target > a,
+.accordion > li > a.active {
+	color: #3e5706;
+	text-shadow: 1px 1px 1px rgba(255,255,255, .2);
+	
+	/*background: url(../img/active.png) repeat-x;*/
+	background: #a5cd4e;
+	background: -moz-linear-gradient(top,  #a5cd4e 0%, #6b8f1a 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#a5cd4e), color-stop(100%,#6b8f1a));
+	background: -webkit-linear-gradient(top,  #a5cd4e 0%,#6b8f1a 100%);
+	background: -o-linear-gradient(top,  #a5cd4e 0%,#6b8f1a 100%);
+	background: -ms-linear-gradient(top,  #a5cd4e 0%,#6b8f1a 100%);
+	background: linear-gradient(top,  #a5cd4e 0%,#6b8f1a 100%);	
+}
+
+.accordion li > a span {
+	display: block;
+	position: absolute;
+	top: 7px;
+	right: 0;
+	padding: 0 10px;
+	margin-right: 10px;
+	
+	font: normal bold 12px/18px Arial, sans-serif;
+	background: #404247;
+	
+	-webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+
+	-webkit-box-shadow: inset 1px 1px 1px rgba(0,0,0, .2), 1px 1px 1px rgba(255,255,255, .1);
+	-moz-box-shadow: inset 1px 1px 1px rgba(0,0,0, .2), 1px 1px 1px rgba(255,255,255, .1);
+	box-shadow: inset 1px 1px 1px rgba(0,0,0, .2), 1px 1px 1px rgba(255,255,255, .1);
+}
+
+.accordion > li:hover > a span,
+.accordion > li:target > a span,
+.accordion > li > a.active span {
+	color: #eee;
+	text-shadow: 0px 1px 0px rgba(0,0,0, .35);
+	background: #3e5706;
+}
+
+/* Sub Menu */
+
+.sub-menu li a {
+	color: #fff;
+	background: #252525;
+	border-bottom: 1px solid #393939;
+}
+
+.sub-menu li:hover a { background: #25253f; }
+
+.sub-menu li:last-child a { border: none; }
+
+.sub-menu li > a span {
+	color: #eee;
+	text-shadow: 1px 1px 0px rgba(255,255,255, .2);
+	background: transparent;
+	border: 1px solid #898989;
+
+	-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+	box-shadow: none;
+}
+
+/* Functionality */
+
+.accordion li > .sub-menu {
+	display: none;
+}
+
+.accordion li:target > .sub-menu {
+	display: block;
+}
+
+.ex-color-box {
+    float: left;
+    width: 14px;
+    height: 14px;
+    margin: 1px;
+    border: 1px solid white;
+}
+.cIFrame {
+ position:fixed;
+ left:0;
+ margin:0;
+ padding:0;
+ display:block;
+ width:100%;
+ height:80%;
+ border:none;
+}
+
+.cIFrameLarge {
+ position:fixed;
+ left:0;
+ margin:0;
+ padding:0;
+ display:block;
+ width:100%;
+ height:calc(100% - 120px);
+ border:none;
+}
+
+
+.dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter {
+	color: #fff;
+}
+
+table.dataTable thead th, table.dataTable thead td {
+	padding: 2px 2px;
+}

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- COMMAND_CLASS_VERSION CommandClassGet not supported -->
+  <CommandClass id="134" classgetsupported="false" />
+</Product>

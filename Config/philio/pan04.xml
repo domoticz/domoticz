@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Philio: PAN04-1 Double Relay Switch 2x1.5kW with Power Measurement -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="short" instance="1" index="1" genre="config" label="Watt meter report period" min="1" max="32000" value="720">
+			<Help>If the setting is configured for 1hour (set value =720), the device will report its instant power consumption every 1 hour to Z-Wave Controller. Unit: 5 seconds.</Help>
+		</Value>
+
+		<Value type="short" instance="1" index="2" genre="config" label="kWh meter report period" min="1" max="32000" value="6">
+			<Help>If the setting is configured for 1hour (set value =720), the device will report its power consumption in KWh every 1 hour to Z-Wave Controller. Unit: 5 seconds.</Help>
+		</Value>
+
+		<Value type="byte" instance="1" index="3" genre="config" label="Selected end point" min="0" max="3" value="1">
+			 <Help>1: Relay 1 and Relay 2. 2: Relay 1. 3: Relay 2</Help>
+		</Value>
+	
+		<Value type="byte" instance="1" index="4" genre="config" label="Edge or Pulse mode or Edge-Togle mode" min="0" max="3" value="1">
+			<Help>Edge or Pulse mode or Edge-Togle mode defines the operating mode of the externally connected switch. Default: Edge Mode</Help>
+			<Item label="Edge Mode" value="1" />
+			<Item label="Toggle Mode" value="2" />
+			<Item label="Edge/Toggle Mode" value="3" />
+		</Value>
+	
+		<Value type="short" instance="1" index="5" genre="config" label="Threshold of Watt for Load Caution" min="10" max="1500" value="1500">
+			 <Help>Threshold of Watt for Load Caution</Help>
+		</Value>
+
+		<Value type="short" instance="1" index="6" genre="config" label="Threshold of kWh for Load Caution" min="0" max="10000" value="10000">
+			 <Help>Threshold of kWh for Load Caution</Help>
+		</Value>
+	</CommandClass>
+
+	<CommandClass id="96" mapping="endpoints" />
+	
+	<!-- COMMAND_CLASS_BASIC does not respond to requests -->
+	<CommandClass id="32" action="remove" />
+
+	<!-- COMMAND_CLASS_ALARM does not respond to requests -->
+	<CommandClass id="113" action="remove" />
+			
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="3">
+		<Group index="1" max_associations="1" label="Relay 1 and 2 together" auto="false" />
+			<Group index="2" max_associations="1" label="Relay 1" auto="false" />
+			<Group index="3" max_associations="1" label="Relay 2" auto="false" />
+		</Associations>
+	</CommandClass>
+
+</Product>
