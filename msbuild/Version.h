@@ -1,4 +1,4 @@
-#include "svnversion.h"
+#include "../svnversion.h"
  
 #define STRINGIZE2(s) #s
 #define STRINGIZE(s) STRINGIZE2(s)

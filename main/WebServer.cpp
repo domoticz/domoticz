@@ -3659,6 +3659,7 @@ namespace http {
 						case pTypeBlinds:
 						case pTypeRFY:
 						case pTypeChime:
+						case pTypeThermostat2:
 						case pTypeThermostat3:
 						case pTypeRemote:
 							bdoAdd = true;
@@ -3729,6 +3730,7 @@ namespace http {
 							case pTypeBlinds:
 							case pTypeRFY:
 							case pTypeChime:
+							case pTypeThermostat2:
 							case pTypeThermostat3:
 							case pTypeRemote:
 							{
@@ -4202,20 +4204,20 @@ namespace http {
 					}
 					else if (lighttype == 104)
 					{
-						//Chime/Byron MP001
-						dtype = pTypeChime;
-						subtype = sTypeByronMP001;
-						std::string id = m_pWebEm->FindValue("id");
+						//HE105
+						dtype = pTypeThermostat2;
+						subtype = sTypeHE105;
 						sunitcode = m_pWebEm->FindValue("unitcode");
-						if (
-							(id == "") ||
-							(sunitcode == "")
-							)
+						if (sunitcode == "")
 							return;
-						int iUnitCode = atoi(sunitcode.c_str()) - 1;
+						//convert to hex, and we have our Unit Code
+						std::stringstream s_strid;
+						s_strid << std::hex << std::uppercase << sunitcode;
+						int iUnitCode;
+						s_strid >> iUnitCode;
 						sprintf(szTmp, "%d", iUnitCode);
 						sunitcode = szTmp;
-						devid = id;
+						devid = "1";
 					}
 					else if ((lighttype >= 200) && (lighttype < 300))
 					{
@@ -4504,20 +4506,20 @@ namespace http {
 					}
 					else if (lighttype == 104)
 					{
-						//Chime/Byron MP001
-						dtype = pTypeChime;
-						subtype = sTypeByronMP001;
-						std::string id = m_pWebEm->FindValue("id");
+						//HE105
+						dtype = pTypeThermostat2;
+						subtype = sTypeHE105;
 						sunitcode = m_pWebEm->FindValue("unitcode");
-						if (
-							(id == "") ||
-							(sunitcode == "")
-							)
+						if (sunitcode == "")
 							return;
-						int iUnitCode = atoi(sunitcode.c_str()) - 1;
+						//convert to hex, and we have our Unit Code
+						std::stringstream s_strid;
+						s_strid << std::hex << std::uppercase << sunitcode;
+						int iUnitCode;
+						s_strid >> iUnitCode;
 						sprintf(szTmp, "%d", iUnitCode);
 						sunitcode = szTmp;
-						devid = id;
+						devid = "1";
 					}
 					else if ((lighttype >= 200) && (lighttype < 300))
 					{
@@ -4632,6 +4634,7 @@ namespace http {
 					(dType == pTypeBlinds) ||
 					(dType == pTypeRFY) ||
 					(dType == pTypeChime) ||
+					(dType == pTypeThermostat2) ||
 					(dType == pTypeThermostat3) ||
 					(dType == pTypeRemote)
 					)
@@ -5425,6 +5428,7 @@ namespace http {
 					(dType != pTypeBlinds) &&
 					(dType != pTypeRFY) &&
 					(dType != pTypeChime) &&
+					(dType != pTypeThermostat2) &&
 					(dType != pTypeThermostat3) &&
 					(dType != pTypeRemote)
 					)
@@ -7433,6 +7437,7 @@ namespace http {
 								(dType != pTypeBlinds) &&
 								(dType != pTypeRFY) &&
 								(dType != pTypeChime) &&
+								(dType != pTypeThermostat2) &&
 								(dType != pTypeThermostat3) &&
 								(dType != pTypeRemote) &&
 								(dType != pTypeChime) &&
@@ -7619,6 +7624,7 @@ namespace http {
 						(dType == pTypeBlinds) ||
 						(dType == pTypeRFY) ||
 						(dType == pTypeChime) ||
+						(dType == pTypeThermostat2) ||
 						(dType == pTypeThermostat3) ||
 						(dType == pTypeRemote)
 						)
@@ -11634,6 +11640,7 @@ namespace http {
 				(dType != pTypeRFY) &&
 				(dType != pTypeRego6XXValue) &&
 				(dType != pTypeChime) &&
+				(dType != pTypeThermostat2) &&
 				(dType != pTypeThermostat3) &&
 				(dType != pTypeRemote)
 				)

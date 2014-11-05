@@ -1185,7 +1185,12 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 		ID = szTmp;
 		Unit=pResponse->CHIME.sound;
 	}
-	else if (devType==pTypeThermostat3)
+	else if (devType == pTypeThermostat2)
+	{
+		ID = "1";
+		Unit = pResponse->THERMOSTAT2.unitcode;
+	}
+	else if (devType == pTypeThermostat3)
 	{
 		sprintf(szTmp,"%02X%02X%02X", pResponse->THERMOSTAT3.unitcode1, pResponse->THERMOSTAT3.unitcode2,pResponse->THERMOSTAT3.unitcode3);
 		ID = szTmp;
@@ -1274,6 +1279,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			case pTypeRFY:
 			case pTypeSecurity1:
 			case pTypeChime:
+			case pTypeThermostat2:
 			case pTypeThermostat3:
 				//we received a control message from a domoticz client,
 				//and should actually perform this command ourself switch
@@ -6083,70 +6089,63 @@ unsigned long long MainWorker::decode_Thermostat1(const CDomoticzHardwareBase *p
 	return DevRowIdx;
 }
 
-//not in dbase yet
 unsigned long long MainWorker::decode_Thermostat2(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
-	unsigned long long DevRowIdx=-1;
-	//decoding of this type is only implemented for use by simulate and verbose
-	//HE105 receive is not implemented in the RFXtrx433 firmware
-	//and RTS10 commands are received as Thermostat1 commands
+	char szTmp[100];
+	unsigned char devType = pTypeThermostat2;
+	unsigned char subType = pResponse->THERMOSTAT2.subtype;
+	std::string ID;
+	ID = "1";
+	unsigned char Unit = pResponse->THERMOSTAT2.unitcode;
+	unsigned char cmnd = pResponse->THERMOSTAT2.cmnd;
+	unsigned char SignalLevel = pResponse->THERMOSTAT2.rssi;
+	unsigned char BatteryLevel = 255;
+	CheckSceneCode(HwdID, ID.c_str(), Unit, devType, subType, cmnd, "");
 
-	WriteMessage("");
-/*
-	unsigned char devType=pTypeThermostat2;
+	unsigned long long DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 
-		Select Case recbuf(THERMOSTAT2.subtype)
-		Case THERMOSTAT2.sTypeHE105
-		WriteMessage("subtype       = HE105")
-		Case THERMOSTAT2.sTypeRTS10
-		WriteMessage("subtype       = RTS10/RFS10/TLX1206")
-		Case Else
-		WriteMessage("ERROR: Unknown Sub type for Packet type=" & Hex(recbuf(THERMOSTAT2.packettype)) & ": " & Hex(recbuf(THERMOSTAT2.subtype)))
-		End Select
-		WriteMessage("Sequence nbr  = " & recbuf(THERMOSTAT2.seqnbr).ToString)
-		WriteMessage("unitcode      = " & recbuf(THERMOSTAT2.unitcode).ToString)
-		If recbuf(THERMOSTAT2.subtype) = THERMOSTAT2.sTypeHE105 Then
-		WriteMessage("switches 1- 5 = ", False)
-		If (recbuf(THERMOSTAT2.unitcode) And &H10) = 0 Then
-		WriteMessage("OFF ", False)
-		Else
-		WriteMessage("ON  ", False)
-		End If
-		If (recbuf(THERMOSTAT2.unitcode) And &H8) = 0 Then
-		WriteMessage("OFF ", False)
-		Else
-		WriteMessage("ON  ", False)
-		End If
-		If (recbuf(THERMOSTAT2.unitcode) And &H4) = 0 Then
-		WriteMessage("OFF ", False)
-		Else
-		WriteMessage("ON  ", False)
-		End If
-		If (recbuf(THERMOSTAT2.unitcode) And &H2) = 0 Then
-		WriteMessage("OFF ", False)
-		Else
-		WriteMessage("ON  ", False)
-		End If
-		If (recbuf(THERMOSTAT2.unitcode) And &H1) = 0 Then
-		WriteMessage("OFF ")
-		Else
-		WriteMessage("ON  ")
-		End If
-		End If
-		WriteMessage("Command       = ", False)
-		Select Case recbuf(THERMOSTAT2.cmnd)
-		Case THERMOSTAT2.sOff
-		WriteMessage("Off")
-		Case THERMOSTAT2.sOn
-		WriteMessage("On")
-		Case THERMOSTAT2.sProgram
-		WriteMessage("Program RTS10")
-		Case Else
-		WriteMessage("UNKNOWN")
-		End Select
-		WriteMessage("Signal level  = " & (recbuf(THERMOSTAT2.rssi) >> 4).ToString)
-*/
-	WriteMessage("Not implemented");
+	if (m_verboselevel == EVBL_ALL)
+	{
+		WriteMessageStart();
+		switch (pResponse->THERMOSTAT2.subtype)
+		{
+		case sTypeHE105:
+			WriteMessage("subtype       = HE105");
+			break;
+		case sTypeRTS10:
+			WriteMessage("subtype       = RTS10");
+			break;
+		default:
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->THERMOSTAT2.packettype, pResponse->THERMOSTAT2.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->THERMOSTAT2.seqnbr);
+		WriteMessage(szTmp);
+
+		sprintf(szTmp, "Unit code        = 0x%02X", pResponse->THERMOSTAT2.unitcode);
+		WriteMessage(szTmp);
+
+		switch (pResponse->THERMOSTAT2.cmnd)
+		{
+		case thermostat2_sOff:
+			WriteMessage("Command       = Off");
+			break;
+		case thermostat2_sOn:
+			WriteMessage("Command       = On");
+			break;
+		default:
+			WriteMessage("Command       = unknown");
+			break;
+		}
+
+		sprintf(szTmp, "Signal level  = %d", pResponse->THERMOSTAT2.rssi);
+		WriteMessage(szTmp);
+		WriteMessageEnd();
+	}
 	return DevRowIdx;
 }
 
@@ -8546,6 +8545,29 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+			}
+			return true;
+		}
+		break;
+	case pTypeThermostat2:
+		{
+			tRBUF lcmd;
+			lcmd.THERMOSTAT2.packetlength = sizeof(lcmd.REMOTE) - 1;
+			lcmd.THERMOSTAT2.packettype = dType;
+			lcmd.THERMOSTAT2.subtype = dSubType;
+			lcmd.THERMOSTAT2.unitcode = Unit;
+			lcmd.THERMOSTAT2.cmnd = Unit;
+			lcmd.THERMOSTAT2.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+
+			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.THERMOSTAT2.cmnd))
+				return false;
+
+			lcmd.THERMOSTAT2.filler = 0;
+			lcmd.THERMOSTAT2.rssi = 7;
+			WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.THERMOSTAT2));
+			if (!IsTesting) {
+				//send to internal for now (later we use the ACK)
+				DecodeRXMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd);
 			}
 			return true;
 		}

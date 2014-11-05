@@ -1,6 +1,8 @@
 #!/bin/sh
 
 #you need to install sshpass (sudo apt-get install sshpass)
+#and after installation (first time) ssh to sourceforge so the key is accepted
+#ssh USERNAME@web.sourceforge.net
 
 DOCUMENT_ROOT="/home/linaro/dev-domoticz"
 SVN_SERVER="svn://svn.code.sf.net/p/domoticz/code/trunk"
