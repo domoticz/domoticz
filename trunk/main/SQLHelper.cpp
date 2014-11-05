@@ -1621,6 +1621,7 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 	case pTypeCurtain:
 	case pTypeBlinds:
 	case pTypeRFY:
+	case pTypeThermostat2:
 	case pTypeThermostat3:
 	case pTypeRemote:
 		bIsLightSwitch=true;
@@ -1720,6 +1721,9 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 					case pTypeRFY:
 						newnValue=rfy_sUp;
 						break;
+					case pTypeThermostat2:
+						newnValue = thermostat2_sOff;
+						break;
 					case pTypeThermostat3:
 						newnValue=thermostat3_sOff;
 						break;
@@ -1787,6 +1791,9 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 				break;
 			case pTypeRFY:
 				newnValue=rfy_sUp;
+				break;
+			case pTypeThermostat2:
+				newnValue = thermostat2_sOff;
 				break;
 			case pTypeThermostat3:
 				newnValue=thermostat3_sOff;
@@ -1891,6 +1898,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 	case pTypeBlinds:
 	case pTypeRFY:
 	case pTypeChime:
+	case pTypeThermostat2:
 	case pTypeThermostat3:
 	case pTypeRemote:
 		//Add Lighting log
@@ -6039,7 +6047,7 @@ void CSQLHelper::CheckDeviceTimeout()
 	std::vector<std::vector<std::string> > result;
 	char szTmp[300];
 	sprintf(szTmp,
-		"SELECT ID,Name,LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) ORDER BY Name",
+		"SELECT ID,Name,LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) ORDER BY Name",
 		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 		pTypeLighting1,
 		pTypeLighting2,
@@ -6053,6 +6061,7 @@ void CSQLHelper::CheckDeviceTimeout()
 		pTypeBlinds,
 		pTypeRFY,
 		pTypeChime,
+		pTypeThermostat2,
 		pTypeThermostat3,
 		pTypeRemote
 		);

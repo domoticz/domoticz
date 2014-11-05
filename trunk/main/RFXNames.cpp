@@ -708,8 +708,8 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeThermostat1, sTypeDigimax, "Temperature,Set point,Mode,Status" },
 		{ pTypeThermostat1, sTypeDigimaxShort, "Temperature,Set point,Mode,Status" },
 
-		{ pTypeThermostat2, sTypeHE105, "Not implemented" },
-		{ pTypeThermostat2, sTypeRTS10, "Not implemented" },
+		{ pTypeThermostat2, sTypeHE105, "Status" },
+		{ pTypeThermostat2, sTypeRTS10, "Status" },
 
 		{ pTypeThermostat3, sTypeMertikG6RH4T1, "Status" },
 		{ pTypeThermostat3, sTypeMertikG6RH4TB, "Status" },
@@ -1338,6 +1338,17 @@ void GetLightStatus(
 	case pTypeRemote:
 		lstatus="On";
 		break;
+	case pTypeThermostat2:
+		switch (nValue)
+		{
+		case thermostat2_sOff:
+			lstatus = "Off";
+			break;
+		case thermostat2_sOn:
+			lstatus = "On";
+			break;
+		}
+		break;
 	case pTypeThermostat3:
 		switch (nValue)
 		{
@@ -1938,6 +1949,23 @@ bool GetLightCommand(
 		break;
 	case pTypeRemote:
 		cmd=light2_sOn;
+		break;
+	case pTypeThermostat2:
+		{
+			if (switchcmd == "On")
+			{
+				cmd = thermostat2_sOn;
+			}
+			else if (switchcmd == "Off")
+			{
+				cmd = thermostat2_sOff;
+			}
+			else
+			{
+				cmd = thermostat2_sOff;
+			}
+			return true;
+		}
 		break;
 	case pTypeThermostat3:
 		{

@@ -36,6 +36,7 @@ Version 2.0.xxxx (October xxth 2014)
 - Implemented: Changing color in scene/groups will now also change it on actual device (for preview)
 - Fixed: OpenZWave, now fully supported domoticz as a secondary Controller (thanks to Cruguah)
 - Changed: 1Wire, better temperature checking
+- Implemented: Manual add Thermostat2 switch (type HE105)
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

@@ -2092,13 +2092,21 @@ define(['app'], function (app) {
 			}
 			else if ((lighttype>=200)&&(lighttype<300)) {
 				//Blinds
-				
 			}
+			
+			$("#dialog-addmanuallightdevice #he105params").hide();
 			$("#dialog-addmanuallightdevice #blindsparams").hide();
 			$("#dialog-addmanuallightdevice #lightingparams_enocean").hide();
 			$("#dialog-addmanuallightdevice #lightingparams_gpio").hide();
-			
-			if (lighttype==60) {
+
+			if (lighttype==104) {
+				//HE105
+				$("#dialog-addmanuallightdevice #lighting1params").hide();
+				$("#dialog-addmanuallightdevice #lighting2params").hide();
+				$("#dialog-addmanuallightdevice #lighting3params").hide();
+				$("#dialog-addmanuallightdevice #he105params").show();
+			}
+			else if (lighttype==60) {
 				//Blyss
 				$('#dialog-addmanuallightdevice #lightparams3 #combogroupcode >option').remove();
 				$('#dialog-addmanuallightdevice #lightparams3 #combounitcode >option').remove();
@@ -2232,6 +2240,9 @@ define(['app'], function (app) {
 			else if ((lighttype<20)||(lighttype==101)) {
 				mParams+="&housecode="+$("#dialog-addmanuallightdevice #lightparams1 #combohousecode option:selected").val();
 				mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightparams1 #combounitcode option:selected").val();
+			}
+			else if (lighttype==104) {
+				mParams+="&unitcode="+$("#dialog-addmanuallightdevice #he105params #combounitcode option:selected").text();
 			}
 			else if ((lighttype>=200)&&(lighttype<300)) {
 				//Blinds
@@ -2491,6 +2502,11 @@ define(['app'], function (app) {
 									for (ii=1; ii<16+1; ii++)
 									{
 										$('#dialog-addmanuallightdevice #lightparams2 #combounitcode').append($('<option></option>').val(ii).html(ii));
+									}
+									$('#dialog-addmanuallightdevice #he105params #combounitcode >option').remove();
+									for (ii=0; ii<32; ii++)
+									{
+										$('#dialog-addmanuallightdevice #he105params #combounitcode').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
 									}
 									UpdateAddManualDialog();
 				  },
