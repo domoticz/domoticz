@@ -48,12 +48,12 @@ SMTPClient::~SMTPClient()
 
 }
 
-void SMTPClient::SetFrom(const std::string From)
+void SMTPClient::SetFrom(const std::string &From)
 {
 	m_From="<"+From+">";
 }
 
-void SMTPClient::SetTo(const std::string To)
+void SMTPClient::SetTo(const std::string &To)
 {
 	std::vector<std::string> results;
 	StringSplit(To,";",results);
@@ -66,24 +66,24 @@ void SMTPClient::SetTo(const std::string To)
 	}
 }
 
-void SMTPClient::SetSubject(const std::string Subject)
+void SMTPClient::SetSubject(const std::string &Subject)
 {
 	m_Subject=Subject;
 }
 
-void SMTPClient::SetServer(const std::string Server, const int Port)
+void SMTPClient::SetServer(const std::string &Server, const int Port)
 {
 	m_Server=Server;
 	m_Port=Port;
 }
 
-void SMTPClient::SetCredentials(const std::string Username, const std::string Password)
+void SMTPClient::SetCredentials(const std::string &Username, const std::string &Password)
 {
 	m_Username=Username;
 	m_Password=Password;
 }
 
-void SMTPClient::AddAttachment(const std::string adata, const std::string atype)
+void SMTPClient::AddAttachment(const std::string &adata, const std::string &atype)
 {
 	std::pair<std::string, std::string> tattachment;
 	tattachment.first = adata;
@@ -91,13 +91,13 @@ void SMTPClient::AddAttachment(const std::string adata, const std::string atype)
 	m_Attachments.push_back(tattachment);
 }
 
-void SMTPClient::SetPlainBody(const std::string body)
+void SMTPClient::SetPlainBody(const std::string &body)
 {
 	m_PlainBody=body;
 	m_HTMLBody="";
 }
 
-void SMTPClient::SetHTMLBody(const std::string body)
+void SMTPClient::SetHTMLBody(const std::string &body)
 {
 	m_HTMLBody=body;
 	m_PlainBody="";
@@ -115,7 +115,6 @@ bool SMTPClient::SendEmail()
 	const std::string rmessage=MakeMessage();
 
 	CURLcode ret;
-	CURL *curl;
 	struct curl_slist *slist1;
 
 	smtp_upload_status smtp_ctx;
@@ -137,6 +136,7 @@ bool SMTPClient::SendEmail()
 
 	try
 	{
+		CURL *curl;
 		curl = curl_easy_init();
 
 		curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10);
@@ -229,8 +229,7 @@ const std::string SMTPClient::MakeMessage()
 	}
 
 	const std::string boundary("bounds=_NextP_0056wi_0_8_ty789432_tp");
-	bool MIME=false;
-	MIME=(m_Attachments.size() || m_HTMLBody.size());
+	bool MIME=(m_Attachments.size() || m_HTMLBody.size());
 
 	if(MIME)
 	{	

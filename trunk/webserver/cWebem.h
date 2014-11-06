@@ -168,13 +168,16 @@ namespace http {
 
 			bool CheckForAction( request& req );
 			std::string& FindValue( const char* name );
-			bool HasParams() { return (myNameValues.size()>0); };
+			bool HasParams()
+			{
+				return !myNameValues.empty(); 
+			};
 
 			bool CheckForPageOverride(const request& req, reply& rep);
 			
 			void SetAuthenticationMethod(const _eAuthenticationMethod amethod);
 
-			void AddUserPassword(const unsigned long ID, const std::string username, const std::string password, const _eUserRights userrights);
+			void AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const _eUserRights userrights);
 			void ClearUserPasswords();
 			std::vector<_tWebUserPassword> m_userpasswords;
 			void AddLocalNetworks(std::string network);

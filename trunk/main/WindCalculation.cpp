@@ -23,6 +23,7 @@ void _tWindCalculationStruct::Init()
 	m_FirstMeasureTime=mytime(NULL);
 	m_history_fifo.clear();
 	m_bHaveLastDirection=false;
+	m_last_direction = 0;
 }
 
 double _tWindCalculationStruct::AddValueAndReturnAvarage(double degree)

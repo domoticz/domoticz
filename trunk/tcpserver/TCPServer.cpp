@@ -88,7 +88,7 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 	}
 }
 
-CTCPServerInt::_tRemoteShareUser* CTCPServerInt::FindUser(const std::string username)
+CTCPServerInt::_tRemoteShareUser* CTCPServerInt::FindUser(const std::string &username)
 {
 	std::vector<CTCPServerInt::_tRemoteShareUser>::iterator itt;
 	int ii=0;
@@ -101,7 +101,7 @@ CTCPServerInt::_tRemoteShareUser* CTCPServerInt::FindUser(const std::string user
 	return NULL;
 }
 
-bool CTCPServerInt::HandleAuthentication(CTCPClient_ptr c, const std::string username, const std::string password)
+bool CTCPServerInt::HandleAuthentication(CTCPClient_ptr c, const std::string &username, const std::string &password)
 {
 	_tRemoteShareUser *pUser=FindUser(username);
 	if (pUser==NULL)
@@ -131,7 +131,7 @@ void CTCPServerInt::stopClient(CTCPClient_ptr c)
 void CTCPServerInt::stopAllClients()
 {
 	boost::lock_guard<boost::mutex> l(connectionMutex);
-	if (connections_.size()<1)
+	if (connections_.empty())
 		return;
 	std::set<CTCPClient_ptr>::const_iterator itt;
 	for (itt=connections_.begin(); itt!=connections_.end(); ++itt)
@@ -143,13 +143,13 @@ void CTCPServerInt::stopAllClients()
 	connections_.clear();
 }
 
-void CTCPServerInt::SetRemoteUsers(const std::vector<_tRemoteShareUser> users)
+void CTCPServerInt::SetRemoteUsers(const std::vector<_tRemoteShareUser> &users)
 {
 	boost::lock_guard<boost::mutex> l(connectionMutex);
 	m_users=users;
 }
 
-unsigned int CTCPServerInt::GetUserDevicesCount(const std::string username)
+unsigned int CTCPServerInt::GetUserDevicesCount(const std::string &username)
 {
 	_tRemoteShareUser *pUser=FindUser(username);
 	if (pUser==NULL)
@@ -222,7 +222,7 @@ CTCPServer::~CTCPServer()
 	m_pTCPServer=NULL;
 }
 
-bool CTCPServer::StartServer(const std::string address, const std::string port)
+bool CTCPServer::StartServer(const std::string &address, const std::string &port)
 {
 	try
 	{
@@ -263,13 +263,13 @@ void CTCPServer::SendToAll(const unsigned long long DeviceRowID, const char *pDa
 		m_pTCPServer->SendToAll(DeviceRowID,pData,Length,pClient2Ignore);
 }
 
-void CTCPServer::SetRemoteUsers(const std::vector<CTCPServerInt::_tRemoteShareUser> users)
+void CTCPServer::SetRemoteUsers(const std::vector<CTCPServerInt::_tRemoteShareUser> &users)
 {
 	if (m_pTCPServer)
 		m_pTCPServer->SetRemoteUsers(users);
 }
 
-unsigned int CTCPServer::GetUserDevicesCount(const std::string username)
+unsigned int CTCPServer::GetUserDevicesCount(const std::string &username)
 {
 	if (m_pTCPServer)
 		return m_pTCPServer->GetUserDevicesCount(username);

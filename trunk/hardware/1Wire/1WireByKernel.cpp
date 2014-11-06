@@ -353,7 +353,7 @@ float C1WireByKernel::ThreadReadRawDataHighPrecisionDigitalThermometer(const std
 bool C1WireByKernel::sendAndReceiveByRwFile(std::string path,const unsigned char * const cmd,size_t cmdSize,unsigned char * const answer,size_t answerSize) const
 {
    bool ok = false;
-   bool pioState = false;
+   //bool pioState = false;
    std::fstream file;
    path+="/rw";
    file.open(path.c_str(),std::ios_base::in|std::ios_base::out|std::ios_base::binary);

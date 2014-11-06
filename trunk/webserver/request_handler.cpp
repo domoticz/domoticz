@@ -59,9 +59,7 @@ request_handler::~request_handler()
 #ifndef WEBSERVER_DONT_USE_ZIP
 int request_handler::do_extract_currentfile(unzFile uf, const char* password, std::string &outputstr)
 {
-	int err=UNZ_OK;
-
-	err = unzOpenCurrentFilePassword(uf,password);
+	int err = unzOpenCurrentFilePassword(uf, password);
 	if (err!=UNZ_OK)
 		return err;
 
@@ -113,12 +111,11 @@ void request_handler::handle_request(const std::string &sHost, const request& re
     request_path += "index.html";
   }
 
-  std::string params="";
 
   size_t paramPos=request_path.find_first_of('?');
   if (paramPos!=std::string::npos)
   {
-	  params=request_path.substr(paramPos+1);
+	  //std::string params = request_path.substr(paramPos + 1);
 	  request_path=request_path.substr(0,paramPos);
   }
 
@@ -132,7 +129,6 @@ void request_handler::handle_request(const std::string &sHost, const request& re
   }
 
   bool bHaveGZipSupport=false;
-  const char *encoding_header;
 
   //check gzip support (only for .js and .htm(l) files
   if (
@@ -140,6 +136,7 @@ void request_handler::handle_request(const std::string &sHost, const request& re
 	  (request_path.find(".htm")!=std::string::npos)
 	  )
   {
+	  const char *encoding_header;
 	  if ((encoding_header = req.get_req_header(&req, "Accept-Encoding")) != NULL)
 	  {
 		  //see if we support gzip

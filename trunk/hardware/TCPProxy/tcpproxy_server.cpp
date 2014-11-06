@@ -163,7 +163,8 @@ namespace tcp_proxy
 		localhost_address(boost::asio::ip::address_v4::from_string(local_host)),
 		acceptor_(io_service_,boost::asio::ip::tcp::endpoint(localhost_address,local_port)),
 		upstream_port_(upstream_port),
-		upstream_host_(upstream_host)
+		upstream_host_(upstream_host),
+		m_bDoStop(false)
 	{
 
 	}

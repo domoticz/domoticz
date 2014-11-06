@@ -165,12 +165,11 @@ class CA2GZIPT
 
   int finish()
   {
-    uInt len;
     int done = 0;
     m_zstream.avail_in = 0; 
     for (;;)
 	{
-        len = Z_BUFSIZE - m_zstream.avail_out;
+		uInt len = Z_BUFSIZE - m_zstream.avail_out;
         if (len != 0)
 		{
 			write(m_outbuf,len);
@@ -256,10 +255,9 @@ class CGZIP2AT
     m_zstream.avail_out = Z_BUFSIZE;
 	check_header();
 	char outbuf[Z_BUFSIZE];
-	int nRead;
 	while(true)
 	{
-	  nRead=gzread(outbuf,Z_BUFSIZE);
+	  int nRead=gzread(outbuf,Z_BUFSIZE);
 	  if(nRead<=0) break;
 	  write(outbuf,nRead);
 	}

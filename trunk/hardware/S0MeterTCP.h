@@ -7,7 +7,7 @@
 class S0MeterTCP: public S0MeterBase
 {
 public:
-	S0MeterTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const int M1Type, const int M1PPH, const int M2Type, const int M2PPH);
+	S0MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const int M1Type, const int M1PPH, const int M2Type, const int M2PPH);
 	~S0MeterTCP(void);
 
 	void write(const char *data, size_t size);

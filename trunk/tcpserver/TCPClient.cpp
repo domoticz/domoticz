@@ -7,10 +7,9 @@ namespace tcp {
 namespace server {
 
 CTCPClient::CTCPClient(boost::asio::io_service& ios, CTCPServerInt *pManager)
-	: socket_(ios), pConnectionManager(pManager)
+: socket_(ios), pConnectionManager(pManager), m_username("")
 {
 	m_bIsLoggedIn=false;
-	m_username="";
 }
 
 

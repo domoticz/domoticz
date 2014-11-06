@@ -6,7 +6,8 @@
 
 #define RETRY_DELAY 30
 
-S0MeterTCP::S0MeterTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const int M1Type, const int M1PPH, const int M2Type, const int M2PPH)
+S0MeterTCP::S0MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const int M1Type, const int M1PPH, const int M2Type, const int M2PPH):
+m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
 #if defined WIN32
@@ -51,8 +52,8 @@ S0MeterTCP::S0MeterTCP(const int ID, const std::string IPAddress, const unsigned
 		m_meters[1].m_pulse_per_unit=float(M2PPH);
 	m_socket=INVALID_SOCKET;
 	m_stoprequested=false;
-	m_szIPAddress=IPAddress;
 	m_usIPPort=usIPPort;
+	m_retrycntr = RETRY_DELAY;
 }
 
 S0MeterTCP::~S0MeterTCP(void)

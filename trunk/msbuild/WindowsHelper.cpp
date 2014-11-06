@@ -60,8 +60,7 @@ void console::OpenHideConsole()
 
 	HWND hwnd = GetConsoleWindow();
 	HMENU hmenu = GetSystemMenu (hwnd, FALSE);
-	HINSTANCE hinstance =
-		(HINSTANCE) GetWindowLong (hwnd, GWL_HINSTANCE);
+	//HINSTANCE hinstance = (HINSTANCE) GetWindowLong (hwnd, GWL_HINSTANCE);
 	while (DeleteMenu (hmenu, 0, MF_BYPOSITION))
 		;
 	// redirect std::cout to our console window

@@ -64,7 +64,6 @@ void CDataPush::DoFibaroPush()
 		{
 			std::string sendValue;
 			std::vector<std::vector<std::string> >::const_iterator itt;
-			int ii=0;
 			for (itt=result.begin(); itt!=result.end(); ++itt)
 			{
 				std::vector<std::string> sd=*itt;

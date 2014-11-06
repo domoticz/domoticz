@@ -7,7 +7,6 @@
 #include <iostream>
 
 #include "hardwaretypes.h"
-#include "../main/localtime_r.h"
 #include "../main/Logger.h"
 
 #define RETRY_DELAY 30
@@ -46,9 +45,7 @@ static Match matchlist[] = {
 	{STD,	MOCHAD_ACTION,	"Rx RF House: ",	13, 9}
 };
 
-static int selected[17][17];
 //end
-
 
 MochadTCP::MochadTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort)
 {
@@ -88,6 +85,10 @@ MochadTCP::MochadTCP(const int ID, const std::string IPAddress, const unsigned s
 	m_mochad.LIGHTING1.housecode = 0;
 	m_mochad.LIGHTING1.unitcode = 0;
 	m_mochad.LIGHTING1.cmnd = 0;
+
+	memset(&selected, 0, sizeof(selected));
+	currentHouse=0;
+	currentUnit=0;
 }
 
 MochadTCP::~MochadTCP(void)

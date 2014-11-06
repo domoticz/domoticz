@@ -41,7 +41,6 @@ protected:
 	int selected[17][17];
 	int currentHouse;
 	int currentUnit;
-	int statusPart;
 	void Switch(int onOff);
 	void AddSelected(const unsigned char *pData);
 	unsigned char m_linecount;
