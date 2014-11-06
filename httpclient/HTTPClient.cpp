@@ -76,12 +76,12 @@ void HTTPClient::SetTimeout(const long timeout)
 	m_iTimeout=timeout;
 }
 
-void HTTPClient::SetUserAgent(const std::string useragent)
+void HTTPClient::SetUserAgent(const std::string &useragent)
 {
 	m_sUserAgent=useragent;
 }
 
-bool HTTPClient::GETBinary(const std::string url, const std::vector<std::string> ExtraHeaders, std::vector<unsigned char> &response, const int TimeOut)
+bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const int TimeOut)
 {
 	try
 	{
@@ -128,7 +128,7 @@ bool HTTPClient::GETBinary(const std::string url, const std::vector<std::string>
 	}
 }
 
-bool HTTPClient::GETBinaryToFile(const std::string url, const std::string outputfile)
+bool HTTPClient::GETBinaryToFile(const std::string &url, const std::string &outputfile)
 {
 	try
 	{
@@ -163,7 +163,7 @@ bool HTTPClient::GETBinaryToFile(const std::string url, const std::string output
 	}
 }
 
-bool HTTPClient::POSTBinary(const std::string url, const std::string postdata, const std::vector<std::string> ExtraHeaders, std::vector<unsigned char> &response)
+bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response)
 {
 	try
 	{
@@ -208,7 +208,7 @@ bool HTTPClient::POSTBinary(const std::string url, const std::string postdata, c
 	}
 }
 
-bool HTTPClient::PUTBinary(const std::string url, const std::string postdata, const std::vector<std::string> ExtraHeaders, std::vector<unsigned char> &response)
+bool HTTPClient::PUTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response)
 {
 	try
 	{
@@ -256,7 +256,7 @@ bool HTTPClient::PUTBinary(const std::string url, const std::string postdata, co
 }
 
 
-bool HTTPClient::GET(const std::string url, std::string &response)
+bool HTTPClient::GET(const std::string &url, std::string &response)
 {
 	std::vector<unsigned char> vHTTPResponse;
 	std::vector<std::string> ExtraHeaders;
@@ -267,7 +267,7 @@ bool HTTPClient::GET(const std::string url, std::string &response)
 	return true;
 }
 
-bool HTTPClient::GET(const std::string url, const std::vector<std::string> ExtraHeaders, std::string &response)
+bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response)
 {
 	std::vector<unsigned char> vHTTPResponse;
 	if (!GETBinary(url,ExtraHeaders,vHTTPResponse))
@@ -277,7 +277,7 @@ bool HTTPClient::GET(const std::string url, const std::vector<std::string> Extra
 	return true;
 }
 
-bool HTTPClient::POST(const std::string url, const std::string postdata, const std::vector<std::string> ExtraHeaders, std::string &response)
+bool HTTPClient::POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response)
 {
 	std::vector<unsigned char> vHTTPResponse;
 	if (!POSTBinary(url,postdata,ExtraHeaders, vHTTPResponse))
@@ -286,7 +286,7 @@ bool HTTPClient::POST(const std::string url, const std::string postdata, const s
 	return true;
 }
 
-bool HTTPClient::PUT(const std::string url, const std::string postdata, const std::vector<std::string> ExtraHeaders, std::string &response)
+bool HTTPClient::PUT(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response)
 {
 	std::vector<unsigned char> vHTTPResponse;
 	if (!PUTBinary(url,postdata,ExtraHeaders, vHTTPResponse))

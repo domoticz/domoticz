@@ -33,10 +33,9 @@ csocket::csocket() : m_socketState(CLOSED),
 #ifdef WIN32
         WORD socketVersion;  
         WSADATA socketData; 
-        int err; 
 
         socketVersion = MAKEWORD(2, 0); 
-        err = WSAStartup(socketVersion, &socketData); 
+        WSAStartup(socketVersion, &socketData); 
 #endif
     }
      
@@ -72,10 +71,8 @@ int csocket::resolveHost(const std::string& szRemoteHostName, struct hostent** p
 #ifdef WIN32
         WORD wVersionRequested;  
         WSADATA wsaData; 
-        int err; 
-
         wVersionRequested = MAKEWORD(2, 0); 
-        err = WSAStartup(wVersionRequested, &wsaData); 
+        WSAStartup(wVersionRequested, &wsaData); 
 #endif
     }
 
@@ -135,7 +132,7 @@ int csocket::connect( const char* remoteHost, const unsigned int remotePort )
     m_socket = socket(AF_INET, SOCK_STREAM, 0);
 #endif
 
-    if (m_socket < 0) 
+	if (m_socket == INVALID_SOCKET)
     {
         return FAILURE;
     }
@@ -248,14 +245,13 @@ int csocket::read( char* pDataBuffer, unsigned int numBytesToRead, bool bReadAll
     }
 
     int numBytesRemaining = numBytesToRead;
-    int numBytesRead = 0;
 
-    do 
+	do 
     {
 #ifdef WIN32
-        numBytesRead = recv( m_socket, pDataBuffer, numBytesRemaining, 0 );
+        int numBytesRead = recv( m_socket, pDataBuffer, numBytesRemaining, 0 );
 #else
-        numBytesRead = ::read( m_socket, pDataBuffer, numBytesRemaining);
+        int numBytesRead = ::read( m_socket, pDataBuffer, numBytesRemaining);
 #endif
 
         if (numBytesRead < 0)
@@ -299,24 +295,23 @@ int csocket::write( const char* pDataBuffer, unsigned int numBytesToWrite )
     }
 
     int numBytesRemaining = numBytesToWrite;
-    int numBytestWritten = 0;
 
     while (numBytesRemaining  > 0) 
     {
 #ifdef WIN32
-        numBytestWritten = send ( m_socket, pDataBuffer, numBytesRemaining , 0 );
+        int numBytesWritten = send ( m_socket, pDataBuffer, numBytesRemaining , 0 );
 #else
-        numBytestWritten= ::write( m_socket, pDataBuffer, numBytesRemaining );
+        int numBytesWritten= ::write( m_socket, pDataBuffer, numBytesRemaining );
 #endif
 
-        if (numBytestWritten < 0) 
+        if (numBytesWritten < 0) 
         {
             m_socketState = ERRORED;
-            return numBytestWritten;      
+            return numBytesWritten;      
         }
 
-        numBytesRemaining  -= numBytestWritten;
-        pDataBuffer += numBytestWritten;
+        numBytesRemaining  -= numBytesWritten;
+        pDataBuffer += numBytesWritten;
     }
 
     return(numBytesToWrite - numBytesRemaining);

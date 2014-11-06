@@ -17,10 +17,10 @@
 //
 //Class P1MeterSerial
 //
-P1MeterSerial::P1MeterSerial(const int ID, const std::string& devname, unsigned int baud_rate)
+P1MeterSerial::P1MeterSerial(const int ID, const std::string& devname, unsigned int baud_rate):
+m_szSerialPort(devname)
 {
 	m_HwdID=ID;
-	m_szSerialPort=devname;
 	m_iBaudRate=baud_rate;
 	m_stoprequested = false;
 }
@@ -31,7 +31,8 @@ P1MeterSerial::P1MeterSerial(const std::string& devname,
         boost::asio::serial_port_base::character_size opt_csize,
         boost::asio::serial_port_base::flow_control opt_flow,
         boost::asio::serial_port_base::stop_bits opt_stop)
-        :AsyncSerial(devname,baud_rate,opt_parity,opt_csize,opt_flow,opt_stop)
+        :AsyncSerial(devname,baud_rate,opt_parity,opt_csize,opt_flow,opt_stop),
+		m_iBaudRate(baud_rate)
 {
 	m_stoprequested = false;
 }

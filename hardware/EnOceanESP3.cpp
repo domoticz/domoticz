@@ -608,11 +608,12 @@ void CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		buf[9]=0x30; // status
 
 		unsigned char RockerID=0;
-		unsigned char UpDown=1;
 		unsigned char Pressed=1;
 
-		if (tsen->LIGHTING2.unitcode<10)
-			RockerID=tsen->LIGHTING2.unitcode-1;
+		if (tsen->LIGHTING2.unitcode < 10)
+		{
+			RockerID = tsen->LIGHTING2.unitcode - 1;
+		}
 		else
 			return;//double not supported yet!
 
@@ -663,7 +664,8 @@ void CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		if (cmnd!=light2_sSetLevel)
 		{
 			//On/Off
-			UpDown=((cmnd!=light2_sOff)&&(cmnd!=light2_sGroupOff));
+			unsigned char UpDown = 1;
+			UpDown = ((cmnd != light2_sOff) && (cmnd != light2_sGroupOff));
 
 
 			buf[1] = (RockerID<<DB3_RPS_NU_RID_SHIFT) | (UpDown<<DB3_RPS_NU_UD_SHIFT) | (Pressed<<DB3_RPS_NU_PR_SHIFT);//0x30;
@@ -702,38 +704,41 @@ void CEnOceanESP3::SendDimmerTeachIn(const char *pdata, const unsigned char leng
 	if (m_id_base==0)
 		return;
 	if (isOpen()) {
-		RBUF *tsen=(RBUF*)pdata;
-		if (tsen->LIGHTING2.packettype!=pTypeLighting2)
+		RBUF *tsen = (RBUF*)pdata;
+		if (tsen->LIGHTING2.packettype != pTypeLighting2)
 			return; //only allowed to control switches
-		unsigned long sID=(tsen->LIGHTING2.id1<<24)|(tsen->LIGHTING2.id2<<16)|(tsen->LIGHTING2.id3<<8)|tsen->LIGHTING2.id4;
-		if ((sID<m_id_base)||(sID>m_id_base+129))
+		unsigned long sID = (tsen->LIGHTING2.id1 << 24) | (tsen->LIGHTING2.id2 << 16) | (tsen->LIGHTING2.id3 << 8) | tsen->LIGHTING2.id4;
+		if ((sID<m_id_base) || (sID>m_id_base + 129))
 		{
-			_log.Log(LOG_ERROR,"EnOcean: Can not switch with this DeviceID, use a switch created with our id_base!...");
+			_log.Log(LOG_ERROR, "EnOcean: Can not switch with this DeviceID, use a switch created with our id_base!...");
 			return;
 		}
 
 		unsigned char buf[100];
-		buf[0]=0xa5;
-		buf[1]=0x2;
-		buf[2]=0;
-		buf[3]=0;
-		buf[4]=0x0; // DB0.3=0 -> teach in
+		buf[0] = 0xa5;
+		buf[1] = 0x2;
+		buf[2] = 0;
+		buf[3] = 0;
+		buf[4] = 0x0; // DB0.3=0 -> teach in
 
-		buf[5]=(sID >> 24) & 0xff;
-		buf[6]=(sID >> 16) & 0xff;
-		buf[7]=(sID >> 8) & 0xff;
-		buf[8]=sID & 0xff;
+		buf[5] = (sID >> 24) & 0xff;
+		buf[6] = (sID >> 16) & 0xff;
+		buf[7] = (sID >> 8) & 0xff;
+		buf[8] = sID & 0xff;
 
-		buf[9]=0x30; // status
+		buf[9] = 0x30; // status
 
-		unsigned char RockerID=0;
-		unsigned char UpDown=1;
-		unsigned char Pressed=1;
-
-		if (tsen->LIGHTING2.unitcode<10)
-			RockerID=tsen->LIGHTING2.unitcode-1;
+		if (tsen->LIGHTING2.unitcode < 10)
+		{
+			unsigned char RockerID = 0;
+			//unsigned char UpDown = 1;
+			//unsigned char Pressed = 1;
+			RockerID = tsen->LIGHTING2.unitcode - 1;
+		}
 		else
+		{
 			return;//double not supported yet!
+		}
 		sendFrame(PACKET_RADIO,buf,10,NULL,0);
 	}
 }
@@ -1063,7 +1068,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							szQuery.clear();
 							szQuery.str("");
 							szQuery << "INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (" << m_HwdID << ",'" << szDeviceID << "'," << manufacturer << "," << profile << "," << ttype << ")";
-							result=m_sql.query(szQuery.str());
+							m_sql.query(szQuery.str());
 						}
 
 					}

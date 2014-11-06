@@ -30,10 +30,10 @@ Source: http://wiringpi.com
 #include "../main/Logger.h"
 #include "GpioPin.h"
 
-CGpioPin::CGpioPin(int id, std::string label, bool isInput, bool isOutput, bool isExported)
+CGpioPin::CGpioPin(const int id, const std::string &label, const bool isInput, const bool isOutput, const bool isExported):
+m_label(label)
 {
 	m_id = id;
-	m_label = label;
 	m_isInput = isInput;
 	m_isOutput = isOutput;
 	m_isExported = isExported;

@@ -61,7 +61,8 @@ class ZWaveBase : public CDomoticzHardwareBase
 		time_t lastreceived;
 		unsigned char sequence_number;
 
-		_tZWaveDevice()
+		_tZWaveDevice() :
+			label("Unknown")
 		{
 			sequence_number=1;
 			nodeID=-1;
@@ -73,10 +74,17 @@ class ZWaveBase : public CDomoticzHardwareBase
 			isFLiRS=false;
 			hasWakeup=false;
 			hasBattery=false;
+			batValue = 0;
 			floatValue=0;
 			intvalue=0;
 			bValidValue=true;
-			label = "Unknown";
+			commandClassID=0;
+			instanceID=0;
+			indexID=0;
+			devType = ZDTYPE_SWITCH_NORMAL;
+			basicType=0;
+			genericType=0;
+			specificType=0;
 		}
 	};
 public:

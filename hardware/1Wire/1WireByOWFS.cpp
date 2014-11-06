@@ -54,12 +54,12 @@ bool C1WireByOWFS::IsAvailable()
     return false;
 }
 
-bool C1WireByOWFS::FindDevice(const std::string sID, /*out*/_t1WireDevice& device) const
+bool C1WireByOWFS::FindDevice(const std::string &sID, /*out*/_t1WireDevice& device) const
 {
     return FindDevice(OWFS_Base_Dir, sID, device);
 }
 
-bool C1WireByOWFS::FindDevice(const std::string inDir, const std::string sID, /*out*/_t1WireDevice& device) const
+bool C1WireByOWFS::FindDevice(const std::string &inDir, const std::string &sID, /*out*/_t1WireDevice& device) const
 {
     bool found = false;
     DIR *d=opendir(inDir.c_str());
@@ -103,7 +103,7 @@ void C1WireByOWFS::GetDevices(/*out*/std::vector<_t1WireDevice>& devices) const
     return GetDevices(OWFS_Base_Dir, devices);
 }
 
-void C1WireByOWFS::GetDevices(const std::string inDir, /*out*/std::vector<_t1WireDevice>& devices) const
+void C1WireByOWFS::GetDevices(const std::string &inDir, /*out*/std::vector<_t1WireDevice>& devices) const
 {
     DIR *d=opendir(inDir.c_str());
     if (d != NULL)
@@ -150,7 +150,7 @@ std::string C1WireByOWFS::readRawData(const std::string& filename) const
     return "";
 }
 
-void C1WireByOWFS::writeData(const _t1WireDevice& device,std::string propertyName,const std::string value) const
+void C1WireByOWFS::writeData(const _t1WireDevice& device,std::string propertyName,const std::string &value) const
 {
     std::ofstream file;
     file.open(std::string(device.filename+"/"+propertyName).c_str());
@@ -388,7 +388,7 @@ bool C1WireByOWFS::IsValidDir(const struct dirent*const de)
     return true;
 }
 
-void C1WireByOWFS::GetDevice(const std::string inDir, const std::string dirname, /*out*/_t1WireDevice& device) const
+void C1WireByOWFS::GetDevice(const std::string &inDir, const std::string &dirname, /*out*/_t1WireDevice& device) const
 {
     // OWFS device name format, see http://owfs.org/uploads/owfs.1.html#sect30
     // OWFS must be configured to use the default format ff.iiiiiiiiiiii, with :
@@ -401,13 +401,13 @@ void C1WireByOWFS::GetDevice(const std::string inDir, const std::string dirname,
     // Device Id (6 chars after '.')
     std::string id=dirname.substr(3,3+6*2);
     // OWFS give us the device ID inverted, so reinvert it
-    char c;
     for (int i=0;i<6/2;i++)
     {
-       int left_position=i*2;          // Point on first byte
-       int right_position=(6-i-1)*2;   // Point on last byte
-       c=id[left_position]; id[left_position]=id[right_position]; id[right_position]=c;
-       c=id[left_position+1]; id[left_position+1]=id[right_position+1]; id[right_position+1]=c;
+		char c;
+		int left_position = i * 2;          // Point on first byte
+		int right_position=(6-i-1)*2;   // Point on last byte
+		c=id[left_position]; id[left_position]=id[right_position]; id[right_position]=c;
+		c=id[left_position+1]; id[left_position+1]=id[right_position+1]; id[right_position+1]=c;
     }
     device.devid=id;
     

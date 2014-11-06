@@ -200,7 +200,7 @@ void S0MeterBase::ParseLine()
 	if (totmeters>max_s0_meters)
 		totmeters=max_s0_meters;
 	//ID:0001:I:99:M1:123:456:M2:234:567 = ID(1)/Pulse Interval(3)/M1Actual(5)/M1Total(7)/M2Actual(8)/M2Total(9)
-	std::string MeterID=results[1];
+	//std::string MeterID=results[1];
 	double s0_pulse_interval=atof(results[3].c_str());
 
 	int roffset=4;

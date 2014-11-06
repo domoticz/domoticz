@@ -22,6 +22,7 @@ extern http::server::CWebServer m_webserver;
 OTGWBase::OTGWBase(void)
 {
 	m_OutsideTemperatureIdx=0;//use build in
+	m_bufferpos = 0;
 }
 
 OTGWBase::~OTGWBase(void)
@@ -117,7 +118,7 @@ void OTGWBase::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
-		result=m_sql.query(szQuery.str());
+		m_sql.query(szQuery.str());
 	}
 
 }
@@ -159,7 +160,7 @@ void OTGWBase::UpdateTempSensor(const unsigned char Idx, const float Temp, const
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ")";
-		result=m_sql.query(szQuery.str());
+		m_sql.query(szQuery.str());
 	}
 }
 
@@ -197,7 +198,7 @@ void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, c
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
-		result=m_sql.query(szQuery.str());
+		m_sql.query(szQuery.str());
 	}
 }
 
@@ -230,8 +231,7 @@ void OTGWBase::UpdatePressureSensor(const unsigned long Idx, const float Pressur
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePressure) << ")";
-		result=m_sql.query(szQuery.str());
-
+		m_sql.query(szQuery.str());
 	}
 }
 
@@ -358,7 +358,6 @@ bool OTGWBase::GetOutsideTemperatureFromDomoticz(float &tvalue)
 		return false;
 
 	Json::Value::const_iterator itt;
-	int ii=0;
 	Json::ArrayIndex rsize=tempjson["result"].size();
 	if (rsize<1)
 		return false;

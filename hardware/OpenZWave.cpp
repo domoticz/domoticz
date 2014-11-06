@@ -422,10 +422,10 @@ uint8 cclassNum(char const *str)
 		return 0xFF;
 }
 
-COpenZWave::COpenZWave(const int ID, const std::string& devname)
+COpenZWave::COpenZWave(const int ID, const std::string& devname):
+m_szSerialPort(devname)
 {
 	m_HwdID = ID;
-	m_szSerialPort = devname;
 	m_controllerID = 0;
 	m_controllerNodeId = 0;
 	m_bIsShuttingDown = false;
@@ -509,7 +509,7 @@ void COpenZWave::WriteControllerConfig()
 
 void OnDeviceStatusUpdate(OpenZWave::Driver::ControllerState cs, OpenZWave::Driver::ControllerError err, void *_context)
 {
-	COpenZWave *pClass = (COpenZWave*)_context;
+	COpenZWave *pClass = static_cast<COpenZWave*>(_context);
 	pClass->OnZWaveDeviceStatusUpdate(cs, err);
 }
 
@@ -519,7 +519,7 @@ void OnDeviceStatusUpdate(OpenZWave::Driver::ControllerState cs, OpenZWave::Driv
 //-----------------------------------------------------------------------------
 void OnNotification(OpenZWave::Notification const* _notification, void* _context)
 {
-	COpenZWave *pClass = (COpenZWave*)_context;
+	COpenZWave *pClass = static_cast<COpenZWave*>(_context);
 	pClass->OnZWaveNotification(_notification);
 }
 

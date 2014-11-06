@@ -41,6 +41,7 @@ struct usb_device *CVolcraftCO20Tool::find_VolcraftCO20()
 CVolcraftCO20Tool::CVolcraftCO20Tool(void)
 {
 	m_device_handle=NULL;
+	m_bUSBIsInit=false;
 	usb_init();
 }
 

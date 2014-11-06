@@ -48,6 +48,7 @@ struct usb_device *CTE923Tool::find_te923()
 CTE923Tool::CTE923Tool(void)
 {
 	m_device_handle=NULL;
+	m_bUSBIsInit=false;
 	usb_init();
 }
 
@@ -282,7 +283,7 @@ int CTE923Tool::decode_te923_data( unsigned char buf[], Te923DataSet_t *data )
 int CTE923Tool::read_from_te923( int adr, unsigned char *rbuf ) 
 {
 	int timeout = 50;
-	int i, ret, bytes;
+	int i, ret;
 	int count = 0;
 	unsigned char crc;
 	unsigned char buf[] = {0x05, 0x0AF, 0x00, 0x00, 0x00, 0x00, 0xAF, 0xFE};
@@ -301,7 +302,7 @@ int CTE923Tool::read_from_te923( int adr, unsigned char *rbuf )
 #ifndef WIN32
 		sleep( 0.15 );
 #endif
-		bytes = ( int )buf[0];
+		int bytes = ( int )buf[0];
 		if (( count + bytes ) < BUFLEN )
 			memcpy( rbuf + count, buf + 1, bytes );
 		count += bytes;

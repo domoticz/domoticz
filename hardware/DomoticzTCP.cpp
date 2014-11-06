@@ -9,11 +9,10 @@
 
 #define RETRY_DELAY 30
 
-DomoticzTCP::DomoticzTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string username, const std::string password)
+DomoticzTCP::DomoticzTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password):
+m_username(username), m_password(password), m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
-	m_username=username;
-	m_password=password;
 #if defined WIN32
 	int ret;
 	//Init winsock
@@ -34,7 +33,6 @@ DomoticzTCP::DomoticzTCP(const int ID, const std::string IPAddress, const unsign
 #endif
 	m_socket=INVALID_SOCKET;
 	m_stoprequested=false;
-	m_szIPAddress=IPAddress;
 	m_usIPPort=usIPPort;
 }
 

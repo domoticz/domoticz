@@ -31,7 +31,7 @@ Source: http://wiringpi.com
 class CGpioPin
 {
 public:
-	CGpioPin(int id, std::string label, bool isInput, bool isOutput, bool isExported);
+	CGpioPin(const int id, const std::string &label, const bool isInput, const bool isOutput, const bool isExported);
 	~CGpioPin();
 	
 	int GetId();

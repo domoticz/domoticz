@@ -283,7 +283,6 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand)
 	std::vector<std::string> ret;
 
 	FILE *fp;
-	char path[1035];
 
 	/* Open the command for reading. */
 #ifdef WIN32
@@ -293,6 +292,7 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand)
 #endif
 	if (fp != NULL) 
 	{
+		char path[1035];
 		/* Read the output a line at a time - output it. */
 		while (fgets(path, sizeof(path)-1, fp) != NULL)
 		{

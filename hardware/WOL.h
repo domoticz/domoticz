@@ -8,8 +8,8 @@ public:
 	CWOL(const int ID, const std::string &BoradcastAddress, const unsigned short Port);
 	~CWOL(void);
 	void WriteToHardware(const char *pdata, const unsigned char length);
-	void AddNode(const std::string &Name, const std::string MacAddress);
-	bool UpdateNode(const int ID, const std::string &Name, const std::string MacAddress);
+	void AddNode(const std::string &Name, const std::string &MACAddress);
+	bool UpdateNode(const int ID, const std::string &Name, const std::string &MACAddress);
 	void RemoveNode(const int ID);
 	void RemoveAllNodes();
 private:

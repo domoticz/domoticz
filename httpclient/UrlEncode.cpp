@@ -25,7 +25,6 @@ std::string CURLEncode::convert(char val)
 // PURPOSE OF THIS FUNCTION IS TO GENERATE A HEX REPRESENTATION OF GIVEN CHARACTER
 std::string CURLEncode::decToHex(char num, int radix)
 {
-	int temp=0;	
 	std::string csTmp;
 	int num_char;
 	num_char = (int) num;
@@ -38,7 +37,7 @@ std::string CURLEncode::decToHex(char num, int radix)
 
 	while (num_char >= radix)
 	{
-		temp = num_char % radix;
+		int temp = num_char % radix;
 		num_char = (int)floor((float)num_char / radix);
 		csTmp = hexVals[temp];
 	}
@@ -61,13 +60,12 @@ std::string CURLEncode::decToHex(char num, int radix)
 bool CURLEncode::isUnsafe(char compareChar)
 {
 	bool bcharfound = false;
-	char tmpsafeChar;
 	int m_strLen = 0;
 
 	m_strLen = csUnsafeString.size();
 	for(int ichar_pos = 0; ichar_pos < m_strLen ;ichar_pos++)
 	{
-		tmpsafeChar = csUnsafeString[ichar_pos]; 
+		char tmpsafeChar = csUnsafeString[ichar_pos]; 
 		if(tmpsafeChar == compareChar)
 		{ 
 			bcharfound = true;
@@ -92,7 +90,7 @@ bool CURLEncode::isUnsafe(char compareChar)
 }
 // PURPOSE OF THIS FUNCTION IS TO CONVERT A STRING 
 // TO URL ENCODE FORM.
-std::string CURLEncode::URLEncode(std::string pcsEncode)
+std::string CURLEncode::URLEncode(const std::string &pcsEncode)
 {	
 	int ichar_pos;
 	std::string csEncode;
@@ -105,10 +103,10 @@ std::string CURLEncode::URLEncode(std::string pcsEncode)
 	for(ichar_pos = 0; ichar_pos < m_length; ichar_pos++)
 	{
 		char ch = csEncode[ichar_pos];
-		if (ch < ' ') 
-		{
-			ch = ch;
-		}		
+		//if (ch < ' ') 
+		//{
+		//	ch = ch;
+		//}		
 		if(!isUnsafe(ch))
 		{
 			// Safe Character				
@@ -124,7 +122,7 @@ std::string CURLEncode::URLEncode(std::string pcsEncode)
 	return csEncoded;
 }
 
-std::string CURLEncode::URLDecode(const std::string SRC)
+std::string CURLEncode::URLDecode(const std::string &SRC)
 {
 	std::string ret;
 	char ch;

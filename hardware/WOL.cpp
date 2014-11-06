@@ -5,7 +5,8 @@
 #include "../main/SQLHelper.h"
 #include "../main/RFXtrx.h"
 
-CWOL::CWOL(const int ID, const std::string &BroadcastAddress, const unsigned short Port)
+CWOL::CWOL(const int ID, const std::string &BroadcastAddress, const unsigned short Port):
+m_broadcast_address(BroadcastAddress)
 {
 	m_HwdID=ID;
 	m_bSkipReceiveCheck = true;
@@ -17,7 +18,6 @@ CWOL::CWOL(const int ID, const std::string &BroadcastAddress, const unsigned sho
 		_log.Log(LOG_ERROR,"WOL: Error initializing Winsock!");
 	}
 #endif
-	m_broadcast_address=BroadcastAddress;//"255.255.255.255";
 	m_wol_port=Port;//9;
 }
 
@@ -54,7 +54,7 @@ bool CWOL::StopHardware()
 
 //6 * 255 or(0xff)
 //16 * MAC Address of target PC
-bool GenerateWOLPacket(unsigned char *pPacket, const std::string MACAddress)
+bool GenerateWOLPacket(unsigned char *pPacket, const std::string &MACAddress)
 {
 	std::vector<std::string> results;
 	StringSplit(MACAddress, "-", results);
@@ -128,15 +128,10 @@ void CWOL::WriteToHardware(const char *pdata, const unsigned char length)
 	tRBUF *pSen=(tRBUF*)pdata;
 
 	unsigned char packettype=pSen->ICMND.packettype;
-	unsigned char subtype=pSen->ICMND.subtype;
+	//unsigned char subtype=pSen->ICMND.subtype;
 
 	if (packettype!=pTypeLighting2)
 		return;
-
-	unsigned char ID1=0;
-	unsigned char ID2=0;
-	unsigned char ID3=0;
-	unsigned char ID4=0;
 
 	int nodeID=(pSen->LIGHTING2.id3<<8)|pSen->LIGHTING2.id4;
 
@@ -167,25 +162,25 @@ void CWOL::WriteToHardware(const char *pdata, const unsigned char length)
 	}
 }
 
-void CWOL::AddNode(const std::string &Name, const std::string MacAddress)
+void CWOL::AddNode(const std::string &Name, const std::string &MACAddress)
 {
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 
 	//Check if exists
-	szQuery << "SELECT ID FROM WOLNodes WHERE (HardwareID==" << m_HwdID << ") AND (Name=='" << Name << "') AND (MacAddress=='" << MacAddress << "')";
+	szQuery << "SELECT ID FROM WOLNodes WHERE (HardwareID==" << m_HwdID << ") AND (Name=='" << Name << "') AND (MacAddress=='" << MACAddress << "')";
 	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 		return; //Already exists
 	szQuery.clear();
 	szQuery.str("");
 
-	szQuery << "INSERT INTO WOLNodes (HardwareID, Name, MacAddress) VALUES (" << m_HwdID << ",'" << Name << "','" << MacAddress << "')";
+	szQuery << "INSERT INTO WOLNodes (HardwareID, Name, MacAddress) VALUES (" << m_HwdID << ",'" << Name << "','" << MACAddress << "')";
 	m_sql.query(szQuery.str());
 
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT ID FROM WOLNodes WHERE (HardwareID==" << m_HwdID << ") AND (Name=='" << Name << "') AND (MacAddress=='" << MacAddress << "')";
+	szQuery << "SELECT ID FROM WOLNodes WHERE (HardwareID==" << m_HwdID << ") AND (Name=='" << Name << "') AND (MacAddress=='" << MACAddress << "')";
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return;
@@ -204,7 +199,7 @@ void CWOL::AddNode(const std::string &Name, const std::string MacAddress)
 	m_sql.query(szQuery.str());
 }
 
-bool CWOL::UpdateNode(const int ID, const std::string &Name, const std::string MacAddress)
+bool CWOL::UpdateNode(const int ID, const std::string &Name, const std::string &MACAddress)
 {
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
@@ -218,7 +213,7 @@ bool CWOL::UpdateNode(const int ID, const std::string &Name, const std::string M
 	szQuery.clear();
 	szQuery.str("");
 
-	szQuery << "UPDATE WOLNodes SET Name='" << Name << "', MacAddress='" << MacAddress << "' WHERE (HardwareID==" << m_HwdID << ") AND (ID==" << ID << ")";
+	szQuery << "UPDATE WOLNodes SET Name='" << Name << "', MacAddress='" << MACAddress << "' WHERE (HardwareID==" << m_HwdID << ") AND (ID==" << ID << ")";
 	m_sql.query(szQuery.str());
 
 	char szID[40];
@@ -237,8 +232,6 @@ bool CWOL::UpdateNode(const int ID, const std::string &Name, const std::string M
 void CWOL::RemoveNode(const int ID)
 {
 	std::stringstream szQuery;
-	std::vector<std::vector<std::string> > result;
-
 	szQuery << "DELETE FROM WOLNodes WHERE (HardwareID==" << m_HwdID << ") AND (ID==" << ID << ")";
 	m_sql.query(szQuery.str());
 
@@ -256,8 +249,6 @@ void CWOL::RemoveNode(const int ID)
 void CWOL::RemoveAllNodes()
 {
 	std::stringstream szQuery;
-	std::vector<std::vector<std::string> > result;
-
 	szQuery << "DELETE FROM WOLNodes WHERE (HardwareID==" << m_HwdID << ")";
 	m_sql.query(szQuery.str());
 

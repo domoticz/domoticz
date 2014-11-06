@@ -29,17 +29,17 @@ public:
 
 	void SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClient* pClient2Ignore);
 
-	void SetRemoteUsers(const std::vector<_tRemoteShareUser> users);
-	unsigned int GetUserDevicesCount(const std::string username);
+	void SetRemoteUsers(const std::vector<_tRemoteShareUser> &users);
+	unsigned int GetUserDevicesCount(const std::string &username);
 private:
 	/// Stop the specified connection.
 	void stopClient(CTCPClient_ptr c);
 
-	_tRemoteShareUser* FindUser(const std::string username);
+	_tRemoteShareUser* FindUser(const std::string &username);
 
 	void handleAccept(const boost::system::error_code& error);
 
-	bool HandleAuthentication(CTCPClient_ptr c, const std::string username, const std::string password);
+	bool HandleAuthentication(CTCPClient_ptr c, const std::string &username, const std::string &password);
 	void DoDecodeMessage(const CTCPClient *pClient, const unsigned char *pRXCommand);
 
 	/// Handle a request to stop the server.
@@ -67,11 +67,11 @@ public:
 	CTCPServer(const int ID);
 	~CTCPServer(void);
 
-	bool StartServer(const std::string address, const std::string port);
+	bool StartServer(const std::string &address, const std::string &port);
 	void StopServer();
 	void SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClient* pClient2Ignore);
-	void SetRemoteUsers(const std::vector<CTCPServerInt::_tRemoteShareUser> users);
-	unsigned int GetUserDevicesCount(const std::string username);
+	void SetRemoteUsers(const std::vector<CTCPServerInt::_tRemoteShareUser> &users);
+	unsigned int GetUserDevicesCount(const std::string &username);
 	void stopAllClients();
 	boost::signals2::signal<void(CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand)> sDecodeRXMessage;
 	void WriteToHardware(const char *pdata, const unsigned char length) {};

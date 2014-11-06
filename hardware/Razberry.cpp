@@ -40,13 +40,13 @@ static std::string readInputTestFile( const char *path )
 	return text;
 }
 
-CRazberry::CRazberry(const int ID, const std::string &ipaddress, const int port, const std::string &username, const std::string &password)
+CRazberry::CRazberry(const int ID, const std::string &ipaddress, const int port, const std::string &username, const std::string &password):
+m_ipaddress(ipaddress),
+m_username(username),
+m_password(password)
 {
 	m_HwdID=ID;
-	m_ipaddress=ipaddress;
 	m_port=port;
-	m_username=username;
-	m_password=password;
 	m_controllerID=0;
 }
 
@@ -572,11 +572,11 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 				int iScene=obj["value"].asInt();
 				int devID=(iScene<<8)+atoi(results[1].c_str());
 				int instanceID=atoi(results[3].c_str());
-				int indexID=0;
 				if (instanceID==0)
 				{
 					//only allow instance 0 for now
-					pDevice=FindDevice(devID,instanceID, indexID, cmdID, ZDTYPE_SWITCH_NORMAL);
+					int indexID = 0;
+					pDevice = FindDevice(devID, instanceID, indexID, cmdID, ZDTYPE_SWITCH_NORMAL);
 					if (pDevice==NULL)
 					{
 						//Add new switch device

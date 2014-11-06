@@ -24,10 +24,10 @@ public:
 
 protected:
    static bool IsValidDir(const struct dirent*const de);
-   virtual bool FindDevice(const std::string sID, /*out*/_t1WireDevice& device) const;
-   virtual bool FindDevice(const std::string inDir, const std::string sID, /*out*/_t1WireDevice& device) const;
-   void GetDevice(const std::string inDir, const std::string dirname, /*out*/_t1WireDevice& device) const;
-   void GetDevices(const std::string inDir, /*out*/std::vector<_t1WireDevice>& devices) const;
+   virtual bool FindDevice(const std::string &sID, /*out*/_t1WireDevice& device) const;
+   virtual bool FindDevice(const std::string &inDir, const std::string &sID, /*out*/_t1WireDevice& device) const;
+   void GetDevice(const std::string &inDir, const std::string &dirname, /*out*/_t1WireDevice& device) const;
+   void GetDevices(const std::string &inDir, /*out*/std::vector<_t1WireDevice>& devices) const;
    std::string readRawData(const std::string& filename) const;
-   void writeData(const _t1WireDevice& device,std::string propertyName,const std::string value) const;
+   void writeData(const _t1WireDevice& device,std::string propertyName,const std::string &value) const;
 };

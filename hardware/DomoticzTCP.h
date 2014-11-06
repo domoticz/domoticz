@@ -7,7 +7,7 @@
 class DomoticzTCP: public CDomoticzHardwareBase
 {
 public:
-	DomoticzTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string username, const std::string password);
+	DomoticzTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password);
 	~DomoticzTCP(void);
 
 	void write(const char *data, size_t size);

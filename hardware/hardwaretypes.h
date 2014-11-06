@@ -102,6 +102,14 @@ typedef struct _tThermostat {
 		id2=0;
 		id3=0;
 		id4=0;
+		dunit=0;
+		temp=0;
+		temp1=0;
+		temp2=0;
+		temp3=0;
+		utemp1=0;
+		utemp2=0;
+		utemp3=0;
 	}
 } tThermostat;
 
@@ -121,6 +129,10 @@ typedef struct _tTempBaro {
 		type=pTypeTEMP_BARO;
 		subtype=sTypeBMP085;
 		id1=1;
+		temp=0;
+		baro=0;
+		altitude=0;
+		forecast=0;
 	}
 } _tTempBaro;
 
@@ -136,6 +148,7 @@ typedef struct _tAirQualityMeter {
 		type=pTypeAirQuality;
 		subtype=sTypeVoltcraft;
 		id1=0;
+		airquality = 0;
 	}
 } AirQualityMeter;
 
@@ -159,6 +172,8 @@ typedef struct _tUsageMeter {
 		id2=0;
 		id3=0;
 		id4=0;
+		dunit=0;
+		fusage=0;
 	}
 } UsageMeter;
 
@@ -184,6 +199,8 @@ typedef struct _tLightMeter {
 		id3=0;
 		id4=0;
 		battery_level=255;
+		dunit=0;
+		fLux=0;
 	}
 } LightMeter;
 
@@ -202,6 +219,10 @@ typedef struct _tGeneralDevice {
 		type=pTypeGeneral;
 		subtype=sTypeVisibility;
 		id=0;
+		floatval1=0;
+		floatval2=0;
+		intval1=0;
+		intval2=0;
 	}
 } GeneralDevice;
 
@@ -239,6 +260,8 @@ typedef struct _tLimitlessLights {
 		len=sizeof(_tLimitlessLights)-1;
 		type=pTypeLimitlessLights;
 		subtype=sTypeLimitlessRGBW;
+		command=0;
+		value=0;
 	}
 } _tLimitlessLights;
 

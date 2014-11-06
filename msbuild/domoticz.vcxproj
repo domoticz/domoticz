@@ -63,7 +63,7 @@
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <PreBuildEvent>
-      <Command>SubWCRev ..\.. ..\svntemplate.txt ..\svnversion.h</Command>
+      <Command>SubWCRev .. ..\svntemplate.txt ..\svnversion.h</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Getting subversion revision</Message>

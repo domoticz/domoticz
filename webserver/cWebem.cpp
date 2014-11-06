@@ -49,15 +49,19 @@ cWebem::cWebem(
 	   const std::string& port,
 	   const std::string& doc_root ) :
 myRequestHandler( doc_root,this ), myPort( port ),
-myServer( address, port, myRequestHandler )
+myServer( address, port, myRequestHandler ),
+m_DigistRealm("Domoticz.com"),
+m_zippassword(""),
+m_actsessionid(""),
+m_actualuser("")
 {
-	m_DigistRealm = "Domoticz.com";
-	m_zippassword = "";
-	m_actsessionid="";
-	m_actualuser = "";
+	
 	m_actualuser_rights = -1;
 	m_authmethod=AUTH_LOGIN;
 	m_bForceRelogin=false;
+	m_bAddNewSession = false;
+	m_bRemoveCookie = false;
+	m_bRemembermeUser = false;
 }
 
 /**
@@ -283,6 +287,7 @@ bool cWebem::CheckForAction( request& req )
 	// look for cWebem form action request
 	std::string uri = req.uri;
 	int q = 0;
+	/*
 	if( req.method != "POST" ) {
 		q = uri.find(".webem");
 		if( q == -1 )
@@ -292,6 +297,10 @@ bool cWebem::CheckForAction( request& req )
 		if( q == -1 )
 			return true;
 	}
+	*/
+	q = uri.find(".webem");
+	if (q == -1)
+		return true;
 
 	// find function matching action code
 	std::string code = uri.substr(1,q-1);
@@ -302,8 +311,6 @@ bool cWebem::CheckForAction( request& req )
 
 	// decode the values
 
-	bool bIsMultipart=false;
-
 	if( req.method == "POST" ) {
 		const char *pContent_Type=req.get_req_header(&req,"Content-Type");
 		if (pContent_Type)
@@ -313,12 +320,10 @@ bool cWebem::CheckForAction( request& req )
 				const char *pBoundary=strstr(pContent_Type,"boundary=");
 				if (pBoundary!=NULL)
 				{
-					bIsMultipart=true;
 					std::string szBoundary=std::string("--")+(pBoundary+9);
 					//Find boundary in content
 					std::istringstream ss(req.content);
 					std::string csubstr;
-					bool actionsDone = false;
 					int ii=0;
 					std::string vName="";
 					while (!ss.eof()) 
@@ -553,7 +558,7 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 	return true;
 }
 
-void cWebem::AddUserPassword(const unsigned long ID, const std::string username, const std::string password, const _eUserRights userrights)
+void cWebem::AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const _eUserRights userrights)
 {
 	_tWebUserPassword wtmp;
 	wtmp.ID=ID;
@@ -1156,7 +1161,7 @@ int cWebemRequestHandler::authorize(const request& req, reply& rep)
 	return 0;
 }
 
-bool IsIPInRange(const std::string ip, const _tIPNetwork ipnetwork) 
+bool IsIPInRange(const std::string &ip, const _tIPNetwork ipnetwork) 
 {
 	if (ipnetwork.hostname.size()!=0)
 	{
