@@ -265,6 +265,7 @@ m_szSerialPort(devname)
 	m_allNodesQueried = false;
 	m_awakeNodesQueried = false;
 	m_bInUserCodeEnrollmentMode = false;
+	m_bNightlyNetworkHeal = false;
 	m_pManager = NULL;
 }
 
@@ -745,6 +746,11 @@ bool COpenZWave::OpenSerialConnector()
 	OpenZWave::Manager::Get()->AddDriver(m_szSerialPort.c_str());
 #endif
 	m_LastControllerConfigWrite = mytime(NULL);
+
+	int nightly_heal = 0;
+	m_sql.GetPreferencesVar("ZWaveEnableNightlyNetworkHeal", nightly_heal);
+	m_bNightlyNetworkHeal = (nightly_heal != 0);
+
 	//Manager::Get()->AddDriver( "HID Controller", Driver::ControllerInterface_Hid );
 	return true;
 }
@@ -2727,6 +2733,21 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 		root["result"][index]["config"][ivalue]["LastUpdate"] = "-";
 		ivalue++;
 
+		//Nightly Node Heal
+		root["result"][index]["config"][ivalue]["type"] = "short";
+
+		int nightly_heal = 0;
+		m_sql.GetPreferencesVar("ZWaveEnableNightlyNetworkHeal", nightly_heal);
+		root["result"][index]["config"][ivalue]["value"] = nightly_heal;
+
+		root["result"][index]["config"][ivalue]["index"] = 3;
+		root["result"][index]["config"][ivalue]["label"] = "Enable Nightly Heal Network (04:00 am)";
+		root["result"][index]["config"][ivalue]["units"] = "";
+		root["result"][index]["config"][ivalue]["help"] =
+			"Enable/Disable nightly heal network. Disabled=0, Enabled=1 ";
+		root["result"][index]["config"][ivalue]["LastUpdate"] = "-";
+		ivalue++;
+
 		//Network Key
 		root["result"][index]["config"][ivalue]["type"] = "string";
 
@@ -2734,7 +2755,7 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 		m_sql.GetPreferencesVar("ZWaveNetworkKey", sValue);
 		root["result"][index]["config"][ivalue]["value"] = sValue;
 
-		root["result"][index]["config"][ivalue]["index"] = 3;
+		root["result"][index]["config"][ivalue]["index"] = 4;
 		root["result"][index]["config"][ivalue]["label"] = "Security Network Key";
 		root["result"][index]["config"][ivalue]["units"] = "";
 		root["result"][index]["config"][ivalue]["help"] =
@@ -2897,6 +2918,18 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 			}
 			else if (rvIndex == 3)
 			{
+				//Nightly Node Heal
+				int nightly_heal = atoi(ValueVal.c_str());
+				int old_nightly_heal = 0;
+				m_sql.GetPreferencesVar("ZWaveEnableNightlyNetworkHeal", old_nightly_heal);
+				if (old_nightly_heal != nightly_heal)
+				{
+					m_sql.UpdatePreferencesVar("ZWaveEnableNightlyNetworkHeal", nightly_heal);
+					m_bNightlyNetworkHeal = (nightly_heal != 0);
+				}
+			}
+			else if (rvIndex == 4)
+			{
 				//Security Key
 				std::string networkkey = ValueVal;
 				std::string old_networkkey = "";
@@ -3029,6 +3062,13 @@ bool COpenZWave::RemoveUserCode(const unsigned int homeID, const int nodeID, con
 	}
 
 	return true;
+}
+
+void COpenZWave::NightlyNodeHeal()
+{
+	if (!m_bNightlyNetworkHeal)
+		return; //not enabled
+	HealNetwork();
 }
 
 #endif //WITH_OPENZWAVE

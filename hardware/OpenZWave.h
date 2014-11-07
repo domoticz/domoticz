@@ -104,6 +104,8 @@ public:
 	bool RemoveNodeFromGroup(const int nodeID,const int groupID, const int removeID);
 	std::string GetConfigFile(std::string &szConfigFile);
 
+	void NightlyNodeHeal();
+
 	bool m_awakeNodesQueried;
 	bool m_allNodesQueried;
 
@@ -150,6 +152,7 @@ private:
 	bool m_bIsShuttingDown;
 	bool m_initFailed;
 	bool m_bInUserCodeEnrollmentMode;
+	bool m_bNightlyNetworkHeal;
 };
 
 #endif //WITH_OPENZWAVE
