@@ -39,6 +39,7 @@ Version 2.0.xxxx (October xxth 2014)
 - Implemented: Manual add Thermostat2 switch (type HE105)
 - Implemented: OpenZWave, Blinds Percentage Inverted (Thanks to PIM)
 - Implemented: OpenZWave, polling all multi_sensor values now (if polling enabled)
+- Implemented: OpenZWave, Controller Node, option for Nightly Network Heal (disabled by default)
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

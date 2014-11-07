@@ -1027,7 +1027,7 @@ void MainWorker::Do_Work()
 					if (pHardware->HwdType == HTYPE_OpenZWave)
 					{
 						COpenZWave *pZWave = (COpenZWave *)pHardware;
-						pZWave->HealNetwork();
+						pZWave->NightlyNodeHeal();
 					}
 				}
 			}
