@@ -7714,7 +7714,8 @@ namespace http {
 							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Open" : "Closed";
 							if (bIsOn) {
 								lstatus = "Open";
-							} else {
+							}
+							else {
 								lstatus = "Closed";
 							}
 							root["result"][ii]["Status"] = lstatus;
@@ -7754,7 +7755,8 @@ namespace http {
 							bool bIsOn = IsLightSwitchOn(lstatus);
 							if (bIsOn) {
 								lstatus = "Open";
-							} else {
+							}
+							else {
 								lstatus = "Closed";
 							}
 							root["result"][ii]["Status"] = lstatus;
@@ -7772,7 +7774,8 @@ namespace http {
 							root["result"][ii]["TypeImg"] = "blinds";
 							if (lstatus == "On") {
 								lstatus = "Closed";
-							} else {
+							}
+							else {
 								lstatus = "Open";
 							}
 							root["result"][ii]["Status"] = lstatus;
@@ -7782,28 +7785,25 @@ namespace http {
 							root["result"][ii]["TypeImg"] = "blinds";
 							if (lstatus == "On") {
 								lstatus = "Open";
-							} else {
+							}
+							else {
 								lstatus = "Closed";
 							}
 							root["result"][ii]["Status"] = lstatus;
 						}
-						else if (switchtype == STYPE_BlindsPercentage)
+						else if ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
 						{
 							root["result"][ii]["TypeImg"] = "blinds";
 							root["result"][ii]["Level"] = LastLevel;
 							int iLevel = round((float(maxDimLevel) / 100.0f)*LastLevel);
 							root["result"][ii]["LevelInt"] = iLevel;
 							if (lstatus == "On") {
-								lstatus = "Closed";
-							} else {
-								if (lstatus == "Off") {
-									lstatus = "Open";
-								}
-								else if (LastLevel == 100)
-								{
-									lstatus = "Open";
-								}
+								lstatus = (switchtype == STYPE_BlindsPercentage) ? "Closed" : "Open";
 							}
+							else if (lstatus == "Off") {
+								lstatus = (switchtype == STYPE_BlindsPercentage) ? "Open" : "Closed";
+							}
+
 							root["result"][ii]["Status"] = lstatus;
 						}
 						else if (switchtype == STYPE_Dimmer)
@@ -10988,6 +10988,7 @@ namespace http {
 					return;
 				m_mainworker.SetSetPoint(idx, (float)atof(setPoint.c_str()));
 			}
+
 			if (clock != "")
 			{
 				int urights = 3;

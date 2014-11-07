@@ -379,7 +379,7 @@
 		<Product type="2001" id="0000" name="ZW ES 1000 Flush Mounted Switch" config="duwi/ZWES1000.xml" />
 		<Product type="3001" id="0000" name="ZW ZS 3500 Plugin Switch" />
 		<Product type="3002" id="0000" name="ZW ZSA 3500 Plugin Switch" />
-		<Product type="4001" id="0000" name="ZW ESJ Blind Control" />
+		<Product type="4001" id="0000" name="ZW ESJ Blind Control" config="duwi/ZWESJ300.xml" />
 		<Product type="5002" id="0000" name="Wireless Flush Mounted Switch" />
 	</Manufacturer>
 	<Manufacturer id="0016" name="PowerLynx">
@@ -521,7 +521,7 @@
 	<Manufacturer id="0115" name="Z-Wave.Me">
 		<Product type="1000" id="0002" name="ZME_06433 Wall Flush-Mountable Dimmer" config="zwave.me/ZME_06433.xml"/>
 		<Product type="1000" id="0003" name="ZME_06436 Motor Control" config="zwave.me/ZME_06436.xml" />
-		<Product type="1000" id="0004" name="ZME_064435 Wall Controller"/>
+		<Product type="1000" id="0004" name="ZME_064435 Wall Controller" config="zwave.me/ZME_064435.xml"/>
 		<Product type="0100" id="0001" name="ZME_KFOB 4 Button Key Fob" config="zwave.me/kfob.xml"/>
 		<Product type="1000" id="0001" name="ZME_054313Z Flush-Mountable Switch" config="zwave.me/ZME_05431.xml"/>
 		<Product type="0100" id="0004" name="ZME_WCD2 Double Paddle Wall Controller" config="zwave.me/ZME_WCD2.xml"/>

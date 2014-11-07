@@ -2376,6 +2376,17 @@ std::string CEventSystem::nValueToWording(const unsigned char dType, const unsig
 			lstatus = "Open";
 		}
 	}
+	else if (switchtype == STYPE_BlindsPercentageInverted)
+	{
+		if (lstatus == "On")
+		{
+			lstatus = "Open";
+		}
+		else
+		{
+			lstatus = "Closed";
+		}
+	}
 	return lstatus;
 }
 

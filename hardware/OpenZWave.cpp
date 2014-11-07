@@ -52,13 +52,13 @@ struct _tAlarmNameToIndexMapping
 };
 
 static const _tAlarmNameToIndexMapping AlarmToIndexMapping[] = {
-		{ "General", 40 },
-		{ "Smoke", 41 },
-		{ "Carbon Monoxide", 42 },
-		{ "Carbon Dioxide", 43 },
-		{ "Heat", 44 },
-		{ "Flood", 45 },
-		{ "Alarm Level", 50 },
+		{ "General",			0x28 },
+		{ "Smoke",				0x29 },
+		{ "Carbon Monoxide",	0x2A },
+		{ "Carbon Dioxide",		0x2B },
+		{ "Heat",				0x2C },
+		{ "Flood",				0x2D },
+		{ "Alarm Level",		0x32 },
 		{ "", 0 }
 };
 
@@ -254,174 +254,6 @@ const char *cclassStr(uint8 cc)
 	return "UNKNOWN";
 }
 
-uint8 cclassNum(char const *str)
-{
-	if (strcmp(str, "NO OPERATION") == 0)
-		return 0x00;
-	else if (strcmp(str, "BASIC") == 0)
-		return 0x20;
-	else if (strcmp(str, "CONTROLLER REPLICATION") == 0)
-		return 0x21;
-	else if (strcmp(str, "APPLICATION STATUS") == 0)
-		return 0x22;
-	else if (strcmp(str, "ZIP SERVICES") == 0)
-		return 0x23;
-	else if (strcmp(str, "ZIP SERVER") == 0)
-		return 0x24;
-	else if (strcmp(str, "SWITCH BINARY") == 0)
-		return 0x25;
-	else if (strcmp(str, "SWITCH MULTILEVEL") == 0)
-		return 0x26;
-	else if (strcmp(str, "SWITCH ALL") == 0)
-		return 0x27;
-	else if (strcmp(str, "SWITCH TOGGLE BINARY") == 0)
-		return 0x28;
-	else if (strcmp(str, "SWITCH TOGGLE MULTILEVEL") == 0)
-		return 0x29;
-	else if (strcmp(str, "CHIMNEY FAN") == 0)
-		return 0x2A;
-	else if (strcmp(str, "SCENE ACTIVATION") == 0)
-		return 0x2B;
-	else if (strcmp(str, "SCENE ACTUATOR CONF") == 0)
-		return 0x2C;
-	else if (strcmp(str, "SCENE CONTROLLER CONF") == 0)
-		return 0x2D;
-	else if (strcmp(str, "ZIP CLIENT") == 0)
-		return 0x2E;
-	else if (strcmp(str, "ZIP ADV SERVICES") == 0)
-		return 0x2F;
-	else if (strcmp(str, "SENSOR BINARY") == 0)
-		return 0x30;
-	else if (strcmp(str, "SENSOR MULTILEVEL") == 0)
-		return 0x31;
-	else if (strcmp(str, "METER") == 0)
-		return 0x32;
-	else if (strcmp(str, "ZIP ADV SERVER") == 0)
-		return 0x33;
-	else if (strcmp(str, "ZIP ADV CLIENT") == 0)
-		return 0x34;
-	else if (strcmp(str, "METER PULSE") == 0)
-		return 0x35;
-	else if (strcmp(str, "THERMOSTAT HEATING") == 0)
-		return 0x38;
-	else if (strcmp(str, "THERMOSTAT MODE") == 0)
-		return 0x40;
-	else if (strcmp(str, "THERMOSTAT OPERATING STATE") == 0)
-		return 0x42;
-	else if (strcmp(str, "THERMOSTAT SETPOINT") == 0)
-		return 0x43;
-	else if (strcmp(str, "THERMOSTAT FAN MODE") == 0)
-		return 0x44;
-	else if (strcmp(str, "THERMOSTAT FAN STATE") == 0)
-		return 0x45;
-	else if (strcmp(str, "CLIMATE CONTROL SCHEDULE") == 0)
-		return 0x46;
-	else if (strcmp(str, "THERMOSTAT SETBACK") == 0)
-		return 0x47;
-	else if (strcmp(str, "DOOR LOCK LOGGING") == 0)
-		return 0x4C;
-	else if (strcmp(str, "SCHEDULE ENTRY LOCK") == 0)
-		return 0x4E;
-	else if (strcmp(str, "BASIC WINDOW COVERING") == 0)
-		return 0x50;
-	else if (strcmp(str, "MTP WINDOW COVERING") == 0)
-		return 0x51;
-	else if (strcmp(str, "MULTI INSTANCE") == 0)
-		return 0x60;
-	else if (strcmp(str, "DOOR LOCK") == 0)
-		return 0x62;
-	else if (strcmp(str, "USER CODE") == 0)
-		return 0x63;
-	else if (strcmp(str, "CONFIGURATION") == 0)
-		return 0x70;
-	else if (strcmp(str, "ALARM") == 0)
-		return 0x71;
-	else if (strcmp(str, "MANUFACTURER SPECIFIC") == 0)
-		return 0x72;
-	else if (strcmp(str, "POWERLEVEL") == 0)
-		return 0x73;
-	else if (strcmp(str, "PROTECTION") == 0)
-		return 0x75;
-	else if (strcmp(str, "LOCK") == 0)
-		return 0x76;
-	else if (strcmp(str, "NODE NAMING") == 0)
-		return 0x77;
-	else if (strcmp(str, "FIRMWARE UPDATE MD") == 0)
-		return 0x7A;
-	else if (strcmp(str, "GROUPING NAME") == 0)
-		return 0x7B;
-	else if (strcmp(str, "REMOTE ASSOCIATION ACTIVATE") == 0)
-		return 0x7C;
-	else if (strcmp(str, "REMOTE ASSOCIATION") == 0)
-		return 0x7D;
-	else if (strcmp(str, "BATTERY") == 0)
-		return 0x80;
-	else if (strcmp(str, "CLOCK") == 0)
-		return 0x81;
-	else if (strcmp(str, "HAIL") == 0)
-		return 0x82;
-	else if (strcmp(str, "WAKE UP") == 0)
-		return 0x84;
-	else if (strcmp(str, "ASSOCIATION") == 0)
-		return 0x85;
-	else if (strcmp(str, "VERSION") == 0)
-		return 0x86;
-	else if (strcmp(str, "INDICATOR") == 0)
-		return 0x87;
-	else if (strcmp(str, "PROPRIETARY") == 0)
-		return 0x88;
-	else if (strcmp(str, "LANGUAGE") == 0)
-		return 0x89;
-	else if (strcmp(str, "TIME") == 0)
-		return 0x8A;
-	else if (strcmp(str, "TIME PARAMETERS") == 0)
-		return 0x8B;
-	else if (strcmp(str, "GEOGRAPHIC LOCATION") == 0)
-		return 0x8C;
-	else if (strcmp(str, "COMPOSITE") == 0)
-		return 0x8D;
-	else if (strcmp(str, "MULTI INSTANCE ASSOCIATION") == 0)
-		return 0x8E;
-	else if (strcmp(str, "MULTI CMD") == 0)
-		return 0x8F;
-	else if (strcmp(str, "ENERGY PRODUCTION") == 0)
-		return 0x90;
-	else if (strcmp(str, "MANUFACTURER PROPRIETARY") == 0)
-		return 0x91;
-	else if (strcmp(str, "SCREEN MD") == 0)
-		return 0x92;
-	else if (strcmp(str, "SCREEN ATTRIBUTES") == 0)
-		return 0x93;
-	else if (strcmp(str, "SIMPLE AV CONTROL") == 0)
-		return 0x94;
-	else if (strcmp(str, "AV CONTENT DIRECTORY MD") == 0)
-		return 0x95;
-	else if (strcmp(str, "AV RENDERER STATUS") == 0)
-		return 0x96;
-	else if (strcmp(str, "AV CONTENT SEARCH MD") == 0)
-		return 0x97;
-	else if (strcmp(str, "SECURITY") == 0)
-		return 0x98;
-	else if (strcmp(str, "AV TAGGING MD") == 0)
-		return 0x99;
-	else if (strcmp(str, "IP CONFIGURATION") == 0)
-		return 0x9A;
-	else if (strcmp(str, "ASSOCIATION COMMAND CONFIGURATION") == 0)
-		return 0x9B;
-	else if (strcmp(str, "SENSOR ALARM") == 0)
-		return 0x9C;
-	else if (strcmp(str, "SILENCE ALARM") == 0)
-		return 0x9D;
-	else if (strcmp(str, "SENSOR CONFIGURATION") == 0)
-		return 0x9E;
-	else if (strcmp(str, "MARK") == 0)
-		return 0xEF;
-	else if (strcmp(str, "NON INTEROPERABLE") == 0)
-		return 0xF0;
-	else
-		return 0xFF;
-}
-
 COpenZWave::COpenZWave(const int ID, const std::string& devname):
 m_szSerialPort(devname)
 {
@@ -477,7 +309,7 @@ COpenZWave::NodeInfo* COpenZWave::GetNodeInfo(const unsigned int homeID, const i
 std::string COpenZWave::GetNodeStateString(const unsigned int homeID, const int nodeID)
 {
 	std::string strState = "Unknown";
-	COpenZWave::NodeInfo *pNode = GetNodeInfo(m_controllerID, nodeID);
+	COpenZWave::NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
 	if (!pNode)
 		return strState;
 	switch (pNode->eState)
@@ -496,6 +328,47 @@ std::string COpenZWave::GetNodeStateString(const unsigned int homeID, const int 
 		break;
 	}
 	return strState;
+}
+
+unsigned char COpenZWave::GetInstanceFromValueID(const OpenZWave::ValueID vID)
+{
+	unsigned char instance;
+
+	int commandClass = vID.GetCommandClassId();
+	unsigned char vInstance = vID.GetInstance();//(See note on top of this file) GetInstance();
+	unsigned char vIndex = vID.GetIndex();
+	//uint8 vNodeId = vID.GetNodeId();
+
+	if (
+		(commandClass == COMMAND_CLASS_MULTI_INSTANCE) ||
+		(commandClass == COMMAND_CLASS_SENSOR_MULTILEVEL) ||
+		(commandClass == COMMAND_CLASS_THERMOSTAT_SETPOINT) ||
+		(commandClass == COMMAND_CLASS_SENSOR_BINARY)
+		)
+	{
+		instance = vIndex;
+		//special case for sensor_multilevel
+		if (commandClass == COMMAND_CLASS_SENSOR_MULTILEVEL)
+		{
+			unsigned char rIndex = instance;
+			if (rIndex != vInstance)
+			{
+				if (rIndex == 1)
+					instance = vInstance;
+			}
+		}
+		else
+		{
+			if ((instance == 0) && (vInstance > 1))
+				instance = vInstance;
+		}
+	}
+	else
+	{
+		instance = vInstance;
+	}
+
+	return instance;
 }
 
 void COpenZWave::WriteControllerConfig()
@@ -541,26 +414,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 	unsigned int _homeID = _notification->GetHomeId();
 	unsigned char _nodeID = _notification->GetNodeId();
 
-	unsigned char vInstance = vID.GetInstance();//(See note on top of this file) GetInstance();
-	unsigned char vIndex = vID.GetIndex();
-
-	unsigned char instance;
-
-	if (
-		(commandClass == COMMAND_CLASS_MULTI_INSTANCE) ||
-		(commandClass == COMMAND_CLASS_SENSOR_MULTILEVEL) ||
-		(commandClass == COMMAND_CLASS_THERMOSTAT_SETPOINT) ||
-		(commandClass == COMMAND_CLASS_SENSOR_BINARY)
-		)
-	{
-		instance = vIndex;
-		if ((instance == 0) && (vInstance > 1))
-			instance = vInstance;
-	}
-	else
-	{
-		instance = vInstance;
-	}
+	unsigned char instance = GetInstanceFromValueID(vID);
 
 	OpenZWave::Notification::NotificationType nType = _notification->GetType();
 	switch (nType)
@@ -1167,25 +1021,10 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		unsigned char commandclass = vID.GetCommandClassId();
 		unsigned char NodeID = vID.GetNodeId();
 
-		unsigned char vInstance = vID.GetInstance();//(See note on top of this file) GetInstance();
-		unsigned char vIndex = vID.GetIndex();
+		//unsigned char vInstance = vID.GetInstance();//(See note on top of this file) GetInstance();
+		//unsigned char vIndex = vID.GetIndex();
 
-		unsigned char instance;
-		if (
-			(commandclass == COMMAND_CLASS_MULTI_INSTANCE) ||
-			(commandclass == COMMAND_CLASS_SENSOR_MULTILEVEL) ||
-			(commandclass == COMMAND_CLASS_THERMOSTAT_SETPOINT) ||
-			(commandclass == COMMAND_CLASS_SENSOR_BINARY)
-			)
-		{
-			instance = vIndex;//(See note on top of this file) GetInstance();
-			if ((instance == 0) && (vInstance > 1))
-				instance = vInstance;
-		}
-		else
-		{
-			instance = vID.GetInstance();//(See note on top of this file) GetInstance();
-		}
+		unsigned char instance = GetInstanceFromValueID(vID);
 
 		std::stringstream sstr;
 		sstr << int(NodeID) << ".instances." << int(instance) << ".commandClasses." << int(commandclass) << ".data";
@@ -1251,35 +1090,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	unsigned char vOrgInstance = vInstance;
 	unsigned char vOrgIndex = vIndex;
 
-	int instance;
-	if (
-		(commandclass == COMMAND_CLASS_MULTI_INSTANCE) ||
-		(commandclass == COMMAND_CLASS_SENSOR_MULTILEVEL) ||
-		(commandclass == COMMAND_CLASS_THERMOSTAT_SETPOINT) ||
-		(commandclass == COMMAND_CLASS_SENSOR_BINARY)
-		)
-	{
-		instance = vIndex;//(See note on top of this file) GetInstance();
-		//special case for sensor_multilevel
-		if (commandclass == COMMAND_CLASS_SENSOR_MULTILEVEL)
-		{
-			unsigned char rIndex = instance;
-			if (rIndex != vInstance)
-			{
-				if (rIndex == 1)
-					instance = vInstance;
-			}
-		}
-		else
-		{
-			if ((instance == 0) && (vInstance > 1))
-				instance = vInstance;
-		}
-	}
-	else
-	{
-		instance = vID.GetInstance();//(See note on top of this file) GetInstance();
-	}
+	unsigned char instance = GetInstanceFromValueID(vID);
 
 	OpenZWave::ValueID::ValueType vType = vID.GetType();
 	OpenZWave::ValueID::ValueGenre vGenre = vID.GetGenre();
@@ -1309,8 +1120,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	_device.scaleID = -1;
 	_device.instanceID = instance;
 	_device.indexID = 0;
-	_device.hasWakeup = m_pManager->IsNodeAwake(m_controllerID, NodeID);
-	_device.isListening = m_pManager->IsNodeListeningDevice(m_controllerID, NodeID);
+	_device.hasWakeup = m_pManager->IsNodeAwake(HomeID, NodeID);
+	_device.isListening = m_pManager->IsNodeListeningDevice(HomeID, NodeID);
 
 	if (vLabel != "")
 		_device.label = vLabel;
@@ -1363,7 +1174,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				InsertDevice(_device);
 				if (instance == 1)
 				{
-					if (IsNodeRGBW(m_controllerID, NodeID))
+					if (IsNodeRGBW(HomeID, NodeID))
 					{
 						_device.label = "Fibaro RGBW";
 						_device.devType = ZDTYPE_SWITCH_FGRGBWM441;
@@ -1691,7 +1502,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	}
 	else if (commandclass == COMMAND_CLASS_CLOCK)
 	{
-		COpenZWave::NodeInfo *pNode = GetNodeInfo(m_controllerID, NodeID);
+		COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
 		if (!pNode)
 			return;
 
@@ -1891,38 +1702,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 	unsigned int HomeID = vID.GetHomeId();
 	unsigned char NodeID = vID.GetNodeId();
 
-	unsigned char vInstance = vID.GetInstance();//(See note on top of this file) GetInstance();
-	unsigned char vIndex = vID.GetIndex();
-
-	unsigned char instance;
-	if (
-		(commandclass == COMMAND_CLASS_MULTI_INSTANCE) ||
-		(commandclass == COMMAND_CLASS_SENSOR_MULTILEVEL) ||
-		(commandclass == COMMAND_CLASS_THERMOSTAT_SETPOINT) ||
-		(commandclass == COMMAND_CLASS_SENSOR_BINARY)
-		)
-	{
-		instance = vIndex;//(See note on top of this file) GetInstance();
-		if (commandclass == COMMAND_CLASS_SENSOR_MULTILEVEL)
-		{
-			unsigned char rIndex = instance;
-			unsigned char rInstance = vInstance;
-			if (rIndex != rInstance)
-			{
-				if (rIndex == 1)
-					instance = rInstance;
-			}
-		}
-		else
-		{
-			if ((instance == 0) && (vInstance > 1))
-				instance = vInstance;
-		}
-	}
-	else
-	{
-		instance = vInstance;//(See note on top of this file) GetInstance();
-	}
+	unsigned char instance = GetInstanceFromValueID(vID);
 
 	OpenZWave::ValueID::ValueType vType = vID.GetType();
 	OpenZWave::ValueID::ValueGenre vGenre = vID.GetGenre();
@@ -1940,26 +1720,31 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 		if (m_pManager->GetValueAsFloat(vID, &fValue) == false)
 			return;
 	}
-	if (vType == OpenZWave::ValueID::ValueType_Bool)
+	else if (vType == OpenZWave::ValueID::ValueType_Bool)
 	{
 		if (m_pManager->GetValueAsBool(vID, &bValue) == false)
 			return;
 	}
-	if (vType == OpenZWave::ValueID::ValueType_Byte)
+	else if (vType == OpenZWave::ValueID::ValueType_Byte)
 	{
 		if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
 			return;
 	}
-	if ((vType == OpenZWave::ValueID::ValueType_Raw) || (vType == OpenZWave::ValueID::ValueType_String))
+	else if ((vType == OpenZWave::ValueID::ValueType_Raw) || (vType == OpenZWave::ValueID::ValueType_String))
 	{
 		if (m_pManager->GetValueAsString(vID, &strValue) == false)
 			return;
+	}
+	else
+	{
+		//unhandled value type
+		return;
 	}
 
 
 	if (vGenre != OpenZWave::ValueID::ValueGenre_User)
 	{
-		NodeInfo *pNode = GetNodeInfo(m_controllerID, NodeID);
+		NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
 		if (pNode)
 		{
 			/*
@@ -1973,7 +1758,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 		if ((pNode) && (vLabel == "Wake-up Interval"))
 		{
 			if (HomeID != m_controllerID)
-				m_pManager->AddAssociation(m_controllerID, NodeID, 1, m_controllerNodeId);
+				m_pManager->AddAssociation(HomeID, NodeID, 1, m_controllerNodeId);
 		}
 		return;
 	}
@@ -2029,7 +1814,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 		if ((instance == 1) && (vGenre == OpenZWave::ValueID::ValueGenre_User) && (vID.GetIndex() == 0) && (vType == OpenZWave::ValueID::ValueType_Raw))
 		{
 			//Enrollment Code
-			COpenZWave::NodeInfo *pNode = GetNodeInfo(m_controllerID, NodeID);
+			COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
 			if (!pNode)
 				return;
 			if (pNode->Instances.find(1) == pNode->Instances.end())
@@ -2096,7 +1881,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 	}
 	else if (commandclass == COMMAND_CLASS_CLOCK)
 	{
-		COpenZWave::NodeInfo *pNode = GetNodeInfo(m_controllerID, NodeID);
+		COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
 		if (!pNode)
 			return;
 
@@ -2319,7 +2104,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 	case ZDTYPE_SENSOR_THERMOSTAT_CLOCK:
 		if (vLabel == "Minute")
 		{
-			COpenZWave::NodeInfo *pNode = GetNodeInfo(m_controllerID, NodeID);
+			COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
 			if (!pNode)
 				return;
 			pDevice->intvalue = (pNode->tClockDay*(24 * 60)) + (pNode->tClockHour * 60) + pNode->tClockMinute;
@@ -2432,7 +2217,7 @@ bool COpenZWave::NetworkInfo(const int hwID, std::vector< std::vector< int > > &
 		NodeArray.push_back(row);
 		NodeArray[rowCnt].push_back(nodeID);
 		uint8* arr;
-		int retval = m_pManager->GetNodeNeighbors(m_controllerID, nodeID, &arr);
+		int retval = m_pManager->GetNodeNeighbors(homeID, nodeID, &arr);
 		if (retval > 0) {
 
 			for (int i = 0; i < retval; i++) {
@@ -2745,10 +2530,10 @@ void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, con
 				}
 				else if (commandclass == COMMAND_CLASS_SENSOR_MULTILEVEL)
 				{
-					if ((*ittValue).GetIndex() != 0)
-					{
-						continue;
-					}
+					//if ((*ittValue).GetIndex() != 0)
+					//{
+					//	continue;
+					//}
 					m_pManager->EnablePoll(*ittValue, 2);
 				}
 				else if (commandclass == COMMAND_CLASS_BATTERY)
