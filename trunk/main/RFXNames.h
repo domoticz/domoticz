@@ -23,6 +23,7 @@ enum _eSwitchType
 	STYPE_BlindsPercentage, //13
 	STYPE_VenetianBlindsUS,	//14
 	STYPE_VenetianBlindsEU,	//15
+	STYPE_BlindsPercentageInverted, //16
 	STYPE_END
 };
 

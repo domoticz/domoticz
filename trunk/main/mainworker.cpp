@@ -1078,8 +1078,10 @@ void MainWorker::SendCommand(const int HwdID, unsigned char Cmd, const char *szM
 void MainWorker::WriteToHardware(const int HwdID, const char *pdata, const unsigned char length)
 {
 	int hindex=FindDomoticzHardware(HwdID);
+	
 	if (hindex==-1)
 		return;
+
 	m_hardwaredevices[hindex]->WriteToHardware(pdata,length);
 }
 
@@ -8137,7 +8139,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			else if (switchtype==STYPE_X10Siren) {
 				level=15;
 			}
-			else if (switchtype==STYPE_BlindsPercentage) {
+			else if ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted)) {
 				if (lcmd.LIGHTING2.cmnd==light2_sSetLevel)
 				{
 					if (level==15)
@@ -8168,6 +8170,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			}
 			else
 				WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING2));
+
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);

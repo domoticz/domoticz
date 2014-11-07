@@ -199,6 +199,7 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_BlindsPercentage, "Blinds Percentage" },
 		{ STYPE_VenetianBlindsUS, "Venetian Blinds US" },
 		{ STYPE_VenetianBlindsEU, "Venetian Blinds EU" },
+		{ STYPE_BlindsPercentageInverted, "Blinds Percentage Inverted" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, sType);
