@@ -367,6 +367,17 @@ unsigned char COpenZWave::GetInstanceFromValueID(const OpenZWave::ValueID vID)
 	else
 	{
 		instance = vInstance;
+		if (commandClass == COMMAND_CLASS_SWITCH_MULTILEVEL)
+		{
+			unsigned char rIndex = vInstance;
+			if (rIndex != vIndex)
+			{
+				if (vInstance == 1)
+				{
+					instance = vIndex;
+				}
+			}
+		}
 	}
 
 	return instance;
@@ -1096,8 +1107,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	unsigned char vOrgInstance = vInstance;
 	unsigned char vOrgIndex = vIndex;
 
-	unsigned char instance = GetInstanceFromValueID(vID);
-
 	OpenZWave::ValueID::ValueType vType = vID.GetType();
 	OpenZWave::ValueID::ValueGenre vGenre = vID.GetGenre();
 
@@ -1106,6 +1115,9 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 		return;
 
 	std::string vLabel = m_pManager->GetValueLabel(vID);
+
+	unsigned char instance = GetInstanceFromValueID(vID);
+
 
 	if (
 		(vLabel == "Exporting") ||
@@ -1612,7 +1624,15 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID vID, int EventID)
 			instance = vID.GetIndex();
 			pDevice = FindDevice(NodeID, -1, -1, COMMAND_CLASS_SENSOR_MULTILEVEL, ZDTYPE_SWITCH_NORMAL);
 			if (pDevice == NULL)
-				return;
+			{
+				//okey, 1 more
+				int tmp_instance = index;
+				pDevice = FindDevice(NodeID, tmp_instance, -1, COMMAND_CLASS_SWITCH_MULTILEVEL, ZDTYPE_SWITCH_DIMMER);
+				if (pDevice == NULL)
+				{
+					return;
+				}
+			}
 		}
 	}
 
