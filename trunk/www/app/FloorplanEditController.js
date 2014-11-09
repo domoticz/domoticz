@@ -2,11 +2,11 @@ define(['app'], function (app) {
 	app.controller('FloorplanEditController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
 
 		ImageLoaded = function() {
-			if (typeof $("#floorplanimagesize") != 'undefined') {
+			if ((typeof $("#floorplanimagesize") != 'undefined') && (typeof $("#floorplanimagesize")[0] != 'undefined') && ($("#floorplanimagesize")[0].naturalWidth != 'undefined')){
 				$('#helptext').attr("title", 'Image width is: ' + $("#floorplanimagesize")[0].naturalWidth + ", Height is: " + $("#floorplanimagesize")[0].naturalHeight);
-				$("#svgcontainer")[0].setAttribute("viewBox","0 0 1280 720");
-				Device.xImageSize = 1280;
-				Device.yImageSize = 720;
+				$("#svgcontainer")[0].setAttribute("viewBox","0 0 "+$("#floorplanimagesize")[0].naturalWidth+" "+$("#floorplanimagesize")[0].naturalHeight);
+				Device.xImageSize = $("#floorplanimagesize")[0].naturalWidth;
+				Device.yImageSize = $("#floorplanimagesize")[0].naturalHeight;
 				$("#svgcontainer")[0].setAttribute("style","display:inline");
 				SVGResize();
 			}
