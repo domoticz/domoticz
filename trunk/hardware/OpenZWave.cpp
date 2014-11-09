@@ -502,35 +502,46 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		}
 		break;
 	case OpenZWave::Notification::Type_Notification:
-
-		switch (_notification->GetNotification())
 		{
-		case OpenZWave::Notification::Code_MsgComplete:
-			if (NodeInfo* nodeInfo = GetNodeInfo(_notification))
+			uint8 subType = _notification->GetNotification();
+			switch (subType)
 			{
-				nodeInfo->eState = NSTATE_AWAKE;
-				nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
+			case OpenZWave::Notification::Code_MsgComplete:
+				if (NodeInfo* nodeInfo = GetNodeInfo(_notification))
+				{
+					nodeInfo->eState = NSTATE_AWAKE;
+					nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
+				}
+				break;
+			case OpenZWave::Notification::Code_Awake:
+				if (NodeInfo* nodeInfo = GetNodeInfo(_notification))
+				{
+					nodeInfo->eState = NSTATE_AWAKE;
+					nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
+				}
+				break;
+			case OpenZWave::Notification::Code_Sleep:
+				if (NodeInfo* nodeInfo = GetNodeInfo(_notification))
+				{
+					nodeInfo->eState = NSTATE_SLEEP;
+				}
+				break;
+			case OpenZWave::Notification::Code_Dead:
+				if (NodeInfo* nodeInfo = GetNodeInfo(_notification))
+				{
+					nodeInfo->eState = NSTATE_DEAD;
+				}
+				break;
+			case OpenZWave::Notification::Code_Timeout:
+				//_log.Log(LOG_STATUS, "OpenZWave: Received timeout notification from HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
+				break;
+			case OpenZWave::Notification::Code_NoOperation:
+				//Code_NoOperation send to node
+				break;
+			default:
+				_log.Log(LOG_STATUS, "OpenZWave: Received unknown notification type (%d) from HomeID: %u, NodeID: %d (0x%02x)", subType, _homeID, _nodeID, _nodeID);
+				break;
 			}
-			break;
-		case OpenZWave::Notification::Code_Awake:
-			if (NodeInfo* nodeInfo = GetNodeInfo(_notification))
-			{
-				nodeInfo->eState = NSTATE_AWAKE;
-				nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
-			}
-			break;
-		case OpenZWave::Notification::Code_Sleep:
-			if (NodeInfo* nodeInfo = GetNodeInfo(_notification))
-			{
-				nodeInfo->eState = NSTATE_SLEEP;
-			}
-			break;
-		case OpenZWave::Notification::Code_Dead:
-			if (NodeInfo* nodeInfo = GetNodeInfo(_notification))
-			{
-				nodeInfo->eState = NSTATE_DEAD;
-			}
-			break;
 		}
 		break;
 	case OpenZWave::Notification::Type_Group:
@@ -652,15 +663,16 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			nodeInfo->m_LastSeen = m_updateTime;
 		}
 		break;
-		/*
-			case OpenZWave::Notification::Type_DriverReset:
-			case OpenZWave::Notification::Type_NodeProtocolInfo:
-			case OpenZWave::Notification::Type_NodeQueriesComplete:
-			default:
-			{
-			}
-			break;
-			*/
+	case OpenZWave::Notification::Type_DriverReset:
+	case OpenZWave::Notification::Type_NodeProtocolInfo:
+	case OpenZWave::Notification::Type_NodeQueriesComplete:
+		break;
+	case OpenZWave::Notification::Type_EssentialNodeQueriesComplete:
+		//The queries on a node that are essential to its operation have been completed. The node can now handle incoming messages.
+		break;
+	default:
+		_log.Log(LOG_STATUS, "OpenZWave: Received unhandled notification type (%d) from HomeID: %u, NodeID: %d", nType, _homeID, _nodeID);
+		break;
 	}
 
 	//Force configuration flush every hour
@@ -2611,6 +2623,8 @@ void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const Node
 
 	std::string sProductDescription = pNode->Manufacturer_name + " " + pNode->Product_name;
 
+	bool bWriteConfig = false;
+
 	if (result.size() < 1)
 	{
 		//Not Found, Add it to the database
@@ -2618,6 +2632,7 @@ void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const Node
 			szQuery << "INSERT INTO ZWaveNodes (HardwareID, HomeID, NodeID, ProductDescription) VALUES (" << m_HwdID << "," << homeID << "," << nodeID << ",'" << sProductDescription << "')";
 		else
 			szQuery << "INSERT INTO ZWaveNodes (HardwareID, HomeID, NodeID, Name,ProductDescription) VALUES (" << m_HwdID << "," << homeID << "," << nodeID << ",'Controller','" << sProductDescription << "')";
+		bWriteConfig = !pNode->Manufacturer_name.empty();
 	}
 	else
 	{
@@ -2630,6 +2645,8 @@ void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const Node
 		szQuery << "UPDATE ZWaveNodes SET ProductDescription='" << sProductDescription << "' WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
 	}
 	m_sql.query(szQuery.str());
+	if (bWriteConfig)
+		WriteControllerConfig();
 }
 
 void COpenZWave::EnableDisableNodePolling()
