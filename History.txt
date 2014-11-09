@@ -1,4 +1,5 @@
 Version 2.0.xxxx (October xxth 2014)
+- Updated: floorplan code to handle non-landscape images better
 - Fixed: Possible crash in Eventsystem (GetCurrentMeasurementStates) where string value was empty
 - Implemented: Manual add Blinds T6 type (DC106, YOOHA, Rohrmotor24 RMF)
 - Fixed: Pushover notification setup in settings (could contain invalid characters)
