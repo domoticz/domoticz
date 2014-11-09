@@ -1,0 +1,532 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <meta content="text/html; charset=ISO-8859-1"
+	  http-equiv="content-type">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="-1">
+    <title>OpenZWave Control Panel</title>
+    <style>
+      body {text-align: center; min-width: 830px; padding: 0}
+      div.esb {width: 25%; float: left; padding: 0; margin-left: auto; margin-right: auto; text-align: left}
+      div.rsb {float: left; padding: 0; margin-left: auto; margin-right: auto; text-align: left}
+      span.admmsg {border: 1px solid; display: none; width: 100%; text-indent: 5px}
+      div.stack {text-align: center; margin-left: auto; margin-right: auto;}
+      div.log {width: 100%; height: 206px; overflow: auto; padding: 4px; font-style: normal; font-size: 10px; font-family: Courier; }
+      table {text-align: left; width: 100%}
+      td {vertical-align: top}
+      th {vertical-align: top; text-decoration: underline}
+      legend {font-family: Arial}
+      tr {background-color: #FFFFFF}
+      .highlight {background-color: #8888FF}
+      .normal {background-color: #FFFFFF}
+      .click {background-color: #FF8888}
+      .hide {display:none}
+      #tt {position:absolute; display:block}
+      #tttop {display:block; height:5px; margin-left:5px; overflow:hidden}
+      #ttcont {display:block; padding:2px 12px 3px 7px; margin-left:5px; background:#666; color:#FFF}
+      #ttbot {display:block; height:5px; margin-left:5px; overflow:hidden}
+    </style>
+    <link rel="icon" href="favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="favicon.png" type="image/x-icon">
+    <script type="text/javascript" src="cp.js">
+    </script>
+  </head>
+  <body onload="return BED();" onmousemove="PosToolTip(event);">
+    <div id="title" style="text-align: center; width: 100%;">
+      <big><big>
+	  <span style="font-family: Arial Bold;">OpenZWave Control Panel</span>
+      </big></big>
+      <hr style="width: 100%; height: 2px;">
+    </div>
+    <div style="width: 100%; height: 170px;">
+      <div style="padding: 0pt; width: 42%; float: left;">
+	<div style="margin-left: auto; margin-right: auto; width: 350px; height: 100px;">
+	  <fieldset>
+	    <legend> Controller </legend>
+	    <div style="text-align: center;">
+	      <span style="font-family: Arial;">Interface</span>
+	    </div>
+	    <br>
+	    <form name="DevPost" method="post">
+	      <input name="devhidden" class="hide" value="hidden">
+	      <div style="text-align: left;">
+		<label><span style="font-family: Arial;">Device name:&nbsp;</span> </label>
+		<input type="text" name="devname" id="devname">
+	      </div>
+	      <div style="text-align: left;">
+		<label><span style="font-family: Arial;">USB&nbsp;</span></label>
+		<input name="usbb" id="usbb" type="checkbox" onchange="return DoDevUSB();">
+	      </div>
+	      <br>
+	      <div style="float: left;">
+		<button name="reset" type="submit" style="text-align: center;" onclick="var r=confirm('Do you really want to completely reset the  interface?'); if (r) return DoDevPost('reset'); else return false;">Reset</button>
+	      </div>
+	      <div style="float: left; padding-left: 7px;">
+		<button name="sreset" type="submit" style="text-align: center;" onclick="return DoDevPost('sreset');">Soft Reset</button>
+	      </div>
+	      <div style="float: right;">
+		<button name="initialize" type="submit" style="text-align: center;" onclick="return DoDevPost('open');">Initialize</button>
+	      </div>
+	      <div style="float: right; padding-right: 7px;">
+		<button name="close" type="submit" style="text-align: left;" onclick=" return DoDevPost('close');">Close</button>
+	      </div>
+	    </form>
+	  </fieldset>
+	</div>
+      </div>
+      <div style="padding: 0pt; width: 34%; float: left;">
+	<div style="margin-left: auto; margin-right: auto; width: 280px; height: 100px;">
+	  <fieldset> <legend> Controller Status </legend>
+	    <form>
+	      <div style="float: left; width: 50%;">
+		<div style="float: right;">
+		  <label><span style="font-family: Arial;">Home Id:&nbsp;</span></label>
+		</div>
+		<br>
+		<br>
+		<div style="float: right;">
+		  <label><span style="font-family: Arial;">Controller Mode:&nbsp;</span></label>
+		</div>
+		<br>
+		<br>
+		<div style="float: right;">
+		  <label><span style="font-family: Arial;">Node Count:&nbsp;</span></label>
+		</div>
+		<br>
+		<br>
+		<div style="float: right;">
+		  <label><span style="font-family: Arial;">SUC Node:&nbsp;</span></label>
+		</div>
+	      </div>
+	      <div style="float: left; width: 50%;">
+		<div style="float: left;">
+		  <input readonly="true" style="font-family: Arial; height: 15px;" size="12" name="homeid" id="homeid" value="" type="text">
+		</div>
+		<br>
+		<br>
+		<div style="float: left;">
+		  <input readonly="true" style="font-family: Arial; height: 15px;" size="12" id="cmode" name="cmode" value="" type="text">
+		</div>
+		<br>
+		<br>
+		<div style="float: left;">
+		  <input readonly="true" style="font-family: Arial; height: 15px;" size="6" name="nodecount" id="nodecount" value="" type="text">
+		</div>
+		<br>
+		<br>
+		<div style="float: left;">
+		  <input readonly="true" style="font-family: Arial; height: 15px;" size="6" name="sucnodeid" id="sucnodeid" value="" type="text">
+		</div>
+	      </div>
+	    </form>
+	  </fieldset>
+	</div>
+      </div>
+      <div style="padding: 0pt; width: 24%; float: left;">
+	<div style="margin-left: auto; margin-right: auto; width: 200px; height: 100px;">
+	  <fieldset> <legend> Backup Controller </legend>
+	    <form name="BackPost" method="post"> 
+	      <input name="devhidden" class="hide" value="hidden">
+	      <div class="stack" style="position: relative; height: 50px;">
+		<button id="save" name="save" onclick="return DoSavePost();" type="submit">Save...</button>
+	      </div>
+	      <div class="stack" style="position: relative; height: 50px;"> 
+		<span id="saveinfo" name="saveinfo" class="legend" style="display: none;">Changes need saving...</span>
+	      </div>
+	    </form>
+	  </fieldset>
+	</div>
+      </div>
+    </div>
+    <div id="network" style="float: left; width: 100%;">
+      <fieldset> <legend> Network </legend>
+	<form name="NetPost" method="post">
+	  <input name="nethidden" class="hide" value="hidden">
+	  <div class="esb" style="margin-left: 14px; width: 180px;">
+	    <select id="netops" onchange="return DoNetHelp();">
+	      <option value="choice" selected="true">Select an operation:</option>
+	      <option value="scen">Scenes</option>
+	      <option value="topo">Topology</option>
+	      <option value="stat">Statistics</option>
+	      <option value="test">Test & Heal</option>
+	    </select>
+	  </div>
+	  <div class="rsb" style="margin-left: 10px;">
+	    <span id="netinfo" name="netinfo" class="admmsg" style="display: none;"></span>
+	  </div>
+	  <div id="scencntl" name="scencntl" class="rsb" style="display: none; margin-right: 10px;">
+	    <div class="rsb" style="margin-left: 10px;">
+	      <table>
+		<tr>
+		  <td style="float: right;">
+		    <div class="stack">
+		      <label><span style="font-family: Arial; font-size: 24px; vertical-align: top;">&nbsp;</span></label>
+		    </div>
+		    <div class="stack">
+		      <button id="scenecreate" name="scenecreate" onclick="return SceneLoad('create');" type="submit">Create</button>
+		    </div>
+		    <div class="stack">
+		      <button id="scenedelete" name="scenedelete" onclick="var ret = SceneLoad('delete'); curscene = null; return ret;" type="Delete">Delete</button>
+		    </div>
+		    <div class="stack">
+		      <button id="sceneexecute" name="sceneexecute" onclick="return SceneLoad('execute');" type="submit">Execute</button>
+		    </div>
+		  </td>
+		  <td>
+		    <div style="width: 165px; vertical-align: top;">
+		      <div class="stack">
+			<label><span class="legend" style="font-size: 12px;">Scene IDs</span></label>
+		      </div>
+		      <div class="stack">
+			<select id="sceneids" size="6" onchange="curscene = this.options[this.selectedIndex].text; return SceneLoad('values');" style="margin-left: 5px;">
+			</select>
+			<div class="stack">
+			  <label><span class="legend" style="font-size: 12px;">Label:</span></label>
+			  <input id="scenelabeltext" type="text" size="8" class="legend">
+			  <button id="updatescenelabel" onclick="return SceneLoad('label');" style="text-align: center;" type="submit">Update</button>
+			</div>
+		      </div>
+		    </div>
+		  </td>
+		  <td>
+		    <div style="width: 160px; vertical-align: top;">
+		      <div class="stack">
+			<label><span class="legend" style="font-size: 12px;">Values</span></label>
+		      </div>
+		      <div class="stack">
+			<select id="scenevalues" size="3" onchange="return DisplaySceneValue(this.options[this.selectedIndex]);" style="margin-left: 5px;">
+			</select>
+		      </div>
+		      <div class="stack">
+			<input id="valuetext" type="text" size="8" class="legend">
+			<select id="valueselect" style="display: none;"></select>
+			<label><span class="legend" style="font-size: 12px;" id="valueunits"></span></label>
+		      </div>
+		    </div>
+		  </td>
+		  <td>
+		    <div style="vertical-align: top;">
+		      <div class="stack">
+			<label><span class="legend" style="font-size: 32px;">&nbsp;</span></label>
+		      </div>
+		      <div class="stack">
+			<button id="savescenevalue" onclick="return SceneLoad('addvalue');" style="text-align: center;" type="submit">Add -&gt;</button>
+		      </div>
+		      <div class="stack">
+			<button id="removescenevalue" onclick="return SceneLoad('remove');" style="text-align: center;" type="submit">&lt;- Remove</button>
+		      </div>
+		    </div>
+		  </td>
+		  <td>
+		    <div style="width: 175px; vertical-align: top;">
+		      <div class="stack">
+			<label><span class="legend" style="font-size: 12px; vertical-align: top;">Scene Values</span></label>
+		      </div>
+		      <div class="stack">
+			<select id="scenescenevalues" size="6" onchange="return DisplaySceneSceneValue(this.options[this.selectedIndex]);" style="margin-left: 5px;">
+			</select>
+		      </div>
+		      <div class="stack">
+			<input id="scenevaluetext" type="text" size="8" class="legend">
+			<select id="scenevalueselect" style="display: none;"></select>
+			<label><span class="legend" style="font-size: 12px;" id="scenevalueunits"></span></label>
+			<button id="updatescenevalue" onclick="return SceneLoad('update');" style="text-align: center;" type="submit">Update</button>
+		      </div>
+		    </div>
+		  </td>
+		</tr>
+	      </table>
+	    </div>
+	  </div>
+	  <div id="topocntl" name="topocntl" class="rsb" style="display: none; margin-right: 5px;">
+	    <div class="rsb" style="margin-left: 5px;">
+	      <button id="refreshtopo" name="refreshtopo" onclick="return TopoLoad('load');" type="submit">Refresh</button>
+	    </div>
+	  </div>
+	  <div id="topo" style="float: left; margin-left: 5px; width: 98%; display: none; overflow: scroll;">
+	    <table border="0" cellpadding="1" cellspacing="0" style="text-align: center;">
+	      <thead id="topohead">
+		<tr>
+		  <th>&nbsp;</th>
+		  <th>&nbsp;</th>
+		</tr>
+	      </thead>
+	      <tbody id="topobody">
+		<tr>
+		  <td>&nbsp;</td>
+		  <td>&nbsp;</td>
+		</tr>
+		<tr>
+		  <td>&nbsp;</td>
+		  <td>&nbsp;</td>
+		</tr>
+	      </tbody>
+	    </table>
+	  </div>
+	  <div id="statcntl" name="statcntl" class="rsb" style="display: none; margin-right: 5px;">
+	    <div class="rsb" style="margin-left: 5px;">
+	      <button id="refreshstat" name="refreshstat" onclick="return StatLoad('load');" type="submit">Refresh</button>
+	    </div>
+	  </div>
+	  <div id="statnet" style="float: left; margin-left: 5px; width: 98%; display: none;">
+	    <table border="0" cellpadding="1" cellspacing="0" style="text-align: center;">
+	      <thead id="statnethead">
+		<tr>
+		  <th style="text-align: right;">Network Errors</th>
+		  <th style="text-decoration: none;">&nbsp;</th>
+		  <th style="text-align: right;">Message Counts</th>
+		  <th style="text-decoration: none;">&nbsp;</th>
+		  <th style="text-align: right;">Network Info</th>
+		  <th style="text-decoration: none;">&nbsp;</th>
+		</tr>
+	      </thead>
+	      <tbody id="statnetbody">
+		<tr>
+		  <td>&nbsp;</td>
+		  <td>&nbsp;</td>
+		</tr>
+		<tr>
+		  <td>&nbsp;</td>
+		  <td>&nbsp;</td>
+		</tr>
+		<tr>
+		  <td>&nbsp;</td>
+		  <td>&nbsp;</td>
+		</tr>
+	      </tbody>
+	    </table>
+	  </div>
+	  <div id="allstats" style="margin-left: auto; margin-right: auto; width: 100%;">
+	    <div id="statnode" style="float: left; margin-left: 5px; width: 100%; display: none;">
+	      <table border="0" cellpadding="1" cellspacing="0" style="text-align: center;">
+		<thead id="statnodehead">
+		  <tr>
+		    <th style="text-align: center;">Node</th>
+		    <th style="text-align: center;">Sent</th>
+		    <th style="text-align: center;">Failed</th>
+		    <th style="text-align: center;">Retries</th>
+		    <th style="text-align: center;">Received</th>
+		    <th style="text-align: center;">Unsolicited</th>
+		    <th style="text-align: center;">Duplicates</th>
+		    <th style="text-align: center;">Last Sent</th>
+		    <th style="text-align: center;">Last Received</th>
+		    <th style="text-align: center;">Last Request RTT</th>
+		    <th style="text-align: center;">Average Request RTT</th>
+		    <th style="text-align: center;">Last Response RTT</th>
+		    <th style="text-align: center;">Average Response RTT</th>
+		    <th style="text-align: center;">Quality</th>
+		  </tr>
+		</thead>
+		<tbody id="statnodebody" style="cursor: help;">
+		  <tr>
+		    <td>&nbsp;</td>
+		    <td>&nbsp;</td>
+		  </tr>
+		  <tr>
+		    <td>&nbsp;</td>
+		    <td>&nbsp;</td>
+		  </tr>
+		  <tr>
+		    <td>&nbsp;</td>
+		    <td>&nbsp;</td>
+		  </tr>
+		</tbody>
+	      </table>
+	    </div>
+	    <div id="statclass" style="float: left; margin-left: 5px; width: 25%; display: none;">
+	      <table border="0" cellpadding="1" cellspacing="0" style="text-align: center;">
+		<thead id="statclasshead">
+		  <tr>
+		    <th style="text-align: center;">Class</th>
+		    <th style="text-align: center;">Sent</th>
+		    <th style="text-align: center;">Received</th>
+		  </tr>
+		</thead>
+		<tbody id="statclassbody">
+		  <tr>
+		    <td>&nbsp;</td>
+		    <td>&nbsp;</td>
+		    <td>&nbsp;</td>
+		  </tr>
+		  <tr>
+		    <td>&nbsp;</td>
+		    <td>&nbsp;</td>
+		    <td>&nbsp;</td>
+		  </tr>
+		</tbody>
+	      </table>
+	    </div>
+	  </div>
+	  <div id="thcntl" name="thcntl" class="rsb" style="display: none; margin-right: 5px;">
+	    <div class="rsb" style="margin-left: 5px;">
+	      <button id="testbutton" name="testbutton" onclick="return TestHealLoad('test');" type="submit">Run</button>
+	      <label><span class="legend" style="font-size: 12px;">Node:</span></label>
+	      <input id="testnode" type="text" size="5" class="legend">
+	      <label><span class="legend" style="font-size: 12px;">Message count:</span></label>
+	      <input id="testmcnt" type="text" size="5" class="legend">
+	    </div>
+	    <br>
+	    <div class="rsb" style="margin-left: 5px;">
+	      <button id="healbutton" name="healbutton" onclick="return TestHealLoad('heal');" type="submit">Run</button>
+	      <label><span class="legend" style="font-size: 12px;">Node:</span></label>
+	      <input id="healnode" type="text" size="5" class="legend">
+	      <input id="healrrs" type="checkbox" value="healrr">Heal Return Routes
+	    </div>
+	  </div>
+	  <div id="testhealreport" class="log" style="float: left; margin-left: 5px; width: 98%; text-align: left; display: none;">
+	  </div>
+	</form>
+      </fieldset>
+    </div>
+    <div id="admin" style="float: left; width: 100%;">
+      <fieldset> <legend> Controller </legend>
+	<form name="AdmPost" method="post">
+	  <input name="admhidden" class="hide" value="hidden">
+	  <div class="esb" style="margin-left: 14px; width: 200px;">
+	    <select id="adminops" onchange="return DoAdmHelp();">
+	      <option value="choice" selected="true">Select an operation:</option>
+	      <option value="addd">Add Device</option>
+	      <option value="cprim">Create Primary</option>
+	      <option value="rconf">Receive Configuration</option>
+	      <option value="remd">Remove Device</option>
+	      <option value="remfn">Remove Failed Node</option>
+	      <option value="hnf">Has Node Failed</option>
+	      <option value="repfn">Replace Failed Node</option>
+	      <option value="tranpr">Transfer Primary Role</option>
+	      <option value="reqnu">Request Network Update</option>
+	      <option value="reqnnu">Request Node Neighbor Update</option>
+	      <option value="assrr">Assign Return Route</option>
+	      <option value="delarr">Delete All Return Routes</option>
+	      <option value="snif">Send Node Information</option>
+	      <option value="reps">Replication Send</option>
+	      <option value="addbtn">Add Button</option>
+	      <option value="delbtn">Delete Button</option>
+	    </select>
+	  </div>
+	  <div id="admcntl" name="admcntl" class="rsb" style="display: none;"></div>
+	  <button id="admgo" name="go" style="float: left; text-align: center; display: none; margin-left: 10px;"
+		  onclick="return DoAdmPost(0);" type="submit">Go</button> 
+	  <button id="admcan" name="cancel" style="float: left; text-align: center; display: none;"
+		  onclick="return DoAdmPost(1);" type="submit">Cancel</button>
+	  <div class="rsb" style="margin-left: 10px;">
+	    <span id="adminfo" name="adminfo" class="admmsg"></span>
+	  </div>
+	</form>
+      </fieldset>
+    </div>
+    <div id="funcs" style="float: left; width: 100%;">
+      <fieldset><legend> Functions </legend>
+	<form name="NodePost" method="post">
+	  <input name="nodehidden" class="hide" value="hidden">
+	  <div class="esb" style="margin-left: 14px; width: 180px;">
+	    <select id="nodeops" onchange="return DoNodeHelp();">
+	      <option value="choice" selected="true">Select an operation:</option>
+	      <option value="nam">Name</option>
+	      <option value="loc">Location</option>
+	      <option value="grp">Group</option>
+	      <option value="pol">Polling</option>
+	    </select>
+	  </div>
+	  <div id="nodecntl" name="nodecntl" class="rsb" style="display: none; margin-right: 10px;"></div>
+	  <div class="rsb">
+	    <span id="nodeinfo" name="nodeinfo"class="admmsg"></span>
+	  </div>
+	</form>
+      </fieldset>
+    </div>
+    <div id="devices" style="float: left; width: 100%;"> <br>
+      <br>
+      <fieldset> <legend> Devices </legend>
+	<form>
+	  <table border="0" cellpadding="1" cellspacing="0">
+	    <thead> <tr>
+		<th>Node Id</th>
+		<th>Basic Type</th>
+		<th>Generic Type</th>
+		<th>Product</th>
+		<th>Name</th>
+		<th>Location</th>
+		<th>Value</th>
+		<th>Last Heard</th>
+		<th>Status</th>
+	      </tr>
+	    </thead> <tbody id="tbody">
+	      <tr>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+	      </tr>
+	      <tr>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+	      </tr>
+	      <tr>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+	      </tr>
+	      <tr>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+		<td> <br> </td>
+	      </tr>
+	    </tbody>
+	  </table>
+	</form>
+      </fieldset>
+    </div>
+    <div id="controls" style="padding-left: 340px; padding-right: 340px; min-width: 550px;">
+      <div style="float: left; position: relative; width: 100%;">
+	<input name="config" value="status" checked="checked" onclick="return DoConfig(this.id);" id="configcur" style="text-align: left;" type="radio">Current Values
+	<input name="config" id="configcon" value="config" style="text-align: left;" onclick="return DoConfig(this.id);" type="radio">Configuration
+	<input name="config" id="configinfo" value="info" style="text-align: left;" onclick="return DoConfig(this.id);" type="radio">Information
+	<form name="ValuePost" method="post">
+	  <div id="divconfigcur" class="" style="margin-left: auto; margin-right: auto; text-align: center; clear: both;">
+	  </div>
+	  <div id="divconfigcon" class="hide" style="margin-left: auto; margin-right: auto; text-align: center; clear: both;">
+	  </div>
+	  <div id="divconfiginfo" class="hide" style="margin-left: auto; margin-right: auto; text-align: center; clear: both;">
+	  </div>
+	</form>
+      </div>
+      <div style="float: left; position: relative; width: 340px; margin-right: -340px;">&nbsp;
+      </div>
+    </div>
+    <div id="log" style="float: left; width: 100%; text-align: left;">
+      <br>
+      <br>
+      <fieldset> <legend> Log output </legend>
+	<form>
+	  <div id="logdata" class="log"> <br>
+	  </div>
+	</form>
+      </fieldset>
+    </div>
+  </body>
+</html>
