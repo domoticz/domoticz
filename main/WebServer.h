@@ -188,11 +188,14 @@ private:
 	void Cmd_ZWaveSendConfigurationToSecondaryController(Json::Value &root);
 	void Cmd_ZWaveTransferPrimaryRole(Json::Value &root);
 	std::string ZWaveGetConfigFile();
+	std::string ZWaveCPPollXml();
+	std::string ZWaveCPIndex();
 	void Cmd_ZWaveSetUserCodeEnrollmentMode(Json::Value &root);
 	void Cmd_ZWaveGetNodeUserCodes(Json::Value &root);
 	void Cmd_ZWaveRemoveUserCode(Json::Value &root);
 	//RTypes
 	void RType_OpenZWaveNodes(Json::Value &root);
+	int m_ZW_Hwidx;
 #endif	
 	boost::shared_ptr<boost::thread> m_thread;
 	std::map < std::string, webserver_response_function > m_webcommands;

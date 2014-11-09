@@ -162,6 +162,9 @@
     <Filter Include="Devices\Philips Hue">
       <UniqueIdentifier>{0ba73f41-846f-48e1-a9ff-b70888ac5920}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\ZWave\OpenZWave\Control Panel">
+      <UniqueIdentifier>{2467c1b1-dd49-4842-9931-bb5a12d729e2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -480,6 +483,15 @@
     <ClInclude Include="..\hardware\PhilipsHue.h">
       <Filter>Devices\Philips Hue</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h">
+      <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\openzwave\control_panel\tinyxml\tinystr.h">
+      <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\openzwave\control_panel\tinyxml\tinyxml.h">
+      <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -757,6 +769,24 @@
     </ClCompile>
     <ClCompile Include="..\hardware\PhilipsHue.cpp">
       <Filter>Devices\Philips Hue</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\openzwave\control_panel\zwavelib.cpp">
+      <Filter>Devices\ZWave\OpenZWave</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp">
+      <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\openzwave\control_panel\tinyxml\tinystr.cpp">
+      <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\openzwave\control_panel\tinyxml\tinyxml.cpp">
+      <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\openzwave\control_panel\tinyxml\tinyxmlerror.cpp">
+      <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\openzwave\control_panel\tinyxml\tinyxmlparser.cpp">
+      <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -412,8 +412,13 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 {
 	if (m_bIsShuttingDown)
 		return;
+
 	// Must do this inside a critical section to avoid conflicts with the main thread
 	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+
+	//Send 2 OZW control panel
+	OnCPNotification(_notification);
+
 	OpenZWave::Manager* pManager = OpenZWave::Manager::Get();
 	if (!pManager)
 		return;
