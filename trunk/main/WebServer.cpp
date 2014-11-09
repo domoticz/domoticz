@@ -84,7 +84,9 @@ namespace http {
 		{
 			m_pWebEm = NULL;
 			m_LastUpdateCheck = 0;
+#ifdef WITH_OPENZWAVE
 			m_ZW_Hwidx = -1;
+#endif
 		}
 
 
