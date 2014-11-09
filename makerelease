@@ -35,7 +35,7 @@ echo "Working copy at revision $LOCAL_REVISION"
 if [ "$SERVER_REVISION" -eq "$LOCAL_REVISION" ]
 then
     echo "Server is up to date. Nothing to do."
-    exit 1
+#    exit 1
 fi
 
 echo "Updating to server revision..."
@@ -51,13 +51,13 @@ then
 	echo "CMake failed!";
 	exit 1
 fi
-make -j 2
+make -j 1
 if [ $? -ne 0 ]
 then
 	echo "Compilation failed!";
 	exit 1
 fi 
-echo "Success, making release...";
+echo "Success, making beta...";
 
 cp -f svnversion.h ${version_file}
 cp -f History.txt ${history_file}
@@ -69,17 +69,28 @@ if [ -f ${archive_file} ];
 then
   rm ${archive_file}
 fi
+if [ -f ${archive_file}.sha256sum ];
+then
+  rm ${archive_file}.sha256sum
+fi
 
-tar -zcf ${archive_file} domoticz History.txt License.txt svnversion.h domoticz.sh www/ scripts/ Config/
+tar -zcf ${archive_file} domoticz History.txt License.txt svnversion.h domoticz.sh --exclude .svn www/ scripts/ Config/
 if [ $? -ne 0 ]
 then
         echo "Error creating archive!";
         exit 1
 fi
+echo "Creating checksum file...";
+sha256sum ${archive_file} > ${archive_file}.sha256sum
+if [ $? -ne 0 ]
+then
+        echo "Error creating archive checksum file!";
+        exit 1
+fi
 
 #################################
 echo "Uploading to SourceForge...";
-sshpass -p ${SVN_UPLOAD_PASSWORD} scp ${archive_file} ${version_file} ${history_file} ${SVN_UPLOAD_USER}@web.sourceforge.net:/home/project-web/domoticz/htdocs
+sshpass -p ${SVN_UPLOAD_PASSWORD} scp ${archive_file} ${archive_file}.sha256sum ${version_file} ${history_file} ${SVN_UPLOAD_USER}@web.sourceforge.net:/home/project-web/domoticz/htdocs
 if [ $? -ne 0 ]
 then
         echo "Error uploading to SourceForge!";
