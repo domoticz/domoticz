@@ -927,7 +927,12 @@ void MainWorker::Do_Work()
 		if (m_bDoDownloadDomoticzUpdate)
 		{
 			m_bDoDownloadDomoticzUpdate=false;
-			std::string outfile = szStartupFolder+"update.tgz";
+			//First download the checksum file
+			std::string outfile = szStartupFolder + "update.tgz.sha256sum";
+			std::string checksumfile = m_szDomoticzUpdateURL + ".sha256sum";
+			HTTPClient::GETBinaryToFile(checksumfile.c_str(), outfile.c_str());
+			//Next download the actual update
+			outfile = szStartupFolder+"update.tgz";
 			m_bHaveDownloadedDomoticzUpdateSuccessFull=HTTPClient::GETBinaryToFile(m_szDomoticzUpdateURL.c_str(),outfile.c_str());
 			m_bHaveDownloadedDomoticzUpdate=true;
 		}

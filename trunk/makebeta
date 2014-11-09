@@ -35,7 +35,7 @@ echo "Working copy at revision $LOCAL_REVISION"
 if [ "$SERVER_REVISION" -eq "$LOCAL_REVISION" ]
 then
     echo "Server is up to date. Nothing to do."
-    exit 1
+#    exit 1
 fi
 
 echo "Updating to server revision..."
@@ -69,17 +69,29 @@ if [ -f ${archive_file} ];
 then
   rm ${archive_file}
 fi
+if [ -f ${archive_file}.sha256sum ];
+then
+  rm ${archive_file}.sha256sum
+fi
 
-tar -zcf ${archive_file} domoticz History.txt License.txt svnversion.h domoticz.sh www/ scripts/ Config/
+tar -zcf ${archive_file} domoticz History.txt License.txt svnversion.h domoticz.sh --exclude .svn www/ scripts/ Config/
 if [ $? -ne 0 ]
 then
         echo "Error creating archive!";
         exit 1
 fi
+echo "Creating checksum file...";
+hash="$(sha256sum ${archive_file} | sed -e 's/\s.*$//') update.tgz";
+echo $hash > ${archive_file}.sha256sum
+if [ ! -f ${archive_file}.sha256sum ];
+then
+        echo "Error creating archive checksum file!";
+        exit 1
+fi
 
 #################################
 echo "Uploading to SourceForge...";
-sshpass -p ${SVN_UPLOAD_PASSWORD} scp ${archive_file} ${version_file} ${history_file} ${SVN_UPLOAD_USER}@web.sourceforge.net:/home/project-web/domoticz/htdocs/beta
+sshpass -p ${SVN_UPLOAD_PASSWORD} scp ${archive_file} ${archive_file}.sha256sum ${version_file} ${history_file} ${SVN_UPLOAD_USER}@web.sourceforge.net:/home/project-web/domoticz/htdocs/beta
 if [ $? -ne 0 ]
 then
         echo "Error uploading to SourceForge!";
