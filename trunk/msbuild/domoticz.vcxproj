@@ -128,6 +128,9 @@
     <ClInclude Include="..\hardware\Meteostick.h" />
     <ClInclude Include="..\hardware\MochadTCP.h" />
     <ClInclude Include="..\hardware\OpenZWave.h" />
+    <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h" />
+    <ClInclude Include="..\hardware\openzwave\control_panel\tinyxml\tinystr.h" />
+    <ClInclude Include="..\hardware\openzwave\control_panel\tinyxml\tinyxml.h" />
     <ClInclude Include="..\hardware\OTGWBase.h" />
     <ClInclude Include="..\hardware\OTGWSerial.h" />
     <ClInclude Include="..\hardware\OTGWTCP.h" />
@@ -234,6 +237,12 @@
     <ClCompile Include="..\hardware\Meteostick.cpp" />
     <ClCompile Include="..\hardware\MochadTCP.cpp" />
     <ClCompile Include="..\hardware\OpenZWave.cpp" />
+    <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp" />
+    <ClCompile Include="..\hardware\openzwave\control_panel\tinyxml\tinystr.cpp" />
+    <ClCompile Include="..\hardware\openzwave\control_panel\tinyxml\tinyxml.cpp" />
+    <ClCompile Include="..\hardware\openzwave\control_panel\tinyxml\tinyxmlerror.cpp" />
+    <ClCompile Include="..\hardware\openzwave\control_panel\tinyxml\tinyxmlparser.cpp" />
+    <ClCompile Include="..\hardware\openzwave\control_panel\zwavelib.cpp" />
     <ClCompile Include="..\hardware\OTGWBase.cpp" />
     <ClCompile Include="..\hardware\OTGWSerial.cpp" />
     <ClCompile Include="..\hardware\OTGWTCP.cpp" />

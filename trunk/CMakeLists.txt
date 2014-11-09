@@ -185,6 +185,8 @@ hardware/Limitless.cpp
 hardware/Meteostick.cpp
 hardware/MochadTCP.cpp
 hardware/OpenZWave.cpp
+hardware/openzwave/control_panel/ozwcp.cpp
+hardware/openzwave/control_panel/zwavelib.cpp
 hardware/OTGWBase.cpp
 hardware/OTGWSerial.cpp
 hardware/OTGWTCP.cpp

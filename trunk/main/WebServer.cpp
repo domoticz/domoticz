@@ -84,6 +84,7 @@ namespace http {
 		{
 			m_pWebEm = NULL;
 			m_LastUpdateCheck = 0;
+			m_ZW_Hwidx = -1;
 		}
 
 
@@ -390,6 +391,15 @@ namespace http {
 			m_pWebEm->RegisterPageCode("/zwavegetconfig.php",
 				boost::bind(
 				&CWebServer::ZWaveGetConfigFile,
+				this));
+
+			m_pWebEm->RegisterPageCode("/ozwcp/poll.xml",
+				boost::bind(
+				&CWebServer::ZWaveCPPollXml,
+				this));
+			m_pWebEm->RegisterPageCode("/ozwcp/cp.html",
+				boost::bind(
+				&CWebServer::ZWaveCPIndex,
 				this));
 
 			RegisterRType("openzwavenodes", boost::bind(&CWebServer::RType_OpenZWaveNodes, this, _1));
@@ -1300,6 +1310,7 @@ namespace http {
 				return;
 			if (pHardware->HwdType != HTYPE_OpenZWave)
 				return;
+			m_ZW_Hwidx = iHardwareID;
 			COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 
 			root["status"] = "OK";
@@ -1932,6 +1943,48 @@ namespace http {
 			}
 			return m_retstr;
 		}
+		std::string CWebServer::ZWaveCPPollXml()
+		{
+			m_retstr = "";
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					std::string szConfigFile = "";
+					m_retstr = pOZWHardware->SendPollResponse(szConfigFile);
+					if (m_retstr != "")
+					{
+						m_pWebEm->m_outputfilename = szConfigFile;
+					}
+				}
+			}
+			return m_retstr;
+		}
+		std::string CWebServer::ZWaveCPIndex()
+		{
+			m_retstr = "";
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					pOZWHardware->SetAllNodesChanged();
+					std::string wwwFile = szWWWFolder + "/ozwcp/cp.html";
+					std::ifstream testFile(wwwFile.c_str(), std::ios::binary);
+					std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
+						std::istreambuf_iterator<char>());
+					if (fileContents.size() > 0)
+					{
+						m_retstr.insert(m_retstr.begin(), fileContents.begin(), fileContents.end());
+					}
+				}
+			}
+			return m_retstr;
+		}
+		
 
 		void CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode(Json::Value &root)
 		{
@@ -9593,6 +9646,8 @@ namespace http {
 		{
 			root["status"] = "OK";
 			root["title"] = "Hardware";
+
+			m_ZW_Hwidx = -1;
 
 			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;

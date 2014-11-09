@@ -8,6 +8,7 @@
 #include "ZWaveBase.h"
 #include "ASyncSerial.h"
 #include <list>
+#include "openzwave/control_panel/ozwcp.h"
 
 namespace OpenZWave
 {
@@ -21,7 +22,7 @@ namespace Json
 	class Value;
 }
 
-class COpenZWave : public AsyncSerial, public ZWaveBase
+class COpenZWave : public AsyncSerial, public ZWaveBase, public COpenZWaveControlPanel
 {
 public:
 	typedef struct  

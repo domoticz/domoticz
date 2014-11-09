@@ -26,7 +26,7 @@ struct mapping
   { "jpg", "image/jpeg" },
   { "png", "image/png" },
   { "css", "text/css" },
-  { "xml", "application/css" },
+  { "xml", "application/xml" },
   { "js", "text/javascript" },
   { "json", "text/javascript" },
   { "swf", "application/x-shockwave-flash" },
