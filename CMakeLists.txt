@@ -187,6 +187,10 @@ hardware/MochadTCP.cpp
 hardware/OpenZWave.cpp
 hardware/openzwave/control_panel/ozwcp.cpp
 hardware/openzwave/control_panel/zwavelib.cpp
+hardware/openzwave/control_panel/tinyxml/tinystr.cpp
+hardware/openzwave/control_panel/tinyxml/tinyxml.cpp
+hardware/openzwave/control_panel/tinyxml/tinyxmlerror.cpp
+hardware/openzwave/control_panel/tinyxml/tinyxmlparser.cpp
 hardware/OTGWBase.cpp
 hardware/OTGWSerial.cpp
 hardware/OTGWTCP.cpp
