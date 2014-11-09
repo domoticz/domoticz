@@ -42,6 +42,9 @@ Version 2.0.xxxx (October xxth 2014)
 - Implemented: OpenZWave, polling all multi_sensor values now (if polling enabled)
 - Implemented: OpenZWave, Controller Node, option for Nightly Network Heal (disabled by default)
 - Fixed: Deleting data points from general graphs (like voltage)
+- Updated: WindowsLibraries on server
+- Changed: OpenZWave Fibaro RGBW configuration file (had problems with the powerlevel class)
+- Changed: OpenZWave code change to fix (ApplicationCommandHandler - Unhandled Command Class 0x2b)
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher
