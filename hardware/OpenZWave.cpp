@@ -538,7 +538,9 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 				}
 				break;
 			case OpenZWave::Notification::Code_Timeout:
-				//_log.Log(LOG_STATUS, "OpenZWave: Received timeout notification from HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
+#ifdef _DEBUG
+				_log.Log(LOG_STATUS, "OpenZWave: Received timeout notification from HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
+#endif
 				break;
 			case OpenZWave::Notification::Code_NoOperation:
 				//Code_NoOperation send to node

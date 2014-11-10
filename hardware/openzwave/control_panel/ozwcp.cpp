@@ -44,7 +44,9 @@
 #include "Node.h"
 #include "Group.h"
 #include "Notification.h"
+
 #include "tinyxml/tinyxml.h"
+
 #include <sys/stat.h>
 #include <fstream>
 #include <iostream>
@@ -805,6 +807,69 @@ COpenZWaveControlPanel::~COpenZWaveControlPanel()
 }
 
 /*
+* web_controller_update
+* Handle controller function feedback from library.
+*/
+
+void web_controller_update(Driver::ControllerState cs, Driver::ControllerError err, void *ct)
+{
+	COpenZWaveControlPanel *cp = (COpenZWaveControlPanel *)ct;
+	string s;
+	bool more = true;
+
+	switch (cs) {
+	case Driver::ControllerState_Normal:
+		s = ": no command in progress.";
+		break;
+	case Driver::ControllerState_Starting:
+		s = ": starting controller command.";
+		break;
+	case Driver::ControllerState_Cancel:
+		s = ": command was cancelled.";
+		more = false;
+		break;
+	case Driver::ControllerState_Error:
+		s = ": command returned an error: ";
+		more = false;
+		break;
+	case Driver::ControllerState_Sleeping:
+		s = ": device went to sleep.";
+		more = false;
+		break;
+	case Driver::ControllerState_Waiting:
+		s = ": waiting for a user action.";
+		break;
+	case Driver::ControllerState_InProgress:
+		s = ": communicating with the other device.";
+		break;
+	case Driver::ControllerState_Completed:
+		s = ": command has completed successfully.";
+		more = false;
+		break;
+	case Driver::ControllerState_Failed:
+		s = ": command has failed.";
+		more = false;
+		break;
+	case Driver::ControllerState_NodeOK:
+		s = ": the node is OK.";
+		more = false;
+		break;
+	case Driver::ControllerState_NodeFailed:
+		s = ": the node has failed.";
+		more = false;
+		break;
+	default:
+		s = ": unknown response.";
+		break;
+	}
+	if (err != Driver::ControllerError_None)
+		s = s + controllerErrorStr(err);
+	cp->setAdminMessage(s);
+	cp->setAdminState(more);
+}
+
+
+/*
 * web_get_groups
 * Return some XML to carry node group associations
 */
@@ -904,7 +969,7 @@ void COpenZWaveControlPanel::web_get_values(int i, TiXmlElement *ep)
 * Process poll request from client and return
 * data as xml.
 */
-std::string COpenZWaveControlPanel::SendPollResponse(std::string &szConfigFile)
+std::string COpenZWaveControlPanel::SendPollResponse()
 {
 	TiXmlDocument doc;
 	struct stat buf;
@@ -914,7 +979,6 @@ std::string COpenZWaveControlPanel::SendPollResponse(std::string &szConfigFile)
 	char str[16];
 	int32 i, j;
 	int32 logread = 0;
-	char fntemp[255];
 	FILE *fp;
 
 	TiXmlDeclaration* decl = new TiXmlDeclaration("1.0", "utf-8", "");
@@ -1041,19 +1105,192 @@ std::string COpenZWaveControlPanel::SendPollResponse(std::string &szConfigFile)
 		}
 	}
 
-	sprintf(fntemp, "%sozwcp.poll.XXXXXX.xml", szStartupFolder.c_str());
-	doc.SaveFile(fntemp);
-
 	std::string retstring = "";
-	szConfigFile = fntemp;
-	std::ifstream testFile(szConfigFile.c_str(), std::ios::binary);
-	std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
-		std::istreambuf_iterator<char>());
-	if (fileContents.size() > 0)
-	{
-		retstring.insert(retstring.begin(), fileContents.begin(), fileContents.end());
-	}
+	retstring << doc;
 	return retstring;
+}
+
+std::string COpenZWaveControlPanel::SendNodeConfResponse(int node_id)
+{
+	Manager::Get()->RequestAllConfigParams(homeId, node_id);
+	return "OK";
+}
+
+std::string COpenZWaveControlPanel::SendNodeValuesResponse(int node_id)
+{
+	Manager::Get()->RequestNodeDynamic(homeId, node_id);
+	return "OK";
+}
+
+std::string COpenZWaveControlPanel::SetNodeValue(const std::string &arg1, const std::string &arg2)
+{
+	MyValue *val = MyNode::lookup(arg1);
+	if (val != NULL) {
+		if (!Manager::Get()->SetValue(val->getId(), arg2))
+		{
+			fprintf(stderr, "SetValue string failed type=%s\n", valueTypeStr(val->getId().GetType()));
+		}
+	}
+	return "OK";
+}
+
+std::string COpenZWaveControlPanel::SetNodeButton(const std::string &arg1, const std::string &arg2)
+{
+	MyValue *val = MyNode::lookup(arg1);
+	if (val != NULL) {
+		if (arg2 == "true") {
+			if (!Manager::Get()->PressButton(val->getId()))
+			{
+				fprintf(stderr, "PressButton failed");
+			}
+		}
+		else {
+			if (!Manager::Get()->ReleaseButton(val->getId()))
+			{
+				fprintf(stderr, "ReleaseButton failed");
+			}
+		}
+	}
+	return "OK";
+}
+std::string COpenZWaveControlPanel::DoAdminCommand(const std::string &fun, const int node_id, const int button_id)
+{
+	if (fun == "cancel") { /* cancel controller function */
+		Manager::Get()->CancelControllerCommand(homeId);
+		setAdminState(false);
+	}
+	else if (fun == "addd") {
+		setAdminFunction("Add Device");
+		setAdminState(
+			Manager::Get()->BeginControllerCommand(homeId,
+			Driver::ControllerCommand_AddDevice,
+			web_controller_update, this, true));
+	}
+	else if (fun == "cprim") {
+		setAdminFunction("Create Primary");
+		setAdminState(
+			Manager::Get()->BeginControllerCommand(homeId,
+			Driver::ControllerCommand_CreateNewPrimary,
+			web_controller_update, this, true));
+	}
+	else if (fun == "rconf") {
+		setAdminFunction("Receive Configuration");
+		setAdminState(
+			Manager::Get()->BeginControllerCommand(homeId,
+			Driver::ControllerCommand_ReceiveConfiguration,
+			web_controller_update, this, true));
+	}
+	else if (fun == "remd") {
+		setAdminFunction("Remove Device");
+		setAdminState(
+			Manager::Get()->BeginControllerCommand(homeId,
+			Driver::ControllerCommand_RemoveDevice,
+			web_controller_update, this, true));
+	}
+	else if (fun == "hnf") {
+		setAdminFunction("Has Node Failed");
+		setAdminState(
+			Manager::Get()->BeginControllerCommand(homeId,
+			Driver::ControllerCommand_HasNodeFailed,
+			web_controller_update, this, true, node_id));
+	}
+	else if (fun == "remfn") {
+		setAdminFunction("Remove Failed Node");
+		setAdminState(
+			Manager::Get()->BeginControllerCommand(homeId,
+			Driver::ControllerCommand_RemoveFailedNode,
+			web_controller_update, this, true, node_id));
+	}
+	else if (fun == "repfn") {
+		setAdminFunction("Replace Failed Node");
+		setAdminState(
+			Manager::Get()->BeginControllerCommand(homeId,
+			Driver::ControllerCommand_ReplaceFailedNode,
+			web_controller_update, this, true, node_id));
+	}
+	else if (fun == "tranpr") {
+		setAdminFunction("Transfer Primary Role");
+		setAdminState(
+			Manager::Get()->BeginControllerCommand(homeId,
+			Driver::ControllerCommand_TransferPrimaryRole,
+			web_controller_update, this, true));
+	}
+	else if (fun == "reqnu") {
+		setAdminFunction("Request Network Update");
+		setAdminState(
+			Manager::Get()->BeginControllerCommand(homeId,
+			Driver::ControllerCommand_RequestNetworkUpdate,
+			web_controller_update, this, true, node_id));
+	}
+	else if (fun == "reqnnu") {
+		setAdminFunction("Request Node Neighbor Update");
+		setAdminState(
+			Manager::Get()->BeginControllerCommand(homeId,
+			Driver::ControllerCommand_RequestNodeNeighborUpdate,
+			web_controller_update, this, true, node_id));
+	}
+	else if (fun == "assrr") {
+		setAdminFunction("Assign Return Route");
+		setAdminState(
+			Manager::Get()->BeginControllerCommand(homeId,
+			Driver::ControllerCommand_AssignReturnRoute,
+			web_controller_update, this, true, node_id));
+	}
+	else if (fun == "delarr") {
+		setAdminFunction("Delete All Return Routes");
+		setAdminState(
+			Manager::Get()->BeginControllerCommand(homeId,
+			Driver::ControllerCommand_DeleteAllReturnRoutes,
+			web_controller_update, this, true, node_id));
+	}
+	else if (fun == "snif") {
+		setAdminFunction("Send Node Information");
+		setAdminState(
+			Manager::Get()->BeginControllerCommand(homeId,
+			Driver::ControllerCommand_SendNodeInformation,
+			web_controller_update, this, true, node_id));
+	}
+	else if (fun == "reps") {
+		setAdminFunction("Replication Send");
+		setAdminState(
+			Manager::Get()->BeginControllerCommand(homeId,
+			Driver::ControllerCommand_ReplicationSend,
+			web_controller_update, this, true, node_id));
+	}
+	else if (fun == "addbtn") {
+		setAdminFunction("Add Button");
+		setAdminState(
+			Manager::Get()->BeginControllerCommand(homeId,
+			Driver::ControllerCommand_CreateButton,
+			web_controller_update, this, true, node_id, button_id));
+	}
+	else if (fun == "delbtn") {
+		setAdminFunction("Delete Button");
+		setAdminState(
+			Manager::Get()->BeginControllerCommand(homeId,
+			Driver::ControllerCommand_DeleteButton,
+			web_controller_update, this, true, node_id, button_id));
+	}
+	return "OK";
+}
+
+std::string COpenZWaveControlPanel::DoNodeChange(const std::string &fun, const int node_id, const std::string &svalue)
+{
+	if (fun == "nam") { /* Node naming */
+		Manager::Get()->SetNodeName(homeId, node_id, svalue.c_str());
+	}
+	else if (fun == "loc") { /* Node location */
+		Manager::Get()->SetNodeLocation(homeId, node_id, svalue.c_str());
+	}
+	else if (fun == "pol") { /* Node polling */
+	}
+	return "OK";
+}
+
+std::string COpenZWaveControlPanel::SaveConfig()
+{
+	Manager::Get()->WriteConfig(homeId);
+	return "OK";
 }
 
 #endif

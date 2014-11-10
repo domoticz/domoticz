@@ -390,19 +390,24 @@ namespace http {
 			RegisterCommandCode("zwavegetusercodes", boost::bind(&CWebServer::Cmd_ZWaveGetNodeUserCodes, this, _1));
 			RegisterCommandCode("zwaveremoveusercode", boost::bind(&CWebServer::Cmd_ZWaveRemoveUserCode, this, _1));
 
-			m_pWebEm->RegisterPageCode("/zwavegetconfig.php",
-				boost::bind(
-				&CWebServer::ZWaveGetConfigFile,
-				this));
+			m_pWebEm->RegisterPageCode("/zwavegetconfig.php", boost::bind(&CWebServer::ZWaveGetConfigFile,	this));
 
-			m_pWebEm->RegisterPageCode("/ozwcp/poll.xml",
-				boost::bind(
-				&CWebServer::ZWaveCPPollXml,
-				this));
-			m_pWebEm->RegisterPageCode("/ozwcp/cp.html",
-				boost::bind(
-				&CWebServer::ZWaveCPIndex,
-				this));
+			m_pWebEm->RegisterPageCode("/ozwcp/poll.xml", boost::bind(&CWebServer::ZWaveCPPollXml, this));
+			m_pWebEm->RegisterPageCode("/ozwcp/cp.html", boost::bind(&CWebServer::ZWaveCPIndex, this));
+			m_pWebEm->RegisterPageCode("/ozwcp/confparmpost.html", boost::bind(&CWebServer::ZWaveCPNodeGetConf, this));
+			m_pWebEm->RegisterPageCode("/ozwcp/refreshpost.html", boost::bind(&CWebServer::ZWaveCPNodeGetValues, this));
+			m_pWebEm->RegisterPageCode("/ozwcp/valuepost.html", boost::bind(&CWebServer::ZWaveCPNodeSetValue, this));
+			m_pWebEm->RegisterPageCode("/ozwcp/buttonpost.html", boost::bind(&CWebServer::ZWaveCPNodeSetButton, this));
+			m_pWebEm->RegisterPageCode("/ozwcp/admpost.html", boost::bind(&CWebServer::ZWaveCPAdminCommand, this));
+			m_pWebEm->RegisterPageCode("/ozwcp/nodepost.html", boost::bind(&CWebServer::ZWaveCPNodeChange, this));
+			m_pWebEm->RegisterPageCode("/ozwcp/savepost.html", boost::bind(&CWebServer::ZWaveCPSaveConfig, this));
+			//grouppost.html
+			//pollpost.html
+			//scenepost.html
+			//topopost.html
+			//statpost.html
+			//thpost.html
+			
 
 			RegisterRType("openzwavenodes", boost::bind(&CWebServer::RType_OpenZWaveNodes, this, _1));
 #endif	
@@ -1945,25 +1950,6 @@ namespace http {
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPPollXml()
-		{
-			m_retstr = "";
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
-			if (pHardware != NULL)
-			{
-				if (pHardware->HwdType == HTYPE_OpenZWave)
-				{
-					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					std::string szConfigFile = "";
-					m_retstr = pOZWHardware->SendPollResponse(szConfigFile);
-					if (m_retstr != "")
-					{
-						m_pWebEm->m_outputfilename = szConfigFile;
-					}
-				}
-			}
-			return m_retstr;
-		}
 		std::string CWebServer::ZWaveCPIndex()
 		{
 			m_retstr = "";
@@ -1986,6 +1972,160 @@ namespace http {
 			}
 			return m_retstr;
 		}
+		std::string CWebServer::ZWaveCPPollXml()
+		{
+			m_retstr = "";
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					m_retstr = pOZWHardware->SendPollResponse();
+				}
+			}
+			return m_retstr;
+		}
+		std::string CWebServer::ZWaveCPNodeGetConf()
+		{
+			m_retstr = "";
+			if (m_pWebEm->m_pActualRequest->content.find("node") == std::string::npos)
+				return "";
+			m_pWebEm->MakeValuesFromPostContent(m_pWebEm->m_pActualRequest);
+			std::string sNode = m_pWebEm->FindValue("node");
+			if (sNode == "")
+				return m_retstr;
+			int iNode = atoi(sNode.c_str());
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					m_retstr = pOZWHardware->SendNodeConfResponse(iNode);
+				}
+			}
+			return m_retstr;
+		}
+		std::string CWebServer::ZWaveCPNodeGetValues()
+		{
+			m_retstr = "";
+			if (m_pWebEm->m_pActualRequest->content.find("node") == std::string::npos)
+				return "";
+			m_pWebEm->MakeValuesFromPostContent(m_pWebEm->m_pActualRequest);
+			std::string sNode = m_pWebEm->FindValue("node");
+			if (sNode == "")
+				return m_retstr;
+			int iNode = atoi(sNode.c_str());
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					m_retstr = pOZWHardware->SendNodeValuesResponse(iNode);
+				}
+			}
+			return m_retstr;
+		}
+		std::string CWebServer::ZWaveCPNodeSetValue()
+		{
+			m_retstr = "";
+			std::vector<std::string> strarray;
+			StringSplit(m_pWebEm->m_pActualRequest->content, "=", strarray);
+			if (strarray.size() != 2)
+				return "";
+
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					m_retstr = pOZWHardware->SetNodeValue(strarray[0], strarray[1]);
+				}
+			}
+			return m_retstr;
+		}
+		std::string CWebServer::ZWaveCPNodeSetButton()
+		{
+			m_retstr = "";
+			std::vector<std::string> strarray;
+			StringSplit(m_pWebEm->m_pActualRequest->content, "=", strarray);
+			if (strarray.size() != 2)
+				return "";
+
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					m_retstr = pOZWHardware->SetNodeButton(strarray[0], strarray[1]);
+				}
+			}
+			return m_retstr;
+		}
+		std::string CWebServer::ZWaveCPAdminCommand()
+		{
+			m_retstr = "";
+			if (m_pWebEm->m_pActualRequest->content.find("fun") == std::string::npos)
+				return "";
+			m_pWebEm->MakeValuesFromPostContent(m_pWebEm->m_pActualRequest);
+			std::string sFun = m_pWebEm->FindValue("fun");
+			std::string sNode = m_pWebEm->FindValue("node");
+			std::string sButton = m_pWebEm->FindValue("button");
+
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					m_retstr = pOZWHardware->DoAdminCommand(sFun,atoi(sNode.c_str()),atoi(sButton.c_str()));
+				}
+			}
+			return m_retstr;
+		}
+		std::string CWebServer::ZWaveCPNodeChange()
+		{
+			m_retstr = "";
+			if (m_pWebEm->m_pActualRequest->content.find("fun") == std::string::npos)
+				return "";
+			m_pWebEm->MakeValuesFromPostContent(m_pWebEm->m_pActualRequest);
+			std::string sFun = m_pWebEm->FindValue("fun");
+			std::string sNode = m_pWebEm->FindValue("node");
+			std::string sValue = m_pWebEm->FindValue("value");
+
+			if (sNode.size() > 4)
+				sNode = sNode.substr(4);
+
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					m_retstr = pOZWHardware->DoNodeChange(sFun, atoi(sNode.c_str()), sValue);
+				}
+			}
+			return m_retstr;
+		}
+		std::string CWebServer::ZWaveCPSaveConfig()
+		{
+			m_retstr = "";
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					m_retstr = pOZWHardware->SaveConfig();
+				}
+			}
+			return m_retstr;
+		}
+		
 		
 
 		void CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode(Json::Value &root)

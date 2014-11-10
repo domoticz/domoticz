@@ -34,6 +34,8 @@ distribution.
  * - added swap(), clear(), size(), capacity(), operator+().
  */
 
+#define TIXML_USE_STL
+
 #ifndef TIXML_USE_STL
 
 #ifndef TIXML_STRING_INCLUDED
