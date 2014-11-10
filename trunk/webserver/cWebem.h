@@ -186,12 +186,14 @@ namespace http {
 			void SetDigistRealm(std::string realm);
 			std::string m_DigistRealm;
 			void SetZipPassword(std::string password);
+			void MakeValuesFromPostContent(const request *req);
 			std::string m_zippassword;
 			std::string m_actualuser;
 			int m_actualuser_rights;
 			std::string m_guestuser;
 			std::string m_lastRequestPath;
 			std::string m_outputfilename;
+			const request		*m_pActualRequest;
 			std::map<std::string,WebEmSession> m_sessionids;
 			std::string m_actsessionid;
 			_eAuthenticationMethod m_authmethod;

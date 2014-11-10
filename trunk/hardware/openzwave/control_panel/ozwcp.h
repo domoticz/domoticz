@@ -116,7 +116,14 @@ public:
 	COpenZWaveControlPanel();
 	~COpenZWaveControlPanel();
 	void OnCPNotification(Notification const* _notification);
-	std::string SendPollResponse(std::string &szConfigFile);
+	std::string SendPollResponse();
+	std::string SendNodeConfResponse(int node_id);
+	std::string SendNodeValuesResponse(int node_id);
+	std::string SetNodeValue(const std::string &arg1, const std::string &arg2);
+	std::string SetNodeButton(const std::string &arg1, const std::string &arg2);
+	std::string DoAdminCommand(const std::string &fun, const int node_id, const int button_id);
+	std::string DoNodeChange(const std::string &fun, const int node_id, const std::string &svalue);
+	std::string SaveConfig();
 	bool isReady() { return ready; }
 	void SetAllNodesChanged();
 	bool getAdminState() { return adminstate; }

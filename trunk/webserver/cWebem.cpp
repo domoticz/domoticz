@@ -274,6 +274,43 @@ std::istream & safeGetline( std::istream & is, std::string & line ) {
 	return is;
 }
 
+//Make Name values from post content
+void cWebem::MakeValuesFromPostContent(const request *req)
+{
+	myNameValues.clear();
+	std::string name;
+	std::string value;
+
+	std::string uri = req->content;
+	int q = 0;
+	int p = q;
+	int flag_done = 0;
+	while (!flag_done) {
+		q = uri.find("=", p);
+		if (q == -1)
+			return;
+		name = uri.substr(p, q - p);
+		p = q + 1;
+		q = uri.find("&", p);
+		if (q != -1)
+			value = uri.substr(p, q - p);
+		else {
+			value = uri.substr(p);
+			flag_done = 1;
+		}
+		// the browser sends blanks as +
+		while (1) {
+			int p = value.find("+");
+			if (p == -1)
+				break;
+			value.replace(p, 1, " ");
+		}
+
+		myNameValues.insert(std::pair< std::string, std::string >(name, value));
+		p = q + 1;
+	}
+}
+
 /**
 
 Do not call from application code,
@@ -492,6 +529,8 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 	{
 		extension = request_path.substr(last_dot_pos + 1);
 	}
+
+	m_pActualRequest = &req;
 
 	std::map < std::string, webem_page_function >::iterator
 		pfun = myPages.find(  request_path );
