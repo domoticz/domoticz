@@ -1989,9 +1989,9 @@ namespace http {
 		std::string CWebServer::ZWaveCPNodeGetConf()
 		{
 			m_retstr = "";
-			if (m_pWebEm->m_pActualRequest->content.find("node") == std::string::npos)
+			if (m_pWebEm->m_ActualRequest.content.find("node") == std::string::npos)
 				return "";
-			m_pWebEm->MakeValuesFromPostContent(m_pWebEm->m_pActualRequest);
+			m_pWebEm->MakeValuesFromPostContent(&m_pWebEm->m_ActualRequest);
 			std::string sNode = m_pWebEm->FindValue("node");
 			if (sNode == "")
 				return m_retstr;
@@ -2010,9 +2010,9 @@ namespace http {
 		std::string CWebServer::ZWaveCPNodeGetValues()
 		{
 			m_retstr = "";
-			if (m_pWebEm->m_pActualRequest->content.find("node") == std::string::npos)
+			if (m_pWebEm->m_ActualRequest.content.find("node") == std::string::npos)
 				return "";
-			m_pWebEm->MakeValuesFromPostContent(m_pWebEm->m_pActualRequest);
+			m_pWebEm->MakeValuesFromPostContent(&m_pWebEm->m_ActualRequest);
 			std::string sNode = m_pWebEm->FindValue("node");
 			if (sNode == "")
 				return m_retstr;
@@ -2032,7 +2032,7 @@ namespace http {
 		{
 			m_retstr = "";
 			std::vector<std::string> strarray;
-			StringSplit(m_pWebEm->m_pActualRequest->content, "=", strarray);
+			StringSplit(m_pWebEm->m_ActualRequest.content, "=", strarray);
 			if (strarray.size() != 2)
 				return "";
 
@@ -2051,7 +2051,7 @@ namespace http {
 		{
 			m_retstr = "";
 			std::vector<std::string> strarray;
-			StringSplit(m_pWebEm->m_pActualRequest->content, "=", strarray);
+			StringSplit(m_pWebEm->m_ActualRequest.content, "=", strarray);
 			if (strarray.size() != 2)
 				return "";
 
@@ -2069,9 +2069,9 @@ namespace http {
 		std::string CWebServer::ZWaveCPAdminCommand()
 		{
 			m_retstr = "";
-			if (m_pWebEm->m_pActualRequest->content.find("fun") == std::string::npos)
+			if (m_pWebEm->m_ActualRequest.content.find("fun") == std::string::npos)
 				return "";
-			m_pWebEm->MakeValuesFromPostContent(m_pWebEm->m_pActualRequest);
+			m_pWebEm->MakeValuesFromPostContent(&m_pWebEm->m_ActualRequest);
 			std::string sFun = m_pWebEm->FindValue("fun");
 			std::string sNode = m_pWebEm->FindValue("node");
 			std::string sButton = m_pWebEm->FindValue("button");
@@ -2090,9 +2090,9 @@ namespace http {
 		std::string CWebServer::ZWaveCPNodeChange()
 		{
 			m_retstr = "";
-			if (m_pWebEm->m_pActualRequest->content.find("fun") == std::string::npos)
+			if (m_pWebEm->m_ActualRequest.content.find("fun") == std::string::npos)
 				return "";
-			m_pWebEm->MakeValuesFromPostContent(m_pWebEm->m_pActualRequest);
+			m_pWebEm->MakeValuesFromPostContent(&m_pWebEm->m_ActualRequest);
 			std::string sFun = m_pWebEm->FindValue("fun");
 			std::string sNode = m_pWebEm->FindValue("node");
 			std::string sValue = m_pWebEm->FindValue("value");
@@ -9789,7 +9789,9 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "Hardware";
 
+#ifdef WITH_OPENZWAVE
 			m_ZW_Hwidx = -1;
+#endif			
 
 			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;

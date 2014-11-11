@@ -659,7 +659,15 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			lmeter.battery_level=pDevice->batValue;
 		sDecodeRXMessage(this, (const unsigned char *)&lmeter);
 	}
-	else if (pDevice->devType==ZDTYPE_SENSOR_SETPOINT)
+	else if (pDevice->devType == ZDTYPE_SENSOR_GAS)
+	{
+		P1Gas	m_p1gas;
+		m_p1gas.type = pTypeP1Gas;
+		m_p1gas.subtype = sTypeP1Gas;
+		m_p1gas.gasusage = (unsigned long)(pDevice->floatValue * 1000);
+		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas);
+	}
+	else if (pDevice->devType == ZDTYPE_SENSOR_SETPOINT)
 	{
 		_tThermostat tmeter;
 		tmeter.subtype=sTypeThermSetpoint;

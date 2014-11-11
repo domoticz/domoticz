@@ -530,7 +530,7 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 		extension = request_path.substr(last_dot_pos + 1);
 	}
 
-	m_pActualRequest = &req;
+	m_ActualRequest = req;
 
 	std::map < std::string, webem_page_function >::iterator
 		pfun = myPages.find(  request_path );

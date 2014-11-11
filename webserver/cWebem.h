@@ -193,7 +193,7 @@ namespace http {
 			std::string m_guestuser;
 			std::string m_lastRequestPath;
 			std::string m_outputfilename;
-			const request		*m_pActualRequest;
+			request		m_ActualRequest;
 			std::map<std::string,WebEmSession> m_sessionids;
 			std::string m_actsessionid;
 			_eAuthenticationMethod m_authmethod;
