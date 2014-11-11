@@ -24,6 +24,7 @@ class ZWaveBase : public CDomoticzHardwareBase
 		ZDTYPE_SENSOR_AMPERE,
 		ZDTYPE_SENSOR_PERCENTAGE,
 		ZDTYPE_SENSOR_THERMOSTAT_CLOCK,
+		ZDTYPE_SENSOR_GAS,
 	};
 	struct _tZWaveDevice
 	{

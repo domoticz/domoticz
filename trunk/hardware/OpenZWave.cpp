@@ -42,7 +42,8 @@ enum _eSensorScaleID
 	SCALEID_POWER,
 	SCALEID_VOLTAGE,
 	SCALEID_CURRENT,
-	SCALEID_POWERFACTOR
+	SCALEID_POWERFACTOR,
+	SCALEID_GAS
 };
 
 struct _tAlarmNameToIndexMapping
@@ -1380,6 +1381,20 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				}
 			}
 		}
+		else if (vLabel == "Gas")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
+				{
+					_device.floatValue = fValue;
+					_device.scaleID = SCALEID_GAS;
+					_device.scaleMultiply = 1;
+					_device.devType = ZDTYPE_SENSOR_GAS;
+					InsertDevice(_device);
+				}
+			}
+		}
 	}
 	else if (commandclass == COMMAND_CLASS_SENSOR_MULTILEVEL)
 	{
@@ -1490,6 +1505,20 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 					_device.scaleMultiply = 1;
 					_device.scaleID = SCALEID_POWERFACTOR;
 					_device.devType = ZDTYPE_SENSOR_PERCENTAGE;
+					InsertDevice(_device);
+				}
+			}
+		}
+		else if (vLabel == "Gas")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
+				{
+					_device.floatValue = fValue;
+					_device.scaleID = SCALEID_GAS;
+					_device.scaleMultiply = 1;
+					_device.devType = ZDTYPE_SENSOR_GAS;
 					InsertDevice(_device);
 				}
 			}
@@ -1831,7 +1860,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 		(vLabel == "Power") ||
 		(vLabel == "Voltage") ||
 		(vLabel == "Current") ||
-		(vLabel == "Power Factor")
+		(vLabel == "Power Factor")||
+		(vLabel == "Gas")
 		)
 	{
 		int scaleID = 0;
@@ -1845,6 +1875,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 			scaleID = SCALEID_CURRENT;
 		else if (vLabel == "Power Factor")
 			scaleID = SCALEID_POWERFACTOR;
+		else if (vLabel == "Gas")
+			scaleID = SCALEID_GAS;
 
 		sstr << "." << scaleID;
 	}
@@ -2143,6 +2175,13 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
 		if (vLabel != "Power Factor")
+			return;
+		pDevice->floatValue = fValue;
+		break;
+	case ZDTYPE_SENSOR_GAS:
+		if (vType != OpenZWave::ValueID::ValueType_Decimal)
+			return;
+		if (vLabel != "Gas")
 			return;
 		pDevice->floatValue = fValue;
 		break;
@@ -2565,7 +2604,8 @@ void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, con
 					//Meter device
 					if (
 						(vLabel == "Energy") ||
-						(vLabel == "Power")
+						(vLabel == "Power")||
+						(vLabel == "Gas")
 						)
 					{
 						if (bSingleIndexPoll && (ittValue->GetIndex() != 0))

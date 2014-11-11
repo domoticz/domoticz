@@ -339,7 +339,7 @@ void MyNode::updatePoll(char *ilist, char *plist)
     polls.push_back(*np == '1' ? true : false);
   }
   if (ids.size() != polls.size()) {
-    fprintf(stderr, "updatePoll: size of ids %d not same as size of polls %d\n",
+    fprintf(stderr, "updatePoll: size of ids %u not same as size of polls %u\n",
 	    ids.size(), polls.size());
     return;
   }
@@ -1104,9 +1104,18 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 			i++;
 		}
 	}
+	char fntemp[200];
+	sprintf(fntemp, "%sozwcp.poll.XXXXXX.xml", szStartupFolder.c_str());
+	doc.SaveFile(fntemp);
 
 	std::string retstring = "";
-	retstring << doc;
+	std::ifstream testFile(fntemp, std::ios::binary);
+	std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
+		std::istreambuf_iterator<char>());
+	if (fileContents.size() > 0)
+	{
+		retstring.insert(retstring.begin(), fileContents.begin(), fileContents.end());
+	}
 	return retstring;
 }
 
