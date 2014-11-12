@@ -115,6 +115,7 @@ class COpenZWaveControlPanel
 public:
 	COpenZWaveControlPanel();
 	~COpenZWaveControlPanel();
+	boost::mutex m_NotificationMutex;
 	void OnCPNotification(Notification const* _notification);
 	std::string SendPollResponse();
 	std::string SendNodeConfResponse(int node_id);
@@ -124,6 +125,8 @@ public:
 	std::string DoAdminCommand(const std::string &fun, const int node_id, const int button_id);
 	std::string DoNodeChange(const std::string &fun, const int node_id, const std::string &svalue);
 	std::string SaveConfig();
+	std::string GetCPTopo();
+	std::string GetCPStats();
 	bool isReady() { return ready; }
 	void SetAllNodesChanged();
 	bool getAdminState() { return adminstate; }
@@ -135,6 +138,8 @@ public:
 private:
 	void web_get_groups(int n, TiXmlElement *ep);
 	void web_get_values(int i, TiXmlElement *ep);
+	TiXmlElement *newstat(char const *tag, char const *label, uint32 const value);
+	TiXmlElement *newstat(char const *tag, char const *label, char const *value);
 	unsigned long logbytes;
 	bool adminstate;
 	string adminmsg;

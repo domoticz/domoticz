@@ -1001,6 +1001,8 @@ void COpenZWaveControlPanel::web_get_values(int i, TiXmlElement *ep)
 */
 std::string COpenZWaveControlPanel::SendPollResponse()
 {
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+
 	TiXmlDocument doc;
 	struct stat buf;
 	const int logbufsz = 1024;	// max amount to send of log per poll
@@ -1153,18 +1155,24 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 
 std::string COpenZWaveControlPanel::SendNodeConfResponse(int node_id)
 {
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+
 	Manager::Get()->RequestAllConfigParams(homeId, node_id);
 	return "OK";
 }
 
 std::string COpenZWaveControlPanel::SendNodeValuesResponse(int node_id)
 {
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+
 	Manager::Get()->RequestNodeDynamic(homeId, node_id);
 	return "OK";
 }
 
 std::string COpenZWaveControlPanel::SetNodeValue(const std::string &arg1, const std::string &arg2)
 {
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+
 	MyValue *val = MyNode::lookup(arg1);
 	if (val != NULL) {
 		if (!Manager::Get()->SetValue(val->getId(), arg2))
@@ -1179,6 +1187,8 @@ std::string COpenZWaveControlPanel::SetNodeValue(const std::string &arg1, const 
 
 std::string COpenZWaveControlPanel::SetNodeButton(const std::string &arg1, const std::string &arg2)
 {
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+
 	MyValue *val = MyNode::lookup(arg1);
 	if (val != NULL) {
 		if (arg2 == "true") {
@@ -1202,6 +1212,8 @@ std::string COpenZWaveControlPanel::SetNodeButton(const std::string &arg1, const
 }
 std::string COpenZWaveControlPanel::DoAdminCommand(const std::string &fun, const int node_id, const int button_id)
 {
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+
 	if (fun == "cancel") { /* cancel controller function */
 		Manager::Get()->CancelControllerCommand(homeId);
 		setAdminState(false);
@@ -1323,6 +1335,8 @@ std::string COpenZWaveControlPanel::DoAdminCommand(const std::string &fun, const
 
 std::string COpenZWaveControlPanel::DoNodeChange(const std::string &fun, const int node_id, const std::string &svalue)
 {
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+
 	if (fun == "nam") { /* Node naming */
 		Manager::Get()->SetNodeName(homeId, node_id, svalue.c_str());
 	}
@@ -1336,8 +1350,194 @@ std::string COpenZWaveControlPanel::DoNodeChange(const std::string &fun, const i
 
 std::string COpenZWaveControlPanel::SaveConfig()
 {
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+
 	Manager::Get()->WriteConfig(homeId);
 	return "OK";
+}
+
+std::string COpenZWaveControlPanel::GetCPTopo()
+{
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+
+	TiXmlDocument doc;
+	char str[16];
+	unsigned int i, j, k;
+	uint8 cnt;
+	uint32 len;
+	uint8 *neighbors;
+	TiXmlDeclaration* decl = new TiXmlDeclaration("1.0", "utf-8", "");
+	doc.LinkEndChild(decl);
+	TiXmlElement* topoElement = new TiXmlElement("topo");
+	doc.LinkEndChild(topoElement);
+
+	cnt = MyNode::getNodeCount();
+	i = 0;
+	j = 1;
+	while (j <= cnt && i < MAX_NODES) {
+		if (nodes[i] != NULL) {
+			len = Manager::Get()->GetNodeNeighbors(homeId, i, &neighbors);
+			if (len > 0) {
+				TiXmlElement* nodeElement = new TiXmlElement("node");
+				snprintf(str, sizeof(str), "%d", i);
+				nodeElement->SetAttribute("id", str);
+				string list = "";
+				for (k = 0; k < len; k++) {
+					snprintf(str, sizeof(str), "%d", neighbors[k]);
+					list += str;
+					if (k < (len - 1))
+						list += ",";
+				}
+				fprintf(stderr, "topo: node=%d %s\n", i, list.c_str());
+				TiXmlText *textElement = new TiXmlText(list.c_str());
+				nodeElement->LinkEndChild(textElement);
+				topoElement->LinkEndChild(nodeElement);
+				delete[] neighbors;
+			}
+			j++;
+		}
+		i++;
+	}
+	char fntemp[200];
+	sprintf(fntemp, "%sozwcp.topo.XXXXXX", szStartupFolder.c_str());
+	doc.SaveFile(fntemp);
+
+	std::string retstring = "";
+	std::ifstream testFile(fntemp, std::ios::binary);
+	std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
+		std::istreambuf_iterator<char>());
+	if (fileContents.size() > 0)
+	{
+		retstring.insert(retstring.begin(), fileContents.begin(), fileContents.end());
+	}
+
+	return retstring;
+}
+
+TiXmlElement *COpenZWaveControlPanel::newstat(char const *tag, char const *label, uint32 const value)
+{
+	char str[32];
+
+	TiXmlElement* statElement = new TiXmlElement(tag);
+	statElement->SetAttribute("label", label);
+	snprintf(str, sizeof(str), "%d", value);
+	TiXmlText *textElement = new TiXmlText(str);
+	statElement->LinkEndChild(textElement);
+	return statElement;
+}
+
+TiXmlElement *COpenZWaveControlPanel::newstat(char const *tag, char const *label, char const *value)
+{
+	TiXmlElement* statElement = new TiXmlElement(tag);
+	statElement->SetAttribute("label", label);
+	TiXmlText *textElement = new TiXmlText(value);
+	statElement->LinkEndChild(textElement);
+	return statElement;
+}
+
+std::string COpenZWaveControlPanel::GetCPStats()
+{
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+
+	TiXmlDocument doc;
+
+	TiXmlDeclaration* decl = new TiXmlDeclaration("1.0", "utf-8", "");
+	doc.LinkEndChild(decl);
+	TiXmlElement* statElement = new TiXmlElement("stats");
+	doc.LinkEndChild(statElement);
+
+	struct Driver::DriverData data;
+	int i, j;
+	int cnt;
+	char str[16];
+
+	Manager::Get()->GetDriverStatistics(homeId, &data);
+
+	TiXmlElement* errorsElement = new TiXmlElement("errors");
+	errorsElement->LinkEndChild(newstat("stat", "ACK Waiting", data.m_ACKWaiting));
+	errorsElement->LinkEndChild(newstat("stat", "Read Aborts", data.m_readAborts));
+	errorsElement->LinkEndChild(newstat("stat", "Bad Checksums", data.m_badChecksum));
+	errorsElement->LinkEndChild(newstat("stat", "CANs", data.m_CANCnt));
+	errorsElement->LinkEndChild(newstat("stat", "NAKs", data.m_NAKCnt));
+	errorsElement->LinkEndChild(newstat("stat", "Out of Frame", data.m_OOFCnt));
+	statElement->LinkEndChild(errorsElement);
+
+	TiXmlElement* countsElement = new TiXmlElement("counts");
+	countsElement->LinkEndChild(newstat("stat", "SOF", data.m_SOFCnt));
+	countsElement->LinkEndChild(newstat("stat", "Total Reads", data.m_readCnt));
+	countsElement->LinkEndChild(newstat("stat", "Total Writes", data.m_writeCnt));
+	countsElement->LinkEndChild(newstat("stat", "ACKs", data.m_ACKCnt));
+	countsElement->LinkEndChild(newstat("stat", "Total Broadcasts Received", data.m_broadcastReadCnt));
+	countsElement->LinkEndChild(newstat("stat", "Total Broadcasts Transmitted", data.m_broadcastWriteCnt));
+	statElement->LinkEndChild(countsElement);
+
+	TiXmlElement* infoElement = new TiXmlElement("info");
+	infoElement->LinkEndChild(newstat("stat", "Dropped", data.m_dropped));
+	infoElement->LinkEndChild(newstat("stat", "Retries", data.m_retries));
+	infoElement->LinkEndChild(newstat("stat", "Unexpected Callbacks", data.m_callbacks));
+	infoElement->LinkEndChild(newstat("stat", "Bad Routes", data.m_badroutes));
+	infoElement->LinkEndChild(newstat("stat", "No ACK", data.m_noack));
+	infoElement->LinkEndChild(newstat("stat", "Network Busy", data.m_netbusy));
+	infoElement->LinkEndChild(newstat("stat", "Not Idle", data.m_notidle));
+	infoElement->LinkEndChild(newstat("stat", "Non Delivery", data.m_nondelivery));
+	infoElement->LinkEndChild(newstat("stat", "Routes Busy", data.m_routedbusy));
+	statElement->LinkEndChild(infoElement);
+
+	cnt = MyNode::getNodeCount();
+	i = 0;
+	j = 1;
+	while (j <= cnt && i < MAX_NODES) {
+		struct Node::NodeData ndata;
+
+		if (nodes[i] != NULL) {
+			Manager::Get()->GetNodeStatistics(homeId, i, &ndata);
+			TiXmlElement* nodeElement = new TiXmlElement("node");
+			snprintf(str, sizeof(str), "%d", i);
+			nodeElement->SetAttribute("id", str);
+			nodeElement->LinkEndChild(newstat("nstat", "Sent messages", ndata.m_sentCnt));
+			nodeElement->LinkEndChild(newstat("nstat", "Failed sent messages", ndata.m_sentFailed));
+			nodeElement->LinkEndChild(newstat("nstat", "Retried sent messages", ndata.m_retries));
+			nodeElement->LinkEndChild(newstat("nstat", "Received messages", ndata.m_receivedCnt));
+			nodeElement->LinkEndChild(newstat("nstat", "Received duplicates", ndata.m_receivedDups));
+			nodeElement->LinkEndChild(newstat("nstat", "Received unsolicited", ndata.m_receivedUnsolicited));
+			nodeElement->LinkEndChild(newstat("nstat", "Last sent message", ndata.m_sentTS.substr(5).c_str()));
+			nodeElement->LinkEndChild(newstat("nstat", "Last received message", ndata.m_receivedTS.substr(5).c_str()));
+			nodeElement->LinkEndChild(newstat("nstat", "Last Request RTT", ndata.m_averageRequestRTT));
+			nodeElement->LinkEndChild(newstat("nstat", "Average Request RTT", ndata.m_averageRequestRTT));
+			nodeElement->LinkEndChild(newstat("nstat", "Last Response RTT", ndata.m_averageResponseRTT));
+			nodeElement->LinkEndChild(newstat("nstat", "Average Response RTT", ndata.m_averageResponseRTT));
+			nodeElement->LinkEndChild(newstat("nstat", "Quality", ndata.m_quality));
+			while (!ndata.m_ccData.empty()) {
+				Node::CommandClassData ccd = ndata.m_ccData.front();
+				TiXmlElement* ccElement = new TiXmlElement("commandclass");
+				snprintf(str, sizeof(str), "%d", ccd.m_commandClassId);
+				ccElement->SetAttribute("id", str);
+				ccElement->SetAttribute("name", cclassStr(ccd.m_commandClassId));
+				ccElement->LinkEndChild(newstat("cstat", "Messages sent", ccd.m_sentCnt));
+				ccElement->LinkEndChild(newstat("cstat", "Messages received", ccd.m_receivedCnt));
+				nodeElement->LinkEndChild(ccElement);
+				ndata.m_ccData.pop_front();
+			}
+			statElement->LinkEndChild(nodeElement);
+			j++;
+		}
+		i++;
+	}
+
+	char fntemp[200];
+	sprintf(fntemp, "%sozwcp.stat.XXXXXX", szStartupFolder.c_str());
+	doc.SaveFile(fntemp);
+
+	std::string retstring = "";
+	std::ifstream testFile(fntemp, std::ios::binary);
+	std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
+		std::istreambuf_iterator<char>());
+	if (fileContents.size() > 0)
+	{
+		retstring.insert(retstring.begin(), fileContents.begin(), fileContents.end());
+	}
+
+	return retstring;
 }
 
 #endif

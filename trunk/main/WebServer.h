@@ -197,6 +197,8 @@ private:
 	std::string ZWaveCPAdminCommand();
 	std::string ZWaveCPNodeChange();
 	std::string ZWaveCPSaveConfig();
+	std::string ZWaveCPGetTopo();
+	std::string ZWaveCPGetStats();
 	void Cmd_ZWaveSetUserCodeEnrollmentMode(Json::Value &root);
 	void Cmd_ZWaveGetNodeUserCodes(Json::Value &root);
 	void Cmd_ZWaveRemoveUserCode(Json::Value &root);
