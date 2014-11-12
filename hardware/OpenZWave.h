@@ -145,7 +145,6 @@ private:
 	OpenZWave::Manager *m_pManager;
 
 	std::list<NodeInfo> m_nodes;
-	boost::mutex m_NotificationMutex;
 
 	std::string m_szSerialPort;
 	unsigned int m_controllerID;

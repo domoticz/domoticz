@@ -401,11 +401,11 @@ namespace http {
 			m_pWebEm->RegisterPageCode("/ozwcp/admpost.html", boost::bind(&CWebServer::ZWaveCPAdminCommand, this));
 			m_pWebEm->RegisterPageCode("/ozwcp/nodepost.html", boost::bind(&CWebServer::ZWaveCPNodeChange, this));
 			m_pWebEm->RegisterPageCode("/ozwcp/savepost.html", boost::bind(&CWebServer::ZWaveCPSaveConfig, this));
+			m_pWebEm->RegisterPageCode("/ozwcp/topopost.html", boost::bind(&CWebServer::ZWaveCPGetTopo, this));
+			m_pWebEm->RegisterPageCode("/ozwcp/statpost.html", boost::bind(&CWebServer::ZWaveCPGetStats, this));
 			//grouppost.html
 			//pollpost.html
 			//scenepost.html
-			//topopost.html
-			//statpost.html
 			//thpost.html
 			
 
@@ -1982,6 +1982,7 @@ namespace http {
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 					m_retstr = pOZWHardware->SendPollResponse();
+					m_pWebEm->m_outputfilename = "poll.xml";
 				}
 			}
 			return m_retstr;
@@ -2123,6 +2124,39 @@ namespace http {
 					m_retstr = pOZWHardware->SaveConfig();
 				}
 			}
+			return m_retstr;
+		}
+		std::string CWebServer::ZWaveCPGetTopo()
+		{
+			m_retstr = "";
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					m_retstr = pOZWHardware->GetCPTopo();
+					m_pWebEm->m_outputfilename = "topo.xml";
+				}
+			}
+			return m_retstr;
+		}
+		std::string CWebServer::ZWaveCPGetStats()
+		{
+			m_retstr = "";
+			//Crashes at OpenZWave::GetNodeStatistics::_data->m_sentTS = m_sentTS.GetAsString();
+			/*
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					m_retstr = pOZWHardware->GetCPStats();
+					m_pWebEm->m_outputfilename = "stats.xml";
+				}
+			}
+			*/
 			return m_retstr;
 		}
 		

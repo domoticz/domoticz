@@ -46,6 +46,7 @@ Version 2.0.xxxx (October xxth 2014)
 - Changed: OpenZWave Fibaro RGBW configuration file (had problems with the powerlevel class)
 - Changed: OpenZWave code change to fix (ApplicationCommandHandler - Unhandled Command Class 0x2b)
 - Implemented: sha256sum checksum checksum checking while downloading a new beta/stable
+- Fixed: OpenZwave RGBW controller
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher
