@@ -200,11 +200,14 @@ void MyNode::removeValue (ValueID id)
     }
   }
   if (!found)
-    fprintf(stderr, "removeValue not found Home 0x%08x Node %d Genre %s Class %s Instance %d Index %d Type %s\n",
-	    id.GetHomeId(), id.GetNodeId(), valueGenreStr(id.GetGenre()),
-	    cclassStr(id.GetCommandClassId()), id.GetInstance(), id.GetIndex(),
-	    valueTypeStr(id.GetType()));
-
+  {
+#ifdef OZW_WRITE_LOG
+	  Log::Write(LogLevel_Error, "removeValue not found Home 0x%08x Node %d Genre %s Class %s Instance %d Index %d Type %s\n",
+		  id.GetHomeId(), id.GetNodeId(), valueGenreStr(id.GetGenre()),
+		  cclassStr(id.GetCommandClassId()), id.GetInstance(), id.GetIndex(),
+		  valueTypeStr(id.GetType()));
+#endif
+  }
   setTime(time(NULL));
   setChanged(true);
 }
@@ -242,7 +245,9 @@ void MyNode::newGroup (uint8 node)
  */
 void MyNode::addGroup (uint8 node, uint8 g, uint8 n, uint8 *v)
 {
-  fprintf(stderr, "addGroup: node %d group %d n %d\n", node, g, n);
+#ifdef OZW_WRITE_LOG
+	Log::Write(LogLevel_Info, "addGroup: node %d group %d n %d\n", node, g, n);
+#endif
   if (groups.size() == 0)
     newGroup(node);
   for (vector<MyGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
@@ -254,7 +259,9 @@ void MyNode::addGroup (uint8 node, uint8 g, uint8 n, uint8 *v)
       setChanged(true);
       return;
     }
-  fprintf(stderr, "addgroup: node %d group %d not found in list\n", node, g);
+#ifdef OZW_WRITE_LOG
+  Log::Write(LogLevel_Error, "addgroup: node %d group %d not found in list\n", node, g);
+#endif
 }
 
 /*
@@ -281,13 +288,16 @@ void MyNode::updateGroup (uint8 node, uint8 grp, char *glist)
   uint8 *v;
   uint8 n;
   uint8 j;
-
-  fprintf(stderr, "updateGroup: node %d group %d\n", node, grp);
+#ifdef OZW_WRITE_LOG
+  Log::Write(LogLevel_Info, "updateGroup: node %d group %d\n", node, grp);
+#endif
   for (it = groups.begin(); it != groups.end(); ++it)
     if ((*it)->groupid == grp)
       break;
   if (it == groups.end()) {
-    fprintf(stderr, "updateGroup: node %d group %d not found\n", node, grp);
+#ifdef OZW_WRITE_LOG
+	  Log::Write(LogLevel_Error, "updateGroup: node %d group %d not found\n", node, grp);
+#endif
     return;
   }
   v = new uint8((*it)->max);
@@ -339,8 +349,10 @@ void MyNode::updatePoll(char *ilist, char *plist)
     polls.push_back(*np == '1' ? true : false);
   }
   if (ids.size() != polls.size()) {
-    fprintf(stderr, "updatePoll: size of ids %u not same as size of polls %u\n",
+#ifdef OZW_WRITE_LOG
+    Log::Write(LogLevel_Error, "updatePoll: size of ids %u not same as size of polls %u\n",
 	    ids.size(), polls.size());
+#endif
     return;
   }
   vector<char*>::iterator it = ids.begin();
@@ -348,18 +360,32 @@ void MyNode::updatePoll(char *ilist, char *plist)
   while (it != ids.end() && pit != polls.end()) {
     v = lookup(*it);
     if (v == NULL) {
-      fprintf(stderr, "updatePoll: value %s not found\n", *it);
+#ifdef OZW_WRITE_LOG
+      Log::Write(LogLevel_Error, "updatePoll: value %s not found\n", *it);
+#endif
       continue;
     }
     /* if poll requested, see if not on list */
     if (*pit) {
-      if (!Manager::Get()->isPolled(v->getId()))
-	if (!Manager::Get()->EnablePoll(v->getId()))
-	  fprintf(stderr, "updatePoll: enable polling for %s failed\n", *it);
+		if (!Manager::Get()->isPolled(v->getId()))
+		{
+			if (!Manager::Get()->EnablePoll(v->getId()))
+			{
+#ifdef OZW_WRITE_LOG
+				Log::Write(LogLevel_Error, "updatePoll: enable polling for %s failed\n", *it);
+#endif
+			}
+		}
     } else {			// polling not requested and it is on, turn it off
-      if (Manager::Get()->isPolled(v->getId()))
-	if (!Manager::Get()->DisablePoll(v->getId()))
-	  fprintf(stderr, "updatePoll: disable polling for %s failed\n", *it);
+		if (Manager::Get()->isPolled(v->getId()))
+		{
+			if (!Manager::Get()->DisablePoll(v->getId()))
+			{
+#ifdef OZW_WRITE_LOG
+				Log::Write(LogLevel_Error, "updatePoll: disable polling for %s failed\n", *it);
+#endif
+			}
+		}
     }
     ++it;
     ++pit;
@@ -948,7 +974,11 @@ void COpenZWaveControlPanel::web_get_values(int i, TiXmlElement *ep)
 			if (id.GetType() == ValueID::ValueType_Decimal) {
 				uint8 precision;
 				if (Manager::Get()->GetValueFloatPrecision(id, &precision))
-					fprintf(stderr, "node = %d id = %d value = %s precision = %d\n", i, j, str.c_str(), precision);
+				{
+#ifdef OZW_WRITE_LOG
+					Log::Write(LogLevel_Info,"node = %d id = %d value = %s precision = %d\n", i, j, str.c_str(), precision);
+#endif
+				}
 			}
 			valueElement->LinkEndChild(textElement);
 		}
@@ -1074,10 +1104,12 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 				nodeElement->SetAttribute("routing", Manager::Get()->IsNodeRoutingDevice(homeId, i) ? "true" : "false");
 				nodeElement->SetAttribute("security", Manager::Get()->IsNodeSecurityDevice(homeId, i) ? "true" : "false");
 				nodeElement->SetAttribute("time", (uint32)nodes[i]->getTime());
-				fprintf(stderr, "i=%d failed=%d\n", i, Manager::Get()->IsNodeFailed(homeId, i));
-				fprintf(stderr, "i=%d awake=%d\n", i, Manager::Get()->IsNodeAwake(homeId, i));
-				fprintf(stderr, "i=%d state=%s\n", i, Manager::Get()->GetNodeQueryStage(homeId, i).c_str());
-				fprintf(stderr, "i=%d listening=%d flirs=%d\n", i, listening, flirs);
+#ifdef OZW_WRITE_LOG
+				Log::Write(LogLevel_Info,"i=%d failed=%d\n", i, Manager::Get()->IsNodeFailed(homeId, i));
+				Log::Write(LogLevel_Info,"i=%d awake=%d\n", i, Manager::Get()->IsNodeAwake(homeId, i));
+				Log::Write(LogLevel_Info,"i=%d state=%s\n", i, Manager::Get()->GetNodeQueryStage(homeId, i).c_str());
+				Log::Write(LogLevel_Info,"i=%d listening=%d flirs=%d\n", i, listening, flirs);
+#endif
 				if (Manager::Get()->IsNodeFailed(homeId, i))
 					nodeElement->SetAttribute("status", "Dead");
 				else {
@@ -1137,7 +1169,9 @@ std::string COpenZWaveControlPanel::SetNodeValue(const std::string &arg1, const 
 	if (val != NULL) {
 		if (!Manager::Get()->SetValue(val->getId(), arg2))
 		{
-			fprintf(stderr, "SetValue string failed type=%s\n", valueTypeStr(val->getId().GetType()));
+#ifdef OZW_WRITE_LOG
+			Log::Write(LogLevel_Error, "SetValue string failed type=%s\n", valueTypeStr(val->getId().GetType()));
+#endif
 		}
 	}
 	return "OK";
@@ -1150,13 +1184,17 @@ std::string COpenZWaveControlPanel::SetNodeButton(const std::string &arg1, const
 		if (arg2 == "true") {
 			if (!Manager::Get()->PressButton(val->getId()))
 			{
-				fprintf(stderr, "PressButton failed");
+#ifdef OZW_WRITE_LOG
+				Log::Write(LogLevel_Error, "PressButton failed");
+#endif
 			}
 		}
 		else {
 			if (!Manager::Get()->ReleaseButton(val->getId()))
 			{
-				fprintf(stderr, "ReleaseButton failed");
+#ifdef OZW_WRITE_LOG
+				Log::Write(LogLevel_Error, "ReleaseButton failed");
+#endif
 			}
 		}
 	}
