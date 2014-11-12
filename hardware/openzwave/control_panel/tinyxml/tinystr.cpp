@@ -28,8 +28,6 @@ distribution.
 
 #include "stdafx.h"
 
-#define TIXML_USE_STL
-
 #ifndef TIXML_USE_STL
 #include "tinystr.h"
 
