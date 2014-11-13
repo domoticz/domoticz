@@ -92,7 +92,7 @@
       </IgnoreSpecificDefaultLibraries>
     </Link>
     <PreBuildEvent>
-      <Command>SubWCRev ..\.. ..\svntemplate.txt svnversion.h</Command>
+      <Command>SubWCRev .. ..\svntemplate.txt ..\svnversion.h</Command>
       <Message>Getting subversion revision</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>

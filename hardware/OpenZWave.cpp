@@ -1210,7 +1210,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 				_device.devType = ZDTYPE_SWITCH_DIMMER;
 				_device.intvalue = byteValue;
 				InsertDevice(_device);
-				if (instance == 0)
+				if (instance == 1)
 				{
 					if (IsNodeRGBW(HomeID, NodeID))
 					{
