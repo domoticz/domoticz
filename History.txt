@@ -47,6 +47,11 @@ Version 2.0.xxxx (October xxth 2014)
 - Changed: OpenZWave code change to fix (ApplicationCommandHandler - Unhandled Command Class 0x2b)
 - Implemented: sha256sum checksum checksum checking while downloading a new beta/stable
 - Fixed: OpenZwave RGBW controller
+- Updated: AngularJS library
+- Implemented: OpenZWave, support for COMMAND_CLASS_THERMOSTAT_MODE and COMMAND_CLASS_THERMOSTAT_FAN_MODE 
+- Changed: OpenZWave, configuration file for Romotec ZXT-120
+- Implemented: OpenZWave, Added Qubino ZMNHJA2.xml config file
+- Implemented: OpenZWave, Added NorthQ nq9121.xml config file
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

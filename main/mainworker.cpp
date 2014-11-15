@@ -7513,7 +7513,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
 
-	if ((subType == sTypeVoltage) || (subType == sTypePercentage) || (subType == sTypePressure) || (subType == sTypeZWaveClock))
+	if ((subType == sTypeVoltage) || (subType == sTypePercentage) || (subType == sTypePressure) || (subType == sTypeZWaveClock) || (subType == sTypeZWaveThermostatMode) || (subType == sTypeZWaveThermostatFanMode))
 	{
 		sprintf(szTmp,"%08X", (unsigned int)pMeter->intval1);
 	}
@@ -7600,6 +7600,11 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		sprintf(szTmp, "%d;%d;%d", day, hour, minute);
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, m_LastDeviceName);
 	}
+	else if ((subType == sTypeZWaveThermostatMode) || (subType == sTypeZWaveThermostatFanMode))
+	{
+		cmnd = (unsigned char)pMeter->intval2;
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, m_LastDeviceName);
+	}
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -7646,6 +7651,16 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 				sprintf(szTmp, "Clock = %s %02d:%02d", ZWave_Clock_Days(day),hour, minute);
 				WriteMessage(szTmp);
 			}
+			break;
+		case sTypeZWaveThermostatMode:
+			WriteMessage("subtype       = Thermostat Mode");
+			sprintf(szTmp, "Mode = %d (%s)", pMeter->intval2, ZWave_Thermostat_Modes[pMeter->intval2]);
+			WriteMessage(szTmp);
+			break;
+		case sTypeZWaveThermostatFanMode:
+			WriteMessage("subtype       = Thermostat Fan Mode");
+			sprintf(szTmp, "Mode = %d (%s)", pMeter->intval2, ZWave_Thermostat_Fan_Modes[pMeter->intval2]);
+			WriteMessage(szTmp);
 			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
@@ -8793,6 +8808,88 @@ bool MainWorker::SetClock(const std::string &idx, const std::string &clockstr)
 
 	std::vector<std::string> sd = result[0];
 	return SetClockInt(sd, clockstr);
+}
+
+bool MainWorker::SetZWaveThermostatModeInt(const std::vector<std::string> &sd, const int tMode)
+{
+#ifdef WITH_OPENZWAVE
+	int HardwareID = atoi(sd[0].c_str());
+	int hindex = FindDomoticzHardware(HardwareID);
+	if (hindex == -1)
+		return false;
+
+	unsigned long ID;
+	std::stringstream s_strid;
+	s_strid << std::hex << sd[1];
+	s_strid >> ID;
+	CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
+	if (pHardware == NULL)
+		return false;
+	if (pHardware->HwdType == HTYPE_OpenZWave)
+	{
+		_tGeneralDevice tmeter;
+		tmeter.subtype = sTypeZWaveThermostatMode;
+		tmeter.intval1 = ID;
+		tmeter.intval2 = tMode;
+		WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tGeneralDevice));
+	}
+#endif
+	return true;
+}
+
+bool MainWorker::SetZWaveThermostatFanModeInt(const std::vector<std::string> &sd, const int fMode)
+{
+#ifdef WITH_OPENZWAVE
+	int HardwareID = atoi(sd[0].c_str());
+	int hindex = FindDomoticzHardware(HardwareID);
+	if (hindex == -1)
+		return false;
+
+	unsigned long ID;
+	std::stringstream s_strid;
+	s_strid << std::hex << sd[1];
+	s_strid >> ID;
+	CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
+	if (pHardware == NULL)
+		return false;
+	if (pHardware->HwdType == HTYPE_OpenZWave)
+	{
+		_tGeneralDevice tmeter;
+		tmeter.subtype = sTypeZWaveThermostatFanMode;
+		tmeter.intval1 = ID;
+		tmeter.intval2 = fMode;
+		WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tGeneralDevice));
+	}
+#endif
+	return true;
+}
+
+bool MainWorker::SetZWaveThermostatMode(const std::string &idx, const int tMode)
+{
+	//Get Device details
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() < 1)
+		return false;
+
+	std::vector<std::string> sd = result[0];
+	return SetZWaveThermostatModeInt(sd, tMode);
+}
+
+bool MainWorker::SetZWaveThermostatFanMode(const std::string &idx, const int fMode)
+{
+	//Get Device details
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() < 1)
+		return false;
+
+	std::vector<std::string> sd = result[0];
+	return SetZWaveThermostatFanModeInt(sd, fMode);
 }
 
 bool MainWorker::SetThermostatState(const std::string &idx, const int newState)

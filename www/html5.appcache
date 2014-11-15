@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 649
+# ref 653
 
 CACHE:
 # CSS
@@ -189,6 +189,8 @@ images/lux48.png
 images/Media.png
 images/Media48_Off.png
 images/Media48_On.png
+images/mode.png
+images/mode48.png
 images/moisture.png
 images/moisture48.png
 images/motion.png

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+<!-- Qubino: ZMNHJA2 Flush Dimmer Fils Pilotes -->
+
+	<!-- Configuration -->
+	<CommandClass id="112">
+		<Value type="list" genre="config" instance="1" index="1" label="Input 1 interrupteur type" size="1" min="0" max="1" value="1">
+			<Help/>
+			<Item label="interrupteur mono-stable" value="0"/>
+			<Item label="interrupteur bi-stable" value="1"/>
+		</Value> 
+
+		<Value type="list" genre="config" instance="1" index="2" label="Input 2 interrupteur type" size="1" min="0" max="1" value="1">
+			<Help/>
+			<Item label="interrupteur mono-stable" value="0"/>
+			<Item label="interrupteur bi-stable" value="1"/>
+		</Value> 
+
+		<Value type="list" genre="config" instance="1" index="3" label="Input 3 interrupteur type" size="1" min="0" max="1" value="1">
+			<Help/>
+			<Item label="interrupteur mono-stable" value="0"/>
+			<Item label="interrupteur bi-stable" value="1"/>
+		</Value> 	
+
+		<Value type="list" genre="config" instance="1" index="4" label="Input 1 contact type" size="1" min="0" max="1" value="0">
+			<Help/>
+			<Item label="NO (normaly open) input type" value="0"/>
+			<Item label="NC (normaly close) input type" value="1"/>
+		</Value> 
+
+		<Value type="list" genre="config" instance="1" index="5" label="Input 2 contact type" size="1" min="0" max="1" value="0">
+			<Help/>
+			<Item label="NO (normaly open) input type" value="0"/>
+			<Item label="NC (normaly close) input type" value="1"/>
+		</Value> 			
+
+		<Value type="list" genre="config" instance="1" index="6" label="Input 3 contact type" size="1" min="0" max="1" value="0">
+			<Help/>
+			<Item label="NO (normaly open) input type" value="0"/>
+			<Item label="NC (normaly close) input type" value="1"/>
+		</Value>
+		
+		<Value type="list" genre="config" instance="1" index="11" label="Input 1 fonctionnement type" size="1" min="0" max="6" value="1">
+			<Help/>
+			<Item label="no modification with Input 1" value="0"/>
+			<Item label="Confort" value="1"/>
+			<Item label="Confort -1" value="2"/>
+			<Item label="Confort -2" value="3"/>		
+			<Item label="Eco" value="4"/>	
+			<Item label="Hors-Gel" value="5"/>	
+			<Item label="STOP" value="6"/>				
+		</Value> 
+		
+		<Value type="list" genre="config" instance="1" index="12" label="Input 2 fonctionnement type" size="1" min="0" max="6" value="4">
+			<Help/>
+			<Item label="no modification with Input 2" value="0"/>
+			<Item label="Confort" value="1"/>
+			<Item label="Confort -1" value="2"/>
+			<Item label="Confort -2" value="3"/>		
+			<Item label="Eco" value="4"/>	
+			<Item label="Hors-Gel" value="5"/>	
+			<Item label="STOP" value="6"/>				
+		</Value> 
+
+		<Value type="list" genre="config" instance="1" index="13" label="Input 3 fonctionnement type" size="1" min="0" max="6" value="5">
+			<Help/>
+			<Item label="no modification with Input 3" value="0"/>
+			<Item label="Confort" value="1"/>
+			<Item label="Confort -1" value="2"/>
+			<Item label="Confort -2" value="3"/>		
+			<Item label="Eco" value="4"/>	
+			<Item label="Hors-Gel" value="5"/>	
+			<Item label="STOP" value="6"/>				
+		</Value> 			
+	
+		<Value type="list" genre="config" instance="1" index="30" label="Saving the state of the relay after a power failure" size="1" min="0" max="1" value="0">
+			<Help/>
+			<Item label="Flush dimmer module saves its state before power failure (it returns to the last position saved before a power failure)" value="0" />
+			<Item label="Flush dimmer module does not save the state after a power failure, it returns to off position" value="1" />
+		</Value>
+	
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="5">
+			<Group index="1" max_associations="5" label="Multilevel" auto="true"/>
+			<Group index="2" max_associations="5" label="Input I1 state" auto="true" />
+			<Group index="3" max_associations="5" label="Input I2 state" auto="true"/>	
+			<Group index="4" max_associations="5" label="Input I3 state" auto="true"/>					
+			<Group index="5" max_associations="1" label="Default reporting" auto="true"/>
+		</Associations>
+	</CommandClass>
+
+	<!-- Remove COMMAND_CLASS_BASIC -->
+	<CommandClass id="32" action="remove" />
+
+	<!-- Map endpoints to instances -->
+	<CommandClass id="96" mapping="endpoints" />
+
+</Product>

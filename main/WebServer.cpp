@@ -3059,6 +3059,44 @@ namespace http {
 				_log.Log(LOG_NORM, "Sending SetPoint to device....");
 				m_mainworker.SetSetPoint(idx, (float)atof(svalue.c_str()));
 			}
+			else if ((idtype == pTypeGeneral) && (idsubtype == sTypeZWaveThermostatMode))
+			{
+				int urights = 3;
+				bool bHaveUser = (m_pWebEm->m_actualuser != "");
+				if (bHaveUser)
+				{
+					int iUser = -1;
+					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+					if (iUser != -1)
+					{
+						urights = (int)m_users[iUser].userrights;
+						_log.Log(LOG_STATUS, "User: %s initiated a Thermostat Mode command", m_users[iUser].Username.c_str());
+					}
+				}
+				if (urights < 1)
+					return;
+				_log.Log(LOG_NORM, "Sending Thermostat Mode to device....");
+				m_mainworker.SetZWaveThermostatMode(idx, atoi(nvalue.c_str()));
+			}
+			else if ((idtype == pTypeGeneral) && (idsubtype == sTypeZWaveThermostatFanMode))
+			{
+				int urights = 3;
+				bool bHaveUser = (m_pWebEm->m_actualuser != "");
+				if (bHaveUser)
+				{
+					int iUser = -1;
+					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+					if (iUser != -1)
+					{
+						urights = (int)m_users[iUser].userrights;
+						_log.Log(LOG_STATUS, "User: %s initiated a Thermostat Fan Mode command", m_users[iUser].Username.c_str());
+					}
+				}
+				if (urights < 1)
+					return;
+				_log.Log(LOG_NORM, "Sending Thermostat Fan Mode to device....");
+				m_mainworker.SetZWaveThermostatFanMode(idx, atoi(nvalue.c_str()));
+			}
 		}
 
 		void CWebServer::Cmd_SetThermostatState(Json::Value &root)
@@ -7727,6 +7765,8 @@ namespace http {
 								(!((dType == pTypeGeneral) && (dSubType == sTypePercentage))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeSystemFan))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveClock))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatMode))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatFanMode))) &&
 								(dType != pTypeLux) &&
 								(dType != pTypeUsage) &&
 								(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))) &&
@@ -9098,6 +9138,82 @@ namespace http {
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["TypeImg"] = "clock";
+						}
+						else if (dSubType == sTypeZWaveThermostatMode)
+						{
+							sprintf(szData, "%s", ZWave_Thermostat_Modes[nValue]);
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["Mode"] = nValue;
+							root["result"][ii]["TypeImg"] = "mode";
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							bool bAddedSupportedModes = false;
+							std::string modes = "";
+							//Add supported modes
+#ifdef WITH_OPENZWAVE
+							if (pHardware)
+							{
+								if (pHardware->HwdType == HTYPE_OpenZWave)
+								{
+									COpenZWave *pZWave = (COpenZWave*)pHardware;
+									unsigned long ID;
+									std::stringstream s_strid;
+									s_strid << std::hex << sd[1];
+									s_strid >> ID;
+									modes = pZWave->GetSupportedThermostatModes(ID);
+									bAddedSupportedModes = !modes.empty();
+								}
+							}
+#endif
+							if (!bAddedSupportedModes)
+							{
+								//Add all modes
+								int smode = 0;
+								while (ZWave_Thermostat_Modes[smode]!=NULL)
+								{
+									sprintf(szTmp, "%d;%s;", smode, ZWave_Thermostat_Modes[smode]);
+									modes += szTmp;
+									smode++;
+								}
+							}
+							root["result"][ii]["Modes"] = modes;
+						}
+						else if (dSubType == sTypeZWaveThermostatFanMode)
+						{
+							sprintf(szData, "%s", ZWave_Thermostat_Fan_Modes[nValue]);
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["Mode"] = nValue;
+							root["result"][ii]["TypeImg"] = "mode";
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							//Add supported modes (add all for now)
+							bool bAddedSupportedModes = false;
+							std::string modes = "";
+							//Add supported modes
+#ifdef WITH_OPENZWAVE
+							if (pHardware)
+							{
+								if (pHardware->HwdType == HTYPE_OpenZWave)
+								{
+									COpenZWave *pZWave = (COpenZWave*)pHardware;
+									unsigned long ID;
+									std::stringstream s_strid;
+									s_strid << std::hex << sd[1];
+									s_strid >> ID;
+									modes = pZWave->GetSupportedThermostatFanModes(ID);
+									bAddedSupportedModes = !modes.empty();
+								}
+							}
+#endif
+							if (!bAddedSupportedModes)
+							{
+								int smode = 0;
+								while (ZWave_Thermostat_Fan_Modes[smode]!=NULL)
+								{
+									sprintf(szTmp, "%d;%s;", smode, ZWave_Thermostat_Fan_Modes[smode]);
+									modes += szTmp;
+									smode++;
+								}
+							}
+							root["result"][ii]["Modes"] = modes;
 						}
 					}
 					else if (dType == pTypeLux)
@@ -11132,6 +11248,8 @@ namespace http {
 			std::string addjmulti2 = m_pWebEm->FindValue("addjmulti2");
 			std::string setPoint = m_pWebEm->FindValue("setpoint");
 			std::string clock = m_pWebEm->FindValue("clock");
+			std::string tmode = m_pWebEm->FindValue("tmode");
+			std::string fmode = m_pWebEm->FindValue("fmode");
 			std::string sCustomImage = m_pWebEm->FindValue("customimage");
 
 			std::string strParam1 = base64_decode(m_pWebEm->FindValue("strparam1"));
@@ -11221,8 +11339,7 @@ namespace http {
 					return;
 				m_mainworker.SetSetPoint(idx, (float)atof(setPoint.c_str()));
 			}
-
-			if (clock != "")
+			else if (clock != "")
 			{
 				int urights = 3;
 				if (bHaveUser)
@@ -11239,6 +11356,41 @@ namespace http {
 					return;
 				m_mainworker.SetClock(idx, clock);
 			}
+			else if (tmode != "")
+			{
+				int urights = 3;
+				if (bHaveUser)
+				{
+					int iUser = -1;
+					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+					if (iUser != -1)
+					{
+						urights = (int)m_users[iUser].userrights;
+						_log.Log(LOG_STATUS, "User: %s initiated a Thermostat Mode command", m_users[iUser].Username.c_str());
+					}
+				}
+				if (urights < 1)
+					return;
+				m_mainworker.SetZWaveThermostatMode(idx, atoi(tmode.c_str()));
+			}
+			else if (fmode != "")
+			{
+				int urights = 3;
+				if (bHaveUser)
+				{
+					int iUser = -1;
+					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+					if (iUser != -1)
+					{
+						urights = (int)m_users[iUser].userrights;
+						_log.Log(LOG_STATUS, "User: %s initiated a Thermostat Fan Mode command", m_users[iUser].Username.c_str());
+					}
+				}
+				if (urights < 1)
+					return;
+				m_mainworker.SetZWaveThermostatFanMode(idx, atoi(fmode.c_str()));
+			}
+
 
 			if (addjvalue != "")
 			{

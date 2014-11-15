@@ -25,6 +25,8 @@ class ZWaveBase : public CDomoticzHardwareBase
 		ZDTYPE_SENSOR_PERCENTAGE,
 		ZDTYPE_SENSOR_THERMOSTAT_CLOCK,
 		ZDTYPE_SENSOR_GAS,
+		ZDTYPE_SENSOR_THERMOSTAT_MODE,
+		ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE,
 	};
 	struct _tZWaveDevice
 	{
@@ -112,7 +114,11 @@ private:
 	virtual void SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)=0;
 	virtual void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value)=0;
 	virtual void SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute)=0;
-	virtual void StopHardwareIntern()=0;
+	virtual void SetThermostatMode(const int nodeID, const int instanceID, const int commandClass, const int tMode) = 0;
+	virtual void SetThermostatFanMode(const int nodeID, const int instanceID, const int commandClass, const int fMode) = 0;
+	virtual std::string GetSupportedThermostatModes(const unsigned long ID) = 0;
+	virtual std::string GetSupportedThermostatFanModes(const unsigned long ID) = 0;
+	virtual void StopHardwareIntern() = 0;
 	virtual bool IncludeDevice()=0;
 	virtual bool ExcludeDevice(const int nodeID)=0;
 	virtual bool RemoveFailedDevice(const int nodeID)=0;

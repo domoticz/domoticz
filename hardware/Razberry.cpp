@@ -870,6 +870,29 @@ void CRazberry::SetClock(const int nodeID, const int instanceID, const int comma
 
 }
 
+void CRazberry::SetThermostatMode(const int nodeID, const int instanceID, const int commandClass, const int tMode)
+{
+
+}
+
+void CRazberry::SetThermostatFanMode(const int nodeID, const int instanceID, const int commandClass, const int fMode)
+{
+
+}
+
+std::string CRazberry::GetSupportedThermostatModes(const unsigned long ID)
+{
+	std::string retstr = "";
+	return retstr;
+}
+
+std::string CRazberry::GetSupportedThermostatFanModes(const unsigned long ID)
+{
+	std::string retstr = "";
+	return retstr;
+}
+
+
 void CRazberry::RunCMD(const std::string &cmd)
 {
 	std::string szURL=GetRunURL(cmd);

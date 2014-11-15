@@ -6,6 +6,7 @@
 #include <vector>
 #include <ctype.h>
 #include <boost/lexical_cast.hpp>
+#include <algorithm>
 
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
@@ -578,6 +579,8 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		nodeInfo.tClockDay = -1;
 		nodeInfo.tClockHour = -1;
 		nodeInfo.tClockMinute = -1;
+		nodeInfo.tMode = -1;
+		nodeInfo.tFanMode = -1;
 
 		if ((_homeID == m_controllerID) && (_nodeID == m_controllerNodeId))
 			nodeInfo.eState = NSTATE_AWAKE;	//controller is always awake
@@ -1566,6 +1569,60 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 			SendDevice2Domoticz(&_device);
 		}
 	}
+	else if (commandclass == COMMAND_CLASS_THERMOSTAT_MODE)
+	{
+		COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
+		if (!pNode)
+			return;
+		if (vType == OpenZWave::ValueID::ValueType_List)
+		{
+			if (vLabel == "Mode") {
+				pNode->tModes.clear();
+				m_pManager->GetValueListItems(vID, &pNode->tModes);
+				std::string vListStr;
+				if (m_pManager->GetValueListSelection(vID, &vListStr))
+				{
+					int32 vMode = Lookup_ZWave_Thermostat_Modes(vListStr);
+					if (vMode != -1)
+					{
+						pNode->tMode = vMode;
+						_device.intvalue = vMode;
+						_device.commandClassID = COMMAND_CLASS_THERMOSTAT_MODE;
+						_device.devType = ZDTYPE_SENSOR_THERMOSTAT_MODE;
+						InsertDevice(_device);
+						SendDevice2Domoticz(&_device);
+					}
+				}
+			}
+		}
+	}
+	else if (commandclass == COMMAND_CLASS_THERMOSTAT_FAN_MODE)
+	{
+		COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
+		if (!pNode)
+			return;
+		if (vType == OpenZWave::ValueID::ValueType_List)
+		{
+			if (vLabel == "Fan Mode") {
+				pNode->tFanModes.clear();
+				m_pManager->GetValueListItems(vID, &pNode->tFanModes);
+				std::string vListStr;
+				if (m_pManager->GetValueListSelection(vID, &vListStr))
+				{
+					int32 vMode = Lookup_ZWave_Thermostat_Fan_Modes(vListStr);
+					if (vMode != -1)
+					{
+						pNode->tFanMode = vMode;
+						_device.intvalue = vMode;
+						_device.commandClassID = COMMAND_CLASS_THERMOSTAT_FAN_MODE;
+						_device.devType = ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE;
+						InsertDevice(_device);
+						SendDevice2Domoticz(&_device);
+					}
+				}
+			}
+		}
+	}
 	else if (commandclass == COMMAND_CLASS_CLOCK)
 	{
 		COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
@@ -1788,6 +1845,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 	bool bValue = false;
 	unsigned char byteValue = 0;
 	std::string strValue = "";
+	int32 lValue = 0;
 
 	if (vType == OpenZWave::ValueID::ValueType_Decimal)
 	{
@@ -1807,6 +1865,11 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 	else if ((vType == OpenZWave::ValueID::ValueType_Raw) || (vType == OpenZWave::ValueID::ValueType_String))
 	{
 		if (m_pManager->GetValueAsString(vID, &strValue) == false)
+			return;
+	}
+	else if (vType == OpenZWave::ValueID::ValueType_List)
+	{
+		if (m_pManager->GetValueListSelection(vID, &lValue) == false)
 			return;
 	}
 	else
@@ -2179,11 +2242,16 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 		pDevice->floatValue = fValue;
 		break;
 	case ZDTYPE_SENSOR_GAS:
-		if (vType != OpenZWave::ValueID::ValueType_Decimal)
-			return;
-		if (vLabel != "Gas")
-			return;
-		pDevice->floatValue = fValue;
+		{
+			if (vType != OpenZWave::ValueID::ValueType_Decimal)
+				return;
+			if (vLabel != "Gas")
+				return;
+			float oldvalue = pDevice->floatValue;
+			pDevice->floatValue = fValue; //always set the value
+			if ((fValue - oldvalue > 10.0f) || (fValue < oldvalue))
+				return;//sanity check, don't report it
+		}
 		break;
 	case ZDTYPE_SENSOR_THERMOSTAT_CLOCK:
 		if (vLabel == "Minute")
@@ -2192,6 +2260,48 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
 			if (!pNode)
 				return;
 			pDevice->intvalue = (pNode->tClockDay*(24 * 60)) + (pNode->tClockHour * 60) + pNode->tClockMinute;
+		}
+		break;
+	case ZDTYPE_SENSOR_THERMOSTAT_MODE:
+		if (vType != OpenZWave::ValueID::ValueType_List)
+			return;
+		if (vLabel == "Mode")
+		{
+			COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
+			if (!pNode)
+				return;
+			pNode->tModes.clear();
+			m_pManager->GetValueListItems(vID, &pNode->tModes);
+
+			std::string vListStr;
+			if (!m_pManager->GetValueListSelection(vID, &vListStr))
+				return;
+			int32 lValue = Lookup_ZWave_Thermostat_Modes(vListStr);
+			if (lValue == -1)
+				return;
+			pNode->tMode = lValue;
+			pDevice->intvalue = lValue;
+		}
+		break;
+	case ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE:
+		if (vType != OpenZWave::ValueID::ValueType_List)
+			return;
+		if (vLabel == "Fan Mode")
+		{
+			COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
+			if (!pNode)
+				return;
+			pNode->tFanModes.clear();
+			m_pManager->GetValueListItems(vID, &pNode->tFanModes);
+
+			std::string vListStr;
+			if (!m_pManager->GetValueListSelection(vID, &vListStr))
+				return;
+			int32 lValue = Lookup_ZWave_Thermostat_Fan_Modes(vListStr);
+			if (lValue == -1)
+				return;
+			pNode->tFanMode = lValue;
+			pDevice->intvalue = lValue;
 		}
 		break;
 	}
@@ -2754,6 +2864,122 @@ void COpenZWave::SetClock(const int nodeID, const int instanceID, const int comm
 	m_pManager->SetValueListSelection(vDay, ZWave_Clock_Days(day));
 	m_pManager->SetValue(vHour, (const uint8)hour);
 	m_pManager->SetValue(vMinute, (const uint8)minute);
+}
+
+void COpenZWave::SetThermostatMode(const int nodeID, const int instanceID, const int commandClass, const int tMode)
+{
+	if (m_pManager == NULL)
+		return;
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
+	if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_MODE, vID) == true)
+	{
+		m_pManager->SetValueListSelection(vID, ZWave_Thermostat_Modes[tMode]);
+	}
+	m_updateTime = mytime(NULL);
+}
+
+void COpenZWave::SetThermostatFanMode(const int nodeID, const int instanceID, const int commandClass, const int fMode)
+{
+	if (m_pManager == NULL)
+		return;
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
+	if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_FAN_MODE, vID) == true)
+	{
+		m_pManager->SetValueListSelection(vID, ZWave_Thermostat_Fan_Modes[fMode]);
+	}
+	m_updateTime = mytime(NULL);
+}
+
+std::string COpenZWave::GetSupportedThermostatModes(const unsigned long ID)
+{
+	std::string retstr = "";
+	unsigned char ID1 = (unsigned char)((ID & 0xFF000000) >> 24);
+	unsigned char ID2 = (unsigned char)((ID & 0x00FF0000) >> 16);
+	unsigned char ID3 = (unsigned char)((ID & 0x0000FF00) >> 8);
+	unsigned char ID4 = (unsigned char)((ID & 0x000000FF));
+
+	int nodeID = (ID2 << 8) | ID3;
+	int instanceID = ID4;
+	int indexID = ID1;
+
+	const _tZWaveDevice* pDevice = FindDevice(nodeID, instanceID, indexID, ZDTYPE_SENSOR_THERMOSTAT_MODE);
+	if (pDevice)
+	{
+		boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+		OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
+		if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_MODE, vID) == true)
+		{
+			unsigned int homeID = vID.GetHomeId();
+			int nodeID = vID.GetNodeId();
+			COpenZWave::NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
+			if (pNode)
+			{
+				int smode = 0;
+				std::string modes = "";
+				char szTmp[200];
+				while (ZWave_Thermostat_Modes[smode] != NULL)
+				{
+					if (std::find(pNode->tModes.begin(), pNode->tModes.end(), ZWave_Thermostat_Modes[smode]) != pNode->tModes.end())
+					{
+						//Value supported
+						sprintf(szTmp, "%d;%s;", smode, ZWave_Thermostat_Modes[smode]);
+						modes += szTmp;
+					}
+					smode++;
+				}
+				retstr = modes;
+			}
+		}
+	}
+
+	return retstr;
+}
+
+std::string COpenZWave::GetSupportedThermostatFanModes(const unsigned long ID)
+{
+	std::string retstr = "";
+	unsigned char ID1 = (unsigned char)((ID & 0xFF000000) >> 24);
+	unsigned char ID2 = (unsigned char)((ID & 0x00FF0000) >> 16);
+	unsigned char ID3 = (unsigned char)((ID & 0x0000FF00) >> 8);
+	unsigned char ID4 = (unsigned char)((ID & 0x000000FF));
+
+	int nodeID = (ID2 << 8) | ID3;
+	int instanceID = ID4;
+	int indexID = ID1;
+
+	const _tZWaveDevice* pDevice = FindDevice(nodeID, instanceID, indexID, ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE);
+	if (pDevice)
+	{
+		boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+		OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
+		if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_FAN_MODE, vID) == true)
+		{
+			unsigned int homeID = vID.GetHomeId();
+			int nodeID = vID.GetNodeId();
+			COpenZWave::NodeInfo* pNode = GetNodeInfo(homeID, nodeID);
+			if (pNode)
+			{
+				int smode = 0;
+				char szTmp[200];
+				std::string modes = "";
+				while (ZWave_Thermostat_Fan_Modes[smode]!=NULL)
+				{
+					if (std::find(pNode->tFanModes.begin(), pNode->tFanModes.end(), ZWave_Thermostat_Fan_Modes[smode]) != pNode->tFanModes.end())
+					{
+						//Value supported
+						sprintf(szTmp, "%d;%s;", smode, ZWave_Thermostat_Fan_Modes[smode]);
+						modes += szTmp;
+					}
+					smode++;
+				}
+				retstr = modes;
+			}
+		}
+	}
+
+	return retstr;
 }
 
 void COpenZWave::NodesQueried()

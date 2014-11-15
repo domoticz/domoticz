@@ -65,6 +65,10 @@ public:
 		int								tClockDay;
 		int								tClockHour;
 		int								tClockMinute;
+		int								tMode;
+		int								tFanMode;
+		std::vector<string>				tModes;
+		std::vector<string>				tFanModes;
 	}NodeInfo;
 
 	COpenZWave(const int ID, const std::string& devname);
@@ -83,6 +87,9 @@ public:
 	bool SetUserCodeEnrollmentMode();
 	bool GetNodeUserCodes(const unsigned int homeID, const int nodeID, Json::Value &root);
 	bool RemoveUserCode(const unsigned int homeID, const int nodeID, const int codeIndex);
+
+	std::string GetSupportedThermostatModes(const unsigned long ID);
+	std::string GetSupportedThermostatFanModes(const unsigned long ID);
 
 	//Controller Commands
 	bool RequestNodeConfig(const unsigned int homeID, const int nodeID);
@@ -128,6 +135,9 @@ private:
 	void SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value);
 	void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value);
 	void SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute);
+	void SetThermostatMode(const int nodeID, const int instanceID, const int commandClass, const int tMode);
+	void SetThermostatFanMode(const int nodeID, const int instanceID, const int commandClass, const int fMode);
+
 	unsigned char GetInstanceFromValueID(const OpenZWave::ValueID vID);
 
 	bool IsNodeRGBW(const unsigned int homeID, const int nodeID);

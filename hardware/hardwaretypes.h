@@ -26,19 +26,21 @@
 
 
 #define pTypeGeneral		0xF3
-#define sTypeVisibility		0x01
-#define sTypeSolarRadiation	0x02
-#define sTypeSoilMoisture	0x03
-#define sTypeLeafWetness	0x04
-#define sTypeSystemTemp		0x05
-#define sTypePercentage		0x06
-#define sTypeSystemFan		0x07
-#define sTypeVoltage		0x08
-#define sTypePressure		0x09
-#define sTypeSetPoint		0x10
-#define sTypeTemperature	0x11
-#define sTypeZWaveClock		0x12
-#define sTypeTextStatus		0x13
+#define sTypeVisibility				0x01
+#define sTypeSolarRadiation			0x02
+#define sTypeSoilMoisture			0x03
+#define sTypeLeafWetness			0x04
+#define sTypeSystemTemp				0x05
+#define sTypePercentage				0x06
+#define sTypeSystemFan				0x07
+#define sTypeVoltage				0x08
+#define sTypePressure				0x09
+#define sTypeSetPoint				0x10
+#define sTypeTemperature			0x11
+#define sTypeZWaveClock				0x12
+#define sTypeTextStatus				0x13
+#define sTypeZWaveThermostatMode	0x14
+#define sTypeZWaveThermostatFanMode	0x15
 
 #define pTypeLux		0xF6
 #define sTypeLux		0x01
