@@ -105,7 +105,7 @@ const char *Security_Status_Desc(const unsigned char status)
 	return findTableIDSingle1 (Table, status);
 }
 
-const char *Timer_Type_Desc(int tType)
+const char *Timer_Type_Desc(const int tType)
 {
 	STR_TABLE_SINGLE	Table[] = 
 	{
@@ -120,7 +120,7 @@ const char *Timer_Type_Desc(int tType)
 	return findTableIDSingle1 (Table, tType);
 }
 
-const char *Timer_Cmd_Desc(int tType)
+const char *Timer_Cmd_Desc(const int tType)
 {
 	STR_TABLE_SINGLE	Table[] = 
 	{
@@ -556,6 +556,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeTemperature, "Temperature" },
 		{ pTypeGeneral, sTypeZWaveClock, "Thermostat Clock" },
 		{ pTypeGeneral, sTypeTextStatus, "Text" },
+		{ pTypeGeneral, sTypeZWaveThermostatMode, "Thermostat Mode" },
+		{ pTypeGeneral, sTypeZWaveThermostatFanMode, "Thermostat Fan Mode" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -764,6 +766,8 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneral, sTypeTemperature, "Temperature" },
 		{ pTypeGeneral, sTypeZWaveClock, "Thermostat Clock" },
 		{ pTypeGeneral, sTypeTextStatus, "Text" },
+		{ pTypeGeneral, sTypeZWaveThermostatMode, "Thermostat Mode" },
+		{ pTypeGeneral, sTypeZWaveThermostatFanMode, "Thermostat Fan Mode" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "Temperature" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -803,6 +807,67 @@ const char *ZWave_Clock_Days(const unsigned char Day)
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1(Table, Day);
+}
+
+const char *ZWave_Thermostat_Modes[] =
+{
+	"Off",
+	"Heat",
+	"Cool",
+	"Auto",
+	"Aux Heat",
+	"Resume",
+	"Fan Only",
+	"Furnace",
+	"Dry Air",
+	"Moist Air",
+	"Auto Changeover",
+	"Heat Econ",
+	"Cool Econ",
+	"Away",
+	"Unknown",
+	NULL
+};
+
+const char *ZWave_Thermostat_Fan_Modes[] =
+{
+	"Auto Low",
+	"On Low",
+	"Auto High",
+	"On High",
+	"Unknown 4",
+	"Unknown 5",
+	"Circulate",
+	"Unknown",
+	NULL
+};
+
+int Lookup_ZWave_Thermostat_Modes(const std::string &sMode)
+{
+	int ii = 0;
+	while (ZWave_Thermostat_Modes[ii]!=NULL)
+	{
+		if (ZWave_Thermostat_Modes[ii] == sMode)
+		{
+			return ii;
+		}
+		ii++;
+	}
+	return -1;
+}
+
+int Lookup_ZWave_Thermostat_Fan_Modes(const std::string &sMode)
+{
+	int ii = 0;
+	while (ZWave_Thermostat_Fan_Modes[ii]!=NULL)
+	{
+		if (ZWave_Thermostat_Fan_Modes[ii] == sMode)
+		{
+			return ii;
+		}
+		ii++;
+	}
+	return -1;
 }
 
 

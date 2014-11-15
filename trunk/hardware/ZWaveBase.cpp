@@ -691,6 +691,24 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		gDevice.intval2 = pDevice->intvalue;
 		sDecodeRXMessage(this, (const unsigned char *)&gDevice);
 	}
+	else if (pDevice->devType == ZDTYPE_SENSOR_THERMOSTAT_MODE)
+	{
+		_tGeneralDevice gDevice;
+		gDevice.subtype = sTypeZWaveThermostatMode;
+		gDevice.id = ID4;
+		gDevice.intval1 = (int)(ID1 << 24) | (ID2 << 16) | (ID3 << 8) | ID4;
+		gDevice.intval2 = pDevice->intvalue;
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+	}
+	else if (pDevice->devType == ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE)
+	{
+		_tGeneralDevice gDevice;
+		gDevice.subtype = sTypeZWaveThermostatFanMode;
+		gDevice.id = ID4;
+		gDevice.intval1 = (int)(ID1 << 24) | (ID2 << 16) | (ID3 << 8) | ID4;
+		gDevice.intval2 = pDevice->intvalue;
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+	}
 }
 
 ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int instanceID, const int indexID, const _eZWaveDeviceType devType)
@@ -864,6 +882,44 @@ void ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 			int minute = tintval;
 
 			SetClock(nodeID, instanceID, pDevice->commandClassID, day, hour, minute);
+		}
+	}
+	else if ((packettype == pTypeGeneral) && (subtype == sTypeZWaveThermostatMode))
+	{
+		_tGeneralDevice *pMeter = (_tGeneralDevice*)pSen;
+		unsigned char ID1 = (unsigned char)((pMeter->intval1 & 0xFF000000) >> 24);
+		unsigned char ID2 = (unsigned char)((pMeter->intval1 & 0x00FF0000) >> 16);
+		unsigned char ID3 = (unsigned char)((pMeter->intval1 & 0x0000FF00) >> 8);
+		unsigned char ID4 = (unsigned char)((pMeter->intval1 & 0x000000FF));
+
+		int nodeID = (ID2 << 8) | ID3;
+		int instanceID = ID4;
+		int indexID = ID1;
+
+		pDevice = FindDevice(nodeID, instanceID, indexID, ZDTYPE_SENSOR_THERMOSTAT_MODE);
+		if (pDevice)
+		{
+			int tMode = pMeter->intval2;
+			SetThermostatMode(nodeID, instanceID, pDevice->commandClassID, tMode);
+		}
+	}
+	else if ((packettype == pTypeGeneral) && (subtype == sTypeZWaveThermostatFanMode))
+	{
+		_tGeneralDevice *pMeter = (_tGeneralDevice*)pSen;
+		unsigned char ID1 = (unsigned char)((pMeter->intval1 & 0xFF000000) >> 24);
+		unsigned char ID2 = (unsigned char)((pMeter->intval1 & 0x00FF0000) >> 16);
+		unsigned char ID3 = (unsigned char)((pMeter->intval1 & 0x0000FF00) >> 8);
+		unsigned char ID4 = (unsigned char)((pMeter->intval1 & 0x000000FF));
+
+		int nodeID = (ID2 << 8) | ID3;
+		int instanceID = ID4;
+		int indexID = ID1;
+
+		pDevice = FindDevice(nodeID, instanceID, indexID, ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE);
+		if (pDevice)
+		{
+			int tMode = pMeter->intval2;
+			SetThermostatFanMode(nodeID, instanceID, pDevice->commandClassID, tMode);
 		}
 	}
 	else if (packettype == pTypeLimitlessLights)

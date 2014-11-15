@@ -931,7 +931,9 @@ define(['app'], function (app) {
 							(item.SubType=="Voltage")||
 							(item.SubType=="Text")||
 							(item.SubType=="Pressure")||
-							(item.SubType=="A/D")
+							(item.SubType=="A/D")||
+							(item.SubType=="Thermostat Mode")||
+							(item.SubType=="Thermostat Fan Mode")
 						) &&
 						(item.Favorite!=0)
 					  )
@@ -1060,6 +1062,10 @@ define(['app'], function (app) {
 								else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 									status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 									bigtext=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+								}
+								else if ((item.SubType=="Thermostat Mode")||(item.SubType=="Thermostat Fan Mode")) {
+									status=item.Data;
+									bigtext=item.Data;
 								}
 								if (typeof item.Usage != 'undefined') {
 									bigtext=item.Usage;
@@ -2395,7 +2401,9 @@ define(['app'], function (app) {
 							(item.SubType=="Voltage")||
 							(item.SubType=="Text")||
 							(item.SubType=="Pressure")||
-							(item.SubType=="A/D")
+							(item.SubType=="A/D")||
+							(item.SubType=="Thermostat Mode")||
+							(item.SubType=="Thermostat Fan Mode")
 						) &&
 						(item.Favorite!=0)
 					  )
@@ -2466,6 +2474,9 @@ define(['app'], function (app) {
 						}
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+						}
+						else if ((item.SubType=="Thermostat Mode")||(item.SubType=="Thermostat Fan Mode")) {
+							status=item.Data;
 						}
 						if (typeof item.Usage != 'undefined') {
 							if ($.DashboardType==0) {
@@ -2619,6 +2630,10 @@ define(['app'], function (app) {
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 							xhtm+='override.png" class="lcursor" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40" width="40"></td>\n';
 							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+						}
+						else if ((item.SubType=="Thermostat Mode")||(item.SubType=="Thermostat Fan Mode")) {
+							xhtm+='mode48.png" height="40" width="40"></td>\n';
+							status=item.Data;
 						}
 						
 						if (typeof item.Usage != 'undefined') {

@@ -57,6 +57,10 @@ public:
 	bool SetSetPointInt(const std::vector<std::string> &sd, const float TempValue);
 	bool SetClock(const std::string &idx, const std::string &clockstr);
 	bool SetClockInt(const std::vector<std::string> &sd, const std::string &clockstr);
+	bool SetZWaveThermostatMode(const std::string &idx, const int tMode);
+	bool SetZWaveThermostatFanMode(const std::string &idx, const int fMode);
+	bool SetZWaveThermostatModeInt(const std::vector<std::string> &sd, const int tMode);
+	bool SetZWaveThermostatFanModeInt(const std::vector<std::string> &sd, const int fMode);
 
 	bool SetRFXCOMHardwaremodes(const int HardwareID, const unsigned char Mode1,const unsigned char Mode2,const unsigned char Mode3,const unsigned char Mode4,const unsigned char Mode5);
 

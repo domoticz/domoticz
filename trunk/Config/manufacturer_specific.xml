@@ -5,6 +5,7 @@
 	<Manufacturer id="0098" name="2GIG Technologies">
 		<Product type="1e12" id="015c" name="CT30 Thermostat" config="2gig/ct30.xml"/>
 		<Product type="6401" id="0105" name="CT100 Thermostat" config="2gig/ct100.xml"/>
+		<Product type="6401" id="0107" name="CT100 Thermostat USA" config="2gig/ct100.xml"/>
 	</Manufacturer>
 	<Manufacturer id="002a" name="3e Technologies">
 	</Manufacturer>
@@ -358,6 +359,7 @@
 	</Manufacturer>
 	<Manufacturer id="0096" name="NorthQ">
 		<Product type="0001" id="0001" name="NQ-92021 Power Reader" config="northq/nq92021.xml"/>
+		<Product type="0010" id="0001" name="NQ-9121 Gas Reader" config="northq/nq9121.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0040" name="Novar EDS">
 	</Manufacturer>
@@ -395,6 +397,7 @@
 		<Product type="0002" id="0001" name="ZMNHBA2 Flush 2 Relays" config="qubino/ZMNHBA2.xml"/>
 		<Product type="0002" id="0002" name="ZMNHAA2 Flush 1 Relay" config="qubino/ZMNHAA2.xml"/>
 		<Product type="0003" id="0002" name="ZMNHCA2 Flush Shutter" config="qubino/ZMNHCA2.xml"/>
+		<Product type="0004" id="0001" name="ZMNHJA2 Flush Dimmer Fil Pilote" config="qubino/ZMNHJA2.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0100" name="Reitz-Group.de">
 	</Manufacturer>

@@ -496,67 +496,20 @@ define(['app'], function (app) {
 		  $("#dialog-editmeterdevice" ).dialog( "open" );
 		}
 
-		EditSetPointInt = function(idx,name,setpoint,isprotected)
-		{
-			$.devIdx=idx;
-			$("#dialog-editsetpointdevice #devicename").val(name);
-			$('#dialog-editsetpointdevice #protected').prop('checked',(isprotected==true));
-			$("#dialog-editsetpointdevice #setpoint").val(setpoint);
-			$("#dialog-editsetpointdevice #tempunit").html($.myglobals.tempsign);
-			$("#dialog-editsetpointdevice" ).dialog( "open" );
-		}
-
 		EditSetPoint = function(idx,name,setpoint,isprotected)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
-			if (typeof isprotected != 'undefined') {
-				if (isprotected==true) {
-					bootbox.prompt($.i18n("Please enter Password")+":", function(result) {
-						if (result === null) {
-							return;
-						} else {
-							if (result=="") {
-								return;
-							}
-							//verify password
-							$.ajax({
-								 url: "json.htm?type=command&param=verifypasscode" + 
-										"&passcode=" + result,
-								 async: false, 
-								 dataType: 'json',
-								 success: function(data) {
-									if (data.status=="OK") {
-										EditSetPointInt(idx,name,setpoint,isprotected)
-									}
-								 },
-								 error: function(){
-								 }
-							});
-						}
-					});
-				}
-				else {
-					EditSetPointInt(idx,name,setpoint,isprotected)
-				}
-			}
-			else {
-				EditSetPointInt(idx,name,setpoint,isprotected)
-			}
-		}
-		
-		EditThermostatClockInt = function(idx,name,daytime,isprotected)
-		{
-			var sarray=daytime.split(";");
-			$.devIdx=idx;
-			$("#dialog-editthermostatclockdevice #devicename").val(name);
-			$('#dialog-editthermostatclockdevice #protected').prop('checked',(isprotected==true));
-			$("#dialog-editthermostatclockdevice #comboclockday").val(parseInt(sarray[0]));
-			$("#dialog-editthermostatclockdevice #clockhour").val(sarray[1]);
-			$("#dialog-editthermostatclockdevice #clockminute").val(sarray[2]);
-			$("#dialog-editthermostatclockdevice" ).dialog( "open" );
+			HandleProtection(isprotected, function() {
+				$.devIdx=idx;
+				$("#dialog-editsetpointdevice #devicename").val(name);
+				$('#dialog-editsetpointdevice #protected').prop('checked',(isprotected==true));
+				$("#dialog-editsetpointdevice #setpoint").val(setpoint);
+				$("#dialog-editsetpointdevice #tempunit").html($.myglobals.tempsign);
+				$("#dialog-editsetpointdevice" ).dialog( "open" );
+			});
 		}
 		
 		EditThermostatClock = function(idx,name,daytime,isprotected)
@@ -565,41 +518,62 @@ define(['app'], function (app) {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
-			if (typeof isprotected != 'undefined') {
-				if (isprotected==true) {
-					bootbox.prompt($.i18n("Please enter Password")+":", function(result) {
-						if (result === null) {
-							return;
-						} else {
-							if (result=="") {
-								return;
-							}
-							//verify password
-							$.ajax({
-								 url: "json.htm?type=command&param=verifypasscode" + 
-										"&passcode=" + result,
-								 async: false, 
-								 dataType: 'json',
-								 success: function(data) {
-									if (data.status=="OK") {
-										EditThermostatClockInt(idx,name,daytime,isprotected)
-									}
-								 },
-								 error: function(){
-								 }
-							});
-						}
-					});
-				}
-				else {
-					EditThermostatClockInt(idx,name,daytime,isprotected)
-				}
-			}
-			else {
-				EditThermostatClockInt(idx,name,daytime,isprotected)
-			}
+			HandleProtection(isprotected, function() {
+				var sarray=daytime.split(";");
+				$.devIdx=idx;
+				$("#dialog-editthermostatclockdevice #devicename").val(name);
+				$('#dialog-editthermostatclockdevice #protected').prop('checked',(isprotected==true));
+				$("#dialog-editthermostatclockdevice #comboclockday").val(parseInt(sarray[0]));
+				$("#dialog-editthermostatclockdevice #clockhour").val(sarray[1]);
+				$("#dialog-editthermostatclockdevice #clockminute").val(sarray[2]);
+				$("#dialog-editthermostatclockdevice" ).dialog( "open" );
+			});
 		}
-		
+
+		EditThermostatMode = function(idx,name,actmode,modes,isprotected)
+		{
+			HandleProtection(isprotected, function() {
+				var sarray=modes.split(";");
+				$.devIdx=idx;
+				$.isFan=false;
+				$("#dialog-editthermostatmode #devicename").val(name);
+				$('#dialog-editthermostatmode #protected').prop('checked',(isprotected==true));
+				//populate mode combo
+				$("#dialog-editthermostatmode #combomode").html("");
+				var ii=0;
+				while (ii<sarray.length-1) {
+					var option = $('<option />');
+					option.attr('value', sarray[ii]).text(sarray[ii+1]);
+					$("#dialog-editthermostatmode #combomode").append(option);				
+					ii+=2;
+				}
+				
+				$("#dialog-editthermostatmode #combomode").val(parseInt(actmode));
+				$("#dialog-editthermostatmode" ).dialog( "open" );
+			});
+		}
+		EditThermostatFanMode = function(idx,name,actmode,modes,isprotected)
+		{
+			HandleProtection(isprotected, function() {
+				var sarray=modes.split(";");
+				$.devIdx=idx;
+				$.isFan=true;
+				$("#dialog-editthermostatmode #devicename").val(name);
+				$('#dialog-editthermostatmode #protected').prop('checked',(isprotected==true));
+				//populate mode combo
+				$("#dialog-editthermostatmode #combomode").html("");
+				var ii=0;
+				while (ii<sarray.length-1) {
+					var option = $('<option />');
+					option.attr('value', sarray[ii]).text(sarray[ii+1]);
+					$("#dialog-editthermostatmode #combomode").append(option);				
+					ii+=2;
+				}
+				
+				$("#dialog-editthermostatmode #combomode").val(parseInt(actmode));
+				$("#dialog-editthermostatmode" ).dialog( "open" );
+			});
+		}
 
 		AddUtilityDevice = function()
 		{
@@ -696,6 +670,12 @@ define(['app'], function (app) {
 							bigtext=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 						}
 						else if (item.SubType=="Thermostat Clock") {
+						  status=item.Data;
+						}
+						else if (item.SubType=="Thermostat Mode") {
+						  status=item.Data;
+						}
+						else if (item.SubType=="Thermostat Fan Mode") {
 						  status=item.Data;
 						}
 						
@@ -950,6 +930,14 @@ define(['app'], function (app) {
 					  xhtm+='clock48.png" height="48" width="48"></td>\n';
 					  status=item.Data;
 					}
+					else if (item.SubType=="Thermostat Mode") {
+					  xhtm+='mode48.png" height="48" width="48"></td>\n';
+					  status=item.Data;
+					}
+					else if (item.SubType=="Thermostat Fan Mode") {
+					  xhtm+='mode48.png" height="48" width="48"></td>\n';
+					  status=item.Data;
+					}
 					if (typeof item.CounterDeliv != 'undefined') {
 						if (item.CounterDeliv!=0) {
 							status+='<br>' + $.i18n("Return") + ': ' + item.CounterDeliv + ', ' + $.i18n("Today") + ': ' + item.CounterDelivToday;
@@ -1054,6 +1042,16 @@ define(['app'], function (app) {
 				  else if (item.SubType=="Thermostat Clock") {
 						if (permissions.hasPermission("Admin")) {
 							xhtm+='<a class="btnsmall" onclick="EditThermostatClock(' + item.idx + ',\'' + item.Name + '\', \'' + item.DayTime + '\',' + item.Protected +');" data-i18n="Edit">Edit</a> ';
+						}
+				  }
+				  else if (item.SubType=="Thermostat Mode") {
+						if (permissions.hasPermission("Admin")) {
+							xhtm+='<a class="btnsmall" onclick="EditThermostatMode(' + item.idx + ',\'' + item.Name + '\', \'' + item.Mode + '\', \'' + item.Modes + '\',' + item.Protected +');" data-i18n="Edit">Edit</a> ';
+						}
+				  }
+				  else if (item.SubType=="Thermostat Fan Mode") {
+						if (permissions.hasPermission("Admin")) {
+							xhtm+='<a class="btnsmall" onclick="EditThermostatFanMode(' + item.idx + ',\'' + item.Name + '\', \'' + item.Mode + '\', \'' + item.Modes + '\',' + item.Protected +');" data-i18n="Edit">Edit</a> ';
 						}
 				  }
 				  else if ((item.Type == "General")&&(item.SubType == "Voltage")) {
@@ -1344,6 +1342,63 @@ define(['app'], function (app) {
 							if (result==true) {
 							  $.ajax({
 								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editthermostatclockdevice #devicename").val()) + '&used=false',
+								 async: false, 
+								 dataType: 'json',
+								 success: function(data) {
+									ShowUtilities();
+								 }
+							  });
+							}
+						});
+					  },
+					  Cancel: function() {
+						  $( this ).dialog( "close" );
+					  }
+				  },
+				  close: function() {
+					$( this ).dialog( "close" );
+				  }
+			});
+
+			$( "#dialog-editthermostatmode" ).dialog({
+				  autoOpen: false,
+				  width: 390,
+				  height: 260,
+				  modal: true,
+				  resizable: false,
+				  buttons: {
+					  "Update": function() {
+						  var bValid = true;
+						  bValid = bValid && checkLength( $("#dialog-editthermostatmode #devicename"), 2, 100 );
+						  if ( bValid ) {
+							  $( this ).dialog( "close" );
+							  var modestr="";
+							  if ($.isFan==false) {
+								modestr="&tmode="+$("#dialog-editthermostatmode #combomode").val();
+							  }
+							  else {
+								modestr="&fmode="+$("#dialog-editthermostatmode #combomode").val();
+							  }
+							  $.ajax({
+								 url: "json.htm?type=setused&idx=" + $.devIdx +
+								 '&name=' + encodeURIComponent($("#dialog-editthermostatmode #devicename").val()) +
+								 modestr + 
+								 '&protected=' + $('#dialog-editthermostatmode #protected').is(":checked") +
+								 '&used=true',
+								 async: false, 
+								 dataType: 'json',
+								 success: function(data) {
+									ShowUtilities();
+								 }
+							  });
+						  }
+					  },
+					  "Remove Device": function() {
+						$( this ).dialog( "close" );
+						bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+							if (result==true) {
+							  $.ajax({
+								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editthermostatmode #devicename").val()) + '&used=false',
 								 async: false, 
 								 dataType: 'json',
 								 success: function(data) {

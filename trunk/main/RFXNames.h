@@ -143,14 +143,18 @@ const char *Switch_Type_Desc(const _eSwitchType sType);
 const char *Meter_Type_Desc(const _eMeterType sType);
 const char *RFX_Forecast_Desc(const unsigned char Forecast);
 const char *RFX_WSForecast_Desc(const unsigned char Forecast);
-const char *Timer_Type_Desc(int tType);
-const char *Timer_Cmd_Desc(int tCmd);
+const char *Timer_Type_Desc(const int tType);
+const char *Timer_Cmd_Desc(const int tCmd);
 const char *Hardware_Type_Desc(int hType);
 const char *Security_Status_Desc(const unsigned char status);
 const char *Notification_Type_Desc(const int nType, const unsigned char snum);
 const char *Notification_Type_Label(const int nType);
 const char *Get_Moisture_Desc(const int moisture);
 const char *ZWave_Clock_Days(const unsigned char Day);
+extern const char *ZWave_Thermostat_Modes[];
+extern const char *ZWave_Thermostat_Fan_Modes[];
+int Lookup_ZWave_Thermostat_Modes(const std::string &sMode);
+int Lookup_ZWave_Thermostat_Fan_Modes(const std::string &sMode);
 
 void GetLightStatus(
 	const unsigned char dType, 
