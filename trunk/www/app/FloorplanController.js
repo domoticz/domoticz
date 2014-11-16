@@ -58,7 +58,7 @@ define(['app'], function (app) {
 				}
 				else {
 					$scope.resetFloorplan();
-					$scope.SVGContainerResize();
+					$scope.SVGContainer2Resize();
 					RefreshDevices();
 				}
 		}
@@ -126,14 +126,14 @@ define(['app'], function (app) {
 					}
 					if ($scope.selectedFloorplan.idx == target.getAttribute("index")) {
 						$("#svgcontainer2")[0].setAttribute("viewBox","0 0 "+node.naturalWidth+" "+node.naturalHeight);
-						$scope.SVGContainerResize();
+						$scope.SVGContainer2Resize();
 						$("#svgcontainer2")[0].setAttribute("style","display:inline");
 					}
 				}
 			}
 		}
 
-		$scope.SVGContainerResize = function() {
+		$scope.SVGContainer2Resize = function() {
 			if (typeof $("#floorplancontainer") != 'undefined') {
 				Device.xImageSize = $scope.floorPlans[$scope.actFloorplan].xImageSize;
 				Device.yImageSize = $scope.floorPlans[$scope.actFloorplan].yImageSize;
@@ -456,7 +456,7 @@ define(['app'], function (app) {
 									  function(){$(this).css({'fill-opacity': $.myglobals.InactiveRoomOpacity/100})});
 			}
 
-			$( window ).resize(function() { $scope.SVGContainerResize(); });
+			$( window ).resize(function() { $scope.SVGContainer2Resize(); });
 		}
 
 		init();
@@ -475,6 +475,7 @@ define(['app'], function (app) {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
+			$( window ).off('resize');
 		}); 
 		
 	} ]);

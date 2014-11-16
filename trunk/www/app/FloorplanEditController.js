@@ -8,11 +8,11 @@ define(['app'], function (app) {
 				Device.xImageSize = $("#floorplanimagesize")[0].naturalWidth;
 				Device.yImageSize = $("#floorplanimagesize")[0].naturalHeight;
 				$("#svgcontainer")[0].setAttribute("style","display:inline");
-				SVGResize();
+				$scope.SVGContainerResize();
 			}
 		}
 
-		SVGResize = function() {
+		$scope.SVGContainerResize = function() {
 			var svgHeight;
 			if ((typeof $("#floorplaneditor") != 'undefined') && (typeof $("#floorplanimagesize") != 'undefined') && (typeof $("#floorplanimagesize")[0] != 'undefined') && ($("#floorplanimagesize")[0].naturalWidth != 'undefined')){
 				$("#floorplaneditor")[0].setAttribute('naturalWidth', $("#floorplanimagesize")[0].naturalWidth);
@@ -415,7 +415,7 @@ define(['app'], function (app) {
 								RefreshPlanTable(idx);
 								$("#floorplanimage").attr("xlink:href", data["Image"]);
 								$("#floorplanimagesize").attr("src", data["Image"]);
-								SVGResize();
+								$scope.SVGContainerResize();
 							}
 						}
 						SetButtonStates();
@@ -839,12 +839,16 @@ define(['app'], function (app) {
 			$("#floorplanimage").on("click", function ( event ) {FloorplanClick(event);});
 			$("#roompolyarea").on("click", function ( event ) {PolyClick(event);});
 			$("#svgcontainer").on("mousemove", function ( event ) {MouseXY(event);});
+			$("#svgcontainer").resize(function() { $scope.SVGContainerResize(); });
 		};
 		$scope.$on('$destroy', function(){
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
+			$("#floorplanimage").off();
+			$("#roompolyarea").off();
+			$("#svgcontainer").off();
 		}); 
 	} ]);
 });
