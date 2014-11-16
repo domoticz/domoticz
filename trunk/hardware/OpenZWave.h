@@ -163,6 +163,7 @@ private:
 	bool m_initFailed;
 	bool m_bInUserCodeEnrollmentMode;
 	bool m_bNightlyNetworkHeal;
+	bool m_bNeedSave;
 };
 
 #endif //WITH_OPENZWAVE

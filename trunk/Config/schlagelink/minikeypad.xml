@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Zipato mini keypad RFID -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+	<!-- Configuration -->
+	<CommandClass id="112">
+
+		<Value type="byte" genre="config" instance="1" index="1" label="Set to Default" value="0">
+			<Help>Set all configuration values to default values (factory settings) if set to 0xff.</Help>
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="2" label="Feedback Time" value="16" >
+			<Help>To configure the time the beep is automatically turned off in seconds. 0 means disabled. 255 is endless</Help>
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="3" label="Feedback Timeout" value="0">
+			<Help>To configure the timeout to wait for a WAKEUP_NO_MORE_INFORMATION before the error beep is automatically sound. The error beeps are fixed 8 beeps shortly after each other. 0 means disabled</Help>
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="4" label="Feedback Beeps per Second" value="2">
+			<Help>To configure the number of beeps per second. Every beep is fixed about 10ms.</Help>
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="5" label="The Mode" value="1" size="1">
+			<Help>To configure the operating mode. If any mode other then 3, that value will be reported after a get but will be handled in SW as mode 1.</Help>
+			<Item label="Mode 1: Normal operating mode." value="1"/>
+			<Item label="Mode 3: Z-Wave chip is always on to request e.g. version or manufacturer id." value="3"/>
+		</Value>
+	</CommandClass>
+	
+	<!-- COMMAND_CLASS_ALARM AlarmCmd_Get not supported -->
+	<CommandClass id="113" getsupported="false" />
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="Report" auto="false"/>
+		</Associations>
+	</CommandClass>
+
+</Product>

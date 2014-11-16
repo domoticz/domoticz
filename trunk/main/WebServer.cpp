@@ -8850,14 +8850,13 @@ namespace http {
 							musage = float(gasactual) / GasDivider;
 							sprintf(szTmp, "%.03f", musage);
 							root["result"][ii]["Counter"] = szTmp;
-
 							total_real_gas = gasactual - total_min_gas;
-
 							musage = float(total_real_gas) / GasDivider;
 							sprintf(szTmp, "%.03f m3", musage);
 							root["result"][ii]["CounterToday"] = szTmp;
-							root["result"][ii]["Data"] = sValue;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							sprintf(szTmp, "%.03f", atof(sValue.c_str()) / GasDivider);
+							root["result"][ii]["Data"] = szTmp;
 						}
 						else
 						{
@@ -8866,7 +8865,8 @@ namespace http {
 							root["result"][ii]["Counter"] = szTmp;
 							sprintf(szTmp, "%.03f m3", 0.0f);
 							root["result"][ii]["CounterToday"] = szTmp;
-							root["result"][ii]["Data"] = sValue;
+							sprintf(szTmp, "%.03f", atof(sValue.c_str()) / GasDivider);
+							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						}
 					}
