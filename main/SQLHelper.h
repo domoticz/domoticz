@@ -351,6 +351,7 @@ private:
 	std::map<unsigned long long,int> m_timeoutlastsend;
 	bool			m_bAcceptHardwareTimerActive;
 	int				m_iAcceptHardwareTimerCounter;
+	bool			m_bPreviousAcceptNewHardware;
 
 	std::vector<_tTaskItem> m_background_task_queue;
 	boost::shared_ptr<boost::thread> m_background_task_thread;

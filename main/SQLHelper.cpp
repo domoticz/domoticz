@@ -1240,6 +1240,7 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("RaspCamParams", "-w 800 -h 600 -t 1"); //width/height/time2wait
 	}
+	nValue = 1;
 	if (!GetPreferencesVar("AcceptNewHardware", nValue))
 	{
 		UpdatePreferencesVar("AcceptNewHardware", 1);
@@ -1266,12 +1267,14 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("BatteryLowNotification", 0); //default disabled
 	}
+	nValue = 1;
 	if (!GetPreferencesVar("AllowWidgetOrdering", nValue))
 	{
 		UpdatePreferencesVar("AllowWidgetOrdering", 1); //default enabled
 		nValue=1;
 	}
 	m_bAllowWidgetOrdering=(nValue==1);
+	nValue = 0;
 	if (!GetPreferencesVar("ActiveTimerPlan", nValue))
 	{
 		UpdatePreferencesVar("ActiveTimerPlan", 0); //default
@@ -1282,6 +1285,7 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("HideDisabledHardwareSensors", 1);
 	}
+	nValue = 0;
 	if (!GetPreferencesVar("DisableEventScriptSystem", nValue))
 	{
 		UpdatePreferencesVar("DisableEventScriptSystem", 0);
@@ -1372,8 +1376,8 @@ void CSQLHelper::Do_Work()
 			if (m_iAcceptHardwareTimerCounter <= 0)
 			{
 				m_bAcceptHardwareTimerActive = false;
-				m_bAcceptNewHardware = false;
-				UpdatePreferencesVar("AcceptNewHardware", 0);
+				m_bAcceptNewHardware = m_bPreviousAcceptNewHardware;
+				UpdatePreferencesVar("AcceptNewHardware", (m_bAcceptNewHardware==true)?1:0);
 				_log.Log(LOG_STATUS, "Receiving of new sensors disabled!...");
 			}
 		}
@@ -6591,6 +6595,10 @@ bool CSQLHelper::CheckTime(const std::string &sTime)
 void CSQLHelper::AllowNewHardwareTimer(const int iTotMinutes)
 {
 	m_iAcceptHardwareTimerCounter = iTotMinutes * 60;
+	if (m_bAcceptHardwareTimerActive == false)
+	{
+		m_bPreviousAcceptNewHardware = m_bAcceptNewHardware;
+	}
 	m_bAcceptNewHardware = true;
 	m_bAcceptHardwareTimerActive = true;
 	_log.Log(LOG_STATUS, "New sensors allowed for %d minutes...", iTotMinutes);

@@ -2366,6 +2366,10 @@ bool COpenZWave::SoftResetDevice()
 	if (m_pManager == NULL)
 		return false;
 
+	std::stringstream szQuery;
+	szQuery << "DELETE FROM ZWaveNodes WHERE (HardwareID = '" << m_HwdID << "')";
+	m_sql.query(szQuery.str());
+
 	m_pManager->SoftReset(m_controllerID);
 	_log.Log(LOG_STATUS, "OpenZWave: Soft Reset device executed...");
 	return true;
@@ -2375,6 +2379,10 @@ bool COpenZWave::HardResetDevice()
 {
 	if (m_pManager == NULL)
 		return false;
+
+	std::stringstream szQuery;
+	szQuery << "DELETE FROM ZWaveNodes WHERE (HardwareID = '" << m_HwdID << "')";
+	m_sql.query(szQuery.str());
 
 	m_pManager->ResetController(m_controllerID);
 	_log.Log(LOG_STATUS, "OpenZWave: Hard Reset device executed...");
