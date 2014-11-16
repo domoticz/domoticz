@@ -269,6 +269,7 @@ m_szSerialPort(devname)
 	m_bInUserCodeEnrollmentMode = false;
 	m_bNightlyNetworkHeal = false;
 	m_pManager = NULL;
+	m_bNeedSave = false;
 }
 
 
@@ -412,11 +413,11 @@ void OnNotification(OpenZWave::Notification const* _notification, void* _context
 
 void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notification)
 {
-	if (m_bIsShuttingDown)
-		return;
-
 	// Must do this inside a critical section to avoid conflicts with the main thread
 	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+
+	if (m_bIsShuttingDown)
+		return;
 
 	//Send 2 OZW control panel
 	OnCPNotification(_notification);
@@ -447,6 +448,62 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		break;
 	case OpenZWave::Notification::Type_NodeNew:
 		_log.Log(LOG_STATUS, "OpenZWave: New Node added. HomeID: %u, NodeID: %d", _homeID, _nodeID);
+		m_bNeedSave = true;
+		break;
+	case OpenZWave::Notification::Type_NodeAdded:
+		{
+			// Add the new node to our list
+			NodeInfo nodeInfo;
+			nodeInfo.m_homeId = _homeID;
+			nodeInfo.m_nodeId = _nodeID;
+			nodeInfo.m_polled = false;
+			nodeInfo.HaveUserCodes = false;
+			nodeInfo.szType = pManager->GetNodeType(_homeID, _nodeID);
+			nodeInfo.iVersion = pManager->GetNodeVersion(_homeID, _nodeID);
+			nodeInfo.Manufacturer_id = pManager->GetNodeManufacturerId(_homeID, _nodeID);
+			nodeInfo.Manufacturer_name = pManager->GetNodeManufacturerName(_homeID, _nodeID);
+			nodeInfo.Product_type = pManager->GetNodeProductType(_homeID, _nodeID);
+			nodeInfo.Product_id = pManager->GetNodeProductId(_homeID, _nodeID);
+			nodeInfo.Product_name = pManager->GetNodeProductName(_homeID, _nodeID);
+
+			nodeInfo.tClockDay = -1;
+			nodeInfo.tClockHour = -1;
+			nodeInfo.tClockMinute = -1;
+			nodeInfo.tMode = -1;
+			nodeInfo.tFanMode = -1;
+
+			if ((_homeID == m_controllerID) && (_nodeID == m_controllerNodeId))
+				nodeInfo.eState = NSTATE_AWAKE;	//controller is always awake
+			else
+				nodeInfo.eState = NTSATE_UNKNOWN;
+
+			nodeInfo.m_LastSeen = m_updateTime;
+			m_nodes.push_back(nodeInfo);
+			AddNode(_homeID, _nodeID, &nodeInfo);
+			m_bNeedSave = true;
+		}
+		break;
+	case OpenZWave::Notification::Type_NodeRemoved:
+		{
+			_log.Log(LOG_STATUS, "OpenZWave: Node Removed. HomeID: %u, NodeID: %d", _homeID, _nodeID);
+			// Remove the node from our list
+			for (std::list<NodeInfo>::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it)
+			{
+				if ((it->m_homeId == _homeID) && (it->m_nodeId == _nodeID))
+				{
+					m_nodes.erase(it);
+					DeleteNode(_homeID, _nodeID);
+					break;
+				}
+			}
+			m_bNeedSave = true;
+		}
+		break;
+	case OpenZWave::Notification::Type_NodeProtocolInfo:
+		m_bNeedSave = true;
+		break;
+	case OpenZWave::Notification::Type_DriverReset:
+		m_bNeedSave = true;
 		break;
 	case OpenZWave::Notification::Type_ValueAdded:
 		if (NodeInfo* nodeInfo = GetNodeInfo(_notification))
@@ -560,54 +617,6 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			nodeInfo->m_LastSeen = m_updateTime;
 		}
 		break;
-	case OpenZWave::Notification::Type_NodeAdded:
-	{
-		// Add the new node to our list
-		NodeInfo nodeInfo;
-		nodeInfo.m_homeId = _homeID;
-		nodeInfo.m_nodeId = _nodeID;
-		nodeInfo.m_polled = false;
-		nodeInfo.HaveUserCodes = false;
-		nodeInfo.szType = pManager->GetNodeType(_homeID, _nodeID);
-		nodeInfo.iVersion = pManager->GetNodeVersion(_homeID, _nodeID);
-		nodeInfo.Manufacturer_id = pManager->GetNodeManufacturerId(_homeID, _nodeID);
-		nodeInfo.Manufacturer_name = pManager->GetNodeManufacturerName(_homeID, _nodeID);
-		nodeInfo.Product_type = pManager->GetNodeProductType(_homeID, _nodeID);
-		nodeInfo.Product_id = pManager->GetNodeProductId(_homeID, _nodeID);
-		nodeInfo.Product_name = pManager->GetNodeProductName(_homeID, _nodeID);
-
-		nodeInfo.tClockDay = -1;
-		nodeInfo.tClockHour = -1;
-		nodeInfo.tClockMinute = -1;
-		nodeInfo.tMode = -1;
-		nodeInfo.tFanMode = -1;
-
-		if ((_homeID == m_controllerID) && (_nodeID == m_controllerNodeId))
-			nodeInfo.eState = NSTATE_AWAKE;	//controller is always awake
-		else
-			nodeInfo.eState = NTSATE_UNKNOWN;
-
-		nodeInfo.m_LastSeen = m_updateTime;
-		m_nodes.push_back(nodeInfo);
-		AddNode(_homeID, _nodeID, &nodeInfo);
-	}
-		break;
-	case OpenZWave::Notification::Type_NodeRemoved:
-	{
-		_log.Log(LOG_STATUS, "OpenZWave: Node Removed. HomeID: %u, NodeID: %d", _homeID, _nodeID);
-		// Remove the node from our list
-		for (std::list<NodeInfo>::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it)
-		{
-			if ((it->m_homeId == _homeID) && (it->m_nodeId == _nodeID))
-			{
-				m_nodes.erase(it);
-				DeleteNode(_homeID, _nodeID);
-				WriteControllerConfig();
-				break;
-			}
-		}
-	}
-		break;
 	case OpenZWave::Notification::Type_NodeEvent:
 		// We have received an event from the node, caused by a
 		// basic_set or hail message.
@@ -644,8 +653,8 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 	case OpenZWave::Notification::Type_AwakeNodesQueried:
 		_log.Log(LOG_STATUS, "OpenZWave: Awake Nodes queried");
 		m_awakeNodesQueried = true;
+		m_bNeedSave = true;
 		NodesQueried();
-		WriteControllerConfig();
 		break;
 	case OpenZWave::Notification::Type_AllNodesQueried:
 	case OpenZWave::Notification::Type_AllNodesQueriedSomeDead:
@@ -656,7 +665,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		else
 			_log.Log(LOG_STATUS, "OpenZWave: All Nodes queried (Some Dead)");
 		NodesQueried();
-		WriteControllerConfig();
+		m_bNeedSave = true;
 		break;
 	case OpenZWave::Notification::Type_NodeNaming:
 		if (NodeInfo* nodeInfo = GetNodeInfo(_notification))
@@ -672,11 +681,11 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 				AddNode(_homeID, _nodeID, nodeInfo);
 			}
 			nodeInfo->m_LastSeen = m_updateTime;
+			m_bNeedSave = true;
 		}
 		break;
-	case OpenZWave::Notification::Type_DriverReset:
-	case OpenZWave::Notification::Type_NodeProtocolInfo:
 	case OpenZWave::Notification::Type_NodeQueriesComplete:
+		m_bNeedSave = true;
 		break;
 	case OpenZWave::Notification::Type_EssentialNodeQueriesComplete:
 		//The queries on a node that are essential to its operation have been completed. The node can now handle incoming messages.
@@ -687,8 +696,18 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 	}
 
 	//Force configuration flush every hour
-	if (m_updateTime - m_LastControllerConfigWrite > 3600)
+	bool bWriteControllerConfig = false;
+	if (m_bNeedSave)
 	{
+		bWriteControllerConfig = (m_updateTime - m_LastControllerConfigWrite > 60);
+	}
+	else
+	{
+		bWriteControllerConfig = (m_updateTime - m_LastControllerConfigWrite > 3600);
+	}
+	if (bWriteControllerConfig)
+	{
+		m_bNeedSave = false;
 		WriteControllerConfig();
 	}
 }
@@ -731,6 +750,7 @@ bool COpenZWave::OpenSerialConnector()
 
 	m_updateTime = mytime(NULL);
 	CloseSerialConnector();
+	m_bNeedSave = false;
 	std::string ConfigPath = szStartupFolder + "Config/";
 	// Create the OpenZWave Manager.
 	// The first argument is the path to the config files (where the manufacturer_specific.xml file is located
@@ -793,11 +813,12 @@ void COpenZWave::CloseSerialConnector()
 {
 	// program exit (clean up)
 	m_bIsShuttingDown = true;
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+
 	OpenZWave::Manager* pManager = OpenZWave::Manager::Get();
 	if (pManager)
 	{
 		WriteControllerConfig();
-		//		boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 		_log.Log(LOG_STATUS, "OpenZWave: Closed");
 
 		try
@@ -2537,6 +2558,9 @@ std::string COpenZWave::GetConfigFile(std::string &szConfigFile)
 	if (m_pManager == NULL)
 		return retstring;
 
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+	WriteControllerConfig();
+
 	char szFileName[255];
 	sprintf(szFileName, "%sConfig/zwcfg_0x%08x.xml", szStartupFolder.c_str(), m_controllerID);
 	szConfigFile = szFileName;
@@ -2587,7 +2611,7 @@ void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
 	case OpenZWave::Driver::ControllerState_Completed:
 		m_bControllerCommandInProgress = false;
 		szLog = "The command has completed successfully";
-		WriteControllerConfig();
+		m_bNeedSave=true;
 		break;
 	case OpenZWave::Driver::ControllerState_Failed:
 		szLog = "The command has failed";
@@ -2770,6 +2794,10 @@ void COpenZWave::DeleteNode(const unsigned int homeID, const int nodeID)
 
 void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const NodeInfo *pNode)
 {
+	if (m_controllerID == 0)
+		return;
+	if (homeID != m_controllerID)
+		return;
 	//Check if node already exist
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
@@ -2780,8 +2808,6 @@ void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const Node
 
 	std::string sProductDescription = pNode->Manufacturer_name + " " + pNode->Product_name;
 
-	bool bWriteConfig = false;
-
 	if (result.size() < 1)
 	{
 		//Not Found, Add it to the database
@@ -2789,7 +2815,6 @@ void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const Node
 			szQuery << "INSERT INTO ZWaveNodes (HardwareID, HomeID, NodeID, ProductDescription) VALUES (" << m_HwdID << "," << homeID << "," << nodeID << ",'" << sProductDescription << "')";
 		else
 			szQuery << "INSERT INTO ZWaveNodes (HardwareID, HomeID, NodeID, Name,ProductDescription) VALUES (" << m_HwdID << "," << homeID << "," << nodeID << ",'Controller','" << sProductDescription << "')";
-		bWriteConfig = !pNode->Manufacturer_name.empty();
 	}
 	else
 	{
@@ -2802,8 +2827,6 @@ void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const Node
 		szQuery << "UPDATE ZWaveNodes SET ProductDescription='" << sProductDescription << "' WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
 	}
 	m_sql.query(szQuery.str());
-	if (bWriteConfig)
-		WriteControllerConfig();
 }
 
 void COpenZWave::EnableDisableNodePolling()
