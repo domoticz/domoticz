@@ -2119,6 +2119,7 @@ void CEventSystem::OpenURL(const std::string &URL)
 {
 	std::string ampURL = stdreplace(URL, "~amp~", "&");
 	ampURL = stdreplace(ampURL, "~comma~", ",");
+	ampURL = stdreplace(ampURL, "~perc~", "%");
 	//_log.Log(LOG_STATUS,"Fetching url: %s",ampURL.c_str());
 	_log.Log(LOG_STATUS, "Fetching url...");
 	_tTaskItem tItem;

@@ -52,6 +52,8 @@ Version 2.0.xxxx (October xxth 2014)
 - Changed: OpenZWave, configuration file for Romotec ZXT-120
 - Implemented: OpenZWave, Added Qubino ZMNHJA2.xml config file
 - Implemented: OpenZWave, Added NorthQ nq9121.xml config file
+- Implemented: OpenZWave, when doing an Inclusion, "allow new hardware" is enabled for 5 minutes if disabled
+- Fixed: OpenZWave when doing a soft/hard reset all entries will be deleted from the ZWaveNodes table
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

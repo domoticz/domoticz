@@ -1469,6 +1469,7 @@ namespace http {
 			if (pHardware != NULL)
 			{
 				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				m_sql.AllowNewHardwareTimer(5);
 				pOZWHardware->IncludeDevice();
 				root["status"] = "OK";
 				root["title"] = "ZWaveInclude";
