@@ -47,7 +47,8 @@ static Match matchlist[] = {
 
 //end
 
-MochadTCP::MochadTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort)
+MochadTCP::MochadTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort):
+m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
 #if defined WIN32
@@ -70,13 +71,12 @@ MochadTCP::MochadTCP(const int ID, const std::string IPAddress, const unsigned s
 #endif
 	m_socket=INVALID_SOCKET;
 	m_stoprequested=false;
-	m_szIPAddress=IPAddress;
 	m_usIPPort=usIPPort;
 	m_linecount=0;
 	m_exclmarkfound=0;
 	m_bufferpos=0;
 
-	memset(&m_buffer,0,sizeof(m_buffer));
+	memset(&m_mochadbuffer,0,sizeof(m_mochadbuffer));
 	memset(&m_mochad,0,sizeof(m_mochad));
 
 	m_mochad.LIGHTING1.packetlength = sizeof(m_mochad) - 1;
@@ -238,7 +238,7 @@ void MochadTCP::OnError(const boost::system::error_code& error)
 
 void MochadTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	RBUF *m_mochad = (RBUF *)pdata;
+	//RBUF *m_mochad = (RBUF *)pdata;
 	if (!mIsConnected)
 		return;
 	if (pdata[1] == pTypeInterfaceControl && pdata[2] == sTypeInterfaceCommand && pdata[4] == cmdSTATUS) {
@@ -260,7 +260,7 @@ void MochadTCP::WriteToHardware(const char *pdata, const unsigned char length)
 
 void MochadTCP::MatchLine()
 {
-	if ((strlen((const char*)&m_buffer)<1)||(m_buffer[0]==0x0a))
+	if ((strlen((const char*)&m_mochadbuffer)<1)||(m_mochadbuffer[0]==0x0a))
 		return; //null value (startup)
 	uint8_t i;
 	int j,k;
@@ -277,7 +277,7 @@ void MochadTCP::MatchLine()
 		switch(t.matchtype)
 		{
 		case ID:
-			if(strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0) {
+			if(strncmp(t.key, (const char*)&m_mochadbuffer, strlen(t.key)) == 0) {
 				m_linecount=1;
 				found=1;
 			}
@@ -285,14 +285,14 @@ void MochadTCP::MatchLine()
 				continue;
 			break;
 		case STD:
-			if(strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0) {
+			if(strncmp(t.key, (const char*)&m_mochadbuffer, strlen(t.key)) == 0) {
 				found=1;
 			}
 			else 
 				continue;
 			break;
 		case LINE17:
-			if(strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0) {
+			if(strncmp(t.key, (const char*)&m_mochadbuffer, strlen(t.key)) == 0) {
 				m_linecount = 17;
 				found=1;
 			}
@@ -300,12 +300,12 @@ void MochadTCP::MatchLine()
 				continue;
 			break;
 		case LINE18:
-			if((m_linecount == 18)&&(strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0)) {
+			if((m_linecount == 18)&&(strncmp(t.key, (const char*)&m_mochadbuffer, strlen(t.key)) == 0)) {
 				found=1;
 			}
 			break;
 		case EXCLMARK:
-			if(strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0) {
+			if(strncmp(t.key, (const char*)&m_mochadbuffer, strlen(t.key)) == 0) {
 				m_exclmarkfound=1;
 				found=1;
 			}
@@ -323,53 +323,53 @@ void MochadTCP::MatchLine()
 	{
 	case MOCHAD_STATUS:
 		j = t.start;
-		if (!('A'<=  m_buffer[j] &&  m_buffer[j] <='Z'))
+		if (!('A'<=  m_mochadbuffer[j] &&  m_mochadbuffer[j] <='Z'))
 			goto onError;
-		m_mochad.LIGHTING1.housecode = m_buffer[j++];
-		if (!(':'==  m_buffer[j++])) goto onError;
-		if (!(' '==  m_buffer[j++])) goto onError;
-		while ('1' <= m_buffer[j] && m_buffer[j] <= '9') {
-			m_mochad.LIGHTING1.unitcode = m_buffer[j++] - '0'; 
-			if ('0' <= m_buffer[j] && m_buffer[j] <= '9') {
-				m_mochad.LIGHTING1.unitcode = m_mochad.LIGHTING1.unitcode*10 + m_buffer[j++] - '0';
+		m_mochad.LIGHTING1.housecode = m_mochadbuffer[j++];
+		if (!(':'==  m_mochadbuffer[j++])) goto onError;
+		if (!(' '==  m_mochadbuffer[j++])) goto onError;
+		while ('1' <= m_mochadbuffer[j] && m_mochadbuffer[j] <= '9') {
+			m_mochad.LIGHTING1.unitcode = m_mochadbuffer[j++] - '0'; 
+			if ('0' <= m_mochadbuffer[j] && m_mochadbuffer[j] <= '9') {
+				m_mochad.LIGHTING1.unitcode = m_mochad.LIGHTING1.unitcode*10 + m_mochadbuffer[j++] - '0';
 			}
-			if (!('='==  m_buffer[j++]))
+			if (!('='==  m_mochadbuffer[j++]))
 				return;
-			if (!('0' <= m_buffer[j] && m_buffer[j] <= '1')) goto onError;
-			m_mochad.LIGHTING1.cmnd = m_buffer[j++] - '0';
+			if (!('0' <= m_mochadbuffer[j] && m_mochadbuffer[j] <= '1')) goto onError;
+			m_mochad.LIGHTING1.cmnd = m_mochadbuffer[j++] - '0';
 			sDecodeRXMessage(this, (const unsigned char *)&m_mochad);//decode message
-			if (!(','==  m_buffer[j++])) return;
+			if (!(','==  m_mochadbuffer[j++])) return;
 		}
 		break;
 	case MOCHAD_UNIT:
 		j = t.start;
-		if (!('A'<=  m_buffer[j] &&  m_buffer[j] <='Z')) goto onError;
-		currentHouse = m_buffer[j++]-'A';
-		if (!('0' <= m_buffer[j] && m_buffer[j] <= '9')) goto onError;
-		currentUnit = m_buffer[j++] - '0';
-		if (('0' <= m_buffer[j] && m_buffer[j] <= '9')) 
-			currentUnit = currentUnit*10 + m_buffer[j++] - '0';
+		if (!('A'<=  m_mochadbuffer[j] &&  m_mochadbuffer[j] <='Z')) goto onError;
+		currentHouse = m_mochadbuffer[j++]-'A';
+		if (!('0' <= m_mochadbuffer[j] && m_mochadbuffer[j] <= '9')) goto onError;
+		currentUnit = m_mochadbuffer[j++] - '0';
+		if (('0' <= m_mochadbuffer[j] && m_mochadbuffer[j] <= '9')) 
+			currentUnit = currentUnit*10 + m_mochadbuffer[j++] - '0';
 		selected[currentHouse][currentUnit] = 1;
-		if (!(' '==  m_buffer[j++])) return;
+		if (!(' '==  m_mochadbuffer[j++])) return;
 		goto checkFunc;
 		break;
 	case MOCHAD_ACTION:
 		j = t.start;
-		if (!('A'<=  m_buffer[j] &&  m_buffer[j] <='Z'))
+		if (!('A'<=  m_mochadbuffer[j] &&  m_mochadbuffer[j] <='Z'))
 			goto onError;
-		currentHouse = m_buffer[j++]-'A';
-		if (!(' '==  m_buffer[j++])) goto onError;
+		currentHouse = m_mochadbuffer[j++]-'A';
+		if (!(' '==  m_mochadbuffer[j++])) goto onError;
 checkFunc:
-		if (!('F'==  m_buffer[j++])) goto onError;
-		if (!('u'==  m_buffer[j++])) goto onError;
-		if (!('n'==  m_buffer[j++])) goto onError;
-		if (!('c'==  m_buffer[j++])) goto onError;
-		if (!(':'==  m_buffer[j++])) goto onError;
-		if (!(' '==  m_buffer[j++])) goto onError;
-		if (!('O'==  m_buffer[j++])) goto onError;
-		if ('f'==  m_buffer[j]) m_mochad.LIGHTING1.cmnd = 0;
+		if (!('F'==  m_mochadbuffer[j++])) goto onError;
+		if (!('u'==  m_mochadbuffer[j++])) goto onError;
+		if (!('n'==  m_mochadbuffer[j++])) goto onError;
+		if (!('c'==  m_mochadbuffer[j++])) goto onError;
+		if (!(':'==  m_mochadbuffer[j++])) goto onError;
+		if (!(' '==  m_mochadbuffer[j++])) goto onError;
+		if (!('O'==  m_mochadbuffer[j++])) goto onError;
+		if ('f'==  m_mochadbuffer[j]) m_mochad.LIGHTING1.cmnd = 0;
 		else
-		if ('n'==  m_buffer[j]) m_mochad.LIGHTING1.cmnd = 1;
+		if ('n'==  m_mochadbuffer[j]) m_mochad.LIGHTING1.cmnd = 1;
 		else goto onError;
 		for (k=1;k<=16;k++) {
 			if (selected[currentHouse][k] >0) {
@@ -383,7 +383,7 @@ checkFunc:
 	}
 	return;
 onError:
-	_log.Log(LOG_ERROR, "Mochad: Cannot decode '%s'", m_buffer);
+	_log.Log(LOG_ERROR, "Mochad: Cannot decode '%s'", m_mochadbuffer);
 
 }
 
@@ -399,20 +399,20 @@ void MochadTCP::ParseData(const unsigned char *pData, int Len)
 			continue;
 		}
 
-		m_buffer[m_bufferpos] = c;
-		if(c == 0x0a || m_bufferpos == sizeof(m_buffer) - 1)
+		m_mochadbuffer[m_bufferpos] = c;
+		if(c == 0x0a || m_bufferpos == sizeof(m_mochadbuffer) - 1)
 		{
 			// discard newline, close string, parse line and clear it.
-			if(m_bufferpos > 0) m_buffer[m_bufferpos] = 0;
+			if(m_bufferpos > 0) m_mochadbuffer[m_bufferpos] = 0;
 			m_linecount++;
-			if (strlen((const char *)m_buffer) > 14) {
+			if (strlen((const char *)m_mochadbuffer) > 14) {
 				int i = 0;
-				while (m_buffer[i+15] != 0) {
-					m_buffer[i] = m_buffer[i+15];
+				while (m_mochadbuffer[i+15] != 0) {
+					m_mochadbuffer[i] = m_mochadbuffer[i+15];
 					i++;
 				}
-				m_buffer[i] = 0;
-//				_log.Log(LOG_STATUS, "Mochad: recv '%s'", m_buffer);
+				m_mochadbuffer[i] = 0;
+//				_log.Log(LOG_STATUS, "Mochad: recv '%s'", m_mochadbuffer);
 				MatchLine();
 			}
 			m_bufferpos = 0;

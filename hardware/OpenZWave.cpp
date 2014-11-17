@@ -131,7 +131,7 @@ const char *cclassStr(uint8 cc)
 	case 0x32:
 		return "METER";
 	case 0x33:
-		return "ZIP ADV SERVER";
+		return "COLOR CONTROL";
 	case 0x34:
 		return "ZIP ADV CLIENT";
 	case 0x35:
@@ -334,7 +334,7 @@ std::string COpenZWave::GetNodeStateString(const unsigned int homeID, const int 
 	return strState;
 }
 
-unsigned char COpenZWave::GetInstanceFromValueID(const OpenZWave::ValueID vID)
+unsigned char COpenZWave::GetInstanceFromValueID(const OpenZWave::ValueID &vID)
 {
 	unsigned char instance;
 
@@ -1124,7 +1124,7 @@ void COpenZWave::SetThermostatSetPoint(const int nodeID, const int instanceID, c
 	m_updateTime = mytime(NULL);
 }
 
-void COpenZWave::AddValue(const OpenZWave::ValueID vID)
+void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 {
 	if (m_pManager == NULL)
 		return;
@@ -1711,7 +1711,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID vID)
 	}
 }
 
-void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID vID, int EventID)
+void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID &vID, int EventID)
 {
 	if (m_pManager == NULL)
 		return;
@@ -1782,7 +1782,7 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID vID, int EventID)
 		SendDevice2Domoticz(pDevice);
 }
 
-void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID vID, int SceneID)
+void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID &vID, int SceneID)
 {
 	if (m_pManager == NULL)
 		return;
@@ -1841,7 +1841,7 @@ void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID vID, int SceneID)
 		SendDevice2Domoticz(pDevice);
 }
 
-void COpenZWave::UpdateValue(const OpenZWave::ValueID vID)
+void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 {
 	if (m_pManager == NULL)
 		return;

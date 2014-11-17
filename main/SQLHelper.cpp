@@ -2024,7 +2024,8 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 					if (
 						(switchtype==STYPE_OnOff)||
 						(switchtype==STYPE_Motion)||
-						(switchtype==STYPE_PushOn)||
+						(switchtype == STYPE_Dimmer) ||
+						(switchtype == STYPE_PushOn) ||
 						(switchtype==STYPE_DoorLock)
 						)
 					{
