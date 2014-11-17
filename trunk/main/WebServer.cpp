@@ -8079,6 +8079,10 @@ namespace http {
 						else if (switchtype == STYPE_Dimmer)
 						{
 							root["result"][ii]["TypeImg"] = "dimmer";
+							root["result"][ii]["AddjValue"] = AddjValue;
+							root["result"][ii]["AddjMulti"] = AddjMulti;
+							root["result"][ii]["AddjValue2"] = AddjValue2;
+							root["result"][ii]["AddjMulti2"] = AddjMulti2;
 						}
 						else if (switchtype == STYPE_Motion)
 						{

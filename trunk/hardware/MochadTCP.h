@@ -12,7 +12,7 @@
 class MochadTCP: public CDomoticzHardwareBase,  ASyncTCP
 {
 public:
-	MochadTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort);
+	MochadTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
 	~MochadTCP(void);
 	void WriteToHardware(const char *pdata, const unsigned char length);
 	RBUF m_mochad;
@@ -47,7 +47,7 @@ protected:
 	unsigned char m_exclmarkfound;
 	void MatchLine();
 	void ParseData(const unsigned char *pData, int Len);
-	unsigned char m_buffer[readBufferSize];
+	unsigned char m_mochadbuffer[readBufferSize];
 	char s_buffer[readBufferSize];
 	int m_bufferpos;
 

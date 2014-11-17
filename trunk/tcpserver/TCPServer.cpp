@@ -118,14 +118,8 @@ void CTCPServerInt::DoDecodeMessage(const CTCPClient *pClient, const unsigned ch
 void CTCPServerInt::stopClient(CTCPClient_ptr c)
 {
 	boost::lock_guard<boost::mutex> l(connectionMutex);
-
-	//std::string s = c->socket().remote_endpoint().address().to_string();
-	//_log.Log(LOG_STATUS,"Closing connection from: %s", s.c_str());
-	if (connections_.find(c)!=connections_.end())
-	{
-		connections_.erase(c);
-		c->stop();
-	}
+	connections_.erase(c);
+	c->stop();
 }
 
 void CTCPServerInt::stopAllClients()

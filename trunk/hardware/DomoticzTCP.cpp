@@ -102,6 +102,19 @@ bool DomoticzTCP::StopHardware()
 			//Don't throw from a Stop command
 		}
 	}
+	else {
+		try {
+			if (m_thread)
+			{
+				m_stoprequested = true;
+				m_thread->join();
+			}
+		}
+		catch (...)
+		{
+			//Don't throw from a Stop command
+		}
+	}
 	m_bIsStarted=false;
 	return true;
 }

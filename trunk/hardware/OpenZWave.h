@@ -127,10 +127,10 @@ private:
 	bool GetValueByCommandClass(const int nodeID, const int instanceID, const int commandClass, OpenZWave::ValueID &nValue);
 	bool GetValueByCommandClassLabel(const int nodeID, const int instanceID, const int commandClass, const std::string &vLabel, OpenZWave::ValueID &nValue);
 	bool GetNodeConfigValueByIndex(const NodeInfo *pNode, const int index, OpenZWave::ValueID &nValue);
-	void AddValue(const OpenZWave::ValueID vID);
-	void UpdateValue(const OpenZWave::ValueID vID);
-	void UpdateNodeEvent(const OpenZWave::ValueID vID, int EventID);
-	void UpdateNodeScene(const OpenZWave::ValueID vID, int SceneID);
+	void AddValue(const OpenZWave::ValueID &vID);
+	void UpdateValue(const OpenZWave::ValueID &vID);
+	void UpdateNodeEvent(const OpenZWave::ValueID &vID, int EventID);
+	void UpdateNodeScene(const OpenZWave::ValueID &vID, int SceneID);
 	NodeInfo* GetNodeInfo( OpenZWave::Notification const* _notification );
 	void SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value);
 	void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value);
@@ -138,7 +138,7 @@ private:
 	void SetThermostatMode(const int nodeID, const int instanceID, const int commandClass, const int tMode);
 	void SetThermostatFanMode(const int nodeID, const int instanceID, const int commandClass, const int fMode);
 
-	unsigned char GetInstanceFromValueID(const OpenZWave::ValueID vID);
+	unsigned char GetInstanceFromValueID(const OpenZWave::ValueID &vID);
 
 	bool IsNodeRGBW(const unsigned int homeID, const int nodeID);
 

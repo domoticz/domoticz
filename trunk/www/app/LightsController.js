@@ -703,7 +703,7 @@ define(['app'], function (app) {
 					if (switchtype==8) {
 						addjvalstr="&addjvalue=" + $("#lightcontent #motionoffdelay").val();
 					}
-					else if ((switchtype==0)||(switchtype==9)||(switchtype==11)) {
+					else if ((switchtype==0)||(switchtype==7)||(switchtype==9)||(switchtype==11)) {
 						addjvalstr="&addjvalue=" + $("#lightcontent #offdelay").val();
 						addjvalstr+="&addjvalue2=" + $("#lightcontent #ondelay").val();
 					}
@@ -1062,7 +1062,7 @@ define(['app'], function (app) {
 						$("#lightcontent #MotionDiv").show();
 						$("#lightcontent #motionoffdelay").val(addjvalue);
 					}
-					else if ((switchtype==0)||(switchtype==9)||(switchtype==11)) {
+					else if ((switchtype==0)||(switchtype==7)||(switchtype==9)||(switchtype==11)) {
 						$("#lightcontent #OnDelayDiv").show();
 						$("#lightcontent #OffDelayDiv").show();
 						$("#lightcontent #offdelay").val(addjvalue);
@@ -1083,7 +1083,7 @@ define(['app'], function (app) {
 					$("#lightcontent #MotionDiv").show();
 					$("#lightcontent #motionoffdelay").val(addjvalue);
 				}
-				else if ((switchtype==0)||(switchtype==9)||(switchtype==11)) {
+				else if ((switchtype==0)||(switchtype==7)||(switchtype==9)||(switchtype==11)) {
 					$("#lightcontent #OnDelayDiv").show();
 					$("#lightcontent #OffDelayDiv").show();
 					$("#lightcontent #offdelay").val(addjvalue);
