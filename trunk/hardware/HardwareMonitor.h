@@ -17,14 +17,18 @@ public:
 	void WriteToHardware(const char *pdata, const unsigned char length) {};
 private:
 	bool m_bEnabled;
-	int hwId;
 	double m_lastquerytime;
 	void Do_Work();	
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 	void Init();
 	void FetchData();
-	void UpdateSystemSensor(const std::string& qType, const std::string& wmiId, const std::string& devName, const std::string& devValue);
+	void GetInternalTemperature();
+	void UpdateSystemSensor(const std::string& qType, const int dindex, const std::string& wmiId, const std::string& devName, const std::string& devValue);
+	void SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname);
+	void SendTempSensor(const int Idx, const float Temp, const std::string &defaultname);
+	void SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname);
+	void SendFanSensor(const int Idx, const int FanSpeed, const std::string &defaultname);
 	bool StartHardware() { return true; };
 	bool StopHardware() { return true; };
 #ifdef WIN32

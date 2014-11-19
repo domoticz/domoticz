@@ -5182,7 +5182,7 @@ namespace http {
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PERCENTAGE, 1);
 					ii++;
 				}
-				if ((dType == pTypeGeneral) && (dSubType == sTypeSystemFan))
+				if ((dType == pTypeGeneral) && (dSubType == sTypeFan))
 				{
 					root["result"][ii]["val"] = NTYPE_RPM;
 					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_RPM, 0);
@@ -7612,18 +7612,14 @@ namespace http {
 						}
 					}
 					int hardwareID = atoi(sd[14].c_str());
-
-					if (hardwareID != 1000) //allways allow motherboard sensors
+					std::map<int, _tHardwareListInt>::iterator hItt = _hardwareNames.find(hardwareID);
+					if (hItt != _hardwareNames.end())
 					{
-						std::map<int, _tHardwareListInt>::iterator hItt = _hardwareNames.find(hardwareID);
-						if (hItt != _hardwareNames.end())
+						//ignore sensors where the hardware is disabled
+						if (HideDisabledHardwareSensors)
 						{
-							//ignore sensors where the hardware is disabled
-							if (HideDisabledHardwareSensors)
-							{
-								if (!(*hItt).second.Enabled)
-									continue;
-							}
+							if (!(*hItt).second.Enabled)
+								continue;
 						}
 					}
 
@@ -7764,7 +7760,7 @@ namespace http {
 								(!((dType == pTypeGeneral) && (dSubType == sTypeSoilMoisture))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeLeafWetness))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypePercentage))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeSystemFan))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeFan))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveClock))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatMode))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatFanMode))) &&
@@ -7808,17 +7804,10 @@ namespace http {
 					}
 
 					root["result"][ii]["HardwareID"] = hardwareID;
-					if (hardwareID == 1000)
-					{
-						root["result"][ii]["HardwareName"] = "System";
-					}
+					if (_hardwareNames.find(hardwareID) == _hardwareNames.end())
+						root["result"][ii]["HardwareName"] = "Unknown?";
 					else
-					{
-						if (_hardwareNames.find(hardwareID) == _hardwareNames.end())
-							root["result"][ii]["HardwareName"] = "Unknown?";
-						else
-							root["result"][ii]["HardwareName"] = _hardwareNames[hardwareID].Name;
-					}
+						root["result"][ii]["HardwareName"] = _hardwareNames[hardwareID].Name;
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Protected"] = (iProtected != 0);
 
@@ -9094,7 +9083,7 @@ namespace http {
 							root["result"][ii]["Image"] = "Computer";
 							root["result"][ii]["TypeImg"] = "hardware";
 						}
-						else if (dSubType == sTypeSystemFan)
+						else if (dSubType == sTypeFan)
 						{
 							sprintf(szData, "%d RPM", atoi(sValue.c_str()));
 							root["result"][ii]["Data"] = szData;
@@ -12942,7 +12931,7 @@ namespace http {
 							WaterDivider = float(tValue);
 						}
 						if (dType == pTypeP1Gas)
-							GasDivider = 1000;
+							GasDivider = 1000.0f;
 						else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
 							EnergyDivider *= 100.0f;
 
@@ -13429,7 +13418,7 @@ namespace http {
 						WaterDivider = float(tValue);
 					}
 					if (dType == pTypeP1Gas)
-						GasDivider = 1000;
+						GasDivider = 1000.0f;
 					else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
 						EnergyDivider *= 100.0f;
 					//else if (dType==pTypeRFXMeter)
@@ -14176,7 +14165,7 @@ namespace http {
 						WaterDivider = float(tValue);
 					}
 					if (dType == pTypeP1Gas)
-						GasDivider = 1000;
+						GasDivider = 1000.0f;
 					else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
 						EnergyDivider *= 100.0f;
 					//				else if (dType==pTypeRFXMeter)
@@ -15338,7 +15327,7 @@ namespace http {
 						WaterDivider = float(tValue);
 					}
 					if (dType == pTypeP1Gas)
-						GasDivider = 1000;
+						GasDivider = 1000.0f;
 					else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
 						EnergyDivider *= 100.0f;
 

@@ -8,6 +8,9 @@
 #include "../main/SQLHelper.h"
 #include <wchar.h>
 
+//Note, for windows we use OpenHardware Monitor
+//http://openhardwaremonitor.org/
+
 #ifdef WIN32
 	#include <comdef.h>
 #elif defined __linux__
@@ -29,6 +32,10 @@
 
 #define POLL_INTERVAL 30
 #define SLEEP_INTERVAL 1000
+
+extern bool bHasInternalTemperature;
+extern std::string szInternalTemperatureCommand;
+#define round(a) ( int ) ( a + .5 )
 
 CHardwareMonitor::CHardwareMonitor()
 {
@@ -87,7 +94,7 @@ void CHardwareMonitor::Init()
 #endif
 	// Check if there is already hardware running for System, if no start it.
 	m_lastquerytime=0;
-	hwId = 0;
+	m_HwdID = 0;
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT ID,Enabled FROM Hardware WHERE (Type=='" <<HTYPE_System << "') AND (Name=='Motherboard') LIMIT 1";
@@ -105,8 +112,8 @@ void CHardwareMonitor::Init()
 		if (result.size()>0)
 		{
 			std::vector<std::string> sd=result[0];
-			hwId=atoi(sd[0].c_str());
-			m_mainworker.AddHardwareFromParams(hwId, "Motherboard", 1, HTYPE_System, "", 1, "", "", 0, 0, 0, 0, 0, 0);
+			m_HwdID=atoi(sd[0].c_str());
+			m_mainworker.AddHardwareFromParams(m_HwdID, "Motherboard", 1, HTYPE_System, "", 1, "", "", 0, 0, 0, 0, 0, 0);
 		}
 
 		m_sql.query(szQuery.str());
@@ -119,9 +126,10 @@ void CHardwareMonitor::Init()
 	if (result.size()>0)
     {
 		std::vector<std::string> sd=result[0];
-		hwId=atoi(sd[0].c_str());
+		m_HwdID=atoi(sd[0].c_str());
 		m_bEnabled=atoi(sd[1].c_str())!=0;
 	}
+	sOnConnected(this);
 }
 
 void CHardwareMonitor::Do_Work()
@@ -149,6 +157,172 @@ void CHardwareMonitor::Do_Work()
 
 }
 
+void CHardwareMonitor::SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname)
+{
+	bool bDeviceExits = true;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+
+	char szTmp[30];
+	sprintf(szTmp, "%08X", (unsigned int)Idx);
+
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeVoltage) << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+
+	_tGeneralDevice gDevice;
+	gDevice.subtype = sTypeVoltage;
+	gDevice.id = 1;
+	gDevice.floatval1 = Volt;
+	gDevice.intval1 = (int)Idx;
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeVoltage) << ")";
+		result = m_sql.query(szQuery.str());
+	}
+}
+
+void CHardwareMonitor::SendTempSensor(const int Idx, const float Temp, const std::string &defaultname)
+{
+	bool bDeviceExits = true;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP10) << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+
+	RBUF tsen;
+	memset(&tsen, 0, sizeof(RBUF));
+
+	tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
+	tsen.TEMP.packettype = pTypeTEMP;
+	tsen.TEMP.subtype = sTypeTEMP10;
+	tsen.TEMP.battery_level = 9;
+	tsen.TEMP.rssi = 12;
+	tsen.TEMP.id1 = (unsigned char)(Idx>>8);
+	tsen.TEMP.id2 = (unsigned char)Idx&0xFF;
+
+	tsen.TEMP.tempsign = (Temp >= 0) ? 0 : 1;
+	int at10 = round(abs(Temp*10.0f));
+	tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
+	at10 -= (tsen.TEMP.temperatureh * 256);
+	tsen.TEMP.temperaturel = (BYTE)(at10);
+
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP10) << ")";
+		result = m_sql.query(szQuery.str());
+	}
+}
+
+void CHardwareMonitor::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
+{
+	bool bDeviceExits = true;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+
+	char szTmp[30];
+	sprintf(szTmp, "%08X", (unsigned int)Idx);
+
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+
+	_tGeneralDevice gDevice;
+	gDevice.subtype = sTypePercentage;
+	gDevice.id = 1;
+	gDevice.floatval1 = Percentage;
+	gDevice.intval1 = (int)Idx;
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
+		result = m_sql.query(szQuery.str());
+
+	}
+}
+
+void CHardwareMonitor::SendFanSensor(const int Idx, const int FanSpeed, const std::string &defaultname)
+{
+	bool bDeviceExits = true;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+
+	char szTmp[30];
+	sprintf(szTmp, "%08X", (unsigned int)Idx);
+
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeFan) << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+
+	_tGeneralDevice gDevice;
+	gDevice.subtype = sTypeFan;
+	gDevice.id = 1;
+	gDevice.intval1 = (int)Idx;
+	gDevice.intval2 = FanSpeed;
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeFan) << ")";
+		result = m_sql.query(szQuery.str());
+
+	}
+}
+
+void CHardwareMonitor::GetInternalTemperature()
+{
+	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalTemperatureCommand.c_str());
+	if (ret.size() < 1)
+		return;
+	std::string tmpline = ret[0];
+	if (tmpline.find("temp=") == std::string::npos)
+		return;
+	tmpline = tmpline.substr(5);
+	int pos = tmpline.find("'");
+	if (pos != std::string::npos)
+	{
+		tmpline = tmpline.substr(0, pos);
+	}
+
+	float temperature = (float)atof(tmpline.c_str());
+	if (temperature == 0)
+		return; //hardly possible for a on board temp sensor, if it is, it is probably not working
+
+	if ((temperature != 85) && (temperature > -273))
+	{
+		SendTempSensor(1, temperature, "Internal Temperature");
+	}
+}
 
 void CHardwareMonitor::FetchData()
 {
@@ -163,68 +337,50 @@ void CHardwareMonitor::FetchData()
 #elif defined __linux__
 	_log.Log(LOG_NORM,"Hardware Monitor: Fetching data (System sensors)");
 	FetchUnixData();
+	if (bHasInternalTemperature)
+	{
+		GetInternalTemperature();
+	}
 #endif
 }
 
-void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const std::string& wmiId, const std::string& devName, const std::string& devValue)
+void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int dindex, const std::string& wmiId, const std::string& devName, const std::string& devValue)
 {
-	if (!hwId) {
+	if (!m_HwdID) {
 #ifdef _DEBUG
 		_log.Log(LOG_NORM,"Hardware Monitor: Id not found!");
 #endif		
 		return;
 	}
-	std::stringstream szQuery;
-	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ID FROM DeviceStatus WHERE (DeviceID=='" << wmiId << "')";
-	result=m_sql.query(szQuery.str());
-	if (result.size()<1)
+	int doffset = 0;
+	int dsubtype=0;
+	if (qType == "Temperature")
 	{
-		szQuery.clear();
-		szQuery.str("");
-		int dsubtype=0;
-		if (qType=="Temperature")
-			dsubtype=sTypeSystemTemp;
-		else if (qType=="Load")
-			dsubtype=sTypePercentage;
-		else if (qType=="Fan")
-			dsubtype=sTypeSystemFan;
-		else if (qType=="Voltage")
-			dsubtype=sTypeVoltage;
-		if (dsubtype!=0) {
-			szQuery << 
-				"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-				"VALUES (" << hwId << ",'" << wmiId << "',"<< 0 << "," << pTypeGeneral << "," <<dsubtype << ",12,255,'" << devName << "'," << devValue << ",'" << devValue << "')";
-			m_sql.query(szQuery.str());
-		}
+		dsubtype = sTypeSystemTemp;
+		doffset = 1000;
+		float temp = (float)atof(devValue.c_str());
+		SendTempSensor(doffset + dindex, temp, devName);
 	}
-	else 
+	else if (qType == "Load")
 	{
-		szQuery.clear();
-		szQuery.str("");
-
-		time_t now = time(0);
-		struct tm ltime;
-		localtime_r(&now,&ltime);
-
-		char szLastUpdate[40];
-		sprintf(szLastUpdate,"%04d-%02d-%02d %02d:%02d:%02d",ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-
-		szQuery << "UPDATE DeviceStatus SET HardwareID = " << hwId << ", nValue=" << devValue << ", sValue ='" << devValue << "', LastUpdate='" << szLastUpdate << "' WHERE (DeviceID == '" << wmiId << "')";
-		m_sql.query(szQuery.str());
-
-		if (qType == "Load") {
-			m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeGeneral, sTypePercentage, NTYPE_PERCENTAGE, (const float)atof(devValue.c_str()));
-		}
-		else if (qType == "Temperature") {
-			m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeGeneral, sTypeSystemTemp, NTYPE_TEMPERATURE, (const float)atof(devValue.c_str()));
-		}
-		else if (qType == "Fan") {
-			m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeGeneral, sTypeSystemFan, NTYPE_RPM, (const float)atof(devValue.c_str()));
-		}
-		else if (qType=="Voltage") {
-			m_sql.CheckAndHandleNotification(hwId, wmiId, 0, pTypeGeneral, sTypeSystemFan, NTYPE_USAGE, (const float)atof(devValue.c_str()));
-		}
+		dsubtype = sTypePercentage;
+		doffset = 1100;
+		float perc = (float)atof(devValue.c_str());
+		SendPercentage(doffset + dindex, perc, devName);
+	}
+	else if (qType == "Fan")
+	{
+		dsubtype = sTypeFan;
+		doffset = 1200;
+		int fanspeed = atoi(devValue.c_str());
+		SendFanSensor(doffset + dindex, fanspeed, devName);
+	}
+	else if (qType == "Voltage")
+	{
+		dsubtype = sTypeVoltage;
+		doffset = 1300;
+		float volt = (float)atof(devValue.c_str());
+		SendVoltage(doffset + dindex, volt, devName);
 	}
 	return;
 }
@@ -290,6 +446,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 	if (pServicesOHM && pServicesSystem)
 	{
 		HRESULT hr;
+		int dindex = 0;
 		std::string query = "SELECT * FROM ";
 		query.append(qTable);
 		query.append(" WHERE SensorType = '");
@@ -335,10 +492,15 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 						if (SUCCEEDED(hr))
 						{
 							std::string itemId = _bstr_t(vtProp.bstrVal);
+							if (itemId.find("/hdd") != std::string::npos)
+							{
+								itemName = itemId + " " + itemName;
+							}
 							//itemId = "WMI"+itemId;
 							//_log.Log(LOG_NORM, "Hardware Monitor: %s, %s, %s",itemId.c_str(), itemName.c_str(),itemValue.str().c_str());
-							UpdateSystemSensor(qType, itemId, itemName, itemValue.str());
+							UpdateSystemSensor(qType, dindex, itemId, itemName, itemValue.str());
 							VariantClear(&vtProp);
+							dindex++;
 						}
 					}
 				}
@@ -372,7 +534,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 		unsigned long usedram=mySysInfo.totalram-mySysInfo.freeram;
 		float memusedpercentage=(100.0f/float(mySysInfo.totalram))*usedram;
 		sprintf(szTmp,"%.2f",memusedpercentage);
-		UpdateSystemSensor("Load", "Memory Usage", "Memory Usage", szTmp);
+		UpdateSystemSensor("Load", 0, "Memory Usage", "Memory Usage", szTmp);
 
 		//CPU
 		char cname[50];
@@ -420,7 +582,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 					if (cpuper>0)
 					{
 						sprintf(szTmp,"%.2f", cpuper);
-						UpdateSystemSensor("Load", "CPU_Usage", "CPU_Usage", szTmp);
+						UpdateSystemSensor("Load", 0, "CPU_Usage", "CPU_Usage", szTmp);
 					}
 					m_lastloadcpu=actload1+actload2+actload3;
 				}
@@ -452,6 +614,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 				}
 			}
 		}
+		int dindex=0;
 		std::map<std::string, _tDUsageStruct>::const_iterator ittDisks;
 		for (ittDisks=_disks.begin(); ittDisks!=_disks.end(); ++ittDisks)
 		{
@@ -461,8 +624,8 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 				double UsagedPercentage=(100 / double(dusage.TotalBlocks))*double(dusage.UsedBlocks);
 				//std::cout << "Disk: " << (*ittDisks).first << ", Mount: " << dusage.MountPoint << ", Used: " << UsagedPercentage << std::endl;
 				sprintf(szTmp,"%.2f", UsagedPercentage);
-				UpdateSystemSensor("Load", (*ittDisks).first, dusage.MountPoint, szTmp);
-
+				UpdateSystemSensor("Load", dindex, (*ittDisks).first, dusage.MountPoint, szTmp);
+				dindex++;
 			}
 		}
 	}

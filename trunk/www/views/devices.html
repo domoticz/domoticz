@@ -70,9 +70,11 @@
 function AddDevice(idx,itemname)
 {
 	$.devIdx = idx;
-	$("#devicename").val(itemname);
-    $( "#dialog-adddevice" ).i18n();
-    $( "#dialog-adddevice" ).dialog( "open" );
+    if (name!='Unknown') {
+		$( "#dialog-adddevice #devicename" ).val(itemname);
+    }
+    $("#dialog-adddevice").i18n();
+    $("#dialog-adddevice").dialog( "open" );
 }
 
 function AddLightDevice(idx, name)

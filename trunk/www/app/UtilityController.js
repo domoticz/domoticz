@@ -890,7 +890,7 @@ define(['app'], function (app) {
 					  xhtm+='Percentage48.png" height="48" width="48"></td>\n';
 					  status=item.Data;
 					}
-					else if (item.SubType == "System fan") {
+					else if (item.SubType == "Fan") {
 					  xhtm+='Fan48_On.png" height="48" width="48"></td>\n';
 					  status=item.Data;
 					}

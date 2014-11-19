@@ -101,7 +101,6 @@ public:
 
 	tcp::server::CTCPServer m_sharedserver;
 private:
-	void GetInternalTemperature();
 	void HandleAutomaticBackups();
 	unsigned long long PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);
 	struct _tStartScene
