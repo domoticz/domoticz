@@ -584,7 +584,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 					if (cpuper>0)
 					{
 						sprintf(szTmp,"%.2f", cpuper);
-						UpdateSystemSensor("Load", 0, "CPU_Usage", "CPU_Usage", szTmp);
+						UpdateSystemSensor("Load", 1, "CPU_Usage", "CPU_Usage", szTmp);
 					}
 					m_lastloadcpu=actload1+actload2+actload3;
 				}
@@ -626,7 +626,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 				double UsagedPercentage=(100 / double(dusage.TotalBlocks))*double(dusage.UsedBlocks);
 				//std::cout << "Disk: " << (*ittDisks).first << ", Mount: " << dusage.MountPoint << ", Used: " << UsagedPercentage << std::endl;
 				sprintf(szTmp,"%.2f", UsagedPercentage);
-				UpdateSystemSensor("Load", dindex, (*ittDisks).first, dusage.MountPoint, szTmp);
+				UpdateSystemSensor("Load", 2+dindex, (*ittDisks).first, dusage.MountPoint, szTmp);
 				dindex++;
 			}
 		}
