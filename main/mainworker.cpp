@@ -81,9 +81,6 @@
 
 extern std::string szStartupFolder;
 extern std::string szWWWFolder;
-extern bool bHasInternalTemperature;
-extern std::string szInternalTemperatureCommand;
-
 
 extern http::server::CWebServer m_webserver;
 
@@ -663,6 +660,8 @@ bool MainWorker::StartThread()
 
 	//Start Scheduler
 	m_scheduler.StartScheduler();
+	m_hardwaremonitor.sDecodeRXMessage.connect(boost::bind(&MainWorker::DecodeRXMessage, this, _1, _2));
+	m_hardwaremonitor.sOnConnected.connect(boost::bind(&MainWorker::OnHardwareConnected, this, _1));
 	m_hardwaremonitor.StartHardwareMonitor();
 	m_eventsystem.SetEnabled(m_sql.m_bDisableEventSystem == false);
 	m_cameras.ReloadCameras();
@@ -693,52 +692,6 @@ void MainWorker::GetDomoticzUpdate(const std::string &UpdateURL)
 	m_bHaveDownloadedDomoticzUpdate=false;
 	m_bHaveDownloadedDomoticzUpdateSuccessFull=false;
 	m_bDoDownloadDomoticzUpdate=true;
-}
-
-void MainWorker::GetInternalTemperature()
-{
-	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalTemperatureCommand.c_str());
-	if (ret.size()<1)
-		return;
-	std::string tmpline=ret[0];
-	if (tmpline.find("temp=")==std::string::npos)
-		return;
-	tmpline=tmpline.substr(5);
-	int pos=tmpline.find("'");
-	if (pos != std::string::npos)
-	{
-		tmpline = tmpline.substr(0, pos);
-	}
-	
-	float temperature=(float)atof(tmpline.c_str());
-	if (temperature == 0)
-		return; //hardly possible for a on board temp sensor, if it is, it is probably not working
-
-	if ((temperature != 85) && (temperature > -273))
-	{
-		//Temp
-		RBUF tsen;
-		memset(&tsen,0,sizeof(RBUF));
-		tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-		tsen.TEMP.packettype=pTypeTEMP;
-		tsen.TEMP.subtype=sTypeTEMP_SYSTEM;
-		tsen.TEMP.battery_level=9;
-		tsen.TEMP.rssi=6;
-		tsen.TEMP.id1=0;
-		tsen.TEMP.id2=1;
-
-		tsen.TEMP.tempsign=(temperature>=0)?0:1;
-		int at10=round(abs(temperature*10.0f));
-		tsen.TEMP.temperatureh=(BYTE)(at10/256);
-		at10-=(tsen.TEMP.temperatureh*256);
-		tsen.TEMP.temperaturel=(BYTE)(at10);
-
-		CDummy hBase(1000);
-		hBase.HwdType = HTYPE_System;
-		hBase.Name="System";
-
-		DecodeRXMessage(&hBase,(const unsigned char*)&tsen);
-	}
 }
 
 void MainWorker::HandleAutomaticBackups()
@@ -1041,10 +994,6 @@ void MainWorker::Do_Work()
 			}
 #endif
 			HandleAutomaticBackups();
-		}
-		if ((bHasInternalTemperature)&&(ltime.tm_sec%30==0))
-		{
-			GetInternalTemperature();
 		}
 		if (ltime.tm_sec % 30 == 0)
 		{
@@ -1974,8 +1923,6 @@ unsigned long long MainWorker::decode_Rain(const CDomoticzHardwareBase *pHardwar
 	}
 	return DevRowIdx;
 }
-
-#define round(a) ( int ) ( a + .5 )
 
 unsigned long long MainWorker::decode_Wind(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
@@ -7513,7 +7460,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
 
-	if ((subType == sTypeVoltage) || (subType == sTypePercentage) || (subType == sTypePressure) || (subType == sTypeZWaveClock) || (subType == sTypeZWaveThermostatMode) || (subType == sTypeZWaveThermostatFanMode))
+	if ((subType == sTypeVoltage) || (subType == sTypePercentage) || (subType == sTypePressure) || (subType == sTypeZWaveClock) || (subType == sTypeZWaveThermostatMode) || (subType == sTypeZWaveThermostatFanMode) || (subType == sTypeFan))
 	{
 		sprintf(szTmp,"%08X", (unsigned int)pMeter->intval1);
 	}
@@ -7591,6 +7538,14 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 			return -1;
 		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_PERCENTAGE, pMeter->floatval1);
 	}
+	else if (subType == sTypeFan)
+	{
+		sprintf(szTmp, "%d", pMeter->intval2);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, m_LastDeviceName);
+		if (DevRowIdx == -1)
+			return -1;
+		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_RPM, (float)pMeter->intval1);
+	}
 	else if (subType == sTypeZWaveClock)
 	{
 		int tintval = pMeter->intval2;
@@ -7639,6 +7594,11 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		case sTypePressure:
 			WriteMessage("subtype       = Pressure");
 			sprintf(szTmp,"Voltage = %.1f bar", pMeter->floatval1);
+			WriteMessage(szTmp);
+			break;
+		case sTypeFan:
+			WriteMessage("subtype       = Fan");
+			sprintf(szTmp, "Speed = %d RPM", pMeter->intval2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeZWaveClock:

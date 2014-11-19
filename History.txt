@@ -55,6 +55,7 @@ Version 2.0.xxxx (October xxth 2014)
 - Implemented: OpenZWave, when doing an Inclusion, "allow new hardware" is enabled for 5 minutes if disabled
 - Fixed: OpenZWave when doing a soft/hard reset all entries will be deleted from the ZWaveNodes table
 - Implemented: Dimmer, on/off actions
+- Changed: Motherboard sensors logging, there will be new devices, and this time working as normal (can be shared/used everywhere)
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

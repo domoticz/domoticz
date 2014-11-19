@@ -32,7 +32,7 @@
 #define sTypeLeafWetness			0x04
 #define sTypeSystemTemp				0x05
 #define sTypePercentage				0x06
-#define sTypeSystemFan				0x07
+#define sTypeFan				0x07
 #define sTypeVoltage				0x08
 #define sTypePressure				0x09
 #define sTypeSetPoint				0x10

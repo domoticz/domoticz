@@ -23,7 +23,7 @@
 	#include <pwd.h>
 #endif
 
-#define DB_VERSION 51
+#define DB_VERSION 52
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -1003,6 +1003,22 @@ bool CSQLHelper::OpenDatabase()
 			query("ALTER TABLE MultiMeter_Calendar ADD COLUMN [Counter2] BIGINT default 0");
 			query("ALTER TABLE MultiMeter_Calendar ADD COLUMN [Counter3] BIGINT default 0");
 			query("ALTER TABLE MultiMeter_Calendar ADD COLUMN [Counter4] BIGINT default 0");
+		}
+		if (dbversion < 52)
+		{
+			//Move onboard system sensor (temperature) to the motherboard hardware
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+			szQuery << "SELECT ID FROM Hardware WHERE (Type=='" << HTYPE_System << "') AND (Name=='Motherboard') LIMIT 1";
+			result = m_sql.query(szQuery.str());
+			if (!result.empty())
+			{
+				int hwId = atoi(result[0][0].c_str());
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "UPDATE DeviceStatus SET HardwareID=" << hwId << " WHERE (HardwareID=1000)";
+				m_sql.query(szQuery.str());
+			}
 		}
 	}
 	else if (bNewInstall)
@@ -4313,7 +4329,7 @@ void CSQLHelper::UpdateFanLog()
 
 	std::vector<std::vector<std::string> > result;
 	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d AND SubType=%d)",
-		pTypeGeneral,sTypeSystemFan
+		pTypeGeneral,sTypeFan
 		);
 	result=query(szTmp);
 	if (result.size()>0)
