@@ -346,7 +346,7 @@ void CHardwareMonitor::FetchData()
 #endif
 }
 
-void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int dindex, const std::string& wmiId, const std::string& devName, const std::string& devValue)
+void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int dindex, const std::string& devName, const std::string& devValue)
 {
 	if (!m_HwdID) {
 #ifdef _DEBUG
@@ -500,7 +500,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 							}
 							//itemId = "WMI"+itemId;
 							//_log.Log(LOG_NORM, "Hardware Monitor: %s, %s, %s",itemId.c_str(), itemName.c_str(),itemValue.str().c_str());
-							UpdateSystemSensor(qType, dindex, itemId, itemName, itemValue.str());
+							UpdateSystemSensor(qType, dindex, itemName, itemValue.str());
 							VariantClear(&vtProp);
 							dindex++;
 						}
@@ -536,7 +536,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 		unsigned long usedram=mySysInfo.totalram-mySysInfo.freeram;
 		float memusedpercentage=(100.0f/float(mySysInfo.totalram))*usedram;
 		sprintf(szTmp,"%.2f",memusedpercentage);
-		UpdateSystemSensor("Load", 0, "Memory Usage", "Memory Usage", szTmp);
+		UpdateSystemSensor("Load", 0, "Memory Usage", szTmp);
 
 		//CPU
 		char cname[50];
@@ -584,7 +584,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 					if (cpuper>0)
 					{
 						sprintf(szTmp,"%.2f", cpuper);
-						UpdateSystemSensor("Load", 1, "CPU_Usage", "CPU_Usage", szTmp);
+						UpdateSystemSensor("Load", 1, "CPU_Usage", szTmp);
 					}
 					m_lastloadcpu=actload1+actload2+actload3;
 				}
@@ -626,7 +626,8 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 				double UsagedPercentage=(100 / double(dusage.TotalBlocks))*double(dusage.UsedBlocks);
 				//std::cout << "Disk: " << (*ittDisks).first << ", Mount: " << dusage.MountPoint << ", Used: " << UsagedPercentage << std::endl;
 				sprintf(szTmp,"%.2f", UsagedPercentage);
-				UpdateSystemSensor("Load", 2+dindex, (*ittDisks).first, dusage.MountPoint, szTmp);
+				std::string hddname = "HDD " + dusage.MountPoint;
+				UpdateSystemSensor("Load", 2+dindex, hddname, szTmp);
 				dindex++;
 			}
 		}
