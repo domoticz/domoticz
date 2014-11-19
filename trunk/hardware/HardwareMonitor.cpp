@@ -41,6 +41,8 @@ CHardwareMonitor::CHardwareMonitor()
 {
 	m_stoprequested=false;
 	m_bEnabled=true;
+	HwdType = HTYPE_System;
+	Name = "Motherboard sensors";
 #ifdef WIN32
 	InitWMI();
 #endif
