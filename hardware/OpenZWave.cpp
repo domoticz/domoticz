@@ -598,7 +598,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 				break;
 			case OpenZWave::Notification::Code_Timeout:
 #ifdef _DEBUG
-				_log.Log(LOG_STATUS, "OpenZWave: Received timeout notification from HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
+				_log.Log(LOG_STATUS, "OpenZWave: Received timeout notification from HomeID: %u, NodeID: %d (0x%02x), CommandClass: %s", _homeID, _nodeID, _nodeID, cclassStr(commandClass));
 #endif
 				break;
 			case OpenZWave::Notification::Code_NoOperation:
@@ -1111,6 +1111,39 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	m_updateTime = mytime(NULL);
 }
 
+void COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int commandClass, const unsigned char *colvalues, const unsigned char valuelen)
+{
+	if (m_pManager == NULL)
+		return;
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+
+	NodeInfo *pNode = GetNodeInfo(m_controllerID, nodeID);
+	if (!pNode)
+	{
+		if (!m_awakeNodesQueried)
+		{
+			_log.Log(LOG_ERROR, "OpenZWave: Switch command not sent because not all Awake Nodes have been Queried!");
+		}
+		else {
+			_log.Log(LOG_ERROR, "OpenZWave: Node not found! (%d, %02x)", nodeID, nodeID);
+		}
+		return;
+	}
+
+	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
+
+	bool bHaveSendSwitch = false;
+
+	if (GetValueByCommandClassLabel(nodeID, instanceID, COMMAND_CLASS_COLOR_CONTROL, "Color", vID) == true)
+	{
+		if (!m_pManager->SetValue(vID, colvalues, valuelen))
+		{
+			_log.Log(LOG_ERROR, "OpenZWave: Error setting Switch Value!");
+		}
+	}
+	m_updateTime = mytime(NULL);
+}
+
 void COpenZWave::SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value)
 {
 	if (m_pManager == NULL)
@@ -1244,6 +1277,22 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 						InsertDevice(_device);
 					}
 				}
+			}
+		}
+	}
+	else if (commandclass == COMMAND_CLASS_COLOR_CONTROL)
+	{
+		if (vLabel == "Color")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Raw)
+			{
+				_device.devType = ZDTYPE_SWITCH_DIMMER;
+				_device.intvalue = 0;
+				InsertDevice(_device);
+				_device.label = "RGBW";
+				_device.devType = ZDTYPE_SWITCH_COLOR;
+				_device.instanceID = 100;
+				InsertDevice(_device);
 			}
 		}
 	}

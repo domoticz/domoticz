@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "ZWaveBase.h"
+#include "ZWaveCommands.h"
 
 #include <sstream>      // std::stringstream
 #include <vector>
@@ -160,11 +161,12 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 	if (
 		(pDevice->devType!=ZDTYPE_SWITCH_NORMAL)&&
 		(pDevice->devType != ZDTYPE_SWITCH_DIMMER) &&
-		(pDevice->devType != ZDTYPE_SWITCH_FGRGBWM441)
+		(pDevice->devType != ZDTYPE_SWITCH_FGRGBWM441)&&
+		(pDevice->devType != ZDTYPE_SWITCH_COLOR)
 		)
 		return; //only for switches
 
-	if (pDevice->devType == ZDTYPE_SWITCH_FGRGBWM441)
+	if ((pDevice->devType == ZDTYPE_SWITCH_FGRGBWM441) || (pDevice->devType == ZDTYPE_SWITCH_COLOR))
 	{
 		unsigned char ID1 = 0;
 		unsigned char ID2 = 0;
@@ -742,7 +744,7 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int inst
 	return NULL;
 }
 
-void hue2rgb(const float hue, int &outR, int &outG, int &outB)
+void hue2rgb(const float hue, int &outR, int &outG, int &outB, const double maxValue=100.0)
 {
 	double      hh, p, q, t, ff;
 	long        i;
@@ -759,36 +761,36 @@ void hue2rgb(const float hue, int &outR, int &outG, int &outB)
 
 	switch (i) {
 	case 0:
-		outR = int(vlue*100.0);
-		outG = int(t*100.0);
-		outB = int(p*100.0);
+		outR = int(vlue*maxValue);
+		outG = int(t*maxValue);
+		outB = int(p*maxValue);
 		break;
 	case 1:
-		outR = int(q*100.0);
-		outG = int(vlue*100.0);
-		outB = int(p*100.0);
+		outR = int(q*maxValue);
+		outG = int(vlue*maxValue);
+		outB = int(p*maxValue);
 		break;
 	case 2:
-		outR = int(p*100.0);
-		outG = int(vlue*100.0);
-		outB = int(t*100.0);
+		outR = int(p*maxValue);
+		outG = int(vlue*maxValue);
+		outB = int(t*maxValue);
 		break;
 
 	case 3:
-		outR = int(p*100.0);
-		outG = int(q*100.0);
-		outB = int(vlue*100.0);
+		outR = int(p*maxValue);
+		outG = int(q*maxValue);
+		outB = int(vlue*maxValue);
 		break;
 	case 4:
-		outR = int(t*100.0);
-		outG = int(p*100.0);
-		outB = int(vlue*100.0);
+		outR = int(t*maxValue);
+		outG = int(p*maxValue);
+		outB = int(vlue*maxValue);
 		break;
 	case 5:
 	default:
-		outR = int(vlue*100.0);
-		outG = int(p*100.0);
-		outB = int(q*100.0);
+		outR = int(vlue*maxValue);
+		outG = int(p*maxValue);
+		outB = int(q*maxValue);
 		break;
 	}
 }
@@ -986,6 +988,76 @@ void ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 				SwitchLight(nodeID, instanceID, pDevice->commandClassID, blue);
 				_log.Log( LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d", red, green, blue);
 				return;
+			}
+		}
+		else
+		{
+			pDevice = FindDevice(nodeID, instanceID, indexID, ZDTYPE_SWITCH_COLOR);
+			if (pDevice)
+			{
+				int svalue = 0;
+				if (pLed->command == Limitless_LedOff)
+				{
+					instanceID = 1;
+					svalue = 0;
+					SwitchLight(nodeID, instanceID, pDevice->commandClassID, svalue);
+				}
+				else if (pLed->command == Limitless_LedOn)
+				{
+					instanceID = 1;
+					svalue = 255;
+					SwitchLight(nodeID, instanceID, pDevice->commandClassID, svalue);
+				}
+				else if (pLed->command == Limitless_SetBrightnessLevel)
+				{
+					instanceID = 1;
+					float fvalue = pLed->value;
+					if (fvalue > 99.0f)
+						fvalue = 99.0f; //99 is fully on
+					svalue = round(fvalue);
+					SwitchLight(nodeID, instanceID, pDevice->commandClassID, svalue);
+				}
+				else if (pLed->command == Limitless_SetColorToWhite)
+				{
+					unsigned char colbuf[8];
+					int iIndex = 0;
+					//colbuf[iIndex++] = 0x02;//red
+					//colbuf[iIndex++] = 0;
+					//colbuf[iIndex++] = 0x03;//green
+					//colbuf[iIndex++] = 0;
+					//colbuf[iIndex++] = 0x04;//blue
+					//colbuf[iIndex++] = 0;
+					colbuf[iIndex++] = 0x00;//warm light
+					colbuf[iIndex++] = 255;
+					instanceID = 1;
+					SwitchColor(nodeID, instanceID, COMMAND_CLASS_COLOR_CONTROL, colbuf, iIndex);
+					return;
+				}
+				else if (pLed->command == Limitless_SetRGBColour)
+				{
+					int red, green, blue;
+					float cHue = (360.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255
+					hue2rgb(cHue, red, green, blue,255);
+					instanceID = 1;
+
+					unsigned char colbuf[10];
+					int iIndex = 0;
+					colbuf[iIndex++] = 0x00;//warm light
+					colbuf[iIndex++] = 0;
+					colbuf[iIndex++] = 0x01;//cold light
+					colbuf[iIndex++] = 0;
+					colbuf[iIndex++] = 0x02;//red
+					colbuf[iIndex++] = (unsigned char)red;
+					colbuf[iIndex++] = 0x03;//green
+					colbuf[iIndex++] = (unsigned char)green;
+					colbuf[iIndex++] = 0x04;//blue
+					colbuf[iIndex++] = (unsigned char)blue;
+
+					SwitchColor(nodeID, instanceID, COMMAND_CLASS_COLOR_CONTROL, colbuf, iIndex);
+
+					_log.Log(LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d", red, green, blue);
+					return;
+				}
 			}
 		}
 	}

@@ -56,6 +56,7 @@ Version 2.0.xxxx (October xxth 2014)
 - Fixed: OpenZWave when doing a soft/hard reset all entries will be deleted from the ZWaveNodes table
 - Implemented: Dimmer, on/off actions
 - Changed: Motherboard sensors logging, there will be new devices, and this time working as normal (can be shared/used everywhere)
+- Implemented: OpenZWave, COMMAND_CLASS_COLOR_CONTROL (for o.a. Zipato RGBW) (needs to be accepted by openzwave yet)
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

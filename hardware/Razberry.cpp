@@ -858,6 +858,10 @@ void CRazberry::SwitchLight(const int nodeID, const int instanceID, const int co
 	RunCMD(sstr.str());
 }
 
+void CRazberry::SwitchColor(const int nodeID, const int instanceID, const int commandClass, const unsigned char *colvalues, const unsigned char valuelen)
+{
+}
+
 void CRazberry::SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value)
 {
 	std::stringstream sstr;

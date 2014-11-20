@@ -27,6 +27,7 @@ private:
 	_tZWaveDevice* FindDeviceInstance(const int nodeID, const int instanceID);
 
 	void SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value);
+	void SwitchColor(const int nodeID, const int instanceID, const int commandClass, const unsigned char *colvalues, const unsigned char valuelen);
 	void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value);
 	void SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute);
 	void SetThermostatMode(const int nodeID, const int instanceID, const int commandClass, const int tMode);
