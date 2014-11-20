@@ -168,6 +168,8 @@ Version 2.0.2025 (September 28th 2014)
 - Implemented: catching SIGHUB, it will recreate the log file (could be usefull for logrotate functions)
 - Fixed: Override pages now checks for authentication
 
+- Disabled: Internal hardware monitoring, some users have issues with latest changes
+
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io
 - Implemented: Temperature/Weather widgets forecast button if hardware is WU/Forecast.io
