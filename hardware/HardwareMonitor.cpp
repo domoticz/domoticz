@@ -58,6 +58,7 @@ CHardwareMonitor::~CHardwareMonitor(void)
 }
 void CHardwareMonitor::StartHardwareMonitor()
 {
+	return;
 #ifdef _DEBUG
         _log.Log(LOG_STATUS,"Hardware Monitor: Started");
 #endif
