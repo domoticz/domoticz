@@ -27,6 +27,7 @@ class ZWaveBase : public CDomoticzHardwareBase
 		ZDTYPE_SENSOR_GAS,
 		ZDTYPE_SENSOR_THERMOSTAT_MODE,
 		ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE,
+		ZDTYPE_SWITCH_COLOR,
 	};
 	struct _tZWaveDevice
 	{
@@ -112,6 +113,7 @@ private:
 	void UpdateDeviceBatteryStatus(const int nodeID, const int value);
 	unsigned char Convert_Battery_To_PercInt(const unsigned char level);
 	virtual void SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)=0;
+	virtual void SwitchColor(const int nodeID, const int instanceID, const int commandClass, const unsigned char *colvalues, const unsigned char valuelen) = 0;
 	virtual void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value)=0;
 	virtual void SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute)=0;
 	virtual void SetThermostatMode(const int nodeID, const int instanceID, const int commandClass, const int tMode) = 0;
