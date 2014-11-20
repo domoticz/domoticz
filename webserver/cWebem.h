@@ -174,7 +174,8 @@ namespace http {
 			};
 
 			bool CheckForPageOverride(const request& req, reply& rep);
-			
+			bool IsPageOverride(const request& req, reply& rep);
+
 			void SetAuthenticationMethod(const _eAuthenticationMethod amethod);
 
 			void AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const _eUserRights userrights);

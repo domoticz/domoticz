@@ -166,6 +166,7 @@ Version 2.0.2025 (September 28th 2014)
 - Implemented: Option to run as daemon (see new domoticz.sh startup script)
 - Implemented: Option to log to syslog
 - Implemented: catching SIGHUB, it will recreate the log file (could be usefull for logrotate functions)
+- Fixed: Override pages now checks for authentication
 
 Version 1.0.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io

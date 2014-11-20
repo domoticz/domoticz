@@ -454,6 +454,32 @@ bool cWebem::CheckForAction( request& req )
 	return true;
 }
 
+bool cWebem::IsPageOverride(const request& req, reply& rep)
+{
+	std::string request_path;
+	if (!request_handler::url_decode(req.uri, request_path))
+	{
+		rep = reply::stock_reply(reply::bad_request);
+		return false;
+	}
+	int paramPos = request_path.find_first_of('?');
+	if (paramPos != std::string::npos)
+	{
+		request_path = request_path.substr(0, paramPos);
+	}
+	std::map < std::string, webem_page_function >::iterator
+		pfun = myPages.find(request_path);
+
+	if (pfun != myPages.end())
+		return true;
+	//check wchar_t
+	std::map < std::string, webem_page_function_w >::iterator
+		pfunW = myPages_w.find(request_path);
+	if (pfunW != myPages_w.end())
+		return true;
+	return false;
+}
+
 bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 {
 	// Decode url to path.
@@ -537,6 +563,7 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 
 	if (pfun!=myPages.end())
 	{
+		std::string url = pfun->first;
 		m_outputfilename="";
 		rep.status = reply::ok;
 		std::string retstr=pfun->second( );
@@ -1544,6 +1571,8 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 	myWebem->m_bRemoveCookie=false;
 	myWebem->m_actsessionid = "";
 
+	bool bCheckAuthentication = myWebem->IsPageOverride(req, rep);
+
 	if (req.uri.find("json.htm") != std::string::npos)
 	{
 		if (req.uri.find("dologout") != std::string::npos)
@@ -1572,6 +1601,13 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 			myWebem->m_bRemoveCookie = true;
 		}
 		else
+		{
+			if (!CheckAuthentication(sHost, req, rep))
+				return;
+		}
+	}
+	else {
+		if (bCheckAuthentication)
 		{
 			if (!CheckAuthentication(sHost, req, rep))
 				return;
