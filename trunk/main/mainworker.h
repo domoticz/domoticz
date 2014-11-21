@@ -43,6 +43,8 @@ public:
 	void SetWebserverPort(const std::string &Port);
 	std::string GetWebserverPort();
 
+	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);
+
 	bool SwitchLight(const std::string &idx, const std::string &switchcmd,const std::string &level, const std::string &hue);
 	bool SwitchLight(unsigned long long idx, const std::string &switchcmd, int level, int hue);
 	bool SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, int hue, const bool IsTesting);
@@ -146,7 +148,6 @@ private:
 	void SendResetCommand(CDomoticzHardwareBase *pHardware);
 	void SendCommand(const int HwdID, unsigned char Cmd, const char *szMessage=NULL);
 	void WriteToHardware(const int HwdID, const char *pdata, const unsigned char length);
-	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);
 	
 	void OnHardwareConnected(CDomoticzHardwareBase *pHardware);
 

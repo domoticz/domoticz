@@ -3020,28 +3020,66 @@ namespace http {
 			if ((nvalue == "") && (svalue == ""))
 				return;
 
+			int iHWID = atoi(hid.c_str());
+			int iUnit = atoi(dunit.c_str());
+			int iType = atoi(dtype.c_str());
+			int iSubType = atoi(dsubtype.c_str());
+			int inValue = atoi(nvalue.c_str());
+
 			root["status"] = "OK";
 			root["title"] = "Update Device";
 
+			if (iType == pTypeLighting2)
+			{
+				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHWID);
+				if (pHardware)
+				{
+					//Send as Lighting 2
+					unsigned long ID;
+					std::stringstream s_strid;
+					s_strid << std::hex << did;
+					s_strid >> ID;
+					unsigned char ID1 = (unsigned char)((ID & 0xFF000000) >> 24);
+					unsigned char ID2 = (unsigned char)((ID & 0x00FF0000) >> 16);
+					unsigned char ID3 = (unsigned char)((ID & 0x0000FF00) >> 8);
+					unsigned char ID4 = (unsigned char)((ID & 0x000000FF));
+
+					tRBUF lcmd;
+					memset(&lcmd, 0, sizeof(RBUF));
+					lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
+					lcmd.LIGHTING2.packettype = pTypeLighting2;
+					lcmd.LIGHTING2.subtype = iSubType;
+					lcmd.LIGHTING2.id1 = ID1;
+					lcmd.LIGHTING2.id2 = ID2;
+					lcmd.LIGHTING2.id3 = ID3;
+					lcmd.LIGHTING2.id4 = ID4;
+					lcmd.LIGHTING2.unitcode = (unsigned char)iUnit;
+					lcmd.LIGHTING2.cmnd = (unsigned char)inValue;
+					lcmd.LIGHTING2.level = (unsigned char)atoi(svalue.c_str());
+					lcmd.LIGHTING2.filler = 0;
+					lcmd.LIGHTING2.rssi = signallevel;
+					m_mainworker.DecodeRXMessage(pHardware, (const unsigned char *)&lcmd.LIGHTING2);
+					return;
+				}
+			}
+
+
 			std::string devname = "Unknown";
 			m_sql.UpdateValue(
-				atoi(hid.c_str()),
+				iHWID,
 				did.c_str(),
-				(const unsigned char)atoi(dunit.c_str()),
-				(const unsigned char)atoi(dtype.c_str()),
-				(const unsigned char)atoi(dsubtype.c_str()),
+				(const unsigned char)iUnit,
+				(const unsigned char)iType,
+				(const unsigned char)iSubType,
 				signallevel,//signal level,
 				batterylevel,//battery level
-				(const int)atoi(nvalue.c_str()),
+				(const int)inValue,
 				svalue.c_str(),
 				devname,
 				false
 				);
 
-			int idtype = atoi(dtype.c_str());
-			int idsubtype = atoi(dsubtype.c_str());
-
-			if ((idtype == pTypeThermostat) && (idsubtype == sTypeThermSetpoint))
+			if ((iType == pTypeThermostat) && (iSubType == sTypeThermSetpoint))
 			{
 				int urights = 3;
 				bool bHaveUser = (m_pWebEm->m_actualuser != "");
@@ -3060,7 +3098,7 @@ namespace http {
 				_log.Log(LOG_NORM, "Sending SetPoint to device....");
 				m_mainworker.SetSetPoint(idx, (float)atof(svalue.c_str()));
 			}
-			else if ((idtype == pTypeGeneral) && (idsubtype == sTypeZWaveThermostatMode))
+			else if ((iType == pTypeGeneral) && (iSubType == sTypeZWaveThermostatMode))
 			{
 				int urights = 3;
 				bool bHaveUser = (m_pWebEm->m_actualuser != "");
@@ -3079,7 +3117,7 @@ namespace http {
 				_log.Log(LOG_NORM, "Sending Thermostat Mode to device....");
 				m_mainworker.SetZWaveThermostatMode(idx, atoi(nvalue.c_str()));
 			}
-			else if ((idtype == pTypeGeneral) && (idsubtype == sTypeZWaveThermostatFanMode))
+			else if ((iType == pTypeGeneral) && (iSubType == sTypeZWaveThermostatFanMode))
 			{
 				int urights = 3;
 				bool bHaveUser = (m_pWebEm->m_actualuser != "");
@@ -7748,6 +7786,7 @@ namespace http {
 								(!((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorVolt))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeVoltage))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeAlert))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypePressure))) &&
 								(dType != pTypeCURRENT) &&
 								(dType != pTypeCURRENTENERGY) &&
@@ -7868,6 +7907,7 @@ namespace http {
 					root["result"][ii]["Data"] = szData;
 
 					root["result"][ii]["Notifications"] = (m_sql.HasNotifications(sd[0]) == true) ? "true" : "false";
+					root["result"][ii]["ShowNotifications"] = true;
 
 					bool bHasTimers = false;
 
@@ -9105,6 +9145,15 @@ namespace http {
 							root["result"][ii]["Data"] = sValue;
 							root["result"][ii]["TypeImg"] = "text";
 							root["result"][ii]["HaveTimeout"] = false;
+							root["result"][ii]["ShowNotifications"] = false;
+						}
+						else if (dSubType == sTypeAlert)
+						{
+							root["result"][ii]["Data"] = sValue;
+							root["result"][ii]["TypeImg"] = "Alert";
+							root["result"][ii]["Level"] = nValue;
+							root["result"][ii]["HaveTimeout"] = false;
+							root["result"][ii]["ShowNotifications"] = false;
 						}
 						else if (dSubType == sTypePressure)
 						{
@@ -9590,15 +9639,20 @@ namespace http {
 				break;
 			case 6:
 				//Switch
-			{
-				unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
-				unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
-				unsigned char ID3 = (unsigned char)((nid & 0x0000FF00) >> 8);
-				unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
-				sprintf(ID, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeLighting2, sTypeAC, 12, 255, 0, "15", devname);
+				{
+					unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
+					unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
+					unsigned char ID3 = (unsigned char)((nid & 0x0000FF00) >> 8);
+					unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
+					sprintf(ID, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+					m_sql.UpdateValue(HwdID, ID, 1, pTypeLighting2, sTypeAC, 12, 255, 0, "15", devname);
+					bCreated = true;
+				}
+				break;
+			case 7:
+				//Alert
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeAlert, 12, 255, 0, "No Alert!", devname);
 				bCreated = true;
-			}
 				break;
 			case pTypeTEMP:
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP, sTypeTEMP1, 10, 255, 0, "0.0", devname);

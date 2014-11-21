@@ -606,6 +606,7 @@ define(['app'], function (app) {
 						if ($(id + " #name").html()!=item.Name) {
 							$(id + " #name").html(item.Name);
 						}
+						var img="";
 						var status="";
 						var bigtext="";
 						if (typeof item.Counter != 'undefined') {
@@ -652,6 +653,10 @@ define(['app'], function (app) {
 						}
 						else if (item.SubType == "Text") {
 							status=item.Data;
+						}
+						else if (item.SubType == "Alert") {
+							status=item.Data;
+							img='<img src="images/Alert48_' + item.Level + '.png" height="48" width="48">';
 						}
 						else if (item.Type == "Lux") {
 							status=item.Data;
@@ -717,6 +722,12 @@ define(['app'], function (app) {
 						}
 						if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 							$(id + " #lastupdate").html(item.LastUpdate);
+						}
+						if (img!="")
+						{
+							if ($(id + " #img").html()!=img) {
+								$(id + " #img").html(img);
+							}
 						}
 					}
 				});
@@ -906,6 +917,10 @@ define(['app'], function (app) {
 					  xhtm+='text48.png" height="48" width="48"></td>\n';
 					  status=item.Data;
 					}
+					else if (item.SubType == "Alert") {
+					  xhtm+='Alert48_' + item.Level + '.png" height="48" width="48"></td>\n';
+					  status=item.Data;
+					}
 					else if (item.SubType == "Pressure") {
 					  xhtm+='gauge48.png" height="48" width="48"></td>\n';
 					  status=item.Data;
@@ -1077,11 +1092,13 @@ define(['app'], function (app) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
-				  if (permissions.hasPermission("Admin")) {
-					  if (item.Notifications == "true")
-						xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#utilitycontent\', \'ShowUtilities\');" data-i18n="Notifications">Notifications</a>';
-					  else
-						xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#utilitycontent\', \'ShowUtilities\');" data-i18n="Notifications">Notifications</a>';
+				  if (item.ShowNotifications == true) {
+					  if (permissions.hasPermission("Admin")) {
+						  if (item.Notifications == "true")
+							xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#utilitycontent\', \'ShowUtilities\');" data-i18n="Notifications">Notifications</a>';
+						  else
+							xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#utilitycontent\', \'ShowUtilities\');" data-i18n="Notifications">Notifications</a>';
+					  }
 				  }
 				  xhtm+=      
 						'</td>\n' +
