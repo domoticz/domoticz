@@ -930,6 +930,7 @@ define(['app'], function (app) {
 							(item.SubType=="Leaf Wetness")||
 							(item.SubType=="Voltage")||
 							(item.SubType=="Text")||
+							(item.SubType=="Alert")||
 							(item.SubType=="Pressure")||
 							(item.SubType=="A/D")||
 							(item.SubType=="Thermostat Mode")||
@@ -974,6 +975,9 @@ define(['app'], function (app) {
 										) {
 									status+=item.Data;
 								}
+								else if (item.SubType=="Alert") {
+									status=item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
+								}
 								else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 									status+=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 								}
@@ -1004,6 +1008,7 @@ define(['app'], function (app) {
 							else {
 								var status="";
 								var bigtext="";
+								var img="";
 								
 								if (typeof item.Counter != 'undefined') {
 									if ((item.SubType=="Gas")||(item.SubType == "RFXMeter counter")) {
@@ -1046,6 +1051,10 @@ define(['app'], function (app) {
 								}
 								else if (item.SubType=="Text") {
 									status=item.Data;
+								}
+								else if (item.SubType=="Alert") {
+									status=item.Data;
+									img='<img src="images/Alert48_' + item.Level + '.png" height="40" width="40">';
 								}
 								else if (item.Type == "Lux") {
 									status=item.Data;
@@ -1124,6 +1133,12 @@ define(['app'], function (app) {
 								}
 								if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 									$(id + " #lastupdate").html(item.LastUpdate);
+								}
+								if (img!="")
+								{
+									if ($(id + " #img").html()!=img) {
+										$(id + " #img").html(img);
+									}
 								}
 							}
 						}
@@ -2400,6 +2415,7 @@ define(['app'], function (app) {
 							(item.SubType=="Leaf Wetness")||
 							(item.SubType=="Voltage")||
 							(item.SubType=="Text")||
+							(item.SubType=="Alert")||
 							(item.SubType=="Pressure")||
 							(item.SubType=="A/D")||
 							(item.SubType=="Thermostat Mode")||
@@ -2471,6 +2487,9 @@ define(['app'], function (app) {
 									(item.SubType=="A/D")
 								) {
 							status=item.Data;
+						}
+						else if (item.SubType=="Alert") {
+							status=item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
 						}
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
@@ -2621,6 +2640,10 @@ define(['app'], function (app) {
 						}
 						else if (item.SubType=="Text") {
 							xhtm+='text48.png" height="40" width="40"></td>\n';
+							status=item.Data;
+						}
+						else if (item.SubType=="Alert") {
+							xhtm+='Alert48_' + item.Level + '.png" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
 						else if (item.SubType=="Pressure") {

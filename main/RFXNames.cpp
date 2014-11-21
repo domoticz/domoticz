@@ -558,6 +558,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeTextStatus, "Text" },
 		{ pTypeGeneral, sTypeZWaveThermostatMode, "Thermostat Mode" },
 		{ pTypeGeneral, sTypeZWaveThermostatFanMode, "Thermostat Fan Mode" },
+		{ pTypeGeneral, sTypeAlert, "Alert" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -768,6 +769,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneral, sTypeTextStatus, "Text" },
 		{ pTypeGeneral, sTypeZWaveThermostatMode, "Thermostat Mode" },
 		{ pTypeGeneral, sTypeZWaveThermostatFanMode, "Thermostat Fan Mode" },
+		{ pTypeGeneral, sTypeAlert, "Alert" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "Temperature" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },

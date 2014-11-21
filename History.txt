@@ -57,6 +57,7 @@ Version 2.0.xxxx (October xxth 2014)
 - Implemented: Dimmer, on/off actions
 - Changed: Motherboard sensors logging, there will be new devices, and this time working as normal (can be shared/used everywhere)
 - Implemented: OpenZWave, COMMAND_CLASS_COLOR_CONTROL (for o.a. Zipato RGBW) (needs to be accepted by openzwave yet)
+- Implemented: Alert Sensor (update via udevice json call)
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

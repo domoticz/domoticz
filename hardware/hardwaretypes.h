@@ -32,7 +32,7 @@
 #define sTypeLeafWetness			0x04
 #define sTypeSystemTemp				0x05
 #define sTypePercentage				0x06
-#define sTypeFan				0x07
+#define sTypeFan					0x07
 #define sTypeVoltage				0x08
 #define sTypePressure				0x09
 #define sTypeSetPoint				0x10
@@ -41,6 +41,7 @@
 #define sTypeTextStatus				0x13
 #define sTypeZWaveThermostatMode	0x14
 #define sTypeZWaveThermostatFanMode	0x15
+#define sTypeAlert					0x16
 
 #define pTypeLux		0xF6
 #define sTypeLux		0x01
