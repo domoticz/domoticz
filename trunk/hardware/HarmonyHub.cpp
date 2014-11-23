@@ -53,11 +53,12 @@ Intergration in Domoticz done by: Jan ten Hove
 
 #define MAX_MISS_COMMANDS							5	//max commands to miss (when executing a command, the harmnoy commands may fail)
 
-CHarmonyHub::CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port, const std::string &userName, const std::string &password)
+CHarmonyHub::CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port, const std::string &userName, const std::string &password):
+m_userName(userName),
+m_password(password),
+m_harmonyAddress(IPAddress),
+m_szAuthorizationToken("")
 {
-	m_userName = userName;
-	m_password = password;
-	m_harmonyAddress = IPAddress;
 	m_usIPPort = port;
 	m_HwdID=ID;
 	m_commandcsocket=NULL;
@@ -217,9 +218,8 @@ void CHarmonyHub::Do_Work()
 bool CHarmonyHub::Login()
 {
 	// Read the token
-	int val;
 	bool bAuthorizationComplete = false;
-	if(m_sql.GetTempVar(TEMP_AUTH_TOKEN, val, m_szAuthorizationToken))
+	if (!m_szAuthorizationToken.empty())
 	{
 
 		//printf("\nLogin Authorization Token is: %s\n\n", m_szAuthorizationToken.c_str());
@@ -255,10 +255,6 @@ bool CHarmonyHub::Login()
 		_log.Log(LOG_STATUS,"Harmony Hub: Logged in to the Logitech web service");
 
 		//printf("\nLogin Authorization Token is: %s\n\n", m_szAuthorizationToken.c_str());
-
-		// Write the Authorization Token to an Authorization Token file to bypass this step
-		// on future sessions
-		m_sql.UpdateTempVar(TEMP_AUTH_TOKEN, m_szAuthorizationToken.c_str());
 
 		csocket authorizationcsocket;
 		if(ConnectToHarmony(m_harmonyAddress, m_usIPPort, &authorizationcsocket) == 1)

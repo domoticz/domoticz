@@ -5980,12 +5980,10 @@ namespace http {
 				}
 			} //(rtype=="switchscene")
 			else if (cparam == "getSunRiseSet") {
-				int nValue = 0;
-				std::string sValue;
-				if (m_sql.GetTempVar("SunRiseSet", nValue, sValue))
+				if (!m_mainworker.m_LastSunriseSet.empty())
 				{
 					std::vector<std::string> strarray;
-					StringSplit(sValue, ";", strarray);
+					StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
 					if (strarray.size() == 2)
 					{
 						struct tm loctime;

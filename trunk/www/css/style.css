@@ -237,7 +237,7 @@ height:100%;
 .btnstyle {
 	display: inline-block;
 	height: 2.60em;
-	margin-top: 1.25em;
+	margin-top: 0;
 	padding: 0em 2.25em 0em 0.5em;
 	background: url(images/img03.jpg) repeat right top;
 	border-radius: 5px;
@@ -288,7 +288,6 @@ height:100%;
 .btnstyle3 {
 	display: inline-block;
 	height: 2.00em;
-	margin-top: 0.25em;
 	padding: 0em 1.25em 0em 1.25em;
 	background: url(images/img03b.jpg) repeat right top;
 	border-radius: 5px;
@@ -304,7 +303,6 @@ height:100%;
 .btnstyle3-dis {
 	display: inline-block;
 	height: 2.00em;
-	margin-top: 0.25em;
 	padding: 0em 1.25em 0em 1.25em;
 	background: url(images/img03bd.png) repeat right top;
 	border-radius: 5px;
@@ -320,7 +318,6 @@ height:100%;
 .btnstyle3-sel {
 	display: inline-block;
 	height: 2.00em;
-	margin-top: 1.25em;
 	padding: 0em 1.25em 0em 1.25em;
 	background: url(images/img03bs.jpg) repeat right top;
 	border-radius: 5px;

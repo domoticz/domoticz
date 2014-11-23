@@ -79,9 +79,13 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	vsnprintf(cbuffer, 1024, logline, argList);
 	va_end(argList);
 
-	time_t now = time(0);
-	char *szDate = asctime(localtime(&now));
-	szDate[strlen(szDate)-1]=0;
+	struct tm *tm;
+	time_t atime = mytime(NULL);
+	tm = localtime(&atime);
+	char szDate[100];
+	sprintf(szDate, "%04d-%02d-%02d %02d:%02d:%02d",
+		+tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
+		+tm->tm_hour, tm->tm_min, tm->tm_sec);
 
 	std::stringstream sstr;
 	
