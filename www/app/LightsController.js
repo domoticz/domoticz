@@ -1264,7 +1264,7 @@ define(['app'], function (app) {
 		  var id="";
 		  
 		  $.ajax({
-			 url: "json.htm?type=devices&filter=light&used=true&order=Name&lastupdate="+$.LastUpdateTime,
+			 url: "json.htm?type=devices&filter=light&used=true&order=Name&lastupdate="+$.LastUpdateTime+"&plan="+window.myglobals.LastPlanSelected,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -1551,13 +1551,55 @@ define(['app'], function (app) {
 		  RefreshLightSwitchesComboArray();
 		  
 		  var htmlcontent = '';
+			var bShowRoomplan=false;
+			$.RoomPlans = [];
+		  $.ajax({
+			 url: "json.htm?type=plans",
+			 async: false, 
+			 dataType: 'json',
+			 success: function(data) {
+				if (typeof data.result != 'undefined') {
+					var totalItems=data.result.length;
+					if (totalItems>0) {
+						bShowRoomplan=true;
+		//				if (window.myglobals.ismobile==true) {
+			//				bShowRoomplan=false;
+				//		}
+						if (bShowRoomplan==true) {
+							$.each(data.result, function(i,item) {
+								$.RoomPlans.push({
+									idx: item.idx,
+									name: item.Name
+								});
+							});
+						}
+					}
+				}
+			 }
+		  });
+		  
 		  var bHaveAddedDevider = false;
 			var bAllowWidgetReorder=true;
 
 			var suntext='<div id="timesun" />\n';
 
-		  var tophtm=
-						'\t<center>' + suntext + '</center>\n';
+		  var tophtm="";
+		  if ($.RoomPlans.length==0) {
+				tophtm+='\t<center>' + suntext + '</center>\n';
+		  }
+		  else {
+				tophtm+=
+					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+					'\t<tr>\n' +
+					'\t  <td align="left">'+suntext+'</td>\n' +
+					'<td align="right">'+
+					'<span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" style="width:160px" class="combobox ui-corner-all">'+
+					'<option value="0" data-i18n="All">All</option>'+
+					'</select>'+
+					'</td>'+
+					'\t</tr>\n' +
+					'\t</table>\n';
+		   }
 			if (permissions.hasPermission("Admin")) {
 				tophtm+=
 					'\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
@@ -1572,7 +1614,7 @@ define(['app'], function (app) {
 			var j=0;
 
 		  $.ajax({
-			 url: "json.htm?type=devices&filter=light&used=true&order=Name", 
+			 url: "json.htm?type=devices&filter=light&used=true&order=Name&plan="+window.myglobals.LastPlanSelected, 
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -1927,6 +1969,21 @@ define(['app'], function (app) {
 		  $('#modal').hide();
 		  $('#lightcontent').html(tophtm+htmlcontent);
 		  $('#lightcontent').i18n();
+			if (bShowRoomplan==true) {
+				$.each($.RoomPlans, function(i,item){
+					var option = $('<option />');
+					option.attr('value', item.idx).text(item.name);
+					$("#lightcontent #comboroom").append(option);
+				});
+				if (typeof window.myglobals.LastPlanSelected!= 'undefined') {
+					$("#lightcontent #comboroom").val(window.myglobals.LastPlanSelected);
+				}
+				$("#lightcontent #comboroom").change(function() { 
+					var idx = $("#lightcontent #comboroom option:selected").val();
+					window.myglobals.LastPlanSelected=idx;
+					ShowLights();
+				});
+			}
 
 			if (bAllowWidgetReorder==true) {
 				if (permissions.hasPermission("Admin")) {

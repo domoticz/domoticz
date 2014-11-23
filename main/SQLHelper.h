@@ -191,9 +191,6 @@ public:
 
 	void UpdateRFXCOMHardwareDetails(const int HardwareID, const int msg1, const int msg2, const int msg3, const int msg4, const int msg5);
 
-	void UpdateTempVar(const char *Key, const char* sValue);
-	bool GetTempVar(const char *Key, int &nValue, std::string &sValue);
-
 	void UpdatePreferencesVar(const char *Key, const char* sValue);
 	void UpdatePreferencesVar(const char *Key, const int nValue);
 	void UpdatePreferencesVar(const char *Key, const int nValue, const char* sValue);

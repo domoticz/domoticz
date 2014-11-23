@@ -1267,13 +1267,13 @@ define(['app'], function (app) {
 		  var tophtm="";
 		  if (permissions.hasPermission("Admin")) {
 			tophtm+=
-				'\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
-				'\t<tr>\n' +
-				'\t  <td align="right">\n' +
-				'\t    <a class="btnstyle" onclick="AddScene();" data-i18n="Add Scene">Add Scene</a>\n' +
-				'\t  </td>\n' +
-				'\t</tr>\n' +
-				'\t</table>\n';
+				'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">' +
+				'\t<tr>' +
+				'\t  <td align="right">' +
+				'\t    <a class="btnstyle" onclick="AddScene();" data-i18n="Add Scene">Add Scene</a>' +
+				'\t  </td>' +
+				'\t</tr>' +
+				'\t</table>';
 		  }
 
 		  var i=0;

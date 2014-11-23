@@ -567,7 +567,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateRain_Calendar);
 	query(sqlCreateTemperature);
 	query(sqlCreateTemperature_Calendar);
-	query(sqlCreateTempVars);
+	//query(sqlCreateTempVars);
 	query(sqlCreateTimers);
 	query(sqlCreateSetpointTimers);
 	query(sqlCreateUV);
@@ -3400,54 +3400,6 @@ bool CSQLHelper::HasSceneTimers(const std::string &Idx)
 	unsigned long long idxll;
 	s_str >> idxll;
 	return HasSceneTimers(idxll);
-}
-
-void CSQLHelper::UpdateTempVar(const char *Key, const char* sValue)
-{
-	if (!m_dbase)
-		return;
-
-	char szTmp[600];
-
-	unsigned long long ID=0;
-
-	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ROWID FROM TempVars WHERE (Key='%s')",Key);
-	result=query(szTmp);
-	if (result.size()==0)
-	{
-		//Insert
-		sprintf(szTmp,
-			"INSERT INTO TempVars (Key, sValue) VALUES ('%s','%s')",
-			Key,sValue);
-		result=query(szTmp);
-	}
-	else
-	{
-		//Update
-		std::stringstream s_str( result[0][0] );
-		s_str >> ID;
-		sprintf(szTmp,"UPDATE TempVars SET sValue='%s' WHERE (ROWID = %llu)",sValue,ID);
-		result = query(szTmp);
-	}
-}
-
-bool CSQLHelper::GetTempVar(const char *Key, int &nValue, std::string &sValue)
-{
-	if (!m_dbase)
-		return false;
-
-	char szTmp[100];
-
-	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT nValue,sValue FROM TempVars WHERE (Key='%s')",Key);
-	result=query(szTmp);
-	if (result.size()<1)
-		return false;
-	std::vector<std::string> sd=result[0];
-	nValue=atoi(sd[0].c_str());
-	sValue=sd[1];
-	return true;
 }
 
 void CSQLHelper::Schedule5Minute()

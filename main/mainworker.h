@@ -37,6 +37,7 @@ public:
 	CDomoticzHardwareBase* GetHardware(int HwdId);
 	
 	void HeartbeatUpdate(const std::string component);
+	void HeartbeatRemove(const std::string component);
 	void HeartbeatCheck();
 
 	void SetVerboseLevel(eVerboseLevel Level);
@@ -102,6 +103,7 @@ public:
 	bool m_bHaveDownloadedDomoticzUpdateSuccessFull;
 
 	tcp::server::CTCPServer m_sharedserver;
+	std::string m_LastSunriseSet;
 private:
 	void HandleAutomaticBackups();
 	unsigned long long PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);

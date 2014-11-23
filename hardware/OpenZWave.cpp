@@ -447,7 +447,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 	}
 		break;
 	case OpenZWave::Notification::Type_NodeNew:
-		_log.Log(LOG_STATUS, "OpenZWave: New Node added. HomeID: %u, NodeID: %d", _homeID, _nodeID);
+		_log.Log(LOG_STATUS, "OpenZWave: New Node added. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 		m_bNeedSave = true;
 		break;
 	case OpenZWave::Notification::Type_NodeAdded:
@@ -485,7 +485,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		break;
 	case OpenZWave::Notification::Type_NodeRemoved:
 		{
-			_log.Log(LOG_STATUS, "OpenZWave: Node Removed. HomeID: %u, NodeID: %d", _homeID, _nodeID);
+			_log.Log(LOG_STATUS, "OpenZWave: Node Removed. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID,_nodeID);
 			// Remove the node from our list
 			for (std::list<NodeInfo>::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it)
 			{
@@ -598,7 +598,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 				break;
 			case OpenZWave::Notification::Code_Timeout:
 #ifdef _DEBUG
-				_log.Log(LOG_STATUS, "OpenZWave: Received timeout notification from HomeID: %u, NodeID: %d (0x%02x), CommandClass: %s", _homeID, _nodeID, _nodeID, cclassStr(commandClass));
+				_log.Log(LOG_STATUS, "OpenZWave: Received timeout notification from HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 #endif
 				break;
 			case OpenZWave::Notification::Code_NoOperation:
@@ -691,7 +691,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		//The queries on a node that are essential to its operation have been completed. The node can now handle incoming messages.
 		break;
 	default:
-		_log.Log(LOG_STATUS, "OpenZWave: Received unhandled notification type (%d) from HomeID: %u, NodeID: %d", nType, _homeID, _nodeID);
+		_log.Log(LOG_STATUS, "OpenZWave: Received unhandled notification type (%d) from HomeID: %u, NodeID: %d (0x%02x)", nType, _homeID, _nodeID,_nodeID);
 		break;
 	}
 
@@ -952,7 +952,7 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 			_log.Log(LOG_ERROR, "OpenZWave: Switch command not sent because not all Awake Nodes have been Queried!");
 		}
 		else {
-			_log.Log(LOG_ERROR, "OpenZWave: Node not found! (%d, %02x)", nodeID, nodeID);
+			_log.Log(LOG_ERROR, "OpenZWave: Node not found! (NodeID: %d, %02x)", nodeID, nodeID);
 		}
 		return;
 	}
@@ -976,7 +976,7 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 			}
 
 			OpenZWave::ValueID::ValueType vType = vID.GetType();
-			_log.Log(LOG_NORM, "OpenZWave: Domoticz has send a Switch command!");
+			_log.Log(LOG_NORM, "OpenZWave: Domoticz has send a Switch command! HomeID: %u, NodeID: %d (0x%02x)",_homeID,_nodeID,_nodeID);
 			bHaveSendSwitch = true;
 			if (vType == OpenZWave::ValueID::ValueType_Bool)
 			{
@@ -1067,11 +1067,11 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 				*/
 		if ((svalue > 99) && (svalue != 255))
 			svalue = 99;
-		_log.Log(LOG_NORM, "OpenZWave: Domoticz has send a Switch command!, Level: %d", svalue);
+		_log.Log(LOG_NORM, "OpenZWave: Domoticz has send a Switch command!, Level: %d, HomeID: %u, NodeID: %d (0x%02x)", svalue,_homeID,_nodeID,_nodeID);
 		bHaveSendSwitch = true;
 		if (!m_pManager->SetValue(vID, svalue))
 		{
-			_log.Log(LOG_ERROR, "OpenZWave: Error setting Switch Value!");
+			_log.Log(LOG_ERROR, "OpenZWave: Error setting Switch Value! HomeID: %u, NodeID: %d (0x%02x)",_homeID,_nodeID,_nodeID);
 		}
 	}
 
@@ -1125,7 +1125,7 @@ void COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int c
 			_log.Log(LOG_ERROR, "OpenZWave: Switch command not sent because not all Awake Nodes have been Queried!");
 		}
 		else {
-			_log.Log(LOG_ERROR, "OpenZWave: Node not found! (%d, %02x)", nodeID, nodeID);
+			_log.Log(LOG_ERROR, "OpenZWave: Node not found! (NodeID: %d, %02x)", nodeID, nodeID);
 		}
 		return;
 	}
@@ -1138,7 +1138,7 @@ void COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int c
 	{
 		if (!m_pManager->SetValue(vID, colvalues, valuelen))
 		{
-			_log.Log(LOG_ERROR, "OpenZWave: Error setting Switch Value!");
+			_log.Log(LOG_ERROR, "OpenZWave: Error setting Switch Value! HomeID: %u, NodeID: %d (0x%02x)",m_controllerID,nodeID,nodeID);
 		}
 	}
 	m_updateTime = mytime(NULL);
@@ -1204,7 +1204,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 		return;
 
 	std::string vUnits = m_pManager->GetValueUnits(vID);
-	_log.Log(LOG_NORM, "OpenZWave: Value_Added: Node: %d, CommandClass: %s, Label: %s, Instance: %d", (int)NodeID, cclassStr(commandclass), vLabel.c_str(), instance);
+	_log.Log(LOG_NORM, "OpenZWave: Value_Added: Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d", (int)NodeID, (int)NodeID, cclassStr(commandclass), vLabel.c_str(), instance);
 
 	if ((instance == 0) && (NodeID == m_controllerID))
 		return;// We skip instance 0 if there are more, since it should be mapped to other instances or their superposition
@@ -1291,7 +1291,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 				InsertDevice(_device);
 				_device.label = "RGBW";
 				_device.devType = ZDTYPE_SWITCH_COLOR;
-				_device.instanceID = 100;
+				_device.instanceID = 101;
 				InsertDevice(_device);
 			}
 		}
@@ -1727,7 +1727,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 					(pNode->tClockMinute != -1)
 					)
 				{
-					_log.Log(LOG_NORM, "OpenZWave: NodeID: %d, Thermostat Clock: %s %02d:%02d", NodeID, ZWave_Clock_Days(pNode->tClockDay), pNode->tClockHour, pNode->tClockMinute);
+					_log.Log(LOG_NORM, "OpenZWave: NodeID: %d (0x%02x), Thermostat Clock: %s %02d:%02d", NodeID, NodeID, ZWave_Clock_Days(pNode->tClockDay), pNode->tClockHour, pNode->tClockMinute);
 					_device.intvalue = (pNode->tClockDay*(24 * 60)) + (pNode->tClockHour * 60) + pNode->tClockMinute;
 					_device.commandClassID = COMMAND_CLASS_CLOCK;
 					_device.devType = ZDTYPE_SENSOR_THERMOSTAT_CLOCK;
@@ -1744,12 +1744,12 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 			if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
 				return;
 		}
-		_log.Log(LOG_ERROR, "OpenZWave: Unhandled class: 0x%02X (%s), NodeID: %d, Index: %d, Instance: %d", commandclass, cclassStr(commandclass), NodeID, vOrgIndex, vOrgInstance);
+		_log.Log(LOG_ERROR, "OpenZWave: Unhandled class: 0x%02X (%s), NodeID: %d (0x%02x), Index: %d, Instance: %d", commandclass, cclassStr(commandclass), NodeID, NodeID, vOrgIndex, vOrgInstance);
 	}
 	else
 	{
 		//Unhandled
-		_log.Log(LOG_ERROR, "OpenZWave: Unhandled class: 0x%02X (%s), NodeID: %d, Index: %d, Instance: %d", commandclass, cclassStr(commandclass), NodeID, vOrgIndex, vOrgInstance);
+		_log.Log(LOG_ERROR, "OpenZWave: Unhandled class: 0x%02X (%s), NodeID: %d (0x%02x), Index: %d, Instance: %d", commandclass, cclassStr(commandclass), NodeID, NodeID, vOrgIndex, vOrgInstance);
 		if (vType == OpenZWave::ValueID::ValueType_List)
 		{
 			//std::vector<std::string > vStringList;
@@ -2016,7 +2016,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	std::string path = sstr.str();
 
 #ifdef DEBUG_ZWAVE_INT
-	_log.Log(LOG_NORM, "OpenZWave: Value_Changed: Node: %d, CommandClass: %s, Label: %s, Instance: %d, Index: %d", NodeID, cclassStr(commandclass), vLabel.c_str(), vID.GetInstance(), vID.GetIndex());
+	_log.Log(LOG_NORM, "OpenZWave: Value_Changed: Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d", NodeID, NodeID, cclassStr(commandclass), vLabel.c_str(), vID.GetInstance(), vID.GetIndex());
 #endif
 
 	if (commandclass == COMMAND_CLASS_USER_CODE)
@@ -2125,7 +2125,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 					(pNode->tClockMinute != -1)
 					)
 				{
-					_log.Log(LOG_NORM, "OpenZWave: NodeID: %d, Thermostat Clock: %s %02d:%02d", NodeID, ZWave_Clock_Days(pNode->tClockDay), pNode->tClockHour, pNode->tClockMinute);
+					_log.Log(LOG_NORM, "OpenZWave: NodeID: %d (0x%02x), Thermostat Clock: %s %02d:%02d", NodeID, NodeID, ZWave_Clock_Days(pNode->tClockDay), pNode->tClockHour, pNode->tClockMinute);
 				}
 			}
 		}
@@ -2455,7 +2455,7 @@ bool COpenZWave::HealNode(const int nodeID)
 		return false;
 
 	m_pManager->HealNetworkNode(m_controllerID, nodeID, true);
-	_log.Log(LOG_STATUS, "OpenZWave: Heal Node command initiated for node: %d...", nodeID);
+	_log.Log(LOG_STATUS, "OpenZWave: Heal Node command initiated for node: %d (0x%02x)...", nodeID,nodeID);
 	return true;
 }
 
@@ -2537,7 +2537,7 @@ bool COpenZWave::AddNodeToGroup(const int nodeID, const int groupID, const int a
 	if (m_pManager == NULL)
 		return false;
 	m_pManager->AddAssociation(m_controllerID, nodeID, groupID, addID);
-	_log.Log(LOG_STATUS, "OpenZWave: added node: %d in group: %d of node: %d", addID, groupID, nodeID);
+	_log.Log(LOG_STATUS, "OpenZWave: added node: %d (0x%02x) in group: %d of node: %d (0x%02x)", addID, addID, groupID, nodeID, nodeID);
 	return true;
 }
 
@@ -2546,7 +2546,7 @@ bool COpenZWave::RemoveNodeFromGroup(const int nodeID, const int groupID, const 
 	if (m_pManager == NULL)
 		return false;
 	m_pManager->RemoveAssociation(m_controllerID, nodeID, groupID, removeID);
-	_log.Log(LOG_STATUS, "OpenZWave: removed node: %d from group: %d of node: %d", removeID, groupID, nodeID);
+	_log.Log(LOG_STATUS, "OpenZWave: removed node: %d (0x%02x) from group: %d of node: %d (0x%02x)", removeID, removeID, groupID, nodeID, nodeID);
 
 	return true;
 }

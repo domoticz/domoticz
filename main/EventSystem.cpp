@@ -69,6 +69,16 @@ void CEventSystem::StopEventSystem()
 	}
 }
 
+void CEventSystem::SetEnabled(const bool bEnabled)
+{
+	m_bEnabled = bEnabled; 
+	if (!bEnabled)
+	{
+		//Remove from heartbeat system
+		m_mainworker.HeartbeatRemove("EventSystem");
+	}
+}
+
 void CEventSystem::LoadEvents()
 {
 	boost::lock_guard<boost::mutex> l(eventMutex);
@@ -1112,7 +1122,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 					{
 						if (parseBlocklyActions(it->Actions, it->Name, it->ID))
 						{
-							_log.Log(LOG_NORM, "UI Event triggered: %s", it->Name.c_str());
+							_log.Log(LOG_NORM, "Event: triggered: %s", it->Name.c_str());
 						}
 					}
 				}
@@ -1161,7 +1171,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 					{
 						if (parseBlocklyActions(it->Actions, it->Name, it->ID))
 						{
-							_log.Log(LOG_NORM, "UI Event triggered: %s", it->Name.c_str());
+							_log.Log(LOG_NORM, "Event: triggered: %s", it->Name.c_str());
 						}
 					}
 				}
@@ -1207,7 +1217,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 						{
 							if (parseBlocklyActions(it->Actions, it->Name, it->ID))
 							{
-								_log.Log(LOG_NORM, "UI Event triggered: %s", it->Name.c_str());
+								_log.Log(LOG_NORM, "Event: triggered: %s", it->Name.c_str());
 							}
 						}
 					}
@@ -1258,7 +1268,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 					{
 						if (parseBlocklyActions(it->Actions, it->Name, it->ID))
 						{
-							_log.Log(LOG_NORM, "UI Event triggered: %s", it->Name.c_str());
+							_log.Log(LOG_NORM, "Event: triggered: %s", it->Name.c_str());
 						}
 					}
 				}
@@ -2456,11 +2466,9 @@ int CEventSystem::getSunRiseSunSetMinutes(const std::string &what)
 	std::vector<std::string> sunRisearray;
 	std::vector<std::string> sunSetarray;
 
-	int nValue = 0;
-	std::string sValue;
-	if (m_sql.GetTempVar("SunRiseSet", nValue, sValue))
+	if (!m_mainworker.m_LastSunriseSet.empty())
 	{
-		StringSplit(sValue, ";", strarray);
+		StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
 		StringSplit(strarray[0], ":", sunRisearray);
 		StringSplit(strarray[1], ":", sunSetarray);
 
