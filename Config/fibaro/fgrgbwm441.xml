@@ -2,6 +2,9 @@
 
 <Product xmlns='http://code.google.com/p/open-zwave/'>
 
+  <!-- COMMAND_CLASS_COLOR get not supported -->
+  <CommandClass id="51" getsupported="false"/>
+
   <!-- Configuration -->
   <CommandClass id="112">
     <Value type="list" genre="config" instance="1" index="1" label="Enable/Disable ALL ON/OFF" size="1" value="255">
