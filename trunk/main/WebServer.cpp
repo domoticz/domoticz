@@ -151,6 +151,7 @@ namespace http {
 				}
 			}
 
+			CheckAppCache(serverpath);
 
 			if (m_pWebEm != NULL)
 				delete m_pWebEm;
@@ -543,6 +544,110 @@ namespace http {
 				}
 			}
 		}
+
+		void CWebServer::CheckAppCache(const std::string &serverpath)
+		{
+			_log.Log(LOG_NORM, "AppCache: Check starting...");
+			try {
+				/*
+				** Load floor plan images from database
+				*/
+				std::stringstream szQuery;
+				std::vector<std::vector<std::string> > result;
+				std::vector<std::string> images;
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT ImageFile FROM Floorplans ORDER BY [Order]";
+				result = m_sql.query(szQuery.str());
+				if (result.size() > 0)
+				{
+					int ii = 0;
+					CURLEncode* oEncoder = new CURLEncode();
+					for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+					{
+						std::string sImage = oEncoder->URLEncode((*itt)[0]);
+						for (std::string::size_type found = sImage.find("%2F"); found!=std::string::npos; found = sImage.find("%2F"))  
+							sImage.replace(found, 3, "/");
+						images.insert(images.end(), sImage);
+//						_log.Log(LOG_NORM, "AppCache: Encoded image '%s'.", sImage.c_str());
+					}
+				}
+				else return;  // if no floorplans then bail out
+				
+				/*
+				**  Scan manifest file and remove those images already in the file
+				**  Images will be at the end of the file after the '# Floorplans' comment
+				*/
+				std::string sLine = "";
+				std::ifstream infile;
+				bool bFoundComment = false;
+				std::string manifestfile = serverpath + "/html5.appcache";
+				infile.open(manifestfile.c_str());
+				if (infile.is_open())
+				{
+					while (!infile.eof())
+					{
+						getline(infile, sLine);
+						if (sLine.size() != 0)
+						{
+							if (!bFoundComment)
+							{
+								if (sLine == "# Floorplans")
+								{
+									bFoundComment = true;
+//									_log.Log(LOG_NORM, "AppCache: Found comment '# Floorplans'.");
+								}
+							}
+							else
+							{
+								for (std::vector<std::string>::iterator itt = images.begin(); itt != images.end(); ++itt)
+								{
+									if (sLine == *itt)
+									{
+										_log.Log(LOG_NORM, "AppCache: Image '%s' found in cache file.", itt->c_str());
+										images.erase(itt); // clear images already in file to avoid duplication
+										break;
+									}
+								}
+							}
+						}
+					}
+					infile.close();
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "AppCache: Cache file '%s' failed to open for read.", manifestfile.c_str());
+					return;
+				}
+
+				if (images.size() > 0)
+				{
+					std::ofstream outfile;
+					outfile.open(manifestfile.c_str(), std::ios::out | std::ios::app);
+					if (outfile.is_open())
+					{
+						if (!bFoundComment)
+						{
+							_log.Log(LOG_NORM, "AppCache: Inserting comment '# Floorplans'.");
+							outfile << "# Floorplans" << std::endl << "CACHE:" << std::endl;
+						}
+						std::vector<std::string>::const_iterator itt;
+						for (itt = images.begin(); itt != images.end(); ++itt)
+						{
+							_log.Log(LOG_NORM, "AppCache: Inserting image '%s' into cache file.", itt->c_str());
+							outfile << itt->c_str() << std::endl;
+						}
+						outfile.flush();
+						outfile.close();
+					}
+					else _log.Log(LOG_ERROR, "AppCache: Cache file '%s' failed to open for append.", manifestfile.c_str());
+				}
+			}
+			catch (...) {
+				_log.Log(LOG_ERROR, "AppCache: Exception during floorplan check.");
+			}
+			_log.Log(LOG_NORM, "AppCache: Check complete.");
+		};
 
 		void CWebServer::Cmd_AddHardware(Json::Value &root)
 		{
