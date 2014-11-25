@@ -9757,6 +9757,18 @@ namespace http {
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeAlert, 12, 255, 0, "No Alert!", devname);
 				bCreated = true;
 				break;
+			case 8:
+				//Thermostat Setpoint
+				{
+					unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
+					unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
+					unsigned char ID3 = (unsigned char)((nid & 0x0000FF00) >> 8);
+					unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
+					sprintf(ID, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+				}
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeThermostat, sTypeThermSetpoint, 12, 255, 0, "20.5", devname);
+				bCreated = true;
+				break;
 			case pTypeTEMP:
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP, sTypeTEMP1, 10, 255, 0, "0.0", devname);
 				bCreated = true;
@@ -11316,6 +11328,13 @@ namespace http {
 				root["result"][ii]["DevName"] = itt->DeviceName;
 				root["result"][ii]["TimerType"] = Timer_Type_Desc(itt->timerType);
 				root["result"][ii]["TimerCmd"] = Timer_Cmd_Desc(itt->timerCmd);
+				root["result"][ii]["IsThermostat"] = itt->bIsThermostat;
+				if (itt->bIsThermostat == true)
+				{
+					char szTemp[10];
+					sprintf(szTemp, "%.1f", itt->Temperature);
+					root["result"][ii]["Temperature"] = szTemp;
+				}
 				root["result"][ii]["Days"] = itt->Days;
 				char *pDate = asctime(localtime(&itt->startTime));
 				if (pDate != NULL)
