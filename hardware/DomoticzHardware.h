@@ -56,6 +56,8 @@ public:
 
 	void SetHeartbeatReceived();
 
+	void EnableOutputLog(const bool bEnableLog);
+
 	bool IsStarted() { return m_bIsStarted; }
 	time_t m_LastHeartbeat;
 	time_t m_LastHeartbeatReceive;
@@ -70,6 +72,7 @@ public:
 	boost::signals2::signal<void(CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand)> sDecodeRXMessage;
 	boost::signals2::signal<void(CDomoticzHardwareBase *pDevice)> sOnConnected;
 	void *m_pUserData;
+	bool m_bOutputLog;
 private:
 	boost::mutex readQueueMutex;
 	virtual bool StartHardware()=0;
@@ -83,6 +86,5 @@ private:
 	void Do_Heartbeat_Work();
 	boost::shared_ptr<boost::thread> m_Heartbeatthread;
 	volatile bool m_stopHeartbeatrequested;
-
 };
 

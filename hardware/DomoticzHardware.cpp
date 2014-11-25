@@ -18,6 +18,7 @@ CDomoticzHardwareBase::CDomoticzHardwareBase()
 	mytime(&m_LastHeartbeatReceive);
 	m_DataTimeout = 0;
 	m_bSkipReceiveCheck = false;
+	m_bOutputLog = true;
 };
 
 CDomoticzHardwareBase::~CDomoticzHardwareBase()
@@ -35,6 +36,10 @@ bool CDomoticzHardwareBase::Stop()
 	return StopHardware();
 }
 
+void CDomoticzHardwareBase::EnableOutputLog(const bool bEnableLog)
+{
+	m_bOutputLog = bEnableLog;
+}
 
 bool CDomoticzHardwareBase::onRFXMessage(const unsigned char *pBuffer, const size_t Len)
 {

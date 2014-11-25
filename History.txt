@@ -66,7 +66,7 @@ Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher
 - Implemented: Splash screen for iPhone5 retina
 - Implemented: Navigation toolbar for mobile devices
-- Fixed: Dashboard/mobile, double 'open' for contact switch types
+- Fixed: Dashboard/mobile, double 'open' for contact switch types6
 - Implemented: Delete short log value P1 SmartLog (Shift-Left click)
 - Implemented: Switch Scene/Group behaviour with learn codes enabled
 - Changed: Energy Device now logs updates same value in short log

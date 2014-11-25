@@ -1143,6 +1143,13 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 		ID = szTmp;
 		Unit=pResponse->CHIME.sound;
 	}
+	else if (devType == pTypeThermostat)
+	{
+		const _tThermostat *pMeter = (const _tThermostat*)pResponse;
+		sprintf(szTmp, "%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
+		ID = szTmp;
+		Unit = 0;
+	}
 	else if (devType == pTypeThermostat2)
 	{
 		ID = "1";
@@ -1242,6 +1249,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			case pTypeRFY:
 			case pTypeSecurity1:
 			case pTypeChime:
+			case pTypeThermostat:
 			case pTypeThermostat2:
 			case pTypeThermostat3:
 				//we received a control message from a domoticz client,
@@ -1436,17 +1444,20 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	if (DeviceRowIdx == -1)
 		return;
 
-	std::stringstream sTmp;
-	std::string sdevicetype = RFX_Type_Desc(pRXCommand[1], 1);
-	if (pRXCommand[1] == pTypeGeneral)
+	if (pHardware->m_bOutputLog)
 	{
-		const _tGeneralDevice *pMeter = (const _tGeneralDevice*)pRXCommand;
-		sdevicetype += "/" + std::string(RFX_Type_SubType_Desc(pMeter->type, pMeter->subtype));
+		std::stringstream sTmp;
+		std::string sdevicetype = RFX_Type_Desc(pRXCommand[1], 1);
+		if (pRXCommand[1] == pTypeGeneral)
+		{
+			const _tGeneralDevice *pMeter = (const _tGeneralDevice*)pRXCommand;
+			sdevicetype += "/" + std::string(RFX_Type_SubType_Desc(pMeter->type, pMeter->subtype));
+		}
+		sTmp << szDate << " (" << pHardware->Name << ") " << sdevicetype << " (" << m_LastDeviceName << ")";
+		WriteMessageStart();
+		WriteMessage(sTmp.str().c_str());
+		WriteMessageEnd();
 	}
-	sTmp << szDate << " (" << pHardware->Name << ") " << sdevicetype << " (" << m_LastDeviceName << ")";
-	WriteMessageStart();
-	WriteMessage(sTmp.str().c_str());
-	WriteMessageEnd();
 
 	//Send to connected Sharing Users
 	m_sharedserver.SendToAll(DeviceRowIdx,(const char*)pRXCommand,pRXCommand[0]+1,pClient2Ignore);
@@ -8707,6 +8718,12 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		tmeter.dunit=1;
 		tmeter.temp=TempValue;
 		WriteToHardware(HardwareID,(const char*)&tmeter,sizeof(_tThermostat));
+
+		if (pHardware->HwdType == HTYPE_Dummy)
+		{
+			//Also set it in the database, ad this devices does not send updates
+			DecodeRXMessage(pHardware, (const unsigned char*)&tmeter);
+		}
 	}
 	return true;
 }

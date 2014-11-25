@@ -42,6 +42,7 @@ CHardwareMonitor::CHardwareMonitor()
 	m_stoprequested=false;
 	m_bEnabled=true;
 	HwdType = HTYPE_System;
+	m_bOutputLog = false;
 	Name = "Motherboard sensors";
 #ifdef WIN32
 	InitWMI();
@@ -58,7 +59,6 @@ CHardwareMonitor::~CHardwareMonitor(void)
 }
 void CHardwareMonitor::StartHardwareMonitor()
 {
-	return;
 #ifdef _DEBUG
         _log.Log(LOG_STATUS,"Hardware Monitor: Started");
 #endif

@@ -5336,7 +5336,9 @@ void CSQLHelper::DeleteDevice(const std::string &idx)
 	query(szTmp);
 	sprintf(szTmp,"DELETE FROM Timers WHERE (DeviceRowID == %s)",idx.c_str());
 	query(szTmp);
-	sprintf(szTmp,"DELETE FROM UV WHERE (DeviceRowID == %s)",idx.c_str());
+	sprintf(szTmp, "DELETE FROM SetpointTimers WHERE (DeviceRowID == %s)", idx.c_str());
+	query(szTmp);
+	sprintf(szTmp, "DELETE FROM UV WHERE (DeviceRowID == %s)", idx.c_str());
 	query(szTmp);
 	sprintf(szTmp,"DELETE FROM UV_Calendar WHERE (DeviceRowID == %s)",idx.c_str());
 	query(szTmp);
