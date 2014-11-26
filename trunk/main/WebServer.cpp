@@ -4094,7 +4094,11 @@ namespace http {
 								root["result"][ii]["Name"] = Name;
 								root["result"][ii]["Type"] = RFX_Type_Desc(Type, 1);
 								root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(Type, SubType);
-								bool bIsDimmer = (switchtype == STYPE_Dimmer);
+								bool bIsDimmer = (
+									(switchtype == STYPE_Dimmer) ||
+									(switchtype == STYPE_BlindsPercentage) ||
+									(switchtype == STYPE_BlindsPercentageInverted)
+									);
 								root["result"][ii]["IsDimmer"] = bIsDimmer;
 								ii++;
 							}
