@@ -61,6 +61,7 @@ Version 2.0.xxxx (October xxth 2014)
 - Implemented: Roomplan selector on switches/utility tab
 - Changed: Date/Time notation in log to ISO-8601 (thanks to Ugo)
 - Changed: OpenZWave logging, more persistant with node id's (thanks to Ugo)
+- Implemented: Scene/Group, Blinds Percentage(+Inverted) can now set the percentage level
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

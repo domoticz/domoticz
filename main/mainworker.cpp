@@ -9050,7 +9050,11 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 
 			int ilevel=maxDimLevel-1;
 
-			if ((switchtype == STYPE_Dimmer)&&(maxDimLevel!=0))
+			if (
+				((switchtype == STYPE_Dimmer) || 
+				(switchtype == STYPE_BlindsPercentage) || 
+				(switchtype == STYPE_BlindsPercentageInverted) 
+				) && (maxDimLevel != 0))
 			{
 				if (intswitchcmd == "On")
 				{
