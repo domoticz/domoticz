@@ -7,7 +7,7 @@
 #include "cWebem.h"
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
-
+#include <boost/algorithm/string.hpp>
 #include "reply.hpp"
 #include "request.hpp"
 #include "mime_types.hpp"
@@ -583,21 +583,38 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 			extraheaders=1;
 		}
 
-		rep.headers.resize(4+extraheaders);
-		rep.headers[0].name = "Content-Length";
-		rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
-		rep.headers[1].name = "Content-Type";
-		rep.headers[1].value = strMimeType;
-		rep.headers[1].value += ";charset=UTF-8"; //ISO-8859-1
-		rep.headers[2].name = "Cache-Control";
-		rep.headers[2].value = "no-cache";
-		rep.headers[3].name = "Pragma";
-		rep.headers[3].value = "no-cache";
-
-		if (m_outputfilename!="")
+		if (!boost::algorithm::starts_with(strMimeType, "image"))
 		{
-			rep.headers[4].name = "Content-Disposition";
-			rep.headers[4].value = "attachment; filename=" + m_outputfilename;
+			rep.headers.resize(4 + extraheaders);
+			rep.headers[0].name = "Content-Length";
+			rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
+			rep.headers[1].name = "Content-Type";
+			rep.headers[1].value = strMimeType;
+			rep.headers[1].value += ";charset=UTF-8"; //ISO-8859-1
+			rep.headers[2].name = "Cache-Control";
+			rep.headers[2].value = "no-cache";
+			rep.headers[3].name = "Pragma";
+			rep.headers[3].value = "no-cache";
+			if (m_outputfilename != "")
+			{
+				rep.headers[4].name = "Content-Disposition";
+				rep.headers[4].value = "attachment; filename=" + m_outputfilename;
+			}
+		}
+		else
+		{
+			rep.headers.resize(3 + extraheaders);
+			rep.headers[0].name = "Content-Length";
+			rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
+			rep.headers[1].name = "Content-Type";
+			rep.headers[1].value = strMimeType;
+			rep.headers[2].name = "Cache-Control";
+			rep.headers[2].value = "max-age=3600, public";
+			if (m_outputfilename != "")
+			{
+				rep.headers[3].name = "Content-Disposition";
+				rep.headers[3].value = "attachment; filename=" + m_outputfilename;
+			}
 		}
 		return true;
 	}
