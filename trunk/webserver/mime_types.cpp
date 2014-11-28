@@ -37,6 +37,7 @@ struct mapping
   { "mp3", "audio/mpeg" },
   { "ogg", "audio/ogg" },
   { "wav", "audio/x-wav" },
+  { "svg", "image/svg+xml" },
   { "db", "application/octet-stream" },
   { 0, 0 } // Marks end of list.
 };

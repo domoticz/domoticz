@@ -95,7 +95,7 @@ void CHardwareMonitor::Init()
 	m_bEnabled=false;
 	return;
 #endif
-	// Check if there is already hardware running for System, if no start it.
+	// Check if there is already a hardware devices for our class, if no add it.
 	m_lastquerytime=0;
 	m_HwdID = 0;
 	std::stringstream szQuery;
