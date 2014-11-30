@@ -180,7 +180,7 @@ void CHardwareMonitor::SendVoltage(const unsigned long Idx, const float Volt, co
 	gDevice.subtype = sTypeVoltage;
 	gDevice.id = 1;
 	gDevice.floatval1 = Volt;
-	gDevice.intval1 = (int)Idx;
+	gDevice.intval1 = static_cast<int>(Idx);
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
 
 	if (!bDeviceExits)
@@ -254,7 +254,7 @@ void CHardwareMonitor::SendPercentage(const unsigned long Idx, const float Perce
 	gDevice.subtype = sTypePercentage;
 	gDevice.id = 1;
 	gDevice.floatval1 = Percentage;
-	gDevice.intval1 = (int)Idx;
+	gDevice.intval1 = static_cast<int>(Idx);
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
 
 	if (!bDeviceExits)
@@ -287,7 +287,7 @@ void CHardwareMonitor::SendFanSensor(const int Idx, const int FanSpeed, const st
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypeFan;
 	gDevice.id = 1;
-	gDevice.intval1 = (int)Idx;
+	gDevice.intval1 = static_cast<int>(Idx);
 	gDevice.intval2 = FanSpeed;
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
 
@@ -311,13 +311,13 @@ void CHardwareMonitor::GetInternalTemperature()
 	if (tmpline.find("temp=") == std::string::npos)
 		return;
 	tmpline = tmpline.substr(5);
-	int pos = tmpline.find("'");
+	size_t pos = tmpline.find("'");
 	if (pos != std::string::npos)
 	{
 		tmpline = tmpline.substr(0, pos);
 	}
 
-	float temperature = (float)atof(tmpline.c_str());
+	float temperature = static_cast<float>(atof(tmpline.c_str()));
 	if (temperature == 0)
 		return; //hardly possible for a on board temp sensor, if it is, it is probably not working
 
@@ -361,14 +361,14 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int di
 	{
 		dsubtype = sTypeSystemTemp;
 		doffset = 1000;
-		float temp = (float)atof(devValue.c_str());
+		float temp = static_cast<float>(atof(devValue.c_str()));
 		SendTempSensor(doffset + dindex, temp, devName);
 	}
 	else if (qType == "Load")
 	{
 		dsubtype = sTypePercentage;
 		doffset = 1100;
-		float perc = (float)atof(devValue.c_str());
+		float perc = static_cast<float>(atof(devValue.c_str()));
 		SendPercentage(doffset + dindex, perc, devName);
 	}
 	else if (qType == "Fan")
@@ -382,7 +382,7 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int di
 	{
 		dsubtype = sTypeVoltage;
 		doffset = 1300;
-		float volt = (float)atof(devValue.c_str());
+		float volt = static_cast<float>(atof(devValue.c_str()));
 		SendVoltage(doffset + dindex, volt, devName);
 	}
 	return;
@@ -438,7 +438,7 @@ bool CHardwareMonitor::IsOHMRunning()
 		VARIANT vtProp;  
 		VariantInit(&vtProp);  
 		hr = pclsObj->Get(L"ProcessId", 0, &vtProp, 0, 0);  
-		int procId=(int)vtProp.iVal;
+		int procId = static_cast<int>(vtProp.iVal);
 		if (procId) return true;
 	}
 	return false;

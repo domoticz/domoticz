@@ -204,7 +204,7 @@ void CPVOutputInput::SendVoltage(const unsigned long Idx, const float Volt, cons
 	gDevice.subtype=sTypeVoltage;
 	gDevice.id=1;
 	gDevice.floatval1=Volt;
-	gDevice.intval1=(int)Idx;
+	gDevice.intval1 = static_cast<int>(Idx);
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
 
 	if (!bDeviceExits)
@@ -238,7 +238,7 @@ void CPVOutputInput::SendPercentage(const unsigned long Idx, const float Percent
 	gDevice.subtype=sTypePercentage;
 	gDevice.id=1;
 	gDevice.floatval1=Percentage;
-	gDevice.intval1=(int)Idx;
+	gDevice.intval1 = static_cast<int>(Idx);
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
 
 	if (!bDeviceExits)

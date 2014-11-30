@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "csocket.h"
+#include "../main/Logger.h"
 
 
 #ifdef WIN32
@@ -35,7 +36,16 @@ csocket::csocket() : m_socketState(CLOSED),
         WSADATA socketData; 
 
         socketVersion = MAKEWORD(2, 0); 
-        WSAStartup(socketVersion, &socketData); 
+		int ret = WSAStartup(socketVersion, &socketData);
+		if (ret != 0)
+		{
+			ret = WSAGetLastError();
+
+			if (ret == WSANOTINITIALISED)
+			{
+				_log.Log(LOG_ERROR, "Domoticz: Winsock could not be initialized!");
+			}
+		}
 #endif
     }
      
@@ -72,7 +82,16 @@ int csocket::resolveHost(const std::string& szRemoteHostName, struct hostent** p
         WORD wVersionRequested;  
         WSADATA wsaData; 
         wVersionRequested = MAKEWORD(2, 0); 
-        WSAStartup(wVersionRequested, &wsaData); 
+		int ret = WSAStartup(wVersionRequested, &wsaData);
+		if (ret != 0)
+		{
+			ret = WSAGetLastError();
+
+			if (ret == WSANOTINITIALISED)
+			{
+				_log.Log(LOG_ERROR, "Domoticz: Winsock could not be initialized!");
+			}
+		}
 #endif
     }
 
@@ -205,9 +224,8 @@ int csocket::canRead( bool* readyToRead, float waitTime )
     } 
     else 
     {
-        timeout.tv_sec  = (int)(waitTime);
-        timeout.tv_usec = (int)(1000000.0f * 
-            (waitTime - (float)timeout.tv_sec));
+		timeout.tv_sec = static_cast<int>((waitTime));
+		timeout.tv_usec = static_cast<int>((1000000.0f * (waitTime - (float)timeout.tv_sec)));
     }
 
     

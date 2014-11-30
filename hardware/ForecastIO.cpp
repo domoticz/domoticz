@@ -284,7 +284,7 @@ void CForecastIO::GetMeterDetails()
 	{
 		if (root["currently"]["windSpeed"]!="N/A")
 		{
-			float temp_wind_mph=(float)atof(root["currently"]["windSpeed"].asString().c_str());
+			float temp_wind_mph = static_cast<float>(atof(root["currently"]["windSpeed"].asString().c_str()));
 			if (temp_wind_mph!=-9999.00f)
 			{
 				wind_mph=temp_wind_mph;
@@ -297,7 +297,7 @@ void CForecastIO::GetMeterDetails()
 	{
 		if (root["currently"]["windGust"]!="N/A")
 		{
-			float temp_wind_gust_mph=(float)atof(root["currently"]["windGust"].asString().c_str());
+			float temp_wind_gust_mph = static_cast<float>(atof(root["currently"]["windGust"].asString().c_str()));
 			if (temp_wind_gust_mph!=-9999.00f)
 			{
 				wind_gust_mph=temp_wind_gust_mph;
@@ -310,7 +310,7 @@ void CForecastIO::GetMeterDetails()
 	{
 		if (root["currently"]["apparentTemperature"]!="N/A")
 		{
-			wind_chill=(float)atof(root["currently"]["apparentTemperature"].asString().c_str());
+			wind_chill = static_cast<float>(atof(root["currently"]["apparentTemperature"].asString().c_str()));
 			//Convert to celcius
 			wind_chill=float((wind_chill-32)*(5.0/9.0));
 		}
@@ -373,7 +373,7 @@ void CForecastIO::GetMeterDetails()
 	{
 		if (root["currently"]["UV"]!="N/A")
 		{
-			float UV=(float)atof(root["currently"]["UV"].asString().c_str());
+			float UV = static_cast<float>(atof(root["currently"]["UV"].asString().c_str()));
 			if ((UV<16)&&(UV>=0))
 			{
 				RBUF tsen;
@@ -397,7 +397,7 @@ void CForecastIO::GetMeterDetails()
 	{
 		if (root["currently"]["precipIntensity"]!="N/A")
 		{
-			float RainCount=(float)atof(root["currently"]["precipIntensity"].asString().c_str())*25.4f; //inches to mm
+			float RainCount = static_cast<float>(atof(root["currently"]["precipIntensity"].asString().c_str()))*25.4f; //inches to mm
 			if ((RainCount!=-9999.00f)&&(RainCount>=0.00f))
 			{
 				RBUF tsen;
@@ -417,7 +417,7 @@ void CForecastIO::GetMeterDetails()
 				{
 					if (root["currently"]["precip_1hr_metric"]!="N/A")
 					{
-						float rainrateph=(float)atof(root["currently"]["precip_1hr_metric"].asString().c_str());
+						float rainrateph = static_cast<float>(atof(root["currently"]["precip_1hr_metric"].asString().c_str()));
 						if (rainrateph!=-9999.00f)
 						{
 							int at10=round(abs(rainrateph*10.0f));
@@ -444,7 +444,7 @@ void CForecastIO::GetMeterDetails()
 	{
 		if (root["currently"]["visibility"]!="N/A")
 		{
-			float visibility=(float)atof(root["currently"]["visibility"].asString().c_str())*1.60934f; //miles to km
+			float visibility = static_cast<float>(atof(root["currently"]["visibility"].asString().c_str()))*1.60934f; //miles to km
 			if (visibility>=0)
 			{
 				_tGeneralDevice gdevice;
@@ -459,7 +459,7 @@ void CForecastIO::GetMeterDetails()
 	{
 		if (root["currently"]["ozone"]!="N/A")
 		{
-			float radiation=(float)atof(root["currently"]["ozone"].asString().c_str());	//this is in dobson units, need to convert to Watt/m2? (2.69×(10^20) ?
+			float radiation = static_cast<float>(atof(root["currently"]["ozone"].asString().c_str()));	//this is in dobson units, need to convert to Watt/m2? (2.69×(10^20) ?
 			if (radiation>=0.0f)
 			{
 				_tGeneralDevice gdevice;

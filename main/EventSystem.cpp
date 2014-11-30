@@ -315,15 +315,15 @@ void CEventSystem::GetCurrentMeasurementStates()
 		{
 		case pTypeRego6XXTemp:
 		case pTypeTEMP:
-			temp = (float)atof(splitresults[0].c_str());
+			temp = static_cast<float>(atof(splitresults[0].c_str()));
 			isTemp = true;
 			break;
 		case pTypeThermostat:
-			temp = (float)atof(splitresults[0].c_str());
+			temp = static_cast<float>(atof(splitresults[0].c_str()));
 			isTemp = true;
 			break;
 		case pTypeThermostat1:
-			temp = (float)atof(splitresults[0].c_str());
+			temp = static_cast<float>(atof(splitresults[0].c_str()));
 			isTemp = true;
 			break;
 		case pTypeHUM:
@@ -331,7 +331,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			isHum = true;
 			break;
 		case pTypeTEMP_HUM:
-			temp = (float)atof(splitresults[0].c_str());
+			temp = static_cast<float>(atof(splitresults[0].c_str()));
 			humidity = atoi(splitresults[1].c_str());
 			dewpoint = (float)CalculateDewPoint(temp, humidity);
 			isTemp = true;
@@ -339,16 +339,16 @@ void CEventSystem::GetCurrentMeasurementStates()
 			isDew = true;
 			break;
 		case pTypeTEMP_HUM_BARO:
-			temp = (float)atof(splitresults[0].c_str());
+			temp = static_cast<float>(atof(splitresults[0].c_str()));
 			humidity = atoi(splitresults[1].c_str());
 			if (sitem.subType == sTypeTHBFloat)
 			{
-				barometer = (float)atof(splitresults[3].c_str());
+				barometer = static_cast<float>(atof(splitresults[3].c_str()));
 				isBaroFloat = true;
 			}
 			else
 			{
-				barometer = (float)atof(splitresults[3].c_str());
+				barometer = static_cast<float>(atof(splitresults[3].c_str()));
 			}
 			dewpoint = (float)CalculateDewPoint(temp, humidity);
 			isTemp = true;
@@ -357,20 +357,20 @@ void CEventSystem::GetCurrentMeasurementStates()
 			isDew = true;
 			break;
 		case pTypeTEMP_BARO:
-			temp = (float)atof(splitresults[0].c_str());
-			barometer = (float)atof(splitresults[1].c_str());
+			temp = static_cast<float>(atof(splitresults[0].c_str()));
+			barometer = static_cast<float>(atof(splitresults[1].c_str()));
 			isTemp = true;
 			isBaro = true;
 			break;
 		case pTypeUV:
 			if (splitresults.size() == 2)
 			{
-				uv = (float)atof(splitresults[0].c_str());
+				uv = static_cast<float>(atof(splitresults[0].c_str()));
 				isUV = true;
 
 				if (sitem.subType == sTypeUV3)
 				{
-					temp = (float)atof(splitresults[1].c_str());
+					temp = static_cast<float>(atof(splitresults[1].c_str()));
 					isTemp = true;
 				}
 			}
@@ -378,7 +378,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 		case pTypeWIND:
 			if (splitresults.size() == 6)
 			{
-				winddir = (float)atof(splitresults[0].c_str());
+				winddir = static_cast<float>(atof(splitresults[0].c_str()));
 				isWindDir = true;
 
 				if (sitem.subType != sTypeWIND5)
@@ -393,8 +393,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 				isWindGust = true;
 				if ((sitem.subType == sTypeWIND4) || (sitem.subType == sTypeWINDNoTemp))
 				{
-					temp = (float)atof(splitresults[4].c_str());
-					chill = (float)atof(splitresults[5].c_str());
+					temp = static_cast<float>(atof(splitresults[4].c_str()));
+					chill = static_cast<float>(atof(splitresults[5].c_str()));
 					isTemp = true;
 				}
 			}
@@ -402,12 +402,12 @@ void CEventSystem::GetCurrentMeasurementStates()
 		case pTypeRFXSensor:
 			if (sitem.subType == sTypeRFXSensorTemp)
 			{
-				temp = (float)atof(splitresults[0].c_str());
+				temp = static_cast<float>(atof(splitresults[0].c_str()));
 				isTemp = true;
 			}
 			else if ((sitem.subType == sTypeRFXSensorVolt) || (sitem.subType == sTypeRFXSensorAD))
 			{
-				utilityval = (float)atof(sitem.sValue.c_str());
+				utilityval = static_cast<float>(atof(sitem.sValue.c_str()));
 				isUtility = true;
 			}
 			break;
@@ -417,47 +417,47 @@ void CEventSystem::GetCurrentMeasurementStates()
 			break;
 		case pTypeENERGY:
 			if (splitresults.size()==2)
-				utilityval = (float)atof(splitresults[1].c_str());
+				utilityval = static_cast<float>(atof(splitresults[1].c_str()));
 			else
-				utilityval = (float)atof(splitresults[0].c_str());
+				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 			isUtility = true;
 			break;
 		case pTypePOWER:
-			utilityval = (float)atof(splitresults[0].c_str());
+			utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 			isUtility = true;
 			break;
 		case pTypeUsage:
-			utilityval = (float)atof(splitresults[0].c_str());
+			utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 			isUtility = true;
 			break;
 		case pTypeP1Power:
-			utilityval = (float)atof(splitresults[4].c_str());
+			utilityval = static_cast<float>(atof(splitresults[4].c_str()));
 			isUtility = true;
 			break;
 		case pTypeLux:
-			utilityval = (float)atof(splitresults[0].c_str());
+			utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 			isUtility = true;
 			break;
 		case pTypeGeneral:
 			{
 				if (sitem.subType == sTypeVisibility)
 				{
-					utilityval = (float)atof(splitresults[0].c_str());
+					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 					isUtility = true;
 				}
 				else if (sitem.subType == sTypeSolarRadiation)
 				{
-					utilityval = (float)atof(splitresults[0].c_str());
+					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 					isUtility = true;
 				}
 				else if (sitem.subType == sTypePercentage)
 				{
-					utilityval = (float)atof(splitresults[0].c_str());
+					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 					isUtility = true;
 				}
 				else if (sitem.subType == sTypeVoltage)
 				{
-					utilityval = (float)atof(splitresults[0].c_str());
+					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 					isUtility = true;
 				}
 			}
@@ -502,16 +502,16 @@ void CEventSystem::GetCurrentMeasurementStates()
 					std::vector<std::string> sd2 = result2[0];
 					if (sitem.subType != sTypeRAINWU)
 					{
-						float total_min = (float)atof(sd2[0].c_str());
-						float total_max = (float)atof(splitresults[1].c_str());
-						rate = (float)atof(sd2[2].c_str());
+						float total_min = static_cast<float>(atof(sd2[0].c_str()));
+						float total_max = static_cast<float>(atof(splitresults[1].c_str()));
+						rate = static_cast<float>(atof(sd2[2].c_str()));
 						if (sitem.subType == sTypeRAIN2)
 							rate /= 100.0f;
 						total_real = total_max - total_min;
 					}
 					else
 					{
-						rate = (float)atof(sd2[2].c_str());
+						rate = static_cast<float>(atof(sd2[2].c_str()));
 						total_real = atof(sd2[1].c_str());
 					}
 					//total_real*=AddjMulti;
@@ -534,8 +534,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 					if (result2.size()>0)
 					{
 						std::vector<std::string> sd2 = result2[0];
-						float r_first = (float)atof(sd2[0].c_str());
-						rainmmlasthour = (float)atof(splitresults[1].c_str()) - r_first;
+						float r_first = static_cast<float>(atof(sd2[0].c_str()));
+						rainmmlasthour = static_cast<float>(atof(splitresults[1].c_str())) - r_first;
 					}
 				}
 			}
@@ -644,7 +644,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 						sprintf(szTmp, "%llu", total_real);
 						break;
 					}
-					utilityval = (float)atof(szTmp);
+					utilityval = static_cast<float>(atof(szTmp));
 					isUtility = true;
 				}
 			}
@@ -2115,7 +2115,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		if ((idtype == pTypeThermostat) && (idsubtype == sTypeThermSetpoint))
 		{
 			_log.Log(LOG_NORM, "Sending SetPoint to device....");
-			m_mainworker.SetSetPoint(idx, (float)atof(svalue.c_str()));
+			m_mainworker.SetSetPoint(idx, static_cast<float>(atof(svalue.c_str())));
 		}
 	}
 }

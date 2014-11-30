@@ -145,7 +145,7 @@ void CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char length)
 	else if (packettype == pTypeLimitlessLights)
 	{
 		_tLimitlessLights *pLed = (_tLimitlessLights*)pSen;
-		nodeID = (int)pLed->id;
+		nodeID = static_cast<int>(pLed->id);
 
 		if (pLed->command == Limitless_LedOff)
 		{

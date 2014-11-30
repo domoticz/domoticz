@@ -525,7 +525,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			nodeInfo->eState = NSTATE_AWAKE;
 
 			// Add the new value to our list
-			UpdateNodeScene(vID, (int)_notification->GetSceneId());
+			UpdateNodeScene(vID, static_cast<int>(_notification->GetSceneId()));
 			nodeInfo->m_LastSeen = m_updateTime;
 			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
 		}
@@ -623,7 +623,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		if (NodeInfo* nodeInfo = GetNodeInfo(_notification))
 		{
 			nodeInfo->eState = NSTATE_AWAKE;
-			UpdateNodeEvent(vID, (int)_notification->GetEvent());
+			UpdateNodeEvent(vID, static_cast<int>(_notification->GetEvent()));
 			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
 			nodeInfo->m_LastSeen = m_updateTime;
 		}
@@ -1204,7 +1204,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 		return;
 
 	std::string vUnits = m_pManager->GetValueUnits(vID);
-	_log.Log(LOG_NORM, "OpenZWave: Value_Added: Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d", (int)NodeID, (int)NodeID, cclassStr(commandclass), vLabel.c_str(), instance);
+	_log.Log(LOG_NORM, "OpenZWave: Value_Added: Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d", static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vLabel.c_str(), instance);
 
 	if ((instance == 0) && (NodeID == m_controllerID))
 		return;// We skip instance 0 if there are more, since it should be mapped to other instances or their superposition
@@ -3214,7 +3214,7 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 					{
 						std::vector<std::string> strs;
 						m_pManager->GetValueListItems(*ittValue, &strs);
-						root["result"][index]["config"][ivalue]["list_items"] = (int)strs.size();
+						root["result"][index]["config"][ivalue]["list_items"] = static_cast<int>(strs.size());
 						int vcounter = 0;
 						for (std::vector<std::string>::const_iterator it = strs.begin(); it != strs.end(); ++it)
 						{

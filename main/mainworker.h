@@ -107,11 +107,6 @@ public:
 private:
 	void HandleAutomaticBackups();
 	unsigned long long PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);
-	struct _tStartScene
-	{
-		unsigned long long SceneRowID;
-		std::string switchcmd;
-	};
 	std::string m_LastDeviceName;
 
 	std::map<std::string, time_t > m_componentheartbeats;

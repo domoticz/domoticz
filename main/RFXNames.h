@@ -120,20 +120,6 @@ enum _eNotificationTypes
 	NTYPE_RPM,
 };
 
-enum _eShareRights
-{
-	SHARE_SENSORS=0,
-	SHARE_ALL
-};
-
-enum _eEventActions
-{
-	EACTION_SWITCHLIGHT=0,
-	EACTION_SENDNOTIFICATION,
-	EACTION_SENDEMAIL,
-	EACTION_EXECUTESCRIPT,
-};
-
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum);
 const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char sType);
 const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned char sType);

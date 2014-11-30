@@ -213,7 +213,7 @@ float C1WireByOWFS::GetTemperature(const _t1WireDevice& device) const
    std::string readValue=readRawData(std::string(device.filename+"/temperature"));
    if (readValue.empty())
       return -1000.0;
-   return (float)atof(readValue.c_str());
+   return static_cast<float>(atof(readValue.c_str()));
 }
 
 float C1WireByOWFS::GetHumidity(const _t1WireDevice& device) const
@@ -221,7 +221,7 @@ float C1WireByOWFS::GetHumidity(const _t1WireDevice& device) const
    std::string readValue=readRawData(std::string(device.filename+"/humidity"));
    if (readValue.empty())
       return 0.0;
-   return (float)atof(readValue.c_str());
+   return static_cast<float>(atof(readValue.c_str()));
 }
 
 float C1WireByOWFS::GetPressure(const _t1WireDevice& device) const
@@ -229,7 +229,7 @@ float C1WireByOWFS::GetPressure(const _t1WireDevice& device) const
    std::string readValue=readRawData(std::string(device.filename+"/B1-R1-A/pressure"));
    if (readValue.empty())
       return 0.0;
-   return (float)atof(readValue.c_str());
+   return static_cast<float>(atof(readValue.c_str()));
 }
 
 bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,int unit) const
@@ -345,7 +345,7 @@ int C1WireByOWFS::GetVoltage(const _t1WireDevice& device,int unit) const
    std::string readValue=readRawData(fileName);
    if (readValue.empty())
       return 0;
-   return (int)(atof(readValue.c_str())*1000.0);
+   return static_cast<int>((atof(readValue.c_str())*1000.0));
 }
 
 float C1WireByOWFS::GetIlluminescence(const _t1WireDevice& device) const

@@ -64,7 +64,7 @@ SOCKET ConnectToService()
       }
 
       // Connect to server
-      if (connect(theSocket,ptr->ai_addr,(int)ptr->ai_addrlen) == SOCKET_ERROR)
+	  if (connect(theSocket, ptr->ai_addr, static_cast<int>(ptr->ai_addrlen)) == SOCKET_ERROR)
       {
          Log(LOG_ERROR,"1Wire: connect function failed with error: %ld\n", WSAGetLastError());
          closesocket(theSocket);

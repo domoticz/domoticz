@@ -331,7 +331,7 @@ void SolarEdgeBase::SendVoltage(const unsigned long Idx, const float Volt, const
 	gDevice.subtype=sTypeVoltage;
 	gDevice.id=1;
 	gDevice.floatval1=Volt;
-	gDevice.intval1=(int)Idx;
+	gDevice.intval1 = static_cast<int>(Idx);
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
 
 	if (!bDeviceExits)
@@ -405,7 +405,7 @@ void SolarEdgeBase::SendPercentage(const unsigned long Idx, const float Percenta
 	gDevice.subtype=sTypePercentage;
 	gDevice.id=1;
 	gDevice.floatval1=Percentage;
-	gDevice.intval1=(int)Idx;
+	gDevice.intval1 = static_cast<int>(Idx);
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
 
 	if (!bDeviceExits)

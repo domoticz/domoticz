@@ -596,7 +596,7 @@ void CPiFace::GetLastKnownValues(void)
                {
                     if ((nValue == 0) && (sValue.size()!=0))
                         {
-                            nValue=(int)atoi(sValue.c_str());
+                            nValue=atoi(sValue.c_str());
                         }
                     m_Inputs[BoardNr].Pin[PinNr].Count.SetCurrent(nValue);
                     m_Inputs[BoardNr].Pin[PinNr].Count.SetTotal(nValue);
@@ -620,7 +620,7 @@ void CPiFace::GetLastKnownValues(void)
                {
                     if ((nValue == 0) && (sValue.size()!=0))
                         {
-                            nValue=(int)atoi(sValue.c_str());
+                            nValue=atoi(sValue.c_str());
                         }
                     m_Outputs[BoardNr].Pin[PinNr].Count.SetCurrent(nValue);
                     m_Outputs[BoardNr].Pin[PinNr].Count.SetTotal(nValue);

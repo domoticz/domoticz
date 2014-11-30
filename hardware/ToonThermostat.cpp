@@ -60,25 +60,25 @@ const std::string TOON_GET_ELECTRIC_GRAPH = "/toonMobileBackendWeb/client/auth/g
 const std::string TOON_GET_GAS_GRAPH = "/toonMobileBackendWeb/client/auth/getGasGraphData"; //?smartMeter=false
 
 
-enum _eProgramStates {
-	PROG_MANUAL = 0,
-	PROG_BASE,			//1
-	PROG_TEMPOVERRIDE,	//2
-	PROG_PROGOVERRIDE,	//3
-	PROG_HOLIDAY,		//4
-	PROG_MANUALHOLIDAY,	//5
-	PROG_AWAYNOW,		//6
-	PROG_DAYOFF,		//7
-	PROG_LOCKEDBASE		//8
-};
+//enum _eProgramStates {
+//	PROG_MANUAL = 0,
+//	PROG_BASE,			//1
+//	PROG_TEMPOVERRIDE,	//2
+//	PROG_PROGOVERRIDE,	//3
+//	PROG_HOLIDAY,		//4
+//	PROG_MANUALHOLIDAY,	//5
+//	PROG_AWAYNOW,		//6
+//	PROG_DAYOFF,		//7
+//	PROG_LOCKEDBASE		//8
+//};
 
-enum _eActiveStates {
-	STATE_RELAX = 0,
-	STATE_ACTIVE,	//1
-	STATE_SLEEP,	//2
-	STATE_AWAY,		//3
-	STATE_HOLIDAY	//4
-};
+//enum _eActiveStates {
+//	STATE_RELAX = 0,
+//	STATE_ACTIVE,	//1
+//	STATE_SLEEP,	//2
+//	STATE_AWAY,		//3
+//	STATE_HOLIDAY	//4
+//};
 
 CToonThermostat::CToonThermostat(const int ID, const std::string &Username, const std::string &Password)
 {

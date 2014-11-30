@@ -136,7 +136,7 @@ void P1MeterSerial::readCallback(const char *data, size_t len)
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
 
-	ParseData((const unsigned char*)data, (int)len);
+	ParseData((const unsigned char*)data, static_cast<int>(len));
 }
 
 void P1MeterSerial::WriteToHardware(const char *pdata, const unsigned char length)
