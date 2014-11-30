@@ -289,7 +289,7 @@ void CWunderground::GetMeterDetails()
 	{
 		if (root["current_observation"]["wind_mph"]!="N/A")
 		{
-			float temp_wind_mph=(float)atof(root["current_observation"]["wind_mph"].asString().c_str());
+			float temp_wind_mph = static_cast<float>(atof(root["current_observation"]["wind_mph"].asString().c_str()));
 			if (temp_wind_mph!=-9999.00f)
 			{
 				wind_mph=temp_wind_mph;
@@ -302,7 +302,7 @@ void CWunderground::GetMeterDetails()
 	{
 		if (root["current_observation"]["wind_gust_mph"]!="N/A")
 		{
-			float temp_wind_gust_mph=(float)atof(root["current_observation"]["wind_gust_mph"].asString().c_str());
+			float temp_wind_gust_mph = static_cast<float>(atof(root["current_observation"]["wind_gust_mph"].asString().c_str()));
 			if (temp_wind_gust_mph!=-9999.00f)
 			{
 				wind_gust_mph=temp_wind_gust_mph;
@@ -315,7 +315,7 @@ void CWunderground::GetMeterDetails()
 	{
 		if (root["current_observation"]["feelslike_c"]!="N/A")
 		{
-			wind_chill=(float)atof(root["current_observation"]["feelslike_c"].asString().c_str());
+			wind_chill = static_cast<float>(atof(root["current_observation"]["feelslike_c"].asString().c_str()));
 		}
 	}
 	if (wind_degrees!=-1)
@@ -376,7 +376,7 @@ void CWunderground::GetMeterDetails()
 	{
 		if (root["current_observation"]["UV"]!="N/A")
 		{
-			float UV=(float)atof(root["current_observation"]["UV"].asString().c_str());
+			float UV = static_cast<float>(atof(root["current_observation"]["UV"].asString().c_str()));
 			if ((UV<16)&&(UV>=0))
 			{
 				RBUF tsen;
@@ -400,7 +400,7 @@ void CWunderground::GetMeterDetails()
 	{
 		if (root["current_observation"]["precip_today_metric"]!="N/A")
 		{
-			float RainCount=(float)atof(root["current_observation"]["precip_today_metric"].asString().c_str());
+			float RainCount = static_cast<float>(atof(root["current_observation"]["precip_today_metric"].asString().c_str()));
 			if ((RainCount!=-9999.00f)&&(RainCount>=0.00f))
 			{
 				RBUF tsen;
@@ -420,7 +420,7 @@ void CWunderground::GetMeterDetails()
 				{
 					if (root["current_observation"]["precip_1hr_metric"]!="N/A")
 					{
-						float rainrateph=(float)atof(root["current_observation"]["precip_1hr_metric"].asString().c_str());
+						float rainrateph = static_cast<float>(atof(root["current_observation"]["precip_1hr_metric"].asString().c_str()));
 						if (rainrateph!=-9999.00f)
 						{
 							int at10=round(abs(rainrateph*10.0f));
@@ -447,7 +447,7 @@ void CWunderground::GetMeterDetails()
 	{
 		if (root["current_observation"]["visibility_km"]!="N/A")
 		{
-			float visibility=(float)atof(root["current_observation"]["visibility_km"].asString().c_str());
+			float visibility = static_cast<float>(atof(root["current_observation"]["visibility_km"].asString().c_str()));
 			if (visibility>=0)
 			{
 				_tGeneralDevice gdevice;
@@ -462,7 +462,7 @@ void CWunderground::GetMeterDetails()
 	{
 		if (root["current_observation"]["solarradiation"]!="N/A")
 		{
-			float radiation=(float)atof(root["current_observation"]["solarradiation"].asString().c_str());
+			float radiation = static_cast<float>(atof(root["current_observation"]["solarradiation"].asString().c_str()));
 			if (radiation>=0.0f)
 			{
 				_tGeneralDevice gdevice;

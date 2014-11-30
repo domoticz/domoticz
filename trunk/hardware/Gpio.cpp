@@ -240,13 +240,13 @@ void CGpio::WriteToHardware(const char *pdata, const unsigned char length)
 			int oldValue = digitalRead(gpioId);
 			_log.Log(LOG_NORM,"GPIO: pin #%d state was %d", gpioId, oldValue);
 
-			int newValue = (int)(pCmd->LIGHTING1.cmnd);
+			int newValue = static_cast<int>(pCmd->LIGHTING1.cmnd);
 			digitalWrite(gpioId, newValue);
 
-			_log.Log(LOG_NORM,"GPIO: WriteToHardware housecode %d, GPIO %d, previously %d, set %d", (int)housecode, (int)gpioId, oldValue, newValue);
+			_log.Log(LOG_NORM,"GPIO: WriteToHardware housecode %d, GPIO %d, previously %d, set %d", static_cast<int>(housecode), static_cast<int>(gpioId), oldValue, newValue);
 		}
 		else {
-			_log.Log(LOG_NORM,"GPIO: wrong housecode %d", (int)housecode);
+			_log.Log(LOG_NORM,"GPIO: wrong housecode %d", static_cast<int>(housecode));
 		}
 	}
 	else {

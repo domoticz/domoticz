@@ -90,7 +90,7 @@ class CA2GZIPT
 	}
 	if(len==-1)
     {
-     len=(int)strlen(lpsz);
+		len = static_cast<int>(strlen(lpsz));
     }
 	m_CurrentBufferSize=t_nBufferLength;
 	pgzip=m_buffer;
@@ -388,7 +388,7 @@ class CGZIP2AT
 	    m_zstream.total_in  += (uLong)len;
 	    m_zstream.total_out += (uLong)len;
         if (len == 0) m_z_eof = 1;
-	    return (int)len;
+		return static_cast<int>(len);
 	}
     if (m_zstream.avail_in == 0 && !m_z_eof)
 	{
@@ -426,7 +426,7 @@ class CGZIP2AT
 	if (m_z_err != Z_OK || m_z_eof) break;
     }
     m_crc = crc32(m_crc, start, (uInt)(m_zstream.next_out - start));
-    return (int)(len - m_zstream.avail_out);
+	return static_cast<int>((len - m_zstream.avail_out));
  }
  uLong getLong()
  {

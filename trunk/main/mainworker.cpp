@@ -2371,7 +2371,7 @@ unsigned long long MainWorker::decode_Hum(const CDomoticzHardwareBase *pHardware
 		result=m_sql.query(szTmp);
 		if (result.size()==1)
 		{
-			temp=(float)atof(result[0][0].c_str());
+			temp = static_cast<float>(atof(result[0][0].c_str()));
 			float AddjValue=0.0f;
 			float AddjMulti=1.0f;
 			m_sql.GetAddjustment(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,AddjValue,AddjMulti);

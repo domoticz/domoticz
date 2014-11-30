@@ -2176,8 +2176,8 @@ void CSQLHelper::GetAddjustment(const int HardwareID, const char* ID, const unsi
 	result=query(szTmp);
 	if (result.size()!=0)
 	{
-		AddjValue=(float)atof(result[0][0].c_str());
-		AddjMulti=(float)atof(result[0][1].c_str());
+		AddjValue = static_cast<float>(atof(result[0][0].c_str()));
+		AddjMulti = static_cast<float>(atof(result[0][1].c_str()));
 	}
 }
 
@@ -2204,8 +2204,8 @@ void CSQLHelper::GetAddjustment2(const int HardwareID, const char* ID, const uns
 	result=query(szTmp);
 	if (result.size()!=0)
 	{
-		AddjValue=(float)atof(result[0][0].c_str());
-		AddjMulti=(float)atof(result[0][1].c_str());
+		AddjValue = static_cast<float>(atof(result[0][0].c_str()));
+		AddjMulti = static_cast<float>(atof(result[0][1].c_str()));
 	}
 }
 
@@ -2640,7 +2640,7 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(
 				continue; //impossible
 			std::string ntype=splitresults[0];
 			bool bWhenIsGreater = (splitresults[1]==">");
-			float svalue=(float)atof(splitresults[2].c_str());
+			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
 			if (m_tempunit==TEMPUNIT_F)
 			{
 				//Convert to Celsius
@@ -2832,7 +2832,7 @@ bool CSQLHelper::CheckAndHandleAmpere123Notification(
 				continue; //impossible
 			std::string ntype=splitresults[0];
 			bool bWhenIsGreater = (splitresults[1]==">");
-			float svalue=(float)atof(splitresults[2].c_str());
+			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
 
 			bool bSendNotification=false;
 
@@ -2973,7 +2973,7 @@ bool CSQLHelper::CheckAndHandleNotification(
 				continue; //impossible
 			std::string ntype=splitresults[0];
 			bool bWhenIsGreater = (splitresults[1]==">");
-			float svalue=(float)atof(splitresults[2].c_str());
+			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
 
 			bool bSendNotification=false;
 
@@ -3166,7 +3166,7 @@ bool CSQLHelper::CheckAndHandleRainNotification(
 		{
 			std::vector<std::string> sd=result[0];
 
-			float total_min=(float)atof(sd[0].c_str());
+			float total_min = static_cast<float>(atof(sd[0].c_str()));
 			float total_max=mvalue;
 			double total_real=total_max-total_min;
 			total_real*=AddjMulti;
@@ -3407,20 +3407,31 @@ void CSQLHelper::Schedule5Minute()
 	if (!m_dbase)
 		return;
 
-	//Force WAL flush
-	sqlite3_wal_checkpoint(m_dbase, NULL);
+	try
+	{
+		//Force WAL flush
+		sqlite3_wal_checkpoint(m_dbase, NULL);
 
-	UpdateTemperatureLog();
-	UpdateRainLog();
-	UpdateWindLog();
-	UpdateUVLog();
-	UpdateMeter();
-	UpdateMultiMeter();
-	UpdatePercentageLog();
-	UpdateFanLog();
-	//Removing the line below could cause a very large database,
-	//and slow(large) data transfer (specially when working remote!!)
-	CleanupShortLog();
+		UpdateTemperatureLog();
+		UpdateRainLog();
+		UpdateWindLog();
+		UpdateUVLog();
+		UpdateMeter();
+		UpdateMultiMeter();
+		UpdatePercentageLog();
+		UpdateFanLog();
+		//Removing the line below could cause a very large database,
+		//and slow(large) data transfer (specially when working remote!!)
+		CleanupShortLog();
+	}
+	catch (boost::exception & e)
+	{
+		_log.Log(LOG_ERROR, "Domoticz: Error running the 5 minute schedule script!");
+#ifdef _DEBUG
+		_log.Log(LOG_ERROR, "-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
+#endif
+		return;
+	}
 }
 
 void CSQLHelper::ScheduleDay()
@@ -3428,18 +3439,29 @@ void CSQLHelper::ScheduleDay()
 	if (!m_dbase)
 		return;
 
-	//Force WAL flush
-	sqlite3_wal_checkpoint(m_dbase, NULL);
+	try
+	{
+		//Force WAL flush
+		sqlite3_wal_checkpoint(m_dbase, NULL);
 
-	AddCalendarTemperature();
-	AddCalendarUpdateRain();
-	AddCalendarUpdateUV();
-	AddCalendarUpdateWind();
-	AddCalendarUpdateMeter();
-	AddCalendarUpdateMultiMeter();
-	AddCalendarUpdatePercentage();
-	AddCalendarUpdateFan();
-	CleanupLightLog();
+		AddCalendarTemperature();
+		AddCalendarUpdateRain();
+		AddCalendarUpdateUV();
+		AddCalendarUpdateWind();
+		AddCalendarUpdateMeter();
+		AddCalendarUpdateMultiMeter();
+		AddCalendarUpdatePercentage();
+		AddCalendarUpdateFan();
+		CleanupLightLog();
+	}
+	catch (boost::exception & e)
+	{
+		_log.Log(LOG_ERROR, "Domoticz: Error running the daily minute schedule script!");
+#ifdef _DEBUG
+		_log.Log(LOG_ERROR, "-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
+#endif
+		return;
+	}
 }
 
 void CSQLHelper::UpdateTemperatureLog()
@@ -3519,10 +3541,10 @@ void CSQLHelper::UpdateTemperatureLog()
 			case pTypeRego6XXTemp:
 			case pTypeTEMP:
 			case pTypeThermostat:
-				temp=(float)atof(splitresults[0].c_str());
+				temp = static_cast<float>(atof(splitresults[0].c_str()));
 				break;
 			case pTypeThermostat1:
-				temp=(float)atof(splitresults[0].c_str());
+				temp = static_cast<float>(atof(splitresults[0].c_str()));
 				break;
 			case pTypeHUM:
 				humidity=nValue;
@@ -3530,7 +3552,7 @@ void CSQLHelper::UpdateTemperatureLog()
 			case pTypeTEMP_HUM:
 				if (splitresults.size()>=2)
 				{
-					temp=(float)atof(splitresults[0].c_str());
+					temp = static_cast<float>(atof(splitresults[0].c_str()));
 					humidity=atoi(splitresults[1].c_str());
 					dewpoint=(float)CalculateDewPoint(temp,humidity);
 				}
@@ -3538,7 +3560,7 @@ void CSQLHelper::UpdateTemperatureLog()
 			case pTypeTEMP_HUM_BARO:
 				if (splitresults.size()==5)
 				{
-					temp=(float)atof(splitresults[0].c_str());
+					temp = static_cast<float>(atof(splitresults[0].c_str()));
 					humidity=atoi(splitresults[1].c_str());
 					if (dSubType==sTypeTHBFloat)
 						barometer=int(atof(splitresults[3].c_str())*10.0f);
@@ -3550,7 +3572,7 @@ void CSQLHelper::UpdateTemperatureLog()
 			case pTypeTEMP_BARO:
 				if (splitresults.size()>=2)
 				{
-					temp=(float)atof(splitresults[0].c_str());
+					temp = static_cast<float>(atof(splitresults[0].c_str()));
 					barometer=int(atof(splitresults[1].c_str())*10.0f);
 				}
 				break;
@@ -3559,7 +3581,7 @@ void CSQLHelper::UpdateTemperatureLog()
 					continue;
 				if (splitresults.size()>=2)
 				{
-					temp=(float)atof(splitresults[1].c_str());
+					temp = static_cast<float>(atof(splitresults[1].c_str()));
 				}
 				break;
 			case pTypeWIND:
@@ -3567,18 +3589,18 @@ void CSQLHelper::UpdateTemperatureLog()
 					continue;
 				if (splitresults.size()>=6)
 				{
-					temp=(float)atof(splitresults[4].c_str());
-					chill=(float)atof(splitresults[5].c_str());
+					temp = static_cast<float>(atof(splitresults[4].c_str()));
+					chill = static_cast<float>(atof(splitresults[5].c_str()));
 				}
 				break;
 			case pTypeRFXSensor:
 				if (dSubType!=sTypeRFXSensorTemp)
 					continue;
-				temp=(float)atof(splitresults[0].c_str());
+				temp = static_cast<float>(atof(splitresults[0].c_str()));
 				break;
 			case pTypeGeneral:
 				if (dSubType==sTypeSystemTemp)
-					temp=(float)atof(splitresults[0].c_str());
+					temp = static_cast<float>(atof(splitresults[0].c_str()));
 				break;
 			}
 			//insert record
@@ -3655,7 +3677,7 @@ void CSQLHelper::UpdateRainLog()
 			int rate=0;
 
 			rate=atoi(splitresults[0].c_str());
-			total=(float)atof(splitresults[1].c_str());
+			total = static_cast<float>(atof(splitresults[1].c_str()));
 
 			//insert record
 			sprintf(szTmp,
@@ -3722,7 +3744,7 @@ void CSQLHelper::UpdateWindLog()
 			if (splitresults.size()<4)
 				continue; //impossible
 
-			float direction=(float)atof(splitresults[0].c_str());
+			float direction = static_cast<float>(atof(splitresults[0].c_str()));
 			int speed=atoi(splitresults[2].c_str());
 			int gust=atoi(splitresults[3].c_str());
 
@@ -3792,7 +3814,7 @@ void CSQLHelper::UpdateUVLog()
 			if (splitresults.size()<1)
 				continue; //impossible
 
-			float level=(float)atof(splitresults[0].c_str());
+			float level = static_cast<float>(atof(splitresults[0].c_str()));
 
 			//insert record
 			sprintf(szTmp,
@@ -4249,7 +4271,7 @@ void CSQLHelper::UpdatePercentageLog()
 			if (splitresults.size()<1)
 				continue; //impossible
 
-			float percentage= (float)atof(sValue.c_str());
+			float percentage = static_cast<float>(atof(sValue.c_str()));
 
 			//insert record
 			sprintf(szTmp,
@@ -4392,14 +4414,14 @@ void CSQLHelper::AddCalendarTemperature()
 		{
 			std::vector<std::string> sd=result[0];
 
-			float temp_min=(float)atof(sd[0].c_str());
-			float temp_max=(float)atof(sd[1].c_str());
-			float temp_avg=(float)atof(sd[2].c_str());
-			float chill_min=(float)atof(sd[3].c_str());
-			float chill_max=(float)atof(sd[4].c_str());
+			float temp_min = static_cast<float>(atof(sd[0].c_str()));
+			float temp_max = static_cast<float>(atof(sd[1].c_str()));
+			float temp_avg = static_cast<float>(atof(sd[2].c_str()));
+			float chill_min = static_cast<float>(atof(sd[3].c_str()));
+			float chill_max = static_cast<float>(atof(sd[4].c_str()));
 			int humidity=atoi(sd[5].c_str());
 			int barometer=atoi(sd[6].c_str());
-			float dewpoint=(float)atof(sd[7].c_str());
+			float dewpoint = static_cast<float>(atof(sd[7].c_str()));
 			//insert into calendar table
 			sprintf(szTmp,
 				"INSERT INTO Temperature_Calendar (DeviceRowID, Temp_Min, Temp_Max, Temp_Avg, Chill_Min, Chill_Max, Humidity, Barometer, DewPoint, Date) "
@@ -4499,8 +4521,8 @@ void CSQLHelper::AddCalendarUpdateRain()
 		{
 			std::vector<std::string> sd=result[0];
 
-			float total_min=(float)atof(sd[0].c_str());
-			float total_max=(float)atof(sd[1].c_str());
+			float total_min = static_cast<float>(atof(sd[0].c_str()));
+			float total_max = static_cast<float>(atof(sd[1].c_str()));
 			int rate=atoi(sd[2].c_str());
 
 			float total_real=0;
@@ -4846,20 +4868,20 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 			{
 				for (int ii=0; ii<6; ii++)
 				{
-					float total_min=(float)atof(sd[(ii*2)+0].c_str());
-					float total_max=(float)atof(sd[(ii*2)+1].c_str());
+					float total_min = static_cast<float>(atof(sd[(ii * 2) + 0].c_str()));
+					float total_max = static_cast<float>(atof(sd[(ii * 2) + 1].c_str()));
 					total_real[ii]=total_max-total_min;
 				}
-				counter1 = (float)atof(sd[1].c_str());
-				counter2 = (float)atof(sd[3].c_str());
-				counter3 = (float)atof(sd[9].c_str());
-				counter4 = (float)atof(sd[11].c_str());
+				counter1 = static_cast<float>(atof(sd[1].c_str()));
+				counter2 = static_cast<float>(atof(sd[3].c_str()));
+				counter3 = static_cast<float>(atof(sd[9].c_str()));
+				counter4 = static_cast<float>(atof(sd[11].c_str()));
 			}
 			else
 			{
 				for (int ii=0; ii<6; ii++)
 				{
-					float fvalue=(float)atof(sd[ii].c_str());
+					float fvalue = static_cast<float>(atof(sd[ii].c_str()));
 					total_real[ii]=fvalue;
 				}
 			}
@@ -4966,7 +4988,7 @@ void CSQLHelper::AddCalendarUpdateWind()
 		{
 			std::vector<std::string> sd=result[0];
 
-			float Direction=(float)atof(sd[0].c_str());
+			float Direction = static_cast<float>(atof(sd[0].c_str()));
 			int speed_min=atoi(sd[1].c_str());
 			int speed_max=atoi(sd[2].c_str());
 			int gust_min=atoi(sd[3].c_str());
@@ -5046,7 +5068,7 @@ void CSQLHelper::AddCalendarUpdateUV()
 		{
 			std::vector<std::string> sd=result[0];
 
-			float level=(float)atof(sd[0].c_str());
+			float level = static_cast<float>(atof(sd[0].c_str()));
 
 			//insert into calendar table
 			sprintf(szTmp,
@@ -5118,9 +5140,9 @@ void CSQLHelper::AddCalendarUpdatePercentage()
 		{
 			std::vector<std::string> sd=result[0];
 
-			float percentage_min=(float)atof(sd[0].c_str());
-			float percentage_max=(float)atof(sd[1].c_str());
-			float percentage_avg=(float)atof(sd[2].c_str());
+			float percentage_min = static_cast<float>(atof(sd[0].c_str()));
+			float percentage_max = static_cast<float>(atof(sd[1].c_str()));
+			float percentage_avg = static_cast<float>(atof(sd[2].c_str()));
 			//insert into calendar table
 			sprintf(szTmp,
 				"INSERT INTO Percentage_Calendar (DeviceRowID, Percentage_Min, Percentage_Max, Percentage_Avg, Date) "

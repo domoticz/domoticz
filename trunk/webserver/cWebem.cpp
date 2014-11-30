@@ -169,11 +169,18 @@ void cWebem::RegisterWhitelistURLString(const char* idname)
 			cUTF( const wchar_t * ws );
 			///  Construct from UTF8
 			cUTF( const char * s );
+			// copy constructor
+			cUTF();
 			/// get UTF8 version
 			const char * get8() { return myString8; }
 			/// free buffers
 			~cUTF() { if (myString8) free(myString8); }
 		};
+
+		cUTF::cUTF()
+		{
+			myString8 = NULL;
+		}
 
 		/// Construct from UTF-16
 		cUTF::cUTF( const wchar_t * ws )
@@ -563,7 +570,6 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 
 	if (pfun!=myPages.end())
 	{
-		std::string url = pfun->first;
 		m_outputfilename="";
 		rep.status = reply::ok;
 		std::string retstr=pfun->second( );

@@ -266,7 +266,7 @@ void CSBFSpot::SendVoltage(const unsigned long Idx, const float Volt, const std:
 	gDevice.subtype=sTypeVoltage;
 	gDevice.id=1;
 	gDevice.floatval1=Volt;
-	gDevice.intval1=(int)Idx;
+	gDevice.intval1 = static_cast<int>(Idx);
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
 
 	if (!bDeviceExits)
@@ -300,7 +300,7 @@ void CSBFSpot::SendPercentage(const unsigned long Idx, const float Percentage, c
 	gDevice.subtype=sTypePercentage;
 	gDevice.id=1;
 	gDevice.floatval1=Percentage;
-	gDevice.intval1=(int)Idx;
+	gDevice.intval1 = static_cast<int>(Idx);
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
 
 	if (!bDeviceExits)
@@ -533,10 +533,16 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 
 void CSBFSpot::GetMeterDetails()
 {
-	if (m_SBFDataPath.size()==0)
+	if (m_SBFDataPath.size() == 0)
+	{
+		_log.Log(LOG_ERROR, "SBFSpot: Data path empty!");
 		return;
-	if (m_SBFPlantName.size()==0)
+	}
+	if (m_SBFPlantName.size() == 0)
+	{
+		_log.Log(LOG_ERROR, "SBFSpot: Plant name empty!");
 		return;
+	}
 
 	time_t atime=time(NULL);
 	char szLogFile[256];
@@ -554,6 +560,7 @@ void CSBFSpot::GetMeterDetails()
 	infile.open(szLogFile);
 	if (!infile.is_open())
 	{
+		_log.Log(LOG_ERROR, "SBFSpot: Could not open spot file: %s", szLogFile);
 		return;
 	}
 	while (!infile.eof())
@@ -586,15 +593,26 @@ void CSBFSpot::GetMeterDetails()
 	}
 	infile.close();
 
-	if (szLastLine.size()==0)
+	if (szLastLine.size() == 0)
+	{
+		_log.Log(LOG_ERROR, "SBFSpot: No data record found in spot file!");
 		return;
-	if (results[1].size()<1)
+	}
+	if (results[1].size() < 1)
+	{
+		_log.Log(LOG_ERROR, "SBFSpot: No data record found in spot file!");
 		return;
+	}
 	if ((results[28] != "OK") && (results[28] != "Ok"))
+	{
+		_log.Log(LOG_ERROR, "SBFSpot: Invalid field [28] should be OK!");
 		return;
+	}
 	std::string szDate=results[0];
-	if (szDate==m_LastDateTime)
+	if (szDate == m_LastDateTime)
+	{
 		return;
+	}
 	m_LastDateTime=szDate;
 /*
 	std::string szDateTimeFormat=m_SMADateFormat + " " + m_SMATimeFormat;
@@ -623,17 +641,17 @@ void CSBFSpot::GetMeterDetails()
 	float voltage;
 	tmpString=results[16];
 	tmpString=stdreplace(tmpString,",",".");
-	voltage=(float)atof(tmpString.c_str());
+	voltage = static_cast<float>(atof(tmpString.c_str()));
 	SendVoltage(1,voltage,"Volt uac1");
 	tmpString=results[17];
 	tmpString=stdreplace(tmpString,",",".");
-	voltage=(float)atof(tmpString.c_str());
+	voltage = static_cast<float>(atof(tmpString.c_str()));
 	if (voltage!=0) {
 		SendVoltage(2,voltage,"Volt uac2");
 	}
 	tmpString=results[18];
 	tmpString=stdreplace(tmpString,",",".");
-	voltage=(float)atof(tmpString.c_str());
+	voltage = static_cast<float>(atof(tmpString.c_str()));
 	if (voltage!=0) {
 		SendVoltage(3,voltage,"Volt uac3");
 	}
@@ -641,22 +659,22 @@ void CSBFSpot::GetMeterDetails()
 	float percentage;
 	tmpString=results[21];
 	tmpString=stdreplace(tmpString,",",".");
-	percentage=(float)atof(tmpString.c_str());
+	percentage = static_cast<float>(atof(tmpString.c_str()));
 	SendPercentage(1,percentage,"Efficiency");
 	tmpString=results[24];
 	tmpString=stdreplace(tmpString,",",".");
-	percentage=(float)atof(tmpString.c_str());
+	percentage = static_cast<float>(atof(tmpString.c_str()));
 	SendPercentage(2,percentage,"Hz");
 	tmpString=results[27];
 	tmpString=stdreplace(tmpString,",",".");
-	percentage=(float)atof(tmpString.c_str());
+	percentage = static_cast<float>(atof(tmpString.c_str()));
 	SendPercentage(3,percentage,"BT_Signal");
 
 	if (results.size()>=31)
 	{
 		tmpString=results[30];
 		tmpString=stdreplace(tmpString,",",".");
-		float temperature=(float)atof(tmpString.c_str());
+		float temperature = static_cast<float>(atof(tmpString.c_str()));
 		SendTempSensor(1,temperature,"Temperature");
 	}
 }

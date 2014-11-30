@@ -222,7 +222,7 @@ void OTGWBase::UpdatePressureSensor(const unsigned long Idx, const float Pressur
 	gDevice.subtype=sTypePressure;
 	gDevice.id=1;
 	gDevice.floatval1=Pressure;
-	gDevice.intval1=(int)Idx;
+	gDevice.intval1 = static_cast<int>(Idx);
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
 
 	if (!bDeviceExits)
@@ -292,27 +292,27 @@ void OTGWBase::ParseLine()
 			bool bDiagnosticEvent=(_status.MsgID[9+1]=='1');								UpdateSwitch(116,bDiagnosticEvent,"DiagnosticEvent");
 		}
 		
-		_status.Control_setpoint=(float)atof(results[idx++].c_str());						UpdateTempSensor(idx-1,_status.Control_setpoint,"Control Setpoint");
+		_status.Control_setpoint=static_cast<float>(atof(results[idx++].c_str()));						UpdateTempSensor(idx-1,_status.Control_setpoint,"Control Setpoint");
 		_status.Remote_parameter_flags=results[idx++];
-		_status.Maximum_relative_modulation_level=(float)atof(results[idx++].c_str());
+		_status.Maximum_relative_modulation_level = static_cast<float>(atof(results[idx++].c_str()));
 		_status.Boiler_capacity_and_modulation_limits=results[idx++];
-		_status.Room_Setpoint=(float)atof(results[idx++].c_str());							UpdateSetPointSensor(idx-1,_status.Room_Setpoint,"Room Setpoint");
-		_status.Relative_modulation_level=(float)atof(results[idx++].c_str());
-		_status.CH_water_pressure=(float)atof(results[idx++].c_str());
+		_status.Room_Setpoint = static_cast<float>(atof(results[idx++].c_str()));							UpdateSetPointSensor(idx - 1, _status.Room_Setpoint, "Room Setpoint");
+		_status.Relative_modulation_level = static_cast<float>(atof(results[idx++].c_str()));
+		_status.CH_water_pressure = static_cast<float>(atof(results[idx++].c_str()));
 		if (_status.CH_water_pressure!=0)
 		{
 			UpdatePressureSensor(idx-1,_status.CH_water_pressure,"CH Water Pressure");
 		}
 
-		_status.Room_temperature=(float)atof(results[idx++].c_str());						UpdateTempSensor(idx-1,_status.Room_temperature,"Room Temperature");
-		_status.Boiler_water_temperature=(float)atof(results[idx++].c_str());				UpdateTempSensor(idx-1,_status.Boiler_water_temperature,"Boiler Water Temperature");
-		_status.DHW_temperature=(float)atof(results[idx++].c_str());						UpdateTempSensor(idx-1,_status.DHW_temperature,"DHW Temperature");
-		_status.Outside_temperature=(float)atof(results[idx++].c_str());					UpdateTempSensor(idx-1,_status.Outside_temperature,"Outside Temperature");
-		_status.Return_water_temperature=(float)atof(results[idx++].c_str());				UpdateTempSensor(idx-1,_status.Return_water_temperature,"Return Water Temperature");
+		_status.Room_temperature = static_cast<float>(atof(results[idx++].c_str()));						UpdateTempSensor(idx - 1, _status.Room_temperature, "Room Temperature");
+		_status.Boiler_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				UpdateTempSensor(idx - 1, _status.Boiler_water_temperature, "Boiler Water Temperature");
+		_status.DHW_temperature = static_cast<float>(atof(results[idx++].c_str()));						UpdateTempSensor(idx - 1, _status.DHW_temperature, "DHW Temperature");
+		_status.Outside_temperature = static_cast<float>(atof(results[idx++].c_str()));					UpdateTempSensor(idx - 1, _status.Outside_temperature, "Outside Temperature");
+		_status.Return_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				UpdateTempSensor(idx - 1, _status.Return_water_temperature, "Return Water Temperature");
 		_status.DHW_setpoint_boundaries=results[idx++];
 		_status.Max_CH_setpoint_boundaries=results[idx++];
-		_status.DHW_setpoint=(float)atof(results[idx++].c_str());							UpdateSetPointSensor(idx-1,_status.DHW_setpoint,"DHW Setpoint");
-		_status.Max_CH_water_setpoint=(float)atof(results[idx++].c_str());					UpdateSetPointSensor(idx-1,_status.Max_CH_water_setpoint,"Max_CH Water Setpoint");
+		_status.DHW_setpoint = static_cast<float>(atof(results[idx++].c_str()));							UpdateSetPointSensor(idx - 1, _status.DHW_setpoint, "DHW Setpoint");
+		_status.Max_CH_water_setpoint = static_cast<float>(atof(results[idx++].c_str()));					UpdateSetPointSensor(idx - 1, _status.Max_CH_water_setpoint, "Max_CH Water Setpoint");
 		_status.Burner_starts=atol(results[idx++].c_str());
 		_status.CH_pump_starts=atol(results[idx++].c_str());
 		_status.DHW_pump_valve_starts=atol(results[idx++].c_str());

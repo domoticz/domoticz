@@ -172,7 +172,7 @@ void Teleinfo::readCallback(const char *data, size_t len)
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
 
-	ParseData((const unsigned char*)data, (int)len);
+	ParseData((const unsigned char*)data, static_cast<int>(len));
 }
 
 void Teleinfo::MatchLine()

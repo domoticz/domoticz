@@ -281,7 +281,7 @@ std::string CDataPush::ProcessSendValue(std::string rawsendValue, int delpos, in
 
 	else if (vType == "UV")
 	{
-		float UVI=(float)atof(rawsendValue.c_str());
+		float UVI = static_cast<float>(atof(rawsendValue.c_str()));
 		if (includeUnit) {
 			sprintf(szData,"%.1f UVI",UVI);
 		}
@@ -291,7 +291,7 @@ std::string CDataPush::ProcessSendValue(std::string rawsendValue, int delpos, in
 	}
 	else if (vType == "Direction")
 	{
-		float Direction = (float)atof(rawsendValue.c_str());
+		float Direction = static_cast<float>(atof(rawsendValue.c_str()));
 		if (includeUnit) {
 			sprintf(szData,"%.1f Degrees",Direction); 
 		}
@@ -426,7 +426,7 @@ std::string CDataPush::ProcessSendValue(std::string rawsendValue, int delpos, in
 	}
 	else if (vType == "Visibility")
 	{
-		float vis=(float)atof(rawsendValue.c_str());
+		float vis = static_cast<float>(atof(rawsendValue.c_str()));
 		if (includeUnit) {
 			if (metertype==0)
 			{
@@ -454,7 +454,7 @@ std::string CDataPush::ProcessSendValue(std::string rawsendValue, int delpos, in
 	}
 	else if (vType == "Solar Radiation")
 	{
-		float radiation=(float)atof(rawsendValue.c_str());
+		float radiation = static_cast<float>(atof(rawsendValue.c_str()));
 		if (includeUnit) {
 			sprintf(szData,"%.1f Watt/m2",radiation);
 		}

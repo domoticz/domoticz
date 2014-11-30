@@ -45,12 +45,12 @@ class Teleinfo : public CDomoticzHardwareBase, AsyncSerial
 	STD, 
 	} MatchType;
 
-	typedef enum {
-		TELEINFO_OPTION_BASE,	//single tariff
-		TELEINFO_OPTION_HC,		//double tariff (low and normal)
-		//TELEINFO_OPTION_EJP,		//EJP Option,  (not developed for the moment)
-		//TELEINFO_OPTION_TEMPO,	//Tempo option,  (not developed for the moment)
-	} Option;
+	//typedef enum {
+	//	TELEINFO_OPTION_BASE,	//single tariff
+	//	TELEINFO_OPTION_HC,		//double tariff (low and normal)
+	//	//TELEINFO_OPTION_EJP,		//EJP Option,  (not developed for the moment)
+	//	//TELEINFO_OPTION_TEMPO,	//Tempo option,  (not developed for the moment)
+	//} Option;
 
 	typedef enum {
 		TELEINFO_TYPE_ADCO,

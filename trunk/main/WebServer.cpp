@@ -2379,7 +2379,7 @@ namespace http {
 					std::stringstream szLogTime;
 					szLogTime << itt->logtime;
 					root["LastLogTime"] = szLogTime.str();
-					root["result"][ii]["level"] = (int)itt->level;
+					root["result"][ii]["level"] = static_cast<int>(itt->level);
 					root["result"][ii]["message"] = itt->logmessage;
 					ii++;
 				}
@@ -2915,7 +2915,7 @@ namespace http {
 				iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 				if (iUser != -1)
 				{
-					urights = (int)m_users[iUser].userrights;
+					urights = static_cast<int>(m_users[iUser].userrights);
 					UserID = m_users[iUser].ID;
 				}
 
@@ -3194,14 +3194,14 @@ namespace http {
 					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 					if (iUser != -1)
 					{
-						urights = (int)m_users[iUser].userrights;
+						urights = static_cast<int>(m_users[iUser].userrights);
 						_log.Log(LOG_STATUS, "User: %s initiated a SetPoint command", m_users[iUser].Username.c_str());
 					}
 				}
 				if (urights < 1)
 					return;
 				_log.Log(LOG_NORM, "Sending SetPoint to device....");
-				m_mainworker.SetSetPoint(idx, (float)atof(svalue.c_str()));
+				m_mainworker.SetSetPoint(idx, static_cast<float>(atof(svalue.c_str())));
 			}
 			else if ((iType == pTypeGeneral) && (iSubType == sTypeZWaveThermostatMode))
 			{
@@ -3213,7 +3213,7 @@ namespace http {
 					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 					if (iUser != -1)
 					{
-						urights = (int)m_users[iUser].userrights;
+						urights = static_cast<int>(m_users[iUser].userrights);
 						_log.Log(LOG_STATUS, "User: %s initiated a Thermostat Mode command", m_users[iUser].Username.c_str());
 					}
 				}
@@ -3232,7 +3232,7 @@ namespace http {
 					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 					if (iUser != -1)
 					{
-						urights = (int)m_users[iUser].userrights;
+						urights = static_cast<int>(m_users[iUser].userrights);
 						_log.Log(LOG_STATUS, "User: %s initiated a Thermostat Fan Mode command", m_users[iUser].Username.c_str());
 					}
 				}
@@ -3262,7 +3262,7 @@ namespace http {
 				iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 				if (iUser != -1)
 				{
-					urights = (int)m_users[iUser].userrights;
+					urights = static_cast<int>(m_users[iUser].userrights);
 					_log.Log(LOG_STATUS, "User: %s initiated a Thermostat State change command", m_users[iUser].Username.c_str());
 				}
 			}
@@ -3444,7 +3444,7 @@ namespace http {
 				int iUser = -1;
 				iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 				if (iUser != -1)
-					urights = (int)m_users[iUser].userrights;
+					urights = static_cast<int>(m_users[iUser].userrights);
 			}
 			root["statuscode"] = urights;
 			int nValue = 1;
@@ -5683,7 +5683,7 @@ namespace http {
 					int iUser = -1;
 					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 					if (iUser != -1)
-						urights = (int)m_users[iUser].userrights;
+						urights = static_cast<int>(m_users[iUser].userrights);
 				}
 				if (urights < 2)
 					return;
@@ -5735,7 +5735,7 @@ namespace http {
 					int iUser = -1;
 					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 					if (iUser != -1)
-						urights = (int)m_users[iUser].userrights;
+						urights = static_cast<int>(m_users[iUser].userrights);
 				}
 				if (urights < 2)
 					return;
@@ -5793,7 +5793,7 @@ namespace http {
 					int iUser = -1;
 					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 					if (iUser != -1)
-						urights = (int)m_users[iUser].userrights;
+						urights = static_cast<int>(m_users[iUser].userrights);
 				}
 				if (urights < 2)
 					return;
@@ -5938,7 +5938,7 @@ namespace http {
 					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 					if (iUser != -1)
 					{
-						urights = (int)m_users[iUser].userrights;
+						urights = static_cast<int>(m_users[iUser].userrights);
 						_log.Log(LOG_STATUS, "User: %s initiated a security status reset command", m_users[iUser].Username.c_str());
 					}
 				}
@@ -6011,7 +6011,7 @@ namespace http {
 					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 					if (iUser != -1)
 					{
-						urights = (int)m_users[iUser].userrights;
+						urights = static_cast<int>(m_users[iUser].userrights);
 						_log.Log(LOG_STATUS, "User: %s initiated a switch command", m_users[iUser].Username.c_str());
 					}
 				}
@@ -6055,7 +6055,7 @@ namespace http {
 					int iUser = -1;
 					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 					if (iUser != -1)
-						urights = (int)m_users[iUser].userrights;
+						urights = static_cast<int>(m_users[iUser].userrights);
 				}
 				if (urights < 1)
 					return;
@@ -6406,7 +6406,7 @@ namespace http {
 					int iUser = -1;
 					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 					if (iUser != -1)
-						urights = (int)m_users[iUser].userrights;
+						urights = static_cast<int>(m_users[iUser].userrights);
 				}
 				if (urights < 2)
 					return;
@@ -6438,7 +6438,7 @@ namespace http {
 					int iUser = -1;
 					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 					if (iUser != -1)
-						urights = (int)m_users[iUser].userrights;
+						urights = static_cast<int>(m_users[iUser].userrights);
 				}
 				if (urights < 2)
 					return;
@@ -6475,7 +6475,7 @@ namespace http {
 					int iUser = -1;
 					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 					if (iUser != -1)
-						urights = (int)m_users[iUser].userrights;
+						urights = static_cast<int>(m_users[iUser].userrights);
 				}
 				if (urights < 2)
 					return;
@@ -6622,7 +6622,7 @@ namespace http {
 					int iUser = -1;
 					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 					if (iUser != -1)
-						urights = (int)m_users[iUser].userrights;
+						urights = static_cast<int>(m_users[iUser].userrights);
 				}
 				if (urights < 2)
 					return;
@@ -6654,7 +6654,7 @@ namespace http {
 					int iUser = -1;
 					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 					if (iUser != -1)
-						urights = (int)m_users[iUser].userrights;
+						urights = static_cast<int>(m_users[iUser].userrights);
 				}
 				if (urights < 2)
 					return;
@@ -6683,7 +6683,7 @@ namespace http {
 					int iUser = -1;
 					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 					if (iUser != -1)
-						urights = (int)m_users[iUser].userrights;
+						urights = static_cast<int>(m_users[iUser].userrights);
 				}
 				if (urights < 2)
 					return;
@@ -6869,7 +6869,7 @@ namespace http {
 
 								_eUserRights rights = (_eUserRights)atoi(sd[4].c_str());
 
-								int bIsActive = (int)atoi(sd[1].c_str());
+								int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
 								if (bIsActive)
 								{
 									AddUser(ID, username, password, rights);
@@ -6967,7 +6967,7 @@ namespace http {
 
 			std::string AuthenticationMethod = m_pWebEm->FindValue("AuthenticationMethod");
 			_eAuthenticationMethod amethod = (_eAuthenticationMethod)atoi(AuthenticationMethod.c_str());
-			m_sql.UpdatePreferencesVar("AuthenticationMethod", (int)amethod);
+			m_sql.UpdatePreferencesVar("AuthenticationMethod", static_cast<int>(amethod));
 			m_pWebEm->SetAuthenticationMethod(amethod);
 
 			std::string ReleaseChannel = m_pWebEm->FindValue("ReleaseChannel");
@@ -7051,10 +7051,10 @@ namespace http {
 			std::string senableautobackup = m_pWebEm->FindValue("enableautobackup");
 			m_sql.UpdatePreferencesVar("UseAutoBackup", (senableautobackup == "on" ? 1 : 0));
 
-			float CostEnergy = (float)atof(m_pWebEm->FindValue("CostEnergy").c_str());
-			float CostEnergyT2 = (float)atof(m_pWebEm->FindValue("CostEnergyT2").c_str());
-			float CostGas = (float)atof(m_pWebEm->FindValue("CostGas").c_str());
-			float CostWater = (float)atof(m_pWebEm->FindValue("CostWater").c_str());
+			float CostEnergy = static_cast<float>(atof(m_pWebEm->FindValue("CostEnergy").c_str()));
+			float CostEnergyT2 = static_cast<float>(atof(m_pWebEm->FindValue("CostEnergyT2").c_str()));
+			float CostGas = static_cast<float>(atof(m_pWebEm->FindValue("CostGas").c_str()));
+			float CostWater = static_cast<float>(atof(m_pWebEm->FindValue("CostWater").c_str()));
 			m_sql.UpdatePreferencesVar("CostEnergy", int(CostEnergy*10000.0f));
 			m_sql.UpdatePreferencesVar("CostEnergyT2", int(CostEnergyT2*10000.0f));
 			m_sql.UpdatePreferencesVar("CostGas", int(CostGas*10000.0f));
@@ -7524,7 +7524,7 @@ namespace http {
 				}
 			}
 
-			root["ActTime"] = (int)now;
+			root["ActTime"] = static_cast<int>(now);
 
 			int nValue = 0;
 			m_sql.GetPreferencesVar("DashboardType", nValue);
@@ -8050,7 +8050,7 @@ namespace http {
 						root["result"][ii]["StrParam1"] = strParam1;
 						root["result"][ii]["StrParam2"] = strParam2;
 
-						if (CustomImage < (int)m_custom_light_icons.size())
+						if (CustomImage < static_cast<int>(m_custom_light_icons.size()))
 							root["result"][ii]["Image"] = m_custom_light_icons[CustomImage].RootFile;
 						else
 							root["result"][ii]["Image"] = "Light";
@@ -8441,7 +8441,7 @@ namespace http {
 						StringSplit(sValue, ";", strarray);
 						if (strarray.size() == 2)
 						{
-							float UVI = (float)atof(strarray[0].c_str());
+							float UVI = static_cast<float>(atof(strarray[0].c_str()));
 							root["result"][ii]["UVI"] = strarray[0];
 							if (dSubType == sTypeUV3)
 							{
@@ -8551,16 +8551,16 @@ namespace http {
 								std::vector<std::string> sd2 = result2[0];
 								if (dSubType != sTypeRAINWU)
 								{
-									float total_min = (float)atof(sd2[0].c_str());
-									float total_max = (float)atof(strarray[1].c_str());
-									rate = (float)atof(sd2[2].c_str());
+									float total_min = static_cast<float>(atof(sd2[0].c_str()));
+									float total_max = static_cast<float>(atof(strarray[1].c_str()));
+									rate = static_cast<float>(atof(sd2[2].c_str()));
 									if (dSubType == sTypeRAIN2)
 										rate /= 100.0f;
 									total_real = total_max - total_min;
 								}
 								else
 								{
-									rate = (float)atof(sd2[2].c_str());
+									rate = static_cast<float>(atof(sd2[2].c_str()));
 									total_real = atof(sd2[1].c_str());
 								}
 								total_real *= AddjMulti;
@@ -8663,7 +8663,7 @@ namespace http {
 						root["result"][ii]["CounterToday"] = szTmp;
 						root["result"][ii]["SwitchTypeVal"] = metertype;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						float fvalue = (float)atof(sValue.c_str());
+						float fvalue = static_cast<float>(atof(sValue.c_str()));
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
@@ -9165,7 +9165,7 @@ namespace http {
 					{
 						if (dSubType == sTypeVisibility)
 						{
-							float vis = (float)atof(sValue.c_str());
+							float vis = static_cast<float>(atof(sValue.c_str()));
 							if (metertype == 0)
 							{
 								//km
@@ -9184,7 +9184,7 @@ namespace http {
 						}
 						else if (dSubType == sTypeSolarRadiation)
 						{
-							float radiation = (float)atof(sValue.c_str());
+							float radiation = static_cast<float>(atof(sValue.c_str()));
 							sprintf(szTmp, "%.1f Watt/m2", radiation);
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Radiation"] = atof(sValue.c_str());
@@ -9433,7 +9433,7 @@ namespace http {
 							root["result"][ii]["StrParam2"] = strParam2;
 							root["result"][ii]["Protected"] = (iProtected != 0);
 
-							if (CustomImage < (int)m_custom_light_icons.size())
+							if (CustomImage < static_cast<int>(m_custom_light_icons.size()))
 								root["result"][ii]["Image"] = m_custom_light_icons[CustomImage].RootFile;
 							else
 								root["result"][ii]["Image"] = "Light";
@@ -9999,7 +9999,7 @@ namespace http {
 			struct tm tLastUpdate;
 			localtime_r(&now, &tLastUpdate);
 
-			root["ActTime"] = (int)now;
+			root["ActTime"] = static_cast<int>(now);
 
 			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result, result2;
@@ -10250,7 +10250,7 @@ namespace http {
 				int iUser = -1;
 				iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 				if (iUser != -1)
-					urights = (int)m_users[iUser].userrights;
+					urights = static_cast<int>(m_users[iUser].userrights);
 			}
 			if (urights < 2)
 				return;
@@ -10635,7 +10635,7 @@ namespace http {
 			unsigned char hour = atoi(shour.c_str());
 			unsigned char min = atoi(smin.c_str());
 			int days = atoi(sdays.c_str());
-			float temperature = (float)atof(stvalue.c_str());
+			float temperature = static_cast<float>(atof(stvalue.c_str()));
 			root["status"] = "OK";
 			root["title"] = "AddSetpointTimer";
 			sprintf(szTmp,
@@ -10702,7 +10702,7 @@ namespace http {
 			unsigned char hour = atoi(shour.c_str());
 			unsigned char min = atoi(smin.c_str());
 			int days = atoi(sdays.c_str());
-			float tempvalue = (float)atof(stvalue.c_str());
+			float tempvalue = static_cast<float>(atof(stvalue.c_str()));
 			root["status"] = "OK";
 			root["title"] = "UpdateSetpointTimer";
 			sprintf(szTmp,
@@ -11392,7 +11392,7 @@ namespace http {
 			szQuery << "DELETE FROM SharedDevices WHERE (SharedUserID == " << idx << ")";
 			result = m_sql.query(szQuery.str());
 
-			int nDevices = (int)strarray.size();
+			int nDevices = static_cast<int>(strarray.size());
 			for (int ii = 0; ii < nDevices; ii++)
 			{
 				szQuery.clear();
@@ -11505,13 +11505,13 @@ namespace http {
 					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 					if (iUser != -1)
 					{
-						urights = (int)m_users[iUser].userrights;
+						urights = static_cast<int>(m_users[iUser].userrights);
 						_log.Log(LOG_STATUS, "User: %s initiated a SetPoint command", m_users[iUser].Username.c_str());
 					}
 				}
 				if (urights < 1)
 					return;
-				m_mainworker.SetSetPoint(idx, (float)atof(setPoint.c_str()));
+				m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setPoint.c_str())));
 			}
 			else if (clock != "")
 			{
@@ -11522,7 +11522,7 @@ namespace http {
 					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 					if (iUser != -1)
 					{
-						urights = (int)m_users[iUser].userrights;
+						urights = static_cast<int>(m_users[iUser].userrights);
 						_log.Log(LOG_STATUS, "User: %s initiated a SetClock command", m_users[iUser].Username.c_str());
 					}
 				}
@@ -11539,7 +11539,7 @@ namespace http {
 					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 					if (iUser != -1)
 					{
-						urights = (int)m_users[iUser].userrights;
+						urights = static_cast<int>(m_users[iUser].userrights);
 						_log.Log(LOG_STATUS, "User: %s initiated a Thermostat Mode command", m_users[iUser].Username.c_str());
 					}
 				}
@@ -11556,7 +11556,7 @@ namespace http {
 					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
 					if (iUser != -1)
 					{
-						urights = (int)m_users[iUser].userrights;
+						urights = static_cast<int>(m_users[iUser].userrights);
 						_log.Log(LOG_STATUS, "User: %s initiated a Thermostat Fan Mode command", m_users[iUser].Username.c_str());
 					}
 				}
@@ -12815,9 +12815,9 @@ namespace http {
 
 								root["result"][ii]["d"] = sd[3].substr(0, 16);
 
-								float fval1 = (float)atof(sd[0].c_str()) / 10.0f;
-								float fval2 = (float)atof(sd[1].c_str()) / 10.0f;
-								float fval3 = (float)atof(sd[2].c_str()) / 10.0f;
+								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0f);
+								float fval2 = static_cast<float>(atof(sd[1].c_str()) / 10.0f);
+								float fval3 = static_cast<float>(atof(sd[2].c_str()) / 10.0f);
 
 								if (fval1 != 0)
 									bHaveL1 = true;
@@ -12893,9 +12893,9 @@ namespace http {
 
 								root["result"][ii]["d"] = sd[3].substr(0, 16);
 
-								float fval1 = (float)atof(sd[0].c_str()) / 10.0f;
-								float fval2 = (float)atof(sd[1].c_str()) / 10.0f;
-								float fval3 = (float)atof(sd[2].c_str()) / 10.0f;
+								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0f);
+								float fval2 = static_cast<float>(atof(sd[1].c_str()) / 10.0f);
+								float fval3 = static_cast<float>(atof(sd[2].c_str()) / 10.0f);
 
 								if (fval1 != 0)
 									bHaveL1 = true;
@@ -13342,7 +13342,7 @@ namespace http {
 						for (itt = result.begin(); itt != result.end(); ++itt)
 						{
 							std::vector<std::string> sd = *itt;
-							float ActTotal = (float)atof(sd[0].c_str());
+							float ActTotal = static_cast<float>(atof(sd[0].c_str()));
 							int Hour = atoi(sd[1].substr(11, 2).c_str());
 							if (Hour != LastHour)
 							{
@@ -13439,11 +13439,11 @@ namespace http {
 						for (itt = result.begin(); itt != result.end(); ++itt)
 						{
 							std::vector<std::string> sd = *itt;
-							float fdirection = (float)atof(sd[0].c_str());
+							float fdirection = static_cast<float>(atof(sd[0].c_str()));
 							if (fdirection == 360)
 								fdirection = 0;
 							int direction = int(fdirection);
-							float speed = (float)atof(sd[1].c_str());
+							float speed = static_cast<float>(atof(sd[1].c_str()));
 							int bucket = int(fdirection / 22.5f);
 
 							int speedpos = 0;
@@ -13556,8 +13556,8 @@ namespace http {
 					{
 						std::vector<std::string> sd = result[0];
 
-						float total_min = (float)atof(sd[0].c_str());
-						float total_max = (float)atof(sd[1].c_str());
+						float total_min = static_cast<float>(atof(sd[0].c_str()));
+						float total_max = static_cast<float>(atof(sd[1].c_str()));
 						int rate = atoi(sd[2].c_str());
 
 						double total_real = 0;
@@ -14269,8 +14269,8 @@ namespace http {
 					{
 						std::vector<std::string> sd = result[0];
 
-						float total_min = (float)atof(sd[0].c_str());
-						float total_max = (float)atof(sd[1].c_str());
+						float total_min = static_cast<float>(atof(sd[0].c_str()));
+						float total_max = static_cast<float>(atof(sd[1].c_str()));
 						int rate = atoi(sd[2].c_str());
 
 						double total_real = 0;
@@ -14375,10 +14375,10 @@ namespace http {
 								std::string szUsage2 = sd[2];
 								std::string szDeliv2 = sd[3];
 
-								float fUsage_1 = (float)atof(szUsage1.c_str());
-								float fUsage_2 = (float)atof(szUsage2.c_str());
-								float fDeliv_1 = (float)atof(szDeliv1.c_str());
-								float fDeliv_2 = (float)atof(szDeliv2.c_str());
+								float fUsage_1 = static_cast<float>(atof(szUsage1.c_str()));
+								float fUsage_2 = static_cast<float>(atof(szUsage2.c_str()));
+								float fDeliv_1 = static_cast<float>(atof(szDeliv1.c_str()));
+								float fDeliv_2 = static_cast<float>(atof(szDeliv2.c_str()));
 
 								if ((fDeliv_1 != 0) || (fDeliv_2 != 0))
 									bHaveDeliverd = true;
@@ -14417,10 +14417,10 @@ namespace http {
 								std::string szUsage2 = sd[2];
 								std::string szDeliv2 = sd[3];
 
-								float fUsage_1 = (float)atof(szUsage1.c_str());
-								float fUsage_2 = (float)atof(szUsage2.c_str());
-								float fDeliv_1 = (float)atof(szDeliv1.c_str());
-								float fDeliv_2 = (float)atof(szDeliv2.c_str());
+								float fUsage_1 = static_cast<float>(atof(szUsage1.c_str()));
+								float fUsage_2 = static_cast<float>(atof(szUsage2.c_str()));
+								float fDeliv_1 = static_cast<float>(atof(szDeliv1.c_str()));
+								float fDeliv_2 = static_cast<float>(atof(szDeliv2.c_str()));
 
 								if ((fDeliv_1 != 0) || (fDeliv_2 != 0))
 									bHaveDeliverd = true;
@@ -14620,12 +14620,12 @@ namespace http {
 
 								root["result"][ii]["d"] = sd[6].substr(0, 16);
 
-								float fval1 = (float)atof(sd[0].c_str()) / 10.0f;
-								float fval2 = (float)atof(sd[1].c_str()) / 10.0f;
-								float fval3 = (float)atof(sd[2].c_str()) / 10.0f;
-								float fval4 = (float)atof(sd[3].c_str()) / 10.0f;
-								float fval5 = (float)atof(sd[4].c_str()) / 10.0f;
-								float fval6 = (float)atof(sd[5].c_str()) / 10.0f;
+								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0f);
+								float fval2 = static_cast<float>(atof(sd[1].c_str()) / 10.0f);
+								float fval3 = static_cast<float>(atof(sd[2].c_str()) / 10.0f);
+								float fval4 = static_cast<float>(atof(sd[3].c_str()) / 10.0f);
+								float fval5 = static_cast<float>(atof(sd[4].c_str()) / 10.0f);
+								float fval6 = static_cast<float>(atof(sd[5].c_str()) / 10.0f);
 
 								if ((fval1 != 0) || (fval2 != 0))
 									bHaveL1 = true;
@@ -14708,12 +14708,12 @@ namespace http {
 
 								root["result"][ii]["d"] = sd[6].substr(0, 16);
 
-								float fval1 = (float)atof(sd[0].c_str()) / 10.0f;
-								float fval2 = (float)atof(sd[1].c_str()) / 10.0f;
-								float fval3 = (float)atof(sd[2].c_str()) / 10.0f;
-								float fval4 = (float)atof(sd[3].c_str()) / 10.0f;
-								float fval5 = (float)atof(sd[4].c_str()) / 10.0f;
-								float fval6 = (float)atof(sd[5].c_str()) / 10.0f;
+								float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0f);
+								float fval2 = static_cast<float>(atof(sd[1].c_str()) / 10.0f);
+								float fval3 = static_cast<float>(atof(sd[2].c_str()) / 10.0f);
+								float fval4 = static_cast<float>(atof(sd[3].c_str()) / 10.0f);
+								float fval5 = static_cast<float>(atof(sd[4].c_str()) / 10.0f);
+								float fval6 = static_cast<float>(atof(sd[5].c_str()) / 10.0f);
 
 								if ((fval1 != 0) || (fval2 != 0))
 									bHaveL1 = true;
@@ -14792,7 +14792,7 @@ namespace http {
 						else if (dType == pTypeRFXMeter)
 						{
 							//Add last counter value
-							float fvalue = (float)atof(sValue.c_str());
+							float fvalue = static_cast<float>(atof(sValue.c_str()));
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:
@@ -15467,8 +15467,8 @@ namespace http {
 					{
 						std::vector<std::string> sd = result[0];
 
-						float total_min = (float)atof(sd[0].c_str());
-						float total_max = (float)atof(sd[1].c_str());
+						float total_min = static_cast<float>(atof(sd[0].c_str()));
+						float total_max = static_cast<float>(atof(sd[1].c_str()));
 						int rate = atoi(sd[2].c_str());
 
 						float total_real = 0;

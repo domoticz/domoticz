@@ -170,7 +170,7 @@ void Meteostick::readCallback(const char *data, size_t len)
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
 
-	ParseData((const unsigned char*)data, (int)len);
+	ParseData((const unsigned char*)data, static_cast<int>(len));
 }
 
 void Meteostick::WriteToHardware(const char *pdata, const unsigned char length)
@@ -452,7 +452,7 @@ void Meteostick::SendPercentage(const unsigned long Idx, const float Percentage,
 	gDevice.subtype = sTypePercentage;
 	gDevice.id = 1;
 	gDevice.floatval1 = Percentage;
-	gDevice.intval1 = (int)Idx;
+	gDevice.intval1 = static_cast<int>(Idx);
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
 
 	if (!bDeviceExits)
@@ -479,7 +479,7 @@ float Meteostick::GetRainSensorCounter(const unsigned char Idx)
 		StringSplit(result[0][0], ";", strarray);
 		if (strarray.size() == 2)
 		{
-			counter = (float)atof(strarray[1].c_str());
+			counter = static_cast<float>(atof(strarray[1].c_str()));
 		}
 	}
 
@@ -602,7 +602,7 @@ void Meteostick::SendSolarRadiationSensor(const unsigned char Idx, const float R
 
 	_tGeneralDevice gdevice;
 	gdevice.subtype = sTypeSolarRadiation;
-	gdevice.id = (int)Idx;
+	gdevice.id = static_cast<int>(Idx);
 	gdevice.floatval1 = Radiation;
 	sDecodeRXMessage(this, (const unsigned char *)&gdevice);
 
@@ -678,8 +678,8 @@ void Meteostick::ParseLine()
 		//temperature in Celsius, pressure in hPa
 		if (results.size() >= 3)
 		{
-			float temp = (float)atof(results[1].c_str());
-			float baro = (float)atof(results[2].c_str());
+			float temp = static_cast<float>(atof(results[1].c_str()));
+			float baro = static_cast<float>(atof(results[2].c_str()));
 
 			SendTempBaroSensor(0, temp, baro, "Meteostick Temp+Baro");
 		}
@@ -691,8 +691,8 @@ void Meteostick::ParseLine()
 			unsigned char ID = (unsigned char)atoi(results[1].c_str());
 			if (m_LastOutsideTemp[ID%MAX_IDS] != 12345)
 			{
-				float speed = (float)atof(results[2].c_str());
-				int direction = (int)atoi(results[3].c_str());
+				float speed = static_cast<float>(atof(results[2].c_str()));
+				int direction = static_cast<int>(atoi(results[3].c_str()));
 				SendWindSensor(ID, m_LastOutsideTemp[ID%MAX_IDS], speed, direction, "Wind");
 			}
 		}
@@ -702,8 +702,8 @@ void Meteostick::ParseLine()
 		if (results.size() >= 5)
 		{
 			unsigned char ID = (unsigned char)atoi(results[1].c_str());
-			float temp = (float)atof(results[2].c_str());
-			int hum = (int)atoi(results[3].c_str());
+			float temp = static_cast<float>(atof(results[2].c_str()));
+			int hum = static_cast<int>(atoi(results[3].c_str()));
 
 			SendTempHumSensor(ID, temp, hum, "Outside Temp+Hum");
 			m_LastOutsideTemp[ID%MAX_IDS] = temp;
@@ -752,7 +752,7 @@ void Meteostick::ParseLine()
 		if (results.size() >= 4)
 		{
 			unsigned char ID = (unsigned char)atoi(results[1].c_str());
-			float Radiation = (float)atof(results[2].c_str());
+			float Radiation = static_cast<float>(atof(results[2].c_str()));
 			SendSolarRadiationSensor(ID, Radiation, "Solar Radiation");
 		}
 		break;
@@ -761,7 +761,7 @@ void Meteostick::ParseLine()
 		if (results.size() >= 4)
 		{
 			unsigned char ID = (unsigned char)atoi(results[1].c_str());
-			float UV = (float)atof(results[2].c_str());
+			float UV = static_cast<float>(atof(results[2].c_str()));
 			SendUVSensor(ID, UV, "UV");
 		}
 		break;
@@ -794,7 +794,7 @@ void Meteostick::ParseLine()
 		{
 			unsigned char ID = (unsigned char)atoi(results[1].c_str());
 			unsigned char Channel = (unsigned char)atoi(results[2].c_str());
-			float temp = (float)atof(results[3].c_str());
+			float temp = static_cast<float>(atof(results[3].c_str()));
 			unsigned char finalID = (ID * 10) + Channel;
 			SendTempSensor(finalID, temp, "Soil/Leaf Temp");
 		}
@@ -804,7 +804,7 @@ void Meteostick::ParseLine()
 		if (results.size() >= 4)
 		{
 			unsigned char ID = (unsigned char)atoi(results[1].c_str());
-			float Percentage = (float)atof(results[2].c_str());
+			float Percentage = static_cast<float>(atof(results[2].c_str()));
 			SendPercentage(ID, Percentage, "power of solar panel");
 		}
 		break;

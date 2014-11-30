@@ -207,7 +207,7 @@ void CScheduler::ReloadSchedules()
 			titem.startTime = 0;
 			titem.timerType = timerType;
 			titem.timerCmd = TCMD_ON;
-			titem.Temperature = (float)atof(sd[3].c_str());
+			titem.Temperature = static_cast<float>(atof(sd[3].c_str()));
 			titem.Level = 100;
 			titem.bUseRandmoness = false;
 			titem.Days = atoi(sd[4].c_str());
