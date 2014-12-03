@@ -7180,6 +7180,8 @@ namespace http {
 			m_sql.UpdatePreferencesVar("FloorplanShowSensorValues", (FloorplanShowSensorValues == "on" ? 1 : 0));
 			std::string FloorplanShowSwitchValues = m_pWebEm->FindValue("FloorplanShowSwitchValues");
 			m_sql.UpdatePreferencesVar("FloorplanShowSwitchValues", (FloorplanShowSwitchValues == "on" ? 1 : 0));
+			std::string FloorplanShowSceneNames = m_pWebEm->FindValue("FloorplanShowSceneNames");
+			m_sql.UpdatePreferencesVar("FloorplanShowSceneNames", (FloorplanShowSceneNames == "on" ? 1 : 0));
 			m_sql.UpdatePreferencesVar("FloorplanRoomColour", CURLEncode::URLDecode(m_pWebEm->FindValue("FloorplanRoomColour").c_str()).c_str());
 			m_sql.UpdatePreferencesVar("FloorplanActiveOpacity", atoi(m_pWebEm->FindValue("FloorplanActiveOpacity").c_str()));
 			m_sql.UpdatePreferencesVar("FloorplanInactiveOpacity", atoi(m_pWebEm->FindValue("FloorplanInactiveOpacity").c_str()));
@@ -9929,6 +9931,10 @@ namespace http {
 				{
 					root["ShowSwitchValues"] = nValue;
 				}
+				if (Key == "FloorplanShowSceneNames")
+				{
+					root["ShowSceneNames"] = nValue;
+				}
 				if (Key == "FloorplanRoomColour")
 				{
 					root["RoomColour"] = sValue;
@@ -12147,6 +12153,10 @@ namespace http {
 				else if (Key == "FloorplanShowSwitchValues")
 				{
 					root["FloorplanShowSwitchValues"] = nValue;
+				}
+				else if (Key == "FloorplanShowSceneNames")
+				{
+					root["FloorplanShowSceneNames"] = nValue;
 				}
 				else if (Key == "FloorplanRoomColour")
 				{

@@ -377,6 +377,9 @@ define(['app'], function (app) {
 					if (typeof data.ShowSwitchValues != 'undefined') {
 						Device.showSwitchValues = (data.ShowSwitchValues == 1);
 					}
+					if (typeof data.ShowSceneNames != 'undefined') {
+						Device.showSceneNames = (data.ShowSceneNames == 1);
+					}
 					//Lets start
 					var elFloor;
 					$.each(data.result, function(i,item) {
@@ -413,7 +416,7 @@ define(['app'], function (app) {
 						elFloor.appendChild(elContent);
 						var elRooms = makeSVGnode('g', { id: $scope.floorPlans[i].tagName+'_Rooms', 'class':'FloorRooms' }, ''); // onclick="RoomClick(event);"
 						elContent.appendChild(elRooms);
-						var elDevices = makeSVGnode('g', { id: $scope.floorPlans[i].tagName+'_Devices' }, '');
+						var elDevices = makeSVGnode('g', { id: $scope.floorPlans[i].tagName+'_Devices', transform: 'scale(1)' }, '');
 						elContent.appendChild(elDevices);
 						$.ajax({
 							url: "json.htm?type=command&param=getfloorplanplans&idx=" + item.idx,

@@ -350,6 +350,9 @@ define(['app'], function (app) {
 			  if (typeof data.FloorplanShowSwitchValues!= 'undefined') {
 				$("#floorplandisplaytable #FloorplanShowSwitchValues").prop('checked',data.FloorplanShowSwitchValues==1);
 			  }
+			  if (typeof data.FloorplanShowSceneNames != 'undefined') {
+				$("#floorplandisplaytable #FloorplanShowSceneNames").prop('checked',data.FloorplanShowSceneNames==1);
+			  }
 			  if (typeof data.FloorplanRoomColour!= 'undefined') {
 				$("#floorplancolourtable #FloorplanRoomColour").val(data.FloorplanRoomColour);
 			  }
