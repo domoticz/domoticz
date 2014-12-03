@@ -387,6 +387,9 @@ define(['app'], function (app) {
 				if (typeof data.ShowSwitchValues != 'undefined') {
 					Device.showSwitchValues = (data.ShowSwitchValues == 1);
 				}
+				if (typeof data.ShowSceneNames != 'undefined') {
+					Device.showSceneNames = (data.ShowSceneNames == 1);
+				}
 				/* Add a click handler to the rows - this could be used as a callback */
 				$('#floorplantable tbody').off()
 										  .on( 'click', 'tr', function () {

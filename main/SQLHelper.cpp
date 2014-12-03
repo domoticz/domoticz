@@ -1328,6 +1328,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("FloorplanShowSwitchValues", 0);
 	}
+	if (!GetPreferencesVar("FloorplanShowSceneNames", nValue))
+	{
+		UpdatePreferencesVar("FloorplanShowSceneNames", 1);
+	}
 	if (!GetPreferencesVar("FloorplanRoomColour", sValue))
 	{
 		UpdatePreferencesVar("FloorplanRoomColour", "Blue");
