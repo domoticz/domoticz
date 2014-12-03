@@ -306,22 +306,22 @@ define(['app'], function (app) {
 						}
 						
 						var disableDays=false;
-						if (data["6"]=="Everyday") {
+						if (data["5"]=="Everyday") {
 							$("#utilitycontent #timerparamstable #when_1").prop('checked', 'checked');
 							disableDays=true;
 						}
-						else if (data["6"]=="Weekdays") {
+						else if (data["5"]=="Weekdays") {
 							$("#utilitycontent #timerparamstable #when_2").prop('checked', 'checked');
 							disableDays=true;
 						}
-						else if (data["6"]=="Weekends") {
+						else if (data["5"]=="Weekends") {
 							$("#utilitycontent #timerparamstable #when_3").prop('checked', 'checked');
 							disableDays=true;
 						}
 						else
 							$("#utilitycontent #timerparamstable #when_4").prop('checked', 'checked');
 							
-						EnableDisableDays(data["6"],disableDays);
+						EnableDisableSetpointDays(data["5"],disableDays);
 					}
 				}
 			}); 
