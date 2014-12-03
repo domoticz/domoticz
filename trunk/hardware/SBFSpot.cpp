@@ -632,8 +632,11 @@ void CSBFSpot::GetMeterDetails()
 		double LastTotal=0;
 		if (GetMeter(0,1,LastUsage,LastTotal))
 		{
-			if (kWhCounter<LastTotal)
+			if (kWhCounter < LastTotal)
+			{
+				_log.Log(LOG_ERROR, "SBFSpot: Actual KwH counter (%f) less then last Counter (%f)!",kWhCounter,LastTotal);
 				return;
+			}
 		}
 		SendMeter(0,1, Pac/1000.0, kWhCounter, "SolarMain");
 	}
