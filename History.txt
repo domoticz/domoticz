@@ -63,6 +63,7 @@ Version 2.0.xxxx (October xxth 2014)
 - Changed: OpenZWave logging, more persistant with node id's (thanks to Ugo)
 - Implemented: Scene/Group, Blinds Percentage(+Inverted) can now set the percentage level
 - Fixed: Setpoint timers, 'when' selection
+- Implemented: ttyACM serial ports if available
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

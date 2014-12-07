@@ -97,6 +97,11 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				bUseDirectPath=true;
 				ret.push_back("/dev/" + fname);
 			}
+			else if (fname.find("ttyACM")!=std::string::npos)
+			{
+				bUseDirectPath=true;
+				ret.push_back("/dev/" + fname);
+			}
 #ifdef __APPLE__
 			else if (fname.find("cu.")!=std::string::npos)
 			{
