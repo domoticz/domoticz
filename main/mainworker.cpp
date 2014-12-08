@@ -1201,7 +1201,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	// current date/time based on current system
 	time_t now = time(0);
 
-	size_t Len=pRXCommand[0]+1;
+	size_t Len = pRXCommand[0] + 1;
 
 	int HwdID = pHardware->m_HwdID;
 	((CDomoticzHardwareBase *)pHardware)->SetHeartbeatReceived();
@@ -1227,14 +1227,14 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		+tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
 		+tm->tm_hour, tm->tm_min, tm->tm_sec);
 
-	unsigned long long DeviceRowIdx=-1;
-	tcp::server::CTCPClient *pClient2Ignore=NULL;
+	unsigned long long DeviceRowIdx = -1;
+	tcp::server::CTCPClient *pClient2Ignore = NULL;
 
 	if (pHardware->HwdType == HTYPE_Domoticz)
 	{
-		if (pHardware->m_HwdID==8765) //did we receive it from our master?
+		if (pHardware->m_HwdID == 8765) //did we receive it from our master?
 		{
-			CDomoticzHardwareBase *pOrgHardware=NULL;
+			CDomoticzHardwareBase *pOrgHardware = NULL;
 			switch (pRXCommand[1])
 			{
 			case pTypeLighting1:
@@ -1254,195 +1254,219 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			case pTypeThermostat3:
 				//we received a control message from a domoticz client,
 				//and should actually perform this command ourself switch
-				DeviceRowIdx=PerformRealActionFromDomoticzClient(pRXCommand,&pOrgHardware);
-				if (DeviceRowIdx!=-1)
+				DeviceRowIdx = PerformRealActionFromDomoticzClient(pRXCommand, &pOrgHardware);
+				if (DeviceRowIdx != -1)
 				{
-					if (pOrgHardware!=NULL)
+					if (pOrgHardware != NULL)
 					{
-						DeviceRowIdx=-1;
-						pClient2Ignore=(tcp::server::CTCPClient*)pHardware->m_pUserData;
-						pHardware=pOrgHardware;
-						HwdID=pOrgHardware->m_HwdID;
+						DeviceRowIdx = -1;
+						pClient2Ignore = (tcp::server::CTCPClient*)pHardware->m_pUserData;
+						pHardware = pOrgHardware;
+						HwdID = pOrgHardware->m_HwdID;
 					}
-					WriteMessage("Control Command, ",(pOrgHardware==NULL));
+					WriteMessage("Control Command, ", (pOrgHardware == NULL));
 				}
 				break;
 			}
 		}
 	}
 
-	if (DeviceRowIdx==-1)
+	if (DeviceRowIdx == -1)
 	{
 		switch (pRXCommand[1])
 		{
 		case pTypeInterfaceMessage:
-			DeviceRowIdx=decode_InterfaceMessage(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_InterfaceMessage(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRecXmitMessage:
-			DeviceRowIdx=decode_RecXmitMessage(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_RecXmitMessage(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeUndecoded:
-			DeviceRowIdx=decode_UNDECODED(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_UNDECODED(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting1:
-			DeviceRowIdx=decode_Lighting1(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Lighting1(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting2:
-			DeviceRowIdx=decode_Lighting2(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Lighting2(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting3:
-			DeviceRowIdx=decode_Lighting3(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Lighting3(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting4:
-			DeviceRowIdx=decode_Lighting4(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Lighting4(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting5:
-			DeviceRowIdx=decode_Lighting5(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Lighting5(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting6:
-			DeviceRowIdx=decode_Lighting6(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Lighting6(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeCurtain:
-			DeviceRowIdx=decode_Curtain(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Curtain(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeBlinds:
-			DeviceRowIdx=decode_BLINDS1(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_BLINDS1(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRFY:
-			DeviceRowIdx=decode_RFY(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_RFY(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeSecurity1:
-			DeviceRowIdx=decode_Security1(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Security1(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeCamera:
-			DeviceRowIdx=decode_Camera1(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Camera1(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRemote:
-			DeviceRowIdx=decode_Remote(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Remote(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeThermostat: //own type
-			DeviceRowIdx=decode_Thermostat(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Thermostat(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeThermostat1:
-			DeviceRowIdx=decode_Thermostat1(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Thermostat1(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeThermostat2:
-			DeviceRowIdx=decode_Thermostat2(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Thermostat2(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeThermostat3:
-			DeviceRowIdx=decode_Thermostat3(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Thermostat3(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeTEMP:
-			DeviceRowIdx=decode_Temp(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Temp(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeHUM:
-			DeviceRowIdx=decode_Hum(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Hum(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeTEMP_HUM:
-			DeviceRowIdx=decode_TempHum(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_TempHum(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeTEMP_RAIN:
-			DeviceRowIdx=decode_TempRain(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_TempRain(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeBARO:
-			DeviceRowIdx=decode_Baro(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Baro(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeTEMP_HUM_BARO:
-			DeviceRowIdx=decode_TempHumBaro(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_TempHumBaro(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeTEMP_BARO:
-			DeviceRowIdx=decode_TempBaro(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_TempBaro(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRAIN:
-			DeviceRowIdx=decode_Rain(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Rain(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeWIND:
-			DeviceRowIdx=decode_Wind(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Wind(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeUV:
-			DeviceRowIdx=decode_UV(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_UV(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeDT:
-			DeviceRowIdx=decode_DateTime(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_DateTime(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeCURRENT:
-			DeviceRowIdx=decode_Current(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Current(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeENERGY:
-			DeviceRowIdx=decode_Energy(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Energy(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeCURRENTENERGY:
-			DeviceRowIdx=decode_Current_Energy(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Current_Energy(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeGAS:
-			DeviceRowIdx=decode_Gas(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Gas(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeWATER:
-			DeviceRowIdx=decode_Water(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Water(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeWEIGHT:
-			DeviceRowIdx=decode_Weight(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Weight(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRFXSensor:
-			DeviceRowIdx=decode_RFXSensor(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_RFXSensor(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRFXMeter:
-			DeviceRowIdx=decode_RFXMeter(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_RFXMeter(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeP1Power:
-			DeviceRowIdx=decode_P1MeterPower(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_P1MeterPower(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeP1Gas:
-			DeviceRowIdx=decode_P1MeterGas(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_P1MeterGas(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeUsage:
-			DeviceRowIdx=decode_Usage(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Usage(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeYouLess:
-			DeviceRowIdx=decode_YouLessMeter(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_YouLessMeter(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeAirQuality:
-			DeviceRowIdx=decode_AirQuality(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_AirQuality(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRego6XXTemp:
-			DeviceRowIdx=decode_Rego6XXTemp(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Rego6XXTemp(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRego6XXValue:
-			DeviceRowIdx=decode_Rego6XXValue(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Rego6XXValue(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeFS20:
-			DeviceRowIdx=decode_FS20(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_FS20(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLux:
-			DeviceRowIdx=decode_Lux(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Lux(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeGeneral:
-			{
-				const _tGeneralDevice *pMeter=(const _tGeneralDevice*)pRXCommand;
-				unsigned char devType=pMeter->type;
-				unsigned char subType=pMeter->subtype;
-				DeviceRowIdx=decode_General(pHardware, HwdID, (tRBUF *)pRXCommand);
-			}
-			break;
+		{
+			const _tGeneralDevice *pMeter = (const _tGeneralDevice*)pRXCommand;
+			unsigned char devType = pMeter->type;
+			unsigned char subType = pMeter->subtype;
+			DeviceRowIdx = decode_General(pHardware, HwdID, (tRBUF *)pRXCommand);
+		}
+		break;
 		case pTypeChime:
-			DeviceRowIdx=decode_Chime(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Chime(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeBBQ:
-			DeviceRowIdx=decode_BBQ(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_BBQ(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypePOWER:
-			DeviceRowIdx=decode_Power(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Power(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLimitlessLights:
-			DeviceRowIdx=decode_LimitlessLights(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_LimitlessLights(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		default:
-			_log.Log(LOG_ERROR,"UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
+			_log.Log(LOG_ERROR, "UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
 			return;
 		}
 	}
 	if (DeviceRowIdx == -1)
 		return;
+
+	//Quick hack to update zwave battery levels for sensors that does not have them
+	//We should move all sensors to a more general sensor type that includes this
+	if (pHardware->HwdType == HTYPE_OpenZWave)
+	{
+		COpenZWave *pZWave = (COpenZWave *)pHardware;
+		if (pZWave->m_iLastSendNodeBatteryValue != 255)
+		{
+			std::stringstream szQuery;
+			szQuery << "UPDATE DeviceStatus SET BatteryLevel=" << pZWave->m_iLastSendNodeBatteryValue << " WHERE (ID==" << DeviceRowIdx << ")";
+			m_sql.query(szQuery.str());
+		}
+	}
+	else if (pHardware->HwdType == HTYPE_RazberryZWave)
+	{
+		CRazberry *pZWave = (CRazberry *)pHardware;
+		if (pZWave->m_iLastSendNodeBatteryValue != 255)
+		{
+			std::stringstream szQuery;
+			szQuery << "UPDATE DeviceStatus SET BatteryLevel=" << pZWave->m_iLastSendNodeBatteryValue << " WHERE (ID==" << DeviceRowIdx << ")";
+			m_sql.query(szQuery.str());
+		}
+	}
+
 
 	if (pHardware->m_bOutputLog)
 	{

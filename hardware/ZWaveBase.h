@@ -100,6 +100,7 @@ public:
 	bool StartHardware();
 	bool StopHardware();
 	void WriteToHardware(const char *pdata, const unsigned char length);
+	int m_iLastSendNodeBatteryValue;
 private:
 	void Do_Work();
 	void SendDevice2Domoticz(const _tZWaveDevice *pDevice);

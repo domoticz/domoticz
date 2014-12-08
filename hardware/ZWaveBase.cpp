@@ -166,6 +166,12 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		)
 		return; //only for switches
 
+	m_iLastSendNodeBatteryValue = 255;
+	if (pDevice->hasBattery)
+	{
+		m_iLastSendNodeBatteryValue = pDevice->batValue;
+	}
+
 	if ((pDevice->devType == ZDTYPE_SWITCH_FGRGBWM441) || (pDevice->devType == ZDTYPE_SWITCH_COLOR))
 	{
 		unsigned char ID1 = 0;
@@ -334,6 +340,11 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	char szID[10];
 	sprintf(szID,"%X%02X%02X%02X", ID1, ID2, ID3, ID4);
 
+	m_iLastSendNodeBatteryValue = 255;
+	if (pDevice->hasBattery)
+	{
+		m_iLastSendNodeBatteryValue = pDevice->batValue;
+	}
 
 	if ((pDevice->devType==ZDTYPE_SWITCH_NORMAL)||(pDevice->devType==ZDTYPE_SWITCH_DIMMER))
 	{
