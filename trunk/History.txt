@@ -64,6 +64,7 @@ Version 2.0.xxxx (October xxth 2014)
 - Implemented: Scene/Group, Blinds Percentage(+Inverted) can now set the percentage level
 - Fixed: Setpoint timers, 'when' selection
 - Implemented: ttyACM serial ports if available
+- Implemented: ZWave battery values for all sensor types that reports this
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher
