@@ -6413,21 +6413,23 @@ namespace http {
 
 				std::string name = m_pWebEm->FindValue("name");
 				std::string imagefile = m_pWebEm->FindValue("image");
+				std::string scalefactor = m_pWebEm->FindValue("scalefactor");
 				if (
 					(name == "") ||
-					(imagefile == "")
+					(imagefile == "") ||
+					(scalefactor == "")
 					)
 					return;
 
 				root["status"] = "OK";
 				root["title"] = "AddFloorplan";
 				sprintf(szTmp,
-					"INSERT INTO Floorplans (Name,ImageFile) VALUES ('%s','%s')",
+					"INSERT INTO Floorplans (Name,ImageFile,ScaleFactor) VALUES ('%s','%s',%s)",
 					name.c_str(),
 					imagefile.c_str()
 					);
 				result = m_sql.query(szTmp);
-				_log.Log(LOG_STATUS, "(Floorplan) '%s' created with image file '%s'.", name.c_str(), imagefile.c_str());
+				_log.Log(LOG_STATUS, "(Floorplan) '%s' created with image file '%s', Scale Factor %s.", name.c_str(), imagefile.c_str(), scalefactor.c_str());
 			}
 			else if (cparam == "updatefloorplan")
 			{
@@ -6448,6 +6450,7 @@ namespace http {
 					return;
 				std::string name = m_pWebEm->FindValue("name");
 				std::string imagefile = m_pWebEm->FindValue("image");
+				std::string scalefactor = m_pWebEm->FindValue("scalefactor");
 				if (
 					(name == "") ||
 					(imagefile == "")
@@ -6458,13 +6461,14 @@ namespace http {
 				root["title"] = "UpdateFloorplan";
 
 				sprintf(szTmp,
-					"UPDATE Floorplans SET Name='%s',ImageFile='%s' WHERE (ID == %s)",
+					"UPDATE Floorplans SET Name='%s',ImageFile='%s', ScaleFactor=%s WHERE (ID == %s)",
 					name.c_str(),
 					imagefile.c_str(),
+					scalefactor.c_str(),
 					idx.c_str()
 					);
 				result = m_sql.query(szTmp);
-				_log.Log(LOG_STATUS, "(Floorplan) '%s' updated with image file '%s'.", name.c_str(), imagefile.c_str());
+				_log.Log(LOG_STATUS, "(Floorplan) '%s' updated with image file '%s', Scale Factor %s.", name.c_str(), imagefile.c_str(), scalefactor.c_str());
 			}
 			else if (cparam == "deletefloorplan")
 			{
@@ -9951,7 +9955,7 @@ namespace http {
 
 			szQuery.clear();
 			szQuery.str("");
-			szQuery << "SELECT ID, Name, ImageFile, [Order] FROM Floorplans ORDER BY [Order]";
+			szQuery << "SELECT ID, Name, ImageFile, ScaleFactor, [Order] FROM Floorplans ORDER BY [Order]";
 			result2 = m_sql.query(szQuery.str());
 			if (result2.size() > 0)
 			{
@@ -9964,7 +9968,8 @@ namespace http {
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["Image"] = sd[2];
-					root["result"][ii]["Order"] = sd[3];
+					root["result"][ii]["ScaleFactor"] = sd[3];
+					root["result"][ii]["Order"] = sd[4];
 
 					unsigned int totPlans = 0;
 
