@@ -23,7 +23,7 @@
 	#include <pwd.h>
 #endif
 
-#define DB_VERSION 52
+#define DB_VERSION 53
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -485,6 +485,7 @@ const char *sqlCreateFloorplans =
 	"[ID] INTEGER PRIMARY KEY, "
 	"[Name] VARCHAR(200) NOT NULL, "
 	"[ImageFile] VARCHAR(100) NOT NULL, "
+	"[ScaleFactor] FLOAT DEFAULT 1.0, "
 	"[Order] INTEGER BIGINT(10) default 0);";
 
 const char *sqlCreateFloorplanOrderTrigger =
@@ -1019,6 +1020,10 @@ bool CSQLHelper::OpenDatabase()
 				szQuery << "UPDATE DeviceStatus SET HardwareID=" << hwId << " WHERE (HardwareID=1000)";
 				m_sql.query(szQuery.str());
 			}
+		}
+		if (dbversion < 53)
+		{
+			query("ALTER TABLE Floorplans ADD COLUMN [ScaleFactor] Float default 1.0");
 		}
 	}
 	else if (bNewInstall)
