@@ -12,3 +12,4 @@ Fireplace;Fireplace;Fireplace
 Water;Water;Water
 Media;Media Player;Multi Media player
 Alarm;Alarm;Alarm
+ChristmasTree;Christmas Tree;Christmas Tree
