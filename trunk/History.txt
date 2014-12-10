@@ -66,6 +66,7 @@ Version 2.0.xxxx (October xxth 2014)
 - Implemented: ttyACM serial ports if available
 - Implemented: ZWave battery values for all sensor types that reports this
 - Fixed: Temperature trend-line toggle removed range chart data
+- Implemented: EnOcean3, added support for door level
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher
