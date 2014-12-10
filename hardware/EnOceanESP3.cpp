@@ -362,28 +362,6 @@ CEnOceanESP3::CEnOceanESP3(const int ID, const std::string& devname, const int t
 	m_id_base=0;
 	m_receivestate=ERS_SYNCBYTE;
 	m_stoprequested=false;
-
-	/*
-	m_ReceivedPacketType = 0x01;
-	m_DataSize = 0x07;
-	m_OptionalDataSize = 0x07;
-	m_bufferpos = 14;
-	m_buffer[0] = 0xF6;
-	m_buffer[1] = 0xC0;
-	m_buffer[2] = 0x00;
-	m_buffer[3] = 0x22;
-	m_buffer[4] = 0xE1;
-	m_buffer[5] = 0x07;
-	m_buffer[6] = 0x20;
-	m_buffer[7] = 0x01;
-	m_buffer[8] = 0xFF;
-	m_buffer[9] = 0xFF;
-	m_buffer[10] = 0xFF;
-	m_buffer[11] = 0xFF;
-	m_buffer[12] = 0x56;
-	m_buffer[13] = 0x00;
-	ParseData();
-	*/
 }
 
 CEnOceanESP3::~CEnOceanESP3()
@@ -1587,13 +1565,31 @@ void CEnOceanESP3::ParseRadioDatagram()
 					if ((T21 == 1) && (NU == 0))
 					{
 						unsigned char DATA_BYTE3 = m_buffer[1];
-						unsigned char ButtonID = (DATA_BYTE3&DB3_RPS_BUTTONS) >> DB3_RPS_BUTTONS_SHIFT;
-						unsigned char UpDown = (DATA_BYTE3&DB3_RPS_PR) >> DB3_RPS_PR_SHIFT;
+						//unsigned char ButtonID = (DATA_BYTE3&DB3_RPS_BUTTONS) >> DB3_RPS_BUTTONS_SHIFT;
+						//unsigned char Position = (DATA_BYTE3&DB3_RPS_PR) >> DB3_RPS_PR_SHIFT;
 
-						_log.Log(LOG_NORM, "Received RPS T21-Message Node 0x%08x Button ID: %i UD: %i Pressed: %i",
-							id,
-							ButtonID,
-							UpDown);
+						unsigned char UpDown = !((DATA_BYTE3 == 0xD0) || (DATA_BYTE3 == 0xF0));
+
+						//_log.Log(LOG_NORM, "Received RPS T21-Message Node 0x%08x Button ID: %02X UD: %i",id,ButtonID,UpDown);
+
+						RBUF tsen;
+						memset(&tsen, 0, sizeof(RBUF));
+						tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
+						tsen.LIGHTING2.packettype = pTypeLighting2;
+						tsen.LIGHTING2.subtype = sTypeAC;
+						tsen.LIGHTING2.seqnbr = 0;
+
+						tsen.LIGHTING2.id1 = (BYTE)ID_BYTE3;
+						tsen.LIGHTING2.id2 = (BYTE)ID_BYTE2;
+						tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
+						tsen.LIGHTING2.id4 = (BYTE)ID_BYTE0;
+						tsen.LIGHTING2.level = 0;
+						tsen.LIGHTING2.rssi = 12;
+
+						tsen.LIGHTING2.unitcode = 1;
+						tsen.LIGHTING2.cmnd = (UpDown == 1) ? light2_sOn : light2_sOff;
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);
+
 					}
 				}
 			}
