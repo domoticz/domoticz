@@ -1594,8 +1594,6 @@ void CEnOceanESP3::ParseRadioDatagram()
 							id,
 							ButtonID,
 							UpDown);
-
-						_asm nop;
 					}
 				}
 			}
