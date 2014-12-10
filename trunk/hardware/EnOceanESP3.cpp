@@ -258,9 +258,9 @@ typedef enum
  * @{
  */
 #define DB3_RPS_BUTTONS 0xE0
-#define DB3_RPS_BUTTONS_SHIFT 4
+#define DB3_RPS_BUTTONS_SHIFT 5
 #define DB3_RPS_PR 0x10
-#define DB3_RPS_PR_SHIFT 3
+#define DB3_RPS_PR_SHIFT 4
 /*@}*/
 
 /**
@@ -362,6 +362,28 @@ CEnOceanESP3::CEnOceanESP3(const int ID, const std::string& devname, const int t
 	m_id_base=0;
 	m_receivestate=ERS_SYNCBYTE;
 	m_stoprequested=false;
+
+	/*
+	m_ReceivedPacketType = 0x01;
+	m_DataSize = 0x07;
+	m_OptionalDataSize = 0x07;
+	m_bufferpos = 14;
+	m_buffer[0] = 0xF6;
+	m_buffer[1] = 0xC0;
+	m_buffer[2] = 0x00;
+	m_buffer[3] = 0x22;
+	m_buffer[4] = 0xE1;
+	m_buffer[5] = 0x07;
+	m_buffer[6] = 0x20;
+	m_buffer[7] = 0x01;
+	m_buffer[8] = 0xFF;
+	m_buffer[9] = 0xFF;
+	m_buffer[10] = 0xFF;
+	m_buffer[11] = 0xFF;
+	m_buffer[12] = 0x56;
+	m_buffer[13] = 0x00;
+	ParseData();
+	*/
 }
 
 CEnOceanESP3::~CEnOceanESP3()
@@ -1494,6 +1516,9 @@ void CEnOceanESP3::ParseRadioDatagram()
 */
 				unsigned char STATUS=m_buffer[6];
 
+				unsigned char T21 = (m_buffer[6] & S_RPS_T21) >> S_RPS_T21_SHIFT;
+				unsigned char NU = (m_buffer[6] & S_RPS_NU) >> S_RPS_NU_SHIFT;
+
 				unsigned char ID_BYTE3=m_buffer[2];
 				unsigned char ID_BYTE2=m_buffer[3];
 				unsigned char ID_BYTE1=m_buffer[4];
@@ -1555,6 +1580,22 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.LIGHTING2.cmnd=(SecondUpDown==1)?light2_sOn:light2_sOff;
 						}
 						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);
+					}
+				}
+				else
+				{
+					if ((T21 == 1) && (NU == 0))
+					{
+						unsigned char DATA_BYTE3 = m_buffer[1];
+						unsigned char ButtonID = (DATA_BYTE3&DB3_RPS_BUTTONS) >> DB3_RPS_BUTTONS_SHIFT;
+						unsigned char UpDown = (DATA_BYTE3&DB3_RPS_PR) >> DB3_RPS_PR_SHIFT;
+
+						_log.Log(LOG_NORM, "Received RPS T21-Message Node 0x%08x Button ID: %i UD: %i Pressed: %i",
+							id,
+							ButtonID,
+							UpDown);
+
+						_asm nop;
 					}
 				}
 			}

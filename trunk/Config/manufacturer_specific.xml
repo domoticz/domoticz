@@ -602,6 +602,7 @@
 		<Product type="2001" id="0105" name="ZD2102 Door/Window Sensor"/>
 		<Product type="2002" id="0201" name="ZP3102 PIR Motion Sensor"/>
 		<Product type="2002" id="0202" name="ZP3102 PIR Motion Sensor"/>
+		<Product type="2002" id="0203" name="ZP3102 PIR Motion Sensor"/>
 		<Product type="2002" id="0204" name="ZP3102 PIR Motion Sensor"/>
 		<Product type="2003" id="0302" name="ZS5101 Shock and Vibration Sensor"/>
 		<Product type="2004" id="0403" name="ZS6101 Smoke Detector"/>
