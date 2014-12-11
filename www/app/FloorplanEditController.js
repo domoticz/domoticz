@@ -295,7 +295,7 @@ define(['app'], function (app) {
 			}
 
 			$.ajax({
-				 url: "json.htm?type=command&param=addfloorplan&name=" + csettings.name + "&image=" + csettings.image,
+				 url: "json.htm?type=command&param=addfloorplan&name=" + csettings.name + "&image=" + csettings.image + "&scalefactor=1.0",
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
