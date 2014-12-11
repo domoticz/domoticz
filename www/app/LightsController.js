@@ -709,7 +709,8 @@ define(['app'], function (app) {
 					}
 					var CustomImage=0;
 					if (switchtype==0) {
-						CustomImage=$('#lightcontent #comboswitchicon').data('ddslick').selectedIndex;
+						var cval=$('#lightcontent #comboswitchicon').data('ddslick').selectedIndex;
+						CustomImage=$.ddData[cval].value;
 					}
 					$.ajax({
 						 url: "json.htm?type=setused&idx=" + $.devIdx + 
@@ -1111,9 +1112,12 @@ define(['app'], function (app) {
 					selectText: "Select Switch Icon",
 					imagePosition:"left"
 				});
-				//alert(customimage);
-				 var i=customimage;
-				 $('#lightcontent #comboswitchicon').ddslick('select', {index: i });
+				//find our custom image index and select it
+				$.each($.ddData, function(i,item){
+					if (item.value==customimage) {
+						$('#lightcontent #comboswitchicon').ddslick('select', {index: i });
+					}
+				});
 			}
 			
 			RefreshSubDeviceTable(idx);
@@ -2615,7 +2619,7 @@ define(['app'], function (app) {
 							bSelected=true;
 						}
 						var img="images/"+item.imageSrc+"48_On.png";
-						$.ddData.push({ text: item.text, value: i, selected: bSelected, description: item.description, imageSrc: img });
+						$.ddData.push({ text: item.text, value: item.idx, selected: bSelected, description: item.description, imageSrc: img });
 					});
 				}
 			 }

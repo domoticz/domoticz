@@ -16,6 +16,7 @@ class CWebServer
 {
 	struct _tCustomIcon
 	{
+		int idx;
 		std::string RootFile;
 		std::string Title;
 		std::string Description;

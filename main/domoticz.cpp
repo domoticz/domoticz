@@ -323,7 +323,7 @@ int main(int argc, char**argv)
 	CreateMutexA(0, FALSE, "Local\\Domoticz"); 
     if(GetLastError() == ERROR_ALREADY_EXISTS) { 
 		MessageBox(HWND_DESKTOP,"Another instance of Domoticz is already running!","Domoticz",MB_OK);
-        return -1; 
+        return 1; 
 	}
 #endif //_DEBUG
 	bool bStartWebBrowser=true;
@@ -578,7 +578,7 @@ int main(int argc, char**argv)
 	
 	if (!m_mainworker.Start())
 	{
-		return 0;
+		return 1;
 	}
 	/* now, lets get into an infinite loop of doing nothing. */
 

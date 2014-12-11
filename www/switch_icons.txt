@@ -4,7 +4,7 @@ TV;Television;Television Screen
 Harddisk;Hard disk;Hard disk drive
 Printer;Printer;Printer
 Amplifier;Amplifier;Device that controls audio
-Computer;Computer;Personal Computer System
+Computer;Computer Laptop;Personal Computer System
 Fan;Fan;Airflow Producer
 Speaker;Speaker;Audio Speaker
 Generic;Generic;Generic On/Off switch
@@ -13,3 +13,6 @@ Water;Water;Water
 Media;Media Player;Multi Media player
 Alarm;Alarm;Alarm
 ChristmasTree;Christmas Tree;Christmas Tree
+Heating;Heating;Heating device
+Cooling;Cooling;Cooling device
+ComputerPC;Computer PC;Personal Computer System
