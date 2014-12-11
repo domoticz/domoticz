@@ -1443,7 +1443,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	}
 	if (DeviceRowIdx == -1)
 		return;
-
+#ifdef WITH_OPENZWAVE
 	//Quick hack to update zwave battery levels for sensors that does not have them
 	//We should move all sensors to a more general sensor type that includes this
 	if (pHardware->HwdType == HTYPE_OpenZWave)
@@ -1466,7 +1466,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			m_sql.query(szQuery.str());
 		}
 	}
-
+#endif
 
 	if (pHardware->m_bOutputLog)
 	{
