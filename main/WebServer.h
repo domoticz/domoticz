@@ -14,6 +14,8 @@ namespace http {
 		struct _tWebUserPassword;
 class CWebServer
 {
+	typedef boost::function< void(Json::Value &root) > webserver_response_function;
+public:
 	struct _tCustomIcon
 	{
 		int idx;
@@ -21,8 +23,6 @@ class CWebServer
 		std::string Title;
 		std::string Description;
 	};
-	typedef boost::function< void(Json::Value &root) > webserver_response_function;
-public:
 	CWebServer(void);
 	~CWebServer(void);
 	bool StartServer(const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword);

@@ -9834,6 +9834,11 @@ namespace http {
 			}
 		}
 
+		bool compareIconsByName(const http::server::CWebServer::_tCustomIcon &a, const http::server::CWebServer::_tCustomIcon &b)
+		{
+			return a.Title < b.Title;
+		}
+
 		void CWebServer::RType_CustomLightIcons(Json::Value &root)
 		{
 			std::vector<_tCustomIcon>::const_iterator itt;
@@ -9841,11 +9846,7 @@ namespace http {
 
 			std::vector<_tCustomIcon> temp_custom_light_icons = m_custom_light_icons;
 			//Sort by name
-			sort(temp_custom_light_icons.begin(), temp_custom_light_icons.end(),
-				[](const _tCustomIcon & a, const _tCustomIcon & b) -> bool
-			{
-				return a.Title < b.Title;
-			});
+			std::sort(temp_custom_light_icons.begin(), temp_custom_light_icons.end(), compareIconsByName);
 
 			for (itt = temp_custom_light_icons.begin(); itt != temp_custom_light_icons.end(); ++itt)
 			{
