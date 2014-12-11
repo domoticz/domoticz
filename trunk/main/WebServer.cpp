@@ -132,6 +132,7 @@ namespace http {
 			infile.open(switchlightsfile.c_str());
 			if (infile.is_open())
 			{
+				int index = 0;
 				while (!infile.eof())
 				{
 					getline(infile, sLine);
@@ -142,6 +143,7 @@ namespace http {
 						if (results.size() == 3)
 						{
 							_tCustomIcon cImage;
+							cImage.idx = index++;
 							cImage.RootFile = results[0];
 							cImage.Title = results[1];
 							cImage.Description = results[2];
@@ -149,6 +151,7 @@ namespace http {
 						}
 					}
 				}
+				infile.close();
 			}
 
 			CheckAppCache(serverpath);
@@ -9835,8 +9838,18 @@ namespace http {
 		{
 			std::vector<_tCustomIcon>::const_iterator itt;
 			int ii = 0;
-			for (itt = m_custom_light_icons.begin(); itt != m_custom_light_icons.end(); ++itt)
+
+			std::vector<_tCustomIcon> temp_custom_light_icons = m_custom_light_icons;
+			//Sort by name
+			sort(temp_custom_light_icons.begin(), temp_custom_light_icons.end(),
+				[](const _tCustomIcon & a, const _tCustomIcon & b) -> bool
 			{
+				return a.Title < b.Title;
+			});
+
+			for (itt = temp_custom_light_icons.begin(); itt != temp_custom_light_icons.end(); ++itt)
+			{
+				root["result"][ii]["idx"] = itt->idx;
 				root["result"][ii]["imageSrc"] = itt->RootFile;
 				root["result"][ii]["text"] = itt->Title;
 				root["result"][ii]["description"] = itt->Description;
