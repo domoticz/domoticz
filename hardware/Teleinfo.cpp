@@ -2,12 +2,13 @@
 	Domoticz Software : http://domoticz.com/
 	File : Teleinfo.cpp
 	Author : Nicolas HILAIRE
-	Version : 1.0
+	Version : 1.1
 	Description : This class manage the Teleinfo Signal
 	
 	
 	History : 
 	- 2013-11-01 : Creation
+	- 2014-10-29 : Add 'EJP' contract (Laurent MEY)	
 */
 
 #include "stdafx.h"
@@ -47,18 +48,22 @@
 #define TE_BASE "BASE"//total power usage normal tariff in base option
 #define TE_HCHC "HCHC"// total power usage low tariff in HC option
 #define TE_HCHP "HCHP"// total power usage normal tariff in HC option
+#define TE_EJPHPM "EJPHPM"// total power usage normal tariff in PM option
+#define TE_EJPHN "EJPHN"// total power usage low tariff in HN option
 #define TE_PTEC	"PTEC"//current tariff period
 #define TE_IINST "IINST"//instant current power usage 
 #define TE_IMAX "IMAX"//maximal current power usage
 #define TE_PAPP "PAPP"//apparent power
 
-Teleinfo::Match Teleinfo::m_matchlist[10] = {
+Teleinfo::Match Teleinfo::m_matchlist[12] = {
 		{STD,	TELEINFO_TYPE_ADCO,			TE_ADCO, 		12},
 		{STD,	TELEINFO_TYPE_OPTARIF,		TE_OPTARIF, 	4},
 		{STD,	TELEINFO_TYPE_ISOUSC,		TE_ISOUSC, 		2},
 		{STD,	TELEINFO_TYPE_BASE,			TE_BASE, 		9},
 		{STD,	TELEINFO_TYPE_HCHC,			TE_HCHC, 		9},
 		{STD,	TELEINFO_TYPE_HCHP,			TE_HCHP, 		9},
+		{STD,	TELEINFO_TYPE_EJPHPM,		TE_EJPHPM, 		9},
+		{STD,	TELEINFO_TYPE_EJPHN,		TE_EJPHN, 		9},
 		{STD,	TELEINFO_TYPE_PTEC,			TE_PTEC, 		4},
 		{STD,	TELEINFO_TYPE_IINST,		TE_IINST, 		3},
 		{STD,	TELEINFO_TYPE_IMAX,			TE_IMAX, 		3},
@@ -236,6 +241,14 @@ void Teleinfo::MatchLine()
 					m_p1power.powerusage2 = ulValue;
 				break;
 			case TELEINFO_TYPE_HCHP :
+				if (ulValue!=0)
+					m_p1power.powerusage1 = ulValue;
+				break;
+			case TELEINFO_TYPE_EJPHPM :	
+				if (ulValue!=0)
+					m_p1power.powerusage2 = ulValue;
+				break;
+			case TELEINFO_TYPE_EJPHN :
 				if (ulValue!=0)
 					m_p1power.powerusage1 = ulValue;
 				break;
