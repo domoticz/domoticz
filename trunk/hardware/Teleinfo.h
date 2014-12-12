@@ -2,12 +2,13 @@
 	Domoticz Software : http://domoticz.com/
 	File : Teleinfo.h
 	Author : Nicolas HILAIRE
-	Version : 1.0
+	Version : 1.1
 	Description : This class manage the Teleinfo Signal
 	
 	
 	History : 
 	- 2013-11-01 : Creation
+	- 2014-10-29 : Add 'EJP' contract (Laurent MEY)	
 */
 
  #pragma once
@@ -59,6 +60,8 @@ class Teleinfo : public CDomoticzHardwareBase, AsyncSerial
 		TELEINFO_TYPE_BASE,
 		TELEINFO_TYPE_HCHC,
 		TELEINFO_TYPE_HCHP,
+		TELEINFO_TYPE_EJPHN,
+		TELEINFO_TYPE_EJPHPM,
 		TELEINFO_TYPE_PTEC,
 		TELEINFO_TYPE_IINST,
 		TELEINFO_TYPE_IMAX,
@@ -124,6 +127,6 @@ private:
 
 	unsigned char m_buffer[readBufferSize];
 	int m_bufferpos;	
-	static Teleinfo::Match m_matchlist[10];
+	static Teleinfo::Match m_matchlist[12];
 };
 
