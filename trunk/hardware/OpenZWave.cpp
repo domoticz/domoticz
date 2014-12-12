@@ -596,6 +596,12 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 					nodeInfo->eState = NSTATE_DEAD;
 				}
 				break;
+			case OpenZWave::Notification::Code_Alive:
+				if (NodeInfo* nodeInfo = GetNodeInfo(_notification))
+				{
+					nodeInfo->eState = NSTATE_AWAKE;
+				}
+				break;
 			case OpenZWave::Notification::Code_Timeout:
 #ifdef _DEBUG
 				_log.Log(LOG_STATUS, "OpenZWave: Received timeout notification from HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
