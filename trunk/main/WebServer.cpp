@@ -6429,7 +6429,8 @@ namespace http {
 				sprintf(szTmp,
 					"INSERT INTO Floorplans (Name,ImageFile,ScaleFactor) VALUES ('%s','%s',%s)",
 					name.c_str(),
-					imagefile.c_str()
+					imagefile.c_str(),
+					scalefactor.c_str()
 					);
 				result = m_sql.query(szTmp);
 				_log.Log(LOG_STATUS, "(Floorplan) '%s' created with image file '%s', Scale Factor %s.", name.c_str(), imagefile.c_str(), scalefactor.c_str());
