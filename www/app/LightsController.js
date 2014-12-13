@@ -1498,6 +1498,8 @@ define(['app'], function (app) {
 											(item.Status == 'On')||
 											(item.Status == 'Chime')||
 											(item.Status == 'Group On')||
+											(item.Status.indexOf('Down')!=-1)||
+											(item.Status.indexOf('Up')!=-1)||
 											(item.Status.indexOf('Set ') == 0)
 										 ) {
 												img='<img src="images/' + item.Image + '48_On.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
@@ -1892,6 +1894,8 @@ define(['app'], function (app) {
 								(item.Status == 'On')||
 								(item.Status == 'Chime')||
 								(item.Status == 'Group On')||
+								(item.Status.indexOf('Down')!=-1)||
+								(item.Status.indexOf('Up')!=-1)||
 								(item.Status.indexOf('Set ') == 0)
 							   ) {
 									xhtm+='\t      <td id="img"><img src="images/' + item.Image + '48_On.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
