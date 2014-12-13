@@ -477,6 +477,8 @@ define(['app'], function (app) {
 											if (
 													(item.Status == 'On')||
 													(item.Status == 'Chime')||
+													(item.Status.indexOf('Down')!=-1)||
+													(item.Status.indexOf('Up')!=-1)||
 													(item.Status == 'Group On')||
 													(item.Status.indexOf('Set ') == 0)
 												 ) {
@@ -1819,6 +1821,8 @@ define(['app'], function (app) {
 												(item.Status == 'On')||
 												(item.Status == 'Chime')||
 												(item.Status == 'Group On')||
+												(item.Status.indexOf('Down')!=-1)||
+												(item.Status.indexOf('Up')!=-1)||
 												(item.Status.indexOf('Set ') == 0)
 											 ) {
 													xhtm+='\t      <td id="img"><img src="images/' + item.Image + '48_On.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40"></td>\n';
