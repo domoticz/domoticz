@@ -180,10 +180,11 @@ define(['app'], function (app) {
 			LoadImageNames();
 			$("#dialog-add-edit-floorplan #floorplanname").val('');
 			$("#dialog-add-edit-floorplan #imagename").val('');
+			$("#dialog-add-edit-floorplan #scalefactor").val('1.0');
 			$( "#dialog-add-edit-floorplan" ).dialog({
 				resizable: false,
-				width: 520,
-				height:400,
+				width: 460,
+				height:540,
 				modal: true,
 				title: 'Add New Floorplan',
 				buttons: {
@@ -210,7 +211,7 @@ define(['app'], function (app) {
 			$( "#dialog-add-edit-floorplan" ).dialog({
 				resizable: false,
 				width: 460,
-				height:500,
+				height:540,
 				modal: true,
 				title: 'Edit Floorplan',
 				buttons: {
@@ -266,6 +267,11 @@ define(['app'], function (app) {
 				ShowNotify('Please enter an image filename!', 2500, true);
 				return;
 			}
+			csettings.scalefactor=$("#dialog-add-edit-floorplan #scalefactor").val();
+			if (!$.isNumeric(csettings.scalefactor)) {
+				ShowNotify($.i18n('Icon Scale can only contain numbers...'), 2000, true);
+				return;
+			}
 			return csettings;
 		}
 
@@ -276,7 +282,7 @@ define(['app'], function (app) {
 			}
 
 			$.ajax({
-				 url: "json.htm?type=command&param=updatefloorplan&idx=" + idx +"&name=" + csettings.name + "&image=" + csettings.image,
+				 url: "json.htm?type=command&param=updatefloorplan&idx=" + idx +"&name=" + csettings.name + "&image=" + csettings.image + "&scalefactor=" + csettings.scalefactor,
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
@@ -358,10 +364,12 @@ define(['app'], function (app) {
 						"DT_RowId": item.idx,
 						"Name": item.Name,
 						"Image": item.Image,
+						"ScaleFactor": item.ScaleFactor,
 						"Order": item.Order,
 						"0": item.Name,
 						"1": item.Image,
-						"2": updownImg
+						"2": item.ScaleFactor,
+						"3": updownImg
 					} );
 				});
 				// handle settings
@@ -399,6 +407,8 @@ define(['app'], function (app) {
 							$(param).removeClass('row_selected');
 							$("#dialog-add-edit-floorplan #floorplanname").val("");
 							$("#dialog-add-edit-floorplan #imagename").val("");
+							$("#dialog-add-edit-floorplan #scalefactor").val("1.0");
+							$("#floorplangroup").attr("scalefactor", "1.0");
 							RefreshPlanTable(-1);
 							$("#floorplanimage").attr("xlink:href", "");
 							$("#floorplanimagesize").attr("src", "");
@@ -415,6 +425,8 @@ define(['app'], function (app) {
 								$("#updelclr #floorplandelete").attr("href", "javascript:DeleteFloorplan(" + idx + ")");
 								$("#dialog-add-edit-floorplan #floorplanname").val(data["Name"]);
 								$("#dialog-add-edit-floorplan #imagename").val(data["Image"]);
+								$("#dialog-add-edit-floorplan #scalefactor").val(data["ScaleFactor"]);
+								$("#floorplangroup").attr("scalefactor", data["ScaleFactor"]);
 								RefreshPlanTable(idx);
 								$("#floorplanimage").attr("xlink:href", data["Image"]);
 								$("#floorplanimagesize").attr("src", data["Image"]);
@@ -767,6 +779,7 @@ define(['app'], function (app) {
 							// insert devices into the document
 							if (typeof data.result != 'undefined') {
 								$.each(data.result, function(i,item) {
+									item.Scale = $("#floorplangroup")[0].getAttribute("scalefactor");
 									var dev = Device.create(item);
 									dev.setDraggable($("#floorplangroup")[0].getAttribute("zoomed") == "false");
 									dev.htmlMinimum($("#roomplandevices")[0]);
@@ -792,12 +805,12 @@ define(['app'], function (app) {
 										if (yoffset > (Device.yImageSize-Device.iconSize)) yoffset = Device.yImageSize-Device.iconSize;
 										parent.setAttribute("xoffset", xoffset);
 										parent.setAttribute("yoffset", yoffset);
-										parent.setAttribute("transform", 'translate(' + xoffset + ',' + yoffset + ')');
+										parent.setAttribute("transform", 'translate(' + xoffset + ',' + yoffset + ') scale(' + $("#floorplangroup").attr("scalefactor") + ')');
 										var objData = $('#DeviceDetails #'+event.target.parentNode.id)[0];
 										if (objData != undefined) {
 											objData.setAttribute("xoffset", xoffset);
 											objData.setAttribute("yoffset", yoffset);
-											objData.setAttribute("transform", 'translate(' + xoffset + ',' + yoffset + ')');
+											objData.setAttribute("transform", 'translate(' + xoffset + ',' + yoffset + ')) scale(' + $("#floorplangroup").attr("scalefactor") + ')');
 										}
 										$('#floorplaneditcontent #delclractive #activeplanupdate').attr("class", "btnstyle3");
 										if ($.browser.mozilla) // nasty hack for FireFox.  FireFox forgets to display the icon once you start dragging so we need to remind it
