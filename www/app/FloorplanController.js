@@ -233,6 +233,7 @@ define(['app'], function (app) {
 						// update devices that already exist in the DOM
 						if (typeof data.result != 'undefined') {
 							$.each(data.result, function(i,item) {
+								item.Scale = $scope.floorPlans[$scope.actFloorplan].scaleFactor;
 								if (item.Type.indexOf('+') >= 0) {
 									var aDev = item.Type.split('+');
 									var i;
@@ -242,7 +243,7 @@ define(['app'], function (app) {
 										item.Type = sDev;
 										item.CustomImage = 1;
 										item.Image = sDev.toLowerCase();
-										item.XOffset = Math.abs(item.XOffset) + ((i == 0) ? 0 : 50);
+										item.XOffset = Math.abs(item.XOffset) + ((i == 0) ? 0 : (50*$scope.floorPlans[$scope.actFloorplan].scaleFactor));
 										var dev = Device.create(item);
 										var existing = document.getElementById(dev.uniquename);
 										if (existing != undefined) {
@@ -269,7 +270,7 @@ define(['app'], function (app) {
 			}
 		}
 
-		$scope.ShowDevices = function(idx, xOffset, parent) {
+		$scope.ShowDevices = function(idx, xOffset, scaleFactor, parent) {
 			if (typeof $("#FPFloorplangroup") != 'undefined') {
 
 				$.ajax({
@@ -294,6 +295,7 @@ define(['app'], function (app) {
 						var dev;
 						if (typeof data.result != 'undefined') {
 							$.each(data.result, function(i,item) {
+								item.Scale = scaleFactor;
 								if (item.Type.indexOf('+') >= 0) {
 									var aDev = item.Type.split('+');
 									var i;
@@ -303,7 +305,7 @@ define(['app'], function (app) {
 										item.Type = sDev;
 										item.CustomImage = 1;
 										item.Image = sDev.toLowerCase();
-										item.XOffset = Math.abs(item.XOffset) + ((i == 0) ? 0 : 50);
+										item.XOffset = Math.abs(item.XOffset) + ((i == 0) ? 0 : (50*scaleFactor));
 										dev = Device.create(item);
 										if (dev.onFloorplan == true) {
 											dev.xoffset += xOffset;
@@ -388,6 +390,7 @@ define(['app'], function (app) {
 							$scope.floorPlans[i].xOffset = -1;
 							$scope.floorPlans[i].xImageSize = 0;
 							$scope.floorPlans[i].yImageSize = 0;
+							$scope.floorPlans[i].scaleFactor = item.ScaleFactor;
 							$scope.floorPlans[i].lastUpdateTime = 0;
 							$scope.floorPlans[i].tagName = tagName;
 							var node=document.getElementById("floorplanimagesize").cloneNode(true);
@@ -404,6 +407,7 @@ define(['app'], function (app) {
 														 order: $scope.floorPlans[i].Order, 
 														 xImageSize: $scope.floorPlans[i].xImageSize, 
 														 yImageSize: $scope.floorPlans[i].yImageSize, 
+														 scaleFactor: $scope.floorPlans[i].scaleFactor,
 														 transform: 'translate('+$scope.floorPlans[i].xOffset+',0)' }, '');
 							elFloor.appendChild(makeSVGnode('image', { width:"100%", height:"100%", "xlink:href": $scope.floorPlans[i].Image }, ''));
 							if ($scope.actFloorplan == i) {
@@ -437,7 +441,7 @@ define(['app'], function (app) {
 						elDevices.appendChild(elIcons);
 						var elDetails = makeSVGnode('g', { id: 'DeviceDetails' }, '');
 						elDevices.appendChild(elDetails);
-						$scope.ShowDevices(item.idx, 0, elDevices);
+						$scope.ShowDevices(item.idx, 0, $scope.floorPlans[i].scaleFactor, elDevices);
 						elIcons.setAttribute("id", $scope.floorPlans[i].tagName+'_Icons');
 						elDetails.setAttribute("id", $scope.floorPlans[i].tagName+'_Details');
 					});
