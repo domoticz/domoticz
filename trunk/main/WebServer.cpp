@@ -3187,7 +3187,10 @@ namespace http {
 				false
 				);
 
-			if ((iType == pTypeThermostat) && (iSubType == sTypeThermSetpoint))
+			if (
+				((iType == pTypeThermostat) && (iSubType == sTypeThermSetpoint))||
+				(iType == pTypeRadiator1)
+				)
 			{
 				int urights = 3;
 				bool bHaveUser = (m_pWebEm->m_actualuser != "");
@@ -6858,10 +6861,10 @@ namespace http {
 					{
 						WebUserName = base64_decode(WebUserName);
 						WebPassword = base64_decode(WebPassword);
-						AddUser(10000, WebUserName, WebPassword, URIGHTS_ADMIN);
+						AddUser(10000, WebUserName, WebPassword, URIGHTS_ADMIN, 0xFFFF);
 
 						std::vector<std::vector<std::string> > result;
-						result = m_sql.query("SELECT ID, Active, Username, Password, Rights FROM Users");
+						result = m_sql.query("SELECT ID, Active, Username, Password, Rights, TabsEnabled FROM Users");
 						if (result.size() > 0)
 						{
 							std::vector<std::vector<std::string> >::const_iterator itt;
@@ -6870,17 +6873,18 @@ namespace http {
 							{
 								std::vector<std::string> sd = *itt;
 
-								unsigned long ID = (unsigned long)atol(sd[0].c_str());
-
-								std::string username = base64_decode(sd[2]);
-								std::string password = base64_decode(sd[3]);
-
-								_eUserRights rights = (_eUserRights)atoi(sd[4].c_str());
-
 								int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
 								if (bIsActive)
 								{
-									AddUser(ID, username, password, rights);
+									unsigned long ID = (unsigned long)atol(sd[0].c_str());
+
+									std::string username = base64_decode(sd[2]);
+									std::string password = base64_decode(sd[3]);
+
+									_eUserRights rights = (_eUserRights)atoi(sd[4].c_str());
+									int activetabs = atoi(sd[5].c_str());
+
+									AddUser(ID, username, password, rights, activetabs);
 								}
 							}
 						}
@@ -6890,16 +6894,17 @@ namespace http {
 			m_mainworker.LoadSharedUsers();
 		}
 
-		void CWebServer::AddUser(const unsigned long ID, const std::string &username, const std::string &password, const int userrights)
+		void CWebServer::AddUser(const unsigned long ID, const std::string &username, const std::string &password, const int userrights, const int activetabs)
 		{
 			_tWebUserPassword wtmp;
 			wtmp.ID = ID;
 			wtmp.Username = username;
 			wtmp.Password = password;
 			wtmp.userrights = (_eUserRights)userrights;
+			wtmp.ActiveTabs = activetabs;
 			m_users.push_back(wtmp);
 
-			m_pWebEm->AddUserPassword(ID, username, password, (_eUserRights)userrights);
+			m_pWebEm->AddUserPassword(ID, username, password, (_eUserRights)userrights, activetabs);
 		}
 
 		void CWebServer::ClearUserPasswords()
@@ -7564,6 +7569,7 @@ namespace http {
 			bool bHaveUser = (m_pWebEm->m_actualuser != "");
 			int iUser = -1;
 			unsigned int totUserDevices = 0;
+			bool bShowScenes = true;
 			if (bHaveUser)
 			{
 				iUser = FindUser(m_pWebEm->m_actualuser.c_str());
@@ -7577,6 +7583,7 @@ namespace http {
 						szQuery << "SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == " << m_users[iUser].ID << ")";
 						result = m_sql.query(szQuery.str());
 						totUserDevices = (unsigned int)result.size();
+						bShowScenes = (m_users[iUser].ActiveTabs&(1 << 1))!=0;
 					}
 				}
 			}
@@ -7587,77 +7594,80 @@ namespace http {
 			int ii = 0;
 			if (rfilter == "all")
 			{
-				//also add scenes
-				szQuery.clear();
-				szQuery.str("");
-
-				if (rowid != "")
-					szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType, Protected, 0 as XOffset, 0 as YOffset, 0 as PlanID FROM Scenes WHERE (ID==" << rowid << ")";
-				else if ((planID != "") && (planID != "0"))
-					szQuery << "SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType, A.Protected, B.XOffset, B.YOffset, B.PlanID FROM Scenes as A, DeviceToPlansMap as B WHERE (B.PlanID==" << planID << ") AND (B.DeviceRowID==a.ID) AND (B.DevSceneType==1) ORDER BY B.[Order]";
-				else if ((floorID != "") && (floorID != "0"))
-					szQuery << "SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType, A.Protected, B.XOffset, B.YOffset, B.PlanID FROM Scenes as A, DeviceToPlansMap as B, Plans as C WHERE (C.FloorplanID==" << floorID << ") AND (C.ID==B.PlanID) AND(B.DeviceRowID==a.ID) AND (B.DevSceneType==1) ORDER BY B.[Order]";
-				else
-					szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType, Protected, 0 as XOffset, 0 as YOffset, 0 as PlanID FROM Scenes ORDER BY " << szOrderBy;
-
-				result = m_sql.query(szQuery.str());
-				if (result.size() > 0)
+				if (bShowScenes)
 				{
-					std::vector<std::vector<std::string> >::const_iterator itt;
-					for (itt = result.begin(); itt != result.end(); ++itt)
+					//add scenes
+					szQuery.clear();
+					szQuery.str("");
+
+					if (rowid != "")
+						szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType, Protected, 0 as XOffset, 0 as YOffset, 0 as PlanID FROM Scenes WHERE (ID==" << rowid << ")";
+					else if ((planID != "") && (planID != "0"))
+						szQuery << "SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType, A.Protected, B.XOffset, B.YOffset, B.PlanID FROM Scenes as A, DeviceToPlansMap as B WHERE (B.PlanID==" << planID << ") AND (B.DeviceRowID==a.ID) AND (B.DevSceneType==1) ORDER BY B.[Order]";
+					else if ((floorID != "") && (floorID != "0"))
+						szQuery << "SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType, A.Protected, B.XOffset, B.YOffset, B.PlanID FROM Scenes as A, DeviceToPlansMap as B, Plans as C WHERE (C.FloorplanID==" << floorID << ") AND (C.ID==B.PlanID) AND(B.DeviceRowID==a.ID) AND (B.DevSceneType==1) ORDER BY B.[Order]";
+					else
+						szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType, Protected, 0 as XOffset, 0 as YOffset, 0 as PlanID FROM Scenes ORDER BY " << szOrderBy;
+
+					result = m_sql.query(szQuery.str());
+					if (result.size() > 0)
 					{
-						std::vector<std::string> sd = *itt;
-						std::string sLastUpdate = sd[3];
-
-						if (iLastUpdate != 0)
+						std::vector<std::vector<std::string> >::const_iterator itt;
+						for (itt = result.begin(); itt != result.end(); ++itt)
 						{
-							tLastUpdate.tm_isdst = tm1.tm_isdst;
-							tLastUpdate.tm_year = atoi(sLastUpdate.substr(0, 4).c_str()) - 1900;
-							tLastUpdate.tm_mon = atoi(sLastUpdate.substr(5, 2).c_str()) - 1;
-							tLastUpdate.tm_mday = atoi(sLastUpdate.substr(8, 2).c_str());
-							tLastUpdate.tm_hour = atoi(sLastUpdate.substr(11, 2).c_str());
-							tLastUpdate.tm_min = atoi(sLastUpdate.substr(14, 2).c_str());
-							tLastUpdate.tm_sec = atoi(sLastUpdate.substr(17, 2).c_str());
-							time_t cLastUpdate = mktime(&tLastUpdate);
-							if (cLastUpdate <= iLastUpdate)
-								continue;
-						}
+							std::vector<std::string> sd = *itt;
+							std::string sLastUpdate = sd[3];
 
-						int nValue = atoi(sd[2].c_str());
-						unsigned char favorite = atoi(sd[4].c_str());
-						unsigned char scenetype = atoi(sd[5].c_str());
-						int iProtected = atoi(sd[6].c_str());
+							if (iLastUpdate != 0)
+							{
+								tLastUpdate.tm_isdst = tm1.tm_isdst;
+								tLastUpdate.tm_year = atoi(sLastUpdate.substr(0, 4).c_str()) - 1900;
+								tLastUpdate.tm_mon = atoi(sLastUpdate.substr(5, 2).c_str()) - 1;
+								tLastUpdate.tm_mday = atoi(sLastUpdate.substr(8, 2).c_str());
+								tLastUpdate.tm_hour = atoi(sLastUpdate.substr(11, 2).c_str());
+								tLastUpdate.tm_min = atoi(sLastUpdate.substr(14, 2).c_str());
+								tLastUpdate.tm_sec = atoi(sLastUpdate.substr(17, 2).c_str());
+								time_t cLastUpdate = mktime(&tLastUpdate);
+								if (cLastUpdate <= iLastUpdate)
+									continue;
+							}
 
-						if (scenetype == 0)
-						{
-							root["result"][ii]["Type"] = "Scene";
+							int nValue = atoi(sd[2].c_str());
+							unsigned char favorite = atoi(sd[4].c_str());
+							unsigned char scenetype = atoi(sd[5].c_str());
+							int iProtected = atoi(sd[6].c_str());
+
+							if (scenetype == 0)
+							{
+								root["result"][ii]["Type"] = "Scene";
+							}
+							else
+							{
+								root["result"][ii]["Type"] = "Group";
+							}
+							root["result"][ii]["idx"] = sd[0];
+							root["result"][ii]["Name"] = sd[1];
+							root["result"][ii]["Favorite"] = favorite;
+							root["result"][ii]["Protected"] = (iProtected != 0);
+							root["result"][ii]["LastUpdate"] = sLastUpdate;
+							root["result"][ii]["TypeImg"] = "lightbulb";
+							if (nValue == 0)
+								root["result"][ii]["Status"] = "Off";
+							else if (nValue == 1)
+								root["result"][ii]["Status"] = "On";
+							else
+								root["result"][ii]["Status"] = "Mixed";
+							unsigned long long camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(1, sd[0]);
+							root["result"][ii]["UsedByCamera"] = (camIDX != 0) ? true : false;
+							if (camIDX != 0) {
+								std::stringstream scidx;
+								scidx << camIDX;
+								root["result"][ii]["CameraIdx"] = scidx.str();
+							}
+							root["result"][ii]["XOffset"] = atoi(sd[7].c_str());
+							root["result"][ii]["YOffset"] = atoi(sd[8].c_str());
+							ii++;
 						}
-						else
-						{
-							root["result"][ii]["Type"] = "Group";
-						}
-						root["result"][ii]["idx"] = sd[0];
-						root["result"][ii]["Name"] = sd[1];
-						root["result"][ii]["Favorite"] = favorite;
-						root["result"][ii]["Protected"] = (iProtected != 0);
-						root["result"][ii]["LastUpdate"] = sLastUpdate;
-						root["result"][ii]["TypeImg"] = "lightbulb";
-						if (nValue == 0)
-							root["result"][ii]["Status"] = "Off";
-						else if (nValue == 1)
-							root["result"][ii]["Status"] = "On";
-						else
-							root["result"][ii]["Status"] = "Mixed";
-						unsigned long long camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(1, sd[0]);
-						root["result"][ii]["UsedByCamera"] = (camIDX != 0) ? true : false;
-						if (camIDX != 0) {
-							std::stringstream scidx;
-							scidx << camIDX;
-							root["result"][ii]["CameraIdx"] = scidx.str();
-						}
-						root["result"][ii]["XOffset"] = atoi(sd[7].c_str());
-						root["result"][ii]["YOffset"] = atoi(sd[8].c_str());
-						ii++;
 					}
 				}
 			}
@@ -7924,7 +7934,8 @@ namespace http {
 								(dType != pTypeUsage) &&
 								(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))) &&
 								(!((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint))) &&
-								(dType != pTypeWEIGHT)
+								(dType != pTypeWEIGHT)&&
+								(dType != pTypeRadiator1)
 								)
 								continue;
 						}
@@ -9158,6 +9169,22 @@ namespace http {
 					else if (dType == pTypeThermostat)
 					{
 						if (dSubType == sTypeThermSetpoint)
+						{
+							bHasTimers = m_sql.HasTimers(sd[0]);
+
+							double tempCelcius = atof(sValue.c_str());
+							double temp = ConvertTemperature(tempCelcius, tempsign);
+
+							sprintf(szTmp, "%.1f", temp);
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["SetPoint"] = szTmp;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["TypeImg"] = "override_mini";
+						}
+					}
+					else if (dType == pTypeRadiator1)
+					{
+						if (dSubType == sTypeSmartwares)
 						{
 							bHasTimers = m_sql.HasTimers(sd[0]);
 

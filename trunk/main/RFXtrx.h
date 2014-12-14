@@ -7,8 +7,34 @@
 // users with a big_endian system have to remove the comment slashes before the #define.
 //
 
+/*
+                                                                   
+Copyright 2011-2014, RFXCOM
+
+ALL RIGHTS RESERVED. This code is owned by RFXCOM, and is protected under
+Netherlands Copyright Laws and Treaties and shall be subject to the 
+exclusive jurisdiction of the Netherlands Courts. The information from this
+file may freely be used to create programs to exclusively interface with
+RFXCOM products only. Any other use or unauthorized reprint of this material
+is prohibited. No part of this code may be reproduced or transmitted in
+any form or by any means, electronic or mechanical, including photocopying,
+recording, or by any information storage and retrieval system without
+express written permission from RFXCOM.
+
+The above copyright notice shall be included in all copies or substantial
+portions of this file.
+'----------------------------------------------------------------------------
+*/
 
 /*
+SDK version 6.27
+	Livolo Appliance 1-10 added
+	Somfy RFY commands: Enable sun+wind & Disable sun added
+	Smartwares radiator valve added
+
+SDK version 6.26
+	TH13 - Alecto WS1700 and compatibles added
+
 SDK version 6.25
 	sTypeByronMP001 added
 	sTypeTEMP11 added
@@ -367,6 +393,7 @@ SDK version 4.9
 #define sTypeAoke 0x07
 #define sTypeTRC02_2 0x08
 #define sTypeEurodomest 0x09
+#define sTypeLivoloAppliance 0x0A
 
 #define light5_sOff 0x0
 #define light5_sOn 0x1
@@ -403,6 +430,13 @@ SDK version 4.9
 #define light5_sLivoloGang1Toggle 0x01
 #define light5_sLivoloGang2Toggle 0x02	//dim+ for dimmer
 #define light5_sLivoloGang3Toggle 0x03	//dim- for dimmer
+#define light5_sLivoloGang4Toggle 0x04
+#define light5_sLivoloGang5Toggle 0x05
+#define light5_sLivoloGang6Toggle 0x06
+#define light5_sLivoloGang7Toggle 0x07
+#define light5_sLivoloGang8Toggle 0x08
+#define light5_sLivoloGang9Toggle 0x09
+#define light5_sLivoloGang10Toggle 0x0A
 #define light5_sRGBoff 0x00
 #define light5_sRGBon 0x01
 #define light5_sRGBbright 0x02
@@ -490,6 +524,8 @@ SDK version 4.9
 #define rfy_s05SecDown 0x10
 #define rfy_s2SecUp 0x11
 #define rfy_s2SecDown 0x12
+#define rfy_sEnableSunWind 0x13
+#define rfy_sDisableSun 0x14
 
 //types for Security1
 #define pTypeSecurity1 0x20
@@ -591,6 +627,14 @@ SDK version 4.9
 #define thermostat3_On2nd 0x5
 #define thermostat3_sStop 0x6
 
+//types for Radiator valve
+#define pTypeRadiator1 0x48
+#define sTypeSmartwares 0x0	//Homewizard smartwares
+
+#define Radiator1_sNight 0x0
+#define Radiator1_sDay 0x1
+#define Radiator1_sSetTemp 0x2
+
 //types for BBQ temperature
 #define pTypeBBQ 0x4E
 #define sTypeBBQ1 0x1  //Maverick ET-732
@@ -638,6 +682,7 @@ SDK version 4.9
 #define sTypeTH10 0xA   //Rubicson
 #define sTypeTH11 0xB   //EW109
 #define sTypeTH12 0xC   //Imagintronix
+#define sTypeTH13 0xD   //Alecto WS1700 and compatibles
 
 //types for barometric
 #define pTypeBARO 0x53
@@ -1195,6 +1240,28 @@ typedef union tRBUF {
 		BYTE	rssi : 4;
 #endif
 	} THERMOSTAT3;
+
+	struct {
+		BYTE	packetlength;
+		BYTE	packettype;
+		BYTE	subtype;
+		BYTE	seqnbr;
+		BYTE	id1;
+		BYTE	id2;
+		BYTE	id3;
+		BYTE	id4;
+		BYTE	unitcode;
+		BYTE	cmnd;
+		BYTE	temperature;
+		BYTE	tempPoint5;
+#ifdef IS_BIG_ENDIAN
+		BYTE	rssi : 4;
+		BYTE	filler : 4;
+#else
+		BYTE	filler : 4;
+		BYTE	rssi : 4;
+#endif
+	} RADIATOR1;
 
 	struct {
 		BYTE	packetlength;

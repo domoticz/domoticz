@@ -52,7 +52,7 @@ public:
 	cWebem *m_pWebEm;
 
 	void LoadUsers();
-	void AddUser(const unsigned long ID, const std::string &username, const std::string &password, const int userrights);
+	void AddUser(const unsigned long ID, const std::string &username, const std::string &password, const int userrights, const int activetabs);
 	void ClearUserPasswords();
 	bool FindAdminUser();
 	int FindUser(const char* szUserName);

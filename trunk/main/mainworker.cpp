@@ -1332,6 +1332,9 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		case pTypeThermostat3:
 			DeviceRowIdx = decode_Thermostat3(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
+		case pTypeRadiator1:
+			DeviceRowIdx = decode_Radiator1(pHardware, HwdID, (tRBUF *)pRXCommand);
+			break;
 		case pTypeTEMP:
 			DeviceRowIdx = decode_Temp(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
@@ -6229,6 +6232,71 @@ unsigned long long MainWorker::decode_Thermostat3(const CDomoticzHardwareBase *p
 	return DevRowIdx;
 }
 
+unsigned long long MainWorker::decode_Radiator1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[100];
+	unsigned char devType = pTypeRadiator1;
+	unsigned char subType = pResponse->RADIATOR1.subtype;
+	std::string ID;
+	sprintf(szTmp, "%X%02X%02X%02X", pResponse->RADIATOR1.id1, pResponse->RADIATOR1.id2, pResponse->RADIATOR1.id3, pResponse->RADIATOR1.id4);
+	ID = szTmp;
+	unsigned char Unit = pResponse->RADIATOR1.unitcode;
+	unsigned char cmnd = pResponse->RADIATOR1.cmnd;
+	unsigned char SignalLevel = pResponse->RADIATOR1.rssi;
+	unsigned char BatteryLevel = 255;
+
+	sprintf(szTmp, "%d.%d", pResponse->RADIATOR1.temperature, pResponse->RADIATOR1.tempPoint5);
+	unsigned long long DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
+
+	if (m_verboselevel == EVBL_ALL)
+	{
+		WriteMessageStart();
+		switch (pResponse->RADIATOR1.subtype)
+		{
+		case sTypeSmartwares:
+			WriteMessage("subtype       = Smartwares");
+			break;
+		default:
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->RADIATOR1.packettype, pResponse->RADIATOR1.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->THERMOSTAT3.seqnbr);
+		WriteMessage(szTmp);
+
+		sprintf(szTmp, "ID            = %X%02X%02X%02X", pResponse->RADIATOR1.id1, pResponse->RADIATOR1.id2, pResponse->RADIATOR1.id3, pResponse->RADIATOR1.id4);
+		WriteMessage(szTmp);
+		sprintf(szTmp, "Unit          = %d", pResponse->RADIATOR1.unitcode);
+		WriteMessage(szTmp);
+
+		switch (pResponse->RADIATOR1.cmnd)
+		{
+		case Radiator1_sNight:
+			WriteMessage("Command       = Night/Off");
+			break;
+		case Radiator1_sDay:
+			WriteMessage("Command       = Day/On");
+			break;
+		case Radiator1_sSetTemp:
+			WriteMessage("Command       = Set Temperature");
+			break;
+		default:
+			WriteMessage("Command       = unknown");
+			break;
+		}
+
+		sprintf(szTmp, "Temp          = %d.%d", pResponse->RADIATOR1.temperature, pResponse->RADIATOR1.tempPoint5);
+		WriteMessage(szTmp);
+		sprintf(szTmp, "Signal level  = %d", pResponse->RADIATOR1.rssi);
+		WriteMessage(szTmp);
+		WriteMessageEnd();
+	}
+	return DevRowIdx;
+}
+
 //not in dbase yet
 unsigned long long MainWorker::decode_Baro(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
@@ -8733,20 +8801,46 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 	}
 	else
 	{
-		_tThermostat tmeter;
-		tmeter.subtype=sTypeThermSetpoint;
-		tmeter.id1=ID1;
-		tmeter.id2=ID2;
-		tmeter.id3=ID3;
-		tmeter.id4=ID4;
-		tmeter.dunit=1;
-		tmeter.temp=TempValue;
-		WriteToHardware(HardwareID,(const char*)&tmeter,sizeof(_tThermostat));
-
-		if (pHardware->HwdType == HTYPE_Dummy)
+		if (dType == pTypeRadiator1)
 		{
-			//Also set it in the database, ad this devices does not send updates
-			DecodeRXMessage(pHardware, (const unsigned char*)&tmeter);
+			tRBUF lcmd;
+			lcmd.RADIATOR1.packetlength = sizeof(lcmd.RADIATOR1) - 1;
+			lcmd.RADIATOR1.packettype = dType;
+			lcmd.RADIATOR1.subtype = dSubType;
+			lcmd.RADIATOR1.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+			lcmd.RADIATOR1.id1 = ID1;
+			lcmd.RADIATOR1.id2 = ID2;
+			lcmd.RADIATOR1.id3 = ID3;
+			lcmd.RADIATOR1.id4 = ID4;
+			lcmd.RADIATOR1.unitcode = Unit;
+			lcmd.RADIATOR1.filler = 0;
+			lcmd.RADIATOR1.rssi = 7;
+			lcmd.RADIATOR1.cmnd = Radiator1_sSetTemp;
+
+			char szTemp[20];
+			sprintf(szTemp, "%.1f", TempValue);
+			std::vector<std::string> strarray;
+			StringSplit(szTemp, ".", strarray);
+			lcmd.RADIATOR1.temperature = (unsigned char)atoi(strarray[0].c_str());
+			lcmd.RADIATOR1.tempPoint5 = (unsigned char)atoi(strarray[1].c_str());
+			WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.RADIATOR1));
+		}
+		else
+		{
+			_tThermostat tmeter;
+			tmeter.subtype = sTypeThermSetpoint;
+			tmeter.id1 = ID1;
+			tmeter.id2 = ID2;
+			tmeter.id3 = ID3;
+			tmeter.id4 = ID4;
+			tmeter.dunit = 1;
+			tmeter.temp = TempValue;
+			WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tThermostat));
+			if (pHardware->HwdType == HTYPE_Dummy)
+			{
+				//Also set it in the database, ad this devices does not send updates
+				DecodeRXMessage(pHardware, (const unsigned char*)&tmeter);
+			}
 		}
 	}
 	return true;
