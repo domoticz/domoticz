@@ -936,7 +936,8 @@ define(['app'], function (app) {
 							(item.SubType=="Pressure")||
 							(item.SubType=="A/D")||
 							(item.SubType=="Thermostat Mode")||
-							(item.SubType=="Thermostat Fan Mode")
+							(item.SubType=="Thermostat Fan Mode")||
+							(item.Type == "Radiator 1")
 						) &&
 						(item.Favorite!=0)
 					  )
@@ -981,6 +982,9 @@ define(['app'], function (app) {
 									status=item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
 								}
 								else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
+									status+=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+								}
+								else if (item.Type == "Radiator 1") {
 									status+=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 								}
 								if (typeof item.Usage != 'undefined') {
@@ -1071,6 +1075,10 @@ define(['app'], function (app) {
 									bigtext=item.Data;
 								}
 								else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
+									status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+									bigtext=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+								}
+								else if (item.Type == "Radiator 1") {
 									status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 									bigtext=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 								}
@@ -2423,7 +2431,8 @@ define(['app'], function (app) {
 							(item.SubType=="Pressure")||
 							(item.SubType=="A/D")||
 							(item.SubType=="Thermostat Mode")||
-							(item.SubType=="Thermostat Fan Mode")
+							(item.SubType=="Thermostat Fan Mode")||
+							(item.Type == "Radiator 1")
 						) &&
 						(item.Favorite!=0)
 					  )
@@ -2496,6 +2505,9 @@ define(['app'], function (app) {
 							status=item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
 						}
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
+							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+						}
+						else if (item.Type == "Radiator 1") {
 							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 						}
 						else if ((item.SubType=="Thermostat Mode")||(item.SubType=="Thermostat Fan Mode")) {
@@ -2581,6 +2593,9 @@ define(['app'], function (app) {
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 							xhtm+=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 						}
+						else if (item.Type == "Radiator 1") {
+							xhtm+=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+						}
 						xhtm+='</td>\n';
 						xhtm+='\t      <td id="img"><img src="images/';
 						var status="";
@@ -2655,6 +2670,10 @@ define(['app'], function (app) {
 							status=item.Data;
 						}
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
+							xhtm+='override.png" class="lcursor" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40" width="40"></td>\n';
+							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+						}
+						else if (item.Type == "Radiator 1") {
 							xhtm+='override.png" class="lcursor" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40" width="40"></td>\n';
 							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 						}

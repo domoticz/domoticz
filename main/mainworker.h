@@ -183,6 +183,7 @@ private:
 	unsigned long long decode_Thermostat1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_Thermostat2(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_Thermostat3(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_Radiator1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_Baro(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_TempHumBaro(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_TempBaro(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);

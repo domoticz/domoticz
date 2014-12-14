@@ -331,7 +331,8 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeThermostat1, "Thermostat 1" , "temperature" },
 		{ pTypeThermostat2, "Thermostat 2" , "temperature" },
 		{ pTypeThermostat3, "Thermostat 3" , "temperature" },
-		{ pTypeTEMP, "Temp" , "temperature" },
+		{ pTypeRadiator1, "Radiator 1", "temperature" },
+		{ pTypeTEMP, "Temp", "temperature" },
 		{ pTypeHUM, "Humidity" , "temperature" },
 		{ pTypeTEMP_HUM, "Temp + Humidity" , "temperature" },
 		{ pTypeBARO, "Barometric" , "temperature" },
@@ -506,6 +507,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 
 		{ pTypeThermostat3, sTypeMertikG6RH4T1, "Mertik G6R-H4T1" },
 		{ pTypeThermostat3, sTypeMertikG6RH4TB, "Mertik G6R-H4TB" },
+
+		{ pTypeRadiator1, sTypeSmartwares, "Smartwares" },
 
 		{ pTypeDT, sTypeDT1, "RTGR328N" },
 
@@ -717,6 +720,8 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 
 		{ pTypeThermostat3, sTypeMertikG6RH4T1, "Status" },
 		{ pTypeThermostat3, sTypeMertikG6RH4TB, "Status" },
+
+		{ pTypeRadiator1, sTypeSmartwares, "Status" },
 
 		{ pTypeDT, sTypeDT1, "?????" },
 
@@ -1449,6 +1454,20 @@ void GetLightStatus(
 			break;
 		}
 		break;
+	case pTypeRadiator1:
+		switch (nValue)
+		{
+		case Radiator1_sNight:
+			lstatus = "Off";
+			break;
+		case Radiator1_sDay:
+			lstatus = "On";
+			break;
+		case Radiator1_sSetTemp:
+			lstatus = "On";
+			break;
+		}
+		break;
 	}
 }
 
@@ -2052,6 +2071,23 @@ bool GetLightCommand(
 			return true;
 		}
 		break;
+	case pTypeRadiator1:
+	{
+		if (switchcmd == "On")
+		{
+			cmd = Radiator1_sDay;
+		}
+		else if (switchcmd == "Off")
+		{
+			cmd = Radiator1_sNight;
+		}
+		else
+		{
+			cmd = Radiator1_sNight;
+		}
+		return true;
+	}
+	break;
 	}
 	//unknown command
 	return false;

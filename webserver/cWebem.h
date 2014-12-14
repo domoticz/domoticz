@@ -24,6 +24,7 @@ namespace http {
 			std::string Password;
 
 			_eUserRights userrights;
+			int ActiveTabs;
 		} WebUserPassword;
 
 		typedef struct _tWebEmSession
@@ -178,7 +179,7 @@ namespace http {
 
 			void SetAuthenticationMethod(const _eAuthenticationMethod amethod);
 
-			void AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const _eUserRights userrights);
+			void AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const _eUserRights userrights, const int activetabs);
 			void ClearUserPasswords();
 			std::vector<_tWebUserPassword> m_userpasswords;
 			void AddLocalNetworks(std::string network);
