@@ -9810,6 +9810,11 @@ namespace http {
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeThermostat, sTypeThermSetpoint, 12, 255, 0, "20.5", devname);
 				bCreated = true;
 				break;
+			case 9:
+				//Current/Ampere
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeCURRENT, sTypeELEC1, 12, 255, 0, "0.0;0.0;0.0", devname);
+				bCreated = true;
+				break;
 			case pTypeTEMP:
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP, sTypeTEMP1, 10, 255, 0, "0.0", devname);
 				bCreated = true;
