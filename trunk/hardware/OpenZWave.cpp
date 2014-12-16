@@ -1750,12 +1750,12 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 			if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
 				return;
 		}
-		_log.Log(LOG_ERROR, "OpenZWave: Unhandled class: 0x%02X (%s), NodeID: %d (0x%02x), Index: %d, Instance: %d", commandclass, cclassStr(commandclass), NodeID, NodeID, vOrgIndex, vOrgInstance);
+		_log.Log(LOG_STATUS, "OpenZWave: Unhandled class: 0x%02X (%s), NodeID: %d (0x%02x), Index: %d, Instance: %d", commandclass, cclassStr(commandclass), NodeID, NodeID, vOrgIndex, vOrgInstance);
 	}
 	else
 	{
 		//Unhandled
-		_log.Log(LOG_ERROR, "OpenZWave: Unhandled class: 0x%02X (%s), NodeID: %d (0x%02x), Index: %d, Instance: %d", commandclass, cclassStr(commandclass), NodeID, NodeID, vOrgIndex, vOrgInstance);
+		_log.Log(LOG_STATUS, "OpenZWave: Unhandled class: 0x%02X (%s), NodeID: %d (0x%02x), Index: %d, Instance: %d", commandclass, cclassStr(commandclass), NodeID, NodeID, vOrgIndex, vOrgInstance);
 		if (vType == OpenZWave::ValueID::ValueType_List)
 		{
 			//std::vector<std::string > vStringList;

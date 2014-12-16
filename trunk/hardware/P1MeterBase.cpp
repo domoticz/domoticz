@@ -11,16 +11,17 @@ typedef enum {
 	EXCLMARK 
 } MatchType;
 
-#define P1_SMID		"/" // Smart Meter ID. Used to detect start of telegram.
-#define P1PU1		"1-0:1.8.1" // total power usage normal tariff
-#define P1PU2		"1-0:1.8.2" // total power usage low tariff
-#define P1PD1		"1-0:2.8.1" // total delivered power normal tariff
-#define P1PD2		"1-0:2.8.2" // total delivered power low tariff
-#define P1TIP		"0-0:96.14.0" // tariff indicator power
-#define P1PUC		"1-0:1.7.0" // current power usage
-#define P1PDC		"1-0:2.7.0" // current power delivery
-#define P1GTS		"0-1:24.3.0" // timestamp gas usage sample
-#define P1GTSDSMRv4	"0-1:24.2.1" // timestamp gas usage sample
+#define P1_SMID			"/" // Smart Meter ID. Used to detect start of telegram.
+#define P1PU1			"1-0:1.8.1" // total power usage normal tariff
+#define P1PU2			"1-0:1.8.2" // total power usage low tariff
+#define P1PD1			"1-0:2.8.1" // total delivered power normal tariff
+#define P1PD2			"1-0:2.8.2" // total delivered power low tariff
+#define P1TIP			"0-0:96.14.0" // tariff indicator power
+#define P1PUC			"1-0:1.7.0" // current power usage
+#define P1PDC			"1-0:2.7.0" // current power delivery
+#define P1GTS			"0-1:24.3.0" // timestamp gas usage sample
+#define P1GTSDSMRv4		"0-1:24.2.1" // timestamp gas usage sample
+#define P1GTSGyrE350	"0-2:24.2.1" // timestamp gas usage sample
 
 typedef enum {
 	P1TYPE_SMID=0,
@@ -34,6 +35,7 @@ typedef enum {
 	P1TYPE_GASTIMESTAMP,
 	P1TYPE_GASUSAGE,
 	P1TYPE_GASUSAGEDSMRv4,
+	P1TYPE_GASUSAGEGyrE350,
 	P1TYPE_END,
 } P1Type;
 
@@ -57,8 +59,9 @@ Match matchlist[] = {
 	{STD,	P1TYPE_DELIVCURRENT,	P1PDC,			"powerdelivc",	10, 7},
 	{LINE17,P1TYPE_GASTIMESTAMP,	P1GTS,			"gastimestamp",	11, 12},
 	{LINE18,P1TYPE_GASUSAGE,		"(",			"gasusage",		1, 9},
-	{STD,	P1TYPE_GASUSAGEDSMRv4,	P1GTSDSMRv4,	"gasusage",		26, 8},
-	{EXCLMARK,P1TYPE_END,			"!",			"",				0, 0}
+	{ STD, P1TYPE_GASUSAGEDSMRv4, P1GTSDSMRv4, "gasusage", 26, 8 },
+	{ STD, P1TYPE_GASUSAGEGyrE350, P1GTSGyrE350, "gasusage", 26, 8 },
+	{ EXCLMARK, P1TYPE_END, "!", "", 0, 0 }
 };
 
 P1MeterBase::P1MeterBase(void)
@@ -270,6 +273,10 @@ void P1MeterBase::MatchLine()
 				temp_usage = (unsigned long)(atof(value)*1000.0f);
 				m_p1gas.gasusage = temp_usage;
 				break;
+			case P1TYPE_GASUSAGEGyrE350:
+				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				m_p1gas.gasusage = temp_usage;
+				break;
 			}
 
 			//_log.Log(LOG_NORM,"Key: %s, Value: %s", t.topic,value);
@@ -295,9 +302,11 @@ void P1MeterBase::ParseData(const unsigned char *pData, int Len)
 		if(c == 0x0a || m_bufferpos == sizeof(m_buffer) - 1)
 		{
 			// discard newline, close string, parse line and clear it.
-			if(m_bufferpos > 0) m_buffer[m_bufferpos] = 0;
 			m_linecount++;
-			MatchLine();
+			if (m_bufferpos > 0) {
+				m_buffer[m_bufferpos] = 0;
+				MatchLine();
+			}
 			m_bufferpos = 0;
 		}
 		else

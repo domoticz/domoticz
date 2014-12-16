@@ -71,6 +71,7 @@ Version 2.0.xxxx (October xxth 2014)
 - Changed: Mertik, will now display status=ON when received Up/Down command
 - Fixed: Dashboard, Scenes now not displayed if user does not have the rights to them
 - Implemented: Option for Dummy device to create Ampere Sensor
+- Implemented: P1 SmartMeter, support for the Gyr E350 (Gas reading)
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher
