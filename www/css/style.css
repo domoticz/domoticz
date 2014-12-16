@@ -611,6 +611,24 @@ ul.style6 .first {
 }
 
 body table#itemtable,
+body table#itemtablenotype,
+body table#itemtablenostatus,
+body table#itemtablesmall,
+body table#itemtabledoubleicon,
+body table#itemtabletrippleicon,
+body table#itemtablesmalldoubleicon,
+body table#itemtablesmalltrippleicon,
+body table#mobileitem
+{
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;    
+}
+
+body table#itemtable,
 body table#itemtable tbody{
 	display: block;
 	width: 100%;

@@ -2112,10 +2112,23 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 
 		//Check if it's a setpoint device, and if so, set the actual setpoint
 
-		if ((idtype == pTypeThermostat) && (idsubtype == sTypeThermSetpoint))
+		if (
+			((idtype == pTypeThermostat) && (idsubtype == sTypeThermSetpoint)) ||
+			(idtype == pTypeRadiator1)
+			)
 		{
 			_log.Log(LOG_NORM, "Sending SetPoint to device....");
 			m_mainworker.SetSetPoint(idx, static_cast<float>(atof(svalue.c_str())));
+		}
+		else if ((idtype == pTypeGeneral) && (idsubtype == sTypeZWaveThermostatMode))
+		{
+			_log.Log(LOG_NORM, "Sending Thermostat Mode to device....");
+			m_mainworker.SetZWaveThermostatMode(idx, atoi(nvalue.c_str()));
+		}
+		else if ((idtype == pTypeGeneral) && (idsubtype == sTypeZWaveThermostatFanMode))
+		{
+			_log.Log(LOG_NORM, "Sending Thermostat Fan Mode to device....");
+			m_mainworker.SetZWaveThermostatFanMode(idx, atoi(nvalue.c_str()));
 		}
 	}
 }
