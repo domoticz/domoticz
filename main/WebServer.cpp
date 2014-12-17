@@ -4658,6 +4658,20 @@ namespace http {
 						sunitcode = szTmp;
 						devid = id;
 					}
+					else if (lighttype == 301)
+					{
+						//Smartwares Radiator
+						dtype = pTypeRadiator1;
+						subtype = sTypeSmartwares;
+						std::string id = m_pWebEm->FindValue("id");
+						sunitcode = m_pWebEm->FindValue("unitcode");
+						if (
+							(id == "") ||
+							(sunitcode == "")
+							)
+							return;
+						devid = id;
+					}
 				}
 				root["status"] = "OK";
 				root["message"] = "OK";
@@ -4958,6 +4972,20 @@ namespace http {
 						int iUnitCode = atoi(sunitcode.c_str());
 						sprintf(szTmp, "%d", iUnitCode);
 						sunitcode = szTmp;
+						devid = id;
+					}
+					else if (lighttype == 301)
+					{
+						//Smartwares Radiator
+						dtype = pTypeRadiator1;
+						subtype = sTypeSmartwares;
+						std::string id = m_pWebEm->FindValue("id");
+						sunitcode = m_pWebEm->FindValue("unitcode");
+						if (
+							(id == "") ||
+							(sunitcode == "")
+							)
+							return;
 						devid = id;
 					}
 				}
