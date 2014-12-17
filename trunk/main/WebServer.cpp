@@ -4661,8 +4661,8 @@ namespace http {
 					else if (lighttype == 301)
 					{
 						//Smartwares Radiator
-						dtype = pTypeRadiator1;
-						subtype = sTypeSmartwares;
+						dtype = pTypeLighting2;
+						subtype = sTypeAC;
 						std::string id = m_pWebEm->FindValue("id");
 						sunitcode = m_pWebEm->FindValue("unitcode");
 						if (
@@ -4977,8 +4977,6 @@ namespace http {
 					else if (lighttype == 301)
 					{
 						//Smartwares Radiator
-						dtype = pTypeRadiator1;
-						subtype = sTypeSmartwares;
 						std::string id = m_pWebEm->FindValue("id");
 						sunitcode = m_pWebEm->FindValue("unitcode");
 						if (
@@ -4987,6 +4985,48 @@ namespace http {
 							)
 							return;
 						devid = id;
+
+						//For this device, we will also need to add a Radiator type, do that first
+						dtype = pTypeRadiator1;
+						subtype = sTypeSmartwares;
+
+						//check if switch is unique
+						std::vector<std::vector<std::string> > result;
+						std::stringstream szQuery;
+						szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << hwdid << " AND DeviceID=='" << devid << "' AND Unit==" << sunitcode << " AND Type==" << dtype << " AND SubType==" << subtype << ")";
+						result = m_sql.query(szQuery.str());
+						if (result.size() > 0)
+						{
+							root["message"] = "Switch already exists!";
+							return;
+						}
+						bool bActEnabledState = m_sql.m_bAcceptNewHardware;
+						m_sql.m_bAcceptNewHardware = true;
+						std::string devname;
+						m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, "20.5", devname);
+						m_sql.m_bAcceptNewHardware = bActEnabledState;
+
+						//set name and switchtype
+						szQuery.clear();
+						szQuery.str("");
+						szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << hwdid << " AND DeviceID=='" << devid << "' AND Unit==" << sunitcode << " AND Type==" << dtype << " AND SubType==" << subtype << ")";
+						result = m_sql.query(szQuery.str());
+						if (result.size() < 1)
+						{
+							root["message"] = "Error finding switch in Database!?!?";
+							return;
+						}
+						std::string ID = result[0][0];
+
+						szQuery.clear();
+						szQuery.str("");
+						szQuery << "UPDATE DeviceStatus SET Used=1, Name='" << name << "', SwitchType=" << switchtype << " WHERE (ID == " << ID << ")";
+						result = m_sql.query(szQuery.str());
+
+						//Now continue to insert the switch
+						dtype = pTypeLighting2;
+						subtype = sTypeAC;
+
 					}
 				}
 
