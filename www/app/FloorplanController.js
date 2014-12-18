@@ -339,7 +339,7 @@ define(['app'], function (app) {
 
 			Device.useSVGtags = true;
 			Device.backFunction = 'ShowFloorplans';
-			Device.switchFunction = 'ShowFloorplans';
+			Device.switchFunction = 'RefreshDevices';
 			Device.contentTag = 'floorplancontent';
 			Device.xImageSize = 1280;
 			Device.yImageSize = 720;
